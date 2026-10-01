@@ -88,10 +88,12 @@ describe('layerExtent — where a highlighted layer sits, from the scene generat
     expect(e.below).toBe('sandstone');
   });
 
-  it('caps the pluton with its baked rim, not the layers it cut', () => {
+  // The pluton stops below the sandstone: that is what caps its top. (It once read 'hornfels', then
+  // 'magma': the blocks beside its widening flanks and its root in the chamber were counted as 'above'.)
+  it('caps the pluton with the layer over its top, not the blocks beside its flanks', () => {
     const e = P.layerExtent('intrusion');
     expect(e.count).toBeGreaterThan(0);
-    expect(e.above).toBe('hornfels');
+    expect(e.above).toBe('sandstone');
   });
 
   it('flags radial scenes so the caller uses the palette depth instead of rows', () => {

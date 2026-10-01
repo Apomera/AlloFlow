@@ -1,0 +1,71 @@
+{
+  "status": "passed",
+  "completedAt": "2026-09-29T22:02:21.629Z",
+  "section": "Sky Lab: Planets",
+  "changes": [
+    "Interactive size, mean Sun distance and orbital pace comparisons",
+    "Diameter-scaled disks and globally linear measurement bars",
+    "Reference selection, swap, comparison presets and elapsed-time controls",
+    "Separate spin period, solar day and spin direction",
+    "Keyboard focus, screen-reader descriptions and 44px controls"
+  ],
+  "data": {
+    "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+    "published": "2025-03-18",
+    "definitions": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/planetfact_notes.html",
+    "precision": "Published rounded reference values",
+    "orbitalModel": "Uniform circular teaching positions based on reference periods; tracks separated and markers enlarged"
+  },
+  "unit": {
+    "passed": 124,
+    "failed": 0,
+    "files": [
+      "astronomy_functional_regressions.test.js",
+      "astronomy_planet_comparison.test.js",
+      "astronomy_ui_resilience.test.js"
+    ],
+    "report": "unit-final.json"
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "viewportWidths": [
+      1280,
+      320
+    ],
+    "themes": [
+      "dark",
+      "contrast"
+    ],
+    "checks": [
+      "Diameter and distance ratios",
+      "Selection, swapping and preserved keyboard focus",
+      "Elapsed time, keyboard input and section restoration",
+      "Phone overflow, touch targets and solar-day explanation",
+      "No browser errors or unhandled promise rejections"
+    ],
+    "report": "browser-tests.json"
+  },
+  "parity": {
+    "sourceAndPublicMatch": true,
+    "sha256": "8a796e95912e57afb3cf0734eee353a576a63c8f73d1faf32fc329b4e17c732e",
+    "newEnglishLabels": 50,
+    "labelsMatchBothRegistries": true
+  },
+  "checks": {
+    "moduleSyntax": true,
+    "scopedDiffWhitespace": true
+  },
+  "visualReview": {
+    "status": "reviewed",
+    "images": [
+      "size-desktop.png",
+      "distance-desktop.png",
+      "venus-phone-contrast.png",
+      "orbit-phone-contrast.png"
+    ]
+  }
+}

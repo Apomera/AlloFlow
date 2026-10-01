@@ -1,0 +1,30 @@
+{
+  "sha": "1b7b01208ca939beb150c5c999f4aab33195b633",
+  "files": [
+    "stem_lab/kitchen_studio/recipe_lab_oil.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_oil.js",
+    "stem_lab/kitchen_studio/recipe_lab.html",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html",
+    "stem_lab/kitchen_studio/recipe_lab.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js",
+    "stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.css",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.css",
+    "stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "stem_lab/kitchen_studio/recipe_lab_ingredients.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_ingredients.js",
+    "tests/kitchen_recipe_oil.test.js",
+    "tests/kitchen_recipe_ingredients.test.js",
+    "dev-tools/kitchen_recipe_oil_qa.cjs",
+    "dev-tools/kitchen_recipe_ingredients_qa.cjs",
+    "reports/kitchen-measured-oil-2026-09-29/validation-summary.json"
+  ],
+  "stdout": "[main 1b7b01208] Add measured olive-oil gestures to Kitchen Lab\n 23 files changed, 488 insertions(+), 62 deletions(-)\n create mode 100644 desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_oil.js\n create mode 100644 dev-tools/kitchen_recipe_oil_qa.cjs\n create mode 100644 reports/kitchen-measured-oil-2026-09-29/validation-summary.json\n create mode 100644 stem_lab/kitchen_studio/recipe_lab_oil.js\n create mode 100644 tests/kitchen_recipe_oil.test.js\n",
+  "stderr": "warning: in the working copy of 'desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_gesture_guide.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.css', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'stem_lab/kitchen_studio/recipe_lab.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'stem_lab/kitchen_studio/recipe_lab_gesture_guide.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'stem_lab/kitchen_studio/recipe_lab_scene.js', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'stem_lab/kitchen_studio/recipe_lab_workspace.css', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'stem_lab/kitchen_studio/recipe_lab_workspace.js', CRLF will be replaced by LF the next time Git touches it\ncheck_staleness_delta: no English rewording vs HEAD (0 added, 0 removed - gap-report territory).\n"
+}

@@ -1,0 +1,130 @@
+{
+  "width": 320,
+  "scrollWidth": 318,
+  "clientWidth": 318,
+  "list": "flex",
+  "cards": [
+    {
+      "height": 99.96875,
+      "width": 177.65625,
+      "scrollWidth": 176,
+      "clientWidth": 176,
+      "opacity": "1"
+    },
+    {
+      "height": 99.96875,
+      "width": 177.65625,
+      "scrollWidth": 176,
+      "clientWidth": 176,
+      "opacity": "1"
+    },
+    {
+      "height": 99.96875,
+      "width": 166.484375,
+      "scrollWidth": 164,
+      "clientWidth": 164,
+      "opacity": "1"
+    },
+    {
+      "height": 99.96875,
+      "width": 190.734375,
+      "scrollWidth": 189,
+      "clientWidth": 189,
+      "opacity": "1"
+    },
+    {
+      "height": 99.96875,
+      "width": 200.625,
+      "scrollWidth": 199,
+      "clientWidth": 199,
+      "opacity": "1"
+    }
+  ],
+  "text": [
+    {
+      "text": "2 of 5 layers revealed",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "🟢 Skin",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Revealed",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Revisit structures",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "💪 Muscle",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Revealed",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Revisit structures",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "🫁 Organs",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Current",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Awaiting reveal",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "🦴 Skeleton",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Locked",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Reveal Organs first",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "⚡ Nervous",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Locked",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Reveal Skeleton first",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Use Left and Right to browse available layers; Enter selects. Scroll to see all layers.",
+      "size": 16,
+      "clipped": false
+    }
+  ]
+}

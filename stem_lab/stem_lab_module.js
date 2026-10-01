@@ -2218,6 +2218,9 @@
         //                 backs off to frame empty space.
         //   fitPad        extra world-units of margin around fitPts
         //   debug         function (S) — extra fields merged into debug()
+        //   camera        optional function (THREE, S, m, now) called after the
+        //                 normal orbit fit. Override the pose/projection for a
+        //                 tool-specific viewpoint; omit to keep orbit behavior.
         //   failMessage   passed to ensureThree
         //
         // Returns { attach, push, onStatusChange, status, debug, dispose }.
@@ -2349,6 +2352,12 @@
             if (isStatic && !hadPending && !sizeChanged && !S.dirty) return;
 
             var THREE = S.THREE;
+            // An opt-in camera may change FOV. Start each pose with the normal
+            // lens so switching back to orbit restores its exact framing.
+            if (cfg.camera) {
+              S.camera.fov = cfg.fov || 42;
+              S.camera.up.set(0, 1, 0);
+            }
             var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
             var dir = new THREE.Vector3(
               Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
@@ -2400,6 +2409,12 @@
             S.camera.far = dist * 8 + 200;
             S.camera.updateProjectionMatrix();
             S.camera.lookAt(tgt);
+            if (typeof cfg.camera === 'function') {
+              try {
+                cfg.camera(THREE, S, S.data || {}, now || 0);
+                S.camera.updateProjectionMatrix();
+              } catch (cameraError) { failRuntime(cameraError, 'camera update'); return; }
+            }
             try {
               // Composer first when the addons arrived; a composer that throws
               // is dropped and the plain path takes over from then on.
@@ -3011,6 +3026,9 @@
     window.AlloModules = window.AlloModules || {};
     // STEM_AUTOSAVE_START
     var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', '_tutorialSeen'];
+    // Kitchen Lab keeps progress and preferences only: never a live cook, its
+    // timers or dialogs. The tool type-checks what comes back (klCleanState).
+    var _KITCHEN_LAB_SAVED = ['recipeHistory', 'recipeCompletedIds', 'aGradedRecipeIds', 'klUnlockedAchievements', 'competitionBests', 'tournamentBestTotal', 'tournamentLastTotal', 'tournamentsCompleted', 'klDetectiveSolved', 'klDetectiveCases', 'klBenchRuns', 'klUnits', 'klAltitudeFt', 'klIndependent', 'klRealKitchen', 'klPanMaterial', 'sandboxFood', 'klHandwashCompleted', 'maillardHunt'];
     function _stemPersistencePayload(labToolData) {
           var _toSave = {};
           // @tool waterCycle
@@ -3032,11 +3050,19 @@
             var _beehive = _serializeBeehiveForPersistence(labToolData.beehive);
             if (_beehive) _toSave.beehive = _beehive;
           }
+          var _kl = labToolData.kitchenLab;
+          if (_kl && typeof _kl === 'object' && !Array.isArray(_kl)) {
+            var _klSave = {};
+            Object.keys(_kl).forEach(function (k) {
+              if (_KITCHEN_LAB_SAVED.indexOf(k) !== -1 || /^klViewed[A-Z]/.test(k)) _klSave[k] = _kl[k];
+            });
+            _toSave.kitchenLab = _klSave;
+          }
           return _toSave;
     }
     function _createStemAutosave() {
       var key = 'alloflow_stemlab_v2';
-      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive']);
+      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab']);
       var previousRefs = null, pending = null, timer = null, disposed = false;
       var lastSaved = null;
       try { lastSaved = localStorage.getItem(key); } catch (_) {}
@@ -4524,7 +4550,8 @@
           if (e.altKey) {
             // Alt+1/Alt+2 used to switch tabs; the tab row is gone (Create
             // moved home to the math tool, and Explore IS the Lab).
-            if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); setStemLabTool(null); announceToSR('Returned to tool grid'); }
+            var _typing = document.activeElement && (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) || document.activeElement.isContentEditable);
+            if (stemLabTool && !_typing && !e.ctrlKey && !e.metaKey && (e.key === 'Backspace' || e.code === 'KeyB')) { e.preventDefault(); setStemLabTool(null); announceToSR('Returned to tool grid'); }
           }
         }
         document.addEventListener('keydown', handleKeyDown);
@@ -5981,6 +6008,180 @@
         // tab plus the pointer \u2014 72px of pure overhead on a phone, and a
         // single-tab tablist is an ARIA anti-pattern besides. Explore IS the
         // Lab now; the Math Studio pointer lives in the topbar actionbar.
+        // ═══ Quest HUD (floating compact panel) ═══
+        // Shown while a tool is open. It used to sit inside the tool-grid branch,
+        // which renders only with NO tool open, so it never appeared.
+        stemLabTab === 'explore' && _activeStation && _activeStation.quests && _activeStation.quests.length > 0 && stemLabTool ?
+          React.createElement("div", {
+            className: "fixed bottom-4 right-4 z-[9998] transition-all " + (_questHudCollapsed ? 'w-auto' : 'w-72'),
+            role: 'region',
+            'aria-label': 'Quest log for station ' + _activeStation.name
+          },
+            React.createElement("div", { className: "bg-white/95 backdrop-blur-sm rounded-xl border-2 border-amber-300 shadow-2xl overflow-hidden" },
+            // Header
+            React.createElement("button", {
+              type: "button",
+              className: "w-full flex items-center justify-between px-3 py-1.5 bg-amber-100 cursor-pointer text-left",
+              "aria-expanded": !_questHudCollapsed,
+              onClick: function() { _setQuestHudCollapsed(!_questHudCollapsed); }
+            },
+              React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFC6 Quest Log"),
+              React.createElement("span", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-[10px] text-amber-600 font-bold" },
+                  _activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length + "/" + _activeStation.quests.length + " complete"
+                ),
+                React.createElement("span", { className: "text-[10px] text-amber-500", "aria-hidden": "true" }, _questHudCollapsed ? "\u25BC" : "\u25B2")
+              )
+            ),
+            // Quest list
+            !_questHudCollapsed && React.createElement("div", { className: "p-2 space-y-1.5" },
+              _activeStation.quests.map(function(quest) {
+                var disp = _getQuestDisplay(quest, labToolData || {}, _questProgress, _activeStation.id);
+                var qp = ((_questProgress[_activeStation.id] || {})[quest.qid]) || {};
+                var qtDef = QUEST_TYPES.find(function(qt) { return qt.id === quest.type; }) || {};
+                // Difficulty indicator
+                var difficulty = 'easy';
+                if (quest.type === 'xpThreshold' && (quest.params.threshold || 50) >= 75) difficulty = 'hard';
+                else if (quest.type === 'xpThreshold' && (quest.params.threshold || 50) >= 40) difficulty = 'medium';
+                else if (quest.type === 'timeSpent' && (quest.params.minutes || 5) >= 8) difficulty = 'hard';
+                else if (quest.type === 'timeSpent' && (quest.params.minutes || 5) >= 5) difficulty = 'medium';
+                else if (quest.type === 'freeResponse' && (quest.params.minLength || 30) >= 60) difficulty = 'hard';
+                else if (quest.type === 'freeResponse') difficulty = 'medium';
+                else if (quest.type === 'toolQuest') difficulty = 'medium';
+                var diffColors = { easy: 'bg-green-100 text-green-700', medium: 'bg-amber-100 text-amber-800', hard: 'bg-red-100 text-red-700' };
+                var diffLabels = { easy: '\u2605', medium: '\u2605\u2605', hard: '\u2605\u2605\u2605' };
+                return React.createElement("div", { key: quest.qid, className: "bg-white rounded-lg px-2.5 py-2 border " + (disp.done ? 'border-green-300 bg-green-50/50' : 'border-amber-200') },
+                  React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                    React.createElement("div", { className: "flex items-center gap-1.5 flex-1 min-w-0" },
+                      React.createElement("span", { className: "text-[11px] font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
+                        (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
+                      ),
+                      !disp.done && React.createElement("span", { className: "text-[10px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
+                    ),
+                    React.createElement("span", { className: "text-[10px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
+                  ),
+                  // Live timer for timeSpent quests
+                  quest.type === 'timeSpent' && !disp.done && (function() {
+                    var ms = (qp.timeAccumMs || 0);
+                    var targetMs = (quest.params.minutes || 5) * 60000;
+                    var min = Math.floor(ms / 60000);
+                    var sec = Math.floor((ms % 60000) / 1000);
+                    var isActive = stemLabTool === quest.toolId;
+                    return React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 mb-0.5" },
+                      React.createElement("span", { className: "text-[10px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
+                        (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
+                      ),
+                      // "counting active time", not "timing" — the clock only
+                      // advances while the learner is present, so a bare
+                      // "timing..." next to a stalled number would be a lie.
+                      isActive && React.createElement("span", { className: "text-[10px] text-green-500" }, 'counting active time')
+                    );
+                  })(),
+                  // Progress bar
+                  !disp.done && React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full overflow-hidden", role: 'progressbar', 'aria-valuenow': Math.round(disp.pct), 'aria-valuemax': 100 },
+                    React.createElement("div", { className: "h-full rounded-full transition-all " + (disp.pct >= 80 ? 'bg-green-400' : disp.pct >= 50 ? 'bg-amber-400' : 'bg-amber-300'), style: { width: disp.pct + '%' } })
+                  ),
+                  // Free response textarea.
+                  //
+                  // This used to render only while `!disp.done`. A reflection
+                  // completes as soon as it reaches minLength, so the moment
+                  // the quest was marked complete the box the student had
+                  // written in was removed: they could not finish the
+                  // sentence, reread what they had said, or fix a typo, and
+                  // nothing else on the row displayed the text. It still went
+                  // into the teacher's report verbatim.
+                  //
+                  // Writing stays visible and editable after completion. The
+                  // quest does not un-complete when edited below the
+                  // threshold, because taking a finished quest away again
+                  // would be worse than leaving it.
+                  quest.type === 'freeResponse' && React.createElement("div", { className: "mt-1.5" },
+                    disp.done && React.createElement("label", {
+                      className: "block text-[10px] font-bold text-green-700 mb-0.5",
+                      htmlFor: 'stem-quest-response-' + quest.qid
+                    }, "Your response (you can still edit it)"),
+                    React.createElement("textarea", {
+                      id: 'stem-quest-response-' + quest.qid,
+                      value: qp.response || '',
+                      placeholder: quest.params.prompt || 'Describe what you learned...',
+                      'aria-label': quest.params.prompt || 'Write your response',
+                      onChange: function(e) {
+                        var val = e.target.value;
+                        _setQuestProgress(function(prev) {
+                          var sp = Object.assign({}, prev[_activeStation.id] || {});
+                          var qpUpdate = Object.assign({}, sp[quest.qid] || {});
+                          qpUpdate.response = val;
+                          sp[quest.qid] = qpUpdate;
+                          var next = Object.assign({}, prev);
+                          next[_activeStation.id] = sp;
+                          return next;
+                        });
+                      },
+                      rows: 2,
+                      className: "w-full px-2 py-1.5 text-xs rounded-lg resize-none focus:ring-2 outline-none " +
+                        (disp.done ? "border border-green-300 bg-green-50/40 focus:ring-green-400" : "border border-amber-200 focus:ring-amber-400")
+                    })
+                  )
+                );
+              }),
+              // All quests complete celebration
+              (function() {
+                var allDone = _activeStation.quests.every(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; });
+                var completedCount = _activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length;
+                return React.createElement("div", { className: "space-y-1.5" },
+                  // All complete celebration
+                  allDone ? React.createElement("div", { className: "bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-3 border border-green-300 text-center" },
+                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF89"),
+                    React.createElement("p", { className: "text-sm font-bold text-green-800" }, "All Quests Complete!"),
+                    React.createElement("p", { className: "text-[10px] text-green-600 mb-2" }, "Great work, explorer! You finished all " + _activeStation.quests.length + " quests in this station."),
+                    React.createElement("div", { className: "flex gap-3 justify-center" },
+                      React.createElement("button", {
+                        'aria-label': 'Copy quest completion report to clipboard',
+                        onClick: function() {
+                          var stProg = _questProgress[_activeStation.id] || {};
+                          var report = '\uD83C\uDFC6 QUEST REPORT: ' + _activeStation.name + '\n';
+                          report += 'Completed: ' + new Date().toLocaleDateString() + '\n\n';
+                          _activeStation.quests.forEach(function(q) {
+                            var qp = stProg[q.qid] || {};
+                            report += (qp.complete ? '\u2705' : '\u2B1C') + ' ' + q.label;
+                            if (qp.completedAt) report += ' (at ' + new Date(qp.completedAt).toLocaleTimeString() + ')';
+                            if (q.type === 'freeResponse' && qp.response) report += '\n   Response: "' + qp.response + '"';
+                            report += '\n';
+                          });
+                          report += '\nStation: ' + _activeStation.name + ' | Tools: ' + _activeStation.tools.join(', ');
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(report).then(function() {
+                              if (addToast) addToast('\uD83D\uDCCB Report copied to clipboard!', 'success');
+                            });
+                          }
+                        },
+                        className: "text-[10px] text-green-700 hover:text-green-900 underline font-bold"
+                      }, "\uD83D\uDCCB Copy Report"),
+                      React.createElement("button", {
+                        'aria-label': 'Reset all quest progress for this station',
+                        onClick: function() {
+                          _setQuestProgress(function(prev) {
+                            var next = Object.assign({}, prev);
+                            delete next[_activeStation.id];
+                            return next;
+                          });
+                          if (addToast) addToast('\uD83D\uDD04 Quest progress reset for ' + _activeStation.name, 'info');
+                        },
+                        className: "text-[10px] text-green-600 hover:text-green-800 underline"
+                      }, "\uD83D\uDD04 Reset & Try Again")
+                    )
+                  ) : null,
+                  // Progress summary bar (when not all complete)
+                  !allDone && completedCount > 0 ? React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-amber-50 rounded-lg border border-amber-200" },
+                    React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden flex-1" },
+                      React.createElement("div", { className: "h-full bg-amber-400 rounded-full transition-all", style: { width: Math.round(completedCount / _activeStation.quests.length * 100) + '%' } })
+                    ),
+                    React.createElement("span", { className: "text-[10px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
+                  ) : null
+                );
+              })()
+            )
+          )) : null,
         stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && /*#__PURE__*/React.createElement("div", {
           className: "stem-active-toolbar",
           role: "region",
@@ -6552,7 +6753,7 @@
                 color: 'emerald', ready: true
               },
               {
-                id: 'organismId', icon: '🧬', label: t('stem.organismid.title') || 'Taxonomy Explorer',
+                id: 'organismId', icon: '🐞', label: t('stem.organismid.title') || 'Taxonomy Explorer',
                 desc: t('stem.tools_menu.walk_the_ranked_tree_of_life') || 'Walk the ranked tree of life, meet the lookalike pairs that fool experienced foragers, and learn why the boxes keep moving — Linnaean ranks vs cladistics, what a species even is, and the organisms that break the system. Photo identification is built but held back pending expert review of its hazard copy.',
                 color: 'emerald', ready: true,
                 aliases: ['taxonomy', 'classification', 'organism id', 'identify organism', 'linnaean', 'cladistics', 'species', 'lookalikes', 'mimicry', 'tree of life', 'dichotomous key']
@@ -7263,7 +7464,7 @@
             if (_activeStation && _activeStation.tools && _activeStation.tools.length > 0) {
               var _stationToolSet = {};
               _activeStation.tools.forEach(function(tid) { _stationToolSet[tid] = true; });
-              _filteredTools = _allStemTools.filter(function(tool) {
+              _filteredTools = _filteredTools.filter(function(tool) {
                 if (tool.category) return true;
                 return !!_stationToolSet[tool.id];
               });
@@ -7810,176 +8011,6 @@
             ) : null
           ),
 
-          // ═══ Quest HUD (floating compact panel) ═══
-          _activeStation && _activeStation.quests && _activeStation.quests.length > 0 && stemLabTool ?
-            React.createElement("div", {
-              className: "fixed bottom-4 right-4 z-[9998] transition-all " + (_questHudCollapsed ? 'w-auto' : 'w-72'),
-              role: 'region',
-              'aria-label': 'Quest log for station ' + _activeStation.name
-            },
-              React.createElement("div", { className: "bg-white/95 backdrop-blur-sm rounded-xl border-2 border-amber-300 shadow-2xl overflow-hidden" },
-              // Header
-              React.createElement("div", {
-                className: "flex items-center justify-between px-3 py-1.5 bg-amber-100 cursor-pointer",
-                onClick: function() { _setQuestHudCollapsed(!_questHudCollapsed); }
-              },
-                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "\uD83C\uDFC6 Quest Log"),
-                React.createElement("div", { className: "flex items-center gap-2" },
-                  React.createElement("span", { className: "text-[10px] text-amber-600 font-bold" },
-                    _activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length + "/" + _activeStation.quests.length + " complete"
-                  ),
-                  React.createElement("span", { className: "text-[10px] text-amber-500" }, _questHudCollapsed ? "\u25BC" : "\u25B2")
-                )
-              ),
-              // Quest list
-              !_questHudCollapsed && React.createElement("div", { className: "p-2 space-y-1.5" },
-                _activeStation.quests.map(function(quest) {
-                  var disp = _getQuestDisplay(quest, labToolData || {}, _questProgress, _activeStation.id);
-                  var qp = ((_questProgress[_activeStation.id] || {})[quest.qid]) || {};
-                  var qtDef = QUEST_TYPES.find(function(qt) { return qt.id === quest.type; }) || {};
-                  // Difficulty indicator
-                  var difficulty = 'easy';
-                  if (quest.type === 'xpThreshold' && (quest.params.threshold || 50) >= 75) difficulty = 'hard';
-                  else if (quest.type === 'xpThreshold' && (quest.params.threshold || 50) >= 40) difficulty = 'medium';
-                  else if (quest.type === 'timeSpent' && (quest.params.minutes || 5) >= 8) difficulty = 'hard';
-                  else if (quest.type === 'timeSpent' && (quest.params.minutes || 5) >= 5) difficulty = 'medium';
-                  else if (quest.type === 'freeResponse' && (quest.params.minLength || 30) >= 60) difficulty = 'hard';
-                  else if (quest.type === 'freeResponse') difficulty = 'medium';
-                  else if (quest.type === 'toolQuest') difficulty = 'medium';
-                  var diffColors = { easy: 'bg-green-100 text-green-700', medium: 'bg-amber-100 text-amber-800', hard: 'bg-red-100 text-red-700' };
-                  var diffLabels = { easy: '\u2605', medium: '\u2605\u2605', hard: '\u2605\u2605\u2605' };
-                  return React.createElement("div", { key: quest.qid, className: "bg-white rounded-lg px-2.5 py-2 border " + (disp.done ? 'border-green-300 bg-green-50/50' : 'border-amber-200') },
-                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                      React.createElement("div", { className: "flex items-center gap-1.5 flex-1 min-w-0" },
-                        React.createElement("span", { className: "text-[11px] font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
-                          (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
-                        ),
-                        !disp.done && React.createElement("span", { className: "text-[10px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
-                      ),
-                      React.createElement("span", { className: "text-[10px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
-                    ),
-                    // Live timer for timeSpent quests
-                    quest.type === 'timeSpent' && !disp.done && (function() {
-                      var ms = (qp.timeAccumMs || 0);
-                      var targetMs = (quest.params.minutes || 5) * 60000;
-                      var min = Math.floor(ms / 60000);
-                      var sec = Math.floor((ms % 60000) / 1000);
-                      var isActive = stemLabTool === quest.toolId;
-                      return React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 mb-0.5" },
-                        React.createElement("span", { className: "text-[10px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
-                          (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
-                        ),
-                        // "counting active time", not "timing" — the clock only
-                        // advances while the learner is present, so a bare
-                        // "timing..." next to a stalled number would be a lie.
-                        isActive && React.createElement("span", { className: "text-[10px] text-green-500" }, 'counting active time')
-                      );
-                    })(),
-                    // Progress bar
-                    !disp.done && React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full overflow-hidden", role: 'progressbar', 'aria-valuenow': Math.round(disp.pct), 'aria-valuemax': 100 },
-                      React.createElement("div", { className: "h-full rounded-full transition-all " + (disp.pct >= 80 ? 'bg-green-400' : disp.pct >= 50 ? 'bg-amber-400' : 'bg-amber-300'), style: { width: disp.pct + '%' } })
-                    ),
-                    // Free response textarea.
-                    //
-                    // This used to render only while `!disp.done`. A reflection
-                    // completes as soon as it reaches minLength, so the moment
-                    // the quest was marked complete the box the student had
-                    // written in was removed: they could not finish the
-                    // sentence, reread what they had said, or fix a typo, and
-                    // nothing else on the row displayed the text. It still went
-                    // into the teacher's report verbatim.
-                    //
-                    // Writing stays visible and editable after completion. The
-                    // quest does not un-complete when edited below the
-                    // threshold, because taking a finished quest away again
-                    // would be worse than leaving it.
-                    quest.type === 'freeResponse' && React.createElement("div", { className: "mt-1.5" },
-                      disp.done && React.createElement("label", {
-                        className: "block text-[10px] font-bold text-green-700 mb-0.5",
-                        htmlFor: 'stem-quest-response-' + quest.qid
-                      }, "Your response (you can still edit it)"),
-                      React.createElement("textarea", {
-                        id: 'stem-quest-response-' + quest.qid,
-                        value: qp.response || '',
-                        placeholder: quest.params.prompt || 'Describe what you learned...',
-                        'aria-label': quest.params.prompt || 'Write your response',
-                        onChange: function(e) {
-                          var val = e.target.value;
-                          _setQuestProgress(function(prev) {
-                            var sp = Object.assign({}, prev[_activeStation.id] || {});
-                            var qpUpdate = Object.assign({}, sp[quest.qid] || {});
-                            qpUpdate.response = val;
-                            sp[quest.qid] = qpUpdate;
-                            var next = Object.assign({}, prev);
-                            next[_activeStation.id] = sp;
-                            return next;
-                          });
-                        },
-                        rows: 2,
-                        className: "w-full px-2 py-1.5 text-xs rounded-lg resize-none focus:ring-2 outline-none " +
-                          (disp.done ? "border border-green-300 bg-green-50/40 focus:ring-green-400" : "border border-amber-200 focus:ring-amber-400")
-                      })
-                    )
-                  );
-                }),
-                // All quests complete celebration
-                (function() {
-                  var allDone = _activeStation.quests.every(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; });
-                  var completedCount = _activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length;
-                  return React.createElement("div", { className: "space-y-1.5" },
-                    // All complete celebration
-                    allDone ? React.createElement("div", { className: "bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-3 border border-green-300 text-center" },
-                      React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF89"),
-                      React.createElement("p", { className: "text-sm font-bold text-green-800" }, "All Quests Complete!"),
-                      React.createElement("p", { className: "text-[10px] text-green-600 mb-2" }, "Great work, explorer! You finished all " + _activeStation.quests.length + " quests in this station."),
-                      React.createElement("div", { className: "flex gap-3 justify-center" },
-                        React.createElement("button", {
-                          'aria-label': 'Copy quest completion report to clipboard',
-                          onClick: function() {
-                            var stProg = _questProgress[_activeStation.id] || {};
-                            var report = '\uD83C\uDFC6 QUEST REPORT: ' + _activeStation.name + '\n';
-                            report += 'Completed: ' + new Date().toLocaleDateString() + '\n\n';
-                            _activeStation.quests.forEach(function(q) {
-                              var qp = stProg[q.qid] || {};
-                              report += (qp.complete ? '\u2705' : '\u2B1C') + ' ' + q.label;
-                              if (qp.completedAt) report += ' (at ' + new Date(qp.completedAt).toLocaleTimeString() + ')';
-                              if (q.type === 'freeResponse' && qp.response) report += '\n   Response: "' + qp.response + '"';
-                              report += '\n';
-                            });
-                            report += '\nStation: ' + _activeStation.name + ' | Tools: ' + _activeStation.tools.join(', ');
-                            if (navigator.clipboard) {
-                              navigator.clipboard.writeText(report).then(function() {
-                                if (addToast) addToast('\uD83D\uDCCB Report copied to clipboard!', 'success');
-                              });
-                            }
-                          },
-                          className: "text-[10px] text-green-700 hover:text-green-900 underline font-bold"
-                        }, "\uD83D\uDCCB Copy Report"),
-                        React.createElement("button", {
-                          'aria-label': 'Reset all quest progress for this station',
-                          onClick: function() {
-                            _setQuestProgress(function(prev) {
-                              var next = Object.assign({}, prev);
-                              delete next[_activeStation.id];
-                              return next;
-                            });
-                            if (addToast) addToast('\uD83D\uDD04 Quest progress reset for ' + _activeStation.name, 'info');
-                          },
-                          className: "text-[10px] text-green-600 hover:text-green-800 underline"
-                        }, "\uD83D\uDD04 Reset & Try Again")
-                      )
-                    ) : null,
-                    // Progress summary bar (when not all complete)
-                    !allDone && completedCount > 0 ? React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-amber-50 rounded-lg border border-amber-200" },
-                      React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden flex-1" },
-                        React.createElement("div", { className: "h-full bg-amber-400 rounded-full transition-all", style: { width: Math.round(completedCount / _activeStation.quests.length * 100) + '%' } })
-                      ),
-                      React.createElement("span", { className: "text-[10px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
-                    ) : null
-                  );
-                })()
-              )
-            )) : null,
 
           // ── Station Builder Panel ──
           _showStationBuilder ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },

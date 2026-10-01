@@ -1,0 +1,13 @@
+{
+  "before": {
+    "word_sounds_core.js": "616de22e05bb3fae5f4c938911cd7e1a05fa842a5b41bf5ae709e2b9a6b1833e",
+    "word_sounds_setup_source.jsx": "6e5bef90133f058c28794e603b723b38cce89c59d26a6f80385758966d85e505",
+    "word_sounds_module.js": "2c2c8261399da0f9fc4d44796100b78b4e3bf8d1acd9fd4b1791c3669e23e6d3"
+  },
+  "after": {
+    "word_sounds_core.js": "5dcd8cb87f63a275eba1c641ee2162f4ad78b2f82826546fe8de7b2a961b85d8",
+    "word_sounds_setup_source.jsx": "57e97d42d537dccaa2c1c0081ee4d348bbc2abfb9eed445b4c4212c86847928f",
+    "word_sounds_module.js": "c944acee686df045869b8523164590024ac86589570d1d3826e1a0202d1397b6"
+  },
+  "embeddingRun": false
+}

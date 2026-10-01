@@ -1,0 +1,838 @@
+{
+  "reason": "failed",
+  "total": 165,
+  "passed": 2,
+  "failed": 2,
+  "errors": [],
+  "tests": [
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > uses the live Three runtime with an explicit visible retry state",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > passes selected mission data into simulation and gives lofty missions viable starts and ceilings",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > renders both a visible engine state and the ready responsive flight shell",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > renders talon mechanics as visual ratio meters with explicit kill thresholds",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > renders the Vision Lab field balance map with scan and depth cues",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > renders the Flight Physics tradeoff map with a highlighted selected profile",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > renders the Stoop Calculator impact scale with log-spaced reference markers",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > renders the Silent Flight mechanism stack as a readable signal path",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt resilient engine startup and mission flow > tracks a mission outcome from actual flight events instead of leaving the picker cosmetic",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt accessible flight controls and lifecycle > provides declarative, keyboard-friendly controls and fullscreen access",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt accessible flight controls and lifecycle > uses Pointer Events, releases held controls on interruption, and tears every listener down",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt accessible flight controls and lifecycle > observes element resize, not just the window, and fully disposes a departed simulation",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > uses one three-dimensional forward/target calculation for both reticle and strike",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps full-screen and compact layouts usable and honors reduced-motion preferences",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > uses a deliberate setup-to-flight flow with compact navigation and progressive disclosure",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > adds depth cues to the flight world without turning them into permanent clutter",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > prioritizes a resumable mission briefing before compact topic discovery",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns each topic into a progress-aware collection landing page",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > derives public inventory counts from the live section, species, and quiz datasets",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > exposes and visually integrates the adaptive Strategy Designer lab",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps the Acuity meadow visual free of invalid function children",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all seven Anatomy Atlas systems into selectable SVG field plates",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 12 Habitat Atlas biomes into layered seasonal ecosystem plates",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 14 Age & Plumage profiles into a life-stage identification lab",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns the 55-record Prey Atlas into a filtered food-web explorer",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 14 Fossil Record entries into a Deep Time evidence navigator",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 12 ID mysteries into illustrated evidence-based field cases",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 17 threats into pathway-based systems and intervention plans",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 12 expert spotlights into an accessible science lineage lab",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns Research Stations into a verified role-by-region research network atlas",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns 26 conservation organizations into an accessible action network",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns 15 museum and field sites into an accessible evidence-literacy lab",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns 30 source-checked books into an accessible reading flight deck",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns 20 source-checked titles into an accessible raptor screening room",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns six avian systems into an accessible functional flow lab",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 24 behaviors into an accessible abstract ethogram field deck",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns twenty raptor voices into an accessible bioacoustic observatory",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > adds an evidence-first Mystery Signal challenge that rewards uncertainty",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns 14 raptor nest systems into an accessible architecture studio",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns ten flight modes into an accessible raptor airflow theater",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 15 World Tour destinations into a seasonal global expedition atlas",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns the Molt Atlas into an interactive sequential feather laboratory",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns the Wing Formula Calculator into an interactive primary measurement lab",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns all 20 Illustration Gallery entries into browsable SVG field plates",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps science surfaces inside the same field-station hierarchy",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > renders setup without mounting a flight until Start Flight is chosen",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > maps every specialized species to a recognizable flight silhouette",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > uses species plumage profiles and keeps facial features on one tracked head node",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > builds indexed tapered primary feathers without rectangular finger geometry",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > samples the rendered terrain grid exactly and batches forest draw calls",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > uses elapsed-time damping and a nonteleporting inward world edge",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > sizes the chase view to the species and shares one 3D flight-forward vector",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > uses frame-rate-independent turn roll and aligns speed streaks to the camera",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > builds recognizable prey families instead of generic primitives",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > gives prey biologically distinct escape, cover, flight, and dive behavior",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > animates each raptor family with distinct wing and tail mechanics",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > offers persistent device-friendly graphics quality tiers",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > updates the complete environment through one coherent daylight palette",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > provides a flight tutorial driven by real steering, altitude, targeting, and strike actions",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps mission and text target guidance visible in narrow touch layouts",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > clamps offscreen guidance to the same target reticle and exposes diagnostics",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > adds quality-aware terrain texture detail and readable horizon landmarks",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps distant landmark layers fixed in world space for natural parallax",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > separates raptor plumage planes with subtle material and edge accents",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps High Stoop atmosphere and target acquisition readable at mission altitude",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > turns live weather into visible, wind-driven atmosphere at every frame rate",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > uses quality-scaled pooled rain and snow with frame-rate-independent wind drift",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > exposes precipitation state while reduced motion suppresses particle animation",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > shows at most one selective target beacon and reports that assist state",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > removes hidden legacy HUD nodes and updates only the compact telemetry strip",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > throttles water visuals and exposes deterministic atmosphere diagnostics",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > differentiates catches and misses with restrained, accessible strike feedback",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt 3D interaction and responsive visual regressions > keeps the packaged desktop copy byte-identical to the canonical tool source",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > ships four control presets that all bind pause, camera, and target assist",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > routes keyboard input through the active preset and ignores unbound keys",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > reads the preset from the canvas dataset so a fresh sim starts on the saved preset",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > renders a contextual key guide that refreshes on target, pause, and landing changes",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > offers a custom preset that rebinds one key per action and survives a corrupt saved map",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > limits the pull-out by the G tolerance it already ships per species",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > lifts on a strong thermal rather than one twice any bird rides",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > glides on the species aerodynamics it already ships, not a flat sink rate",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > buys stoop speed with height instead of snapping to terminal velocity",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > reads acuity magnification from the species instead of claiming a flat 8x",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > teaches the acuity zoom as the answer to small distant prey",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > lets flight school drive the key guide and warns when a custom map drops an essential action",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > drives the on-screen controls from the same guided prompts as the key chips",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > labels the strike button from the preset instead of a hard-coded F",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > hides the key guide by pointer type rather than by window width",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt configurable controls and key guide > spells the dive and take-off keys from the preset instead of hard-coding Shift and Space",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt wind advection and ground speed > carries the bird at the full wind speed instead of a fraction of it",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt wind advection and ground speed > derives ground speed once, beside the motion it describes",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt wind advection and ground speed > names the airspeed metric and puts ground speed on the wind chip",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt wind advection and ground speed > makes the kiting the encyclopedia describes arithmetically reachable",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt wind advection and ground speed > keeps the deploy mirror byte-identical after the wind change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > keeps one biome climate table that both the weather and the snow line read",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > decides snow by temperature instead of a hand-typed list of biomes",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > gives a lower peak less snow than a taller one on the same skyline",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > measures the snow line against the height the generator can actually reach",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > seats every snow cap on the peak it belongs to",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > samples snow caps from the same parent ridge surface",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > paints both far peak rings from one palette",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > flat-shades the near landmarks like every other peak in the scene",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > reports the snow line in the snapshot so a capture can prove it",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow line and horizon peaks > keeps the deploy mirror byte-identical after the snow line change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > casts a ground shadow at all, which the scene previously had none of",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > throws the shadow away from the sun and clamps the low-sun runaway",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > spreads and fades the shadow with height, the way a penumbra does",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > keeps the shadow colour a live parameter rather than a dead one",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > ties the shadow to sunlight reaching the ground",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > makes readability depend on what the bird is actually seen against",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > separates the two low-contrast species from the four that are already readable",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > shares one relative-luminance helper instead of measuring brightness twice",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > reports the shadow and the contrast in the snapshot",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt ground shadow and background-aware readability > keeps the deploy mirror byte-identical after the shadow change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow ground shading > shades snow by sky-lit shadow instead of lerping it toward an olive meadow",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow ground shading > leaves the other biomes ground shading untouched",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow ground shading > records why more vertex shading cannot rescue the snow foreground",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow ground shading > keeps the tone mapping this analysis assumes",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt snow ground shading > keeps the deploy mirror byte-identical after the snow ground change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt stylesheet structure > ships a structurally sound stylesheet",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt stylesheet structure > catches a dropped closing brace, the way the forced-colors blocks broke",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt stylesheet structure > catches a stray closing brace",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt stylesheet structure > catches a media query whose block never opens",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt stylesheet structure > does not fire on the BibTeX entries this file also carries",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > finds the shipped roster it is going to reason about",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > burns against metabolic mass rather than plain mass",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > had an energy model in which mass cancelled exactly",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > restores the spread the tool teaches in its own Kleiber problem",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > anchors on the lightest species so the fix makes nothing worse",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > reports the endurance figures a capture can check",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt metabolic scaling > keeps the deploy mirror byte-identical after the metabolic change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > reads the shipped sizes and the reference table it must agree with",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > no longer contradicts the tool own prey reference table",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > keeps the exponent that fitted and only moves the coefficient",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > states the edible fraction instead of hiding it in the coefficient",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > keeps a meal capped at the share of body mass the tool teaches",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > reports the catch figures in the snapshot",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey energy value > keeps the deploy mirror byte-identical after the prey energy change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt accessibility string translation > reaches the translator from inside the simulation",
+      "state": "passed",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt accessibility string translation > asks for its accessibility strings through the translator, not as literals",
+      "state": "passed",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt accessibility string translation > does not let the untranslated accessibility count grow",
+      "state": "failed",
+      "errors": [
+        "expected 229 to be less than or equal to 175"
+      ]
+    },
+    {
+      "name": "Raptor Hunt accessibility string translation > keeps ordinary copy fully translated, which is what makes the gap categorical",
+      "state": "failed",
+      "errors": [
+        "expected 106 to be less than or equal to 5"
+      ]
+    },
+    {
+      "name": "Raptor Hunt visual field and target lock cone > reads the visual field it will reason about from the shipped roster",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt visual field and target lock cone > derives the lock cone from the species field instead of a flat 120 degrees",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt visual field and target lock cone > gives owls the narrowest cone and never locks behind the bird",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt visual field and target lock cone > leaves the strike gate alone so a wider lock does not mean a looser hit",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt visual field and target lock cone > reports the cone in the snapshot, matching the browser-measured values",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt visual field and target lock cone > keeps the deploy mirror byte-identical after the visual field change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > bridges the two id conventions the tool uses for the same birds",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > no longer gives a vulture the same screech as a falcon",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > takes the number of notes from the catalogue, not a constant",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > keeps the pitch anchors and the generic screech for species the catalogue does not name",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > keeps every one-shot on the gated master with bounded lifetime, hiss included",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > reports the call shape in the snapshot",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt species call shape > keeps the deploy mirror byte-identical after the call change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt debrief consistency > labels the debrief peak as airspeed, matching the HUD metric",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt debrief consistency > names the thermal-entry event once and counts it by that name",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt debrief consistency > only gives energy coaching for energy warnings",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt debrief consistency > keeps the deploy mirror byte-identical after the debrief change",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey detection distance > detects the raptor by true distance, not by its footprint on the map",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey detection distance > anchors the radius so the low cruise still alerts and the high pass does not",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey detection distance > scales the silent-strike pull-up alert and the calm-down range the same way",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey detection distance > still flees along the ground",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey detection distance > reports the evidence fields in the snapshot",
+      "state": "skipped",
+      "errors": []
+    },
+    {
+      "name": "Raptor Hunt prey detection distance > keeps the deploy mirror byte-identical after the detection change",
+      "state": "skipped",
+      "errors": []
+    }
+  ]
+}

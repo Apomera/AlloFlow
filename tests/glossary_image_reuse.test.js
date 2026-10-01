@@ -88,6 +88,10 @@ describe('glossary illustration reuse', () => {
 
 const branch = source.slice(source.indexOf("      if (type === 'glossary') {"), source.indexOf(" else if (type === 'simplified') {", source.indexOf("      if (type === 'glossary') {")));
 const runBranch = new Function('deps', 'glossaryImageReuseCache', 'return (async () => { with (deps) { let content, metaInfo; ' + branch + '; return content; } })();');
+// The branch now shares the module-level glossary normalizer with the local path.
+const normalizerStart = source.indexOf('const _unwrapGeneratedList =');
+const normalizeGlossaryTerms = normalizerStart < 0 ? undefined
+  : new Function(source.slice(normalizerStart, source.indexOf('const normalizeFaqItems =', normalizerStart)) + '; return normalizeGlossaryTerms;')();
 function deps(overrides = {}) {
   return {
     type: 'glossary', glossaryTier2Count: 1, glossaryTier3Count: 0, configOverride: {},
@@ -103,6 +107,7 @@ function deps(overrides = {}) {
     callGemini: vi.fn(async () => JSON.stringify([leaf])),
     callImagenWithSignal: vi.fn(async () => 'data:image/png;base64,raw'),
     callGeminiImageEditWithSignal: vi.fn(async () => 'data:image/png;base64,clean'),
+    ...(normalizeGlossaryTerms ? { normalizeGlossaryTerms } : {}),
     ...overrides,
   };
 }

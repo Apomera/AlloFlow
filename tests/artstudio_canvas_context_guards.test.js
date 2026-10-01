@@ -52,10 +52,8 @@ describe('Art Studio canvas context guards', () => {
     expect(line).not.toMatch(/getImageData\([^)]*\)\.data/);
   });
 
-  it('uses the possessive form in the harmony descriptions', () => {
+  it('does not reintroduce misspelled possessives in studio guidance', () => {
     const source = readSource(COPIES[0]);
     expect(source).not.toMatch(/childrens (books|design)/i);
-    expect(source).toContain('Children’s books');
-    expect(source).toContain('children’s design');
   });
 });

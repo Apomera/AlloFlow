@@ -362,7 +362,7 @@ function TimelineView(props) {
     },
     onDragOver: e => handleTimelineDragOver(e, idx),
     onDragEnd: handleTimelineDragEnd,
-    className: `relative flex items-start gap-2 p-3 rounded-xl border-2 transition-all ${draggedTimelineIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-white border-slate-200 shadow-sm'}`
+    className: `relative flex flex-wrap items-start gap-2 p-3 rounded-xl border-2 transition-all ${draggedTimelineIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-white border-slate-200 shadow-sm'}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-1 mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
   }, /*#__PURE__*/React.createElement(GripVertical, {
@@ -391,7 +391,7 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "↓"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow grid grid-cols-1 gap-3"
+    className: "flex-1 min-w-0 grid grid-cols-1 gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("input", {
@@ -399,7 +399,7 @@ function TimelineView(props) {
     type: "text",
     value: item.date,
     onChange: e => handleTimelineChange(idx, 'date', e.target.value),
-    className: "w-1/3 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
+    className: "w-1/3 min-w-0 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.label_placeholder')
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.text_field'),
@@ -407,7 +407,7 @@ function TimelineView(props) {
     "data-timeline-event": true,
     value: item.event,
     onChange: e => handleTimelineChange(idx, 'event', e.target.value),
-    className: "w-2/3 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
+    className: "w-2/3 min-w-0 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.event_placeholder')
   })), (item.event_en || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -416,25 +416,26 @@ function TimelineView(props) {
     type: "text",
     value: item.date_en || '',
     onChange: e => handleTimelineChange(idx, 'date', e.target.value, true),
-    className: "w-1/3 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
+    className: "w-1/3 min-w-0 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.label_en_placeholder')
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.text_field'),
     type: "text",
     value: item.event_en || '',
     onChange: e => handleTimelineChange(idx, 'event', e.target.value, true),
-    className: "w-2/3 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
+    className: "w-2/3 min-w-0 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.event_en_placeholder')
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-1 mt-1 shrink-0"
   }, item.image ? /*#__PURE__*/React.createElement("div", {
-    className: "relative group/timgimg"
+    "data-timeline-image-box": true,
+    className: "relative group/timgimg w-12 h-12"
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: item.image,
     alt: item.decorative ? '' : item.alt || `${item.date || ''}: ${item.event || ''}`,
     className: "w-12 h-12 object-contain rounded border border-slate-400 bg-white"
-  }), isEditingTimeline && renderTimelineAltField(item, idx), /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date),
     disabled: isGeneratingTimelineImage[idx],
     "aria-busy": !!isGeneratingTimelineImage[idx],
@@ -447,49 +448,7 @@ function TimelineView(props) {
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
-  })), isEditingTimeline && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-full mt-1 left-0 w-44 bg-white border border-slate-400 rounded shadow-lg p-1.5 z-10 motion-safe:animate-in motion-safe:slide-in-from-top-2"
-  }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('timeline.visuals.remove_text_btn') || 'Remove text from image',
-    onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
-    disabled: isGeneratingTimelineImage[idx],
-    className: "w-full mb-1 text-[10px] bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-1.5 py-0.5 rounded flex items-center justify-center gap-1 font-bold",
-    title: t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
-  }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 10,
-    className: reducedMotion ? '' : 'animate-spin',
-    "aria-hidden": "true"
-  }) : /*#__PURE__*/React.createElement(Ban, {
-    size: 10
-  }), " ", t('timeline.visuals.remove_text_btn') || 'Remove Text'), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-1"
-  }, /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('timeline.visuals.refine_placeholder') || 'Describe image changes',
-    type: "text",
-    value: timelineRefinementInputs[idx] || '',
-    onChange: e => setTimelineRefinementInputs(prev => ({
-      ...prev,
-      [idx]: e.target.value
-    })),
-    placeholder: t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter',
-    className: "text-[10px] border border-yellow-600 rounded px-1 py-0.5 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0",
-    onKeyDown: e => {
-      if (e.key === 'Enter' && timelineRefinementInputs[idx]) {
-        handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
-      }
-    }
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]),
-    disabled: !timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx],
-    className: "bg-yellow-400 text-yellow-900 p-1 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
-    "aria-label": t('common.apply_edit') || 'Apply edit'
-  }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 10,
-    className: reducedMotion ? '' : 'animate-spin',
-    "aria-hidden": "true"
-  }) : /*#__PURE__*/React.createElement(Send, {
-    size: 10
-  }))))) : /*#__PURE__*/React.createElement("button", {
+  }))) : /*#__PURE__*/React.createElement("button", {
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date),
     disabled: isGeneratingTimelineImage[idx] || !item.event,
     "aria-busy": !!isGeneratingTimelineImage[idx],
@@ -509,7 +468,52 @@ function TimelineView(props) {
     title: t('timeline.remove_step_title')
   }, /*#__PURE__*/React.createElement(Trash2, {
     size: 16
-  })))), /*#__PURE__*/React.createElement("button", {
+  })), item.image && isEditingTimeline && /*#__PURE__*/React.createElement("div", {
+    "data-timeline-image-tools": true,
+    className: "basis-full min-w-0 flex flex-col gap-2 border-t border-slate-200 pt-2 motion-safe:animate-in motion-safe:slide-in-from-top-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    "aria-label": t('timeline.visuals.remove_text_btn') || 'Remove text from image',
+    onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
+    disabled: isGeneratingTimelineImage[idx],
+    className: "min-h-8 text-[11px] bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 font-bold",
+    title: t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
+  }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 10,
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(Ban, {
+    size: 10
+  }), " ", t('timeline.visuals.remove_text_btn') || 'Remove Text'), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-1 min-w-[10rem] gap-1"
+  }, /*#__PURE__*/React.createElement("input", {
+    "aria-label": t('timeline.visuals.refine_placeholder') || 'Describe image changes',
+    type: "text",
+    value: timelineRefinementInputs[idx] || '',
+    onChange: e => setTimelineRefinementInputs(prev => ({
+      ...prev,
+      [idx]: e.target.value
+    })),
+    placeholder: t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter',
+    className: "text-xs border border-yellow-600 rounded px-2 py-1 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0",
+    onKeyDown: e => {
+      if (e.key === 'Enter' && timelineRefinementInputs[idx]) {
+        handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
+      }
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]),
+    disabled: !timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx],
+    className: "bg-yellow-400 text-yellow-900 px-2 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
+    "aria-label": t('common.apply_edit') || 'Apply edit'
+  }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 10,
+    className: reducedMotion ? '' : 'animate-spin',
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(Send, {
+    size: 10
+  })))), renderTimelineAltField(item, idx)))), /*#__PURE__*/React.createElement("button", {
     onClick: handleAddTimelineStep,
     className: "w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Plus, {

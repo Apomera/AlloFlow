@@ -1,0 +1,91 @@
+{
+  "width": 302,
+  "scrollWidth": 300,
+  "clientWidth": 300,
+  "texts": [
+    {
+      "text": "+ Observation",
+      "size": 14,
+      "width": 132.8125,
+      "scrollWidth": 131,
+      "clientWidth": 131
+    },
+    {
+      "text": "+ Location",
+      "size": 14,
+      "width": 132.8125,
+      "scrollWidth": 131,
+      "clientWidth": 131
+    },
+    {
+      "text": "+ Reasoning",
+      "size": 14,
+      "width": 132.8125,
+      "scrollWidth": 131,
+      "clientWidth": 131
+    },
+    {
+      "text": "+ Reference",
+      "size": 14,
+      "width": 132.8125,
+      "scrollWidth": 131,
+      "clientWidth": 131
+    },
+    {
+      "text": "I observed a transparent membrane at the eye. Its location supports this identification.",
+      "size": 16,
+      "width": 272.8125,
+      "scrollWidth": 271,
+      "clientWidth": 271
+    },
+    {
+      "text": "How sure are you, based on your evidence?",
+      "size": 14,
+      "width": 272.8125,
+      "scrollWidth": 273,
+      "clientWidth": 273
+    },
+    {
+      "text": "1 · Not sure yet",
+      "size": 14,
+      "width": 272.8125,
+      "scrollWidth": 271,
+      "clientWidth": 271
+    },
+    {
+      "text": "2 · Somewhat sure",
+      "size": 14,
+      "width": 272.8125,
+      "scrollWidth": 271,
+      "clientWidth": 271
+    },
+    {
+      "text": "3 · Confident",
+      "size": 14,
+      "width": 272.8125,
+      "scrollWidth": 271,
+      "clientWidth": 271
+    },
+    {
+      "text": "Calibration cue: Check one more distinguishing feature or anatomical relationship.",
+      "size": 14,
+      "width": 272.8125,
+      "scrollWidth": 273,
+      "clientWidth": 273
+    },
+    {
+      "text": "Text and confidence are recorded separately. Their presence does not verify the explanation or earn an assessment score.",
+      "size": 14,
+      "width": 272.8125,
+      "scrollWidth": 273,
+      "clientWidth": 273
+    }
+  ],
+  "choicesWidth": 272.8125,
+  "starts": [
+    132.8125,
+    132.8125,
+    132.8125,
+    132.8125
+  ]
+}

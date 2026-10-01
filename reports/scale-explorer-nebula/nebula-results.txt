@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-nebula.spec.ts:37:5 › ray-marched gas changes with orbit and visibility without moving stars or measured bounds (5.4s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-nebula.spec.ts:54:5 › four landmarks and an orthographic comparison keep the nebula at its catalog scale (6.1s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-nebula.spec.ts:70:5 › phone keyboard exploration restores and exports cloud visibility in the notebook (4.1s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-nebula.spec.ts:84:5 › the cloud and its stars render with a WebGL 1 context (3.3s)
+
+  4 passed (20.0s)

@@ -133,6 +133,9 @@ const handleDiceRollComplete = (deps) => {
           return;
       }
       const data = pendingAdventureUpdate;
+      // A new debate topic applies only with a reset, and never a schema placeholder.
+      const newDebateTopic = data.resetDebate && typeof data.newTopic === 'string' && data.newTopic.trim()
+          && !/^(string|null|undefined|new topic|next topic)$/i.test(data.newTopic.trim()) ? data.newTopic.trim().slice(0, 300) : null;
       let applied = appliedAdventureTurnUpdates.get(setAdventureState);
       if (!applied) { applied = new WeakSet(); appliedAdventureTurnUpdates.set(setAdventureState, applied); }
       if (applied.has(data)) return;
@@ -520,7 +523,7 @@ const handleDiceRollComplete = (deps) => {
               }
               if (data.resetDebate) {
                   playAdventureEventSound('success');
-                  addToast(`Debate Concluded! Moving to new topic: ${data.newTopic || 'Next Topic'}`, "success");
+                  addToast(`Debate Concluded! Moving to new topic: ${newDebateTopic || 'Next Topic'}`, "success");
               }
               if (goldAwarded > 0) {
                   addToast(t('toasts.gold_earned', { amount: goldAwarded }), "success");
@@ -602,7 +605,7 @@ const handleDiceRollComplete = (deps) => {
               activeGoldBuffTurns: Math.max(0, goldBuffTurns - 1),
               lastKeyItemTurn: keyItemAdded ? nextTurn : prev.lastKeyItemTurn,
               debateMomentum: newMomentum,
-              debateTopic: data.newTopic || prev.debateTopic,
+              debateTopic: newDebateTopic || prev.debateTopic,
               debatePhase: nextDebatePhase,
               climax: data.isTerminalTurn ? { ...updatedClimax, isActive: false } : updatedClimax,
               stats: newStats,

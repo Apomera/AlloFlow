@@ -2108,7 +2108,7 @@ function createDriver(options) {
             const tagOptions = {
               title: fileName.replace(/\.pdf$/i, ''),
               lang: (cur && cur.documentLanguage) || (audit && audit.documentLanguage) || 'en',
-              subject: 'Remediated for accessibility by AlloFlow',
+              subject: 'Prepared with AlloFlow accessibility tools; not a certification of conformance',
             };
             const tagged = await pipeline.createTaggedPdf(bytes, cur, tagOptions);
             const outBytes = tagged && (tagged.bytes || tagged);
@@ -2347,6 +2347,13 @@ function createDriver(options) {
       // what is actually wrong. Skipped when a test injects its own spawner: that fake never runs Java.
       if (typeof (options && options.spawnProcess) !== 'function') {
         const java = probeJavaRuntime(javaBin);
+        if (!java.present && java.timedOut) {
+          // A slow `java -version` on a busy machine is not a missing runtime: do not tell the user to
+          // install Java they already have.
+          throw new Error('Java did not respond in time: `' + javaBin + ' -version` took longer than ' +
+            Math.round((java.timeoutMs || 60000) / 1000) + ' s (' + (java.error || 'timed out') + '). Java may well be installed; ' +
+            'the machine may be busy. Retry when it is less busy, or raise ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS.');
+        }
         if (!java.present) {
           throw new Error('Java runtime not found: `' + javaBin + ' -version` failed (' + (java.error || 'unknown error') + '). ' +
             'PDF/UA validation runs the bundled veraPDF CLI through a local Java runtime (11 or newer). Install one ' +
@@ -2394,13 +2401,21 @@ function createDriver(options) {
           }
           let evidence;
           try { evidence = Verification.parsePdfUaCliReport(parsed, code); }
-          catch (_) { return finish(reject, new Error('veraPDF CLI returned incomplete or contradictory validation evidence (exit ' + code + ')')); }
+          catch (parseError) {
+            // A job veraPDF ended early keeps its own message: it says the PDF was only partly
+            // checked, with the count. Anything else names the reason instead of swallowing it.
+            if (parseError && parseError.code === 'ALLOFLOW_VERAPDF_PARTIAL') return finish(reject, parseError);
+            const reason = parseError && parseError.detail ? ': ' + String(parseError.detail).slice(0, 300) : '';
+            return finish(reject, new Error('veraPDF CLI returned incomplete or contradictory validation evidence (exit ' + code + ')' + reason));
+          }
           const { report, validation, counts } = evidence;
           const details = validation.details;
           const releases = report && report.buildInformation && Array.isArray(report.buildInformation.releaseDetails)
             ? report.buildInformation.releaseDetails : [];
           const core = releases.find((item) => item && item.id === 'core');
-          const count = (value) => Number.isSafeInteger(value) && value >= 0 && value <= 1000000 ? value : 0;
+          // No ceiling: a rule on a long document can fail more than a million checks, and clamping
+          // that to 0 used to report a failing rule as having no failed checks.
+          const count = (value) => Number.isSafeInteger(value) && value >= 0 ? value : 0;
           const safeText = (value, max) => typeof value === 'string' ? value.slice(0, max) : '';
           const failedRuleSummaries = (Array.isArray(details.ruleSummaries) ? details.ruleSummaries : [])
             .filter((item) => item && item.ruleStatus === 'FAILED')

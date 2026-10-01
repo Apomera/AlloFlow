@@ -1,0 +1,542 @@
+diff --git a/karaoke_audio_store_module.js b/karaoke_audio_store_module.js
+--- a/karaoke_audio_store_module.js
++++ b/karaoke_audio_store_module.js
+@@ -371,7 +371,7 @@
+     ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'requestedProvider', 'requestedModel', 'createdAt'].forEach(function (key) {
+       if (meta[key] != null && String(meta[key]).trim()) out[key] = String(meta[key]).trim().slice(0, 160);
+     });
+-    var speed = Number(meta.speed);
++    var speed = Number(meta.synthesisRate != null ? meta.synthesisRate : meta.speed);
+     if (isFinite(speed) && speed > 0 && speed <= 4) out.speed = speed;
+     var voiceResolverVersion = Number(meta.voiceResolverVersion);
+     if (isFinite(voiceResolverVersion) && voiceResolverVersion > 0) out.voiceResolverVersion = voiceResolverVersion;
+@@ -446,9 +446,33 @@
+     return !!entry && String(entry.source || 'ai').indexOf('human') === 0;
+   }
+ 
++  function missingProfileFields(entry, requested) {
++    if (!entry || isHuman(entry)) return [];
++    var stored = entry.synthesisProfile || metadataToProfile(entry.metadata) || {};
++    var wanted = normalizeSynthesisProfile(requested) || {};
++    var missing = [];
++    if (!stored.voiceResolverVersion) missing.push('voiceResolverVersion');
++    if (wanted.voice && !stored.voice) missing.push('voice');
++    if (wanted.synthesisRate != null && stored.synthesisRate == null) missing.push('synthesisRate');
++    if (wanted.language && !stored.language) missing.push('language');
++    return missing;
++  }
++
++  function withProfileEvidence(result, entry, requested) {
++    var missing = missingProfileFields(entry, requested);
++    if (result.status === 'stale' && missing.length) {
++      result.reason = 'profile-unverified';
++      result.unverifiedProfileFields = missing;
++    }
++    return result;
++  }
++
+   function profilesCompatible(entry, requested) {
+     if (!entry) return false;
+     if (isHuman(entry)) return true;
++    // Missing settings are unknown, not evidence that this take matches the
++    // current request. Preserve the stored bytes for review/regeneration.
++    if (missingProfileFields(entry, requested).length) return false;
+     var stored = entry.synthesisProfile || metadataToProfile(entry.metadata);
+     var wanted = normalizeSynthesisProfile(requested) || {};
+     // V2 remains the default for legacy callers; version-aware callers may
+@@ -592,9 +616,10 @@
+             quarantine: Object.assign({}, direct.quarantine),
+             legacy: false
+           };
+-          var ready = identitiesCompatible(direct.identity, identity) &&
++          var sameIdentity = identitiesCompatible(direct.identity, identity);
++          var ready = sameIdentity &&
+             profilesCompatible(direct, requestedProfile);
+-          return {
++          var result = {
+             status: ready ? 'ready' : 'stale',
+             url: ready ? direct.url : null,
+             source: direct.source || 'ai',
+@@ -602,6 +627,7 @@
+             synthesisProfile: direct.synthesisProfile ? Object.assign({}, direct.synthesisProfile) : null,
+             legacy: false
+           };
++          return sameIdentity ? withProfileEvidence(result, direct, requestedProfile) : result;
+         }
+         var legacyEntry = legacy.get(keyFor(identity.spokenText));
+         if (!legacyEntry) return {
+@@ -614,11 +640,11 @@
+           synthesisProfile: metadataToProfile(legacyEntry.metadata),
+           quarantine: Object.assign({}, legacyEntry.quarantine), legacy: true
+         };
+-        if (!profilesCompatible(legacyEntry, requestedProfile)) return {
++        if (!profilesCompatible(legacyEntry, requestedProfile)) return withProfileEvidence({
+           status: 'stale', url: null, source: legacyEntry.source || 'ai',
+           identity: Object.assign({}, identity),
+           synthesisProfile: metadataToProfile(legacyEntry.metadata), legacy: true
+-        };
++        }, legacyEntry, requestedProfile);
+         var shouldPromote = promote && !isHuman(legacyEntry);
+         var resolved = shouldPromote ? _promoteLegacy(identity, legacyEntry) : legacyEntry;
+         if (!resolved) return {
+@@ -663,7 +689,7 @@
+         legacy: !entry.identity
+       };
+       var compatible = profilesCompatible(entry, requestedProfile);
+-      return {
++      return withProfileEvidence({
+         status: compatible ? 'ready' : 'stale',
+         url: compatible ? entry.url : null,
+         source: entry.source || 'ai',
+@@ -672,7 +698,7 @@
+           ? Object.assign({}, entry.synthesisProfile)
+           : metadataToProfile(entry.metadata),
+         legacy: !entry.identity
+-      };
++      }, entry, requestedProfile);
+     };
+ 
+     var _serializeLegacy = function () {
+diff --git a/read_aloud_audio_service_source.jsx b/read_aloud_audio_service_source.jsx
+--- a/read_aloud_audio_service_source.jsx
++++ b/read_aloud_audio_service_source.jsx
+@@ -409,6 +409,8 @@
+                         synthesisProfile: inspected.synthesisProfile || null,
+                         legacy: inspected.legacy === true,
+                         quarantine: inspected.quarantine || null,
++                        reason: inspected.reason || null,
++                        unverifiedProfileFields: Array.isArray(inspected.unverifiedProfileFields) ? inspected.unverifiedProfileFields.slice() : [],
+                         segment,
+                         profile,
+                     };
+@@ -448,10 +450,11 @@
+         function summary(options = {}) {
+             const list = segments();
+             const store = liveStore({ operation: 'summary' });
+-            const result = { total: list.length, ready: 0, stale: 0, corrupt: 0, missing: 0, estimatedBytes: 0 };
++            const result = { total: list.length, ready: 0, stale: 0, corrupt: 0, missing: 0, unverified: 0, estimatedBytes: 0 };
+             list.forEach((segment) => {
+-                const status = inspectDescriptor(segment, store, profileFor(segment, 'summary', options.profile)).status;
+-                result[status] += 1;
++                const inspection = inspectDescriptor(segment, store, profileFor(segment, 'summary', options.profile));
++                result[inspection.status] += 1;
++                if (inspection.status === 'stale' && inspection.unverifiedProfileFields?.length) result.unverified += 1;
+             });
+             if (store && typeof store.estimateBytes === 'function') {
+                 const bytes = Number(store.estimateBytes());
+@@ -1307,7 +1310,7 @@
+             : (Array.isArray(sentences) ? sentences : null);
+         const binding = bindingFor(suppliedSegments, 'reference');
+         if (!binding) {
+-            return { ok: false, generated: 0, failed: 0, remaining: 0, cancelled: false, attempted: 0, total: 0, bytes: 0, failure: null };
++            return { ok: false, generated: 0, failed: 0, remaining: 0, cancelled: false, attempted: 0, total: 0, bytes: 0, failure: null, failures: [] };
+         }
+         const controller = binding.controller;
+         const allSegments = controller.segments();
+@@ -1319,6 +1322,23 @@
+         let failed = 0;
+         let attempted = 0;
+         let lastFailure = null;
++        const failures = [];
++        function recordFailure(error, segment, index) {
++            const detail = failureDetail(error) || {};
++            const code = detail.code || error?.code || 'read-aloud-failed';
++            const action = code === 'human-recording-protected' ? 'review-recording'
++                : ['resource-limit', 'clip-too-large'].includes(code) ? 'review-storage' : 'retry';
++            const failure = {
++                index: Number.isInteger(index) ? index : null,
++                segmentId: segment?.segmentId || null,
++                text: segment?.spokenText || '',
++                code,
++                reason: detail.reason || error?.message || 'Read-aloud audio could not be saved.',
++                retryable: action === 'retry' && detail.retryable !== false,
++                action,
++            };
++            if (!failures.some(item => item.index === failure.index && item.segmentId === failure.segmentId)) failures.push(failure);
++        }
+         const cancellationGetter = typeof options.isCancelled === 'function'
+             ? options.isCancelled
+             : defaultIsCancelled;
+@@ -1340,6 +1360,7 @@
+             if (event.status === 'failed') {
+                 failed += 1;
+                 lastFailure = failureDetail(event.error);
++                recordFailure(event.error, event.segment, event.index);
+             }
+             if (typeof onProgress === 'function') {
+                 try { onProgress(attempted, total, event.segment && event.segment.spokenText); } catch (_) {}
+@@ -1360,12 +1381,14 @@
+             });
+             if (result && result.errors && result.errors.length) {
+                 lastFailure = failureDetail(result.errors[result.errors.length - 1].error);
++                result.errors.forEach(item => recordFailure(item.error, allSegments[item.index], item.index));
+             }
+         } catch (error) {
+             if (error && (error.name === 'AbortError' || error.code === 'aborted')) cancelled = true;
+             else {
+                 failed += 1;
+                 lastFailure = failureDetail(error);
++                recordFailure(error, null, null);
+             }
+         }
+         const finalSummary = controller.summary({ profile: options.profile });
+@@ -1381,6 +1404,7 @@
+             total,
+             bytes: Number(finalSummary.estimatedBytes || 0),
+             failure: lastFailure,
++            failures,
+         };
+     }
+ 
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2424,6 +2424,8 @@
+     var ttsPrepNoticeState = React.useState('');
+     var ttsPrepNotice = ttsPrepNoticeState[0], setTtsPrepNotice = ttsPrepNoticeState[1];
+     var [ttsPrepFailure, setTtsPrepFailure] = React.useState(null);
++    var [ttsPrepRecovery, setTtsPrepRecovery] = React.useState(null);
++    var [audioRecoveryTarget, setAudioRecoveryTarget] = React.useState(null);
+     var ttsPrepRequestRef = React.useRef(null);
+     var audioProfileRevision = typeof window !== 'undefined' ? window.__alloReadAloudProfileRevision : null;
+     var ttsPrepContext = JSON.stringify([generatedContent && generatedContent.id, simplifiedReadAloudText, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision]);
+@@ -2957,7 +2959,8 @@
+         if (!sharedSummary && st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
+         if (st && typeof st.limits === 'function') maxBytes = st.limits().maxBytes || 0;
+       } catch (_) {}
+-      return { saved: saved, ready: ready, stale: stale, corrupt: corrupt, missing: missing, unavailable: unavailable, total: entries.length, bytes: bytes, maxBytes: maxBytes };
++      var unverified = Math.min(stale, count(sharedSummary && sharedSummary.unverified));
++      return { saved: saved, ready: ready, stale: stale, corrupt: corrupt, missing: missing, unverified: unverified, unavailable: unavailable, total: entries.length, bytes: bytes, maxBytes: maxBytes };
+     };
+     var getReadAloudSentenceEntriesForText = function (rawText, sourceLanguage) {
+       var text = typeof rawText === 'string' ? rawText : String(rawText || '');
+@@ -3097,17 +3100,24 @@
+       ttsPrepRequestRef.current = request;
+       setTtsPrepNotice('');
+       setTtsPrepFailure(null);
++      setTtsPrepRecovery(null);
+       setTtsPrepState({ busy: true, done: 0, total: sentences.length });
+       try {
+         var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
+           if (ownsTtsPreparation(request)) setTtsPrepState({ busy: true, done: done, total: total || sentences.length });
+         }, { entries: entries, signal: request.controller && request.controller.signal });
+         if (!ownsTtsPreparation(request)) return;
++        var failures = (Array.isArray(result?.failures) ? result.failures : []).filter(function (failure) {
++          return Number.isInteger(failure.index) && entries[failure.index]?.text === failure.text;
++        });
++        setTtsPrepRecovery(failures.length ? { context: request.context, failures: failures } : null);
+         if (result && result.cancelled) {
+           setTtsPrepNotice(viewText('simplified.offline_audio_stopped', 'Audio preparation stopped. Completed clips are kept; prepare missing audio to continue.'));
+         } else if (result && result.remaining) {
+           setTtsPrepFailure(result.failure || { code: 'preparation-incomplete' });
+-          setTtsPrepNotice((result.failure && result.failure.reason) || (result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.'));
++          setTtsPrepNotice(failures.length
++            ? viewText('simplified.audio_recovery_remaining', 'Last preparation: {count} clips needed attention. Review any remaining sentences below.', { count: result.remaining })
++            : (result.failure && result.failure.reason) || (result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.'));
+         } else if (result && result.ok) {
+           setTtsPrepNotice(viewText('simplified.offline_audio_prepared_checking', 'Audio is prepared. Checking whether it is saved on this device.'));
+         }
+@@ -3120,6 +3130,7 @@
+         if (ownsTtsPreparation(request)) {
+           ttsPrepRequestRef.current = null;
+           setTtsPrepState({ busy: false, done: 0, total: 0 });
++          setAudioStatusTick(function (n) { return n + 1; });
+           if (deviceAudioRefreshRef.current) deviceAudioRefreshRef.current();
+         }
+       }
+@@ -3373,6 +3384,44 @@
+       if (editAudioOpen) handleToggleEditAudioPanel();
+       editAudioToggleRef.current?.focus();
+     };
++    React.useEffect(function () {
++      if (!audioRecoveryTarget) return;
++      if (audioRecoveryTarget.context !== ttsPrepContext) { setAudioRecoveryTarget(null); return; }
++      if (!editAudioOpen) return;
++      var panelId = editAudioToggleRef.current?.getAttribute('aria-controls');
++      var sentenceRow = panelId && document.getElementById(panelId)?.querySelector('[data-audio-sentence-index="' + audioRecoveryTarget.index + '"]');
++      var control = sentenceRow?.querySelector('button:not([disabled])');
++      if (control) { control.focus(); control.scrollIntoView?.({ block: 'nearest' }); }
++      setAudioRecoveryTarget(null);
++    }, [audioRecoveryTarget, editAudioOpen, ttsPrepContext]);
++    function renderAudioPreparationIssues() {
++      if (!isTeacherMode || !ttsPrepRecovery || ttsPrepRecovery.context !== ttsPrepContext) return null;
++      var entries = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
++      var unresolved = ttsPrepRecovery.failures.filter(function (failure) {
++        try {
++          var options = getReadAloudIdentityOptions(entries[failure.index]);
++          var inspection = window.__alloInspectReadAloudAudio?.(failure.text, 'reference', options);
++          return inspection?.status !== 'ready' || !!getEditAudioPlaybackIssue(failure.text, options);
++        } catch (_) { return true; }
++      });
++      if (!unresolved.length) return null;
++      return <div data-audio-preparation-issues role="region" aria-label={viewText('simplified.audio_recovery_title', 'Sentences needing audio')} className="my-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-slate-900">
++        <p className="font-bold">{viewText('simplified.audio_recovery_title', 'Sentences needing audio')}</p>
++        <ul className="mt-2 space-y-3">{unresolved.map(function (failure) {
++          var hint = failure.action === 'review-recording'
++            ? viewText('simplified.audio_recovery_recording', 'This recording is protected. Review it and choose whether to record again or generate a replacement.')
++            : failure.action === 'review-storage'
++              ? viewText('simplified.audio_recovery_storage', 'Audio exceeded a storage limit. Review this sentence before retrying.')
++              : viewText('simplified.audio_recovery_retry', 'Preparation failed. Retry this sentence or try preparing the remaining audio again.');
++          return <li key={failure.index} data-audio-recovery-index={failure.index}>
++            <p className="font-semibold">{failure.index + 1}. {failure.text}</p><p>{hint}</p>
++            <button type="button" className="mt-1 min-h-11 rounded-md border border-amber-700 bg-white px-3 py-2 font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" onClick={function () {
++              setEditAudioOpen(true); setAudioRecoveryTarget({ context: ttsPrepContext, index: failure.index });
++            }}>{viewText('simplified.audio_recovery_sentence', 'Review sentence {number}', { number: failure.index + 1 })}</button>
++          </li>;
++        })}</ul>
++      </div>;
++    }
+     // One owned player for pronunciation and dictionary recordings. A request
+     // token prevents delayed synthesis or play() completions reopening dismissed help.
+     var helpAudioRef = React.useRef(null);
+@@ -3605,7 +3654,7 @@
+         var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
+         var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
+         var actionClass = 'min-h-11 inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
+-        return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" style={{ overflowWrap: 'anywhere' }} className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div role="group" className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`} title={!isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`} title={isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`} title={isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`${simplifiedAudioRemoveLabel} ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel}</span></button>}</div></div>;
++        return <div key={key} data-audio-sentence-index={i} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" style={{ overflowWrap: 'anywhere' }} className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div role="group" className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`} title={!isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`} title={isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`} title={isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`${simplifiedAudioRemoveLabel} ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel}</span></button>}</div></div>;
+       })}</div><button type="button" data-close-narration onClick={closeNarrationPanel} className="mt-3 min-h-11 rounded-lg border border-orange-300 bg-white px-3 py-2 text-sm font-semibold text-orange-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.close_narration', 'Close narration')}</button></div>}</div>;
+     };
+     var instructionalTextProfile = getSimplifiedInstructionalText(generatedContent);
+@@ -4385,6 +4434,9 @@
+       var state = ttsPrepState.busy ? 'preparing' : deviceAudio?.state || 'unverified';
+       var playbackLabel = reviewAudio?.unavailable ? viewText('simplified.review_audio_unavailable', 'Audio status unavailable') : reviewAudio?.ready === reviewAudio?.total ? viewText('simplified.review_audio_ready', 'Audio prepared') : reviewAudio?.ready ? viewText('simplified.review_audio_partial', 'Audio partly prepared') : viewText('simplified.review_audio_none', 'Audio not prepared');
+       var playbackDetail = viewText('simplified.review_audio_current_detail', '{ready} of {total} sentence clips ready for these settings on this device.', { ready: reviewAudio?.ready || 0, total: reviewAudio?.total || 0 });
++      if (reviewAudio && !reviewAudio.unavailable && reviewAudio.ready < reviewAudio.total) playbackDetail += ' ' + viewText('simplified.review_audio_breakdown', 'To update: {stale}; unknown settings: {unverified}; damaged: {corrupt}; missing: {missing}.', {
++        stale: Math.max(0, reviewAudio.stale - reviewAudio.unverified), unverified: reviewAudio.unverified, corrupt: reviewAudio.corrupt, missing: reviewAudio.missing
++      });
+       var labels = { ready: ['saved', 'Audio saved on this device'], partial: ['partial', 'Audio partly prepared'], preparing: ['preparing', 'Preparing audio'], failed: ['failed', 'Audio needs recovery'], 'session-only': ['session', 'Audio available for this session'], unverified: ['unverified', 'Device audio not verified'] };
+       var label = labels[state] || labels.unverified;
+       var detail = deviceAudio ? viewText('simplified.offline_audio_counts', '{saved} of {total} clips saved on this device; {remaining} still need preparation.', { saved: deviceAudio.durableReady, total: deviceAudio.total, remaining: deviceAudio.remaining }) : viewText('simplified.offline_audio_check', 'Check device storage before relying on saved audio.');
+@@ -5185,7 +5237,7 @@
+               };
+               delete updated.alignmentCheck;
+               setGeneratedContent(updated);
+-            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId('simplified-focus-view-hint')} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{wordHelpCard && wordHelpCard.context === preparedHelpContext && (() => {
++            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId('simplified-focus-view-hint')} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{renderAudioPreparationIssues()}{wordHelpCard && wordHelpCard.context === preparedHelpContext && (() => {
+           var entry = wordHelpCard.entry, cardLanguage = wordHelpCard.language || readingLanguage, explanation = entry.definition || entry.explanation || entry.text || '';
+           var cardDirection = typeof getContentDirection === 'function' ? getContentDirection(cardLanguage) : undefined;
+           var cardButton = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6669,6 +6669,13 @@
+     "review_audio_ready": "Audio prepared",
+     "review_audio_unavailable": "Audio status unavailable",
+     "review_audio_current_detail": "{ready} of {total} sentence clips ready for these settings on this device.",
++    "review_audio_breakdown": "To update: {stale}; unknown settings: {unverified}; damaged: {corrupt}; missing: {missing}.",
++    "audio_recovery_title": "Sentences needing audio",
++    "audio_recovery_remaining": "Last preparation: {count} clips needed attention. Review any remaining sentences below.",
++    "audio_recovery_sentence": "Review sentence {number}",
++    "audio_recovery_recording": "This recording is protected. Review it and choose whether to record again or generate a replacement.",
++    "audio_recovery_storage": "Audio exceeded a storage limit. Review this sentence before retrying.",
++    "audio_recovery_retry": "Preparation failed. Retry this sentence or try preparing the remaining audio again.",
+     "review_audio_partial": "Audio partly prepared",
+     "review_audio_none": "Audio not prepared",
+     "review_audio_detail": "{saved} of {total} sentences saved, so they play without waiting.",
+diff --git a/tests/read_aloud_recovery.test.js b/tests/read_aloud_recovery.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/read_aloud_recovery.test.js
+@@ -0,0 +1,93 @@
++import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++import { validAudioBase64 } from './lib/audio_fixtures.js';
++let KS, createBridge;
++const profile = { voice: 'Kore', language: 'English', synthesisRate: 1, voiceResolverVersion: 2 };
++const identity = text => ({ adapterId: 'simplified', segmentId: 'one', spokenText: text });
++beforeAll(() => {
++  loadAlloModule('karaoke_audio_store_module.js'); loadAlloModule('read_aloud_audio_service_source.jsx');
++  KS = window.AlloModules.KaraokeAudioStore; createBridge = window.AlloModules.createReadAloudLegacyBridge;
++});
++beforeEach(() => {
++  let serial = 0;
++  Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:recovery-' + ++serial) });
++  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
++});
++function harness(entries = [{ text: 'First sentence.', segmentId: 'one' }, { text: 'Second sentence.', segmentId: 'two' }], synthesize) {
++  const store = KS.createStore();
++  synthesize ||= vi.fn(async () => ({ b64: validAudioBase64(), mime: 'audio/wav' }));
++  const bridge = createBridge({ getResource: () => ({ id: 'recovery', type: 'simplified' }), getStore: () => store,
++    getProfile: () => profile, enumerateResourceSegments: () => entries, synthesize });
++  return { store, bridge, entries, synthesize };
++}
++
++describe('legacy synthesis settings evidence', () => {
++  it.each(['synthesisRate', 'language'])('does not certify a legacy clip missing %s for a request that specifies it', field => {
++    const store = KS.createStore(); const saved = { ...profile }; delete saved[field];
++    const url = store.put('First sentence.', validAudioBase64(), 'audio/wav', 'ai', saved);
++    const result = store.inspect('First sentence.', profile);
++    expect(result).toMatchObject({ status: 'stale', reason: 'profile-unverified', unverifiedProfileFields: [field] });
++    expect(store.get('First sentence.')).toBe(url); // Keep the saved take for review.
++    const reloaded = KS.createStore(); reloaded.hydrate(JSON.parse(JSON.stringify(store.serialize())));
++    expect(reloaded.inspect('First sentence.', profile).status).toBe('stale');
++  });
++  it('does not promote incomplete legacy metadata into a certified identity', () => {
++    const store = KS.createStore(); store.put('First sentence.', validAudioBase64(), 'audio/wav', 'ai', { voice: 'Kore', voiceResolverVersion: 2 });
++    expect(store.inspect(identity('First sentence.'), profile).status).toBe('stale');
++    expect(store.serialize().version).toBe(3);
++  });
++  it('preserves human takes across voice settings but still rejects an edited sentence identity', () => {
++    const store = KS.createStore(), target = identity('First sentence.');
++    store.put(target, validAudioBase64(), 'audio/wav', 'human-teacher');
++    expect(store.inspect(target, { ...profile, voice: 'Aoede', synthesisRate: 0.8 }).status).toBe('ready');
++    expect(store.inspect({ ...target, spokenText: 'Edited sentence.' }, profile).status).toBe('stale');
++  });
++  it('counts unverified clips within stale and prepares only the incomplete clip', async () => {
++    const h = harness(); await h.bridge.prepare(h.entries); h.synthesize.mockClear();
++    const entry = Object.values(h.store.serialize().entries).find(e => e.identity.spokenText === 'First sentence.');
++    h.store.put(entry.identity, validAudioBase64(), 'audio/wav', 'ai', { voice: 'Kore', voiceResolverVersion: 2 });
++    expect(h.bridge.summary(h.entries)).toMatchObject({ ready: 1, stale: 1, unverified: 1 });
++    expect(h.bridge.inspect('First sentence.')).toMatchObject({ reason: 'profile-unverified', unverifiedProfileFields: ['synthesisRate', 'language'] });
++    expect(await h.bridge.prepare(h.entries)).toMatchObject({ ok: true, generated: 1, remaining: 0, failures: [] });
++    expect(h.synthesize).toHaveBeenCalledTimes(1);
++    expect(h.bridge.summary(h.entries)).toMatchObject({ ready: 2, stale: 0, unverified: 0 });
++  });
++});
++
++describe('sentence-level preparation recovery', () => {
++  it('retains all distinct failures and duplicate sentence positions while keeping the legacy last failure', async () => {
++    const entries = [{ text: 'Repeated sentence.', segmentId: 'one' }, { text: 'Repeated sentence.', segmentId: 'two' }];
++    const h = harness(entries, vi.fn(async ({ segment }) => { throw Object.assign(new Error(segment.segmentId), { code: segment.index ? 'resource-limit' : 'network-failed' }); }));
++    const result = await h.bridge.prepare(entries);
++    expect(result.failures).toMatchObject([
++      { index: 0, segmentId: 'one', text: 'Repeated sentence.', code: 'network-failed', retryable: true, action: 'retry' },
++      { index: 1, segmentId: 'two', text: 'Repeated sentence.', code: 'resource-limit', retryable: false, action: 'review-storage' },
++    ]);
++    expect(result).toMatchObject({ failed: 2, remaining: 2, failure: { code: 'resource-limit' } });
++  });
++  it('retains failures before cancellation, keeps successful clips and retries only the remaining ones', async () => {
++    const abort = new AbortController();
++    const entries = ['Saved sentence.', 'Failed sentence.', 'Stopped sentence.'].map((text, index) => ({ text, segmentId: String(index) }));
++    const h = harness(entries, vi.fn(async ({ segment }) => {
++      if (!segment.index) return { b64: validAudioBase64(), mime: 'audio/wav' };
++      if (segment.index === 1) throw Object.assign(new Error('Provider unavailable'), { code: 'network-failed' });
++      abort.abort(); throw Object.assign(new Error('Stopped'), { name: 'AbortError' });
++    }));
++    const result = await h.bridge.prepare(h.entries, null, { signal: abort.signal });
++    expect(result).toMatchObject({ cancelled: true, failures: [{ index: 1, code: 'network-failed' }], generated: 1, failed: 1, remaining: 2 });
++    expect(h.bridge.summary(h.entries)).toMatchObject({ ready: 1 });
++    h.synthesize.mockReset().mockResolvedValue({ b64: validAudioBase64(), mime: 'audio/wav' });
++    expect(await h.bridge.prepare(h.entries)).toMatchObject({ ok: true, generated: 2, remaining: 0, failures: [] });
++    expect(h.synthesize).toHaveBeenCalledTimes(2);
++  });
++  it('points protected recordings to explicit review without asking the synthesizer to replace them', async () => {
++    const h = harness(); await h.bridge.prepare(h.entries);
++    const entry = Object.values(h.store.serialize().entries).find(e => e.identity.spokenText === 'First sentence.');
++    h.store.put(entry.identity, validAudioBase64(), 'audio/wav', 'human-teacher');
++    h.store.quarantine(entry.identity, { code: 'decode-failed' }); h.synthesize.mockClear();
++    const result = await h.bridge.prepare(h.entries);
++    expect(result.failures).toMatchObject([{ index: 0, code: 'human-recording-protected', retryable: false, action: 'review-recording' }]);
++    expect(h.synthesize).not.toHaveBeenCalled();
++    expect(h.store.sourceOf(entry.identity)).toBe('human-teacher');
++  });
++});
+diff --git a/tests/reader_audio_readiness.test.js b/tests/reader_audio_readiness.test.js
+--- a/tests/reader_audio_readiness.test.js
++++ b/tests/reader_audio_readiness.test.js
+@@ -56,6 +56,54 @@
+ }
+ 
+ describe('teacher audio readiness', () => {
++  it('distinguishes unknown settings from clips that need updating and from damage', () => {
++    window.__alloGetReadAloudAudioSummary = () => ({ ...summary(0, 1, 1, 0), unverified: 1 });
++    mount();
++    expect(row().textContent).toContain('To update: 0; unknown settings: 1; damaged: 1; missing: 0.');
++  });
++  it('shows each preparation failure and opens the matching narration controls', async () => {
++    window.__alloGetReadAloudAudioSummary = () => summary(0);
++    window.__alloPrepareReadAloud = vi.fn(async () => ({ remaining: 2, failure: { code: 'human-recording-protected' }, failures: [
++      { index: 0, text: 'Plants need light.', code: 'network-failed', action: 'retry' },
++      { index: 1, text: 'Roots take in water.', code: 'human-recording-protected', action: 'review-recording' },
++    ] }));
++    mount(); await act(async () => { recovery().click(); });
++    const panel = host.querySelector('[data-audio-preparation-issues]');
++    expect(panel.querySelectorAll('li').length).toBe(2);
++    expect(panel.textContent).toContain('This recording is protected');
++    await act(async () => { panel.querySelectorAll('button')[1].click(); });
++    expect(document.activeElement.closest('[data-audio-sentence-index]')?.getAttribute('data-audio-sentence-index')).toBe('1');
++  });
++  it('discards recovery details when the reading identity changes', async () => {
++    window.__alloGetReadAloudAudioSummary = () => summary(0);
++    window.__alloPrepareReadAloud = async () => ({ remaining: 2, failures: [{ index: 0, text: 'Plants need light.', code: 'network-failed' }] });
++    const view = mount(); await act(async () => { recovery().click(); });
++    expect(host.querySelector('[data-audio-preparation-issues]')).not.toBeNull();
++    view.render({ generatedContent: { ...view.props.generatedContent, id: 'new-reading' } });
++    expect(host.querySelector('[data-audio-preparation-issues]')).toBeNull();
++  });
++  it('removes an individually repaired sentence from the recovery list', async () => {
++    window.__alloGetReadAloudAudioSummary = () => summary(0);
++    let repaired = false;
++    window.__alloInspectReadAloudAudio = () => ({ status: repaired ? 'ready' : 'missing', url: repaired ? 'blob:repaired' : null });
++    window.__alloPrepareReadAloud = async () => ({ remaining: 2, failures: [{ index: 0, text: 'Plants need light.', code: 'network-failed' }] });
++    mount(); await act(async () => { recovery().click(); });
++    expect(host.querySelector('[data-audio-preparation-issues]')).not.toBeNull();
++    repaired = true; update('alloflow:karaoke-audio-updated');
++    expect(host.querySelector('[data-audio-preparation-issues]')).toBeNull();
++  });
++  it('retains failures reported before cancellation and clears them after a successful retry', async () => {
++    let state = summary(0);
++    window.__alloGetReadAloudAudioSummary = () => state;
++    window.__alloPrepareReadAloud = vi.fn()
++      .mockResolvedValueOnce({ cancelled: true, remaining: 2, failures: [{ index: 0, text: 'Plants need light.', code: 'network-failed' }] })
++      .mockImplementationOnce(async () => { state = summary(2); return { ok: true, remaining: 0, failures: [] }; });
++    mount(); await act(async () => { recovery().click(); });
++    expect(host.querySelector('[data-audio-preparation-issues]')).not.toBeNull();
++    await act(async () => { recovery().click(); });
++    expect(host.querySelector('[data-audio-preparation-issues]')).toBeNull();
++    expect(row().textContent).toContain('Audio prepared');
++  });
+   it('refreshes on direct store removal, hydration, quarantine, replacement and clear without window events', async () => {
+     const { store, sentences, save } = liveStore(); const payload = store.serialize();
+     mount(); expect(row().textContent).toContain('Audio prepared');
+diff --git a/tests/browser/audio_readiness.cjs b/tests/browser/audio_readiness.cjs
+--- a/tests/browser/audio_readiness.cjs
++++ b/tests/browser/audio_readiness.cjs
+@@ -86,7 +86,12 @@
+       window.bridge = window.AlloModules.createReadAloudLegacyBridge({
+         getResource: () => resource, getStore: () => KS.current, getProfile: () => profile,
+         enumerateResourceSegments: () => sentences.map((text, index) => ({ text, segmentId: 'sentence-' + index })),
+-        synthesize: async () => { window.synthCalls++; return { b64: fixtures.good, mime: 'audio/wav' }; },
++        synthesize: async ({ segment }) => {
++          window.synthCalls++;
++          const failure = window.syntheticFailures?.[segment.index];
++          if (failure) throw Object.assign(new Error('Fixture preparation failed'), { code: failure });
++          return { b64: fixtures.good, mime: 'audio/wav' };
++        },
+       });
+       if (payload) KS.current.hydrate(payload); else await bridge.prepare(sentences);
+       window.__alloGetReadAloudAudioSummary = (...args) => bridge.summary(...args);
+@@ -195,6 +200,32 @@
+       await boot(saved); assert.equal(await page.evaluate(() => window.synthCalls), 0);
+       await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
+     });
++    await check('unknown synthesis settings remain unready until only that clip is regenerated', async () => {
++      await boot();
++      const before = await page.evaluate(() => {
++        const store = window.AlloModules.KaraokeAudioStore.current;
++        const entry = Object.values(store.serialize().entries).find(e => e.identity.spokenText === sentences[0]);
++        store.put(entry.identity, entry.audio, entry.mime, 'ai', { voice: 'Kore', voiceResolverVersion: 2 });
++        return window.synthCalls;
++      });
++      await expect(review()).toContainText('unknown settings: 1'); await expect(review()).toContainText('1 of 2');
++      await recover().click(); await expect(review()).toContainText('2 of 2');
++      assert.equal(await page.evaluate(() => window.synthCalls), before + 1);
++    });
++    await check('partial preparation lists both failures, targets the right sentence and retries only unresolved clips', async () => {
++      await page.evaluate(() => { window.AlloModules.KaraokeAudioStore.current.clear(); window.syntheticFailures = { 0: 'network-failed', 1: 'resource-limit' }; });
++      await expect(review()).toContainText('0 of 2'); await recover().click();
++      await expect(page.locator('[data-audio-preparation-issues] li')).toHaveCount(2);
++      await page.getByRole('button', { name: 'Review sentence 2', exact: true }).click();
++      assert.equal(await page.evaluate(() => document.activeElement.closest('[data-audio-sentence-index]')?.dataset.audioSentenceIndex), '1');
++      await page.evaluate(() => { delete window.syntheticFailures[0]; });
++      await recover().click(); await expect(review()).toContainText('1 of 2');
++      await expect(page.locator('[data-audio-preparation-issues] li')).toHaveCount(1);
++      const before = await page.evaluate(() => { window.syntheticFailures = {}; return window.synthCalls; });
++      await recover().click(); await expect(review()).toContainText('2 of 2');
++      await expect(page.locator('[data-audio-preparation-issues]')).toHaveCount(0);
++      assert.equal(await page.evaluate(() => window.synthCalls), before + 1);
++    });
+     await check('native autoplay denial preserves readiness and a trusted click can retry', async () => {
+       await page.close();
+       const policyContext = await browser.newContext();

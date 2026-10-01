@@ -1,0 +1,22 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:3"
+  },
+  "source": {
+    "destination": "feedback",
+    "url": "https://remediation.invalid/result?answer=Original",
+    "method": "GET"
+  },
+  "candidate": {
+    "destination": "main",
+    "url": "https://remediation.invalid/result?answer=Original",
+    "method": "GET"
+  },
+  "repaired": {
+    "destination": "feedback",
+    "url": "https://remediation.invalid/result?answer=Original",
+    "method": "GET"
+  }
+}

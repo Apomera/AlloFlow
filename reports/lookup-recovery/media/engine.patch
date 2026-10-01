@@ -1,0 +1,23 @@
+Index: content_engine_source.jsx
+===================================================================
+--- content_engine_source.jsx
++++ content_engine_source.jsx
+@@ -2982,7 +2982,9 @@
+       const owner = lookupOwner(setter);
+       owner.current?.cancel();
+       const live = _s();
++      const lookupLifetimeController = typeof AbortController === 'function' ? new AbortController() : null;
+       const request = Object.freeze({
++          signal: lookupLifetimeController?.signal || null,
+           ...captureLookupContext(event, context), word,
+           resourceId: live.generatedContent?.id,
+           resourceText: live.generatedContent?.data,
+@@ -2996,7 +2998,7 @@
+           if (audioUrl?.startsWith('blob:') && !window.__alloTtsCacheOwnsUrl?.(audioUrl)) URL.revokeObjectURL(audioUrl);
+           audioUrl = null;
+       };
+-      const session = { cancel: () => { ++attempt; aiAttempt?.cancel(); dictionaryAttempt?.cancel(); releaseAudio(); } };
++      const session = { cancel: () => { ++attempt; lookupLifetimeController?.abort(); aiAttempt?.cancel(); dictionaryAttempt?.cancel(); releaseAudio(); } };
+       owner.current = session;
+       const isCurrent = () => {
+           const state = _s();

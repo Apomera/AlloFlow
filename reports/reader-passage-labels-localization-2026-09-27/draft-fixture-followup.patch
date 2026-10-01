@@ -1,0 +1,10 @@
+diff --git a/tests/reader_draft_locales.test.js b/tests/reader_draft_locales.test.js
+--- a/tests/reader_draft_locales.test.js
++++ b/tests/reader_draft_locales.test.js
+@@ -67,5 +67,5 @@
+   await click(notice(h).querySelector('button')); await click(h.saveButton());
+   expect(h.onUpdate).not.toHaveBeenCalled(); expect(h.session.hasChanges()).toBe(true); expect(h.input().value).toBe('Retained subword explanation.');
+   expect(h.saveButton().disabled).toBe(true);
+-  expect(h.host.textContent).toContain('No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.');
++  expect(h.host.textContent).toContain(h.t('simplified.gloss_no_exact_match_adapted'));
+ });

@@ -102,7 +102,9 @@ describe('ConceptSortGame retry keeps correct cards', () => {
     await place('Owl', 1);
     await click(buttonWithText('concept_sort.check_answers'));
     expect(completions.at(-1).type).toBe('conceptSort');
-    expect(completions.at(-1).payload.isPerfect).toBe(true);
+    // 2026-09-27 (C2): finished after a retry is not a first-try perfect; the first miss is reported.
+    expect(completions.at(-1).payload.isPerfect).toBe(false);
+    expect(completions.at(-1).payload.incorrectPlacements.map((p) => p.itemText)).toEqual(['Owl']);
     expect(completions.at(-1).payload.attempts).toBe(2);
   }, 30_000);
 

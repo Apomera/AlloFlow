@@ -1,0 +1,207 @@
+[
+  {
+    "id": "11-dictionary",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "dictionary_loader.js",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "11-engine",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "content_engine_source.jsx",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "11-reader",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "view_simplified_source.jsx",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "02-audio",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "karaoke_audio_store_module.js",
+        "changed": true
+      },
+      {
+        "file": "read_aloud_audio_service_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "view_simplified_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "ui_strings.js",
+        "changed": true
+      },
+      {
+        "file": "tests/read_aloud_recovery.test.js",
+        "changed": true
+      },
+      {
+        "file": "tests/reader_audio_readiness.test.js",
+        "changed": true
+      },
+      {
+        "file": "tests/browser/audio_readiness.cjs",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "15-offline",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "changed": true
+      },
+      {
+        "file": "dev-tools/check_offline_storybook_recovery.cjs",
+        "changed": true
+      },
+      {
+        "file": "export_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "read_aloud_artifact_audio_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "tests/adventure_storybook_read_aloud_export.test.js",
+        "changed": true
+      },
+      {
+        "file": "tests/offline_media_recovery.test.js",
+        "changed": true
+      },
+      {
+        "file": "view_storybook_export_modal_source.jsx",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "03-recovery",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "reader_place_store.js",
+        "changed": true
+      },
+      {
+        "file": "view_simplified_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "ui_strings.js",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "04-drafts",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "view_simplified_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "tests/reading_support_draft_transitions.test.js",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "06-listen",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "view_simplified_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "tests/reader_listen_along_access.test.js",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "07-vocab",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "generation_helpers_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "text_pipeline_helpers_source.jsx",
+        "changed": true
+      },
+      {
+        "file": "tests/preserved_vocabulary_enhancements.test.js",
+        "changed": true
+      },
+      {
+        "file": "tests/track07-browser-fixture.js",
+        "changed": true
+      },
+      {
+        "file": "tests/track07-browser-acceptance.cjs",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "09-reader",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "view_simplified_source.jsx",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "09-strings",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "ui_strings.js",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "09-tests",
+    "exit": 0,
+    "summary": [
+      {
+        "file": "tests/reader_preview_isolation.test.js",
+        "changed": true
+      }
+    ]
+  },
+  {
+    "id": "10-help",
+    "exit": 1,
+    "error": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\integrate-delta.cjs:24\r\n  if (typeof applied !== 'string') throw new Error('Strict patch conflict: ' + target);\r\n                                   ^\r\n\r\nError: Strict patch conflict: view_simplified_source.jsx\r\n    at Object.<anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\integrate-delta.cjs:24:42)\r\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\r\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\r\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.11.1\r\n"
+  }
+]

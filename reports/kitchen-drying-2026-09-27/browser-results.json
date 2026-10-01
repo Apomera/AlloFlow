@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "The actual 3D cloth requires sustained contact. Wet marks transfer to the cloth, saturation stops absorption, and holding over the bowl wrings it without rewetting food.",
+    "Illustrated cloth dragging, held keyboard contact, selected-area controls, and keyboard wringing share the same model. Release and Escape stop contact; partial work survives reload.",
+    "Graphics-context loss stops cloth contact and retains working text controls.",
+    "Changing preparation tools or starting a fresh cook cannot leave background blotting running.",
+    "Complete cloth-prepared recipes export and replay actual wet areas and cloth loading. Older cooks retain original physics and explain how to access gradual drying.",
+    "A partially saved ladle no longer disables topping up the remaining recipe allowance.",
+    "Real touch contact and wringing work without WebGL. Narrow layouts and forced colors retain accessible tools."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop drying board",
+      "issues": []
+    },
+    {
+      "label": "320px drying board",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

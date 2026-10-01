@@ -1,0 +1,914 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2590,6 +2590,8 @@
+     var editAudioRecordingSaveKey_state = React.useState(null);
+     var editAudioRecordingSaveKey = editAudioRecordingSaveKey_state[0];
+     var setEditAudioRecordingSaveKey = editAudioRecordingSaveKey_state[1];
++    var [editAudioFailedTake, setEditAudioFailedTake] = React.useState(null);
++    var editAudioRecoveryRef = React.useRef(null);
+     var removeAudioKey_state = React.useState(null);
+     var removeAudioKey = removeAudioKey_state[0];
+     var setRemoveAudioKey = removeAudioKey_state[1];
+@@ -2598,12 +2600,47 @@
+     var setEditAudioNotice = editAudioNotice_state[1];
+     var editAudioPlayerRef = React.useRef(null);
+     var editAudioPlayTokenRef = React.useRef(0);
+-    var editAudioRecordTokenRef = React.useRef(0);
++    var editAudioRecordingRequestRef = React.useRef(null);
++    var editAudioRecordingContext = JSON.stringify([generatedContent?.id, simplifiedReadAloudText, leveledTextLanguage]);
++    var editAudioRecordingLiveRef = React.useRef(null);
++    editAudioRecordingLiveRef.current = { context: editAudioRecordingContext, allowed: canManageNarration };
+     var editAudioMediaRecorderRef = React.useRef(null);
+-    var editAudioMediaStreamRef = React.useRef(null);
+-    var editAudioChunksRef = React.useRef([]);
+-    var editAudioRecordingTimerRef = React.useRef(null);
+-    var editAudioRecordingStartedAtRef = React.useRef(0);
++    function ownsEditAudioRecording(request) {
++      return editAudioRecordingRequestRef.current === request && editAudioRecordingLiveRef.current.allowed && editAudioRecordingLiveRef.current.context === request.context;
++    }
++    function releaseEditAudioRequestMedia(request, stopRecorder) {
++      if (!request) return;
++      if (request.timer) clearTimeout(request.timer);
++      request.timer = null;
++      var recorder = request.recorder;
++      if (recorder) {
++        // Detach even after stop() made the recorder inactive: its final data
++        // and stop events may still be queued by the browser.
++        recorder.ondataavailable = null;
++        recorder.onstop = null;
++        recorder.onerror = null;
++        try { if (stopRecorder && recorder.state !== 'inactive') recorder.stop(); } catch (_) {}
++      }
++      try { request.stream?.getTracks().forEach(track => track.stop()); } catch (_) {}
++      request.stream = null;
++      if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
++    }
++    function cancelEditAudioRecording(resetUi) {
++      var request = editAudioRecordingRequestRef.current;
++      editAudioRecordingRequestRef.current = null;
++      if (request) {
++        request.controller?.abort();
++        releaseEditAudioRequestMedia(request, true);
++        request.chunks = [];
++        request.blob = null;
++      }
++      if (resetUi) {
++        setEditAudioMicRequestKey(null);
++        setEditAudioRecordingKey(null);
++        setEditAudioRecordingSaveKey(null);
++        setEditAudioFailedTake(null);
++      }
++    }
+     var EDIT_AUDIO_MAX_RECORDING_MS = 120000;
+     var immersiveDialogRef = React.useRef(null);
+     var [immersiveToolbarBottom, setImmersiveToolbarBottom] = React.useState(0);
+@@ -2760,12 +2797,16 @@
+       if (canManageNarration) return;
+       setEditAudioOpen(false);
+       stopEditAudioPlayback();
+-      editAudioRecordTokenRef.current += 1;
+-      setEditAudioMicRequestKey(null);
+-      var recorder = editAudioMediaRecorderRef.current;
+-      try { if (recorder && recorder.state !== 'inactive') recorder.stop(); } catch (_) {}
+     }, [canManageNarration]);
+     React.useEffect(function () {
++      setEditAudioMicRequestKey(null);
++      setEditAudioRecordingKey(null);
++      setEditAudioRecordingSaveKey(null);
++      setEditAudioFailedTake(null);
++      setEditAudioNotice('');
++      return function () { cancelEditAudioRecording(false); };
++    }, [editAudioRecordingContext, canManageNarration]);
++    React.useEffect(function () {
+       setEditAudioOpen(false);
+       stopEditAudioPlayback();
+       setEditAudioMicRequestKey(null);
+@@ -2775,7 +2816,6 @@
+       setEditAudioNotice('');
+       return function () {
+         editAudioPlayTokenRef.current += 1;
+-        editAudioRecordTokenRef.current += 1;
+         try {
+           if (editAudioPlayerRef.current) {
+             editAudioPlayerRef.current.onended = null;
+@@ -2784,20 +2824,6 @@
+           }
+         } catch (_) {}
+         editAudioPlayerRef.current = null;
+-        if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+-        editAudioRecordingTimerRef.current = null;
+-        var recorder = editAudioMediaRecorderRef.current;
+-        try {
+-          if (recorder && recorder.state !== 'inactive') {
+-            recorder.onstop = null;
+-            recorder.stop();
+-          }
+-        } catch (_) {}
+-        editAudioMediaRecorderRef.current = null;
+-        var stream = editAudioMediaStreamRef.current;
+-        try { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+-        editAudioMediaStreamRef.current = null;
+-        editAudioChunksRef.current = [];
+       };
+     }, [generatedContent && generatedContent.id]);
+     var cleanSentenceForAudio = function (sentence) {
+@@ -3286,23 +3312,64 @@
+         if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
+       }
+     };
+-    var releaseEditAudioStream = function () {
+-      if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+-      editAudioRecordingTimerRef.current = null;
+-      var stream = editAudioMediaStreamRef.current;
+-      try { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+-      editAudioMediaStreamRef.current = null;
++    function restoreEditAudioRecoveryFocus() {
++      if (editAudioRecoveryRef.current?.contains(document.activeElement)) editAudioToggleRef.current?.focus();
++    }
++    React.useLayoutEffect(function () {
++      var request = editAudioRecordingRequestRef.current;
++      if (editAudioFailedTake && request && ownsEditAudioRecording(request) && request.phase === 'failed' && request.focusAtSave && document.activeElement === request.focusAtSave) {
++        editAudioRecoveryRef.current?.querySelector('[data-retry-recording]')?.focus();
++      }
++    }, [editAudioFailedTake]);
++    var saveEditAudioTake = async function (request) {
++      if (!request || !ownsEditAudioRecording(request) || !request.blob || !['captured', 'failed'].includes(request.phase)) return;
++      request.focusAtSave = document.activeElement?.getAttribute('data-record-sentence') === request.key ? document.activeElement : null;
++      request.phase = 'saving';
++      setEditAudioRecordingSaveKey(request.key);
++      setEditAudioNotice('Adding the teacher recording for sentence ' + request.sentenceNumber + '...');
++      try {
++        var saved = await request.saveRecording(request.sentence, request.blob, 'human-teacher', Object.assign({}, request.identityOptions || {}, { durationMs: request.durationMs, signal: request.controller?.signal }));
++        if (!ownsEditAudioRecording(request)) return;
++        if (!saved) throw new Error(viewText('simplified.audio_recording_was_not_saved', 'Recording was not saved'));
++        request.phase = 'complete';
++        request.blob = null;
++        setAudioStatusTick(function (n) { return n + 1; });
++        updateEditAudioPlaybackIssue(request.sentence, null, request.identityOptions);
++        restoreEditAudioRecoveryFocus();
++        setEditAudioFailedTake(null);
++        setEditAudioNotice(viewText('simplified.audio_recording_ready', 'Teacher recording ready for sentence {number}. Check device save status above.', { number: request.sentenceNumber }));
++      } catch (_) {
++        if (ownsEditAudioRecording(request)) {
++          request.phase = 'failed';
++          setEditAudioFailedTake({ key: request.key, sentenceNumber: request.sentenceNumber });
++          setEditAudioNotice(viewText('simplified.audio_recording_retry_notice', 'Could not save the recording for sentence {number}. Your take is available to retry below.', { number: request.sentenceNumber }));
++        }
++      } finally {
++        if (ownsEditAudioRecording(request)) {
++          setEditAudioRecordingSaveKey(null);
++          if (request.phase !== 'failed') editAudioRecordingRequestRef.current = null;
++        }
++      }
+     };
++    var discardEditAudioTake = function () {
++      var request = editAudioRecordingRequestRef.current;
++      if (!request || !ownsEditAudioRecording(request) || request.phase !== 'failed') return;
++      restoreEditAudioRecoveryFocus();
++      cancelEditAudioRecording(true);
++      setEditAudioNotice(viewText('simplified.audio_recording_discarded', 'Unsaved take discarded. You can record again.'));
++    };
+     var handleRecordEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
+-      var activeRecorder = editAudioMediaRecorderRef.current;
+-      if (activeRecorder && activeRecorder._alloSentenceKey === key && activeRecorder.state !== 'inactive') {
+-        try {
+-          activeRecorder.stop();
+-          setEditAudioNotice('Finishing the recording for sentence ' + sentenceNumber + '...');
+-        } catch (_) {}
++      var activeRequest = editAudioRecordingRequestRef.current;
++      var activeRecorder = activeRequest?.recorder;
++      if (activeRequest && ownsEditAudioRecording(activeRequest) && activeRequest.key === key && activeRecorder && activeRecorder.state !== 'inactive') {
++        if (activeRequest.phase !== 'recording') return;
++        activeRequest.phase = 'stopping';
++        setEditAudioNotice('Finishing the recording for sentence ' + sentenceNumber + '...');
++        try { activeRecorder.stop(); } catch (_) { activeRecorder.onerror?.(); }
+         return;
+       }
+-      if (!sentence || editAudioRecordingKey || editAudioMicRequestKey || editAudioRecordingSaveKey) return;
++      // A ref guards two activations before React publishes busy state.
++      if (!canManageNarration || !sentence || activeRequest) return;
+       if (typeof window.__alloStoreRecordedSentenceAudio !== 'function') {
+         setEditAudioNotice(viewText('simplified.audio_recorded_audio_storage_is_still_loading', 'Recorded-audio storage is still loading. Please try again.'));
+         return;
+@@ -3312,17 +3379,18 @@
+         return;
+       }
+       stopEditAudioPlayback();
+-      var requestToken = ++editAudioRecordTokenRef.current;
++      var request = {
++        context: editAudioRecordingContext, key, phase: 'permission', chunks: [], stream: null, recorder: null, timer: null,
++        sentence, sentenceNumber, identityOptions, blob: null,
++        controller: typeof AbortController === 'function' ? new AbortController() : null,
++        saveRecording: window.__alloStoreRecordedSentenceAudio,
++      };
++      editAudioRecordingRequestRef.current = request;
+       setEditAudioMicRequestKey(key);
+       setEditAudioNotice('Opening the microphone for sentence ' + sentenceNumber + '...');
+-      var stream = null;
+       try {
+-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+-        if (requestToken !== editAudioRecordTokenRef.current) {
+-          try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+-          return;
+-        }
+-        editAudioMediaStreamRef.current = stream;
++        request.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
++        if (!ownsEditAudioRecording(request)) { releaseEditAudioRequestMedia(request, true); return; }
+         var MediaRecorderCtor = window.MediaRecorder;
+         var preferredTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+         var mimeType = '';
+@@ -3331,71 +3399,58 @@
+             if (MediaRecorderCtor.isTypeSupported(preferredTypes[typeIdx])) { mimeType = preferredTypes[typeIdx]; break; }
+           }
+         }
+-        var recorder = mimeType ? new MediaRecorderCtor(stream, { mimeType: mimeType }) : new MediaRecorderCtor(stream);
++        var recorder = mimeType ? new MediaRecorderCtor(request.stream, { mimeType }) : new MediaRecorderCtor(request.stream);
++        request.recorder = recorder;
+         recorder._alloSentenceKey = key;
+-        editAudioChunksRef.current = [];
+         recorder.ondataavailable = function (event) {
+-          if (event && event.data && event.data.size > 0) editAudioChunksRef.current.push(event.data);
++          if (ownsEditAudioRecording(request) && event?.data?.size > 0) request.chunks.push(event.data);
+         };
+         recorder.onerror = function () {
+-          recorder._alloFailed = true;
+-          editAudioChunksRef.current = [];
+-          if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
+-          releaseEditAudioStream();
++          var owned = ownsEditAudioRecording(request);
++          releaseEditAudioRequestMedia(request, true);
++          request.chunks = [];
++          if (!owned) return;
++          editAudioRecordingRequestRef.current = null;
+           setEditAudioMicRequestKey(null);
+           setEditAudioRecordingKey(null);
+           setEditAudioRecordingSaveKey(null);
+           setEditAudioNotice('The microphone stopped unexpectedly. Please record sentence ' + sentenceNumber + ' again.');
+         };
+         recorder.onstop = async function () {
+-          var chunks = editAudioChunksRef.current.slice();
+-          editAudioChunksRef.current = [];
+-          if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
+-          releaseEditAudioStream();
++          if (!ownsEditAudioRecording(request)) { releaseEditAudioRequestMedia(request, true); return; }
++          var chunks = request.chunks;
++          request.chunks = [];
++          releaseEditAudioRequestMedia(request, false);
+           setEditAudioRecordingKey(null);
+-          var durationMs = Math.max(0, Date.now() - (recorder._alloStartedAt || editAudioRecordingStartedAtRef.current || Date.now()));
+-          if (recorder._alloFailed) return;
+           if (!chunks.length) {
++            editAudioRecordingRequestRef.current = null;
+             setEditAudioNotice('No audio was captured for sentence ' + sentenceNumber + '.');
+             return;
+           }
+-          var recordedBlob = new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/webm' });
+-          setEditAudioRecordingSaveKey(key);
+-          setEditAudioNotice('Saving the teacher recording for sentence ' + sentenceNumber + ' as MP3...');
+-          try {
+-            var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher', Object.assign({}, identityOptions || {}, { durationMs: durationMs }));
+-            if (saved === false) throw new Error(viewText('simplified.audio_recording_was_not_saved', 'Recording was not saved'));
+-            setAudioStatusTick(function (n) { return n + 1; });
+-            updateEditAudioPlaybackIssue(sentence, null, identityOptions);
+-            setEditAudioNotice('Teacher recording saved for sentence ' + sentenceNumber + '.');
+-          } catch (_) {
+-            setEditAudioNotice('Could not save the recording for sentence ' + sentenceNumber + '. Please try again.');
+-          } finally {
+-            setEditAudioRecordingSaveKey(null);
+-          }
++          request.blob = new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/webm' });
++          request.durationMs = Math.max(0, Date.now() - request.startedAt);
++          request.phase = 'captured';
++          await saveEditAudioTake(request);
+         };
+         editAudioMediaRecorderRef.current = recorder;
+-        recorder._alloFailed = false;
+-        recorder._alloStartedAt = Date.now();
+-        editAudioRecordingStartedAtRef.current = recorder._alloStartedAt;
++        request.startedAt = Date.now();
++        request.phase = 'recording';
+         recorder.start(250);
+-        editAudioRecordingTimerRef.current = setTimeout(function () {
+-          if (editAudioMediaRecorderRef.current === recorder && recorder.state !== 'inactive') {
++        request.timer = setTimeout(function () {
++          if (ownsEditAudioRecording(request) && request.phase === 'recording' && recorder.state !== 'inactive') {
++            request.phase = 'stopping';
+             setEditAudioNotice('The two-minute recording limit was reached. Finishing sentence ' + sentenceNumber + '...');
+-            try { recorder.stop(); } catch (_) { recorder.onerror(); }
++            try { recorder.stop(); } catch (_) { recorder.onerror?.(); }
+           }
+         }, EDIT_AUDIO_MAX_RECORDING_MS);
+         setEditAudioMicRequestKey(null);
+         setEditAudioRecordingKey(key);
+         setEditAudioNotice('Recording sentence ' + sentenceNumber + '. Press Stop when finished.');
+       } catch (_) {
+-        editAudioMediaRecorderRef.current = null;
+-        editAudioChunksRef.current = [];
+-        releaseEditAudioStream();
+-        if (stream) {
+-          try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_err) {}
+-        }
+-        if (requestToken === editAudioRecordTokenRef.current) {
++        releaseEditAudioRequestMedia(request, true);
++        request.chunks = [];
++        if (ownsEditAudioRecording(request)) {
++          editAudioRecordingRequestRef.current = null;
+           setEditAudioMicRequestKey(null);
+           setEditAudioRecordingKey(null);
+           setEditAudioNotice(viewText('simplified.audio_microphone_access_was_not_available_chec', 'Microphone access was not available. Check permission and try again.'));
+@@ -3427,10 +3482,16 @@
+       var next = !editAudioOpen;
+       if (!next) {
+         stopEditAudioPlayback();
+-        editAudioRecordTokenRef.current += 1;
+-        setEditAudioMicRequestKey(null);
+-        var recorder = editAudioMediaRecorderRef.current;
+-        try { if (recorder && recorder.state !== 'inactive') recorder.stop(); } catch (_) {}
++        var request = editAudioRecordingRequestRef.current;
++        if (request?.phase === 'permission') {
++          cancelEditAudioRecording(true);
++          setEditAudioNotice(viewText('simplified.audio_recording_cancelled', 'Microphone request cancelled. No recording was added.'));
++        }
++        else if (request?.phase === 'recording' && request.recorder?.state !== 'inactive') {
++          request.phase = 'stopping';
++          setEditAudioNotice(viewText('simplified.audio_recording_finishing', 'Finishing your recording. Keep this reading open while it is added.'));
++          try { request.recorder.stop(); } catch (_) { request.recorder.onerror?.(); }
++        }
+       }
+       setEditAudioOpen(next);
+     };
+@@ -3706,8 +3767,14 @@
+       var savingCount = Object.keys(savingAudioKeys || {}).length;
+       var captureErrorCount = Object.keys(captureAudioErrors || {}).length;
+       var panelId = 'allo-edit-audio-' + previewInstanceId.replace(/[^a-z0-9_-]/gi, '-') + '-' + String((generatedContent && generatedContent.id) || 'current').replace(/[^a-z0-9_-]/gi, '-');
+-      var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey;
+-      return <div data-narration-tools className="mt-2 w-full min-w-0 rounded-xl border border-orange-100 bg-orange-50/80"><p id={panelId + '-scope'} className="px-3 pt-3 text-sm font-semibold text-slate-800">{protectedOriginal ? viewText('simplified.narration_original_scope', 'Original narration. Recording or saving audio leaves the original text unchanged.') : viewText('simplified.narration_adapted_scope', 'Adapted text narration. Use Edit text to change the passage.')}</p><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"><button ref={editAudioToggleRef} type="button" data-manage-narration aria-describedby={panelId + '-scope'} onClick={handleToggleEditAudioPanel} aria-expanded={editAudioOpen} aria-controls={panelId} className="min-h-11 min-w-0 flex-wrap inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"><Volume2 size={14} /><span>{simplifiedAudioEditLabel}</span>{' '}<span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case">{summary.saved}/{summary.total} {simplifiedAudioSavedLabel.toLowerCase()}{summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''}</span>{editAudioOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button><div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">{savingCount > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"><RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> {simplifiedAudioSaveLabel} {savingCount}</span>}{captureErrorCount > 0 && <span role="alert" className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"><AlertCircle size={10} /> {captureErrorCount} {simplifiedAudioErrorLabel}</span>}<button type="button" onClick={copyTtsDiagnostics} title={viewText('simplified.audio_copies_a_technical_trace_of_recent', 'Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck.')} className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">{ttsDiagCopied ? '✓ ' + simplifiedAudioCopiedLabel : '🩺 ' + simplifiedAudioDiagnosticsLabel}</button><label className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (event) { setSaveTtsAsPlayedEnabled(event.target.checked); }} className="accent-orange-600" aria-label={simplifiedAudioSaveLabel} /><span>{simplifiedAudioSaveLabel}</span></label></div></div>{editAudioOpen && <div id={panelId} role="region" aria-label={simplifiedAudioEditLabel} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeNarrationPanel(); } }} className="border-t border-orange-100 bg-white p-3"><div className="flex items-start gap-2 mb-3 text-xs text-slate-600"><Mic size={14} className="mt-0.5 shrink-0 text-orange-700" /><p>{viewText('simplified.audio_preview_saved_audio_generate_a_new', 'Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.')}</p></div><div role="status" aria-live="polite" data-edit-audio-status className={editAudioNotice ? 'mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800' : 'sr-only'}>{editAudioNotice}</div><div className="space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar">{sentences.map(function (entry, i) {
++      var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey || !!editAudioFailedTake;
++      return <div data-narration-tools className="mt-2 w-full min-w-0 rounded-xl border border-orange-100 bg-orange-50/80"><p id={panelId + '-scope'} className="px-3 pt-3 text-sm font-semibold text-slate-800">{protectedOriginal ? viewText('simplified.narration_original_scope', 'Original narration. Recording or saving audio leaves the original text unchanged.') : viewText('simplified.narration_adapted_scope', 'Adapted text narration. Use Edit text to change the passage.')}</p><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"><button ref={editAudioToggleRef} type="button" data-manage-narration aria-describedby={panelId + '-scope'} onClick={handleToggleEditAudioPanel} aria-expanded={editAudioOpen} aria-controls={panelId} className="min-h-11 min-w-0 flex-wrap inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"><Volume2 size={14} /><span>{simplifiedAudioEditLabel}</span>{' '}<span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case">{summary.saved}/{summary.total} {simplifiedAudioSavedLabel.toLowerCase()}{summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''}</span>{editAudioOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button><div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">{savingCount > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"><RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> {simplifiedAudioSaveLabel} {savingCount}</span>}{captureErrorCount > 0 && <span role="alert" className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"><AlertCircle size={10} /> {captureErrorCount} {simplifiedAudioErrorLabel}</span>}<button type="button" onClick={copyTtsDiagnostics} title={viewText('simplified.audio_copies_a_technical_trace_of_recent', 'Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck.')} className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">{ttsDiagCopied ? '✓ ' + simplifiedAudioCopiedLabel : '🩺 ' + simplifiedAudioDiagnosticsLabel}</button><label className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (event) { setSaveTtsAsPlayedEnabled(event.target.checked); }} className="accent-orange-600" aria-label={simplifiedAudioSaveLabel} /><span>{simplifiedAudioSaveLabel}</span></label></div></div><div role="status" aria-live="polite" aria-atomic="true" data-edit-audio-status className={editAudioNotice ? 'mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800' : 'sr-only'}>{editAudioNotice}</div>{editAudioFailedTake && <div ref={editAudioRecoveryRef} data-recording-recovery role="group" aria-label={viewText('simplified.audio_recording_recovery', 'Recording recovery for sentence {number}', { number: editAudioFailedTake.sentenceNumber })} onKeyDown={event => { if (editAudioOpen && event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeNarrationPanel(); } }} className="mx-3 mb-3 min-w-0 rounded-lg border border-orange-200 bg-white p-3">
++        <p id={panelId + '-take-recovery'} className="mb-2 text-sm text-slate-700">{viewText('simplified.audio_recording_retry_scope', 'Keep this reading open and its text and language unchanged until you retry. Leaving or reloading clears this take. Discard it to record again.')}</p>
++        <div className="flex flex-wrap gap-2">
++          <button type="button" data-retry-recording aria-disabled={!!editAudioRecordingSaveKey} aria-busy={!!editAudioRecordingSaveKey} aria-describedby={panelId + '-take-recovery'} onClick={() => saveEditAudioTake(editAudioRecordingRequestRef.current)} className="min-h-11 min-w-0 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 aria-disabled:opacity-60">{viewText('simplified.audio_recording_retry', 'Retry adding recording')}</button>
++          <button type="button" data-discard-recording aria-disabled={!!editAudioRecordingSaveKey} aria-describedby={panelId + '-take-recovery'} onClick={discardEditAudioTake} className="min-h-11 min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 aria-disabled:opacity-60">{viewText('simplified.audio_recording_discard', 'Discard take')}</button>
++        </div>
++      </div>}{editAudioOpen && <div id={panelId} role="region" aria-label={simplifiedAudioEditLabel} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeNarrationPanel(); } }} className="border-t border-orange-100 bg-white p-3"><div className="flex items-start gap-2 mb-3 text-xs text-slate-600"><Mic size={14} className="mt-0.5 shrink-0 text-orange-700" /><p>{viewText('simplified.audio_preview_saved_audio_generate_a_new', 'Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.')}</p></div><div className="space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar">{sentences.map(function (entry, i) {
+         var sentence = entry.text;
+         var identityOptions = getReadAloudIdentityOptions(entry);
+         var key = 'simplified-' + i;
+@@ -3731,7 +3798,7 @@
+         var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
+         var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
+         var actionClass = 'min-h-11 inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
+-        return <div key={key} data-audio-sentence-index={i} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" style={{ overflowWrap: 'anywhere' }} className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div role="group" className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`} title={!isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`} title={isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`} title={isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`${simplifiedAudioRemoveLabel} ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel}</span></button>}</div></div>;
++        return <div key={key} data-audio-sentence-index={i} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" style={{ overflowWrap: 'anywhere' }} className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div role="group" className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`} title={!isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`} title={isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel}</span></button><button type="button" data-record-sentence={key} onClick={function () { if (!recordDisabled) handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled && !(isMicRequest || isRecordingSave || editAudioFailedTake?.key === key)} aria-disabled={recordDisabled} aria-describedby={editAudioFailedTake?.key === key ? panelId + '-take-recovery' : undefined} aria-pressed={isRecording} aria-label={`${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`} title={isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} className={`${actionClass} aria-disabled:opacity-50 ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`${simplifiedAudioRemoveLabel} ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel}</span></button>}</div></div>;
+       })}</div><button type="button" data-close-narration onClick={closeNarrationPanel} className="mt-3 min-h-11 rounded-lg border border-orange-300 bg-white px-3 py-2 text-sm font-semibold text-orange-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.close_narration', 'Close narration')}</button></div>}</div>;
+     };
+     var instructionalTextProfile = getSimplifiedInstructionalText(generatedContent);
+===================================================================
+--- /dev/null
++++ b/tests/reader_recording_lifecycle.test.js
+@@ -0,0 +1,278 @@
++// Recording ownership, cancellation, and visible completion through route changes.
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { readFileSync } from 'node:fs';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++let React, createRoot, act, View, root, host, pure, phase;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  act = React.act;
++  global.React = window.React = React;
++  global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
++  loadAlloModule('view_simplified_module.js');
++  pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
++});
++beforeEach(() => { localStorage.clear(); });
++afterEach(() => {
++  if (root) act(() => root.unmount()); host?.remove(); root = null; host = null;
++  vi.restoreAllMocks(); vi.unstubAllGlobals();
++  for (const key of ['__alloStoreRecordedSentenceAudio', '__alloRemoveSentenceAudio', '__alloGetReadAloudAudioSummary', '__alloInspectReadAloudAudio', '__alloPrepareReadAloud', '__alloQuarantineReadAloudAudio', '__alloReadAloudProfileRevision']) delete window[key];
++  if (window.AlloModules.KaraokeAudioStore) window.AlloModules.KaraokeAudioStore.current = null;
++});
++const TEXT = 'Plants need light. Roots take in water.';
++function mount(extra = {}) {
++  const noop = () => {};
++  let props = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'audio-1', type: 'simplified', data: TEXT, config: { language: 'English' }, instructionalText: { form: 'adapted', role: 'supplemental' } }, selectedVoice: 'Kore', voiceSpeed: 1, leveledTextLanguage: 'English', isTeacherMode: true, isZenMode: false, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [], setFocusedParagraphIndex: noop, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, handleToggleIsEditingLeveledText: noop, handleSimplifiedTextChange: noop, handleFormatText: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, setSelectionMenu: noop, ...extra };
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  const render = next => { props = { ...props, ...next }; act(() => root.render(React.createElement(View, props))); };
++  render({}); return { render, get props() { return props; } };
++}
++let recorders, streams, getMedia;
++const mediaDescriptor = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
++class Recorder {
++  static isTypeSupported() { return true; }
++  constructor(stream, options = {}) { this.stream = stream; this.mimeType = options.mimeType || 'audio/webm'; this.state = 'inactive'; recorders.push(this); }
++  start() { this.state = 'recording'; }
++  stop() { this.state = 'inactive'; }
++  async finish(text = 'one take') { this.ondataavailable?.({ data: new Blob([text], { type: this.mimeType }) }); await this.onstop?.(); }
++}
++const newStream = () => { const stop = vi.fn(); const stream = { getTracks: () => [{ stop }], stop }; streams.push(stream); return stream; };
++const toggle = () => host.querySelector('[data-manage-narration]');
++const record = () => host.querySelector('[data-audio-sentence-index="0"] button[aria-label="word_sounds.voice_pack_tab_record 1"]');
++const stopRecord = () => host.querySelector('[data-audio-sentence-index="0"] button[aria-label="common.stop 1"]');
++const notice = () => host.querySelector('[data-edit-audio-status]');
++const retryTake = () => host.querySelector('[data-retry-recording]');
++const discardTake = () => host.querySelector('[data-discard-recording]');
++const open = () => act(() => toggle().click());
++const start = async () => { await act(async () => record().click()); return recorders.at(-1); };
++const nextReading = view => { view.render({ generatedContent: { ...view.props.generatedContent, id: 'audio-2' } }); open(); };
++
++beforeEach(() => {
++  recorders = []; streams = [];
++  vi.stubGlobal('MediaRecorder', Recorder);
++  getMedia = vi.fn(async () => newStream());
++  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: getMedia } });
++  window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
++});
++afterEach(() => {
++  if (mediaDescriptor) Object.defineProperty(navigator, 'mediaDevices', mediaDescriptor);
++  else delete navigator.mediaDevices;
++});
++
++describe('recording request ownership', () => {
++  it('does not let an old permission rejection stop the next reading microphone', async () => {
++    let rejectOld;
++    getMedia.mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectOld = reject; }));
++    const view = mount(); open(); await act(async () => record().click());
++    nextReading(view); await start();
++    await act(async () => rejectOld(new Error('Old permission denied')));
++    expect(streams[0].stop).not.toHaveBeenCalled();
++    expect(stopRecord()).not.toBeNull();
++  });
++
++  it('ignores a queued stop event after an inactive recorder belongs to an old reading', async () => {
++    const view = mount(); open(); const old = await start();
++    act(() => stopRecord().click());
++    nextReading(view);
++    await act(async () => old.finish('old take'));
++    expect(window.__alloStoreRecordedSentenceAudio).not.toHaveBeenCalled();
++    expect(notice().textContent).not.toContain('saved');
++  });
++
++  it('keeps old event callbacks out of the new recording buffer and stream', async () => {
++    const view = mount(); open(); const old = await start();
++    const lateData = old.ondataavailable, lateStop = old.onstop;
++    nextReading(view); const current = await start();
++    await act(async () => { lateData({ data: new Blob(['old take']) }); await lateStop(); });
++    expect(streams[1].stop).not.toHaveBeenCalled();
++    expect(window.__alloStoreRecordedSentenceAudio).not.toHaveBeenCalled();
++    act(() => stopRecord().click()); await act(async () => current.finish('new take'));
++    const savedBlob = window.__alloStoreRecordedSentenceAudio.mock.calls[0][1];
++    expect(savedBlob.size).toBe(new Blob(['new take']).size);
++  });
++
++  it.each(['text', 'language'])('ends a recording when the same reading changes %s', async changed => {
++    const view = mount(); open(); const old = await start();
++    view.render({ generatedContent: { ...view.props.generatedContent, ...(changed === 'text' ? { data: 'Changed wording.' } : { config: { language: 'Spanish' } }) } });
++    expect(streams[0].stop).toHaveBeenCalled();
++    expect(notice().textContent).not.toContain('Recording sentence');
++    await act(async () => old.finish());
++    expect(window.__alloStoreRecordedSentenceAudio).not.toHaveBeenCalled();
++  });
++
++  it('aborts an in-flight recording save and ignores its late failure in the next reading', async () => {
++    let finishOld;
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn(() => new Promise(resolve => { finishOld = resolve; }));
++    const view = mount(); open(); const old = await start(); act(() => stopRecord().click());
++    let pending; await act(async () => { pending = old.finish(); });
++    const signal = save.mock.calls[0][3]?.signal;
++    expect(signal).toBeDefined();
++    nextReading(view); await start();
++    expect(signal.aborted).toBe(true);
++    await act(async () => { finishOld(false); await pending; });
++    expect(notice().textContent).toContain('Recording sentence 1');
++    expect(stopRecord()).not.toBeNull();
++  });
++
++  it('finishes and reports a recording after closing narration in the same reading', async () => {
++    mount(); open(); const recorder = await start();
++    act(() => host.querySelector('[data-close-narration]').click());
++    await act(async () => recorder.finish());
++    expect(window.__alloStoreRecordedSentenceAudio).toHaveBeenCalledOnce();
++    expect(toggle().getAttribute('aria-expanded')).toBe('false');
++    expect(notice()).not.toBeNull();
++    expect(notice().textContent).toContain('Teacher recording ready for sentence 1');
++    expect(notice().textContent).toContain('Check device save status');
++    expect(notice().getAttribute('aria-atomic')).toBe('true');
++  });
++
++  it('guards rapid recording activation before React publishes busy state', async () => {
++    let resolvePermission;
++    getMedia.mockImplementation(() => new Promise(resolve => { resolvePermission = resolve; }));
++    mount(); open(); await act(async () => { record().click(); record().click(); });
++    expect(getMedia).toHaveBeenCalledOnce();
++    await act(async () => resolvePermission(newStream()));
++  });
++
++  it('cancels a pending permission request when narration closes', async () => {
++    let resolvePermission;
++    getMedia.mockImplementationOnce(() => new Promise(resolve => { resolvePermission = resolve; }));
++    mount(); open(); await act(async () => record().click());
++    act(() => host.querySelector('[data-close-narration]').click());
++    expect(notice().textContent).toContain('Microphone request cancelled');
++    const stream = newStream(); await act(async () => resolvePermission(stream));
++    expect(stream.stop).toHaveBeenCalled(); expect(recorders).toHaveLength(0);
++  });
++
++  it('cleans up active recording when teacher controls become unavailable', async () => {
++    const view = mount(); open(); const recorder = await start();
++    view.render({ isTeacherMode: false });
++    expect(streams[0].stop).toHaveBeenCalled();
++    await act(async () => recorder.finish());
++    expect(window.__alloStoreRecordedSentenceAudio).not.toHaveBeenCalled();
++  });
++
++  it('keeps a human recording active when only the selected AI voice changes', async () => {
++    const view = mount(); open(); await start();
++    view.render({ selectedVoice: 'Puck' });
++    expect(streams[0].stop).not.toHaveBeenCalled(); expect(stopRecord()).not.toBeNull();
++  });
++
++  it('does not report readiness when the recording API returns no result', async () => {
++    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => undefined);
++    mount(); open(); const recorder = await start(); act(() => stopRecord().click());
++    await act(async () => recorder.finish());
++    expect(notice().textContent).toContain('Could not save the recording');
++    expect(notice().textContent).not.toContain('Teacher recording saved');
++  });
++
++  it('retries the same take and identity after Close without reopening the microphone', async () => {
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
++    mount(); open(); const recorder = await start();
++    act(() => host.querySelector('[data-close-narration]').click());
++    await act(async () => recorder.finish('retained teacher take'));
++    expect(retryTake()).not.toBeNull();
++    expect(host.querySelector('[data-recording-recovery]').textContent).toContain('Leaving or reloading clears this take');
++    const first = save.mock.calls[0];
++    const replacement = window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
++    retryTake().focus(); await act(async () => retryTake().click());
++    expect(save).toHaveBeenCalledTimes(2);
++    expect(save.mock.calls[1][1]).toBe(first[1]);
++    expect(save.mock.calls[1][3]).toEqual(first[3]);
++    expect(replacement).not.toHaveBeenCalled();
++    expect(getMedia).toHaveBeenCalledOnce();
++    expect(retryTake()).toBeNull(); expect(document.activeElement).toBe(toggle());
++    expect(notice().textContent).toContain('Teacher recording ready');
++  });
++
++  it('keeps recovery available after another failed retry', async () => {
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn(async () => false);
++    mount(); open(); const recorder = await start(); act(() => stopRecord().click());
++    await act(async () => recorder.finish());
++    expect(retryTake()).not.toBeNull();
++    retryTake().focus(); await act(async () => retryTake().click());
++    expect(save).toHaveBeenCalledTimes(2); expect(getMedia).toHaveBeenCalledOnce();
++    expect(document.activeElement).toBe(retryTake());
++    expect(retryTake().getAttribute('aria-disabled')).toBe('false');
++    expect(notice().textContent).toContain('available to retry');
++  });
++
++  it('guards duplicate retry and discard while saving, retaining focus on the busy action', async () => {
++    let resolveRetry;
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn().mockResolvedValueOnce(false).mockImplementationOnce(() => new Promise(resolve => { resolveRetry = resolve; }));
++    mount(); open(); const recorder = await start(); act(() => stopRecord().click()); await act(async () => recorder.finish());
++    expect(retryTake()).not.toBeNull(); retryTake().focus();
++    await act(async () => { retryTake().click(); retryTake().click(); discardTake().click(); });
++    expect(save).toHaveBeenCalledTimes(2);
++    expect(retryTake().getAttribute('aria-busy')).toBe('true');
++    expect(discardTake().getAttribute('aria-disabled')).toBe('true');
++    expect(document.activeElement).toBe(retryTake());
++    await act(async () => resolveRetry(true));
++    expect(retryTake()).toBeNull(); expect(document.activeElement).toBe(toggle());
++  });
++
++  it('does not steal focus from another control when retry succeeds', async () => {
++    let resolveRetry;
++    window.__alloStoreRecordedSentenceAudio = vi.fn().mockResolvedValueOnce(false).mockImplementationOnce(() => new Promise(resolve => { resolveRetry = resolve; }));
++    mount(); open(); const recorder = await start(); act(() => stopRecord().click()); await act(async () => recorder.finish());
++    expect(retryTake()).not.toBeNull(); retryTake().focus(); await act(async () => retryTake().click());
++    const close = host.querySelector('[data-close-narration]'); close.focus();
++    await act(async () => resolveRetry(true)); expect(document.activeElement).toBe(close);
++  });
++
++  it('discards only the temporary take, restores focus, and enables another recording', async () => {
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn(async () => false);
++    const remove = window.__alloRemoveSentenceAudio = vi.fn();
++    mount(); open(); const recorder = await start(); act(() => stopRecord().click()); await act(async () => recorder.finish());
++    expect(discardTake()).not.toBeNull(); expect(record().getAttribute('aria-disabled')).toBe('true');
++    discardTake().focus(); act(() => discardTake().click());
++    expect(retryTake()).toBeNull(); expect(document.activeElement).toBe(toggle());
++    expect(notice().textContent).toContain('Unsaved take discarded');
++    expect(remove).not.toHaveBeenCalled(); expect(save).toHaveBeenCalledOnce();
++    expect(record().getAttribute('aria-disabled')).toBe('false'); await start(); expect(getMedia).toHaveBeenCalledTimes(2);
++    delete window.__alloRemoveSentenceAudio;
++  });
++
++  it.each(['reading', 'text', 'language', 'eligibility'])('clears a retained take after changing %s', async changed => {
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn(async () => false);
++    const view = mount(); open(); const recorder = await start(); act(() => stopRecord().click()); await act(async () => recorder.finish());
++    expect(retryTake()).not.toBeNull(); const signal = save.mock.calls[0][3].signal;
++    if(changed==='eligibility')view.render({isTeacherMode:false});
++    else view.render({generatedContent:{...view.props.generatedContent,...(changed==='reading'?{id:'audio-2'}:changed==='text'?{data:'Changed wording.'}:{config:{language:'Spanish'}})}});
++    expect(retryTake()).toBeNull(); expect(signal.aborted).toBe(true); expect(save).toHaveBeenCalledOnce();
++  });
++
++  it('ignores an old retry result after navigation while keeping the new failed take', async () => {
++    let resolveRetry;
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn().mockResolvedValueOnce(false).mockImplementationOnce(() => new Promise(resolve => { resolveRetry = resolve; })).mockResolvedValueOnce(false);
++    const view = mount(); open(); const old = await start(); act(() => stopRecord().click()); await act(async () => old.finish('old'));
++    expect(retryTake()).not.toBeNull(); await act(async () => retryTake().click());
++    const oldSignal = save.mock.calls[1][3].signal;
++    nextReading(view); const current = await start(); act(() => stopRecord().click()); await act(async () => current.finish('new'));
++    expect(oldSignal.aborted).toBe(true); expect(retryTake()).not.toBeNull();
++    await act(async () => resolveRetry(true));
++    expect(retryTake()).not.toBeNull(); expect(notice().textContent).toContain('available to retry');
++    expect(save).toHaveBeenCalledTimes(3);
++  });
++
++  it('moves the focused Stop control to Retry when adding that take fails', async () => {
++    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => false);
++    mount(); open(); const recorder = await start(); stopRecord().focus(); act(() => stopRecord().click());
++    await act(async () => recorder.finish());
++    expect(retryTake()).not.toBeNull(); expect(document.activeElement).toBe(retryTake());
++    act(() => record().click()); expect(getMedia).toHaveBeenCalledOnce();
++  });
++
++  it('clears a failed take on unmount', async () => {
++    const save = window.__alloStoreRecordedSentenceAudio = vi.fn(async () => false);
++    mount(); open(); const recorder = await start(); act(() => stopRecord().click()); await act(async () => recorder.finish());
++    expect(retryTake()).not.toBeNull(); const signal = save.mock.calls[0][3].signal;
++    act(() => root.unmount()); root = null;
++    expect(signal.aborted).toBe(true); expect(retryTake()).toBeNull();
++  });
++});
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader_recording_lifecycle_browser.cjs
+@@ -0,0 +1,122 @@
++// Isolated fixture only: no app server, credentials, saved data, or TTS calls.
++const fs = require('fs'), path = require('path'), { createRequire } = require('module');
++const root = path.resolve(__dirname, '..'), req = createRequire(path.join(root, 'package.json'));
++const web = createRequire(path.join(root, 'desktop/web-app/package.json'));
++const { chromium } = req('playwright'), esbuild = req('esbuild');
++const out = path.join(root, 'validation');
++const fixture = String.raw`
++const h = React.createElement, noop = () => {};
++const text = 'Plants need light. Roots take in water. '+ 'Longword'.repeat(14) + '.';
++const original = AlloModules.InstructionalContext.createSupportedReading(text, {id:'original',config:{language:'English'}});
++const adapted = {id:'adapted',type:'simplified',data:text,config:{language:'English',grade:'5'},sourceSnapshot:original.sourceSnapshot,instructionalText:{form:'adapted',role:'supplemental'}};
++window.saveCalls=0; window.savedClips=0; window.activeReadingId='adapted'; window.__alloGetReadAloudAudioSummary = () => ({ready:3,missing:0,total:3});
++window.__alloGetReadAloudReadiness = async () => ({resourceId:activeReadingId,scope:'device-audio',state:savedClips===3?'ready':'session-only',ready:3,total:3,remaining:0,durableReady:savedClips,sessionOnly:3-savedClips,nextActions:savedClips===3?[]:['retry-save']});
++window.__alloRetryReadAloudPersistence = (lane,options)=>{window.saveCalls++;window.saveSignal=options?.signal;return new Promise((resolve,reject)=>{window.finishSave=resolve;window.failSave=reject;});};
++window.__alloPrepareReadAloud = async () => ({ok:false,remaining:3,failure:{reason:'Fixture: narration could not be saved. Try again.'}});
++
++window.recordingSaves=[];window.syntheticStreams=[];window.nativeRecorders=[];window.recordingSaveMode='success';
++const NativeMediaRecorder=window.MediaRecorder;
++window.MediaRecorder=class extends NativeMediaRecorder {
++ constructor(...args){super(...args);this.fixtureBytes=0;this.addEventListener('dataavailable',event=>this.fixtureBytes+=event.data.size);window.nativeRecorders.push(this);}
++};
++const AudioContextCtor=window.AudioContext||window.webkitAudioContext;
++window.syntheticMicrophone = async ()=>{
++ const context=new AudioContextCtor(),destination=context.createMediaStreamDestination(),oscillator=context.createOscillator();
++ oscillator.frequency.value=220;oscillator.connect(destination);oscillator.start();await context.resume();
++ const stream=destination.stream;window.syntheticStreams.push(stream);
++ stream.getTracks().forEach(track=>{const stop=track.stop.bind(track);track.stop=()=>{stop();try{oscillator.stop();}catch(_){}oscillator.disconnect();context.close().catch(()=>{});};});
++ return stream;
++};
++Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:()=>window.syntheticMicrophone()}});
++
++function Harness({options}) {
++ const [editing,setEditing]=React.useState(false), [compare,setCompare]=React.useState(!!options.compare), [originalRoute,setOriginalRoute]=React.useState(!!options.original);window.switchReading=()=>setOriginalRoute(x=>!x);window.activeReadingId=originalRoute?'original':'adapted';window.__alloStoreRecordedSentenceAudio=((resourceId)=>async(sentence,blob,source,options)=>{window.recordingSaves.push({resourceId,sentence,bytes:blob.size,mime:blob.type,source,signal:options?.signal});if(window.recordingSaveMode==='pending')return new Promise(resolve=>window.finishRecordingSave=resolve);return window.recordingSaveMode==='success';})(window.activeReadingId);
++ const props={t,generatedContent:originalRoute?original:adapted,gradeLevel:'5',leveledTextLanguage:'English',selectedVoice:'Kore',voiceSpeed:1,studentInterests:[],history:[original,adapted],
++ isTeacherMode:options.teacher!==false,isZenMode:false,isEditingLeveledText:editing,isProcessing:false,isPlaying:false,isCompareMode:compare,interactionMode:'read',textEditorRef:React.useRef(null),
++ cursorStyles:{},latestGlossary:[],playbackState:{currentIdx:-1},getSideBySideContent:()=>null,getContentDirection:()=> 'ltr',isRtlLang:()=>false,highlightGlossaryTerms:x=>x,
++ splitTextToSentences:x=>AlloModules.PureHelpers.splitTextToSentences(x,{}),formatInteractiveText:(x,c)=>AlloModules.PhaseNHelpers.formatInteractiveText(x,c,false,{highlightGlossaryTerms:x=>x,latestGlossary:[],MathSymbol:({text})=>text}),renderFormattedText:x=>x,
++ SourceReferencesPanel:()=>null,ComplexityGauge:()=>null,handleSpeak:noop,handleWordClick:noop,handlePhonicsClick:noop,handleQuickAddGlossary:noop,handleTextMouseUp:noop,
++ setFocusedParagraphIndex:noop,stopPlayback:noop,setComplexityLevel:noop,setSaveOriginalOnAdjust:noop,setReadingTheme:noop,setInteractionMode:noop,setIsCompareMode:setCompare,setIsFluencyMode:noop,handleToggleIsTeacherToolbarExpanded:noop,handleToggleIsEditingLeveledText:()=>setEditing(x=>!x),handleSimplifiedTextChange:noop,handleFormatText:noop,setSelectionMenu:noop};
++ return h('div',{className:'theme-'+(options.shell||'light')},h('div',{className:'allo-docsuite'},h(AlloModules.AppStyles.AppStyles),h('div',{'data-reading-theme':options.theme||'default'},h(AlloModules.SimplifiedView,props))));
++}
++window.renderFixture=options=>{if(window.fixtureRoot)fixtureRoot.unmount();document.querySelector('#mount').textContent='';window.fixtureRoot=createRoot(document.querySelector('#mount'));fixtureRoot.render(h(Harness,{options}));};
++`;
++(async () => {
++ fs.mkdirSync(out,{recursive:true});
++ const css=(await web('postcss')([web('tailwindcss')({...web('./tailwind.config.js'),content:[path.join(root,'view_simplified_source.jsx')]})]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ const runtime=esbuild.buildSync({stdin:{contents:"import React from 'react';import {createRoot} from 'react-dom/client';import * as icons from 'lucide-react';window.React=React;window.createRoot=createRoot;window.AlloIcons=icons;",resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,format:'iife',define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const strings=JSON.parse(fs.readFileSync(path.join(root,'ui_strings.js'),'utf8'));
++ const browser=await chromium.launch({headless:true});
++ const page=await browser.newPage({viewport:{width:320,height:640},hasTouch:true,reducedMotion:'reduce'}), results=[], errors=[];
++ page.setDefaultTimeout(15000);
++ page.on('pageerror',e=>errors.push(e.message));
++ await page.route('**/*',route=>route.request().url()==='http://narration-fixture.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main id="mount"></main></body></html>'}):route.abort());
++ const check=(ok,label)=>{if(!ok)throw Error(label);};
++ try {
++  await page.goto('http://narration-fixture.test/');await page.addStyleTag({content:css});await page.addScriptTag({content:runtime});
++  await page.addScriptTag({content:'window.translations='+JSON.stringify(strings)+';window.t=(key)=>{const value=key.split(".").reduce((o,k)=>o&&o[k],translations);return typeof value==="string"?value:key;};window.AlloLanguageContext=React.createContext({t});window.AlloModules={};'});
++  for(const file of ['app_styles_module.js','instructional_context_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','view_simplified_module.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
++  await page.addScriptTag({content:fixture});
++  const render=async options=>{await page.evaluate(o=>{window.savedClips=0;window.saveCalls=0;window.recordingSaves=[];window.syntheticStreams=[];window.recordingSaveMode='success';renderFixture(o);},options);await page.locator('[data-adapted-reader]').waitFor();await page.locator('[data-review-action=audio-retry-save]').waitFor();};
++  const manage=()=>page.locator('[data-manage-narration]');
++  const record=()=>page.locator('[data-audio-sentence-index="0"]').getByRole('button').nth(2);
++  const close=()=>page.getByRole('button',{name:'Close narration',exact:true});
++  const status=()=>page.locator('[data-edit-audio-status]');
++  const focusVisible=async locator=>locator.evaluate(el=>{const b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return b.top>=0&&b.bottom<=innerHeight+1&&(hit===el||el.contains(hit));});
++  const open=async()=>{await manage().focus();await page.keyboard.press('Enter');await record().waitFor();};
++  const start=async()=>{await record().focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>document.querySelector('[data-audio-sentence-index="0"] button[aria-pressed="true"]'));await page.waitForFunction(()=>nativeRecorders.at(-1)?.fixtureBytes>0);};
++  for(const route of ['adapted','original','both'])for(const mode of ['normal','spacing','200-text']) {
++   console.log('Checking '+route+' / '+mode);
++   await render({original:route==='original',compare:route==='both'});await open();
++   if(mode==='spacing')await page.evaluate(()=>{document.querySelectorAll('#mount *').forEach(el=>{el.style.lineHeight='1.5';el.style.letterSpacing='.12em';el.style.wordSpacing='.16em';if(el.tagName==='P')el.style.marginBottom='2em';});});
++   if(mode==='200-text')await page.evaluate(()=>{const values=[...document.querySelectorAll('#mount *')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);values.forEach(([el,size])=>el.style.fontSize=(size*2)+'px');});
++   await start();await close().focus();check(await focusVisible(close()),'Close focus obscured');
++   if(route==='both'&&mode==='normal')await close().tap();else await page.keyboard.press('Enter');
++   await page.waitForFunction(()=>document.querySelector('[data-edit-audio-status]')?.textContent.includes('Teacher recording ready'));
++   const saved=await page.evaluate(()=>({saves:recordingSaves.map(({signal,...value})=>value),ended:syntheticStreams.every(stream=>stream.getTracks().every(track=>track.readyState==='ended'))}));
++   check(saved.saves.length===1&&saved.saves[0].bytes>0,'native recording blob missing');
++   check(saved.saves[0].resourceId===(route==='original'?'original':'adapted'),'recording bound to wrong reading');
++   check(saved.saves[0].source==='human-teacher'&&saved.ended,'recording ownership or track cleanup');
++   check(await close().count()===0,'narration did not close');
++   check(await manage().evaluate(el=>el===document.activeElement),'Close focus not restored');
++   check(await focusVisible(manage()),'restored focus obscured');
++   check(await status().isVisible(),'completion hidden after Close');
++   const semantics=await status().evaluate(el=>({role:el.getAttribute('role'),live:el.getAttribute('aria-live'),atomic:el.getAttribute('aria-atomic')}));
++   check(semantics.role==='status'&&semantics.live==='polite'&&semantics.atomic==='true','completion semantics');
++   const geometry=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
++   check(geometry.scrollWidth<=geometry.width+2,'narrow recording overflow '+JSON.stringify(geometry));
++   results.push({route,mode,...geometry,...saved,semantics,focusReturned:true,completionVisible:true});
++  }
++  console.log('Checking navigation during save');
++  await render({});await open();await page.evaluate(()=>window.recordingSaveMode='pending');await start();await record().click();
++  await page.waitForFunction(()=>recordingSaves.length===1);
++  await page.evaluate(()=>{window.oldSignal=recordingSaves[0].signal;window.oldFinish=finishRecordingSave;switchReading();});
++  await page.waitForFunction(()=>activeReadingId==='original'&&oldSignal.aborted);
++  if(!await record().count())await open();await page.evaluate(()=>window.recordingSaveMode='success');await start();
++  await page.evaluate(()=>oldFinish(false));
++  check(await record().getAttribute('aria-pressed')==='true','old save disrupted new recording');
++  await close().click();await page.waitForFunction(()=>recordingSaves.length===2&&document.querySelector('[data-edit-audio-status]')?.textContent.includes('Teacher recording ready'));
++  check(await page.evaluate(()=>recordingSaves[1].resourceId==='original'&&syntheticStreams.every(stream=>stream.getTracks().every(track=>track.readyState==='ended'))),'new recording not scoped or cleaned');
++  results.push({route:'navigate-during-recording-save',oldSignalAborted:true,newRecordingIndependent:true});
++  console.log('Checking close during permission');
++  await render({});await open();
++  await page.evaluate(()=>{window.realSyntheticMicrophone=syntheticMicrophone;window.syntheticMicrophone=()=>new Promise(resolve=>window.resolveMicrophone=resolve);});
++  await record().click();await page.waitForFunction(()=>typeof resolveMicrophone==='function');await close().click();
++  await page.evaluate(async()=>{resolveMicrophone(await realSyntheticMicrophone());window.syntheticMicrophone=realSyntheticMicrophone;});
++  await page.waitForFunction(()=>syntheticStreams.length===1&&syntheticStreams[0].getTracks().every(track=>track.readyState==='ended'));
++  check(await page.evaluate(()=>recordingSaves.length===0),'cancelled permission saved recording');
++  results.push({route:'close-during-permission',lateStreamStopped:true,noSave:true});
++  console.log('Checking failure after close');
++  await render({});await open();await page.evaluate(()=>window.recordingSaveMode='failure');await start();await close().click();
++  await page.waitForFunction(()=>document.querySelector('[data-edit-audio-status]')?.textContent.includes('Could not save'));
++  check(await status().isVisible(),'failed recording invisible after Close');
++  check(!(await status().textContent()).includes('Teacher recording ready'),'failed recording reported ready');
++  results.push({route:'failure-after-close',failureVisible:true});
++  check(errors.length===0,'browser errors: '+errors.join(';'));
++  fs.writeFileSync(path.join(out,'recording-lifecycle-browser.json'),JSON.stringify({browser:'Chromium',viewport:{width:320,height:640},simulatedTouch:true,reducedMotion:true,nativeMediaRecorder:true,results,errors,limitations:['Synthetic audio stream, no microphone permission prompt or hardware use','Mock host save callback; no actual persistent writes or reopen verification','DOM live-region semantics are not real AT announcement verification','200% computed-font simulation is not real browser text zoom or 400% zoom','No hardware mobile, WebKit, or Firefox verification']},null,2));
++  console.log(JSON.stringify({passed:results.length,errors}));
++ } catch(error) {
++  console.error(JSON.stringify(await page.evaluate(()=>({notice:document.querySelector('[data-edit-audio-status]')?.textContent,saves:recordingSaves.map(({signal,...value})=>value),tracks:syntheticStreams.map(stream=>stream.getTracks().map(track=>track.readyState))}))));
++  throw error;
++ } finally {await browser.close();}
++})().catch(error=>{console.error(error);process.exitCode=1;});
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader_recording_retry_browser.cjs
+@@ -0,0 +1,136 @@
++// Isolated fixture only: no app server, credentials, saved data, or TTS calls.
++const fs = require('fs'), path = require('path'), { createRequire } = require('module');
++const root = path.resolve(__dirname, '..'), req = createRequire(path.join(root, 'package.json'));
++const web = createRequire(path.join(root, 'desktop/web-app/package.json'));
++const { chromium } = req('playwright'), esbuild = req('esbuild');
++const out = path.join(root, 'validation');
++const fixture = String.raw`
++const h = React.createElement, noop = () => {};
++const text = 'Plants need light. Roots take in water. '+ 'Longword'.repeat(14) + '.';
++const original = AlloModules.InstructionalContext.createSupportedReading(text, {id:'original',config:{language:'English'}});
++const adapted = {id:'adapted',type:'simplified',data:text,config:{language:'English',grade:'5'},sourceSnapshot:original.sourceSnapshot,instructionalText:{form:'adapted',role:'supplemental'}};
++window.saveCalls=0; window.savedClips=0; window.activeReadingId='adapted'; window.__alloGetReadAloudAudioSummary = () => ({ready:3,missing:0,total:3});
++window.__alloGetReadAloudReadiness = async () => ({resourceId:activeReadingId,scope:'device-audio',state:savedClips===3?'ready':'session-only',ready:3,total:3,remaining:0,durableReady:savedClips,sessionOnly:3-savedClips,nextActions:savedClips===3?[]:['retry-save']});
++window.__alloRetryReadAloudPersistence = (lane,options)=>{window.saveCalls++;window.saveSignal=options?.signal;return new Promise((resolve,reject)=>{window.finishSave=resolve;window.failSave=reject;});};
++window.__alloPrepareReadAloud = async () => ({ok:false,remaining:3,failure:{reason:'Fixture: narration could not be saved. Try again.'}});
++
++window.recordingSaves=[];window.syntheticStreams=[];window.nativeRecorders=[];window.recordingSaveMode='success';
++const NativeMediaRecorder=window.MediaRecorder;
++window.MediaRecorder=class extends NativeMediaRecorder {
++ constructor(...args){super(...args);this.fixtureBytes=0;this.addEventListener('dataavailable',event=>this.fixtureBytes+=event.data.size);window.nativeRecorders.push(this);}
++};
++const AudioContextCtor=window.AudioContext||window.webkitAudioContext;
++window.syntheticMicrophone = async ()=>{
++ const context=new AudioContextCtor(),destination=context.createMediaStreamDestination(),oscillator=context.createOscillator();
++ oscillator.frequency.value=220;oscillator.connect(destination);oscillator.start();await context.resume();
++ const stream=destination.stream;window.syntheticStreams.push(stream);
++ stream.getTracks().forEach(track=>{const stop=track.stop.bind(track);track.stop=()=>{stop();try{oscillator.stop();}catch(_){}oscillator.disconnect();context.close().catch(()=>{});};});
++ return stream;
++};
++Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:()=>window.syntheticMicrophone()}});
++
++function Harness({options}) {
++ const [editing,setEditing]=React.useState(false), [compare,setCompare]=React.useState(!!options.compare), [originalRoute,setOriginalRoute]=React.useState(!!options.original);window.switchReading=()=>setOriginalRoute(x=>!x);window.activeReadingId=originalRoute?'original':'adapted';window.__alloStoreRecordedSentenceAudio=((resourceId)=>async(sentence,blob,source,options)=>{window.recordingSaves.push({blob,resourceId,sentence,bytes:blob.size,mime:blob.type,source,signal:options?.signal});if(window.recordingSaveMode==='pending')return new Promise(resolve=>window.finishRecordingSave=resolve);return window.recordingSaveMode==='success';})(window.activeReadingId);
++ const props={t,generatedContent:originalRoute?original:adapted,gradeLevel:'5',leveledTextLanguage:'English',selectedVoice:'Kore',voiceSpeed:1,studentInterests:[],history:[original,adapted],
++ isTeacherMode:options.teacher!==false,isZenMode:false,isEditingLeveledText:editing,isProcessing:false,isPlaying:false,isCompareMode:compare,interactionMode:'read',textEditorRef:React.useRef(null),
++ cursorStyles:{},latestGlossary:[],playbackState:{currentIdx:-1},getSideBySideContent:()=>null,getContentDirection:()=> 'ltr',isRtlLang:()=>false,highlightGlossaryTerms:x=>x,
++ splitTextToSentences:x=>AlloModules.PureHelpers.splitTextToSentences(x,{}),formatInteractiveText:(x,c)=>AlloModules.PhaseNHelpers.formatInteractiveText(x,c,false,{highlightGlossaryTerms:x=>x,latestGlossary:[],MathSymbol:({text})=>text}),renderFormattedText:x=>x,
++ SourceReferencesPanel:()=>null,ComplexityGauge:()=>null,handleSpeak:noop,handleWordClick:noop,handlePhonicsClick:noop,handleQuickAddGlossary:noop,handleTextMouseUp:noop,
++ setFocusedParagraphIndex:noop,stopPlayback:noop,setComplexityLevel:noop,setSaveOriginalOnAdjust:noop,setReadingTheme:noop,setInteractionMode:noop,setIsCompareMode:setCompare,setIsFluencyMode:noop,handleToggleIsTeacherToolbarExpanded:noop,handleToggleIsEditingLeveledText:()=>setEditing(x=>!x),handleSimplifiedTextChange:noop,handleFormatText:noop,setSelectionMenu:noop};
++ return h('div',{className:'theme-'+(options.shell||'light')},h('div',{className:'allo-docsuite'},h(AlloModules.AppStyles.AppStyles),h('div',{'data-reading-theme':options.theme||'default'},h(AlloModules.SimplifiedView,props))));
++}
++window.renderFixture=options=>{if(window.fixtureRoot)fixtureRoot.unmount();document.querySelector('#mount').textContent='';window.fixtureRoot=createRoot(document.querySelector('#mount'));fixtureRoot.render(h(Harness,{options}));};
++`;
++(async () => {
++ fs.mkdirSync(out,{recursive:true});
++ const css=(await web('postcss')([web('tailwindcss')({...web('./tailwind.config.js'),content:[path.join(root,'view_simplified_source.jsx')]})]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ const runtime=esbuild.buildSync({stdin:{contents:"import React from 'react';import {createRoot} from 'react-dom/client';import * as icons from 'lucide-react';window.React=React;window.createRoot=createRoot;window.AlloIcons=icons;",resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,format:'iife',define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const strings=JSON.parse(fs.readFileSync(path.join(root,'ui_strings.js'),'utf8'));
++ const browser=await chromium.launch({headless:true});
++ const page=await browser.newPage({viewport:{width:320,height:640},hasTouch:true,reducedMotion:'reduce'}), results=[], errors=[];
++ page.setDefaultTimeout(15000);
++ page.on('pageerror',e=>errors.push(e.message));
++ await page.route('**/*',route=>route.request().url()==='http://narration-fixture.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main id="mount"></main></body></html>'}):route.abort());
++ const check=(ok,label)=>{if(!ok)throw Error(label);};
++ try {
++  await page.goto('http://narration-fixture.test/');await page.addStyleTag({content:css});await page.addScriptTag({content:runtime});
++  await page.addScriptTag({content:'window.translations='+JSON.stringify(strings)+';window.t=(key)=>{const value=key.split(".").reduce((o,k)=>o&&o[k],translations);return typeof value==="string"?value:key;};window.AlloLanguageContext=React.createContext({t});window.AlloModules={};'});
++  for(const file of ['app_styles_module.js','instructional_context_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','view_simplified_module.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
++  await page.addScriptTag({content:fixture});
++  const render=async options=>{await page.evaluate(o=>{window.savedClips=0;window.saveCalls=0;window.recordingSaves=[];window.syntheticStreams=[];window.recordingSaveMode='success';renderFixture(o);},options);await page.locator('[data-adapted-reader]').waitFor();await page.locator('[data-review-action=audio-retry-save]').waitFor();};
++  const manage=()=>page.locator('[data-manage-narration]');
++  const record=()=>page.locator('[data-audio-sentence-index="0"]').getByRole('button').nth(2);
++  const close=()=>page.getByRole('button',{name:'Close narration',exact:true});
++  const status=()=>page.locator('[data-edit-audio-status]');
++  const focusVisible=async locator=>locator.evaluate(el=>{const b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return b.top>=0&&b.bottom<=innerHeight+1&&(hit===el||el.contains(hit));});
++  const open=async()=>{await manage().focus();await page.keyboard.press('Enter');await record().waitFor();};
++  const start=async()=>{await record().focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>document.querySelector('[data-audio-sentence-index="0"] button[aria-pressed="true"]'));await page.waitForFunction(()=>nativeRecorders.at(-1)?.fixtureBytes>0);};
++  const retry=()=>page.locator('[data-retry-recording]');
++  const discard=()=>page.locator('[data-discard-recording]');
++  const failedTake=async()=>{await page.evaluate(()=>window.recordingSaveMode='failure');await start();await close().click();await retry().waitFor();};
++  for(const route of ['adapted','original','both'])for(const mode of ['normal','spacing','200-text']) {
++   console.log('Checking retry '+route+' / '+mode);
++   await render({original:route==='original',compare:route==='both'});await open();await failedTake();
++   if(mode==='spacing')await page.evaluate(()=>{document.querySelectorAll('#mount *').forEach(el=>{el.style.lineHeight='1.5';el.style.letterSpacing='.12em';el.style.wordSpacing='.16em';if(el.tagName==='P')el.style.marginBottom='2em';});});
++   if(mode==='200-text')await page.evaluate(()=>{const values=[...document.querySelectorAll('#mount *')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);values.forEach(([el,size])=>el.style.fontSize=(size*2)+'px');});
++   check(await page.locator('[data-recording-recovery]').isVisible(),'recovery hidden after Close');
++   check((await page.locator('[data-recording-recovery]').textContent()).includes('Leaving or reloading clears this take'),'temporary scope unclear');
++   const before=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,streams:syntheticStreams.length,stopped:syntheticStreams.every(stream=>stream.getTracks().every(track=>track.readyState==='ended'))}));
++   check(before.scrollWidth<=before.width+2&&before.stopped,'recovery overflow or microphone not released');
++   await retry().focus();check(await focusVisible(retry()),'Retry focus obscured');
++   await page.evaluate(()=>window.recordingSaveMode='pending');
++   if(route==='both'&&mode==='normal')await retry().tap();else await page.keyboard.press('Enter');
++   await page.waitForFunction(()=>recordingSaves.length===2);
++   check(await retry().getAttribute('aria-disabled')==='true'&&await retry().getAttribute('aria-busy')==='true','retry busy state missing');
++   check(await retry().evaluate(el=>el===document.activeElement),'retry busy focus lost');
++   await page.keyboard.press('Enter');check(await page.evaluate(()=>recordingSaves.length===2),'duplicate retry');
++   await page.evaluate(()=>finishRecordingSave(true));await retry().waitFor({state:'detached'});
++   check(await manage().evaluate(el=>el===document.activeElement),'removed Retry lost focus');
++   check(await focusVisible(manage()),'restored Manage focus obscured');
++   const saved=await page.evaluate(()=>({sameBlob:recordingSaves[0].blob===recordingSaves[1].blob,streams:syntheticStreams.length,resourceId:recordingSaves[1].resourceId,bytes:recordingSaves[1].bytes,mime:recordingSaves[1].mime}));
++   check(saved.sameBlob&&saved.streams===before.streams&&saved.resourceId===(route==='original'?'original':'adapted'),'retry changed capture or resource');
++   check((await status().textContent()).includes('Check device save status'),'recording readiness overstated');
++   check(await status().getAttribute('aria-atomic')==='true'&&await status().isVisible(),'result unavailable');
++   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
++   check(!overflow,'success caused horizontal overflow');
++   check(await page.locator('button button, button input, button select, button a').count()===0,'nested controls');
++   results.push({route,mode,...before,...saved,recoveryVisible:true,focusReturned:true});
++  }
++  console.log('Checking stop-in-panel failure focus');
++  await render({});await open();await page.evaluate(()=>window.recordingSaveMode='failure');await start();await record().focus();await page.keyboard.press('Enter');await retry().waitFor();
++  check(await retry().evaluate(el=>el===document.activeElement),'stop-in-panel failure lost recovery focus');
++  check(await focusVisible(retry()),'first-failure Retry focus obscured');
++  results.push({route:'stop-in-panel-failure',retryFocused:true});
++  console.log('Checking repeated failure and discard');
++  await render({});await open();await failedTake();await retry().focus();await page.keyboard.press('Enter');
++  await page.waitForFunction(()=>recordingSaves.length===2&&document.querySelector('[data-retry-recording]')?.getAttribute('aria-busy')==='false');
++  check(await retry().evaluate(el=>el===document.activeElement),'failure stole Retry focus');
++  await discard().focus();check(await focusVisible(discard()),'Discard focus obscured');await page.keyboard.press('Space');await retry().waitFor({state:'detached'});
++  check(await manage().evaluate(el=>el===document.activeElement),'Discard lost focus');
++  check((await status().textContent()).includes('Unsaved take discarded'),'discard status missing');
++  await page.evaluate(()=>window.recordingSaveMode='success');await open();await start();await close().click();
++  await page.waitForFunction(()=>recordingSaves.length===3&&document.querySelector('[data-edit-audio-status]')?.textContent.includes('Teacher recording ready'));
++  check(await page.evaluate(()=>syntheticStreams.length===2),'discard did not allow another recording');
++  results.push({route:'repeat-failure-discard-record-again',focusReturned:true});
++  console.log('Checking busy guards and moved focus');
++  await render({});await open();await failedTake();await page.evaluate(()=>window.recordingSaveMode='pending');await retry().click();
++  await page.waitForFunction(()=>recordingSaves.length===2);await discard().focus();await page.keyboard.press('Enter');
++  check(await retry().count()===1&&await discard().getAttribute('aria-disabled')==='true','busy discard was not guarded');
++  await open();await close().focus();await page.evaluate(()=>finishRecordingSave(true));await retry().waitFor({state:'detached'});
++  check(await close().evaluate(el=>el===document.activeElement),'retry completion stole moved focus');
++  results.push({route:'retry-busy-and-moved-focus',focusPreserved:true,discardGuarded:true});
++  console.log('Checking retry navigation');
++  await render({});await open();await failedTake();await page.evaluate(()=>window.recordingSaveMode='pending');await retry().click();await page.waitForFunction(()=>recordingSaves.length===2);
++  await page.evaluate(()=>{window.oldFinish=finishRecordingSave;window.oldSignal=recordingSaves[1].signal;switchReading();});
++  await page.waitForFunction(()=>activeReadingId==='original'&&oldSignal.aborted);await retry().waitFor({state:'detached'});
++  await open();await failedTake();await page.evaluate(()=>oldFinish(true));
++  check(await retry().isVisible()&&(await status().textContent()).includes('available to retry'),'old completion removed the new retained take');
++  results.push({route:'navigate-during-retry',oldSignalAborted:true,newTakeIndependent:true});
++  check(errors.length===0,'browser errors: '+errors.join(';'));
++  fs.writeFileSync(path.join(out,'recording-retry-browser.json'),JSON.stringify({browser:'Chromium',viewport:{width:320,height:640},simulatedTouch:true,reducedMotion:true,nativeMediaRecorder:true,results,errors,limitations:['Native MediaRecorder with synthetic audio; no actual microphone or permission dialog','Mock host save callback; no persistent writes, reopen, quota or eviction verification','DOM semantics and focus checks are not actual screen-reader announcement verification','200% computed-font simulation is not actual text-only zoom or 400% browser zoom','No mobile hardware, Firefox or WebKit verification']},null,2));
++  console.log(JSON.stringify({passed:results.length,errors}));
++ } catch(error) {
++  console.error(JSON.stringify(await page.evaluate(()=>({notice:document.querySelector('[data-edit-audio-status]')?.textContent,saves:recordingSaves.map(({signal,blob,...value})=>value),tracks:syntheticStreams.map(stream=>stream.getTracks().map(track=>track.readyState))}))));
++  throw error;
++ } finally {await browser.close();}
++})().catch(error=>{console.error(error);process.exitCode=1;});

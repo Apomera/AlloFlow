@@ -1,0 +1,194 @@
+{
+  "species": 362,
+  "trueDinosaurEntries": 359,
+  "quizQuestions": 34,
+  "siteCards": 12,
+  "fossilEvidenceCategories": 8,
+  "glossaryTerms": 51,
+  "catalogGlyphVariants": 4,
+  "wingOnlyMatches": [
+    {
+      "id": "dreadnoughtus",
+      "name": "Dreadnoughtus",
+      "group": "sauropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "growing"
+      ]
+    },
+    {
+      "id": "eolambia",
+      "name": "Eolambia",
+      "group": "ornithischian",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "riojasaurus",
+      "name": "Riojasaurus",
+      "group": "sauropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "foreshadowing"
+      ]
+    },
+    {
+      "id": "tethyshadros",
+      "name": "Tethyshadros",
+      "group": "ornithischian",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "secernosaurus",
+      "name": "Secernosaurus",
+      "group": "ornithischian",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "eoabelisaurus",
+      "name": "Eoabelisaurus",
+      "group": "theropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "shaochilong",
+      "name": "Shaochilong",
+      "group": "theropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "scansoriopteryx",
+      "name": "Scansoriopteryx",
+      "group": "theropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "membrane-winged"
+      ]
+    },
+    {
+      "id": "tornieria",
+      "name": "Tornieria",
+      "group": "sauropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "mercuriceratops",
+      "name": "Mercuriceratops",
+      "group": "ornithischian",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "wing-like",
+        "winged-helmet",
+        "wing-like"
+      ]
+    },
+    {
+      "id": "unenlagia",
+      "name": "Unenlagia",
+      "group": "theropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "wing,"
+      ]
+    },
+    {
+      "id": "willinakaqe",
+      "name": "Willinakaqe",
+      "group": "ornithischian",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "showing"
+      ]
+    },
+    {
+      "id": "beishanlong",
+      "name": "Beishanlong",
+      "group": "theropod",
+      "matches": [
+        "wing"
+      ],
+      "matchingWords": [
+        "growing"
+      ]
+    }
+  ],
+  "variousFormation": [
+    {
+      "name": "Tianyulong",
+      "period": "jurassic",
+      "region": "Asia (China)",
+      "older": 161,
+      "younger": 155
+    },
+    {
+      "name": "Cetiosaurus",
+      "period": "jurassic",
+      "region": "Europe (England)",
+      "older": 171,
+      "younger": 164
+    },
+    {
+      "name": "Rhabdodon",
+      "period": "cretaceous",
+      "region": "Europe (France/Spain)",
+      "older": 72,
+      "younger": 66
+    },
+    {
+      "name": "Dacentrurus",
+      "period": "jurassic",
+      "region": "Europe (England/Portugal)",
+      "older": 154,
+      "younger": 150
+    },
+    {
+      "name": "Pyroraptor",
+      "period": "cretaceous",
+      "region": "Europe (France)",
+      "older": 72,
+      "younger": 70
+    }
+  ],
+  "scopes": "Data and filter inventory, not an exhaustive taxonomic or factual verification."
+}

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "document": {
+    "fileName": "district-sample.pdf",
+    "fingerprint": { "algo": "SHA-256", "hash": "source-hash" },
+    "shippedFingerprint": { "algo": "SHA-256", "hash": "shipped-hash" }
+  },
+  "validation": {
+    "pdfUA": {
+      "validator": "veraPDF (ISO 14289-1 / PDF/UA-1)",
+      "compliant": false,
+      "failedChecks": 1
+    },
+    "note": "PDF/UA verdict is independent of the content score; human review still recommended."
+  },
+  "remediation": {
+    "standard": "WCAG 2.1 AA",
+    "engines": ["AI (Gemini, 2-pass self-consistency)", "axe-core (Deque WCAG 2.1 AA)", "IBM Equal Access (WCAG 2.1 AA)"],
+    "beforeScore": 61,
+    "afterScore": 88,
+    "autoFixPasses": 4,
+    "integrityCoverage": 97,
+    "fidelity": {
+      "coverage": 97,
+      "limited": true,
+      "notes": [
+        { "kind": "tables", "msg": "Source table survived, but cell count dropped; review the diff." }
+      ],
+      "ocrAccuracy": { "score": 83, "band": "fair", "basis": "ocr-language-model" },
+      "groundTruth": { "charCount": 12480, "method": "dual-ocr" }
+    },
+    "issueResolution": {
+      "resolved": [{ "issue": "Image missing alternative text", "wcag": "1.1.1", "severity": "serious" }],
+      "persisted": [{ "issue": "Complex table needs manual header review", "wcag": "1.3.1", "severity": "moderate" }],
+      "introduced": []
+    },
+    "expertReview": { "needed": true, "reason": "content-fidelity" },
+    "remainingIssues": 1,
+    "userEdits": { "rejectedHunkCount": 0, "userEditedAt": null, "lastApplyPath": null }
+  },
+  "summary": "Golden evidence dossier for remediation trust checks."
+}

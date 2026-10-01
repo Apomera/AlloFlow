@@ -1,0 +1,6 @@
+{
+  "pass": true,
+  "checks": [
+    "Saturated cloth asks to be wrung; wringing restores the ready label and enables blotting the selected wet area."
+  ]
+}

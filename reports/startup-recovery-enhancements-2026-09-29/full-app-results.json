@@ -1,0 +1,51 @@
+{
+  "at": "2026-09-29T23:33:18.995Z",
+  "preview": {
+    "at": "2026-09-29T23:31:02.724Z",
+    "hostSha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "shellSha256": "8453cb675e8138c4d299666fb5f9d855d0f9721b8bac6bb3f7fe51018ae3688e",
+    "js": "main.4d9c9876.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "results": [
+    {
+      "scenario": "plain",
+      "errors": [],
+      "downloads": [
+        "Verified-plain.json"
+      ],
+      "cryptoRequests": 1,
+      "fixture": "Offline history snapshot seeded with the actual idb-keyval vendor; restored by the actual storageDB.get/hydrateHistory path.",
+      "filename": "Verified-plain.json",
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "cancel-encryption",
+      "errors": [],
+      "downloads": [
+        "Verified-retry.enc.json"
+      ],
+      "cryptoRequests": 1,
+      "fixture": "Offline history snapshot seeded with the actual idb-keyval vendor; restored by the actual storageDB.get/hydrateHistory path.",
+      "filename": "Verified-retry.enc.json",
+      "decryptionVerified": true,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "failed-encryption",
+      "errors": [],
+      "downloads": [
+        "Verified-failed-encryption.enc.json"
+      ],
+      "cryptoRequests": 3,
+      "fixture": "Offline history snapshot seeded with the actual idb-keyval vendor; restored by the actual storageDB.get/hydrateHistory path.",
+      "filename": "Verified-failed-encryption.enc.json",
+      "decryptionVerified": true,
+      "unhandled": [],
+      "passed": true
+    }
+  ]
+}

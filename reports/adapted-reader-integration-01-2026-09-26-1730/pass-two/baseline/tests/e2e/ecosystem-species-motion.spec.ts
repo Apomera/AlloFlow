@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+import {GlHarness} from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_ecosystem.js',toolId:'ecosystem',width:1100,height:900,appStyles:true});
+test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
+test('articulated insects, banking owls and action overlays follow the selected sample',async({page})=>{
+  await page.setViewportSize({width:1140,height:1050});
+  await harness.mount(page,{ecosystem:{tab:'foodweb',tutorialDismissed:true}},undefined,{expectCanvas:false});
+  await page.evaluate(()=>{document.body.className='theme-default';document.getElementById('wrap')!.style.cssText='width:100%;height:auto;display:block;padding:16px;background:white';});
+  await page.getByRole('button',{name:'Insect food shortage',exact:true}).click();await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  const meadow=page.locator('[data-efw-meadow]'),canvas=meadow.locator('canvas'),stage=meadow.locator('.efw-meadow-stage'),timeline=meadow.getByLabel('Meadow timeline',{exact:true});
+  const expected=await page.evaluate(()=>{const w=window as any,a=w.StemLab.ecosystemFoodWeb,c=w.__toolData.ecosystem.foodWeb.run.config,rows=a.compare(c).experiment,f=a.behaviorTimeline(c,rows),crawl=f.findIndex((x:any)=>x.caterpillars[0].active&&x.caterpillars[0].crawl>.8),feed=f.findIndex((x:any,j:number)=>j>crawl&&x.caterpillars[0].state==='Feeding'&&x.caterpillars[0].crawl===0),bank=f.reduce((best:number,x:any,i:number)=>Math.abs(x.owls[0].bank)>Math.abs(f[best].owls[0].bank)?i:best,0);return {crawl,feed,bank,parts:JSON.stringify(Array.from({length:14},(_,i)=>a.segmentPose(f[crawl].caterpillars[0],i))),bankValue:f[bank].owls[0].bank.toFixed(5),wing:f[bank].owls[0].wingFlap.toFixed(5),owlState:f[bank].owls[0].state,biomass:rows[crawl].values.caterpillars};});
+  expect(expected.crawl).toBeGreaterThan(0);expect(expected.feed).toBeGreaterThan(0);expect(expected.bank).toBeGreaterThan(0);
+  await meadow.getByRole('button',{name:/Caterpillars\s/}).click();await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).click();await meadow.getByRole('button',{name:'Isolate specimen',exact:true}).click();await timeline.fill(String(expected.crawl));
+  await expect(canvas).toHaveAttribute('data-caterpillar-segments','14');await expect(canvas).toHaveAttribute('data-caterpillar-articulation',expected.parts);await expect(canvas).toHaveAttribute('data-biomass-caterpillars',String(expected.biomass));await expect(meadow.locator('[data-efw-action-overlay]')).toContainText('Crawling');
+  await stage.screenshot({path:'reports/ecosystem-species-motion/caterpillar-crawling.jpg',type:'jpeg',quality:90});
+  await timeline.fill(String(expected.feed));await expect(meadow.locator('[data-efw-action-overlay]')).toContainText('Feeding');await expect(canvas).not.toHaveAttribute('data-caterpillar-articulation',expected.parts);
+  await timeline.fill(String(expected.crawl));await expect(canvas).toHaveAttribute('data-caterpillar-articulation',expected.parts);
+  await meadow.getByRole('button',{name:/Barn owls\s/}).click();await timeline.fill(String(expected.bank));await expect(canvas).toHaveAttribute('data-owl-bank',expected.bankValue);await expect(canvas).toHaveAttribute('data-wing-amplitude',expected.wing);await expect(meadow.locator('[data-efw-action-overlay]')).toContainText(expected.owlState);
+  await stage.screenshot({path:'reports/ecosystem-species-motion/owl-banking.jpg',type:'jpeg',quality:90});
+  await page.setViewportSize({width:390,height:844});await stage.screenshot({path:'reports/ecosystem-species-motion/mobile-owl.jpg',type:'jpeg',quality:90});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.emulateMedia({reducedMotion:'reduce'});await expect(meadow.locator('[data-efw-action-overlay]')).toContainText('Starting pose');await expect(canvas).toHaveAttribute('data-owl-bank','0.00000');
+  await meadow.getByRole('button',{name:/Caterpillars\s/}).click();const frozen=await canvas.getAttribute('data-caterpillar-articulation');await timeline.fill('240');await expect(canvas).toHaveAttribute('data-caterpillar-articulation',frozen!);
+  await meadow.getByRole('button',{name:'Habitat view',exact:true}).click();await expect(meadow.locator('[data-efw-action-overlay]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

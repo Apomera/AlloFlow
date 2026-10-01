@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-29",
+  "browserScenarios": 17,
+  "viewControlScenarios": 6,
+  "viewControlAccessibilityChecks": 6,
+  "notebookScenarios": 5,
+  "workspaceScenarios": 6,
+  "reviewCaptureScenarios": 6,
+  "focusedRegressionChecks": 109,
+  "rendererCopiesMatch": true,
+  "javascriptSyntaxValid": true,
+  "scopedWhitespaceClean": true,
+  "rendererSha256": "97810238298723a8bd4d9022c8b892f2afd69abffeb0248bd0aca9337418e269",
+  "committed": false
+}

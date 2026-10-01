@@ -393,6 +393,28 @@ describe('word help opens from the passage', () => {
     expect(document.activeElement).toBe(host.querySelector('[data-adapted-word-help]'));
   });
 
+  it.each([
+    ['hidden', () => adaptedItem([at('heron'), at('shallow')], false)],
+    ['made for an older passage', () => adaptedItem([at('heron'), at('shallow')], true, PASSAGE.replace('shallow', 'deep'))]
+  ])('underlines, lists and opens nothing for word help that is %s', async (_, make) => {
+    const registry = new Map();
+    const savedCSS = window.CSS, savedHighlight = globalThis.Highlight;
+    window.CSS = { ...(savedCSS || {}), highlights: registry };
+    globalThis.Highlight = class extends Set { constructor(...ranges) { super(ranges); } get ranges() { return [...this]; } };
+    try {
+      const handleWordClick = vi.fn();
+      mountReader(make(), { mode: 'define', extra: { handleWordClick } });
+      await act(async () => {});
+      expect(registry.has('allo-word-help')).toBe(false);
+      expect(host.querySelector('[data-adapted-word-help]')).toBe(null);
+      await click(word('heron'));
+      expect(card()).toBe(null);
+      expect(handleWordClick).toHaveBeenCalledTimes(1);
+    } finally {
+      window.CSS = savedCSS; globalThis.Highlight = savedHighlight;
+    }
+  });
+
   it('opens nothing for word help that students cannot see yet', async () => {
     const handleWordClick = vi.fn();
     mountReader(adaptedItem([at('heron')], false), { mode: 'define', extra: { handleWordClick } });

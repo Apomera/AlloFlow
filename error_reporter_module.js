@@ -155,7 +155,7 @@
     return false;
   }
 
-  function record(level, message, stack, source, line, column) {
+  function record(level, message, stack, source, line, column, api) {
     if (shouldIgnore(message)) return;
     var msg = redactSecrets(String(message || '')).slice(0, 2000);
     // Coalesce a repeat of the most recent entry (same level + message) into a count rather than
@@ -163,7 +163,8 @@
     // fires every few seconds. The first ts is kept; lastTs + count track the repeats so the
     // report/panel show one line with "×N" instead of N identical rows.
     var last = buffer.length ? buffer[buffer.length - 1] : null;
-    if (last && last.load === LOAD_ID && last.level === level && last.message === msg) {
+    if (last && last.load === LOAD_ID && last.level === level && last.message === msg
+        && (!api ? !last.api : last.api && last.api.requestId === api.requestId && last.api.state === api.state)) {
       last.count = (last.count || 1) + 1;
       last.lastTs = new Date().toISOString();
       persistBuffer();
@@ -182,7 +183,8 @@
       url: redactSecrets(window.location.href).slice(0, 300),
       count: 1,
       v: APP_BUILD_TAG,  // which app build captured this — stale-entry pruning key
-      load: LOAD_ID      // which page load — only this load's errors reach the badge
+      load: LOAD_ID,      // which page load - only this load's errors reach the badge
+      ...(api ? { api: api } : {})
     };
     buffer.push(entry);
     while (buffer.length > MAX_BUFFERED) buffer.shift();
@@ -190,6 +192,37 @@
     updateBadge();
     refreshPanelIfOpen();
   }
+
+  function receiveApiFeedback(detail) {
+    if (!detail || !/^[A-Za-z0-9_-]{1,96}$/.test(detail.requestId || '')) return;
+    if (!['pending', 'retrying', 'succeeded', 'failed', 'cancelled'].includes(detail.state)) return;
+    var requestId = detail.requestId;
+    if (detail.state === 'succeeded' || detail.state === 'cancelled') {
+      buffer.forEach(function (entry) {
+        if (entry.load === LOAD_ID && entry.api && entry.api.requestId === requestId) {
+          entry.api.recovered = detail.state;
+        }
+      });
+      persistBuffer();
+      updateBadge();
+      refreshPanelIfOpen();
+      return;
+    }
+    if (detail.state !== 'retrying' && detail.state !== 'failed') return;
+    var api = {
+      requestId: requestId,
+      state: detail.state,
+      operation: redactSecrets(detail.operation || 'API request').slice(0, 40),
+      kind: ['auth', 'quota', 'config', 'transient', 'refusal', 'other'].includes(detail.kind) ? detail.kind : 'other',
+      httpStatus: Number.isInteger(detail.httpStatus) && detail.httpStatus >= 100 && detail.httpStatus <= 599 ? detail.httpStatus : null,
+      attempt: Number.isInteger(detail.attempt) && detail.attempt >= 0 ? Math.min(detail.attempt, 100) : null
+    };
+    var message = detail.message || (detail.state === 'failed' ? 'The request failed. Review its details and retry when the cause is resolved.' : 'The request is retrying.');
+    record(detail.state === 'failed' ? 'error' : 'warn', message, detail.technical || '', '', 0, 0, api);
+  }
+  window.addEventListener('alloflow:api-feedback', function (event) {
+    try { receiveApiFeedback(event.detail); } catch (_) {}
+  });
 
   // ── Capture: window error events ──
   window.addEventListener('error', function (ev) {
@@ -349,6 +382,7 @@
   // ── DOM UI ──
   var badge = null;
   var panel = null;
+  var panelTrigger = null;
 
   // Translator. The badge is built with raw DOM, so its accessible name never
   // passed through React and stayed English in every language.
@@ -403,7 +437,8 @@
   }
 
   function countsTowardBadge(e) {
-    return e.level === 'error' && e.load === LOAD_ID && !recoveredModule(e);
+    return e.level === 'error' && e.load === LOAD_ID && !recoveredModule(e)
+      && (!e.api || e.api.state === 'failed' && !e.api.recovered);
   }
 
   function entryTags(e) {
@@ -411,6 +446,12 @@
     if (e.load !== LOAD_ID) tags.push('earlier page load');
     var mod = recoveredModule(e);
     if (mod) tags.push('recovered: ' + mod + ' loaded later');
+    if (e.api) {
+      tags.push(e.api.kind + (e.api.httpStatus ? ' / HTTP ' + e.api.httpStatus : ''));
+      if (e.api.recovered) tags.push(e.api.recovered === 'succeeded' ? 'recovered: request succeeded' : 'request cancelled');
+      else if (e.api.state === 'retrying') tags.push('attempt diagnostic; request retrying');
+      else tags.push('action needed');
+    }
     return tags;
   }
 
@@ -763,6 +804,7 @@
       if (tab) { refreshPanelIfOpen(); return; }
       closePanel(); return;
     }
+    panelTrigger = document.activeElement;
     panel = document.createElement('div');
     panel.id = 'allo-err-panel';
     panel.setAttribute('role', 'dialog');
@@ -784,18 +826,33 @@
     // ESC closes
     panel.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') { ev.preventDefault(); closePanel(); }
+      if (ev.key === 'Tab') {
+        var controls = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]'))
+          .filter(function (node) { return node.tabIndex >= 0 && !node.hidden && !node.closest('[hidden]'); });
+        var first = controls[0], last = controls[controls.length - 1];
+        if (!first) { ev.preventDefault(); return; }
+        if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+        else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+      }
     });
   }
 
   function closePanel() {
     if (panel) { panel.remove(); panel = null; }
-    if (badge) badge.focus();
+    var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
+    panelTrigger = null;
+    if (target) target.focus();
   }
 
   function refreshPanelIfOpen() {
     if (!panel) return;
+    var focusedId = panel.contains(document.activeElement) ? document.activeElement.id : '';
     panel.innerHTML = panelHtml();
     wirePanelHandlers();
+    if (focusedId) {
+      var target = document.getElementById(focusedId) || document.getElementById('aer-close');
+      if (target) target.focus();
+    }
   }
 
   // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
@@ -1062,6 +1119,11 @@
   } catch (_) {}
 
   // Global convenience hook for host surfaces (settings panels, help flows).
+  if (Array.isArray(window.__alloApiFeedbackHistory)) {
+    window.__alloApiFeedbackHistory.slice(-100).forEach(function (detail) {
+      try { receiveApiFeedback(detail); } catch (_) {}
+    });
+  }
   try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' ? tab : 'errors'); }; } catch (_) {}
 
   // A timed-out module that arrives later drops out of the count.

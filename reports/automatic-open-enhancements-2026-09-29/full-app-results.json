@@ -1,0 +1,88 @@
+{
+  "at": "2026-09-30T12:04:00.424Z",
+  "preview": {
+    "at": "2026-09-30T12:01:46.006Z",
+    "hostSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+    "shellSha256": "70d67ac74a230775b06000f4bd0c9aba80da8ff0729cd6aab076da5b26ca6aae",
+    "js": "main.049d3f85.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "fixture": "Actual allo_pack fragment decoder and full local app; real built modules and styles; delayed/failed network requests; service workers blocked; no React state injection.",
+  "results": [
+    {
+      "scenario": "reader-chain",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "helperRequests": 3,
+      "waitedForCompleteChain": true,
+      "readingVisible": true,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "failed-retry",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FAIL] PureHelpersModule network error, trying GitHub raw fallback: Event",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FALLBACK-FAIL] PureHelpersModule fallback also unreachable",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FAIL] PureHelpersModule network error, trying GitHub raw fallback: Event",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FALLBACK-FAIL] PureHelpersModule fallback also unreachable"
+      ],
+      "helperRequests": 7,
+      "retainedOnFailure": true,
+      "readingVisible": true,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "navigation",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "helperRequests": 3,
+      "waitedForCompleteChain": true,
+      "navigationPreserved": true,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "phone",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "helperRequests": 3,
+      "waitedForCompleteChain": true,
+      "readingVisible": true,
+      "viewportOverflow": false,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "cached-history",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "helperRequests": 3,
+      "waitedForCompleteChain": true,
+      "readingVisible": true,
+      "unhandled": [],
+      "passed": true
+    }
+  ]
+}

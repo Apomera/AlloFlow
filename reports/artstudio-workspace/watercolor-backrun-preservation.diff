@@ -1,0 +1,103 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-watercolor-backruns.js b/stem_lab/stem_tool_artstudio.js
+index aab1906ed..680039afd 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-watercolor-backruns.js
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -3628,21 +3628,13 @@ const d = labToolData.artStudio || {};
+             return WATERCOLOR_PIGMENTS[0];
+           };
+           const mixWatercolorPigments = function (first, second, secondPercent) {
+-            var secondWeight = Math.max(0, Math.min(1, Number(secondPercent) / 100));
++            var secondWeight = artStudioMixerNumber(secondPercent, 50, 0, 100) / 100;
+             var firstWeight = 1 - secondWeight;
+-            var firstNumber = parseInt(first.color.slice(1), 16);
+-            var secondNumber = parseInt(second.color.slice(1), 16);
+-            var firstRgb = [(firstNumber >> 16) & 255, (firstNumber >> 8) & 255, firstNumber & 255];
+-            var secondRgb = [(secondNumber >> 16) & 255, (secondNumber >> 8) & 255, secondNumber & 255];
+-            var mixedRgb = firstRgb.map(function (channel, channelIndex) {
+-              // Interpolate optical absorbance rather than display RGB. This
+-              // produces the darker, less neon mixtures expected from paint.
+-              var firstReflectance = (channel + 12) / 267;
+-              var secondReflectance = (secondRgb[channelIndex] + 12) / 267;
+-              var reflectance = Math.exp(Math.log(firstReflectance) * firstWeight + Math.log(secondReflectance) * secondWeight);
+-              return Math.max(0, Math.min(255, Math.round(reflectance * 267 - 12)));
+-            });
+-            var mixedColor = '#' + mixedRgb.map(function (channel) { return channel.toString(16).padStart(2, '0'); }).join('');
++            // Share the pinned pigment model with Color Mixer. The prepared
++            // mixture is a single paint load; transport on paper remains the
++            // existing conservative RGB approximation with carried traits.
++            var mixedColor = secondWeight === 0 || first.color === second.color ? first.color : secondWeight === 1 ? second.color :
++              artStudioSpectral.mix([new artStudioSpectral.Color(first.color), firstWeight], [new artStudioSpectral.Color(second.color), secondWeight]).toString().toLowerCase();
+             var mixedValues = {};
+             ['watercolorGranulation', 'watercolorStaining', 'watercolorOpacity', 'watercolorMobility'].forEach(function (key) {
+               mixedValues[key] = Math.round(first.values[key] * firstWeight + second.values[key] * secondWeight);
+@@ -5392,7 +5384,7 @@ const d = labToolData.artStudio || {};
+               nextGranulationMass.set(pigmentGranulationMass); nextMobilityMass.set(pigmentMobilityMass);
+               nextMobilityRMass.set(pigmentMobilityRMass); nextMobilityGMass.set(pigmentMobilityGMass); nextMobilityBMass.set(pigmentMobilityBMass);
+ 
+-              function moveAcross(from,to,downhill) {
++              function moveAcross(from,to,downhill,upstream) {
+                 var access = (1 - mask[from]) * (1 - mask[to]);
+                 if (access <= 0.0001) return;
+                 var donorWater = water[from], receiverWater = water[to];
+@@ -5406,8 +5398,18 @@ const d = labToolData.artStudio || {};
+                 var wetContact = Math.min(1, donorWater * 3) * (0.12 + Math.min(1, receiverWater * 3) * 0.88);
+                 var granulation = clamp(pigmentGranulationMass[from] / mass,0,1);
+                 var opacity = clamp(pigmentOpacityMass[from] / mass,0,1);
+-                var rate = (pigmentFlow * 0.25 * wetContact * (1 - opacity * 0.18) * (1 - granulation * 0.22) +
+-                  waterTransfer / Math.max(0.001, donorWater) * 0.42) * access;
++                // Fresh water entering a damp wash pushes its mobile pigment
++                // toward the drier front. A centered moisture gradient provides
++                // that direction even when the new water contains no pigment.
++                // The older boundary tint alone could not create a backrun:
++                // diffusion simply filled the clear patch with surrounding paint.
++                var moistureSlope = (water[upstream] - receiverWater) * (1 - mask[upstream]);
++                var bloomResponse = clamp(params.bloomSensitivity, 0, 1) * (0.65 + params.sizing * 0.35);
++                var counterFlow = 1 - clamp(-moistureSlope * 2, 0, 1) * bloomResponse * 0.85;
++                var capillaryDrift = Math.min(0.12, Math.max(0, moistureSlope) * 0.22 * bloomResponse) *
++                  Math.min(1, donorWater * 4) * (1 - granulation * 0.32);
++                var rate = (pigmentFlow * 0.25 * wetContact * (1 - opacity * 0.18) * (1 - granulation * 0.22) * counterFlow +
++                  waterTransfer / Math.max(0.001, donorWater) * 0.42 + capillaryDrift) * access;
+                 // Bounded outgoing fractions prevent negative concentrations,
+                 // even at maximum water, flow, and separation settings.
+                 var fastRate = Math.min(0.19,rate * (1 + separation * 0.85));
+@@ -5437,10 +5439,10 @@ const d = labToolData.artStudio || {};
+               for (var y=0;y<SIM_H;y++) for (var x=0;x<SIM_W;x++) {
+                 var i=y*SIM_W+x;
+                 if (water[i] <= 0.0001) continue;
+-                if (x>0) moveAcross(i,i-1,direction==='left');
+-                if (x<SIM_W-1) moveAcross(i,i+1,direction==='right');
+-                if (y>0) moveAcross(i,i-SIM_W,direction==='up');
+-                if (y<SIM_H-1) moveAcross(i,i+SIM_W,direction==='down');
++                if (x>0) moveAcross(i,i-1,direction==='left',x<SIM_W-1?i+1:i);
++                if (x<SIM_W-1) moveAcross(i,i+1,direction==='right',x>0?i-1:i);
++                if (y>0) moveAcross(i,i-SIM_W,direction==='up',y<SIM_H-1?i+SIM_W:i);
++                if (y<SIM_H-1) moveAcross(i,i+SIM_W,direction==='down',y>0?i-SIM_W:i);
+               }
+               var nextWetCells=0, nextWaterTotal=0;
+               var mobile = [nextR,nextG,nextB,nextDensity,nextStainingMass,nextOpacityMass,nextGranulationMass,nextMobilityMass,nextMobilityRMass,nextMobilityGMass,nextMobilityBMass];
+@@ -9554,7 +9556,7 @@ const d = labToolData.artStudio || {};
+             tab === 'watercolor' && React.createElement("div", { id:'watercolorFullscreenWorkspace',className: "artstudio-watercolor-workspace space-y-3" },
+               React.createElement('style',null,`
+                 .artstudio-watercolor-workspace{min-width:0}
+-                .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace input[type=color]{min-height:44px}
++                .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace summary,.artstudio-watercolor-workspace input[type=color],.artstudio-watercolor-workspace input[type=range]{min-height:44px}
+                 .artstudio-watercolor-colors button{min-width:44px}
+                 @media(max-width:700px){#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{flex:0 0 auto}}
+                 .artstudio-watercolor-exit-label{display:none}
+@@ -9634,7 +9636,7 @@ const d = labToolData.artStudio || {};
+                   React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
+                     React.createElement("div", null,
+                       React.createElement("h4", { id: "artstudio-watercolor-mixing-title", className: "text-xs font-extrabold text-amber-950" }, __alloT('stem.artstudio.watercolor_mixing_tray', 'Pigment mixing tray')),
+-                      React.createElement("p", { className: "text-[0.6875rem] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Blend two material profiles using optical absorbance.'))
++                      React.createElement("p", { className: "text-[0.6875rem] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Preview a pigment mixture and carry both its color and material behavior into your brush.'))
+                     ),
+                     React.createElement("div", { role: "img", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mixture_preview', 'Mixture preview: {value1}'), { value1: mixtureSummary }), title: mixtureSummary, className: "ml-auto h-10 w-16 rounded-lg border-2 border-white shadow-sm", style: { background: mixture.color } })
+                   ),
+@@ -9789,6 +9791,7 @@ const d = labToolData.artStudio || {};
+                   React.createElement('button', {type:'button',onClick:function(){var c=document.getElementById('watercolorCanvas');if(c && c._watercolorEngine)c._watercolorEngine.wetPaper();if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.wet_paper_done','Paper wetted with clear water. Masked areas remain protected.'));},className:'min-h-[44px] rounded-lg bg-sky-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wet_paper','Wet paper')),
+                   React.createElement('span',{className:'text-xs text-sky-950'},__alloT('stem.artstudio.wet_paper_help','Prepare a wet sheet for soft washes. Dry paint before adding a crisp glaze.'))
+                 ),
++                React.createElement('p', { className: 'rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950', role: 'note' }, __alloT('stem.artstudio.watercolor_backrun_hint', 'Try a backrun: paint a wash, let it become damp, then add clean water with the Water brush. Watch mobile color move from the wetter center toward a darker rim.')),
+                 React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
+                 React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on."),
+               ),

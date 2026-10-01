@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-28",
+  "mainSha256": "0dac9187c02fa00d6cb3917f22526ae77449ae5de0ff25b5bbc029c2436a0d2c",
+  "shippedSha256": "0dac9187c02fa00d6cb3917f22526ae77449ae5de0ff25b5bbc029c2436a0d2c",
+  "sourceParity": true,
+  "initialTestsPassed": 123,
+  "finalAffectedTestsPassed": 100,
+  "finalDiagramTestsPassed": 81,
+  "workflowAndVisual": {
+    "startTime": "2026-09-29T02:11:56.150Z",
+    "duration": 135765.821,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "finalVisual": {
+    "startTime": "2026-09-29T02:16:57.784Z",
+    "duration": 113735.285,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "axeScans": 9,
+  "axeViolations": 0,
+  "responsiveWidths": [
+    768,
+    390,
+    320
+  ],
+  "registeredStrings": 119
+}

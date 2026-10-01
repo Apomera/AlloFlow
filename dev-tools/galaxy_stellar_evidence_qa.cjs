@@ -1,0 +1,123 @@
+// Genuine React and WebGL scene with deterministic local investigation inputs.
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { chromium } = require('playwright');
+const ROOT = path.resolve(__dirname, '..');
+const OUT = path.join(ROOT, 'reports/galaxy-stellar-evidence-2026-09-30');
+const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const core = read('dev-tools/galaxy_core_clipping.cjs');
+let shell = core.slice(core.indexOf('const SHELL = `') + 15, core.indexOf('`;\n\n(async'));
+shell = shell.replace('var pair = React.useState({ galaxy: state });', `var pair = React.useState({ galaxy: state });
+    window.__galaxyState = pair[0].galaxy;
+    window.__patchGalaxy = function(patch) { pair[1](function(prev) { return { galaxy: Object.assign({}, prev.galaxy, patch) }; }); };`);
+const cssAsset = 'desktop/web-app/public/app/' + JSON.parse(read('desktop/web-app/public/app/asset-manifest.json')).files['main.css'].replace(/^\//, '');
+
+(async () => {
+  fs.mkdirSync(OUT, { recursive: true });
+  const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1050 }, deviceScaleFactor: 1 });
+    const errors = [], checks = [];
+    page.on('pageerror', e => errors.push(String(e)));
+    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    await page.setContent('<!doctype html><html lang="en"><head><meta charset="utf-8"><style>body{margin:0;padding:16px;font-family:system-ui;background:#f4f6fb}*{box-sizing:border-box}</style></head><body><main id="slot"></main></body></html>');
+    await page.addStyleTag({ path: path.join(ROOT, cssAsset) });
+    for (const file of ['desktop/web-app/node_modules/react/umd/react.production.min.js', 'desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js', 'vendor/three-r128/three.min.js']) await page.addScriptTag({ content: read(file) });
+    await page.addScriptTag({ content: 'window.__uiStrings=' + read('ui_strings.js') + ';' });
+    await page.addScriptTag({ content: shell });
+    await page.addScriptTag({ content: read('stem_lab/stem_tool_galaxy.js') });
+    const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const state = () => page.evaluate(() => window.__galaxyState);
+    const patch = async metalHunt => { await page.evaluate(metalHunt => window.__patchGalaxy({ metalHunt }), metalHunt); await settle(); };
+    const click = async name => { await page.getByRole('button', { name, exact: true }).click(); await settle(); };
+    const baseline = { z: 0.001, m: 0.7, a: 12, st: 'popIII' };
+    const metalHunt = { metallicity: 1, mass: 1, age: 5, hypothesis: 'Keep my hypothesis.', explanation: 'Keep my explanation.', log: [baseline, { z: 2, m: 30, a: 0.1, st: 'rich' }, { z: 0, m: 1, a: 10, st: 'rich' }] };
+    await page.evaluate(metalHunt => window.__mount({ simMode: 'metalHunt', metalHunt }), metalHunt); await settle();
+    assert.equal(await page.getByText('Population III (zero-metal)', { exact: true }).count(), 0);
+    await page.getByRole('button', { name: 'Compare with combination 1', exact: true }).click(); await settle();
+    let s = (await state()).metalHunt;
+    assert.deepEqual(s.comparison, { z: baseline.z, m: baseline.m, a: baseline.a });
+    assert.equal(s.mass, 1); assert.equal(s.age, 5);
+    const saved = { ...s.comparison };
+    await page.locator('#mh-metallicity').focus(); await page.keyboard.press('Home'); await settle();
+    assert.equal((await state()).metalHunt.metallicity, 0);
+    assert(await page.getByText('Metal-free reference (Population III)', { exact: false }).first().isVisible());
+    await page.keyboard.press('ArrowRight'); await settle(); assert.equal((await state()).metalHunt.metallicity, 0.001);
+    assert(await page.getByText('Very metal-poor composition', { exact: false }).first().isVisible());
+    assert.deepEqual((await state()).metalHunt.comparison, saved);
+    checks.push('Keyboard slider reaches zero and distinguishes the first nonzero abundance; reference stays fixed.');
+    await click('Restore combination 2'); s = (await state()).metalHunt;
+    assert.equal(s.mass, 30); assert.equal(s.metallicity, 2); assert.deepEqual(s.comparison, saved);
+    assert.equal(s.hypothesis, metalHunt.hypothesis); assert.equal(s.explanation, metalHunt.explanation);
+    assert.equal(await page.locator('[data-galaxy-lifetime-marker="comparison"]').count(), 1);
+    assert.equal(await page.locator('[data-galaxy-age-marker="comparison"]').count(), 1);
+    assert.deepEqual(await page.locator('[data-galaxy-metallicity-comparison] dd').allTextContents(), ['+2 Z☉', '+29.3 M☉', '-11.9 Gyr', '-24.4 Gyr']);
+    checks.push('Restore preserves reference, log, and notes; numeric differences and both charts use the same reference.');
+    await page.locator('[data-galaxy-mode="star"]').click(); await settle();
+    await page.locator('[data-galaxy-mode="metalHunt"]').click(); await settle();
+    assert.deepEqual((await state()).metalHunt.comparison, saved);
+    // Discarding old log entries must not move or drop a selected reference.
+    await patch({ ...(await state()).metalHunt, log: Array.from({ length: 8 }, (_, i) => ({ z: 1, m: 1, a: i })) });
+    await click('📋 Log this combination'); s = (await state()).metalHunt;
+    assert.equal(s.log.length, 8); assert.deepEqual(s.comparison, saved);
+    assert.equal(s.log[0].a, 1);
+    checks.push('Comparison survives mode changes and the eight-entry log rolling over.');
+    await click('Clear comparison'); assert.equal((await state()).metalHunt.comparison, null);
+    assert.equal(await page.locator('[data-galaxy-metallicity-comparison]').count(), 0);
+    assert.equal(await page.locator('[data-galaxy-metallicity-point="comparison"]').count(), 0);
+    await patch({ ...metalHunt, metallicity: 0, age: 13.8, comparison: saved });
+    assert.equal(await page.locator('[data-galaxy-metallicity-point="current"]').getAttribute('data-formation-time'), '0');
+    assert(await page.getByText(/This age places formation at the Big Bang/).isVisible());
+    checks.push('Clear removes reference geometry; the exact cosmic endpoint receives a formation warning.');
+    await patch({ ...metalHunt, comparison: saved });
+    const sizes = [];
+    for (const width of [1440, 390, 320]) {
+      await page.setViewportSize({ width, height: 1100 }); await settle();
+      await page.evaluate(() => document.getAnimations().filter(a => a.effect.getComputedTiming().iterations !== Infinity).forEach(a => a.finish()));
+      if (width < 640) {
+        await page.getByRole('button', { name: 'Compare with combination 3', exact: true }).click(); await settle();
+        assert.equal((await state()).metalHunt.comparison.z, 0);
+        await page.getByRole('button', { name: 'Compare with combination 1', exact: true }).focus(); await page.keyboard.press('Enter'); await settle();
+        assert.deepEqual((await state()).metalHunt.comparison, saved);
+      }
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
+      const outside = await page.evaluate(() => [...document.querySelectorAll('[data-galaxy-metallicity-chart], [data-galaxy-metallicity-comparison], [data-galaxy-metallicity-log] button')].filter(e => e.getBoundingClientRect().width > 0).filter(e => { const r=e.getBoundingClientRect(); return r.left < -1 || r.right > innerWidth+1; }).map(e => e.textContent));
+      assert.deepEqual(outside, []);
+      const chartText = await page.locator('[data-galaxy-metallicity-chart] svg').evaluateAll(svgs => svgs.flatMap(svg => [...svg.querySelectorAll('text')].filter(t => getComputedStyle(t).display !== 'none').map(t => {
+        const b=t.getBoundingClientRect(), v=svg.getBoundingClientRect();
+        return { text:t.textContent, fits:b.left >= v.left-1 && b.top >= v.top-1 && b.right <= v.right+1 && b.bottom <= v.bottom+1, size:parseFloat(getComputedStyle(t).fontSize)*v.width/svg.viewBox.baseVal.width, bounds:{left:b.left-v.left,top:b.top-v.top,right:b.right-v.left,bottom:b.bottom-v.top,width:v.width,height:v.height} };
+      })));
+      assert.deepEqual(chartText.filter(t=>!t.fits),[], 'Chart labels stay within their plots.');
+      assert(chartText.every(t=>t.size >= 10), 'Chart text is readable at the actual rendered size.');
+      const targets = await page.locator('[data-galaxy-metallicity-log] button:visible').evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
+      assert(targets.every(h => h >= 44));
+      const zero = await page.locator('[data-galaxy-metallicity-point="log"]').nth(2).locator('circle').getAttribute('cy');
+      assert.equal(zero, '178');
+      await page.locator('[data-galaxy-metallicity-visuals]').scrollIntoViewIfNeeded();
+      await page.screenshot({ animations: 'disabled', path: path.join(OUT, 'stellar-comparison-' + width + '.png'), fullPage: true });
+      await page.locator('[data-galaxy-metallicity-visuals]').screenshot({ animations: 'disabled', path: path.join(OUT, 'stellar-charts-' + width + '.png') });
+      sizes.push({ width, noOverflow: true, touchTargets: true });
+    }
+    await page.evaluate(() => { document.documentElement.dir='rtl'; }); await settle();
+    assert.equal(await page.locator('[data-galaxy-metallicity-chart] svg[dir="ltr"]').count(), 2);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
+    await page.screenshot({ animations: 'disabled', path: path.join(OUT, 'stellar-comparison-320-rtl.png'), fullPage: true });
+    checks.push('Desktop, 390 px, 320 px, and RTL layouts retain usable controls and stable axis directions.');
+    await patch({ ...(await state()).metalHunt, metallicity: 0, mass: 50, age: 0 });
+    assert(await page.getByText('Estimated lifetime: ~2.0 Myr', { exact: true }).isVisible());
+    assert.equal(await page.locator('[data-galaxy-age-marker="current"]').getAttribute('x1'),'48');
+    assert.equal(await page.locator('[data-galaxy-metallicity-point="current"] circle').getAttribute('cy'),'178');
+    assert.equal(await page.locator('[data-galaxy-metallicity-chart="enrichment"] p[dir="ltr"]').count(),1);
+    await page.locator('[data-galaxy-metallicity-visuals]').scrollIntoViewIfNeeded(); await settle();
+    await page.evaluate(() => document.getAnimations().filter(a => a.effect.getComputedTiming().iterations !== Infinity).forEach(a => a.finish()));
+    await page.locator('[data-galaxy-metallicity-visuals]').screenshot({ animations: 'disabled', path: path.join(OUT, 'stellar-charts-320-extreme.png') });
+    await click('Clear comparison'); await click('Compare with combination 1'); await click('↺ Reset');
+    s=(await state()).metalHunt; assert.equal(s.comparison,null); assert.deepEqual(s.log,[]); assert.equal(s.hypothesis,'');
+    assert.equal(await page.locator('[data-galaxy-metallicity-point="log"]').count(),0);
+    checks.push('Reset clears the comparison, plotted log entries, and notes together.');
+    assert.deepEqual(errors, []);
+    fs.writeFileSync(path.join(OUT, 'browser-results.json'), JSON.stringify({ passed: true, checks, sizes, errors }, null, 2));
+    console.log(JSON.stringify({ passed: true, checks: checks.length, sizes, errors }));
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode=1; });

@@ -5,7 +5,9 @@
 // M20 (live alt-quality feedback in the image review card), M11 (abort-slot handback).
 import { describe, it, expect, vi } from 'vitest';
 vi.setConfig({ testTimeout: 30000 });
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const read = (name) => readFileSync(resolve(process.cwd(), name), 'utf8');

@@ -1,0 +1,23 @@
+{
+  "checks": [
+    "The fresh kitchen shows place settings without inventing a finished batch or enabling serving.",
+    "A real phone scoop and level hover keep every portion and the clock unchanged.",
+    "Leveling cancels a tipped preview; tip and release transfer exactly one spoonful in either direction and returning all food unlocks cooking.",
+    "Adjust-plate controls focus the exact keyboard destination and change no evidence until the serving action.",
+    "Underfilled and overfilled plate feedback restores from canonical actions after reloading.",
+    "A cooking-state change cancels a held spoon without transferring food.",
+    "The new portion panel fits 320px and remains accessible with forced colors and reduced motion."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "390px portion feedback",
+      "violations": []
+    },
+    {
+      "name": "320px forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

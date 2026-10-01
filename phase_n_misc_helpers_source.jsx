@@ -4,7 +4,7 @@
 // handleCheckLevel.
 
 // Capture the destination before requesting text or images. Quick Add from a
-// reader uses the latest glossary at that moment, never one created meanwhile.
+// reader uses the reader's related glossary at that moment, never one created meanwhile.
 const addGlossaryTerm = async (rawWord, deps, quick = false) => {
     const { generatedContent, history, gradeLevel, selectedLanguages, useEmojis,
         callGemini, cleanJson, callImagen, callGeminiImageEdit, autoRemoveWords,
@@ -12,7 +12,10 @@ const addGlossaryTerm = async (rawWord, deps, quick = false) => {
         setIsAddingTerm, setNewGlossaryTerm, addToast, t, warnLog } = deps;
     const word = String(rawWord || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
     if (!word || (!quick && generatedContent?.type !== 'glossary')) return false;
+    // Quick Add from a reader targets that reading's unit/source glossary, not the newest anywhere.
+    const findRelated = window.AlloModules?.GlossaryHelpers?.findRelatedHistoryItem;
     const origin = generatedContent?.type === 'glossary' ? generatedContent
+        : typeof findRelated === 'function' ? findRelated(history, 'glossary', generatedContent)
         : [...(history || [])].reverse().find(resource => resource?.type === 'glossary');
     const begin = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask;
     if (origin && !begin) throw new Error('Glossary helpers are not loaded. Reload and retry.');
@@ -22,7 +25,11 @@ const addGlossaryTerm = async (rawWord, deps, quick = false) => {
     const current = () => !task || task.isCurrent();
     setIsAddingTerm(true);
     try {
-        const languages = Array.isArray(selectedLanguages) ? selectedLanguages : [];
+        // Match the destination glossary's own translation columns; chips only seed a new glossary.
+        const originLanguages = origin && Array.isArray(origin.data) ? [...new Set(origin.data.flatMap(item =>
+            item && item.translations && typeof item.translations === 'object' && !Array.isArray(item.translations)
+                ? Object.keys(item.translations).filter(lang => String(item.translations[lang] || '').trim()) : []))] : null;
+        const languages = originLanguages || (Array.isArray(selectedLanguages) ? selectedLanguages : []);
         const prompt = [
             'Analyze the input term ' + JSON.stringify(word) + '.',
             '1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".',

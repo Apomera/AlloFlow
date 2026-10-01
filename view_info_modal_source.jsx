@@ -423,7 +423,7 @@ function OpenSourceTab({ t }) {
                       {item.name}
                     </a>
                     <span className="text-slate-600">
-                      — {item.use} <span className="text-slate-400">·</span> <span className="font-medium text-slate-500">{item.license}</span>
+                      — {item.use} <span className="text-slate-600">·</span> <span className="font-medium text-slate-500">{item.license}</span>
                     </span>
                   </li>
                 ))}
@@ -473,7 +473,7 @@ const ATLAS_HUBS = [
     "icon": "🔬",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the STEAM Lab registry",
-    "total": 142,
+    "total": 146,
     "categories": [
       {
         "name": "Math Fundamentals",
@@ -554,9 +554,11 @@ const ATLAS_HUBS = [
         "tools": [
           "Ecosystem",
           "Companion Planting Lab",
+          "Butterfly Habitat Lab",
           "Beehive Colony Simulator",
           "Climate Explorer",
           "Environmental Stewardship Campaigns",
+          "Field Journeys (Pilot)",
           "Fire Ecology & Indigenous Stewardship",
           "Renewables Lab",
           "Aquaculture & Ocean Lab",
@@ -584,7 +586,9 @@ const ATLAS_HUBS = [
           "Moon Mission",
           "Space Station",
           "Galaxy Explorer",
-          "Universe Time-Lapse"
+          "Universe Time-Lapse",
+          "Zoom Gallery",
+          "Scale Explorer"
         ]
       },
       {
@@ -629,12 +633,12 @@ const ATLAS_HUBS = [
           "Logic Lab",
           "Cellular Automaton Lab",
           "Cyber Defense Lab",
+          "Tool Forge",
           "Digital Accessibility Lab",
           "AI Literacy Lab",
           "Access Lens",
           "Typing Practice",
-          "Sim Shelf",
-          "Zoom Gallery"
+          "Sim Shelf"
         ]
       },
       {
@@ -704,7 +708,7 @@ const ATLAS_HUBS = [
     "icon": "🧠",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the SEL Hub registry",
-    "total": 71,
+    "total": 72,
     "categories": [
       {
         "name": "Self-Awareness",
@@ -801,6 +805,7 @@ const ATLAS_HUBS = [
           "Healthy Relationships",
           "Restorative Circle",
           "Friendship Builder",
+          "Practice Journeys (Pilot)",
           "Social Skills Roleplay",
           "Peer Support Coach",
           "Conflict Theater"

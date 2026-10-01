@@ -13,8 +13,9 @@ import { loadAlloModule } from './setup.js';
 
 let C, S;
 beforeAll(() => {
-  loadAlloModule('agent_core_contracts_module.js');
-  loadAlloModule('agent_core_blueprint_service_module.js');
+  // ALLO_N2_AGENT_CORE_CONTRACTS_MODULE_JS: scratch copy for mutation runs (lane N2).
+  loadAlloModule(process.env.ALLO_N2_AGENT_CORE_CONTRACTS_MODULE_JS || 'agent_core_contracts_module.js');
+  loadAlloModule(process.env.ALLO_N2_AGENT_CORE_BLUEPRINT_SERVICE_MODULE_JS || 'agent_core_blueprint_service_module.js');
   C = window.AlloModules.AgentCoreContracts;
   S = window.AlloModules.AgentCoreBlueprintService;
   if (!C || !S) throw new Error('Agent Core modules failed to register');
@@ -195,16 +196,103 @@ describe('createDraft', () => {
     expect(bp.globalSettings).toMatchObject({ gradeLevel: '3rd Grade', theme: 'high-contrast' });
   });
 
-  it('keeps adaptation independent from a standard that requires grade-level primary text', async () => {
+  // Changed 2026-09-28 (lane N2, Novak follow-up). This used to pin that a
+  // grade-level text standard still drafted an adapted companion. Blueprint now
+  // follows the same default as Full Pack (InstructionalContext): no companion
+  // unless the teacher asks; tests/text_access_parity.test.js keeps them equal.
+  it('leaves out the adapted companion by default under a grade-level text standard, and includes it on request', async () => {
     const svc = mkService();
+    const standards = 'CCSS.ELA-LITERACY.RI.5.10: Read grade-level complex text independently and proficiently.';
     const bp = await svc.createDraft({
       blueprintId: 'bp-complex-primary',
-      standards: 'CCSS.ELA-LITERACY.RI.5.10: Read grade-level complex text independently and proficiently.',
+      standards,
+      plan: ['analysis', 'simplified', 'quiz'],
+    });
+    expect(bp.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz']);
+    expect(bp.instructionalContext).toMatchObject({
+      primaryTextAccess: 'required', adaptedTextPolicy: 'omit', adaptedTextPolicySource: 'standard',
+    });
+
+    const requested = await svc.createDraft({
+      blueprintId: 'bp-complex-primary-companion',
+      standards,
+      instructionalContext: { adaptedTextPolicy: 'include', adaptedTextPolicySource: 'educator' },
       plan: ['analysis', 'quiz'],
     });
-    expect(bp.plan.map((row) => row.tool)).toEqual(['analysis', 'simplified', 'quiz']);
-    expect(bp.instructionalContext).toMatchObject({
-      primaryTextAccess: 'required', adaptedTextPolicy: 'include',
+    expect(requested.plan.map((row) => row.tool)).toEqual(['analysis', 'simplified', 'quiz']);
+    expect(requested.instructionalContext).toMatchObject({
+      primaryTextAccess: 'required', adaptedTextPolicy: 'include', adaptedTextPolicySource: 'educator',
+    });
+
+    // Adding the companion during review is the teacher's explicit request.
+    const added = svc.revise(bp, { addTools: ['simplified'] });
+    expect(added.ok).toBe(true);
+    expect(added.value.plan.map((row) => row.tool)).toContain('simplified');
+    expect(added.value.instructionalContext).toMatchObject({ adaptedTextPolicy: 'include', adaptedTextPolicySource: 'educator' });
+
+    // A draft saved with the old automatic include is derived again.
+    const stale = await svc.createDraft({
+      blueprintId: 'bp-complex-primary-stale',
+      standards,
+      instructionalContext: { adaptedTextPolicy: 'include', adaptedTextPolicySource: 'workflow-default' },
+      plan: ['analysis', 'simplified', 'quiz'],
+    });
+    expect(stale.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz']);
+    expect(stale.instructionalContext).toMatchObject({ adaptedTextPolicy: 'omit', adaptedTextPolicySource: 'standard' });
+  });
+
+  // Lane N2 round 2: an AI draft whose plan has no Analysis row still gets the
+  // primary-text row when the standard requires grade-level text (as Full Pack does).
+  it('keeps the Analysis row under a grade-level text standard even with no companion', async () => {
+    const svc = mkService({ autoConfigure: async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }, { tool: 'glossary', directive: '' }] }) });
+    const ai = await svc.createDraft({ blueprintId: 'bp-ai-grade-level', standards: 'CCSS.ELA-LITERACY.RL.9-10.10' });
+    expect(ai.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz', 'glossary']);
+    expect(ai.plan[0].instructionalText).toMatchObject({ role: 'primary', form: 'original' });
+    expect(ai.instructionalContext).toMatchObject({ primaryTextAccess: 'required', adaptedTextPolicy: 'omit', adaptedTextPolicySource: 'standard' });
+
+    const offline = mkService();
+    const teacherOmit = await offline.createDraft({
+      blueprintId: 'bp-omit-grade-level', standards: 'CCSS.ELA-LITERACY.RL.9-10.10',
+      instructionalContext: { adaptedTextPolicy: 'omit', adaptedTextPolicySource: 'educator' }, plan: ['quiz'],
+    });
+    expect(teacherOmit.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz']);
+
+    // No required text: a teacher omit adds nothing.
+    const plainOmit = await offline.createDraft({
+      blueprintId: 'bp-omit-plain', instructionalContext: { adaptedTextPolicy: 'omit', adaptedTextPolicySource: 'educator' }, plan: ['quiz'],
+    });
+    expect(plainOmit.plan.map((row) => row.tool)).toEqual(['quiz']);
+
+    // A sourced prohibition plans only what was asked for, as in Full Pack.
+    const prohibited = await offline.createDraft({
+      blueprintId: 'bp-prohibit-no-analysis',
+      standardsContext: {
+        standards: [{ code: 'SECURE-STIMULUS-1', label: 'Secure stimulus' }],
+        instructionalConstraints: { textAccessExpectation: 'adaptation-prohibited', basis: 'Official secure-assessment administration rule' },
+      },
+      plan: ['quiz'],
+    });
+    expect(prohibited.plan.map((row) => row.tool)).toEqual(['quiz']);
+
+    // A teacher who removes the Analysis row during review keeps it removed.
+    const removed = offline.revise(ai, { removeTools: ['analysis'] });
+    expect(removed.ok).toBe(true);
+    expect(removed.value.plan.map((row) => row.tool)).toEqual(['quiz', 'glossary']);
+  });
+
+  it('brings the companion back when a revision drops the grade-level text standard', async () => {
+    const svc = mkService();
+    const bp = await svc.createDraft({
+      blueprintId: 'bp-standard-change',
+      standards: 'CCSS.ELA-LITERACY.RL.9-10.10',
+      plan: ['analysis', 'quiz'],
+    });
+    expect(bp.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz']);
+    const revised = svc.revise(bp, { standards: 'CCSS.ELA-LITERACY.RL.9-10.2' });
+    expect(revised.ok).toBe(true);
+    expect(revised.value.plan.map((row) => row.tool)).toEqual(['analysis', 'simplified', 'quiz']);
+    expect(revised.value.instructionalContext).toMatchObject({
+      adaptedTextPolicy: 'include', adaptedTextPolicySource: 'workflow-default', textAccessReason: 'default-access-companion',
     });
   });
 

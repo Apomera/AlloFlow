@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:51:21.012Z",
+  "label": "pass2-persistence-shell",
+  "patch": "1f3bf40e4f3b19a02ef6a55a4dcc2e01eaada1433fd9b32a1d3d572e484201eb",
+  "plans": [
+    {
+      "target": "tests/leveled_text_karaoke_persistence_e2e.test.js",
+      "targets": [
+        "tests/leveled_text_karaoke_persistence_e2e.test.js"
+      ],
+      "before": "6251d5e2ab951d6d32e910e2cfd6f9d18c70011eccef6a1cc3bdd4799f527dec",
+      "after": "363753d337ff441fb1f3fa81f1793ec1f66607fb91852f95f90017dbe7a4d21c",
+      "changed": true
+    }
+  ]
+}

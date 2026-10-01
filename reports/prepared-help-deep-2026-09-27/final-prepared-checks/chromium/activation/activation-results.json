@@ -1,0 +1,30 @@
+{
+  "browser": "chromium",
+  "results": [
+    {
+      "width": 390,
+      "destination": "same",
+      "priorScroll": 152,
+      "nextScroll": 0
+    },
+    {
+      "width": 390,
+      "destination": "other",
+      "priorScroll": 373,
+      "nextScroll": 0
+    },
+    {
+      "width": 1280,
+      "destination": "same",
+      "priorScroll": 450,
+      "nextScroll": 0
+    },
+    {
+      "width": 1280,
+      "destination": "other",
+      "priorScroll": 185,
+      "nextScroll": 0
+    }
+  ],
+  "errors": []
+}

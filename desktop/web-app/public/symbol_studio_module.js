@@ -274,7 +274,7 @@
     + '.ss-theme-contrast.ss-modal-root img{background:#fff !important;border:1px solid #ffff00 !important}'
     + '.ss-theme-contrast.ss-modal-root svg{fill:#ffff00 !important}'
     + '.ss-theme-contrast.ss-modal-root :focus-visible{outline:3px solid #ffff00 !important;outline-offset:2px !important}'
-    + '.ss-theme-dark.ss-modal-root ::placeholder{color:#64748b !important}'
+    + '.ss-theme-dark.ss-modal-root ::placeholder{color:#94a3b8 !important}'
     + '.ss-theme-dark.ss-modal-root :focus-visible{outline:2px solid #a78bfa !important;outline-offset:2px !important}';
     if (document.head) document.head.appendChild(st);
   })();
@@ -304,6 +304,21 @@
       + '}'
       + ".ss-setup-toggle{gap:12px}.ss-setup-toggle>span:last-child{flex-shrink:0}@media screen and (max-width:800px){.ss-workspace #ss-pb>div[style*=\"grid-template-columns\"]{grid-template-columns:repeat(auto-fit,minmax(min(132px,100%),1fr))!important}.ss-workspace #ss-pb .ss-board-cell{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;justify-items:center;min-width:0}.ss-workspace #ss-pb .ss-board-cell>img,.ss-workspace #ss-pb .ss-board-cell>span,.ss-workspace #ss-pb .ss-board-cell>div{grid-column:1/-1}.ss-workspace #ss-pb .ss-board-cell>button{position:static!important;min-width:44px!important;min-height:44px!important;width:100%!important;height:auto!important;margin:0!important}.ss-workspace #ss-pb .ss-board-cell>button[aria-label^=\"Speak \"]{grid-column:1/-1}.ss-workspace #ss-pb .ss-board-cell>div[aria-hidden=true]{display:none}.ss-workspace input[type=color]{min-width:44px!important}.ss-workspace button[data-schedule-move-id],.ss-workspace button[aria-label^=\"Move \"][aria-label$=\" later\"],.ss-workspace button[aria-label^=\"Remove \"][aria-label$=\" from sequence\"]{min-height:44px!important}}";
     style.textContent += ".ss-stories-workspace,.ss-story-viewer,.ss-pack-workspace,.ss-pack-details{min-width:0;min-height:0}.ss-story-print-pages{display:none}@media screen and (max-width:800px){.ss-stories-workspace,.ss-pack-workspace{flex-direction:column!important;overflow:visible!important}.ss-story-editor,.ss-pack-list{width:100%!important;overflow:visible!important;border-right:0!important;flex-shrink:0}.ss-story-viewer,.ss-pack-details{overflow:visible!important;flex:0 0 auto!important;width:100%;padding:12px!important}.ss-story-page{flex-direction:column!important;gap:12px!important;padding:12px!important}.ss-story-page>div{min-width:0}.ss-story-page img{max-width:100%}.ss-workspace .ss-pack-create-field{min-width:min(180px,100%)!important;flex-basis:180px!important}.ss-pack-details [style*=\"grid-template-columns\"]{grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))!important}}@media print{.ss-story-print-pages{display:block!important}.ss-story-viewer,.ss-stories-workspace{display:block!important;overflow:visible!important;padding:0!important}.ss-story-editor{display:none!important}}";
+    // (2026-09-28) Desktop layout. The settings column now collapses behind the same toggle bar
+    // phones use (grid keeps the DOM order: bar on top, settings | workspace below). Every tab
+    // area scrolls: roots were overflow:hidden, so a short frame (Canvas with the chat open)
+    // cut Board Builder and Sequences off with no way to reach the rest. A scrolling root lets
+    // flexbox shrink an inner scroller to nothing, so the result areas keep a floor.
+    style.textContent += '@media screen and (min-width:801px){.ss-body{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}'
+      + '.ss-setup-toggle{display:flex;grid-column:1/-1;grid-row:1;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:6px 16px;border:0;border-bottom:1px solid #e5e7eb;background:#f5f3ff;color:#5b21b6;font-weight:700;font-size:12px;text-align:left;cursor:pointer}'
+      + '.ss-settings{grid-column:1;grid-row:2;min-height:0}.ss-settings[data-expanded=false]{display:none!important}.ss-workspace{grid-column:2;grid-row:2;min-height:0}'
+      + '.ss-draft-editor>*{overflow-y:auto!important}.ss-draft-editor #ss-pb,.ss-draft-editor #ss-ps,.ss-draft-editor #ss-pq{min-height:min(260px,55vh)}}'
+      + '.ss-theme-dark .ss-setup-toggle{background:#1e293b;color:#c4b5fd;border-color:#334155}'
+      // Tabs that do not fit fade at the edge they continue past, so hidden tabs are discoverable.
+      + '.ss-tabs{position:relative}'
+      + '.ss-tabs[data-more-right=true]{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent)}'
+      + '.ss-tabs[data-more-left=true]{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 44px),transparent)}'
+      + '.ss-tabs[data-more-left=true][data-more-right=true]{-webkit-mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent)}';
     style.textContent += '@media print{.ss-print-story,.ss-print-story .ss-main-modal,.ss-print-story .ss-body,.ss-print-story .ss-workspace{position:static!important;display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;min-height:0!important;width:100%!important;max-width:none!important;padding:0!important;margin:0!important;box-shadow:none!important;border-radius:0!important}.ss-print-story .ss-header,.ss-print-story .ss-settings,.ss-print-story .ss-setup-toggle{display:none!important}.ss-print-story #ss-py{position:static!important}.ss-story-print-pages>div{break-inside:avoid}body:has(.ss-print-story) [inert]{display:none!important}body:has(.ss-print-story),body:has(.ss-print-story) :has(.ss-print-story){position:static!important;display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;min-height:0!important;width:auto!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important;transform:none!important}}';
     document.head.appendChild(style);
   })();
@@ -324,6 +339,22 @@
   var VISUAL_PACK_SCHEMA_VERSION = 1;
   var SYMBOL_SPEECH_NAMESPACE = 'symbol_studio_audio_v1';
   var MAX_PROFILES = 8;
+
+  // Dark-theme counterparts for text colours written for a light surface (used by ink()).
+  var SS_DARK_INK = { '#6b7280': '#94a3b8', '#9ca3af': '#94a3b8', '#64748b': '#94a3b8', '#374151': '#cbd5e1', '#475569': '#cbd5e1', '#4b5563': '#cbd5e1', '#1f2937': '#f1f5f9', '#111827': '#f1f5f9', '#7c3aed': '#c4b5fd', '#5b21b6': '#c4b5fd', '#0e7490': '#67e8f9', '#047857': '#6ee7b7', '#15803d': '#86efac', '#b91c1c': '#fca5a5', '#e11d48': '#fda4af', '#b45309': '#fcd34d', '#92400e': '#fcd34d', '#1d4ed8': '#93c5fd', '#6d28d9': '#c4b5fd' };
+  // A printed region goes on white paper, so dark-theme ink and panels map back to light values.
+  function ssRgb(hex) { var n = parseInt(hex.slice(1), 16); return 'rgb(' + (n >> 16 & 255) + ', ' + (n >> 8 & 255) + ', ' + (n & 255) + ')'; }
+  var SS_PAPER_INK = (function () { var m = {}; Object.keys(SS_DARK_INK).forEach(function (light) { var k = ssRgb(SS_DARK_INK[light]); if (!m[k]) m[k] = light; }); m[ssRgb('#e2e8f0')] = '#1f2937'; return m; })();
+  var SS_PAPER_BG = (function () { var m = {}; m[ssRgb('#0f172a')] = '#fff'; m[ssRgb('#1e293b')] = '#fff'; return m; })();
+  function paperInk(root) {
+    [root].concat(Array.prototype.slice.call(root.querySelectorAll('*'))).forEach(function (el) {
+      var st = el.style; if (!st) return;
+      if (SS_PAPER_INK[st.color]) st.color = SS_PAPER_INK[st.color];
+      if (SS_PAPER_BG[st.backgroundColor]) st.backgroundColor = SS_PAPER_BG[st.backgroundColor];
+      if (st.borderColor === ssRgb('#334155')) st.borderColor = '#e5e7eb';
+    });
+    return root;
+  }
 
   // Codename system — privacy-safe student identifiers (Adjective + Animal)
   var CN_ADJ = ['Alpine','Arctic','Bold','Brave','Bright','Calm','Clever','Cool','Cosmic','Daring','Eager','Epic','Fair','Fast','Fierce','Gentle','Grand','Happy','Heroic','Jolly','Kind','Lively','Lucky','Magic','Mighty','Neon','Noble','Proud','Quick','Rapid','Royal','Silent','Smart','Solar','Sonic','Steady','Super','Swift','Tough','Turbo','Unique','Vivid','Wild','Wise','Zealous'];
@@ -1195,6 +1226,15 @@
       preparedByTarget[String(target.scopeId || '') + '\n' + String(target.segmentId || '') + '\n' + String(target.spokenText || '')] = record;
     });
     var counts = { images: 0, customOmitted: 0, preparedOmitted: 0, customIncluded: 0, preparedIncluded: 0 };
+    // Each picture's credit rides with its cell; the package lists each once.
+    var credits = [], listedCredits = Object.create(null);
+    var creditOf = function (cell) {
+      var credit = typeof settings.creditFor === 'function' ? settings.creditFor(cell) : (ownCellCredit(cell) ? packAttributionForShare(cell.attribution) : null);
+      if (!credit || !credit.license) return null;
+      var key = JSON.stringify(credit);
+      if (!listedCredits[key]) { listedCredits[key] = true; credits.push(credit); }
+      return credit;
+    };
     var pages = pageSources.map(function (page, pageIndex) {
       var pageSource = page && typeof page === 'object' ? page : {};
       var sourcePageId = String(pageSource.id || ('page-' + pageIndex));
@@ -1250,6 +1290,8 @@
             category: String(cell.category || 'other').replace(/\s+/g, ' ').trim().slice(0, 60) || 'other',
             image: image
           };
+          var credit = image ? creditOf(cell) : null;
+          if (credit) result.credit = credit;
           if (audio) result.audio = audio;
           return result;
         })
@@ -1262,7 +1304,7 @@
     if (settings.preparedAudioLoadFailed === true) warnings.push('Prepared speech could not be read from this device.');
     var date = settings.exportedAt ? new Date(settings.exportedAt) : new Date(settings.now == null ? Date.now() : settings.now);
     if (!isFinite(date.getTime())) date = new Date(0);
-    return {
+    var portable = {
       format: 'alloflow.aac-board',
       version: 1,
       exportedAt: date.toISOString(),
@@ -1283,6 +1325,8 @@
         warnings: warnings
       }
     };
+    if (credits.length) portable.credits = credits;
+    return portable;
   }
   function portableAACViewerRuntime(pack, isRtl) {
     'use strict';
@@ -1629,6 +1673,24 @@
         + '<h2 id=' + quote + 'export-warnings-title' + quote + '>Export notes</h2><ul>'
         + warnings.map(function (warning) { return '<li>' + escHtml(warning) + '</li>'; }).join('')
         + '</ul></aside>' : '';
+    // Share-alike and attribution licences travel with the file itself.
+    var creditList = [], listedCredits = Object.create(null);
+    (Array.isArray(pack.credits) ? pack.credits : []).concat(pages.reduce(function (all, page) {
+      return all.concat((Array.isArray(page.cells) ? page.cells : []).map(function (cell) { return cell && cell.credit; }));
+    }, [])).forEach(function (credit) {
+      if (!credit || typeof credit !== 'object' || !credit.license) return;
+      var key = JSON.stringify(credit);
+      if (!listedCredits[key]) { listedCredits[key] = true; creditList.push(credit); }
+    });
+    var creditsHTML = creditList.length
+      ? '<section id=' + quote + 'picture-credits' + quote + ' aria-labelledby=' + quote + 'picture-credits-title' + quote + '>'
+        + '<h2 id=' + quote + 'picture-credits-title' + quote + '>Picture credits</h2><ul>'
+        + creditList.map(function (credit) {
+          var links = [];
+          if (/^https:\/\//i.test(credit.licenseUrl || '')) links.push('<a href=' + quote + escHtml(credit.licenseUrl) + quote + '>License</a>');
+          if (/^https:\/\//i.test(credit.url || '')) links.push('<a href=' + quote + escHtml(credit.url) + quote + '>Source</a>');
+          return '<li>' + escHtml(creditText(credit)) + (links.length ? ' (' + links.join(', ') + ')' : '') + '</li>';
+        }).join('') + '</ul></section>' : '';
     var packageJson = JSON.stringify(pack).replace(/</g, '\\u003c');
     var runtime = '(' + portableAACViewerRuntime.toString() + ')(' + packageJson + ',' + (isRtl ? 'true' : 'false') + ');';
     var controls = '<header role=' + quote + 'banner' + quote + '><h1>' + title + '</h1>'
@@ -1672,6 +1734,7 @@
       + ' aria-live=' + quote + 'assertive' + quote + ' aria-atomic=' + quote + 'true' + quote + '></div>'
       + controls + sentence + scan + help + warningHTML
       + '<main id=' + quote + 'board-main' + quote + ' role=' + quote + 'main' + quote + '>' + tabs + panels + '</main>'
+      + creditsHTML
       + '<footer role=' + quote + 'contentinfo' + quote + '><p>AlloFlow Symbol Studio | ' + escHtml(locale) + '</p>'
       + '<div class=' + quote + 'a11y-stmt' + quote + ' role=' + quote + 'note' + quote
       + ' aria-label=' + quote + 'Accessibility' + quote + '><strong>Accessibility</strong> Designed for WCAG 2.2 AA accessibility | Keyboard navigation'
@@ -1684,12 +1747,7 @@
   function obfImageLicenseFor(gallery, img, word) {
     // By the cell's own asset first (its picture may have been replaced since),
     // then by the picture itself, then by a credit the cell carries.
-    var bank = Array.isArray(gallery) ? gallery : [];
-    var credited = function (entry) { return entry && entry.attribution && entry.attribution.license; };
-    var assetId = word && word.assetId != null ? String(word.assetId) : '';
-    var asset = (assetId && bank.find(function (entry) { return credited(entry) && String(entry.id) === assetId; }))
-      || bank.find(function (entry) { return credited(entry) && entry.image === img; })
-      || (word && credited(word) ? word : null);
+    var asset = creditHolderFor(gallery, img, word);
     if (!asset) return null;
     var a = asset.attribution;
     var license = { type: String(a.license).slice(0, 120) };
@@ -1699,7 +1757,10 @@
     return license;
   }
   function obfBoardLicense(images) {
-    return (images || []).some(function (image) { return image.license && /\bSA\b/i.test(image.license.type); }) ? { type: 'CC By-Sa' } : { type: 'CC By' };
+    // The board takes the most restrictive terms any of its pictures carries.
+    var has = function (term) { return (images || []).some(function (image) { return image.license && new RegExp('\\b' + term + '\\b', 'i').test(image.license.type); }); };
+    var nc = has('NC'), sa = has('SA');
+    return { type: 'CC By' + (nc ? '-Nc' : '') + (sa ? '-Sa' : '') };
   }
   // Regenerated art replaces a picked symbol or photo: its credit, source and
   // validated status belonged to that picture, not to the new AI one.
@@ -1708,6 +1769,126 @@
     var next = Object.assign({}, asset, { source: 'ai-symbol-studio', validated: false });
     delete next.attribution;
     return next;
+  }
+  // A cell keeps the credit of the picture it shows, tied to that exact picture
+  // by pictureKey: it outlives the bank item being regenerated or deleted, and
+  // never passes to a different picture later placed in the same cell.
+  function pictureKey(image) {
+    var text = typeof image === 'string' ? image : '';
+    if (!text) return '';
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    return text.length.toString(36) + '.' + (hash >>> 0).toString(36);
+  }
+  function hasLicenseCredit(entry) { return !!(entry && entry.attribution && entry.attribution.license); }
+  function ownCellCredit(word, img) {
+    var picture = img != null ? img : word && word.image;
+    return hasLicenseCredit(word) && word.creditPicture && word.creditPicture === pictureKey(picture) ? word : null;
+  }
+  // Whose credit a cell's picture carries: its own, then its bank asset, then a
+  // bank item with the same picture, then (older data) any credit on the cell.
+  function creditHolderFor(gallery, img, word) {
+    var bank = Array.isArray(gallery) ? gallery : [];
+    var assetId = word && word.assetId != null ? String(word.assetId) : '';
+    return ownCellCredit(word, img)
+      || (assetId && bank.find(function (entry) { return hasLicenseCredit(entry) && String(entry.id) === assetId; }))
+      || (img && bank.find(function (entry) { return hasLicenseCredit(entry) && entry.image === img; }))
+      || (hasLicenseCredit(word) && !word.creditPicture ? word : null);
+  }
+  // OBF lets each image carry its own licence (Cboard's Mulberry is BY-SA,
+  // ARASAAC is BY-NC-SA): kept per picture on import, never a board default.
+  function obfImageCredits(images) {
+    var credits = {};
+    (Array.isArray(images) ? images : []).forEach(function (im) {
+      var license = im && im.id && im.license && typeof im.license === 'object' ? im.license : null;
+      if (!license || typeof license.type !== 'string' || !license.type.trim()) return;
+      credits[im.id] = packAttributionForShare({ license: license.type.trim(), author: license.author_name,
+        licenseUrl: license.copyright_notice_url, url: license.source_url });
+    });
+    return credits;
+  }
+  function cellCreditFor(gallery, word) {
+    var holder = word && word.image ? creditHolderFor(gallery, word.image, word) : null;
+    return holder ? packAttributionForShare(holder.attribution) : null;
+  }
+  // Stamps the credit onto cells showing a credited picture, so they keep it.
+  function withCellCredits(words, gallery) {
+    var changed = false;
+    var next = (Array.isArray(words) ? words : []).map(function (word) {
+      if (!word || !word.image || ownCellCredit(word)) return word;
+      var credit = cellCreditFor(gallery, word);
+      if (!credit) return word;
+      changed = true;
+      return Object.assign({}, word, { attribution: credit, creditPicture: pictureKey(word.image) });
+    });
+    return changed ? next : words;
+  }
+  // Before a credited bank picture is regenerated, edited or deleted, the cells
+  // still showing that exact picture keep its credit.
+  function keepPictureCredit(words, asset) {
+    if (!asset || !asset.image || !hasLicenseCredit(asset)) return words;
+    var credit = packAttributionForShare(asset.attribution), picture = pictureKey(asset.image), changed = false;
+    var next = (Array.isArray(words) ? words : []).map(function (word) {
+      if (!word || word.image !== asset.image || ownCellCredit(word)) return word;
+      changed = true;
+      return Object.assign({}, word, { attribution: credit, creditPicture: picture });
+    });
+    return changed ? next : words;
+  }
+  function boardWithCellCredits(board, gallery) { return mapBoardCells(board, function (words) { return withCellCredits(words, gallery); }); }
+  function mapBoardCells(board, mapWords) {
+    if (!board || typeof board !== 'object') return board;
+    var words = mapWords(board.words), items = mapWords(board.items);
+    var pages = Array.isArray(board.pages) ? board.pages.map(function (page) {
+      var pageWords = mapWords(page && page.words);
+      return pageWords === (page && page.words) ? page : Object.assign({}, page, { words: pageWords });
+    }) : board.pages;
+    var pagesChanged = Array.isArray(board.pages) && pages.some(function (page, index) { return page !== board.pages[index]; });
+    if (words === board.words && items === board.items && !pagesChanged) return board;
+    var next = Object.assign({}, board);
+    if (words !== board.words) next.words = words;
+    if (items !== board.items) next.items = items;
+    if (pagesChanged) next.pages = pages;
+    return next;
+  }
+  function uniqueCredits(credits) {
+    var seen = Object.create(null), list = [];
+    (credits || []).forEach(function (credit) {
+      if (!credit || !credit.license) return;
+      var key = JSON.stringify(credit);
+      if (!seen[key]) { seen[key] = true; list.push(credit); }
+    });
+    return list;
+  }
+  // Printed pages carry their pictures' credits as text: a printed link cannot be clicked.
+  function pictureCreditsHTML(credits) {
+    var list = uniqueCredits(credits);
+    if (!list.length) return '';
+    return '<section class="picture-credits" style="margin-top:16px;font-size:11px;color:#374151;page-break-inside:avoid">'
+      + '<h2 style="font-size:13px;margin:0 0 4px">Picture credits</h2><ul style="margin:0;padding-left:18px">'
+      + list.map(function (credit) {
+        var where = [];
+        if (/^https:\/\//i.test(credit.licenseUrl || '')) where.push('License: ' + credit.licenseUrl);
+        if (/^https:\/\//i.test(credit.url || '')) where.push('Source: ' + credit.url);
+        return '<li>' + escHtml(creditText(credit) + (where.length ? ' (' + where.join('; ') + ')' : '')) + '</li>';
+      }).join('') + '</ul></section>';
+  }
+  // Credits for the pictures a built page shows, found by picture in the bank.
+  function creditsForPrintedImages(html, gallery) {
+    var credits = [], pattern = /<img src="([^"]+)"/g, match;
+    while ((match = pattern.exec(String(html || '')))) credits.push(cellCreditFor(gallery, { image: match[1] }));
+    return credits;
+  }
+  // The same wording as AltText.openImageCreditLine, which this module cannot assume is loaded.
+  function creditText(credit) {
+    var c = credit || {}, parts = [];
+    if (c.title) parts.push('“' + c.title + '”' + (c.author ? ' by ' + c.author : ''));
+    else if (c.author) parts.push((c.set ? c.set + ' by ' : 'By ') + c.author);
+    else if (c.set) parts.push(c.set);
+    if (c.license) parts.push(c.license);
+    if (c.via && parts[0] !== c.via) parts.push('via ' + c.via);
+    if (c.modified === true) parts.push('edited');
+    return parts.join(', ');
   }
   function packAttributionForShare(attribution) {
     var source = attribution && typeof attribution === 'object' ? attribution : null;
@@ -1731,17 +1912,20 @@
   }
   function packWordForShare(word) {
     var source = word && typeof word === 'object' ? word : {};
-    return {
+    var image = portablePackImage(source.image);
+    // The picture's own credit travels with it, still tied to that picture.
+    var credit = image && ownCellCredit(source, image) ? { attribution: packAttributionForShare(source.attribution), creditPicture: pictureKey(image) } : {};
+    return Object.assign({
       id: String(source.id || uid()).slice(0, 160),
       label: String(source.label || '').replace(/\s+/g, ' ').trim().slice(0, 160),
       translatedLabel: String(source.translatedLabel || '').replace(/\s+/g, ' ').trim().slice(0, 160),
       vocalLabel: String(source.vocalLabel || '').replace(/\s+/g, ' ').trim().slice(0, 160),
       description: String(source.description || '').slice(0, 300),
       category: String(source.category || 'other').replace(/\s+/g, ' ').trim().slice(0, 60),
-      image: portablePackImage(source.image),
+      image: image,
       assetId: typeof source.assetId === 'string' || typeof source.assetId === 'number' ? String(source.assetId).trim().slice(0, 160) || null : null,
       conceptId: typeof source.conceptId === 'string' || typeof source.conceptId === 'number' ? String(source.conceptId).trim().slice(0, 160) || null : null
-    };
+    }, credit);
   }
   function packBoardForShare(board) {
     var source = board && typeof board === 'object' ? board : {};
@@ -1811,8 +1995,9 @@
     var selectedScheduleSources = safePack.scheduleIds.map(function (id) {
       return scheduleBank.find(function (schedule) { return schedule && String(schedule.id) === id; });
     }).filter(Boolean);
-    var selectedBoards = selectedBoardSources.map(packBoardForShare);
-    var selectedSchedules = selectedScheduleSources.map(packScheduleForShare);
+    // Cells take their picture's credit with them, even if not linked to an asset.
+    var selectedBoards = selectedBoardSources.map(function (board) { return packBoardForShare(boardWithCellCredits(board, assetBank)); });
+    var selectedSchedules = selectedScheduleSources.map(function (schedule) { return packScheduleForShare(boardWithCellCredits(schedule, assetBank)); });
     var requiredAssets = Object.create(null);
     safePack.assetIds.forEach(function (id) { requiredAssets[id] = true; });
     function collectCellAssets(cells) {
@@ -1867,6 +2052,18 @@
     var licenses = selectedAssets.filter(function (asset) { return asset.attribution; }).map(function (asset) {
       return { assetId: asset.id, label: asset.label, attribution: asset.attribution };
     });
+    var listedCredits = Object.create(null);
+    licenses.forEach(function (entry) { listedCredits[JSON.stringify(entry.attribution)] = true; });
+    function listCellCredits(cells) {
+      (Array.isArray(cells) ? cells : []).forEach(function (cell) {
+        var key = cell && cell.attribution ? JSON.stringify(cell.attribution) : '';
+        if (!key || listedCredits[key]) return;
+        listedCredits[key] = true;
+        licenses.push({ assetId: cell.assetId || null, label: cell.label, attribution: cell.attribution });
+      });
+    }
+    selectedBoards.forEach(function (board) { listCellCredits(board.words); (board.pages || []).forEach(function (page) { listCellCredits(page.words); }); });
+    selectedSchedules.forEach(function (schedule) { listCellCredits(schedule.items); });
     var reviewWarningCount = selectedAssets.filter(function (asset) { return asset.reviewStatus !== 'approved'; }).length;
     return {
       format: 'alloflow.visual-pack',
@@ -2443,7 +2640,33 @@
     var activeProfileIdRef = useRef(activeProfileId); activeProfileIdRef.current = activeProfileId;
     var scopedKey = function (base) { return profKey(base, activeProfileIdRef.current); };
     var activeProfile = profiles.find(function (p) { return p.id === activeProfileId; }) || profiles[0] || { id: null, image: null, name: '', description: '' };
-    var _showSetup = useState(false); var showSetup = _showSetup[0]; var setShowSetup = _showSetup[1];
+    // Profile & settings column: collapsed by default (desktop too, since 2026-09-28) and the
+    // teacher's choice is remembered, so the set-once controls stop costing every tab 250px.
+    var STORAGE_SETUP_OPEN = 'alloSymbolStudioSetupOpen';
+    var _showSetup = useState(function () { return load(STORAGE_SETUP_OPEN, false) === true; }); var showSetup = _showSetup[0]; var setShowSetup = _showSetup[1];
+    var toggleSetup = function () { var next = !showSetup; store(STORAGE_SETUP_OPEN, next); setShowSetup(next); };
+    // Tab bar: mark the edges that have more tabs past them (CSS fades them) and keep the
+    // active tab in view, so the tabs that do not fit on a narrow screen are discoverable.
+    var tabsRef = useRef(null);
+    useEffect(function () {
+      var el = tabsRef.current;
+      if (!el) return undefined;
+      var update = function () {
+        var max = el.scrollWidth - el.clientWidth;
+        el.setAttribute('data-more-left', el.scrollLeft > 4 ? 'true' : 'false');
+        el.setAttribute('data-more-right', max - el.scrollLeft > 4 ? 'true' : 'false');
+      };
+      var active = el.querySelector('[aria-selected="true"]');
+      if (active && el.scrollWidth > el.clientWidth) {
+        var left = active.offsetLeft, right = left + active.offsetWidth;
+        if (left < el.scrollLeft) el.scrollLeft = Math.max(0, left - 8);
+        else if (right > el.scrollLeft + el.clientWidth) el.scrollLeft = right - el.clientWidth + 8;
+      }
+      update();
+      el.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      return function () { el.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
+    }, [tab, isOpen]);
     var _showAvatar = useState(false); var showAvatar = _showAvatar[0]; var setShowAvatar = _showAvatar[1];
     var _avatarGenerating = useState(false); var avatarGenerating = _avatarGenerating[0]; var setAvatarGenerating = _avatarGenerating[1];
     var _avatarDesc = useState(activeProfile.description || ''); var avatarDesc = _avatarDesc[0]; var setAvatarDesc = _avatarDesc[1];
@@ -2499,9 +2722,32 @@
       delete symbolWorkRef.current.pending[work.key];
       setSymLoading(function (prev) { var next = Object.assign({}, prev); delete next[work.key]; return next; });
     }
+    // A credited picture leaving the bank (regenerated, edited, deleted) leaves
+    // its credit on the board and schedule cells that still show it.
+    function keepCreditsLeavingBank(before, after) {
+      var stillCredited = Object.create(null);
+      (Array.isArray(after) ? after : []).forEach(function (asset) { if (hasLicenseCredit(asset) && asset.image) stillCredited[asset.image] = true; });
+      var leaving = (Array.isArray(before) ? before : []).filter(function (asset) { return hasLicenseCredit(asset) && asset.image && !stillCredited[asset.image]; });
+      if (!leaving.length) return;
+      var keepAll = function (words) { return leaving.reduce(function (current, asset) { return keepPictureCredit(current, asset); }, words); };
+      [[savedBoardsRef, setSavedBoards, STORAGE_BOARDS], [savedSchedulesRef, setSavedSchedules, STORAGE_SCHEDULES]].forEach(function (target) {
+        var rows = Array.isArray(target[0].current) ? target[0].current : [];
+        var next = rows.map(function (row) { return mapBoardCells(row, keepAll); });
+        if (!next.some(function (row, index) { return row !== rows[index]; })) return;
+        target[0].current = next; target[1](next); store(scopedKey(target[2]), next);
+      });
+      setBoardWords(function (words) { return keepAll(words); });
+      setBoardPages(function (pages) {
+        if (!Array.isArray(pages)) return pages;
+        var next = pages.map(function (page) { return mapBoardCells(page, keepAll); });
+        return next.some(function (page, index) { return page !== pages[index]; }) ? next : pages;
+      });
+    }
     function commitSymbolBank(update, work) {
       if (!symbolWorkIsCurrent(work)) return false;
-      var next = update(galleryStateRef.current);
+      var before = galleryStateRef.current;
+      var next = update(before);
+      keepCreditsLeavingBank(before, next);
       var saved = store(profKey(STORAGE_GALLERY, work.profileId), next);
       galleryStateRef.current = next;
       setGallery(next); setSymbolSaveError(!saved);
@@ -2528,6 +2774,7 @@
         addToast && addToast('Could not remove symbols because device storage is unavailable. Your Symbol Bank is unchanged.', 'error');
         return;
       }
+      keepCreditsLeavingBank(current, next);
       galleryStateRef.current = next; setGallery(next); setSymbolSaveError(false);
       setSymbolRemoval(removed); setSelectedId(null);
       addToast && addToast('Removed ' + removed.length + ' symbol' + (removed.length === 1 ? '' : 's') + '. Undo is available while this learner stays open.', 'info');
@@ -2686,18 +2933,23 @@
       // A board cell is small and browser storage is shared, so keep a 400px copy,
       // with the photo's credit drawn under it: printed boards and exports copy only the picture.
       var A = window.AlloModules && window.AlloModules.AltText;
-      var prepare = A && A.shrinkImageDataUrl && A.bakeCreditIntoImage
+      // The band's height is kept so an AI edit can take the credit off first
+      // and draw a fresh "edited" one afterwards (refineSymbol).
+      var prepare = A && A.shrinkImageDataUrl && (A.bakeCreditBand || A.bakeCreditIntoImage)
         ? A.shrinkImageDataUrl(choice.dataUrl, 400, { kind: 'photo', fitWidth: true }).then(function (small) {
-            return choice.creditLine ? A.bakeCreditIntoImage(small, choice.creditLine, { kind: 'photo', attribution: choice.attribution }) : small;
+            if (!choice.creditLine) return { dataUrl: small, bandHeight: 0 };
+            var options = { kind: 'photo', attribution: choice.attribution };
+            return A.bakeCreditBand ? A.bakeCreditBand(small, choice.creditLine, options)
+              : A.bakeCreditIntoImage(small, choice.creditLine, options).then(function (dataUrl) { return { dataUrl: dataUrl, bandHeight: null }; });
           })
-        : Promise.resolve(choice.dataUrl);
-      return prepare.then(function (image) {
+        : Promise.resolve({ dataUrl: choice.dataUrl, bandHeight: null });
+      return prepare.then(function (baked) {
         if (!symbolWorkIsCurrent(work)) return;
-        var entry = normalizeBankAsset({
-          id: uid(), label: label, description: String(choice.alt || '').slice(0, 250), image: safeImgUrl(image),
+        var entry = normalizeBankAsset(Object.assign({
+          id: uid(), label: label, description: String(choice.alt || '').slice(0, 250), image: safeImgUrl(baked.dataUrl),
           style: 'photo', category: symWordType, topicTags: symCategory ? [symCategory] : [], isFavorite: false, createdAt: Date.now(),
           source: 'wikimedia', validated: false, attribution: choice.attribution ? Object.assign({}, choice.attribution) : undefined
-        });
+        }, Number.isFinite(baked.bandHeight) ? { imageCreditBand: baked.bandHeight } : {}));
         var saved = commitSymbolBank(function (current) { return [entry].concat(current); }, work);
         setSelectedId(entry.id);
         finishSymbolWork(work);
@@ -3424,8 +3676,15 @@
         recovery: 'A saved draft is available. Restoring it will replace your current edits.'
       };
       var buttonStyle = { border: '1px solid #cbd5e1', borderRadius: '7px', background: '#fff', color: '#334155', padding: '8px 10px', minHeight: '44px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 };
-      return e('div', { className: 'ss-draft-status ss-no-print', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', padding: '9px 12px', borderRadius: '9px', background: draftStatus === 'error' || draftStatus === 'recovery' ? '#fffbeb' : '#f1f5f9', color: '#334155', flexShrink: 0 } },
-        e('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 180px', fontSize: '12px' } }, tab === 'stories' && storyTextEdit ? 'Page text has unsaved changes. Use Save text to include them in the draft.' : messages[draftStatus] || messages.ready),
+      // Routine states ("Drafts save on this device.") are one quiet line; only a failure or a
+      // pending recovery, which need a decision, keep the full-size banner.
+      var draftNeedsAttention = draftStatus === 'error' || draftStatus === 'recovery' || !!draftRecovery;
+      var draftDark = ssTheme === 'dark' || ssTheme === 'contrast';
+      if (!draftNeedsAttention) buttonStyle = { border: '1px solid ' + (draftDark ? '#475569' : '#cbd5e1'), borderRadius: '6px', background: 'transparent', color: draftDark ? '#e2e8f0' : '#334155', padding: '2px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 };
+      return e('div', { className: 'ss-draft-status ss-no-print', style: draftNeedsAttention
+        ? { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', padding: '9px 12px', borderRadius: '9px', background: '#fffbeb', color: '#334155', flexShrink: 0 }
+        : { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', padding: '3px 16px', borderBottom: '1px solid ' + (draftDark ? '#334155' : '#e5e7eb'), color: draftDark ? '#cbd5e1' : '#475569', flexShrink: 0 } },
+        e('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 180px', fontSize: draftNeedsAttention ? '12px' : '11px' } }, tab === 'stories' && storyTextEdit ? 'Page text has unsaved changes. Use Save text to include them in the draft.' : messages[draftStatus] || messages.ready),
         draftStatus === 'error' && e('button', { type: 'button', onClick: retryStudioDraft, 'aria-label': record && record.loadFailed ? 'Retry draft recovery' : 'Retry saving draft', style: buttonStyle }, 'Retry'),
         draftStatus === 'error' && record && record.loadFailed && record.dirty && e('button', { type: 'button', onClick: replaceUnreadableStudioDraft, 'aria-label': t('symbol_studio.save_current_draft_instead','Save current draft instead'), style: buttonStyle }, 'Save current instead'),
         draftRecovery && e('button', { type: 'button', onClick: function () {
@@ -3948,14 +4207,33 @@
       setSymLoading(function (p) { var n = Object.assign({}, p); n[id] = true; return n; });
       addToast && addToast(t('toasts.refining_icon'), 'info');
       try {
-        var raw = await ensureBase64(item.image);
+        // A credited picture (a Commons photo, a Mulberry symbol) stays credited:
+        // a drawn credit band is taken off before the edit and redrawn after it,
+        // and the credit says "edited", as CC BY and BY-SA ask.
+        var A = window.AlloModules && window.AlloModules.AltText;
+        var credited = hasLicenseCredit(item);
+        var band = credited && Number.isFinite(item.imageCreditBand) && item.imageCreditBand > 0 ? item.imageCreditBand : 0;
+        var drawnCredit = credited && (band > 0 || item.style === 'photo' || item.source === 'wikimedia');
+        if (drawnCredit && !(A && A.bakeCreditBand && A.openImageCreditLine && (!band || A.cropImageBottom))) throw new Error('The picture tools are still loading. Try again in a moment.');
+        var art = band ? await A.cropImageBottom(item.image, band) : item.image;
+        var raw = await ensureBase64(art);
         if (!raw) throw new Error('Could not extract image data');
         if (!symbolWorkIsCurrent(work)) return;
         var refinementPrompt = 'Edit this educational icon. Instruction: ' + instruction + '. Maintain the simple, flat vector art style. White background. STRICTLY NO TEXT.';
         var refined = await promiseWithTimeout(Promise.resolve(onCallGeminiImageEdit(refinementPrompt, raw, 400, 0.85)), 90000, 'Image editing timed out. Please try again.');
+        var creditChanges = {};
+        if (refined && credited) {
+          var edited = Object.assign({}, item.attribution, { modified: true });
+          creditChanges = { attribution: edited, validated: false };
+          if (drawnCredit) {
+            var redrawn = await A.bakeCreditBand(refined, A.openImageCreditLine(edited), { kind: 'photo', attribution: edited });
+            refined = redrawn.dataUrl;
+            creditChanges.imageCreditBand = redrawn.bandHeight;
+          }
+        }
         if (refined) {
           if (!symbolWorkIsCurrent(work)) return;
-          var updated = galleryStateRef.current.map(function (i) { return i.id === id && !i.locked ? Object.assign({}, i, { image: refined, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
+          var updated = galleryStateRef.current.map(function (i) { return i.id === id && !i.locked ? Object.assign({}, i, { image: refined, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }, creditChanges) : i; });
           var saved = commitSymbolBank(function () { return updated; }, work);
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
           saved && addToast && addToast(t('toasts.icon_refined'), 'success');
@@ -5596,14 +5874,15 @@
     // Maps an Open Board Format button grid back into a native Symbol Studio
     // board {title, words:[{id,label,description,category,image}], cols}.
     var _obfToPage = function (obf) {
-      var imagesById = {};
+      var imagesById = {}, creditsById = obfImageCredits(obf.images);
       (obf.images || []).forEach(function (im) { if (im && im.id) imagesById[im.id] = im.data || im.url || ''; });
       var buttonsById = {};
       (obf.buttons || []).forEach(function (b) { if (b && b.id != null) buttonsById[b.id] = b; });
       var _btnToWord = function (b) {
         var raw = b.image_id ? (imagesById[b.image_id] || '') : '';
-        return { id: uid(), label: b.label || b.vocalization || '', description: b.label || b.vocalization || '',
-          category: 'other', image: safeImgUrl(raw) };
+        var image = safeImgUrl(raw), credit = image && b.image_id ? creditsById[b.image_id] : null;
+        return Object.assign({ id: uid(), label: b.label || b.vocalization || '', description: b.label || b.vocalization || '',
+          category: 'other', image: image }, credit ? { attribution: credit, creditPicture: pictureKey(image) } : {});
       };
       var words = [];
       var order = obf.grid && Array.isArray(obf.grid.order) ? obf.grid.order : null;
@@ -5826,12 +6105,15 @@
     // ── Quick Board HTML export (WCAG 2.1 AA accessible) ──────────────────
     // Exports First-Then boards as standalone accessible HTML with TTS,
     // keyboard activation, high contrast, and WCAG 2.1 AA compliance.
+    // Credits for a board's pictures come from the cell itself, then the Symbol Bank.
+    function bankCreditFor(cell) { return cellCreditFor(galleryStateRef.current, cell); }
     function portableAACPackageForBoard(board, audioOptions) {
       var audioSettings = audioOptions && typeof audioOptions === 'object' ? audioOptions : {};
       var includeCustomAudio = audioSettings.includeCustomAudio === true;
       var includePreparedAudio = audioSettings.includePreparedAudio === true;
       var expectedPrepared = !!(board && board.speechAudioRef);
       var baseOptions = {
+        creditFor: bankCreditFor,
         includeCustomAudio: includeCustomAudio,
         includePreparedAudio: includePreparedAudio,
         preparedAudioExpected: expectedPrepared
@@ -5898,7 +6180,7 @@
     function sendPortableAACResource(callback, board, successMessage, failureMessage) {
       var portablePackage;
       try {
-        portablePackage = buildPortableAACPackage(board);
+        portablePackage = buildPortableAACPackage(board, { creditFor: bankCreditFor });
       } catch (_) {
         addToast && addToast(failureMessage, 'error');
         return Promise.resolve(false);
@@ -5953,12 +6235,12 @@
         title = 'First-Then Board';
         bodyHTML = '<div class="ft-board" role="group" aria-label="First Then Board">'
           + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftFirstLabel || 'First') + '" aria-label="First: ' + esc(ftFirstLabel || 'activity') + '">'
-          + '<div class="ft-header" style="background:#f59e0b;">FIRST</div>'
+          + '<div class="ft-header" style="background:#c2410c;">FIRST</div>'
           + (ftFirstImage ? '<img src="' + escHtml(safeImgUrl(ftFirstImage)) + '" alt="' + esc(ftFirstLabel || 'First activity') + '">' : '<div class="ft-placeholder">?</div>')
           + '<div class="ft-label">' + esc(ftFirstLabel || '') + '</div></div>'
           + '<div class="ft-arrow" aria-hidden="true">\u2192</div>'
           + '<div class="ft-cell" role="button" tabindex="0" data-speak="' + esc(ftThenLabel || 'Then') + '" aria-label="Then: ' + esc(ftThenLabel || 'reward') + '">'
-          + '<div class="ft-header" style="background:#22c55e;">THEN</div>'
+          + '<div class="ft-header" style="background:#15803d;">THEN</div>'
           + (ftThenImage ? '<img src="' + escHtml(safeImgUrl(ftThenImage)) + '" alt="' + esc(ftThenLabel || 'Then activity') + '">' : '<div class="ft-placeholder">?</div>')
           + '<div class="ft-label">' + esc(ftThenLabel || '') + '</div></div></div>';
       } else { return; }
@@ -6153,20 +6435,15 @@
       addToast && addToast('\u201c' + item.label + '\u201d added to board', 'success');
     }, [addToast]);
 
-    // Sized print: injects a temporary @media print rule then calls window.print()
+    // Sized print: the chosen cell size applies on paper (printRegion opens the board in its own
+    // window; window.print() on the app is ignored in Canvas).
     var CELL_SIZES = { small: 144, medium: 192, large: 240 }; // px at 96dpi = 1.5", 2", 2.5"
     var printBoardSized = useCallback(function () {
       var sz = CELL_SIZES[boardCellSz] || 192;
       var imgSz = sz - 28;
-      var styleId = 'ss-print-sz-override';
-      var prev = document.getElementById(styleId); if (prev) prev.parentNode.removeChild(prev);
-      var style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = '@media print { .ss-board-cell { width: ' + sz + 'px !important; height: ' + sz + 'px !important; min-height: unset !important; box-sizing: border-box !important; } .ss-board-cell img { width: ' + imgSz + 'px !important; height: ' + imgSz + 'px !important; } }';
-      document.head.appendChild(style);
-      window.print();
-      setTimeout(function () { var el = document.getElementById(styleId); if (el) el.parentNode.removeChild(el); }, 2000);
-    }, [boardCellSz]);
+      printRegion('ss-pb', boardTitle || t('symbol_studio.board_print_title', 'Communication Board'),
+        '.ss-board-cell { width: ' + sz + 'px !important; height: ' + sz + 'px !important; min-height: unset !important; box-sizing: border-box !important; } .ss-board-cell img { width: ' + imgSz + 'px !important; height: ' + imgSz + 'px !important; }');
+    }, [boardCellSz, boardTitle]);
 
     // ── Activity Sets (multi-board books) ─────────────────────────────────
     var createBook = useCallback(function () {
@@ -6605,35 +6882,27 @@
       if (!boardsInSet.length) { addToast && addToast(t('toasts.boards_set_yet'), 'error'); return; }
       var sz = CELL_SIZES[boardCellSz] || 192;
       var imgSz = sz - 28;
-      var styleId = 'ss-print-sz-override';
-      var prev = document.getElementById(styleId); if (prev) prev.parentNode.removeChild(prev);
-      var style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = '@media print { .ss-board-cell { width: ' + sz + 'px !important; height: ' + sz + 'px !important; min-height: unset !important; box-sizing: border-box !important; } .ss-board-cell img { width: ' + imgSz + 'px !important; height: ' + imgSz + 'px !important; } }';
-      document.head.appendChild(style);
-      // Build a temporary print iframe with all boards in sequence
-      var html = '<!DOCTYPE html><html><head><style>body{font-family:sans-serif;margin:20px}.board-section{page-break-after:always}.board-title{font-size:18px;font-weight:800;margin-bottom:12px}.board-grid{display:grid;grid-template-columns:repeat(' + (Number(boardsInSet[0].cols) || 4) + ',1fr);gap:8px}.ss-board-cell{border:2px solid #e5e7eb;border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;width:' + sz + 'px;height:' + sz + 'px;box-sizing:border-box}.ss-board-cell img{width:' + imgSz + 'px;height:' + imgSz + 'px;object-fit:contain}.cell-label{font-size:11px;font-weight:700;text-align:center;line-height:1.3}</style></head><body>';
+      // Every board in the pack, one per sheet, printed from a window of its own: the hidden
+      // iframe this used to print from inherits Canvas's sandbox, so print() was ignored there.
+      // The pack is not on screen, so there is no in-place fallback; a blocked window says so.
+      var css = '.board-section{page-break-after:always}.board-section.last{page-break-after:auto}.board-title{font-size:18px;font-weight:800;margin-bottom:12px}.board-grid{display:grid;grid-template-columns:repeat(' + (Number(boardsInSet[0].cols) || 4) + ',1fr);gap:8px}.ss-board-cell{border:2px solid #e5e7eb;border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;width:' + sz + 'px;height:' + sz + 'px;box-sizing:border-box}.ss-board-cell img{width:' + imgSz + 'px;height:' + imgSz + 'px;object-fit:contain}.cell-label{font-size:11px;font-weight:700;text-align:center;line-height:1.3}';
+      var body = '';
       boardsInSet.forEach(function (board, idx) {
-        html += '<div class="board-section"><div class="board-title">' + escHtml(board.title || ('Board ' + (idx + 1))) +'</div><div class="board-grid">';
+        body += '<div class="board-section' + (idx === boardsInSet.length - 1 ? ' last' : '') + '"><div class="board-title">' + escHtml(board.title || ('Board ' + (idx + 1))) +'</div><div class="board-grid">';
         board.words.forEach(function (w) {
-          html += '<div class="ss-board-cell">';
-          if (w.image) html += '<img src="' + escHtml(safeImgUrl(w.image)) + '" alt="' + escHtml(w.label) + '">';
-          html += '<span class="cell-label">' + escHtml(w.label) + '</span></div>';
+          body += '<div class="ss-board-cell">';
+          if (w.image) body += '<img src="' + escHtml(safeImgUrl(w.image)) + '" alt="' + escHtml(w.label) + '">';
+          body += '<span class="cell-label">' + escHtml(w.label) + '</span></div>';
         });
-        html += '</div></div>';
+        body += '</div></div>';
       });
-      html += '</body></html>';
-      var iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px';
-      document.body.appendChild(iframe);
-      iframe.contentDocument.write(html);
-      iframe.contentDocument.close();
-      setTimeout(function () { iframe.contentWindow.print(); setTimeout(function () { document.body.removeChild(iframe); var el = document.getElementById(styleId); if (el) el.parentNode.removeChild(el); }, 1500); }, 500);
+      body += pictureCreditsHTML(boardsInSet.reduce(function (all, board) { return all.concat((board.words || []).map(function (w) { return cellCreditFor(galleryStateRef.current, w); })); }, []));
+      openPrintWindow({ title: book.title || 'Visual Pack', css: css, body: body });
     }, [books, savedBoards, boardCellSz, addToast]);
 
     var printBoard = useCallback(function () {
-      window.print();
-    }, []);
+      printRegion('ss-pb', boardTitle || t('symbol_studio.board_print_title', 'Communication Board'));
+    }, [boardTitle]);
 
     var speakCell = useCallback(function (value) {
       var cell = value && typeof value === 'object' ? value : null;
@@ -7489,8 +7758,8 @@
     var S = {
       overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, display: 'flex', alignItems: 'stretch', justifyContent: 'center', padding: '12px', boxSizing: 'border-box' },
       modal: { background: _ssDk ? '#0f172a' : '#fff', borderRadius: '14px', width: '100%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.4)' },
-      header: { background: _ssDk ? 'linear-gradient(135deg, #4c1d95 0%, #312e81 100%)' : 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)', padding: '12px 18px', flexShrink: 0 },
-      tabBar: { display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', padding: '3px', marginTop: '10px' },
+      header: { background: _ssDk ? 'linear-gradient(135deg, #4c1d95 0%, #312e81 100%)' : 'linear-gradient(135deg, #6d28d9 0%, #4338ca 100%)', padding: '8px 16px', flexShrink: 0, position: 'relative' },
+      tabBar: { display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.15)', borderRadius: '10px', padding: '3px', marginTop: '8px' },
       body: { display: 'flex', flex: 1, overflow: 'hidden' },
       leftCol: { width: '250px', flexShrink: 0, borderRight: _ssDk ? '1px solid #334155' : '1px solid #e5e7eb', overflowY: 'auto', background: _ssDk ? '#1e293b' : '#f9fafb', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' },
       rightCol: { flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' },
@@ -7501,6 +7770,10 @@
       chip: function (bg, color) { return { padding: '3px 8px', background: bg, color: color, border: '1px solid ' + color, borderRadius: '20px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }; },
       card: { background: _ssDk ? '#1e293b' : '#fff', border: _ssDk ? '1px solid #334155' : '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', color: _ssDk ? '#e2e8f0' : 'inherit' },
     };
+    // Text ink by substrate: ink() for text on theme surfaces (modal, S.card, settings column).
+    // Text on a self-painted light surface (white cells, pastel tiles, gradient cards) keeps dark ink.
+    var ink = function (c) { return _ssDk ? (SS_DARK_INK[c] || c) : c; };
+    S.lblOnLight = Object.assign({}, S.lbl, { color: '#374151' });
 
     // ── Sub-render helpers ─────────────────────────────────────────────────
     function tabBtn(t) {
@@ -7542,8 +7815,8 @@
       return e('div', { style: { width: size, height: size, border: '3px solid #e5e7eb', borderTop: '3px solid ' + PURPLE, borderRadius: '50%', animation: 'spin 1s linear infinite', display: 'inline-block' } });
     }
 
-    function sectionLabel(text) {
-      return e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, text);
+    function sectionLabel(text, onLight) {
+      return e('div', { style: { fontSize: '10px', fontWeight: 700, color: onLight ? '#4b5563' : ink('#6b7280'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, text);
     }
 
     var BOARD_THEMES = {
@@ -8209,9 +8482,9 @@
       var pctDone = Math.min(100, Math.round((questBoardPos / pathLen) * 100));
 
       if (pool.length < 3) {
-        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
+        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: ink('#6b7280'), padding: '40px' } },
           e('div', { style: { fontSize: '48px' } }, '🎮'),
-          e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Quest'),
+          e('h3', { style: { fontWeight: 700, color: ink('#374151') } }, 'Symbol Quest'),
           e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Add at least 3 different words with pictures in the Symbol Bank tab first, then come back to play games that teach you the symbols!')
         );
       }
@@ -8220,8 +8493,8 @@
       if (questMode === 'menu') {
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', overflowY: 'auto' } },
           e('div', { style: { fontSize: '48px' } }, '🎮'),
-          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Quest'),
-          e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '400px', margin: 0 } }, 'Learn your symbols through fun mini-games! Each correct answer moves you along the board path.'),
+          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: ink('#374151'), margin: 0 } }, 'Symbol Quest'),
+          e('p', { style: { fontSize: '13px', color: ink('#6b7280'), textAlign: 'center', maxWidth: '400px', margin: 0 } }, 'Learn your symbols through fun mini-games! Each correct answer moves you along the board path.'),
           // Board path progress
           e('div', { style: { width: '100%', maxWidth: '400px', background: '#f3f4f6', borderRadius: '10px', padding: '10px', textAlign: 'center' } },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151', marginBottom: '6px' } }, '🏁 Board Progress: ' + questBoardPos + '/' + pathLen + ' spaces'),
@@ -8234,15 +8507,15 @@
           questTotal > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
             e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
               e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#047857' } }, questCorrectCount),
-              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'correct')
+              e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'correct')
             ),
             e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
               e('div', { style: { fontSize: '18px', fontWeight: 800, color: PURPLE } }, questScore),
-              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'points')
+              e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'points')
             ),
             e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
               e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#d97706' } }, questBest + 'x'),
-              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
+              e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'best streak')
             )
           ),
           // Game mode buttons
@@ -8270,19 +8543,19 @@
               );
             })
           ),
-          !categoryReady && e('p', { id: 'ss-quest-category-help', style: { fontSize: '12px', color: '#475569', maxWidth: '400px', margin: 0 } }, 'Category Quiz needs symbols from at least two different categories. Set word types or topics in the Symbol Bank to enable it.'),
+          !categoryReady && e('p', { id: 'ss-quest-category-help', style: { fontSize: '12px', color: ink('#475569'), maxWidth: '400px', margin: 0 } }, 'Category Quiz needs symbols from at least two different categories. Set word types or topics in the Symbol Bank to enable it.'),
           // Reset progress
           questTotal > 0 && e('button', {
             onClick: function () { setQuestScore(0); setQuestBoardPos(0); setQuestTotal(0); setQuestCorrectCount(0); setQuestBest(0); },
-            'aria-label': t('symbol_studio.reset_progress','Reset progress'), style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+            'aria-label': t('symbol_studio.reset_progress','Reset progress'), style: { fontSize: '10px', color: ink('#6b7280'), background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
           }, '↻ Reset progress')
         );
       }
 
       // Active game screen
       var backBtn = e('button', { onClick: function () { cancelQuestTimer(); setQuestMode('menu'); setQuestFeedback(null); }, 'aria-label': 'Back', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
-      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + questScore + ', Round: ' + questRound + ', Progress: ' + questBoardPos + ' of ' + pathLen, style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
-        e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + questScore),
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + questScore + ', Round: ' + questRound + ', Progress: ' + questBoardPos + ' of ' + pathLen, style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: ink('#6b7280') } },
+        e('span', { style: { fontWeight: 700, color: ink(PURPLE) } }, '⭐ ' + questScore),
         e('span', null, '🎯 Round ' + questRound),
         questStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700, animation: 'pulse 1s infinite' } }, '🔥 x' + questStreak),
         e('span', null, '🏁 ' + questBoardPos + '/' + pathLen)
@@ -8293,7 +8566,7 @@
       if (questMode === 'imgToLabel') {
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
-          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🖼️ What symbol is this?'),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: ink('#374151'), margin: 0 } }, '🖼️ What symbol is this?'),
           questTarget && e('div', { style: { width: '140px', height: '140px', borderRadius: '16px', overflow: 'hidden', border: '3px solid ' + PURPLE, boxShadow: '0 4px 20px rgba(124,58,237,0.2)' } },
             e('img', { src: questTarget.image, alt: t('symbol_studio.symbol_to_identify','symbol to identify'), style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
@@ -8316,7 +8589,7 @@
       if (questMode === 'labelToImg') {
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
-          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🏷️ Find the symbol for:'),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: ink('#374151'), margin: 0 } }, '🏷️ Find the symbol for:'),
           questTarget && e('div', { style: { padding: '10px 24px', background: LIGHT_PURPLE, borderRadius: '12px', border: '2px solid ' + PURPLE } },
             e('span', { style: { fontSize: '20px', fontWeight: 800, color: PURPLE } }, questTarget.label)
           ),
@@ -8350,8 +8623,8 @@
         var catName = CAT_LABELS[askedCategory] || ('a word tagged "' + (askedCategory || 'other') + '"');
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
-          e('h4', { style: { fontSize: '16px', fontWeight: 700, color: '#374151', margin: 0, textAlign: 'center' } }, '🗂️ Which of these is ' + catName + '?'),
-          e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Listen to each option, then choose the one that matches.'),
+          e('h4', { style: { fontSize: '16px', fontWeight: 700, color: ink('#374151'), margin: 0, textAlign: 'center' } }, '🗂️ Which of these is ' + catName + '?'),
+          e('p', { style: { fontSize: '11px', color: ink('#475569'), margin: 0, fontStyle: 'italic' } }, 'Listen to each option, then choose the one that matches.'),
           feedbackBar,
           e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%', maxWidth: '400px' } },
             questOptions.map(function (opt) {
@@ -8398,11 +8671,11 @@
         };
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
-          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '✏️ Spell this symbol:'),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: ink('#374151'), margin: 0 } }, '✏️ Spell this symbol:'),
           questTarget && e('div', { style: { width: '120px', height: '120px', borderRadius: '14px', overflow: 'hidden', border: '3px solid ' + PURPLE } },
             e('img', { src: questTarget.image, alt: t('symbol_studio.symbol_to_identify_2','symbol to identify'), style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
-          questTarget && e('div', { style: { fontSize: '11px', color: '#6b7280' } }, questTarget.label.length + ' letters'),
+          questTarget && e('div', { style: { fontSize: '11px', color: ink('#6b7280') } }, questTarget.label.length + ' letters'),
           feedbackBar,
           e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '300px' } },
             e('input', {
@@ -8443,12 +8716,12 @@
 
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
-          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🧠 Match symbols with labels'),
-          e('div', { style: { fontSize: '11px', color: '#6b7280' } }, 'Moves: ' + memMoves + ' · Matched: ' + memMatched.length + '/' + memPool.length),
+          e('h4', { style: { fontSize: '14px', fontWeight: 600, color: ink('#374151'), margin: 0 } }, '🧠 Match symbols with labels'),
+          e('div', { style: { fontSize: '11px', color: ink('#6b7280') } }, 'Moves: ' + memMoves + ' · Matched: ' + memMatched.length + '/' + memPool.length),
           memWon
             ? e('div', { style: { textAlign: 'center', padding: '20px' } },
                 e('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🏆'),
-                e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#047857' } }, 'All matched in ' + memMoves + ' moves!'),
+                e('div', { style: { fontSize: '16px', fontWeight: 700, color: ink('#047857') } }, 'All matched in ' + memMoves + ' moves!'),
                 e('button', { onClick: function () { initializeMemory(pool); }, 'aria-label': t('symbol_studio.play_again','Play Again'), style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
               )
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', maxWidth: '400px' } },
@@ -8486,10 +8759,10 @@
 
     var GROWTH_LEVELS = {
       seed:     { icon: '🌰', label: 'Seed',      color: '#92400e', bg: '#fef3c7', border: '#fbbf24', desc: 'Just planted — appears in one place' },
-      sprout:   { icon: '🌱', label: 'Sprout',     color: '#15803d', bg: '#dcfce7', border: '#4ade80', desc: 'Available in multiple tools or some recent activity' },
-      growing:  { icon: '🌿', label: 'Growing',    color: '#047857', bg: '#d1fae5', border: '#34d399', desc: 'Available in several resource types or recently practiced' },
-      blooming: { icon: '🌸', label: 'Blooming',   color: '#7c3aed', bg: '#ede9fe', border: '#a78bfa', desc: 'Recent practice with words found in several resource types' },
-      mastered: { icon: '🌳', label: 'Well practiced',   color: '#b45309', bg: '#fefce8', border: '#facc15', desc: 'Frequent recent activity with words found in several resource types' }
+      sprout:   { icon: '🌱', label: 'Sprout',     color: '#166534', bg: '#dcfce7', border: '#4ade80', desc: 'Available in multiple tools or some recent activity' },
+      growing:  { icon: '🌿', label: 'Growing',    color: '#065f46', bg: '#d1fae5', border: '#34d399', desc: 'Available in several resource types or recently practiced' },
+      blooming: { icon: '🌸', label: 'Blooming',   color: '#6d28d9', bg: '#ede9fe', border: '#a78bfa', desc: 'Recent practice with words found in several resource types' },
+      mastered: { icon: '🌳', label: 'Well practiced',   color: '#854d0e', bg: '#fefce8', border: '#facc15', desc: 'Frequent recent activity with words found in several resource types' }
     };
     var GROWTH_ORDER = ['seed', 'sprout', 'growing', 'blooming', 'mastered'];
     var CONTEXT_ICONS = { gallery: '🎨', board: '📋', schedule: '📅', story: '📖', quickboard: '⚡', wish: '💫' };
@@ -8501,8 +8774,8 @@
       rejecting:   { icon: '🚫', label: 'Rejecting', color: '#dc2626', words: 'no,stop,all done,don\'t want,not,finished,go away,yucky,leave me,enough'.split(',') },
       commenting:  { icon: '👀', label: 'Commenting', color: '#2563eb', words: 'look,funny,big,little,pretty,cool,yummy,uh oh,wow,good,bad,different,same,new,broken,hot,cold,fast,slow,loud,quiet'.split(',') },
       social:      { icon: '👋', label: 'Social', color: '#047857', words: 'hi,bye,hello,goodbye,thank you,sorry,please,excuse me,good morning,goodnight,good job,welcome,nice,friend,share'.split(',') },
-      questioning: { icon: '❓', label: 'Questioning', color: '#d97706', words: 'what,where,when,who,why,how,what is,where is,can i,is it,do you'.split(',') },
-      expressing:  { icon: '😊', label: 'Expressing', color: '#ec4899', words: 'happy,sad,angry,scared,tired,frustrated,excited,worried,bored,proud,silly,surprised,hurt,sick,better,love,like'.split(',') }
+      questioning: { icon: '❓', label: 'Questioning', color: '#b45309', words: 'what,where,when,who,why,how,what is,where is,can i,is it,do you'.split(',') },
+      expressing:  { icon: '😊', label: 'Expressing', color: '#be185d', words: 'happy,sad,angry,scared,tired,frustrated,excited,worried,bored,proud,silly,surprised,hurt,sick,better,love,like'.split(',') }
     };
     var COMM_FN_ORDER = ['requesting', 'rejecting', 'commenting', 'social', 'questioning', 'expressing'];
     function getWordFunction(label) {
@@ -8519,28 +8792,28 @@
     // behavior analysis and communication intervention.
     var FCT_MAP = {
       Attention: {
-        icon: '👀', label: 'Attention-Seeking', color: '#3b82f6',
+        icon: '👀', label: 'Attention-Seeking', color: '#3b82f6', ink: '#1d4ed8',
         desc: 'Behavior is maintained by getting attention from others.',
         replacements: ['requesting', 'social', 'commenting'],
         priorityWords: 'look,help,hi,excuse me,come here,play,friend,my turn,look at me,watch me'.split(','),
         tip: 'Teach attention-getting words so the student can access social connection through communication instead of behavior.'
       },
       Escape: {
-        icon: '🏃', label: 'Escape/Avoidance', color: '#f59e0b',
+        icon: '🏃', label: 'Escape/Avoidance', color: '#f59e0b', ink: '#92400e',
         desc: 'Behavior is maintained by avoiding or escaping demands.',
         replacements: ['rejecting', 'expressing'],
         priorityWords: 'break,stop,all done,help,too hard,need help,not now,wait,finished,no'.split(','),
         tip: 'Teach rejection and help-seeking words so the student can appropriately request breaks or assistance.'
       },
       Tangible: {
-        icon: '🎁', label: 'Tangible Access', color: '#10b981',
+        icon: '🎁', label: 'Tangible Access', color: '#10b981', ink: '#047857',
         desc: 'Behavior is maintained by accessing items or activities.',
         replacements: ['requesting', 'questioning'],
         priorityWords: 'want,more,give,my turn,can i,please,open,play,eat,drink'.split(','),
         tip: 'Teach requesting vocabulary so the student can ask for desired items instead of taking them.'
       },
       Sensory: {
-        icon: '🌀', label: 'Sensory Regulation', color: '#8b5cf6',
+        icon: '🌀', label: 'Sensory Regulation', color: '#8b5cf6', ink: '#6d28d9',
         desc: 'Behavior is maintained by sensory stimulation or avoidance.',
         replacements: ['expressing', 'rejecting'],
         priorityWords: 'too loud,need break,need quiet,need headphones,feel overwhelmed,need to move,need fidget,too bright,deep breath,help'.split(','),
@@ -8805,7 +9078,7 @@
                 e('span', { style: { color: fromGl.color } }, fromGl.icon + ' ' + fromGl.label),
                 e('span', null, '→'),
                 e('span', { style: { color: toGl.color, fontWeight: 700 } }, toGl.icon + ' ' + toGl.label))),
-            e('button', { onClick: function () { setGrowthEvents(function (prev) { return prev.filter(function (_, j) { return j !== i; }); }); }, 'aria-label': 'Dismiss', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#9ca3af', padding: '4px' } }, '×'));
+            e('button', { onClick: function () { setGrowthEvents(function (prev) { return prev.filter(function (_, j) { return j !== i; }); }); }, 'aria-label': 'Dismiss', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#6b7280', padding: '4px' } }, '×'));
         }));
     }
 
@@ -8818,9 +9091,9 @@
       ];
 
       if (pool.length < 3) {
-        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
+        return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: ink('#6b7280'), padding: '40px' } },
           e('div', { style: { fontSize: '48px' } }, '🔍'),
-          e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Search'),
+          e('h3', { style: { fontWeight: 700, color: ink('#374151') } }, 'Symbol Search'),
           e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbol Bank tab first, then come back to practice finding symbols by listening!')
         );
       }
@@ -8892,12 +9165,12 @@
             )
           ),
           e('div', { style: { fontSize: '48px' } }, '🔍'),
-          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Search'),
-          e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '420px', margin: 0 } },
+          e('h3', { style: { fontWeight: 800, fontSize: '22px', color: ink('#374151'), margin: 0 } }, 'Symbol Search'),
+          e('p', { style: { fontSize: '13px', color: ink('#6b7280'), textAlign: 'center', maxWidth: '420px', margin: 0 } },
             'Train the auditory-to-visual connection that AAC learners need. Hear a word or phrase, then find the matching symbol(s).'),
           // Category filter — lets SLPs run targeted practice sessions (e.g. verbs-only).
           // "All" keeps the default behavior (draws from every category).
-          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '12px', color: '#374151', maxWidth: '420px' } },
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '12px', color: ink('#374151'), maxWidth: '420px' } },
             e('span', { style: { fontWeight: 600 } }, 'Practice:'),
             [
               { id: null, label: 'All', icon: '🎯', count: pool.length },
@@ -8924,12 +9197,12 @@
                   opacity: disabled ? 0.6 : 1,
                   display: 'inline-flex', alignItems: 'center', gap: '4px'
                 }
-              }, c.icon + ' ' + c.label, e('span', { style: { fontSize: '10px', opacity: 0.7, fontWeight: 500 } }, '(' + c.count + ')'));
+              }, c.icon + ' ' + c.label, e('span', { style: { fontSize: '10px', fontWeight: 500 } }, '(' + c.count + ')'));
             })
           ),
           // Difficulty selector. In errorless mode the difficulty is forced to 2 internally,
           // so we visually disable the difficulty chips to avoid confusion about what's in effect.
-          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', opacity: srchErrorless ? 0.5 : 1 } },
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: ink('#374151'), opacity: srchErrorless ? 0.5 : 1 } },
             e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
             [2, 3, 4, 6].map(function (n) {
               return e('button', {
@@ -8951,7 +9224,7 @@
           ),
           // Errorless learning mode toggle — for pre-receptive students. When on, wrong answers
           // don't penalize the student; distractors are always off-category; difficulty forced to 2.
-          e('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', cursor: 'pointer', background: srchErrorless ? '#fef3c7' : 'transparent', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + (srchErrorless ? '#fcd34d' : 'transparent') } },
+          e('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: srchErrorless ? '#374151' : ink('#374151'), cursor: 'pointer', background: srchErrorless ? '#fef3c7' : 'transparent', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + (srchErrorless ? '#fcd34d' : 'transparent') } },
             e('input', {
               type: 'checkbox',
               checked: srchErrorless,
@@ -8959,11 +9232,11 @@
               'aria-label': t('symbol_studio.toggle_errorless_learning_mode','Toggle errorless learning mode')
             }),
             e('span', { style: { fontWeight: 600 } }, '💛 Errorless mode'),
-            e('span', { style: { fontSize: '10px', color: '#6b7280' } }, '(beginner — wrong picks retry same target)')
+            e('span', { style: { fontSize: '10px', color: srchErrorless ? '#4b5563' : ink('#6b7280') } }, '(beginner — wrong picks retry same target)')
           ),
           // Session length selector — optional auto-end after N rounds. Default "Unlimited" matches
           // legacy behavior. Good for structured practice blocks or data-probe sessions.
-          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', flexWrap: 'wrap' } },
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: ink('#374151'), flexWrap: 'wrap' } },
             e('span', { style: { fontWeight: 600 } }, 'Session length:'),
             [
               { val: null, label: 'Unlimited' },
@@ -8990,15 +9263,15 @@
           srchStats.sessions > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
             e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
               e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#047857' } }, srchStats.totalCorrect),
-              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'all-time correct')
+              e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'all-time correct')
             ),
             e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
               e('div', { style: { fontSize: '18px', fontWeight: 800, color: PURPLE } }, allTimeAcc + '%'),
-              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'accuracy')
+              e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'accuracy')
             ),
             e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
               e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#d97706' } }, srchStats.bestStreak + 'x'),
-              e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
+              e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'best streak')
             )
           ),
           // Mode selection — now respects the category filter; if the filtered pool is too
@@ -9023,8 +9296,8 @@
                 e('div', { style: { fontSize: '32px', lineHeight: 1 } }, m.icon),
                 e('div', null,
                   e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#374151' } }, m.label),
-                  e('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, m.desc),
-                  disabled && e('div', { style: { fontSize: '10px', color: '#f97316', marginTop: '3px' } }, 'Need at least ' + minPool + ' symbols')
+                  e('div', { style: { fontSize: '11px', color: '#4b5563', marginTop: '2px' } }, m.desc),
+                  disabled && e('div', { style: { fontSize: '10px', color: '#c2410c', marginTop: '3px' } }, 'Need at least ' + minPool + ' symbols')
                 )
               );
             })
@@ -9045,9 +9318,9 @@
       // Round counter gives students/SLPs a sense of session length. Starts at 1 once the first
       // round loads so there isn't a confusing "Round 0".
       var roundNum = (srchTotal || 0) + (srchFeedback ? 0 : 1);
-      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Round ' + roundNum + ', Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280', flexWrap: 'wrap' } },
-        e('span', { style: { fontWeight: 600, color: '#64748b' } }, 'Round ' + roundNum),
-        e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + srchScore),
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Round ' + roundNum + ', Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: ink('#6b7280'), flexWrap: 'wrap' } },
+        e('span', { style: { fontWeight: 600, color: ink('#64748b') } }, 'Round ' + roundNum),
+        e('span', { style: { fontWeight: 700, color: ink(PURPLE) } }, '⭐ ' + srchScore),
         e('span', null, '🎯 ' + srchCorrect + '/' + srchTotal),
         srchStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700 } }, '🔥 x' + srchStreak),
         e('span', null, pctAcc + '% acc')
@@ -9061,7 +9334,7 @@
           // Audio prompt area — main 🔊 plays at normal speed, 🐢 plays at 0.7× for students
           // with auditory-processing delays or unfamiliar words.
           e('div', { style: { textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
-            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#4b5563', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
             e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '10px' } },
               e('button', {
                 onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
@@ -9125,7 +9398,7 @@
             e('button', {
               onClick: function () { setSrchRevealed(true); },
               'aria-label': t('symbol_studio.show_hint','Show hint'),
-              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+              style: { fontSize: '11px', color: ink('#6b7280'), background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
             }, '💡 Show word hint')
           )
         );
@@ -9139,7 +9412,7 @@
           e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
           // Audio prompt
           e('div', { style: { textAlign: 'center', padding: '16px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
-            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Build the phrase:'),
+            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#4b5563', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Build the phrase:'),
             e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '10px' } },
               e('button', {
                 onClick: function () { srchSpeakWord(phraseText); },
@@ -9220,7 +9493,7 @@
             !srchRevealed && e('button', {
               onClick: function () { setSrchRevealed(true); },
               'aria-label': t('symbol_studio.show_phrase_hint','Show phrase hint'),
-              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+              style: { fontSize: '11px', color: ink('#6b7280'), background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
             }, '💡 Show phrase'),
             e('button', {
               onClick: function () {
@@ -9229,7 +9502,7 @@
                 srchSpeakWord(phraseText);
               },
               'aria-label': t('symbol_studio.reset_phrase','Reset phrase'),
-              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
+              style: { fontSize: '11px', color: ink('#6b7280'), background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
             }, '↻ Reset')
           )
         );
@@ -9250,10 +9523,10 @@
       if (total === 0) {
         return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px', padding: '40px', textAlign: 'center' } },
           e('div', { style: { fontSize: '64px' } }, '🌱'),
-          e('h3', { style: { fontWeight: 700, color: '#374151', margin: 0 } }, 'Your Word Garden'),
+          e('h3', { style: { fontWeight: 700, color: ink('#374151'), margin: 0 } }, 'Your Word Garden'),
           !gardenStudentView && renderUnassignedWishes(),
-          e('p', { style: { fontSize: '13px', color: '#6b7280', maxWidth: '380px', lineHeight: 1.6 } }, 'Every word your student encounters is a seed. Create symbols, build boards, add schedules, or write stories — and watch each word grow as it appears in more places.'),
-          e('p', { style: { fontSize: '11px', color: '#9ca3af', maxWidth: '340px', fontStyle: 'italic' } }, 'Words grow strongest when they appear across multiple tools — that\'s aided language modeling in action.'));
+          e('p', { style: { fontSize: '13px', color: ink('#6b7280'), maxWidth: '380px', lineHeight: 1.6 } }, 'Every word your student encounters is a seed. Create symbols, build boards, add schedules, or write stories — and watch each word grow as it appears in more places.'),
+          e('p', { style: { fontSize: '11px', color: ink('#6b7280'), maxWidth: '340px', fontStyle: 'italic' } }, 'Words grow strongest when they appear across multiple tools — that\'s aided language modeling in action.'));
       }
       // ── Student View ──
       if (gardenStudentView) {
@@ -9269,7 +9542,7 @@
           var words = grouped[level]; if (!words.length) return null; var gl = GROWTH_LEVELS[level];
           return e('div', { key: level, style: { background: rowBg[level], borderRadius: '16px', padding: '14px 16px', marginBottom: '10px' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' } },
-              e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '14px', fontWeight: 700, color: gl.color } }, gl.label), e('span', { style: { fontSize: '12px', color: gl.color, opacity: 0.7 } }, '(' + words.length + ')')),
+              e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '14px', fontWeight: 700, color: gl.color } }, gl.label), e('span', { style: { fontSize: '12px', color: gl.color } }, '(' + words.length + ')')),
             e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px' } },
               words.map(function (w) {
                 var animClass = level === 'seed' ? 'ss-garden-seed' : level === 'mastered' ? 'ss-garden-mastered' : '';
@@ -9290,7 +9563,7 @@
                     : e('div', { style: { width: '56px', height: '56px', borderRadius: '10px', background: gl.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' } }, gl.icon),
                   e('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.2 } },
                     w.displayLabel, w.hasVoice && e('span', { style: { marginLeft: '3px', fontSize: '10px' }, title: t('symbol_studio.has_a_loved_one_s_voice','Has a loved one\'s voice') }, '❤️')),
-                  gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6366f1', textAlign: 'center', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)));
+                  gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#4f46e5', textAlign: 'center', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)));
               })));
         };
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)' } },
@@ -9339,13 +9612,13 @@
               onClick: function () { generateGardenStory(bank, sName); },
               disabled: gardenStoryLoading,
               'aria-label': t('symbol_studio.generate_a_story_about_your_word_garden','Generate a story about your word garden'),
-              style: { marginTop: '6px', padding: '8px 20px', background: gardenStoryLoading ? '#d1d5db' : 'linear-gradient(135deg, #059669 0%, #0d9488 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: gardenStoryLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }
+              style: { marginTop: '6px', padding: '8px 20px', background: gardenStoryLoading ? '#d1d5db' : 'linear-gradient(135deg, #047857 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: gardenStoryLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }
             }, gardenStoryLoading ? '✨ Growing a story...' : '📖 My Garden Story'),
             // "Print My Garden" — printable poster for the student's desk
             total >= 3 && e('button', {
               onClick: function () { printGardenPoster(bank, grouped, sName, total, counts); },
               'aria-label': t('symbol_studio.print_garden_poster','Print garden poster'),
-              style: { marginTop: '6px', padding: '8px 20px', background: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(180,83,9,0.3)' }
+              style: { marginTop: '6px', padding: '8px 20px', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(180,83,9,0.3)' }
             }, '🖨️ Print My Garden')),
           // Story display
           gardenStory && e('div', { style: { margin: '0 16px', padding: '16px', background: 'rgba(255,255,255,0.9)', borderRadius: '14px', border: '2px solid #a7f3d0', boxShadow: '0 2px 10px rgba(5,150,105,0.1)' } },
@@ -9402,28 +9675,28 @@
               : e('div', { style: { width: '80px', height: '80px', borderRadius: '12px', background: '#fff', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#d1d5db' } }, '🖼'),
             e('div', { style: { flex: 1 } },
               e('div', { style: { fontSize: '24px', fontWeight: 800, color: '#1f2937' } }, w.displayLabel),
-              gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '14px', fontWeight: 600, color: '#6366f1', fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
+              gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '14px', fontWeight: 600, color: '#4f46e5', fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
               e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' } },
-                e('span', { style: { padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: catFill[w.category] || '#f3f4f6', color: catBorder[w.category] || '#6b7280', border: '1px solid ' + (catBorder[w.category] || '#d1d5db') } }, w.category),
+                e('span', { style: { padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: catFill[w.category] || '#f3f4f6', color: '#374151', border: '1px solid ' + (catBorder[w.category] || '#d1d5db') } }, w.category),
                 w.commFn && (function () { var cf = COMM_FUNCTIONS[w.commFn]; return e('span', { style: { padding: '2px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, background: cf.color + '15', color: cf.color, border: '1px solid ' + cf.color + '33' } }, cf.icon + ' ' + cf.label); })(),
                 e('span', { style: { fontSize: '20px' } }, gl.icon), e('span', { style: { fontSize: '13px', fontWeight: 700, color: gl.color } }, gl.label)),
-              e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '6px 0 0', fontStyle: 'italic' } }, gl.desc),
-              w.hasVoice && e('p', { style: { fontSize: '11px', color: '#ec4899', margin: '4px 0 0', fontWeight: 600 } }, '❤️ This word has a loved one\'s recorded voice'))),
+              e('p', { style: { fontSize: '11px', color: '#4b5563', margin: '6px 0 0', fontStyle: 'italic' } }, gl.desc),
+              w.hasVoice && e('p', { style: { fontSize: '11px', color: '#be185d', margin: '4px 0 0', fontWeight: 600 } }, '❤️ This word has a loved one\'s recorded voice'))),
           // Stats
           e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
-            e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#047857' } }, w.uniqueContextCount), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'contexts')),
-            e('div', { style: { background: '#eff6ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#2563eb' } }, w.taps || 0), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'AAC taps')),
-            e('div', { style: { background: '#faf5ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, (function () { var tq = (w.questCorrect || 0) + (w.questWrong || 0); return tq > 0 ? Math.round(w.questCorrect / tq * 100) + '%' : '—'; })()), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'quest accuracy')),
-            e('div', { style: { background: '#fefce8', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#b45309' } }, Math.round((w.famScore || 0) * 100)), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'familiarity %'))),
+            e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#047857' } }, w.uniqueContextCount), e('div', { style: { fontSize: '10px', color: '#4b5563' } }, 'contexts')),
+            e('div', { style: { background: '#eff6ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#2563eb' } }, w.taps || 0), e('div', { style: { fontSize: '10px', color: '#4b5563' } }, 'AAC taps')),
+            e('div', { style: { background: '#faf5ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, (function () { var tq = (w.questCorrect || 0) + (w.questWrong || 0); return tq > 0 ? Math.round(w.questCorrect / tq * 100) + '%' : '—'; })()), e('div', { style: { fontSize: '10px', color: '#4b5563' } }, 'quest accuracy')),
+            e('div', { style: { background: '#fefce8', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#b45309' } }, Math.round((w.famScore || 0) * 100)), e('div', { style: { fontSize: '10px', color: '#4b5563' } }, 'familiarity %'))),
           // Growth journey
           e('div', { style: { padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' }, role: 'group', 'aria-label': 'Growth journey for ' + w.displayLabel + ': currently at ' + GROWTH_LEVELS[w.growth].label + ' stage' },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#374151', marginBottom: '8px' } }, '🌱 Growth Journey'),
             e('div', { role: 'progressbar', 'aria-valuenow': GROWTH_ORDER.indexOf(w.growth) + 1, 'aria-valuemin': 1, 'aria-valuemax': 5, 'aria-label': w.displayLabel + ' is at growth stage ' + (GROWTH_ORDER.indexOf(w.growth) + 1) + ' of 5: ' + GROWTH_LEVELS[w.growth].label, style: { display: 'flex', gap: '2px', height: '8px', borderRadius: '4px', overflow: 'hidden', background: '#e5e7eb' } },
               GROWTH_ORDER.map(function (lv, i) { return e('div', { key: lv, style: { flex: 1, background: GROWTH_ORDER.indexOf(w.growth) >= i ? GROWTH_LEVELS[lv].border : 'transparent', transition: 'background 0.3s' } }); })),
             e('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '4px' } },
-              GROWTH_ORDER.map(function (lv) { var g2 = GROWTH_LEVELS[lv]; return e('span', { key: lv, style: { fontSize: '10px', fontWeight: lv === w.growth ? 700 : 400, color: lv === w.growth ? g2.color : '#9ca3af' } }, g2.icon + ' ' + g2.label); }))),
+              GROWTH_ORDER.map(function (lv) { var g2 = GROWTH_LEVELS[lv]; return e('span', { key: lv, style: { fontSize: '10px', fontWeight: lv === w.growth ? 700 : 400, color: lv === w.growth ? g2.color : '#6b7280' } }, g2.icon + ' ' + g2.label); }))),
           // Contexts
-          e('div', null, e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '🗺️ Found In (' + w.contexts.length + ' places)'),
+          e('div', null, e('div', { style: { fontSize: '12px', fontWeight: 700, color: ink('#374151'), marginBottom: '8px' } }, '🗺️ Found In (' + w.contexts.length + ' places)'),
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
               w.contexts.map(function (cx, i) { return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: '#f9fafb', borderRadius: '6px', fontSize: '12px', color: '#374151' } }, e('span', null, CONTEXT_ICONS[cx.type] || '📌'), e('span', { style: { fontWeight: 500 } }, cx.source)); }))),
           // Related words — other words sharing contexts with this one
@@ -9438,7 +9711,7 @@
             }).sort(function (a, b) { return b.shared - a.shared; }).slice(0, 10);
             if (!related.length) return null;
             return e('div', null,
-              e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '🔗 Related Words'),
+              e('div', { style: { fontSize: '12px', fontWeight: 700, color: ink('#374151'), marginBottom: '8px' } }, '🔗 Related Words'),
               e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 related.map(function (r) {
                   var g2 = GROWTH_LEVELS[r.growth];
@@ -9446,7 +9719,7 @@
                     'aria-label': r.label, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#fff', border: '1px solid ' + g2.border, borderRadius: '20px', fontSize: '11px', fontWeight: 600, color: '#374151', cursor: 'pointer' } },
                     e('span', { style: { fontSize: '12px' } }, g2.icon),
                     e('span', null, r.label),
-                    e('span', { style: { fontSize: '9px', color: '#9ca3af' } }, r.shared + '×'));
+                    e('span', { style: { fontSize: '9px', color: '#6b7280' } }, r.shared + '×'));
                 })));
           })(),
           // IEP Goal Connection — show which goals this word has contributed to
@@ -9463,7 +9736,7 @@
             if (goalHits.length === 0) return null;
             var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
             return e('div', null,
-              e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '🎯 IEP Goal Progress'),
+              e('div', { style: { fontSize: '12px', fontWeight: 700, color: ink('#374151'), marginBottom: '8px' } }, '🎯 IEP Goal Progress'),
               e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                 goalHits.map(function (gh, i) {
                   var pct = gh.total > 0 ? Math.round(gh.successes / gh.total * 100) : 0;
@@ -9472,13 +9745,13 @@
                     e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
                       e('span', { style: { fontSize: '10px', padding: '1px 6px', borderRadius: '8px', background: tc, color: '#fff', fontWeight: 600 } }, gh.goal.type),
                       e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#0c4a6e' } }, gh.goal.text)),
-                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#6b7280' } },
+                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#4b5563' } },
                       e('span', null, gh.successes + '/' + gh.total + ' trials with "' + w.displayLabel + '" (' + pct + '% correct)'),
                       e('span', null, '· ' + gh.goal.currentCount + '/' + gh.goal.targetCount + ' goal progress')));
                 })));
           })(),
           // Suggestions
-          suggestions.length > 0 && e('div', null, e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '💡 Next Steps'),
+          suggestions.length > 0 && e('div', null, e('div', { style: { fontSize: '12px', fontWeight: 700, color: ink('#374151'), marginBottom: '8px' } }, '💡 Next Steps'),
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               suggestions.map(function (s, i) { return e(s.action ? 'button' : 'div', { key: i, onClick: s.action || undefined, style: { display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px 12px', background: s.action ? '#fef9c3' : '#fffbeb', borderRadius: '8px', border: '1px solid ' + (s.action ? '#facc15' : '#fef3c7'), fontSize: '12px', color: '#78350f', lineHeight: 1.5, cursor: s.action ? 'pointer' : 'default', textAlign: 'left', fontFamily: 'inherit', width: '100%' } }, e('span', { style: { flexShrink: 0 } }, s.icon), e('span', null, s.text + (s.action ? ' →' : ''))); }))),
           // Actions
@@ -9499,7 +9772,7 @@
           return e('button', { onClick: function () { setGardenFilter(gardenFilter === 'core' ? 'all' : 'core'); }, 'aria-label': t('symbol_studio.filter_core_vocabulary','Filter core vocabulary'), style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (isActive ? '#3b82f6' : 'transparent'), background: isActive ? '#dbeafe' : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' } },
             e('span', null, '💬'), e('span', null, coreMastered + '/' + coreInBank + ' core'));
         })(),
-        e('div', { style: { marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' } }, e('span', null, '📝'), e('span', null, total + ' words')));
+        e('div', { style: { marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center', gap: '4px' } }, e('span', null, '📝'), e('span', null, total + ' words')));
       var controlsBar = e('div', { className: 'ss-garden-controls', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', padding: '0 16px', marginBottom: '4px' } },
         e('input', { type: 'text', value: gardenSearch, placeholder: '🔍 Search...', onChange: function (ev) { setGardenSearch(ev.target.value); }, 'aria-label': 'Search', style: Object.assign({}, S.input, { flex: '1 1 180px', minWidth: 'min(180px, 100%)', maxWidth: '100%', minHeight: '44px', fontSize: '12px' }) }),
         e('select', { value: gardenSort, onChange: function (ev) { setGardenSort(ev.target.value); }, 'aria-label': 'Sort', style: Object.assign({}, S.input, { width: 'auto', flexShrink: 0, minHeight: '44px', fontSize: '11px' }) },
@@ -9528,7 +9801,7 @@
             setBoardCols(Math.min(4, Math.ceil(Math.sqrt(newWords.length))));
             setTab('board');
             addToast && addToast(t('toasts.garden_board_created_with') + newWords.length + ' words!' + bankReuseReviewNotice(reusedAssets), 'success');
-          }, 'aria-label': t('symbol_studio.generate_communication_board_from_garden_dat','Generate communication board from garden data'), style: Object.assign({}, S.btn('#059669', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
+          }, 'aria-label': t('symbol_studio.generate_communication_board_from_garden_dat','Generate communication board from garden data'), style: Object.assign({}, S.btn('#047857', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
         })(),
         // Phonics Lesson from Garden — bridges to Word Sounds
         (function () {
@@ -9552,7 +9825,7 @@
             addToast && addToast(t('toasts.phonics_lesson_ready_open_word') + wordList.length + ' garden words loaded: ' + wordList.slice(0, 4).join(', ') + (wordList.length > 4 ? '...' : ''), 'success');
           }, 'aria-label': t('symbol_studio.build_phonics_lesson_from_garden_vocabulary','Build phonics lesson from garden vocabulary'), style: Object.assign({}, S.btn('#2563eb', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📖 Phonics Lesson');
         })(),
-        e('p', { style: { flexBasis: '100%', margin: '4px 0', color: '#475569', fontSize: '12px', lineHeight: 1.5 } }, 'Garden totals include words in your resources and Quick Board suggestions. Growth reflects resource availability and recent activity, not independent communication or mastery.'),
+        e('p', { style: { flexBasis: '100%', margin: '4px 0', color: ink('#475569'), fontSize: '12px', lineHeight: 1.5 } }, 'Garden totals include words in your resources and Quick Board suggestions. Growth reflects resource availability and recent activity, not independent communication or mastery.'),
         e('div', { style: { flexBasis: '100%', minWidth: 0 } }, renderUnassignedWishes()),
         // Wish Seed input — plant a word the student wanted but couldn't find
         e('div', { style: { display: 'flex', flexBasis: '100%', minWidth: 0, gap: '6px', alignItems: 'center', marginBottom: '6px' } },
@@ -9589,13 +9862,13 @@
           w.hasVoice && e('div', { style: { position: 'absolute', bottom: '3px', right: '5px', fontSize: '10px' }, title: t('symbol_studio.this_word_has_a_parent_s_recorded_voice','This word has a parent\'s recorded voice') }, '❤️'),
           w.image ? e('img', { src: w.image, alt: '', style: { width: '48px', height: '48px', objectFit: 'contain', borderRadius: '8px' } }) : e('div', { style: { width: '48px', height: '48px', borderRadius: '8px', background: g2.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' } }, g2.icon),
           e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.2 } }, w.displayLabel),
-          gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#6366f1', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
+          gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#4f46e5', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
           e('div', { style: { display: 'flex', gap: '2px', fontSize: '10px' } }, w.contextTypes.map(function (ct) { return e('span', { key: ct, title: ct, style: { opacity: 0.7 } }, CONTEXT_ICONS[ct] || '📌'); }))); });
       return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
         e('div', { style: { padding: '16px 16px 8px', flexShrink: 0 } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
             e('span', { style: { fontSize: '22px' } }, '🌱'),
-            e('div', { style: { flex: 1 } }, e('h3', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: 0 } }, 'Word Garden'), e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '2px 0 0' } }, 'Tap any word to explore its growth across tools.')),
+            e('div', { style: { flex: 1 } }, e('h3', { style: { fontWeight: 800, fontSize: '16px', color: ink('#1f2937'), margin: 0 } }, 'Word Garden'), e('p', { style: { fontSize: '11px', color: ink('#6b7280'), margin: '2px 0 0' } }, 'Tap any word to explore its growth across tools.')),
             e('button', { onClick: function () { setGardenStudentView(true); }, 'aria-label': t('symbol_studio.student_view','Student view'), style: { padding: '5px 12px', background: '#dcfce7', border: '2px solid #4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#15803d', cursor: 'pointer', whiteSpace: 'nowrap' } }, '🌱 Student View'),
             // Home language selector for bilingual garden
             e('select', { value: gardenHomeLang, onChange: function (ev) {
@@ -9666,7 +9939,7 @@
               (function () {
                 var missing = COMM_FN_ORDER.filter(function (fn) { return !fnCounts[fn]; });
                 if (missing.length === 0 || missing.length > 3) return null;
-                return e('span', { style: { fontSize: '9px', color: '#9ca3af', marginLeft: '4px' } }, 'Missing: ' + missing.map(function (fn) { return COMM_FUNCTIONS[fn].label; }).join(', '));
+                return e('span', { style: { fontSize: '9px', color: '#4b5563', marginLeft: '4px' } }, 'Missing: ' + missing.map(function (fn) { return COMM_FUNCTIONS[fn].label; }).join(', '));
               })());
           })(),
           // FCT Bridge — Functional Communication Training link to BehaviorLens
@@ -9684,22 +9957,22 @@
               e('div', { style: { padding: '10px 14px', background: fct.color + '10', borderRadius: '10px', border: '1px solid ' + fct.color + '33' } },
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' } },
                   e('span', { style: { fontSize: '16px' } }, fct.icon),
-                  e('span', { style: { fontSize: '12px', fontWeight: 700, color: fct.color } }, 'FCT: ' + fct.label + ' → Communication Replacements')),
-                e('p', { style: { fontSize: '11px', color: '#374151', margin: '0 0 8px', lineHeight: 1.5 } }, fct.tip),
+                  e('span', { style: { fontSize: '12px', fontWeight: 700, color: ink(fct.ink || fct.color) } }, 'FCT: ' + fct.label + ' → Communication Replacements')),
+                e('p', { style: { fontSize: '11px', color: ink('#374151'), margin: '0 0 8px', lineHeight: 1.5 } }, fct.tip),
                 mastered.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
-                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#047857' } }, '✅ Ready:'),
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: ink('#047857') } }, '✅ Ready:'),
                   mastered.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#dcfce7', fontSize: '10px', fontWeight: 600, color: '#15803d' } }, w.displayLabel); })),
                 growing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
-                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#d97706' } }, '🌿 Growing:'),
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: ink('#b45309') } }, '🌿 Growing:'),
                   growing.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#fef3c7', fontSize: '10px', fontWeight: 600, color: '#92400e' } }, w.displayLabel); })),
                 missing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#dc2626' } }, '🌰 Not yet planted:'),
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: ink('#b91c1c') } }, '🌰 Not yet planted:'),
                   missing.slice(0, 5).map(function (pw) { return e('span', { key: pw, style: { padding: '1px 6px', borderRadius: '8px', background: '#fee2e2', fontSize: '10px', fontWeight: 600, color: '#991b1b' } }, pw); }))));
           })(),
           summaryBar, controlsBar),
         renderGrowthCelebrations(),
         e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 16px' } },
-          filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
+          filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: ink('#6b7280') } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
           total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
             e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': t('symbol_studio.print_practice_report','Print practice report'), style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Practice Report'),
@@ -9883,7 +10156,7 @@
       html += 'Generated by AlloFlow Symbol Studio · Word Garden<br>';
       html += name + '\'s vocabulary is tracked across all tools automatically. No words are lost. Every interaction counts.<br>';
       html += '<strong>Every word in this garden belongs to ' + name + '.</strong>';
-      html += '</div></body></html>';
+      html += '</div>' + pictureCreditsHTML(creditsForPrintedImages(html, galleryStateRef.current)) + '</body></html>';
       var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
     }
 
@@ -9917,7 +10190,7 @@
         var words = grouped[level]; if (!words || !words.length) return;
         var gl = GROWTH_LEVELS[level];
         html += '<div class="bed" style="background:' + rowBg[level] + ';border:' + rowBorder[level] + '">';
-        html += '<div class="bed-label" style="color:' + gl.color + '">' + gl.icon + ' ' + gl.label + ' <span style="font-size:13px;opacity:0.7">(' + words.length + ')</span></div>';
+        html += '<div class="bed-label" style="color:' + gl.color + '">' + gl.icon + ' ' + gl.label + ' <span style="font-size:13px">(' + words.length + ')</span></div>';
         html += '<div class="words">';
         words.forEach(function (w) {
           html += '<div class="word" style="border:2px solid ' + gl.border + '">';
@@ -9928,7 +10201,7 @@
         html += '</div></div>';
       });
       html += '<div class="footer">Every word in this garden belongs to ' + studentName + '. 🌳</div>';
-      html += '</div></body></html>';
+      html += pictureCreditsHTML(creditsForPrintedImages(html, galleryStateRef.current)) + '</div></body></html>';
       var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
     }
 
@@ -10099,7 +10372,7 @@
 
     // ── Quick Boards tab ───────────────────────────────────────────────────
     function renderQuickBoardsTab() {
-      var ORANGE = '#f97316'; var GREEN = '#22c55e'; var BLUE = '#3b82f6';
+      var ORANGE = '#c2410c'; var GREEN = '#15803d'; var BLUE = '#3b82f6';
       var subModes = [
         { id: 'firstthen', icon: '➡️', label: 'First-Then' },
         { id: 'choice', icon: '🔵', label: 'Choice Board' },
@@ -10161,7 +10434,7 @@
         var visibleItems = cbItems.slice(0, cbCount);
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1 } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '6px', alignItems: 'center' } },
-            e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#374151' } }, 'Choices:'),
+            e('span', { style: { fontSize: '12px', fontWeight: 600, color: ink('#374151') } }, 'Choices:'),
             [2, 3, 4].map(function (n) {
               return e('button', { key: n, onClick: function () { setCbCount(n); setCbSelected(null); }, 'aria-label': n + ' choices', 'aria-pressed': cbCount === n, style: { padding: '4px 12px', borderRadius: '6px', border: '2px solid ' + (cbCount === n ? PURPLE : '#d1d5db'), background: cbCount === n ? LIGHT_PURPLE : '#fff', color: cbCount === n ? PURPLE : '#374151', fontWeight: cbCount === n ? 700 : 400, fontSize: '12px', cursor: 'pointer' } }, n);
             }),
@@ -10212,7 +10485,7 @@
           e('div', { style: { display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap', flex: 1 } },
             // Token row
             e('div', { style: { flex: 1 } },
-              tokenLabel && e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#374151', marginBottom: '10px', textAlign: 'center' } }, 'Working for: ' + tokenLabel),
+              tokenLabel && e('div', { style: { fontWeight: 700, fontSize: '14px', color: ink('#374151'), marginBottom: '10px', textAlign: 'center' } }, 'Working for: ' + tokenLabel),
               e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '12px' } },
                 tokens.map(function (idx) {
                   var earned = idx < tokenEarned;
@@ -10227,16 +10500,16 @@
               e('div', { style: { background: '#f3f4f6', borderRadius: '20px', height: 14, overflow: 'hidden', margin: '0 auto', maxWidth: 280 } },
                 e('div', { style: { height: '100%', background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', borderRadius: '20px', width: (tokenTotal > 0 ? (tokenEarned / tokenTotal * 100) : 0) + '%', transition: 'width 0.3s' } })
               ),
-              e('div', { style: { textAlign: 'center', fontSize: '11px', color: '#6b7280', marginTop: '4px' } }, tokenEarned + ' / ' + tokenTotal + ' tokens earned'),
-              tokenEarned >= tokenTotal && e('div', { style: { textAlign: 'center', fontSize: '18px', fontWeight: 800, color: '#16a34a', marginTop: '8px' } }, '🎉 Great job! Time for your reward!')
+              e('div', { style: { textAlign: 'center', fontSize: '11px', color: ink('#6b7280'), marginTop: '4px' } }, tokenEarned + ' / ' + tokenTotal + ' tokens earned'),
+              tokenEarned >= tokenTotal && e('div', { style: { textAlign: 'center', fontSize: '18px', fontWeight: 800, color: ink('#15803d'), marginTop: '8px' } }, '🎉 Great job! Time for your reward!')
             ),
             // Reward panel
             e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: 130 } },
-              e('div', { style: { fontWeight: 700, fontSize: '12px', color: '#374151' } }, 'REWARD'),
+              e('div', { style: { fontWeight: 700, fontSize: '12px', color: ink('#374151') } }, 'REWARD'),
               e('div', { style: { width: 120, height: 120, border: '3px solid #16a34a', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0fdf4' } },
                 cellImage(tokenRewardImage, tokenRewardLoading, 110)
               ),
-              e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#16a34a', textAlign: 'center' } }, tokenRewardLabel || '\u00a0'),
+              e('div', { style: { fontWeight: 700, fontSize: '14px', color: ink('#15803d'), textAlign: 'center' } }, tokenRewardLabel || '\u00a0'),
               e('div', { className: 'ss-no-print', style: { display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' } },
                 e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: t('symbol_studio.e_g_ipad_time','e.g. iPad time'), 'aria-label': t('symbol_studio.token_board_reward','Token board reward'), style: Object.assign({}, S.input, { fontSize: '11px' }) }),
                 e('div', { style: { display: 'flex', gap: '4px' } },
@@ -10251,12 +10524,12 @@
 
       // ── Calming Corner ──
       function renderCalmingCorner() {
-        var TEAL = '#0d9488'; var TEAL_LIGHT = '#f0fdfa'; var TEAL_BORDER = '#99f6e4';
+        var TEAL = '#0f766e'; var TEAL_LIGHT = '#f0fdfa'; var TEAL_BORDER = '#99f6e4';
         var cmLoadingAny = Object.keys(cmLoading).length > 0;
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           // Controls bar
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
-            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Tap any card to speak the strategy aloud • Edit labels directly on each card'),
+            e('p', { style: { fontSize: '12px', color: ink('#6b7280'), margin: 0 } }, 'Tap any card to speak the strategy aloud • Edit labels directly on each card'),
             e('button', {
               onClick: genAllCmItems,
               disabled: !onCallImagen || cmLoadingAny,
@@ -10299,17 +10572,17 @@
             })
           ),
           // Tip
-          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', margin: 0, flexShrink: 0 } }, 'Print as a laminated "Calming Menu" poster for the calming corner, breakroom, or student desk strip.')
+          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: ink('#6b7280'), margin: 0, flexShrink: 0 } }, 'Print as a laminated "Calming Menu" poster for the calming corner, breakroom, or student desk strip.')
         );
       }
 
       function renderSensoryNeeds() {
-        var AMBER = '#d97706'; var AMBER_LIGHT = '#fffbeb'; var AMBER_BORDER = '#fcd34d';
+        var AMBER = '#b45309'; var AMBER_LIGHT = '#fffbeb'; var AMBER_BORDER = '#fcd34d';
         var snLoadingAny = Object.keys(snLoading).length > 0;
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           // Controls bar
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
-            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Tap any card to say the need aloud • Helps non-verbal students communicate sensory overload'),
+            e('p', { style: { fontSize: '12px', color: ink('#6b7280'), margin: 0 } }, 'Tap any card to say the need aloud • Helps non-verbal students communicate sensory overload'),
             e('button', {
               onClick: genAllSnItems,
               disabled: !onCallImagen || snLoadingAny,
@@ -10352,7 +10625,7 @@
             })
           ),
           // Tip
-          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', margin: 0, flexShrink: 0 } }, 'Print as a personal "How I Feel" card or laminated desk reference for students who struggle to verbalize sensory needs.')
+          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: ink('#6b7280'), margin: 0, flexShrink: 0 } }, 'Print as a personal "How I Feel" card or laminated desk reference for students who struggle to verbalize sensory needs.')
         );
       }
 
@@ -10362,7 +10635,7 @@
         var amLoadingAny = Object.keys(amLoading).length > 0;
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
-            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Questions a student can initiate \u2014 tap any card to speak it aloud'),
+            e('p', { style: { fontSize: '12px', color: ink('#6b7280'), margin: 0 } }, 'Questions a student can initiate \u2014 tap any card to speak it aloud'),
             e('button', { onClick: genAllAmItems, disabled: !onCallImagen || amLoadingAny, 'aria-label': t('symbol_studio.generate_all_ask_me_item_images','Generate all ask me item images'), style: Object.assign({}, S.btn(BLUE, '#fff', !onCallImagen || amLoadingAny), { marginLeft: 'auto' }) }, amLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
           ),
           e('div', { id: 'ss-pq-askme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: '12px', overflowY: 'auto', flex: 1 } },
@@ -10388,7 +10661,7 @@
               );
             })
           ),
-          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', margin: 0, flexShrink: 0 } }, 'Print as a laminated card in a communication binder, or display on a tablet for students to initiate questions independently.')
+          e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: ink('#6b7280'), margin: 0, flexShrink: 0 } }, 'Print as a laminated card in a communication binder, or display on a tablet for students to initiate questions independently.')
         );
       }
 
@@ -10400,13 +10673,13 @@
         var PAIN_LABELS = ['1\nNo pain','2\nA little','3\nSome','4\nMild','5\nModerate','6\nMore','7\nStrong','8\nVery bad','9\nSevere','10\nWorst'];
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
-            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Help students communicate pain level and location without words'),
+            e('p', { style: { fontSize: '12px', color: ink('#6b7280'), margin: 0 } }, 'Help students communicate pain level and location without words'),
             e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, 'aria-label': t('symbol_studio.generate_all_body_part_images','Generate all body part images'), style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
           ),
           // Pain scale
           e('div', { id: 'ss-pq-bodycheck', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' } },
             e('div', null,
-              e('div', { style: { fontWeight: 700, fontSize: '12px', color: '#374151', marginBottom: '8px' } }, 'Pain Scale \u2014 tap to select'),
+              e('div', { style: { fontWeight: 700, fontSize: '12px', color: ink('#374151'), marginBottom: '8px' } }, 'Pain Scale \u2014 tap to select'),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 PAIN_LABELS.map(function (lbl, i) {
                   var level = i + 1;
@@ -10418,16 +10691,16 @@
                     onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: { width: 52, padding: '8px 4px', borderRadius: '10px', background: PAIN_COLORS[i], border: isSelected ? '3px solid #1e293b' : '3px solid transparent', cursor: 'pointer', textAlign: 'center', boxShadow: isSelected ? '0 0 0 3px rgba(0,0,0,0.2)' : 'none', transition: 'transform 0.1s', transform: isSelected ? 'scale(1.12)' : 'scale(1)' }
                   },
-                    e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' } }, level),
-                    e('div', { style: { fontSize: '9px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)', lineHeight: 1.3, whiteSpace: 'pre-line' } }, lbl.split('\n')[1])
+                    e('div', { style: { fontWeight: 800, fontSize: '16px', color: i < 7 ? '#111827' : '#fff', textShadow: i < 7 ? 'none' : '0 1px 2px rgba(0,0,0,0.4)' } }, level),
+                    e('div', { style: { fontSize: '9px', color: i < 7 ? '#111827' : '#fff', textShadow: i < 7 ? 'none' : '0 1px 2px rgba(0,0,0,0.4)', lineHeight: 1.3, whiteSpace: 'pre-line' } }, lbl.split('\n')[1])
                   );
                 })
               ),
-              bcPainLevel && e('p', { style: { marginTop: '8px', fontSize: '13px', fontWeight: 700, color: ROSE } }, 'Selected: Pain level ' + bcPainLevel + ' \u2014 ' + PAIN_LABELS[bcPainLevel - 1].split('\n')[1])
+              bcPainLevel && e('p', { style: { marginTop: '8px', fontSize: '13px', fontWeight: 700, color: ink(ROSE) } }, 'Selected: Pain level ' + bcPainLevel + ' \u2014 ' + PAIN_LABELS[bcPainLevel - 1].split('\n')[1])
             ),
             // Body parts grid
             e('div', null,
-              e('div', { style: { fontWeight: 700, fontSize: '12px', color: '#374151', marginBottom: '8px' } }, 'Where does it hurt? \u2014 tap to speak'),
+              e('div', { style: { fontWeight: 700, fontSize: '12px', color: ink('#374151'), marginBottom: '8px' } }, 'Where does it hurt? \u2014 tap to speak'),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' } },
                 bcItems.map(function (item) {
                   var isLoading = !!bcLoading[item.id];
@@ -10463,7 +10736,7 @@
         var currentItem = twItems[twStep] || null;
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
-            e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Show one step at a time \u2014 use arrows to advance through the transition sequence'),
+            e('p', { style: { fontSize: '12px', color: ink('#6b7280'), margin: 0 } }, 'Show one step at a time \u2014 use arrows to advance through the transition sequence'),
             e('button', { onClick: genAllTwItems, disabled: !onCallImagen || twLoadingAny, 'aria-label': t('symbol_studio.generate_all_time_and_wait_images','Generate all time and wait images'), style: Object.assign({}, S.btn(INDIGO, '#fff', !onCallImagen || twLoadingAny), { marginLeft: 'auto' }) }, twLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
           ),
           // Live presentation step
@@ -10525,12 +10798,12 @@
           title: 'Replace current board', confirmText: 'Replace board'
         });
       };
-      var fctChipStyle = function (selected, color) {
+      var fctChipStyle = function (selected, color, inkColor) {
         return {
           padding: '6px 12px', borderRadius: '999px',
           border: '2px solid ' + (selected ? (color || PURPLE) : '#d1d5db'),
           background: selected ? (color ? color + '18' : LIGHT_PURPLE) : '#fff',
-          color: selected ? (color || PURPLE) : '#374151',
+          color: selected ? (inkColor || color || PURPLE) : '#374151',
           fontWeight: selected ? 700 : 500, fontSize: '12px', cursor: 'pointer',
           display: 'inline-flex', alignItems: 'center', gap: '5px'
         };
@@ -10556,7 +10829,7 @@
               FCT_FUNCTIONS.map(function (fn) {
                 var meta = FCT_MAP[fn];
                 var sel = cbFunction === fn;
-                return e('button', { key: fn, onClick: function () { setCbFunction(fn); }, 'aria-label': meta.label + ' function', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel, meta.color) },
+                return e('button', { key: fn, onClick: function () { setCbFunction(fn); }, 'aria-label': meta.label + ' function', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel, meta.color, meta.ink) },
                   e('span', null, meta.icon), e('span', null, meta.label));
               })
             )
@@ -10571,7 +10844,7 @@
                 var count = (FCT_PHASE_TEMPLATES[cbFunction] && FCT_PHASE_TEMPLATES[cbFunction][ph] || []).length;
                 return e('button', { key: ph, onClick: function () { setCbPhase(ph); }, 'aria-label': meta.label + ' (' + count + ' symbols)', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel) },
                   e('span', null, meta.label),
-                  e('span', { style: { fontSize: '10px', background: sel ? '#fff' : '#f3f4f6', color: sel ? PURPLE : '#6b7280', padding: '1px 6px', borderRadius: '999px', fontWeight: 700, marginLeft: '2px', border: sel ? '1px solid ' + PURPLE : '1px solid transparent' } }, count));
+                  e('span', { style: { fontSize: '10px', background: sel ? '#fff' : '#f3f4f6', color: sel ? PURPLE : '#4b5563', padding: '1px 6px', borderRadius: '999px', fontWeight: 700, marginLeft: '2px', border: sel ? '1px solid ' + PURPLE : '1px solid transparent' } }, count));
               })
             ),
             FCT_PHASE_META[cbPhase] && e('div', { style: { fontSize: '10px', color: '#6b7280', marginTop: '5px', fontStyle: 'italic' } }, FCT_PHASE_META[cbPhase].desc)
@@ -10581,14 +10854,14 @@
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', flex: 1, minWidth: '200px' } },
               e('span', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Preview (' + fctPhasePreview.length + (fctPhasePreview.length === 1 ? ' symbol' : ' symbols') + '):'),
               fctPhasePreview.map(function (lbl, li) {
-                return e('span', { key: li, style: { background: '#fff', border: '1px solid ' + (activeFctMeta.color || '#d1d5db'), color: activeFctMeta.color || '#374151', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 } }, lbl);
+                return e('span', { key: li, style: { background: '#fff', border: '1px solid ' + (activeFctMeta.color || '#d1d5db'), color: activeFctMeta.ink || '#374151', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 } }, lbl);
               })
             ),
             e('button', {
               onClick: async function () { if (await confirmReplaceBoard()) applyFctTemplate(cbFunction, cbPhase); },
               disabled: !fctPhasePreview.length,
               'aria-label': t('symbol_studio.build_board_from_fct_template','Build board from FCT template'),
-              style: Object.assign({}, S.btn(activeFctMeta.color || PURPLE, '#fff', !fctPhasePreview.length), { whiteSpace: 'nowrap' })
+              style: Object.assign({}, S.btn(activeFctMeta.ink || PURPLE, '#fff', !fctPhasePreview.length), { whiteSpace: 'nowrap' })
             }, 'Build board →')
           ),
           // Tip from FCT_MAP
@@ -10662,7 +10935,7 @@
         // Print & export bar
         e('div', { className: 'ss-no-print', style: { padding: '10px 14px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
           qbMode === 'firstthen' && (ftFirstImage || ftThenImage) && e('button', { onClick: function () { exportQuickBoardHTML('firstthen'); }, 'aria-label': t('symbol_studio.export_first_then_board_as_accessible_html','Export First-Then board as accessible HTML'), style: S.btn('#fef9c3', '#92400e', false) }, '\uD83C\uDF10 Export HTML'),
-          e('button', { onClick: function () { window.print(); }, 'aria-label': t('symbol_studio.print_board','Print board'), style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDDA8\uFE0F Print Board')
+          e('button', { onClick: function () { printRegion('ss-pq', t('symbol_studio.quick_board_print_title', 'Quick Board')); }, 'aria-label': t('symbol_studio.print_board','Print board'), style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDDA8\uFE0F Print Board')
         ),
         e('input', { type: 'file', accept: 'image/*', ref: qbUploadRef, style: { display: 'none' }, onChange: handleQbUpload })
       );
@@ -10677,7 +10950,7 @@
             sectionLabel('Student Profiles'),
             profiles.length < MAX_PROFILES && e('button', {
               onClick: addProfile,
-              'aria-label': t('symbol_studio.add_new_student_profile','Add new student profile'), style: { padding: '2px 8px', border: '1px dashed #6b7280', borderRadius: '12px', background: 'transparent', color: '#6b7280', fontSize: '11px', cursor: 'pointer', lineHeight: 1.4 }
+              'aria-label': t('symbol_studio.add_new_student_profile','Add new student profile'), style: { padding: '2px 8px', border: '1px dashed ' + ink('#6b7280'), borderRadius: '12px', background: 'transparent', color: ink('#6b7280'), fontSize: '11px', cursor: 'pointer', lineHeight: 1.4 }
             }, '+ Add')
           ),
           // Profile chips row
@@ -10706,7 +10979,7 @@
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { name: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
             }, placeholder: t('symbol_studio.e_g_marcus_never_leaves_this_device','e.g. Marcus (never leaves this device)'), 'aria-label': t('symbol_studio.display_name_local_only','Display name - local only'), style: Object.assign({}, S.input, { marginBottom: '2px' }) }),
-            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '0 0 6px' } }, 'Used in Social Stories and prints. Included in manual backups; not cloud sync.'),
+            e('p', { style: { fontSize: '9px', color: ink('#6b7280'), margin: '0 0 6px' } }, 'Used in Social Stories and prints. Included in manual backups; not cloud sync.'),
             e('label', { style: S.lbl }, 'Codename (used for tracking)'),
             e('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' } },
               e('select', {
@@ -10751,8 +11024,8 @@
             e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
               e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), 'aria-label': t('symbol_studio.generate_student_avatar','Generate student avatar'), style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
               e('button', { onClick: function () { fileInputRef.current && fileInputRef.current.click(); }, 'aria-label': 'Upload', style: S.btn('#f3f4f6', '#374151', false) }, '📷 Upload'),
-              activeProfile.image && e('button', { onClick: clearAvatar, title: t('symbol_studio.clear_avatar_image','Clear avatar image'), 'aria-label': t('symbol_studio.clear_avatar_image_2','Clear avatar image'), style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️'),
-              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: t('symbol_studio.delete_this_profile','Delete this profile'), 'aria-label': 'Delete profile ' + (activeProfile.name || 'student'), style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
+              activeProfile.image && e('button', { onClick: clearAvatar, title: t('symbol_studio.clear_avatar_image','Clear avatar image'), 'aria-label': t('symbol_studio.clear_avatar_image_2','Clear avatar image'), style: S.btn('#fee2e2', '#b91c1c', false) }, '🗑️'),
+              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: t('symbol_studio.delete_this_profile','Delete this profile'), 'aria-label': 'Delete profile ' + (activeProfile.name || 'student'), style: S.btn('#fee2e2', '#b91c1c', false) }, '✕')
             ),
             e('input', { type: 'file', accept: 'image/*', ref: fileInputRef, style: { display: 'none' }, onChange: uploadAvatarFile })
           )
@@ -10771,15 +11044,15 @@
             'aria-label': t('symbol_studio.custom_art_style_description','Custom art style description'),
             style: Object.assign({}, S.input, { marginBottom: '8px', fontSize: '11px' })
           }),
-          e('label', { style: { display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#374151' } },
+          e('label', { style: { display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: ink('#374151') } },
             e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); }, 'aria-label': t('symbol_studio.auto_clean_text_from_images','Auto-clean text from images') }),
             e('span', null, 'Auto-clean text from images')
           ),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
           e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, 'Category Colors (AAC)'),
           e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '4px' } },
             [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adj'], ['other', 'Other']].map(function (pair) {
-              return e('label', { key: pair[0], style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#374151', cursor: 'pointer' } },
+              return e('label', { key: pair[0], style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: ink('#374151'), cursor: 'pointer' } },
                 e('input', {
                   type: 'color', value: catFill[pair[0]] || '#f9fafb',
                   onChange: function (ev) { var v = ev.target.value; setCatFill(function (prev) { var n = Object.assign({}, prev); n[pair[0]] = v; store(STORAGE_CAT_COLORS + '_fill', n); return n; }); },
@@ -10790,10 +11063,10 @@
             }),
             e('button', {
               onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-              'aria-label': t('symbol_studio.reset_category_colors','Reset category colors'), style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+              'aria-label': t('symbol_studio.reset_category_colors','Reset category colors'), style: { fontSize: '10px', color: ink('#6b7280'), background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
             }, 'Reset')
           ),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } }, 'Colors apply to boards and symbol cards'),
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '0' } }, 'Colors apply to boards and symbol cards'),
           e('label', { style: Object.assign({}, S.lbl, { marginTop: '10px' }) }, '🔊 Quick Voice Settings'),
           e('select', {
               value: currentVoice,
@@ -10824,9 +11097,9 @@
               }).catch(function () {});
             },
             'aria-label': t('symbol_studio.preview_selected_voice','Preview selected voice'),
-            style: Object.assign({}, { fontSize: '10px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginBottom: '4px' })
+            style: Object.assign({}, { fontSize: '10px', color: ink(PURPLE), background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginBottom: '4px' })
           }, '🔊 Preview voice'),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } },
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '0' } },
             onSetVoice ? 'Synced with app-wide voice settings' : 'Used for read-aloud in stories, boards, and AAC mode'
           )
         ),
@@ -10836,16 +11109,16 @@
           if (gBank.length === 0) return null;
           var gc = { seed: 0, sprout: 0, growing: 0, blooming: 0, mastered: 0 };
           gBank.forEach(function (w) { gc[w.growth]++; });
-          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%)', border: '1px solid #d1fae5' }) },
+          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%)', border: '1px solid #d1fae5', color: '#1f2937' }) },
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' } },
-              sectionLabel('🌱 Word Garden'),
+              sectionLabel('🌱 Word Garden', true),
               e('button', { onClick: function () { setTab('garden'); }, 'aria-label': t('symbol_studio.open_garden_tab','Open garden tab'), style: { fontSize: '9px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 } }, 'Open →')),
             e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               GROWTH_ORDER.map(function (lv) {
                 var g = GROWTH_LEVELS[lv]; var ct = gc[lv] || 0; if (ct === 0) return null;
                 return e('span', { key: lv, style: { fontSize: '10px', padding: '1px 6px', borderRadius: '10px', background: g.bg, color: g.color, fontWeight: 600, border: '1px solid ' + g.border } }, g.icon + ' ' + ct);
               })),
-            e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '4px 0 0' } }, (function () {
+            e('p', { style: { fontSize: '10px', color: '#4b5563', margin: '4px 0 0' } }, (function () {
               var types = {}; gBank.forEach(function (w) { w.contextTypes.forEach(function (t) { types[t] = 1; }); });
               return gBank.length + ' words across ' + Object.keys(types).length + ' tool types';
             })()));
@@ -10871,9 +11144,9 @@
             return { word: w, score: score };
           }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
           if (focusCandidates.length === 0) return null;
-          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%)', border: '1px solid #c7d2fe' }) },
-            sectionLabel('🎯 Weekly Focus'),
-            e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 6px' } }, 'Words that would grow most from attention this week:'),
+          return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%)', border: '1px solid #c7d2fe', color: '#1f2937' }) },
+            sectionLabel('🎯 Weekly Focus', true),
+            e('p', { style: { fontSize: '10px', color: '#4b5563', margin: '0 0 6px' } }, 'Words that would grow most from attention this week:'),
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
               focusCandidates.map(function (fc) {
                 var w = fc.word; var gl = GROWTH_LEVELS[w.growth];
@@ -10887,16 +11160,16 @@
                     : e('span', { style: { fontSize: '14px' } }, gl.icon),
                   e('div', { style: { flex: 1, minWidth: 0 } },
                     e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, w.displayLabel),
-                    missingCtx.length > 0 && e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'Add to: ' + missingCtx.join(', '))
+                    missingCtx.length > 0 && e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'Add to: ' + missingCtx.join(', '))
                   ),
                   w.isCore && e('span', { style: { fontSize: '7px', background: '#dbeafe', color: '#1d4ed8', padding: '1px 4px', borderRadius: '3px', fontWeight: 700 } }, 'CORE'));
               })),
-            e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '6px 0 0', fontStyle: 'italic' } }, 'Model each word 5+ times daily across settings'));
+            e('p', { style: { fontSize: '9px', color: '#4b5563', margin: '6px 0 0', fontStyle: 'italic' } }, 'Model each word 5+ times daily across settings'));
         })(),
         // Backup & Restore
         e('div', { style: S.card },
           sectionLabel('Backup & Restore'),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 8px' } },
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '0 0 8px' } },
             gallery.length + ' symbol' + (gallery.length !== 1 ? 's' : '') + ' · ' +
             savedBoards.length + ' board' + (savedBoards.length !== 1 ? 's' : '') + ' · ' +
             savedSchedules.length + ' schedule' + (savedSchedules.length !== 1 ? 's' : '')
@@ -10930,33 +11203,33 @@
               e('button', {
                 onClick: function () { setShowAnalytics(function (v) { return !v; }); },
                 'aria-label': t('symbol_studio.toggle_aac_usage_analytics','Toggle AAC usage analytics'),
-                style: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', width: '100%', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: showAnalytics ? '8px' : 0 }
-              }, '📊 AAC Usage Analytics ', e('span', { style: { color: '#6b7280', fontWeight: 400, marginLeft: 'auto', fontSize: '10px' } }, showAnalytics ? '▲ hide' : '▼ show')),
-              showAnalytics && allSessions.length === 0 && e('p', { style: { fontSize: '10px', color: '#6b7280', margin: 0 } }, 'No sessions recorded yet. Use a board in Use mode to start tracking.'),
+                style: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', width: '100%', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: ink('#374151'), marginBottom: showAnalytics ? '8px' : 0 }
+              }, '📊 AAC Usage Analytics ', e('span', { style: { color: ink('#6b7280'), fontWeight: 400, marginLeft: 'auto', fontSize: '10px' } }, showAnalytics ? '▲ hide' : '▼ show')),
+              showAnalytics && allSessions.length === 0 && e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: 0 } }, 'No sessions recorded yet. Use a board in Use mode to start tracking.'),
               showAnalytics && allSessions.length > 0 && e('div', null,
                 // Summary row
                 e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
                   e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
                     e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#047857' } }, totalUtterances),
-                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'symbol taps')
+                    e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'symbol taps')
                   ),
                   e('div', { style: { flex: 1, background: '#eff6ff', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
                     e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#2563eb' } }, allSessions.length),
-                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'sessions')
+                    e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'sessions')
                   ),
                   e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
                     e('div', { style: { fontSize: '16px', fontWeight: 800, color: PURPLE } }, thisWeekEntries),
-                    e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'this week' + (lastWeekEntries > 0 ? (thisWeekEntries >= lastWeekEntries ? ' ▲' : ' ▼') : '')))
+                    e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'this week' + (lastWeekEntries > 0 ? (thisWeekEntries >= lastWeekEntries ? ' ▲' : ' ▼') : '')))
 
                 ),
                 // Top words
                 topWords.length > 0 && e('div', { style: { marginBottom: '8px' } },
-                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '5px' } }, 'Top words:'),
+                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: ink('#374151'), marginBottom: '5px' } }, 'Top words:'),
                   e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                     topWords.map(function (w) {
                       var pct = Math.round((wordCount[w] / totalUtterances) * 100);
                       return e('div', { key: w, style: { background: LIGHT_PURPLE, borderRadius: '5px', padding: '2px 7px', fontSize: '10px', color: PURPLE, fontWeight: 600 } },
-                        w, e('span', { style: { fontWeight: 400, color: '#6b7280', marginLeft: '3px' } }, wordCount[w])
+                        w, e('span', { style: { fontWeight: 400, color: '#4b5563', marginLeft: '3px' } }, wordCount[w])
                       );
                     })
                   )
@@ -10976,18 +11249,18 @@
                   }
                   var maxD = Math.max.apply(null, days.concat([1]));
                   return e('div', { style: { marginBottom: '8px' } },
-                    e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '5px' } }, '7-Day Activity:'),
+                    e('div', { style: { fontSize: '10px', fontWeight: 600, color: ink('#374151'), marginBottom: '5px' } }, '7-Day Activity:'),
                     e('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '3px', height: '48px' } },
                       days.map(function (c, i) {
                         var h = Math.max(3, Math.round((c / maxD) * 44));
                         return e('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' } },
-                          c > 0 && e('span', { style: { fontSize: '8px', color: '#6b7280' } }, c),
+                          c > 0 && e('span', { style: { fontSize: '8px', color: ink('#6b7280') } }, c),
                           e('div', { style: { width: '100%', height: h + 'px', background: c > 0 ? PURPLE : '#e5e7eb', borderRadius: '2px', transition: 'height 0.3s' } })
                         );
                       })
                     ),
                     e('div', { style: { display: 'flex', gap: '3px', marginTop: '2px' } },
-                      dayLabels.map(function (l, i) { return e('div', { key: i, style: { flex: 1, textAlign: 'center', fontSize: '8px', color: '#6b7280' } }, l); })
+                      dayLabels.map(function (l, i) { return e('div', { key: i, style: { flex: 1, textAlign: 'center', fontSize: '8px', color: ink('#6b7280') } }, l); })
                     )
                   );
                 })(),
@@ -10997,19 +11270,19 @@
                   var diversityPct = totalUtterances > 0 ? Math.round((uniqueWords / totalUtterances) * 100) : 0;
                   return e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
                     e('div', { style: { flex: 1, background: '#fef3c7', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
-                      e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#d97706' } }, uniqueWords),
-                      e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'unique words')
+                      e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#92400e' } }, uniqueWords),
+                      e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'unique words')
                     ),
                     e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
                       e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#047857' } }, diversityPct + '%'),
-                      e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'unique / taps')
+                      e('div', { style: { fontSize: '9px', color: '#4b5563' } }, 'unique / taps')
                     )
                   );
                 })(),
                 // Recent sessions
-                e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#374151', marginBottom: '4px' } }, 'Recent sessions:'),
+                e('div', { style: { fontSize: '10px', fontWeight: 600, color: ink('#374151'), marginBottom: '4px' } }, 'Recent sessions:'),
                 allSessions.slice(-5).reverse().map(function (s, i) {
-                  return e('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#6b7280', padding: '2px 0', borderBottom: '1px solid #f3f4f6' } },
+                  return e('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: ink('#6b7280'), padding: '2px 0', borderBottom: '1px solid #f3f4f6' } },
                     e('span', null, s.boardTitle || 'Board'),
                     e('span', null, symbolSessionMetrics([s]).symbolTaps + ' taps · ' + new Date(s.date).toLocaleDateString([], { month: 'short', day: 'numeric' }))
                   );
@@ -11022,17 +11295,17 @@
                     store(scopedKey(STORAGE_USAGE),updated);
                     setUsageLog(updated);
                   },
-                  'aria-label': t('symbol_studio.clear_aac_usage_analytics_data','Clear AAC usage analytics data'), style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
+                  'aria-label': t('symbol_studio.clear_aac_usage_analytics_data','Clear AAC usage analytics data'), style: Object.assign({}, S.btn('#fee2e2', '#b91c1c', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
                 }, '🗑️ Clear Analytics')
               )
             );
           })(),
           cloudSync && !isCanvasEnv && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' } },
-              e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? '#16a34a' : syncStatus === 'error' ? '#dc2626' : '#6b7280' } },
+              e('span', { style: { fontSize: '10px', color: syncStatus === 'synced' ? ink('#15803d') : syncStatus === 'error' ? ink('#b91c1c') : ink('#6b7280') } },
                 syncStatus === 'syncing' ? '⏳ Syncing...' : syncStatus === 'synced' ? '✓ Cloud synced' : syncStatus === 'error' ? '✗ Sync error' : '☁️ Cloud backup'
               ),
-              lastSynced && e('span', { style: { fontSize: '9px', color: '#6b7280', marginLeft: 'auto' } }, new Date(lastSynced).toLocaleDateString())
+              lastSynced && e('span', { style: { fontSize: '9px', color: ink('#6b7280'), marginLeft: 'auto' } }, new Date(lastSynced).toLocaleDateString())
             ),
             e('div', { style: { display: 'flex', gap: '4px' } },
               e('button', { onClick: syncToCloud, disabled: syncStatus === 'syncing', 'aria-label': t('symbol_studio.save_data_to_cloud','Save data to cloud'), style: Object.assign({}, S.btn(PURPLE, '#fff', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '☁️ Sync Now'),
@@ -11043,7 +11316,7 @@
         // ── IEP Communication Goals ──
         e('div', { style: S.card },
           sectionLabel('IEP Communication Goals'),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0 0 8px' } }, 'Track AAC & communication goals. Progress syncs with Teacher Dashboard RTI data.'),
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '0 0 8px' } }, 'Track AAC & communication goals. Progress syncs with Teacher Dashboard RTI data.'),
           // Active goals list
           activeGoals.length > 0 && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' } },
             activeGoals.map(function (g) {
@@ -11075,28 +11348,28 @@
                   e('button', { onClick: function () { removeIepGoal(g.id); }, 'aria-label': 'Remove IEP goal: ' + g.text, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
                 ),
                 // Meta row: cue level, data method, and IEP section — collapses if none are set.
-                (g.cueLevel || g.dataMethod || g.linkedIepSection) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '5px', fontSize: '9px', color: '#6b7280' } },
+                (g.cueLevel || g.dataMethod || g.linkedIepSection) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '5px', fontSize: '9px', color: '#4b5563' } },
                   g.cueLevel && g.cueLevel !== 'independent' && e('span', { style: { background: '#ede9fe', color: '#5b21b6', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: t('symbol_studio.cue_level_currently_required','Cue level currently required') }, '🫳 ' + g.cueLevel + ' cue'),
                   g.cueLevel === 'independent' && e('span', { style: { background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Independent — no cue needed' }, '⭐ independent'),
                   g.dataMethod && e('span', { style: { background: '#f1f5f9', color: '#334155', padding: '1px 6px', borderRadius: '999px' }, title: t('symbol_studio.data_collection_method','Data collection method') }, '📊 ' + g.dataMethod),
                   g.linkedIepSection && e('span', { style: { background: '#fff7ed', color: '#9a3412', padding: '1px 6px', borderRadius: '999px', fontStyle: 'italic' }, title: t('symbol_studio.linked_iep_section','Linked IEP section') }, '📎 ' + g.linkedIepSection)
                 ),
-                g.baseline && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: t('symbol_studio.starting_performance','Starting performance') }, 'Baseline: ' + g.baseline),
-                g.accommodations && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: t('symbol_studio.required_supports','Required supports') }, 'Accommodations: ' + g.accommodations),
+                g.baseline && e('div', { style: { fontSize: '9px', color: '#4b5563', marginBottom: '4px', fontStyle: 'italic' }, title: t('symbol_studio.starting_performance','Starting performance') }, 'Baseline: ' + g.baseline),
+                g.accommodations && e('div', { style: { fontSize: '9px', color: '#4b5563', marginBottom: '4px', fontStyle: 'italic' }, title: t('symbol_studio.required_supports','Required supports') }, 'Accommodations: ' + g.accommodations),
                 // Progress bar
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   e('div', { style: { flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' } },
                     e('div', { style: { height: '100%', width: Math.min(100, pct) + '%', background: pct >= 100 ? '#16a34a' : typeColor, borderRadius: '4px', transition: 'width 0.3s' } })
                   ),
-                  e('span', { style: { fontSize: '10px', fontWeight: 700, color: pct >= 100 ? '#16a34a' : '#374151', minWidth: '36px', textAlign: 'right' } }, g.currentCount + '/' + g.targetCount)
+                  e('span', { style: { fontSize: '10px', fontWeight: 700, color: pct >= 100 ? '#15803d' : '#374151', minWidth: '36px', textAlign: 'right' } }, g.currentCount + '/' + g.targetCount)
                 ),
                 // Recent accuracy
                 recentTrials.length > 0 && e('div', { style: { display: 'flex', gap: '4px', marginTop: '4px', alignItems: 'center' } },
-                  e('span', { style: { fontSize: '9px', color: '#6b7280' } }, 'Last 10:'),
+                  e('span', { style: { fontSize: '9px', color: '#4b5563' } }, 'Last 10:'),
                   recentTrials.map(function (t, ti) {
                     return e('span', { key: ti, style: { width: '8px', height: '8px', borderRadius: '50%', background: t.success ? '#16a34a' : '#dc2626', display: 'inline-block' } });
                   }),
-                  e('span', { style: { fontSize: '9px', fontWeight: 700, color: recentAcc >= 80 ? '#16a34a' : recentAcc >= 60 ? '#d97706' : '#dc2626', marginLeft: '4px' } }, recentAcc + '% acc')
+                  e('span', { style: { fontSize: '9px', fontWeight: 700, color: recentAcc >= 80 ? '#15803d' : recentAcc >= 60 ? '#b45309' : '#b91c1c', marginLeft: '4px' } }, recentAcc + '% acc')
                 ),
                 // Legacy auto-trial cleanup: pre-manual-only data inflated this goal. Offer a
                 // clinician-triggered, confirmed recompute (never silent — see recomputeIepGoal).
@@ -11128,7 +11401,7 @@
               );
             })
           ),
-          activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: '#6b7280', fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
+          activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: ink('#6b7280'), fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
           // Add goal form — progressive disclosure: primary fields visible, IEP-meta under a toggle.
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
             e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -11161,10 +11434,10 @@
             // Collapsible IEP-team metadata — priority, baseline, target date, cue level, etc.
             // Hidden by default so quick adds stay fast; SLPs get the full field set when they need it.
             e('details', { style: { fontSize: '10px' } },
-              e('summary', { style: { cursor: 'pointer', color: '#6b7280', fontWeight: 700, padding: '2px 0' } }, '+ IEP team details (priority, baseline, target date, cue level)'),
+              e('summary', { style: { cursor: 'pointer', color: ink('#6b7280'), fontWeight: 700, padding: '2px 0' } }, '+ IEP team details (priority, baseline, target date, cue level)'),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px', marginTop: '6px' } },
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Priority'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Priority'),
                   e('select', { id: 'iep-goal-priority', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } },
                     e('option', { value: 'standard' }, 'Standard'),
                     e('option', { value: 'high' }, 'High'),
@@ -11172,7 +11445,7 @@
                   )
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Cue level'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Cue level'),
                   e('select', { id: 'iep-goal-cue', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' }, title: t('symbol_studio.support_required_for_the_student_to_succeed','Support required for the student to succeed on this goal') },
                     e('option', { value: 'independent' }, 'Independent'),
                     e('option', { value: 'visual' }, 'Visual cue'),
@@ -11182,7 +11455,7 @@
                   )
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Data method'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Data method'),
                   e('select', { id: 'iep-goal-datamethod', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } },
                     e('option', { value: 'frequency' }, 'Frequency count'),
                     e('option', { value: 'percentage' }, 'Percentage accuracy'),
@@ -11191,19 +11464,19 @@
                   )
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Target date'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Target date'),
                   e('input', { id: 'iep-goal-targetdate', type: 'date', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Baseline'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Baseline'),
                   e('input', { id: 'iep-goal-baseline', type: 'text', placeholder: t('symbol_studio.e_g_2_10_accuracy_on_probe_trials_sept_2026','e.g. 2/10 accuracy on probe trials (Sept 2026)'), style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Accommodations'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Accommodations'),
                   e('input', { id: 'iep-goal-accom', type: 'text', placeholder: t('symbol_studio.e_g_aac_device_available_visual_supports_ext','e.g. AAC device available, visual supports, extended time'), style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
-                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Linked IEP section (optional)'),
+                  e('span', { style: { color: ink('#374151'), fontWeight: 700 } }, 'Linked IEP section (optional)'),
                   e('input', { id: 'iep-goal-iepsection', type: 'text', placeholder: 'e.g. Communication — Expressive Language', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
                 )
               )
@@ -11396,7 +11669,7 @@
             var filtered = timeSuggestions.filter(function (s) { return existing.indexOf(s) === -1; });
             if (filtered.length === 0) return null;
             return e('div', { style: { marginBottom: '4px' } },
-              e('div', { style: { fontSize: '9px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '💡 Suggested (' + (hour < 9 ? 'Morning' : hour < 12 ? 'School' : hour < 14 ? 'Lunch' : hour < 16 ? 'Afternoon' : 'Evening') + ')'),
+              e('div', { style: { fontSize: '9px', color: ink('#6b7280'), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '💡 Suggested (' + (hour < 9 ? 'Morning' : hour < 12 ? 'School' : hour < 14 ? 'Lunch' : hour < 16 ? 'Afternoon' : 'Evening') + ')'),
               e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                 filtered.map(function (s) {
                   return e('button', { key: s, onClick: function () { setSymLabel(s); }, 'aria-label': 'Quick set label: ' + s, style: { padding: '2px 7px', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', fontSize: '9px', cursor: 'pointer', color: '#92400e', fontWeight: 500 } }, s);
@@ -11423,9 +11696,9 @@
             : e('div', null,
                 e('label', { style: S.lbl }, 'One label per line'),
                 e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', 'aria-label': t('symbol_studio.batch_symbol_labels_one_per_line','Batch symbol labels, one per line'), style: Object.assign({}, S.textarea, { height: '70px' }) }),
-                e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
+                e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
                 e('div', { style: { marginTop: '6px' } },
-                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
+                  e('div', { style: { fontSize: '10px', fontWeight: 600, color: ink('#6b7280'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
                   e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                     QUICK_SETS.map(function (qs) {
                       return e('button', { key: qs.label, onClick: function () { setSymBatch(qs.items.join('\n')); }, 'aria-label': 'Quick batch: ' + qs.label, style: { padding: '3px 7px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '3px' } },
@@ -11442,9 +11715,9 @@
           // hand-designed, CC BY-SA AAC symbol library) for the current label.
           e('button', { onClick: openPhotoPicker, 'aria-label': t('symbol_studio.find_a_photo','Find a photo'), title: t('symbol_studio.photo_search_help', 'Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety'), style: S.btn('#f0f9ff', '#075985', false) }, '\uD83D\uDCF7 Find photo'),
           e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': t('symbol_studio.find_a_validated_mulberry_symbol_2','Find a validated Mulberry symbol'), title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280'), margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: ink('#0e7490') } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
-          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': t('symbol_studio.clear_all_symbols_from_symbol_bank','Clear all symbols from Symbol Bank'), style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
+          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': t('symbol_studio.clear_all_symbols_from_symbol_bank','Clear all symbols from Symbol Bank'), style: S.btn('#fee2e2', '#b91c1c', false) }, '🗑️ Clear All')
         ),
         // Preview + gallery
         e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '10px' } },
@@ -11456,7 +11729,7 @@
             e('div', { style: { flex: 1 } },
               e('h3', { style: { fontWeight: 700, fontSize: '16px', color: '#111827', margin: '0 0 6px' } }, selectedItem.label),
               e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '8px', alignItems: 'center' } },
-                e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: selectedItem.reviewStatus === 'approved' ? '#dcfce7' : selectedItem.reviewStatus === 'needs_changes' ? '#fee2e2' : '#f3f4f6', color: selectedItem.reviewStatus === 'approved' ? '#166534' : selectedItem.reviewStatus === 'needs_changes' ? '#b91c1c' : '#6b7280' } }, selectedItem.reviewStatus === 'approved' ? 'Approved' : selectedItem.reviewStatus === 'needs_changes' ? 'Needs changes' : 'Unreviewed'),
+                e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: selectedItem.reviewStatus === 'approved' ? '#dcfce7' : selectedItem.reviewStatus === 'needs_changes' ? '#fee2e2' : '#f3f4f6', color: selectedItem.reviewStatus === 'approved' ? '#166534' : selectedItem.reviewStatus === 'needs_changes' ? '#b91c1c' : '#4b5563' } }, selectedItem.reviewStatus === 'approved' ? 'Approved' : selectedItem.reviewStatus === 'needs_changes' ? 'Needs changes' : 'Unreviewed'),
                 selectedItem.validated && e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#ecfeff', color: '#0e7490' } }, 'Validated source'),
                 selectedItem.isPreferred && e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#ede9fe', color: PURPLE } }, 'Preferred variant')
               ),
@@ -11467,7 +11740,7 @@
                 e('button', { onClick: function () { refineSymbol(selectedItem.id, 'Remove all text, labels, letters, and words from the image. Keep the illustration clean.'); }, disabled: !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Remove text from ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '🚫 Remove Text'),
                 e('button', { onClick: function () { speakCell(selectedItem.label); }, 'aria-label': 'Speak ' + selectedItem.label, style: S.btn('#dcfce7', '#166534', false) }, '🔊 Speak'),
                 e('button', { onClick: function () { downloadSym(selectedItem); }, 'aria-label': 'Download ' + selectedItem.label + ' as PNG', style: S.btn('#dbeafe', '#1e40af', false) }, '⬇️ PNG'),
-                e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️')
+                e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', false) }, '🗑️')
               ),
               e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
                 e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) { ev.preventDefault(); if (selectedItem.locked) createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); else refineSymbol(selectedItem.id, symRefine[selectedItem.id]); } }, placeholder: selectedItem.locked ? 'Describe a new variant; the original stays locked' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
@@ -11479,11 +11752,11 @@
                 e('button', { onClick: function () { setSymbolReview(selectedItem.id, 'needs_changes'); }, 'aria-pressed': selectedItem.reviewStatus === 'needs_changes', style: S.btn('#fee2e2', '#b91c1c', false), 'aria-label': 'Mark ' + selectedItem.label + ' as needing changes' }, 'Needs changes'),
                 selectedItem.reviewStatus !== 'unreviewed' && e('button', { onClick: function () { setSymbolReview(selectedItem.id, 'unreviewed'); }, style: S.btn('#f3f4f6', '#6b7280', false), 'aria-label': 'Reset review for ' + selectedItem.label }, 'Reset')
               ),
-              e('label', { style: Object.assign({}, S.lbl, { display: 'block', marginBottom: '7px' }) },
+              e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block', marginBottom: '7px' }) },
                 'Search aliases',
                 e('input', { type: 'text', key: selectedItem.id, value: Object.prototype.hasOwnProperty.call(symAliasDraft, selectedItem.id) ? symAliasDraft[selectedItem.id] : (selectedItem.aliases || []).join(', '), onChange: function (ev) { var value = ev.target.value; setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); next[selectedItem.id] = value; return next; }); }, onBlur: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); ev.currentTarget.blur(); } }, placeholder: t('symbol_studio.restroom_toilet_washroom','restroom, toilet, washroom'), 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
               ),
-              e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
+              e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block' }) },
                 'Word type (AAC color)',
                 e('select', { value: selectedItem.category, 'aria-label': 'Word type for ' + selectedItem.label, style: S.input, onChange: function (event) {
                   var category = event.target.value; var id = selectedItem.id;
@@ -11492,7 +11765,7 @@
                   finishSymbolWork(work);
                 } }, ['other', 'noun', 'verb', 'adjective'].map(function (category) { return e('option', { key: category, value: category }, category === 'other' ? 'Other / not set' : category); }))
               ),
-              e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
+              e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block' }) },
                 'Topics (comma-separated)',
                 e('input', { key: 'topics-' + selectedItem.id + '-' + selectedItem.topicTags.join(','), type: 'text', defaultValue: selectedItem.topicTags.join(', '), 'aria-label': 'Topics for ' + selectedItem.label, style: S.input, onKeyDown: function (event) { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } }, onBlur: function (event) {
                   var topics = event.target.value.split(','); var id = selectedItem.id;
@@ -11501,7 +11774,7 @@
                   finishSymbolWork(work);
                 } })
               ),
-              e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
+              e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block' }) },
                 'Review note',
                 e('input', { type: 'text', value: selectedItem.reviewNote || '', onChange: function (ev) { setSymbolReviewNote(selectedItem.id, ev.target.value); }, placeholder: t('symbol_studio.context_or_change_needed','Context or change needed'), 'aria-label': 'Review note for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
               ),
@@ -11523,7 +11796,7 @@
               ),
               symBulk.open && e(React.Fragment, null,
                 renderSelectionPack(),
-                e('button', { type: 'button', 'aria-label': t('symbol_studio.create_board_from_selected_symbols','Create board from selected symbols'), disabled: !selectedBatchCount || draftHydratedProfile !== activeProfileId || !!draftRecovery, onClick: createBoardFromSelection, style: Object.assign({}, S.btn('#059669', '#fff', !selectedBatchCount), { minHeight: '44px', marginBottom: '8px' }) }, 'Create board from selection (' + selectedBatchCount + ')'),
+                e('button', { type: 'button', 'aria-label': t('symbol_studio.create_board_from_selected_symbols','Create board from selected symbols'), disabled: !selectedBatchCount || draftHydratedProfile !== activeProfileId || !!draftRecovery, onClick: createBoardFromSelection, style: Object.assign({}, S.btn('#047857', '#fff', !selectedBatchCount), { minHeight: '44px', marginBottom: '8px' }) }, 'Create board from selection (' + selectedBatchCount + ')'),
                 e('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '0 0 8px' } }, 'Includes selected symbols hidden by filters, in selection order. Apply any pending metadata changes before creating the board.'),
                 e('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '8px 0' } }, 'Select symbols below, then choose changes to apply together. Topics are added to existing topics.'),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' } },
@@ -11541,7 +11814,7 @@
             ),
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                e('span', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Symbol Bank (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
+                e('span', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 600, fontSize: '12px', color: ink('#374151') } }, 'Symbol Bank (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
                 e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': t('symbol_studio.search_symbols_in_the_symbol_bank','Search symbols in the Symbol Bank'), style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
                 e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, 'aria-pressed': symShowFavs, 'aria-label': symShowFavs ? 'Show all symbols' : 'Show favorite symbols only', style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
               ),
@@ -11560,7 +11833,7 @@
                 })
               ),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
-                e('span', { style: { fontSize: '9px', color: '#6b7280', fontWeight: 700 } }, 'Review:'),
+                e('span', { style: { fontSize: '9px', color: ink('#6b7280'), fontWeight: 700 } }, 'Review:'),
                 [['', 'All'], ['unreviewed', 'Unreviewed'], ['approved', 'Approved'], ['needs_changes', 'Needs changes']].map(function (pair) {
                   var status = pair[0]; var label = pair[1];
                   var active = symReviewFilter === status;
@@ -11597,7 +11870,7 @@
                     );
                   })
                 )
-              : e('div', { style: { textAlign: 'center', color: '#6b7280', padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Create your first symbol with Generate or Find validated symbol.' : e(React.Fragment, null, e('p', null, 'No symbols match the current search and filters.'), e('button', { onClick: function () { setSymFilter(''); setSymCatFilter(''); setSymTopicFilter(''); setSymReviewFilter(''); setSymShowFavs(false); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Clear filters')))
+              : e('div', { style: { textAlign: 'center', color: ink('#6b7280'), padding: '30px 0', fontSize: '13px' } }, gallery.length === 0 ? 'Create your first symbol with Generate or Find validated symbol.' : e(React.Fragment, null, e('p', null, 'No symbols match the current search and filters.'), e('button', { onClick: function () { setSymFilter(''); setSymCatFilter(''); setSymTopicFilter(''); setSymReviewFilter(''); setSymShowFavs(false); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Clear filters')))
           )
         )
       );
@@ -11674,7 +11947,7 @@
         e('p', { id: 'ss-cell-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'To reorder a board cell, focus its Speak button and press Alt plus an Arrow key.'),
         // Template picker row
         e('div', { style: { flexShrink: 0 } },
-          e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Quick Templates'),
+          e('div', { style: { fontSize: '11px', fontWeight: 600, color: ink('#6b7280'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Quick Templates'),
           e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             BOARD_TEMPLATES.map(function (t) {
               return e('button', {
@@ -11707,7 +11980,7 @@
               }, 'aria-label': 'Add ' + w.displayLabel + ' to board', title: 'This word is a seed — adding it to a board helps it grow',
                 style: { display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
                 e('img', { src: w.image, alt: '', style: { width: 16, height: 16, borderRadius: '3px', objectFit: 'contain' } }),
-                w.displayLabel, e('span', { style: { color: '#9ca3af' } }, '+'));
+                w.displayLabel, e('span', { style: { color: '#6b7280' } }, '+'));
             }));
         })(),
         // Controls row
@@ -11717,18 +11990,18 @@
             e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: t('symbol_studio.e_g_morning_routine_feelings_playground','e.g. morning routine, feelings, playground'), 'aria-label': t('symbol_studio.board_topic','Board topic'), style: S.input, autoFocus: true })
           ),
           e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': t('symbol_studio.generate_word_list','Generate word list'), style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
-          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': t('symbol_studio.generate_images','Generate images'), style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
+          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': t('symbol_studio.generate_images','Generate images'), style: S.btn('#047857', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
           boardWords.length > 0 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cols:'),
             e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, 'aria-label': t('symbol_studio.board_columns','Board columns'), style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' } })
           ),
-          boardWords.length > 0 && e('label', { style: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', cursor: 'pointer', color: '#374151' } },
+          boardWords.length > 0 && e('label', { style: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', cursor: 'pointer', color: ink('#374151') } },
             e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); }, 'aria-label': t('symbol_studio.enable_color_coding','Enable color coding') }),
             'Color coding'
           ),
           // Theme selector
           e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
-            e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, 'Theme:'),
+            e('span', { style: { fontSize: '10px', color: ink('#6b7280'), fontWeight: 600 } }, 'Theme:'),
             Object.values(BOARD_THEMES).map(function (t) {
               var active = boardTheme === t.id;
               return e('button', {
@@ -11741,7 +12014,7 @@
           ),
           // Language selector for multilingual boards
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } },
-            e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, '🌐'),
+            e('span', { style: { fontSize: '10px', color: ink('#6b7280'), fontWeight: 600 } }, '🌐'),
             e('select', {
               value: boardLang,
               onChange: function (ev) {
@@ -11894,7 +12167,7 @@
                     liveSession && liveSession.active && e('button', {
                       title: t('symbol_studio.push_board_to_student_screens','Push board to student screens'), 'aria-label': t('symbol_studio.push_board_to_student_screens_2','Push board to student screens'),
                       onClick: function () {
-                        liveSession.push(buildPortableAACPackage(b))
+                        liveSession.push(buildPortableAACPackage(b, { creditFor: bankCreditFor }))
                           .then(function () { addToast(t('toasts.board_pushed_students'), 'success'); })
                           .catch(function () { addToast(t('toasts.push_failed_check_session_connection'), 'error'); });
                       },
@@ -11931,7 +12204,7 @@
         showSentencePanel && e('div', { style: { flexShrink: 0, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
             e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#065f46' } }, '🔤 Text → Symbols'),
-            e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'Type a sentence and AI will map each word to an AAC symbol')
+            e('span', { style: { fontSize: '11px', color: '#4b5563' } }, 'Type a sentence and AI will map each word to an AAC symbol')
           ),
           e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end' } },
             e('input', {
@@ -11943,7 +12216,7 @@
               'aria-label': t('symbol_studio.sentence_to_map_to_symbols','Sentence to map to symbols'),
               style: Object.assign({}, S.input, { flex: 1, borderColor: '#86efac' })
             }),
-            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, 'aria-label': t('symbol_studio.parse_sentence_into_symbols','Parse sentence into symbols'), style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
+            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, 'aria-label': t('symbol_studio.parse_sentence_into_symbols','Parse sentence into symbols'), style: S.btn('#047857', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
               sentenceParsing ? '⏳ Mapping…' : '🤖 Map Symbols'
             )
           ),
@@ -11982,7 +12255,7 @@
               e('button', {
                 onClick: applySentenceMapping,
                 disabled: !sentenceMapping.some(function (m) { return m.selected && !m.skip; }),
-                'aria-label': t('symbol_studio.add_to_board','Add to Board'), style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
+                'aria-label': t('symbol_studio.add_to_board','Add to Board'), style: S.btn('#047857', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
               }, '✅ Add to Board (' + sentenceMapping.filter(function (m) { return m.selected && !m.skip; }).length + ')'),
               e('button', { onClick: function () { setSentenceMapping([]); setSentenceInput(''); }, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '↩ Reset')
             )
@@ -12124,6 +12397,13 @@
                   );
                 })
               ),
+              // Printed with the board: Mulberry is CC BY-SA and Commons photos carry their own licences.
+              (function () {
+                var credits = uniqueCredits(boardWords.map(function (word) { return cellCreditFor(gallery, word); }));
+                return credits.length ? e('p', { 'data-board-picture-credits': true, style: { fontSize: '10px', color: theme.textColor, margin: '8px 0 0' } },
+                  e('strong', null, 'Picture credits: '),
+                  credits.map(function (credit) { return creditText(credit) + (/^https:\/\//i.test(credit.licenseUrl || '') ? ' (' + credit.licenseUrl + ')' : ''); }).join('; ')) : null;
+              })(),
               boardColor && e('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap', alignItems: 'center' } },
                 e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, 'Colors:'),
                 [['noun', 'Noun'], ['verb', 'Verb'], ['adjective', 'Adj'], ['other', 'Other']].map(function (pair) {
@@ -12143,7 +12423,7 @@
                 }, 'Reset')
               )
             )
-          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
+          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ink('#6b7280'), flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📋'),
               e('p', { style: { fontWeight: 600 } }, 'Enter a topic and generate a complete communication board'),
               e('p', { style: { fontSize: '12px', maxWidth: '380px', textAlign: 'center' } }, 'AI writes the word list, you generate symbols, and export a print-ready board. Drag cells to reorder, or focus Speak and press Alt plus an Arrow key. Color coding follows AAC conventions.')
@@ -12158,7 +12438,7 @@
         e('p', { id: 'ss-schedule-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Use Earlier and Later to change step order. Completion moves Now to the next unfinished step.'),
         e('div', {
           className: 'ss-no-print',
-          style: { flexShrink: 0, display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', padding: '10px', background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: '10px' }
+          style: { flexShrink: 0, display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', padding: '10px', background: _ssDk ? '#1e293b' : '#faf5ff', border: '1px solid ' + (_ssDk ? '#334155' : '#ddd6fe'), borderRadius: '10px' }
         },
           e('div', { style: { flex: 1, minWidth: '220px' } },
             e('label', { style: S.lbl }, 'Topic, process, or story'),
@@ -12191,7 +12471,7 @@
                 setSchedInput(function (prev) { return prev ? prev + '\n' + w.displayLabel : w.displayLabel; });
               }, 'aria-label': 'Add ' + w.displayLabel + ' to sequence input', title: t('symbol_studio.add_to_sequence_steps','Add to sequence steps'),
                 style: { padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
-                w.displayLabel, e('span', { style: { color: '#9ca3af', marginLeft: '2px' } }, '+'));
+                w.displayLabel, e('span', { style: { color: '#6b7280', marginLeft: '2px' } }, '+'));
             }));
         })(),
         // Controls
@@ -12214,7 +12494,7 @@
             e('button', { onClick: resetSchedule, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
             e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, editingScheduleId ? '💾 Save changes' : '💾 Save'),
             editingScheduleId && e('button', { onClick: function () { saveSchedule(true); }, 'aria-label': t('symbol_studio.save_sequence_as_a_copy','Save sequence as a copy'), style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
-            e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
+            e('button', { onClick: function () { printRegion('ss-ps', schedTitle || t('symbol_studio.sequence_print_title', 'Visual Sequence')); }, 'aria-label': t('symbol_studio.print_sequence', 'Print sequence'), style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
           ),
           savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': t('symbol_studio.toggle_saved_sequences','Toggle saved sequences'), style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
         ),
@@ -12248,7 +12528,7 @@
         // Schedule strip
         schedItems.length > 0
           ? e('div', { id: 'ss-ps', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
-              schedTitle && e('h2', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: '0 0 12px' } }, schedTitle),
+              schedTitle && e('h2', { style: { fontWeight: 800, fontSize: '16px', color: ink('#1f2937'), margin: '0 0 12px' } }, schedTitle),
               e('div', { role: 'list', 'aria-label': (schedTitle || 'Visual sequence') + ' ordered steps', style: {
                 display: 'flex',
                 flexDirection: schedOrientation === 'horizontal' ? 'row' : 'column',
@@ -12300,9 +12580,9 @@
                   );
                 })
               ),
-              e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: '#6b7280', marginTop: '10px' } }, 'Use Mark done to advance the current step. Reorder with Earlier and Later; Set as now changes the active step.')
+              e('p', { className: 'ss-no-print', style: { fontSize: '11px', color: ink('#6b7280'), marginTop: '10px' } }, 'Use Mark done to advance the current step. Reorder with Earlier and Later; Set as now changes the active step.')
             )
-          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
+          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ink('#6b7280'), flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📅'),
               e('p', { style: { fontWeight: 600 } }, 'Build a personalized visual sequence'),
               e('p', { style: { fontSize: '12px', maxWidth: '360px', textAlign: 'center' } }, 'Enter steps yourself or build an ordered sequence from a topic. Generate symbols, mark steps done, and print it for classroom or home use.')
@@ -12320,17 +12600,17 @@
           e('label', { htmlFor: 'ss-saved-story-title', style: S.lbl }, 'Save completed story'),
           e('input', { id: 'ss-saved-story-title', 'aria-label': t('symbol_studio.name_for_saved_story','Name for saved story'), value: savedStoryTitle, maxLength: 120, placeholder: t('symbol_studio.e_g_taking_a_quiet_break','e.g. Taking a quiet break'), onChange: function (ev) { savedStoryTitleRef.current = ev.target.value; setSavedStoryTitle(ev.target.value); }, style: Object.assign({}, S.input, { minHeight: '44px', width: '100%', minWidth: 0 }), 'aria-describedby': 'ss-story-library-help' }),
           e('button', { type: 'submit', 'aria-label': t('symbol_studio.save_new_story_to_library','Save new story to library'), disabled: cannotSave, style: Object.assign({}, S.btn(PURPLE, '#fff', cannotSave), { minHeight: '44px', whiteSpace: 'normal' }) }, 'Save a new copy'),
-          e('p', { id: 'ss-story-library-help', style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, storyTextEdit ? 'Save or cancel the page text edit first.' : busy ? 'Wait for story generation and illustrations to finish.' : 'Keeps the page text and illustrations as an independent copy for this learner.')
+          e('p', { id: 'ss-story-library-help', style: { fontSize: '12px', color: ink('#6b7280'), margin: 0 } }, storyTextEdit ? 'Save or cancel the page text edit first.' : busy ? 'Wait for story generation and illustrations to finish.' : 'Keeps the page text and illustrations as an independent copy for this learner.')
         ),
-        storyLibraryNotice && e('div', { role: storyLibraryNotice.error ? 'alert' : 'status', style: { fontSize: '12px', color: storyLibraryNotice.error ? '#b91c1c' : '#374151', overflowWrap: 'anywhere' } }, storyLibraryNotice.text),
+        storyLibraryNotice && e('div', { role: storyLibraryNotice.error ? 'alert' : 'status', style: { fontSize: '12px', color: ink(storyLibraryNotice.error ? '#b91c1c' : '#374151'), overflowWrap: 'anywhere' } }, storyLibraryNotice.text),
         e('details', null,
           e('summary', { style: { cursor: 'pointer', minHeight: '44px', padding: '12px 0', fontSize: '13px', fontWeight: 700 } }, 'Saved stories (' + savedStories.length + ')'),
-          e('p', { style: { fontSize: '12px', color: '#6b7280', marginTop: 0 } }, 'Stored on this device and included in full backups.'),
-          savedStories.length === 0 && e('p', { style: { fontSize: '12px', color: '#6b7280' } }, 'Save a completed story to reuse it here.'),
+          e('p', { style: { fontSize: '12px', color: ink('#6b7280'), marginTop: 0 } }, 'Stored on this device and included in full backups.'),
+          savedStories.length === 0 && e('p', { style: { fontSize: '12px', color: ink('#6b7280') } }, 'Save a completed story to reuse it here.'),
           savedStories.map(function (story) {
-            return e('div', { key: story.id, style: { border: '1px solid #e5e7eb', borderRadius: '8px', background: '#fff', padding: '8px', marginBottom: '8px', minWidth: 0 } },
+            return e('div', { key: story.id, style: { border: '1px solid ' + (_ssDk ? '#334155' : '#e5e7eb'), borderRadius: '8px', background: _ssDk ? '#0f172a' : '#fff', padding: '8px', marginBottom: '8px', minWidth: 0 } },
               e('div', { style: { fontSize: '13px', fontWeight: 700, overflowWrap: 'anywhere' } }, story.title),
-              e('div', { style: { fontSize: '12px', color: '#6b7280', margin: '4px 0' } }, story.pages.length + (story.pages.length === 1 ? ' page' : ' pages')),
+              e('div', { style: { fontSize: '12px', color: ink('#6b7280'), margin: '4px 0' } }, story.pages.length + (story.pages.length === 1 ? ' page' : ' pages')),
               e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                 e('button', { type: 'button', 'aria-label': 'Open saved story: ' + story.title, disabled: !story.pages.length, onClick: function () { openSavedStory(story.id); }, style: buttonStyle }, 'Open'),
                 e('button', { type: 'button', 'aria-label': 'Duplicate saved story: ' + story.title, onClick: function () { duplicateSavedStory(story.id); }, style: buttonStyle }, 'Duplicate'),
@@ -12343,6 +12623,108 @@
       );
     }
 
+    // ── Printing ───────────────────────────────────────────────────────────
+    // window.print() on the app is IGNORED inside Gemini Canvas: the app runs in a sandboxed
+    // iframe without allow-modals (Chrome logs "Ignored call to 'print()'"), and a child iframe
+    // inherits that sandbox. So every print button here did nothing and said nothing. Print from
+    // a window of its own, like the posters and the host's resource sheets. The window carries its
+    // own Print button and a Ctrl+P hint in case it inherits the sandbox too. opts.inPlace: when no
+    // window opens, fall back to printing the app itself (works outside a sandbox; a refused
+    // print() fires no beforeprint, so the teacher is told instead of left guessing).
+    function openPrintWindow(opts) {
+      var html = '<!DOCTYPE html><html lang="' + escHtml(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><title>' + escHtml(opts.title || 'Symbol Studio') + '</title><style>'
+        + 'body{margin:0;padding:24px;color:#111;background:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}'
+        + '.print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font:14px system-ui,sans-serif;color:#374151}'
+        + '.print-bar button{font:600 15px system-ui,sans-serif;padding:10px 18px;border:0;border-radius:8px;background:#1e40af;color:#fff;cursor:pointer}'
+        + (opts.css || '')
+        + '@media print{.print-bar{display:none}body{padding:0}}'
+        + '</style></head><body><div class="print-bar"><button type="button" onclick="window.print()">🖨️ ' + escHtml(t('symbol_studio.print', 'Print')) + '</button><span>'
+        + escHtml(t('symbol_studio.print_window_hint', 'If the print dialog does not open, press Ctrl+P (⌘P on a Mac).')) + '</span></div>'
+        + opts.body + '</body></html>';
+      var win = null;
+      try { win = window.open('', '_blank'); } catch (_) { win = null; }
+      if (win) {
+        try {
+          win.document.open(); win.document.write(html); win.document.close();
+          try { win.focus(); } catch (_) {}
+          var tries = 0;
+          (function printWhenReady() {
+            try {
+              var imgs = win.document.images, ready = true;
+              for (var i = 0; i < imgs.length; i++) if (!imgs[i].complete) ready = false;
+              if (!ready && tries++ < 30) { setTimeout(printWhenReady, 100); return; }
+              win.print();
+            } catch (_) { /* window closed, or print refused: its own bar says what to do */ }
+          })();
+          return true;
+        } catch (_) { /* could not write the window: fall through */ }
+      }
+      if (opts.inPlace) {
+        var sizing = null;
+        if (opts.inPlaceCss) {
+          sizing = document.createElement('style'); sizing.textContent = '@media print{' + opts.inPlaceCss + '}';
+          document.head.appendChild(sizing);
+        }
+        var fired = false;
+        var onBefore = function () { fired = true; };
+        window.addEventListener('beforeprint', onBefore);
+        try { window.print(); } catch (_) {}
+        window.removeEventListener('beforeprint', onBefore);
+        if (sizing) setTimeout(function () { if (sizing.parentNode) sizing.parentNode.removeChild(sizing); }, 2000);
+        if (fired) return true;
+      }
+      if (addToast) addToast(t('symbol_studio.print_window_blocked', 'Printing is blocked here. Allow pop-ups for this page, then press Print again.'), 'error');
+      return false;
+    }
+
+    // Print what is on screen in one of the print areas (#ss-pb board, #ss-ps sequence, #ss-pq
+    // quick board). cloneNode drops what the teacher typed into fields, so live values are copied
+    // across; on-screen-only controls (.ss-no-print) are removed; pictures are credited unless the
+    // area already carries its own credits line.
+    function printRegion(regionId, title, sizeCss) {
+      var region = document.getElementById(regionId);
+      if (!region) { if (addToast) addToast(t('symbol_studio.nothing_to_print', 'There is nothing to print yet.'), 'info'); return false; }
+      var clone = region.cloneNode(true);
+      var src = region.querySelectorAll('input,textarea,select,canvas');
+      var dst = clone.querySelectorAll('input,textarea,select,canvas');
+      for (var i = 0; i < src.length && i < dst.length; i++) {
+        var s = src[i], d = dst[i];
+        if (s.tagName === 'TEXTAREA') d.textContent = s.value;
+        else if (s.tagName === 'SELECT') { for (var o = 0; o < d.options.length; o++) { if (o === s.selectedIndex) d.options[o].setAttribute('selected', ''); else d.options[o].removeAttribute('selected'); } }
+        else if (s.tagName === 'CANVAS') { try { var pic = document.createElement('img'); pic.src = s.toDataURL('image/png'); pic.alt = ''; pic.style.cssText = s.style.cssText; d.parentNode.replaceChild(pic, d); } catch (_) {} }
+        else if (s.type === 'checkbox' || s.type === 'radio') { if (s.checked) d.setAttribute('checked', ''); else d.removeAttribute('checked'); }
+        else d.setAttribute('value', s.value);
+      }
+      Array.prototype.forEach.call(clone.querySelectorAll('.ss-no-print'), function (n) { if (n.parentNode) n.parentNode.removeChild(n); });
+      if (ssTheme === 'dark' || ssTheme === 'contrast') paperInk(clone);
+      clone.style.overflow = 'visible'; clone.style.height = 'auto'; clone.style.maxHeight = 'none'; clone.style.flex = 'none';
+      var credits = clone.querySelector('[data-board-picture-credits]') ? '' : pictureCreditsHTML(Array.prototype.map.call(clone.querySelectorAll('img'), function (im) {
+        return cellCreditFor(galleryStateRef.current, { image: im.getAttribute('src') });
+      }));
+      return openPrintWindow({ title: title, css: sizeCss ? '@media print{' + sizeCss + '}' : '', body: clone.outerHTML + credits, inPlace: true, inPlaceCss: sizeCss || '' });
+    }
+
+    function printStory() {
+      var pages = storyPages.filter(function (p) { return p && (p.text || p.image); });
+      if (!pages.length) return;
+      var title = t('symbol_studio.social_story_print_title', 'Social Story');
+      var body = pages.map(function (page, idx) {
+        var img = safeImgUrl(page.image);
+        return '<section class="page' + (idx === pages.length - 1 ? ' last' : '') + '">'
+          + (img ? '<img src="' + escHtml(img) + '" alt="">' : '')
+          + '<p>' + escHtml(page.text || '') + '</p></section>';
+      }).join('');
+      openPrintWindow({
+        title: title, inPlace: true,
+        css: 'body{font-family:Georgia,serif}'
+          + '.page{display:flex;gap:24px;align-items:center;padding:24px 0;border-bottom:1px solid #e5e7eb;break-inside:avoid}'
+          + '.page img{width:220px;height:220px;object-fit:contain;flex-shrink:0;border:1px solid #e5e7eb;border-radius:8px}'
+          + '.page p{font-size:22px;line-height:1.7;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}'
+          + '@media print{.page{break-after:page;border:0}.page.last{break-after:auto}}',
+        body: body + pictureCreditsHTML(creditsForPrintedImages(body, galleryStateRef.current))
+      });
+    }
+
     function renderStoriesTab() {
       var currentPage = storyPages[storyCurrent] || null;
       var editingCurrentPage = !!(storyTextEdit && currentPage && storyTextEdit.pageId === currentPage.id && storyTextEdit.profileId === activeProfileId && storyTextEdit.revision === storyRevisionRef.current);
@@ -12350,7 +12732,7 @@
       var isIllustrating = Object.keys(storyIllustrating).length > 0;
       return e('div', { className: 'ss-stories-workspace', style: { display: 'flex', flex: 1, overflow: 'hidden', gap: '0' } },
         // Left: inputs
-        e('div', { className: 'ss-story-editor ss-no-print', style: { width: '240px', flexShrink: 0, borderRight: '1px solid #e5e7eb', padding: '16px', overflowY: 'auto', background: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '10px' } },
+        e('div', { className: 'ss-story-editor ss-no-print', style: { width: '240px', flexShrink: 0, borderRight: '1px solid ' + (_ssDk ? '#334155' : '#e5e7eb'), padding: '16px', overflowY: 'auto', background: _ssDk ? '#1e293b' : '#f9fafb', color: _ssDk ? '#e2e8f0' : 'inherit', display: 'flex', flexDirection: 'column', gap: '10px' } },
           renderStoryLibrary(),
           e('div', null,
             e('label', { style: S.lbl }, 'Student Name'),
@@ -12359,7 +12741,7 @@
           e('div', null,
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
               e('label', { style: S.lbl }, 'Situation / Goal'),
-              e('span', { style: { fontSize: '10px', color: '#6b7280' } }, 'or pick a template ↓')
+              e('span', { style: { fontSize: '10px', color: ink('#6b7280') } }, 'or pick a template ↓')
             ),
             e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: t('symbol_studio.e_g_marcus_is_learning_to_wait_his_turn_duri','e.g. Marcus is learning to wait his turn during group time'), 'aria-label': t('symbol_studio.social_story_situation_or_goal','Social story situation or goal'), style: Object.assign({}, S.textarea, { height: '65px' }) }),
             e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px' } },
@@ -12396,11 +12778,8 @@
           ),
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': t('symbol_studio.generate_social_story','Generate social story'), style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
           storyError && e('div', { role: 'alert', style: { fontSize: '12px', padding: '10px', border: '1px solid #fecaca', borderRadius: '8px', background: '#fff1f2', color: '#991b1b' } }, storyError),
-          storyGenerating && e('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '12px', color: '#5b21b6' } }, storyProgress.total ? ('Illustrations ' + storyProgress.ready + ' of ' + storyProgress.total) : 'Writing your story...'),
-          e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
-          hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
-            e('button', { onClick: function () { window.print(); }, 'aria-label': t('symbol_studio.print_story','Print Story'), style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
-          )
+          storyGenerating && e('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '12px', color: ink('#5b21b6') } }, storyProgress.total ? ('Illustrations ' + storyProgress.ready + ' of ' + storyProgress.total) : 'Writing your story...'),
+          e('p', { style: { fontSize: '10px', color: ink('#6b7280') } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.')
         ),
         // Right: story viewer
         hasStory
@@ -12408,11 +12787,13 @@
               // Page navigation
               e('div', { className: 'ss-no-print', style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
                 e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, 'aria-label': t('symbol_studio.previous_story_page','Previous story page'), disabled: storyCurrent === 0, style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
-                e('span', { style: { fontWeight: 600, fontSize: '13px', color: '#374151' } }, 'Page ' + (storyCurrent + 1) + ' of ' + storyPages.length),
+                e('span', { style: { fontWeight: 600, fontSize: '13px', color: ink('#374151') } }, 'Page ' + (storyCurrent + 1) + ' of ' + storyPages.length),
                 e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, 'aria-label': t('symbol_studio.next_story_page','Next story page'), style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
                 currentPage && e('button', { onClick: function () { speakPage(currentPage.text); }, disabled: editingCurrentPage, 'aria-label': storySpeaking ? 'Stop reading aloud' : 'Read this page aloud', style: S.btn('#dcfce7', '#166534', editingCurrentPage) }, storySpeaking ? '⏹ Stop' : '🔊 Read Aloud'),
                 currentPage && !editingCurrentPage && e('button', { type: 'button', ref: storyTextEditButtonRef, onClick: function () { beginStoryTextEdit(currentPage); }, 'aria-label': 'Edit text for story page ' + (storyCurrent + 1), style: S.btn(LIGHT_PURPLE, PURPLE, false) }, '✏️ Edit text'),
                 currentPage && e('button', { onClick: function () { regenPageIllustration(currentPage.id); }, disabled: !!storyIllustrating[currentPage.id], 'aria-label': t('symbol_studio.regenerate_illustration_for_this_page','Regenerate illustration for this page'), style: S.btn(LIGHT_PURPLE, PURPLE, !!storyIllustrating[currentPage.id]) }, storyIllustrating[currentPage.id] ? '⏳' : '🔄 Regen Image'),
+                // With the story it prints, not at the foot of the input column.
+                e('button', { onClick: printStory, 'aria-label': t('symbol_studio.print_story','Print Story'), style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { marginLeft: 'auto' }) }, '🖨️ Print Story')
               ),
               // All pages for print, single page for screen
               e('div', { className: 'ss-no-print' },
@@ -12425,7 +12806,7 @@
                   e('div', { style: { flex: 1, minWidth: 0 } },
                     editingCurrentPage
                       ? e('form', { onSubmit: function (ev) { ev.preventDefault(); saveStoryPageText(); }, style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-                          e('label', { htmlFor: 'ss-story-page-text', style: S.lbl }, 'Text for page ' + (storyCurrent + 1)),
+                          e('label', { htmlFor: 'ss-story-page-text', style: S.lblOnLight }, 'Text for page ' + (storyCurrent + 1)),
                           e('textarea', { id: 'ss-story-page-text', value: storyTextEdit.text, autoFocus: true, maxLength: 2000, rows: 7, 'aria-label': t('symbol_studio.story_page_text','Story page text'), 'aria-invalid': !!storyTextEditError, 'aria-describedby': 'ss-story-page-text-help' + (storyTextEditError ? ' ss-story-page-text-error' : ''), onChange: function (ev) { var text = ev.target.value.slice(0, 2000); setStoryTextEdit(function (edit) { return edit ? Object.assign({}, edit, { text: text }) : null; }); setStoryTextEditError(''); }, style: Object.assign({}, S.textarea, { width: '100%', fontSize: '16px', lineHeight: 1.6, minHeight: '160px' }) }),
                           e('div', { id: 'ss-story-page-text-help', style: { fontSize: '12px', color: '#6b7280' } }, storyTextEdit.text.length + ' / 2000 characters. Changes apply when you save.'),
                           storyTextEditError && e('div', { id: 'ss-story-page-text-error', role: 'alert', style: { fontSize: '13px', color: '#b91c1c' } }, storyTextEditError),
@@ -12456,12 +12837,12 @@
                     page.image
                       ? e('img', { src: page.image, alt: '', style: { width: '58px', height: '58px', objectFit: 'contain', borderRadius: '5px', background: '#fafafa' } })
                       : e('div', { style: { width: '58px', height: '58px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', background: '#f9fafb', borderRadius: '5px' } }, storyIllustrating[page.id] ? spinner(20) : '📄'),
-                    e('div', { style: { fontSize: '10px', color: '#6b7280', marginTop: '3px' } }, 'p.' + (idx + 1))
+                    e('div', { style: { fontSize: '10px', color: '#4b5563', marginTop: '3px' } }, 'p.' + (idx + 1))
                   );
                 })
               )
             )
-          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px', padding: '20px' } },
+          : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ink('#6b7280'), flexDirection: 'column', gap: '10px', padding: '20px' } },
               e('div', { style: { fontSize: '52px' } }, '📖'),
               e('p', { style: { fontWeight: 600 } }, 'Create an AI-illustrated Social Story'),
               e('div', { style: { maxWidth: '420px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
@@ -12537,7 +12918,7 @@
         e('div', { className: 'ss-pack-workspace', style: { display: 'flex', gap: '14px', flex: 1, minHeight: 0, overflow: 'hidden' } },
           e('div', { className: 'ss-pack-list', style: { width: '240px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
             books.length === 0
-              ? e('div', { style: { color: '#6b7280', fontSize: '13px', padding: '20px 4px', textAlign: 'center', lineHeight: 1.6 } }, 'No Visual Packs yet. Create one or import a shareable pack.')
+              ? e('div', { style: { color: ink('#6b7280'), fontSize: '13px', padding: '20px 4px', textAlign: 'center', lineHeight: 1.6 } }, 'No Visual Packs yet. Create one or import a shareable pack.')
               : books.map(function (book) {
                   var isActive = book.id === activeBookId;
                   var taggedProfile = profiles.find(function (profile) { return profile.id === book.profileId; }) || null;
@@ -12562,7 +12943,7 @@
                     }
                   },
                     e('div', { style: { fontWeight: 700, fontSize: '13px', color: isActive ? PURPLE : '#1f2937', marginBottom: '3px' } }, book.title),
-                    e('div', { style: { fontSize: '10px', color: '#6b7280', lineHeight: 1.5 } },
+                    e('div', { style: { fontSize: '10px', color: '#4b5563', lineHeight: 1.5 } },
                       resolvedBoardCount + ' board' + (resolvedBoardCount === 1 ? '' : 's') + ' \u00b7 '
                       + resolvedScheduleCount + ' sequence' + (resolvedScheduleCount === 1 ? '' : 's') + ' \u00b7 '
                       + resolvedAssetCount + ' asset' + (resolvedAssetCount === 1 ? '' : 's')
@@ -12578,7 +12959,7 @@
                   e('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start', flexWrap: 'wrap' } },
                     e('div', { style: { flex: 1, minWidth: '240px' } },
                       e('h3', { id: 'ss-pack-heading', style: { fontWeight: 800, fontSize: '18px', color: '#1f2937', margin: '0 0 8px' } }, activeBook.title),
-                      e('label', { style: S.lbl }, 'Pack Description'),
+                      e('label', { style: S.lblOnLight }, 'Pack Description'),
                       e('textarea', {
                         key: activeBook.id + ':description',
                         defaultValue: activeBook.description || '',
@@ -12610,7 +12991,7 @@
                       e('button', { type: 'button', onClick: function () { exportVisualPack(activeBook); }, 'aria-label': 'Export shareable Visual Pack ' + (activeBook.title || 'Untitled'), style: S.btn('#dcfce7', '#166534', false) }, 'Export Shareable'),
                       e('button', { type: 'button', onClick: function () { printBook(activeBook); }, disabled: selectedBoards.length === 0, 'aria-label': 'Print all boards in ' + (activeBook.title || 'Visual Pack'), style: S.btn('#dbeafe', '#1e40af', selectedBoards.length === 0) }, 'Print Boards (' + selectedBoards.length + ')'),
                       missingReferenceCount > 0 && e('button', { type: 'button', onClick: repairPackReferences, 'aria-label': 'Repair missing references in ' + (activeBook.title || 'Visual Pack'), style: S.btn('#fef3c7', '#92400e', false) }, 'Repair ' + missingReferenceCount + ' Missing'),
-                      e('button', { type: 'button', onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'Delete Visual Pack ' + (activeBook.title || 'Untitled'), style: S.btn('#fee2e2', '#dc2626', false) }, 'Delete Pack')
+                      e('button', { type: 'button', onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'Delete Visual Pack ' + (activeBook.title || 'Untitled'), style: S.btn('#fee2e2', '#b91c1c', false) }, 'Delete Pack')
                     )
                   ),
                   e('div', { style: { marginTop: '10px', padding: '8px 10px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', color: '#854d0e', fontSize: '11px', lineHeight: 1.5 } },
@@ -12645,7 +13026,7 @@
                               e('button', { type: 'button', onClick: function () { loadBoard(board); setTab('board'); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Edit'),
                               e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'boardIds', board.id, -1); }, disabled: boardIndex === 0, 'aria-label': 'Move ' + (board.title || 'board') + ' earlier', style: S.btn('#f3f4f6', '#374151', boardIndex === 0) }, 'Earlier'),
                               e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'boardIds', board.id, 1); }, disabled: boardIndex === selectedBoards.length - 1, 'aria-label': 'Move ' + (board.title || 'board') + ' later', style: S.btn('#f3f4f6', '#374151', boardIndex === selectedBoards.length - 1) }, 'Later'),
-                              e('button', { type: 'button', onClick: function () { toggleBoardInBook(activeBook.id, board.id); }, 'aria-label': 'Remove ' + (board.title || 'board') + ' from Visual Pack', style: S.btn('#fee2e2', '#dc2626', false) }, 'Remove')
+                              e('button', { type: 'button', onClick: function () { toggleBoardInBook(activeBook.id, board.id); }, 'aria-label': 'Remove ' + (board.title || 'board') + ' from Visual Pack', style: S.btn('#fee2e2', '#b91c1c', false) }, 'Remove')
                             )
                           );
                         })
@@ -12673,7 +13054,7 @@
                               e('button', { type: 'button', onClick: function () { loadSchedule(schedule); setTab('schedule'); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Open'),
                               e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'scheduleIds', schedule.id, -1); }, disabled: scheduleIndex === 0, 'aria-label': 'Move ' + (schedule.title || 'sequence') + ' earlier', style: S.btn('#f3f4f6', '#374151', scheduleIndex === 0) }, 'Earlier'),
                               e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'scheduleIds', schedule.id, 1); }, disabled: scheduleIndex === selectedSchedules.length - 1, 'aria-label': 'Move ' + (schedule.title || 'sequence') + ' later', style: S.btn('#f3f4f6', '#374151', scheduleIndex === selectedSchedules.length - 1) }, 'Later'),
-                              e('button', { type: 'button', onClick: function () { toggleScheduleInBook(activeBook.id, schedule.id); }, 'aria-label': 'Remove ' + (schedule.title || 'sequence') + ' from Visual Pack', style: S.btn('#fee2e2', '#dc2626', false) }, 'Remove')
+                              e('button', { type: 'button', onClick: function () { toggleScheduleInBook(activeBook.id, schedule.id); }, 'aria-label': 'Remove ' + (schedule.title || 'sequence') + ' from Visual Pack', style: S.btn('#fee2e2', '#b91c1c', false) }, 'Remove')
                             )
                           );
                         })
@@ -12700,13 +13081,13 @@
                             e('div', { style: { fontSize: '9px', color: asset.reviewStatus === 'approved' ? '#166534' : '#6b7280', margin: '2px 0 6px' } }, asset.reviewStatus === 'approved' ? 'Approved locally' : 'Review: ' + String(asset.reviewStatus || 'unreviewed').replace('_', ' ')),
                             e('div', { style: { display: 'flex', gap: '3px' } },
                               e('button', { type: 'button', onClick: function () { setSelectedId(asset.id); setTab('symbols'); }, style: S.btn('#ecfdf5', '#065f46', false) }, 'View'),
-                              e('button', { type: 'button', onClick: function () { toggleAssetInBook(activeBook.id, asset.id); }, 'aria-label': 'Remove ' + asset.label + ' from Visual Pack', style: S.btn('#fee2e2', '#dc2626', false) }, 'Remove')
+                              e('button', { type: 'button', onClick: function () { toggleAssetInBook(activeBook.id, asset.id); }, 'aria-label': 'Remove ' + asset.label + ' from Visual Pack', style: S.btn('#fee2e2', '#b91c1c', false) }, 'Remove')
                             )
                           );
                         })
                       ),
                   gallery.length > 0 && e('div', null,
-                    e('label', { style: S.lbl }, 'Find bank assets to add'),
+                    e('label', { style: S.lblOnLight }, 'Find bank assets to add'),
                     e('input', {
                       type: 'search',
                       value: packAssetFilter,
@@ -12734,9 +13115,9 @@
                   )
                 )
               )
-            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px', padding: '24px', textAlign: 'center' } },
+            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ink('#6b7280'), flexDirection: 'column', gap: '10px', padding: '24px', textAlign: 'center' } },
                 e('div', { style: { fontSize: '52px' } }, '📚'),
-                e('p', { style: { fontWeight: 700, color: '#374151', margin: 0 } }, 'Build a complete visual support kit'),
+                e('p', { style: { fontWeight: 700, color: ink('#374151'), margin: 0 } }, 'Build a complete visual support kit'),
                 e('p', { style: { maxWidth: '470px', fontSize: '13px', lineHeight: 1.7, margin: 0 } }, 'A Visual Pack combines interactive communication boards, visual sequences, and selected Symbol Bank assets. Prepared speech stays saved locally on this device and is not included in shareable exports.')
               )
         )
@@ -13003,7 +13384,7 @@
             'aria-pressed': aiPredict,
             'aria-label': aiPredict ? 'AI word prediction is on — click to turn off' : 'AI word prediction is off — click to turn on',
             title: aiPredict ? 'AI prediction ON: the student\'s tapped words are sent to the AI for next-word suggestions. Click to turn off.' : 'AI prediction OFF. Click to enable (sends the student\'s tapped words to the AI).',
-            style: { background: aiPredict ? '#7c3aed' : '#334155', color: aiPredict ? '#fff' : '#94a3b8', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            style: { background: aiPredict ? '#7c3aed' : '#334155', color: aiPredict ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, aiPredict ? '🤖 AI On' : '🤖 AI Off'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
@@ -13354,17 +13735,18 @@
               e('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🎨'),
               e('div', null,
                 e('h2', { id: 'ss-dialog-title', style: { color: '#fff', fontWeight: 800, fontSize: '17px', margin: 0 } }, 'Symbol Studio'),
-                e('p', { id: 'ss-dialog-description', style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbol bank • boards • sequences • social stories')
+                // Still the dialog's description for screen readers; no longer a visible line.
+                e('p', { id: 'ss-dialog-description', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'AI-powered symbol bank • boards • sequences • social stories')
               )
             ),
             e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': t('symbol_studio.close_symbol_studio','Close Symbol Studio') }, '×')
           ),
           // Tab bar
-          e('div', { className: 'ss-tabs', style: S.tabBar, role: 'tablist', 'aria-label': t('symbol_studio.studio_sections','Studio sections') }, TABS.map(tabBtn))
+          e('div', { className: 'ss-tabs', ref: tabsRef, style: S.tabBar, role: 'tablist', 'aria-label': t('symbol_studio.studio_sections','Studio sections') }, TABS.map(tabBtn))
         ),
         // Body
         e('div', { className: 'ss-body', style: S.body, role: 'tabpanel', id: 'ss-studio-panel', 'aria-labelledby': 'ss-tab-' + tab },
-          e('button', { className: 'ss-setup-toggle', 'aria-expanded': showSetup, 'aria-controls': 'ss-profile-settings', onClick: function () { setShowSetup(!showSetup); } }, e('span', null, 'Profile & settings · ' + (activeProfile.name || 'Student')), e('span', null, showSetup ? 'Hide' : 'Show')),
+          e('button', { className: 'ss-setup-toggle', 'aria-expanded': showSetup, 'aria-controls': 'ss-profile-settings', onClick: toggleSetup }, e('span', null, 'Profile & settings · ' + (activeProfile.name || 'Student')), e('span', null, showSetup ? 'Hide' : 'Show')),
           renderSharedLeft(),
           e('div', { className: 'ss-workspace', style: S.rightCol },
             renderStudioDraftStatus(),
@@ -13424,6 +13806,14 @@
     packScheduleForShare: packScheduleForShare,
     packAssetForShare: packAssetForShare,
     withoutPickedCredit: withoutPickedCredit,
+    pictureKey: pictureKey,
+    cellCreditFor: cellCreditFor,
+    keepPictureCredit: keepPictureCredit,
+    boardWithCellCredits: boardWithCellCredits,
+    creditText: creditText,
+    obfImageCredits: obfImageCredits,
+    pictureCreditsHTML: pictureCreditsHTML,
+    creditsForPrintedImages: creditsForPrintedImages,
     obfImageLicenseFor: obfImageLicenseFor,
     obfBoardLicense: obfBoardLicense,
     buildVisualPackEnvelope: buildVisualPackEnvelope,

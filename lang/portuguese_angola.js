@@ -1,4 +1,2420 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "Temperatura",
+          "headline": "Água fria na cara",
+          "steps": {
+            "0": "Enche uma taça com água fria (com gelo, se tiveres).",
+            "1": "Sustém a respiração.",
+            "2": "Inclina-te e mergulha a cara, desde acima das sobrancelhas até abaixo das maçãs do rosto, durante 15-30 segundos. (Se não conseguires mergulhar a cara, põe antes uma bolsa de frio ou uma toalha de rosto molhada sobre os olhos e a parte de cima das bochechas.)",
+            "3": "Levanta a cara e respira normalmente.",
+            "4": "Repete uma vez, se for preciso."
+          },
+          "why": "O frio na cara ativa o reflexo de mergulho dos mamíferos: o ritmo cardíaco abranda, o sangue afasta-se das extremidades e o sistema parassimpático ativa-se. Funciona em segundos. É a forma fisiológica mais rápida de interromper um mal-estar extremo.",
+          "caution": "EVITA se tiveres uma doença cardíaca, uma perturbação alimentar ou qualquer condição em que abrandar o ritmo cardíaco possa ser perigoso. Se não tiveres a certeza, pergunta primeiro a um médico ou ao enfermeiro da escola. A água deve estar fria (~10-15°C ou 50-60°F), não gelada."
+        },
+        "intense": {
+          "label": "Exercício intenso",
+          "headline": "Gasta a ativação",
+          "steps": {
+            "0": "Durante 5 a 10 minutos, faz algo fisicamente intenso.",
+            "1": "Opções: sprints, polichinelos, burpees, subir escadas a correr, flexões até à exaustão, saltar à corda depressa, dançar com toda a energia.",
+            "2": "O objetivo é ficares mesmo sem fôlego e sentires o coração a acelerar.",
+            "3": "Depois abranda até estares a caminhar e deixa o corpo acalmar."
+          },
+          "why": "Quando estás em hiperativação (luta ou fuga), o teu corpo fica inundado de hormonas do stress que existem para ser usadas. O exercício intenso gasta a adrenalina e dá ao corpo o sinal «já fiz o que tinha a fazer». Ficar parado em hiperativação mantém o motor acelerado.",
+          "caution": "Se tiveres uma condição médica que limite o exercício (cardíaca, asma, lesão recente), usa movimento de menor intensidade ou escolhe outra competência TIPP. Não faças exercício intenso até te magoares."
+        },
+        "paced": {
+          "label": "Respiração pausada",
+          "headline": "Expira durante mais tempo do que inspiras",
+          "steps": {
+            "0": "Senta-te ou deita-te de forma confortável.",
+            "1": "Inspira pelo nariz enquanto contas até 4.",
+            "2": "Expira devagar pela boca enquanto contas até 6 ou 8 (mais tempo do que a inspiração).",
+            "3": "Mantém este ritmo durante 1 a 2 minutos.",
+            "4": "Não é preciso forçar nem fazer esforço; a EXPIRAÇÃO MAIS LONGA é o ingrediente ativo."
+          },
+          "why": "Uma expiração mais longa do que a inspiração leva o sistema nervoso autónomo para o predomínio parassimpático («descansar e digerir»). Os estudos sobre respiração pausada encontram descidas mensuráveis nos marcadores de stress da variabilidade da frequência cardíaca em 90 segundos. O objetivo não é relaxar; é biologia.",
+          "caution": "Se respirar devagar te deixar MAIS ansioso (o que acontece a algumas pessoas com perturbação de pânico ou trauma), experimenta outra competência TIPP. Não forces."
+        },
+        "paired": {
+          "label": "Relaxamento muscular emparelhado",
+          "headline": "Contrai e depois solta, músculo a músculo",
+          "steps": {
+            "0": "Senta-te ou deita-te. Inspira devagar.",
+            "1": "Na inspiração, contrai com força um grupo de músculos (cerra os punhos, encolhe os ombros, franze a cara).",
+            "2": "Mantém a tensão durante 5 segundos.",
+            "3": "Na expiração, solta a tensão por completo. Repara na diferença entre contraído e solto.",
+            "4": "Percorre o corpo: mãos, braços, ombros, cara, pescoço, peito, barriga, pernas, pés.",
+            "5": "No total, demora cerca de 5 minutos."
+          },
+          "why": "Contrair um músculo ao máximo e depois soltá-lo produz um relaxamento mais profundo do que simplesmente tentar relaxar (investigação de Jacobson sobre o Relaxamento Muscular Progressivo, formalizada nos anos 1930). Juntar cada libertação a uma expiração soma os dois efeitos.",
+          "caution": "Se tiveres uma lesão, uma síndrome de dor ou hipermobilidade, salta os grupos musculares que doem. A tensão deve ser forte, mas nunca dolorosa."
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "Quatro competências DBT de sobrevivência a crises (Temperatura, exercício Intenso, respiração Pausada, relaxamento muscular emparelhado com a respiração) para mal-estar agudo. Pensadas para acalmar o corpo em 30 segundos a 10 minutos ANTES de tentares sair da situação só a pensar. Competência fundamental de Tolerância ao Mal-Estar da DBT, de Linehan.",
+        "back_to_sel_hub": "Voltar ao SEL Hub",
+        "back": "← Voltar",
+        "four_dbt_crisis_survival_skills_for": "Quatro competências DBT de sobrevivência a crises para mal-estar agudo. Primeiro faz, depois pensa.",
+        "tipp_sections": "Secções do TIPP",
+        "tipp_is_for_acute_distress_not": "🆘 O TIPP é para mal-estar AGUDO, não para o stress do dia a dia. ",
+        "if_you_are_in_crisis_right": "Se estás em crise neste momento (a pensar em magoar-te, em perigo imediato), por favor usa o Companheiro de Crise neste SEL Hub, liga para o 988 (Suicide and Crisis Lifeline, a linha de prevenção do suicídio e crise) ou envia HOME para o 741741 (Crisis Text Line). O TIPP pode dar-te os próximos 5 minutos; uma pessoa pode estar contigo durante mais tempo.",
+        "tipp_is_a_real_dbt_skill": "O TIPP é uma verdadeira competência DBT, mas não é terapia. Se deres por ti a recorrer ao TIPP muitas vezes, isso é informação; fala disso com um orientador ou com o psicólogo da escola.",
+        "tipp_quick_chooser": "Seletor rápido TIPP",
+        "body_first_chooser": "Seletor a partir do corpo",
+        "match_the_skill_to_the_signal": "Escolhe a competência que corresponde ao sinal que o teu corpo está a dar agora.",
+        "helped_logcount_helped": "{helped}/{logCount} ajudaram",
+        "no_sessions_logged": "Nenhuma sessão registada",
+        "start_label": "Começar: {label}",
+        "choose": "Escolher",
+        "pick_one_do_it_notice_if": "Escolhe uma. Faz. Repara se o ponteiro se mexe.",
+        "you_do_not_need_to_do": "Não precisas de fazer as quatro. Escolhe a que se adapta ao ponto em que estás agora. O TIPP é RÁPIDO: 30 segundos a 10 minutos.",
+        "duration_seconds": "~{duration} segundos",
+        "logged_glad_it_helped": "Registado — ainda bem que ajudou.",
+        "logged_try_a_different_tipp_next": "Registado — experimenta outro TIPP da próxima vez.",
+        "tipp_session_logged": "Sessão TIPP registada.",
+        "active_letter": "Ativo · {letter}",
+        "steps": "Passos",
+        "why_this_works": "🧠 Porque é que isto funciona",
+        "caution": "⚖️ Cuidado: ",
+        "done_that_helped": "✓ Feito. Ajudou.",
+        "done_try_a_different_one": "Feito. Experimentar outra.",
+        "try_a_different_one": "⤴ Experimentar outra",
+        "exit_without_logging": "Sair sem registar",
+        "exit": "Sair",
+        "no_tipp_sessions_logged_yet": "Ainda não há sessões TIPP registadas.",
+        "after_you_do_a_tipp_skill": "Depois de fazeres uma competência TIPP, regista-a para descobrires quais funcionam contigo.",
+        "total_sessions": "Total de sessões",
+        "helped": "Ajudou",
+        "by_skill": "Por competência",
+        "recent_sessions": "Sessões recentes",
+        "unknown": "(desconhecida)",
+        "helped_2": "✓ ajudou",
+        "tried_another": "⤴ experimentei outra",
+        "read_this_first": "🆘 Lê isto primeiro",
+        "tipp_is_for_acute_distress_the": "O TIPP é para mal-estar AGUDO: o momento em que estás prestes a fazer algo de que te vais arrepender, ou em que sentes que não consegues aguentar os próximos 5 minutos. NÃO é para o stress do dia a dia, o humor em baixo ou os pensamentos ansiosos. O TIPP é rápido, é físico e serve para te dar os próximos minutos, para que falar, refletir ou pedir ajuda volte a ser possível. Se estás em crise, por favor usa o Companheiro de Crise ou liga para o 988 / envia HOME para o 741741.",
+        "what_tipp_is": "O que é o TIPP",
+        "tipp_is_a_set_of_four": "O TIPP é um conjunto de quatro competências DBT de sobrevivência a crises que atuam diretamente no corpo antes de atuarem na mente. A ideia é que, quando estás em hiperativação (coração acelerado, pensamentos acelerados, pronto para agir por impulso), tentar «sair só a pensar» raramente funciona, porque o cérebro que pensa está desligado. Primeiro, o corpo tem de voltar.",
+        "each_tipp_skill_uses_a_physiological": "Cada competência TIPP usa um mecanismo fisiológico que interrompe a resposta ao stress: o frio na cara ativa o reflexo de mergulho, o exercício intenso gasta a adrenalina, a respiração pausada muda o equilíbrio do sistema autónomo e o relaxamento muscular emparelhado produz a libertação que vem depois da tensão. Funcionam em 30 segundos a 10 minutos, não em dias.",
+        "where_tipp_comes_from": "De onde vem o TIPP",
+        "tipp_is_part_of_the_distress": "O TIPP faz parte do módulo de Tolerância ao Mal-Estar da Terapia Comportamental Dialética (DBT), desenvolvida por Marsha Linehan a partir dos anos 1980. Linehan desenvolveu a DBT para pessoas que vivem as emoções de forma intensa e reativa, originalmente para doentes cronicamente suicidas com perturbação de personalidade borderline. As competências de Tolerância ao Mal-Estar foram pensadas para momentos de «sobrevivência a crises», em que o objetivo é apenas não piorar as coisas nos minutos seguintes. Hoje, o TIPP é muito ensinado na saúde mental pediátrica, em escolas informadas pelo trauma e em grupos de competências DBT em regime de ambulatório.",
+        "sources_and_learn_more": "📚 Fontes e saber mais",
+        "authoritative_resources_for_tipp_and_dbt": "Recursos de referência sobre o TIPP e a DBT.",
+        "the_standard_manual_tipp_is_in": "O manual de referência; o TIPP está no módulo de Tolerância ao Mal-Estar.",
+        "practical_worksheets_including_tipp_handouts": "Fichas práticas, incluindo materiais sobre o TIPP.",
+        "linehan_founded_organization_for_dbt_training": "Organização fundada por Linehan para formação e certificação em DBT.",
+        "free_open_educational_resource_covers_tipp": "Recurso educativo aberto e gratuito; aborda o TIPP e outras competências de Tolerância ao Mal-Estar.",
+        "honest_limits": "⚖️ Limites honestos",
+        "tipp_is_a_survival_skill_not": "O TIPP é uma competência de sobrevivência, não uma solução. Ajuda-te a passar os próximos 5 minutos; não resolve a razão por que estás em mal-estar.",
+        "if_you_find_yourself_reaching_for": "Se deres por ti a recorrer ao TIPP todos os dias, isso é sinal de que se passa algo maior na tua vida, que merece um psicólogo ou terapeuta a acompanhar-te nisso.",
+        "tipp_works_on_hyperarousal_too_activated": "O TIPP funciona na hiperativação (ativação a mais). NÃO funciona na hipoativação (desligado, entorpecido, dissociado); para isso, é mais útil outra competência DBT (Self-Soothe, ACCEPTS) ou simplesmente a ligação com outras pessoas.",
+        "the_cautions_on_each_skill_are": "Os cuidados indicados em cada competência são a sério. A Temperatura está contraindicada em doenças cardíacas e em algumas perturbações alimentares; o exercício intenso está contraindicado em algumas condições médicas; se uma competência não te parecer bem, abranda e sai dela aos poucos.",
+        "tipp_is_best_learned_in_a": "O TIPP APRENDE-SE melhor num momento sem crise, para que as competências já estejam praticadas antes de precisares delas. Fazê-las uma vez num período calmo é a melhor preparação.",
+        "notes_for_educators": "📝 Notas para educadores: ",
+        "tipp_is_most_useful_when_students": "O TIPP é mais útil quando os alunos já o praticaram uma ou duas vezes no tempo de Crew, e não quando o encontram pela primeira vez numa crise. Um protocolo simples para o Crew: percorre com eles uma competência TIPP (a respiração pausada é a mais fácil numa sala de aula), refere as outras três e depois indica esta ferramenta aos alunos. Combina com o Companheiro de Crise para qualquer aluno que mostre padrões de mal-estar agudo.",
+        "tipp_pocket_card": "🖨 Cartão de bolso TIPP. ",
+        "print_and_fold_carry_in_a": "Imprime e dobra; leva-o no bolso, na carteira ou na agenda. O objetivo é teres as quatro competências contigo ANTES de precisares delas. O cartão de bolso cabe numa página; os cuidados ficam porque são importantes.",
+        "print_save_as_pdf": "🖨 Imprimir / Guardar como PDF",
+        "tipp_pocket_card_2": "TIPP · Cartão de Bolso",
+        "dbt_distress_tolerance_linehan": "Tolerância ao Mal-Estar DBT · Linehan",
+        "when_to_use": "Quando usar: ",
+        "acute_distress_where_you_might_do": "mal-estar agudo em que podes fazer algo de que te vais arrepender. Primeiro trata do corpo; fala depois. Se estás em crise, liga para o 988 ou envia HOME para o 741741.",
+        "caution_2": "Cuidado: ",
+        "practice_tipp_once_in_a_calm": "Pratica o TIPP uma vez num momento calmo, antes de precisares dele. Impresso a partir do AlloFlow SEL Hub. Fonte: Linehan, DBT Skills Training Manual (2014).",
+        "tipp_crisis_survival_skills": "Competências TIPP de sobrevivência a crises"
+      },
+      "tabs": {
+        "home": {
+          "label": "Preciso disto agora"
+        },
+        "log": {
+          "label": "O meu registo"
+        },
+        "print": {
+          "label": "Cartão de bolso"
+        },
+        "about": {
+          "label": "Sobre"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "Muito exaltado ou impulsivo",
+          "fit": "Reinício mais rápido"
+        },
+        "1": {
+          "signal": "Adrenalina em alta",
+          "fit": "Usa o corpo"
+        },
+        "2": {
+          "signal": "A respiração pode guiar",
+          "fit": "Opção mais discreta"
+        },
+        "3": {
+          "signal": "Contraído ou tenso",
+          "fit": "Solta a tensão"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "Quem: ",
+      "label_what": "O quê: ",
+      "crisis_resources": {
+        "988": {
+          "contact": "Liga ou envia mensagem para o 988",
+          "script": "Podes dizer: «Estou preocupado com um amigo.» Isso chega. A partir daí, eles orientam a conversa."
+        },
+        "crisistext": {
+          "contact": "Envia HOME para o 741741",
+          "script": "Podes escrever: «O meu amigo está a falar em magoar-se e eu não sei o que fazer.» Isso resulta."
+        },
+        "trevor": {
+          "contact": "Liga para o 1-866-488-7386 · Envia START para o 678-678",
+          "script": "Podes ligar ou escrever: «Tenho um amigo que é LGBTQ+ e está a passar por um momento mesmo difícil.»"
+        },
+        "911": {
+          "label": "911 Emergência",
+          "contact": "Liga para o 911",
+          "script": "Podes dizer: «O meu amigo está em perigo e eu não sei o que fazer.» Eles vão ajudar."
+        },
+        "211": {
+          "label": "211 — linha de recursos comunitários",
+          "contact": "Liga para o 211 · ou visita 211.org",
+          "script": "Podes dizer: «Estou à procura de serviços de crise de saúde mental na minha zona para um amigo.» Vão encaminhar-te para o serviço local certo."
+        },
+        "namilocator": {
+          "label": "NAMI Affiliate Locator (diretório nacional)",
+          "contact": "Visita nami.org/findsupport",
+          "script": "No site: introduz o código postal → «Find My Local NAMI» → vê os contactos, os programas e o número da linha de apoio da tua zona."
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov (diretório federal)",
+          "contact": "Visita findtreatment.gov · ou 1-800-662-HELP (4357)",
+          "script": "No site: introduz o código postal → filtra por «Mental Health Services» (serviços de saúde mental) → restringe pelo que podes pagar ou pelo seguro. A linha telefónica é uma boa opção se o site te parecer demasiado."
+        },
+        "befrienders": {
+          "contact": "Visita befrienders.org",
+          "script": "No site: seleciona o teu país → vê os números das linhas de apoio locais, os horários, as línguas disponíveis e as formas de contacto."
+        },
+        "iasp": {
+          "label": "IASP — International Association for Suicide Prevention (Associação Internacional para a Prevenção do Suicídio)",
+          "contact": "Visita iasp.info/resources/Crisis_Centres",
+          "script": "No site: seleciona o teu país → vê as linhas de crise com as formas de contacto e os horários."
+        },
+        "mainecrisis": {
+          "contact": "Liga para o 1-888-568-1112",
+          "script": "Diz o teu condado ou a tua localidade, se puderes. Vão encaminhar-te para a equipa local certa."
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance (Cumberland County + todo o estado)",
+          "contact": "Geral: 207-553-5800 · Crise: 1-888-568-1112",
+          "script": "Para um amigo em crise aguda no Cumberland County: liga para o 1-888-568-1112 e pergunta se a equipa móvel de crise pode ir ao sítio onde o teu amigo está. Para apoio fora de crise / ligar uma família a serviços continuados: liga para a linha geral durante o horário de expediente."
+        },
+        "namimaine": {
+          "contact": "Liga para o 1-800-464-5767",
+          "script": "Boa para perguntas que não são urgentes: «Como ajudo o meu amigo a encontrar um terapeuta?» ou «Onde é que as famílias podem procurar apoio?» E também: «A nossa escola recebe o Ending the Silence?»"
+        },
+        "school": {
+          "label": "O teu orientador escolar ou o psicólogo da escola",
+          "contact": "Vai lá, deixa um bilhete ou pede a qualquer professor que te leve",
+          "script": "Podes dizer: «Estou preocupado com um amigo.» Se não conseguires dizê-lo em voz alta, escreve num post-it e entrega-lho."
+        }
+      },
+      "res_988_who": "Qualquer pessoa nos EUA — incluindo jovens preocupados com um amigo",
+      "res_988_what": "Gratuita, confidencial, 24/7. Conselheiros de crise com formação. Faz a ligação a serviços locais, se for preciso.",
+      "res_crisistext_who": "Qualquer pessoa nos EUA, no Canadá, no Reino Unido ou na Irlanda (os códigos variam conforme o país) — só por mensagem é bom se não quiseres falar",
+      "res_crisistext_what": "Gratuita, confidencial, 24/7. Responde-te por mensagem um conselheiro humano, uma pessoa real. Espera média inferior a 5 minutos.",
+      "res_trevor_who": "Jovens LGBTQ+ e amigos que os apoiam (EUA)",
+      "res_trevor_what": "Gratuito, confidencial, 24/7. Com formação específica para crises de jovens LGBTQ+. Os jovens LGBTQ+ enfrentam taxas mais altas de pensamentos suicidas; este recurso foi criado para essa realidade.",
+      "res_911_who": "Quando alguém está em perigo físico imediato, agora mesmo (EUA)",
+      "res_911_what": "Para emergências a acontecer agora: alguém está a magoar-se, tomou alguma coisa ou não está em segurança neste momento. Envia polícia, bombeiros e emergência médica.",
+      "res_211_who": "Qualquer pessoa nos EUA ou no Canadá — encaminha automaticamente para os serviços da tua zona pelo indicativo",
+      "res_211_what": "Gratuita, confidencial, 24/7. Liga-te a serviços locais de crise de saúde mental, apoio alimentar, habitação, apoio à família e centenas de outros programas comunitários. Gerida pela United Way + organizações locais sem fins lucrativos. É diferente do 988 — o 211 é a linha mais ampla de serviços comunitários.",
+      "res_namilocator_who": "Qualquer pessoa nos EUA — escreve o teu código postal (zip code) e vê a delegação local da NAMI",
+      "res_namilocator_what": "Cada estado tem pelo menos uma delegação da NAMI; muitos têm várias. As delegações locais oferecem grupos de apoio gratuitos para famílias, programas de recuperação conduzidos por pares, formações (Family-to-Family, Ending the Silence nas escolas) e linhas de apoio emocional (warmlines). NAMI HelpLine: 1-800-950-6264.",
+      "res_samhsa_who": "Qualquer pessoa nos EUA à procura de acompanhamento continuado em saúde mental ou consumo de substâncias",
+      "res_samhsa_what": "Base de dados federal com ~13,000 (cerca de treze mil) locais de tratamento — terapia, psiquiatria, ambulatório intensivo, internamento, duplo diagnóstico. Filtra por código postal, pelo seguro que tens, por língua, pelos serviços oferecidos. A SAMHSA também tem uma National Helpline 24/7 (1-800-662-4357) que faz encaminhamentos gratuitos.",
+      "res_befrienders_who": "Qualquer pessoa fora dos EUA à procura de apoio em crise no seu país",
+      "res_befrienders_what": "Uma rede mundial de centros de voluntários de apoio emocional em mais de 30 países. Escreve o teu país no site e recebes os números das linhas de apoio e as opções de chat da tua zona. A maioria dos centros é gratuita, confidencial e 24/7.",
+      "res_iasp_who": "Qualquer pessoa fora dos EUA — diretório mundial completo de linhas de crise",
+      "res_iasp_what": "A IASP mantém a lista internacional mais completa de linhas de crise para a prevenção do suicídio. Pode pesquisar-se por país, com opções de telefone, mensagem e chat online. Muitas vezes é o melhor ponto de partida se o teu país não aparecer na Befrienders.",
+      "res_mainecrisis_who": "Qualquer pessoa no Maine — liga-te aos serviços de crise de todo o estado",
+      "res_mainecrisis_what": "Gratuita, confidencial, 24/7. Conselheiros que trabalham no Maine. Gerida pela The Opportunity Alliance no sul do Maine e por outros prestadores regionais no resto do estado. Pode enviar equipas móveis locais de crise quando for preciso.",
+      "res_opportunityalliance_who": "Crianças, adolescentes, famílias e adultos do Cumberland County e de todo o Maine",
+      "res_opportunityalliance_what": "Gere a equipa Cumberland County Crisis Mobile Response — as pessoas que vão mesmo ter contigo quando o 1-888-568-1112 as envia, em Portland e nas comunidades à volta. Também presta os Children's Behavioral Health Services, saúde comportamental ao domicílio, apoio à família e a estrutura de base do 211 Maine no sul do Maine.",
+      "res_namimaine_who": "Qualquer pessoa no Maine à procura de informação, apoio ou encaminhamento em saúde mental",
+      "res_namimaine_what": "Não é uma linha de crise, mas é um ótimo recurso durante o dia para te orientares nos serviços de saúde mental, no apoio entre pares e nos programas locais. Também gere o programa escolar Ending the Silence — apresentadores com idade de estudante que falam sobre doença mental diretamente nas turmas do I e do II ciclo do ensino secundário.",
+      "res_school_who": "Todas as escolas públicas dos EUA têm orientadores com formação; a maioria das escolas do I e do II ciclo do ensino secundário também tem um psicólogo escolar",
+      "res_school_what": "Têm formação para isto. Estão obrigados à confidencialidade, exceto quando está em causa a segurança. Podem fazer a ligação a apoio fora da escola, falar com os pais contigo e acompanhar-te durante todo o processo.",
+      "resource_groups": {
+        "national": {
+          "label": "Funcionam em qualquer ponto dos EUA",
+          "desc": "Estes quatro são a base universal. Memoriza o 988."
+        },
+        "lookup": {
+          "label": "Encontra ajuda na tua zona (EUA)",
+          "desc": "Diretórios que te encaminham para os serviços da tua zona. Úteis para acompanhamento continuado, para além da chamada de crise."
+        },
+        "international": {
+          "label": "Fora dos EUA?",
+          "desc": "O 988, o 211, a Trevor e a SAMHSA só existem nos EUA. Estes diretórios cobrem o resto do mundo."
+        },
+        "maine": {
+          "label": "Parceiros no Maine (serviços locais identificados)",
+          "desc": "Identificados especificamente porque a King Middle e as Portland Public Schools são o contexto-piloto desta ferramenta. Se estás noutro sítio, usa os diretórios acima para encontrares os equivalentes."
+        },
+        "school": {
+          "label": "Ajuda na escola",
+          "desc": "Muitas vezes é o adulto mais fácil de encontrar durante o dia de escola. Disponível em todas as escolas públicas dos EUA."
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "Humor em baixo persistente",
+          "desc": "Tristeza, vazio ou uma sensação de apatia / dormência que dura a maior parte do dia, quase todos os dias, durante semanas. É diferente dos dias tristes normais, que vêm e vão."
+        },
+        "irritability": {
+          "label": "Mais irritabilidade",
+          "desc": "Sobretudo nos adolescentes, a depressão aparece muitas vezes mais como irritabilidade ou raiva do que como tristeza. Explodir por coisas pequenas, andar sempre à flor da pele."
+        },
+        "withdrawal": {
+          "label": "Afastamento das atividades",
+          "desc": "Afastar-se de passatempos, desporto, amigos e coisas de que costumava gostar. Cancelar planos repetidamente. Passar muito mais tempo sozinho do que antes."
+        },
+        "sleep": {
+          "label": "Alterações no sono",
+          "desc": "Dormir muito mais do que o habitual, ou quase não dormir. Dificuldade em adormecer, acordar exausto, passar o dia a dormir."
+        },
+        "appetite": {
+          "label": "Alterações no apetite",
+          "desc": "Comer muito mais ou muito menos do que o habitual. Saltar refeições, ou comer constantemente sem prazer. Mudanças de peso visíveis em poucas semanas."
+        },
+        "energy": {
+          "label": "Pouca energia / cansaço",
+          "desc": "Tudo parece pesado. Até as tarefas pequenas parecem impossíveis. Pode dizer que se sente cansado o tempo todo, mesmo depois de dormir."
+        },
+        "school": {
+          "label": "Menos envolvimento na escola",
+          "desc": "Notas a descer, trabalhos por entregar, atrasar-se em disciplinas que antes não eram problema. Muitas vezes vem acompanhado de faltas à escola."
+        },
+        "selfcare": {
+          "label": "Menos cuidado consigo",
+          "desc": "Menos atenção à higiene, à aparência ou às rotinas diárias que costumava manter. Não é uma mudança de estilo — é a sensação de que deixou de se importar."
+        },
+        "hopeless": {
+          "label": "Frases de desesperança ou de autocrítica",
+          "desc": "Comentários frequentes como «para quê?», «nada interessa», «não valho nada», «sou um fardo». São formas de falar que merecem ser levadas a sério, mesmo quando ditas de passagem."
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "FALA — o que a pessoa diz",
+        "mood_what_you_re_seeing": "HUMOR — o que estás a ver",
+        "behavior_what_they_re_doing": "COMPORTAMENTO — o que a pessoa faz",
+        "a_friend_opens_up_at_lunch": "Uma amiga desabafa ao almoço",
+        "a_direct_disclosure_over_text": "Uma revelação direta por mensagem",
+        "the_aftermath_your_friend_is_now": "Depois — o teu amigo está agora a ser acompanhado",
+        "help_is_available_right_now": "Há ajuda disponível agora mesmo",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline · liga ou envia mensagem para o 988",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line · envia HOME para o 741741",
+        "tell_a_school_counselor_teacher_parent": "🏫 Conta a um orientador escolar, a um professor, ao teu pai ou à tua mãe, ou a outro adulto de confiança",
+        "box_breathing_started_4_seconds_in": "Respiração quadrada iniciada. 4 segundos a inspirar, 4 a suster, 4 a expirar, 4 a suster.",
+        "box_breathing_paused": "Respiração quadrada em pausa.",
+        "box_breathing_pacer": "🌬️ Guia de respiração quadrada",
+        "a_4_4_4_4_rhythm": "Um ritmo 4-4-4-4: inspira durante 4, sustém durante 4, expira durante 4, sustém durante 4. Usado por profissionais de saúde e equipas de emergência para acalmar o sistema nervoso. O círculo expande-se quando inspiras e contrai-se quando expiras.",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}, ciclo {cyclesDone}",
+        "breathing_pacer_ready": "Guia de respiração pronto",
+        "ready": "Pronto",
+        "cycle_cyclesdone": "Ciclo {cyclesDone}",
+        "start_box_breathing_pacer": "Iniciar o guia de respiração quadrada",
+        "start": "▶ Iniciar",
+        "pause_box_breathing_pacer": "Pausar o guia de respiração quadrada",
+        "pause": "⏸ Pausa",
+        "if_breathing_exercises_feel_uncomfortable_or": "Se os exercícios de respiração te parecerem desconfortáveis ou te deixarem mais ansioso, isso é na verdade comum — para e experimenta antes a ancoragem. Com as definições de movimento reduzido, o círculo fica parado e guias-te pelo nome da fase.",
+        "grounding_complete_you_ve_returned_to": "Ancoragem concluída. Voltaste ao momento presente.",
+        "grounding_reset": "Ancoragem reiniciada.",
+        "5_4_3_2_1_grounding": "👁️ Ancoragem 5-4-3-2-1",
+        "a_sensory_anchor_when_your_thoughts": "Uma âncora sensorial para quando os pensamentos estão acelerados ou te sentes desligado. Percorre os sentidos um de cada vez. Não precisas de escrever nada — só de reparar.",
+        "you_ve_come_back_to_the": "Voltaste ao presente.",
+        "grounding_doesn_t_make_hard_feelings": "A ancoragem não faz desaparecer os sentimentos difíceis. Só lhes dá um lugar mais pequeno onde ficar durante um momento, para que a onda possa passar.",
+        "do_it_again": "↻ Fazer outra vez",
+        "step_stepidx_of_groundstepscount": "Passo {stepIdx} de {GROUNDSTEPSCount}",
+        "optional_jot_what_you_notice_private": "Opcional: aponta o que notas (privado, não é guardado).",
+        "notes_for_step_stepidx": "Notas para o passo {stepIdx}",
+        "reset_grounding_to_first_step": "Reiniciar a ancoragem no primeiro passo",
+        "reset": "↻ Reiniciar",
+        "next_step": "Próximo passo",
+        "finish_grounding_exercise": "Terminar o exercício de ancoragem",
+        "next": "Seguinte →",
+        "finish": "Terminar ✓",
+        "this_device_would_not_save_it": "Este dispositivo não conseguiu guardar. O teu trabalho continua no ecrã — usa Exportar ou Imprimir para guardares uma cópia antes de fechares esta página.",
+        "added_to_your_toolkit": "Adicionado ao teu kit",
+        "removed_from_your_toolkit": "Removido do teu kit",
+        "my_coping_toolkit": "🧰 O meu kit de estratégias para lidar",
+        "tap_any_strategy_to_add_it": "Toca numa estratégia para a adicionares ao teu kit pessoal. Fica guardado só no teu dispositivo — nada é enviado. Faz uma lista de 5-7 coisas que já te ajudaram de verdade no passado, para que, quando chegar um momento difícil, não tenhas de pensar do zero.",
+        "my_toolkit_savedcount": "✓ O meu kit ({savedCount})",
+        "remove_label_from_toolkit": "Remover «{label}» do kit",
+        "remove_from_toolkit": "Remover do kit: ",
+        "add_to_toolkit": "Adicionar ao kit: ",
+        "note_this_toolkit_is_a_complement": "Nota: este kit é um complemento ao apoio profissional, não o substitui. Se estás em crise, liga ou envia mensagem para o 988.",
+        "e_g_when_i_haven_t": "p. ex., «Quando não durmo e passei o fim de semana todo sozinho»",
+        "e_g_listen_to_a_calming": "p. ex., «Ouvir uma playlist calma, dar um passeio, salpicar água fria na cara»",
+        "e_g_library_after_school_my": "p. ex., «A biblioteca depois das aulas, a minha amiga Maya, o café»",
+        "e_g_mom_cell_aunt_liz": "p. ex., «Mãe (telemóvel ____), tia Liz (telemóvel ____), orientador Sr. K (sala 204)»",
+        "e_g_988_lifeline_call_or": "p. ex., «Linha 988 (ligar ou enviar mensagem), Crisis Text Line (enviar HOME para o 741741), Dr. ____ na clínica ____, orientador escolar»",
+        "e_g_give_my_medications_to": "p. ex., «Dar os meus medicamentos à minha mãe para ela os guardar fechados à chave. Não ir à cave. Ficar com alguém durante a noite se estiver mesmo mal.»",
+        "could_not_open_print_window_your": "Não foi possível abrir a janela de impressão — o teu navegador pode tê-la bloqueado.",
+        "print_preview_opened": "Pré-visualização de impressão aberta.",
+        "print_could_not_be_opened": "Não foi possível abrir a impressão.",
+        "my_safety_plan_stanley_brown": "📋 O meu plano de segurança (Stanley-Brown)",
+        "best_built_with_a_counselor_or": "É melhor construí-lo COM um psicólogo ou terapeuta. ",
+        "a_safety_plan_is_most_effective": "Um plano de segurança funciona melhor quando um adulto que te conhece te ajuda a preenchê-lo — lembra-se de coisas que te escapariam e é uma pessoa a quem já praticaste pedir ajuda. Podes começá-lo aqui, guardá-lo e terminá-lo em conjunto. Guardado só neste dispositivo.",
+        "filledcount_stepscount_filled": "{filledCount} / {STEPSCount} preenchidos",
+        "print_save_as_pdf": "🖨 Imprimir / guardar como PDF",
+        "clear_my_saved_safety_plan": "Apagar o meu plano de segurança guardado",
+        "clear_plan": "✕ Apagar plano",
+        "stanley_brown_safety_planning_intervention_is": "A Stanley-Brown Safety Planning Intervention é recomendada pelo Suicide Prevention Resource Center e é um dos planos de segurança baseados em evidência mais estudados. A versão clínica completa é feita com um profissional com formação.",
+        "you_are_not_the_therapist": "Tu não és o terapeuta",
+        "your_job_ended_when_you_connected": "A tua tarefa terminou quando puseste o teu amigo em contacto com um adulto. A partir daqui, o teu papel volta a ser o de amigo — e esse é o tamanho certo. Tratamento, plano de segurança, acompanhamento continuado — isso é trabalho para profissionais com formação. O teu trabalho é estar presente, ser amigo e não desaparecer.",
+        "if_your_friend_goes_to_treatment": "Se o teu amigo iniciar tratamento, isso é um sucesso — não um abandono",
+        "when_a_friend_gets_professional_help": "Quando um amigo recebe ajuda profissional — terapia, medicação, programas intensivos, às vezes internamento — pode parecer que a amizade ficou em pausa. Não ficou. O tratamento é aquilo que ajudaste a tornar possível. O teu amigo está a fazer o trabalho difícil que o mantém cá. Envia uma mensagem. Guarda-lhe um lugar ao almoço. Está lá quando ele voltar.",
+        "concrete_moves_that_help": "Passos concretos que ajudam",
+        "tell_another_adult_you_trust": "Conta a outro adulto em quem confies. ",
+        "even_if_the_situation_has_been": "Mesmo que a situação já «esteja resolvida», TU passaste por uma coisa difícil. O teu pai ou a tua mãe, um psicólogo escolar ou um terapeuta podem ajudar-te a processar isso.",
+        "pause_platforms_that_are_amplifying_it": "Faz uma pausa nas plataformas que estão a amplificar isto. ",
+        "if_social_media_is_making_your": "Se as redes sociais estão a piorar a tua preocupação, faz uma pausa. Silencia, deixa de seguir ou fecha a app durante um dia.",
+        "keep_your_own_routines": "Mantém as tuas rotinas. ",
+        "sleep_food_school_hobbies_these_are": "Sono, comida, escola, passatempos. São as tábuas do chão que te mantêm firme — não as deixes fugir enquanto carregas isto.",
+        "ask_for_breaks_when_you_need": "Pede pausas quando precisares. ",
+        "you_are_allowed_to_not_text": "Tens o direito de não responder logo às mensagens. Tens o direito de estar indisponível durante umas horas. A recuperação do teu amigo não exige que estejas sempre de prevenção.",
+        "notice_your_own_feelings": "Repara nos teus próprios sentimentos. ",
+        "sadness_anger_fear_exhaustion_are_normal": "Tristeza, raiva, medo e cansaço são normais. Sentir-te entorpecido também é normal. Se os sentimentos continuarem pesados durante mais de duas semanas, é altura de falar com um psicólogo escolar.",
+        "keep_your_other_friendships": "Mantém as tuas outras amizades. ",
+        "don_t_let_supporting_one_friend": "Não deixes que apoiar um amigo te isole de toda a gente. É toda a tua rede de relações que te segura.",
+        "when_supporting_a_friend_has_hit": "Quando apoiar um amigo TE afetou muito",
+        "if_you_re_losing_sleep_having": "Se estás a perder o sono, a ter pensamentos intrusivos, a sentir-te entorpecido ou a começar a ter os teus próprios pensamentos de autolesão — são sinais de que também precisas de apoio. Liga para o 988, envia HOME para o 741741 ou fala com um psicólogo escolar. Quem ajuda também precisa de ajuda. Não há vergonha nenhuma em precisar.",
+        "you_showed_up_you_noticed_you": "Estiveste presente. Reparaste. Disseste alguma coisa. Contaste a alguém. Isso chega. Isso é tudo.",
+        "today": "hoje",
+        "yesterday": "ontem",
+        "value_days_ago": "há {value} dias",
+        "value_weeks_ago": "há {value} semanas",
+        "value_months_ago": "há {value} meses",
+        "if_you_are_in_crisis_right": "🚨 SE ESTÁS EM CRISE NESTE MOMENTO:",
+        "call_or_text": "Liga ou envia mensagem para o ",
+        "us_suicide_crisis_lifeline": " (Suicide + Crisis Lifeline dos EUA). ",
+        "text": "Envia ",
+        "to": " para o ",
+        "reach_a_real_person_24_7": "Fala com uma pessoa real, 24/7.",
+        "my_safety_plan": "O Meu Plano de Segurança",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012 — a intervenção com mais evidência para reduzir novas tentativas. Constrói o TEU plano quando estiveres calmo.",
+        "why_this_works": "🎓 Porque é que isto funciona: ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry. Escrever este plano quando estás calmo torna-o acessível durante uma crise. Partilha-o com alguém em quem confies — psicólogo escolar, pai ou mãe, amigo.",
+        "need_a_sign": "Escreve primeiro um sinal.",
+        "my_warning_signs_log": "O Meu Registo de Sinais de Alerta",
+        "track_when_warning_signs_appear_so": "Regista quando aparecem sinais de alerta, para que o padrão se torne visível. Conhecer o teu padrão = apanhá-lo mais cedo.",
+        "what_sign_showed_up_e_g": "Que sinal apareceu? (p. ex., «senti-me entorpecido a tarde toda», «queria desaparecer»)",
+        "context_where_what_was_happening": "Contexto (onde, o que estava a acontecer)",
+        "intensity": "Intensidade: ",
+        "what_helped_if_anything": "O que ajudou (se alguma coisa ajudou)",
+        "log_it": "💾 Registar",
+        "helped_whathelped": "✓ Ajudou: {whatHelped}",
+        "add_a_few_words_first_then": "Escreve primeiro algumas palavras e depois carrega outra vez no botão.",
+        "my_coping_arsenal": "O Meu Arsenal de Estratégias",
+        "strategies_that_have_actually_worked_for": "Estratégias que resultaram mesmo COMIGO. Toca em «+1 usada» quando uma te ajudar — regista o que funciona.",
+        "a_strategy_that_worked_for_me": "Uma estratégia que resultou comigo (p. ex., «água fria na cara», «ligar à mãe»)",
+        "add_to_arsenal": "+ Adicionar ao arsenal",
+        "used_value": "usada: {value}",
+        "a_name_is_needed_before_this": "É preciso um nome antes de guardar.",
+        "my_support_contacts": "Os Meus Contactos de Apoio",
+        "quick_access_list_of_people_crisis": "Lista de acesso rápido com pessoas + linhas de crise + quando usar cada uma. Cartão para a carteira.",
+        "name": "Nome",
+        "role_mom_therapist_friend": "Papel (mãe, terapeuta, amigo)",
+        "contact_phone_text": "Contacto (telefone / mensagem)",
+        "when_to_reach_out_to_this": "Quando contactar ESTA pessoa",
+        "add": "+ Adicionar",
+        "need_a_brief_description": "Escreve uma breve descrição.",
+        "my_recovery_notes": "As Minhas Notas de Recuperação",
+        "after_a_hard_moment_log_what": "Depois de um momento difícil, regista o que ajudou + o que não ajudou. Vai construindo o conhecimento sobre ti próprio.",
+        "what_happened_brief": "O que aconteceu? (em poucas palavras)",
+        "what_helped": "✓ O que ajudou",
+        "what_didn_t_help_or_made": "✗ O que não ajudou (ou piorou)",
+        "what_i_want_future_me_to": "💌 O que quero que o meu eu do futuro recorde disto",
+        "save": "💾 Guardar",
+        "helped": "✓ Ajudou: ",
+        "didn_t": "✗ Não ajudou: ",
+        "write_something_first_then_press_add": "Escreve alguma coisa primeiro e depois carrega em Adicionar.",
+        "my_hope_list": "A Minha Lista de Esperança",
+        "reasons_to_keep_going_people_plans": "Razões para continuar. Pessoas, planos, lugares, qualquer coisa. Lê isto quando for difícil.",
+        "one_of_your_reasons": "💛 Uma das tuas razões",
+        "a_reason_to_keep_going_small": "Uma razão para continuar (pequena ou grande, qualquer uma)",
+        "my_safety_kit": "🛡 O Meu Kit de Segurança",
+        "personal_crisis_support_tools": "Ferramentas pessoais de apoio em crise",
+        "6_tools_to_build_your_safety": "6 ferramentas para construíres o TEU plano de segurança + arsenal de estratégias. Os números das linhas de crise estão sempre visíveis. Todos os dados ficam no teu navegador.",
+        "open": "Abrir →",
+        "my_safety_kit_2": "← O Meu Kit de Segurança",
+        "crisis_companion": "Companheiro de Crise",
+        "peer_support_and_suicide_prevention_skills": "Apoio entre pares e competências de prevenção do suicídio. O que fazer se um amigo parecer deprimido, estiver em crise ou a pensar em magoar-se. Reconhecer os sinais, o que dizer (e não dizer), como contar a um adulto de confiança. Alinhado com NEDA + AFSP + Sources of Strength + 988. Protegido por aviso de conteúdo.",
+        "safety_plan_cleared": "Plano de segurança apagado.",
+        "all_distress_readings_cleared": "Todos os registos de mal-estar foram apagados.",
+        "clear_your_saved_safety_plan": "Apagar o teu plano de segurança guardado?",
+        "clear_all_distress_readings": "Apagar todos os registos de mal-estar?",
+        "this_permanently_removes_every_step_of": "Isto remove permanentemente deste dispositivo todos os passos do teu plano de segurança guardado. Não é possível anular. Se puderes vir a precisar dele, imprime ou guarda primeiro uma cópia.",
+        "this_permanently_deletes_your_entire_distress": "Isto apaga permanentemente todo o teu histórico de registos de mal-estar, incluindo notas e dados de tendência. Não é possível anular.",
+        "cancel": "Cancelar",
+        "clear_safety_plan": "Apagar plano de segurança",
+        "clear_all_readings": "Apagar todos os registos",
+        "now_viewing_label": "A ver agora: {label}",
+        "content_note_before_you_continue": "Aviso de conteúdo antes de continuares",
+        "this_module_is_about_what_to": "Este módulo é sobre o que fazer se um amigo estiver deprimido, em crise ou a pensar em magoar-se — incluindo o suicídio. Aborda:",
+        "recognizing_signs_of_depression_in_a": "Reconhecer sinais de depressão num amigo",
+        "crisis_warning_signs_at_a_general": "Sinais de alerta de crise — de forma geral, sem instruções detalhadas",
+        "how_to_ask_listen_and_respond": "Como perguntar, ouvir e responder",
+        "how_and_when_to_tell_a": "Como e quando contar a um adulto de confiança",
+        "crisis_helplines_and_what_to_say": "Linhas de apoio em crise e o que dizer quando ligas",
+        "how_to_take_care_of_yourself": "Como cuidares de ti depois de teres apoiado um amigo",
+        "what_this_module_does_not_include": "O que este módulo NÃO inclui: ",
+        "specific_methods_of_self_harm_descriptions": "métodos específicos de autolesão, descrições de tentativas de suicídio, histórias de «antes/depois» ou qualquer conteúdo que possa funcionar como instruções. A informação é intencionalmente geral — centrada na consciencialização, no apoio e em ligar as pessoas à ajuda.",
+        "if_reading_about_these_topics_is": "Se ler sobre estes temas for difícil para ti neste momento, ",
+        "please_consider_one_of_these_instead": "por favor considera antes uma destas opções:",
+        "talk_with_a_trusted_adult_before": "Fala com um adulto de confiança antes de continuares — um psicólogo escolar, o teu pai ou a tua mãe, ou um professor",
+        "skip_this_module_and_explore_other": "Salta este módulo e explora outras ferramentas do SEL Hub",
+        "the_988_suicide_crisis_lifeline_free": " — a 988 Suicide & Crisis Lifeline (gratuita, confidencial, 24/7)",
+        "home_to_741741": "HOME para o 741741",
+        "crisis_text_line_free_confidential_24": " — Crisis Text Line (gratuita, confidencial, 24/7)",
+        "continuing_into_crisis_companion": "A entrar no Companheiro de Crise",
+        "i_understand_the_content_note_and": "Compreendo o aviso de conteúdo e quero continuar para o Companheiro de Crise",
+        "i_understand_continue": "✓ Compreendo — continuar",
+        "returning_to_sel_hub_menu": "A voltar ao menu do SEL Hub",
+        "take_me_back_to_the_menu": "← Voltar ao menu",
+        "visitedcount_sectionscount_sections_visited": "{visitedCount} / {SECTIONSCount} secções visitadas",
+        "crisis_companion_sections": "Secções do Companheiro de Crise",
+        "visited": " (visitada)",
+        "next_label": "Seguinte: {label} →",
+        "breath_pacer": "Guia de respiração",
+        "a_visual_breathing_pacer_watch_the": "Um guia visual de respiração. Observa o círculo a expandir-se e a contrair-se; deixa a tua respiração acompanhá-lo. Útil em momentos de stress agudo antes de uma conversa difícil, depois dela, ou sempre que o corpo vai à frente da mente. Esta é uma ferramenta para USAR — não substitui nenhum dos apoios do resto deste módulo.",
+        "cycle_cycles": "Ciclo {cycles}",
+        "keep_going_as_long_as_feels": " · continua enquanto te fizer bem",
+        "press_start_when_you_re_ready": "Carrega em Iniciar quando estiveres pronto",
+        "stop": "■ Parar",
+        "restart": "↺ Recomeçar",
+        "when_to_use_which": "💡 Quando usar cada uma: ",
+        "box_breathing_4_4_4_4": "Respiração quadrada (4-4-4-4) para a regulação geral — é usada por militares e equipas de emergência. ",
+        "4_7_8_for_falling_asleep": "4-7-8 para adormecer ou para acalmar depressa num momento agudo — a expiração longa ativa o sistema parassimpático. ",
+        "equal_breath_6_6_for_sustainable": "Respiração igual (6-6) para usar no dia a dia de forma sustentável — sem pausas, fácil de manter.",
+        "write_something_first_then_press_the": "Escreve alguma coisa primeiro e depois carrega outra vez no botão.",
+        "grounding_5_4_3_2_1": "Ancoragem 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "Quando a tua mente está acelerada ou a ansiedade está a subir, a técnica 5-4-3-2-1 traz a atenção de volta ao corpo e ao momento presente. Usa qualquer um dos 5 sentidos, mesmo que alguns não estejam acessíveis — diz aquilo de que te lembras, o que imaginas, o cheiro que gostavas de estar a sentir. Funciona na mesma.",
+        "itemscount_of_count_added": "{itemsCount} de {count} adicionados",
+        "remove": "Remover",
+        "finish_2": "✓ Terminar",
+        "grounding_complete": "Ancoragem concluída",
+        "you_named_15_specific_things_in": "Disseste 15 coisas específicas do teu momento presente. Repara em como te sentes agora, em comparação com quando começaste.",
+        "start_again": "↺ Começar de novo",
+        "distress_reading_saved": "Registo de mal-estar guardado.",
+        "calm": "Calmo",
+        "mild_stress": "Stress ligeiro",
+        "notable_distress": "Mal-estar considerável",
+        "high_distress": "Mal-estar elevado",
+        "crisis_level_distress": "Mal-estar ao nível de crise",
+        "distress_check": "Verificação do mal-estar",
+        "a_quick_way_to_track_how": "Uma forma rápida de acompanhar como te sentes ao longo do tempo. Avalia o teu mal-estar de 0–10. Acrescenta uma nota, se quiseres. O padrão ao longo de uma semana diz-te coisas que só as palavras não dizem. ",
+        "if_your_reading_is_8_or": "Se o teu registo for 8 ou mais durante mais de uma hora, por favor fala com um adulto de confiança ou envia HOME para o 741741.",
+        "right_now_i_m_feeling": "Neste momento sinto-me:",
+        "0_calm": "0 · calmo",
+        "10_crisis": "10 · crise",
+        "optional_note_what_s_going_on": "Nota opcional (o que se passa?):",
+        "e_g_math_test_in_3rd": "p. ex., teste de matemática ao 3.º tempo; quase não dormi",
+        "log_this_reading": "💾 Registar este valor",
+        "this_is_a_hard_moment": "⚠ Este é um momento difícil.",
+        "you_re_in_real_distress_the": "Estás em verdadeiro mal-estar. O Guia de respiração (uma secção acima) e a Ancoragem 5-4-3-2-1 estão mesmo aqui. ",
+        "if_thoughts_of_self_harm_are": "Se tiveres pensamentos de autolesão, envia HOME para o 741741 (Crisis Text Line) ou liga ou envia mensagem para o 988 agora mesmo.",
+        "above_average_distress": "Mal-estar acima da média.",
+        "worth_pausing_for_try_the_breath": "Vale a pena parar. Experimenta o Guia de respiração ou a Ancoragem. Se este nível continuar a voltar, contar a um adulto de confiança é uma boa decisão.",
+        "your_pattern": "📊 O teu padrão",
+        "7_day_avg_avg_sevendayreadingscount_readings": "Média de 7 dias: {avg} · {sevenDayReadingsCount} registos",
+        "distress_over_time_chart": "Gráfico do mal-estar ao longo do tempo",
+        "recent_readings_readingscount": "📋 Registos recentes ({readingsCount})",
+        "why_this_matters": "Porque é que isto importa",
+        "you_don_t_have_to_be": "Não tens de ser psicólogo. Não tens de saber o que dizer. Não tens de resolver nada.",
+        "you_have_to_be_a_person": "Tens de ser uma pessoa que repara, ",
+        "and_a_person_who_tells_an": "e uma pessoa que conta a um adulto. É só isso. Estas duas competências podem ser aprendidas, e ambas salvam vidas.",
+        "friends_are_usually_the_first_to": "Normalmente, os amigos são os primeiros a reparar quando algo não está bem. Os adultos muitas vezes não veem os primeiros sinais, porque os adolescentes se abrem mais com os amigos do que com os pais ou os professores. Isso não é um problema — é a forma natural da amizade na tua idade. Só quer dizer que o teu papel é importante.",
+        "what_this_module_teaches": "O que este módulo ensina",
+        "how_to_recognize_when_a_friend": "Como reconhecer quando o humor ou o padrão de comportamento de um amigo está a caminhar para a depressão",
+        "how_to_recognize_warning_signs_of": "Como reconhecer sinais de alerta de crise — incluindo pensamentos de suicídio",
+        "how_to_ask_listen_and_respond_2": "Como perguntar, ouvir e responder — incluindo as palavras que ajudam e as que não ajudam",
+        "how_to_tell_a_trusted_adult": "Como contar a um adulto de confiança — quando, a quem e como",
+        "crisis_resources_you_can_call_or": "Recursos de crise para onde podes ligar ou enviar mensagem a qualquer hora — pelo teu amigo ou por ti",
+        "how_to_take_care_of_yourself_2": "Como cuidares de ti depois de teres apoiado um amigo em algo pesado",
+        "what_this_module_does_not_do": "O que este módulo NÃO faz",
+        "it_does_not_turn_you_into": "Não te transforma em terapeuta. O teu papel é estar presente e pôr a pessoa em contacto com ajuda.",
+        "it_does_not_require_you_to": "Não te pede para guardares segredos. Se a segurança estiver em causa, contar a um adulto é lealdade, não traição.",
+        "it_does_not_describe_specific_methods": "Não descreve métodos específicos de autolesão. Somos gerais de propósito quanto aos comportamentos de alerta.",
+        "it_does_not_replace_professional_help": "Não substitui a ajuda profissional. Ensina-te a ser uma ponte para a ajuda profissional.",
+        "sources_framework": "Fontes e enquadramento",
+        "this_module_aligns_with_safe_messaging": "Este módulo segue as orientações de comunicação segura da AFSP (afsp.org) e da SAMHSA, as orientações para os media Reporting on Suicide (reportingonsuicide.org), o Sources of Strength (sourcesofstrength.org), o QPR Institute, o NIMH e as orientações da AAP sobre saúde na adolescência. Foi concebido por um psicólogo escolar para ser usado com alunos do I e do II ciclo do ensino secundário, com revisão editorial segundo as orientações de comunicação segura.",
+        "recognizing_depression_in_a_friend": "Reconhecer a depressão num amigo",
+        "every_kid_has_bad_days_every": "Todos os jovens têm dias maus. Todos têm uma semana difícil de vez em quando. Isso é ser humano, não é depressão.",
+        "depression_is_a_pattern": "A depressão é um PADRÃO. ",
+        "it_s_a_cluster_of_changes": "É um conjunto de mudanças que dura semanas, não um único dia mau. Os sinais abaixo merecem ser levados a sério quando VÁRIOS acontecem ao mesmo tempo E quando duram mais do que uma fase difícil normal.",
+        "a_useful_question_to_keep_in": "Uma pergunta útil para ter em mente: «Este padrão de mudanças está a durar mais, a piorar ou a atrapalhar o dia a dia da pessoa?»",
+        "patterns_to_notice_over_weeks_not": "Padrões a observar (ao longo de semanas, não de dias)",
+        "important_nuance": "Uma nuance importante",
+        "in_adolescents_especially_depression_often_shows": "Sobretudo nos adolescentes, a depressão aparece muitas vezes como IRRITABILIDADE em vez de tristeza. Um amigo que anda há semanas a responder mal, à flor da pele com coisas pequenas, ou com ar de estar a arder em lume brando pode estar a passar por mais dificuldades do que alguém que está visivelmente triste.",
+        "boys_athletes_kids_of_color_larger": "Rapazes, atletas, jovens racializados, jovens com corpos maiores e alunos com resultados muito bons passam muitas vezes despercebidos porque não correspondem ao estereótipo do «adolescente deprimido». Leva a sério o conjunto de mudanças, seja qual for o aspeto do teu amigo.",
+        "what_to_do_if_you_re": "O que fazer se estás a ver o padrão",
+        "reach_out_send_a_text_sit": "Aproxima-te. Envia uma mensagem. Senta-te ao lado dele ao almoço. O sinal de que estás atento conta.",
+        "ask_gently_and_specifically_i_ve": "Pergunta com cuidado e de forma específica: «Tenho reparado que andas muito cansado e calado. Como estás, a sério?»",
+        "listen_don_t_fix_most_people": "Ouve. Não tentes resolver. A maioria das pessoas não quer uma solução; quer sentir-se menos sozinha.",
+        "if_they_share_something_heavy_that": "Se a pessoa partilhar algo pesado, é o momento de fazer a pergunta mais difícil (secção seguinte: sinais de alerta de crise).",
+        "if_you_re_worried_about_them": "Se estás preocupado com a pessoa, conta a um adulto de confiança. Não precisas de certezas. A preocupação chega.",
+        "crisis_warning_signs": "Sinais de alerta de crise",
+        "when_depression_deepens_into_crisis_including": "Quando a depressão se aprofunda até se tornar uma crise — incluindo pensamentos de suicídio — costuma haver sinais de alerta. A American Foundation for Suicide Prevention (AFSP, Fundação Americana para a Prevenção do Suicídio) agrupa-os em três categorias: ",
+        "talk": "FALA",
+        "mood": "HUMOR",
+        "and": ", e ",
+        "behavior": "COMPORTAMENTO",
+        "a_note_about_how_this_section": "Uma nota sobre a forma como esta secção está escrita: de propósito, NÃO listamos comportamentos específicos que possam funcionar como uma lista de instruções. As categorias gerais chegam para um amigo perceber que algo não está bem. Se vires vários destes sinais juntos, é o momento de agir — não o momento de investigar mais por tua conta.",
+        "examples": "Exemplos",
+        "note": "Nota: ",
+        "if_you_see_any_of_these": "Se vires QUALQUER um destes sinais, os próximos passos são:",
+        "stay_with_them_if_you_can": "Fica com a pessoa, se puderes. ",
+        "don_t_leave_them_alone_if": "Não a deixes sozinha se estiver em sofrimento imediato.",
+        "ask_directly": "Pergunta diretamente. ",
+        "are_you_thinking_about_hurting_yourself": "«Estás a pensar em magoar-te?» Perguntar NÃO planta a ideia (a secção seguinte explica a investigação).",
+        "tell_a_trusted_adult_today": "Conta a um adulto de confiança — hoje. ",
+        "not_next_week_today": "Não na próxima semana. Hoje.",
+        "call_or_text_988": "Liga ou envia mensagem para o 988 ",
+        "if_you_re_unsure_what_to": "se não tiveres a certeza do que fazer — eles orientam-TE para ajudares o teu amigo.",
+        "call_911": "Liga para o 911 ",
+        "if_your_friend_is_in_immediate": "se o teu amigo estiver em perigo físico imediato neste momento.",
+        "question_persuade_refer": "Perguntar · Persuadir · Encaminhar",
+        "question_persuade_refer_2": "Question, Persuade, Refer: perguntar, persuadir, encaminhar",
+        "is_the_most_widely_taught_suicide": ") é o modelo de prevenção do suicídio mais ensinado a não profissionais. É usado em escolas, hospitais e programas comunitários em todo o mundo. O modelo é simples de propósito: três passos, e cada um deles é algo que um amigo pode fazer.",
+        "you_re_not_the_therapist_you": "Tu não és o terapeuta. És a ligação entre alguém em sofrimento e as pessoas com formação para ajudar. Essa ligação é exatamente o que salva vidas.",
+        "question_ask_directly": "Perguntar — pergunta diretamente",
+        "if_you_suspect_your_friend_is": "Se suspeitas que o teu amigo está a pensar em suicídio, pergunta. De forma direta e com cuidado. As palavras exatas importam menos do que a vontade de perguntar.",
+        "examples_2": "Exemplos: ",
+        "are_you_thinking_about_hurting_yourself_2": "«Estás a pensar em magoar-te?» · «Estás a ter pensamentos de suicídio?» · «Estás a pensar em pôr fim à tua vida?»",
+        "the_most_cited_barrier_to_asking": "🔬 O obstáculo mais citado para não perguntar está errado: ",
+        "asking_does_not_plant_the_idea": "Perguntar NÃO planta a ideia. Várias meta-análises (Dazzi et al., 2014, Psychological Medicine) e décadas de investigação da AFSP, do NIMH e do QPR Institute confirmam: perguntar diretamente protege. Muitas vezes é um alívio — a pessoa estava à espera de que alguém reparasse.",
+        "persuade_listen_and_stay": "Persuadir — ouve e fica",
+        "persuade_doesn_t_mean_talking_them": "«Persuadir» não quer dizer convencer a pessoa a não sentir o que sente. Quer dizer ouvir com toda a atenção, reconhecer que isto é difícil e ajudá-la a dizer SIM a receber ajuda.",
+        "listen_without_judgment": "Ouve sem julgar. ",
+        "don_t_debate_don_t_minimize": "Não discutas. Não desvalorizes. Não tentes superar com a tua própria história.",
+        "reflect": "Devolve o que ouviste. ",
+        "it_sounds_like_you_ve_been": "«Parece que tens andado a carregar tanta coisa e estás exausto.» Fazer a pessoa sentir-se ouvida é o remédio.",
+        "don_t_promise_secrecy": "Não prometas segredo. ",
+        "you_can_say_i_care_about": "Podes dizer: «Gosto demasiado de ti para guardar isto só para mim. Quero que falemos com alguém que possa ajudar a sério.»",
+        "stay_with_them": "Fica com a pessoa. ",
+        "don_t_leave_them_alone_if_2": "Não a deixes sozinha se estiver em sofrimento imediato. Senta-te. Caminha com ela. Basta estares presente.",
+        "skip_the_promise_me_trap": "⚠ Evita a armadilha do «promete-me»: ",
+        "don_t_ask_them_to_promise": "Não lhe peças para «prometer» que não vai fazer nada. Isso põe a pessoa na posição de fazer uma promessa que pode não conseguir cumprir, o que acrescenta vergonha. Em vez disso: «Quero que estejas em segurança. Vamos procurar ajuda agora mesmo, juntos.»",
+        "refer_connect_them_to_help": "Encaminhar — liga a pessoa à ajuda",
+        "refer_means_getting_them_to_someone": "«Encaminhar» quer dizer levar a pessoa até alguém que pode fazer mais do que tu. Esta é a parte em que TU também não estás sozinho.",
+        "best_walk_with_them_to_a": "O melhor: vai com ela até um orientador escolar, um psicólogo escolar ou um adulto de confiança. Agora mesmo.",
+        "if_that_s_not_possible_call": "Se isso não for possível: liguem juntos para o 988 (ou fica ao lado dela enquanto liga ou envia mensagem). O 988 é para a pessoa em risco E para o amigo que está a ajudar.",
+        "if_they_refuse_to_tell_anyone": "Se a pessoa se recusar a contar a alguém: ",
+        "tell_an_adult_yourself": "conta tu a um adulto. ",
+        "you_re_not_breaking_trust_you": "Não estás a quebrar a confiança — estás a agir com a lealdade que a crise dela merece. É provável que mais tarde fique aliviada.",
+        "if_immediate_physical_danger_911_not": "Se houver perigo físico imediato: 911. Não na próxima semana. Agora.",
+        "the_whole_framework_in_one_sentence": "O modelo inteiro numa frase: ",
+        "ask_directly_listen_fully_and_bring": "Pergunta diretamente, ouve com toda a atenção e chama um adulto que possa ajudar.",
+        "what_to_say_and_what_not": "O que dizer (e o que não dizer)",
+        "you_don_t_need_a_perfect": "Não precisas de um guião perfeito. Não precisas de ser sábio. Precisas de estar presente, ser honesto e estar disposto a chamar um adulto. As frases abaixo são exemplos — a tua conversa real será feita com as tuas próprias palavras.",
+        "a_useful_frame_would_what_i": "Uma pergunta útil: o que estou prestes a dizer vai fazer o meu amigo sentir-se MAIS seguro para continuar a falar, ou MENOS?",
+        "these_help": "Isto ajuda",
+        "why": "Porquê: ",
+        "these_don_t_help_even_when": "Isto não ajuda (mesmo com boa intenção)",
+        "if_you_said_one_of_the": "Se no passado disseste alguma das coisas «a evitar» — ",
+        "that_s_ok_you_didn_t": "não faz mal. Não sabias. Ninguém nasce a saber isto. Agora tens outras palavras. A próxima conversa pode ser diferente.",
+        "telling_a_trusted_adult": "Contar a um adulto de confiança",
+        "this_is_the_most_important_skill": "Esta é a competência mais importante de todo o módulo. ",
+        "telling_an_adult_is_what_turns": "Contar a um adulto é o que transforma a tua preocupação em ajuda que muda mesmo o desfecho. É o passo que sustenta tudo — o momento que permite aos profissionais fazer aquilo para que têm formação.",
+        "loyalty_not_betrayal": "Lealdade, não traição",
+        "a_friend_in_crisis_may_ask": "Um amigo em crise pode pedir-te para não contares a ninguém. Pode fazer-te prometer. Pode estar com medo, com vergonha ou convencido de que isso vai piorar as coisas.",
+        "tell_anyway": "Conta na mesma. ",
+        "safety_overrides_secrecy_telling_an_adult": "A segurança está acima do segredo. Contar a um adulto quando a vida ou o bem-estar de um amigo está em risco é a coisa mais leal que um amigo pode fazer. A maioria das pessoas protegidas desta forma fica GRATA depois — mesmo que tenha ficado chateada no momento. A amizade sobrevive a uma conversa difícil; não sobrevive a perder o amigo.",
+        "when_to_tell_every_time": "Quando contar — em todos estes casos",
+        "your_friend_mentioned_wanting_to_die": "O teu amigo falou em querer morrer, magoar-se ou pôr fim à vida — mesmo que de passagem",
+        "you_re_seeing_a_cluster_of": "Estás a ver vários sinais de alerta de crise ao mesmo tempo (FALA / HUMOR / COMPORTAMENTO)",
+        "your_friend_has_a_plan_a": "O teu amigo tem um plano, um meio ou um prazo — mesmo que vago",
+        "your_friend_has_hurt_themselves_even": "O teu amigo magoou-se, mesmo que pouco",
+        "you_re_scared_and_you_don": "Estás com medo e não sabes o que fazer — isso já é razão suficiente para contar",
+        "who_to_tell_pick_whoever_you": "A quem contar — escolhe quem conseguires contactar mais depressa",
+        "how": "Como: ",
+        "how_to_tell_practical_moves": "Como contar — passos práticos",
+        "you_don_t_need_a_script": "Não precisas de um guião. «Preciso de ajuda com uma coisa séria sobre um amigo» chega.",
+        "you_can_write_it_down_if": "Se não conseguires dizê-lo em voz alta, podes escrevê-lo. Um bilhete, uma mensagem, um e-mail — tudo serve.",
+        "you_can_ask_another_friend_to": "Podes pedir a outro amigo que vá contigo ao gabinete do orientador escolar.",
+        "you_can_leave_class_to_do": "Podes sair da aula para fazer isto. Diz ao professor: «Preciso de ir ao orientador escolar — é urgente.» A maioria dos professores deixa-te ir sem fazer perguntas.",
+        "if_the_first_adult_doesn_t": "Se o primeiro adulto não te levar a sério — e isso acontece — tenta outro. Continua até alguém te ouvir.",
+        "if_it_s_outside_school_hours": "Se for fora do horário escolar, liga para o 988. Vão ajudar-te a perceber o que fazer.",
+        "in_maine_schools": "🍎 Nas escolas do Maine",
+        "school_counselors_and_school_psychologists_are": "Os orientadores escolares e os psicólogos escolares têm o dever legal de comunicar — a lei obriga-os a agir perante preocupações de segurança. NÃO vão simplesmente contar aos teus pais e ir embora. Vão seguir um protocolo que inclui avaliar o teu amigo, contactar a família dele em segurança e ligá-lo a um acompanhamento continuado. O dever de comunicar é uma proteção, não um castigo.",
+        "marked_as_myth_correct": "Marcado como mito — correto",
+        "marked_as_truth_but_research_says": "Marcado como verdade — mas a investigação diz que é um mito",
+        "myths_debunked": "Mitos desfeitos",
+        "six_of_the_most_cited_myths": "Seis dos mitos mais citados que impedem as pessoas de ajudar um amigo em crise. Para cada um, decide: a afirmação é um MITO ou uma VERDADE? Depois lê a resposta baseada em evidência, com as fontes.",
+        "score_so_far_correctcount_totalanswered_answered": "Pontuação até agora: {correctCount} / {totalAnswered} respostas certas.",
+        "myth_value_of_mythscount": "Mito {value} de {MYTHSCount}",
+        "this_is_a_myth": "Isto é um MITO",
+        "this_is_true": "Isto é VERDADE",
+        "correct_this_is_a_myth": "✓ Certo — isto é um mito.",
+        "common_misconception_this_is_actually_a": "⚠ Ideia errada comum — na verdade, isto é um mito.",
+        "what_the_evidence_says": "O que diz a evidência: ",
+        "sources_cite": "Fontes: {cite}",
+        "what_to_say": "O que dizer: ",
+        "crisis_resources": "Recursos de crise",
+        "every_resource_here_is_free_confidential": "Todos os recursos aqui são gratuitos, confidenciais e têm pessoas com formação. Podes ligar PELO teu amigo, COM o teu amigo ou por ti. As linhas de apoio não são só para a pessoa em crise — também são para o amigo, o pai ou a mãe, ou quem está a apoiar e a tentar perceber o que fazer.",
+        "below": "Abaixo: ",
+        "national": "Nacionais",
+        "works_anywhere_in_the_u_s": " (funcionam em qualquer ponto dos EUA) → ",
+        "find_your_local_help": "Encontra ajuda na tua zona",
+        "directory_lookups_by_zip": " (diretórios por código postal) → ",
+        "outside_the_u_s": "Fora dos EUA?",
+        "maine_partners": "Parceiros no Maine",
+        "named_local_agencies": " (serviços locais identificados) → ",
+        "school_based": "Na escola",
+        "you_don_t_need_to_know": "Não precisas de saber o que dizer. Eles têm formação para começar a conversa. Podes voltar a ligar. Podes desligar. Não há forma errada de o fazer.",
+        "a_note_about_lgbtq_youth": "Uma nota sobre os jovens LGBTQ+",
+        "research_consistently_shows_lgbtq_youth_and": "A investigação mostra de forma consistente que os jovens LGBTQ+ — e sobretudo os jovens trans — enfrentam taxas significativamente mais altas de pensamentos e tentativas de suicídio do que os seus pares não LGBTQ+. As razões estão bem documentadas: rejeição da família, assédio na escola, falta de cuidados que os afirmem e stress de minoria. O The Trevor Project (1-866-488-7386 / envia START para o 678-678) tem pessoas com formação específica para estas realidades. Se o teu amigo for LGBTQ+, este recurso foi criado para ele.",
+        "self_care_sub_sections": "Subsecções de autocuidado",
+        "supporting_a_friend_through_a_mental": "Apoiar um amigo numa crise de saúde mental é pesado. Muda-te. Os investigadores chamam a isto ",
+        "secondary_stress": "stress secundário",
+        "the_way_that_being_close_to": " — a forma como estar perto da dor de outra pessoa afeta o teu próprio bem-estar. É real e merece atenção.",
+        "taking_care_of_yourself_is_not": "Cuidares de ti não é egoísmo. É assim que continuas a conseguir estar presente.",
+        "interactive_tools_above": "🧰 Ferramentas interativas acima",
+        "the_tabs_at_the_top_of": "Os separadores no topo desta secção têm ferramentas práticas que podes usar já: um ",
+        "breathing_pacer": "guia de respiração orientado",
+        "a_sensory": ", um ",
+        "grounding_exercise": "exercício de ancoragem sensorial",
+        "a_personal": ", o teu próprio ",
+        "coping_toolkit": "kit de estratégias para lidar",
+        "you_can_build_and_the_evidence": " que podes construir e o ",
+        "stanley_brown_safety_plan": "plano de segurança Stanley-Brown baseado em evidência",
+        "they_re_for_you_and_for": ". São para ti E para partilhares com um amigo que esteja a passar por dificuldades.",
+        "caring_for_yourself_when_you_ve": "Cuidar de ti depois de teres apoiado um amigo",
+        "helpful_response": "Resposta útil",
+        "this_response_could_harm_see_explanation": "Esta resposta pode fazer mal — vê a explicação",
+        "neutral_response_see_explanation": "Resposta neutra — vê a explicação",
+        "practice_three_scenarios": "Praticar — três cenários",
+        "three_short_scenarios_drawn_from_typical": "Três cenários curtos baseados em experiências típicas da adolescência. Em cada um, escolhe a resposta que achas que ajudaria mais. Não há uma resposta perfeita — só respostas mais ou menos úteis no contexto. Inspirado nos protocolos de prática do Sources of Strength.",
+        "loaded_scenario_title": "Cenário carregado: {title}",
+        "scenario_value": "Cenário {value}",
+        "how_would_you_respond": "Como responderias?",
+        "helpful": "✓ Útil — ",
+        "harmful": "× Prejudicial — ",
+        "neutral": "~ Neutra — ",
+        "a_note_on_practice": "Uma nota sobre a prática: ",
+        "real_conversations_are_messier_than_scripted": "As conversas reais são mais confusas do que os cenários com guião. O objetivo de praticar não é decorar frases — é desenvolver o INSTINTO de perguntar, ouvir, ficar e contar. Com a prática, esse instinto fica mais rápido.",
+        "loading": "A carregar…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "Linguagem direta ou indireta sobre querer morrer, acabar com a dor, ser um fardo ou não ter futuro. Às vezes é dito de passagem ou a brincar. Leva a sério, seja qual for a forma como é dito.",
+          "examples": {
+            "0": "«Quero morrer» ou «Quem me dera não estar cá»",
+            "1": "«Toda a gente ficava melhor sem mim»",
+            "2": "«Já não aguento mais»",
+            "3": "«Só quero que isto pare»",
+            "4": "«Já não vais ter de te preocupar comigo durante muito tempo»",
+            "5": "Despedir-se de uma forma que parece definitiva, mesmo que subtil"
+          },
+          "note": "Um amigo que brinca com querer morrer é, mesmo assim, um momento para perguntares com cuidado como está. A maioria das pessoas que mais tarde faz uma tentativa contou a alguém — às vezes de forma casual ou como quem não quer a coisa."
+        },
+        "mood": {
+          "desc": "Mudanças significativas no humor, sobretudo em pouco tempo. Uma calma ou um alívio repentinos DEPOIS de um período de sofrimento podem ser um sinal sério — às vezes, uma pessoa em risco decide um plano e sente-se temporariamente em paz com isso.",
+          "examples": {
+            "0": "Depressão ou ansiedade persistentes que não passam",
+            "1": "Uma sensação repentina de calma ou de «agora está tudo bem» depois de um longo período difícil",
+            "2": "Desesperança em relação ao futuro",
+            "3": "Fúria ou conversa de vingança",
+            "4": "Perda de interesse em coisas com que antes se importava"
+          },
+          "note": "Uma melhoria repentina depois de um longo período difícil é boa quando vem depois de tratamento, apoio e descanso. É um sinal de alerta quando não vem depois de nada — quando a calma aparece do nada, após semanas de luta."
+        },
+        "behavior": {
+          "desc": "Padrões de ação, sobretudo padrões de preparação. De propósito, NÃO enumeramos aqui detalhes que possam funcionar como instruções. As categorias gerais chegam para um amigo perceber que algo não está bem.",
+          "examples": {
+            "0": "Afastar-se dos amigos, da família ou de atividades de que antes gostava muito",
+            "1": "Mais consumo de substâncias (álcool, erva, comprimidos, vapear mais do que o habitual)",
+            "2": "Dar objetos com significado",
+            "3": "Despedir-se das pessoas de uma forma que parece definitiva",
+            "4": "Agir de forma imprudente, correr riscos que normalmente não correria",
+            "5": "Procurar online formas de se magoar (podes reparar que o tempo de ecrã dispara a horas estranhas, ou que esconde pesquisas)"
+          },
+          "note": "Não precisas de ter a certeza. Se vários destes sinais estão a aparecer, é o momento de perguntar com cuidado como está E de contar a um adulto de confiança. Não precisas de certezas — a preocupação chega."
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "«Tenho reparado que andas mesmo em baixo. Gosto de ti. Como estás, a sério?»",
+          "why": "Específico, carinhoso, dá-lhe uma abertura. O «a sério» mostra que queres ir além do habitual «estou bem»."
+        },
+        "1": {
+          "say": "«Estás a pensar em magoar-te? Estás a pensar em suicídio?»",
+          "why": "Perguntar diretamente NÃO planta a ideia — a investigação é clara quanto a isto. Muitas vezes é um alívio. Provavelmente a pessoa estava à espera de que alguém reparasse."
+        },
+        "2": {
+          "say": "«Ainda bem que me contaste. Foi preciso coragem.»",
+          "why": "Valoriza o que foi partilhado. Não saltes logo para a solução — primeiro agradece-lhe por confiar em ti."
+        },
+        "3": {
+          "say": "«Isto é mais do que eu consigo aguentar sozinho, e quero ter a certeza de que estás em segurança. Podemos contar a alguém juntos?»",
+          "why": "É honesto sobre os teus limites. Apresenta contar a um adulto como um gesto de amor, não como uma traição. O «juntos» é importante — não estás a abandonar a pessoa."
+        },
+        "4": {
+          "say": "«Estou aqui. Não vou a lado nenhum. Podemos ficar em silêncio, se quiseres.»",
+          "why": "A presença é o remédio. Não precisas de ter respostas. Só precisas de ficar."
+        },
+        "5": {
+          "say": "«Há alguém em quem confies com quem eu te possa ajudar a falar agora?»",
+          "why": "Deixa claro que o próximo passo é a ajuda de um adulto, mas deixa a pessoa escolher quem."
+        },
+        "6": {
+          "say": "«Gosto muito de ti. Tenho medo por ti. Por favor, deixa-me ajudar.»",
+          "why": "Honestidade emocional direta. Dizer «medo» não faz mal — é o que sentes de verdade, e mostra-lhe que isto é importante para ti."
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "«Não devias sentir-te assim.»",
+          "why": "Diz à pessoa que o que sente está errado. Ela vai deixar de te contar seja o que for se os seus sentimentos forem julgados."
+        },
+        "1": {
+          "say": "«Há pessoas que estão pior do que tu.»",
+          "why": "A dor não é uma competição. Isto fecha a conversa e acrescenta vergonha."
+        },
+        "2": {
+          "say": "«Não contes a ninguém. Eu também não conto.»",
+          "why": "Prometer segredo numa situação de segurança é o contrário de ajudar. A segurança está acima do segredo. Aqui, ser leal é contar."
+        },
+        "3": {
+          "say": "«Promete-me que não vais fazer nada.»",
+          "why": "Pede à pessoa uma promessa que pode não estar ao seu alcance cumprir — e acrescenta a sensação de te ter falhado, se não conseguir. Em vez disso, diz: «Quero que estejas em segurança. Vamos procurar ajuda juntos.»"
+        },
+        "4": {
+          "say": "«Tens tanto por que viver.»",
+          "why": "É bem-intencionado, mas num momento muito em baixo a pessoa não consegue mesmo sentir isto. Pode soar a «devias estar grato» — o que junta vergonha à dor."
+        },
+        "5": {
+          "say": "«Sai dessa / anima-te / esforça-te mais.»",
+          "why": "A depressão não é uma escolha. Dizer a alguém para escolher outra coisa mostra-lhe que não percebes o que está a viver."
+        },
+        "6": {
+          "say": "«Porque é que havias de pensar isso?» (num tom frustrado)",
+          "why": "A frustração soa a julgamento. Se queres mesmo perceber, pergunta com cuidado — «Podes ajudar-me a perceber o que estás a sentir agora?» — e mantém-te aberto ao que a pessoa disser."
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "Orientador escolar ou psicólogo da escola",
+          "pro": "Tem formação para isto. Muitas vezes é o mais fácil de encontrar durante o dia de escola. Está obrigado à confidencialidade, exceto quando está em causa a segurança. Pode ajudar-te a contar aos pais e fazer a ligação a apoio fora da escola.",
+          "how": "Vai lá. Deixa um bilhete. Pede a qualquer professor que te leve. Se não conseguires dizê-lo, podes escrevê-lo."
+        },
+        "1": {
+          "label": "Um professor em quem confies",
+          "pro": "Vê-te com regularidade e conhece o teu grupo de amigos. Tem o dever legal de comunicar estas situações — sabe o que fazer.",
+          "how": "Depois da aula, no horário de atendimento ou por bilhete. «Preciso de falar consigo sobre uma coisa séria acerca de um amigo.»"
+        },
+        "2": {
+          "label": "Enfermeiro da escola",
+          "pro": "Recurso confidencial de saúde física / mental na escola. Muitas vezes é mais fácil de encontrar do que o orientador.",
+          "how": "Vai ao gabinete de enfermagem. Vão arranjar espaço para ti."
+        },
+        "3": {
+          "label": "Pai, mãe, encarregado de educação ou irmão mais velho",
+          "pro": "Gostam de ti. Querem ajudar. Mesmo que não saibam o que fazer, podem dar o próximo passo contigo.",
+          "how": "Escolhe um momento calmo. Começa com: «Preciso de ajuda com uma coisa séria sobre um amigo.» Pergunta se se podem sentar juntos."
+        },
+        "4": {
+          "label": "Médico de família ou pediatra",
+          "pro": "Profissional de saúde com dever de confidencialidade. Pode encaminhar para cuidados de saúde mental, falar com a família do teu amigo ou articular com a escola.",
+          "how": "Podes ligar para o consultório e dizer que precisas de falar com o médico. Muitos garantem confidencialidade aos adolescentes."
+        },
+        "5": {
+          "label": "Treinador ou responsável de um clube",
+          "pro": "Adultos que já te conhecem a ti e ao teu amigo através das atividades. Muitas vezes têm contacto com o orientador escolar.",
+          "how": "Depois do treino ou de uma reunião. «Preciso de falar consigo sobre uma coisa que me preocupa.»"
+        },
+        "6": {
+          "label": "Líder religioso (se a tua família fizer parte de uma comunidade de fé)",
+          "pro": "Para famílias em que esta é uma relação de confiança, os líderes religiosos podem ser um primeiro apoio importante.",
+          "how": "A maioria acolhe bem estas conversas. Muitos têm formação informada pelo trauma."
+        },
+        "7": {
+          "label": "Um terapeuta (o teu ou o do teu amigo, se algum de vocês tiver)",
+          "pro": "Já tem formação exatamente para esta conversa. Se tu ou o teu amigo já são acompanhados por um terapeuta, este é o caminho mais direto.",
+          "how": "Liga para o consultório. «Tenho uma preocupação de segurança de que preciso de falar hoje.»"
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "Perguntar a alguém se está a pensar em suicídio vai pôr-lhe a ideia na cabeça.",
+          "truth": "Falso. A investigação é consistente e clara: perguntar NÃO aumenta o risco. Muitas vezes é um alívio — a pessoa estava à espera de que alguém reparasse. Perguntar é uma das coisas mais protetoras que um amigo pode fazer.",
+          "cite": "Dazzi et al., Psychological Medicine (2014), meta-análise · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "As pessoas que falam de suicídio só querem chamar a atenção. Não iam fazer nada a sério.",
+          "truth": "Mito perigoso. A maioria das pessoas que mais tarde faz uma tentativa contou primeiro a alguém — às vezes de passagem, às vezes a brincar. Cada desabafo merece uma resposta a sério. «Querer chamar a atenção» quer muitas vezes dizer «estar em sofrimento sem outra forma de pedir ajuda»."
+        },
+        "2": {
+          "claim": "Se alguém quisesse mesmo morrer, não contava a ninguém.",
+          "truth": "Falso. É ao contrário. Muitas pessoas que fazem uma tentativa deram sinais de alerta diretos ou indiretos às pessoas à sua volta. Contar a alguém é muitas vezes um sinal de ambivalência — uma parte da pessoa quer viver e está a pedir ajuda."
+        },
+        "3": {
+          "claim": "Um amigo não pode fazer nada — só um médico ou um terapeuta pode ajudar.",
+          "truth": "Está documentado que a presença dos pares protege. Não tens de resolver nada. Ouvir, levar a sério e ajudar a pessoa a chegar a um adulto de confiança é ajuda verdadeira. Programas como o Sources of Strength assentam no facto de que os amigos contam.",
+          "cite": "Investigação do Sources of Strength · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "Falar de suicídio vai piorar as coisas.",
+          "truth": "Só é verdade com mensagens POUCO SEGURAS — glamorizar o suicídio, descrever métodos, fazer sensacionalismo. Falar com cuidado, usar linguagem segura e fazer a ligação à ajuda protege. Todas as grandes organizações de prevenção do suicídio recomendam conversas honestas.",
+          "cite": "Reporting on Suicide guidelines (reportingonsuicide.org) · AFSP · OMS"
+        },
+        "5": {
+          "claim": "O suicídio acontece sem aviso.",
+          "truth": "Falso. A investigação mostra de forma consistente que há sinais de alerta na maioria dos casos — embora às vezes só se tornem óbvios mais tarde. É por isso que a formação em apoio entre pares é importante: ensina-te a reparar nos sinais no momento em que acontecem.",
+          "cite": "AFSP · CDC YRBSS · resumos de investigação do NIMH"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "Estás a almoçar com a Maya. Ultimamente, ela tem andado mais calada do que o habitual. Vai remexendo na comida e diz, quase de passagem: «Sinceramente, às vezes já não vejo sentido em nada disto.»",
+          "responses": {
+            "0": {
+              "text": "«Como assim? Não fales assim.»",
+              "why": "Isto fecha a conversa. Dizer a alguém «não fales assim» mostra-lhe que o que sente está errado E que não é seguro ser honesto contigo. Provavelmente vai fechar-se."
+            },
+            "1": {
+              "text": "«Isso parece mesmo pesado. Podes contar-me mais sobre o que se tem passado? Gosto de ti.»",
+              "why": "Valida o sentimento sem julgar. Convida a dizer mais sem forçar. O «gosto de ti» torna seguro continuar a falar. Isto abre a porta à pergunta mais difícil, que vem a seguir: «Estás a ter pensamentos de te magoares?»"
+            },
+            "2": {
+              "text": "«Pois, a escola anda mesmo stressante.»",
+              "why": "Não faz mal, mas passa ao lado do que ela disse de facto. «Já não vejo sentido em nada disto» é mais do que stress da escola. Uma resposta neutra pode deixá-la a sentir que não foi ouvida. Faz uma pergunta a seguir para teres a certeza."
+            }
+          }
+        },
+        "sc2": {
+          "setting": "São 11 da noite de uma terça-feira. O teu amigo Jamie envia-te uma mensagem: «Não paro de pensar que toda a gente ficava bem sem mim.» Lês aquilo e o coração quase te para.",
+          "responses": {
+            "0": {
+              "text": "«Estou aqui. Não faças nada. Vou ligar já à minha mãe para ela vir ajudar.»",
+              "why": "Direto, presente, leva a sério, envolve um adulto depressa. «Vou ligar à minha mãe» diz qual é o passo. Se também conseguires continuar a trocar mensagens ou ligar-lhe enquanto esperas, faz isso. Se conseguires ir ter com ele pessoalmente em segurança, faz isso."
+            },
+            "1": {
+              "text": "«meu deus estás bem?? tens tanto por que viver!!»",
+              "why": "Boa intenção, mas cai mal. «Tens tanto por que viver» pode soar a chantagem emocional num momento muito em baixo. Melhor: diz que tens medo, diz-lhe que gostas muito dele e envolve um adulto."
+            },
+            "2": {
+              "text": "«Não conto a ninguém, mas por favor não faças nada esta noite, está bem?»",
+              "why": "Prometer segredo numa situação de segurança piora as coisas. O mais leal aqui é contar a um adulto — mesmo que o Jamie te peça para não o fazeres. A segurança está acima do segredo. Esta noite, contas a alguém."
+            }
+          }
+        },
+        "sc3": {
+          "setting": "Na semana passada, o teu amigo foi internado depois de uma noite muito difícil. Foste tu quem contou a um adulto. Hoje voltou à escola e parece exausto. No corredor, não olha para ti. Tens medo de que esteja zangado contigo.",
+          "responses": {
+            "0": {
+              "text": "Aproximas-te: «Olá. Tenho pensado em ti. Ainda bem que estás cá hoje. Sempre que quiseres falar — sobre qualquer coisa disto, ou sobre nada — estou por aqui.»",
+              "why": "Mostra-lhe que continuas presente sem fazer disto uma questão sobre ti. Não exige nada. O «sobre qualquer coisa disto, ou sobre nada» dá-lhe liberdade para escolher o ritmo. É este o aspeto da lealdade DEPOIS de teres contado."
+            },
+            "1": {
+              "text": "Evitas o teu amigo para ele não se sentir estranho ao ver-te.",
+              "why": "É um instinto compreensível, mas a ausência parece rejeição — exatamente o contrário do que ele precisa agora. Até um simples «Olá, ainda bem que estás cá» conta. Não precisas de saber o que dizer."
+            },
+            "2": {
+              "text": "Mais tarde, envias-lhe uma mensagem: «Contei porque gosto muito de ti e tive medo. Estás zangado comigo?»",
+              "why": "É honesto, mas põe-no na posição de ter de TE consolar pela tua decisão. Podes falar desses sentimentos mais tarde, com um adulto de confiança ou um terapeuta. Com o teu amigo, começa por: «Ainda bem que estás cá. Estou por aqui quando precisares.»"
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "Movimento",
+        "sensory": "Sensorial",
+        "connection": "Ligação",
+        "creative": "Criativo",
+        "cognitive": "Cognitivo",
+        "inhale": "Inspira",
+        "exhale": "Expira",
+        "hold": "Sustém"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "Dá um passeio de 5 minutos lá fora"
+        },
+        "stretch": {
+          "label": "Faz alongamentos lentos durante 5 minutos"
+        },
+        "pushwall": {
+          "label": "Empurra uma parede (liberta a tensão)"
+        },
+        "run_stairs": {
+          "label": "Sobe e desce as escadas a correr uma vez"
+        },
+        "cold_water": {
+          "label": "Salpica água fria na cara ou nos pulsos"
+        },
+        "ice_cube": {
+          "label": "Segura um cubo de gelo na mão"
+        },
+        "heavy_blanket": {
+          "label": "Enrola-te num cobertor pesado"
+        },
+        "rain_sounds": {
+          "label": "Ouve sons de chuva ou do mar"
+        },
+        "safe_smell": {
+          "label": "Cheira algo de que gostes (creme, comida, vela)"
+        },
+        "text_friend": {
+          "label": "Envia a um amigo de confiança «estou a pensar em ti»"
+        },
+        "hug_pet": {
+          "label": "Abraça um animal de estimação ou um peluche"
+        },
+        "call_family": {
+          "label": "Liga a um familiar com quem te sintas seguro"
+        },
+        "with_someone": {
+          "label": "Fica ao pé de alguém com quem te sintas seguro (não é preciso falar)"
+        },
+        "playlist": {
+          "label": "Ouve uma playlist calma que já sabes que te faz bem"
+        },
+        "doodle": {
+          "label": "Desenha ou rabisca (sem objetivo, sem regras)"
+        },
+        "journal": {
+          "label": "Escreve o que te vier à cabeça, nem que seja uma frase"
+        },
+        "make": {
+          "label": "Faz algo com as mãos (origami, bolos, construções)"
+        },
+        "three_okay": {
+          "label": "Escreve 3 pequenas coisas que estão bem neste momento"
+        },
+        "five_breaths": {
+          "label": "Faz 5 respirações lentas (conta até 4 a inspirar, 4 a expirar)"
+        },
+        "will_pass": {
+          "label": "Lembra-te: «este sentimento vai passar»"
+        },
+        "one_step": {
+          "label": "Escolhe uma pequena coisa para fazer a seguir (só uma)"
+        }
+      },
+      "phaselabel": {
+        "0": "Inspira",
+        "1": "Sustém",
+        "2": "Expira"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "Diz 5 coisas que consegues VER à tua volta agora.",
+          "helper": "Tudo conta. O candeeiro. O canto de uma secretária. Uma nuvem."
+        },
+        "1": {
+          "prompt": "Diz 4 coisas que consegues SENTIR no corpo.",
+          "helper": "Os teus pés no chão. O tecido da tua camisola. O ar na pele."
+        },
+        "2": {
+          "prompt": "Diz 3 coisas que consegues OUVIR.",
+          "helper": "Um relógio. O trânsito. A tua própria respiração."
+        },
+        "3": {
+          "prompt": "Diz 2 coisas que consegues CHEIRAR.",
+          "helper": "(Ou coisas de que te lembras do cheiro, se não houver nada perto.)"
+        },
+        "4": {
+          "prompt": "Diz 1 coisa que consegues SABOREAR.",
+          "helper": "(Ou o teu último gole de água, ou uma comida preferida.)"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. Sinais de alerta",
+          "sub": "Que pensamentos, sentimentos ou situações me dizem que aí vem uma onda difícil?"
+        },
+        "internal": {
+          "label": "2. Coisas que posso fazer sozinho (estratégias internas)",
+          "sub": "Coisas que me ajudaram a sentir-me nem que seja um pouco melhor e que posso fazer sem mais ninguém."
+        },
+        "distract": {
+          "label": "3. Pessoas + lugares que me distraem (no bom sentido)",
+          "sub": "Amigos a quem enviar mensagens, lugares onde me sinto bem só por estar lá. NÃO é para apoio em crise — é só para desviar a cabeça.",
+          "label_2": "3. Pessoas + lugares que me ajudam a distrair-me"
+        },
+        "helpers": {
+          "label": "4. Pessoas a quem posso pedir ajuda diretamente",
+          "sub": "Amigos ou familiares que sabem o que se passa, ou em quem confio o suficiente para contar. Escreve os nomes + como os contactar.",
+          "label_2": "4. Pessoas a quem posso pedir ajuda"
+        },
+        "professionals": {
+          "label": "5. Profissionais + linhas de crise",
+          "sub": "O meu terapeuta (se tiver), psiquiatra, médico, orientador escolar, mais linhas de crise 24/7."
+        },
+        "environment": {
+          "label": "6. Tornar o meu ambiente mais seguro",
+          "sub": "O que posso fazer (eu ou alguém em quem confio) para pôr distância entre mim e qualquer coisa que possa usar para me magoar? Este é o passo com mais evidência científica."
+        },
+        "warning": {
+          "label": "1. Sinais de alerta (pensamentos, sentimentos, situações)"
+        },
+        "coping": {
+          "label": "2. Estratégias internas que posso usar sozinho"
+        },
+        "pros": {
+          "label": "5. Profissionais + linhas de crise"
+        },
+        "safer": {
+          "label": "6. Tornar o meu ambiente mais seguro"
+        },
+        "0": {
+          "label": "5 coisas que consegues VER",
+          "prompt": "Olha à tua volta. Diz 5 coisas que consegues ver agora. Sê específico — «o canto de um livro», não «um livro»."
+        },
+        "1": {
+          "label": "4 coisas em que consegues TOCAR",
+          "prompt": "Estende a mão e toca em 4 coisas diferentes. Repara na textura. Fria ou quente? Lisa ou áspera?"
+        },
+        "2": {
+          "label": "3 coisas que consegues OUVIR",
+          "prompt": "Escuta. Diz 3 sons diferentes — podem estar perto ou longe, ser fortes ou baixos."
+        },
+        "3": {
+          "label": "2 coisas que consegues CHEIRAR",
+          "prompt": "Repara em 2 cheiros. Se não conseguires sentir cheiro nenhum, diz 2 cheiros de que te lembras de gostar."
+        },
+        "4": {
+          "label": "1 coisa que consegues SABOREAR",
+          "prompt": "Repara em 1 sabor na boca — o que a tua última bebida ou comida deixou, ou só o sabor do ar."
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 Corpo"
+        },
+        "mind": {
+          "label": "🧠 Mente"
+        },
+        "distract": {
+          "label": "🎮 Distração"
+        },
+        "connect": {
+          "label": "🤝 Ligação"
+        },
+        "creative": {
+          "label": "🎨 Criatividade"
+        },
+        "spirit": {
+          "label": "🌅 Espiritual"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "O Meu Plano de Segurança",
+          "desc": "Plano de 6 passos de Stanley + Brown",
+          "stat": "{Count} passos preenchidos"
+        },
+        "warning": {
+          "label": "O Meu Registo de Sinais de Alerta",
+          "desc": "Registar sinais ao longo do tempo = padrão",
+          "stat": "{Count} registados"
+        },
+        "arsenal": {
+          "label": "O Meu Arsenal de Estratégias",
+          "desc": "Estratégias que funcionam COMIGO",
+          "stat": "{Count} guardadas"
+        },
+        "contacts": {
+          "label": "Os Meus Contactos de Apoio",
+          "desc": "Acesso rápido: a quem ligar e quando",
+          "stat": "{Count} pessoas"
+        },
+        "recovery": {
+          "label": "As Minhas Notas de Recuperação",
+          "desc": "Depois de momentos difíceis — o que funcionou",
+          "stat": "{Count} notas"
+        },
+        "hope": {
+          "label": "A Minha Lista de Esperança",
+          "desc": "Razões para continuar. Escolha aleatória.",
+          "stat": "{Count} razões"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "O Meu Kit de Segurança"
+        },
+        "breath": {
+          "label": "Guia de respiração"
+        },
+        "grounding": {
+          "label": "Ancoragem 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "Verificação do mal-estar"
+        },
+        "whyMatters": {
+          "label": "Porque é que isto importa"
+        },
+        "recognizeDepression": {
+          "label": "Reconhecer a depressão"
+        },
+        "crisisSigns": {
+          "label": "Sinais de alerta de crise"
+        },
+        "qpr": {
+          "label": "Perguntar · Persuadir · Encaminhar"
+        },
+        "whatToSay": {
+          "label": "O que dizer"
+        },
+        "tellingAdult": {
+          "label": "Contar a um adulto de confiança"
+        },
+        "myths": {
+          "label": "Mitos desfeitos"
+        },
+        "resources": {
+          "label": "Recursos de crise"
+        },
+        "selfCare": {
+          "label": "Cuidar de ti"
+        },
+        "practice": {
+          "label": "Praticar"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "Respiração quadrada (4-4-4-4)"
+        },
+        "fourseven": {
+          "name": "Respiração calmante 4-7-8"
+        },
+        "equal": {
+          "name": "Respiração igual (6-6)"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "Ler"
+        },
+        "breath": {
+          "label": "Guia de respiração"
+        },
+        "ground": {
+          "label": "Ancoragem 5-4-3-2-1"
+        },
+        "toolkit": {
+          "label": "O meu kit"
+        },
+        "safety": {
+          "label": "Plano de segurança"
+        }
+      },
+      "print": {
+        "title": "O Meu Plano de Segurança",
+        "intro": "Construído com a Stanley-Brown Safety Planning Intervention. É mais útil quando revisto com um psicólogo ou terapeuta.",
+        "empty": "(ainda não preenchido)",
+        "crisis_head": "Se estás em crise neste momento:",
+        "crisis_body": "Liga ou envia mensagem para o {call} (24/7). Envia {text}. Conta a um adulto de confiança.",
+        "created": "Criado em {date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "zones_of_regulation": "Zonas de Regulação",
+        "positive_psychology": "Psicologia Positiva",
+        "coaching_tradition": "Tradição do coaching",
+        "trauma_informed": "Informado pelo Trauma",
+        "media_literacy": "Literacia Mediática",
+        "contemplative": "Contemplativo",
+        "trauma_informed_practice": "Prática Informada pelo Trauma",
+        "philosophy_ethics": "Filosofia / Ética",
+        "social_work": "Serviço Social",
+        "person_centered_planning": "Planeamento Centrado na Pessoa",
+        "family_systems": "Sistemas Familiares",
+        "self_determination_theory": "Teoria da Autodeterminação",
+        "executive_function": "Funções Executivas",
+        "bystander_intervention": "Intervenção da Testemunha",
+        "restorative_practices": "Práticas Restaurativas",
+        "motivational_interviewing": "Entrevista Motivacional",
+        "place_based_education": "Educação Baseada no Lugar",
+        "harm_reduction": "Redução de Danos",
+        "body_appreciation": "Apreciação Corporal",
+        "occupational_therapy": "Terapia Ocupacional",
+        "grief_counseling": "Aconselhamento no Luto",
+        "neurodiversity_paradigm": "Paradigma da Neurodiversidade",
+        "suicide_prevention": "Prevenção do Suicídio"
+      },
+      "tool": {
+        "zones": {
+          "label": "Zonas das Emoções",
+          "desc": "Identifica a tua zona (azul, verde, amarela, vermelha) e explora estratégias para te autorregulares."
+        },
+        "emotions": {
+          "label": "Explorador de Emoções",
+          "desc": "Desenvolve vocabulário emocional — identifica, nomeia e avalia a intensidade dos sentimentos."
+        },
+        "strengths": {
+          "label": "Descobridor de Forças",
+          "desc": "Descobre e reflete sobre as tuas forças pessoais, talentos e áreas de crescimento."
+        },
+        "viaStrengths": {
+          "label": "Forças VIA",
+          "desc": "Uma autoclassificação simplificada das 24 Forças de Caráter VIA (Peterson e Seligman, 2004), com 6 virtudes e identificação das forças distintivas. Para o questionário oficial e gratuito, vai a viacharacter.org. Prática reflexiva, não psicométrica."
+        },
+        "wheelOfLife": {
+          "label": "Roda da Vida",
+          "desc": "Gráfico de radar de 8 áreas da vida, cada uma avaliada de 1 a 10. Um autorretrato de onde a vida está cheia e onde está mais vazia neste momento. Da tradição do coaching (Meyer, anos 60; Co-Active Coaching). Heurística; não é um instrumento psicométrico validado."
+        },
+        "perma": {
+          "label": "Bem-Estar PERMA",
+          "desc": "Autoverificação dos cinco domínios PERMA, mais uma reflexão sobre a Saúde: emoções Positivas, Envolvimento, Relações, Significado, Realização e Saúde. 24 itens, resultado em gráfico de barras, reflexão por domínio. De Seligman; combina com Forças VIA."
+        },
+        "coping": {
+          "label": "Kit de Estratégias para Lidar",
+          "desc": "Explora e pratica estratégias para lidar com dificuldades — respiração, ancoragem, movimento e mais."
+        },
+        "windowOfTolerance": {
+          "label": "Janela de Tolerância",
+          "desc": "Recurso visual de autoconsciência informado pelo trauma. Três zonas de ativação (hiperativação, janela, hipoativação). Mapeia os teus sinais pessoais de cada zona, os teus gatilhos e as práticas que te trazem de volta. Baseado em Siegel (1999); prática padrão nas escolas informadas pelo trauma."
+        },
+        "stressBucket": {
+          "label": "Balde do Stress",
+          "desc": "Um recurso visual de capacidade. Os fatores de stress entram; as práticas para lidar com dificuldades escoam. Vê se o que entra e o que sai estão equilibrados. Ferramenta da tradição CBT (Brabban e Turkington, 2002), usada no NHS IAPT e na Mind UK. Honesta sobre os fatores de stress estruturais."
+        },
+        "tipp": {
+          "desc": "Quatro competências DBT de sobrevivência a crises (Temperatura, exercício Intenso, respiração Pausada, relaxamento muscular emparelhado com a respiração) para mal-estar AGUDO. Acalma o corpo em 30 segundos a 10 minutos, antes de tentares sair da situação só a pensar. Competência fundamental de Tolerância ao Mal-Estar da DBT (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Kit para a Ansiedade",
+          "desc": "Competências baseadas na CBT para lidar com a ansiedade: psicoeducação, a árvore das preocupações (preocupação produtiva vs. improdutiva), tempo marcado para as preocupações, descatastrofização, técnicas de ancoragem e um inventário de padrões pessoais. Do Beck Institute, AACAP e ADAA. Combina com Janela de Tolerância e Balde do Stress."
+        },
+        "sleep": {
+          "label": "Sono e Descanso",
+          "desc": "O sono dos adolescentes é uma crise de saúde pública. As 8-10 horas recomendadas pela AAP raramente são cumpridas. Psicoeducação, autoverificação, 8 obstáculos comuns + o que funciona para cada um, e um diário do sono. Da AAP, CDC, NSF e investigação de Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Regulação Sensorial",
+          "desc": "Ferramenta que afirma a neurodiversidade, para compreenderes o teu próprio processamento sensorial nos 8 sistemas sensoriais. Cria um perfil pessoal, planeia uma dieta sensorial, identifica adaptações escolares. Linguagem que põe a identidade em primeiro lugar; baseada em Ayres / Dunn / investigação liderada por pessoas autistas."
+        },
+        "bigFeelings": {
+          "label": "Grandes Emoções (Raiva)",
+          "desc": "Psicoeducação e desenvolvimento de competências específicos para a raiva. A raiva como informação, não como o problema; a agressão reativa como a armadilha. Baseado na tradição Coping Power de Lochman + a base de evidência da CBT para a raiva. Registo de contrariedades, inventário de gatilhos, o ponto de escolha, formas personalizadas de acalmar."
+        },
+        "substancePsychoed": {
+          "label": "Consumo de Substâncias",
+          "desc": "Psicoeducação de redução de danos sobre substâncias (álcool, canábis, nicotina, opioides, estimulantes, benzodiazepinas, alucinogénios). Riscos para o cérebro adolescente. Educação sobre a naloxona. NÃO é um instrumento de rastreio, NÃO se limita à abstinência. Forte encaminhamento para a SAMHSA. Espaço de reflexão alinhado com a Entrevista Motivacional."
+        },
+        "behavioralActivation": {
+          "label": "Ativação Comportamental",
+          "desc": "Planeia pequenas atividades, realiza-as e avalia-as quanto à mestria (sentiste-te competente) e ao prazer (gostaste). Repara no que resulta para ti e escolhe um próximo passo exequível. Esta atividade de planeamento inspira-se na ativação comportamental; não aplica nem avalia um processo terapêutico."
+        },
+        "mindfulness": {
+          "label": "Cantinho da Atenção Plena",
+          "desc": "Exercícios de respiração guiados, explorações corporais e atividades de atenção plena."
+        },
+        "quietQuestions": {
+          "label": "Perguntas Silenciosas",
+          "desc": "Prática semanal de questionamento interior. Fica com uma pergunta aberta durante uma semana inteira. 20 perguntas rotativas sobre atenção, desejo, dificuldade, ligação e transformação. Inspirado na tradição quaker das perguntas; laico e não prescritivo."
+        },
+        "orientations": {
+          "label": "Orientações",
+          "desc": "Formas de Viver, Comparadas. Oito tradições filosóficas (taoísmo, zen, estoicismo, existencialismo, ética confuciana, Ubuntu, relacionalidade indígena, ética do cuidado) comparadas perante as grandes questões da vida. Não prescritivo; cada tradição tem um painel honesto «o que não consegue fazer bem»."
+        },
+        "thoughtRecord": {
+          "label": "Registo de Pensamentos CBT",
+          "desc": "O registo de pensamentos de 7 colunas da Terapia Cognitivo-Comportamental. Percorre um momento difícil: situação, emoção, pensamento automático, evidências a favor e contra, pensamento equilibrado, nova avaliação da emoção. Guarda as entradas ao longo do tempo. De Beck, Burns e Padesky."
+        },
+        "costBenefit": {
+          "label": "Grelha Custo-Benefício",
+          "desc": "Uma grelha de decisão 2x2 da Terapia Comportamental Dialética. Prós e contras de curto e de longo prazo de uma decisão, lado a lado. Útil quando a emoção está a empurrar para uma das opções. De Linehan."
+        },
+        "sfbt": {
+          "label": "Focado nas Soluções",
+          "desc": "Terapia Breve Focada nas Soluções: a Pergunta Milagre, as Escalas, a Procura de Exceções e os Elogios. Olha para a frente em vez de para trás e pergunta o que já está a funcionar. A técnica mais usada no aconselhamento escolar nos EUA. De de Shazer e Berg."
+        },
+        "careConstellations": {
+          "label": "Constelações de Cuidado",
+          "desc": "Um mapa relacional de quem cuida de ti e de quem tu cuidas. Recusa o enquadramento individualista ou consumista do «autocuidado». Inclui uma perspetiva filosófica aprofundada sobre Cuidado de Si vs. Autocuidado (Foucault, o grego epimeleia heautou, Audre Lorde, eudemónico vs. hedónico)."
+        },
+        "ecomap": {
+          "label": "Ecomapa",
+          "desc": "Mapa das relações da pessoa com o seu ambiente. Tu no centro; os 12 grandes sistemas da vida à tua volta. Cada ligação é avaliada quanto à força, ao stress e à direção da energia. Ferramenta padrão do serviço social desde Hartman (1978); usada em IEPs, na avaliação familiar e no inventário pessoal de vida."
+        },
+        "circlesOfSupport": {
+          "label": "Círculos de Apoio",
+          "desc": "Quatro anéis concêntricos de relação: Intimidade, Amizade, Participação, Troca (paga). Torna visível quem está realmente próximo, incluindo quando são pessoas pagas que preenchem os anéis interiores. De Forest e Snow, da Inclusion Press."
+        },
+        "genogram": {
+          "label": "Genograma",
+          "desc": "Mapa familiar de três gerações com os símbolos padrão dos sistemas familiares. Apenas para autoconhecimento pessoal (NÃO é uma avaliação clínica). Baseado na teoria dos sistemas familiares de Bowen e na notação de McGoldrick-Gerson-Petry. Inclui orientações destacadas para um enquadramento seguro."
+        },
+        "griefLoss": {
+          "label": "Luto e Perda",
+          "desc": "Um companheiro guiado para o luto. A morte de uma pessoa ou de um animal de estimação, mudanças na família, perdas de amigos, perdas de identidade, perda ambígua — tudo conta. Percorre as quatro tarefas do luto de Worden, escreve uma carta, planeia rituais. Forte enquadramento de segurança que encaminha para o Companheiro de Crise / 988 em caso de luto grave ou complicado."
+        },
+        "traumaPsychoed": {
+          "label": "Compreender o Trauma",
+          "desc": "Apenas psicoeducação (NÃO é um instrumento de rastreio). O que o trauma é e não é, neurobiologia em linguagem simples, respostas comuns reinterpretadas como adaptações, os 6 princípios da SAMHSA, tratamentos baseados em evidência. Para alunos e educadores. Inclui um enquadramento de segurança destacado sobre a razão por que o rastreio sem acompanhamento não é seguro."
+        },
+        "bodyStory": {
+          "label": "História do Corpo",
+          "desc": "Ferramenta de aceitação do corpo e de corporeidade. NÃO é focada no peso, NÃO está ligada a dietas, NÃO é um instrumento de rastreio. Baseada na apreciação corporal de Tylka, nos princípios da alimentação intuitiva e na literacia mediática. Inclusiva de todos os corpos, todos os géneros, todos os tamanhos. Forte enquadramento de encaminhamento para a NEDA em caso de perturbações alimentares."
+        },
+        "sourcesOfStrength": {
+          "label": "Fontes de Força",
+          "desc": "Mapeia os teus 8 fatores de proteção. Explora apoios protetores inspirados no programa Sources of Strength. Este mapa autoguiado é uma adaptação, não a aplicação do programa escolar avaliado."
+        },
+        "crisiscompanion": {
+          "label": "Companheiro de Crise",
+          "desc": "Apoio entre pares e competências de prevenção do suicídio: o que fazer se tu ou um amigo estiverem deprimidos, em crise ou a pensar em autolesão — reconhecer os sinais, o que dizer (e não dizer), contar a um adulto de confiança, além do 988 e de um plano de segurança pessoal. Protegido por aviso de conteúdo. Alinhado com NEDA, AFSP, Sources of Strength e 988. O complemento de apoio agudo às Fontes de Força."
+        },
+        "identitySupport": {
+          "label": "Apoio à Identidade",
+          "desc": "Espaço inclusivo e afirmativo para questões de identidade de género, orientação sexual, orientação romântica e identidade em geral. Vocabulário, desenvolvimento da identidade, encontrar comunidade, segurança para jovens trans, orientações para aliados. Baseado no Trevor Project, GLSEN e PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Vozes da Deficiência",
+          "desc": "Verdadeiros ativistas autistas e com deficiência cujo trabalho moldou, e criticou, a prática na área da deficiência. Citações, contexto e uma lista de leituras selecionadas. Construído para que as pessoas SOBRE quem esta área agiu fiquem no centro, e não relegadas para uma barra lateral numa ferramenta de ciência do comportamento. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Definir Objetivos",
+          "desc": "Define objetivos SMART, acompanha o progresso e celebra as conquistas."
+        },
+        "howlTracker": {
+          "label": "Registo HOWL",
+          "desc": "Autoavaliação dos Hábitos de Trabalho e Aprendizagem (HOWL) para o tempo de Crew. Check-ins semanais, objetivos trimestrais, gráfico de tendências, propostas de conversa para o Crew. Alinhado com o modelo HOWL da EL Education."
+        },
+        "onePageProfile": {
+          "label": "Perfil de Uma Página",
+          "desc": "Perfil portátil e imprimível que cabe numa página. Três secções: o que as pessoas gostam e admiram em mim, o que é importante para mim, como me apoiar da melhor forma. Documento de planeamento centrado na pessoa para reuniões de IEP, transições, professores substitutos ou Crew. Baseado no formato da Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Criar Planos de Ação). Oito perguntas em sequência (A Minha História, Sonho, Pesadelo, Quem Sou, Dons, Necessidades, Plano de Ação, Primeiros Passos). Recurso visual centrado na pessoa, de Pearpoint, O'Brien e Forest, da Inclusion Press; muito usado no planeamento de transições."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Planear Amanhãs Alternativos com Esperança). Recurso visual de planeamento do futuro: oito etapas desde a tua Estrela do Norte a longo prazo, a recuar até aos primeiros passos nas próximas duas semanas. Pearpoint, O'Brien e Forest, da Inclusion Press; combina com MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Valores e Ação",
+          "desc": "Organiza o que importa, nomeia os teus valores principais e transforma cada um numa pequena ação concreta esta semana. Da Terapia de Aceitação e Compromisso (Hayes); enquadramento DNA-V para adolescentes. A distinção da ACT entre valores (direções) e objetivos (destinos)."
+        },
+        "careerCompass": {
+          "label": "Bússola de Carreiras",
+          "desc": "Explora carreiras a partir dos teus interesses. Uma autoverificação RIASEC de 36 itens dá o teu código Holland com os três tipos principais; explora carreiras, os 16 grupos de carreiras federais (Career Clusters) e próximos passos concretos (dias de acompanhamento de um profissional, entrevistas informativas, CTE, formação em aprendizagem). Baseado no modelo de Holland; remete para o O*NET Interest Profiler oficial em mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Estúdio de Autorrepresentação",
+          "desc": "Cria um plano concreto de apoio escolar para questões de IEP ou 504, adaptações, escolhas sobre revelar informação e pedir ajuda a adultos de confiança."
+        },
+        "perspective": {
+          "label": "Lente de Perspetiva",
+          "desc": "Vê as situações de diferentes pontos de vista — pratica a empatia e a tomada de perspetiva."
+        },
+        "community": {
+          "label": "Comunidade e Cultura",
+          "desc": "Explora a diversidade, a consciência cultural e o sentido de pertença à comunidade."
+        },
+        "conflict": {
+          "label": "Resolução de Conflitos",
+          "desc": "Pratica um conflito hipotético ou de baixo risco com tomada de perspetiva, mensagens na primeira pessoa, redução da tensão e escolhas de reparação. Se alguém não estiver em segurança, envolve um adulto em vez de negociares sozinho."
+        },
+        "social": {
+          "label": "Laboratório de Competências Sociais",
+          "desc": "Pratica competências de conversação, escuta ativa, linguagem corporal e cooperação."
+        },
+        "teamwork": {
+          "label": "Construtor de Trabalho em Equipa",
+          "desc": "Desafios colaborativos e exploração de papéis na equipa."
+        },
+        "dearMan": {
+          "desc": "Constrói um guião para um pedido difícil em sete passos: Descrever, Expressar, Afirmar, Reforçar, estar Atento (Mindful), Aparentar confiança, Negociar. Da Eficácia Interpessoal da DBT (Linehan); o guião de comunicação assertiva mais usado no aconselhamento escolar. Combina com o Estúdio de Autorrepresentação."
+        },
+        "motivationalInterviewing": {
+          "label": "Entrevista Motivacional",
+          "desc": "Um modelo de conversa para ajudar alguém (ou a ti próprio) a pensar numa mudança. Aprende as competências OARS (perguntas Abertas, Afirmações, Reflexões, Resumos), as três réguas e a Conversa de Mudança. De Miller e Rollnick; base do aconselhamento escolar e do trabalho de apoio entre pares."
+        },
+        "crewProtocols": {
+          "label": "Protocolos de Crew",
+          "desc": "Uma biblioteca de formatos estruturados de grupo para o tempo de Crew, a tutoria ou a direção de turma: atividades de construção de comunidade, aberturas, encerramentos, círculos restaurativos, protocolos de reflexão, formatos de celebração e guias para conversas difíceis. Inclui ainda uma compilação de todas as propostas de Crew de todo o SEL Hub. Baseado no Crew da EL Education, nas Práticas Restaurativas, no Tribes e no Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Relações Saudáveis",
+          "desc": "O espetro (saudável / não saudável / abusiva) em 8 dimensões de qualquer relação próxima. Consentimento em detalhe, prevenção da violência no namoro, segurança + linhas de apoio. Baseado no modelo Loveisrespect / NDVH. Inclusivo de pessoas queer, neurodivergentes e com deficiência."
+        },
+        "decisions": {
+          "label": "Laboratório de Decisões",
+          "desc": "Trabalha cenários da vida real com modelos de parar-pensar-agir."
+        },
+        "journal": {
+          "label": "Diário de Sentimentos",
+          "desc": "Diário para o check-in de cada dia — regista estados de espírito, gatilhos e reflexões ao longo do tempo."
+        },
+        "safety": {
+          "label": "Segurança e Limites",
+          "desc": "Aprende sobre limites pessoais, adultos de confiança e situações seguras vs. não seguras."
+        },
+        "landPlace": {
+          "label": "Terra e Lugar",
+          "desc": "Estúdio de Cuidado do Bem Comum para uma relação contínua com a terra onde vives. Três fios (história, ecologia, presente), reflexão crítica sobre o reconhecimento territorial como prática e não como encenação, organizações lideradas pelos Wabanaki como vozes de referência e um diário de reflexão privado."
+        },
+        "somaticReset": {
+          "label": "Pausa de Corpo e Respiração",
+          "desc": "Escolhe uma zona do corpo e segue uma pausa curta de quietude, respiração ou movimento suave, que podes fazer sentado, com um check-in privado antes e depois."
+        },
+        "restorativeCircle": {
+          "label": "Círculo Restaurativo",
+          "desc": "Dinamiza círculos restaurativos e de construção de comunidade com normas estabelecidas, orientação de um adulto e cuidado com as raízes culturais. Não serve para revelações forçadas nem para situações de risco ativo para a segurança."
+        },
+        "compassion": {
+          "label": "Compaixão e Diálogo Interno",
+          "desc": "Pratica a autocompaixão, reformula o crítico interior e constrói uma voz interior mais gentil."
+        },
+        "friendship": {
+          "label": "Construtor de Amizades",
+          "desc": "Explora estilos de amizade, estratégias de reparação e padrões de relação saudáveis."
+        },
+        "transitions": {
+          "label": "Transições de Vida",
+          "desc": "Lida com mudanças como mudar de casa, entrar numa escola nova e crescer."
+        },
+        "upstander": {
+          "label": "Treino de Testemunha Ativa",
+          "desc": "Aprende a defender os outros em segurança — competências para passar de testemunha passiva a testemunha ativa."
+        },
+        "growthmindset": {
+          "label": "Mentalidade de Crescimento",
+          "desc": "Ciência do cérebro, reformular desafios e construir resiliência."
+        },
+        "execfunction": {
+          "label": "Funções Executivas",
+          "desc": "Estratégias para as partes mais difíceis de fazer as coisas: começar tarefas, manter a concentração, planear com antecedência e acompanhar o tempo."
+        },
+        "advocacy": {
+          "label": "Prática de Fazer-se Ouvir",
+          "desc": "Ensaia guiões gerais para exprimir necessidades, pedir apoio e fazer-te ouvir em situações do dia a dia."
+        },
+        "civicAction": {
+          "label": "Ação Cívica e Esperança",
+          "desc": "Processa sentimentos difíceis sobre a injustiça, desenvolve a capacidade de ação cívica e cultiva a esperança através da ação."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratório de Raciocínio Ético",
+          "desc": "Explora dilemas éticos contemporâneos através de vários modelos e de um diálogo socrático com IA."
+        },
+        "cultureExplorer": {
+          "label": "Explorador de Culturas",
+          "desc": "Mergulha a fundo nas culturas do mundo com a ajuda da IA, com ilustrações e áudio."
+        },
+        "voicedetective": {
+          "label": "Detetive de Vozes",
+          "desc": "Ouve vozes e identifica emoções pelo tom."
+        },
+        "practiceJourneys": {
+          "label": "Jornadas de Prática (Piloto)",
+          "desc": "Pratica pedir apoio através de quatro encontros ligados entre si. Responde com escolhas, com as tuas próprias palavras, ou com ambas. Mantém um diário e experimenta outro caminho."
+        },
+        "sociallab": {
+          "label": "Dramatização de Competências Sociais",
+          "desc": "Pratica cenários sociais e dramatizações com colegas simulados por IA, com diálogo ramificado."
+        },
+        "peersupport": {
+          "label": "Treinador de Apoio entre Pares",
+          "desc": "Aprende as competências de escuta OARS e quando pedir ajuda a um adulto."
+        },
+        "conflicttheater": {
+          "label": "Teatro de Conflitos",
+          "desc": "Pratica um conflito fictício com duas personagens de IA numa cena imersiva. Apenas dramatização em versão beta; não a uses para mediar situações de dano em curso."
+        },
+        "digitalWellbeing": {
+          "label": "Estúdio de Bem-Estar Digital",
+          "desc": "Avalia a tua relação com as redes sociais e os chatbots de IA, cria hábitos mais saudáveis com o telemóvel, recupera do ciberbullying, deteta a manipulação no feed, gere com segurança as relações com chatbots e encontra ajuda quando precisares."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Autoconsciência",
+          "desc": "Reconhecer emoções, forças e áreas de crescimento"
+        },
+        "self-regulation": {
+          "label": "Autorregulação",
+          "desc": "Regular emoções, ativação e atenção; praticar estratégias para lidar com dificuldades"
+        },
+        "self-direction": {
+          "label": "Autodireção",
+          "desc": "Definição de objetivos, capacidade de ação, funções executivas, mentalidade de crescimento"
+        },
+        "inner-work": {
+          "label": "Trabalho Interior",
+          "desc": "Práticas contemplativas e reflexivas"
+        },
+        "care-of-self": {
+          "label": "Cuidado de Si",
+          "desc": "Autocompaixão, autocuidado relacional"
+        },
+        "social-awareness": {
+          "label": "Consciência Social",
+          "desc": "Empatia, tomada de perspetiva e valorização da diversidade"
+        },
+        "relationship-skills": {
+          "label": "Competências de Relacionamento",
+          "desc": "Comunicação, trabalho em equipa e resolução de conflitos"
+        },
+        "responsible-decision-making": {
+          "label": "Tomada de Decisão Responsável",
+          "desc": "Escolhas éticas, avaliação de consequências e resolução de problemas"
+        },
+        "stewardship": {
+          "label": "Cuidado do Bem Comum",
+          "desc": "Cuidar da comunidade, da justiça, da terra e do futuro"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Nomeia a tua zona atual e escolhe uma estratégia de regulação que se ajuste.",
+          "next": "Verifica a tua zona, escolhe uma estratégia e depois guarda, se quiseres voltar a ela."
+        },
+        "coping": {
+          "purpose": "Escolhe uma estratégia para lidar com dificuldades e pratica-a uma vez, com um ponto de paragem claro.",
+          "next": "Escolhe uma estratégia corporal ou de ancoragem, experimenta-a e depois repara se ajudou."
+        },
+        "journal": {
+          "purpose": "Escreve uma reflexão privada e repara em padrões que talvez queiras guardar.",
+          "next": "Escolhe uma proposta, escreve com honestidade e guarda ou exporta antes de fechar."
+        },
+        "emotions": {
+          "purpose": "Desenvolve vocabulário emocional e nomeia o que estás a sentir com mais precisão.",
+          "next": "Escolhe um sentimento, avalia a sua intensidade e depois escolhe a palavra que melhor se ajusta."
+        },
+        "mindfulness": {
+          "purpose": "Faz uma pausa, respira e pratica a atenção sem precisares de escrever nada.",
+          "next": "Escolhe uma prática curta, segue-a até ao fim e depois repara no que mudou."
+        },
+        "somaticReset": {
+          "purpose": "Usa um check-in privado por zonas do corpo para escolher uma pausa curta que podes fazer sentado.",
+          "next": "Escolhe uma zona do corpo, experimenta uma opção de quietude, respiração ou movimento suave e depois repara no que mudou."
+        },
+        "thoughtRecord": {
+          "purpose": "Abranda um pensamento difícil e procura uma visão mais equilibrada.",
+          "next": "Nomeia a situação, avalia o sentimento e depois põe o pensamento à prova com as evidências."
+        },
+        "anxietyToolkit": {
+          "purpose": "Organiza as preocupações, reduz a intensidade da ansiedade e escolhe um próximo passo prático.",
+          "next": "Escolhe a preocupação que fala mais alto, experimenta uma estratégia e depois guarda o plano, se ajudar."
+        },
+        "sleep": {
+          "purpose": "Repara nos obstáculos ao sono e escolhe um hábito de descanso para experimentar a seguir.",
+          "next": "Vê o que está a atrapalhar, escolhe uma pequena mudança e volta a isto mais tarde."
+        },
+        "goals": {
+          "purpose": "Transforma uma intenção numa próxima ação concreta e realista.",
+          "next": "Escreve um objetivo, escolhe um primeiro passo e guarda o plano antes de fechar."
+        },
+        "friendship": {
+          "purpose": "Pensa nas necessidades de amizade, no sentido de pertença e nas escolhas com os colegas.",
+          "next": "Escolhe uma situação de amizade e identifica um próximo gesto gentil."
+        },
+        "conflict": {
+          "purpose": "Compreende um conflito e prepara uma resposta centrada na reparação.",
+          "next": "Nomeia o que aconteceu, considera os dois lados e depois escolhe uma ação de reparação."
+        },
+        "safety": {
+          "purpose": "Cria um plano de segurança prático e identifica apoios de confiança.",
+          "next": "Acrescenta sinais de alerta, passos para lidar com a situação e pessoas a contactar; guarda antes de fechar."
+        },
+        "crisiscompanion": {
+          "purpose": "Usa um caminho de apoio estruturado quando as emoções parecem urgentes ou pouco seguras.",
+          "next": "Escolhe a opção de apoio mais próxima e envolve um adulto de confiança ou um serviço de crise quando for preciso."
+        },
+        "conflicttheater": {
+          "purpose": "Pratica uma cena de conflito fictícia e testa linguagem restaurativa, sem tratar a ferramenta como uma mediação.",
+          "next": "Escolhe uma cena fictícia, experimenta uma resposta e reflete sobre o que precisaria do apoio de um adulto na vida real."
+        },
+        "restorativeCircle": {
+          "purpose": "Planeia ou dinamiza um processo de grupo restaurativo com normas claras e a orientação de um adulto.",
+          "next": "Define primeiro os acordos do círculo e depois escolhe uma proposta; nunca exijas revelações em público."
+        },
+        "strengths": {
+          "next": "Escolhe as forças que têm a ver contigo e depois encontra um momento real deste trimestre que mostre cada uma delas."
+        },
+        "viaStrengths": {
+          "purpose": "Usa uma autoclassificação inspirada no VIA como atividade de reflexão, não como uma avaliação formal.",
+          "next": "Classifica as forças, repara em padrões e escreve um exemplo que dê chão ao resultado."
+        },
+        "perma": {
+          "purpose": "Tira um retrato reflexivo do teu bem-estar nos domínios PERMA, mais a Saúde.",
+          "next": "Usa o retrato para escolher uma conversa ou uma pequena experiência, não para te rotulares."
+        },
+        "advocacy": {
+          "purpose": "Pratica linguagem do dia a dia para exprimir necessidades e pedir apoio.",
+          "next": "Escolhe uma situação, rascunha um pedido curto e decide quem te poderia ajudar."
+        },
+        "selfAdvocacy": {
+          "purpose": "Cria um plano concreto de apoio escolar para IEP, 504, adaptações ou escolhas sobre revelar informação.",
+          "next": "Escolhe uma necessidade de apoio, reúne as tuas perguntas e identifica um adulto de confiança para envolver."
+        },
+        "crewProtocols": {
+          "next": "Explora por finalidade, escolhe um protocolo para hoje e depois anota em «O meu plano de Crew» quando o vais fazer."
+        },
+        "perspective": {
+          "next": "Escolhe uma situação, adota primeiro o outro ponto de vista e depois diz o que farias de forma diferente."
+        },
+        "windowOfTolerance": {
+          "next": "Acrescenta um sinal a cada uma das tuas três zonas e depois usa «Check-in» para situar o dia de hoje."
+        },
+        "sensoryRegulation": {
+          "next": "Começa por «O que é sensorial?» e depois marca os sistemas que são muito ou pouco intensos para ti."
+        },
+        "execfunction": {
+          "next": "Vai a «Começar» e escolhe uma forma de arrancar hoje; depois vai a «Manter» para escolheres onde vais anotar as coisas."
+        },
+        "growthmindset": {
+          "next": "Abre «Reformula», escreve o pensamento fixo e transforma-o num pensamento específico e exequível."
+        },
+        "dearMan": {
+          "next": "Escreve o teu pedido numa frase, rascunha os sete passos e depois ensaia-o uma vez."
+        },
+        "howlTracker": {
+          "next": "Regista um Pulso e depois faz o check-in semanal: avalia cada HOWL e acrescenta um exemplo específico."
+        },
+        "peersupport": {
+          "next": "Escolhe duas perguntas abertas que poderias fazer a um amigo e depois experimenta uma numa situação fictícia no separador de prática."
+        },
+        "upstander": {
+          "next": "Lê a escada da coragem em «Ações» e escolhe as duas ações mais pequenas que conseguirias mesmo fazer esta semana."
+        },
+        "digitalWellbeing": {
+          "next": "Faz a Autoverificação com honestidade e depois escolhe um hábito do Kit e um limite que defines com antecedência."
+        },
+        "teamwork": {
+          "next": "Vê os «Papéis» e depois escreve um Plano de Comunicação para um grupo real: quem faz o quê, onde e até quando."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Começa aqui",
+        "name_it": "Dá-lhe um nome",
+        "calm_now": "Acalma-te agora",
+        "body_reset": "Pausa para o corpo",
+        "make_a_plan": "Faz um plano",
+        "understand_patterns": "Compreende padrões",
+        "practice_repair": "Pratica a reparação",
+        "role_play": "Dramatização",
+        "facilitated_group": "Grupo com dinamizador",
+        "reflect": "Reflete",
+        "practice_speaking_up": "Pratica fazer-te ouvir",
+        "make_a_support_plan": "Faz um plano de apoio",
+        "urgent_support": "Apoio urgente",
+        "get_support": "Procura apoio",
+        "move_gently": "Avança com cuidado",
+        "learn_not_diagnose": "Aprende, não diagnostiques",
+        "learn_and_get_support": "Aprende e procura apoio",
+        "check_boundaries": "Verifica os limites",
+        "explore_identity": "Explora a identidade",
+        "practice_body_respect": "Pratica o respeito pelo corpo",
+        "map_carefully": "Mapeia com cuidado",
+        "understand_needs": "Compreende as necessidades"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Nomeia o que está a acontecer antes de escolheres uma estratégia."
+        },
+        "emotions": {
+          "note": "Desenvolve palavras precisas para os sentimentos e repara na intensidade."
+        },
+        "coping": {
+          "note": "Experimenta uma estratégia corporal ou de ancoragem e depois repara no que mudou."
+        },
+        "mindfulness": {
+          "note": "Uma pausa com pouca escrita para a respiração, a atenção ou a consciência corporal."
+        },
+        "somaticReset": {
+          "note": "Escolhe uma zona do corpo e depois experimenta uma prática curta de quietude, respiração ou movimento suave. Um seletor compacto e acessível por teclado mantém todos os recursos visuais fáceis de usar em ecrãs pequenos. Os recursos visuais incluem uma Onda Fluida que associa INSPIRA · SOBE a uma linha contínua e um marcador redondo, EXPIRA · ASSENTA a uma linha pontilhada e um marcador em losango, e EM PAUSA a barras de pausa; uma Flor a Desabrochar que associa INSPIRA · ABRE a contornos de pétalas contínuos e um centro redondo, EXPIRA · SUAVIZA a contornos pontilhados e um centro em losango, e EM PAUSA a barras de pausa no centro; um Horizonte de Ancoragem que associa INSPIRA · SOBE a um contorno de sol contínuo e um centro circular, EXPIRA · ASSENTA a um contorno de sol pontilhado e um centro em losango, e EM PAUSA a barras de pausa no sol; um caminho linear previsível, com a direção marcada, rótulos diretos INSPIRA e EXPIRA, alvos redondos para INSPIRA e em losango para EXPIRA, um rasto a partir da origem ativa e o próximo destino contornado; e uma Órbita da Respiração em duas partes, com arcos de fase contínuos e pontilhados que ficam mais grossos quando ativos, um anel central com o padrão da fase correspondente, rótulos diretos INSPIRA e EXPIRA, um símbolo central para o estado de pausa, a estação da passagem seguinte contornada, um marcador com a forma da fase que roda no sentido dos ponteiros do relógio, um mapa de cadência codificado por formas e indicações de fase para leitores de ecrã. Os alunos podem experimentar uma respiração com movimento antes de o temporizador começar e depois ampliar, imobilizar ou desligar o guia. Na Vista Tranquila, o recurso visual ampliado torna-se um controlo de iniciar/pausar que funciona com o teclado e por toque. A contagem decrescente pode ser ocultada; as palavras de orientação podem ser completas, só com a fase ou ocultas; e as contagens de respirações e as avaliações numéricas são opcionais.",
+          "boundary": "Isto não é tratamento nem diagnóstico. Mantém os movimentos pequenos e sem dor; interrompe se sentires dor, tonturas ou dormência e conta a um adulto de confiança ou a um profissional de saúde."
+        },
+        "anxietyToolkit": {
+          "note": "Separa a preocupação da ação e escolhe um próximo passo prático."
+        },
+        "windowOfTolerance": {
+          "note": "Mapeia sinais de ativação e apoios ao longo do tempo; não é um diagnóstico."
+        },
+        "stressBucket": {
+          "note": "Olha para as pressões e os apoios em conjunto, incluindo pressões que estão fora do teu controlo."
+        },
+        "bigFeelings": {
+          "note": "Usa a raiva como informação e planeia uma pausa ou uma reparação mais segura."
+        },
+        "conflict": {
+          "note": "Ideal para praticar conflitos hipotéticos ou de baixo risco.",
+          "boundary": "Se houver ameaças, coação, bullying, abuso ou uma diferença de poder perigosa, faz uma pausa e envolve um adulto de confiança em vez de negociares sozinho."
+        },
+        "conflicttheater": {
+          "note": "Prática imersiva em versão beta com personagens fictícias; não a uses para mediar situações de dano em curso.",
+          "boundary": "Ameaças reais, abuso ou bullying precisam do apoio de um adulto e de uma resposta de segurança, não de um exercício de dramatização."
+        },
+        "restorativeCircle": {
+          "note": "Usa com normas de círculo já estabelecidas e um adulto a dinamizar.",
+          "boundary": "Não uses um círculo para pressionar alguém a fazer revelações em público nem para lidar com um risco ativo para a segurança."
+        },
+        "strengths": {
+          "note": "Reflexão aberta sobre forças, sem pontuação, classificação nem diagnóstico."
+        },
+        "viaStrengths": {
+          "note": "Uma autoclassificação para reflexão, não o questionário VIA oficial nem um resultado psicométrico."
+        },
+        "perma": {
+          "note": "Um retrato do bem-estar para estimular a conversa, não uma avaliação de saúde mental."
+        },
+        "advocacy": {
+          "note": "Guiões gerais e ensaio para exprimir necessidades e pedir apoio."
+        },
+        "selfAdvocacy": {
+          "note": "Usa para planear de forma concreta o IEP, o 504, adaptações, a revelação de informação ou o apoio escolar."
+        },
+        "crisiscompanion": {
+          "note": "Um guia de apoio para ti ou para um amigo; não é um instrumento de rastreio de crises nem substitui um adulto.",
+          "boundary": "Se alguém puder estar em perigo imediato ou puder agir segundo pensamentos de autolesão, interrompe aqui e contacta agora um adulto de confiança ou um serviço de emergência/crise."
+        },
+        "safety": {
+          "note": "Aprende sobre limites e os passos para recorrer a um adulto de confiança; isto não é um teste para saber se uma situação é segura.",
+          "boundary": "Se estiveres em perigo imediato ou se alguém te estiver a magoar, interrompe e contacta agora um adulto de confiança ou um serviço de emergência."
+        },
+        "griefLoss": {
+          "note": "Um companheiro privado para o luto e a perda; salta tudo o que te parecer demasiado.",
+          "boundary": "Se o luto parecer insuportável, se não te sentires em segurança ou se outra pessoa estiver em risco, envolve um adulto de confiança ou um serviço de crise."
+        },
+        "traumaPsychoed": {
+          "note": "Psicoeducação sobre respostas ao trauma; não é um instrumento de rastreio nem um tratamento.",
+          "boundary": "Não precisas de revelar nenhum trauma aqui. Faz uma pausa e procura um adulto de confiança ou um psicólogo escolar se o conteúdo despertar algo que não seja seguro."
+        },
+        "substancePsychoed": {
+          "note": "Informação e reflexão sobre redução de danos; não é um instrumento de rastreio nem uma autorização para consumir substâncias.",
+          "boundary": "Não uses esta ferramenta em caso de sobredosagem ou de situação médica urgente; contacta os serviços de emergência ou um adulto de confiança."
+        },
+        "healthyRelationships": {
+          "note": "Explora o consentimento e os padrões nas relações sem rotular uma pessoa ou uma relação.",
+          "boundary": "Se uma relação incluir ameaças, coação ou violência, procura a ajuda de um adulto; não confrontes ninguém sozinho."
+        },
+        "identitySupport": {
+          "note": "Reflexão afirmativa e apoio da comunidade; partilhar é opcional.",
+          "boundary": "Mantém a informação pessoal privada e envolve um adulto de confiança se não te sentires em segurança."
+        },
+        "bodyStory": {
+          "note": "Apreciação corporal e literacia mediática; não é uma avaliação de perda de peso nem de perturbações alimentares.",
+          "boundary": "Se a comida, a imagem corporal ou o exercício te parecerem pouco seguros ou estiverem a ocupar-te demasiado, fala com um adulto de confiança ou um profissional de saúde."
+        },
+        "genogram": {
+          "note": "Reflexão pessoal sobre a família; não é uma avaliação clínica e partilhar é opcional.",
+          "boundary": "Salta os detalhes familiares que te pareçam pouco seguros ou privados; pede apoio a um adulto de confiança."
+        },
+        "sensoryRegulation": {
+          "note": "Cria um perfil sensorial e adaptações; não é um diagnóstico.",
+          "boundary": "Escolhe apoios que te pareçam seguros; partilha as adaptações apenas quando quiseres."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Check-in da Manhã",
+          "desc": "Começa o dia com uma verificação do estado de espírito, respiração e definição de objetivos"
+        },
+        "calm_down": {
+          "name": "Cantinho da Calma",
+          "desc": "Estratégias de regulação para quando as emoções estão ao rubro"
+        },
+        "conflict_unit": {
+          "name": "Unidade de Resolução de Conflitos",
+          "desc": "Pratica resolver desentendimentos e desenvolver competências de reparação"
+        },
+        "empathy_week": {
+          "name": "Semana da Empatia e da Perspetiva",
+          "desc": "Desenvolve a empatia através da tomada de perspetiva e da consciência cultural"
+        },
+        "decision_making": {
+          "name": "Tomada de Decisão a Fundo",
+          "desc": "Pratica o raciocínio ético e as escolhas responsáveis"
+        },
+        "self_discovery": {
+          "name": "Viagem de Autodescoberta",
+          "desc": "Explora quem és — forças, emoções e mentalidade de crescimento"
+        },
+        "friendship": {
+          "name": "Amizade e Competências Sociais",
+          "desc": "Constrói amizades saudáveis e competências de comunicação"
+        },
+        "transitions": {
+          "name": "Lidar com a Mudança",
+          "desc": "Apoia os alunos em transições de vida e novas experiências"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Repara no que precisas e escolhe um próximo passo exequível.",
+          "model": "Sinto-me irrequieto. Posso experimentar um alongamento e depois escolher a primeira parte da minha tarefa.",
+          "practice": "Nomeia um sentimento, aponta para uma escolha ou repara em silêncio. Experimenta um apoio e escolhe um objetivo pequeno.",
+          "reflect": "O que notaste? O que manterias ou mudarias?",
+          "transfer": "Quando a próxima aula começar, posso experimentar ____. Se precisar de ajuda, posso pedir a ____."
+        },
+        "calm_down": {
+          "goal": "Explora um apoio que se ajuste ao teu corpo e a este momento.",
+          "model": "Hoje a prática de respiração não me está a ajudar. Posso experimentar olhar à volta da sala ou pedir companhia.",
+          "practice": "Escolhe apenas uma estratégia confortável. Ficar sentado, observar ou fazer uma pausa são opções válidas.",
+          "reflect": "Ajudou, ficou igual ou foi desconfortável? Podes parar ou escolher outra forma.",
+          "transfer": "Quando eu notar ____, posso experimentar ____ ou pedir apoio a ____."
+        },
+        "conflict_unit": {
+          "goal": "Considera diferentes perspetivas e ensaia uma resposta respeitosa para um desentendimento do dia a dia.",
+          "model": "Queremos os dois o mesmo material. Posso perguntar do que precisas, explicar do que eu preciso e sugerir que façamos à vez.",
+          "practice": "Usa um desentendimento inventado e de baixo risco. Ensaia uma pergunta de escuta e um possível próximo passo.",
+          "reflect": "A que necessidades deu resposta a reação escolhida? O que poderia precisar de mudar?",
+          "transfer": "Num desentendimento seguro, posso ____. Em caso de ameaças, bullying ou coação, posso pedir ajuda a um adulto de confiança."
+        },
+        "empathy_week": {
+          "goal": "Explora outra perspetiva sem presumires que sabes como alguém se sente.",
+          "model": "Essa pessoa está calada. Pode estar cansada ou a pensar; posso perguntar em vez de decidir por ela.",
+          "practice": "Usa um exemplo fictício. Nomeia duas perspetivas possíveis e uma pergunta respeitosa que poderias fazer.",
+          "reflect": "O que sabes e o que estás a adivinhar? Como poderias confirmar?",
+          "transfer": "Esta semana, antes de fazer uma suposição, posso perguntar ____."
+        },
+        "decision_making": {
+          "goal": "Compara escolhas pelos seus efeitos em ti e nos outros.",
+          "model": "Antes de publicar uma foto de grupo, posso pedir autorização e pensar em quem a poderá ver.",
+          "practice": "Escolhe uma decisão inventada. Compara duas opções, os efeitos possíveis e alguém que poderia ajudar.",
+          "reflect": "Que informação está em falta? Há uma opção mais segura ou mais justa?",
+          "transfer": "Antes de decidir sobre ____, posso fazer uma pausa para verificar ____."
+        },
+        "self_discovery": {
+          "goal": "Reconhece uma força e escolhe uma forma de a usar com apoio.",
+          "model": "Faço perguntas úteis. Posso usar essa força quando uma tarefa não está clara e pedir um exemplo.",
+          "practice": "Escolhe uma força que tenha a ver contigo, ou com uma personagem fictícia. Dá um exemplo dessa força em ação.",
+          "reflect": "O que ajudou essa força a aparecer? Que apoio tornaria possível o próximo passo?",
+          "transfer": "Posso usar ____ quando ____. Uma pessoa ou um recurso que poderia ajudar é ____."
+        },
+        "friendship": {
+          "goal": "Pratica uma comunicação que respeite as tuas necessidades e os limites das outras pessoas.",
+          "model": "Posso convidar alguém a juntar-se a nós e aceitar a escolha dessa pessoa se ela disser que não.",
+          "practice": "Ensaia um convite, uma pergunta de escuta ou um limite respeitoso. Falar, escrever ou usar CAA, tudo conta.",
+          "reflect": "Cada pessoa teve uma escolha real? O que poderia tornar a interação mais acolhedora?",
+          "transfer": "Numa interação segura esta semana, posso experimentar ____ e reparar em ____."
+        },
+        "transitions": {
+          "goal": "Identifica o que está a mudar, o que pode manter-se estável e uma fonte de apoio.",
+          "model": "Uma disciplina nova traz incerteza. Posso encontrar a sala com antecedência e perguntar quem me pode ajudar.",
+          "practice": "Escolhe uma mudança real ou fictícia. Nomeia uma incerteza, um apoio estável e um pequeno próximo passo.",
+          "reflect": "Que parte está sob o teu controlo? Que ajuda ou adaptação seria útil?",
+          "transfer": "Antes da mudança, posso ____. Se o plano tiver de mudar, posso ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Individual ou em grupo",
+          "cue": "Útil como primeiro check-in antes de qualquer partilha."
+        },
+        "emotions": {
+          "format": "Individual ou em pares",
+          "cue": "Bom aquecimento de vocabulário."
+        },
+        "coping": {
+          "format": "Individual ou em grupo",
+          "cue": "Ideal para uma pausa de regulação."
+        },
+        "mindfulness": {
+          "format": "Turma inteira",
+          "cue": "Opção de regulação com pouca escrita."
+        },
+        "somaticReset": {
+          "format": "Individual ou turma inteira",
+          "cue": "O seletor visual compacto mantém todos os guias disponíveis sem uma grelha densa de botões. A Órbita da Respiração associa arcos contínuos e pontilhados a uma fase ativa mais grossa, a um anel central contínuo ou pontilhado correspondente e a rótulos diretos INSPIRA e EXPIRA; o centro passa de um ponto para barras de pausa quando está em pausa, e o losango ou anel contornado identifica a passagem para a fase seguinte, enquanto o marcador redondo ou em losango que roda no sentido dos ponteiros do relógio, o losango de passagem, o anel de regresso, as barras curtas de inspiração e os pontos ocos de expiração mantêm a fase e a contagem opcional legíveis sem depender da cor. Deixa os alunos experimentar uma respiração com movimento antes do temporizador, ou escolher Parado. Oferece palavras de orientação completas, só com a fase ou ocultas. A Vista Tranquila torna o recurso visual ampliado num controlo direto de iniciar/pausar. A Onda Fluida usa INSPIRA · SOBE com uma linha contínua e um marcador redondo, EXPIRA · ASSENTA com uma linha pontilhada e um marcador em losango, e barras de pausa para uma sessão em pausa. A Flor a Desabrochar usa INSPIRA · ABRE com contornos de pétalas contínuos e um centro redondo, EXPIRA · SUAVIZA com contornos pontilhados e um centro em losango, e barras de pausa no centro para uma sessão em pausa. O Horizonte de Ancoragem usa INSPIRA · SOBE com um contorno de sol contínuo e um centro circular, EXPIRA · ASSENTA com um contorno de sol pontilhado e um centro em losango, e barras de pausa no sol quando está em pausa. O Caminho da Respiração usa um alvo redondo para INSPIRA, um alvo em losango para EXPIRA, um rasto a partir da origem ativa e o próximo destino contornado, para que a direção não dependa da cor. Oferece indicações de fase para leitores de ecrã, além das opções de contagem decrescente oculta, orientação oculta, movimento parado, sem recurso visual, respiração natural e sem números; nunca exijas avaliações nem explicações das sensações corporais."
+        },
+        "journal": {
+          "format": "Individual",
+          "cue": "Reflexão privada. A partilha deve ser opcional."
+        },
+        "goals": {
+          "format": "Individual ou tutoria",
+          "cue": "Bom passo de fecho depois da reflexão."
+        },
+        "conflict": {
+          "format": "Pares ou pequeno grupo",
+          "cue": "Revê as normas antes da dramatização."
+        },
+        "restorativeCircle": {
+          "format": "Círculo",
+          "cue": "Usa com normas de círculo já estabelecidas."
+        },
+        "peersupport": {
+          "format": "Prática em pares",
+          "cue": "Muito bom para ensaiar competências de escuta."
+        },
+        "perspective": {
+          "format": "Pares ou grupo",
+          "cue": "Boa ponte de empatia antes da discussão."
+        },
+        "digitalWellbeing": {
+          "format": "Individual ou tutoria",
+          "cue": "Útil antes de definir normas sobre telemóveis ou IA."
+        },
+        "sleep": {
+          "format": "Individual",
+          "cue": "Bom para unidades de saúde na tutoria."
+        },
+        "safety": {
+          "format": "Individual",
+          "cue": "Pré-visualiza primeiro; evita revelações forçadas."
+        },
+        "crisiscompanion": {
+          "format": "Individual",
+          "cue": "Para competências de apoio urgente, não para um trabalho de turma."
+        },
+        "griefLoss": {
+          "format": "Individual",
+          "cue": "Pré-visualiza primeiro; usa alternativas para quem optar por não participar."
+        },
+        "identitySupport": {
+          "format": "Individual",
+          "cue": "Usa com cuidado com a privacidade e com a opção de não participar."
+        },
+        "traumaPsychoed": {
+          "format": "Individual ou orientado por um educador",
+          "cue": "Apenas psicoeducação; oferece a opção de não participar e um caminho até um adulto de confiança."
+        },
+        "substancePsychoed": {
+          "format": "Individual ou aula de saúde",
+          "cue": "Pré-visualiza o enquadramento de redução de danos e disponibiliza apoios de adultos/médicos."
+        },
+        "healthyRelationships": {
+          "format": "Individual ou aula de saúde",
+          "cue": "Pré-visualiza a linguagem sobre consentimento e segurança; nunca exijas revelações pessoais."
+        },
+        "bodyStory": {
+          "format": "Individual",
+          "cue": "Enquadramento de respeito pelo corpo; oferece a opção de não participar e evita discussões focadas no peso."
+        },
+        "genogram": {
+          "format": "Individual",
+          "cue": "Apenas reflexão sobre a família; a partilha deve ser opcional."
+        },
+        "sensoryRegulation": {
+          "format": "Individual ou planeamento de apoios",
+          "cue": "Usa linguagem que afirme a identidade e deixa os alunos escolher o que partilhar."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Check-in matinal na tutoria",
+          "format": "Turma inteira",
+          "focus": "Estado de espírito, respiração, um próximo passo",
+          "studentView": "Os alunos verificam a sua zona em privado, experimentam uma opção de regulação e depois escolhem uma necessidade para o dia ou passam.",
+          "teacherMove": "Mostra primeiro, como modelo, a opção de passar. Convida a partilhar uma palavra ou uma cor só depois da prática em privado.",
+          "privacyBoundary": "Não é recolhido nenhum texto do diário; os alunos decidem mais tarde se algum ponto de controlo entra num Pacote de Partilha.",
+          "note": "Começa com uma verificação da zona em privado e depois oferece respiração ou definição de objetivos. Os alunos podem partilhar uma palavra, uma cor ou passar."
+        },
+        "calm_reset": {
+          "name": "Pausa calmante de cinco minutos",
+          "format": "Turma inteira ou cantinho da calma",
+          "focus": "Regulação corporal",
+          "studentView": "Os alunos reparam no estado atual do seu corpo e escolhem uma prática para acalmar o corpo.",
+          "teacherMove": "Mantém a rotina com pouca conversa e com tempo limitado. Oferece alternativas de movimento, de respiração ou em silêncio.",
+          "privacyBoundary": "Os alunos podem guardar um ponto de controlo para si; ninguém tem de explicar por que precisou de uma pausa.",
+          "note": "Mantém isto com pouca conversa. Os alunos escolhem uma prática de regulação e reparam no que mudou."
+        },
+        "repair_routine": {
+          "name": "Rotina de reparação após um conflito",
+          "format": "Pequeno grupo ou tutoria",
+          "focus": "Perspetiva, reparação, próxima ação",
+          "studentView": "Os alunos podem usar um cenário real, hipotético ou dado pelo professor para praticar linguagem de reparação.",
+          "teacherMove": "Define primeiro as normas de reparação e evita confissões públicas. Faz uma pausa se a situação precisar da mediação de um adulto.",
+          "privacyBoundary": "Os alunos escolhem o que partilhar; as reflexões privadas sobre conflitos não devem passar a ser usadas como evidência na turma.",
+          "note": "Usa depois de as normas estarem definidas. Mantém o foco na linguagem de reparação, não em confissões públicas."
+        },
+        "digital_reset": {
+          "name": "Minilição de bem-estar digital",
+          "format": "Tutoria ou saúde",
+          "focus": "Telemóvel, sono, IA e limites",
+          "studentView": "Os alunos reveem os seus hábitos, escolhem um limite para testar e mantêm o motivo em privado, se quiserem.",
+          "teacherMove": "Apresenta isto como criação de hábitos, não como uma auditoria ao telemóvel. Evita pedir aos alunos que revelem capturas de ecrã ou dados de utilização.",
+          "privacyBoundary": "Os alunos podem partilhar um objetivo de limite, mas os detalhes pessoais sobre sono, telemóvel ou IA continuam a ser opcionais.",
+          "note": "Apresenta isto como criação de hábitos, não como uma auditoria ao telemóvel. Os alunos escolhem um limite para experimentar."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Abordagem informada pela investigação",
+          "title": "A investigação diz respeito à abordagem de base; esta adaptação digital não foi avaliada aqui"
+        },
+        "emerging": {
+          "label": "Evidência limitada da abordagem",
+          "title": "Promissora, mas com evidência limitada ou mista"
+        },
+        "contested": {
+          "label": "Modelo contestado",
+          "title": "Popular, mas cientificamente contestado; é melhor usá-lo como metáfora, não como mecanismo"
+        },
+        "practice": {
+          "label": "Prática reflexiva",
+          "title": "Uma prática estruturada ou uma heurística, não uma afirmação empírica de eficácia"
+        }
+      },
+      "ui": {
+        "sel_practice": "Prática SEL",
+        "default_purpose": "Pratica uma competência SEL com cuidado.",
+        "default_next": "Completa um pequeno passo e depois decide se queres guardar.",
+        "private_checkpoint": "Ponto de controlo privado",
+        "share_packet_eligible": "Elegível para o Pacote de Partilha",
+        "saving_preparing": "A preparar para guardar o teu trabalho SEL...",
+        "save_requested": "Foi pedido para guardar {title}",
+        "returned_to_grid": "De volta à grelha de ferramentas",
+        "back_to_sel_tools": "Voltar às ferramentas SEL",
+        "export_now_aria": "Exportar agora o ficheiro do projeto SEL",
+        "export_now": "Exportar agora",
+        "purpose": "Finalidade",
+        "next_step": "Próximo passo",
+        "saved_work": "Trabalho guardado",
+        "checkpoints_private": "Os pontos de controlo das ferramentas ficam privados aqui, a menos que os escolhas para um Pacote de Partilha.",
+        "use_with_care_label": "Usar com cuidado:",
+        "tool_open_failed_title": "Não foi possível abrir esta ferramenta",
+        "tool_open_failed_body": "Algo nas informações guardadas desta atividade não carregou. Não foi nada que tenhas feito de errado.",
+        "saved_work_kept": "O teu trabalho guardado não foi apagado.",
+        "back_to_hub": "Voltar ao SEL Hub",
+        "tell_teacher": "Se isto continuar a acontecer, diz ao teu professor qual era a atividade.",
+        "load_did_not_start": "A ferramenta foi transferida, mas não arrancou.",
+        "load_too_long": "A ferramenta demorou demasiado tempo a carregar.",
+        "this_sel_tool": "Esta ferramenta SEL",
+        "tool_opening": "{name} está a abrir...",
+        "tool_open_retry": "Não foi possível abrir {name}. Tenta novamente ou escolhe outra ferramenta.",
+        "station_link_missing": "Esta ligação indica uma estação que não está neste projeto. Carrega o pacote que a contém ou inicia uma a partir de Estações SEL no painel Histórico.",
+        "started_station": "Estação {name} iniciada",
+        "tool_could_not_open": "Não foi possível abrir {name}.",
+        "tool_not_available": "{name} não está disponível neste SEL Hub.",
+        "try_again": "Tentar novamente",
+        "dismiss": "Descartar",
+        "back_to_tools": "Voltar às ferramentas",
+        "band_elementary": "Ensino primário",
+        "band_middle": "I ciclo do ensino secundário",
+        "band_high": "II ciclo do ensino secundário",
+        "unsaved_aria": "Tens alterações por guardar",
+        "unsaved_title": "Alterações por guardar",
+        "unsaved": "Por guardar",
+        "unsaved_hint": "Tens alterações por guardar — toca em Exportar agora para as guardar",
+        "educators_opened": "Guia Para educadores aberto",
+        "educators_aria": "Para educadores: como usar este Hub de forma responsável",
+        "for_educators": "Para educadores",
+        "theme_aria": "Mudar o tema (claro, escuro ou alto contraste)",
+        "theme_contrast": "Alto contraste",
+        "theme_dark": "Modo escuro",
+        "theme_light": "Modo claro",
+        "theme_contrast_short": "Alto contr.",
+        "theme_dark_short": "Escuro",
+        "theme_light_short": "Claro",
+        "xp_aria": "{count} pontos de experiência SEL",
+        "close_hub": "Fechar o SEL Hub",
+        "keep_share_title": "Escolhe o que guardar e partilhar",
+        "keep_share_body": "Algumas atividades guardam o trabalho neste dispositivo; outro trabalho só dura neste separador. Fechar o separador não apaga tudo. Exporta um ficheiro para guardares uma cópia. Num dispositivo partilhado, consulta Dados e privacidade em Para educadores. As funcionalidades de IA e de partilha usam os serviços configurados.",
+        "got_it_aria": "Entendido, começar a usar o SEL Hub",
+        "got_it": "Entendido",
+        "practice_support": "Apoio à prática",
+        "learning_guide": "Guia de aprendizagem e formas de praticar",
+        "what_you_can_explore": "O que podes explorar",
+        "worked_example": "Um exemplo resolvido",
+        "try_one_step": "Experimenta um passo",
+        "reflect_transfer": "Reflete e usa noutros contextos",
+        "look_closer": "Observa com mais atenção",
+        "next_use": "Uma possível utilização a seguir",
+        "adapt_together": "Adaptar a prática em conjunto",
+        "adapt_smaller": "Começa mais pequeno: mostra como modelo uma frase ou uma escolha, usa uma imagem ou um objeto concreto e dá tempo para pensar.",
+        "adapt_deeper": "Vai mais fundo: compara duas respostas, identifica a informação em falta e explica o que poderia mudar a tua escolha.",
+        "adapt_context": "Muda o contexto: usa uma situação fictícia que se ajuste à língua, aos interesses, à cultura e às necessidades de acesso do aluno.",
+        "adapt_check": "Verifica a compreensão através de um exemplo ou de uma explicação à escolha, não de uma história pessoal obrigatória, de uma mudança emocional ou de uma pontuação.",
+        "optional_prompts": "Estas propostas opcionais não submetem respostas, não atribuem conclusão nem substituem as instruções e as informações de segurança da própria atividade.",
+        "returned_to_activities": "De volta às atividades. Esta ação não registou nenhuma prática como concluída.",
+        "return_to_activities": "Voltar às atividades",
+        "chooser_first_reset_coping": "Escolhe uma opção de ancoragem confortável. Repara se te serve; parar é permitido.",
+        "chooser_first_reset_journal": "Escreve uma coisa que tornaria os próximos minutos mais fáceis de gerir. Não é preciso nenhuma história pessoal.",
+        "chooser_first_feelings_zones": "Aponta para um sentimento ou repara em silêncio. Escolhe um apoio; não há nenhuma zona certa a que tenhas de chegar.",
+        "chooser_first_feelings_emotions": "Explora duas palavras de sentimentos para uma personagem fictícia. Pode haver mais do que uma resposta adequada.",
+        "chooser_first_feelings_journal": "Escreve uma palavra ou uma reflexão curta sobre uma situação fictícia ou do dia a dia.",
+        "chooser_first_conversation_advocacy": "Usa uma situação fictícia para ensaiar um pedido em voz alta, com CAA ou em silêncio, longe do formulário.",
+        "chooser_first_conversation_journal": "Rascunha um pedido respeitoso para uma situação segura do dia a dia; não tens de o enviar.",
+        "chooser_first_decision_decisions": "Pensa em duas escolhas numa situação fictícia e num possível efeito de cada uma.",
+        "chooser_first_decision_goals": "Rascunha um próximo passo realista e um apoio que poderias pedir.",
+        "try_a_reset": "Experimenta uma pausa",
+        "need_feeling": "Compreender um sentimento",
+        "need_conversation": "Preparar uma conversa",
+        "need_decision": "Escolher um próximo passo",
+        "help_choose": "Ajuda-me a escolher uma atividade",
+        "help_choose_intro": "Escolhe o que queres experimentar. As sugestões usam apenas estas escolhas; não avaliam os teus sentimentos. Os tempos descrevem um primeiro passo, não a atividade completa.",
+        "what_would_help": "O que te ajudaria?",
+        "time_first_step": "Tempo para um primeiro passo",
+        "n_minutes": "{count} minutos",
+        "how_respond": "Como gostarias de responder?",
+        "respond_any": "De qualquer forma",
+        "respond_offline": "Pensar, falar, desenhar ou CAA",
+        "respond_write": "Escrever uma resposta curta",
+        "options_one": "{count} opção inicial para as tuas escolhas.",
+        "options_many": "{count} opções iniciais para as tuas escolhas.",
+        "options_none": "Ainda nenhuma opção inicial corresponde. Experimenta mais tempo ou outro formato de resposta; o catálogo completo continua disponível.",
+        "why_option_write": "Porquê esta opção: {need}, com um primeiro passo sugerido de {minutes} minutos e uma resposta escrita curta.",
+        "why_option_offline": "Porquê esta opção: {need}, com um primeiro passo sugerido de {minutes} minutos e uma forma de praticar sem escrever no teclado.",
+        "open_named": "Abrir {name}",
+        "open_named_unavailable": "Abrir {name} (não disponível)",
+        "pathway_guide": "Guia de prática do percurso",
+        "pathway_opened": "{opened} de {total} ferramentas abertas. Abrir uma ferramenta não significa que praticaste a competência.",
+        "exit_pathway_aria": "Sair do modo de percurso",
+        "pathway_cleared": "Percurso desativado",
+        "exit_pathway": "Sair do percurso",
+        "practice_goal": "Objetivo da prática:",
+        "pathway_intro": "Escolhe uma atividade ou segue a ordem sugerida. Podes passar, usar um exemplo fictício ou responder a falar, a desenhar, a escrever ou com CAA. Partilhar é opcional.",
+        "model_practice_reflect": "Modelar, praticar e refletir",
+        "an_example": "Um exemplo",
+        "notice_adjust": "Repara e ajusta",
+        "take_with_you": "Leva contigo",
+        "self_check_aria": "Autoverificação opcional da prática",
+        "self_check_intro": "Depois de experimentares um passo, escolhe o que se ajusta. Isto é opcional e não conta para nota; fica nesta sessão do percurso.",
+        "i_tried": "Experimentei um passo",
+        "another_way": "Preciso de outra forma",
+        "pass_for_now": "Passar por agora",
+        "tried_feedback": "Repara no que ajudou, no que não ajudou e onde poderias voltar a experimentar a competência.",
+        "adapt_feedback": "Experimenta um passo mais pequeno, outra forma de responder, uma ferramenta diferente ou o apoio de alguém em quem confias.",
+        "pass_feedback": "Passar é uma escolha válida. Podes voltar mais tarde ou pedir apoio.",
+        "next_option": "Próxima opção: {name}",
+        "open_next": "Abrir a seguir: {name}",
+        "view_pathway_tools": "Ver as ferramentas do percurso",
+        "revisit_any": "Podes voltar a qualquer atividade. Escolhe uma ideia para experimentar fora do hub; não é obrigatório terminar todas as ferramentas.",
+        "station_activities": "Atividades da estação",
+        "active_station": "Estação SEL ativa: {name}",
+        "steps_recorded_passed": "{done} de {total} passos registados · {passed} passados por agora. Isto é um registo de prática, não uma nota.",
+        "steps_recorded": "{done} de {total} passos registados. Isto é um registo de prática, não uma nota.",
+        "active_minutes_done": "{mins} de {goal} minutos ativos aqui. Passo registado.",
+        "active_minutes_counting": "{mins} de {goal} minutos ativos aqui. Conta enquanto este separador estiver visível e o estiveres a usar.",
+        "exit_station_aria": "Sair do modo de estação",
+        "station_cleared": "Estação desativada",
+        "exit_station": "Sair da estação",
+        "station_tools_steps": "Ferramentas, passos e reflexão da estação",
+        "station_steps": "Passos e reflexão da estação",
+        "station_privacy": "Os passos e as notas são guardados neste dispositivo e podem ser incluídos em ficheiros do projeto. Usa exemplos fictícios ou deixa de fora os detalhes pessoais. Escolhe o que partilhar.",
+        "step_passed": "Passaste por agora. Podes voltar quando estiveres pronto.",
+        "step_marked": "Marcaste este passo como concluído.",
+        "step_target": "Meta da atividade registada; isto não mede competências nem bem-estar.",
+        "step_ready": "Quando estiveres pronto.",
+        "open_step_activity": "Abrir a atividade deste passo",
+        "xp_progress": "{xp} / {target} XP SEL no total. Inclui atividade anterior; não é uma pontuação de competências.",
+        "time_progress": "{mins} / {target} minutos ativos. O tempo não é evidência de aprendizagem.",
+        "default_reflect": "O que notaste? O que manterias ou mudarias?",
+        "self_check_ways": "Pensa, desenha, fala, usa língua gestual ou CAA. Uma nota escrita é opcional. Marca tu próprio o passo como concluído, ou passa por agora.",
+        "length_target": "Este passo guardado usa uma meta de extensão: {count} / {target} caracteres. A extensão não mede a qualidade da reflexão. A tua nota continua editável.",
+        "reflection_for": "Reflexão sobre {name}",
+        "optional_note": "Nota opcional: o que ajudou ou o que poderias experimentar a seguir...",
+        "write_reflection": "Escreve uma reflexão...",
+        "mark_complete_aria": "Marcar «{name}» como concluído",
+        "step_reopened": "Passo reaberto: {name}",
+        "step_marked_named": "Marcaste este passo como concluído: {name}",
+        "mark_complete": "Marcar como concluído",
+        "step_passed_named": "Passaste por agora: {name}",
+        "filter_pathway": "percurso: {name}",
+        "filter_station": "estação: {name}",
+        "no_tools_match": "Nenhuma ferramenta corresponde a {filters}",
+        "results_one": "{count} ferramenta de {total} corresponde a {filters}",
+        "results_many": "{count} ferramentas de {total} correspondem a {filters}",
+        "showing_all": "A mostrar todas as {total} ferramentas",
+        "crisis_elementary": "Se não conseguires encontrar um adulto logo, continua a pedir até alguém te ouvir. Mereces ajuda.",
+        "crisis_call_or_text": "Liga ou envia mensagem para",
+        "crisis_988": "a Linha 988 de Prevenção do Suicídio e Crise (gratuita, confidencial, 24/7).",
+        "crisis_text": "Envia uma mensagem",
+        "crisis_text_line": "Crisis Text Line (gratuita, confidencial, 24/7).",
+        "tool_selection": "Seleção de ferramentas do SEL Hub",
+        "jumped_to_list": "Saltaste para a lista de ferramentas. {summary}.",
+        "skip_to_list": "Saltar para a lista de ferramentas",
+        "start_here": "Começa aqui",
+        "quick_route": "Escolhe um caminho rápido ou explora abaixo.",
+        "browsing_all": "A explorar todas as ferramentas SEL",
+        "continue": "Continuar",
+        "continue_desc": "Retoma a última ferramenta SEL que abriste.",
+        "starting_idea": "Ideia inicial",
+        "starting_idea_desc": "{name}: uma atividade sugerida para este nível de ensino, com exemplos que podes adaptar.",
+        "starting_idea_none": "Abre um ponto de partida adequado ao nível de ensino.",
+        "try_a_reset_desc": "Explora uma estratégia confortável; não é obrigatório sentires-te calmo.",
+        "journal": "Diário",
+        "journal_desc": "Escreve uma reflexão; revê as opções de guardar e partilhar.",
+        "browse_all": "Explorar tudo",
+        "browse_all_desc": "Pesquisa ou filtra o catálogo completo.",
+        "need_chip_calm": "Acalmar o corpo",
+        "need_chip_feelings": "Nomear sentimentos",
+        "need_chip_stress": "Stress ou preocupação",
+        "need_chip_friend": "Conflito com um amigo",
+        "need_chip_write": "Pôr por escrito",
+        "need_chip_decision": "Tomar uma decisão",
+        "need_chip_sleep": "Sono ou cansaço",
+        "need_chip_crisis": "Em perigo ou em crise",
+        "need_chip_relationshipsafety": "Segurança nas relações",
+        "need_chip_schoolsupport": "Apoio escolar",
+        "need_chip_grief": "Luto ou perda",
+        "storage_notice": "Algum trabalho SEL fica guardado neste dispositivo. As funcionalidades de IA usam o serviço configurado. Escolhe o que guardar ou partilhar, sobretudo num dispositivo partilhado.",
+        "save_now_aria": "Guardar ou exportar agora o trabalho SEL",
+        "save_now": "Guardar agora",
+        "recent_work": "Trabalho SEL recente",
+        "saved_here": "Guardado aqui. Exporta para o manteres depois de fechar.",
+        "create_packet_aria": "Criar um Pacote de Partilha SEL a partir dos pontos de controlo guardados",
+        "review_packets_aria": "Rever os Pacotes de Partilha SEL guardados",
+        "create_packet": "Criar Pacote de Partilha",
+        "review_packets": "Rever Pacotes de Partilha",
+        "open_related": "Abrir a ferramenta relacionada.",
+        "related_unavailable": "A ferramenta relacionada não está disponível neste SEL Hub.",
+        "streak_aria": "Sequência SEL de {count} dias. A mais longa: {longest} dias.",
+        "streak": "Sequência de {count} dias",
+        "streak_best": "melhor {count}",
+        "find_activity": "Encontrar uma atividade",
+        "search_placeholder": "Pesquisa sentimentos, amigos, stress, objetivos...",
+        "search_aria": "Pesquisar ferramentas SEL",
+        "support_options": "Opções de apoio",
+        "crisis_hard_moment": "Parece que este pode ser um momento difícil.",
+        "crisis_tell_adult": "Não tens de resolver isto sozinho e não tens de encontrar primeiro a ferramenta certa. Por favor, conta agora a um adulto de confiança — um psicólogo escolar, um professor, o teu pai ou a tua mãe, ou outro adulto em quem confies. Pesquisar aqui não avisa ninguém; uma pessoa só fica a saber se lhe contares.",
+        "open_crisis_companion": "Abrir o Companheiro de Crise",
+        "find_by_need": "Encontrar ferramentas SEL por necessidade",
+        "i_need": "Preciso de...",
+        "cleared_search": "Pesquisa SEL limpa",
+        "clear_search_aria": "Limpar a pesquisa SEL",
+        "clear": "Limpar",
+        "cleared_need": "Filtro de necessidade SEL limpo",
+        "showing_for": "A mostrar ferramentas SEL para {name}",
+        "clear_need_aria": "Limpar o filtro de necessidade: {name}",
+        "find_for_aria": "Encontrar ferramentas para: {name}",
+        "browse_by_area": "Explorar por área de competência",
+        "filter_by_category": "Filtrar ferramentas SEL por categoria",
+        "showing_all_categories": "A mostrar todas as categorias",
+        "show_all_categories_aria": "Mostrar todas as categorias ({count} ferramentas)",
+        "all": "Todas",
+        "filtered_to": "Filtro aplicado: {name}",
+        "filter_chip_aria": "Filtro: {name} ({count} ferramentas)",
+        "pathways_heading": "Percursos SEL — Sequências de Aprendizagem Selecionadas",
+        "started_pathway": "Percurso iniciado: {name}",
+        "pathway_started": "Percurso {name} iniciado!",
+        "n_activities": "{count} atividades",
+        "grades_range": "classes {range}",
+        "use_with_care": "Usar com cuidado",
+        "visits_many": "{count} visitas",
+        "visits_one": "{count} visita",
+        "best_for": "Ideal para: {mode}.",
+        "teacher_cue": "Indicação para o professor: {time}, {format}. {cue}",
+        "preview_first": "Pré-visualiza primeiro",
+        "evidence_tradition": "Tradição de evidência: {tag}",
+        "approach_context": "Contexto da abordagem: {label}. {title}. Este distintivo não demonstra eficácia para esta aplicação nem para um aluno em particular.",
+        "step_opened": "Passo {n} · Aberto",
+        "step_not_opened": "Passo {n} · Não aberto",
+        "suggested_grades": "Classes sugeridas: {range}",
+        "no_tools_current_view": "Nenhuma ferramenta corresponde à vista atual",
+        "empty_try": "Experimenta calma, sentimentos, stress, amigo, escrever, decisão ou sono.",
+        "filters_cleared": "Filtros limpos. A mostrar todas as {total} ferramentas.",
+        "show_all_tools": "Mostrar todas as {total} ferramentas",
+        "error_loading": "Erro ao carregar {name}",
+        "unknown_error": "Erro desconhecido",
+        "back_to_tools_error": "Voltar às Ferramentas",
+        "tool_load_failed": "Não foi possível carregar esta ferramenta.",
+        "loading_tool": "A carregar a ferramenta...",
+        "file_not_arrived": "O ficheiro não chegou.",
+        "check_connection": "Verifica a ligação e tenta novamente.",
+        "plugin_fetching": "O ficheiro do plugin ainda está a ser obtido.",
+        "research_about": "Sobre os rótulos de investigação",
+        "research_summary": "O que significam os rótulos de investigação",
+        "research_context": "Contexto da abordagem: {label}.",
+        "research_not_app": "A investigação sobre uma terapia, um currículo ou um modelo não demonstra que esta atividade digital tenha os mesmos efeitos. Os rótulos descrevem a abordagem; não classificam esta aplicação nem um aluno.",
+        "research_check": "Antes de escolheres uma atividade, verifica as fontes citadas, as idades e os contextos estudados, o apoio necessário e os resultados medidos. Estes rótulos não estabelecem a adequação à população nem a eficácia desta adaptação.",
+        "research_casel_link": "CASEL: escolher e avaliar um programa SEL",
+        "project_save_failed": "O pedido para guardar o projeto falhou. Mantém este hub aberto e experimenta Guardar / Exportar na aplicação principal.",
+        "project_save_requested": "Pedido para guardar o projeto enviado. Conclui o processo de gravação na aplicação principal; aqui não foi confirmado nenhum ficheiro guardado.",
+        "saving_aria": "Guardar e partilhar o trabalho SEL",
+        "saving_failed_alert": "Não foi possível guardar algumas alterações SEL neste dispositivo. Mantém este hub aberto e guarda uma cópia do projeto; os rascunhos de estações têm de ser guardados como estações para entrarem nessa cópia.",
+        "saving_attention": "A gravação precisa de atenção",
+        "saving_title": "Guardar e partilhar",
+        "saving_failed_body": "O trabalho atual continua disponível neste hub aberto. Uma gravação local falhada pode deixar uma cópia mais antiga neste dispositivo.",
+        "saving_ok_body": "As estações guardadas, as notas das estações e os pontos de controlo do hub estão a ser armazenados neste dispositivo. Cada atividade tem os seus próprios controlos para guardar; este estado não confirma que todas as entradas das atividades foram guardadas.",
+        "saving_drafts": "Os rascunhos de estações ficam neste dispositivo para recuperação. Guardar uma estação adiciona-a aos dados do projeto disponíveis em Guardar / Exportar; pedir para guardar o projeto não confirma que um ficheiro foi escrito.",
+        "saving_live": "Está ligada uma sessão ao vivo. Pode enviar o progresso ou sinais de segurança ao anfitrião. A IA opcional envia o texto das atividades para o serviço configurado. Revê um Pacote de Partilha antes de decidires partilhá-lo.",
+        "saving_ai": "A IA opcional envia o texto das atividades para o serviço configurado. Um Pacote de Partilha contém os itens e os níveis de detalhe que selecionares; revê a pré-visualização antes de partilhar.",
+        "saving_retry": "Tentar de novo guardar localmente",
+        "saving_request": "Pedir para guardar o projeto",
+        "removed_stations": "Estações removidas",
+        "removed_body": "Anula a remoção de estações enquanto este hub estiver aberto. Os registos de prática existentes são mantidos.",
+        "station_restored": "Estação restaurada: {name}",
+        "undo_removal": "Anular remoção: {name}",
+        "launch_routines_aria": "Rotinas de lançamento do professor",
+        "launch_title": "Lançamento do professor",
+        "launch_note": "Mantém a prática sem nota e a partilha opcional. Explica o armazenamento no dispositivo, as funcionalidades de IA configuradas e a partilha antes de começar. Usa exemplos fictícios; convida os alunos a pedir ajuda ou a passar.",
+        "launch_guardrails_aria": "Salvaguardas do lançamento do professor",
+        "launch_step_boundary": "Define o limite",
+        "launch_step_boundary_body": "Diz o que é privado, o que é opcional e como os alunos podem passar.",
+        "launch_step_run": "Conduz a rotina",
+        "launch_step_run_body": "Usa as ferramentas como prática. Mantém a reflexão formativa e sem nota.",
+        "launch_step_close": "Termina com uma escolha",
+        "launch_step_close_body": "Os alunos decidem se querem guardar, exportar ou incluir um ponto de controlo mais tarde.",
+        "launch_student_sees": "O aluno vê",
+        "launch_student_sees_default": "Os alunos completam uma rotina SEL privada e escolhem o que partilhar.",
+        "launch_teacher_move": "Ação do professor",
+        "launch_teacher_move_default": "Apresenta isto como prática, não como avaliação.",
+        "launch_sharing_boundary": "Limite de partilha",
+        "launch_sharing_boundary_default": "A partilha continua a ser controlada pelo aluno.",
+        "launch_tools_loading": "A carregar ferramentas...",
+        "launch_still_loading": "Ainda a carregar: {tools}",
+        "launch_preview_sensitive": "Pré-visualiza primeiro as ferramentas sensíveis: {tools}",
+        "launch_load_aria": "Carregar o plano de lançamento do professor: {name}",
+        "launch_finish_draft": "Termina ou descarta primeiro o rascunho atual",
+        "launch_waiting": "À espera das ferramentas",
+        "launch_loading": "A carregar",
+        "launch_load": "Carregar no Construtor de Estações",
+        "builder_note_student": "Vista do aluno: {text}",
+        "builder_note_teacher": "Ação do professor: {text}",
+        "builder_note_sharing": "Limite de partilha: {text}",
+        "builder_note_note": "Nota do professor: {text}",
+        "launch_finish_existing": "Termina ou descarta primeiro o teu rascunho de estação existente.",
+        "launch_tools_still_loading": "As ferramentas do lançamento do professor ainda estão a carregar. Tenta novamente daqui a pouco.",
+        "launch_tools_still_loading_sr": "As ferramentas do lançamento do professor ainda estão a carregar.",
+        "launch_default_name": "Rotina SEL para a turma",
+        "launch_default_short": "Rotina SEL",
+        "launch_loaded_sr": "Plano de lançamento do professor carregado no construtor de estações: {name}",
+        "launch_loaded_toast": "Plano de lançamento do professor carregado no Construtor de Estações.",
+        "stations_summary": "Estações SEL Personalizadas — conjuntos criados por professores",
+        "station_delete_aria": "Eliminar a estação {name}",
+        "station_removed_sr": "Estação removida. Podes anular até este hub fechar.",
+        "station_removed": "Estação removida",
+        "station_tools_count": "{count} ferramentas",
+        "station_quests_count": "{count} missões",
+        "station_activated_sr": "Estação SEL ativada: {name}",
+        "station_started": "{name} começou!",
+        "station_activate_aria": "Ativar a estação {name}",
+        "station_start": "Iniciar estação",
+        "station_adapt_aria": "Adaptar uma cópia da estação {name}",
+        "station_adapt": "Adaptar uma cópia",
+        "draft_aria": "Rascunho de estação recuperável",
+        "draft_untitled": "Estação sem título",
+        "draft_body": "Está guardado neste dispositivo um rascunho de estação por terminar: {name}. Retoma-o ou descarta-o antes de começares outro.",
+        "draft_resume": "Retomar o rascunho de estação",
+        "draft_discard": "Descartar o rascunho de estação",
+        "builder_opened": "Construtor de estações aberto",
+        "build_station_aria": "Criar uma nova Estação SEL personalizada",
+        "build_station": "+ Criar uma Estação Personalizada"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Conexão do professor em pausa — o seu lugar fica guardado enquanto o AlloFlow se reconecta.",
+    "host_stale": "A verificação do estado do professor está desatualizada — a sessão ao vivo pode continuar conectada. O seu trabalho fica neste dispositivo.",
+    "dismiss": "Fechar",
+    "dismiss_aria": "Fechar o aviso sobre o estado do professor",
+    "connecting": "Conectando à turma…",
+    "retrying": "Atualizações da turma em pausa. Reconectando automaticamente…",
+    "failed": "As atualizações da turma estão desconectadas. Verifique a sua conexão e tente reconectar.",
+    "access": "O acesso à turma foi negado. Peça ao seu professor para verificar o acesso e depois reconecte.",
+    "sign_in": "Inicie sessão novamente para recuperar o acesso à turma e depois reconecte.",
+    "reconnect": "Reconectar"
+  },
   "_version": "20260526T1779819430342",
   "tour": {
     "input_panel_title": "Painel de Entrada",
@@ -5283,9 +7699,99 @@
     "measured_on_target": "Adequado para {grade}",
     "measured_above": "Acima do nível {grade}",
     "measured_below": "Abaixo do nível {grade}",
-    "measured_note": "Flesch-Kincaid, medido neste texto. Use Verificar Nível para uma verificação mais completa."
+    "measured_note": "Flesch-Kincaid, medido neste texto. Use Verificar Nível para uma verificação mais completa.",
+    "listen_along": "Ouvir e acompanhar",
+    "compare_listen_here": "Ouvir aqui",
+    "compare_listen_here_original": "Ouvir aqui o texto original",
+    "compare_listen_here_adapted": "Ouvir aqui o texto adaptado",
+    "compare_stop_reading_original": "Parar a leitura do texto original",
+    "compare_stop_reading_adapted": "Parar a leitura do texto adaptado",
+    "compare_scroll_together": "Deslocar em conjunto",
+    "reading_width": "Largura de leitura",
+    "width_narrow": "Estreita",
+    "width_medium": "Média",
+    "width_wide": "Larga",
+    "width_extra_wide": "Muito larga",
+    "reading_width_characters": "cerca de {count} caracteres por linha",
+    "original_support_spoken": "Ajuda para a palavra «{word}»: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Escreva a palavra ou expressão que falta",
+      "explain_thinking": "Explique o seu raciocínio",
+      "write_response": "Escreva a sua resposta",
+      "submit_response": "Enviar resposta",
+      "numeric_answer": "Resposta numérica",
+      "unit_named": "Unidade ({unit})",
+      "unit_optional": "Unidade (opcional)",
+      "submit_numeric": "Enviar resposta numérica",
+      "select_all_apply": "Selecione todas as respostas que se aplicam",
+      "submit_selections": "Enviar seleções",
+      "part1": "Parte 1 — Escolha a melhor resposta",
+      "part2": "Parte 2 — {prompt}",
+      "default_evidence_prompt": "Escolha a evidência que melhor apoia a resposta.",
+      "submit_answer_evidence": "Enviar resposta e evidência",
+      "order_check": "Esta ordem está correta?",
+      "order_yes": "Sim, está correta",
+      "order_no": "Não, há algo fora do lugar",
+      "select_misplaced": "Selecione acima um item que está fora do lugar.",
+      "arrange_instructions": "Coloque os itens na ordem correta. Se já estiverem certos, deixe-os como estão.",
+      "your_order": "A sua ordem",
+      "move_up": "Mover para cima: {item}",
+      "move_down": "Mover para baixo: {item}",
+      "done_arranging": "Terminei de ordenar",
+      "principle_question": "Qual é o critério da ordem?",
+      "principle_chronological": "ordem cronológica",
+      "principle_cause_effect": "causa e efeito",
+      "principle_process": "etapas de um processo",
+      "principle_size": "tamanho",
+      "principle_hierarchy": "hierarquia",
+      "find_mismatch": "Encontre o par que não corresponde",
+      "choose_mismatch": "Escolha o par que não se encaixa.",
+      "pair_with_question": "Com que deve ser emparelhado o item selecionado?",
+      "replacement_partner": "Novo par para o item",
+      "submit_replacement": "Enviar substituição",
+      "retry_failed": "Não foi possível enviar a sua resposta. A sua participação continua registada; tente novamente quando a conexão voltar.",
+      "return_to_quiz": "Voltar ao quiz ao vivo",
+      "minimize": "Minimizar",
+      "minimize_aria": "Sair do ecrã do quiz ao vivo",
+      "battle_result": "Resultado da batalha",
+      "class_victory": "Vitória da turma!",
+      "battle_complete": "Batalha concluída",
+      "regroup": "Uma oportunidade para se reorganizarem",
+      "end_no_scored": "Estas perguntas eram para discussão ou para revisão pelo professor. Não foi atribuída pontuação de batalha.",
+      "end_questions_complete": "Todas as perguntas estão concluídas. O resultado compara a percentagem de vida restante; em caso de empate, ganha a turma.",
+      "end_victory": "A sua turma derrotou o monstro em conjunto.",
+      "end_regroup": "Usem a explicação abaixo para planearem juntos a próxima tentativa.",
+      "end_review_last": "Reveja a última pergunta abaixo. O seu professor pode reiniciar a batalha.",
+      "boss_default_name": "Chefão",
+      "boss_hp": "HP de {name}",
+      "boss_health": "Vida de {name}",
+      "battle_scoring_paused": "Pontuação da batalha em pausa",
+      "tick_of": "{value} de {total}",
+      "confidence_legend": "Qual era o seu grau de certeza?",
+      "confidence_knew": "Eu sabia",
+      "confidence_guessed": "Dei um palpite com base no que sei",
+      "confidence_unsure": "Não tinha a certeza",
+      "confidence_help": "Isto ajuda o seu professor a identificar o que já sabe bem e as ideias erradas. Nunca altera a correção da resposta nem os pontos.",
+      "retry_send": "Tentar enviar a resposta novamente",
+      "waiting_for_teacher": "Aguardando que o seu professor inicie esta pergunta.",
+      "sending": "Enviando a sua resposta…",
+      "receipt_only": "Participação registada. A sua resposta não chegou ao professor para avaliação.",
+      "complete_and_submit": "Complete e envie a sua resposta",
+      "poll_closed": "Esta pergunta de opinião foi encerrada.",
+      "receipt_not_scored": "O seu professor recebeu apenas a sua participação. Esta resposta não foi avaliada.",
+      "no_answer_submitted": "Não foi enviada nenhuma resposta a esta pergunta. Reveja-a com a sua turma.",
+      "answer_review": "Revisão da resposta",
+      "review_answer": "Rever a resposta",
+      "discuss_with_teacher": "Converse sobre a resposta com o seu professor.",
+      "response_correct": "Resposta correta.",
+      "response_partial": "Resposta parcialmente correta.",
+      "response_incorrect": "Esta resposta precisa de ser revista.",
+      "response_none": "Não foi enviada nenhuma resposta.",
+      "response_submitted": "Resposta enviada para revisão.",
+      "explanation": "Explicação"
+    },
     "title": "Avaliar",
     "mcq_count": "Quantidade de Múltipla Escolha",
     "reflections": "Reflexões",
@@ -53366,7 +55872,6 @@
       "your_explanation": "Your explanation"
     },
     "geology": {
-      "depth": "Profundidade",
       "compare": "Comparar",
       "compare_title": "Comparar",
       "clear": "Limpar",
@@ -53381,7 +55886,7 @@
       "cutaway": "Vista em corte",
       "comparing": "Fixado para comparar ✓",
       "context_summary": "Lê o contexto científico",
-      "core_read": "Um testemunho lê-se de cima → para baixo: o mais jovem à superfície, o mais antigo em profundidade.",
+      "core_read": "Um testemunho lê-se de cima → para baixo: as camadas não perturbadas ficam mais antigas com a profundidade, mas um plutão que as corta é mais jovem.",
       "core_title": "Recolhe um testemunho de sondagem",
       "cycle_hint": "Aplica um processo real e segue esta rocha pelo ciclo. (Segue a rocha; o terreno não muda.)",
       "cycle_path": "O teu percurso: ",
@@ -53403,7 +55908,6 @@
       "forms": "Forma-se por",
       "fossils_found": "Fósseis descobertos",
       "fp_enter": "Entra e escava",
-      "fp_keys": "WASD / setas voar · Q E subir·descer · IJKL / arrastar olhar · Esc sair",
       "fp_on": "Modo de primeira pessoa ativado. W A S D ou as setas para voar, Q e E para subir e descer, I J K L ou arrastar para olhar, Esc para sair.",
       "fullscreen": "Ecrã inteiro",
       "fullscreen_title": "Explorador geológico em ecrã inteiro",
@@ -53457,11 +55961,6 @@
       "to_present": "Saltar para o presente: mostrar o corte completo",
       "water": "Nível freático",
       "water_tip": "Mostra o nível freático e as camadas que guardam água subterrânea",
-      "no3d_body": "O teu dispositivo não conseguiu iniciar o WebGL. Usa o corte e a lista de rochas: têm todo o conteúdo.",
-      "pressure": "Pressão",
-      "slice": "Corte",
-      "subtitle": "Escava um corte da crosta. Identifica rochas, lê as camadas e encontra o plutão que as corta.",
-      "temp": "Temp.",
       "fp_reset_and_enter": "Repor e entrar",
       "sr": {
         "operator_tier_earned": "Nível de operador {tier} obtido com {degrees} graus, {depth} intervalos. ",
@@ -53569,7 +56068,9 @@
         "dig_sounds_on": "Sons de escavação ligados.",
         "story_to_cer": "O rasto de evidências está pronto. Usa os pontos de referência guardados para explicar as tuas evidências.",
         "find_toast_first": "{icon} Encontraste {name}! {tells}",
-        "find_toast_again": "{icon} {name} · {count} achados"
+        "find_toast_again": "{icon} {name} · {count} achados",
+        "quiz_feedback_read": "Feedback específico. {note}{misconception} {remedy}",
+        "cycle_applied": "Processo aplicado: {proc}. {from} transforma-se em {to}. {note}"
       },
       "sits_shell": "Camada {n} de {m} a partir da superfície · centrada a cerca de {depth} km de profundidade",
       "sits_span": "Vai de {top} a {bottom} de profundidade · {thick} de cima a baixo",
@@ -53705,7 +56206,7 @@
         "end_bore_and_log": "Terminar a sondagem ativa e registar as amostras recuperadas",
         "pack_and_relocate_rig": "Arrumar e mudar a sonda direcional de lugar",
         "fp_toggle": "{label} (explorador na primeira pessoa)",
-        "fp_canvas_rig": "Estação de controlo da sonda direcional. Escolhe um ângulo e uma profundidade de sondagem, ajusta o avanço Preserve, Cruise ou Torque a cada formação, usa o líquido de arrefecimento limitado para proteger a integridade e bate as tuas pontuações anteriores. R termina uma sondagem ativa ou arruma uma sonda parada, e H leva-te ao início.",
+        "fp_canvas_rig": "Estação de controlo da sonda direcional. Escolhe um ângulo e uma profundidade de sondagem, ajusta o avanço Preservar, Cruzeiro ou Torque a cada formação, usa o líquido de arrefecimento limitado para proteger a integridade e bate as tuas pontuações anteriores. R termina uma sondagem ativa ou arruma uma sonda parada, e H leva-te ao início.",
         "fp_canvas_walk": "Explorador geológico de escavação na primeira pessoa. W A S D ou as setas para andar, Espaço para saltar, mantém Espaço enquanto andas contra uma parede para escalar ou carrega em C para sair de um buraco fundo, T mede a inclinação da camada na retícula, Shift para correr, I J K L ou arrastar para olhar, 1 escolhe a picareta, 2 escolhe o berbequim elétrico, manter X fura sem parar com um limite de calor, R instala a sonda direcional, G prospeta o espécime ativo ou o achado escondido mais próximo, clicar ou tocar escava um bloco, Enter escava de imediato, Z anula, Y refaz e H leva-te ao início. Esc para sair.",
         "fp_canvas_fly": "Voo na primeira pessoa pelo interior da Terra. W A S D ou as setas para voar, Q e E para subir e descer, I J K L ou arrastar para olhar, 1 escolhe a picareta, 2 escolhe o berbequim elétrico, manter X fura sem parar com um limite de calor, G prospeta o espécime ativo ou o achado escondido mais próximo, clicar ou tocar escava um bloco, Enter escava de imediato, Z anula, Y refaz e H leva-te ao início. Esc para sair.",
         "model_with_cross_section": "Modelo 3D interativo em vóxeis de {scene}. Usa o corte e a lista de materiais abaixo como alternativa acessível.",
@@ -53752,7 +56253,19 @@
         "process_story": "História do processo",
         "story_stages": "Etapas da história",
         "story_stage": "Etapa {n}: {label}. {state}",
-        "read_story_aloud": "Ler a história do processo em voz alta"
+        "read_story_aloud": "Ler a história do processo em voz alta",
+        "read_quiz_feedback": "Ler o feedback específico em voz alta",
+        "schematic_stage": "Etapa ativa do processo: {label}.",
+        "schematic_selected": "Material selecionado: {label}.",
+        "core_band": "{label}, intervalos {range}: {name}, {state}",
+        "core_band_integrity": "{label}, intervalos {range}: {name}, {state}, integridade média de {pct} por cento",
+        "pad_forward": "Mover para a frente",
+        "pad_left": "Mover para a esquerda",
+        "pad_back": "Mover para trás",
+        "pad_right": "Mover para a direita",
+        "pad_up": "Mover para cima",
+        "pad_down": "Mover para baixo",
+        "pad_jump": "Saltar"
       },
       "sits_title": "Onde fica",
       "reveal_layer": "Escondida dentro do bloco: corta-o para veres esta camada",
@@ -53793,7 +56306,7 @@
         },
         "geode": {
           "eyebrow": "Trabalho de campo sobre o crescimento de minerais",
-          "question": "Porque aparecem minerais diferentes nas camadas de um geodo?",
+          "question": "Porque é que a mesma sílica forma camadas tão diferentes num geodo?",
           "evidence": "Segue a sequência de crescimento e explica porque os cristais maiores se formaram no fim.",
           "subtitle": "Segue como a água subterrânea constrói uma caverna de cristais da parede para dentro.",
           "check": {
@@ -53863,7 +56376,7 @@
           "eyebrow": "Trabalho de campo sobre o movimento das placas",
           "question": "Como pode uma cadeia de vulcões revelar o movimento de uma placa?",
           "evidence": "Usa a idade e a forma das ilhas para explicar como a placa se moveu por cima da pluma.",
-          "subtitle": "Lê uma cadeia de ilhas como o registo de uma placa em movimento por cima de uma pluma fixa.",
+          "subtitle": "Lê uma cadeia de ilhas como o registo de uma placa em movimento por cima de uma pluma quase fixa.",
           "check": {
             "chain": "Compara vulcões ativos, extintos e submersos",
             "motion": "Segue a sequência do movimento",
@@ -53898,9 +56411,9 @@
       "hist1": "1 · Um mar quente e pouco profundo deposita CALCÁRIO: a primeira e mais antiga camada sedimentar, por isso fica no fundo.",
       "hist2": "2 · A lama assenta em águas mais calmas e endurece em XISTO ARGILOSO, por cima do calcário mais antigo.",
       "hist3": "3 · Os rios e as dunas acumulam areia → ARENITO, a camada mais recente, no topo (sobreposição: o mais jovem está mais acima).",
-      "hist4": "4 · A meteorização decompõe a rocha da superfície em SOLO.",
-      "hist5": "5 · Um impulso POSTERIOR de magma sobe através de todas as camadas e solidifica num PLUTÃO de granito: como corta as camadas, tem de ser mais jovem (intersecção).",
-      "hist6": "6 · O calor do plutão coze a rocha em que toca e forma uma orla METAMÓRFICA: mármore a partir do calcário, corneana a partir do xisto argiloso (metamorfismo de contacto).",
+      "hist4": "4 · Um impulso POSTERIOR de magma sobe à força através das camadas mais profundas e solidifica num PLUTÃO de granito: como corta essas camadas, tem de ser mais jovem (intersecção).",
+      "hist5": "5 · O calor do plutão coze a rocha em que toca e forma uma orla METAMÓRFICA: mármore a partir do calcário, corneana a partir do xisto argiloso (metamorfismo de contacto).",
+      "hist6": "6 · A meteorização decompõe a rocha da superfície em SOLO. Ainda se está a formar hoje, por isso é a camada mais jovem.",
       "core_edge": "Bordo em camadas",
       "core_rim": "Orla cozida",
       "core_centre": "Centro do plutão",
@@ -53994,7 +56507,12 @@
         "click_or_x_to_dig": "clica ou X para escavar",
         "cooling": "A arrefecer…",
         "heat_percent": "{pct}% de calor",
-        "hover_depth": "Profundidade ≈ {depth} km · {temp}"
+        "hover_depth": "Profundidade ≈ {depth} km · {temp}",
+        "cause_cutaway": "a vista em corte retirou o teu ponto de entrada habitual",
+        "cause_lens": "a lente de foco está a esconder o teu ponto de entrada habitual",
+        "cause_history": "esse terreno ainda não se formou neste momento da história",
+        "cause_hazard": "o teu ponto de entrada habitual está mesmo ao lado de rocha fundida",
+        "cause_dug": "o teu ponto de entrada habitual já foi escavado"
       },
       "rock_type": {
         "sedimentary": "Sedimentar",
@@ -54031,7 +56549,50 @@
         "adjust_trajectory": "Ajustar a trajetória",
         "end_bore": "Terminar sondagem",
         "relocate": "Mudar de lugar",
-        "pack": "Arrumar"
+        "pack": "Arrumar",
+        "steady": "constante",
+        "mixed": "mista",
+        "volatile": "instável",
+        "risk_clear": "baixo",
+        "risk_caution": "moderado",
+        "risk_limited": "alto",
+        "trajectory_summary": "{recoverable}/{requested} recuperáveis · resistência {variability} · mudanças de carga: {shifts} · risco de limite {risk}",
+        "control_angle_changed": "Ângulo {from}° → {to}° · profundidade mantida em {depth}",
+        "control_depth_changed": "Profundidade {from} → {to} intervalos · ângulo mantido em {angle}°",
+        "finding_consistent": "Estes ensaios de sondagem em par recuperaram sequências semelhantes.",
+        "finding_mixed": "Estes ensaios de sondagem em par partilham parte da sequência e acrescentam evidências diferentes.",
+        "finding_different": "Estes ensaios de sondagem em par recuperaram sequências diferentes; outro ensaio controlado reforçaria a interpretação.",
+        "control_hold_angle": "Mantém o ângulo em {angle}° · muda a profundidade {from} → {to}",
+        "control_hold_depth": "Mantém a profundidade em {depth} intervalos · muda o ângulo {from}° → {to}°",
+        "question_depth": "Uma sondagem de {depth} intervalos acrescenta outra formação recuperada se o ângulo ficar em {angle}°?",
+        "question_angle": "Mudar para {angle}° altera a sequência recuperada se a profundidade ficar em {depth} intervalos?",
+        "pristine": "Intacto",
+        "stable": "Estável",
+        "damaged": "Danificado",
+        "core_sample": "Testemunho de sondagem",
+        "interval_summary": "Testemunho: {label} · {name} · {pct}% de integridade",
+        "pristine_streak": "série de intactos {n}",
+        "next_formation": "Próxima formação: carga {load}. Escolhe o avanço {feed}.",
+        "formation_scan": "Análise da formação. Carga {load}. Escolhe o avanço {feed}.",
+        "guide_first": "Nota C, 85% de integridade e recuperar o alvo ou um limite protegido depois de 75%",
+        "guide_top": "Nível máximo de operador alcançado",
+        "guide_mastered": "Meta de domínio: classificação de programa 175 com 97% de integridade",
+        "guide_advanced": "Meta avançada: classificação de programa 135 com 92% de integridade",
+        "need_grade_c": "Precisas de nota C",
+        "need_integrity": "Precisas de 85% de integridade",
+        "need_recovery": "Recupera 75% e termina no alvo ou num limite protegido",
+        "guide_retry": "Tenta de novo para certificar esta trajetória",
+        "title_master": "Mestre Operador de Sondagem",
+        "title_certified": "Operador de Sondagem Certificado",
+        "title_specialist": "Especialista em Sondagem Direcional",
+        "title_qualified": "Operador Qualificado",
+        "title_training": "Operador em formação",
+        "stop_water": "limite de água",
+        "stop_thermal": "limite térmico",
+        "stop_rock": "limite de rocha",
+        "stop_existing": "sondagem existente",
+        "stop_operator": "paragem pedida pelo operador",
+        "stop_target": "profundidade-alvo"
       },
       "tool_pick": "Picareta",
       "tool_drill": "Berbequim",
@@ -54081,7 +56642,6 @@
         "granite_basement": "Soco granítico",
         "granite_pluton": "Plutão de granito",
         "marble": "Mármore",
-        "hornfels_schist": "Corneana / xisto",
         "magma_chamber": "Câmara magmática",
         "basalt": "Basalto",
         "roots_and_recent_shells": "Raízes e conchas recentes",
@@ -54144,7 +56704,8 @@
         "gneiss": "Gnaisse",
         "leucogranite": "Leucogranito",
         "suture_zone_ophiolite": "Ofiolito da zona de sutura",
-        "continental_crust_and_root": "Crosta continental e raiz"
+        "continental_crust_and_root": "Crosta continental e raiz",
+        "hornfels": "Corneana"
       },
       "world": {
         "crust": "Crosta em camadas",
@@ -54301,7 +56862,6 @@
         "tfeb018a4": "~2 m de extensão do espécime (esquemático)",
         "tbdf7a6b8": "Parede da cavidade → centro",
         "t9b5d1d4d": "Lê o crescimento dos minerais para dentro a partir da parede de basalto. O centro aberto não está vazio por acaso: guarda o espaço onde os cristais cresceram.",
-        "tc0505980": "Raio da Terra: 6371 km",
         "t823ebddb": "Superfície → centro",
         "tf02d00ff": "É um corte radial, não uma pilha plana. Usa as camadas e o sinal sísmico para deduzir o estado.",
         "tff54d653": "~200 km de intervalo de profundidade (esquemático)",
@@ -54381,7 +56941,6 @@
         "tcb223aee": "Calcário COZIDO pelo plutão próximo (metamorfismo de contacto) → recristalizado.",
         "t2386cbec": "Calcite recristalizada",
         "t3a30acf9": "Voltou a ser cozido quando chegou a intrusão.",
-        "t0e9f23c8": "Xisto argiloso cozido + comprimido junto ao plutão → duro, por vezes com granada.",
         "tfa682d26": "Mica, granada",
         "t0c42c122": "Rocha fundida — a origem. Arrefece e forma rocha ígnea, e o ciclo recomeça.",
         "t113ed003": "—",
@@ -54395,7 +56954,6 @@
         "tc3ef4d2b": "Sílica microcristalina que reveste a parede da cavidade — a primeira camada a precipitar da água rica em minerais.",
         "t6aaf53bf": "Quartzo criptocristalino",
         "td44b85bd": "Cresceu da parede para dentro ao longo de milénios.",
-        "t87b7de1c": "Bandas concêntricas depositadas à medida que a água rica em minerais passava em impulsos — cada banda é um episódio de crescimento.",
         "t69ca338f": "Calcedónia em bandas",
         "ta63f612e": "A banda mais antiga está junto à parede e a mais jovem em direção ao centro.",
         "t444ae411": "Quartzo límpido que cresceu lentamente para dentro da cavidade ABERTA — crescimento lento + espaço = cristais euédricos grandes.",
@@ -54411,7 +56969,6 @@
         "t571bf2d5": "A sua convecção lenta impulsiona a tectónica de placas.",
         "td9e83328": "Rocha SÓLIDA mais quente e mais densa, sob uma pressão enorme — continua a fazer convecção, só que de forma extremamente lenta.",
         "tf77b7d05": "Bridgmanite",
-        "t9a5839ba": "Cerca de dois terços do volume da Terra.",
         "td1df054f": "Ferro–níquel LÍQUIDO. A sua convecção gera o campo magnético da Terra — o geodínamo — o escudo que desvia o vento solar.",
         "t86eee16b": "Ferro–níquel fundido",
         "teea2e908": "As ondas S não o conseguem atravessar — é ASSIM que sabemos que é líquido.",
@@ -54426,7 +56983,6 @@
         "tf19a74c7": "Forma-se nas dorsais oceânicas e é reciclada aqui.",
         "t9dec18bd": "Granito espesso e de BAIXA densidade. Flutua demasiado para se afundar — por isso fica por cima enquanto a placa oceânica mergulha por baixo.",
         "ta1808749": "Granito",
-        "t9614ae07": "A jangada flutuante que nunca entra em subducção.",
         "t14d668f9": "A placa oceânica a dobrar-se PARA BAIXO, para dentro do manto — FRIA e densa, arrasta consigo a água do mar presa nos seus minerais. À medida que se torna mais densa e passa a eclogito, o seu próprio peso puxa o resto da placa (tração da placa).",
         "t95d7a06c": "Basalto → eclogito",
         "te183393c": "Mais fria do que o manto à sua volta → dentro dela ocorrem sismos profundos.",
@@ -54446,7 +57002,6 @@
         "td5fbbd78": "A marca da subducção à superfície.",
         "t21833326": "Mais fundo longe do eixo: à medida que a crosta oceânica envelhece e arrefece, fica mais densa e AFUNDA-SE — a profundidade do fundo oceânico é um relógio.",
         "t3207303d": "Menos fundo mesmo por cima do eixo da dorsal, jovem e quente.",
-        "tcdca8dea": "Uma chuva lenta de conchas de plâncton e argila — alguns cm por cada MIL anos. Nada sobre a crosta acabada de se formar no eixo; mais espesso quanto mais antigo (mais afastado) for o fundo oceânico.",
         "t85423a53": "Vasa, argila",
         "t7132f96c": "A sua espessura é um segundo relógio: mais sedimento = fundo oceânico mais antigo.",
         "t654797b7": "A lava que sai em erupção para a água do mar fria solidifica em massas com forma de almofada. Os minerais de ferro lá dentro fixam a direção do campo magnético da Terra ao arrefecerem.",
@@ -54454,22 +57009,18 @@
         "t547c59b6": "Registou a direção atual do campo quando arrefeceu.",
         "tf235ccf6": "O mesmo basalto em almofada — mas arrefeceu quando o campo magnético da Terra apontava para o OUTRO lado. As faixas são o espelho umas das outras nos dois lados do eixo.",
         "tf1e77e15": "Basalto (polaridade invertida)",
-        "t53f1b26a": "Foi o padrão simétrico de faixas que PROVOU a expansão em 1963.",
         "t8b19f39c": "Milhares de fendas verticais de magma, cada uma um episódio de expansão: a crosta separa-se, o magma preenche o espaço, solidifica e é partido pela fenda SEGUINTE.",
         "t97106b90": "Diabase",
         "t5c3121f1": "Cada dique regista um momento de expansão.",
         "t58e48c81": "O fundo da câmara magmática, que arrefeceu LENTAMENTE em profundidade e formou cristais grosseiros — quimicamente é o mesmo magma do basalto em almofada por cima, arrefecido a uma velocidade diferente.",
         "ta7d3343f": "Gabro (basalto de grão grosseiro)",
-        "tf7f2477b": "Camada inferior da sequência ofiolítica.",
         "t417ffa39": "Uma lente fina de magma por baixo do vale de rifte, alimentada pelo manto que sobe e funde quando a pressão baixa (fusão por descompressão — não é preciso calor extra).",
         "t7b2b6062": "Magma basáltico",
         "tfe0c558e": "Alimenta todas as erupções e todos os diques.",
         "t13f124f4": "A água do mar infiltra-se na crosta jovem e quente, dissolve metais e volta a sair em jato a ~350 °C como uma FUMAROLA NEGRA, precipitando chaminés de sulfuretos metálicos.",
         "t5fc6845b": "Sulfuretos metálicos",
         "t4646726b": "Aqui, teias alimentares inteiras vivem da química, não da luz do Sol.",
-        "tdf46de48": "Manto que ficou rígido, preso à base da crosta. Quase AUSENTE no eixo quente; fica mais espesso com a idade, à medida que a placa arrefece — placas antigas são placas espessas.",
         "t2fe32ba0": "A sua espessura crescente é um terceiro relógio.",
-        "td2f16e49": "Manto sólido que flui lentamente para cima por baixo do eixo. À medida que sobe, a descida da pressão deixa fundir alguns por cento dele — a origem de TODA a crosta oceânica nova.",
         "t44ec4f1d": "Sobe exatamente onde as placas se afastam.",
         "t470f5077": "A placa por baixo deste oceano está em movimento — e afasta cada vulcão da sua fonte de magma.",
         "tb7ec8d54": "O tapete rolante.",
@@ -54484,8 +57035,6 @@
         "tf83587e7": "O elo mais antigo que se vê — a cadeia é um gravador do movimento da placa.",
         "tb3057413": "Fundo oceânico comum sobre o qual os vulcões se constroem — formou-se há muito tempo numa dorsal oceânica.",
         "t4dd8a63f": "Viaja com a placa em movimento.",
-        "t2f630dab": "A tampa rígida de manto que se move com a crosta como uma só placa — a pluma tem de abrir caminho com o seu calor através de TUDO isto para chegar à superfície.",
-        "t315a1d37": "Move-se; a pluma por baixo não.",
         "tf911f889": "Material fundido da cabeça da pluma que abre caminho para cima através da placa e da crosta e alimenta APENAS o vulcão que está agora por cima.",
         "tae138e70": "Abandona cada ilha à medida que a placa a leva.",
         "t12b675fc": "Uma coluna de manto SÓLIDO mas muito quente (~200 °C acima do que o rodeia) que sobe lentamente das profundezas do manto. Perto do topo, a descida da pressão deixa-a fundir parcialmente.",
@@ -54503,7 +57052,6 @@
         "ted6aad63": "Calcite, fósseis marinhos",
         "tb4c3eaba": "Formou-se debaixo de um mar; foi levantado pela colisão.",
         "tb51f8eb2": "Uma rutura pouco inclinada onde uma fatia de crosta foi empurrada para cima e por cima de outra. Rocha esmagada e estirada marca o plano. Corta as camadas, por isso é mais jovem do que elas (intersecção).",
-        "tde88564b": "Farinha de falha, milonito",
         "td2677d0e": "Ativa durante a colisão — ainda desliza hoje (Nepal, 2015).",
         "t33195dfd": "Xisto argiloso enterrado a ~15 km sob a crosta espessada, aquecido e comprimido durante milhões de anos até a sua argila recristalizar em folhas brilhantes de mica — metamorfismo REGIONAL, ao longo de toda uma cadeia montanhosa, não uma cozedura junto a um único plutão.",
         "t608cad91": "Mica, granada, quartzo",
@@ -54521,7 +57069,6 @@
         "t3fe95960": "Granito, gnaisse",
         "td5261685": "A crosta mais espessa da Terra.",
         "tdbda0369": "Manto rígido soldado por baixo das duas placas. A placa que penetra ainda empurra a ~5 cm por ano, por isso a colisão — e o levantamento — continuam hoje.",
-        "t5409d20c": "Manto SÓLIDO que flui lentamente. A raiz da crosta pressiona-o e ele empurra de volta — é esse apoio por flutuação que sustenta a cordilheira.",
         "tdd28bfa5": "Em formação hoje — demasiado jovem para ser um fóssil de idade.",
         "t623cd5a6": "Os fósseis de plantas mostram que havia terra perto. As marcas de ondulação ao lado deles não são fósseis: foi a água em movimento ou o vento que moldou a areia. Juntos, apontam para rios, deltas ou praias.",
         "ta5ac6655": "As trilobites rastejavam no fundo do mar e os graptólitos andavam à deriva na água por cima; os seus restos afundaram em água calma, onde se depositava lama fina. Ambos são fósseis de idade que ajudam a datar camadas.",
@@ -54578,7 +57125,6 @@
         "t5562931e": "Crosta mais fria que flutua",
         "tbc122a0d": "Placa que desce por baixo da fossa",
         "t0ceba3b4": "Anomalia fria da placa",
-        "t15f39af7": "Manto rígido por baixo de uma placa",
         "t400809dc": "Domínio rígido da placa",
         "tea4d0c0e": "Manto por cima da placa que desce",
         "tba211ecc": "Cunha quente, com água infiltrada",
@@ -54596,7 +57142,6 @@
         "t51125ca5": "Polaridade normal fixada durante o arrefecimento",
         "t23b94d44": "Faixa magnética em espelho",
         "t2c4c0955": "A polaridade invertida regista outro intervalo",
-        "t21596fb3": "Por baixo da crosta do eixo da dorsal",
         "t8a3250d0": "Cada dique regista uma abertura da crosta",
         "tf80b3baf": "Crosta oceânica inferior",
         "t58db0928": "O arrefecimento lento forma cristais grosseiros",
@@ -54627,7 +57172,6 @@
         "t523cf219": "Manto dúctil à volta da pluma",
         "t7a6b8930": "Domínio do manto envolvente",
         "t84555aa9": "Bacia de antepaís na frente da cordilheira",
-        "t6437e984": "Nunca foi enterrado — o enchimento mais jovem",
         "tc60e8d20": "Fatias do bloco superior empilhadas por cavalgamentos",
         "t1cb436d7": "Enterramento pouco profundo — dobrados, não recristalizados",
         "t38b07861": "Crista do cume, ~8 km acima do nível do mar",
@@ -54683,7 +57227,6 @@
         "t831b383d": "Estás em cima de basalto fresco — lava que entrou em erupção e solidificou depressa.",
         "t11532b07": "Estás no basalto hospedeiro — a escoada de lava antiga onde a bolha de gás ficou presa.",
         "tf6b2e1d1": "Estás na parede da cavidade — a primeira sílica a precipitar.",
-        "t0a70c734": "Estás nas bandas de ágata — cada banda é um impulso de crescimento.",
         "tc3a5864c": "Estás no meio de quartzo que cresceu PARA DENTRO do espaço aberto — espaço = cristais grandes.",
         "tc58200e2": "Estás na ametista — quartzo roxo, com a cor dada por vestígios de ferro.",
         "tf2adcee0": "Estás na crosta fina e frágil — a camada onde vivemos.",
@@ -54692,7 +57235,6 @@
         "t468a63a9": "Estás no núcleo externo de ferro LÍQUIDO — este fluxo produz o campo magnético da Terra.",
         "ta91733f2": "Estás no núcleo interno SÓLIDO — mais quente do que o núcleo externo, solidificado pela pressão.",
         "t93fa2fab": "Estás no oceano por cima da placa que está prestes a mergulhar.",
-        "t26c98fc7": "Estás na crosta oceânica densa — pesada o suficiente para se afundar e entrar em subducção.",
         "t2fb5517e": "Estás na crosta continental que flutua — é leve demais para entrar em subducção, por isso fica por cima.",
         "t3a3ec4a5": "Vais com a placa PARA BAIXO — fria e densa, a levar água do mar para dentro do manto.",
         "t1d827d94": "Estás no manto rígido soldado por baixo da crosta — juntos formam uma só placa.",
@@ -54708,14 +57250,11 @@
         "t1c7e0975": "Estás no gabro — o mesmo magma das almofadas por cima, arrefecido lentamente em cristais grosseiros.",
         "t9ea51623": "Estás na lente magmática axial — é mesmo aqui que se forma crosta totalmente nova.",
         "t2f794171": "Estás numa fumarola negra — água mineralizada a 350 °C a jorrar para o mar frio.",
-        "t29970688": "Estás no manto rígido preso à crosta — fica mais espesso à medida que a placa envelhece.",
-        "t723863a8": "Estás no manto em ascensão — rocha sólida que funde alguns por cento quando a pressão baixa.",
         "t24221af7": "Estás no oceano por cima de uma placa EM MOVIMENTO — o tapete rolante da cadeia.",
         "tbfa3aa50": "Estás no vulcão em escudo ativo — hoje diretamente por cima da pluma.",
         "t9c709fdb": "Estás numa ilha extinta — afastada da sua fonte de magma, agora a sofrer erosão.",
         "tf3e03604": "Estás num monte submarino afundado — uma antiga ilha que sofreu erosão e se afundou.",
         "ta736b0ae": "Estás na crosta oceânica comum — a placa que leva os vulcões para longe.",
-        "t1b782c4a": "Estás na tampa rígida de manto — a pluma tem de abrir caminho com o seu calor através de tudo isto.",
         "tc3e86c1a": "Estás na conduta — material fundido da pluma que alimenta APENAS o vulcão por cima.",
         "t5b48b355": "Estás na pluma do manto — rocha sólida, ~200 °C mais quente do que o meio à sua volta.",
         "tc794a57b": "Estás no manto dúctil comum — a pluma é só um pouco mais quente do que isto.",
@@ -54739,7 +57278,6 @@
         "t1ee457eb": "A placa está MAIS FRIA do que o manto à sua volta — é por isso que dentro dela se dão sismos profundos.",
         "te3476ac4": "A crosta continental flutua demasiado para entrar em subducção — por isso é a placa oceânica densa que mergulha por baixo dela.",
         "t47f35f4c": "A crosta jovem fica ALTA porque está quente e flutua — o fundo oceânico afunda-se à medida que arrefece e envelhece.",
-        "tc281f9cf": "Mito desfeito: as faixas magnéticas simétricas são um gravador das inversões do campo — a prova da expansão, de 1963.",
         "tae4b06e9": "A maior parte do vulcanismo da Terra acontece aqui — debaixo de água, sem ninguém ver, ao longo de 65000 km de dorsal.",
         "te44070af": "Uma fumarola negra: água rica em minerais a ~350 °C. Aqui, a vida funciona à base de QUÍMICA, não de luz do Sol.",
         "t76cf8d12": "Cada um destes diques verticais é um episódio de expansão solidificado — aqui a crosta separou-se literalmente.",
@@ -54783,7 +57321,712 @@
         "t97374728": "sólido (já esteve perto de fundir, agora à superfície)",
         "tb84586e4": "sólido (magma da crosta, já cristalizado)",
         "tb4b83a90": "sólido (fundo do mar aprisionado)",
-        "tb9dd28d5": "sólido (raiz flutuante)"
+        "tb9dd28d5": "sólido (raiz flutuante)",
+        "tbe65e0a1": "Testa-te: datação relativa",
+        "t366aea19": "Calcário",
+        "tc93700f0": "Arenito",
+        "tf033ba1e": "Testa-te: cavernas de cristais",
+        "t72221149": "Testa-te: o interior da Terra",
+        "ta8a1102e": "Testa-te: subducção",
+        "t0c5e2350": "Testa-te: expansão do fundo oceânico",
+        "tb5dbb816": "Testa-te: pontos quentes",
+        "t38d12207": "Testa-te: cordilheiras",
+        "t87a0a1ca": "Cunha do manto",
+        "tb86f3233": "Pluma do manto",
+        "t8086eaea": "Guia da aula do Explorador geológico",
+        "ta5c3e054": "Investigar",
+        "tdf593b47": "Diamante",
+        "t8e5d3664": "Que camada é MAIS ANTIGA?",
+        "t344c3c37": "Formaram-se ao mesmo tempo",
+        "t5a61c356": "O calcário está por baixo do arenito, e as camadas inferiores depositaram-se primeiro — sobreposição.",
+        "tf0bed97c": "O plutão de granito é mais antigo ou mais jovem do que o xisto argiloso que corta?",
+        "t8b0514c4": "Impossível saber pela intersecção",
+        "t7d50a480": "Mais jovem",
+        "ta6ead101": "Mais antigo",
+        "t63506a05": "Uma estrutura que corta outra tem de ser mais jovem — intersecção. O plutão corta o xisto argiloso, por isso veio depois.",
+        "te4bb474b": "Como se formou a orla de mármore?",
+        "t0a82ffc6": "Conchas acumularam-se num mar",
+        "t775d416f": "Um rio deixou ali areia e lama",
+        "t2b902112": "O plutão cozeu o calcário",
+        "t1c4ccece": "O mármore é calcário recristalizado pelo calor do plutão — metamorfismo de contacto.",
+        "t279e9dbb": "Onde esperarias encontrar fósseis?",
+        "tc49227a8": "No xisto argiloso",
+        "tf7d4b181": "No plutão de granito",
+        "t33fef77c": "No magma",
+        "tddf9fd78": "No topo",
+        "t9f150737": "A meio do testemunho",
+        "tf7f54e46": "Na base",
+        "t9c5ddcc1": "As camadas empilham-se da mais antiga para a mais recente, por isso a rocha mais profunda é a mais antiga — sobreposição.",
+        "tc4215fe6": "Porque é que os cristais do geodo são tão GRANDES?",
+        "t65565630": "Foram comprimidos pela pressão",
+        "t02c0a0d2": "Cresceram muito depressa em fluido quente",
+        "t3c60dc94": "Cresceram devagar, com espaço livre",
+        "t0cca831c": "Crescimento lento mais espaço para crescer dá cristais grandes — a mesma regra que torna o granito de grão grosseiro.",
+        "te686efba": "O que formou a cavidade original?",
+        "t50f94388": "Água subterrânea ácida a dissolver calcário",
+        "t414d313f": "Uma bolha de gás presa na lava a arrefecer",
+        "tf626818b": "Um sismo que abriu uma fenda na rocha",
+        "tafab7853": "O gás preso enquanto a lava arrefecia deixou um buraco redondo (uma vesícula). Muito mais tarde, água subterrânea rica em minerais infiltrou-se e revestiu-o.",
+        "tc7e6604f": "A cor roxa da ametista vem de…",
+        "tff2f9e37": "Vestígios de ferro e irradiação natural",
+        "t0a400c79": "Sais de cobre deixados por fluidos quentes",
+        "tf83e607b": "Corante roxo de plantas antigas",
+        "tda532c7a": "Impurezas de ferro no quartzo, alteradas pela radiação natural, dão à ametista a sua cor roxa.",
+        "t29a537f8": "O que se formou PRIMEIRO?",
+        "t279a16b4": "Ambos cresceram ao mesmo tempo",
+        "tadffe9b0": "As pontas de quartzo no interior",
+        "t6b03b377": "A crosta precipitou primeiro na parede da cavidade; depois, os cristais cresceram PARA DENTRO, no espaço livre.",
+        "ta218f3a7": "O manto é sobretudo…",
+        "t597cad80": "Lava fundida que se agita devagar",
+        "t83658bf2": "Fragmentos soltos sob pressão",
+        "t255bb64d": "Rocha sólida que flui devagar",
+        "tcea014d9": "O manto é SÓLIDO — faz convecção por fluência ao longo de milhões de anos; só uma pequena fração funde perto do topo.",
+        "tb074e43d": "Como sabemos que o núcleo EXTERNO é líquido?",
+        "t2d56b94a": "A lava dos vulcões veio de lá",
+        "tcc234821": "Um furo profundo recolheu amostras",
+        "t4e8fb189": "As ondas S não o atravessam",
+        "t0d262cf6": "As ondas de cisalhamento não se propagam em líquidos — a sua sombra no lado oposto da Terra revela o núcleo externo líquido.",
+        "t227c3bc9": "O núcleo interno está MAIS QUENTE do que o núcleo externo, mas é sólido. Porquê?",
+        "tc25e5093": "É feito de um metal diferente",
+        "t9a1013ef": "A pressão eleva o ponto de fusão do ferro",
+        "t33153df1": "O seu metal tem densidade muito baixa",
+        "tdb3e0f3f": "À pressão do núcleo interno, o ponto de fusão do ferro sobe acima da temperatura local — fica sólido pela compressão, apesar dos ≈5200 °C.",
+        "t5fcb8e1d": "O campo magnético da Terra é gerado por…",
+        "t0676d02e": "Convecção de ferro líquido no núcleo externo",
+        "tffecdd47": "Um íman gigante em barra no centro",
+        "tba9d2499": "Rotação do núcleo interno de ferro sólido",
+        "t4314a370": "O geodínamo: o ferro-níquel líquido em movimento no núcleo externo gera o campo que nos protege.",
+        "t62688c36": "O magma dos vulcões do arco vem de…",
+        "tb7f49e19": "Calor do atrito entre as placas",
+        "tec7215e2": "Água da placa a fundir a CUNHA do manto",
+        "tb21c0983": "A própria placa em subducção a fundir",
+        "t31e07489": "A água libertada pela placa baixa o ponto de fusão da cunha — é a cunha que funde em parte, não a placa.",
+        "t4c7c9f67": "Porque é que a placa OCEÂNICA se afunda?",
+        "t3a91e3bb": "É mais fria e mais densa",
+        "tf149c010": "É mais fina e mais fraca",
+        "t5c5dddc6": "Transporta sedimentos mais pesados",
+        "t23e2284f": "Os sismos profundos acontecem…",
+        "t28b25a6d": "Na cunha quente do manto",
+        "t652b9dc9": "Ao longo do fundo da fossa oceânica",
+        "td4888bc8": "Dentro da placa fria",
+        "t217f97ef": "Só a placa fria e rígida é frágil o suficiente para partir em profundidade — a cunha quente, pelo contrário, flui.",
+        "tb93fdf02": "Porque é que a crosta continental não entra em subducção?",
+        "td6e6a990": "Flutua demasiado",
+        "tb4b9dff1": "Está presa ao manto",
+        "t1a3b11a1": "É demasiado resistente",
+        "tec174e88": "A crosta granítica tem baixa densidade — como uma rolha, flutua demasiado para ser empurrada para baixo.",
+        "t6af94727": "As faixas magnéticas simétricas provam…",
+        "t62410a04": "O novo fundo oceânico afasta-se do eixo",
+        "te6d85da4": "O campo magnético da Terra nunca muda",
+        "t56c44c14": "O fundo oceânico afunda por igual",
+        "t7d9689dd": "O basalto a arrefecer regista o campo; as inversões pintam faixas iguais nos DOIS flancos — a prova da expansão, de 1963.",
+        "t85877b95": "Porque é que a dorsal fica ALTA em relação ao fundo oceânico antigo?",
+        "t9caba3f0": "Sedimentos espessos elevam-na",
+        "te09a0c0e": "A lava acumula-se ao longo do eixo",
+        "t84790934": "A crosta jovem é quente e flutua",
+        "t48347652": "A crosta jovem e quente fica alta; ao envelhecer, arrefece, fica mais densa e AFUNDA-SE — a profundidade regista a idade.",
+        "t59039333": "Onde é MAIS ESPESSO o sedimento do mar profundo?",
+        "t1539f00a": "Mesmo no eixo",
+        "tf51d9ff6": "Longe do eixo",
+        "t10e24c9a": "Igual em todo o lado",
+        "t731f8c04": "Os sedimentos caem devagar, sem parar — o fundo oceânico mais antigo (mais afastado) acumulou mais. O eixo é novíssimo e está a nu.",
+        "te6cef133": "O gabro e o basalto em almofada são…",
+        "tcd8ff7e6": "A mesma rocha com duas idades",
+        "tb8428ba4": "O mesmo magma arrefecido a ritmos diferentes",
+        "td018aad8": "Magmas vindos de duas fontes diferentes",
+        "tc277fb5f": "O mesmo magma basáltico: em erupção na água do mar = almofadas de grão fino; arrefecido devagar em profundidade = gabro de grão grosseiro.",
+        "t494a20be": "A CADEIA de ilhas existe porque…",
+        "t22e6be28": "A PLACA move-se sobre uma pluma ~fixa",
+        "tea5cbe61": "Muitas bocas em erupção ao mesmo tempo",
+        "t89af8fa6": "A pluma desloca-se por baixo da placa",
+        "tcf46e971": "Que ilha é a MAIS ANTIGA?",
+        "t75586d38": "A que está agora por cima da pluma",
+        "tb52ba78f": "A mais afastada da pluma",
+        "tbefd1cfa": "A maior ilha da cadeia",
+        "t0a64135a": "A idade aumenta ao longo da cadeia com a distância — essa progressão de idades é uma prova clássica de que as placas se movem.",
+        "t3754474e": "Um vulcão em escudo tem encostas suaves porque…",
+        "tf80f326e": "O seu basalto fluido corre para longe",
+        "t35b76917": "A sua lava espessa explode para cima",
+        "t12313d50": "O vento e a chuva desgastaram-no",
+        "t55f14866": "O basalto quente e fluido espalha-se em camadas finas — escudos largos, ao contrário dos estratovulcões de arco, íngremes e explosivos.",
+        "t8be4fe28": "Os vulcões de ponto quente situam-se…",
+        "te56c7d18": "Por cima de fossas oceânicas profundas",
+        "tebcec19a": "Só em limites de placas",
+        "tc8c5a1fc": "No meio das placas",
+        "t42844ba0": "Porque é que há fósseis de conchas marinhas no cume?",
+        "t3f4bee56": "As aves levaram as conchas lá para cima",
+        "t09b6d92d": "A colisão ergueu um antigo fundo do mar",
+        "t1fe2d55e": "Um grande dilúvio cobriu em tempos o pico",
+        "t1894184d": "O calcário formou-se num fundo de mar entre dois continentes; quando colidiram, a crosta espessou e ergueu-o ~8 km.",
+        "t7c461d82": "O gnaisse do núcleo da cordilheira formou-se…",
+        "tac66ae02": "À superfície, de escoadas de lava a arrefecer",
+        "tc9f8e46e": "A uns 25 km de profundidade; a erosão expô-lo depois",
+        "t4f93d24c": "Numa zona de falha pouco profunda",
+        "tc0ae77ac": "Metamorfismo regional: o enterramento profundo sob a crosta espessada recristalizou a rocha; mais tarde, a erosão removeu tudo o que estava por cima.",
+        "t4b9c7e1e": "Porque é que esta cordilheira NÃO tem vulcões?",
+        "tbf8cdfcd": "O manto aqui é demasiado frio para fundir",
+        "t6eefe907": "A crosta aqui é demasiado espessa",
+        "t549a6fd8": "Não há água de placa nem pluma a fundir o manto",
+        "tf95c39a6": "Os vulcões precisam de magma do manto. Sem placa em subducção e sem pluma, o manto continua sólido — só se forma um pouco de fusão da crosta (leucogranito), que solidifica em profundidade.",
+        "tfc777edd": "O que sustenta a cordilheira?",
+        "t6e0acc96": "Uma raiz crustal profunda e flutuante (isostasia)",
+        "tf38bdecc": "As duas placas continuam a empurrar",
+        "tfe255a3a": "Magma a empurrar toda a cordilheira para cima",
+        "t48f45c82": "Como um icebergue, a cordilheira flutua sobre uma raiz crustal com ~70 km de profundidade. O impulso de flutuação do manto sustenta a massa por cima.",
+        "tc42bcae6": "As camadas de cima são sempre as mais antigas.",
+        "t449e739d": "As camadas sedimentares depositam-se normalmente por cima de camadas mais antigas. Lê da superfície para baixo para encontrares idades relativas mais antigas.",
+        "t87f7a1c9": "Uma estrutura que corta a rocha tem de ser mais antiga.",
+        "ta4d764eb": "A estrutura que corta teve de chegar depois da rocha que corta, por isso um plutão ou uma falha é mais jovem do que as camadas que atravessa.",
+        "tad570b37": "O mármore forma-se pela acumulação de conchas ou com areia de rio.",
+        "t996d2a7b": "O mármore é calcário transformado pelo calor e pela pressão. A composição química original mantém-se, mas a textura recristaliza.",
+        "t0f0e2f34": "Os fósseis sobrevivem dentro do granito ou do magma.",
+        "t038c2665": "Os fósseis preservam-se mais facilmente em rochas sedimentares. A fusão e o aquecimento forte destroem o registo fóssil original.",
+        "t328956ba": "O topo de um testemunho de sondagem é a parte mais antiga.",
+        "t5f513d56": "Um testemunho lê-se da superfície para baixo: o topo é o mais jovem e as camadas mais profundas são mais antigas, a não ser que as rochas tenham sido perturbadas.",
+        "teb716299": "Os cristais grandes devem ter crescido depressa.",
+        "t8748a8de": "Os cristais grandes precisam de tempo e de espaço livre. O crescimento lento deixa os átomos organizarem-se em faces de cristal maiores.",
+        "t996de95f": "A cavidade foi aberta por dissolução do calcário, como uma gruta.",
+        "tde544ba4": "Esta cavidade começou como uma bolha de gás presa na lava a arrefecer. Muito mais tarde, água subterrânea rica em minerais infiltrou-se e revestiu o espaço livre.",
+        "tc1cd486a": "O roxo da ametista vem do cobre.",
+        "t46b08f7c": "Vestígios de ferro no quartzo, junto com a irradiação natural, produzem a cor roxa.",
+        "t83f58378": "As pontas dos cristais formaram-se antes da crosta da parede.",
+        "t7db9b52c": "A crosta precipitou primeiro na parede da cavidade. Depois, o quartzo e a ametista cresceram para dentro, no espaço livre.",
+        "t7ffd3c38": "O manto é um oceano global de lava líquida.",
+        "t29c38b6b": "A maior parte do manto é rocha sólida que flui devagar por fluência plástica. Só pequenas regiões fundem em parte.",
+        "tceba6a2c": "Os cientistas perfuraram até ao núcleo externo.",
+        "tae680085": "As ondas S não se propagam em líquidos. O padrão da sua sombra permite aos cientistas deduzir, a partir da superfície, que o núcleo externo é líquido.",
+        "tf22c81ac": "O núcleo interno é sólido porque é feito de outro metal.",
+        "tef31eeb5": "O núcleo interno é sobretudo o mesmo sistema de ferro-níquel; a pressão imensa eleva o ponto de fusão e mantém-no sólido.",
+        "t18b0d1ae": "Só o núcleo interno sólido gera o campo magnético.",
+        "teeb9b5bb": "A convecção no núcleo externo líquido move ferro-níquel condutor e alimenta o geodínamo.",
+        "t32660398": "A própria placa que desce funde e forma o vulcão.",
+        "ta3d68ff6": "A água libertada pela placa baixa o ponto de fusão da cunha do manto. A cunha funde em parte e fornece o magma do arco.",
+        "t724dbe55": "A placa oceânica afunda-se porque é mais fina.",
+        "t6baace4b": "A litosfera oceânica antiga é fria e densa. É a densidade e a flutuabilidade, não só a espessura, que fazem a placa afundar.",
+        "tab75b6fd": "Os sismos profundos acontecem na cunha quente do manto.",
+        "tdb1b1a7c": "A placa fria e rígida pode partir-se em profundidade. A cunha do manto, mais quente, sobretudo flui em vez de partir.",
+        "t23e81ab6": "A crosta continental fica em cima porque é demasiado resistente.",
+        "tee183b27": "A crosta continental tem densidade relativamente baixa e flutua, por isso resiste a ser puxada para baixo, para dentro do manto.",
+        "td28cd8fb": "As faixas magnéticas provam que o campo da Terra nunca muda.",
+        "t721bf799": "O basalto regista o campo ao arrefecer. As inversões criam faixas iguais dos dois lados, à medida que o novo fundo oceânico se afasta do eixo.",
+        "t8a0e8061": "A dorsal é alta só porque a lava se acumula ali.",
+        "t46462dd1": "A crosta jovem é quente e flutua. À medida que arrefece e fica mais densa, afunda-se ao afastar-se da dorsal.",
+        "t28ae89ce": "O fundo oceânico mais recente tem os sedimentos mais espessos.",
+        "t7e904c14": "Os sedimentos acumulam-se com o tempo, por isso o fundo oceânico mais antigo, mais longe do eixo, costuma ter mais sedimentos.",
+        "t287f3732": "O basalto em almofada e o gabro vêm de magmas diferentes.",
+        "t71accbea": "Podem formar-se a partir do mesmo magma basáltico: o arrefecimento rápido na água do mar forma almofadas, e o arrefecimento lento em profundidade forma gabro de grão grosseiro.",
+        "t63a14147": "A pluma desloca-se e é assim que forma a cadeia de ilhas.",
+        "t21a04213": "Uma pluma relativamente fixa fornece magma enquanto a placa tectónica se move por cima dela e leva os vulcões mais antigos para longe.",
+        "t3898f995": "A ilha por cima da pluma é a mais antiga.",
+        "tb1e7ff6e": "A ilha ativa é a mais jovem. A idade costuma aumentar com a distância à pluma, em direção aos montes submarinos extintos e afundados.",
+        "tfe8feef0": "Os vulcões em escudo têm encostas suaves porque a sua lava é espessa e explosiva.",
+        "tb25ba026": "O basalto fluido corre para longe em camadas finas e constrói escudos largos e suaves, e não cones íngremes e explosivos.",
+        "tbcc7150c": "Os vulcões de ponto quente têm de estar em limites de placas.",
+        "t70a61cea": "Os pontos quentes podem ocorrer no interior das placas. A pluma é uma fonte de calor profunda, separada dos processos dos limites de placas, nas dorsais e nas zonas de subducção.",
+        "t4c2b8f66": "Fósseis marinhos num cume significam que a água já cobriu a montanha.",
+        "t2f1cf16a": "A rocha formou-se debaixo de um mar antes de a montanha existir. A colisão espessou a crosta e ergueu esse fundo do mar até ao cume.",
+        "t677c05b1": "O gnaisse do núcleo formou-se à superfície, a partir de lava.",
+        "t2100e775": "O gnaisse é metamórfico: o enterramento profundo cozeu e comprimiu rocha mais antiga. Depois, o levantamento e a erosão expuseram-no.",
+        "t79e2487b": "A rocha de uma cordilheira é demasiado fria para alguma vez fundir.",
+        "td0fd279a": "A crosta espessada funde mesmo um pouco e forma leucogranito. O que falta é magma do manto: sem água de uma placa e sem pluma, não há vulcões.",
+        "tfe6c1a21": "O magma a empurrar de baixo é que sustenta a cordilheira.",
+        "t9a3b5812": "Uma raiz crustal de baixa densidade faz a cordilheira flutuar no manto, tal como um icebergue flutua. Esse equilíbrio é a isostasia.",
+        "te16dd61b": "Numa sequência não perturbada, as camadas sedimentares de baixo depositaram-se antes das camadas que estão por cima.",
+        "t2bc44a58": "Usa este termo quando comparares profundidades num testemunho de sondagem.",
+        "t157ed3e4": "Uma estrutura que corta outra rocha formou-se depois da rocha que corta.",
+        "t3cb1e826": "Usa este termo quando seguires o plutão de granito através das camadas.",
+        "t74c04901": "Metamorfismo de contacto",
+        "t202ab68a": "O calor de um magma próximo transforma a rocha sem a fundir por completo.",
+        "t9fb31a99": "Usa este termo quando comparares o calcário com a orla de mármore.",
+        "tdfec9d63": "Cavidade",
+        "t3c554387": "Usa este termo quando identificares o centro oco.",
+        "t10837b70": "Precipitação",
+        "t42e6c74c": "Os minerais dissolvidos saem da água e formam camadas minerais sólidas ou cristais.",
+        "t8993ccab": "Usa este termo quando explicares como se formaram a crosta e as bandas.",
+        "t85745adb": "Sequência de crescimento",
+        "t736e2904": "Os minerais que se formam primeiro ficam junto à parede; os cristais posteriores crescem para dentro, no espaço livre.",
+        "t3a33c85f": "Usa este termo quando ordenares a crosta, as bandas e as pontas dos cristais.",
+        "t2e8bced4": "Sombra sísmica",
+        "tf0435aad": "Uma região onde se registam menos ondas porque uma camada desvia ou bloqueia certas ondas sísmicas.",
+        "t2dc70d89": "Usa este termo quando deduzires que o núcleo externo é líquido a partir das ondas S que faltam.",
+        "t436b1e11": "Convecção",
+        "tfce36889": "Movimento lento que transfere calor através de um material, à medida que circulam zonas mais quentes e mais frias.",
+        "t158cbc8e": "Usa este termo quando descreveres o manto ou o núcleo externo líquido.",
+        "t22be70ba": "Ponto de fusão sob pressão",
+        "td5244c78": "A temperatura a que um material funde pode subir quando a pressão aumenta.",
+        "t38be31f8": "Usa este termo quando explicares porque é que o núcleo interno, mais quente, é sólido.",
+        "t073944cd": "Subducção",
+        "tb7b2074b": "O processo em que uma placa tectónica se dobra e se afunda por baixo de outra placa.",
+        "tcd09f4ec": "Usa este termo quando seguires a placa fria em direção à fossa.",
+        "tdfc380b7": "A parte do manto em forma de cunha por cima de uma placa que se afunda, onde a água ajuda a rocha a fundir em parte.",
+        "t463f7148": "Usa este termo quando localizares a origem do magma do arco.",
+        "tb711dcac": "Fusão induzida por água",
+        "ta9781d36": "A água baixa o ponto de fusão de uma rocha e permite que se forme fusão parcial a uma temperatura mais baixa.",
+        "t3cb1d808": "Usa este termo quando ligares a água da placa ao arco vulcânico.",
+        "t47790b53": "Inversão magnética",
+        "t7e1da830": "Um período em que o campo magnético da Terra aponta no sentido oposto.",
+        "t689e622a": "Usa este termo quando leres faixas de polaridade iguais dos dois lados da dorsal.",
+        "te2647e5f": "A nova crosta oceânica forma-se numa dorsal e afasta-se para os lados à medida que se acrescenta mais crosta.",
+        "t38a82897": "Usa este termo quando leres o eixo da dorsal como a crosta mais jovem.",
+        "t37c89c3e": "Fusão por descompressão",
+        "tc4560544": "O manto quente pode fundir em parte quando sobe e a pressão baixa, mesmo sem calor extra.",
+        "tc7ae400a": "Usa este termo quando explicares a lente de magma por baixo do eixo.",
+        "tb3728259": "Uma coluna relativamente fixa de manto invulgarmente quente que pode fornecer magma a partir de baixo.",
+        "t5792360f": "Usa este termo quando identificares o ponto de referência por baixo do vulcão ativo.",
+        "t241d73ca": "Vulcão em escudo",
+        "t20087975": "Um vulcão largo, de encostas suaves, construído por lava basáltica fluida.",
+        "t9de65680": "Usa este termo quando comparares o vulcão ativo com um vulcão de arco íngreme.",
+        "tff57d82c": "Rasto do movimento da placa",
+        "tc8005a6d": "Uma linha de vulcões que regista como uma placa em movimento passou por cima de uma pluma relativamente fixa.",
+        "tbf43cae6": "Usa este termo quando a idade aumentar em direção à ilha extinta e ao monte submarino.",
+        "t066225bb": "Falha inversa",
+        "tac5eac52": "Uma falha pouco inclinada ao longo da qual uma fatia de crosta é empurrada para cima e por cima de outra, o que encurta e espessa a crosta.",
+        "tf4e1f06c": "Usa este termo quando explicares como as camadas do fundo do mar foram empilhadas e erguidas.",
+        "t36f79900": "Metamorfismo regional",
+        "te8e7efa8": "O calor e a pressão do enterramento profundo em toda uma cordilheira recristalizam a rocha em xisto e gnaisse.",
+        "tfd6a31c8": "Usa este termo quando comparares o núcleo de gnaisse com os estratos dobrados por cima dele.",
+        "t4a87b918": "Isostasia",
+        "taec6f890": "A crosta flutua no manto; uma cordilheira alta precisa de uma raiz profunda e de baixa densidade, como a parte escondida de um icebergue.",
+        "tcd38155f": "Usa este termo quando explicares o que sustenta a cordilheira sem qualquer magma.",
+        "tfbe0bf0f": "Ordem dos acontecimentos na datação relativa",
+        "tf72fe2e6": "Ordena os acontecimentos do mais antigo ao mais recente, para que as camadas e as intersecções contem uma só história.",
+        "tbf565fd6": "O calcário acumula-se",
+        "tdad01705": "Conchas e corais formam a camada sedimentar mais antiga num mar pouco profundo.",
+        "tcebb8e14": "A lama assenta e forma xisto argiloso",
+        "tb70237ca": "A água calma deposita lama por cima do calcário mais antigo.",
+        "tdf5c4772": "A areia torna-se arenito",
+        "t705ce9cf": "A areia enterrada é compactada e cimentada e forma a camada sedimentar superior.",
+        "t576506a8": "A superfície sofre meteorização",
+        "t1b1e8f82": "Um plutão de granito atravessa as camadas",
+        "tfa8ade29": "Um impulso de magma posterior abre caminho pelas camadas existentes e solidifica.",
+        "td88a65ab": "A orla de contacto é cozida",
+        "t795d4236": "O calor do plutão transforma o calcário e o xisto argiloso próximos sem os fundir.",
+        "t7fe07343": "Ordem de crescimento dos cristais",
+        "t5488773a": "Ordena os acontecimentos, desde o primeiro passo que formou a cavidade até aos cristais que cresceram por último.",
+        "t82e6f9de": "Uma bolha de gás deixa um buraco",
+        "te37ac944": "O gás preso enquanto a lava arrefecia deixou um buraco redondo no basalto.",
+        "ta80174d6": "Precipita uma crosta na parede",
+        "t5da1a882": "A sílica microcristalina reveste primeiro a parede da cavidade.",
+        "t6a989b7b": "Impulsos ricos em minerais deixam bandas",
+        "ta85cccda": "Impulsos repetidos de água depositam bandas concêntricas de ágata.",
+        "t7cc58f95": "Os cristais crescem para dentro, no espaço livre",
+        "t33d3aef4": "O quartzo e a ametista usam o espaço que resta para formar pontas grandes.",
+        "t686df973": "Ordem das provas sobre o interior da Terra",
+        "t628f4a74": "Ordena o percurso das provas, desde a camada que conhecemos até à dedução sobre o centro.",
+        "tfc06da5b": "Começa na crosta sólida",
+        "tb1cb5b3f": "A fina camada exterior é a referência de superfície do modelo radial.",
+        "t983066e6": "Atravessa o manto sólido",
+        "td12fa58d": "A rocha do manto é sólida, mas flui e faz convecção ao longo do tempo geológico.",
+        "t934e9f5e": "Encontra a sombra das ondas S",
+        "t72cfdf7f": "As ondas S que faltam revelam um núcleo externo líquido.",
+        "ta4344063": "Explica o núcleo interno sólido",
+        "tf46f2a0f": "A pressão extrema eleva o ponto de fusão do ferro e mantém sólido o centro, mais quente.",
+        "t749ee1f4": "Ordena a cadeia de acontecimentos, desde o movimento da placa até ao vulcão à superfície.",
+        "t5b0b58a5": "Uma placa fria desce",
+        "t864bce1f": "A litosfera oceânica densa dobra-se na fossa e leva água para baixo.",
+        "t27468fc7": "A água entra na cunha do manto",
+        "tbc2d1938": "A água libertada baixa o ponto de fusão da cunha; a placa, na maior parte, não funde.",
+        "t48c15858": "O magma do arco sobe",
+        "te2e38273": "O magma da fusão parcial sobe através da placa que fica por cima.",
+        "t8cb71296": "Forma-se o arco vulcânico",
+        "t0b705604": "O magma chega à superfície e constrói um vulcão de arco.",
+        "tab7a505e": "Ordem da expansão do fundo oceânico",
+        "t688ef92c": "Ordena as provas do eixo da dorsal para fora, até ao fundo oceânico mais antigo.",
+        "tc9016b9f": "O magma sobe no eixo",
+        "t75922873": "O manto que sobe funde em parte quando a pressão baixa.",
+        "t1e417d28": "O basalto novo regista a polaridade",
+        "t8b40db5d": "O basalto em almofada arrefece e fixa a direção do campo magnético.",
+        "ta3dc347e": "Uma inversão cria uma faixa em espelho",
+        "tda35aee7": "O fundo oceânico mais antigo acumula sedimentos",
+        "t813ff72d": "A crosta mais afastada arrefece, afunda-se e acumula uma cobertura de sedimentos mais espessa.",
+        "t1fb76f15": "Rasto do movimento da placa sobre o ponto quente",
+        "t877ece0c": "Ordena a cadeia, desde o vulcão ativo por cima da pluma até ao elo afundado mais antigo.",
+        "t84e4eea3": "Uma pluma relativamente fixa fornece magma",
+        "t64ad89d4": "Manto muito quente sobe por baixo de um mesmo local.",
+        "tf99c21ab": "Cresce um vulcão em escudo",
+        "t8d85315f": "O basalto fluido constrói um vulcão largo e de encostas suaves por cima da pluma.",
+        "t2f99a713": "A placa leva uma ilha para longe",
+        "t8e7f1939": "O vulcão extingue-se depois de se afastar da fonte de magma.",
+        "td2f01478": "O elo mais antigo afunda-se",
+        "t8df2317a": "A crosta que arrefece e afunda, junto com a erosão, leva a antiga ilha para baixo do nível do mar.",
+        "t6f997fe9": "Ordem da formação das montanhas",
+        "td6eee895": "Ordena os acontecimentos, desde o oceano que separava os continentes até à cordilheira que hoje sofre erosão.",
+        "t70f7ad42": "Acumulam-se camadas no fundo do mar",
+        "ta12c4cc3": "Calcário e lama acumulam-se no fundo do oceano entre dois continentes.",
+        "t7517c9d3": "O oceano fecha-se",
+        "t5c532b6b": "Os continentes encontram-se; uma lasca de fundo do mar fica presa na sutura.",
+        "tbdd2fc54": "Falhas inversas empilham a crosta",
+        "t186a3a92": "Fatias de crosta sobem umas por cima das outras; a crosta encurta e espessa até ~70 km.",
+        "t67c803e4": "O enterramento profundo coze o núcleo",
+        "tf44ab8ec": "A rocha enterrada transforma-se em xisto e gnaisse, e a crosta quente liberta leucogranito.",
+        "ta1c34996": "A cordilheira sobe e sofre erosão",
+        "t2c6300e3": "Uma raiz flutuante ergue o cume; a erosão expõe o núcleo e enche a bacia de antepaís.",
+        "t641df56b": "Deposição, intrusão e calor",
+        "t665743cf": "Sobreposição, intersecção e uma orla metamórfica",
+        "t8362dbf0": "Topo → profundidade; uma estrutura que corta é mais jovem",
+        "t1efe4bf8": "Uma sequência de acontecimentos nas rochas",
+        "tdd459644": "Crescimento mineral",
+        "t9461fc9b": "Água subterrânea, precipitação e crescimento em espaço livre",
+        "t2f201f6b": "Bandas da parede para o centro e tamanho dos cristais",
+        "t6959f05b": "Uma sequência de crescimento dentro de uma antiga bolha de gás",
+        "t982e9636": "Estrutura da Terra",
+        "ta5e0bccf": "Camadas concêntricas, pressão e ondas sísmicas",
+        "tae2102ba": "Sombra das ondas S e estados sólido/líquido",
+        "tdc92df4c": "Um modelo das camadas interiores escondidas",
+        "t52c3540c": "Movimento convergente das placas",
+        "t7666894a": "Descida da placa fria e água a entrar na cunha do manto",
+        "t069638db": "Fossa, placa, cunha e arco vulcânico",
+        "td5a8a909": "Placa oceânica → fossa → arco",
+        "t7137f9ee": "Um percurso de causa e efeito, do movimento da placa até ao magma",
+        "td5874689": "Subida do manto, fusão por descompressão e arrefecimento",
+        "t6e4472de": "Faixas magnéticas simétricas e flancos mais antigos",
+        "t865b2680": "Eixo da dorsal → fundo oceânico mais antigo",
+        "tdf401828": "Nova crosta oceânica a afastar-se do eixo",
+        "t7737b00d": "Vulcanismo intraplaca",
+        "t3534139e": "Uma pluma relativamente fixa por baixo de uma placa em movimento",
+        "t13ab6956": "Progressão da idade e da altitude ao longo de uma cadeia",
+        "td79df10b": "Uma cadeia vulcânica que regista o movimento da placa",
+        "t0fefafb2": "Duas placas que flutuam convergem; a crosta encurta, espessa e sobe",
+        "t6aa68b45": "Calcário do fundo do mar no cume, fatias empilhadas por cavalgamentos e uma raiz crustal profunda",
+        "t1638a88f": "Antepaís → cume → planalto; superfície → raiz",
+        "tf036dd2b": "Uma cordilheira sem vulcões, que flutua sobre uma raiz leve",
+        "t03ee83cb": "Mapa de evidências 2D da caverna de cristais",
+        "t5cfa2b06": "Zonas minerais concêntricas registam o crescimento desde a parede da cavidade no basalto até às pontas dos cristais e ao espaço livre.",
+        "t0b353ed6": "Mapa de evidências 2D do interior da Terra",
+        "t2d4bdf59": "Camadas radiais encaixadas ligam o estado dos materiais às provas sísmicas usadas para deduzir o interior escondido da Terra.",
+        "t4e0c9bbc": "Mapa de evidências 2D da zona de subducção",
+        "tff6f10f9": "Uma placa oceânica fria desce por baixo de um continente, enquanto a água entra na cunha do manto, mais quente, e alimenta um arco.",
+        "t305f9a08": "Mapa de evidências 2D da dorsal oceânica",
+        "td84026ae": "Forma-se nova crosta no eixo central, e faixas magnéticas em espelho registam a expansão em direção a dois flancos mais antigos.",
+        "tfa4db2d4": "Mapa de evidências 2D da cadeia de ponto quente",
+        "t92c357ed": "Uma placa em movimento afasta os vulcões de uma pluma relativamente fixa e cria um rasto de idades, da ilha ativa ao monte submarino.",
+        "t074c3b7a": "Mapa de evidências 2D da cordilheira",
+        "t6fdd90ad": "Dois continentes convergem: falhas inversas empilham camadas dobradas do fundo do mar e formam uma cordilheira assente numa raiz crustal profunda, sem vulcões.",
+        "t24726007": "Lê os estratos",
+        "t163b9967": "Recolhe a sequência sedimentar, das camadas mais jovens para as mais antigas.",
+        "t24368d00": "Cartografa a zona de contacto",
+        "ta178e1e0": "Segue a rocha alterada pelo calor até à intrusão ígnea mais jovem.",
+        "t2a51eebd": "Segue o crescimento dos cristais",
+        "t6bf22b72": "Segue o revestimento mineral para dentro, ao longo de três fases de crescimento.",
+        "t1ce5ee27": "Da cavidade à rocha encaixante",
+        "t299e722a": "Avança para fora, das pontas de cristal mais jovens até à rocha encaixante mais antiga.",
+        "t7a98222b": "Constrói um perfil virtual desde a crosta, através das duas camadas sólidas do manto.",
+        "taa6e75df": "Perfil virtual até ao núcleo",
+        "tb41582ae": "Compara as camadas sólidas profundas, sem esquecer que este modelo é esquemático.",
+        "t3c2142ff": "Segue a placa que desce",
+        "tbdce86b0": "Segue a placa que chega até à cunha do manto com água.",
+        "td787eef5": "Lê a placa que fica por cima",
+        "t0e33d484": "Compara a crosta que flutua, o manto rígido e o manto dúctil por baixo.",
+        "t3f30ee89": "Monta a sequência ofiolítica",
+        "tc2037945": "Recolhe a sequência clássica da crosta oceânica, de cima para baixo.",
+        "t3fe75b2d": "Lê as provas da expansão",
+        "t05c2bf07": "Relaciona a idade da crosta, a polaridade magnética e a circulação hidrotermal.",
+        "t1dcb2c8f": "Segue a placa em movimento",
+        "tfb090963": "Segue um vulcão extinto até à placa que o leva para longe.",
+        "t056d29b2": "Segue o rasto do ponto quente",
+        "tc9c1e572": "Liga o vulcão mais antigo que aparece ao seu referencial no manto.",
+        "te34f0411": "Sobe a pilha de camadas",
+        "t28fa4035": "Recolhe o enchimento do antepaís, as fatias dobradas e o calcário do fundo do mar no cume.",
+        "t4375fafd": "Exuma o núcleo",
+        "tab2cd9f6": "Avança do micaxisto para o gnaisse em bandas e para o granito que dele se libertou.",
+        "t79659339": "Batedor de trilhos",
+        "tf86e20bc": "Geólogo de campo",
+        "t222ec5de": "Geólogo sénior",
+        "t1cc4f794": "Líder de expedição",
+        "t0c841362": "Abrir a lista de materiais",
+        "t644cdaa0": "Lista de materiais em foco. Seleciona os materiais pedidos para concluir esta verificação.",
+        "tf3d363b1": "Lista de materiais em foco. Seleciona a crosta, as bandas e os cristais para os comparares.",
+        "te57e687d": "Lista de materiais em foco. Seleciona o núcleo externo e o interno para comparares os seus estados.",
+        "t4d4bae94": "Lista de materiais em foco. Seleciona a placa fria e a cunha do manto.",
+        "tbaf9afca": "Lista de materiais em foco. Seleciona o basalto normal e o invertido.",
+        "t149fa181": "Lista de materiais em foco. Seleciona o vulcão ativo, a ilha antiga e o monte submarino.",
+        "tb8a2ecdb": "Abrir o testemunho de sondagem",
+        "t6d36a50d": "Controlos do testemunho em foco. Escolhe um local para leres as suas camadas.",
+        "t60946843": "Abrir a cronologia do processo",
+        "tb2d4a985": "Cronologia do processo em foco. Revela cada passo pela ordem.",
+        "ta00414de": "Cronologia das provas sísmicas em foco. Revela o passo da sombra das ondas S.",
+        "t52867b7b": "Cronologia de causa e efeito em foco. Segue a água desde a placa até ao magma do arco.",
+        "td253b5dd": "Cronologia da expansão em foco. Revela a faixa magnética em espelho.",
+        "tc5c636af": "Cronologia do ponto quente em foco. Segue o rasto do movimento da placa.",
+        "t12c606b3": "Lista de materiais em foco. Seleciona o calcário do cume, o gnaisse e o cascalho do antepaís.",
+        "t00b1437c": "Cronologia da colisão em foco. Segue a crosta desde a pilha de cavalgamentos até ao cume.",
+        "tafe7c266": "Abrir o questionário",
+        "tf6253771": "Questionário de avaliação em foco. Responde a uma pergunta para concluir esta verificação.",
+        "t8275118d": "Observação",
+        "t78d529d6": "O que observei diretamente?",
+        "t727f7d9c": "Um pormenor visível ou medido.",
+        "t0a3d6d1a": "Processo",
+        "tae7df83c": "Como aconteceu?",
+        "tb4252739": "A mudança geológica que liga os pormenores.",
+        "t02dfaed3": "Resultado",
+        "te5ac005f": "Que afirmação apoia?",
+        "t99889d68": "O padrão ou resultado que apoia a tua afirmação.",
+        "t15f9d9fa": "25-35 minutos",
+        "td5eaf953": "Usar observações para reconstituir um processo geológico.",
+        "tc2bf9d18": "Fundamentar uma afirmação com pelo menos duas evidências.",
+        "t97845176": "Explicar como um processo muda rochas, camadas ou formas de relevo.",
+        "t2fdd6d37": "Lançar a pergunta",
+        "t23a9bf92": "3 min",
+        "tc6c5d0df": "Lê a pergunta da cena e pede aos alunos que prevejam que evidências ajudariam.",
+        "tc6c4aecb": "12-15 min",
+        "ta6f6fccf": "Os alunos selecionam materiais, seguem o percurso do processo e recolhem evidências no caderno.",
+        "t772681db": "Construir a explicação",
+        "tb379c827": "8-10 min",
+        "t2ff18fa4": "Os alunos escrevem uma afirmação, citam duas observações e ligam as evidências ao processo.",
+        "t6692941a": "Balanço final",
+        "taf91da8c": "5 min",
+        "tea0a1f93": "Compara as explicações e diz que observação mudou a ideia inicial.",
+        "t021dc8ca": "O que observaste?",
+        "tc679c05b": "Que observação é a evidência mais forte?",
+        "ta6e3b518": "Que processo liga as evidências à tua afirmação?",
+        "tc178a5a6": "Erupção e arrefecimento rápido",
+        "t9eff936c": "Entra em erupção à superfície e arrefece em segundos → BASALTO de grão fino (extrusivo).",
+        "teab63b29": "Arrefecimento lento (retido)",
+        "tc41f9775": "Retido no subsolo, o arrefecimento lento faz crescer cristais grandes → GRANITO (intrusivo).",
+        "ta9220d67": "Levantamento e meteorização",
+        "tffadb5e0": "Exposto à superfície, decompõe-se em sedimento solto.",
+        "t9e00ee4d": "Calor + pressão",
+        "tedca669f": "Fusão",
+        "ta8bda31c": "Enterrado a grande profundidade ou em subducção → volta ao estado fundido.",
+        "t61189412": "O calor profundo volta a fundi-lo.",
+        "tff94b570": "Enterramento, compactação e cimentação",
+        "te760fb60": "O sedimento é comprimido e cimentado em rocha sólida (litificação).",
+        "tfb463297": "Recristaliza numa rocha metamórfica mais dura.",
+        "t4d4e1bf6": "Meteorização e erosão",
+        "t6cedc258": "Volta a desfazer-se em sedimento solto.",
+        "t21ca98f1": "O calor profundo funde-o.",
+        "t950f7839": "Recristaliza em mármore.",
+        "t0e9b39e0": "Dissolve-se / volta a desfazer-se em sedimento.",
+        "t081fab44": "O calor profundo funde-o → material fundido.",
+        "te6f0a7dc": "Exposto e desfeito em sedimento.",
+        "t387f5ab9": "Decompõe-se em sedimento à superfície.",
+        "taee53874": "Enterrado e cozido → rocha metamórfica.",
+        "t0ac5f189": "Volta a fundir-se.",
+        "tcce5dbc8": "A pressão aumenta — o gás dissolvido e o magma a subir empurram para cima, por baixo do vulcão.",
+        "t16772a86": "O magma sobe por uma conduta: um tubo de rocha fundida que vai direito à superfície.",
+        "t2c40d545": "Erupção! A lava jorra da boca eruptiva e uma coluna de cinzas ergue-se para o céu.",
+        "t6775096a": "Ao ar livre e no chão, a lava arrefece em segundos → BASALTO de grão fino (rocha ígnea extrusiva) — cristais demasiado pequenos para se verem.",
+        "tf9a671ea": "Urânio-238",
+        "t10bcc0f6": "Chumbo-206",
+        "t41d30979": "O granito retém urânio ao cristalizar — o relógio começa a contar no momento em que solidifica.",
+        "t99fb25a9": "Datar o plutão diz-te quando este magma solidificou — por isso é posterior às camadas que corta.",
+        "t7e6bc031": "Potássio-40",
+        "tac88fe61": "Árgon-40",
+        "tc614f4fb": "Poroso",
+        "t409e00b2": "deixa a chuva infiltrar-se a partir da superfície",
+        "tc2c2f63f": "Permeável — aquífero",
+        "t571095fb": "os poros ligados guardam e transmitem água subterrânea (os poços vão buscá-la aqui)",
+        "tc8307555": "Impermeável — aquitardo",
+        "tfba04f60": "a argila compacta retém a água na rocha por cima dela",
+        "t1a02d5e7": "Permeável onde está fraturado",
+        "ted2fb23a": "fendas e grutas conduzem a água (aquíferos cársicos)",
+        "td63bedf8": "Impermeável",
+        "t08933e5a": "a rocha cristalina sólida bloqueia a água, exceto se estiver fraturada",
+        "tfdda6445": "o granito sólido bloqueia a água, exceto se estiver fraturado",
+        "ta86cd122": "rocha compacta e recristalizada",
+        "tc7a21755": "rocha cozida e compacta",
+        "t13389fb6": "rocha fundida — aqui não há água subterrânea",
+        "tb9edde0a": "Impermeável (exceto se vesicular/fraturado)",
+        "t831ca4e1": "rocha de lava densa; bolhas de gás ou fendas podem deixar passar alguma água",
+        "tac515c57": "Um fóssil de planta é uma película de carbono na rocha: não tem uma dureza única.",
+        "t98481e91": "Carapaça de trilobite (calcite)",
+        "t841e0dc1": "Os graptólitos são uma película de carbono, sem um valor único.",
+        "t489eaf17": "Conchas de calcite",
+        "tdc5f44e8": "Granada",
+        "tc9ad9e7e": "Quartzo",
+        "t7d1b92db": "Granada almandina",
+        "tff7bde58": "Ametista (quartzo)",
+        "t91b4d52f": "Calcedónia",
+        "ta1c19585": "Olivina",
+        "t9edbaf2f": "Nunca foi testada ao risco: só é estável à pressão do manto inferior, e os únicos grãos naturais conhecidos são microscópicos, num meteorito.",
+        "t235c55ce": "Paredes de vidro",
+        "t3ebd802a": "Esfarela-se porque está cheia de buracos de gás, não por ser mole.",
+        "t181eede8": "Pirite",
+        "t7e66ad34": "Uma chaminé também tem minerais mais moles, como a esfalerite (3,5–4).",
+        "t4a227ad0": "Uma rocha é uma mistura de minerais; a dureza de Mohs aplica-se a minerais isolados.",
+        "t69b5f6ff": "Alguma vasa é feita de conchas de sílica (opala), 5,5–6. A vasa em si é lama mole; só as conchas são duras.",
+        "td4243b8c": "O coral vivo dos recifes produz aragonite (3,5–4); em fósseis tão antigos, costuma já ter passado a calcite.",
+        "t4fc2997a": "As duas cenas usam a posição para ler o tempo, mas a direção muda: as camadas leem-se para baixo, enquanto os cristais crescem para dentro a partir da parede de uma cavidade.",
+        "te97d790c": "As duas cenas usam padrões de idade, mas as camadas da crosta usam relações relativas, enquanto as faixas da dorsal registam a história magnética à medida que o novo fundo oceânico se expande.",
+        "t5cc21466": "A cena da crosta reconstitui uma sequência a partir das relações entre rochas; a subducção reconstitui um sistema ativo de causa e efeito, do movimento das placas até ao magma.",
+        "ta9e2b9fa": "Ambas podem revelar o tempo pela posição das rochas, mas uma cadeia de ponto quente regista movimento ao longo de uma distância, enquanto a crosta em camadas regista acontecimentos empilhados.",
+        "t3c5d6754": "Ambas envolvem material do manto, mas as provas sísmicas revelam a estrutura profunda da Terra, enquanto as faixas magnéticas revelam nova crosta a formar-se à superfície.",
+        "t2df32e63": "Ambas distinguem material sólido de material líquido ou que flui, mas o interior da Terra usa o comportamento das ondas, enquanto a subducção usa a temperatura, a densidade e a água.",
+        "t3b1b24fd": "A água é importante nas duas cenas: a água subterrânea forma camadas minerais numa cavidade, enquanto a água da placa muda a forma como a cunha do manto funde.",
+        "t1e070bfd": "São histórias opostas de limites de placas: uma dorsal cria crosta quando as placas se separam, enquanto a subducção recicla crosta quando as placas convergem.",
+        "t69c697e3": "Ambas podem construir vulcões basálticos, mas o vulcanismo das dorsais marca um limite de placas, enquanto o vulcanismo de ponto quente ocorre no interior de uma placa em movimento.",
+        "ta05bee80": "Ambas produzem cadeias vulcânicas, mas a subducção liga os vulcões a um limite de placas, enquanto uma cadeia de ponto quente regista uma placa a mover-se sobre uma pluma.",
+        "t2795b575": "Ambas usam a intersecção: o plutão da crosta e a falha inversa da cordilheira são ambos mais jovens do que as camadas que cortam, mas uma colisão também dobra e empilha sequências inteiras de camadas.",
+        "t759ca443": "Ambas dependem do manto sólido que flui: o interior da Terra mostra-o em convecção, e a cordilheira mostra-o a empurrar para cima uma raiz crustal flutuante (isostasia).",
+        "tfce089c1": "Ambas elevam terra longe de qualquer dorsal, mas um ponto quente constrói vulcões com o magma da pluma, enquanto uma colisão ergue rocha do fundo do mar ao espessar a crosta — sem nenhum vulcão.",
+        "t45f44da1": "Extremos opostos da vida de um oceano: uma dorsal cria fundo do mar, e uma colisão é o que acontece depois de esse oceano se fechar, com a sua última lasca presa numa sutura.",
+        "t573c132c": "Ambas mostram limites convergentes, mas na subducção uma placa oceânica densa afunda-se e uma cunha funde para alimentar vulcões, enquanto dois continentes que flutuam não se conseguem afundar — por isso a crosta empilha-se.",
+        "t93c342fd": "Seleciona três materiais quaisquer para comparares a profundidade, o tipo e a história de formação de cada um.",
+        "t8138c4f0": "Muda para Avaliar, abre o questionário e responde a uma pergunta sobre sobreposição ou intersecção.",
+        "t52bd05c6": "Seleciona a crosta de calcedónia, as bandas de ágata e o cristal de quartzo; compara onde cada um fica na cavidade.",
+        "t8d500376": "Abre a sequência de crescimento dos cristais e revela os passos da parede para dentro.",
+        "tfdda0450": "Muda para Avaliar, abre o questionário dos cristais e testa porque é que o espaço livre dá cristais maiores.",
+        "t7b4bc30c": "Seleciona o núcleo externo e o núcleo interno para comparares o estado e a pressão.",
+        "t70bbf0f7": "Segue a sonda sísmica até à sombra das ondas S; um líquido não transmite ondas de cisalhamento.",
+        "t47a79810": "Muda para Avaliar, responde à pergunta sobre o núcleo e usa o resultado das ondas S na tua explicação.",
+        "t319d4691": "Seleciona a placa fria e a cunha quente do manto; a placa transporta água, mas é a cunha que fornece o magma.",
+        "t045f43b1": "Segue a sequência: placa que desce, libertação de água e magma do arco a subir.",
+        "tf9765e3f": "Usa o questionário para verificares porque é que a própria placa quase não funde.",
+        "tedc79392": "Seleciona o basalto normal e o invertido; os registos magnéticos iguais nos dois flancos são a comparação essencial.",
+        "t290ebe5c": "Segue a sequência: fusão no eixo, basalto normal e faixa invertida em espelho.",
+        "t4b133bf9": "Usa o questionário para relacionares as inversões magnéticas com o novo fundo oceânico.",
+        "ta475d106": "Seleciona o vulcão ativo, a ilha antiga e o monte submarino; a idade e a altitude mudam ao longo da cadeia.",
+        "td56e3196": "Segue a sequência: a pluma, a ilha levada pela placa e o monte submarino afundado.",
+        "tac26ed41": "Usa o questionário para testares se é a placa ou a pluma que se move.",
+        "t9674ef81": "Seleciona o calcário do cume, o gnaisse da encosta íngreme e o cascalho do antepaís; repara qual está mais alto, qual esteve mais fundo e qual é o mais jovem.",
+        "t5380bfd7": "Segue a sequência: a falha inversa, o núcleo cozido em profundidade e o fundo do mar erguido até ao cume.",
+        "t395aab7d": "Usa o questionário para verificares porque há fósseis marinhos no cume e porque não há vulcões.",
+        "t0ce9f962": "Camadas empilhadas não são simultâneas. Cada uma depositou-se sobre a superfície já formada da camada de baixo.",
+        "tfdc18ded": "Aqui o arenito está por cima do calcário, por isso chegou depois. Lê uma sequência de cima para baixo para recuares no tempo.",
+        "t46ba723a": "O facto de uma rocha cortar outra é uma das pistas mais fiáveis que tens. O que é cortado já tinha de lá estar.",
+        "t14e9512e": "O plutão teve de chegar depois do xisto argiloso, senão não haveria ali nada para ele atravessar.",
+        "t25ce31c2": "Foi assim que se formou o próprio calcário. A orla de mármore é o que aconteceu depois a esse calcário.",
+        "t601b73d4": "A areia dos rios forma arenito. O mármore é calcário recristalizado pelo calor, não um sedimento novo.",
+        "tf29316ab": "O granito cristalizou a partir de magma. Nenhum ser vivo sobrevive a isso, por isso um plutão não tem fósseis.",
+        "t5a5eb6f9": "O magma é rocha fundida. Uma concha ou um osso lá dentro é destruído muito antes de a rocha solidificar.",
+        "t3aa6d15d": "O topo de um testemunho é a superfície atual, o material mais jovem. A idade aumenta à medida que desces.",
+        "t3af4a69e": "Não há nada de especial no meio. A idade aumenta de forma contínua, do mais jovem no topo ao mais antigo na base.",
+        "tad163baf": "A pressão não faz crescer cristais. Os átomos precisam de tempo para se juntarem e de espaço livre para crescerem.",
+        "tc32e40b0": "O crescimento rápido forma muitos cristais minúsculos, apertados uns contra os outros. As faces grandes precisam de crescimento lento.",
+        "t9d664592": "É assim que se formam as grutas de calcário, e nelas cresce calcite. Esta cavidade está no basalto: começou como uma bolha de gás na lava.",
+        "tdbf4c59e": "Uma fenda é fina e plana. Esta cavidade é redonda, como as bolhas de gás que ficaram presas na lava solidificada.",
+        "t4068d0ac": "Os minerais de cobre costumam ser verdes ou azuis, como a malaquite e a turquesa, e não roxos.",
+        "tc131eb8a": "Estão empilhados, não misturados. A crosta reveste a parede e as pontas dos cristais ficam por dentro dela.",
+        "t80135f56": "As pontas cresceram para dentro a partir da crosta, por isso a crosta teve de revestir a parede primeiro.",
+        "t6957066b": "Move-se mesmo devagar, mas como sólido. A rocha pode fluir e continuar sólida, tal como o gelo flui num glaciar.",
+        "t88745b76": "O núcleo interno é a parte mais densa do planeta. Não é uma baixa densidade que o mantém sólido.",
+        "t45016db1": "O ferro perde o magnetismo a temperaturas muito abaixo das do núcleo. Um íman permanente não sobreviveria lá em baixo.",
+        "t84d0fb2e": "A rotação, por si só, não gera campo nenhum. É preciso metal líquido em movimento para transportar as correntes elétricas.",
+        "t448cc5b9": "O atrito provoca sismos, mas nem de longe calor suficiente para fundir rocha a esta escala.",
+        "tf2e2b74a": "A placa é o que há de mais frio lá em baixo. Liberta água, e é essa água que funde a cunha por cima dela.",
+        "t0e911c90": "Fino não é o mesmo que pesado. Uma placa fina e densa afunda-se; uma espessa e que flutua fica em cima.",
+        "t425c2fd6": "O sedimento é só uma camada fina por cima. O peso que conta é o da placa fria e densa por baixo dele.",
+        "t0c2bb31c": "A rocha quente flui em vez de partir, por isso não consegue acumular a tensão que um sismo liberta.",
+        "tbc0ddb55": "A fossa é só a marca à superfície. Estes sismos profundos acontecem muito mais abaixo, dentro da placa que desce.",
+        "t9938359d": "Nada a prende. Fica em cima porque é menos densa do que o manto por baixo dela.",
+        "tb3503604": "Não é a resistência que impede o afundamento. É a flutuabilidade, tal como uma rolha resiste a ser empurrada para debaixo de água.",
+        "tfd708175": "As faixas mostram o contrário. Registam o campo a inverter-se vezes sem conta.",
+        "tfd75caa1": "Um afundamento não produziria um padrão em espelho dos dois lados do eixo.",
+        "td98b2af8": "O eixo é o sítio mais nu do fundo oceânico. Os sedimentos ainda não tiveram tempo nenhum para se acumularem ali.",
+        "te356753c": "Todo o flanco está elevado, não só as bocas. O calor levanta toda a placa jovem.",
+        "t40e29a8f": "O eixo é o fundo oceânico mais recente que existe, por isso teve menos tempo para acumular o que quer que seja.",
+        "ta1d99c53": "Os sedimentos acumulam-se com o tempo, e o fundo oceânico não tem todo a mesma idade.",
+        "t9243f654": "Aqui, a diferença não é a idade. É o ritmo de arrefecimento que define o tamanho dos cristais.",
+        "tae3a6176": "Um só magma basáltico forma os dois: arrefecido na água do mar dá almofadas; retido em profundidade dá gabro de grão grosseiro.",
+        "t0f5dc7a4": "Nesse caso, as ilhas teriam todas a mesma idade. Em vez disso, as idades aumentam passo a passo ao longo da cadeia.",
+        "t7e02e2d6": "A pluma fica mais ou menos no mesmo sítio. É a placa por cima dela que viaja.",
+        "t839e24fd": "Essa ilha ainda está a ser construída. É a mais jovem da cadeia.",
+        "tfa382bb7": "O tamanho depende da quantidade de lava expelida, não da idade. As ilhas antigas sofrem erosão e encolhem à medida que se afastam.",
+        "td628552c": "Isso descreve um estratovulcão íngreme. As erupções explosivas constroem cones, não escudos largos.",
+        "t44a2d6b5": "A erosão escava vales num escudo. O perfil suave existe desde o momento em que é construído.",
+        "te4cc6074": "As conchas estão dentro de calcário sólido e fazem parte da própria rocha; não estão soltas nem espalhadas à superfície.",
+        "t48f8467c": "Nenhum dilúvio chega aos 8 km. A rocha formou-se ao nível do mar, e a montanha subiu por baixo dela.",
+        "t2429a305": "As falhas pouco profundas esmagam e moem a rocha. As bandas do gnaisse precisam do calor e da pressão de uma grande profundidade.",
+        "tbefed2d0": "A crosta é espessa e funde mesmo um pouco, formando leucogranito. Os vulcões precisam de magma do manto.",
+        "t48b14ecd": "Essa compressão construiu a cordilheira, mas um empurrão lateral não sustenta o peso.",
+        "tb17c81a4": "Não há câmara magmática por baixo desta cordilheira. O suporte é uma raiz flutuante, como um icebergue.",
+        "t4fc40a64": "Sem classificação",
+        "tef799db2": "Certificado",
+        "t60f3de7b": "Avançado",
+        "taab49f92": "Dominado",
+        "t7f180f2b": "Coluna excecional",
+        "teed1285d": "Testemunho de qualidade científica",
+        "t1961d089": "Recuperação forte",
+        "tc472dd80": "Testemunho utilizável",
+        "t8bfbb2a9": "Recuperação parcial",
+        "te28c3849": "Preservar",
+        "t57e97982": "Cruzeiro",
+        "t76809283": "Torque",
+        "t22b95bc9": "Intacto",
+        "t02b032b6": "Estável",
+        "t6122c24c": "Danificado",
+        "t896c5721": "Muda a sonda de lugar ou muda o ângulo antes de furar.",
+        "t67aa1e9f": "Um limite protegido encurta esta sondagem; dá prioridade à integridade da amostra.",
+        "ta0d3a73f": "A coluna segura é mais curta do que o pedido; pensa noutra trajetória.",
+        "ta59f758d": "Muitas mudanças de resistência pela frente: observa cada análise da formação e guarda líquido de arrefecimento.",
+        "tb4349cff": "Resistência constante pela frente: prefere o avanço Torque e protege a cabeça de perfuração com líquido de arrefecimento.",
+        "tc9a1b291": "Predomina terreno delicado: prefere o avanço Preservar para proteger a integridade do testemunho.",
+        "t8a15f41e": "Terreno equilibrado pela frente: começa em Cruzeiro e reage a cada análise da formação.",
+        "t431cc72c": "Basalto encaixante",
+        "t3edaa365": "Pontas dos cristais",
+        "t033f2b5e": "Centro aberto",
+        "t790b176b": "Primeiro a parede",
+        "t93cf9536": "Depois o centro",
+        "t5c4d52b1": "Crosta fina",
+        "tf276e223": "Núcleo interno sólido",
+        "t2684f8f6": "A onda S para no líquido",
+        "t779459fd": "Placa oceânica",
+        "ta7dcecc7": "Fossa",
+        "taa7a27a7": "Placa fria + água",
+        "ta8ad7aa8": "Arco vulcânico",
+        "t3363d5db": "A água libertada permite a fusão",
+        "t270a2b06": "Eixo: o mais jovem",
+        "t40494da3": "Manto em ascensão",
+        "t73b48d95": "Faixas magnéticas em espelho",
+        "t5a7e8b13": "A placa leva os vulcões para a esquerda",
+        "t54c802ef": "O mais antigo: afundado",
+        "ta70026a6": "Mais antigo: extinto",
+        "ta411ff9f": "Ativo agora",
+        "t7c396f21": "Pluma relativamente fixa",
+        "tf3d58845": "As placas convergem",
+        "t5192ca75": "Levantamento",
+        "t5e2200a3": "Bacia de antepaís",
+        "ta238322d": "Calcário do fundo do mar no topo",
+        "t4d5c83e3": "Raiz crustal profunda",
+        "tb75ec67e": "Escolhe um local de sondagem; lê as bandas coloridas, da mais jovem no topo à mais antiga em profundidade.",
+        "t836373da": "Raio da Terra: 6371 km (crosta e manto superior desenhados mais espessos)",
+        "t7eefb3e5": "Xisto argiloso cozido pelo calor do plutão → duro, de grão fino, por vezes com granada.",
+        "t48680407": "Bandas concêntricas depositadas da parede para dentro — muitas vezes interpretadas como impulsos repetidos de água rica em sílica.",
+        "t8551ede1": "Mais de metade do volume da Terra.",
+        "t26821775": "A jangada flutuante que resiste à subducção.",
+        "te4565c8b": "Uma chuva lenta de conchas de plâncton e argila — cerca de um centímetro ou menos por cada MIL anos. Nada sobre a crosta acabada de se formar no eixo; mais espesso quanto mais antigo (mais afastado) for o fundo oceânico.",
+        "t922e705b": "Foi o padrão simétrico de faixas (previsto em 1963 e já confirmado em 1966) que PROVOU a expansão.",
+        "ta9796ab4": "Camada inferior da crosta na sequência ofiolítica.",
+        "t7511018b": "Manto que arrefeceu e ficou rígido por baixo da base da crosta. Quase AUSENTE no eixo quente; fica mais espesso com a idade, à medida que a placa arrefece — placas antigas são placas espessas.",
+        "t3aac16c0": "Manto sólido que flui lentamente para cima por baixo do eixo. À medida que sobe, a descida da pressão deixa fundir cerca de um décimo dele — a origem de TODA a crosta oceânica nova.",
+        "t2c0c7600": "A tampa rígida de manto que se move com a crosta como uma só placa — o magma da pluma tem de subir através de TUDO isto para chegar à superfície.",
+        "t7c93e8b9": "Move-se; a pluma por baixo quase não se move.",
+        "t638b9e44": "Farinha de falha, brecha; milonito mais em profundidade",
+        "te6605a82": "Manto SÓLIDO que flui lentamente. A placa por cima, incluindo a raiz da crosta, flutua sobre ele e ele empurra de volta — é esse apoio por flutuação que sustenta a cordilheira.",
+        "teaf66816": "Manto rígido na base de uma placa",
+        "tc18e6ec9": "Crosta média, por baixo do basalto em almofada",
+        "t79ad9992": "Enterramento pouco profundo — o enchimento mais jovem",
+        "t3dbc3a77": "Os fósseis formam-se em rochas sedimentares como o xisto argiloso; a fusão destrói-os e o metamorfismo intenso normalmente também.",
+        "tb6285f7a": "Num testemunho de sondagem através de camadas não perturbadas, a rocha MAIS ANTIGA fica…",
+        "t59195667": "A crosta de calcedónia na parede",
+        "t8b8c0666": "A placa oceânica antiga é fria e densa — mais densa do que o manto quente por baixo dela, por isso afunda-se. Não é a espessura que decide.",
+        "t80671424": "A pluma fica quase no mesmo sítio; a placa desliza por cima e afasta cada vulcão da sua fonte de magma — um gravador do movimento das placas.",
+        "tc46f332e": "Vulcanismo intraplaca: o magma da pluma sobe através do meio de uma placa, muitas vezes longe de qualquer limite.",
+        "t785155fc": "Um espaço aberto dentro da rocha. A cavidade deste geodo começou como uma bolha de gás presa na lava a arrefecer.",
+        "t5a7fcd75": "A rocha exposta decompõe-se em solo à superfície — e isso ainda acontece hoje.",
+        "taa69c920": "O basalto mais antigo, mais afastado, regista o sentido oposto do campo nos dois flancos.",
+        "t97bf4cfe": "É cozido pelo magma próximo → corneana.",
+        "t52db011f": "Dois destinos, uma só regra de arrefecimento: a lava que entra em erupção arrefece depressa → cristais minúsculos (BASALTO); o magma retido no subsolo arrefece lentamente → cristais grandes (GRANITO, de um magma mais rico em sílica). Forma-se uma nova camada vulcânica — o ciclo das rochas continua.",
+        "t9b4812b5": "A lava em erupção retém potássio-40; cerca de 1 em cada 9 dos seus decaimentos produz árgon-40, que se acumula a partir de zero à medida que a rocha envelhece.",
+        "te9d27db9": "Ambas registam mudanças lentas, mas um geodo faz crescer minerais no espaço livre ao longo de milhares de anos, enquanto uma colisão recristaliza rocha enterrada em xisto e gnaisse ao longo de milhões.",
+        "te6018a13": "Não há nenhum corante vegetal envolvido. A cor vem do ferro dentro do cristal, alterado pela radiação natural.",
+        "t725fc98f": "Grãos soltos só transmitem ondas S lentamente. As ondas S atravessam o manto a grande velocidade, por isso é rocha sólida e coesa.",
+        "t84d0f7b0": "A lava sobe do manto superior, no máximo a umas duas centenas de quilómetros de profundidade, muito longe do núcleo.",
+        "tb10c893e": "O furo mais profundo alguma vez feito mal arranha a crosta. Ninguém recolheu amostras do núcleo; as ondas são a nossa melhor evidência.",
+        "td558b026": "Os dois núcleos são sobretudo do mesmo ferro-níquel. O que mantém o núcleo interno sólido é a pressão, não um metal diferente.",
+        "t4940fe73": "As fossas marcam zonas de subducção. Uma pluma sobe das profundezas e não precisa de nenhum limite de placas.",
+        "t1dfee9c0": "As dorsais e os arcos precisam de limites de placas. Um ponto quente não: o Havai entra em erupção no meio de uma placa.",
+        "t645baaff": "A lava a arrefecer forma rochas vulcânicas como o basalto. As bandas do gnaisse só se formam com enterramento profundo.",
+        "tfeb08f10": "Aqui o manto é tão quente como o manto normal. O que lhe falta é a água ou o calor extra que desencadearia a fusão.",
+        "t80ddd9dd": "Estás nas bandas de ágata — as bandas são muitas vezes interpretadas como impulsos repetidos de crescimento.",
+        "t0fc566d9": "Estás na crosta oceânica densa — viajas numa placa fria e pesada que se afunda e entra em subducção.",
+        "t065bd998": "Estás no manto rígido que arrefeceu e endureceu por baixo da crosta — fica mais espesso à medida que a placa envelhece.",
+        "t7149d5e6": "Estás no manto em ascensão — rocha sólida que funde em parte (cerca de 10%) quando a pressão baixa.",
+        "t0b23e71d": "Estás na tampa rígida de manto — o magma da pluma tem de subir através de tudo isto.",
+        "t27682bac": "Mito desfeito: as faixas magnéticas simétricas são um gravador das inversões do campo — previstas em 1963 e, já em 1966, prova da expansão.",
+        "tb66a99c5": "Recuperar a coluna segura",
+        "taf272720": "Proteger a integridade média",
+        "t5443355a": "Fazer uma série de intactos"
       },
       "camera": {
         "front": "Corte frontal",
@@ -54792,7 +58035,9 @@
         "overlay_title": "Orientação",
         "eyebrow": "Vista da câmara",
         "hint": "Mantém a orientação da cena visível enquanto comparas a profundidade e as camadas.",
-        "viewing": "Vista: {view}"
+        "viewing": "Vista: {view}",
+        "btn_front": "Frente",
+        "btn_top": "Topo"
       },
       "speech": {
         "depth": "{label} de cerca de {n} quilómetros",
@@ -54805,7 +58050,528 @@
       "focus_lens_state_on": "Lente de foco: LIGADA",
       "focus_lens_state_off": "Lente de foco: DESLIGADA",
       "datable": "Datável",
-      "datable_detail": "{parent} → {daughter}, semivida {hl} Ma"
+      "datable_detail": "{parent} → {daughter}, semivida {hl} Ma",
+      "quiz_feedback": "Feedback específico",
+      "quiz_try_again": "Tenta outra vez",
+      "cer": {
+        "evidence": "Evidências",
+        "causal_words": "porque, portanto, por isso, então, logo, pois, mostra, sugere, significa, causou, provocou, levou a, faz com que, devido a, como resultado",
+        "evidence_need_two": "Recolhe pelo menos duas observações da cena ou do caderno.",
+        "evidence_map_first": "Organiza as tuas evidências em Observação, Processo e Resultado antes de as usares na explicação.",
+        "evidence_ok": "Recolheste pelo menos duas observações e ligaste-as no mapa de evidências.",
+        "claim": "Afirmação",
+        "claim_ok": "A tua resposta faz uma afirmação específica e testável.",
+        "claim_need": "Diz o que achas que aconteceu e responde à pergunta da cena.",
+        "reasoning": "Raciocínio",
+        "reasoning_ok": "O teu raciocínio liga as observações a um processo.",
+        "reasoning_need": "Explica porque é que as observações apoiam a tua afirmação, com uma ligação de causa como porque, por isso ou portanto.",
+        "mission": "Verificações da missão",
+        "mission_ok": "As verificações obrigatórias da cena estão concluídas.",
+        "mission_need": "Completa a lista de verificação da cena antes de enviares.",
+        "draft_claim_outcome": "As evidências apoiam o resultado de que {outcome}.",
+        "draft_claim_question": "As evidências ajudam a explicar {question}.",
+        "the_process": "o processo geológico",
+        "draft_observed": "Observei {text}.",
+        "draft_process": "O processo liga estas observações porque {text}.",
+        "draft_outcome": "Em conjunto, estes pormenores apoiam o resultado de que {text}.",
+        "draft_empty": "Junta observações organizadas no mapa, um processo e um resultado para construir a explicação."
+      },
+      "eng": {
+        "near_your_level": "ao teu nível",
+        "above_you": "acima de ti",
+        "below_you": "abaixo de ti",
+        "pack_ready": "Sonda arrumada",
+        "mountain_peak": "Pico da montanha",
+        "island_volcano": "Vulcão insular",
+        "volcano_cone": "Cone vulcânico",
+        "new_layer_reached": "Nova camada alcançada: {layer} · {km} km · {temp}",
+        "layers_walked": "Camadas percorridas: {n}",
+        "the_drill_overheated_release_the_trigger_and": "O berbequim sobreaqueceu. Solta o gatilho e deixa-o arrefecer.",
+        "no_solid_ground_is_visible_to_land_on_reset": "Não se vê chão firme para aterrar: {layer_cause_text}. Repõe a vista em corte ou a lente de foco e volta a entrar.",
+        "ground_hidden_lens": "O chão por baixo de ti foi escondido pela lente de foco, por isso o explorador levou-te para o chão firme mais próximo.",
+        "ground_hidden_history": "O chão por baixo de ti foi escondido pela reprodução da história, por isso o explorador levou-te para o chão firme mais próximo.",
+        "ground_hidden_cutaway": "O chão por baixo de ti foi escondido pela vista em corte, por isso o explorador levou-te para o chão firme mais próximo.",
+        "stuck_in_a_hole_hold_space_or_the_jump": "Preso num buraco? Mantém Espaço (ou o botão de saltar) premido e anda contra a parede para sair a escalar, ou carrega em C (🧗) para escalar. H leva-te ao início.",
+        "heat_rising_magma_is_within_one_block_rock": "O calor está a subir: o magma está a um bloco de distância. Escava à volta, não para dentro.",
+        "slipped_nearest": "Saíste do modelo, por isso o explorador levou-te de volta ao chão firme mais próximo.",
+        "slipped_foothold": "Saíste do modelo, por isso o explorador levou-te de volta ao último ponto de apoio seguro.",
+        "deploy_the_rig_before_changing_its_feed_mode": "Instala a sonda antes de mudares o modo de avanço.",
+        "choose_preserve_cruise_or_torque_feed": "Escolhe o avanço Preservar, Cruzeiro ou Torque.",
+        "feed_selected": "Avanço {feed} selecionado",
+        "formation_load": "Formação {load}",
+        "feed_advance_heat_load": "Avanço {label} · {speed_multiplier}% de avanço · {heat_multiplier}% de carga térmica",
+        "coolant_is_available_during_an_active_bore": "O líquido de arrefecimento está disponível durante uma sondagem ativa.",
+        "auto_cooling_is_already_protecting_the_core": "O arrefecimento automático já está a proteger o testemunho. Guarda o impulso para o próximo intervalo.",
+        "both_coolant_pulses_have_been_used_for_this": "Os dois impulsos de arrefecimento já foram usados nesta sondagem.",
+        "head_temperature_is_already_low_save_the": "A temperatura da cabeça de perfuração já está baixa. Guarda o impulso de arrefecimento.",
+        "coolant_pulse_head_temperature_remaining": "Impulso de arrefecimento · temperatura da cabeça {heat}% · restam {coolant_remaining}",
+        "coolant_pulse_released_core_integrity": "Impulso de arrefecimento libertado · integridade do testemunho protegida",
+        "directional_core_rigs_need_a_stable_surface": "As sondas direcionais precisam de uma superfície estável. No interior da Terra, a expedição continua a ser de voo, só com ferramentas de mão.",
+        "enter_walk_dig_before_deploying_the_core_rig": "Entra em Caminhar e escavar antes de instalares a sonda.",
+        "find_stable_cool_ground_before_deploying_the": "Encontra chão estável e frio antes de instalares a sonda.",
+        "no_level_drilling_pad_is_clear_nearby_move": "Não há nenhuma plataforma de perfuração plana livre por perto. Vai para uma saliência mais larga e tenta de novo.",
+        "bore_preview_recoverable_intervals": "Pré-visualização da sondagem · {length} intervalos recuperáveis",
+        "no_safe_rock_on_this_trajectory": "Não há rocha segura nesta trajetória",
+        "locking_stabilizers_trajectory_scan_ready": "A fixar os estabilizadores · análise da trajetória pronta",
+        "core_rig_deployed_choose_an_angle_and_depth": "Sonda instalada. Escolhe um ângulo e uma profundidade e depois ajusta o avanço Preservar, Cruzeiro ou Torque à carga de cada formação.",
+        "deploy_the_core_rig_before_configuring_a": "Instala a sonda antes de configurares uma sondagem.",
+        "wait_for_the_stabilizers_before_redirecting": "Espera pelos estabilizadores antes de redirecionares a sondagem.",
+        "trajectory_ready_recoverable_intervals": "Trajetória pronta · {length} intervalos recuperáveis",
+        "trajectory_unavailable_change_angle_depth_or": "Trajetória indisponível · muda o ângulo, a profundidade ou a posição",
+        "result_grade": "Nota {grade} · {label}",
+        "existing_bore_detected_relocate_or_change": "Detetada uma sondagem existente — muda de lugar ou de trajetória.",
+        "bore_ended_before_a_sample_interval_was": "A sondagem terminou antes de se recuperar um intervalo de amostra.",
+        "no_recoverable_core_on_this_trajectory": "Não há testemunho recuperável nesta trajetória.",
+        "water_boundary_stop_sealed_safely": "Paragem no limite de água selada com segurança · {result_label3d}",
+        "thermal_boundary_stop_protected_the_sample": "A paragem no limite térmico protegeu a amostra · {result_label3d}",
+        "rock_boundary_reached": "Limite de rocha alcançado · {result_label3d}",
+        "existing_bore_intersected": "Sondagem existente intersectada · {result_label3d}",
+        "operator_ended_early": "O operador terminou mais cedo · {result_label3d}",
+        "core_recovered": "Testemunho recuperado · {result_label3d}",
+        "deploy_the_rig_before_starting_a_bore": "Instala a sonda antes de começares uma sondagem.",
+        "the_stabilizers_are_still_locking_start_the": "Os estabilizadores ainda estão a fixar-se. Começa a sondagem quando a trajetória estiver pronta.",
+        "spin_up_locking_the_drill_string": "Arranque · a fixar a coluna de perfuração",
+        "feed_engaged_load_response": "Avanço ativado · carga {formation_load} · resposta {label}",
+        "auto_cooling_drill_head": "Arrefecimento automático da cabeça de perfuração · {heat}%",
+        "cooling_complete_resuming_the_protected_core": "Arrefecimento concluído · a retomar o testemunho protegido",
+        "thermal_pause_protecting_the_recovered_core": "Pausa térmica · a proteger o testemunho recuperado",
+        "deploy_the_rig_before_ending_a_bore": "Instala a sonda antes de terminares uma sondagem.",
+        "the_rig_is_actively_drilling_end_the_bore": "A sonda está a furar. Termina a sondagem em segurança antes de a arrumares.",
+        "pack_the_directional_core_rig_before_hand": "Arruma a sonda direcional antes de escavares à mão.",
+        "the_drill_is_cooling_switch_to_the_pickaxe": "O berbequim está a arrefecer. Muda para a picareta ou espera pelo medidor de calor.",
+        "is_surface_relief_not_dug_here_dig_the": "{label} é relevo de superfície, aqui não se escava. Escava o chão ao lado.",
+        "move_closer_and_aim_the_reticle_at_an": "Aproxima-te e aponta a retícula para um bloco exposto.",
+        "the_active_bore_must_finish_before": "A sondagem ativa tem de terminar antes de se poder anular a escavação.",
+        "pack_the_directional_core_rig_before_undoing": "Arruma a sonda direcional antes de anulares a escavação.",
+        "there_is_no_excavation_to_undo_yet": "Ainda não há escavação para anular.",
+        "digs_left_to_undo": "Escavações que ainda podes anular: {n}.",
+        "the_active_bore_must_finish_before_2": "A sondagem ativa tem de terminar antes de se poder refazer a escavação.",
+        "pack_the_directional_core_rig_before_redoing": "Arruma a sonda direcional antes de refazeres a escavação.",
+        "there_is_no_excavation_to_redo_yet": "Ainda não há escavação para refazer.",
+        "this_face_of_the_is_too_tall_to_dig_into": "Esta face do relevo ({label}) é alta demais para escavar de lado. Aponta mais abaixo, para a base, ou sobe para cima dele e escava para baixo.",
+        "you_dug_through_the_to_the_beneath_it_keep": "Escavaste através do relevo ({label}) até {below_name}, que está por baixo. Continua a escavar.",
+        "dig_the_layers_above_first_deeper_older": "Escava primeiro as camadas de cima — mais fundo = mais antigo (sobreposição).",
+        "heads_up_so_you_are_landing_on_the_nearest": "Atenção: {layer_cause_text}, por isso vais aterrar no chão firme mais próximo{layer}.",
+        "the_rig_is_drilling_let_the_bore_finish": "A sonda está a furar. Deixa a sondagem terminar antes de voltares ao início.",
+        "returned_to_the_nearest_solid_ground": "Voltaste ao chão firme mais próximo.",
+        "returned_to_the_dig_in_point": "Voltaste ao ponto de entrada.",
+        "returned_to_the_deep_earth_starting_point": "Voltaste ao ponto de partida do interior da Terra.",
+        "foothold_gone_magma": "O teu último ponto de apoio foi escavado, por isso o explorador levou-te de volta ao ponto de entrada. O magma é rocha fundida a 700 °C ou mais: nenhuma picareta ou berbequim o consegue furar.",
+        "that_is_magma": "Isso é magma: rocha fundida a 700 °C ou mais, por isso nenhuma picareta ou berbequim o consegue furar. Voltaste ao teu último ponto de apoio seguro. Dica: a orla cozida à volta do plutão (metamorfismo de contacto) mostra até onde chegou o calor do magma.",
+        "re_excavated": "Escavado de novo: {name}.",
+        "excavated_exposed": "Escavado: {name}. A camada de baixo está agora exposta.",
+        "excavated_column_done": "Escavado: {name}. Essa coluna está agora totalmente escavada."
+      },
+      "ui": {
+        "forms_by": "Forma-se por",
+        "minerals": "Minerais",
+        "water": "Água",
+        "visual_story_comparison": "Comparação de histórias visuais",
+        "compare_geology_scenes": "Comparar cenas geológicas",
+        "compare_with": "Comparar com",
+        "process": "Processo",
+        "evidence": "Evidências",
+        "direction": "Direção",
+        "outcome": "Resultado",
+        "progress_summary": "Resumo do progresso",
+        "vocabulary_bridge": "Ponte de vocabulário",
+        "cer_explain": "Explica as tuas evidências",
+        "depth": "Profundidade",
+        "phase_debrief": "Balanço final",
+        "free_flight": "Voo livre",
+        "compare": "Comparar",
+        "dig_layer_depth": "{name} (≈ {km} km)",
+        "dig_superposition": "As camadas mais profundas formaram-se primeiro, por isso a rocha ficava mais antiga à medida que escavavas (sobreposição).",
+        "in_the_layer": "Na camada de {rock}",
+        "streak_reset": "série reiniciada",
+        "full_block": "Bloco inteiro",
+        "cut_away_percent": "{percent}% cortado pela frente",
+        "final_section": "secção final",
+        "hint_default": "Volta à lista de verificação e recolhe a próxima observação.",
+        "mission_complete": "Missão concluída",
+        "mission_complete_text": "As tuas observações obrigatórias estão prontas para apoiar uma explicação AER.",
+        "integrity": "{integrity_percent}% de integridade",
+        "brief_met": "Plano {met}/3",
+        "restored_name": "Reposto: {name}.",
+        "stop_reason": "Paragem: {reason}.",
+        "target_depth_recovered_sentence": "Profundidade-alvo recuperada.",
+        "this_run_rated": "Esta tentativa: {label} com classificação de programa {rating}/200",
+        "this_run_unrated": "Esta tentativa não tem classificação",
+        "program_best_remains": "o melhor do programa continua a ser {tier}",
+        "core_note_title": "Testemunho direcional · {angle}° / {depth} intervalos · Nota {grade} ({score})",
+        "new_personal_best": "Novo recorde pessoal!",
+        "grade_score": "Nota {grade} · {score}/200.",
+        "core_integrity_sentence": "Integridade do testemunho: {pct}%.",
+        "bore_brief_met": "Plano de sondagem {met}/3.",
+        "tier_program": "{tier}: programa {angle}° / {depth}!",
+        "highest_tier_earned": "Já alcançaste o nível máximo de operador.",
+        "improve_to_advance": "Melhora a classificação do programa ou a qualidade do testemunho para avançares.",
+        "all_programs_certified_toast": "Os nove programas certificados — Operador de Sondagem Certificado!",
+        "all_programs_mastered_toast": "Todos os programas dominados — Mestre Operador de Sondagem!",
+        "paired_finding": "Resultado em par · {pct}% de correspondência na sequência.",
+        "next_experiment_ready": "Próxima experiência pronta.",
+        "rank_up": "Subiste de nível: {rank}!",
+        "field_run_started_first_specimen": "Saída de campo iniciada: {label}. Primeiro espécime: {field_specimen_name}.",
+        "assignment_retired_journal_discoveries_and": "Tarefa retirada. As descobertas do diário e os XP de campo foram guardados.",
+        "collected_first_person": "Recolhido durante o trabalho de campo na primeira pessoa.",
+        "new_specimen_logged_in_this_scene": "Novo espécime registado: {secured_name} · {found}/{total} nesta cena.",
+        "new_specimen_logged_contract_target": "Novo espécime registado: {secured_name} · o alvo do contrato não mudou.",
+        "new_specimen_logged_short": "Novo espécime registado.",
+        "field_set_complete_return_to_the_entry_point": "Conjunto de campo completo.{journal_note} Volta ao ponto de entrada para receberes {field_run_reward} XP.",
+        "sample_secured_next": "Amostra recolhida: {secured_name}.{journal_note} A seguir: {next_name}.",
+        "layer_reached": "Camada alcançada: {where}",
+        "layers_this_dive": "Camadas neste mergulho: {n}",
+        "new_layer_reached_xp": "Nova camada alcançada: {where} · +{layer_milestone_xp} XP.{rank_up}",
+        "program_state_tier": "{tier} · melhor nota {grade} · classificação {rating}",
+        "retry_available": "podes tentar de novo",
+        "open_program": "programa aberto",
+        "program_xp_ceiling": "Atingiste o limite de XP do programa.",
+        "program_xp_next_step": "Uma classificação de programa de {points} alcança o próximo patamar de XP.",
+        "trajectory_applied": "Trajetória aplicada — começa a sondagem.",
+        "program_loaded_next": "Programa carregado — entra em Caminhar e escavar, encontra chão plano e depois instala a sonda.",
+        "next_experiment_loaded": "Próxima experiência carregada · {angle_degrees}° / {depth}. {v}",
+        "program_loaded": "Programa carregado · {angle_degrees}° / {depth} · {state_copy}. {program_next_action}",
+        "research_ceiling_reached": "O limite de investigação de 200 pontos já foi atingido.",
+        "research_points_next": "Uma pontuação de {points} dá mais XP de investigação.",
+        "challenge_loaded_intervals_replay": "Desafio carregado · {core_rig_angle_degrees}° / {challenge_depth} intervalos · repetição {replay_score}.",
+        "collected_in_order": "Recolhidos por ordem: {list}.",
+        "field_run_banked": "Saída de campo registada: +{reward} XP.{rank_up} A seguir: {next}.",
+        "new_contract": "novo contrato",
+        "your_dig_layers": "A tua escavação · camadas: {n}",
+        "field_guide_complete_for": "Guia de campo completo — {world}:desenterraste todos os achados que este mundo esconde ({found} de {total}).",
+        "field_guide_complete": "Guia de campo completo",
+        "rock": "rocha",
+        "fossil": "Fóssil",
+        "fossil_uncovered_here": "Foi descoberto um fóssil nesta camada sedimentar.",
+        "fossil_uncovered_in": "Achado: {name} em {rock}!",
+        "excavated_blocks_remain": "Blocos escavados que restam: {n}.",
+        "outcrop_restored": "O afloramento voltou à sua superfície original.",
+        "reexcavated_name": "Escavado de novo: {name}.",
+        "blocks_removed_now": "Blocos retirados agora: {n}.",
+        "dating_note_molten": "Ainda não tem idade — o relógio radiométrico só começa quando a rocha fundida cristaliza.",
+        "dating_note_surface": "Está a formar-se hoje — é jovem demais; os relógios radiométricos servem para intervalos de milhões a milhares de milhões de anos.",
+        "dating_note_metamorphic": "A datação dá a idade do metamorfismo (quando foi cozida), não a da rocha original.",
+        "dating_note_sedimentary": "Não se data diretamente — os seus grãos são mais antigos do que a rocha. Os geólogos enquadram a sua idade com camadas ígneas datáveis + fósseis de idade.",
+        "pair_basalt_basement": "Arrefecimento oposto, magmas diferentes: o basalto entrou em erupção e arrefeceu depressa (cristais pequenos demais para se verem); o granito arrefeceu lentamente no subsolo (cristais grandes e entrelaçados), a partir de um magma mais rico em sílica.",
+        "pair_basalt_intrusion": "Arrefecimento oposto, magmas diferentes: o basalto entrou em erupção e arrefeceu depressa (cristais minúsculos); o plutão de granito arrefeceu lentamente no subsolo (cristais grandes), a partir de um magma mais rico em sílica.",
+        "pair_limestone_marble": "O mármore É calcário — recristalizado pelo calor do plutão (metamorfismo de contacto). A mesma química, uma textura totalmente nova.",
+        "pair_basement_intrusion": "Ambos são granito, mas o soco é antigo e o plutão é MAIS JOVEM — corta as camadas (intersecção).",
+        "pair_hornfels_shale": "A corneana É xisto argiloso, cozido até ficar duro junto ao plutão (metamorfismo de contacto).",
+        "pair_limestone_sandstone": "Ambas são sedimentares, mas o calcário forma-se a partir de conchas marinhas (mar quente e pouco profundo) e o arenito a partir de grãos de areia (rios, dunas, praias).",
+        "pair_default": "Compara o tipo, a forma como se formam e a relação de idade acima — o que é igual e o que mudou?",
+        "type": "Tipo",
+        "dating": "Datação",
+        "indirect": "indireta",
+        "comparison_read_text": "Cena atual {current}. Cena de comparação {other}. Conceito: {concept_a} versus {concept_b}. Processo: {process_a} versus {process_b}. Evidências: {evidence_a} versus {evidence_b}. Etapa selecionada {n}: {stage_a} versus {stage_b}.",
+        "select_matching_stages_to_see_where_the_two": "Seleciona etapas correspondentes para veres onde as duas histórias geológicas se separam.",
+        "stage_of": "Etapa {compare_index} de {length}",
+        "current_scene": "Cena atual",
+        "comparison_scene": "Cena de comparação",
+        "transfer_lab": "Laboratório de transferência",
+        "compare_the_process_and_evidence_pattern": "Compara o processo e o padrão das evidências e depois transfere uma ideia de um ambiente para o outro.",
+        "current_scene_2": "Cena atual: {label}",
+        "comparison_scene_2": "Cena de comparação: {label}",
+        "concept": "Conceito",
+        "compare_the_pattern": "Compara o padrão: ",
+        "transfer_prompt_which_observation_would_best": "Pergunta de transferência: que observação distinguiria melhor {concept} de {concept_2}?",
+        "read_scene_comparison_aloud": "Ler a comparação das cenas em voz alta",
+        "km": "{d0}–{d1} km",
+        "sequence_correct_feedback": "Correto. O processo lê-se agora como uma sequência baseada em evidências.",
+        "sequence_challenge_title": "Desafio de sequência: {title}",
+        "sequence_not_yet": "Ainda não. A posição {n} devia ser “{label}”. Move um cartão e verifica de novo.",
+        "drag_and_drop_reasoning": "Raciocínio de arrastar e largar",
+        "read_sequence_challenge_aloud": "Ler o desafio de sequência em voz alta",
+        "sequence_saved": "Sequência guardada",
+        "not_checked": "Não verificado",
+        "drag_a_card_to_reorder_it_or_tap_select_on": "Arrasta um cartão para mudar a ordem. Ou toca em Selecionar num cartão e depois em Colocar aqui noutro cartão. Quem usa o teclado pode usar os botões Mover para antes e Mover para depois.",
+        "selected_choose_place_here_on_another_card": "Selecionaste {label}. Escolhe Colocar aqui noutro cartão.",
+        "touch_reorder_is_ready_choose_select_on_a": "A reordenação por toque está pronta: escolhe Selecionar num cartão para o pores antes de outro cartão.",
+        "cancel": "Cancelar",
+        "place_here": "Colocar aqui",
+        "select": "Selecionar",
+        "check_again": "Verificar de novo",
+        "check_sequence": "Verificar a sequência",
+        "reset_order": "Repor a ordem",
+        "export_progress_title": "Resumo do progresso no Explorador geológico",
+        "export_scenes_complete": "Cenas concluídas: {done}/{total}",
+        "export_scene_line": "{label} | verificações {done}/{total} | observações {evidence} | tentativas no questionário {attempts} ({correct} certas) | alertas de revisão {flags}",
+        "export_signal_steps": "passos do sinal: {step}/{total}",
+        "export_sequence_complete": "desafio de sequência: concluído",
+        "progress_summary_exported": "Resumo do progresso exportado.",
+        "could_not_export_the_progress_summary": "Não foi possível exportar o resumo do progresso.",
+        "across_all_scenes": "Em todas as cenas",
+        "scene_missions_complete": "{completed}/{length} missões de cena concluídas.",
+        "export_progress_summary": "Exportar o resumo do progresso",
+        "checks": "Verificações {done}/{total}",
+        "obs": "Obs. {evidence_count}",
+        "quiz": "Questionário {quiz_attempts}",
+        "review": "Rever {misconception_count}",
+        "signal": "Sinal {signal_step}/{signal_total}",
+        "order": "Ordem ✓",
+        "cer": "{score}/{total} AER",
+        "how_to_read_this_model_scale_direction": "Como ler este modelo. Escala: {scale}. Direção: {direction}. {read}",
+        "read_scene_guidance_aloud": "Ler as orientações da cena em voz alta",
+        "connect_the_words_to_what_you_can_observe": "Liga as palavras ao que consegues observar.",
+        "hide_vocabulary_bridge": "Ocultar a ponte de vocabulário",
+        "show_vocabulary_bridge": "Mostrar a ponte de vocabulário",
+        "use_it_when": "Quando usar: {cue}",
+        "vocabulary_bridge_2": "Ponte de vocabulário. {vocabulary_text}",
+        "read_vocabulary_aloud": "Ler o vocabulário em voz alta",
+        "read_mission_aloud": "Ler a missão em voz alta",
+        "ready_to_explain": "Pronto para explicar",
+        "field_checks": "Verificações de campo",
+        "what_to_notice": "O que observar",
+        "hint": "Pista: {text}",
+        "draft_explanation_created_from_the_evidence": "Foi criado um rascunho de explicação a partir do mapa de evidências.",
+        "note_not_written": "(não escrito)",
+        "note_cer_score": "Pontuação AER: {score}/{total}",
+        "note_title": "Nota de campo do Explorador geológico — {scene}",
+        "note_question": "Pergunta: {text}",
+        "note_claim": "Afirmação: {text}",
+        "note_explanation": "Explicação: {text}",
+        "note_reflection": "Reflexão: {text}",
+        "note_evidence": "Evidências:",
+        "note_evidence_map": "Mapa de evidências:",
+        "note_none_assigned": "(nenhuma atribuída)",
+        "note_unassigned": "Por atribuir:",
+        "could_not_export_the_field_note": "Não foi possível exportar a nota de campo.",
+        "cer_claim": "Afirmação",
+        "i_think_this_world_formed_because": "Acho que este mundo se formou porque…",
+        "use_two_or_more_observations_connect_what": "Usa duas ou mais observações. Liga o que viste ao processo.",
+        "cer_reflection": "Reflexão: que observação mudou a tua forma de pensar?",
+        "name_the_observation_that_changed": "Indica a observação que mudou, reforçou ou complicou a tua primeira ideia.",
+        "cer_rubric_score_out_of": "Grelha AER. Pontuação {score} em {total}. {join}",
+        "read_cer_feedback_aloud": "Ler o feedback AER em voz alta",
+        "evidence_map": "Mapa de evidências",
+        "give_each_collected_item_a_job_what_you": "Dá uma função a cada item recolhido: o que observaste, como funcionou o processo ou o que ele apoia.",
+        "map_ready": "Mapa pronto",
+        "roles_mapped": "{mapped_role_count}/{length} funções atribuídas",
+        "map_ready_an_observation_process_and_outcome": "Mapa pronto: estão representados uma observação, um processo e um resultado.",
+        "map_each_item": "Classifica cada item como observação, processo ou resultado.",
+        "items_unassigned": "Ainda por atribuir: {n}.",
+        "draft_explanation_from_map": "Criar um rascunho de explicação a partir do mapa",
+        "creates_an_editable_claim_and_explanation": "Cria uma afirmação e uma explicação que podes editar.",
+        "map_all_three_roles_to_unlock_a_draft": "Atribui as três funções para desbloquear um rascunho.",
+        "collect_observations_in_investigate_mode": "Recolhe observações no modo Investigar e depois organiza-as aqui.",
+        "collected_evidence": "Evidências recolhidas",
+        "your_observations_will_appear_here_as_you": "As tuas observações vão aparecer aqui à medida que exploras.",
+        "field_conclusion_saved": "Conclusão de campo guardada.",
+        "conclusion_saved": "✓ Conclusão guardada",
+        "save_conclusion": "Guardar a conclusão",
+        "export_field_note": "⇩ Exportar a nota de campo",
+        "explain_your_evidence": "📝 Explica as tuas evidências",
+        "complete_the_rubric_checks_above_before": "Completa as verificações da grelha acima antes de enviares a tua conclusão.",
+        "accessible_scene_map": "Mapa acessível da cena",
+        "stage_of_2": "Etapa {active_index} de {length}",
+        "active_stage": "Etapa ativa: ",
+        "selected": "Selecionado: ",
+        "select_a_material_below_to_connect_it_to_the": "Seleciona um material abaixo para o ligares ao mapa.",
+        "focus_lens_is_isolating_this_material": "A lente de foco está a isolar este material.",
+        "this_map_follows_the_formation_timeline_and": "Este mapa segue a cronologia de formação e a lista de materiais existente.",
+        "intervals": "{total_intervals} / {shared_interval_scale} intervalos",
+        "interval_gap": "Diferença de intervalos: {remainder_intervals}",
+        "no_recovered_intervals": "Nenhum intervalo recuperado",
+        "core_correlation": "Correlação de testemunhos",
+        "match": "{similarity}% de correspondência",
+        "shared": "Em comum",
+        "new": "Novo",
+        "not_repeated": "Não repetido",
+        "sequence_matches_compare_recovered_intervals": "As correspondências de sequência comparam intervalos recuperados; não provam que haja rocha contínua entre os furos de sondagem.",
+        "angle": "Ângulo",
+        "current": "Atual",
+        "next": "Seguinte",
+        "outcome_unknown_run_this_bore_to_reveal_the": "Resultado desconhecido · faz esta sondagem para revelar a comparação",
+        "specimen_journal": "📓 Diário de espécimes",
+        "mine_a_material_in_first_person_to_log_it": "Escava um material na primeira pessoa para o registares. Os cartões registados revelam a sua categoria e podem voltar a focar o modelo 3D.",
+        "finds_across_worlds": "💎 {found}/{total} achados em todos os mundos",
+        "across_worlds": "{found}/{total} em todos os mundos",
+        "finds_in_the_rock": "💎 Achados na rocha",
+        "found": "{scene_finds_found}/{length} encontrados",
+        "each_one_hides_inside_the_rock_where_it": "Cada um está escondido na rocha onde realmente se forma. Escava na primeira pessoa; aparece na parede antes de o soltares.",
+        "mohs_hardness_ranks_which_mineral_scratches": "A dureza de Mohs ordena que mineral risca qual, do talco (1) ao diamante (10): é uma ordenação, não uma régua. Uma faca de aço ou uma picareta tem cerca de 5,5. Duro não é o mesmo que resistente: os cristais duros também se podem estilhaçar, e a rapidez com que se escava uma rocha depende de quão resistente e cimentada ela é.",
+        "found_2": "Encontrado: {hint}",
+        "not_found_yet": "❔ Ainda não encontrado",
+        "look": "Procura: {hint}",
+        "your_digs": "📏 As tuas escavações",
+        "each_column_is_one_dig_top_to_bottom_deeper": "Cada coluna é uma escavação, de cima para baixo. As camadas mais profundas formaram-se primeiro: a base de cada coluna é a rocha mais antiga a que chegaste (sobreposição).",
+        "each_column_is_one_dig_the_layers_it_passed": "Cada coluna é uma escavação: as camadas que atravessou, de cima para baixo.",
+        "km_2": "≈ {depth_km} km",
+        "field_assignments": "🧭 Tarefas de campo",
+        "ready_to_bank": "Pronto para receber",
+        "3_secured": "{length}/3 recolhidos",
+        "xp": "+{field_run_reward} XP",
+        "enter_3d_and_return_home_to_bank": "Entra no 3D e volta ao início para receber",
+        "retire_assignment": "Retirar a tarefa",
+        "directional_core_research": "◉ Investigação com testemunhos direcionais",
+        "bore_interval_target_log": "Sondagem a {v}° · alvo de {target_depth} intervalos · registo {length}",
+        "no_bore_logged_in_this_scene_yet": "Ainda não há nenhuma sondagem registada nesta cena.",
+        "new_best": "Novo recorde",
+        "brief_3": "Plano {met_count}/3",
+        "grade": "Nota {grade}",
+        "research_mastery": "Domínio da investigação",
+        "best_grade_200": "Melhor nota {core_mastery_grade} · {core_mastery_score}/200",
+        "awaiting_first_core": "À espera do primeiro testemunho",
+        "scored_bores": "Sondagens pontuadas: {n}",
+        "selected_research_xp": "Sondagem selecionada: +{research_reward} XP de investigação",
+        "improve_the_best_score_to_earn_xp": "Melhora a melhor pontuação para ganhares XP",
+        "core_rig_operator_certification": "⬡ Certificação de operador da sonda de testemunhos",
+        "certify_every_angle_and_depth_earn_grade_c": "Certifica todos os ângulos e profundidades. Obtém nota C, protege pelo menos 85% de integridade e recupera o alvo ou chega a 75% antes de um limite protegido.",
+        "certified_c_85_advanced_135_rating_92": "Certificado: nota C / 85% ·Avançado: classificação 135 / 92% · Dominado: classificação 175 / 97%",
+        "certification_programs_by_drill_angle_and": "Programas de certificação por ângulo de sondagem e profundidade-alvo",
+        "int": "{depth} int.",
+        "program_spoken_tier": "{tier}. Nota da melhor pontuação válida: {grade}. Melhor classificação do programa: {rating}. Integridade máxima: {integrity} por cento. {guidance}",
+        "program_spoken_unrated": "Sem classificação. Tentativas: {n}. {guidance}",
+        "program_spoken_open": "Aberto, sem tentativas.",
+        "selected_program": "Programa selecionado",
+        "intervals_2": "{angle_degrees}° {angle} · {depth} intervalos",
+        "retry": "Repetir",
+        "open": "Aberto",
+        "program_meta_tier": "Melhor pontuação válida {grade} · {score}/200 · Melhor classificação {rating}/200 · Integridade máxima {integrity}% · Tentativas: {attempts}",
+        "last_result_200_rating_200_integrity": "Último resultado {last_grade} · {last_score}/200 · classificação {last_rating}/200 · {last_integrity}% de integridade",
+        "no_bore_logged_for_this_exact_trajectory_yet": "Ainda não há nenhuma sondagem registada para esta trajetória exata.",
+        "all_score_improvement_xp_earned": "Já ganhaste todos os XP por melhorar a pontuação",
+        "load_program_enter_walk_dig": "Carregar o programa {angle_degrees}° / {depth} · entrar em Caminhar e escavar",
+        "end_the_active_bore_before_loading_another": "Termina a sondagem ativa antes de carregares outro programa.",
+        "core_interval_label": "Intervalo {n} do testemunho: {name}, {quality}",
+        "integrity_not_recorded": "integridade não registada",
+        "percent_integrity_spoken": "{pct} por cento de integridade",
+        "core_interval_missing": "Intervalo {n} do testemunho: não recuperado",
+        "drop_into_walk_dig_find_level_ground_then": "Entra em Caminhar e escavar, encontra chão plano e depois carrega em R para instalar a sonda.",
+        "samples": "{sample_count} amostras",
+        "materials": "{unique_materials} materiais",
+        "interval_deepest": "Intervalo mais fundo: {deepest}",
+        "pristine": "{pristine_count} intactos",
+        "stop": "Paragem · {core_rig_stop_label}",
+        "target_depth_recovered": "Profundidade-alvo recuperada",
+        "finding": "Resultado",
+        "next_experiment": "Próxima experiência",
+        "improve_this_bore": "Melhorar esta sondagem · {v}° / {target_depth}",
+        "compare_load": "Comparar · carregar {angle_degrees}° / {depth}",
+        "recent": "Recente",
+        "mine_to_reveal_field_notes": "Escava para revelar as notas de campo",
+        "scene_journal_complete_every_safely_mineable": "✓ Diário da cena completo — todos os materiais que se podem escavar em segurança estão registados.",
+        "return_to_the_3d_view_for_fieldwork": "Volta à vista 3D para o trabalho de campo",
+        "drop_in_for_another_field_run": "⛏ Entra para outra saída de campo",
+        "drop_in_and_log_specimens": "⛏ Entra e regista espécimes",
+        "field_run": "Saída de campo",
+        "bank_xp": "⌂ Receber +{field_run_reward} XP",
+        "excavate_the_arrowed_specimen_next": "A seguir, escava o espécime assinalado pela seta.",
+        "survey_pulse_g": "◎ Impulso de prospeção (G)",
+        "next_2": "A seguir: {label} · {brief}",
+        "start_3_specimen_run": "Começar saída de 3 espécimes",
+        "xp_2": "{v} XP",
+        "xp_to": "{remaining} XP para {next_label}",
+        "top_rank": "Nível máximo",
+        "scene_specimens": "📓 Espécimes da cena",
+        "return_home_to_bank": "Volta ao início para receberes os XP da saída de campo",
+        "in_progress": "Em curso",
+        "replay_score": "Repetição {score}",
+        "research_ceiling_short": "limite de investigação atingido",
+        "earns_xp_at": "{points}+ dá XP",
+        "replay_beaten": "Repetição superada +{delta} · resultado {result}",
+        "replay_matched": "Repetição igualada · resultado {result}",
+        "replay_behind": "Pontos para a repetição: {n} · resultado {result}",
+        "recover_then_compare": "Recupera este testemunho e depois compara a sequência revelada.",
+        "rig_program_tier": "{tier} · melhor pontuação válida {grade} · classificação {rating} · integridade máxima {integrity}% · {guidance}",
+        "next_xp_at_rating_points": "Próximos XP com uma classificação de {points}",
+        "strata_core_rig": "SONDA DE ESTRATOS",
+        "rig_samples": "Amostras: {n}",
+        "rig_seals": "{met}/3 selos",
+        "phase_setup": "Preparação",
+        "bore": "Sondagem",
+        "complete": "Concluído",
+        "upcoming": "A seguir",
+        "field_run_target": "Alvo da saída de campo · {rig_target}",
+        "program_focus": "Foco do programa",
+        "score_challenge": "◆ Desafio de pontuação",
+        "new_best_2": "★ Novo recorde",
+        "research_xp": "+{research_reward} XP de investigação",
+        "program_xp": "+{certification_reward} XP do programa",
+        "bore_brief": "Plano de sondagem",
+        "3_seals": "{met_count}/3 SELOS",
+        "yield": "Rendimento",
+        "resistance": "Resistência",
+        "boundary": "Limite",
+        "formation_scan_load": "ANÁLISE DA FORMAÇÃO · {load}",
+        "reading": "a analisar",
+        "formation_load_line": "Formação · {load}",
+        "trajectory_scan": "análise da trajetória",
+        "feed_select": "Escolhe · {feed}",
+        "feed_best": "Melhor resposta · {feed}",
+        "choose_a_feed": "Escolhe um avanço",
+        "streak": "série {pristine_streak}",
+        "coolant_pulse_remaining": "❄ Impulso de arrefecimento · restam {v}",
+        "core_debrief": "Balanço do testemunho",
+        "recovered": "Recuperado",
+        "integrity_2": "Integridade",
+        "head_temp": "Temp. da cabeça",
+        "live_core_integrity": "Integridade do testemunho em tempo real",
+        "pristine_streak": "{rig_integrity}% · série de intactos {v}",
+        "surface_barrel": "Barrilete à superfície",
+        "core_cassette": "Cassete de testemunhos",
+        "recovered_2": "{revealed_count}/{total} recuperados",
+        "load_comparison": "Carregar comparação · {angle_degrees}° / {depth}",
+        "trajectory_ready": "Trajetória pronta",
+        "mine_mode": "Modo de escavação",
+        "deep_earth_flight": "Voo pelo interior da Terra",
+        "dug_count": "Escavados: {n}",
+        "finding_safe_ground": "A procurar chão seguro…",
+        "shells_you_have_passed_outside_in": "Camadas que atravessaste, de fora para dentro",
+        "your_dig_top_to_bottom": "A tua escavação, de cima para baixo",
+        "deeper_layers_formed_first_you_are_digging": "As camadas mais profundas formaram-se primeiro: estás a escavar para trás no tempo (sobreposição).",
+        "each_shell_inward_is_hotter_and_under_more": "Cada camada para dentro está mais quente e sob mais pressão.",
+        "field_checks_complete": "As tuas verificações de campo estão concluídas. Muda para Avaliar e explica as tuas evidências.",
+        "select_another_material": "Seleciona outro material e compara o que mudou.",
+        "use_mission_checklist": "Usa a lista de verificação da missão para recolher mais uma evidência.",
+        "observe": "Observar",
+        "path_observe": "Explora um mundo e seleciona um material.",
+        "path_compare": "Liga camadas, profundidade e processos.",
+        "reconstruct": "Reconstituir",
+        "path_reconstruct": "Usa evidências para explicar a sua história.",
+        "focus_lens_isolates_one_material_turn_it_off": "A lente de foco isola um material · desliga-a para escavar",
+        "click_a_top_block_to_dig_undo_restores_it": "Clica num bloco de cima para escavar · Anular repõe-no",
+        "schematic_model_not_to_scale_colors_are": "Modelo esquemático — fora de escala. As cores são ilustrativas.",
+        "on": "Ativado",
+        "off": "Desativado",
+        "variable_changed": "Muda",
+        "variable_held": "Mantém-se",
+        "depth_n_intervals": "{n} intervalos",
+        "recovered_formation": "Formação recuperada",
+        "angle_changed_depth_held": "Ângulo alterado · profundidade mantida",
+        "depth_changed_angle_held": "Profundidade alterada · ângulo mantido",
+        "reference_bore": "Sondagem de referência",
+        "candidate_bore": "Sondagem candidata",
+        "core_compare_default_finding": "As sequências recuperadas dão uma nova comparação para o diário de campo.",
+        "core_compare_default_control": "Compara uma variável alterada, mantendo a outra constante.",
+        "coolant_pulses_one": "1 impulso de arrefecimento",
+        "coolant_pulses": "{n} impulsos de arrefecimento",
+        "specimens_complete": "{found}/{total} concluídos",
+        "specimens_logged": "{found}/{total} registados",
+        "cert_line": "CERT {done}/9 • {angle}° / {depth} • {state}",
+        "core_interval_scanning": "Intervalo {n} do testemunho: análise da formação em curso",
+        "core_interval_current": "Intervalo {n} do testemunho: intervalo de perfuração atual",
+        "core_interval_pending": "Intervalo {n} do testemunho: pendente",
+        "resumed_at_stage": "Retomado na etapa {n}: {label}."
+      },
+      "mohs": {
+        "harder": "mais duro do que o aço: riscaria a tua picareta",
+        "softer": "mais macio do que o aço: a tua picareta risca-o",
+        "about": "mais ou menos tão duro como o aço",
+        "line": "dureza {value} (Mohs), {steel}."
+      },
+      "compass": {
+        "n": "N",
+        "ne": "NE",
+        "e": "E",
+        "se": "SE",
+        "s": "S",
+        "sw": "SO",
+        "w": "O",
+        "nw": "NO"
+      },
+      "fp_keys_fly": "WASD voar · Q E subir/descer · IJKL olhar · 1 picareta · 2 berbequim · mantém X escavar · G prospeção · Z/Y anular/refazer · H início",
+      "sits_soil": "Desenhado com um bloco de espessura para o poderes escavar · o solo real só tem alguns metros de espessura",
+      "dating_earth_limit": "A Terra tem cerca de 4540 milhões de anos, por isso o controlo deslizante para aí."
     },
     "kitchenlab": {
       "browning_lab": "Laboratório de Douração",

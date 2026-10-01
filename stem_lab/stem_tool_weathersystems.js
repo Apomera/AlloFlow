@@ -3796,14 +3796,14 @@ var GEOGRAPHY_PROFILES = {
         var next = immersiveLessonPresetList((Array.isArray(d.immersiveLessonPresets) ? d.immersiveLessonPresets : []).filter(function (item) { return item.id !== preset.id; }).concat([preset]));
         update({ immersiveLessonPresets: next, immersiveLessonPresetActiveId: preset.id, immersiveLessonPresetDraftName: '', immersiveLessonPresetStatus: 'Saved preset “' + preset.name + '”.' });
         if (addToast) addToast('Lesson preset saved locally.', 'success');
-        if (announce) announce('Lesson preset ' + preset.name + ' saved locally.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_lesson_preset_saved_locally', 'Lesson preset {value1} saved locally.'), { value1: preset.name }));
       }
 
       function applyImmersiveLessonPreset(preset) {
         var safe = validateImmersiveLessonPreset(preset);
         if (!safe) { update({ immersiveLessonPresetStatus: 'That lesson preset could not be applied.' }); return; }
         update(Object.assign({}, safe.weatherSystems, { immersiveLessonPresetActiveId: safe.id, immersiveLessonPresetStatus: 'Applied preset “' + safe.name + '”.' }));
-        if (announce) announce('Lesson preset ' + safe.name + ' applied.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_lesson_preset_applied', 'Lesson preset {value1} applied.'), { value1: safe.name }));
       }
 
       function deleteImmersiveLessonPreset(preset) {
@@ -3835,13 +3835,13 @@ var GEOGRAPHY_PROFILES = {
           }
           update(livePatch);
           if (addToast) addToast('Live weather loaded for ' + live.label + '.', 'success');
-          if (announce) announce('Live weather loaded for ' + live.label + '. Observed condition: ' + live.condition + '.');
+          if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_live_weather_loaded_for_observed_condition', 'Live weather loaded for {value1}. Observed condition: {value2}.'), { value1: live.label, value2: live.condition }));
           return live;
         }).catch(function (error) {
           var message = error && error.message ? error.message : 'Live weather could not be loaded.';
           update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: d.liveWeather ? 'Showing the last saved weather while the new request is unavailable.' : '', immersiveLiveFallbackAvailable: !!d.liveWeather });
           if (addToast) addToast(message, 'error');
-          if (announce) announce('Live weather error. ' + message);
+          if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_live_weather_error', 'Live weather error. {value1}'), { value1: message }));
           return null;
         });
       }
@@ -3913,7 +3913,7 @@ var GEOGRAPHY_PROFILES = {
           var message = error && error.message ? error.message : 'Location search failed.';
           update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: '' });
           if (addToast) addToast(message, 'error');
-          if (announce) announce('Location search error. ' + message);
+          if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_location_search_error', 'Location search error. {value1}'), { value1: message }));
         });
       }
 
@@ -3974,7 +3974,7 @@ var GEOGRAPHY_PROFILES = {
           };
         }
         update({ immersiveCameraPreset: preset });
-        if (announce) announce('3D camera moved to the ' + view.label + ' view.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_3d_camera_moved_to_the_view', '3D camera moved to the {value1} view.'), { value1: view.label }));
       }
 
       function setGeographicCameraPreset(preset) {
@@ -3989,7 +3989,7 @@ var GEOGRAPHY_PROFILES = {
         try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
         runtime.map.easeTo({ center: [geographic.longitude, geographic.latitude], zoom: view.zoom, pitch: view.pitch, bearing: view.bearing, duration: reduceMotion ? 0 : 850, essential: false });
         update({ geographicCameraPreset: view.id, geographicAnalysisLens: 'custom', geographicInvestigationPaused: true, geographicViewport: { zoom: view.zoom, pitch: view.pitch, bearing: view.bearing } });
-        if (announce) announce('Geographic camera moved to ' + view.label + '. Analysis view is now custom.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_geographic_camera_moved_to_analysis_view_is_now_c', 'Geographic camera moved to {value1}. Analysis view is now custom.'), { value1: view.label }));
       }
 
       function resetImmersiveOrientation() {
@@ -4060,7 +4060,7 @@ var GEOGRAPHY_PROFILES = {
           if (source && source.setData) source.setData(geographicOverlayData(d.liveWeather, nextRadius).studyArea);
         }
         update({ geographicStudyRadius: nextRadius });
-        if (announce) announce('Geographic study area changed to ' + nextRadius + ' kilometers.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_geographic_study_area_changed_to_kilometers', 'Geographic study area changed to {value1} kilometers.'), { value1: nextRadius }));
       }
 
       function setGeographicTerrainExaggeration(exaggeration) {
@@ -4077,7 +4077,7 @@ var GEOGRAPHY_PROFILES = {
         }
         runtime.map.setTerrain({ source: 'weather-terrain', exaggeration: nextExaggeration });
         update({ geographicTerrainExaggeration: nextExaggeration });
-        if (announce) announce('Terrain emphasis changed to ' + nextExaggeration + ' times elevation.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_terrain_emphasis_changed_to_times_elevation', 'Terrain emphasis changed to {value1} times elevation.'), { value1: nextExaggeration }));
       }
 
       function setGeographicOverlayVisibility(kind, visible) {
@@ -4253,7 +4253,7 @@ var GEOGRAPHY_PROFILES = {
         if (checkpoints.length > 8) checkpoints = checkpoints.slice(checkpoints.length - 8);
         update({ liveForecastCheckpoints: checkpoints });
         if (addToast) addToast('Forecast checkpoint saved for ' + weather.validAt + '.', 'success');
-        if (announce) announce('Forecast checkpoint saved for ' + weatherTimelineLabel(weather, weather.timezone) + '. Refresh live weather near that hour to compare forecast and observation.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_forecast_checkpoint_saved_for_refresh_live_weathe', 'Forecast checkpoint saved for {value1}. Refresh live weather near that hour to compare forecast and observation.'), { value1: weatherTimelineLabel(weather, weather.timezone) }));
       }
 
       function removeLiveForecastCheckpoint(checkpointId) {
@@ -4326,7 +4326,7 @@ var GEOGRAPHY_PROFILES = {
           var message = error && error.message ? error.message : 'The regional weather field could not be loaded.';
           update({ geographicWeatherFieldLoading: false, geographicWeatherFieldError: message, geographicWeatherFieldStatus: '' });
           if (addToast) addToast(message, 'error');
-          if (announce) announce('Regional weather field error. ' + message);
+          if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_regional_weather_field_error', 'Regional weather field error. {value1}'), { value1: message }));
           return null;
         });
       }
@@ -4379,7 +4379,7 @@ var GEOGRAPHY_PROFILES = {
         }
         if (runtime && runtime.setFocusSpotlight) runtime.setFocusSpotlight(nextFocus, d.immersiveFocusSpotlight !== false);
         update({ immersiveFocus: nextFocus });
-        if (announce) announce('3D analysis focus changed to ' + labels[nextFocus] + '.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_3d_analysis_focus_changed_to', '3D analysis focus changed to {value1}.'), { value1: labels[nextFocus] }));
       }
 
 function openImmersiveTourStep(stepId) {
@@ -4388,7 +4388,7 @@ function openImmersiveTourStep(stepId) {
         applyImmersiveFocus(step.focus);
         if (immersiveRuntimeRef.current && immersiveRuntimeRef.current.camera) setImmersiveCameraPreset(step.camera);
         else update({ immersiveCameraPreset: step.camera });
-        if (announce) announce('Immersive investigation step ' + (step.index + 1) + ' of ' + step.total + ': ' + step.label + '. ' + step.prompt);
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_immersive_investigation_step_of', 'Immersive investigation step {value1} of {value2}: {value3}. {value4}'), { value1: (step.index + 1), value2: step.total, value3: step.label, value4: step.prompt }));
       }
 
 
@@ -4454,7 +4454,7 @@ function openImmersiveTourStep(stepId) {
         var validPanels = ['explain', 'evidence', 'compare', 'connections'];
         var nextPanel = validPanels.indexOf(panelId) !== -1 ? panelId : 'explain';
         update({ immersiveInspectorPanel: nextPanel });
-        if (announce) announce('Immersive inspector view changed to ' + nextPanel + '.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_immersive_inspector_view_changed_to', 'Immersive inspector view changed to {value1}.'), { value1: nextPanel }));
       }
 
       function previewImmersiveFeature(featureId, inputMethod) {
@@ -4535,7 +4535,7 @@ function openImmersiveTourStep(stepId) {
           experimentPrediction: '',
           experimentResult: null
         });
-        if (announce) announce('Loaded scenario: ' + next.name + '. ' + next.summary);
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_loaded_scenario', 'Loaded scenario: {value1}. {value2}'), { value1: next.name, value2: next.summary }));
       }
 
       function viewStation(id) {
@@ -4543,7 +4543,7 @@ function openImmersiveTourStep(stepId) {
         viewed[id] = true;
         update({ selectedStation: id, stationsViewed: viewed });
         var chosen = STATIONS.filter(function (item) { return item.id === id; })[0];
-        if (announce && chosen) announce('Selected observation station ' + chosen.name + '.');
+        if (announce && chosen) announce(__alloFill(__alloT('stem.weathersystems.sr_selected_observation_station', 'Selected observation station {value1}.'), { value1: chosen.name }));
       }
 
       function logObservation() {
@@ -4561,13 +4561,13 @@ function openImmersiveTourStep(stepId) {
         if (log.length > 8) log = log.slice(log.length - 8);
         update({ observationLog: log });
         if (addToast) addToast('Observation logged at ' + observation.name + '.', 'success');
-        if (announce) announce('Logged observation at ' + observation.name + ' for model hour ' + state.simHour + '.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_logged_observation_at_for_model_hour', 'Logged observation at {value1} for model hour {value2}.'), { value1: observation.name, value2: state.simHour }));
       }
 
       function advance(hours) {
         var nextHour = clamp(state.simHour + hours, 0, 24);
         update({ simHour: nextHour, timeAdvanced: true });
-        if (announce) announce('Model advanced to ' + nextHour + ' hours.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_model_advanced_to_hours', 'Model advanced to {value1} hours.'), { value1: nextHour }));
       }
 
       function toggleEvidence(id) {
@@ -4649,7 +4649,7 @@ function openImmersiveTourStep(stepId) {
         update({ experimentResult: result, experimentsRun: runs, experimentCompleted: true });
         if (!d.experimentCompleted && ctx.awardXP) ctx.awardXP('weatherSystems', 8, 'Controlled weather experiment');
         if (addToast) addToast(result.predictionCorrect ? 'Prediction supported by the model.' : 'The model produced a different result?revise your explanation.', result.predictionCorrect ? 'success' : 'info');
-        if (announce) announce('Controlled test complete. Precipitation potential changed by ' + result.deltas.precipPotential + ' percentage points.');
+        if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_controlled_test_complete_precipitation_potential', 'Controlled test complete. Precipitation potential changed by {value1} percentage points.'), { value1: result.deltas.precipPotential }));
       }
 
       React.useEffect(function () {
@@ -6852,8 +6852,7 @@ var geographyGroup = new THREE.Group();
           h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'How close to cloudy?' : 'Distance to saturation'),
           h('svg', {
             viewBox: '0 0 700 96', className: 'mt-1 h-auto w-full', role: 'img',
-            'aria-label': 'Temperature axis from ' + axisLow + ' to ' + axisHigh + ' degrees Celsius. Dew point is ' + dewPoint + ' degrees and air temperature is ' + temperature + ' degrees, a spread of ' + spread + ' degrees. ' + caption
-          },
+            'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_temperature_axis_from_to_degrees_celsius_dew_po', 'Temperature axis from {value1} to {value2} degrees Celsius. Dew point is {value3} degrees and air temperature is {value4} degrees, a spread of {value5} degrees. {value6}'), { value1: axisLow, value2: axisHigh, value3: dewPoint, value4: temperature, value5: spread, value6: caption })},
             h('line', { x1: LEFT, y1: 54, x2: RIGHT, y2: 54, stroke: chartBaseline, strokeWidth: 2 }),
             [axisLow, Math.round((axisLow + axisHigh) / 2), axisHigh].map(function (tick) {
               // Drop a tick that would print under the markers rather than let them overprint.
@@ -7865,7 +7864,7 @@ var geographyGroup = new THREE.Group();
                   fill: 'transparent',
                   tabIndex: 0,
                   role: 'img',
-                  'aria-label': 'T plus ' + point.hour + ' hours: temperature ' + point.temperature + ' degrees, dew point ' + point.dewPoint + ' degrees, pressure ' + point.seaLevelPressure + ' hectopascals, wind ' + point.windSpeed + ' kilometers per hour, cloud cover ' + point.cloudCover + ' percent, precipitation potential ' + point.precipPotential + ' percent.',
+                  'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_t_plus_hours_temperature_degrees_dew_point_degr', 'T plus {value1} hours: temperature {value2} degrees, dew point {value3} degrees, pressure {value4} hectopascals, wind {value5} kilometers per hour, cloud cover {value6} percent, precipitation potential {value7} percent.'), { value1: point.hour, value2: point.temperature, value3: point.dewPoint, value4: point.seaLevelPressure, value5: point.windSpeed, value6: point.cloudCover, value7: point.precipPotential }),
                   onMouseEnter: function () { setMeteogramHoverHour(point.hour); },
                   onFocus: function () { setMeteogramHoverHour(point.hour); },
                   onBlur: function () { setMeteogramHoverHour(null); }
@@ -7988,7 +7987,7 @@ var geographyGroup = new THREE.Group();
               h('span', { className: 'mr-1 text-xs font-black uppercase tracking-wide ' + storyEyebrow }, 'Jump to chapter'),
               chapters.map(function (hour) {
                 var active = state.simHour === hour;
-                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-800 bg-cyan-700 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) }, 'T +' + hour);
+                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_atmosphere_storyline_moved_to_model_hour', 'Atmosphere storyline moved to model hour {value1}.'), { value1: hour })); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-800 bg-cyan-700 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) }, 'T +' + hour);
               })
             ),
             h('div', { className: 'relative mt-4 grid gap-3 md:grid-cols-3', 'aria-live': 'polite' }, cards.map(function (card) {
@@ -8084,7 +8083,7 @@ var geographyGroup = new THREE.Group();
         function applyVisualPreset(preset) {
           update({ radar: preset.radar, fronts: preset.fronts, windLayer: preset.windLayer, motion: preset.motion, visualPresetUsed: true });
           if (addToast) addToast('Visual scene changed to ' + preset.label + '.', 'success');
-          if (announce) announce('Weather map visual scene changed to ' + preset.label + '. ' + preset.detail + '. Model data did not change.');
+          if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_weather_map_visual_scene_changed_to_model_data_di', 'Weather map visual scene changed to {value1}. {value2}. Model data did not change.'), { value1: preset.label, value2: preset.detail }));
         }
         return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-visual-scene-studio': true, 'aria-labelledby': 'visual-scene-studio-title' },
           h('div', { className: 'flex items-start justify-between gap-2 border-b p-3 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
@@ -8366,7 +8365,7 @@ var geographyGroup = new THREE.Group();
                   onChange: function (event) {
                     var next = scenarioById(event.target.value);
                     update({ compareScenario: next.id, patternCompared: true });
-                    if (announce) announce('Comparing ' + scenario.name + ' with ' + next.name + ' at model hour ' + state.simHour + '.');
+                    if (announce) announce(__alloFill(__alloT('stem.weathersystems.sr_comparing_with_at_model_hour', 'Comparing {value1} with {value2} at model hour {value3}.'), { value1: scenario.name, value2: next.name, value3: state.simHour }));
                   },
                   className: inputClass
                 }, alternatives.map(function (item) { return h('option', { key: item.id, value: item.id }, item.name); }))
@@ -8479,7 +8478,7 @@ var geographyGroup = new THREE.Group();
               h('div', {
                 className: 'border-t px-3 py-3 ' + (dark ? 'border-slate-700 bg-slate-950/45' : 'border-sky-100 bg-white/70'),
                 role: 'group',
-                'aria-label': 'Live atmospheric snapshot for ' + station.name + ' at model hour ' + state.simHour,
+                'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_live_atmospheric_snapshot_for_at_model_hour', 'Live atmospheric snapshot for {value1} at model hour {value2}'), { value1: station.name, value2: state.simHour }),
                 'data-weather-snapshot-rail': true
               },
                 h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
@@ -9097,7 +9096,7 @@ var geographyGroup = new THREE.Group();
                     ),
                     h('span', { className: 'rounded-full px-2.5 py-1 text-sm font-black ' + (entry.score >= 80 ? 'bg-emerald-700 text-white' : entry.score >= 55 ? 'bg-amber-400 text-amber-950' : 'bg-rose-600 text-white') }, entry.score)
                   ),
-                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Forecast ' + entry.attempt + ' score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': entry.score },
+                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_forecast_score_2', 'Forecast {value1} score'), { value1: entry.attempt }), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': entry.score },
                     h('div', { className: 'h-full rounded-full ' + (entry.score >= 80 ? 'bg-emerald-400' : entry.score >= 55 ? 'bg-amber-400' : 'bg-rose-400'), style: { width: entry.score + '%' } })
                   ),
                   h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, (precipLabels[entry.precip] || entry.precip) + ' | ' + entry.timing + ' hours | ' + (hazardLabels[entry.hazard] || entry.hazard)),
@@ -9665,8 +9664,7 @@ var geographyGroup = new THREE.Group();
             className: 'mt-4 h-auto w-full',
             role: 'img',
             'data-weather-experiment-chart': true,
-            'aria-label': 'Controlled experiment comparison at plus ' + result.hour + ' hours: ' + summary
-          },
+            'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_controlled_experiment_comparison_at_plus_hours', 'Controlled experiment comparison at plus {value1} hours: {value2}'), { value1: result.hour, value2: summary })},
             h('g', null,
               h('circle', { cx: 167, cy: 22, r: 6, fill: baseColor, stroke: surfaceColor, strokeWidth: 2 }),
               h('text', { x: 180, y: 26, fill: textColor, fontSize: 12, fontWeight: 700 }, 'Baseline'),
@@ -10295,7 +10293,7 @@ var geographyGroup = new THREE.Group();
               __alloFill(__alloT('stem.weathersystems.predict_tally', 'Right so far: {value1} of {value2}'), { value1: predictionTally.correct, value2: predictionTally.total }))
           )
         );
-        var focusSpotlightBadge = !geographicMode && immersiveFocusSpotlight && h('div', { className: 'pointer-events-none w-[min(320px,100%)] rounded-2xl border px-3 py-2 text-center shadow-2xl backdrop-blur-md ' + (immersiveStageMode ? 'hidden xl:block ' : '') + focusSpotlightTheme.badge, 'data-weather-focus-spotlight-badge': immersiveFocus, role: 'status', 'aria-live': 'polite', 'aria-label': 'Visual spotlight: ' + focusDetail.label + '. ' + focusDetail.detail },
+        var focusSpotlightBadge = !geographicMode && immersiveFocusSpotlight && h('div', { className: 'pointer-events-none w-[min(320px,100%)] rounded-2xl border px-3 py-2 text-center shadow-2xl backdrop-blur-md ' + (immersiveStageMode ? 'hidden xl:block ' : '') + focusSpotlightTheme.badge, 'data-weather-focus-spotlight-badge': immersiveFocus, role: 'status', 'aria-live': 'polite', 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_visual_spotlight', 'Visual spotlight: {value1}. {value2}'), { value1: focusDetail.label, value2: focusDetail.detail })},
                   h('p', { className: 'text-[0.5625rem] font-black uppercase tracking-[0.18em] ' + focusSpotlightTheme.eyebrow }, 'Visual spotlight'),
                   h('p', { className: 'mt-0.5 flex items-center justify-center gap-1.5 text-xs font-black text-white' }, h('span', { className: 'h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]', style: { backgroundColor: focusSpotlightTheme.color }, 'aria-hidden': true }), focusDetail.label),
                   h('p', { className: 'mt-0.5 truncate text-[0.5625rem] text-slate-300' }, focusDetail.detail)
@@ -10350,7 +10348,7 @@ var geographyGroup = new THREE.Group();
                   ),
                   h('button', { type: 'button', onClick: toggleImmersivePresenterMode, className: 'mt-3 min-h-11 w-full rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-2 text-[0.625rem] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Exit presenter mode')
                 );
-        var comparisonLegendPanel = !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/90 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': '3D feature comparison. Anchor A: ' + comparisonAnchorFeature.label + '. Inspecting B: ' + selectedGlossaryFeature.label + '.' },
+        var comparisonLegendPanel = !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/90 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_3d_feature_comparison_anchor_a_inspecting_b', '3D feature comparison. Anchor A: {value1}. Inspecting B: {value2}.'), { value1: comparisonAnchorFeature.label, value2: selectedGlossaryFeature.label })},
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, '3D feature comparison'),
                   h('div', { className: 'mt-1.5 space-y-1.5 text-[0.625rem] font-bold' },
                     h('div', { className: 'flex items-center gap-2 text-fuchsia-100' }, h('span', { className: 'h-2.5 w-2.5 rounded-sm border border-white bg-fuchsia-400', 'aria-hidden': true }), h('span', null, 'Anchor A: ' + comparisonAnchorFeature.label)),
@@ -10437,7 +10435,7 @@ var geographyGroup = new THREE.Group();
             ),
             h('div', { className: 'grid gap-4 p-3 sm:p-5 ' + (immersiveStageMode ? 'xl:grid-cols-1' : 'xl:grid-cols-[minmax(0,1fr)_380px]'), 'data-weather-immersive-layout': immersiveStageMode ? 'stage' : 'control-rail' },
               h('div', { ref: immersiveStageRef, 'data-weather-immersive-stage': immersiveFullscreen ? 'fullscreen' : 'inline', className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' + (immersiveFullscreen ? ' h-full' : ' self-start xl:sticky xl:top-4') },
-                h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: immersiveFullscreen ? 'block h-full min-h-[500px] w-full' : 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.' }),
+                h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: immersiveFullscreen ? 'block h-full min-h-[500px] w-full' : 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_interactive_three_dimensional_weather_scene_for', 'Interactive three-dimensional weather scene for {value1}. {value2}. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.'), { value1: sceneLabel, value2: sceneCondition })}),
                 immersiveStageMode && useLive && liveTimeline.length > 1 && h('div', { className: 'pointer-events-auto absolute bottom-3 left-3 right-3 z-30 rounded-2xl border border-violet-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-timeline': true, role: 'region', 'aria-labelledby': 'weather-stage-timeline-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Live timeline playback'), h('h4', { id: 'weather-stage-timeline-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Move the 3D scene through time')),
@@ -10481,7 +10479,7 @@ var geographyGroup = new THREE.Group();
                   h('p', { className: 'mt-0.5 text-xs font-black text-white' }, selectedGlossaryFeature.label),
                   h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)
                 ),
-                geographicMode && h('div', { ref: geographicMapRef, className: 'absolute inset-0 min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-geographic-map': true, role: 'region', 'aria-label': 'Interactive open geographic map and 3D terrain centered on ' + geographic.label + '. Use map controls, drag, or keyboard navigation to explore.', 'aria-describedby': 'weather-geographic-map-instructions' }),
+                geographicMode && h('div', { ref: geographicMapRef, className: 'absolute inset-0 min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-geographic-map': true, role: 'region', 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_interactive_open_geographic_map_and_3d_terrain', 'Interactive open geographic map and 3D terrain centered on {value1}. Use map controls, drag, or keyboard navigation to explore.'), { value1: geographic.label }), 'aria-describedby': 'weather-geographic-map-instructions' }),
                 geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950/45', 'data-weather-geographic-vignette': true, 'aria-hidden': true }),
                 geographicMode && h('div', { className: 'pointer-events-none absolute left-3 right-3 top-3 z-20 flex flex-col items-start gap-2', 'data-weather-stage-overlays': 'geographic' },
                   geographicCommandBar,
@@ -10849,7 +10847,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                           h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-400' }, 'Follow a relationship to inspect how weather-system parts work together.'),
                           h('div', { className: 'mt-2 space-y-2' },
                             connectedGlossaryFeatures.map(function (connection) {
-                              return h('button', { key: connection.id, type: 'button', onClick: function () { explainImmersiveFeature(connection.id); }, onFocus: function () { previewImmersiveFeature(connection.id, 'keyboard'); }, onBlur: function () { previewImmersiveFeature('', ''); }, onMouseEnter: function () { previewImmersiveFeature(connection.id, 'pointer'); }, onMouseLeave: function () { previewImmersiveFeature('', ''); }, className: 'flex min-h-12 w-full items-start gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-left hover:border-emerald-300/45 hover:bg-emerald-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200', 'aria-label': 'Explore ' + connection.label + '. ' + connection.relation },
+                              return h('button', { key: connection.id, type: 'button', onClick: function () { explainImmersiveFeature(connection.id); }, onFocus: function () { previewImmersiveFeature(connection.id, 'keyboard'); }, onBlur: function () { previewImmersiveFeature('', ''); }, onMouseEnter: function () { previewImmersiveFeature(connection.id, 'pointer'); }, onMouseLeave: function () { previewImmersiveFeature('', ''); }, className: 'flex min-h-12 w-full items-start gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-left hover:border-emerald-300/45 hover:bg-emerald-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200', 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_explore', 'Explore {value1}. {value2}'), { value1: connection.label, value2: connection.relation })},
                                 h('span', { className: 'mt-0.5 text-sm text-emerald-200', 'aria-hidden': true }, connection.icon),
                                 h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[0.6875rem] font-black text-emerald-100' }, connection.label), h('span', { className: 'mt-0.5 block text-[0.625rem] leading-relaxed text-slate-400' }, connection.relation))
                               );
@@ -12042,7 +12040,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     h('span', { className: 'shrink-0 rounded-full px-2 py-1 text-[0.6875rem] font-black ' + (selected === 'secure' ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : selected === 'developing' ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') : selected === 'emerging' ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ratingLabel(selected))
                   ),
                   h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, criterion.detail),
-                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Rate ' + criterion.title }, ratingOptions.map(function (option) {
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': __alloFill(__alloT('stem.weathersystems.a11y_rate', 'Rate {value1}'), { value1: criterion.title })}, ratingOptions.map(function (option) {
                     var pressed = selected === option.id;
                     return h('button', {
                       key: option.id || 'not-reviewed',

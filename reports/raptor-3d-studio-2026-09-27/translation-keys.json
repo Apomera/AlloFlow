@@ -1,0 +1,37 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    {
+      "key": "stem.raptorhunt.study_presentations_differ",
+      "fallback": "These moments use different lighting and backgrounds, which can change how feathers look. Use Match saved view to match the presentation before comparing details."
+    },
+    {
+      "key": "stem.raptorhunt.study_presentation",
+      "fallback": "Study presentation"
+    },
+    {
+      "key": "stem.raptorhunt.study_studio",
+      "fallback": "Studio"
+    },
+    {
+      "key": "stem.raptorhunt.study_studio_label",
+      "fallback": "Studio lighting"
+    },
+    {
+      "key": "stem.raptorhunt.study_habitat",
+      "fallback": "Habitat"
+    },
+    {
+      "key": "stem.raptorhunt.study_habitat_label",
+      "fallback": "Habitat + study lighting"
+    },
+    {
+      "key": "stem.raptorhunt.study_presentation_announced",
+      "fallback": "{presentation}. The bird’s pose and flight readings are unchanged."
+    },
+    {
+      "key": "stem.raptorhunt.study_studio_frozen",
+      "fallback": "Frozen moment · studio lighting"
+    }
+  ]
+}

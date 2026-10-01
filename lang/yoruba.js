@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Àwọn Agbègbè Ìmọ̀lára",
+          "desc": "Dá agbègbè rẹ mọ̀ (búlúù, àwọ̀ ewé, òféèfé, pupa) kí o sì ṣàwárí àwọn ọ̀nà láti ṣàkóso ara rẹ."
+        },
+        "emotions": {
+          "label": "Olùṣàwárí Ìmọ̀lára",
+          "desc": "Kọ́ àwọn ọ̀rọ̀ ìmọ̀lára — dá wọn mọ̀, sọ orúkọ wọn, kí o sì díwọ̀n bí wọ́n ṣe lágbára tó."
+        },
+        "strengths": {
+          "label": "Olùwárí Agbára",
+          "desc": "Ṣàwárí kí o sì ronú lórí àwọn agbára rẹ, ẹ̀bùn rẹ, àti àwọn ibi tí o ti lè dàgbà."
+        },
+        "viaStrengths": {
+          "label": "Àwọn Agbára VIA",
+          "desc": "Ìtòlẹ́sẹẹsẹ ara-ẹni tó rọrùn ti Àwọn Agbára Ìwà 24 ti VIA (Peterson àti Seligman, 2004), pẹ̀lú àwọn ìwà rere 6 àti ìdámọ̀ àwọn agbára pàtàkì rẹ. Fún ìwádìí ọ̀fẹ́ tòótọ́, lọ sí viacharacter.org. Ìdánrawò ìrònú ni, kì í ṣe ìdánwò ìmọ̀ ọpọlọ onímọ̀-sáyẹ́ǹsì."
+        },
+        "wheelOfLife": {
+          "label": "Kẹ̀kẹ́ Ìgbésí Ayé",
+          "desc": "Àwòrán aláǹtakùn ti àwọn ẹ̀ka ìgbésí ayé 8, tí a ń díwọ̀n ọ̀kọ̀ọ̀kan láti 1 sí 10. Àwòrán ara rẹ tí ó fi ibi tí ìgbésí ayé ti kún àti ibi tí ó ti tínrín hàn báyìí. Láti inú àṣà ìdarí coaching (Meyer ọdún 1960; Co-Active Coaching). Àròjinlẹ̀ ni; kì í ṣe ìdánwò ìmọ̀ ọpọlọ tí a fọwọ́ sí."
+        },
+        "perma": {
+          "label": "Àlàáfíà PERMA",
+          "desc": "Àyẹ̀wò ara-ẹni lórí àwọn ẹ̀ka márùn-ún PERMA pẹ̀lú ìrònú nípa Ìlera: Ìmọ̀lára rere, Ìkópa, Àjọṣepọ̀, Ìtumọ̀, Àṣeyọrí, àti Ìlera. Ìbéèrè 24, èsì lórí àwòrán ọ̀pá, ìrònú fún ẹ̀ka kọ̀ọ̀kan. Láti ọ̀dọ̀ Seligman; ó bá Àwọn Agbára VIA lọ."
+        },
+        "coping": {
+          "label": "Irinṣẹ́ Ìfaradà",
+          "desc": "Ṣàwárí kí o sì ṣe ìdánrawò àwọn ọ̀nà ìfaradà — mímí, ìfọkànsílẹ̀, ìṣípòpadà ara, àti bẹ́ẹ̀ bẹ́ẹ̀ lọ."
+        },
+        "windowOfTolerance": {
+          "label": "Fèrèsé Ìmúmọ́ra (Window of Tolerance)",
+          "desc": "Àwòrán ìmọ̀ ara-ẹni tó ń ṣàkíyèsí ìpalára ọkàn. Agbègbè ìrusókè mẹ́ta (ìrusókè tó pọ̀ jù, fèrèsé, ìrẹ̀sílẹ̀ tó pọ̀ jù). Ya àwọn àmì ara rẹ fún agbègbè kọ̀ọ̀kan, àwọn ohun tó ń ru ọ́ sókè, àti àwọn ìdánrawò tó ń mú ọ padà. Ó dá lórí Siegel (1999); ó wọ́pọ̀ ní àwọn ilé-ìwé tó ń ṣàkíyèsí ìpalára ọkàn."
+        },
+        "stressBucket": {
+          "label": "Korobá Wàhálà",
+          "desc": "Àwòrán agbára ìgbà nǹkan. Àwọn ohun wàhálà ń dà sínú rẹ̀; àwọn ìdánrawò ìfaradà ń ṣàn wọ́n jáde. Wo bóyá ohun tó ń wọlé àti ohun tó ń jáde dọ́gba. Irinṣẹ́ láti inú àṣà CBT (Brabban àti Turkington 2002), tí a ń lò ní NHS IAPT àti Mind UK. Ó sọ òtítọ́ nípa wàhálà tó ń wá láti inú ètò àwùjọ."
+        },
+        "tipp": {
+          "desc": "Ọgbọ́n DBT mẹ́rin fún líla ìṣòro kọjá (Temperature/ìgbóná ara, Intense exercise/eré ìdárayá líle, Paced breathing/mímí díẹ̀díẹ̀, Paired muscle relaxation/ìtura iṣan) fún ìdààmú LÍLE ti ìsinsìnyí. Ó ń mú ara rọlẹ̀ láàárín ìṣẹ́jú-àáyá 30 sí ìṣẹ́jú 10 kí o tó gbìyànjú láti ronú ọ̀nà àbáyọ. Ọgbọ́n ìpìlẹ̀ DBT fún Ìfaradà Ìdààmú (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Irinṣẹ́ Àníyàn",
+          "desc": "Àwọn ọgbọ́n tó dá lórí CBT fún ṣíṣiṣẹ́ pẹ̀lú àníyàn: ẹ̀kọ́ nípa ìlera ọpọlọ, igi àníyàn (àníyàn tó wúlò àti èyí tí kò wúlò), àkókò àníyàn tí a ṣètò, dídín èrò àjálù kù, ọgbọ́n ìfọkànsílẹ̀, àti àkọsílẹ̀ àwọn ìlànà ìwà rẹ. Láti ọ̀dọ̀ Beck Institute, AACAP, ADAA. Ó bá Fèrèsé Ìmúmọ́ra (Window of Tolerance) àti Korobá Wàhálà lọ."
+        },
+        "sleep": {
+          "label": "Oorun àti Ìsinmi",
+          "desc": "Oorun àwọn ọ̀dọ́ jẹ́ ìṣòro ńlá fún ìlera gbogbo ènìyàn. Wákàtí 8-10 tí AAP dámọ̀ràn kì í sábà wáyé. Ẹ̀kọ́ nípa ìlera ọpọlọ, àyẹ̀wò ara-ẹni, àwọn ìdènà 8 tó wọ́pọ̀ àti ohun tó ń ṣiṣẹ́ fún ọ̀kọ̀ọ̀kan, àti ìwé ìròyìn oorun. Láti ọ̀dọ̀ AAP, CDC, NSF, ìwádìí Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Ìṣàkóso Ìmọ̀-ara",
+          "desc": "Irinṣẹ́ tó ń fọwọ́ sí onírúurú ọpọlọ fún òye bí ara rẹ ṣe ń ṣiṣẹ́ lórí ohun tó ń mọ̀ lára ní àwọn ẹ̀ka ìmọ̀-ara 8. Kọ́ àpèjúwe ara rẹ, ṣètò oúnjẹ ìmọ̀-ara, ṣàwárí àwọn ìrọ̀rùn ilé-ìwé. Èdè tó ń fi ìdánimọ̀ ṣáájú; a kọ́ ọ lórí Ayres / Dunn / ìwádìí tí àwọn tó ní autism ń darí."
+        },
+        "bigFeelings": {
+          "label": "Ìmọ̀lára Ńlá (Ìbínú)",
+          "desc": "Ẹ̀kọ́ nípa ìlera ọpọlọ àti kíkọ́ ọgbọ́n tó jẹ mọ́ ìbínú. Ìbínú gẹ́gẹ́ bí ìsọfúnni, kì í ṣe ìṣòro náà; ìkọlù ní ìdáhùn sí ìbínú ni ìdẹkùn. A kọ́ ọ lórí àṣà Coping Power ti Lochman + ẹ̀rí CBT fún ìbínú. Àkọsílẹ̀ ohun tó ń bí ni nínú, àkọsílẹ̀ ohun tó ń ru ìbínú sókè, àkókò yíyàn, àwọn ọ̀nà ìtutù ara ẹni."
+        },
+        "substancePsychoed": {
+          "label": "Lílo Oògùn Olóró",
+          "desc": "Ẹ̀kọ́ nípa ìlera ọpọlọ tó ń dín ìpalára kù nípa àwọn oògùn olóró (ọtí, igbó, nicotine, opioids, àwọn oògùn amóríyá, benzos, àwọn oògùn tó ń mú ni rí ìran). Ewu fún ọpọlọ ọ̀dọ́. Ẹ̀kọ́ nípa Naloxone. KÌ Í ṢE ohun èlò àyẹ̀wò, KÌ Í ṢE ẹ̀kọ́ ìyàgò nìkan. Ìtọ́kasí tó lágbára sí SAMHSA. Ààyè ìrònú tó bá MI mu."
+        },
+        "behavioralActivation": {
+          "label": "Ìmúṣiṣẹ́ Ìwà (Behavioral Activation)",
+          "desc": "Ṣètò àwọn ìgbòkègbodò kékeré, ṣe wọ́n, kí o sì díwọ̀n wọn fún ìmọ̀-ṣe (o rò pé o lè ṣe é) àti ìgbádùn (o gbádùn rẹ̀). Ṣàkíyèsí ohun tó bá ọ mu kí o sì yan ìgbésẹ̀ tó kàn tí o lè ṣàkóso. Ìgbòkègbodò ìṣètò yìí fà láti inú ìmúṣiṣẹ́ ìwà (behavioral activation); kò pèsè ìtọ́jú, kò sì ṣe àgbéyẹ̀wò ìtọ́jú."
+        },
+        "mindfulness": {
+          "label": "Igun Ìfọkànsí",
+          "desc": "Àwọn ìdánrawò mímí pẹ̀lú ìtọ́sọ́nà, àyẹ̀wò ara, àti àwọn ìgbòkègbodò ìfọkànsí."
+        },
+        "quietQuestions": {
+          "label": "Àwọn Ìbéèrè Ìdákẹ́jẹ́ẹ́",
+          "desc": "Ìdánrawò ìwádìí inú lọ́sọ̀ọ̀sẹ̀. Jókòó pẹ̀lú ìbéèrè ṣíṣí kan fún odindi ọ̀sẹ̀ kan. Ìbéèrè 20 tó ń yípo lórí àfiyèsí, ìfẹ́-ọkàn, ìṣòro, ìsopọ̀, àti ìdàgbàsókè. Ó gba ìmísí láti inú àṣà ìbéèrè Quaker; kì í ṣe ti ẹ̀sìn, kò sì ń pàṣẹ nǹkan."
+        },
+        "orientations": {
+          "label": "Àwọn Ìwòye Ìgbésí Ayé",
+          "desc": "Àwọn Ọ̀nà Ìgbé Ayé, Ní Àfiwé. Àṣà ìmọ̀ ọgbọ́n mẹ́jọ (Daoism, Zen, Stoicism, Existentialism, ìlànà ìwà Confucius, Ubuntu, àjọṣepọ̀ Àwọn Ọmọ Ìbílẹ̀, Ìlànà Ìwà Ìtọ́jú) tí a fi wé ara wọn lórí àwọn ìbéèrè ńlá ìgbésí ayé. Kò ń pàṣẹ nǹkan; àṣà kọ̀ọ̀kan ní abala òtítọ́ kan nípa \"ohun tí kò lè ṣe dáadáa\"."
+        },
+        "thoughtRecord": {
+          "label": "Àkọsílẹ̀ Èrò CBT",
+          "desc": "Àkọsílẹ̀ èrò olópó 7 láti inú Cognitive Behavioral Therapy (CBT). Tẹ̀lé ìgbà líle kan: ipò, ìmọ̀lára, èrò tó wá fúnra rẹ̀, ẹ̀rí tó ṣe àtìlẹ́yìn àti èyí tó tako, èrò tó dọ́gba, àtúndíwọ̀n ìmọ̀lára. Ó ń fi àwọn àkọsílẹ̀ pamọ́ bí àkókò ti ń lọ. Láti ọ̀dọ̀ Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Àtẹ Èrè àti Àdánù",
+          "desc": "Àtẹ ìpinnu 2x2 láti inú Dialectical Behavior Therapy (DBT). Àǹfààní àti àléébù ìpinnu kan fún ìgbà kúkúrú àti ìgbà gígùn, ní ẹ̀gbẹ́ ara wọn. Ó wúlò nígbà tí ìmọ̀lára bá ń tì ọ́ sí àṣàyàn kan. Láti ọ̀dọ̀ Linehan."
+        },
+        "sfbt": {
+          "label": "Ìfojúsùn Ojútùú",
+          "desc": "Ìtọ́jú Kúkúrú Onífojúsùn Ojútùú (Solution-Focused Brief Therapy): Ìbéèrè Iṣẹ́ Ìyanu, Ìdíwọ̀n, Wíwá Àyàfi, àti Ìyìn. Ó ń wo iwájú dípò ẹ̀yìn, ó ń béèrè ohun tó ti ń ṣiṣẹ́ tẹ́lẹ̀. Ọ̀nà tí a ń lò jù lọ nínú ìmọ̀ràn ilé-ìwé ní US. Láti ọ̀dọ̀ de Shazer àti Berg."
+        },
+        "careConstellations": {
+          "label": "Ìràwọ̀ Ìtọ́jú",
+          "desc": "Àwòrán àjọṣepọ̀ ti àwọn tó ń tọ́jú rẹ àti àwọn tí ìwọ ń tọ́jú. Ó kọ èrò \"ìtọ́jú ara-ẹni\" ti ìmọtara-ẹni-nìkan tàbí ti ìrajà. Ó ní ìwòye ìmọ̀ ọgbọ́n tó jinlẹ̀ lórí Ìkẹ́ Ara-ẹni àti Ìtọ́jú Ara-ẹni (Foucault, epimeleia heautou ti Gíríìkì, Audre Lorde, eudaimonic àti hedonic)."
+        },
+        "ecomap": {
+          "label": "Àwòrán Àyíká",
+          "desc": "Àwòrán àjọṣepọ̀ ènìyàn àti àyíká rẹ̀. Ìwọ ní àárín; àwọn ètò ìgbésí ayé ńlá 12 yí ọ ká. A ń díwọ̀n ìsopọ̀ kọ̀ọ̀kan fún agbára, wàhálà, àti ọ̀nà tí agbára ń gbà. Irinṣẹ́ iṣẹ́ àlàáfíà àwùjọ tó wọ́pọ̀ láti ìgbà Hartman (1978); a ń lò ó nínú IEP, àyẹ̀wò ìdílé, àti àkọsílẹ̀ ìgbésí ayé ara-ẹni."
+        },
+        "circlesOfSupport": {
+          "label": "Àwọn Àyíká Àtìlẹ́yìn",
+          "desc": "Òrùka mẹ́rin tó yí ara wọn ká ti àjọṣepọ̀: Ìsúnmọ́ra, Ọ̀rẹ́, Ìkópa, Pàṣípààrọ̀ (tí a ń sanwó fún). Ó ń fi àwọn tó súnmọ́ ọ gan-an hàn, títí kan ìgbà tí àwọn tí a ń sanwó fún bá kún àwọn òrùka inú. Láti ọ̀dọ̀ Forest àti Snow ní Inclusion Press."
+        },
+        "genogram": {
+          "label": "Àwòrán Ìran Ìdílé",
+          "desc": "Àwòrán ìdílé ti ìran mẹ́ta tó ń lo àwọn àmì ètò ìdílé tó wọ́pọ̀. Fún òye ara-ẹni nìkan (KÌ Í ṢE àyẹ̀wò ilé ìwòsàn). Ó dá lórí ẹ̀kọ́ ètò ìdílé ti Bowen àti àkọsílẹ̀ McGoldrick-Gerson-Petry. Ó ní ìtọ́sọ́nà ààbò tí a fi hàn kedere."
+        },
+        "griefLoss": {
+          "label": "Ọ̀fọ̀ àti Àdánù",
+          "desc": "Alábàárìn ara-ẹni fún ọ̀fọ̀. Ikú ènìyàn tàbí ẹranko ọ̀sìn, àyípadà ìdílé, àdánù ọ̀rẹ́, àdánù ìdánimọ̀, àdánù tí kò ṣe kedere — gbogbo wọn ló ṣe pàtàkì. Tẹ̀lé iṣẹ́ mẹ́rin ọ̀fọ̀ ti Worden, kọ lẹ́tà, ṣètò àwọn ààtò. Ìtọ́sọ́nà ààbò tó lágbára tó ń tọ́ka sí Alábàárìn Ìgbà Ìṣòro / 988 fún ọ̀fọ̀ líle tàbí èyí tó díjú."
+        },
+        "traumaPsychoed": {
+          "label": "Òye Ìpalára Ọkàn",
+          "desc": "Ẹ̀kọ́ nípa ìlera ọpọlọ nìkan (KÌ Í ṢE ohun èlò àyẹ̀wò). Ohun tí ìpalára ọkàn jẹ́ àti ohun tí kì í ṣe, ìmọ̀ ọpọlọ ní èdè tó rọrùn, àwọn ìdáhùn tó wọ́pọ̀ gẹ́gẹ́ bí ọ̀nà ìmúbádọ́gba, àwọn ìlànà 6 ti SAMHSA, àwọn ìtọ́jú tó ní ẹ̀rí. Fún àwọn akẹ́kọ̀ọ́ àti àwọn olùkọ́. Ó ní ìtọ́sọ́nà ààbò tí a fi hàn kedere nípa ìdí tí àyẹ̀wò láìsí ìtẹ̀lé kò fi ní ààbò."
+        },
+        "bodyStory": {
+          "label": "Ìtàn Ara",
+          "desc": "Irinṣẹ́ ìgbà ara àti gbígbé nínú ara. KÌ Í ṢE èyí tó dá lórí ìwúwo, KÌ Í ṢE èyí tó jẹ mọ́ oúnjẹ ìdínkù, KÌ Í ṢE ohun èlò àyẹ̀wò. A kọ́ ọ lórí ìmọrírì ara ti Tylka, ìlànà jíjẹun nípa gbígbọ́ ara, àti ìmọ̀ nípa ìròyìn àti ìpolówó. Ó gba gbogbo ara, gbogbo ìdánimọ̀ akọ-abo, gbogbo ìwọ̀n. Ìtọ́kasí tó lágbára sí NEDA fún àwọn ìṣòro jíjẹun."
+        },
+        "sourcesOfStrength": {
+          "label": "Orísun Agbára",
+          "desc": "Ya àwọn ohun ààbò 8 rẹ. Ṣàwárí àwọn àtìlẹ́yìn ààbò tí ètò Sources of Strength fún ní ìmísí. Àwòrán tí o ń darí fúnra rẹ yìí jẹ́ àtúnṣe, kì í ṣe ìmúṣẹ ètò ilé-ìwé tí a ti ṣe àgbéyẹ̀wò rẹ̀."
+        },
+        "crisiscompanion": {
+          "label": "Alábàárìn Ìgbà Ìṣòro",
+          "desc": "Àtìlẹ́yìn ẹlẹgbẹ́ àti ọgbọ́n ìdènà ìpara-ẹni: ohun tí o lè ṣe bí ìwọ tàbí ọ̀rẹ́ kan bá ní ìsoríkọ́, wà nínú ìṣòro, tàbí ń ronú láti ṣe ara rẹ̀ léṣe — dídá àwọn àmì mọ̀, ohun tí a lè sọ (àti èyí tí a kò gbọ́dọ̀ sọ), sísọ fún àgbàlagbà tí o fọkàn tán, pẹ̀lú 988 àti ètò ààbò ara rẹ. A ń ṣí i lẹ́yìn ìkìlọ̀ nípa àkóónú. Ó bá NEDA, AFSP, Sources of Strength, àti 988 mu. Ó jẹ́ irinṣẹ́ àtìlẹ́yìn pàjáwìrì tó bá Orísun Agbára rìn."
+        },
+        "identitySupport": {
+          "label": "Àtìlẹ́yìn Ìdánimọ̀",
+          "desc": "Ààyè tó ń gbani wọlé tó sì ń fọwọ́ sí ìdánimọ̀ akọ-abo, ìtẹ̀sí ìbálòpọ̀, ìtẹ̀sí ìfẹ́, àti àwọn ìbéèrè ìdánimọ̀ tó gbòòrò. Àwọn ọ̀rọ̀, ìdàgbàsókè ìdánimọ̀, wíwá àwùjọ, ààbò fún àwọn ọ̀dọ́ trans, ìtọ́sọ́nà fún àwọn alátìlẹ́yìn. A kọ́ ọ lórí Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Ohùn Àwọn Tó Ní Ìpèníjà Ara",
+          "desc": "Àwọn agbẹnusọ gidi tó ní autism àti àwọn tó ní ìpèníjà ara tí iṣẹ́ wọn ṣe àgbékalẹ̀, tí ó sì ṣe àríwísí, iṣẹ́ nípa ìpèníjà ara. Ọ̀rọ̀ wọn, àlàyé, àti àkójọ ìwé kíkà tí a yàn. A kọ́ ọ kí àwọn ènìyàn tí a ti ṣe iṣẹ́ ẹ̀ka náà LÉ WỌN LÓRÍ lè wà ní àárín, kí a má fi wọ́n sí ẹ̀gbẹ́ nínú irinṣẹ́ sáyẹ́ǹsì ìwà. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Olùṣètò Àfojúsùn",
+          "desc": "Ṣètò àwọn àfojúsùn SMART, tọpinpin ìlọsíwájú, kí o sì ṣayẹyẹ àwọn àṣeyọrí."
+        },
+        "howlTracker": {
+          "label": "Olùtọpinpin HOWL",
+          "desc": "Àyẹ̀wò ara-ẹni lórí Àwọn Ìwà Iṣẹ́ àti Ẹ̀kọ́ (HOWL) fún àkókò Crew. Àyẹ̀wò lọ́sọ̀ọ̀sẹ̀, àfojúsùn oṣù mẹ́ta-mẹ́ta, àwòrán ìlọsíwájú, àwọn ìbéèrè ìjíròrò Crew. Ó bá ìlànà HOWL ti EL Education mu."
+        },
+        "onePageProfile": {
+          "label": "Àpèjúwe Ara-ẹni Ojú-ìwé Kan",
+          "desc": "Àpèjúwe ara-ẹni tó rọrùn láti gbé kiri àti láti tẹ̀ jáde, tó bá ojú-ìwé kan mu. Abala mẹ́ta: ohun tí àwọn ènìyàn fẹ́ràn tí wọ́n sì ń yìn nípa mi, ohun tó ṣe pàtàkì sí mi, bí a ṣe lè ràn mí lọ́wọ́ jù lọ. Ìwé ìṣètò tó dá lórí ènìyàn fún àwọn ìpàdé IEP, àyípadà, àwọn olùkọ́ adelé, tàbí Crew. Ó dá lórí ìlànà Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Ṣíṣe Ètò Ìgbésẹ̀). Ìbéèrè mẹ́jọ ní ìtẹ̀léra (Ìtàn Mi, Àlá, Àlá Burúkú, Ẹni Tí Mo Jẹ́, Ẹ̀bùn, Àìní, Ètò Ìgbésẹ̀, Ìgbésẹ̀ Àkọ́kọ́). Àwòrán tó dá lórí ènìyàn láti ọ̀dọ̀ Pearpoint, O'Brien, àti Forest ní Inclusion Press; a ń lò ó púpọ̀ fún ìṣètò àyípadà."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Ṣíṣètò Ọ̀la Mìíràn pẹ̀lú Ìrètí). Àwòrán ìṣètò ọjọ́ iwájú: ìpele mẹ́jọ láti Ìràwọ̀ Àríwá rẹ tó jìnnà padà sẹ́yìn sí àwọn ìgbésẹ̀ àkọ́kọ́ láàárín ọ̀sẹ̀ méjì. Pearpoint, O'Brien, àti Forest ní Inclusion Press; ó bá MAPS lọ."
+        },
+        "valuesCommittedAction": {
+          "label": "Àwọn Ohun Iyebíye àti Ìṣe",
+          "desc": "To ohun tó ṣe pàtàkì lẹ́sẹẹsẹ, sọ orúkọ àwọn ohun iyebíye rẹ tó ga jù, kí o sì sọ ọ̀kọ̀ọ̀kan di ìṣe kékeré tó ṣe kedere ní ọ̀sẹ̀ yìí. Láti inú Acceptance and Commitment Therapy (Hayes); ìlànà DNA-V fún àwọn ọ̀dọ́. Ìyàtọ̀ ACT láàárín àwọn ohun iyebíye (ìtọ́sọ́nà) àti àfojúsùn (ibi tí a ń lọ)."
+        },
+        "careerCompass": {
+          "label": "Kọ́ńpáàsì Iṣẹ́",
+          "desc": "Ṣàwárí àwọn iṣẹ́ nípasẹ̀ ohun tí o nífẹ̀ẹ́ sí. Àyẹ̀wò ara-ẹni RIASEC oníbéèrè 36 ń fún ọ ní kóòdù Holland mẹ́ta tó ga jù; wo àwọn iṣẹ́, Àwọn Ìsọ̀rí Iṣẹ́ 16 ti ìjọba àpapọ̀, àti àwọn ìgbésẹ̀ tó kàn tó ṣe kedere (ọjọ́ títẹ̀lé òṣìṣẹ́, ìfọ̀rọ̀wánilẹ́nuwò fún ìsọfúnni, CTE, iṣẹ́ ọmọṣẹ́). A kọ́ ọ lórí ìlànà Holland; ó tọ́ka sí O*NET Interest Profiler tòótọ́ ní mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Ilé-iṣẹ́ Ìgbẹnusọ fún Ara-ẹni",
+          "desc": "Kọ́ ètò àtìlẹ́yìn ilé-ìwé tó ṣe kedere fún àwọn ìbéèrè IEP tàbí 504, àwọn ìrọ̀rùn, àwọn àṣàyàn ìṣípayá, àti bíbéèrè ìrànlọ́wọ́ lọ́wọ́ àwọn àgbàlagbà tí o fọkàn tán."
+        },
+        "perspective": {
+          "label": "Awò Ìwòye",
+          "desc": "Wo àwọn ipò láti oríṣiríṣi ìwòye — ṣe ìdánrawò ìbánikẹ́dùn àti wíwo nǹkan láti ojú ẹlòmíràn."
+        },
+        "community": {
+          "label": "Àwùjọ àti Àṣà",
+          "desc": "Ṣàwárí onírúurú, ìmọ̀ àṣà, àti jíjẹ́ ara àwùjọ."
+        },
+        "conflict": {
+          "label": "Ìyanjú Ìforígbárí",
+          "desc": "Ṣe ìdánrawò ìforígbárí kékeré tàbí ti àròsọ pẹ̀lú wíwo nǹkan láti ojú ẹlòmíràn, ọ̀rọ̀ tó bẹ̀rẹ̀ pẹ̀lú \"Èmi\", dídín ìbínú kù, àti àwọn àṣàyàn àtúnṣe. Bí ẹnìkan kò bá ní ààbò, mú àgbàlagbà wọlé dípò kí o dá nìkan ṣe ìdúnàádúrà."
+        },
+        "social": {
+          "label": "Yàrá Ìdánrawò Ọgbọ́n Àjọṣe",
+          "desc": "Ṣe ìdánrawò ọgbọ́n ìjíròrò, fífetísílẹ̀ dáadáa, èdè ara, àti ìfọwọ́sowọ́pọ̀."
+        },
+        "teamwork": {
+          "label": "Akọ́lé Iṣẹ́ Àjùmọ̀ṣe",
+          "desc": "Àwọn ìpèníjà ìfọwọ́sowọ́pọ̀ àti ṣíṣàwárí ipa nínú ẹgbẹ́."
+        },
+        "dearMan": {
+          "desc": "Kọ ọ̀rọ̀ fún ìbéèrè líle ní ìgbésẹ̀ méje: Describe (Ṣàpèjúwe), Express (Sọ ìmọ̀lára rẹ), Assert (Sọ ohun tí o fẹ́), Reinforce (Fi àǹfààní rẹ̀ hàn), Mindful (Fọkàn sí i), Appear confident (Fi ìgboyà hàn), Negotiate (Ṣe ìdúnàádúrà). Láti inú Ọgbọ́n Àjọṣe DBT (Linehan); ọ̀rọ̀ ìbánisọ̀rọ̀ onígboyà tí a ń lò jù lọ nínú ìmọ̀ràn ilé-ìwé. Ó bá Ilé-iṣẹ́ Ìgbẹnusọ fún Ara-ẹni lọ."
+        },
+        "motivationalInterviewing": {
+          "label": "Ìfọ̀rọ̀wánilẹ́nuwò Ìmóríyá (Motivational Interviewing)",
+          "desc": "Ìlànà ìjíròrò fún ríran ẹnìkan (tàbí ara rẹ) lọ́wọ́ láti ronú nípa àyípadà. Kọ́ ọgbọ́n OARS (Open questions/ìbéèrè ṣíṣí, Affirmations/ìfọwọ́sí, Reflections/àtúnsọ ohun tí o gbọ́, Summaries/àkópọ̀), àwọn òṣùwọ̀n mẹ́ta, àti Ọ̀rọ̀ Àyípadà. Láti ọ̀dọ̀ Miller àti Rollnick; ìpìlẹ̀ ìmọ̀ràn ilé-ìwé àti iṣẹ́ àtìlẹ́yìn ẹlẹgbẹ́."
+        },
+        "crewProtocols": {
+          "label": "Àwọn Ìlànà Crew",
+          "desc": "Àkójọ àwọn ìlànà ẹgbẹ́ tí a ṣètò fún àkókò Crew, àkókò ìmọ̀ràn, tàbí kíláàsì òwúrọ̀: àwọn akọ́lé àwùjọ, ìbẹ̀rẹ̀, ìparí, àwọn àyíká àtúnṣe, àwọn ìlànà ìrònú, ọ̀nà ayẹyẹ, àti ìtọ́sọ́nà fún ìjíròrò líle. Pẹ̀lú àkópọ̀ gbogbo ìbéèrè Crew láti gbogbo SEL Hub. A kọ́ ọ lórí EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Àjọṣepọ̀ Tó Dára",
+          "desc": "Ìwọ̀n (tó dára / tí kò dára / ìfìyàjẹni) ní ẹ̀ka 8 ti àjọṣepọ̀ tímọ́tímọ́ èyíkéyìí. Ìfohùnṣọ̀kan ní kíkún, ìdènà ìwà ipá nínú ìfẹ́, ààbò + àwọn nọ́ńbà ìrànlọ́wọ́. A kọ́ ọ lórí ìlànà Loveisrespect / NDVH. Ó gba àwọn queer, àwọn onírúurú ọpọlọ, àti àwọn tó ní ìpèníjà ara."
+        },
+        "decisions": {
+          "label": "Yàrá Ìdánrawò Ìpinnu",
+          "desc": "Tẹ̀lé àwọn ipò ìgbésí ayé gidi nípa lílo ìlànà dúró-ronú-ṣe."
+        },
+        "journal": {
+          "label": "Ìwé Ìròyìn Ìmọ̀lára",
+          "desc": "Ìwé ìròyìn àyẹ̀wò ojoojúmọ́ — kọ ipò ọkàn, àwọn ohun tó ń ru ìmọ̀lára sókè, àti àwọn ìrònú bí àkókò ti ń lọ."
+        },
+        "safety": {
+          "label": "Ààbò àti Ààlà",
+          "desc": "Kọ́ nípa ààlà ara-ẹni, àwọn àgbàlagbà tí o fọkàn tán, àti àwọn ipò tó ní ààbò àti èyí tí kò ní."
+        },
+        "landPlace": {
+          "label": "Ilẹ̀ àti Ibùgbé",
+          "desc": "Ilé-iṣẹ́ Ìtọ́jú Ilẹ̀ fún àjọṣepọ̀ tó ń bá a lọ pẹ̀lú ilẹ̀ tí o ń gbé. Okùn mẹ́ta (ìtàn, àyíká àdánidá, ìsinsìnyí), ìrònú jinlẹ̀ lórí ìjẹ́wọ́ ilẹ̀ gẹ́gẹ́ bí ìṣe dípò àfihàn, àwọn àjọ tí àwọn Wabanaki ń darí gẹ́gẹ́ bí ohùn aláṣẹ, àti ìwé ìròyìn ìrònú àdáni."
+        },
+        "somaticReset": {
+          "label": "Àtúntò Ara àti Ìmí",
+          "desc": "Yan apá ara kan kí o sì tẹ̀lé àtúntò kúkúrú ti ìdákẹ́rọ́rọ́, mímí, tàbí ìṣípòpadà jẹ́jẹ́ tí a lè ṣe lórí àga, pẹ̀lú àyẹ̀wò àdáni ṣáájú àti lẹ́yìn."
+        },
+        "restorativeCircle": {
+          "label": "Àyíká Àtúnṣe",
+          "desc": "Darí àwọn àyíká àtúnṣe àti kíkọ́ àwùjọ pẹ̀lú àwọn òfin tí a ti fìdí múlẹ̀, ìtọ́sọ́nà àgbàlagbà, àti ìṣọ́ra nípa gbòǹgbò àṣà. Kì í ṣe fún ìfipá ṣípayá tàbí ewu ààbò tó ń ṣẹlẹ̀ lọ́wọ́."
+        },
+        "compassion": {
+          "label": "Àánú àti Ọ̀rọ̀ Inú",
+          "desc": "Ṣe ìdánrawò àánú fún ara rẹ, yí olùṣelámèyítọ́ inú padà, kí o sì kọ́ ohùn inú tó ní inú rere."
+        },
+        "friendship": {
+          "label": "Akọ́lé Ọ̀rẹ́",
+          "desc": "Ṣàwárí àwọn ọ̀nà ọ̀rẹ́, àwọn ọ̀nà àtúnṣe, àti ìlànà àjọṣepọ̀ tó dára."
+        },
+        "transitions": {
+          "label": "Àwọn Àyípadà Ìgbésí Ayé",
+          "desc": "La àwọn àyípadà kọjá bíi kíkó lọ, ilé-ìwé tuntun, àti dídàgbà."
+        },
+        "upstander": {
+          "label": "Ìdánilẹ́kọ̀ọ́ Ìdúró fún Ẹlòmíràn",
+          "desc": "Kọ́ láti dúró fún àwọn ẹlòmíràn láìléwu — ọgbọ́n láti ẹni tó ń wòran sí ẹni tó ń dúró gbọn-in."
+        },
+        "growthmindset": {
+          "label": "Èrò Ìdàgbàsókè",
+          "desc": "Sáyẹ́ǹsì ọpọlọ, wíwo àwọn ìpèníjà lọ́nà tuntun, àti kíkọ́ ìdúróṣinṣin."
+        },
+        "execfunction": {
+          "label": "Iṣẹ́ Àkóso Ọpọlọ",
+          "desc": "Àwọn ọ̀nà fún àwọn apá líle ti ṣíṣe nǹkan parí: bíbẹ̀rẹ̀ iṣẹ́, dídi àfiyèsí mú, ṣíṣètò ṣáájú, àti títọpinpin àkókò."
+        },
+        "advocacy": {
+          "label": "Ìdánrawò Ìgbẹnusọ",
+          "desc": "Tún àwọn ọ̀rọ̀ gbogbogbò sọ fún sísọ àìní, bíbéèrè àtìlẹ́yìn, àti sísọ̀rọ̀ jáde ní àwọn ipò ojoojúmọ́."
+        },
+        "civicAction": {
+          "label": "Ìṣe Aráàlú àti Ìrètí",
+          "desc": "Ṣiṣẹ́ lórí àwọn ìmọ̀lára líle nípa àìṣèdájọ́ òdodo, kọ́ agbára ìkópa aráàlú, kí o sì gbin ìrètí nípasẹ̀ ìṣe."
+        },
+        "ethicalReasoning": {
+          "label": "Yàrá Ìdánrawò Ìrònú Ìwà Rere",
+          "desc": "Ṣàwárí àwọn ìṣòro ìwà rere òde òní nípasẹ̀ oríṣiríṣi ìlànà àti ìjíròrò ìbéèrè-àti-ìdáhùn bíi ti Socrates pẹ̀lú AI."
+        },
+        "cultureExplorer": {
+          "label": "Olùṣàwárí Àṣà",
+          "desc": "Ṣe ìwádìí jinlẹ̀ tí AI ń ràn lọ́wọ́ sínú àwọn àṣà àgbáyé pẹ̀lú àwòrán àti ohùn."
+        },
+        "voicedetective": {
+          "label": "Aṣàwárí Ohùn",
+          "desc": "Fetí sí àwọn ohùn kí o sì dá ìmọ̀lára mọ̀ láti inú ìró ohùn."
+        },
+        "practiceJourneys": {
+          "label": "Àwọn Ìrìn-àjò Ìdánrawò (Àdánwò)",
+          "desc": "Ṣe ìdánrawò bíbéèrè àtìlẹ́yìn nípasẹ̀ ìpàdé mẹ́rin tó so pọ̀. Dáhùn pẹ̀lú àṣàyàn, ọ̀rọ̀ tìrẹ, tàbí méjèèjì. Kọ ìwé ìròyìn kí o sì gbìyànjú ọ̀nà mìíràn."
+        },
+        "sociallab": {
+          "label": "Eré Ipa Ọgbọ́n Àjọṣe",
+          "desc": "Ṣe ìdánrawò àwọn ipò àjọṣe àti eré ipa pẹ̀lú ẹlẹgbẹ́ AI tí ìjíròrò rẹ̀ ní ẹ̀ka."
+        },
+        "peersupport": {
+          "label": "Olùkọ́ni Àtìlẹ́yìn Ẹlẹgbẹ́",
+          "desc": "Kọ́ ọgbọ́n fífetísílẹ̀ OARS àti ìgbà tí o yẹ kí o wá ìrànlọ́wọ́ àgbàlagbà."
+        },
+        "conflicttheater": {
+          "label": "Gbọ̀ngàn Eré Ìforígbárí",
+          "desc": "Ṣe ìdánrawò ìforígbárí àròsọ pẹ̀lú àwọn ẹ̀dá ìtàn AI méjì nínú ìran tó fani mọ́ra. Eré ipa àdánwò (beta) nìkan; má ṣe lò ó láti yanjú ìpalára tó ń ṣẹlẹ̀ lọ́wọ́."
+        },
+        "digitalWellbeing": {
+          "label": "Ilé-iṣẹ́ Àlàáfíà Oní-nọ́ńbà",
+          "desc": "Ṣàyẹ̀wò àjọṣepọ̀ rẹ pẹ̀lú ìkànnì àjọlò àti chatbot AI, kọ́ àṣà fóònù tó dára jù, bọ́ lọ́wọ́ ìfòòró lórí ayélujára, dá ìtànjẹ mọ̀ nínú ohun tí a ń fi hàn ọ́, ṣàkóso àjọṣepọ̀ pẹ̀lú chatbot láìléwu, kí o sì rí ìrànlọ́wọ́ nígbà tí o bá nílò rẹ̀."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Ìmọ̀ Ara-ẹni",
+          "desc": "Dídá ìmọ̀lára, agbára, àti ibi ìdàgbàsókè mọ̀"
+        },
+        "self-regulation": {
+          "label": "Ìṣàkóso Ara-ẹni",
+          "desc": "Ṣíṣàkóso ìmọ̀lára, ìrusókè, àfiyèsí; ìdánrawò ìfaradà"
+        },
+        "self-direction": {
+          "label": "Ìdarí Ara-ẹni",
+          "desc": "Ṣíṣètò àfojúsùn, agbára ara-ẹni, àkóso ọpọlọ, èrò ìdàgbàsókè"
+        },
+        "inner-work": {
+          "label": "Iṣẹ́ Inú",
+          "desc": "Àwọn ìdánrawò àṣàrò àti ìrònú"
+        },
+        "care-of-self": {
+          "label": "Ìkẹ́ Ara-ẹni",
+          "desc": "Àánú fún ara-ẹni, ìtọ́jú ara-ẹni nípasẹ̀ àjọṣepọ̀"
+        },
+        "social-awareness": {
+          "label": "Ìmọ̀ Àwùjọ",
+          "desc": "Ìbánikẹ́dùn, wíwo nǹkan láti ojú ẹlòmíràn, àti mímọrírì onírúurú"
+        },
+        "relationship-skills": {
+          "label": "Ọgbọ́n Àjọṣepọ̀",
+          "desc": "Ìbánisọ̀rọ̀, iṣẹ́ àjùmọ̀ṣe, àti ìyanjú ìforígbárí"
+        },
+        "responsible-decision-making": {
+          "label": "Ṣíṣe Ìpinnu Tó Yẹ",
+          "desc": "Àṣàyàn ìwà rere, ṣíṣe àgbéyẹ̀wò àbájáde, àti yíyanjú ìṣòro"
+        },
+        "stewardship": {
+          "label": "Ìṣàbójútó",
+          "desc": "Títọ́jú àwùjọ, ìdájọ́ òdodo, ilẹ̀, àti ọjọ́ iwájú"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "ìṣẹ́jú 5-8",
+          "purpose": "Sọ orúkọ agbègbè rẹ lọ́wọ́lọ́wọ́ kí o sì yan ọ̀nà ìṣàkóso tó bá a mu.",
+          "next": "Ṣàyẹ̀wò agbègbè rẹ, yan ọ̀nà kan, lẹ́yìn náà fi pamọ́ bí o bá fẹ́ padà sí i."
+        },
+        "coping": {
+          "time": "ìṣẹ́jú 3-10",
+          "purpose": "Yan ọ̀nà ìfaradà kan kí o sì ṣe ìdánrawò rẹ̀ lẹ́ẹ̀kan pẹ̀lú ibi ìdádúró tó ṣe kedere.",
+          "next": "Yan ọ̀nà kan tó jẹ mọ́ ara tàbí ìfọkànsílẹ̀, gbìyànjú rẹ̀, lẹ́yìn náà ṣàkíyèsí bóyá ó ṣèrànwọ́."
+        },
+        "journal": {
+          "time": "ìṣẹ́jú 5-12",
+          "purpose": "Kọ ìrònú àdáni kí o sì ṣàkíyèsí àwọn ìlànà tí o lè fẹ́ pa mọ́.",
+          "next": "Yan ìbéèrè kan, kọ̀wé pẹ̀lú òtítọ́, kí o sì fi pamọ́ tàbí gbé e jáde kí o tó pa á dé."
+        },
+        "emotions": {
+          "time": "ìṣẹ́jú 4-8",
+          "purpose": "Kọ́ àwọn ọ̀rọ̀ ìmọ̀lára kí o sì sọ ohun tí ò ń rí lára ní pàtó.",
+          "next": "Yan ìmọ̀lára kan, díwọ̀n bí ó ṣe lágbára tó, lẹ́yìn náà yan ọ̀rọ̀ kan tó bá a mu jù."
+        },
+        "mindfulness": {
+          "time": "ìṣẹ́jú 2-10",
+          "purpose": "Dánu dúró, mí, kí o sì ṣe ìdánrawò àfiyèsí láìnílò láti kọ ohunkóhun.",
+          "next": "Yan ìdánrawò kúkúrú kan, tẹ̀lé e dé òpin, lẹ́yìn náà ṣàkíyèsí ohun tó yí padà."
+        },
+        "somaticReset": {
+          "time": "ìṣẹ́jú 3-8",
+          "purpose": "Lo àyẹ̀wò apá ara àdáni láti yan àtúntò kúkúrú tí a lè ṣe lórí àga.",
+          "next": "Yan apá ara kan, gbìyànjú àṣàyàn ìdákẹ́rọ́rọ́, mímí, tàbí ìṣípòpadà jẹ́jẹ́ kan, lẹ́yìn náà ṣàkíyèsí ohun tó yí padà."
+        },
+        "thoughtRecord": {
+          "time": "ìṣẹ́jú 8-15",
+          "purpose": "Rọra ronú lórí èrò líle kan kí o sì wá ìwòye tó dọ́gba jù.",
+          "next": "Sọ orúkọ ipò náà, díwọ̀n ìmọ̀lára náà, lẹ́yìn náà dán èrò náà wò pẹ̀lú ẹ̀rí."
+        },
+        "anxietyToolkit": {
+          "time": "ìṣẹ́jú 5-12",
+          "purpose": "To àníyàn lẹ́sẹẹsẹ, dín agbára àníyàn kù, kí o sì yan ìgbésẹ̀ tó kàn tó wúlò.",
+          "next": "Yan àníyàn tó ń pariwo jù, gbìyànjú ọ̀nà kan, lẹ́yìn náà fi ètò náà pamọ́ bí ó bá ṣèrànwọ́."
+        },
+        "sleep": {
+          "time": "ìṣẹ́jú 4-10",
+          "purpose": "Ṣàkíyèsí àwọn ìdènà oorun kí o sì yan àṣà ìsinmi kan láti gbìyànjú.",
+          "next": "Ṣàyẹ̀wò ohun tó ń dí ọ lọ́wọ́, yan àyípadà kékeré kan, lẹ́yìn náà padà wò ó lẹ́yìn."
+        },
+        "goals": {
+          "time": "ìṣẹ́jú 5-10",
+          "purpose": "Sọ èrò-ọkàn kan di ìṣe tó kàn tó ṣe kedere tí ó sì ṣeé ṣe.",
+          "next": "Kọ àfojúsùn kan, yan ìgbésẹ̀ àkọ́kọ́, kí o sì fi ètò náà pamọ́ kí o tó pa á dé."
+        },
+        "friendship": {
+          "time": "ìṣẹ́jú 5-10",
+          "purpose": "Ronú lórí àwọn àìní ọ̀rẹ́, jíjẹ́ ara ẹgbẹ́, àti àṣàyàn ẹlẹgbẹ́.",
+          "next": "Yan ipò ọ̀rẹ́ kan kí o sì dá ìgbésẹ̀ onínúure kan tó kàn mọ̀."
+        },
+        "conflict": {
+          "time": "ìṣẹ́jú 6-12",
+          "purpose": "Lóye ìforígbárí kan kí o sì múra ìdáhùn tó dá lórí àtúnṣe sílẹ̀.",
+          "next": "Sọ ohun tó ṣẹlẹ̀, ronú nípa ẹ̀gbẹ́ méjèèjì, lẹ́yìn náà yan ìṣe àtúnṣe kan."
+        },
+        "safety": {
+          "time": "ìṣẹ́jú 8-15",
+          "purpose": "Ṣẹ̀dá ètò ààbò tó wúlò kí o sì dá àwọn alátìlẹ́yìn tí o fọkàn tán mọ̀.",
+          "next": "Fi àwọn àmì ìkìlọ̀, àwọn ìgbésẹ̀ ìfaradà, àti àwọn ènìyàn láti kàn sí kún un; fi pamọ́ kí o tó pa á dé."
+        },
+        "crisiscompanion": {
+          "time": "ìṣẹ́jú 3-10",
+          "purpose": "Lo ọ̀nà àtìlẹ́yìn tí a ṣètò nígbà tí ìmọ̀lára bá dà bí pàjáwìrì tàbí tí kò ní ààbò.",
+          "next": "Yan àṣàyàn àtìlẹ́yìn tó súnmọ́ jù kí o sì mú àgbàlagbà tí o fọkàn tán tàbí iṣẹ́ ìrànlọ́wọ́ ìṣòro wọlé nígbà tí ó bá yẹ."
+        },
+        "conflicttheater": {
+          "time": "ìṣẹ́jú 8-15",
+          "purpose": "Ṣe ìdánrawò ìran ìforígbárí àròsọ kí o sì dán èdè àtúnṣe wò láìka irinṣẹ́ náà sí ìlàjà.",
+          "next": "Yan ìran àròsọ kan, gbìyànjú ìdáhùn kan, kí o sì jíròrò ohun tí yóò nílò àtìlẹ́yìn àgbàlagbà ní ìgbésí ayé gidi."
+        },
+        "restorativeCircle": {
+          "time": "ìṣẹ́jú 15-30",
+          "purpose": "Ṣètò tàbí darí ìlànà àtúnṣe ẹgbẹ́ pẹ̀lú àwọn òfin tó ṣe kedere àti ìtọ́sọ́nà àgbàlagbà.",
+          "next": "Kọ́kọ́ ṣètò àwọn àdéhùn àyíká, lẹ́yìn náà yan ìbéèrè kan; má ṣe fipá mú ẹnikẹ́ni láti ṣípayá níwájú gbogbo ènìyàn."
+        },
+        "strengths": {
+          "time": "ìṣẹ́jú 5-10",
+          "next": "Yan àwọn agbára tó dà bí ìwọ, lẹ́yìn náà wá àkókò gidi kan láti sáà ẹ̀kọ́ yìí tó fi ọ̀kọ̀ọ̀kan hàn."
+        },
+        "viaStrengths": {
+          "time": "ìṣẹ́jú 8-15",
+          "purpose": "Lo ìtòlẹ́sẹẹsẹ ara-ẹni tí VIA fún ní ìmísí gẹ́gẹ́ bí ìgbòkègbodò ìrònú, kì í ṣe àyẹ̀wò oníbiṣẹ́.",
+          "next": "To àwọn agbára náà lẹ́sẹẹsẹ, ṣàkíyèsí àwọn ìlànà, kí o sì kọ àpẹẹrẹ kan tó fi ìdí èsì náà múlẹ̀."
+        },
+        "perma": {
+          "time": "ìṣẹ́jú 8-15",
+          "purpose": "Ya àwòrán ìrònú ti àlàáfíà rẹ ní àwọn ẹ̀ka PERMA pẹ̀lú Ìlera.",
+          "next": "Lo àwòrán náà láti yan ìjíròrò tàbí àdánwò kékeré kan, kì í ṣe láti fún ara rẹ ní orúkọ."
+        },
+        "advocacy": {
+          "time": "ìṣẹ́jú 5-12",
+          "purpose": "Ṣe ìdánrawò èdè ojoojúmọ́ fún sísọ àìní àti bíbéèrè àtìlẹ́yìn.",
+          "next": "Yan ipò kan, kọ ìbéèrè kúkúrú kan, kí o sì pinnu ẹni tó lè ṣèrànwọ́."
+        },
+        "selfAdvocacy": {
+          "time": "ìṣẹ́jú 10-20",
+          "purpose": "Kọ́ ètò àtìlẹ́yìn ilé-ìwé tó ṣe kedere fún IEP, 504, àwọn ìrọ̀rùn, tàbí àwọn àṣàyàn ìṣípayá.",
+          "next": "Yan àìní àtìlẹ́yìn kan, kó àwọn ìbéèrè rẹ jọ, kí o sì dá àgbàlagbà tí o fọkàn tán tí o lè mú wọlé mọ̀."
+        },
+        "crewProtocols": {
+          "time": "ìṣẹ́jú 10-20",
+          "next": "Wò ó nípa ète, yan ìlànà kan fún òní, lẹ́yìn náà kọ sínú Ètò Crew Mi ìgbà tí o máa ṣe é."
+        },
+        "perspective": {
+          "time": "ìṣẹ́jú 6-12",
+          "next": "Yan ipò kan, kọ́kọ́ wò ó láti ojú ẹnìkejì, lẹ́yìn náà sọ ohun tí ìwọ yóò ṣe lọ́nà mìíràn."
+        },
+        "windowOfTolerance": {
+          "time": "ìṣẹ́jú 8-12",
+          "next": "Fi àmì kan kún ọ̀kọ̀ọ̀kan nínú agbègbè mẹ́ta rẹ, lẹ́yìn náà lo Àyẹ̀wò láti fi òní sí ipò rẹ̀."
+        },
+        "sensoryRegulation": {
+          "time": "ìṣẹ́jú 8-15",
+          "next": "Bẹ̀rẹ̀ pẹ̀lú Kí ni ìmọ̀-ara?, lẹ́yìn náà sàmì sí àwọn ẹ̀ka tó ń pariwo tàbí tó dákẹ́ fún ọ."
+        },
+        "execfunction": {
+          "time": "ìṣẹ́jú 5-10",
+          "next": "Lọ sí Bẹ̀rẹ̀ kí o sì yan ìgbésẹ̀ ìbẹ̀rẹ̀ kan fún òní, lẹ́yìn náà lọ sí Dìmú láti yan ibi tí o máa kọ nǹkan sí."
+        },
+        "growthmindset": {
+          "time": "ìṣẹ́jú 5-10",
+          "next": "Ṣí Yí I Padà, kọ èrò tó dúró gbagidi, kí o sì sọ ọ́ di èyí tó ṣe pàtó tí ó sì ṣeé ṣe."
+        },
+        "dearMan": {
+          "time": "ìṣẹ́jú 8-12",
+          "next": "Kọ ìbéèrè rẹ ní gbólóhùn kan, kọ ìgbésẹ̀ méje náà, lẹ́yìn náà tún un sọ lẹ́ẹ̀kan."
+        },
+        "howlTracker": {
+          "time": "ìṣẹ́jú 5-10",
+          "next": "Kọ Ìlù Ọkàn sílẹ̀, lẹ́yìn náà ṣe Àyẹ̀wò Ọ̀sẹ̀: díwọ̀n HOWL kọ̀ọ̀kan kí o sì fi àpẹẹrẹ pàtó kan kún un."
+        },
+        "peersupport": {
+          "time": "ìṣẹ́jú 5-10",
+          "next": "Yan ìbéèrè ṣíṣí méjì tí o lè béèrè lọ́wọ́ ọ̀rẹ́ kan, lẹ́yìn náà gbìyànjú ọ̀kan lórí ipò àròsọ nínú táàbù ìdánrawò."
+        },
+        "upstander": {
+          "time": "ìṣẹ́jú 8-12",
+          "next": "Ka àkàbà ìgboyà nínú Àwọn Ìṣísẹ̀ kí o sì yan ìṣísẹ̀ méjì tó kéré jù tí o lè ṣe gan-an ní ọ̀sẹ̀ yìí."
+        },
+        "digitalWellbeing": {
+          "time": "ìṣẹ́jú 8-12",
+          "next": "Ṣe Àyẹ̀wò Ara-ẹni pẹ̀lú òtítọ́, lẹ́yìn náà yan àṣà kan láti inú Àpótí Irinṣẹ́ àti ààlà kan tí o fi lélẹ̀ ṣáájú àkókò."
+        },
+        "teamwork": {
+          "time": "ìṣẹ́jú 8-12",
+          "next": "Wo Àwọn Ipa, lẹ́yìn náà kọ Ètò Ìbánisọ̀rọ̀ fún ẹgbẹ́ gidi kan: ta ni yóò ṣe kí ni, níbo, àti nígbà wo."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Bẹ̀rẹ̀ níbí",
+        "name_it": "Sọ orúkọ rẹ̀",
+        "calm_now": "Farabalẹ̀ báyìí",
+        "body_reset": "Àtúntò ara",
+        "make_a_plan": "Ṣe ètò",
+        "understand_patterns": "Lóye àwọn ìlànà",
+        "practice_repair": "Ṣe ìdánrawò àtúnṣe",
+        "role_play": "Eré ipa",
+        "facilitated_group": "Ẹgbẹ́ tí a ń darí",
+        "reflect": "Ronú jinlẹ̀",
+        "practice_speaking_up": "Ṣe ìdánrawò sísọ̀rọ̀ jáde",
+        "make_a_support_plan": "Ṣe ètò àtìlẹ́yìn",
+        "urgent_support": "Àtìlẹ́yìn pàjáwìrì",
+        "get_support": "Gba àtìlẹ́yìn",
+        "move_gently": "Rọra lọ",
+        "learn_not_diagnose": "Kọ́ ẹ̀kọ́, kì í ṣe ìdámọ̀ àìsàn",
+        "learn_and_get_support": "Kọ́ ẹ̀kọ́ kí o sì gba àtìlẹ́yìn",
+        "check_boundaries": "Ṣàyẹ̀wò ààlà",
+        "explore_identity": "Ṣàwárí ìdánimọ̀",
+        "practice_body_respect": "Ṣe ìdánrawò ìbọ̀wọ̀ fún ara",
+        "map_carefully": "Ya àwòrán pẹ̀lú ìṣọ́ra",
+        "understand_needs": "Lóye àwọn àìní"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Sọ orúkọ ohun tó ń ṣẹlẹ̀ kí o tó yan ọ̀nà kan."
+        },
+        "emotions": {
+          "note": "Kọ́ àwọn ọ̀rọ̀ ìmọ̀lára pàtó kí o sì ṣàkíyèsí bí wọ́n ṣe lágbára tó."
+        },
+        "coping": {
+          "note": "Gbìyànjú ọ̀nà kan tó jẹ mọ́ ara tàbí ìfọkànsílẹ̀, lẹ́yìn náà ṣàkíyèsí ohun tó yí padà."
+        },
+        "mindfulness": {
+          "note": "Ìdánudúró tí kò nílò kíkọ púpọ̀ fún mímí, àfiyèsí, tàbí ìmọ̀ ara."
+        },
+        "somaticReset": {
+          "note": "Yan apá ara kan, lẹ́yìn náà gbìyànjú ìdánrawò kúkúrú ti ìdákẹ́rọ́rọ́, mímí, tàbí ìṣípòpadà jẹ́jẹ́. Olùyàn kékeré tí a lè lò pẹ̀lú pátákó ìtẹ̀wé ń jẹ́ kí gbogbo àwòrán rọrùn láti lò lórí ìbòjú kékeré. Àwọn àwòrán náà ní Ìgbì Omi Tó Ń Ṣàn tó so SÍNÚ · DÌDE pọ̀ mọ́ ìlà tí kò já àti àmì yíká, JÁDE · RỌLẸ̀ mọ́ ìlà oní-tọ́ńtọ́ǹ àti àmì dáyámọ́ǹdì, àti DÁNU DÚRÓ mọ́ àwọn ọ̀pá ìdánudúró; Òdòdó Tó Ń Yọ tó so SÍNÚ · ṢÍ pọ̀ mọ́ ìlà ewé òdòdó tí kò já àti àárín yíká, JÁDE · RỌ̀ mọ́ ìlà oní-tọ́ńtọ́ǹ àti àárín dáyámọ́ǹdì, àti DÁNU DÚRÓ mọ́ àwọn ọ̀pá ìdánudúró ní àárín; Ojú Ọ̀run Ìfọkànsílẹ̀ tó so SÍNÚ · DÌDE pọ̀ mọ́ ìlà oòrùn tí kò já àti àárín òbìrí, JÁDE · RỌLẸ̀ mọ́ ìlà oòrùn oní-tọ́ńtọ́ǹ àti àárín dáyámọ́ǹdì, àti DÁNU DÚRÓ mọ́ àwọn ọ̀pá ìdánudúró oòrùn; ọ̀nà títọ́ tí a lè sọ tẹ́lẹ̀ tó ní àmì ìdarí pẹ̀lú àkọlé SÍNÚ àti JÁDE tààrà, àfojúsùn SÍNÚ yíká àti àfojúsùn JÁDE dáyámọ́ǹdì, ipasẹ̀ ìbẹ̀rẹ̀ tó ń ṣiṣẹ́, àti ibi tó kàn tí a fi ìlà yí ká; àti Òbìrí Ìmí apá méjì pẹ̀lú àwọn ìtẹ̀ ìpele tí kò já àti oní-tọ́ńtọ́ǹ tí ó ń nípọn sí i nígbà tí wọ́n bá ń ṣiṣẹ́, òrùka àárín tó bá ìlànà ìpele mu, àkọlé SÍNÚ àti JÁDE tààrà, àmì àárín fún ìgbà ìdánudúró, ibi ìfàlé tó kàn tí a fi ìlà yí ká, àmì onírísí ìpele tó ń yí bí aago, àwòrán ìlù tí a fi ìrísí sàmì, àti àwọn àmì ìpele fún olùka ìbòjú. Àwọn akẹ́kọ̀ọ́ lè dán ìmí kan ti ìṣípòpadà wò kí aago tó bẹ̀rẹ̀, lẹ́yìn náà kí wọ́n sọ ọ́ di ńlá, dá a dúró, tàbí pa ìtọ́sọ́nà náà. Nínú Ipò Ìdákẹ́jẹ́ẹ́, àwòrán tí a sọ di ńlá máa di bọ́tìnnì bẹ̀rẹ̀/dánu dúró tí a lè lò pẹ̀lú pátákó ìtẹ̀wé àti ìfọwọ́kàn. A lè fi kíka sẹ́yìn pamọ́; ọ̀rọ̀ ìtọ́sọ́nà lè kún, jẹ́ ti ìpele nìkan, tàbí kí ó farasin; kíka ìmí àti ìdíwọ̀n oní-nọ́ńbà sì jẹ́ àṣàyàn.",
+          "boundary": "Èyí kì í ṣe ìtọ́jú tàbí ìdámọ̀ àìsàn. Jẹ́ kí ìṣípòpadà kéré kí ó má sì dunni; dúró bí ìrora, òòyì, tàbí ara kíkú bá wà, kí o sì sọ fún àgbàlagbà tí o fọkàn tán tàbí òṣìṣẹ́ ìlera."
+        },
+        "anxietyToolkit": {
+          "note": "Ya àníyàn sọ́tọ̀ kúrò lára ìṣe kí o sì yan ìgbésẹ̀ tó kàn kan tó wúlò."
+        },
+        "windowOfTolerance": {
+          "note": "Ya àwọn àmì ìrusókè àti àtìlẹ́yìn bí àkókò ti ń lọ; kì í ṣe ìdámọ̀ àìsàn."
+        },
+        "stressBucket": {
+          "note": "Wo àwọn ìfúnpá àti àtìlẹ́yìn papọ̀, títí kan àwọn ìfúnpá tí kò sí ní ìkáwọ́ rẹ."
+        },
+        "bigFeelings": {
+          "note": "Lo ìbínú gẹ́gẹ́ bí ìsọfúnni kí o sì ṣètò ìdánudúró tàbí àtúnṣe tó ní ààbò jù."
+        },
+        "conflict": {
+          "note": "Ó dára jù fún ìdánrawò ìforígbárí kékeré tàbí ti àròsọ.",
+          "boundary": "Bí ìhalẹ̀, ìfipáṣe, ìfòòró, ìfìyàjẹni, tàbí ìyàtọ̀ agbára tí kò ní ààbò bá wà, dánu dúró kí o sì mú àgbàlagbà tí o fọkàn tán wọlé dípò kí o dá nìkan ṣe ìdúnàádúrà."
+        },
+        "conflicttheater": {
+          "note": "Ìdánrawò àdánwò (beta) tó fani mọ́ra pẹ̀lú àwọn ẹ̀dá ìtàn àròsọ; má ṣe lò ó láti yanjú ìpalára tó ń ṣẹlẹ̀ lọ́wọ́.",
+          "boundary": "Ìhalẹ̀ gidi, ìfìyàjẹni, tàbí ìfòòró nílò àtìlẹ́yìn àgbàlagbà àti ìdáhùn ààbò, kì í ṣe ìdánrawò eré ipa."
+        },
+        "restorativeCircle": {
+          "note": "Lò ó pẹ̀lú àwọn òfin àyíká tí a ti fìdí múlẹ̀ àti àgbàlagbà tó ń darí.",
+          "boundary": "Má ṣe lo àyíká láti fipá mú ẹnikẹ́ni láti ṣípayá níwájú gbogbo ènìyàn tàbí láti yanjú ewu ààbò tó ń ṣẹlẹ̀ lọ́wọ́."
+        },
+        "strengths": {
+          "note": "Ìrònú ṣíṣí nípa agbára láìsí máàkì, ipò, tàbí ìdámọ̀ àìsàn."
+        },
+        "viaStrengths": {
+          "note": "Ìtòlẹ́sẹẹsẹ ara-ẹni fún ìrònú, kì í ṣe ìwádìí VIA oníbiṣẹ́ tàbí èsì ìdánwò ìmọ̀ ọpọlọ onímọ̀-sáyẹ́ǹsì."
+        },
+        "perma": {
+          "note": "Àwòrán àlàáfíà láti ru ìjíròrò sókè, kì í ṣe àyẹ̀wò ìlera ọpọlọ."
+        },
+        "advocacy": {
+          "note": "Àwọn ọ̀rọ̀ gbogbogbò àti àtúnsọ fún sísọ àìní àti bíbéèrè àtìlẹ́yìn."
+        },
+        "selfAdvocacy": {
+          "note": "Lò ó fún ṣíṣètò IEP, 504, ìrọ̀rùn, ìṣípayá, tàbí àtìlẹ́yìn ilé-ìwé tó ṣe kedere."
+        },
+        "crisiscompanion": {
+          "note": "Ìtọ́sọ́nà àtìlẹ́yìn fún ìwọ tàbí ọ̀rẹ́ kan; kì í ṣe ohun èlò àyẹ̀wò ìṣòro tàbí ìrọ́pò fún àgbàlagbà.",
+          "boundary": "Bí ẹnikẹ́ni bá lè wà nínú ewu lójú ẹsẹ̀ tàbí tí ó lè ṣe ohun tí ó ń rò láti ṣe ara rẹ̀ léṣe, dúró níbí kí o sì kàn sí àgbàlagbà tí o fọkàn tán tàbí àtìlẹ́yìn pàjáwìrì/ìṣòro báyìí."
+        },
+        "safety": {
+          "note": "Kọ́ nípa ààlà àti àwọn ìgbésẹ̀ láti lọ sọ́dọ̀ àgbàlagbà tí o fọkàn tán; èyí kì í ṣe ìdánwò bóyá ipò kan ní ààbò.",
+          "boundary": "Bí o bá wà nínú ewu lójú ẹsẹ̀ tàbí tí ẹnìkan bá ń pa ọ́ lára, dúró kí o sì kàn sí àgbàlagbà tí o fọkàn tán tàbí àtìlẹ́yìn pàjáwìrì báyìí."
+        },
+        "griefLoss": {
+          "note": "Alábàárìn àdáni fún ọ̀fọ̀ àti àdánù; fo ohunkóhun tó bá pọ̀ jù fún ọ.",
+          "boundary": "Bí ọ̀fọ̀ bá kọjá agbára rẹ, tí o kò bá ní ààbò, tàbí tí ẹlòmíràn bá wà nínú ewu, mú àgbàlagbà tí o fọkàn tán tàbí àtìlẹ́yìn ìṣòro wọlé."
+        },
+        "traumaPsychoed": {
+          "note": "Ẹ̀kọ́ nípa ìlera ọpọlọ lórí àwọn ìdáhùn sí ìpalára ọkàn; kì í ṣe ohun èlò àyẹ̀wò tàbí ìtọ́jú.",
+          "boundary": "O kò nílò láti ṣípayá ìpalára ọkàn níbí. Dánu dúró kí o sì wá àgbàlagbà tí o fọkàn tán tàbí olùdámọ̀ràn bí àkóónú bá ru ohun tí kò ní ààbò sókè."
+        },
+        "substancePsychoed": {
+          "note": "Ìsọfúnni àti ìrònú tó ń dín ìpalára kù; kì í ṣe ohun èlò àyẹ̀wò tàbí àṣẹ láti lo oògùn olóró.",
+          "boundary": "Má ṣe lo irinṣẹ́ yìí fún lílo oògùn àlòjù tàbí ipò ìlera pàjáwìrì; kàn sí ìrànlọ́wọ́ pàjáwìrì tàbí àgbàlagbà tí o fọkàn tán."
+        },
+        "healthyRelationships": {
+          "note": "Ṣàwárí ìfohùnṣọ̀kan àti ìlànà àjọṣepọ̀ láìfún ènìyàn tàbí àjọṣepọ̀ ní orúkọ.",
+          "boundary": "Bí àjọṣepọ̀ kan bá ní ìhalẹ̀, ìfipáṣe, tàbí ìwà ipá, wá ìrànlọ́wọ́ àgbàlagbà; má ṣe dá nìkan kojú ẹnikẹ́ni."
+        },
+        "identitySupport": {
+          "note": "Ìrònú tó ń fọwọ́ sí ọ àti àtìlẹ́yìn àwùjọ; pínpín jẹ́ àṣàyàn.",
+          "boundary": "Pa ìsọfúnni ara-ẹni rẹ mọ́ ní ìkọ̀kọ̀ kí o sì mú àgbàlagbà tí o fọkàn tán wọlé bí o kò bá ní ààbò."
+        },
+        "bodyStory": {
+          "note": "Ìmọrírì ara àti ìmọ̀ nípa ìròyìn àti ìpolówó; kì í ṣe àyẹ̀wò ìdínkù ìwúwo tàbí ìṣòro jíjẹun.",
+          "boundary": "Bí oúnjẹ, bí o ṣe ń wo ara rẹ, tàbí eré ìdárayá bá dà bí èyí tí kò ní ààbò tàbí tó ń gba gbogbo ọkàn rẹ, bá àgbàlagbà tí o fọkàn tán tàbí òṣìṣẹ́ ìlera sọ̀rọ̀."
+        },
+        "genogram": {
+          "note": "Ìrònú ara-ẹni nípa ìdílé; kì í ṣe àyẹ̀wò ilé ìwòsàn, pínpín sì jẹ́ àṣàyàn.",
+          "boundary": "Fo àwọn àlàyé ìdílé tí kò ní ààbò tàbí tó jẹ́ àṣírí; béèrè àtìlẹ́yìn lọ́wọ́ àgbàlagbà tí o fọkàn tán."
+        },
+        "sensoryRegulation": {
+          "note": "Kọ́ àpèjúwe ìmọ̀-ara rẹ àti àwọn ìrọ̀rùn; kì í ṣe ìdámọ̀ àìsàn.",
+          "boundary": "Yan àwọn àtìlẹ́yìn tó ní ààbò fún ọ; pín àwọn ìrọ̀rùn nìkan nígbà tí o bá fẹ́."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Àyẹ̀wò Òwúrọ̀",
+          "desc": "Bẹ̀rẹ̀ ọjọ́ pẹ̀lú àyẹ̀wò ipò ọkàn, mímí, àti ṣíṣètò àfojúsùn"
+        },
+        "calm_down": {
+          "name": "Igun Ìfọkànbalẹ̀",
+          "desc": "Àwọn ọ̀nà ìṣàkóso fún ìgbà tí ìmọ̀lára bá ga sókè"
+        },
+        "conflict_unit": {
+          "name": "Ẹ̀kọ́ Ìyanjú Ìforígbárí",
+          "desc": "Ṣe ìdánrawò yíyanjú èdè-àìyédè àti kíkọ́ ọgbọ́n àtúnṣe"
+        },
+        "empathy_week": {
+          "name": "Ọ̀sẹ̀ Ìbánikẹ́dùn àti Ìwòye",
+          "desc": "Kọ́ ìbánikẹ́dùn nípasẹ̀ wíwo nǹkan láti ojú ẹlòmíràn àti ìmọ̀ àṣà"
+        },
+        "decision_making": {
+          "name": "Ìwádìí Jinlẹ̀ Lórí Ṣíṣe Ìpinnu",
+          "desc": "Ṣe ìdánrawò ìrònú ìwà rere àti àṣàyàn tó yẹ"
+        },
+        "self_discovery": {
+          "name": "Ìrìn-àjò Ìṣàwárí Ara-ẹni",
+          "desc": "Ṣàwárí ẹni tí o jẹ́ — agbára, ìmọ̀lára, àti èrò ìdàgbàsókè"
+        },
+        "friendship": {
+          "name": "Ọ̀rẹ́ àti Ọgbọ́n Àjọṣe",
+          "desc": "Kọ́ ọ̀rẹ́ tó dára àti ọgbọ́n ìbánisọ̀rọ̀"
+        },
+        "transitions": {
+          "name": "Lílà Àyípadà Kọjá",
+          "desc": "Ṣe àtìlẹ́yìn fún àwọn akẹ́kọ̀ọ́ nínú àwọn àyípadà ìgbésí ayé àti ìrírí tuntun"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Ṣàkíyèsí ohun tí o nílò kí o sì yan ìgbésẹ̀ tó kàn kan tí o lè ṣàkóso.",
+          "model": "Ara mi kò balẹ̀. Mo lè gbìyànjú nínà ara, lẹ́yìn náà kí n yan apá àkọ́kọ́ iṣẹ́ mi.",
+          "practice": "Sọ orúkọ ìmọ̀lára kan, tọ́ka sí àṣàyàn kan, tàbí ṣàkíyèsí ní ìdákẹ́jẹ́ẹ́. Gbìyànjú àtìlẹ́yìn kan kí o sì yan àfojúsùn kékeré kan.",
+          "reflect": "Kí ni o ṣàkíyèsí? Kí ni ìwọ yóò pa mọ́ tàbí yí padà?",
+          "transfer": "Nígbà tí ẹ̀kọ́ tó kàn bá bẹ̀rẹ̀, mo lè gbìyànjú ____. Bí mo bá nílò ìrànlọ́wọ́, mo lè béèrè lọ́wọ́ ____."
+        },
+        "calm_down": {
+          "goal": "Ṣàwárí àtìlẹ́yìn tó bá ara rẹ àti àkókò yìí mu.",
+          "model": "Ìdánrawò mímí kò ràn mí lọ́wọ́ lónìí. Mo lè gbìyànjú wíwo àyíká yàrá tàbí kí n béèrè kí ẹnìkan wà pẹ̀lú mi.",
+          "practice": "Yan ọ̀nà kan ṣoṣo tó rọrùn fún ọ. Jíjókòó, wíwò, tàbí gbígba ìsinmi jẹ́ àṣàyàn tó tọ́.",
+          "reflect": "Ṣé ó ṣèrànwọ́, ṣé ó rí bákan náà, tàbí ṣé kò rọrùn? O lè dúró tàbí yan ọ̀nà mìíràn.",
+          "transfer": "Nígbà tí mo bá ṣàkíyèsí ____, mo lè gbìyànjú ____ tàbí béèrè àtìlẹ́yìn lọ́wọ́ ____."
+        },
+        "conflict_unit": {
+          "goal": "Ronú nípa oríṣiríṣi ìwòye kí o sì tún ìdáhùn ọ̀wọ̀ kan sọ fún èdè-àìyédè ojoojúmọ́.",
+          "model": "Àwa méjèèjì fẹ́ ohun èlò kan náà. Mo lè béèrè ohun tí o nílò, ṣàlàyé àìní mi, kí n sì dábàá pé kí a máa lò ó ní àyè-àyè.",
+          "practice": "Lo èdè-àìyédè àròsọ kékeré kan. Tún ìbéèrè fífetísílẹ̀ kan àti ìgbésẹ̀ tó kàn kan tó ṣeé ṣe sọ.",
+          "reflect": "Àìní ta ni ìdáhùn náà bójú tó? Kí ni ó lè nílò àyípadà?",
+          "transfer": "Nínú èdè-àìyédè tó ní ààbò, mo lè ____. Fún ìhalẹ̀, ìfòòró, tàbí ìfipáṣe, mo lè béèrè ìrànlọ́wọ́ lọ́wọ́ àgbàlagbà tí mo fọkàn tán."
+        },
+        "empathy_week": {
+          "goal": "Ṣàwárí ìwòye mìíràn láìrò pé o mọ bí ẹnìkan ṣe ń rí lára.",
+          "model": "Wọ́n dákẹ́. Ó lè jẹ́ pé ó rẹ̀ wọ́n tàbí wọ́n ń ronú; mo lè béèrè dípò kí n pinnu fún wọn.",
+          "practice": "Lo àpẹẹrẹ àròsọ. Sọ orúkọ ìwòye méjì tó ṣeé ṣe àti ìbéèrè ọ̀wọ̀ kan tí o lè béèrè.",
+          "reflect": "Kí ni o mọ̀, kí sì ni ò ń fojú inú wò? Báwo ni o ṣe lè ṣàyẹ̀wò rẹ̀?",
+          "transfer": "Kí n tó ṣe ìdájọ́ tẹ́lẹ̀ ní ọ̀sẹ̀ yìí, mo lè béèrè ____."
+        },
+        "decision_making": {
+          "goal": "Fi àwọn àṣàyàn wéra nípa ipa wọn lórí ìwọ àti àwọn ẹlòmíràn.",
+          "model": "Kí n tó fi fọ́tò ẹgbẹ́ sórí ayélujára, mo lè béèrè àṣẹ kí n sì ronú nípa ẹni tó lè rí i.",
+          "practice": "Yan ìpinnu àròsọ kan. Fi àṣàyàn méjì wéra, ipa tí wọ́n lè ní, àti ẹnìkan tó lè ṣèrànwọ́.",
+          "reflect": "Ìsọfúnni wo ló kù? Ṣé àṣàyàn kan wà tó ní ààbò jù tàbí tó tọ́ jù?",
+          "transfer": "Kí n tó pinnu nípa ____, mo lè dánu dúró láti ṣàyẹ̀wò ____."
+        },
+        "self_discovery": {
+          "goal": "Dá agbára kan mọ̀ kí o sì yan ọ̀nà láti lò ó pẹ̀lú àtìlẹ́yìn.",
+          "model": "Mo máa ń béèrè àwọn ìbéèrè tó wúlò. Mo lè lo agbára yẹn nígbà tí iṣẹ́ kò bá ṣe kedere kí n sì béèrè fún àpẹẹrẹ.",
+          "practice": "Yan agbára kan tó bá ọ mu, tàbí ti ẹ̀dá ìtàn àròsọ kan. Fún ní àpẹẹrẹ kan bí ó ṣe ń ṣiṣẹ́.",
+          "reflect": "Kí ló ran agbára yẹn lọ́wọ́ láti farahàn? Àtìlẹ́yìn wo ni yóò mú kí ìgbésẹ̀ tó kàn ṣeé ṣe?",
+          "transfer": "Mo lè lo ____ nígbà tí ____. Ẹnìkan tàbí ohun èlò tó lè ṣèrànwọ́ ni ____."
+        },
+        "friendship": {
+          "goal": "Ṣe ìdánrawò ìbánisọ̀rọ̀ tó bọ̀wọ̀ fún àìní rẹ àti ààlà àwọn ẹlòmíràn.",
+          "model": "Mo lè pe ẹnìkan láti darapọ̀ mọ́ wa kí n sì gba ìpinnu rẹ̀ bí ó bá sọ pé rárá.",
+          "practice": "Tún ìpè kan, ìbéèrè fífetísílẹ̀ kan, tàbí ààlà ọ̀wọ̀ kan sọ. Sísọ̀rọ̀, kíkọ̀wé, tàbí AAC gbogbo wọn ló tọ́.",
+          "reflect": "Ṣé ẹnìkọ̀ọ̀kan ní àṣàyàn gidi? Kí ló lè mú kí ìbáṣepọ̀ náà gbani wọlé jù?",
+          "transfer": "Nínú ìbáṣepọ̀ tó ní ààbò ní ọ̀sẹ̀ yìí, mo lè gbìyànjú ____ kí n sì ṣàkíyèsí ____."
+        },
+        "transitions": {
+          "goal": "Dá ohun tó ń yí padà mọ̀, ohun tó lè dúró sójú kan, àti orísun àtìlẹ́yìn kan.",
+          "model": "Kíláàsì tuntun kan ń mú kí n ṣiyèméjì. Mo lè wá yàrá náà ṣáájú kí n sì béèrè ẹni tó lè ṣèrànwọ́.",
+          "practice": "Yan àyípadà gidi tàbí ti àròsọ. Sọ orúkọ ohun kan tí kò dájú, àtìlẹ́yìn kan tó dúró sójú kan, àti ìgbésẹ̀ tó kàn kékeré kan.",
+          "reflect": "Apá wo ló wà ní ìkáwọ́ rẹ? Ìrànlọ́wọ́ tàbí ìrọ̀rùn wo ni yóò wúlò?",
+          "transfer": "Kí àyípadà náà tó dé, mo lè ____. Bí ètò náà bá nílò láti yí padà, mo lè ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "ìṣẹ́jú 5-8",
+          "format": "Ẹnìkan tàbí ẹgbẹ́",
+          "cue": "Àyẹ̀wò àkọ́kọ́ tó wúlò kí pínpín èyíkéyìí tó wáyé."
+        },
+        "emotions": {
+          "time": "ìṣẹ́jú 5-8",
+          "format": "Ẹnìkan tàbí méjì-méjì",
+          "cue": "Ìmúrasílẹ̀ ọ̀rọ̀ tó dára."
+        },
+        "coping": {
+          "time": "ìṣẹ́jú 3-10",
+          "format": "Ẹnìkan tàbí ẹgbẹ́",
+          "cue": "Ó dára jù fún àtúntò ìṣàkóso."
+        },
+        "mindfulness": {
+          "time": "ìṣẹ́jú 2-10",
+          "format": "Gbogbo kíláàsì",
+          "cue": "Àṣàyàn ìṣàkóso tí kò nílò kíkọ púpọ̀."
+        },
+        "somaticReset": {
+          "time": "ìṣẹ́jú 3-8",
+          "format": "Ẹnìkan tàbí gbogbo kíláàsì",
+          "cue": "Olùyàn àwòrán kékeré ń jẹ́ kí gbogbo ìtọ́sọ́nà wà láìsí àkójọ bọ́tìnnì tó kún fọ́fọ́. Òbìrí Ìmí so àwọn ìtẹ̀ tí kò já àti oní-tọ́ńtọ́ǹ pọ̀ mọ́ ìpele tó ń ṣiṣẹ́ tó nípọn jù, òrùka àárín tí kò já-tàbí-oní-tọ́ńtọ́ǹ tó bá a mu, àti àkọlé SÍNÚ àti JÁDE tààrà; àárín rẹ̀ ń yí padà láti kókó sí àwọn ọ̀pá ìdánudúró nígbà tí a bá dánu dúró, dáyámọ́ǹdì tàbí òrùka rẹ̀ tí a fi ìlà yí ká sì ń fi ìfàlé ìpele tó kàn hàn, nígbà tí àmì yíká-tàbí-dáyámọ́ǹdì rẹ̀ tó ń yí bí aago, dáyámọ́ǹdì ìfàlé, òrùka ìpadàbọ̀, àwọn ọ̀pá kúkúrú mímí sínú, àti àwọn kókó ṣófo mímí jáde ń jẹ́ kí ìpele àti kíkà àṣàyàn hàn kedere láìsí àwọ̀. Jẹ́ kí àwọn akẹ́kọ̀ọ́ dán ìmí kan ti ìṣípòpadà wò ṣáájú aago, tàbí kí wọ́n yan Dídúró. Pèsè ọ̀rọ̀ ìtọ́sọ́nà kíkún, ti ìpele nìkan, tàbí èyí tó farasin. Ipò Ìdákẹ́jẹ́ẹ́ ń sọ àwòrán tí a sọ di ńlá di bọ́tìnnì bẹ̀rẹ̀/dánu dúró tààrà. Ìgbì Omi Tó Ń Ṣàn ń lo SÍNÚ · DÌDE pẹ̀lú ìlà tí kò já àti àmì yíká, JÁDE · RỌLẸ̀ pẹ̀lú ìlà oní-tọ́ńtọ́ǹ àti àmì dáyámọ́ǹdì, àti àwọn ọ̀pá ìdánudúró fún ìgbà tí a dánu dúró. Òdòdó Tó Ń Yọ ń lo SÍNÚ · ṢÍ pẹ̀lú ìlà ewé òdòdó tí kò já àti àárín yíká, JÁDE · RỌ̀ pẹ̀lú ìlà oní-tọ́ńtọ́ǹ àti àárín dáyámọ́ǹdì, àti àwọn ọ̀pá ìdánudúró ní àárín fún ìgbà tí a dánu dúró. Ojú Ọ̀run Ìfọkànsílẹ̀ ń lo SÍNÚ · DÌDE pẹ̀lú ìlà oòrùn tí kò já àti àárín òbìrí, JÁDE · RỌLẸ̀ pẹ̀lú ìlà oòrùn oní-tọ́ńtọ́ǹ àti àárín dáyámọ́ǹdì, àti àwọn ọ̀pá ìdánudúró oòrùn nígbà tí a bá dánu dúró. Ọ̀nà Ìmí ń lo àfojúsùn SÍNÚ yíká, àfojúsùn JÁDE dáyámọ́ǹdì, ipasẹ̀ ìbẹ̀rẹ̀ tó ń ṣiṣẹ́, àti ibi tó kàn tí a fi ìlà yí ká kí ìdarí má bàa gbára lé àwọ̀. Pèsè àwọn àmì ìpele fún olùka ìbòjú, pẹ̀lú àwọn àṣàyàn kíka sẹ́yìn tó farasin, ìtọ́sọ́nà tó farasin, ìṣípòpadà tó dúró, àìsí àwòrán, mímí àdánidá, àti àìsí nọ́ńbà; má ṣe fipá mú ìdíwọ̀n tàbí àlàyé nípa bí ara ṣe ń rí lára láé."
+        },
+        "journal": {
+          "time": "ìṣẹ́jú 5-12",
+          "format": "Ẹnìkan",
+          "cue": "Ìrònú àdáni. Pínpín gbọ́dọ̀ jẹ́ àṣàyàn."
+        },
+        "goals": {
+          "time": "ìṣẹ́jú 5-10",
+          "format": "Ẹnìkan tàbí àkókò ìmọ̀ràn",
+          "cue": "Ìgbésẹ̀ ìparí tó dára lẹ́yìn ìrònú."
+        },
+        "conflict": {
+          "time": "ìṣẹ́jú 8-12",
+          "format": "Méjì-méjì tàbí ẹgbẹ́ kékeré",
+          "cue": "Kọ́kọ́ wo àwọn òfin kí eré ipa tó bẹ̀rẹ̀."
+        },
+        "restorativeCircle": {
+          "time": "ìṣẹ́jú 15-30",
+          "format": "Àyíká",
+          "cue": "Lò ó pẹ̀lú àwọn òfin àyíká tí a ti fìdí múlẹ̀."
+        },
+        "peersupport": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ìdánrawò méjì-méjì",
+          "cue": "Ó dára gan-an fún títún ọgbọ́n fífetísílẹ̀ ṣe."
+        },
+        "perspective": {
+          "time": "ìṣẹ́jú 6-12",
+          "format": "Méjì-méjì tàbí ẹgbẹ́",
+          "cue": "Afárá ìbánikẹ́dùn tó dára ṣáájú ìjíròrò."
+        },
+        "digitalWellbeing": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan tàbí àkókò ìmọ̀ràn",
+          "cue": "Ó wúlò ṣáájú ṣíṣètò òfin fóònù tàbí AI."
+        },
+        "sleep": {
+          "time": "ìṣẹ́jú 5-10",
+          "format": "Ẹnìkan",
+          "cue": "Ó dára fún àwọn ẹ̀kọ́ ìlera ní àkókò ìmọ̀ràn."
+        },
+        "safety": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan",
+          "cue": "Kọ́kọ́ wò ó; yẹra fún ìfipá ṣípayá."
+        },
+        "crisiscompanion": {
+          "time": "ìṣẹ́jú 3-10",
+          "format": "Ẹnìkan",
+          "cue": "Fún ọgbọ́n àtìlẹ́yìn pàjáwìrì, kì í ṣe iṣẹ́ kíláàsì."
+        },
+        "griefLoss": {
+          "time": "ìṣẹ́jú 10-20",
+          "format": "Ẹnìkan",
+          "cue": "Kọ́kọ́ wò ó; lo àwọn ìgbòkègbodò mìíràn fún àwọn tó yàn láti yọ ara wọn kúrò."
+        },
+        "identitySupport": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan",
+          "cue": "Lò ó pẹ̀lú ìpamọ́ àṣírí àti ìṣọ́ra àṣàyàn yíyọ kúrò."
+        },
+        "traumaPsychoed": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan tàbí pẹ̀lú ìtọ́sọ́nà olùkọ́",
+          "cue": "Ẹ̀kọ́ nípa ìlera ọpọlọ nìkan; pèsè àṣàyàn yíyọ kúrò àti ọ̀nà sí àgbàlagbà tí a fọkàn tán."
+        },
+        "substancePsychoed": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan tàbí ẹ̀kọ́ ìlera",
+          "cue": "Kọ́kọ́ wo ìlànà ìdínkù ìpalára kí o sì pèsè àtìlẹ́yìn àgbàlagbà/ìlera."
+        },
+        "healthyRelationships": {
+          "time": "ìṣẹ́jú 10-20",
+          "format": "Ẹnìkan tàbí ẹ̀kọ́ ìlera",
+          "cue": "Kọ́kọ́ wo èdè ìfohùnṣọ̀kan àti ààbò; má ṣe fipá mú ẹnikẹ́ni láti ṣípayá ọ̀rọ̀ ara-ẹni láé."
+        },
+        "bodyStory": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan",
+          "cue": "Ìlànà ìbọ̀wọ̀ fún ara; pèsè àṣàyàn yíyọ kúrò kí o sì yẹra fún ìjíròrò tó dá lórí ìwúwo."
+        },
+        "genogram": {
+          "time": "ìṣẹ́jú 10-20",
+          "format": "Ẹnìkan",
+          "cue": "Ìrònú nípa ìdílé nìkan; pínpín gbọ́dọ̀ jẹ́ àṣàyàn."
+        },
+        "sensoryRegulation": {
+          "time": "ìṣẹ́jú 8-15",
+          "format": "Ẹnìkan tàbí ìṣètò àtìlẹ́yìn",
+          "cue": "Lo èdè tó ń fọwọ́ sí ìdánimọ̀ kí o sì jẹ́ kí àwọn akẹ́kọ̀ọ́ yan ohun tí wọ́n máa pín."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Àyẹ̀wò àkókò ìmọ̀ràn òwúrọ̀",
+          "time": "ìṣẹ́jú 10-15",
+          "format": "Gbogbo kíláàsì",
+          "focus": "Ipò ọkàn, ìmí, ìgbésẹ̀ tó kàn kan",
+          "studentView": "Àwọn akẹ́kọ̀ọ́ ń ṣàyẹ̀wò agbègbè wọn ní ìkọ̀kọ̀, wọ́n ń gbìyànjú àṣàyàn ìṣàkóso kan, lẹ́yìn náà wọ́n yan àìní kan fún ọjọ́ náà tàbí kí wọ́n fò ó.",
+          "teacherMove": "Kọ́kọ́ fi àṣàyàn fífò hàn. Pe pínpín ọ̀rọ̀ kan tàbí àwọ̀ kan nìkan lẹ́yìn ìdánrawò àdáni.",
+          "privacyBoundary": "A kò kó ọ̀rọ̀ ìwé ìròyìn jọ; àwọn akẹ́kọ̀ọ́ ló ń pinnu lẹ́yìn náà bóyá ibi ìpamọ́ kankan yóò wọ Àpò Pínpín.",
+          "note": "Bẹ̀rẹ̀ pẹ̀lú àyẹ̀wò agbègbè àdáni, lẹ́yìn náà pèsè mímí tàbí ṣíṣètò àfojúsùn. Àwọn akẹ́kọ̀ọ́ lè pín ọ̀rọ̀ kan, àwọ̀ kan, tàbí fò ó."
+        },
+        "calm_reset": {
+          "name": "Àtúntò ìfọkànbalẹ̀ ìṣẹ́jú márùn-ún",
+          "time": "ìṣẹ́jú 5-8",
+          "format": "Gbogbo kíláàsì tàbí igun ìfọkànbalẹ̀",
+          "focus": "Ìṣàkóso ara",
+          "studentView": "Àwọn akẹ́kọ̀ọ́ ń ṣàkíyèsí ipò ara wọn lọ́wọ́lọ́wọ́ wọ́n sì ń yan ìdánrawò ìfọkànbalẹ̀ ara kan.",
+          "teacherMove": "Jẹ́ kí ìlànà náà ní ọ̀rọ̀ díẹ̀ kí ó sì ní àkókò tó ní ààlà. Pèsè àṣàyàn ìṣípòpadà, mímí, tàbí ìdákẹ́jẹ́ẹ́.",
+          "privacyBoundary": "Àwọn akẹ́kọ̀ọ́ lè fi ibi ìpamọ́ kan pamọ́ fún ara wọn; kò sí ẹni tó gbọ́dọ̀ ṣàlàyé ìdí tí ó fi nílò àtúntò.",
+          "note": "Jẹ́ kí èyí ní ọ̀rọ̀ díẹ̀. Àwọn akẹ́kọ̀ọ́ ń yan ìdánrawò ìṣàkóso kan wọ́n sì ń ṣàkíyèsí ohun tó yí padà."
+        },
+        "repair_routine": {
+          "name": "Ìlànà àtúnṣe lẹ́yìn ìforígbárí",
+          "time": "ìṣẹ́jú 15-25",
+          "format": "Ẹgbẹ́ kékeré tàbí àkókò ìmọ̀ràn",
+          "focus": "Ìwòye, àtúnṣe, ìṣe tó kàn",
+          "studentView": "Àwọn akẹ́kọ̀ọ́ lè lo ipò gidi, ti àròsọ, tàbí èyí tí olùkọ́ pèsè láti ṣe ìdánrawò èdè àtúnṣe.",
+          "teacherMove": "Kọ́kọ́ ṣètò àwọn òfin àtúnṣe kí o sì yẹra fún ìjẹ́wọ́ níwájú gbogbo ènìyàn. Dánu dúró bí ipò náà bá nílò ìlàjà àgbàlagbà.",
+          "privacyBoundary": "Àwọn akẹ́kọ̀ọ́ ló ń yan ohun tí wọ́n máa pín; ìrònú àdáni nípa ìforígbárí kò gbọdọ̀ di ẹ̀rí kíláàsì.",
+          "note": "Lò ó lẹ́yìn tí a bá ti ṣètò àwọn òfin. Fojú sí èdè àtúnṣe, kì í ṣe ìjẹ́wọ́ níwájú gbogbo ènìyàn."
+        },
+        "digital_reset": {
+          "name": "Ẹ̀kọ́ kékeré lórí àlàáfíà oní-nọ́ńbà",
+          "time": "ìṣẹ́jú 12-20",
+          "format": "Àkókò ìmọ̀ràn tàbí ìlera",
+          "focus": "Fóònù, oorun, AI àti ààlà",
+          "studentView": "Àwọn akẹ́kọ̀ọ́ ń ṣàyẹ̀wò àṣà wọn, wọ́n ń yan ààlà kan láti dán wò, wọ́n sì lè pa ìdí rẹ̀ mọ́ ní ìkọ̀kọ̀ bí wọ́n bá fẹ́.",
+          "teacherMove": "Ṣàfihàn rẹ̀ gẹ́gẹ́ bí ìṣètò àṣà, kì í ṣe àyẹ̀wò fóònù. Yẹra fún bíbéèrè kí àwọn akẹ́kọ̀ọ́ ṣípayá àwòrán ìbòjú tàbí dátà lílò.",
+          "privacyBoundary": "Àwọn akẹ́kọ̀ọ́ lè pín àfojúsùn ààlà kan, ṣùgbọ́n àlàyé ara-ẹni nípa oorun, fóònù, tàbí AI ṣì jẹ́ àṣàyàn.",
+          "note": "Ṣàfihàn rẹ̀ gẹ́gẹ́ bí ìṣètò àṣà, kì í ṣe àyẹ̀wò fóònù. Àwọn akẹ́kọ̀ọ́ ń yan ààlà kan láti gbìyànjú."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Ọ̀nà tí ìwádìí ṣe àtìlẹ́yìn",
+          "title": "Ìwádìí jẹ mọ́ ọ̀nà tó wà nísàlẹ̀; a kò tíì ṣe àgbéyẹ̀wò àtúnṣe oní-nọ́ńbà yìí níbí"
+        },
+        "emerging": {
+          "label": "Ẹ̀rí ọ̀nà tó mọ níwọ̀n",
+          "title": "Ó ní ìrètí ṣùgbọ́n ẹ̀rí mọ níwọ̀n tàbí ó dàpọ̀"
+        },
+        "contested": {
+          "label": "Àwòṣe tí a ń jiyàn lé lórí",
+          "title": "Ó gbajúmọ̀ ṣùgbọ́n àwọn onímọ̀ sáyẹ́ǹsì ń jiyàn lé e lórí; ó dára jù láti lò ó gẹ́gẹ́ bí àfiwé, kì í ṣe gẹ́gẹ́ bí bí nǹkan ṣe ń ṣiṣẹ́"
+        },
+        "practice": {
+          "label": "Ìdánrawò ìrònú",
+          "title": "Ìdánrawò tí a ṣètò tàbí àròjinlẹ̀, kì í ṣe ìlérí ìmúṣẹ tí a fi ìdánwò sáyẹ́ǹsì fìdí rẹ̀ múlẹ̀"
+        }
+      },
+      "ui": {
+        "sel_practice": "Ìdánrawò SEL",
+        "default_purpose": "Ṣe ìdánrawò ọgbọ́n SEL kan pẹ̀lú ìṣọ́ra.",
+        "default_next": "Parí ìgbésẹ̀ kékeré kan, lẹ́yìn náà pinnu bóyá o máa fi pamọ́.",
+        "private_checkpoint": "Ibi ìpamọ́ àdáni",
+        "share_packet_eligible": "Ó yẹ fún Àpò Pínpín",
+        "saving_preparing": "À ń múra láti fi iṣẹ́ SEL rẹ pamọ́...",
+        "save_requested": "A ti béèrè láti fi {title} pamọ́",
+        "returned_to_grid": "A ti padà sí àkójọ irinṣẹ́",
+        "back_to_sel_tools": "Padà sí àwọn irinṣẹ́ SEL",
+        "export_now_aria": "Gbé fáìlì iṣẹ́ àkànṣe SEL jáde báyìí",
+        "export_now": "Gbé jáde báyìí",
+        "purpose": "Ète",
+        "next_step": "Ìgbésẹ̀ tó kàn",
+        "saved_work": "Iṣẹ́ tí a fi pamọ́",
+        "checkpoints_private": "Àwọn ibi ìpamọ́ irinṣẹ́ máa wà ní àdáni níbí àyàfi tí o bá yàn wọ́n fún Àpò Pínpín.",
+        "use_with_care_label": "Lò ó pẹ̀lú ìṣọ́ra:",
+        "tool_open_failed_title": "Irinṣẹ́ yìí kò lè ṣí",
+        "tool_open_failed_body": "Nǹkan kan nínú ìsọfúnni tí a fi pamọ́ fún ìgbòkègbodò yìí kò ṣí. Èyí kì í ṣe àṣìṣe rẹ.",
+        "saved_work_kept": "A kò pa iṣẹ́ rẹ tí a fi pamọ́ rẹ́.",
+        "back_to_hub": "Padà sí SEL Hub",
+        "tell_teacher": "Bí èyí bá ń ṣẹlẹ̀ léraléra, sọ fún olùkọ́ rẹ ìgbòkègbodò tí ó jẹ́.",
+        "load_did_not_start": "A ti gba irinṣẹ́ náà sílẹ̀ ṣùgbọ́n kò bẹ̀rẹ̀.",
+        "load_too_long": "Irinṣẹ́ náà pẹ́ jù kí ó tó ṣí.",
+        "this_sel_tool": "Irinṣẹ́ SEL yìí",
+        "tool_opening": "{name} ń ṣí...",
+        "tool_open_retry": "A kò lè ṣí {name}. Tún gbìyànjú, tàbí yan irinṣẹ́ mìíràn.",
+        "station_link_missing": "Ìjápọ̀ yìí dárúkọ ìbùdó kan tí kò sí nínú iṣẹ́ àkànṣe yìí. Ṣí àkójọpọ̀ tó ní in, tàbí bẹ̀rẹ̀ ọ̀kan láti Àwọn Ìbùdó SEL nínú pánẹ́lì Ìtàn.",
+        "started_station": "A ti bẹ̀rẹ̀ ìbùdó {name}",
+        "tool_could_not_open": "{name} kò lè ṣí.",
+        "tool_not_available": "{name} kò sí nínú SEL Hub yìí.",
+        "try_again": "Tún gbìyànjú",
+        "dismiss": "Lé kúrò",
+        "back_to_tools": "Padà sí àwọn irinṣẹ́",
+        "band_elementary": "Ilé-ìwé Alákọ̀ọ́bẹ̀rẹ̀",
+        "band_middle": "Ilé-ìwé Girama Kékeré",
+        "band_high": "Ilé-ìwé Girama Àgbà",
+        "unsaved_aria": "O ní àwọn àyípadà tí a kò tíì fi pamọ́",
+        "unsaved_title": "Àwọn àyípadà tí a kò tíì fi pamọ́",
+        "unsaved": "A kò tíì fi pamọ́",
+        "unsaved_hint": "O ní àwọn àyípadà tí a kò tíì fi pamọ́ — tẹ Gbé jáde báyìí láti fi wọ́n pamọ́",
+        "educators_opened": "A ti ṣí ìtọ́sọ́nà Fún Àwọn Olùkọ́",
+        "educators_aria": "Fún Àwọn Olùkọ́: bí a ṣe lè lo Hub yìí lọ́nà tó yẹ",
+        "for_educators": "Fún Àwọn Olùkọ́",
+        "theme_aria": "Yí àwọ̀ ìrísí padà (ìmọ́lẹ̀ / òkùnkùn / ìyàtọ̀ gíga)",
+        "theme_contrast": "Ìyàtọ̀ Gíga",
+        "theme_dark": "Ipò Òkùnkùn",
+        "theme_light": "Ipò Ìmọ́lẹ̀",
+        "theme_contrast_short": "Ìyàtọ̀",
+        "theme_dark_short": "Òkùnkùn",
+        "theme_light_short": "Ìmọ́lẹ̀",
+        "xp_aria": "Máàkì ìrírí SEL {count}",
+        "close_hub": "Pa SEL Hub dé",
+        "keep_share_title": "Yan ohun tí o máa pa mọ́ àti ohun tí o máa pín",
+        "keep_share_body": "Àwọn ìgbòkègbodò kan ń fi iṣẹ́ pamọ́ sórí ẹ̀rọ yìí; iṣẹ́ mìíràn máa wà nínú táàbù yìí nìkan. Pípa táàbù dé kò pa gbogbo nǹkan rẹ́. Gbé fáìlì jáde láti pa ẹ̀dà kan mọ́. Lórí ẹ̀rọ tí a jọ ń lò, ṣàyẹ̀wò Dátà àti àṣírí nínú Fún Àwọn Olùkọ́. Àwọn ẹ̀yà AI àti pínpín ń lo àwọn iṣẹ́ ìpèsè tí a ṣètò fún ọ.",
+        "got_it_aria": "Ó yé mi, bẹ̀rẹ̀ sí lo SEL Hub",
+        "got_it": "Ó yé mi",
+        "practice_support": "Àtìlẹ́yìn ìdánrawò",
+        "learning_guide": "Ìtọ́sọ́nà ẹ̀kọ́ àti àwọn ọ̀nà láti ṣe ìdánrawò",
+        "what_you_can_explore": "Ohun tí o lè ṣàwárí",
+        "worked_example": "Àpẹẹrẹ tí a ti ṣiṣẹ́ rẹ̀",
+        "try_one_step": "Gbìyànjú ìgbésẹ̀ kan",
+        "reflect_transfer": "Ronú jinlẹ̀ kí o sì lò ó níbòmíràn",
+        "look_closer": "Wò ó fínnífínní",
+        "next_use": "Ìlò tó kàn tó ṣeé ṣe",
+        "adapt_together": "Ṣe àtúnṣe ìdánrawò náà papọ̀",
+        "adapt_smaller": "Bẹ̀rẹ̀ kékeré: fi gbólóhùn kan tàbí àṣàyàn kan hàn gẹ́gẹ́ bí àpẹẹrẹ, lo àwòrán tàbí ohun tí a lè fọwọ́ kàn, kí o sì fún ní àkókò láti ronú.",
+        "adapt_deeper": "Lọ jinlẹ̀ sí i: fi ìdáhùn méjì wéra, dá ìsọfúnni tó kù mọ̀, kí o sì ṣàlàyé ohun tó lè yí àṣàyàn rẹ padà.",
+        "adapt_context": "Yí ipò padà: lo ipò àròsọ tó bá èdè, ìfẹ́, àṣà, àti àìní ìráyè akẹ́kọ̀ọ́ mu.",
+        "adapt_check": "Ṣàyẹ̀wò òye nípasẹ̀ àpẹẹrẹ tàbí àlàyé tí a yàn, kì í ṣe ìtàn ara-ẹni tí a fipá béèrè, àyípadà ìmọ̀lára, tàbí máàkì.",
+        "optional_prompts": "Àwọn ìbéèrè àṣàyàn wọ̀nyí kò fi ìdáhùn ránṣẹ́, kò fúnni ní àmì ìparí, bẹ́ẹ̀ ni wọn kò rọ́pò ìtọ́ni àti ìsọfúnni ààbò ti ìgbòkègbodò náà fúnra rẹ̀.",
+        "returned_to_activities": "A ti padà sí àwọn ìgbòkègbodò. Ìgbésẹ̀ yìí kò kọ ìparí ìdánrawò kankan sílẹ̀.",
+        "return_to_activities": "Padà sí àwọn ìgbòkègbodò",
+        "chooser_first_reset_coping": "Yan àṣàyàn ìfọkànsílẹ̀ kan tó rọrùn fún ọ. Ṣàkíyèsí bóyá ó bá ọ mu; o lè dúró.",
+        "chooser_first_reset_journal": "Kọ ohun kan tí yóò mú kí ìṣẹ́jú díẹ̀ tó ń bọ̀ rọrùn láti ṣàkóso. A kò nílò ìtàn ara-ẹni.",
+        "chooser_first_feelings_zones": "Tọ́ka sí ìmọ̀lára kan tàbí ṣàkíyèsí ní ìdákẹ́jẹ́ẹ́. Yan àtìlẹ́yìn kan; kò sí agbègbè tó tọ́ tí o gbọ́dọ̀ dé.",
+        "chooser_first_feelings_emotions": "Ṣàwárí ọ̀rọ̀ ìmọ̀lára méjì fún ẹ̀dá ìtàn àròsọ kan. Ìdáhùn tó ju ọ̀kan lọ lè bá a mu.",
+        "chooser_first_feelings_journal": "Kọ ọ̀rọ̀ kan tàbí ìrònú kúkúrú nípa ipò àròsọ tàbí ti ojoojúmọ́.",
+        "chooser_first_conversation_advocacy": "Lo ipò àròsọ láti tún ìbéèrè kan sọ sókè, pẹ̀lú AAC, tàbí ní ìdákẹ́jẹ́ẹ́, kúrò lórí fọ́ọ̀mù náà.",
+        "chooser_first_conversation_journal": "Kọ ìbéèrè ọ̀wọ̀ kan fún ipò ojoojúmọ́ tó ní ààbò; kò pọn dandan kí o fi ránṣẹ́.",
+        "chooser_first_decision_decisions": "Ronú lórí àṣàyàn méjì nínú ipò àròsọ àti ipa kan tí ọ̀kọ̀ọ̀kan lè ní.",
+        "chooser_first_decision_goals": "Kọ ìgbésẹ̀ tó kàn kan tó ṣeé ṣe àti àtìlẹ́yìn kan tí o lè béèrè fún.",
+        "try_a_reset": "Gbìyànjú àtúntò kan",
+        "need_feeling": "Lóye ìmọ̀lára kan",
+        "need_conversation": "Múra ìjíròrò sílẹ̀",
+        "need_decision": "Yan ìgbésẹ̀ tó kàn",
+        "help_choose": "Ràn mí lọ́wọ́ láti yan ìgbòkègbodò kan",
+        "help_choose_intro": "Yan ohun tí o fẹ́ gbìyànjú. Àwọn àbá ń lo àwọn àṣàyàn wọ̀nyí nìkan; wọn kò ṣe àyẹ̀wò ìmọ̀lára rẹ. Àkókò ń ṣàpèjúwe ìgbésẹ̀ àkọ́kọ́, kì í ṣe gbogbo ìgbòkègbodò náà.",
+        "what_would_help": "Kí ni yóò ṣèrànwọ́?",
+        "time_first_step": "Àkókò fún ìgbésẹ̀ àkọ́kọ́",
+        "n_minutes": "Ìṣẹ́jú {count}",
+        "how_respond": "Báwo ni o ṣe fẹ́ dáhùn?",
+        "respond_any": "Ọ̀nà èyíkéyìí",
+        "respond_offline": "Ronú, sọ̀rọ̀, ya àwòrán, tàbí AAC",
+        "respond_write": "Kọ ìdáhùn kúkúrú",
+        "options_one": "Àṣàyàn ìbẹ̀rẹ̀ {count} fún àwọn yíyàn rẹ.",
+        "options_many": "Àwọn àṣàyàn ìbẹ̀rẹ̀ {count} fún àwọn yíyàn rẹ.",
+        "options_none": "Kò tíì sí àṣàyàn ìbẹ̀rẹ̀ tó bá a mu. Gbìyànjú àkókò púpọ̀ sí i tàbí ọ̀nà ìdáhùn mìíràn; gbogbo àkójọ náà ṣì wà.",
+        "why_option_write": "Ìdí tí a fi yan èyí: {need}, pẹ̀lú ìgbésẹ̀ àkọ́kọ́ ìṣẹ́jú {minutes} tí a dábàá àti ìdáhùn kúkúrú tí a kọ sílẹ̀.",
+        "why_option_offline": "Ìdí tí a fi yan èyí: {need}, pẹ̀lú ìgbésẹ̀ àkọ́kọ́ ìṣẹ́jú {minutes} tí a dábàá àti ọ̀nà láti ṣe ìdánrawò láìtẹ ọ̀rọ̀.",
+        "open_named": "Ṣí {name}",
+        "open_named_unavailable": "Ṣí {name} (kò sí)",
+        "pathway_guide": "Ìtọ́sọ́nà ìdánrawò ọ̀nà ìkẹ́kọ̀ọ́",
+        "pathway_opened": "A ti ṣí irinṣẹ́ {opened} nínú {total}. Ṣíṣí irinṣẹ́ kò túmọ̀ sí pé o ti ṣe ìdánrawò ọgbọ́n náà.",
+        "exit_pathway_aria": "Jáde kúrò nínú ipò ọ̀nà ìkẹ́kọ̀ọ́",
+        "pathway_cleared": "A ti pa ọ̀nà ìkẹ́kọ̀ọ́ rẹ́",
+        "exit_pathway": "Jáde kúrò nínú ọ̀nà ìkẹ́kọ̀ọ́",
+        "practice_goal": "Àfojúsùn ìdánrawò:",
+        "pathway_intro": "Yan ìgbòkègbodò kan tàbí tẹ̀lé ìtẹ̀léra tí a dábàá. O lè fò ó, lo àpẹẹrẹ àròsọ, tàbí dáhùn nípa sísọ̀rọ̀, yíya àwòrán, kíkọ̀wé, tàbí AAC. Pínpín jẹ́ àṣàyàn.",
+        "model_practice_reflect": "Fi àpẹẹrẹ hàn, ṣe ìdánrawò, kí o sì ronú jinlẹ̀",
+        "an_example": "Àpẹẹrẹ kan",
+        "notice_adjust": "Ṣàkíyèsí kí o sì ṣàtúnṣe",
+        "take_with_you": "Mú u lọ pẹ̀lú rẹ",
+        "self_check_aria": "Àyẹ̀wò ara-ẹni ìdánrawò àṣàyàn",
+        "self_check_intro": "Lẹ́yìn tí o bá gbìyànjú ìgbésẹ̀ kan, yan ohun tó bá a mu. Èyí jẹ́ àṣàyàn, a kò sì fún un ní máàkì; ó wà nínú ìgbà ọ̀nà ìkẹ́kọ̀ọ́ yìí.",
+        "i_tried": "Mo gbìyànjú ìgbésẹ̀ kan",
+        "another_way": "Mo nílò ọ̀nà mìíràn",
+        "pass_for_now": "Fò ó fún báyìí",
+        "tried_feedback": "Ṣàkíyèsí ohun tó ṣèrànwọ́, ohun tí kò ṣèrànwọ́, àti ibi tí o ti lè tún gbìyànjú ọgbọ́n náà.",
+        "adapt_feedback": "Gbìyànjú ìgbésẹ̀ tó kéré jù, ọ̀nà mìíràn láti dáhùn, irinṣẹ́ mìíràn, tàbí àtìlẹ́yìn láti ọ̀dọ̀ ẹni tí o fọkàn tán.",
+        "pass_feedback": "Fífò jẹ́ àṣàyàn tó tọ́. O lè padà wá lẹ́yìn tàbí béèrè àtìlẹ́yìn.",
+        "next_option": "Àṣàyàn tó kàn: {name}",
+        "open_next": "Ṣí èyí tó kàn: {name}",
+        "view_pathway_tools": "Wo àwọn irinṣẹ́ ọ̀nà ìkẹ́kọ̀ọ́",
+        "revisit_any": "O lè padà sí ìgbòkègbodò èyíkéyìí. Yan èrò kan láti gbìyànjú lẹ́yìn òde hub; kò pọn dandan láti parí gbogbo irinṣẹ́.",
+        "station_activities": "Àwọn ìgbòkègbodò ìbùdó",
+        "active_station": "Ìbùdó SEL tó ń ṣiṣẹ́: {name}",
+        "steps_recorded_passed": "A ti kọ ìgbésẹ̀ {done} nínú {total} sílẹ̀ · a ti fo {passed} fún báyìí. Èyí jẹ́ àkọsílẹ̀ ìdánrawò, kì í ṣe máàkì.",
+        "steps_recorded": "A ti kọ ìgbésẹ̀ {done} nínú {total} sílẹ̀. Èyí jẹ́ àkọsílẹ̀ ìdánrawò, kì í ṣe máàkì.",
+        "active_minutes_done": "Ìṣẹ́jú iṣẹ́ {mins} nínú {goal} níbí. A ti kọ ìgbésẹ̀ náà sílẹ̀.",
+        "active_minutes_counting": "Ìṣẹ́jú iṣẹ́ {mins} nínú {goal} níbí. Ó ń kà nígbà tí táàbù yìí bá hàn tí o sì ń lò ó.",
+        "exit_station_aria": "Jáde kúrò nínú ipò ìbùdó",
+        "station_cleared": "A ti pa ìbùdó rẹ́",
+        "exit_station": "Jáde kúrò nínú ìbùdó",
+        "station_tools_steps": "Àwọn irinṣẹ́ ìbùdó, ìgbésẹ̀ àti ìrònú",
+        "station_steps": "Àwọn ìgbésẹ̀ ìbùdó àti ìrònú",
+        "station_privacy": "A ń fi àwọn ìgbésẹ̀ àti àkọsílẹ̀ pamọ́ sórí ẹ̀rọ yìí, a sì lè fi wọ́n sínú fáìlì iṣẹ́ àkànṣe. Lo àwọn àpẹẹrẹ àròsọ tàbí fi àlàyé ara-ẹni sílẹ̀. Yan ohun tí o máa pín.",
+        "step_passed": "A ti fò ó fún báyìí. O lè padà wá nígbà tí o bá ṣetán.",
+        "step_marked": "O ti sàmì sí ìgbésẹ̀ yìí pé ó ti parí.",
+        "step_target": "A ti kọ àfojúsùn ìgbòkègbodò sílẹ̀; èyí kò díwọ̀n ọgbọ́n tàbí àlàáfíà.",
+        "step_ready": "Nígbàkígbà tí o bá ṣetán.",
+        "open_step_activity": "Ṣí ìgbòkègbodò fún ìgbésẹ̀ yìí",
+        "xp_progress": "{xp} / {target} àpapọ̀ XP SEL. Èyí ní ìgbòkègbodò àtẹ̀yìnwá nínú; kì í ṣe máàkì ọgbọ́n.",
+        "time_progress": "Ìṣẹ́jú iṣẹ́ {mins} / {target}. Àkókò kì í ṣe ẹ̀rí ẹ̀kọ́.",
+        "default_reflect": "Kí ni o ṣàkíyèsí? Kí ni ìwọ yóò pa mọ́ tàbí yí padà?",
+        "self_check_ways": "Ronú, ya àwòrán, sọ̀rọ̀, lo èdè ọwọ́, tàbí lo AAC. Àkọsílẹ̀ jẹ́ àṣàyàn. Sàmì sí ìgbésẹ̀ náà pé ó ti parí fúnra rẹ, tàbí fò ó fún báyìí.",
+        "length_target": "Ìgbésẹ̀ tí a fi pamọ́ yìí ń lo àfojúsùn gígùn: lẹ́tà {count} / {target}. Gígùn kò díwọ̀n bí ìrònú ṣe dára tó. O ṣì lè ṣàtúnṣe àkọsílẹ̀ rẹ.",
+        "reflection_for": "Ìrònú fún {name}",
+        "optional_note": "Àkọsílẹ̀ àṣàyàn: ohun tó ṣèrànwọ́, tàbí ohun tí o lè gbìyànjú tó kàn...",
+        "write_reflection": "Kọ ìrònú kan...",
+        "mark_complete_aria": "Sàmì sí \"{name}\" pé ó ti parí",
+        "step_reopened": "A ti tún ìgbésẹ̀ ṣí: {name}",
+        "step_marked_named": "O ti sàmì sí ìgbésẹ̀ yìí pé ó ti parí: {name}",
+        "mark_complete": "Sàmì pé ó ti parí",
+        "step_passed_named": "A ti fò ó fún báyìí: {name}",
+        "filter_pathway": "ọ̀nà ìkẹ́kọ̀ọ́: {name}",
+        "filter_station": "ìbùdó: {name}",
+        "no_tools_match": "Kò sí irinṣẹ́ tó bá {filters} mu",
+        "results_one": "Irinṣẹ́ {count} nínú {total} bá {filters} mu",
+        "results_many": "Irinṣẹ́ {count} nínú {total} bá {filters} mu",
+        "showing_all": "À ń fi gbogbo irinṣẹ́ {total} hàn",
+        "crisis_elementary": "Bí o kò bá rí àgbàlagbà lẹ́sẹ̀kẹsẹ̀, máa béèrè títí ẹnìkan yóò fi fetí sí ọ. O yẹ fún ìrànlọ́wọ́.",
+        "crisis_call_or_text": "Pè tàbí fi ọ̀rọ̀ ránṣẹ́ sí",
+        "crisis_988": "nọ́ńbà ìrànlọ́wọ́ 988 fún ìpara-ẹni àti ìṣòro (ọ̀fẹ́, àṣírí, 24/7).",
+        "crisis_text": "Fi ọ̀rọ̀ ránṣẹ́ sí",
+        "crisis_text_line": "Crisis Text Line (ọ̀fẹ́, àṣírí, 24/7).",
+        "tool_selection": "Yíyan irinṣẹ́ SEL Hub",
+        "jumped_to_list": "A ti fò lọ sí àkójọ irinṣẹ́. {summary}.",
+        "skip_to_list": "Fò lọ sí àkójọ irinṣẹ́",
+        "start_here": "Bẹ̀rẹ̀ níbí",
+        "quick_route": "Yan ọ̀nà kíákíá, tàbí wo ìsàlẹ̀.",
+        "browsing_all": "À ń wo gbogbo irinṣẹ́ SEL",
+        "continue": "Tẹ̀síwájú",
+        "continue_desc": "Tẹ̀síwájú pẹ̀lú irinṣẹ́ SEL tí o ṣí gbẹ̀yìn.",
+        "starting_idea": "Èrò ìbẹ̀rẹ̀",
+        "starting_idea_desc": "{name}: ìgbòkègbodò tí a dábàá fún ìpele kíláàsì yìí, pẹ̀lú àwọn àpẹẹrẹ tí o lè ṣàtúnṣe.",
+        "starting_idea_none": "Ṣí ibi ìbẹ̀rẹ̀ tó bá ìpele kíláàsì mu.",
+        "try_a_reset_desc": "Ṣàwárí ọ̀nà kan tó rọrùn fún ọ; kò pọn dandan kí ara rẹ balẹ̀.",
+        "journal": "Ìwé ìròyìn",
+        "journal_desc": "Kọ ìrònú kan; ṣàyẹ̀wò àwọn àṣàyàn fífipamọ́ àti pínpín.",
+        "browse_all": "Wo Gbogbo Rẹ̀",
+        "browse_all_desc": "Wá tàbí ṣàṣẹ́ gbogbo àkójọ náà.",
+        "need_chip_calm": "Mú ara mi balẹ̀",
+        "need_chip_feelings": "Sọ orúkọ ìmọ̀lára",
+        "need_chip_stress": "Wàhálà tàbí àníyàn",
+        "need_chip_friend": "Ìforígbárí pẹ̀lú ọ̀rẹ́",
+        "need_chip_write": "Kọ ọ́ sílẹ̀",
+        "need_chip_decision": "Ṣe ìpinnu",
+        "need_chip_sleep": "Oorun tàbí àárẹ̀",
+        "need_chip_crisis": "Kò ní ààbò tàbí wà nínú ìṣòro",
+        "need_chip_relationshipsafety": "Ààbò nínú àjọṣepọ̀",
+        "need_chip_schoolsupport": "Àtìlẹ́yìn ilé-ìwé",
+        "need_chip_grief": "Ọ̀fọ̀ tàbí àdánù",
+        "storage_notice": "A ń fi àwọn iṣẹ́ SEL kan pamọ́ sórí ẹ̀rọ yìí. Àwọn ẹ̀yà AI ń lo iṣẹ́ ìpèsè tí a ṣètò fún ọ. Yan ohun tí o máa fi pamọ́ tàbí pín, pàápàá lórí ẹ̀rọ tí a jọ ń lò.",
+        "save_now_aria": "Fi iṣẹ́ SEL pamọ́ tàbí gbé e jáde báyìí",
+        "save_now": "Fi pamọ́ báyìí",
+        "recent_work": "Iṣẹ́ SEL àìpẹ́ yìí",
+        "saved_here": "A ti fi pamọ́ níbí. Gbé e jáde láti pa á mọ́ lẹ́yìn tí o bá pa á dé.",
+        "create_packet_aria": "Ṣẹ̀dá Àpò Pínpín SEL láti inú àwọn ibi ìpamọ́ tí a fi pamọ́",
+        "review_packets_aria": "Ṣàyẹ̀wò àwọn Àpò Pínpín SEL tí a fi pamọ́",
+        "create_packet": "Ṣẹ̀dá Àpò Pínpín",
+        "review_packets": "Ṣàyẹ̀wò àwọn Àpò Pínpín",
+        "open_related": "Ṣí irinṣẹ́ tó jọmọ́ ọ.",
+        "related_unavailable": "Irinṣẹ́ tó jọmọ́ ọ kò sí nínú SEL Hub yìí.",
+        "streak_aria": "Ìtẹ̀síwájú SEL ọjọ́ {count}. Èyí tó gùn jù: ọjọ́ {longest}.",
+        "streak": "Ìtẹ̀síwájú ọjọ́ {count}",
+        "streak_best": "tó dára jù {count}",
+        "find_activity": "Wá ìgbòkègbodò kan",
+        "search_placeholder": "Wá ìmọ̀lára, ọ̀rẹ́, wàhálà, àfojúsùn...",
+        "search_aria": "Wá àwọn irinṣẹ́ SEL",
+        "support_options": "Àwọn àṣàyàn àtìlẹ́yìn",
+        "crisis_hard_moment": "Ó dà bí pé èyí lè jẹ́ àkókò tó le.",
+        "crisis_tell_adult": "O kò ní láti yanjú èyí ní ìwọ nìkan, o kò sì ní láti kọ́kọ́ wá irinṣẹ́ tó tọ́. Jọ̀wọ́ sọ fún àgbàlagbà tí o fọkàn tán báyìí — olùdámọ̀ràn ilé-ìwé, olùkọ́, òbí, tàbí àgbàlagbà mìíràn tí o fọkàn tán. Wíwá nǹkan níbí kò sọ fún ẹnikẹ́ni; ẹnìkan yóò mọ̀ nìkan bí o bá sọ fún un.",
+        "open_crisis_companion": "Ṣí Alábàárìn Ìgbà Ìṣòro",
+        "find_by_need": "Wá àwọn irinṣẹ́ SEL nípa àìní",
+        "i_need": "Mo nílò...",
+        "cleared_search": "A ti pa ìwádìí SEL rẹ́",
+        "clear_search_aria": "Pa ìwádìí SEL rẹ́",
+        "clear": "Pa rẹ́",
+        "cleared_need": "A ti pa àṣẹ́ àìní SEL rẹ́",
+        "showing_for": "À ń fi àwọn irinṣẹ́ SEL hàn fún {name}",
+        "clear_need_aria": "Pa àṣẹ́ àìní rẹ́: {name}",
+        "find_for_aria": "Wá àwọn irinṣẹ́ fún: {name}",
+        "browse_by_area": "Wò ó nípa ẹ̀ka ọgbọ́n",
+        "filter_by_category": "Ṣàṣẹ́ àwọn irinṣẹ́ SEL nípa ìsọ̀rí",
+        "showing_all_categories": "À ń fi gbogbo ìsọ̀rí hàn",
+        "show_all_categories_aria": "Fi gbogbo ìsọ̀rí hàn (irinṣẹ́ {count})",
+        "all": "Gbogbo",
+        "filtered_to": "A ti ṣàṣẹ́ sí {name}",
+        "filter_chip_aria": "Àṣẹ́: {name} (irinṣẹ́ {count})",
+        "pathways_heading": "Àwọn Ọ̀nà Ìkẹ́kọ̀ọ́ SEL — Ìtẹ̀léra Ẹ̀kọ́ Tí A Yàn",
+        "started_pathway": "A ti bẹ̀rẹ̀ ọ̀nà ìkẹ́kọ̀ọ́: {name}",
+        "pathway_started": "Ọ̀nà ìkẹ́kọ̀ọ́ {name} ti bẹ̀rẹ̀!",
+        "n_activities": "Ìgbòkègbodò {count}",
+        "grades_range": "kíláàsì {range}",
+        "use_with_care": "Lò ó pẹ̀lú ìṣọ́ra",
+        "visits_many": "Ìbẹ̀wò {count}",
+        "visits_one": "Ìbẹ̀wò {count}",
+        "best_for": "Ó dára jù fún: {mode}.",
+        "teacher_cue": "Àmì olùkọ́: {time}, {format}. {cue}",
+        "preview_first": "Kọ́kọ́ wò ó",
+        "evidence_tradition": "Àṣà ẹ̀rí: {tag}",
+        "approach_context": "Àyíká ọ̀nà: {label}. {title}. Àmì yìí kò fi ìdí ìmúṣẹ múlẹ̀ fún áàpù yìí tàbí fún akẹ́kọ̀ọ́ kan pàtó.",
+        "step_opened": "Ìgbésẹ̀ {n} · A ti ṣí i",
+        "step_not_opened": "Ìgbésẹ̀ {n} · A kò tíì ṣí i",
+        "suggested_grades": "Kíláàsì tí a dábàá {range}",
+        "no_tools_current_view": "Kò sí irinṣẹ́ tó bá ohun tí à ń fi hàn báyìí mu",
+        "empty_try": "Gbìyànjú ìfọkànbalẹ̀, ìmọ̀lára, wàhálà, ọ̀rẹ́, kíkọ̀wé, ìpinnu, tàbí oorun.",
+        "filters_cleared": "A ti pa àwọn àṣẹ́ rẹ́. À ń fi gbogbo irinṣẹ́ {total} hàn.",
+        "show_all_tools": "Fi gbogbo irinṣẹ́ {total} hàn",
+        "error_loading": "Àṣìṣe nígbà tí à ń ṣí {name}",
+        "unknown_error": "Àṣìṣe tí a kò mọ̀",
+        "back_to_tools_error": "Padà sí Àwọn Irinṣẹ́",
+        "tool_load_failed": "Irinṣẹ́ yìí kò lè ṣí.",
+        "loading_tool": "À ń ṣí irinṣẹ́...",
+        "file_not_arrived": "Fáìlì náà kò dé.",
+        "check_connection": "Ṣàyẹ̀wò ìsopọ̀ ayélujára, lẹ́yìn náà tún gbìyànjú.",
+        "plugin_fetching": "À ṣì ń mú fáìlì plugin náà wá.",
+        "research_about": "Nípa àwọn àmì ìwádìí",
+        "research_summary": "Ohun tí àwọn àmì ìwádìí túmọ̀ sí",
+        "research_context": "Àyíká ọ̀nà: {label}.",
+        "research_not_app": "Ìwádìí lórí ìtọ́jú kan, ètò ẹ̀kọ́ kan, tàbí ìlànà kan kò fi ìdí rẹ̀ múlẹ̀ pé ìgbòkègbodò oní-nọ́ńbà yìí ní àbájáde kan náà. Àwọn àmì náà ń ṣàpèjúwe ọ̀nà náà; wọn kò díwọ̀n áàpù yìí tàbí akẹ́kọ̀ọ́ kan.",
+        "research_check": "Kí o tó yan ìgbòkègbodò kan, ṣàyẹ̀wò àwọn orísun tí a tọ́ka sí, ọjọ́ orí àti àyíká tí a ṣèwádìí lé lórí, àtìlẹ́yìn tí a nílò, àti àwọn àbájáde tí a díwọ̀n. Àwọn àmì wọ̀nyí kò fi ìdí rẹ̀ múlẹ̀ pé ó bá àwọn ènìyàn náà mu tàbí pé àtúnṣe yìí ń ṣiṣẹ́.",
+        "research_casel_link": "CASEL: yíyan àti ṣíṣe àgbéyẹ̀wò ètò SEL kan",
+        "project_save_failed": "Ìbéèrè láti fi iṣẹ́ àkànṣe pamọ́ kùnà. Jẹ́ kí hub yìí wà ní ṣíṣí kí o sì gbìyànjú Fi pamọ́ / Gbé jáde nínú áàpù àkọ́kọ́.",
+        "project_save_requested": "A ti béèrè láti fi iṣẹ́ àkànṣe pamọ́. Parí ìgbésẹ̀ fífipamọ́ nínú áàpù àkọ́kọ́; a kò tíì fìdí fáìlì tí a fi pamọ́ múlẹ̀ níbí.",
+        "saving_aria": "Fífipamọ́ àti pínpín SEL",
+        "saving_failed_alert": "A kò lè fi àwọn àyípadà SEL kan pamọ́ sórí ẹ̀rọ yìí. Jẹ́ kí hub yìí wà ní ṣíṣí kí o sì fi ẹ̀dà iṣẹ́ àkànṣe kan pamọ́; a gbọ́dọ̀ fi àwọn àkọsílẹ̀ àkọ́kọ́ ìbùdó pamọ́ gẹ́gẹ́ bí ìbùdó kí wọ́n tó lè wọ ẹ̀dà yẹn.",
+        "saving_attention": "Fífipamọ́ nílò àfiyèsí",
+        "saving_title": "Fífipamọ́ àti pínpín",
+        "saving_failed_body": "Iṣẹ́ lọ́wọ́lọ́wọ́ ṣì wà nínú hub yìí tó ṣí. Fífipamọ́ sórí ẹ̀rọ tó kùnà lè fi ẹ̀dà àtijọ́ sílẹ̀ sórí ẹ̀rọ yìí.",
+        "saving_ok_body": "À ń fi àwọn ìbùdó tí a fi pamọ́, àkọsílẹ̀ ìbùdó, àti àwọn ibi ìpamọ́ hub pamọ́ sórí ẹ̀rọ yìí. Ìgbòkègbodò kọ̀ọ̀kan ní àwọn bọ́tìnnì fífipamọ́ tirẹ̀; ipò yìí kò fìdí rẹ̀ múlẹ̀ pé a ti fi gbogbo ohun tí a tẹ̀ sínú ìgbòkègbodò kọ̀ọ̀kan pamọ́.",
+        "saving_drafts": "Àwọn àkọsílẹ̀ àkọ́kọ́ ìbùdó máa wà lórí ẹ̀rọ yìí fún ìmúpadàbọ̀sípò. Fífi ìbùdó pamọ́ ń fi kún dátà iṣẹ́ àkànṣe tó wà fún Fi pamọ́ / Gbé jáde; bíbéèrè láti fi iṣẹ́ àkànṣe pamọ́ kò fìdí rẹ̀ múlẹ̀ pé a ti kọ fáìlì kan.",
+        "saving_live": "Ìpàdé tààrà kan ti so pọ̀. Ó lè fi ìlọsíwájú tàbí àmì ààbò ránṣẹ́ sí olùgbàlejò. AI àṣàyàn ń fi ọ̀rọ̀ ìgbòkègbodò ránṣẹ́ sí iṣẹ́ ìpèsè tí a ṣètò. Ṣàyẹ̀wò Àpò Pínpín kí o tó yàn láti pín in.",
+        "saving_ai": "AI àṣàyàn ń fi ọ̀rọ̀ ìgbòkègbodò ránṣẹ́ sí iṣẹ́ ìpèsè tí a ṣètò. Àpò Pínpín ní àwọn ohun àti ìpele àlàyé tí o yàn nínú; ṣàyẹ̀wò àfihàn rẹ̀ kí o tó pín in.",
+        "saving_retry": "Tún gbìyànjú fífipamọ́ sórí ẹ̀rọ",
+        "saving_request": "Béèrè fífi iṣẹ́ àkànṣe pamọ́",
+        "removed_stations": "Àwọn ìbùdó tí a yọ kúrò",
+        "removed_body": "Fagi lé yíyọ ìbùdó nígbà tí hub yìí ṣì wà ní ṣíṣí. A ń pa àwọn àkọsílẹ̀ ìdánrawò tó wà mọ́.",
+        "station_restored": "A ti dá ìbùdó padà: {name}",
+        "undo_removal": "Fagi lé yíyọ kúrò: {name}",
+        "launch_routines_aria": "Àwọn ìlànà ìbẹ̀rẹ̀ olùkọ́",
+        "launch_title": "Ìbẹ̀rẹ̀ olùkọ́",
+        "launch_note": "Jẹ́ kí ìdánrawò wà láìsí máàkì kí pínpín sì jẹ́ àṣàyàn. Ṣàlàyé ìpamọ́ lórí ẹ̀rọ, àwọn ẹ̀yà AI tí a ṣètò, àti pínpín kí o tó bẹ̀rẹ̀. Lo àwọn àpẹẹrẹ àròsọ; pe àwọn akẹ́kọ̀ọ́ láti béèrè ìrànlọ́wọ́ tàbí fò ó.",
+        "launch_guardrails_aria": "Àwọn ààlà ààbò ìbẹ̀rẹ̀ olùkọ́",
+        "launch_step_boundary": "Ṣètò ààlà",
+        "launch_step_boundary_body": "Sọ ohun tó jẹ́ àdáni, ohun tó jẹ́ àṣàyàn, àti bí àwọn akẹ́kọ̀ọ́ ṣe lè fò ó.",
+        "launch_step_run": "Ṣe ìlànà náà",
+        "launch_step_run_body": "Lo àwọn irinṣẹ́ náà gẹ́gẹ́ bí ìdánrawò. Jẹ́ kí ìrònú jẹ́ fún ẹ̀kọ́, láìsí máàkì.",
+        "launch_step_close": "Parí pẹ̀lú àṣàyàn",
+        "launch_step_close_body": "Àwọn akẹ́kọ̀ọ́ ló ń pinnu bóyá wọ́n máa fi pamọ́, gbé jáde, tàbí fi ibi ìpamọ́ kan kún un lẹ́yìn náà.",
+        "launch_student_sees": "Ohun tí akẹ́kọ̀ọ́ ń rí",
+        "launch_student_sees_default": "Àwọn akẹ́kọ̀ọ́ ń parí ìlànà SEL àdáni wọ́n sì ń yan ohun tí wọ́n máa pín.",
+        "launch_teacher_move": "Ìgbésẹ̀ olùkọ́",
+        "launch_teacher_move_default": "Ṣàfihàn èyí gẹ́gẹ́ bí ìdánrawò, kì í ṣe àyẹ̀wò.",
+        "launch_sharing_boundary": "Ààlà pínpín",
+        "launch_sharing_boundary_default": "Pínpín wà ní ìkáwọ́ akẹ́kọ̀ọ́.",
+        "launch_tools_loading": "Àwọn irinṣẹ́ ń ṣí...",
+        "launch_still_loading": "Ṣì ń ṣí: {tools}",
+        "launch_preview_sensitive": "Kọ́kọ́ wo àwọn irinṣẹ́ tó nílò ìṣọ́ra: {tools}",
+        "launch_load_aria": "Ṣí ètò ìbẹ̀rẹ̀ olùkọ́: {name}",
+        "launch_finish_draft": "Kọ́kọ́ parí tàbí pa àkọsílẹ̀ àkọ́kọ́ lọ́wọ́lọ́wọ́ rẹ́",
+        "launch_waiting": "À ń dúró de àwọn irinṣẹ́",
+        "launch_loading": "À ń ṣí i",
+        "launch_load": "Fi sínú Akọ́lé Ìbùdó",
+        "builder_note_student": "Ohun tí akẹ́kọ̀ọ́ ń rí: {text}",
+        "builder_note_teacher": "Ìgbésẹ̀ olùkọ́: {text}",
+        "builder_note_sharing": "Ààlà pínpín: {text}",
+        "builder_note_note": "Àkọsílẹ̀ olùkọ́: {text}",
+        "launch_finish_existing": "Kọ́kọ́ parí tàbí pa àkọsílẹ̀ àkọ́kọ́ ìbùdó rẹ tó wà rẹ́.",
+        "launch_tools_still_loading": "Àwọn irinṣẹ́ ìbẹ̀rẹ̀ olùkọ́ ṣì ń ṣí. Tún gbìyànjú láìpẹ́.",
+        "launch_tools_still_loading_sr": "Àwọn irinṣẹ́ ìbẹ̀rẹ̀ olùkọ́ ṣì ń ṣí.",
+        "launch_default_name": "Ìlànà SEL kíláàsì",
+        "launch_default_short": "Ìlànà SEL",
+        "launch_loaded_sr": "A ti fi ètò ìbẹ̀rẹ̀ olùkọ́ sínú akọ́lé ìbùdó: {name}",
+        "launch_loaded_toast": "A ti fi ètò ìbẹ̀rẹ̀ olùkọ́ sínú Akọ́lé Ìbùdó.",
+        "stations_summary": "Àwọn Ìbùdó SEL Àkànṣe — àkójọpọ̀ tí àwọn olùkọ́ ṣẹ̀dá",
+        "station_delete_aria": "Pa ìbùdó {name} rẹ́",
+        "station_removed_sr": "A ti yọ ìbùdó kúrò. O lè fagi lé e títí hub yìí yóò fi di títì.",
+        "station_removed": "A ti yọ ìbùdó kúrò",
+        "station_tools_count": "Irinṣẹ́ {count}",
+        "station_quests_count": "Ìpèníjà {count}",
+        "station_activated_sr": "A ti mú Ìbùdó SEL ṣiṣẹ́: {name}",
+        "station_started": "{name} ti bẹ̀rẹ̀!",
+        "station_activate_aria": "Mú ìbùdó {name} ṣiṣẹ́",
+        "station_start": "Bẹ̀rẹ̀ ìbùdó",
+        "station_adapt_aria": "Ṣàtúnṣe ẹ̀dà ìbùdó {name}",
+        "station_adapt": "Ṣàtúnṣe ẹ̀dà kan",
+        "draft_aria": "Àkọsílẹ̀ àkọ́kọ́ ìbùdó tí a lè gbà padà",
+        "draft_untitled": "Ìbùdó aláìní orúkọ",
+        "draft_body": "Àkọsílẹ̀ àkọ́kọ́ ìbùdó tí a kò tíì parí wà lórí ẹ̀rọ yìí: {name}. Tẹ̀síwájú pẹ̀lú rẹ̀ tàbí pa á rẹ́ kí o tó bẹ̀rẹ̀ òmíràn.",
+        "draft_resume": "Tẹ̀síwájú pẹ̀lú àkọsílẹ̀ àkọ́kọ́ ìbùdó",
+        "draft_discard": "Pa àkọsílẹ̀ àkọ́kọ́ ìbùdó rẹ́",
+        "builder_opened": "A ti ṣí akọ́lé ìbùdó",
+        "build_station_aria": "Kọ́ Ìbùdó SEL àkànṣe tuntun",
+        "build_station": "+ Kọ́ Ìbùdó Àkànṣe"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Ìsopọ̀ olùkọ́ ti dúró díẹ̀ — a ń pa ibi tí o dé mọ́ nígbà tí AlloFlow ń tún sopọ̀.",
+    "host_stale": "Ìròyìn ipò olùkọ́ ti pẹ́ - ìpàdé tààràtà náà ṣì lè wà ní ìsopọ̀. Iṣẹ́ rẹ wà lórí ẹ̀rọ yìí.",
+    "dismiss": "Pa á tì",
+    "dismiss_aria": "Pa ìkìlọ̀ ipò olùkọ́ tì",
+    "connecting": "Ń sopọ̀ mọ́ kíláàsì…",
+    "retrying": "Àwọn ìmúdójúìwọ̀n kíláàsì ti dúró. Ń tún sopọ̀ fúnra rẹ̀…",
+    "failed": "Àwọn ìmúdójúìwọ̀n kíláàsì ti já. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o sì gbìyànjú láti tún sopọ̀.",
+    "access": "A kọ̀ láti fún ọ ní àyè sí kíláàsì. Ní kí olùkọ́ rẹ ṣàyẹ̀wò àyè náà, lẹ́yìn náà tún sopọ̀.",
+    "sign_in": "Tún wọlé láti gba àyè sí kíláàsì padà, lẹ́yìn náà tún sopọ̀.",
+    "reconnect": "Tún sopọ̀"
+  },
   "_version": "20260526T1779819434723",
   "tour": {
     "input_panel_title": "wọle pẹpẹ",
@@ -5283,9 +6504,99 @@
     "measured_on_target": "Ó bá {grade} mu",
     "measured_above": "Ó ga ju ìpele {grade} lọ",
     "measured_below": "Ó rẹlẹ̀ ju ìpele {grade} lọ",
-    "measured_note": "Flesch-Kincaid, a wọ̀n ọ́ lórí ọ̀rọ̀ yìí. Lo Check ipele fún àyẹ̀wò kíkún."
+    "measured_note": "Flesch-Kincaid, a wọ̀n ọ́ lórí ọ̀rọ̀ yìí. Lo Check ipele fún àyẹ̀wò kíkún.",
+    "listen_along": "Gbọ́ pẹ̀lú",
+    "compare_listen_here": "Gbọ́ níbí",
+    "compare_listen_here_original": "Gbọ́ níbí: ọ̀rọ̀ àkọ́kọ́",
+    "compare_listen_here_adapted": "Gbọ́ níbí: ọ̀rọ̀ tí a mú rọrùn",
+    "compare_stop_reading_original": "Duro kíka ọ̀rọ̀ àkọ́kọ́",
+    "compare_stop_reading_adapted": "Duro kíka ọ̀rọ̀ tí a mú rọrùn",
+    "compare_scroll_together": "Yí papọ̀",
+    "reading_width": "Fífẹ̀ ìkàwé",
+    "width_narrow": "Tóóró",
+    "width_medium": "Àárín",
+    "width_wide": "Fífẹ̀",
+    "width_extra_wide": "Fífẹ̀ gan-an",
+    "reading_width_characters": "nǹkan bí lẹ́tà {count} ní ìlà kọ̀ọ̀kan",
+    "original_support_spoken": "Ìrànlọ́wọ́ fún ọ̀rọ̀ “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Tẹ ọ̀rọ̀ tàbí gbólóhùn tí ó kù",
+      "explain_thinking": "Ṣàlàyé èrò rẹ",
+      "write_response": "Kọ ìdáhùn rẹ",
+      "submit_response": "Fi ìdáhùn ránṣẹ́",
+      "numeric_answer": "Ìdáhùn oní-nọ́ńbà",
+      "unit_named": "Ẹyọ ìwọ̀n ({unit})",
+      "unit_optional": "Ẹyọ ìwọ̀n (kò pọn dandan)",
+      "submit_numeric": "Fi ìdáhùn oní-nọ́ńbà ránṣẹ́",
+      "select_all_apply": "Yan gbogbo ìdáhùn tí ó bá yẹ",
+      "submit_selections": "Fi àwọn àṣàyàn rẹ ránṣẹ́",
+      "part1": "Apá 1 — Yan ìdáhùn tí ó dára jùlọ",
+      "part2": "Apá 2 — {prompt}",
+      "default_evidence_prompt": "Yan ẹ̀rí tí ó ṣe àtìlẹ́yìn jùlọ.",
+      "submit_answer_evidence": "Fi ìdáhùn àti ẹ̀rí ránṣẹ́",
+      "order_check": "Ṣé ìtòlẹ́sẹẹsẹ yìí tọ́?",
+      "order_yes": "Bẹ́ẹ̀ni, ó tọ́",
+      "order_no": "Rárá, nǹkan kan wà ní ibi tí kò yẹ",
+      "select_misplaced": "Yan ohun kan lókè tí ó wà ní ibi tí kò yẹ.",
+      "arrange_instructions": "To àwọn nǹkan náà ní ìtòlẹ́sẹẹsẹ tí ó tọ́. Bí wọ́n bá ti tọ́ tẹ́lẹ̀, fi wọ́n sílẹ̀ bí wọ́n ṣe wà.",
+      "your_order": "Ìtòlẹ́sẹẹsẹ rẹ",
+      "move_up": "Gbé sókè: {item}",
+      "move_down": "Gbé sísàlẹ̀: {item}",
+      "done_arranging": "Mo ti to tán",
+      "principle_question": "Kí ni ìlànà tí a fi to wọ́n?",
+      "principle_chronological": "àkókò",
+      "principle_cause_effect": "ìdí àti àbájáde",
+      "principle_process": "ìgbésẹ̀",
+      "principle_size": "ìtóbi",
+      "principle_hierarchy": "ipò",
+      "find_mismatch": "Wá àwọn méjì tí kò bá ara wọn mu",
+      "choose_mismatch": "Yan àwọn méjì tí kò yẹ níbẹ̀.",
+      "pair_with_question": "Kí ni ó yẹ kí a so ohun tí a yàn pọ̀ mọ́?",
+      "replacement_partner": "Ohun ìsopọ̀ tuntun",
+      "submit_replacement": "Fi ìrọ́pò ránṣẹ́",
+      "retry_failed": "A kò lè fi ìdáhùn rẹ ránṣẹ́. A ṣì ti ṣàkọsílẹ̀ ìkópa rẹ; gbìyànjú lẹ́ẹ̀kan sí i nígbà tí o bá ní ìsopọ̀.",
+      "return_to_quiz": "Padà sí ìdánwò tààràtà",
+      "minimize": "Dín kù",
+      "minimize_aria": "Kúrò nínú ojú ìdánwò tààràtà",
+      "battle_result": "Àbájáde ìjà",
+      "class_victory": "Kíláàsì ṣẹ́gun!",
+      "battle_complete": "Ìjà ti parí",
+      "regroup": "Àǹfààní láti tún múra",
+      "end_no_scored": "Àwọn ìbéèrè wọ̀nyí wà fún ìjíròrò tàbí àyẹ̀wò olùkọ́. A kò fún ìjà náà ní máàkì kankan.",
+      "end_questions_complete": "Gbogbo ìbéèrè ti parí. Àbájáde náà ń fi ìpín ọgọ́rùn-ún ìlera tí ó kù wé ara wọn; bí ó bá dọ́gba, kíláàsì ni ó borí.",
+      "end_victory": "Kíláàsì rẹ jọ ṣẹ́gun abàmì ẹ̀dá náà.",
+      "end_regroup": "Lo àlàyé tí ó wà nísàlẹ̀ láti jọ ṣètò ìgbìyànjú tí ó kàn.",
+      "end_review_last": "Ṣàyẹ̀wò ìbéèrè tí ó kẹ́yìn nísàlẹ̀. Olùkọ́ rẹ lè tún ìjà náà bẹ̀rẹ̀.",
+      "boss_default_name": "Ọ̀gá",
+      "boss_hp": "HP ti {name}",
+      "boss_health": "Ìlera {name}",
+      "battle_scoring_paused": "A ti dá kíka máàkì ìjà dúró fún ìgbà díẹ̀",
+      "tick_of": "{value} nínú {total}",
+      "confidence_legend": "Báwo ni ó ṣe dá ọ lójú tó?",
+      "confidence_knew": "Mo mọ èyí",
+      "confidence_guessed": "Mo fi òye méfò",
+      "confidence_unsure": "Kò dá mi lójú",
+      "confidence_help": "Èyí ń ran olùkọ́ rẹ lọ́wọ́ láti rí ìmọ̀ tí ó fìdí múlẹ̀ àti àwọn èrò tí kò tọ́. Kì í yí bí ìdáhùn ṣe tọ́ tàbí máàkì padà láé.",
+      "retry_send": "Tún gbìyànjú láti fi ìdáhùn ránṣẹ́",
+      "waiting_for_teacher": "Ń dúró de olùkọ́ rẹ láti bẹ̀rẹ̀ ìbéèrè yìí.",
+      "sending": "Ń fi ìdáhùn rẹ ránṣẹ́…",
+      "receipt_only": "A ti ṣàkọsílẹ̀ ìkópa rẹ. Ìdáhùn rẹ kò tíì dé ọ̀dọ̀ olùkọ́ fún máàkì.",
+      "complete_and_submit": "Parí ìdáhùn rẹ kí o sì fi ránṣẹ́",
+      "poll_closed": "Ìbéèrè èrò yìí ti tì.",
+      "receipt_not_scored": "Ìkópa nìkan ni olùkọ́ rẹ gbà. A kò fún ìdáhùn yìí ní máàkì.",
+      "no_answer_submitted": "A kò fi ìdáhùn kankan ránṣẹ́ fún ìbéèrè yìí. Ṣàyẹ̀wò rẹ̀ pẹ̀lú kíláàsì rẹ.",
+      "answer_review": "Àyẹ̀wò ìdáhùn",
+      "review_answer": "Ṣàyẹ̀wò ìdáhùn náà",
+      "discuss_with_teacher": "Jíròrò ìdáhùn náà pẹ̀lú olùkọ́ rẹ.",
+      "response_correct": "Ìdáhùn tí ó tọ́.",
+      "response_partial": "Ìdáhùn tí ó tọ́ ní apá kan.",
+      "response_incorrect": "Ìdáhùn yìí nílò àyẹ̀wò mìíràn.",
+      "response_none": "A kò fi ìdáhùn kankan ránṣẹ́.",
+      "response_submitted": "A ti fi ìdáhùn ránṣẹ́ fún àyẹ̀wò.",
+      "explanation": "Àlàyé"
+    },
     "title": "Ṣàyẹ̀wò",
     "mcq_count": "MCQ Ka",
     "reflections": "Ìṣàrò",

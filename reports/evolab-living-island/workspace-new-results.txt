@@ -1,0 +1,120 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:35100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:35100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 10[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "id": "color-contrast",[39m
+    [31m+     "nodes": Array [[39m
+    [31m+       Array [[39m
+    [31m+         ".ei-desk-heading > .ei-kicker",[39m
+    [31m+       ],[39m
+    [31m+     ],[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+      717 |   for (const tab of ['Explore', 'Families', 'Investigate', 'Evidence']) {
+      718 |     await page.getByRole('tab', { name: tab, exact: true }).click();
+    > 719 |     expect(await page.evaluate(async () => (window as any).axe.run('.ei-app', { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }).then((r: any) => r.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => n.target) }))))).toEqual([]);
+          |                                                                                                                                                                                                                                                                   ^
+      720 |   }
+      721 |   expect(errors).toEqual([]);
+      722 | });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:719:259
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+[1A[2K(node:46300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:46300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:724:5 › inheritance reveal shows recorded choices, mutations and trait averages without drawing new genes
+[1A[2K  2) [chromium] › tests\e2e\evolab-living-island.spec.ts:724:5 › inheritance reveal shows recorded choices, mutations and trait averages without drawing new genes 
+
+    TimeoutError: locator.selectOption: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('Trait to trace', { exact: true })[22m
+
+
+      731 |   await page.selectOption('#ei-organism', String(child.id));
+      732 |   await page.getByRole('button', { name: 'Explore this family & inheritance', exact: true }).click();
+    > 733 |   await page.getByLabel('Trait to trace', { exact: true }).selectOption(trait);
+          |                                                            ^
+      734 |   const reveal = page.locator('.ei-inheritance');
+      735 |   await expect(reveal).toHaveAttribute('data-inheritance-step', '0');
+      736 |   await page.getByRole('button', { name: 'Next inheritance step', exact: true }).click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:733:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-inher-9060c-s-without-drawing-new-genes-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-inher-9060c-s-without-drawing-new-genes-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-inher-9060c-s-without-drawing-new-genes-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-inher-9060c-s-without-drawing-new-genes-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-inher-9060c-s-without-drawing-new-genes-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\workspace-new-artifacts\evolab-living-island-inher-9060c-s-without-drawing-new-genes-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:33312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:33312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:769:5 › phone inheritance is self paced, accessible and does not overflow with reduced motion
+[1A[2K  2 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged 
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:724:5 › inheritance reveal shows recorded choices, mutations and trait averages without drawing new genes 
+  1 passed (5.2m)

@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-09-29T04:16:09.548Z",
+  "suites": [
+    {
+      "path": "tests/ai_capability_gating.test.js",
+      "status": "passed",
+      "passed": 38,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-retry-tests.json"
+    },
+    {
+      "path": "tests/app_shell_cognitive_load.test.js",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/canvas_workspace_recovery.test.js",
+      "status": "passed",
+      "passed": 34,
+      "failed": 0,
+      "skipped": 1,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/class_materials_first_run.test.js",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/deferred_module_pump.test.js",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/educator_hub_modal_runtime_a11y.test.js",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/guided_mode_banner_completion.test.js",
+      "status": "passed",
+      "passed": 89,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/header_nav_i18n.test.js",
+      "status": "passed",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-retry-tests.json"
+    },
+    {
+      "path": "tests/history_navigation_lane_visual.test.js",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-final-tests.json"
+    },
+    {
+      "path": "tests/hub_personalization.test.js",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/learning_hub_ai_only_cards.test.js",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/learning_hub_modal_runtime_a11y.test.js",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/localization_landing_and_catalog.test.js",
+      "status": "passed",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    },
+    {
+      "path": "tests/qr_student_shell.test.js",
+      "status": "passed",
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-final-tests.json"
+    },
+    {
+      "path": "tests/sidebar_tabs_navigation_a11y.test.js",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "runtime-a11y-tests.json"
+    }
+  ],
+  "passed": 268,
+  "failed": 0,
+  "skipped": 1
+}

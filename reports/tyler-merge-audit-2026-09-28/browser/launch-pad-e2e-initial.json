@@ -1,0 +1,498 @@
+{
+  "config": {
+    "configFile": "C:\\tmp\\tyler_integration_candidate\\playwright.config.ts",
+    "rootDir": "C:/tmp/tyler_integration_candidate/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/tmp/tyler_integration_candidate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/tmp/tyler_integration_candidate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "02-launch-pad.spec.ts",
+      "file": "02-launch-pad.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Launch Pad role picker",
+          "file": "02-launch-pad.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "offers the four current roles and the full Teacher workspace alternative",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24800,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:02:17.872Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-03d7dc9e755405b22521",
+              "file": "02-launch-pad.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "each native role button names its visible title and description",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 55286,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:02:46.047Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-9522d50e48e1346dd6bd",
+              "file": "02-launch-pad.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "Enter on Specialist opens the educator dialog and moves focus inside it",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 92514,
+                      "error": {
+                        "message": "Error: Timeout 15000ms exceeded while waiting on the predicate",
+                        "stack": "Error: Timeout 15000ms exceeded while waiting on the predicate\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:45:124",
+                        "location": {
+                          "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                          "column": 124,
+                          "line": 45
+                        },
+                        "snippet": "  43 |     await expect(dialog).toBeVisible();\n  44 |     await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);\n> 45 |     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}').role)).toBe('specialist');\n     |                                                                                                                            ^\n  46 |   });\n  47 |\n  48 |   test('Student expands its class-entry choices without leaving Start', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                            "column": 124,
+                            "line": 45
+                          },
+                          "message": "Error: Timeout 15000ms exceeded while waiting on the predicate\n\n  43 |     await expect(dialog).toBeVisible();\n  44 |     await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);\n> 45 |     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}').role)).toBe('specialist');\n     |                                                                                                                            ^\n  46 |   });\n  47 |\n  48 |   test('Student expands its class-entry choices without leaving Start', async ({ page }) => {\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:45:124"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:03:41.369Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-d1001-g-and-moves-focus-inside-it-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-d1001-g-and-moves-focus-inside-it-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-d1001-g-and-moves-focus-inside-it-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-d1001-g-and-moves-focus-inside-it-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                        "column": 124,
+                        "line": 45
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-3b51b6299ec9b26fa687",
+              "file": "02-launch-pad.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "Student expands its class-entry choices without leaving Start",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 80044,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:07:06.229Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-661af2b2bbb22a3a5c85",
+              "file": "02-launch-pad.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "full Teacher workspace remains selected after reload",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 146452,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('textbox', { name: /Source material input/i })\nExpected: visible\nTimeout: 60000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: /Source material input/i })\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('textbox', { name: /Source material input/i })\nExpected: visible\nTimeout: 60000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: /Source material input/i })\u001b[22m\n\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:64:81",
+                        "location": {
+                          "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                          "column": 81,
+                          "line": 64
+                        },
+                        "snippet": "  62 |     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'teacher', workspace: 'full' });\n  63 |     await page.reload({ waitUntil: 'domcontentloaded' });\n> 64 |     await expect(page.getByRole('textbox', { name: /Source material input/i })).toBeVisible({ timeout: 60000 });\n     |                                                                                 ^\n  65 |     await expect(page.locator('[data-alloflow-launch-pad=\"true\"]')).toBeHidden();\n  66 |     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'teacher', workspace: 'full' });\n  67 |   });"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                            "column": 81,
+                            "line": 64
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('textbox', { name: /Source material input/i })\nExpected: visible\nTimeout: 60000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: /Source material input/i })\u001b[22m\n\n\n  62 |     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'teacher', workspace: 'full' });\n  63 |     await page.reload({ waitUntil: 'domcontentloaded' });\n> 64 |     await expect(page.getByRole('textbox', { name: /Source material input/i })).toBeVisible({ timeout: 60000 });\n     |                                                                                 ^\n  65 |     await expect(page.locator('[data-alloflow-launch-pad=\"true\"]')).toBeHidden();\n  66 |     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'teacher', workspace: 'full' });\n  67 |   });\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:64:81"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:08:47.087Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-c5b23-mains-selected-after-reload-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-c5b23-mains-selected-after-reload-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-c5b23-mains-selected-after-reload-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-c5b23-mains-selected-after-reload-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                        "column": 81,
+                        "line": 64
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-7c9c5d91c2909548e0c3",
+              "file": "02-launch-pad.spec.ts",
+              "line": 59,
+              "column": 7
+            },
+            {
+              "title": "family can switch to Specialist and keep it after reload",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 161487,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"role\": \"specialist\",\u001b[22m\n\u001b[32m-   \"workspace\": \"full\",\u001b[39m\n\u001b[31m+   \"workspace\": null,\u001b[39m\n\u001b[2m  }\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"role\": \"specialist\",\u001b[22m\n\u001b[32m-   \"workspace\": \"full\",\u001b[39m\n\u001b[31m+   \"workspace\": null,\u001b[39m\n\u001b[2m  }\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:80:121",
+                        "location": {
+                          "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                          "column": 121,
+                          "line": 80
+                        },
+                        "snippet": "  78 |       const dialog = page.locator('[role=\"dialog\"][aria-labelledby=\"educator-hub-title\"]');\n  79 |       await expect(dialog).toBeVisible();\n> 80 |       await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'specialist', workspace: 'full' });\n     |                                                                                                                         ^\n  81 |       await expect(page.locator('header').first()).toContainText('Specialist');\n  82 |       await expect(page.locator('header').first()).not.toContainText('Family Mode');\n  83 |       await expect(page.locator('header').first()).not.toContainText('Guided Mode');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                            "column": 121,
+                            "line": 80
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"role\": \"specialist\",\u001b[22m\n\u001b[32m-   \"workspace\": \"full\",\u001b[39m\n\u001b[31m+   \"workspace\": null,\u001b[39m\n\u001b[2m  }\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate\n\n  78 |       const dialog = page.locator('[role=\"dialog\"][aria-labelledby=\"educator-hub-title\"]');\n  79 |       await expect(dialog).toBeVisible();\n> 80 |       await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'specialist', workspace: 'full' });\n     |                                                                                                                         ^\n  81 |       await expect(page.locator('header').first()).toContainText('Specialist');\n  82 |       await expect(page.locator('header').first()).not.toContainText('Family Mode');\n  83 |       await expect(page.locator('header').first()).not.toContainText('Guided Mode');\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:80:121"
+                        },
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m"
+                        },
+                        {
+                          "message": "Error: browserContext.close: Test ended.\nBrowser logs:\n\n[pid=17620][err] [0929/001530.168:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_short\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.168:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_standard\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_deep\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_all\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.pack_options\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.options_help\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.auto_configure\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.pack_size\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.limit_tooltip\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_auto\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_short\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_standard\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_deep\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.option_all\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: sidebar.needs_ai_setup\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: sidebar.needs_ai_setup_cta\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.action_plan_aria\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.action_plan\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.169:INFO:CONSOLE:246] \"[i18n] missing key: fullpack.plan_first_help\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.170:INFO:CONSOLE:246] \"[i18n] missing key: codenames.adjectives\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.170:INFO:CONSOLE:246] \"[i18n] missing key: codenames.animals\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.175:INFO:CONSOLE:246] \"[i18n] missing key: codenames.adjectives\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.175:INFO:CONSOLE:246] \"[i18n] missing key: codenames.animals\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.179:INFO:CONSOLE:246] \"[i18n] missing key: codenames.adjectives\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.179:INFO:CONSOLE:246] \"[i18n] missing key: codenames.animals\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.179:INFO:CONSOLE:246] \"[i18n] missing key: modals.download_submission\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.247:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.254:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.subtitle\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.255:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.close_aria\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.256:INFO:CONSOLE:246] \"[i18n] missing key: hub.search_label\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.257:INFO:CONSOLE:246] \"[i18n] missing key: hub.search_label\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.257:INFO:CONSOLE:246] \"[i18n] missing key: hub.search_placeholder\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.258:INFO:CONSOLE:246] \"[i18n] missing key: hub.favorites_only\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.258:INFO:CONSOLE:246] \"[i18n] missing key: hub.manage_favorites\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.259:INFO:CONSOLE:246] \"[i18n] missing key: hub.role_label\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.260:INFO:CONSOLE:246] \"[i18n] missing key: hub.role_educator\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.261:INFO:CONSOLE:246] \"[i18n] missing key: hub.role_clinician\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.261:INFO:CONSOLE:246] \"[i18n] missing key: hub.role_leader\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.261:INFO:CONSOLE:246] \"[i18n] missing key: hub.role_student\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.262:INFO:CONSOLE:246] \"[i18n] missing key: hub.role_family\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.262:INFO:CONSOLE:246] \"[i18n] missing key: hub.recommended\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.262:INFO:CONSOLE:246] \"[i18n] missing key: hub.recommended\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.262:INFO:CONSOLE:246] \"[i18n] missing key: hub.recommended_for\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.264:INFO:CONSOLE:246] \"[i18n] missing key: hub.recommended_hint\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.264:INFO:CONSOLE:246] \"[i18n] missing key: hub.tools_available\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.264:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_start_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.265:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_start_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.265:INFO:CONSOLE:246] \"[i18n] missing key: hub.collapse_section\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.266:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.blueprint_mode_badge\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.359:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.lesson_builder_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.378:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.lesson_builder_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.379:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.379:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.380:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.lumen_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.381:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.lumen_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.381:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.383:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.383:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.document_hub_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.383:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.document_hub_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.384:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.384:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.384:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.whiteboard_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.384:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.whiteboard_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.385:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.385:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.386:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_plan_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.386:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_plan_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.386:INFO:CONSOLE:246] \"[i18n] missing key: hub.expand_section\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.386:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.throughline_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.388:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.throughline_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.388:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.389:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.389:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.allo_studio_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.389:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.allo_studio_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.389:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.390:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.390:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.video_studio_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.390:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.video_studio_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.391:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.391:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.391:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.symbol_studio_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.391:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.symbol_studio_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.392:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.392:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.393:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.allosheet_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.393:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.allosheet_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.393:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.394:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.394:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_teach_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.394:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_teach_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.395:INFO:CONSOLE:246] \"[i18n] missing key: hub.collapse_section\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.395:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.activities_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.395:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.activities_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.395:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.396:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.396:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.assessment_center_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.396:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.assessment_center_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.396:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.396:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.397:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.dynamic_assessment_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.397:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.dynamic_assessment_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.397:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.397:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.397:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.behavior_lens_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.398:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.behavior_lens_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.398:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.398:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.398:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.report_writer_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.398:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.report_writer_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.398:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.399:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.399:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_access_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.399:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_access_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.399:INFO:CONSOLE:246] \"[i18n] missing key: hub.expand_section\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.400:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.document_accessibility_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.400:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.document_accessibility_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.400:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.400:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.401:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.accessibility_lab_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.401:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.accessibility_lab_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.401:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.401:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.402:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_extend_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.402:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.section_extend_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.403:INFO:CONSOLE:246] \"[i18n] missing key: hub.expand_section\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.403:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.community_catalog_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.community_catalog_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.research_suite_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.research_suite_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.404:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.405:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.professional_dev_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.406:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.professional_dev_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.407:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.407:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.409:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.admin_hub_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.409:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.admin_hub_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.409:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.409:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.409:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.school_rewards_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.410:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.school_rewards_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.410:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.410:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.410:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.communications_studio_title\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.411:INFO:CONSOLE:246] \"[i18n] missing key: educator_hub.communications_studio_desc\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.411:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620][err] [0929/001530.412:INFO:CONSOLE:246] \"[i18n] missing key: hub.add_favorite\", source: http://127.0.0.1:55436/app/error_reporter_module.js?v=8ccc78b8 (246)\n[pid=17620] <gracefully close start>"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:13:01.904Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-4d905-st-and-keep-it-after-reload-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-4d905-st-and-keep-it-after-reload-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-4d905-st-and-keep-it-after-reload-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                        "column": 121,
+                        "line": 80
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-67c62adc5aae63e85e65",
+              "file": "02-launch-pad.spec.ts",
+              "line": 70,
+              "column": 9
+            },
+            {
+              "title": "teacher can switch to Specialist and keep it after reload",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 190550,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"role\": \"specialist\",\u001b[22m\n\u001b[32m-   \"workspace\": \"full\",\u001b[39m\n\u001b[31m+   \"workspace\": null,\u001b[39m\n\u001b[2m  }\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"role\": \"specialist\",\u001b[22m\n\u001b[32m-   \"workspace\": \"full\",\u001b[39m\n\u001b[31m+   \"workspace\": null,\u001b[39m\n\u001b[2m  }\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:80:121",
+                        "location": {
+                          "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                          "column": 121,
+                          "line": 80
+                        },
+                        "snippet": "  78 |       const dialog = page.locator('[role=\"dialog\"][aria-labelledby=\"educator-hub-title\"]');\n  79 |       await expect(dialog).toBeVisible();\n> 80 |       await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'specialist', workspace: 'full' });\n     |                                                                                                                         ^\n  81 |       await expect(page.locator('header').first()).toContainText('Specialist');\n  82 |       await expect(page.locator('header').first()).not.toContainText('Family Mode');\n  83 |       await expect(page.locator('header').first()).not.toContainText('Guided Mode');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                            "column": 121,
+                            "line": 80
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"role\": \"specialist\",\u001b[22m\n\u001b[32m-   \"workspace\": \"full\",\u001b[39m\n\u001b[31m+   \"workspace\": null,\u001b[39m\n\u001b[2m  }\u001b[22m\n\nCall Log:\n- Timeout 15000ms exceeded while waiting on the predicate\n\n  78 |       const dialog = page.locator('[role=\"dialog\"][aria-labelledby=\"educator-hub-title\"]');\n  79 |       await expect(dialog).toBeVisible();\n> 80 |       await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_session_resume') || '{}'))).toMatchObject({ role: 'specialist', workspace: 'full' });\n     |                                                                                                                         ^\n  81 |       await expect(page.locator('header').first()).toContainText('Specialist');\n  82 |       await expect(page.locator('header').first()).not.toContainText('Family Mode');\n  83 |       await expect(page.locator('header').first()).not.toContainText('Guided Mode');\n    at C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts:80:121"
+                        },
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:16:58.813Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-dc309-st-and-keep-it-after-reload-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-dc309-st-and-keep-it-after-reload-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\tmp\\tyler_integration_candidate\\test-results\\02-launch-pad-Launch-Pad-r-dc309-st-and-keep-it-after-reload-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\tmp\\tyler_integration_candidate\\tests\\e2e\\02-launch-pad.spec.ts",
+                        "column": 121,
+                        "line": 80
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-7d51c6ba8e92f31d22b8",
+              "file": "02-launch-pad.spec.ts",
+              "line": 70,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-29T04:01:59.437Z",
+    "duration": 1275047.6909999999,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

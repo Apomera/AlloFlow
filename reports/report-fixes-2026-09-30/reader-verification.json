@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-01T00:36:46.915Z",
+  "status": "passed",
+  "candidateHashes": {
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "reports/report-fixes-2026-09-30/reader-browser.cjs": "d221de68fddd46ab25d32451b2304079b68ae9e894ea029ecf92b2bb84293cc1",
+    "reports/report-fixes-2026-09-30/reader-adjacent-run.cjs": "b9685da7e23a6336fef9d59bbb9f488dd45a8f891511c512dd5c7b353dfa97f3",
+    "reports/report-fixes-2026-09-30/compact-audio-browser.cjs": "117b100125d5da3b253e81370b96b7a0bddea06d4e3158660948ac92f9d9f8e8",
+    "reports/report-fixes-2026-09-30/compact-audio-mounted-run.cjs": "9f41cc48328ee2e9a11ffa56f7e70473e694a7ec27be397f0d64c912e4d2ce69"
+  },
+  "fix": "Compact teacher audio status separates voice-model preparation, synthesis attempts, ready session clips, playback and verified device saves. Expandable details support keyboard/Escape/focus restoration. Audio actions keep the parent Review disclosure open so a status change cannot hide Stop. Duplicate, failed and interrupted actions retain partial clips. Original/adapted/BOTH glossary parity and exact annotations remain covered.",
+  "tests": {
+    "compactMountedReader": {
+      "passed": 16,
+      "failed": 0,
+      "report": "compact-audio-mounted-candidate-tests.json"
+    },
+    "mountedReader": {
+      "passed": 22,
+      "failed": 0,
+      "report": "compact-audio-mounted-candidate-tests.json"
+    },
+    "compactGeneratedChromium": {
+      "passed": 23,
+      "failed": 0,
+      "errors": [],
+      "report": "compact-audio-browser-results.json",
+      "axe": {
+        "violations": [],
+        "incomplete": []
+      }
+    },
+    "generatedModuleChromium": {
+      "passed": 48,
+      "failed": 0,
+      "errors": [],
+      "report": "reader-browser-results.json"
+    },
+    "adjacentReader": {
+      "passed": 149,
+      "failed": 0,
+      "files": 8,
+      "report": "reader-adjacent-tests.json"
+    }
+  },
+  "negativeEvidence": {
+    "nativeFocusProbe": "reader-browser-focus-probe.json",
+    "originalBrowserAttempt": "reader-browser-before-focus.json",
+    "mountedPreFix": "reader-focus-before-tests.json",
+    "initialAdjacentLabelMismatch": "reader-adjacent-before-label-expectation-tests.json",
+    "compactEscapeBehaviorPreFix": "compact-audio-keyboard-before-behavior-tests.json",
+    "compactTimeoutBeforeBehavior": "compact-audio-keyboard-before-tests.json",
+    "compactReviewDisclosureBrowserPreFix": "compact-audio-browser-before-review-disclosure.json",
+    "compactReviewDisclosureMountedPreFix": "compact-audio-review-disclosure-before-tests.json",
+    "compactHarnessUnboundedAttempt": "compact-audio-unbounded-attempt.json",
+    "compactHarnessDeadlineBeforeFixtureFix": "before-promise-fixture-compact-audio-browser-results.json"
+  },
+  "negativeEvidenceNotes": "The native Review disclosure failure and mounted red assertion reproduce a product defect and were fixed in source. The later unbounded/incomplete attempt and bounded deadline failure were caused by the fixture returning an unresolved mock-save promise to page.evaluate before Save activation; they are harness failures, not additional product-failure evidence. The final browser retains explicit action/wait/navigation bounds and an overall deadline.",
+  "screenshotsProduced": [
+    "reader-browser-reflow320-font16.png",
+    "reader-browser-reflow320-font32.png",
+    "compact-audio-default320.png",
+    "compact-audio-save-failure320.png",
+    "compact-audio-font32-320.png"
+  ],
+  "screenshotsInspected": [
+    "reader-browser-reflow320-font16.png",
+    "reader-browser-reflow320-font32.png",
+    "compact-audio-default320.png",
+    "compact-audio-save-failure320.png",
+    "compact-audio-font32-320.png"
+  ],
+  "validationScope": "Local generated reader/helper modules, real React/CSS and canonical host glossary adapter, using fixture props and mocked speech/lookup/audio/storage callbacks. All source, generated, browser and adjacent inputs were explicitly hashed and unchanged across the candidate runs.",
+  "limits": [
+    "Not a full app/student-session/cloud test.",
+    "Root font 16/32px at 320/640 CSSpx tested; actual browser zoom and manual screen reader testing were not performed.",
+    "No WCAG conformance or instructional-content-validity claim.",
+    "Shared host/cache-pin integration remains coordinator-owned and held."
+  ],
+  "labelContractAdaptation": {
+    "at": "2026-09-30T22:46:07.288Z",
+    "status": "label-contract-adaptation",
+    "preexisting": "Not established: Git source lacks the current dirty exact renderer, and no full pre-task dirty source copy is available.",
+    "runtimeChange": false,
+    "sourceHash": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "labelContract": "Each accessible label uses the full raw sentence range, then plainReadingText; callback reads from sentence.start.",
+    "test": "tests/reader_exact_sentence_start.test.js",
+    "beforeTestHash": "db864642f5d20d83addbd592e4566cde3bfbcdfc081a94a45c24b0f303e60a33",
+    "failedReport": "reader-adjacent-before-label-expectation-tests.json",
+    "preservedAssertions": [
+      "visible words included in accessible name",
+      "one Tab stop per line",
+      "read-from-here offsets and actual spoken sentence",
+      "keyboard Enter/Space/arrows/Home/End",
+      "shown and hidden original supports"
+    ],
+    "afterTestHash": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "validation": "All 149 adjacent tests passed after only three expected labels changed."
+  }
+}

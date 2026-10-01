@@ -1,0 +1,46 @@
+[
+  {
+    "old": "    function normalizeSweep(value) {\n      var raw = record(value);\n      if (typeof raw.variable !== 'string' || !Object.prototype.hasOwnProperty.call(sweepSteps, raw.variable) ||\n        !raw.conditions || typeof raw.conditions !== 'object' || Array.isArray(raw.conditions)) return null;\n      return Object.freeze({ variable: raw.variable, conditions: normalizeConditions(raw.conditions) });\n    }",
+    "new": "    function normalizeSweep(value, strict) {\n      var raw = record(value);\n      if (typeof raw.variable !== 'string' || !Object.prototype.hasOwnProperty.call(sweepSteps, raw.variable) ||\n        !raw.conditions || typeof raw.conditions !== 'object' || Array.isArray(raw.conditions)) return null;\n      var conditions = raw.conditions;\n      if (strict && (!Object.prototype.hasOwnProperty.call(conditions, 'profile') || typeof conditions.profile !== 'string' ||\n        !Object.prototype.hasOwnProperty.call(profiles, conditions.profile) || !['tempC', 'pH', 'oxygen'].every(function(key) {\n          return Object.prototype.hasOwnProperty.call(conditions, key) && typeof conditions[key] === 'number' && Number.isFinite(conditions[key]);\n        }))) return null;\n      return Object.freeze({ variable: raw.variable, conditions: normalizeConditions(conditions) });\n    }"
+  },
+  {
+    "old": "      return !!a && !!b && a.variable === b.variable && conditionKeys.every(function(key) { return a.conditions[key] === b.conditions[key]; });",
+    "new": "      return !!a && !!b && a.variable === b.variable && conditionKeys.every(function(key) { return key === a.variable || a.conditions[key] === b.conditions[key]; });"
+  },
+  {
+    "old": "      var previousSweep = normalizeSweep(raw.previousSweep);",
+    "new": "      var previousSweep = normalizeSweep(raw.previousSweep, true);"
+  },
+  {
+    "old": "      var notebook = normalizeNotebook(value), next = normalizeSweep(specification);",
+    "new": "      var notebook = normalizeNotebook(value), next = normalizeSweep(specification, true);"
+  },
+  {
+    "old": "        function sweepChart(result) {",
+    "new": "        function sweepChart(result, label) {"
+  },
+  {
+    "old": "            h('figcaption', null, gt('sweep_response', 'Response to') + ' ' + labels[result.variable] + ' · ' + gt('sweep_final_units', 'Population at hour 24, arbitrary units')),",
+    "new": "            h('figcaption', null, label + ': ' + gt('sweep_response', 'Response to') + ' ' + labels[result.variable] + ' · ' + gt('sweep_final_units', 'Population at hour 24, arbitrary units')),"
+  },
+  {
+    "old": "            h('svg', { viewBox: '0 0 660 285', role: 'img', 'aria-label': gt('sweep_chart_alt', 'Sampled growth response across one environmental variable. The table below provides every setting and result.') },",
+    "new": "            h('svg', { viewBox: '0 0 660 285', role: 'img', 'aria-label': label + '. ' + gt('sweep_chart_alt', 'Sampled growth response across one environmental variable. The table below provides every setting and result.') },"
+  },
+  {
+    "old": "        function sweepEvidence(result, previous) {\n          return h('div',",
+    "new": "        function sweepEvidence(result, previous) {\n          var label = previous ? gt('sweep_previous', 'Previous sweep') : gt('sweep_current', 'Current sweep');\n          return h('div',"
+  },
+  {
+    "old": "            h('h4', { id: previous ? 'gl-previous-sweep-heading' : 'gl-current-sweep-heading', tabIndex: -1 }, previous ? gt('sweep_previous', 'Previous sweep') : gt('sweep_current', 'Current sweep')),",
+    "new": "            h('h4', { id: previous ? 'gl-previous-sweep-heading' : 'gl-current-sweep-heading', tabIndex: -1 }, label),"
+  },
+  {
+    "old": "              sweepChart(result),",
+    "new": "              sweepChart(result, label),"
+  },
+  {
+    "old": "                h('caption', null, gt('sweep_table', 'Saved sweep settings and model responses')),",
+    "new": "                h('caption', null, label + ': ' + gt('sweep_table', 'Saved sweep settings and model responses')),"
+  }
+]

@@ -1,0 +1,58 @@
+{
+  "commit": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "parent": "e6e137b8e07a544beda49e54a7a2cdbbd778de65",
+  "branch": "main",
+  "files": 30,
+  "normalHooks": true,
+  "committedTreeMatchesReviewed": true,
+  "checks": [
+    {
+      "file": "generation_helpers_source.jsx",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "text_pipeline_helpers_source.jsx",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "reader_place_store.js",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "_build_view_simplified_module.js",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "committedMatchesValidated": true
+    },
+    {
+      "file": "view_simplified_module.js",
+      "committedMatchesValidated": true
+    }
+  ],
+  "committedModulePairsAndHostPinsMatch": true,
+  "remainingStaged": [],
+  "subsequentWorkingChangesPreserved": [
+    "AlloFlowANTI.txt",
+    "_build_view_simplified_module.js",
+    "desktop/web-app/public/view_simplified_module.js",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx",
+    "view_simplified_module.js",
+    "view_simplified_source.jsx"
+  ],
+  "completed": "2026-09-27T17:20:25.417Z"
+}

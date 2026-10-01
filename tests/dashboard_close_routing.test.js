@@ -22,16 +22,15 @@ const source = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
 // instead of quietly widening the region. Anchors are the branch CONDITIONS,
 // which are the thing under test, not incidental prop names.
 const TEACHER_BRANCH = "{activeView === 'dashboard' && isTeacherMode && !isIndependentMode &&";
-const LEARNER_BRANCH = "{activeView === 'dashboard' && (!isTeacherMode || isIndependentMode) &&";
+const LEARNER_BRANCH = "{activeView === 'dashboard' && (!isTeacherMode || isIndependentMode || isParentMode) &&";
 const FROM = { file: 'AlloFlowANTI.txt' };
 
 describe('Student/Teacher Dashboard close routing', () => {
   it('routes both dashboard variants back to the input view', () => {
     expect(source).toContain("const handleCloseDashboard = useCallback(() => setActiveView('input'), []);");
 
-    // The teacher branch ends where the learner branch begins; the learner
-    // branch ends at its own share handler, which sits after its onClose.
-    const teacherBranch = sliceBetween(source, TEACHER_BRANCH, LEARNER_BRANCH, { ...FROM, label: 'teacher dashboard branch' });
+    // Each branch uses its own boundary so moving a view cannot widen the slice.
+    const teacherBranch = sliceBetween(source, TEACHER_BRANCH, '</ErrorBoundary>', { ...FROM, label: 'teacher dashboard branch' });
     const learnerBranch = sliceBetween(source, LEARNER_BRANCH, 'onShareWithTeacher=', { ...FROM, label: 'learner dashboard branch' });
 
     expect(teacherBranch).toContain('<TeacherDashboard');
@@ -51,7 +50,8 @@ describe('Student/Teacher Dashboard close routing', () => {
     const teacherIdx = source.indexOf(TEACHER_BRANCH);
     const learnerIdx = source.indexOf(LEARNER_BRANCH);
     expect(teacherIdx).toBeGreaterThan(-1);
-    expect(learnerIdx).toBeGreaterThan(teacherIdx);
+    expect(learnerIdx).toBeGreaterThan(-1);
+    expect(learnerIdx).not.toBe(teacherIdx);
     // Exactly one of each: a duplicated branch means one is dead code.
     expect(expectAnchorCount(source, TEACHER_BRANCH, 1, FROM)).toBe(1);
     expect(expectAnchorCount(source, LEARNER_BRANCH, 1, FROM)).toBe(1);

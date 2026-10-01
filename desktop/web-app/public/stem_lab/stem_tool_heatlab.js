@@ -25,6 +25,13 @@
 // ═══════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
+  // Fallback-aware translator reachable from every call site in this tool.
+  var __alloCtx_heatlab = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCtx_heatlab && typeof __alloCtx_heatlab.t === "function") ? __alloCtx_heatlab.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ── Materials. k = thermal conductivity (W/m-K), c = specific heat (J/kg-K),
@@ -544,6 +551,7 @@
     ],
 
     render: function (ctx) {
+      try { __alloCtx_heatlab = ctx; } catch (e) {}
       var React = ctx.React;
       var h = React.createElement;
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
@@ -2034,7 +2042,7 @@
                   var el = canvasRef.current;
                   if (el && el._heatReset) el._heatReset();
                   if (typeof beep === 'function') beep();
-                  if (typeof announceToSR === 'function') announceToSR('Bars reset to 20 degrees.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.heatlab.sr_bars_reset_to_20_degrees', 'Bars reset to 20 degrees.'));
                 },
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
@@ -2432,7 +2440,7 @@
                 if (!mixEstimateRevision || mixEstimateReflection.trim().length < 12 || d.mixEstimateReflectionComplete) return;
                 upd({ mixEstimateReflectionComplete: true });
                 if (typeof awardXP === 'function') awardXP('heatlab_mix_reflection', 5, 'Completed a calorimetry evidence reflection');
-                if (typeof announceToSR === 'function') announceToSR('Calorimetry estimation reflection saved.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.heatlab.sr_calorimetry_estimation_reflection_saved', 'Calorimetry estimation reflection saved.'));
               }, className: 'min-h-10 rounded-lg bg-sky-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, d.mixEstimateReflectionComplete ? 'Reflection saved' : 'Save evidence reflection'),
               h('button', { type: 'button', onClick: function () { resetMixEstimate({}); }, className: 'min-h-10 rounded-lg border px-3 py-2 text-[0.625rem] font-black', style: { borderColor: 'rgba(56,189,248,0.5)', color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Try another estimate')
             )

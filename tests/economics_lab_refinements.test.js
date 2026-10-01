@@ -134,9 +134,11 @@ describe('Economics Lab refinements', () => {
 
     // Contrast: slate-200 text on light backgrounds was unreadable.
     expect(source).not.toContain('text-slate-200');
-    // Life sim: single computed cash write + tracked investment portfolio.
-    expect(source).toContain("upd('pfCash', finalCash)");
-    expect(source).toContain("upd('pfInvested'");
+    // Life sim: the year is computed once by the engine, and cash plus the
+    // tracked investment portfolio are written from that one result.
+    expect(source).toContain('E.lifeYear(pfLifeIn, eff, Math.random)');
+    expect(source).toContain('pfCash: finalCash');
+    expect(source).toContain('pfInvested: nx.invested');
     // Net worth counts equity + investments.
     expect(source).toContain('var pfNetWorth');
   });
@@ -170,7 +172,8 @@ describe('Economics Lab refinements', () => {
   it('teaches debt cost and emergency-fund runway in the life sim', () => {
     const html = renderEconomicsLab({ econTab: 'personalFinance', pfDebt: 5000 });
 
-    expect(html).toContain('Debt +10%/yr APR');
+    // Loans and card balances carry their own rates (7% and 22%).
+    expect(html).toContain('at 7% APR');
     expect(html).toContain('Emergency fund');
 
     const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
@@ -232,9 +235,11 @@ describe('Economics Lab refinements', () => {
     // Canvas fillStyle can't resolve CSS var() — the pie slice must use a literal.
     // (var() in React style objects is fine; only canvas-fed colors are the bug.)
     expect(source).not.toContain("val: remaining, color: 'var(");
-    // Soft Landing achievement exists and the header count matches 21.
+    // Soft Landing achievement exists, and the header count is derived from
+    // the achievement list itself (a hard-coded "/21" drifted to 23 real ones).
     expect(source).toContain('Soft Landing');
-    expect(source).toContain("'/21)'");
+    expect(source).toContain("'/' + ECON_ACH.length + ')'");
+    expect(source).not.toContain("'/21)'");
   });
 
   it('exposes the S&D curve probe with keyboard support and SR text', () => {

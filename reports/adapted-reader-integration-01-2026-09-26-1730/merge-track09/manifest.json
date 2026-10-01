@@ -1,0 +1,22 @@
+[
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 15
+  },
+  {
+    "file": "ui_strings.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/view_simplified_dialog_a11y.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/reader_preview_isolation.test.js",
+    "existed": false,
+    "conflicts": 0
+  }
+]

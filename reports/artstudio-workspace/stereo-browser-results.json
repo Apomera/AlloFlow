@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "desktopDepthWidth": 760
+    },
+    {
+      "fastNativeStrokeContinuous": true,
+      "singleGestureUndoRedo": true
+    },
+    {
+      "clearUndo": true,
+      "presetUndoRedo": true
+    },
+    {
+      "drawingSurvivesLabNavigation": true,
+      "drawingSurvivesAnimationRoundTrip": true
+    },
+    {
+      "viewingGuidesMatchPatternWidth": true
+    },
+    {
+      "seedReproducesTexture": true
+    },
+    {
+      "exportFinishesPartialRender": true,
+      "everyRowOpaque": true,
+      "downloadMatchesCanvas": true
+    },
+    {
+      "studyContainsDepthArtwork": true
+    },
+    {
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "touchTargets44": true
+    }
+  ],
+  "errors": []
+}

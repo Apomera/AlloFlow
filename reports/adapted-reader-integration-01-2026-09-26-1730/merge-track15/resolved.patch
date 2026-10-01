@@ -1,0 +1,1025 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -23479,8 +23479,21 @@
+                 if (item.inputArtifactId) serializedItem.inputArtifactId = item.inputArtifactId;
+                 const supportSource = stripImages && typeof window.stripReadingSupportPictures === 'function' ? window.stripReadingSupportPictures(item) : item;
+                 if (supportSource.readingSupports) serializedItem.readingSupports = supportSource.readingSupports;
+                 if (supportSource.adaptedReadingSupports) serializedItem.adaptedReadingSupports = supportSource.adaptedReadingSupports;
++                // Retain small omission markers through reload so a missing
++                // picture is distinguishable from a reading that never had one.
++                const pictureOmissions = [];
++                ['readingSupports', 'adaptedReadingSupports'].forEach(field => {
++                    const annotations = Array.isArray(item[field]?.annotations) ? item[field].annotations : [];
++                    annotations.forEach(entry => {
++                        if (!entry?.id) return;
++                        const omittedNow = stripImages && entry.image && !supportSource[field]?.annotations?.some(saved => saved.id === entry.id && saved.image);
++                        const omittedBefore = !entry.image && item.offlineMediaOmissions?.some?.(omission => omission.field === field && omission.id === entry.id);
++                        if (omittedNow || omittedBefore) pictureOmissions.push({ field, id: entry.id, kind: 'picture', reason: 'storage-quota' });
++                    });
++                });
++                if (pictureOmissions.length) serializedItem.offlineMediaOmissions = pictureOmissions;
+                 if (item.gameData) serializedItem.gameData = JSON.stringify(item.gameData);
+                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
+                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
+                 if (item.posData) serializedItem.posData = item.posData;
+@@ -23503,12 +23516,30 @@
+                 if (!stripImages && item.karaokeStudentAudio) serializedItem.karaokeStudentAudio = item.karaokeStudentAudio;
+                 return serializedItem;
+             });
+         };
++        const publishMediaReceipt = (receipt) => {
++            if (owner.sequence !== sequence) return;
++            window.__alloOfflineMediaPersistence = {
++                status: receipt.status, verified: receipt.verified,
++                verifiedAt: receipt.verifiedAt || null, code: receipt.code || null
++            };
++            window.dispatchEvent(new CustomEvent('alloflow:offline-media-persistence', {
++                detail: { status: receipt.status, verified: receipt.verified, verifiedAt: receipt.verifiedAt || null }
++            }));
++        };
++        const verifySnapshot = async (snapshot) => {
++            const write = window.AlloModules?.UtilsPure?.writeVerifiedStorageSnapshot;
++            if (typeof write !== 'function') throw new Error('Verified device storage is not ready yet.');
++            return write(storageDB, 'allo_offline_history', snapshot, () => owner.sequence === sequence);
++        };
+         try {
+             const fullPayload = { items: serializeItems(itemsToSave, false) };
+-            await storageDB.set('allo_offline_history', fullPayload);
+-            if (owner.sequence === sequence) setLastSaved(new Date());
++            const receipt = await verifySnapshot(fullPayload);
++            if (receipt.verified && owner.sequence === sequence) {
++                publishMediaReceipt(receipt);
++                setLastSaved(new Date(receipt.verifiedAt));
++            }
+         } catch (e) {
+             // Quota classification must be PRECISE. This used to also match any error
+             // whose message merely contained 'exceeded', which catches
+             // "Maximum call stack size exceeded" - the RangeError JSON.stringify throws
+@@ -23528,15 +23559,20 @@
+                 warnLog("Storage Quota Exceeded. Retrying with stripped assets...");
+                 addToast(t('toasts.storage_full_text_only'), "warning");
+                 try {
+                     const strippedPayload = { items: serializeItems(itemsToSave, true) };
+-                    await storageDB.set('allo_offline_history', strippedPayload);
+-                    if (owner.sequence === sequence) setLastSaved(new Date());
++                    const receipt = await verifySnapshot(strippedPayload);
++                    if (receipt.verified && owner.sequence === sequence) {
++                        publishMediaReceipt({ ...receipt, status: 'text-only' });
++                        setLastSaved(new Date(receipt.verifiedAt));
++                    }
+                 } catch (retryErr) {
++                    publishMediaReceipt({ status: 'failed', verified: false, code: retryErr?.code || retryErr?.name || 'storage-failed' });
+                     warnLog("Critical Storage Failure:", retryErr);
+                     if (owner.sequence === sequence) addToast(t('toasts.storage_full_critical'), "error");
+                 }
+             } else {
++                publishMediaReceipt({ status: 'failed', verified: false, code: e?.code || e?.name || 'storage-failed' });
+                 // NOT a quota problem. Say so plainly instead of leaving the teacher
+                 // with a silent failure or, worse, a false 'storage full'.
+                 warnLog("IndexedDB Save Error (not a quota condition):", e);
+                 if (owner.sequence === sequence) addToast((t('toasts.autosave_failed') || 'Could not autosave history') + ': ' + String((e && e.message) || e).slice(0, 120), 'error');
+@@ -32758,10 +32794,12 @@
+       return await bridge.prepare(sentences, onProgress, options);
+     } finally {
+       if (cancellationPoll) clearInterval(cancellationPoll);
+       try { externalSignal?.removeEventListener?.('abort', relayExternalAbort); } catch (_) {}
+-      if (window.__alloPrepareReadAloudController === controller) window.__alloPrepareReadAloudController = null;
+-      window.__alloPrepareReadAloudCancel = false;
++      if (window.__alloPrepareReadAloudController === controller) {
++        window.__alloPrepareReadAloudController = null;
++        window.__alloPrepareReadAloudCancel = false;
++      }
+     }
+   };
+   window.__alloCaptureKaraokeAudio = async (sentence, url, captureOptions) => {
+     const bridge = _getReadAloudBridge();
+@@ -32837,8 +32875,35 @@
+   window.__alloGetReadAloudAudioSummary = (sentences, lane, summaryOptions) => {
+     const bridge = _getReadAloudBridge();
+     return bridge ? bridge.summary(sentences, lane || 'reference', summaryOptions || {}) : null;
+   };
++  // Track 02 can present these device-scoped counts alongside its current
++  // identity summary. Reading IndexedDB again detects eviction and text-only
++  // autosave; this never infers package or reader-shell portability.
++  window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference') => {
++    const requestOwner = window.__alloGetReadAloudReadiness;
++    const bridge = _getReadAloudBridge();
++    if (!bridge?.readiness) return null;
++    const resourceId = generatedContent?.id || generatedContent?.resourceId;
++    const KS = window.AlloModules?.KaraokeAudioStore;
++    const durableStore = KS?.createStore();
++    try {
++      const snapshot = await storageDB.get('allo_offline_history', { throwOnError: true, localOnly: true });
++      if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
++      const saved = snapshot?.items?.find(item => String(item.id || item.resourceId) === String(resourceId));
++      if (saved && durableStore) durableStore.hydrate(saved[lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio']);
++      return { resourceId, ...bridge.readiness(sentences, lane, {
++        durableStore, receipt: { verified: true, verifiedAt: new Date().toISOString() },
++        preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
++      }), pictureOmissions: saved?.offlineMediaOmissions || [] };
++    } catch (error) {
++      if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
++      return { resourceId, ...bridge.readiness(sentences, lane, {
++        failure: error, preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
++      }), code: error?.code || error?.name || 'storage-failed' };
++    } finally { durableStore?.clear(); }
++  };
++  window.__alloRetryReadAloudPersistence = (lane = 'reference', options = {}) => _getReadAloudBridge()?.retryPersistence(lane, options);
+   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
+     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
+     highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
+     matchOriginal: { name: 'Match Original', emoji: '📎', wcagLevel: 'AA', cssVars: null },
+===================================================================
+--- a/read_aloud_audio_service_source.jsx
++++ b/read_aloud_audio_service_source.jsx
+@@ -187,8 +187,10 @@
+         const adapter = configuration.adapter;
+         const lane = configuration.lane == null ? 'current' : configuration.lane;
+         const persistencePolicy = configuration.persistencePolicy == null ? 'none' : configuration.persistencePolicy;
+         const subscribers = new Set();
++        let preparation = null;
++        let preparationOptions = null;
+         const bindingKey = resourceType + ':' + resourceId + ':' + (typeof lane === 'string' ? lane : 'custom');
+ 
+         if (!adapter || typeof adapter.enumerate !== 'function' || typeof adapter.spokenText !== 'function') {
+             throw serviceError(
+@@ -438,9 +440,9 @@
+ 
+         function inspect(input, options = {}) {
+             const segment = requireSegment(input);
+             const store = liveStore({ segment, operation: 'inspect' });
+-            const profile = Object.assign({}, profileFor(segment, 'inspect'), options.profile || {});
++            const profile = profileFor(segment, 'inspect', options.profile);
+             return inspectDescriptor(segment, store, profile);
+         }
+ 
+         function summary(options = {}) {
+@@ -457,12 +459,56 @@
+             }
+             return result;
+         }
+ 
++        function readiness(options = {}) {
++            const memory = summary(options);
++            const currentStore = liveStore({ operation: 'readiness' });
++            const receipt = options.receipt;
++            const durableStore = receipt?.verified === true ? options.durableStore : null;
++            const payload = serializeStore(currentStore);
++            const saved = serializeStore(durableStore);
++            const storeApi = typeof window !== 'undefined' && window.AlloModules?.KaraokeAudioStore;
++            const clip = (value, key) => {
++                if (!value || !storeApi) return null;
++                const identityKey = typeof key === 'object' ? storeApi.portableKeyForIdentity(key) : null;
++                const entry = identityKey && value.entries?.[identityKey];
++                if (entry) return JSON.stringify([entry.audio, entry.mime, entry.source, entry.synthesisProfile]);
++                const legacy = value.version === 4 ? value.legacy : value;
++                const textKey = storeApi.keyFor(typeof key === 'object' ? key.spokenText : key);
++                if (!legacy?.sentences?.[textKey]) return null;
++                return JSON.stringify([legacy.sentences[textKey], legacy.mimes?.[textKey] || 'audio/mpeg',
++                    legacy.sources?.[textKey] || 'ai', storeApi.normalizeSynthesisProfile(legacy.metadata?.[textKey])]);
++            };
++            let durableReady = 0, protectedRecordings = 0;
++            for (const segment of segments()) {
++                const profile = profileFor(segment, 'readiness', options.profile);
++                const current = inspectDescriptor(segment, currentStore, profile);
++                if (current.status !== 'ready' && String(current.source || '').startsWith('human')) protectedRecordings++;
++                if (current.status !== 'ready' ||
++                    inspectDescriptor(segment, durableStore, profile).status !== 'ready') continue;
++                // The selected take matters, even when an older take has the
++                // same text and voice. Never count unsaved replacement bytes.
++                const currentClip = clip(payload, segment.storageKey);
++                if (currentClip && currentClip === clip(saved, segment.storageKey)) durableReady++;
++            }
++            const sessionOnly = Math.max(0, memory.ready - durableReady);
++            const remaining = memory.missing + memory.stale + memory.corrupt;
++            const state = options.preparing || preparation ? 'preparing'
++                : memory.total > 0 && durableReady === memory.total ? 'ready'
++                    : sessionOnly > 0 ? 'session-only'
++                        : options.failure && memory.ready === 0 ? 'failed' : 'partial';
++            return { scope: 'device-audio', state, ...memory, durableReady, sessionOnly, remaining, protectedRecordings,
++                verifiedAt: receipt?.verified === true ? receipt.verifiedAt || null : null,
++                nextActions: [sessionOnly > 0 && 'retry-save', remaining > protectedRecordings && 'prepare-missing',
++                    protectedRecordings > 0 && 'review-recordings',
++                    receipt?.verified !== true && 'verify-device-save'].filter(Boolean) };
++        }
++
+         async function resolve(input, options = {}) {
+             const segment = requireSegment(input);
+             const store = liveStore({ segment, operation: 'resolve' });
+-            const profile = Object.assign({}, profileFor(segment, 'resolve'), options.profile || {});
++            const profile = profileFor(segment, 'resolve', options.profile);
+             const inspected = inspectDescriptor(segment, store, profile);
+             if (!options.force && inspected.status === 'ready' && inspected.url != null) {
+                 emit('resolved', { source: 'store', segment, profile, url: inspected.url });
+                 return inspected.url;
+@@ -514,9 +560,9 @@
+             if (!persist || !shouldPersist(reason, segment)) return false;
+             throwIfAborted(signal);
+             const resource = liveResource({ segment, operation: 'persist', reason });
+             const payload = serializeStore(store);
+-            await persist({
++            const receipt = await persist({
+                 resource,
+                 resourceId,
+                 resourceType,
+                 lane,
+@@ -526,18 +572,24 @@
+                 segment,
+                 payload,
+                 signal,
+             });
+-            emit('persisted', { reason, segment, payload });
+-            return true;
++            // Legacy hosts attach bytes to React state. Only an explicit receipt
++            // acknowledges durable storage; undefined is an attachment, not a save.
++            if (receipt === false || receipt?.status === 'failed') {
++                throw serviceError('persistence-failed', 'Audio is available for this session but could not be saved.', receipt);
++            }
++            const durable = receipt?.status === 'saved' && receipt?.verified === true;
++            emit(durable ? 'persisted' : 'attached', { reason, segment, payload, receipt: receipt || null });
++            return durable;
+         }
+ 
+         async function storeAudio(input, audio, options) {
+             const segment = requireSegment(input);
+             const operation = options.operation;
+             const signal = options.signal;
+             throwIfAborted(signal);
+-            const profile = Object.assign({}, profileFor(segment, operation), options.profile || {},
++            const profile = Object.assign({}, profileFor(segment, operation, options.profile),
+                 audioProvenanceOf(audio));
+             const encoded = await encode(audio, {
+                 segment,
+                 profile,
+@@ -607,9 +659,9 @@
+         }
+ 
+         async function regenerate(input, options = {}) {
+             const segment = requireSegment(input);
+-            const profile = Object.assign({}, profileFor(segment, 'regenerate'), options.profile || {});
++            const profile = profileFor(segment, 'regenerate', options.profile);
+             throwIfAborted(options.signal);
+             emit('regenerating', { segment, profile });
+             const resource = liveResource({ segment, operation: 'regenerate' });
+             const audio = await synthesize({
+@@ -637,9 +689,25 @@
+                 signal: options.signal,
+             });
+         }
+ 
+-        async function prepareAll(options = {}) {
++        function prepareAll(options = {}) {
++            // Joining an identical controller job also prevents two callers from
++            // both observing a missing clip and synthesizing it simultaneously.
++            if (preparation) {
++                if (options.signal === preparationOptions.signal &&
++                    JSON.stringify([options.profile, options.source, options.storeOptions, options.metadata]) ===
++                    JSON.stringify([preparationOptions.profile, preparationOptions.source, preparationOptions.storeOptions, preparationOptions.metadata])) return preparation;
++                return Promise.reject(serviceError('preparation-in-progress', 'Stop the current preparation before starting a different request.'));
++            }
++            preparationOptions = options;
++            const running = Promise.resolve().then(() => runPreparation(options));
++            preparation = running;
++            running.finally(() => { if (preparation === running) preparation = null; }).catch(() => {});
++            return running;
++        }
++
++        async function runPreparation(options = {}) {
+             const signal = options.signal;
+             const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
+             const list = segments();
+             const result = { total: list.length, prepared: 0, skipped: 0, failed: 0, errors: [] };
+@@ -664,14 +732,21 @@
+             result.reconciliation = await reconcile({ signal, reason: 'prepare-reconcile' });
+             for (let index = 0; index < list.length; index += 1) {
+                 throwIfAborted(signal);
+                 const segment = list[index];
+-                const state = inspect(segment);
++                const state = inspect(segment, { profile: options.profile });
+                 if (state.status === 'ready') {
+                     result.skipped += 1;
+                     progress('segment', { index, segment, status: 'skipped' });
+                     continue;
+                 }
++                if (String(state.source || '').startsWith('human')) {
++                    const error = serviceError('human-recording-protected', 'Review or replace this recording explicitly. Automatic preparation preserves human recordings.');
++                    result.failed += 1;
++                    result.errors.push({ index, segmentId: segment.segmentId, error });
++                    progress('segment', { index, segment, status: 'failed', error });
++                    continue;
++                }
+                 try {
+                     await regenerate(segment, {
+                         signal,
+                         reason: 'prepare-all',
+@@ -694,9 +769,9 @@
+                     progress('segment', { index, segment, status: 'failed', error });
+                     emit('error', { operation: 'prepare-all', segment, error });
+                 }
+             }
+-            result.summary = summary();
++            result.summary = summary(options);
+             progress('complete', { summary: result.summary });
+             return result;
+         }
+ 
+@@ -705,9 +780,13 @@
+             const signal = options.signal;
+             throwIfAborted(signal);
+             const store = liveStore({ operation: 'reconcile' });
+             if (!store || typeof store.reconcile !== 'function') return null;
+-            const activeKeys = segments().map((segment) => segment.storageKey);
++            // A retry/card selection is a worklist, never proof that the other
++            // resource segments were deleted. Adapters may supply the full inventory.
++            const activeKeys = typeof configuration.reconciliationKeys === 'function'
++                ? configuration.reconciliationKeys()
++                : segments().map((segment) => segment.storageKey);
+             const report = await Promise.resolve(store.reconcile(activeKeys, {
+                 pruneAi: options.pruneAi !== false,
+             }));
+             if (report && report.changed && options.persist !== false) {
+@@ -760,8 +839,9 @@
+         return {
+             segments,
+             inspect,
+             summary,
++            readiness,
+             resolve,
+             prepareAll,
+             regenerate,
+             capturePlayed,
+@@ -770,8 +850,9 @@
+             quarantine,
+             remove,
+             subscribe,
+             serialize,
++            retryPersistence: (options = {}) => persistStore('retry-save', null, liveStore({ operation: 'retry-save' }), options.signal),
+         };
+     }
+ 
+     return { forResource };
+@@ -1103,8 +1184,10 @@
+             resourceType,
+             adapter,
+             lane: lane || 'reference',
+             persistencePolicy: 'durable',
++            reconciliationKeys: () => resourceSegments(resource, resourceType, null)
++                .map((segment) => identityFor(resourceType, segment)),
+         });
+         return { controller, resource, resourceId, resourceType, rawSegments };
+     }
+ 
+@@ -1228,9 +1311,9 @@
+         }
+         const controller = binding.controller;
+         const allSegments = controller.segments();
+         const pending = allSegments.filter((segment) => {
+-            try { return controller.inspect(segment).status !== 'ready'; } catch (_) { return true; }
++            try { return controller.inspect(segment, { profile: options.profile }).status !== 'ready'; } catch (_) { return true; }
+         });
+         const total = pending.length;
+         let generated = 0;
+         let failed = 0;
+@@ -1284,9 +1367,9 @@
+                 failed += 1;
+                 lastFailure = failureDetail(error);
+             }
+         }
+-        const finalSummary = controller.summary();
++        const finalSummary = controller.summary({ profile: options.profile });
+         const remaining = Math.max(0, Number(finalSummary.stale || 0) +
+             Number(finalSummary.corrupt || 0) + Number(finalSummary.missing || 0));
+         return {
+             ok: !cancelled && remaining === 0,
+@@ -1426,10 +1509,20 @@
+         if (!binding) return null;
+         try { return binding.controller.summary({ profile: options.profile }); } catch (_) { return null; }
+     }
+ 
++    function readiness(sentences, lane, options) {
++        const binding = bindingFor(Array.isArray(sentences) ? sentences : null, lane || 'reference');
++        return binding ? binding.controller.readiness(options || {}) : null;
++    }
++
++    async function retryPersistence(lane, options) {
++        const binding = bindingFor(null, lane || 'reference');
++        return binding ? binding.controller.retryPersistence(options || {}) : false;
++    }
++
+     return {
+-        resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, quarantine, reconcile, summary,
++        resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, quarantine, reconcile, summary, readiness, retryPersistence,
+     };
+ };
+ window.AlloModules = window.AlloModules || {};
+ window.AlloModules.createReadAloudAudioService = createReadAloudAudioService;
+===================================================================
+--- a/read_aloud_artifact_audio_source.jsx
++++ b/read_aloud_artifact_audio_source.jsx
+@@ -160,8 +160,12 @@
+         const segments = normalizeSegments(options.segments, defaults);
+         if (!segments.length) {
+             return {
+                 audioBySegmentId: {},
++                checkpoint: null,
++                cancelled: false,
++                available: 0,
++                remaining: 0,
+                 total: 0,
+                 prepared: 0,
+                 failed: 0,
+                 skipped: 0,
+@@ -175,11 +179,29 @@
+         const resourceType = cleanToken(options.resourceType, 'read-aloud-artifact', 160);
+         const scopeId = cleanToken(options.scopeId, 'main', 240);
+         const resource = { id: resourceId, type: resourceType, segments };
+         const adapterId = cleanToken(options.adapterId, 'read-aloud-artifact', 160);
++        const checkpointFor = payload => ({ version: 1, resourceId, resourceType, scopeId, adapterId, payload });
++        if (options.checkpoint) {
++            const previous = options.checkpoint;
++            if (previous.version !== 1 || previous.resourceId !== resourceId || previous.resourceType !== resourceType ||
++                previous.scopeId !== scopeId || previous.adapterId !== adapterId || previous.payload?.version !== 4) {
++                throw artifactAudioError('checkpoint-mismatch', 'This narration checkpoint belongs to a different artifact.');
++            }
++            // Checkpoints are an import boundary. Learner practice recordings
++            // and legacy/unidentified takes must never become export narration.
++            const entries = Object.fromEntries(Object.entries(previous.payload.entries || {}).filter(([, entry]) =>
++                ['ai-generated', 'ai-played', 'ai', 'human-teacher'].includes(entry?.source) &&
++                entry.identity?.adapterId === adapterId && entry.identity?.adapterVersion === 1 &&
++                entry.identity?.scopeId === scopeId && segments.some(segment => segment.segmentId === entry.identity?.segmentId)));
++            store.hydrate({ version: 4, entries });
++        }
+         const service = serviceFactory()({
+             getStoreModule: () => store,
+             getResource: () => resource,
++            persist: async ({ payload }) => {
++                if (typeof options.onCheckpoint === 'function') return options.onCheckpoint(checkpointFor(payload));
++            },
+             getSynthesisProfile: ({ segment }) => ({
+                 voice: segment.voice || defaults.voice,
+                 language: segment.language || defaults.language,
+                 provider: segment.provider || defaults.provider,
+@@ -202,9 +224,9 @@
+         }).forResource({
+             resourceId,
+             resourceType,
+             lane: store,
+-            persistencePolicy: 'none',
++            persistencePolicy: typeof options.onCheckpoint === 'function' ? 'durable' : 'none',
+             adapter: {
+                 enumerate: (value) => value && value.segments,
+                 spokenText: (segment) => segment.text,
+                 fields: (segment) => ({
+@@ -228,13 +250,24 @@
+             },
+         });
+ 
+         let preparation;
++        let latestProgress = { total: segments.length, prepared: 0, skipped: 0, failed: 0 };
+         try {
+-            preparation = await service.prepareAll({
+-                signal: options.signal,
+-                onProgress: options.onProgress,
+-            });
++            let cancellation = null;
++            try {
++                preparation = await service.prepareAll({
++                    signal: options.signal,
++                    onProgress: progress => {
++                        latestProgress = progress;
++                        if (typeof options.onProgress === 'function') options.onProgress(progress);
++                    },
++                });
++            } catch (error) {
++                if (error?.name !== 'AbortError') throw error;
++                cancellation = error;
++                preparation = { ...latestProgress, errors: [] };
++            }
+             const serialized = service.serialize() || {};
+             const entries = serialized.entries && typeof serialized.entries === 'object'
+                 ? serialized.entries
+                 : {};
+@@ -244,15 +277,16 @@
+                 const identity = entry && entry.identity;
+                 const segmentId = identity && identity.segmentId;
+                 const base64 = entry && entry.audio;
+                 if (!segmentId || typeof base64 !== 'string' || !base64) return;
++                if (!segments.some(segment => segment.segmentId === segmentId) || service.inspect(segmentId).status !== 'ready') return;
+                 const profile = entry.synthesisProfile || {};
+                 audioBySegmentId[segmentId] = {
+                     encoding: 'base64',
+                     mime: entry.mime || 'audio/mpeg',
+                     base64: base64.replace(/^data:[^,]*,/, '').replace(/\s+/g, ''),
+                     byteLength: byteLengthOfBase64(base64),
+-                    source: cleanToken(options.source, 'tts-artifact', 80),
++                    source: entry.source === 'human-teacher' ? entry.source : cleanToken(options.source, 'tts-artifact', 80),
+                     vetted: true,
+                     vettingMethod: 'owner-approved',
+                     synthesisProfile: {
+                         voice: cleanToken(profile.voice, defaults.voice, 160),
+@@ -266,10 +300,14 @@
+                 };
+             });
+             const estimatedBytes = Object.values(audioBySegmentId)
+                 .reduce((sum, audio) => sum + (Number(audio.byteLength) || 0), 0);
+-            return {
++            const result = {
+                 audioBySegmentId,
++                checkpoint: checkpointFor(serialized),
++                cancelled: !!cancellation,
++                available: Object.keys(audioBySegmentId).length,
++                remaining: Math.max(0, preparation.total - Object.keys(audioBySegmentId).length),
+                 total: preparation.total,
+                 prepared: preparation.prepared,
+                 failed: preparation.failed,
+                 skipped: preparation.skipped,
+@@ -280,8 +318,14 @@
+                     code: item.error && item.error.code ? item.error.code : 'narration-failed',
+                     message: item.error && item.error.message ? item.error.message : 'Narration could not be generated.',
+                 })),
+             };
++            if (cancellation) {
++                cancellation.partialResult = result;
++                cancellation.checkpoint = result.checkpoint;
++                throw cancellation;
++            }
++            return result;
+         } finally {
+             if (store && typeof store.clear === 'function') store.clear();
+         }
+     }
+===================================================================
+--- a/utils_pure_source.jsx
++++ b/utils_pure_source.jsx
+@@ -441,9 +441,9 @@
+         if (strict) throw new Error('Device storage is not ready yet.');
+         warnLog('storageDB.get: IDB not yet loaded, returning null for', key); return null;
+       }
+       let val = await window.idbKeyval.get(key);
+-      if ((val === undefined || val === null) && _dsBridgeWanted) {
++      if ((val === undefined || val === null) && _dsBridgeWanted && !(options && options.localOnly)) {
+         // Fresh Canvas session: local IDB is empty but the bridge may hold
+         // the previous session's autosave. Backfill local so later reads hit
+         // the fast path.
+         try {
+@@ -472,15 +472,24 @@
+       if (strict) throw e;
+       return null;
+     }
+   },
+-  set: async (key, value) => {
++  set: async (key, value, options) => {
++    const strict = !!(options && options.throwOnError);
+     // Reports success as a boolean (2026-07-13): true when the write LANDED,
+     // false when it was skipped or failed (quota, IDB unavailable). Durability-
+     // sensitive callers (batch checkpoints) check the report; legacy callers
+-    // that ignore the return keep fire-and-forget semantics — still never throws.
+-    if (typeof window === 'undefined') return false;
+-    if (!window.idbKeyval) { warnLog("storageDB.set: IDB not yet loaded, skipping write for", key); return false; }
++    // that ignore the return keep non-throwing semantics. Strict recovery
++    // writers opt in to the original error for accurate quota classification.
++    if (typeof window === 'undefined' || !window.idbKeyval) {
++      if (strict) {
++        const error = new Error('Device storage is not ready yet.');
++        error.code = 'storage-unavailable';
++        throw error;
++      }
++      warnLog('storageDB.set: IDB not yet loaded, skipping write for', key);
++      return false;
++    }
+     try {
+       const stringified = JSON.stringify(value);
+       const valToStore = window.LZString ? window.LZString.compressToUTF16(stringified) : stringified;
+       await window.idbKeyval.set(key, valToStore);
+@@ -493,8 +502,9 @@
+       try {
+         const stringified = JSON.stringify(value);
+         _dsMirrorSet(key, window.LZString ? window.LZString.compressToUTF16(stringified) : stringified);
+       } catch (_) {}
++      if (strict) throw e;
+       return false;
+     }
+   },
+   del: async (key) => {
+@@ -517,8 +527,24 @@
+   }
+ };
+ const PROVIDER_RETRY_AFTER_MAX_MS = 120000;
+ 
++// A successful state update or a fulfilled legacy set() promise is not a
++// durability receipt. Recovery callers require an acknowledged write and a
++// matching strict read. The caller owns sequencing and quota fallback.
++const writeVerifiedStorageSnapshot = async (storage, key, snapshot, isCurrent = () => true) => {
++  const fail = (code, message) => { const error = new Error(message); error.code = code; throw error; };
++  if (!isCurrent()) return { status: 'superseded', verified: false };
++  const expected = JSON.stringify(snapshot);
++  const written = await storage.set(key, snapshot, { throwOnError: true });
++  if (written !== true) fail('storage-write-unacknowledged', 'Device storage did not acknowledge this save.');
++  if (!isCurrent()) return { status: 'superseded', verified: false };
++  const saved = await storage.get(key, { throwOnError: true, localOnly: true });
++  if (!isCurrent()) return { status: 'superseded', verified: false };
++  if (JSON.stringify(saved) !== expected) fail('storage-readback-mismatch', 'The saved snapshot could not be verified.');
++  return { status: 'saved', verified: true, verifiedAt: new Date().toISOString(), snapshot: saved };
++};
++
+ // RFC 9110 Retry-After accepts either delta-seconds or an HTTP date. Keep the
+ // raw header out of every return value: callers get numeric, bounded metadata.
+ const parseProviderRetryAfter = (value, nowMs = Date.now(), maxDelayMs = PROVIDER_RETRY_AFTER_MAX_MS) => {
+   if (value == null || value === '') return null;
+@@ -1578,8 +1604,9 @@
+   chunkObject,
+   flattenObject,
+   unflattenObject,
+   storageDB,
++  writeVerifiedStorageSnapshot,
+   parseProviderRetryAfter,
+   classifyProviderError,
+   getProviderErrorSafeFields,
+   fetchWithExponentialBackoff,
+===================================================================
+--- /dev/null
++++ b/tests/offline_media_recovery.test.js
+@@ -0,0 +1,265 @@
++import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { loadAlloModule } from './setup.js';
++import { validAudioBase64 } from './lib/audio_fixtures.js';
++
++let KS, createService, createBridge, createArtifact;
++const profile = { voice: 'Kore', language: 'English', synthesisRate: 1, provider: 'gemini', voiceResolverVersion: 2 };
++const audio = n => ({ b64: validAudioBase64(192, n || 65), mime: 'audio/wav' });
++beforeAll(() => {
++  ['karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js'].forEach(loadAlloModule);
++  KS = window.AlloModules.KaraokeAudioStore;
++  createService = window.AlloModules.createReadAloudAudioService;
++  createBridge = window.AlloModules.createReadAloudLegacyBridge;
++  createArtifact = window.AlloModules.createReadAloudArtifactAudio;
++});
++beforeEach(() => {
++  Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:test') });
++  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
++});
++function harness(persist = async () => undefined) {
++  const resource = { id: 'r', type: 'simplified', parts: [{ id: 'a', text: 'One.' }, { id: 'b', text: 'Two.' }] };
++  const store = KS.createStore();
++  const synthesize = vi.fn(async () => audio());
++  const service = createService({ getStoreModule: () => store, getResource: () => resource,
++    getSynthesisProfile: () => profile, synthesize, persist }).forResource({ resourceId: 'r', resourceType: 'simplified',
++    persistencePolicy: 'durable', adapter: { enumerate: r => r.parts, spokenText: p => p.text,
++      fields: p => ({ segmentId: p.id, storageKey: p.text }) } });
++  return { resource, store, synthesize, service };
++}
++
++describe('offline media preparation and recovery', () => {
++  it('does not prune other cards when preparing a subset or retrying a missing item', async () => {
++    const resource = { id: 'r', type: 'simplified' }, store = KS.createStore();
++    const segments = [{ segmentId: 'card/a', text: 'One.' }, { segmentId: 'card/b', text: 'Two.' }];
++    const synthesize = vi.fn(async () => audio());
++    const bridge = createBridge({ getResource: () => resource, getStore: () => store, getProfile: () => profile,
++      synthesize, enumerateResourceSegments: () => segments });
++    await bridge.prepare(segments);
++    const original = JSON.stringify(store.serialize());
++    synthesize.mockClear();
++    await bridge.prepare([segments[1]]);
++    expect(JSON.stringify(store.serialize())).toBe(original);
++    expect(synthesize).not.toHaveBeenCalled();
++    await bridge.remove(segments[1]);
++    await bridge.prepare([segments[1]]);
++    expect(synthesize).toHaveBeenCalledTimes(1);
++    expect(bridge.inspect(segments[0]).status).toBe('ready');
++    expect(store.size()).toBe(2);
++    const durableStore = KS.createStore(); durableStore.hydrate(JSON.parse(JSON.stringify(store.serialize())));
++    expect(bridge.readiness(segments, 'reference', { durableStore, receipt: { verified: true } })).toMatchObject({ state: 'ready', durableReady: 2 });
++    durableStore.clear();
++    expect(bridge.readiness(segments, 'reference', { durableStore, receipt: { verified: true } })).toMatchObject({ state: 'session-only', durableReady: 0 });
++    const changedProfile = await bridge.prepare([segments[1]], null, { profile: { voice: 'Aoede' } });
++    expect(changedProfile).toMatchObject({ ok: true, remaining: 0, total: 1, generated: 1 });
++  });
++
++  it('distinguishes attachment, verified durability, stale audio, and failed storage', async () => {
++    const h = harness(), events = [];
++    h.service.subscribe(event => events.push(event.type));
++    expect(h.service.readiness().state).toBe('partial');
++    await h.service.prepareAll();
++    expect(events).toContain('attached');
++    expect(events).not.toContain('persisted');
++    expect(h.service.readiness()).toMatchObject({ state: 'session-only', ready: 2, durableReady: 0 });
++    const durableStore = KS.createStore(); durableStore.hydrate(JSON.parse(JSON.stringify(h.store.serialize())));
++    const receipt = { verified: true, verifiedAt: '2026-09-26T12:00:00Z' };
++    expect(h.service.readiness({ durableStore, receipt })).toMatchObject({ state: 'ready', durableReady: 2 });
++    await h.service.saveRecording('a', audio(70));
++    expect(h.service.readiness({ durableStore, receipt })).toMatchObject({ state: 'session-only', durableReady: 1 });
++    durableStore.clear();
++    expect(h.service.readiness({ durableStore, receipt }).durableReady).toBe(0);
++    expect(harness().service.readiness({ failure: new Error('denied') }).state).toBe('failed');
++  });
++
++  it('keeps clips after a failed persistence callback and can retry saving without synthesis', async () => {
++    const persist = vi.fn(async () => false), h = harness(persist);
++    const result = await h.service.prepareAll();
++    expect(result.failed).toBe(2);
++    expect(h.service.summary().ready).toBe(2);
++    persist.mockResolvedValue({ status: 'saved', verified: true });
++    h.synthesize.mockClear();
++    await expect(h.service.retryPersistence()).resolves.toBe(true);
++    expect(h.synthesize).not.toHaveBeenCalled();
++  });
++
++  it('checks an explicitly requested synthesis profile before deciding to reuse clips', async () => {
++    const h = harness(); await h.service.prepareAll(); h.synthesize.mockClear();
++    const result = await h.service.prepareAll({ profile: { voice: 'Aoede' } });
++    expect(h.synthesize).toHaveBeenCalledTimes(2);
++    expect(h.service.inspect('a', { profile: { voice: 'Aoede' } }).status).toBe('ready');
++    expect(result.summary.ready).toBe(2);
++    expect(h.service.readiness({ profile: { voice: 'Aoede' } }).ready).toBe(2);
++  });
++
++  it('joins a preparation requested reentrantly by the start progress callback', async () => {
++    const h = harness(); let joined;
++    const pending = h.service.prepareAll({ onProgress: event => {
++      if (event.phase === 'start') joined = h.service.prepareAll();
++    } });
++    await pending;
++    expect(joined).toBe(pending);
++    expect(h.synthesize).toHaveBeenCalledTimes(2);
++  });
++
++  it('coalesces identical jobs, rejects competing profiles, and stops before storing a cancelled response', async () => {
++    const h = harness(); let release;
++    h.synthesize.mockImplementation(() => new Promise(resolve => { release = resolve; }));
++    const controller = new AbortController();
++    const first = h.service.prepareAll({ signal: controller.signal });
++    expect(h.service.prepareAll({ signal: controller.signal })).toBe(first);
++    await expect(h.service.prepareAll({ profile: { voice: 'Aoede' } })).rejects.toMatchObject({ code: 'preparation-in-progress' });
++    await vi.waitFor(() => expect(release).toBeTypeOf('function'));
++    expect(h.service.readiness().state).toBe('preparing');
++    controller.abort(); release(audio());
++    await expect(first).rejects.toMatchObject({ name: 'AbortError' });
++    expect(h.store.size()).toBe(0);
++  });
++
++  it('does not synthesize replacements for quarantined human recordings', async () => {
++    const h = harness();
++    await h.service.saveRecording('a', audio());
++    await h.service.quarantine('a', { code: 'decode-failed' });
++    h.synthesize.mockClear();
++    const result = await h.service.prepareAll();
++    expect(result.errors[0].error.code).toBe('human-recording-protected');
++    expect(h.synthesize.mock.calls.map(([request]) => request.text)).toEqual(['Two.']);
++    expect(h.store.sourceOf('One.')).toBe('human-teacher');
++    expect(h.service.readiness().nextActions).toContain('review-recordings');
++  });
++});
++
++describe('resumable portable narration', () => {
++  const options = { ownerApproved: true, resourceId: 'story', segments: [{ segmentId: 'a', text: 'One.' }, { segmentId: 'b', text: 'Two.' }] };
++  it('reuses only current checkpoint clips after a network failure and profile change', async () => {
++    const callTTS = vi.fn(async text => { if (text === 'Two.') throw new Error('offline'); return audio(); });
++    const helper = createArtifact({ callTTS });
++    const first = await helper.prepare(options);
++    expect(first).toMatchObject({ available: 1, remaining: 1 });
++    callTTS.mockImplementation(async () => audio()); callTTS.mockClear();
++    const second = await helper.prepare({ ...options, checkpoint: JSON.parse(JSON.stringify(first.checkpoint)) });
++    expect(second).toMatchObject({ available: 2, remaining: 0, skipped: 1 });
++    expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['Two.']);
++    callTTS.mockClear();
++    await helper.prepare({ ...options, defaultVoice: 'Aoede', checkpoint: second.checkpoint });
++    expect(callTTS).toHaveBeenCalledTimes(2);
++  });
++  it('returns partial bytes on AbortError, frees URLs, and resumes after serialization', async () => {
++    const controller = new AbortController(), callTTS = vi.fn(async () => audio());
++    const helper = createArtifact({ callTTS });
++    let cancellation;
++    try { await helper.prepare({ ...options, signal: controller.signal, onProgress: p => { if (p.prepared === 1) controller.abort(); } }); }
++    catch (error) { cancellation = error; }
++    expect(cancellation).toMatchObject({ name: 'AbortError', partialResult: { cancelled: true, available: 1, remaining: 1, prepared: 1 } });
++    expect(URL.revokeObjectURL).toHaveBeenCalled();
++    callTTS.mockClear();
++    await helper.prepare({ ...options, checkpoint: JSON.parse(JSON.stringify(cancellation.checkpoint)) });
++    expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['Two.']);
++  });
++  it('rejects a different artifact checkpoint and does not transfer learner recordings', async () => {
++    const callTTS = vi.fn(async () => audio()), helper = createArtifact({ callTTS });
++    const first = await helper.prepare(options);
++    await expect(helper.prepare({ ...options, resourceId: 'different', checkpoint: first.checkpoint })).rejects.toMatchObject({ code: 'checkpoint-mismatch' });
++    Object.values(first.checkpoint.payload.entries).forEach(entry => { entry.source = 'human-student'; entry.audio = audio(77).b64; });
++    const result = await helper.prepare({ ...options, checkpoint: first.checkpoint });
++    expect(Object.values(result.audioBySegmentId).every(entry => entry.base64 !== audio(77).b64)).toBe(true);
++    expect(JSON.stringify(result.checkpoint)).not.toContain('human-student');
++  });
++  it('discards foreign checkpoint scopes and retries only edited current identities', async () => {
++    const callTTS = vi.fn(async () => audio()), helper = createArtifact({ callTTS });
++    const first = await helper.prepare(options);
++    const entries = first.checkpoint.payload.entries;
++    const foreign = JSON.parse(JSON.stringify(Object.values(entries)[0]));
++    foreign.identity.scopeId = 'foreign'; foreign.source = 'human-teacher'; foreign.audio = audio(88).b64;
++    entries[KS.portableKeyForIdentity(foreign.identity)] = foreign;
++    callTTS.mockClear();
++    const result = await helper.prepare({ ...options, checkpoint: first.checkpoint,
++      segments: [{ segmentId: 'a', text: 'One edited.' }, options.segments[1]] });
++    expect(callTTS.mock.calls.map(([text]) => text)).toEqual(['One edited.']);
++    expect(result).toMatchObject({ available: 2, remaining: 0, skipped: 1 });
++    expect(JSON.stringify(result.checkpoint)).not.toContain('foreign');
++    expect(Object.values(result.audioBySegmentId).some(entry => entry.base64 === audio(88).b64)).toBe(false);
++  });
++});
++
++const utils = readFileSync('utils_pure_source.jsx', 'utf8');
++const writeStart = utils.indexOf('const writeVerifiedStorageSnapshot =');
++const writeEnd = utils.indexOf('\n};', writeStart) + 3;
++const writeVerified = new Function(utils.slice(writeStart, writeEnd) + '; return writeVerifiedStorageSnapshot;')();
++function writerHarness(set) {
++  const start = utils.indexOf('  set: async (key, value, options)'), end = utils.indexOf('  del: async', start);
++  return new Function('window', 'warnLog', '_dsMirrorSet', 'return ({' + utils.slice(start, end) + '}).set;')({ idbKeyval: { set } }, vi.fn(), vi.fn());
++}
++describe('verified device save receipts', () => {
++  it('preserves legacy false results and exposes real quota errors to strict writers', async () => {
++    const quota = new DOMException('full', 'QuotaExceededError');
++    const set = writerHarness(async () => { throw quota; });
++    await expect(set('history', {})).resolves.toBe(false);
++    await expect(set('history', {}, { throwOnError: true })).rejects.toBe(quota);
++  });
++  it('rejects false acknowledgement, missing data, readback mismatch, and stale ownership', async () => {
++    const snapshot = { items: [{ id: 'r' }] };
++    await expect(writeVerified({ set: async () => false }, 'history', snapshot)).rejects.toMatchObject({ code: 'storage-write-unacknowledged' });
++    for (const saved of [null, { items: [] }]) {
++      await expect(writeVerified({ set: async () => true, get: async () => saved }, 'history', snapshot)).rejects.toMatchObject({ code: 'storage-readback-mismatch' });
++    }
++    const get = vi.fn(async () => snapshot); let current = true;
++    expect(await writeVerified({ set: async () => { current = false; return true; }, get }, 'history', snapshot, () => current)).toEqual({ status: 'superseded', verified: false });
++    expect(get).not.toHaveBeenCalled();
++    expect(await writeVerified({ set: async () => true, get }, 'history', snapshot)).toMatchObject({ status: 'saved', verified: true, snapshot });
++    expect(get).toHaveBeenCalledWith('history', { throwOnError: true, localOnly: true });
++  });
++});
++
++describe('host autosave media receipts', () => {
++  it.each(['quota', 'false', 'readback', 'ok'])('reports the actual %s save result without changing in-memory media', async mode => {
++    const host = readFileSync('AlloFlowANTI.txt', 'utf8');
++    const start = host.indexOf('        const retention = ALLO_WORKSPACE_RECOVERY.resolvePolicy(', host.indexOf('const saveHistory ='));
++    const end = host.indexOf('\n    }).finally', start);
++    const original = { id: 'r', type: 'simplified', data: 'One.', timestamp: '2026-09-26', karaokeAudio: { version: 4, entries: {} },
++      readingSupports: { annotations: [{ id: 'picture-1', image: { src: 'data:image/png;base64,abcd' }, text: 'Help' }] } };
++    let saved, writes = 0;
++    const storage = { set: vi.fn(async (_key, value) => {
++      writes++; if (mode === 'false') return false;
++      if (mode === 'quota' && writes === 1) throw new DOMException('full', 'QuotaExceededError');
++      saved = JSON.parse(JSON.stringify(value)); return true;
++    }), get: async () => mode === 'readback' ? null : saved };
++    window.AlloModules.UtilsPure = { writeVerifiedStorageSnapshot: writeVerified };
++    window.stripReadingSupportPictures = item => ({ ...item, readingSupports: { annotations: item.readingSupports.annotations.map(({ image, ...entry }) => entry) } });
++    const lastSaved = vi.fn();
++    const run = new Function('storageDB', 'history', 'setLastSaved', 'addToast', 'warnLog', 't',
++      'const owner={sequence:1}, sequence=1, canvasRecoveryStoreRef={current:{}}; const ALLO_WORKSPACE_RECOVERY={resolvePolicy:()=>({maxOfflineItems:50})}; return (async()=>{' + host.slice(start, end) + '})();');
++    await run(storage, [original], lastSaved, vi.fn(), vi.fn(), x => x);
++    expect(original.karaokeAudio).toBeTruthy();
++    expect(original.readingSupports.annotations[0].image).toBeTruthy();
++    expect(lastSaved).toHaveBeenCalledTimes(['quota', 'ok'].includes(mode) ? 1 : 0);
++    expect(window.__alloOfflineMediaPersistence.status).toBe(mode === 'quota' ? 'text-only' : mode === 'ok' ? 'saved' : 'failed');
++    expect(window.__alloOfflineMediaPersistence.snapshot).toBeUndefined();
++    if (mode === 'quota') {
++      expect(saved.items[0].karaokeAudio).toBeUndefined();
++      expect(saved.items[0].offlineMediaOmissions).toEqual([{ field: 'readingSupports', id: 'picture-1', kind: 'picture', reason: 'storage-quota' }]);
++      expect(saved.items[0].readingSupports.annotations[0].text).toBe('Help');
++    }
++  });
++
++  it('reads local device state, reports active preparation, and drops obsolete readiness requests', async () => {
++    const host = readFileSync('AlloFlowANTI.txt', 'utf8');
++    const start = host.indexOf('  window.__alloGetReadAloudReadiness =');
++    const end = host.indexOf('  window.__alloRetryReadAloudPersistence =', start);
++    const bind = new Function('storageDB', '_getReadAloudBridge', 'generatedContent', host.slice(start, end));
++    const bridge = { readiness: vi.fn((_sentences, _lane, options) => ({ state: options.preparing ? 'preparing' : 'session-only' })) };
++    const get = vi.fn(async () => ({ items: [{ id: 'r', offlineMediaOmissions: [{ id: 'p' }] }] }));
++    window.__alloPrepareReadAloudController = new AbortController();
++    bind({ get }, () => bridge, { id: 'r' });
++    expect(await window.__alloGetReadAloudReadiness()).toMatchObject({ state: 'preparing', pictureOmissions: [{ id: 'p' }] });
++    expect(get).toHaveBeenCalledWith('allo_offline_history', { throwOnError: true, localOnly: true });
++    let release;
++    get.mockImplementation(() => new Promise(resolve => { release = resolve; }));
++    const pending = window.__alloGetReadAloudReadiness();
++    window.__alloGetReadAloudReadiness = () => null;
++    release({ items: [] });
++    expect(await pending).toBeNull();
++    expect(bridge.readiness).toHaveBeenCalledTimes(1);
++    window.__alloPrepareReadAloudController = null;
++  });
++});
+===================================================================
+--- a/tests/read_aloud_audio_service.test.js
++++ b/tests/read_aloud_audio_service.test.js
+@@ -89,9 +89,9 @@
+     b64: clipB64('synth-' + segment.segmentId),
+     mime: 'audio/mpeg',
+   }));
+   const encode = options.encode;
+-  const persist = options.persist || vi.fn(async () => {});
++  const persist = options.persist || vi.fn(async () => ({ status: 'saved', verified: true }));
+   const eventSink = options.events || vi.fn();
+   const getStoreModule = vi.fn(() => storeModule);
+   const getResource = vi.fn(() => resource);
+   const getSynthesisProfile = vi.fn(() => profile);
+===================================================================
+--- /dev/null
++++ b/dev-tools/check_offline_media_recovery.cjs
+@@ -0,0 +1,99 @@
++// Disposable real-browser verification. No deployed app, keys, or user profile.
++const fs = require('node:fs');
++const path = require('node:path');
++const os = require('node:os');
++const http = require('node:http');
++const { pathToFileURL } = require('node:url');
++const { chromium } = require('playwright');
++const root = path.resolve(__dirname, '..');
++const script = name => fs.readFileSync(path.join(root, name), 'utf8').replace(/<\/script/gi, '<\\/script');
++function wave() {
++  const frames = 800, bytes = Buffer.alloc(44 + frames * 2);
++  bytes.write('RIFF'); bytes.writeUInt32LE(bytes.length - 8, 4); bytes.write('WAVEfmt ', 8);
++  bytes.writeUInt32LE(16, 16); bytes.writeUInt16LE(1, 20); bytes.writeUInt16LE(1, 22);
++  bytes.writeUInt32LE(8000, 24); bytes.writeUInt32LE(16000, 28); bytes.writeUInt16LE(2, 32); bytes.writeUInt16LE(16, 34);
++  bytes.write('data', 36); bytes.writeUInt32LE(frames * 2, 40);
++  for (let n = 0; n < frames; n++) bytes.writeInt16LE(Math.round(2000 * Math.sin(n * 2 * Math.PI * 440 / 8000)), 44 + n * 2);
++  return bytes.toString('base64');
++}
++const modules = ['karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js'];
++const html = '<!doctype html><meta charset="utf-8"><title>Offline media fixture</title>' + modules.map(name => '<script>' + script(name) + '</script>').join('');
++const fixture = {
++  id: 'disposable-reading', type: 'simplified', parts: [{ id: 'one', text: 'First sentence.' }, { id: 'two', text: 'Second sentence.' }],
++  image: 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="green"/></svg>').toString('base64')
++};
++const runtime = `
++window.fixtureIdentity = part => ({identityVersion:4,adapterId:'offline-fixture',adapterVersion:1,scopeId:'main',segmentId:part.id,spokenText:part.text});
++window.makeService = resource => {
++  const store = AlloModules.KaraokeAudioStore.createStore();
++  if (resource.karaokeAudio) store.hydrate(resource.karaokeAudio);
++  const service = AlloModules.createReadAloudAudioService({ getStoreModule: () => store, getResource: () => resource,
++    getSynthesisProfile: () => ({voice:'Kore', language:'English', synthesisRate:1, voiceResolverVersion:2}),
++    synthesize: async () => { window.synthesisCalls=(window.synthesisCalls||0)+1; throw new Error('Network synthesis forbidden in recipient'); }
++  }).forResource({resourceId:resource.id, resourceType:resource.type, adapter:{enumerate:r=>r.parts,spokenText:p=>p.text,fields:p=>({segmentId:p.id,storageKey:fixtureIdentity(p)})}});
++  return {store,service};
++};
++window.checkMedia = async resource => {
++  const {store,service}=makeService(resource), context=new AudioContext();
++  const durations=[];
++  for(const part of resource.parts) {
++    const url=await service.resolve(part.id);
++    const response=await fetch(url);
++    durations.push((await context.decodeAudioData(await response.arrayBuffer())).duration);
++  }
++  await context.close();
++  const picture=new Image(); picture.src=resource.image; await picture.decode();
++  window.fixtureStore=store; window.fixtureService=service;
++  return {ready:service.summary().ready,durations,pictureWidth:picture.naturalWidth,synthesisCalls:window.synthesisCalls||0};
++};`;
++
++(async () => {
++  let browser, server;
++  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-offline-media-'));
++  try {
++    server = http.createServer((_request, response) => { response.setHeader('Content-Type', 'text/html'); response.end(html + '<script>' + runtime + '</script>'); });
++    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
++    const url = `http://127.0.0.1:${server.address().port}/`;
++    browser = await chromium.launch({ headless: true });
++    const authorContext = await browser.newContext(), author = await authorContext.newPage();
++    await author.goto(url);
++    const prepared = await author.evaluate(async ({fixture, wave}) => {
++      const {store}=makeService(fixture);
++      for(const part of fixture.parts) store.put(fixtureIdentity(part),wave,'audio/wav','ai-generated',{voice:'Kore',language:'English',synthesisRate:1,voiceResolverVersion:2});
++      fixture.karaokeAudio=store.serialize();
++      const database=await new Promise((resolve,reject)=>{const request=indexedDB.open('disposable-media',1);request.onupgradeneeded=()=>request.result.createObjectStore('items');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
++      await new Promise((resolve,reject)=>{const tx=database.transaction('items','readwrite');tx.objectStore('items').put(fixture,'reading');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});
++      database.close(); return fixture;
++    }, { fixture, wave: wave() });
++    // Reload destroys the first store and every old object URL.
++    await author.reload();
++    const reloadResult = await author.evaluate(async () => {
++      const database=await new Promise((resolve,reject)=>{const request=indexedDB.open('disposable-media',1);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
++      const resource=await new Promise((resolve,reject)=>{const request=database.transaction('items').objectStore('items').get('reading');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
++      database.close(); return checkMedia(resource);
++    });
++    await authorContext.close();
++    const portable = path.join(temporary, 'reading.html');
++    fs.writeFileSync(portable, html + '<script>' + runtime + '\nwindow.resource=' + JSON.stringify(prepared).replace(/</g,'\\u003c') + ';</script><button id="play">Play prepared sentence</button><script>document.querySelector("#play").onclick=async()=>{const audio=new Audio(await fixtureService.resolve("one"));window.fixtureAudio=audio;audio.onended=()=>window.played=true;await audio.play();};</script>');
++    const recipientContext = await browser.newContext({ offline: true }), recipient = await recipientContext.newPage();
++    const networkRequests=[];
++    recipient.on('request',request=>{if(/^https?:/.test(request.url())) networkRequests.push(request.url());});
++    await recipient.goto(pathToFileURL(portable).href);
++    const recipientResult = await recipient.evaluate(() => checkMedia(resource));
++    await recipient.click('#play'); await recipient.waitForFunction(() => window.played === true);
++    await recipient.reload();
++    const recipientReload = await recipient.evaluate(() => checkMedia(resource));
++    if ([reloadResult,recipientResult,recipientReload].some(result=>result.ready!==2 || result.synthesisCalls!==0 || result.pictureWidth!==16 || result.durations.some(duration=>duration<=0)) || networkRequests.length) throw new Error('Offline recipient verification failed');
++    const report = { status:'passed', reloadResult, recipientResult, recipientReload, actualPlayback:true, networkRequests,
++      scope:'Disposable IndexedDB reload and self-contained fixture in a fresh offline recipient context; not deployed-app or all-route certification.' };
++    const output = path.join(root,'reports','offline-media-recovery'); fs.mkdirSync(output,{recursive:true});
++    fs.writeFileSync(path.join(output,'browser-verification.json'),JSON.stringify(report,null,2)+'\n');
++    console.log(JSON.stringify(report,null,2));
++    await recipientContext.close();
++  } finally {
++    if(browser) await browser.close();
++    if(server) await new Promise(resolve=>server.close(resolve));
++    // Delete only this process's mkdtemp fixture directory after browser shutdown.
++    if(path.dirname(temporary)===os.tmpdir() && path.basename(temporary).startsWith('alloflow-offline-media-')) fs.rmSync(temporary,{recursive:true,force:true});
++  }
++})().catch(error=>{console.error(error);process.exitCode=1;});

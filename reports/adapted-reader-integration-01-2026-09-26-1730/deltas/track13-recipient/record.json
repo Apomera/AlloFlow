@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-26T22:34:35.588Z",
+  "label": "track13-recipient",
+  "patch": "b2d827fc0208f46c8faaf235d85281145cccc4013fab2c5d651592dbf7793a77",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "9b9140b55dd94933b1bb68b1b5a910f42f80bc646557bbdc4428e5291832913d",
+      "after": "9213e6277ab9db6e46bc52ba24cb36018a85a498c63eecf79c67d084f5ec1207",
+      "changed": true
+    }
+  ]
+}

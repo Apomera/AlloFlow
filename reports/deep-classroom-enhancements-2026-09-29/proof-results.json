@@ -1,0 +1,153 @@
+{
+  "at": "2026-09-29T22:17:50.487Z",
+  "scratch": "C:\\Users\\cabba\\AppData\\Local\\Temp\\allo-deep-proofs-c6g7ZQ",
+  "unchanged": true,
+  "before": {
+    "AlloFlowANTI.txt": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "desktop/web-app/src/AlloFlowANTI.txt": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "desktop/web-app/src/App.jsx": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "teacher_source.jsx": "aed18b2870524fc6b394649568397c3ddaf9a12e264c4aa36ca3b79d5bc378fc",
+    "teacher_module.js": "2d081f04bc812e754226aa8ca37bff65e781ac5eff347369f740c24e5a99cb98",
+    "desktop/web-app/public/teacher_module.js": "2d081f04bc812e754226aa8ca37bff65e781ac5eff347369f740c24e5a99cb98"
+  },
+  "after": {
+    "AlloFlowANTI.txt": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "desktop/web-app/src/AlloFlowANTI.txt": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "desktop/web-app/src/App.jsx": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "teacher_source.jsx": "aed18b2870524fc6b394649568397c3ddaf9a12e264c4aa36ca3b79d5bc378fc",
+    "teacher_module.js": "2d081f04bc812e754226aa8ca37bff65e781ac5eff347369f740c24e5a99cb98",
+    "desktop/web-app/public/teacher_module.js": "2d081f04bc812e754226aa8ca37bff65e781ac5eff347369f740c24e5a99cb98"
+  },
+  "results": [
+    {
+      "id": "audio-stale-context",
+      "exit": 1,
+      "signal": null,
+      "proved": true,
+      "failures": [
+        {
+          "title": "rejects changed context field 1",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      undefined,\n      Object {\n        \"addBlobUrl\": [Function Mock],\n        \"audioRef\": [Function Mock],\n        \"callTTS\": [Function Mock],\n        \"flashcardIndex\": 0,\n        \"flashcardLang\": \"en\",\n        \"flashcardMode\": \"study\",\n        \"generatedContent\": Object {\n          \"data\": Array [\n            Object {\n              \"text\": \"First\",\n            },\n          ],\n          \"id\": \"cards-A\",\n        },\n        \"getGroupTtsSpeed\": [Function Mock],\n        \"isPlayingRef\": [Function Mock],\n        \"playbackRateRef\": [Function Mock],\n        \"playbackSessionRef\": Object {\n          \"current\": 12,\n        },\n        \"selectedVoice\": \"voice-A\",\n        \"setIsPlaying\": [Function Mock],\n        \"setPlayingContentId\": [Function Mock],\n        \"standardDeckLang\": \"en\",\n        \"stopPlayback\": [Function Mock],\n        \"t\": [Function Mock],\n        \"warnLog\": [Function Mock],\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/k5_deep_action_readiness.test.js:41:53\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+        "run",
+        "tests/k5_deep_action_readiness.test.js",
+        "-t",
+        "rejects changed context field 1",
+        "--maxWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\deep-classroom-enhancements-2026-09-29\\proof-audio-stale-context.json"
+      ]
+    },
+    {
+      "id": "document-stale-generation",
+      "exit": 1,
+      "signal": null,
+      "proved": true,
+      "failures": [
+        {
+          "title": "rejects a changed document (generation)",
+          "messages": [
+            "AssertionError: expected 'dispatched' to deeply equal { started: false, …(1) }\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/k5_deep_action_readiness.test.js:73:37\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+        "run",
+        "tests/k5_deep_action_readiness.test.js",
+        "-t",
+        "rejects a changed document \\(generation\\)",
+        "--maxWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\deep-classroom-enhancements-2026-09-29\\proof-document-stale-generation.json"
+      ]
+    },
+    {
+      "id": "weekly-ungraded-accuracy",
+      "exit": 1,
+      "signal": null,
+      "proved": true,
+      "failures": [
+        {
+          "title": "keeps weekly accuracy honest (mixed)",
+          "messages": [
+            "AssertionError: expected '90%' to be '0%' // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/learner_progress_scope_browser.test.js:121:68\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+        "run",
+        "tests/learner_progress_scope_browser.test.js",
+        "-t",
+        "keeps weekly accuracy honest \\(mixed\\)",
+        "--maxWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\deep-classroom-enhancements-2026-09-29\\proof-weekly-ungraded-accuracy.json"
+      ]
+    },
+    {
+      "id": "family-selector-unscoped",
+      "exit": 1,
+      "signal": null,
+      "proved": true,
+      "failures": [
+        {
+          "title": "selects real child sessions and labels aggregate totals honestly",
+          "messages": [
+            "AssertionError: expected 2 to be 1 // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/learner_progress_scope_browser.test.js:58:47\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+        "run",
+        "tests/learner_progress_scope_browser.test.js",
+        "-t",
+        "selects real child sessions",
+        "--maxWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\deep-classroom-enhancements-2026-09-29\\proof-family-selector-unscoped.json"
+      ]
+    },
+    {
+      "id": "progress-outside-main",
+      "exit": 1,
+      "signal": null,
+      "proved": true,
+      "failures": [
+        {
+          "title": "places learner progress inside the main landmark",
+          "messages": [
+            "AssertionError: progress should occupy main, without an empty workspace ahead of it: expected undefined to be defined\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dashboard_progress_workspace.test.js:35:89\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+        "run",
+        "tests/dashboard_progress_workspace.test.js",
+        "-t",
+        "places learner progress inside the main",
+        "--maxWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\deep-classroom-enhancements-2026-09-29\\proof-progress-outside-main.json"
+      ]
+    }
+  ]
+}

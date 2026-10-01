@@ -1,0 +1,78 @@
+{
+  "date": "2026-09-29",
+  "result": "passed",
+  "unitTests": {
+    "passed": 192,
+    "files": 3,
+    "finalRunSeconds": 16.2,
+    "suites": {
+      "firstresponse_depth_explorer": 59,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "passed": 19,
+    "finalFullRunMinutes": 7.4,
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "markerVisualScenarios": 3,
+    "manikinRealismScenarios": 3,
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "precedingFullRun": {
+      "passed": 18,
+      "failed": 1,
+      "failure": "Full-arrest test remained at 29 of 30 compressions after its anchored input schedule caught up with a burst",
+      "resolution": "Space the 30 scenario inputs from the previous tap; final full suite passed"
+    }
+  },
+  "coverage": [
+    "Continuous torso surface follows calibrated depth and recoil with a fixed back plane",
+    "Tapered forearms have wider muscle contours than wrists and separate axes",
+    "Stacked hand elbows are level and segment lengths remain fixed",
+    "Coach heel follows the actual chest surface during compression and release across ages",
+    "Coach breathing phase retains its hand lift and reduced-motion behavior",
+    "Facial features remain attached to the moving head pivot",
+    "Arm close-ups keep the heel and sleeve ends in frame at a useful size for every age",
+    "Head close-ups fit facial features and point the face toward the camera",
+    "All eight recovery steps complete; mouth moves and rolled face remains inspectable",
+    "Placement gates arm inspection and hidden hands disable the depth arm camera",
+    "Actual WebGL rendering, AED picking, age scaling, recovery and both coaching sequences",
+    "One canvas during live controls and context disposal when leaving the module",
+    "320px reflow, keyboard controls, enlarged text spacing and reduced motion",
+    "Normal axe semantics and contrast checks, app contrast and forced system colors"
+  ],
+  "synchronization": {
+    "moduleCopies": "identical",
+    "newEnglishStrings": 2,
+    "catalogCopies": "aligned",
+    "scopedWhitespaceCheck": "passed"
+  },
+  "visualReview": {
+    "screenshotsReviewed": 11,
+    "result": "passed",
+    "screenshots": [
+      "whole-manikin.png",
+      "adult-arms.png",
+      "child-arms.png",
+      "infant-arms.png",
+      "adult-face.png",
+      "child-face.png",
+      "infant-face.png",
+      "recovery-head.png",
+      "recovery-body.png",
+      "phone-arms.png",
+      "contrast-arms.png"
+    ]
+  },
+  "resolvedDuringDevelopment": [
+    "The recovery arm reference initially used the rolled mat height and stretched the upper arm. A fixed supine reference restored segment lengths.",
+    "Coach hands previously used an independent height offset. The heel now tracks the animated chest surface.",
+    "The new camera mesh targets were initially absent from the viewer's part registry. Registering them enabled focus; browser checks now require useful close-up size.",
+    "Shaped head geometry exposed a lighting seam. More detailed geometry and shared normals removed the strip.",
+    "The default head view faced the back of the rolled skull. The recovery camera now uses an angle facing the turned face, verified by orientation and visual review.",
+    "Browser compression sampling now awaits a depressed marker before reading the peak; recovery checks complete the actual ordered controls rather than skipping missing controls.",
+    "The full-arrest test retains exactly 30 inputs while preventing catch-up bursts after software-rendering delays. The full suite passed after this pacing fix."
+  ]
+}

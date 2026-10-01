@@ -1,0 +1,4576 @@
+{
+  "browser": "154.0.4258.37",
+  "measuredAt": "2026-09-29T03:52:32.453Z",
+  "order": "Alternating ABBA/BAAB; three warmup rounds, twelve measured rounds",
+  "results": [
+    {
+      "name": "comparison-supports-200",
+      "baseline": {
+        "samples": 24,
+        "medianPaintMs": 32.10000000009313,
+        "p95PaintMs": 38,
+        "medianRenderMs": 29.100000000325963,
+        "domParses": 28752,
+        "totalRenderMs": 705.4999999974389
+      },
+      "candidate": {
+        "samples": 24,
+        "medianPaintMs": 13.599999999860302,
+        "p95PaintMs": 18.700000000186265,
+        "medianRenderMs": 10.699999999720603,
+        "domParses": 0,
+        "totalRenderMs": 279.50000000046566
+      },
+      "samples": [
+        [
+          {
+            "wallMs": 40.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 1.3000000000465661,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 37.00000000023283,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 38,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 1.2000000001862645,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 33.99999999976717,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 34.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 1.1999999999534339,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.3000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 30.799999999115244,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.9000000001397,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.0999999998603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 26.99999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.399999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4999999995343387,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.9000000001396984
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.600000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 26.300000000279397,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 32.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.7999999998137355,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 29.700000000186265,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.0999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999999534339,
+                "validateReadingSupports": 1.0999999998603016,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.9000000001396984
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 26.799999999348074,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31.799999999813735,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.40000000037252903,
+                "validateReadingSupports": 1.5999999998603016,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.3999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 29.199999999720603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.899999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 32.0999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999997206032,
+                "validateReadingSupports": 0.9000000001396984,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.90000000060536,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 34.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 30.49999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 29.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 25.699999999487773,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.8999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.199999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 38,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.599999999627471,
+                "validateReadingSupports": 1.1999999999534339,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 33.8000000002794,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 34.89999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3999999996740371,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 30.899999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 35.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 31.49999999976717,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 36.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 1.3999999999068677,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.3000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 33.50000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 32.10000000009313,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 28.699999999487773,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 34.39999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 1.1999999999534339,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 29.100000000325963,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 34,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 30.200000000186265,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 29,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.8999999999068677,
+                "fingerprintSourceText": 0.19999999995343387,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 25.699999999487773,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          }
+        ],
+        [
+          {
+            "wallMs": 18.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 16.09999999962747,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 18.700000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.599999999627471,
+                "validateReadingSupports": 1.1999999999534339,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 15.600000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 1.0999999998603016,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 13,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 17.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.2999999998137355,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 1.3000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 14.899999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 16.9000000001397,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 14.399999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 16.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.20000000018626451,
+                "validateReadingSupports": 1.1999999999534339,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 13.50000000023283,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.400000000139698,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999997206032,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 12.400000000372529,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.599999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 13.199999999487773,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 16.600000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.8999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 13.09999999939464,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.100000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 0.8000000000465661,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.199999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.599999999627471,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.200000000186265,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.100000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 0.8999999999068677,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.800000000512227,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.599999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.29999999958090484,
+                "validateReadingSupports": 1,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.8999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.299999999580905,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.09999999986030161,
+                "validateReadingSupports": 1.2000000001862645,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.8999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.40000000083819,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.8999999999068677,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.500000000931323,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.099999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.8000000002793968,
+                "validateReadingSupports": 0.7000000001862645,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 9.300000000279397,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.100000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.599999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 9.49999999976717,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.200000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.8000000000465661,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 9.399999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.900000000139698,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 0.7999999998137355,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.599999999627471,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.599999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.599999999627471,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.8999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.700000000419095,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.700000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.7999999998137355
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.199999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.100000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.8000000000465661,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.49999999976717,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "textContentReads": 1,
+                "textContentChars": 18698
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.5999999998603016,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.699999999720603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          }
+        ]
+      ],
+      "cleanup": [
+        {
+          "longTasks": {
+            "count": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          },
+          "audioStarts": 0,
+          "playingAudio": 0,
+          "counts": {
+            "getSourceSnapshot": 8,
+            "validateReadingSupports": 2,
+            "fingerprintSourceText": 3,
+            "selectReadingSupports": 2,
+            "domParses": 1198,
+            "textContentReads": 1,
+            "textContentChars": 18698
+          },
+          "milliseconds": {
+            "getSourceSnapshot": 0.6000000000931323,
+            "validateReadingSupports": 0.8999999999068677,
+            "fingerprintSourceText": 0.19999999995343387,
+            "selectReadingSupports": 1.1000000000931323
+          },
+          "activeMutationObservers": 1,
+          "commits": 1,
+          "commitMs": 25.699999999487773,
+          "outstandingTimers": 0,
+          "outstandingFrames": 0,
+          "ranges": 0
+        },
+        {
+          "longTasks": {
+            "count": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          },
+          "audioStarts": 0,
+          "playingAudio": 0,
+          "counts": {
+            "getSourceSnapshot": 8,
+            "validateReadingSupports": 2,
+            "fingerprintSourceText": 3,
+            "selectReadingSupports": 2,
+            "textContentReads": 1,
+            "textContentChars": 18698
+          },
+          "milliseconds": {
+            "getSourceSnapshot": 0.6000000000931323,
+            "validateReadingSupports": 0.5999999998603016,
+            "fingerprintSourceText": 0,
+            "selectReadingSupports": 0.7000000001862645
+          },
+          "activeMutationObservers": 1,
+          "commits": 1,
+          "commitMs": 10.699999999720603,
+          "outstandingTimers": 0,
+          "outstandingFrames": 0,
+          "ranges": 0
+        }
+      ]
+    },
+    {
+      "name": "bilingual-panes",
+      "baseline": {
+        "samples": 24,
+        "medianPaintMs": 42.300000000046566,
+        "p95PaintMs": 79.80000000004657,
+        "medianRenderMs": 35.60000000009313,
+        "domParses": 28752,
+        "totalRenderMs": 1004.6999999992549
+      },
+      "candidate": {
+        "samples": 24,
+        "medianPaintMs": 17.300000000046566,
+        "p95PaintMs": 29.399999999906868,
+        "medianRenderMs": 11.599999999627471,
+        "domParses": 0,
+        "totalRenderMs": 297.2999999995809
+      },
+      "samples": [
+        [
+          {
+            "wallMs": 57.4000000001397,
+            "metrics": {
+              "longTasks": {
+                "count": 1,
+                "totalMs": 55,
+                "maxMs": 55
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999997206032,
+                "validateReadingSupports": 0.5,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.599999999627471
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 53.00000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 48.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.19999999995343387,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 42.600000000791624,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 61.89999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 1,
+                "totalMs": 59,
+                "maxMs": 59
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.20000000018626451,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 56.800000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 41.4000000001397,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.7999999995809048,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 34.0999999998603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 51.5999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.5,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 29.699999999720603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 48.89999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 29.799999999580905,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 75.5999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 1,
+                "totalMs": 73,
+                "maxMs": 73
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000005587935,
+                "validateReadingSupports": 0.49999999976716936,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 70.60000000009313,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 38.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 0.7000000001862645,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 36.19999999925494,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 38.39999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0.19999999995343387,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 33.5999999998603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 32,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000004656613,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 28.300000000279397,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 35.700000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.5000000002328306,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.7999999998137355
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 32.199999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 42.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.8999999996740371,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.19999999995343387,
+                "selectReadingSupports": 1
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 33.800000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 96.39999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 1,
+                "totalMs": 94,
+                "maxMs": 94
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 1.1000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 92.2000000004191,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 38.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999999534339,
+                "validateReadingSupports": 0.9000000001396984,
+                "fingerprintSourceText": 0.19999999995343387,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 32.60000000032596,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 33.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 27.199999999487773,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 44.10000000009313,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.40000000037252903,
+                "validateReadingSupports": 0.49999999976716936,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 39.99999999976717,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 39.5999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.20000000018626451,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 36.10000000032596,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 36.89999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999999534339,
+                "validateReadingSupports": 0.5,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 32.89999999944121,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 39.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.7000000001862645,
+                "validateReadingSupports": 0.5999999998603016,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 35.60000000009313,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 79.80000000004657,
+            "metrics": {
+              "longTasks": {
+                "count": 1,
+                "totalMs": 79,
+                "maxMs": 79
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 76.20000000018626,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 35,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 0.6999999999534339,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.49999999976716936
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 32.59999999962747,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 37,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 33.6999999997206,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 43.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 0.5000000002328306,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 39.5,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 49.9000000001397,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2,
+                "domParses": 1198
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 45.39999999990687,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          }
+        ],
+        [
+          {
+            "wallMs": 19.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 2.200000000419095,
+                "validateReadingSupports": 0.8999999996740371,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 16,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 17.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000003259629,
+                "validateReadingSupports": 0.8000000000465661,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 14.200000000651926,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 20.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 17.5999999998603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 24.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000003259629,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 21.09999999962747,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.099999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.5999999998603016,
+                "fingerprintSourceText": 0.19999999995343387,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 11.199999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.5000000002328306,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 11.799999999813735,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.099999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.2999999998137355,
+                "validateReadingSupports": 0.6999999997206032,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5000000002328306
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.799999999813735,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.7999999993480742,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 12.100000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 12.099999999627471,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 25.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000003259629,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 11.599999999627471,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 29.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.2999999998137355,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 11.399999999674037,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 17.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.7000000001862645,
+                "validateReadingSupports": 0.5000000002328306,
+                "fingerprintSourceText": 0.20000000018626451,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 14.299999999813735,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 0.5000000002328306,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 9.800000000745058,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 26.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 0.5999999998603016,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.6999999997206032
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.199999999720603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 21.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.5999999998603016,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.8000000002793968
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 12.400000000372529,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.600000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.599999999627471,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.09999999986030161,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 12.000000000465661,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.49999999976716936,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.599999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 29.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.8999999999068677,
+                "validateReadingSupports": 0.7000000001862645,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 17.200000000186265,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 23.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.49999999976716936
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 11.399999999674037,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 12.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.20000000018626451,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 8.599999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 17,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.699999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6999999999534339,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 8.99999999976717,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 18.4000000001397,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.6000000000931323,
+                "fingerprintSourceText": 0.20000000018626451,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.40000000060536,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 8,
+                "validateReadingSupports": 2,
+                "fingerprintSourceText": 3,
+                "selectReadingSupports": 2
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.6000000000931323,
+                "validateReadingSupports": 0.5,
+                "fingerprintSourceText": 0.10000000009313226,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.799999999813735,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          }
+        ]
+      ],
+      "cleanup": [
+        {
+          "longTasks": {
+            "count": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          },
+          "audioStarts": 0,
+          "playingAudio": 0,
+          "counts": {
+            "getSourceSnapshot": 8,
+            "validateReadingSupports": 2,
+            "fingerprintSourceText": 3,
+            "selectReadingSupports": 2,
+            "domParses": 1198
+          },
+          "milliseconds": {
+            "getSourceSnapshot": 0.39999999990686774,
+            "validateReadingSupports": 0.6000000000931323,
+            "fingerprintSourceText": 0.10000000009313226,
+            "selectReadingSupports": 0.6000000000931323
+          },
+          "activeMutationObservers": 1,
+          "commits": 1,
+          "commitMs": 45.39999999990687,
+          "outstandingTimers": 0,
+          "outstandingFrames": 0,
+          "ranges": 0
+        },
+        {
+          "longTasks": {
+            "count": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          },
+          "audioStarts": 0,
+          "playingAudio": 0,
+          "counts": {
+            "getSourceSnapshot": 8,
+            "validateReadingSupports": 2,
+            "fingerprintSourceText": 3,
+            "selectReadingSupports": 2
+          },
+          "milliseconds": {
+            "getSourceSnapshot": 0.6000000000931323,
+            "validateReadingSupports": 0.5,
+            "fingerprintSourceText": 0.10000000009313226,
+            "selectReadingSupports": 0.5999999998603016
+          },
+          "activeMutationObservers": 1,
+          "commits": 1,
+          "commitMs": 10.799999999813735,
+          "outstandingTimers": 0,
+          "outstandingFrames": 0,
+          "ranges": 0
+        }
+      ]
+    },
+    {
+      "name": "original-supports-200",
+      "baseline": {
+        "samples": 24,
+        "medianPaintMs": 23.199999999953434,
+        "p95PaintMs": 36.700000000186265,
+        "medianRenderMs": 6.800000000512227,
+        "domParses": 0,
+        "totalRenderMs": 190.60000000032596
+      },
+      "candidate": {
+        "samples": 24,
+        "medianPaintMs": 23.300000000046566,
+        "p95PaintMs": 37.5,
+        "medianRenderMs": 6.099999999860302,
+        "domParses": 0,
+        "totalRenderMs": 160.1999999990221
+      },
+      "samples": [
+        [
+          {
+            "wallMs": 23.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 3.5,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 9.600000000325963,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.600000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.2999999998137355,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.800000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.5999999998603016,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.500000000232831,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 35.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.19999999995343387,
+                "validateReadingSupports": 0.5999999998603016,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 25.399999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 36.39999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 1.1999999999534339,
+                "validateReadingSupports": 0.5,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.699999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14.200000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.40000000037252903,
+                "validateReadingSupports": 0.5999999998603016,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 22.0999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.300000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 88.80000000004657,
+            "metrics": {
+              "longTasks": {
+                "count": 1,
+                "totalMs": 80,
+                "maxMs": 80
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.09999999986030161,
+                "validateReadingSupports": 0.9000000001396984,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.800000000512227,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.599999999860302,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5000000002328306,
+                "validateReadingSupports": 0.5,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.799999999580905,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 0.5999999998603016,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.7000000001862645,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 26.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.899999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.39999999990686774,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.599999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 19.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 0.8999999999068677,
+                "selectReadingSupports": 2.1000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 8.599999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 22.5999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.29999999958090484,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.8999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.800000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 22.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.29999999958090484,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.599999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 22.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.7000000001862645,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.899999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.499999999767169,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 36.700000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 8.300000000279397,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 23.600000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.499999999767169,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31.100000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.7000000001862645,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 31.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 1.1999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 14.100000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15.400000000139698,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.499999999534339,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 19.600000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 1.1999999999534339,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.399999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 20.200000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.2999999998137355,
+                "validateReadingSupports": 0.7999999998137355,
+                "selectReadingSupports": 1.3999999999068677
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.6000000005587935,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          }
+        ],
+        [
+          {
+            "wallMs": 15.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.5,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.899999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 28.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.19999999995343387,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.600000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 24.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.300000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 14,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.8999999999068677,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.099999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.700000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.19999999995343387,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.7999999998137355
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.499999999534339,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 18.0999999998603,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.099999999860302,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 19.100000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.19999999995343387,
+                "validateReadingSupports": 0.5999999998603016,
+                "selectReadingSupports": 1.0999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.300000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.399999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.600000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 20.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 17.800000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 1.8000000000465661,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 0.7000000001862645
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.399999999906868,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 23.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.5
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 10.199999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 30.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.2999999998137355,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 23.899999999906868,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.2999999998137355,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.600000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 32,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5,
+                "validateReadingSupports": 10.399999999906868,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 15.800000000046566,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 24.300000000046566,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.100000000093132,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 22.600000000093132,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 0.8000000000465661,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.7999999998137355,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 33,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.4000000001396984,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.5,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 22.199999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.3000000002793968,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 7.699999999953434,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 13.699999999953434,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.5999999998603016,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.5999999998603016
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.999999999767169,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 15,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.10000000009313226,
+                "validateReadingSupports": 0.7000000001862645,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.199999999720603,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 29.700000000186265,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.30000000004656613,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.899999999674037,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 39.39999999990687,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.09999999986030161,
+                "validateReadingSupports": 0.5999999998603016,
+                "selectReadingSupports": 0.6000000000931323
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.400000000372529,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 37.5,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.49999999976716936,
+                "validateReadingSupports": 0.6000000000931323,
+                "selectReadingSupports": 0.6999999999534339
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 5.400000000372529,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          },
+          {
+            "wallMs": 37,
+            "metrics": {
+              "longTasks": {
+                "count": 0,
+                "totalMs": 0,
+                "maxMs": 0
+              },
+              "audioStarts": 0,
+              "playingAudio": 0,
+              "counts": {
+                "getSourceSnapshot": 4,
+                "validateReadingSupports": 1,
+                "selectReadingSupports": 1,
+                "textContentReads": 1,
+                "textContentChars": 21000
+              },
+              "milliseconds": {
+                "getSourceSnapshot": 0.20000000018626451,
+                "validateReadingSupports": 0.6999999999534339,
+                "selectReadingSupports": 0.8000000000465661
+              },
+              "activeMutationObservers": 1,
+              "commits": 1,
+              "commitMs": 6.5,
+              "outstandingTimers": 0,
+              "outstandingFrames": 0
+            }
+          }
+        ]
+      ],
+      "cleanup": [
+        {
+          "longTasks": {
+            "count": 0,
+            "totalMs": 0,
+            "maxMs": 0
+          },
+          "audioStarts": 0,
+          "playingAudio": 0,
+          "counts": {
+            "getSourceSnapshot": 4,
+            "validateReadingSupports": 1,
+            "selectReadingSupports": 1,
+            "textContentReads": 1,
+            "textContentChars": 21000
+          },
+          "milliseconds": {
+            "getSourceSnapshot": 0.2999999998137355,
+            "validateReadingSupports": 0.7999999998137355,
+            "selectReadingSupports": 1.3999999999068677
+          },
+          "activeMutationObservers": 1,
+          "commits": 1,
+          "commitMs": 7.6000000005587935,
+          "outstandingTimers": 0,
+          "outstandingFrames": 0,
+          "ranges": 0
+        },
+        {
+          "longTasks": {
+            "count": 1,
+            "totalMs": 58,
+            "maxMs": 58
+          },
+          "audioStarts": 0,
+          "playingAudio": 0,
+          "counts": {
+            "getSourceSnapshot": 4,
+            "validateReadingSupports": 1,
+            "selectReadingSupports": 1,
+            "textContentReads": 1,
+            "textContentChars": 21000
+          },
+          "milliseconds": {
+            "getSourceSnapshot": 0.20000000018626451,
+            "validateReadingSupports": 0.6999999999534339,
+            "selectReadingSupports": 0.8000000000465661
+          },
+          "activeMutationObservers": 1,
+          "commits": 1,
+          "commitMs": 6.5,
+          "outstandingTimers": 0,
+          "outstandingFrames": 0,
+          "ranges": 0
+        }
+      ]
+    }
+  ]
+}

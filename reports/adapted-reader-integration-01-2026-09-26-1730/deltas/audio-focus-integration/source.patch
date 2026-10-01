@@ -1,0 +1,42 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -4372,8 +4372,16 @@
+       } finally {
+         if (deviceAudioSaveRef.current === request) { deviceAudioSaveRef.current = null; setDeviceAudioSaveBusy(false); }
+       }
+     }
++    var reviewAudioFocusRef = React.useRef(null);
++    React.useLayoutEffect(function () {
++      const previous = reviewAudioFocusRef.current;
++      if (previous && !previous.isConnected) {
++        reviewAudioFocusRef.current = null;
++        if (!document.activeElement || document.activeElement === document.body) editAudioToggleRef.current?.focus();
++      }
++    });
+     function deviceAudioReviewRow() {
+       var state = ttsPrepState.busy ? 'preparing' : deviceAudio?.state || 'unverified';
+       var playbackLabel = reviewAudio?.unavailable ? viewText('simplified.review_audio_unavailable', 'Audio status unavailable') : reviewAudio?.ready === reviewAudio?.total ? viewText('simplified.review_audio_ready', 'Audio prepared') : reviewAudio?.ready ? viewText('simplified.review_audio_partial', 'Audio partly prepared') : viewText('simplified.review_audio_none', 'Audio not prepared');
+       var playbackDetail = viewText('simplified.review_audio_current_detail', '{ready} of {total} sentence clips ready for these settings on this device.', { ready: reviewAudio?.ready || 0, total: reviewAudio?.total || 0 });
+@@ -4385,9 +4393,9 @@
+       if (omitted) detail += ' ' + viewText('simplified.offline_audio_pictures', 'Support pictures omitted from the device save: {count}.', { count: omitted });
+       return { key: 'audio', tone: state === 'ready' && !omitted ? 'ok' : state === 'session-only' || state === 'failed' || omitted ? 'attention' : 'neutral',
+         label: playbackLabel + ' · ' + viewText('simplified.offline_audio_' + label[0], label[1]), detail: playbackDetail + ' ' + detail,
+         actions: [
+-          state === 'preparing' && ['audio-stop', viewText('simplified.save_audio_stop', 'Stop saving audio'), () => { ttsPrepRequestRef.current?.controller?.abort(); window.__alloCancelPrepareReadAloud?.(); }],
++          state === 'preparing' && ['audio', viewText('simplified.save_audio_stop', 'Stop saving audio'), () => { ttsPrepRequestRef.current?.controller?.abort(); window.__alloCancelPrepareReadAloud?.(); }],
+           state !== 'preparing' && (deviceAudio?.nextActions?.includes('prepare-missing') || reviewAudio?.unavailable || reviewAudio?.ready < reviewAudio?.total) && ['audio', viewText('simplified.offline_audio_prepare_missing', 'Prepare missing audio'), handlePrepareReadAloudAudio],
+           state !== 'preparing' && deviceAudio?.sessionOnly > 0 && ['audio-retry-save', deviceAudioSaveBusy ? viewText('simplified.offline_audio_saving', 'Saving audio on this device…') : viewText('simplified.offline_audio_retry_save', 'Retry saving audio'), retryDeviceAudioSave],
+           state !== 'preparing' && !deviceAudio && ['audio-check', viewText('simplified.offline_audio_check_again', 'Check device save'), () => deviceAudioRefreshRef.current?.()],
+           deviceAudio?.protectedRecordings > 0 && ['audio-recordings', viewText('simplified.offline_audio_review_recordings', 'Review recordings'), () => { if (!editAudioOpen) handleToggleEditAudioPanel(); editAudioToggleRef.current?.focus(); }],
+@@ -4454,9 +4462,9 @@
+       ].filter(Boolean);
+       var tones = { ok: 'border-emerald-300 bg-emerald-50 text-emerald-900', attention: 'border-amber-400 bg-amber-50 text-amber-950', neutral: 'border-slate-300 bg-slate-50 text-slate-800' };
+       return <section data-teacher-review-summary aria-labelledby={readerId('simplified-review-summary-title')} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-3 text-left text-sm text-slate-800">
+         <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={readerId('simplified-review-summary-title')} className="text-base font-bold text-slate-900">{viewText('simplified.review_title', 'Before you share')}</h3><button type="button" data-student-preview-open onClick={event => { studentPreviewOpener.current = event.currentTarget; previewSessionRef.current += 1; setStudentPreview(captureReadingPreview(props)); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{viewText('simplified.layout_preview_open', 'Preview reading layout')}</button></div>
+-        <ul className="mt-2 grid gap-2 sm:grid-cols-3">{rows.map(row => <li key={row.key} data-review-state={row.key} data-review-tone={row.tone} className={'rounded-xl border p-2 ' + tones[row.tone]}><p className="font-bold">{row.label}</p><p className="mt-0.5 text-xs">{row.detail}</p><div className="mt-1 flex flex-wrap gap-x-3">{row.actions.filter(Boolean).map(([key, label, run]) => <button key={key} type="button" data-review-action={key} onClick={run} className="min-h-11 rounded px-1 text-sm font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label}</button>)}</div></li>)}</ul>
++        <ul className="mt-2 grid gap-2 sm:grid-cols-3">{rows.map(row => <li key={row.key} data-review-state={row.key} data-review-tone={row.tone} className={'rounded-xl border p-2 ' + tones[row.tone]}><p className="font-bold">{row.label}</p><p className="mt-0.5 text-xs">{row.detail}</p><div className="mt-1 flex flex-wrap gap-x-3">{row.actions.filter(Boolean).map(([key, label, run]) => <button key={key} type="button" data-review-action={key} aria-busy={key === 'audio-retry-save' && deviceAudioSaveBusy ? true : undefined} aria-disabled={key === 'audio-retry-save' && deviceAudioSaveBusy ? true : undefined} onClick={event => { if (row.key === 'audio' && document.activeElement === event.currentTarget) reviewAudioFocusRef.current = event.currentTarget; run(); }} className="min-h-11 rounded px-1 text-sm font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label}</button>)}</div></li>)}</ul>
+       </section>;
+     }
+     // A local layout snapshot; delivered-lesson fidelity belongs to packet preview.
+     function renderStudentPreview() {

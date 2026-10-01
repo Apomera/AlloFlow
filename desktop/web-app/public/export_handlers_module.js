@@ -3081,17 +3081,25 @@
         return false;
       }
       const data = prepared.resource.data;
-      const mode = isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher';
+      const savedMode = generatedContent && generatedContent.config && generatedContent.config.generationInputs ? generatedContent.config.generationInputs.mode : null;
+      const mode = savedMode === 'study' ? 'student' : savedMode === 'family' ? 'parent' : savedMode === 'teacher' ? 'teacher' : isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher';
+      const criterionText = entry => entry && typeof entry === 'object' && !Array.isArray(entry) && typeof entry.statement === 'string' ? entry.statement.trim() : (typeof entry === 'string' ? entry.trim() : '');
+      const stemRegistry = Array.isArray(window.STEM_TOOL_REGISTRY) ? window.STEM_TOOL_REGISTRY : [];
       const lines = [tr('lesson_plan.header_title', 'Lesson Plan'), tr('lesson_plan.topic_label', 'Topic') + ': ' + (prepared.topic || tr('lesson_plan.grade_not_recorded', 'Not recorded')), tr('lesson_plan.grade_label', 'Grade') + ': ' + (prepared.grade || tr('lesson_plan.grade_not_recorded', 'Not recorded')), ''];
       const section = (label, content) => { if (content) lines.push(label + ':', content, ''); };
       const numbered = values => values.map((value, index) => (index + 1) + '. ' + value).join('\n');
       section(tr('lesson_plan.materials_header', 'Materials Needed'), data.materialsNeeded.map(value => '• ' + value).join('\n'));
       section(tr('lesson_headers.' + mode + '.essentialQuestion', 'Essential Question'), data.essentialQuestion);
       section(tr('lesson_headers.' + mode + '.objectives', 'Objectives'), numbered(data.objectives));
+      section(tr('lesson_headers.success_criteria', 'Success criteria'), (Array.isArray(data.successCriteria) ? data.successCriteria : []).map(criterionText).filter(Boolean).map(value => '• ' + value).join('\n'));
       for (const [key, fallback] of [['hook','Hook'],['directInstruction','Direct Instruction'],['guidedPractice','Guided Practice'],['independentPractice','Independent Practice'],['closure','Closure & Assessment']]) section(tr('lesson_headers.' + mode + '.' + key, fallback), data[key]);
       section(tr('lesson_plan.activities_header', 'Activities'), data.activities.map((activity, index) => [(index + 1) + '. ' + (activity.title || tr('lesson_plan.activities_header', 'Activity')), activity.description, activity.duration].filter(Boolean).join('\n')).join('\n\n'));
       section(tr('lesson_plan.assessment_header', 'Assessment'), data.assessmentIdeas.map(value => '• ' + value).join('\n'));
       section(tr('lesson_headers.extensions_header', 'Extensions'), (data.extensions || []).map((extension, index) => typeof extension === 'string' ? (index + 1) + '. ' + extension : [(index + 1) + '. ' + (extension.title || tr('lesson_headers.extension_idea_fallback', 'Extension Idea')), extension.description, extension.guide ? tr('lesson_headers.teacher_guide_header', 'Teacher Guide') + ':\n' + extension.guide : ''].filter(Boolean).join('\n')).join('\n\n'));
+      section(tr('lesson_plan.stem_tools_header', 'Recommended STEAM Lab Tools'), (Array.isArray(data.recommendedStemTools) ? data.recommendedStemTools : []).filter(tool => tool && typeof tool === 'object' && typeof tool.id === 'string').map(tool => {
+        const meta = stemRegistry.find(entry => entry && typeof entry.id === 'string' && entry.id.toLowerCase() === tool.id.toLowerCase());
+        return ['• ' + (meta && meta.name ? meta.name : tool.id), typeof tool.rationale === 'string' ? tool.rationale : '', typeof tool.suggestedActivity === 'string' ? tool.suggestedActivity : ''].filter(Boolean).join('\n');
+      }).join('\n'));
       await navigator.clipboard.writeText(lines.join('\n').trim() + '\n');
       if (addToast) addToast(tr('toasts.copied_to_clipboard', 'Copied to clipboard.'), 'success');
       return true;

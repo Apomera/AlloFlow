@@ -8,7 +8,9 @@ function createReadingPlaceStore(options) {
   var fields = ['mainIdea', 'support', 'confusing', 'confusingNote'];
   var maxChars = options.maxChars || 1500000;
   var maxAnswerChars = options.maxAnswerChars || 16000;
-  var maxRecords = options.maxRecords || 80;
+  var maxRecords = options.maxRecords || 400;
+  // Answers and bookmarks untouched this long may make room on a full device.
+  var staleWorkMs = options.staleWorkMs || 180 * 24 * 60 * 60 * 1000;
   var maxEmptyEntries = Number.isSafeInteger(options.maxEmptyEntries) && options.maxEmptyEntries > 0 ? options.maxEmptyEntries : 20;
   var now = options.now || Date.now;
   var object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -19,10 +21,17 @@ function createReadingPlaceStore(options) {
   var memoryKey = scope => JSON.stringify([scope.learner || '', scope.itemId, scope.fingerprint, scope.text]);
   var hasWork = row => !!row && (!!row.bookmark || Object.values(row.responses || {}).some(answer => fields.some(field => !!answer[field])));
   var authoredToken = row => JSON.stringify(row ? { responses: row.responses || {}, bookmark: row.bookmark || null } : null);
+  // The key holds the text's FNV-1a hash and length; this second, independent
+  // hash tells versions apart without storing the text in every row.
+  var textCheck = text => {
+    var a = 5381, b = 0x9e3779b9;
+    for (var i = 0; i < text.length; i++) { var c = text.charCodeAt(i); a = Math.imul(a, 33) ^ c; b = Math.imul(b ^ c, 0x85ebca6b); b ^= b >>> 13; }
+    return 'c1-' + (a >>> 0).toString(16) + '-' + (b >>> 0).toString(16);
+  };
   function normalize(value) {
     var bad = !object(value), row = { responses: {} };
     if (bad) return { row: null, bad: true };
-    for (var name of ['paragraph', 'snippet', 'resume', 'at', 'bookmark', 'responses', 'sourceText', 'revision']) {
+    for (var name of ['paragraph', 'snippet', 'resume', 'at', 'bookmark', 'responses', 'sourceText', 'sourceCheck', 'revision']) {
       if (!Object.prototype.hasOwnProperty.call(value, name)) continue;
       var v = value[name];
       if (name === 'responses') {
@@ -50,10 +59,15 @@ function createReadingPlaceStore(options) {
       if (raw && raw.length > maxChars) return { rows: {}, reason: 'too-large', problem: { kind: 'store-size', length: raw.length, limit: maxChars } };
       var all = raw == null ? {} : JSON.parse(raw);
       if (!object(all)) return { rows: {}, reason: 'corrupt-store' };
-      var rows = Object.create(null), bad = false;
-      Object.keys(all).forEach(key => { var checked = normalize(all[key]); if (checked.row) rows[key] = checked.row; bad = bad || checked.bad; });
-      return { rows, all, storage, reason: bad ? 'corrupt-store' : null };
+      // A damaged row blocks only the reader it belongs to (see problemFor); it
+      // stays byte-for-byte for repair, and other learners keep saving.
+      var rows = Object.create(null), damaged = Object.create(null);
+      Object.keys(all).forEach(key => { var checked = normalize(all[key]); if (checked.row) rows[key] = checked.row; if (checked.bad) damaged[key] = true; });
+      return { rows, all, storage, damaged, reason: null };
     } catch (error) { return { rows: {}, reason: error && error.name === 'SyntaxError' ? 'corrupt-store' : 'denied' }; }
+  }
+  function problemFor(loaded, scope) {
+    return loaded.reason || (loaded.damaged && loaded.damaged[keyOf(scope)] ? 'corrupt-store' : null);
   }
   function flatten(row) {
     var flat = {};
@@ -90,6 +104,9 @@ function createReadingPlaceStore(options) {
     return [...entry.dirty].some(key => key !== 'position' && !equal(local[key] || null, base[key] || null));
   }
   function hasUnsavedWork() { return [...entries.values()].some(needsRecovery); }
+  // Unnamed learners share one page scope; a new learner on the page (or "Clear my
+  // reading work") drops that page-only work. Named learners are untouched.
+  function forgetAnonymous() { [...entries.keys()].forEach(key => { if (!entries.get(key).scope.learner) entries.delete(key); }); syncGuard(); }
   function hasSessionWork(learner) { return [...entries.values()].some(entry => entry.scope.learner === learner && (hasWork(entry.draft) || entry.recoveryCopies.length || needsRecovery(entry))); }
   function guardLeaving(event) {
     if (!hasUnsavedWork()) return;
@@ -116,7 +133,9 @@ function createReadingPlaceStore(options) {
       .filter(entry => entry.scope.learner === learner && (hasWork(entry.draft) || entry.recoveryCopies.length || needsRecovery(entry)))
       .map(entry => ({ scope: copy(entry.scope), place: copy(entry.draft), recoveryCopies: copy(entry.recoveryCopies), status: entry.status })) };
   }
-  function matching(row, scope) { return row && (row.sourceText === undefined || row.sourceText === scope.text); }
+  function matching(row, scope) {
+    return row && (row.sourceText !== undefined ? row.sourceText === scope.text : row.sourceCheck === undefined || row.sourceCheck === textCheck(String(scope.text || '')));
+  }
   function trimEmptyEntries(current) {
     // Exact-text keys can be large. Bound only pristine, never-saved readings;
     // authored work, positions, pending writes, removals and recovery evidence
@@ -141,7 +160,7 @@ function createReadingPlaceStore(options) {
       var row = loaded.rows[keyOf(scope)];
       if (!matching(row, scope)) row = null;
       entry = { scope: { ...scope }, draft: copy(row) || { responses: {} }, base: copy(row), dirty: new Set(), revision: 0, generation: 0, recoveryCopies: [],
-        status: !scope.learner ? 'session-only' : loaded.reason ? 'failed' : row ? 'saved' : 'ready', reason: loaded.reason, problem: loaded.problem };
+        status: !scope.learner ? 'session-only' : problemFor(loaded, scope) ? 'failed' : row ? 'saved' : 'ready', reason: problemFor(loaded, scope), problem: loaded.problem };
       entries.set(key, entry);
     }
     // Map insertion order is the recency order for the disposable entries.
@@ -168,16 +187,16 @@ function createReadingPlaceStore(options) {
     if (remote) {
       var nextBase = flatten(remote);
       entry.dirty.forEach(key => { if (base[key] === undefined) delete nextBase[key]; else nextBase[key] = base[key]; });
-      entry.base = expand(nextBase, { at: remote.at, revision: remote.revision, sourceText: remote.sourceText });
+      entry.base = expand(nextBase, { at: remote.at, revision: remote.revision, sourceText: remote.sourceText, sourceCheck: remote.sourceCheck });
     }
-    entry.draft = expand(latest, { at: entry.dirty.size ? entry.draft.at : remote && remote.at, sourceText: entry.scope.text });
+    entry.draft = expand(latest, { at: entry.dirty.size ? entry.draft.at : remote && remote.at, sourceCheck: textCheck(String(entry.scope.text || '')) });
     return !conflict;
   }
   function load(scope) {
     var entry = entryFor(scope), loaded = scope.learner ? read() : { rows: {} };
     var own = loaded.rows[keyOf(scope)];
     if (scope.learner) {
-      if (loaded.reason) fail(entry, loaded.reason, loaded.problem);
+      if (problemFor(loaded, scope)) fail(entry, problemFor(loaded, scope), loaded.problem);
       else if (own && !matching(own, scope)) fail(entry, 'version-conflict');
       else if (!reconcile(entry, own)) fail(entry, 'conflict');
       else if (!entry.dirty.size) { entry.base = copy(own) || null; entry.status = own ? 'saved' : 'ready'; entry.reason = null; entry.problem = null; }
@@ -199,12 +218,12 @@ function createReadingPlaceStore(options) {
     Object.keys(patch.responses || {}).forEach(section => fields.forEach(field => {
       if (typeof patch.responses[section][field] === 'string') { var key = section + ':' + field; flat[key] = patch.responses[section][field]; entry.dirty.add(key); }
     }));
-    entry.draft = expand(flat, { at: now(), sourceText: entry.scope.text });
+    entry.draft = expand(flat, { at: now(), sourceCheck: textCheck(String(entry.scope.text || '')) });
     entry.revision++;
   }
   function commit(entry) {
     var loaded = read(), scope = entry.scope, key = keyOf(scope), remote = loaded.rows[key];
-    if (loaded.reason) return fail(entry, loaded.reason, loaded.problem);
+    if (problemFor(loaded, scope)) return fail(entry, problemFor(loaded, scope), loaded.problem);
     if (remote && !matching(remote, scope)) return fail(entry, 'version-conflict');
     if (!reconcile(entry, remote)) return fail(entry, 'conflict');
     for (var section of Object.keys(entry.draft.responses)) {
@@ -214,13 +233,24 @@ function createReadingPlaceStore(options) {
       }
     }
     var next = { ...entry.draft, at: now(), revision: (remote && remote.revision || 0) + 1 };
+    delete next.sourceText;
+    // A place alone needs no version check: Continue compares the paragraph text.
+    if (!hasWork(next)) delete next.sourceCheck;
     var all = { ...loaded.all, [key]: next }, keys = Object.keys(all);
-    var removable = keys.filter(other => other !== key && !hasWork(loaded.rows[other])).sort((a, b) => (loaded.rows[a].at || 0) - (loaded.rows[b].at || 0));
+    // Make room oldest first: places, then answers and bookmarks no one has
+    // touched for staleWorkMs. Recent work is never removed to make room.
+    var age = other => loaded.rows[other] ? loaded.rows[other].at || 0 : 0;
+    var keep = other => other === key || !!loaded.damaged[other];
+    var removable = keys.filter(other => !keep(other) && !hasWork(loaded.rows[other])).sort((a, b) => age(a) - age(b))
+      .concat(keys.filter(other => !keep(other) && hasWork(loaded.rows[other]) && typeof loaded.rows[other].at === 'number' && now() - age(other) >= staleWorkMs).sort((a, b) => age(a) - age(b)));
     while (keys.length > maxRecords && removable.length) { var old = removable.shift(); delete all[old]; keys = Object.keys(all); }
-    if (keys.length > maxRecords) return fail(entry, 'capacity');
+    // Blocked by others' work, not this reader's: say so (the fix differs).
+    var crowd = () => { var mine = keys.filter(other => other !== key && other.startsWith((scope.learner || '') + '|')).length; return { kind: 'store-crowded', own: mine, others: keys.length - 1 - mine }; };
+    if (keys.length > maxRecords) return fail(entry, 'capacity', crowd());
     try {
       var serialized = JSON.stringify(all);
-      if (serialized.length > maxChars) return fail(entry, 'too-large', { kind: 'store-size', length: serialized.length, limit: maxChars });
+      while (serialized.length > maxChars && removable.length) { delete all[removable.shift()]; keys = Object.keys(all); serialized = JSON.stringify(all); }
+      if (serialized.length > maxChars) return fail(entry, 'too-large', { ...crowd(), kind: 'store-size', length: serialized.length, limit: maxChars });
       loaded.storage.setItem(storageKey, serialized);
       entry.base = copy(next); entry.draft = copy(next); entry.dirty.clear(); entry.status = 'saved'; entry.reason = null; entry.problem = null;
       return result(entry);
@@ -250,7 +280,7 @@ function createReadingPlaceStore(options) {
   function review(scope) {
     if (!scope.learner) return null;
     var entry = entryFor(scope), loaded = read(), saved = loaded.rows[keyOf(scope)] || null;
-    if (loaded.reason) { fail(entry, loaded.reason, loaded.problem); return null; }
+    if (problemFor(loaded, scope)) { fail(entry, problemFor(loaded, scope), loaded.problem); return null; }
     if (saved && !matching(saved, scope)) { fail(entry, 'version-conflict'); return null; }
     reconcile(entry, saved);
     return { scopeKey: memoryKey(scope), token: authoredToken(saved), draftToken: authoredToken(entry.draft), draftRevision: entry.revision,
@@ -275,7 +305,7 @@ function createReadingPlaceStore(options) {
       if (!locks || typeof locks.request !== 'function') return Promise.resolve(fail(entry, 'coordination-unavailable'));
       return Promise.resolve(locks.request(storageKey, function () {
         var loaded = read(), saved = loaded.rows[keyOf(scope)] || null;
-        if (loaded.reason) return fail(entry, loaded.reason, loaded.problem);
+        if (problemFor(loaded, scope)) return fail(entry, problemFor(loaded, scope), loaded.problem);
         if (saved && !matching(saved, scope)) return fail(entry, 'version-conflict');
         // Compare the reviewed snapshot inside the same lock as the write.
         // A new remote edit or newly typed local text requires another review.
@@ -309,7 +339,7 @@ function createReadingPlaceStore(options) {
       var key = keyOf(scope);
       if (!Object.prototype.hasOwnProperty.call(all, key)) return null;
       var original = all[key], checked = normalize(original);
-      if (object(original) && original.sourceText !== undefined && original.sourceText !== scope.text) { fail(entry, 'version-conflict'); return null; }
+      if (object(original) && !matching(original, scope)) { fail(entry, 'version-conflict'); return null; }
       return { scopeKey: memoryKey(scope), token: JSON.stringify(original), draftToken: authoredToken(entry.draft),
         place: checked.row, corrupt: checked.bad, characters: JSON.stringify(original).length };
     } catch (error) { fail(entry, error?.name === 'SyntaxError' ? 'corrupt-store' : 'denied'); return null; }
@@ -359,7 +389,8 @@ function createReadingPlaceStore(options) {
         if (action === 'remove') delete all[key];
         else {
           if (!fresh.corrupt) return fail(entry, 'review-changed');
-          next = { ...next, sourceText: scope.text, revision: (next.revision || 0) + 1, at: now() };
+          next = { ...next, sourceCheck: textCheck(String(scope.text || '')), revision: (next.revision || 0) + 1, at: now() };
+          delete next.sourceText;
           all[key] = next;
         }
         // Removal may reduce an already oversized store. Do not forbid recovery.
@@ -383,5 +414,5 @@ function createReadingPlaceStore(options) {
       })).catch(error => fail(entry, error?.name === 'QuotaExceededError' ? 'quota' : 'unavailable'));
     } catch (_) { return Promise.resolve(fail(entry, 'unavailable')); }
   }
-  return { key: storageKey, load, save, review, resolve, reviewRecovery, changeRecovery, inspectSaved, manageSaved, watchPage, hasUnsavedWork, hasSessionWork, exportSession, peek: scope => result(entryFor(scope)) };
+  return { key: storageKey, load, save, review, resolve, reviewRecovery, changeRecovery, inspectSaved, manageSaved, watchPage, hasUnsavedWork, hasSessionWork, exportSession, forgetAnonymous, peek: scope => result(entryFor(scope)) };
 }

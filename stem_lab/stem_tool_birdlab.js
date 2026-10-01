@@ -8003,7 +8003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── WEATHER + BIRDING — how weather influences bird behavior
   var WEATHER_BIRDING = [
     { weather: 'Stormy front passing',
-      birds: 'Hawkwatching peaks on cold fronts (Sept–Oct) — broadwings ride leading-edge thermals south. Songbird migration "fallout" can occur — birds blown down + concentrated in coastal stopover sites.',
+      birds: 'Hawkwatching peaks on the clear, northwest-wind days after a cold front passes (Sept–Oct): Broad-winged Hawks ride the thermals that build in the cool, dry air behind it. Where rain along the front meets night migrants, songbirds are forced down and crowd into coastal stopover sites (a "fallout").',
       where_to_go: 'Cadillac Mountain Hawk Watch (Acadia) on a clear, north-wind September morning after a cold front. Coastal stopover sites for fallout migrants — Acadia, Petit Manan.' },
     { weather: 'High pressure + calm sunny',
       birds: 'Bird activity high in morning + evening; slows at midday. Singing peaks dawn + dusk.',
@@ -8033,6 +8033,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       birds: 'Fall migration peaks on northwest wind nights. Hawks soar to thermals during NW-wind day.',
       where_to_go: 'Hawkwatches + coastal lookouts on clear Sept morning after NW-wind night.' }
   ];
+
+  // ── WX_ART — a fall cold front on a weather map, seen from above. The front
+  // runs southwest-northeast and moves southeast. Behind it: clear, cool air on
+  // northwest winds, thermals, hawks. Along it: rain that forces night
+  // migrants down (a fallout). Ahead of it: warm south-southwest winds, head
+  // winds for birds bound south, so few migrants move.
+  var WX_ART = (function() {
+    var W = 600, H = 330;
+    // Front line from (A) in the southwest to (B) in the northeast.
+    var A = [90, 330], B = [510, 0];
+    function side(x, y) { return (B[0] - A[0]) * (y - A[1]) - (B[1] - A[1]) * (x - A[0]); }
+    function vec(deg, r) { var a = deg * Math.PI / 180; return [Math.sin(a) * r, -Math.cos(a) * r]; }
+    function arrow(h, x, y, fromDeg, len, color, key) {
+      var t = vec(fromDeg + 180, len / 2), x1 = x - t[0], y1 = y - t[1], x2 = x + t[0], y2 = y + t[1];
+      var u = vec(fromDeg + 180, 1), n = [-u[1], u[0]], hb = [x2 - u[0] * 9, y2 - u[1] * 9];
+      return h('g', { key: key, 'data-wx-wind': fromDeg, 'data-wx-at': x + ',' + y },
+        h('path', { d: 'M ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' L ' + hb[0].toFixed(1) + ' ' + hb[1].toFixed(1), stroke: color, strokeWidth: 3.5, strokeLinecap: 'round' }),
+        h('path', { d: 'M ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' L ' + (hb[0] + n[0] * 6).toFixed(1) + ' ' + (hb[1] + n[1] * 6).toFixed(1) + ' L ' + (hb[0] - n[0] * 6).toFixed(1) + ' ' + (hb[1] - n[1] * 6).toFixed(1) + ' Z', fill: color }));
+    }
+    // A soaring hawk seen head-on: flat, broad wings.
+    var HAWK = 'M -12 1 Q -6 -3 0 0 Q 6 -3 12 1 L 12 2.4 Q 6 -1 0 2 Q -6 -1 -12 2.4 Z';
+    function cloud(h, x, y, s, key) {
+      return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + s + ')' },
+        h('path', { d: 'M -18 6 Q -20 -4 -10 -5 Q -6 -14 4 -11 Q 12 -16 16 -6 Q 24 -4 20 6 Z', fill: '#fff', stroke: '#94a3b8', strokeWidth: 1 }));
+    }
+    function draw(h, L) {
+      var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: '#ecfccb' })];
+      // Cool air behind (northwest side), warm air ahead (southeast side).
+      kids.push(h('path', { key: 'cool', d: 'M 0 0 L ' + B[0] + ' 0 L ' + A[0] + ' ' + H + ' L 0 ' + H + ' Z', fill: '#dbeafe', 'data-wx-side': 'behind' }));
+      kids.push(h('path', { key: 'warm', d: 'M ' + B[0] + ' 0 L ' + W + ' 0 L ' + W + ' ' + H + ' L ' + A[0] + ' ' + H + ' Z', fill: '#fef3c7', 'data-wx-side': 'ahead' }));
+      // Rain band along the front, on its leading side.
+      var rain = [];
+      for (var i = 0; i < 26; i++) {
+        var f = (i + 0.5) / 26, x = A[0] + (B[0] - A[0]) * f + 14 + (i % 3) * 7, y = A[1] + (B[1] - A[1]) * f + 6 + (i % 2) * 6;
+        rain.push(h('path', { key: 'rn' + i, d: 'M ' + x.toFixed(1) + ' ' + y.toFixed(1) + ' l -3 7', stroke: '#15803d', strokeWidth: 1.6, strokeLinecap: 'round' }));
+      }
+      kids.push(h('g', { key: 'rain', 'data-wx-rain': 'true' }, rain));
+      // The front with its triangles pointing the way it moves.
+      kids.push(h('path', { key: 'front', d: 'M ' + A[0] + ' ' + A[1] + ' L ' + B[0] + ' ' + B[1], stroke: '#1d4ed8', strokeWidth: 3.5, 'data-wx-front': 'true' }));
+      var dir = vec(135, 1), ux = (B[0] - A[0]), uy = (B[1] - A[1]), ul = Math.sqrt(ux * ux + uy * uy);
+      for (var k = 1; k < 8; k++) {
+        var fx = A[0] + ux * k / 8, fy = A[1] + uy * k / 8, px = ux / ul * 9, py = uy / ul * 9;
+        kids.push(h('path', { key: 'tri' + k, d: 'M ' + (fx - px).toFixed(1) + ' ' + (fy - py).toFixed(1) + ' L ' + (fx + px).toFixed(1) + ' ' + (fy + py).toFixed(1) + ' L ' + (fx + dir[0] * 12).toFixed(1) + ' ' + (fy + dir[1] * 12).toFixed(1) + ' Z', fill: '#1d4ed8', 'data-wx-tri': 'true' }));
+      }
+      kids.push(h('g', { key: 'mv', 'data-wx-motion': '135' }, arrow(h, 398, 228, 315, 44, '#1e3a8a', 'mva')));
+      kids.push(h('text', { key: 'mvt', x: 420, y: 262, fontSize: 11, fontWeight: 700, fill: '#1e3a8a' }, L.moves));
+      // Winds.
+      [[70, 118], [180, 104], [40, 196]].forEach(function(p, i) { kids.push(arrow(h, p[0], p[1], 315, 46, '#2563eb', 'wb' + i)); });
+      [[548, 190], [470, 300], [560, 290]].forEach(function(p, i) { kids.push(arrow(h, p[0], p[1], 200, 46, '#b45309', 'wa' + i)); });
+      // Clear-air cumulus and a hawk kettle behind the front.
+      kids.push(cloud(h, 250, 50, 0.9, 'c1'), cloud(h, 120, 170, 1, 'c2'));
+      var kettle = [];
+      kettle.push(h('ellipse', { key: 'ring', cx: 118, cy: 250, rx: 30, ry: 16, fill: 'none', stroke: '#78350f', strokeWidth: 1.2, strokeDasharray: '3 3' }));
+      for (var j = 0; j < 5; j++) { var a = j * 72 * Math.PI / 180; kettle.push(h('path', { key: 'hk' + j, d: HAWK, transform: 'translate(' + (118 + Math.cos(a) * 30).toFixed(1) + ' ' + (250 + Math.sin(a) * 16).toFixed(1) + ')', fill: '#78350f' })); }
+      kids.push(h('g', { key: 'kettle', 'data-wx-kettle': '118,250' }, kettle));
+      // Songbirds dropping out of the rain.
+      kids.push(h('g', { key: 'fall', 'data-wx-fallout': '300,196' },
+        [0, 1, 2].map(function(k) { return h('path', { key: 'sb' + k, d: 'M ' + (292 + k * 12) + ' ' + (186 + k * 6) + ' q 4 -4 8 0 q 4 -4 8 0', stroke: '#0f172a', strokeWidth: 1.6, fill: 'none' }); }),
+        h('path', { d: 'M 306 206 v 14 l -4 -6 m 4 6 l 4 -6', stroke: '#0f172a', strokeWidth: 1.4, fill: 'none' })));
+      // Labels.
+      var lab = function(x, y, lines, color, anchor, key) {
+        return h('text', { key: key, x: x, y: y, textAnchor: anchor || 'start', fontSize: 11.5, fontWeight: 700, fill: color }, lines.map(function(t, i) { return h('tspan', { key: i, x: x, dy: i ? 14 : 0 }, t); }));
+      };
+      kids.push(lab(14, 22, L.behind, '#1e3a8a', 'start', 'lb'));
+      kids.push(lab(352, 150, L.fallout, '#14532d', 'start', 'lf'));
+      kids.push(lab(590, 92, L.ahead, '#92400e', 'end', 'la'));
+      kids.push(h('g', { key: 'n' }, h('path', { d: 'M 28 318 v -22 l -5 8 m 5 -8 l 5 8', stroke: '#334155', strokeWidth: 2, fill: 'none' }),
+        h('text', { x: 44, y: 314, fontSize: 11, fontWeight: 800, fill: '#334155' }, L.north)));
+      return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': L.label, 'data-wx-map': 'true', 'data-front': A.concat(B).join(','),
+        style: { width: '100%', maxWidth: 680, height: 'auto', display: 'block', margin: '0 auto', borderRadius: 10 } }, kids);
+    }
+    return { draw: draw, side: side };
+  })();
 
   // ── BIRDING FAQ
   var BIRDING_FAQ = [
@@ -8518,6 +8591,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       flight_use: 'In air: heavy flapping flight. Underwater: same wings propel deep dives. Compromise wing shape.',
       examples: 'Atlantic Puffin, Razorbill, Common Murre, Black Guillemot' }
   ];
+
+  // ── WINGLOAD — the Wing Loading Lab's birds and physics. Every preset is a
+  // measured bird: m = body mass (kg), b = wingspan (m), s = wing area (m²,
+  // both wings plus the body between them, Pennycuick's method), from
+  // Alerstam et al. 2007 (PLoS Biology 5: e197, Protocol S1). Maine has no
+  // soaring eagle or hawk in that table, so two measured European relatives
+  // stand in, named as such. The albatross is typical size (8.5 kg, 3.1 m)
+  // with the ~140 N/m² wing loading Pennycuick measured.
+  var WINGLOAD = (function() {
+    var G = 9.81, RHO = 1.225, CLMAX = 1.6;
+    var BIRDS = [
+      { id: 'barnSwallow', name: 'Barn Swallow', m: 0.016, b: 0.32, s: 0.0136, fly: 'agile', tip: 'pointed', how: 'Twists and swoops after flying insects, gliding between quick flaps.' },
+      { id: 'arcticTern', name: 'Arctic Tern', m: 0.110, b: 0.80, s: 0.0571, fly: 'agile', tip: 'pointed', how: 'Light, buoyant flapping; hovers over the water, then plunges for fish.' },
+      { id: 'starling', name: 'European Starling', m: 0.083, b: 0.38, s: 0.0244, fly: 'flapper', tip: 'pointed', how: 'Fast, direct flapping with short glides on triangular wings.' },
+      { id: 'redKnot', name: 'Red Knot', m: 0.128, b: 0.50, s: 0.0286, fly: 'flapper', tip: 'pointed', how: 'Fast, steady flapping for thousands of miles between stops.' },
+      { id: 'greatEgret', name: 'Great Egret', m: 0.888, b: 1.44, s: 0.2443, fly: 'flapper', tip: 'rounded', how: 'Slow, deep wingbeats with the neck folded back.' },
+      { id: 'peregrine', name: 'Peregrine Falcon', m: 0.789, b: 1.02, s: 0.1257, fly: 'flapper', tip: 'pointed', how: 'Fast, powerful flapping; folds its wings to dive on prey.' },
+      { id: 'raven', name: 'Common Raven', m: 1.149, b: 1.21, s: 0.2472, fly: 'soarer', tip: 'slotted', how: 'Flaps steadily, but also soars on rising air and rolls in play.' },
+      { id: 'herringGull', name: 'Herring Gull', m: 1.142, b: 1.34, s: 0.1968, fly: 'soarer', tip: 'pointed', how: 'Easy flapping and long glides; rides updrafts over cliffs, ships and warm land.' },
+      { id: 'buzzard', name: 'Common Buzzard', note: 'Europe; a hawk much like our Red-tailed Hawk', m: 0.885, b: 1.24, s: 0.2689, fly: 'soarer', tip: 'slotted', how: 'Circles on thermals; hangs in the wind over fields.' },
+      { id: 'wtEagle', name: 'White-tailed Eagle', note: 'Europe; the Bald Eagle\'s closest relative', m: 4.967, b: 2.18, s: 0.8824, fly: 'soarer', tip: 'slotted', how: 'Circles in rising warm air on broad, fingered wings, flapping little.' },
+      { id: 'mallard', name: 'Mallard', m: 1.082, b: 0.88, s: 0.1062, fly: 'fast', tip: 'pointed', how: 'Fast, whistling wingbeats; springs almost straight up off the water.' },
+      { id: 'canadaGoose', name: 'Canada Goose', m: 3.628, b: 1.69, s: 0.3717, fly: 'fast', tip: 'pointed', how: 'Strong, steady flapping, often in a V; takes a short run to lift off.' },
+      { id: 'eider', name: 'Common Eider', m: 2.015, b: 0.98, s: 0.1310, fly: 'fast', tip: 'pointed', how: 'Heavy, fast flapping in lines low over the waves.' },
+      { id: 'rtLoon', name: 'Red-throated Loon', m: 1.505, b: 1.04, s: 0.0890, fly: 'fast', tip: 'pointed', how: 'Fast, nonstop wingbeats; patters across the water to take off.' },
+      { id: 'albatross', name: 'Wandering Albatross', note: 'Southern Ocean', m: 8.5, b: 3.1, s: 0.60, fly: 'wind', tip: 'pointed', how: 'Glides for hours low over the waves on the wind (dynamic soaring), barely flapping.' }
+    ];
+    var FLY = ['agile', 'flapper', 'soarer', 'fast', 'wind'];
+    var COLORS = { agile: '#0e7490', flapper: '#6d28d9', soarer: '#b45309', fast: '#b91c1c', wind: '#1d4ed8' };
+    // Slider ranges: mass and wing area on log scales (a swallow and an eagle
+    // differ 300-fold), aspect ratio linear.
+    var RANGE = { mass: [5, 12000], area: [20, 10000], ar: [3, 18] };
+    function toPos(v, r) { return Math.round(1000 * Math.log(v / r[0]) / Math.log(r[1] / r[0])); }
+    function fromPos(p, r) { return r[0] * Math.pow(r[1] / r[0], p / 1000); }
+    // Span from area and aspect ratio (AR = span² / area); wing loading =
+    // weight / area; slowest flight = the speed where the wing's best lift
+    // (coefficient CLMAX, sea-level air) just equals the bird's weight.
+    function derive(massKg, areaM2, ar) {
+      var span = Math.sqrt(ar * areaM2), wl = massKg * G / areaM2;
+      return { span: span, chord: areaM2 / span, wl: wl, kgPerM2: massKg / areaM2, vmin: Math.sqrt(2 * wl / (RHO * CLMAX)) };
+    }
+    function preset(bird) { return { massG: bird.m * 1000, areaCm2: bird.s * 1e4, ar: bird.b * bird.b / bird.s }; }
+    function comma(n) { return String(n).replace(/(\d)(?=(\d{3})+$)/g, '$1,'); }
+    function fmtMass(g) { return g < 1000 ? comma(Math.round(g)) + ' g' : (g / 1000).toFixed(g < 10000 ? 2 : 1) + ' kg'; }
+    function fmtArea(cm2) { return comma(Math.round(cm2)) + ' cm²' + (cm2 >= 1000 ? ' (' + (cm2 / 1e4).toFixed(2) + ' m²)' : ''); }
+    function fill(t, v) { return String(t).split('{value1}').join(v[0]).split('{value2}').join(v[1]).split('{value3}').join(v[2]); }
+    function fmtLen(m) { return m < 1 ? Math.round(m * 100) + ' cm' : m.toFixed(2) + ' m'; }
+    // The wing seen from above, drawn to a real scale with a scale bar.
+    // Body length ~0.55 x mass^(1/3) (m, kg) fits swallows through albatrosses.
+    function planform(h, o, L) {
+      var dv = derive(o.massKg, o.areaM2, o.ar), bodyL = 0.55 * Math.cbrt(o.massKg), bodyW = bodyL * 0.2;
+      var px = Math.min(500 / dv.span, 150 / bodyL, 110 / dv.chord);
+      var half = dv.span / 2 * px, c = dv.chord * px, bl = bodyL * px, bw = bodyW * px;
+      var tip = o.tip || (o.ar >= 12 ? 'pointed' : (o.ar <= 6 ? 'slotted' : 'rounded'));
+      var wing = function(dir) {
+        var x0 = dir * bw * 0.4, x1 = dir * half, lead = -c * 0.45, trail = c * 0.55;
+        var d = 'M ' + x0.toFixed(1) + ' ' + lead.toFixed(1) + ' Q ' + (x0 + dir * half * 0.45).toFixed(1) + ' ' + (lead - c * 0.12).toFixed(1) + ' ' + (x1 - dir * c * 0.35).toFixed(1) + ' ' + (-c * 0.12).toFixed(1);
+        if (tip === 'pointed') d += ' L ' + x1.toFixed(1) + ' ' + (c * 0.05).toFixed(1);
+        else if (tip === 'slotted') {
+          for (var f = 0; f < 4; f++) {
+            var fy = -c * 0.12 + f * c * 0.18;
+            d += ' L ' + (x1 + dir * c * (0.34 - f * 0.05)).toFixed(1) + ' ' + fy.toFixed(1) + ' L ' + (x1 + dir * c * (0.3 - f * 0.05)).toFixed(1) + ' ' + (fy + c * 0.07).toFixed(1) + ' L ' + (x1 - dir * c * 0.04).toFixed(1) + ' ' + (fy + c * 0.1).toFixed(1);
+          }
+        } else d += ' Q ' + (x1 + dir * c * 0.15).toFixed(1) + ' ' + (c * 0.1).toFixed(1) + ' ' + (x1 - dir * c * 0.3).toFixed(1) + ' ' + (c * 0.28).toFixed(1);
+        return d + ' Q ' + (x0 + dir * half * 0.5).toFixed(1) + ' ' + (trail + c * 0.08).toFixed(1) + ' ' + x0.toFixed(1) + ' ' + trail.toFixed(1) + ' Z';
+      };
+      var NICE = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2], bar = NICE[0];
+      NICE.forEach(function(n) { if (n * px <= 170) bar = n; });
+      var motion = { agile: 'flapglide', flapper: 'flap', soarer: 'glide', fast: 'buzz', wind: 'glide' }[o.fly] || 'flap';
+      return h('svg', { viewBox: '0 0 600 220', width: '100%', role: 'img', 'data-birdlab-wing-planform': o.fly || 'custom', 'data-span-px': (2 * half).toFixed(2), 'data-px-per-m': px.toFixed(4), 'data-scale-m': bar,
+          'aria-label': fill(L.aria, [fmtLen(dv.span), fmtLen(dv.chord), L.tips[tip]]),
+          style: { display: 'block', borderRadius: 8, background: 'linear-gradient(180deg, #0c4a6e 0%, #155e75 55%, #164e63 100%)' } },
+        o.fly === 'soarer' ? h('g', { className: 'birdlab-wh-thermal', fill: 'none', stroke: '#fde68a', strokeWidth: 1.4, opacity: 0.35, strokeLinecap: 'round' },
+          h('path', { d: 'M 90 210 C 60 180 120 160 90 130 C 60 100 120 80 90 50' }), h('path', { d: 'M 510 210 C 480 180 540 160 510 130 C 480 100 540 80 510 50' })) : null,
+        o.fly === 'wind' || o.fly === 'fast' ? h('path', { d: 'M 0 198 Q 75 190 150 198 T 300 198 T 450 198 T 600 198 L 600 220 L 0 220 Z', fill: '#0e7490', opacity: 0.6 }) : null,
+        h('g', { className: 'birdlab-wh-streaks birdlab-wh-air-' + motion, stroke: '#e0f2fe', strokeWidth: 1.2, opacity: 0.3, strokeLinecap: 'round' },
+          h('path', { d: 'M 30 10 L 30 44 M 110 100 L 110 130 M 24 150 L 24 186 M 570 20 L 570 56 M 490 110 L 490 138 M 576 150 L 576 190' })),
+        h('g', { transform: 'translate(300 104)' },
+          h('g', { className: 'birdlab-wh-body birdlab-wh-' + motion },
+            h('g', { className: 'birdlab-wh-wings' },
+              h('path', { d: wing(-1), fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 1.2 }),
+              h('path', { d: wing(1), fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 1.2 })),
+            h('ellipse', { cx: 0, cy: (bl * 0.05).toFixed(1), rx: (bw / 2).toFixed(1), ry: (bl * 0.36).toFixed(1), fill: '#94a3b8', stroke: '#0f172a', strokeWidth: 1.2 }),
+            h('circle', { cx: 0, cy: (-bl * 0.36).toFixed(1), r: (bw * 0.42).toFixed(1), fill: '#cbd5e1', stroke: '#0f172a', strokeWidth: 1 }),
+            h('path', { d: 'M ' + (-bw * 0.45).toFixed(1) + ' ' + (bl * 0.36).toFixed(1) + ' L 0 ' + (bl * 0.6).toFixed(1) + ' L ' + (bw * 0.45).toFixed(1) + ' ' + (bl * 0.36).toFixed(1) + ' Z', fill: '#94a3b8', stroke: '#0f172a', strokeWidth: 1 }))),
+        h('g', { 'data-scale-bar': bar },
+          h('path', { d: 'M 16 206 h ' + (bar * px).toFixed(1) + ' M 16 201 v 10 M ' + (16 + bar * px).toFixed(1) + ' 201 v 10', stroke: '#fef9c3', strokeWidth: 2 }),
+          h('text', { x: 16, y: 196, fill: '#fef9c3', fontSize: 11, fontWeight: 700 }, fmtLen(bar))),
+        h('text', { x: 588, y: 18, textAnchor: 'end', fill: '#e0f2fe', fontSize: 11, fontWeight: 700 }, L.motion[motion]));
+    }
+    // The student's notebook: only the birds they have logged, placed by wing
+    // loading (log scale) and aspect ratio. Empty until something is logged.
+    function notebook(h, log, L) {
+      var X0 = 64, X1 = 584, Y0 = 16, Y1 = 214, lo = 5, hi = 300;
+      var X = function(wl) { return X0 + Math.log(wl / lo) / Math.log(hi / lo) * (X1 - X0); };
+      var Y = function(ar) { return Y1 - (ar - 3) / 15 * (Y1 - Y0); };
+      var kids = [h('rect', { key: 'bg', x: X0, y: Y0, width: X1 - X0, height: Y1 - Y0, fill: '#f8fafc', stroke: '#cbd5e1' })];
+      [10, 20, 50, 100, 200].forEach(function(v) {
+        kids.push(h('path', { key: 'gx' + v, d: 'M ' + X(v).toFixed(1) + ' ' + Y0 + ' V ' + Y1, stroke: '#e2e8f0' }));
+        kids.push(h('text', { key: 'tx' + v, x: X(v), y: Y1 + 14, textAnchor: 'middle', fontSize: 11, fill: '#334155' }, String(v)));
+      });
+      [5, 10, 15].forEach(function(v) {
+        kids.push(h('path', { key: 'gy' + v, d: 'M ' + X0 + ' ' + Y(v).toFixed(1) + ' H ' + X1, stroke: '#e2e8f0' }));
+        kids.push(h('text', { key: 'ty' + v, x: X0 - 8, y: Y(v) + 4, textAnchor: 'end', fontSize: 11, fill: '#334155' }, String(v)));
+      });
+      kids.push(h('text', { key: 'xl', x: (X0 + X1) / 2, y: Y1 + 30, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#1e293b' }, L.xAxis));
+      kids.push(h('text', { key: 'yl', x: 14, y: (Y0 + Y1) / 2, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#1e293b', transform: 'rotate(-90 14 ' + (Y0 + Y1) / 2 + ')' }, L.yAxis));
+      if (!log.length) kids.push(h('text', { key: 'empty', x: (X0 + X1) / 2, y: (Y0 + Y1) / 2, textAnchor: 'middle', fontSize: 13, fill: '#475569' }, L.empty));
+      log.forEach(function(e, i) {
+        var dv = derive(e.m, e.s, e.ar), x = X(Math.max(lo, Math.min(hi, dv.wl))), y = Y(Math.max(3, Math.min(18, e.ar))), col = COLORS[e.fly];
+        kids.push(h('g', { key: 'd' + i, 'data-wl-dot': e.name, 'data-wl': dv.wl.toFixed(2), 'data-ar': e.ar.toFixed(3), 'data-fly': e.fly || 'custom' },
+          h('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 6, fill: col || '#fff', stroke: col || '#334155', strokeWidth: col ? 1 : 2 }),
+          // Numbers alternate sides so neighbours in a cluster stay readable.
+          h('text', { x: (i % 2 ? x - 9 : x + 9).toFixed(1), y: (y + 4).toFixed(1), textAnchor: i % 2 ? 'end' : 'start', fontSize: 11, fontWeight: 700, fill: '#0f172a' }, String(i + 1))));
+      });
+      return h('svg', { viewBox: '0 0 600 250', width: '100%', role: 'img', 'aria-label': L.aria, 'data-wl-notebook': log.length, 'data-x0': X0, 'data-x1': X1, 'data-lo': lo, 'data-hi': hi,
+        style: { display: 'block', background: '#fff', borderRadius: 8 } }, kids);
+    }
+    return { BIRDS: BIRDS, FLY: FLY, COLORS: COLORS, RANGE: RANGE, G: G, RHO: RHO, CLMAX: CLMAX,
+      toPos: toPos, fromPos: fromPos, derive: derive, preset: preset, fmtMass: fmtMass, fmtArea: fmtArea, fmtLen: fmtLen, planform: planform, notebook: notebook };
+  })();
 
   // ── BIRD FOOT TYPES — anatomy + function
   var FOOT_TYPES = [
@@ -14011,12 +14205,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── BIRDS + WIND ENERGY
   var WIND_ENERGY = [
     { topic: 'The Wind Energy + Birds Question',
-      details: 'Wind turbines kill birds + bats by collision + rotor impact. Estimated 200,000-600,000 bird deaths annually in US. Maine + Eastern US developing offshore wind.',
+      details: 'Wind turbines kill birds + bats by collision + rotor impact. Estimated 140,000 to 330,000 bird deaths a year in the continental US (Loss and others, 2013), more as more turbines are built. Maine + Eastern US developing offshore wind.',
       research: 'Maine Audubon + state biologists + wildlife agencies + wind developers collaborate on mitigation research.',
       maine_specifics: 'Maine: New England\'s largest wind producer (about a quarter of in-state power). Offshore wind in Gulf of Maine planned + controversial.' },
 
     { topic: 'Mitigation Strategies',
-      details: 'Site selection (avoid migration corridors, raptor concentration areas). Curtailment during high-risk periods (low-wind migration nights). Painted blades (one black blade reduces strikes ~70% in some studies). Lighting controls.',
+      details: 'Site selection (avoid migration corridors, raptor concentration areas). Curtailment during high-risk periods (low-wind migration nights). Painted blades (painting one blade black cut bird deaths about 70% at the Smøla wind farm in Norway; May and others, 2020). Lighting controls.',
       research: 'Ongoing trials of mitigation effectiveness.',
       maine_specifics: 'Maine wind projects increasingly include avian assessments + mitigation plans.' },
 
@@ -14030,6 +14224,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       research: 'NOAA, USFWS, state agencies, Maine Audubon involved in environmental review.',
       maine_specifics: 'Active topic. Public review + permit processes ongoing 2025-2026.' }
   ];
+
+  // ── MORTALITY_ART — what kills US birds each year, on a scale where every
+  // gridline is ten times the one before, so wind turbines can sit on the same
+  // chart as cats. Ranges are the published estimates: Loss, Will + Marra 2013
+  // (cats) and 2014 (vehicles, power lines), Loss and others 2014 (buildings)
+  // and 2013 (wind turbines), Longcore and others 2012 (towers, US + Canada).
+  var MORTALITY = [
+    { key: 'cats', cause: 'Outdoor cats', lo: 1.3e9, hi: 4.0e9, mid: 2.4e9 },
+    { key: 'glass', cause: 'Buildings + windows', lo: 365e6, hi: 988e6, mid: 599e6 },
+    { key: 'cars', cause: 'Cars + trucks', lo: 89e6, hi: 340e6 },
+    { key: 'lines', cause: 'Power lines', lo: 12e6, hi: 64e6 },
+    { key: 'towers', cause: 'Communication towers', lo: 6.8e6, hi: 6.8e6, region: 'US + Canada' },
+    { key: 'wind', cause: 'Wind turbines', lo: 140000, hi: 328000 }
+  ];
+  var MORTALITY_ART = (function() {
+    var W = 940, X0 = 250, X1 = 860, E0 = 5, E1 = 10, ROW = 44, TOP = 30;
+    function X(n) { return X0 + (Math.log(n) / Math.LN10 - E0) / (E1 - E0) * (X1 - X0); }
+    function fmt(n, L) {
+      var u = n >= 1e9 ? [1e9, L.billion] : (n >= 1e6 ? [1e6, L.million] : [1, '']);
+      var v = n / u[0], s = v >= 100 || u[0] === 1 ? String(Math.round(v)) : String(Math.round(v * 10) / 10);
+      return (u[0] === 1 ? s.replace(/(\d)(?=(\d{3})+$)/g, '$1,') : s) + (u[1] ? ' ' + u[1] : '');
+    }
+    function range(r, L) {
+      if (r.lo === r.hi) return fmt(r.lo, L);
+      var a = fmt(r.lo, L), b = fmt(r.hi, L), unit = a.split(' ')[1];
+      return unit && unit === b.split(' ')[1] ? a.split(' ')[0] + '–' + b : a + ' – ' + b;
+    }
+    function draw(h, rows, L) {
+      var H = TOP + rows.length * ROW + 30, kids = [];
+      for (var e = E0; e <= E1; e++) {
+        var x = X(Math.pow(10, e));
+        kids.push(h('path', { key: 'g' + e, d: 'M ' + x.toFixed(1) + ' ' + (TOP - 8) + ' V ' + (H - 24), stroke: '#cbd5e1' }));
+        kids.push(h('text', { key: 'gt' + e, x: x, y: TOP - 14, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#334155' }, L.ticks[e - E0]));
+      }
+      rows.forEach(function(r, i) {
+        var y = TOP + i * ROW, a = X(r.lo), b = X(r.hi), hot = r.key === 'wind';
+        kids.push(h('g', { key: 'r' + i, 'data-mort': r.key, 'data-lo': r.lo, 'data-hi': r.hi },
+          i % 2 ? null : h('rect', { x: 0, y: y, width: W, height: ROW, fill: '#f8fafc' }),
+          h('text', { x: X0 - 12, y: y + 20, textAnchor: 'end', fontSize: 13, fontWeight: 800, fill: '#0f172a' }, L.cause[r.key] || r.cause),
+          r.region ? h('text', { x: X0 - 12, y: y + 34, textAnchor: 'end', fontSize: 10.5, fill: '#475569' }, L.region) : null,
+          r.lo === r.hi ? h('circle', { cx: a.toFixed(1), cy: y + 16, r: 7, fill: '#475569', 'data-mort-bar': 'true' })
+            : h('rect', { x: a.toFixed(1), y: y + 9, width: Math.max(4, b - a).toFixed(1), height: 14, rx: 7, fill: hot ? '#d97706' : '#475569', 'data-mort-bar': 'true' }),
+          r.mid ? h('circle', { cx: X(r.mid).toFixed(1), cy: y + 16, r: 4, fill: '#fff', stroke: '#0f172a', strokeWidth: 1.5 }) : null,
+          h('text', { x: (r.lo === r.hi ? a + 12 : b + 8).toFixed(1), y: y + 20, fontSize: 12, fontWeight: 700, fill: hot ? '#92400e' : '#1e293b' }, range(r, L))));
+      });
+      kids.push(h('text', { key: 'ax', x: X0, y: H - 6, fontSize: 11, fill: '#334155' }, L.axis));
+      return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': L.label, 'data-mort-chart': 'true', 'data-x0': X0, 'data-x1': X1, 'data-e0': E0, 'data-e1': E1,
+        style: { width: '100%', minWidth: 600, height: 'auto', display: 'block' } }, kids);
+    }
+    return { draw: draw, range: range };
+  })();
 
   // ── BIRDING WITH SCIENCE — research methods + technology
   var BIRD_RESEARCH_TECH = [
@@ -14501,6 +14746,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       details: 'Most fundamental strategy: migrate to better climate. Maine breeding birds escape brutal cold by flying south.',
       method: 'Insectivorous birds in Maine cannot survive cold winters without insects — migration not optional.' }
   ];
+
+  // ── THERMO_ART — countercurrent heat exchange in a gull's leg. The artery
+  // down the leg runs pressed against the veins coming back up, so warm blood
+  // heading for the foot hands its heat to cold blood heading for the body:
+  // the foot sits near the temperature of the ice, the body stays warm. A
+  // second leg without the swap shows where the heat would otherwise go.
+  var THERMO_ART = (function() {
+    // Blood colour from warm (red, t = 0) to cold (blue, t = 1).
+    function mix(t) {
+      var a = [220, 38, 38], b = [37, 99, 235];
+      return 'rgb(' + a.map(function(v, i) { return Math.round(v + (b[i] - v) * t); }).join(',') + ')';
+    }
+    function draw(h, L) {
+      var TOP = 118, BOT = 250, AX = 176, VX = 194, N = 8, ICE = 262, kids = [];
+      kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: 600, height: 300, fill: '#f0f9ff' }));
+      kids.push(h('rect', { key: 'ice', x: 0, y: ICE, width: 600, height: 38, fill: '#bae6fd' }));
+      kids.push(h('text', { key: 'icet', x: 12, y: 292, fontSize: 11, fontWeight: 700, fill: '#075985' }, L.ice));
+      // Gull, side-on.
+      kids.push(h('path', { key: 'body', d: 'M 64 94 Q 96 58 184 60 Q 262 62 300 84 L 348 92 L 300 102 Q 256 122 186 122 Q 100 122 64 94 Z', fill: '#f8fafc', stroke: '#334155', strokeWidth: 2 }));
+      kids.push(h('path', { key: 'wing', d: 'M 116 84 Q 200 68 296 90 Q 214 106 128 100 Z', fill: '#94a3b8' }));
+      kids.push(h('circle', { key: 'head', cx: 70, cy: 70, r: 19, fill: '#f8fafc', stroke: '#334155', strokeWidth: 2 }));
+      kids.push(h('path', { key: 'bill', d: 'M 52 70 L 28 76 L 52 78 Z', fill: '#facc15', stroke: '#a16207' }));
+      kids.push(h('circle', { key: 'eye', cx: 64, cy: 66, r: 2.6, fill: '#0f172a' }));
+      kids.push(h('text', { key: 'bt', x: 186, y: 42, textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: '#b91c1c', 'data-thermo-temp': 'body' }, L.body));
+      kids.push(h('path', { key: 'foot', d: 'M 160 ' + ICE + ' L 214 ' + ICE + ' L 238 ' + (ICE - 4) + ' L 214 ' + (ICE - 8) + ' L 168 ' + (ICE - 8) + ' Z', fill: '#fbbf24', stroke: '#b45309' }));
+      // Artery going down, vein coming up, in segments: at every height the
+      // artery is a little warmer than the vein beside it, so heat crosses over.
+      for (var i = 0; i < N; i++) {
+        var y0 = TOP + (BOT - TOP) * i / N, y1 = TOP + (BOT - TOP) * (i + 1) / N, t = (i + 0.5) / N, tv = Math.min(1, t + 0.12);
+        kids.push(h('path', { key: 'a' + i, d: 'M ' + AX + ' ' + y0.toFixed(1) + ' V ' + y1.toFixed(1), stroke: mix(t), strokeWidth: 8, 'data-thermo-artery': t.toFixed(3) }));
+        kids.push(h('path', { key: 'v' + i, d: 'M ' + VX + ' ' + y0.toFixed(1) + ' V ' + y1.toFixed(1), stroke: mix(tv), strokeWidth: 8, 'data-thermo-vein': tv.toFixed(3) }));
+        if (i % 2 === 0) kids.push(h('path', { key: 'q' + i, d: 'M ' + (AX + 5) + ' ' + ((y0 + y1) / 2).toFixed(1) + ' L ' + (VX - 5) + ' ' + ((y0 + y1) / 2).toFixed(1), stroke: '#ea580c', strokeWidth: 2, 'data-thermo-heat': 'true' }));
+      }
+      kids.push(h('path', { key: 'fa', d: 'M 160 150 V 196 l -5 -8 m 5 8 l 5 -8', stroke: '#b91c1c', strokeWidth: 2, fill: 'none' }));
+      kids.push(h('path', { key: 'fv', d: 'M 212 214 V 168 l -5 8 m 5 -8 l 5 8', stroke: '#1d4ed8', strokeWidth: 2, fill: 'none' }));
+      kids.push(h('text', { key: 'at', x: 150, y: 164, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: '#b91c1c' }, L.artery));
+      kids.push(h('text', { key: 'vt', x: 222, y: 196, fontSize: 12, fontWeight: 700, fill: '#1d4ed8' }, L.vein));
+      kids.push(h('text', { key: 'ht', x: 222, y: 140, fontSize: 11, fill: '#9a3412' }, L.heat));
+      kids.push(h('text', { key: 'ft', x: 150, y: 246, textAnchor: 'end', fontSize: 12, fontWeight: 800, fill: '#1d4ed8', 'data-thermo-temp': 'foot' }, L.foot));
+      // The same leg without the swap.
+      var CX = 496;
+      kids.push(h('g', { key: 'no', 'data-thermo-contrast': 'true' },
+        h('rect', { x: 398, y: 96, width: 194, height: 162, rx: 8, fill: '#fff', stroke: '#cbd5e1' }),
+        h('text', { x: CX, y: 116, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#0f172a' }, L.without),
+        h('text', { x: CX, y: 134, textAnchor: 'middle', fontSize: 11, fill: '#b91c1c' }, L.withoutFoot),
+        h('path', { d: 'M ' + (CX - 9) + ' 144 V ' + (ICE - 8), stroke: mix(0.04), strokeWidth: 8, 'data-thermo-contrast-artery': '0.04' }),
+        h('path', { d: 'M ' + (CX + 9) + ' 144 V ' + (ICE - 8), stroke: mix(0.5), strokeWidth: 8 }),
+        h('path', { d: 'M ' + (CX - 26) + ' ' + ICE + ' L ' + (CX + 28) + ' ' + ICE + ' L ' + (CX + 44) + ' ' + (ICE - 4) + ' L ' + (CX + 28) + ' ' + (ICE - 8) + ' L ' + (CX - 16) + ' ' + (ICE - 8) + ' Z', fill: '#fbbf24', stroke: '#b45309' }),
+        [0, 1, 2].map(function(k) { var x = CX - 20 + k * 20; return h('path', { key: 'hw' + k, d: 'M ' + x + ' ' + (ICE + 4) + ' q 4 5 0 10 q -4 5 0 10', stroke: '#ea580c', strokeWidth: 2, fill: 'none', 'data-thermo-loss': 'true' }); }),
+        h('text', { x: CX - 30, y: ICE + 26, textAnchor: 'end', fontSize: 11, fontWeight: 700, fill: '#9a3412' }, L.lost)));
+      return h('svg', { viewBox: '0 0 600 300', role: 'img', 'aria-label': L.label, 'data-thermo-leg': 'true',
+        style: { width: '100%', maxWidth: 640, height: 'auto', display: 'block', margin: '0 auto', borderRadius: 10 } }, kids);
+    }
+    return { draw: draw, mix: mix };
+  })();
 
   // ── DAWN CHORUS SCIENCE
   var DAWN_CHORUS = [
@@ -16576,6 +16876,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             desc: __alloT('stem.birdlab.elliptical_wings_songbirds_high_aspect', 'Elliptical wings (songbirds), high-aspect-ratio (swallows + albatrosses), soaring wings with slots (eagles + vultures), high-speed tapered (falcons), aquatic (puffins). Wing shape predicts flight style + habitat.'),
             color: 'from-sky-700 to-amber-700',
             ring: 'ring-sky-500/40',
+            ready: true
+          },
+          {
+            id: 'wingHunt', title: __alloT('stem.birdlab.wl_menu_title', 'Wing Loading Lab'), icon: '🦅',
+            subtitle: __alloT('stem.birdlab.wl_menu_sub', 'Weight, wings + the slowest a bird can fly'),
+            desc: __alloT('stem.birdlab.wl_menu_desc', '15 measured birds, from a Barn Swallow to a Wandering Albatross. Change body mass, wing area and wing shape, see the wingspan and the slowest flight speed, and chart the birds you log.'),
+            color: 'from-cyan-700 to-sky-800',
+            ring: 'ring-cyan-500/40',
             ready: true
           },
           {
@@ -25335,7 +25643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 misconceptions: [
                   '"All birds are declining" — raptors and waterfowl have INCREASED since 1970 due to focused conservation. Losses are concentrated in groups without comparable conservation investment.',
                   '"Conservation is too expensive" — Bald Eagle recovery cost ~$28M federal funding over 30+ years per USFWS — small compared to the social value of a recovered national symbol + ecosystem services.',
-                  '"Local action doesn\'t matter" — Wood Thrush wintering grounds are in Central America. But local action (window strikes, outdoor cats, breeding-season pesticides) accounts for 1-2 billion bird deaths per year in the US alone.'
+                  '"Local action doesn\'t matter" — Wood Thrush wintering grounds are in Central America. But local threats kill billions of birds a year in the US alone: outdoor cats about 2.4 billion, buildings and windows 365 to 988 million.'
                 ],
                 extension: 'Pick ONE focal species above. Read its Cornell All About Birds page + a recent (2020+) article on its conservation status. Write a 1-paragraph "what\'s the latest?" update.',
                 sources: 'Rosenberg et al. 2019 (Science). USFWS. Maine IFW Endangered + Threatened Species List. Cornell Lab All About Birds. Gulf of Maine Research Institute. National Audubon Society Climate Watch.'
@@ -29117,6 +29425,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_14', '← Menu'))
           ),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.birds_respond_to_weather_knowing_what_', 'Birds respond to weather. Knowing what to expect when the forecast says X is half the battle.')),
+          h('figure', { className: 'm-0 mb-4 p-3 rounded-xl bg-white border border-sky-200 shadow' },
+            WX_ART.draw(h, { label: __alloT('stem.birdlab.wx_label', 'A fall cold front on a weather map: northwest winds and hawks behind it, rain and a fallout along it, south-southwest winds ahead of it'),
+              moves: __alloT('stem.birdlab.wx_moves', 'Front moves southeast'), north: __alloT('stem.birdlab.wx_north', 'N'),
+              behind: __alloT('stem.birdlab.wx_behind', 'Behind the front: clear, cool,|northwest winds. Hawks ride|thermals by day; songbirds|fly south by night.').split('|'),
+              fallout: __alloT('stem.birdlab.wx_fallout', 'Rain on the front forces|night migrants down|(a fallout).').split('|'),
+              ahead: __alloT('stem.birdlab.wx_ahead', 'Ahead: warm, humid,|south-southwest winds.|Head winds for birds|going south: few move.').split('|') }),
+            h('figcaption', { className: 'text-[0.75rem] mt-2 leading-snug', style: { color: '#475569' } },
+              __alloT('stem.birdlab.wx_note', 'Seen from above. The triangles point the way the front is moving. Birders watch for the day after a fall cold front passes: clear skies and northwest winds.'))),
           h('div', { className: 'space-y-3' },
             WEATHER_BIRDING.map(function(w, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-600 p-4' },
@@ -30124,7 +30440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }, '🦴 ' + __alloT('stem.birdlab.glossary_see_topography', 'Body-part terms (lore, malar, nape, rump...) are drawn on a labelled bird in the Bird Topography Lab')),
           h('input', { 'aria-label': __alloT('stem.birdlab.glossary_search_label', 'Search birding glossary'), type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
             placeholder: __alloT('stem.birdlab.search_terms_or_definitions', 'Search terms or definitions...'),
-            className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-300 mb-3 text-sm bg-white', style: { color: '#1e293b' } }),
+            className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-500 mb-3 text-sm bg-white', style: { color: '#1e293b' } }),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             filtered.map(function(g, i) {
               return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3' },
@@ -30557,6 +30873,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_58', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.bradbury_mountain_pownal_is_maine_s_pr', 'Bradbury Mountain (Pownal) counts Maine\'s spring hawk flight; Cadillac Mountain (Acadia) counts the fall flight. Citizen science + viewing.')),
+          h('figure', { className: 'm-0 mb-4 p-3 rounded-xl bg-white border border-orange-200 shadow' },
+            h('div', { className: 'overflow-x-auto' }, HAWK_ART.draw(h, HAWKWATCH_DATA, HAWKWATCH_GUIDE[0].season, { label: __alloT('stem.birdlab.hawk_wind_label', 'Wind and hawk headings at Bradbury Mountain in spring and Cadillac Mountain in fall, with each count\'s season'),
+              spring: __alloT('stem.birdlab.hawk_wind_spring', 'Spring · Bradbury Mountain'), fall: __alloT('stem.birdlab.hawk_wind_fall', 'Fall · Cadillac Mountain'),
+              compass: __alloT('stem.birdlab.hawk_wind_compass', 'N,E,S,W').split(','), sea: __alloT('stem.birdlab.hawk_wind_sea', 'Atlantic'),
+              springNote: __alloT('stem.birdlab.hawk_wind_spring_note', 'South + southwest winds blow the way the hawks fly'), fallNote: __alloT('stem.birdlab.hawk_wind_fall_note', 'Northwest winds push hawks sideways, onto the coast'),
+              keyWind: __alloT('stem.birdlab.hawk_wind_key_wind', 'Wind'), keyHeading: __alloT('stem.birdlab.hawk_wind_key_heading', 'Hawks heading'), keyDrift: __alloT('stem.birdlab.hawk_wind_key_drift', 'Drift'),
+              months: __alloT('stem.birdlab.hawk_wind_months', 'J,F,M,A,M,J,J,A,S,O,N,D').split(','), peak: __alloT('stem.birdlab.hawk_wind_peak', 'Broad-winged peak') })),
+            h('figcaption', { className: 'text-[0.75rem] mt-2 leading-snug', style: { color: '#475569' } },
+              __alloT('stem.birdlab.hawk_wind_note', 'Each wind arrow comes in from the direction the wind is named for. Spring hawks head northeast, so a southwest wind is at their backs. Fall hawks head southwest; a northwest wind hits them side-on and drifts them to the coast, where they follow the shore past Cadillac.'))),
           h('div', { className: 'space-y-3' },
             HAWKWATCH_GUIDE.map(function(h2, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
@@ -30794,6 +31119,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_68', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.wind_turbines_kill_birds_bats_climate_', 'Wind turbines kill birds + bats. Climate change kills far more. The complex science + ethics of renewable energy + bird conservation.')),
+          h('figure', { className: 'm-0 mb-4 p-3 rounded-xl bg-white border border-sky-200 shadow' },
+            h('div', { className: 'overflow-x-auto' }, MORTALITY_ART.draw(h, MORTALITY, { label: __alloT('stem.birdlab.mort_label', 'Estimated birds killed each year in the United States, by cause'),
+              billion: __alloT('stem.birdlab.mort_billion', 'billion'), million: __alloT('stem.birdlab.mort_million', 'million'), region: __alloT('stem.birdlab.mort_region', 'US + Canada'),
+              axis: __alloT('stem.birdlab.mort_axis', 'Birds killed each year (each gridline is 10 times the one before)'),
+              ticks: __alloT('stem.birdlab.mort_ticks', '100,000|1 million|10 million|100 million|1 billion|10 billion').split('|'),
+              cause: { cats: __alloT('stem.birdlab.mort_cats', 'Outdoor cats'), glass: __alloT('stem.birdlab.mort_glass', 'Buildings + windows'), cars: __alloT('stem.birdlab.mort_cars', 'Cars + trucks'),
+                lines: __alloT('stem.birdlab.mort_lines', 'Power lines'), towers: __alloT('stem.birdlab.mort_towers', 'Communication towers'), wind: __alloT('stem.birdlab.mort_wind', 'Wind turbines') } })),
+            h('figcaption', { className: 'text-[0.75rem] mt-2 leading-snug', style: { color: '#475569' } },
+              __alloT('stem.birdlab.mort_note', 'Published yearly estimates for the United States (towers: US and Canada); a white dot marks the best single estimate. Turbines kill far fewer birds than cats or windows, but they can kill eagles and other slow-breeding birds, so where they are built matters.'))),
           h('div', { className: 'space-y-3' },
             WIND_ENERGY.map(function(w, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-600 p-4' },
@@ -31126,6 +31460,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_80', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.how_birds_maintain_104_108_f_body_temp_2', 'How birds maintain ~104-108°F body temperature in Maine\'s -30°F to 100°F range. Feathers, behavior, torpor, group roosting, gular fluttering, migration.')),
+          h('figure', { className: 'm-0 mb-4 p-3 rounded-xl bg-white border border-sky-200 shadow' },
+            THERMO_ART.draw(h, { label: __alloT('stem.birdlab.thermo_label', 'A gull standing on ice: warm blood flowing down its leg warms the cold blood flowing back up'),
+              ice: __alloT('stem.birdlab.thermo_ice', 'Ice'), body: __alloT('stem.birdlab.thermo_body', 'Body about 40 °C (104 °F)'), foot: __alloT('stem.birdlab.thermo_foot', 'Foot just above freezing'),
+              artery: __alloT('stem.birdlab.thermo_artery', 'Warm blood down'), vein: __alloT('stem.birdlab.thermo_vein', 'Cold blood back up'), heat: __alloT('stem.birdlab.thermo_heat', 'Heat crosses to the returning blood'),
+              without: __alloT('stem.birdlab.thermo_without', 'Without the swap'), withoutFoot: __alloT('stem.birdlab.thermo_without_foot', 'Warm blood reaches the foot'), lost: __alloT('stem.birdlab.thermo_lost', 'heat lost to the ice') }),
+            h('figcaption', { className: 'text-[0.75rem] mt-2 leading-snug', style: { color: '#475569' } },
+              __alloT('stem.birdlab.thermo_note', 'Countercurrent heat exchange: in the legs of gulls, ducks and many other birds, the artery runs pressed against the veins, so warm blood heading for the foot hands its heat to cold blood heading back to the body. The foot stays just above freezing and little heat is lost to the ice.'))),
           h('div', { className: 'space-y-3' },
             THERMOREGULATION.map(function(t, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-rose-500 p-4' },
@@ -31696,121 +32037,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       if (view === 'quotes') return h(QuotesView);
-      if (view === 'wingHunt') return h(function() {
-        // Use the tool's own d/upd (ctx-bound). This view previously referenced bare
-        // `toolData`/`setToolData`, which don't exist in scope — so it threw a ReferenceError
-        // and rendered blank (the registry try/catch swallowed it to null).
-        var iq = d.wingHunt || { wingArea: 4, mass: 500, ar: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) { upd('wingHunt', Object.assign({}, d.wingHunt || iq, patch)); }
-        var wingLoading = iq.mass / iq.wingArea;
-        var flightStyle;
-        if (wingLoading < 25 && iq.ar > 10) flightStyle = 'soarer';
-        else if (wingLoading < 50) flightStyle = 'flapper';
-        else if (wingLoading >= 150) flightStyle = 'diver';
-        else flightStyle = 'general';
-        var fsMeta = {
-          soarer:  { label: __alloT('stem.birdlab.soarer_low_load_high_ar', '🦅 Soarer (low load, high AR)'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.birdlab.albatross_like_glides_on_thermals_mini', 'Albatross-like. Glides on thermals, minimal flapping.') },
-          flapper: { label: __alloT('stem.birdlab.flapper_medium_load', '🐦 Flapper (medium load)'),       color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.birdlab.songbird_like_active_wing_motion_moder', 'Songbird-like. Active wing motion, moderate efficiency.') },
-          diver:   { label: __alloT('stem.birdlab.diver_high_load', '🦆 Diver (high load)'),           color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.birdlab.duck_loon_like_heavy_fast_flight_body_', 'Duck/loon-like. Heavy fast flight, body-density adapted.') },
-          general: { label: __alloT('stem.birdlab.general_purpose', '🪶 General-purpose'),             color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.birdlab.mixed_strategy_crow_like_or_hawk_like', 'Mixed strategy. Crow-like or hawk-like.') }
-        }[flightStyle];
-        var H = React.createElement;
-        return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
-          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Back to menu'),
-          H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0' } },
-            H('h3', { style: { fontSize: 16, fontWeight: 800, color: '#67e8f9', margin: '0 0 6px 0' } }, '🦅 Wing loading discovery'),
-            H('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, 'Adjust wing area, body mass, and aspect ratio. Widget classifies flight style into one of four discrete categories. No score, no reveal.'),
-            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: fsMeta.bg, border: '2px solid ' + fsMeta.border, marginBottom: 12 } },
-              H('div', { style: { fontSize: 15, fontWeight: 900, color: fsMeta.color } }, fsMeta.label),
-              H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, fsMeta.desc),
-              H('div', { style: { fontSize: 10, color: '#475569', marginTop: 4, fontFamily: 'monospace' } }, 'Wing loading ≈ ' + wingLoading.toFixed(1) + ' g/m²')
-            ),
-            // Live planform: span and chord follow from area and aspect ratio
-            // (span = sqrt(AR x area), chord = area / span), body from mass,
-            // and the bird flies the way its class does. Seen from above, a
-            // wingbeat foreshortens the span, so flapping is a span squeeze.
-            (function() {
-              var span = Math.sqrt(iq.ar * iq.wingArea), chord = iq.wingArea / span;
-              var half = Math.min(250, span * 15), c = Math.max(4, Math.min(64, chord * 30));
-              var bodyL = 18 + 9 * Math.cbrt(iq.mass / 100), bodyW = bodyL * 0.34;
-              var tip = iq.ar >= 12 ? 'pointed' : (iq.ar <= 6 ? 'slotted' : 'rounded');
-              var wing = function(dir) {
-                var x0 = dir * bodyW * 0.4, x1 = dir * half;
-                var lead = -c * 0.45, trail = c * 0.55;
-                var d = 'M ' + x0 + ' ' + lead + ' Q ' + (x0 + dir * half * 0.45) + ' ' + (lead - c * 0.12) + ' ' + (x1 - dir * c * 0.35) + ' ' + (-c * 0.12);
-                if (tip === 'pointed') d += ' L ' + x1 + ' ' + (c * 0.05);
-                else if (tip === 'slotted') {
-                  // Emarginated primaries: separate "fingers" at the tip.
-                  for (var f = 0; f < 4; f++) {
-                    var fy = -c * 0.12 + f * c * 0.18;
-                    d += ' L ' + (x1 + dir * c * (0.34 - f * 0.05)) + ' ' + fy.toFixed(1) + ' L ' + (x1 + dir * c * (0.3 - f * 0.05)) + ' ' + (fy + c * 0.07).toFixed(1) + ' L ' + (x1 - dir * c * 0.04) + ' ' + (fy + c * 0.1).toFixed(1);
-                  }
-                } else d += ' Q ' + (x1 + dir * c * 0.15) + ' ' + (c * 0.1) + ' ' + (x1 - dir * c * 0.3) + ' ' + (c * 0.28);
-                return d + ' Q ' + (x0 + dir * half * 0.5) + ' ' + (trail + c * 0.08) + ' ' + x0 + ' ' + trail + ' Z';
-              };
-              var motion = { soarer: 'glide', flapper: 'flap', diver: 'buzz', general: 'flapglide' }[flightStyle];
-              return H('figure', { style: { margin: '0 0 12px 0' }, 'data-birdlab-wing-planform': flightStyle },
-                H('svg', { viewBox: '0 0 600 200', width: '100%', role: 'img',
-                  'aria-label': __alloFill(__alloT('stem.birdlab.a11y_wing_planform', 'Wing planform: span {value1} units, chord {value2}, {value3} tips; flight style {value4}'), { value1: span.toFixed(1), value2: chord.toFixed(2), value3: tip, value4: flightStyle }),
-                  style: { display: 'block', borderRadius: 8, background: 'linear-gradient(180deg, #0c4a6e 0%, #155e75 55%, #164e63 100%)' } },
-                  flightStyle === 'soarer' && H('g', { className: 'birdlab-wh-thermal', fill: 'none', stroke: '#fde68a', strokeWidth: 1.4, opacity: 0.35, strokeLinecap: 'round' },
-                    H('path', { d: 'M 120 190 C 90 160 150 140 120 110 C 90 80 150 60 120 30' }),
-                    H('path', { d: 'M 480 190 C 450 160 510 140 480 110 C 450 80 510 60 480 30' })
-                  ),
-                  flightStyle === 'diver' && H('path', { d: 'M 0 176 Q 75 170 150 176 T 300 176 T 450 176 T 600 176 L 600 200 L 0 200 Z', fill: '#0e7490', opacity: 0.6 }),
-                  // Air streaming past: the bird flies up the frame.
-                  H('g', { className: 'birdlab-wh-streaks birdlab-wh-air-' + motion, stroke: '#e0f2fe', strokeWidth: 1.2, opacity: 0.3, strokeLinecap: 'round' },
-                    H('path', { d: 'M 40 10 L 40 44 M 110 90 L 110 120 M 30 150 L 30 186 M 560 20 L 560 56 M 490 100 L 490 128 M 575 150 L 575 190 M 190 -20 L 190 6 M 420 170 L 420 196' })
-                  ),
-                  H('g', { transform: 'translate(300 96)' },
-                    H('g', { className: 'birdlab-wh-body birdlab-wh-' + motion },
-                      H('g', { className: 'birdlab-wh-wings' },
-                        H('path', { d: wing(-1), fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 1.2 }),
-                        H('path', { d: wing(1), fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 1.2 })
-                      ),
-                      H('ellipse', { cx: 0, cy: bodyL * 0.1, rx: bodyW / 2, ry: bodyL / 2, fill: '#94a3b8', stroke: '#0f172a', strokeWidth: 1.2 }),
-                      H('circle', { cx: 0, cy: -bodyL * 0.46, r: bodyW * 0.36, fill: '#cbd5e1', stroke: '#0f172a', strokeWidth: 1 }),
-                      H('path', { d: 'M ' + (-bodyW * 0.5) + ' ' + (bodyL * 0.52) + ' L 0 ' + (bodyL * 0.52 + bodyL * 0.36) + ' L ' + (bodyW * 0.5) + ' ' + (bodyL * 0.52) + ' Z', fill: '#94a3b8', stroke: '#0f172a', strokeWidth: 1 })
-                    )
-                  ),
-                  H('g', { fill: '#e0f2fe', fontSize: 11, fontFamily: 'monospace' },
-                    H('text', { x: 12, y: 18 }, 'span ' + span.toFixed(1) + ' · chord ' + chord.toFixed(2) + ' · ' + tip + ' tips'),
-                    H('text', { x: 588, y: 18, textAnchor: 'end' }, { glide: 'gliding', flap: 'steady flapping', buzz: 'fast shallow beats', flapglide: 'flap, flap, glide' }[motion])
-                  )
-                )
-              );
-            })(),
-            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
-              [{ k: 'wingArea', l: 'Wing area (m²)', v: iq.wingArea, mn: 0.5, mx: 10, st: 0.1 },
-               { k: 'mass', l: 'Body mass (g)', v: iq.mass, mn: 5, mx: 5000, st: 5 },
-               { k: 'ar', l: 'Aspect ratio', v: iq.ar, mn: 3, mx: 18, st: 0.5 }].map(function(s) {
-                return H('div', { key: s.k },
-                  H('label', { htmlFor: 'wh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, s.v)),
-                  H('input', { id: 'wh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: s.v,
-                    onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                    style: { width: '100%' }, 'aria-label': s.l }));
-              })
-            ),
-            H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-              H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ wa: iq.wingArea, m: iq.mass, ar: iq.ar, st: flightStyle }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-              H('button', { onClick: function() { setIQ({ wingArea: 4, mass: 500, ar: 8, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
-            ),
-            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.birdlab.hypothesis_what_body_wing_combinations', 'Hypothesis: What body+wing combinations enable soaring?'),
-              style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 2 }),
-            !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — open prompts'),
-            iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
-              H('ul', { style: { margin: 0, paddingLeft: 18 } },
-                H('li', null, 'Find two settings producing the same flight style.'),
-                H('li', null, 'Albatross has aspect ratio ~16. Investigate why.'))),
-            H('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
-              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.birdlab.how_do_wing_loading_aspect_ratio_shape', 'How do wing loading + aspect ratio shape flight strategy?'),
-                style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 })),
-            H('div', { style: { marginTop: 10, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } }, 'Design note: discrete 4-style flight marker; no efficiency score; no reveal — by design.')
-          )
-        );
-      });
+      // ── WING LOADING LAB ─────────────────────────────────────────
+      // Measured birds and live physics (WINGLOAD). An inquiry notebook, not
+      // a quiz: no score and no answer map, only the birds the student logs.
+      // State v2 uses real units; an older save (wing area in "m²" up to 10,
+      // loading in g/m²) keeps only its written answers.
+      function WingHuntView() {
+        var raw = d.wingHunt || {};
+        var iq = raw.v === 2 ? raw : { v: 2, massG: 500, areaCm2: 1000, ar: 7, pick: null, log: [],
+          hypothesis: raw.hypothesis || '', explanation: raw.explanation || '', understood: !!raw.understood, stuckRevealed: !!raw.stuckRevealed };
+        function setIQ(patch) { upd('wingHunt', Object.assign({}, iq, patch)); }
+        var W = WINGLOAD, bird = iq.pick ? W.BIRDS.filter(function(b) { return b.id === iq.pick; })[0] : null;
+        var massKg = iq.massG / 1000, areaM2 = iq.areaCm2 / 1e4, dv = W.derive(massKg, areaM2, iq.ar);
+        var log = iq.log || [];
+        var FLY_LABEL = {
+          agile: __alloT('stem.birdlab.wl_fly_agile', 'Flaps and glides after food in the air'),
+          flapper: __alloT('stem.birdlab.wl_fly_flapper', 'Steady flapper'),
+          soarer: __alloT('stem.birdlab.wl_fly_soarer', 'Soars on rising air'),
+          fast: __alloT('stem.birdlab.wl_fly_fast', 'Fast, nonstop flapper'),
+          wind: __alloT('stem.birdlab.wl_fly_wind', 'Soars on the ocean wind'),
+          custom: __alloT('stem.birdlab.wl_fly_custom', 'Your own birds')
+        };
+        var L = {
+          aria: __alloT('stem.birdlab.wl_aria', 'Wing seen from above, to scale: span {value1}, average width {value2}, {value3} tips'),
+          tips: { pointed: __alloT('stem.birdlab.wl_tip_pointed', 'pointed'), rounded: __alloT('stem.birdlab.wl_tip_rounded', 'rounded'), slotted: __alloT('stem.birdlab.wl_tip_slotted', 'slotted') },
+          motion: { glide: __alloT('stem.birdlab.wl_motion_glide', 'gliding'), flap: __alloT('stem.birdlab.wl_motion_flap', 'steady flapping'),
+            buzz: __alloT('stem.birdlab.wl_motion_buzz', 'fast beats'), flapglide: __alloT('stem.birdlab.wl_motion_flapglide', 'flap, flap, glide') }
+        };
+        function logThis() {
+          var e = bird ? { id: bird.id, name: bird.name, m: bird.m, s: bird.s, ar: iq.ar, fly: bird.fly }
+            : { id: null, name: __alloFill(__alloT('stem.birdlab.wl_mine', 'My bird {value1}'), { value1: log.filter(function(x) { return !x.id; }).length + 1 }), m: massKg, s: areaM2, ar: iq.ar, fly: null };
+          var next = e.id ? log.filter(function(x) { return x.id !== e.id; }).concat([e]) : log.concat([e]);
+          setIQ({ log: next.slice(-16) });
+        }
+        var mph = dv.vmin * 2.23694, kmh = dv.vmin * 3.6;
+        var dark = '#0f172a', panel = '#1e293b', muted = '#94a3b8', text = '#e2e8f0';
+        var tile = function(key, label, value, sub) {
+          return h('div', { key: key, 'data-wl-readout': key, style: { background: panel, borderRadius: 8, padding: '8px 10px' } },
+            h('div', { style: { fontSize: 11, color: muted, fontWeight: 700 } }, label),
+            h('div', { style: { fontSize: 17, color: '#f8fafc', fontWeight: 900 } }, value),
+            sub ? h('div', { style: { fontSize: 11, color: muted } }, sub) : null);
+        };
+        var sliders = [
+          { k: 'massG', id: 'wh-mass', l: __alloT('stem.birdlab.wl_mass', 'Body mass'), r: W.RANGE.mass, v: iq.massG, txt: W.fmtMass(iq.massG), log: true },
+          { k: 'areaCm2', id: 'wh-area', l: __alloT('stem.birdlab.wl_area', 'Wing area (both wings + the body between)'), r: W.RANGE.area, v: iq.areaCm2, txt: W.fmtArea(iq.areaCm2), log: true },
+          { k: 'ar', id: 'wh-ar', l: __alloT('stem.birdlab.wl_ar', 'Aspect ratio (span² ÷ area)'), r: W.RANGE.ar, v: iq.ar, txt: iq.ar.toFixed(1), log: false }
+        ];
+        var present = W.FLY.concat(['custom']).filter(function(f) { return log.some(function(e) { return (e.fly || 'custom') === f; }); });
+        return h('div', { className: 'p-4 max-w-5xl mx-auto' },
+          h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
+            h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.wl_title', '🪶 Wing Loading Lab')),
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
+              className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.wl_back', '← Menu'))),
+          h('div', { style: { padding: 16, background: dark, borderRadius: 12, color: text } },
+            h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 12px 0' } },
+              __alloT('stem.birdlab.wl_intro', 'Wing loading is a bird\'s weight divided by its wing area. Aspect ratio is wingspan² ÷ wing area: long, narrow wings score high. Load a real bird or build your own, log it, and look for a pattern.')),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: muted, marginBottom: 6 } }, __alloT('stem.birdlab.wl_real_birds', 'Real birds (measured)')),
+            h('div', { className: 'flex flex-wrap gap-1.5', style: { marginBottom: 12 } },
+              W.BIRDS.map(function(b) {
+                var on = iq.pick === b.id;
+                return h('button', { key: b.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'data-wl-bird': b.id,
+                  onClick: function() { var p = W.preset(b); setIQ({ pick: b.id, massG: p.massG, areaCm2: p.areaCm2, ar: p.ar }); },
+                  style: { padding: '4px 9px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? '#67e8f9' : '#475569'),
+                    background: on ? '#67e8f9' : panel, color: on ? dark : '#e2e8f0' } }, b.name);
+              })),
+            h('figure', { style: { margin: '0 0 10px 0' } },
+              W.planform(h, { massKg: massKg, areaM2: areaM2, ar: iq.ar, tip: bird ? bird.tip : null, fly: bird ? bird.fly : null }, L)),
+            h('div', { 'data-wl-subject': bird ? bird.id : 'custom', style: { fontSize: 13, color: text, marginBottom: 10, lineHeight: 1.45 } },
+              bird ? [h('b', { key: 'n' }, bird.name + (bird.note ? ' (' + bird.note + ')' : '') + '. '), h('span', { key: 'hw' }, __alloT('stem.birdlab.wl_how', 'How it really flies: ') + bird.how)]
+                : h('b', null, __alloT('stem.birdlab.wl_your_bird', 'Your own bird: move the sliders, then log it to compare.'))),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 8 } },
+              tile('span', __alloT('stem.birdlab.wl_span', 'Wingspan'), W.fmtLen(dv.span)),
+              tile('loading', __alloT('stem.birdlab.wl_loading', 'Wing loading'), Math.round(dv.wl) + ' N/m²',
+                __alloFill(__alloT('stem.birdlab.wl_per_m2', '{value1} kg of bird on each m² of wing'), { value1: dv.kgPerM2.toFixed(1) })),
+              tile('aspect', __alloT('stem.birdlab.wl_aspect', 'Aspect ratio'), iq.ar.toFixed(1)),
+              tile('slowest', __alloT('stem.birdlab.wl_slowest', 'Slowest flight'), Math.round(mph) + ' mph', Math.round(kmh) + ' km/h')),
+            dv.wl > 250 ? h('div', { role: 'status', 'data-wl-warn': 'heavy', style: { fontSize: 12, color: '#fde68a', marginBottom: 6 } },
+              __alloT('stem.birdlab.wl_too_heavy', 'No flying bird carries this much weight on its wings: the heaviest carry about 20 to 25 kg per m².')) : null,
+            dv.span > 3.6 ? h('div', { role: 'status', 'data-wl-warn': 'wide', style: { fontSize: 12, color: '#fde68a', marginBottom: 6 } },
+              __alloT('stem.birdlab.wl_too_wide', 'Wider than any living bird: the longest wings measured, a Wandering Albatross\'s, span about 3.6 m.')) : null,
+            h('p', { style: { fontSize: 11, color: muted, margin: '0 0 12px 0', lineHeight: 1.45 } },
+              __alloT('stem.birdlab.wl_slow_note', 'Slowest flight: below this speed even the wing\'s best lift cannot hold the bird up (sea-level air, lift coefficient 1.6). Flapping lets real birds go a little slower.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 12 } },
+              sliders.map(function(s) {
+                var pos = s.log ? W.toPos(s.v, s.r) : s.v;
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: s.id, style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+                    s.l + ': ', h('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, s.txt)),
+                  h('input', { id: s.id, type: 'range', min: s.log ? 0 : s.r[0], max: s.log ? 1000 : s.r[1], step: s.log ? 1 : 0.1, value: pos, 'aria-valuetext': s.txt,
+                    onChange: function(e) {
+                      var raw = parseFloat(e.target.value), p = { pick: null };
+                      p[s.k] = s.log ? W.fromPos(raw, s.r) : raw;
+                      setIQ(p);
+                    }, style: { width: '100%' } }));
+              })),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } },
+              h('button', { type: 'button', onClick: logThis, 'data-wl-log': 'true',
+                style: { padding: '6px 12px', background: '#67e8f9', color: dark, border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 800, cursor: 'pointer' } },
+                __alloT('stem.birdlab.wl_log', '📋 Log this bird')),
+              h('button', { type: 'button', onClick: function() { setIQ({ log: [] }); },
+                style: { padding: '6px 12px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, fontSize: 12, cursor: 'pointer' } },
+                __alloT('stem.birdlab.wl_clear', 'Clear notebook')),
+              h('button', { type: 'button', onClick: function() { upd('wingHunt', { v: 2, massG: 500, areaCm2: 1000, ar: 7, pick: null, log: [], hypothesis: '', explanation: '', understood: false, stuckRevealed: false }); },
+                style: { padding: '6px 12px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, fontSize: 12, cursor: 'pointer' } },
+                __alloT('stem.birdlab.wl_reset', '↺ Reset'))),
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: text, marginBottom: 6 } }, __alloT('stem.birdlab.wl_notebook', 'Your notebook')),
+            W.notebook(h, log, { xAxis: __alloT('stem.birdlab.wl_x', 'Wing loading (N/m², log scale)'), yAxis: __alloT('stem.birdlab.wl_y', 'Aspect ratio'),
+              empty: __alloT('stem.birdlab.wl_empty', 'Log a bird to put it on your chart.'),
+              aria: __alloFill(__alloT('stem.birdlab.wl_nb_aria', 'Your logged birds, placed by wing loading and aspect ratio: {value1} so far'), { value1: log.length }) }),
+            present.length ? h('div', { className: 'flex flex-wrap gap-3', style: { margin: '8px 0', fontSize: 12, color: text } },
+              present.map(function(f) {
+                var col = W.COLORS[f];
+                return h('span', { key: f, className: 'inline-flex items-center gap-1.5' },
+                  h('span', { 'aria-hidden': 'true', style: { width: 11, height: 11, borderRadius: '50%', display: 'inline-block', background: col || 'transparent', border: '2px solid ' + (col || '#e2e8f0') } }), FLY_LABEL[f]);
+              })) : null,
+            log.length ? h('ol', { 'data-wl-list': 'true', style: { margin: '6px 0 12px 0', paddingLeft: 22, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              log.map(function(e, i) {
+                var x = W.derive(e.m, e.s, e.ar);
+                return h('li', { key: i }, h('b', { style: { color: text } }, e.name), ': ' + __alloFill(__alloT('stem.birdlab.wl_row', 'wing loading {value1} N/m², aspect ratio {value2}, wingspan {value3}, slowest flight {value4} mph'),
+                  { value1: Math.round(x.wl), value2: e.ar.toFixed(1), value3: W.fmtLen(x.span), value4: Math.round(x.vmin * 2.23694) }));
+              })) : null,
+            h('textarea', { value: iq.hypothesis || '', 'aria-label': __alloT('stem.birdlab.hypothesis_what_body_wing_combinations', 'Hypothesis: What body+wing combinations enable soaring?'),
+              onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.birdlab.hypothesis_what_body_wing_combinations', 'Hypothesis: What body+wing combinations enable soaring?'),
+              style: { width: '100%', minHeight: 50, padding: 6, background: panel, color: text, border: '1px solid #475569', borderRadius: 4, fontSize: 12, marginBottom: 10 }, rows: 2 }),
+            !iq.stuckRevealed ? h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
+              style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 10 } },
+              __alloT('stem.birdlab.wl_stuck', '🤔 Stuck? Questions to try')) :
+            h('ul', { 'data-wl-questions': 'true', style: { margin: '0 0 10px 0', paddingLeft: 18, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+              h('li', null, __alloT('stem.birdlab.wl_q1', 'Log the White-tailed Eagle and the Wandering Albatross. Both soar for hours. How are their wings different, and why might each suit the air where it lives?')),
+              h('li', null, __alloT('stem.birdlab.wl_q2', 'Log the Mallard and the Red-throated Loon. Which must fly faster just to stay up? How could that change the way each takes off?')),
+              h('li', null, __alloT('stem.birdlab.wl_q3', 'Make a bird twice as big in every direction: its weight goes up 8 times, its wing area 4 times. What happens to its wing loading?'))),
+            h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 6 } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#34d399', cursor: 'pointer' } },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                __alloT('stem.birdlab.wl_understood', 'I can explain it in my own words')),
+              iq.understood ? h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                'aria-label': __alloT('stem.birdlab.how_do_wing_loading_aspect_ratio_shape', 'How do wing loading + aspect ratio shape flight strategy?'),
+                placeholder: __alloT('stem.birdlab.how_do_wing_loading_aspect_ratio_shape', 'How do wing loading + aspect ratio shape flight strategy?'),
+                style: { width: '100%', minHeight: 60, padding: 6, background: panel, color: text, border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, marginTop: 6 }, rows: 3 }) : null),
+            h('p', { style: { marginTop: 10, fontSize: 11, color: muted, lineHeight: 1.45 } },
+              __alloT('stem.birdlab.wl_source', 'Measurements: Alerstam and others (2007), wing area by Pennycuick\'s method; albatross after Pennycuick. Design note: no score and no answer map; the pattern comes from the birds you log.'))));
+      }
+      if (view === 'wingHunt') return h(stableType('WingHuntView', WingHuntView));
       return h(stableType('MainMenu', MainMenu));
     }
   });

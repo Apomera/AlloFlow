@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { Blob as NodeBlob } from 'node:buffer';
 import { CompressionStream as NodeCompressionStream, DecompressionStream as NodeDecompressionStream } from 'node:stream/web';
 import { resolve } from 'node:path';

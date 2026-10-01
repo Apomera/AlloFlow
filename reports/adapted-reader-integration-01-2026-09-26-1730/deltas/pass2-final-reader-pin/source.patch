@@ -1,0 +1,14 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -14724,9 +14724,9 @@
+     loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=55e824a46');
+     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=55e824a46');
+     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=55e824a46');
+     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=55e824a46');
+-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=2344b55e'); }; })();
++    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=a1b6e046'); }; })();
+     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
+     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=55e824a46');
+     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=55e824a46');
+     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=55e824a46');

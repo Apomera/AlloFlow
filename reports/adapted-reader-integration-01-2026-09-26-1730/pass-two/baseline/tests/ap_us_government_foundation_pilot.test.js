@@ -1,0 +1,163 @@
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const root = resolve(import.meta.dirname, '..');
+const packPath = resolve(root, 'test_prep/ap_us_government_foundation_pilot.json');
+const libraryPath = resolve(root, 'test_prep/ap_us_government_foundation_pilot_learning_library.json');
+const qaPath = resolve(root, 'test_prep/ap_us_government_foundation_pilot_qa.json');
+const manifestPath = resolve(root, 'test_prep/pack_manifest.json');
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function sha256(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function countBy(values) {
+  return values.reduce((counts, value) => {
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+const pack = readJson(packPath);
+const library = readJson(libraryPath);
+const qa = readJson(qaPath);
+const expectedFoundationalDocumentIds = [
+  'articles-of-confederation',
+  'brutus-no-1',
+  'constitution-of-the-united-states',
+  'declaration-of-independence',
+  'emancipation-proclamation',
+  'federalist-no-10',
+  'federalist-no-39',
+  'federalist-no-51',
+  'federalist-no-70',
+  'federalist-no-78',
+  'gettysburg-address',
+  'letter-from-a-birmingham-jail',
+  'adam-smith-wealth-of-nations',
+];
+
+describe('AP U.S. Government and Politics internal foundation pilot', () => {
+  it('crosswalks the current five-unit, sixty-topic public framework without presenting itself as official', () => {
+    expect(pack.id).toBe('ap-us-government-foundation-pilot');
+    expect(pack.version).toBe('0.8.0-internal-preview');
+    expect(pack.status).toBe('preview');
+    expect(pack.visibility).toBe('internal');
+    expect(pack.released).toBe(false);
+    expect(pack.releaseEligible).toBe(false);
+    expect(pack.disclaimer).toMatch(/unofficial/i);
+    expect(pack.disclaimer).toMatch(/official scores|score predictions/i);
+    expect(pack.officialBlueprintUrl).toContain('ap-us-government-and-politics-course-and-exam-description.pdf');
+    expect(pack.domains).toHaveLength(5);
+    expect(pack.blueprint.officialFrameworkTopicCount).toBe(60);
+    expect(pack.blueprint.officialFrameworkTopicIds).toHaveLength(60);
+    expect(pack.blueprint.bigIdeas).toHaveLength(5);
+    expect(pack.blueprint.skills).toHaveLength(5);
+    expect(pack.blueprint.foundationalDocumentCatalog).toHaveLength(13);
+    expect(pack.blueprint.foundationalDocumentCount).toBe(13);
+    expect(pack.foundationalDocumentCount).toBe(13);
+    expect(pack.blueprint.foundationalDocumentRoutes).toHaveLength(13);
+    expect(pack.blueprint.foundationalDocumentRouteCount).toBe(13);
+    expect(pack.foundationalDocumentRouteCount).toBe(13);
+    expect(new Set(pack.blueprint.foundationalDocumentCatalog.map((document) => document.id))).toEqual(new Set(expectedFoundationalDocumentIds));
+    expect(pack.blueprint.foundationalDocumentCatalog.every((document) => document.requiredForAcademicYear === '2026-27' && document.reproducedText === false && document.releaseEligible === false && document.sourceUse.includes('no official document text'))).toBe(true);
+    expect(pack.sourceCatalog.some((source) => source.url.includes('course-and-exam-description-clarifications-effective-fall-2026.pdf'))).toBe(true);
+    expect(pack.clarificationsUrl).toContain('course-and-exam-description-clarifications-effective-fall-2026.pdf');
+    expect(pack.capabilities.frqWorkshopsIncluded).toBe(true);
+    expect(pack.constructedResponseWorkshopCount).toBe(5);
+  });
+
+  it('contains a balanced 260-item pilot with three angles for every topic', () => {
+    const unitCounts = countBy(pack.items.map((item) => item.domainId));
+    const skillCounts = countBy(pack.items.map((item) => item.skillId));
+    const answerCounts = countBy(pack.items.map((item) => String(item.answerIndex)));
+    const topicCounts = countBy(pack.items.flatMap((item) => item.topicIds));
+    const transferTopicCounts = countBy(pack.items.filter((item) => item.practiceSlice === 'transfer-slice').flatMap((item) => item.topicIds));
+
+    expect(pack.items).toHaveLength(260);
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(260);
+    expect(Object.values(unitCounts).sort((a, b) => a - b)).toEqual([34, 43, 45, 63, 75]);
+    expect(Object.values(topicCounts).every((count) => count >= 3)).toBe(true);
+    expect(Object.keys(topicCounts)).toHaveLength(60);
+    expect(pack.depthCoverage).toMatchObject({ baseItemCount: 100, depthItemCount: 100, transferItemCount: 60, topicsWithAtLeastTwoItems: 60, topicsWithAtLeastThreeItems: 60, topicCount: 60 });
+    expect(pack.items.filter((item) => item.practiceSlice === 'foundation-slice')).toHaveLength(100);
+    expect(pack.items.filter((item) => item.practiceSlice === 'depth-slice')).toHaveLength(100);
+    expect(pack.items.filter((item) => item.practiceSlice === 'transfer-slice')).toHaveLength(60);
+    expect(Object.keys(transferTopicCounts)).toHaveLength(60);
+    expect(Object.values(transferTopicCounts).every((count) => count === 1)).toBe(true);
+    expect(pack.items.every((item) => (item.practiceSlice === 'foundation-slice' && item.practiceAngle === 'foundation') || (item.practiceSlice === 'depth-slice' && item.practiceAngle === 'depth') || (item.practiceSlice === 'transfer-slice' && item.practiceAngle === 'transfer'))).toBe(true);
+    expect(pack.practiceRouting).toMatchObject({ mode: 'section-linked-item-routes', sectionCount: 15, itemCount: 260, uniqueItemCount: 260, foundationItemCount: 100, depthItemCount: 100, transferItemCount: 60, topicDrillMapCount: 60 });
+    expect(Object.keys(skillCounts).sort()).toEqual([
+      '1.A', '1.B', '1.C', '1.D', '1.E',
+      '2.A', '2.B', '2.C', '2.D',
+      '3.A', '3.B', '3.C', '3.D', '3.E', '3.F',
+      '4.A', '4.B', '4.C', '4.D',
+      '5.A', '5.B', '5.C', '5.D',
+    ]);
+    expect(answerCounts).toEqual({ 0: 65, 1: 65, 2: 65, 3: 65 });
+    expect(pack.sections).toHaveLength(52);
+    expect(pack.sections.every((section) => section.itemIds.length === 5)).toBe(true);
+    expect(pack.items.every((item) => item.choices.length === 4 && item.choiceRationales.length === 4)).toBe(true);
+    expect(pack.items.every((item) => item.provenance === 'native-original' && item.releaseEligible === false)).toBe(true);
+  });
+
+  it('routes every item to a topic-level remediation target and structured unit lesson', () => {
+    const objectiveById = new Map(pack.blueprint.learningObjectiveCatalog.map((objective) => [objective.id, objective]));
+    expect(pack.blueprint.learningObjectiveCatalog).toHaveLength(60);
+    for (const item of pack.items) {
+      const objective = objectiveById.get(item.learningObjectiveId);
+      expect(objective).toBeTruthy();
+      expect(objective.topicId).toBe(item.topicIds[0]);
+      expect(objective.domainId).toBe(item.domainId);
+      expect(item.chapterIds).toEqual([objective.chapterId]);
+      expect(item.learningSectionId).toBe(objective.sectionId);
+      expect(objective.practiceIds).toContain(item.practiceId);
+      expect(Array.isArray(item.foundationalDocumentIds)).toBe(true);
+      expect(item.foundationalDocumentIds.every((documentId) => expectedFoundationalDocumentIds.includes(documentId))).toBe(true);
+    }
+  });
+
+  it('provides five native chapters, fifteen structured sections, and deterministic QA', () => {
+    expect(library.chapters).toHaveLength(5);
+    expect(library.chapters.every((chapter) => chapter.foundationPrototype)).toBe(true);
+    expect(library.chapters.every((chapter) => chapter.sections.length === 3)).toBe(true);
+    expect(library.chapters.flatMap((chapter) => chapter.knowledgeChecks)).toHaveLength(15);
+    expect(library.flashcards).toHaveLength(15);
+    expect(library.memoryAids).toHaveLength(5);
+    expect(library.constructedResponseWorkshops).toHaveLength(5);
+    expect(library.blueprint.foundationalDocumentCatalog).toHaveLength(13);
+    expect(library.foundationalDocumentCatalog).toHaveLength(13);
+    expect(library.blueprint.foundationalDocumentRoutes).toHaveLength(13);
+    expect(library.foundationalDocumentRoutes).toHaveLength(13);
+    expect(library.foundationalDocumentRoutes.every((route) => route.itemCount === route.itemIds.length && route.itemCount > 0 && route.sectionIds.length > 0 && route.references.length === 3 && route.accessNote.includes('does not reproduce official document text'))).toBe(true);
+    expect(library.constructedResponseWorkshops.every((workshop) => workshop.unscored === true && workshop.automatedScoring === false && workshop.scorePrediction === false && workshop.syntheticStimulus === true && workshop.releaseEligible === false && workshop.foundationalDocumentIds.every((documentId) => expectedFoundationalDocumentIds.includes(documentId)) && workshop.taskParts.length === 3 && workshop.planningFrame.length === 4 && workshop.successCriteria.length === 4 && workshop.commonPitfalls.length === 4 && workshop.sampleOutline.length === 3)).toBe(true);
+    expect(library.constructedResponseWorkshops.every((workshop) => workshop.rights.originalStimulus === true && workshop.accessibility.stimulusFormat === 'plain text' && workshop.accessibility.readingOrder === 'linear')).toBe(true);
+    expect(library.summary).toMatchObject({ chapters: 5, sections: 15, knowledgeChecks: 15, constructedResponseWorkshops: 5, sourceReviewedConstructedResponseWorkshops: 5, foundationalDocuments: 13, sourceReviewedFoundationalDocuments: 13, foundationalDocumentRoutes: 13, sourceReviewedFoundationalDocumentRoutes: 13, richLessonPrototypes: 5 });
+    expect(library.chapters.every((chapter) => chapter.sections.every((section) => section.contentBlocks.length >= 8))).toBe(true);
+    const studySections = library.chapters.flatMap((chapter) => chapter.sections);
+    expect(studySections.every((section) => section.practiceRoute.itemCount === section.practiceRoute.itemIds.length &&
+      section.practiceRoute.foundationItemCount + section.practiceRoute.depthItemCount + section.practiceRoute.transferItemCount === section.practiceRoute.itemCount &&
+      Object.values(section.practiceRoute.topicCounts).every((count) => count >= 3) &&
+      Object.keys(section.practiceRoute.topicItemIds).length === Object.keys(section.practiceRoute.topicCounts).length &&
+      Object.entries(section.practiceRoute.topicItemIds).every(([topicId, itemIds]) => itemIds.length === section.practiceRoute.topicCounts[topicId] && itemIds.every((itemId) => section.practiceRoute.itemIds.includes(itemId))))).toBe(true);
+    expect(library.practiceRouting).toMatchObject({ mode: 'section-linked-item-routes', sectionCount: 15, itemCount: 260, uniqueItemCount: 260, foundationItemCount: 100, depthItemCount: 100, transferItemCount: 60, topicDrillMapCount: 60 });
+    expect(qa.automatedAssessment).toBe('pass');
+    expect(qa.structuralFindings).toEqual([]);
+    expect(qa.metrics).toMatchObject({ itemCount: 260, unitCount: 5, topicCount: 60, topicsWithAtLeastTwoItems: 60, topicsWithAtLeastThreeItems: 60, chapterCount: 5, sectionCount: 15, constructedResponseWorkshopCount: 5, foundationalDocumentCount: 13, representedFoundationalDocumentCount: 13, foundationalDocumentRouteCount: 13, representedFoundationalDocumentRouteCount: 13, practiceSliceCounts: { 'foundation-slice': 100, 'depth-slice': 100, 'transfer-slice': 60 }, transferItemCount: 60, transferTopicCount: 60, topicDrillMapCount: 60 });
+  });
+
+  it('binds the generated pack and QA record into the lazy manifest', () => {
+    const manifest = readJson(manifestPath);
+    const entry = manifest.entries.find((candidate) => candidate.id === pack.id);
+    expect(entry).toMatchObject({ loadMode: 'lazy', visibility: 'internal', itemCount: 260, domainCount: 5 });
+    expect(entry.sha256).toBe(sha256(packPath));
+    expect(entry.nativeQaSha256).toBe(sha256(qaPath));
+    expect(entry.packUrl).toBe('./test_prep/ap_us_government_foundation_pilot.json');
+  });
+});

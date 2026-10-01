@@ -1,7 +1,9 @@
 {
   "checks": [
     "Cold sibling-module loading",
+    "Inquiry, prediction, and primary play controls lead into the landscape",
     "Optional ground grid changes only rendering and restores the identical landscape",
+    "Land choices are pure previews; edge patches clip, stream beds stay intact, and Apply/Undo restores evidence",
     "Undo restores edited cover without changing water",
     "Model-derived flow arrows and accessible cell-transfer readings",
     "Live storm, pause, step, conserved completion, immutable baseline",
@@ -15,6 +17,7 @@
     "Mode-switch persistence and paused restore",
     "Keyboard location selection and soil lens",
     "Narrow layouts and a stable paused canvas under reduced motion",
+    "Pending patch controls remain accessible in high contrast and at 320px",
     "Difference preferences restore with dark-mode contrast and 320px layout",
     "Equal-depth rainfall timing experiment, replay controls, recorded intensity, and exported provenance",
     "High-density canvas retains logical coordinates and keyboard selection",

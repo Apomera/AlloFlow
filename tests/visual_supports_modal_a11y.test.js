@@ -12,7 +12,7 @@ describe('visual supports modal accessibility', () => {
   });
 
   it('implements the keyboard-operable ARIA tabs pattern', () => {
-    expect(source).toContain('role="tablist" aria-label="Visual support type"');
+    expect(source).toContain("role=\"tablist\" aria-label={tr('type_label', 'Visual support type')}");
     expect(source.match(/role="tab" aria-selected=/g)?.length).toBe(2);
     expect(source).toContain("event.key === 'ArrowRight'");
     expect(source).toContain('role="tabpanel"');

@@ -1,0 +1,34 @@
+{
+  "structure": {
+    "vertices": 962,
+    "triangles": 1824,
+    "headVertices": 425,
+    "clearance": 0.003267194119271094,
+    "area": 0.000009833207945939587,
+    "minColor": 0.7994388937950134,
+    "maxColor": 0.9192779064178467,
+    "chroma": 0.04327511787414551,
+    "finite": true,
+    "attached": true,
+    "eyeClearance": 0.0020000000000000295,
+    "plumage": "white-facial-feathers",
+    "meshes": 9,
+    "texture": "5FEF6931-3E5B-4054-91AF-45F5C8092F9A",
+    "geometry": "43F3C0C3-D265-4CCF-9531-FD2B7C35FF24",
+    "version": 0,
+    "bytes": 53272,
+    "drawCalls": 18,
+    "textures": 13,
+    "geometries": 51
+  },
+  "pixelChecks": [
+    {
+      "view": "front",
+      "changed": 18121
+    },
+    {
+      "view": "side",
+      "changed": 12967
+    }
+  ]
+}

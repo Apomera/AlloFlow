@@ -30,7 +30,8 @@ const addGlossaryTerm = async (rawWord, deps, quick = false) => {
   } = deps;
   const word = String(rawWord || "").replace(/[\u0000-\u001f\u007f]/g, "").trim();
   if (!word || !quick && generatedContent?.type !== "glossary") return false;
-  const origin = generatedContent?.type === "glossary" ? generatedContent : [...history || []].reverse().find((resource) => resource?.type === "glossary");
+  const findRelated = window.AlloModules?.GlossaryHelpers?.findRelatedHistoryItem;
+  const origin = generatedContent?.type === "glossary" ? generatedContent : typeof findRelated === "function" ? findRelated(history, "glossary", generatedContent) : [...history || []].reverse().find((resource) => resource?.type === "glossary");
   const begin = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask;
   if (origin && !begin) throw new Error("Glossary helpers are not loaded. Reload and retry.");
   const task = origin ? begin(deps, null, [], "add:" + word.toLocaleLowerCase(), origin) : null;
@@ -39,7 +40,8 @@ const addGlossaryTerm = async (rawWord, deps, quick = false) => {
   const current = () => !task || task.isCurrent();
   setIsAddingTerm(true);
   try {
-    const languages = Array.isArray(selectedLanguages) ? selectedLanguages : [];
+    const originLanguages = origin && Array.isArray(origin.data) ? [...new Set(origin.data.flatMap((item) => item && item.translations && typeof item.translations === "object" && !Array.isArray(item.translations) ? Object.keys(item.translations).filter((lang) => String(item.translations[lang] || "").trim()) : []))] : null;
+    const languages = originLanguages || (Array.isArray(selectedLanguages) ? selectedLanguages : []);
     const prompt = [
       "Analyze the input term " + JSON.stringify(word) + ".",
       '1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".',

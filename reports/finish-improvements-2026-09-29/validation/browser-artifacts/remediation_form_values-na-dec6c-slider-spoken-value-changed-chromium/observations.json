@@ -1,0 +1,53 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:1"
+  },
+  "repaired": {
+    "form": null,
+    "sliders": [
+      {
+        "name": "Temperature",
+        "value": 50,
+        "valueText": "Warm"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 1,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 1,
+      "candidateRejections": [
+        {
+          "chunkId": "1",
+          "phase": "single",
+          "reason": "form-state-changed",
+          "sourceLocation": "control:1"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "form": null,
+    "sliders": [
+      {
+        "name": "Temperature",
+        "value": 50,
+        "valueText": "Warm"
+      }
+    ]
+  },
+  "candidate": {
+    "form": null,
+    "sliders": [
+      {
+        "name": "Temperature",
+        "value": 50,
+        "valueText": "Cold"
+      }
+    ]
+  }
+}

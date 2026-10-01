@@ -1,0 +1,157 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "unconfirmedResultVisible": true,
+      "duplicateGuard": true,
+      "focusReturned": true
+    },
+    {
+      "route": "background-save-before-activation",
+      "focusReturned": true
+    },
+    {
+      "route": "background-save-focus-moved",
+      "focusPreserved": true
+    },
+    {
+      "route": "navigate-during-save",
+      "oldRequestAborted": true,
+      "newRequestIndependent": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Mock storage APIs; no actual persistent writes or reopen verification",
+    "DOM live-region semantics are not real AT announcement verification",
+    "200% computed-font simulation is not real browser text zoom or 400% zoom",
+    "No hardware mobile or microphone use"
+  ]
+}

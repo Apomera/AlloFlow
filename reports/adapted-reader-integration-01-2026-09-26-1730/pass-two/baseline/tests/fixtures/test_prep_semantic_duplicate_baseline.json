@@ -1,0 +1,115 @@
+{
+  "note": "Semantic concept-duplicate ratchet for the non-EPPP credential packs. Mirrors audit_eppp_distractor_quality.cjs so scores are comparable. hiddenPairs are semantically duplicate but kernel-distinct, so each one inflates distinctContentKernels and understates the authoring gap; those are the number to drive down. Rates may fall, never rise.",
+  "packs": {
+    "audiology_5343": {
+      "pairs": 69,
+      "hiddenPairs": 19,
+      "hiddenSameBank": 2
+    },
+    "early_childhood_5025": {
+      "pairs": 81,
+      "hiddenPairs": 18,
+      "hiddenSameBank": 15
+    },
+    "educational_leadership_5412": {
+      "pairs": 53,
+      "hiddenPairs": 7,
+      "hiddenSameBank": 0
+    },
+    "esol_5362": {
+      "pairs": 42,
+      "hiddenPairs": 1,
+      "hiddenSameBank": 0
+    },
+    "parapro": {
+      "pairs": 12,
+      "hiddenPairs": 12,
+      "hiddenSameBank": 1
+    },
+    "plt_5_9_5623": {
+      "pairs": 19,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "plt_7_12_5624": {
+      "pairs": 19,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "plt_early_childhood_5621": {
+      "pairs": 19,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "plt_k6_5622": {
+      "pairs": 19,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "praxis_core_5752": {
+      "pairs": 23,
+      "hiddenPairs": 7,
+      "hiddenSameBank": 2
+    },
+    "reading_specialist_5302": {
+      "pairs": 28,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "school_counselor_5422": {
+      "pairs": 32,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "school_librarian_5312": {
+      "pairs": 605,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "school_psychologist_5403": {
+      "pairs": 45,
+      "hiddenPairs": 1,
+      "hiddenSameBank": 0
+    },
+    "special_education_5355": {
+      "pairs": 32,
+      "hiddenPairs": 2,
+      "hiddenSameBank": 1
+    },
+    "special_education_behavior_emotional_5372": {
+      "pairs": 30,
+      "hiddenPairs": 2,
+      "hiddenSameBank": 2
+    },
+    "special_education_early_childhood_5692": {
+      "pairs": 33,
+      "hiddenPairs": 1,
+      "hiddenSameBank": 1
+    },
+    "special_education_intellectual_disabilities_5322": {
+      "pairs": 30,
+      "hiddenPairs": 1,
+      "hiddenSameBank": 1
+    },
+    "special_education_learning_disabilities_5383": {
+      "pairs": 27,
+      "hiddenPairs": 6,
+      "hiddenSameBank": 5
+    },
+    "special_education_severe_profound_5547": {
+      "pairs": 29,
+      "hiddenPairs": 2,
+      "hiddenSameBank": 1
+    },
+    "speech_language_pathology_5331": {
+      "pairs": 41,
+      "hiddenPairs": 0,
+      "hiddenSameBank": 0
+    },
+    "teaching_reading_5205": {
+      "pairs": 21,
+      "hiddenPairs": 2,
+      "hiddenSameBank": 2
+    }
+  }
+}

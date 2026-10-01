@@ -70,10 +70,11 @@ describe('beehive canvas animation smoothness', () => {
   });
 
   it('keeps the waggle dance legible without changing the taught tempo', () => {
-    // The distance encoding is the straight-run duration (dnPhase), standardised at ~1 km/sec to
-    // agree with the field guide and the worked math problems. It must survive any wag retiming.
-    expect(SRC).toMatch(/dnPhase/);
-    const wag = SRC.match(/dancerWag = inStraightRun \? Math\.sin\(t2 \* ([\d.]+)\)/);
+    // The distance encoding is the straight-run duration, standardised at ~1 km/sec to agree with
+    // the field guide and the worked math problems. It must survive any wag retiming. (Since
+    // 2026-09-28 both waggle panels read bhWaggleDemoState, whose runSec = distM / 1000.)
+    expect(SRC).toContain('var runSec = Math.max(0.4, Math.min(4.5, site.distM / 1000));');
+    const wag = SRC.match(/dancerWag = ws\.phase === 'run' \? Math\.sin\(t2 \* ([\d.]+)\)/);
     expect(wag, 'dancerWag site not found').toBeTruthy();
     expect(parseFloat(wag[1])).toBeLessThanOrEqual(MAX_RAD_PER_FRAME);
   });

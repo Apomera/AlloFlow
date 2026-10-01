@@ -1,0 +1,17 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:31028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:31028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1772:5 › family resemblance on a phone preserves unknown legacy provenance and supports keyboard exploration
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1826:5 › birth comparison opens for a newborn and visits either real parent without losing the way back
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1915:5 › sibling explorer compares real full and half siblings with synchronized traits and an unchanged island
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1971:5 › sibling explorer on a phone supports keyboard comparison, empty groups and legacy saves
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2008:5 › sibling explorer without WebGL pauses real playback without changing the chosen resident
+[1A[2K  5 passed (57.2s)

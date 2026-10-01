@@ -12,23 +12,32 @@ function fixture() {
   item.readingSupports = api.validateReadingSupports(item, [{ id: 'heath', kind: 'gloss', start, end: start + 5, quote: 'heath', text: 'open land', priority: 'essential' }]);
   return { item, text, start };
 }
-function harness(item, generate = vi.fn()) {
-  const stateRef = { current: { history: [item], generatedContent: item, isTeacherMode: true } };
-  const source = readFileSync(resolve('AlloFlowANTI.txt'), 'utf8');
+function harness(item, generate = vi.fn(), history = [item]) {
+  const stateRef = { current: { history, generatedContent: item, isTeacherMode: true } };
+  const source = readFileSync(resolve(process.env.ALLO_ANTI_CANDIDATE || 'AlloFlowANTI.txt'), 'utf8');
   const from = source.indexOf('  const handleUpdateReadingSupports =');
   const to = source.indexOf('  const getFilteredHistory =', from);
-  const onUpdateResource = (id, updater) => {
-    const current = stateRef.current.history.find(row => row.id === id);
+  // The handlers name the copy they change (imported packs can repeat a public
+  // id), using ANTI's own getArtifactInstanceId, sliced here rather than copied.
+  const helperFrom = source.indexOf('const ALLO_ARTIFACT_INSTANCE_ID_FIELD =');
+  const helperTo = source.indexOf('const _alloSafeArtifactPublicIdValue =', helperFrom);
+  if (from < 0 || to < 0 || helperFrom < 0 || helperTo < 0) throw new Error('ANTI anchors moved');
+  const instanceHelpers = source.slice(helperFrom, helperTo);
+  const instanceOf = new Function(instanceHelpers + '\nreturn getArtifactInstanceId;')();
+  // Like the host's onUpdateResource: given an instance id, only that copy changes.
+  const onUpdateResource = vi.fn((id, updater, options = {}) => {
+    const instanceId = options && typeof options.instanceId === 'string' ? options.instanceId : '';
+    const current = stateRef.current.history.find(row => row.id === id && (!instanceId || instanceOf(row) === instanceId));
     if (!current) return false;
     const updated = updater(current);
     if (!updated || updated === current) return false;
-    stateRef.current.history = stateRef.current.history.map(row => row.id === id ? updated : row);
-    if (stateRef.current.generatedContent?.id === id) stateRef.current.generatedContent = updated;
+    stateRef.current.history = stateRef.current.history.map(row => row === current ? updated : row);
+    if (stateRef.current.generatedContent === current) stateRef.current.generatedContent = updated;
     return true;
-  };
+  });
   window.AlloModules.GenDispatcher = { generateReadingSupports: generate };
-  const callbacks = new Function('window', '_resourceMutationStateRef', 'onUpdateResource', 'callGemini', 'cleanJson', 'gradeLevel', 'leveledTextLanguage', source.slice(from, to) + '\nreturn { edit: handleUpdateReadingSupports, generate: handleGenerateReadingSupports };')(window, stateRef, onUpdateResource, vi.fn(), value => value, '5', 'English');
-  return { ...callbacks, stateRef, current: () => stateRef.current.history[0] };
+  const callbacks = new Function('window', '_resourceMutationStateRef', 'onUpdateResource', 'callGemini', 'cleanJson', 'gradeLevel', 'leveledTextLanguage', instanceHelpers + source.slice(from, to) + '\nreturn { edit: handleUpdateReadingSupports, generate: handleGenerateReadingSupports };')(window, stateRef, onUpdateResource, vi.fn(), value => value, '5', 'English');
+  return { ...callbacks, stateRef, onUpdateResource, current: () => stateRef.current.history[0] };
 }
 describe('curated reading support host updates', () => {
   it('saves a teacher explanation to history and current view without changing the original', () => {
@@ -76,5 +85,15 @@ describe('curated reading support host updates', () => {
   it('rejects a stale source snapshot and leaves the current saved reading intact', () => {
     const { item } = fixture(); const replacement = api.createSupportedReading(api.createSourceSnapshot('A different original.', { sourceArtifactId: 'source-a' }), { id: item.id, sourceFamilyId: 'source-a', unitId: 'lesson-a' });
     const h = harness(replacement); expect(() => h.edit(item, { type: 'remove', id: 'heath' })).toThrow(/changed/); expect(h.current()).toBe(replacement);
+  });
+  it('changes only the copy being edited when an imported pack repeats the same id', () => {
+    const { item, start } = fixture();
+    const mine = { ...item, _artifactInstanceId: 'artifact-mine-0001' }, imported = { ...item, _artifactInstanceId: 'artifact-imported-01' };
+    const h = harness(mine, vi.fn(), [imported, mine]);
+    h.edit(mine, { type: 'upsert', annotation: { id: 'heath', start, end: start + 5, quote: 'heath', text: 'my explanation', priority: 'essential' } });
+    expect(h.onUpdateResource.mock.calls[0][2]).toEqual({ instanceId: 'artifact-mine-0001' });
+    const [importedAfter, mineAfter] = h.stateRef.current.history;
+    expect(mineAfter.readingSupports.annotations[0].text).toBe('my explanation');
+    expect(importedAfter).toBe(imported);
   });
 });

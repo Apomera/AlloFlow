@@ -1,0 +1,110 @@
+{
+  "enhancement": "Black-hole mass, horizon size and Hawking temperature explorer",
+  "unitTests": {
+    "total": 232,
+    "passed": 232,
+    "failed": 0
+  },
+  "browserScenarios": {
+    "total": 6,
+    "passed": 6,
+    "cases": [
+      {
+        "title": "mass examples keep horizon, temperature curve, physical readouts and source labels synchronized",
+        "status": "passed"
+      },
+      {
+        "title": "log controls and keyboard changes move to custom mass and explain both sides of CMB balance",
+        "status": "passed"
+      },
+      {
+        "title": "touch input and restored published presets use the same mass without disturbing topic focus",
+        "status": "passed"
+      },
+      {
+        "title": "sources give study uncertainties and distinguish horizon size from EHT imagery and Hawking detection",
+        "status": "passed"
+      },
+      {
+        "title": "phone contrast diagrams have readable separated labels, real disk ratios and usable information comparison",
+        "status": "passed"
+      },
+      {
+        "title": "damaged and extreme saved masses recover to finite diagrams and remain editable",
+        "status": "passed"
+      }
+    ]
+  },
+  "build": {
+    "sourceScopeReconstruction": true,
+    "existingTestScope": true,
+    "syntaxValid": true,
+    "mirrorEqual": true,
+    "englishLabelsAddedOrCorrected": 58,
+    "sourceSHA256": "4cc55b4430a673ec41904a2122b80e9b6c74c4eea788a9cd770a9289ad1479ab"
+  },
+  "whitespaceCheckPassed": true,
+  "visualReview": {
+    "desktop": true,
+    "phone320Contrast": true,
+    "minimumSVGLabelPixels": 11,
+    "minimumControlHeightPixels": 44,
+    "temperatureTicksSeparated": true,
+    "proportionalHorizonDisks": true
+  },
+  "scientificReferences": [
+    {
+      "url": "https://eventhorizontelescope.org/publications/first-sagittarius-event-horizon-telescope-results-iv-variability-morphology-and",
+      "used": "Fixed EHT 2022 Sagittarius A* mass estimate: 4.0 million solar masses, −0.6/+1.1 million interval."
+    },
+    {
+      "url": "https://arxiv.org/abs/1906.11243",
+      "used": "Fixed EHT 2019 M87* mass estimate: 6.5 billion solar masses, ±0.2 billion statistical and ±0.7 billion systematic."
+    },
+    {
+      "url": "https://doi.org/10.1007/BF02345020",
+      "used": "Hawking temperature and horizon entropy relations."
+    },
+    {
+      "url": "https://arxiv.org/abs/0911.1955",
+      "used": "Fixsen 2009 CMB reference: 2.72548 ±0.00057 K."
+    },
+    {
+      "url": "https://physics.nist.gov/cuu/Constants/index.html",
+      "used": "CODATA 2022 c, h, kB and G."
+    },
+    {
+      "url": "https://arxiv.org/abs/1510.07674",
+      "used": "IAU nominal solar GM: 1.3271244e20 m³/s²."
+    },
+    {
+      "url": "https://arxiv.org/abs/hep-th/9306083",
+      "used": "Conceptual radiation entropy Page curve; no numerical time or mass turnover claim."
+    },
+    {
+      "url": "https://arxiv.org/abs/1905.08255",
+      "used": "Controlled models reproducing Page-curve behaviour."
+    },
+    {
+      "url": "https://arxiv.org/abs/2509.17599",
+      "used": "Recent primary literature describing astrophysical Hawking radiation as unverified."
+    }
+  ],
+  "physicalChecks": {
+    "oneMillimetreHorizonTemperatureK": 0.364446,
+    "SolarMassDiameterKm": 5.9065,
+    "SolarMassTemperatureNanoK": 61.7,
+    "relativeMassScaling": "diameter ∝ mass; temperature ∝ 1/mass; horizon entropy ∝ mass²"
+  },
+  "modelLimits": "Schwarzschild equivalents assume zero spin and charge. Published presets supply only central mass estimates. No uncertainty propagation, accretion, shadow ray tracing, emission rate, evaporation timeline or quantum endpoint is simulated. The CMB comparison describes photon exchange. Page curves are conceptual and independent of mass controls.",
+  "corrections": [
+    "A 1 mm horizon diameter implies about 0.36 K, replacing the incorrect 10²³ K statement.",
+    "Horizon entropy is reported as S/kB; information capacity in bits includes ln 2.",
+    "Page time is an entropy turnover, not a claim that half the mass has evaporated."
+  ],
+  "resolvedDuringVerification": [
+    "One automatic permission-review timeout was retried successfully.",
+    "A shared registry read caught a concurrent incomplete write; fresh reads of both registries are valid and all owned labels match."
+  ],
+  "commitCreated": false
+}

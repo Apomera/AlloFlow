@@ -456,7 +456,7 @@ function CanvasRecoveryDialogView(props) {
     className: "space-y-3"
   }, canvasRecoveryStore.snapshots.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "rounded-xl bg-slate-50 p-4 text-sm text-slate-700"
-  }, "No saved work remains on this device."), canvasRecoveryStore.snapshots.map((snapshot, index) => /*#__PURE__*/React.createElement("div", {
+  }, "No recovery workspaces are listed. Other saved work may still be available in Device storage."), canvasRecoveryStore.snapshots.map((snapshot, index) => /*#__PURE__*/React.createElement("div", {
     key: snapshot.id,
     className: "rounded-2xl border border-slate-200 p-4"
   }, /*#__PURE__*/React.createElement("div", {

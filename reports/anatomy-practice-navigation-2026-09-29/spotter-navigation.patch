@@ -1,0 +1,172 @@
+--- a/stem_lab/stem_tool_anatomy.js
++++ b/stem_lab/stem_tool_anatomy.js
+@@ -6064,6 +6064,35 @@
+           return JSON.stringify([state._spotterTarget,state._spotterStartTime,state._spotterSerial,state._spotterRoundTimed === true,
+             Array.isArray(state._spotterOpts) ? state._spotterOpts.map(function(option){return option && option.id;}) : []]);
+         }
++        function spotterContextKey(state) {
++          return JSON.stringify([state.system,state.view,state.complexity]);
++        }
++        function focusSpotterStage(stage, questionKey, contextKey, answerId) {
++          setTimeout(function() {
++            var panel = document.querySelector('[data-anatomy-spotter-panel]');
++            if (!panel || panel.getAttribute('data-anatomy-spotter-question') !== questionKey || panel.getAttribute('data-anatomy-spotter-context') !== contextKey) return;
++            if (typeof answerId === 'string' && panel.getAttribute('data-anatomy-spotter-answer') !== answerId) return;
++            var active = panel.getAttribute('data-anatomy-spotter-active') === 'true';
++            if ((stage === 'start' && active) || (stage !== 'start' && stage !== 'panel' && !active)) return;
++            var target = stage === 'diagram' ? document.querySelector('[data-anatomy-model-shell] [data-anatomy-canvas]')
++              : stage === 'feedback' ? panel.querySelector('[data-anatomy-spotter-feedback]')
++              : stage === 'question' ? panel.querySelector('#anatomy-spotter-question-title')
++              : stage === 'start' ? panel.querySelector('[data-anatomy-spotter-start]') : panel;
++            if (!target || typeof target.focus !== 'function') return;
++            target.focus({preventScroll:true});
++            var anchor = stage === 'diagram' ? document.querySelector('[data-anatomy-spotter-return]') || target : target;
++            if (typeof anchor.scrollIntoView === 'function') anchor.scrollIntoView({block:'start',behavior:'auto'});
++          },0);
++        }
++        function focusCurrentSpotter() {
++          var stage = !spotterActive ? 'start' : !spotterRoundReady ? 'panel' : spotterFeedback !== null ? 'feedback' : 'question';
++          focusSpotterStage(stage,spotterQuestionKey(d),spotterContextKey(d),spotterFeedback || '');
++        }
++        function showSpotterDiagram() {
++          if (!spotterActive || !spotterRoundReady) return;
++          focusSpotterStage('diagram',spotterQuestionKey(d),spotterContextKey(d),spotterFeedback || '');
++        }
++
+         function sameSpotterContext(state) {
+           return state._activeTab === 'spotter' && state.system === d.system && state.view === d.view && state.complexity === d.complexity;
+         }
+@@ -6080,14 +6109,15 @@
+           var candidates=pool.filter(function(structure){return anatomyEvidenceId(structure.id,knownStructureIds)!==previousConcept;});
+           var target=candidates[Math.floor(Math.random()*candidates.length)];
+           var opts=shuffleSpotter(shuffleSpotter(pool.filter(function(structure){return structure.id!==target.id;})).slice(0,3).concat([target]));
+-          var expected=spotterQuestionKey(d),accepted=false;
++          var expected=spotterQuestionKey(d),accepted=false,nextQuestionKey=null;
+           setLabToolData(function(previous){
+             var current=previous.anatomy||{};
+             if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected||(isStart&&current._spotterActive===true))return previous;
+             var patch={_spotterActive:true,_spotterTarget:target.id,_spotterFeedback:null,_spotterOpts:opts.map(function(option){return {id:option.id};}),_spotterStartTime:Date.now(),_spotterElapsed:null,_spotterRoundTimed:current._spotterTimed===true,_spotterSerial:safeNonNegativeNumber(current._spotterSerial,0,true)+1};
++            nextQuestionKey=spotterQuestionKey(Object.assign({},current,patch));
+             accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},current,patch)});
+           });
+-          setTimeout(function(){if(!accepted)return;if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));var panel=document.querySelector('[data-anatomy-spotter-panel]');if(panel)panel.focus();},0);
++          setTimeout(function(){if(!accepted)return;if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));focusSpotterStage('question',nextQuestionKey,spotterContextKey(d),'');},0);
+           return true;
+         };
+         function spotterAnswerPatch(current,optionId,expected,now) {
+@@ -6110,6 +6140,7 @@
+             playSound(correct?'spotterCorrect':'spotterWrong');
+             if(typeof announceToSR==='function')announceToSR((correct?t('stem.anatomy.spot_ref_correct','Correct. '):t('stem.anatomy.spot_ref_answer','The marked structure is '))+spotterTargetStruct.name+'. '+learnerText(spotterTargetStruct));
+             checkAnatomyChallenges();
++            focusSpotterStage('feedback',expected,spotterContextKey(d),opt.id);
+           },0);
+         }
+         function setSpotterTiming(enabled) {
+@@ -6117,9 +6148,9 @@
+         }
+         function renderSpotterEndButton() {
+           return h('button',{type:'button','data-anatomy-spotter-end':true,'aria-label':t('stem.anatomy.end_test','End Test'),className:'anatomy-spotter-end',onClick:function(){
+-            var expected=spotterQuestionKey(d),ended=false;
+-            setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;ended=true;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0,_spotterRoundTimed:false})});});
+-            setTimeout(function(){if(!ended)return;var start=document.querySelector('[data-anatomy-spotter-start]');if(start)start.focus();},0);
++            var expected=spotterQuestionKey(d),ended=false,endQuestionKey=null;
++            setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;var next=Object.assign({},current,{_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0,_spotterRoundTimed:false});endQuestionKey=spotterQuestionKey(next);ended=true;return Object.assign({},previous,{anatomy:next});});
++            setTimeout(function(){if(ended)focusSpotterStage('start',endQuestionKey,spotterContextKey(d),'');},0);
+           }},t('stem.anatomy.end_test_2','End Test'));
+         }
+ 
+@@ -14672,6 +14703,7 @@
+                   body3dStyle !== 'clinical' && expertModesAvailable && h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_opening_a_matching_synthetic_procedure_scenario_f', 'Opening a matching synthetic procedure scenario from the 3D body overview.')); } }, 'Open matching procedure')
+                 )
+               ),
++              activeTab === 'spotter' && spotterActive && spotterRoundReady && h('button',{type:'button',className:'anatomy-route-return anatomy-spotter-return','data-anatomy-spotter-return':true,onClick:focusCurrentSpotter},spotterFeedback !== null ? t('stem.anatomy.practice_flow_spotter_return_feedback','Return to feedback') : t('stem.anatomy.practice_flow_spotter_return_question','Return to question')),
+               h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true', 'data-allo-fs-stage': 'true', style: { position: 'relative' }, 'data-anatomy-view': bodyView3d ? '3d' : '2d' },
+                 h('button', {
+                   type: 'button',
+@@ -14693,7 +14725,7 @@
+                 ),
+                 bodyView3d && h('span', { className: 'anatomy-canvas-mode-chip', 'data-mode': body3dStyle, 'aria-hidden': 'true' }, body3dStyle === 'clinical' ? 'Clinical Atlas' : body3dStyle === 'realistic' ? '3D Surface' : '3D Blueprint'),
+                 bodyView3d && h('canvas', { role: 'img', tabIndex: 0, width: 360, height: 520, ref: stableAnatomy3dRef, className: 'anatomy-3d-canvas', 'data-anatomy-3d-canvas': 'true', 'data-anatomy-3d-style': body3dStyle, 'data-anatomy-atlas-pack': body3dStyle === 'clinical' && selectedClinicalAtlasPack ? selectedClinicalAtlasPack.id : undefined, 'data-anatomy-clinical-selection': body3dStyle === 'clinical' && selectedClinicalConceptId ? selectedClinicalConceptId : undefined, 'aria-keyshortcuts': body3dStyle === 'clinical' || detailedSurfaceView ? 'ArrowUp ArrowDown ArrowLeft ArrowRight + - R Home 0' : 'ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] R Home 0', 'aria-label': detailedSurfaceView ? t('stem.anatomy.surface_canvas_compact',"Interactive external body surface. Choose a body region, drag or open Rotate & tilt to rotate, and use plus or minus to zoom. Refit view keeps your current region and angle. Reset, Home, or R returns to the whole body. Explore structure pins in Blueprint or the 2D Atlas.") : body3dStyle === 'clinical' && selectedClinicalAtlasPack ? 'Interactive clinical atlas organ-focus model of the ' + selectedClinicalAtlasPack.focusLabel + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel or plus and minus to zoom. Use the 2D Atlas for whole-body structure selection.' : 'Interactive ' + (body3dStyle === 'realistic' ? 'realistic surface' : 'blueprint') + ' 3D overview of the ' + sys.name + '. On touch devices, use the camera buttons above. Otherwise drag to rotate and use the wheel to zoom. Use arrow keys to rotate, plus and minus to zoom, and square brackets to cycle labeled markers.', 'aria-describedby': 'anatomy-3d-status anatomy-canvas-instructions' + (body3dStyle === 'clinical' && selectedClinicalAtlasPack ? ' anatomy-clinical-visual-key-' + selectedClinicalAtlasPack.id : '') }),
+-                !bodyView3d && h('canvas', { role: 'img', tabIndex: 0, 'aria-label': canvasLabel,
++                !bodyView3d && h('canvas', { role: 'img', tabIndex: 0, 'aria-label': spotterActive && spotterFeedback === null && activeTab === 'spotter' ? t('stem.anatomy.practice_flow_spotter_diagram_label','Spotter diagram. Identify the structure at the crosshair. Use the diagram controls to inspect it, then return to the question to answer.') : canvasLabel,
+                   'aria-describedby': 'anatomy-canvas-instructions',
+                   'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight + - 0 Home F Escape',
+                   ref: stableAnatomy2dRef,
+@@ -15405,7 +15437,7 @@
+                 )
+               ) : activeTab === 'spotter' ? (
+                 // Spotter Panel
+-                h('div', { className: 'anatomy-spotter-panel bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true', tabIndex: -1,
++                h('div', { className: 'anatomy-spotter-panel bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true', 'data-anatomy-spotter-question':spotterQuestionKey(d), 'data-anatomy-spotter-context':spotterContextKey(d), 'data-anatomy-spotter-answer':spotterFeedback || '', 'data-anatomy-spotter-active':spotterActive ? 'true' : 'false', tabIndex: -1,
+                   onKeyDown: function(e) {
+                     var keyNumber = parseInt(e.key, 10);
+                     if (!spotterActive || !spotterRoundReady || spotterFeedback !== null) return;
+@@ -15416,7 +15448,7 @@
+                   }
+                 },
+                   h('div', { className: 'anatomy-spotter-heading flex items-center justify-between mb-2' },
+-                    h('h4', { className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
++                    h('h4', { id:'anatomy-spotter-title', tabIndex:-1, className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
+                     h('div', { className: 'flex gap-2' },
+                       h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, h('bdi',{dir:'ltr','data-anatomy-spotter-score':true},spotterScore + '/' + spotterTotal)),
+                       spotterTimed && spotterBestTime > 0 ? h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, formatAnatomyStudyText(t('stem.anatomy.spot_ref_best','Best timed response: {seconds} s'),{seconds:spotterBestTime.toFixed(1)})) : null
+@@ -15435,7 +15467,7 @@
+                   ) : h('div', { className: 'space-y-3' },
+                     h('p',{'data-anatomy-spotter-mode':true},spotterRoundTimed?t('stem.anatomy.spot_ref_timed','Timing enabled'):t('stem.anatomy.spot_ref_untimed','Untimed practice')),
+                     h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200 text-center' },
+-                      h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, t('stem.anatomy.what_structure_is_marked_on_the_figure', 'What structure is marked on the figure?')),
++                      h('h5', { id:'anatomy-spotter-question-title', tabIndex:-1, className: 'text-sm font-bold text-cyan-900 mb-1' }, t('stem.anatomy.what_structure_is_marked_on_the_figure', 'What structure is marked on the figure?')),
+                       h('p',{'data-anatomy-spotter-cue':true},spotterCueText),
+                       h('p',null,t('stem.anatomy.spot_ref_viewer','Left and right refer to the viewer. The cue locates the marker, not the full extent of the structure.')),
+                       ttsBtn(t('stem.anatomy.what_structure_is_marked_on_the_figure','What structure is marked on the figure?')+' '+spotterCueText,t('stem.anatomy.spot_ref_read_prompt','Read the spotter prompt aloud'))
+@@ -15452,12 +15484,16 @@
+                         '.'
+                       )
+                     ) : null,
+-                    h('div', { className: 'grid grid-cols-2 gap-2' },
++                    spotterRoundReady && h('div',{className:'anatomy-spotter-navigation','data-anatomy-spotter-navigation':true},
++                      h('button',{type:'button','data-anatomy-spotter-diagram':true,onClick:showSpotterDiagram},t('stem.anatomy.practice_flow_spotter_diagram','Show diagram')),
++                      h('p',null,t('stem.anatomy.practice_flow_spotter_navigation_help','Move between the crosshair and this question. Your current attempt stays the same.'))),
++                    spotterRoundReady && spotterFeedback === null && h('p',{id:'anatomy-spotter-answer-help'},t('stem.anatomy.practice_flow_spotter_question_help','Choose one answer, or use keys 1–4 while the question is focused.')),
++                    h('div', { className: 'grid grid-cols-2 gap-2', role:'group', 'aria-labelledby':'anatomy-spotter-question-title', 'aria-describedby':spotterRoundReady && spotterFeedback === null ? 'anatomy-spotter-answer-help' : undefined, 'data-anatomy-spotter-choices':true },
+                       (spotterRoundReady ? spotterOptions : []).map(function(opt, optIndex) {
+                         var isCorrect = opt.id === spotterTarget;
+                         var showResult = spotterFeedback !== null;
+                         var wasChosen = showResult && spotterFeedback === opt.id;
+-                        return h('button', { key: opt.id, 'data-anatomy-spotter-option':opt.id,
++                        return h('button', { key: opt.id, 'data-anatomy-spotter-option':opt.id, 'aria-pressed':wasChosen, 'data-anatomy-spotter-answer-state':showResult ? isCorrect ? 'correct' : wasChosen ? 'chosen' : 'neutral' : 'neutral',
+                           disabled: showResult,
+                           'aria-keyshortcuts': String(optIndex + 1),
+                           onClick: function() { answerSpotterOption(opt); },
+@@ -15467,7 +15503,9 @@
+                                 'transition-colors border-slate-200 hover:border-amber-600 text-slate-700 hover:bg-amber-50 active:scale-[0.97]')
+                         },
+                           h('span', { className: 'anatomy-quiz-key', 'aria-hidden': 'true' }, showResult && isCorrect ? '\u2713' : showResult && wasChosen ? '\u2717' : String(optIndex + 1)),
+-                          h('span', null, opt.name)
++                          h('span', null, opt.name),
++                          wasChosen && h('span',{className:'anatomy-spotter-answer-label'},t('stem.anatomy.practice_flow_spotter_your_answer','Your answer')),
++                          showResult && isCorrect && h('span',{className:'anatomy-spotter-answer-label'},t('stem.anatomy.practice_flow_spotter_correct_answer','Correct answer'))
+                         );
+                       })
+                     ),
+@@ -15476,9 +15514,9 @@
+                       var selectedStruct = allStructures.find(function(s) { return s.id === spotterFeedback; }) || {};
+                       var isRight = spotterFeedback === spotterTarget;
+ 
+-                      return h('div', { className: 'space-y-2', 'data-anatomy-spotter-feedback':true },
++                      return h('div', { className: 'space-y-2', 'data-anatomy-spotter-feedback':true, tabIndex:-1, role:'group', 'aria-labelledby':'anatomy-spotter-feedback-title' },
+                         h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (isRight ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') },
+-                          h('p', { className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
++                          h('h5', { id:'anatomy-spotter-feedback-title', className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
+                             isRight ? t('stem.anatomy.spot_ref_correct','Correct. ') + targetStruct.name : t('stem.anatomy.spot_ref_answer','The marked structure is ') + targetStruct.name
+                           ),
+                           h('p', { className: 'text-slate-600 mt-1' },
+@@ -15498,7 +15536,7 @@
+                           onClick: function() { updMulti(structureFocusPatch(targetStruct.id, { _activeTab: 'explore', quizMode: false })); announceStructure(targetStruct.id); focusAnatomyStructureDetail(); },
+                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-white text-amber-800 border border-amber-600 hover:bg-amber-50 transition-all active:scale-[0.97]'
+                         }, formatAnatomyStudyText(t('stem.anatomy.spot_ref_study','Study {name} on the diagram'),{name:targetStruct.name})) : null,
+-                        h('button', { 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
++                        h('button', { type:'button', 'data-anatomy-spotter-next':true, 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
+                           onClick: function() { pickSpotterRound(false); },
+                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]'
+                         }, t('stem.anatomy.next_structure_2', 'Next Structure ➔'))

@@ -1,0 +1,86 @@
+{
+  "at": "2026-09-30T02:45:40.764Z",
+  "preview": {
+    "at": "2026-09-30T02:44:34.040Z",
+    "hostSha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35",
+    "shellSha256": "00c6cc6bc88118de1ce7f012dd2d96f65db16c4f9d78bb7db7753dccdbd5e9ae",
+    "js": "main.e209680b.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "fixture": "Actual offline-history hydrate path, actual full local host, real built view and handler modules; network delay and failure injected by Playwright; service workers blocked.",
+  "results": [
+    {
+      "scenario": "latest",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "navigation",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "failed-retry",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FAIL] MiscHandlersModule network error, trying GitHub raw fallback: Event",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FALLBACK-FAIL] MiscHandlersModule fallback also unreachable"
+      ],
+      "requests": 3,
+      "loadingError": true,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "incomplete",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "narrow",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "viewportOverflow": false,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "reader-dependencies",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "unhandled": [],
+      "passed": true
+    }
+  ]
+}

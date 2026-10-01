@@ -331,6 +331,7 @@ function HistoryPanel(props) {
   const {
     activeSidebarTab, activeStation, activeUnitId, addToast, cloudSyncStatus, editTitle,
     editingId, generatedContent, getDefaultTitle, getFilteredHistory, getIconForType,
+    pendingHistoryResource = null,
     handleCancelEdit, handleClearHistory, handleCreateUnit, handleDeleteHistoryItem,
     handleDeleteUnit, handleDragEnd, handleDragEnter, handleDragStart, handleLoadProject,
     handleMoveToUnit, handleRestoreView, handleSaveEdit,
@@ -1446,6 +1447,7 @@ function HistoryPanel(props) {
                                 && publicHistoryIdCounts.get(itemPublicId) === 1
                                 && getSafePublicArtifactId(generatedContent) === itemPublicId)
                         );
+                        const isOpening = item === pendingHistoryResource;
                         const openLabel = t('common.open') || 'Open';
                         const currentLabel = t('launch_pad.current_language') || 'Current';
                         /* Reuse component's filteredHistory snapshot; keep nested callbacks consistent throughout this render. */
@@ -1513,7 +1515,7 @@ function HistoryPanel(props) {
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (isCurrent) return;
+                                                if (isCurrent || isOpening) return;
                                                 if (isSyncMode) {
                                                     addToast(t('session.teacher_control_warning'), "info");
                                                     return;
@@ -1524,9 +1526,11 @@ function HistoryPanel(props) {
                                             className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
                                             aria-label={isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`}
                                             aria-current={isCurrent ? 'page' : undefined}
+                                            aria-busy={isOpening || undefined}
                                             aria-disabled={isSyncMode || isCurrent}
                                         >
                                             <div className="min-w-0 w-full">
+                                                {isOpening && <span role="status" className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700"><RefreshCw size={12} className="animate-spin" aria-hidden="true" />{t('common.loading')}</span>}
                                                 <div data-history-resource-title className="text-sm font-bold leading-snug" style={{ overflowWrap: 'anywhere' }} title={itemTitle}>
                                                     {itemTitle}
                                                 </div>

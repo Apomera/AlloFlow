@@ -19,6 +19,8 @@ const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_
 const shareSessionSurfacesSource = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
+// Handler closures moved out of ANTI into this module on 2026-09-13 (4d407aaa7).
+const hostHandlersSource = fs.readFileSync(path.join(ROOT, 'host_handlers_source.jsx'), 'utf8');
 
 function loadStudentPackSerializer(win) {
     const start = liveAacSource.indexOf('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
@@ -714,7 +716,7 @@ describe('ANTI wiring pins', () => {
         expect(live).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
         const hosted = sliceBetween('// Mailbox-hosted homework entry', "if (activeView === 'adventure'");
         expect(hosted).toMatch(/getpack/);
-        expect(hosted).toMatch(/setPendingQrAssignmentResource\(firstResource\)/);
+        expect(hosted).toMatch(/setPendingQrAssignmentResource\(firstResource(?: \|\| null)?\)/);
         expect(hosted).toMatch(/_alloSetQrStudentAiPolicy/);
         expect(hosted).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
     });
@@ -741,12 +743,17 @@ describe('ANTI wiring pins', () => {
         expect(shareSessionSurfacesSource).toContain('complete portfolio is not retained as a permanent Firebase record');
         expect(anti).toContain("a: 'putsubmission'");
         expect(anti).toContain('setMbHostedAssignment({ url: entry.u');
-        expect(anti).toContain('Mailbox submission upload failed; downloading a backup instead');
+        expect(hostHandlersSource).toContain('Mailbox submission upload failed; downloading a backup instead');
     });
 
     it('keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks', () => {
         expect(sharedActivitySource).toContain('setTerm(current => current || result.own.text)');
-        expect(sharedActivitySource).toContain('[activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
+        // The poll loop's dependency list may grow (scopeToken joined it), but the
+        // typed term must never be in it, or every keystroke restarts the loop.
+        const pollDeps = (/\[activityId, activityScope, [^\]]*\]\);/.exec(sharedActivitySource) || [''])[0];
+        const pollDepNames = pollDeps.slice(1, -3).split(',').map(name => name.trim());
+        expect(pollDepNames).toEqual(expect.arrayContaining(['activityId', 'applySharedActivitySummary', 'ensureCredential', 'mailboxUrl', 'packId']));
+        expect(pollDepNames).not.toContain('term');
         expect(sharedActivitySource).toContain('const requestSequence = ++requestSequenceRef.current;');
         expect(sharedActivitySource).toContain('_alloNextSharedActivitySummaryOrder');
         expect(sharedActivitySource).not.toContain('mailboxUrl, packId, term]);');
@@ -760,8 +767,9 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain('sharedActivity: built.sharedActivities[0] || null');
         // Surveys need the v13 script; gating HERE means a too-old mailbox is
         // named before anything uploads, instead of bouncing as bad-activity.
-        expect(anti).toContain("const requiredMailboxVersion = (sharedAssignmentActivity.enabled && sharedAssignmentActivity.type === 'survey') ? 13");
-        expect(anti).toContain(': sharedAssignmentActivity.enabled ? 11 : 9;');
+        expect(anti).toContain("const hasSurvey = built.sharedActivities.some(activity => activity.type === 'survey');");
+        expect(anti).toContain('const requiredMailboxVersion = hasSurvey ? 13 : hasSharedActivity ? 11 : 9;');
+        expect(anti).toContain('Number(connection.v || 0) < requiredMailboxVersion');
         expect(anti).not.toContain('activity: built.sharedActivity');
     });
 
@@ -843,7 +851,7 @@ describe('ANTI wiring pins', () => {
         expect(shareSessionSurfacesSource).toMatch(/Admin token \(only when reconnecting from a new device\)/);
         expect(anti).toMatch(/answerRtcOffer/);
         expect(anti).toMatch(/ondatachannel/);
-        expect(anti).toMatch(/instant, ' \+ Math\.max\(0, total - rtcCount\) \+ ' via mailbox/);
+        expect(hostHandlersSource).toMatch(/instant, ' \+ Math\.max\(0, total - rtcCount\) \+ ' via mailbox/);
         expect(shareSessionSurfacesSource).toMatch(/· away\?/);
         expect(shareSessionSurfacesSource).toMatch(/real-time ⚡/);
         // Student: heartbeat, visibility handling, RTC offerer with retry cap,
@@ -874,7 +882,7 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain("{ a: 'getpack', id: data.packRef.id, k: data.packRef.k }");
         expect(anti).toContain('await _alloFetchMailboxPackParts(');
         // Large homework packs route to the mailbox host instead of dead-ending.
-        expect(anti).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;');
+        expect(anti).toMatch(/return hostPackOnMailboxRef\.current \? hostPackOnMailboxRef\.current\(selectedResourceIds(?:, \{[^}]*\})?\) : null;/);
         // The offline-history loader no longer clobbers a joining live student
         // (current guard form @41cc1dd52: entry-param based, two lines).
         expect(anti).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()');

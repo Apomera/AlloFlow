@@ -1,8 +1,14 @@
 import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import { setupReader, mountReader, disposeReader, click, act, fixtures, View } from './helpers/reader_locale_harness.js';
 beforeAll(setupReader);
-beforeEach(() => { localStorage.clear(); });
-afterEach(() => { disposeReader(); vi.restoreAllMocks(); });
+// Bookmarks save only with cross-tab locks (the store refuses an unsafe
+// localStorage read/modify/write); jsdom has none, so provide the browser's.
+beforeEach(() => {
+  localStorage.clear();
+  let queue = Promise.resolve();
+  Object.defineProperty(navigator, 'locks', { configurable: true, value: { request(_key, callback) { const next = queue.then(callback); queue = next.catch(() => {}); return next; } } });
+});
+afterEach(() => { disposeReader(); vi.restoreAllMocks(); delete navigator.locks; });
 describe('named reader language fixtures', () => {
   for (const fixture of fixtures) {
     it(fixture.id + ': translated review, bookmarks, prompts and student preview', async () => {
@@ -24,7 +30,9 @@ describe('named reader language fixtures', () => {
       const before = JSON.stringify(localStorage);
       await click(host.querySelector('[data-student-preview-open]'));
       const preview = host.querySelector('[data-student-preview]');
-      expect(preview.textContent).toContain(t('simplified.preview_note'));
+      // 37bdb2883 renamed the dialog to a reading-layout preview with its limits stated.
+      expect(preview.textContent).toContain(t('simplified.layout_preview_note'));
+      expect(preview.textContent).toContain(t('simplified.layout_preview_limits'));
       expect(preview.querySelector('[data-reading-paragraph="1"]').lang).toBe(fixture.tag);
       await click(preview.querySelector('[data-reading-outline-toggle]'));
       await click(preview.querySelector('[data-reading-bookmark]'));
@@ -37,7 +45,8 @@ describe('named reader language fixtures', () => {
       const preview = { status: 'preview', resourceId: fixture.id, baseData: fixture.passage, data: fixture.passage + '\n\n' + fixture.snippet, config: { language: fixture.language } };
       const handleComplexityAdjustment = vi.fn(async () => preview);
       const { host, t } = mountReader(fixture, { handleComplexityAdjustment });
-      expect(host.querySelector('[data-adaptation-controls]').textContent).toContain(t('simplified.adapt_keep_terms_hint'));
+      // c4c8d6f8b replaced the short hint with the exact parser rules (adapt_exact_terms_hint).
+      expect(host.querySelector('[data-adaptation-controls]').textContent).toContain(t('simplified.adapt_exact_terms_hint'));
       await click(host.querySelector('[data-adapt-option="shorterSentences"]'));
       await click(host.querySelector('[data-apply-complexity]'));
       expect(host.querySelector('[data-adaptation-preview]').textContent).toContain(t('simplified.adapt_preview_hint'));

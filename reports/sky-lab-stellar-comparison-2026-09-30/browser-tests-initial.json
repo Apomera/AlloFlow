@@ -1,0 +1,361 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/sky-lab-stellar-comparison-2026-09-30/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "astronomy-stellar-comparison.spec.ts",
+      "file": "astronomy-stellar-comparison.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "published inputs link exact controls, plot, radius and luminosity explanation while keeping notes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10298,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:08:38.055Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b55709529d77fe84d903-691c4bfde3b7ea6ab56b",
+          "file": "astronomy-stellar-comparison.spec.ts",
+          "line": 56,
+          "column": 5
+        },
+        {
+          "title": "true scale stays proportional at both extremes and mode changes preserve the investigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4618,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:08:50.893Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b55709529d77fe84d903-e6de367e314d5803917c",
+          "file": "astronomy-stellar-comparison.spec.ts",
+          "line": 83,
+          "column": 5
+        },
+        {
+          "title": "phone contrast labels remain readable and contained for the source examples and extreme disks",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3568,
+                  "error": {
+                    "message": "Error: Sirius A\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 12\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"b\": Object {\u001b[39m\n\u001b[31m+       \"h\": 32.52255630493164,\u001b[39m\n\u001b[31m+       \"w\": 245.8671417236328,\u001b[39m\n\u001b[31m+       \"x\": 80,\u001b[39m\n\u001b[31m+       \"y\": -7.10213041305542,\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[31m+     \"font\": 13.837209302325581,\u001b[39m\n\u001b[31m+     \"text\": \"Luminosity (Sun = 1) ↑\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: Sirius A\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 12\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"b\": Object {\u001b[39m\n\u001b[31m+       \"h\": 32.52255630493164,\u001b[39m\n\u001b[31m+       \"w\": 245.8671417236328,\u001b[39m\n\u001b[31m+       \"x\": 80,\u001b[39m\n\u001b[31m+       \"y\": -7.10213041305542,\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[31m+     \"font\": 13.837209302325581,\u001b[39m\n\u001b[31m+     \"text\": \"Luminosity (Sun = 1) ↑\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-stellar-comparison.spec.ts:113:20",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-stellar-comparison.spec.ts",
+                      "column": 20,
+                      "line": 113
+                    },
+                    "snippet": "  111 |    });\n  112 |   }));\n> 113 |   expect(bad,name).toEqual([]);\n      |                    ^\n  114 |   const circles=await page.locator('#astronomy-hr-size [data-hr-disk]').evaluateAll(nodes=>nodes.map(n=>{\n  115 |    const x=Number(n.getAttribute('cx')),y=Number(n.getAttribute('cy')),r=Number(n.getAttribute('r'));\n  116 |    return x-r>=0&&x+r<=360&&y-r>=0&&y+r<=230;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-stellar-comparison.spec.ts",
+                        "column": 20,
+                        "line": 113
+                      },
+                      "message": "Error: Sirius A\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 12\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"b\": Object {\u001b[39m\n\u001b[31m+       \"h\": 32.52255630493164,\u001b[39m\n\u001b[31m+       \"w\": 245.8671417236328,\u001b[39m\n\u001b[31m+       \"x\": 80,\u001b[39m\n\u001b[31m+       \"y\": -7.10213041305542,\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[31m+     \"font\": 13.837209302325581,\u001b[39m\n\u001b[31m+     \"text\": \"Luminosity (Sun = 1) ↑\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  111 |    });\n  112 |   }));\n> 113 |   expect(bad,name).toEqual([]);\n      |                    ^\n  114 |   const circles=await page.locator('#astronomy-hr-size [data-hr-disk]').evaluateAll(nodes=>nodes.map(n=>{\n  115 |    const x=Number(n.getAttribute('cx')),y=Number(n.getAttribute('cy')),r=Number(n.getAttribute('r'));\n  116 |    return x-r>=0&&x+r<=360&&y-r>=0&&y+r<=230;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-stellar-comparison.spec.ts:113:20"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:08:55.573Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-stellar-comparison-2026-09-30\\test-results\\astronomy-stellar-comparis-15476--examples-and-extreme-disks-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-stellar-comparison-2026-09-30\\test-results\\astronomy-stellar-comparis-15476--examples-and-extreme-disks-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-stellar-comparison-2026-09-30\\test-results\\astronomy-stellar-comparis-15476--examples-and-extreme-disks-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-stellar-comparison.spec.ts",
+                    "column": 20,
+                    "line": 113
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b55709529d77fe84d903-909571b7bf4836d09808",
+          "file": "astronomy-stellar-comparison.spec.ts",
+          "line": 100,
+          "column": 5
+        },
+        {
+          "title": "saved scale choices survive restore and malformed choices recover without losing notes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9178,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:10:01.779Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b55709529d77fe84d903-2b6534e1226479ba76eb",
+          "file": "astronomy-stellar-comparison.spec.ts",
+          "line": 126,
+          "column": 5
+        },
+        {
+          "title": "diagram touch and keyboard edits update custom inputs without changing the selected size mode",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2781,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:10:21.842Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b55709529d77fe84d903-9a3e8b8b9cdde6bfe28f",
+          "file": "astronomy-stellar-comparison.spec.ts",
+          "line": 144,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "astronomy-visual-simulators.spec.ts",
+      "file": "astronomy-visual-simulators.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "HR explorer links presets, log slider, keyboard and saved observations to the visible diagram",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14861,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:11:04.137Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7446ee1ad10430925c4c-e197a6da583bc259cc75",
+          "file": "astronomy-visual-simulators.spec.ts",
+          "line": 39,
+          "column": 5
+        },
+        {
+          "title": "HR diagram responds to pointer input and stays usable on a 320px contrast screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5345,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T22:11:22.137Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7446ee1ad10430925c4c-95ff8648d85678773d78",
+          "file": "astronomy-visual-simulators.spec.ts",
+          "line": 69,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T22:08:34.254Z",
+    "duration": 190044.37999999998,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -84,7 +84,7 @@ describe('Art Studio headings choose one ink class per theme', () => {
     const html = renderTool('artStudio', { artStudio: { tab: 'watercolor', studioHome: false } });
     const holder = document.createElement('div');
     holder.innerHTML = html;
-    const css = holder.querySelector('style').textContent;
+    const css = Array.from(holder.querySelectorAll('style'), style => style.textContent).join('\n');
     expect(css).toContain('.theme-contrast [data-artstudio-root] :is(h1,h2,h3,summary,legend,');
     expect(css).toContain(':not(button *){color:var(--allo-stem-text,#ffff00) !important}');
   });

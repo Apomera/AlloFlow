@@ -389,7 +389,7 @@ const createTTS = (deps) => {
             try {
                 const taskResult = await (async () => {
             const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent`;
-            const url = `${baseUrl}?key=${apiKey || ''}`;
+            const url = baseUrl;
             const decodeBase64 = (base64) => {
                  const binaryString = window.atob(base64);
                  const len = binaryString.length;
@@ -458,7 +458,7 @@ const createTTS = (deps) => {
               const fetchStartedAt = Date.now();
               const response = await awaitTtsHardDeadline(fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(payload),
                 signal: fetchSignal
               }), fetchTimeoutMs, () => {
@@ -716,11 +716,19 @@ let piperLoadPromise = null;
             return !!(await mc.hasKokoro());
         } catch (_) { return false; }
     };
-    const ensureKokoroTts = async (timeoutMs) => {
+    const ensureKokoroTts = async (timeoutMs, signal) => {
         try {
+            const throwIfCancelled = () => {
+                if (!signal?.aborted) return;
+                const error = new Error('TTS request aborted');
+                error.name = 'AbortError';
+                throw error;
+            };
+            throwIfCancelled();
             if (window._kokoroTTS && window._kokoroTTS.ready) return window._kokoroTTS;
             if (typeof window.__loadKokoroTTS !== 'function') return null;
             const onDevice = await kokoroModelOnDevice();
+            throwIfCancelled();
             if (!onDevice && !window._isDesktopBundledApp) {
                 _ttsTrace('calltts:kokoro-not-on-device', null);
                 return null;
@@ -760,7 +768,9 @@ let piperLoadPromise = null;
             // still moving, give up only after it has been STALLED for the
             // stall budget, and cap the whole thing so nothing waits forever.
             const stallBudget = Number.isFinite(timeoutMs) ? timeoutMs : KOKORO_ENSURE_TIMEOUT_MS;
-            const engine = await Promise.race([
+            // Cancelling one utterance stops its wait, while the shared model
+            // wake can finish for later utterances without being discarded.
+            const engine = await awaitTtsHardDeadline(Promise.race([
                 kokoroLoadPromise,
                 new Promise((resolve) => {
                     const startedAt = Date.now();
@@ -781,13 +791,14 @@ let piperLoadPromise = null;
                     // running otherwise; kokoroLoadPromise always settles.
                     Promise.resolve(kokoroLoadPromise).catch(() => {}).then(() => clearInterval(tick));
                 }),
-            ]);
+            ]), KOKORO_ENSURE_MAX_MS + 1000, null, 'Local voice preparation timed out', signal);
             if (engine === undefined) {
                 _ttsTrace('calltts:kokoro-ensure-timeout', { stallBudgetMs: stallBudget, maxMs: KOKORO_ENSURE_MAX_MS });
                 return null;
             }
             return engine;
         } catch (error) {
+            if (error?.name === 'AbortError') throw error;
             console.warn('[TTS] ensureKokoroTts failed:', error?.message || error);
             return null;
         }
@@ -1117,7 +1128,7 @@ let piperLoadPromise = null;
                     // model is genuinely on THIS device or we are the desktop
                     // build, so it cannot start a surprise 88MB download for a
                     // QR student on a phone.
-                    if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts();
+                    if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts(undefined, _signal);
                     if (window._kokoroTTS) {
                         // callTTS promises one COMPLETE playable URL. The streaming
                         // API returns only its first chunk and requires chainPlay,
@@ -1290,7 +1301,7 @@ let piperLoadPromise = null;
                     console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
                     _kokoroDeferredToGemini = true;
                 }
-            } else if (await ensureKokoroTts()) {
+            } else if (await ensureKokoroTts(undefined, _signal)) {
                 // The engine was not live, but the model IS on this device (or
                 // we are desktop), so wake it and speak now. Previously this
                 // case only ever kicked a background load and returned, handing
@@ -1407,7 +1418,7 @@ let piperLoadPromise = null;
         const localAfterGemini = async () => {
             if (_isEnglish) {
                 try {
-                    if (!window._kokoroTTS?.ready) await ensureKokoroTts();
+                    if (!window._kokoroTTS?.ready) await ensureKokoroTts(undefined, _signal);
                     if (window._kokoroTTS?.ready) {
                         const localVoice = KOKORO_VOICE_PREFIX.test(voiceName) ? voiceName : 'af_heart';
                         const url = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), localVoice, speed, { signal: _signal, force: _forceRefresh });
@@ -1542,6 +1553,11 @@ let piperLoadPromise = null;
             : (typeof _directOpts.maxRetries === 'number' ? _directOpts.maxRetries : 2);
         maxRetries = Math.max(0, Math.min(2, Number(maxRetries) || 0));
         var _directSignal = _directOpts.signal || null;
+        if (_directSignal?.aborted) {
+            const abortError = new Error('TTS request aborted');
+            abortError.name = 'AbortError';
+            throw abortError;
+        }
         var _directLanguage = _directOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
         var _isDirectAbortError = (e) => e && (e.name === 'AbortError' || /aborted/i.test(e.message || ''));
         var _directTtsConfig = getAiUserConfig();
@@ -1554,9 +1570,15 @@ let piperLoadPromise = null;
             _directOpts.mathSpeech || null
         );
         voiceName = _resolveRequestedVoice(voiceName);
+        if (String(voiceName).toLowerCase() === 'browser') return null;
         // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
         if (_isCanvasEnv && _directTtsProvider !== 'local') {
-            if (Date.now() < (state.timeoutRetryAt || 0)) {
+            const selectedKokoroVoice = KOKORO_VOICE_PREFIX.test(voiceName) && languageToTTSCode(_directLanguage) === 'en';
+            if (selectedKokoroVoice) {
+                _ttsTrace('callttsdirect:kokoro-selected', { voice: voiceName });
+            } else if (window.__ttsGeminiAuthFailed && Date.now() < (state.authRetryAt || 0)) {
+                _ttsTrace('callttsdirect:canvas-skip-authfailed', { probeInMs: Math.max(0, state.authRetryAt - Date.now()) });
+            } else if (Date.now() < (state.timeoutRetryAt || 0)) {
                 _ttsTrace('callttsdirect:canvas-skip-timeout', { untilMs: Math.max(0, state.timeoutRetryAt - Date.now()) });
             } else if (Date.now() >= state.rateLimitedUntil) {
                 // Match callTTS's Canvas resilience (field-caught 2026-07-06): the
@@ -1566,7 +1588,8 @@ let piperLoadPromise = null;
                 // so a single blip dropped AlloBot straight to the browser voice
                 // even though Gemini was available — the "sometimes browser TTS"
                 // regression. Retry transient errors before giving up.
-                const botCanvasMaxAttempts = Math.min(2, maxRetries + 1);
+                const botCanvasMaxAttempts = window.__ttsGeminiAuthFailed ? 1 : Math.min(2, maxRetries + 1);
+                if (window.__ttsGeminiAuthFailed) state.authRetryAt = Date.now() + 5 * 60000;
                 for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
                     try {
                 const botCanvasGeminiVoice = _resolveGeminiVoice(voiceName);
@@ -1617,7 +1640,7 @@ let piperLoadPromise = null;
                 try {
                     // Same lazy wake as callTTS: an on-device model should serve
                     // bot lines too instead of losing them to the browser voice.
-                    if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts();
+                    if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts(undefined, _directSignal);
                     if (window._kokoroTTS) {
                         const url = await window._kokoroTTS.speakStreaming(cleanedText, voiceName, speed, { signal: _directSignal });
                         if (url) return url;
@@ -1656,11 +1679,15 @@ let piperLoadPromise = null;
             || (!_isCanvasEnv && !_cloudKeyUsable() && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser');
         if (_botKokoroEligible) {
             const botKokoroLang = languageToTTSCode(_directLanguage);
-            if (botKokoroLang === 'en' && window._kokoroTTS && window._kokoroTTS.ready) {
+            if (botKokoroLang === 'en' && ((window._kokoroTTS && window._kokoroTTS.ready) || await ensureKokoroTts(undefined, _directSignal))) {
                 try {
                     const kokoroBotUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed, { signal: _directSignal });
                     if (kokoroBotUrl) { _routeNoteBot('kokoro'); return kokoroBotUrl; }
-                } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message); _routeNoteBot('kokoro-failed', e?.message); }
+                } catch (e) {
+                    if (_isDirectAbortError(e)) throw e;
+                    console.warn('[callTTSDirect] Kokoro engine failed - deferring to provider/cloud:', e?.message);
+                    _routeNoteBot('kokoro-failed', e?.message);
+                }
                 if (_directSignal?.aborted) {
                     const abortError = new Error('TTS request aborted');
                     abortError.name = 'AbortError';
@@ -1733,7 +1760,7 @@ let piperLoadPromise = null;
                 const queuedTask = state.botQueue.then(async () => {
                     console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
                     const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;
-                    const url = `${baseUrl}${apiKey ? `?key=${apiKey}` : ''}`;
+                    const url = baseUrl;
                     const decodeBase64 = (base64) => {
                          const binaryString = window.atob(base64);
                          const len = binaryString.length;
@@ -1764,7 +1791,7 @@ let piperLoadPromise = null;
                     try {
                         response = await awaitTtsHardDeadline(fetch(url, {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                           body: JSON.stringify(payload),
                           signal: fetchController.signal,
                         }), TTS_FETCH_TIMEOUT_INTERACTIVE_MS, () => {

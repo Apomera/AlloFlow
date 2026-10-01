@@ -1,0 +1,156 @@
+{
+  "createdAt": "2026-09-27T18:17:07.857Z",
+  "headAtSnapshot": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "headAtPackaging": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "prerequisites": [
+    "reader-device-save-track18-2026-09-27",
+    "faq-sentence-targets-track18-2026-09-27"
+  ],
+  "normalization": "LF",
+  "files": [
+    {
+      "file": "resource_read_aloud_module.js",
+      "added": false,
+      "basisSha256": "a2d3d9164585086b07d6c13ddbcbbd0cdaf844cb1026a65f70a695f1905c62c7",
+      "candidateSha256": "6a4390ff272efcebc0cf4586e6221192a62f5e9affc7d3afa50703a939c363b8",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "tests/device_save_status.test.js",
+      "added": false,
+      "basisSha256": "dfb31e7b83ace2f025cc147857042daff7328123dcbc35155ad58291e79388c8",
+      "candidateSha256": "c2c6691d40dc38493c8e5298a3ec04eb11597bac15dd21521a4e4105e1a8fbfa",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "tests/device_save_completion.test.js",
+      "added": true,
+      "basisSha256": null,
+      "candidateSha256": "265d9be9904a4f9bb5ab9091c8b8ba6ae39bc287b46ab3909a7f200f84768f41",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "dev-tools/device_durability_browser.cjs",
+      "added": true,
+      "basisSha256": null,
+      "candidateSha256": "d65db47e58d85b4ebeed8cd1472912ec97d9b8914b2f3c2bd5c0e46fea9d9f48",
+      "patchRoundTrip": true
+    }
+  ],
+  "rootAtPackaging": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+      "matchesSnapshot": false
+    },
+    {
+      "file": "utils_pure_source.jsx",
+      "sha256": "92e64bf18f65f7b6476df70be5bf714e141572096345b2eab0a9b289ccc6de2e",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "utils_pure_module.js",
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "sha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "read_aloud_audio_service_module.js",
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "phase_k_helpers_module.js",
+      "sha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "resource_read_aloud_module.js",
+      "sha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "view_faq_source.jsx",
+      "sha256": "5bfc4cf001fb4cce287ac40e5525a9ba940519a3b48212a2494aa7e473f01db5",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "view_faq_module.js",
+      "sha256": "83d72094be0ac51b272ed9984b954ed8a8c2fa09e854c3e9ee8b6487be4d9115",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "immersive_reader_module.js",
+      "sha256": "718a334275dae108386380adcfe0a85af0ed1e616948a569dc246bf2899dc589",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "package.json",
+      "sha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+      "matchesSnapshot": false
+    },
+    {
+      "file": "vitest.config.js",
+      "sha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "tests/setup.js",
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "tests/lib/audio_fixtures.js",
+      "sha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "tests/read_aloud_audio_service.test.js",
+      "sha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "tests/read_aloud_recovery.test.js",
+      "sha256": "318a3002473807beb1d4bf10e16e0de855aa1951858fd3f28c649f366b8c9587",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "tests/utils_pure_storage.test.js",
+      "sha256": "acc81184eacf93b52aa83025f8824a7c3b14058988e69c16101f42256285d6d8",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/package.json",
+      "sha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/tailwind.config.js",
+      "sha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/public/vendor/idb-keyval-6.2.0.umd.min.js",
+      "sha256": "100ab577fc6c04ebae5b11cb41eda6eb78ceba77fe31f857413918ea49e21dce",
+      "matchesSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/public/vendor/lz-string-1.4.4.min.js",
+      "sha256": "9d1a0ef07a2ea5faa8cd4afb60a0518075e6771e341e5ff4e0e481cefedeecbf",
+      "matchesSnapshot": true
+    }
+  ],
+  "mirror": {
+    "sha256": "6a4390ff272efcebc0cf4586e6221192a62f5e9affc7d3afa50703a939c363b8",
+    "matches": true
+  }
+}

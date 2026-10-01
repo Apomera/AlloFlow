@@ -1,0 +1,182 @@
+Index: content_engine_source.jsx
+===================================================================
+--- content_engine_source.jsx
++++ content_engine_source.jsx
+@@ -2601,19 +2601,62 @@
+       copy?.querySelectorAll?.('button,[data-reading-gloss],[data-adapted-word-help],[role="status"],[aria-hidden="true"]').forEach(element => element.remove());
+       return copy?.textContent || '';
+   };
+-  // Capture the actual occurrence before selection/focus disappears. Never retain
+-  // DOM nodes in the retry snapshot, and exclude help controls from passage text.
++  // Project the selected blocks into plain passage text while mapping offsets.
++  // Interleaved bilingual rows can put another language and its headings inside
++  // the DOM range; only the starting pane's passage text belongs to this lookup.
++  const lookupRangeContext = range => {
++      const elementFor = node => node?.nodeType === 1 ? node : node?.parentElement;
++      const first = elementFor(range.startContainer), last = elementFor(range.endContainer);
++      const blockSelector = '[data-reading-paragraph],p,li,blockquote,h1,h2,h3,h4,h5,h6';
++      const startBlock = first?.closest?.(blockSelector), endBlock = last?.closest?.(blockSelector);
++      if (!startBlock || !endBlock) return null;
++      const language = first.closest('[data-reading-language]')?.dataset.readingLanguage;
++      const pane = first.closest('[data-compare-version]');
++      const contextRange = document.createRange();
++      contextRange.setStartBefore(startBlock); contextRange.setEndAfter(endBlock);
++      const walker = document.createTreeWalker(contextRange.commonAncestorContainer, 4);
++      let passageText = '', selectionStart = null, selectionEnd = null, previousBlock = null;
++      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
++          const parent = node.parentElement;
++          if (!node.textContent || !contextRange.intersectsNode(node) || parent?.closest('button,[data-reading-gloss],[data-adapted-word-help],[role="status"],[aria-hidden="true"]')) continue;
++          if (language && parent?.closest('[data-reading-language]')?.dataset.readingLanguage !== language) continue;
++          if (pane && parent?.closest('[data-compare-version]') !== pane) continue;
++          const block = parent?.closest(blockSelector);
++          if (!block) continue; // Pane headings and inter-block layout text are not passage content.
++          if (passageText && previousBlock !== block && !passageText.endsWith('\n')) passageText += '\n';
++          previousBlock = block;
++          const offset = passageText.length;
++          passageText += node.textContent;
++          if (range.intersectsNode(node)) {
++              const from = node === range.startContainer ? range.startOffset : 0;
++              const to = node === range.endContainer ? range.endOffset : node.textContent.length;
++              if (to > from) {
++                  if (selectionStart == null) selectionStart = offset + from;
++                  selectionEnd = offset + to;
++              }
++          }
++      }
++      if (selectionStart == null) return null;
++      const selected = passageText.slice(selectionStart, selectionEnd);
++      selectionStart += selected.length - selected.trimStart().length;
++      selectionEnd -= selected.length - selected.trimEnd().length;
++      return { passageText, selectionStart, selectionEnd, lookupText: passageText.slice(selectionStart, selectionEnd) };
++  };
++  // Capture before selection/focus disappears; retry snapshots retain no DOM.
+   const captureLookupContext = (event, context = {}) => {
+       const range = context.range;
+       const node = range?.startContainer;
+       const element = node ? (node.nodeType === 1 ? node : node.parentElement) : event?.currentTarget;
+       const block = element?.closest?.('[data-reading-paragraph],p,li,blockquote');
+-      const passageText = context.passageText ?? (lookupPlainText(block) || context.text || '');
+-      let selectionStart = context.selectionStart;
++      let captured = null;
++      if (range && context.passageText == null) {
++          try { captured = lookupRangeContext(range); } catch (_) {}
++      }
++      const passageText = context.passageText ?? captured?.passageText ?? (lookupPlainText(block) || context.text || '');
++      let selectionStart = context.selectionStart ?? captured?.selectionStart;
+       if (selectionStart == null && block?.contains?.(element)) {
+           try {
+-              const before = document.createRange();
+-              before.selectNodeContents(block);
++              const before = document.createRange(); before.selectNodeContents(block);
+               if (range) before.setEnd(range.startContainer, range.startOffset);
+               else before.setEndBefore(element);
+               selectionStart = lookupPlainText(before.cloneContents()).length;
+@@ -2625,6 +2668,8 @@
+       return {
+           passageText: String(passageText),
+           selectionStart: Number.isInteger(selectionStart) ? selectionStart : null,
++          selectionEnd: context.selectionEnd ?? captured?.selectionEnd ?? null,
++          lookupText: context.lookupText ?? captured?.lookupText ?? null,
+           occurrence: Number.isInteger(context.occurrence) ? context.occurrence : null,
+           pane: context.pane || block?.dataset?.readingParagraph || null,
+           language: language === 'All Selected Languages' ? 'English' : language,
+@@ -2638,6 +2683,7 @@
+           passage,
+           selectedText: request.word,
+           selectionStart: request.selectionStart == null ? null : request.selectionStart - start,
++          selectionEnd: request.selectionEnd == null ? null : request.selectionEnd - start,
+           occurrence: request.occurrence
+       }) : '';
+   };
+@@ -2658,13 +2704,13 @@
+           preparedText: context.preparedText || '',
+           audioPlayback: options.audioPlayback
+       });
+-      let attempt = 0, audio = null, audioUrl = null;
++      let attempt = 0, audio = null, audioUrl = null, dictionaryAttempt = null;
+       const releaseAudio = () => {
+           if (audio) { audio.pause(); audio = null; }
+           if (audioUrl?.startsWith('blob:') && !window.__alloTtsCacheOwnsUrl?.(audioUrl)) URL.revokeObjectURL(audioUrl);
+           audioUrl = null;
+       };
+-      const session = { cancel: () => { ++attempt; releaseAudio(); } };
++      const session = { cancel: () => { ++attempt; dictionaryAttempt?.cancel(); releaseAudio(); } };
+       owner.current = session;
+       const isCurrent = () => {
+           const state = _s();
+@@ -2678,19 +2724,38 @@
+       };
+       const dictionarySupported = request.language === 'English' && !/\s/.test(word);
+       const rect = event?.currentTarget?.getBoundingClientRect?.();
+-      const lookupDictionary = async () => {
++      const lookupDictionary = async (retry = false) => {
++          if (!isCurrent() || !dictionarySupported || dictionaryAttempt) return;
++          const controller = typeof AbortController === 'function' ? new AbortController() : null;
++          const job = { cancel: null };
++          dictionaryAttempt = job;
++          let timer;
++          const cancelled = new Promise(resolve => {
++              job.cancel = () => { controller?.abort(); resolve({ cancelled: true }); };
++          });
++          const deadline = new Promise(resolve => {
++              timer = setTimeout(() => { controller?.abort(); resolve({ entry: null }); }, 10000);
++          });
++          update({ dictionaryStatus: 'loading' });
+           try {
+-              if (!window.AlloDictionary?.lookup && window.__alloLoadPlugin) {
+-                  let timer;
+-                  try {
+-                      await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(resolve => { timer = setTimeout(resolve, 6000); })]);
+-                  } finally { clearTimeout(timer); }
++              const work = (async () => {
++                  if (!window.AlloDictionary?.lookup && window.__alloLoadPlugin) await window.__alloLoadPlugin('dictionary_loader.js');
++                  if (!isCurrent() || dictionaryAttempt !== job || controller?.signal.aborted) return { cancelled: true };
++                  const entry = await window.AlloDictionary?.lookup?.(word, { signal: controller?.signal, bypassMissingCache: retry });
++                  return { entry };
++              })();
++              const result = await Promise.race([work, deadline, cancelled]);
++              if (!result.cancelled && dictionaryAttempt === job) {
++                  const entry = result.entry;
++                  update(entry ? { dictionary: entry, dictionaryStatus: 'ready' }
++                      : { dictionaryStatus: 'unavailable', dictionaryRetryAvailable: true });
+               }
+-              if (!isCurrent()) return;
+-              const entry = await window.AlloDictionary?.lookup?.(word);
+-              update({ dictionary: entry ? (kind === 'definition' ? entry : { phonetic: entry.phonetic, audio: entry.audio }) : null,
+-                  dictionaryStatus: entry ? 'ready' : 'unavailable' });
+-          } catch (_) { update({ dictionaryStatus: 'unavailable' }); }
++          } catch (_) {
++              if (dictionaryAttempt === job) update({ dictionaryStatus: 'unavailable', dictionaryRetryAvailable: true });
++          } finally {
++              clearTimeout(timer);
++              if (dictionaryAttempt === job) dictionaryAttempt = null;
++          }
+       };
+       const run = async () => {
+           if (!isCurrent()) return;
+@@ -2746,14 +2811,14 @@
+                   if (isCurrent() && currentAttempt === attempt) { releaseAudio(); update({ audioError: true }); }
+               }
+           } catch (_) {
+-              if (isCurrent() && currentAttempt === attempt) update({ aiStatus: 'error', isLoading: false });
++              if (isCurrent() && currentAttempt === attempt) update({ aiStatus: 'error', isLoading: false, aiRetryAvailable: true });
+           }
+       };
+       setter({
+           word, text: null, data: null, language: request.language, grade: request.grade,
+           lookupRequest: request, preparedText: request.preparedText,
+           aiStatus: 'loading', dictionaryStatus: dictionarySupported ? 'loading' : 'unsupported',
+-          isLoading: true, retry: run,
++          isLoading: true, retry: run, retryDictionary: dictionarySupported ? () => lookupDictionary(true) : undefined,
+           x: event?.clientX || context.x || rect?.left || 0,
+           y: event?.clientY || context.y || rect?.bottom || 0
+       });
+@@ -2915,7 +2980,7 @@
+       if (!selectionMenu?.text?.trim()) return;
+       const selected = { ...selectionMenu };
+       setSelectionMenu(null);
+-      await startReadingLookup('definition', selected.text.trim(), null, selected);
++      await startReadingLookup('definition', (selected.lookupText || selected.text).trim(), null, selected);
+   };
+   const stopPlayback = () => {
+     // Read refs from window state bag (they're React refs in the main component)

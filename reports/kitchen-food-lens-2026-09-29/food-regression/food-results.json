@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Real masher gestures leave firm wedges intact, split softened wedges, then flatten them into pulp. Only the selected piece changes; its finite juice and saved texture survive reload.",
+    "Turning a mushroom slice reveals its recorded browned face without advancing time or changing the other pieces."
+  ],
+  "errors": [],
+  "screenshots": [
+    "tomato-prepared-wedges.png",
+    "tomato-softened-wedges.png",
+    "tomato-piece-split.png",
+    "tomato-piece-crushed.png",
+    "tomato-crushed-after-reload.png",
+    "mushrooms-before-turning.png",
+    "mushrooms-turned-cut-face.png"
+  ],
+  "pass": true
+}

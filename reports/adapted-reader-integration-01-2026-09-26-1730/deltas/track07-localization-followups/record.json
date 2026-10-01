@@ -1,0 +1,35 @@
+{
+  "at": "2026-09-26T22:41:58.279Z",
+  "label": "track07-localization-followups",
+  "patch": "f404e5cf0ef8c253b14dda16d7e2aec45fc09d18ae9d5f9cd786ca47d0a2c187",
+  "plans": [
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "b63fe623feaea4a5ea7335f17783590d85b9c4cb6eb86b36027e6ea710f959d6",
+      "after": "0fcbf04d06c67f460d41e92a910fef8aa104a49bf912981121cf32ccbce6d3a2",
+      "changed": true
+    },
+    {
+      "target": "lang/spanish_castilian.js",
+      "targets": [
+        "lang/spanish_castilian.js"
+      ],
+      "before": "088f0388f75d01e24d6b8d5aa52a90972750642b96f2a6c2275fb3cf5d837019",
+      "after": "3bc13f8358c98e18a62707701f87774ccb32ed1cac522ab4e7eb32e264f5b504",
+      "changed": true
+    },
+    {
+      "target": "lang/spanish_latin_america.js",
+      "targets": [
+        "lang/spanish_latin_america.js"
+      ],
+      "before": "69067bd807154f8e4a3d288e7667574ff0075cec435187e3588dacf1d866ae54",
+      "after": "4444d19bad2121c2d20376f1900baf58797d4bad6a9e7a25acc79e2ae5d92776",
+      "changed": true
+    }
+  ]
+}

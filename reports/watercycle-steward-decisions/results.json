@@ -1,0 +1,60 @@
+{
+  "groups": [
+    "Preview is read-only; capped effects visible; keyboard Cancel restores focus",
+    "Apply matches preview, spends hours once, updates focus and budget availability",
+    "Year ledger reconciles every score through all causes and supports place selection",
+    "Light and dark previews/ledgers fit desktop and 320px; eight axe audits",
+    "Older saved years disclose missing evidence and preserve available summaries"
+  ],
+  "audits": [
+    {
+      "selector": ".wc-steward-decision",
+      "theme": "light",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-ledger",
+      "theme": "light",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-decision",
+      "theme": "light",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-ledger",
+      "theme": "light",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-decision",
+      "theme": "dark",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-ledger",
+      "theme": "dark",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-decision",
+      "theme": "dark",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "selector": ".wc-steward-ledger",
+      "theme": "dark",
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

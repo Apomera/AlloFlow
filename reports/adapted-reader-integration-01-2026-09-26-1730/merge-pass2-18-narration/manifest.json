@@ -1,0 +1,17 @@
+[
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 1
+  },
+  {
+    "file": "tests/reader_narration_recovery.test.js",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader_narration_recovery_browser.cjs",
+    "existed": false,
+    "conflicts": 0
+  }
+]

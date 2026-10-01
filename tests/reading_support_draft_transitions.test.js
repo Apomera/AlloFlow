@@ -74,7 +74,7 @@ const type = (node, value) => act(() => { node.focus(); Object.getOwnPropertyDes
 async function edit() {
   const toggle = [...host.querySelectorAll('button')].find(node => node.textContent.startsWith('Review word supports'));
   if (toggle && toggle.getAttribute('aria-expanded') === 'false') await click(toggle);
-  await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
+  await click(host.querySelector('button[aria-label^="Edit word help: heron"], button[aria-label^="Edit gloss for heron"]'));
 }
 async function dirtyExplanation() { await edit(); type(draft().querySelector('textarea'), 'My unsaved explanation.'); }
 async function pictureChoice(next = { ...IMAGE, src: 'data:image/png;base64,REVG' }, resize) {
@@ -135,7 +135,7 @@ describe('current support data across editor transitions', () => {
     it.each(['refreshed', 'removed'])(`resolves a %s deferred edit target after ${decision}`, async change => {
       const h = fixture(); const start = PASSAGE.indexOf('water');
       replaceHelp(h, contract.upsertAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, { id: 'water', start, end: start + 5, quote: 'water', text: 'Older water meaning.' }));
-      await dirtyExplanation(); await click(host.querySelector('button[aria-label^="Edit gloss for water"]'));
+      await dirtyExplanation(); await click(host.querySelector('button[aria-label^="Edit word help: water"], button[aria-label^="Edit gloss for water"]'));
       const saveResult = deferred();
       if (decision === 'Save and continue') { h.persist.mockReturnValueOnce(saveResult.promise); await click(byText(decision)); }
       const help = h.state.item.adaptedReadingSupports;

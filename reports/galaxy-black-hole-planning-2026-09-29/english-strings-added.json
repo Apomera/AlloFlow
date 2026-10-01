@@ -1,0 +1,20 @@
+{
+  "bh_predict_capture": "Capture",
+  "bh_predict_orbit": "Circular orbit",
+  "bh_predict_escape": "Outward escape",
+  "bh_predict_bound": "Bound path · stays outside in this preview",
+  "bh_predict_unbound": "Unbound path · preview ends before exit",
+  "bh_prediction_title": "Center-path prediction: {outcome}",
+  "bh_prediction_range": "Closest distance in preview: {radius} horizon radii",
+  "bh_comparison_summary": "Purple comparison: {outcome} · Start {radius} radii · Sideways {sideways}% · Radial push {radial}",
+  "bh_comparison_kept": "Comparison kept in purple. Change the release to compare its cyan path.",
+  "bh_comparison_cleared": "Comparison cleared.",
+  "bh_comparison_restored": "Comparison release restored. Ready to run again.",
+  "bh_aim_adjust_help": "Drag on the scene to adjust the yellow arrow. A click keeps the current throw. Arrow keys adjust sideways and radial motion; Escape cancels a drag.",
+  "bh_release_here": "Release here",
+  "bh_compare_paths": "Compare paths",
+  "bh_comparison_help": "Keep one center path in purple, then change the release to compare the cyan path. The comparison lasts while this lab is open. Debris can follow different paths after breakup.",
+  "bh_keep_path": "Keep current path",
+  "bh_restore_path": "Restore comparison release",
+  "bh_clear_path": "Clear comparison"
+}

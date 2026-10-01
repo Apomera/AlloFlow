@@ -1,0 +1,12 @@
+{
+  "sourceMirrored": true,
+  "physicsTestsPassed": 17,
+  "modeSmokeTestsPassed": 6,
+  "modeSmokeTestsFailed": 0,
+  "browser": {
+    "before": false,
+    "errors": [],
+    "overflow": false
+  },
+  "sharedCatalogFailures": 3
+}

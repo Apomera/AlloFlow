@@ -1,0 +1,20 @@
+{
+  "bh_presentation": "Black hole view",
+  "bh_object_view": "Object experiment",
+  "bh_optical_view": "Light bending",
+  "bh_optical_gesture": "Drag or use arrow keys to change viewing angle. Scroll or use + and − to zoom. Your object experiment stays paused.",
+  "bh_optical_canvas": "Interactive Schwarzschild light-bending view of a thin accretion disk and background sky",
+  "bh_experiment_canvas": "Interactive nonrotating black hole model with object placement, throwing, trajectories, and tidal disruption.",
+  "bh_optical_animate": "Animate disk",
+  "bh_optical_pause": "Pause disk",
+  "bh_optical_readout": "Observer: 20 horizon radii · Disk: 3–12 horizon radii · Nonrotating black hole",
+  "bh_optical_map_key": "Orange: redshift · Pale: little shift · Blue: blueshift. Colors show received frequency relative to emission.",
+  "bh_optical_key": "The disk and sky follow the same bent light paths. The central shadow is larger than the event horizon.",
+  "bh_optical_title": "Explore the bent light",
+  "bh_optical_description": "Turn toward the edge of the disk to see its far side lifted above and below the shadow. Hide the disk to inspect the lensed sky.",
+  "bh_optical_disk": "Show accretion disk",
+  "bh_optical_grid": "Show sky grid",
+  "bh_optical_map": "Show frequency-shift map",
+  "bh_optical_scope": "Light paths use a Schwarzschild model and a thin disk in circular motion. The sky and gas texture are illustrative. Fine photon subrings, time delays, and light from the dropped objects are not modeled here.",
+  "bh_optical_saved": "Your object release and timeline are preserved. Choose Object experiment to return."
+}

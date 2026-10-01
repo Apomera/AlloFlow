@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Mpaghara Mmetụta",
+          "desc": "Chọpụta mpaghara gị (acha anụnụ anụnụ, akwụkwọ ndụ, odo odo, uhie) ma nyochaa atụmatụ iji chịkwaa onwe gị."
+        },
+        "emotions": {
+          "label": "Onye Nyocha Mmetụta",
+          "desc": "Wulite okwu mmetụta — chọpụta, kpọọ aha, ma tụọ ike mmetụta."
+        },
+        "strengths": {
+          "label": "Onye Nchọpụta Ike",
+          "desc": "Chọpụta ma tụgharịa uche n'ike gị, onyinye gị, na ebe ị ga-eto."
+        },
+        "viaStrengths": {
+          "label": "Ike VIA",
+          "desc": "Nhazi onwe dị mfe nke Ike Agwa 24 nke VIA (Peterson na Seligman, 2004), ya na omume ọma 6 na ịchọpụta ike pụrụ iche gị. Maka nyocha izizi n'efu, gaa na viacharacter.org. Omume ntụgharị uche, ọbụghị nnwale uche nke sayensị."
+        },
+        "wheelOfLife": {
+          "label": "Wiil Ndụ",
+          "desc": "Eserese ududo nke akụkụ ndụ 8, a na-atụ nke ọ bụla site na 1 ruo 10. Foto onwe gị nke ebe ndụ jupụtara na ebe ọ dị ntakịrị ugbu a. Site n'omenala nkuzi coaching (Meyer afọ 1960; Co-Active Coaching). Ọ bụ ntụle; ọbụghị nnwale uche akwadoro."
+        },
+        "perma": {
+          "label": "Ọdịmma PERMA",
+          "desc": "Nlele onwe n'akụkụ ise nke PERMA gbakwunyere ntụgharị uche Ahụike: Mmetụta ọma, Itinye aka, Mmekọrịta, Nzube, Mmezu, na Ahụike. Ajụjụ 24, nsonaazụ n'eserese ogwe, ntụgharị uche maka akụkụ ọ bụla. Site na Seligman; ọ na-aga na Ike VIA."
+        },
+        "coping": {
+          "label": "Ngwa Ịnagide",
+          "desc": "Nyochaa ma mee omume atụmatụ ịnagide — iku ume, ịdọta uche, mmegharị ahụ, na ndị ọzọ."
+        },
+        "windowOfTolerance": {
+          "label": "Windo Ndidi (Window of Tolerance)",
+          "desc": "Eserese ịmata onwe nke na-echebara mmerụ uche echiche. Mpaghara mkpali atọ (mkpali karịrị akarị, windo, mkpali dị ala nke ukwuu). Deputa ihe ịrịba ama gị nke mpaghara ọ bụla, ihe na-akpali gị, na omume na-eweghachi gị. Dabere na Siegel (1999); a na-eji ya n'ụlọ akwụkwọ ndị na-echebara mmerụ uche echiche."
+        },
+        "stressBucket": {
+          "label": "Bọket Nrụgide",
+          "desc": "Eserese ikike. Ihe nrụgide na-awụba n'ime; omume ịnagide na-agbapụta ha. Hụ ma ihe na-abata na ihe na-apụ ọ dị n'otu. Ngwa si n'omenala CBT (Brabban na Turkington 2002), nke a na-eji na NHS IAPT na Mind UK. Ọ na-ekwu eziokwu gbasara nrụgide si n'otu ọha si hazie."
+        },
+        "tipp": {
+          "desc": "Nka DBT anọ maka ịlanarị nsogbu (Temperature/okpomọkụ, Intense exercise/mmega ahụ siri ike, Paced breathing/iku ume nwayọọ, Paired muscle relaxation/izu ike akwara) maka nhụjuanya SIRI IKE nke ugbu a. Ọ na-eme ka ahụ dajụọ n'ime sekọnd 30 ruo nkeji 10 tupu ị nwaa iche echiche ịpụ na ya. Nka ntọala DBT nke Ndidi n'Oge Nhụjuanya (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Ngwa Nchekasị",
+          "desc": "Nka dabere na CBT maka ịrụ ọrụ na nchekasị: mmụta gbasara ahụike uche, osisi nchegbu (nchegbu bara uru na nke na-abaghị uru), oge nchegbu ahaziri, ibelata echiche ọdachi, nka ịdọta uche, na ndepụta ụdị omume nke gị. Site na Beck Institute, AACAP, ADAA. Ọ na-aga na Windo Ndidi (Window of Tolerance) na Bọket Nrụgide."
+        },
+        "sleep": {
+          "label": "Ụra na Izu Ike",
+          "desc": "Ụra ndị na-eto eto bụ nnukwu nsogbu ahụike ọha. Awa 8-10 AAP tụrụ aro anaghị emezu ọtụtụ mgbe. Mmụta gbasara ahụike uche, nlele onwe, ihe mgbochi 8 a na-ahụkarị na ihe na-arụ ọrụ maka nke ọ bụla, na akwụkwọ akụkọ ụra. Site na AAP, CDC, NSF, nchọcha Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Ịchịkwa Mmetụta Ahụ",
+          "desc": "Ngwa na-akwado ọdịiche ụbụrụ maka ịghọta otú ahụ gị si ahazi ihe ọ na-emetụta n'ụzọ mmetụta ahụ 8. Wulite nkọwa onwe gị, hazie atụmatụ mmetụta ahụ, chọpụta mgbanwe nkwado n'ụlọ akwụkwọ. Asụsụ na-ebute njirimara ụzọ; e wuru ya na Ayres / Dunn / nchọcha nke ndị autism na-edu."
+        },
+        "bigFeelings": {
+          "label": "Mmetụta Ukwu (Iwe)",
+          "desc": "Mmụta gbasara ahụike uche na iwulite nka metụtara iwe. Iwe dị ka ozi, ọbụghị nsogbu ahụ; ime ihe ike n'ihi mkpali bụ ọnyà ahụ. E wuru ya n'omenala Coping Power nke Lochman + ihe akaebe CBT maka iwe. Ndekọ ihe na-akpasu iwe, ndepụta ihe na-akpali iwe, oge nhọrọ, ụzọ ịjụ oyi nke gị."
+        },
+        "substancePsychoed": {
+          "label": "Iji Ọgwụ Ọjọọ",
+          "desc": "Mmụta gbasara ahụike uche na-ebelata mmerụ gbasara ọgwụ ọjọọ (mmanya, wii, nicotine, opioids, ọgwụ na-akpali ahụ, benzos, ọgwụ na-eme ka mmadụ hụ ihe na-adịghị). Ihe egwu nye ụbụrụ onye na-eto eto. Mmụta gbasara Naloxone. ỌBỤGHỊ ngwa nnyocha, ỌBỤGHỊ nkuzi izere naanị. Ntụnye siri ike gaa na SAMHSA. Ebe ntụgharị uche kwekọrọ na MI."
+        },
+        "behavioralActivation": {
+          "label": "Mkpali Omume (Behavioral Activation)",
+          "desc": "Hazie obere ọrụ, mee ha, ma tụọ ha maka ikike (ị chere na ị nwere ike) na obi ụtọ (ọ tọrọ gị ụtọ). Chọpụta ihe dabara ma họrọ nzọụkwụ ọzọ ị nwere ike ijikwa. Ọrụ nhazi a si na mkpali omume (behavioral activation); ọ naghị enye ọgwụgwọ, ọ naghịkwa atụle ọgwụgwọ."
+        },
+        "mindfulness": {
+          "label": "Akụkụ Nlebara Anya",
+          "desc": "Omume iku ume a na-eduzi, nlele ahụ, na ọrụ nlebara anya."
+        },
+        "quietQuestions": {
+          "label": "Ajụjụ Nwayọọ",
+          "desc": "Omume nyocha obi kwa izu. Nọrọ na otu ajụjụ mepere emepe otu izu dum. Ajụjụ 20 na-agbanwe agbanwe gbasara nlebara anya, agụụ obi, ihe isi ike, njikọ, na itolite. O si n'omenala ajụjụ Quaker; ọ bụghị nke okpukpe, ọ naghịkwa amanye ihe."
+        },
+        "orientations": {
+          "label": "Echiche Ndụ",
+          "desc": "Ụzọ Ibi Ndụ, Atụnyere. Omenala nkà ihe ọmụma asatọ (Daoism, Zen, Stoicism, Existentialism, ụkpụrụ Confucius, Ubuntu, mmekọrịta Ụmụ Amaala, Ụkpụrụ Nlekọta) atụnyere n'ajụjụ ndụ ukwu. Ọ naghị amanye ihe; omenala ọ bụla nwere ngalaba eziokwu nke \"ihe ọ na-enweghị ike ime nke ọma\"."
+        },
+        "thoughtRecord": {
+          "label": "Ndekọ Echiche CBT",
+          "desc": "Ndekọ echiche nwere kọlụm 7 si na Cognitive Behavioral Therapy (CBT). Gafee otu oge siri ike: ọnọdụ, mmetụta, echiche na-abịa onwe ya, ihe akaebe kwadoro na nke megidere, echiche kwụ ọtọ, ịtụ mmetụta ọzọ. Ọ na-echekwa ihe ndekọ ka oge na-aga. Site na Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Tebụl Uru na Ọghọm",
+          "desc": "Tebụl mkpebi 2x2 si na Dialectical Behavior Therapy (DBT). Uru na ọghọm nke mkpebi n'oge dị mkpụmkpụ na n'oge dị ogologo, n'akụkụ n'akụkụ. Ọ bara uru mgbe mmetụta na-akwagide gị gaa n'otu nhọrọ. Site na Linehan."
+        },
+        "sfbt": {
+          "label": "Nke Lekwasịrị Anya na Ngwọta",
+          "desc": "Ọgwụgwọ Nkenke Lekwasịrị Anya na Ngwọta (Solution-Focused Brief Therapy): Ajụjụ Ọrụ Ebube, Ntụle n'Ọnụọgụgụ, Ịchọta Ihe Dị Iche, na Otuto. Ọ na-ele anya n'ihu kama n'azụ, na-ajụ ihe na-arụ ọrụ ugbu a. Ụzọ a kacha eji na ndụmọdụ ụlọ akwụkwọ na US. Site na de Shazer na Berg."
+        },
+        "careConstellations": {
+          "label": "Kpakpando Nlekọta",
+          "desc": "Eserese mmekọrịta nke ndị na-elekọta gị na ndị ị na-elekọta. Ọ na-ajụ echiche \"nlekọta onwe\" nke ịchọ onwe naanị ma ọ bụ nke ịzụ ahịa. Ọ gụnyere echiche nkà ihe ọmụma miri emi gbasara Nlekọta Mkpụrụ Obi na Nlekọta Onwe (Foucault, epimeleia heautou nke Grik, Audre Lorde, eudaimonic na hedonic)."
+        },
+        "ecomap": {
+          "label": "Eserese Gburugburu",
+          "desc": "Eserese mmekọrịta mmadụ na gburugburu ya. Gị n'etiti; nnukwu sistemụ ndụ 12 gbara gị gburugburu. A na-atụ njikọ ọ bụla maka ike, nrụgide, na ụzọ ike si aga. Ngwa ọrụ ọdịmma ọha a na-ejikarị kemgbe Hartman (1978); a na-eji ya na IEP, nyocha ezinụlọ, na ndepụta ndụ onwe."
+        },
+        "circlesOfSupport": {
+          "label": "Gburugburu Nkwado",
+          "desc": "Mgbanaka anọ gbara onwe ha gburugburu nke mmekọrịta: Mmekọ chiri anya, Ọbụbụenyi, Isonye, Mgbanwe (a na-akwụ ụgwọ). Ọ na-egosi ndị nọ nso n'ezie, gụnyere mgbe ndị a na-akwụ ụgwọ jupụtara mgbanaka ime. Site na Forest na Snow na Inclusion Press."
+        },
+        "genogram": {
+          "label": "Eserese Ọgbọ Ezinụlọ",
+          "desc": "Eserese ezinụlọ nke ọgbọ atọ na-eji akara sistemụ ezinụlọ a na-ejikarị. Maka ịghọta onwe naanị (ỌBỤGHỊ nyocha ụlọ ọgwụ). Dabere na tiori sistemụ ezinụlọ nke Bowen na ndepụta McGoldrick-Gerson-Petry. Ọ gụnyere ntuziaka nchekwa a na-egosi nke ọma."
+        },
+        "griefLoss": {
+          "label": "Iru Uju na Mfu",
+          "desc": "Enyi nduzi onwe maka iru uju. Ọnwụ mmadụ ma ọ bụ anụ ụlọ, mgbanwe ezinụlọ, mfu enyi, mfu njirimara, mfu na-edoghị anya — ha niile dị mkpa. Gafee ọrụ anọ nke iru uju nke Worden, dee akwụkwọ ozi, hazie ememe. Nchekwa siri ike na-atụ aka na Enyi n'Oge Nsogbu / 988 maka iru uju siri ike ma ọ bụ nke gbagwojuru anya."
+        },
+        "traumaPsychoed": {
+          "label": "Ịghọta Mmerụ Uche",
+          "desc": "Mmụta gbasara ahụike uche naanị (ỌBỤGHỊ ngwa nnyocha). Ihe mmerụ uche bụ na ihe ọ na-abụghị, ọmụmụ ụbụrụ n'asụsụ dị mfe, mmeghachi omume a na-ahụkarị dị ka ụzọ mmegharị, ụkpụrụ 6 nke SAMHSA, ọgwụgwọ nwere ihe akaebe. Maka ụmụ akwụkwọ na ndị nkuzi. Ọ gụnyere nchekwa a na-egosi nke ọma gbasara ihe mere nnyocha na-enweghị nsochi ji enweghị nchekwa."
+        },
+        "bodyStory": {
+          "label": "Akụkọ Ahụ",
+          "desc": "Ngwa maka ịnabata ahụ na ibi n'ahụ. ỌBỤGHỊ nke lekwasịrị anya n'ịdị arọ, ỌBỤGHỊ nke metụtara nri mbelata, ỌBỤGHỊ ngwa nnyocha. E wuru ya na ekele ahụ nke Tylka, ụkpụrụ iri nri site n'ige ahụ ntị, na mmụta mgbasa ozi. Ọ gụnyere ahụ niile, okike niile, nha niile. Ntụnye siri ike gaa na NEDA maka nsogbu iri nri."
+        },
+        "sourcesOfStrength": {
+          "label": "Isi Iyi Ike",
+          "desc": "Deputa ihe nchebe 8 gị. Nyochaa nkwado nchebe nke mmemme Sources of Strength kpaliri. Eserese a ị na-eduzi onwe gị bụ mmegharị, ọbụghị mmemme ụlọ akwụkwọ a nwalere."
+        },
+        "crisiscompanion": {
+          "label": "Enyi n'Oge Nsogbu",
+          "desc": "Nkwado ndị ọgbọ na nka mgbochi igbu onwe: ihe ị ga-eme ma ọ bụrụ na gị ma ọ bụ enyi nwere ịda mbà n'obi, nọ na nsogbu, ma ọ bụ na-eche echiche imerụ onwe — ịmata ihe ịrịba ama, ihe a ga-ekwu (na ihe a na-agaghị ekwu), ịgwa okenye ị tụkwasịrị obi, gbakwunyere 988 na atụmatụ nchekwa onwe gị. A na-emepe ya mgbe ịdọ aka ná ntị gbasara ọdịnaya gasịrị. Ọ kwekọrọ na NEDA, AFSP, Sources of Strength, na 988. Ọ bụ ngwa nkwado mberede nke na-eso Isi Iyi Ike."
+        },
+        "identitySupport": {
+          "label": "Nkwado Njirimara",
+          "desc": "Ebe na-anabata ma na-akwado maka njirimara okike, mmasị mmekọahụ, mmasị ịhụnanya, na ajụjụ njirimara sara mbara. Okwu, mmepe njirimara, ịchọta obodo, nchekwa maka ndị ntorobịa trans, ntuziaka maka ndị na-akwado. E wuru ya na Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Olu Ndị Nwere Nkwarụ",
+          "desc": "Ezigbo ndị na-akwado autism na ndị nwere nkwarụ bụ ndị ọrụ ha kpụrụ, ma katọọ, omume gbasara nkwarụ. Okwu ha kwuru, nkọwa, na ndepụta ihe ọgụgụ a họpụtara. E wuru ya ka ndị a rụrụ ọrụ ngalaba ahụ N'AHỤ HA bụrụ ndị nọ n'etiti, ọ bụghị ndị a tụpụrụ n'akụkụ n'ime ngwa sayensị omume. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Onye Nhazi Ebumnuche",
+          "desc": "Tọọ ebumnuche SMART, soro ọganihu, ma mee mmemme maka ihe ị rụzuru."
+        },
+        "howlTracker": {
+          "label": "Onye Nsochi HOWL",
+          "desc": "Nyocha onwe gbasara Omume Ọrụ na Mmụta (HOWL) maka oge Crew. Nlele kwa izu, ebumnuche kwa ọnwa atọ, eserese ọganihu, ajụjụ mkparịta ụka Crew. Ọ kwekọrọ na nhazi HOWL nke EL Education."
+        },
+        "onePageProfile": {
+          "label": "Nkọwa Onwe n'Otu Peeji",
+          "desc": "Nkọwa onwe dị mfe iburu na ibipụta nke dabara n'otu peeji. Ngalaba atọ: ihe ndị mmadụ na-amasị ma na-eto n'ahụ m, ihe dị m mkpa, otú kacha mma isi kwado m. Akwụkwọ nhazi lekwasịrị anya na mmadụ maka nzukọ IEP, mgbanwe, ndị nkuzi nnọchi, ma ọ bụ Crew. Dabere na nhazi Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Ịme Atụmatụ Omume). Ajụjụ asatọ otu n'otu (Akụkọ M, Nrọ, Nrọ Ọjọọ, Onye M Bụ, Onyinye, Mkpa, Atụmatụ Omume, Nzọụkwụ Mbụ). Eserese lekwasịrị anya na mmadụ site na Pearpoint, O'Brien, na Forest na Inclusion Press; a na-ejikarị ya maka ịhazi mgbanwe."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Ịhazi Echi Ọzọ na Olileanya). Eserese ịhazi ọdịnihu: nzọụkwụ asatọ site na Kpakpando Ugwu gị dị anya laghachi azụ ruo nzọụkwụ mbụ n'ime izu abụọ. Pearpoint, O'Brien, na Forest na Inclusion Press; ọ na-aga na MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Ụkpụrụ na Omume",
+          "desc": "Hazie ihe dị mkpa, kpọọ aha ụkpụrụ gị kacha elu, ma tụgharịa nke ọ bụla ka ọ bụrụ obere omume doro anya n'izu a. Site na Acceptance and Commitment Therapy (Hayes); nhazi DNA-V maka ndị na-eto eto. Ọdịiche ACT n'etiti ụkpụrụ (ụzọ) na ebumnuche (ebe a na-aga)."
+        },
+        "careerCompass": {
+          "label": "Kompas Ọrụ Aka",
+          "desc": "Nyochaa ọrụ aka site n'ihe na-amasị gị. Nlele onwe RIASEC nwere ajụjụ 36 na-enye koodu Holland atọ kacha elu; lelee ọrụ aka, Otu Ọrụ Aka 16 nke gọọmentị etiti, na nzọụkwụ ọzọ doro anya (ụbọchị iso onye ọrụ, ajụjụ ọnụ maka ozi, CTE, ịmụ ọrụ aka). E wuru ya na nhazi Holland; ọ na-atụ aka na O*NET Interest Profiler izizi na mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Ụlọ Ọrụ Ịkwado Onwe",
+          "desc": "Wulite atụmatụ nkwado ụlọ akwụkwọ doro anya maka ajụjụ IEP ma ọ bụ 504, mgbanwe nkwado, nhọrọ ikpughe, na ịrịọ ndị okenye ị tụkwasịrị obi maka enyemaka."
+        },
+        "perspective": {
+          "label": "Ugogbe Echiche",
+          "desc": "Hụ ọnọdụ site n'echiche dị iche iche — mee omume ọmịiko na ile ihe anya site n'echiche onye ọzọ."
+        },
+        "community": {
+          "label": "Obodo na Omenala",
+          "desc": "Nyochaa ọdịiche, ịmata omenala, na ịbụ akụkụ nke obodo."
+        },
+        "conflict": {
+          "label": "Idozi Esemokwu",
+          "desc": "Mee omume esemokwu dị obere ma ọ bụ nke echiche site n'ile ihe anya site n'echiche onye ọzọ, okwu na-amalite na \"Mụ\", ibelata ọgbaghara, na nhọrọ mmezi. Ọ bụrụ na mmadụ enweghị nchekwa, tinye okenye aka kama ịkparịta naanị gị."
+        },
+        "social": {
+          "label": "Ụlọ Nnwale Nka Mmekọrịta",
+          "desc": "Mee omume nka mkparịta ụka, ige ntị nke ọma, asụsụ ahụ, na imekọ ihe ọnụ."
+        },
+        "teamwork": {
+          "label": "Onye Nwulite Ọrụ Otu",
+          "desc": "Ihe ịma aka imekọ ihe ọnụ na nyocha ọrụ n'ime otu."
+        },
+        "dearMan": {
+          "desc": "Wulite okwu maka arịrịọ siri ike na nzọụkwụ asaa: Describe (Kọwaa), Express (Kwupụta mmetụta), Assert (Kwuo ihe ị chọrọ), Reinforce (Gosi uru ya), Mindful (Lekwasị anya), Appear confident (Gosi obi ike), Negotiate (Kparịta). Site na Nka Mmekọrịta DBT (Linehan); okwu nkwupụta obi ike a kacha eji na ndụmọdụ ụlọ akwụkwọ. Ọ na-aga na Ụlọ Ọrụ Ịkwado Onwe."
+        },
+        "motivationalInterviewing": {
+          "label": "Ajụjụ Ọnụ Mkpali (Motivational Interviewing)",
+          "desc": "Nhazi mkparịta ụka maka inyere mmadụ (ma ọ bụ onwe gị) aka iche echiche gbasara mgbanwe. Mụta nka OARS (Open questions/ajụjụ mepere emepe, Affirmations/nkwado, Reflections/ikwughachi ihe ị nụrụ, Summaries/nchịkọta), ihe ntụle atọ, na Okwu Mgbanwe. Site na Miller na Rollnick; ntọala ndụmọdụ ụlọ akwụkwọ na ọrụ nkwado ndị ọgbọ."
+        },
+        "crewProtocols": {
+          "label": "Ntuziaka Crew",
+          "desc": "Ọba nke nhazi otu ahaziri ahazi maka oge Crew, oge ndụmọdụ, ma ọ bụ klas ụtụtụ: ndị na-ewulite obodo, mmalite, mmechi, gburugburu mmezi, ntuziaka ntụgharị uche, ụdị mmemme, na ntuziaka mkparịta ụka siri ike. Gbakwunyere nchịkọta ajụjụ Crew niile si n'ebe niile na SEL Hub. E wuru ya na EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Mmekọrịta Dị Mma",
+          "desc": "Ọkwa (dị mma / adịghị mma / mmetọ) n'akụkụ 8 nke mmekọrịta chiri anya ọ bụla. Nkwenye n'uju, mgbochi ime ihe ike na mmekọrịta ịhụnanya, nchekwa + ahịrị enyemaka. E wuru ya na nhazi Loveisrespect / NDVH. Ọ gụnyere ndị queer, ndị nwere ụbụrụ dị iche, na ndị nwere nkwarụ."
+        },
+        "decisions": {
+          "label": "Ụlọ Nnwale Mkpebi",
+          "desc": "Gafee ọnọdụ ndụ n'ezie site n'iji nhazi kwụsị-chee-mee."
+        },
+        "journal": {
+          "label": "Akwụkwọ Akụkọ Mmetụta",
+          "desc": "Akwụkwọ akụkọ nlele kwa ụbọchị — dee ọnọdụ obi, ihe na-akpali mmetụta, na ntụgharị uche ka oge na-aga."
+        },
+        "safety": {
+          "label": "Nchekwa na Oke",
+          "desc": "Mụta gbasara oke onwe, ndị okenye ị tụkwasịrị obi, na ọnọdụ nwere nchekwa na ndị na-enweghị."
+        },
+        "landPlace": {
+          "label": "Ala na Ebe",
+          "desc": "Ụlọ Ọrụ Nlekọta Ala maka mmekọrịta na-aga n'ihu na ala ị bi na ya. Eri atọ (akụkọ ihe mere eme, gburugburu ebe obibi, ugbu a), ntụgharị uche miri emi gbasara nkwenye ala dị ka omume kama ngosi, otu ndị Wabanaki na-edu dị ka olu nwere ikike, na akwụkwọ akụkọ ntụgharị uche nzuzo."
+        },
+        "somaticReset": {
+          "label": "Ntọgharị Ahụ na Iku Ume",
+          "desc": "Họrọ akụkụ ahụ ma soro obere ntọgharị nke ịnọ jụụ, iku ume, ma ọ bụ mmegharị nwayọọ nke dabara n'oche, ya na nlele onwe nzuzo tupu na mgbe e mesịrị."
+        },
+        "restorativeCircle": {
+          "label": "Gburugburu Mmezi",
+          "desc": "Duzie gburugburu mmezi na iwulite obodo nwere ụkpụrụ e hiwere, nduzi okenye, na nlekọta gbasara mgbọrọgwụ omenala. Ọ bụghị maka ịmanye ikpughe ma ọ bụ ihe egwu nchekwa na-eme ugbu a."
+        },
+        "compassion": {
+          "label": "Ọmịiko na Okwu Onwe",
+          "desc": "Mee omume ọmịiko nye onwe gị, tụgharịa onye nkatọ dị n'ime, ma wulite olu ime nwere obiọma."
+        },
+        "friendship": {
+          "label": "Onye Nwulite Ọbụbụenyi",
+          "desc": "Nyochaa ụdị ọbụbụenyi, atụmatụ mmezi, na ụdị mmekọrịta dị mma."
+        },
+        "transitions": {
+          "label": "Mgbanwe Ndụ",
+          "desc": "Gafee mgbanwe dị ka ịkwaga ebe obibi, ụlọ akwụkwọ ọhụrụ, na itolite."
+        },
+        "upstander": {
+          "label": "Ọzụzụ Iguzo Maka Ndị Ọzọ",
+          "desc": "Mụta iguzo maka ndị ọzọ n'enweghị ihe egwu — nka isi n'onye na-ekiri gaa n'onye na-eguzo."
+        },
+        "growthmindset": {
+          "label": "Echiche Uto",
+          "desc": "Sayensị ụbụrụ, ịtụgharị ihe ịma aka, na iwulite ntachi obi."
+        },
+        "execfunction": {
+          "label": "Ọrụ Nchịkwa Ụbụrụ",
+          "desc": "Atụmatụ maka akụkụ ndị siri ike nke ime ihe: ịmalite ọrụ, ilekwasị anya, ịhazi n'ihu, na ịsochi oge."
+        },
+        "advocacy": {
+          "label": "Omume Ikwuchite",
+          "desc": "Mee nnwale okwu izugbe maka ikwupụta mkpa, ịrịọ nkwado, na ikwu okwu n'ọnọdụ kwa ụbọchị."
+        },
+        "civicAction": {
+          "label": "Omume Obodo na Olileanya",
+          "desc": "Hazie mmetụta siri ike gbasara ikpe na-ezighị ezi, wulite ikike isonye n'obodo, ma kpalite olileanya site n'omume."
+        },
+        "ethicalReasoning": {
+          "label": "Ụlọ Nnwale Echiche Ụkpụrụ Omume",
+          "desc": "Nyochaa nsogbu ụkpụrụ omume nke oge a site n'ọtụtụ nhazi na mkparịta ụka ajụjụ-na-azịza dị ka nke Socrates ya na AI."
+        },
+        "cultureExplorer": {
+          "label": "Onye Nyocha Omenala",
+          "desc": "Mee nyocha miri emi nke AI na-enye aka gbasara omenala ụwa, ya na foto na ụda."
+        },
+        "voicedetective": {
+          "label": "Onye Nchọpụta Olu",
+          "desc": "Gee olu ntị ma chọpụta mmetụta site n'ụda olu."
+        },
+        "practiceJourneys": {
+          "label": "Njem Omume (Nnwale)",
+          "desc": "Mee omume ịrịọ nkwado site na nzute anọ jikọrọ ọnụ. Zaa site na nhọrọ, okwu nke gị, ma ọ bụ ha abụọ. Debe akwụkwọ akụkọ ma nwaa ụzọ ọzọ."
+        },
+        "sociallab": {
+          "label": "Egwuregwu Ọnọdụ Nka Mmekọrịta",
+          "desc": "Mee omume ọnọdụ mmekọrịta na egwuregwu ọnọdụ ya na ndị ọgbọ AI nwere mkparịta ụka na-ekewa ekewa."
+        },
+        "peersupport": {
+          "label": "Onye Nkuzi Nkwado Ndị Ọgbọ",
+          "desc": "Mụta nka ige ntị OARS na mgbe ị ga-achọ enyemaka okenye."
+        },
+        "conflicttheater": {
+          "label": "Ụlọ Ihe Nkiri Esemokwu",
+          "desc": "Mee omume esemokwu akụkọ ifo ya na agwa AI abụọ n'ime ọnọdụ na-adọrọ mmasị. Egwuregwu ọnọdụ nnwale (beta) naanị; ejila ya dozie mmerụ na-eme ugbu a."
+        },
+        "digitalWellbeing": {
+          "label": "Ụlọ Ọrụ Ọdịmma Dijitalụ",
+          "desc": "Lelee mmekọrịta gị na soshal midia na chatbot AI, wulite omume ekwentị ka mma, gbakee site na mmegbu n'ịntanetị, chọpụta aghụghọ n'ihe a na-egosi gị, jikwaa mmekọrịta chatbot n'enweghị ihe egwu, ma chọta enyemaka mgbe ị chọrọ ya."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Ịmata Onwe",
+          "desc": "Ịmata mmetụta, ike, na ebe ị ga-eto"
+        },
+        "self-regulation": {
+          "label": "Ịchịkwa Onwe",
+          "desc": "Ịchịkwa mmetụta, mkpali, nlebara anya; omume ịnagide"
+        },
+        "self-direction": {
+          "label": "Iduzi Onwe",
+          "desc": "Ịtọ ebumnuche, ikike onwe, nchịkwa ụbụrụ, echiche uto"
+        },
+        "inner-work": {
+          "label": "Ọrụ Ime Obi",
+          "desc": "Omume ntụgharị uche na ịnọ jụụ"
+        },
+        "care-of-self": {
+          "label": "Nlekọta Mkpụrụ Obi",
+          "desc": "Ọmịiko nye onwe, nlekọta onwe site na mmekọrịta"
+        },
+        "social-awareness": {
+          "label": "Ịmata Ọha",
+          "desc": "Ọmịiko, ile ihe anya site n'echiche onye ọzọ, na ịkwanyere ọdịiche ugwu"
+        },
+        "relationship-skills": {
+          "label": "Nka Mmekọrịta",
+          "desc": "Nkwurịta okwu, imekọ ihe ọnụ, na idozi esemokwu"
+        },
+        "responsible-decision-making": {
+          "label": "Ime Mkpebi n'Ụzọ Kwesịrị",
+          "desc": "Nhọrọ ziri ezi, ịtụle ihe ga-esi na ya pụta, na idozi nsogbu"
+        },
+        "stewardship": {
+          "label": "Nlekọta Ihe Enyere Anyị",
+          "desc": "Ilekọta obodo, ikpe ziri ezi, ala, na ọdịnihu"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "nkeji 5-8",
+          "purpose": "Kpọọ aha mpaghara gị ugbu a ma họrọ atụmatụ ịchịkwa dabara.",
+          "next": "Lelee mpaghara gị, họrọ otu atụmatụ, wee chekwaa ma ọ bụrụ na ị chọrọ ịlaghachi na ya."
+        },
+        "coping": {
+          "time": "nkeji 3-10",
+          "purpose": "Họrọ atụmatụ ịnagide ma mee ya otu ugboro nwere ebe nkwụsị doro anya.",
+          "next": "Họrọ otu atụmatụ nke ahụ ma ọ bụ nke ịdọta uche, nwaa ya, wee chọpụta ma o nyere aka."
+        },
+        "journal": {
+          "time": "nkeji 5-12",
+          "purpose": "Dee ntụgharị uche nzuzo ma chọpụta ụdị ihe ị ga-achọ idobe.",
+          "next": "Họrọ ajụjụ, dee n'eziokwu, ma chekwaa ma ọ bụ bupụ tupu imechi."
+        },
+        "emotions": {
+          "time": "nkeji 4-8",
+          "purpose": "Wulite okwu mmetụta ma kpọọ aha ihe ị na-enwe n'ụzọ doro anya karị.",
+          "next": "Họrọ otu mmetụta, tụọ ike ya, wee họrọ otu okwu kacha dabara."
+        },
+        "mindfulness": {
+          "time": "nkeji 2-10",
+          "purpose": "Kwụsịtụ, kuo ume, ma mee omume nlebara anya n'achọghị ide ihe ọ bụla.",
+          "next": "Họrọ otu obere omume, soro ya ruo n'isi, wee chọpụta ihe gbanwere."
+        },
+        "somaticReset": {
+          "time": "nkeji 3-8",
+          "purpose": "Jiri nlele akụkụ ahụ nzuzo họrọ obere ntọgharị dabara n'oche.",
+          "next": "Họrọ akụkụ ahụ, nwaa otu nhọrọ ịnọ jụụ, iku ume, ma ọ bụ mmegharị nwayọọ, wee chọpụta ihe gbanwere."
+        },
+        "thoughtRecord": {
+          "time": "nkeji 8-15",
+          "purpose": "Mee ka echiche siri ike jee nwayọọ ma chọọ echiche kwụ ọtọ karị.",
+          "next": "Kpọọ aha ọnọdụ ahụ, tụọ mmetụta ahụ, wee jiri ihe akaebe nwalee echiche ahụ."
+        },
+        "anxietyToolkit": {
+          "time": "nkeji 5-12",
+          "purpose": "Hazie nchegbu, belata ike nchekasị, ma họrọ nzọụkwụ ọzọ bara uru.",
+          "next": "Họrọ nchegbu kacha ụda, nwaa otu atụmatụ, wee chekwaa atụmatụ ahụ ma ọ bụrụ na o nyere aka."
+        },
+        "sleep": {
+          "time": "nkeji 4-10",
+          "purpose": "Chọpụta ihe na-egbochi ụra ma họrọ otu omume izu ike ị ga-anwa ọzọ.",
+          "next": "Lelee ihe na-egbochi gị, họrọ otu obere mgbanwe, wee lelee ya ọzọ ma emechaa."
+        },
+        "goals": {
+          "time": "nkeji 5-10",
+          "purpose": "Tụgharịa ebumnobi ka ọ bụrụ omume ọzọ doro anya ma nwee ike ime.",
+          "next": "Dee otu ebumnuche, họrọ nzọụkwụ mbụ, ma chekwaa atụmatụ ahụ tupu imechi."
+        },
+        "friendship": {
+          "time": "nkeji 5-10",
+          "purpose": "Chee echiche gbasara mkpa ọbụbụenyi, ịbụ akụkụ, na nhọrọ ndị ọgbọ.",
+          "next": "Họrọ otu ọnọdụ ọbụbụenyi ma chọpụta otu omume obiọma ọzọ."
+        },
+        "conflict": {
+          "time": "nkeji 6-12",
+          "purpose": "Ghọta esemokwu ma kwadebe nzaghachi lekwasịrị anya na mmezi.",
+          "next": "Kpọọ aha ihe mere, tụlee akụkụ abụọ, wee họrọ otu omume mmezi."
+        },
+        "safety": {
+          "time": "nkeji 8-15",
+          "purpose": "Mepụta atụmatụ nchekwa bara uru ma chọpụta nkwado ị tụkwasịrị obi.",
+          "next": "Tinye ihe ịrịba ama ịdọ aka ná ntị, nzọụkwụ ịnagide, na ndị a ga-akpọ; chekwaa tupu imechi."
+        },
+        "crisiscompanion": {
+          "time": "nkeji 3-10",
+          "purpose": "Jiri ụzọ nkwado ahaziri ahazi mgbe mmetụta dị ngwa ngwa ma ọ bụ enweghị nchekwa.",
+          "next": "Họrọ nhọrọ nkwado kacha nso ma tinye okenye ị tụkwasịrị obi ma ọ bụ ọrụ enyemaka nsogbu aka mgbe ọ dị mkpa."
+        },
+        "conflicttheater": {
+          "time": "nkeji 8-15",
+          "purpose": "Mee omume ọnọdụ esemokwu akụkọ ifo ma nwalee asụsụ mmezi n'ewereghị ngwa a dị ka ịkpezi okwu.",
+          "next": "Họrọ ọnọdụ akụkọ ifo, nwaa otu nzaghachi, ma kparịta ihe ga-achọ nkwado okenye na ndụ n'ezie."
+        },
+        "restorativeCircle": {
+          "time": "nkeji 15-30",
+          "purpose": "Hazie ma ọ bụ duzie mmemme mmezi otu nwere ụkpụrụ doro anya na nduzi okenye.",
+          "next": "Buru ụzọ tọọ nkwekọrịta gburugburu, wee họrọ ajụjụ; amanyela mmadụ ikpughe ihe n'ihu ọha."
+        },
+        "strengths": {
+          "time": "nkeji 5-10",
+          "next": "Họrọ ike ndị yiri gị, wee chọta otu oge n'ezie n'ime tam a nke na-egosi nke ọ bụla."
+        },
+        "viaStrengths": {
+          "time": "nkeji 8-15",
+          "purpose": "Jiri nhazi onwe VIA kpaliri dị ka ọrụ ntụgharị uche, ọbụghị nyocha izizi.",
+          "next": "Hazie ike ndị ahụ, chọpụta ụdị ihe, ma dee otu ihe atụ na-akwado nsonaazụ ahụ."
+        },
+        "perma": {
+          "time": "nkeji 8-15",
+          "purpose": "Were foto ntụgharị uche nke ọdịmma n'akụkụ PERMA gbakwunyere Ahụike.",
+          "next": "Jiri foto ahụ họrọ mkparịta ụka ma ọ bụ obere nnwale, ọ bụghị ịkpọ onwe gị aha."
+        },
+        "advocacy": {
+          "time": "nkeji 5-12",
+          "purpose": "Mee omume asụsụ kwa ụbọchị maka ikwupụta mkpa na ịrịọ nkwado.",
+          "next": "Họrọ ọnọdụ, dee obere arịrịọ, ma kpebie onye nwere ike inye aka."
+        },
+        "selfAdvocacy": {
+          "time": "nkeji 10-20",
+          "purpose": "Wulite atụmatụ nkwado ụlọ akwụkwọ doro anya maka IEP, 504, mgbanwe nkwado, ma ọ bụ nhọrọ ikpughe.",
+          "next": "Họrọ otu mkpa nkwado, chịkọta ajụjụ gị, ma chọpụta okenye ị tụkwasịrị obi ị ga-etinye aka."
+        },
+        "crewProtocols": {
+          "time": "nkeji 10-20",
+          "next": "Lelee site na nzube, họrọ otu ntuziaka maka taa, wee dee na Atụmatụ Crew M mgbe ị ga-eme ya."
+        },
+        "perspective": {
+          "time": "nkeji 6-12",
+          "next": "Họrọ ọnọdụ, buru ụzọ lee ya site n'echiche onye nke ọzọ, wee kwuo ihe ị ga-eme n'ụzọ dị iche."
+        },
+        "windowOfTolerance": {
+          "time": "nkeji 8-12",
+          "next": "Tinye otu ihe ịrịba ama na mpaghara atọ gị nke ọ bụla, wee jiri Nlele tinye taa."
+        },
+        "sensoryRegulation": {
+          "time": "nkeji 8-15",
+          "next": "Malite na Gịnị bụ mmetụta ahụ?, wee kaa akara n'ụzọ mmetụta ndị dị gị ụda ma ọ bụ jụụ."
+        },
+        "execfunction": {
+          "time": "nkeji 5-10",
+          "next": "Gaa na Malite ma họrọ otu omume mmalite maka taa, wee gaa na Jide iji họrọ ebe ị ga-edetu ihe."
+        },
+        "growthmindset": {
+          "time": "nkeji 5-10",
+          "next": "Mepee Tụgharịa Ya, dee echiche kwụ chịm, ma tụgharịa ya ka ọ bụrụ nke doro anya ma nwee ike ime."
+        },
+        "dearMan": {
+          "time": "nkeji 8-12",
+          "next": "Dee arịrịọ gị n'otu ahịrịokwu, dee nzọụkwụ asaa ahụ, wee mee nnwale ya otu ugboro."
+        },
+        "howlTracker": {
+          "time": "nkeji 5-10",
+          "next": "Dee Ọkụkụ Obi, wee mee Nlele Kwa Izu: tụọ HOWL ọ bụla ma tinye otu ihe atụ doro anya."
+        },
+        "peersupport": {
+          "time": "nkeji 5-10",
+          "next": "Họrọ ajụjụ mepere emepe abụọ ị nwere ike ịjụ enyi, wee nwaa otu n'ọnọdụ akụkọ ifo na taabụ omume."
+        },
+        "upstander": {
+          "time": "nkeji 8-12",
+          "next": "Gụọ ubọ obi ike na Mmegharị ma họrọ mmegharị abụọ kacha nta ị nwere ike ime n'ezie n'izu a."
+        },
+        "digitalWellbeing": {
+          "time": "nkeji 8-12",
+          "next": "Mee Nlele Onwe n'eziokwu, wee họrọ otu omume site na Ngwa na otu oke ị tọrọ tupu oge eruo."
+        },
+        "teamwork": {
+          "time": "nkeji 8-12",
+          "next": "Lelee Ọrụ n'Otu, wee dee Atụmatụ Nkwurịta Okwu maka otu n'ezie: onye na-eme gịnị, ebee, na mgbe ole."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Malite ebe a",
+        "name_it": "Kpọọ ya aha",
+        "calm_now": "Dajụọ ugbu a",
+        "body_reset": "Ntọgharị ahụ",
+        "make_a_plan": "Mee atụmatụ",
+        "understand_patterns": "Ghọta ụdị ihe",
+        "practice_repair": "Mee omume mmezi",
+        "role_play": "Egwuregwu ọnọdụ",
+        "facilitated_group": "Otu a na-eduzi",
+        "reflect": "Tụgharịa uche",
+        "practice_speaking_up": "Mee omume ikwu okwu",
+        "make_a_support_plan": "Mee atụmatụ nkwado",
+        "urgent_support": "Nkwado mberede",
+        "get_support": "Nweta nkwado",
+        "move_gently": "Gaa nwayọọ",
+        "learn_not_diagnose": "Mụta, ọ bụghị nchọpụta ọrịa",
+        "learn_and_get_support": "Mụta ma nweta nkwado",
+        "check_boundaries": "Lelee oke",
+        "explore_identity": "Nyochaa njirimara",
+        "practice_body_respect": "Mee omume nsọpụrụ ahụ",
+        "map_carefully": "Deputa nke ọma",
+        "understand_needs": "Ghọta mkpa"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Kpọọ aha ihe na-eme tupu ịhọrọ atụmatụ."
+        },
+        "emotions": {
+          "note": "Wulite okwu mmetụta doro anya ma chọpụta ike ha."
+        },
+        "coping": {
+          "note": "Nwaa otu atụmatụ nke ahụ ma ọ bụ nke ịdọta uche, wee chọpụta ihe gbanwere."
+        },
+        "mindfulness": {
+          "note": "Nkwụsịtụ na-achọghị ide ihe dị ukwuu maka iku ume, nlebara anya, ma ọ bụ ịmata ahụ."
+        },
+        "somaticReset": {
+          "note": "Họrọ akụkụ ahụ, wee nwaa obere omume ịnọ jụụ, iku ume, ma ọ bụ mmegharị nwayọọ. Obere onye nhọrọ a na-eji keyboard arụ na-eme ka eserese ọ bụla dị mfe iji na obere ihuenyo. Eserese ndị ahụ gụnyere Ebili Mmiri Na-asọ nke na-ejikọ BATA · BILIE na ahịrị siri ike na akara gburugburu, PỤTA · DAJỤỌ na ahịrị ntụpọ ntụpọ na akara daịmọnd, na AKWỤSỊTỤRỤ na ogwe nkwụsịtụ; Okooko Osisi Na-emepe nke na-ejikọ BATA · MEPEE na ahịrị mpempe okooko siri ike na etiti gburugburu, PỤTA · DỊ NRO na ahịrị ntụpọ ntụpọ na etiti daịmọnd, na AKWỤSỊTỤRỤ na ogwe nkwụsịtụ n'etiti; Mbara Igwe Na-adọta Uche nke na-ejikọ BATA · BILIE na ahịrị anyanwụ siri ike na etiti okirikiri, PỤTA · DAJỤỌ na ahịrị anyanwụ ntụpọ ntụpọ na etiti daịmọnd, na AKWỤSỊTỤRỤ na ogwe nkwụsịtụ anyanwụ; ụzọ kwụ ọtọ a na-atụ anya ya nwere akara ụzọ na akara BATA na PỤTA ozugbo, ebumnuche BATA gburugburu na ebumnuche PỤTA daịmọnd, akara ụkwụ nke mmalite na-arụ ọrụ, na ebe ọzọ a ga-aga nwere ahịrị gburugburu ya; na Gburugburu Ume nwere akụkụ abụọ nwere ụta oge siri ike na ntụpọ ntụpọ na-aka ibu mgbe ha na-arụ ọrụ, mgbanaka etiti kwekọrọ n'ụdị oge ahụ, akara BATA na PỤTA ozugbo, akara etiti nke oge nkwụsịtụ, ebe nnyefe ọzọ nwere ahịrị gburugburu ya, akara nwere ọdịdị oge na-atụgharị dị ka elekere, maapụ ụda nwere koodu ọdịdị, na akara oge maka onye na-agụ ihuenyo. Ụmụ akwụkwọ nwere ike ịnwale otu ume nke mmegharị tupu elekere amalite, wee mee ka ọ buo ibu, kwụsị ya, ma ọ bụ gbanyụọ nduzi ahụ. Na Ọnọdụ Jụụ, eserese ahụ e mere ka ọ buo ibu na-aghọ njikwa mmalite/nkwụsịtụ a na-eji keyboard na mmetụ aka arụ. Enwere ike izo ọnụọgụ azụ; okwu nduzi nwere ike ịbụ nke zuru ezu, naanị oge, ma ọ bụ zoro ezo; ma ọnụọgụ ume na ntụle ọnụọgụ bụ nhọrọ.",
+          "boundary": "Nke a abụghị ọgwụgwọ ma ọ bụ nchọpụta ọrịa. Mee ka mmegharị dị obere ma ghara inwe mgbu; kwụsị ma ọ bụrụ na e nwere mgbu, isi na-atụgharị, ma ọ bụ ahụ ịkpọnwụ ma gwa okenye ị tụkwasịrị obi ma ọ bụ onye ọrụ ahụike."
+        },
+        "anxietyToolkit": {
+          "note": "Kewaa nchegbu na omume ma họrọ otu nzọụkwụ ọzọ bara uru."
+        },
+        "windowOfTolerance": {
+          "note": "Deputa ihe ịrịba ama mkpali na nkwado ka oge na-aga; ọ bụghị nchọpụta ọrịa."
+        },
+        "stressBucket": {
+          "note": "Lelee nrụgide na nkwado ọnụ, gụnyere nrụgide ndị ị na-enweghị ike ịchịkwa."
+        },
+        "bigFeelings": {
+          "note": "Jiri iwe dị ka ozi ma hazie nkwụsịtụ ma ọ bụ mmezi nwere nchekwa karị."
+        },
+        "conflict": {
+          "note": "Kacha mma maka omume esemokwu dị obere ma ọ bụ nke echiche.",
+          "boundary": "Ọ bụrụ na e nwere iyi egwu, mmanye, mmegbu, mmetọ, ma ọ bụ ọdịiche ike na-enweghị nchekwa, kwụsịtụ ma tinye okenye ị tụkwasịrị obi aka kama ịkparịta naanị gị."
+        },
+        "conflicttheater": {
+          "note": "Omume na-adọrọ mmasị nke nnwale (beta) ya na agwa akụkọ ifo; ejila ya dozie mmerụ na-eme ugbu a.",
+          "boundary": "Iyi egwu n'ezie, mmetọ, ma ọ bụ mmegbu chọrọ nkwado okenye na nzaghachi nchekwa, ọ bụghị omume egwuregwu ọnọdụ."
+        },
+        "restorativeCircle": {
+          "note": "Jiri ya na ụkpụrụ gburugburu e hiwere na okenye na-eduzi.",
+          "boundary": "Ejila gburugburu manye mmadụ ikpughe ihe n'ihu ọha ma ọ bụ iji dozie ihe egwu nchekwa na-eme ugbu a."
+        },
+        "strengths": {
+          "note": "Ntụgharị uche ike mepere emepe na-enweghị akara, ọkwa, ma ọ bụ nchọpụta ọrịa."
+        },
+        "viaStrengths": {
+          "note": "Nhazi onwe maka ntụgharị uche, ọbụghị nyocha VIA izizi ma ọ bụ nsonaazụ nnwale uche nke sayensị."
+        },
+        "perma": {
+          "note": "Foto ọdịmma iji kpalite mkparịta ụka, ọbụghị nyocha ahụike uche."
+        },
+        "advocacy": {
+          "note": "Okwu izugbe na nnwale maka ikwupụta mkpa na ịrịọ nkwado."
+        },
+        "selfAdvocacy": {
+          "note": "Jiri ya maka ịhazi IEP, 504, mgbanwe nkwado, ikpughe, ma ọ bụ nkwado ụlọ akwụkwọ doro anya."
+        },
+        "crisiscompanion": {
+          "note": "Ntuziaka nkwado maka gị ma ọ bụ enyi; ọ bụghị ngwa nnyocha nsogbu, ọ bụghịkwa ihe nnọchi okenye.",
+          "boundary": "Ọ bụrụ na mmadụ nwere ike ịnọ n'ihe egwu ozugbo ma ọ bụ nwere ike ime ihe gbasara echiche imerụ onwe ya, kwụsị ebe a ma kpọtụrụ okenye ị tụkwasịrị obi ma ọ bụ enyemaka mberede/nsogbu ugbu a."
+        },
+        "safety": {
+          "note": "Mụta oke na nzọụkwụ gbasara okenye ị tụkwasịrị obi; nke a abụghị nnwale ma ọnọdụ ọ nwere nchekwa.",
+          "boundary": "Ọ bụrụ na ị nọ n'ihe egwu ozugbo ma ọ bụ mmadụ na-emerụ gị ahụ, kwụsị ma kpọtụrụ okenye ị tụkwasịrị obi ma ọ bụ enyemaka mberede ugbu a."
+        },
+        "griefLoss": {
+          "note": "Enyi nzuzo maka iru uju na mfu; gafee ihe ọ bụla dị gị oke.",
+          "boundary": "Ọ bụrụ na iru uju karịrị ike gị, ị na-enweghị nchekwa, ma ọ bụ onye ọzọ nọ n'ihe egwu, tinye okenye ị tụkwasịrị obi ma ọ bụ nkwado nsogbu aka."
+        },
+        "traumaPsychoed": {
+          "note": "Mmụta gbasara ahụike uche maka mmeghachi omume mmerụ uche; ọ bụghị ngwa nnyocha ma ọ bụ ọgwụgwọ.",
+          "boundary": "Ọ dịghị mkpa ka ị kpughee mmerụ uche ebe a. Kwụsịtụ ma chọọ okenye ị tụkwasịrị obi ma ọ bụ onye ndụmọdụ ma ọ bụrụ na ọdịnaya kpalitere ihe na-enweghị nchekwa."
+        },
+        "substancePsychoed": {
+          "note": "Ozi na ntụgharị uche na-ebelata mmerụ; ọ bụghị ngwa nnyocha ma ọ bụ ikike iji ọgwụ ọjọọ.",
+          "boundary": "Ejila ngwa a maka iri ọgwụ karịrị akarị ma ọ bụ ọnọdụ ahụike mberede; kpọtụrụ enyemaka mberede ma ọ bụ okenye ị tụkwasịrị obi."
+        },
+        "healthyRelationships": {
+          "note": "Nyochaa nkwenye na ụdị mmekọrịta n'akpọghị mmadụ ma ọ bụ mmekọrịta aha.",
+          "boundary": "Ọ bụrụ na mmekọrịta nwere iyi egwu, mmanye, ma ọ bụ ime ihe ike, chọọ enyemaka okenye; agakwala ịgbagha mmadụ naanị gị."
+        },
+        "identitySupport": {
+          "note": "Ntụgharị uche na-akwado na nkwado obodo; ịkekọrịta bụ nhọrọ.",
+          "boundary": "Debe ozi onwe gị na nzuzo ma tinye okenye ị tụkwasịrị obi aka ma ọ bụrụ na ị na-enweghị nchekwa."
+        },
+        "bodyStory": {
+          "note": "Ekele ahụ na mmụta mgbasa ozi; ọ bụghị nyocha mbelata arọ ma ọ bụ nsogbu iri nri.",
+          "boundary": "Ọ bụrụ na nri, otú ị si ele ahụ gị, ma ọ bụ mmega ahụ na-enweghị nchekwa ma ọ bụ na-ejupụta obi gị, gwa okenye ị tụkwasịrị obi ma ọ bụ onye ọrụ ahụike okwu."
+        },
+        "genogram": {
+          "note": "Ntụgharị uche onwe gbasara ezinụlọ; ọ bụghị nyocha ụlọ ọgwụ, ịkekọrịta bụkwa nhọrọ.",
+          "boundary": "Gafee nkọwa ezinụlọ ndị na-enweghị nchekwa ma ọ bụ bụ nzuzo; rịọ okenye ị tụkwasịrị obi maka nkwado."
+        },
+        "sensoryRegulation": {
+          "note": "Wulite nkọwa mmetụta ahụ gị na mgbanwe nkwado; ọ bụghị nchọpụta ọrịa.",
+          "boundary": "Họrọ nkwado nwere nchekwa nye gị; kekọrịta mgbanwe nkwado naanị mgbe ị chọrọ."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Nlele Ụtụtụ",
+          "desc": "Malite ụbọchị site na nlele ọnọdụ obi, iku ume, na ịtọ ebumnuche"
+        },
+        "calm_down": {
+          "name": "Akụkụ Ịdajụ Obi",
+          "desc": "Atụmatụ ịchịkwa maka mgbe mmetụta dị elu"
+        },
+        "conflict_unit": {
+          "name": "Ngalaba Idozi Esemokwu",
+          "desc": "Mee omume idozi nghọtahie na iwulite nka mmezi"
+        },
+        "empathy_week": {
+          "name": "Izu Ọmịiko na Echiche",
+          "desc": "Wulite ọmịiko site n'ile ihe anya site n'echiche onye ọzọ na ịmata omenala"
+        },
+        "decision_making": {
+          "name": "Nyocha Miri Emi nke Ime Mkpebi",
+          "desc": "Mee omume echiche ụkpụrụ omume na nhọrọ kwesịrị ekwesị"
+        },
+        "self_discovery": {
+          "name": "Njem Ịchọpụta Onwe",
+          "desc": "Nyochaa onye ị bụ — ike, mmetụta, na echiche uto"
+        },
+        "friendship": {
+          "name": "Ọbụbụenyi na Nka Mmekọrịta",
+          "desc": "Wulite ọbụbụenyi dị mma na nka nkwurịta okwu"
+        },
+        "transitions": {
+          "name": "Ịgafe Mgbanwe",
+          "desc": "Kwado ụmụ akwụkwọ n'oge mgbanwe ndụ na ahụmahụ ọhụrụ"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Chọpụta ihe ị chọrọ ma họrọ otu nzọụkwụ ọzọ ị nwere ike ijikwa.",
+          "model": "Enweghị m izu ike. Enwere m ike ịnwa ịgbatị ahụ, wee họrọ akụkụ mbụ nke ọrụ m.",
+          "practice": "Kpọọ aha otu mmetụta, tụọ aka na nhọrọ, ma ọ bụ chọpụta n'ime obi. Nwaa otu nkwado ma họrọ obere ebumnuche.",
+          "reflect": "Gịnị ka ị chọpụtara? Gịnị ka ị ga-edobe ma ọ bụ gbanwee?",
+          "transfer": "Mgbe ihe ọmụmụ ọzọ malitere, enwere m ike ịnwa ____. Ọ bụrụ na m chọrọ enyemaka, enwere m ike ịjụ ____."
+        },
+        "calm_down": {
+          "goal": "Nyochaa nkwado dabara ahụ gị na oge a.",
+          "model": "Omume iku ume anaghị enyere m aka taa. Enwere m ike ịnwa ile anya gburugburu ọnụ ụlọ ma ọ bụ rịọ ka mmadụ nọnyere m.",
+          "practice": "Họrọ naanị otu atụmatụ dị gị mma. Ịnọ ọdụ, ile anya, ma ọ bụ izu ike bụ nhọrọ niile ziri ezi.",
+          "reflect": "O nyere aka, ọ dị otu ahụ, ka ọ dịghị gị mma? Ị nwere ike ịkwụsị ma ọ bụ họrọ ụzọ ọzọ.",
+          "transfer": "Mgbe m chọpụtara ____, enwere m ike ịnwa ____ ma ọ bụ rịọ ____ maka nkwado."
+        },
+        "conflict_unit": {
+          "goal": "Tụlee echiche dị iche iche ma mee nnwale nzaghachi nwere nsọpụrụ nye nghọtahie kwa ụbọchị.",
+          "model": "Anyị abụọ chọrọ otu ihe. Enwere m ike ịjụ ihe ị chọrọ, kọwaa mkpa m, ma tụọ aro ka anyị na-eji ya n'otu n'otu.",
+          "practice": "Jiri nghọtahie echepụtara, nke dị obere. Mee nnwale otu ajụjụ ige ntị na otu nzọụkwụ ọzọ nwere ike ime.",
+          "reflect": "Mkpa onye ka nzaghachi ahụ lebara anya? Gịnị nwere ike ịchọ mgbanwe?",
+          "transfer": "N'ime nghọtahie nwere nchekwa, enwere m ike ____. Maka iyi egwu, mmegbu, ma ọ bụ mmanye, enwere m ike ịrịọ okenye m tụkwasịrị obi maka enyemaka."
+        },
+        "empathy_week": {
+          "goal": "Nyochaa echiche ọzọ n'echeghị na ị maara otú mmadụ si enwe mmetụta.",
+          "model": "Ha dere duu. Ike nwere ike ịgwụ ha ma ọ bụ ha na-eche echiche; enwere m ike ịjụ kama ikpebiere ha.",
+          "practice": "Jiri ihe atụ akụkọ ifo. Kpọọ aha echiche abụọ nwere ike ịdị na otu ajụjụ nwere nsọpụrụ ị nwere ike ịjụ.",
+          "reflect": "Gịnị ka ị maara, gịnịkwa ka ị na-eche? Olee otú ị ga-esi nyochaa?",
+          "transfer": "Tupu m echee na m maara ihe n'izu a, enwere m ike ịjụ ____."
+        },
+        "decision_making": {
+          "goal": "Tụnyere nhọrọ site n'otú ha si emetụta gị na ndị ọzọ.",
+          "model": "Tupu m tinye foto otu n'ịntanetị, enwere m ike ịrịọ ikike ma tụlee onye nwere ike ịhụ ya.",
+          "practice": "Họrọ mkpebi echepụtara. Tụnyere nhọrọ abụọ, ihe ha nwere ike ịkpata, na onye nwere ike inye aka.",
+          "reflect": "Olee ozi na-efu? Ọ nwere nhọrọ nwere nchekwa karị ma ọ bụ ziri ezi karị?",
+          "transfer": "Tupu m kpebie gbasara ____, enwere m ike ịkwụsịtụ ilele ____."
+        },
+        "self_discovery": {
+          "goal": "Mata otu ike ma họrọ ụzọ iji ya na nkwado.",
+          "model": "Ana m ajụ ajụjụ bara uru. Enwere m ike iji ike ahụ mgbe ọrụ edoghị anya ma rịọ maka ihe atụ.",
+          "practice": "Họrọ ike dabara gị, ma ọ bụ nke agwa akụkọ ifo. Nye otu ihe atụ nke ya n'ọrụ.",
+          "reflect": "Gịnị nyere ike ahụ aka ipụta ìhè? Kedụ nkwado ga-eme ka nzọụkwụ ọzọ kwe omume?",
+          "transfer": "Enwere m ike iji ____ mgbe ____. Onye ma ọ bụ ihe nwere ike inye aka bụ ____."
+        },
+        "friendship": {
+          "goal": "Mee omume nkwurịta okwu na-akwanyere mkpa gị na oke ndị ọzọ ugwu.",
+          "model": "Enwere m ike ịkpọ mmadụ ka o sonyere anyị ma nabata nhọrọ ya ma ọ sị mba.",
+          "practice": "Mee nnwale òkù, ajụjụ ige ntị, ma ọ bụ oke nwere nsọpụrụ. Ikwu okwu, ide ihe, ma ọ bụ AAC niile dị mma.",
+          "reflect": "Onye ọ bụla ọ nwere nhọrọ n'ezie? Gịnị nwere ike ime ka mmekọrịta ahụ nabata mmadụ karị?",
+          "transfer": "N'ime mmekọrịta nwere nchekwa n'izu a, enwere m ike ịnwa ____ ma chọpụta ____."
+        },
+        "transitions": {
+          "goal": "Chọpụta ihe na-agbanwe, ihe nwere ike ịnọgide, na otu ebe nkwado.",
+          "model": "Klas ọhụrụ na-eme ka m ghara ịma ihe ga-eme. Enwere m ike ịchọta ọnụ ụlọ ahụ tupu oge eruo ma jụọ onye nwere ike inye aka.",
+          "practice": "Họrọ mgbanwe n'ezie ma ọ bụ nke akụkọ ifo. Kpọọ aha otu ihe na-edoghị anya, otu nkwado kwụsiri ike, na otu obere nzọụkwụ ọzọ.",
+          "reflect": "Kedụ akụkụ dị n'aka gị? Kedụ enyemaka ma ọ bụ mgbanwe nkwado ga-aba uru?",
+          "transfer": "Tupu mgbanwe ahụ, enwere m ike ____. Ọ bụrụ na atụmatụ ahụ chọrọ ịgbanwe, enwere m ike ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "nkeji 5-8",
+          "format": "Naanị gị ma ọ bụ otu",
+          "cue": "Nlele mbụ bara uru tupu ịkekọrịta ihe ọ bụla."
+        },
+        "emotions": {
+          "time": "nkeji 5-8",
+          "format": "Naanị gị ma ọ bụ mmadụ abụọ",
+          "cue": "Ezigbo mmalite maka okwu."
+        },
+        "coping": {
+          "time": "nkeji 3-10",
+          "format": "Naanị gị ma ọ bụ otu",
+          "cue": "Kacha mma maka ntọgharị ịchịkwa."
+        },
+        "mindfulness": {
+          "time": "nkeji 2-10",
+          "format": "Klas dum",
+          "cue": "Nhọrọ ịchịkwa na-achọghị ide ihe dị ukwuu."
+        },
+        "somaticReset": {
+          "time": "nkeji 3-8",
+          "format": "Naanị gị ma ọ bụ klas dum",
+          "cue": "Obere onye nhọrọ eserese na-eme ka nduzi ọ bụla dịrị n'enweghị ọtụtụ bọtịnụ jupụtara. Gburugburu Ume na-ejikọ ụta siri ike na ntụpọ ntụpọ ya na oge na-arụ ọrụ ka ibu, mgbanaka etiti siri ike-ma-ọ-bụ-ntụpọ kwekọrọ, na akara BATA na PỤTA ozugbo; etiti ya na-agbanwe site na ntụpọ gaa na ogwe nkwụsịtụ mgbe a kwụsịtụrụ, na daịmọnd ma ọ bụ mgbanaka ya nwere ahịrị gburugburu na-egosi nnyefe oge ọzọ, ebe akara gburugburu-ma-ọ-bụ-daịmọnd ya na-atụgharị dị ka elekere, daịmọnd nnyefe, mgbanaka nlọghachi, obere ogwe iku ume bata, na ntụpọ oghere iku ume pụta na-eme ka oge na ọnụọgụ nhọrọ doo anya n'enweghị agba. Ka ụmụ akwụkwọ nwalee otu ume nke mmegharị tupu elekere, ma ọ bụ họrọ Jụụ. Nye okwu nduzi zuru ezu, naanị oge, ma ọ bụ zoro ezo. Ọnọdụ Jụụ na-eme ka eserese e mere ka ọ buo ibu bụrụ njikwa mmalite/nkwụsịtụ ozugbo. Ebili Mmiri Na-asọ na-eji BATA · BILIE na ahịrị siri ike na akara gburugburu, PỤTA · DAJỤỌ na ahịrị ntụpọ ntụpọ na akara daịmọnd, na ogwe nkwụsịtụ maka oge a kwụsịtụrụ. Okooko Osisi Na-emepe na-eji BATA · MEPEE na ahịrị mpempe okooko siri ike na etiti gburugburu, PỤTA · DỊ NRO na ahịrị ntụpọ ntụpọ na etiti daịmọnd, na ogwe nkwụsịtụ n'etiti maka oge a kwụsịtụrụ. Mbara Igwe Na-adọta Uche na-eji BATA · BILIE na ahịrị anyanwụ siri ike na etiti okirikiri, PỤTA · DAJỤỌ na ahịrị anyanwụ ntụpọ ntụpọ na etiti daịmọnd, na ogwe nkwụsịtụ anyanwụ mgbe a kwụsịtụrụ. Ụzọ Ume na-eji ebumnuche BATA gburugburu, ebumnuche PỤTA daịmọnd, akara ụkwụ nke mmalite na-arụ ọrụ, na ebe ọzọ a ga-aga nwere ahịrị gburugburu ya ka ụzọ ghara ịdabere n'agba. Nye akara oge maka onye na-agụ ihuenyo, gbakwunyere nhọrọ izo ọnụọgụ azụ, izo nduzi, mmegharị kwụsịrị, enweghị eserese, iku ume nkịtị, na enweghị ọnụọgụ; amanyela ụmụ akwụkwọ ịtụ ma ọ bụ ịkọwa mmetụta ahụ ha."
+        },
+        "journal": {
+          "time": "nkeji 5-12",
+          "format": "Naanị gị",
+          "cue": "Ntụgharị uche nzuzo. Ịkekọrịta kwesịrị ịbụ nhọrọ."
+        },
+        "goals": {
+          "time": "nkeji 5-10",
+          "format": "Naanị gị ma ọ bụ oge ndụmọdụ",
+          "cue": "Ezigbo nzọụkwụ mmechi mgbe ntụgharị uche gasịrị."
+        },
+        "conflict": {
+          "time": "nkeji 8-12",
+          "format": "Mmadụ abụọ ma ọ bụ obere otu",
+          "cue": "Lelee ụkpụrụ mbụ tupu egwuregwu ọnọdụ."
+        },
+        "restorativeCircle": {
+          "time": "nkeji 15-30",
+          "format": "Gburugburu",
+          "cue": "Jiri ya na ụkpụrụ gburugburu e hiwere."
+        },
+        "peersupport": {
+          "time": "nkeji 8-15",
+          "format": "Omume mmadụ abụọ",
+          "cue": "Dị ike maka nnwale nka ige ntị."
+        },
+        "perspective": {
+          "time": "nkeji 6-12",
+          "format": "Mmadụ abụọ ma ọ bụ otu",
+          "cue": "Ezigbo akwa mmiri ọmịiko tupu mkparịta ụka."
+        },
+        "digitalWellbeing": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị ma ọ bụ oge ndụmọdụ",
+          "cue": "Bara uru tupu ịtọ ụkpụrụ ekwentị ma ọ bụ AI."
+        },
+        "sleep": {
+          "time": "nkeji 5-10",
+          "format": "Naanị gị",
+          "cue": "Dị mma maka ngalaba ahụike n'oge ndụmọdụ."
+        },
+        "safety": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị",
+          "cue": "Lelee ya mbụ; zere ịmanye ikpughe."
+        },
+        "crisiscompanion": {
+          "time": "nkeji 3-10",
+          "format": "Naanị gị",
+          "cue": "Maka nka nkwado mberede, ọ bụghị ọrụ klas."
+        },
+        "griefLoss": {
+          "time": "nkeji 10-20",
+          "format": "Naanị gị",
+          "cue": "Lelee ya mbụ; jiri ọrụ nnọchi maka ndị họọrọ ịpụ."
+        },
+        "identitySupport": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị",
+          "cue": "Jiri ya na nzuzo na nlekọta nhọrọ ịpụ."
+        },
+        "traumaPsychoed": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị ma ọ bụ onye nkuzi na-eduzi",
+          "cue": "Mmụta gbasara ahụike uche naanị; nye nhọrọ ịpụ na ụzọ gaa n'okenye a tụkwasịrị obi."
+        },
+        "substancePsychoed": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị ma ọ bụ ihe ọmụmụ ahụike",
+          "cue": "Lelee nhazi mbelata mmerụ mbụ ma nye nkwado okenye/ahụike."
+        },
+        "healthyRelationships": {
+          "time": "nkeji 10-20",
+          "format": "Naanị gị ma ọ bụ ihe ọmụmụ ahụike",
+          "cue": "Lelee asụsụ nkwenye na nchekwa mbụ; amanyela ikpughe ihe onwe."
+        },
+        "bodyStory": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị",
+          "cue": "Nhazi nsọpụrụ ahụ; nye nhọrọ ịpụ ma zere mkparịta ụka lekwasịrị anya n'ịdị arọ."
+        },
+        "genogram": {
+          "time": "nkeji 10-20",
+          "format": "Naanị gị",
+          "cue": "Ntụgharị uche ezinụlọ naanị; ịkekọrịta kwesịrị ịbụ nhọrọ."
+        },
+        "sensoryRegulation": {
+          "time": "nkeji 8-15",
+          "format": "Naanị gị ma ọ bụ ịhazi nkwado",
+          "cue": "Jiri asụsụ na-akwado njirimara ma hapụ ụmụ akwụkwọ ka ha họrọ ihe ha ga-ekekọrịta."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Nlele oge ndụmọdụ ụtụtụ",
+          "time": "nkeji 10-15",
+          "format": "Klas dum",
+          "focus": "Ọnọdụ obi, ume, otu nzọụkwụ ọzọ",
+          "studentView": "Ụmụ akwụkwọ na-elele mpaghara ha na nzuzo, na-anwa nhọrọ ịchịkwa, wee họrọ otu mkpa maka ụbọchị ahụ ma ọ bụ gafee.",
+          "teacherMove": "Buru ụzọ gosi nhọrọ ịgafe. Kpọọ ka ha kekọrịta otu okwu ma ọ bụ agba naanị mgbe omume nzuzo gasịrị.",
+          "privacyBoundary": "Anaghị anakọta ederede akwụkwọ akụkọ; ụmụ akwụkwọ na-ekpebi ma emechaa ma ntụpọ nchekwa ọ bụla ga-abanye na Ngwugwu Nkekọrịta.",
+          "note": "Malite na nlele mpaghara nzuzo, wee nye iku ume ma ọ bụ ịtọ ebumnuche. Ụmụ akwụkwọ nwere ike ikekọrịta otu okwu, agba, ma ọ bụ gafee."
+        },
+        "calm_reset": {
+          "name": "Ntọgharị ịdajụ obi nke nkeji ise",
+          "time": "nkeji 5-8",
+          "format": "Klas dum ma ọ bụ akụkụ ịdajụ obi",
+          "focus": "Ịchịkwa ahụ",
+          "studentView": "Ụmụ akwụkwọ na-achọpụta ọnọdụ ahụ ha ugbu a ma họrọ otu omume ịdajụ ahụ.",
+          "teacherMove": "Mee ka omume a nwee obere okwu ma nwee oke oge. Nye nhọrọ mmegharị, iku ume, ma ọ bụ ịnọ jụụ.",
+          "privacyBoundary": "Ụmụ akwụkwọ nwere ike ichekwa ntụpọ nchekwa maka onwe ha; ọ dịghị onye ga-akọwa ihe mere o ji chọọ ntọgharị.",
+          "note": "Mee ka nke a nwee obere okwu. Ụmụ akwụkwọ na-ahọrọ otu omume ịchịkwa ma chọpụta ihe gbanwere."
+        },
+        "repair_routine": {
+          "name": "Omume mmezi mgbe esemokwu gasịrị",
+          "time": "nkeji 15-25",
+          "format": "Obere otu ma ọ bụ oge ndụmọdụ",
+          "focus": "Echiche, mmezi, omume ọzọ",
+          "studentView": "Ụmụ akwụkwọ nwere ike iji ọnọdụ n'ezie, nke echiche, ma ọ bụ nke onye nkuzi nyere mee omume asụsụ mmezi.",
+          "teacherMove": "Buru ụzọ tọọ ụkpụrụ mmezi ma zere nkwupụta n'ihu ọha. Kwụsịtụ ma ọ bụrụ na ọnọdụ ahụ chọrọ ka okenye kpezie ya.",
+          "privacyBoundary": "Ụmụ akwụkwọ na-ahọrọ ihe ha ga-ekekọrịta; ntụgharị uche esemokwu nzuzo ekwesịghị ịghọ ihe akaebe klas.",
+          "note": "Jiri ya mgbe e tọọrọ ụkpụrụ. Lekwasị anya n'asụsụ mmezi, ọ bụghị nkwupụta n'ihu ọha."
+        },
+        "digital_reset": {
+          "name": "Obere ihe ọmụmụ ọdịmma dijitalụ",
+          "time": "nkeji 12-20",
+          "format": "Oge ndụmọdụ ma ọ bụ ahụike",
+          "focus": "Ekwentị, ụra, AI na oke",
+          "studentView": "Ụmụ akwụkwọ na-elele omume ha, na-ahọrọ otu oke ha ga-anwa, ma na-edobe ihe kpatara ya na nzuzo ma ọ bụrụ na ha chọrọ.",
+          "teacherMove": "Kọwaa ya dị ka ịhazi omume, ọ bụghị nyocha ekwentị. Ejila rịọ ụmụ akwụkwọ ka ha kpughee foto ihuenyo ma ọ bụ data ojiji.",
+          "privacyBoundary": "Ụmụ akwụkwọ nwere ike ikekọrịta ebumnuche oke, mana nkọwa onwe gbasara ụra, ekwentị, ma ọ bụ AI na-anọgide dị ka nhọrọ.",
+          "note": "Kọwaa ya dị ka ịhazi omume, ọ bụghị nyocha ekwentị. Ụmụ akwụkwọ na-ahọrọ otu oke ha ga-anwa."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Ụzọ nchọcha kwadoro",
+          "title": "Nchọcha metụtara ụzọ dị n'okpuru ya; a nwalebeghị mmegharị dijitalụ a ebe a"
+        },
+        "emerging": {
+          "label": "Ihe akaebe ụzọ dị ntakịrị",
+          "title": "Ọ na-enye olileanya mana ihe akaebe dị ntakịrị ma ọ bụ agwakọtara agwakọta"
+        },
+        "contested": {
+          "label": "Nhazi a na-arụrịta ụka",
+          "title": "Ọ ma ama mana ndị sayensị na-arụrịta ụka gbasara ya; kacha mma iji ya dị ka ihe atụ, ọ bụghị dị ka otú ihe si arụ ọrụ"
+        },
+        "practice": {
+          "label": "Omume ntụgharị uche",
+          "title": "Omume ahaziri ahazi ma ọ bụ ntụle, ọ bụghị nkwupụta ịdị irè sitere na nnwale sayensị"
+        }
+      },
+      "ui": {
+        "sel_practice": "Omume SEL",
+        "default_purpose": "Mee omume otu nka SEL n'ụzọ nlekọta.",
+        "default_next": "Mezuo otu obere nzọụkwụ, wee kpebie ma ị ga-echekwa.",
+        "private_checkpoint": "Ntụpọ nchekwa nzuzo",
+        "share_packet_eligible": "Enwere ike itinye na Ngwugwu Nkekọrịta",
+        "saving_preparing": "Na-akwado ichekwa ọrụ SEL gị...",
+        "save_requested": "Arịọla ichekwa {title}",
+        "returned_to_grid": "Alaghachila na ndepụta ngwa",
+        "back_to_sel_tools": "Laghachi na ngwa SEL",
+        "export_now_aria": "Bupụ faịlụ ọrụ SEL ugbu a",
+        "export_now": "Bupụ ugbu a",
+        "purpose": "Nzube",
+        "next_step": "Nzọụkwụ ọzọ",
+        "saved_work": "Ọrụ echekwara",
+        "checkpoints_private": "Ntụpọ nchekwa ngwa na-anọ na nzuzo ebe a ma ọ bụrụ na ị họrọghị ha maka Ngwugwu Nkekọrịta.",
+        "use_with_care_label": "Jiri ya nke ọma:",
+        "tool_open_failed_title": "Ngwa a enweghị ike imepe",
+        "tool_open_failed_body": "Ihe dị n'ozi echekwara maka ọrụ a ebughị. Ọ bụghị ihe ị mehiere.",
+        "saved_work_kept": "Ehichapụghị ọrụ gị echekwara.",
+        "back_to_hub": "Laghachi na SEL Hub",
+        "tell_teacher": "Ọ bụrụ na nke a na-eme mgbe niile, gwa onye nkuzi gị ọrụ ọ bụ.",
+        "load_did_not_start": "Ebudatara ngwa ahụ mana ọ malitebeghị.",
+        "load_too_long": "Ngwa ahụ were oge dị ogologo iji bulite.",
+        "this_sel_tool": "Ngwa SEL a",
+        "tool_opening": "{name} na-emepe...",
+        "tool_open_retry": "Enweghị ike imepe {name}. Nwaa ọzọ, ma ọ bụ họrọ ngwa ọzọ.",
+        "station_link_missing": "Njikọ a na-akpọ aha ọdụ na-adịghị na faịlụ ọrụ a. Bulite mkpokọta nwere ya, ma ọ bụ malite otu site na Ọdụ SEL na paneli Akụkọ Ihe Gara Aga.",
+        "started_station": "Amalitela ọdụ {name}",
+        "tool_could_not_open": "{name} enweghị ike imepe.",
+        "tool_not_available": "{name} adịghị na SEL Hub a.",
+        "try_again": "Nwaa ọzọ",
+        "dismiss": "Wepụ",
+        "back_to_tools": "Laghachi na ngwa",
+        "band_elementary": "Praịmarị",
+        "band_middle": "Sekọndrị Nta",
+        "band_high": "Sekọndrị Elu",
+        "unsaved_aria": "Ị nwere mgbanwe ị chekwabeghị",
+        "unsaved_title": "Mgbanwe echekwabeghị",
+        "unsaved": "Echekwabeghị",
+        "unsaved_hint": "Ị nwere mgbanwe ị chekwabeghị — pịa Bupụ ugbu a iji chekwaa ha",
+        "educators_opened": "Emepela ntuziaka Maka Ndị Nkuzi",
+        "educators_aria": "Maka Ndị Nkuzi: otú e si eji Hub a n'ụzọ kwesịrị ekwesị",
+        "for_educators": "Maka Ndị Nkuzi",
+        "theme_aria": "Gbanwee ọdịdị (ìhè / ọchịchịrị / ọdịiche dị elu)",
+        "theme_contrast": "Ọdịiche Dị Elu",
+        "theme_dark": "Ọnọdụ Ọchịchịrị",
+        "theme_light": "Ọnọdụ Ìhè",
+        "theme_contrast_short": "Ọdịiche",
+        "theme_dark_short": "Ọchịchịrị",
+        "theme_light_short": "Ìhè",
+        "xp_aria": "Akara ahụmahụ SEL {count}",
+        "close_hub": "Mechie SEL Hub",
+        "keep_share_title": "Họrọ ihe ị ga-edobe na ihe ị ga-ekekọrịta",
+        "keep_share_body": "Ụfọdụ ọrụ na-echekwa ihe na ngwaọrụ a; ọrụ ndị ọzọ na-adị naanị na taabụ a. Imechi taabụ anaghị ehichapụ ihe niile. Bupụ faịlụ iji debe otu nnomi. Na ngwaọrụ a na-ekekọrịta, lelee Data na nzuzo na Maka Ndị Nkuzi. Njirimara AI na ịkekọrịta na-eji sevisi a haziri maka gị.",
+        "got_it_aria": "Aghọtara m, malite iji SEL Hub",
+        "got_it": "Aghọtara m",
+        "practice_support": "Nkwado omume",
+        "learning_guide": "Ntuziaka mmụta na ụzọ isi mee omume",
+        "what_you_can_explore": "Ihe ị nwere ike inyocha",
+        "worked_example": "Ihe atụ a rụchara",
+        "try_one_step": "Nwaa otu nzọụkwụ",
+        "reflect_transfer": "Tụgharịa uche ma jiri ya n'ebe ọzọ",
+        "look_closer": "Lelee nke ọma",
+        "next_use": "Ojiji ọzọ nwere ike ịdị",
+        "adapt_together": "Megharịa omume ahụ ọnụ",
+        "adapt_smaller": "Malite obere: gosi otu ahịrịokwu ma ọ bụ nhọrọ, jiri foto ma ọ bụ ihe a na-ahụ anya, ma nye oge iche echiche.",
+        "adapt_deeper": "Gaa n'ime: tụnyere nzaghachi abụọ, chọpụta ozi na-efu, ma kọwaa ihe nwere ike ịgbanwe nhọrọ gị.",
+        "adapt_context": "Gbanwee ọnọdụ: jiri ọnọdụ akụkọ ifo dabara asụsụ onye na-amụ ihe, ihe na-amasị ya, omenala ya, na mkpa nnweta ya.",
+        "adapt_check": "Lelee nghọta site n'ihe atụ ma ọ bụ nkọwa a họọrọ, ọ bụghị akụkọ onwe a manyere, mgbanwe mmetụta, ma ọ bụ akara.",
+        "optional_prompts": "Ajụjụ nhọrọ ndị a anaghị eziga azịza, anaghị enye akara mmezu, anaghịkwa anọchi ntuziaka na ozi nchekwa nke ọrụ ahụ n'onwe ya.",
+        "returned_to_activities": "Alaghachila na ọrụ. Omume a edekọghị na ị mechara omume ọ bụla.",
+        "return_to_activities": "Laghachi na ọrụ",
+        "chooser_first_reset_coping": "Họrọ otu nhọrọ ịdọta uche dị gị mma. Chọpụta ma ọ dabara; ị nwere ike ịkwụsị.",
+        "chooser_first_reset_journal": "Dee otu ihe ga-eme ka nkeji ole na ole na-abịa dị mfe ijikwa. Ọ dịghị mkpa akụkọ onwe.",
+        "chooser_first_feelings_zones": "Tụọ aka na mmetụta ma ọ bụ chọpụta n'ime obi. Họrọ otu nkwado; ọ dịghị mpaghara ziri ezi ị ga-eru.",
+        "chooser_first_feelings_emotions": "Nyochaa okwu mmetụta abụọ maka agwa akụkọ ifo. Ihe karịrị otu azịza nwere ike ịdaba.",
+        "chooser_first_feelings_journal": "Dee otu okwu ma ọ bụ obere ntụgharị uche gbasara ọnọdụ akụkọ ifo ma ọ bụ nke kwa ụbọchị.",
+        "chooser_first_conversation_advocacy": "Jiri ọnọdụ akụkọ ifo mee nnwale otu arịrịọ n'olu dị elu, site na AAC, ma ọ bụ n'ime obi, n'ebe dị anya na fọm ahụ.",
+        "chooser_first_conversation_journal": "Dee otu arịrịọ nwere nsọpụrụ maka ọnọdụ kwa ụbọchị nwere nchekwa; ọ dịghị mkpa ka i ziga ya.",
+        "chooser_first_decision_decisions": "Chee echiche gbasara nhọrọ abụọ n'ọnọdụ akụkọ ifo na otu ihe nke ọ bụla nwere ike ịkpata.",
+        "chooser_first_decision_goals": "Dee otu nzọụkwụ ọzọ nwere ike ime na nkwado ị nwere ike ịrịọ.",
+        "try_a_reset": "Nwaa ntọgharị",
+        "need_feeling": "Ghọta otu mmetụta",
+        "need_conversation": "Kwadebe mkparịta ụka",
+        "need_decision": "Họrọ nzọụkwụ ọzọ",
+        "help_choose": "Nyere m aka ịhọrọ ọrụ",
+        "help_choose_intro": "Họrọ ihe ị chọrọ ịnwa. Aro na-eji naanị nhọrọ ndị a; ha anaghị enyocha mmetụta gị. Oge na-akọwa nzọụkwụ mbụ, ọ bụghị ọrụ ahụ dum.",
+        "what_would_help": "Gịnị ga-enyere gị aka?",
+        "time_first_step": "Oge maka nzọụkwụ mbụ",
+        "n_minutes": "Nkeji {count}",
+        "how_respond": "Olee otú ị chọrọ isi zaa?",
+        "respond_any": "Ụzọ ọ bụla",
+        "respond_offline": "Chee echiche, kwuo okwu, see ihe, ma ọ bụ AAC",
+        "respond_write": "Dee obere azịza",
+        "options_one": "Nhọrọ mmalite {count} maka nhọrọ gị.",
+        "options_many": "Nhọrọ mmalite {count} maka nhọrọ gị.",
+        "options_none": "Ọ dịbeghị nhọrọ mmalite dabara. Nwaa oge karịa ma ọ bụ ụdị nzaghachi ọzọ; ndepụta zuru ezu ka dị.",
+        "why_option_write": "Ihe kpatara nhọrọ a: {need}, ya na nzọụkwụ mbụ nke nkeji {minutes} a tụrụ aro na obere azịza e dere ede.",
+        "why_option_offline": "Ihe kpatara nhọrọ a: {need}, ya na nzọụkwụ mbụ nke nkeji {minutes} a tụrụ aro na ụzọ isi mee omume n'ejighị keyboard ede ihe.",
+        "open_named": "Mepee {name}",
+        "open_named_unavailable": "Mepee {name} (adịghị)",
+        "pathway_guide": "Ntuziaka omume ụzọ mmụta",
+        "pathway_opened": "Emepela ngwa {opened} n'ime {total}. Imepe ngwa apụtaghị na ị mere omume nka ahụ.",
+        "exit_pathway_aria": "Pụọ n'ọnọdụ ụzọ mmụta",
+        "pathway_cleared": "Ehichapụla ụzọ mmụta",
+        "exit_pathway": "Pụọ n'ụzọ mmụta",
+        "practice_goal": "Ebumnuche omume:",
+        "pathway_intro": "Họrọ otu ọrụ ma ọ bụ soro ndokwa a tụrụ aro. Ị nwere ike ịgafe, jiri ihe atụ akụkọ ifo, ma ọ bụ zaa site n'ikwu okwu, ise ihe, ide ihe, ma ọ bụ AAC. Ịkekọrịta bụ nhọrọ.",
+        "model_practice_reflect": "Gosi ihe atụ, mee omume, ma tụgharịa uche",
+        "an_example": "Otu ihe atụ",
+        "notice_adjust": "Chọpụta ma megharịa",
+        "take_with_you": "Buru ya gaa",
+        "self_check_aria": "Nlele onwe omume nhọrọ",
+        "self_check_intro": "Mgbe ị nwachara otu nzọụkwụ, họrọ ihe dabara. Nke a bụ nhọrọ, a naghị enye ya akara; ọ na-anọ n'oge ụzọ mmụta a.",
+        "i_tried": "Anwara m otu nzọụkwụ",
+        "another_way": "Achọrọ m ụzọ ọzọ",
+        "pass_for_now": "Gafee ugbu a",
+        "tried_feedback": "Chọpụta ihe nyere aka, ihe na-enyeghị aka, na ebe ị nwere ike ịnwa nka ahụ ọzọ.",
+        "adapt_feedback": "Nwaa nzọụkwụ pere mpe, ụzọ ọzọ isi zaa, ngwa dị iche, ma ọ bụ nkwado site n'aka onye ị tụkwasịrị obi.",
+        "pass_feedback": "Ịgafe bụ nhọrọ ziri ezi. Ị nwere ike ịlaghachi ma emechaa ma ọ bụ rịọ nkwado.",
+        "next_option": "Nhọrọ ọzọ: {name}",
+        "open_next": "Mepee nke ọzọ: {name}",
+        "view_pathway_tools": "Lelee ngwa ụzọ mmụta",
+        "revisit_any": "Ị nwere ike ịlaghachi n'ọrụ ọ bụla. Họrọ otu echiche ị ga-anwa n'èzí hub; ọ dịghị mkpa ka i mechaa ngwa niile.",
+        "station_activities": "Ọrụ ọdụ",
+        "active_station": "Ọdụ SEL na-arụ ọrụ: {name}",
+        "steps_recorded_passed": "Edekọla nzọụkwụ {done} n'ime {total} · agafeela {passed} ugbu a. Nke a bụ ndekọ omume, ọ bụghị akara.",
+        "steps_recorded": "Edekọla nzọụkwụ {done} n'ime {total}. Nke a bụ ndekọ omume, ọ bụghị akara.",
+        "active_minutes_done": "Nkeji ọrụ {mins} n'ime {goal} ebe a. Edekọla nzọụkwụ.",
+        "active_minutes_counting": "Nkeji ọrụ {mins} n'ime {goal} ebe a. Ọ na-agụ mgbe taabụ a na-egosi na ị na-eji ya.",
+        "exit_station_aria": "Pụọ n'ọnọdụ ọdụ",
+        "station_cleared": "Ehichapụla ọdụ",
+        "exit_station": "Pụọ n'ọdụ",
+        "station_tools_steps": "Ngwa ọdụ, nzọụkwụ na ntụgharị uche",
+        "station_steps": "Nzọụkwụ ọdụ na ntụgharị uche",
+        "station_privacy": "A na-echekwa nzọụkwụ na ndetu na ngwaọrụ a, enwere ike itinye ha na faịlụ ọrụ. Jiri ihe atụ akụkọ ifo ma ọ bụ hapụ nkọwa onwe. Họrọ ihe ị ga-ekekọrịta.",
+        "step_passed": "Agafeela ugbu a. Ị nwere ike ịlaghachi mgbe ị dị njikere.",
+        "step_marked": "Ị kaara nzọụkwụ a akara na o mechara.",
+        "step_target": "Edekọla ebumnuche ọrụ; nke a anaghị atụ nka ma ọ bụ ọdịmma.",
+        "step_ready": "Mgbe ọ bụla ị dị njikere.",
+        "open_step_activity": "Mepee ọrụ maka nzọụkwụ a",
+        "xp_progress": "{xp} / {target} XP SEL niile. Nke a gụnyere ọrụ gara aga; ọ bụghị akara nka.",
+        "time_progress": "Nkeji ọrụ {mins} / {target}. Oge abụghị ihe akaebe nke mmụta.",
+        "default_reflect": "Gịnị ka ị chọpụtara? Gịnị ka ị ga-edobe ma ọ bụ gbanwee?",
+        "self_check_ways": "Chee echiche, see ihe, kwuo okwu, jiri asụsụ aka, ma ọ bụ jiri AAC. Ndetu e dere ede bụ nhọrọ. Kaa akara na nzọụkwụ ahụ mechara n'onwe gị, ma ọ bụ gafee ugbu a.",
+        "length_target": "Nzọụkwụ echekwara a na-eji ebumnuche ogologo: mkpụrụedemede {count} / {target}. Ogologo anaghị atụ ịdị mma nke ntụgharị uche. Ị ka nwere ike idezi ndetu gị.",
+        "reflection_for": "Ntụgharị uche maka {name}",
+        "optional_note": "Ndetu nhọrọ: ihe nyere aka, ma ọ bụ ihe ị ga-anwa ọzọ...",
+        "write_reflection": "Dee ntụgharị uche...",
+        "mark_complete_aria": "Kaa \"{name}\" akara na o mechara",
+        "step_reopened": "Emepeghachila nzọụkwụ: {name}",
+        "step_marked_named": "Ị kaara nzọụkwụ a akara na o mechara: {name}",
+        "mark_complete": "Kaa akara na o mechara",
+        "step_passed_named": "Agafeela ugbu a: {name}",
+        "filter_pathway": "ụzọ mmụta: {name}",
+        "filter_station": "ọdụ: {name}",
+        "no_tools_match": "Ọ dịghị ngwa dabara {filters}",
+        "results_one": "Ngwa {count} n'ime {total} dabara {filters}",
+        "results_many": "Ngwa {count} n'ime {total} dabara {filters}",
+        "showing_all": "Na-egosi ngwa {total} niile",
+        "crisis_elementary": "Ọ bụrụ na ị hụghị okenye ozugbo, gaa n'ihu na-ajụ ruo mgbe mmadụ gere gị ntị. Ị kwesịrị inweta enyemaka.",
+        "crisis_call_or_text": "Kpọọ ma ọ bụ zipu ozi na",
+        "crisis_988": "ahịrị enyemaka 988 maka igbu onwe na nsogbu (n'efu, na nzuzo, 24/7).",
+        "crisis_text": "Zipu ozi na",
+        "crisis_text_line": "Crisis Text Line (n'efu, na nzuzo, 24/7).",
+        "tool_selection": "Nhọrọ ngwa SEL Hub",
+        "jumped_to_list": "Awụlila gaa na ndepụta ngwa. {summary}.",
+        "skip_to_list": "Wụfee gaa na ndepụta ngwa",
+        "start_here": "Malite ebe a",
+        "quick_route": "Họrọ ụzọ dị ngwa, ma ọ bụ lelee n'okpuru.",
+        "browsing_all": "Na-elele ngwa SEL niile",
+        "continue": "Gaa n'ihu",
+        "continue_desc": "Gaa n'ihu na ngwa SEL ikpeazụ ị mepere.",
+        "starting_idea": "Echiche mmalite",
+        "starting_idea_desc": "{name}: ọrụ a tụrụ aro maka otu klas a, ya na ihe atụ ị nwere ike imegharị.",
+        "starting_idea_none": "Mepee ebe mmalite dabara klas.",
+        "try_a_reset_desc": "Nyochaa atụmatụ dị gị mma; ọ dịghị mkpa ka obi dajụọ gị.",
+        "journal": "Akwụkwọ akụkọ",
+        "journal_desc": "Dee ntụgharị uche; lelee nhọrọ ichekwa na ịkekọrịta.",
+        "browse_all": "Lelee Ha Niile",
+        "browse_all_desc": "Chọọ ma ọ bụ họchaa ndepụta zuru ezu.",
+        "need_chip_calm": "Mee ka ahụ m dajụọ",
+        "need_chip_feelings": "Kpọọ mmetụta aha",
+        "need_chip_stress": "Nrụgide ma ọ bụ nchegbu",
+        "need_chip_friend": "Esemokwu enyi",
+        "need_chip_write": "Dee ya",
+        "need_chip_decision": "Mee mkpebi",
+        "need_chip_sleep": "Ụra ma ọ bụ ike ọgwụgwụ",
+        "need_chip_crisis": "Enweghị nchekwa ma ọ bụ nọ na nsogbu",
+        "need_chip_relationshipsafety": "Nchekwa mmekọrịta",
+        "need_chip_schoolsupport": "Nkwado ụlọ akwụkwọ",
+        "need_chip_grief": "Iru uju ma ọ bụ mfu",
+        "storage_notice": "A na-echekwa ụfọdụ ọrụ SEL na ngwaọrụ a. Njirimara AI na-eji sevisi a haziri maka gị. Họrọ ihe ị ga-echekwa ma ọ bụ kekọrịta, karịsịa na ngwaọrụ a na-ekekọrịta.",
+        "save_now_aria": "Chekwaa ma ọ bụ bupụ ọrụ SEL ugbu a",
+        "save_now": "Chekwaa ugbu a",
+        "recent_work": "Ọrụ SEL nso nso a",
+        "saved_here": "Echekwara ebe a. Bupụ ya iji debe ya mgbe imechiri.",
+        "create_packet_aria": "Mepụta Ngwugwu Nkekọrịta SEL site na ntụpọ nchekwa echekwara",
+        "review_packets_aria": "Lelee Ngwugwu Nkekọrịta SEL echekwara",
+        "create_packet": "Mepụta Ngwugwu Nkekọrịta",
+        "review_packets": "Lelee Ngwugwu Nkekọrịta",
+        "open_related": "Mepee ngwa metụtara ya.",
+        "related_unavailable": "Ngwa metụtara ya adịghị na SEL Hub a.",
+        "streak_aria": "Usoro SEL ụbọchị {count}. Nke kacha ogologo: ụbọchị {longest}.",
+        "streak": "Usoro ụbọchị {count}",
+        "streak_best": "kacha mma {count}",
+        "find_activity": "Chọta ọrụ",
+        "search_placeholder": "Chọọ mmetụta, ndị enyi, nrụgide, ebumnuche...",
+        "search_aria": "Chọọ ngwa SEL",
+        "support_options": "Nhọrọ nkwado",
+        "crisis_hard_moment": "Ọ dị ka nke a nwere ike ịbụ oge siri ike.",
+        "crisis_tell_adult": "Ọ dịghị mkpa ka i dozie nke a naanị gị, ọ dịghịkwa mkpa ka i buru ụzọ chọta ngwa ziri ezi. Biko gwa okenye ị tụkwasịrị obi ugbu a — onye ndụmọdụ ụlọ akwụkwọ, onye nkuzi, nne ma ọ bụ nna, ma ọ bụ okenye ọzọ ị tụkwasịrị obi. Ịchọ ihe ebe a anaghị agwa onye ọ bụla; mmadụ ga-ama naanị ma ọ bụrụ na ị gwa ya.",
+        "open_crisis_companion": "Mepee Enyi n'Oge Nsogbu",
+        "find_by_need": "Chọta ngwa SEL site na mkpa",
+        "i_need": "Achọrọ m...",
+        "cleared_search": "Ehichapụla nchọ SEL",
+        "clear_search_aria": "Hichapụ nchọ SEL",
+        "clear": "Hichapụ",
+        "cleared_need": "Ehichapụla ihe nhọcha mkpa SEL",
+        "showing_for": "Na-egosi ngwa SEL maka {name}",
+        "clear_need_aria": "Hichapụ ihe nhọcha mkpa: {name}",
+        "find_for_aria": "Chọta ngwa maka: {name}",
+        "browse_by_area": "Lelee site na ngalaba nka",
+        "filter_by_category": "Họchaa ngwa SEL site n'ụdị",
+        "showing_all_categories": "Na-egosi ụdị niile",
+        "show_all_categories_aria": "Gosi ụdị niile (ngwa {count})",
+        "all": "Niile",
+        "filtered_to": "Ahọchala ka ọ bụrụ {name}",
+        "filter_chip_aria": "Ihe nhọcha: {name} (ngwa {count})",
+        "pathways_heading": "Ụzọ Mmụta SEL — Ndokwa Mmụta A Họpụtara",
+        "started_pathway": "Amalitela ụzọ mmụta: {name}",
+        "pathway_started": "Amalitela ụzọ mmụta {name}!",
+        "n_activities": "Ọrụ {count}",
+        "grades_range": "klas {range}",
+        "use_with_care": "Jiri ya nke ọma",
+        "visits_many": "Nleta {count}",
+        "visits_one": "Nleta {count}",
+        "best_for": "Kacha mma maka: {mode}.",
+        "teacher_cue": "Ndụmọdụ onye nkuzi: {time}, {format}. {cue}",
+        "preview_first": "Lelee ya mbụ",
+        "evidence_tradition": "Omenala ihe akaebe: {tag}",
+        "approach_context": "Ọnọdụ ụzọ: {label}. {title}. Akara a anaghị egosi ịdị irè maka app a ma ọ bụ maka otu onye na-amụ ihe.",
+        "step_opened": "Nzọụkwụ {n} · Emepere",
+        "step_not_opened": "Nzọụkwụ {n} · Emepeghị",
+        "suggested_grades": "Klas a tụrụ aro {range}",
+        "no_tools_current_view": "Ọ dịghị ngwa dabara ihe a na-egosi ugbu a",
+        "empty_try": "Nwaa ịdajụ obi, mmetụta, nrụgide, enyi, ide ihe, mkpebi, ma ọ bụ ụra.",
+        "filters_cleared": "Ehichapụla ihe nhọcha. Na-egosi ngwa {total} niile.",
+        "show_all_tools": "Gosi ngwa {total} niile",
+        "error_loading": "Njehie n'ibulite {name}",
+        "unknown_error": "Njehie a na-amaghị",
+        "back_to_tools_error": "Laghachi na Ngwa",
+        "tool_load_failed": "Ngwa a enweghị ike ibulite.",
+        "loading_tool": "Na-ebulite ngwa...",
+        "file_not_arrived": "Faịlụ ahụ erubeghị.",
+        "check_connection": "Lelee njikọ ịntanetị, wee nwaa ọzọ.",
+        "plugin_fetching": "A ka na-ebute faịlụ plugin ahụ.",
+        "research_about": "Gbasara akara nchọcha",
+        "research_summary": "Ihe akara nchọcha pụtara",
+        "research_context": "Ọnọdụ ụzọ: {label}.",
+        "research_not_app": "Nchọcha gbasara ọgwụgwọ, usoro ọmụmụ, ma ọ bụ nhazi anaghị egosi na ọrụ dijitalụ a nwere otu nsonaazụ ahụ. Akara ndị ahụ na-akọwa ụzọ ahụ; ha anaghị atụle app a ma ọ bụ onye na-amụ ihe.",
+        "research_check": "Tupu ịhọrọ ọrụ, lelee isi mmalite e hotara, afọ na ebe a mụrụ, nkwado a chọrọ, na nsonaazụ a tụrụ. Akara ndị a egosighi na ọ dabara ndị mmadụ ahụ ma ọ bụ na mmegharị a dị irè.",
+        "research_casel_link": "CASEL: ịhọrọ na ịtụle mmemme SEL",
+        "project_save_failed": "Arịrịọ ichekwa faịlụ ọrụ adaala. Hapụ hub a ka ọ mepee ma nwaa Chekwaa / Bupụ na isi app.",
+        "project_save_requested": "Arịọla ichekwa faịlụ ọrụ. Mezuo nzọụkwụ nchekwa na isi app; ekwenyebeghị faịlụ echekwara ebe a.",
+        "saving_aria": "Nchekwa na ịkekọrịta SEL",
+        "saving_failed_alert": "Enweghị ike ichekwa ụfọdụ mgbanwe SEL na ngwaọrụ a. Hapụ hub a ka ọ mepee ma chekwaa nnomi faịlụ ọrụ; a ga-echekwa ndepụta mbụ ọdụ dị ka ọdụ ka ha banye na nnomi ahụ.",
+        "saving_attention": "Nchekwa chọrọ nlebara anya",
+        "saving_title": "Nchekwa na ịkekọrịta",
+        "saving_failed_body": "Ọrụ ugbu a ka dị na hub a mepere emepe. Nchekwa n'ime ngwaọrụ dara ada nwere ike ịhapụ nnomi ochie na ngwaọrụ a.",
+        "saving_ok_body": "A na-echekwa ọdụ echekwara, ndetu ọdụ, na ntụpọ nchekwa hub na ngwaọrụ a. Ọrụ ọ bụla nwere njikwa nchekwa nke ya; ọnọdụ a anaghị ekwenye na echekwara ihe niile e tinyere n'ọrụ ọ bụla.",
+        "saving_drafts": "Ndepụta mbụ ọdụ na-anọ na ngwaọrụ a maka mweghachi. Ichekwa ọdụ na-agbakwunye ya na data faịlụ ọrụ dị na Chekwaa / Bupụ; ịrịọ ichekwa faịlụ ọrụ anaghị ekwenye na e dere faịlụ.",
+        "saving_live": "Ejikọla nzukọ na-aga n'ihu ugbu a. O nwere ike iziga ọganihu ma ọ bụ akara nchekwa nye onye na-akwado nzukọ ahụ. AI nhọrọ na-eziga ederede ọrụ na sevisi a haziri. Lelee Ngwugwu Nkekọrịta tupu ị họrọ ikekọrịta ya.",
+        "saving_ai": "AI nhọrọ na-eziga ederede ọrụ na sevisi a haziri. Ngwugwu Nkekọrịta nwere ihe na ọkwa nkọwa ị họọrọ; lelee ihe ngosi ya tupu ịkekọrịta.",
+        "saving_retry": "Nwaa nchekwa n'ime ngwaọrụ ọzọ",
+        "saving_request": "Rịọ ichekwa faịlụ ọrụ",
+        "removed_stations": "Ọdụ ewepụrụ",
+        "removed_body": "Kagbuo mwepụ ọdụ mgbe hub a ka mepere emepe. A na-edobe ndekọ omume dị adị.",
+        "station_restored": "Eweghachila ọdụ: {name}",
+        "undo_removal": "Kagbuo mwepụ: {name}",
+        "launch_routines_aria": "Omume mmalite onye nkuzi",
+        "launch_title": "Mmalite onye nkuzi",
+        "launch_note": "Mee ka omume ghara inwe akara ma ịkekọrịta bụrụ nhọrọ. Kọwaa nchekwa na ngwaọrụ, njirimara AI a haziri, na ịkekọrịta tupu ịmalite. Jiri ihe atụ akụkọ ifo; kpọọ ụmụ akwụkwọ ka ha rịọ enyemaka ma ọ bụ gafee.",
+        "launch_guardrails_aria": "Ụkpụrụ nchebe mmalite onye nkuzi",
+        "launch_step_boundary": "Tọọ oke",
+        "launch_step_boundary_body": "Kwuo ihe bụ nzuzo, ihe bụ nhọrọ, na otú ụmụ akwụkwọ ga-esi gafee.",
+        "launch_step_run": "Mee omume ahụ",
+        "launch_step_run_body": "Jiri ngwa ndị ahụ dị ka omume. Mee ka ntụgharị uche bụrụ maka mmụta, na-enweghị akara.",
+        "launch_step_close": "Mechie site na nhọrọ",
+        "launch_step_close_body": "Ụmụ akwụkwọ na-ekpebi ma ha ga-echekwa, bupụ, ma ọ bụ tinye ntụpọ nchekwa ma emechaa.",
+        "launch_student_sees": "Ihe nwata akwụkwọ na-ahụ",
+        "launch_student_sees_default": "Ụmụ akwụkwọ na-emezu omume SEL nzuzo ma họrọ ihe ha ga-ekekọrịta.",
+        "launch_teacher_move": "Omume onye nkuzi",
+        "launch_teacher_move_default": "Kọwaa nke a dị ka omume, ọ bụghị nyocha.",
+        "launch_sharing_boundary": "Oke ịkekọrịta",
+        "launch_sharing_boundary_default": "Ịkekọrịta na-anọ n'aka nwata akwụkwọ.",
+        "launch_tools_loading": "Ngwa na-ebulite...",
+        "launch_still_loading": "Ka na-ebulite: {tools}",
+        "launch_preview_sensitive": "Buru ụzọ lelee ngwa ndị chọrọ nlezianya: {tools}",
+        "launch_load_aria": "Bulite atụmatụ mmalite onye nkuzi: {name}",
+        "launch_finish_draft": "Buru ụzọ mezue ma ọ bụ tufuo ndepụta mbụ dị ugbu a",
+        "launch_waiting": "Na-echere ngwa",
+        "launch_loading": "Na-ebulite",
+        "launch_load": "Bulite n'ime Onye Nwulite Ọdụ",
+        "builder_note_student": "Ihe nwata akwụkwọ na-ahụ: {text}",
+        "builder_note_teacher": "Omume onye nkuzi: {text}",
+        "builder_note_sharing": "Oke ịkekọrịta: {text}",
+        "builder_note_note": "Ndetu onye nkuzi: {text}",
+        "launch_finish_existing": "Buru ụzọ mezue ma ọ bụ tufuo ndepụta mbụ ọdụ gị dị adị.",
+        "launch_tools_still_loading": "Ngwa mmalite onye nkuzi ka na-ebulite. Nwaa ọzọ n'otu ntabi anya.",
+        "launch_tools_still_loading_sr": "Ngwa mmalite onye nkuzi ka na-ebulite.",
+        "launch_default_name": "Omume SEL nke klas",
+        "launch_default_short": "Omume SEL",
+        "launch_loaded_sr": "Ebulitela atụmatụ mmalite onye nkuzi n'ime onye nwulite ọdụ: {name}",
+        "launch_loaded_toast": "Ebulitela atụmatụ mmalite onye nkuzi n'ime Onye Nwulite Ọdụ.",
+        "stations_summary": "Ọdụ SEL Ahaziri Ahazi — mkpokọta ndị nkuzi haziri",
+        "station_delete_aria": "Hichapụ ọdụ {name}",
+        "station_removed_sr": "Ewepụla ọdụ. Ị nwere ike ịkagbu ya ruo mgbe hub a mechiri.",
+        "station_removed": "Ewepụla ọdụ",
+        "station_tools_count": "Ngwa {count}",
+        "station_quests_count": "Ihe ịma aka {count}",
+        "station_activated_sr": "Emeela ka Ọdụ SEL rụọ ọrụ: {name}",
+        "station_started": "Amalitela {name}!",
+        "station_activate_aria": "Mee ka ọdụ {name} rụọ ọrụ",
+        "station_start": "Malite ọdụ",
+        "station_adapt_aria": "Megharịa nnomi ọdụ {name}",
+        "station_adapt": "Megharịa nnomi",
+        "draft_aria": "Ndepụta mbụ ọdụ enwere ike iweghachi",
+        "draft_untitled": "Ọdụ na-enweghị aha",
+        "draft_body": "Ndepụta mbụ ọdụ a na-emechabeghị ka echekwara na ngwaọrụ a: {name}. Gaa n'ihu na ya ma ọ bụ tufuo ya tupu ịmalite nke ọzọ.",
+        "draft_resume": "Gaa n'ihu na ndepụta mbụ ọdụ",
+        "draft_discard": "Tufuo ndepụta mbụ ọdụ",
+        "builder_opened": "Emepela onye nwulite ọdụ",
+        "build_station_aria": "Wulite Ọdụ SEL ọhụrụ ahaziri ahazi",
+        "build_station": "+ Wulite Ọdụ Ahaziri Ahazi"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Njikọ onye nkuzi kwụsịtụrụ — anyị na-echekwa ebe ị nọ ka AlloFlow na-ejikọ ọzọ.",
+    "host_stale": "Nlele ọnọdụ onye nkuzi emeela ochie - nnọkọ ozugbo ahụ nwere ike ka jikọrọ. Ọrụ gị ka dị na ngwaọrụ a.",
+    "dismiss": "Mechie",
+    "dismiss_aria": "Mechie ịdọ aka ná ntị gbasara ọnọdụ onye nkuzi",
+    "connecting": "Na-ejikọ na klas…",
+    "retrying": "Mmelite klas kwụsịtụrụ. Na-ejikọ ọzọ na-akpaghị aka…",
+    "failed": "Njikọ mmelite klas ebipụla. Lelee njikọ gị ma nwaa ijikọ ọzọ.",
+    "access": "A jụrụ gị ịbanye na klas. Gwa onye nkuzi gị ka o lelee ohere ịbanye, wee jikọọ ọzọ.",
+    "sign_in": "Banye ọzọ iji weghachi ohere ịbanye na klas, wee jikọọ ọzọ.",
+    "reconnect": "Jikọọ ọzọ"
+  },
   "_version": "20260526T1779819425246",
   "tour": {
     "input_panel_title": "ntinye mbara",
@@ -5283,9 +6504,99 @@
     "measured_on_target": "Kwesịrị {grade}",
     "measured_above": "Karịrị ọkwa {grade}",
     "measured_below": "Erughị ọkwa {grade}",
-    "measured_note": "Flesch-Kincaid, a tụrụ ya na ederede a. Jiri Check ọkwa maka nyocha zuru ezu."
+    "measured_note": "Flesch-Kincaid, a tụrụ ya na ederede a. Jiri Check ọkwa maka nyocha zuru ezu.",
+    "listen_along": "Gee ntị ka ọ na-agụ",
+    "compare_listen_here": "Gee ntị ebe a",
+    "compare_listen_here_original": "Gee ntị ebe a: ederede mbụ",
+    "compare_listen_here_adapted": "Gee ntị ebe a: ederede emegharịrị",
+    "compare_stop_reading_original": "Kwụsị ịgụ ederede mbụ",
+    "compare_stop_reading_adapted": "Kwụsị ịgụ ederede emegharịrị",
+    "compare_scroll_together": "Pịgharịa ọnụ",
+    "reading_width": "Obosara ọgụgụ",
+    "width_narrow": "Warara",
+    "width_medium": "Etiti",
+    "width_wide": "Obosara",
+    "width_extra_wide": "Obosara nke ukwuu",
+    "reading_width_characters": "ihe dị ka mkpụrụedemede {count} n'ahịrị ọ bụla",
+    "original_support_spoken": "Enyemaka maka okwu “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Pịnye okwu ma ọ bụ nkebiokwu na-efu",
+      "explain_thinking": "Kọwaa otu i si chee echiche",
+      "write_response": "Dee azịza gị",
+      "submit_response": "Nyefee azịza",
+      "numeric_answer": "Azịza ọnụọgụ",
+      "unit_named": "Nkeji ({unit})",
+      "unit_optional": "Nkeji (nhọrọ)",
+      "submit_numeric": "Nyefee azịza ọnụọgụ",
+      "select_all_apply": "Họrọ azịza ọ bụla dabara",
+      "submit_selections": "Nyefee nhọrọ gị",
+      "part1": "Akụkụ 1 — Họrọ azịza kacha mma",
+      "part2": "Akụkụ 2 — {prompt}",
+      "default_evidence_prompt": "Họrọ ihe àmà kacha mma na-akwado azịza ahụ.",
+      "submit_answer_evidence": "Nyefee azịza na ihe àmà",
+      "order_check": "Usoro a ọ ziri ezi?",
+      "order_yes": "Ee, ọ ziri ezi",
+      "order_no": "Mba, otu ihe anọghị n'ebe o kwesịrị",
+      "select_misplaced": "Họrọ otu ihe dị n'elu nke anọghị n'ebe o kwesịrị.",
+      "arrange_instructions": "Hazie ihe ndị ahụ n'usoro ziri ezi. Ọ bụrụ na ha ziri ezi ugbu a, hapụ ha otu ahụ.",
+      "your_order": "Usoro gị",
+      "move_up": "Bulie elu: {item}",
+      "move_down": "Wedata ala: {item}",
+      "done_arranging": "Emechaala m ịhazi",
+      "principle_question": "Kedu ụkpụrụ e ji hazie ha?",
+      "principle_chronological": "usoro oge",
+      "principle_cause_effect": "ihe kpatara na nsonaazụ",
+      "principle_process": "usoro nzọụkwụ",
+      "principle_size": "nha",
+      "principle_hierarchy": "ọkwa",
+      "find_mismatch": "Chọta njikọ na-adabaghị",
+      "choose_mismatch": "Họrọ njikọ na-adabaghị na ndị ọzọ.",
+      "pair_with_question": "Kedu ihe e kwesịrị ijikọ ihe ahụ a họpụtara na ya?",
+      "replacement_partner": "Onye mmekọ ọhụrụ",
+      "submit_replacement": "Nyefee nnọchi",
+      "retry_failed": "Enweghị ike izipu azịza gị. E dekọọla ntinye aka gị; nwaa ọzọ mgbe i jikọrọ.",
+      "return_to_quiz": "Laghachi na ule ozugbo",
+      "minimize": "Mee ka ọ dị obere",
+      "minimize_aria": "Hapụ ihuenyo ule ozugbo",
+      "battle_result": "Nsonaazụ agha",
+      "class_victory": "Klas meriri!",
+      "battle_complete": "Agha agwụla",
+      "regroup": "Ohere ịkwadebe ọzọ",
+      "end_no_scored": "Ajụjụ ndị a bụ maka mkparịta ụka ma ọ bụ nyocha onye nkuzi. E nyeghị akara agha ọ bụla.",
+      "end_questions_complete": "Ajụjụ niile agwụla. Nsonaazụ ahụ na-atụnyere pasentị ike ndụ fọdụrụ; ọ bụrụ na ha hara nhata, klas ga-emeri.",
+      "end_victory": "Klas gị jikọrọ aka merie ajọ anụ ahụ.",
+      "end_regroup": "Jiri nkọwa dị n'okpuru ka unu mee atụmatụ mgbalị unu ọzọ ọnụ.",
+      "end_review_last": "Nyochaa ajụjụ ikpeazụ dị n'okpuru. Onye nkuzi gị nwere ike ịmalite agha ahụ ọzọ.",
+      "boss_default_name": "Nnukwu Onye Iro",
+      "boss_hp": "HP nke {name}",
+      "boss_health": "Ike ndụ nke {name}",
+      "battle_scoring_paused": "Akara agha kwụsịtụrụ",
+      "tick_of": "{value} n'ime {total}",
+      "confidence_legend": "Ị ji n'aka ruo ole?",
+      "confidence_knew": "Amaara m nke a",
+      "confidence_guessed": "Akọrọ m nkọ dabere n'ihe m maara",
+      "confidence_unsure": "Ejighị m n'aka",
+      "confidence_help": "Nke a na-enyere onye nkuzi gị aka ịhụ ihe ị ma nke ọma na ebe ị ghọtaghị nke ọma. Ọ naghị agbanwe ma azịza ziri ezi ma ọ bụ akara.",
+      "retry_send": "Nwaa izipu azịza ọzọ",
+      "waiting_for_teacher": "Na-eche ka onye nkuzi gị malite ajụjụ a.",
+      "sending": "Na-ezipu azịza gị…",
+      "receipt_only": "E dekọọla ntinye aka. Azịza gị erubeghị n'aka onye nkuzi maka akara.",
+      "complete_and_submit": "Mechaa ma nyefee azịza gị",
+      "poll_closed": "Ajụjụ echiche a emechiela.",
+      "receipt_not_scored": "Onye nkuzi gị natara naanị ntinye aka. E nyeghị azịza a akara.",
+      "no_answer_submitted": "E nyefeghị azịza ọ bụla maka ajụjụ a. Nyochaa ya na klas gị.",
+      "answer_review": "Nyocha azịza",
+      "review_answer": "Nyochaa azịza ahụ",
+      "discuss_with_teacher": "Kparịta ụka banyere azịza ahụ na onye nkuzi gị.",
+      "response_correct": "Azịza ziri ezi.",
+      "response_partial": "Azịza ziri ezi n'akụkụ.",
+      "response_incorrect": "Azịza a chọrọ ka e lekwa ya ọzọ.",
+      "response_none": "E nyefeghị azịza ọ bụla.",
+      "response_submitted": "E nyefela azịza maka nyocha.",
+      "explanation": "Nkọwa"
+    },
     "title": "Nyochaa",
     "mcq_count": "MCQ Gụọ",
     "reflections": "Ntụgharị Uche",

@@ -1,0 +1,47 @@
+[
+  {
+    "theme": "theme-default",
+    "mode": "writing",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "mode": "sorting",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "mode": "notebook",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "mode": "writing",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "mode": "sorting",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "mode": "notebook",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "mode": "writing",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "mode": "sorting",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "mode": "notebook",
+    "violations": []
+  }
+]

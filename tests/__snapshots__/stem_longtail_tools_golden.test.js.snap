@@ -62,10 +62,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for economicsLab 1`] = `
 {
-  "buttons": 26,
-  "inputs": 7,
-  "lengthBucket": 68,
-  "sha": "3f50d9c192b0905e",
+  "buttons": 35,
+  "inputs": 8,
+  "lengthBucket": 101,
+  "sha": "5d0bed8b1c6f9033",
   "svgs": 0,
 }
 `;

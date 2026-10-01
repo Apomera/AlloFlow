@@ -25,19 +25,16 @@ describe('Art Studio paused loops idle', () => {
   const source = fs.readFileSync(SOURCE, 'utf8');
 
   it('the generative loop stops while paused and can be restarted', () => {
-    expect(source, 'a paused generative loop must stop, not re-arm')
-      .toContain("if (canvas.getAttribute('data-paused') === '1' && !isRestoring) { canvas._genAnim = null; return; }");
-    expect(source, 'something has to restart it when play resumes')
-      .toContain('canvas._genResume = function ()');
-    expect(source).toMatch(/if \(!isPaused && typeof canvas\._genResume === 'function'\) canvas\._genResume\(\);/);
+    // Runtime timing, cancellation, and restore coverage lives in generative_playback.
+    expect(source).toContain("!disposed && canvas.isConnected && !document.hidden && !isRestoring && canvas.getAttribute('data-paused') !== '1'");
+    expect(source).toContain('canvas._genResume = resume;');
+    expect(source).toContain('if (canvas._genSyncPlayback) canvas._genSyncPlayback();');
   });
 
-  it('the spin loop only re-arms while it still has work to flush', () => {
-    // The paused branch legitimately finishes a pending checkpoint, so it may
-    // keep spinning for that — but not once the work is done.
-    expect(source).toContain('var spinBusy = spinRestoring || spinCheckpointPending || canvas._spinPointerDown;');
-    expect(source).toContain('if (canvas.isConnected && spinBusy) canvas._spinAnim = requestAnimationFrame(animate);');
-    expect(source).toContain('canvas._spinResume = function ()');
+  it('the spin loop stops while paused, hidden, or empty', () => {
+    // Runtime coverage, including frame counts, lives in artstudio_spin_engine.
+    expect(source).toContain("!restoring && !document.hidden && canvas.dataset.paused!=='1' && (drips.length>0 || canvas._spinPointerDown)");
+    expect(source).toContain('canvas._spinResume=resume;');
   });
 
   it('neither loop re-arms unconditionally any more', () => {

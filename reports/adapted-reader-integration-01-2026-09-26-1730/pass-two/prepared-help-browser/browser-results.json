@@ -1,0 +1,12 @@
+{
+  "passed": [
+    "Exact formatted occurrence; keyboard Enter/Space; Escape focus return; no sentence playback",
+    "Closing stops the actual card-owned audio ID",
+    "Comparison change view dismisses an open card",
+    "Same-item readers keep distinct heading IDs and spotlight ownership; list keyboard/popup references remain valid",
+    "Closing cancels owned pending audio while the host still reports isPlaying false",
+    "Touch opens one card without lookup/audio; truthful no-Highlights fallback; card ARIA/control checks"
+  ],
+  "errors": [],
+  "limitations": "Local fixture uses host callback spies and minimal layout CSS; no live provider pronunciation or full-app visual claim."
+}

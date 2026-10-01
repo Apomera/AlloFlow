@@ -1,0 +1,76 @@
+Microbial growth discovery
+Illustrative model v1; population is in arbitrary units (5 initially, capacity 100). Values are simulated, not measurements.
+
+Trial 1
+Control: E. coli · 37 °C · pH 7 · Oxygen availability 100/100
+Trial conditions: E. coli · 37 °C · pH 7 · Oxygen availability 0/100
+Prediction: Lower population
+My reasoning before the run: Without oxygen, E. coli should grow more slowly.
+Changed variables: Oxygen availability
+At 24 model hours: Control 99.7; Trial 90.3
+My evidence and explanation: Both populations grow. The no-oxygen curve grows more slowly, so oxygen helps but is not essential here.
+
+Simulated population at each model hour
+Model hour	Control	Trial
+0	5.0	5.0
+1	5.0	5.0
+2	5.0	5.0
+3	7.3	5.0
+4	10.5	5.0
+5	14.9	6.2
+6	20.7	7.9
+7	28.0	10.1
+8	36.7	12.7
+9	46.4	15.8
+10	56.4	19.6
+11	65.8	24.0
+12	74.2	29.1
+13	81.1	34.7
+14	86.5	40.8
+15	90.5	47.2
+16	93.4	53.7
+17	95.5	60.1
+18	96.9	66.1
+19	97.9	71.7
+20	98.6	76.7
+21	99.1	81.0
+22	99.4	84.7
+23	99.6	87.8
+24	99.7	90.3
+
+Trial 2
+Control: E. coli · 36 °C · pH 7 · Oxygen availability 0/100
+Trial conditions: E. coli · 35 °C · pH 7 · Oxygen availability 100/100
+Prediction: Lower population
+My reasoning before the run: Without oxygen, E. coli should grow more slowly.
+Changed variables: Temperature, Oxygen availability
+At 24 model hours: Control 88.3; Trial 99.4
+My evidence and explanation: 
+
+Simulated population at each model hour
+Model hour	Control	Trial
+0	5.0	5.0
+1	5.0	5.0
+2	5.0	5.0
+3	5.0	6.1
+4	5.0	8.7
+5	6.0	12.1
+6	7.6	16.7
+7	9.5	22.5
+8	11.9	29.6
+9	14.8	38.0
+10	18.3	47.0
+11	22.3	56.3
+12	27.0	65.1
+13	32.2	73.1
+14	37.9	79.7
+15	44.0	85.1
+16	50.2	89.2
+17	56.5	92.3
+18	62.5	94.6
+19	68.2	96.2
+20	73.4	97.4
+21	78.0	98.2
+22	82.0	98.7
+23	85.4	99.1
+24	88.3	99.4

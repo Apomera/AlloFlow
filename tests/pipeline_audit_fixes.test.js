@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
@@ -98,19 +99,25 @@ describe('H-9: _reauditAndScore drops a stale write (score must describe the byt
 });
 
 describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, resolution affirmative', () => {
-  it('the green "Conformant (veraPDF verified)" header requires a CURRENT tagged PDF (hasChecks)', () => {
+  it('the green veraPDF headline requires a CURRENT tagged PDF (hasChecks) and never says "Conformant"', () => {
     // was: a stale compliant veraPDF result upgraded "Awaiting Tagged PDF" → green "Conformant", next to
-    // "No tagged PDF available · 0 rules checked" (a false conformance claim).
-    const block = dp.slice(dp.indexOf("conformanceLabel === 'Conformant'"), dp.indexOf("// Reliability block"));
-    expect(block).toMatch(/_vera && _vera\.compliant === true && hasChecks &&/);
-    expect(block).toMatch(/conformanceLabel = 'Conformant \(veraPDF · ISO 14289-1 verified\)'/);
+    // "No tagged PDF available · 0 rules checked" (a false conformance claim). 2026-09-28 (G1): even a
+    // current veraPDF pass is now labelled as automated checks only, never "Conformant".
+    const block = sliceBetween(dp, "_pevSum.overall === 'FAIL' && _headlineTier === 'pass'", '// Reliability block', { file: 'doc_pipeline_source.jsx', label: 'headline floor block' });
+    expect(block).toMatch(/_vera && _vera\.compliant === true && hasChecks && _headlineTier === 'pass'/);
+    expect(block).toMatch(/conformanceLabel = 'No failures in veraPDF automated checks \(ISO 14289-1\)'/);
+    expect(block).not.toMatch(/'Conformant/);
   });
   it('the veraPDF section shows a STALE note (not "PASSES") when there is no current tagged PDF', () => {
     const veraBlock = dp.slice(dp.indexOf('const _veraBlock = (() =>'), dp.indexOf('// Issue resolution block'));
     expect(veraBlock).toMatch(/if \(!hasChecks\) \{/);
     expect(veraBlock).toMatch(/no current tagged PDF to validate/);
-    // the "✓ PASSES PDF/UA-1" label must come AFTER the !hasChecks guard (so it can't show without a tagged PDF)
-    expect(veraBlock.indexOf('if (!hasChecks)')).toBeLessThan(veraBlock.indexOf('PASSES PDF/UA-1'));
+    // the green pass label must come AFTER the !hasChecks guard (so it can't show without a tagged PDF).
+    // 2026-09-28 (G1): the label says "No failures in veraPDF automated checks", not "PASSES PDF/UA-1".
+    const passAt = veraBlock.indexOf('No failures in veraPDF automated checks');
+    expect(passAt).toBeGreaterThan(-1);
+    expect(veraBlock.indexOf('if (!hasChecks)')).toBeLessThan(passAt);
+    expect(veraBlock).not.toMatch(/PASSES PDF\/UA-1/);
   });
   it('Re-scan with OCR confirms + offers to save the project before wiping the result', () => {
     const fn = view.slice(view.indexOf('const _reRun = async (force) => {'), view.indexOf('const _reRun = async (force) => {') + 2200);

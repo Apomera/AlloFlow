@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "A sample is required before lifting. Water flows only after positioning over the colander and tilting; leveling or release stops it. Partial drainage preserves saved water, pasta progress, clock, and burner setting and survives reload.",
+    "Escape keeps already-drained water removed. Fully drained pasta appears in the colander, the active burner remains visible, and dragging the colander into the sauce pan combines the dish.",
+    "Graphics-context loss stops drainage without restoring lost water, and the illustrated controls remain usable. The 3D keyboard route focuses the hold-to-drain pot and release stops flow.",
+    "Direct drainage retains exact transfer amounts in restoration, locked replay, and exported evidence.",
+    "Real touch can lift and tilt the 3D pot; touch cancellation stops flow. Desktop, narrow illustrated controls, and forced colors pass accessibility scans."
+  ],
+  "accessibility": [
+    {
+      "label": "3D draining and keyboard controls",
+      "issues": []
+    },
+    {
+      "label": "320px illustrated drain",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

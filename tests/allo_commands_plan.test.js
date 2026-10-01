@@ -8,7 +8,9 @@
 // plannable before content exists (the #1 regression, fixed 2026-07-10).
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -618,7 +620,8 @@ describe('AlloBot hands-free agent button', () => {
   it('both ANTI copies pass the voice-loop props to the chat modal', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
-      expect(app, path).toContain('onToggleVoiceAgent: () => { const c = _alloCmdCtx(); if (alloVoiceActive) c.stopVoiceLoop(); else c.startVoiceLoop(); }');
+      // f900780bc moved the context builder to a CDN module; _alloCmdCtx() is null until it lands, so the prop now guards it.
+      expect(app, path).toContain('onToggleVoiceAgent: () => { const c = _alloCmdCtx(); if (!c) return; if (alloVoiceActive) c.stopVoiceLoop(); else c.startVoiceLoop(); }');
       expect(app, path).toContain('voiceAvailable: _alloVoiceInputAvailable()');
       expect(app, path).toContain("typeof voice.isHandsFreeSupported === 'function'");
       expect(app, path).toContain('voice.isHandsFreeSupported({ callGeminiAudio })');
@@ -744,7 +747,8 @@ describe('AlloBot hands-free agent button', () => {
     expect(src).toContain("role=\"menuitemcheckbox\"");
     // Escape and outside-click must close it — a menu dismissible only by its
     // own trigger is a keyboard trap.
-    expect(src).toMatch(/ev\.key === 'Escape'\) setChatMenuOpen\(false\)/);
+    // 946e0f8a8 made the Escape branch a block (preventDefault + focus return); it must still close the menu.
+    expect(src).toMatch(/ev\.key === 'Escape'\)(?: \{\s*ev\.preventDefault\(\);)?\s*setChatMenuOpen\(false\)/);
     expect(src).toContain("document.addEventListener('mousedown', onDown)");
     expect(src).toContain('document.removeEventListener');
     // Show Me is demoted to a preference and says so: pointing happens anyway.

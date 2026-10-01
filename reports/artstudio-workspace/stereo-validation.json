@@ -1,0 +1,90 @@
+{
+  "date": "2026-09-30",
+  "scope": "Static stereogram depth editing, persistence, render completion, pattern seeds and large workspace",
+  "sourceSHA256": "1D2BA8A9FBAFB9B5A0749D104312FECD1F265DC8B37E77C7021BDA9C7700FEC1",
+  "sourcePublicIdentical": true,
+  "tests": [
+    {
+      "report": "stereo-initial-results.json",
+      "files": 4,
+      "passed": 30,
+      "failed": 0
+    },
+    {
+      "report": "stereo-model-results.json",
+      "files": 1,
+      "passed": 10,
+      "failed": 0
+    },
+    {
+      "report": "stereo-focused-results.json",
+      "files": 2,
+      "passed": 21,
+      "failed": 0
+    },
+    {
+      "report": "stereo-regression-results.json",
+      "files": 19,
+      "passed": 140,
+      "failed": 0
+    },
+    {
+      "report": "stereo-final-results.json",
+      "files": 3,
+      "passed": 28,
+      "failed": 0
+    }
+  ],
+  "newCases": 24,
+  "latestScopedResults": {
+    "files": 19,
+    "passed": 140,
+    "unresolvedFailures": 0
+  },
+  "browser": {
+    "report": "stereo-browser-results.json",
+    "passed": true,
+    "pageErrors": 0,
+    "desktopViewport": [
+      1440,
+      1000
+    ],
+    "desktopDepthWidth": 760,
+    "phoneViewport": [
+      390,
+      844
+    ],
+    "phoneOverflow": false,
+    "phonePreviewFirst": true,
+    "touchTargetsMinPx": 44,
+    "fastNativeStrokeContinuous": true,
+    "wholeGestureUndoRedo": true,
+    "clearPresetRecovery": true,
+    "drawingSurvivesNavigation": true,
+    "drawingSurvivesAnimationRoundTrip": true,
+    "studyContainsDepthArtwork": true,
+    "seedReproducesTexture": true,
+    "viewingGuidesMatchPatternWidth": true,
+    "exportFinishesPartialRender": true,
+    "nativeOutputDimensions": [
+      512,
+      512
+    ],
+    "downloadMatchesCompletedCanvas": true
+  },
+  "previews": [
+    "stereo-depth-desktop.png",
+    "stereo-output-desktop.png",
+    "stereo-phone-preview.png",
+    "stereo-phone-controls.png",
+    "stereo-export.png"
+  ],
+  "registryKeysMatched": 14,
+  "newEnglishStrings": 14,
+  "syntaxCheck": true,
+  "spectralVendorCheck": true,
+  "scopedWhitespaceCheck": true,
+  "prePassPreservationDiffReviewed": true,
+  "committed": false,
+  "deployed": false
+}

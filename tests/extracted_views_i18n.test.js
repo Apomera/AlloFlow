@@ -36,10 +36,10 @@ describe('extracted view localization catalog', () => {
     )].sort();
 
     expect(assignmentKeys).toHaveLength(120);
-    expect(directionKeys).toHaveLength(25);
+    expect(directionKeys).toHaveLength(32);
     expect(catalog.ASSIGNMENT_KEYS).toEqual(assignmentKeys);
     expect(catalog.DIRECTION_KEYS).toEqual(directionKeys);
-    expect(catalog.EXTRACTED_VIEW_KEYS).toHaveLength(145);
+    expect(catalog.EXTRACTED_VIEW_KEYS).toHaveLength(152);
     expect(flatten(manifest.ENGLISH_ADDITIONS)).toEqual(expect.objectContaining(english));
   });
 

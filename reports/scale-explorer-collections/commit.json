@@ -1,0 +1,19 @@
+{
+  "commit": "5c86b7f63ad5b0135c46f5931db66e6414960a2b",
+  "parent": "ad775b02065b6617c8ba746fad4132166cb236d1",
+  "files": [
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/ui_strings.js",
+    "reports/scale-explorer-collections/README.md",
+    "reports/scale-explorer-collections/desktop-collection.png",
+    "reports/scale-explorer-collections/model-collection.svg",
+    "reports/scale-explorer-collections/phone-collection.png",
+    "reports/scale-explorer-collections/printable-collection.png",
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "tests/e2e/scale-explorer-collections.spec.ts",
+    "tests/scale_explorer_collections.test.js",
+    "ui_strings.js"
+  ],
+  "collectionKeys": 19,
+  "unrelatedStagesPreserved": true
+}

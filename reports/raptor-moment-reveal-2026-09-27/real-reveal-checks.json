@@ -1,0 +1,22 @@
+{
+  "pixels": {
+    "endpoints": {
+      "different": 17125,
+      "total": 54843,
+      "fraction": 0.31225498240431776
+    },
+    "left": {
+      "different": 0,
+      "total": 20996,
+      "fraction": 0
+    },
+    "right": {
+      "different": 0,
+      "total": 20996,
+      "fraction": 0
+    }
+  },
+  "noSimulationRedraws": true,
+  "unchangedOriginalImages": true,
+  "offlineReportImages": 2
+}

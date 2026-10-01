@@ -1,0 +1,42 @@
+[
+  {
+    "dark": true,
+    "width": 1180,
+    "scrollWidth": 1180,
+    "navigatorWidth": 1180,
+    "readoutWidth": 366.71875,
+    "errors": [],
+    "minimumReadoutValueSize": 19,
+    "modelNoteContrast": 12.024320295980338
+  },
+  {
+    "dark": false,
+    "width": 1180,
+    "scrollWidth": 1180,
+    "navigatorWidth": 1180,
+    "readoutWidth": 366.71875,
+    "errors": [],
+    "minimumReadoutValueSize": 19,
+    "modelNoteContrast": 7.25634738928224
+  },
+  {
+    "dark": true,
+    "width": 736,
+    "scrollWidth": 736,
+    "navigatorWidth": 736,
+    "readoutWidth": 224.625,
+    "errors": [],
+    "minimumReadoutValueSize": 19,
+    "modelNoteContrast": 12.024320295980338
+  },
+  {
+    "dark": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "navigatorWidth": 320,
+    "readoutWidth": 298,
+    "errors": [],
+    "minimumReadoutValueSize": 18,
+    "modelNoteContrast": 7.25634738928224
+  }
+]

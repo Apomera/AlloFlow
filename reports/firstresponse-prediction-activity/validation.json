@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-29",
+  "unit": {
+    "passed": 163,
+    "failed": 0,
+    "files": 3,
+    "durationSeconds": 18.44,
+    "log": "unit-tests.log"
+  },
+  "browser": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "durationMinutes": 2.7,
+    "cycleInspector": 3,
+    "depthComparison": 3,
+    "predictionActivity": 2,
+    "depthExplorer": 3,
+    "renderer": "Chromium WebGL with explicit SwiftShader",
+    "traceAndVideo": "disabled",
+    "log": "browser-final.log"
+  },
+  "visualReview": {
+    "desktopEvidence": "passed",
+    "phonePredictions": "passed",
+    "phoneEvidence": "passed",
+    "enlargedTextSpacing": "passed",
+    "forcedColors": "passed"
+  },
+  "accessibility": {
+    "normalRendering": "axe WCAG A/AA checks including text contrast",
+    "forcedColors": "axe semantic checks, computed system-color contrast of activity controls, and screenshot review",
+    "forcedColorDiagnostic": "forced-colors-auditor.json",
+    "manualScreenReaderAudit": false
+  },
+  "sourcePublicParity": "passed",
+  "newActivityEnglishStrings": 19,
+  "firstResponseCatalogChangesInCommit": 65,
+  "syntaxAndWhitespace": "passed"
+}

@@ -1,0 +1,81 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:48492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:48492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:343:5 › trait lenses display actual values, preserve coats and reuse measurement buffers
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1333:5 › watch a generation records one climate-boundary round and explores its real cohorts in 3D
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1465:5 › variation explorer spotlights real trait ranges in 3D and compares recorded cohorts without changing organisms
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1531:5 › variation explorer on a phone supports exact boundary values, keyboard spotlight and zero-valued organisms
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:1531:5 › variation explorer on a phone supports exact boundary values, keyboard spotlight and zero-valued organisms 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('[data-variation-bin] strong')
+    Timeout: 15000ms
+    [32m- Expected  - 7[39m
+    [31m+ Received  + 1[39m
+
+    [32m- Array [[39m
+    [32m-   "1",[39m
+    [32m-   "1",[39m
+    [32m-   "1",[39m
+    [32m-   "1",[39m
+    [32m-   "2",[39m
+    [32m- ][39m
+    [31m+ Array [][39m
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-variation-bin] strong')[22m
+    [2m    33 × locator resolved to 0 elements[22m
+
+
+      1538 |   await harness.mount(page, { evoLab: { view:'livingIsland',island:world,islandStudy:{seed:42,introDismissed:true,lens:'fur'} } });
+      1539 |   await page.evaluate(() => { document.getElementById('wrap')!.style.width='100%'; document.body.style.padding='0'; });
+    > 1540 |   await expect(page.locator('[data-variation-bin] strong')).toHaveText(['1','1','1','1','2']);
+           |                                                             ^
+      1541 |   await page.locator('[data-variation-bin="4"]').focus(); await page.keyboard.press('Enter');
+      1542 |   await expect(page.locator('.ei-variation-detail')).toContainText('2 / 6 · 33.3%');
+      1543 |   await expect(page.locator('.ei-variation-detail')).toContainText('Advance once to compare');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:1540:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\variation-browser-artifacts\evolab-living-island-varia-28da4-t-and-zero-valued-organisms-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\variation-browser-artifacts\evolab-living-island-varia-28da4-t-and-zero-valued-organisms-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\variation-browser-artifacts\evolab-living-island-varia-28da4-t-and-zero-valued-organisms-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\variation-browser-artifacts\evolab-living-island-varia-28da4-t-and-zero-valued-organisms-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\variation-browser-artifacts\evolab-living-island-varia-28da4-t-and-zero-valued-organisms-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\variation-browser-artifacts\evolab-living-island-varia-28da4-t-and-zero-valued-organisms-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K(node:32156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:32156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1557:5 › variation explorer without WebGL follows a watched extinction with no invented percentage
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1531:5 › variation explorer on a phone supports exact boundary values, keyboard spotlight and zero-valued organisms 
+  4 passed (4.9m)

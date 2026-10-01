@@ -1,0 +1,62 @@
+[
+  {
+    "theme": "theme-default",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "tab": "notes",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "tab": "birds",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "tab": "ecosystem",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "notes",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "birds",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "ecosystem",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "notes",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "birds",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "ecosystem",
+    "violations": []
+  }
+]

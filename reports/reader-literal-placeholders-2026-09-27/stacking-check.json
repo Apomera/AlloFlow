@@ -1,0 +1,12 @@
+{
+  "layoutPatch": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-word-help-localization-2026-09-27\\layout.patch",
+  "layoutSha256": "67ce47f0aca49e129bf9b990a2bc823dbca18b561cb65c8b5dadf3e0bc2ee62e",
+  "previousLayoutPatchApplies": false,
+  "equalBothOrders": null,
+  "currentReaderRowClasses": [
+    "data-adapted-word-help-entry className=\"space-y-2 break-words text-base leading-relaxed\"",
+    "data-adapted-word-help-text className=\"min-w-0 flex-1 basis-48\""
+  ],
+  "note": "The shared list row has changed since the old proposal. Do not apply the old layout patch; reader owner must reconcile it with current source.",
+  "otherPendingLocalePatchesHaveNoOverlappingFiles": true
+}

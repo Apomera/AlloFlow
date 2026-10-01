@@ -34,7 +34,7 @@
     basement:  { name: 'Granite basement',  type: 'Igneous (intrusive)', color: 0xc99ab8, formation: 'Magma that cooled SLOWLY deep underground → large interlocking crystals.',       minerals: 'Quartz, feldspar, mica',        age: 'Ancient basement — older than the sediments resting on it.' },
     intrusion: { name: 'Granite pluton',    type: 'Igneous (intrusive)', color: 0xe75fb0, formation: 'A LATER pulse of magma forced up through the layers and froze in place.',        minerals: 'Quartz, feldspar, mica',        age: 'YOUNGER than the layers it cuts — the cross-cutting rule wins here.' },
     marble:    { name: 'Marble',            type: 'Metamorphic',         color: 0xe8e8ee, formation: 'Limestone BAKED by the nearby pluton (contact metamorphism) → recrystallised.', minerals: 'Recrystallised calcite',        age: 'Re-cooked when the intrusion arrived.' },
-    hornfels:  { name: 'Hornfels / Schist', type: 'Metamorphic',         color: 0x8a5a8a, formation: 'Shale baked + squeezed beside the pluton → hard, sometimes garnet-bearing.',    minerals: 'Mica, garnet',                  age: 'Re-cooked when the intrusion arrived.' },
+    hornfels:  { name: 'Hornfels', type: 'Metamorphic',         color: 0x8a5a8a, formation: 'Shale baked by the pluton’s heat → hard, fine-grained, sometimes garnet-bearing.',    minerals: 'Mica, garnet',                  age: 'Re-cooked when the intrusion arrived.' },
     magma:     { name: 'Magma chamber',     type: 'Molten',              color: 0xff7a33, glow: 1, formation: 'Molten rock — the source. It cools to igneous rock and the cycle restarts.',     minerals: '—',                             age: 'Active now — still forming.' },
     basalt:    { name: 'Basalt',            type: 'Igneous (extrusive)', color: 0x4a4a55, formation: 'Lava that ERUPTED and cooled FAST at the surface → crystals too tiny to see (the opposite of slow-cooled granite).', minerals: 'Plagioclase + pyroxene (fine-grained)', age: 'Newest rock — just erupted onto the surface.' }
   };
@@ -44,10 +44,10 @@
     'Continental': '#a16207', 'Fault zone': '#57534e' };
   // Text ink per theme for the type chips (AA on the white card / on the dark ground).
   var TYPE_INK = {
-    light: { 'Surface': '#78573f', 'Sedimentary': '#0369a1', 'Igneous (intrusive)': '#be185d', 'Igneous (extrusive)': '#c2410c', 'Metamorphic': '#6d28d9', 'Molten': '#c2410c',
-      'Crust': '#78573f', 'Mantle': '#b91c1c', 'Outer core': '#c2410c', 'Inner core': '#a16207', 'Mineral': '#0e7490', 'Mineral (silica)': '#0f766e', 'Mineral (quartz)': '#6d28d9',
-      'Water': '#0369a1', 'Igneous (basalt)': '#475569', 'Mantle (rigid)': '#b45309', 'Mantle (ductile)': '#b91c1c', 'Mantle (plume)': '#c2410c', 'Mantle (melting)': '#b91c1c',
-      'Subducting plate': '#334155', 'Continental': '#a16207', 'Fault zone': '#57534e' },
+    light: { 'Surface': '#634833', 'Sedimentary': '#075985', 'Igneous (intrusive)': '#9d174d', 'Igneous (extrusive)': '#9a3412', 'Metamorphic': '#6d28d9', 'Molten': '#9a3412',
+      'Crust': '#634833', 'Mantle': '#991b1b', 'Outer core': '#9a3412', 'Inner core': '#854d0e', 'Mineral': '#155e75', 'Mineral (silica)': '#115e59', 'Mineral (quartz)': '#6d28d9',
+      'Water': '#075985', 'Igneous (basalt)': '#475569', 'Mantle (rigid)': '#92400e', 'Mantle (ductile)': '#991b1b', 'Mantle (plume)': '#9a3412', 'Mantle (melting)': '#991b1b',
+      'Subducting plate': '#334155', 'Continental': '#854d0e', 'Fault zone': '#57534e' },
     dark: { 'Surface': '#d6b89b', 'Sedimentary': '#7dd3fc', 'Igneous (intrusive)': '#f9a8d4', 'Igneous (extrusive)': '#fdba74', 'Metamorphic': '#c4b5fd', 'Molten': '#fdba74',
       'Crust': '#d6b89b', 'Mantle': '#fca5a5', 'Outer core': '#fdba74', 'Inner core': '#fde047', 'Mineral': '#67e8f9', 'Mineral (silica)': '#5eead4', 'Mineral (quartz)': '#c4b5fd',
       'Water': '#7dd3fc', 'Igneous (basalt)': '#cbd5e1', 'Mantle (rigid)': '#fcd34d', 'Mantle (ductile)': '#fca5a5', 'Mantle (plume)': '#fdba74', 'Mantle (melting)': '#fca5a5',
@@ -86,7 +86,7 @@
   var DATING = {
     basement:  { parent: 'Uranium-238', daughter: 'Lead-206', hl: 4470, note: 'Granite locks in uranium as it crystallises — the clock starts the moment it solidifies.' },
     intrusion: { parent: 'Uranium-238', daughter: 'Lead-206', hl: 4470, note: 'Dating the pluton tells you when this magma froze — so it post-dates the layers it cuts.' },
-    basalt:    { parent: 'Potassium-40', daughter: 'Argon-40', hl: 1250, note: 'Erupted lava traps potassium; the argon it decays to builds up from zero as it ages.' }
+    basalt:    { parent: 'Potassium-40', daughter: 'Argon-40', hl: 1250, share: 0.107, note: 'Erupted lava traps potassium-40; about 1 in 9 of its decays makes argon-40, which builds up from zero as the rock ages.' }
   };
   // World extent is FIXED; the detail level only changes how finely it is voxelized, so
   // higher detail = SHARPER (smaller cubes), NOT a bigger block. Camera/lights/surface
@@ -112,7 +112,7 @@
     var Y = Math.floor(y * 12 / NY); if (Y > 11) Y = 11;   // map to the canonical 12-row strata
     var intrusionR = (1.2 + (Y / 12) * 2.6) * sx;
     if (Y >= 3 && r < intrusionR) return 'intrusion';
-    if (Y >= 3 && Y < 11 && r < intrusionR + 1.05 * sx) return (Y >= 6 && Y <= 8) ? 'marble' : 'hornfels';
+    if (Y >= 3 && Y <= 6 && r < intrusionR + 1.05 * sx) return Y >= 5 ? 'marble' : 'hornfels';   // rim: limestone rows -> marble, shale rows -> hornfels
     if (Y === 0) return 'soil';
     if (Y <= 2) return 'sandstone';
     if (Y <= 4) return 'shale';
@@ -667,10 +667,11 @@
   };
   // One saved dig as words: its layers top to bottom with depths; in the crust, once it passes two
   // sedimentary layers, the superposition reading. PURE.
-  function digLogSummary(layers, sceneId) {
-    var list = (layers || []).map(function (l) { return l.name + ' (≈ ' + l.depthKm + ' km)'; }).join(' → ');
+  function digLogSummary(layers, sceneId, t) {
+    t = t || geoEnglishT; var tf = t;
+    var list = (layers || []).map(function (l) { return tf('stem.geology.ui.dig_layer_depth', '{name} (≈ {km} km)', { name: l.name, km: l.depthKm }); }).join(' → ');
     var sedimentary = (layers || []).filter(function (l) { return SED_FOSSIL[l.key]; }).length;
-    return list + (sceneId === 'crust' && sedimentary >= 2 ? '. Deeper layers formed first, so the rock got older as you dug (superposition).' : '.');
+    return list + (sceneId === 'crust' && sedimentary >= 2 ? '. ' + t('stem.geology.ui.dig_superposition', 'Deeper layers formed first, so the rock got older as you dug (superposition).') : '.');
   }
   // What shows on the face of a block that still hides a find: the clue a geologist would notice,
   // never the find's name. PURE.
@@ -699,18 +700,20 @@
   }
   // 'harder' (lowest ≥ 6), 'softer' (highest ≤ 5) or 'about' as hard as steel (~5.5); null = no value. PURE.
   function mohsVsSteel(range) { if (!range) return null; return range[0] >= 6 ? 'harder' : (range[1] <= 5 ? 'softer' : 'about'); }
-  function mohsLine(kind) {
+  function mohsLine(kind, t) {
+    t = t || geoEnglishT; var tf = t;
     var m = SPECIMEN_MOHS[kind]; if (!m) return null;
     if (!m.mohs) return { text: m.note, vs: null };
     var value = m.mohs[0] === m.mohs[1] ? String(m.mohs[0]) : m.mohs[0] + '–' + m.mohs[1], vs = mohsVsSteel(m.mohs);
-    var steel = vs === 'harder' ? 'harder than steel: it would scratch your pick' : (vs === 'softer' ? 'softer than steel: your pick scratches it' : 'about as hard as steel');
-    return { text: (m.label ? m.label + ': ' : '') + 'hardness ' + value + ' (Mohs), ' + steel + '.' + (m.note ? ' ' + m.note : ''), vs: vs };
+    var steel = vs === 'harder' ? t('stem.geology.mohs.harder', 'harder than steel: it would scratch your pick') : (vs === 'softer' ? t('stem.geology.mohs.softer', 'softer than steel: your pick scratches it') : t('stem.geology.mohs.about', 'about as hard as steel'));
+    return { text: (m.label ? m.label + ': ' : '') + tf('stem.geology.mohs.line', 'hardness {value} (Mohs), {steel}.', { value: value, steel: steel }) + (m.note ? ' ' + m.note : ''), vs: vs };
   }
   // Every find a scene hides, with where to look: the collection panel lists found and still-hidden ones.
-  function sceneSpecimenCatalog(sceneId) {
+  function sceneSpecimenCatalog(sceneId, t) {
+    t = t || geoEnglishT; var tf = t;
     var out = [];
-    if (sceneId === 'crust') Object.keys(SED_FOSSIL).forEach(function (key) { var f = FOSSILS[key]; out.push({ kind: 'fossil-' + key, icon: f.icon, name: f.name, hint: 'In the ' + ROCKS[key].name.toLowerCase() + ' layer', tells: f.tells, hardness: mohsLine('fossil-' + key), shape: 'fossil', color: FOSSIL_LOOK[key] || 0xe7dcc6 }); });
-    Object.keys(SPECIMENS).forEach(function (id) { var sp = SPECIMENS[id]; if (sp.scene === sceneId) out.push({ kind: id, icon: sp.icon, name: sp.name, hint: sp.hint, tells: sp.tells, hardness: mohsLine(id), shape: sp.shape, color: sp.color }); });
+    if (sceneId === 'crust') Object.keys(SED_FOSSIL).forEach(function (key) { var f = FOSSILS[key]; out.push({ kind: 'fossil-' + key, icon: f.icon, name: f.name, hint: tf('stem.geology.ui.in_the_layer', 'In the {rock} layer', { rock: ROCKS[key].name.toLowerCase() }), tells: f.tells, hardness: mohsLine('fossil-' + key, t), shape: 'fossil', color: FOSSIL_LOOK[key] || 0xe7dcc6 }); });
+    Object.keys(SPECIMENS).forEach(function (id) { var sp = SPECIMENS[id]; if (sp.scene === sceneId) out.push({ kind: id, icon: sp.icon, name: sp.name, hint: sp.hint, tells: sp.tells, hardness: mohsLine(id, t), shape: sp.shape, color: sp.color }); });
     return out;
   }
   // Finds dug free, per world and across all of them (a kind counts once, however many were found). PURE.
@@ -1058,11 +1061,12 @@
       ['clear', 'caution', 'limited'].indexOf(scan.riskLevel) >= 0 ? scan.riskLevel : 'limited'
     );
   }
-  function coreRigTrajectorySummary(scan) {
+  function coreRigTrajectorySummary(scan, t) {
+    t = t || geoEnglishT; var tf = t;
     var safe = coreRigTrajectorySnapshot(scan);
-    return safe.recoverable + '/' + safe.requestedDepth + ' recoverable · ' +
-      safe.variability + ' resistance · ' + safe.transitions + ' load shift' +
-      (safe.transitions === 1 ? '' : 's') + ' · ' + safe.riskLevel + ' boundary risk';
+    var variability = { steady: t('stem.geology.rig.steady', 'steady'), mixed: t('stem.geology.rig.mixed', 'mixed'), volatile: t('stem.geology.rig.volatile', 'volatile') }[safe.variability] || safe.variability;
+    var risk = { clear: t('stem.geology.rig.risk_clear', 'clear'), caution: t('stem.geology.rig.risk_caution', 'caution'), limited: t('stem.geology.rig.risk_limited', 'limited') }[safe.riskLevel] || safe.riskLevel;
+    return tf('stem.geology.rig.trajectory_summary', '{recoverable}/{requested} recoverable · {variability} resistance · load shifts: {shifts} · {risk} boundary risk', { recoverable: safe.recoverable, requested: safe.requestedDepth, variability: variability, shifts: safe.transitions, risk: risk });
   }
   function coreRigBoreBrief(scan, samples, bestPristineStreak, finished) {
     var safeScan = coreRigTrajectorySnapshot(scan);
@@ -1198,7 +1202,8 @@
       Math.max(0, Math.round(Number(report.completedAt) || 0)), compressed.sequence.join('>')
     ].join('@');
   }
-  function coreRigCompareReports(previousReport, nextReport) {
+  function coreRigCompareReports(previousReport, nextReport, t) {
+    t = t || geoEnglishT; var tf = t;
     previousReport = previousReport && typeof previousReport === 'object' ? previousReport : {};
     nextReport = nextReport && typeof nextReport === 'object' ? nextReport : {};
     var previousCore = coreRigCompressedCore(previousReport), nextCore = coreRigCompressedCore(nextReport);
@@ -1254,14 +1259,14 @@
     });
     var changedVariable = angleChanged ? 'angle' : 'depth';
     var controlLabel = angleChanged
-      ? ('Angle ' + coreRigAngleDegrees(previousAngle) + '° → ' + coreRigAngleDegrees(nextAngle) + '° · depth held at ' + previousDepth)
-      : ('Depth ' + previousDepth + ' → ' + nextDepth + ' intervals · angle held at ' + coreRigAngleDegrees(previousAngle) + '°');
+      ? tf('stem.geology.rig.control_angle_changed', 'Angle {from}° → {to}° · depth held at {depth}', { from: coreRigAngleDegrees(previousAngle), to: coreRigAngleDegrees(nextAngle), depth: previousDepth })
+      : tf('stem.geology.rig.control_depth_changed', 'Depth {from} → {to} intervals · angle held at {angle}°', { from: previousDepth, to: nextDepth, angle: coreRigAngleDegrees(previousAngle) });
     var findingLevel = similarityPct >= 70 ? 'consistent' : (similarityPct >= 35 ? 'mixed' : 'different');
     var interpretation = findingLevel === 'consistent'
-      ? 'These paired bore trials recovered similar sequences.'
+      ? t('stem.geology.rig.finding_consistent', 'These paired bore trials recovered similar sequences.')
       : (findingLevel === 'mixed'
-      ? 'These paired bore trials share part of the sequence and add different evidence.'
-      : 'These paired bore trials recovered different sequences; another controlled trial would strengthen the interpretation.');
+      ? t('stem.geology.rig.finding_mixed', 'These paired bore trials share part of the sequence and add different evidence.')
+      : t('stem.geology.rig.finding_different', 'These paired bore trials recovered different sequences; another controlled trial would strengthen the interpretation.'));
     return {
       eligible: true, pairId: pairId, changedVariable: changedVariable, changed: changedVariable,
       controlLabel: controlLabel, lcsLength: lcsLength, lcsRatio: lcsRatio, similarityPct: similarityPct,
@@ -1272,7 +1277,8 @@
       previousCore: previousCore, nextCore: nextCore
     };
   }
-  function coreRigNextExperiment(report, certification) {
+  function coreRigNextExperiment(report, certification, t) {
+    t = t || geoEnglishT; var tf = t;
     report = report && typeof report === 'object' ? report : {};
     var angle = CORE_RIG_ANGLES[report.angle] ? report.angle : null;
     var depth = Math.round(Number(report.targetDepth) || 0);
@@ -1296,38 +1302,41 @@
     if (!next) return null;
     var changedVariable = next.angle === angle ? 'depth' : 'angle';
     var controlLabel = changedVariable === 'depth'
-      ? ('Hold angle at ' + coreRigAngleDegrees(angle) + '° · change depth ' + depth + ' → ' + next.depth)
-      : ('Hold depth at ' + depth + ' intervals · change angle ' + coreRigAngleDegrees(angle) + '° → ' + next.angleDegrees + '°');
+      ? tf('stem.geology.rig.control_hold_angle', 'Hold angle at {angle}° · change depth {from} → {to}', { angle: coreRigAngleDegrees(angle), from: depth, to: next.depth })
+      : tf('stem.geology.rig.control_hold_depth', 'Hold depth at {depth} intervals · change angle {from}° → {to}°', { depth: depth, from: coreRigAngleDegrees(angle), to: next.angleDegrees });
     var question = changedVariable === 'depth'
-      ? ('Does a ' + next.depth + '-interval bore add another recovered formation while angle stays ' + coreRigAngleDegrees(angle) + '°?')
-      : ('Does changing to ' + next.angleDegrees + '° alter the recovered sequence while depth stays ' + depth + ' intervals?');
+      ? tf('stem.geology.rig.question_depth', 'Does a bore of {depth} intervals add another recovered formation while the angle stays {angle}°?', { depth: next.depth, angle: coreRigAngleDegrees(angle) })
+      : tf('stem.geology.rig.question_angle', 'Does changing to {angle}° alter the recovered sequence while the depth stays {depth} intervals?', { angle: next.angleDegrees, depth: depth });
     return {
       mode: 'compare', programKey: next.key, angle: next.angle, angleDegrees: next.angleDegrees,
       depth: next.depth, changedVariable: changedVariable, changed: changedVariable,
       controlLabel: controlLabel, question: question
     };
   }
-  function coreRigIntervalFeedback(name, integrity, pristineStreak) {
+  function coreRigIntervalFeedback(name, integrity, pristineStreak, t) {
+    t = t || geoEnglishT; var tf = t;
     var numericIntegrity = Number(integrity);
     var safeIntegrity = isFinite(numericIntegrity) ? Math.max(0.55, Math.min(1, numericIntegrity)) : 1;
     var integrityPercent = Math.round(safeIntegrity * 100);
     var streak = Math.max(0, Math.floor(Number(pristineStreak) || 0));
     var tier = safeIntegrity >= 0.97 ? 'pristine' : (safeIntegrity >= 0.85 ? 'stable' : 'damaged');
-    var label = tier === 'pristine' ? 'Pristine' : (tier === 'stable' ? 'Stable' : 'Damaged');
-    var sampleName = String(name || 'Core sample');
+    var label = tier === 'pristine' ? t('stem.geology.rig.pristine', 'Pristine') : (tier === 'stable' ? t('stem.geology.rig.stable', 'Stable') : t('stem.geology.rig.damaged', 'Damaged'));
+    var sampleName = String(name || t('stem.geology.rig.core_sample', 'Core sample'));
     return {
       name: sampleName, integrity: safeIntegrity, integrityPercent: integrityPercent,
       pristineStreak: streak, tier: tier, label: label,
-      summary: label + ' core · ' + sampleName + ' · ' + integrityPercent + '% integrity · ' + (tier === 'pristine' ? ('pristine streak ' + streak) : 'streak reset')
+      summary: tf('stem.geology.rig.interval_summary', '{label} core · {name} · {pct}% integrity', { label: label, name: sampleName, pct: integrityPercent }) + ' · ' + (tier === 'pristine' ? tf('stem.geology.rig.pristine_streak', 'pristine streak {n}', { n: streak }) : t('stem.geology.ui.streak_reset', 'streak reset'))
     };
   }
-  function coreRigFormationCue(formationLoad, idealMode, previousResult) {
+  function coreRigFormationCue(formationLoad, idealMode, previousResult, t) {
+    t = t || geoEnglishT; var tf = t;
     var load = String(formationLoad || 'Dense');
     var profile = coreRigFeedProfile(String(idealMode || 'cruise').toLowerCase());
     var previousSummary = previousResult && previousResult.summary ? String(previousResult.summary) : '';
+    var loadText = fpProfileText(load, t).tag || load, feedText = t(geoTextKey(profile.label), profile.label);
     var prompt = previousSummary
-      ? previousSummary + '. Next formation: ' + load + ' load. Select ' + profile.label + ' feed.'
-      : 'Formation scan. ' + load + ' load. Select ' + profile.label + ' feed.';
+      ? previousSummary + '. ' + tf('stem.geology.rig.next_formation', 'Next formation: {load} load. Select {feed} feed.', { load: loadText, feed: feedText })
+      : tf('stem.geology.rig.formation_scan', 'Formation scan. {load} load. Select {feed} feed.', { load: loadText, feed: feedText });
     return { formationLoad: load, idealFeedMode: profile.id, idealFeedLabel: profile.label, prompt: prompt };
   }
   function coreRigChallengeProgress(replayScore, bestScore, resultScore) {
@@ -1486,19 +1495,21 @@
       tierUp: tierUp, newBest: newBest, duplicate: false
     };
   }
-  function coreRigCertificationGuidance(program) {
+  function coreRigCertificationGuidance(program, t) {
+    t = t || geoEnglishT;
     program = program && typeof program === 'object' ? program : {};
-    if (!Math.max(0, Math.floor(Number(program.attempts) || 0))) return 'Grade C, 85% integrity, and target recovery or a protected boundary after 75%';
-    if (Number(program.tier) >= 3) return 'Highest operator tier earned';
-    if (Number(program.tier) >= 2) return 'Mastered target: 175 program rating with 97% integrity';
-    if (Number(program.tier) >= 1) return 'Advanced target: 135 program rating with 92% integrity';
+    if (!Math.max(0, Math.floor(Number(program.attempts) || 0))) return t('stem.geology.rig.guide_first', 'Grade C, 85% integrity, and target recovery or a protected boundary after 75%');
+    if (Number(program.tier) >= 3) return t('stem.geology.rig.guide_top', 'Highest operator tier earned');
+    if (Number(program.tier) >= 2) return t('stem.geology.rig.guide_mastered', 'Mastered target: 175 program rating with 97% integrity');
+    if (Number(program.tier) >= 1) return t('stem.geology.rig.guide_advanced', 'Advanced target: 135 program rating with 92% integrity');
     var needs = [];
-    if (Number(program.lastScore) < 65) needs.push('Need Grade C');
-    if (Number(program.lastIntegrity) < 85) needs.push('Need 85% integrity');
-    if (!program.lastEligible || (!program.lastFullCore && !program.lastSafeBoundary)) needs.push('Recover 75% and finish at target or protected boundary');
-    return needs.length ? needs.join(' · ') : 'Retry to certify this trajectory';
+    if (Number(program.lastScore) < 65) needs.push(t('stem.geology.rig.need_grade_c', 'Need Grade C'));
+    if (Number(program.lastIntegrity) < 85) needs.push(t('stem.geology.rig.need_integrity', 'Need 85% integrity'));
+    if (!program.lastEligible || (!program.lastFullCore && !program.lastSafeBoundary)) needs.push(t('stem.geology.rig.need_recovery', 'Recover 75% and finish at target or protected boundary'));
+    return needs.length ? needs.join(' · ') : t('stem.geology.rig.guide_retry', 'Retry to certify this trajectory');
   }
-  function coreRigCertificationSummary(entry) {
+  function coreRigCertificationSummary(entry, t) {
+    t = t || geoEnglishT;
     var programs = normalizeCoreRigPrograms(entry), certified = 0, advanced = 0, mastered = 0, attempts = 0;
     var rows = { vertical: 0, slant: 0, shallow: 0 };
     coreRigProgramCatalog().forEach(function (program) {
@@ -1509,7 +1520,7 @@
       if (cell.tier >= 3) mastered += 1;
     });
     var completedRows = Object.keys(rows).filter(function (angle) { return rows[angle] === CORE_RIG_DEPTHS.length; }).length;
-    var title = mastered === 9 ? 'Master Core Operator' : (certified === 9 ? 'Certified Core Operator' : (certified >= 6 ? 'Directional Specialist' : (certified >= 3 ? 'Qualified Operator' : 'Operator in training')));
+    var title = mastered === 9 ? t('stem.geology.rig.title_master', 'Master Core Operator') : (certified === 9 ? t('stem.geology.rig.title_certified', 'Certified Core Operator') : (certified >= 6 ? t('stem.geology.rig.title_specialist', 'Directional Specialist') : (certified >= 3 ? t('stem.geology.rig.title_qualified', 'Qualified Operator') : t('stem.geology.rig.title_training', 'Operator in training'))));
     return { total: 9, certified: certified, advanced: advanced, mastered: mastered, attempts: attempts, percent: Math.round(certified / 9 * 100), complete: certified === 9, completedRows: completedRows, title: title };
   }
 
@@ -1618,12 +1629,13 @@
       newBest: newBest, duplicate: false
     };
   }
-  function coreRigStopLabel(reason) {
-    return reason === 'fluid' ? 'water boundary'
-      : (reason === 'hazard' ? 'thermal boundary'
-      : (reason === 'blocked' ? 'rock boundary'
-      : (reason === 'spent' ? 'existing bore'
-      : (reason === 'cancelled' ? 'operator-requested stop' : 'target depth'))));
+  function coreRigStopLabel(reason, t) {
+    t = t || geoEnglishT;
+    return reason === 'fluid' ? t('stem.geology.rig.stop_water', 'water boundary')
+      : (reason === 'hazard' ? t('stem.geology.rig.stop_thermal', 'thermal boundary')
+      : (reason === 'blocked' ? t('stem.geology.rig.stop_rock', 'rock boundary')
+      : (reason === 'spent' ? t('stem.geology.rig.stop_existing', 'existing bore')
+      : (reason === 'cancelled' ? t('stem.geology.rig.stop_operator', 'operator-requested stop') : t('stem.geology.rig.stop_target', 'target depth')))));
   }
   function excavationWorldKey(sceneId, detail) { return String(sceneId || 'crust') + '@' + String(detail || 'standard'); }
   function fpSeedPose(sceneId) {                              // grounded eye-point for surfaces; radial midpoint for Deep Earth flight
@@ -1664,7 +1676,7 @@
   // describe the world as built. Radial scenes carry their own depth on the palette, so
   // row-derived depths are flagged as meaningless there and the caller falls back to it.
   function layerExtent(key) {
-    var count = 0, total = 0, minY = -1, maxY = -1, above = {}, below = {};
+    var count = 0, total = 0, minY = -1, maxY = -1, above = {}, below = {}, edges = [];
     for (var x = 0; x < NX; x++) for (var z = 0; z < NZ; z++) for (var y = 0; y < NY; y++) {
       var k = SCENE.gen(x, y, z);
       if (k === 'void') continue;
@@ -1674,9 +1686,12 @@
       if (minY < 0 || y < minY) minY = y;
       if (y > maxY) maxY = y;
       var up = y > 0 ? SCENE.gen(x, y - 1, z) : null, down = y < NY - 1 ? SCENE.gen(x, y + 1, z) : null;
-      if (up && up !== key && up !== 'void') above[up] = (above[up] || 0) + 1;
-      if (down && down !== key && down !== 'void') below[down] = (below[down] || 0) + 1;
+      if (up && up !== key && up !== 'void') edges.push([y, 'up', up]);
+      if (down && down !== key && down !== 'void') edges.push([y, 'down', down]);
     }
+    // Only the layer's top surface says what caps it, and its base what floors it: the flanks of a
+    // widening body (the pluton, whose root sits in the magma chamber) are beside it, not above it.
+    edges.forEach(function (e) { if (e[1] === 'up' && e[0] === minY) above[e[2]] = (above[e[2]] || 0) + 1; if (e[1] === 'down' && e[0] === maxY) below[e[2]] = (below[e[2]] || 0) + 1; });
     function top(t) { var bk = null, bc = 0; Object.keys(t).forEach(function (k) { if (t[k] > bc) { bc = t[k]; bk = k; } }); return bk; }
     var R = SCENE.palette[key] || ROCKS[key] || null, radial = !!(R && R.depthKm != null);
     // Concentric shells wrap, so row adjacency reads the SAME shell above and below; the
@@ -1692,12 +1707,13 @@
       radial: radial, above: aboveKey, below: belowKey
     };
   }
-  function layerCauseText(cause) {
-    return cause === 'cutaway' ? 'the cutaway has removed your usual dig-in point'
-      : (cause === 'lens' ? 'the focus lens is hiding your usual dig-in point'
-      : (cause === 'history' ? 'that ground has not formed yet at this point in the history'
-      : (cause === 'hazard' ? 'your usual dig-in point is right beside molten rock'
-      : 'your usual dig-in point has been dug away')));
+  function layerCauseText(cause, t) {
+    t = t || geoEnglishT;
+    return cause === 'cutaway' ? t('stem.geology.hud.cause_cutaway', 'the cutaway has removed your usual dig-in point')
+      : (cause === 'lens' ? t('stem.geology.hud.cause_lens', 'the focus lens is hiding your usual dig-in point')
+      : (cause === 'history' ? t('stem.geology.hud.cause_history', 'that ground has not formed yet at this point in the history')
+      : (cause === 'hazard' ? t('stem.geology.hud.cause_hazard', 'your usual dig-in point is right beside molten rock')
+      : t('stem.geology.hud.cause_dug', 'your usual dig-in point has been dug away'))));
   }
   function layerChanged(prev, next) { return next != null && next !== prev; }
   // Second-person, present-tense "you are inside THIS" lines (distinct register from R.formation), per scene.
@@ -1716,7 +1732,7 @@
   var FP_BLURB_GEODE = {
     hostBasalt: 'You’re in the basalt host — the old lava flow the gas bubble was trapped in.',
     chalcedony: 'You’re on the cavity wall — the first silica to precipitate.',
-    agate: 'You’re in agate banding — each band is one growth pulse.',
+    agate: 'You’re in agate banding — bands often read as repeated growth pulses.',
     quartz: 'You’re among quartz that grew INTO open space — room = big crystals.',
     amethyst: 'You’re in amethyst — purple quartz, colour from trace iron.'
   };
@@ -1729,7 +1745,7 @@
   };
   var FP_BLURB_SUB = {
     oceanWater: 'You’re in the ocean above the plate that’s about to dive.',
-    oceanCrust: 'You’re in dense oceanic crust — heavy enough to sink and subduct.',
+    oceanCrust: 'You’re in dense oceanic crust — riding a cold, heavy plate that sinks and subducts.',
     contCrust: 'You’re in buoyant continental crust — too light to subduct, so it overrides.',
     slab: 'You’re riding the slab DOWN — cold and dense, carrying seawater into the mantle.',
     lithMantle: 'You’re in rigid mantle welded under the crust — together they’re one plate.',
@@ -1747,8 +1763,8 @@
     gabbro: 'You’re in gabbro — the same melt as the pillows above, cooled slowly into coarse crystals.',
     axialMagma: 'You’re at the axial magma lens — brand-new crust is being made right here.',
     vent: 'You’re at a black smoker — 350 °C mineral water jetting into the cold sea.',
-    lithMantle: 'You’re in rigid mantle frozen onto the crust — it thickens as the plate ages.',
-    asthenosphere: 'You’re in upwelling mantle — solid rock that melts a few percent as pressure drops.'
+    lithMantle: 'You’re in rigid mantle cooled stiff under the crust — it thickens as the plate ages.',
+    asthenosphere: 'You’re in upwelling mantle — solid rock that partly melts (about 10%) as pressure drops.'
   };
   var FP_BLURB_HOTSPOT = {
     oceanWater: 'You’re in the ocean over a MOVING plate — the conveyor belt of the chain.',
@@ -1756,7 +1772,7 @@
     oldIsland: 'You’re on an extinct island — carried off its magma supply, now eroding.',
     seamount: 'You’re on a drowned seamount — a former island that eroded and sank.',
     oceanCrust: 'You’re in ordinary ocean crust — the plate that carries the volcanoes away.',
-    lithMantle: 'You’re in the rigid mantle lid — the plume must burn through all of this.',
+    lithMantle: 'You’re in the rigid mantle lid — plume melt must rise through all of this.',
     conduit: 'You’re in the conduit — plume melt feeding ONLY the volcano overhead.',
     plume: 'You’re in the mantle plume — solid rock, ~200 °C hotter than its surroundings.',
     asthenosphere: 'You’re in ordinary ductile mantle — the plume is only slightly hotter than this.'
@@ -1786,7 +1802,7 @@
     slab: 'The slab is COLDER than the mantle around it — that’s why deep earthquakes fire off inside it.',
     contCrust: 'Continental crust is too buoyant to subduct — so the dense ocean plate dives under it instead.',
     basaltN: 'Young crust rides HIGH because it’s hot and buoyant — the seafloor sinks as it cools and ages.',
-    basaltR: 'Myth-bust: the symmetric magnetic stripes are a tape recorder of field reversals — the 1963 proof of spreading.',
+    basaltR: 'Myth-bust: the symmetric magnetic stripes are a tape recorder of field reversals — predicted in 1963, proof of spreading by 1966.',
     axialMagma: 'Most of Earth’s volcanism happens here — underwater, unseen, along 65,000 km of ridge.',
     vent: 'A black smoker: ~350 °C mineral-rich water. Life here runs on CHEMISTRY, not sunlight.',
     dikes: 'Every one of these vertical dikes is a frozen spreading event — the crust literally pulled apart here.',
@@ -1842,16 +1858,14 @@
     magma:     [{ proc: 'Erupt & cool fast',     icon: '🌋', to: 'basalt',    note: 'Erupts at the surface and cools in seconds → fine-grained BASALT (extrusive).' },
                 { proc: 'Cool slowly (trapped)', icon: '❄️', to: 'basement',  note: 'Trapped underground, slow cooling grows big crystals → GRANITE (intrusive).' }],
     basement:  [{ proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed at the surface, it breaks down into loose sediment.' },
-                { proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Squeezed and baked without melting → metamorphic rock.' },
                 { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deeply buried or subducted → back to molten.' }],
     intrusion: [{ proc: 'Uplift & weather',   icon: '💧', to: 'soil',      note: 'Exposed at the surface, it breaks down into loose sediment.' },
-                { proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Baked without melting → metamorphic rock.' },
                 { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it back to molten.' }],
     soil:      [{ proc: 'Bury, compact & cement', icon: '🧱', to: 'sandstone', note: 'Sediment is squeezed and glued into solid rock (lithification).' }],
     sandstone: [{ proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Recrystallises into a harder metamorphic rock.' },
                 { proc: 'Weather & erode',    icon: '💧', to: 'soil',      note: 'Broken back down into loose sediment.' },
                 { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it.' }],
-    shale:     [{ proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Bakes and squeezes into hornfels / schist.' },
+    shale:     [{ proc: 'Heat + pressure',    icon: '🔥', to: 'hornfels',  note: 'Baked by nearby magma → hornfels.' },
                 { proc: 'Weather & erode',    icon: '💧', to: 'soil',      note: 'Broken back down into loose sediment.' },
                 { proc: 'Melt',               icon: '🌋', to: 'magma',     note: 'Deep heat melts it.' }],
     limestone: [{ proc: 'Heat + pressure',    icon: '🔥', to: 'marble',    note: 'Recrystallises into marble.' },
@@ -1870,15 +1884,15 @@
   // The chronological stage each rock appeared, so "Play history" can assemble the
   // cross-section in the order it actually formed — the synthesis of superposition
   // (sediments bottom-up), cross-cutting (pluton last) and contact metamorphism.
-  var FORMED_AT = { basement: 0, magma: 0, limestone: 1, shale: 2, sandstone: 3, soil: 4, intrusion: 5, marble: 6, hornfels: 6 };
+  var FORMED_AT = { basement: 0, magma: 0, limestone: 1, shale: 2, sandstone: 3, intrusion: 4, marble: 5, hornfels: 5, soil: 6 };
   var HISTORY = [
     { tk: 'stem.geology.hist0', fb: 'Starting point — an ancient granite basement above deep, molten magma.' },
     { tk: 'stem.geology.hist1', fb: '1 · A warm, shallow sea deposits LIMESTONE — the first and oldest sedimentary layer, so it ends up on the bottom.' },
     { tk: 'stem.geology.hist2', fb: '2 · Mud settles in calmer water and hardens into SHALE, resting on the older limestone.' },
     { tk: 'stem.geology.hist3', fb: '3 · Rivers and dunes pile up sand → SANDSTONE, the newest layer on top (superposition: youngest is highest).' },
-    { tk: 'stem.geology.hist4', fb: '4 · Weathering breaks down the surface rock into SOIL.' },
-    { tk: 'stem.geology.hist5', fb: '5 · A LATER pulse of magma forces up through every layer and freezes into a granite PLUTON — because it cuts the layers, it must be younger (cross-cutting).' },
-    { tk: 'stem.geology.hist6', fb: '6 · The pluton’s heat bakes the rock it touches into a METAMORPHIC rim — marble from limestone, hornfels from shale (contact metamorphism).' }
+    { tk: 'stem.geology.hist4', fb: '4 · A LATER pulse of magma forces up through the deeper layers and freezes into a granite PLUTON — because it cuts those layers, it must be younger (cross-cutting).' },
+    { tk: 'stem.geology.hist5', fb: '5 · The pluton’s heat bakes the rock it touches into a METAMORPHIC rim — marble from limestone, hornfels from shale (contact metamorphism).' },
+    { tk: 'stem.geology.hist6', fb: '6 · Weathering breaks down the surface rock into SOIL. It is still forming today, so it is the youngest layer.' }
   ];
 
   // ── Relative-dating quiz (active recall of the principles the tool teaches) ──
@@ -1886,8 +1900,8 @@
     { q: 'Which layer is OLDER?',                                              opts: ['Limestone', 'They formed at the same time', 'Sandstone'], correct: 0, why: 'Limestone lies below the sandstone, and lower layers were laid down first — superposition.' },
     { q: 'Is the granite pluton older or younger than the shale it cuts?',      opts: ['Impossible to tell from cutting', 'Younger', 'Older'], correct: 1, why: 'A feature that cuts across another must be younger — cross-cutting. The pluton cuts the shale, so it came later.' },
     { q: 'How did the marble rim form?',                                        opts: ['Shells piled up in a sea', 'A river dropped sand and mud there', 'The pluton baked the limestone'], correct: 2, why: 'Marble is limestone recrystallised by the pluton’s heat — contact metamorphism.' },
-    { q: 'Where would you expect to find fossils?',                             opts: ['In the shale', 'In the granite pluton', 'In the magma'], correct: 0, why: 'Fossils form in sedimentary rock like shale; melting and metamorphism destroy them.' },
-    { q: 'In a drill core, the OLDEST rock is…',                                opts: ['At the top', 'In the middle of the core', 'At the bottom'], correct: 2, why: 'Layers stack oldest-first, so the deepest rock is the oldest — superposition.' }
+    { q: 'Where would you expect to find fossils?',                             opts: ['In the shale', 'In the granite pluton', 'In the magma'], correct: 0, why: 'Fossils form in sedimentary rock like shale; melting destroys them, and strong metamorphism usually does too.' },
+    { q: 'In a drill core through undisturbed layers, the OLDEST rock is…',                                opts: ['At the top', 'In the middle of the core', 'At the bottom'], correct: 2, why: 'Layers stack oldest-first, so the deepest rock is the oldest — superposition.' }
   ];
   // Scene-aware quiz banks: retrieval practice for EVERY scene, keyed by
   // SCENE.id (crust keeps its original relative-dating bank). Each bank pins
@@ -1898,7 +1912,7 @@
       { q: 'Why are geode crystals so LARGE?', opts: ['They were squeezed by pressure', 'They grew very fast in hot fluid', 'They grew slowly with open space'], correct: 2, why: 'Slow growth plus room to grow makes big crystals — the same rule that makes granite coarse.' },
       { q: 'What made the original hollow?', opts: ['Acidic groundwater dissolving limestone', 'A gas bubble trapped in cooling lava', 'An earthquake cracking the rock open'], correct: 1, why: 'Gas trapped as the lava cooled left a round hole (a vesicle). Much later, mineral-rich groundwater seeped in and lined it.' },
       { q: 'Amethyst’s purple colour comes from…', opts: ['Trace iron plus natural irradiation', 'Copper salts left by hot fluids', 'Purple dye from ancient plants'], correct: 0, why: 'Iron impurities in quartz, altered by natural radiation, give amethyst its purple.' },
-      { q: 'Which formed FIRST?', opts: ['Both grew at the same time', 'The agate rind on the wall', 'The quartz crystal points inside'], correct: 1, why: 'The rind precipitated on the void wall first; crystals then grew INWARD into the space.' }
+      { q: 'Which formed FIRST?', opts: ['Both grew at the same time', 'The chalcedony rind on the wall', 'The quartz crystal points inside'], correct: 1, why: 'The rind precipitated on the void wall first; crystals then grew INWARD into the space.' }
     ] },
     deepEarth: { title: 'Test yourself — inside the Earth', items: [
       { q: 'The mantle is mostly…', opts: ['Molten lava that slowly churns', 'Loose rubble under pressure', 'Solid rock that slowly flows'], correct: 2, why: 'The mantle is SOLID — it convects by creep over millions of years; only a tiny fraction melts near the top.' },
@@ -1908,7 +1922,7 @@
     ] },
     subduction: { title: 'Test yourself — subduction', items: [
       { q: 'Arc-volcano magma comes from…', opts: ['Friction heat between the plates', 'Slab water melting the mantle WEDGE', 'The subducting slab itself melting'], correct: 1, why: 'Water driven off the slab lowers the wedge’s melting point — the wedge partially melts, not the slab.' },
-      { q: 'Why does the OCEANIC plate sink?', opts: ['It is colder and denser', 'It is thinner and weaker', 'It carries heavier sediment'], correct: 0, why: 'Old oceanic plate is cold, dense basalt — heavy enough to sink. Thickness isn’t what decides.' },
+      { q: 'Why does the OCEANIC plate sink?', opts: ['It is colder and denser', 'It is thinner and weaker', 'It carries heavier sediment'], correct: 0, why: 'Old oceanic plate is cold and dense — denser than the hot mantle beneath it, so it sinks. Thickness isn’t what decides.' },
       { q: 'Deep earthquakes happen…', opts: ['In the hot mantle wedge', 'Along the ocean trench floor', 'Inside the cold slab'], correct: 2, why: 'Only the cold, rigid slab is brittle enough to snap at depth — the hot wedge flows instead.' },
       { q: 'Why doesn’t continental crust subduct?', opts: ['It is too buoyant', 'It is anchored to the mantle', 'It is too strong'], correct: 0, why: 'Granite crust is low-density — like a cork, it’s too buoyant to be pushed under.' }
     ] },
@@ -1919,10 +1933,10 @@
       { q: 'Gabbro and pillow basalt are…', opts: ['The same rock at two ages', 'The same melt cooled at different speeds', 'Magmas from two different sources'], correct: 1, why: 'Same basaltic melt: erupted into seawater = fine-grained pillows; cooled slowly at depth = coarse gabbro.' }
     ] },
     hotspot: { title: 'Test yourself — hotspots', items: [
-      { q: 'The island CHAIN exists because…', opts: ['The PLATE moves over a ~fixed plume', 'Many separate vents erupting at once', 'The plume wanders under the plate'], correct: 0, why: 'The plume stays put; the plate slides past, carrying each volcano off its magma supply — a tape recorder of plate motion.' },
+      { q: 'The island CHAIN exists because…', opts: ['The PLATE moves over a ~fixed plume', 'Many separate vents erupting at once', 'The plume wanders under the plate'], correct: 0, why: 'The plume stays nearly put; the plate slides past, carrying each volcano off its magma supply — a tape recorder of plate motion.' },
       { q: 'Which island is OLDEST?', opts: ['The one sitting over the plume now', 'The one farthest from the plume', 'The largest island in the chain'], correct: 1, why: 'Age grows down the chain with distance — that age progression is textbook evidence that plates move.' },
       { q: 'A shield volcano has gentle slopes because…', opts: ['Its runny basalt flows far', 'Its thick lava explodes upward', 'Wind and rain wore it down'], correct: 0, why: 'Hot, runny basalt spreads in thin sheets — broad shields, unlike steep, explosive arc stratovolcanoes.' },
-      { q: 'Hotspot volcanoes sit…', opts: ['Above deep ocean trenches', 'Only on plate boundaries', 'In the middle of plates'], correct: 2, why: 'Intraplate volcanism: the plume punches through the middle of a plate, far from any boundary.' }
+      { q: 'Hotspot volcanoes sit…', opts: ['Above deep ocean trenches', 'Only on plate boundaries', 'In the middle of plates'], correct: 2, why: 'Intraplate volcanism: plume melt rises through the middle of a plate, often far from any boundary.' }
     ] },
     collision: { title: 'Test yourself — mountain belts', items: [
       { q: 'Why are sea-shell fossils found on the summit?', opts: ['Birds carried the shells up', 'Collision lifted an ancient sea floor', 'A great flood once covered the peak'], correct: 1, why: 'The limestone formed on a sea floor between two continents; when they collided, the crust thickened and lifted it ~8 km.' },
@@ -2015,7 +2029,7 @@
       },
       {
         'Copper salts left by hot fluids': 'Copper minerals are typically green or blue, as in malachite and turquoise, not purple.',
-        'Purple dye from ancient plants': 'Nothing organic survives inside quartz. The colour comes from iron within the crystal structure itself.'
+        'Purple dye from ancient plants': 'No plant dye is involved. The colour comes from iron within the crystal, changed by natural radiation.'
       },
       {
         'Both grew at the same time': 'They are stacked, not mixed. The rind lines the wall and the crystal points sit inside it.',
@@ -2025,14 +2039,14 @@
     deepEarth: [
       {
         'Molten lava that slowly churns': 'It does move slowly, but as a solid. Rock can creep and still be solid, the way ice flows in a glacier.',
-        'Loose rubble under pressure': 'Loose grains could not carry S-waves. The mantle transmits them, so it is coherent solid rock.'
+        'Loose rubble under pressure': 'Loose grains carry S-waves only slowly. S-waves race through the mantle, so it is coherent solid rock.'
       },
       {
-        'Lava from volcanoes came from it': 'Lava rises from the upper mantle, a few tens of kilometres down, nowhere near the core.',
-        'A deep borehole sampled it': 'The deepest hole ever drilled barely dents the crust. Everything we know about the core comes from waves.'
+        'Lava from volcanoes came from it': 'Lava rises from the upper mantle, at most a couple of hundred kilometres down, nowhere near the core.',
+        'A deep borehole sampled it': 'The deepest hole ever drilled barely dents the crust. No one has sampled the core; waves are our best evidence.'
       },
       {
-        'It is made of a different metal': 'Both cores are the same iron-nickel system. The difference is pressure, not composition.',
+        'It is made of a different metal': 'Both cores are mostly the same iron-nickel. What keeps the inner core solid is pressure, not a different metal.',
         'Its metal has a very low density': 'The inner core is the densest part of the planet. Low density is not what keeps it solid.'
       },
       {
@@ -2090,8 +2104,8 @@
         'Wind and rain wore it down': 'Erosion carves valleys into a shield. The gentle profile is there from the moment it is built.'
       },
       {
-        'Above deep ocean trenches': 'Trenches mark subduction zones. A plume rises far away from any plate boundary.',
-        'Only on plate boundaries': 'Ridges and arcs sit on boundaries. A hotspot punches straight up through the middle of a plate.'
+        'Above deep ocean trenches': 'Trenches mark subduction zones. A plume rises from deep below and needs no plate boundary.',
+        'Only on plate boundaries': 'Ridges and arcs need boundaries. A hotspot does not: Hawaii erupts through the middle of a plate.'
       },
     ],
     collision: [
@@ -2100,11 +2114,11 @@
         'A great flood once covered the peak': 'No flood reaches 8 km. The rock formed at sea level, and the mountain rose up underneath it.'
       },
       {
-        'At the surface, from cooling lava flows': 'Cooling lava makes basalt. The banding in gneiss only forms under deep burial.',
+        'At the surface, from cooling lava flows': 'Cooling lava makes volcanic rock such as basalt. The banding in gneiss only forms under deep burial.',
         'In a shallow surface fault zone': 'Shallow faults crush and grind rock. Gneiss banding needs the heat and pressure of real depth.'
       },
       {
-        'The mantle here is far too cold to melt': 'The mantle is hot enough. What it lacks is the water or extra heat that would trigger melting.',
+        'The mantle here is far too cold to melt': 'The mantle here is as hot as normal mantle. What it lacks is the water or extra heat that would trigger melting.',
         'The crust here is far too thick': 'The crust is thick, and it does melt a little, making leucogranite. Volcanoes need mantle melt.'
       },
       {
@@ -2117,7 +2131,10 @@
     var scene = QUIZ_OPTION_NOTES[sceneId];
     var forItem = scene && scene[index];
     if (!forItem || typeof optionText !== 'string') return '';
-    return Object.prototype.hasOwnProperty.call(forItem, optionText) ? forItem[optionText] : '';
+    // The notes stay keyed by the ENGLISH option; a translated option maps back through its position.
+    var bank = QUIZ_BANKS[sceneId], item = bank && bank.items[index], enOpts = item && geoTextEnglish ? geoTextEnglish.get(item.opts) : null;
+    var at = enOpts ? item.opts.indexOf(optionText) : -1, key = at >= 0 ? enOpts[at] : optionText;
+    return Object.prototype.hasOwnProperty.call(forItem, key) ? forItem[key] : '';
   }
   function quizRemediation(sceneId, index, optionText) {
     var bank = QUIZ_REMEDIATION[sceneId] || QUIZ_REMEDIATION.crust;
@@ -2131,7 +2148,7 @@
     { fb: 'Magma climbs a conduit: a pipe of molten rock cutting straight to the surface.' },
     { fb: 'Eruption! Lava fountains from the vent and an ash plume billows skyward.' },
     { fb: 'Out in the air and on the ground, the lava cools in seconds → fine-grained BASALT (extrusive igneous) — crystals too small to see.' },
-    { fb: 'Same magma, two fates: erupted = fast-cooled BASALT (tiny crystals); trapped underground = slow-cooled GRANITE (big crystals). A new volcanic layer forms — the rock cycle turns.' }
+    { fb: 'Two fates, one cooling rule: lava that erupts cools fast → tiny crystals (BASALT); magma trapped underground cools slowly → big crystals (GRANITE, from a more silica-rich melt). A new volcanic layer forms — the rock cycle turns.' }
   ];
 
   // ── SCENE REGISTRY ──────────────────────────────────────────────────────────
@@ -2140,8 +2157,14 @@
   // Geotherm = temp/pressure vs depth. The crust uses the original LINEAR shallow-crust
   // model (valid in the upper crust + the shallow geode); deep scenes (next) MUST
   // declare their own NON-linear geotherm — the linear one overshoots ~50× at the core.
+  // Pressure under the sea: seawater (~1.03 g/cm3) adds ~10 MPa per km, rock ~30. Depths in the ocean
+  // scenes are from sea level, so rock under 2.5 km of water is NOT under 2.5 km of rock.
+  function seaPressureMPa(depthKm, seaKm, rockPerKm) {
+    var water = Math.min(depthKm, seaKm || 0);
+    return Math.round(water * 10 + (depthKm - water) * rockPerKm);
+  }
   function crustGeotherm(depthKm, key) {
-    if (key === 'magma') return { tempC: '≈ 1000+', presMPa: Math.round(depthKm * 27), state: 'molten' };
+    if (key === 'magma') return { tempC: '≈ 700–1200', presMPa: Math.round(depthKm * 27), state: 'molten' };
     return { tempC: Math.round(15 + depthKm * 25), presMPa: Math.round(depthKm * 27), state: 'solid' };
   }
 
@@ -2153,7 +2176,7 @@
   var GEODE_ROCKS = {
     hostBasalt: { name: 'Basalt host (old lava flow)', type: 'Igneous (extrusive)', color: 0x4b4f58, formation: 'An old lava flow. As it cooled, gas bubbles were trapped inside and left round holes; this geode grew in one of them.', minerals: 'Plagioclase, pyroxene', age: 'Older than every mineral that later grew inside the hole.' },
     chalcedony: { name: 'Chalcedony rind', type: 'Mineral (silica)', color: 0x8fb0a8, formation: 'Microcrystalline silica lining the cavity wall — the first layer to precipitate from mineral-rich water.', minerals: 'Cryptocrystalline quartz', age: 'Grew inward from the wall over millennia.' },
-    agate:      { name: 'Agate banding',   type: 'Mineral (silica)', color: 0xc98a5a, formation: 'Concentric bands deposited as mineral-rich water pulsed through — each band is one growth episode.', minerals: 'Banded chalcedony', age: 'Oldest band at the wall, youngest toward the centre.' },
+    agate:      { name: 'Agate banding',   type: 'Mineral (silica)', color: 0xc98a5a, formation: 'Concentric bands laid down from the wall inward — often read as repeated pulses of silica-rich water.', minerals: 'Banded chalcedony', age: 'Oldest band at the wall, youngest toward the centre.' },
     quartz:     { name: 'Quartz crystal',  type: 'Mineral',          color: 0xd9d6ea, formation: 'Clear quartz that grew slowly into the OPEN cavity — slow growth + space = big euhedral crystals.', minerals: 'SiO₂', age: '10³–10⁶ years to grow.' },
     amethyst:   { name: 'Amethyst',        type: 'Mineral (quartz)', color: 0x9b6dd6, formation: 'Purple quartz — colour from trace IRON plus natural irradiation; grew inward into the void.', minerals: 'SiO₂ + Fe', age: '10³–10⁶ years to grow.' }
   };
@@ -2165,7 +2188,11 @@
     var Rc = minN * 0.32, lining = Math.max(1.0, minN * 0.08), rind = minN * 0.16;
     if (r < Rc - lining) return 'void';                                   // hollow interior (skipped)
     if (r < Rc) return ((x * 7 + y * 5 + z * 3) % 5 === 0) ? 'quartz' : 'amethyst';   // crystal lining (inward)
-    if (r < Rc + rind) return (Math.round(r) % 2 === 0) ? 'agate' : 'chalcedony';     // banded rind
+    if (r < Rc + rind) {                                                 // the rind: chalcedony wherever it meets the basalt wall, agate bands inside
+      var wall = Rc + rind, nb = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+      for (var ni = 0; ni < 6; ni++) { var ex = dx + nb[ni][0], ey = dy + nb[ni][1], ez = dz + nb[ni][2]; if (Math.sqrt(ex * ex + ey * ey + ez * ez) >= wall) return 'chalcedony'; }
+      return r >= Rc + rind * 0.5 ? 'chalcedony' : 'agate';
+    }
     return 'hostBasalt';                                                 // host rock: the lava flow
   }
 
@@ -2175,7 +2202,7 @@
   var DEEPEARTH_ROCKS = {
     crust:       { name: 'Crust',               type: 'Crust',      color: 0x6b5640, depthKm: 35,   glow: 0, formation: 'Thin, brittle outer shell of rock — oceanic basalt and continental granite.', minerals: 'Silicate rock', age: 'The surface we live on.' },
     upperMantle: { name: 'Upper mantle',        type: 'Mantle',     color: 0xb14a2c, depthKm: 400,  glow: 0, formation: 'SOLID silicate rock that CONVECTS by slow plastic creep over millions of years — only a tiny % melts near the top (the asthenosphere). It is NOT a sea of lava.', minerals: 'Olivine, pyroxene', age: 'Its slow convection drives plate tectonics.' },
-    lowerMantle: { name: 'Lower mantle',        type: 'Mantle',     color: 0x7a2f22, depthKm: 2000, glow: 0, formation: 'Hotter, denser SOLID rock under huge pressure — still convects, just extremely slowly.', minerals: 'Bridgmanite', age: 'About two-thirds of Earth’s volume.' },
+    lowerMantle: { name: 'Lower mantle',        type: 'Mantle',     color: 0x7a2f22, depthKm: 2000, glow: 0, formation: 'Hotter, denser SOLID rock under huge pressure — still convects, just extremely slowly.', minerals: 'Bridgmanite', age: 'Over half of Earth’s volume.' },
     outerCore:   { name: 'Outer core (liquid)', type: 'Outer core', color: 0xff7a33, depthKm: 4000, glow: 1, formation: 'LIQUID iron–nickel. Its convection generates Earth’s magnetic field — the geodynamo — the shield that deflects the solar wind.', minerals: 'Molten iron–nickel', age: 'S-waves can’t pass through it — that is HOW we know it is liquid.' },
     innerCore:   { name: 'Inner core (solid)',  type: 'Inner core', color: 0xffe08a, depthKm: 6000, glow: 1, formation: 'SOLID iron–nickel — even though it is HOTTER than the outer core, the crushing pressure raises iron’s melting point above the local temperature, so it freezes solid.', minerals: 'Solid iron–nickel', age: '≈ 5200 °C — about the Sun’s surface.' }
   };
@@ -2198,7 +2225,7 @@
     // At each shell's representative depth (DEEPEARTH_ROCKS depthKm), pressure from PREM (the reference
     // Earth model), temperature from the usual geotherm; non-linear. Pinned in geology_scene_measurements.
     var T = { crust: 500, upperMantle: 1500, lowerMantle: 2300, outerCore: 4500, innerCore: 5200 };
-    var P = { crust: 1000, upperMantle: 13500, lowerMantle: 88000, outerCore: 230000, innerCore: 360000 };
+    var P = { crust: 1000, upperMantle: 13500, lowerMantle: 88000, outerCore: 246000, innerCore: 360000 };   // PREM (integrated, not interpolated): 246 GPa at 4,000 km
     var S = { crust: 'solid', upperMantle: 'solid (convecting)', lowerMantle: 'solid (convecting)', outerCore: 'liquid', innerCore: 'solid' };
     return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: (P[key] != null ? P[key] : Math.round(depthKm * 27)), state: (S[key] || 'solid') };
   }
@@ -2212,7 +2239,7 @@
   var SUBDUCTION_ROCKS = {
     oceanWater:    { name: 'Ocean',                type: 'Water',                color: 0x2b6cb0, depthKm: 0,   glow: 0, formation: 'The sea sitting over the oceanic plate, deepest right above the trench.', minerals: 'Seawater', age: 'Hydrates the plate before it dives.' },
     oceanCrust:    { name: 'Oceanic crust',        type: 'Igneous (basalt)',     color: 0x33414d, depthKm: 6,   glow: 0, formation: 'Thin, DENSE basalt + gabbro. Old oceanic plate is cold and heavy, so it sinks and subducts.', minerals: 'Basalt, gabbro', age: 'Made at mid-ocean ridges, recycled here.' },
-    contCrust:     { name: 'Continental crust',    type: 'Continental',          color: 0xb08d57, depthKm: 20,  glow: 0, formation: 'Thick, LOW-density granite. Too buoyant to sink — so it overrides while the ocean plate dives under it.', minerals: 'Granite', age: 'The buoyant raft that never subducts.' },
+    contCrust:     { name: 'Continental crust',    type: 'Continental',          color: 0xb08d57, depthKm: 20,  glow: 0, formation: 'Thick, LOW-density granite. Too buoyant to sink — so it overrides while the ocean plate dives under it.', minerals: 'Granite', age: 'The buoyant raft that resists subducting.' },
     slab:          { name: 'Subducting slab',      type: 'Subducting plate',     color: 0x3a4a58, depthKm: 120, glow: 0, formation: 'The oceanic plate bending DOWN into the mantle — COLD and dense, dragging seawater locked in its minerals down with it. As it densifies to eclogite its own weight pulls the rest of the plate along (slab pull).', minerals: 'Basalt → eclogite', age: 'Colder than the mantle around it → deep earthquakes happen inside it.' },
     lithMantle:    { name: 'Lithospheric mantle',  type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 60,  glow: 0, formation: 'Rigid mantle welded under the crust — crust + this rigid lid together make a tectonic plate.', minerals: 'Peridotite', age: 'Moves as one with the crust above it.' },
     wedge:         { name: 'Mantle wedge',         type: 'Mantle (melting)',     color: 0xc2452b, depthKm: 110, glow: 0, formation: 'Hot mantle ABOVE the slab. Water driven off the slab lowers its melting point so it PARTIALLY MELTS — this is where arc magma is born, NOT the slab itself.', minerals: 'Peridotite + water', age: 'The true source of the volcanoes.' },
@@ -2244,8 +2271,9 @@
   }
   function subductionGeotherm(depthKm, key) {
     var T = { oceanWater: 4, oceanCrust: 150, contCrust: 400, slab: 700, lithMantle: 900, asthenosphere: 1330, wedge: 1300, arcMagma: 1100, arcVolcano: 900 };   // slab COLD, wedge HOT (the anomaly)
+    var SEA = { oceanCrust: 4.5 };   // km of water above (abyssal plain before the trench)
     var S = { oceanWater: 'liquid', oceanCrust: 'solid', contCrust: 'solid', slab: 'solid (cold slab)', lithMantle: 'solid (rigid)', asthenosphere: 'solid (ductile — flows)', wedge: 'solid → partial melt', arcMagma: 'molten', arcVolcano: 'erupting' };
-    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: seaPressureMPa(depthKm, SEA[key], 30), state: (S[key] || 'solid') };
   }
 
   // ── Scene 5: Mid-ocean ridge (divergent boundary) ───────────────────────────
@@ -2256,15 +2284,15 @@
   // sediment thickening with age, and hydrothermal vents.
   var RIDGE_ROCKS = {
     oceanWater:    { name: 'Ocean',               type: 'Water',                color: 0x2b6cb0, depthKm: 0,  glow: 0, formation: 'Deepest far from the axis: as oceanic crust ages and cools it grows denser and SINKS — seafloor depth is a clock.', minerals: 'Seawater', age: 'Shallowest right over the young, hot ridge axis.' },
-    sediment:      { name: 'Deep-sea sediment',   type: 'Sedimentary',          color: 0xc9b98f, depthKm: 3,  glow: 0, formation: 'A slow rain of plankton shells and clay — a few cm per THOUSAND years. None on brand-new crust at the axis; thicker the older (farther) the seafloor.', minerals: 'Ooze, clay', age: 'Its thickness is a second clock: more sediment = older seafloor.' },
+    sediment:      { name: 'Deep-sea sediment',   type: 'Sedimentary',          color: 0xc9b98f, depthKm: 3,  glow: 0, formation: 'A slow rain of plankton shells and clay — about a centimetre or less per THOUSAND years. None on brand-new crust at the axis; thicker the older (farther) the seafloor.', minerals: 'Ooze, clay', age: 'Its thickness is a second clock: more sediment = older seafloor.' },
     basaltN:       { name: 'Pillow basalt',       type: 'Igneous (extrusive)',  color: 0x33414d, depthKm: 3,  glow: 0, formation: 'Lava erupting into cold seawater freezes into pillow-shaped blobs. Iron minerals inside lock in the direction of Earth’s magnetic field as they cool.', minerals: 'Basalt (normal polarity)', age: 'Recorded today’s field direction when it cooled.' },
-    basaltR:       { name: 'Reversed-polarity basalt', type: 'Igneous (extrusive)', color: 0x50626f, depthKm: 3, glow: 0, formation: 'Same pillow basalt — but it cooled when Earth’s magnetic field pointed the OTHER way. The stripes mirror each other on both sides of the axis.', minerals: 'Basalt (reversed polarity)', age: 'The symmetric stripe pattern is how spreading was PROVEN in 1963.' },
+    basaltR:       { name: 'Reversed-polarity basalt', type: 'Igneous (extrusive)', color: 0x50626f, depthKm: 3, glow: 0, formation: 'Same pillow basalt — but it cooled when Earth’s magnetic field pointed the OTHER way. The stripes mirror each other on both sides of the axis.', minerals: 'Basalt (reversed polarity)', age: 'The symmetric stripe pattern (predicted in 1963, confirmed by 1966) is how spreading was PROVEN.' },
     dikes:         { name: 'Sheeted dikes',       type: 'Igneous (intrusive)',  color: 0x475366, depthKm: 4,  glow: 0, formation: 'Thousands of vertical magma cracks, each one a spreading event: the crust pulls apart, magma fills the gap, freezes, and is split by the NEXT crack.', minerals: 'Diabase', age: 'Each dike records one moment of spreading.' },
-    gabbro:        { name: 'Gabbro',              type: 'Igneous (intrusive)',  color: 0x3d4a43, depthKm: 6,  glow: 0, formation: 'The magma chamber’s floor, cooled SLOWLY at depth into coarse crystals — chemically the same melt as the pillow basalt above, cooled at a different speed.', minerals: 'Gabbro (coarse basalt)', age: 'Bottom layer of the ophiolite sequence.' },
+    gabbro:        { name: 'Gabbro',              type: 'Igneous (intrusive)',  color: 0x3d4a43, depthKm: 6,  glow: 0, formation: 'The magma chamber’s floor, cooled SLOWLY at depth into coarse crystals — chemically the same melt as the pillow basalt above, cooled at a different speed.', minerals: 'Gabbro (coarse basalt)', age: 'Bottom layer of the crust in the ophiolite sequence.' },
     axialMagma:    { name: 'Axial magma lens',    type: 'Molten',               color: 0xff7a33, depthKm: 4,  glow: 1, formation: 'A thin melt lens under the rift valley, fed by upwelling mantle that melts as pressure drops (decompression melting — no extra heat needed).', minerals: 'Basaltic melt', age: 'Feeds every eruption and every dike.' },
     vent:          { name: 'Hydrothermal vent',   type: 'Mineral',              color: 0x18e0c8, depthKm: 2.5, glow: 1, formation: 'Seawater sinks into hot young crust, leaches metals, and jets back out at ~350 °C as a BLACK SMOKER, precipitating metal-sulfide chimneys.', minerals: 'Metal sulfides', age: 'Whole food webs live here on chemistry, not sunlight.' },
-    lithMantle:    { name: 'Lithospheric mantle', type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 15, glow: 0, formation: 'Mantle frozen rigid onto the crust’s base. Nearly ABSENT at the hot axis; thickens with age as the plate cools — old plates are thick plates.', minerals: 'Peridotite', age: 'Its growing thickness is a third clock.' },
-    asthenosphere: { name: 'Asthenosphere',       type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 30, glow: 0, formation: 'Solid mantle flowing slowly upward beneath the axis. As it rises, falling pressure lets a few percent of it melt — the source of ALL new ocean crust.', minerals: 'Peridotite', age: 'Wells up exactly where the plates pull apart.' }
+    lithMantle:    { name: 'Lithospheric mantle', type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 15, glow: 0, formation: 'Mantle cooled stiff and rigid under the crust’s base. Nearly ABSENT at the hot axis; thickens with age as the plate cools — old plates are thick plates.', minerals: 'Peridotite', age: 'Its growing thickness is a third clock.' },
+    asthenosphere: { name: 'Asthenosphere',       type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 30, glow: 0, formation: 'Solid mantle flowing slowly upward beneath the axis. As it rises, falling pressure lets about a tenth of it melt — the source of ALL new ocean crust.', minerals: 'Peridotite', age: 'Wells up exactly where the plates pull apart.' }
   };
   function ridgeKeyAt(x, y, z) {
     var fx = NX > 1 ? x / (NX - 1) : 0;
@@ -2305,8 +2333,9 @@
   function ridgeGeotherm(depthKm, key) {
     // Key-based: temperature here tracks crust AGE (distance), not just depth.
     var T = { oceanWater: 2, sediment: 10, basaltN: 80, basaltR: 40, dikes: 150, gabbro: 300, axialMagma: 1200, vent: 350, lithMantle: 900, asthenosphere: 1330 };
+    var SEA = { vent: 2.5, axialMagma: 2.5, dikes: 2.5, gabbro: 2.5, lithMantle: 2.5, asthenosphere: 2.5, sediment: 3, basaltN: 3, basaltR: 3 };   // axis 2.5 km deep, flanks 3
     var S = { oceanWater: 'liquid', sediment: 'soft (unconsolidated)', basaltN: 'solid (young, still cooling)', basaltR: 'solid (older, cooler)', dikes: 'solid', gabbro: 'solid', axialMagma: 'molten', vent: 'superheated water jet', lithMantle: 'solid (rigid)', asthenosphere: 'solid (ductile — flows)' };
-    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: seaPressureMPa(depthKm, SEA[key], 30), state: (S[key] || 'solid') };
   }
 
   // ── Scene 6: Hotspot island chain (intraplate volcanism) ────────────────────
@@ -2320,7 +2349,7 @@
     oldIsland:     { name: 'Extinct island',      type: 'Igneous (extrusive)', color: 0x6a6f5a, depthKm: 0,   glow: 0, formation: 'Carried OFF the plume by plate motion — its magma supply is gone. Now erosion grinds it down while the cooling plate beneath it slowly sinks.', minerals: 'Weathered basalt, soil', age: 'Older than the active island — age grows down the chain.' },
     seamount:      { name: 'Drowned seamount',    type: 'Igneous (extrusive)', color: 0x4a5d68, depthKm: 1,   glow: 0, formation: 'A former island that eroded and subsided beneath the waves — the chain continues underwater for thousands of km (Hawaii’s Emperor Seamounts).', minerals: 'Basalt, coral caps', age: 'Oldest link shown — the chain is a plate-motion tape recorder.' },
     oceanCrust:    { name: 'Oceanic crust',       type: 'Igneous (basalt)',    color: 0x33414d, depthKm: 8,   glow: 0, formation: 'Ordinary ocean floor the volcanoes are built on — made long ago at a mid-ocean ridge.', minerals: 'Basalt, gabbro', age: 'Rides the moving plate.' },
-    lithMantle:    { name: 'Lithospheric mantle', type: 'Mantle (rigid)',      color: 0x6b3f33, depthKm: 60,  glow: 0, formation: 'The rigid mantle lid that moves with the crust as one plate — the plume must burn through ALL of this to reach the surface.', minerals: 'Peridotite', age: 'Moves; the plume below does not.' },
+    lithMantle:    { name: 'Lithospheric mantle', type: 'Mantle (rigid)',      color: 0x6b3f33, depthKm: 60,  glow: 0, formation: 'The rigid mantle lid that moves with the crust as one plate — plume melt must rise through ALL of this to reach the surface.', minerals: 'Peridotite', age: 'Moves; the plume below barely does.' },
     conduit:       { name: 'Magma conduit',       type: 'Molten',              color: 0xff7a33, depthKm: 40,  glow: 1, formation: 'Melt from the plume head punching up through plate and crust to feed ONLY the volcano currently overhead.', minerals: 'Basaltic melt', age: 'Abandons each island as the plate carries it away.' },
     plume:         { name: 'Mantle plume',        type: 'Mantle (plume)',      color: 0xe0512e, depthKm: 150, glow: 1, formation: 'A column of SOLID but extra-hot mantle (~200 °C above its surroundings) rising slowly from deep in the mantle. Near the top, falling pressure lets it partially melt.', minerals: 'Hot peridotite', age: 'Stays ~fixed while the plate above slides past — that is the whole trick.' },
     asthenosphere: { name: 'Asthenosphere',       type: 'Mantle (ductile)',    color: 0x8a2f22, depthKm: 150, glow: 0, formation: 'Ordinary ductile mantle around the plume — solid rock that flows.', minerals: 'Peridotite', age: 'The plume is only slightly hotter — but that is enough.' }
@@ -2343,9 +2372,10 @@
     return 'asthenosphere';
   }
   function hotspotGeotherm(depthKm, key) {
-    var T = { oceanWater: 4, activeVolcano: 1150, oldIsland: 15, seamount: 4, oceanCrust: 150, lithMantle: 900, conduit: 1200, plume: 1550, asthenosphere: 1330 };
+    var T = { oceanWater: 25, activeVolcano: 1150, oldIsland: 15, seamount: 4, oceanCrust: 150, lithMantle: 900, conduit: 1200, plume: 1550, asthenosphere: 1330 };
+    var SEA = { seamount: 1, oceanCrust: 5, lithMantle: 5 };   // the old plate's seafloor is ~5 km deep; the plume rises under the island
     var S = { oceanWater: 'liquid', activeVolcano: 'erupting (runny basalt)', oldIsland: 'solid (extinct, eroding)', seamount: 'solid (drowned)', oceanCrust: 'solid', lithMantle: 'solid (rigid)', conduit: 'molten', plume: 'solid — but ~200 °C hotter than its surroundings', asthenosphere: 'solid (ductile — flows)' };
-    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: seaPressureMPa(depthKm, SEA[key], 30), state: (S[key] || 'solid') };
   }
 
   // ── Scene 7: Mountain belt (continent–continent collision) ──────────────────
@@ -2360,14 +2390,14 @@
     molasse:         { name: 'Foreland basin gravel',    type: 'Sedimentary',          color: 0xd9b56a, depthKm: 2,  glow: 0, formation: 'Sand and gravel shed off the rising range and dumped in a basin at its foot (the Siwaliks). The mountain’s own erosion, stacked up as new rock.', minerals: 'Sandstone, conglomerate', age: 'Youngest rock here — still being deposited.' },
     foldedStrata:    { name: 'Folded, thrust-stacked strata', type: 'Sedimentary',     color: 0x8a6544, depthKm: 5,  glow: 0, formation: 'Sea-floor layers squeezed between two continents: folded like a rug and sliced along thrust faults, each slice shoved on top of the next. The crust SHORTENS and THICKENS.', minerals: 'Sandstone, shale, limestone', age: 'Deposited before the collision; deformed during it.' },
     summitLimestone: { name: 'Summit limestone',         type: 'Sedimentary',          color: 0xe6e0c8, depthKm: 0,  glow: 0, formation: 'Marine limestone — shells and sea-floor mud — now on the highest ridge. Everest’s summit is exactly this: an ancient sea floor lifted ~8 km by collision.', minerals: 'Calcite, marine fossils', age: 'Formed under a sea; lifted by collision.' },
-    thrustZone:      { name: 'Thrust fault zone',        type: 'Fault zone',           color: 0x3f2a22, depthKm: 8,  glow: 0, formation: 'A gently dipping break where one crustal slice was shoved up and over another. Crushed, smeared rock marks the plane. It cuts the layers, so it is younger than them (cross-cutting).', minerals: 'Fault gouge, mylonite', age: 'Active during collision — still slipping today (Nepal, 2015).' },
+    thrustZone:      { name: 'Thrust fault zone',        type: 'Fault zone',           color: 0x3f2a22, depthKm: 8,  glow: 0, formation: 'A gently dipping break where one crustal slice was shoved up and over another. Crushed, smeared rock marks the plane. It cuts the layers, so it is younger than them (cross-cutting).', minerals: 'Fault gouge, breccia; mylonite deeper down', age: 'Active during collision — still slipping today (Nepal, 2015).' },
     schist:          { name: 'Schist',                   type: 'Metamorphic',          color: 0x7d6b86, depthKm: 15, glow: 0, formation: 'Shale buried ~15 km under the thickened crust, heated and squeezed for millions of years until its clay recrystallised into shiny mica sheets — REGIONAL metamorphism, over a whole mountain belt, not a bake beside one pluton.', minerals: 'Mica, garnet, quartz', age: 'Metamorphosed during the collision.' },
     gneiss:          { name: 'Gneiss',                   type: 'Metamorphic',          color: 0xc4b8c8, depthKm: 25, glow: 0, formation: 'The range’s core: banded, high-grade rock that was ~25 km deep and close to melting. It is at the surface only because erosion has stripped away the kilometres of rock above it (exhumation).', minerals: 'Feldspar, quartz, mica bands', age: 'The deepest rock exposed at the surface.' },
     leucogranite:    { name: 'Leucogranite',             type: 'Igneous (intrusive)',  color: 0xe9c8dd, depthKm: 20, glow: 0, formation: 'Pale granite made by PARTIALLY MELTING the thickened crust itself — no mantle plume, no subducting slab. Wet, over-thick crust gets hot enough to sweat out a little granite melt, which freezes at depth.', minerals: 'Quartz, feldspar, muscovite, tourmaline', age: 'Intruded ~20 million years ago; cuts the gneiss it came from.' },
     suture:          { name: 'Suture-zone ophiolite',    type: 'Igneous (basalt)',     color: 0x3b5f4f, depthKm: 5,  glow: 0, formation: 'A sliver of the ocean floor that used to lie between the two continents, caught in the seam (the Indus–Tsangpo suture). Deep-sea rock on a mountainside is proof an ocean closed here.', minerals: 'Basalt, gabbro, serpentinite', age: 'The last trace of the vanished Tethys Ocean.' },
     crustRoot:       { name: 'Continental crust & root', type: 'Continental',          color: 0xb4915e, depthKm: 50, glow: 0, formation: 'Granite-type crust of both plates. Under the range it is doubled to ~70 km: like an iceberg, a mountain needs a deep, low-density ROOT to float on the mantle (isostasy) — most of the range is below sea level.', minerals: 'Granite, gneiss', age: 'The thickest crust on Earth.' },
     lithMantle:      { name: 'Lithospheric mantle',      type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 85, glow: 0, formation: 'Rigid mantle welded under both plates. The indenting plate still pushes in at ~5 cm per year, so the collision — and the uplift — continue today.', minerals: 'Peridotite', age: 'Moves as one with the crust above it.' },
-    asthenosphere:   { name: 'Asthenosphere',            type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 100, glow: 0, formation: 'SOLID mantle that flows slowly. The crustal root presses into it and it pushes back — that buoyant support is what holds the range up.', minerals: 'Peridotite', age: 'Convects over millions of years.' }
+    asthenosphere:   { name: 'Asthenosphere',            type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 100, glow: 0, formation: 'SOLID mantle that flows slowly. The plate above, crustal root and all, floats on it and it pushes back — that buoyant support is what holds the range up.', minerals: 'Peridotite', age: 'Convects over millions of years.' }
   };
   function collisionTopo(fx) {                                  // surface height (fy): foreland plain → steep face → summit → high plateau
     return fx < 0.55 ? 0.30 - 0.26 * Math.max(0, 1 - (0.55 - fx) / 0.32) : Math.min(0.16, 0.04 + (fx - 0.55) * 0.45);
@@ -2398,7 +2428,7 @@
   }
   function collisionGeotherm(depthKm, key) {
     // Key-based: the summit is the COLDEST rock (highest = coldest), the crustal melt is frozen, the mantle never melts.
-    var T = { summitLimestone: -8, molasse: 20, foldedStrata: 60, suture: 80, thrustZone: 150, schist: 400, gneiss: 650, leucogranite: 700, crustRoot: 800, lithMantle: 1000, asthenosphere: 1330 };
+    var T = { summitLimestone: -25, molasse: 65, foldedStrata: 140, suture: 140, thrustZone: 200, schist: 500, gneiss: 650, leucogranite: 700, crustRoot: 800, lithMantle: 1000, asthenosphere: 1330 };
     var S = { summitLimestone: 'solid (frozen summit — highest is coldest)', molasse: 'loose → cemented gravel', foldedStrata: 'solid (folded, faulted)', suture: 'solid (trapped sea floor)', thrustZone: 'solid (crushed; slips in earthquakes)', schist: 'solid (recrystallised by burial)', gneiss: 'solid (once near melting, now exhumed)', leucogranite: 'solid (crystallised crustal melt)', crustRoot: 'solid (buoyant root)', lithMantle: 'solid (rigid)', asthenosphere: 'solid (ductile — flows)' };
     return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 28), state: (S[key] || 'solid') };
   }
@@ -2524,14 +2554,15 @@
   function fieldRunReward(contract) {
     return Math.max(1, Math.floor(Number(contract && contract.reward) || 100));
   }
+  var FIELD_RANKS = [   // translated in place
+    { label: 'Trail Scout', threshold: 0 },
+    { label: 'Field Geologist', threshold: 300 },
+    { label: 'Senior Geologist', threshold: 750 },
+    { label: 'Expedition Lead', threshold: 1500 }
+  ];
   function fieldRankForXp(xp) {
     var value = Math.max(0, Math.floor(Number(xp) || 0));
-    var ranks = [
-      { label: 'Trail Scout', threshold: 0 },
-      { label: 'Field Geologist', threshold: 300 },
-      { label: 'Senior Geologist', threshold: 750 },
-      { label: 'Expedition Lead', threshold: 1500 }
-    ];
+    var ranks = FIELD_RANKS;
     var index = 0;
     for (var i = 1; i < ranks.length; i++) if (value >= ranks[i].threshold) index = i;
     var current = ranks[index], next = ranks[index + 1] || null;
@@ -2594,7 +2625,7 @@
     oceanCrust: { position: 'Incoming oceanic plate', thermal: 'Cold, dense lithosphere' },
     contCrust: { position: 'Overriding continental plate', thermal: 'Cooler buoyant crust' },
     slab: { position: 'Descending plate below the trench', thermal: 'Cold slab anomaly' },
-    lithMantle: { position: 'Rigid mantle beneath a plate', thermal: 'Rigid plate domain' },
+    lithMantle: { position: 'Rigid mantle at the base of a plate', thermal: 'Rigid plate domain' },
     wedge: { position: 'Mantle above the descending slab', thermal: 'Hot, water-fluxed wedge' },
     asthenosphere: { position: 'Ductile mantle below the plates', thermal: 'Hot, slowly flowing mantle' },
     arcMagma: { position: 'Rising path above the mantle wedge', thermal: 'Buoyant partial melt' },
@@ -2605,7 +2636,7 @@
     sediment: { position: 'Older spreading flank', evidence: 'Thicker cover indicates more elapsed time' },
     basaltN: { position: 'Magnetic stripe on a spreading flank', evidence: 'Normal polarity locked in while cooling' },
     basaltR: { position: 'Mirrored magnetic stripe', evidence: 'Reversed polarity records another interval' },
-    dikes: { position: 'Below the ridge-axis crust', evidence: 'Each dike records a crust-opening event' },
+    dikes: { position: 'Middle crust, below the pillow basalt', evidence: 'Each dike records a crust-opening event' },
     gabbro: { position: 'Lower oceanic crust', evidence: 'Slow cooling makes coarse crystals' },
     axialMagma: { position: 'Ridge axis — youngest crust', evidence: 'Melt supplies new seafloor' },
     vent: { position: 'Hot young ridge flank', evidence: 'Circulating seawater carries dissolved minerals' },
@@ -2624,7 +2655,7 @@
     asthenosphere: { position: 'Ductile mantle around the plume', age: 'Background mantle domain' }
   };
   var COLLISION_MEASUREMENTS = {
-    molasse: { position: 'Foreland basin at the range front', burial: 'Never buried — the youngest fill' },
+    molasse: { position: 'Foreland basin at the range front', burial: 'Shallow burial — the youngest fill' },
     foldedStrata: { position: 'Thrust-stacked slices of the hanging wall', burial: 'Shallow burial — folded, not recrystallised' },
     summitLimestone: { position: 'Summit ridge, ~8 km above sea level', burial: 'Deposited on a sea floor, then lifted' },
     thrustZone: { position: 'Main thrust plane beneath the range', burial: 'Cuts the layers — younger than them' },
@@ -2727,7 +2758,7 @@
 
   var SCENE_COMPARISONS = {
     crust: { concept: 'Relative dating', process: 'Deposition, intrusion, and heat', evidence: 'Superposition, cross-cutting, and a metamorphic rim', direction: 'Top → depth; a cutting feature is younger', outcome: 'A sequence of rock events' },
-    geode: { concept: 'Mineral growth', process: 'Groundwater, precipitation, and open-space growth', evidence: 'Wall-to-center bands and crystal size', direction: 'Cavity wall → center', outcome: 'A growth sequence inside a dissolved void' },
+    geode: { concept: 'Mineral growth', process: 'Groundwater, precipitation, and open-space growth', evidence: 'Wall-to-center bands and crystal size', direction: 'Cavity wall → center', outcome: 'A growth sequence inside an old gas bubble' },
     deepEarth: { concept: 'Earth structure', process: 'Layered shells, pressure, and seismic waves', evidence: 'S-wave shadow plus solid/liquid states', direction: 'Surface → center', outcome: 'A model of hidden interior layers' },
     subduction: { concept: 'Convergent plate motion', process: 'Cold slab descent and water fluxing the mantle wedge', evidence: 'Trench, slab, wedge, and volcanic arc', direction: 'Ocean plate → trench → arc', outcome: 'A causal path from plate motion to magma' },
     ridge: { concept: 'Seafloor spreading', process: 'Upwelling, decompression melting, and cooling', evidence: 'Symmetric magnetic stripes and older flanks', direction: 'Ridge axis → older seafloor', outcome: 'New ocean crust moving away from the axis' },
@@ -2747,7 +2778,7 @@
     'hotspot+subduction': 'Both produce volcanic chains, but subduction links volcanoes to a plate boundary while a hotspot chain records a plate moving over a plume.',
     'collision+crust': 'Both use cross-cutting: the crust’s pluton and the mountain belt’s thrust fault are each younger than the layers they cut, but a collision also folds and stacks whole layer sequences.',
     'collision+deepEarth': 'Both depend on the solid, flowing mantle: deep Earth shows it convecting, and the mountain belt shows it pushing back on a buoyant crustal root (isostasy).',
-    'collision+geode': 'Both record slow change over millions of years, but a geode grows minerals into open space while a collision recrystallises buried rock into schist and gneiss.',
+    'collision+geode': 'Both record slow change, but a geode grows minerals into open space over thousands of years while a collision recrystallises buried rock into schist and gneiss over millions.',
     'collision+hotspot': 'Both raise land far from any ridge, but a hotspot builds volcanoes from plume melt while a collision lifts sea-floor rock by thickening the crust — with no volcanoes at all.',
     'collision+ridge': 'Opposite ends of an ocean’s life: a ridge creates sea floor, and a collision is what happens after that ocean has closed, with its last sliver trapped in a suture.',
     'collision+subduction': 'Both are convergent boundaries, but subduction sinks a dense ocean plate and melts a wedge to feed volcanoes, while two buoyant continents cannot sink — so the crust stacks up instead.'
@@ -2779,7 +2810,7 @@
     geode: {
       eyebrow: 'Mineral-growth fieldwork',
       subtitle: 'Trace how groundwater builds a crystal cavern from the wall inward.',
-      question: 'Why do different minerals appear in a geode’s layers?',
+      question: 'Why does the same silica form such different layers in a geode?',
       notice: ['A gas bubble in lava leaves a round hole.', 'Bands grow in pulses from the wall.', 'Open space lets crystals grow large.'],
       evidencePrompt: 'Follow the growth sequence and explain why the largest crystals formed last.',
       checklist: [
@@ -2846,7 +2877,7 @@
     },
     hotspot: {
       eyebrow: 'Intraplate-motion fieldwork',
-      subtitle: 'Read an island chain as a record of a moving plate over a fixed plume.',
+      subtitle: 'Read an island chain as a record of a moving plate over a nearly fixed plume.',
       question: 'How can a volcano chain reveal plate motion?',
       notice: ['The plume stays roughly fixed.', 'The plate carries volcanoes away from the melt.', 'Age increases toward extinct and drowned islands.'],
       evidencePrompt: 'Use island age and shape to explain how the plate moved across the plume.',
@@ -2908,7 +2939,10 @@
   // English is kept in a WeakMap (nothing extra to leak into saved data). Only these display
   // fields are touched: ids, keys, views and gradients are tokens.
   var GEO_TEXT_FIELDS = { title: 1, prompt: 1, label: 1, body: 1, detail: 1, summary: 1, depth: 1, value: 1, ariaLabel: 1, scale: 1, direction: 1, read: 1,
-    formation: 1, minerals: 1, age: 1, tells: 1, hint: 1, position: 1, thermal: 1, evidence: 1, burial: 1, zone: 1, order: 1, blurb: 1 };   // rock, find, core and measurement text
+    formation: 1, minerals: 1, age: 1, tells: 1, hint: 1, position: 1, thermal: 1, evidence: 1, burial: 1, zone: 1, order: 1, blurb: 1,   // rock, find, core and measurement text
+    q: 1, why: 1, misconception: 1, remedy: 1, term: 1, definition: 1, cue: 1, brief: 1, concept: 1, process: 1, outcome: 1, description: 1,
+    help: 1, message: 1, action: 1, minutes: 1, duration: 1, proc: 1, note: 1, fb: 1, perm: 1, role: 1, parent: 1, daughter: 1 };   // quiz, lesson, comparison, cycle, dating text
+  var GEO_TEXT_LISTS = { labels: 1, opts: 1, objectives: 1, prompts: 1 };   // arrays of display strings (quiz options keep their order)
   var geoTextEnglish = typeof WeakMap === 'function' ? new WeakMap() : null;
   function geoTextKey(en) {   // FNV-1a of the English: stable, short, changes when the sentence does
     var h = 0x811c9dc5, s = String(en);
@@ -2918,9 +2952,43 @@
   function geoTextRoots() {
     var roots = [CRUST_JOURNEY, SCENE_BEACONS, SCENE_PROCESS_CUES, SCENE_ORIENTATION,
       ROCKS, GEODE_ROCKS, DEEPEARTH_ROCKS, SUBDUCTION_ROCKS, RIDGE_ROCKS, HOTSPOT_ROCKS, COLLISION_ROCKS, FOSSILS, SPECIMENS,
-      GEODE_MEASUREMENTS, SUBDUCTION_MEASUREMENTS, RIDGE_MEASUREMENTS, HOTSPOT_MEASUREMENTS, COLLISION_MEASUREMENTS, CORE_SITES];
+      GEODE_MEASUREMENTS, SUBDUCTION_MEASUREMENTS, RIDGE_MEASUREMENTS, HOTSPOT_MEASUREMENTS, COLLISION_MEASUREMENTS, CORE_SITES,
+      QUIZ_BANKS, QUIZ_REMEDIATION, SCENE_VOCABULARY, SCENE_SEQUENCE_CHALLENGES, SCENE_COMPARISONS, SCENE_SCHEMATICS, FIELD_EXPEDITIONS, FIELD_RANKS,
+      MISSION_ACTIONS, EVIDENCE_MAP_ROLES, LESSON_GUIDE, CYCLE, ERUPT, DATING, GROUNDWATER, SPECIMEN_MOHS];
     Object.keys(SCENE_MISSIONS).forEach(function (id) { if (SCENE_MISSIONS[id].signal) roots.push(SCENE_MISSIONS[id].signal); });
     return roots;
+  }
+  // Flat {token: text} tables: the values translate, the keys stay (they are what the code looks up;
+  // the quiz notes are keyed by the ENGLISH option, see quizOptionNote).
+  function geoValueMaps() {
+    var maps = [SCENE_COMPARISON_INSIGHTS];
+    Object.keys(MISSION_HINTS).forEach(function (id) { maps.push(MISSION_HINTS[id]); });
+    Object.keys(QUIZ_OPTION_NOTES).forEach(function (id) { maps = maps.concat(QUIZ_OPTION_NOTES[id]); });
+    return maps;
+  }
+  function localizeValueMap(map, t) {
+    if (!map || typeof map !== 'object' || !geoTextEnglish) return;
+    var en = geoTextEnglish.get(map);
+    if (!en) { en = Object.assign({}, map); geoTextEnglish.set(map, en); }
+    Object.keys(en).forEach(function (k) { if (typeof en[k] === 'string') map[k] = t ? t(geoTextKey(en[k]), en[k]) : en[k]; });
+  }
+  // Mission text already has its own keys (stem.geology.mission.<id>.*): the table takes those, so the
+  // panels that read mission.question etc. directly (objective line, read-aloud, CER draft) match the rest.
+  function localizeMissions(t) {
+    if (!geoTextEnglish) return;
+    Object.keys(SCENE_MISSIONS).forEach(function (id) {
+      var m = SCENE_MISSIONS[id], s = SCENES[id], base = 'stem.geology.mission.' + id + '.', en = geoTextEnglish.get(m);
+      if (!en) {
+        en = { eyebrow: m.eyebrow, subtitle: m.subtitle, question: m.question, evidencePrompt: m.evidencePrompt, notice: m.notice.slice(),
+          checks: m.checklist.map(function (c) { return c.label; }), blurb: s ? s.blurb : null };
+        geoTextEnglish.set(m, en);
+      }
+      var tr = function (k, fb) { return t ? t(base + k, fb) : fb; };
+      m.eyebrow = tr('eyebrow', en.eyebrow); m.subtitle = tr('subtitle', en.subtitle); m.question = tr('question', en.question); m.evidencePrompt = tr('evidence', en.evidencePrompt);
+      en.notice.forEach(function (text, i) { m.notice[i] = tr('notice.' + i, text); });
+      m.checklist.forEach(function (c, i) { c.label = tr('check.' + c.id, en.checks[i]); });
+      if (s && typeof en.blurb === 'string') s.blurb = tr('context', en.blurb);
+    });
   }
   function localizeTextNode(node, t) {
     if (!node || typeof node !== 'object' || !geoTextEnglish) return;
@@ -2932,14 +3000,18 @@
       if (typeof v === 'string' && GEO_TEXT_FIELDS[field]) {
         if (!(field in en)) en[field] = v;
         node[field] = t ? t(geoTextKey(en[field]), en[field]) : en[field];
-      } else if (field === 'labels' && Array.isArray(v)) {
+      } else if (GEO_TEXT_LISTS[field] && Array.isArray(v)) {
         var enLabels = geoTextEnglish.get(v);
         if (!enLabels) { enLabels = v.slice(); geoTextEnglish.set(v, enLabels); }
         for (var i = 0; i < v.length; i++) v[i] = t ? t(geoTextKey(enLabels[i]), enLabels[i]) : enLabels[i];
       } else if (v && typeof v === 'object') localizeTextNode(v, t);
     });
   }
-  function localizeGeologyText(t) { geoTextRoots().forEach(function (root) { localizeTextNode(root, t); }); }
+  function localizeGeologyText(t) {
+    geoTextRoots().forEach(function (root) { localizeTextNode(root, t); });
+    geoValueMaps().forEach(function (map) { localizeValueMap(map, t); });
+    localizeMissions(t);
+  }
   // Names + text, redone only when the language changes (three probe lookups per render otherwise).
   var geoI18nProbe = null;
   function localizeGeologyAll(t) {
@@ -3075,7 +3147,8 @@
   function focusLensIncludes(materialKey, selectedKey, enabled) {
     return !enabled || !selectedKey || materialKey === selectedKey;
   }
-  function cutawayReadout(slice, totalSections) {
+  function cutawayReadout(slice, totalSections, t) {
+    t = t || geoEnglishT; var tf = t;
     var total = Math.max(1, Math.round(Number(totalSections) || 1));
     var max = Math.max(0, total - 1);
     var raw = Number(slice); if (!isFinite(raw)) raw = 0;
@@ -3085,7 +3158,7 @@
       step: step,
       max: max,
       percent: percent,
-      label: step === 0 ? 'Full block' : percent + '% cut away from front' + (step === max ? ' · final section' : '')
+      label: step === 0 ? t('stem.geology.ui.full_block', 'Full block') : tf('stem.geology.ui.cut_away_percent', '{percent}% cut away from front', { percent: percent }) + (step === max ? ' · ' + t('stem.geology.ui.final_section', 'final section') : '')
     };
   }
   // Scenes whose science lives INSIDE the block open part-cut, because from outside they
@@ -3242,22 +3315,33 @@
     ],
     prompts: ['What did you observe?', 'Which observation is strongest evidence?', 'What process connects the evidence to your claim?']
   };
-  function evaluateCER(mission, context, notebook) {
+  function evaluateCER(mission, context, notebook, t) {
+    t = t || geoEnglishT;
     var claim = String((notebook && notebook.claim) || '').trim();
     var explanation = String((notebook && notebook.explanation) || '').trim();
     var evidenceCount = context && Array.isArray(context.evidence) ? context.evidence.length : 0;
-    var causal = /(because|therefore|so|shows|suggests|means|caused|led to|as a result)/i.test(explanation);
+    var connectors = ['because', 'therefore', 'so', 'shows', 'suggests', 'means', 'caused', 'led to', 'as a result'].concat(String(t('stem.geology.cer.causal_words', 'because, therefore, so, shows, suggests, means, caused, led to, as a result')).split(','));
+    var lower = explanation.toLowerCase(), letter = /[\p{L}\p{N}]/u;
+    // The student may write in their own language. A short connector ("so") must stand alone: inside
+    // "also", "some" or "son" it is not reasoning, and every explanation used to pass on that alone.
+    var causal = connectors.some(function (w) {
+      w = w.trim().toLowerCase(); if (!w) return false;
+      for (var at = lower.indexOf(w); at >= 0; at = lower.indexOf(w, at + 1)) {
+        if (w.length > 3 || (!letter.test(lower.charAt(at - 1)) && !letter.test(lower.charAt(at + w.length)))) return true;
+      }
+      return false;
+    });
     var mapStatus = context && context.evidenceMapStatus && typeof context.evidenceMapStatus === 'object' ? context.evidenceMapStatus : null;
     var mapReady = !mapStatus || !!mapStatus.ready;
     var evidenceMet = evidenceCount >= 2 && mapReady;
     var evidenceFeedback = evidenceCount < 2
-      ? 'Collect at least two observations from the scene or notebook.'
-      : (!mapReady ? 'Map your evidence across Observation, Process, and Outcome before using it in the explanation.' : 'You collected at least two observations and connected them in the Evidence Map.');
+      ? t('stem.geology.cer.evidence_need_two', 'Collect at least two observations from the scene or notebook.')
+      : (!mapReady ? t('stem.geology.cer.evidence_map_first', 'Map your evidence across Observation, Process, and Outcome before using it in the explanation.') : t('stem.geology.cer.evidence_ok', 'You collected at least two observations and connected them in the Evidence Map.'));
     var criteria = [
-      { id: 'claim', label: 'Claim', met: claim.length >= 12, feedback: claim.length >= 12 ? 'Your response makes a specific, testable claim.' : 'State what you think happened and answer the scene question.' },
-      { id: 'evidence', label: 'Evidence', met: evidenceMet, feedback: evidenceFeedback },
-      { id: 'reasoning', label: 'Reasoning', met: explanation.length >= 30 && causal, feedback: explanation.length >= 30 && causal ? 'Your reasoning connects observations to a process.' : 'Explain why the observations support your claim using a causal link such as because, so, or therefore.' },
-      { id: 'mission', label: 'Mission checks', met: !!(context && context.missionComplete), feedback: context && context.missionComplete ? 'The required scene checks are complete.' : 'Complete the scene checklist before submitting.' }
+      { id: 'claim', label: t('stem.geology.cer.claim', 'Claim'), met: claim.length >= 12, feedback: claim.length >= 12 ? t('stem.geology.cer.claim_ok', 'Your response makes a specific, testable claim.') : t('stem.geology.cer.claim_need', 'State what you think happened and answer the scene question.') },
+      { id: 'evidence', label: t('stem.geology.cer.evidence', 'Evidence'), met: evidenceMet, feedback: evidenceFeedback },
+      { id: 'reasoning', label: t('stem.geology.cer.reasoning', 'Reasoning'), met: explanation.length >= 30 && causal, feedback: explanation.length >= 30 && causal ? t('stem.geology.cer.reasoning_ok', 'Your reasoning connects observations to a process.') : t('stem.geology.cer.reasoning_need', 'Explain why the observations support your claim using a causal link such as because, so, or therefore.') },
+      { id: 'mission', label: t('stem.geology.cer.mission', 'Mission checks'), met: !!(context && context.missionComplete), feedback: context && context.missionComplete ? t('stem.geology.cer.mission_ok', 'The required scene checks are complete.') : t('stem.geology.cer.mission_need', 'Complete the scene checklist before submitting.') }
     ];
     var score = criteria.filter(function (item) { return item.met; }).length;
     return { criteria: criteria, score: score, total: criteria.length, ready: score === criteria.length };
@@ -3289,13 +3373,14 @@
     var mappedRoleCount = EVIDENCE_MAP_ROLES.length - missingRoles.length;
     return { total: list.length, assigned: assigned, mappedRoleCount: mappedRoleCount, unassigned: list.length - assigned, counts: counts, missingRoles: missingRoles, ready: mappedRoleCount === EVIDENCE_MAP_ROLES.length };
   }
-  function evidenceMapDraft(mission, evidence, map) {
+  function evidenceMapDraft(mission, evidence, map, t) {
+    t = t || geoEnglishT; var tf = t;
     var list = Array.isArray(evidence) ? evidence : [];
     var assignments = map && typeof map === 'object' && !Array.isArray(map) ? map : {};
     var groups = { observation: [], process: [], outcome: [] };
     var usedIds = [];
     function describe(item) {
-      var label = String((item && item.label) || 'Evidence');
+      var label = String((item && item.label) || t('stem.geology.cer.evidence', 'Evidence'));
       var detail = String((item && item.detail) || '').trim();
       return detail ? label + ': ' + detail : label;
     }
@@ -3310,17 +3395,17 @@
     var processText = groups.process.join('; ');
     var outcomeText = groups.outcome.join('; ');
     var claim = outcomeText
-      ? 'The evidence supports the outcome that ' + outcomeText + '.'
-      : 'The evidence supports an explanation of ' + String((mission && mission.question) || 'the geologic process').replace(/[?.!]+$/, '') + '.';
+      ? tf('stem.geology.cer.draft_claim_outcome', 'The evidence supports the outcome that {outcome}.', { outcome: outcomeText })
+      : tf('stem.geology.cer.draft_claim_question', 'The evidence supports an explanation of {question}.', { question: String((mission && mission.question) || t('stem.geology.cer.the_process', 'the geologic process')).replace(/[?.!¿؟]+$/, '') });
     var parts = [];
-    if (observationText) parts.push('I observed ' + observationText + '.');
-    if (processText) parts.push('The process connects these observations because ' + processText + '.');
-    if (outcomeText) parts.push('Together, these details support the outcome that ' + outcomeText + '.');
-    if (!parts.length) parts.push('Add mapped observations, a process, and an outcome to build the explanation.');
+    if (observationText) parts.push(tf('stem.geology.cer.draft_observed', 'I observed {text}.', { text: observationText }));
+    if (processText) parts.push(tf('stem.geology.cer.draft_process', 'The process connects these observations because {text}.', { text: processText }));
+    if (outcomeText) parts.push(tf('stem.geology.cer.draft_outcome', 'Together, these details support the outcome that {text}.', { text: outcomeText }));
+    if (!parts.length) parts.push(t('stem.geology.cer.draft_empty', 'Add mapped observations, a process, and an outcome to build the explanation.'));
     return { claim: claim, explanation: parts.join(' '), ready: status.ready, usedIds: usedIds, status: status };
   }
   var MISSION_HINTS = {
-    crust: { materials: 'Select any three materials so you can compare their depth, type, and formation story.', core: 'Use a drill-core site on the right; read the colored bands from youngest at the top to oldest at depth.', quiz: 'Switch to Assess, open the quiz, and answer one question about superposition or cross-cutting.' },
+    crust: { materials: 'Select any three materials so you can compare their depth, type, and formation story.', core: 'Pick a drill-core site; read the colored bands from youngest at the top to oldest at depth.', quiz: 'Switch to Assess, open the quiz, and answer one question about superposition or cross-cutting.' },
     geode: { layers: 'Select the chalcedony rind, agate bands, and quartz crystal; compare where each sits in the cavity.', sequence: 'Open the crystal growth sequence and reveal the steps from the wall inward.', quiz: 'Switch to Assess, open the crystal quiz, and test why open space makes larger crystals.' },
     deepEarth: { cores: 'Select both the outer core and inner core so you can compare state and pressure.', waves: 'Follow the seismic probe to the S-wave shadow; liquid cannot carry shear waves.', quiz: 'Switch to Assess, answer the core question, and use the S-wave result in your explanation.' },
     subduction: { slab: 'Select the cold slab and hot mantle wedge; the slab carries water but the wedge supplies the melt.', arc: 'Follow the sequence from descending slab to water release to rising arc magma.', quiz: 'Use the quiz to check why the slab itself mostly does not melt.' },
@@ -3328,13 +3413,14 @@
     hotspot: { chain: 'Select the active volcano, old island, and seamount; age and elevation change along the chain.', motion: 'Follow the sequence from the plume to the carried island to the drowned seamount.', quiz: 'Use the quiz to test whether the plate or plume is moving.' },
     collision: { uplift: 'Select the summit limestone, the gneiss on the steep face, and the foreland gravel; note which is highest, which was deepest, and which is youngest.', thicken: 'Follow the sequence from the thrust fault to the deep-baked core to the sea floor lifted onto the summit.', quiz: 'Use the quiz to check why marine fossils sit on the summit and why there are no volcanoes.' }
   };
-  function nextMissionHint(mission, context, sceneId) {
+  function nextMissionHint(mission, context, sceneId, t) {
+    t = t || geoEnglishT;
     var hints = MISSION_HINTS[sceneId] || {};
     var checks = mission && mission.checklist ? mission.checklist : [];
     for (var i = 0; i < checks.length; i++) {
-      if (!checks[i].check(context)) return { id: checks[i].id, label: checks[i].label, text: hints[checks[i].id] || 'Return to the checklist and collect the next observation.' };
+      if (!checks[i].check(context)) return { id: checks[i].id, label: checks[i].label, text: hints[checks[i].id] || t('stem.geology.ui.hint_default', 'Return to the checklist and collect the next observation.') };
     }
-    return { id: 'complete', label: 'Mission complete', text: 'Your required observations are ready to support a CER explanation.' };
+    return { id: 'complete', label: t('stem.geology.ui.mission_complete', 'Mission complete'), text: t('stem.geology.ui.mission_complete_text', 'Your required observations are ready to support a CER explanation.') };
   }
   var MISSION_ACTIONS = {
     materials: { target: 'materials', mode: 'investigate', label: 'Open material list', message: 'Material list focused. Select the requested materials to complete this check.' },
@@ -3358,7 +3444,7 @@
   var SCENE_ORIENTATION = {
     crust: { scale: '~10.8 km deep', direction: 'Surface → depth', read: 'Read the layers from top to bottom. Deeper sedimentary layers are generally older; a cutting feature is younger.' },
     geode: { scale: '~2 m specimen span (schematic)', direction: 'Cavity wall → center', read: 'Read mineral growth inward from the basalt wall. The open center is not empty by accident; it records space for crystals to grow.' },
-    deepEarth: { scale: 'Earth radius 6,371 km', direction: 'Surface → center', read: 'This is a radial slice, not a flat stack. Use the shells and seismic signal to infer state.' },
+    deepEarth: { scale: 'Earth radius 6,371 km (crust and upper mantle drawn thicker)', direction: 'Surface → center', read: 'This is a radial slice, not a flat stack. Use the shells and seismic signal to infer state.' },
     subduction: { scale: '~200 km depth range (schematic)', direction: 'Left plate → trench → right arc', read: 'Follow the cold slab downward. Water leaves the slab, fluxes the wedge, and the melt rises toward the arc.' },
     ridge: { scale: '~30 km depth range (schematic)', direction: 'Ridge axis → older flanks', read: 'The axis is youngest. Read outward for older crust, thicker sediment, and mirrored magnetic history.' },
     hotspot: { scale: '~150 km depth range (schematic)', direction: 'Plume → plate-motion trail', read: 'The plume is the reference point. The plate carries volcanoes away, so age increases toward the drowned seamount.' },
@@ -3390,14 +3476,15 @@
       description: 'Two continents converge: thrust faults stack folded sea-floor layers into a range that rides on a deep crustal root, with no volcanoes.'
     }
   };
-  function sceneSchematicInfo(sceneId, selectedKey, stageIndex) {
+  function sceneSchematicInfo(sceneId, selectedKey, stageIndex, t) {
+    t = t || geoEnglishT; var tf = t;
     var id = SCENE_SCHEMATICS[sceneId] ? sceneId : 'geode';
     var config = SCENE_SCHEMATICS[id], scene = SCENES[id], journey = sceneJourneyFor(id);
     var index = Math.max(0, Math.min(Number(stageIndex) || 0, journey.length - 1));
     var active = journey[index], selectedRock = selectedKey && scene.palette[selectedKey];
     var selected = selectedRock ? { key: selectedKey, label: selectedRock.name } : null;
-    var ariaLabel = config.title + '. ' + config.description + ' Active process stage: ' + active.label + '.';
-    if (selected) ariaLabel += ' Selected material: ' + selected.label + '.';
+    var ariaLabel = config.title + '. ' + config.description + ' ' + tf('stem.geology.a11y.schematic_stage', 'Active process stage: {label}.', { label: active.label });
+    if (selected) ariaLabel += ' ' + tf('stem.geology.a11y.schematic_selected', 'Selected material: {label}.', { label: selected.label });
     return {
       sceneId: id,
       title: config.title,
@@ -3432,7 +3519,7 @@
       { term: 'Contact metamorphism', definition: 'Heat from nearby magma changes rock without melting the whole rock.', cue: 'Use it when you compare limestone with the marble rim.' }
     ],
     geode: [
-      { term: 'Cavity', definition: 'An open space left when groundwater dissolves part of the host rock.', cue: 'Use it when you identify the hollow center.' },
+      { term: 'Cavity', definition: 'An open space inside rock. This geode’s cavity began as a gas bubble trapped in cooling lava.', cue: 'Use it when you identify the hollow center.' },
       { term: 'Precipitation', definition: 'Dissolved minerals leave water and become solid mineral layers or crystals.', cue: 'Use it when you explain how the rind and bands formed.' },
       { term: 'Growth sequence', definition: 'Minerals that form first stay at the wall; later crystals grow inward into open space.', cue: 'Use it when you order rind, bands, and crystal points.' }
     ],
@@ -3469,9 +3556,9 @@
       { key: 'limestone', label: 'Limestone accumulates', detail: 'Shells and coral build the oldest sedimentary layer in a shallow sea.' },
       { key: 'shale', label: 'Mud settles into shale', detail: 'Calm water deposits mud above the older limestone.' },
       { key: 'sandstone', label: 'Sand becomes sandstone', detail: 'Buried sand is compacted and cemented into the upper sedimentary layer.' },
-      { key: 'soil', label: 'The surface weathers', detail: 'Exposed rock breaks down into soil at the surface.' },
       { key: 'pluton', label: 'A granite pluton cuts through', detail: 'A later pulse of magma forces through the existing layers and freezes.' },
-      { key: 'rim', label: 'The contact rim is baked', detail: 'Heat from the pluton changes nearby limestone and shale without melting them.' }
+      { key: 'rim', label: 'The contact rim is baked', detail: 'Heat from the pluton changes nearby limestone and shale without melting them.' },
+      { key: 'soil', label: 'The surface weathers', detail: 'Exposed rock breaks down into soil at the surface — still happening today.' }
     ] },
     geode: { title: 'Crystal-growth order', prompt: 'Arrange the events from the first cavity-forming step to the crystals that grew last.', items: [
       { key: 'cavity', label: 'A gas bubble leaves a hole', detail: 'Gas trapped as the lava cooled left a round hole in the basalt.' },
@@ -3494,7 +3581,7 @@
     ridge: { title: 'Seafloor-spreading order', prompt: 'Arrange the evidence outward from the ridge axis to the older ocean floor.', items: [
       { key: 'axialMagma', label: 'Magma rises at the axis', detail: 'Upwelling mantle partially melts as pressure drops.' },
       { key: 'basaltN', label: 'New basalt records polarity', detail: 'Pillow basalt cools and locks in the magnetic field direction.' },
-      { key: 'basaltR', label: 'A reversal makes a mirror stripe', detail: 'Later basalt records the opposite field direction on both flanks.' },
+      { key: 'basaltR', label: 'A reversal makes a mirror stripe', detail: 'Older basalt, farther out, records the opposite field direction on both flanks.' },
       { key: 'sediment', label: 'Older seafloor gathers sediment', detail: 'Farther crust cools, sinks, and accumulates a thicker sediment cover.' }
     ] },
     hotspot: { title: 'Hotspot plate-motion trail', prompt: 'Arrange the chain from the active volcano over the plume to the oldest drowned link.', items: [
@@ -3545,6 +3632,7 @@
       var s = null; try { s = opts.t(k, fb, vars); } catch (e) {}
       return s == null || s === '' ? geoEnglishT(k, fb, vars) : s;
     } : geoEnglishT;
+    var geoTE = function (en) { return typeof en === 'string' && en ? geoT(geoTextKey(en), en) : en; };   // an English label from a table, by its text key
     var cnv = document.createElement('canvas');
     // The labelled viewport container owns the WebGL alternative and keyboard mode.
     cnv.setAttribute('aria-hidden', 'true');
@@ -4966,7 +5054,7 @@
       feedMode: 'cruise', coolantRemaining: 2, coolantUsed: 0, formationLoad: null, idealFeedMode: 'cruise',
       intervalStress: 0, intervalPeakHeat: 0, pristineStreak: 0, bestPristineStreak: 0,
       currentCell: null, currentVoxel: null, currentElapsed: 0, currentDuration: 0,
-      stopReason: null, plannedStop: null, trajectoryScan: null, status: 'Pack ready', lastHudAt: 0, evaluation: null,
+      stopReason: null, plannedStop: null, trajectoryScan: null, status: geoT('stem.geology.eng.pack_ready', 'Pack ready'), lastHudAt: 0, evaluation: null,
       deployedAt: 0, celebrateUntil: 0, coolantFlashUntil: 0, scanUntil: 0, lastIntervalResult: null
     };
     coreRigGroup3d.name = 'directional-core-rig';
@@ -5450,7 +5538,7 @@
     function fpConeProp3d(x3d, z3d, radius3d, height3d, landformStyle3d, baseY3d, obj3d, rayObj3d, rockKey3d) {
       return { kind: 'cone', x: x3d, z: z3d, r: radius3d, rTop: ruggedSummitRadius3d(radius3d, landformStyle3d), h: height3d,
         base: baseY3d, crater: ruggedCraterDepth3d(height3d, landformStyle3d), stand: true, obj: obj3d, ray: rayObj3d || obj3d, rockKey: rockKey3d || null,
-        label: landformStyle3d === 'alpine' ? 'Mountain peak' : (landformStyle3d === 'shield-island' ? 'Island volcano' : 'Volcano cone') };
+        label: landformStyle3d === 'alpine' ? geoT('stem.geology.eng.mountain_peak', 'Mountain peak') : (landformStyle3d === 'shield-island' ? geoT('stem.geology.eng.island_volcano', 'Island volcano') : geoT('stem.geology.eng.volcano_cone', 'Volcano cone')) };
     }
     function addRuggedGeologyCone3d(x3d, z3d, radius3d, height3d, color3d, seed3d, landformStyle3d, baseY3d) {
       var isShieldIsland3d = landformStyle3d === 'shield-island';
@@ -6531,7 +6619,7 @@
       if (now - (fp.enteredAt || 0) < 1500) return;                      // the layer you spawn on is not a discovery
       var n = Object.keys(fp.layersReached).length;
       if (opts.onLayerMilestone) { try { opts.onLayerMilestone(here, n); } catch (e) {} }
-      else if (opts.onFlash) opts.onFlash('New layer reached: ' + (here.layerName || here.key) + ' · ' + here.depthKm + ' km · ' + temperatureValue(here.tempC) + (n > 1 ? ' · ' + n + ' layers walked' : ''));
+      else if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.new_layer_reached', 'New layer reached: {layer} · {km} km · {temp}', { layer: here.layerName || here.key, km: here.depthKm, temp: temperatureValue(here.tempC) }) + (n > 1 ? ' · ' + geoT('stem.geology.eng.layers_walked', 'Layers walked: {n}', { n: n }) : ''));
       if (window._alloHaptic) { try { window._alloHaptic('achieve'); } catch (e) {} }
     }
     function fpMarkBlocked() {
@@ -6598,7 +6686,7 @@
       else fp.drillHeat = Math.max(0, fp.drillHeat - Math.max(0, dt) * (fp.drillOverheated ? 0.38 : 0.22));
       if (!fp.drillOverheated && fp.drillHeat >= 1) {
         fp.drillOverheated = true; fp.drillHeld = false; fpCancelMining(); fp.statusKey = '__refresh';
-        if (opts.onFlash) opts.onFlash('The drill overheated. Release the trigger and let it cool.');
+        if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.the_drill_overheated_release_the_trigger_and', 'The drill overheated. Release the trigger and let it cool.'));
         if (window._alloHaptic) { try { window._alloHaptic('error'); } catch (e) {} }
       } else if (fp.drillOverheated && fp.drillHeat <= 0.3) {
         fp.drillOverheated = false; fp.statusKey = '__refresh';
@@ -6732,12 +6820,13 @@
       if (v.z > 1 || v.z < -1) return null;
       return { x: (v.x + 1) / 2 * (lastW || container.clientWidth || 1), y: (1 - v.y) / 2 * (lastH || container.clientHeight || 1) };
     }
-    function placeOverlayNode3d(node, at, dx, dy, minTop) {
+    function placeOverlayNode3d(node, at, dx, dy, minTop, maxRight) {   // maxRight: keep the box left of another overlay
       if (!node) return;
       if (!at) { node.style.display = 'none'; return; }
       var w = lastW || container.clientWidth || 1, h = lastH || container.clientHeight || 1;
       var bw = node.offsetWidth || 120, bh = node.offsetHeight || 40;
-      var x = Math.max(4, Math.min(w - bw - 4, at.x + dx)), y = Math.max(minTop || 4, Math.min(h - bh - 4, at.y + dy));
+      var right = maxRight != null ? Math.min(w, maxRight) : w;
+      var x = Math.max(4, Math.min(right - bw - 4, at.x + dx)), y = Math.max(minTop || 4, Math.min(h - bh - 4, at.y + dy));
       node.style.display = ''; node.style.left = x + 'px'; node.style.top = y + 'px';
     }
     function updateLandingPin3d() {                            // "you'll land here" label follows the ring as the camera orbits
@@ -6765,7 +6854,9 @@
     function updateLayerCallout3d() {
       var node = hudNode3d('[data-geology-layer-callout]'); if (!node) return;
       if (fp.active || !highlightKey || !highlightAnchor3d) { node.style.display = 'none'; return; }
-      placeOverlayNode3d(node, projectToOverlay3d(highlightAnchor3d.x, highlightAnchor3d.y, highlightAnchor3d.z), 14, -(node.offsetHeight || 40) / 2);
+      var beacons = hudNode3d('[data-geology-beacon-overlay]'), frame = node.offsetParent, limit = null;   // the stage buttons stay clickable
+      if (beacons && frame && beacons.offsetWidth) limit = beacons.getBoundingClientRect().left - frame.getBoundingClientRect().left - 6;
+      placeOverlayNode3d(node, projectToOverlay3d(highlightAnchor3d.x, highlightAnchor3d.y, highlightAnchor3d.z), 14, -(node.offsetHeight || 40) / 2, 4, limit);
     }
     var hoverCardKey3d = '';
     function updateHoverCard3d(v, e) {                          // orbit-mode peek: name · type · depth · temperature, next to the pointer
@@ -6778,7 +6869,7 @@
         var nameNode = node.querySelector('[data-hover-name]'), typeNode = node.querySelector('[data-hover-type]'), metaNode = node.querySelector('[data-hover-meta]');
         if (nameNode) nameNode.textContent = R.name || v.key;
         if (typeNode) typeNode.textContent = rockTypeText(R.type, geoT);
-        if (metaNode) metaNode.textContent = (f.measurements && f.measurements.length) ? f.measurements.map(function (row) { return row.label + ' ' + row.value; }).join(' · ') : fpHoverMetaText(f.depthKm, f.tempC, geoT);
+        if (metaNode) metaNode.textContent = (f.measurements && f.measurements.length) ? f.measurements.map(function (row) { return geoTE(row.label) + ' ' + geoTE(row.value); }).join(' · ') : fpHoverMetaText(f.depthKm, f.tempC, geoT);
         node.dataset.hoverKey = v.key;
       }
       var rect = cnv.getBoundingClientRect();
@@ -6788,7 +6879,7 @@
       // Engine-initiated exit: there is nowhere to stand, so leave first person instead of
       // looping fall → respawn → fall. Tells the host so the toggle follows.
       exitFP(true);
-      if (opts.onFlash) opts.onFlash('No solid ground is visible to land on — ' + layerCauseText(reason) + '. Reset the cutaway or the focus lens, then drop in again.');
+      if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.no_solid_ground_is_visible_to_land_on_reset', 'No solid ground is visible to land on — {layer_cause_text}. Reset the cutaway or the focus lens, then drop in again.', { layer_cause_text: layerCauseText(reason, geoT) }));
       if (opts.onFpBail) { try { opts.onFpBail({ reason: reason }); } catch (e) {} }
       return null;
     }
@@ -6799,7 +6890,7 @@
       fp.safePose = null;
       if (!fpRespawn(true)) return;
       fpSetMedium('air');
-      if (opts.onFlash) opts.onFlash('The ground under you was hidden by the ' + (cause === 'lens' ? 'focus lens' : (cause === 'history' ? 'history playback' : 'cutaway')) + ', so the explorer moved you to the nearest solid ground.');
+      if (opts.onFlash) opts.onFlash(cause === 'lens' ? geoT('stem.geology.eng.ground_hidden_lens', 'The ground under you was hidden by the focus lens, so the explorer moved you to the nearest solid ground.') : (cause === 'history' ? geoT('stem.geology.eng.ground_hidden_history', 'The ground under you was hidden by the history playback, so the explorer moved you to the nearest solid ground.') : geoT('stem.geology.eng.ground_hidden_cutaway', 'The ground under you was hidden by the cutaway, so the explorer moved you to the nearest solid ground.')));
     }
     updateLandingMarker3d();                                   // the init-time rebuild() ran before this block could place the pad
     function fpHazardRespawn() {
@@ -6812,8 +6903,8 @@
       if (goHome) { fp.safePose = null; fp.hazardLoopCount = 0; }
       fp.lastHazardAt = now; if (!fpRespawn(goHome)) return; fpSetMedium('air');
       if (canWarn && opts.onFlash) opts.onFlash(goHome
-        ? 'Your last foothold was dug away, so the explorer returned you to the dig-in point. Magma is molten rock above ~1000 °C: no pick or drill can bite it.'
-        : 'That is magma: molten rock above ~1000 °C, so no pick or drill can bite it. You returned to your last safe foothold. Tip: the baked rim around the chamber (contact metamorphism) shows how far its heat reached.');
+        ? geoT('stem.geology.eng.foothold_gone_magma', 'Your last foothold was dug away, so the explorer returned you to the dig-in point. Magma is molten rock at 700 °C or more: no pick or drill can bite it.')
+        : geoT('stem.geology.eng.that_is_magma', 'That is magma: molten rock at 700 °C or more, so no pick or drill can bite it. You returned to your last safe foothold. Tip: the baked rim around the pluton (contact metamorphism) shows how far magma’s heat reached.'));
       if (window._alloHaptic) { try { window._alloHaptic('error'); } catch (e) {} }
     }
     // A horizontal move is allowed when the body fits at the current height and, if the ground
@@ -6840,7 +6931,7 @@
     function fpMaybeClimbHint() {
       if (fp.climbHintShown || !opts.onFlash || fpHoleDepth() < VOXEL * 1.2) return;
       fp.climbHintShown = true;
-      opts.onFlash('Stuck in a hole? Hold Space (or the jump button) and walk into the wall to climb out, or press C (🧗) to climb. H takes you home.');
+      opts.onFlash(geoT('stem.geology.eng.stuck_in_a_hole_hold_space_or_the_jump', 'Stuck in a hole? Hold Space (or the jump button) and walk into the wall to climb out, or press C (🧗) to climb. H takes you home.'));
     }
     // One-action climb (the 🧗 button or C): face the nearest rock face and climb it, on the same
     // physics as holding Space and forward, for anyone who cannot hold two keys at once. Any key or
@@ -6979,7 +7070,7 @@
       if (fp.hazardNearby && !wasNearHazard && safeNow - (fp.lastHeatWarnAt || 0) > 8000) {
         // Teach the approach, not just the fall: one flash per descent, throttled so it never nags.
         fp.lastHeatWarnAt = safeNow;
-        if (opts.onFlash) opts.onFlash('Heat rising: magma is within one block. Rock this close to the chamber gets baked into marble or hornfels. Dig around it, not into it.');
+        if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.heat_rising_magma_is_within_one_block_rock', 'Heat rising: magma is within one block. Dig around it, not into it.'));
         if (window._alloHaptic) { try { window._alloHaptic('bump'); } catch (e) {} }
       }
       if (fp.onGround && fp.medium === 'air' && !fp.hazardNearby && safeNow - fp.lastSafeAt > 650) {
@@ -6992,7 +7083,7 @@
         if (fp.fallLoopCount >= 3) { fpBail(fpLandingPose(SCENE.id).cause || 'excavation'); return; }
         var back = fpRespawn(false); if (!back) return;
         fpSetMedium('air');
-        if (opts.onFlash) opts.onFlash('You slipped out of the model, so the explorer returned you to ' + (back.relocated ? 'the nearest solid ground' : 'the last safe foothold') + '.');
+        if (opts.onFlash) opts.onFlash(back.relocated ? geoT('stem.geology.eng.slipped_nearest', 'You slipped out of the model, so the explorer returned you to the nearest solid ground.') : geoT('stem.geology.eng.slipped_foothold', 'You slipped out of the model, so the explorer returned you to the last safe foothold.'));
       }
     }
     function fpSafePoseStillSafe(pose) {
@@ -7046,6 +7137,8 @@
       var sign = signKind || null;   // resolved to words below, only when the label actually changes
       var key = v ? vkey(v) + (specimen ? '#specimen' : '') + (sign ? '#sign' : '') : (prop ? '__prop:' + prop.label : '__none');
       fp.targetKey = key;
+      key += '|' + fp.tool + '|' + fpTargetLabelText({}, geoT);   // a tool or language switch re-renders the label
+
       var root = container.parentNode, label = null;
       try { label = root && root.querySelector ? root.querySelector('[data-geology-mining-target]') : null; } catch (e) {}
       if (!label || label.getAttribute('data-target-key') === key) return;
@@ -7167,7 +7260,7 @@
       var reading = {
         distanceBlocks: Math.max(1, Math.round(Math.sqrt(distanceSq) / VOXEL)),
         direction: Math.abs(deltaX) > Math.abs(deltaZ) ? (deltaX >= 0 ? 'east' : 'west') : (deltaZ >= 0 ? 'south' : 'north'),
-        vertical: Math.abs(deltaY) < VOXEL * 1.25 ? 'near your level' : (deltaY > 0 ? 'above you' : 'below you')
+        vertical: Math.abs(deltaY) < VOXEL * 1.25 ? geoT('stem.geology.eng.near_your_level', 'near your level') : (deltaY > 0 ? geoT('stem.geology.eng.above_you', 'above you') : geoT('stem.geology.eng.below_you', 'below you'))
       };
       geoSfxSurveyPing(reading.distanceBlocks, -Math.sin(dYaw), reading.vertical);   // panned from where the view faced BEFORE it turns
       return reading;
@@ -7276,7 +7369,7 @@
         evaluation: coreRigState3d.evaluation ? Object.assign({}, coreRigState3d.evaluation) : null,
         scanning: coreRigIntervalScanning(coreRigState3d.scanUntil, Date.now(), coreRigState3d.running, coreRigState3d.currentVoxel),
         lastIntervalResult: coreRigState3d.lastIntervalResult ? Object.assign({}, coreRigState3d.lastIntervalResult) : null,
-        formationCue: coreRigState3d.running && coreRigState3d.currentVoxel && coreRigState3d.formationLoad ? coreRigFormationCue(coreRigState3d.formationLoad, coreRigState3d.idealFeedMode, coreRigState3d.lastIntervalResult) : null,
+        formationCue: coreRigState3d.running && coreRigState3d.currentVoxel && coreRigState3d.formationLoad ? coreRigFormationCue(coreRigState3d.formationLoad, coreRigState3d.idealFeedMode, coreRigState3d.lastIntervalResult, geoT) : null,
         status: coreRigState3d.status
       };
     }
@@ -7402,26 +7495,26 @@
       return { ok: false, reason: reason3d || 'unavailable', message: message3d };
     }
     function setCoreRigFeedMode3d(modeId3d) {
-      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the rig before changing its feed mode.', 'packed');
-      if (!CORE_RIG_FEED_MODES[modeId3d]) return coreRigError3d('Choose Preserve, Cruise, or Torque feed.', 'invalid-mode');
+      if (!coreRigState3d.deployed) return coreRigError3d(geoT('stem.geology.eng.deploy_the_rig_before_changing_its_feed_mode', 'Deploy the rig before changing its feed mode.'), 'packed');
+      if (!CORE_RIG_FEED_MODES[modeId3d]) return coreRigError3d(geoT('stem.geology.eng.choose_preserve_cruise_or_torque_feed', 'Choose Preserve, Cruise, or Torque feed.'), 'invalid-mode');
       coreRigState3d.feedMode = modeId3d;
       var profile3d = coreRigFeedProfile(modeId3d);
-      coreRigState3d.status = profile3d.label + ' feed selected' + (coreRigState3d.formationLoad ? (' · ' + coreRigState3d.formationLoad + ' formation') : '');
+      coreRigState3d.status = geoT('stem.geology.eng.feed_selected', '{feed} feed selected', { feed: geoTE(profile3d.label) }) + (coreRigState3d.formationLoad ? ' · ' + geoT('stem.geology.eng.formation_load', '{load} formation', { load: fpProfileText(coreRigState3d.formationLoad, geoT).tag }) : '');
       notifyCoreRigState3d(true);
-      if (opts.onFlash) opts.onFlash(profile3d.label + ' feed · ' + Math.round(profile3d.speedMultiplier * 100) + '% advance · ' + Math.round(profile3d.heatMultiplier * 100) + '% heat load');
+      if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.feed_advance_heat_load', '{label} feed · {speed_multiplier}% advance · {heat_multiplier}% heat load', { label: geoTE(profile3d.label), speed_multiplier: Math.round(profile3d.speedMultiplier * 100), heat_multiplier: Math.round(profile3d.heatMultiplier * 100) }));
       if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (coreRigModeHapticError3d) {} }
       return { ok: true, state: coreRigSnapshot3d() };
     }
     function useCoreRigCoolant3d() {
-      if (!coreRigState3d.deployed || !coreRigState3d.running) return coreRigError3d('Coolant is available during an active bore.', 'inactive');
-      if (coreRigState3d.stage === 'cooling') return coreRigError3d('Auto-cooling is already protecting the core. Save the pulse for the next interval.', 'cooling');
-      if (coreRigState3d.coolantRemaining <= 0) return coreRigError3d('Both coolant pulses have been used for this bore.', 'empty');
-      if (coreRigState3d.heat < 0.22) return coreRigError3d('Head temperature is already low. Save the coolant pulse.', 'cool');
+      if (!coreRigState3d.deployed || !coreRigState3d.running) return coreRigError3d(geoT('stem.geology.eng.coolant_is_available_during_an_active_bore', 'Coolant is available during an active bore.'), 'inactive');
+      if (coreRigState3d.stage === 'cooling') return coreRigError3d(geoT('stem.geology.eng.auto_cooling_is_already_protecting_the_core', 'Auto-cooling is already protecting the core. Save the pulse for the next interval.'), 'cooling');
+      if (coreRigState3d.coolantRemaining <= 0) return coreRigError3d(geoT('stem.geology.eng.both_coolant_pulses_have_been_used_for_this', 'Both coolant pulses have been used for this bore.'), 'empty');
+      if (coreRigState3d.heat < 0.22) return coreRigError3d(geoT('stem.geology.eng.head_temperature_is_already_low_save_the', 'Head temperature is already low. Save the coolant pulse.'), 'cool');
       coreRigState3d.coolantRemaining -= 1; coreRigState3d.coolantUsed += 1;
       coreRigState3d.heat = Math.max(0, coreRigState3d.heat - 0.34); coreRigState3d.coolantFlashUntil = Date.now() + 700;
-      coreRigState3d.status = 'Coolant pulse · head temperature ' + Math.round(coreRigState3d.heat * 100) + '% · ' + coreRigState3d.coolantRemaining + ' remaining';
+      coreRigState3d.status = geoT('stem.geology.eng.coolant_pulse_head_temperature_remaining', 'Coolant pulse · head temperature {heat}% · {coolant_remaining} remaining', { heat: Math.round(coreRigState3d.heat * 100), coolant_remaining: coreRigState3d.coolantRemaining });
       notifyCoreRigState3d(true);
-      if (opts.onFlash) opts.onFlash('Coolant pulse released · core integrity protected');
+      if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.coolant_pulse_released_core_integrity', 'Coolant pulse released · core integrity protected'));
       if (window._alloHaptic) { try { window._alloHaptic('success'); } catch (coreRigCoolantHapticError3d) {} }
       return { ok: true, state: coreRigSnapshot3d() };
     }
@@ -7458,13 +7551,13 @@
     }
     function deployCoreRig3d(config3d) {
       config3d = config3d || {};
-      if (!coreRigSupported(SCENE.id) || fp.mode !== 'mine') return coreRigError3d('Directional core rigs need a stable surface. Deep Earth remains a handheld flight expedition.', 'unsupported');
-      if (!fp.active) return coreRigError3d('Enter Walk & Dig before deploying the core rig.', 'inactive');
+      if (!coreRigSupported(SCENE.id) || fp.mode !== 'mine') return coreRigError3d(geoT('stem.geology.eng.directional_core_rigs_need_a_stable_surface', 'Directional core rigs need a stable surface. Deep Earth remains a handheld flight expedition.'), 'unsupported');
+      if (!fp.active) return coreRigError3d(geoT('stem.geology.eng.enter_walk_dig_before_deploying_the_core_rig', 'Enter Walk & Dig before deploying the core rig.'), 'inactive');
       if (coreRigState3d.deployed) {
         configureCoreRig3d(config3d);
         return { ok: true, state: coreRigSnapshot3d() };
       }
-      if (!fp.onGround || fp.medium !== 'air' || fp.hazardNearby) return coreRigError3d('Find stable, cool ground before deploying the core rig.', 'unstable');
+      if (!fp.onGround || fp.medium !== 'air' || fp.hazardNearby) return coreRigError3d(geoT('stem.geology.eng.find_stable_cool_ground_before_deploying_the', 'Find stable, cool ground before deploying the core rig.'), 'unstable');
       var forwardX3d = -Math.sin(fp.yaw), forwardZ3d = -Math.cos(fp.yaw);
       var rightX3d = -forwardZ3d, rightZ3d = forwardX3d;
       var padOffsets3d = [[forwardX3d, forwardZ3d], [rightX3d, rightZ3d], [-rightX3d, -rightZ3d], [-forwardX3d, -forwardZ3d]];
@@ -7477,7 +7570,7 @@
         if (!stablePad3d) continue;
         pad3d = stablePad3d; break;
       }
-      if (!pad3d) return coreRigError3d('No level drilling pad is clear nearby. Move to a broader ledge and try again.', 'no-pad');
+      if (!pad3d) return coreRigError3d(geoT('stem.geology.eng.no_level_drilling_pad_is_clear_nearby_move', 'No level drilling pad is clear nearby. Move to a broader ledge and try again.'), 'no-pad');
       coreRigState3d.deployed = true; coreRigState3d.running = false;
       coreRigState3d.stage = reducedMotion3d ? 'preview' : 'deploying';
       coreRigState3d.angle = CORE_RIG_ANGLES[config3d.angle] ? config3d.angle : coreRigState3d.angle;
@@ -7498,17 +7591,17 @@
       planCoreRigPath3d(); updateCoreRigGuide3d();
       coreRigGroup3d.scale.setScalar(reducedMotion3d ? 1 : 0.04); coreRigGroup3d.updateMatrixWorld(true);
       coreRigState3d.status = reducedMotion3d
-        ? (coreRigState3d.path.length ? ('Bore preview · ' + coreRigState3d.path.length + ' recoverable intervals') : 'No safe rock on this trajectory')
-        : 'Locking stabilizers · trajectory scan ready';
+        ? (coreRigState3d.path.length ? (geoT('stem.geology.eng.bore_preview_recoverable_intervals', 'Bore preview · {length} recoverable intervals', { length: coreRigState3d.path.length })) : geoT('stem.geology.eng.no_safe_rock_on_this_trajectory', 'No safe rock on this trajectory'))
+        : geoT('stem.geology.eng.locking_stabilizers_trajectory_scan_ready', 'Locking stabilizers · trajectory scan ready');
       notifyCoreRigState3d(true);
-      if (opts.onFlash) opts.onFlash('Core rig deployed. Choose an angle and depth, then match Preserve, Cruise, or Torque feed to each formation load.');
+      if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.core_rig_deployed_choose_an_angle_and_depth', 'Core rig deployed. Choose an angle and depth, then match Preserve, Cruise, or Torque feed to each formation load.'));
       if (window._alloHaptic) { try { window._alloHaptic('success'); } catch (coreRigHapticError3d) {} }
       return { ok: true, state: coreRigSnapshot3d() };
     }
     function configureCoreRig3d(config3d) {
       config3d = config3d || {};
-      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the core rig before configuring a bore.', 'packed');
-      if (coreRigState3d.running || coreRigState3d.stage === 'deploying') return coreRigError3d('Wait for the stabilizers before redirecting the bore.', 'running');
+      if (!coreRigState3d.deployed) return coreRigError3d(geoT('stem.geology.eng.deploy_the_core_rig_before_configuring_a', 'Deploy the core rig before configuring a bore.'), 'packed');
+      if (coreRigState3d.running || coreRigState3d.stage === 'deploying') return coreRigError3d(geoT('stem.geology.eng.wait_for_the_stabilizers_before_redirecting', 'Wait for the stabilizers before redirecting the bore.'), 'running');
       if (CORE_RIG_ANGLES[config3d.angle]) coreRigState3d.angle = config3d.angle;
       if (CORE_RIG_DEPTHS.indexOf(Number(config3d.depth)) >= 0) coreRigState3d.depth = Number(config3d.depth);
       coreRigState3d.stage = 'preview'; coreRigState3d.cursor = 0; coreRigState3d.samples = [];
@@ -7519,8 +7612,8 @@
       coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null; coreRigFeedGlow3d.visible = false;
       clearCoreRigBoreMarkers3d(); planCoreRigPath3d(); updateCoreRigGuide3d();
       coreRigState3d.status = coreRigState3d.path.length
-        ? ('Trajectory ready · ' + coreRigState3d.path.length + ' recoverable intervals')
-        : 'Trajectory unavailable · change angle, depth, or position';
+        ? (geoT('stem.geology.eng.trajectory_ready_recoverable_intervals', 'Trajectory ready · {length} recoverable intervals', { length: coreRigState3d.path.length }))
+        : geoT('stem.geology.eng.trajectory_unavailable_change_angle_depth_or', 'Trajectory unavailable · change angle, depth, or position');
       notifyCoreRigState3d(true);
       return { ok: true, state: coreRigSnapshot3d() };
     }
@@ -7548,19 +7641,19 @@
       report3d.evaluation = Object.assign({}, evaluation3d);
       coreRigState3d.evaluation = Object.assign({}, evaluation3d);
       coreRigState3d.celebrateUntil = summary3d.sampleCount ? completedAt3d + (reducedMotion3d ? 250 : 2400) : 0;
-      var resultLabel3d = 'Grade ' + evaluation3d.grade + ' · ' + evaluation3d.label +
-        (evaluation3d.integrityPercent != null ? (' · ' + evaluation3d.integrityPercent + '% integrity') : '') +
-        ' · Brief ' + report3d.boreBrief.metCount + '/3';
+      var resultLabel3d = geoT('stem.geology.eng.result_grade', 'Grade {grade} · {label}', { grade: evaluation3d.grade, label: geoTE(evaluation3d.label) }) +
+        (evaluation3d.integrityPercent != null ? ' · ' + geoT('stem.geology.ui.integrity', '{integrity_percent}% integrity', { integrity_percent: evaluation3d.integrityPercent }) : '') +
+        ' · ' + geoT('stem.geology.ui.brief_met', 'Brief {met}/3', { met: report3d.boreBrief.metCount });
       var message3d = !summary3d.sampleCount
-        ? (reason3d === 'spent' ? 'Existing bore detected — relocate or change trajectory.'
-        : (reason3d === 'cancelled' ? 'Bore ended before a sample interval was recovered.'
-        : 'No recoverable core on this trajectory.'))
-        : (reason3d === 'fluid' ? 'Water-boundary stop sealed safely · ' + resultLabel3d
-        : (reason3d === 'hazard' ? 'Thermal-boundary stop protected the sample · ' + resultLabel3d
-        : (reason3d === 'blocked' ? 'Rock boundary reached · ' + resultLabel3d
-        : (reason3d === 'spent' ? 'Existing bore intersected · ' + resultLabel3d
-        : (reason3d === 'cancelled' ? 'Operator ended early · ' + resultLabel3d
-        : 'Core recovered · ' + resultLabel3d)))));
+        ? (reason3d === 'spent' ? geoT('stem.geology.eng.existing_bore_detected_relocate_or_change', 'Existing bore detected — relocate or change trajectory.')
+        : (reason3d === 'cancelled' ? geoT('stem.geology.eng.bore_ended_before_a_sample_interval_was', 'Bore ended before a sample interval was recovered.')
+        : geoT('stem.geology.eng.no_recoverable_core_on_this_trajectory', 'No recoverable core on this trajectory.')))
+        : (reason3d === 'fluid' ? geoT('stem.geology.eng.water_boundary_stop_sealed_safely', 'Water-boundary stop sealed safely · {result_label3d}', { result_label3d: resultLabel3d })
+        : (reason3d === 'hazard' ? geoT('stem.geology.eng.thermal_boundary_stop_protected_the_sample', 'Thermal-boundary stop protected the sample · {result_label3d}', { result_label3d: resultLabel3d })
+        : (reason3d === 'blocked' ? geoT('stem.geology.eng.rock_boundary_reached', 'Rock boundary reached · {result_label3d}', { result_label3d: resultLabel3d })
+        : (reason3d === 'spent' ? geoT('stem.geology.eng.existing_bore_intersected', 'Existing bore intersected · {result_label3d}', { result_label3d: resultLabel3d })
+        : (reason3d === 'cancelled' ? geoT('stem.geology.eng.operator_ended_early', 'Operator ended early · {result_label3d}', { result_label3d: resultLabel3d })
+        : geoT('stem.geology.eng.core_recovered', 'Core recovered · {result_label3d}', { result_label3d: resultLabel3d }))))));
       coreRigState3d.status = message3d;
       notifyCoreRigState3d(true);
       if (opts.onFlash) opts.onFlash(message3d);
@@ -7584,15 +7677,15 @@
         coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = coreRigState3d.heat;
         coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = Math.max(950, Math.round(duration3d * 1.7));
         coreRigState3d.scanUntil = Date.now() + CORE_RIG_INTERVAL_SCAN_MS;
-        coreRigState3d.stage = 'drilling'; coreRigState3d.status = coreRigFormationCue(formation3d.label, formation3d.idealMode, coreRigState3d.lastIntervalResult).prompt;
+        coreRigState3d.stage = 'drilling'; coreRigState3d.status = coreRigFormationCue(formation3d.label, formation3d.idealMode, coreRigState3d.lastIntervalResult, geoT).prompt;
         notifyCoreRigState3d(true);
         return true;
       }
       finishCoreRig3d(coreRigState3d.plannedStop || 'complete'); return false;
     }
     function startCoreRig3d() {
-      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the rig before starting a bore.', 'packed');
-      if (coreRigState3d.stage === 'deploying') return coreRigError3d('The stabilizers are still locking. Start the bore when the trajectory is ready.', 'deploying');
+      if (!coreRigState3d.deployed) return coreRigError3d(geoT('stem.geology.eng.deploy_the_rig_before_starting_a_bore', 'Deploy the rig before starting a bore.'), 'packed');
+      if (coreRigState3d.stage === 'deploying') return coreRigError3d(geoT('stem.geology.eng.the_stabilizers_are_still_locking_start_the', 'The stabilizers are still locking. Start the bore when the trajectory is ready.'), 'deploying');
       if (coreRigState3d.running) return { ok: true, state: coreRigSnapshot3d() };
       coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.heat = 0;
       coreRigState3d.progress = 0; coreRigState3d.stopReason = null; coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0;
@@ -7602,7 +7695,7 @@
       coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null;
       clearCoreRigBoreMarkers3d(); planCoreRigPath3d(); updateCoreRigGuide3d();
       if (!coreRigState3d.path.length) return finishCoreRig3d(coreRigState3d.plannedStop || 'blocked');
-      coreRigState3d.running = true; coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Spin-up · locking the drill string';
+      coreRigState3d.running = true; coreRigState3d.stage = 'drilling'; coreRigState3d.status = geoT('stem.geology.eng.spin_up_locking_the_drill_string', 'Spin-up · locking the drill string');
       prepareCoreRigStep3d();
       if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (coreRigStartHapticError3d) {} }
       return { ok: true, state: coreRigSnapshot3d() };
@@ -8003,8 +8096,8 @@ function updateCoreRig3d(dt3d) {
         if (deployProgress3d >= 1) {
           coreRigState3d.stage = 'preview';
           coreRigState3d.status = coreRigState3d.path.length
-            ? ('Bore preview · ' + coreRigState3d.path.length + ' recoverable intervals')
-            : 'Trajectory unavailable · change angle, depth, or position';
+            ? (geoT('stem.geology.eng.bore_preview_recoverable_intervals', 'Bore preview · {length} recoverable intervals', { length: coreRigState3d.path.length }))
+            : geoT('stem.geology.eng.trajectory_unavailable_change_angle_depth_or', 'Trajectory unavailable · change angle, depth, or position');
           notifyCoreRigState3d(true);
         }
       }
@@ -8066,13 +8159,13 @@ function updateCoreRig3d(dt3d) {
       }
       if (coreRigState3d.scanUntil) {
         coreRigState3d.scanUntil = 0;
-        coreRigState3d.status = 'Feed engaged · ' + coreRigState3d.formationLoad + ' load · ' + coreRigFeedProfile(coreRigState3d.feedMode).label + ' response';
+        coreRigState3d.status = geoT('stem.geology.eng.feed_engaged_load_response', 'Feed engaged · {formation_load} load · {label} response', { formation_load: fpProfileText(coreRigState3d.formationLoad, geoT).tag, label: geoTE(coreRigFeedProfile(coreRigState3d.feedMode).label) });
         notifyCoreRigState3d(true);
       }
       if (coreRigState3d.stage === 'cooling') {
         coreRigState3d.heat = Math.max(0, coreRigState3d.heat - dt3d * 0.4);
-        coreRigState3d.status = 'Auto-cooling drill head · ' + Math.round(coreRigState3d.heat * 100) + '%';
-        if (coreRigState3d.heat <= 0.38) { coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Cooling complete · resuming the protected core'; }
+        coreRigState3d.status = geoT('stem.geology.eng.auto_cooling_drill_head', 'Auto-cooling drill head · {heat}%', { heat: Math.round(coreRigState3d.heat * 100) });
+        if (coreRigState3d.heat <= 0.38) { coreRigState3d.stage = 'drilling'; coreRigState3d.status = geoT('stem.geology.eng.cooling_complete_resuming_the_protected_core', 'Cooling complete · resuming the protected core'); }
         notifyCoreRigState3d(false); return;
       }
       if (!coreRigState3d.currentVoxel && !prepareCoreRigStep3d()) return;
@@ -8084,7 +8177,7 @@ function updateCoreRig3d(dt3d) {
       coreRigState3d.progress = coreRigState3d.path.length ? (coreRigState3d.cursor + stepProgress3d) / coreRigState3d.path.length : 1;
       coreRigFeedGlow3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, fpClampN(coreRigState3d.progress, 0, 1));
       if (coreRigState3d.heat >= 0.86 && stepProgress3d < 1) {
-        coreRigState3d.stage = 'cooling'; coreRigState3d.status = 'Thermal pause · protecting the recovered core';
+        coreRigState3d.stage = 'cooling'; coreRigState3d.status = geoT('stem.geology.eng.thermal_pause_protecting_the_recovered_core', 'Thermal pause · protecting the recovered core');
         notifyCoreRigState3d(true); return;
       }
       if (stepProgress3d >= 1) {
@@ -8096,7 +8189,7 @@ function updateCoreRig3d(dt3d) {
           var sample3d = { key: drilledVoxel3d.key, name: drilledMaterial3d.name, type: drilledMaterial3d.type || 'Rock', color: drilledMaterial3d.color || 0xcbd5e1, depth: drilledCell3d.depth, integrity: intervalIntegrity3d };
           coreRigState3d.pristineStreak = intervalIntegrity3d >= 0.97 ? coreRigState3d.pristineStreak + 1 : 0;
           coreRigState3d.bestPristineStreak = Math.max(coreRigState3d.bestPristineStreak, coreRigState3d.pristineStreak);
-          coreRigState3d.lastIntervalResult = coreRigIntervalFeedback(sample3d.name, intervalIntegrity3d, coreRigState3d.pristineStreak);
+          coreRigState3d.lastIntervalResult = coreRigIntervalFeedback(sample3d.name, intervalIntegrity3d, coreRigState3d.pristineStreak, geoT);
           coreRigState3d.samples.push(sample3d); addCoreRigSampleMarker3d(sample3d, drilledVoxel3d);
           beginCoreRigLift3d(sample3d, drilledVoxel3d);
           if (window._alloHaptic) { try { window._alloHaptic('break'); } catch (coreRigSampleHapticError3d) {} }
@@ -8109,15 +8202,15 @@ function updateCoreRig3d(dt3d) {
       notifyCoreRigState3d(false);
     }
     function cancelCoreRig3d() {
-      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the rig before ending a bore.', 'packed');
+      if (!coreRigState3d.deployed) return coreRigError3d(geoT('stem.geology.eng.deploy_the_rig_before_ending_a_bore', 'Deploy the rig before ending a bore.'), 'packed');
       if (!coreRigState3d.running) return { ok: true, state: coreRigSnapshot3d() };
       var report3d = finishCoreRig3d('cancelled');
       return { ok: true, report: report3d, state: coreRigSnapshot3d() };
     }
     function packCoreRig3d() {
       if (!coreRigState3d.deployed) return { ok: true, state: coreRigSnapshot3d() };
-      if (coreRigState3d.running) return coreRigError3d('The rig is actively drilling. End the bore safely before packing it.', 'running');
-      coreRigState3d.deployed = false; coreRigState3d.running = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
+      if (coreRigState3d.running) return coreRigError3d(geoT('stem.geology.eng.the_rig_is_actively_drilling_end_the_bore', 'The rig is actively drilling. End the bore safely before packing it.'), 'running');
+      coreRigState3d.deployed = false; coreRigState3d.running = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = geoT('stem.geology.eng.pack_ready', 'Pack ready');
       coreRigState3d.origin = null; coreRigState3d.path = []; coreRigState3d.samples = []; coreRigState3d.cursor = 0;
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
       coreRigState3d.progress = 0; coreRigState3d.heat = 0; coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null; coreRigState3d.trajectoryScan = null;
@@ -8165,15 +8258,15 @@ function updateCoreRig3d(dt3d) {
     function fpMineAtCrosshair(instant, chained) {
       if (coreRigState3d.deployed) {
         fp.drillHeld = false;
-        return chained ? null : coreRigError3d('Pack the directional core rig before hand mining.', coreRigState3d.running ? 'rig-running' : 'rig-deployed');
+        return chained ? null : coreRigError3d(geoT('stem.geology.eng.pack_the_directional_core_rig_before_hand', 'Pack the directional core rig before hand mining.'), coreRigState3d.running ? 'rig-running' : 'rig-deployed');
       }
       var now = (window.performance && performance.now) ? performance.now() : Date.now();
       if (fp.mining) return { pending: true, progress: fp.mining.duration ? fp.mining.elapsed / fp.mining.duration : 1 };
-      if (fp.tool === 'drill' && fp.drillOverheated && !instant) { if (!chained && opts.onFlash) opts.onFlash('The drill is cooling. Switch to the pickaxe or wait for the heat meter.'); return null; }
+      if (fp.tool === 'drill' && fp.drillOverheated && !instant) { if (!chained && opts.onFlash) opts.onFlash(geoT('stem.geology.eng.the_drill_is_cooling_switch_to_the_pickaxe', 'The drill is cooling. Switch to the pickaxe or wait for the heat meter.')); return null; }
       if (!chained && fp.lastMineAt && now - fp.lastMineAt < 140) return null;
       fp.lastMineAt = now;
       var v = fpTargetVoxel();
-      if (!v) { if (!chained && opts.onFlash) opts.onFlash(fp.propAimed ? fp.propAimed.label + ' is surface relief, not dug here. Dig the ground beside it.' : 'Move closer and aim the reticle at an exposed block.'); return null; }
+      if (!v) { if (!chained && opts.onFlash) opts.onFlash(fp.propAimed ? geoT('stem.geology.eng.is_surface_relief_not_dug_here_dig_the', '{label} is surface relief, not dug here. Dig the ground beside it.', { label: fp.propAimed.label }) : geoT('stem.geology.eng.move_closer_and_aim_the_reticle_at_an', 'Move closer and aim the reticle at an exposed block.')); return null; }
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'Rock', type: '' };
       var profile = fpMiningProfile(v.key, material.type);
       if (!profile.mineable) { fp.drillHeld = false; if (!chained) { geoSfxDenied(profile.label === 'Fluid' ? 'fluid' : 'hazard'); if (opts.onFlash) opts.onFlash(fpProfileReasonText(profile.label, geoT)); } return null; }
@@ -8186,22 +8279,22 @@ function updateCoreRig3d(dt3d) {
       return { pending: true, duration: fp.mining.duration, hardness: profile.label, tool: fp.tool };
     }
     function fpUndoMine() {
-      if (coreRigState3d.running) return coreRigError3d('The active bore must finish before excavation can be undone.', 'rig-running');
-      if (coreRigState3d.deployed) return coreRigError3d('Pack the directional core rig before undoing excavation.', 'rig-deployed');
+      if (coreRigState3d.running) return coreRigError3d(geoT('stem.geology.eng.the_active_bore_must_finish_before', 'The active bore must finish before excavation can be undone.'), 'rig-running');
+      if (coreRigState3d.deployed) return coreRigError3d(geoT('stem.geology.eng.pack_the_directional_core_rig_before_undoing', 'Pack the directional core rig before undoing excavation.'), 'rig-deployed');
       fpCancelMining();
       var restored = undoExcavation();
-      if (!restored) { if (opts.onFlash) opts.onFlash('There is no excavation to undo yet.'); return null; }
-      if (opts.onFlash) opts.onFlash('Restored ' + restored.name + '. ' + restored.remaining + ' dig' + (restored.remaining === 1 ? '' : 's') + ' left to undo.');
+      if (!restored) { if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.there_is_no_excavation_to_undo_yet', 'There is no excavation to undo yet.')); return null; }
+      if (opts.onFlash) opts.onFlash(geoT('stem.geology.ui.restored_name', 'Restored {name}.', { name: restored.name }) + ' ' + geoT('stem.geology.eng.digs_left_to_undo', 'Digs left to undo: {n}.', { n: restored.remaining }));
       fp.targetKey = '__refresh'; fpTargetVoxel();
       return restored;
     }
     function fpRedoMine() {
-      if (coreRigState3d.running) return coreRigError3d('The active bore must finish before excavation can be redone.', 'rig-running');
-      if (coreRigState3d.deployed) return coreRigError3d('Pack the directional core rig before redoing excavation.', 'rig-deployed');
+      if (coreRigState3d.running) return coreRigError3d(geoT('stem.geology.eng.the_active_bore_must_finish_before_2', 'The active bore must finish before excavation can be redone.'), 'rig-running');
+      if (coreRigState3d.deployed) return coreRigError3d(geoT('stem.geology.eng.pack_the_directional_core_rig_before_redoing', 'Pack the directional core rig before redoing excavation.'), 'rig-deployed');
       fpCancelMining();
       var redone = redoExcavation();
-      if (!redone) { if (opts.onFlash) opts.onFlash('There is no excavation to redo yet.'); return null; }
-      if (opts.onFlash) opts.onFlash('Re-excavated ' + redone.name + '.');
+      if (!redone) { if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.there_is_no_excavation_to_redo_yet', 'There is no excavation to redo yet.')); return null; }
+      if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.re_excavated', 'Re-excavated {name}.', { name: redone.name }));
       fp.targetKey = '__refresh'; fpTargetVoxel();
       return redone;
     }
@@ -8257,7 +8350,7 @@ function updateCoreRig3d(dt3d) {
       if (belowVoxel && opts.onSelect && method !== 'core-rig') opts.onSelect(rockFacts(belowVoxel.key, belowVoxel.y));
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'material' };
       if (surveyVoxelKey === id) { surveyBox.visible = false; surveyVoxelKey = null; }
-      if (opts.onFlash && method !== 'core-rig') opts.onFlash('Excavated ' + material.name + '. ' + (belowVoxel ? 'The layer beneath is now exposed.' : 'That column is now fully excavated.'));
+      if (opts.onFlash && method !== 'core-rig') opts.onFlash(belowVoxel ? geoT('stem.geology.eng.excavated_exposed', 'Excavated {name}. The layer beneath is now exposed.', { name: material.name }) : geoT('stem.geology.eng.excavated_column_done', 'Excavated {name}. That column is now fully excavated.', { name: material.name }));
       var result = { removedKey: v.key, removedY: v.y, name: material.name, exposedKey: belowVoxel ? belowVoxel.key : null, count: undoableCount(), firstPerson: !!fp.active, method: method || 'hand' };
       if (opts.onExcavate) opts.onExcavate(result);
       return result;
@@ -8277,7 +8370,7 @@ function updateCoreRig3d(dt3d) {
       }, plan.radius * 0.9);
       if (!changes.length) {                                   // a face too tall to reach: say how to get into it
         var nowMs = (window.performance && performance.now) ? performance.now() : Date.now();
-        if (opts.onFlash && !(rel.steepHintAt && nowMs - rel.steepHintAt < 6000)) { rel.steepHintAt = nowMs; opts.onFlash('This face of the ' + prop.label.toLowerCase() + ' is too tall to dig into sideways. Aim lower at its foot, or climb on and dig down.'); }
+        if (opts.onFlash && !(rel.steepHintAt && nowMs - rel.steepHintAt < 6000)) { rel.steepHintAt = nowMs; opts.onFlash(geoT('stem.geology.eng.this_face_of_the_is_too_tall_to_dig_into', 'This face of the {label} is too tall to dig into sideways. Aim lower at its foot, or climb on and dig down.', { label: prop.label.toLowerCase() })); }
         return null;
       }
       pushHistory3d({ r: rel.id, h: changes.map(function (ch) { return [ch[0], ch[1] >= rel.top - 1e-4 ? null : ch[1], ch[2]]; }) });
@@ -8290,7 +8383,7 @@ function updateCoreRig3d(dt3d) {
         rel.throughNoted = true;
         var col = fpWorldToVoxel(c[0], 0, c[2]), below = shallowest(col.x, col.z), belowCell = below == null ? null : cellAt(col.x, below, col.z);
         var belowName = belowCell ? (SCENE.palette[belowCell.key] || ROCKS[belowCell.key] || { name: belowCell.key }).name.toLowerCase() : 'rock';
-        opts.onFlash('You dug through the ' + prop.label.toLowerCase() + ' to the ' + belowName + ' beneath it. Keep digging.');
+        opts.onFlash(geoT('stem.geology.eng.you_dug_through_the_to_the_beneath_it_keep', 'You dug through the {label} to the {below_name} beneath it. Keep digging.', { label: prop.label.toLowerCase(), below_name: belowName }));
       }
       return { subs: Math.max(6, Math.min(30, changes.length)), cells: 0, firstTouch: 0, cleared: 0, specimens: 0, relief: true, count: undoableCount() };
     }
@@ -8386,7 +8479,7 @@ function updateCoreRig3d(dt3d) {
       var v = orbitHitCell3d(); if (!v) return;
       if (excavate) {
         var top = shallowest(v.x, v.z);
-        if (v.y !== top) { if (opts.onFlash) opts.onFlash('Dig the layers above first — deeper = older (superposition).'); if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y)); return; }
+        if (v.y !== top) { if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.dig_the_layers_above_first_deeper_older', 'Dig the layers above first — deeper = older (superposition).')); if (opts.onSelect) opts.onSelect(rockFacts(v.key, v.y)); return; }
         excavateVoxel(v);
       } else {
         if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
@@ -8431,7 +8524,7 @@ function updateCoreRig3d(dt3d) {
       if (fp.active) return;                                  // idempotent — no double-binding
       var landing = fpLandingPose(SCENE.id);
       if (!landing.ok) {                                      // nowhere to stand: refuse instead of falling for ever
-        if (opts.onFlash) opts.onFlash('No solid ground is visible to land on — ' + layerCauseText(landing.cause) + '. Reset the cutaway or the focus lens, then drop in again.');
+        if (opts.onFlash) opts.onFlash(geoT('stem.geology.eng.no_solid_ground_is_visible_to_land_on_reset', 'No solid ground is visible to land on — {layer_cause_text}. Reset the cutaway or the focus lens, then drop in again.', { layer_cause_text: layerCauseText(landing.cause, geoT) }));
         if (opts.onFpBail) { try { opts.onFpBail({ reason: landing.cause }); } catch (e) {} }
         return;
       }
@@ -8446,7 +8539,7 @@ function updateCoreRig3d(dt3d) {
       if (controls) controls.enabled = false;                // hand the camera to FP
       var seed = landing;
       fp.mode = fpExplorerMode(SCENE.id);
-      if (landing.relocated && opts.onFlash) opts.onFlash('Heads up: ' + layerCauseText(landing.cause) + ', so you are landing on the nearest solid ground' + (landing.layerName ? ' — ' + landing.layerName : '') + '.');
+      if (landing.relocated && opts.onFlash) opts.onFlash(geoT('stem.geology.eng.heads_up_so_you_are_landing_on_the_nearest', 'Heads up: {layer_cause_text}, so you are landing on the nearest solid ground{layer}.', { layer_cause_text: layerCauseText(landing.cause, geoT), layer: landing.layerName ? ' — ' + landing.layerName : '' }));
       fp.pos = { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }; fp.yaw = seed.yaw; fp.pitch = seed.pitch;
       fp.input = { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }; fp.turn = { yaw: 0, pitch: 0 };
       fp.velocity = { x: 0, y: 0, z: 0 }; fp.onGround = false; fp.jumpLatch = false; fp.target = null; fp.targetKey = '__none'; fp.lastMineAt = 0; fp.lastKey = '__none'; fp.lastHud = 0; fp.medium = 'air'; fp.mining = null; fp.tool = (o && o.tool === 'drill') ? 'drill' : 'pick'; fp.drillHeat = 0; fp.drillOverheated = false; fp.drillHeld = false; fp.drillHudAt = 0; fp.drillNextAt = 0; fp.safePose = { pos: { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }, yaw: seed.yaw, pitch: seed.pitch }; fp.lastSafeAt = 0; fp.hazardNearby = false; fp.blockedUntil = 0; fp.statusKey = '__refresh'; cnv.dataset.geologyPlayerMedium = 'air'; fpSetMiningProgress(0, false);
@@ -8750,7 +8843,7 @@ function updateCoreRig3d(dt3d) {
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); fpReseatIfUnsupported('history'); };
     eng.reset = function () {
       removed = {}; damaged = {}; excavationHistory = []; excavationRedo = []; debris3d.length = 0; specimens3d.forEach(function (sp) { sp.taken = false; }); reliefProps3d.forEach(function (rp) { rp.relief.cut.fill(rp.relief.top); rp.relief.touched = false; rp.relief.throughNoted = false; refreshRelief3d(rp); }); fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
-      coreRigState3d.running = false; coreRigState3d.deployed = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
+      coreRigState3d.running = false; coreRigState3d.deployed = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = geoT('stem.geology.eng.pack_ready', 'Pack ready');
       coreRigState3d.angle = 'vertical'; coreRigState3d.depth = CORE_RIG_DEPTHS[1]; coreRigState3d.origin = null; coreRigState3d.yaw = 0;
       coreRigState3d.path = []; coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.progress = 0; coreRigState3d.heat = 0;
       coreRigState3d.feedMode = 'cruise'; coreRigState3d.coolantRemaining = 2; coreRigState3d.coolantUsed = 0;
@@ -8787,7 +8880,7 @@ function updateCoreRig3d(dt3d) {
     eng.fpToolState = function () { return { tool: fp.tool, heat: fp.drillHeat, overheated: fp.drillOverheated, held: fp.drillHeld }; };
     eng.fpUndoMine = fpUndoMine;
     eng.fpRedoMine = fpRedoMine;
-    eng.fpRespawn = function () { if (coreRigState3d.running) return coreRigError3d('The rig is drilling. Let the bore finish before returning home.', 'running'); if (coreRigState3d.deployed) packCoreRig3d(); var result = fpRespawn(true); if (!result) return null; if (opts.onFlash) opts.onFlash(fp.mode === 'mine' ? (result.relocated ? 'Returned to the nearest solid ground.' : 'Returned to the dig-in point.') : 'Returned to the Deep Earth starting point.'); if (opts.onFpHome) opts.onFpHome(); return result; };
+    eng.fpRespawn = function () { if (coreRigState3d.running) return coreRigError3d(geoT('stem.geology.eng.the_rig_is_drilling_let_the_bore_finish', 'The rig is drilling. Let the bore finish before returning home.'), 'running'); if (coreRigState3d.deployed) packCoreRig3d(); var result = fpRespawn(true); if (!result) return null; if (opts.onFlash) opts.onFlash(fp.mode === 'mine' ? (result.relocated ? geoT('stem.geology.eng.returned_to_the_nearest_solid_ground', 'Returned to the nearest solid ground.') : geoT('stem.geology.eng.returned_to_the_dig_in_point', 'Returned to the dig-in point.')) : geoT('stem.geology.eng.returned_to_the_deep_earth_starting_point', 'Returned to the Deep Earth starting point.')); if (opts.onFpHome) opts.onFpHome(); return result; };
     eng.fpActive = function () { return !!fp.active; };
     eng.fpLanding = function () { var l = fpLandingPose(SCENE.id); return { ok: !!l.ok, relocated: !!l.relocated, cause: l.cause || null, ring: l.ring, pos: l.pos ? { x: l.pos.x, y: l.pos.y, z: l.pos.z } : null, layerKey: l.layerKey || null, layerName: l.layerName || null, fluidName: l.fluidName || null }; };
     eng.layerExtent = function (k) { return layerExtent(k); };
@@ -8874,7 +8967,7 @@ function updateCoreRig3d(dt3d) {
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, collisionGeotherm: collisionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpBearingTo: fpBearingTo, fpBearingOfYaw: fpBearingOfYaw, fpLayerTilt: fpLayerTilt, fpTiltKind: fpTiltKind, fpCompassWord: fpCompassWord,
       measurementSpeechText: measurementSpeechText, geoSpokenTexts: geoSpokenTexts,
-      localizeGeologyNames: localizeGeologyNames, geoNameKey: geoNameKey, geoNameTables: geoNameTables, localizeGeologyText: localizeGeologyText, localizeGeologyAll: localizeGeologyAll, geoTextKey: geoTextKey, geoTextRoots: geoTextRoots, geoTextFields: function () { return Object.keys(GEO_TEXT_FIELDS); }, sceneLabels: function () { return Object.keys(SCENES).map(function (id) { return SCENES[id].label; }); },
+      localizeGeologyNames: localizeGeologyNames, geoNameKey: geoNameKey, geoNameTables: geoNameTables, localizeGeologyText: localizeGeologyText, localizeGeologyAll: localizeGeologyAll, geoTextKey: geoTextKey, geoTextRoots: geoTextRoots, geoTextFields: function () { return Object.keys(GEO_TEXT_FIELDS); }, geoTextLists: function () { return Object.keys(GEO_TEXT_LISTS); }, geoValueMaps: geoValueMaps, formedAt: function () { return Object.assign({}, FORMED_AT); }, historySteps: function () { return HISTORY.map(function (h) { return { tk: h.tk, fb: h.fb }; }); }, rockCycle: function () { return JSON.parse(JSON.stringify(CYCLE)); }, datingTable: function () { return JSON.parse(JSON.stringify(DATING)); }, sceneLabels: function () { return Object.keys(SCENES).map(function (id) { return SCENES[id].label; }); },
       fpStatusLine: fpStatusLine, fpTargetLabelText: fpTargetLabelText, fpDrillReadoutText: fpDrillReadoutText, fpHoverMetaText: fpHoverMetaText, fpProfileText: fpProfileText, fpProfileReasonText: fpProfileReasonText,
       fpDirectionText: fpDirectionText, fpVerticalText: fpVerticalText, fpBlocksText: fpBlocksText, rockTypeText: rockTypeText, fpClimbGrip: fpClimbGrip, fpMantleTarget: fpMantleTarget, fpClimbOutHeading: fpClimbOutHeading, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpPropSurfaceY: fpPropSurfaceY, capPointSize3d: capPointSize3d, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
       coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigFeedProfile: coreRigFeedProfile, coreRigFormationLoad: coreRigFormationLoad, coreRigIntegrityLoss: coreRigIntegrityLoss, coreRigIntegrityFromStress: coreRigIntegrityFromStress, coreRigQualitySummary: coreRigQualitySummary, coreRigTrajectoryScan: coreRigTrajectoryScan, coreRigTrajectorySnapshot: coreRigTrajectorySnapshot, coreRigTrajectorySummary: coreRigTrajectorySummary, coreRigBoreBrief: coreRigBoreBrief, coreRigCoreCassette: coreRigCoreCassette, coreRigCompressedCore: coreRigCompressedCore, coreRigCompareReports: coreRigCompareReports, coreRigNextExperiment: coreRigNextExperiment, coreRigReportStableId: coreRigReportStableId, coreRigIntervalScanMs: coreRigIntervalScanMs, coreRigIntervalScanning: coreRigIntervalScanning, coreRigIntervalFeedback: coreRigIntervalFeedback, coreRigFormationCue: coreRigFormationCue, coreRigChallengeProgress: coreRigChallengeProgress, coreRigProgramKey: coreRigProgramKey, coreRigProgramCatalog: coreRigProgramCatalog, coreRigProgramRating: coreRigProgramRating, coreRigCertificationTier: coreRigCertificationTier, coreRigCertificationReward: coreRigCertificationReward, coreRigCertificationXpTarget: coreRigCertificationXpTarget, normalizeCoreRigPrograms: normalizeCoreRigPrograms, advanceCoreRigCertification: advanceCoreRigCertification, coreRigCertificationSummary: coreRigCertificationSummary, coreRigCertificationGuidance: coreRigCertificationGuidance, coreRigCertificationTiers: coreRigCertificationTiers, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); }, coreRigFeedModes: function () { return Object.keys(CORE_RIG_FEED_MODES); },
@@ -8917,6 +9010,8 @@ function updateCoreRig3d(dt3d) {
       var tf = function (k, fb, vars) { return t(k, fb, vars); };
       localizeGeologyAll(t);   // names + scene text follow the current language (redone only when it changes)
       var geoTT = function (en) { return typeof en === 'string' && en ? t(geoTextKey(en), en) : en; };   // English data text shown as-is elsewhere
+      var compassLetters = [t('stem.geology.compass.n', 'N'), t('stem.geology.compass.ne', 'NE'), t('stem.geology.compass.e', 'E'), t('stem.geology.compass.se', 'SE'),
+        t('stem.geology.compass.s', 'S'), t('stem.geology.compass.sw', 'SW'), t('stem.geology.compass.w', 'W'), t('stem.geology.compass.nw', 'NW')];   // clockwise from north
       function fpAnnounceTextFor(p) {   // fpAnnounceText in the student's language
         var summary = measurementSpeechText(p.measurements, t) || tf('stem.geology.speech.depth', '{label} about {n} kilometres', { label: geoTT('Depth'), n: p.depthKm });
         return tf('stem.geology.speech.inside', 'You are inside {layer}, {type}. {summary}. State {state}.', { layer: p.layerName, type: rockTypeText(p.type, t), summary: summary, state: geoTT(p.state) }) + (p.bust ? ' ' + geoTT(p.bust) : '');
@@ -9047,7 +9142,7 @@ function updateCoreRig3d(dt3d) {
       var fpl = React.useState(null); var fpLanding = fpl[0], setFpLanding = fpl[1];   // where "Drop in" will land (engine-validated; null until reported)
       setScene(scene); setGrid(res);   // sync active scene + module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) before render + effects read them
       var feat = SCENE.features;
-      var cutaway = cutawayReadout(slice, NZ);
+      var cutaway = cutawayReadout(slice, NZ, t);
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
       React.useEffect(function () {
@@ -9138,9 +9233,9 @@ function updateCoreRig3d(dt3d) {
         cleanReport.totalReward = transition.researchReward + certification.certificationReward;
         var logs = Array.isArray(logsByScene[sceneId]) ? logsByScene[sceneId].slice(-5) : [];
         var previousCoreLog = logs.length ? logs[logs.length - 1] : null;
-        cleanReport.comparison = coreRigCompareReports(previousCoreLog || {}, cleanReport);
+        cleanReport.comparison = coreRigCompareReports(previousCoreLog || {}, cleanReport, t);
         if (!previousCoreLog || !cleanReport.comparison.eligible) cleanReport.comparison = null;
-        cleanReport.nextExperiment = coreRigNextExperiment(cleanReport, certification.entry);
+        cleanReport.nextExperiment = coreRigNextExperiment(cleanReport, certification.entry, t);
         logs.push(cleanReport); logsByScene[sceneId] = logs; researchByScene[sceneId] = transition.entry;
         var oldXp = Math.max(0, Math.floor(Number(book.xp) || 0));
         var nextXp = oldXp + cleanReport.totalReward;
@@ -9169,32 +9264,32 @@ function updateCoreRig3d(dt3d) {
         });
         var summary = coreRigReportSummary(cleanReport);
         var sequence = cleanReport.samples.map(function (sample) { return sample.name; }).join(' → ');
-        var boundary = cleanReport.stopReason ? (' Stop: ' + coreRigStopLabel(cleanReport.stopReason) + '.') : ' Target depth recovered.';
+        var boundary = ' ' + (cleanReport.stopReason ? tf('stem.geology.ui.stop_reason', 'Stop: {reason}.', { reason: coreRigStopLabel(cleanReport.stopReason, t) }) : t('stem.geology.ui.target_depth_recovered_sentence', 'Target depth recovered.'));
         var certificationNote = certification.assessment && certification.assessment.level
-          ? (' · This run ' + certification.assessment.label + ' at ' + certification.assessment.rating + '/200 program rating')
-          : (' · This run unrated' + (certification.program && certification.program.tier ? (' · program best remains ' + certification.program.tierLabel) : ''));
+          ? ' · ' + tf('stem.geology.ui.this_run_rated', 'This run: {label} at {rating}/200 program rating', { label: certification.assessment.label, rating: certification.assessment.rating })
+          : (' · ' + t('stem.geology.ui.this_run_unrated', 'This run unrated') + (certification.program && certification.program.tier ? ' · ' + tf('stem.geology.ui.program_best_remains', 'program best remains {tier}', { tier: geoTT(certification.program.tierLabel) }) : ''));
         addNotebookEvidence(
           'core-rig',
-          'Directional core · ' + cleanReport.angleDegrees + '° / ' + cleanReport.targetDepth + ' intervals · Grade ' + evaluation.grade + ' (' + evaluation.score + ')' + (evaluation.integrityPercent != null ? (' · ' + evaluation.integrityPercent + '% integrity') : '') + ' · Brief ' + cleanReport.boreBrief.metCount + '/3' + certificationNote,
+          tf('stem.geology.ui.core_note_title', 'Directional core · {angle}° / {depth} intervals · Grade {grade} ({score})', { angle: cleanReport.angleDegrees, depth: cleanReport.targetDepth, grade: evaluation.grade, score: evaluation.score }) + (evaluation.integrityPercent != null ? ' · ' + tf('stem.geology.ui.integrity', '{integrity_percent}% integrity', { integrity_percent: evaluation.integrityPercent }) : '') + ' · ' + tf('stem.geology.ui.brief_met', 'Brief {met}/3', { met: cleanReport.boreBrief.metCount }) + certificationNote,
           sequence + '.' + boundary,
           'core-rig-' + reportId
         );
         var oldRank = fieldRankForXp(oldXp), nextRank = fieldRankForXp(nextXp);
-        var toastMessage = (transition.newBest ? 'New personal best! ' : '') + 'Grade ' + evaluation.grade + ' · ' + evaluation.score + '/200.' + (evaluation.integrityPercent != null ? (' Core integrity ' + evaluation.integrityPercent + '%.') : '') + ' Bore Brief ' + cleanReport.boreBrief.metCount + '/3.';
-        if (certification.tierUp && certification.program) toastMessage += ' ' + certification.program.tierLabel + ': ' + certification.program.angleDegrees + '° / ' + certification.program.depth + ' program!';
-        if (!certification.tierUp && certification.program && certification.program.tier === 0) toastMessage += ' ' + coreRigCertificationGuidance(certification.program) + '.';
+        var toastMessage = (transition.newBest ? t('stem.geology.ui.new_personal_best', 'New personal best!') + ' ' : '') + tf('stem.geology.ui.grade_score', 'Grade {grade} · {score}/200.', { grade: evaluation.grade, score: evaluation.score }) + (evaluation.integrityPercent != null ? ' ' + tf('stem.geology.ui.core_integrity_sentence', 'Core integrity {pct}%.', { pct: evaluation.integrityPercent }) : '') + ' ' + tf('stem.geology.ui.bore_brief_met', 'Bore Brief {met}/3.', { met: cleanReport.boreBrief.metCount });
+        if (certification.tierUp && certification.program) toastMessage += ' ' + tf('stem.geology.ui.tier_program', '{tier}: {angle}° / {depth} program!', { tier: geoTT(certification.program.tierLabel), angle: certification.program.angleDegrees, depth: certification.program.depth });
+        if (!certification.tierUp && certification.program && certification.program.tier === 0) toastMessage += ' ' + coreRigCertificationGuidance(certification.program, t) + '.';
         if (cleanReport.totalReward) toastMessage += ' +' + cleanReport.totalReward + ' XP.';
-        else if (certification.program && certification.program.tier >= 3) toastMessage += ' Highest operator tier already earned.';
-        else toastMessage += ' Improve the program rating or core quality to advance.';
-        if (!previousCertificationSummary.complete && nextCertificationSummary.complete) toastMessage += ' All nine programs certified — Certified Core Operator!';
-        if (previousCertificationSummary.mastered < 9 && nextCertificationSummary.mastered === 9) toastMessage += ' Every program mastered — Master Core Operator!';
-        if (cleanReport.comparison) toastMessage += ' Paired finding · ' + cleanReport.comparison.similarityPct + '% sequence match.';
-        if (cleanReport.nextExperiment) toastMessage += ' Next experiment ready.';
-        if (nextRank.label !== oldRank.label) toastMessage += ' Rank up: ' + nextRank.label + '!';
+        else if (certification.program && certification.program.tier >= 3) toastMessage += ' ' + t('stem.geology.ui.highest_tier_earned', 'Highest operator tier already earned.');
+        else toastMessage += ' ' + t('stem.geology.ui.improve_to_advance', 'Improve the program rating or core quality to advance.');
+        if (!previousCertificationSummary.complete && nextCertificationSummary.complete) toastMessage += ' ' + t('stem.geology.ui.all_programs_certified_toast', 'All nine programs certified — Certified Core Operator!');
+        if (previousCertificationSummary.mastered < 9 && nextCertificationSummary.mastered === 9) toastMessage += ' ' + t('stem.geology.ui.all_programs_mastered_toast', 'Every program mastered — Master Core Operator!');
+        if (cleanReport.comparison) toastMessage += ' ' + tf('stem.geology.ui.paired_finding', 'Paired finding · {pct}% sequence match.', { pct: cleanReport.comparison.similarityPct });
+        if (cleanReport.nextExperiment) toastMessage += ' ' + t('stem.geology.ui.next_experiment_ready', 'Next experiment ready.');
+        if (nextRank.label !== oldRank.label) toastMessage += ' ' + tf('stem.geology.ui.rank_up', 'Rank up: {rank}!', { rank: nextRank.label });
         addToast(toastMessage, transition.newBest || certification.tierUp ? 'success' : 'info');
         var certificationSpeech = certification.tierUp && certification.program
-          ? tf('stem.geology.sr.operator_tier_earned', '{tier} operator tier earned for {degrees} degrees, {depth} intervals. ', { tier: certification.program.tierLabel, degrees: certification.program.angleDegrees, depth: certification.program.depth })
-          : (certification.program && certification.program.tier === 0 ? tf('stem.geology.sr.program_remains_unrated', 'Program remains unrated. {guidance}. ', { guidance: coreRigCertificationGuidance(certification.program) }) : '');
+          ? tf('stem.geology.sr.operator_tier_earned', '{tier} operator tier earned for {degrees} degrees, {depth} intervals. ', { tier: geoTT(certification.program.tierLabel), degrees: certification.program.angleDegrees, depth: certification.program.depth })
+          : (certification.program && certification.program.tier === 0 ? tf('stem.geology.sr.program_remains_unrated', 'Program remains unrated. {guidance}. ', { guidance: coreRigCertificationGuidance(certification.program, t) }) : '');
         var completionSpeech = !previousCertificationSummary.complete && nextCertificationSummary.complete ? t('stem.geology.sr.all_programs_certified', 'All nine programs certified. Certified Core Operator earned. ') : '';
         if (previousCertificationSummary.mastered < 9 && nextCertificationSummary.mastered === 9) completionSpeech += t('stem.geology.sr.every_program_mastered', 'Every program mastered. Master Core Operator earned. ');
         announce(tf('stem.geology.sr.core_log_saved', 'Core log saved. Grade {grade}, {score} points. {samples} samples across {materials} materials. ', { grade: evaluation.grade, score: evaluation.score, samples: summary.sampleCount, materials: summary.uniqueMaterials }) + (evaluation.integrityPercent != null ? tf('stem.geology.sr.core_integrity_percent', '{percent} percent core integrity. ', { percent: evaluation.integrityPercent }) : '') + tf('stem.geology.sr.bore_brief_complete', 'Bore Brief {met} of 3 complete. ', { met: cleanReport.boreBrief.metCount }) + certificationSpeech + completionSpeech + (cleanReport.totalReward ? tf('stem.geology.sr.experience_earned', '{xp} experience earned. ', { xp: cleanReport.totalReward }) : t('stem.geology.sr.no_new_experience', 'No new experience this run. ')) +
@@ -9210,7 +9305,7 @@ function updateCoreRig3d(dt3d) {
         var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
         var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = entry;
         saveFieldBook(Object.assign({}, book, { byScene: byScene }));
-        addToast('Field run started: ' + contract.label + '. First specimen: ' + fieldSpecimenName(sceneId, contract.targets[0]) + '.', 'info');
+        addToast(tf('stem.geology.ui.field_run_started_first_specimen', 'Field run started: {label}. First specimen: {field_specimen_name}.', { label: contract.label, field_specimen_name: fieldSpecimenName(sceneId, contract.targets[0]) }), 'info');
         announce(tf('stem.geology.sr.field_run_started_first_specimen', 'Field run started. {brief} First specimen: {targets}.', { brief: contract.brief, targets: fieldSpecimenName(sceneId, contract.targets[0]) }));
         return true;
       }
@@ -9220,7 +9315,7 @@ function updateCoreRig3d(dt3d) {
         var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
         var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = retireFieldRunEntry(entry);
         saveFieldBook(Object.assign({}, book, { byScene: byScene }));
-        addToast('Assignment retired. Journal discoveries and Field XP were kept.', 'info');
+        addToast(t('stem.geology.ui.assignment_retired_journal_discoveries_and', 'Assignment retired. Journal discoveries and Field XP were kept.'), 'info');
         announce(contract ? tf('stem.geology.sr.assignment_retired_named', '{label} retired. Your specimen journal and Field XP are unchanged.', { label: contract.label }) : t('stem.geology.sr.assignment_retired', 'Assignment retired. Your specimen journal and Field XP are unchanged.'));
         return true;
       }
@@ -9232,7 +9327,7 @@ function updateCoreRig3d(dt3d) {
         var securedName = fieldSpecimenName(sceneId, sample.removedKey);
         if (discovery.added) {
           var specimenFacts = rockFacts(sample.removedKey, sample.removedY);
-          var specimenDetail = specimenFacts && specimenFacts.R ? specimenFacts.R.formation + ' ' + specimenFacts.R.age : 'Collected during first-person fieldwork.';
+          var specimenDetail = specimenFacts && specimenFacts.R ? specimenFacts.R.formation + ' ' + specimenFacts.R.age : t('stem.geology.ui.collected_first_person', 'Collected during first-person fieldwork.');
           addNotebookEvidence('specimen', securedName, specimenDetail, sample.removedKey);
         }
         var entry = book.byScene && book.byScene[sceneId];
@@ -9240,7 +9335,7 @@ function updateCoreRig3d(dt3d) {
           if (discovery.added) {
             saveFieldBook(nextBook);
             var freeProgress = fieldDiscoveryProgress(sceneId, discovery.discoveredByScene);
-            addToast('New specimen logged: ' + securedName + ' · ' + freeProgress.found + '/' + freeProgress.total + ' in this scene.', 'success');
+            addToast(tf('stem.geology.ui.new_specimen_logged_in_this_scene', 'New specimen logged: {secured_name} · {found}/{total} in this scene.', { secured_name: securedName, found: freeProgress.found, total: freeProgress.total }), 'success');
             announce(tf('stem.geology.sr.new_field_journal_specimen_of_mineable_materia', 'New field journal specimen: {secured_name}. {found} of {total} mineable materials logged in this scene.', { secured_name: securedName, found: freeProgress.found, total: freeProgress.total }));
           }
           return discovery.added;
@@ -9250,20 +9345,20 @@ function updateCoreRig3d(dt3d) {
         if (!advanced.matched) {
           if (discovery.added) {
             saveFieldBook(nextBook);
-            addToast('New specimen logged: ' + securedName + ' · contract target unchanged.', 'success');
+            addToast(tf('stem.geology.ui.new_specimen_logged_contract_target', 'New specimen logged: {secured_name} · contract target unchanged.', { secured_name: securedName }), 'success');
             announce(tf('stem.geology.sr.new_field_journal_specimen_your_current_contra', 'New field journal specimen: {secured_name}. Your current contract target is still {expected_key}.', { secured_name: securedName, expected_key: fieldSpecimenName(sceneId, advanced.expectedKey) }));
           }
           return discovery.added;
         }
         var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = advanced.entry;
         nextBook.byScene = byScene; saveFieldBook(nextBook);
-        var journalNote = discovery.added ? ' New specimen logged.' : '';
+        var journalNote = discovery.added ? ' ' + t('stem.geology.ui.new_specimen_logged_short', 'New specimen logged.') : '';
         if (advanced.ready) {
-          addToast('Field set complete.' + journalNote + ' Return to the entry point to bank ' + fieldRunReward(contract) + ' XP.', 'success');
+          addToast(tf('stem.geology.ui.field_set_complete_return_to_the_entry_point', 'Field set complete.{journal_note} Return to the entry point to bank {field_run_reward} XP.', { journal_note: journalNote, field_run_reward: fieldRunReward(contract) }), 'success');
           announce(tf('stem.geology.sr.sample_secured_field_set_complete_return_to_th', 'Sample secured: {secured_name}.{journal_note} Field set complete. Return to the entry point to bank your field XP.', { secured_name: securedName, journal_note: journalNote }));
         } else {
           var nextName = fieldSpecimenName(sceneId, advanced.expectedKey);
-          addToast('Sample secured: ' + securedName + '.' + journalNote + ' Next: ' + nextName + '.', 'success');
+          addToast(tf('stem.geology.ui.sample_secured_next', 'Sample secured: {secured_name}.{journal_note} Next: {next_name}.', { secured_name: securedName, journal_note: journalNote, next_name: nextName }), 'success');
           announce(tf('stem.geology.sr.sample_secured_next_specimen', 'Sample secured: {secured_name}.{journal_note} Next specimen: {next_name}.', { secured_name: securedName, journal_note: journalNote, next_name: nextName }));
         }
         return true;
@@ -9277,15 +9372,15 @@ function updateCoreRig3d(dt3d) {
         var seen = Array.isArray(layers[sceneId]) ? layers[sceneId].slice() : [];
         var fresh = seen.indexOf(here.key) < 0;
         var where = (here.layerName || here.key) + ' · ' + here.depthKm + ' km · ' + temperatureValue(here.tempC);
-        if (!fresh) { addToast('Layer reached: ' + where + (walkedThisDive > 1 ? ' · ' + walkedThisDive + ' layers this dive' : ''), 'info'); return false; }
+        if (!fresh) { addToast(tf('stem.geology.ui.layer_reached', 'Layer reached: {where}', { where: where }) + (walkedThisDive > 1 ? ' · ' + tf('stem.geology.ui.layers_this_dive', 'Layers this dive: {n}', { n: walkedThisDive }) : ''), 'info'); return false; }
         seen.push(here.key);
         var nextLayers = Object.assign({}, layers); nextLayers[sceneId] = seen;
         var oldXp = Math.max(0, Math.floor(Number(book.xp) || 0)), newXp = oldXp + LAYER_MILESTONE_XP;
         var oldRank = fieldRankForXp(oldXp), newRank = fieldRankForXp(newXp);
         saveFieldBook(Object.assign({ xp: 0, total: 0, byScene: {} }, book, { xp: newXp, layersByScene: nextLayers }));
-        var rankUp = oldRank.label !== newRank.label ? ' Rank up: ' + newRank.label + '!' : '';
-        addToast('New layer reached: ' + where + ' · +' + LAYER_MILESTONE_XP + ' XP.' + rankUp, 'success');
-        announce(tf('stem.geology.sr.new_layer_reached_you_earned_field_xp', 'New layer reached: {key}. {temp_c}. You earned {layer_milestone_xp} field XP.{rank_up}', { key: (here.layerName || here.key), temp_c: temperatureSpeech(here.tempC), layer_milestone_xp: LAYER_MILESTONE_XP, rank_up: rankUp }));
+        var rankUp = oldRank.label !== newRank.label ? ' ' + tf('stem.geology.ui.rank_up', 'Rank up: {rank}!', { rank: newRank.label }) : '';
+        addToast(tf('stem.geology.ui.new_layer_reached_xp', 'New layer reached: {where} · +{layer_milestone_xp} XP.{rank_up}', { where: where, layer_milestone_xp: LAYER_MILESTONE_XP, rank_up: rankUp }), 'success');
+        announce(tf('stem.geology.sr.new_layer_reached_you_earned_field_xp', 'New layer reached: {key}. {temp_c}. You earned {layer_milestone_xp} field XP.{rank_up}', { key: (here.layerName || here.key), temp_c: tf('stem.geology.speech.temperature', 'Temperature about {n} degrees Celsius', { n: typeof here.tempC === 'number' ? here.tempC : String(here.tempC).replace(/^≈\s*/, '') }), layer_milestone_xp: LAYER_MILESTONE_XP, rank_up: rankUp }));
         return true;
       }
       // Strike and dip (📐 or T): how the layer at the reticle is tilted, and what that tells a geologist.
@@ -9437,14 +9532,14 @@ function updateCoreRig3d(dt3d) {
         };
         setCoreRigReview(null); setCoreRigChallenge(challenge); setCoreRigProgramSelection(catalogProgram.key);
         var xpTarget = coreRigCertificationXpTarget(cell.bestRating);
-        var stateCopy = cell.tier ? (cell.tierLabel + ' · best grade ' + cell.bestGrade + ' · rating ' + cell.bestRating) : (cell.attempts ? 'retry available' : 'open program');
-        var targetCopy = xpTarget == null ? 'Program XP ceiling reached.' : ('A ' + xpTarget + '-point program rating reaches the next XP step.');
-        var programNextAction = trajectoryApplication.engineState && trajectoryApplication.engineState.deployed ? 'Trajectory applied — start the bore.' : 'Program loaded — enter Walk and Dig, find level ground, then deploy the rig.';
+        var stateCopy = cell.tier ? tf('stem.geology.ui.program_state_tier', '{tier} · best grade {grade} · rating {rating}', { tier: geoTT(cell.tierLabel), grade: cell.bestGrade, rating: cell.bestRating }) : (cell.attempts ? t('stem.geology.ui.retry_available', 'retry available') : t('stem.geology.ui.open_program', 'open program'));
+        var targetCopy = xpTarget == null ? t('stem.geology.ui.program_xp_ceiling', 'Program XP ceiling reached.') : tf('stem.geology.ui.program_xp_next_step', 'A program rating of {points} reaches the next XP step.', { points: xpTarget });
+        var programNextAction = trajectoryApplication.engineState && trajectoryApplication.engineState.deployed ? t('stem.geology.ui.trajectory_applied', 'Trajectory applied — start the bore.') : t('stem.geology.ui.program_loaded_next', 'Program loaded — enter Walk and Dig, find level ground, then deploy the rig.');
         if (experimentMode) {
-          addToast('Next experiment loaded · ' + catalogProgram.angleDegrees + '° / ' + catalogProgram.depth + '. ' + (experimentQuestion || experimentControl), 'info');
+          addToast(tf('stem.geology.ui.next_experiment_loaded', 'Next experiment loaded · {angle_degrees}° / {depth}. {v}', { angle_degrees: catalogProgram.angleDegrees, depth: catalogProgram.depth, v: experimentQuestion || experimentControl }), 'info');
           announce(tf('stem.geology.sr.next_controlled_experiment_loaded_degrees_inte', 'Next controlled experiment loaded. {angle_degrees} degrees, {depth} intervals. {experiment_control}. {experiment_question} {program_next_action}', { angle_degrees: catalogProgram.angleDegrees, depth: catalogProgram.depth, experiment_control: experimentControl, experiment_question: experimentQuestion, program_next_action: programNextAction }));
         } else {
-          addToast('Program loaded · ' + catalogProgram.angleDegrees + '° / ' + catalogProgram.depth + ' · ' + stateCopy + '. ' + programNextAction, 'info');
+          addToast(tf('stem.geology.ui.program_loaded', 'Program loaded · {angle_degrees}° / {depth} · {state_copy}. {program_next_action}', { angle_degrees: catalogProgram.angleDegrees, depth: catalogProgram.depth, state_copy: stateCopy, program_next_action: programNextAction }), 'info');
           announce(tf('stem.geology.sr.core_rig_certification_program_loaded_degrees', 'Core rig certification program loaded. {angle_degrees} degrees, {depth} intervals. {state_copy}. {target_copy} Grade C or better, at least 85 percent integrity, and target recovery or a safe boundary after 75 percent earns certification. {program_next_action}', { angle_degrees: catalogProgram.angleDegrees, depth: catalogProgram.depth, state_copy: stateCopy, target_copy: targetCopy, program_next_action: programNextAction }));
         }
         return true;
@@ -9465,8 +9560,8 @@ function updateCoreRig3d(dt3d) {
           angle: challengeAngle, depth: challengeDepth
         };
         setCoreRigReview({ sceneId: SCENE.id, report: report }); setCoreRigChallenge(challenge); setCoreRigProgramSelection(programKey);
-        var targetCopy = progress.xpTarget == null ? 'The 200-point research ceiling is already reached.' : (progress.xpTarget + ' points earns more research XP.');
-        addToast('Challenge loaded · ' + coreRigAngleDegrees(challengeAngle) + '° / ' + challengeDepth + ' intervals · replay ' + progress.replayScore + '.', 'info');
+        var targetCopy = progress.xpTarget == null ? t('stem.geology.ui.research_ceiling_reached', 'The 200-point research ceiling is already reached.') : tf('stem.geology.ui.research_points_next', 'A score of {points} earns more research XP.', { points: progress.xpTarget });
+        addToast(tf('stem.geology.ui.challenge_loaded_intervals_replay', 'Challenge loaded · {core_rig_angle_degrees}° / {challenge_depth} intervals · replay {replay_score}.', { core_rig_angle_degrees: coreRigAngleDegrees(challengeAngle), challenge_depth: challengeDepth, replay_score: progress.replayScore }), 'info');
         announce(tf('stem.geology.sr.challenge_trajectory_loaded_replay_score_perso', 'Challenge trajectory loaded. Replay score {replay_score}. Personal best {best_score}. {target_copy}', { replay_score: progress.replayScore, best_score: progress.bestScore, target_copy: targetCopy }));
         return true;
       }
@@ -9482,10 +9577,10 @@ function updateCoreRig3d(dt3d) {
         var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = nextEntry;
         var nextBook = Object.assign({}, book, { xp: Math.max(0, Math.floor(Number(book.xp) || 0)) + reward, total: Math.max(0, Math.floor(Number(book.total) || 0)) + 1, byScene: byScene });
         saveFieldBook(nextBook);
-        addNotebookEvidence('field-run', contract.label, contract.brief + ' Collected in order: ' + contract.targets.map(function (key) { return fieldSpecimenName(sceneId, key); }).join(' → ') + '.', 'field-run-' + contract.id);
+        addNotebookEvidence('field-run', contract.label, contract.brief + ' ' + tf('stem.geology.ui.collected_in_order', 'Collected in order: {list}.', { list: contract.targets.map(function (key) { return fieldSpecimenName(sceneId, key); }).join(' → ') }), 'field-run-' + contract.id);
         var nextContract = fieldExpeditionFor(sceneId, completed);
-        var rankUp = oldRank.label !== newRank.label ? ' Rank up: ' + newRank.label + '!' : '';
-        addToast('Field run banked: +' + reward + ' XP.' + rankUp + ' Next: ' + (nextContract ? nextContract.label : 'new contract') + '.', 'success');
+        var rankUp = oldRank.label !== newRank.label ? ' ' + tf('stem.geology.ui.rank_up', 'Rank up: {rank}!', { rank: newRank.label }) : '';
+        addToast(tf('stem.geology.ui.field_run_banked', 'Field run banked: +{reward} XP.{rank_up} Next: {next}.', { reward: reward, rank_up: rankUp, next: nextContract ? nextContract.label : t('stem.geology.ui.new_contract', 'new contract') }), 'success');
         announce(tf('stem.geology.sr.field_run_complete_you_earned_field_xp', 'Field run complete. You earned {reward} field XP.{rank_up}', { reward: reward, rank_up: rankUp }));
         return true;
       }
@@ -9653,19 +9748,19 @@ function updateCoreRig3d(dt3d) {
         var all = Object.assign({}, d.digLogs || {});
         var entry = { at: Date.now(), layers: layers.map(function (l) { return { key: l.key, name: l.name, depthKm: l.depthKm, color: l.color }; }) };
         all[sceneId] = (all[sceneId] || []).slice(-3).concat([entry]); upd('digLogs', all);
-        addNotebookEvidence('dig', 'Your dig: ' + entry.layers.length + ' layers', digLogSummary(entry.layers, sceneId), 'dig-' + entry.at);
+        addNotebookEvidence('dig', tf('stem.geology.ui.your_dig_layers', 'Your dig · layers: {n}', { n: entry.layers.length }), digLogSummary(entry.layers, sceneId, t), 'dig-' + entry.at);
       }
       function collectSpecimen(sceneId, found) {
         if (!found || !found.kind) return;
         var all = Object.assign({}, specimensRef.current || {}), mine = Object.assign({}, all[sceneId] || {}), firstOfKind = !mine[found.kind];
         mine[found.kind] = (mine[found.kind] || 0) + 1; all[sceneId] = mine; specimensRef.current = all; upd('specimensFound', all);
         if (found.crustFossil && !(fossilsRef.current || {})[found.key]) { uncoverFossil(found.key); return; }
-        var hardnessLine = mohsLine(found.kind);
+        var hardnessLine = mohsLine(found.kind, t);
         if (firstOfKind) addNotebookEvidence(found.crustFossil ? 'fossil' : 'specimen', found.name, found.tells + (hardnessLine ? ' ' + hardnessLine.text : ''), found.kind);
         var progressNow = findsProgress(all).byScene[sceneId];
         if (firstOfKind && progressNow && progressNow.complete) {                   // this find was the world's last one
-          var worldLabel = (SCENES[sceneId] && SCENES[sceneId].label) || sceneId, doneMsg = 'Field guide complete for ' + worldLabel.replace(/^\S+\s/, '') + ': you dug free every find this world hides (' + progressNow.total + ' of ' + progressNow.total + ').';
-          addNotebookEvidence('guide', 'Field guide complete', sceneSpecimenCatalog(sceneId).map(function (c) { return c.name; }).join(', ') + '.', 'guide-' + sceneId);
+          var worldLabel = (SCENES[sceneId] && SCENES[sceneId].label) || sceneId, doneMsg = tf('stem.geology.ui.field_guide_complete_for', 'Field guide complete for {world}: you dug free every find this world hides ({found} of {total}).', { world: worldLabel.replace(/^\S+\s/, ''), found: progressNow.total, total: progressNow.total });
+          addNotebookEvidence('guide', t('stem.geology.ui.field_guide_complete', 'Field guide complete'), sceneSpecimenCatalog(sceneId, t).map(function (c) { return c.name; }).join(', ') + '.', 'guide-' + sceneId);
           setTimeout(function () { addToast('🏆 ' + doneMsg, 'success'); announce(doneMsg); }, 900);   // after the find's own message
         }
         addToast(firstOfKind ? tf('stem.geology.sr.find_toast_first', '{icon} {name} found! {tells}', { icon: found.icon || '💎', name: found.name, tells: found.tells }) : tf('stem.geology.sr.find_toast_again', '{icon} {name} · {count} found', { icon: found.icon || '💎', name: found.name, count: mine[found.kind] }), 'success');
@@ -9674,9 +9769,9 @@ function updateCoreRig3d(dt3d) {
       function uncoverFossil(key) {
         var cur = fossilsRef.current || {}; if (cur[key]) return; // already collected this layer's fossil
         var nf = Object.assign({}, cur); nf[key] = 1; setFound(nf); upd('fossils', nf);
-        var F = FOSSILS[key], rn = ROCKS[key] ? ROCKS[key].name : 'rock';
-        addNotebookEvidence('fossil', F ? F.name : 'Fossil', F ? F.tells : 'A fossil was uncovered in this sedimentary layer.', key);
-        addToast('✨ ' + (F ? F.name : 'Fossil') + ' uncovered in the ' + rn + '!', 'success');
+        var F = FOSSILS[key], rn = ROCKS[key] ? ROCKS[key].name : t('stem.geology.ui.rock', 'rock');
+        addNotebookEvidence('fossil', F ? F.name : t('stem.geology.ui.fossil', 'Fossil'), F ? F.tells : t('stem.geology.ui.fossil_uncovered_here', 'A fossil was uncovered in this sedimentary layer.'), key);
+        addToast('✨ ' + tf('stem.geology.ui.fossil_uncovered_in', '{name} uncovered in the {rock}!', { name: F ? F.name : t('stem.geology.ui.fossil', 'Fossil'), rock: rn }), 'success');
         announce(tf('stem.geology.sr.you_uncovered_in_the', 'You uncovered {name} in the {rock}. {tells}', { name: F ? F.name : t('stem.geology.sr.a_fossil', 'a fossil'), rock: rn, tells: F ? F.tells : '' }));
       }
       function takeCore(site) {
@@ -9696,8 +9791,9 @@ function updateCoreRig3d(dt3d) {
         if (remediation) misconceptions = Object.assign({}, misconceptions, { [remediation.id]: (Number(misconceptions[remediation.id]) || 0) + 1 });
         var nextQuizState = Object.assign({}, quizByScene, { [SCENE.id]: { answered: (Number(previous.answered) || 0) + 1, correct: (Number(previous.correct) || 0) + (i === Q.correct ? 1 : 0), misconceptions: misconceptions } });
         upd('quizByScene', nextQuizState);
-        addNotebookEvidence('quiz', Q.q, (i === Q.correct ? 'Correct. ' : 'Not quite. ') + (remediation && remediation.note ? remediation.note + ' ' : '') + Q.why, 'question-' + quizI);
-        announce(tf(i === Q.correct ? 'stem.geology.sr.quiz_correct' : 'stem.geology.sr.quiz_not_quite', i === Q.correct ? 'Correct. {note}{why}' : 'Not quite. {note}{why}', { note: (remediation && remediation.note ? remediation.note + ' ' : ''), why: Q.why }));
+        var verdict = tf(i === Q.correct ? 'stem.geology.sr.quiz_correct' : 'stem.geology.sr.quiz_not_quite', i === Q.correct ? 'Correct. {note}{why}' : 'Not quite. {note}{why}', { note: (remediation && remediation.note ? remediation.note + ' ' : ''), why: Q.why });
+        addNotebookEvidence('quiz', Q.q, verdict, 'question-' + quizI);
+        announce(verdict);
       }
       function retryQuiz() { setQuizAns(null); announce(t('stem.geology.sr.try_the_same_question_again_use_the_targeted_f', 'Try the same question again. Use the targeted feedback, then choose an answer.')); }
       function nextQuiz() { var B = sceneQuiz().items; var n = (quizI + 1) % B.length; setQuizI(n); setQuizAns(null); announce(tf('stem.geology.sr.question', 'Question {n}. {q}', { n: (n + 1), q: B[n].q })); }
@@ -10077,7 +10173,7 @@ function updateCoreRig3d(dt3d) {
         var restored = engine.undoExcavate();
         if (!restored) { announce(t('stem.geology.sr.there_is_no_excavation_to_undo', 'There is no excavation to undo.')); return; }
         var facts = rockFacts(restored.key, restored.y);
-        selectRock(facts, false, 'Restored ' + restored.name + '. ' + (restored.remaining ? restored.remaining + ' excavated blocks remain.' : 'The outcrop is back to its original surface.'));
+        selectRock(facts, false, tf('stem.geology.ui.restored_name', 'Restored {name}.', { name: restored.name }) + ' ' + (restored.remaining ? tf('stem.geology.ui.excavated_blocks_remain', 'Excavated blocks remaining: {n}.', { n: restored.remaining }) : t('stem.geology.ui.outcrop_restored', 'The outcrop is back to its original surface.')));
       }
       function redoLastExcavation() {
         var engine = window[ENGINE_KEY];
@@ -10086,7 +10182,7 @@ function updateCoreRig3d(dt3d) {
         var redone = engine.redoExcavate();
         if (!redone) { announce(t('stem.geology.sr.there_is_no_excavation_to_redo', 'There is no excavation to redo.')); return; }
         var facts = rockFacts(redone.key, redone.y);
-        selectRock(facts, false, 'Re-excavated ' + redone.name + '. ' + redone.count + (redone.count === 1 ? ' block is' : ' blocks are') + ' now removed.');
+        selectRock(facts, false, tf('stem.geology.ui.reexcavated_name', 'Re-excavated {name}.', { name: redone.name }) + ' ' + tf('stem.geology.ui.blocks_removed_now', 'Blocks removed now: {n}.', { n: redone.count }));
       }
       // "Where it sits": extent, thickness, share and neighbours of the selected material, from
       // the scene generator. Shared by the sidebar profile and the in-viewport layer callout.
@@ -10099,6 +10195,8 @@ function updateCoreRig3d(dt3d) {
         if (ext.radial && SCENE.order) {
           var idx = SCENE.order.indexOf(f.key);
           lines.push(tf('stem.geology.sits_shell', 'Shell {n} of {m} from the surface · centred about {depth} km down', { n: idx + 1, m: SCENE.order.length, depth: R.depthKm }));
+        } else if (ext.count && f.key === 'soil' && !SCENE.palette) {
+          lines.push(t('stem.geology.sits_soil', 'Drawn one block thick so you can dig it · real soil is only metres thick'));
         } else if (ext.count) {
           lines.push(tf('stem.geology.sits_span', 'Spans {top} to {bottom} deep · {thick} top to bottom', { top: fmt(ext.topKm), bottom: fmt(ext.bottomKm), thick: fmt(ext.thicknessKm) }));
         }
@@ -10165,22 +10263,22 @@ function updateCoreRig3d(dt3d) {
       // ── absolute (radiometric) dating: why a rock can or can't be dated, + a clock ──
       function datingNote(f) {
         var ty = f.R.type;
-        if (ty === 'Molten') return 'No age yet — the radiometric clock only starts when molten rock crystallises.';
-        if (ty === 'Surface') return 'Forming today — far too young; radiometric clocks suit million-to-billion-year spans.';
-        if (ty.indexOf('Metamorphic') >= 0) return 'Dating gives the metamorphism age (when it was baked), not the original rock.';
-        return 'Not dated directly — its grains are older than the rock. Geologists bracket it with datable igneous layers + index fossils.';
+        if (ty === 'Molten') return t('stem.geology.ui.dating_note_molten', 'No age yet — the radiometric clock only starts when molten rock crystallises.');
+        if (ty === 'Surface') return t('stem.geology.ui.dating_note_surface', 'Forming today — far too young; radiometric clocks suit million-to-billion-year spans.');
+        if (ty.indexOf('Metamorphic') >= 0) return t('stem.geology.ui.dating_note_metamorphic', 'Dating gives the metamorphism age (when it was baked), not the original rock.');
+        return t('stem.geology.ui.dating_note_sedimentary', 'Not dated directly — its grains are older than the rock. Geologists bracket it with datable igneous layers + index fossils.');
       }
       // ── compare two rocks side by side (pin via the info panel's 📊 button) ──
       function compareInsight(a, b) {
         var key = [a, b].sort().join('+');
         return {
-          'basalt+basement': 'Same magma, opposite cooling: basalt erupted and cooled fast (crystals too tiny to see); granite cooled slowly underground (big interlocking crystals).',
-          'basalt+intrusion': 'Same magma, opposite cooling: basalt erupted and cooled fast (tiny crystals); the granite pluton cooled slowly underground (big crystals).',
-          'limestone+marble': 'Marble IS limestone — recrystallised by the pluton’s heat (contact metamorphism). Same chemistry, brand-new texture.',
-          'basement+intrusion': 'Both granite, but the basement is ancient while the pluton is YOUNGER — it cuts across the layers (cross-cutting).',
-          'hornfels+shale': 'Hornfels IS shale, baked hard beside the pluton (contact metamorphism).',
-          'limestone+sandstone': 'Both sedimentary, but limestone is built from sea shells (warm shallow sea) and sandstone from sand grains (rivers, dunes, beaches).'
-        }[key] || 'Compare their type, how they form, and their age relationship above — what’s the same, and what changed?';
+          'basalt+basement': t('stem.geology.ui.pair_basalt_basement', 'Opposite cooling, different melts: basalt erupted and cooled fast (crystals too tiny to see); granite cooled slowly underground (big interlocking crystals) from a more silica-rich magma.'),
+          'basalt+intrusion': t('stem.geology.ui.pair_basalt_intrusion', 'Opposite cooling, different melts: basalt erupted and cooled fast (tiny crystals); the granite pluton cooled slowly underground (big crystals) from a more silica-rich magma.'),
+          'limestone+marble': t('stem.geology.ui.pair_limestone_marble', 'Marble IS limestone — recrystallised by the pluton’s heat (contact metamorphism). Same chemistry, brand-new texture.'),
+          'basement+intrusion': t('stem.geology.ui.pair_basement_intrusion', 'Both granite, but the basement is ancient while the pluton is YOUNGER — it cuts across the layers (cross-cutting).'),
+          'hornfels+shale': t('stem.geology.ui.pair_hornfels_shale', 'Hornfels IS shale, baked hard beside the pluton (contact metamorphism).'),
+          'limestone+sandstone': t('stem.geology.ui.pair_limestone_sandstone', 'Both sedimentary, but limestone is built from sea shells (warm shallow sea) and sandstone from sand grains (rivers, dunes, beaches).')
+        }[key] || t('stem.geology.ui.pair_default', 'Compare their type, how they form, and their age relationship above — what’s the same, and what changed?');
       }
       function comparePanel() {
         if (compareList.length < 2) return null;
@@ -10197,11 +10295,11 @@ function updateCoreRig3d(dt3d) {
             h('button', { type: 'button', onClick: function () { setCompareList([]); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg border ' + (isDark ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100') }, '✕ ' + t('stem.geology.clear', 'Clear'))),
           h('div', { className: 'grid gap-2 text-[12px] font-extrabold pb-1', style: cols },
             h('span', null, ''), h('span', { style: { color: typeInk(RA.type) } }, RA.name), h('span', { style: { color: typeInk(RB.type) } }, RB.name)),
-          row('Type', RA.type, RB.type),
-          row('Forms by', RA.formation, RB.formation),
-          row('Minerals', RA.minerals, RB.minerals),
-          row('Dating', DATING[a] ? DATING[a].parent + '→' + DATING[a].daughter : 'indirect', DATING[b] ? DATING[b].parent + '→' + DATING[b].daughter : 'indirect'),
-          row('Water', GROUNDWATER[a] ? GROUNDWATER[a].perm : '—', GROUNDWATER[b] ? GROUNDWATER[b].perm : '—'),
+          row(t('stem.geology.ui.type', 'Type'), RA.type, RB.type),
+          row(t('stem.geology.ui.forms_by', 'Forms by'), RA.formation, RB.formation),
+          row(t('stem.geology.ui.minerals', 'Minerals'), RA.minerals, RB.minerals),
+          row(t('stem.geology.ui.dating', 'Dating'), DATING[a] ? DATING[a].parent + '→' + DATING[a].daughter : t('stem.geology.ui.indirect', 'indirect'), DATING[b] ? DATING[b].parent + '→' + DATING[b].daughter : t('stem.geology.ui.indirect', 'indirect')),
+          row(t('stem.geology.ui.water', 'Water'), GROUNDWATER[a] ? GROUNDWATER[a].perm : '—', GROUNDWATER[b] ? GROUNDWATER[b].perm : '—'),
           h('div', { className: 'mt-2 text-[11px] leading-snug ' + ink }, '💡 ' + compareInsight(a, b))
         );
       }
@@ -10211,7 +10309,7 @@ function updateCoreRig3d(dt3d) {
         var currentJourney = sceneJourneyFor(SCENE.id), otherJourney = sceneJourneyFor(otherId);
         var compareIndex = Math.max(0, Math.min(compareStage, Math.min(currentJourney.length, otherJourney.length) - 1));
         var currentStage = currentJourney[compareIndex], otherStage = otherJourney[compareIndex];
-        var comparisonReadText = 'Current scene ' + SCENES[SCENE.id].label + '. Comparison scene ' + SCENES[otherId].label + '. Concept: ' + A.concept + ' versus ' + B.concept + '. Process: ' + A.process + ' versus ' + B.process + '. Evidence: ' + A.evidence + ' versus ' + B.evidence + '. Selected stage ' + (compareIndex + 1) + ': ' + currentStage.label + ' versus ' + otherStage.label + '. ' + sceneComparisonInsight(SCENE.id, otherId);
+        var comparisonReadText = tf('stem.geology.ui.comparison_read_text', 'Current scene {current}. Comparison scene {other}. Concept: {concept_a} versus {concept_b}. Process: {process_a} versus {process_b}. Evidence: {evidence_a} versus {evidence_b}. Selected stage {n}: {stage_a} versus {stage_b}.', { current: SCENES[SCENE.id].label, other: SCENES[otherId].label, concept_a: A.concept, concept_b: B.concept, process_a: A.process, process_b: B.process, evidence_a: A.evidence, evidence_b: B.evidence, n: compareIndex + 1, stage_a: currentStage.label, stage_b: otherStage.label }) + ' ' + sceneComparisonInsight(SCENE.id, otherId);
         function comparisonLane(title, sceneId, journey, side, accent) {
           return h('div', { key: side, className: 'min-w-0 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/40' : 'border-slate-200 bg-slate-50'), role: 'group', 'aria-label': tf('stem.geology.a11y.visual_story', '{title} visual story', { title: title })}, [
             h('div', { key: 'lane-title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, title + ': ' + SCENES[sceneId].label),
@@ -10230,13 +10328,13 @@ function updateCoreRig3d(dt3d) {
         var visualComparison = h('section', { key: 'visual-comparison', className: 'mt-3 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/30' : 'border-slate-200 bg-slate-50'), role: 'region', 'aria-label': t('stem.geology.a11y.visual_story_comparison', 'Visual story comparison'), 'data-geology-comparison-map': 'true' }, [
           h('div', { key: 'visual-head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
             h('div', { key: 'visual-copy' },
-              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-sky-300' : 'text-sky-700') }, 'Visual story comparison'),
-              h('p', { className: 'mt-1 text-[10.5px] leading-relaxed ' + muted }, 'Select matching stages to see where the two geology stories diverge.')),
-            h('span', { key: 'visual-stage', className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + muted }, 'Stage ' + (compareIndex + 1) + ' of ' + Math.min(currentJourney.length, otherJourney.length))
+              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-sky-300' : 'text-sky-700') }, t('stem.geology.ui.visual_story_comparison', 'Visual story comparison')),
+              h('p', { className: 'mt-1 text-[10.5px] leading-relaxed ' + muted }, t('stem.geology.ui.select_matching_stages_to_see_where_the_two', 'Select matching stages to see where the two geology stories diverge.'))),
+            h('span', { key: 'visual-stage', className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + muted }, tf('stem.geology.ui.stage_of', 'Stage {compare_index} of {length}', { compare_index: compareIndex + 1, length: Math.min(currentJourney.length, otherJourney.length) }))
           ]),
           h('div', { key: 'lanes', className: 'mt-2 grid gap-2 sm:grid-cols-2' }, [
-            comparisonLane('Current scene', SCENE.id, currentJourney, 'current', 'violet'),
-            comparisonLane('Comparison scene', otherId, otherJourney, 'comparison', 'sky')
+            comparisonLane(t('stem.geology.ui.current_scene', 'Current scene'), SCENE.id, currentJourney, 'current', 'violet'),
+            comparisonLane(t('stem.geology.ui.comparison_scene', 'Comparison scene'), otherId, otherJourney, 'comparison', 'sky')
           ]),
           h('div', { key: 'visual-detail', className: 'mt-2 rounded-lg border-l-2 border-sky-400 bg-sky-500/10 p-2 text-[11px] leading-relaxed ' + ink, role: 'status', 'data-geology-comparison-detail': 'true' }, [
             h('strong', { key: 'visual-detail-title' }, currentStage.label + ' ↔ ' + otherStage.label),
@@ -10246,55 +10344,56 @@ function updateCoreRig3d(dt3d) {
         var cols = { gridTemplateColumns: '82px minmax(180px, 1fr) minmax(180px, 1fr)' };
         var options = Object.keys(SCENES).filter(function (id) { return id !== SCENE.id; });
         function row(label, va, vb) {
-          return h('div', { className: 'grid gap-2 border-t py-1.5 text-[11px] ' + (isDark ? 'border-slate-700 ' : 'border-slate-200 ') + ink, style: cols },
-            h('span', { className: muted }, label), h('span', null, va), h('span', null, vb));
+          return h('div', { role: 'row', className: 'grid gap-2 border-t py-1.5 text-[11px] ' + (isDark ? 'border-slate-700 ' : 'border-slate-200 ') + ink, style: cols },
+            h('span', { role: 'rowheader', className: muted }, label), h('span', { role: 'cell' }, va), h('span', { role: 'cell' }, vb));
         }
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': t('stem.geology.a11y.compare_geology_scenes', 'Compare geology scenes'), 'data-geology-scene-comparison': 'true' },
           h('div', { className: 'p-3' },
             h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' },
               h('div', null,
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, 'Transfer lab'),
-                h('h3', { className: 'mt-1 text-sm font-extrabold ' + ink }, 'Compare geology scenes'),
-                h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, 'Compare the process and evidence pattern, then transfer one idea from one environment to the other.')),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, t('stem.geology.ui.transfer_lab', 'Transfer lab')),
+                h('h3', { className: 'mt-1 text-sm font-extrabold ' + ink }, t('stem.geology.ui.compare_geology_scenes', 'Compare geology scenes')),
+                h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, t('stem.geology.ui.compare_the_process_and_evidence_pattern', 'Compare the process and evidence pattern, then transfer one idea from one environment to the other.'))),
               h('label', { className: 'min-w-[12rem] text-[10px] font-bold ' + muted },
-                h('span', { className: 'block mb-1 uppercase tracking-wider' }, 'Compare with'),
+                h('span', { className: 'block mb-1 uppercase tracking-wider' }, t('stem.geology.ui.compare_with', 'Compare with')),
                 h('select', { value: otherId, 'aria-label': t('stem.geology.a11y.compare_with', 'Compare with'), onChange: function (e) { var next = e.target.value; setCompareSceneId(next); setCompareStage(0); announce(tf('stem.geology.sr.comparing_with', 'Comparing {label} with {label_2}.', { label: SCENES[SCENE.id].label, label_2: SCENES[next].label })); }, className: 'w-full rounded-lg border px-2 py-1.5 text-[11px] font-bold ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-700') },
                   options.map(function (id) { return h('option', { key: id, value: id }, SCENES[id].label); })))),
-            h('div', { key: 'headers', className: 'mt-3 grid gap-2 text-[11px] font-black ' + ink, style: cols },
-              h('span', null, ''), h('span', null, 'Current scene: ' + SCENES[SCENE.id].label), h('span', null, 'Comparison scene: ' + SCENES[otherId].label)),
             visualComparison,
-            h('div', { key: 'table', className: 'mt-1 overflow-x-auto', role: 'table', 'aria-label': t('stem.geology.a11y.scene_comparison_evidence', 'Scene comparison evidence') },
-              h('div', { className: 'min-w-[500px]' },
-                row('Concept', A.concept, B.concept),
-                row('Process', A.process, B.process),
-                row('Evidence', A.evidence, B.evidence),
-                row('Direction', A.direction, B.direction),
-                row('Outcome', A.outcome, B.outcome))),
+            h('div', { key: 'table', className: 'mt-1 overflow-x-auto rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400', tabIndex: 0, role: 'region', 'aria-label': t('stem.geology.a11y.scene_comparison_evidence', 'Scene comparison evidence') },
+              h('div', { className: 'min-w-[500px]', role: 'table', 'aria-label': t('stem.geology.a11y.scene_comparison_evidence', 'Scene comparison evidence') },
+                h('div', { key: 'headers', role: 'row', className: 'grid gap-2 pb-1 text-[11px] font-black ' + ink, style: cols },
+                  h('span', { role: 'cell' }, ''), h('span', { role: 'columnheader' }, tf('stem.geology.ui.current_scene_2', 'Current scene: {label}', { label: SCENES[SCENE.id].label })), h('span', { role: 'columnheader' }, tf('stem.geology.ui.comparison_scene_2', 'Comparison scene: {label}', { label: SCENES[otherId].label }))),
+                row(t('stem.geology.ui.concept', 'Concept'), A.concept, B.concept),
+                row(t('stem.geology.ui.process', 'Process'), A.process, B.process),
+                row(t('stem.geology.ui.evidence', 'Evidence'), A.evidence, B.evidence),
+                row(t('stem.geology.ui.direction', 'Direction'), A.direction, B.direction),
+                row(t('stem.geology.ui.outcome', 'Outcome'), A.outcome, B.outcome))),
             h('p', { key: 'insight', className: 'mt-3 rounded-lg border-l-2 border-violet-400 bg-violet-500/10 p-2.5 text-[11px] leading-relaxed ' + ink },
-              h('strong', null, 'Compare the pattern: '), sceneComparisonInsight(SCENE.id, otherId)),
+              h('strong', null, t('stem.geology.ui.compare_the_pattern', 'Compare the pattern: ')), sceneComparisonInsight(SCENE.id, otherId)),
             h('p', { key: 'prompt', className: 'mt-2 text-[11px] font-semibold ' + muted },
-              'Transfer prompt: Which observation would best distinguish ' + A.concept.toLowerCase() + ' from ' + B.concept.toLowerCase() + '?'),
-            h('div', { key: 'audio', className: 'mt-2' }, readAloudButton(comparisonReadText, 'comparison-' + SCENE.id + '-' + otherId, 'Read scene comparison aloud'))
+              tf('stem.geology.ui.transfer_prompt_which_observation_would_best', 'Transfer prompt: Which observation would best distinguish {concept} from {concept_2}?', { concept: A.concept.toLowerCase(), concept_2: B.concept.toLowerCase() })),
+            h('div', { key: 'audio', className: 'mt-2' }, readAloudButton(comparisonReadText, 'comparison-' + SCENE.id + '-' + otherId, t('stem.geology.ui.read_scene_comparison_aloud', 'Read scene comparison aloud')))
           ));
       }
       function datingPanel() {
         if (!selected) return null;
         var DT = DATING[selected.key]; if (!DT) return null;
-        var pPct = datingParent, dPct = 100 - pPct;
+        var minParent = Math.ceil(100 * Math.pow(2, -4540 / DT.hl));   // no reading older than the Earth (4,540 million years)
+        var pPct = Math.max(minParent, datingParent), dPct = 100 - pPct;
         var halfLives = Math.log(100 / pPct) / Math.log(2);
         var ageMa = Math.round(DT.hl * halfLives);
         return h('div', { className: 'p-3 rounded-xl border ' + cardBg, role: 'region', 'aria-label': t('stem.geology.a11y.radiometric_dating_clock', 'Radiometric dating clock') },
           h('div', { className: 'text-[12px] font-extrabold tracking-tight ' + ink }, '📅 ' + t('stem.geology.dating_title', 'Radiometric clock') + ' · ' + DT.parent + ' → ' + DT.daughter),
-          h('p', { className: 'mt-1 text-[10.5px] leading-relaxed ' + muted }, t('stem.geology.dating_simulation', 'Practice simulation: adjust the isotope ratio to see how an age calculation works. This does not date the voxel automatically.')),
+          h('p', { className: 'mt-1 text-[10.5px] leading-relaxed ' + muted }, t('stem.geology.dating_simulation', 'Practice simulation: adjust the isotope ratio to see how an age calculation works. This does not date the voxel automatically.') + ' ' + t('stem.geology.dating_earth_limit', 'Earth is about 4,540 million years old, so the slider stops there.')),
           h('div', { className: 'flex h-4 rounded-md overflow-hidden mt-2 border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), 'aria-hidden': 'true' },
             h('div', { style: { width: pPct + '%', background: '#f59e0b', transition: 'width .12s' } }),
             h('div', { style: { width: dPct + '%', background: isDark ? '#475569' : '#cbd5e1', transition: 'width .12s' } })),
           h('div', { className: 'flex items-center justify-between mt-1 text-[11px] ' + muted },
             h('span', null, '🟠 ' + DT.parent + ' ' + Math.round(pPct) + '%'),
-            h('span', null, DT.daughter + ' ' + Math.round(dPct) + '% ◻️')),
+            h('span', null, DT.daughter + ' ' + Math.round(dPct * (DT.share || 1)) + '% ◻️')),
           h('label', { className: 'block mt-2 text-[11px] ' + muted },
             t('stem.geology.parent_left', 'Parent isotope still left (drag to let it decay):'),
-            h('input', { type: 'range', min: 5, max: 100, value: pPct, 'aria-label': t('stem.geology.a11y.percent_of_parent_isotope_remaining', 'Percent of parent isotope remaining'), className: 'w-full', onChange: function (e) { var v = +e.target.value; setDatingParent(v); if (v < 100) upd('datedRock', 1); var hlv = Math.log(100 / v) / Math.log(2); announce(tf('stem.geology.sr.percent_parent_left_about_half_lives_age_milli', '{v} percent parent left — about {hlv} half-lives, age {to_locale_string} million years.', { v: Math.round(v), hlv: (Math.round(hlv * 100) / 100), to_locale_string: Math.round(DT.hl * hlv).toLocaleString() })); } })),
+            h('input', { type: 'range', min: minParent, max: 100, value: pPct, 'aria-label': t('stem.geology.a11y.percent_of_parent_isotope_remaining', 'Percent of parent isotope remaining'), className: 'w-full', onChange: function (e) { var v = +e.target.value; setDatingParent(v); if (v < 100) upd('datedRock', 1); var hlv = Math.log(100 / v) / Math.log(2); announce(tf('stem.geology.sr.percent_parent_left_about_half_lives_age_milli', '{v} percent parent left — about {hlv} half-lives, age {to_locale_string} million years.', { v: Math.round(v), hlv: (Math.round(hlv * 100) / 100), to_locale_string: Math.round(DT.hl * hlv).toLocaleString() })); } })),
           h('div', { className: 'text-[12px] font-bold ' + ink }, '≈ ' + ageMa.toLocaleString() + ' ' + t('stem.geology.ma', 'million years') + '  ·  ' + (Math.round(halfLives * 100) / 100) + ' ' + t('stem.geology.halflives', 'half-lives')),
           h('div', { className: 'mt-1.5 text-[11px] leading-snug ' + muted }, DT.note + ' ' + t('stem.geology.dating_method', 'Measure the real parent:daughter ratio → that fixes how many half-lives passed → × the half-life gives the age.'))
         );
@@ -10315,7 +10414,7 @@ function updateCoreRig3d(dt3d) {
               return h('button', {
                 key: p.proc + '>' + p.to, type: 'button', title: p.note,
                 'aria-label': tf('stem.geology.a11y.turns_into', '{proc}: turns {name} into {name_2}. {note}', { proc: p.proc, name: selected.R.name, name_2: toR.name, note: p.note }),
-                onClick: function () { selectRock(rockFacts(p.to, DEPTH_GUESS[p.to] || 4), true, 'Applied ' + p.proc + '. ' + selected.R.name + ' becomes ' + toR.name + '. ' + p.note); },
+                onClick: function () { selectRock(rockFacts(p.to, DEPTH_GUESS[p.to] || 4), true, tf('stem.geology.sr.cycle_applied', 'Applied {proc}. {from} becomes {to}. {note}', { proc: p.proc, from: selected.R.name, to: toR.name, note: p.note })); },
                 className: 'transition-colors active:scale-[0.97] inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border ' + chipIdle
               },
                 h('span', null, p.icon + ' ' + p.proc),
@@ -10385,10 +10484,10 @@ function updateCoreRig3d(dt3d) {
           return h('li', { key: i, className: 'flex items-center gap-2 text-[11px] ' + ink },
             h('span', { 'aria-hidden': 'true', className: 'w-3 h-3 rounded flex-none', style: { background: hex(R.color), boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.15)' } }),
             h('span', { className: 'font-semibold' }, R.name),
-            h('span', { className: muted }, d0 + '–' + d1 + ' km'));
+            h('span', { className: muted }, tf('stem.geology.ui.km', '{d0}–{d1} km', { d0: d0, d1: d1 })));
         });
         return h('div', { className: 'p-2.5 rounded-xl border ' + cardBg, role: 'region', 'aria-label': t('stem.geology.a11y.drill_core_sample', 'Drill core sample') },
-          h('div', { className: 'text-[11px] mb-1.5 ' + muted }, t('stem.geology.core_read', 'A core reads top → bottom: youngest at the surface, oldest at depth.')),
+          h('div', { className: 'text-[11px] mb-1.5 ' + muted }, t('stem.geology.core_read', 'A core reads top → bottom: undisturbed layers get older with depth, but a pluton that cuts them is younger.')),
           h('div', { className: 'flex items-start gap-3' },
             h('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', className: 'rounded-md overflow-hidden border flex-none ' + (isDark ? 'border-slate-700' : 'border-slate-300') }, bands),
             h('ol', { className: 'space-y-1 m-0 p-0 list-none' }, list)),
@@ -10419,13 +10518,13 @@ function updateCoreRig3d(dt3d) {
             h('div', { className: 'flex flex-wrap gap-1.5 mt-1.5' }, Q.opts.map(function (_, i) { return ansBtn(i); })),
             revealed ? h('div', { className: 'mt-2 text-[11.5px] ' + (quizAns === Q.correct ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-rose-300' : 'text-rose-700')) }, (quizAns === Q.correct ? '✓ ' : '✗ ') + Q.why) : null,
             remediation ? h('div', { className: 'mt-2 rounded-lg border-l-2 border-amber-400 bg-amber-500/10 p-2.5 ' + ink, role: 'region', 'aria-label': t('stem.geology.a11y.targeted_remediation', 'Targeted remediation'), 'data-geology-remediation': 'true' },
-              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Targeted feedback'),
+              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t('stem.geology.quiz_feedback', 'Targeted feedback')),
               remediation.note ? h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed', 'data-geology-remediation-note': 'true' }, remediation.note) : null,
               h('div', { className: 'mt-1 text-[11px] ' + (remediation.note ? 'font-semibold opacity-90' : 'font-bold') }, remediation.misconception),
               h('p', { className: 'mt-1 text-[11px] leading-relaxed' }, remediation.remedy),
               h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
-                readAloudButton('Targeted feedback. ' + (remediation.note ? remediation.note + ' ' : '') + remediation.misconception + '. ' + remediation.remedy, 'remediation-' + remediation.id, 'Read targeted feedback aloud'),
-                h('button', { type: 'button', onClick: retryQuiz, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, 'Try again'))) : null,
+                readAloudButton(tf('stem.geology.sr.quiz_feedback_read', 'Targeted feedback. {note}{misconception} {remedy}', { note: (remediation.note ? remediation.note + ' ' : ''), misconception: remediation.misconception, remedy: remediation.remedy }), 'remediation-' + remediation.id, t('stem.geology.a11y.read_quiz_feedback', 'Read targeted feedback aloud')),
+                h('button', { type: 'button', onClick: retryQuiz, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, t('stem.geology.quiz_try_again', 'Try again')))) : null,
             revealed ? h('button', { type: 'button', onClick: nextQuiz, className: 'mt-2 ' + btn + btnIdle }, t('stem.geology.quiz_next', 'Next question →')) : null
           ) : null);
       }
@@ -10537,15 +10636,15 @@ function updateCoreRig3d(dt3d) {
           var saved = (d.sequenceByScene && typeof d.sequenceByScene === 'object') ? d.sequenceByScene : {};
           var nextSaved = Object.assign({}, saved, sequenceCompletionByScene, { [SCENE.id]: true });
           setSequenceCompletionByScene(nextSaved);
-          setSequenceFeedback({ correct: true, message: 'Correct. The process now reads as one evidence-based sequence.' });
+          setSequenceFeedback({ correct: true, message: t('stem.geology.ui.sequence_correct_feedback', 'Correct. The process now reads as one evidence-based sequence.') });
           upd('sequenceByScene', nextSaved);
-          addNotebookEvidence('process', 'Sequence challenge: ' + challenge.title, items.map(function (item) { return item.label; }).join(' → '), 'sequence-challenge');
+          addNotebookEvidence('process', tf('stem.geology.ui.sequence_challenge_title', 'Sequence challenge: {title}', { title: challenge.title }), items.map(function (item) { return item.label; }).join(' → '), 'sequence-challenge');
           announce(t('stem.geology.sr.sequence_correct_the_process_is_in_the_right_o', 'Sequence correct. The process is in the right order and saved as evidence.'));
           return;
         }
         for (var i = 0; i < items.length; i++) { if (sequenceOrder[i] !== items[i].key) { firstWrong = i; break; } }
         var expected = firstWrong >= 0 ? items[firstWrong] : items[0];
-        setSequenceFeedback({ correct: false, message: 'Not yet. Position ' + (firstWrong + 1) + ' should be “' + expected.label + '”. Move a card, then check again.' });
+        setSequenceFeedback({ correct: false, message: tf('stem.geology.ui.sequence_not_yet', 'Not yet. Position {n} should be “{label}”. Move a card, then check again.', { n: firstWrong + 1, label: expected.label }) });
         announce(tf('stem.geology.sr.the_sequence_needs_another_change_position_sho', 'The sequence needs another change. Position {first_wrong} should be {label}.', { first_wrong: (firstWrong + 1), label: expected.label }));
       }
       function sceneSequencePanel() {
@@ -10557,29 +10656,29 @@ function updateCoreRig3d(dt3d) {
           h('div', { className: 'p-3' }, [
             h('div', { key: 'seq-head', className: 'flex flex-wrap items-start justify-between gap-2' },
               h('div', null,
-                h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Drag-and-drop reasoning'),
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t('stem.geology.ui.drag_and_drop_reasoning', 'Drag-and-drop reasoning')),
                 h('h3', { className: 'mt-1 text-[12px] font-extrabold ' + ink }, challenge.title),
                 h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, challenge.prompt),
-                h('div', { className: 'mt-2' }, readAloudButton(sequenceReadText, 'sequence-' + SCENE.id, 'Read sequence challenge aloud'))),
-              h('span', { className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (sequenceComplete ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted) }, sequenceComplete ? 'Sequence saved' : 'Not checked')),
-            h('p', { key: 'seq-hint', className: 'mt-2 text-[10.5px] ' + muted }, 'Drag a card to reorder it. Or tap Select on one card, then Place here on another card. Keyboard users can use the Move earlier and Move later buttons.'),
-            h('p', { key: 'seq-status', className: 'mt-1 text-[10.5px] ' + muted, role: touchSelected ? 'status' : undefined, 'data-geology-sequence-touch-status': 'true' }, touchSelected ? 'Selected ' + touchSelected.label + '. Choose Place here on another card.' : 'Touch reorder is ready: choose Select on a card to move it before another card.'),
+                h('div', { className: 'mt-2' }, readAloudButton(sequenceReadText, 'sequence-' + SCENE.id, t('stem.geology.ui.read_sequence_challenge_aloud', 'Read sequence challenge aloud')))),
+              h('span', { className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (sequenceComplete ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted) }, sequenceComplete ? t('stem.geology.ui.sequence_saved', 'Sequence saved') : t('stem.geology.ui.not_checked', 'Not checked'))),
+            h('p', { key: 'seq-hint', className: 'mt-2 text-[10.5px] ' + muted }, t('stem.geology.ui.drag_a_card_to_reorder_it_or_tap_select_on', 'Drag a card to reorder it. Or tap Select on one card, then Place here on another card. Keyboard users can use the Move earlier and Move later buttons.')),
+            h('p', { key: 'seq-status', className: 'mt-1 text-[10.5px] ' + muted, role: touchSelected ? 'status' : undefined, 'data-geology-sequence-touch-status': 'true' }, touchSelected ? tf('stem.geology.ui.selected_choose_place_here_on_another_card', 'Selected {label}. Choose Place here on another card.', { label: touchSelected.label }) : t('stem.geology.ui.touch_reorder_is_ready_choose_select_on_a', 'Touch reorder is ready: choose Select on a card to move it before another card.')),
             h('div', { key: 'seq-list', className: 'mt-2 space-y-1.5', role: 'list', 'aria-label': t('stem.geology.a11y.sequence_cards', 'Sequence cards') },
               sequenceOrder.map(function (key, index) {
                 var item = byKey[key];
                 return h('div', { key: key, role: 'listitem', draggable: true, 'data-geology-sequence-card': key, onDragStart: function (event) { setSequenceDragKey(key); try { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', key); } catch (e) {} }, onDragOver: function (event) { event.preventDefault(); }, onDrop: function (event) { dropSequenceCard(key, event); }, onDragEnd: function () { setSequenceDragKey(null); }, className: 'flex items-start gap-2 rounded-lg border p-2 transition ' + (sequenceDragKey === key ? 'ring-2 ring-amber-400 ' : '') + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50') },
-                  h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-black text-white', 'aria-label': tf('stem.geology.a11y.position', 'Position {index}', { index: (index + 1) })}, index + 1),
+                  h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-black text-white' }, h('span', { className: 'sr-only' }, tf('stem.geology.a11y.position', 'Position {index}', { index: (index + 1) })), h('span', { 'aria-hidden': 'true' }, index + 1)),
                   h('div', { className: 'min-w-0 flex-1' },
                     h('div', { className: 'text-[11px] font-extrabold ' + ink }, item.label),
                     h('p', { className: 'mt-0.5 text-[10.5px] leading-snug ' + muted }, item.detail)),
                   h('div', { className: 'flex shrink-0 flex-wrap justify-end gap-1', role: 'group', 'aria-label': tf('stem.geology.a11y.reorder', 'Reorder {label}', { label: item.label })},
-                    h('button', { type: 'button', 'aria-pressed': sequenceTapKey === key ? 'true' : 'false', 'aria-label': sequenceTapKey === key ? tf('stem.geology.a11y.cancel_touch_reorder', 'Cancel touch reorder for {label}', { label: item.label }) : (touchSelected ? tf('stem.geology.a11y.place_before', 'Place {label} before {target}', { label: touchSelected.label, target: item.label }) : tf('stem.geology.a11y.select_for_touch_reorder', 'Select {label} for touch reorder', { label: item.label })), onClick: function () { selectSequenceCard(key); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (sequenceTapKey === key ? 'border-violet-500 bg-violet-600 text-white' : btnIdle) }, sequenceTapKey === key ? 'Cancel' : (touchSelected ? 'Place here' : 'Select')),
-                    h('button', { type: 'button', disabled: index === 0, 'aria-label': tf('stem.geology.a11y.move_earlier', 'Move {label} earlier', { label: item.label }), onClick: function () { moveSequenceCard(key, -1); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (index === 0 ? 'opacity-40 ' : '') + btnIdle }, '↑'),
-                    h('button', { type: 'button', disabled: index === sequenceOrder.length - 1, 'aria-label': tf('stem.geology.a11y.move_later', 'Move {label} later', { label: item.label }), onClick: function () { moveSequenceCard(key, 1); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (index === sequenceOrder.length - 1 ? 'opacity-40 ' : '') + btnIdle }, '↓')));
+                    h('button', { type: 'button', 'aria-pressed': sequenceTapKey === key ? 'true' : 'false', 'aria-label': sequenceTapKey === key ? tf('stem.geology.a11y.cancel_touch_reorder', 'Cancel touch reorder for {label}', { label: item.label }) : (touchSelected ? tf('stem.geology.a11y.place_before', 'Place {label} before {target}', { label: touchSelected.label, target: item.label }) : tf('stem.geology.a11y.select_for_touch_reorder', 'Select {label} for touch reorder', { label: item.label })), onClick: function () { selectSequenceCard(key); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (sequenceTapKey === key ? 'border-violet-500 bg-violet-600 text-white' : btnIdle) }, sequenceTapKey === key ? t('stem.geology.ui.cancel', 'Cancel') : (touchSelected ? t('stem.geology.ui.place_here', 'Place here') : t('stem.geology.ui.select', 'Select'))),
+                    h('button', { type: 'button', disabled: index === 0, 'aria-label': tf('stem.geology.a11y.move_earlier', 'Move {label} earlier', { label: item.label }), onClick: function () { moveSequenceCard(key, -1); }, className: 'min-h-6 min-w-6 rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (index === 0 ? 'opacity-40 ' : '') + btnIdle }, '↑'),
+                    h('button', { type: 'button', disabled: index === sequenceOrder.length - 1, 'aria-label': tf('stem.geology.a11y.move_later', 'Move {label} later', { label: item.label }), onClick: function () { moveSequenceCard(key, 1); }, className: 'min-h-6 min-w-6 rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (index === sequenceOrder.length - 1 ? 'opacity-40 ' : '') + btnIdle }, '↓')));
               })),
             h('div', { key: 'seq-actions', className: 'mt-2 flex flex-wrap gap-1.5' },
-              h('button', { type: 'button', 'data-geology-sequence-check': 'true', onClick: checkSequenceOrder, className: btn + btnIdle }, sequenceComplete ? 'Check again' : 'Check sequence'),
-              h('button', { type: 'button', 'data-geology-sequence-reset': 'true', onClick: resetSequenceOrder, className: btn + btnIdle }, 'Reset order')),
+              h('button', { type: 'button', 'data-geology-sequence-check': 'true', onClick: checkSequenceOrder, className: btn + btnIdle }, sequenceComplete ? t('stem.geology.ui.check_again', 'Check again') : t('stem.geology.ui.check_sequence', 'Check sequence')),
+              h('button', { type: 'button', 'data-geology-sequence-reset': 'true', onClick: resetSequenceOrder, className: btn + btnIdle }, t('stem.geology.ui.reset_order', 'Reset order'))),
              sequenceFeedback ? h('div', { key: 'seq-feedback', className: 'mt-2 rounded-lg border-l-2 p-2 text-[11px] leading-relaxed ' + (sequenceFeedback.correct ? 'border-emerald-400 bg-emerald-500/10 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') : 'border-amber-400 bg-amber-500/10 ' + ink), role: sequenceFeedback.correct ? 'status' : 'alert', 'data-geology-sequence-feedback': sequenceFeedback.correct ? 'correct' : 'retry' }, sequenceFeedback.message) : null
             ]));
       }
@@ -10589,44 +10688,44 @@ function updateCoreRig3d(dt3d) {
         var completed = progress.filter(function (item) { return item.complete; }).length;
         function exportProgressSummary() {
           try {
-            var lines = ['Geology Explorer progress summary', 'Scenes complete: ' + completed + '/' + progress.length, ''];
+            var lines = [t('stem.geology.ui.export_progress_title', 'Geology Explorer progress summary'), tf('stem.geology.ui.export_scenes_complete', 'Scenes complete: {done}/{total}', { done: completed, total: progress.length }), ''];
             progress.forEach(function (item) {
-              lines.push(item.label + ' | checks ' + item.done + '/' + item.total + ' | observations ' + item.evidenceCount + ' | quiz attempts ' + item.quizAttempts + ' (' + item.quizCorrect + ' correct) | review flags ' + item.misconceptionCount);
-              if (item.signalTotal) lines.push('  signal steps: ' + item.signalStep + '/' + item.signalTotal);
-              if (item.sequenceComplete) lines.push('  sequence challenge: complete');
+              lines.push(tf('stem.geology.ui.export_scene_line', '{label} | checks {done}/{total} | observations {evidence} | quiz attempts {attempts} ({correct} correct) | review flags {flags}', { label: item.label, done: item.done, total: item.total, evidence: item.evidenceCount, attempts: item.quizAttempts, correct: item.quizCorrect, flags: item.misconceptionCount }));
+              if (item.signalTotal) lines.push('  ' + tf('stem.geology.ui.export_signal_steps', 'signal steps: {step}/{total}', { step: item.signalStep, total: item.signalTotal }));
+              if (item.sequenceComplete) lines.push('  ' + t('stem.geology.ui.export_sequence_complete', 'sequence challenge: complete'));
               item.checks.forEach(function (check) { lines.push('  ' + (check.complete ? '[x] ' : '[ ] ') + check.label); });
               lines.push('');
             });
             var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }), url = URL.createObjectURL(blob), a = document.createElement('a');
             a.href = url; a.download = 'geology-progress-summary.txt'; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 0);
-            addToast('Progress summary exported.', 'success');
-          } catch (e) { addToast('Could not export the progress summary.', 'error'); }
+            addToast(t('stem.geology.ui.progress_summary_exported', 'Progress summary exported.'), 'success');
+          } catch (e) { addToast(t('stem.geology.ui.could_not_export_the_progress_summary', 'Could not export the progress summary.'), 'error'); }
         }
         return h('section', { key: 'teacher-progress', className: 'mt-3 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/40' : 'border-slate-200 bg-slate-50'), role: 'region', 'aria-label': t('stem.geology.a11y.progress_summary', 'Progress summary'), 'data-geology-progress-summary': 'true' }, [
           h('div', { key: 'head', className: 'flex flex-wrap items-center justify-between gap-2' },
             h('div', null,
-              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Across all scenes'),
-              h('div', { className: 'mt-1 text-[12px] font-extrabold ' + ink }, 'Progress summary'),
-              h('p', { className: 'mt-1 text-[10.5px] ' + muted }, completed + '/' + progress.length + ' scene missions complete.')),
-            h('button', { type: 'button', onClick: exportProgressSummary, className: btn + btnIdle }, 'Export progress summary')),
+              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.ui.across_all_scenes', 'Across all scenes')),
+              h('div', { className: 'mt-1 text-[12px] font-extrabold ' + ink }, t('stem.geology.ui.progress_summary', 'Progress summary')),
+              h('p', { className: 'mt-1 text-[10.5px] ' + muted }, tf('stem.geology.ui.scene_missions_complete', '{completed}/{length} scene missions complete.', { completed: completed, length: progress.length }))),
+            h('button', { type: 'button', onClick: exportProgressSummary, className: btn + btnIdle }, t('stem.geology.ui.export_progress_summary', 'Export progress summary'))),
           h('div', { key: 'grid', className: 'mt-2 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3' },
             progress.map(function (item) {
               return h('div', { key: item.id, className: 'rounded-lg border p-2 ' + (item.complete ? (isDark ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-emerald-300 bg-emerald-50') : (isDark ? 'border-slate-700' : 'border-slate-200')), role: 'group', 'aria-label': tf('stem.geology.a11y.of_checks_complete', '{label}: {done} of {total} checks complete', { label: item.label, done: item.done, total: item.total })},
                 h('div', { className: 'truncate text-[11px] font-bold ' + ink, title: item.label }, item.label),
                 h('div', { className: 'mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] ' + muted },
-                  h('span', null, 'Checks ' + item.done + '/' + item.total),
-                  h('span', null, 'Obs ' + item.evidenceCount),
-                  h('span', null, 'Quiz ' + item.quizAttempts),
-                  item.misconceptionCount ? h('span', { className: isDark ? 'text-amber-300' : 'text-amber-700' }, 'Review ' + item.misconceptionCount) : null,
-                  item.signalTotal ? h('span', null, 'Signal ' + item.signalStep + '/' + item.signalTotal) : null,
-                  item.sequenceComplete ? h('span', { className: isDark ? 'text-emerald-300' : 'text-emerald-700' }, 'Order ✓') : null))
+                  h('span', null, tf('stem.geology.ui.checks', 'Checks {done}/{total}', { done: item.done, total: item.total })),
+                  h('span', null, tf('stem.geology.ui.obs', 'Obs {evidence_count}', { evidence_count: item.evidenceCount })),
+                  h('span', null, tf('stem.geology.ui.quiz', 'Quiz {quiz_attempts}', { quiz_attempts: item.quizAttempts })),
+                  item.misconceptionCount ? h('span', { className: isDark ? 'text-amber-300' : 'text-amber-700' }, tf('stem.geology.ui.review', 'Review {misconception_count}', { misconception_count: item.misconceptionCount })) : null,
+                  item.signalTotal ? h('span', null, tf('stem.geology.ui.signal', 'Signal {signal_step}/{signal_total}', { signal_step: item.signalStep, signal_total: item.signalTotal })) : null,
+                  item.sequenceComplete ? h('span', { className: isDark ? 'text-emerald-300' : 'text-emerald-700' }, t('stem.geology.ui.order', 'Order ✓')) : null))
             }))
         ]);
       }
       function lessonGuidePanel() {
         if (!lessonGuideOpen) return null;
         var mission = missionForScene(), context = missionContext(), complete = missionIsComplete();
-        var rubric = evaluateCER(mission, Object.assign({}, context, { missionComplete: complete }), notebook);
+        var rubric = evaluateCER(mission, Object.assign({}, context, { missionComplete: complete }), notebook, t);
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': t('stem.geology.a11y.lesson_guide', 'Lesson guide') },
           h('div', { className: 'p-3' }, [
             h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' },
@@ -10634,7 +10733,7 @@ function updateCoreRig3d(dt3d) {
                 h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (isDark ? 'text-sky-300' : 'text-sky-700') }, t('stem.geology.lesson_label', 'Teacher / lesson guide')),
                 h('h3', { className: 'mt-1 text-sm font-extrabold ' + ink }, t('stem.geology.lesson_title', 'Geology Explorer lesson guide')),
                 h('p', { className: 'mt-1 text-[11px] ' + muted }, LESSON_GUIDE.duration + ' · ' + t('stem.geology.lesson_objective', 'Current objective: ') + mission.question)),
-              h('span', { className: 'rounded-lg border px-2 py-1 text-[11px] font-bold ' + (isDark ? 'border-sky-500/40 bg-sky-950/30 text-sky-200' : 'border-sky-300 bg-sky-50 text-sky-800') }, rubric.score + '/' + rubric.total + ' CER')),
+              h('span', { className: 'rounded-lg border px-2 py-1 text-[11px] font-bold ' + (isDark ? 'border-sky-500/40 bg-sky-950/30 text-sky-200' : 'border-sky-300 bg-sky-50 text-sky-800') }, tf('stem.geology.ui.cer', '{score}/{total} CER', { score: rubric.score, total: rubric.total }))),
             h('div', { key: 'phases', className: 'mt-3 grid gap-2 sm:grid-cols-4' }, LESSON_GUIDE.phases.map(function (phase, index) {
               return h('div', { key: phase.id, className: 'rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/40' : 'border-slate-200 bg-slate-50') },
                 h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, (index + 1) + '. ' + phase.minutes),
@@ -10666,23 +10765,23 @@ function updateCoreRig3d(dt3d) {
               h('div', null, h('span', { className: 'block text-[10px] font-bold uppercase ' + muted }, t('stem.geology.orientation_direction', 'Direction')), orientation.direction)),
             h('p', { key: 'read', className: 'mt-2 text-[11px] leading-relaxed ' + muted }, orientation.read),
             h('p', { key: 'note', className: 'mt-1 text-[10.5px] font-semibold ' + muted }, t('stem.geology.schematic_note', 'Schematic model — not to scale. Colors are illustrative.')),
-            h('div', { key: 'audio', className: 'mt-2' }, readAloudButton('How to read this model. Scale: ' + orientation.scale + '. Direction: ' + orientation.direction + '. ' + orientation.read, 'orientation-' + SCENE.id, 'Read scene guidance aloud')),
+            h('div', { key: 'audio', className: 'mt-2' }, readAloudButton(tf('stem.geology.ui.how_to_read_this_model_scale_direction', 'How to read this model. Scale: {scale}. Direction: {direction}. {read}', { scale: orientation.scale, direction: orientation.direction, read: orientation.read }), 'orientation-' + SCENE.id, t('stem.geology.ui.read_scene_guidance_aloud', 'Read scene guidance aloud'))),
             h('div', { key: 'vocab', className: 'mt-3 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/40' : 'border-slate-200 bg-slate-50') }, [
               h('div', { key: 'vb-head', className: 'flex flex-wrap items-center justify-between gap-2' }, [
                 h('div', { key: 'vb-label' },
-                  h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Vocabulary bridge'),
-                  h('p', { className: 'mt-0.5 text-[10.5px] ' + muted }, 'Connect the words to what you can observe.')),
-                h('button', { key: 'vb-toggle', type: 'button', 'aria-expanded': vocabularyOpen ? 'true' : 'false', 'aria-controls': vocabularyOpen ? 'geology-vocabulary-' + SCENE.id : null, 'data-geology-vocabulary-toggle': SCENE.id, onClick: function () { setVocabularyOpen(function (open) { return !open; }); }, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, vocabularyOpen ? 'Hide vocabulary bridge' : 'Show vocabulary bridge')
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.ui.vocabulary_bridge', 'Vocabulary bridge')),
+                  h('p', { className: 'mt-0.5 text-[10.5px] ' + muted }, t('stem.geology.ui.connect_the_words_to_what_you_can_observe', 'Connect the words to what you can observe.'))),
+                h('button', { key: 'vb-toggle', type: 'button', 'aria-expanded': vocabularyOpen ? 'true' : 'false', 'aria-controls': vocabularyOpen ? 'geology-vocabulary-' + SCENE.id : null, 'data-geology-vocabulary-toggle': SCENE.id, onClick: function () { setVocabularyOpen(function (open) { return !open; }); }, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, vocabularyOpen ? t('stem.geology.ui.hide_vocabulary_bridge', 'Hide vocabulary bridge') : t('stem.geology.ui.show_vocabulary_bridge', 'Show vocabulary bridge'))
               ]),
               vocabularyOpen ? h('div', { key: 'vb-body', id: 'geology-vocabulary-' + SCENE.id, role: 'region', 'aria-label': t('stem.geology.a11y.vocabulary_bridge', 'Vocabulary bridge'), 'data-geology-vocabulary': 'true', className: 'mt-2' }, [
                 h('dl', { key: 'vb-list', className: 'space-y-2' }, vocabulary.map(function (item) {
                   return h('div', { key: item.term, className: 'rounded-md border p-2 ' + (isDark ? 'border-slate-700' : 'border-slate-200') }, [
                     h('dt', { key: 'term', className: 'text-[11px] font-extrabold ' + ink }, item.term),
                     h('dd', { key: 'def', className: 'mt-0.5 text-[10.5px] leading-snug ' + muted }, item.definition),
-                    h('dd', { key: 'observe', className: 'mt-1 text-[10px] font-semibold leading-snug ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Use it when: ' + item.cue)
+                    h('dd', { key: 'observe', className: 'mt-1 text-[10px] font-semibold leading-snug ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, tf('stem.geology.ui.use_it_when', 'Use it when: {cue}', { cue: item.cue }))
                   ]);
                 })),
-                h('div', { key: 'vb-audio', className: 'mt-2' }, readAloudButton('Vocabulary bridge. ' + vocabularyText, 'vocabulary-' + SCENE.id, 'Read vocabulary aloud'))
+                h('div', { key: 'vb-audio', className: 'mt-2' }, readAloudButton(tf('stem.geology.ui.vocabulary_bridge_2', 'Vocabulary bridge. {vocabulary_text}', { vocabulary_text: vocabularyText }), 'vocabulary-' + SCENE.id, t('stem.geology.ui.read_vocabulary_aloud', 'Read vocabulary aloud')))
               ]) : null
             ])
           ]));
@@ -10691,7 +10790,7 @@ function updateCoreRig3d(dt3d) {
 
       function sceneMissionPanel() {
         var mission = missionForScene(), context = missionContext(), items = missionItemsForScene(), complete = items.every(function (item) { return item.complete; });
-        var hint = nextMissionHint(mission, context, SCENE.id);
+        var hint = nextMissionHint(mission, context, SCENE.id, t);
         var done = items.filter(function (item) { return item.complete; }).length;
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': t('stem.geology.a11y.field_mission', 'Field mission') },
           h('div', { className: 'flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between' },
@@ -10699,10 +10798,11 @@ function updateCoreRig3d(dt3d) {
               h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t('stem.geology.mission.' + SCENE.id + '.eyebrow', mission.eyebrow)),
               h('h3', { className: 'mt-1 text-sm font-extrabold ' + ink }, t('stem.geology.mission.' + SCENE.id + '.question', mission.question)),
               h('p', { className: 'mt-1 text-[11.5px] leading-relaxed ' + muted }, t('stem.geology.mission.' + SCENE.id + '.evidence', mission.evidencePrompt)),
-            readAloudButton(mission.question + '. ' + mission.evidencePrompt, 'mission-' + SCENE.id, 'Read mission aloud')),
-            h('div', { className: 'shrink-0 rounded-lg border px-2.5 py-1.5 text-center ' + (complete ? (isDark ? 'border-emerald-500/60 bg-emerald-950/30 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-800') : (isDark ? 'border-slate-600 bg-slate-900/40 text-slate-200' : 'border-slate-300 bg-slate-50 text-slate-700')), 'aria-label': tf('stem.geology.a11y.of_mission_checks_complete', '{done} of {length} mission checks complete', { done: done, length: items.length })},
-              h('div', { className: 'text-base font-black' }, done + '/' + items.length),
-              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider' }, complete ? 'Ready to explain' : 'Field checks'))),
+            readAloudButton(mission.question + '. ' + mission.evidencePrompt, 'mission-' + SCENE.id, t('stem.geology.ui.read_mission_aloud', 'Read mission aloud'))),
+            h('div', { className: 'shrink-0 rounded-lg border px-2.5 py-1.5 text-center ' + (complete ? (isDark ? 'border-emerald-500/60 bg-emerald-950/30 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-800') : (isDark ? 'border-slate-600 bg-slate-900/40 text-slate-200' : 'border-slate-300 bg-slate-50 text-slate-700')) },
+              h('span', { className: 'sr-only' }, tf('stem.geology.a11y.of_mission_checks_complete', '{done} of {length} mission checks complete', { done: done, length: items.length })),
+              h('div', { className: 'text-base font-black', 'aria-hidden': 'true' }, done + '/' + items.length),
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider' }, complete ? t('stem.geology.ui.ready_to_explain', 'Ready to explain') : t('stem.geology.ui.field_checks', 'Field checks')))),
           h('div', { className: 'grid gap-1.5 border-t px-3 py-2.5 sm:grid-cols-3 ' + (isDark ? 'border-slate-700' : 'border-slate-200') },
             items.map(function (item) {
               var action = item.complete ? null : missionActionFor(item.id);
@@ -10712,7 +10812,7 @@ function updateCoreRig3d(dt3d) {
                 action ? h('button', { type: 'button', 'data-geology-route': item.id, 'aria-label': action.label + ': ' + item.label, onClick: function () { focusMissionTarget(item.id); }, className: 'shrink-0 rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, action.label) : null);
             })),
           h('div', { className: 'border-t px-3 py-2.5 ' + (isDark ? 'border-slate-700' : 'border-slate-200') },
-            h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'What to notice'),
+            h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.ui.what_to_notice', 'What to notice')),
             h('ul', { className: 'mt-1 grid gap-1 text-[11px] ' + muted },
               (mission.notice || []).map(function (notice, i) { return h('li', { key: i, className: 'flex gap-1.5' }, h('span', { 'aria-hidden': 'true' }, '•'), h('span', null, t('stem.geology.mission.' + SCENE.id + '.notice.' + i, notice))); }))),
           h('div', { className: 'border-t px-3 py-2.5 ' + (isDark ? 'border-slate-700' : 'border-slate-200') },
@@ -10721,7 +10821,7 @@ function updateCoreRig3d(dt3d) {
               : h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                   h('span', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.hint_label', 'Stuck?')),
                   h('button', { type: 'button', 'aria-expanded': hintShown ? 'true' : 'false', onClick: function () { setHintShown(function (value) { return !value; }); }, className: btn + btnIdle }, hintShown ? t('stem.geology.hide_hint', 'Hide hint') : t('stem.geology.show_hint', 'Show hint')),
-                  hintShown ? h('p', { className: 'basis-full rounded-lg border-l-2 border-amber-400 bg-amber-500/10 p-2 text-[11px] leading-relaxed ' + ink, 'data-geology-hint': 'true' }, 'Hint: ' + hint.text) : null)
+                  hintShown ? h('p', { className: 'basis-full rounded-lg border-l-2 border-amber-400 bg-amber-500/10 p-2 text-[11px] leading-relaxed ' + ink, 'data-geology-hint': 'true' }, tf('stem.geology.ui.hint', 'Hint: {text}', { text: hint.text })) : null)
           )
         );
       }
@@ -10731,47 +10831,48 @@ function updateCoreRig3d(dt3d) {
         var ready = missionIsComplete(), explanation = notebook.explanation || '';
         var mapAssignments = evidenceMapForScene(notebook.evidenceMap, SCENE.id);
         var mapStatus = evidenceMapStatus(evidence, mapAssignments);
-        var rubric = evaluateCER(mission, Object.assign({}, context, { missionComplete: ready, evidenceMapStatus: mapStatus }), notebook);
-        var draft = evidenceMapDraft(mission, evidence, mapAssignments);
+        var rubric = evaluateCER(mission, Object.assign({}, context, { missionComplete: ready, evidenceMapStatus: mapStatus }), notebook, t);
+        var draft = evidenceMapDraft(mission, evidence, mapAssignments, t);
         function draftFromMap() {
           if (!draft.ready) { announce(t('stem.geology.sr.complete_the_observation_process_and_outcome_m', 'Complete the Observation, Process, and Outcome map before drafting.')); return; }
           var current = notebookRef.current || notebook;
           saveNotebook(Object.assign({}, current, { claim: current.claim || draft.claim, explanation: draft.explanation, submitted: false, rubric: null }));
-          addToast('Draft explanation created from the Evidence Map.', 'success');
+          addToast(t('stem.geology.ui.draft_explanation_created_from_the_evidence', 'Draft explanation created from the Evidence Map.'), 'success');
           announce(t('stem.geology.sr.draft_explanation_created_from_the_evidence_ma', 'Draft explanation created from the Evidence Map. Review and edit it before saving.'));
         }
         function exportNote() {
           try {
-            var lines = ['CER score: ' + rubric.score + '/' + rubric.total, 'Geology Explorer field note — ' + SCENE.label, '', 'Question: ' + mission.question, 'Claim: ' + (notebook.claim || '(not written)'), 'Explanation: ' + (notebook.explanation || '(not written)'), 'Reflection: ' + (notebook.reflection || '(not written)'), '', 'Evidence:',];
+            var notWritten = t('stem.geology.ui.note_not_written', '(not written)');
+            var lines = [tf('stem.geology.ui.note_cer_score', 'CER score: {score}/{total}', { score: rubric.score, total: rubric.total }), tf('stem.geology.ui.note_title', 'Geology Explorer field note — {scene}', { scene: SCENE.label }), '', tf('stem.geology.ui.note_question', 'Question: {text}', { text: mission.question }), tf('stem.geology.ui.note_claim', 'Claim: {text}', { text: notebook.claim || notWritten }), tf('stem.geology.ui.note_explanation', 'Explanation: {text}', { text: notebook.explanation || notWritten }), tf('stem.geology.ui.note_reflection', 'Reflection: {text}', { text: notebook.reflection || notWritten }), '', t('stem.geology.ui.note_evidence', 'Evidence:')];
             evidence.forEach(function (item) { lines.push('- ' + item.label + ': ' + item.detail); });
-            lines.push('', 'Evidence map:');
+            lines.push('', t('stem.geology.ui.note_evidence_map', 'Evidence map:'));
             EVIDENCE_MAP_ROLES.forEach(function (role) {
               var mapped = evidence.filter(function (item) { return mapAssignments[item.id] === role.id; });
               lines.push(role.label + ':');
-              if (!mapped.length) lines.push('- (none assigned)');
+              if (!mapped.length) lines.push('- ' + t('stem.geology.ui.note_none_assigned', '(none assigned)'));
               mapped.forEach(function (item) { lines.push('- ' + item.label + ': ' + item.detail); });
             });
             var unassigned = evidence.filter(function (item) { return !mapAssignments[item.id]; });
             if (unassigned.length) {
-              lines.push('Unassigned:');
+              lines.push(t('stem.geology.ui.note_unassigned', 'Unassigned:'));
               unassigned.forEach(function (item) { lines.push('- ' + item.label + ': ' + item.detail); });
             }
             var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }), url = URL.createObjectURL(blob), a = document.createElement('a');
             a.href = url; a.download = 'geology-field-note-' + SCENE.id + '.txt'; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 0);
-          } catch (e) { addToast('Could not export the field note.', 'error'); }
+          } catch (e) { addToast(t('stem.geology.ui.could_not_export_the_field_note', 'Could not export the field note.'), 'error'); }
         }
         var fields = h('div', { key: 'fields', className: 'mt-2 space-y-2' }, [
           h('label', { key: 'claim', className: 'block text-[11px] font-bold ' + ink }, [
-            'Claim',
-            h('textarea', { key: 'field', rows: 2, value: notebook.claim || '', onChange: function (e) { setNotebookField('claim', e.target.value); }, placeholder: 'I think this world formed because…', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
+            t('stem.geology.ui.cer_claim', 'Claim'),
+            h('textarea', { key: 'field', rows: 2, value: notebook.claim || '', onChange: function (e) { setNotebookField('claim', e.target.value); }, placeholder: t('stem.geology.ui.i_think_this_world_formed_because', 'I think this world formed because…'), className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
           ]),
           h('label', { key: 'explanation', className: 'block text-[11px] font-bold ' + ink }, [
-            'Explain your evidence',
-            h('textarea', { key: 'field', rows: 4, value: explanation, onChange: function (e) { setNotebookField('explanation', e.target.value); }, placeholder: 'Use two or more observations. Connect what you saw to the process.', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
+            t('stem.geology.ui.cer_explain', 'Explain your evidence'),
+            h('textarea', { key: 'field', rows: 4, value: explanation, onChange: function (e) { setNotebookField('explanation', e.target.value); }, placeholder: t('stem.geology.ui.use_two_or_more_observations_connect_what', 'Use two or more observations. Connect what you saw to the process.'), className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
           ]),
           h('label', { key: 'reflection', className: 'block text-[11px] font-bold ' + ink }, [
-            'Reflection: Which observation changed your thinking?',
-             h('textarea', { key: 'field', rows: 3, value: notebook.reflection || '', onChange: function (e) { setNotebookField('reflection', e.target.value); }, placeholder: 'Name the observation that changed, strengthened, or complicated your first idea.', className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
+            t('stem.geology.ui.cer_reflection', 'Reflection: Which observation changed your thinking?'),
+             h('textarea', { key: 'field', rows: 3, value: notebook.reflection || '', onChange: function (e) { setNotebookField('reflection', e.target.value); }, placeholder: t('stem.geology.ui.name_the_observation_that_changed', 'Name the observation that changed, strengthened, or complicated your first idea.'), className: 'mt-1 block w-full rounded-lg border p-2 text-[12px] font-normal ' + (isDark ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-800') })
            ]),
         ]);
         var rubricBox = h('div', { key: 'rubric', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'bg-slate-50 border-slate-200'), role: 'region', 'aria-label': t('stem.geology.a11y.cer_rubric', 'CER rubric') }, [
@@ -10784,19 +10885,19 @@ function updateCoreRig3d(dt3d) {
               h('span', null, h('strong', null, criterion.label + ': '), criterion.feedback));
           })),
           h('p', { key: 'summary', className: 'mt-2 text-[11px] font-semibold ' + (rubric.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, rubric.ready ? t('stem.geology.rubric_ready', 'Ready to submit for teacher review.') : t('stem.geology.rubric_next', 'Use the feedback above to strengthen the explanation.')),
-          h('div', { key: 'audio', className: 'mt-2' }, readAloudButton('CER rubric. Score ' + rubric.score + ' out of ' + rubric.total + '. ' + rubric.criteria.map(function (criterion) { return criterion.label + ': ' + criterion.feedback; }).join(' '), 'cer-' + SCENE.id, 'Read CER feedback aloud'))
+          h('div', { key: 'audio', className: 'mt-2' }, readAloudButton(tf('stem.geology.ui.cer_rubric_score_out_of', 'CER rubric. Score {score} out of {total}. {join}', { score: rubric.score, total: rubric.total, join: rubric.criteria.map(function (criterion) { return criterion.label + ': ' + criterion.feedback; }).join(' ') }), 'cer-' + SCENE.id, t('stem.geology.ui.read_cer_feedback_aloud', 'Read CER feedback aloud')))
         ]);
         var evidenceMapBox = h('section', { key: 'evidence-map', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50'), role: 'region', 'aria-label': t('stem.geology.a11y.evidence_map', 'Evidence map'), 'data-geology-evidence-map': 'true' }, [
           h('div', { key: 'header', className: 'flex flex-wrap items-start justify-between gap-2' }, [
             h('div', { key: 'em-label' },
-              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Evidence Map'),
-              h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, 'Give each collected item a job: what you observed, how the process worked, or what it supports.')),
-            h('span', { key: 'em-status', className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (mapStatus.ready ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted) }, mapStatus.ready ? 'Map ready' : mapStatus.mappedRoleCount + '/' + EVIDENCE_MAP_ROLES.length + ' roles mapped')
+              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.ui.evidence_map', 'Evidence Map')),
+              h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, t('stem.geology.ui.give_each_collected_item_a_job_what_you', 'Give each collected item a job: what you observed, how the process worked, or what it supports.'))),
+            h('span', { key: 'em-status', className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (mapStatus.ready ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted) }, mapStatus.ready ? t('stem.geology.ui.map_ready', 'Map ready') : tf('stem.geology.ui.roles_mapped', '{mapped_role_count}/{length} roles mapped', { mapped_role_count: mapStatus.mappedRoleCount, length: EVIDENCE_MAP_ROLES.length }))
           ]),
-          h('p', { key: 'status', className: 'mt-2 text-[11px] font-semibold ' + (mapStatus.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted), role: mapStatus.ready ? 'status' : 'note', 'data-geology-evidence-map-status': 'true' }, mapStatus.ready ? 'Map ready: an observation, process, and outcome are represented.' : 'Map each item as an observation, process, or outcome. ' + mapStatus.unassigned + ' item' + (mapStatus.unassigned === 1 ? ' is' : 's are') + ' still unassigned.'),
+          h('p', { key: 'status', className: 'mt-2 text-[11px] font-semibold ' + (mapStatus.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted), role: mapStatus.ready ? 'status' : 'note', 'data-geology-evidence-map-status': 'true' }, mapStatus.ready ? t('stem.geology.ui.map_ready_an_observation_process_and_outcome', 'Map ready: an observation, process, and outcome are represented.') : t('stem.geology.ui.map_each_item', 'Map each item as an observation, process, or outcome.') + ' ' + tf('stem.geology.ui.items_unassigned', 'Still unassigned: {n}.', { n: mapStatus.unassigned })),
           h('div', { key: 'draft-actions', className: 'mt-2 flex flex-wrap items-center gap-2' }, [
-            h('button', { key: 'draft', type: 'button', disabled: !mapStatus.ready, onClick: draftFromMap, className: btn + (!mapStatus.ready ? 'opacity-50 ' : '') + btnIdle }, 'Draft explanation from map'),
-            h('span', { key: 'draft-help', className: 'text-[10px] ' + muted }, mapStatus.ready ? 'Creates an editable claim and explanation.' : 'Map all three roles to unlock a draft.')
+            h('button', { key: 'draft', type: 'button', disabled: !mapStatus.ready, onClick: draftFromMap, className: btn + (!mapStatus.ready ? 'opacity-50 ' : '') + btnIdle }, t('stem.geology.ui.draft_explanation_from_map', 'Draft explanation from map')),
+            h('span', { key: 'draft-help', className: 'text-[10px] ' + muted }, mapStatus.ready ? t('stem.geology.ui.creates_an_editable_claim_and_explanation', 'Creates an editable claim and explanation.') : t('stem.geology.ui.map_all_three_roles_to_unlock_a_draft', 'Map all three roles to unlock a draft.'))
           ]),
           evidence.length
             ? h('div', { key: 'items', className: 'mt-2 space-y-2' }, evidence.map(function (item) {
@@ -10809,22 +10910,22 @@ function updateCoreRig3d(dt3d) {
                   }))
                 ]);
               }))
-            : h('p', { key: 'empty', className: 'mt-2 text-[11px] ' + muted }, 'Collect observations in Investigate mode, then map them here.')
+            : h('p', { key: 'empty', className: 'mt-2 text-[11px] ' + muted }, t('stem.geology.ui.collect_observations_in_investigate_mode', 'Collect observations in Investigate mode, then map them here.'))
         ]);
         var evidenceBox = h('div', { key: 'evidence', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50') }, [
-          h('div', { key: 'title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Collected evidence'),
+          h('div', { key: 'title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.ui.collected_evidence', 'Collected evidence')),
           evidence.length
             ? h('ul', { key: 'list', className: 'mt-1 space-y-1 text-[11px] ' + ink }, evidence.map(function (item) { return h('li', { key: item.id }, [h('strong', { key: 'label' }, item.label + ': '), item.detail]); }))
-            : h('p', { key: 'empty', className: 'mt-1 text-[11px] ' + muted }, 'Your observations will appear here as you explore.')
+            : h('p', { key: 'empty', className: 'mt-1 text-[11px] ' + muted }, t('stem.geology.ui.your_observations_will_appear_here_as_you', 'Your observations will appear here as you explore.'))
         ]);
         var actions = h('div', { key: 'actions', className: 'mt-2 flex flex-wrap gap-1.5' }, [
-          h('button', { key: 'save', type: 'button', disabled: !rubric.ready, onClick: function () { saveNotebook(Object.assign({}, notebookRef.current, { submitted: true, rubric: rubric, submittedAt: Date.now() })); addToast('Field conclusion saved.', 'success'); announce(t('stem.geology.sr.your_field_conclusion_is_saved', 'Your field conclusion is saved.')); }, className: btn + (!rubric.ready ? 'opacity-50 ' : '') + btnIdle }, notebook.submitted ? '✓ Conclusion saved' : 'Save conclusion'),
-          h('button', { key: 'export', type: 'button', disabled: !evidence.length, onClick: exportNote, className: btn + (!evidence.length ? 'opacity-50 ' : '') + btnIdle }, '⇩ Export field note')
+          h('button', { key: 'save', type: 'button', disabled: !rubric.ready, onClick: function () { saveNotebook(Object.assign({}, notebookRef.current, { submitted: true, rubric: rubric, submittedAt: Date.now() })); addToast(t('stem.geology.ui.field_conclusion_saved', 'Field conclusion saved.'), 'success'); announce(t('stem.geology.sr.your_field_conclusion_is_saved', 'Your field conclusion is saved.')); }, className: btn + (!rubric.ready ? 'opacity-50 ' : '') + btnIdle }, notebook.submitted ? t('stem.geology.ui.conclusion_saved', '✓ Conclusion saved') : t('stem.geology.ui.save_conclusion', 'Save conclusion')),
+          h('button', { key: 'export', type: 'button', disabled: !evidence.length, onClick: exportNote, className: btn + (!evidence.length ? 'opacity-50 ' : '') + btnIdle }, t('stem.geology.ui.export_field_note', '⇩ Export field note'))
         ]);
         return h('section', { className: 'rounded-xl border ' + cardBg + routeTargetClass('cer'), role: 'region', 'aria-label': t('stem.geology.a11y.explain_your_evidence', 'Explain your evidence'), 'data-geology-target': 'cer', tabIndex: -1 },
           h('div', { className: 'p-3' }, [
-            h('div', { key: 'title', className: 'text-[12px] font-extrabold ' + ink }, '📝 Explain your evidence'),
-            h('p', { key: 'prompt', className: 'mt-1 text-[11px] leading-relaxed ' + muted }, rubric.ready ? mission.evidencePrompt : 'Complete the rubric checks above before submitting your conclusion.'),
+            h('div', { key: 'title', className: 'text-[12px] font-extrabold ' + ink }, t('stem.geology.ui.explain_your_evidence', '📝 Explain your evidence')),
+            h('p', { key: 'prompt', className: 'mt-1 text-[11px] leading-relaxed ' + muted }, rubric.ready ? mission.evidencePrompt : t('stem.geology.ui.complete_the_rubric_checks_above_before', 'Complete the rubric checks above before submitting your conclusion.')),
             fields,
             evidenceMapBox,
             rubricBox,
@@ -10849,7 +10950,7 @@ function updateCoreRig3d(dt3d) {
         return h('svg', { width: W, height: bands.length * bh, viewBox: '0 0 ' + W + ' ' + (bands.length * bh), role: 'img', 'aria-label': waterOn ? t('stem.geology.a11y.cross_section_water', 'Cross-section: sedimentary layers over basement and magma, cut by a granite pluton. Groundwater fills the sandstone aquifer and is trapped above the shale; a dashed line marks the water table.') : t('stem.geology.a11y.cross_section', 'Cross-section: sedimentary layers over basement and magma, cut by a granite pluton'), className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300'),
           // ★An <svg> is a flex item like any other and shrinks: beside the teaching paragraph
           // this column was squeezed to about a third of its 150px width and became unreadable.
-          style: { flex: '0 0 auto' } },
+          style: { flex: '0 0 auto', direction: 'ltr' } },   // fixed-x labels: keep their anchors on an RTL page
           rows,
           // groundwater: saturated zone fills the lower sandstone, perched on the shale
           waterOn ? h('g', { key: 'water' },
@@ -10905,17 +11006,17 @@ function updateCoreRig3d(dt3d) {
       function deepEarthSchematicDiagram(v) {
         return [
           v.mark('circle', 'crust', { key: 'crust', cx: 122, cy: 94, r: 80, fill: v.color('crust') }),
-          v.mark('circle', 'upperMantle', { key: 'upper-mantle', cx: 122, cy: 94, r: 73, fill: v.color('upperMantle') }),
-          v.mark('circle', 'lowerMantle', { key: 'lower-mantle', cx: 122, cy: 94, r: 56, fill: v.color('lowerMantle') }),
-          v.mark('circle', 'outerCore', { key: 'outer-core', cx: 122, cy: 94, r: 39, fill: v.color('outerCore') }),
-          v.mark('circle', 'innerCore', { key: 'inner-core', cx: 122, cy: 94, r: 19, fill: v.color('innerCore') }),
+          v.mark('circle', 'upperMantle', { key: 'upper-mantle', cx: 122, cy: 94, r: 77, fill: v.color('upperMantle') }),   // true proportions below the (thickened) crust
+          v.mark('circle', 'lowerMantle', { key: 'lower-mantle', cx: 122, cy: 94, r: 72, fill: v.color('lowerMantle') }),   // 660 km: 0.90 R
+          v.mark('circle', 'outerCore', { key: 'outer-core', cx: 122, cy: 94, r: 44, fill: v.color('outerCore') }),   // 2,891 km: 0.55 R
+          v.mark('circle', 'innerCore', { key: 'inner-core', cx: 122, cy: 94, r: 15, fill: v.color('innerCore') }),   // 5,150 km: 0.19 R
           v.line('crust-leader', 177, 36, 238, 22),
           v.text('Thin crust', 350, 25, 'end'),
           v.line('mantle-leader', 169, 62, 238, 58),
           v.text('Solid mantle', 350, 62, 'end'),
           v.line('outer-leader', 159, 96, 238, 96),
           v.text('Liquid outer core', 350, 100, 'end'),
-          v.line('inner-leader', 138, 109, 238, 137),
+          v.line('inner-leader', 130, 102, 238, 137),
           v.text('Solid inner core', 350, 142, 'end'),
           v.h('path', { key: 's-wave', d: 'M 8 156 Q 48 111 84 105', fill: 'none', stroke: v.arrow, strokeWidth: 2, strokeDasharray: '6 3', markerEnd: 'url(#' + v.arrowId + ')' }),
           v.text('S-wave stops at liquid', 10, 181, 'start')
@@ -11053,7 +11154,7 @@ function updateCoreRig3d(dt3d) {
           return children == null ? h(tag, next) : h(tag, next, children);
         }
         function textNode(label, x, y, anchor) {
-          return h('text', { key: 'label-' + label + '-' + x + '-' + y, x: x, y: y, fill: textColor, fontSize: 13, textAnchor: anchor || 'start', style: { fontWeight: 600 }, paintOrder: 'stroke', stroke: bg, strokeWidth: 2, strokeLinejoin: 'round' }, label);
+          return h('text', { key: 'label-' + label + '-' + x + '-' + y, x: x, y: y, fill: textColor, fontSize: 13, textAnchor: anchor || 'start', style: { fontWeight: 600 }, paintOrder: 'stroke', stroke: bg, strokeWidth: 2, strokeLinejoin: 'round' }, geoTT(label));   // scene text key, like the tables
         }
         function leader(key, x1, y1, x2, y2) {
           return h('line', { key: key, x1: x1, y1: y1, x2: x2, y2: y2, stroke: mutedColor, strokeWidth: 1.25, vectorEffect: 'non-scaling-stroke' });
@@ -11069,7 +11170,7 @@ function updateCoreRig3d(dt3d) {
           role: 'img',
           'aria-labelledby': titleId + ' ' + descId,
           'data-geology-scene-schematic': info.sceneId,
-          style: { display: 'block', width: '100%', height: H, background: bg, borderRadius: '0.5rem' }
+          style: { display: 'block', width: '100%', height: H, background: bg, borderRadius: '0.5rem', direction: 'ltr' }   // labels sit at fixed x: an RTL page must not flip their anchors
         },
           h('title', { id: titleId }, info.title),
           h('desc', { id: descId }, descText),
@@ -11079,24 +11180,24 @@ function updateCoreRig3d(dt3d) {
           draw(v));
       }
       function sceneSchematicPanel() {
-        var info = sceneSchematicInfo(SCENE.id, selected ? selected.key : null, sceneJourneyStep);
+        var info = sceneSchematicInfo(SCENE.id, selected ? selected.key : null, sceneJourneyStep, t);
         var journey = sceneJourneyFor(SCENE.id);
         return h('section', { className: 'rounded-xl border p-3 ' + cardBg, role: 'region', 'aria-label': t('stem.geology.a11y.2d_evidence_map', '2D evidence map'), 'data-geology-schematic-panel': SCENE.id }, [
           h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
             h('div', { key: 'titles' }, [
-              h('div', { key: 'eyebrow', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Accessible scene map'),
+              h('div', { key: 'eyebrow', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.ui.accessible_scene_map', 'Accessible scene map')),
               h('h3', { key: 'title', className: 'mt-0.5 text-[12px] font-extrabold ' + ink }, info.title)
             ]),
-            h('span', { key: 'stage', className: 'text-[10.5px] font-bold tabular-nums ' + muted }, 'Stage ' + (info.activeIndex + 1) + ' of ' + journey.length)
+            h('span', { key: 'stage', className: 'text-[10.5px] font-bold tabular-nums ' + muted }, tf('stem.geology.ui.stage_of_2', 'Stage {active_index} of {length}', { active_index: info.activeIndex + 1, length: journey.length }))
           ]),
           h('p', { key: 'description', className: 'mt-1 text-[11px] leading-relaxed ' + muted }, info.description),
           h('div', { key: 'map', className: 'mt-2 overflow-hidden rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300') }, sceneSchematicSVG(info)),
           h('div', { key: 'status', className: 'mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] ' + ink, 'data-geology-schematic-status': 'true' }, [
-            h('span', { key: 'active' }, [h('span', { key: 'label', className: 'font-bold' }, 'Active stage: '), info.activeLabel]),
-            h('span', { key: 'selected' }, info.selectedLabel ? [h('span', { key: 'label', className: 'font-bold' }, 'Selected: '), info.selectedLabel] : 'Select a material below to connect it to the map.'),
-            focusLensOn && info.selectedLabel ? h('span', { key: 'focus', className: 'font-semibold text-cyan-500' }, 'Focus Lens is isolating this material.') : null
+            h('span', { key: 'active' }, [h('span', { key: 'label', className: 'font-bold' }, t('stem.geology.ui.active_stage', 'Active stage: ')), info.activeLabel]),
+            h('span', { key: 'selected' }, info.selectedLabel ? [h('span', { key: 'label', className: 'font-bold' }, t('stem.geology.ui.selected', 'Selected: ')), info.selectedLabel] : t('stem.geology.ui.select_a_material_below_to_connect_it_to_the', 'Select a material below to connect it to the map.')),
+            focusLensOn && info.selectedLabel ? h('span', { key: 'focus', className: 'font-semibold text-cyan-500' }, t('stem.geology.ui.focus_lens_is_isolating_this_material', 'Focus Lens is isolating this material.')) : null
           ]),
-          h('p', { key: 'hint', className: 'mt-1 text-[10.5px] ' + muted }, 'This map follows the formation timeline and the existing material list.')
+          h('p', { key: 'hint', className: 'mt-1 text-[10.5px] ' + muted }, t('stem.geology.ui.this_map_follows_the_formation_timeline_and', 'This map follows the formation timeline and the existing material list.'))
         ]);
       }
       function coreRigPublicBandColor(band) {
@@ -11130,8 +11231,8 @@ function updateCoreRig3d(dt3d) {
           : (findingLevel === 'mixed' ? (darkSurface ? 'text-amber-100' : 'text-amber-900') : (darkSurface ? 'text-rose-100' : 'text-rose-900'));
         var bodyInk = darkSurface ? 'text-slate-100' : 'text-slate-900';
         var bodyMuted = darkSurface ? 'text-slate-300' : 'text-slate-600';
-        var interpretation = String(comparison.interpretation || 'Recovered sequences provide a new comparison for the field journal.').slice(0, 180);
-        var controlLabel = String(comparison.controlLabel || 'Compare one changed variable while holding the other constant.').slice(0, 120);
+        var interpretation = String(comparison.interpretation || t('stem.geology.ui.core_compare_default_finding', 'Recovered sequences provide a new comparison for the field journal.')).slice(0, 180);
+        var controlLabel = String(comparison.controlLabel || t('stem.geology.ui.core_compare_default_control', 'Compare one changed variable while holding the other constant.')).slice(0, 120);
         function bandState(laneId, key) {
           key = String(key || '');
           if (sharedKeys.indexOf(key) >= 0) return 'shared';
@@ -11140,7 +11241,7 @@ function updateCoreRig3d(dt3d) {
           return laneId === 'candidate' ? 'new' : 'not-repeated';
         }
         function bandStateLabel(state) {
-          return state === 'shared' ? 'Shared' : (state === 'new' ? 'New' : 'Not repeated');
+          return state === 'shared' ? t('stem.geology.ui.shared', 'Shared') : (state === 'new' ? t('stem.geology.ui.new', 'New') : t('stem.geology.ui.not_repeated', 'Not repeated'));
         }
         function recoveredIntervalCount(core) {
           var bands = core && Array.isArray(core.bands) ? core.bands.slice(0, 24) : [];
@@ -11161,7 +11262,7 @@ function updateCoreRig3d(dt3d) {
           }, [
             h('div', { key: 'head', className: 'mb-1 flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide ' + bodyMuted }, [
               h('span', { key: 'label' }, label),
-              h('span', { key: 'count', className: 'tabular-nums' }, totalIntervals + ' / ' + sharedIntervalScale + ' intervals')
+              h('span', { key: 'count', className: 'tabular-nums' }, tf('stem.geology.ui.intervals', '{total_intervals} / {shared_interval_scale} intervals', { total_intervals: totalIntervals, shared_interval_scale: sharedIntervalScale }))
             ]),
             bands.length ? h('div', { key: 'scroll', className: 'overflow-x-auto pb-1' },
               h('ol', {
@@ -11174,7 +11275,7 @@ function updateCoreRig3d(dt3d) {
                 var start = Math.max(1, Math.round(Number(band && band.startDepth) || (bandIndex + 1)));
                 var end = Math.max(start, Math.round(Number(band && band.endDepth) || (start + count - 1)));
                 var range = start === end ? String(start) : (start + '–' + end);
-                var name = String(band && band.name || 'Recovered formation').slice(0, 80);
+                var name = String(band && band.name || t('stem.geology.ui.recovered_formation', 'Recovered formation')).slice(0, 80);
                 var integrity = band && band.avgIntegrity != null && isFinite(Number(band.avgIntegrity))
                   ? Math.max(0, Math.min(100, Math.round(Number(band.avgIntegrity) * 100))) : null;
                 var stateLabel = bandStateLabel(state);
@@ -11184,8 +11285,9 @@ function updateCoreRig3d(dt3d) {
                 var bandRing = state === 'shared'
                   ? 'ring-1 ring-cyan-200/70'
                   : (state === 'new' ? 'ring-2 ring-amber-200/80' : 'ring-1 ring-rose-200/70 opacity-70 grayscale');
-                var aria = label + ' intervals ' + range + ': ' + name + ', ' + stateLabel.toLowerCase() +
-                  (integrity == null ? '' : (', average integrity ' + integrity + ' percent'));
+                var aria = integrity == null
+                  ? tf('stem.geology.a11y.core_band', '{label} intervals {range}: {name}, {state}', { label: label, range: range, name: name, state: stateLabel })
+                  : tf('stem.geology.a11y.core_band_integrity', '{label} intervals {range}: {name}, {state}, average integrity {pct} percent', { label: label, range: range, name: name, state: stateLabel, pct: integrity });
                 return h('li', {
                   key: laneId + '-' + key + '-' + bandIndex,
                   'data-geology-core-band': key || String(bandIndex + 1), 'data-state': state,
@@ -11209,11 +11311,11 @@ function updateCoreRig3d(dt3d) {
                   style: { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0, transparent 5px, rgba(148,163,184,.22) 5px, rgba(148,163,184,.22) 7px)' },
                   'aria-hidden': 'true'
                 }),
-                h('span', { key: 'meta', className: 'mt-1 block truncate text-[10px] font-bold ' + bodyMuted }, remainderIntervals + ' interval gap')
-              ])] : [])) : h('p', { key: 'empty', className: 'text-[10px] font-semibold ' + bodyMuted }, 'No recovered intervals')
+                h('span', { key: 'meta', className: 'mt-1 block truncate text-[10px] font-bold ' + bodyMuted }, tf('stem.geology.ui.interval_gap', '{remainder_intervals} interval gap', { remainder_intervals: remainderIntervals }))
+              ])] : [])) : h('p', { key: 'empty', className: 'text-[10px] font-semibold ' + bodyMuted }, t('stem.geology.ui.no_recovered_intervals', 'No recovered intervals'))
           ]);
         }
-        var change = comparison.changedVariable === 'angle' ? 'Angle changed · depth held' : 'Depth changed · angle held';
+        var change = comparison.changedVariable === 'angle' ? t('stem.geology.ui.angle_changed_depth_held', 'Angle changed · depth held') : t('stem.geology.ui.depth_changed_angle_held', 'Depth changed · angle held');
         return h('figure', {
           key: options.key, 'data-geology-core-correlation': findingLevel,
           className: 'rounded-xl border p-2 shadow-inner ' + surfaceTone,
@@ -11221,10 +11323,10 @@ function updateCoreRig3d(dt3d) {
         }, [
           h('div', { key: 'heading', className: 'flex items-start justify-between gap-2' }, [
             h('div', { key: 'copy' }, [
-              h('h4', { key: 'title', className: 'text-[11px] font-black uppercase tracking-[.14em] ' + headingTone }, 'Core correlation'),
+              h('h4', { key: 'title', className: 'text-[11px] font-black uppercase tracking-[.14em] ' + headingTone }, t('stem.geology.ui.core_correlation', 'Core correlation')),
               h('p', { key: 'change', className: 'mt-0.5 text-[10px] font-bold ' + bodyMuted }, change)
             ]),
-            h('span', { key: 'score', className: 'shrink-0 rounded-full border border-cyan-200/40 bg-cyan-400/10 px-2 py-1 text-[11px] font-black tabular-nums ' + (darkSurface ? 'text-cyan-100' : 'text-cyan-900') }, similarity + '% match')
+            h('span', { key: 'score', className: 'shrink-0 rounded-full border border-cyan-200/40 bg-cyan-400/10 px-2 py-1 text-[11px] font-black tabular-nums ' + (darkSurface ? 'text-cyan-100' : 'text-cyan-900') }, tf('stem.geology.ui.match', '{similarity}% match', { similarity: similarity }))
           ]),
           h('div', {
             key: 'meter', role: 'meter', 'aria-label': t('stem.geology.a11y.recovered_sequence_similarity', 'Recovered sequence similarity'),
@@ -11236,15 +11338,15 @@ function updateCoreRig3d(dt3d) {
             style: { width: similarity + '%' }
           })),
           h('div', { key: 'strips', className: 'mt-2 grid gap-1.5' }, [
-            coreStrip('reference', 'Reference bore', comparison.previousCore),
-            coreStrip('candidate', 'Candidate bore', comparison.nextCore)
+            coreStrip('reference', t('stem.geology.ui.reference_bore', 'Reference bore'), comparison.previousCore),
+            coreStrip('candidate', t('stem.geology.ui.candidate_bore', 'Candidate bore'), comparison.nextCore)
           ]),
           h('ul', { key: 'legend', className: 'mt-1.5 flex flex-wrap gap-1', 'aria-label': t('stem.geology.a11y.core_correlation_states', 'Core correlation states') }, [
-            h('li', { key: 'shared', className: 'list-none rounded-full border border-cyan-300/40 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-cyan-100' : 'text-cyan-800') }, 'Shared'),
-            h('li', { key: 'new', className: 'list-none rounded-full border border-amber-300/45 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-amber-100' : 'text-amber-800') }, 'New'),
-            h('li', { key: 'not-repeated', className: 'list-none rounded-full border border-rose-300/40 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-rose-100' : 'text-rose-800') }, 'Not repeated')
+            h('li', { key: 'shared', className: 'list-none rounded-full border border-cyan-300/40 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-cyan-100' : 'text-cyan-800') }, t('stem.geology.ui.shared', 'Shared')),
+            h('li', { key: 'new', className: 'list-none rounded-full border border-amber-300/45 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-amber-100' : 'text-amber-800') }, t('stem.geology.ui.new', 'New')),
+            h('li', { key: 'not-repeated', className: 'list-none rounded-full border border-rose-300/40 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-rose-100' : 'text-rose-800') }, t('stem.geology.ui.not_repeated', 'Not repeated'))
           ]),
-          h('p', { key: 'note', 'data-geology-core-correlation-note': 'true', className: 'mt-1.5 text-[10px] font-semibold leading-snug ' + bodyMuted }, 'Sequence matches compare recovered intervals; they do not prove continuous rock between boreholes.'),
+          h('p', { key: 'note', 'data-geology-core-correlation-note': 'true', className: 'mt-1.5 text-[10px] font-semibold leading-snug ' + bodyMuted }, t('stem.geology.ui.sequence_matches_compare_recovered_intervals', 'Sequence matches compare recovered intervals; they do not prove continuous rock between boreholes.')),
           h('figcaption', { key: 'caption', className: 'mt-1.5 ' + bodyInk }, [
             h('p', { key: 'finding', className: 'text-[11px] font-semibold leading-snug' }, interpretation),
             h('p', { key: 'control', className: 'mt-0.5 text-[10px] font-bold ' + bodyMuted }, controlLabel)
@@ -11261,8 +11363,8 @@ function updateCoreRig3d(dt3d) {
         var currentAngle = isFinite(Number(options.currentAngleDegrees)) ? Math.max(0, Math.round(Number(options.currentAngleDegrees))) : nextAngle;
         var currentDepth = isFinite(Number(options.currentDepth)) ? Math.max(0, Math.round(Number(options.currentDepth))) : nextDepth;
         var variables = [
-          { id: 'angle', label: 'Angle', value: nextAngle + '°' },
-          { id: 'depth', label: 'Depth', value: nextDepth + ' intervals' }
+          { id: 'angle', label: t('stem.geology.ui.angle', 'Angle'), value: nextAngle + '°' },
+          { id: 'depth', label: t('stem.geology.ui.depth', 'Depth'), value: tf('stem.geology.ui.depth_n_intervals', '{n} intervals', { n: nextDepth }) }
         ];
         var currentConfiguration = currentAngle + '° / ' + currentDepth;
         var nextConfiguration = nextAngle + '° / ' + nextDepth;
@@ -11273,12 +11375,12 @@ function updateCoreRig3d(dt3d) {
           'aria-label': tf('stem.geology.a11y.controlled_experiment_map_current_setup_chan', 'Controlled experiment map. Current setup {current_configuration}. {changed_variable} changes. Next setup {next_configuration}. Outcome unknown until the bore is run.', { current_configuration: currentConfiguration, changed_variable: changedVariable, next_configuration: nextConfiguration })}, [
           h('div', { key: 'configurations', className: 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1' }, [
             h('div', { key: 'current', 'data-geology-core-configuration': 'current', className: 'min-w-0 rounded-md border px-2 py-1.5 ' + (darkSurface ? 'border-slate-500/50 bg-slate-950/55 text-slate-100' : 'border-slate-300 bg-white/80 text-slate-800') }, [
-              h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide ' + (darkSurface ? 'text-cyan-200' : 'text-cyan-800') }, 'Current'),
+              h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide ' + (darkSurface ? 'text-cyan-200' : 'text-cyan-800') }, t('stem.geology.ui.current', 'Current')),
               h('span', { key: 'value', className: 'mt-0.5 block truncate text-[11px] font-extrabold tabular-nums', title: currentConfiguration }, currentConfiguration)
             ]),
             h('span', { key: 'arrow', className: 'grid place-items-center px-0.5 text-base text-violet-300', 'aria-hidden': 'true' }, '→'),
             h('div', { key: 'next', 'data-geology-core-configuration': 'next', className: 'min-w-0 rounded-md border px-2 py-1.5 ' + (darkSurface ? 'border-violet-200/60 bg-violet-400/20 text-violet-50 shadow-[0_0_12px_rgba(167,139,250,.16)]' : 'border-violet-400 bg-violet-100 text-violet-950') }, [
-              h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide ' + (darkSurface ? 'text-violet-200' : 'text-violet-800') }, 'Next'),
+              h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide ' + (darkSurface ? 'text-violet-200' : 'text-violet-800') }, t('stem.geology.ui.next', 'Next')),
               h('span', { key: 'value', className: 'mt-0.5 block truncate text-[11px] font-extrabold tabular-nums', title: nextConfiguration }, nextConfiguration)
             ])
           ]),
@@ -11288,11 +11390,11 @@ function updateCoreRig3d(dt3d) {
               key: variable.id, 'data-geology-core-variable': variable.id, 'data-state': changed ? 'changed' : 'held',
               className: 'rounded-md border px-2 py-1.5 ' + (changed
                 ? (darkSurface ? 'border-violet-200/70 bg-violet-400/20 text-violet-50' : 'border-violet-400 bg-violet-100 text-violet-950')
-                : (darkSurface ? 'border-cyan-300/30 bg-slate-950/45 text-slate-200' : 'border-cyan-300 bg-white/70 text-slate-700')),
-              'aria-label': changed ? tf('stem.geology.a11y.variable_changed_to', '{label} changed to {value}', { label: variable.label, value: variable.value }) : tf('stem.geology.a11y.variable_held_at', '{label} held at {value}', { label: variable.label, value: variable.value })
+                : (darkSurface ? 'border-cyan-300/30 bg-slate-950/45 text-slate-200' : 'border-cyan-300 bg-white/70 text-slate-700'))
             }, [
-              h('span', { key: 'state', className: 'block text-[10px] font-black uppercase tracking-wide ' + (changed ? (darkSurface ? 'text-violet-200' : 'text-violet-800') : (darkSurface ? 'text-cyan-200' : 'text-cyan-800')) }, (changed ? 'Δ Changed · ' : '= Held · ') + variable.label),
-              h('span', { key: 'value', className: 'mt-0.5 block text-[11px] font-extrabold tabular-nums' }, variable.value)
+              h('span', { key: 'sr', className: 'sr-only' }, changed ? tf('stem.geology.a11y.variable_changed_to', '{label} changed to {value}', { label: variable.label, value: variable.value }) : tf('stem.geology.a11y.variable_held_at', '{label} held at {value}', { label: variable.label, value: variable.value })),
+              h('span', { key: 'state', 'aria-hidden': 'true', className: 'block text-[10px] font-black uppercase tracking-wide ' + (changed ? (darkSurface ? 'text-violet-200' : 'text-violet-800') : (darkSurface ? 'text-cyan-200' : 'text-cyan-800')) }, (changed ? 'Δ ' + t('stem.geology.ui.variable_changed', 'Changed') : '= ' + t('stem.geology.ui.variable_held', 'Held')) + ' · ' + variable.label),
+              h('span', { key: 'value', 'aria-hidden': 'true', className: 'mt-0.5 block text-[11px] font-extrabold tabular-nums' }, variable.value)
             ]);
           })),
           h('div', {
@@ -11302,7 +11404,7 @@ function updateCoreRig3d(dt3d) {
             h('span', { key: 'slots', className: 'flex shrink-0 gap-0.5', 'aria-hidden': 'true' }, [0, 1, 2].map(function (slot) {
               return h('span', { key: slot, className: 'grid h-5 w-4 place-items-center rounded-sm border border-slate-500/60 bg-slate-700/50 text-[10px] font-black' }, '?');
             })),
-            h('span', { key: 'copy', className: 'min-w-0 text-[10px] font-bold leading-snug' }, 'Outcome unknown · run this bore to reveal the comparison')
+            h('span', { key: 'copy', className: 'min-w-0 text-[10px] font-bold leading-snug' }, t('stem.geology.ui.outcome_unknown_run_this_bore_to_reveal_the', 'Outcome unknown · run this bore to reveal the comparison'))
           ])
         ]);
       }
@@ -11321,14 +11423,14 @@ function updateCoreRig3d(dt3d) {
           ? latestCoreLog.comparison : null;
         var previousCoreLog = latestCoreLogIndex > 0 ? sceneCoreLogs[latestCoreLogIndex - 1] : null;
         var derivedCoreComparison = previousCoreLog && latestCoreLog
-          ? coreRigCompareReports(previousCoreLog, latestCoreLog) : null;
+          ? coreRigCompareReports(previousCoreLog, latestCoreLog, t) : null;
         var latestCoreComparison = derivedCoreComparison && derivedCoreComparison.eligible
           ? derivedCoreComparison : (!previousCoreLog ? persistedCoreComparison : null);
-        var latestCoreNextExperiment = latestCoreLog ? (coreRigNextExperiment(latestCoreLog, fieldBook.coreCertification) || latestCoreLog.nextExperiment || null) : null;
+        var latestCoreNextExperiment = latestCoreLog ? (coreRigNextExperiment(latestCoreLog, fieldBook.coreCertification, t) || latestCoreLog.nextExperiment || null) : null;
         var latestCoreCassette = latestCoreLog ? coreRigCoreCassette(latestCoreLog.samples, latestCoreLog.targetDepth, false, false) : null;
         var sceneCoreResearch = (fieldBook.coreResearchByScene && fieldBook.coreResearchByScene[SCENE.id]) || {};
         var corePrograms = normalizeCoreRigPrograms(fieldBook.coreCertification);
-        var coreCertificationProgress = coreRigCertificationSummary(fieldBook.coreCertification);
+        var coreCertificationProgress = coreRigCertificationSummary(fieldBook.coreCertification, t);
         var selectedCoreProgramKey = corePrograms[coreRigProgramSelection] ? coreRigProgramSelection : coreRigProgramKey(coreRigAngle, coreRigDepth);
         var selectedCoreProgram = corePrograms[selectedCoreProgramKey] || corePrograms[coreRigProgramCatalog()[0].key];
         var selectedProgramXpTarget = coreRigCertificationXpTarget(selectedCoreProgram.bestRating);
@@ -11354,7 +11456,7 @@ function updateCoreRig3d(dt3d) {
           h('div', { key: 'head', className: 'flex items-center gap-2 p-2.5' }, [
             h('button', { key: 'toggle', type: 'button', onClick: toggleJournal, 'aria-expanded': fieldJournalOpen ? 'true' : 'false', 'aria-controls': fieldJournalOpen ? panelId : null, className: 'flex min-h-10 min-w-0 flex-1 items-center justify-between gap-2 rounded-lg px-1.5 text-left focus:outline-none focus:ring-2 focus:ring-cyan-400' }, [
               h('span', { key: 'title', className: 'min-w-0' }, [
-                h('span', { key: 'eyebrow', className: 'block text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, '📓 Specimen journal'),
+                h('span', { key: 'eyebrow', className: 'block text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, t('stem.geology.ui.specimen_journal', '📓 Specimen journal')),
                 h('span', { key: 'world', className: 'mt-0.5 block truncate text-[11px] font-extrabold ' + ink }, SCENE.label)
               ]),
               h('span', { key: 'count', className: 'shrink-0 text-right text-[10px] font-bold ' + (progress.complete ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, (sceneFindsFound ? '💎 ' + sceneFindsFound + '/' + sceneFindCatalog.length + ' · ' : '') + progress.found + '/' + progress.total + (fieldJournalOpen ? ' ▲' : ' ▼'))
@@ -11364,17 +11466,17 @@ function updateCoreRig3d(dt3d) {
             h('span', { className: 'block h-full rounded-full ' + (progress.complete ? 'bg-emerald-500' : 'bg-cyan-500'), style: { width: progress.percent + '%' } })),
           fieldJournalOpen ? h('div', { key: 'body', id: panelId, className: 'border-t p-3 ' + (isDark ? 'border-slate-700' : 'border-slate-200') }, [
             h('div', { key: 'summary', className: 'flex flex-wrap items-start justify-between gap-2' }, [
-              h('p', { key: 'copy', className: 'max-w-sm text-[10.5px] leading-relaxed ' + muted }, 'Mine a material in first person to log it. Logged cards reveal their category and can refocus the 3D model.'),
-              (function () { var fp3 = findsProgress(d.specimensFound); return fp3.found ? h('span', { key: 'finds-all', 'data-geology-finds-total': fp3.found + '/' + fp3.total, className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-amber-500/50 text-amber-200' : 'border-amber-300 text-amber-800') }, '💎 ' + fp3.found + '/' + fp3.total + ' finds across worlds') : null; })(),
-              h('span', { key: 'all', className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600'), 'data-geology-journal-total': totalProgress.found + '/' + totalProgress.total }, totalProgress.found + '/' + totalProgress.total + ' across worlds')
+              h('p', { key: 'copy', className: 'max-w-sm text-[10.5px] leading-relaxed ' + muted }, t('stem.geology.ui.mine_a_material_in_first_person_to_log_it', 'Mine a material in first person to log it. Logged cards reveal their category and can refocus the 3D model.')),
+              (function () { var fp3 = findsProgress(d.specimensFound); return fp3.found ? h('span', { key: 'finds-all', 'data-geology-finds-total': fp3.found + '/' + fp3.total, className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-amber-500/50 text-amber-200' : 'border-amber-300 text-amber-800') }, tf('stem.geology.ui.finds_across_worlds', '💎 {found}/{total} finds across worlds', { found: fp3.found, total: fp3.total })) : null; })(),
+              h('span', { key: 'all', className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600'), 'data-geology-journal-total': totalProgress.found + '/' + totalProgress.total }, tf('stem.geology.ui.across_worlds', '{found}/{total} across worlds', { found: totalProgress.found, total: totalProgress.total }))
             ]),
             sceneFindCatalog.length ? h('section', { key: 'finds', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-amber-500/40 bg-amber-950/20' : 'border-amber-200 bg-amber-50'), role: 'region', 'aria-label': t('stem.geology.a11y.finds_in_the_rock', 'Finds in the rock'), 'data-geology-finds': SCENE.id }, [
               h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
-                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '💎 Finds in the rock'),
-                h('span', { key: 'count', className: 'text-[10px] font-bold ' + muted }, sceneFindsFound + '/' + sceneFindCatalog.length + ' found')
+                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, t('stem.geology.ui.finds_in_the_rock', '💎 Finds in the rock')),
+                h('span', { key: 'count', className: 'text-[10px] font-bold ' + muted }, tf('stem.geology.ui.found', '{scene_finds_found}/{length} found', { scene_finds_found: sceneFindsFound, length: sceneFindCatalog.length }))
               ]),
-              h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, 'Each one hides inside the rock where it really forms. Dig in first person; it shows in the wall before you dig it free.'),
-              sceneFindsFound ? h('p', { key: 'mohs', 'data-geology-mohs-caption': 'true', className: 'mt-1 text-[10px] leading-snug ' + muted }, 'Mohs hardness ranks which mineral scratches which, from talc (1) to diamond (10): a ranking, not a ruler. A steel knife or pick is about 5.5. Hard is not the same as tough: hard crystals can still shatter, and how fast rock digs depends on how tough and cemented it is.') : null,
+              h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, t('stem.geology.ui.each_one_hides_inside_the_rock_where_it', 'Each one hides inside the rock where it really forms. Dig in first person; it shows in the wall before you dig it free.')),
+              sceneFindsFound ? h('p', { key: 'mohs', 'data-geology-mohs-caption': 'true', className: 'mt-1 text-[10px] leading-snug ' + muted }, t('stem.geology.ui.mohs_hardness_ranks_which_mineral_scratches', 'Mohs hardness ranks which mineral scratches which, from talc (1) to diamond (10): a ranking, not a ruler. A steel knife or pick is about 5.5. Hard is not the same as tough: hard crystals can still shatter, and how fast rock digs depends on how tough and cemented it is.')) : null,
               h('ul', { key: 'list', className: 'mt-1.5 grid gap-1 sm:grid-cols-2' }, sceneFindCatalog.map(function (item) {
                 var count = sceneFinds[item.kind] || 0;
                 return h('li', { key: item.kind, 'data-geology-find': item.kind, 'data-found': count ? 'true' : 'false', className: 'rounded-md border px-2 py-1 text-[10.5px] ' + (isDark ? 'border-slate-600 bg-slate-900/40' : 'border-slate-200 bg-white') }, [
@@ -11383,10 +11485,10 @@ function updateCoreRig3d(dt3d) {
                         h('summary', { key: 'name', className: 'cursor-pointer font-bold ' + ink }, [specimenGlyph(item), h('span', { key: 'n' }, item.name + (count > 1 ? ' ×' + count : ''))]),
                         h('span', { key: 'tells', className: 'mt-0.5 block leading-snug ' + ink }, item.tells),
                         item.hardness ? h('span', { key: 'mohs', 'data-geology-mohs': item.hardness.vs || 'none', className: 'mt-0.5 block leading-snug font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '⛏ ' + item.hardness.text) : null,
-                        h('span', { key: 'where', className: 'mt-0.5 block leading-snug ' + muted }, 'Found: ' + item.hint)
+                        h('span', { key: 'where', className: 'mt-0.5 block leading-snug ' + muted }, tf('stem.geology.ui.found_2', 'Found: {hint}', { hint: item.hint }))
                       ])
-                    : h('span', { key: 'name', className: 'block font-bold ' + ink }, '❔ Not found yet'),
-                  count ? null : h('span', { key: 'hint', className: 'block leading-snug ' + muted }, 'Look: ' + item.hint)
+                    : h('span', { key: 'name', className: 'block font-bold ' + ink }, t('stem.geology.ui.not_found_yet', '❔ Not found yet')),
+                  count ? null : h('span', { key: 'hint', className: 'block leading-snug ' + muted }, tf('stem.geology.ui.look', 'Look: {hint}', { hint: item.hint }))
                 ]);
               }))
             ]) : null,
@@ -11394,14 +11496,14 @@ function updateCoreRig3d(dt3d) {
               var logs = ((d.digLogs || {})[SCENE.id] || []).slice(-3).reverse();
               if (!logs.length) return null;
               return h('section', { key: 'digs', 'data-geology-dig-logs': logs.length, className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-sky-500/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50'), role: 'region', 'aria-label': t('stem.geology.a11y.your_digs', 'Your digs') }, [
-                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-sky-200' : 'text-sky-800') }, '📏 Your digs'),
-                h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, SCENE.id === 'crust' ? 'Each column is one dig, top to bottom. Deeper layers formed first: the bottom of each column is the oldest rock you reached (superposition).' : 'Each column is one dig: the layers it passed through, top to bottom.'),
+                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-sky-200' : 'text-sky-800') }, t('stem.geology.ui.your_digs', '📏 Your digs')),
+                h('p', { key: 'how', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, SCENE.id === 'crust' ? t('stem.geology.ui.each_column_is_one_dig_top_to_bottom_deeper', 'Each column is one dig, top to bottom. Deeper layers formed first: the bottom of each column is the oldest rock you reached (superposition).') : t('stem.geology.ui.each_column_is_one_dig_the_layers_it_passed', 'Each column is one dig: the layers it passed through, top to bottom.')),
                 h('div', { key: 'cols', className: 'mt-1.5 flex gap-2 overflow-x-auto' }, logs.map(function (log, li) {
                   return h('ol', { key: log.at, 'data-geology-dig-log': li, 'aria-label': li === 0 ? tf('stem.geology.a11y.dig_log_latest', 'Dig {n} (most recent), top to bottom', { n: li + 1 }) : tf('stem.geology.a11y.dig_log_entry', 'Dig {n}, top to bottom', { n: li + 1 }), className: 'min-w-[130px] flex-1 overflow-hidden rounded-md border ' + (isDark ? 'border-slate-600 bg-slate-900/40' : 'border-slate-200 bg-white') }, log.layers.map(function (layer, i) {
                     return h('li', { key: layer.key + ':' + i, className: 'flex items-stretch gap-1.5 border-b text-[10px] last:border-b-0 ' + (isDark ? 'border-slate-700' : 'border-slate-100') }, [
                       h('span', { key: 'band', 'aria-hidden': 'true', style: { width: '10px', flex: '0 0 10px', background: '#' + ((layer.color || 0x94a3b8) >>> 0).toString(16).padStart(6, '0') } }),
                       h('span', { key: 'name', className: 'flex-1 py-1 font-semibold ' + ink }, layer.name),
-                      h('span', { key: 'depth', className: 'py-1 pr-1.5 ' + muted }, '≈ ' + layer.depthKm + ' km')
+                      h('span', { key: 'depth', className: 'py-1 pr-1.5 ' + muted }, tf('stem.geology.ui.km_2', '≈ {depth_km} km', { depth_km: layer.depthKm }))
                     ]);
                   }));
                 }))
@@ -11409,19 +11511,19 @@ function updateCoreRig3d(dt3d) {
             })(),
             h('section', { key: 'assignments', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-violet-500/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50'), role: 'region', 'aria-label': t('stem.geology.a11y.field_assignments', 'Field assignments'), 'data-geology-assignment-board': SCENE.id }, [
               h('div', { key: 'assignment-head', className: 'flex items-center justify-between gap-2' }, [
-                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, '🧭 Field assignments'),
-                activeAssignment ? h('span', { key: 'status', className: 'text-[10px] font-bold ' + (runEntry.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, runEntry.ready ? 'Ready to bank' : (runEntry.collected || []).length + '/3 secured') : null
+                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, t('stem.geology.ui.field_assignments', '🧭 Field assignments')),
+                activeAssignment ? h('span', { key: 'status', className: 'text-[10px] font-bold ' + (runEntry.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, runEntry.ready ? t('stem.geology.ui.ready_to_bank', 'Ready to bank') : tf('stem.geology.ui.3_secured', '{length}/3 secured', { length: (runEntry.collected || []).length })) : null
               ]),
               activeAssignment
                 ? h('div', { key: 'active', className: 'mt-1.5', 'data-geology-assignment': activeAssignment.id, 'data-state': runEntry.ready ? 'ready' : 'active' }, [
                     h('div', { key: 'title', className: 'flex items-start justify-between gap-2' }, [
                       h('span', { key: 'name', className: 'text-[11px] font-extrabold ' + ink }, activeAssignment.label),
-                      h('span', { key: 'reward', className: 'shrink-0 text-[10px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '+' + fieldRunReward(activeAssignment) + ' XP')
+                      h('span', { key: 'reward', className: 'shrink-0 text-[10px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, tf('stem.geology.ui.xp', '+{field_run_reward} XP', { field_run_reward: fieldRunReward(activeAssignment) }))
                     ]),
                     h('p', { key: 'brief', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, activeAssignment.brief),
                     runEntry.ready
-                      ? h('button', { key: 'bank', type: 'button', onClick: function () { setFpOn(true); setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0); }, className: 'mt-2 min-h-10 w-full rounded-md border border-emerald-400/60 bg-emerald-500/10 px-2 text-[10px] font-extrabold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), 'data-geology-assignment-bank': 'true' }, 'Enter 3D and return home to bank')
-                      : h('button', { key: 'retire', type: 'button', onClick: function () { retireFieldRun(SCENE.id); }, className: 'mt-2 min-h-10 w-full rounded-md border border-slate-400/50 px-2 text-[10px] font-bold ' + btnIdle, 'data-geology-retire-assignment': 'true', 'aria-label': tf('stem.geology.a11y.retire_ordered_contract_progress_will_reset', 'Retire {label}. Ordered contract progress will reset; journal discoveries and XP will be kept.', { label: activeAssignment.label })}, 'Retire assignment')
+                      ? h('button', { key: 'bank', type: 'button', onClick: function () { setFpOn(true); setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0); }, className: 'mt-2 min-h-10 w-full rounded-md border border-emerald-400/60 bg-emerald-500/10 px-2 text-[10px] font-extrabold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), 'data-geology-assignment-bank': 'true' }, t('stem.geology.ui.enter_3d_and_return_home_to_bank', 'Enter 3D and return home to bank'))
+                      : h('button', { key: 'retire', type: 'button', onClick: function () { retireFieldRun(SCENE.id); }, className: 'mt-2 min-h-10 w-full rounded-md border border-slate-400/50 px-2 text-[10px] font-bold ' + btnIdle, 'data-geology-retire-assignment': 'true', 'aria-label': tf('stem.geology.a11y.retire_ordered_contract_progress_will_reset', 'Retire {label}. Ordered contract progress will reset; journal discoveries and XP will be kept.', { label: activeAssignment.label })}, t('stem.geology.ui.retire_assignment', 'Retire assignment'))
                   ])
                 : h('div', { key: 'choices', className: 'mt-1.5 grid gap-1.5 sm:grid-cols-2', role: 'group', 'aria-label': t('stem.geology.a11y.choose_a_field_assignment', 'Choose a field assignment') }, assignmentChoices.map(function (assignment, assignmentIndex) {
                     return h('button', { key: assignment.id, type: 'button', onClick: function () { startFieldRun(SCENE.id, assignmentIndex); }, className: 'min-h-12 rounded-lg border p-2 text-left transition hover:border-violet-400 ' + btnIdle, 'data-geology-assignment': assignment.id, 'data-state': 'available', 'aria-label': tf('stem.geology.a11y.start_for_field_xp', 'Start {label} for {assignment} field XP', { label: assignment.label, assignment: fieldRunReward(assignment) })}, [
@@ -11435,36 +11537,36 @@ function updateCoreRig3d(dt3d) {
               h('div', { key: 'body', className: 'p-2.5' }, [
                 h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
                   h('div', { key: 'title' }, [
-                    h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, '◉ Directional core research'),
-                    h('p', { key: 'sub', className: 'mt-0.5 text-[10px] ' + muted }, latestCoreLog ? ((latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)) + '° bore · ' + latestCoreLog.targetDepth + '-interval target · log ' + sceneCoreLogs.length) : 'No bore logged in this scene yet.')
+                    h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, t('stem.geology.ui.directional_core_research', '◉ Directional core research')),
+                    h('p', { key: 'sub', className: 'mt-0.5 text-[10px] ' + muted }, latestCoreLog ? (tf('stem.geology.ui.bore_interval_target_log', '{v}° bore · {target_depth}-interval target · log {length}', { v: latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle), target_depth: latestCoreLog.targetDepth, length: sceneCoreLogs.length })) : t('stem.geology.ui.no_bore_logged_in_this_scene_yet', 'No bore logged in this scene yet.'))
                   ]),
                   latestCoreEvaluation ? h('div', { key: 'grade', className: 'flex items-center gap-1.5' }, [
-                    latestCoreLog && latestCoreLog.newBest ? h('span', { key: 'best', className: 'rounded-full border border-amber-300/60 bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'New best') : null,
+                    latestCoreLog && latestCoreLog.newBest ? h('span', { key: 'best', className: 'rounded-full border border-amber-300/60 bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, t('stem.geology.ui.new_best', 'New best')) : null,
                     latestCoreLog && latestCoreLog.boreBrief ? h('span', { key: 'brief',
                       'data-geology-core-brief-badge': latestCoreLog.boreBrief.metCount,
                       className: 'rounded-full border border-violet-300/55 bg-violet-400/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-violet-200' : 'text-violet-800') },
-                      'Brief ' + latestCoreLog.boreBrief.metCount + '/3') : null,
-                    h('span', { key: 'badge', 'data-geology-core-grade': latestCoreEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + coreGradeClass }, 'Grade ' + latestCoreEvaluation.grade),
+                      tf('stem.geology.ui.brief_3', 'Brief {met_count}/3', { met_count: latestCoreLog.boreBrief.metCount })) : null,
+                    h('span', { key: 'badge', 'data-geology-core-grade': latestCoreEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + coreGradeClass }, tf('stem.geology.ui.grade', 'Grade {grade}', { grade: latestCoreEvaluation.grade })),
                     h('span', { key: 'score', 'data-geology-core-score': latestCoreEvaluation.score, className: 'text-[10px] font-black tabular-nums ' + ink }, latestCoreEvaluation.score + '/200')
                   ]) : null
                 ]),
                 h('section', { key: 'mastery', 'data-geology-core-mastery': coreMasteryScore, className: 'mt-2 rounded-lg border px-2 py-1.5 ' + (isDark ? 'border-white/10 bg-black/20' : 'border-slate-200 bg-white/65'), 'aria-label': t('stem.geology.a11y.core_research_mastery', 'Core research mastery') }, [
                   h('div', { key: 'labels', className: 'flex items-center justify-between gap-2 text-[10px] font-bold' }, [
-                    h('span', { key: 'label', className: ink }, 'Research mastery'),
-                    h('span', { key: 'best', className: isDark ? 'text-cyan-200' : 'text-cyan-800' }, coreMasteryScore ? ('Best grade ' + coreMasteryGrade + ' · ' + coreMasteryScore + '/200') : 'Awaiting first core')
+                    h('span', { key: 'label', className: ink }, t('stem.geology.ui.research_mastery', 'Research mastery')),
+                    h('span', { key: 'best', className: isDark ? 'text-cyan-200' : 'text-cyan-800' }, coreMasteryScore ? (tf('stem.geology.ui.best_grade_200', 'Best grade {core_mastery_grade} · {core_mastery_score}/200', { core_mastery_grade: coreMasteryGrade, core_mastery_score: coreMasteryScore })) : t('stem.geology.ui.awaiting_first_core', 'Awaiting first core'))
                   ]),
                   h('div', { key: 'track', className: 'mt-1 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': t('stem.geology.a11y.best_directional_core_score', 'Best directional core score'), 'aria-valuemin': 0, 'aria-valuemax': 200, 'aria-valuenow': coreMasteryScore }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-violet-500 transition-[width] duration-300 motion-reduce:transition-none', style: { width: (coreMasteryScore / 2) + '%' } })),
                   h('div', { key: 'meta', className: 'mt-1 flex flex-wrap justify-between gap-1 text-[10px] font-semibold ' + muted }, [
-                    h('span', { key: 'bores' }, Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) + ' scored bore' + (Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) === 1 ? '' : 's')),
-                    h('span', { key: 'reward', 'data-geology-core-research-reward': latestCoreLog ? (latestCoreLog.researchReward || 0) : 0 }, latestCoreLog && latestCoreLog.researchReward ? ('Selected +' + latestCoreLog.researchReward + ' research XP') : 'Improve the best score to earn XP')
+                    h('span', { key: 'bores' }, tf('stem.geology.ui.scored_bores', 'Scored bores: {n}', { n: Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) })),
+                    h('span', { key: 'reward', 'data-geology-core-research-reward': latestCoreLog ? (latestCoreLog.researchReward || 0) : 0 }, latestCoreLog && latestCoreLog.researchReward ? (tf('stem.geology.ui.selected_research_xp', 'Selected +{research_reward} research XP', { research_reward: latestCoreLog.researchReward })) : t('stem.geology.ui.improve_the_best_score_to_earn_xp', 'Improve the best score to earn XP'))
                   ])
                 ]),
                 h('section', { key: 'certification', 'data-geology-core-certification': 'true', className: 'mt-2 overflow-hidden rounded-lg border ' + (isDark ? 'border-violet-400/45 bg-violet-950/20' : 'border-violet-200 bg-white/75'), role: 'region', 'aria-label': t('stem.geology.a11y.core_rig_operator_certification', 'Core Rig Operator Certification') }, [
                   h('div', { key: 'cert-head', className: 'flex flex-wrap items-start justify-between gap-2 p-2' }, [
                     h('div', { key: 'copy' }, [
-                      h('h5', { key: 'title', className: 'text-[10px] font-black uppercase tracking-[.13em] ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, '⬡ Core Rig Operator Certification'),
-                      h('p', { key: 'rule', className: 'mt-0.5 max-w-sm text-[11px] leading-snug ' + muted }, 'Certify every angle and depth. Earn Grade C, protect at least 85% integrity, and recover the target or reach 75% before a protected boundary.'),
-                      h('p', { key: 'tiers', className: 'mt-1 text-[10.5px] font-bold ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, 'Certified C / 85% · Advanced 135 rating / 92% · Mastered 175 rating / 97%')
+                      h('h5', { key: 'title', className: 'text-[10px] font-black uppercase tracking-[.13em] ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, t('stem.geology.ui.core_rig_operator_certification', '⬡ Core Rig Operator Certification')),
+                      h('p', { key: 'rule', className: 'mt-0.5 max-w-sm text-[11px] leading-snug ' + muted }, t('stem.geology.ui.certify_every_angle_and_depth_earn_grade_c', 'Certify every angle and depth. Earn Grade C, protect at least 85% integrity, and recover the target or reach 75% before a protected boundary.')),
+                      h('p', { key: 'tiers', className: 'mt-1 text-[10.5px] font-bold ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, t('stem.geology.ui.certified_c_85_advanced_135_rating_92', 'Certified C / 85% · Advanced 135 rating / 92% · Mastered 175 rating / 97%'))
                     ]),
                     h('div', { key: 'rank', className: 'text-right' }, [
                       h('div', { key: 'count', className: 'text-[12px] font-black tabular-nums ' + (coreCertificationProgress.complete ? (isDark ? 'text-emerald-200' : 'text-emerald-800') : ink) }, coreCertificationProgress.certified + '/9'),
@@ -11474,11 +11576,11 @@ function updateCoreRig3d(dt3d) {
                   h('div', { key: 'cert-progress', className: 'mx-2 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': t('stem.geology.a11y.core_rig_certification_programs_completed', 'Core rig certification programs completed'), 'aria-valuemin': 0, 'aria-valuemax': 9, 'aria-valuenow': coreCertificationProgress.certified, 'aria-valuetext': tf('stem.geology.a11y.certification_progress_value', '{n} of 9 certification programs complete', { n: coreCertificationProgress.certified }) }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-violet-500 transition-[width] motion-reduce:transition-none', style: { width: coreCertificationProgress.percent + '%' } })),
                   h('div', { key: 'matrix-wrap', className: 'mt-2 overflow-x-auto px-2' },
                     h('table', { className: 'w-full table-fixed border-separate border-spacing-1 text-center', 'data-geology-core-program-matrix': 'true' }, [
-                      h('caption', { key: 'caption', className: 'sr-only' }, 'Certification programs by drill angle and target depth'),
+                      h('caption', { key: 'caption', className: 'sr-only' }, t('stem.geology.ui.certification_programs_by_drill_angle_and', 'Certification programs by drill angle and target depth')),
                       h('thead', { key: 'head' }, h('tr', null, [
-                        h('th', { key: 'corner', scope: 'col', className: 'w-[4.5rem] px-1 text-left text-[10px] font-black uppercase tracking-wide ' + muted }, 'Angle')
+                        h('th', { key: 'corner', scope: 'col', className: 'w-[4.5rem] px-1 text-left text-[10px] font-black uppercase tracking-wide ' + muted }, t('stem.geology.ui.angle', 'Angle'))
                       ].concat(CORE_RIG_DEPTHS.map(function (depth) {
-                        return h('th', { key: depth, scope: 'col', 'aria-label': tf('stem.geology.a11y.intervals', '{depth} intervals', { depth: depth }), className: 'px-1 pb-0.5 text-[10px] font-black ' + ink }, depth + ' int.');
+                        return h('th', { key: depth, scope: 'col', 'aria-label': tf('stem.geology.a11y.intervals', '{depth} intervals', { depth: depth }), className: 'px-1 pb-0.5 text-[10px] font-black ' + ink }, tf('stem.geology.ui.int', '{depth} int.', { depth: depth }));
                       })))),
                       h('tbody', { key: 'body' }, ['vertical', 'slant', 'shallow'].map(function (angle) {
                         return h('tr', { key: angle }, [
@@ -11490,10 +11592,10 @@ function updateCoreRig3d(dt3d) {
                           var programKey = coreRigProgramKey(angle, depth), cell = corePrograms[programKey];
                           var selectedProgram = selectedCoreProgramKey === programKey;
                           var visibleStatus = cell.tier >= 3 ? ('★ ' + cell.bestGrade) : (cell.tier >= 2 ? ('◆ ' + cell.bestGrade) : (cell.tier >= 1 ? ('✓ ' + cell.bestGrade) : (cell.attempts ? 'Retry' : 'Open')));
-                          var programGuidance = coreRigCertificationGuidance(cell);
+                          var programGuidance = coreRigCertificationGuidance(cell, t);
                           var spokenStatus = cell.tier
-                            ? (cell.tierLabel + '. Highest qualifying score grade ' + cell.bestGrade + '. Best program rating ' + cell.bestRating + '. Highest integrity ' + cell.bestIntegrity + ' percent. ' + programGuidance)
-                            : (cell.attempts ? ('Unrated after ' + cell.attempts + ' attempts. ' + programGuidance) : 'Open, no attempts. ' + programGuidance);
+                            ? tf('stem.geology.ui.program_spoken_tier', '{tier}. Highest qualifying score grade {grade}. Best program rating {rating}. Highest integrity {integrity} percent. {guidance}', { tier: geoTT(cell.tierLabel), grade: cell.bestGrade, rating: cell.bestRating, integrity: cell.bestIntegrity, guidance: programGuidance })
+                            : (cell.attempts ? tf('stem.geology.ui.program_spoken_unrated', 'Unrated. Attempts: {n}. {guidance}', { n: cell.attempts, guidance: programGuidance }) : t('stem.geology.ui.program_spoken_open', 'Open, no attempts.') + ' ' + programGuidance);
                           return h('td', { key: programKey, className: 'p-0.5' },
                             h('button', {
                               type: 'button', 'data-geology-core-program': programKey, 'data-tier': cell.tier,
@@ -11516,25 +11618,25 @@ function updateCoreRig3d(dt3d) {
                   h('div', { key: 'selected', className: 'm-2 mt-1.5 rounded-lg border p-2 ' + (isDark ? 'border-white/10 bg-black/20' : 'border-slate-200 bg-slate-50') }, [
                     h('div', { key: 'row', className: 'flex flex-wrap items-start justify-between gap-2' }, [
                       h('div', { key: 'name' }, [
-                        h('div', { key: 'eyebrow', className: 'text-[10px] font-black uppercase tracking-wide ' + muted }, 'Selected program'),
-                        h('div', { key: 'value', className: 'text-[11px] font-extrabold ' + ink }, selectedCoreProgram.angleDegrees + '° ' + selectedCoreProgram.angle + ' · ' + selectedCoreProgram.depth + ' intervals')
+                        h('div', { key: 'eyebrow', className: 'text-[10px] font-black uppercase tracking-wide ' + muted }, t('stem.geology.ui.selected_program', 'Selected program')),
+                        h('div', { key: 'value', className: 'text-[11px] font-extrabold ' + ink }, tf('stem.geology.ui.intervals_2', '{angle_degrees}° {angle} · {depth} intervals', { angle_degrees: selectedCoreProgram.angleDegrees, angle: selectedCoreProgram.angle, depth: selectedCoreProgram.depth }))
                       ]),
-                      h('span', { key: 'state', className: 'rounded-full border px-2 py-0.5 text-[10px] font-black ' + (selectedCoreProgram.tier ? (isDark ? 'border-emerald-300/50 text-emerald-200' : 'border-emerald-300 text-emerald-800') : (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600')) }, selectedCoreProgram.tier ? selectedCoreProgram.tierLabel : (selectedCoreProgram.attempts ? 'Retry' : 'Open'))
+                      h('span', { key: 'state', className: 'rounded-full border px-2 py-0.5 text-[10px] font-black ' + (selectedCoreProgram.tier ? (isDark ? 'border-emerald-300/50 text-emerald-200' : 'border-emerald-300 text-emerald-800') : (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600')) }, selectedCoreProgram.tier ? geoTT(selectedCoreProgram.tierLabel) : (selectedCoreProgram.attempts ? t('stem.geology.ui.retry', 'Retry') : t('stem.geology.ui.open', 'Open')))
                     ]),
                     h('p', { key: 'meta', className: 'mt-1 text-[11px] font-semibold ' + muted }, selectedCoreProgram.tier
-                      ? ('Highest qualifying score ' + selectedCoreProgram.bestGrade + ' · ' + selectedCoreProgram.bestScore + '/200 · Best rating ' + selectedCoreProgram.bestRating + '/200 · Highest integrity ' + selectedCoreProgram.bestIntegrity + '% · ' + selectedCoreProgram.attempts + ' attempt' + (selectedCoreProgram.attempts === 1 ? '' : 's'))
+                      ? tf('stem.geology.ui.program_meta_tier', 'Highest qualifying score {grade} · {score}/200 · Best rating {rating}/200 · Highest integrity {integrity}% · Attempts: {attempts}', { grade: selectedCoreProgram.bestGrade, score: selectedCoreProgram.bestScore, rating: selectedCoreProgram.bestRating, integrity: selectedCoreProgram.bestIntegrity, attempts: selectedCoreProgram.attempts })
                       : (selectedCoreProgram.attempts
-                        ? ('Last result ' + selectedCoreProgram.lastGrade + ' · ' + selectedCoreProgram.lastScore + '/200 · rating ' + selectedCoreProgram.lastRating + '/200 · ' + selectedCoreProgram.lastIntegrity + '% integrity')
-                        : 'No bore logged for this exact trajectory yet.')),
-                    h('p', { key: 'guidance', className: 'mt-0.5 text-[11px] font-bold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, coreRigCertificationGuidance(selectedCoreProgram)),
-                    h('p', { key: 'xp', className: 'mt-0.5 text-[10.5px] font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, selectedProgramXpTarget == null ? 'All score-improvement XP earned' : ('Next XP at ' + selectedProgramXpTarget + ' rating ' + (selectedProgramXpTarget === 1 ? 'point' : 'points'))),
+                        ? (tf('stem.geology.ui.last_result_200_rating_200_integrity', 'Last result {last_grade} · {last_score}/200 · rating {last_rating}/200 · {last_integrity}% integrity', { last_grade: selectedCoreProgram.lastGrade, last_score: selectedCoreProgram.lastScore, last_rating: selectedCoreProgram.lastRating, last_integrity: selectedCoreProgram.lastIntegrity }))
+                        : t('stem.geology.ui.no_bore_logged_for_this_exact_trajectory_yet', 'No bore logged for this exact trajectory yet.'))),
+                    h('p', { key: 'guidance', className: 'mt-0.5 text-[11px] font-bold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, coreRigCertificationGuidance(selectedCoreProgram, t)),
+                    h('p', { key: 'xp', className: 'mt-0.5 text-[10.5px] font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, selectedProgramXpTarget == null ? t('stem.geology.ui.all_score_improvement_xp_earned', 'All score-improvement XP earned') : tf('stem.geology.ui.next_xp_at_rating_points', 'Next XP at a rating of {points}', { points: selectedProgramXpTarget })),
                     h('button', {
                       key: 'load', type: 'button', 'data-geology-core-program-load': selectedCoreProgram.key,
                       disabled: coreProgramLoadLocked, 'aria-describedby': coreProgramLoadLocked ? coreProgramLoadHelpId : undefined,
                       onClick: function () { loadCoreRigProgram(selectedCoreProgram); },
                       className: 'mt-2 min-h-11 w-full rounded-lg border border-cyan-300/60 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 px-3 text-[11px] font-extrabold transition hover:border-amber-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-45 ' + (isDark ? 'text-cyan-100' : 'text-cyan-900'),
-                      'aria-label': tf('stem.geology.a11y.load_degree_interval_certification_program_a', 'Load {angle_degrees} degree, {depth} interval certification program and enter Walk and Dig', { angle_degrees: selectedCoreProgram.angleDegrees, depth: selectedCoreProgram.depth })}, 'Load ' + selectedCoreProgram.angleDegrees + '° / ' + selectedCoreProgram.depth + ' program · enter Walk & Dig'),
-                    coreProgramLoadLocked ? h('p', { key: 'load-help', id: coreProgramLoadHelpId, className: 'mt-1 text-[11px] font-semibold text-amber-500' }, 'End the active bore before loading another program.') : null
+                      'aria-label': tf('stem.geology.a11y.load_degree_interval_certification_program_a', 'Load {angle_degrees} degree, {depth} interval certification program and enter Walk and Dig', { angle_degrees: selectedCoreProgram.angleDegrees, depth: selectedCoreProgram.depth })}, tf('stem.geology.ui.load_program_enter_walk_dig', 'Load {angle_degrees}° / {depth} program · enter Walk & Dig', { angle_degrees: selectedCoreProgram.angleDegrees, depth: selectedCoreProgram.depth })),
+                    coreProgramLoadLocked ? h('p', { key: 'load-help', id: coreProgramLoadHelpId, className: 'mt-1 text-[11px] font-semibold text-amber-500' }, t('stem.geology.ui.end_the_active_bore_before_loading_another', 'End the active bore before loading another program.')) : null
                   ])
                 ]),
                 latestCoreLog && latestCoreCassette ? h('ol', {
@@ -11548,10 +11650,10 @@ function updateCoreRig3d(dt3d) {
                   var rawColor = cassetteSample && cassetteSample.color != null ? cassetteSample.color : sampleRock.color;
                   var sampleTone = typeof rawColor === 'string' ? (rawColor.charAt(0) === '#' ? rawColor : '#' + rawColor) : hex(rawColor == null ? 0x64748b : rawColor);
                   var slotLabel = recoveredSlot
-                    ? ('Core interval ' + cassetteSlot.interval + ': ' + cassetteSample.name + ', ' + cassetteSlot.quality + (cassetteSlot.integrityPercent == null ? ', integrity not recorded' : (', ' + cassetteSlot.integrityPercent + ' percent integrity')))
-                    : ('Core interval ' + cassetteSlot.interval + ': not recovered');
+                    ? tf('stem.geology.ui.core_interval_label', 'Core interval {n}: {name}, {quality}', { n: cassetteSlot.interval, name: cassetteSample.name, quality: geoTT(cassetteSlot.quality) }) + ', ' + (cassetteSlot.integrityPercent == null ? t('stem.geology.ui.integrity_not_recorded', 'integrity not recorded') : tf('stem.geology.ui.percent_integrity_spoken', '{pct} percent integrity', { pct: cassetteSlot.integrityPercent }))
+                    : tf('stem.geology.ui.core_interval_missing', 'Core interval {n}: not recovered', { n: cassetteSlot.interval });
                   var slotCopy = [
-                    h('span', { key: 'number', 'data-geology-core-interval-number': cassetteSlot.interval, className: 'rounded-sm bg-slate-950/70 px-1 text-[10px] font-black tabular-nums shadow-sm' }, '#' + String(cassetteSlot.interval)),
+                    h('span', { key: 'number', 'data-geology-core-interval-number': cassetteSlot.interval, 'aria-hidden': 'true', className: 'rounded-sm bg-slate-950/70 px-1 text-[10px] font-black tabular-nums shadow-sm' }, '#' + String(cassetteSlot.interval)),
                     h('span', { key: 'quality', 'data-geology-core-quality-glyph': cassetteSlot.quality, className: 'rounded-sm bg-slate-950/70 px-1 text-[13px] font-black leading-none shadow-sm', 'aria-hidden': 'true' }, cassetteSlot.glyph)
                   ];
                   return h('li', {
@@ -11565,17 +11667,17 @@ function updateCoreRig3d(dt3d) {
                         'aria-label': slotLabel,
                         onClick: function () { selectRock(rockFacts(cassetteSample.key, DEPTH_GUESS[cassetteSample.key] || cassetteSample.depth)); }
                       }, slotCopy)
-                    : h('span', { className: 'flex min-h-11 items-center justify-between gap-1 px-1', 'aria-label': slotLabel }, slotCopy));
-                })) : h('div', { key: 'empty', className: 'mt-2 rounded-md border border-dashed p-2 text-[10px] font-semibold ' + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') }, 'Drop into Walk & Dig, find level ground, then press R to deploy the core rig.'),
+                    : h('span', { className: 'flex min-h-11 items-center justify-between gap-1 px-1' }, [h('span', { key: 'sr', className: 'sr-only' }, slotLabel)].concat(slotCopy)));
+                })) : h('div', { key: 'empty', className: 'mt-2 rounded-md border border-dashed p-2 text-[10px] font-semibold ' + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') }, t('stem.geology.ui.drop_into_walk_dig_find_level_ground_then', 'Drop into Walk & Dig, find level ground, then press R to deploy the core rig.')),
                 latestCoreLog ? h('div', { key: 'summary', className: 'mt-2 grid gap-1 text-[10px] font-bold sm:grid-cols-[auto_1fr] ' + muted }, [
                   h('div', { key: 'facts', className: 'flex flex-wrap gap-x-3 gap-y-1' }, [
-                    h('span', { key: 'samples' }, latestCoreSummary.sampleCount + ' samples'),
-                    h('span', { key: 'materials' }, latestCoreSummary.uniqueMaterials + ' materials'),
-                    h('span', { key: 'deepest' }, 'Interval ' + latestCoreSummary.deepest + ' deepest'),
-                    latestCoreEvaluation && latestCoreEvaluation.integrityPercent != null ? h('span', { key: 'integrity', className: isDark ? 'text-cyan-200' : 'text-cyan-800' }, latestCoreEvaluation.integrityPercent + '% integrity') : null,
-                    latestCoreEvaluation && latestCoreEvaluation.pristineCount ? h('span', { key: 'pristine', className: isDark ? 'text-emerald-200' : 'text-emerald-800' }, latestCoreEvaluation.pristineCount + ' pristine') : null,
-                    latestCoreLog.coolantUsed ? h('span', { key: 'coolant', className: isDark ? 'text-sky-200' : 'text-sky-800' }, latestCoreLog.coolantUsed + ' coolant pulse' + (latestCoreLog.coolantUsed === 1 ? '' : 's')) : null,
-                    h('span', { key: 'stop', className: latestCoreLog.stopReason ? (isDark ? 'text-amber-200' : 'text-amber-800') : (isDark ? 'text-emerald-200' : 'text-emerald-800') }, latestCoreLog.stopReason ? ('Stop · ' + coreRigStopLabel(latestCoreLog.stopReason)) : 'Target depth recovered')
+                    h('span', { key: 'samples' }, tf('stem.geology.ui.samples', '{sample_count} samples', { sample_count: latestCoreSummary.sampleCount })),
+                    h('span', { key: 'materials' }, tf('stem.geology.ui.materials', '{unique_materials} materials', { unique_materials: latestCoreSummary.uniqueMaterials })),
+                    h('span', { key: 'deepest' }, tf('stem.geology.ui.interval_deepest', 'Interval {deepest} deepest', { deepest: latestCoreSummary.deepest })),
+                    latestCoreEvaluation && latestCoreEvaluation.integrityPercent != null ? h('span', { key: 'integrity', className: isDark ? 'text-cyan-200' : 'text-cyan-800' }, tf('stem.geology.ui.integrity', '{integrity_percent}% integrity', { integrity_percent: latestCoreEvaluation.integrityPercent })) : null,
+                    latestCoreEvaluation && latestCoreEvaluation.pristineCount ? h('span', { key: 'pristine', className: isDark ? 'text-emerald-200' : 'text-emerald-800' }, tf('stem.geology.ui.pristine', '{pristine_count} pristine', { pristine_count: latestCoreEvaluation.pristineCount })) : null,
+                    latestCoreLog.coolantUsed ? h('span', { key: 'coolant', className: isDark ? 'text-sky-200' : 'text-sky-800' }, latestCoreLog.coolantUsed === 1 ? t('stem.geology.ui.coolant_pulses_one', '1 coolant pulse') : tf('stem.geology.ui.coolant_pulses', '{n} coolant pulses', { n: latestCoreLog.coolantUsed })) : null,
+                    h('span', { key: 'stop', className: latestCoreLog.stopReason ? (isDark ? 'text-amber-200' : 'text-amber-800') : (isDark ? 'text-emerald-200' : 'text-emerald-800') }, latestCoreLog.stopReason ? (tf('stem.geology.ui.stop', 'Stop · {core_rig_stop_label}', { core_rig_stop_label: coreRigStopLabel(latestCoreLog.stopReason, t) })) : t('stem.geology.ui.target_depth_recovered', 'Target depth recovered'))
                   ]),
                   h('span', { key: 'sequence', className: 'min-w-0 break-words sm:text-right', title: latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → ') }, latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → '))
                 ]) : null,
@@ -11583,7 +11685,7 @@ function updateCoreRig3d(dt3d) {
                   key: 'finding', 'data-geology-core-finding': latestCoreComparison.findingLevel,
                   className: 'mt-2', 'aria-label': t('stem.geology.a11y.paired_bore_finding', 'Paired bore finding')
                 }, [
-                  h('span', { key: 'label', className: 'sr-only' }, 'Finding'),
+                  h('span', { key: 'label', className: 'sr-only' }, t('stem.geology.ui.finding', 'Finding')),
                   coreRigCorrelationFigure(latestCoreComparison, { key: 'figure' })
                 ]) : null,
                 latestCoreNextExperiment ? h('section', {
@@ -11591,7 +11693,7 @@ function updateCoreRig3d(dt3d) {
                   className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-violet-300/35 bg-violet-400/10' : 'border-violet-200 bg-violet-50'),
                   'aria-label': t('stem.geology.a11y.next_controlled_experiment', 'Next controlled experiment')
                 }, [
-                  h('h5', { key: 'label', className: 'text-[10px] font-black uppercase tracking-[.14em] ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, 'Next experiment'),
+                  h('h5', { key: 'label', className: 'text-[10px] font-black uppercase tracking-[.14em] ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, t('stem.geology.ui.next_experiment', 'Next experiment')),
                   h('p', { key: 'question', className: 'mt-1 text-[11px] font-extrabold leading-snug ' + ink }, latestCoreNextExperiment.question),
                   coreRigExperimentRail(latestCoreNextExperiment, { key: 'variables', currentAngleDegrees: latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle), currentDepth: latestCoreLog.targetDepth }),
                   h('p', { key: 'control', className: 'mt-1 text-[10px] font-semibold ' + muted }, latestCoreNextExperiment.controlLabel)
@@ -11602,20 +11704,20 @@ function updateCoreRig3d(dt3d) {
                     onClick: function () { loadCoreRigChallenge(latestCoreLog); },
                     className: 'min-h-11 rounded-lg border border-amber-300/60 bg-gradient-to-r from-amber-500/15 to-cyan-500/15 px-3 text-[11px] font-extrabold transition hover:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-45 ' + (isDark ? 'text-amber-100' : 'text-amber-900'),
                     'data-geology-core-load-trajectory': 'true',
-                    'aria-label': tf('stem.geology.a11y.improve_this_degree_interval_bore', 'Improve this {angle} degree, {target_depth} interval bore', { angle: (latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)), target_depth: latestCoreLog.targetDepth })}, 'Improve this bore · ' + (latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)) + '° / ' + latestCoreLog.targetDepth),
+                    'aria-label': tf('stem.geology.a11y.improve_this_degree_interval_bore', 'Improve this {angle} degree, {target_depth} interval bore', { angle: (latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)), target_depth: latestCoreLog.targetDepth })}, tf('stem.geology.ui.improve_this_bore', 'Improve this bore · {v}° / {target_depth}', { v: latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle), target_depth: latestCoreLog.targetDepth })),
                   latestCoreNextExperiment ? h('button', {
                     key: 'compare', type: 'button', disabled: coreProgramLoadLocked,
                     onClick: function () { loadCoreRigProgram(latestCoreNextExperiment.programKey, latestCoreNextExperiment); },
                     className: 'min-h-11 rounded-lg border border-violet-300/60 bg-gradient-to-r from-violet-500/20 to-cyan-500/15 px-3 text-[11px] font-extrabold transition hover:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-45 ' + (isDark ? 'text-violet-100' : 'text-violet-900'),
                     'data-geology-core-next-experiment': latestCoreNextExperiment.programKey,
-                    'aria-label': tf('stem.geology.a11y.load_next_controlled_experiment', 'Load next controlled experiment. {question}', { question: latestCoreNextExperiment.question })}, 'Compare · load ' + latestCoreNextExperiment.angleDegrees + '° / ' + latestCoreNextExperiment.depth) : null
+                    'aria-label': tf('stem.geology.a11y.load_next_controlled_experiment', 'Load next controlled experiment. {question}', { question: latestCoreNextExperiment.question })}, tf('stem.geology.ui.compare_load', 'Compare · load {angle_degrees}° / {depth}', { angle_degrees: latestCoreNextExperiment.angleDegrees, depth: latestCoreNextExperiment.depth })) : null
                 ]) : null,
                 sceneCoreLogs.length > 1 ? h('div', { key: 'recent', className: 'mt-2 flex flex-wrap items-center gap-1', role: 'group', 'aria-label': t('stem.geology.a11y.recent_scored_bores', 'Recent scored bores') }, [
-                  h('span', { key: 'label', className: 'mr-1 text-[10px] font-black uppercase tracking-wide ' + muted }, 'Recent'),
+                  h('span', { key: 'label', className: 'mr-1 text-[10px] font-black uppercase tracking-wide ' + muted }, t('stem.geology.ui.recent', 'Recent')),
                   sceneCoreLogs.slice().reverse().map(function (coreLog, coreLogIndex) {
                     var logEvaluation = coreLog.evaluation || coreRigEvaluation(coreLog);
                     var logSelected = latestCoreLog === coreLog;
-                    var logStop = coreLog.stopReason ? coreRigStopLabel(coreLog.stopReason) : 'target depth';
+                    var logStop = coreRigStopLabel(coreLog.stopReason || null, t);
                     return h('button', { key: coreLog.id || coreLog.completedAt || coreLogIndex, type: 'button', 'aria-pressed': logSelected ? 'true' : 'false', 'data-geology-core-review': coreLog.id || coreLog.completedAt || coreLogIndex, onClick: function () { reviewCoreRigReport(coreLog); }, className: 'min-h-9 rounded-full border px-2 text-[10px] font-extrabold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (logSelected ? (isDark ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100' : 'border-cyan-500 bg-cyan-100 text-cyan-900') : (isDark ? 'border-slate-600 bg-slate-900/60 text-slate-200' : 'border-slate-300 bg-white/70 text-slate-700')), 'aria-label': tf('stem.geology.a11y.review_grade_bore_score_degrees_intervals_st', 'Review grade {grade} bore, score {score}, {angle} degrees, {target_depth} intervals, stop {log_stop}', { grade: logEvaluation.grade, score: logEvaluation.score, angle: coreRigAngleDegrees(coreLog.angle), target_depth: coreLog.targetDepth, log_stop: logStop })}, logEvaluation.grade + ' · ' + logEvaluation.score);
                   })
                 ]) : null
@@ -11627,7 +11729,7 @@ function updateCoreRig3d(dt3d) {
                 h('span', { key: 'swatch', 'aria-hidden': 'true', className: 'h-5 w-5 shrink-0 rounded-md border border-white/20', style: { background: tone, boxShadow: entry.discovered ? 'inset 0 0 0 1px rgba(255,255,255,.18)' : 'none' } }),
                 h('span', { key: 'copy', className: 'min-w-0' }, [
                   h('span', { key: 'name', className: 'block truncate text-[10.5px] font-extrabold' }, (entry.discovered ? '✓ ' : '🔒 ') + entry.name),
-                  h('span', { key: 'type', className: 'block truncate text-[10px] ' + muted }, entry.discovered ? entry.type : 'Mine to reveal field notes')
+                  h('span', { key: 'type', className: 'block truncate text-[10px] ' + muted }, entry.discovered ? entry.type : t('stem.geology.ui.mine_to_reveal_field_notes', 'Mine to reveal field notes'))
                 ])
               ];
               return entry.discovered
@@ -11635,9 +11737,9 @@ function updateCoreRig3d(dt3d) {
                 : h('div', { key: entry.key, 'data-geology-journal-entry': entry.key, 'data-state': 'unlogged', className: 'flex min-h-12 min-w-0 items-center gap-2 rounded-lg border border-dashed p-2 ' + ink + ' ' + (isDark ? 'border-slate-600' : 'border-slate-300') }, body);
             })),
             progress.complete
-              ? h('p', { key: 'complete', className: 'mt-2 rounded-lg border border-emerald-400/50 bg-emerald-500/10 p-2 text-[10.5px] font-bold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), role: 'status' }, '✓ Scene journal complete — every safely mineable material is logged.')
+              ? h('p', { key: 'complete', className: 'mt-2 rounded-lg border border-emerald-400/50 bg-emerald-500/10 p-2 text-[10.5px] font-bold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), role: 'status' }, t('stem.geology.ui.scene_journal_complete_every_safely_mineable', '✓ Scene journal complete — every safely mineable material is logged.'))
               : null,
-            h('button', { key: 'drop-in', type: 'button', onClick: function () { setFpOn(true); setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0); }, className: 'mt-2 min-h-10 w-full rounded-lg border border-cyan-400/60 bg-cyan-500/10 px-2 text-[10.5px] font-extrabold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800'), 'data-geology-journal-drop-in': 'true' }, fpOn ? 'Return to the 3D view for fieldwork' : (progress.complete ? '⛏ Drop in for another Field Run' : '⛏ Drop in and log specimens'))
+            h('button', { key: 'drop-in', type: 'button', onClick: function () { setFpOn(true); setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0); }, className: 'mt-2 min-h-10 w-full rounded-lg border border-cyan-400/60 bg-cyan-500/10 px-2 text-[10.5px] font-extrabold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800'), 'data-geology-journal-drop-in': 'true' }, fpOn ? t('stem.geology.ui.return_to_the_3d_view_for_fieldwork', 'Return to the 3D view for fieldwork') : (progress.complete ? t('stem.geology.ui.drop_in_for_another_field_run', '⛏ Drop in for another Field Run') : t('stem.geology.ui.drop_in_and_log_specimens', '⛏ Drop in and log specimens')))
           ]) : null
         ]);
       }
@@ -11690,9 +11792,9 @@ function updateCoreRig3d(dt3d) {
         if (fpOn) return null;
         return h('div', { className: 'pointer-events-none absolute bottom-2 right-2 z-10 hidden items-center gap-2 rounded-lg border border-white/20 bg-slate-950/80 px-2 py-1.5 text-white shadow-lg sm:flex', 'aria-hidden': 'true', 'data-geology-camera-compass': 'true' }, [
           h('div', { key: 'compass', className: 'relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-400/70 text-[10px] font-black' }, [
-            h('span', { key: 'north', className: 'absolute -top-2 text-[10px] text-amber-200' }, 'N'),
-            h('span', { key: 'west', className: 'absolute -left-2 text-[10px] text-slate-300' }, 'W'),
-            h('span', { key: 'east', className: 'absolute -right-2 text-[10px] text-slate-300' }, 'E'),
+            h('span', { key: 'north', className: 'absolute -top-2 text-[10px] text-amber-200' }, compassLetters[0]),
+            h('span', { key: 'west', className: 'absolute -left-2 text-[10px] text-slate-300' }, compassLetters[6]),
+            h('span', { key: 'east', className: 'absolute -right-2 text-[10px] text-slate-300' }, compassLetters[2]),
             h('span', { key: 'needle', className: 'text-amber-300 motion-safe:transition-transform motion-reduce:transition-none', style: { transform: cameraViewState === 'top' ? 'rotate(90deg)' : (cameraViewState === 'front' ? 'rotate(180deg)' : 'rotate(35deg)') } }, '↗')
           ]),
           h('div', { key: 'label', className: 'min-w-0' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-amber-200' }, t('stem.geology.camera.overlay_title', 'Orientation')), h('div', { className: 'text-[10.5px] font-bold' }, cameraViewLabel(cameraViewState)))
@@ -11819,7 +11921,7 @@ function updateCoreRig3d(dt3d) {
                 tf('stem.geology.story.progress', '{done} of {total} stages linked', { done: doneCount, total: journey.length }))
             ]),
             sceneResumeNotice && sceneResumeNotice.sceneId === SCENE.id
-              ? h('p', { key: 'resume', className: 'mt-2 text-[11px] font-semibold ' + (isDark ? 'text-sky-300' : 'text-sky-700'), role: 'status', 'data-geology-resumed-stage': 'true' }, '↪ ' + sceneResumeNotice.message + ' ' + t('stem.geology.story.resume_kept', 'Saved process evidence remains linked.'))
+              ? h('p', { key: 'resume', className: 'mt-2 text-[11px] font-semibold ' + (isDark ? 'text-sky-300' : 'text-sky-700'), role: 'status', 'data-geology-resumed-stage': 'true' }, '↪ ' + tf('stem.geology.ui.resumed_at_stage', 'Resumed at stage {n}: {label}.', { n: sceneResumeNotice.index + 1, label: geoTT(sceneResumeNotice.label) }) + ' ' + t('stem.geology.story.resume_kept', 'Saved process evidence remains linked.'))
               : null,
             h('div', { key: 'stages', className: 'mt-3 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': t('stem.geology.a11y.story_stages', 'Story stages') }, journey.map(function (item, i) {
               var on = i === index, linked = !!done[i], b = beaconFor(i);
@@ -11957,7 +12059,7 @@ function updateCoreRig3d(dt3d) {
           var contract = fieldExpeditionFor(scene, entry.active ? entry.contractIndex : (entry.completed || 0));
           if (!contract) return null;
           var collected = Array.isArray(entry.collected) ? entry.collected : [];
-          var heading = entry.active ? contract.label : 'Field Run';
+          var heading = entry.active ? contract.label : t('stem.geology.ui.field_run', 'Field Run');
           var rank = fieldRankForXp(book.xp), rankRange = rank.nextThreshold == null ? 1 : Math.max(1, rank.nextThreshold - rank.threshold);
           var rankProgress = rank.nextThreshold == null ? 100 : Math.max(0, Math.min(100, Math.round(((Number(book.xp) || 0) - rank.threshold) / rankRange * 100)));
           var discoveryProgress = fieldDiscoveryProgress(scene, book.discoveredByScene);
@@ -11974,26 +12076,26 @@ function updateCoreRig3d(dt3d) {
                   ]);
                 })),
                 entry.ready
-                  ? h('button', { key: 'bank', type: 'button', onClick: function () { fpAction('home'); }, className: 'mt-2 min-h-10 w-full rounded-md border border-emerald-300 bg-emerald-500 px-2 text-[10px] font-extrabold text-emerald-950 shadow', 'aria-label': tf('stem.geology.a11y.return_to_the_entry_point_and_bank_field_xp', 'Return to the entry point and bank {contract} field XP', { contract: fieldRunReward(contract) })}, '⌂ Bank +' + fieldRunReward(contract) + ' XP')
+                  ? h('button', { key: 'bank', type: 'button', onClick: function () { fpAction('home'); }, className: 'mt-2 min-h-10 w-full rounded-md border border-emerald-300 bg-emerald-500 px-2 text-[10px] font-extrabold text-emerald-950 shadow', 'aria-label': tf('stem.geology.a11y.return_to_the_entry_point_and_bank_field_xp', 'Return to the entry point and bank {contract} field XP', { contract: fieldRunReward(contract) })}, tf('stem.geology.ui.bank_xp', '⌂ Bank +{field_run_reward} XP', { field_run_reward: fieldRunReward(contract) }))
                   : h('div', { key: 'guide', className: 'mt-1.5 grid gap-1.5' }, [
-                      h('p', { key: 'instruction', className: 'text-[10px] font-bold text-amber-100' }, 'Excavate the arrowed specimen next.'),
-                      h('button', { key: 'survey', type: 'button', 'data-geology-field-survey': 'true', onClick: function () { fpAction('survey'); }, className: 'min-h-10 w-full rounded-md border border-cyan-300/70 bg-cyan-950/80 px-2 text-[10px] font-extrabold text-cyan-100', 'aria-label': tf('stem.geology.a11y.survey_for_nearest', 'Survey for nearest {length}', { length: fieldSpecimenName(scene, contract.targets[collected.length]) })}, '◎ Survey pulse (G)')
+                      h('p', { key: 'instruction', className: 'text-[10px] font-bold text-amber-100' }, t('stem.geology.ui.excavate_the_arrowed_specimen_next', 'Excavate the arrowed specimen next.')),
+                      h('button', { key: 'survey', type: 'button', 'data-geology-field-survey': 'true', onClick: function () { fpAction('survey'); }, className: 'min-h-10 w-full rounded-md border border-cyan-300/70 bg-cyan-950/80 px-2 text-[10px] font-extrabold text-cyan-100', 'aria-label': tf('stem.geology.a11y.survey_for_nearest', 'Survey for nearest {length}', { length: fieldSpecimenName(scene, contract.targets[collected.length]) })}, t('stem.geology.ui.survey_pulse_g', '◎ Survey pulse (G)'))
                     ])
               ]
             : [
-                expanded ? h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, 'Next: ' + contract.label + ' · ' + contract.brief) : null,
-                h('button', { key: 'start', type: 'button', onClick: function () { startFieldRun(scene); }, className: 'mt-1.5 min-h-9 w-full rounded-md border border-amber-300 bg-amber-500 px-2 text-[10px] font-extrabold text-amber-950 shadow', 'aria-label': tf('stem.geology.a11y.start_field_run', 'Start field run: {label}', { label: contract.label })}, 'Start 3-specimen run')
+                expanded ? h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, tf('stem.geology.ui.next_2', 'Next: {label} · {brief}', { label: contract.label, brief: contract.brief })) : null,
+                h('button', { key: 'start', type: 'button', onClick: function () { startFieldRun(scene); }, className: 'mt-1.5 min-h-9 w-full rounded-md border border-amber-300 bg-amber-500 px-2 text-[10px] font-extrabold text-amber-950 shadow', 'aria-label': tf('stem.geology.a11y.start_field_run', 'Start field run: {label}', { label: contract.label })}, t('stem.geology.ui.start_3_specimen_run', 'Start 3-specimen run'))
               ];
           return h('section', { 'data-geology-field-run': 'true', 'data-expanded': expanded ? 'true' : 'false', 'data-state': entry.ready ? 'ready' : (entry.active ? 'active' : 'available'), className: 'absolute left-2 top-28 z-10 rounded-lg border border-amber-300/50 bg-slate-950/90 p-2 text-white shadow-xl ' + (coreRigHud && coreRigHud.deployed ? 'hidden md:block' : ''), style: { width: expanded ? 'min(220px, calc(100% - 5.5rem))' : 'min(176px, calc(100% - 5.5rem))' }, role: 'region', 'aria-label': t('stem.geology.a11y.field_run_contract', 'Field run contract') }, [
             h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
               h('h3', { key: 'title', className: 'truncate text-[11px] font-extrabold text-amber-200' }, '🧭 ' + heading),
-              h('span', { key: 'xp', className: 'shrink-0 text-[10px] font-bold text-emerald-300', title: tf('stem.geology.a11y.field_runs_completed', '{n} field runs completed', { n: book.total || 0 }) }, (book.xp || 0) + ' XP'),
+              h('span', { key: 'xp', className: 'shrink-0 text-[10px] font-bold text-emerald-300', title: tf('stem.geology.a11y.field_runs_completed', '{n} field runs completed', { n: book.total || 0 }) }, tf('stem.geology.ui.xp_2', '{v} XP', { v: book.xp || 0 })),
               h('button', { key: 'toggle', type: 'button', 'data-geology-field-run-toggle': 'true', 'aria-expanded': expanded ? 'true' : 'false', 'aria-controls': expanded ? detailsId : undefined, 'aria-label': expanded ? t('stem.geology.a11y.hide_field_run_details', 'Hide field run details') : t('stem.geology.a11y.show_field_run_details', 'Show field run details'), onClick: function () { setFieldRunExpanded(!expanded); }, className: 'shrink-0 min-h-6 min-w-6 rounded border border-slate-500/60 bg-slate-800 px-1 text-[10px] font-bold text-slate-100' }, expanded ? '▾' : '▸')
             ]),
             expanded ? h('div', { key: 'rank', id: detailsId, className: 'mt-1', 'data-geology-field-rank': rank.label }, [
-              h('div', { key: 'labels', className: 'flex justify-between gap-2 text-[10px] font-semibold text-slate-300' }, [h('span', { key: 'current' }, rank.label), h('span', { key: 'next' }, rank.nextLabel ? rank.remaining + ' XP to ' + rank.nextLabel : 'Top rank')]),
+              h('div', { key: 'labels', className: 'flex justify-between gap-2 text-[10px] font-semibold text-slate-300' }, [h('span', { key: 'current' }, rank.label), h('span', { key: 'next' }, rank.nextLabel ? tf('stem.geology.ui.xp_to', '{remaining} XP to {next_label}', { remaining: rank.remaining, next_label: rank.nextLabel }) : t('stem.geology.ui.top_rank', 'Top rank'))]),
               h('div', { key: 'track', className: 'mt-0.5 h-1 overflow-hidden rounded-full bg-slate-700', role: 'progressbar', 'aria-label': t('stem.geology.a11y.field_rank_progress', 'Field rank progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rankProgress }, h('span', { className: 'block h-full rounded-full bg-emerald-400', style: { width: rankProgress + '%' } })),
-              h('div', { key: 'journal', 'data-geology-field-journal': 'true', className: 'mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold ' + (discoveryProgress.complete ? 'text-emerald-300' : 'text-cyan-200') }, [h('span', { key: 'label' }, '📓 Scene specimens'), h('span', { key: 'count' }, discoveryProgress.found + '/' + discoveryProgress.total + (discoveryProgress.complete ? ' complete' : ' logged'))])
+              h('div', { key: 'journal', 'data-geology-field-journal': 'true', className: 'mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold ' + (discoveryProgress.complete ? 'text-emerald-300' : 'text-cyan-200') }, [h('span', { key: 'label' }, t('stem.geology.ui.scene_specimens', '📓 Scene specimens')), h('span', { key: 'count' }, discoveryProgress.complete ? tf('stem.geology.ui.specimens_complete', '{found}/{total} complete', { found: discoveryProgress.found, total: discoveryProgress.total }) : tf('stem.geology.ui.specimens_logged', '{found}/{total} logged', { found: discoveryProgress.found, total: discoveryProgress.total }))])
             ]) : null
           ].concat(content));
         }
@@ -12027,13 +12129,13 @@ function updateCoreRig3d(dt3d) {
           var rigRunEntry = (fieldBook.byScene && fieldBook.byScene[SCENE.id]) || {};
           var rigAssignment = rigRunEntry.active ? fieldExpeditionFor(SCENE.id, rigRunEntry.contractIndex) : null;
           var rigCollected = Array.isArray(rigRunEntry.collected) ? rigRunEntry.collected.length : 0;
-          var rigTarget = rigAssignment ? (rigRunEntry.ready ? 'Return home to bank the field run' : fieldSpecimenName(SCENE.id, rigAssignment.targets[rigCollected])) : null;
+          var rigTarget = rigAssignment ? (rigRunEntry.ready ? t('stem.geology.ui.return_home_to_bank', 'Return home to bank the field run') : fieldSpecimenName(SCENE.id, rigAssignment.targets[rigCollected])) : null;
           var rigFeed = coreRigFeedProfile(coreRigHud.feedMode);
           var rigIntegrity = Math.round(Math.max(0.55, Math.min(1, Number(coreRigHud.currentIntegrity) || 1)) * 100);
           var rigScanning = !!coreRigHud.scanning;
           var rigCassette = coreRigCoreCassette(rigSamples, coreRigHud.depth || coreRigDepth, rigRunning, rigScanning);
           var rigIntervalResult = coreRigHud.lastIntervalResult || null;
-          var rigFormationCue = coreRigHud.formationCue || (rigRunning && coreRigHud.formationLoad ? coreRigFormationCue(coreRigHud.formationLoad, coreRigHud.idealFeedMode, rigIntervalResult) : null);
+          var rigFormationCue = coreRigHud.formationCue || (rigRunning && coreRigHud.formationLoad ? coreRigFormationCue(coreRigHud.formationLoad, coreRigHud.idealFeedMode, rigIntervalResult, t) : null);
           var rigTrajectory = coreRigHud.trajectoryScan ? coreRigTrajectorySnapshot(coreRigHud.trajectoryScan) : null;
           var rigBrief = coreRigHud.boreBrief || (rigTrajectory
             ? coreRigBoreBrief(rigTrajectory, rigSamples, coreRigHud.bestPristineStreak, ['complete', 'stopped', 'paused'].indexOf(rigStage) >= 0)
@@ -12041,7 +12143,7 @@ function updateCoreRig3d(dt3d) {
           var rigBriefObjectives = rigBrief && Array.isArray(rigBrief.objectives) ? rigBrief.objectives : [];
           var rigComparison = coreRigHud.comparison && coreRigHud.comparison.eligible ? coreRigHud.comparison : null;
           var rigNextExperiment = coreRigHud.nextExperiment || null;
-          var rigTrajectoryCopy = rigTrajectory ? coreRigTrajectorySummary(rigTrajectory) : '';
+          var rigTrajectoryCopy = rigTrajectory ? coreRigTrajectorySummary(rigTrajectory, t) : '';
           var rigRiskTone = !rigTrajectory ? 'border-slate-500/40 bg-slate-900/45 text-slate-200'
             : (rigTrajectory.riskLevel === 'clear' ? 'border-emerald-300/45 bg-emerald-400/10 text-emerald-100'
             : (rigTrajectory.riskLevel === 'caution' ? 'border-amber-300/50 bg-amber-400/10 text-amber-100'
@@ -12050,24 +12152,24 @@ function updateCoreRig3d(dt3d) {
           var rigProgramKey = coreRigProgramKey(coreRigAngle, coreRigDepth);
           var rigPrograms = normalizeCoreRigPrograms(fieldBook.coreCertification);
           var rigProgram = rigPrograms[rigProgramKey];
-          var rigCertificationProgress = coreRigCertificationSummary(fieldBook.coreCertification);
-          var rigCertificationState = rigRunning ? 'IN PROGRESS' : (rigProgram.tier ? (rigProgram.tierLabel.toUpperCase() + ' ' + rigProgram.bestGrade) : (rigProgram.attempts ? 'RETRY' : 'OPEN'));
-          var rigCertificationCopy = 'CERT ' + rigCertificationProgress.certified + '/9 • ' + coreRigAngleDegrees(coreRigAngle) + '° / ' + coreRigDepth + ' • ' + rigCertificationState;
+          var rigCertificationProgress = coreRigCertificationSummary(fieldBook.coreCertification, t);
+          var rigCertificationState = rigRunning ? t('stem.geology.ui.in_progress', 'In progress').toUpperCase() : (rigProgram.tier ? (geoTT(rigProgram.tierLabel).toUpperCase() + ' ' + rigProgram.bestGrade) : (rigProgram.attempts ? t('stem.geology.ui.retry', 'Retry').toUpperCase() : t('stem.geology.ui.open', 'Open').toUpperCase()));
+          var rigCertificationCopy = tf('stem.geology.ui.cert_line', 'CERT {done}/9 • {angle}° / {depth} • {state}', { done: rigCertificationProgress.certified, angle: coreRigAngleDegrees(coreRigAngle), depth: coreRigDepth, state: rigCertificationState });
           var activeRigChallenge = coreRigChallenge && coreRigChallenge.sceneId === SCENE.id ? coreRigChallenge : null;
           var challengeProgress = activeRigChallenge && activeRigChallenge.kind === 'score' ? coreRigChallengeProgress(activeRigChallenge.replayScore, activeRigChallenge.bestScore, rigEvaluation && rigEvaluation.score) : null;
           var activeProgramChallenge = activeRigChallenge && (activeRigChallenge.kind === 'program' || activeRigChallenge.kind === 'experiment') ? activeRigChallenge : null;
           var challengeCopy = !challengeProgress ? '' : (challengeProgress.state === 'ready'
-            ? ('Replay ' + challengeProgress.replayScore + (challengeProgress.xpTarget == null ? ' · research ceiling reached' : ' · ' + challengeProgress.xpTarget + '+ earns XP'))
-            : (challengeProgress.state === 'beaten' ? ('Replay beaten +' + challengeProgress.delta + ' · result ' + challengeProgress.resultScore)
-            : (challengeProgress.state === 'matched' ? ('Replay matched · result ' + challengeProgress.resultScore) : (Math.abs(challengeProgress.delta) + ' points to replay · result ' + challengeProgress.resultScore))));
+            ? (tf('stem.geology.ui.replay_score', 'Replay {score}', { score: challengeProgress.replayScore }) + ' · ' + (challengeProgress.xpTarget == null ? t('stem.geology.ui.research_ceiling_short', 'research ceiling reached') : tf('stem.geology.ui.earns_xp_at', '{points}+ earns XP', { points: challengeProgress.xpTarget })))
+            : (challengeProgress.state === 'beaten' ? tf('stem.geology.ui.replay_beaten', 'Replay beaten +{delta} · result {result}', { delta: challengeProgress.delta, result: challengeProgress.resultScore })
+            : (challengeProgress.state === 'matched' ? tf('stem.geology.ui.replay_matched', 'Replay matched · result {result}', { result: challengeProgress.resultScore }) : tf('stem.geology.ui.replay_behind', 'Points to replay: {n} · result {result}', { n: Math.abs(challengeProgress.delta), result: challengeProgress.resultScore }))));
           var activeExperimentChallenge = activeProgramChallenge && activeProgramChallenge.kind === 'experiment' ? activeProgramChallenge : null;
           var programChallengeTarget = activeProgramChallenge && !activeExperimentChallenge ? coreRigCertificationXpTarget(activeProgramChallenge.programBestRating) : null;
           var programChallengeCopy = !activeProgramChallenge ? '' : (activeExperimentChallenge
-            ? (activeExperimentChallenge.question || 'Recover this core, then compare the revealed sequence.')
-            : (rigProgram.tier ? (rigProgram.tierLabel + ' · highest qualifying score ' + rigProgram.bestGrade + ' · rating ' + rigProgram.bestRating + ' · highest integrity ' + rigProgram.bestIntegrity + '% · ' + coreRigCertificationGuidance(rigProgram)) : coreRigCertificationGuidance(rigProgram)));
+            ? (activeExperimentChallenge.question || t('stem.geology.ui.recover_then_compare', 'Recover this core, then compare the revealed sequence.'))
+            : (rigProgram.tier ? tf('stem.geology.ui.rig_program_tier', '{tier} · highest qualifying score {grade} · rating {rating} · highest integrity {integrity}% · {guidance}', { tier: geoTT(rigProgram.tierLabel), grade: rigProgram.bestGrade, rating: rigProgram.bestRating, integrity: rigProgram.bestIntegrity, guidance: coreRigCertificationGuidance(rigProgram, t) }) : coreRigCertificationGuidance(rigProgram, t)));
           var programChallengeXpCopy = !activeProgramChallenge ? '' : (activeExperimentChallenge
             ? activeExperimentChallenge.controlLabel
-            : (programChallengeTarget == null ? 'All score-improvement XP earned' : ('Next XP at ' + programChallengeTarget + ' rating ' + (programChallengeTarget === 1 ? 'point' : 'points'))));
+            : (programChallengeTarget == null ? t('stem.geology.ui.all_score_improvement_xp_earned', 'All score-improvement XP earned') : tf('stem.geology.ui.next_xp_at_rating_points', 'Next XP at a rating of {points}', { points: programChallengeTarget })));
           var rigGradeClass = !rigEvaluation ? '' : (rigEvaluation.grade === 'S' ? 'border-violet-300 bg-violet-400/20 text-violet-100' : (rigEvaluation.grade === 'A' ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100' : (rigEvaluation.grade === 'B' ? 'border-emerald-300 bg-emerald-400/20 text-emerald-100' : (rigEvaluation.grade === 'C' ? 'border-amber-300 bg-amber-400/20 text-amber-100' : 'border-rose-300 bg-rose-400/20 text-rose-100'))));
           function sampleColor(sample) {
             var raw = sample && sample.color;
@@ -12088,15 +12190,15 @@ function updateCoreRig3d(dt3d) {
                 h('div', { key: 'title', className: 'flex min-w-0 items-center gap-1.5' }, [
                   h('span', { key: 'icon', className: 'grid h-7 w-7 shrink-0 place-items-center rounded-md border text-base transition-colors duration-200 motion-reduce:transition-none ' + rigIconTone, 'aria-hidden': 'true' }, rigPhaseGlyph),
                   h('div', { key: 'words', className: 'min-w-0' }, [
-                    h('h3', { key: 'name', className: 'truncate text-[11px] font-black tracking-wide text-cyan-100' }, 'STRATA CORE RIG'),
+                    h('h3', { key: 'name', className: 'truncate text-[11px] font-black tracking-wide text-cyan-100' }, t('stem.geology.ui.strata_core_rig', 'STRATA CORE RIG')),
                     h('p', { key: 'stage', className: 'text-[11px] font-extrabold tracking-[.14em] transition-colors duration-200 motion-reduce:transition-none ' + rigStageTextTone }, stageLabel)
                   ])
                 ]),
-                h('span', { key: 'count', className: 'shrink-0 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-0.5 text-[11px] font-bold text-cyan-100' }, rigSamples.length + ' sample' + (rigSamples.length === 1 ? '' : 's') + (rigBrief ? (' · ' + rigBrief.metCount + '/3 seals') : '')),
+                h('span', { key: 'count', className: 'shrink-0 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-0.5 text-[11px] font-bold text-cyan-100' }, tf('stem.geology.ui.rig_samples', 'Samples: {n}', { n: rigSamples.length }) + (rigBrief ? ' · ' + tf('stem.geology.ui.rig_seals', '{met}/3 seals', { met: rigBrief.metCount }) : '')),
                 h('ol', {
                   key: 'phase-rail', 'data-geology-core-phase-rail': rigPhaseKey,
                   className: 'grid w-full grid-cols-3 gap-1', 'aria-label': t('stem.geology.a11y.core_rig_workflow', 'Core rig workflow')
-                }, [['setup', 'Setup'], ['bore', 'Bore'], ['debrief', 'Debrief']].map(function (phase, phaseIndex) {
+                }, [['setup', t('stem.geology.ui.phase_setup', 'Setup')], ['bore', t('stem.geology.ui.bore', 'Bore')], ['debrief', t('stem.geology.ui.phase_debrief', 'Debrief')]].map(function (phase, phaseIndex) {
                   var phaseState = phaseIndex < rigPhaseIndex ? 'complete' : (phaseIndex === rigPhaseIndex ? 'current' : 'upcoming');
                   return h('li', {
                     key: phase[0], 'data-geology-core-phase-step': phase[0], 'data-state': phaseState,
@@ -12109,38 +12211,38 @@ function updateCoreRig3d(dt3d) {
                   }, [
                     h('span', { key: 'label', className: 'block' }, (phaseState === 'complete' ? '✓ ' : (phaseState === 'current' ? '● ' : '○ ')) + phase[1]),
                     h('span', { key: 'state', className: 'block text-[10px] font-bold normal-case tracking-normal opacity-80' },
-                      phaseState === 'complete' ? 'Complete' : (phaseState === 'current' ? 'Current' : 'Upcoming'))
+                      phaseState === 'complete' ? t('stem.geology.ui.complete', 'Complete') : (phaseState === 'current' ? t('stem.geology.ui.current', 'Current') : t('stem.geology.ui.upcoming', 'Upcoming')))
                   ]);
                 }))
               ]),
               rigPreview ? h('div', { key: 'cert-status', 'data-geology-core-cert-status': rigProgramKey, className: 'mt-1.5 rounded-md border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] font-black tracking-wide text-cyan-100' }, rigCertificationCopy) : null,
               rigTarget ? h('div', { key: 'target', className: 'mt-1.5 flex items-center gap-1.5 rounded-md border border-violet-300/25 bg-violet-400/10 px-2 py-1 text-[11px] font-semibold text-violet-100', 'data-geology-core-field-target': 'true' }, [
                 h('span', { key: 'icon', 'aria-hidden': 'true' }, '🧭'),
-                h('span', { key: 'copy', className: 'min-w-0 truncate', title: rigTarget }, 'Field Run target · ' + rigTarget)
+                h('span', { key: 'copy', className: 'min-w-0 truncate', title: rigTarget }, tf('stem.geology.ui.field_run_target', 'Field Run target · {rig_target}', { rig_target: rigTarget }))
               ]) : null,
               rigPreview && activeProgramChallenge ? h('p', { key: 'program-challenge', 'data-geology-core-program-challenge': activeProgramChallenge.programKey, className: 'mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5 rounded-md border border-violet-300/30 bg-violet-400/10 px-2 py-1 text-[10.5px] font-semibold text-slate-100' }, [
-                h('span', { key: 'label', className: 'font-black text-violet-200' }, activeExperimentChallenge ? 'Next experiment' : 'Program focus'),
+                h('span', { key: 'label', className: 'font-black text-violet-200' }, activeExperimentChallenge ? t('stem.geology.ui.next_experiment', 'Next experiment') : t('stem.geology.ui.program_focus', 'Program focus')),
                 h('span', { key: 'copy' }, programChallengeCopy),
                 h('span', { key: 'xp', className: 'text-amber-200' }, programChallengeXpCopy)
               ]) : null,
               rigPreview && challengeProgress ? h('div', { key: 'challenge', 'data-geology-core-challenge': challengeProgress.state, className: 'mt-1.5 rounded-md border border-amber-300/40 bg-gradient-to-r from-amber-400/15 to-violet-400/10 px-2 py-1.5' }, [
                 h('div', { key: 'head', className: 'flex items-center justify-between gap-2 text-[11px] font-black uppercase tracking-wide text-amber-200' }, [
-                  h('span', { key: 'label' }, '◆ Score challenge'),
+                  h('span', { key: 'label' }, t('stem.geology.ui.score_challenge', '◆ Score challenge')),
                   h('span', { key: 'trajectory', className: 'shrink-0 text-cyan-200' }, coreRigAngleDegrees(activeRigChallenge.angle) + '° / ' + activeRigChallenge.depth)
                 ]),
                 h('p', { key: 'copy', className: 'mt-0.5 text-[11px] font-bold text-slate-100', role: challengeProgress.state === 'ready' ? undefined : 'status' }, challengeCopy)
               ]) : null,
               rigEvaluation ? h('div', { key: 'evaluation', className: 'mt-1.5 flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-2 py-1.5' }, [
-                h('span', { key: 'grade', 'data-geology-core-grade': rigEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + rigGradeClass }, 'Grade ' + rigEvaluation.grade),
+                h('span', { key: 'grade', 'data-geology-core-grade': rigEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + rigGradeClass }, tf('stem.geology.ui.grade', 'Grade {grade}', { grade: rigEvaluation.grade })),
                 h('div', { key: 'copy', className: 'min-w-0 flex-1' }, [
-                  h('p', { key: 'label', className: 'truncate text-[11px] font-extrabold text-white' }, rigEvaluation.label),
+                  h('p', { key: 'label', className: 'truncate text-[11px] font-extrabold text-white' }, geoTT(rigEvaluation.label)),
                   h('p', { key: 'detail', className: 'text-[11px] font-semibold text-slate-300' }, [
                     h('span', { key: 'score', 'data-geology-core-score': rigEvaluation.score }, rigEvaluation.score + '/200'),
-                    coreRigHud.newBest ? h('span', { key: 'best', className: 'ml-1.5 text-amber-300' }, '★ New best') : null,
+                    coreRigHud.newBest ? h('span', { key: 'best', className: 'ml-1.5 text-amber-300' }, t('stem.geology.ui.new_best_2', '★ New best')) : null,
                     coreRigHud.certificationEarned ? h('span', { key: 'cert-tier', className: 'ml-1.5 text-violet-200' }, '⬡ ' + coreRigHud.certificationTierLabel) : null,
-                    coreRigHud.researchReward ? h('span', { key: 'xp', 'data-geology-core-research-reward': coreRigHud.researchReward, className: 'ml-1.5 text-emerald-300' }, '+' + coreRigHud.researchReward + ' research XP') : null,
-                    coreRigHud.certificationReward ? h('span', { key: 'program-xp', 'data-geology-core-certification-reward': coreRigHud.certificationReward, className: 'ml-1.5 text-amber-200' }, '+' + coreRigHud.certificationReward + ' program XP') : null,
-                    rigEvaluation.integrityPercent != null ? h('span', { key: 'integrity', className: 'ml-1.5 text-cyan-200' }, rigEvaluation.integrityPercent + '% integrity') : null
+                    coreRigHud.researchReward ? h('span', { key: 'xp', 'data-geology-core-research-reward': coreRigHud.researchReward, className: 'ml-1.5 text-emerald-300' }, tf('stem.geology.ui.research_xp', '+{research_reward} research XP', { research_reward: coreRigHud.researchReward })) : null,
+                    coreRigHud.certificationReward ? h('span', { key: 'program-xp', 'data-geology-core-certification-reward': coreRigHud.certificationReward, className: 'ml-1.5 text-amber-200' }, tf('stem.geology.ui.program_xp', '+{certification_reward} program XP', { certification_reward: coreRigHud.certificationReward })) : null,
+                    rigEvaluation.integrityPercent != null ? h('span', { key: 'integrity', className: 'ml-1.5 text-cyan-200' }, tf('stem.geology.ui.integrity', '{integrity_percent}% integrity', { integrity_percent: rigEvaluation.integrityPercent })) : null
                   ])
                 ])
               ]) : null,
@@ -12169,13 +12271,13 @@ function updateCoreRig3d(dt3d) {
                   h('div', { key: 'title', className: 'flex items-center gap-1.5' }, [
                     h('span', { key: 'radar', className: 'grid h-6 w-6 place-items-center rounded-full border border-cyan-300/45 bg-cyan-400/15 text-[12px] text-cyan-100', 'aria-hidden': 'true' }, '◉'),
                     h('div', { key: 'copy' }, [
-                      h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-[.16em] text-cyan-100' }, 'Bore Brief'),
+                      h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-[.16em] text-cyan-100' }, t('stem.geology.ui.bore_brief', 'Bore Brief')),
                       h('p', { key: 'summary', className: 'text-[10px] font-semibold text-slate-300' }, rigTrajectoryCopy)
                     ])
                   ]),
                   h('span', { key: 'seals', className: 'shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-black ' +
                     (rigBrief.complete ? 'border-violet-200/70 bg-violet-300/20 text-violet-100' : 'border-white/15 bg-white/5 text-slate-200') },
-                    rigBrief.metCount + '/3 SEALS')
+                    tf('stem.geology.ui.3_seals', '{met_count}/3 SEALS', { met_count: rigBrief.metCount }))
                 ]),
                 h('div', { key: 'coverage', className: 'mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10',
                   role: 'progressbar', 'aria-label': t('stem.geology.a11y.projected_safe_bore_coverage', 'Projected safe bore coverage'), 'aria-valuemin': 0, 'aria-valuemax': 100,
@@ -12184,25 +12286,25 @@ function updateCoreRig3d(dt3d) {
                     style: { width: rigTrajectory.coveragePct + '%' } })),
                 h('div', { key: 'signals', className: 'mt-1.5 grid grid-cols-3 gap-1 text-center' }, [
                   h('div', { key: 'yield', className: 'rounded-md border border-white/10 bg-black/20 px-1 py-1' }, [
-                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-400' }, 'Yield'),
+                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-400' }, t('stem.geology.ui.yield', 'Yield')),
                     h('span', { key: 'value', className: 'block text-[11px] font-black tabular-nums text-cyan-100' }, rigTrajectory.recoverable + '/' + rigTrajectory.requestedDepth)
                   ]),
                   h('div', { key: 'ground', className: 'rounded-md border border-white/10 bg-black/20 px-1 py-1' }, [
-                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-400' }, 'Resistance'),
-                    h('span', { key: 'value', className: 'block text-[11px] font-black capitalize text-violet-100' }, rigTrajectory.variability)
+                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-400' }, t('stem.geology.ui.resistance', 'Resistance')),
+                    h('span', { key: 'value', className: 'block text-[11px] font-black capitalize text-violet-100' }, ({ steady: t('stem.geology.rig.steady', 'steady'), mixed: t('stem.geology.rig.mixed', 'mixed'), volatile: t('stem.geology.rig.volatile', 'volatile') })[rigTrajectory.variability] || rigTrajectory.variability)
                   ]),
                   h('div', { key: 'risk', className: 'rounded-md border px-1 py-1 ' + rigRiskTone }, [
-                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide opacity-75' }, 'Boundary'),
-                    h('span', { key: 'value', className: 'block text-[11px] font-black capitalize' }, rigTrajectory.riskLevel)
+                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide opacity-75' }, t('stem.geology.ui.boundary', 'Boundary')),
+                    h('span', { key: 'value', className: 'block text-[11px] font-black capitalize' }, ({ clear: t('stem.geology.rig.risk_clear', 'clear'), caution: t('stem.geology.rig.risk_caution', 'caution'), limited: t('stem.geology.rig.risk_limited', 'limited') })[rigTrajectory.riskLevel] || rigTrajectory.riskLevel)
                   ])
                 ]),
-                h('div', { key: 'mix', className: 'mt-1.5 flex flex-wrap gap-1', 'aria-label': t('stem.geology.a11y.aggregate_feed_mix', 'Aggregate feed mix') },
+                h('div', { key: 'mix', role: 'group', className: 'mt-1.5 flex flex-wrap gap-1', 'aria-label': t('stem.geology.a11y.aggregate_feed_mix', 'Aggregate feed mix') },
                   ['preserve', 'cruise', 'torque'].map(function (modeId) {
                     return h('span', { key: modeId, 'data-geology-core-load-mix': modeId,
                       className: 'rounded-full border border-white/10 bg-black/25 px-1.5 py-0.5 text-[10px] font-bold text-slate-200' },
-                      coreRigFeedProfile(modeId).label + ' ×' + rigTrajectory.loadCounts[modeId]);
+                      geoTT(coreRigFeedProfile(modeId).label) + ' ×' + rigTrajectory.loadCounts[modeId]);
                   })),
-                h('p', { key: 'advice', className: 'mt-1 text-[10px] font-semibold leading-snug text-slate-300' }, rigTrajectory.advice),
+                h('p', { key: 'advice', className: 'mt-1 text-[10px] font-semibold leading-snug text-slate-300' }, geoTT(rigTrajectory.advice)),
                 h('ul', { key: 'objectives', className: 'mt-1.5 grid gap-1', 'aria-label': t('stem.geology.a11y.bore_brief_objectives', 'Bore Brief objectives') },
                   rigBriefObjectives.map(function (objective) {
                     var objectiveIcon = objective.state === 'met' ? '✓' : (objective.state === 'missed' ? '×' : '○');
@@ -12216,30 +12318,30 @@ function updateCoreRig3d(dt3d) {
                       className: 'flex items-center justify-between gap-2 rounded-md border px-1.5 py-1 text-[10px] font-bold ' + objectiveTone }, [
                       h('span', { key: 'label', className: 'min-w-0 truncate' }, [
                         h('span', { key: 'icon', className: 'mr-1', 'aria-hidden': 'true' }, objectiveIcon),
-                        objective.label
+                        geoTT(objective.label)
                       ]),
                       h('span', { key: 'progress', className: 'shrink-0 tabular-nums opacity-85' }, objectiveProgress)
                     ]);
                   })),
                 // Completion speech is owned by the existing global announcer; keep this semantic summary silent.
                 rigBrief.finished ? h('p', { key: 'final',
-                  'data-geology-core-brief-summary': rigBrief.metCount, className: 'sr-only' }, rigBrief.summary) : null
+                  'data-geology-core-brief-summary': rigBrief.metCount, className: 'sr-only' }, tf('stem.geology.sr.bore_brief_complete', 'Bore Brief {met} of 3 complete. ', { met: rigBrief.metCount }).trim()) : null
               ]) : null,
               !rigFinished ? h('section', { key: 'operator', 'data-geology-core-phase-surface': 'bore', 'data-geology-core-feed-control': 'true', 'data-geology-core-interval-scan': rigScanning ? 'active' : 'idle', className: 'mt-2 rounded-lg border p-1.5 transition-colors motion-reduce:transition-none ' + (rigScanning ? 'border-cyan-300/70 bg-gradient-to-r from-cyan-400/15 via-emerald-400/10 to-amber-400/15 shadow-[0_0_16px_rgba(34,211,238,.18)]' : 'border-cyan-300/20 bg-black/20'), 'aria-label': t('stem.geology.a11y.adaptive_core_recovery_controls', 'Adaptive core recovery controls') }, [
                 h('p', { key: 'scan-live', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only', 'data-geology-core-formation-cue': 'true', 'data-state': rigFormationCue ? 'active' : 'idle' }, rigFormationCue ? rigFormationCue.prompt : ''),
                 h('div', { key: 'formation', className: 'flex items-center justify-between gap-2 text-[11px] font-bold ' + (rigScanning ? 'text-white' : 'text-slate-300') }, [
-                  h('span', { key: 'load', className: 'min-w-0 leading-snug' }, rigScanning ? ('◉ FORMATION SCAN · ' + (coreRigHud.formationLoad || 'reading')) : ('Formation · ' + (coreRigHud.formationLoad || 'trajectory scan'))),
-                  h('span', { key: 'ideal', className: 'shrink-0 ' + (rigScanning ? 'text-amber-200' : 'text-cyan-200') }, coreRigHud.formationLoad ? ((rigScanning ? 'Select · ' : 'Best response · ') + coreRigFeedProfile(coreRigHud.idealFeedMode).label) : 'Choose a feed')
+                  h('span', { key: 'load', className: 'min-w-0 leading-snug' }, rigScanning ? '◉ ' + tf('stem.geology.ui.formation_scan_load', 'FORMATION SCAN · {load}', { load: coreRigHud.formationLoad ? fpProfileText(coreRigHud.formationLoad, t).tag : t('stem.geology.ui.reading', 'reading') }) : tf('stem.geology.ui.formation_load_line', 'Formation · {load}', { load: coreRigHud.formationLoad ? fpProfileText(coreRigHud.formationLoad, t).tag : t('stem.geology.ui.trajectory_scan', 'trajectory scan') })),
+                  h('span', { key: 'ideal', className: 'shrink-0 ' + (rigScanning ? 'text-amber-200' : 'text-cyan-200') }, coreRigHud.formationLoad ? (rigScanning ? tf('stem.geology.ui.feed_select', 'Select · {feed}', { feed: geoTT(coreRigFeedProfile(coreRigHud.idealFeedMode).label) }) : tf('stem.geology.ui.feed_best', 'Best response · {feed}', { feed: geoTT(coreRigFeedProfile(coreRigHud.idealFeedMode).label) })) : t('stem.geology.ui.choose_a_feed', 'Choose a feed'))
                 ]),
                 rigIntervalResult ? h('div', { key: 'interval-result', 'data-geology-core-interval-result': rigIntervalResult.tier, className: 'mt-1 flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-[10px] font-extrabold ' + rigResultTone }, [
                   h('span', { key: 'quality', className: 'min-w-0 leading-snug' }, '◆ ' + rigIntervalResult.label.toUpperCase() + ' · ' + rigIntervalResult.name + ' · ' + rigIntervalResult.integrityPercent + '%'),
-                  h('span', { key: 'streak', className: 'shrink-0' }, rigIntervalResult.tier === 'pristine' ? ('streak ' + rigIntervalResult.pristineStreak) : 'streak reset')
+                  h('span', { key: 'streak', className: 'shrink-0' }, rigIntervalResult.tier === 'pristine' ? (tf('stem.geology.ui.streak', 'streak {pristine_streak}', { pristine_streak: rigIntervalResult.pristineStreak })) : t('stem.geology.ui.streak_reset', 'streak reset'))
                 ]) : null,
                 h('div', { key: 'modes', className: 'mt-1 grid grid-cols-3 gap-1', role: 'group', 'aria-label': t('stem.geology.a11y.drill_feed_mode', 'Drill feed mode') }, Object.keys(CORE_RIG_FEED_MODES).map(function (modeId) {
                   var modeProfile = coreRigFeedProfile(modeId), modeActive = rigFeed.id === modeId;
-                  return h('button', { key: modeId, type: 'button', disabled: rigStage === 'deploying', 'data-geology-core-feed-mode': modeId, 'aria-pressed': modeActive ? 'true' : 'false', onClick: function () { coreRigAction('feed', modeId); }, className: 'min-h-11 rounded-md border px-1 text-[11px] font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45 ' + (modeActive ? 'border-cyan-300 bg-cyan-400/25 text-cyan-50 shadow-[0_0_10px_rgba(34,211,238,.2)]' : 'border-slate-600 bg-slate-900/70 text-slate-300 hover:border-cyan-500'), 'aria-label': tf('stem.geology.a11y.feed_percent_advance_and_percent_heat_load', '{label} feed, {speed_multiplier} percent advance and {heat_multiplier} percent heat load', { label: modeProfile.label, speed_multiplier: Math.round(modeProfile.speedMultiplier * 100), heat_multiplier: Math.round(modeProfile.heatMultiplier * 100) })}, modeProfile.label);
+                  return h('button', { key: modeId, type: 'button', disabled: rigStage === 'deploying', 'data-geology-core-feed-mode': modeId, 'aria-pressed': modeActive ? 'true' : 'false', onClick: function () { coreRigAction('feed', modeId); }, className: 'min-h-11 rounded-md border px-1 text-[11px] font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45 ' + (modeActive ? 'border-cyan-300 bg-cyan-400/25 text-cyan-50 shadow-[0_0_10px_rgba(34,211,238,.2)]' : 'border-slate-600 bg-slate-900/70 text-slate-300 hover:border-cyan-500'), 'aria-label': tf('stem.geology.a11y.feed_percent_advance_and_percent_heat_load', '{label} feed, {speed_multiplier} percent advance and {heat_multiplier} percent heat load', { label: geoTT(modeProfile.label), speed_multiplier: Math.round(modeProfile.speedMultiplier * 100), heat_multiplier: Math.round(modeProfile.heatMultiplier * 100) })}, geoTT(modeProfile.label));
                 })),
-                h('button', { key: 'coolant', type: 'button', disabled: !rigRunning || rigStage === 'cooling' || Number(coreRigHud.coolantRemaining) <= 0 || rigHeat < 22, onClick: function () { coreRigAction('coolant'); }, className: 'mt-1 min-h-11 w-full rounded-md border border-sky-300/50 bg-sky-400/15 px-2 text-[11px] font-extrabold text-sky-100 transition hover:bg-sky-400/25 disabled:cursor-not-allowed disabled:border-slate-600 disabled:bg-slate-900/60 disabled:text-slate-500', 'data-geology-core-coolant': coreRigHud.coolantRemaining, 'aria-label': tf('stem.geology.a11y.release_coolant_pulse_remaining', 'Release coolant pulse. {coolant_remaining} remaining', { coolant_remaining: Number(coreRigHud.coolantRemaining || 0) })}, '❄ Coolant pulse · ' + Number(coreRigHud.coolantRemaining || 0) + ' remaining')
+                h('button', { key: 'coolant', type: 'button', disabled: !rigRunning || rigStage === 'cooling' || Number(coreRigHud.coolantRemaining) <= 0 || rigHeat < 22, onClick: function () { coreRigAction('coolant'); }, className: 'mt-1 min-h-11 w-full rounded-md border border-sky-300/50 bg-sky-400/15 px-2 text-[11px] font-extrabold text-sky-100 transition hover:bg-sky-400/25 disabled:cursor-not-allowed disabled:border-slate-600 disabled:bg-slate-900/60 disabled:text-slate-500', 'data-geology-core-coolant': coreRigHud.coolantRemaining, 'aria-label': tf('stem.geology.a11y.release_coolant_pulse_remaining', 'Release coolant pulse. {coolant_remaining} remaining', { coolant_remaining: Number(coreRigHud.coolantRemaining || 0) })}, tf('stem.geology.ui.coolant_pulse_remaining', '❄ Coolant pulse · {v} remaining', { v: Number(coreRigHud.coolantRemaining || 0) }))
               ]) : null,
               rigFinished ? h('section', {
                 key: 'debrief', 'data-geology-core-debrief': rigStage, 'data-geology-core-phase-surface': 'debrief',
@@ -12250,45 +12352,45 @@ function updateCoreRig3d(dt3d) {
                   h('h4', {
                     key: 'label', tabIndex: -1, 'data-geology-core-debrief-heading': 'true',
                     className: 'scroll-mt-24 text-[11px] font-black uppercase tracking-[.14em] text-violet-100 focus:outline-none'
-                  }, 'Core debrief'),
+                  }, t('stem.geology.ui.core_debrief', 'Core debrief')),
                   h('span', { key: 'stage', className: 'rounded-full border border-white/15 bg-slate-950/45 px-2 py-0.5 text-[10px] font-black text-cyan-100' }, stageLabel)
                 ]),
                 h('div', { key: 'metrics', className: 'mt-1.5 grid grid-cols-3 gap-1' }, [
                   h('div', { key: 'recovery', className: 'rounded-md border border-white/10 bg-slate-950/45 p-1.5 text-center' }, [
                     h('span', { key: 'value', className: 'block text-[12px] font-black tabular-nums text-white' }, rigSamples.length + '/' + Math.max(1, Number(coreRigHud.depth || coreRigDepth))),
-                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, 'Recovered')
+                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, t('stem.geology.ui.recovered', 'Recovered'))
                   ]),
                   h('div', { key: 'integrity', className: 'rounded-md border border-white/10 bg-slate-950/45 p-1.5 text-center' }, [
                     h('span', { key: 'value', className: 'block text-[12px] font-black tabular-nums text-emerald-200' }, (rigEvaluation && rigEvaluation.integrityPercent != null ? rigEvaluation.integrityPercent : rigIntegrity) + '%'),
-                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, 'Integrity')
+                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, t('stem.geology.ui.integrity_2', 'Integrity'))
                   ]),
                   h('div', { key: 'brief', className: 'rounded-md border border-white/10 bg-slate-950/45 p-1.5 text-center' }, [
                     h('span', { key: 'value', className: 'block text-[12px] font-black tabular-nums text-amber-200' }, (rigBrief ? rigBrief.metCount : 0) + '/3'),
-                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, 'Bore Brief')
+                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, t('stem.geology.ui.bore_brief', 'Bore Brief'))
                   ])
                 ])
               ]) : null,
               h('div', { key: 'meters', className: (rigFinished ? 'hidden ' : '') + 'mt-2 grid grid-cols-2 gap-2' }, [
                 h('div', { key: 'progress' }, [
-                  h('div', { key: 'labels', className: 'flex justify-between text-[11px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Bore'), h('span', { key: 'b', 'data-geology-core-rig-progress-value': 'true' }, rigProgress + '%')]),
+                  h('div', { key: 'labels', className: 'flex justify-between text-[11px] font-bold text-slate-300' }, [h('span', { key: 'a' }, t('stem.geology.ui.bore', 'Bore')), h('span', { key: 'b', 'data-geology-core-rig-progress-value': 'true' }, rigProgress + '%')]),
                   h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': t('stem.geology.a11y.core_bore_progress', 'Core bore progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rigProgress }, h('span', { 'data-geology-core-rig-progress': 'true', className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 to-cyan-300 shadow-[0_0_8px_rgba(34,211,238,.8)] transition-[width,background-color] duration-200 motion-reduce:transition-none', style: { width: rigProgress + '%' } }))
                 ]),
                 h('div', { key: 'heat' }, [
-                  h('div', { key: 'labels', className: 'flex justify-between text-[11px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Head temp'), h('span', { key: 'b', 'data-geology-core-rig-heat-value': 'true' }, rigHeat + '%')]),
+                  h('div', { key: 'labels', className: 'flex justify-between text-[11px] font-bold text-slate-300' }, [h('span', { key: 'a' }, t('stem.geology.ui.head_temp', 'Head temp')), h('span', { key: 'b', 'data-geology-core-rig-heat-value': 'true' }, rigHeat + '%')]),
                   h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': t('stem.geology.a11y.core_rig_heat', 'Core rig heat'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rigHeat }, h('span', { 'data-geology-core-rig-heat': 'true', className: 'block h-full rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,.8)] transition-[width,background-color] duration-200 motion-reduce:transition-none', style: { width: rigHeat + '%' } }))
                 ])
               ]),
               h('div', { key: 'integrity', 'data-geology-core-integrity': rigIntegrity, className: (rigFinished ? 'hidden ' : '') + 'mt-2' }, [
                 h('div', { key: 'labels', className: 'flex justify-between gap-2 text-[11px] font-bold text-slate-300' }, [
-                  h('span', { key: 'a' }, 'Live core integrity'),
-                  h('span', { key: 'b', className: rigIntegrity >= 97 ? 'text-emerald-300' : (rigIntegrity >= 85 ? 'text-cyan-200' : 'text-amber-300') }, rigIntegrity + '% · pristine streak ' + Number(coreRigHud.pristineStreak || 0))
+                  h('span', { key: 'a' }, t('stem.geology.ui.live_core_integrity', 'Live core integrity')),
+                  h('span', { key: 'b', className: rigIntegrity >= 97 ? 'text-emerald-300' : (rigIntegrity >= 85 ? 'text-cyan-200' : 'text-amber-300') }, tf('stem.geology.ui.pristine_streak', '{rig_integrity}% · pristine streak {v}', { rig_integrity: rigIntegrity, v: Number(coreRigHud.pristineStreak || 0) }))
                 ]),
                 h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': t('stem.geology.a11y.current_core_interval_integrity', 'Current core interval integrity'), 'aria-valuemin': 55, 'aria-valuemax': 100, 'aria-valuenow': rigIntegrity }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-300 to-emerald-300 transition-[width] duration-200 motion-reduce:transition-none', style: { width: rigIntegrity + '%' } }))
               ]),
               h('section', { key: 'core', 'data-geology-core-cassette': 'console', className: 'mt-2 rounded-lg border border-slate-600/80 bg-slate-950/65 p-1.5', 'aria-label': t('stem.geology.a11y.core_recovery_cassette', 'Core recovery cassette') }, [
                 h('div', { key: 'head', className: 'mb-1 flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-slate-300' }, [
-                  h('span', { key: 'label' }, rigFinished ? 'Surface barrel' : 'Core cassette'),
-                  h('span', { key: 'count', className: 'tabular-nums text-cyan-200' }, rigCassette.revealedCount + '/' + rigCassette.total + ' recovered')
+                  h('span', { key: 'label' }, rigFinished ? t('stem.geology.ui.surface_barrel', 'Surface barrel') : t('stem.geology.ui.core_cassette', 'Core cassette')),
+                  h('span', { key: 'count', className: 'tabular-nums text-cyan-200' }, tf('stem.geology.ui.recovered_2', '{revealed_count}/{total} recovered', { revealed_count: rigCassette.revealedCount, total: rigCassette.total }))
                 ]),
                 h('ol', { key: 'slots', className: 'flex min-h-10 gap-1 overflow-x-auto', 'aria-label': t('stem.geology.a11y.requested_core_intervals', 'Requested core intervals') },
                   rigCassette.slots.map(function (cassetteSlot) {
@@ -12302,8 +12404,10 @@ function updateCoreRig3d(dt3d) {
                       ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-100'
                       : 'border-slate-700 bg-slate-900 text-slate-400'));
                     var slotLabel = recoveredSlot
-                      ? ('Interval ' + cassetteSlot.interval + ': ' + cassetteSlot.name + ', ' + cassetteSlot.quality + (cassetteSlot.integrityPercent == null ? ', integrity not recorded' : (', ' + cassetteSlot.integrityPercent + ' percent integrity')))
-                      : ('Interval ' + cassetteSlot.interval + ': ' + (cassetteSlot.state === 'scanning' ? 'formation scan in progress' : (cassetteSlot.state === 'current' ? 'current drill interval' : 'pending')));
+                      ? tf('stem.geology.ui.core_interval_label', 'Core interval {n}: {name}, {quality}', { n: cassetteSlot.interval, name: cassetteSlot.name, quality: geoTT(cassetteSlot.quality) }) + ', ' + (cassetteSlot.integrityPercent == null ? t('stem.geology.ui.integrity_not_recorded', 'integrity not recorded') : tf('stem.geology.ui.percent_integrity_spoken', '{pct} percent integrity', { pct: cassetteSlot.integrityPercent }))
+                      : (cassetteSlot.state === 'scanning' ? tf('stem.geology.ui.core_interval_scanning', 'Core interval {n}: formation scan in progress', { n: cassetteSlot.interval })
+                        : (cassetteSlot.state === 'current' ? tf('stem.geology.ui.core_interval_current', 'Core interval {n}: current drill interval', { n: cassetteSlot.interval })
+                        : tf('stem.geology.ui.core_interval_pending', 'Core interval {n}: pending', { n: cassetteSlot.interval })));
                     return h('li', {
                       key: cassetteSlot.interval, 'data-state': cassetteSlot.state, 'aria-label': slotLabel,
                       className: 'flex min-h-10 min-w-9 list-none flex-col items-center justify-center overflow-hidden rounded-md border text-center transition motion-reduce:transition-none ' + slotTone +
@@ -12319,7 +12423,7 @@ function updateCoreRig3d(dt3d) {
                 key: 'finding', 'data-geology-core-finding': rigComparison.findingLevel,
                 className: 'mt-2', 'aria-label': t('stem.geology.a11y.paired_bore_finding', 'Paired bore finding')
               }, [
-                h('span', { key: 'label', className: 'sr-only' }, 'Finding'),
+                h('span', { key: 'label', className: 'sr-only' }, t('stem.geology.ui.finding', 'Finding')),
                 coreRigCorrelationFigure(rigComparison, { key: 'figure', compact: true, forceDark: true })
               ]) : null,
               rigFinished && rigNextExperiment ? h('section', {
@@ -12327,16 +12431,16 @@ function updateCoreRig3d(dt3d) {
                 className: 'mt-2 rounded-lg border border-violet-300/45 bg-gradient-to-r from-violet-400/15 to-cyan-400/10 p-2',
                 'aria-label': t('stem.geology.a11y.next_controlled_experiment', 'Next controlled experiment')
               }, [
-                h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Next experiment'),
+                h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, t('stem.geology.ui.next_experiment', 'Next experiment')),
                 h('p', { key: 'question', className: 'mt-1 text-[11px] font-extrabold leading-snug text-white' }, rigNextExperiment.question),
                 coreRigExperimentRail(rigNextExperiment, { key: 'variables', forceDark: true, currentAngleDegrees: coreRigAngleDegrees(coreRigHud.angle || coreRigAngle), currentDepth: coreRigHud.depth || coreRigDepth }),
                 h('p', { key: 'control', className: 'mt-1 text-[10px] font-semibold text-slate-300' }, rigNextExperiment.controlLabel),
                 h('button', {
                   key: 'load', type: 'button', onClick: function () { loadCoreRigProgram(rigNextExperiment.programKey, rigNextExperiment); },
                   className: 'mt-1.5 min-h-11 w-full rounded-md border border-violet-200/60 bg-violet-400/20 px-2 text-[11px] font-black text-violet-50 transition hover:border-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300',
-                  'aria-label': tf('stem.geology.a11y.load_next_controlled_experiment', 'Load next controlled experiment. {question}', { question: rigNextExperiment.question })}, 'Load comparison · ' + rigNextExperiment.angleDegrees + '° / ' + rigNextExperiment.depth)
+                  'aria-label': tf('stem.geology.a11y.load_next_controlled_experiment', 'Load next controlled experiment. {question}', { question: rigNextExperiment.question })}, tf('stem.geology.ui.load_comparison', 'Load comparison · {angle_degrees}° / {depth}', { angle_degrees: rigNextExperiment.angleDegrees, depth: rigNextExperiment.depth }))
               ]) : null,
-              h('p', { key: 'status', 'data-geology-core-rig-status': 'true', className: 'mt-2 text-[11px] font-semibold leading-snug text-cyan-100', title: coreRigHud.status }, coreRigHud.status || 'Trajectory ready'),
+              h('p', { key: 'status', 'data-geology-core-rig-status': 'true', className: 'mt-2 text-[11px] font-semibold leading-snug text-cyan-100', title: coreRigHud.status }, coreRigHud.status || t('stem.geology.ui.trajectory_ready', 'Trajectory ready')),
               h('div', {
                 key: 'footer', 'data-geology-core-action-dock': rigPhaseKey,
                 className: 'sticky bottom-0 z-20 -mx-2 mt-2 grid gap-2 border-t border-white/10 bg-slate-950/95 px-2 pt-2 backdrop-blur-md ' +
@@ -12366,7 +12470,7 @@ function updateCoreRig3d(dt3d) {
           padTimersRef.current[axis] = setTimeout(function () { fpSet(axis, 0); }, PAD_STEP_MS);
         }
         function padBtn(label, axis, val, aria) {
-          return h('button', { key: aria, type: 'button', 'aria-label': aria, 'data-geology-pad': axis,
+          return h('button', { key: axis + ':' + val, type: 'button', 'aria-label': aria, 'data-geology-pad': axis,
             onPointerDown: function (e) { try { e.preventDefault(); } catch (x) {} padPress(axis, val); },
             onPointerUp: function () { padRelease(axis); }, onPointerLeave: function () { padRelease(axis); }, onPointerCancel: function () { padRelease(axis); },
             onClick: function () { padClick(axis, val); },
@@ -12382,7 +12486,7 @@ function updateCoreRig3d(dt3d) {
           var firstTime = !d.fpUsed;
           var label = fpWalkScene ? t('stem.geology.fp_enter', 'Drop in & dig') : t('stem.geology.fp_enter_fly', 'Fly inside');
           var sub = null;
-          if (!ok) sub = tf('stem.geology.fp_blocked', 'No solid ground to land on — {why}', { why: layerCauseText(cause) });
+          if (!ok) sub = tf('stem.geology.fp_blocked', 'No solid ground to land on — {why}', { why: layerCauseText(cause, t) });
           else if (!fpWalkScene) sub = firstTime ? t('stem.geology.fp_fly_sub', 'Free flight through every shell · live depth, heat and pressure') : null;
           else if (relocated) sub = tf('stem.geology.fp_relocated_sub', 'Lands on the nearest solid ground · {name}', { name: landName || t('stem.geology.fp_surface', 'the surface') });
           else if (landing && landing.fluidName) sub = tf('stem.geology.fp_splash_sub', 'Splash down into {fluid} · swim to the {floor} below, then dig', { fluid: landing.fluidName, floor: landName || t('stem.geology.fp_floor', 'floor') });
@@ -12415,8 +12519,8 @@ function updateCoreRig3d(dt3d) {
           processCueOverlay(),
           cameraCompassOverlay(),
           h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: isFs ? 0 : (rigDeployed ? 400 : 320), background: '#060913', cursor: fpOn ? 'crosshair' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? (rigDeployed ? t('stem.geology.a11y.fp_canvas_rig', 'Directional core rig control station. Choose a bore angle and depth, match Preserve, Cruise, or Torque feed to each formation, use limited coolant to protect integrity, and challenge previous scores. R ends an active bore or packs an idle rig, and H returns home.') : (fpWalkScene ? t('stem.geology.a11y.fp_canvas_walk', 'First-person geology mining explorer. W A S D or arrow keys walk, Space jumps, hold Space while walking into a wall to climb or press C to climb out of a deep hole, T measures the tilt of the layer at the reticle, Shift sprints, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, R deploys the directional core rig, G surveys for the active specimen or the nearest hidden find, click or tap digs one block, Enter digs instantly, Z undoes, Y redoes, and H returns. Escape exits.') : t('stem.geology.a11y.fp_canvas_fly', 'First-person Deep Earth flight. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, G surveys for the active specimen or the nearest hidden find, click or tap excavates one block, Enter excavates instantly, Z undoes, Y redoes, and H returns. Escape exits.'))) : (feat.crossSection ? tf('stem.geology.a11y.model_with_cross_section', 'Interactive 3D voxel model of {scene}. Use the cross-section and material list below for an accessible alternative.', { scene: SCENE.label }) : tf('stem.geology.a11y.model_with_evidence_map', 'Interactive 3D voxel model of {scene}. Use the 2D evidence map and material list below for an accessible alternative.', { scene: SCENE.label })) }),
-          h('div', { 'data-geology-view-buttons': 'true', className: 'absolute top-2 left-2 z-10 flex gap-1' },
-            [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
+          fpOn ? null : h('div', { 'data-geology-view-buttons': 'true', className: 'absolute top-2 left-2 z-10 flex flex-col gap-1 sm:flex-row' },
+            [['iso', '3D'], ['front', t('stem.geology.camera.btn_front', 'Front')], ['top', t('stem.geology.camera.btn_top', 'Top')]].map(function (vw) {
               var activeView = cameraViewState === vw[0];
               return h('button', { key: vw[0], type: 'button', disabled: fpOn, 'aria-pressed': activeView ? 'true' : 'false', 'data-geology-camera-view': vw[0], onClick: function () { setCameraView(vw[0]); }, 'aria-label': tf('stem.geology.a11y.camera_view', 'Camera view: {vw}', { vw: vw[1] }), className: 'min-h-9 transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (activeView ? 'border-sky-500 bg-sky-700 text-white' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, vw[1]);
             }).concat([
@@ -12436,12 +12540,12 @@ function updateCoreRig3d(dt3d) {
             var calloutLines = layerSitsLines(selected), calloutBust = fpBust(selected.key), calloutInk = typeInk(selected.R.type);
             return h('div', { 'data-geology-layer-callout': selected.key, className: 'pointer-events-none absolute z-10 max-w-[240px] rounded-lg border px-2.5 py-1.5 text-[11px] shadow-xl ' + (isDark ? 'bg-slate-900/90 border-slate-600 text-slate-100' : 'bg-white/95 border-slate-300 text-slate-800'), style: { display: 'none', borderLeft: '4px solid ' + calloutInk }, 'aria-hidden': 'true' },
               h('div', { className: 'text-[12px] font-extrabold' }, selected.R.name),
-              h('div', { className: 'text-[10px] font-bold ' + muted }, selected.R.type),
+              h('div', { className: 'text-[10px] font-bold ' + muted }, rockTypeText(selected.R.type, t)),
               calloutLines.slice(0, 2).map(function (line, i) { return h('div', { key: 'cl-' + i, className: 'mt-0.5' }, line); }),
               calloutBust ? h('div', { className: 'mt-1 text-[10.5px] font-semibold leading-snug ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '💡 ' + geoTT(calloutBust)) : null);
           })() : null,
-          (fpOn && !rigDeployed) ? h('div', { 'data-geology-first-person-mode': fpWalkScene ? 'mine' : 'fly', className: 'absolute left-2 top-12 z-10 rounded-full border px-2 py-1 text-[10px] font-extrabold ' + (fpWalkScene ? 'border-amber-300/70 bg-amber-950/80 text-amber-100' : 'border-sky-300/70 bg-sky-950/80 text-sky-100'), 'aria-hidden': 'true' }, (fpWalkScene ? '⛏ Mine mode' : '🛰 Deep Earth flight') + ' · ' + digCount + ' dug' + (sceneFindCatalog.length ? ' · 💎 ' + sceneFindsFound + '/' + sceneFindCatalog.length : '')) : null,
-          (fpOn && !rigDeployed) ? h('div', { 'data-geology-player-status': 'true', 'data-state': fpWalkScene ? 'grounded' : 'flight', className: 'pointer-events-none absolute left-2 top-20 z-10 rounded-full border border-emerald-300/60 bg-slate-950/80 px-2 py-1 text-[10px] font-bold text-emerald-200 shadow-lg', 'aria-hidden': 'true' }, fpWalkScene ? 'Finding safe ground…' : 'Free flight') : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-first-person-mode': fpWalkScene ? 'mine' : 'fly', className: 'absolute left-2 top-12 z-10 rounded-full border px-2 py-1 text-[10px] font-extrabold ' + (fpWalkScene ? 'border-amber-300/70 bg-amber-950/80 text-amber-100' : 'border-sky-300/70 bg-sky-950/80 text-sky-100'), 'aria-hidden': 'true' }, (fpWalkScene ? '⛏ ' + t('stem.geology.ui.mine_mode', 'Mine mode') : '🛰 ' + t('stem.geology.ui.deep_earth_flight', 'Deep Earth flight')) + ' · ' + tf('stem.geology.ui.dug_count', 'Dug: {n}', { n: digCount }) + (sceneFindCatalog.length ? ' · 💎 ' + sceneFindsFound + '/' + sceneFindCatalog.length : '')) : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-player-status': 'true', 'data-state': fpWalkScene ? 'grounded' : 'flight', className: 'pointer-events-none absolute left-2 top-20 z-10 rounded-full border border-emerald-300/60 bg-slate-950/80 px-2 py-1 text-[10px] font-bold text-emerald-200 shadow-lg', 'aria-hidden': 'true' }, fpWalkScene ? t('stem.geology.ui.finding_safe_ground', 'Finding safe ground…') : t('stem.geology.ui.free_flight', 'Free flight')) : null,
           fieldRunPanel(),
           coreRigConsole(),
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-tool-selector': 'true', className: 'absolute right-14 top-2 z-10 rounded-lg border border-slate-500/60 bg-slate-950/85 p-1 shadow-lg', role: 'group', 'aria-label': t('stem.geology.a11y.excavation_tool', 'Excavation tool') },
@@ -12460,26 +12564,26 @@ function updateCoreRig3d(dt3d) {
           // first-person touch pad: walk + jump on surface scenes, six-axis movement in Deep Earth
           // On a mouse + keyboard device the pad is a backup, so it recedes until pointed at or focused; touch keeps it solid.
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-move-pad': finePointer ? 'recessed' : 'solid', className: 'absolute bottom-2 left-2 z-10 grid gap-1 transition-opacity ' + (finePointer ? 'opacity-50 hover:opacity-100 focus-within:opacity-100' : ''), style: { gridTemplateColumns: 'repeat(3, auto)' }, role: 'group', 'aria-label': fpWalkScene ? t('stem.geology.a11y.walk_controls', 'First-person walk and jump controls') : t('stem.geology.a11y.flight_controls', 'First-person flight controls') },
-            emptyCell('a'), padBtn('▲', 'fwd', 1, 'Move forward'), emptyCell('b'),
-            padBtn('◀', 'strafe', -1, 'Move left'), padBtn('▼', 'fwd', -1, 'Move back'), padBtn('▶', 'strafe', 1, 'Move right'),
-            fpWalkScene ? emptyCell('walk-a') : padBtn('⤒', 'vert', 1, 'Move up'),
-            fpWalkScene ? padBtn('⇧', 'jump', 1, 'Jump') : emptyCell('c'),
-            fpWalkScene ? emptyCell('walk-b') : padBtn('⤓', 'vert', -1, 'Move down')) : null,
+            emptyCell('a'), padBtn('▲', 'fwd', 1, t('stem.geology.a11y.pad_forward', 'Move forward')), emptyCell('b'),
+            padBtn('◀', 'strafe', -1, t('stem.geology.a11y.pad_left', 'Move left')), padBtn('▼', 'fwd', -1, t('stem.geology.a11y.pad_back', 'Move back')), padBtn('▶', 'strafe', 1, t('stem.geology.a11y.pad_right', 'Move right')),
+            fpWalkScene ? emptyCell('walk-a') : padBtn('⤒', 'vert', 1, t('stem.geology.a11y.pad_up', 'Move up')),
+            fpWalkScene ? padBtn('⇧', 'jump', 1, t('stem.geology.a11y.pad_jump', 'Jump')) : emptyCell('c'),
+            fpWalkScene ? emptyCell('walk-b') : padBtn('⤓', 'vert', -1, t('stem.geology.a11y.pad_down', 'Move down'))) : null,
           // on-screen key legend (visual; SR gets layer announcements via the live region)
-          (fpOn && !rigDeployed && fpKeysVisible) ? h('div', { 'data-geology-key-legend': 'true', style: Object.assign({ zIndex: 20 }, fpHud ? { left: '7.5rem', right: 'calc(3.5rem + min(220px, 48%) + 0.5rem)' } : null), className: 'absolute bottom-2 z-10 hidden rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (fpHud ? '' : 'left-1/2 max-w-[58%] -translate-x-1/2 ') + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, (fpWalkScene ? t('stem.geology.fp_keys_walk', 'WASD walk · Space+W or C climb · 1 pick · 2 drill · hold X dig · T tilt · R core rig · G survey · Z/Y undo/redo · H home') : t('stem.geology.fp_keys', 'WASD fly · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home'))) : null,
+          (fpOn && !rigDeployed && fpKeysVisible) ? h('div', { 'data-geology-key-legend': 'true', style: Object.assign({ zIndex: 20 }, fpHud ? { left: '7.5rem', right: 'calc(3.5rem + min(220px, 48%) + 0.5rem)' } : null), className: 'absolute bottom-2 z-10 hidden rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (fpHud ? '' : 'left-1/2 max-w-[58%] -translate-x-1/2 ') + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, (fpWalkScene ? t('stem.geology.fp_keys_walk', 'WASD walk · Space+W or C climb · 1 pick · 2 drill · hold X dig · T tilt · R core rig · G survey · Z/Y undo/redo · H home') : t('stem.geology.fp_keys_fly', 'WASD fly · Q E up/down · IJKL look · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home'))) : null,
           (fpOn && !rigDeployed && !fpKeysVisible) ? h('button', { type: 'button', 'data-geology-key-legend-toggle': 'true', style: { zIndex: 20 }, onClick: function () { setFpKeysVisible(true); }, className: 'absolute bottom-2 left-1/2 z-10 hidden min-h-8 -translate-x-1/2 rounded-md border px-2 text-[10px] font-bold sm:block ' + (isDark ? 'border-slate-600 bg-slate-900/70 text-slate-200' : 'border-slate-300 bg-white/80 text-slate-700'), 'aria-label': t('stem.geology.a11y.show_keyboard_controls', 'Show keyboard controls'), title: t('stem.geology.a11y.show_keyboard_controls', 'Show keyboard controls') }, '⌨ ' + t('stem.geology.keys_button', 'Keys')) : null,
           // Compass ribbon: the engine slides the strip with the view (north = the survey's north) and
           // shows the survey target's bearing. Visual only; the survey speaks its own reading.
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-compass': 'true', 'aria-hidden': 'true', className: 'pointer-events-none absolute left-1/2 top-2 z-10 hidden h-7 -translate-x-1/2 overflow-hidden rounded-full border border-white/25 bg-slate-950/75 shadow-lg sm:block', style: { width: '150px' } },
             h('div', { 'data-geology-compass-strip': 'true', className: 'absolute left-1/2 top-0 h-full', style: { transform: 'translateX(0px)' } },
               [-360, -315, -270, -225, -180, -135, -90, -45, 0, 45, 90, 135, 180, 225, 270, 315, 360, 405, 450, 495, 540, 585, 630, 675, 720].map(function (deg) {
-                var label = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][((deg / 45) % 8 + 8) % 8], cardinal = label.length === 1;
-                return h('span', { key: deg, className: 'absolute top-1/2 -translate-x-1/2 -translate-y-1/2 font-extrabold ' + (cardinal ? 'text-[11px] ' + (label === 'N' ? 'text-rose-300' : 'text-slate-100') : 'text-[10px] text-slate-400'), style: { left: (deg * 1.5) + 'px' } }, label);
+                var point = ((deg / 45) % 8 + 8) % 8, label = compassLetters[point], cardinal = point % 2 === 0;
+                return h('span', { key: deg, className: 'absolute top-1/2 -translate-x-1/2 -translate-y-1/2 font-extrabold ' + (cardinal ? 'text-[11px] ' + (point === 0 ? 'text-rose-300' : 'text-slate-100') : 'text-[10px] text-slate-400'), style: { left: (deg * 1.5) + 'px' } }, label);
               })),
             h('span', { className: 'absolute left-1/2 top-0 h-2 w-px -translate-x-1/2 bg-amber-300' }),
             h('span', { 'data-geology-compass-target': 'true', className: 'absolute top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold leading-none text-cyan-300', style: { display: 'none' } }, '●')) : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-reticle': 'true', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded border border-white/55 bg-black/15 text-xl font-light leading-none text-white shadow-[0_1px_6px_rgba(0,0,0,.8)]', 'aria-hidden': 'true' }, '+') : null,
-          (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-target': 'true', 'data-target-ready': 'false', 'data-target-key': '__none', style: { zIndex: 20 }, className: 'pointer-events-none absolute left-1/2 top-1/2 mt-6 -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/75 px-2.5 py-1 text-[10px] font-bold text-slate-100 shadow-lg', 'aria-hidden': 'true' }, 'Aim at an exposed block') : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-target': 'true', 'data-target-ready': 'false', 'data-target-key': '__none', style: { zIndex: 20 }, className: 'pointer-events-none absolute left-1/2 top-1/2 mt-6 -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/75 px-2.5 py-1 text-[10px] font-bold text-slate-100 shadow-lg', 'aria-hidden': 'true' }, t('stem.geology.hud.aim_at_block', 'Aim at an exposed block')) : null,
           (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-progress-shell': 'true', 'data-active': 'false', style: { zIndex: 20 }, className: 'pointer-events-none absolute left-1/2 top-1/2 mt-14 h-1.5 w-28 -translate-x-1/2 overflow-hidden rounded-full border border-white/20 bg-slate-950/70 opacity-40 data-[active=true]:opacity-100', 'aria-hidden': 'true' },
             h('span', { 'data-geology-mining-progress': 'true', className: 'block h-full rounded-full bg-amber-400', style: { width: '0%' } })) : null,
           fpOn ? h('div', { 'data-geology-mining-actions': 'true', className: 'absolute right-2 top-14 flex flex-col gap-1', style: { zIndex: 20, flexWrap: 'wrap-reverse', alignContent: 'flex-start', maxHeight: 'calc(100% - 64px)' }, role: 'group', 'aria-label': rigDeployed ? t('stem.geology.a11y.core_rig_actions', 'Core rig actions') : t('stem.geology.a11y.mining_actions', 'Mining actions') },
@@ -12513,22 +12617,22 @@ function updateCoreRig3d(dt3d) {
             fpHud.blurb ? h('div', { className: 'mt-1 text-[10.5px] leading-snug' }, geoTT(fpHud.blurb)) : null,
             fpHud.bust ? h('div', { className: 'mt-1 text-[10.5px] leading-snug font-semibold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, '⚠ ' + geoTT(fpHud.bust)) : null,
             fpShaftLog.length > 1 ? h('div', { 'data-geology-shaft-log': fpShaftLog.length, className: 'mt-1.5 border-t pt-1 ' + (isDark ? 'border-slate-600' : 'border-slate-200') }, [
-              h('div', { key: 'title', className: 'text-[10px] font-extrabold ' + muted }, scene === 'deepEarth' ? 'Shells you have passed, outside in' : 'Your dig, top to bottom'),
+              h('div', { key: 'title', className: 'text-[10px] font-extrabold ' + muted }, scene === 'deepEarth' ? t('stem.geology.ui.shells_you_have_passed_outside_in', 'Shells you have passed, outside in') : t('stem.geology.ui.your_dig_top_to_bottom', 'Your dig, top to bottom')),
               fpShaftLog.map(function (entry) {
                 return h('div', { key: entry.key, className: 'flex items-center gap-1.5 text-[10.5px]' }, [
                   h('span', { key: 'swatch', 'aria-hidden': 'true', style: { display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: '#' + ((entry.color || 0x94a3b8) >>> 0).toString(16).padStart(6, '0') } }),
                   h('span', { key: 'name', className: 'font-semibold' }, entry.name),
-                  h('span', { key: 'depth', className: muted }, '≈ ' + entry.depthKm + ' km')
+                  h('span', { key: 'depth', className: muted }, tf('stem.geology.ui.km_2', '≈ {depth_km} km', { depth_km: entry.depthKm }))
                 ]);
               }),
               scene === 'crust' && fpShaftLog.filter(function (entry) { return SED_FOSSIL[entry.key]; }).length >= 2
-                ? h('div', { key: 'lesson', className: 'mt-0.5 text-[10px] leading-snug font-semibold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Deeper layers formed first: you are digging back in time (superposition).')
-                : (scene === 'deepEarth' && fpShaftLog.length >= 3 ? h('div', { key: 'lesson', className: 'mt-0.5 text-[10px] leading-snug font-semibold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, 'Each shell inward is hotter and under more pressure.') : null)
+                ? h('div', { key: 'lesson', className: 'mt-0.5 text-[10px] leading-snug font-semibold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, t('stem.geology.ui.deeper_layers_formed_first_you_are_digging', 'Deeper layers formed first: you are digging back in time (superposition).'))
+                : (scene === 'deepEarth' && fpShaftLog.length >= 3 ? h('div', { key: 'lesson', className: 'mt-0.5 text-[10px] leading-snug font-semibold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, t('stem.geology.ui.each_shell_inward_is_hotter_and_under_more', 'Each shell inward is hotter and under more pressure.')) : null)
             ]) : null) : null);
       }
 
       var btn = 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-2 rounded-lg border ';
-      var sceneFindCatalog = sceneSpecimenCatalog(scene), sceneFinds = (d.specimensFound && d.specimensFound[scene]) || {};
+      var sceneFindCatalog = sceneSpecimenCatalog(scene, t), sceneFinds = (d.specimensFound && d.specimensFound[scene]) || {};
       var sceneFindsFound = sceneFindCatalog.filter(function (item) { return (sceneFinds[item.kind] || 0) > 0; }).length;
       var btnIdle = isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100';
       var sceneMission = missionForScene();
@@ -12539,12 +12643,12 @@ function updateCoreRig3d(dt3d) {
       var sceneLabel = (SCENES[scene] && SCENES[scene].label) || scene;
       var fieldEvidence = sceneContext.evidence.length + (core ? 1 : 0) + (d.datedRock ? 1 : 0);
       var fieldNext = missionIsComplete()
-        ? 'Your field checks are complete. Switch to Assess and explain your evidence.'
+        ? t('stem.geology.ui.field_checks_complete', 'Your field checks are complete. Switch to Assess and explain your evidence.')
         : !selected
           ? sceneMission.evidencePrompt
           : identifiedCount < 3
-            ? 'Select another material and compare what changed.'
-            : 'Use the mission checklist to collect one more piece of evidence.';
+            ? t('stem.geology.ui.select_another_material', 'Select another material and compare what changed.')
+            : t('stem.geology.ui.use_mission_checklist', 'Use the mission checklist to collect one more piece of evidence.');
       var inInvestigation = mode !== 'explore';
       var inAssessment = mode === 'assess';
       var GEOLOGY_SCENE_ORDER = Object.keys(SCENES);
@@ -12606,9 +12710,9 @@ function updateCoreRig3d(dt3d) {
             ),
             h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.geology.a11y.geology_field_investigation_pathway', 'Geology field investigation pathway') },
               [
-                { n: '1', title: 'Observe', detail: 'Explore a world and select material.' },
-                { n: '2', title: 'Compare', detail: 'Connect layers, depth, and processes.' },
-                { n: '3', title: 'Reconstruct', detail: 'Use evidence to explain its history.' }
+                { n: '1', title: t('stem.geology.ui.observe', 'Observe'), detail: t('stem.geology.ui.path_observe', 'Explore a world and select material.') },
+                { n: '2', title: t('stem.geology.ui.compare', 'Compare'), detail: t('stem.geology.ui.path_compare', 'Connect layers, depth, and processes.') },
+                { n: '3', title: t('stem.geology.ui.reconstruct', 'Reconstruct'), detail: t('stem.geology.ui.path_reconstruct', 'Use evidence to explain its history.') }
               ].map(function (step) {
                 return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
                   h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-300 font-black text-slate-950' }, step.n),
@@ -12644,7 +12748,7 @@ function updateCoreRig3d(dt3d) {
             }, SCENES[sid].label);
           })),
         // main: viewport + controls (left) | info + cross-section + list (right)
-        h('div', { className: 'grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]',
+        h('div', { className: 'grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]',
           role: 'tabpanel', id: 'stem-geology-panel-' + scene,
           'aria-labelledby': 'stem-geology-tab-' + scene, tabIndex: 0 },
           h('div', { className: 'space-y-2' },
@@ -12659,14 +12763,14 @@ function updateCoreRig3d(dt3d) {
                 h('span', { className: muted }, t('stem.geology.cutaway', 'Cutaway')),
                 h('input', { type: 'range', min: 0, max: NZ - 1, value: cutaway.step, disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, 'aria-label': t('stem.geology.a11y.cutaway_from_front', 'Cutaway from front'), 'aria-valuetext': cutaway.label, title: t('stem.geology.a11y.cutaway_title', 'Remove front sections to inspect structures inside the block'), onChange: function (e) { var v = +e.target.value; setSlice(v); if (window[ENGINE_KEY]) window[ENGINE_KEY].setSlice(v); } }),
                 h('span', { 'data-geology-cutaway-readout': 'true', 'aria-hidden': 'true', className: 'min-w-[7rem] text-[11px] font-semibold tabular-nums ' + muted }, cutaway.label)),
-              inInvestigation && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, title: focusLensOn ? t('stem.geology.a11y.excavate_lens_first', 'Turn off the Focus lens before excavating hidden layers') : t('stem.geology.a11y.excavate_title', 'Click a top block to remove it and expose the material below'), onClick: function () { if (focusLensOn) return; var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
+              inInvestigation && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, title: focusLensOn ? t('stem.geology.a11y.excavate_lens_first', 'Turn off the Focus lens before excavating hidden layers') : t('stem.geology.a11y.excavate_title', 'Click a top block to remove it and expose the material below'), onClick: function () { if (focusLensOn) return; var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.geology.ui.on', 'ON') : t('stem.geology.ui.off', 'OFF'))),
               inInvestigation && digCount > 0 && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, 'data-geology-undo-excavation': 'true', 'data-geology-undo-preview-control': 'true', 'aria-label': tf(digCount === 1 ? 'stem.geology.a11y.undo_excavation_one' : 'stem.geology.a11y.undo_excavation_other', digCount === 1 ? 'Undo last excavation. {n} block removed.' : 'Undo last excavation. {n} blocks removed.', { n: digCount }), title: focusLensOn ? t('stem.geology.a11y.undo_lens_first', 'Turn off the Focus lens to restore the last block') : t('stem.geology.a11y.undo_preview_title', 'Hover or focus to preview the block; activate to restore it'), onMouseEnter: function () { setUndoPreviewIntent('hover', true); }, onMouseLeave: function () { setUndoPreviewIntent('hover', false); }, onFocus: function () { setUndoPreviewIntent('focus', true); }, onBlur: function () { setUndoPreviewIntent('focus', false); }, onClick: undoLastExcavation, className: btn + (isDark ? 'border-amber-500/70 bg-amber-950/40 text-amber-100 hover:bg-amber-900/60' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, '↶ ' + tf('stem.geology.undo_dig_count', 'Undo dig ({n})', { n: digCount })),
               inInvestigation && redoCount > 0 && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, 'data-geology-redo-excavation': 'true', 'aria-label': tf(redoCount === 1 ? 'stem.geology.a11y.redo_excavation_one' : 'stem.geology.a11y.redo_excavation_other', redoCount === 1 ? 'Redo last excavation. {n} block available.' : 'Redo last excavation. {n} blocks available.', { n: redoCount }), title: t('stem.geology.a11y.redo_title', 'Reapply the most recently undone excavation'), onClick: redoLastExcavation, className: btn + (isDark ? 'border-sky-500/70 bg-sky-950/40 text-sky-100 hover:bg-sky-900/60' : 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100') }, '↷ ' + tf('stem.geology.redo_dig_count', 'Redo dig ({n})', { n: redoCount })),
               h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { var resetCut = sceneOpeningCutaway(SCENE.id, NZ); setSlice(resetCut); setExcavate(false); setDigCount(0); setRedoCount(0); setFocusLensOn(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(false); if (resetCut) window[ENGINE_KEY].setSlice(resetCut); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
               inInvestigation && feat.history && h('button', { type: 'button', disabled: eruptStage >= 0, onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-600 border-violet-700 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
-              inInvestigation && feat.water && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce(t('stem.geology.sr.water_table_on_rain_soaks_through_permeable_ro', 'Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Use the cutaway or read the cross-section to see it.')); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-700 border-blue-800 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
+              inInvestigation && feat.water && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce(t('stem.geology.sr.water_table_on_rain_soaks_through_permeable_ro', 'Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Use the cutaway or read the cross-section to see it.')); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-700 border-blue-800 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.geology.ui.on', 'ON') : t('stem.geology.ui.off', 'OFF'))),
               inInvestigation && feat.volcano && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { playEruption(); }, title: t('stem.geology.erupt_tip', 'Watch a volcano erupt — magma reaches the surface and cools fast into basalt'), className: btn + (eruptStage >= 0 ? 'bg-orange-700 border-orange-800 text-orange-50' : btnIdle) }, eruptStage >= 0 ? '🌋 ' + t('stem.geology.erupting_short', 'Erupting…') : '🌋 ' + t('stem.geology.erupt', 'Erupt')),
-              h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? (focusLensOn ? 'Focus lens isolates one material · turn it off to excavate' : (excavate ? 'Click a top block to dig · Undo restores it' : t('stem.geology.tip', 'Drag to orbit · click a block to identify'))) : '')),
+              h('span', { className: 'text-[11px] ' + muted }, threeReady && !webglError ? (focusLensOn ? t('stem.geology.ui.focus_lens_isolates_one_material_turn_it_off', 'Focus lens isolates one material · turn it off to excavate') : (excavate ? t('stem.geology.ui.click_a_top_block_to_dig_undo_restores_it', 'Click a top block to dig · Undo restores it') : t('stem.geology.tip', 'Drag to orbit · click a block to identify'))) : '')),
             infoPanel(),
             inInvestigation && feat.dating ? datingPanel() : null,
             inInvestigation && feat.cycle ? cyclePanel() : null,
@@ -12683,7 +12787,7 @@ function updateCoreRig3d(dt3d) {
                   h('details', { className: 'rounded-xl border p-3 ' + cardBg },
                     h('summary', { className: 'cursor-pointer text-[11px] font-bold ' + ink }, t('stem.geology.context_summary', 'Read the science context')),
                     h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + ink }, t('stem.geology.mission.' + SCENE.id + '.context', SCENE.blurb)),
-                    h('p', { className: 'mt-2 text-[10.5px] font-semibold ' + muted }, 'Schematic model — not to scale. Colors are illustrative.'))),
+                    h('p', { className: 'mt-2 text-[10.5px] font-semibold ' + muted }, t('stem.geology.ui.schematic_model_not_to_scale_colors_are', 'Schematic model — not to scale. Colors are illustrative.')))),
             inInvestigation ? sceneSequencePanel() : null,
             h('div', { className: 'text-[11px] font-bold ' + muted }, (feat.crossSection || SCENE.id === 'collision') ? t('stem.geology.rocks', 'Rock types') : (SCENE.id === 'geode' ? t('stem.geology.minerals', 'Minerals') : t('stem.geology.layers', 'Layers'))),
             strataList(),

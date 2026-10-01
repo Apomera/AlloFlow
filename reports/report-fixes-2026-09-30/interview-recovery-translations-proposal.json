@@ -1,0 +1,17 @@
+{
+  "proposalOnly": true,
+  "registryApplied": false,
+  "messages": {
+    "persona.candidates_refused": "The AI provider blocked this response for content safety. Review the lesson source and instructions, then try Find Interview Candidates again. No new interview candidates were created.",
+    "persona.candidates_no_sources": "No new interview candidates were created because search returned no attributable sources. Use a more specific lesson source or topic, then try Find Interview Candidates again. Sources will not be invented.",
+    "persona.candidates_timeout": "The interview search or AI request took too long. Check the connection, then try Find Interview Candidates again.",
+    "persona.candidates_access": "The AI or search connection was rejected. Check AI Backend Settings and approved access, then try Find Interview Candidates again.",
+    "persona.candidates_quota": "The AI or search provider reported a usage limit. Check its usage allowance, then retry when it is available.",
+    "persona.candidates_rate_limit": "The AI or search provider is receiving too many requests. Wait briefly, then try Find Interview Candidates again.",
+    "persona.candidates_search_unavailable": "Interview web search is unavailable. Check the connection, then retry when search is available.",
+    "persona.candidates_connection": "The AI or search connection failed. Check the connection, then try Find Interview Candidates again.",
+    "persona.candidates_response_invalid": "The AI response did not contain usable interview candidates. Try Find Interview Candidates again.",
+    "persona.candidates_generate_failed": "Interview candidates could not be created. Try Find Interview Candidates again; if the problem continues, inspect the diagnostic details.",
+    "persona.candidates_previous_kept": "Your previous interview candidates are kept."
+  }
+}

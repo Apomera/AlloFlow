@@ -89,7 +89,9 @@ describe('the source uses it', () => {
     // on the reactor-parts table, not a CSS property — inking those put an
     // ink() call at module scope where the helper does not exist, which
     // check_free_vars caught as a ReferenceError before it could ship.
-    const RENDER = SRC.slice(SRC.indexOf('    render: function (ctx) {'));
+    const renderStart = SRC.indexOf('function renderReference(ctx)');
+    expect(renderStart).toBeGreaterThan(0);
+    const RENDER = SRC.slice(renderStart);
     expect(RENDER.length).toBeGreaterThan(1000);
     // '#0b1020' and '#fff' are text ON an accent background, not on the card,
     // so they are measured against that accent in the rendered pass below.
@@ -244,7 +246,7 @@ describe('every rendered text/background pair', () => {
 
   for (const [name, state, ctx, page] of SURFACES) {
     it(name + ' meets WCAG AA 4.5:1', async () => {
-      const { loadTool, renderTool, resetStemLab } = await import('./helpers/stem_widgets_smoke_harness.js');
+      const { loadTool, renderTool, resetStemLab } = await import('./helpers/nuclear_lab_reference_harness.js');
       resetStemLab();
       loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab');
       const host = document.createElement('div');

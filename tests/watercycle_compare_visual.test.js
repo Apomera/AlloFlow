@@ -44,12 +44,12 @@ describe('Water Cycle visual Scenario Compare', () => {
 
       expect(source).toContain('"0-2x"');
       expect(source).toContain('"0-100"');
-      expect(source).toContain('"Base " + wcBaselineEvaporationIndex.toFixed(2) + "x"');
-      expect(source).toContain('"Now " + evaporationIndex.toFixed(2) + "x"');
-      expect(source).toContain('"Base " + wcBaselineLandIndices.runoff + "/100"');
-      expect(source).toContain('"Now " + runoffTendency + "/100"');
-      expect(source).toContain('"Base " + wcBaselineLandIndices.infiltration + "/100"');
-      expect(source).toContain('"Now " + infiltrationOpportunity + "/100"');
+      expect(source).toContain('"Baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x"');
+      expect(source).toContain('"Current " + evaporationIndex.toFixed(2) + "x"');
+      expect(source).toContain('"Baseline " + wcBaselineLandIndices.runoff + "/100"');
+      expect(source).toContain('"Current " + runoffTendency + "/100"');
+      expect(source).toContain('"Baseline " + wcBaselineLandIndices.infiltration + "/100"');
+      expect(source).toContain('"Current " + infiltrationOpportunity + "/100"');
       expect(source).toContain('(wcBaselineEvaporationIndex / 2) * 100');
       expect(source).toContain('className: "wc-compare-bar-delta "');
       expect(source).toContain('formatWcDelta(wcEvaporationDelta, "x", 2)');

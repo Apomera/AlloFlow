@@ -1,0 +1,101 @@
+{
+  "started": "2026-09-30T22:22:54.440Z",
+  "inputHashes": {
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "view_simplified_source.jsx": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "text_utility_helpers_source.jsx": "6f1e7ab89f762a2ad9de339eefe620b6984eb33ce5b6490fb0164964f39c126b",
+    "view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "text_utility_helpers_module.js": "1e6f6b5ce979ec2b4e597a8f876b5369da6d0cb7c0306b84a1476abec487b173",
+    "desktop/web-app/public/view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "desktop/web-app/public/text_utility_helpers_module.js": "1e6f6b5ce979ec2b4e597a8f876b5369da6d0cb7c0306b84a1476abec487b173",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9"
+  },
+  "checks": [],
+  "errors": [],
+  "status": "failed",
+  "focusProbe": [
+    {
+      "fontSize": 16,
+      "afterFocus": {
+        "trace": [
+          {
+            "event": "focusin",
+            "target": "allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-indigo-600 border-indigo-400 hover:bg-indigo-50",
+            "scrollY": 0,
+            "at": 761.2999999970198
+          }
+        ],
+        "focused": true,
+        "popup": true,
+        "scrollY": 0,
+        "term": {
+          "x": 33.046875,
+          "y": 577,
+          "width": 50.453125,
+          "height": 44,
+          "top": 577,
+          "right": 83.5,
+          "bottom": 621,
+          "left": 33.046875
+        }
+      },
+      "afterEnter": {
+        "popup": true,
+        "focused": true,
+        "scrollY": 0
+      }
+    },
+    {
+      "fontSize": 32,
+      "afterFocus": {
+        "trace": [
+          {
+            "event": "focusin",
+            "target": "allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-indigo-600 border-indigo-400 hover:bg-indigo-50",
+            "scrollY": 1366,
+            "at": 1316
+          },
+          {
+            "event": "focusin",
+            "target": "allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-indigo-600 border-indigo-400 hover:bg-indigo-50",
+            "scrollY": 1366,
+            "at": 1316
+          },
+          {
+            "event": "scroll",
+            "target": "#document",
+            "scrollY": 1366,
+            "at": 1323.5999999940395
+          },
+          {
+            "event": "scroll",
+            "target": "#document",
+            "scrollY": 1366,
+            "at": 1323.5999999940395
+          }
+        ],
+        "focused": true,
+        "popup": false,
+        "scrollY": 1366,
+        "term": {
+          "x": 62.078125,
+          "y": 420,
+          "width": 100.890625,
+          "height": 59.5,
+          "top": 420,
+          "right": 162.96875,
+          "bottom": 479.5,
+          "left": 62.078125
+        }
+      },
+      "afterEnter": {
+        "popup": true,
+        "focused": true,
+        "scrollY": 1366
+      }
+    }
+  ],
+  "changedInputs": [],
+  "completed": "2026-09-30T22:23:34.837Z"
+}

@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "desktopCanvas": 1013.328125,
+      "previousCanvas": 638,
+      "focusPreservesCanvas": true,
+      "repeatedSeedExactPng": true
+    },
+    {
+      "speedPreservesPaint": true,
+      "oneClickPlayback": true,
+      "pauseHasNoPendingFrame": true,
+      "preciseStepControls": true
+    },
+    {
+      "scaledPointerAccurate": true,
+      "burstSizeLive": true,
+      "pausedBurstVisible": true,
+      "keyboardBurst": true,
+      "cursorExcludedFromPng": true
+    },
+    {
+      "tabRoundTripExact": true,
+      "actualPngDownloadMatchesCanvas": true
+    },
+    {
+      "style": "rain",
+      "step": 300,
+      "coloredPixels": 142036
+    },
+    {
+      "style": "stars",
+      "step": 300,
+      "coloredPixels": 118708
+    },
+    {
+      "style": "aurora",
+      "step": 300,
+      "coloredPixels": 133619
+    },
+    {
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets": true
+    }
+  ],
+  "errors": []
+}

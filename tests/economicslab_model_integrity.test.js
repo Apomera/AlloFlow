@@ -29,10 +29,11 @@ function macroStep() {
   // Shock and noise are deliberately excluded: they are random, and the
   // relationships under test are about the DETERMINISTIC policy response.
   const demand = grab('demandImpulse');
+  // The noise draws through mJitter (pinned during missions) or Math.random.
   const gdp = grab('gdpNew').replace(/\s*\+\s*\(shock \? shock\.gdp : 0\)/, '')
-    .replace(/\s*\+\s*\(Math\.random\(\) - 0\.5\) \* [\d.]+/, '');
+    .replace(/\s*\+\s*\((?:Math\.random|mJitter)\(\) - 0\.5\) \* [\d.]+/, '');
   const inf = grab('infNew').replace(/\s*\+\s*\(shock \? shock\.inf : 0\)/, '')
-    .replace(/\s*\+\s*\(Math\.random\(\) - 0\.5\) \* [\d.]+/, '');
+    .replace(/\s*\+\s*\((?:Math\.random|mJitter)\(\) - 0\.5\) \* [\d.]+/, '');
   const unemp = grab('unempNew').replace(/\s*\+\s*\(shock \? shock\.unemp : 0\)/, '');
 
   // eslint-disable-next-line no-new-func
@@ -64,11 +65,13 @@ describe('the macro model teaches the right direction', () => {
   const nothing = () => run({});
 
   it('stimulus raises output and inflation and lowers unemployment', () => {
-    const base = nothing();
-    const stim = run({ spend: 2 });
-    expect(stim.gdp).toBeGreaterThan(base.gdp);
-    expect(stim.inf).toBeGreaterThan(base.inf);
-    expect(stim.unemp).toBeLessThan(base.unemp);
+    // Output and jobs respond in the short run; over time growth returns to
+    // trend (the model has a ~4% natural rate) and what lasts is inflation.
+    const base1 = run({}, 1);
+    const stim1 = run({ spend: 2 }, 1);
+    expect(stim1.gdp).toBeGreaterThan(base1.gdp);
+    expect(stim1.unemp).toBeLessThan(base1.unemp);
+    expect(run({ spend: 2 }).inf).toBeGreaterThan(nothing().inf);
   });
 
   it('austerity and tax rises lower output', () => {

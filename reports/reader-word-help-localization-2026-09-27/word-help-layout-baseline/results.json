@@ -1,0 +1,362 @@
+[
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_en_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 490,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Show in text",
+          "width": 200,
+          "scrollWidth": 200,
+          "left": 288.46875,
+          "right": 490.28125
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_en_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [
+      {
+        "element": "BUTTON",
+        "text": "Show in text",
+        "width": 200,
+        "scrollWidth": 200
+      }
+    ],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_es419_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 586,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Mostrar en el texto",
+          "width": 282,
+          "scrollWidth": 282,
+          "left": 301.828125,
+          "right": 586.265625
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_es419_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [
+      {
+        "element": "BUTTON",
+        "text": "Mostrar en el texto",
+        "width": 282,
+        "scrollWidth": 282
+      }
+    ],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_esES_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 586,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Mostrar en el texto",
+          "width": 282,
+          "scrollWidth": 282,
+          "left": 301.828125,
+          "right": 586.265625
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_esES_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [
+      {
+        "element": "BUTTON",
+        "text": "Mostrar en el texto",
+        "width": 282,
+        "scrollWidth": 282
+      }
+    ],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_ar_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 539,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "أظهر في النص",
+          "width": 220,
+          "scrollWidth": 220,
+          "left": -218.96875,
+          "right": 3.015625
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_ar_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [
+      {
+        "element": "BUTTON",
+        "text": "أظهر في النص",
+        "width": 220,
+        "scrollWidth": 220
+      }
+    ],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_zh_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 461,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "在文中显示",
+          "width": 188,
+          "scrollWidth": 188,
+          "left": 271,
+          "right": 461
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_zh_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [
+      {
+        "element": "BUTTON",
+        "text": "在文中显示",
+        "width": 188,
+        "scrollWidth": 188
+      }
+    ],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_th_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 552,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "แสดงในข้อความ",
+          "width": 237,
+          "scrollWidth": 237,
+          "left": 313.1875,
+          "right": 552.28125
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_th_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": false,
+    "helpActionFailures": [
+      {
+        "element": "BUTTON",
+        "text": "แสดงในข้อความ",
+        "width": 237,
+        "scrollWidth": 237
+      }
+    ],
+    "navigationFailures": [],
+    "cardFailures": []
+  }
+]

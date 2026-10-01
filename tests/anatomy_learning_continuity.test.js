@@ -35,10 +35,10 @@ describe('Portable learning continuity',()=>{
   const equal=C.packet({_retrievalEvidence:{diaphragm:{attempts:7,correct:7}}},ids,now);expect(C.merge(a,equal,ids,now).patch._retrievalEvidence.diaphragm.correct).toBe(4);
  });
  it('round trips writing while keeping answer choices local and preserving existing work',()=>{
-  const C=window.__alloAnatomyStudyPure,p=C.packet({_systemsMotionLearning:{exercise:{explanation:'My chain',transferExplanation:'My comparison',prediction:'less',transfer:1,selfReview:true},forged:{explanation:'Ignore'}},_feedbackExperiment:{explanation:'Feedback slows',direction:'cooling',prediction:'active',revealed:true}},ids,now);
+  const C=window.__alloAnatomyStudyPure,p=C.packet({_systemsMotionLearning:{exercise:{explanation:'My chain',transferExplanation:'My comparison',prediction:'less',transfer:1,selfReview:true},forged:{explanation:'Ignore'}},_feedbackExperiment:{explanation:'Feedback slows',direction:'cool',prediction:'active',revealed:true}},ids,now);
   expect(p.learningNotes).toHaveLength(2);expect(JSON.stringify(p)).not.toMatch(/prediction|selfReview|revealed|forged/);
-  const state={_systemsMotionLearning:{exercise:{explanation:'Keep this',prediction:'same',transfer:2},meal:{explanation:'Other scenario'}},_feedbackExperiment:{direction:'cooling',prediction:'active',revealed:true}};
-  const a=C.merge(state,p,ids,now);expect(a.keptReflections).toBe(1);expect(a.patch._systemsMotionLearning.exercise).toMatchObject({explanation:'Keep this',transferExplanation:'My comparison',prediction:'same',transfer:2});expect(a.patch._systemsMotionLearning.meal.explanation).toBe('Other scenario');expect(a.patch._feedbackExperiment).toMatchObject({direction:'cooling',revealed:true,explanation:'Feedback slows'});
+  const state={_systemsMotionLearning:{exercise:{explanation:'Keep this',prediction:'same',transfer:2},meal:{explanation:'Other scenario'}},_feedbackExperiment:{direction:'cool',prediction:'active',revealed:true}};
+  const a=C.merge(state,p,ids,now);expect(a.keptReflections).toBe(1);expect(a.patch._systemsMotionLearning.exercise).toMatchObject({explanation:'Keep this',transferExplanation:'My comparison',prediction:'same',transfer:2});expect(a.patch._systemsMotionLearning.meal.explanation).toBe('Other scenario');expect(a.patch._feedbackExperiment).toMatchObject({direction:'cool',revealed:true,explanation:'Feedback slows'});
   const fresh=C.merge({},p,ids,now).patch;expect(fresh._systemsMotionLearning.exercise.prediction).toBeUndefined();expect(fresh._systemsMotionLearning.exercise.transfer).toBeUndefined();
  });
  it('rejects malformed count and reflection extensions before merging',()=>{
@@ -86,7 +86,7 @@ for(const file of paths)describe('Connected anatomy learning: '+file,()=>{
   expect(s.html().querySelector('[data-anatomy-study-recall="diaphragm"]').textContent).toContain('2/4');expect(s.html().querySelectorAll('[data-anatomy-study-reflection]')).toHaveLength(2);
   let copied='';const original=document.execCommand;document.execCommand=()=>{copied=document.querySelector('textarea').value;return true;};
   try{s.click('📋 Copy as text');expect(copied).toContain('Absorption chain');expect(copied).toContain('Transport comparison');expect(copied).toContain('Temperature feedback');expect(copied).toContain('2/4');}finally{document.execCommand=original;}
-  s.node(n=>n.props?.['data-anatomy-resume-reflection']==='homeostasis').props.onClick();expect(s.data()).toMatchObject({_showStudySheet:false,_activeTab:'homeoHunt'});
+  s.node(n=>n.props?.['data-anatomy-resume-reflection']==='homeostasis-warm').props.onClick();expect(s.data()).toMatchObject({_showStudySheet:false,_activeTab:'homeoHunt'});
  });
  it('returns to an imported scenario explanation even before a new prediction',()=>{
   const s=session(file,{_showStudySheet:true,_systemsMotionLearning:{fluid:{explanation:'Keep volume and selectivity separate'}}});

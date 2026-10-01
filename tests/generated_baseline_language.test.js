@@ -11,6 +11,11 @@ if ([fixStart, helperStart, generationStart, baselineEnd].some(index => index < 
   throw new Error('Generated-document language regression extraction boundaries changed');
 }
 const helperSource = source.slice(helperStart, helperEnd);
+// The wrapper's contentinfo footer calls a module-level helper (fleet G1, 2026-09-28): run the real one.
+const footerStart = source.indexOf('var _alloOutputProvenanceFooterHtml = function (opts) {');
+const footerEnd = source.indexOf('\n};', footerStart) + 3;
+if (footerStart < 0 || footerEnd < 3) throw new Error('Provenance footer helper extraction boundaries changed');
+const provenanceFooterHtml = new Function(source.slice(footerStart, footerEnd) + '\nreturn _alloOutputProvenanceFooterHtml;')();
 // Execute the real wrapper and both initial audit calls, stopping before unrelated fixes.
 // The deterministic-text fixture bypasses the OCR spelling branch in this production segment.
 const baselineSource = source.slice(generationStart, baselineEnd);
@@ -26,6 +31,7 @@ async function captureInitialAudits(documentLanguage, rtl = false) {
     isRtlLang,
     _fileName: 'guia-familias.pdf',
     _alloEscapePromptDisplayText: text => String(text),
+    _alloOutputProvenanceFooterHtml: provenanceFooterHtml,
     bodyContent: prose,
     pageCount: 1,
     extractedLength: prose.length,
@@ -57,6 +63,10 @@ function expectBothAudits(result, language, direction = null) {
   }
   expect(result.inputs[0].html).toBe(result.inputs[1].html);
   expect(result.html).toBe(result.inputs[1].html);
+  // The English provenance footer is marked as English inside any document language.
+  const footer = new DOMParser().parseFromString(result.html, 'text/html').querySelector('footer[role="contentinfo"]');
+  expect(footer && footer.getAttribute('lang')).toBe('en');
+  expect(footer.textContent).toContain('This is not a certification of WCAG conformance.');
 }
 
 describe('generated language reaches the first axe and AI audits', () => {

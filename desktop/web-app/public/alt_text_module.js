@@ -241,6 +241,7 @@ const OPEN_IMAGE_MAX_BYTES = 3e6;
 const _OPEN_IMAGE_STILL = /^image\/(jpeg|png|webp)$/i;
 const PICKER_PHOTO_TIMEOUT_MS = 6e4;
 const PICKER_SYMBOL_TIMEOUT_MS = 2e4;
+const PICKER_CHOOSE_TIMEOUT_MS = 45e3;
 const MULBERRY_CREDIT = Object.freeze({ set: "Mulberry Symbols", author: "Steve Lee", license: "CC BY-SA 4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", via: "Global Symbols", url: "https://mulberrysymbols.org" });
 const _OPEN_LICENSE_OK = /^(cc0|cc[- ]zero|public domain|pd(-|\b)|no restrictions|cc[- ]by(-sa)?[- ]\d(\.\d)?\b)/i;
 const _OPEN_IMAGE_BLOCK = /\b(nud(e|es|ity|ism|ist|ists)|naked (man|men|woman|women|people|persons?|body|bodies|girls?|boys?|child|children)|erotic\w*|porn\w*|genital\w*|penis(es)?|vagina\w*|vulva\w*|nipples?|topless|bottomless|lingerie|bdsm|fetish\w*|masturbat\w*|sexual (intercourse|activity|acts?)|sex acts?|gore|gory|corpses?|cadavers?|dead bodies|decapitat\w*|beheading\w*|mutilat\w*|lynching\w*|executions?|torture\w*|suicide\w*|self[- ]harm\w*)\b/i;
@@ -279,7 +280,8 @@ function normalizeCommonsPage(page) {
       set: "Wikimedia Commons",
       title,
       // Commons' Credit field names the source ("Own work", a Flickr link), not the author.
-      author: _oiPlainText(value("Artist"), 160) || "Unknown author",
+      // Attribution is the wording the author asked for, so it comes first.
+      author: _oiPlainText(value("Attribution"), 160) || _oiPlainText(value("Artist"), 160) || "Unknown author",
       license: _oiPlainText(value("LicenseShortName"), 120),
       licenseUrl: _oiHttps(value("LicenseUrl")),
       via: "Wikimedia Commons",
@@ -326,7 +328,7 @@ async function searchOpenImages(query, options) {
     "prop=imageinfo",
     "iiprop=url%7Cmime%7Cextmetadata",
     "iiurlwidth=" + OPEN_IMAGE_THUMB,
-    "iiextmetadatafilter=" + encodeURIComponent("LicenseShortName|LicenseUrl|Artist|Credit|ImageDescription|Categories")
+    "iiextmetadatafilter=" + encodeURIComponent("LicenseShortName|LicenseUrl|Artist|Attribution|Credit|ImageDescription|Categories")
   ];
   let json;
   try {
@@ -655,7 +657,7 @@ async function searchMulberrySymbols(query, options) {
   return { symbols, error: "" };
 }
 function ClassroomImagePicker(props) {
-  const { initialQuery, language, onChoose, sources, t, idPrefix, fetchImpl, callGeminiVision, searchTimeoutMs } = props;
+  const { initialQuery, language, onChoose, sources, t, idPrefix, fetchImpl, callGeminiVision, searchTimeoutMs, chooseTimeoutMs } = props;
   const tr = (key, fallback, params) => _atTranslate(t, key, fallback, params);
   const allowed = (Array.isArray(sources) && sources.length ? sources : ["symbols", "photos"]).filter((s) => s === "symbols" || s === "photos");
   const [tab, setTab] = React.useState(allowed[0] || "photos");
@@ -700,6 +702,11 @@ function ClassroomImagePicker(props) {
     const current = typeof AbortController === "function" ? new AbortController() : null;
     chooseController.current = current;
     const signal = current ? current.signal : void 0;
+    let timedOut = false;
+    const timer = current ? setTimeout(() => {
+      timedOut = true;
+      current.abort();
+    }, Number(chooseTimeoutMs) > 0 ? Number(chooseTimeoutMs) : PICKER_CHOOSE_TIMEOUT_MS) : null;
     setChoosing(item.id);
     setState((prev) => Object.assign({}, prev, { chooseError: "" }));
     try {
@@ -707,13 +714,18 @@ function ClassroomImagePicker(props) {
         if (error && error.name === "AbortError") throw error;
         return item.svgUrl;
       }) : await fetchClassroomImage(item, { fetchImpl, callGeminiVision, language, query: state.query || query, signal });
+      if (timer) clearTimeout(timer);
       if (mine !== epoch.current || signal && signal.aborted) return;
       await onChoose({ dataUrl, alt: item.alt, altSource: item.source === "mulberry" ? "author" : item.altSource, attribution: item.attribution, creditLine: item.creditLine, source: item.source });
     } catch (error) {
-      if (!(error && error.name === "AbortError")) {
+      if (!timedOut && !(error && error.name === "AbortError")) {
         setState((prev) => Object.assign({}, prev, { chooseError: error && error.message || tr("images_add_failed", "That picture could not be added. Try another one.") }));
       }
     } finally {
+      if (timer) clearTimeout(timer);
+      if (timedOut && mine === epoch.current) {
+        setState((prev) => Object.assign({}, prev, { chooseError: tr("images_add_timeout", "That picture took too long to download and check. Try again, or choose another one.") }));
+      }
       setChoosing("");
     }
   };

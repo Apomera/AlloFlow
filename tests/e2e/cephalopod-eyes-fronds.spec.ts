@@ -244,7 +244,7 @@ for (const quality of ['low', 'balanced'] as const) {
     expect(anatomy.eyeTriangles).toBeGreaterThan(100); expect(anatomy.eyeTriangles).toBeLessThanOrEqual(3000);
     expect(anatomy.grass).toBe(80); expect(anatomy.kelp).toBe(25); expect(anatomy.instances).toBe(true); expect(anatomy.plantKeys).toEqual(['cl-plant-flex-v15']);
     for (const frond of anatomy.fronds) {
-      expect(frond.vertices).toBe(141); expect(frond.triangles).toBe(168); expect(frond.contained && frond.unitNormals).toBe(true);
+      expect(frond.vertices).toBe(277); expect(frond.triangles).toBe(424); expect(frond.contained && frond.unitNormals).toBe(true);
       expect(frond.roots).toEqual([0, 0, 0]); expect(frond.maxY).toBeCloseTo(frond.height, 5);
       expect(frond.maxRadius).toBeLessThanOrEqual(1.25); expect(frond.substrate).toBe('grass'); expect(frond.radius).toBe(1.4); expect(frond.groundOffset).toBe(0);
     }

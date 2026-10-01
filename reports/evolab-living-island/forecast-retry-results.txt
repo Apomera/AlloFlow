@@ -1,0 +1,71 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:51072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K(node:51072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1333:5 › watch a generation records one climate-boundary round and explores its real cohorts in 3D
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2067:5 › survival chance lens on a phone distinguishes the coming climate from recorded probabilities and outcomes
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2113:5 › round forecast locks before a climate-boundary round, reveals real evidence and saves a separate journal note
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:2113:5 › round forecast locks before a climate-boundary round, reveals real evidence and saves a separate journal note 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Living Island · round forecast', { exact: true }).first()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for getByText('Living Island · round forecast', { exact: true }).first()[22m
+
+
+      2139 |   await page.getByRole('button',{name:'Predict this round',exact:true}).click();await expect(draft).toHaveAttribute('data-forecast-generation','6');await draft.getByRole('button',{name:'Cancel forecast',exact:true}).click();await expect(page.getByRole('button',{name:'Predict this round',exact:true})).toBeFocused();
+      2140 |   expect(await page.evaluate(()=>(window as any).__toolData.evoLab.island)).toEqual(fixture.next);expect((await harness.glContexts(page)).filter(r=>r.connected&&!r.lost).map(r=>r.id)).toEqual(contexts);
+    > 2141 |   await page.getByRole('button',{name:'Field journal',exact:false}).click();await expect(page.getByText('Living Island · round forecast',{exact:true}).first()).toBeVisible();expect(errors).toEqual([]);
+           |                                                                                                                                                                 ^
+      2142 | });
+      2143 |
+      2144 | test('round forecast on a phone handles keyboard estimates, invalid counts and cancellation when conditions change', async ({ page }) => {
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:2141:161
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\forecast-retry-artifacts\evolab-living-island-round-e4a60-ves-a-separate-journal-note-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\forecast-retry-artifacts\evolab-living-island-round-e4a60-ves-a-separate-journal-note-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\forecast-retry-artifacts\evolab-living-island-round-e4a60-ves-a-separate-journal-note-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\forecast-retry-artifacts\evolab-living-island-round-e4a60-ves-a-separate-journal-note-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\forecast-retry-artifacts\evolab-living-island-round-e4a60-ves-a-separate-journal-note-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\forecast-retry-artifacts\evolab-living-island-round-e4a60-ves-a-separate-journal-note-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:45988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:45988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2144:5 › round forecast on a phone handles keyboard estimates, invalid counts and cancellation when conditions change
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2169:5 › round forecast without WebGL can match a count while extinction still follows the two-parent rule
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:2113:5 › round forecast locks before a climate-boundary round, reveals real evidence and saves a separate journal note 
+  4 passed (1.4m)

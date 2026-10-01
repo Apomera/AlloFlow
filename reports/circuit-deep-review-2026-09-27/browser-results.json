@@ -1,0 +1,472 @@
+{
+  "errors": [],
+  "scenarios": [
+    {
+      "workspace": "Simple circuits",
+      "layouts": [
+        {
+          "width": 1280,
+          "scrollWidth": 1280,
+          "overflow": []
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": [
+            {
+              "tag": "svg",
+              "class": {},
+              "text": "9V🔋+−Add components below"
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "g",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "line",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "line",
+              "class": {},
+              "text": ""
+            }
+          ]
+        },
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "overflow": [
+            {
+              "tag": "svg",
+              "class": {},
+              "text": "9V🔋+−Add components below"
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "g",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "line",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "line",
+              "class": {},
+              "text": ""
+            }
+          ]
+        }
+      ],
+      "headings": [
+        "🔌 Circuit Builder",
+        "Small circuits. Big discoveries.",
+        "What will change the current?",
+        "Build your circuit",
+        "Start with a question"
+      ],
+      "axe": []
+    },
+    {
+      "workspace": "Mixed circuits",
+      "layouts": [
+        {
+          "width": 1280,
+          "scrollWidth": 1280,
+          "overflow": []
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": []
+        },
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "overflow": [
+            {
+              "tag": "SPAN",
+              "class": "circuit-mixed-terminal",
+              "text": "N1 −"
+            },
+            {
+              "tag": "SPAN",
+              "class": "circuit-mixed-terminal",
+              "text": "N1 −"
+            }
+          ]
+        }
+      ],
+      "headings": [
+        "More paths. New possibilities.",
+        "See the circuit respond",
+        "Live circuit bench",
+        "Connection editor",
+        "Part 1 · resistor",
+        "Current splits. Voltage is shared."
+      ],
+      "axe": []
+    },
+    {
+      "workspace": "Active electronics",
+      "layouts": [
+        {
+          "width": 1280,
+          "scrollWidth": 1280,
+          "overflow": []
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": [
+            {
+              "tag": "DIV",
+              "class": "circuit-active-board-frame",
+              "text": "VIN 3.30 VRB10 kΩLAMP220 Ω104.73 mWQ1NPNCEVCC 5.0 VCOMMON RETURN · 0 V↓→↓IC 21.82 mAIB 260 µA+INBCRE"
+            },
+            {
+              "tag": "svg",
+              "class": {},
+              "text": "VIN 3.30 VRB10 kΩLAMP220 Ω104.73 mWQ1NPNCEVCC 5.0 VCOMMON RETURN · 0 V↓→↓IC 21.82 mAIB 260 µA"
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "g",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            }
+          ]
+        },
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "overflow": [
+            {
+              "tag": "DIV",
+              "class": "circuit-active-board-frame",
+              "text": "VIN 3.30 VRB10 kΩLAMP220 Ω104.73 mWQ1NPNCEVCC 5.0 VCOMMON RETURN · 0 V↓→↓IC 21.82 mAIB 260 µA+INBCRE"
+            },
+            {
+              "tag": "svg",
+              "class": {},
+              "text": "VIN 3.30 VRB10 kΩLAMP220 Ω104.73 mWQ1NPNCEVCC 5.0 VCOMMON RETURN · 0 V↓→↓IC 21.82 mAIB 260 µA"
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "g",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            }
+          ]
+        }
+      ],
+      "headings": [
+        "A small signal. A brighter idea.",
+        "01 · Change the input",
+        "02 · Follow the connections",
+        "03 · Discover the response",
+        "Keep a reference. Test one change.",
+        "Explore the operating regions",
+        "Cutoff",
+        "Active region",
+        "Saturation",
+        "What sets the lamp current?",
+        "04 · Explain what changes",
+        "Predict, then test"
+      ],
+      "axe": []
+    },
+    {
+      "workspace": "Connected circuits",
+      "layouts": [
+        {
+          "width": 1280,
+          "scrollWidth": 1280,
+          "overflow": []
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": [
+            {
+              "tag": "DIV",
+              "class": "circuit-network-stage",
+              "text": "V16.00VR21 kΩR31 kΩR41 kΩR51 kΩR61 kΩ00.00VA6.00VB R3.00VC K3.00V"
+            },
+            {
+              "tag": "svg",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            }
+          ]
+        },
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "overflow": [
+            {
+              "tag": "DIV",
+              "class": "circuit-network-stage",
+              "text": "V16.00VR21 kΩR31 kΩR41 kΩR51 kΩR61 kΩ00.00VA6.00VB R3.00VC K3.00V"
+            },
+            {
+              "tag": "svg",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "rect",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            },
+            {
+              "tag": "polygon",
+              "class": {},
+              "text": ""
+            }
+          ]
+        }
+      ],
+      "headings": [
+        "Build beyond branches.",
+        "01 · Trace the network",
+        "Inspect the response",
+        "02 · Make the connections",
+        "V1 · Voltage source",
+        "03 · Check the evidence"
+      ],
+      "axe": []
+    }
+  ],
+  "initialButtons": [
+    "Simple circuits",
+    "Mixed circuits",
+    "Active electronics",
+    "Connected circuits",
+    "",
+    "🏅 Badges",
+    "🤖 AI Tutor",
+    "series",
+    "parallel",
+    "Load Starter Circuit",
+    "Open Presets",
+    "Advanced Simulator",
+    "Schematic",
+    "3D bench",
+    "Undo",
+    "Redo",
+    "Resume motion",
+    "➕ ResistorLimit current · 100 Ω",
+    "💡 BulbSee energy transfer · 50 Ω",
+    "🔘 SwitchOpen or close a path",
+    "🔴 LEDOne direction · add series R",
+    "⚡ AmmeterMeasure current · in series",
+    "🔋 VoltmeterMeasure voltage · across",
+    "⸨ CapacitorStore charge · 100 µF",
+    "🗑 ClearRemove all parts · undoable",
+    "📋 Circuit Presets▼",
+    "🎯 Get 2A current",
+    "🎯 Get 0.5A current",
+    "🎯 Total R = 200Ω",
+    "🎯 Power = 24W",
+    "🎯 Total R = 50Ω",
+    "🎯 Get exactly 0.1A",
+    "🎯 Power = 1W",
+    "🎯 Total R = 500Ω",
+    "🎯 Get 3A current",
+    "🎯 Power = 100W",
+    "⚡ Ohm's Law Quiz",
+    "⚖ Kirchhoff's Laws▼",
+    "🔦FlashlightSeries",
+    "📱Phone ChargerSeries + Parallel",
+    "🚗Car HeadlightsParallel",
+    "🎵Guitar PedalSeries + Parallel",
+    "🚦Traffic LightParallel",
+    "❤️Heart MonitorSeries",
+    "📸 Snapshot"
+  ],
+  "localeBefore": [
+    "Simple circuits",
+    "Mixed circuits",
+    "Active electronics",
+    "Connected circuits",
+    "",
+    "🏅 Badges",
+    "🤖 AI Tutor",
+    "series",
+    "parallel",
+    "Load Starter Circuit",
+    "Open Presets",
+    "Advanced Simulator",
+    "Schematic",
+    "3D bench",
+    "Undo",
+    "Redo",
+    "Resume motion",
+    "➕ ResistorLimit current · 100 Ω",
+    "💡 BulbSee energy transfer · 50 Ω",
+    "🔘 SwitchOpen or close a path",
+    "🔴 LEDOne direction · add series R",
+    "⚡ AmmeterMeasure current · in series",
+    "🔋 VoltmeterMeasure voltage · across",
+    "⸨ CapacitorStore charge · 100 µF",
+    "🗑 ClearRemove all parts · undoable",
+    "📋 Circuit Presets▼",
+    "🎯 Get 2A current",
+    "🎯 Get 0.5A current",
+    "🎯 Total R = 200Ω",
+    "🎯 Power = 24W",
+    "🎯 Total R = 50Ω",
+    "🎯 Get exactly 0.1A",
+    "🎯 Power = 1W",
+    "🎯 Total R = 500Ω",
+    "🎯 Get 3A current",
+    "🎯 Power = 100W",
+    "⚡ Ohm's Law Quiz",
+    "⚖ Kirchhoff's Laws▼",
+    "🔦FlashlightSeries",
+    "📱Phone ChargerSeries + Parallel",
+    "🚗Car HeadlightsParallel",
+    "🎵Guitar PedalSeries + Parallel",
+    "🚦Traffic LightParallel",
+    "❤️Heart MonitorSeries",
+    "📸 Snapshot"
+  ],
+  "localeAfter": [
+    "Simple circuits",
+    "Mixed circuits",
+    "Active electronics",
+    "Connected circuits",
+    "",
+    "🏅 Badges",
+    "🤖 AI Tutor",
+    "series",
+    "parallel",
+    "Load Starter Circuit",
+    "Open Presets",
+    "Advanced Simulator",
+    "Schematic",
+    "3D bench",
+    "Undo",
+    "Redo",
+    "Resume motion",
+    "➕ ResistorLimit current · 100 Ω",
+    "💡 BulbSee energy transfer · 50 Ω",
+    "🔘 SwitchOpen or close a path",
+    "🔴 LEDOne direction · add series R",
+    "⚡ AmmeterMeasure current · in series",
+    "🔋 VoltmeterMeasure voltage · across",
+    "⸨ CapacitorStore charge · 100 µF",
+    "🗑 ClearRemove all parts · undoable",
+    "📋 Circuit Presets▼",
+    "🎯 Get 2A current",
+    "🎯 Get 0.5A current",
+    "🎯 Total R = 200Ω",
+    "🎯 Power = 24W",
+    "🎯 Total R = 50Ω",
+    "🎯 Get exactly 0.1A",
+    "🎯 Power = 1W",
+    "🎯 Total R = 500Ω",
+    "🎯 Get 3A current",
+    "🎯 Power = 100W",
+    "⚡ Ohm's Law Quiz",
+    "⚖ Kirchhoff's Laws▼",
+    "🔦FlashlightSeries",
+    "📱Phone ChargerSeries + Parallel",
+    "🚗Car HeadlightsParallel",
+    "🎵Guitar PedalSeries + Parallel",
+    "🚦Traffic LightParallel",
+    "❤️Heart MonitorSeries",
+    "📸 Snapshot"
+  ],
+  "finalState": {
+    "_circuit": {
+      "pauseMotion": true,
+      "mixedWorkbench": false,
+      "activeWorkbench": false,
+      "networkWorkbench": false
+    }
+  }
+}

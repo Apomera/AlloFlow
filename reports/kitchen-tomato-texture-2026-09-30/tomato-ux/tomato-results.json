@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Other recipes show truthful prerequisites without inventing a tomato batch or enabling a press.",
+    "A real phone press previews firm resistance, then records one rejected attempt without changing food, juice, heat or time.",
+    "Softened food visibly compresses only in preview; down-only release and touch cancellation preserve its exact original state.",
+    "Press, lift and release split then crush exactly one piece, conserve its finite juice, restore the puddle and texture on reload, and prevent extra juice from repeated pressing.",
+    "The texture selector opens the exact piece in both keyboard pressing and the Food lens, with no evidence changes during navigation.",
+    "Folding blends away the local pending-juice puddles without removing liquid, undoing the chosen texture, or adding saved water.",
+    "An external burner change cancels a held masher and restores the food shape without recording an extra press.",
+    "The native press and adaptive camera work with a wide four-serving pan parked on the trivet.",
+    "The texture panel fits 320px and passes accessibility checks with forced colors and reduced motion."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "390px tomato feedback",
+      "violations": []
+    },
+    {
+      "name": "320px forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

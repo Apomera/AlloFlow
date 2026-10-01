@@ -69,6 +69,22 @@ function beginGlossaryTask(deps, index, fields = [], channel = 'entry', resource
     };
 }
 
+// A lesson companion (glossary, analysis) for the active resource: the same
+// resource, then its source family (same unit first), then its unit. The newest
+// of that type is used only when nothing matches. AlloFlowANTI's latestGlossary
+// mirrors this; tests/fix0927_glossary.test.js runs both on one case table.
+function findRelatedHistoryItem(history, type, active) {
+    const unitOf = item => { const unit = item && (item.unitId || item.config?.unitId); return unit && unit !== 'all' && unit !== 'uncategorized' ? unit : null; };
+    const familyOf = item => (item && (item.sourceFamilyId || item.config?.sourceFamilyId)) || null;
+    const items = (Array.isArray(history) ? history : []).filter(item => item && item.type === type).reverse();
+    if (!active) return items[0] || null;
+    const same = items.find(item => item.id != null && item.id === active.id);
+    if (same) return same;
+    const unit = unitOf(active), family = familyOf(active);
+    const inUnit = items.filter(item => unitOf(item) === unit);
+    return (family && (inUnit.find(item => familyOf(item) === family) || items.find(item => familyOf(item) === family))) || inUnit[0] || items[0] || null;
+}
+
 // glossary_helpers_source.jsx - Phase G.1 of CDN modularization.
 // applyAIConfig + handleGenerateTermEtymology lifted out of AlloFlowANTI.txt
 // 2026-04-25 using the (args, deps) shim pattern.
@@ -428,6 +444,7 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.GlossaryHelpers = {
   applyAIConfig,
   beginGlossaryTask,
+  findRelatedHistoryItem,
   handleGenerateTermEtymology,
 };
 

@@ -1,0 +1,858 @@
+{
+  "phase": "baseline",
+  "sourceHash": "431d21d84e7834f4350e51b6a06d5720fa51db96bbc238387e23f554d2d08554",
+  "completed": true,
+  "interceptions": 2,
+  "checks": [
+    "amber 65 degree full-world view renders",
+    "amber 30 degree full-world view renders",
+    "blue 65 degree full-world view renders",
+    "blue 30 degree full-world view renders",
+    "pale 65 degree full-world view renders",
+    "pale 30 degree full-world view renders",
+    "low resolution and high exposure retain a valid star rendering",
+    "shifted and unshifted displays preserve physical camera state",
+    "closing releases textures and reopening reproduces stable stellar pixels",
+    "DPR2 retains the resolved surface rendering"
+  ],
+  "captures": [
+    {
+      "name": "amber-arrival",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "70a5f2d9682f90f920f19a02e556de4160d3f5a4029173ae26328478d581de6e",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 7.509222332481754,
+        "max": 255,
+        "colorFraction": 0.2094111328125,
+        "clippedWhiteFraction": 0.000052734375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "amber-zoom",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "9fea99edfe4293c76b791c6f193119a651c6c49c46ebe4f5a58a5923dc036de3",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 5.127020296770303,
+        "max": 255,
+        "colorFraction": 0.1438037109375,
+        "clippedWhiteFraction": 0.0000927734375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "blue-arrival",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "9f6cffb34a369262498f188186119f6ccf0fac5fd11dec241422912870ebf49a",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.2
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "stats": {
+        "mean": 7.757111620196859,
+        "max": 255,
+        "colorFraction": 0.250728515625,
+        "clippedWhiteFraction": 0.0000302734375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 799
+        }
+      }
+    },
+    {
+      "name": "blue-zoom",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "7c309bbb0f57694955404871b17931d8ecee9c91975059b4c90feee44ee5e906",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.2
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "stats": {
+        "mean": 4.6186859746562074,
+        "max": 255,
+        "colorFraction": 0.1315361328125,
+        "clippedWhiteFraction": 0.0000205078125,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "pale-arrival",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "1c3b010547e537be48993aec90f4235d00eec914a993570d204f88a20d6d8422",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "stats": {
+        "mean": 7.017306543568877,
+        "max": 255,
+        "colorFraction": 0.2091669921875,
+        "clippedWhiteFraction": 0.0000732421875,
+        "luminousBounds": {
+          "x": 0,
+          "y": 1,
+          "width": 1280,
+          "height": 799
+        }
+      }
+    },
+    {
+      "name": "pale-zoom",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "3f7b4a018558a4b844f96c644f2ea274292871409ff4c597dfb584c83f111c35",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "stats": {
+        "mean": 3.863404468737484,
+        "max": 255,
+        "colorFraction": 0.05113671875,
+        "clippedWhiteFraction": 0.0000693359375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1271,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "isolated-css6",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "67d17e3832bd282fefdaac349619f0ad7d8d3679fc9527e22f4bb3799149025d",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            -8.243312822586564
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 2.7920953234254706,
+        "max": 174,
+        "colorFraction": 0.00000390625,
+        "clippedWhiteFraction": 0,
+        "luminousBounds": {
+          "x": 638,
+          "y": 398,
+          "width": 4,
+          "height": 4
+        }
+      }
+    },
+    {
+      "name": "isolated-css10",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "476cc67c0f935388e19bdbe521c000bbfc2b367308d06c5f07299d07e6799e8b",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            -1.5459876935519379
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 2.793302941394222,
+        "max": 255,
+        "colorFraction": 0.000015625,
+        "clippedWhiteFraction": 0,
+        "luminousBounds": {
+          "x": 637,
+          "y": 397,
+          "width": 6,
+          "height": 6
+        }
+      }
+    },
+    {
+      "name": "isolated-css40",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "1e8044663db6bf62f9fe2ccf37eb2d7a7089c5f9cbc3b794fe7149578bbe7376",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            5.988503076612016
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 2.8217388304567224,
+        "max": 255,
+        "colorFraction": 0.00027734375,
+        "clippedWhiteFraction": 0,
+        "luminousBounds": {
+          "x": 627,
+          "y": 387,
+          "width": 26,
+          "height": 26
+        }
+      }
+    },
+    {
+      "name": "blue-low-exposure2",
+      "width": 1088,
+      "height": 680,
+      "pixelHash": "ee30df77f0b8839474ae3d000e78c65f473bf6e3a6a851cfc3d8c9437359e9f8",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 2,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.2
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      },
+      "stats": {
+        "mean": 6.449733040179328,
+        "max": 255,
+        "colorFraction": 0.2438446150519031,
+        "clippedWhiteFraction": 0.0002554606401384083,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1088,
+          "height": 680
+        }
+      }
+    },
+    {
+      "name": "relativity-shifted",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8de7013997e8c9b681fc206f69c1724fab858bf20d97adcf8690cfb54d595fd2",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 5.7960728281375085,
+        "max": 255,
+        "colorFraction": 0.0460263671875,
+        "clippedWhiteFraction": 0.00144921875,
+        "luminousBounds": {
+          "x": 15,
+          "y": 0,
+          "width": 1264,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "relativity-unshifted",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "70a5f2d9682f90f920f19a02e556de4160d3f5a4029173ae26328478d581de6e",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": true,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 7.509222332481754,
+        "max": 255,
+        "colorFraction": 0.2094111328125,
+        "clippedWhiteFraction": 0.000052734375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "reopen-reference",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "70a5f2d9682f90f920f19a02e556de4160d3f5a4029173ae26328478d581de6e",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 7.509222332481754,
+        "max": 255,
+        "colorFraction": 0.2094111328125,
+        "clippedWhiteFraction": 0.000052734375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "reopened",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "70a5f2d9682f90f920f19a02e556de4160d3f5a4029173ae26328478d581de6e",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 7.509222332481754,
+        "max": 255,
+        "colorFraction": 0.2094111328125,
+        "clippedWhiteFraction": 0.000052734375,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "amber-dpr2-zoom",
+      "width": 1920,
+      "height": 1200,
+      "pixelHash": "a0c4d789f883109239b5c0e8bddc7c5c8a21398f20979e5c46365898f4adcf00",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 30,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.9
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 5.1311262263531745,
+        "max": 255,
+        "colorFraction": 0.14383246527777777,
+        "clippedWhiteFraction": 0.00009114583333333334,
+        "luminousBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1200
+        }
+      }
+    },
+    {
+      "name": "dpr2-css16",
+      "width": 1920,
+      "height": 1200,
+      "pixelHash": "abd32aa19f132222d731b710ee9df64a7311bdc8cf95b047669af39d5c90c781",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            2.221257691530039
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "stats": {
+        "mean": 2.796242292511513,
+        "max": 255,
+        "colorFraction": 0.00004861111111111111,
+        "clippedWhiteFraction": 0,
+        "luminousBounds": {
+          "x": 952,
+          "y": 592,
+          "width": 16,
+          "height": 16
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "graphics": [
+    {
+      "name": "amber-arrival",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "amber-zoom",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-arrival",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-zoom",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "pale-arrival",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "pale-zoom",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "isolated-css6",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "isolated-css10",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "isolated-css40",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-low-exposure2",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "relativity-shifted",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "relativity-unshifted",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "reopen-reference",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "reopened",
+      "errors": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "amber-dpr2-zoom",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "dpr2-css16",
+      "errors": [
+        0
+      ]
+    }
+  ],
+  "stability": [
+    {
+      "size": 6,
+      "identicalPixels": true
+    },
+    {
+      "size": 10,
+      "identicalPixels": true
+    },
+    {
+      "size": 40,
+      "identicalPixels": true
+    }
+  ],
+  "transition": [],
+  "lifecycle": [
+    {
+      "live": [
+        {
+          "created": 2,
+          "deleted": 0,
+          "live": 2
+        }
+      ],
+      "released": [
+        {
+          "created": 2,
+          "deleted": 2,
+          "live": 0
+        }
+      ]
+    }
+  ],
+  "pointDataHash": "357c06122c25540fcbc1d87d29f3c8fc5c362c2257ff56bb3be61efe0709b448",
+  "math": {
+    "gamma": 7.088812050083356,
+    "doppler": 3.326528141123146,
+    "spectrum": {
+      "angleDeg": 20.561888495621638,
+      "doppler": 1.9305897064531514,
+      "observedNm": 284.88704677207215,
+      "band": "ultraviolet"
+    },
+    "clock": {
+      "shipSeconds": 2,
+      "starSeconds": 14.177624100166712,
+      "horizontalLightSeconds": 14.035847859165045,
+      "photonPathLightSeconds": 14.177624100166712
+    }
+  }
+}

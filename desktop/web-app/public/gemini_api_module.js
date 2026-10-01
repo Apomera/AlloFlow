@@ -110,17 +110,20 @@ const createGeminiAPI = (deps) => {
     // excerpts, prompts, filenames, or other user content from Error.message.
     const _diagnosticErrorSummary = (error) => {
       const name = String(error && error.name || 'Error').replace(/[^a-z0-9_.-]/gi, '').slice(0, 48) || 'Error';
-      const rawCode = error && (error.code != null ? error.code : error.status);
+      const rawCode = error && (error.code != null ? error.code : (error.httpStatus || error.status || error.statusCode));
       const code = rawCode == null ? '' : String(rawCode).replace(/[^a-z0-9_.-]/gi, '').slice(0, 48);
       const message = String(error && error.message || error || '').toLowerCase();
-      const category = /abort|cancel/.test(message) ? 'cancelled'
+      const status = Number(error && (error.httpStatus || error.status || error.statusCode)) || 0;
+      const category = error && error.classification && error.classification.kind || (/abort|cancel/.test(message) ? 'cancelled'
+        : status === 401 || status === 403 ? 'auth'
+        : status === 429 ? 'quota'
         : /timeout|timed out|etimedout/.test(message) ? 'timeout'
         : /429|quota|resource_exhausted|rate limit/.test(message) ? 'quota'
         : /401|403|auth|api key|permission/.test(message) ? 'auth'
         : /fetch|network|5\d\d/.test(message) ? 'network'
         : /404|model not found|unknown model|unsupported model|config/.test(message) ? 'configuration'
         : /json|parse|syntax|malformed|empty response|truncat/.test(message) ? 'response-format'
-        : 'unexpected';
+        : 'unexpected');
       return name + (code ? ' code=' + code : '') + ' category=' + category;
     };
 
@@ -184,7 +187,8 @@ const createGeminiAPI = (deps) => {
       // Different Canvas/provider adapters do not all format HTTP failures the
       // same way. Prefer the structured status when one is present, while
       // retaining the message checks for older fetch wrappers.
-      const status = Number(err && (err.status || err.statusCode)) || 0;
+      const status = Number(err && (err.httpStatus || err.status || err.statusCode))
+        || Number((msg.match(/\b(?:HTTP\s+)?(401|403|408|429|404|5\d\d)\b/i) || [])[1]) || 0;
       // Refusal (safety / blocked / finishReason) — keep this FIRST so other
       // string heuristics don't mislabel a content block as quota/auth.
       if (
@@ -201,46 +205,40 @@ const createGeminiAPI = (deps) => {
       // OR per-day quota (resolves at midnight Pacific). We can't reliably
       // distinguish them from the error message alone, so word the user-facing
       // message to admit both possibilities rather than claiming "daily."
-      if (status === 429 || msg.includes('429') || lower.includes('resource_exhausted') || lower.includes('quota exceeded')) {
+      const explicitQuota = /resource_exhausted|quota (?:exceeded|check failed|limit|exhausted)|rate[ -]limit (?:hit|exceeded)/i.test(msg);
+      if (status === 429 || (status !== 401 && explicitQuota)) {
         // Look for explicit "per minute" / "per day" hints in the body to
         // narrow the wording when possible.
         const perMinHint = lower.includes('per minute') || lower.includes('rpm') || lower.includes('per-minute');
         const perDayHint = lower.includes('per day') || lower.includes('daily limit') || lower.includes('rpd');
         const userMessage = perMinHint
-          ? 'Gemini API per-minute rate limit hit — usually clears in 60 seconds.'
+          ? 'Gemini API per-minute rate limit reached. Wait briefly, then retry.'
           : perDayHint
-            ? 'Gemini API daily quota reached — resolves at midnight Pacific time.'
-            : 'Gemini API rate or quota limit hit. May be a per-minute burst (clears in seconds) or a daily quota (resolves at midnight Pacific) — try again in a minute first.';
+            ? 'Gemini API daily quota reached. Check the provider usage limit and reset time before retrying.'
+            : 'Gemini API rate or quota limit reached. Wait about a minute and retry; if it persists, check the provider usage limits.';
         // Carry the per-minute/per-day evidence on the classification so downstream retry layers
         // can treat a per-minute burst as a throttle (retryable) without re-parsing the raw body
         // (which _throwClassified replaces with the API_QUOTA_EXHAUSTED sentinel).
-        return { kind: 'quota', userMessage, model: null, perMinute: perMinHint, perDay: perDayHint };
+        return { kind: 'quota', userMessage, model: null, perMinute: perMinHint, perDay: perDayHint, httpStatus: status || null };
       }
       // Auth: HTTP 401 + the documented Gemini codes.
       if (
         status === 401 ||
         status === 403 ||
-        msg.includes('401') ||
         lower.includes('unauthenticated') ||
         lower.includes('api key not valid') ||
         lower.includes('api_key_invalid') ||
+        lower.includes('no ai api key is configured') ||
         lower.includes('permission_denied') ||
-        msg.includes('403')
+        lower.includes('authentication failed')
       ) {
-        // 403 is ambiguous — Gemini returns it for both real quota throttling
-        // and permission denials. If the body actually mentions quota, treat
-        // it as quota; otherwise as auth.
-        if (lower.includes('quota') || lower.includes('rate')) {
-          return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null, perMinute: false, perDay: false };
-        }
-        // 401 handling, in plain language. In Canvas the app auto-injects the key each session —
-        // the user never manages one — so a 401 there is almost always a brief rate-limit / hiccup,
-        // NOT a bad key, and "regenerate your key" advice is wrong + confusing. Word it accordingly.
-        // (Outside Canvas a 401 usually IS a key problem, but heavy usage can cause a temporary one.)
+// A rejected connection may recover on a bounded Canvas retry, but
+        // HTTP 401/403 alone is not evidence of rate limiting. Canvas manages
+        // the key; direct users can review their configured connection.
         const _authMsg = _isCanvasEnv
-          ? 'The AI service didn’t accept that request. This is almost always a brief rate-limit or hiccup — not a real key problem (this app manages the AI key for you). It usually clears on its own — wait a moment and try again.'
-          : 'The Gemini API key looks invalid, expired, or missing. If it was working recently, heavy usage can cause a temporary 401 — wait a few minutes before regenerating it.';
-        return { kind: 'auth', userMessage: _authMsg, model: null };
+          ? 'The AI service rejected the connection or permission. Canvas manages the AI key for you. Retry once; if it persists, reload Canvas or ask the deployment owner to check access.'
+          : 'The Gemini connection was rejected. Check the configured API key and model permissions in AI Backend Settings, then retry.';
+        return { kind: 'auth', userMessage: _authMsg, model: null, httpStatus: status || null };
       }
       // Config: model not found / unsupported / 404 / INVALID_ARGUMENT.
       if (
@@ -270,6 +268,7 @@ const createGeminiAPI = (deps) => {
         lower.includes('etimedout') ||
         lower.includes('unexpected end of input') ||
         lower.includes('empty response body') ||
+        lower.includes('empty response text') ||
         lower.includes('truncated/invalid json response body') ||
         msg.includes('408')
       ) {
@@ -279,14 +278,45 @@ const createGeminiAPI = (deps) => {
     };
 
     // ── Auth-failure debounce ─────────────────────────────────────────────
-    // A SINGLE 401 is usually transient — a brief per-minute rate-limit or a momentary hiccup,
-    // especially in Canvas where the key is auto-injected and can't actually be "wrong". Showing
-    // an alarming "Auth error / regenerate your key" banner on the first one is misleading and the
-    // pipeline often keeps working. So we only surface the auth banner after several CONSECUTIVE
-    // auth failures with no success in between; _noteApiSuccess() resets the streak (and clears the
-    // banner + shows a recovery note) the moment any AI call succeeds again.
+// Some Canvas connection failures recover after retry. The sticky auth
+    // notice waits for repeated completed failures. Request feedback still
+    // reports each unresolved action and retains recovered attempt history.
     let _authFailStreak = 0;
     const _AUTH_BANNER_THRESHOLD = 3;
+    let _recoveryNoticeTimer = null;
+
+    // Request-scoped, content-free diagnostics distinguish retry attempts from
+    // unresolved user actions. Recovered attempts remain inspectable without
+    // contributing to the active-error badge.
+    let _feedbackSequence = 0;
+    const _newFeedbackRequest = (operation) => {
+      let sequence = ++_feedbackSequence;
+      if (typeof window !== 'undefined') {
+        sequence = window.__alloApiFeedbackSequence = (Number(window.__alloApiFeedbackSequence) || 0) + 1;
+      }
+      return { requestId: 'gemini-' + Date.now().toString(36) + '-' + sequence, operation };
+    };
+    const _emitApiFeedback = (context, state, error = null, attempt = null) => {
+      const cls = error && (error.classification || _classifyGeminiError(error));
+      const httpStatus = Number(error && (error.httpStatus || error.status || error.statusCode))
+        || Number(cls && cls.httpStatus) || null;
+      const detail = {
+        ...context, state, at: Date.now(), attempt,
+        kind: error && error.name === 'AbortError' ? 'cancelled' : (cls && cls.kind || null),
+        httpStatus,
+        message: cls && ['auth', 'quota', 'config', 'transient', 'refusal'].includes(cls.kind)
+          ? cls.userMessage : (error ? 'The AI request did not complete. Retry when ready.' : ''),
+        technical: error ? _diagnosticErrorSummary(error) : '',
+      };
+      try { if (typeof deps.onApiFeedback === 'function') deps.onApiFeedback(detail); } catch (_) {}
+      if (typeof window === 'undefined') return;
+      try {
+        window.__alloApiFeedbackHistory = window.__alloApiFeedbackHistory || [];
+        window.__alloApiFeedbackHistory.push(detail);
+        if (window.__alloApiFeedbackHistory.length > 100) window.__alloApiFeedbackHistory.shift();
+        window.dispatchEvent(new CustomEvent('alloflow:api-feedback', { detail }));
+      } catch (_) { /* feedback must never change the provider result */ }
+    };
 
     // ── Persistent quota banner ───────────────────────────────────────────
     // When a genuine quota error fires, surface a sticky banner at the top
@@ -300,11 +330,12 @@ const createGeminiAPI = (deps) => {
       if (classification.kind === 'auth') {
         _authFailStreak++;
         if (_authFailStreak < _AUTH_BANNER_THRESHOLD) {
-          try { if (typeof warnLog === 'function') warnLog('[GeminiAPI] transient auth failure ' + _authFailStreak + '/' + _AUTH_BANNER_THRESHOLD + ' — likely a brief rate-limit; not alarming the user yet.'); } catch (_) {}
+          try { if (typeof warnLog === 'function') warnLog('[GeminiAPI] connection/permission failure ' + _authFailStreak + '/' + _AUTH_BANNER_THRESHOLD + '; sticky notice waits for repeated completed failures.'); } catch (_) {}
           return;
         }
       }
       try {
+        if (_recoveryNoticeTimer != null) { clearTimeout(_recoveryNoticeTimer); _recoveryNoticeTimer = null; }
         window.__alloflowQuotaState = {
           active: true,
           kind: classification.kind,
@@ -352,7 +383,7 @@ const createGeminiAPI = (deps) => {
           const closeBtn = document.createElement('button');
           closeBtn.type = 'button';
           closeBtn.textContent = 'Dismiss ×';
-          closeBtn.setAttribute('aria-label', 'Dismiss quota notice');
+          closeBtn.setAttribute('aria-label', 'Dismiss AI service notice');
           closeBtn.style.cssText = 'background:rgba(255,255,255,0.18);color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font:600 13px system-ui,sans-serif';
           closeBtn.onclick = () => {
             // A3 (2026-06-28): don't swallow a sessionStorage QuotaExceededError silently — on a storage-full
@@ -366,25 +397,17 @@ const createGeminiAPI = (deps) => {
           (document.body || document.documentElement).appendChild(banner);
         }
         const msgEl = document.getElementById('alloflow-quota-banner-msg');
+        banner.style.background = '#7c1d1d';
+        banner.setAttribute('role', 'alert');
+        banner.setAttribute('aria-live', 'assertive');
         if (msgEl) {
           // 401 vs 429 named explicitly (2026-06-12, maintainer ask): auth
           // errors were historically mistaken for quota — say which is which.
           const prefix = classification.kind === 'auth'
-            ? (_isCanvasEnv
-                ? '⏳ AI service temporarily throttled (Canvas HTTP 401 — your key/sign-in is not the problem): '
-                : '🔑 Auth error (HTTP 401 — check the configured key or sign-in): ')
-                       : classification.kind === 'config' ? '⚙ Configuration error: '
-                       : '🛑 Gemini quota limit (HTTP 429): ';
-          // Per-kind trailing advice. Was hardcoded "until this is resolved"
-          // for all kinds, which under-described the quota case (user couldn't
-          // tell if a wait would help or if they needed to fix something).
-          const trailing = classification.kind === 'quota'
-            ? ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail meanwhile. Deterministic fixes still run — try again in about a minute. If the message recurs immediately, you have likely hit the daily quota and will need to wait until midnight Pacific or upgrade the Gemini tier.'
-            : classification.kind === 'auth'
-              ? (_isCanvasEnv
-                  ? ' The basic (non-AI) fixes still ran. The AI steps (reading images, rewriting, alt text) keep retrying — if it clears, you’ll see a green “responding again” note. If this banner keeps showing for a few minutes, the AI service is heavily rate-limited; wait and retry.'
-                  : ' AI steps (image reading, rewriting, alt text) will fail until the key is fixed; the basic fixes still ran. (A key that worked recently may just be hitting a temporary 401 from heavy usage — wait a few minutes before regenerating.)')
-              : ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail until this is resolved. Deterministic fixes still run.';
+            ? (_isCanvasEnv ? 'Canvas AI connection or permission error: ' : 'AI connection or permission error: ')
+            : classification.kind === 'config' ? 'AI configuration error: '
+            : 'Gemini rate or quota limit: ';
+          const trailing = ' Review the failed step before retrying. Technical details are in Diagnostics.';
           msgEl.textContent = prefix + classification.userMessage + trailing;
         }
         try {
@@ -407,17 +430,25 @@ const createGeminiAPI = (deps) => {
       try {
         const st = window.__alloflowQuotaState;
         const bannerEl = document.getElementById('alloflow-quota-banner');
-        const wasActive = !!(st && st.active && (st.kind === 'auth' || st.kind === 'quota'));
+        const wasActive = !!(st && st.active && ['auth', 'quota', 'config'].includes(st.kind));
         if (!wasActive && !(hadStreak && bannerEl)) return;
-        window.__alloflowQuotaState = { active: false };
-        try { window.dispatchEvent(new CustomEvent('alloflow:quota-recovered', {})); } catch (_) {}
-        // Re-arm the dismissal so a LATER genuine error can show again.
+        const recoveredState = { active: false, previousKind: st && st.kind || null, recoveredAt: Date.now() };
+        window.__alloflowQuotaState = recoveredState;
+        try { window.dispatchEvent(new CustomEvent('alloflow:quota-recovered', { detail: recoveredState })); } catch (_) {}
+        // A later error can show again even after a previous dismissal.
         try { if (window.sessionStorage) sessionStorage.removeItem('__alloflowQuotaBannerDismissed'); } catch (_) {}
         if (bannerEl) {
-          bannerEl.style.background = '#166534'; // green
+          bannerEl.style.background = '#166534';
+          bannerEl.setAttribute('role', 'status');
+          bannerEl.setAttribute('aria-live', 'polite');
           const msgEl = document.getElementById('alloflow-quota-banner-msg');
-          if (msgEl) msgEl.textContent = '✓ The AI service is responding again — that was a temporary interruption. You can keep working.';
-          setTimeout(() => { try { const b = document.getElementById('alloflow-quota-banner'); if (b) b.remove(); } catch (_) {} }, 6000);
+          if (msgEl) msgEl.textContent = 'The AI service is responding again. The latest request succeeded; review any earlier failed steps before retrying them.';
+          _recoveryNoticeTimer = setTimeout(() => {
+            _recoveryNoticeTimer = null;
+            try {
+              if (window.__alloflowQuotaState === recoveredState && document.getElementById('alloflow-quota-banner') === bannerEl) bannerEl.remove();
+            } catch (_) {}
+          }, 6000);
         }
       } catch (_) { /* recovery notice is best-effort */ }
     };
@@ -488,26 +519,26 @@ const createGeminiAPI = (deps) => {
 
     // Public throw helper — classify the underlying error, surface the
     // banner if needed, and throw a typed error so call-sites can branch.
-    const _throwClassified = (err) => {
+    const _throwClassified = (err, showBanner = true) => {
       const cls = _classifyGeminiError(err);
       if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
-        _showQuotaBanner(cls);
+        if (showBanner) _showQuotaBanner(cls);
         const out = new Error(cls.kind === 'quota' ? 'API_QUOTA_EXHAUSTED'
                             : cls.kind === 'auth' ? 'API_AUTH_FAILED'
                             : 'API_MODEL_NOT_FOUND');
         out.isQuota = cls.kind === 'quota';
         out.isAuth = cls.kind === 'auth';
         out.isConfig = cls.kind === 'config';
-        // In Canvas an 'auth' (401/403) is almost always a brief throttle/rate-limit, NOT a real key
-        // problem (the app injects the key — see the classifier's own note). Flag it so the pipeline's
-        // retry layer treats it as RETRYABLE (transient) rather than permanent. (2026-06-19)
+// Legacy retry flag: Canvas may retry a rejected connection a bounded
+        // number of times. This is retry policy, not a quota diagnosis.
         out.canvasTransientAuth = (cls.kind === 'auth' && !!_isCanvasEnv);
         out.classification = cls;
         out.originalMessage = err && err.message;
         // (2026-08-15) Numeric evidence survives the re-wrap. The classified message collapses
         // 401 and 403 into API_AUTH_FAILED, and the 2026-08-14 investigation could not tell them
         // apart from the field log; Retry-After is the server saying how long the throttle is.
-        if (err && err.httpStatus != null) out.httpStatus = err.httpStatus;
+        const httpStatus = Number(err && (err.httpStatus || err.status || err.statusCode)) || Number(cls.httpStatus) || 0;
+        if (httpStatus) out.httpStatus = httpStatus;
         if (err && err.retryAfterSec != null) out.retryAfterSec = err.retryAfterSec;
         throw out;
       }
@@ -572,6 +603,7 @@ const createGeminiAPI = (deps) => {
           temperature: temperature == null ? null : Number(temperature),
           signal,
         });
+        if (typeof value !== 'string' || !value.trim()) throw new Error('Empty response text from local fallback.');
         try {
           window.__alloLocalFallbackLastUsed = {
             at: Date.now ? Date.now() : 0,
@@ -590,7 +622,7 @@ const createGeminiAPI = (deps) => {
 
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
-    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null) => {
+    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, deferBanner = false, feedbackContext = null) => {
       await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'text', search: useSearch });
       if (!_resolveApiKey() && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
@@ -689,6 +721,7 @@ const createGeminiAPI = (deps) => {
             && !(_fallbackPlan.pipelineManaged && cls.kind === 'quota')
             && _fallbackPlan.canFallback;
           if (shouldFallback && GEMINI_MODELS.fallback && GEMINI_MODELS.fallback !== GEMINI_MODELS.default) {
+            if (feedbackContext) _emitApiFeedback(feedbackContext, 'retrying', primaryErr);
             console.warn(`[callGemini] Primary model (${GEMINI_MODELS.default}) ${cls.kind} — falling back to ${GEMINI_MODELS.fallback}`);
             try {
               if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.fallback);
@@ -698,7 +731,8 @@ const createGeminiAPI = (deps) => {
               // Both models failed — the original error is more informative
               // for classification (the fallback's error is usually the same
               // type cascading), so keep the primary in case of quota/auth.
-              console.error('[callGemini] Fallback also failed:', _diagnosticErrorSummary(fbErr));
+              if (feedbackContext) _emitApiFeedback(feedbackContext, 'retrying', fbErr);
+              console.warn('[callGemini] Fallback attempt failed:', _diagnosticErrorSummary(fbErr));
               const fbCls = _classifyGeminiError(fbErr);
               // If primary was quota/auth/config, prefer the primary's err so
               // _throwClassified shows the right banner kind.
@@ -716,6 +750,7 @@ const createGeminiAPI = (deps) => {
         // 'other' and spammed error reports. Name the condition so the
         // classifier routes it to 'transient' and the retry layers handle it.
         const _rawBody = await response.text();
+        if (_signal && _signal.aborted) throw _abortError();
         if (!_rawBody || !_rawBody.trim()) {
           _emitResponseMeta(_innerTelemetry, { model: _modelUsed, bodyBytes: 0, finishReason: null, empty: true });
           throw new Error('Empty response body from Gemini (transient; the retry layer handles this)');
@@ -799,6 +834,7 @@ const createGeminiAPI = (deps) => {
                 debugLog && debugLog("[callGemini] Trimmed " + (before - text.length) + " chars of truncated trailing content (broken citation link or orphan fragment).");
             }
         }
+        if (typeof text !== 'string' || !text.trim()) throw new Error('Empty response text from Gemini. Retry the failed step.');
         _noteApiSuccess(); // a good response clears any transient-401 streak / banner + notifies recovery
         if (useSearch) {
             return {
@@ -820,7 +856,7 @@ const createGeminiAPI = (deps) => {
         if (cls.kind === 'transient' || cls.kind === 'other') {
           console.warn(`[callGemini] ${cls.kind} error (retry layers usually recover this — not an app failure by itself):`, _diagnosticErrorSummary(err));
         } else {
-          console.error(`[callGemini] Error caught (${cls.kind}):`, _diagnosticErrorSummary(err));
+          console.warn(`[callGemini] Attempt failed (${cls.kind}):`, _diagnosticErrorSummary(err));
         }
         // Refusals are surfaced gracefully — the caller asked for content the
         // model declined to produce. Return a placeholder so the pipeline
@@ -837,101 +873,91 @@ const createGeminiAPI = (deps) => {
         // deploy fabrication for weeks).
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
           if (cls.kind === 'quota') {
+            if (feedbackContext && _readLocalFallbackConfig()) _emitApiFeedback(feedbackContext, 'retrying', err);
             const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution });
-            if (localFallback.used) return localFallback.value;
+            if (localFallback.used) {
+              // Local completion recovers the task, not the remote connection.
+              // Keep the Gemini quota evidence for a later remote request.
+              return localFallback.value;
+            }
           }
-          _throwClassified(err);
+          _throwClassified(err, !deferBanner);
         }
         throw err;
       }
     };
 
     // ── Canvas transient-401 retry (2026-07-27) ────────────────────────────
-    // In Gemini Canvas the app never holds a key — Canvas injects it — so a
-    // 401/403 is almost always a BRIEF THROTTLE, not a dead credential. The
-    // classifier has flagged that as `canvasTransientAuth` since 2026-06-19
-    // precisely so a retry layer could de-escalate it… but only doc_pipeline
-    // and view_pdf_audit ever read the flag. Every other caller (grammar
-    // repair, glossary, personas, adventure, ~20 handler files) treated one
-    // throttled call as a permanent failure and surfaced its own generic
-    // "…failed" message, which reads as a feature bug rather than a hiccup.
-    //
-    // Field evidence 2026-07-27: a teacher's read-aloud trace logged 401, 401,
-    // then a clean success on the same key in the same session, while grammar
-    // repair — one call, no retry — reported failure.
-    //
-    // Retrying HERE fixes every call site at once. doc_pipeline's own retry
-    // still sits on top; both are bounded, so the worst case stays finite.
-    // Deliberately narrow: ONLY Canvas, ONLY auth. Quota, config, refusal and
-    // real non-Canvas auth failures keep throwing immediately, because
-    // retrying those is how you turn a dead key into a hammering loop.
-    // Backoff is injectable so tests can exercise the retry without spending
-    // real seconds on it (an un-tunable sleep here pushed the auth-banner
-    // debounce tests past their timeout). Production leaves it at the default.
+    // Preserve bounded retries for Canvas connection rejections that may
+    // recover. Authentication/permission and quota remain separate categories;
+    // this retry policy does not establish why the provider rejected access.
+    // Backoff stays injectable for deterministic retry/cancellation tests.
     const CANVAS_AUTH_BACKOFF_MS = Array.isArray(deps && deps.canvasAuthBackoffMs)
       ? deps.canvasAuthBackoffMs
       : [1200, 3000];
     const CANVAS_AUTH_RETRIES = CANVAS_AUTH_BACKOFF_MS.length; // attempts = retries + 1
-    const _sleep = (ms) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
+const _abortError = () => { const error = new Error('AI request cancelled.'); error.name = 'AbortError'; return error; };
+    const _sleep = (ms, signal) => new Promise((resolve, reject) => {
+      if (signal && signal.aborted) { reject(_abortError()); return; }
+      let timer;
+      const cleanup = () => { if (signal) signal.removeEventListener('abort', onAbort); };
+      const onAbort = () => { clearTimeout(timer); cleanup(); reject(_abortError()); };
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+      timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, ms));
+    });
 
     const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null) => {
-      let lastErr = null;
-      for (let attempt = 0; attempt <= CANVAS_AUTH_RETRIES; attempt++) {
-        // The auth banner debounces on CONSECUTIVE USER-LEVEL failures
-        // (_AUTH_BANNER_THRESHOLD). Each internal attempt runs through
-        // _showQuotaBanner and bumps that streak, so without this snapshot one
-        // retried call would advance it by three and fire the alarming
-        // "regenerate your key" banner on the user's very first action —
-        // defeating the debounce it exists to provide.
-        const _streakBefore = _authFailStreak;
-        const _rungStartedAt = Date.now();
-        try {
-          return await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, signal, useCodeExecution, telemetry);
-        } catch (err) {
-          lastErr = err;
-          // Never retry a caller-initiated abort — Stop must stop.
-          if (err && err.name === 'AbortError') throw err;
-          const retryable = !!(err && err.canvasTransientAuth && !err.isQuota && !err.isConfig);
-          if (!retryable) throw err;
-          if (telemetry && typeof telemetry.onAuthRung === 'function') {
-            try { telemetry.onAuthRung(attempt + 1); } catch (_) {}
-          }
-          if (attempt === CANVAS_AUTH_RETRIES) throw err;
-          // Respect an abort that landed while we were waiting to retry.
-          if (signal && signal.aborted) throw err;
-          // Nullish, not `||` — a configured 0 (tests) is a valid wait and
-          // `0 || 3000` would silently restore the full production backoff.
-          const _cfg = CANVAS_AUTH_BACKOFF_MS[attempt];
-          const wait = (typeof _cfg === 'number' && _cfg >= 0) ? _cfg : 3000;
-          // Deadline-aware rung (2026-09-02). The Canvas proxy HOLDS a throttled request for about
-          // a minute before answering 401, so three rungs cannot fit inside the pipeline's 180s
-          // outer wall: the 08-14 log never once showed rung 3/3, and the call that the wall killed
-          // was filed as a TIMEOUT, starving the auth breaker. When the caller supplies a deadline
-          // and the next rung (backoff + the last rung's observed duration) cannot finish before it,
-          // fail NOW with the auth error intact so the breaker sees what actually happened.
-          const _rungMs = Math.max(0, Date.now() - _rungStartedAt);
-          const _deadlineTs = _telemetryDeadlineTs(telemetry);
-          if (_deadlineTs > 0) {
-            const _remainingMs = _deadlineTs - Date.now();
-            const _neededMs = wait + Math.max(_rungMs, 1000) + 1000;
-            if (_remainingMs < _neededMs) {
-              if (telemetry && typeof telemetry.onAuthLadderCut === 'function') {
-                try { telemetry.onAuthLadderCut({ attempt: attempt + 1, rungMs: _rungMs, remainingMs: Math.max(0, _remainingMs), neededMs: _neededMs }); } catch (_) {}
-              }
-              console.warn(`[callGemini] Canvas auth throttle (HTTP 401) — ${Math.round(Math.max(0, _remainingMs) / 1000)}s left before the deadline, last rung took ${Math.round(_rungMs / 1000)}s; failing as auth now instead of retrying into the wall.`);
-              throw err;
-            }
-          }
-          // Roll the streak back: this call has not failed yet, it is retrying.
-          // If the retry succeeds, _noteApiSuccess() clears the streak anyway;
-          // if every attempt fails, the final one's increment stands, so the
-          // net effect per user-level call is unchanged from before the retry.
-          _authFailStreak = _streakBefore;
-          console.warn(`[callGemini] Canvas auth throttle (HTTP 401) — retrying in ${wait}ms (attempt ${attempt + 2}/${CANVAS_AUTH_RETRIES + 1}).`);
-          await _sleep(wait);
+      const context = _newFeedbackRequest('text');
+      const effectiveSignal = signal || (typeof getAbortSignal === 'function' ? getAbortSignal() : null) || null;
+      _emitApiFeedback(context, 'pending');
+      let terminalFeedbackEmitted = false;
+      try {
+        if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
+        if (!_resolveApiKey() && !_isCanvasEnv) {
+          const missingKey = new Error('No AI API key is configured. Open AI Backend Settings and check the approved connection, then retry.');
+          missingKey.code = 'allo/no-api-key';
+          _throwClassified(missingKey);
         }
+        for (let attempt = 0; attempt <= CANVAS_AUTH_RETRIES; attempt++) {
+          if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
+          const rungStartedAt = Date.now();
+          try {
+            const value = await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, effectiveSignal, useCodeExecution, telemetry, true, context);
+            if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
+            _emitApiFeedback(context, 'succeeded', null, attempt + 1);
+            return value;
+          } catch (error) {
+            if (error && error.name === 'AbortError') throw error;
+            if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
+            const retryable = !!(error && error.canvasTransientAuth && !error.isQuota && !error.isConfig);
+            if (retryable && telemetry && typeof telemetry.onAuthRung === 'function') {
+              try { telemetry.onAuthRung(attempt + 1); } catch (_) {}
+            }
+            const configuredWait = CANVAS_AUTH_BACKOFF_MS[attempt];
+            const wait = typeof configuredWait === 'number' && configuredWait >= 0 ? configuredWait : 3000;
+            const rungMs = Math.max(0, Date.now() - rungStartedAt);
+            const deadlineTs = _telemetryDeadlineTs(telemetry);
+            const remainingMs = deadlineTs > 0 ? deadlineTs - Date.now() : Infinity;
+            const neededMs = wait + Math.max(rungMs, 1000) + 1000;
+            const deadlineCut = retryable && remainingMs < neededMs;
+            if (deadlineCut && telemetry && typeof telemetry.onAuthLadderCut === 'function') {
+              try { telemetry.onAuthLadderCut({ attempt: attempt + 1, rungMs, remainingMs: Math.max(0, remainingMs), neededMs }); } catch (_) {}
+            }
+            if (!retryable || attempt === CANVAS_AUTH_RETRIES || deadlineCut) {
+              if (error && error.classification) _showQuotaBanner(error.classification);
+              _emitApiFeedback(context, 'failed', error, attempt + 1);
+              terminalFeedbackEmitted = true;
+              throw error;
+            }
+            _emitApiFeedback(context, 'retrying', error, attempt + 1);
+            console.warn('[callGemini] Canvas connection rejected; bounded retry in ' + wait + 'ms (attempt ' + (attempt + 2) + '/' + (CANVAS_AUTH_RETRIES + 1) + ').', _diagnosticErrorSummary(error));
+            await _sleep(wait, effectiveSignal);
+          }
+        }
+      } catch (error) {
+        if (!terminalFeedbackEmitted) _emitApiFeedback(context, error && error.name === 'AbortError' ? 'cancelled' : 'failed', error);
+        throw error;
       }
-      throw lastErr;
     };
 
     const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null, options = null) => {
@@ -979,9 +1005,9 @@ const createGeminiAPI = (deps) => {
         const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
         if (!imagePart) throw new Error("No image generated in response");
         const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
-        _noteApiSuccess(); // a good image response clears any transient-401 streak / banner
         const optimized = await optimizeImage(rawUrl, width, qual);
         _throwIfImageEditAborted();
+        _noteApiSuccess(); // image preparation completed and was not cancelled
         return optimized;
       } catch (err) {
         warnLog("Gemini Image Edit Error", _diagnosticErrorSummary(err));
@@ -1103,7 +1129,6 @@ const createGeminiAPI = (deps) => {
           }
           throw new Error("Vision API returned invalid response. The document may be too large — try a shorter PDF.");
         }
-        _noteApiSuccess(); // a valid Vision response clears any transient-401 streak / banner
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) {
           const blockReason = data.candidates?.[0]?.finishReason;
@@ -1113,6 +1138,8 @@ const createGeminiAPI = (deps) => {
           }
           throw new Error("No text generated from vision." + (blockReason ? ` Reason: ${blockReason}` : ''));
         }
+        if (typeof text !== 'string' || !text.trim()) throw new Error('Empty response text from Gemini Vision. Retry the failed step.');
+        _noteApiSuccess(); // usable Vision text clears the connection notice
         return text;
       } catch (err) {
         if (err && err.name === 'AbortError') throw err;

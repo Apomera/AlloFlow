@@ -1,0 +1,192 @@
+AlloFlowANTI.txt
+Snapshot SHA256 3fc492e303317be4876203d693a17fa72fc67e9715cf7cbf7a4844bdf973e7ba
+
+5831: function _alloQueueSequencedWrite(owner, sequence, task) {
+5832:   const previous = owner && owner.chain ? owner.chain : Promise.resolve();
+5833:   const run = previous.catch(() => undefined).then(() => {
+5834:     if (!owner || owner.sequence !== sequence) return { skipped: true };
+5835:     return task();
+5836:   });
+5837:   if (owner) {
+5838:     // Keep the serialization chain alive after a failed write while returning
+5839:     // the original promise so the caller can still report that failure.
+5840:     owner.chain = run.catch(() => undefined);
+5841:   }
+5842:   return run;
+5843: }
+5844: function _alloBeginOwnedAsync(ownerRef, identity) {
+
+23404:   const offlineHistoryWriteRef = useRef({ sequence: 0, chain: Promise.resolve() });
+23405:   const offlineProfileWriteRef = useRef({ sequence: 0, chain: Promise.resolve() });
+23406:   const offlineUnitWriteRef = useRef({ sequence: 0, chain: Promise.resolve() });
+23407:   useEffect(() => {
+23408:     const owner = offlineHistoryWriteRef.current;
+23409:     if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) {
+23410:         owner.sequence += 1;
+23411:         setPendingSync(false);
+23412:         return;
+23413:     }
+23414:     const sequence = owner.sequence + 1;
+23415:     owner.sequence = sequence;
+23416:     setPendingSync(true);
+23417:     const saveHistory = () => _alloQueueSequencedWrite(owner, sequence, async () => {
+23418:         const retention = ALLO_WORKSPACE_RECOVERY.resolvePolicy(
+23419:             canvasRecoveryStoreRef.current.retentionPolicy,
+23420:             null,
+23421:             canvasRecoveryStoreRef.current.effectiveRetentionPolicy
+23422:         );
+23423:         const itemsToSave = history.slice(-retention.maxOfflineItems);
+23424:         const serializeItems = (items, stripImages) => {
+23425:             return items.filter(item => item && typeof item === 'object').map(item => {
+23426:                 let dataToSave = item.data;
+
+23546:                 if (item.sourceProvenance) serializedItem.sourceProvenance = item.sourceProvenance;
+23547:                 // Vetted read-aloud audio (and student practice takes) must survive
+23548:                 // the browser-session autosave, not just explicit project-file saves —
+23549:                 // otherwise a plain refresh silently deletes prepped TTS and recorded
+23550:                 // voices. Dropped in the stripped (quota-exceeded) retry like other
+23551:                 // binary payloads.
+23552:                 if (!stripImages && item.karaokeAudio) serializedItem.karaokeAudio = item.karaokeAudio;
+23553:                 if (!stripImages && item.karaokeStudentAudio) serializedItem.karaokeStudentAudio = item.karaokeStudentAudio;
+23554:                 return serializedItem;
+23555:             });
+23556:         };
+23557:         const publishMediaReceipt = (receipt) => {
+23558:             if (owner.sequence !== sequence) return;
+23559:             window.__alloOfflineMediaPersistence = {
+23560:                 status: receipt.status, verified: receipt.verified,
+23561:                 verifiedAt: receipt.verifiedAt || null, code: receipt.code || null
+23562:             };
+23563:             window.dispatchEvent(new CustomEvent('alloflow:offline-media-persistence', {
+23564:                 detail: { status: receipt.status, verified: receipt.verified, verifiedAt: receipt.verifiedAt || null }
+23565:             }));
+23566:         };
+23567:         const verifySnapshot = async (snapshot) => {
+23568:             const write = window.AlloModules?.UtilsPure?.writeVerifiedStorageSnapshot;
+23569:             if (typeof write !== 'function') throw new Error('Verified device storage is not ready yet.');
+23570:             return write(storageDB, 'allo_offline_history', snapshot, () => owner.sequence === sequence);
+23571:         };
+23572:         try {
+23573:             const fullPayload = { items: serializeItems(itemsToSave, false) };
+23574:             const receipt = await verifySnapshot(fullPayload);
+23575:             if (receipt.verified && owner.sequence === sequence) {
+23576:                 publishMediaReceipt(receipt);
+23577:                 setLastSaved(new Date(receipt.verifiedAt));
+23578:             }
+23579:         } catch (e) {
+23580:             // Quota classification must be PRECISE. This used to also match any error
+23581:             // whose message merely contained 'exceeded', which catches
+23582:             // "Maximum call stack size exceeded" - the RangeError JSON.stringify throws
+23583:             // on deeply nested or cyclic data - and reported it to the teacher as
+23584:             // "Storage full". Behaviour Lens surfaced exactly that while the storage
+23585:             // manager showed 296 MB of 10536 MB used, so the diagnosis was not just
+23586:             // wrong, it pointed at the one thing that was fine. Match the real quota
+23587:             // signals (name, legacy codes, or the word 'quota') and nothing else.
+23588:             const _alloIsQuotaError = (err) => {
+23589:                 if (!err) return false;
+23590:                 if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') return true;
+23591:                 if (err.code === 22 || err.code === 1014) return true;
+23592:                 return String(err.message || '').toLowerCase().includes('quota');
+23593:             };
+23594:             if (_alloIsQuotaError(e)) {
+23595:                 if (owner.sequence !== sequence) return;
+23596:                 warnLog("Storage Quota Exceeded. Retrying with stripped assets...");
+23597:                 addToast(t('toasts.storage_full_text_only'), "warning");
+23598:                 try {
+23599:                     const strippedPayload = { items: serializeItems(itemsToSave, true) };
+23600:                     const receipt = await verifySnapshot(strippedPayload);
+23601:                     if (receipt.verified && owner.sequence === sequence) {
+23602:                         publishMediaReceipt({ ...receipt, status: 'text-only' });
+23603:                         setLastSaved(new Date(receipt.verifiedAt));
+23604:                     }
+23605:                 } catch (retryErr) {
+23606:                     publishMediaReceipt({ status: 'failed', verified: false, code: retryErr?.code || retryErr?.name || 'storage-failed' });
+23607:                     warnLog("Critical Storage Failure:", retryErr);
+23608:                     if (owner.sequence === sequence) addToast(t('toasts.storage_full_critical'), "error");
+23609:                 }
+23610:             } else {
+23611:                 publishMediaReceipt({ status: 'failed', verified: false, code: e?.code || e?.name || 'storage-failed' });
+23612:                 // NOT a quota problem. Say so plainly instead of leaving the teacher
+23613:                 // with a silent failure or, worse, a false 'storage full'.
+23614:                 warnLog("IndexedDB Save Error (not a quota condition):", e);
+23615:                 if (owner.sequence === sequence) addToast((t('toasts.autosave_failed') || 'Could not autosave history') + ': ' + String((e && e.message) || e).slice(0, 120), 'error');
+23616:             }
+23617:         }
+23618:     }).finally(() => {
+23619:         // A stale write must never clear the spinner for the newer snapshot
+23620:         // queued behind it.
+23621:         if (owner.sequence === sequence) setPendingSync(false);
+23622:     });
+23623:     const timeoutId = setTimeout(saveHistory, 1000);
+23624:     return () => {
+23625:         clearTimeout(timeoutId);
+23626:         if (owner.sequence === sequence) owner.sequence += 1;
+23627:     };
+23628:   }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded, canvasRecoveryRevision]);
+
+32197:   const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
+32198:     const liveResourceId = generatedContent && (generatedContent.id || generatedContent.resourceId || generatedContent.__alloUnsavedTtsToken);
+32199:     const resourceId = targetResourceId && targetResourceId !== 'unsaved'
+32200:       ? targetResourceId
+32201:       : (liveResourceId || targetResourceId || null);
+32202:     try {
+32203:       const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+32204:       if (KS) {
+32205:         const slot = field === 'karaokeStudentAudio' ? 'studentCurrent' : 'current';
+32206:         KS[slot + 'PendingPayloadSignature'] = _karaokePayloadSignature(payload);
+32207:       }
+32208:     } catch (_) {}
+32209: 
+32210:     try {
+32211:       setGeneratedContent(gc => {
+32212:         if (!gc) return gc;
+32213:         const currentId = gc.id || gc.resourceId || gc.__alloUnsavedTtsToken || null;
+32214:         if (resourceId && currentId && String(currentId) !== String(resourceId)) return gc;
+32215:         return Object.assign({}, gc, { [field]: payload });
+32216:       });
+32217:     } catch (_) {}
+32218:     try {
+32219:       if (resourceId) {
+32220:         setHistory(prev => Array.isArray(prev)
+32221:           ? prev.map(item => item && String(item.id || item.resourceId || '') === String(resourceId)
+32222:             ? Object.assign({}, item, { [field]: payload })
+32223:             : item)
+32224:           : prev);
+32225:       }
+32226:     } catch (_) {}
+32227:     try {
+32228:       window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated', { detail: { resourceId: resourceId || null, field } }));
+32229:     } catch (_) {}
+
+32679:       persist: ({ lane, payload, resourceId }) => {
+32680:         const field = lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio';
+32681:         _persistKaraokeAudioField(field, payload, resourceId);
+32682:       },
+32683:       normalize: _normalizeReadAloudBridgeText,
+
+32922:   window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference', options = {}) => {
+32923:     const requestOwner = window.__alloGetReadAloudReadiness;
+32924:     const bridge = _getReadAloudBridge();
+32925:     if (!bridge?.readiness) return null;
+32926:     const resourceId = generatedContent?.id || generatedContent?.resourceId;
+32927:     const KS = window.AlloModules?.KaraokeAudioStore;
+32928:     const durableStore = KS?.createStore();
+32929:     try {
+32930:       const snapshot = await storageDB.get('allo_offline_history', { throwOnError: true, localOnly: true });
+32931:       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+32932:       const saved = snapshot?.items?.find(item => String(item.id || item.resourceId) === String(resourceId));
+32933:       if (saved && durableStore) durableStore.hydrate(saved[lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio']);
+32934:       return { resourceId, ...bridge.readiness(sentences, lane, {
+32935:         entries: options.entries, profile: options.profile, failure: options.failure,
+32936:         durableStore, receipt: { verified: true, verifiedAt: new Date().toISOString() },
+32937:         preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+32938:       }), pictureOmissions: saved?.offlineMediaOmissions || [] };
+32939:     } catch (error) {
+32940:       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+32941:       return { resourceId, ...bridge.readiness(sentences, lane, {
+32942:         entries: options.entries, profile: options.profile,
+32943:         failure: error, preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+32944:       }), code: error?.code || error?.name || 'storage-failed' };
+32945:     } finally { durableStore?.clear(); }
+32946:   };
+32947:   window.__alloRetryReadAloudPersistence = (lane = 'reference', options = {}) => _getReadAloudBridge()?.retryPersistence(lane, options);

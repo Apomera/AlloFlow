@@ -33,6 +33,22 @@ window.SelHub = window.SelHub || {
 };
 
 (function() {
+
+  // Translation: __alloT reads the ctx that render() stores in _ctx, or the
+  // hub-published t for helpers that run outside render. Text tables are
+  // rebuilt at the top of each render, so a language switch applies at once.
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function') ? _ctx.t : ((window.SelHub && typeof window.SelHub.t === 'function') ? window.SelHub.t : null);
+    var v = null;
+    if (fn) { try { v = fn(key); } catch (e) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : fallback;
+  };
+  var _selFill = function (text, params) {
+    var s = String(text == null ? '' : text);
+    Object.keys(params || {}).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); });
+    return s;
+  };
   'use strict';
 
   // Reduced-motion CSS (WCAG 2.3.3) + focus-visible rings (WCAG 2.4.7) — scope to this tool's class
@@ -130,383 +146,392 @@ window.SelHub = window.SelHub || {
   // section can render them grouped: National (US-wide) → Find local
   // (US directory lookups) → International → Maine partners → School-based.
   // Numbers verified as of 2026-04-30.
-  var CRISIS_RESOURCES = [
+  function _selBuild_CRISIS_RESOURCES() { return [
     // ── NATIONAL (US-wide, works anywhere in the US) ──
     {
       id: '988', group: 'national',
-      label: '988 Suicide & Crisis Lifeline',
-      contact: 'Call or text 988',
+      label: __alloT('sel.crisiscompanion.crisis_resources.988.label', '988 Suicide & Crisis Lifeline'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.988.contact', 'Call or text 988'),
       url: 'https://988lifeline.org',
-      who: 'Anyone in the U.S. — including kids worried about a friend',
-      what: 'Free, confidential, 24/7. Trained crisis counselors. Connects to local services if needed.',
-      script: 'You can say: "I\'m worried about my friend." That is enough. They will guide the conversation from there.'
+      who: __alloT('sel.crisiscompanion.res_988_who', 'Anyone in the U.S. — including kids worried about a friend'),
+      what: __alloT('sel.crisiscompanion.res_988_what', 'Free, confidential, 24/7. Trained crisis counselors. Connects to local services if needed.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.988.script', 'You can say: "I\'m worried about my friend." That is enough. They will guide the conversation from there.')
     },
     {
       id: 'crisistext', group: 'national',
-      label: 'Crisis Text Line',
-      contact: 'Text HOME to 741741',
+      label: __alloT('sel.crisiscompanion.crisis_resources.crisistext.label', 'Crisis Text Line'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.crisistext.contact', 'Text HOME to 741741'),
       url: 'https://crisistextline.org',
-      who: 'Anyone in the U.S., Canada, UK, or Ireland (codes vary by country) — text-only is good if you don\'t want to talk',
-      what: 'Free, confidential, 24/7. A real human counselor texts back. Average wait under 5 minutes.',
-      script: 'You can text: "My friend is talking about hurting themselves and I don\'t know what to do." That works.'
+      who: __alloT('sel.crisiscompanion.res_crisistext_who', 'Anyone in the U.S., Canada, UK, or Ireland (codes vary by country) — text-only is good if you don\'t want to talk'),
+      what: __alloT('sel.crisiscompanion.res_crisistext_what', 'Free, confidential, 24/7. A real human counselor texts back. Average wait under 5 minutes.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.crisistext.script', 'You can text: "My friend is talking about hurting themselves and I don\'t know what to do." That works.')
     },
     {
       id: 'trevor', group: 'national',
-      label: 'The Trevor Project',
-      contact: 'Call 1-866-488-7386 · Text START to 678-678',
+      label: __alloT('sel.crisiscompanion.crisis_resources.trevor.label', 'The Trevor Project'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.trevor.contact', 'Call 1-866-488-7386 · Text START to 678-678'),
       url: 'https://thetrevorproject.org',
-      who: 'LGBTQ+ youth and friends supporting them (US)',
-      what: 'Free, confidential, 24/7. Specifically trained for LGBTQ+ youth crisis. LGBTQ+ kids face higher rates of suicidal thoughts; this resource is built for that reality.',
-      script: 'You can call or text: "I have a friend who\'s LGBTQ+ and going through a really hard time."'
+      who: __alloT('sel.crisiscompanion.res_trevor_who', 'LGBTQ+ youth and friends supporting them (US)'),
+      what: __alloT('sel.crisiscompanion.res_trevor_what', 'Free, confidential, 24/7. Specifically trained for LGBTQ+ youth crisis. LGBTQ+ kids face higher rates of suicidal thoughts; this resource is built for that reality.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.trevor.script', 'You can call or text: "I have a friend who\'s LGBTQ+ and going through a really hard time."')
     },
     {
       id: '911', group: 'national',
-      label: '911 Emergency',
-      contact: 'Call 911',
+      label: __alloT('sel.crisiscompanion.crisis_resources.911.label', '911 Emergency'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.911.contact', 'Call 911'),
       url: null,
-      who: 'When someone is in immediate physical danger right now (US)',
-      what: 'For active emergencies: someone is hurting themselves, has taken something, or is unsafe right now. Police, fire, and EMS dispatch.',
-      script: 'You can say: "My friend is in danger and I don\'t know what to do." They will help.'
+      who: __alloT('sel.crisiscompanion.res_911_who', 'When someone is in immediate physical danger right now (US)'),
+      what: __alloT('sel.crisiscompanion.res_911_what', 'For active emergencies: someone is hurting themselves, has taken something, or is unsafe right now. Police, fire, and EMS dispatch.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.911.script', 'You can say: "My friend is in danger and I don\'t know what to do." They will help.')
     },
 
     // ── FIND LOCAL (US directory lookups — type your zip, find your area) ──
     {
       id: '211', group: 'lookup',
-      label: '211 — community resource line',
-      contact: 'Call 211 · or visit 211.org',
+      label: __alloT('sel.crisiscompanion.crisis_resources.211.label', '211 — community resource line'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.211.contact', 'Call 211 · or visit 211.org'),
       url: 'https://www.211.org',
-      who: 'Anyone in the U.S. or Canada — automatically routes to your local services by area code',
-      what: 'Free, confidential, 24/7. Connects you to local mental-health crisis services, food assistance, housing, family support, and hundreds of other community programs. Run by United Way + local nonprofits. Different from 988 — 211 is the broader community-services line.',
-      script: 'You can say: "I\'m looking for mental-health crisis services in my area for a friend." They\'ll route you to the right local agency.'
+      who: __alloT('sel.crisiscompanion.res_211_who', 'Anyone in the U.S. or Canada — automatically routes to your local services by area code'),
+      what: __alloT('sel.crisiscompanion.res_211_what', 'Free, confidential, 24/7. Connects you to local mental-health crisis services, food assistance, housing, family support, and hundreds of other community programs. Run by United Way + local nonprofits. Different from 988 — 211 is the broader community-services line.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.211.script', 'You can say: "I\'m looking for mental-health crisis services in my area for a friend." They\'ll route you to the right local agency.')
     },
     {
       id: 'namilocator', group: 'lookup',
-      label: 'NAMI Affiliate Locator (national directory)',
-      contact: 'Visit nami.org/findsupport',
+      label: __alloT('sel.crisiscompanion.crisis_resources.namilocator.label', 'NAMI Affiliate Locator (national directory)'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.namilocator.contact', 'Visit nami.org/findsupport'),
       url: 'https://www.nami.org/findsupport',
-      who: 'Anyone in the U.S. — type your zip code, see your local NAMI chapter',
-      what: 'Every state has at least one NAMI affiliate; many have several. Local chapters offer free family support groups, peer-led recovery programs, education classes (Family-to-Family, Ending the Silence in schools), and warmlines. NAMI HelpLine: 1-800-950-6264.',
-      script: 'On the site: enter zip → "Find My Local NAMI" → see contact info, programs, and helpline number for your area.'
+      who: __alloT('sel.crisiscompanion.res_namilocator_who', 'Anyone in the U.S. — type your zip code, see your local NAMI chapter'),
+      what: __alloT('sel.crisiscompanion.res_namilocator_what', 'Every state has at least one NAMI affiliate; many have several. Local chapters offer free family support groups, peer-led recovery programs, education classes (Family-to-Family, Ending the Silence in schools), and warmlines. NAMI HelpLine: 1-800-950-6264.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.namilocator.script', 'On the site: enter zip → "Find My Local NAMI" → see contact info, programs, and helpline number for your area.')
     },
     {
       id: 'samhsa', group: 'lookup',
-      label: 'SAMHSA FindTreatment.gov (federal directory)',
-      contact: 'Visit findtreatment.gov · or 1-800-662-HELP (4357)',
+      label: __alloT('sel.crisiscompanion.crisis_resources.samhsa.label', 'SAMHSA FindTreatment.gov (federal directory)'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.samhsa.contact', 'Visit findtreatment.gov · or 1-800-662-HELP (4357)'),
       url: 'https://findtreatment.gov',
-      who: 'Anyone in the U.S. looking for ongoing mental-health or substance-use care',
-      what: 'Federal database of ~13,000 treatment facilities — therapy, psychiatry, intensive outpatient, residential, dual-diagnosis. Filter by zip, by what insurance you have, by language, by services offered. SAMHSA also has a 24/7 National Helpline (1-800-662-4357) that gives free referrals.',
-      script: 'On the site: enter zip → filter for "Mental Health Services" → narrow by what you can pay or insurance. The phone helpline is good if the website is overwhelming.'
+      who: __alloT('sel.crisiscompanion.res_samhsa_who', 'Anyone in the U.S. looking for ongoing mental-health or substance-use care'),
+      what: __alloT('sel.crisiscompanion.res_samhsa_what', 'Federal database of ~13,000 treatment facilities — therapy, psychiatry, intensive outpatient, residential, dual-diagnosis. Filter by zip, by what insurance you have, by language, by services offered. SAMHSA also has a 24/7 National Helpline (1-800-662-4357) that gives free referrals.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.samhsa.script', 'On the site: enter zip → filter for "Mental Health Services" → narrow by what you can pay or insurance. The phone helpline is good if the website is overwhelming.')
     },
 
     // ── INTERNATIONAL (outside the US) ──
     {
       id: 'befrienders', group: 'international',
-      label: 'Befrienders Worldwide',
-      contact: 'Visit befrienders.org',
+      label: __alloT('sel.crisiscompanion.crisis_resources.befrienders.label', 'Befrienders Worldwide'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.befrienders.contact', 'Visit befrienders.org'),
       url: 'https://www.befrienders.org',
-      who: 'Anyone outside the U.S. looking for crisis support in their country',
-      what: 'A global network of emotional-support volunteer centers in over 30 countries. Type your country into the site and you\'ll get the helpline numbers and chat options for your area. Most affiliates are free, confidential, and 24/7.',
-      script: 'On the site: select your country → see local helpline numbers, opening hours, languages supported, and contact methods.'
+      who: __alloT('sel.crisiscompanion.res_befrienders_who', 'Anyone outside the U.S. looking for crisis support in their country'),
+      what: __alloT('sel.crisiscompanion.res_befrienders_what', 'A global network of emotional-support volunteer centers in over 30 countries. Type your country into the site and you\'ll get the helpline numbers and chat options for your area. Most affiliates are free, confidential, and 24/7.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.befrienders.script', 'On the site: select your country → see local helpline numbers, opening hours, languages supported, and contact methods.')
     },
     {
       id: 'iasp', group: 'international',
-      label: 'IASP — International Association for Suicide Prevention',
-      contact: 'Visit iasp.info/resources/Crisis_Centres',
+      label: __alloT('sel.crisiscompanion.crisis_resources.iasp.label', 'IASP — International Association for Suicide Prevention'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.iasp.contact', 'Visit iasp.info/resources/Crisis_Centres'),
       url: 'https://www.iasp.info/resources/Crisis_Centres',
-      who: 'Anyone outside the U.S. — comprehensive global crisis-line directory',
-      what: 'IASP maintains the most complete international list of suicide-prevention crisis lines. Searchable by country, with phone, text, and online chat options. Often the best starting point if Befrienders does not have your country listed.',
-      script: 'On the site: select your country → see crisis lines with contact methods and hours.'
+      who: __alloT('sel.crisiscompanion.res_iasp_who', 'Anyone outside the U.S. — comprehensive global crisis-line directory'),
+      what: __alloT('sel.crisiscompanion.res_iasp_what', 'IASP maintains the most complete international list of suicide-prevention crisis lines. Searchable by country, with phone, text, and online chat options. Often the best starting point if Befrienders does not have your country listed.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.iasp.script', 'On the site: select your country → see crisis lines with contact methods and hours.')
     },
 
     // ── MAINE PARTNERS (named local agencies) ──
     {
       id: 'mainecrisis', group: 'maine',
-      label: 'Maine Crisis Line',
-      contact: 'Call 1-888-568-1112',
+      label: __alloT('sel.crisiscompanion.crisis_resources.mainecrisis.label', 'Maine Crisis Line'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.mainecrisis.contact', 'Call 1-888-568-1112'),
       url: 'https://www.maine.gov/dhhs/obh',
-      who: 'Anyone in Maine — connects to statewide crisis services',
-      what: 'Free, confidential, 24/7. Maine-based counselors. Operated by The Opportunity Alliance for southern Maine and other regional providers statewide. Can dispatch local mobile crisis teams when needed.',
-      script: 'Identify your county or town if you can. They will route you to the right local team.'
+      who: __alloT('sel.crisiscompanion.res_mainecrisis_who', 'Anyone in Maine — connects to statewide crisis services'),
+      what: __alloT('sel.crisiscompanion.res_mainecrisis_what', 'Free, confidential, 24/7. Maine-based counselors. Operated by The Opportunity Alliance for southern Maine and other regional providers statewide. Can dispatch local mobile crisis teams when needed.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.mainecrisis.script', 'Identify your county or town if you can. They will route you to the right local team.')
     },
     {
       id: 'opportunityalliance', group: 'maine',
-      label: 'The Opportunity Alliance (Cumberland County + statewide)',
-      contact: 'Main: 207-553-5800 · Crisis: 1-888-568-1112',
+      label: __alloT('sel.crisiscompanion.crisis_resources.opportunityalliance.label', 'The Opportunity Alliance (Cumberland County + statewide)'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.opportunityalliance.contact', 'Main: 207-553-5800 · Crisis: 1-888-568-1112'),
       url: 'https://www.opportunityalliance.org',
-      who: 'Children, teens, families, and adults in Cumberland County and across Maine',
-      what: 'Runs the Cumberland County Crisis Mobile Response team — the people who actually come to you when 1-888-568-1112 dispatches in Portland and surrounding communities. Also provides Children\'s Behavioral Health Services, in-home behavioral health, family support, and the 211 Maine backbone for southern Maine.',
-      script: 'For a friend in active crisis in Cumberland County: call 1-888-568-1112 and ask whether mobile crisis can come to your friend\'s location. For non-crisis support / connecting a family to ongoing services: call the main line during business hours.'
+      who: __alloT('sel.crisiscompanion.res_opportunityalliance_who', 'Children, teens, families, and adults in Cumberland County and across Maine'),
+      what: __alloT('sel.crisiscompanion.res_opportunityalliance_what', 'Runs the Cumberland County Crisis Mobile Response team — the people who actually come to you when 1-888-568-1112 dispatches in Portland and surrounding communities. Also provides Children\'s Behavioral Health Services, in-home behavioral health, family support, and the 211 Maine backbone for southern Maine.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.opportunityalliance.script', 'For a friend in active crisis in Cumberland County: call 1-888-568-1112 and ask whether mobile crisis can come to your friend\'s location. For non-crisis support / connecting a family to ongoing services: call the main line during business hours.')
     },
     {
       id: 'namimaine', group: 'maine',
-      label: 'NAMI Maine HelpLine',
-      contact: 'Call 1-800-464-5767',
+      label: __alloT('sel.crisiscompanion.crisis_resources.namimaine.label', 'NAMI Maine HelpLine'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.namimaine.contact', 'Call 1-800-464-5767'),
       url: 'https://namimaine.org',
-      who: 'Anyone in Maine seeking mental-health information, support, or referrals',
-      what: 'Not a crisis line, but a great daytime resource for navigating mental-health systems, peer support, and local programs. Also runs the Ending the Silence school program — student-aged presenters who teach about mental illness directly in middle and high school classrooms.',
-      script: 'Good for non-immediate questions: "How do I help my friend find a therapist?" or "Where do families go for support?" Also: "Does our school host Ending the Silence?"'
+      who: __alloT('sel.crisiscompanion.res_namimaine_who', 'Anyone in Maine seeking mental-health information, support, or referrals'),
+      what: __alloT('sel.crisiscompanion.res_namimaine_what', 'Not a crisis line, but a great daytime resource for navigating mental-health systems, peer support, and local programs. Also runs the Ending the Silence school program — student-aged presenters who teach about mental illness directly in middle and high school classrooms.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.namimaine.script', 'Good for non-immediate questions: "How do I help my friend find a therapist?" or "Where do families go for support?" Also: "Does our school host Ending the Silence?"')
     },
 
     // ── SCHOOL-BASED (works at every public school in the US) ──
     {
       id: 'school', group: 'school',
-      label: 'Your school counselor or school psychologist',
-      contact: 'Walk in, send a note, or ask any teacher to take you',
+      label: __alloT('sel.crisiscompanion.crisis_resources.school.label', 'Your school counselor or school psychologist'),
+      contact: __alloT('sel.crisiscompanion.crisis_resources.school.contact', 'Walk in, send a note, or ask any teacher to take you'),
       url: null,
-      who: 'Every public school in the U.S. has trained counselors; most middle and high schools also have a school psychologist',
-      what: 'They are trained for this. They are bound by confidentiality except for safety. They can connect to outside care, talk to parents with you, and stay with you through it.',
-      script: 'You can say: "I\'m worried about my friend." If you can\'t say it out loud, write it on a sticky note and hand it to them.'
+      who: __alloT('sel.crisiscompanion.res_school_who', 'Every public school in the U.S. has trained counselors; most middle and high schools also have a school psychologist'),
+      what: __alloT('sel.crisiscompanion.res_school_what', 'They are trained for this. They are bound by confidentiality except for safety. They can connect to outside care, talk to parents with you, and stay with you through it.'),
+      script: __alloT('sel.crisiscompanion.crisis_resources.school.script', 'You can say: "I\'m worried about my friend." If you can\'t say it out loud, write it on a sticky note and hand it to them.')
     }
-  ];
+  ]; }
+  var CRISIS_RESOURCES = _selBuild_CRISIS_RESOURCES();
 
   // Resource group display order + headers used by the Resources section.
-  var RESOURCE_GROUPS = [
-    { id: 'national',      label: 'Works anywhere in the U.S.', desc: 'These four are the universal backbone. Memorize 988.' },
-    { id: 'lookup',        label: 'Find your local help (U.S.)', desc: 'Directory lookups that route you to your specific area\'s services. Useful for ongoing care beyond the crisis call.' },
-    { id: 'international', label: 'Outside the U.S.?', desc: '988, 211, Trevor, and SAMHSA are U.S.-only. These directories cover the rest of the world.' },
-    { id: 'maine',         label: 'Maine partners (named local agencies)', desc: 'Specifically named because King Middle and Portland Public Schools are this tool\'s pilot context. If you\'re elsewhere, use the directory lookups above to find your equivalents.' },
-    { id: 'school',        label: 'School-based help', desc: 'Often the easiest adult to reach during the school day. Available in every U.S. public school.' }
-  ];
+  function _selBuild_RESOURCE_GROUPS() { return [
+    { id: 'national',      label: __alloT('sel.crisiscompanion.resource_groups.national.label', 'Works anywhere in the U.S.'), desc: __alloT('sel.crisiscompanion.resource_groups.national.desc', 'These four are the universal backbone. Memorize 988.') },
+    { id: 'lookup',        label: __alloT('sel.crisiscompanion.resource_groups.lookup.label', 'Find your local help (U.S.)'), desc: __alloT('sel.crisiscompanion.resource_groups.lookup.desc', 'Directory lookups that route you to your specific area\'s services. Useful for ongoing care beyond the crisis call.') },
+    { id: 'international', label: __alloT('sel.crisiscompanion.resource_groups.international.label', 'Outside the U.S.?'), desc: __alloT('sel.crisiscompanion.resource_groups.international.desc', '988, 211, Trevor, and SAMHSA are U.S.-only. These directories cover the rest of the world.') },
+    { id: 'maine',         label: __alloT('sel.crisiscompanion.resource_groups.maine.label', 'Maine partners (named local agencies)'), desc: __alloT('sel.crisiscompanion.resource_groups.maine.desc', 'Specifically named because King Middle and Portland Public Schools are this tool\'s pilot context. If you\'re elsewhere, use the directory lookups above to find your equivalents.') },
+    { id: 'school',        label: __alloT('sel.crisiscompanion.resource_groups.school.label', 'School-based help'), desc: __alloT('sel.crisiscompanion.resource_groups.school.desc', 'Often the easiest adult to reach during the school day. Available in every U.S. public school.') }
+  ]; }
+  var RESOURCE_GROUPS = _selBuild_RESOURCE_GROUPS();
 
   // Module 2 — Recognizing depression. Pattern-of-change framing, NOT a
   // checklist that could function as a self-diagnosis tool. AAP-aligned.
-  var DEPRESSION_PATTERNS = [
-    { id: 'mood',     icon: '🌧️', label: 'Persistent low mood',
-      desc: 'Sadness, emptiness, or a flat / numb feeling that lasts most of the day, nearly every day, for weeks. Different from normal sad days that come and go.' },
-    { id: 'irritability', icon: '⚡', label: 'Increased irritability',
-      desc: 'In adolescents especially, depression often shows up as irritability or anger more than sadness. Snapping at small things, feeling raw all the time.' },
-    { id: 'withdrawal', icon: '🚪', label: 'Withdrawal from activities',
-      desc: 'Pulling away from hobbies, sports, friends, and things they used to enjoy. Cancelling plans repeatedly. Spending much more time alone than they used to.' },
-    { id: 'sleep',    icon: '😴', label: 'Sleep changes',
-      desc: 'Sleeping much more than usual, or barely sleeping. Trouble falling asleep, waking up exhausted, sleeping through the day.' },
-    { id: 'appetite', icon: '🍽️', label: 'Appetite changes',
-      desc: 'Eating much more or much less than usual. Skipping meals, or eating constantly without enjoyment. Notable weight changes over a few weeks.' },
-    { id: 'energy',   icon: '🔋', label: 'Low energy / fatigue',
-      desc: 'Everything feels heavy. Even small tasks feel impossible. They might describe feeling tired all the time even after sleeping.' },
-    { id: 'school',   icon: '📚', label: 'Drop in school engagement',
-      desc: 'Grades sliding, missing assignments, falling behind in classes that used to be no problem. Often accompanied by missed school days.' },
-    { id: 'selfcare', icon: '🪥', label: 'Decline in self-care',
-      desc: 'Less attention to hygiene, appearance, or daily routines they used to keep up with. Not a fashion change — a sense that they\'ve stopped caring.' },
-    { id: 'hopeless', icon: '🌫️', label: 'Hopeless or self-critical statements',
-      desc: 'Frequent comments like "what\'s the point," "nothing matters," "I\'m worthless," "I\'m a burden." These are language patterns worth taking seriously, even when said casually.' }
-  ];
+  function _selBuild_DEPRESSION_PATTERNS() { return [
+    { id: 'mood',     icon: '🌧️', label: __alloT('sel.crisiscompanion.depression_patterns.mood.label', 'Persistent low mood'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.mood.desc', 'Sadness, emptiness, or a flat / numb feeling that lasts most of the day, nearly every day, for weeks. Different from normal sad days that come and go.') },
+    { id: 'irritability', icon: '⚡', label: __alloT('sel.crisiscompanion.depression_patterns.irritability.label', 'Increased irritability'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.irritability.desc', 'In adolescents especially, depression often shows up as irritability or anger more than sadness. Snapping at small things, feeling raw all the time.') },
+    { id: 'withdrawal', icon: '🚪', label: __alloT('sel.crisiscompanion.depression_patterns.withdrawal.label', 'Withdrawal from activities'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.withdrawal.desc', 'Pulling away from hobbies, sports, friends, and things they used to enjoy. Cancelling plans repeatedly. Spending much more time alone than they used to.') },
+    { id: 'sleep',    icon: '😴', label: __alloT('sel.crisiscompanion.depression_patterns.sleep.label', 'Sleep changes'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.sleep.desc', 'Sleeping much more than usual, or barely sleeping. Trouble falling asleep, waking up exhausted, sleeping through the day.') },
+    { id: 'appetite', icon: '🍽️', label: __alloT('sel.crisiscompanion.depression_patterns.appetite.label', 'Appetite changes'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.appetite.desc', 'Eating much more or much less than usual. Skipping meals, or eating constantly without enjoyment. Notable weight changes over a few weeks.') },
+    { id: 'energy',   icon: '🔋', label: __alloT('sel.crisiscompanion.depression_patterns.energy.label', 'Low energy / fatigue'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.energy.desc', 'Everything feels heavy. Even small tasks feel impossible. They might describe feeling tired all the time even after sleeping.') },
+    { id: 'school',   icon: '📚', label: __alloT('sel.crisiscompanion.depression_patterns.school.label', 'Drop in school engagement'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.school.desc', 'Grades sliding, missing assignments, falling behind in classes that used to be no problem. Often accompanied by missed school days.') },
+    { id: 'selfcare', icon: '🪥', label: __alloT('sel.crisiscompanion.depression_patterns.selfcare.label', 'Decline in self-care'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.selfcare.desc', 'Less attention to hygiene, appearance, or daily routines they used to keep up with. Not a fashion change — a sense that they\'ve stopped caring.') },
+    { id: 'hopeless', icon: '🌫️', label: __alloT('sel.crisiscompanion.depression_patterns.hopeless.label', 'Hopeless or self-critical statements'),
+      desc: __alloT('sel.crisiscompanion.depression_patterns.hopeless.desc', 'Frequent comments like "what\'s the point," "nothing matters," "I\'m worthless," "I\'m a burden." These are language patterns worth taking seriously, even when said casually.') }
+  ]; }
+  var DEPRESSION_PATTERNS = _selBuild_DEPRESSION_PATTERNS();
 
   // Module 3 — Crisis warning signs (TALK / MOOD / BEHAVIOR framework from
   // AFSP). DELIBERATELY high-level. We do NOT enumerate specific behaviors
   // that could function as a how-to.
-  var CRISIS_SIGNS = {
+  function _selBuild_CRISIS_SIGNS() { return {
     talk: {
       icon: '🗣️',
-      title: 'TALK — what they\'re saying',
-      desc: 'Direct or indirect language about wanting to die, ending pain, being a burden, or having no future. Sometimes said casually or as a joke. Take it seriously regardless of how it\'s framed.',
+      title: __alloT('sel.crisiscompanion.ui.talk_what_they_re_saying', 'TALK — what they\'re saying'),
+      desc: __alloT('sel.crisiscompanion.crisis_signs.talk.desc', 'Direct or indirect language about wanting to die, ending pain, being a burden, or having no future. Sometimes said casually or as a joke. Take it seriously regardless of how it\'s framed.'),
       examples: [
-        '"I want to die" or "I wish I weren\'t here"',
-        '"Everyone would be better off without me"',
-        '"I can\'t do this anymore"',
-        '"I just want it to stop"',
-        '"You won\'t have to worry about me much longer"',
-        'Saying goodbye in a way that feels final, even if subtle'
+        __alloT('sel.crisiscompanion.crisis_signs.talk.examples.0', '"I want to die" or "I wish I weren\'t here"'),
+        __alloT('sel.crisiscompanion.crisis_signs.talk.examples.1', '"Everyone would be better off without me"'),
+        __alloT('sel.crisiscompanion.crisis_signs.talk.examples.2', '"I can\'t do this anymore"'),
+        __alloT('sel.crisiscompanion.crisis_signs.talk.examples.3', '"I just want it to stop"'),
+        __alloT('sel.crisiscompanion.crisis_signs.talk.examples.4', '"You won\'t have to worry about me much longer"'),
+        __alloT('sel.crisiscompanion.crisis_signs.talk.examples.5', 'Saying goodbye in a way that feels final, even if subtle')
       ],
-      note: 'A friend joking about wanting to die is still a moment to gently check in. Most people who later attempt have told someone — sometimes in a casual or seemingly throwaway way.'
+      note: __alloT('sel.crisiscompanion.crisis_signs.talk.note', 'A friend joking about wanting to die is still a moment to gently check in. Most people who later attempt have told someone — sometimes in a casual or seemingly throwaway way.')
     },
     mood: {
       icon: '🌫️',
-      title: 'MOOD — what you\'re seeing',
-      desc: 'Significant shifts in mood, especially over short periods. Sudden calm or relief AFTER a period of distress can be a serious sign — sometimes a person at risk decides on a plan and feels temporarily peaceful about it.',
+      title: __alloT('sel.crisiscompanion.ui.mood_what_you_re_seeing', 'MOOD — what you\'re seeing'),
+      desc: __alloT('sel.crisiscompanion.crisis_signs.mood.desc', 'Significant shifts in mood, especially over short periods. Sudden calm or relief AFTER a period of distress can be a serious sign — sometimes a person at risk decides on a plan and feels temporarily peaceful about it.'),
       examples: [
-        'Persistent depression or anxiety that isn\'t lifting',
-        'A sudden sense of calm or "everything is fine now" after a long hard period',
-        'Hopelessness about the future',
-        'Rage or vengeful talk',
-        'Loss of interest in things they used to care about'
+        __alloT('sel.crisiscompanion.crisis_signs.mood.examples.0', 'Persistent depression or anxiety that isn\'t lifting'),
+        __alloT('sel.crisiscompanion.crisis_signs.mood.examples.1', 'A sudden sense of calm or "everything is fine now" after a long hard period'),
+        __alloT('sel.crisiscompanion.crisis_signs.mood.examples.2', 'Hopelessness about the future'),
+        __alloT('sel.crisiscompanion.crisis_signs.mood.examples.3', 'Rage or vengeful talk'),
+        __alloT('sel.crisiscompanion.crisis_signs.mood.examples.4', 'Loss of interest in things they used to care about')
       ],
-      note: 'Sudden improvement after a long hard time is good when it follows treatment, support, and rest. It\'s a warning sign when it follows nothing — when calm appears out of nowhere after weeks of struggle.'
+      note: __alloT('sel.crisiscompanion.crisis_signs.mood.note', 'Sudden improvement after a long hard time is good when it follows treatment, support, and rest. It\'s a warning sign when it follows nothing — when calm appears out of nowhere after weeks of struggle.')
     },
     behavior: {
       icon: '🪶',
-      title: 'BEHAVIOR — what they\'re doing',
-      desc: 'Patterns of action, especially preparation patterns. We deliberately do NOT enumerate specifics here that could function as a how-to. The general categories are enough for a friend to recognize that something is wrong.',
+      title: __alloT('sel.crisiscompanion.ui.behavior_what_they_re_doing', 'BEHAVIOR — what they\'re doing'),
+      desc: __alloT('sel.crisiscompanion.crisis_signs.behavior.desc', 'Patterns of action, especially preparation patterns. We deliberately do NOT enumerate specifics here that could function as a how-to. The general categories are enough for a friend to recognize that something is wrong.'),
       examples: [
-        'Withdrawing from friends, family, or activities they used to love',
-        'Increased substance use (alcohol, weed, pills, vaping more than usual)',
-        'Giving away meaningful possessions',
-        'Saying goodbye to people in a way that feels final',
-        'Acting recklessly, taking risks they normally wouldn\'t',
-        'Searching for ways to harm themselves online (you might see screen-time spike at strange hours, or notice they have searches they hide)'
+        __alloT('sel.crisiscompanion.crisis_signs.behavior.examples.0', 'Withdrawing from friends, family, or activities they used to love'),
+        __alloT('sel.crisiscompanion.crisis_signs.behavior.examples.1', 'Increased substance use (alcohol, weed, pills, vaping more than usual)'),
+        __alloT('sel.crisiscompanion.crisis_signs.behavior.examples.2', 'Giving away meaningful possessions'),
+        __alloT('sel.crisiscompanion.crisis_signs.behavior.examples.3', 'Saying goodbye to people in a way that feels final'),
+        __alloT('sel.crisiscompanion.crisis_signs.behavior.examples.4', 'Acting recklessly, taking risks they normally wouldn\'t'),
+        __alloT('sel.crisiscompanion.crisis_signs.behavior.examples.5', 'Searching for ways to harm themselves online (you might see screen-time spike at strange hours, or notice they have searches they hide)')
       ],
-      note: 'You don\'t have to be sure. If a cluster of these is showing up, that\'s the moment to gently check in AND tell a trusted adult. You don\'t need certainty — concern is enough.'
+      note: __alloT('sel.crisiscompanion.crisis_signs.behavior.note', 'You don\'t have to be sure. If a cluster of these is showing up, that\'s the moment to gently check in AND tell a trusted adult. You don\'t need certainty — concern is enough.')
     }
-  };
+  }; }
+  var CRISIS_SIGNS = _selBuild_CRISIS_SIGNS();
 
   // Module 5 — What to say (and what not to say) — paired ✓/× cards.
-  var SAY_DO = [
-    { say: '"I\'ve noticed you seem really down lately. I care about you. How are you really doing?"',
-      why: 'Specific, caring, gives them an opening. "Really doing" signals you want past the usual "I\'m fine."' },
-    { say: '"Are you thinking about hurting yourself? Are you thinking about suicide?"',
-      why: 'Directly asking does NOT plant the idea — research is clear on this. It often comes as a relief. They were probably waiting for someone to notice.' },
-    { say: '"I\'m glad you told me. That took courage."',
-      why: 'Affirms the disclosure. Don\'t skip ahead to fixing — first thank them for trusting you.' },
-    { say: '"This is more than I can handle alone, and I want to make sure you\'re safe. Can we tell someone together?"',
-      why: 'Honest about your limits. Frames adult-telling as an act of love, not betrayal. The "together" matters — you\'re not bailing.' },
-    { say: '"I\'m here. I\'m not going anywhere. We can sit in silence if you want."',
-      why: 'Presence is the medicine. You don\'t have to have answers. You just have to stay.' },
-    { say: '"Is there someone you trust I can help you talk to right now?"',
-      why: 'Names that adult-help is the next step, but lets them have agency in choosing who.' },
-    { say: '"I love you. I\'m scared for you. Please let me help."',
-      why: 'Direct emotional honesty. "Scared" is OK — it\'s how you actually feel, and it tells them this matters to you.' }
-  ];
+  function _selBuild_SAY_DO() { return [
+    { say: __alloT('sel.crisiscompanion.say_do.0.say', '"I\'ve noticed you seem really down lately. I care about you. How are you really doing?"'),
+      why: __alloT('sel.crisiscompanion.say_do.0.why', 'Specific, caring, gives them an opening. "Really doing" signals you want past the usual "I\'m fine."') },
+    { say: __alloT('sel.crisiscompanion.say_do.1.say', '"Are you thinking about hurting yourself? Are you thinking about suicide?"'),
+      why: __alloT('sel.crisiscompanion.say_do.1.why', 'Directly asking does NOT plant the idea — research is clear on this. It often comes as a relief. They were probably waiting for someone to notice.') },
+    { say: __alloT('sel.crisiscompanion.say_do.2.say', '"I\'m glad you told me. That took courage."'),
+      why: __alloT('sel.crisiscompanion.say_do.2.why', 'Affirms the disclosure. Don\'t skip ahead to fixing — first thank them for trusting you.') },
+    { say: __alloT('sel.crisiscompanion.say_do.3.say', '"This is more than I can handle alone, and I want to make sure you\'re safe. Can we tell someone together?"'),
+      why: __alloT('sel.crisiscompanion.say_do.3.why', 'Honest about your limits. Frames adult-telling as an act of love, not betrayal. The "together" matters — you\'re not bailing.') },
+    { say: __alloT('sel.crisiscompanion.say_do.4.say', '"I\'m here. I\'m not going anywhere. We can sit in silence if you want."'),
+      why: __alloT('sel.crisiscompanion.say_do.4.why', 'Presence is the medicine. You don\'t have to have answers. You just have to stay.') },
+    { say: __alloT('sel.crisiscompanion.say_do.5.say', '"Is there someone you trust I can help you talk to right now?"'),
+      why: __alloT('sel.crisiscompanion.say_do.5.why', 'Names that adult-help is the next step, but lets them have agency in choosing who.') },
+    { say: __alloT('sel.crisiscompanion.say_do.6.say', '"I love you. I\'m scared for you. Please let me help."'),
+      why: __alloT('sel.crisiscompanion.say_do.6.why', 'Direct emotional honesty. "Scared" is OK — it\'s how you actually feel, and it tells them this matters to you.') }
+  ]; }
+  var SAY_DO = _selBuild_SAY_DO();
 
-  var SAY_DONT = [
-    { say: '"You shouldn\'t feel that way."',
-      why: 'Tells them their feelings are wrong. They will stop telling you anything if their feelings get judged.' },
-    { say: '"Other people have it worse than you."',
-      why: 'Pain isn\'t a comparison. This shuts down disclosure and adds shame.' },
-    { say: '"Don\'t tell anyone. I won\'t tell either."',
-      why: 'Promising secrecy in a safety situation is the opposite of help. Safety overrides secrecy. Loyalty here means telling.' },
-    { say: '"Promise me you won\'t do anything."',
-      why: 'Asks them to make a promise that may not be in their power to keep — and adds a feeling of having let you down if they can\'t. Replace with: "I want you to be safe. Let\'s find help together."' },
-    { say: '"You have so much to live for."',
-      why: 'Well-meant, but in a deeply low moment a person genuinely cannot feel this. It can land as "you should be grateful" — which adds shame to the pain.' },
-    { say: '"Just snap out of it / cheer up / try harder."',
-      why: 'Depression is not a choice. Telling someone to choose otherwise tells them you don\'t understand what they\'re experiencing.' },
-    { say: '"Why would you think that?" (in a frustrated tone)',
-      why: 'Frustration reads as judgment. If you genuinely want to understand, ask gently — "Can you help me understand what you\'re feeling right now?" — and stay open to whatever they say.' }
-  ];
+  function _selBuild_SAY_DONT() { return [
+    { say: __alloT('sel.crisiscompanion.say_dont.0.say', '"You shouldn\'t feel that way."'),
+      why: __alloT('sel.crisiscompanion.say_dont.0.why', 'Tells them their feelings are wrong. They will stop telling you anything if their feelings get judged.') },
+    { say: __alloT('sel.crisiscompanion.say_dont.1.say', '"Other people have it worse than you."'),
+      why: __alloT('sel.crisiscompanion.say_dont.1.why', 'Pain isn\'t a comparison. This shuts down disclosure and adds shame.') },
+    { say: __alloT('sel.crisiscompanion.say_dont.2.say', '"Don\'t tell anyone. I won\'t tell either."'),
+      why: __alloT('sel.crisiscompanion.say_dont.2.why', 'Promising secrecy in a safety situation is the opposite of help. Safety overrides secrecy. Loyalty here means telling.') },
+    { say: __alloT('sel.crisiscompanion.say_dont.3.say', '"Promise me you won\'t do anything."'),
+      why: __alloT('sel.crisiscompanion.say_dont.3.why', 'Asks them to make a promise that may not be in their power to keep — and adds a feeling of having let you down if they can\'t. Replace with: "I want you to be safe. Let\'s find help together."') },
+    { say: __alloT('sel.crisiscompanion.say_dont.4.say', '"You have so much to live for."'),
+      why: __alloT('sel.crisiscompanion.say_dont.4.why', 'Well-meant, but in a deeply low moment a person genuinely cannot feel this. It can land as "you should be grateful" — which adds shame to the pain.') },
+    { say: __alloT('sel.crisiscompanion.say_dont.5.say', '"Just snap out of it / cheer up / try harder."'),
+      why: __alloT('sel.crisiscompanion.say_dont.5.why', 'Depression is not a choice. Telling someone to choose otherwise tells them you don\'t understand what they\'re experiencing.') },
+    { say: __alloT('sel.crisiscompanion.say_dont.6.say', '"Why would you think that?" (in a frustrated tone)'),
+      why: __alloT('sel.crisiscompanion.say_dont.6.why', 'Frustration reads as judgment. If you genuinely want to understand, ask gently — "Can you help me understand what you\'re feeling right now?" — and stay open to whatever they say.') }
+  ]; }
+  var SAY_DONT = _selBuild_SAY_DONT();
 
   // Module 6 — Telling a trusted adult: list of adult options.
-  var TRUSTED_ADULTS = [
-    { icon: '🍎', label: 'School counselor or school psychologist',
-      pro: 'Trained for this. Often the easiest one to access during a school day. Bound by confidentiality except for safety. Can help you tell parents and connect to outside care.',
-      how: 'Walk in. Send a note. Ask any teacher to take you. You can write it down if you can\'t say it.' },
-    { icon: '🏫', label: 'Teacher you trust',
-      pro: 'Sees you regularly, knows your friend group. Mandated reporter — they know what to do.',
-      how: 'After class, in office hours, or by note. "I need to talk to you about something serious about a friend."' },
-    { icon: '🩺', label: 'School nurse',
-      pro: 'Confidential medical / mental-health resource at school. Often easier to access than the counselor.',
-      how: 'Walk into the nurse\'s office. They\'ll make space.' },
-    { icon: '👨‍👩‍👧', label: 'Parent, guardian, or older sibling',
-      pro: 'They love you. They want to help. Even if they don\'t know what to do, they can take the next step with you.',
-      how: 'Pick a calm moment. Start with: "I need help with something serious about a friend." Ask if you can sit down together.' },
-    { icon: '⚕️', label: 'Family doctor or pediatrician',
-      pro: 'Confidential medical professional. Can refer to mental-health care, talk to your friend\'s family, or coordinate with school.',
-      how: 'You can call the office and say you need to talk to the doctor. Many offer adolescent confidentiality.' },
-    { icon: '🏟️', label: 'Coach or club advisor',
-      pro: 'Adults who already know you and your friend through activities. Often have school-counselor connections.',
-      how: 'After practice or a meeting. "I need to talk to you about something I\'m worried about."' },
-    { icon: '🕊️', label: 'Religious leader (if your family is part of a faith community)',
-      pro: 'For families where this is a trusted relationship, faith leaders can be a meaningful first stop.',
-      how: 'Most welcome these conversations. Many have trauma-informed training.' },
-    { icon: '🧑‍⚕️', label: 'A therapist (yours or theirs, if either of you has one)',
-      pro: 'Already trained for this exact conversation. If you or your friend already see a therapist, this is the most direct route.',
-      how: 'Call the office. "I have a safety concern I need to talk about today."' }
-  ];
+  function _selBuild_TRUSTED_ADULTS() { return [
+    { icon: '🍎', label: __alloT('sel.crisiscompanion.trusted_adults.0.label', 'School counselor or school psychologist'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.0.pro', 'Trained for this. Often the easiest one to access during a school day. Bound by confidentiality except for safety. Can help you tell parents and connect to outside care.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.0.how', 'Walk in. Send a note. Ask any teacher to take you. You can write it down if you can\'t say it.') },
+    { icon: '🏫', label: __alloT('sel.crisiscompanion.trusted_adults.1.label', 'Teacher you trust'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.1.pro', 'Sees you regularly, knows your friend group. Mandated reporter — they know what to do.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.1.how', 'After class, in office hours, or by note. "I need to talk to you about something serious about a friend."') },
+    { icon: '🩺', label: __alloT('sel.crisiscompanion.trusted_adults.2.label', 'School nurse'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.2.pro', 'Confidential medical / mental-health resource at school. Often easier to access than the counselor.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.2.how', 'Walk into the nurse\'s office. They\'ll make space.') },
+    { icon: '👨‍👩‍👧', label: __alloT('sel.crisiscompanion.trusted_adults.3.label', 'Parent, guardian, or older sibling'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.3.pro', 'They love you. They want to help. Even if they don\'t know what to do, they can take the next step with you.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.3.how', 'Pick a calm moment. Start with: "I need help with something serious about a friend." Ask if you can sit down together.') },
+    { icon: '⚕️', label: __alloT('sel.crisiscompanion.trusted_adults.4.label', 'Family doctor or pediatrician'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.4.pro', 'Confidential medical professional. Can refer to mental-health care, talk to your friend\'s family, or coordinate with school.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.4.how', 'You can call the office and say you need to talk to the doctor. Many offer adolescent confidentiality.') },
+    { icon: '🏟️', label: __alloT('sel.crisiscompanion.trusted_adults.5.label', 'Coach or club advisor'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.5.pro', 'Adults who already know you and your friend through activities. Often have school-counselor connections.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.5.how', 'After practice or a meeting. "I need to talk to you about something I\'m worried about."') },
+    { icon: '🕊️', label: __alloT('sel.crisiscompanion.trusted_adults.6.label', 'Religious leader (if your family is part of a faith community)'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.6.pro', 'For families where this is a trusted relationship, faith leaders can be a meaningful first stop.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.6.how', 'Most welcome these conversations. Many have trauma-informed training.') },
+    { icon: '🧑‍⚕️', label: __alloT('sel.crisiscompanion.trusted_adults.7.label', 'A therapist (yours or theirs, if either of you has one)'),
+      pro: __alloT('sel.crisiscompanion.trusted_adults.7.pro', 'Already trained for this exact conversation. If you or your friend already see a therapist, this is the most direct route.'),
+      how: __alloT('sel.crisiscompanion.trusted_adults.7.how', 'Call the office. "I have a safety concern I need to talk about today."') }
+  ]; }
+  var TRUSTED_ADULTS = _selBuild_TRUSTED_ADULTS();
 
   // Module 7 — Suicide myths debunked
-  var MYTHS = [
+  function _selBuild_MYTHS() { return [
     {
-      claim: 'Asking someone if they\'re thinking about suicide will plant the idea.',
-      truth: 'False. Research is consistent and clear: asking does NOT increase risk. It often comes as a relief — the person was waiting for someone to notice. Asking is one of the most protective things a friend can do.',
-      cite: 'Dazzi et al., Psychological Medicine (2014) meta-analysis · AFSP · QPR Institute · NIMH'
+      claim: __alloT('sel.crisiscompanion.myths.0.claim', 'Asking someone if they\'re thinking about suicide will plant the idea.'),
+      truth: __alloT('sel.crisiscompanion.myths.0.truth', 'False. Research is consistent and clear: asking does NOT increase risk. It often comes as a relief — the person was waiting for someone to notice. Asking is one of the most protective things a friend can do.'),
+      cite: __alloT('sel.crisiscompanion.myths.0.cite', 'Dazzi et al., Psychological Medicine (2014) meta-analysis · AFSP · QPR Institute · NIMH')
     },
     {
-      claim: 'People who talk about suicide are just looking for attention. They wouldn\'t actually do anything.',
-      truth: 'Dangerous myth. Most people who later attempt have told someone first — sometimes casually, sometimes as a joke. Every disclosure deserves a real response. "Attention-seeking" is often code for "in distress with no other way to ask for help."',
-      cite: 'AFSP · CDC · National Action Alliance for Suicide Prevention'
+      claim: __alloT('sel.crisiscompanion.myths.1.claim', 'People who talk about suicide are just looking for attention. They wouldn\'t actually do anything.'),
+      truth: __alloT('sel.crisiscompanion.myths.1.truth', 'Dangerous myth. Most people who later attempt have told someone first — sometimes casually, sometimes as a joke. Every disclosure deserves a real response. "Attention-seeking" is often code for "in distress with no other way to ask for help."'),
+      cite: __alloT('sel.crisiscompanion.myths.1.cite', 'AFSP · CDC · National Action Alliance for Suicide Prevention')
     },
     {
-      claim: 'If someone really wanted to die, they wouldn\'t tell anyone.',
-      truth: 'False. The opposite is true. Many people who attempt have given direct or indirect warning signs to people around them. Telling someone is often a sign of ambivalence — part of them wants to live and is reaching out.',
-      cite: 'Reporting on Suicide guidelines · AFSP · Sources of Strength'
+      claim: __alloT('sel.crisiscompanion.myths.2.claim', 'If someone really wanted to die, they wouldn\'t tell anyone.'),
+      truth: __alloT('sel.crisiscompanion.myths.2.truth', 'False. The opposite is true. Many people who attempt have given direct or indirect warning signs to people around them. Telling someone is often a sign of ambivalence — part of them wants to live and is reaching out.'),
+      cite: __alloT('sel.crisiscompanion.myths.2.cite', 'Reporting on Suicide guidelines · AFSP · Sources of Strength')
     },
     {
-      claim: 'There\'s nothing a friend can do — only a doctor or therapist can help.',
-      truth: 'Peer presence is documented as protective. You don\'t have to fix anything. Listening, taking it seriously, and helping connect them to a trusted adult is genuine help. Programs like Sources of Strength are built around the fact that friends matter.',
-      cite: 'Sources of Strength research · Wyman et al., American Journal of Public Health (2010)'
+      claim: __alloT('sel.crisiscompanion.myths.3.claim', 'There\'s nothing a friend can do — only a doctor or therapist can help.'),
+      truth: __alloT('sel.crisiscompanion.myths.3.truth', 'Peer presence is documented as protective. You don\'t have to fix anything. Listening, taking it seriously, and helping connect them to a trusted adult is genuine help. Programs like Sources of Strength are built around the fact that friends matter.'),
+      cite: __alloT('sel.crisiscompanion.myths.3.cite', 'Sources of Strength research · Wyman et al., American Journal of Public Health (2010)')
     },
     {
-      claim: 'Talking about suicide will make it worse.',
-      truth: 'Only true with UNSAFE messaging — glamorizing it, describing methods, sensationalizing. Talking with care, using safe-messaging language, and connecting to help is protective. Every major suicide-prevention organization recommends honest conversation.',
-      cite: 'Reporting on Suicide guidelines (reportingonsuicide.org) · AFSP · WHO'
+      claim: __alloT('sel.crisiscompanion.myths.4.claim', 'Talking about suicide will make it worse.'),
+      truth: __alloT('sel.crisiscompanion.myths.4.truth', 'Only true with UNSAFE messaging — glamorizing it, describing methods, sensationalizing. Talking with care, using safe-messaging language, and connecting to help is protective. Every major suicide-prevention organization recommends honest conversation.'),
+      cite: __alloT('sel.crisiscompanion.myths.4.cite', 'Reporting on Suicide guidelines (reportingonsuicide.org) · AFSP · WHO')
     },
     {
-      claim: 'Suicide happens without warning.',
-      truth: 'False. Research consistently shows warning signs are present in the majority of cases — though they\'re sometimes only obvious in hindsight. That\'s why peer-support training matters: it teaches you what to notice in real time.',
-      cite: 'AFSP · CDC YRBSS · NIMH research summaries'
+      claim: __alloT('sel.crisiscompanion.myths.5.claim', 'Suicide happens without warning.'),
+      truth: __alloT('sel.crisiscompanion.myths.5.truth', 'False. Research consistently shows warning signs are present in the majority of cases — though they\'re sometimes only obvious in hindsight. That\'s why peer-support training matters: it teaches you what to notice in real time.'),
+      cite: __alloT('sel.crisiscompanion.myths.5.cite', 'AFSP · CDC YRBSS · NIMH research summaries')
     }
-  ];
+  ]; }
+  var MYTHS = _selBuild_MYTHS();
 
   // Module 10 — Practice scenarios. Three scripted conversations with three
   // possible responses each (helpful / neutral / harmful) and feedback.
   // Modeled on Sources of Strength practice protocols. Intentionally NOT
   // detailed enough to function as a script for someone in crisis to mimic.
-  var PRACTICE_SCENARIOS = [
+  function _selBuild_PRACTICE_SCENARIOS() { return [
     {
       id: 'sc1',
-      title: 'A friend opens up at lunch',
-      setting: 'You and Maya are sitting together at lunch. She\'s been quieter than usual lately. She picks at her food and says, almost casually: "Honestly, sometimes I just don\'t see the point of any of this anymore."',
+      title: __alloT('sel.crisiscompanion.ui.a_friend_opens_up_at_lunch', 'A friend opens up at lunch'),
+      setting: __alloT('sel.crisiscompanion.practice_scenarios.sc1.setting', 'You and Maya are sitting together at lunch. She\'s been quieter than usual lately. She picks at her food and says, almost casually: "Honestly, sometimes I just don\'t see the point of any of this anymore."'),
       responses: [
         {
-          text: '"What do you mean? Don\'t talk like that."',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc1.responses.0.text', '"What do you mean? Don\'t talk like that."'),
           rating: 'harmful',
-          why: 'This shuts down the disclosure. Telling someone "don\'t talk like that" tells them their feelings are wrong, AND that you\'re not safe to be honest with. They will likely retreat.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc1.responses.0.why', 'This shuts down the disclosure. Telling someone "don\'t talk like that" tells them their feelings are wrong, AND that you\'re not safe to be honest with. They will likely retreat.')
         },
         {
-          text: '"That sounds really heavy. Can you tell me more about what\'s been going on? I care about you."',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc1.responses.1.text', '"That sounds really heavy. Can you tell me more about what\'s been going on? I care about you."'),
           rating: 'helpful',
-          why: 'Validates the feeling without judgment. Invites more without forcing. "I care about you" makes it safe to keep talking. This opens the door for the harder question to come next: "Are you having thoughts of hurting yourself?"'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc1.responses.1.why', 'Validates the feeling without judgment. Invites more without forcing. "I care about you" makes it safe to keep talking. This opens the door for the harder question to come next: "Are you having thoughts of hurting yourself?"')
         },
         {
-          text: '"Yeah, school is so stressful right now."',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc1.responses.2.text', '"Yeah, school is so stressful right now."'),
           rating: 'neutral',
-          why: 'Not harmful, but misses what she actually said. "Don\'t see the point of any of this" is more than school stress. A neutral response can leave her feeling unheard. Ask one follow-up question to be sure.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc1.responses.2.why', 'Not harmful, but misses what she actually said. "Don\'t see the point of any of this" is more than school stress. A neutral response can leave her feeling unheard. Ask one follow-up question to be sure.')
         }
       ]
     },
     {
       id: 'sc2',
-      title: 'A direct disclosure over text',
-      setting: 'It\'s 11pm on a Tuesday. Your friend Jamie texts: "I keep thinking about how everyone would be fine without me." You read it and your heart stops.',
+      title: __alloT('sel.crisiscompanion.ui.a_direct_disclosure_over_text', 'A direct disclosure over text'),
+      setting: __alloT('sel.crisiscompanion.practice_scenarios.sc2.setting', 'It\'s 11pm on a Tuesday. Your friend Jamie texts: "I keep thinking about how everyone would be fine without me." You read it and your heart stops.'),
       responses: [
         {
-          text: '"I\'m here. Don\'t do anything. I\'m calling my mom right now to come help."',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc2.responses.0.text', '"I\'m here. Don\'t do anything. I\'m calling my mom right now to come help."'),
           rating: 'helpful',
-          why: 'Direct, present, taking it seriously, getting an adult involved fast. "Calling my mom" names the move. If you can also stay on text or call them while waiting, do that. If you can get to them in person safely, do that.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc2.responses.0.why', 'Direct, present, taking it seriously, getting an adult involved fast. "Calling my mom" names the move. If you can also stay on text or call them while waiting, do that. If you can get to them in person safely, do that.')
         },
         {
-          text: '"omg are you okay?? you have so much to live for!!"',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc2.responses.1.text', '"omg are you okay?? you have so much to live for!!"'),
           rating: 'neutral',
-          why: 'Heart in the right place but lands wrong. "You have so much to live for" can feel like a guilt trip in a deeply low moment. Better: name your fear, tell them you love them, and get an adult involved.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc2.responses.1.why', 'Heart in the right place but lands wrong. "You have so much to live for" can feel like a guilt trip in a deeply low moment. Better: name your fear, tell them you love them, and get an adult involved.')
         },
         {
-          text: '"I won\'t tell anyone, but please don\'t do anything tonight, okay?"',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc2.responses.2.text', '"I won\'t tell anyone, but please don\'t do anything tonight, okay?"'),
           rating: 'harmful',
-          why: 'Promising secrecy in a safety situation makes things worse. The most loyal thing here is telling an adult — even if Jamie asks you not to. Safety overrides secrecy. Tonight, you tell someone.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc2.responses.2.why', 'Promising secrecy in a safety situation makes things worse. The most loyal thing here is telling an adult — even if Jamie asks you not to. Safety overrides secrecy. Tonight, you tell someone.')
         }
       ]
     },
     {
       id: 'sc3',
-      title: 'The aftermath — your friend is now in care',
-      setting: 'Last week your friend was hospitalized after a really hard night. You were the one who told an adult. They\'re back at school today, looking exhausted. They don\'t look at you in the hallway. You\'re scared they\'re mad at you.',
+      title: __alloT('sel.crisiscompanion.ui.the_aftermath_your_friend_is_now', 'The aftermath — your friend is now in care'),
+      setting: __alloT('sel.crisiscompanion.practice_scenarios.sc3.setting', 'Last week your friend was hospitalized after a really hard night. You were the one who told an adult. They\'re back at school today, looking exhausted. They don\'t look at you in the hallway. You\'re scared they\'re mad at you.'),
       responses: [
         {
-          text: 'You walk up: "Hey. I\'ve been thinking about you. I\'m glad you\'re here today. Whenever you want to talk — about any of it, or nothing at all — I\'m around."',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc3.responses.0.text', 'You walk up: "Hey. I\'ve been thinking about you. I\'m glad you\'re here today. Whenever you want to talk — about any of it, or nothing at all — I\'m around."'),
           rating: 'helpful',
-          why: 'Lets them know you\'re still there without making it about you. Doesn\'t demand anything. The "any of it, or nothing at all" gives them permission to choose pace. This is what loyalty looks like AFTER you\'ve told.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc3.responses.0.why', 'Lets them know you\'re still there without making it about you. Doesn\'t demand anything. The "any of it, or nothing at all" gives them permission to choose pace. This is what loyalty looks like AFTER you\'ve told.')
         },
         {
-          text: 'You avoid them so they don\'t feel weird seeing you.',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc3.responses.1.text', 'You avoid them so they don\'t feel weird seeing you.'),
           rating: 'harmful',
-          why: 'Understandable instinct, but absence reads as rejection — exactly the opposite of what they need right now. Even a small "Hey, glad you\'re here" matters. You don\'t have to know what to say.'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc3.responses.1.why', 'Understandable instinct, but absence reads as rejection — exactly the opposite of what they need right now. Even a small "Hey, glad you\'re here" matters. You don\'t have to know what to say.')
         },
         {
-          text: 'You text them later: "I told because I love you and I was scared. Are you mad at me?"',
+          text: __alloT('sel.crisiscompanion.practice_scenarios.sc3.responses.2.text', 'You text them later: "I told because I love you and I was scared. Are you mad at me?"'),
           rating: 'neutral',
-          why: 'Honest, but puts them in the position of comforting YOU about your decision. You can name those feelings later, with a trusted adult or therapist. With your friend, lead with: "I\'m glad you\'re here. I\'m around when you want me."'
+          why: __alloT('sel.crisiscompanion.practice_scenarios.sc3.responses.2.why', 'Honest, but puts them in the position of comforting YOU about your decision. You can name those feelings later, with a trusted adult or therapist. With your friend, lead with: "I\'m glad you\'re here. I\'m around when you want me."')
         }
       ]
     }
-  ];
+  ]; }
+  var PRACTICE_SCENARIOS = _selBuild_PRACTICE_SCENARIOS();
 
   // ══════════════════════════════════════════════════════════════
   // ── REUSABLE: persistent crisis bar at top + bottom of every section ──
@@ -518,11 +543,11 @@ window.SelHub = window.SelHub || {
     }
     // Fallback if safety layer didn't load
     return h('div', { role: 'alert', 'aria-live': 'assertive', style: { background: _ccC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '12px', padding: '12px', marginBottom: '12px' } },
-      h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, 'Help is available right now'),
+      h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.help_is_available_right_now', 'Help is available right now')),
       h('div', { style: { fontSize: '12px', color: '#7f1d1d', lineHeight: 1.6 } },
-        h('div', null, '☎ 988 Suicide & Crisis Lifeline · call or text 988'),
-        h('div', null, '✉ Crisis Text Line · text HOME to 741741'),
-        h('div', null, '🏫 Tell a school counselor, teacher, parent, or trusted adult')
+        h('div', null, __alloT('sel.crisiscompanion.ui.988_suicide_crisis_lifeline_call_or', '☎ 988 Suicide & Crisis Lifeline · call or text 988')),
+        h('div', null, __alloT('sel.crisiscompanion.ui.crisis_text_line_text_home_to', '✉ Crisis Text Line · text HOME to 741741')),
+        h('div', null, __alloT('sel.crisiscompanion.ui.tell_a_school_counselor_teacher_parent', '🏫 Tell a school counselor, teacher, parent, or trusted adult'))
       )
     );
   }
@@ -536,29 +561,30 @@ window.SelHub = window.SelHub || {
   // Coping strategies — pre-loaded, evidence-based, age-appropriate.
   // Categories drawn from CBT/DBT distress-tolerance and adolescent
   // self-regulation literature (Linehan, AAP guidance, Sources of Strength).
-  var COPING_STRATEGIES = [
-    { id: 'walk_outside', cat: 'Movement', label: 'Take a 5-minute walk outside' },
-    { id: 'stretch', cat: 'Movement', label: 'Slow stretching for 5 minutes' },
-    { id: 'pushwall', cat: 'Movement', label: 'Push against a wall (release tension)' },
-    { id: 'run_stairs', cat: 'Movement', label: 'Run up and down the stairs once' },
-    { id: 'cold_water', cat: 'Sensory', label: 'Splash cold water on your face or wrists' },
-    { id: 'ice_cube', cat: 'Sensory', label: 'Hold an ice cube in your hand' },
-    { id: 'heavy_blanket', cat: 'Sensory', label: 'Wrap up in a heavy blanket' },
-    { id: 'rain_sounds', cat: 'Sensory', label: 'Listen to rain or ocean sounds' },
-    { id: 'safe_smell', cat: 'Sensory', label: 'Smell something you like (lotion, food, candle)' },
-    { id: 'text_friend', cat: 'Connection', label: 'Text a trusted friend "thinking of you"' },
-    { id: 'hug_pet', cat: 'Connection', label: 'Hug a pet or stuffed animal' },
-    { id: 'call_family', cat: 'Connection', label: 'Call a family member who feels safe' },
-    { id: 'with_someone', cat: 'Connection', label: 'Sit with someone safe (no need to talk)' },
-    { id: 'playlist', cat: 'Creative', label: 'Listen to a calming playlist you trust' },
-    { id: 'doodle', cat: 'Creative', label: 'Draw or doodle (no goal, no rules)' },
-    { id: 'journal', cat: 'Creative', label: 'Write whatever\'s in your head, even one sentence' },
-    { id: 'make', cat: 'Creative', label: 'Make something with your hands (origami, baking, building)' },
-    { id: 'three_okay', cat: 'Cognitive', label: 'Write down 3 small things that are OK right now' },
-    { id: 'five_breaths', cat: 'Cognitive', label: 'Take 5 slow breaths (count to 4 in, 4 out)' },
-    { id: 'will_pass', cat: 'Cognitive', label: 'Remind yourself: "this feeling will pass"' },
-    { id: 'one_step', cat: 'Cognitive', label: 'Pick one small thing to do next (just one)' }
-  ];
+  function _selBuild_COPING_STRATEGIES() { return [
+    { id: 'walk_outside', cat: __alloT('sel.crisiscompanion.value.movement', 'Movement'), label: __alloT('sel.crisiscompanion.coping_strategies.walk_outside.label', 'Take a 5-minute walk outside') },
+    { id: 'stretch', cat: __alloT('sel.crisiscompanion.value.movement', 'Movement'), label: __alloT('sel.crisiscompanion.coping_strategies.stretch.label', 'Slow stretching for 5 minutes') },
+    { id: 'pushwall', cat: __alloT('sel.crisiscompanion.value.movement', 'Movement'), label: __alloT('sel.crisiscompanion.coping_strategies.pushwall.label', 'Push against a wall (release tension)') },
+    { id: 'run_stairs', cat: __alloT('sel.crisiscompanion.value.movement', 'Movement'), label: __alloT('sel.crisiscompanion.coping_strategies.run_stairs.label', 'Run up and down the stairs once') },
+    { id: 'cold_water', cat: __alloT('sel.crisiscompanion.value.sensory', 'Sensory'), label: __alloT('sel.crisiscompanion.coping_strategies.cold_water.label', 'Splash cold water on your face or wrists') },
+    { id: 'ice_cube', cat: __alloT('sel.crisiscompanion.value.sensory', 'Sensory'), label: __alloT('sel.crisiscompanion.coping_strategies.ice_cube.label', 'Hold an ice cube in your hand') },
+    { id: 'heavy_blanket', cat: __alloT('sel.crisiscompanion.value.sensory', 'Sensory'), label: __alloT('sel.crisiscompanion.coping_strategies.heavy_blanket.label', 'Wrap up in a heavy blanket') },
+    { id: 'rain_sounds', cat: __alloT('sel.crisiscompanion.value.sensory', 'Sensory'), label: __alloT('sel.crisiscompanion.coping_strategies.rain_sounds.label', 'Listen to rain or ocean sounds') },
+    { id: 'safe_smell', cat: __alloT('sel.crisiscompanion.value.sensory', 'Sensory'), label: __alloT('sel.crisiscompanion.coping_strategies.safe_smell.label', 'Smell something you like (lotion, food, candle)') },
+    { id: 'text_friend', cat: __alloT('sel.crisiscompanion.value.connection', 'Connection'), label: __alloT('sel.crisiscompanion.coping_strategies.text_friend.label', 'Text a trusted friend "thinking of you"') },
+    { id: 'hug_pet', cat: __alloT('sel.crisiscompanion.value.connection', 'Connection'), label: __alloT('sel.crisiscompanion.coping_strategies.hug_pet.label', 'Hug a pet or stuffed animal') },
+    { id: 'call_family', cat: __alloT('sel.crisiscompanion.value.connection', 'Connection'), label: __alloT('sel.crisiscompanion.coping_strategies.call_family.label', 'Call a family member who feels safe') },
+    { id: 'with_someone', cat: __alloT('sel.crisiscompanion.value.connection', 'Connection'), label: __alloT('sel.crisiscompanion.coping_strategies.with_someone.label', 'Sit with someone safe (no need to talk)') },
+    { id: 'playlist', cat: __alloT('sel.crisiscompanion.value.creative', 'Creative'), label: __alloT('sel.crisiscompanion.coping_strategies.playlist.label', 'Listen to a calming playlist you trust') },
+    { id: 'doodle', cat: __alloT('sel.crisiscompanion.value.creative', 'Creative'), label: __alloT('sel.crisiscompanion.coping_strategies.doodle.label', 'Draw or doodle (no goal, no rules)') },
+    { id: 'journal', cat: __alloT('sel.crisiscompanion.value.creative', 'Creative'), label: __alloT('sel.crisiscompanion.coping_strategies.journal.label', 'Write whatever\'s in your head, even one sentence') },
+    { id: 'make', cat: __alloT('sel.crisiscompanion.value.creative', 'Creative'), label: __alloT('sel.crisiscompanion.coping_strategies.make.label', 'Make something with your hands (origami, baking, building)') },
+    { id: 'three_okay', cat: __alloT('sel.crisiscompanion.value.cognitive', 'Cognitive'), label: __alloT('sel.crisiscompanion.coping_strategies.three_okay.label', 'Write down 3 small things that are OK right now') },
+    { id: 'five_breaths', cat: __alloT('sel.crisiscompanion.value.cognitive', 'Cognitive'), label: __alloT('sel.crisiscompanion.coping_strategies.five_breaths.label', 'Take 5 slow breaths (count to 4 in, 4 out)') },
+    { id: 'will_pass', cat: __alloT('sel.crisiscompanion.value.cognitive', 'Cognitive'), label: __alloT('sel.crisiscompanion.coping_strategies.will_pass.label', 'Remind yourself: "this feeling will pass"') },
+    { id: 'one_step', cat: __alloT('sel.crisiscompanion.value.cognitive', 'Cognitive'), label: __alloT('sel.crisiscompanion.coping_strategies.one_step.label', 'Pick one small thing to do next (just one)') }
+  ]; }
+  var COPING_STRATEGIES = _selBuild_COPING_STRATEGIES();
 
   // ── Box-breathing pacer (4-4-4-4) ──
   // The phase is computed from a stored start timestamp. The CSS transition
@@ -577,17 +603,17 @@ window.SelHub = window.SelHub || {
       var inCycle = elapsed % totalCycle;
       phaseIndex = Math.floor(inCycle / phaseLen);
     }
-    var phaseLabel = ['Breathe in', 'Hold', 'Breathe out', 'Hold'][phaseIndex];
+    var phaseLabel = [__alloT('sel.crisiscompanion.phaselabel.0', 'Breathe in'), __alloT('sel.crisiscompanion.phaselabel.1', 'Hold'), __alloT('sel.crisiscompanion.phaselabel.2', 'Breathe out'), __alloT('sel.crisiscompanion.phaselabel.1', 'Hold')][phaseIndex];
     var phaseColor = ['#10b981', '#0d9488', '#0891b2', '#0d9488'][phaseIndex];
     // Discrete target scale per phase — CSS transition smooths between values.
     var targetScale = (phaseIndex === 0 || phaseIndex === 1) ? 1.0 : 0.55;
     function start() {
       upd({ breathRunning: true, breathStartedAt: Date.now() });
-      announce('Box breathing started. 4 seconds in, 4 hold, 4 out, 4 hold.');
+      announce(__alloT('sel.crisiscompanion.ui.box_breathing_started_4_seconds_in', 'Box breathing started. 4 seconds in, 4 hold, 4 out, 4 hold.'));
     }
     function stop() {
       upd({ breathRunning: false, breathStartedAt: 0 });
-      announce('Box breathing paused.');
+      announce(__alloT('sel.crisiscompanion.ui.box_breathing_paused', 'Box breathing paused.'));
     }
     // Tick every 1s while running so the phase label updates each phase change.
     // We bump a state value via upd, which triggers a parent re-render. Idempotent.
@@ -603,14 +629,14 @@ window.SelHub = window.SelHub || {
     }
     var cyclesDone = running && totalCycle ? Math.floor(elapsed / totalCycle) : 0;
     return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px', textAlign: 'center' } },
-      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '🌬️ Box-breathing pacer'),
+      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.box_breathing_pacer', '🌬️ Box-breathing pacer')),
       h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.6, margin: '0 0 16px' } },
-        'A 4-4-4-4 rhythm: breathe in for 4, hold for 4, breathe out for 4, hold for 4. Used by clinicians and first responders to calm the nervous system. The circle expands when you breathe in, contracts when you breathe out.'
+        __alloT('sel.crisiscompanion.ui.a_4_4_4_4_rhythm', 'A 4-4-4-4 rhythm: breathe in for 4, hold for 4, breathe out for 4, hold for 4. Used by clinicians and first responders to calm the nervous system. The circle expands when you breathe in, contracts when you breathe out.')
       ),
       h('div', { style: { position: 'relative', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' } },
         h('div', {
           className: 'cc-breath-circle',
-          'aria-label': running ? phaseLabel + ', cycle ' + cyclesDone : 'Breathing pacer ready',
+          'aria-label': running ? _selFill(__alloT('sel.crisiscompanion.ui.phaselabel_cycle_cyclesdone', '{phaseLabel}, cycle {cyclesDone}'), { phaseLabel: phaseLabel, cyclesDone: cyclesDone }) : __alloT('sel.crisiscompanion.ui.breathing_pacer_ready', 'Breathing pacer ready'),
           style: {
             width: '160px', height: '160px', borderRadius: '50%',
             background: 'radial-gradient(circle at 35% 35%, ' + phaseColor + ', ' + TEAL_DARK + ')',
@@ -619,23 +645,23 @@ window.SelHub = window.SelHub || {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#fff', fontWeight: 800, fontSize: '17px'
           }
-        }, running ? phaseLabel : 'Ready'),
-        running && h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: '-6px', fontSize: '12px', color: TEAL_DARK, fontWeight: 700 } }, 'Cycle ' + cyclesDone)
+        }, running ? phaseLabel : __alloT('sel.crisiscompanion.ui.ready', 'Ready')),
+        running && h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: '-6px', fontSize: '12px', color: TEAL_DARK, fontWeight: 700 } }, _selFill(__alloT('sel.crisiscompanion.ui.cycle_cyclesdone', 'Cycle {cyclesDone}'), { cyclesDone: cyclesDone }))
       ),
       h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
         !running && h('button', {
           onClick: start,
-          'aria-label': 'Start box-breathing pacer',
+          'aria-label': __alloT('sel.crisiscompanion.ui.start_box_breathing_pacer', 'Start box-breathing pacer'),
           style: { padding: '10px 22px', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
-        }, '▶ Start'),
+        }, __alloT('sel.crisiscompanion.ui.start', '▶ Start')),
         running && h('button', {
           onClick: stop,
-          'aria-label': 'Pause box-breathing pacer',
+          'aria-label': __alloT('sel.crisiscompanion.ui.pause_box_breathing_pacer', 'Pause box-breathing pacer'),
           style: { padding: '10px 22px', background: _ccC('#fff'), color: _ccC(TEAL_DARK), border: '2px solid ' + TEAL, borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
-        }, '⏸ Pause')
+        }, __alloT('sel.crisiscompanion.ui.pause', '⏸ Pause'))
       ),
       h('p', { style: { fontSize: '11px', color: SLATE_MID, fontStyle: 'italic', margin: '14px 0 0', lineHeight: 1.55 } },
-        'If breathing exercises feel uncomfortable or make you more anxious, that\'s actually common — stop and try grounding instead. Reduced-motion settings will hold the circle still and rely on the phase label.'
+        __alloT('sel.crisiscompanion.ui.if_breathing_exercises_feel_uncomfortable_or', 'If breathing exercises feel uncomfortable or make you more anxious, that\'s actually common — stop and try grounding instead. Reduced-motion settings will hold the circle still and rely on the phase label.')
       )
     );
   }
@@ -643,11 +669,11 @@ window.SelHub = window.SelHub || {
   // ── 5-4-3-2-1 sensory grounding ──
   function _GroundingExercise(h, d, upd) {
     var GROUND_STEPS = [
-      { n: 5, sense: 'see',   prompt: 'Name 5 things you can SEE around you right now.', helper: 'Anything counts. The lamp. The corner of a desk. A cloud.' },
-      { n: 4, sense: 'feel',  prompt: 'Name 4 things you can FEEL.', helper: 'Your feet on the floor. Fabric of your shirt. Air on your skin.' },
-      { n: 3, sense: 'hear',  prompt: 'Name 3 things you can HEAR.', helper: 'A clock. Traffic. Your own breathing.' },
-      { n: 2, sense: 'smell', prompt: 'Name 2 things you can SMELL.', helper: '(Or things you remember the smell of, if nothing\'s nearby.)' },
-      { n: 1, sense: 'taste', prompt: 'Name 1 thing you can TASTE.', helper: '(Or your last sip of water, or a favorite food.)' }
+      { n: 5, sense: 'see',   prompt: __alloT('sel.crisiscompanion.ground_steps.0.prompt', 'Name 5 things you can SEE around you right now.'), helper: __alloT('sel.crisiscompanion.ground_steps.0.helper', 'Anything counts. The lamp. The corner of a desk. A cloud.') },
+      { n: 4, sense: 'feel',  prompt: __alloT('sel.crisiscompanion.ground_steps.1.prompt', 'Name 4 things you can FEEL.'), helper: __alloT('sel.crisiscompanion.ground_steps.1.helper', 'Your feet on the floor. Fabric of your shirt. Air on your skin.') },
+      { n: 3, sense: 'hear',  prompt: __alloT('sel.crisiscompanion.ground_steps.2.prompt', 'Name 3 things you can HEAR.'), helper: __alloT('sel.crisiscompanion.ground_steps.2.helper', 'A clock. Traffic. Your own breathing.') },
+      { n: 2, sense: 'smell', prompt: __alloT('sel.crisiscompanion.ground_steps.3.prompt', 'Name 2 things you can SMELL.'), helper: __alloT('sel.crisiscompanion.ground_steps.3.helper', '(Or things you remember the smell of, if nothing\'s nearby.)') },
+      { n: 1, sense: 'taste', prompt: __alloT('sel.crisiscompanion.ground_steps.4.prompt', 'Name 1 thing you can TASTE.'), helper: __alloT('sel.crisiscompanion.ground_steps.4.helper', '(Or your last sip of water, or a favorite food.)') }
     ];
     var stepIdx = d.groundStep != null ? d.groundStep : 0;
     var entries = d.groundEntries || {};
@@ -661,19 +687,19 @@ window.SelHub = window.SelHub || {
         announce(GROUND_STEPS[stepIdx + 1].prompt);
       } else {
         upd({ groundStep: GROUND_STEPS.length, groundCompleted: (d.groundCompleted || 0) + 1 });
-        announce('Grounding complete. You\'ve returned to the present moment.');
+        announce(__alloT('sel.crisiscompanion.ui.grounding_complete_you_ve_returned_to', 'Grounding complete. You\'ve returned to the present moment.'));
       }
     }
     function reset() {
       upd({ groundStep: 0, groundEntries: {} });
-      announce('Grounding reset.');
+      announce(__alloT('sel.crisiscompanion.ui.grounding_reset', 'Grounding reset.'));
     }
     var atEnd = stepIdx >= GROUND_STEPS.length;
     var current = atEnd ? null : GROUND_STEPS[stepIdx];
     return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
-      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '👁️ 5-4-3-2-1 Grounding'),
+      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.5_4_3_2_1_grounding', '👁️ 5-4-3-2-1 Grounding')),
       h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.6, margin: '0 0 14px' } },
-        'A sensory anchor when your thoughts are racing or you feel disconnected. Move through the senses one at a time. You don\'t have to write anything — just notice.'
+        __alloT('sel.crisiscompanion.ui.a_sensory_anchor_when_your_thoughts', 'A sensory anchor when your thoughts are racing or you feel disconnected. Move through the senses one at a time. You don\'t have to write anything — just notice.')
       ),
       // Progress dots
       h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '14px' }, 'aria-hidden': 'true' },
@@ -688,41 +714,41 @@ window.SelHub = window.SelHub || {
       ),
       atEnd ? h('div', { style: { textAlign: 'center', padding: '20px 12px' }, 'aria-live': 'polite' },
         h('div', { style: { fontSize: '32px', marginBottom: '8px' }, 'aria-hidden': 'true' }, '🌿'),
-        h('h3', { style: { fontSize: '17px', color: _ccC(EMERALD_DARK), margin: '0 0 8px', fontWeight: 800 } }, 'You\'ve come back to the present.'),
+        h('h3', { style: { fontSize: '17px', color: _ccC(EMERALD_DARK), margin: '0 0 8px', fontWeight: 800 } }, __alloT('sel.crisiscompanion.ui.you_ve_come_back_to_the', 'You\'ve come back to the present.')),
         h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 16px' } },
-          'Grounding doesn\'t make hard feelings disappear. It just gives them a smaller place to live for a moment, so the wave can pass.'
+          __alloT('sel.crisiscompanion.ui.grounding_doesn_t_make_hard_feelings', 'Grounding doesn\'t make hard feelings disappear. It just gives them a smaller place to live for a moment, so the wave can pass.')
         ),
         h('button', {
           onClick: reset,
           style: { padding: '10px 20px', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
-        }, '↻ Do it again')
+        }, __alloT('sel.crisiscompanion.ui.do_it_again', '↻ Do it again'))
       ) : h('div', null,
         h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '16px', marginBottom: '12px' } },
-          h('div', { style: { fontSize: '13px', fontWeight: 700, color: TEAL_DARK, marginBottom: '6px' } }, 'Step ' + (stepIdx + 1) + ' of ' + GROUND_STEPS.length),
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: TEAL_DARK, marginBottom: '6px' } }, _selFill(__alloT('sel.crisiscompanion.ui.step_stepidx_of_groundstepscount', 'Step {stepIdx} of {GROUNDSTEPSCount}'), { stepIdx: (stepIdx + 1), GROUNDSTEPSCount: GROUND_STEPS.length })),
           h('p', { style: { fontSize: '17px', fontWeight: 700, color: SLATE_TEXT, lineHeight: 1.5, margin: '0 0 6px' } }, current.prompt),
           h('p', { style: { fontSize: '12px', fontStyle: 'italic', color: SLATE_MID, margin: 0, lineHeight: 1.55 } }, current.helper)
         ),
-        h('label', { htmlFor: 'cc-ground-' + stepIdx, style: { fontSize: '11px', color: SLATE_MID, display: 'block', marginBottom: '4px' } }, 'Optional: jot what you notice (private, not saved).'),
+        h('label', { htmlFor: 'cc-ground-' + stepIdx, style: { fontSize: '11px', color: SLATE_MID, display: 'block', marginBottom: '4px' } }, __alloT('sel.crisiscompanion.ui.optional_jot_what_you_notice_private', 'Optional: jot what you notice (private, not saved).')),
         h('textarea', {
           id: 'cc-ground-' + stepIdx,
           value: entries[stepIdx] || '',
           onChange: function(e) { setEntry(stepIdx, e.target.value); },
           rows: 2,
-          'aria-label': 'Notes for step ' + (stepIdx + 1),
-          placeholder: current.n + ' things you can ' + current.sense + '...',
+          'aria-label': _selFill(__alloT('sel.crisiscompanion.ui.notes_for_step_stepidx', 'Notes for step {stepIdx}'), { stepIdx: (stepIdx + 1) }),
+          placeholder: __alloT('sel.crisiscompanion.ground_steps.' + stepIdx + '.placeholder', ['5 things you can see...', '4 things you can feel...', '3 things you can hear...', '2 things you can smell...', '1 thing you can taste...'][stepIdx] || ''),
           style: { width: '100%', padding: '10px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: '12px' }
         }),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'space-between' } },
           h('button', {
             onClick: reset,
-            'aria-label': 'Reset grounding to first step',
+            'aria-label': __alloT('sel.crisiscompanion.ui.reset_grounding_to_first_step', 'Reset grounding to first step'),
             style: { padding: '8px 16px', background: _ccC('#fff'), color: SLATE_TEXT, border: '2px solid #cbd5e1', borderRadius: '8px', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }
-          }, '↻ Reset'),
+          }, __alloT('sel.crisiscompanion.ui.reset', '↻ Reset')),
           h('button', {
             onClick: next,
-            'aria-label': stepIdx < GROUND_STEPS.length - 1 ? 'Next step' : 'Finish grounding exercise',
+            'aria-label': stepIdx < GROUND_STEPS.length - 1 ? __alloT('sel.crisiscompanion.ui.next_step', 'Next step') : __alloT('sel.crisiscompanion.ui.finish_grounding_exercise', 'Finish grounding exercise'),
             style: { padding: '10px 22px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
-          }, stepIdx < GROUND_STEPS.length - 1 ? 'Next →' : 'Finish ✓')
+          }, stepIdx < GROUND_STEPS.length - 1 ? __alloT('sel.crisiscompanion.ui.next', 'Next →') : __alloT('sel.crisiscompanion.ui.finish', 'Finish ✓'))
         )
       )
     );
@@ -736,8 +762,8 @@ window.SelHub = window.SelHub || {
     function toggle(id) {
       var next = saved.indexOf(id) === -1 ? saved.concat([id]) : saved.filter(function(x) { return x !== id; });
       upd('toolkitIds', next);
-      if (!lsSet(ccKey('crisisCompanion.toolkit.v1'), next)) announce('This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.');
-      announce(saved.indexOf(id) === -1 ? 'Added to your toolkit' : 'Removed from your toolkit');
+      if (!lsSet(ccKey('crisisCompanion.toolkit.v1'), next)) announce(__alloT('sel.crisiscompanion.ui.this_device_would_not_save_it', 'This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.'));
+      announce(saved.indexOf(id) === -1 ? __alloT('sel.crisiscompanion.ui.added_to_your_toolkit', 'Added to your toolkit') : __alloT('sel.crisiscompanion.ui.removed_from_your_toolkit', 'Removed from your toolkit'));
     }
     var byCategory = {};
     COPING_STRATEGIES.forEach(function(s) {
@@ -747,13 +773,13 @@ window.SelHub = window.SelHub || {
     var savedSet = {};
     saved.forEach(function(id) { savedSet[id] = true; });
     return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
-      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '🧰 My coping toolkit'),
+      h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.my_coping_toolkit', '🧰 My coping toolkit')),
       h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.6, margin: '0 0 14px' } },
-        'Tap any strategy to add it to your personal toolkit. Saved on your device only — nothing is uploaded. Build a list of 5-7 things that have actually worked for you in the past, so when a hard moment comes you don\'t have to think from scratch.'
+        __alloT('sel.crisiscompanion.ui.tap_any_strategy_to_add_it', 'Tap any strategy to add it to your personal toolkit. Saved on your device only — nothing is uploaded. Build a list of 5-7 things that have actually worked for you in the past, so when a hard moment comes you don\'t have to think from scratch.')
       ),
       // "My toolkit" summary at top
       saved.length > 0 && h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '12px 14px', marginBottom: '14px' } },
-        h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '✓ My toolkit (' + saved.length + ')'),
+        h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, _selFill(__alloT('sel.crisiscompanion.ui.my_toolkit_savedcount', '✓ My toolkit ({savedCount})'), { savedCount: saved.length })),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
           saved.map(function(id) {
             var s = COPING_STRATEGIES.filter(function(x) { return x.id === id; })[0];
@@ -761,7 +787,7 @@ window.SelHub = window.SelHub || {
             return h('button', {
               key: id,
               onClick: function() { toggle(id); },
-              'aria-label': 'Remove "' + s.label + '" from toolkit',
+              'aria-label': _selFill(__alloT('sel.crisiscompanion.ui.remove_label_from_toolkit', 'Remove "{label}" from toolkit'), { label: s.label }),
               style: { padding: '4px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '999px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, s.label + ' ✕');
           })
@@ -778,7 +804,7 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 onClick: function() { toggle(s.id); },
                 'aria-pressed': on ? 'true' : 'false',
-                'aria-label': (on ? 'Remove from toolkit: ' : 'Add to toolkit: ') + s.label,
+                'aria-label': (on ? __alloT('sel.crisiscompanion.ui.remove_from_toolkit', 'Remove from toolkit: ') : __alloT('sel.crisiscompanion.ui.add_to_toolkit', 'Add to toolkit: ')) + s.label,
                 style: {
                   padding: '6px 12px',
                   background: on ? TEAL : '#fff',
@@ -793,7 +819,7 @@ window.SelHub = window.SelHub || {
         );
       }),
       h('p', { style: { fontSize: '11px', color: SLATE_MID, fontStyle: 'italic', margin: '8px 0 0', lineHeight: 1.55 } },
-        'Note: this toolkit is a complement to, not a replacement for, professional support. If you\'re in crisis, call/text 988.'
+        __alloT('sel.crisiscompanion.ui.note_this_toolkit_is_a_complement', 'Note: this toolkit is a complement to, not a replacement for, professional support. If you\'re in crisis, call/text 988.')
       )
     );
   }
@@ -804,18 +830,18 @@ window.SelHub = window.SelHub || {
   // building it WITH a clinician — which is the actual evidence-based use.
   function _SafetyPlan(h, d, upd, requestClear) {
     var STEPS = [
-      { id: 'warningSigns', label: '1. Warning signs', sub: 'What thoughts, feelings, or situations tell me a tough wave is coming?', placeholder: 'e.g., "When I haven\'t slept and I\'ve been alone all weekend"' },
-      { id: 'internal', label: '2. Things I can do alone (internal coping)', sub: 'Things that have helped me feel even slightly better, that I can do without anyone else.', placeholder: 'e.g., "Listen to a calming playlist, take a walk, splash cold water on my face"' },
-      { id: 'distract', label: '3. People + places that distract me (in a good way)', sub: 'Friends to text, places where I feel okay just being there. NOT for crisis support — just for taking my mind off it.', placeholder: 'e.g., "Library after school, my friend Maya, the coffee shop"' },
-      { id: 'helpers', label: '4. People I can ask for help directly', sub: 'Friends or family who know what\'s going on, or who I trust enough to tell. List names + how to reach them.', placeholder: 'e.g., "Mom (cell ____), Aunt Liz (cell ____), Counselor Mr. K (room 204)"' },
-      { id: 'professionals', label: '5. Professionals + crisis lines', sub: 'My therapist (if I have one), psychiatrist, doctor, school counselor, plus 24/7 crisis lines.', placeholder: 'e.g., "988 Lifeline (call or text), Crisis Text Line (text HOME to 741741), Dr. ____ at clinic ____, school counselor"' },
-      { id: 'environment', label: '6. Making my environment safer', sub: 'What can I (or someone I trust) do to put distance between me and anything I might use to hurt myself? This is the single most evidence-based step.', placeholder: 'e.g., "Give my medications to mom to lock up. Stay out of the basement. Stay with someone overnight if it\'s really bad."' }
+      { id: 'warningSigns', label: __alloT('sel.crisiscompanion.steps.warningSigns.label', '1. Warning signs'), sub: __alloT('sel.crisiscompanion.steps.warningSigns.sub', 'What thoughts, feelings, or situations tell me a tough wave is coming?'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_when_i_haven_t', 'e.g., "When I haven\'t slept and I\'ve been alone all weekend"') },
+      { id: 'internal', label: __alloT('sel.crisiscompanion.steps.internal.label', '2. Things I can do alone (internal coping)'), sub: __alloT('sel.crisiscompanion.steps.internal.sub', 'Things that have helped me feel even slightly better, that I can do without anyone else.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_listen_to_a_calming', 'e.g., "Listen to a calming playlist, take a walk, splash cold water on my face"') },
+      { id: 'distract', label: __alloT('sel.crisiscompanion.steps.distract.label', '3. People + places that distract me (in a good way)'), sub: __alloT('sel.crisiscompanion.steps.distract.sub', 'Friends to text, places where I feel okay just being there. NOT for crisis support — just for taking my mind off it.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_library_after_school_my', 'e.g., "Library after school, my friend Maya, the coffee shop"') },
+      { id: 'helpers', label: __alloT('sel.crisiscompanion.steps.helpers.label', '4. People I can ask for help directly'), sub: __alloT('sel.crisiscompanion.steps.helpers.sub', 'Friends or family who know what\'s going on, or who I trust enough to tell. List names + how to reach them.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_mom_cell_aunt_liz', 'e.g., "Mom (cell ____), Aunt Liz (cell ____), Counselor Mr. K (room 204)"') },
+      { id: 'professionals', label: __alloT('sel.crisiscompanion.steps.professionals.label', '5. Professionals + crisis lines'), sub: __alloT('sel.crisiscompanion.steps.professionals.sub', 'My therapist (if I have one), psychiatrist, doctor, school counselor, plus 24/7 crisis lines.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_988_lifeline_call_or', 'e.g., "988 Lifeline (call or text), Crisis Text Line (text HOME to 741741), Dr. ____ at clinic ____, school counselor"') },
+      { id: 'environment', label: __alloT('sel.crisiscompanion.steps.environment.label', '6. Making my environment safer'), sub: __alloT('sel.crisiscompanion.steps.environment.sub', 'What can I (or someone I trust) do to put distance between me and anything I might use to hurt myself? This is the single most evidence-based step.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_give_my_medications_to', 'e.g., "Give my medications to mom to lock up. Stay out of the basement. Stay with someone overnight if it\'s really bad."') }
     ];
     var entries = d.safetyPlan || lsGet(ccKey('crisisCompanion.safetyPlan.v1'), null) || {};
     function setStep(id, val) {
       var ne = Object.assign({}, entries); ne[id] = val;
       upd('safetyPlan', ne);
-      if (!lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne)) announce('This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.');
+      if (!lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne)) announce(__alloT('sel.crisiscompanion.ui.this_device_would_not_save_it', 'This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.'));
     }
     function clearAll() {
       if (requestClear) requestClear();
@@ -823,9 +849,9 @@ window.SelHub = window.SelHub || {
     function printPlan() {
       try {
         var win = window.open('', '_blank', 'width=720,height=900');
-        if (!win) { announce('Could not open print window — your browser may have blocked it.'); return; }
+        if (!win) { announce(__alloT('sel.crisiscompanion.ui.could_not_open_print_window_your', 'Could not open print window — your browser may have blocked it.')); return; }
         var safeText = function(t) { return String(t || '').replace(/[<>&]/g, function(c) { return { '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]; }); };
-        var html = '<!doctype html><html><head><title>My Safety Plan</title>' +
+        var html = '<!doctype html><html><head><title>' + safeText(__alloT('sel.crisiscompanion.print.title', 'My Safety Plan')) + '</title>' +
           '<style>body{font-family:Georgia,serif;max-width:720px;margin:24px auto;padding:0 20px;color:#1e293b;line-height:1.6}' +
           'h1{color:#0d9488;border-bottom:2px solid #0d9488;padding-bottom:6px}' +
           'h2{color:#115e59;font-size:15px;margin-top:24px}' +
@@ -834,8 +860,8 @@ window.SelHub = window.SelHub || {
           '.meta{font-size:11px;color:#64748b;margin-top:4px}' +
           '.crisis{background:#fef2f2;border:2px solid #fca5a5;border-radius:8px;padding:14px;margin-top:24px}' +
           '.crisis strong{color:#991b1b}</style></head><body>' +
-          '<h1>My Safety Plan</h1>' +
-          '<p style="font-size:13px;color:#334155">Built using the Stanley-Brown Safety Planning Intervention. Most useful when reviewed with a counselor or therapist.</p>';
+          '<h1>' + safeText(__alloT('sel.crisiscompanion.print.title', 'My Safety Plan')) + '</h1>' +
+          '<p style="font-size:13px;color:#334155">' + safeText(__alloT('sel.crisiscompanion.print.intro', 'Built using the Stanley-Brown Safety Planning Intervention. Most useful when reviewed with a counselor or therapist.')) + '</p>';
         STEPS.forEach(function(s) {
           html += '<h2>' + safeText(s.label) + '</h2>';
           html += '<p class="subhint">' + safeText(s.sub) + '</p>';
@@ -843,27 +869,27 @@ window.SelHub = window.SelHub || {
           if (content && content.trim()) {
             html += '<div class="entry">' + safeText(content) + '</div>';
           } else {
-            html += '<div class="entry" style="color:#94a3b8;font-style:italic">(not yet filled in)</div>';
+            html += '<div class="entry" style="color:#94a3b8;font-style:italic">' + safeText(__alloT('sel.crisiscompanion.print.empty', '(not yet filled in)')) + '</div>';
           }
         });
-        html += '<div class="crisis"><strong>If you are in crisis right now:</strong><br>' +
-          'Call or text <strong>988</strong> (24/7). Text <strong>HOME to 741741</strong>. Tell a trusted adult.</div>';
-        html += '<p class="meta">Created ' + new Date().toLocaleDateString() + '</p>';
+        html += '<div class="crisis"><strong>' + safeText(__alloT('sel.crisiscompanion.print.crisis_head', 'If you are in crisis right now:')) + '</strong><br>' +
+          _selFill(safeText(__alloT('sel.crisiscompanion.print.crisis_body', 'Call or text {call} (24/7). Text {text}. Tell a trusted adult.')), { call: '<strong>988</strong>', text: '<strong>HOME to 741741</strong>' }) + '</div>';
+        html += '<p class="meta">' + safeText(_selFill(__alloT('sel.crisiscompanion.print.created', 'Created {date}'), { date: new Date().toLocaleDateString() })) + '</p>';
         html += '<script>window.print();</' + 'script></body></html>';
         win.document.write(html);
         win.document.close();
-        announce('Print preview opened.');
+        announce(__alloT('sel.crisiscompanion.ui.print_preview_opened', 'Print preview opened.'));
       } catch (e) {
-        announce('Print could not be opened.');
+        announce(__alloT('sel.crisiscompanion.ui.print_could_not_be_opened', 'Print could not be opened.'));
       }
     }
     var filledCount = STEPS.filter(function(s) { return (entries[s.id] || '').trim().length > 0; }).length;
     return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
-      h('h2', { id: 'cc-safety-plan-heading', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, '📋 My safety plan (Stanley-Brown)'),
+      h('h2', { id: 'cc-safety-plan-heading', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.my_safety_plan_stanley_brown', '📋 My safety plan (Stanley-Brown)')),
       h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' } },
         h('p', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.6, margin: 0 } },
-          h('strong', null, 'Best built WITH a counselor or therapist. '),
-          'A safety plan is most effective when an adult who knows you helps you fill it in — they think of things you\'d miss, and they\'re a person you\'ve already practiced reaching out to. You can start it here, save it, and finish it together. Saved on this device only.'
+          h('strong', null, __alloT('sel.crisiscompanion.ui.best_built_with_a_counselor_or', 'Best built WITH a counselor or therapist. ')),
+          __alloT('sel.crisiscompanion.ui.a_safety_plan_is_most_effective', 'A safety plan is most effective when an adult who knows you helps you fill it in — they think of things you\'d miss, and they\'re a person you\'ve already practiced reaching out to. You can start it here, save it, and finish it together. Saved on this device only.')
         )
       ),
       // Progress
@@ -871,7 +897,7 @@ window.SelHub = window.SelHub || {
         h('div', { style: { flex: 1, height: '6px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }, 'aria-hidden': 'true' },
           h('div', { style: { width: (filledCount / STEPS.length * 100).toFixed(0) + '%', height: '100%', background: EMERALD, transition: 'width 0.3s' } })
         ),
-        h('span', { style: { fontSize: '11px', color: SLATE_MID, fontWeight: 700 } }, filledCount + ' / ' + STEPS.length + ' filled')
+        h('span', { style: { fontSize: '11px', color: SLATE_MID, fontWeight: 700 } }, _selFill(__alloT('sel.crisiscompanion.ui.filledcount_stepscount_filled', '{filledCount} / {STEPSCount} filled'), { filledCount: filledCount, STEPSCount: STEPS.length }))
       ),
       // Steps
       STEPS.map(function(s) {
@@ -896,16 +922,16 @@ window.SelHub = window.SelHub || {
         h('button', {
           onClick: printPlan,
           style: { padding: '10px 16px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
-        }, '🖨 Print / save as PDF'),
+        }, __alloT('sel.crisiscompanion.ui.print_save_as_pdf', '🖨 Print / save as PDF')),
         h('button', {
           id: 'cc-clear-safety-plan',
           onClick: clearAll,
-          'aria-label': 'Clear my saved safety plan',
+          'aria-label': __alloT('sel.crisiscompanion.ui.clear_my_saved_safety_plan', 'Clear my saved safety plan'),
           style: { padding: '10px 16px', background: _ccC('#fff'), color: _ccC('#9f1239'), border: '2px solid ' + ROSE, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
-        }, '✕ Clear plan')
+        }, __alloT('sel.crisiscompanion.ui.clear_plan', '✕ Clear plan'))
       ),
       h('p', { style: { fontSize: '11px', color: SLATE_MID, fontStyle: 'italic', margin: '14px 0 0', lineHeight: 1.55 } },
-        'Stanley-Brown Safety Planning Intervention is endorsed by the Suicide Prevention Resource Center and is one of the most-studied evidence-based safety plans. The full clinical version walks through it with a trained provider.'
+        __alloT('sel.crisiscompanion.ui.stanley_brown_safety_planning_intervention_is', 'Stanley-Brown Safety Planning Intervention is endorsed by the Suicide Prevention Resource Center and is one of the most-studied evidence-based safety plans. The full clinical version walks through it with a trained provider.')
       )
     );
   }
@@ -920,34 +946,34 @@ window.SelHub = window.SelHub || {
       );
     }
     return h('div', null,
-      _card('You are not the therapist',
+      _card(__alloT('sel.crisiscompanion.ui.you_are_not_the_therapist', 'You are not the therapist'),
         h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-          'Your job ended when you connected your friend to an adult. From here, your role shrinks back down to being a friend — and that\'s the right size. Treatment, safety planning, ongoing follow-up — those are jobs for trained professionals. Your job is presence, friendship, and not disappearing.'),
+          __alloT('sel.crisiscompanion.ui.your_job_ended_when_you_connected', 'Your job ended when you connected your friend to an adult. From here, your role shrinks back down to being a friend — and that\'s the right size. Treatment, safety planning, ongoing follow-up — those are jobs for trained professionals. Your job is presence, friendship, and not disappearing.')),
         EMERALD
       ),
-      _card('If your friend goes to treatment, that is success — not abandonment',
+      _card(__alloT('sel.crisiscompanion.ui.if_your_friend_goes_to_treatment', 'If your friend goes to treatment, that is success — not abandonment'),
         h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-          'When a friend gets professional help — therapy, medication, intensive programs, sometimes hospitalization — it can feel like the friendship has been put on pause. It hasn\'t. Treatment is what you helped make possible. Your friend is doing the hard work that keeps them here. Send a text. Save them a seat at lunch. Be there when they come back.'),
+          __alloT('sel.crisiscompanion.ui.when_a_friend_gets_professional_help', 'When a friend gets professional help — therapy, medication, intensive programs, sometimes hospitalization — it can feel like the friendship has been put on pause. It hasn\'t. Treatment is what you helped make possible. Your friend is doing the hard work that keeps them here. Send a text. Save them a seat at lunch. Be there when they come back.')),
         EMERALD
       ),
-      _card('Concrete moves that help',
+      _card(__alloT('sel.crisiscompanion.ui.concrete_moves_that_help', 'Concrete moves that help'),
         h('ul', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
-          h('li', null, h('strong', null, 'Tell another adult you trust. '), 'Even if the situation has been "handled," YOU went through something. A parent, counselor, or therapist can help you process it.'),
-          h('li', null, h('strong', null, 'Pause platforms that are amplifying it. '), 'If social media is making your worry worse, take a break. Mute, unfollow, or close the app for a day.'),
-          h('li', null, h('strong', null, 'Keep your own routines. '), 'Sleep, food, school, hobbies. These are the floorboards that keep you steady — don\'t let them slip while you\'re carrying this.'),
-          h('li', null, h('strong', null, 'Ask for breaks when you need them. '), 'You are allowed to not text back immediately. You are allowed to be unavailable for a few hours. Your friend\'s recovery doesn\'t require you to be on-call.'),
-          h('li', null, h('strong', null, 'Notice your own feelings. '), 'Sadness, anger, fear, exhaustion are normal. Numbness is also normal. If feelings stay heavy for more than a couple weeks, that\'s a moment to talk with a counselor.'),
-          h('li', null, h('strong', null, 'Keep your other friendships. '), 'Don\'t let supporting one friend isolate you from everyone else. Your full social fabric is what holds you up.')
+          h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.tell_another_adult_you_trust', 'Tell another adult you trust. ')), __alloT('sel.crisiscompanion.ui.even_if_the_situation_has_been', 'Even if the situation has been "handled," YOU went through something. A parent, counselor, or therapist can help you process it.')),
+          h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.pause_platforms_that_are_amplifying_it', 'Pause platforms that are amplifying it. ')), __alloT('sel.crisiscompanion.ui.if_social_media_is_making_your', 'If social media is making your worry worse, take a break. Mute, unfollow, or close the app for a day.')),
+          h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.keep_your_own_routines', 'Keep your own routines. ')), __alloT('sel.crisiscompanion.ui.sleep_food_school_hobbies_these_are', 'Sleep, food, school, hobbies. These are the floorboards that keep you steady — don\'t let them slip while you\'re carrying this.')),
+          h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.ask_for_breaks_when_you_need', 'Ask for breaks when you need them. ')), __alloT('sel.crisiscompanion.ui.you_are_allowed_to_not_text', 'You are allowed to not text back immediately. You are allowed to be unavailable for a few hours. Your friend\'s recovery doesn\'t require you to be on-call.')),
+          h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.notice_your_own_feelings', 'Notice your own feelings. ')), __alloT('sel.crisiscompanion.ui.sadness_anger_fear_exhaustion_are_normal', 'Sadness, anger, fear, exhaustion are normal. Numbness is also normal. If feelings stay heavy for more than a couple weeks, that\'s a moment to talk with a counselor.')),
+          h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.keep_your_other_friendships', 'Keep your other friendships. ')), __alloT('sel.crisiscompanion.ui.don_t_let_supporting_one_friend', 'Don\'t let supporting one friend isolate you from everyone else. Your full social fabric is what holds you up.'))
         )
       ),
       h('div', { style: { background: _ccC('#fef2f2'), border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, 'When supporting a friend has hit YOU hard'),
+        h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.when_supporting_a_friend_has_hit', 'When supporting a friend has hit YOU hard')),
         h('p', { style: { fontSize: '13px', color: '#7f1d1d', lineHeight: 1.7, margin: 0 } },
-          'If you\'re losing sleep, having intrusive thoughts, feeling numb, or starting to have your own thoughts of self-harm — those are signs that you need support too. Call 988, text HOME to 741741, or talk to a school counselor. Helpers need help too. There is no shame in needing it.')
+          __alloT('sel.crisiscompanion.ui.if_you_re_losing_sleep_having', 'If you\'re losing sleep, having intrusive thoughts, feeling numb, or starting to have your own thoughts of self-harm — those are signs that you need support too. Call 988, text HOME to 741741, or talk to a school counselor. Helpers need help too. There is no shame in needing it.'))
       ),
       h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
         h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0, fontWeight: 600 } },
-          'You showed up. You noticed. You said something. You told someone. That is enough. That is everything.')
+          __alloT('sel.crisiscompanion.ui.you_showed_up_you_noticed_you', 'You showed up. You noticed. You said something. You told someone. That is enough. That is everything.'))
       )
     );
   }
@@ -974,9 +1000,9 @@ window.SelHub = window.SelHub || {
     if (!iso) return '';
     var t = new Date(iso + 'T12:00:00').getTime();
     var d = Math.floor((Date.now() - t) / 86400000);
-    if (d === 0) return 'today'; if (d === 1) return 'yesterday'; if (d < 7) return d + ' days ago';
-    if (d < 30) return Math.floor(d / 7) + ' weeks ago';
-    return Math.floor(d / 30) + ' months ago';
+    if (d === 0) return __alloT('sel.crisiscompanion.ui.today', 'today'); if (d === 1) return __alloT('sel.crisiscompanion.ui.yesterday', 'yesterday'); if (d < 7) return _selFill(__alloT('sel.crisiscompanion.ui.value_days_ago', '{value} days ago'), { value: d });
+    if (d < 30) return _selFill(__alloT('sel.crisiscompanion.ui.value_weeks_ago', '{value} weeks ago'), { value: Math.floor(d / 7) });
+    return _selFill(__alloT('sel.crisiscompanion.ui.value_months_ago', '{value} months ago'), { value: Math.floor(d / 30) });
   }
   function ccCard(border, children) {
     return ccH('div', { style: {
@@ -1039,12 +1065,12 @@ window.SelHub = window.SelHub || {
   }
   function ccCrisisBanner() {
     return ccH('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', marginBottom: 14 } },
-      ccH('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '🚨 IF YOU ARE IN CRISIS RIGHT NOW:'),
+      ccH('div', { style: { fontSize: 12, color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, __alloT('sel.crisiscompanion.ui.if_you_are_in_crisis_right', '🚨 IF YOU ARE IN CRISIS RIGHT NOW:')),
       ccH('div', { style: { fontSize: 12, color: '#fecaca', lineHeight: 1.6 } },
-        'Call or text ', ccH('strong', null, '988'), ' (US Suicide + Crisis Lifeline). ',
-        'Maine Mobile Crisis: ', ccH('strong', null, '1-888-568-1112'), '. ',
-        'Text ', ccH('strong', null, 'HOME'), ' to ', ccH('strong', null, '741741'), ' (Crisis Text Line). ',
-        'Reach a real person 24/7.'
+        __alloT('sel.crisiscompanion.ui.call_or_text', 'Call or text '), ccH('strong', null, '988'), __alloT('sel.crisiscompanion.ui.us_suicide_crisis_lifeline', ' (US Suicide + Crisis Lifeline). '),
+        __alloT('sel.crisiscompanion.ui.maine_mobile_crisis', 'Maine Mobile Crisis: '), ccH('strong', null, '1-888-568-1112'), '. ',
+        __alloT('sel.crisiscompanion.ui.text', 'Text '), ccH('strong', null, 'HOME'), __alloT('sel.crisiscompanion.ui.to', ' to '), ccH('strong', null, '741741'), __alloT('sel.crisiscompanion.ui.crisis_text_line', ' (Crisis Text Line). '),
+        __alloT('sel.crisiscompanion.ui.reach_a_real_person_24_7', 'Reach a real person 24/7.')
       )
     );
   }
@@ -1057,15 +1083,15 @@ window.SelHub = window.SelHub || {
     var p = data.plan || {};
     function update(k, v) { setData({ plan: Object.assign({}, p, (function() { var o = {}; o[k] = v; return o; })()) }); }
     var STEPS = [
-      { id: 'warning',  label: '1. Warning signs (thoughts, feelings, situations)', color: '#fbbf24' },
-      { id: 'coping',   label: '2. Internal coping I can do alone',                color: '#3b82f6' },
-      { id: 'distract', label: '3. People + places that help me distract',          color: '#10b981' },
-      { id: 'helpers',  label: '4. People I can ask for help',                      color: '#a855f7' },
-      { id: 'pros',     label: '5. Professionals + crisis lines',                   color: '#ec4899' },
-      { id: 'safer',    label: '6. Making my environment safer',                    color: '#ef4444' }
+      { id: 'warning',  label: __alloT('sel.crisiscompanion.steps.warning.label', '1. Warning signs (thoughts, feelings, situations)'), color: '#fbbf24' },
+      { id: 'coping',   label: __alloT('sel.crisiscompanion.steps.coping.label', '2. Internal coping I can do alone'),                color: '#3b82f6' },
+      { id: 'distract', label: __alloT('sel.crisiscompanion.steps.distract.label_2', '3. People + places that help me distract'),          color: '#10b981' },
+      { id: 'helpers',  label: __alloT('sel.crisiscompanion.steps.helpers.label_2', '4. People I can ask for help'),                      color: '#a855f7' },
+      { id: 'pros',     label: __alloT('sel.crisiscompanion.steps.pros.label', '5. Professionals + crisis lines'),                   color: '#ec4899' },
+      { id: 'safer',    label: __alloT('sel.crisiscompanion.steps.safer.label', '6. Making my environment safer'),                    color: '#ef4444' }
     ];
     return ccH('div', { style: { padding: 14 } },
-      ccSection('🛡', 'My Safety Plan', 'Stanley + Brown 2012 — strongest-evidence intervention for reducing repeat-attempts. Build YOUR plan when calm.', '#14b8a6'),
+      ccSection('🛡', __alloT('sel.crisiscompanion.ui.my_safety_plan', 'My Safety Plan'), __alloT('sel.crisiscompanion.ui.stanley_brown_2012_strongest_evidence_interventi', 'Stanley + Brown 2012 — strongest-evidence intervention for reducing repeat-attempts. Build YOUR plan when calm.'), '#14b8a6'),
       ccCrisisBanner(),
       ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         STEPS.map(function(s) {
@@ -1076,8 +1102,8 @@ window.SelHub = window.SelHub || {
         })
       ),
       ccH('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
-        ccH('strong', { style: { color: '#14b8a6' } }, '🎓 Why this works: '),
-        'Stanley + Brown 2012, JAMA Psychiatry. The act of writing this plan when calm makes it accessible during crisis. Share with someone you trust — counselor, parent, friend.'
+        ccH('strong', { style: { color: '#14b8a6' } }, __alloT('sel.crisiscompanion.ui.why_this_works', '🎓 Why this works: ')),
+        __alloT('sel.crisiscompanion.ui.stanley_brown_2012_jama_psychiatry_the', 'Stanley + Brown 2012, JAMA Psychiatry. The act of writing this plan when calm makes it accessible during crisis. Share with someone you trust — counselor, parent, friend.')
       )
     );
   }
@@ -1090,7 +1116,7 @@ window.SelHub = window.SelHub || {
     var fs = R_CC.useState({ sign: '', context: '', intensity: 5, whatHelped: '' });
     var form = fs[0]; var setForm = fs[1];
     function save() {
-      if (!form.sign.trim()) { alert('Need a sign.'); return; }
+      if (!form.sign.trim()) { alert(__alloT('sel.crisiscompanion.ui.need_a_sign', 'Need a sign.')); return; }
       var e = Object.assign({ id: cc_id(), date: cc_today(), time: Date.now() }, form);
       setData({ logs: [e].concat(data.logs || []) });
       setForm({ sign: '', context: '', intensity: 5, whatHelped: '' });
@@ -1098,21 +1124,21 @@ window.SelHub = window.SelHub || {
     function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
     var logs = data.logs || [];
     return ccH('div', { style: { padding: 14 } },
-      ccSection('🌡', 'My Warning Signs Log', 'Track when warning signs appear so the pattern becomes visible. Knowing your pattern = catching it earlier.', '#fbbf24'),
+      ccSection('🌡', __alloT('sel.crisiscompanion.ui.my_warning_signs_log', 'My Warning Signs Log'), __alloT('sel.crisiscompanion.ui.track_when_warning_signs_appear_so', 'Track when warning signs appear so the pattern becomes visible. Knowing your pattern = catching it earlier.'), '#fbbf24'),
       ccCrisisBanner(),
       ccCard('#fbbf24',
         ccH('div', null,
-          ccInput(form.sign, function(v) { setForm(Object.assign({}, form, { sign: v })); }, 'What sign showed up? (e.g., "felt numb all afternoon", "wanted to disappear")', { marginBottom: 6 }),
-          ccInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Context (where, what was happening)', { marginBottom: 6 }),
+          ccInput(form.sign, function(v) { setForm(Object.assign({}, form, { sign: v })); }, __alloT('sel.crisiscompanion.ui.what_sign_showed_up_e_g', 'What sign showed up? (e.g., "felt numb all afternoon", "wanted to disappear")'), { marginBottom: 6 }),
+          ccInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, __alloT('sel.crisiscompanion.ui.context_where_what_was_happening', 'Context (where, what was happening)'), { marginBottom: 6 }),
           ccH('div', { style: { marginBottom: 6 } },
-            ccH('span', { style: { fontSize: 11, color: '#fbbf24' } }, 'Intensity: '), ccH('strong', { style: { color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10'),
+            ccH('span', { style: { fontSize: 11, color: '#fbbf24' } }, __alloT('sel.crisiscompanion.ui.intensity', 'Intensity: ')), ccH('strong', { style: { color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10'),
             ccH('input', { type: 'range', min: 1, max: 10, step: 1, value: form.intensity,
               onChange: function(e) { setForm(Object.assign({}, form, { intensity: parseInt(e.target.value, 10) })); },
               style: { width: '100%', accentColor: '#fbbf24', marginTop: 4 }
             })
           ),
-          ccInput(form.whatHelped, function(v) { setForm(Object.assign({}, form, { whatHelped: v })); }, 'What helped (if anything)', { marginBottom: 8 }),
-          ccBtn('💾 Log it', save, 'primary')
+          ccInput(form.whatHelped, function(v) { setForm(Object.assign({}, form, { whatHelped: v })); }, __alloT('sel.crisiscompanion.ui.what_helped_if_anything', 'What helped (if anything)'), { marginBottom: 8 }),
+          ccBtn(__alloT('sel.crisiscompanion.ui.log_it', '💾 Log it'), save, 'primary')
         )
       ),
       logs.length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -1127,7 +1153,7 @@ window.SelHub = window.SelHub || {
               )
             ),
             l.context ? ccH('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '📍 ' + l.context) : null,
-            l.whatHelped ? ccH('div', { style: { fontSize: 11, color: '#10b981', marginTop: 4 } }, '✓ Helped: ' + l.whatHelped) : null
+            l.whatHelped ? ccH('div', { style: { fontSize: 11, color: '#10b981', marginTop: 4 } }, _selFill(__alloT('sel.crisiscompanion.ui.helped_whathelped', '✓ Helped: {whatHelped}'), { whatHelped: l.whatHelped })) : null
           );
         })
       ) : null
@@ -1142,15 +1168,15 @@ window.SelHub = window.SelHub || {
     var fs = R_CC.useState({ text: '', category: 'body', effective: 5 });
     var form = fs[0]; var setForm = fs[1];
     var CATS = [
-      { id: 'body',     label: '🫀 Body',      color: '#ef4444' },
-      { id: 'mind',     label: '🧠 Mind',      color: '#a855f7' },
-      { id: 'distract', label: '🎮 Distract',  color: '#3b82f6' },
-      { id: 'connect',  label: '🤝 Connect',   color: '#10b981' },
-      { id: 'creative', label: '🎨 Creative',  color: '#fbbf24' },
-      { id: 'spirit',   label: '🌅 Spiritual', color: '#06b6d4' }
+      { id: 'body',     label: __alloT('sel.crisiscompanion.cats.body.label', '🫀 Body'),      color: '#ef4444' },
+      { id: 'mind',     label: __alloT('sel.crisiscompanion.cats.mind.label', '🧠 Mind'),      color: '#a855f7' },
+      { id: 'distract', label: __alloT('sel.crisiscompanion.cats.distract.label', '🎮 Distract'),  color: '#3b82f6' },
+      { id: 'connect',  label: __alloT('sel.crisiscompanion.cats.connect.label', '🤝 Connect'),   color: '#10b981' },
+      { id: 'creative', label: __alloT('sel.crisiscompanion.cats.creative.label', '🎨 Creative'),  color: '#fbbf24' },
+      { id: 'spirit',   label: __alloT('sel.crisiscompanion.cats.spirit.label', '🌅 Spiritual'), color: '#06b6d4' }
     ];
     function save() {
-      if (!form.text.trim()) { announce('Add a few words first, then press the button again.'); return; }
+      if (!form.text.trim()) { announce(__alloT('sel.crisiscompanion.ui.add_a_few_words_first_then', 'Add a few words first, then press the button again.')); return; }
       var s = Object.assign({ id: cc_id(), addedAt: cc_today(), useCount: 0 }, form);
       setData({ strategies: [s].concat(data.strategies || []) });
       setForm({ text: '', category: 'body', effective: 5 });
@@ -1159,11 +1185,11 @@ window.SelHub = window.SelHub || {
     function used(id) { setData({ strategies: (data.strategies || []).map(function(s) { return s.id === id ? Object.assign({}, s, { useCount: (s.useCount || 0) + 1, lastUsed: cc_today() }) : s; }) }); }
     var strategies = data.strategies || [];
     return ccH('div', { style: { padding: 14 } },
-      ccSection('🧰', 'My Coping Arsenal', 'Strategies that have actually worked for ME. Tap "+1 used" when one helps — track what works.', '#10b981'),
+      ccSection('🧰', __alloT('sel.crisiscompanion.ui.my_coping_arsenal', 'My Coping Arsenal'), __alloT('sel.crisiscompanion.ui.strategies_that_have_actually_worked_for', 'Strategies that have actually worked for ME. Tap "+1 used" when one helps — track what works.'), '#10b981'),
       ccCrisisBanner(),
       ccCard('#10b981',
         ccH('div', null,
-          ccInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'A strategy that worked for me (e.g., "cold water on face", "call Mom")', { marginBottom: 8 }),
+          ccInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, __alloT('sel.crisiscompanion.ui.a_strategy_that_worked_for_me', 'A strategy that worked for me (e.g., "cold water on face", "call Mom")'), { marginBottom: 8 }),
           ccH('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
             CATS.map(function(c) {
               var on = form.category === c.id;
@@ -1173,7 +1199,7 @@ window.SelHub = window.SelHub || {
               }, c.label);
             })
           ),
-          ccBtn('+ Add to arsenal', save, 'primary')
+          ccBtn(__alloT('sel.crisiscompanion.ui.add_to_arsenal', '+ Add to arsenal'), save, 'primary')
         )
       ),
       strategies.length > 0 ? CATS.map(function(cat) {
@@ -1186,7 +1212,7 @@ window.SelHub = window.SelHub || {
               return ccH('div', { key: 'st-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + cat.color, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 } },
                 ccH('div', { style: { flex: 1, fontSize: 11, color: '#cbd5e1' } }, s.text),
                 ccH('div', { style: { display: 'flex', gap: 4 } },
-                  ccH('span', { style: { fontSize: 10, color: cat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'used ' + (s.useCount || 0)),
+                  ccH('span', { style: { fontSize: 10, color: cat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, _selFill(__alloT('sel.crisiscompanion.ui.used_value', 'used {value}'), { value: (s.useCount || 0) })),
                   ccBtn('+1', function() { used(s.id); }, 'good', { padding: '3px 8px', fontSize: 10 }),
                   ccH('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
                 )
@@ -1206,24 +1232,24 @@ window.SelHub = window.SelHub || {
     var fs = R_CC.useState({ name: '', role: '', contact: '', when: '' });
     var form = fs[0]; var setForm = fs[1];
     function add() {
-      if (!form.name.trim()) { announce('A name is needed before this can be saved.'); return; }
+      if (!form.name.trim()) { announce(__alloT('sel.crisiscompanion.ui.a_name_is_needed_before_this', 'A name is needed before this can be saved.')); return; }
       var c = Object.assign({ id: cc_id() }, form);
       setData({ contacts: [c].concat(data.contacts || []) });
       setForm({ name: '', role: '', contact: '', when: '' });
     }
     function remove(id) { setData({ contacts: (data.contacts || []).filter(function(c) { return c.id !== id; }) }); }
     return ccH('div', { style: { padding: 14 } },
-      ccSection('☎', 'My Support Contacts', 'Quick-access list of people + crisis lines + when to use each. Wallet card.', '#06b6d4'),
+      ccSection('☎', __alloT('sel.crisiscompanion.ui.my_support_contacts', 'My Support Contacts'), __alloT('sel.crisiscompanion.ui.quick_access_list_of_people_crisis', 'Quick-access list of people + crisis lines + when to use each. Wallet card.'), '#06b6d4'),
       ccCrisisBanner(),
       ccCard('#06b6d4',
         ccH('div', null,
           ccH('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 6, marginBottom: 6 } },
-            ccInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Name'),
-            ccInput(form.role, function(v) { setForm(Object.assign({}, form, { role: v })); }, 'Role (mom, therapist, friend)')
+            ccInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, __alloT('sel.crisiscompanion.ui.name', 'Name')),
+            ccInput(form.role, function(v) { setForm(Object.assign({}, form, { role: v })); }, __alloT('sel.crisiscompanion.ui.role_mom_therapist_friend', 'Role (mom, therapist, friend)'))
           ),
-          ccInput(form.contact, function(v) { setForm(Object.assign({}, form, { contact: v })); }, 'Contact (phone / text)', { marginBottom: 6 }),
-          ccInput(form.when, function(v) { setForm(Object.assign({}, form, { when: v })); }, 'When to reach out to THIS person', { marginBottom: 8 }),
-          ccBtn('+ Add', add, 'primary')
+          ccInput(form.contact, function(v) { setForm(Object.assign({}, form, { contact: v })); }, __alloT('sel.crisiscompanion.ui.contact_phone_text', 'Contact (phone / text)'), { marginBottom: 6 }),
+          ccInput(form.when, function(v) { setForm(Object.assign({}, form, { when: v })); }, __alloT('sel.crisiscompanion.ui.when_to_reach_out_to_this', 'When to reach out to THIS person'), { marginBottom: 8 }),
+          ccBtn(__alloT('sel.crisiscompanion.ui.add', '+ Add'), add, 'primary')
         )
       ),
       (data.contacts || []).length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -1249,25 +1275,25 @@ window.SelHub = window.SelHub || {
     var fs = R_CC.useState({ what: '', helped: '', didntHelp: '', tellSelf: '' });
     var form = fs[0]; var setForm = fs[1];
     function save() {
-      if (!form.what.trim()) { alert('Need a brief description.'); return; }
+      if (!form.what.trim()) { alert(__alloT('sel.crisiscompanion.ui.need_a_brief_description', 'Need a brief description.')); return; }
       var n = Object.assign({ id: cc_id(), date: cc_today() }, form);
       setData({ notes: [n].concat(data.notes || []) });
       setForm({ what: '', helped: '', didntHelp: '', tellSelf: '' });
     }
     function remove(id) { setData({ notes: (data.notes || []).filter(function(n) { return n.id !== id; }) }); }
     return ccH('div', { style: { padding: 14 } },
-      ccSection('🌅', 'My Recovery Notes', 'After a hard moment, log what helped + what didn\'t. Build self-knowledge over time.', '#10b981'),
+      ccSection('🌅', __alloT('sel.crisiscompanion.ui.my_recovery_notes', 'My Recovery Notes'), __alloT('sel.crisiscompanion.ui.after_a_hard_moment_log_what', 'After a hard moment, log what helped + what didn\'t. Build self-knowledge over time.'), '#10b981'),
       ccCrisisBanner(),
       ccCard('#10b981',
         ccH('div', null,
-          ccInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What happened? (brief)', { marginBottom: 6 }),
-          ccTextarea(form.helped, function(v) { setForm(Object.assign({}, form, { helped: v })); }, '✓ What helped', 2),
+          ccInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, __alloT('sel.crisiscompanion.ui.what_happened_brief', 'What happened? (brief)'), { marginBottom: 6 }),
+          ccTextarea(form.helped, function(v) { setForm(Object.assign({}, form, { helped: v })); }, __alloT('sel.crisiscompanion.ui.what_helped', '✓ What helped'), 2),
           ccH('div', { style: { height: 6 } }),
-          ccTextarea(form.didntHelp, function(v) { setForm(Object.assign({}, form, { didntHelp: v })); }, '✗ What didn\'t help (or made it worse)', 2),
+          ccTextarea(form.didntHelp, function(v) { setForm(Object.assign({}, form, { didntHelp: v })); }, __alloT('sel.crisiscompanion.ui.what_didn_t_help_or_made', '✗ What didn\'t help (or made it worse)'), 2),
           ccH('div', { style: { height: 6 } }),
-          ccTextarea(form.tellSelf, function(v) { setForm(Object.assign({}, form, { tellSelf: v })); }, '💌 What I want future-me to remember from this', 3),
+          ccTextarea(form.tellSelf, function(v) { setForm(Object.assign({}, form, { tellSelf: v })); }, __alloT('sel.crisiscompanion.ui.what_i_want_future_me_to', '💌 What I want future-me to remember from this'), 3),
           ccH('div', { style: { height: 8 } }),
-          ccBtn('💾 Save', save, 'primary')
+          ccBtn(__alloT('sel.crisiscompanion.ui.save', '💾 Save'), save, 'primary')
         )
       ),
       (data.notes || []).length > 0 ? ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1280,8 +1306,8 @@ window.SelHub = window.SelHub || {
                 ccH('button', { onClick: function() { remove(n.id); }, style: { background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, cursor: 'pointer' } }, '✕')
               )
             ),
-            n.helped ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, ccH('strong', { style: { color: '#10b981' } }, '✓ Helped: '), n.helped) : null,
-            n.didntHelp ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, ccH('strong', { style: { color: '#ef4444' } }, '✗ Didn\'t: '), n.didntHelp) : null,
+            n.helped ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6 } }, ccH('strong', { style: { color: '#10b981' } }, __alloT('sel.crisiscompanion.ui.helped', '✓ Helped: ')), n.helped) : null,
+            n.didntHelp ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, ccH('strong', { style: { color: '#ef4444' } }, __alloT('sel.crisiscompanion.ui.didn_t', '✗ Didn\'t: ')), n.didntHelp) : null,
             n.tellSelf ? ccH('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, fontStyle: 'italic' } }, ccH('strong', { style: { color: '#a855f7' } }, '💌 '), n.tellSelf) : null
           );
         })
@@ -1295,22 +1321,22 @@ window.SelHub = window.SelHub || {
     var data = props.data || { items: [] };
     var setData = props.setData;
     var ns = R_CC.useState(''); var newItem = ns[0]; var setNewItem = ns[1];
-    function add() { if (!newItem.trim()) { announce('Write something first, then press Add.'); return; } setData({ items: [{ id: cc_id(), text: newItem.trim() }].concat(data.items || []) }); setNewItem(''); }
+    function add() { if (!newItem.trim()) { announce(__alloT('sel.crisiscompanion.ui.write_something_first_then_press_add', 'Write something first, then press Add.')); return; } setData({ items: [{ id: cc_id(), text: newItem.trim() }].concat(data.items || []) }); setNewItem(''); }
     function remove(id) { setData({ items: (data.items || []).filter(function(i) { return i.id !== id; }) }); }
     var items = data.items || [];
     var random = items.length > 0 ? items[Math.floor(Math.random() * items.length)] : null;
     return ccH('div', { style: { padding: 14 } },
-      ccSection('💛', 'My Hope List', 'Reasons to keep going. People, plans, places, anything. Read this when hard.', '#fbbf24'),
+      ccSection('💛', __alloT('sel.crisiscompanion.ui.my_hope_list', 'My Hope List'), __alloT('sel.crisiscompanion.ui.reasons_to_keep_going_people_plans', 'Reasons to keep going. People, plans, places, anything. Read this when hard.'), '#fbbf24'),
       ccCrisisBanner(),
       random ? ccH('div', { style: { padding: 20, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14, textAlign: 'center' } },
-        ccH('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '💛 One of your reasons'),
+        ccH('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, __alloT('sel.crisiscompanion.ui.one_of_your_reasons', '💛 One of your reasons')),
         ccH('div', { style: { fontSize: 16, color: '#e2e8f0', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + random.text + '"')
       ) : null,
       ccCard('#fbbf24',
         ccH('div', null,
           ccH('div', { style: { display: 'flex', gap: 6 } },
-            ccInput(newItem, setNewItem, 'A reason to keep going (small or big, anything)', { flex: 1 }),
-            ccBtn('+ Add', add, 'primary', { padding: '8px 14px' })
+            ccInput(newItem, setNewItem, __alloT('sel.crisiscompanion.ui.a_reason_to_keep_going_small', 'A reason to keep going (small or big, anything)'), { flex: 1 }),
+            ccBtn(__alloT('sel.crisiscompanion.ui.add', '+ Add'), add, 'primary', { padding: '8px 14px' })
           )
         )
       ),
@@ -1331,25 +1357,25 @@ window.SelHub = window.SelHub || {
     var d = props.d || {};
     var navigate = props.navigate;
     var tools = [
-      { id: 'plan',    icon: '🛡', label: 'My Safety Plan',     color: '#14b8a6', desc: 'Stanley + Brown 6-step plan',
-        stat: Object.keys(((d.kit_plan || {}).plan) || {}).length + ' steps filled' },
-      { id: 'warning', icon: '🌡', label: 'My Warning Signs Log', color: '#fbbf24', desc: 'Track signs over time = pattern',
-        stat: (((d.kit_warning || {}).logs) || []).length + ' logged' },
-      { id: 'arsenal', icon: '🧰', label: 'My Coping Arsenal',   color: '#10b981', desc: 'Strategies that work for ME',
-        stat: (((d.kit_arsenal || {}).strategies) || []).length + ' saved' },
-      { id: 'contacts',icon: '☎', label: 'My Support Contacts', color: '#06b6d4', desc: 'Quick-access who to call when',
-        stat: (((d.kit_contacts || {}).contacts) || []).length + ' people' },
-      { id: 'recovery',icon: '🌅', label: 'My Recovery Notes',   color: '#10b981', desc: 'After hard moments — what worked',
-        stat: (((d.kit_recovery || {}).notes) || []).length + ' notes' },
-      { id: 'hope',    icon: '💛', label: 'My Hope List',        color: '#fbbf24', desc: 'Reasons to keep going. Random pick.',
-        stat: (((d.kit_hope || {}).items) || []).length + ' reasons' }
+      { id: 'plan',    icon: '🛡', label: __alloT('sel.crisiscompanion.tools.plan.label', 'My Safety Plan'),     color: '#14b8a6', desc: __alloT('sel.crisiscompanion.tools.plan.desc', 'Stanley + Brown 6-step plan'),
+        stat: _selFill(__alloT('sel.crisiscompanion.tools.plan.stat', '{Count} steps filled'), { Count: Object.keys(((d.kit_plan || {}).plan) || {}).length }) },
+      { id: 'warning', icon: '🌡', label: __alloT('sel.crisiscompanion.tools.warning.label', 'My Warning Signs Log'), color: '#fbbf24', desc: __alloT('sel.crisiscompanion.tools.warning.desc', 'Track signs over time = pattern'),
+        stat: _selFill(__alloT('sel.crisiscompanion.tools.warning.stat', '{Count} logged'), { Count: (((d.kit_warning || {}).logs) || []).length }) },
+      { id: 'arsenal', icon: '🧰', label: __alloT('sel.crisiscompanion.tools.arsenal.label', 'My Coping Arsenal'),   color: '#10b981', desc: __alloT('sel.crisiscompanion.tools.arsenal.desc', 'Strategies that work for ME'),
+        stat: _selFill(__alloT('sel.crisiscompanion.tools.arsenal.stat', '{Count} saved'), { Count: (((d.kit_arsenal || {}).strategies) || []).length }) },
+      { id: 'contacts',icon: '☎', label: __alloT('sel.crisiscompanion.tools.contacts.label', 'My Support Contacts'), color: '#06b6d4', desc: __alloT('sel.crisiscompanion.tools.contacts.desc', 'Quick-access who to call when'),
+        stat: _selFill(__alloT('sel.crisiscompanion.tools.contacts.stat', '{Count} people'), { Count: (((d.kit_contacts || {}).contacts) || []).length }) },
+      { id: 'recovery',icon: '🌅', label: __alloT('sel.crisiscompanion.tools.recovery.label', 'My Recovery Notes'),   color: '#10b981', desc: __alloT('sel.crisiscompanion.tools.recovery.desc', 'After hard moments — what worked'),
+        stat: _selFill(__alloT('sel.crisiscompanion.tools.recovery.stat', '{Count} notes'), { Count: (((d.kit_recovery || {}).notes) || []).length }) },
+      { id: 'hope',    icon: '💛', label: __alloT('sel.crisiscompanion.tools.hope.label', 'My Hope List'),        color: '#fbbf24', desc: __alloT('sel.crisiscompanion.tools.hope.desc', 'Reasons to keep going. Random pick.'),
+        stat: _selFill(__alloT('sel.crisiscompanion.tools.hope.stat', '{Count} reasons'), { Count: (((d.kit_hope || {}).items) || []).length }) }
     ];
     return ccH('div', { style: { padding: 14 } },
       ccH('div', { style: { padding: '22px 20px', borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, rgba(20,184,166,0.25), rgba(16,185,129,0.10))', border: '1px solid rgba(20,184,166,0.40)' } },
-        ccH('div', { style: { fontSize: 11, color: '#5eead4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🛡 My Safety Kit'),
-        ccH('div', { style: { fontSize: 20, fontWeight: 900, color: '#e2e8f0', marginBottom: 6 } }, 'Personal crisis-support tools'),
+        ccH('div', { style: { fontSize: 11, color: '#5eead4', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, __alloT('sel.crisiscompanion.ui.my_safety_kit', '🛡 My Safety Kit')),
+        ccH('div', { style: { fontSize: 20, fontWeight: 900, color: '#e2e8f0', marginBottom: 6 } }, __alloT('sel.crisiscompanion.ui.personal_crisis_support_tools', 'Personal crisis-support tools')),
         ccH('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 } },
-          '6 tools to build YOUR safety plan + coping arsenal. Crisis-line numbers always visible. All data stays in your browser.'
+          __alloT('sel.crisiscompanion.ui.6_tools_to_build_your_safety', '6 tools to build YOUR safety plan + coping arsenal. Crisis-line numbers always visible. All data stays in your browser.')
         )
       ),
       ccCrisisBanner(),
@@ -1368,7 +1394,7 @@ window.SelHub = window.SelHub || {
             ),
             ccH('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: '1px solid ' + t.color + '30' } },
               ccH('span', { style: { fontSize: 10, color: t.color, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, t.stat),
-              ccH('span', { style: { fontSize: 11, color: t.color, fontWeight: 700 } }, 'Open →')
+              ccH('span', { style: { fontSize: 11, color: t.color, fontWeight: 700 } }, __alloT('sel.crisiscompanion.ui.open', 'Open →'))
             )
           );
         })
@@ -1384,7 +1410,7 @@ window.SelHub = window.SelHub || {
     if (view === 'hub') return ccH(CCKitHub, { d: d, navigate: function(v) { setView(v); } });
     var backBar = ccH('button', { onClick: function() { setView('hub'); },
       style: { padding: '6px 12px', borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8, marginLeft: 14 }
-    }, '← My Safety Kit');
+    }, __alloT('sel.crisiscompanion.ui.my_safety_kit_2', '← My Safety Kit'));
     var Comp, p;
     if (view === 'plan')     { Comp = CCSafetyPlan;      p = bind('kit_plan',     { plan: {} }); }
     else if (view === 'warning'){ Comp = CCWarningLog;   p = bind('kit_warning',  { logs: [] }); }
@@ -1398,11 +1424,12 @@ window.SelHub = window.SelHub || {
 
   window.SelHub.registerTool('crisiscompanion', {
     icon: '🫂',
-    label: 'Crisis Companion',
-    desc: 'Peer support and suicide-prevention skills. What to do if a friend seems depressed, in crisis, or thinking about hurting themselves. Recognizing signs, what to say (and not say), how to tell a trusted adult. NEDA + AFSP + Sources of Strength + 988 aligned. Content-warning gated.',
+    label: __alloT('sel.crisiscompanion.ui.crisis_companion', 'Crisis Companion'),
+    desc: __alloT('sel.crisiscompanion.ui.peer_support_and_suicide_prevention_skills', 'Peer support and suicide-prevention skills. What to do if a friend seems depressed, in crisis, or thinking about hurting themselves. Recognizing signs, what to say (and not say), how to tell a trusted adult. NEDA + AFSP + Sources of Strength + 988 aligned. Content-warning gated.'),
     color: 'teal',
     category: 'peer-support',
     render: function(ctx) {
+      _ctx = ctx; CRISIS_RESOURCES = _selBuild_CRISIS_RESOURCES(); RESOURCE_GROUPS = _selBuild_RESOURCE_GROUPS(); DEPRESSION_PATTERNS = _selBuild_DEPRESSION_PATTERNS(); CRISIS_SIGNS = _selBuild_CRISIS_SIGNS(); SAY_DO = _selBuild_SAY_DO(); SAY_DONT = _selBuild_SAY_DONT(); TRUSTED_ADULTS = _selBuild_TRUSTED_ADULTS(); MYTHS = _selBuild_MYTHS(); PRACTICE_SCENARIOS = _selBuild_PRACTICE_SCENARIOS(); COPING_STRATEGIES = _selBuild_COPING_STRATEGIES();
       // ── i18n ──────────────────────────────────────────────────────────────
       // The same shim 106 STEM tools use. Two things it must do, both learned
       // the hard way:
@@ -1412,12 +1439,7 @@ window.SelHub = window.SelHub || {
       //   • live HERE, in render, not at module scope. CRISIS_RESOURCES is
       //     built once at load; translating it there would freeze the language
       //     at first paint and ignore a mid-session language switch.
-      var __alloT = function (key, fallback) {
-        var fn = (ctx && typeof ctx.t === 'function') ? ctx.t : null;
-        var value = null;
-        if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
-        return (value == null) ? (fallback != null ? fallback : key) : value;
-      };
+      // __alloT is module-level and reads the ctx stored at the top of render.
       // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
       var _ccCTheme = (ctx && ctx.theme) || {};
       var _ccCHC = !!_ccCTheme.isContrast, _ccCDark = !_ccCHC && !!_ccCTheme.isDark;
@@ -1487,11 +1509,11 @@ window.SelHub = window.SelHub || {
         if (ccConfirmAction.type === 'clear-safety-plan') {
           upd({ ccConfirmAction: null, safetyPlan: {} });
           lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
-          announce('Safety plan cleared.');
+          announce(__alloT('sel.crisiscompanion.ui.safety_plan_cleared', 'Safety plan cleared.'));
           focusCrisisControl('cc-safety-plan-heading');
         } else if (ccConfirmAction.type === 'clear-distress-readings') {
           upd({ ccConfirmAction: null, distressReadings: [] });
-          announce('All distress readings cleared.');
+          announce(__alloT('sel.crisiscompanion.ui.all_distress_readings_cleared', 'All distress readings cleared.'));
           focusCrisisControl('cc-distress-section');
         } else {
           closeCrisisConfirm();
@@ -1519,10 +1541,8 @@ window.SelHub = window.SelHub || {
       function renderCrisisConfirm() {
         if (!ccConfirmAction) return null;
         var clearingPlan = ccConfirmAction.type === 'clear-safety-plan';
-        var title = clearingPlan ? 'Clear your saved safety plan?' : 'Clear all distress readings?';
-        var description = clearingPlan
-          ? 'This permanently removes every step of your saved safety plan from this device. This cannot be undone. Print or save a copy first if you may need it.'
-          : 'This permanently deletes your entire distress-reading history, including notes and trend data. This cannot be undone.';
+        var title = clearingPlan ? __alloT('sel.crisiscompanion.ui.clear_your_saved_safety_plan', 'Clear your saved safety plan?') : __alloT('sel.crisiscompanion.ui.clear_all_distress_readings', 'Clear all distress readings?');
+        var description = clearingPlan ? __alloT('sel.crisiscompanion.ui.this_permanently_removes_every_step_of', 'This permanently removes every step of your saved safety plan from this device. This cannot be undone. Print or save a copy first if you may need it.') : __alloT('sel.crisiscompanion.ui.this_permanently_deletes_your_entire_distress', 'This permanently deletes your entire distress-reading history, including notes and trend data. This cannot be undone.');
         return h('div', {
           id: 'cc-destructive-confirm',
           className: 'fixed inset-0 z-[10003] flex items-center justify-center bg-slate-950/80 p-4',
@@ -1539,11 +1559,11 @@ window.SelHub = window.SelHub || {
               id: 'cc-confirm-cancel',
               onClick: closeCrisisConfirm,
               style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #64748b', background: _ccC('#f8fafc'), color: SLATE_TEXT, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
-            }, 'Cancel'),
+            }, __alloT('sel.crisiscompanion.ui.cancel', 'Cancel')),
             h('button', {
               onClick: commitCrisisAction,
               style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #dc2626', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
-            }, clearingPlan ? 'Clear safety plan' : 'Clear all readings')
+            }, clearingPlan ? __alloT('sel.crisiscompanion.ui.clear_safety_plan', 'Clear safety plan') : __alloT('sel.crisiscompanion.ui.clear_all_readings', 'Clear all readings'))
           )
         ));
       }
@@ -1572,20 +1592,20 @@ window.SelHub = window.SelHub || {
       }, [section, d.breathRunning, d.breathTick]);
 
       var SECTIONS = [
-        { id: 'mykit',               icon: '🛡', label: 'My Safety Kit' },
-        { id: 'breath',              icon: '🫧', label: 'Breath pacer' },
-        { id: 'grounding',           icon: '🌿', label: 'Grounding 5-4-3-2-1' },
-        { id: 'thermometer',         icon: '🌡', label: 'Distress check' },
-        { id: 'whyMatters',          icon: '🫂', label: 'Why this matters' },
-        { id: 'recognizeDepression', icon: '🌧️', label: 'Recognizing depression' },
-        { id: 'crisisSigns',         icon: '🚨', label: 'Crisis warning signs' },
-        { id: 'qpr',                 icon: '🧭', label: 'Question · Persuade · Refer' },
-        { id: 'whatToSay',           icon: '💬', label: 'What to say' },
-        { id: 'tellingAdult',        icon: '🍎', label: 'Telling a trusted adult' },
-        { id: 'myths',               icon: '🔍', label: 'Myths debunked' },
-        { id: 'resources',           icon: '☎️', label: 'Crisis resources' },
-        { id: 'selfCare',            icon: '💚', label: 'Caring for yourself' },
-        { id: 'practice',            icon: '🎭', label: 'Practice' }
+        { id: 'mykit',               icon: '🛡', label: __alloT('sel.crisiscompanion.sections.mykit.label', 'My Safety Kit') },
+        { id: 'breath',              icon: '🫧', label: __alloT('sel.crisiscompanion.sections.breath.label', 'Breath pacer') },
+        { id: 'grounding',           icon: '🌿', label: __alloT('sel.crisiscompanion.sections.grounding.label', 'Grounding 5-4-3-2-1') },
+        { id: 'thermometer',         icon: '🌡', label: __alloT('sel.crisiscompanion.sections.thermometer.label', 'Distress check') },
+        { id: 'whyMatters',          icon: '🫂', label: __alloT('sel.crisiscompanion.sections.whyMatters.label', 'Why this matters') },
+        { id: 'recognizeDepression', icon: '🌧️', label: __alloT('sel.crisiscompanion.sections.recognizeDepression.label', 'Recognizing depression') },
+        { id: 'crisisSigns',         icon: '🚨', label: __alloT('sel.crisiscompanion.sections.crisisSigns.label', 'Crisis warning signs') },
+        { id: 'qpr',                 icon: '🧭', label: __alloT('sel.crisiscompanion.sections.qpr.label', 'Question · Persuade · Refer') },
+        { id: 'whatToSay',           icon: '💬', label: __alloT('sel.crisiscompanion.sections.whatToSay.label', 'What to say') },
+        { id: 'tellingAdult',        icon: '🍎', label: __alloT('sel.crisiscompanion.sections.tellingAdult.label', 'Telling a trusted adult') },
+        { id: 'myths',               icon: '🔍', label: __alloT('sel.crisiscompanion.sections.myths.label', 'Myths debunked') },
+        { id: 'resources',           icon: '☎️', label: __alloT('sel.crisiscompanion.sections.resources.label', 'Crisis resources') },
+        { id: 'selfCare',            icon: '💚', label: __alloT('sel.crisiscompanion.sections.selfCare.label', 'Caring for yourself') },
+        { id: 'practice',            icon: '🎭', label: __alloT('sel.crisiscompanion.sections.practice.label', 'Practice') }
       ];
 
       // Track which sections have been visited (for progress badge persistence)
@@ -1594,14 +1614,14 @@ window.SelHub = window.SelHub || {
         if (!badges[id]) {
           var nb = Object.assign({}, badges); nb[id] = true;
           upd('badges', nb);
-          if (!lsSet(ccKey('crisisCompanion.badges.v1'), nb)) announce('This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.');
+          if (!lsSet(ccKey('crisisCompanion.badges.v1'), nb)) announce(__alloT('sel.crisiscompanion.ui.this_device_would_not_save_it', 'This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.'));
         }
       }
 
       function setSection(id) {
         upd('section', id);
         markVisited(id);
-        announce('Now viewing: ' + (SECTIONS.filter(function(s){return s.id===id;})[0] || {}).label);
+        announce(_selFill(__alloT('sel.crisiscompanion.ui.now_viewing_label', 'Now viewing: {label}'), { label: (SECTIONS.filter(function(s){return s.id===id;})[0] || {}).label }));
       }
 
       // ══════════════════════════════════════════════════════════════
@@ -1612,44 +1632,44 @@ window.SelHub = window.SelHub || {
           h('div', { style: { background: _ccC('#fff'), border: '3px solid ' + AMBER, borderRadius: '16px', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '14px', borderBottom: '1px solid #e5e7eb', marginBottom: '14px' } },
               h('span', { style: { fontSize: '38px' }, 'aria-hidden': 'true' }, '⚠️'),
-              h('h1', { style: { fontSize: '20px', fontWeight: 800, color: _ccC('#92400e'), margin: 0 } }, 'Content note before you continue')
+              h('h1', { style: { fontSize: '20px', fontWeight: 800, color: _ccC('#92400e'), margin: 0 } }, __alloT('sel.crisiscompanion.ui.content_note_before_you_continue', 'Content note before you continue'))
             ),
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 12px' } },
-              'This module is about what to do if a friend is depressed, in crisis, or thinking about hurting themselves — including suicide. It covers:'),
+              __alloT('sel.crisiscompanion.ui.this_module_is_about_what_to', 'This module is about what to do if a friend is depressed, in crisis, or thinking about hurting themselves — including suicide. It covers:')),
             h('ul', { style: { fontSize: '13px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 14px', paddingLeft: '22px' } },
-              h('li', null, 'Recognizing signs of depression in a friend'),
-              h('li', null, 'Crisis warning signs — at a general level, not detailed instructions'),
-              h('li', null, 'How to ask, listen, and respond'),
-              h('li', null, 'How and when to tell a trusted adult'),
-              h('li', null, 'Crisis helplines and what to say when you call'),
-              h('li', null, 'How to take care of yourself when you\'ve supported a friend')
+              h('li', null, __alloT('sel.crisiscompanion.ui.recognizing_signs_of_depression_in_a', 'Recognizing signs of depression in a friend')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.crisis_warning_signs_at_a_general', 'Crisis warning signs — at a general level, not detailed instructions')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_ask_listen_and_respond', 'How to ask, listen, and respond')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_and_when_to_tell_a', 'How and when to tell a trusted adult')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.crisis_helplines_and_what_to_say', 'Crisis helplines and what to say when you call')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_take_care_of_yourself', 'How to take care of yourself when you\'ve supported a friend'))
             ),
             h('div', { style: { background: _ccC('#eff6ff'), border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', marginBottom: '14px' } },
               h('p', { style: { fontSize: '13px', lineHeight: 1.6, color: SLATE_TEXT, margin: 0 } },
-                h('strong', { style: { color: _ccC('#1e40af') } }, 'What this module does NOT include: '),
-                'specific methods of self-harm, descriptions of suicide attempts, "before/after" stories, or any content that could function as a how-to. The information is intentionally general — focused on awareness, support, and connecting people to help.')
+                h('strong', { style: { color: _ccC('#1e40af') } }, __alloT('sel.crisiscompanion.ui.what_this_module_does_not_include', 'What this module does NOT include: ')),
+                __alloT('sel.crisiscompanion.ui.specific_methods_of_self_harm_descriptions', 'specific methods of self-harm, descriptions of suicide attempts, "before/after" stories, or any content that could function as a how-to. The information is intentionally general — focused on awareness, support, and connecting people to help.'))
             ),
             h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '10px', padding: '12px', marginBottom: '18px' } },
               h('p', { style: { fontSize: '13px', lineHeight: 1.6, color: _ccC('#78350f'), margin: '0 0 8px' } },
-                h('strong', null, 'If reading about these topics is hard for you right now, '),
-                'please consider one of these instead:'),
+                h('strong', null, __alloT('sel.crisiscompanion.ui.if_reading_about_these_topics_is', 'If reading about these topics is hard for you right now, ')),
+                __alloT('sel.crisiscompanion.ui.please_consider_one_of_these_instead', 'please consider one of these instead:')),
               h('ul', { style: { fontSize: '13px', color: _ccC('#78350f'), margin: 0, paddingLeft: '22px', lineHeight: 1.7 } },
-                h('li', null, 'Talk with a trusted adult before continuing — a school counselor, parent, or teacher'),
-                h('li', null, 'Skip this module and explore other SEL Hub tools'),
-                h('li', null, 'Call or text ', h('strong', { style: { fontFamily: 'monospace' } }, '988'), ' — the 988 Suicide & Crisis Lifeline (free, confidential, 24/7)'),
-                h('li', null, 'Text ', h('strong', { style: { fontFamily: 'monospace' } }, 'HOME to 741741'), ' — Crisis Text Line (free, confidential, 24/7)')
+                h('li', null, __alloT('sel.crisiscompanion.ui.talk_with_a_trusted_adult_before', 'Talk with a trusted adult before continuing — a school counselor, parent, or teacher')),
+                h('li', null, __alloT('sel.crisiscompanion.ui.skip_this_module_and_explore_other', 'Skip this module and explore other SEL Hub tools')),
+                h('li', null, __alloT('sel.crisiscompanion.ui.call_or_text', 'Call or text '), h('strong', { style: { fontFamily: 'monospace' } }, '988'), __alloT('sel.crisiscompanion.ui.the_988_suicide_crisis_lifeline_free', ' — the 988 Suicide & Crisis Lifeline (free, confidential, 24/7)')),
+                h('li', null, __alloT('sel.crisiscompanion.ui.text', 'Text '), h('strong', { style: { fontFamily: 'monospace' } }, __alloT('sel.crisiscompanion.ui.home_to_741741', 'HOME to 741741')), __alloT('sel.crisiscompanion.ui.crisis_text_line_free_confidential_24', ' — Crisis Text Line (free, confidential, 24/7)'))
               )
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               h('button', {
-                onClick: function() { upd('consented', true); markVisited('whyMatters'); announce('Continuing into Crisis Companion'); },
-                'aria-label': 'I understand the content note and want to continue into Crisis Companion',
+                onClick: function() { upd('consented', true); markVisited('whyMatters'); announce(__alloT('sel.crisiscompanion.ui.continuing_into_crisis_companion', 'Continuing into Crisis Companion')); },
+                'aria-label': __alloT('sel.crisiscompanion.ui.i_understand_the_content_note_and', 'I understand the content note and want to continue into Crisis Companion'),
                 style: { padding: '14px 18px', background: TEAL, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', boxShadow: '0 3px 10px rgba(13,148,136,0.3)' }
-              }, '✓ I understand — continue'),
+              }, __alloT('sel.crisiscompanion.ui.i_understand_continue', '✓ I understand — continue')),
               h('button', {
-                onClick: function() { addToast('Returning to SEL Hub menu'); if (ctx.setSelHubTool) ctx.setSelHubTool(null); },
+                onClick: function() { addToast(__alloT('sel.crisiscompanion.ui.returning_to_sel_hub_menu', 'Returning to SEL Hub menu')); if (ctx.setSelHubTool) ctx.setSelHubTool(null); },
                 style: { padding: '12px 18px', background: _ccC('#f1f5f9'), color: _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : SLATE_TEXT), border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
-              }, '← Take me back to the menu')
+              }, __alloT('sel.crisiscompanion.ui.take_me_back_to_the_menu', '← Take me back to the menu'))
             )
           )
         );
@@ -1665,10 +1685,10 @@ window.SelHub = window.SelHub || {
       function navStrip() {
         return h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '10px 12px', marginBottom: '14px' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Crisis Companion'),
-            h('div', { style: { fontSize: '11px', color: TEAL_DARK, fontWeight: 600 } }, visitedCount + ' / ' + SECTIONS.length + ' sections visited')
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('sel.crisiscompanion.ui.crisis_companion', 'Crisis Companion')),
+            h('div', { style: { fontSize: '11px', color: TEAL_DARK, fontWeight: 600 } }, _selFill(__alloT('sel.crisiscompanion.ui.visitedcount_sectionscount_sections_visited', '{visitedCount} / {SECTIONSCount} sections visited'), { visitedCount: visitedCount, SECTIONSCount: SECTIONS.length }))
           ),
-          h('div', { 'role': 'tablist', 'aria-label': 'Crisis Companion sections', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+          h('div', { 'role': 'tablist', 'aria-label': __alloT('sel.crisiscompanion.ui.crisis_companion_sections', 'Crisis Companion sections'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
             SECTIONS.map(function(s) {
               var sel = (section === s.id);
               var visited = !!badges[s.id];
@@ -1676,7 +1696,7 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 role: 'tab',
                 'aria-selected': sel ? 'true' : 'false',
-                'aria-label': s.label + (visited ? ' (visited)' : ''),
+                'aria-label': s.label + (visited ? __alloT('sel.crisiscompanion.ui.visited', ' (visited)') : ''),
                 onClick: function() { setSection(s.id); },
                 style: {
                   padding: '6px 12px',
@@ -1719,7 +1739,7 @@ window.SelHub = window.SelHub || {
           h('button', {
             onClick: function() { setSection(nextSec.id); },
             style: { padding: '10px 18px', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
-          }, 'Next: ' + nextSec.label + ' →')
+          }, _selFill(__alloT('sel.crisiscompanion.ui.next_label', 'Next: {label} →'), { label: nextSec.label }))
         );
       }
 
@@ -1764,9 +1784,9 @@ window.SelHub = window.SelHub || {
         var bStart  = d.breathStart || 0;
         var bSession = d.breathSession || { cycles: 0 };
         var BREATH_MODES = {
-          box:  { name: 'Box breathing (4-4-4-4)', phases: [{ name: 'Inhale', sec: 4, scale: 1.4 }, { name: 'Hold',   sec: 4, scale: 1.4 }, { name: 'Exhale', sec: 4, scale: 0.7 }, { name: 'Hold',   sec: 4, scale: 0.7 }] },
-          fourseven: { name: '4-7-8 calming breath', phases: [{ name: 'Inhale', sec: 4, scale: 1.4 }, { name: 'Hold', sec: 7, scale: 1.4 }, { name: 'Exhale', sec: 8, scale: 0.7 }] },
-          equal:{ name: 'Equal breath (6-6)',     phases: [{ name: 'Inhale', sec: 6, scale: 1.4 }, { name: 'Exhale', sec: 6, scale: 0.7 }] }
+          box:  { name: __alloT('sel.crisiscompanion.breath_modes.box.name', 'Box breathing (4-4-4-4)'), phases: [{ name: 'Inhale', sec: 4, scale: 1.4 }, { name: 'Hold',   sec: 4, scale: 1.4 }, { name: 'Exhale', sec: 4, scale: 0.7 }, { name: 'Hold',   sec: 4, scale: 0.7 }] },
+          fourseven: { name: __alloT('sel.crisiscompanion.breath_modes.fourseven.name', '4-7-8 calming breath'), phases: [{ name: 'Inhale', sec: 4, scale: 1.4 }, { name: 'Hold', sec: 7, scale: 1.4 }, { name: 'Exhale', sec: 8, scale: 0.7 }] },
+          equal:{ name: __alloT('sel.crisiscompanion.breath_modes.equal.name', 'Equal breath (6-6)'),     phases: [{ name: 'Inhale', sec: 6, scale: 1.4 }, { name: 'Exhale', sec: 6, scale: 0.7 }] }
         };
         var pattern = BREATH_MODES[bMode] || BREATH_MODES.box;
         var cycleSec = pattern.phases.reduce(function(s, p) { return s + p.sec; }, 0);
@@ -1806,10 +1826,10 @@ window.SelHub = window.SelHub || {
         var ringColor = currentPhase.name === 'Inhale' ? '#0d9488' : (currentPhase.name === 'Exhale' ? '#7c3aed' : '#0891b2');
 
         content = h('div', null,
-          sectionHero({ icon: '🫧', label: 'Breath pacer' }),
+          sectionHero({ icon: '🫧', label: __alloT('sel.crisiscompanion.ui.breath_pacer', 'Breath pacer') }),
           h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
-              'A visual breathing pacer. Watch the circle expand and contract; let your breath follow. Useful for moments of acute stress before a hard conversation, after one, or any time the body is ahead of the mind. This is a tool to USE — it doesn\'t replace any of the supports in the rest of this module.'),
+              __alloT('sel.crisiscompanion.ui.a_visual_breathing_pacer_watch_the', 'A visual breathing pacer. Watch the circle expand and contract; let your breath follow. Useful for moments of acute stress before a hard conversation, after one, or any time the body is ahead of the mind. This is a tool to USE — it doesn\'t replace any of the supports in the rest of this module.')),
 
             // Mode picker
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
@@ -1833,28 +1853,28 @@ window.SelHub = window.SelHub || {
                   transition: bRunning ? 'transform 0.25s linear' : 'transform 0.4s ease'
                 } }),
                 h('div', { style: { position: 'absolute', textAlign: 'center', color: '#fff', fontWeight: 800, pointerEvents: 'none' } },
-                  h('div', { style: { fontSize: 22, textShadow: '0 1px 4px rgba(0,0,0,0.5)' } }, bRunning ? currentPhase.name : 'Ready'),
+                  h('div', { style: { fontSize: 22, textShadow: '0 1px 4px rgba(0,0,0,0.5)' } }, bRunning ? __alloT('sel.crisiscompanion.value.' + String(currentPhase.name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''), currentPhase.name) : __alloT('sel.crisiscompanion.ui.ready', 'Ready')),
                   bRunning && h('div', { style: { fontSize: 14, marginTop: 4, textShadow: '0 1px 4px rgba(0,0,0,0.5)' } }, (currentPhase.sec - Math.floor(phaseProgress * currentPhase.sec)) + 's')
                 )
               ),
               h('div', { style: { marginTop: 14, fontSize: 13, color: SLATE_MID, fontWeight: 600 } },
-                bRunning ? ('Cycle ' + cycles + ' · keep going as long as feels good') : 'Press Start when you\'re ready'),
+                bRunning ? (_selFill(__alloT('sel.crisiscompanion.ui.cycle_cycles', 'Cycle {cycles}'), { cycles: cycles }) + __alloT('sel.crisiscompanion.ui.keep_going_as_long_as_feels', ' · keep going as long as feels good')) : __alloT('sel.crisiscompanion.ui.press_start_when_you_re_ready', 'Press Start when you\'re ready')),
 
               h('div', { style: { display: 'flex', gap: 8, marginTop: 14 } },
                 !bRunning
-                  ? h('button', { onClick: start, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '▶ Start')
-                  : h('button', { onClick: stop, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _ccC('#dc2626'), color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '■ Stop'),
+                  ? h('button', { onClick: start, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, __alloT('sel.crisiscompanion.ui.start', '▶ Start'))
+                  : h('button', { onClick: stop, style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _ccC('#dc2626'), color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, __alloT('sel.crisiscompanion.ui.stop', '■ Stop')),
                 bRunning && h('button', { onClick: function() { upd('breathStart', Date.now()); upd('breathSession', { cycles: 0 }); },
-                  style: { padding: '10px 20px', borderRadius: 10, border: '1.5px solid #d1d5db', background: _ccC('#fff'), color: SLATE_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↺ Restart')
+                  style: { padding: '10px 20px', borderRadius: 10, border: '1.5px solid #d1d5db', background: _ccC('#fff'), color: SLATE_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, __alloT('sel.crisiscompanion.ui.restart', '↺ Restart'))
               )
             )
           ),
 
           h('div', { style: { marginTop: 12, padding: 12, background: _ccC('#f0fdfa'), borderRadius: 10, border: '1px solid ' + TEAL, fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65 } },
-            h('strong', { style: { color: TEAL_DARK } }, '💡 When to use which: '),
-            'Box breathing (4-4-4-4) for general regulation — military and first responders use it. ',
-            '4-7-8 for falling asleep or quick acute calm — the long exhale activates the parasympathetic system. ',
-            'Equal breath (6-6) for sustainable everyday use — no holds, easy to maintain.')
+            h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.when_to_use_which', '💡 When to use which: ')),
+            __alloT('sel.crisiscompanion.ui.box_breathing_4_4_4_4', 'Box breathing (4-4-4-4) for general regulation — military and first responders use it. '),
+            __alloT('sel.crisiscompanion.ui.4_7_8_for_falling_asleep', '4-7-8 for falling asleep or quick acute calm — the long exhale activates the parasympathetic system. '),
+            __alloT('sel.crisiscompanion.ui.equal_breath_6_6_for_sustainable', 'Equal breath (6-6) for sustainable everyday use — no holds, easy to maintain.'))
         );
       }
 
@@ -1863,11 +1883,11 @@ window.SelHub = window.SelHub || {
         var gStep = d.groundStep || 0;
         var gItems = d.groundItems || { sight: [], touch: [], hear: [], smell: [], taste: [] };
         var STEPS = [
-          { sense: 'sight', count: 5, label: '5 things you can SEE', icon: '👁', prompt: 'Look around. Name 5 things you can see right now. Be specific — "the corner of a book", not "a book".' },
-          { sense: 'touch', count: 4, label: '4 things you can TOUCH', icon: '✋', prompt: 'Reach out and touch 4 different things. Notice the texture. Cold or warm? Smooth or rough?' },
-          { sense: 'hear',  count: 3, label: '3 things you can HEAR', icon: '👂', prompt: 'Listen. Name 3 different sounds — they can be close or far, loud or quiet.' },
-          { sense: 'smell', count: 2, label: '2 things you can SMELL', icon: '👃', prompt: 'Notice 2 smells. If you can\'t smell anything, name 2 smells you remember enjoying.' },
-          { sense: 'taste', count: 1, label: '1 thing you can TASTE', icon: '👅', prompt: 'Notice 1 taste in your mouth — what your last drink or food left, or just the taste of the air.' }
+          { sense: 'sight', count: 5, label: __alloT('sel.crisiscompanion.steps.0.label', '5 things you can SEE'), icon: '👁', prompt: __alloT('sel.crisiscompanion.steps.0.prompt', 'Look around. Name 5 things you can see right now. Be specific — "the corner of a book", not "a book".') },
+          { sense: 'touch', count: 4, label: __alloT('sel.crisiscompanion.steps.1.label', '4 things you can TOUCH'), icon: '✋', prompt: __alloT('sel.crisiscompanion.steps.1.prompt', 'Reach out and touch 4 different things. Notice the texture. Cold or warm? Smooth or rough?') },
+          { sense: 'hear',  count: 3, label: __alloT('sel.crisiscompanion.steps.2.label', '3 things you can HEAR'), icon: '👂', prompt: __alloT('sel.crisiscompanion.steps.2.prompt', 'Listen. Name 3 different sounds — they can be close or far, loud or quiet.') },
+          { sense: 'smell', count: 2, label: __alloT('sel.crisiscompanion.steps.3.label', '2 things you can SMELL'), icon: '👃', prompt: __alloT('sel.crisiscompanion.steps.3.prompt', 'Notice 2 smells. If you can\'t smell anything, name 2 smells you remember enjoying.') },
+          { sense: 'taste', count: 1, label: __alloT('sel.crisiscompanion.steps.4.label', '1 thing you can TASTE'), icon: '👅', prompt: __alloT('sel.crisiscompanion.steps.4.prompt', 'Notice 1 taste in your mouth — what your last drink or food left, or just the taste of the air.') }
         ];
         var current = STEPS[Math.min(gStep, STEPS.length - 1)];
         var sense = current.sense;
@@ -1875,7 +1895,7 @@ window.SelHub = window.SelHub || {
         var complete = items.length >= current.count;
         var allDone = gStep >= STEPS.length;
         function addItem(text) {
-          if (!text || !text.trim()) { announce('Write something first, then press the button again.'); return; }
+          if (!text || !text.trim()) { announce(__alloT('sel.crisiscompanion.ui.write_something_first_then_press_the', 'Write something first, then press the button again.')); return; }
           var ni = Object.assign({}, gItems);
           ni[sense] = (ni[sense] || []).concat([text.trim()]);
           upd('groundItems', ni);
@@ -1889,10 +1909,10 @@ window.SelHub = window.SelHub || {
         function nextStep() { upd('groundStep', gStep + 1); }
         function reset() { upd('groundStep', 0); upd('groundItems', { sight: [], touch: [], hear: [], smell: [], taste: [] }); }
         content = h('div', null,
-          sectionHero({ icon: '🌿', label: 'Grounding 5-4-3-2-1' }),
+          sectionHero({ icon: '🌿', label: __alloT('sel.crisiscompanion.ui.grounding_5_4_3_2_1', 'Grounding 5-4-3-2-1') }),
           h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
-              'When your mind is racing or anxiety is climbing, the 5-4-3-2-1 technique pulls attention back to the body and the present moment. Use any of the 5 senses, even if some aren\'t accessible — name what you remember, what you imagine, what you wish you smelled. It still works.'),
+              __alloT('sel.crisiscompanion.ui.when_your_mind_is_racing_or', 'When your mind is racing or anxiety is climbing, the 5-4-3-2-1 technique pulls attention back to the body and the present moment. Use any of the 5 senses, even if some aren\'t accessible — name what you remember, what you imagine, what you wish you smelled. It still works.')),
             // Progress dots
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, justifyContent: 'center' } },
               STEPS.map(function(s, i) {
@@ -1906,13 +1926,13 @@ window.SelHub = window.SelHub || {
                 h('span', { style: { fontSize: 32 } }, current.icon),
                 h('div', null,
                   h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK } }, current.label),
-                  h('div', { style: { fontSize: 12, color: SLATE_MID, marginTop: 2 } }, items.length + ' of ' + current.count + ' added'))
+                  h('div', { style: { fontSize: 12, color: SLATE_MID, marginTop: 2 } }, _selFill(__alloT('sel.crisiscompanion.ui.itemscount_of_count_added', '{itemsCount} of {count} added'), { itemsCount: items.length, count: current.count })))
               ),
               h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 10px' } }, current.prompt),
               // Input
               !complete && h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', id: 'gr-input-' + sense,
-                  placeholder: 'Type one ' + sense + ' thing and press Enter',
+                  placeholder: __alloT('sel.crisiscompanion.steps.' + Math.min(gStep, STEPS.length - 1) + '.placeholder', ['Type one thing you see and press Enter', 'Type one thing you can touch and press Enter', 'Type one thing you hear and press Enter', 'Type one thing you smell and press Enter', 'Type one thing you taste and press Enter'][Math.min(gStep, STEPS.length - 1)] || ''),
                   onKeyDown: function(e) { if (e.key === 'Enter') { addItem(e.target.value); e.target.value = ''; } },
                   style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 } })
               ),
@@ -1922,19 +1942,19 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, background: _ccC('#fff'), borderRadius: 6, marginBottom: 4, border: '1px solid #d1fae5' } },
                     h('span', { style: { fontSize: 16, color: '#22c55e' } }, '✓'),
                     h('span', { style: { flex: 1, fontSize: 13, color: SLATE_TEXT } }, it),
-                    h('button', { onClick: function() { removeItem(idx); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: _ccC('#94a3b8'), cursor: 'pointer', fontSize: 16 } }, '×'));
+                    h('button', { onClick: function() { removeItem(idx); }, 'aria-label': __alloT('sel.crisiscompanion.ui.remove', 'Remove'), style: { background: 'transparent', border: 'none', color: _ccC('#94a3b8'), cursor: 'pointer', fontSize: 16 } }, '×'));
                 })
               ),
               complete && h('button', { onClick: nextStep,
                 style: { marginTop: 12, padding: '10px 18px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } },
-                gStep === STEPS.length - 1 ? '✓ Finish' : 'Next →')
+                gStep === STEPS.length - 1 ? __alloT('sel.crisiscompanion.ui.finish_2', '✓ Finish') : __alloT('sel.crisiscompanion.ui.next', 'Next →'))
             ),
             allDone && h('div', { style: { padding: 18, background: 'linear-gradient(135deg, #d1fae5, #ccfbf1)', borderRadius: 12, textAlign: 'center' } },
               h('div', { style: { fontSize: 28, marginBottom: 6 } }, '🌿'),
-              h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK, marginBottom: 6 } }, 'Grounding complete'),
-              h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } }, 'You named 15 specific things in your present moment. Notice how you feel now compared to when you started.'),
+              h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK, marginBottom: 6 } }, __alloT('sel.crisiscompanion.ui.grounding_complete', 'Grounding complete')),
+              h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } }, __alloT('sel.crisiscompanion.ui.you_named_15_specific_things_in', 'You named 15 specific things in your present moment. Notice how you feel now compared to when you started.')),
               h('button', { onClick: reset,
-                style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid ' + TEAL, background: _ccC('#fff'), color: TEAL_DARK, fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '↺ Start again')
+                style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid ' + TEAL, background: _ccC('#fff'), color: TEAL_DARK, fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, __alloT('sel.crisiscompanion.ui.start_again', '↺ Start again'))
             )
           )
         );
@@ -1949,7 +1969,7 @@ window.SelHub = window.SelHub || {
           var entry = { id: 'dr_' + Date.now(), value: nowMood, note: nowNote, time: new Date().toISOString() };
           upd('distressReadings', readings.concat([entry]));
           upd('distressNote', '');
-          if (announce) announce('Distress reading saved.');
+          if (announce) announce(__alloT('sel.crisiscompanion.ui.distress_reading_saved', 'Distress reading saved.'));
         }
         function removeReading(id) { upd('distressReadings', readings.filter(function(r) { return r.id !== id; })); }
         function clearAll() { openCrisisConfirm({ type: 'clear-distress-readings', triggerId: 'cc-clear-distress-readings' }); }
@@ -1963,63 +1983,63 @@ window.SelHub = window.SelHub || {
 
         var levelColors = ['#22c55e','#22c55e','#84cc16','#eab308','#eab308','#f59e0b','#f97316','#f97316','#ef4444','#ef4444',_ccC('#b91c1c')];
         var levelLabel = function(v) {
-          if (v <= 2) return 'Calm';
-          if (v <= 4) return 'Mild stress';
-          if (v <= 6) return 'Notable distress';
-          if (v <= 8) return 'High distress';
-          return 'Crisis-level distress';
+          if (v <= 2) return __alloT('sel.crisiscompanion.ui.calm', 'Calm');
+          if (v <= 4) return __alloT('sel.crisiscompanion.ui.mild_stress', 'Mild stress');
+          if (v <= 6) return __alloT('sel.crisiscompanion.ui.notable_distress', 'Notable distress');
+          if (v <= 8) return __alloT('sel.crisiscompanion.ui.high_distress', 'High distress');
+          return __alloT('sel.crisiscompanion.ui.crisis_level_distress', 'Crisis-level distress');
         };
 
         content = h('div', { id: 'cc-distress-section', tabIndex: -1 },
-          sectionHero({ icon: '🌡', label: 'Distress check' }),
+          sectionHero({ icon: '🌡', label: __alloT('sel.crisiscompanion.ui.distress_check', 'Distress check') }),
           h('div', { style: { background: _ccC('#fff'), borderRadius: 12, padding: 18, border: '1px solid #e5e7eb' } },
             h('p', { style: { fontSize: 14, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } },
-              'A quick way to track how you\'re feeling over time. Rate your distress 0–10. Add an optional note. The pattern over a week tells you something words alone won\'t. ',
-              h('strong', null, 'If your reading is 8 or above for more than an hour, please reach out to a trusted adult or text HOME to 741741.')),
+              __alloT('sel.crisiscompanion.ui.a_quick_way_to_track_how', 'A quick way to track how you\'re feeling over time. Rate your distress 0–10. Add an optional note. The pattern over a week tells you something words alone won\'t. '),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.if_your_reading_is_8_or', 'If your reading is 8 or above for more than an hour, please reach out to a trusted adult or text HOME to 741741.'))),
 
             // Current reading slider
             h('div', { style: { padding: 14, background: _ccC('#f0fdfa'), borderRadius: 10, marginBottom: 14 } },
-              h('label', { htmlFor: 'distress-slider', style: { display: 'block', fontSize: 12, fontWeight: 700, color: TEAL_DARK, marginBottom: 8 } }, 'Right now I\'m feeling:'),
+              h('label', { htmlFor: 'distress-slider', style: { display: 'block', fontSize: 12, fontWeight: 700, color: TEAL_DARK, marginBottom: 8 } }, __alloT('sel.crisiscompanion.ui.right_now_i_m_feeling', 'Right now I\'m feeling:')),
               h('input', { id: 'distress-slider', type: 'range', min: 0, max: 10, step: 1, value: nowMood,
                 onChange: function(e) { upd('distressNow', parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: levelColors[nowMood] }
               }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _ccC('#94a3b8'), marginTop: 2 } },
-                h('span', null, '0 · calm'), h('span', null, '5'), h('span', null, '10 · crisis')
+                h('span', null, __alloT('sel.crisiscompanion.ui.0_calm', '0 · calm')), h('span', null, '5'), h('span', null, __alloT('sel.crisiscompanion.ui.10_crisis', '10 · crisis'))
               ),
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 12 } },
                 h('div', { style: { fontSize: 36, fontWeight: 900, color: levelColors[nowMood] } }, nowMood),
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: levelColors[nowMood] } }, levelLabel(nowMood))
               ),
-              h('label', { htmlFor: 'distress-note', style: { display: 'block', fontSize: 11, fontWeight: 700, color: SLATE_MID, marginTop: 12, marginBottom: 4 } }, 'Optional note (what\'s going on?):'),
+              h('label', { htmlFor: 'distress-note', style: { display: 'block', fontSize: 11, fontWeight: 700, color: SLATE_MID, marginTop: 12, marginBottom: 4 } }, __alloT('sel.crisiscompanion.ui.optional_note_what_s_going_on', 'Optional note (what\'s going on?):')),
               h('input', { id: 'distress-note', type: 'text', value: nowNote,
                 onChange: function(e) { upd('distressNote', e.target.value); },
-                placeholder: 'e.g., math test in 3rd period; barely slept',
+                placeholder: __alloT('sel.crisiscompanion.ui.e_g_math_test_in_3rd', 'e.g., math test in 3rd period; barely slept'),
                 style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 12.5, boxSizing: 'border-box' }
               }),
               h('button', { onClick: logReading,
-                style: { marginTop: 12, padding: '10px 18px', borderRadius: 8, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '💾 Log this reading'),
+                style: { marginTop: 12, padding: '10px 18px', borderRadius: 8, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, __alloT('sel.crisiscompanion.ui.log_this_reading', '💾 Log this reading')),
 
               // Adaptive guidance based on level
               nowMood >= 8 && h('div', { style: { marginTop: 12, padding: 12, background: _ccC('#fef2f2'), borderRadius: 8, border: '1px solid #fca5a5' } },
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: _ccC('#b91c1c'), marginBottom: 4 } }, '⚠ This is a hard moment.'),
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: _ccC('#b91c1c'), marginBottom: 4 } }, __alloT('sel.crisiscompanion.ui.this_is_a_hard_moment', '⚠ This is a hard moment.')),
                 h('p', { style: { fontSize: 12, color: _ccC('#7f1d1d'), lineHeight: 1.6, margin: 0 } },
-                  'You\'re in real distress. The Breath pacer (one section up) and Grounding 5-4-3-2-1 are both right here. ',
-                  h('strong', null, 'If thoughts of self-harm are present, text HOME to 741741 (Crisis Text Line) or call/text 988 right now.'))),
+                  __alloT('sel.crisiscompanion.ui.you_re_in_real_distress_the', 'You\'re in real distress. The Breath pacer (one section up) and Grounding 5-4-3-2-1 are both right here. '),
+                  h('strong', null, __alloT('sel.crisiscompanion.ui.if_thoughts_of_self_harm_are', 'If thoughts of self-harm are present, text HOME to 741741 (Crisis Text Line) or call/text 988 right now.')))),
               nowMood >= 5 && nowMood < 8 && h('div', { style: { marginTop: 12, padding: 12, background: _ccC('#fffbeb'), borderRadius: 8, border: '1px solid #fcd34d' } },
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: _ccC('#92400e'), marginBottom: 4 } }, 'Above average distress.'),
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: _ccC('#92400e'), marginBottom: 4 } }, __alloT('sel.crisiscompanion.ui.above_average_distress', 'Above average distress.')),
                 h('p', { style: { fontSize: 12, color: _ccC('#78350f'), lineHeight: 1.6, margin: 0 } },
-                  'Worth pausing for. Try the Breath pacer or Grounding tool. If this level keeps coming back, telling a trusted adult is a good move.'))
+                  __alloT('sel.crisiscompanion.ui.worth_pausing_for_try_the_breath', 'Worth pausing for. Try the Breath pacer or Grounding tool. If this level keeps coming back, telling a trusted adult is a good move.')))
             ),
 
             // History chart
             readings.length > 0 && h('div', { style: { padding: 14, background: _ccC('#fff'), borderRadius: 10, marginBottom: 14 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 } },
-                h('h4', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: SLATE_TEXT } }, '📊 Your pattern'),
-                avg7 && h('span', { style: { fontSize: 11, color: SLATE_MID } }, '7-day avg: ' + avg7 + ' · ' + sevenDayReadings.length + ' readings')
+                h('h4', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: SLATE_TEXT } }, __alloT('sel.crisiscompanion.ui.your_pattern', '📊 Your pattern')),
+                avg7 && h('span', { style: { fontSize: 11, color: SLATE_MID } }, _selFill(__alloT('sel.crisiscompanion.ui.7_day_avg_avg_sevendayreadingscount_readings', '7-day avg: {avg} · {sevenDayReadingsCount} readings'), { avg: avg7, sevenDayReadingsCount: sevenDayReadings.length }))
               ),
               // Mini timeline
-              h('svg', { viewBox: '0 0 320 100', style: { width: '100%', height: 100 }, 'aria-label': 'Distress over time chart' },
+              h('svg', { viewBox: '0 0 320 100', style: { width: '100%', height: 100 }, 'aria-label': __alloT('sel.crisiscompanion.ui.distress_over_time_chart', 'Distress over time chart') },
                 h('line', { x1: 30, y1: 90, x2: 310, y2: 90, stroke: _ccC('#cbd5e1') }),
                 [0, 5, 10].map(function(g) {
                   var y = 90 - g * 8;
@@ -2045,7 +2065,7 @@ window.SelHub = window.SelHub || {
 
             // Recent log
             readings.length > 0 && h('details', { style: { padding: 12, background: _ccC('#f8fafc'), borderRadius: 10, marginBottom: 14 } },
-              h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: TEAL_DARK } }, '📋 Recent readings (' + readings.length + ')'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: TEAL_DARK } }, _selFill(__alloT('sel.crisiscompanion.ui.recent_readings_readingscount', '📋 Recent readings ({readingsCount})'), { readingsCount: readings.length })),
               h('div', { style: { marginTop: 10, maxHeight: 200, overflowY: 'auto' } },
                 readings.slice().reverse().slice(0, 20).map(function(r) {
                   var when = new Date(r.time);
@@ -2053,11 +2073,11 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 14, fontWeight: 700, color: levelColors[r.value], minWidth: 28 } }, r.value),
                     h('span', { style: { fontSize: 11, color: SLATE_MID, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 100 } }, when.toLocaleString()),
                     h('span', { style: { flex: 1, fontSize: 12, color: SLATE_TEXT, lineHeight: 1.5 } }, r.note || ''),
-                    h('button', { onClick: function() { removeReading(r.id); }, 'aria-label': 'Remove', style: { background: 'transparent', border: 'none', color: _ccC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+                    h('button', { onClick: function() { removeReading(r.id); }, 'aria-label': __alloT('sel.crisiscompanion.ui.remove', 'Remove'), style: { background: 'transparent', border: 'none', color: _ccC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
                   );
                 })
               ),
-              h('button', { id: 'cc-clear-distress-readings', onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _ccC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all readings')
+              h('button', { id: 'cc-clear-distress-readings', onClick: clearAll, style: { marginTop: 8, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _ccC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, __alloT('sel.crisiscompanion.ui.clear_all_readings', 'Clear all readings'))
             )
           )
         );
@@ -2066,39 +2086,39 @@ window.SelHub = window.SelHub || {
       // ─── Section 1: Why this matters ───
       else if (section === 'whyMatters') {
         content = h('div', null,
-          sectionHero({ icon: '🫂', label: 'Why this matters' }),
+          sectionHero({ icon: '🫂', label: __alloT('sel.crisiscompanion.ui.why_this_matters', 'Why this matters') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 12px' } },
-              'You don\'t have to be a counselor. You don\'t have to know what to say. You don\'t have to fix anything.'),
+              __alloT('sel.crisiscompanion.ui.you_don_t_have_to_be', 'You don\'t have to be a counselor. You don\'t have to know what to say. You don\'t have to fix anything.')),
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 12px' } },
-              h('strong', null, 'You have to be a person who notices, '),
-              'and a person who tells an adult. That\'s it. Both of those skills can be learned, and both of them save lives.'),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.you_have_to_be_a_person', 'You have to be a person who notices, ')),
+              __alloT('sel.crisiscompanion.ui.and_a_person_who_tells_an', 'and a person who tells an adult. That\'s it. Both of those skills can be learned, and both of them save lives.')),
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: SLATE_MID, margin: 0 } },
-              'Friends are usually the first to notice when something is wrong. Adults often miss the early signs because adolescents share more openly with friends than with parents or teachers. That\'s not a problem — that\'s the natural shape of friendship at your age. It just means your role matters.')
+              __alloT('sel.crisiscompanion.ui.friends_are_usually_the_first_to', 'Friends are usually the first to notice when something is wrong. Adults often miss the early signs because adolescents share more openly with friends than with parents or teachers. That\'s not a problem — that\'s the natural shape of friendship at your age. It just means your role matters.'))
           ),
-          card('What this module teaches',
+          card(__alloT('sel.crisiscompanion.ui.what_this_module_teaches', 'What this module teaches'),
             h('ul', { style: { fontSize: '14px', lineHeight: 1.7, color: SLATE_TEXT, margin: 0, paddingLeft: '22px' } },
-              h('li', null, 'How to recognize when a friend\'s mood or behavior pattern is moving toward depression'),
-              h('li', null, 'How to recognize warning signs of crisis — including thoughts of suicide'),
-              h('li', null, 'How to ask, listen, and respond — including the words that help and the words that don\'t'),
-              h('li', null, 'How to tell a trusted adult — when, who, and how'),
-              h('li', null, 'Crisis resources you can call or text any time — for your friend or for yourself'),
-              h('li', null, 'How to take care of yourself when you\'ve supported a friend through something heavy')
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_recognize_when_a_friend', 'How to recognize when a friend\'s mood or behavior pattern is moving toward depression')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_recognize_warning_signs_of', 'How to recognize warning signs of crisis — including thoughts of suicide')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_ask_listen_and_respond_2', 'How to ask, listen, and respond — including the words that help and the words that don\'t')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_tell_a_trusted_adult', 'How to tell a trusted adult — when, who, and how')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.crisis_resources_you_can_call_or', 'Crisis resources you can call or text any time — for your friend or for yourself')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.how_to_take_care_of_yourself_2', 'How to take care of yourself when you\'ve supported a friend through something heavy'))
             )
           ),
-          card('What this module does NOT do',
+          card(__alloT('sel.crisiscompanion.ui.what_this_module_does_not_do', 'What this module does NOT do'),
             h('ul', { style: { fontSize: '13px', lineHeight: 1.7, color: SLATE_MID, margin: 0, paddingLeft: '22px' } },
-              h('li', null, 'It does not turn you into a therapist. Your role is presence and connecting them to help.'),
-              h('li', null, 'It does not require you to keep secrets. If safety is involved, telling an adult is loyalty, not betrayal.'),
-              h('li', null, 'It does not describe specific methods of self-harm. We are deliberately general about warning behaviors.'),
-              h('li', null, 'It does not replace professional help. It teaches you to be a bridge to professional help.')
+              h('li', null, __alloT('sel.crisiscompanion.ui.it_does_not_turn_you_into', 'It does not turn you into a therapist. Your role is presence and connecting them to help.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.it_does_not_require_you_to', 'It does not require you to keep secrets. If safety is involved, telling an adult is loyalty, not betrayal.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.it_does_not_describe_specific_methods', 'It does not describe specific methods of self-harm. We are deliberately general about warning behaviors.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.it_does_not_replace_professional_help', 'It does not replace professional help. It teaches you to be a bridge to professional help.'))
             ),
             EMERALD
           ),
           h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.04em' } }, 'Sources & framework'),
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.04em' } }, __alloT('sel.crisiscompanion.ui.sources_framework', 'Sources & framework')),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              'This module aligns with safe-messaging guidelines from AFSP (afsp.org), SAMHSA, the Reporting on Suicide media guidelines (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), the QPR Institute, NIMH, and AAP adolescent health guidance. It was designed by a school psychologist for use with middle- and high-school students, with editorial review against safe-messaging guidelines.')
+              __alloT('sel.crisiscompanion.ui.this_module_aligns_with_safe_messaging', 'This module aligns with safe-messaging guidelines from AFSP (afsp.org), SAMHSA, the Reporting on Suicide media guidelines (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), the QPR Institute, NIMH, and AAP adolescent health guidance. It was designed by a school psychologist for use with middle- and high-school students, with editorial review against safe-messaging guidelines.'))
           ),
           nextButton()
         );
@@ -2107,17 +2127,17 @@ window.SelHub = window.SelHub || {
       // ─── Section 2: Recognizing depression ───
       else if (section === 'recognizeDepression') {
         content = h('div', null,
-          sectionHero({ icon: '🌧️', label: 'Recognizing depression in a friend' }),
+          sectionHero({ icon: '🌧️', label: __alloT('sel.crisiscompanion.ui.recognizing_depression_in_a_friend', 'Recognizing depression in a friend') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'Every kid has bad days. Every kid has a hard week now and then. That\'s being human, not depression.'),
+              __alloT('sel.crisiscompanion.ui.every_kid_has_bad_days_every', 'Every kid has bad days. Every kid has a hard week now and then. That\'s being human, not depression.')),
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              h('strong', null, 'Depression is a PATTERN. '),
-              'It\'s a cluster of changes that lasts for weeks, not a single bad day. The signs below are worth taking seriously when SEVERAL of them are happening together AND when they\'ve persisted longer than a normal rough patch.'),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.depression_is_a_pattern', 'Depression is a PATTERN. ')),
+              __alloT('sel.crisiscompanion.ui.it_s_a_cluster_of_changes', 'It\'s a cluster of changes that lasts for weeks, not a single bad day. The signs below are worth taking seriously when SEVERAL of them are happening together AND when they\'ve persisted longer than a normal rough patch.')),
             h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: SLATE_MID, margin: 0, fontStyle: 'italic' } },
-              'A useful question to keep in mind: "Is this pattern of changes lasting longer, getting worse, or getting in the way of their daily life?"')
+              __alloT('sel.crisiscompanion.ui.a_useful_question_to_keep_in', 'A useful question to keep in mind: "Is this pattern of changes lasting longer, getting worse, or getting in the way of their daily life?"'))
           ),
-          h('div', { style: { fontSize: '12px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Patterns to notice (over weeks, not days)'),
+          h('div', { style: { fontSize: '12px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, __alloT('sel.crisiscompanion.ui.patterns_to_notice_over_weeks_not', 'Patterns to notice (over weeks, not days)')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px', marginBottom: '14px' } },
             DEPRESSION_PATTERNS.map(function(p) {
               return h('div', { key: p.id, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '12px 14px' } },
@@ -2133,21 +2153,21 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
               h('span', { style: { fontSize: '24px', flexShrink: 0 }, 'aria-hidden': 'true' }, '⚠️'),
               h('div', null,
-                h('div', { style: { fontSize: '14px', fontWeight: 800, color: _ccC('#78350f'), marginBottom: '6px' } }, 'Important nuance'),
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: _ccC('#78350f'), marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.important_nuance', 'Important nuance')),
                 h('p', { style: { fontSize: '13px', color: _ccC('#78350f'), lineHeight: 1.7, margin: '0 0 8px' } },
-                  'In adolescents especially, depression often shows up as IRRITABILITY rather than sadness. A friend who\'s been snappy for weeks, raw at small things, or looking like they\'re burning at low temperature could be struggling more than someone who\'s visibly sad.'),
+                  __alloT('sel.crisiscompanion.ui.in_adolescents_especially_depression_often_shows', 'In adolescents especially, depression often shows up as IRRITABILITY rather than sadness. A friend who\'s been snappy for weeks, raw at small things, or looking like they\'re burning at low temperature could be struggling more than someone who\'s visibly sad.')),
                 h('p', { style: { fontSize: '13px', color: _ccC('#78350f'), lineHeight: 1.7, margin: 0 } },
-                  'Boys, athletes, kids of color, larger-bodied kids, and high-achievers are often missed because they don\'t match the stereotype of "depressed teenager." Take the cluster of changes seriously regardless of how the friend looks.')
+                  __alloT('sel.crisiscompanion.ui.boys_athletes_kids_of_color_larger', 'Boys, athletes, kids of color, larger-bodied kids, and high-achievers are often missed because they don\'t match the stereotype of "depressed teenager." Take the cluster of changes seriously regardless of how the friend looks.'))
               )
             )
           ),
-          card('What to do if you\'re seeing the pattern',
+          card(__alloT('sel.crisiscompanion.ui.what_to_do_if_you_re', 'What to do if you\'re seeing the pattern'),
             h('ul', { style: { fontSize: '14px', lineHeight: 1.7, color: SLATE_TEXT, margin: 0, paddingLeft: '22px' } },
-              h('li', null, 'Reach out. Send a text. Sit next to them at lunch. The signal you\'re paying attention matters.'),
-              h('li', null, 'Ask gently and specifically: "I\'ve noticed you\'ve seemed really tired and quiet lately. How are you really doing?"'),
-              h('li', null, 'Listen. Don\'t fix. Most people don\'t want a solution; they want to feel less alone.'),
-              h('li', null, 'If they share something heavy, that\'s a moment to ask the harder question (next section: crisis warning signs).'),
-              h('li', null, 'If you\'re worried about them, tell a trusted adult. You don\'t need certainty. Concern is enough.')
+              h('li', null, __alloT('sel.crisiscompanion.ui.reach_out_send_a_text_sit', 'Reach out. Send a text. Sit next to them at lunch. The signal you\'re paying attention matters.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.ask_gently_and_specifically_i_ve', 'Ask gently and specifically: "I\'ve noticed you\'ve seemed really tired and quiet lately. How are you really doing?"')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.listen_don_t_fix_most_people', 'Listen. Don\'t fix. Most people don\'t want a solution; they want to feel less alone.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_they_share_something_heavy_that', 'If they share something heavy, that\'s a moment to ask the harder question (next section: crisis warning signs).')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_you_re_worried_about_them', 'If you\'re worried about them, tell a trusted adult. You don\'t need certainty. Concern is enough.'))
             )
           ),
           nextButton()
@@ -2157,15 +2177,15 @@ window.SelHub = window.SelHub || {
       // ─── Section 3: Crisis warning signs (most safety-sensitive) ───
       else if (section === 'crisisSigns') {
         content = h('div', null,
-          sectionHero({ icon: '🚨', label: 'Crisis warning signs' }),
+          sectionHero({ icon: '🚨', label: __alloT('sel.crisiscompanion.ui.crisis_warning_signs', 'Crisis warning signs') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'When depression deepens into crisis — including thoughts of suicide — there are usually warning signs. The American Foundation for Suicide Prevention (AFSP) groups these into three buckets: ',
-              h('strong', { style: { color: TEAL_DARK } }, 'TALK'), ', ',
-              h('strong', { style: { color: TEAL_DARK } }, 'MOOD'), ', and ',
-              h('strong', { style: { color: TEAL_DARK } }, 'BEHAVIOR'), '.'),
+              __alloT('sel.crisiscompanion.ui.when_depression_deepens_into_crisis_including', 'When depression deepens into crisis — including thoughts of suicide — there are usually warning signs. The American Foundation for Suicide Prevention (AFSP) groups these into three buckets: '),
+              h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.talk', 'TALK')), ', ',
+              h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.mood', 'MOOD')), __alloT('sel.crisiscompanion.ui.and', ', and '),
+              h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.behavior', 'BEHAVIOR')), '.'),
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: SLATE_MID, margin: '0 0 8px', fontStyle: 'italic' } },
-              'A note about how this section is written: we deliberately do NOT list specific behaviors that could function as a how-to checklist. The general categories are enough for a friend to recognize that something is wrong. If you see a cluster of these, that\'s the moment to act — not the moment to investigate further on your own.')
+              __alloT('sel.crisiscompanion.ui.a_note_about_how_this_section', 'A note about how this section is written: we deliberately do NOT list specific behaviors that could function as a how-to checklist. The general categories are enough for a friend to recognize that something is wrong. If you see a cluster of these, that\'s the moment to act — not the moment to investigate further on your own.'))
           ),
           ['talk', 'mood', 'behavior'].map(function(k) {
             var sg = CRISIS_SIGNS[k];
@@ -2175,25 +2195,25 @@ window.SelHub = window.SelHub || {
                 h('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, sg.title)
               ),
               h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 10px' } }, sg.desc),
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' } }, 'Examples'),
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' } }, __alloT('sel.crisiscompanion.ui.examples', 'Examples')),
               h('ul', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 10px', paddingLeft: '20px' } },
                 sg.examples.map(function(ex, i) { return h('li', { key: i }, ex); })
               ),
               h('div', { style: { background: _ccC(TEAL_LIGHT), padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: TEAL_DARK, lineHeight: 1.7 } },
-                h('strong', null, 'Note: '), sg.note)
+                h('strong', null, __alloT('sel.crisiscompanion.ui.note', 'Note: ')), sg.note)
             );
           }),
           h('div', { style: { background: _ccC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '12px', padding: '14px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
               h('span', { style: { fontSize: '24px', flexShrink: 0 }, 'aria-hidden': 'true' }, '⚠️'),
               h('div', null,
-                h('div', { style: { fontSize: '14px', fontWeight: 800, color: _ccC('#991b1b'), marginBottom: '6px' } }, 'If you see ANY of these signs, the next moves are:'),
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: _ccC('#991b1b'), marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.if_you_see_any_of_these', 'If you see ANY of these signs, the next moves are:')),
                 h('ol', { style: { fontSize: '13px', color: _ccC('#7f1d1d'), lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
-                  h('li', null, h('strong', null, 'Stay with them if you can. '), 'Don\'t leave them alone if they\'re in immediate distress.'),
-                  h('li', null, h('strong', null, 'Ask directly. '), '"Are you thinking about hurting yourself?" Asking does NOT plant the idea (next section explains the research).'),
-                  h('li', null, h('strong', null, 'Tell a trusted adult — today. '), 'Not next week. Today.'),
-                  h('li', null, h('strong', null, 'Call or text 988 '), 'if you\'re unsure what to do — they\'ll guide YOU through helping your friend.'),
-                  h('li', null, h('strong', null, 'Call 911 '), 'if your friend is in immediate physical danger right now.')
+                  h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.stay_with_them_if_you_can', 'Stay with them if you can. ')), __alloT('sel.crisiscompanion.ui.don_t_leave_them_alone_if', 'Don\'t leave them alone if they\'re in immediate distress.')),
+                  h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.ask_directly', 'Ask directly. ')), __alloT('sel.crisiscompanion.ui.are_you_thinking_about_hurting_yourself', '"Are you thinking about hurting yourself?" Asking does NOT plant the idea (next section explains the research).')),
+                  h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.tell_a_trusted_adult_today', 'Tell a trusted adult — today. ')), __alloT('sel.crisiscompanion.ui.not_next_week_today', 'Not next week. Today.')),
+                  h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.call_or_text_988', 'Call or text 988 ')), __alloT('sel.crisiscompanion.ui.if_you_re_unsure_what_to', 'if you\'re unsure what to do — they\'ll guide YOU through helping your friend.')),
+                  h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.call_911', 'Call 911 ')), __alloT('sel.crisiscompanion.ui.if_your_friend_is_in_immediate', 'if your friend is in immediate physical danger right now.'))
                 )
               )
             )
@@ -2205,69 +2225,69 @@ window.SelHub = window.SelHub || {
       // ─── Section 4: QPR (Question · Persuade · Refer) ───
       else if (section === 'qpr') {
         content = h('div', null,
-          sectionHero({ icon: '🧭', label: 'Question · Persuade · Refer' }),
+          sectionHero({ icon: '🧭', label: __alloT('sel.crisiscompanion.ui.question_persuade_refer', 'Question · Persuade · Refer') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'QPR (',
-              h('strong', null, 'Question, Persuade, Refer'),
-              ') is the most widely-taught suicide-prevention framework for non-professionals. It\'s used in schools, hospitals, and community programs around the world. The framework is simple on purpose: three steps, and each one is something a friend can do.'),
+              __alloT('sel.crisiscompanion.ui.qpr', 'QPR ('),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.question_persuade_refer_2', 'Question, Persuade, Refer')),
+              __alloT('sel.crisiscompanion.ui.is_the_most_widely_taught_suicide', ') is the most widely-taught suicide-prevention framework for non-professionals. It\'s used in schools, hospitals, and community programs around the world. The framework is simple on purpose: three steps, and each one is something a friend can do.')),
             h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
-              'You\'re not the therapist. You\'re the link between someone struggling and the people trained to help. That link is exactly what saves lives.')
+              __alloT('sel.crisiscompanion.ui.you_re_not_the_therapist_you', 'You\'re not the therapist. You\'re the link between someone struggling and the people trained to help. That link is exactly what saves lives.'))
           ),
           // Q
           h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
               h('div', { style: { width: '42px', height: '42px', borderRadius: '50%', background: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800 } }, 'Q'),
-              h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Question — ask directly')
+              h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, __alloT('sel.crisiscompanion.ui.question_ask_directly', 'Question — ask directly'))
             ),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
-              'If you suspect your friend is thinking about suicide, ask. Directly and gently. The exact words matter less than the willingness to ask.'),
+              __alloT('sel.crisiscompanion.ui.if_you_suspect_your_friend_is', 'If you suspect your friend is thinking about suicide, ask. Directly and gently. The exact words matter less than the willingness to ask.')),
             h('div', { style: { background: _ccC(TEAL_LIGHT), padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: TEAL_DARK, lineHeight: 1.7, marginBottom: '8px' } },
-              h('strong', null, 'Examples: '),
-              '"Are you thinking about hurting yourself?" · "Are you having thoughts of suicide?" · "Are you thinking about ending your life?"'),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.examples_2', 'Examples: ')),
+              __alloT('sel.crisiscompanion.ui.are_you_thinking_about_hurting_yourself_2', '"Are you thinking about hurting yourself?" · "Are you having thoughts of suicide?" · "Are you thinking about ending your life?"')),
             h('div', { style: { background: _ccC('#eff6ff'), border: '1px solid #bfdbfe', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: _ccC('#1e40af'), lineHeight: 1.7 } },
-              h('strong', null, '🔬 The most-cited barrier to asking is wrong: '),
-              'Asking does NOT plant the idea. Multiple meta-analyses (Dazzi et al., 2014, Psychological Medicine) and decades of research from AFSP, NIMH, and QPR Institute confirm: asking directly is protective. It often comes as a relief — the person was waiting for someone to notice.')
+              h('strong', null, __alloT('sel.crisiscompanion.ui.the_most_cited_barrier_to_asking', '🔬 The most-cited barrier to asking is wrong: ')),
+              __alloT('sel.crisiscompanion.ui.asking_does_not_plant_the_idea', 'Asking does NOT plant the idea. Multiple meta-analyses (Dazzi et al., 2014, Psychological Medicine) and decades of research from AFSP, NIMH, and QPR Institute confirm: asking directly is protective. It often comes as a relief — the person was waiting for someone to notice.'))
           ),
           // P
           h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
               h('div', { style: { width: '42px', height: '42px', borderRadius: '50%', background: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800 } }, 'P'),
-              h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Persuade — listen and stay')
+              h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, __alloT('sel.crisiscompanion.ui.persuade_listen_and_stay', 'Persuade — listen and stay'))
             ),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
-              '"Persuade" doesn\'t mean talking them out of how they feel. It means listening fully, validating that this is hard, and helping them say YES to getting help.'),
+              __alloT('sel.crisiscompanion.ui.persuade_doesn_t_mean_talking_them', '"Persuade" doesn\'t mean talking them out of how they feel. It means listening fully, validating that this is hard, and helping them say YES to getting help.')),
             h('ul', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px', paddingLeft: '22px' } },
-              h('li', null, h('strong', null, 'Listen without judgment. '), 'Don\'t debate. Don\'t minimize. Don\'t one-up with your own story.'),
-              h('li', null, h('strong', null, 'Reflect. '), '"It sounds like you\'ve been carrying so much, and you\'re exhausted." Letting them feel heard is the medicine.'),
-              h('li', null, h('strong', null, 'Don\'t promise secrecy. '), 'You can say: "I care about you too much to keep this to myself. I want us to talk to someone who can really help."'),
-              h('li', null, h('strong', null, 'Stay with them. '), 'Don\'t leave them alone if they\'re in immediate distress. Sit. Walk. Just be present.')
+              h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.listen_without_judgment', 'Listen without judgment. ')), __alloT('sel.crisiscompanion.ui.don_t_debate_don_t_minimize', 'Don\'t debate. Don\'t minimize. Don\'t one-up with your own story.')),
+              h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.reflect', 'Reflect. ')), __alloT('sel.crisiscompanion.ui.it_sounds_like_you_ve_been', '"It sounds like you\'ve been carrying so much, and you\'re exhausted." Letting them feel heard is the medicine.')),
+              h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.don_t_promise_secrecy', 'Don\'t promise secrecy. ')), __alloT('sel.crisiscompanion.ui.you_can_say_i_care_about', 'You can say: "I care about you too much to keep this to myself. I want us to talk to someone who can really help."')),
+              h('li', null, h('strong', null, __alloT('sel.crisiscompanion.ui.stay_with_them', 'Stay with them. ')), __alloT('sel.crisiscompanion.ui.don_t_leave_them_alone_if_2', 'Don\'t leave them alone if they\'re in immediate distress. Sit. Walk. Just be present.'))
             ),
             h('div', { style: { background: _ccC('#fff7ed'), border: '1px solid #fdba74', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: _ccC('#9a3412'), lineHeight: 1.7 } },
-              h('strong', null, '⚠ Skip the "promise me" trap: '),
-              'Don\'t ask them to "promise" they won\'t do anything. It puts them in the position of making a promise they may not be able to keep, which adds shame. Instead: "I want you to be safe. Let\'s find help right now, together."')
+              h('strong', null, __alloT('sel.crisiscompanion.ui.skip_the_promise_me_trap', '⚠ Skip the "promise me" trap: ')),
+              __alloT('sel.crisiscompanion.ui.don_t_ask_them_to_promise', 'Don\'t ask them to "promise" they won\'t do anything. It puts them in the position of making a promise they may not be able to keep, which adds shame. Instead: "I want you to be safe. Let\'s find help right now, together."'))
           ),
           // R
           h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
               h('div', { style: { width: '42px', height: '42px', borderRadius: '50%', background: TEAL, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800 } }, 'R'),
-              h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Refer — connect them to help')
+              h('h3', { style: { fontSize: '17px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, __alloT('sel.crisiscompanion.ui.refer_connect_them_to_help', 'Refer — connect them to help'))
             ),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
-              '"Refer" means getting them to someone who can do more than you can. This is the part where YOU are not alone either.'),
+              __alloT('sel.crisiscompanion.ui.refer_means_getting_them_to_someone', '"Refer" means getting them to someone who can do more than you can. This is the part where YOU are not alone either.')),
             h('ul', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px', paddingLeft: '22px' } },
-              h('li', null, 'Best: walk with them to a school counselor, school psychologist, or trusted adult. Right now.'),
-              h('li', null, 'If that\'s not possible: call 988 together (or sit with them while they call/text). 988 is for the person at risk AND for the friend who\'s helping.'),
-              h('li', null, 'If they refuse to tell anyone: ',
-                h('strong', null, 'tell an adult yourself. '),
-                'You\'re not breaking trust — you\'re acting on the loyalty their crisis deserves. They will probably be relieved later.'),
-              h('li', null, 'If immediate physical danger: 911. Not next week. Now.')
+              h('li', null, __alloT('sel.crisiscompanion.ui.best_walk_with_them_to_a', 'Best: walk with them to a school counselor, school psychologist, or trusted adult. Right now.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_that_s_not_possible_call', 'If that\'s not possible: call 988 together (or sit with them while they call/text). 988 is for the person at risk AND for the friend who\'s helping.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_they_refuse_to_tell_anyone', 'If they refuse to tell anyone: '),
+                h('strong', null, __alloT('sel.crisiscompanion.ui.tell_an_adult_yourself', 'tell an adult yourself. ')),
+                __alloT('sel.crisiscompanion.ui.you_re_not_breaking_trust_you', 'You\'re not breaking trust — you\'re acting on the loyalty their crisis deserves. They will probably be relieved later.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_immediate_physical_danger_911_not', 'If immediate physical danger: 911. Not next week. Now.'))
             )
           ),
           h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              h('strong', { style: { color: TEAL_DARK } }, 'The whole framework in one sentence: '),
-              'Ask directly, listen fully, and bring in an adult who can help.')
+              h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.the_whole_framework_in_one_sentence', 'The whole framework in one sentence: ')),
+              __alloT('sel.crisiscompanion.ui.ask_directly_listen_fully_and_bring', 'Ask directly, listen fully, and bring in an adult who can help.'))
           ),
           nextButton()
         );
@@ -2276,24 +2296,24 @@ window.SelHub = window.SelHub || {
       // ─── Section 5: What to say (and what NOT to say) ───
       else if (section === 'whatToSay') {
         content = h('div', null,
-          sectionHero({ icon: '💬', label: 'What to say (and what not to say)' }),
+          sectionHero({ icon: '💬', label: __alloT('sel.crisiscompanion.ui.what_to_say_and_what_not', 'What to say (and what not to say)') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'You don\'t need a perfect script. You don\'t need to be wise. You need to be present, honest, and willing to bring an adult in. The wording below is example-level — your real conversation will be your own words.'),
+              __alloT('sel.crisiscompanion.ui.you_don_t_need_a_perfect', 'You don\'t need a perfect script. You don\'t need to be wise. You need to be present, honest, and willing to bring an adult in. The wording below is example-level — your real conversation will be your own words.')),
             h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
-              'A useful frame: would what I\'m about to say make my friend feel MORE safe to keep talking, or LESS?')
+              __alloT('sel.crisiscompanion.ui.a_useful_frame_would_what_i', 'A useful frame: would what I\'m about to say make my friend feel MORE safe to keep talking, or LESS?'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px', marginBottom: '12px' } },
             // ✓ Things that help
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '22px', color: EMERALD }, 'aria-hidden': 'true' }, '✓'),
-                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: 0 } }, 'These help')
+                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: 0 } }, __alloT('sel.crisiscompanion.ui.these_help', 'These help'))
               ),
               SAY_DO.map(function(it, i) {
                 return h('div', { key: i, style: { background: _ccC('#f0fdf4'), border: '2px solid ' + EMERALD, borderRadius: '10px', padding: '12px', marginBottom: '8px' } },
                   h('div', { style: { fontSize: '13px', fontWeight: 700, color: _ccC(EMERALD_DARK), marginBottom: '6px' } }, it.say),
-                  h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } }, h('strong', null, 'Why: '), it.why)
+                  h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } }, h('strong', null, __alloT('sel.crisiscompanion.ui.why', 'Why: ')), it.why)
                 );
               })
             ),
@@ -2301,20 +2321,20 @@ window.SelHub = window.SelHub || {
             h('div', null,
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '22px', color: ROSE }, 'aria-hidden': 'true' }, '×'),
-                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: _ccC('#9f1239'), margin: 0 } }, 'These don\'t help (even when well-meant)')
+                h('h2', { style: { fontSize: '15px', fontWeight: 800, color: _ccC('#9f1239'), margin: 0 } }, __alloT('sel.crisiscompanion.ui.these_don_t_help_even_when', 'These don\'t help (even when well-meant)'))
               ),
               SAY_DONT.map(function(it, i) {
                 return h('div', { key: i, style: { background: _ccC(ROSE_LIGHT), border: '2px solid ' + ROSE, borderRadius: '10px', padding: '12px', marginBottom: '8px' } },
                   h('div', { style: { fontSize: '13px', fontWeight: 700, color: _ccC('#9f1239'), marginBottom: '6px' } }, it.say),
-                  h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } }, h('strong', null, 'Why: '), it.why)
+                  h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } }, h('strong', null, __alloT('sel.crisiscompanion.ui.why', 'Why: ')), it.why)
                 );
               })
             )
           ),
           h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              h('strong', { style: { color: TEAL_DARK } }, 'If you said one of the "don\'t" things in the past — '),
-              'that\'s OK. You didn\'t know. None of us were born knowing this. Now you have other words. The next conversation can be different.')
+              h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.if_you_said_one_of_the', 'If you said one of the "don\'t" things in the past — ')),
+              __alloT('sel.crisiscompanion.ui.that_s_ok_you_didn_t', 'that\'s OK. You didn\'t know. None of us were born knowing this. Now you have other words. The next conversation can be different.'))
           ),
           nextButton()
         );
@@ -2323,31 +2343,31 @@ window.SelHub = window.SelHub || {
       // ─── Section 6: Telling a trusted adult (load-bearing skill) ───
       else if (section === 'tellingAdult') {
         content = h('div', null,
-          sectionHero({ icon: '🍎', label: 'Telling a trusted adult' }),
+          sectionHero({ icon: '🍎', label: __alloT('sel.crisiscompanion.ui.telling_a_trusted_adult', 'Telling a trusted adult') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              h('strong', null, 'This is the most important skill in the whole module. '),
-              'Telling an adult is what turns your concern into help that actually changes the outcome. It is the load-bearing move — the moment that lets professionals do what they\'re trained to do.')
+              h('strong', null, __alloT('sel.crisiscompanion.ui.this_is_the_most_important_skill', 'This is the most important skill in the whole module. ')),
+              __alloT('sel.crisiscompanion.ui.telling_an_adult_is_what_turns', 'Telling an adult is what turns your concern into help that actually changes the outcome. It is the load-bearing move — the moment that lets professionals do what they\'re trained to do.'))
           ),
           h('div', { style: { background: _ccC('#f0fdf4'), border: '2px solid ' + EMERALD, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
-            h('h2', { style: { fontSize: '16px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: '0 0 8px' } }, 'Loyalty, not betrayal'),
+            h('h2', { style: { fontSize: '16px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: '0 0 8px' } }, __alloT('sel.crisiscompanion.ui.loyalty_not_betrayal', 'Loyalty, not betrayal')),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
-              'A friend in crisis may ask you not to tell anyone. They may make you promise. They may be scared, ashamed, or convinced it will make things worse.'),
+              __alloT('sel.crisiscompanion.ui.a_friend_in_crisis_may_ask', 'A friend in crisis may ask you not to tell anyone. They may make you promise. They may be scared, ashamed, or convinced it will make things worse.')),
             h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              h('strong', null, 'Tell anyway. '),
-              'Safety overrides secrecy. Telling an adult when a friend\'s life or wellbeing is at risk is the most loyal thing a friend can do. Most people who are protected this way are GRATEFUL afterward — even when they were upset in the moment. The friendship can survive a hard conversation; it cannot survive losing the friend.')
+              h('strong', null, __alloT('sel.crisiscompanion.ui.tell_anyway', 'Tell anyway. ')),
+              __alloT('sel.crisiscompanion.ui.safety_overrides_secrecy_telling_an_adult', 'Safety overrides secrecy. Telling an adult when a friend\'s life or wellbeing is at risk is the most loyal thing a friend can do. Most people who are protected this way are GRATEFUL afterward — even when they were upset in the moment. The friendship can survive a hard conversation; it cannot survive losing the friend.'))
           ),
-          h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'When to tell — every time'),
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, __alloT('sel.crisiscompanion.ui.when_to_tell_every_time', 'When to tell — every time')),
           h('div', { style: { background: _ccC('#fef2f2'), border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
             h('ul', { style: { fontSize: '14px', color: _ccC('#7f1d1d'), lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
-              h('li', null, 'Your friend mentioned wanting to die, hurt themselves, or end their life — even casually'),
-              h('li', null, 'You\'re seeing a cluster of crisis warning signs (TALK / MOOD / BEHAVIOR)'),
-              h('li', null, 'Your friend has a plan, a means, or a timeline — even if vague'),
-              h('li', null, 'Your friend has hurt themselves, even slightly'),
-              h('li', null, 'You\'re scared and you don\'t know what to do — that itself is enough reason to tell')
+              h('li', null, __alloT('sel.crisiscompanion.ui.your_friend_mentioned_wanting_to_die', 'Your friend mentioned wanting to die, hurt themselves, or end their life — even casually')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.you_re_seeing_a_cluster_of', 'You\'re seeing a cluster of crisis warning signs (TALK / MOOD / BEHAVIOR)')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.your_friend_has_a_plan_a', 'Your friend has a plan, a means, or a timeline — even if vague')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.your_friend_has_hurt_themselves_even', 'Your friend has hurt themselves, even slightly')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.you_re_scared_and_you_don', 'You\'re scared and you don\'t know what to do — that itself is enough reason to tell'))
             )
           ),
-          h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Who to tell — pick whoever you can reach fastest'),
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, __alloT('sel.crisiscompanion.ui.who_to_tell_pick_whoever_you', 'Who to tell — pick whoever you can reach fastest')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '10px', marginBottom: '14px' } },
             TRUSTED_ADULTS.map(function(a, i) {
               return h('div', { key: i, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '12px 14px' } },
@@ -2355,26 +2375,26 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, a.icon),
                   h('h3', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, a.label)
                 ),
-                h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, 'Why: '), a.pro),
-                h('p', { style: { fontSize: '12px', color: SLATE_MID, lineHeight: 1.6, margin: 0, fontStyle: 'italic' } }, h('strong', null, 'How: '), a.how)
+                h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, __alloT('sel.crisiscompanion.ui.why', 'Why: ')), a.pro),
+                h('p', { style: { fontSize: '12px', color: SLATE_MID, lineHeight: 1.6, margin: 0, fontStyle: 'italic' } }, h('strong', null, __alloT('sel.crisiscompanion.ui.how', 'How: ')), a.how)
               );
             })
           ),
-          card('How to tell — practical moves',
+          card(__alloT('sel.crisiscompanion.ui.how_to_tell_practical_moves', 'How to tell — practical moves'),
             h('ul', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0, paddingLeft: '22px' } },
-              h('li', null, 'You don\'t need a script. "I need help with something serious about a friend" is enough.'),
-              h('li', null, 'You can write it down if you can\'t say it out loud. A note, a text, an email all work.'),
-              h('li', null, 'You can ask another friend to come with you to the counselor\'s office.'),
-              h('li', null, 'You can leave class to do this. Tell the teacher: "I need to see the counselor — it\'s urgent." Most teachers will let you go without questions.'),
-              h('li', null, 'If the first adult doesn\'t take you seriously — and that does happen — try another. Keep going until someone listens.'),
-              h('li', null, 'If it\'s outside school hours, call 988. They\'ll help you figure out what to do.')
+              h('li', null, __alloT('sel.crisiscompanion.ui.you_don_t_need_a_script', 'You don\'t need a script. "I need help with something serious about a friend" is enough.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.you_can_write_it_down_if', 'You can write it down if you can\'t say it out loud. A note, a text, an email all work.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.you_can_ask_another_friend_to', 'You can ask another friend to come with you to the counselor\'s office.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.you_can_leave_class_to_do', 'You can leave class to do this. Tell the teacher: "I need to see the counselor — it\'s urgent." Most teachers will let you go without questions.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_the_first_adult_doesn_t', 'If the first adult doesn\'t take you seriously — and that does happen — try another. Keep going until someone listens.')),
+              h('li', null, __alloT('sel.crisiscompanion.ui.if_it_s_outside_school_hours', 'If it\'s outside school hours, call 988. They\'ll help you figure out what to do.'))
             ),
             EMERALD
           ),
           h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
-            h('div', { style: { fontSize: '13px', fontWeight: 700, color: TEAL_DARK, marginBottom: '4px' } }, '🍎 In Maine schools'),
+            h('div', { style: { fontSize: '13px', fontWeight: 700, color: TEAL_DARK, marginBottom: '4px' } }, __alloT('sel.crisiscompanion.ui.in_maine_schools', '🍎 In Maine schools')),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              'School counselors and school psychologists are mandated reporters — they are legally required to act on safety concerns. They will NOT just tell your parents and walk away. They will follow a protocol that includes assessing your friend, contacting their family safely, and connecting them to ongoing care. Mandated reporting is a guard rail, not a punishment.')
+              __alloT('sel.crisiscompanion.ui.school_counselors_and_school_psychologists_are', 'School counselors and school psychologists are mandated reporters — they are legally required to act on safety concerns. They will NOT just tell your parents and walk away. They will follow a protocol that includes assessing your friend, contacting their family safely, and connecting them to ongoing care. Mandated reporting is a guard rail, not a punishment.'))
           ),
           nextButton()
         );
@@ -2388,25 +2408,25 @@ window.SelHub = window.SelHub || {
           if (picks[idx] != null) return;
           var nm = Object.assign({}, picks); nm[idx] = choice;
           upd('mythPicks', nm);
-          announce(choice === 0 ? 'Marked as myth — correct' : 'Marked as truth — but research says this is a myth');
+          announce(choice === 0 ? __alloT('sel.crisiscompanion.ui.marked_as_myth_correct', 'Marked as myth — correct') : __alloT('sel.crisiscompanion.ui.marked_as_truth_but_research_says', 'Marked as truth — but research says this is a myth'));
         }
 
         var totalAnswered = Object.keys(picks).length;
         var correctCount = Object.keys(picks).filter(function(k) { return picks[k] === 0; }).length;
 
         content = h('div', null,
-          sectionHero({ icon: '🔍', label: 'Myths debunked' }),
+          sectionHero({ icon: '🔍', label: __alloT('sel.crisiscompanion.ui.myths_debunked', 'Myths debunked') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'Six of the most-cited myths that prevent people from helping a friend in crisis. For each one, decide: is the claim a MYTH or a TRUTH? Then read the evidence-based answer with citations.'),
+              __alloT('sel.crisiscompanion.ui.six_of_the_most_cited_myths', 'Six of the most-cited myths that prevent people from helping a friend in crisis. For each one, decide: is the claim a MYTH or a TRUTH? Then read the evidence-based answer with citations.')),
             h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
-              'Score so far: ' + correctCount + ' / ' + totalAnswered + ' answered correctly.')
+              _selFill(__alloT('sel.crisiscompanion.ui.score_so_far_correctcount_totalanswered_answered', 'Score so far: {correctCount} / {totalAnswered} answered correctly.'), { correctCount: correctCount, totalAnswered: totalAnswered }))
           ),
           MYTHS.map(function(m, i) {
             var picked = picks[i];
             var revealed = picked != null;
             return h('div', { key: i, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Myth ' + (i + 1) + ' of ' + MYTHS.length),
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, _selFill(__alloT('sel.crisiscompanion.ui.myth_value_of_mythscount', 'Myth {value} of {MYTHSCount}'), { value: (i + 1), MYTHSCount: MYTHS.length })),
               h('div', { style: { background: _ccC('#f1f5f9'), borderLeft: '4px solid #94a3b8', padding: '10px 14px', borderRadius: '6px', marginBottom: '12px' } },
                 h('p', { style: { fontSize: '14px', fontStyle: 'italic', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } }, '"' + m.claim + '"')
               ),
@@ -2415,21 +2435,21 @@ window.SelHub = window.SelHub || {
                   onClick: function() { pickMyth(i, 0); },
                   role: 'radio', 'aria-checked': 'false',
                   style: { flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', background: _ccC('#fff'), color: SLATE_TEXT, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
-                }, 'This is a MYTH'),
+                }, __alloT('sel.crisiscompanion.ui.this_is_a_myth', 'This is a MYTH')),
                 h('button', {
                   onClick: function() { pickMyth(i, 1); },
                   role: 'radio', 'aria-checked': 'false',
                   style: { flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', background: _ccC('#fff'), color: SLATE_TEXT, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
-                }, 'This is TRUE')
+                }, __alloT('sel.crisiscompanion.ui.this_is_true', 'This is TRUE'))
               ),
               revealed && h('div', { 'aria-live': 'polite' },
                 h('div', { style: { padding: '10px 12px', background: picked === 0 ? _ccC('#f0fdf4') : _ccC('#fff7ed'), border: '1px solid ' + (picked === 0 ? EMERALD : '#fdba74'), borderRadius: '8px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: picked === 0 ? EMERALD_DARK : _ccC('#9a3412') } },
-                  picked === 0 ? '✓ Correct — this is a myth.' : '⚠ Common misconception — this is actually a myth.'),
+                  picked === 0 ? __alloT('sel.crisiscompanion.ui.correct_this_is_a_myth', '✓ Correct — this is a myth.') : __alloT('sel.crisiscompanion.ui.common_misconception_this_is_actually_a', '⚠ Common misconception — this is actually a myth.')),
                 h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
-                  h('strong', { style: { color: TEAL_DARK } }, 'What the evidence says: '),
+                  h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.what_the_evidence_says', 'What the evidence says: ')),
                   m.truth),
                 h('p', { style: { fontSize: '11px', color: SLATE_MID, fontStyle: 'italic', margin: 0, fontFamily: 'monospace' } },
-                  'Sources: ' + m.cite)
+                  _selFill(__alloT('sel.crisiscompanion.ui.sources_cite', 'Sources: {cite}'), { cite: m.cite }))
               )
             );
           }),
@@ -2447,7 +2467,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, __alloT('sel.crisiscompanion.label_who', 'Who: ')), __alloT('sel.crisiscompanion.res_' + r.id + '_who', r.who)),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, __alloT('sel.crisiscompanion.label_what', 'What: ')), __alloT('sel.crisiscompanion.res_' + r.id + '_what', r.what)),
             h('p', { style: { fontSize: '13px', color: TEAL_DARK, lineHeight: 1.6, margin: '0 0 6px', background: _ccC(TEAL_LIGHT), padding: '8px 10px', borderRadius: '6px' } },
-              h('strong', null, 'What to say: '), r.script),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.what_to_say', 'What to say: ')), r.script),
             r.url && h('div', { style: { fontSize: '12px', color: _ccC('#0369a1'), fontFamily: 'monospace' } }, '🔗 ', r.url)
           );
         }
@@ -2466,27 +2486,27 @@ window.SelHub = window.SelHub || {
         }
 
         content = h('div', null,
-          sectionHero({ icon: '☎️', label: 'Crisis resources' }),
+          sectionHero({ icon: '☎️', label: __alloT('sel.crisiscompanion.ui.crisis_resources', 'Crisis resources') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'Every resource here is free, confidential, and trained. You can call FOR your friend, WITH your friend, or for yourself. Helplines are not just for the person in crisis — they are also for the friend, parent, or supporter trying to figure out what to do.'),
+              __alloT('sel.crisiscompanion.ui.every_resource_here_is_free_confidential', 'Every resource here is free, confidential, and trained. You can call FOR your friend, WITH your friend, or for yourself. Helplines are not just for the person in crisis — they are also for the friend, parent, or supporter trying to figure out what to do.')),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 10px' } },
-              'Below: ',
-              h('strong', null, 'National'), ' (works anywhere in the U.S.) → ',
-              h('strong', null, 'Find your local help'), ' (directory lookups by zip) → ',
-              h('strong', null, 'Outside the U.S.?'), ' → ',
-              h('strong', null, 'Maine partners'), ' (named local agencies) → ',
-              h('strong', null, 'School-based'), '.'),
+              __alloT('sel.crisiscompanion.ui.below', 'Below: '),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.national', 'National')), __alloT('sel.crisiscompanion.ui.works_anywhere_in_the_u_s', ' (works anywhere in the U.S.) → '),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.find_your_local_help', 'Find your local help')), __alloT('sel.crisiscompanion.ui.directory_lookups_by_zip', ' (directory lookups by zip) → '),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.outside_the_u_s', 'Outside the U.S.?')), ' → ',
+              h('strong', null, __alloT('sel.crisiscompanion.ui.maine_partners', 'Maine partners')), __alloT('sel.crisiscompanion.ui.named_local_agencies', ' (named local agencies) → '),
+              h('strong', null, __alloT('sel.crisiscompanion.ui.school_based', 'School-based')), '.'),
             h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
-              'You don\'t need to know what to say. They are trained to start the conversation. You can call back. You can hang up. You can\'t do it wrong.')
+              __alloT('sel.crisiscompanion.ui.you_don_t_need_to_know', 'You don\'t need to know what to say. They are trained to start the conversation. You can call back. You can hang up. You can\'t do it wrong.'))
           ),
           // Render each group in order
           RESOURCE_GROUPS.map(resourceGroupBlock),
           // LGBTQ+ closing note
           h('div', { style: { background: _ccC('#f0fdf4'), border: '2px solid ' + EMERALD, borderRadius: '12px', padding: '14px' } },
-            h('h2', { style: { fontSize: '14px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: '0 0 6px' } }, 'A note about LGBTQ+ youth'),
+            h('h2', { style: { fontSize: '14px', fontWeight: 800, color: _ccC(EMERALD_DARK), margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.a_note_about_lgbtq_youth', 'A note about LGBTQ+ youth')),
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              'Research consistently shows LGBTQ+ youth — and especially transgender youth — face significantly higher rates of suicidal thoughts and attempts than their non-LGBTQ+ peers. The reasons are well-documented: family rejection, school harassment, lack of affirming care, and minority stress. The Trevor Project (1-866-488-7386 / text START to 678-678) is staffed by people specifically trained for these realities. If your friend is LGBTQ+, this resource is built for them.')
+              __alloT('sel.crisiscompanion.ui.research_consistently_shows_lgbtq_youth_and', 'Research consistently shows LGBTQ+ youth — and especially transgender youth — face significantly higher rates of suicidal thoughts and attempts than their non-LGBTQ+ peers. The reasons are well-documented: family rejection, school harassment, lack of affirming care, and minority stress. The Trevor Project (1-866-488-7386 / text START to 678-678) is staffed by people specifically trained for these realities. If your friend is LGBTQ+, this resource is built for them.'))
           ),
           nextButton()
         );
@@ -2496,15 +2516,15 @@ window.SelHub = window.SelHub || {
       else if (section === 'selfCare') {
         var careSubtab = d.careSubtab || 'read';
         var SUB_TABS = [
-          { id: 'read',     icon: '📖', label: 'Read' },
-          { id: 'breath',   icon: '🌬️', label: 'Breathing pacer' },
-          { id: 'ground',   icon: '👁️', label: '5-4-3-2-1 grounding' },
-          { id: 'toolkit',  icon: '🧰', label: 'My toolkit' },
-          { id: 'safety',   icon: '📋', label: 'Safety plan' }
+          { id: 'read',     icon: '📖', label: __alloT('sel.crisiscompanion.sub_tabs.read.label', 'Read') },
+          { id: 'breath',   icon: '🌬️', label: __alloT('sel.crisiscompanion.sub_tabs.breath.label', 'Breathing pacer') },
+          { id: 'ground',   icon: '👁️', label: __alloT('sel.crisiscompanion.sub_tabs.ground.label', '5-4-3-2-1 grounding') },
+          { id: 'toolkit',  icon: '🧰', label: __alloT('sel.crisiscompanion.sub_tabs.toolkit.label', 'My toolkit') },
+          { id: 'safety',   icon: '📋', label: __alloT('sel.crisiscompanion.sub_tabs.safety.label', 'Safety plan') }
         ];
-        function setSub(id) { upd('careSubtab', id); announce('Now viewing: ' + (SUB_TABS.filter(function(t) { return t.id === id; })[0] || {}).label); }
+        function setSub(id) { upd('careSubtab', id); announce(_selFill(__alloT('sel.crisiscompanion.ui.now_viewing_label', 'Now viewing: {label}'), { label: (SUB_TABS.filter(function(t) { return t.id === id; })[0] || {}).label })); }
         // Sub-nav strip
-        var subNav = h('div', { role: 'tablist', 'aria-label': 'Self-care sub-sections', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
+        var subNav = h('div', { role: 'tablist', 'aria-label': __alloT('sel.crisiscompanion.ui.self_care_sub_sections', 'Self-care sub-sections'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
           SUB_TABS.map(function(t) {
             var sel = (careSubtab === t.id);
             return h('button', {
@@ -2542,28 +2562,28 @@ window.SelHub = window.SelHub || {
           subContent = h('div', null,
             h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
               h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-                'Supporting a friend through a mental-health crisis is heavy. It changes you. Researchers call this ',
-                h('em', null, 'secondary stress'),
-                ' — the way that being close to someone else\'s pain affects your own well-being. It\'s real, and it deserves attention.'),
+                __alloT('sel.crisiscompanion.ui.supporting_a_friend_through_a_mental', 'Supporting a friend through a mental-health crisis is heavy. It changes you. Researchers call this '),
+                h('em', null, __alloT('sel.crisiscompanion.ui.secondary_stress', 'secondary stress')),
+                __alloT('sel.crisiscompanion.ui.the_way_that_being_close_to', ' — the way that being close to someone else\'s pain affects your own well-being. It\'s real, and it deserves attention.')),
               h('p', { style: { fontSize: '13px', color: SLATE_MID, lineHeight: 1.7, margin: 0, fontStyle: 'italic' } },
-                'Taking care of yourself is not selfish. It\'s how you stay able to keep showing up.')
+                __alloT('sel.crisiscompanion.ui.taking_care_of_yourself_is_not', 'Taking care of yourself is not selfish. It\'s how you stay able to keep showing up.'))
             ),
             // Pointer to the interactive tools
             h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' } },
-              h('div', { style: { fontSize: '12px', fontWeight: 700, color: TEAL_DARK, marginBottom: '4px' } }, '🧰 Interactive tools above'),
+              h('div', { style: { fontSize: '12px', fontWeight: 700, color: TEAL_DARK, marginBottom: '4px' } }, __alloT('sel.crisiscompanion.ui.interactive_tools_above', '🧰 Interactive tools above')),
               h('p', { style: { fontSize: '12px', color: SLATE_TEXT, lineHeight: 1.6, margin: 0 } },
-                'The tabs at the top of this section have practical tools you can use right now: a guided ',
-                h('strong', null, 'breathing pacer'), ', a sensory ',
-                h('strong', null, 'grounding exercise'), ', a personal ',
-                h('strong', null, 'coping toolkit'), ' you can build, and the evidence-based ',
-                h('strong', null, 'Stanley-Brown safety plan'), '. They\'re for you AND for sharing with a friend who\'s struggling.'
+                __alloT('sel.crisiscompanion.ui.the_tabs_at_the_top_of', 'The tabs at the top of this section have practical tools you can use right now: a guided '),
+                h('strong', null, __alloT('sel.crisiscompanion.ui.breathing_pacer', 'breathing pacer')), __alloT('sel.crisiscompanion.ui.a_sensory', ', a sensory '),
+                h('strong', null, __alloT('sel.crisiscompanion.ui.grounding_exercise', 'grounding exercise')), __alloT('sel.crisiscompanion.ui.a_personal', ', a personal '),
+                h('strong', null, __alloT('sel.crisiscompanion.ui.coping_toolkit', 'coping toolkit')), __alloT('sel.crisiscompanion.ui.you_can_build_and_the_evidence', ' you can build, and the evidence-based '),
+                h('strong', null, __alloT('sel.crisiscompanion.ui.stanley_brown_safety_plan', 'Stanley-Brown safety plan')), __alloT('sel.crisiscompanion.ui.they_re_for_you_and_for', '. They\'re for you AND for sharing with a friend who\'s struggling.')
               )
             ),
             null  // sentinel, so the comma is harmless before the static cards below
           );
         }
         content = h('div', null,
-          sectionHero({ icon: '💚', label: 'Caring for yourself when you\'ve supported a friend' }),
+          sectionHero({ icon: '💚', label: __alloT('sel.crisiscompanion.ui.caring_for_yourself_when_you_ve', 'Caring for yourself when you\'ve supported a friend') }),
           subNav,
           subContent,
           // Always-visible static support content below the sub-tab area
@@ -2583,17 +2603,17 @@ window.SelHub = window.SelHub || {
           var nr = Object.assign({}, responses); nr[key] = rIdx;
           upd('practiceResponses', nr);
           var rating = PRACTICE_SCENARIOS[scIdx].responses[rIdx].rating;
-          announce(rating === 'helpful' ? 'Helpful response' : rating === 'harmful' ? 'This response could harm — see explanation' : 'Neutral response — see explanation');
+          announce(rating === 'helpful' ? __alloT('sel.crisiscompanion.ui.helpful_response', 'Helpful response') : rating === 'harmful' ? __alloT('sel.crisiscompanion.ui.this_response_could_harm_see_explanation', 'This response could harm — see explanation') : __alloT('sel.crisiscompanion.ui.neutral_response_see_explanation', 'Neutral response — see explanation'));
         }
 
         var sc = PRACTICE_SCENARIOS[practiceIdx];
         var picked = responses[practiceIdx];
 
         content = h('div', null,
-          sectionHero({ icon: '🎭', label: 'Practice — three scenarios' }),
+          sectionHero({ icon: '🎭', label: __alloT('sel.crisiscompanion.ui.practice_three_scenarios', 'Practice — three scenarios') }),
           h('div', { style: { background: _ccC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '12px' } },
             h('p', { style: { fontSize: '15px', lineHeight: 1.7, color: SLATE_TEXT, margin: '0 0 10px' } },
-              'Three short scenarios drawn from typical adolescent experience. For each, pick the response you think would help most. There\'s no perfect answer — just answers that are more or less helpful in context. Modeled on Sources of Strength practice protocols.')
+              __alloT('sel.crisiscompanion.ui.three_short_scenarios_drawn_from_typical', 'Three short scenarios drawn from typical adolescent experience. For each, pick the response you think would help most. There\'s no perfect answer — just answers that are more or less helpful in context. Modeled on Sources of Strength practice protocols.'))
           ),
           // Scenario picker
           h('div', { style: { display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' } },
@@ -2602,10 +2622,10 @@ window.SelHub = window.SelHub || {
               var done = responses[i] != null;
               return h('button', {
                 key: s.id,
-                onClick: function() { upd('practiceIdx', i); announce('Loaded scenario: ' + s.title); },
+                onClick: function() { upd('practiceIdx', i); announce(_selFill(__alloT('sel.crisiscompanion.ui.loaded_scenario_title', 'Loaded scenario: {title}'), { title: s.title })); },
                 'aria-pressed': sel ? 'true' : 'false',
                 style: { padding: '8px 14px', borderRadius: '10px', border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER), background: sel ? TEAL : _ccC('#fff'), color: sel ? '#fff' : TEAL_DARK, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-              }, 'Scenario ' + (i + 1), done ? ' ✓' : '');
+              }, _selFill(__alloT('sel.crisiscompanion.ui.scenario_value', 'Scenario {value}'), { value: (i + 1) }), done ? ' ✓' : '');
             })
           ),
           // Scenario card
@@ -2614,7 +2634,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { background: _ccC(SLATE_BG), borderLeft: '4px solid ' + TEAL, padding: '12px 14px', borderRadius: '6px', marginBottom: '14px' } },
               h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } }, sc.setting)
             ),
-            h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'How would you respond?'),
+            h('div', { style: { fontSize: '13px', fontWeight: 700, color: SLATE_MID, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, __alloT('sel.crisiscompanion.ui.how_would_you_respond', 'How would you respond?')),
             h('div', { 'role': 'radiogroup', 'aria-label': sc.title, style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               sc.responses.map(function(r, ri) {
                 var sel = (picked === ri);
@@ -2634,7 +2654,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontWeight: 700, marginBottom: revealed ? '8px' : 0 } }, r.text),
                   revealed && h('div', { style: { fontSize: '12px', lineHeight: 1.6, fontWeight: 400, fontStyle: 'italic' } },
-                    r.rating === 'helpful' ? '✓ Helpful — ' : r.rating === 'harmful' ? '× Harmful — ' : '~ Neutral — ',
+                    r.rating === 'helpful' ? __alloT('sel.crisiscompanion.ui.helpful', '✓ Helpful — ') : r.rating === 'harmful' ? __alloT('sel.crisiscompanion.ui.harmful', '× Harmful — ') : __alloT('sel.crisiscompanion.ui.neutral', '~ Neutral — '),
                     r.why
                   )
                 );
@@ -2643,8 +2663,8 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
             h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.7, margin: 0 } },
-              h('strong', { style: { color: TEAL_DARK } }, 'A note on practice: '),
-              'Real conversations are messier than scripted scenarios. The point of practice isn\'t to memorize lines — it\'s to develop the INSTINCT to ask, listen, stay, and tell. With practice, that instinct gets faster.')
+              h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.a_note_on_practice', 'A note on practice: ')),
+              __alloT('sel.crisiscompanion.ui.real_conversations_are_messier_than_scripted', 'Real conversations are messier than scripted scenarios. The point of practice isn\'t to memorize lines — it\'s to develop the INSTINCT to ask, listen, stay, and tell. With practice, that instinct gets faster.'))
             )
         );
       }
@@ -2655,7 +2675,7 @@ window.SelHub = window.SelHub || {
         renderCrisisConfirm(),
         withCrisisBars(h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('crisiscompanion', h, ctx) : null),
-          content || h('div', null, 'Loading…')
+          content || h('div', null, __alloT('sel.crisiscompanion.ui.loading', 'Loading…'))
         ))
       );
     }

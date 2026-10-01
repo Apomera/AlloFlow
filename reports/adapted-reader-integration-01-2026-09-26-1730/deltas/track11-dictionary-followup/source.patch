@@ -1,0 +1,37 @@
+Index: dictionary_loader.js
+===================================================================
+--- dictionary_loader.js
++++ dictionary_loader.js
+@@ -142,21 +142,27 @@
+      * Look up an authoritative dictionary entry. Resolves to the normalized
+      * entry, or NULL when not found / offline-uncached / any failure.
+      */
+-    lookup: function (word) {
++    lookup: function (word, options) {
++      options = options || {};
++      if (options.signal?.aborted) return Promise.resolve(null);
+       var w = normalizeWord(word);
+       if (!w || /\s/.test(w)) return Promise.resolve(null); // single words only
+       var cached = readCache(w);
+-      if (cached !== undefined) return Promise.resolve(cached); // hit (entry or cached-null)
++      if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return Promise.resolve(cached);
+       if (typeof fetch !== 'function') return Promise.resolve(null);
+-      return fetch(API + encodeURIComponent(w)).then(function (r) {
++      return Promise.resolve().then(function () {
++        if (options.signal?.aborted) return null;
++        return fetch(API + encodeURIComponent(w), { signal: options.signal });
++      }).then(function (r) {
++        if (!r || options.signal?.aborted) return null;
+         if (r.status === 404) { writeCache(w, null); return null; } // cache "not found" so we don't refetch
+         if (!r.ok) return null;
+         return r.json();
+       }).then(function (rows) {
+-        if (rows == null) return null;
++        if (rows == null || options.signal?.aborted) return null;
+         var entry = normalizeEntry(rows, w);
+         if (entry) writeCache(w, entry);
+-        else writeCache(w, null);
++        // Only a real 404 is a cached miss; malformed responses remain retryable.
+         return entry;
+       }).catch(function () { return null; });
+     },

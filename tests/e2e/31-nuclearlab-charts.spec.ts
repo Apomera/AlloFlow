@@ -55,7 +55,7 @@ test.afterAll(async () => { await harness.stop(); });
  * width, and the screenshots would be of a layout no student ever sees.
  */
 async function mount2d(page: any, toolData: Record<string, unknown>) {
-  await harness.mount(page, toolData, undefined, { expectCanvas: false });
+  await harness.mount(page, { ...toolData, _nuclearLab: { nkView: 'reference', ...(toolData?._nuclearLab || {}) } }, undefined, { expectCanvas: false });
   await page.evaluate(() => {
     const w = document.getElementById('wrap')!;
     w.style.display = 'block';

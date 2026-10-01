@@ -397,7 +397,7 @@ window.StemLab = window.StemLab || {
           })) : null),
         [{ key: 'claim', label: 'Claim', prompt: 'What important similarity or difference do you notice?' }, { key: 'evidence', label: 'Evidence', prompt: 'Name both organisms and cite a property from the comparison.' }, { key: 'reasoning', label: 'Reasoning', prompt: 'How does the evidence support your claim? What can these descriptions not tell you?' }].map(function(field) {
           return h('label', { key: field.key, className: 'block text-sm font-bold' }, field.label,
-            h('textarea', { 'aria-label': 'Comparison ' + field.label.toLowerCase(), value: model.draft[field.key], maxLength: 3000, rows: 2, placeholder: field.prompt, className: 'mt-1 block w-full rounded-lg border border-slate-400 bg-white p-2 text-sm font-normal', onChange: function(e) { write(field.key, e.target.value); } }));
+            h('textarea', { 'aria-label': 'Comparison ' + field.label.toLowerCase(), value: model.draft[field.key], maxLength: 3000, rows: 2, placeholder: field.prompt, className: 'mt-1 block w-full rounded-lg border border-slate-500 bg-white p-2 text-sm font-normal', onChange: function(e) { write(field.key, e.target.value); } }));
         }),
         h('button', { type: 'button', className: button, onClick: exportReport }, 'Download comparison report')),
       h('p', { role: 'status', className: 'text-xs' }, typeof raw._cmpNotice === 'string' ? raw._cmpNotice : ''));

@@ -356,7 +356,9 @@ describe('Geology Explorer — no flattened separators in the interface copy', (
   // certainly a casualty of an earlier encoding round-trip that flattened '·' to '?'.
   it('joins label halves with a middle dot, never a bare question mark', () => {
     expect(source.split("+ ' ? ' +").length - 1).toBe(0);
-    expect(source.split("+ ' · ' +").length - 1).toBeGreaterThanOrEqual(23);
+    // Many joins now live INSIDE translation templates ('{a} · {b}'), so check those too.
+    expect(source.match(/'[^'\n]*\} \? \{[^'\n]*'/g) || []).toEqual([]);
+    expect(source.split(' · ').length - 1).toBeGreaterThanOrEqual(23);
   });
 
   it('uses the real arrow in direction copy, not an ASCII substitute', () => {

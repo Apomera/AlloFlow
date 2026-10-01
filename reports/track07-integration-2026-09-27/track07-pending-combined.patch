@@ -1,0 +1,1021 @@
+diff --git a/generation_helpers_source.jsx b/generation_helpers_source.jsx
+index 3d4a5b1c8..31ad242c4 100644
+--- a/generation_helpers_source.jsx
++++ b/generation_helpers_source.jsx
+@@ -3484,12 +3484,14 @@ const handleComplexityAdjustment = async (deps) => {
+   const artifactIsBilingual = generatedContent?.type === 'simplified'
+     && typeof generatedContent?.data === 'string'
+     && /---\s*ENGLISH TRANSLATION\s*---/i.test(generatedContent.data);
+-  // A rewrite of an already bilingual artifact must remain bilingual even if
+-  // the teacher has since changed the ambient translation toggle. The content
+-  // itself is the durable language snapshot for legacy artifacts that predate
+-  // an explicit translation-policy field.
++  // The legacy delimiter names English even when the saved target is another
++  // language. Preserve the artifact's metadata before consulting ambient settings.
++  const savedTranslationTarget = [generatedContent?.config?.translationPolicy?.target,
++    generatedContent?.translationPolicy?.target, generatedContent?.translationTarget,
++    generatedContent?.config?.translationTarget, generatedContent?.config?.attachedTranslationTarget]
++    .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
+   const _xlate = artifactIsBilingual
+-    ? { ...resolvedTranslationPolicy, enabled: true, target: 'English', mode: 'artifact-preserve' }
++    ? { enabled: true, target: window.AlloModules?.TextPipelineHelpers?.getArtifactTranslationTarget?.(generatedContent) || savedTranslationTarget?.trim() || 'English', mode: 'artifact-preserve' }
+     : resolvedTranslationPolicy;
+   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
+     // adaptationPlan (reader, 2026-09-26): { options } adds precise changes;
+@@ -3511,7 +3513,8 @@ const handleComplexityAdjustment = async (deps) => {
+         vocabularyRejected = true;
+         const message = _preservedVocabulary.feedback(audit, t);
+         addToast(message, 'warning');
+-        return { status: 'rejected', reason: audit.reason || 'invalid-preserved-terms', sourceRetained: true, message, vocabulary: audit };
++        return { status: 'rejected', reason: audit.reason || 'invalid-preserved-terms', sourceRetained: true, message,
++            ...(audit.scope === 'panes' ? { panes: audit, recovery: 'preview' } : { vocabulary: audit }) };
+     };
+     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
+     if ((complexityLevel === 5 && !hasPlanOptions && !prepared) || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
+@@ -3708,6 +3711,7 @@ const handleComplexityAdjustment = async (deps) => {
+             : await callGemini(prompt, jsonMode);
+         if (!isCurrent()) return { status: 'stale' };
+         if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
++            if (typeof result !== 'string') return rejectVocabulary({ scope: 'panes', valid: false, reason: 'invalid-candidate-text' });
+             const candidateParts = splitReferenceTrailer(result);
+             const candidateBody = candidateParts.body.trim();
+             const candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
+@@ -3715,6 +3719,9 @@ const handleComplexityAdjustment = async (deps) => {
+             const finalCandidate = [candidateBody, simplifiedCitationContext.references].filter(Boolean).join('\n\n');
+             vocabularyAudit = _preservedVocabulary.validate(requestResourceData, finalCandidate, requestedTerms, vocabularySplit);
+             if (!vocabularyAudit.valid) return rejectVocabulary(vocabularyAudit);
++            const requiresTranslation = simplifiedCitationContext.wasBilingual || !!_xlate.enabled;
++            const paneAudit = _preservedVocabulary.checkPanes(candidateBody, requiresTranslation, vocabularySplit);
++            if (!paneAudit.valid) return rejectVocabulary(paneAudit);
+             const originalForValidation = simplifiedCitationContext.wasBilingual
+                 ? simplifiedCitationContext.sourceBody
+                 : simplifiedCitationContext.sourceTarget;
+@@ -3722,9 +3729,10 @@ const handleComplexityAdjustment = async (deps) => {
+                 ? candidateBody
+                 : candidateTarget;
+             let conservation = validateCitationsInOrder(originalForValidation, candidateForValidation);
+-            const shouldValidateGeneratedEnglish = !simplifiedCitationContext.wasBilingual
+-                && (candidateExtraction.isBilingual || String(effectiveLanguage || '').trim().toLowerCase() !== 'english');
+-            if (shouldValidateGeneratedEnglish) {
++            // Pane validation above guarantees the configured translation exists.
++            // A non-English primary alone does not require a translation.
++            const shouldValidateGeneratedTranslation = !simplifiedCitationContext.wasBilingual && requiresTranslation;
++            if (shouldValidateGeneratedTranslation) {
+                 const englishConservation = validateCitationsInOrder(
+                     candidateTarget,
+                     candidateExtraction.isBilingual ? candidateExtraction.englishBlock : ''
+@@ -3787,6 +3795,10 @@ const handleComplexityAdjustment = async (deps) => {
+             : null;
+         const adjustedConfig = {
+             ...(prepared && prepared.config ? prepared.config : priorConfig),
++            ...(generatedContent.type === 'simplified' ? {
++                translationPolicy: { enabled: !!_xlate.enabled, target: _xlate.target || '', mode: _xlate.mode || 'auto' },
++                translationTarget: _xlate.enabled ? _xlate.target : ''
++            } : {}),
+             ...(complexityCitationAudit ? {
+                 citationAudit: {
+                     ...(priorAudit || {
+@@ -3928,6 +3940,8 @@ const handleComplexityAdjustment = async (deps) => {
+         return { status: 'applied', ...outcome };
+     } catch (err) {
+         if (!isCurrent()) return { status: 'stale' };
++        if (err?.code === 'invalid-generated-text') return rejectVocabulary({ scope: 'panes', valid: false,
++            reason: 'empty-required-pane', pane: err.pane || 'primary' });
+         if (err?.code === 'citation-conservation-failed') {
+             warnLog('[CitationConservation] Complexity adjustment rejected; original resource retained.', err.details || err);
+             addToast('The adjustment changed a source citation, so the original citation-safe version was retained.', 'warning');
+@@ -4002,7 +4016,11 @@ const _preservedVocabulary = (() => {
+         if (typeof body !== 'string') throw new Error('text-parser-unavailable');
+         const parts = body.split(/^\s*---\s*ENGLISH TRANSLATION\s*---\s*$/im);
+         if (parts.length > 2 || /---\s*TRANSLATION\s*---/i.test(body)) throw new Error('ambiguous-language-panes');
+-        return { primary: blocks(parts[0]), ...(parts.length === 2 ? { translation: blocks(parts[1]) } : {}) };
++        const readPane = (raw, pane) => {
++            try { return blocks(raw); }
++            catch (error) { error.pane = pane; throw error; }
++        };
++        return { primary: readPane(parts[0], 'primary'), ...(parts.length === 2 ? { translation: readPane(parts[1], 'translation') } : {}) };
+     };
+     // Index boundaries once per region, not once per requested term. This is
+     // request-local: no reading text or segmentation data survives in a cache.
+@@ -4040,7 +4058,10 @@ const _preservedVocabulary = (() => {
+                 else result.required.push({ term, panes: occurrences });
+             }
+             if (result.absentFromSource.length) { result.valid = false; result.status = 'invalid'; result.reason = 'terms-absent-from-source'; }
+-        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
++        } catch (error) {
++            result.valid = false; result.status = 'unverified'; result.reason = error.message;
++            result.diagnostic = { stage: 'source', pane: error.pane || null, format: error.format || null };
++        }
+         return result;
+     };
+     const validate = (source, candidate, requested, splitReferences) => {
+@@ -4052,9 +4073,30 @@ const _preservedVocabulary = (() => {
+                 if (!count(candidatePanes[original.pane], entry.term)) result.missingTerms.push({ term: entry.term, pane: original.pane });
+             }
+             if (result.missingTerms.length) { result.valid = false; result.status = 'invalid'; result.reason = 'essential-terms-missing'; }
+-        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
++        } catch (error) {
++            result.valid = false; result.status = 'unverified'; result.reason = error.message;
++            result.diagnostic = { stage: 'candidate', pane: error.pane || null, format: error.format || null };
++        }
+         return result;
+     };
++    // Pane completeness is independent of vocabulary presence. An empty term
++    // list grants no vocabulary guarantee, but must not permit lost reading panes.
++    const checkPanes = (candidate, requiresTranslation, splitReferences) => {
++        const audit = { version, scope: 'panes', valid: false, requiredPanes: requiresTranslation ? ['primary', 'translation'] : ['primary'] };
++        if (typeof candidate !== 'string') return { ...audit, reason: 'invalid-candidate-text' };
++        try {
++            const markers = candidate.match(/---\s*(?:ENGLISH\s+)?TRANSLATION\s*---/gi) || [];
++            if (markers.some(marker => marker !== '--- ENGLISH TRANSLATION ---')) return { ...audit, reason: 'ambiguous-language-panes' };
++            const candidatePanes = panes(candidate, splitReferences);
++            if (markers.length !== (candidatePanes.translation ? 1 : 0)) return { ...audit, reason: 'ambiguous-language-panes' };
++            if (requiresTranslation && !candidatePanes.translation) return { ...audit, reason: 'missing-required-pane', pane: 'translation' };
++            if (!requiresTranslation && candidatePanes.translation) return { ...audit, reason: 'unexpected-translation-pane' };
++            for (const pane of audit.requiredPanes) if (!candidatePanes[pane]?.some(text => text.replace(/[\s\p{Default_Ignorable_Code_Point}]/gu, ''))) return { ...audit, reason: 'empty-required-pane', pane };
++            return { ...audit, valid: true };
++        } catch (error) {
++            return { ...audit, reason: error.message, diagnostic: { stage: 'candidate', pane: error.pane || null, format: error.format || null } };
++        }
++    };
+     const feedback = (audit, translate) => {
+         const defaults = {
+         "adapt_exact_terms_hint": "Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.",
+@@ -4071,6 +4113,20 @@ const _preservedVocabulary = (() => {
+         "adapt_terms_text": "Each term must be a text entry.",
+         "adapt_terms_invalid": "Current text kept. {details} No terms were dropped. Correct the list and preview again.",
+         "adapt_preview_expired": "Current text kept. This preview can no longer be verified. Preview the change again.",
++        "adapt_format_source": "Current text kept. Cannot verify the {pane} in the current reading: {details} {action}",
++        "adapt_format_candidate": "Current text kept. Cannot verify the {pane} in the proposed version: {details} Retry the preview; no change was applied.",
++        "adapt_format_code": "HTML code or preformatted text cannot be checked.",
++        "adapt_format_html": "HTML tags are unbalanced or span separate lines or sentences.",
++        "adapt_format_styled": "Custom styles or classes prevent reliable text checking.",
++        "adapt_format_element": "This pane contains an unsupported HTML element.",
++        "adapt_format_unclosed": "A code span, comment, or fenced block is not closed.",
++        "adapt_format_plain_action": "Use plain text or standard emphasis in that pane, then preview again.",
++        "adapt_format_close_action": "Close the formatting markers in that pane, then preview again.",
++        "adapt_pane_missing": "Current text kept. The proposed version is missing the {pane}. Preview again to generate both reading panes.",
++        "adapt_pane_empty": "Current text kept. The proposed {pane} has no readable text. Preview again; no change was applied.",
++        "adapt_pane_unexpected": "Current text kept. The proposed version added a translation that was not requested. Preview again.",
++        "adapt_panes_invalid": "Current text kept. The proposed version has invalid or ambiguous reading panes. Preview again.",
++        "adapt_panes_unverified": "Current text kept. The proposed reading panes could not be verified. Reload and preview again.",
+         "adapt_terms_unverified": "Current text kept. Essential terms could not be verified. Preview again using supported text formatting.",
+         "adapt_terms_separator": "Use a separator after a quoted term.",
+         "adapt_terms_quote": "Close the quotation mark around the term."
+@@ -4081,14 +4137,26 @@ const _preservedVocabulary = (() => {
+             const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
+             return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
+         };
++        if (audit.reason === 'missing-required-pane' || audit.reason === 'empty-required-pane') return message(audit.reason === 'missing-required-pane' ? 'adapt_pane_missing' : 'adapt_pane_empty', {
++            pane: message(audit.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary')
++        });
++        if (audit.reason === 'unexpected-translation-pane') return message('adapt_pane_unexpected');
++        if (audit.scope === 'panes' && ['invalid-candidate-text', 'ambiguous-language-panes'].includes(audit.reason)) return message('adapt_panes_invalid');
+         if (audit.reason === 'separator-after-quote') return message('adapt_terms_separator');
+         if (audit.reason === 'unclosed-term-quote') return message('adapt_terms_quote');
+         if (audit.missingTerms?.length) return message('adapt_terms_missing', { terms: audit.missingTerms.map(entry => '“' + entry.term + '” (' + message(entry.pane === 'primary' ? 'adapt_terms_primary' : 'adapt_terms_translation') + ')').join('; ') });
+         if (audit.absentFromSource?.length) return message('adapt_terms_absent', { terms: audit.absentFromSource.map(term => '“' + term + '”').join('; ') });
+         if (audit.errors?.length) return message('adapt_terms_invalid', { details: audit.errors.map(error => message(error.code === 'too-many-terms' ? 'adapt_terms_many' : error.code === 'term-too-long' ? 'adapt_term_long' : error.code === 'terms-too-long' ? 'adapt_terms_long' : 'adapt_terms_text', error)).join(' ') });
++        const formatKey = { code: 'code', html: 'html', styled: 'styled', element: 'element', unclosed: 'unclosed' }[audit.diagnostic?.format];
++        if (formatKey && audit.diagnostic.pane) return message(audit.diagnostic.stage === 'candidate' ? 'adapt_format_candidate' : 'adapt_format_source', {
++            pane: message(audit.diagnostic.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary'),
++            details: message('adapt_format_' + formatKey),
++            action: message(formatKey === 'unclosed' ? 'adapt_format_close_action' : 'adapt_format_plain_action')
++        });
++        if (audit.scope === 'panes') return message('adapt_panes_unverified');
+         return message(audit.reason === 'preview-validation-unavailable' ? 'adapt_preview_expired' : 'adapt_terms_unverified');
+     };
+-    return { version, limits, normalize, parseInput, prepare, validate, feedback };
++    return { version, limits, normalize, parseInput, prepare, validate, checkPanes, feedback };
+ })();
+ 
+ const _waitForGenerationMatrixReady = async (deps = {}) => {
+diff --git a/text_pipeline_helpers_source.jsx b/text_pipeline_helpers_source.jsx
+index 04df27042..997fa9fc5 100644
+--- a/text_pipeline_helpers_source.jsx
++++ b/text_pipeline_helpers_source.jsx
+@@ -96,6 +96,13 @@ const resolveTranslationPolicy = (mode, outputLanguage, uiLanguage, allowedTarge
+ // which is Aaron's "it would probably only want to come up when you are doing
+ // other languages". Second clause: a teacher who has already chosen 'off' or a
+ // specific language must keep seeing the control, or they cannot undo it.
++const getArtifactTranslationTarget = artifact => {
++  const saved = [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target,
++    artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget]
++    .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
++  return saved?.trim() || 'English'; // Legacy bilingual artifacts predate destination metadata.
++};
++
+ const isTranslationControlRelevant = (mode, outputLanguage, uiLanguage, allowedTargets) => {
+   // Read through the resolver, never by comparing the raw string here — a
+   // second, looser copy of the mode logic is exactly how a setting starts
+@@ -128,6 +135,7 @@ const translationTargetChoices = (outputLanguage, uiLanguage, selectedLanguages)
+ // for validation; readers may fall back to their legacy renderer.
+ const readingText = (() => {
+     const normalizeText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim();
++    const formattingError = (reason, format) => Object.assign(new Error(reason), { format });
+     const balanced = (text, start, open, close) => {
+         let depth = 0;
+         for (let i = start; i < text.length; i++) {
+@@ -148,7 +156,7 @@ const readingText = (() => {
+                 const delimiter = String.fromCharCode(96).repeat(width);
+                 let end = text.indexOf(delimiter, i + width);
+                 while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
+-                if (end < 0) throw new Error('unclosed-formatting');
++                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
+                 result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
+                 i = end + width - 1; continue;
+             }
+@@ -181,11 +189,11 @@ const readingText = (() => {
+         const tags = html.match(/<\/?[A-Za-z][^<>]*>/g) || [], stack = [];
+         for (const tag of tags) {
+             const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
+-            if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
+-            if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
++            if (/^(CODE|PRE)$/.test(name)) throw formattingError('unsupported-formatting', 'code');
++            if (/^<\//.test(tag)) { if (stack.pop() !== name) throw formattingError('unsupported-formatting', 'html'); }
+             else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
+         }
+-        if (stack.length) throw new Error('unsupported-formatting');
++        if (stack.length) throw formattingError('unsupported-formatting', 'html');
+         const allowed = new Set('BODY P DIV SPAN STRONG B EM I U A BR UL OL LI TABLE THEAD TBODY TFOOT TR TD TH H1 H2 H3 H4 H5 H6 BLOCKQUOTE DL DT DD FIGURE FIGCAPTION SUB SUP HR DEL S STRIKE'.split(' '));
+         const visit = node => {
+             if (node.nodeType === 3) return { text: node.data };
+@@ -193,7 +201,8 @@ const readingText = (() => {
+             if (/^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT|IMG|SVG|MATH|BUTTON)$/.test(node.tagName)
+                 || node.hasAttribute('hidden') || node.getAttribute('aria-hidden') === 'true'
+                 || /(?:display\s*:\s*none|visibility\s*:\s*hidden)/i.test(node.getAttribute('style') || '')) return { hidden: true };
+-            if (!allowed.has(node.tagName) || node.hasAttribute('class') || node.hasAttribute('style')) throw new Error('unsupported-formatting');
++            if (!allowed.has(node.tagName)) throw formattingError('unsupported-formatting', 'element');
++            if (node.hasAttribute('class') || node.hasAttribute('style')) throw formattingError('unsupported-formatting', 'styled');
+             return { tag: node.tagName.toLowerCase(), excluded: /^(DEL|S|STRIKE)$/.test(node.tagName), href: node.tagName === 'A' ? node.getAttribute('href') : undefined, children: Array.from(node.childNodes, visit) };
+         };
+         return visit(new DOMParser().parseFromString(html, 'text/html').body);
+@@ -202,7 +211,7 @@ const readingText = (() => {
+         if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
+         // Keep hidden HTML spanning lines from being split into independent
+         // Markdown paragraphs. Unsupported cross-line HTML is unverified.
+-        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw new Error('unclosed-formatting');
++        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw formattingError('unclosed-formatting', 'unclosed');
+         raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+         const chunks = []; let paragraph = [], fence = '';
+         const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
+@@ -214,17 +223,17 @@ const readingText = (() => {
+             const stack = [];
+             for (const tag of htmlTags) {
+                 const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
+-                if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
+-                if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
++                if (/^(CODE|PRE)$/.test(name)) throw formattingError('unsupported-formatting', 'code');
++                if (/^<\//.test(tag)) { if (stack.pop() !== name) throw formattingError('unsupported-formatting', 'html'); }
+                 else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
+             }
+-            if (stack.length) throw new Error('unsupported-formatting');
++            if (stack.length) throw formattingError('unsupported-formatting', 'html');
+             if (!line.trim() || /^\s*\[[^\]]+\]:\s*\S/.test(line) || /^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) { flush(); continue; }
+             if (/^\s*\|.*\|\s*$/.test(line)) { flush(); chunks.push(...line.trim().slice(1, -1).split(/(?<!\\)\|/)); continue; }
+             const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
+             if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
+         }
+-        if (fence) throw new Error('unclosed-formatting');
++        if (fence) throw formattingError('unclosed-formatting', 'unclosed');
+         flush();
+         const output = [];
+         const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));
+@@ -274,12 +283,14 @@ const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, trans
+             throw error;
+         }
+     };
+-    const requestText = async prompt => {
++    const requestText = async (prompt, pane = 'primary') => {
+         ensureCurrent();
+         try {
+             const raw = await callGeminiFn(prompt);
+             ensureCurrent();
+-            return stripFences(raw);
++            const text = typeof raw === 'string' ? stripFences(raw) : '';
++            if (!text) throw Object.assign(new Error('Generation returned no reading text.'), { code: 'invalid-generated-text', pane });
++            return text;
+         } catch (error) {
+             // An obsolete provider failure belongs to the cancelled request.
+             ensureCurrent();
+@@ -304,15 +315,18 @@ URL PRESERVATION (CRITICAL — applies to every citation link [⁽N⁾](url)):
+     const policy = (translationPolicy && typeof translationPolicy === 'object')
+         ? translationPolicy
+         : resolveTranslationPolicy(TRANSLATION_MODE_AUTO, targetLang, 'English');
+-    if (!targetLang || targetLang === 'English') {
++    if (!targetLang || targetLang === 'All Selected Languages') {
+         return requestText(basePrompt + '\n\n' + urlPreservationRules);
+     }
+-    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${policy.enabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
++    // English can be the primary pane too. Suppress only disabled, empty, or
++    // same-language destinations; never suppress a requested translation by source language.
++    const translationEnabled = !!policy.enabled && !!_normLangName(policy.target) && !isSameLanguage(targetLang, policy.target);
++    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${translationEnabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
+     const targetResult = await requestText(targetPrompt);
+     // Translations off (or nothing sensible to translate into): one call, one
+     // block, no delimiter. Every downstream consumer already handles a string
+     // without the delimiter — that is the English-output case they see today.
+-    if (!policy.enabled) return targetResult;
++    if (!translationEnabled) return targetResult;
+     // Use triple-pipe fences instead of "..." wrapping so trailing ")" on the last citation
+     // doesn't butt up against a closing quote (which Gemini sometimes eats).
+     const preservedTranslationTerms = Array.isArray(controls?.translationKeepTerms) ? controls.translationKeepTerms : [];
+@@ -332,7 +346,7 @@ Return ONLY the ${policy.target} translation — no preamble, no fences in your
+ ${targetResult}
+ |||END ${targetLang.toUpperCase()}|||
+     `;
+-    const translatedResult = await requestText(translationPrompt);
++    const translatedResult = await requestText(translationPrompt, 'translation');
+     // The delimiter stays the literal '--- ENGLISH TRANSLATION ---' whatever the
+     // destination language is. It is a MACHINE TOKEN, not user-facing copy: it
+     // is parsed by extractSourceTextForProcessing, BilingualFieldRenderer,
+@@ -1594,6 +1608,7 @@ const createTextPipelineHelpers = () => ({
+   isTranslationControlRelevant,
+   translationTargetChoices,
+   isSameLanguage,
++  getArtifactTranslationTarget,
+   TRANSLATION_MODE_AUTO,
+   TRANSLATION_MODE_OFF,
+   extractSourceTextForProcessing,
+diff --git a/tests/preserved_vocabulary_completeness.test.js b/tests/preserved_vocabulary_completeness.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/preserved_vocabulary_completeness.test.js
+@@ -0,0 +1,119 @@
++import { beforeAll, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++const D = '\n\n--- ENGLISH TRANSLATION ---\n\n';
++let helpers, pipeline;
++beforeAll(() => { for (const file of ['pure_helpers_module.js','text_pipeline_helpers_module.js','generation_helpers_module.js']) loadAlloModule(file); helpers=window.AlloModules.GenerationHelpers; pipeline=window.AlloModules.TextPipelineHelpers; });
++function deps(candidate, terms = ['Herons']) {
++  return { generatedContent: {id:'panes-1',type:'simplified',data:'Herons eat fish.'+D+'Las garzas comen peces.',config:{language:'English',translationTarget:'Spanish'},instructionalText:{form:'adapted'}},
++    complexityLevel:3,gradeLevel:'Grade 4',leveledTextLanguage:'English',translationMode:'off',resolveTranslationPolicy:pipeline.resolveTranslationPolicy,currentUiLanguage:'English',saveOriginalOnAdjust:false,
++    adaptationPlan:{preview:true,options:{shorterSentences:true,keepTerms:terms}},setIsProcessing:vi.fn(),setComplexityLevel:vi.fn(),setGeneratedContent:vi.fn(),setHistory:vi.fn(),setWordSoundsCustomTerms:vi.fn(),setWsPreloadedWords:vi.fn(),setError:vi.fn(),addToast:vi.fn(),warnLog:vi.fn(),callGemini:vi.fn(),cleanJson:x=>x,t:k=>k,getDefaultTitle:()=> 'Reading',extractSourceTextForProcessing:pipeline.extractSourceTextForProcessing,generateBilingualText:vi.fn(async()=>candidate) };
++}
++function retained(d){expect(d.setGeneratedContent).not.toHaveBeenCalled();expect(d.setHistory).not.toHaveBeenCalled();expect(d.setComplexityLevel).not.toHaveBeenCalled();expect(d.addToast.mock.calls.some(([,tone])=>tone==='success')).toBe(false);}
++describe('required reading pane completeness',()=>{
++  it.each([
++    ['missing translation','Herons catch fish.'], ['empty translation','Herons catch fish.'+D], ['empty primary',D+'Las garzas pescan.'],
++    ['hidden translation','Herons catch fish.'+D+'<span hidden>Las garzas pescan.</span>'], ['citation-only translation','Herons catch fish.'+D+'[⁽¹⁾](https://example.org)'],
++    ['reference-only translation','Herons catch fish.'+D+'## References\n\nhttps://example.org'],
++    ['extra translation','Herons catch fish.'+D+'Las garzas pescan.'+D+'More text.'],['ambiguous delimiter','Herons catch fish.\n--- TRANSLATION ---\nLas garzas pescan.'],
++    ['invisible-only translation','Herons catch fish.'+D+'\u200b\u2060\ufeff'],
++    ['noncanonical separator','Herons catch fish.\n--- english translation ---\nLas garzas pescan.'],
++    ['inline separator','Herons catch fish. --- ENGLISH TRANSLATION --- Las garzas pescan.'],
++    ['non-text result',{text:'Herons catch fish.'}],['empty result','']
++  ])('retains source for %s even without requested terms',async(_name,candidate)=>{
++    const d=deps(candidate,[]),result=await helpers.handleComplexityAdjustment(d);
++    expect(result).toMatchObject({status:'rejected',sourceRetained:true});expect(result.message).toContain('Current text kept');retained(d);
++  });
++  it('does not let primary-only terms conceal a dropped translation',async()=>{
++    const d=deps('Herons catch fish.'),result=await helpers.handleComplexityAdjustment(d);
++    expect(result).toMatchObject({status:'rejected',sourceRetained:true});expect(result.message).toContain('translation');retained(d);
++  });
++  it('checks pane completeness again on Apply',async()=>{
++    const d=deps('Herons catch fish.'+D+'Las garzas pescan.'),preview=await helpers.handleComplexityAdjustment(d);expect(preview.status).toBe('preview');
++    preview.data='Herons catch fish.';d.adaptationPlan={apply:preview};const result=await helpers.handleComplexityAdjustment(d);
++    expect(result).toMatchObject({status:'rejected',sourceRetained:true});expect(d.generateBilingualText).toHaveBeenCalledTimes(1);retained(d);
++  });
++  it('retains the ordinary missing-term explanation for complete panes',async()=>{
++    const d=deps('Birds catch fish.'+D+'Las garzas pescan.');const result=await helpers.handleComplexityAdjustment(d);
++    expect(result.message).toContain('missing: “Herons”');retained(d);
++  });
++  it('accepts visible content in both panes and keeps no-terms status honest',async()=>{
++    const d=deps('Herons catch fish.'+D+'Las garzas pescan.',[]),result=await helpers.handleComplexityAdjustment(d);
++    expect(result.status).toBe('preview');expect(result.vocabulary.status).toBe('not-requested');retained(d);
++  });
++  it('accepts visible Unicode content rather than requiring Latin letters',async()=>{
++    const d=deps('👩‍🏫'+D+'طيور الماء',[]);expect((await helpers.handleComplexityAdjustment(d)).status).toBe('preview');retained(d);
++  });
++  it('requires a newly requested translation even for a monolingual source',async()=>{
++    const d=deps('Herons catch fish.',[]);d.generatedContent.data='Herons eat fish.';d.translationMode='Spanish';
++    expect(await helpers.handleComplexityAdjustment(d)).toMatchObject({status:'rejected',sourceRetained:true});retained(d);
++  });
++  it('rejects an unsolicited translation when the policy is off',async()=>{
++    const d=deps('Herons catch fish.'+D+'Las garzas pescan.',[]);d.generatedContent.data='Herons eat fish.';
++    expect(await helpers.handleComplexityAdjustment(d)).toMatchObject({status:'rejected',sourceRetained:true});retained(d);
++  });
++  it.each(['', '  ', '```\n\n```', null, undefined, {text:'Herons eat.'}])('stops an invalid primary response before translation: %j',async raw=>{
++    const provider=vi.fn().mockResolvedValueOnce(raw).mockResolvedValueOnce('Las garzas pescan.');
++    await expect(pipeline.generateBilingualText('Rewrite.','English',provider,{enabled:true,target:'Spanish'})).rejects.toMatchObject({code:'invalid-generated-text',pane:'primary'});
++    expect(provider).toHaveBeenCalledTimes(1);
++  });
++  it('rejects an empty translation response',async()=>{
++    const provider=vi.fn().mockResolvedValueOnce('Herons eat.').mockResolvedValueOnce('');
++    await expect(pipeline.generateBilingualText('Rewrite.','English',provider,{enabled:true,target:'Spanish'})).rejects.toMatchObject({code:'invalid-generated-text',pane:'translation'});
++  });
++  it('reports provider output rejection with retained source',async()=>{
++    const d=deps('',[]);d.generateBilingualText=pipeline.generateBilingualText;d.callGemini=vi.fn().mockResolvedValueOnce('');
++    expect(await helpers.handleComplexityAdjustment(d)).toMatchObject({status:'rejected',sourceRetained:true});retained(d);
++  });
++});
++
++
++describe('citations follow the actual translation policy', () => {
++  const citation = '[⁽¹⁾](https://example.org/research_(verified))';
++  const references = '### Source Text References\n1. [Verified research](https://example.org/research_(verified))';
++  function cited(candidate, translationMode = 'off') {
++    const d = deps(candidate, ['garzas']);
++    d.generatedContent.data = 'Las garzas comen peces. ' + citation + '\n\n' + references;
++    d.generatedContent.config = { language: 'Spanish' };
++    d.leveledTextLanguage = 'Spanish';
++    d.translationMode = translationMode;
++    return d;
++  }
++  it('previews and applies a cited Spanish adaptation with translation disabled', async () => {
++    const d = cited('Las garzas pescan. ' + citation);
++    const preview = await helpers.handleComplexityAdjustment(d);
++    expect(preview.status).toBe('preview');
++    expect(preview.data).toBe('Las garzas pescan. ' + citation + '\n\n' + references);
++    retained(d);
++    d.adaptationPlan = { apply: preview, commit: vi.fn(async () => true) };
++    const applied = await helpers.handleComplexityAdjustment(d);
++    expect(applied.status).toBe('applied');
++    expect(d.generateBilingualText).toHaveBeenCalledTimes(1);
++    expect(d.adaptationPlan.commit).toHaveBeenCalledTimes(1);
++    expect(d.setGeneratedContent).not.toHaveBeenCalled();
++  });
++  it.each([
++    ['missing', 'Las garzas pescan.'],
++    ['changed', 'Las garzas pescan. [⁽¹⁾](https://example.org/changed)'],
++    ['duplicated', 'Las garzas pescan. ' + citation + ' ' + citation],
++  ])('retains citation protection without translation: %s', async (_label, candidate) => {
++    const d = cited(candidate);
++    const result = await helpers.handleComplexityAdjustment(d);
++    expect(result).toBeUndefined();
++    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('source citation'), 'warning');
++    retained(d);
++  });
++  it('accepts a requested translation that preserves the primary citations', async () => {
++    const d = cited('Las garzas pescan. ' + citation + D + 'Herons fish. ' + citation, 'English');
++    const preview = await helpers.handleComplexityAdjustment(d);
++    expect(preview.status).toBe('preview');
++    d.adaptationPlan = { apply: preview, commit: vi.fn(async () => true) };
++    expect((await helpers.handleComplexityAdjustment(d)).status).toBe('applied');
++    expect(d.generateBilingualText).toHaveBeenCalledTimes(1);
++  });
++  it('rejects a requested translation that loses the primary citations', async () => {
++    const d = cited('Las garzas pescan. ' + citation + D + 'Herons fish.', 'English');
++    expect(await helpers.handleComplexityAdjustment(d)).toBeUndefined();
++    expect(d.addToast).toHaveBeenCalledWith(expect.stringContaining('source citation'), 'warning');
++    retained(d);
++  });
++});
+diff --git a/tests/text_complexity_freshness.test.js b/tests/text_complexity_freshness.test.js
+index 8ee3984d3..78717ab17 100644
+--- a/tests/text_complexity_freshness.test.js
++++ b/tests/text_complexity_freshness.test.js
+@@ -29,6 +29,7 @@ const makeComplexityAdjustment = () => extractFunction(
+ 
+ beforeAll(() => {
+   loadAlloModule('instructional_context_module.js');
++  loadAlloModule('pure_helpers_module.js'); loadAlloModule('text_pipeline_helpers_module.js');
+   Context = window.AlloModules.InstructionalContext;
+   if (!Context) throw new Error('InstructionalContext failed to register');
+ });
+diff --git a/tests/preserved_vocabulary_languages.test.js b/tests/preserved_vocabulary_languages.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/preserved_vocabulary_languages.test.js
+@@ -0,0 +1,80 @@
++import { beforeAll, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++let pipeline, helpers, vocabulary;
++const D = '\n\n--- ENGLISH TRANSLATION ---\n\n';
++beforeAll(() => {
++  loadAlloModule('pure_helpers_module.js'); loadAlloModule('text_pipeline_helpers_module.js'); loadAlloModule('generation_helpers_module.js');
++  pipeline = window.AlloModules.TextPipelineHelpers; helpers = window.AlloModules.GenerationHelpers; vocabulary = helpers.preservedVocabulary;
++});
++function deps(config = {}, extra = {}) {
++  return {
++    generatedContent: { id: 'language-1', type: 'simplified', data: 'Herons eat fish.' + D + 'Las garzas comen peces.', config: { language: 'English', ...config }, instructionalText: { form: 'adapted' } },
++    complexityLevel: 5, gradeLevel: 'Grade 4', leveledTextLanguage: 'Arabic', translationMode: 'off', currentUiLanguage: 'French', resolveTranslationPolicy: pipeline.resolveTranslationPolicy,
++    saveOriginalOnAdjust: false, adaptationPlan: { preview: true, options: { keepTerms: ['Herons', 'garzas'] } },
++    setIsProcessing: vi.fn(), setComplexityLevel: vi.fn(), setGeneratedContent: vi.fn(), setHistory: vi.fn(), setWordSoundsCustomTerms: vi.fn(), setWsPreloadedWords: vi.fn(), setError: vi.fn(), addToast: vi.fn(), warnLog: vi.fn(),
++    callGemini: vi.fn().mockResolvedValueOnce('Herons catch fish.').mockResolvedValueOnce('Las garzas pescan.'), cleanJson: value => value, t: key => key, getDefaultTitle: () => 'Reading',
++    extractSourceTextForProcessing: pipeline.extractSourceTextForProcessing, generateBilingualText: pipeline.generateBilingualText, ...extra
++  };
++}
++describe('translation language preservation', () => {
++  it('generates an explicit Spanish translation of English primary text', async () => {
++    const provider = vi.fn().mockResolvedValueOnce('Herons eat.').mockResolvedValueOnce('Las garzas comen.');
++    expect(await pipeline.generateBilingualText('Rewrite.', 'English', provider, { enabled: true, target: 'Spanish' })).toBe('Herons eat.' + D + 'Las garzas comen.');
++    expect(provider.mock.calls[1][0]).toContain('Translate the English text between the fences into Spanish.');
++  });
++  it.each([{ enabled: false, target: 'Spanish' }, { enabled: true, target: ' english ' }, { enabled: true, target: '' }])('makes one call without a distinct enabled target: %j', async policy => {
++    const provider = vi.fn().mockResolvedValue('Herons eat.');
++    expect(await pipeline.generateBilingualText('Rewrite.', 'English', provider, policy)).toBe('Herons eat.'); expect(provider).toHaveBeenCalledTimes(1);
++  });
++  it('retains legacy English-only behavior without a policy', async () => {
++    const provider = vi.fn().mockResolvedValue('Herons eat.');
++    expect(await pipeline.generateBilingualText('Rewrite.', 'English', provider)).toBe('Herons eat.'); expect(provider).toHaveBeenCalledTimes(1);
++  });
++  it.each([{translationPolicy:{target:'Spanish'}},{translationTarget:'Spanish'},{attachedTranslationTarget:'Spanish'}])('preserves a saved target despite different ambient settings: %j', async config => {
++    const d = deps(config), result = await helpers.handleComplexityAdjustment(d);
++    expect(result.status).toBe('preview'); expect(d.callGemini).toHaveBeenCalledTimes(2);
++    expect(d.callGemini.mock.calls[1][0]).toContain('into Spanish.'); expect(d.callGemini.mock.calls[1][0]).toContain('["garzas"]');
++    expect(result.config.translationPolicy).toEqual({enabled:true,target:'Spanish',mode:'artifact-preserve'});
++    expect(result.vocabulary.required).toEqual([{term:'Herons',panes:[{pane:'primary',count:1}]},{term:'garzas',panes:[{pane:'translation',count:1}]}]);
++    expect(d.setGeneratedContent).not.toHaveBeenCalled(); expect(d.setHistory).not.toHaveBeenCalled();
++  });
++  it('preserves top-level target metadata', async () => {
++    const d = deps(); d.generatedContent.translationTarget = 'Spanish';
++    expect((await helpers.handleComplexityAdjustment(d)).status).toBe('preview'); expect(d.callGemini.mock.calls[1][0]).toContain('into Spanish.');
++  });
++  it('uses English for legacy bilingual artifacts with no target metadata', async () => {
++    const d = deps(); d.generatedContent.config.language = 'Spanish'; d.generatedContent.data = 'Las garzas comen.' + D + 'Herons eat.';
++    d.callGemini = vi.fn().mockResolvedValueOnce('Las garzas pescan.').mockResolvedValueOnce('Herons catch fish.');
++    const result = await helpers.handleComplexityAdjustment(d); expect(result.status).toBe('preview'); expect(d.callGemini.mock.calls[1][0]).toContain('into English.');
++  });
++  it('persists an explicit target for a new bilingual candidate', async () => {
++    const d = deps({}, {translationMode:'Spanish'}); d.generatedContent.data = 'Herons eat fish.'; d.adaptationPlan.options.keepTerms = ['Herons'];
++    const result = await helpers.handleComplexityAdjustment(d); expect(result.status).toBe('preview'); expect(result.config.translationTarget).toBe('Spanish'); expect(result.config.translationPolicy.target).toBe('Spanish');
++  });
++  it('revalidates translation terms on Apply and keeps the source after tampering', async () => {
++    const d = deps({translationTarget:'Spanish'}), preview = await helpers.handleComplexityAdjustment(d);
++    expect(preview.status).toBe('preview'); preview.data = 'Herons catch fish.' + D + 'Las aves pescan.';
++    d.adaptationPlan = {apply:preview}; const result = await helpers.handleComplexityAdjustment(d);
++    expect(result.status).toBe('rejected'); expect(result.message).toContain('garzas'); expect(d.setGeneratedContent).not.toHaveBeenCalled(); expect(d.setHistory).not.toHaveBeenCalled();
++  });
++  it('rejects Apply when saved translation metadata changes after Preview', async () => {
++    const d = deps({translationTarget:'Spanish'}), preview = await helpers.handleComplexityAdjustment(d);
++    expect(preview.status).toBe('preview'); d.generatedContent.config.translationTarget = 'French'; d.adaptationPlan = {apply:preview};
++    expect((await helpers.handleComplexityAdjustment(d)).status).toBe('stale'); expect(d.setHistory).not.toHaveBeenCalled(); expect(d.callGemini).toHaveBeenCalledTimes(2);
++  });
++});
++describe('actionable formatting diagnostics', () => {
++  it.each([['<code>garzas</code>','code'],['<span class="colored">garzas</span>','styled'],['<details>garzas</details>','element'],['<em>garzas','html'],['`garzas','unclosed']])('identifies source translation formatting: %s', (text,format) => {
++    const result = vocabulary.prepare('Herons eat.' + D + text, ['garzas'], pipeline.splitReferencesFromBody);
++    expect(result).toMatchObject({valid:false,status:'unverified',diagnostic:{stage:'source',pane:'translation',format}});
++    expect(vocabulary.feedback(result)).toContain('translation in the current reading'); expect(vocabulary.feedback(result)).toContain('preview again');
++  });
++  it('distinguishes candidate failure and asks for a new preview', () => {
++    const result = vocabulary.validate('Herons eat.','<span style="color:red">Herons</span> eat.',['Herons'],pipeline.splitReferencesFromBody);
++    expect(result.diagnostic).toEqual({stage:'candidate',pane:'primary',format:'styled'}); expect(vocabulary.feedback(result)).toContain('proposed version'); expect(vocabulary.feedback(result)).toContain('Retry the preview');
++  });
++  it('retains absent-term and duplicate readiness evidence', () => {
++    const result = vocabulary.prepare('Herons eat.' + D + 'Las garzas comen.',['Herons','garzas','HERONS','garzas'],pipeline.splitReferencesFromBody);
++    expect(result.absentFromSource).toEqual(['HERONS']); expect(result.duplicates).toEqual([{term:'garzas',index:3}]); expect(result.required).toHaveLength(2);
++  });
++});
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index 1454fb031..eb644e57d 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2149,7 +2149,10 @@
+     var simplifiedDefineLabel = t('text_tools.define') || '';
+     var simplifiedReadSentenceLabel = t('common.read') || '';
+     var simplifiedGeneratingMoreLabel = t('word_sounds.generating_more') || '';
+-    var simplifiedEnglishTranslationLabel = t('common.english_translation') || '';
++    var readingTranslationLanguage = window.AlloModules?.TextPipelineHelpers?.getArtifactTranslationTarget?.(props.generatedContent) || 'English';
++    var simplifiedEnglishTranslationLabel = /^english$/i.test(readingTranslationLanguage)
++      ? viewText('common.english_translation', 'English translation')
++      : viewText('simplified.translation_language', '{language} translation', { language: readingTranslationLanguage });
+     var simplifiedStopAudioDownloadLabel = t('common.audio_stop') || simplifiedAudioStopLabel;
+     var generatedContent = props.generatedContent;
+     var readingContract = getInstructionalContextApi();
+@@ -3065,11 +3068,11 @@
+         }).filter(Boolean);
+       };
+       return makeEntries(sourceList, sourceLanguage || leveledTextLanguage || 'English', 'source')
+-        .concat(makeEntries(targetList, 'English', 'target'));
++        .concat(makeEntries(targetList, readingTranslationLanguage, 'target'));
+     };
+     var narrationSentences = React.useMemo(function () {
+       return canManageNarration ? getReadAloudSentenceEntriesForText(simplifiedReadAloudText) : [];
+-    }, [canManageNarration, simplifiedReadAloudText, leveledTextLanguage]);
++    }, [canManageNarration, simplifiedReadAloudText, leveledTextLanguage, readingTranslationLanguage]);
+     var narrationSummary = React.useMemo(function () {
+       if (!canManageNarration) return null;
+       return getReadAloudAudioSummary(narrationSentences);
+@@ -4719,7 +4722,7 @@
+     var [adaptOptions, setAdaptOptions] = React.useState({ shorterSentences: false, explainVocabulary: false, keepTerms: '' });
+     var [adaptPreview, setAdaptPreview] = React.useState(null);
+     var [adaptUndo, setAdaptUndo] = React.useState(null);
+-    var [adaptNotice, setAdaptNotice] = React.useState('');
++    var [adaptNoticeRecord, setAdaptNoticeRecord] = React.useState(null);
+     var adaptPreviewRef = React.useRef(null);
+     var adaptPreviewTriggerRef = React.useRef(null), adaptUndoButtonRef = React.useRef(null), adaptFocusRecoveryRef = React.useRef(null), adaptApplyInFlightRef = React.useRef(false);
+     function dismissAdaptationPreview(destination) {
+@@ -4744,8 +4747,11 @@
+     var adaptRequestRef = React.useRef(0), adaptMountedRef = React.useRef(true), adaptPendingCommitRef = React.useRef(null);
+     var [adaptBusy, setAdaptBusy] = React.useState(false), [adaptCommitRevision, setAdaptCommitRevision] = React.useState(0);
+     var [adaptFocus, setAdaptFocus] = React.useState(null);
+-    var adaptKey = JSON.stringify([generatedContent?.id, generatedContent?.data, generatedContent?.type, generatedContent?.instructionalText?.form,
+-      generatedContent?.config, complexityLevel, saveOriginalOnAdjust, adaptOptions, props.translationMode, props.currentUiLanguage, leveledTextLanguage]);
++    var adaptationKeyFor = content => JSON.stringify([content?.id, content?.data, content?.type, content?.instructionalText?.form,
++      content?.config, content?.translationTarget, content?.translationPolicy, complexityLevel, saveOriginalOnAdjust, adaptOptions, props.translationMode, props.currentUiLanguage, leveledTextLanguage]);
++    var adaptKey = adaptationKeyFor(generatedContent);
++    var adaptNotice = adaptNoticeRecord?.key === adaptKey ? adaptNoticeRecord.message : '';
++    function setAdaptNotice(message, key) { setAdaptNoticeRecord({ message, key: key || adaptLiveRef.current.key }); }
+     var adaptLiveRef = React.useRef(null);
+     adaptLiveRef.current = { key: adaptKey, content: generatedContent };
+     React.useEffect(function () { adaptMountedRef.current = true; return () => {
+@@ -4753,7 +4759,7 @@
+       const pending = adaptPendingCommitRef.current;
+       if (pending) { pending.cancelled = true; pending.resolve(false); adaptPendingCommitRef.current = null; }
+     }; }, []);
+-    React.useEffect(function () { dismissAdaptationPreview(); setAdaptBusy(false); }, [adaptKey]);
++    React.useEffect(function () { dismissAdaptationPreview(); setAdaptBusy(false); setAdaptNoticeRecord(current => current?.key === adaptKey ? current : null); }, [adaptKey]);
+     React.useEffect(function () { if (adaptPreview && adaptPreviewRef.current) adaptPreviewRef.current.focus(); }, [!!adaptPreview]);
+     React.useEffect(function () {
+       if (!adaptFocus || isProcessing) return;
+@@ -4773,11 +4779,26 @@
+       pending.resolve(accepted);
+     }, [generatedContent, adaptCommitRevision]);
+     var adaptVocabulary = window.AlloModules?.GenerationHelpers?.preservedVocabulary;
+-    var adaptTermInput = adaptVocabulary?.parseInput ? adaptVocabulary.parseInput(adaptOptions.keepTerms) : { valid: !adaptOptions.keepTerms.trim(), terms: [] };
++    var adaptTermInput = React.useMemo(() => adaptVocabulary?.parseInput ? adaptVocabulary.parseInput(adaptOptions.keepTerms) : { valid: !adaptOptions.keepTerms.trim(), terms: [] }, [adaptVocabulary, adaptOptions.keepTerms]);
+     var adaptTerms = adaptTermInput.terms;
+-    var adaptTermCheck = adaptTermInput.valid && adaptVocabulary?.normalize ? adaptVocabulary.normalize(adaptTerms) : null;
++    var adaptTermCheck = React.useMemo(() => adaptTermInput.valid && adaptVocabulary?.normalize ? adaptVocabulary.normalize(adaptTerms) : null, [adaptVocabulary, adaptTermInput]);
++    var adaptReadinessKey = JSON.stringify([generatedContent?.id, generatedContent?.data, adaptOptions.keepTerms]);
++    var [adaptReadinessRecord, setAdaptReadinessRecord] = React.useState(null);
++    var adaptSplitReferences = window.AlloModules?.TextPipelineHelpers?.splitReferencesFromBody || window.AlloModules?.GenDispatcher?.splitAdaptationReferences;
++    var adaptNeedsReadiness = !!(adaptTermCheck?.valid && adaptTermCheck.terms.length);
++    var adaptReadiness = adaptReadinessRecord?.key === adaptReadinessKey ? adaptReadinessRecord.audit : null;
++    var adaptReadinessPending = adaptNeedsReadiness && !adaptReadiness;
++    React.useEffect(function () {
++      if (!adaptNeedsReadiness) return;
++      // Debounce typing; never render an audit for another source or term list.
++      const timer = setTimeout(() => setAdaptReadinessRecord({ key: adaptReadinessKey, audit: adaptVocabulary?.prepare
++        ? adaptVocabulary.prepare(generatedContent?.data, adaptTerms, adaptSplitReferences)
++        : { valid: false, reason: 'preview-validation-unavailable' } }), 200);
++      return () => clearTimeout(timer);
++    }, [adaptReadinessKey, adaptNeedsReadiness, adaptVocabulary, adaptSplitReferences]);
+     var adaptTermError = !adaptTermInput.valid ? (adaptVocabulary?.feedback ? adaptVocabulary.feedback(adaptTermInput, t) : viewText('simplified.adapt_validation_unavailable', 'Essential-term validation is unavailable. Reload before previewing.'))
+-      : adaptTermCheck && !adaptTermCheck.valid ? adaptVocabulary.feedback(adaptTermCheck, t) : '';
++      : adaptTermCheck && !adaptTermCheck.valid ? adaptVocabulary.feedback(adaptTermCheck, t)
++      : adaptReadiness && !adaptReadiness.valid ? adaptVocabulary.feedback(adaptReadiness, t) : '';
+     var currentAdaptOptions = () => ({ shorterSentences: adaptOptions.shorterSentences, explainVocabulary: adaptOptions.explainVocabulary, keepTerms: adaptTerms });
+     var adaptHasOptions = adaptOptions.shorterSentences || adaptOptions.explainVocabulary || adaptTerms.length > 0;
+     var adaptUndoAvailable = !!adaptUndo && (adaptUndo.keptOriginal ? generatedContent?.id === adaptUndo.newId : generatedContent?.id === adaptUndo.previousId && generatedContent?.data !== adaptUndo.previousData && (adaptUndo.appliedData == null || generatedContent?.data === adaptUndo.appliedData));
+@@ -4789,10 +4810,11 @@
+     function adaptationFailure(result) {
+       setAdaptPreview(null);
+       setAdaptNotice(result?.message || viewText('simplified.adapt_not_applied', 'The change was not applied. Review the current text and preview again.'));
+-      setAdaptFocus(result?.status === 'rejected' ? 'terms' : 'preview');
++      setAdaptFocus(result?.status === 'rejected' && result?.recovery !== 'preview' ? 'terms' : 'preview');
+     }
+     async function prepareAdaptation() {
+       if (typeof handleComplexityAdjustment !== 'function' || adaptBusy) return;
++      if (adaptReadinessPending) return;
+       if (adaptTermError) { setAdaptNotice(adaptTermError); setAdaptFocus('terms'); return; }
+       const isCurrent = startAdaptRequest();
+       setAdaptNotice(''); setAdaptPreview(null);
+@@ -4827,7 +4849,7 @@
+       try {
+         const result = await handleComplexityAdjustment({ apply: adaptPreview, options: currentAdaptOptions(), isCurrent, commit });
+         if (!adaptMountedRef.current) return;
+-        if (result?.status === 'applied' && committed) {
++        if (result?.status === 'applied' && committed && adaptLiveRef.current.content?.id === result.newId && adaptLiveRef.current.content?.data === result.data) {
+           setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data });
+           dismissAdaptationPreview('undo');
+           setAdaptNotice(viewText('simplified.adapt_applied', 'Change applied. You can go back to the previous version.'));
+@@ -4845,7 +4867,7 @@
+         if (previous && typeof setGeneratedContent === 'function') setGeneratedContent(previous);
+       } else if (typeof handleSimplifiedTextChange === 'function') handleSimplifiedTextChange(undo.previousData);
+       setAdaptUndo(null);
+-      setAdaptNotice(viewText('simplified.adapt_undone', 'Back to the previous version.'));
++      setAdaptNotice(viewText('simplified.adapt_undone', 'Back to the previous version.'), adaptationKeyFor(undo.keptOriginal ? previous : { ...generatedContent, data: undo.previousData }));
+     }
+     function renderAdaptationControls() {
+       var check = (field, label) => <label className="flex min-h-11 min-w-0 items-center gap-2 text-sm text-slate-800"><input type="checkbox" data-adapt-option={field} checked={!!adaptOptions[field]} disabled={isProcessing || adaptBusy} onChange={event => setAdaptOptions(current => ({ ...current, [field]: event.target.checked }))} className="h-4 w-4 shrink-0 accent-indigo-600" /><span className="min-w-0">{label}</span></label>;
+@@ -4854,10 +4876,20 @@
+         <fieldset className="min-w-0 max-w-full rounded-lg border border-slate-200 p-2 sm:p-3"><legend className="max-w-full whitespace-normal px-1 text-xs font-bold uppercase tracking-wide text-indigo-700">{viewText('simplified.adapt_also', 'Also change')}</legend>
+           {check('shorterSentences', viewText('simplified.adapt_shorter', 'Shorter sentences'))}
+           {check('explainVocabulary', viewText('simplified.adapt_explain_vocab', 'Explain unfamiliar vocabulary'))}
+-          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id={readerId('simplified-adapt-terms-hint')} className="block text-xs font-normal text-slate-600">{viewText('simplified.adapt_exact_terms_hint', 'Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.')}</span><input ref={adaptTermsRef} type="text" data-adapt-keep-terms aria-describedby={[readerId('simplified-adapt-terms-hint'), readerId('simplified-adapt-terms-error')].join(' ')} aria-invalid={!!adaptTermError} value={adaptOptions.keepTerms} disabled={isProcessing || adaptBusy} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id={readerId('simplified-adapt-terms-hint')} className="block text-xs font-normal text-slate-600">{viewText('simplified.adapt_exact_terms_hint', 'Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.')}</span><input ref={adaptTermsRef} type="text" data-adapt-keep-terms aria-describedby={[readerId('simplified-adapt-terms-hint'), readerId('simplified-adapt-terms-error'), readerId('simplified-adapt-terms-readiness')].join(' ')} aria-invalid={!!adaptTermError} value={adaptOptions.keepTerms} disabled={isProcessing || adaptBusy} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          <div id={readerId('simplified-adapt-terms-readiness')} data-adapt-term-readiness role="status" aria-live="polite" aria-atomic="true" className="space-y-1 text-xs text-slate-700">
++            {adaptTermCheck && <p>{viewText('simplified.adapt_terms_remaining', '{remaining} of {limit} term slots available.', { remaining: Math.max(0, adaptTermCheck.limits.terms - adaptTermCheck.terms.length), limit: adaptTermCheck.limits.terms })}</p>}
++            {adaptTermCheck?.duplicates.length > 0 && <p>{viewText('simplified.adapt_terms_duplicates', 'Repeated entries count once: {terms}.', { terms: [...new Set(adaptTermCheck.duplicates.map(entry => entry.term))].join('; ') })}</p>}
++            {adaptReadinessPending && <p>{viewText('simplified.adapt_terms_checking', 'Checking terms in the current reading…')}</p>}
++            {adaptReadiness?.terms?.length > 0 && adaptReadiness.status !== 'unverified' && <ul className="list-inside list-disc">{adaptReadiness.terms.map(term => {
++              const found = adaptReadiness.required?.find(entry => entry.term === term);
++              const panes = found?.panes.map(entry => viewText(entry.pane === 'translation' ? 'simplified.adapt_terms_translation' : 'simplified.adapt_terms_primary', entry.pane === 'translation' ? 'translation' : 'primary reading')).join(', ');
++              return <li key={term}>{found ? viewText('simplified.adapt_term_found', '“{term}”: found in {panes}.', { term, panes }) : viewText('simplified.adapt_term_absent', '“{term}”: not found exactly. Check spelling and case.', { term })}</li>;
++            })}</ul>}
++          </div>
+           <p id={readerId('simplified-adapt-terms-error')} role={adaptTermError ? 'alert' : undefined} className={adaptTermError ? 'text-sm text-red-800' : 'sr-only'}>{adaptTermError}</p>
+         </fieldset>
+-        <div className="text-center"><button ref={adaptPreviewButtonRef} type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || adaptBusy || !!adaptTermError || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
++        <div className="text-center"><button ref={adaptPreviewButtonRef} type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || adaptBusy || adaptReadinessPending || !!adaptTermError || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
+         {adaptPreview && <section ref={adaptPreviewRef} tabIndex={-1} data-adaptation-preview aria-labelledby={readerId('simplified-adapt-preview-title')} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+           <h4 id={readerId('simplified-adapt-preview-title')} className="font-bold text-indigo-950">{viewText('simplified.adapt_preview_title', 'Preview of the change')}</h4>
+           <p className="text-xs text-slate-700">{diff ? viewText('simplified.adapt_preview_hint', 'Removed words are struck through and new words are underlined. Nothing changes until you apply it.') : viewText('simplified.adapt_preview_plain', 'The proposed text is shown below. Nothing changes until you apply it.')}</p>
+@@ -4931,11 +4963,11 @@
+       var adaptedParts = getSideBySideContent(simplifiedDisplayBody);
+       // The canonical source is complete, including any bilingual blocks.
+       var sourceParts = original.selection === 'captured-source' ? null : getSideBySideContent(original.text);
+-      var effectiveLanguage = comparisonLanguage === 'auto' ? (adaptedParts && simplifiedLanguageTag(originalLanguage)?.startsWith('en') ? 'english' : 'adapted') : comparisonLanguage;
++      var effectiveLanguage = comparisonLanguage === 'auto' ? (adaptedParts && simplifiedLanguageTag(originalLanguage) && simplifiedLanguageTag(originalLanguage) === simplifiedLanguageTag(readingTranslationLanguage) ? 'english' : 'adapted') : comparisonLanguage;
+       var targetText = adaptedParts ? effectiveLanguage === 'english' ? adaptedParts.targetFull : adaptedParts.sourceFull : simplifiedDisplayBody;
+       var sourceText = sourceParts ? effectiveLanguage === 'english' ? sourceParts.targetFull : sourceParts.sourceFull : original.text;
+-      var targetLanguage = effectiveLanguage === 'english' && adaptedParts ? 'English' : readingLanguage;
+-      if (sourceParts && effectiveLanguage === 'english') originalLanguage = 'English';
++      var targetLanguage = effectiveLanguage === 'english' && adaptedParts ? readingTranslationLanguage : readingLanguage;
++      if (sourceParts && effectiveLanguage === 'english') originalLanguage = window.AlloModules?.TextPipelineHelpers?.getArtifactTranslationTarget?.(original.artifact) || 'English';
+       var stripReferences = value => { try { return splitReferencesFromBody ? splitReferencesFromBody(String(value || '')).body : String(value || ''); } catch (_) { return String(value || ''); } };
+       if (original.selection !== 'captured-source') sourceText = stripReferences(sourceText);
+       targetText = stripReferences(targetText);
+@@ -5083,7 +5115,7 @@
+ 
+     function renderSimplifiedReading() {
+       var parts = getSideBySideContent(simplifiedReadAloudText);
+-      var languages = parts ? [{ key: 'src', label: readingLanguage, paragraphs: parts.source }, { key: 'tgt', label: 'English', paragraphs: parts.target }] : [{ key: 'mono', label: readingLanguage, paragraphs: simplifiedReadAloudText.split(/\n{2,}/) }];
++      var languages = parts ? [{ key: 'src', label: readingLanguage, paragraphs: parts.source }, { key: 'tgt', label: readingTranslationLanguage, paragraphs: parts.target }] : [{ key: 'mono', label: readingLanguage, paragraphs: simplifiedReadAloudText.split(/\n{2,}/) }];
+       var isWordMode = ['define', 'phonics', 'add-glossary'].includes(interactionMode);
+       var isSelectionMode = ['explain', 'revise'].includes(interactionMode);
+       var sentenceCursor = 0;
+@@ -5236,8 +5268,8 @@
+         <div ref={readingStartRef} data-reading-passage="true" data-reading-language={readingLanguage} data-paragraph-focus={!!isLineFocusMode} tabIndex={-1} role="region" aria-label={readerText('simplified.passage', 'Reading passage')} className={(isLineFocusMode ? 'bg-slate-950 rounded-xl p-4 ' : '') + 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'}>
+           {parts && isSideBySide ? <>
+             {parts.source.length !== parts.target.length && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{readerText('simplified.unmatched_paragraphs', 'The versions have different paragraph counts. They are shown in order; a row may not be an exact translation match.')}</p>}
+-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{Array.from({ length: Math.max(rendered[0].length, rendered[1].length) }, (_, i) => <React.Fragment key={i}>{languages.map((section, j) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={j === 1 ? 'ltr' : sourceDirection} className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-4" style={{ backgroundColor: isLineFocusMode ? 'transparent' : undefined }}><div data-reading-ui="true" className="mb-3 text-sm font-bold" style={{ color: isLineFocusMode ? '#e2e8f0' : '#334155' }}>{section.label}</div><div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}>{rendered[j][i] || <p data-reading-ui="true" className="text-sm italic text-slate-600">{readerText('simplified.no_paired_paragraph', 'No corresponding paragraph in this version.')}</p>}</div></section>)}</React.Fragment>)}</div>
+-          </> : languages.map((section, i) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={i === 1 ? 'ltr' : sourceDirection}>{i === 1 && <h2 data-reading-ui="true" className="my-6 border-t border-indigo-200 pt-4 text-lg font-bold">{simplifiedEnglishTranslationLabel}</h2>}{rendered[i]}</section>)}
++            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{Array.from({ length: Math.max(rendered[0].length, rendered[1].length) }, (_, i) => <React.Fragment key={i}>{languages.map((section, j) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={j === 1 ? getContentDirection(readingTranslationLanguage) : sourceDirection} className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-4" style={{ backgroundColor: isLineFocusMode ? 'transparent' : undefined }}><div data-reading-ui="true" className="mb-3 text-sm font-bold" style={{ color: isLineFocusMode ? '#e2e8f0' : '#334155' }}>{section.label}</div><div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}>{rendered[j][i] || <p data-reading-ui="true" className="text-sm italic text-slate-600">{readerText('simplified.no_paired_paragraph', 'No corresponding paragraph in this version.')}</p>}</div></section>)}</React.Fragment>)}</div>
++          </> : languages.map((section, i) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={i === 1 ? getContentDirection(readingTranslationLanguage) : sourceDirection}>{i === 1 && <h2 data-reading-ui="true" className="my-6 border-t border-indigo-200 pt-4 text-lg font-bold">{simplifiedEnglishTranslationLabel}</h2>}{rendered[i]}</section>)}
+         </div>
+         {renderSectionPromptsArea()}
+         {/* Novak's ramp: an adaptation prepares students for the original, so its end leads there. */}
+diff --git a/tests/track07-browser-fixture.js b/tests/track07-browser-fixture.js
+index ac8c6e644..3c98cd288 100644
+--- a/tests/track07-browser-fixture.js
++++ b/tests/track07-browser-fixture.js
+@@ -8,24 +8,26 @@ window.mountReading = function (options = {}) {
+   const contract=AlloModules.InstructionalContext, pure=AlloModules.PureHelpers, phase=AlloModules.PhaseNHelpers;
+   const data=options.source || 'Herons are wading birds. They eat fish.';
+   const original=contract.createSupportedReading(contract.createSourceSnapshot('A source reading.', {sourceArtifactId:'src'}),{id:'orig',sourceFamilyId:'birds'});
+-  const content={id:'fixture-1', type:'simplified', data, config:{language:options.language || 'English'}, sourceSnapshot:original.sourceSnapshot, instructionalText:{form:'adapted',role:'supplemental'}};
++  const content={id:'fixture-1', type:'simplified', data, config:{language:options.language || 'English',...options.config}, sourceSnapshot:original.sourceSnapshot, instructionalText:{form:'adapted',role:'supplemental'}};
+   const extra={};
+-  const props={ ComplexityGauge: () => null, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, setReadingTheme: noop, setSelectionMenu: noop, setIsCustomReviseOpen: noop, setInteractionMode: noop, setIsCompareMode: noop, setIsFluencyMode: noop, stopPlayback: noop, closeDefinition: noop, closePhonics: noop, closeRevision: noop, handleToggleIsEditingLeveledText: noop, t: k => k, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: false, isEditingLeveledText: false, isImmersiveReaderActive: false, isCompareMode: false, isSideBySide: false, isZenMode: true, isProcessing: false, isPlaying: false, interactionMode: 'read', history: [content], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: content, readingLearnerKey: 'learner|Blue Fox', ...extra };
++  const props={ ComplexityGauge: () => null, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, setReadingTheme: noop, setSelectionMenu: noop, setIsCustomReviseOpen: noop, setInteractionMode: noop, setIsCompareMode: noop, setIsFluencyMode: noop, stopPlayback: noop, closeDefinition: noop, closePhonics: noop, closeRevision: noop, handleToggleIsEditingLeveledText: noop, t: k => options.strings?.[k] || k, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: false, isEditingLeveledText: false, isImmersiveReaderActive: false, isCompareMode: false, isSideBySide: false, isZenMode: true, isProcessing: false, isPlaying: false, interactionMode: 'read', history: [content], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: {}, getContentDirection: language => /arabic|hebrew|persian|urdu/i.test(language) ? 'rtl' : 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: content, readingLearnerKey: 'learner|Blue Fox', ...extra };
+   const hostBilingual = (prompt, language, provider, policy) => AlloModules.TextPipelineHelpers.generateBilingualText(prompt, language, provider, policy);
+   window.fixture={...options, initial:content, toasts:[], requests:[], providerCalls:0, preview:null};
+   function Host() {
+     const [current,setCurrent]=React.useState(content), [history,setHistory]=React.useState([content]);
+-    const [processing,setProcessing]=React.useState(false),[level,setLevel]=React.useState(5);
++    const [processing,setProcessing]=React.useState(false),[level,setLevel]=React.useState(options.level ?? 5);
+     const setGeneratedContent=React.useCallback(update=>{if(!window.fixture.decline) setCurrent(update);},[]);
+-    fixture.state={current,history,processing};
++    fixture.state={current,history,processing,level};
+     fixture.changeSource=data=>setCurrent(previous=>({...previous,data}));
++    fixture.replaceCurrent=value=>setCurrent(value);
+     const handleComplexityAdjustment=async plan=>{
+       const result=await AlloModules.GenerationHelpers.handleComplexityAdjustment({generatedContent:current, complexityLevel:level, gradeLevel:'Grade 4',leveledTextLanguage:content.config.language,
++        translationMode:fixture.translationMode,resolveTranslationPolicy:AlloModules.TextPipelineHelpers.resolveTranslationPolicy,currentUiLanguage:'English',
+         adaptationPlan:plan,saveOriginalOnAdjust:!!fixture.keepOriginal,setIsProcessing:setProcessing,setComplexityLevel:setLevel,setGeneratedContent,setHistory,
+         setWordSoundsCustomTerms:noop,setWsPreloadedWords:noop,setError:noop,addToast:(message,tone)=>fixture.toasts.push({message,tone}),warnLog:noop,
+-        callGemini:async()=>{ fixture.providerCalls++; if(fixture.staged && fixture.providerCalls===1) return new Promise(resolve=>fixture.finishPrimary=resolve); return 'The birds eat.'; },cleanJson:value=>value,t:key=>key,getDefaultTitle:()=> 'Reading',
++        callGemini:async()=>{ fixture.providerCalls++; if(fixture.staged && fixture.providerCalls===1) return new Promise(resolve=>fixture.finishPrimary=resolve); return fixture.responses ? fixture.responses[fixture.providerCalls-1] : 'The birds eat.'; },cleanJson:value=>value,t:key=>key,getDefaultTitle:()=> 'Reading',
+         extractSourceTextForProcessing:AlloModules.TextPipelineHelpers.extractSourceTextForProcessing,
+-        generateBilingualText:async(...args)=>{fixture.requests.push(args);if(fixture.staged) return hostBilingual(...args);return fixture.delayed ? new Promise(resolve=>fixture.finish=resolve) : fixture.candidate || 'Herons are wading birds. They catch fish.';}
++        generateBilingualText:async(...args)=>{fixture.requests.push(args);if(fixture.staged || fixture.pipeline) return hostBilingual(...args);return fixture.delayed ? new Promise(resolve=>fixture.finish=resolve) : fixture.candidate ?? 'Herons are wading birds. They catch fish.';}
+       });
+       if(result?.status==='preview') fixture.preview=result;
+       return result;
+diff --git a/tests/track07-browser-acceptance.cjs b/tests/track07-browser-acceptance.cjs
+index 80dce2d5c..2e6a9a13d 100644
+--- a/tests/track07-browser-acceptance.cjs
++++ b/tests/track07-browser-acceptance.cjs
+@@ -17,7 +17,7 @@ const root = path.resolve(__dirname, '..');
+     const mount = async options => { await page.evaluate(options => mountReading(options),options || {}); await expect(page.locator('[data-adapt-keep-terms]')).toBeVisible(); };
+     const preview = async (terms='wading birds') => { await page.locator('[data-adapt-keep-terms]').fill(terms); await page.locator('[data-apply-complexity]').click(); };
+     const apply = async () => { await page.locator('[data-adaptation-apply]').focus(); await page.keyboard.press('Enter'); };
+-    const check = async (name, fn) => { try { await fn(); results.push({name,status:'passed'}); console.log('PASS '+name); } catch(error) { failures.push(name);results.push({name,status:'failed',error:error.stack});console.error('FAIL '+name+': '+error.message); } };
++    const check = async (name, fn) => { try { await fn(); results.push({name,status:'passed'}); console.log('PASS '+name); } catch(error) { failures.push(name);results.push({name,status:'failed',error:error.stack,reader:await page.evaluate(()=>({sections:[...document.querySelectorAll('[data-reading-passage] section')].map(n=>({language:n.dataset.readingLanguage,text:n.textContent.slice(0,100)})),translationTarget:window.AlloModules.TextPipelineHelpers.getArtifactTranslationTarget?.(fixture.state.current),config:fixture.state.current.config}))});console.error('FAIL '+name+': '+error.message); } };
+     await check('acknowledged overwrite and keyboard Apply',async()=>{
+       await mount();await preview();await apply();
+       await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
+@@ -84,8 +84,10 @@ const root = path.resolve(__dirname, '..');
+       assert.equal(await page.evaluate(()=>fixture.state.current.data),'Learners see 👩.');
+     });
+     await check('partial emoji source terms fail before a model call',async()=>{
+-      await mount({source:'Learners see 👩‍🏫.'});await preview('👩');
+-      await expect(page.locator('[data-adaptation-notice]')).toContainText('not found exactly');
++      await mount({source:'Learners see 👩‍🏫.'});await page.locator('[data-adapt-keep-terms]').fill('👩');
++      await expect(page.locator('[data-adapt-keep-terms]')).toHaveAttribute('aria-invalid','true');
++      await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
++      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('not found exactly');
+       assert.equal(await page.evaluate(()=>fixture.requests.length),0);
+     });
+     await check('changing readings during primary generation prevents the translation call',async()=>{
+@@ -104,8 +106,101 @@ const root = path.resolve(__dirname, '..');
+       await expect(page.locator('[data-apply-complexity]')).toBeFocused();
+       await expect(page.locator('[data-adaptation-preview]')).toHaveCount(0);
+     });
++    await check('readiness shows each pane, duplicates and remaining capacity before Preview',async()=>{
++      const source='Herons are wading birds. fish.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen fish.';
++      await mount({source,config:{translationTarget:'Spanish'}});
++      await page.locator('[data-adapt-keep-terms]').fill('wading birds; garzas; fish; garzas');
++      const ready=page.locator('[data-adapt-term-readiness]');
++      await expect(ready).toContainText('27 of 30');await expect(ready).toContainText('Repeated entries count once: garzas');
++      await expect(ready).toContainText('“wading birds”: found in primary reading.');await expect(ready).toContainText('“garzas”: found in translation.');await expect(ready).toContainText('“fish”: found in primary reading, translation.');
++      assert.equal(await page.evaluate(()=>fixture.requests.length),0);await expect(page.locator('[data-adapt-keep-terms]')).toHaveValue('wading birds; garzas; fish; garzas');
++    });
++    await check('readiness rejects case changes and recovers when corrected',async()=>{
++      await mount();await page.locator('[data-adapt-keep-terms]').fill('Wading birds');
++      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('not found exactly');await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
++      assert.equal(await page.evaluate(()=>fixture.requests.length),0);
++      await page.locator('[data-adapt-keep-terms]').fill('wading birds');await expect(page.locator('[data-apply-complexity]')).toBeEnabled();
++    });
++    await check('readiness invalidates immediately when the reading changes',async()=>{
++      await mount();await page.locator('[data-adapt-keep-terms]').fill('wading birds');await expect(page.locator('[data-apply-complexity]')).toBeEnabled();
++      await page.evaluate(()=>fixture.changeSource('A different reading.'));
++      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('not found exactly');await expect(page.locator('[data-apply-complexity]')).toBeDisabled();assert.equal(await page.evaluate(()=>fixture.requests.length),0);
++    });
++    await check('formatting feedback identifies the source pane before generation',async()=>{
++      await mount({source:'Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\n<span class="colored">garzas</span>',config:{translationTarget:'Spanish'}});
++      await page.locator('[data-adapt-keep-terms]').fill('garzas');
++      await expect(page.locator('[id^="simplified-adapt-terms-error"]')).toContainText('translation in the current reading: Custom styles or classes');await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
++      assert.equal(await page.evaluate(()=>fixture.requests.length),0);
++    });
++    await check('candidate formatting failure retains source and offers retry',async()=>{
++      await mount({candidate:'<span class="colored">wading birds</span>'});await preview();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('primary reading in the proposed version');await expect(page.locator('[data-adaptation-notice]')).toContainText('Retry the preview');assert.equal(await page.evaluate(()=>fixture.state.current.data),await page.evaluate(()=>fixture.initial.data));
++    });
++    await check('failure notice stays cleared after switching readings and returning',async()=>{
++      await mount({candidate:'Birds eat.'});await preview();await expect(page.locator('[data-adaptation-notice]')).toContainText('missing:');
++      await page.evaluate(()=>fixture.replaceCurrent({...fixture.initial,id:'another-reading'}));await expect(page.locator('[data-adaptation-notice]')).toHaveText('');
++      await page.evaluate(()=>fixture.replaceCurrent(fixture.initial));await expect(page.locator('[data-adaptation-notice]')).toHaveText('');
++    });
++    await check('editing adaptation options clears obsolete feedback',async()=>{
++      await mount({candidate:'Birds eat.'});await preview();await expect(page.locator('[data-adaptation-notice]')).toContainText('missing:');
++      await page.locator('[data-adapt-option="shorterSentences"]').check();await expect(page.locator('[data-adaptation-notice]')).toHaveText('');
++    });
++    await check('English primary and saved Spanish translation survive Preview and Apply',async()=>{
++      const source='Herons are wading birds.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
++      await mount({source,config:{translationTarget:'Spanish'},translationMode:'off',pipeline:true,responses:['Herons remain wading birds.','Las garzas pescan.']});
++      await preview('wading birds; garzas');await expect(page.locator('[data-adaptation-apply]')).toBeVisible();await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
++      assert.equal(await page.evaluate(()=>fixture.providerCalls),2);assert.equal(await page.evaluate(()=>fixture.state.current.config.translationPolicy.target),'Spanish');
++      await expect(page.locator('[data-reading-passage] section[data-reading-language="Spanish"]')).toHaveAttribute('lang','es');
++      await expect(page.locator('[data-reading-passage] section[data-reading-language="Spanish"]')).toContainText('Spanish translation');
++    });
++    await check('saved Arabic translation receives RTL and Arabic metadata',async()=>{
++      await mount({source:'Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\nطيور الماء تأكل.',config:{translationTarget:'Arabic'}});
++      await expect(page.locator('[data-reading-passage] section[data-reading-language="Arabic"]')).toHaveAttribute('dir','rtl');await expect(page.locator('[data-reading-passage] section[data-reading-language="Arabic"]')).toHaveAttribute('lang','ar');
++    });
++    await check('Spanish readiness strings interpolate terms and counts',async()=>{
++      const entries=JSON.parse(fs.readFileSync(path.join(root,'lang/spanish_castilian.js'),'utf8')).simplified;
++      await mount({strings:Object.fromEntries(Object.entries(entries).map(([key,value])=>['simplified.'+key,value]))});await page.locator('[data-adapt-keep-terms]').fill('wading birds; wading birds');
++      await expect(page.locator('[data-adapt-term-readiness]')).toContainText('Quedan 29 de 30');await expect(page.locator('[data-adapt-term-readiness]')).toContainText('«wading birds»: aparece en');await expect(page.locator('[data-adapt-term-readiness]')).not.toContainText('{term}');
++    });
++    await check('Undo retains its confirmation after the reading changes back',async()=>{
++      await mount({keepOriginal:true});await preview();await apply();await expect(page.locator('[data-adaptation-undo]')).toBeVisible();
++      await page.locator('[data-adaptation-undo]').click();await expect(page.locator('[data-adaptation-notice]')).toHaveText('Back to the previous version.');
++      assert.equal(await page.evaluate(()=>fixture.state.current.id),'fixture-1');
++    });
++    await check('required translation cannot disappear behind primary-only preserved terms',async()=>{
++      const source='Herons are wading birds.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
++      await mount({source,config:{translationTarget:'Spanish'},candidate:'Herons are wading birds.'});await preview();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing the translation');await expect(page.locator('[data-apply-complexity]')).toBeFocused();await expect(page.locator('[data-adaptation-apply]')).toHaveCount(0);
++      assert.equal(await page.evaluate(()=>fixture.state.current.data),source);assert.equal(await page.evaluate(()=>fixture.state.history.length),1);
++    });
++    await check('empty candidate is rejected without preserved terms',async()=>{
++      await mount({level:3,candidate:''});await page.locator('[data-apply-complexity]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('primary reading has no readable text');await expect(page.locator('[data-apply-complexity]')).toBeFocused();assert.equal(await page.evaluate(()=>fixture.state.level),3);
++      assert.equal(await page.evaluate(()=>fixture.state.current.data),await page.evaluate(()=>fixture.initial.data));
++    });
++    await check('hidden-only translation is rejected without preserved terms',async()=>{
++      const source='Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
++      await mount({source,level:3,config:{translationTarget:'Spanish'},candidate:'Herons eat.\n\n--- ENGLISH TRANSLATION ---\n\n<span hidden>Las garzas comen.</span>'});await page.locator('[data-apply-complexity]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('translation has no readable text');assert.equal(await page.evaluate(()=>fixture.state.current.data),source);
++    });
++    await check('Apply rechecks complete panes after preview data is changed',async()=>{
++      const source='Herons are wading birds.\n\n--- ENGLISH TRANSLATION ---\n\nLas garzas comen.';
++      await mount({source,config:{translationTarget:'Spanish'},candidate:source});await preview();await expect(page.locator('[data-adaptation-apply]')).toBeVisible();
++      await page.evaluate(()=>fixture.preview.data='Herons are wading birds.');await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing the translation');await expect(page.locator('[data-apply-complexity]')).toBeFocused();assert.equal(await page.evaluate(()=>fixture.state.current.data),source);
++      assert.equal(await page.evaluate(()=>fixture.toasts.filter(t=>t.tone==='success').length),0);
++    });
++    await check('blank primary provider output never starts translation',async()=>{
++      await mount({level:3,pipeline:true,translationMode:'Spanish',responses:['','Las garzas comen.']});await page.locator('[data-apply-complexity]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('primary reading has no readable text');assert.equal(await page.evaluate(()=>fixture.providerCalls),1);assert.equal(await page.evaluate(()=>fixture.state.current.data),await page.evaluate(()=>fixture.initial.data));
++    });
++    await check('complexity reset after Apply preserves its confirmation',async()=>{
++      await mount({level:3});await preview();await apply();await expect.poll(()=>page.evaluate(()=>fixture.state.level)).toBe(5);
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');await expect(page.locator('[data-adaptation-undo]')).toBeVisible();
++    });
+     assert.deepEqual(errors,[]);
+   } catch(error) { results.push({name:'browser harness',status:'failed',error:error.stack});failures.push('browser harness'); }
+-  finally { fs.writeFileSync(path.join(root,'track07-enhancement-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
++  finally { fs.writeFileSync(path.join(root,'track07-completeness-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
+   if(failures.length) process.exitCode=1;
+ })();
+diff --git a/tests/reader_place_review_adapt.test.js b/tests/reader_place_review_adapt.test.js
+index ab78f0348..f0c302934 100644
+--- a/tests/reader_place_review_adapt.test.js
++++ b/tests/reader_place_review_adapt.test.js
+@@ -58,6 +58,7 @@ const focusParagraph = index => act(() => { const node = paragraph(index); node.
+ const typeInto = async (node, value) => {
+   const proto = node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : node.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+   await act(async () => { Object.getOwnPropertyDescriptor(proto, 'value').set.call(node, value); node.dispatchEvent(new Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); });
++  if (node.hasAttribute('data-adapt-keep-terms')) await act(async () => { await new Promise(done => setTimeout(done, 230)); });
+ };
+ const scrollAndWait = async () => { await act(async () => { document.dispatchEvent(new Event('scroll')); await new Promise(done => setTimeout(done, 900)); }); };
+ 
+@@ -414,7 +415,7 @@ describe('precise adaptation choices', () => {
+ 
+   it('blocks over-limit/unfinished lists visibly and preserves literal quoted punctuation', async () => {
+     const handleComplexityAdjustment = vi.fn(async () => ({ status: 'rejected', message: 'Current text kept.' }));
+-    mount(item(), { ...open, handleComplexityAdjustment });
++    mount(item('In Washington, D.C., herons eat fish.'), { ...open, handleComplexityAdjustment });
+     await typeInto($('[data-adapt-keep-terms]'), Array.from({ length: 31 }, (_, i) => 'term' + i).join(', '));
+     expect($('[data-apply-complexity]').disabled).toBe(true);
+     expect($('[data-adapt-keep-terms]').getAttribute('aria-invalid')).toBe('true');
+diff --git a/ui_strings.js b/ui_strings.js
+index fa8489385..25e693e6c 100644
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6297,6 +6297,26 @@
+     "adapt_terms_text": "Each term must be a text entry.",
+     "adapt_terms_invalid": "Current text kept. {details} No terms were dropped. Correct the list and preview again.",
+     "adapt_preview_expired": "Current text kept. This preview can no longer be verified. Preview the change again.",
++    "translation_language": "{language} translation",
++    "adapt_terms_remaining": "{remaining} of {limit} term slots available.",
++    "adapt_terms_duplicates": "Repeated entries count once: {terms}.",
++    "adapt_terms_checking": "Checking terms in the current reading…",
++    "adapt_term_found": "“{term}”: found in {panes}.",
++    "adapt_term_absent": "“{term}”: not found exactly. Check spelling and case.",
++    "adapt_format_source": "Current text kept. Cannot verify the {pane} in the current reading: {details} {action}",
++    "adapt_format_candidate": "Current text kept. Cannot verify the {pane} in the proposed version: {details} Retry the preview; no change was applied.",
++    "adapt_format_code": "HTML code or preformatted text cannot be checked.",
++    "adapt_format_html": "HTML tags are unbalanced or span separate lines or sentences.",
++    "adapt_format_styled": "Custom styles or classes prevent reliable text checking.",
++    "adapt_format_element": "This pane contains an unsupported HTML element.",
++    "adapt_format_unclosed": "A code span, comment, or fenced block is not closed.",
++    "adapt_format_plain_action": "Use plain text or standard emphasis in that pane, then preview again.",
++    "adapt_format_close_action": "Close the formatting markers in that pane, then preview again.",
++    "adapt_pane_missing": "Current text kept. The proposed version is missing the {pane}. Preview again to generate both reading panes.",
++    "adapt_pane_empty": "Current text kept. The proposed {pane} has no readable text. Preview again; no change was applied.",
++    "adapt_pane_unexpected": "Current text kept. The proposed version added a translation that was not requested. Preview again.",
++    "adapt_panes_invalid": "Current text kept. The proposed version has invalid or ambiguous reading panes. Preview again.",
++    "adapt_panes_unverified": "Current text kept. The proposed reading panes could not be verified. Reload and preview again.",
+     "adapt_terms_unverified": "Current text kept. Essential terms could not be verified. Preview again using supported text formatting.",
+     "adapt_terms_separator": "Use a separator after a quoted term.",
+     "adapt_terms_quote": "Close the quotation mark around the term.",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+index 2efb5d4b9..049e1a373 100644
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4568,6 +4568,26 @@
+     "adapt_terms_text": "Cada término debe ser una entrada de texto.",
+     "adapt_terms_invalid": "Se conservó el texto actual. {details} No se descartó ningún término. Corrige la lista y crea otra vista previa.",
+     "adapt_preview_expired": "Se conservó el texto actual. Esta vista previa ya no se puede verificar. Crea otra vista previa del cambio.",
++    "translation_language": "Traducción: {language}",
++    "adapt_terms_remaining": "Quedan {remaining} de {limit} espacios para términos.",
++    "adapt_terms_duplicates": "Los términos repetidos cuentan una sola vez: {terms}.",
++    "adapt_terms_checking": "Comprobando los términos en la lectura actual…",
++    "adapt_term_found": "«{term}»: aparece en {panes}.",
++    "adapt_term_absent": "«{term}»: no se encontró exactamente. Revisa la ortografía y las mayúsculas.",
++    "adapt_format_source": "Se conservó el texto actual. No se puede verificar {pane} en la lectura actual: {details} {action}",
++    "adapt_format_candidate": "Se conservó el texto actual. No se puede verificar {pane} en la versión propuesta: {details} Vuelve a crear la vista previa; no se aplicó ningún cambio.",
++    "adapt_format_code": "No se puede comprobar el código HTML ni el texto preformateado.",
++    "adapt_format_html": "Las etiquetas HTML no están equilibradas o abarcan líneas u oraciones separadas.",
++    "adapt_format_styled": "Los estilos o las clases personalizados impiden comprobar el texto de forma fiable.",
++    "adapt_format_element": "Este panel contiene un elemento HTML no compatible.",
++    "adapt_format_unclosed": "Hay un fragmento de código, un comentario o un bloque de código sin cerrar.",
++    "adapt_format_plain_action": "Usa texto sin formato, negrita o cursiva en ese panel y vuelve a crear la vista previa.",
++    "adapt_format_close_action": "Cierra los marcadores de formato de ese panel y vuelve a crear la vista previa.",
++    "adapt_pane_missing": "Se conservó el texto actual. Falta {pane} en la versión propuesta. Vuelve a crear la vista previa para generar ambos paneles de lectura.",
++    "adapt_pane_empty": "Se conservó el texto actual. El panel de {pane} propuesto no contiene texto legible. Vuelve a crear la vista previa; no se aplicó ningún cambio.",
++    "adapt_pane_unexpected": "Se conservó el texto actual. La versión propuesta añadió una traducción que no se había solicitado. Vuelve a crear la vista previa.",
++    "adapt_panes_invalid": "Se conservó el texto actual. La versión propuesta contiene paneles de lectura no válidos o ambiguos. Vuelve a crear la vista previa.",
++    "adapt_panes_unverified": "Se conservó el texto actual. No se pudieron verificar los paneles de lectura propuestos. Recarga y vuelve a crear la vista previa.",
+     "adapt_terms_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Crea otra vista previa con un formato de texto compatible.",
+     "adapt_terms_separator": "Añade un separador después de un término entre comillas.",
+     "adapt_terms_quote": "Cierra las comillas del término.",
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+index 83e4609a3..3fe03c20e 100644
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4576,6 +4576,26 @@
+     "adapt_terms_text": "Cada término debe ser una entrada de texto.",
+     "adapt_terms_invalid": "Se conservó el texto actual. {details} No se descartó ningún término. Corrige la lista y crea otra vista previa.",
+     "adapt_preview_expired": "Se conservó el texto actual. Esta vista previa ya no se puede verificar. Crea otra vista previa del cambio.",
++    "translation_language": "Traducción: {language}",
++    "adapt_terms_remaining": "Quedan {remaining} de {limit} espacios para términos.",
++    "adapt_terms_duplicates": "Los términos repetidos cuentan una sola vez: {terms}.",
++    "adapt_terms_checking": "Comprobando los términos en la lectura actual…",
++    "adapt_term_found": "«{term}»: aparece en {panes}.",
++    "adapt_term_absent": "«{term}»: no se encontró exactamente. Revisa la ortografía y las mayúsculas.",
++    "adapt_format_source": "Se conservó el texto actual. No se puede verificar {pane} en la lectura actual: {details} {action}",
++    "adapt_format_candidate": "Se conservó el texto actual. No se puede verificar {pane} en la versión propuesta: {details} Vuelve a crear la vista previa; no se aplicó ningún cambio.",
++    "adapt_format_code": "No se puede comprobar el código HTML ni el texto preformateado.",
++    "adapt_format_html": "Las etiquetas HTML no están equilibradas o abarcan líneas u oraciones separadas.",
++    "adapt_format_styled": "Los estilos o las clases personalizados impiden comprobar el texto de forma fiable.",
++    "adapt_format_element": "Este panel contiene un elemento HTML no compatible.",
++    "adapt_format_unclosed": "Hay un fragmento de código, un comentario o un bloque de código sin cerrar.",
++    "adapt_format_plain_action": "Usa texto sin formato, negrita o cursiva en ese panel y vuelve a crear la vista previa.",
++    "adapt_format_close_action": "Cierra los marcadores de formato de ese panel y vuelve a crear la vista previa.",
++    "adapt_pane_missing": "Se conservó el texto actual. Falta {pane} en la versión propuesta. Vuelve a crear la vista previa para generar ambos paneles de lectura.",
++    "adapt_pane_empty": "Se conservó el texto actual. El panel de {pane} propuesto no contiene texto legible. Vuelve a crear la vista previa; no se aplicó ningún cambio.",
++    "adapt_pane_unexpected": "Se conservó el texto actual. La versión propuesta añadió una traducción que no se había solicitado. Vuelve a crear la vista previa.",
++    "adapt_panes_invalid": "Se conservó el texto actual. La versión propuesta contiene paneles de lectura no válidos o ambiguos. Vuelve a crear la vista previa.",
++    "adapt_panes_unverified": "Se conservó el texto actual. No se pudieron verificar los paneles de lectura propuestos. Recarga y vuelve a crear la vista previa.",
+     "adapt_terms_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Crea otra vista previa con un formato de texto compatible.",
+     "adapt_terms_separator": "Añade un separador después de un término entre comillas.",
+     "adapt_terms_quote": "Cierra las comillas del término.",

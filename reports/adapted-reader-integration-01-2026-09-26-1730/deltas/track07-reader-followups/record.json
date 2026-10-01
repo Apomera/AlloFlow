@@ -1,0 +1,88 @@
+{
+  "at": "2026-09-26T22:44:54.701Z",
+  "label": "track07-reader-followups",
+  "patch": "fe185e4ed48f0fd28a99ef6526666607cf484ee35097236306c0354d3edbfb91",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "0816592a84242eadb1f4063f7f0f7aae30be4d106b115da7b6676667bb19c5cb",
+      "after": "cf8a3a0192a8d129bb56fd58528d98887367bdae58386bfaf57be7c82bab3ea6",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_place_review_adapt.test.js",
+      "targets": [
+        "tests/reader_place_review_adapt.test.js"
+      ],
+      "before": "bab1dd0eb07c0fce02889795e0e37ff19d0826e02d834c971e55f5f182a758ba",
+      "after": "1f476fcf886f65037c2c4f47eaf19a546230b12e9e9566cc8034166e5889de27",
+      "changed": true
+    },
+    {
+      "target": "tests/original_reader_markdown.test.js",
+      "targets": [
+        "tests/original_reader_markdown.test.js"
+      ],
+      "before": "135869d0ee995815485cb10dbe5dbc237054797ab0a32b120d8c4f5e675b4a0f",
+      "after": "c3dab554f1347ce48291fddc77500609b4b6703a55259c73aea63abe32ebeac9",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_keyboard_a11y.test.js",
+      "targets": [
+        "tests/reader_keyboard_a11y.test.js"
+      ],
+      "before": "25b30e39a29c0431310b387f11573f6b305943a6605fcd1a47cf6fa8b93424ac",
+      "after": "f7146545d1c564e22a7f9536f3c0e9185ace9d543808c3a979723ce8c99af6cb",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_render_cost.test.js",
+      "targets": [
+        "tests/reader_render_cost.test.js"
+      ],
+      "before": "2bfe61391ff028e452eaff2cfbc1c4822019824abce0a3f70c0aa2fba91bfc97",
+      "after": "c394ccd2086b0d67c4ea48c1bd3bcc2dda49c2f2b401849f6b97e258b3599876",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_sentence_links.test.js",
+      "targets": [
+        "tests/reader_sentence_links.test.js"
+      ],
+      "before": "edb6fd9e7ebb04a80bf7cc653c9f2763fd943255d3b20b9342415a121ca4831f",
+      "after": "4f493df8198ea9e477968d350855877a77a4c180008077cc955dd2008b1880e4",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_sentence_numbering.test.js",
+      "targets": [
+        "tests/reader_sentence_numbering.test.js"
+      ],
+      "before": "4e35c4aa3645d82dd162aafd9e312a86eb0c251764c0378c4a07e7e9d6464c93",
+      "after": "f819badf4567a5d14a7b92631553243c9c5d7bc12319bff5d98fad964ded467b",
+      "changed": true
+    },
+    {
+      "target": "tests/track07-browser-fixture.js",
+      "targets": [
+        "tests/track07-browser-fixture.js"
+      ],
+      "before": null,
+      "after": "75facb4d9f8c3c82b32b25423aa270f8c61ae06b0c03767dc57d5f03b6fe0121",
+      "changed": true
+    },
+    {
+      "target": "tests/track07-browser-acceptance.cjs",
+      "targets": [
+        "tests/track07-browser-acceptance.cjs"
+      ],
+      "before": null,
+      "after": "4e6ffa69317b88989cfd2147541f7f76dc6f5e48cd09286348c64b61055e068d",
+      "changed": true
+    }
+  ]
+}

@@ -1,0 +1,208 @@
+diff --git a/tests/fixtures/reader_literal_placeholders.json b/tests/fixtures/reader_literal_placeholders.json
+new file mode 100644
+--- /dev/null
++++ b/tests/fixtures/reader_literal_placeholders.json
+@@ -0,0 +1,56 @@
++[
++  {
++    "id": "literal_en_v1",
++    "locale": "English",
++    "tag": "en",
++    "dir": "ltr",
++    "word": "heron",
++    "literalValue": "heron $& $$ $` $' $1 {start} {word}",
++    "repeatedTemplate": "{word} / {word} / {count} / {context}"
++  },
++  {
++    "id": "literal_es419_v1",
++    "locale": "spanish_latin_america",
++    "tag": "es-419",
++    "dir": "ltr",
++    "word": "garza",
++    "literalValue": "garza $& $$ $` $' $1 {start} {word}",
++    "repeatedTemplate": "{word} / {word} / {count} / {context}"
++  },
++  {
++    "id": "literal_esES_v1",
++    "locale": "spanish_castilian",
++    "tag": "es-ES",
++    "dir": "ltr",
++    "word": "garza",
++    "literalValue": "garza $& $$ $` $' $1 {start} {word}",
++    "repeatedTemplate": "{word} / {word} / {count} / {context}"
++  },
++  {
++    "id": "literal_ar_rtl_v1",
++    "locale": "arabic",
++    "tag": "ar",
++    "dir": "rtl",
++    "word": "الماء",
++    "literalValue": "الماء $& $$ $` $' $1 {start} {word}",
++    "repeatedTemplate": "{word} / {word} / {count} / {context}"
++  },
++  {
++    "id": "literal_zh_unspaced_v1",
++    "locale": "chinese_simplified",
++    "tag": "zh-Hans",
++    "dir": "ltr",
++    "word": "水",
++    "literalValue": "水 $& $$ $` $' $1 {start} {word}",
++    "repeatedTemplate": "{word} / {word} / {count} / {context}"
++  },
++  {
++    "id": "literal_th_unspaced_v1",
++    "locale": "thai",
++    "tag": "th",
++    "dir": "ltr",
++    "word": "หนังสือ",
++    "literalValue": "หนังสือ $& $$ $` $' $1 {start} {word}",
++    "repeatedTemplate": "{word} / {word} / {count} / {context}"
++  }
++]
+diff --git a/tests/helpers/literal_placeholder_harness.js b/tests/helpers/literal_placeholder_harness.js
+new file mode 100644
+--- /dev/null
++++ b/tests/helpers/literal_placeholder_harness.js
+@@ -0,0 +1,19 @@
++import { readFileSync } from 'node:fs';
++export const literalFixtures = JSON.parse(readFileSync('tests/fixtures/reader_literal_placeholders.json', 'utf8'));
++export const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++const hostPath = process.env.ALLO_LITERAL_HOST_SOURCE || 'AlloFlowANTI.txt';
++const host = readFileSync(hostPath, 'utf8');
++export const translatorPattern = /const t = useCallback\((\(keyString, params = \{\}\) => \{[\s\S]+?\}), \[languagePack\]\);/g;
++export function translatorFromSource(source, pack = {}, fallback = english, wordSounds = {}) {
++  const matches = [...source.matchAll(translatorPattern)];
++  if (matches.length !== 1) throw Error('Host translator boundary changed; review fixture extraction.');
++  return new Function('languagePack', 'UI_STRINGS', 'WORD_SOUNDS_STRINGS', 'return (' + matches[0][1] + ');')(pack, fallback, wordSounds);
++}
++const packs = new Map(literalFixtures.map(f => [f.locale, f.locale === 'English' ? {} : JSON.parse(readFileSync('lang/' + f.locale + '.js', 'utf8'))]));
++export function hostTranslator(locale, additions = {}) { return translatorFromSource(host, { ...packs.get(locale), ...additions }); }
++export function readerTextHelper() {
++  const source = readFileSync(process.env.ALLO_LITERAL_READER_SOURCE || 'view_simplified_source.jsx', 'utf8');
++  const matches = [...source.matchAll(/function simplifiedText\(key, fallback, params, translate\) \{[\s\S]*?\n  \}/g)];
++  if (matches.length !== 1) throw Error('Reader text helper boundary changed; review fixture extraction.');
++  return new Function(matches[0][0] + '; return simplifiedText;')();
++}
+diff --git a/tests/host_literal_placeholders.test.js b/tests/host_literal_placeholders.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/host_literal_placeholders.test.js
+@@ -0,0 +1,80 @@
++import { describe, it, expect } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { literalFixtures, english, hostTranslator, translatorFromSource, readerTextHelper, translatorPattern } from './helpers/literal_placeholder_harness.js';
++describe('host translator preserves literal caller values', () => {
++  for (const fixture of literalFixtures) {
++    it(fixture.id + ': preserves replacement metacharacters and mixed-script learner text', () => {
++      const t = hostTranslator(fixture.locale);
++      expect(t('simplified.word_help_show_word_in_text', { word: fixture.literalValue })).toBe('Show in text: ' + fixture.literalValue);
++    });
++    it(fixture.id + ': replaces every occurrence once without interpreting inserted placeholders', () => {
++      const t = hostTranslator(fixture.locale, { literal_contract: fixture.repeatedTemplate });
++      expect(t('literal_contract', { word: fixture.literalValue, count: 0, context: '{count} stays literal' })).toBe(fixture.literalValue + ' / ' + fixture.literalValue + ' / 0 / {count} stays literal');
++    });
++    it(fixture.id + ': treats property names as literal tokens', () => {
++      const t = hostTranslator(fixture.locale, { literal_contract: '{a.b} | {a.b} | {0} | {unknown}' });
++      expect(t('literal_contract', { 'a.b': fixture.word, 0: false })).toBe(fixture.word + ' | ' + fixture.word + ' | false | {unknown}');
++    });
++  }
++  it('resolves every repeated placeholder in the current English catalog', () => {
++    const repeated = [];
++    function scan(object, prefix = '') {
++      for (const [key, value] of Object.entries(object)) {
++        const full = prefix ? prefix + '.' + key : key;
++        if (typeof value === 'string') {
++          const names = [...value.matchAll(/\{(\w+)\}/g)].map(m => m[1]);
++          if (new Set(names).size < names.length) repeated.push({ key: full, names });
++        } else if (value && typeof value === 'object') scan(value, full);
++      }
++    }
++    scan(english); expect(repeated.length).toBeGreaterThan(0);
++    for (const { key, names } of repeated) {
++      const text = hostTranslator('English')(key, Object.fromEntries(names.map(name => [name, '[' + name + '-literal]'])));
++      expect(text).not.toMatch(/\{\w+\}/);
++      for (const name of new Set(names)) expect(text.split('[' + name + '-literal]').length - 1).toBe(names.filter(n => n === name).length);
++    }
++  });
++  it('resolves both occurrences in the existing read-along confirmation', () => {
++    expect(hostTranslator('English')('pdf_audit.mo.confirm', { n: 12 })).toBe('Build a read-along ebook? This narrates 12 text sections with text-to-speech — about 12 voice calls, which can take a few minutes.');
++  });
++  it('does not make parameter order change the result', () => {
++    const t = hostTranslator('English', { literal_contract: '{word} / {start}' });
++    expect(t('literal_contract', { word: '{start}', start: 8 })).toBe('{start} / 8');
++    expect(t('literal_contract', { start: 8, word: '{start}' })).toBe('{start} / 8');
++  });
++  it('preserves empty strings, zero and false; leaves missing/inherited tokens alone', () => {
++    const values = Object.assign(Object.create({ inherited: 'must not leak' }), { empty: '', n: 0, flag: false });
++    expect(hostTranslator('English', { literal_contract: '{empty}|{n}|{flag}|{missing}|{inherited}' })('literal_contract', values)).toBe('|0|false|{missing}|{inherited}');
++  });
++  it('keeps prototype-looking parameter names as ordinary literal data', () => {
++    const values = Object.assign(Object.create(null), { constructor: 'literal constructor', toString: 'literal method', '__proto__': 'ignored object initializer' });
++    values.__proto__ = 'literal prototype';
++    expect(hostTranslator('English', { literal_contract: '{constructor}|{toString}|{__proto__}|{constructor}' })('literal_contract', values)).toBe('literal constructor|literal method|literal prototype|literal constructor');
++  });
++  it('preserves catalog lookup precedence, word-sounds fallback and object opt-in', () => {
++    const source = readFileSync('AlloFlowANTI.txt','utf8'), group = { nested: 'one' };
++    const t = translatorFromSource(source, { literal: 'locale {n}', group }, { literal: 'English {n}', only_english: 'English {n}' }, { only_sounds: 'Sounds {n}' });
++    expect(t('literal',{n:2})).toBe('locale 2'); expect(t('only_english',{n:2})).toBe('English 2'); expect(t('only_sounds',{n:2})).toBe('Sounds 2');
++    expect(t('group')).toBeUndefined(); expect(t('group',{returnObjects:true})).toBe(group); expect(t('missing')).toBeUndefined(); expect(t(null)).toBe(''); expect(t(42)).toBe('42');
++  });
++  it('keeps both canonical host callback copies identical', () => {
++    const sources = ['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt'].map(f=>readFileSync(f,'utf8'));
++    expect([...sources[0].matchAll(translatorPattern)][0][1]).toBe([...sources[1].matchAll(translatorPattern)][0][1]);
++    const template = { literal_contract:'{word} / {word}' };
++    for (const source of sources) expect(translatorFromSource(source,template)('literal_contract',{word:'$&'})).toBe('$& / $&');
++  });
++});
++describe('reader text helpers interpolate catalog templates only once', () => {
++  for(const fixture of literalFixtures) it(fixture.id + ': preserves literal braces after the host lookup', () => {
++    const t = hostTranslator(fixture.locale, { literal_contract: '{word} / {start} / {word}' });
++    const text = readerTextHelper()('literal_contract', 'Fallback {word} / {start} / {word}', { word: fixture.word+'{start}', start: 9 }, t);
++    expect(text).toBe(fixture.word+'{start} / 9 / '+fixture.word+'{start}');
++  });
++  it.each(['missing','echoed','throwing'])('%s translation falls back and preserves inserted braces', mode => {
++    const translate = mode === 'missing' ? () => undefined : mode === 'echoed' ? key => key : () => { throw Error('Unavailable'); };
++    expect(readerTextHelper()('literal_contract','{word} / {start} / {word}',{word:'{start} $&',start:0},translate)).toBe('{start} $& / 0 / {start} $&');
++  });
++  it('continues to interpolate a supplied raw-template translator', () => {
++    expect(readerTextHelper()('literal_contract','unused',{count:0,word:'水$&'},()=>'{word} / {word} / {count}')).toBe('水$& / 水$& / 0');
++  });
++});
+diff --git a/tests/reader_literal_placeholder_labels.test.js b/tests/reader_literal_placeholder_labels.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_literal_placeholder_labels.test.js
+@@ -0,0 +1,33 @@
++import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { React, View, contract, act } from './helpers/reader_locale_harness.js';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase } from './helpers/reader_recovery_locale_harness.js';
++import { literalFixtures, hostTranslator } from './helpers/literal_placeholder_harness.js';
++const require = createRequire(import.meta.url), { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
++let root, host;
++beforeAll(setupRecoveryReader, 60000);
++beforeEach(prepareRecoveryCase);
++afterEach(() => { if (root) act(() => root.unmount()); root = null; host?.remove(); host = null; delete window.__alloT; cleanupRecoveryCase(); });
++describe('real reader gloss labels preserve literal learner words', () => {
++  for (const fixture of literalFixtures) for (const suffix of ['$&','$$','{start}','{item}']) it(fixture.id + ': keeps ' + suffix + ' intact through nested accessible labels', () => {
++    const quote = fixture.word + suffix, passage = '«' + quote + '»';
++    const snapshot = contract.createSourceSnapshot(passage, { language: fixture.tag, sourceArtifactId: fixture.id });
++    const item = contract.createSupportedReading(snapshot, { id: fixture.id });
++    const supports = contract.validateReadingSupports(item, [{ id: 'literal-word', start: 1, end: 1 + quote.length, quote, text: 'A prepared explanation.', priority: 'essential', origin: 'educator', pinned: false, kind: 'gloss' }]);
++    expect(supports.annotations).toHaveLength(1);
++    const before = JSON.stringify({ item, supports }), update = vi.fn();
++    window.__alloT = hostTranslator(fixture.locale);
++    host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++    act(() => root.render(React.createElement(View.ReadingGlossEditor, { item, supports, onUpdate: update, disabled: false })));
++    const review = [...host.querySelectorAll('button')].find(b => b.textContent.includes('Review word supports'));
++    expect(review).toBeTruthy(); act(() => review.click());
++    const label = quote + ', text position 2–' + (1 + quote.length) + ': ' + passage;
++    const edit = [...host.querySelectorAll('button')].find(b => b.getAttribute('aria-label')?.startsWith('Edit gloss for'));
++    expect(edit?.getAttribute('aria-label')).toBe('Edit gloss for ' + label);
++    const remove = [...host.querySelectorAll('button')].find(b => b.getAttribute('aria-label')?.startsWith('Remove gloss for'));
++    expect(remove?.getAttribute('aria-label')).toBe('Remove gloss for ' + label);
++    expect([...host.querySelectorAll('strong')].map(n=>n.textContent)).toContain(quote);
++    expect(JSON.stringify({ item, supports })).toBe(before); expect(update).not.toHaveBeenCalled();
++  });
++});

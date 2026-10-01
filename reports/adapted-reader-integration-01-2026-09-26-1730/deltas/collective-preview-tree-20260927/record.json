@@ -1,0 +1,73 @@
+{
+  "at": "2026-09-27T19:04:40.079Z",
+  "label": "collective-preview-tree-20260927",
+  "patch": "387d6345280b4a4ae8419fe1cc32e240e7380eb2067a6641ec1894ba8325cbcc",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "b2adc280a1555fc3b2c09a9650190eb3a6c6fa3371a940f18e68e5d7c80f3185",
+      "after": "aba473acf0c6e188e1aa7932a808c5235887b55f840b06db7e31231b95b25370",
+      "changed": true
+    },
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "c9625901a41c5a48c86faf6255bc1e3b867607f7c8c953d8b656c65a3a8f0121",
+      "after": "8c989d10bcb987899377d1c4b9103b475629d9ce602d0968e123e8ccc0274ac1",
+      "changed": true
+    },
+    {
+      "target": "stem_lab/stem_tool_treelab.js",
+      "targets": [
+        "stem_lab/stem_tool_treelab.js"
+      ],
+      "before": "f39cb2c647fa070ee9cfe1aaa2a145eb08054ce90e941997a30bc96d55cd261e",
+      "after": "aa705710be17482a10fd922ba0dde7bbe8e4bc99be8328310519d99195271063",
+      "changed": true
+    },
+    {
+      "target": "tests/tree_lab_field_guide.test.js",
+      "targets": [
+        "tests/tree_lab_field_guide.test.js"
+      ],
+      "before": null,
+      "after": "cfd09e40021ce220aadcb283035424e484feb70e39b3e0c510d9d9a6b19c7f65",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_preview_focus_narration.test.js",
+      "targets": [
+        "tests/reader_preview_focus_narration.test.js"
+      ],
+      "before": null,
+      "after": "f73db405921e734eed0b4dff08e323405285a102872953e0215b167282a7e9e0",
+      "changed": true
+    },
+    {
+      "target": "tests/helpers/reader_focus_effect.cjs",
+      "targets": [
+        "tests/helpers/reader_focus_effect.cjs"
+      ],
+      "before": null,
+      "after": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5",
+      "changed": true
+    },
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "cfa2847311ec415e595d3f235b12eeabb97b7934ab4062cac576c34e1b93fa6e",
+      "after": "d436605c3c2a21304de1fe4d0f42eb3344d799b7c262cac0735f4b0d6c7147f1",
+      "changed": true
+    }
+  ]
+}

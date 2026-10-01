@@ -1,0 +1,17 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:34716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K(node:34716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:66:5 › phone layout, reduced motion and keyboard-equivalent selection
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:159:5 › guided investigation pauses at its result, records reviewed evidence, and resumes its field notes
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:399:5 › generation stories replay actual cohorts, stop reliably and keep the expedition unchanged
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:434:5 › generation stories keep the recorded habitat after a pending change and close without advancing
+[1A[2K  5 passed (3.7m)

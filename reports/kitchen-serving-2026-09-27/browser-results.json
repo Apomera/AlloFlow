@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Real 3D carries require a checked dish and burners off. Wrong drops, taps, empty plates, and Escape leave portions unchanged. Spoonfuls remain finite, partial portions survive reload, returning all food unlocks cooking, and an uneven batch can be rebalanced and finished in 3D.",
+    "Every plate works for four servings, including a pan resting on the trivet. Keyboard focus, destination labels, single-key passes, illustrated carries, and returning spoonfuls all share the same model.",
+    "Locked replay reconstructs the historical portions without changing the cook. Exported evidence includes individual plates and exact serving transfers. Desktop, 320px, and forced-color views pass accessibility scans.",
+    "Real touch serves in 3D and without WebGL. Touch cancellation and graphics loss during a carry leave all food conserved; completed portions remain available to return."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop serving controls",
+      "issues": []
+    },
+    {
+      "label": "320px illustrated serving",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

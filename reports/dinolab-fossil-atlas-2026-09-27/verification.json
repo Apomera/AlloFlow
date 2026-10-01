@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-27",
+  "sourceSha256": "75a4a38ba319af1efa5510de8e4ac8451e9ff299803a4ad1d3508ff5e958281c",
+  "shippedSha256": "75a4a38ba319af1efa5510de8e4ac8451e9ff299803a4ad1d3508ff5e958281c",
+  "sourceParity": true,
+  "initialUnitTests": 117,
+  "finalAffectedUnitTests": 87,
+  "browserStats": {
+    "startTime": "2026-09-27T18:33:29.496Z",
+    "duration": 9722.41,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "accessibilityScans": 9,
+  "accessibilityViolations": 0,
+  "viewportWidths": [
+    1366,
+    768,
+    390,
+    320
+  ],
+  "atlasStrings": 86
+}

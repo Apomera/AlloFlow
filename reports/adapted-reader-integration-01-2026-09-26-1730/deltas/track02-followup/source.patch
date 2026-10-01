@@ -1,0 +1,726 @@
+diff --git a/karaoke_audio_store_module.js b/karaoke_audio_store_module.js
+--- a/karaoke_audio_store_module.js
++++ b/karaoke_audio_store_module.js
+@@ -497,6 +497,24 @@
+     var identities = new Map();
+     var legacy = new Map();
+     var lastPutError = null;
++    // One store belongs to one resource/lane. Publish after a committed
++    // mutation; revisions and listeners are transient, never serialized.
++    var revision = 0;
++    var subscribers = new Set();
++    var pendingChanges = [], notifying = false;
++    var _changed = function (type) {
++      pendingChanges.push(Object.freeze({ type: type, revision: ++revision }));
++      if (notifying) return;
++      notifying = true;
++      try {
++        while (pendingChanges.length) {
++          var event = pendingChanges.shift();
++          Array.from(subscribers).forEach(function (listener) {
++            try { listener(event); } catch (_) {}
++          });
++        }
++      } finally { notifying = false; }
++    };
+     var _revoke = function (entry) {
+       if (entry && entry.url) { try { URL.revokeObjectURL(entry.url); } catch (_) {} }
+     };
+@@ -556,6 +574,7 @@
+       entry.identity = Object.assign({}, identity);
+       entry.synthesisProfile = entry.synthesisProfile || metadataToProfile(entry.metadata);
+       identities.set(identityKey, entry);
++      _changed('promote');
+       return entry;
+     };
+ 
+@@ -769,6 +788,7 @@
+       _revoke(located.entry);
+       located.entry.url = null;
+       located.entry.quarantine = normalizeQuarantine(detail);
++      _changed('quarantine');
+       return true;
+     };
+     var _orphanDescriptor = function (entry, legacyEntry) {
+@@ -856,9 +876,16 @@
+         legacy.delete(legacyKey);
+       });
+       report.changed = report.removedAi > 0;
++      if (report.changed) _changed('reconcile');
+       return report;
+     };
+     return {
++      getRevision: function () { return revision; },
++      subscribe: function (listener) {
++        if (typeof listener !== 'function') return function () {};
++        subscribers.add(listener);
++        return function () { subscribers.delete(listener); };
++      },
+       // Raw getters remain for legacy UI/diagnostics. Playback should prefer
+       // getCompatible(), which applies voice/profile compatibility.
+       get: function (target) {
+@@ -961,6 +988,7 @@
+           legacy.delete(keyFor(identity.spokenText));
+         }
+         lastPutError = null;
++        _changed('put');
+         return url;
+       },
+ 
+@@ -1013,12 +1041,12 @@
+         if (identity) {
+           var identityKey = portableKeyForIdentity(identity);
+           _revoke(identities.get(identityKey));
+-          identities.delete(identityKey);
++          if (identities.delete(identityKey)) _changed('remove');
+           return;
+         }
+         var legacyKey = keyFor(target);
+         _revoke(legacy.get(legacyKey));
+-        legacy.delete(legacyKey);
++        var removed = legacy.delete(legacyKey);
+         // Preserve legacy Edit Audio removal during a partial service rollout:
+         // a string can remove one unambiguous V4 spelling, never guess among
+         // repeated-text identities.
+@@ -1027,14 +1055,18 @@
+           var uniqueIdentityKey = portableKeyForIdentity(uniqueIdentityEntry.identity);
+           _revoke(uniqueIdentityEntry);
+           identities.delete(uniqueIdentityKey);
++          removed = true;
+         }
++        if (removed) _changed('remove');
+       },
+       size: function () { return identities.size + legacy.size; },
+       clear: function () {
++        var changed = identities.size > 0 || legacy.size > 0;
+         identities.forEach(_revoke);
+         legacy.forEach(_revoke);
+         identities.clear();
+         legacy.clear();
++        if (changed) _changed('clear');
+       },
+ 
+       // With no profile this preserves V3's raw-presence behavior. Supplying a
+@@ -1083,7 +1115,11 @@
+       hydrate: function (obj, options) {
+         if (!obj || typeof obj !== 'object') return 0;
+         var limits = _hydrateLimits(options);
+-        if (Number(obj.version) !== 4) return _hydrateLegacy(obj, limits);
++        if (Number(obj.version) !== 4) {
++          var hydrated = _hydrateLegacy(obj, limits);
++          if (hydrated) _changed('hydrate');
++          return hydrated;
++        }
+         var n = 0;
+         var entries = obj.entries && typeof obj.entries === 'object' ? obj.entries : {};
+         var list = Array.isArray(entries)
+@@ -1130,6 +1166,7 @@
+         }
+         n += _hydrateLegacy(obj.legacy, limits);
+         if (obj.sentences) n += _hydrateLegacy(obj, limits);
++        if (n) _changed('hydrate');
+         return n;
+       },
+       estimateBytes: function () { return _estimateBytes(); }
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2522,15 +2522,27 @@
+         return next;
+       });
+     };
+-    var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error, identityOptions) {
++    var getEditAudioPlaybackIssue = function (sentence, identityOptions) {
++      var issue = editAudioPlaybackErrors[getReadAloudAudioKey(sentence, identityOptions)];
++      if (issue && issue.url) {
++        var currentUrl = getStoredReadAloudAudioUrl(sentence, identityOptions);
++        if (currentUrl && currentUrl !== issue.url) return null;
++      }
++      return issue;
++    };
++    var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error, identityOptions, failedUrl) {
+       if (error && error.name === 'AbortError') return;
+       if (error && error.name === 'NotAllowedError') {
+         setEditAudioNotice(viewText('simplified.audio_audio_playback_was_blocked_press_play', 'Audio playback was blocked. Press Play again.'));
+         return;
+       }
++      var currentUrl = getStoredReadAloudAudioUrl(sentence, identityOptions);
++      // A late rejection from the old element must not quarantine its replacement.
++      if (failedUrl && currentUrl && currentUrl !== failedUrl) return;
+       updateEditAudioPlaybackIssue(sentence, {
+         code: error && error.name ? error.name : 'playback-failed',
+-        reason: 'The saved audio could not be decoded or loaded.'
++        reason: 'The saved audio could not be decoded or loaded.',
++        url: failedUrl || currentUrl || null
+       }, identityOptions);
+       setEditAudioNotice('Saved audio for sentence ' + sentenceNumber + ' could not be played. Rebuild or replace it.');
+       // Share a confirmed decoder/load failure with preparation and every reader.
+@@ -2669,6 +2681,28 @@
+         return null;
+       }
+     };
++    var readAloudStore = getReadAloudStore();
++    var readAloudStoreRevision = readAloudStore && typeof readAloudStore.getRevision === 'function' ? readAloudStore.getRevision() : 0;
++    React.useEffect(function () {
++      // Summary/host hydration may initialize or replace the store during
++      // render. Subscribe to the committed store, then close that timing gap.
++      var store = getReadAloudStore();
++      if (!store || typeof store.subscribe !== 'function') return;
++      var active = true, queued = false;
++      var refresh = function () {
++        if (!active || queued) return;
++        queued = true;
++        // Legacy inspection can promote a clip during render. Defer the
++        // React update and coalesce synchronous batches of saved sentences.
++        Promise.resolve().then(function () {
++          queued = false;
++          if (active) setAudioStatusTick(function (n) { return n + 1; });
++        });
++      };
++      var unsubscribe = store.subscribe(refresh);
++      if (store !== readAloudStore || (typeof store.getRevision === 'function' && store.getRevision() !== readAloudStoreRevision)) refresh();
++      return function () { active = false; if (typeof unsubscribe === 'function') unsubscribe(); };
++    }, [readAloudStore, readAloudStoreRevision, audioStatusTick, generatedContent?.id, generatedContent?.karaokeAudio]);
+     var getStoredReadAloudAudioUrl = function (sentence, identityOptions) {
+       try {
+         var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
+@@ -2822,7 +2856,7 @@
+       var unverifiedFailure = false;
+       entries.forEach(function (entry) {
+         var options = getReadAloudIdentityOptions(entry);
+-        if (!editAudioPlaybackErrors[getReadAloudAudioKey(entry.text, options)]) return;
++        if (!getEditAudioPlaybackIssue(entry.text, options)) return;
+         var inspection = null;
+         try { inspection = window.__alloInspectReadAloudAudio && window.__alloInspectReadAloudAudio(entry.text, 'reference', options); } catch (_) {}
+         if (inspection && inspection.status === 'ready') { ready = Math.max(0, ready - 1); corrupt += 1; }
+@@ -3019,7 +3053,10 @@
+     var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
+       if (!sentence || editAudioLoadingKey) return;
+       var current = editAudioPlayerRef.current;
+-      if (current && current._alloSentenceKey === key) {
++      var storedUrl = getStoredReadAloudAudioUrl(sentence, identityOptions);
++      // A store replacement/deletion must not replay the old decoded element.
++      // Blob URLs are immutable: a changed URL means a different artifact.
++      if (current && current._alloSentenceKey === key && storedUrl && current._alloStoredUrl === storedUrl) {
+         if (!current.paused) {
+           try { current.pause(); } catch (_) {}
+           setEditAudioPlayingKey(null);
+@@ -3033,10 +3070,11 @@
+           setEditAudioPlayingKey(key);
+           setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
+         } catch (error) {
+-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions);
++          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions, current._alloStoredUrl);
+         }
+         return;
+       }
++      if (current) stopEditAudioPlayback();
+       if (!hasStoredReadAloudAudio(sentence, identityOptions)) {
+         setEditAudioNotice('Generate or record audio for sentence ' + sentenceNumber + ' before playing it.');
+         return;
+@@ -3051,6 +3089,7 @@
+         if (!url) throw new Error(viewText('simplified.audio_no_saved_audio_url', 'No saved audio URL'));
+         var audio = new Audio(url);
+         audio._alloSentenceKey = key;
++        audio._alloStoredUrl = url;
+         audio.preload = 'auto';
+         // Preview the stored artifact exactly as students receive it.
+         audio.playbackRate = 1;
+@@ -3064,7 +3103,7 @@
+           if (editAudioPlayerRef.current === audio) {
+             editAudioPlayerRef.current = null;
+             setEditAudioPlayingKey(null);
+-            reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error, identityOptions);
++            reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error, identityOptions, audio._alloStoredUrl);
+           }
+         };
+         editAudioPlayerRef.current = audio;
+@@ -3080,7 +3119,7 @@
+         if (token === editAudioPlayTokenRef.current) {
+           editAudioPlayerRef.current = null;
+           setEditAudioPlayingKey(null);
+-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions);
++          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions, url);
+         }
+       } finally {
+         if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
+@@ -3450,7 +3489,7 @@
+         var isSaved = hasStoredReadAloudAudio(sentence, identityOptions);
+         var provenance = isSaved ? getReadAloudAudioProvenance(sentence, identityOptions) : { source: null, label: simplifiedAudioMissingLabel, stale: false };
+         var captureIssue = captureAudioErrors[audioKey];
+-        var playbackIssue = editAudioPlaybackErrors[audioKey];
++        var playbackIssue = getEditAudioPlaybackIssue(sentence, identityOptions);
+         var needsRebuild = !!(isSaved && (provenance.stale || playbackIssue));
+         var isGenerating = regenAudioKey === key;
+         var isLoading = editAudioLoadingKey === key;
+@@ -4078,7 +4117,7 @@
+     var reviewAudio = React.useMemo(function () {
+       if (!showReviewSummary) return null;
+       try { return getReadAloudAudioSummary(getReadAloudSentenceEntriesForText(simplifiedReadAloudText)); } catch (_) { return null; }
+-    }, [showReviewSummary, simplifiedReadAloudText, generatedContent?.id, generatedContent?.karaokeAudio, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision, audioStatusTick, editAudioPlaybackErrors, ttsPrepState.done, ttsPrepState.busy, isPlaying]);
++    }, [showReviewSummary, simplifiedReadAloudText, generatedContent?.id, generatedContent?.karaokeAudio, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision, audioStatusTick, readAloudStore, readAloudStoreRevision, editAudioPlaybackErrors, ttsPrepState.done, ttsPrepState.busy, isPlaying]);
+     React.useEffect(function () {
+       if (!studentPreview || !studentPreviewRef.current) return;
+       var modal = studentPreviewRef.current, opener = studentPreviewOpener.current;
+diff --git a/tests/reader_audio_readiness.test.js b/tests/reader_audio_readiness.test.js
+--- a/tests/reader_audio_readiness.test.js
++++ b/tests/reader_audio_readiness.test.js
+@@ -23,6 +23,7 @@
+   if (root) act(() => root.unmount()); host?.remove(); root = null; host = null;
+   vi.restoreAllMocks(); vi.unstubAllGlobals();
+   for (const key of ['__alloGetReadAloudAudioSummary', '__alloInspectReadAloudAudio', '__alloPrepareReadAloud', '__alloQuarantineReadAloudAudio', '__alloReadAloudProfileRevision']) delete window[key];
++  if (window.AlloModules.KaraokeAudioStore) window.AlloModules.KaraokeAudioStore.current = null;
+ });
+ const TEXT = 'Plants need light. Roots take in water.';
+ function mount(extra = {}) {
+@@ -37,7 +38,64 @@
+ const update = type => act(() => window.dispatchEvent(new CustomEvent(type, { detail: { resourceId: 'audio-1' } })));
+ const summary = (ready, stale = 0, corrupt = 0, missing = 2 - ready - stale - corrupt) => ({ total: 2, ready, stale, corrupt, missing });
+ 
++function liveStore() {
++  loadAlloModule('karaoke_audio_store_module.js');
++  vi.stubGlobal('URL', { createObjectURL: () => 'blob:local', revokeObjectURL: vi.fn() });
++  const KS = window.AlloModules.KaraokeAudioStore;
++  const store = KS.current = KS.createStore();
++  const sentences = ['Plants need light.', 'Roots take in water.'];
++  const profile = { voice: 'Kore', language: 'English', synthesisRate: 1, voiceResolverVersion: 2 };
++  const save = (target = store) => sentences.forEach(sentence => target.put(sentence, validAudioBase64(), 'audio/wav', 'ai', profile));
++  save();
++  window.__alloGetReadAloudAudioSummary = vi.fn(() => {
++    const state = summary(0, 0, 0, 0);
++    sentences.forEach(sentence => { state[KS.current.inspect(sentence, profile).status]++; });
++    return state;
++  });
++  return { KS, store, sentences, save };
++}
++
+ describe('teacher audio readiness', () => {
++  it('refreshes on direct store removal, hydration, quarantine, replacement and clear without window events', async () => {
++    const { store, sentences, save } = liveStore(); const payload = store.serialize();
++    mount(); expect(row().textContent).toContain('Audio prepared');
++    await act(async () => { store.remove(sentences[0]); });
++    expect(row().textContent).toContain('1 of 2'); expect(recovery()).not.toBeNull();
++    await act(async () => { store.hydrate(payload); }); expect(row().textContent).toContain('Audio prepared');
++    await act(async () => { store.quarantine(sentences[0], { code: 'decode-failed' }); });
++    expect(row().textContent).toContain('1 of 2');
++    await act(async () => { save(); }); expect(row().textContent).toContain('Audio prepared');
++    await act(async () => { store.clear(); }); expect(row().textContent).toContain('0 of 2'); expect(recovery()).not.toBeNull();
++  });
++  it('rebinds a replaced store and ignores unrelated stores and queued old-store notifications', async () => {
++    const { KS, store, save } = liveStore(); const view = mount();
++    const resolver = window.__alloGetReadAloudAudioSummary; const before = resolver.mock.calls.length;
++    const other = KS.createStore(); await act(async () => { save(other); other.clear(); });
++    expect(resolver).toHaveBeenCalledTimes(before);
++    await act(async () => { store.clear(); KS.current = other; view.render({}); });
++    expect(row().textContent).toContain('0 of 2');
++    const replacedCalls = resolver.mock.calls.length;
++    await act(async () => { save(store); }); expect(resolver).toHaveBeenCalledTimes(replacedCalls);
++    await act(async () => { save(other); }); expect(row().textContent).toContain('Audio prepared');
++  });
++  it('closes the render-to-subscription race when summary initializes the store', async () => {
++    const { KS, store } = liveStore(); KS.current = null;
++    const base = window.__alloGetReadAloudAudioSummary;
++    window.__alloGetReadAloudAudioSummary = () => { KS.current = store; return base(); };
++    await act(async () => { mount(); });
++    await act(async () => { store.clear(); }); expect(row().textContent).toContain('0 of 2');
++  });
++  it('rechecks a mutation between render and subscription and batches synchronous mutations', async () => {
++    const { store, save } = liveStore(); const subscribe = store.subscribe.bind(store);
++    vi.spyOn(store, 'subscribe').mockImplementationOnce(listener => { store.clear(); return subscribe(listener); });
++    await act(async () => { mount(); }); expect(row().textContent).toContain('0 of 2');
++    const resolver = window.__alloGetReadAloudAudioSummary; const before = resolver.mock.calls.length;
++    await act(async () => { save(); }); expect(row().textContent).toContain('Audio prepared');
++    expect(resolver.mock.calls.length - before).toBe(1);
++    await act(async () => { store.clear(); root.unmount(); root = null; });
++    const afterUnmount = resolver.mock.calls.length;
++    await act(async () => { save(); }); expect(resolver).toHaveBeenCalledTimes(afterUnmount);
++  });
+   it.each([
+     ['all stale', summary(0, 2), 'Audio not prepared', 0],
+     ['mixed ready/stale', summary(1, 1), 'Audio partly prepared', 1],
+@@ -148,6 +206,51 @@
+     }
+   });
+ 
++  it('replays a replacement URL instead of the previously decoded element', async () => {
++    let url = 'blob:first'; const players = [];
++    window.__alloGetReadAloudAudioSummary = () => summary(2);
++    window.__alloInspectReadAloudAudio = () => ({ status: 'ready', storedUrl: url, url });
++    vi.stubGlobal('Audio', class {
++      constructor(src) { this.src = src; this.paused = true; this.play = vi.fn(async () => { this.paused = false; }); players.push(this); }
++      pause() { this.paused = true; }
++    });
++    mount({ isEditingLeveledText: true, t: key => key === 'common.play' ? 'Play' : key });
++    await act(async () => { host.querySelector('button[aria-controls^="allo-edit-audio-"]').click(); });
++    await act(async () => { host.querySelector('button[aria-label="Play 1"]').click(); });
++    await act(async () => { players[0].paused = true; players[0].onended(); });
++    url = 'blob:replacement';
++    await act(async () => { host.querySelector('button[aria-label="Play 1"]').click(); });
++    expect(players.map(player => player.src)).toEqual(['blob:first', 'blob:replacement']);
++    expect(players[0].play).toHaveBeenCalledTimes(1);
++  });
++  it('stops attributing an old decoder failure to a repaired clip', async () => {
++    let url = 'blob:broken';
++    window.__alloGetReadAloudAudioSummary = () => summary(2);
++    window.__alloInspectReadAloudAudio = () => ({ status: 'ready', storedUrl: url, url });
++    window.__alloQuarantineReadAloudAudio = vi.fn(async () => true);
++    vi.stubGlobal('Audio', class { play() { return Promise.reject(Object.assign(new Error('decode'), { name: 'NotSupportedError' })); } pause() {} });
++    mount({ isEditingLeveledText: true, t: key => key === 'common.play' ? 'Play' : key });
++    await act(async () => { host.querySelector('button[aria-controls^="allo-edit-audio-"]').click(); });
++    await act(async () => { host.querySelector('button[aria-label="Play 1"]').click(); });
++    expect(row().textContent).toContain('1 of 2');
++    url = 'blob:repaired'; update('alloflow:karaoke-audio-updated');
++    expect(row().textContent).toContain('Audio prepared'); expect(recovery()).toBeNull();
++  });
++  it('does not quarantine a new clip for a delayed rejection from the old clip', async () => {
++    let url = 'blob:old', rejectPlayback;
++    window.__alloGetReadAloudAudioSummary = () => summary(2);
++    window.__alloInspectReadAloudAudio = () => ({ status: 'ready', storedUrl: url, url });
++    window.__alloQuarantineReadAloudAudio = vi.fn();
++    vi.stubGlobal('Audio', class { play() { return new Promise((_resolve, reject) => { rejectPlayback = reject; }); } pause() {} });
++    mount({ isEditingLeveledText: true, t: key => key === 'common.play' ? 'Play' : key });
++    await act(async () => { host.querySelector('button[aria-controls^="allo-edit-audio-"]').click(); });
++    await act(async () => { host.querySelector('button[aria-label="Play 1"]').click(); });
++    url = 'blob:new';
++    await act(async () => { rejectPlayback(Object.assign(new Error('old decode failed'), { name: 'NotSupportedError' })); });
++    expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();
++    expect(row().textContent).toContain('Audio prepared');
++  });
++
+   it('rechecks provider/model identity when the host revision changes', () => {
+     let state = summary(2); window.__alloGetReadAloudAudioSummary = () => state;
+     window.__alloReadAloudProfileRevision = 'gemini/model-a';
+diff --git a/tests/karaoke_audio_store_notifications.test.js b/tests/karaoke_audio_store_notifications.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/karaoke_audio_store_notifications.test.js
+@@ -0,0 +1,81 @@
++import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++import { validAudioBase64 } from './lib/audio_fixtures.js';
++
++let KS;
++const profile = { voice: 'Kore', language: 'English', synthesisRate: 1, voiceResolverVersion: 2 };
++const identity = (segmentId, spokenText = 'Read this sentence.') => ({ adapterId: 'simplified', scopeId: 'main', segmentId, spokenText });
++const put = (store, target, source = 'ai') => store.put(target, validAudioBase64(), 'audio/wav', source, profile);
++beforeAll(() => { loadAlloModule('karaoke_audio_store_module.js'); KS = window.AlloModules.KaraokeAudioStore; });
++beforeEach(() => {
++  let serial = 0;
++  Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:clip-' + ++serial) });
++  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
++});
++
++describe('audio store mutation subscriptions', () => {
++  it('publishes committed state and a monotonic revision for save, replace, quarantine, remove and clear', () => {
++    const store = KS.createStore(); const target = identity('one'); const states = [];
++    expect(store.getRevision()).toBe(0);
++    store.subscribe(event => states.push({ ...event, status: store.inspect(target, profile).status, size: store.size() }));
++    put(store, target); put(store, target);
++    store.quarantine(target, { code: 'media-playback-failed' }); store.remove(target);
++    put(store, target); store.clear();
++    expect(states.map(e => e.type)).toEqual(['put', 'put', 'quarantine', 'remove', 'put', 'clear']);
++    expect(states.map(e => e.revision)).toEqual([1, 2, 3, 4, 5, 6]);
++    expect(states.map(e => e.status)).toEqual(['ready', 'ready', 'corrupt', 'missing', 'ready', 'missing']);
++    expect(states.at(-1).size).toBe(0);
++    expect(store.getRevision()).toBe(6);
++  });
++  it('publishes hydration once for a complete batch, including mixed V4 and legacy entries', () => {
++    const writer = KS.createStore(); put(writer, identity('one')); put(writer, 'Another sentence.');
++    const reader = KS.createStore(); const sizes = [];
++    reader.subscribe(event => sizes.push([event.type, reader.size()]));
++    expect(reader.hydrate(writer.serialize())).toBe(2);
++    expect(sizes).toEqual([['hydrate', 2]]);
++    const legacyReader = KS.createStore(); const changed = vi.fn(); legacyReader.subscribe(changed);
++    const legacyWriter = KS.createStore(); put(legacyWriter, 'Legacy sentence.');
++    expect(legacyReader.hydrate(legacyWriter.serialize())).toBe(1);
++    expect(changed).toHaveBeenCalledTimes(1);
++    expect(changed).toHaveBeenCalledWith({ type: 'hydrate', revision: 1 });
++  });
++  it('does not publish rejected writes, absent removals, empty clears or unchanged reconciliation', () => {
++    const store = KS.createStore(); const target = identity('one'); put(store, target, 'human');
++    const changed = vi.fn(); store.subscribe(changed); const revision = store.getRevision();
++    expect(put(store, target)).toBeNull();
++    expect(store.put(identity('two'), 'invalid', 'audio/wav', 'ai', profile)).toBeNull();
++    store.remove(identity('absent')); store.quarantine(identity('absent')); store.reconcile([target]);
++    store.hydrate({ version: 4, entries: {} }); store.hydrate(null);
++    expect(changed).not.toHaveBeenCalled(); expect(store.getRevision()).toBe(revision);
++    store.clear(); changed.mockClear(); store.clear(); expect(changed).not.toHaveBeenCalled();
++  });
++  it('publishes reconciliation once and preserves human takes', () => {
++    const store = KS.createStore(); put(store, identity('human'), 'human'); put(store, identity('ai')); put(store, 'Legacy AI.');
++    const changed = vi.fn(); store.subscribe(changed);
++    expect(store.reconcile([])).toMatchObject({ removedAi: 2, preservedHuman: 1, changed: true });
++    expect(changed).toHaveBeenCalledTimes(1); expect(changed.mock.calls[0][0].type).toBe('reconcile');
++    expect(store.sourceOf(identity('human'))).toBe('human');
++  });
++  it('reports legacy promotion once without turning later reads into mutations', () => {
++    const store = KS.createStore(); const target = identity('one');
++    put(store, target.spokenText); const changed = vi.fn(); store.subscribe(changed);
++    expect(store.inspect(target, profile).status).toBe('ready');
++    store.inspect(target, profile); store.getCompatible(target, profile); store.serialize();
++    expect(changed).toHaveBeenCalledTimes(1); expect(changed.mock.calls[0][0].type).toBe('promote');
++  });
++  it('isolates stores, unsubscribes and contains listener errors without breaking saves', () => {
++    const a = KS.createStore(), b = KS.createStore(); const changed = vi.fn();
++    a.subscribe(() => { throw new Error('broken observer'); });
++    const unsubscribe = a.subscribe(changed); const other = vi.fn(); b.subscribe(other);
++    expect(put(a, identity('one'))).toBeTruthy(); expect(changed).toHaveBeenCalledTimes(1); expect(other).not.toHaveBeenCalled();
++    unsubscribe(); unsubscribe(); a.clear(); expect(changed).toHaveBeenCalledTimes(1);
++    expect(Object.keys(changed.mock.calls[0][0]).sort()).toEqual(['revision', 'type']);
++  });
++  it('delivers revisions in order when a listener triggers another mutation', () => {
++    const store = KS.createStore(), received = [];
++    store.subscribe(event => { if (event.type === 'put') store.clear(); });
++    store.subscribe(event => received.push(event.revision));
++    put(store, identity('one'));
++    expect(received).toEqual([1, 2]); expect(store.size()).toBe(0);
++  });
++});
+diff --git a/tests/browser/audio_readiness.cjs b/tests/browser/audio_readiness.cjs
+new file mode 100644
+--- /dev/null
++++ b/tests/browser/audio_readiness.cjs
+@@ -0,0 +1,243 @@
++// Local browser acceptance: real media decoding and the built reader/service.
++// No server, live app, account, provider request, or persisted user data.
++// Run from the repository root: node tests/browser/audio_readiness.cjs
++const fs = require('node:fs');
++const path = require('node:path');
++const assert = require('node:assert/strict');
++const { chromium, expect } = require('@playwright/test');
++const esbuild = require('esbuild');
++const root = path.resolve(__dirname, '../..');
++const output = path.resolve(process.argv[2] || path.join(root, 'reports/audio-readiness-browser.json'));
++const report = { cases: [], browser: null, liveRequests: [] };
++
++function wave(codec = 1) {
++  const samples = 4000, bytes = Buffer.alloc(44 + samples * 2);
++  bytes.write('RIFF', 0); bytes.writeUInt32LE(bytes.length - 8, 4); bytes.write('WAVEfmt ', 8);
++  bytes.writeUInt32LE(16, 16); bytes.writeUInt16LE(codec, 20); bytes.writeUInt16LE(1, 22);
++  bytes.writeUInt32LE(8000, 24); bytes.writeUInt32LE(16000, 28); bytes.writeUInt16LE(2, 32); bytes.writeUInt16LE(16, 34);
++  bytes.write('data', 36); bytes.writeUInt32LE(samples * 2, 40);
++  for (let i = 0; i < samples; i++) bytes.writeInt16LE(Math.round(2000 * Math.sin(i * 2 * Math.PI * 220 / 8000)), 44 + i * 2);
++  return bytes.toString('base64');
++}
++const damaged = Buffer.from(wave(), 'base64'); damaged.writeUInt32LE(0, 24); damaged.writeUInt32LE(0, 28);
++const fixtures = { good: wave(), unsupported: wave(0xffff), damaged: damaged.toString('base64') };
++
++(async () => {
++  const runtime = esbuild.buildSync({ stdin: {
++    contents: 'window.React = require("react"); window.ReactDOM = require("react-dom/client");',
++    resolveDir: path.join(root, 'desktop/web-app'),
++  }, bundle: true, write: false, platform: 'browser', define: { 'process.env.NODE_ENV': '"production"' } }).outputFiles[0].text;
++  const browser = await chromium.launch({ headless: true, args: ['--autoplay-policy=document-user-activation-required'] });
++  report.browser = browser.version();
++  const context = await browser.newContext();
++  const errors = [];
++  await context.route('**/*', route => {
++    if (route.request().url() === 'https://audio-readiness.test/') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><title>Audio readiness fixture</title></head><body><main id="root"></main></body></html>' });
++    report.liveRequests.push(route.request().url()); return route.abort();
++  });
++  let page = await context.newPage();
++  page.on('pageerror', error => errors.push(error.message));
++  page.setDefaultTimeout(8000);
++  const review = () => page.locator('[data-review-state="audio"]');
++  const recover = () => page.locator('[data-review-action="audio"]');
++  async function check(name, run) {
++    try { await run(); report.cases.push({ name, passed: true }); console.log('PASS ' + name); }
++    catch (error) {
++      const state = await page.evaluate(() => ({ mediaEvents: window.mediaEvents, review: document.querySelector('[data-review-state="audio"]')?.textContent, summary: window.bridge?.summary(window.sentences), notice: document.body.innerText.slice(-4000) }));
++      report.cases.push({ name, passed: false, error: String(error.stack || error), state }); throw error;
++    }
++  }
++  async function boot(payload = null, openTools = true) {
++    await page.goto('https://audio-readiness.test/');
++    // CDP's default userGesture=false keeps fixture initialization from
++    // granting autoplay permission before the test's actual button click.
++    const setupSession = await page.context().newCDPSession(page);
++    const script = async expression => {
++      const result = await setupSession.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true, userGesture: false });
++      if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails));
++      return result.result.value;
++    };
++    const evaluate = (fn, args) => script('(' + fn.toString() + ')(' + JSON.stringify(args ?? null) + ')');
++    await script(runtime);
++    await evaluate(() => {
++      window.AlloModules = {}; window.warnLog = window.debugLog = () => {};
++      window.AlloIcons = new Proxy({}, { get: () => () => null });
++      window.mediaEvents = [];
++      // Observe native media elements. Neither play() nor decoding is mocked.
++      window.Audio = new Proxy(window.Audio, { construct(NativeAudio, args) {
++        const audio = new NativeAudio(...args);
++        for (const type of ['playing', 'ended', 'error']) audio.addEventListener(type, () => {
++          window.mediaEvents.push({ type, url: audio.src, code: audio.error?.code, time: audio.currentTime });
++        });
++        return audio;
++      } });
++    });
++    for (const file of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'view_simplified_module.js']) {
++      await script(fs.readFileSync(path.join(root, file), 'utf8'));
++    }
++    await evaluate(async ({ fixtures, payload }) => {
++      window.fixtures = fixtures; window.synthCalls = 0;
++      const KS = window.AlloModules.KaraokeAudioStore;
++      const pure = window.AlloModules.PureHelpers, phase = window.AlloModules.PhaseNHelpers;
++      const sentences = window.sentences = ['Plants need light.', 'Roots take in water.'];
++      const resource = { id: 'audio-fixture', type: 'simplified', data: sentences.join(' '), config: { language: 'English' }, instructionalText: { form: 'adapted', role: 'supplemental' } };
++      const profile = { voice: 'Kore', language: 'English', synthesisRate: 1, voiceResolverVersion: 2 };
++      KS.current = KS.createStore();
++      window.bridge = window.AlloModules.createReadAloudLegacyBridge({
++        getResource: () => resource, getStore: () => KS.current, getProfile: () => profile,
++        enumerateResourceSegments: () => sentences.map((text, index) => ({ text, segmentId: 'sentence-' + index })),
++        synthesize: async () => { window.synthCalls++; return { b64: fixtures.good, mime: 'audio/wav' }; },
++      });
++      if (payload) KS.current.hydrate(payload); else await bridge.prepare(sentences);
++      window.__alloGetReadAloudAudioSummary = (...args) => bridge.summary(...args);
++      window.__alloInspectReadAloudAudio = (...args) => bridge.inspect(...args);
++      window.__alloQuarantineReadAloudAudio = (...args) => bridge.quarantine(...args);
++      window.__alloPrepareReadAloud = (...args) => bridge.prepare(...args);
++      const noop = () => {};
++      const props = { ComplexityGauge: () => null, t: key => key === 'common.play' ? 'Play' : key,
++        generatedContent: resource, selectedVoice: 'Kore', voiceSpeed: 1, leveledTextLanguage: 'English',
++        isTeacherMode: true, isEditingLeveledText: true, isZenMode: false, interactionMode: 'read', history: [],
++        textEditorRef: React.createRef(), splitTextToSentences: text => pure.splitTextToSentences(text, {}),
++        getSideBySideContent: () => null, handleSpeak: noop, cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false,
++        renderFormattedText: value => value,
++        formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }),
++        SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [],
++        setFocusedParagraphIndex: noop, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop,
++        handleToggleIsEditingLeveledText: noop, handleSimplifiedTextChange: noop, handleFormatText: noop,
++        handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, setSelectionMenu: noop };
++      window.renderReader = (extra = {}) => { Object.assign(props, extra); window.readerRoot.render(React.createElement(window.AlloModules.SimplifiedView, { ...props })); };
++      window.readerRoot = ReactDOM.createRoot(document.getElementById('root')); window.renderReader();
++      window.replaceFirst = (fixture, source = 'ai') => {
++        const entry = Object.values(KS.current.serialize().entries).find(e => e.identity.spokenText === sentences[0]);
++        return KS.current.put(entry.identity, fixtures[fixture], 'audio/wav', source, entry.synthesisProfile, { allowReplaceHuman: true });
++      };
++    }, { fixtures, payload });
++    await setupSession.detach();
++    if (openTools) {
++      await expect(review()).toContainText('2 of 2');
++      await page.locator('button[aria-controls^="allo-edit-audio-"]').click();
++    }
++  }
++  async function preview() {
++    await page.evaluate(() => { window.mediaEvents.length = 0; });
++    await page.getByRole('button', { name: 'Play 1', exact: true }).click();
++  }
++  try {
++    await boot();
++    await check('native PCM preview reaches playing and ended', async () => {
++      await preview();
++      await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended' && event.time > 0));
++      assert.ok(await page.evaluate(() => window.mediaEvents.some(event => event.type === 'playing')));
++      await expect(review()).toContainText('Audio prepared');
++    });
++    await check('fresh document hydrates serialized clips and plays without synthesis', async () => {
++      const saved = await page.evaluate(() => ({ payload: JSON.parse(JSON.stringify(window.AlloModules.KaraokeAudioStore.current.serialize())), url: bridge.inspect(sentences[0]).url }));
++      await boot(saved.payload);
++      assert.equal(await page.evaluate(() => window.synthCalls), 0);
++      assert.notEqual(await page.evaluate(() => bridge.inspect(sentences[0]).url), saved.url);
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
++    });
++    await check('unsupported codec is quarantined after real decoder failure and preparation recovers', async () => {
++      assert.ok(await page.evaluate(() => window.replaceFirst('unsupported')));
++      await preview();
++      await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'error'));
++      await expect(review()).toContainText('1 of 2'); await expect(recover()).toBeVisible();
++      assert.equal(await page.evaluate(() => bridge.inspect(sentences[0]).status), 'corrupt');
++      await recover().click(); await expect(review()).toContainText('2 of 2');
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
++    });
++    await check('revoked blob fails native playback and keeps recovery available', async () => {
++      await page.evaluate(() => { const url = window.replaceFirst('good'); URL.revokeObjectURL(url); });
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'error'));
++      await expect(review()).toContainText('1 of 2'); await expect(recover()).toBeVisible();
++      await recover().click(); await expect(review()).toContainText('2 of 2');
++    });
++    await check('damaged WAV passes container screening but native decoding rejects it and allows repair', async () => {
++      assert.ok(await page.evaluate(() => window.replaceFirst('damaged')));
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'error'));
++      await expect(review()).toContainText('1 of 2');
++      assert.equal(await page.evaluate(() => bridge.inspect(sentences[0]).status), 'corrupt');
++      await recover().click(); await expect(review()).toContainText('2 of 2');
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
++    });
++    await check('direct clear and delayed hydration update the mounted reader without host events', async () => {
++      const payload = await page.evaluate(() => window.AlloModules.KaraokeAudioStore.current.serialize());
++      await page.evaluate(() => window.AlloModules.KaraokeAudioStore.current.clear());
++      await expect(review()).toContainText('0 of 2'); await expect(recover()).toBeVisible();
++      await page.evaluate(payload => window.AlloModules.KaraokeAudioStore.current.hydrate(payload), payload);
++      await expect(review()).toContainText('2 of 2');
++    });
++    await check('real MediaRecorder teacher take remains playable and survives synthesis setting changes', async () => {
++      const recorded = await page.evaluate(async () => {
++        const ctx = new AudioContext(), oscillator = ctx.createOscillator(), destination = ctx.createMediaStreamDestination();
++        oscillator.connect(destination); await ctx.resume();
++        const chunks = [], recorder = new MediaRecorder(destination.stream, { mimeType: 'audio/webm;codecs=opus' });
++        const blob = await new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(new Error('Recorder did not finish')), 5000);
++          recorder.ondataavailable = event => {
++            if (event.data.size) chunks.push(event.data);
++            if (chunks.reduce((total, chunk) => total + chunk.size, 0) > 1000 && recorder.state === 'recording') recorder.stop();
++          };
++          recorder.onerror = event => { clearTimeout(timer); reject(event.error || new Error('Recording failed')); };
++          recorder.onstop = () => { clearTimeout(timer); resolve(new Blob(chunks, { type: recorder.mimeType })); };
++          recorder.start(100); oscillator.start();
++        }).finally(async () => { oscillator.stop(); destination.stream.getTracks().forEach(track => track.stop()); await ctx.close(); });
++        const saved = await bridge.saveRecording(sentences[0], blob, 'human-teacher', 'reference');
++        window.renderReader({ selectedVoice: 'Aoede', voiceSpeed: 0.8 });
++        return { saved, mime: blob.type, size: blob.size };
++      });
++      report.recording = recorded;
++      assert.equal(recorded.saved, true); assert.ok(recorded.size > 0);
++      await expect(review()).toContainText('1 of 2'); // Teacher take is ready; old synthesized second sentence is stale.
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
++      assert.equal(await page.evaluate(() => bridge.inspect(sentences[0]).source), 'human-teacher');
++      const saved = await page.evaluate(() => JSON.parse(JSON.stringify(window.AlloModules.KaraokeAudioStore.current.serialize())));
++      await boot(saved); assert.equal(await page.evaluate(() => window.synthCalls), 0);
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
++    });
++    await check('native autoplay denial preserves readiness and a trusted click can retry', async () => {
++      await page.close();
++      const policyContext = await browser.newContext();
++      await policyContext.route('**/*', route => {
++        if (route.request().url() === 'https://audio-readiness.test/') return route.fulfill({
++          contentType: 'text/html', headers: { 'Permissions-Policy': 'autoplay=()' },
++          body: '<!doctype html><html><head><title>Autoplay fixture</title></head><body><main id="root"></main></body></html>',
++        });
++        report.liveRequests.push(route.request().url()); return route.abort();
++      });
++      page = await policyContext.newPage(); page.setDefaultTimeout(8000);
++      page.on('pageerror', error => errors.push(error.message));
++      await boot(null, false);
++      // Playwright's normal evaluate grants userGesture. Use an explicitly
++      // untrusted script task to exercise Chromium's actual autoplay policy.
++      const cdp = await policyContext.newCDPSession(page);
++      const denied = await cdp.send('Runtime.evaluate', { expression: '(' + (async () => {
++        const wait = predicate => new Promise((resolve, reject) => {
++          const deadline = Date.now() + 8000;
++          const poll = () => { if (predicate()) resolve(); else if (Date.now() >= deadline) reject(new Error('Autoplay fixture timed out')); else setTimeout(poll, 20); };
++          poll();
++        });
++        await wait(() => document.querySelector('button[aria-controls^="allo-edit-audio-"]'));
++        document.querySelector('button[aria-controls^="allo-edit-audio-"]').click();
++        await wait(() => document.querySelector('button[aria-label="Play 1"]'));
++        document.querySelector('button[aria-label="Play 1"]').click();
++        await wait(() => document.body.textContent.includes('Audio playback was blocked. Press Play again.'));
++        return { activation: navigator.userActivation.hasBeenActive, status: window.bridge.inspect(window.sentences[0]).status };
++      }).toString() + ')()', userGesture: false, awaitPromise: true, returnByValue: true });
++      assert.equal(denied.exceptionDetails, undefined, JSON.stringify(denied.exceptionDetails));
++      assert.deepEqual(denied.result.value, { activation: false, status: 'ready' });
++      await expect(page.getByText('Audio playback was blocked. Press Play again.', { exact: true })).toBeVisible();
++      await expect(review()).toContainText('2 of 2');
++      assert.equal(await page.evaluate(() => bridge.inspect(sentences[0]).status), 'ready');
++      await preview(); await page.waitForFunction(() => window.mediaEvents.some(event => event.type === 'ended'));
++      await cdp.detach();
++      await policyContext.close();
++    });
++    assert.deepEqual(errors, []); assert.deepEqual(report.liveRequests, []);
++    report.passed = true;
++  } finally {
++    report.pageErrors = errors;
++    fs.mkdirSync(path.dirname(output), { recursive: true }); fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
++    await browser.close();
++  }
++})().catch(error => { console.error(error.stack || error); process.exitCode = 1; });

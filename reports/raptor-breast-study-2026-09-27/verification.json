@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-27",
+  "scope": "Breast-feather inspection view, adult peregrine and great horned owl underpart barring, species-specific observation prompts, saved-view integration",
+  "runs": [
+    {
+      "suites": ["raptor-breast-study.spec.ts"],
+      "output": "initial-browser-results",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "4.2 minutes",
+      "note": "Visual review prompted softer, separated feather-sized bar segments after this passing run."
+    },
+    {
+      "suites": ["raptor-breast-study.spec.ts", "raptor-study-anatomy.spec.ts", "raptor-tail-rest.spec.ts"],
+      "output": "final-browser-results",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "5.4 minutes",
+      "note": "All scenarios use the final application source, including the refined bar segments."
+    }
+  ],
+  "uniqueScenariosValidated": 11,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "scopedAxeViolations": 0,
+    "visualInspection": "pass",
+    "finiteUnchangedGeometry": "pass",
+    "sameCameraBarringPixelContribution": "pass",
+    "flyingAndRestingFraming": "pass",
+    "phoneAndShortFullscreenLayout": "pass",
+    "savedViewMatchingAndRestoration": "pass",
+    "notebookAndReportExport": "pass",
+    "noIdleStudyRedraws": "pass",
+    "stableTexturesAndGeometryBuffers": "pass"
+  },
+  "resources": {
+    "extraMeshes": 0,
+    "extraVertices": 0,
+    "extraTextures": 0,
+    "extraMaterials": 0,
+    "extraDrawCalls": 0,
+    "extraAnimationLoops": 0
+  },
+  "sourceFiles": [
+    {
+      "path": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "5f772a31b44ef51fe974cdb71243964e0873742ce57c7a320b744f429f655d27"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "5f772a31b44ef51fe974cdb71243964e0873742ce57c7a320b744f429f655d27"
+    }
+  ],
+  "newTranslationKeys": 6,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "environment": "Local Chromium/WebGL, low and high graphics quality, phone viewport, reduced motion, and short fullscreen. No physical-device frame-rate benchmark.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

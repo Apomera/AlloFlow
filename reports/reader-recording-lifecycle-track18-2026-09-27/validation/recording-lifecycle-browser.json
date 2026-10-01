@@ -1,0 +1,241 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "nativeMediaRecorder": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "adapted",
+          "sentence": "Plants need light.",
+          "bytes": 27289,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "adapted",
+          "sentence": "Plants need light.",
+          "bytes": 3059,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "adapted",
+          "sentence": "Plants need light.",
+          "bytes": 6939,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "original",
+          "sentence": "Plants need light.",
+          "bytes": 3059,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "original",
+          "sentence": "Plants need light.",
+          "bytes": 3059,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "original",
+          "sentence": "Plants need light.",
+          "bytes": 1127,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "adapted",
+          "sentence": "Plants need light.",
+          "bytes": 4025,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "adapted",
+          "sentence": "Plants need light.",
+          "bytes": 1127,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "saves": [
+        {
+          "resourceId": "adapted",
+          "sentence": "Plants need light.",
+          "bytes": 1127,
+          "mime": "audio/webm;codecs=opus",
+          "source": "human-teacher"
+        }
+      ],
+      "ended": true,
+      "semantics": {
+        "role": "status",
+        "live": "polite",
+        "atomic": "true"
+      },
+      "focusReturned": true,
+      "completionVisible": true
+    },
+    {
+      "route": "navigate-during-recording-save",
+      "oldSignalAborted": true,
+      "newRecordingIndependent": true
+    },
+    {
+      "route": "close-during-permission",
+      "lateStreamStopped": true,
+      "noSave": true
+    },
+    {
+      "route": "failure-after-close",
+      "failureVisible": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Synthetic audio stream, no microphone permission prompt or hardware use",
+    "Mock host save callback; no actual persistent writes or reopen verification",
+    "DOM live-region semantics are not real AT announcement verification",
+    "200% computed-font simulation is not real browser text zoom or 400% zoom",
+    "No hardware mobile, WebKit, or Firefox verification"
+  ]
+}

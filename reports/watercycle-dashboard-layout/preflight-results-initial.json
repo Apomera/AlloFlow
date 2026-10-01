@@ -1,0 +1,6722 @@
+{
+  "title": "Water Cycle dashboard layout",
+  "mode": "layout preflight",
+  "startedAt": "2026-09-30T15:57:33.786Z",
+  "sourceSha256": "8880926c08902af7ceb7f749cfcb7bc04abccb072f2d204f5ae759dd62f06815",
+  "publicSha256": "8880926c08902af7ceb7f749cfcb7bc04abccb072f2d204f5ae759dd62f06815",
+  "method": "Frozen actual runtime in an owned ephemeral localhost server and isolated Chromium. Native controls, SVG geometry and container font scaling, reading order and measured layout gaps, scenario evidence and paused parcel preservation. No learner tabs, port 8770, runtime edits, or Git writes.",
+  "measurementNote": "SVG geometry is measured after two animation frames. Text bounds are assessed in both axes and rendered font sizes include SVG scale. The frozen baseline in this report directory supplies before measurements.",
+  "checks": [
+    {
+      "label": "light-320 default follows standalone Infiltration at Land",
+      "pass": true,
+      "detail": {
+        "label": "light-320 default",
+        "stageIndex": 3,
+        "inspectIndex": 3,
+        "inspectChoice": "follow",
+        "followOption": "Follow stage focus · Land",
+        "focusChip": "Focus · Infiltration",
+        "focusChipAria": "Focused stage: Infiltration",
+        "focusState": "infiltration",
+        "markerLabel": "Land",
+        "markerX": 294,
+        "description": "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. Stage focus is Land; inspected values are at Land. Exact scores are available below.",
+        "readoutPlace": "land",
+        "readoutHeader": "Land · Teaching scores\nFollowing stage focus",
+        "readout": [
+          {
+            "key": "energy",
+            "label": "Energy cue",
+            "score": 42
+          },
+          {
+            "key": "flow",
+            "label": "Surface flow cue",
+            "score": 76
+          },
+          {
+            "key": "storage",
+            "label": "Storage cue",
+            "score": 74
+          }
+        ],
+        "rows": [
+          {
+            "place": "surface",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 52,
+              "flow": 51,
+              "storage": 71
+            }
+          },
+          {
+            "place": "air",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 46,
+              "flow": 47,
+              "storage": 52
+            }
+          },
+          {
+            "place": "cloud",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 56,
+              "flow": 66,
+              "storage": 65
+            }
+          },
+          {
+            "place": "land",
+            "highlight": true,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 42,
+              "flow": 76,
+              "storage": 74
+            }
+          },
+          {
+            "place": "return",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 34,
+              "flow": 57,
+              "storage": 56
+            }
+          }
+        ],
+        "series": [
+          {
+            "key": "energy",
+            "stroke": "rgb(167, 90, 8)",
+            "dash": "none",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 130,
+                "y": 97.3,
+                "score": 45.984848484848484
+              },
+              {
+                "x": 212,
+                "y": 84.1,
+                "score": 55.98484848484849
+              },
+              {
+                "x": 294,
+                "y": 102.6,
+                "score": 41.969696969696976
+              },
+              {
+                "x": 376,
+                "y": 113.1,
+                "score": 34.01515151515152
+              }
+            ]
+          },
+          {
+            "key": "flow",
+            "stroke": "rgb(8, 118, 155)",
+            "dash": "9px, 6px",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 90.7,
+                "score": 50.984848484848484
+              },
+              {
+                "x": 130,
+                "y": 96,
+                "score": 46.96969696969697
+              },
+              {
+                "x": 212,
+                "y": 70.9,
+                "score": 65.98484848484848
+              },
+              {
+                "x": 294,
+                "y": 57.7,
+                "score": 75.98484848484848
+              },
+              {
+                "x": 376,
+                "y": 82.8,
+                "score": 56.96969696969697
+              }
+            ]
+          },
+          {
+            "key": "storage",
+            "stroke": "rgb(20, 116, 89)",
+            "dash": "1px, 6px",
+            "width": "4.5px",
+            "opacity": "1",
+            "points": [
+              {
+                "x": 48,
+                "y": 64.3,
+                "score": 70.98484848484848
+              },
+              {
+                "x": 130,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 212,
+                "y": 72.2,
+                "score": 65
+              },
+              {
+                "x": 294,
+                "y": 60.3,
+                "score": 74.01515151515152
+              },
+              {
+                "x": 376,
+                "y": 84.1,
+                "score": 55.98484848484849
+              }
+            ]
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ],
+        "legend": [
+          {
+            "key": "energy",
+            "text": "Energy cue\nSolid",
+            "dash": "none",
+            "marker": "circle",
+            "stroke": "rgb(167, 90, 8)"
+          },
+          {
+            "key": "flow",
+            "text": "Surface flow cue\nDashed",
+            "dash": "9px, 6px",
+            "marker": "rect",
+            "stroke": "rgb(8, 118, 155)"
+          },
+          {
+            "key": "storage",
+            "text": "Storage cue\nDotted",
+            "dash": "1px, 6px",
+            "marker": "path",
+            "stroke": "rgb(20, 116, 89)"
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 62.53786087036133,
+              "y": 4214.40576171875,
+              "w": 7.999996185302734,
+              "h": 17,
+              "right": 70.53785705566406,
+              "bottom": 4231.40576171875
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 54.94411087036133,
+              "y": 4179.521484375,
+              "w": 15.596843719482422,
+              "h": 17,
+              "right": 70.54095458984375,
+              "bottom": 4196.521484375
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 48.81911087036133,
+              "y": 4144.6376953125,
+              "w": 21.726329803466797,
+              "h": 17,
+              "right": 70.54544067382812,
+              "bottom": 4161.6376953125
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 22,
+            "renderedFont": 11.628571428571428,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 190.62440490722656,
+              "y": 4137.70947265625,
+              "w": 28.07965087890625,
+              "h": 16,
+              "right": 218.7040557861328,
+              "bottom": 4153.70947265625
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 53.75841522216797,
+              "y": 4233.43310546875,
+              "w": 41.59751892089844,
+              "h": 17,
+              "right": 95.3559341430664,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 108.88040924072266,
+              "y": 4233.43310546875,
+              "w": 17.249771118164062,
+              "h": 17,
+              "right": 126.13018035888672,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 144.55709838867188,
+              "y": 4233.43310546875,
+              "w": 32.99998474121094,
+              "h": 17,
+              "right": 177.5570831298828,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 190.85877990722656,
+              "y": 4233.43310546875,
+              "w": 27.078125,
+              "h": 17,
+              "right": 217.93690490722656,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 229.2854461669922,
+              "y": 4233.43310546875,
+              "w": 36.90626525878906,
+              "h": 17,
+              "right": 266.19171142578125,
+              "bottom": 4250.43310546875
+            }
+          }
+        ],
+        "textCollisions": [],
+        "plotHeading": {
+          "x": 49,
+          "y": 4093.28125,
+          "w": 222,
+          "h": 44.5,
+          "right": 271,
+          "bottom": 4137.78125
+        },
+        "headingText": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 49,
+              "y": 4093.28125,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 226.390625,
+              "bottom": 4115.78125
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 49,
+              "y": 4119.78125,
+              "w": 123.984375,
+              "h": 18,
+              "right": 172.984375,
+              "bottom": 4137.78125
+            }
+          }
+        ],
+        "ink": "rgb(25, 63, 71)",
+        "plotRect": {
+          "x": 49,
+          "y": 4142.78125,
+          "w": 222,
+          "h": 109.9375,
+          "right": 271,
+          "bottom": 4252.71875
+        },
+        "panelRect": {
+          "x": 23,
+          "y": 3767.171875,
+          "w": 274,
+          "h": 1387.96875,
+          "right": 297,
+          "bottom": 5155.140625
+        },
+        "viewportWidth": 320,
+        "scrollWidth": 320,
+        "overflow": [],
+        "folded": true,
+        "tableCaption": "Independent teaching scores (0–100) for each place",
+        "columnScopes": [
+          "col",
+          "col",
+          "col",
+          "col"
+        ],
+        "chartSelect": {
+          "x": 49,
+          "y": 4395.21875,
+          "w": 222,
+          "h": 44,
+          "right": 271,
+          "bottom": 4439.21875
+        },
+        "summary": {
+          "x": 49,
+          "y": 4993.140625,
+          "w": 222,
+          "h": 44,
+          "right": 271,
+          "bottom": 5037.140625
+        },
+        "dataWithoutInspection": "{\"wcMode\":\"explore\",\"wcSection\":\"data\",\"journeyView\":\"2d\",\"journeyActive\":false,\"journeyState\":\"idle\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"infiltration\",\"climTemp\":15,\"climSolar\":1,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\",\"wcScenarioBaseline\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\"},\"wcProcessCompare\":{\"first\":\"condensation\",\"second\":\"precipitation\",\"notes\":{\"condensation|precipitation\":\"Cloud particles grow and fall; condensation forms droplets.\"}},\"wcExperimentLog\":[{\"id\":\"signal-inspection-evidence\",\"note\":\"Saved observation must survive chart inspection\",\"inputs\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1}}]}",
+        "parcel": {
+          "active": false,
+          "state": "idle",
+          "stage": "infiltration",
+          "paused": "true",
+          "progress": 0
+        },
+        "solar": 1
+      }
+    },
+    {
+      "label": "light-320 values table starts folded and has caption and row/column headers",
+      "pass": true
+    },
+    {
+      "label": "light-320 default all plotted coordinates agree with five-place table",
+      "pass": true,
+      "detail": [
+        {
+          "key": "energy",
+          "plot": [
+            51.96969696969696,
+            45.984848484848484,
+            55.98484848484849,
+            41.969696969696976,
+            34.01515151515152
+          ],
+          "table": [
+            52,
+            46,
+            56,
+            42,
+            34
+          ]
+        },
+        {
+          "key": "flow",
+          "plot": [
+            50.984848484848484,
+            46.96969696969697,
+            65.98484848484848,
+            75.98484848484848,
+            56.96969696969697
+          ],
+          "table": [
+            51,
+            47,
+            66,
+            76,
+            57
+          ]
+        },
+        {
+          "key": "storage",
+          "plot": [
+            70.98484848484848,
+            51.96969696969696,
+            65,
+            74.01515151515152,
+            55.98484848484849
+          ],
+          "table": [
+            71,
+            52,
+            65,
+            74,
+            56
+          ]
+        }
+      ]
+    },
+    {
+      "label": "light-320 default selected place readout and highlighted table row agree",
+      "pass": true,
+      "detail": {
+        "readout": [
+          {
+            "key": "energy",
+            "label": "Energy cue",
+            "score": 42
+          },
+          {
+            "key": "flow",
+            "label": "Surface flow cue",
+            "score": 76
+          },
+          {
+            "key": "storage",
+            "label": "Storage cue",
+            "score": 74
+          }
+        ],
+        "rows": [
+          {
+            "place": "surface",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 52,
+              "flow": 51,
+              "storage": 71
+            }
+          },
+          {
+            "place": "air",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 46,
+              "flow": 47,
+              "storage": 52
+            }
+          },
+          {
+            "place": "cloud",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 56,
+              "flow": 66,
+              "storage": 65
+            }
+          },
+          {
+            "place": "land",
+            "highlight": true,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 42,
+              "flow": 76,
+              "storage": 74
+            }
+          },
+          {
+            "place": "return",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 34,
+              "flow": 57,
+              "storage": 56
+            }
+          }
+        ],
+        "choice": "follow"
+      }
+    },
+    {
+      "label": "light-320 default selected shape marks the actual plotted score",
+      "pass": true,
+      "detail": [
+        {
+          "key": "energy",
+          "tag": "circle",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 102.55999755859375
+          },
+          "score": 42.00000184955019,
+          "fill": "rgb(167, 90, 8)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 98.05999755859375,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "flow",
+          "tag": "rect",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 57.68000030517578
+          },
+          "score": 75.99999976880622,
+          "fill": "rgb(8, 118, 155)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 53.18000030517578,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "storage",
+          "tag": "path",
+          "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+          "center": {
+            "x": 294,
+            "y": 60.31999969482422
+          },
+          "score": 74.00000023119378,
+          "fill": "rgb(20, 116, 89)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 288,
+            "y": 54.31999969482422,
+            "w": 12,
+            "h": 12
+          }
+        }
+      ]
+    },
+    {
+      "label": "light-320 default panel fits viewport without clipping or page overflow",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "light-320 default plot text remains about 12px or larger and labels do not overlap",
+      "pass": false,
+      "detail": {
+        "fonts": [
+          {
+            "text": "0",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "50",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "100",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Land",
+            "font": 11.628571428571428
+          },
+          {
+            "text": "Surface",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Air",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Cloud",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Land",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Return",
+            "font": 12.685714285714285
+          }
+        ],
+        "collisions": []
+      }
+    },
+    {
+      "label": "light-320 default plot labels clear the heading and shape marks stay inside the scene",
+      "pass": true,
+      "detail": {
+        "heading": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 49,
+              "y": 4093.28125,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 226.390625,
+              "bottom": 4115.78125
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 49,
+              "y": 4119.78125,
+              "w": 123.984375,
+              "h": 18,
+              "right": 172.984375,
+              "bottom": 4137.78125
+            }
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 62.53786087036133,
+              "y": 4214.40576171875,
+              "w": 7.999996185302734,
+              "h": 17,
+              "right": 70.53785705566406,
+              "bottom": 4231.40576171875
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 54.94411087036133,
+              "y": 4179.521484375,
+              "w": 15.596843719482422,
+              "h": 17,
+              "right": 70.54095458984375,
+              "bottom": 4196.521484375
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 48.81911087036133,
+              "y": 4144.6376953125,
+              "w": 21.726329803466797,
+              "h": 17,
+              "right": 70.54544067382812,
+              "bottom": 4161.6376953125
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 22,
+            "renderedFont": 11.628571428571428,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 190.62440490722656,
+              "y": 4137.70947265625,
+              "w": 28.07965087890625,
+              "h": 16,
+              "right": 218.7040557861328,
+              "bottom": 4153.70947265625
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 53.75841522216797,
+              "y": 4233.43310546875,
+              "w": 41.59751892089844,
+              "h": 17,
+              "right": 95.3559341430664,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 108.88040924072266,
+              "y": 4233.43310546875,
+              "w": 17.249771118164062,
+              "h": 17,
+              "right": 126.13018035888672,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 144.55709838867188,
+              "y": 4233.43310546875,
+              "w": 32.99998474121094,
+              "h": 17,
+              "right": 177.5570831298828,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 190.85877990722656,
+              "y": 4233.43310546875,
+              "w": 27.078125,
+              "h": 17,
+              "right": 217.93690490722656,
+              "bottom": 4250.43310546875
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 229.2854461669922,
+              "y": 4233.43310546875,
+              "w": 36.90626525878906,
+              "h": 17,
+              "right": 266.19171142578125,
+              "bottom": 4250.43310546875
+            }
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-320 folded four semantic groups follow plot inspection stores table DOM order",
+      "pass": true,
+      "detail": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ]
+    },
+    {
+      "label": "light-320 folded inspection and stores have visible coherent grouping and named references",
+      "pass": true,
+      "detail": {
+        "heading": "Storage cues by store",
+        "storeAria": "wcSignalStoresTitle",
+        "references": [
+          {
+            "id": "wcSignalStoresTitle",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-320 folded values table spans the complete grid below the other groups",
+      "pass": true,
+      "detail": {
+        "grid": {
+          "x": 36,
+          "y": 4080.28125,
+          "w": 248,
+          "h": 957.859375,
+          "right": 284,
+          "bottom": 5038.140625
+        },
+        "values": {
+          "x": 36,
+          "y": 4992.140625,
+          "w": 248,
+          "h": 46,
+          "right": 284,
+          "bottom": 5038.140625
+        }
+      }
+    },
+    {
+      "label": "light-320 folded visual groups follow the responsive desktop or phone arrangement",
+      "pass": true,
+      "detail": {
+        "stacked": true,
+        "chart": {
+          "x": 36,
+          "y": 4080.28125,
+          "w": 248,
+          "h": 264.4375,
+          "right": 284,
+          "bottom": 4344.71875
+        },
+        "inspection": {
+          "x": 36,
+          "y": 4356.71875,
+          "w": 248,
+          "h": 287.484375,
+          "right": 284,
+          "bottom": 4644.203125
+        },
+        "stores": {
+          "x": 36,
+          "y": 4656.203125,
+          "w": 248,
+          "h": 323.9375,
+          "right": 284,
+          "bottom": 4980.140625
+        },
+        "values": {
+          "x": 36,
+          "y": 4992.140625,
+          "w": 248,
+          "h": 46,
+          "right": 284,
+          "bottom": 5038.140625
+        }
+      }
+    },
+    {
+      "label": "light-320 solid dashed dotted styles and circle square diamond shapes match their legend",
+      "pass": true,
+      "detail": {
+        "series": [
+          {
+            "key": "energy",
+            "stroke": "rgb(167, 90, 8)",
+            "dash": "none",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 130,
+                "y": 97.3,
+                "score": 45.984848484848484
+              },
+              {
+                "x": 212,
+                "y": 84.1,
+                "score": 55.98484848484849
+              },
+              {
+                "x": 294,
+                "y": 102.6,
+                "score": 41.969696969696976
+              },
+              {
+                "x": 376,
+                "y": 113.1,
+                "score": 34.01515151515152
+              }
+            ]
+          },
+          {
+            "key": "flow",
+            "stroke": "rgb(8, 118, 155)",
+            "dash": "9px, 6px",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 90.7,
+                "score": 50.984848484848484
+              },
+              {
+                "x": 130,
+                "y": 96,
+                "score": 46.96969696969697
+              },
+              {
+                "x": 212,
+                "y": 70.9,
+                "score": 65.98484848484848
+              },
+              {
+                "x": 294,
+                "y": 57.7,
+                "score": 75.98484848484848
+              },
+              {
+                "x": 376,
+                "y": 82.8,
+                "score": 56.96969696969697
+              }
+            ]
+          },
+          {
+            "key": "storage",
+            "stroke": "rgb(20, 116, 89)",
+            "dash": "1px, 6px",
+            "width": "4.5px",
+            "opacity": "1",
+            "points": [
+              {
+                "x": 48,
+                "y": 64.3,
+                "score": 70.98484848484848
+              },
+              {
+                "x": 130,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 212,
+                "y": 72.2,
+                "score": 65
+              },
+              {
+                "x": 294,
+                "y": 60.3,
+                "score": 74.01515151515152
+              },
+              {
+                "x": 376,
+                "y": 84.1,
+                "score": 55.98484848484849
+              }
+            ]
+          }
+        ],
+        "legend": [
+          {
+            "key": "energy",
+            "text": "Energy cue\nSolid",
+            "dash": "none",
+            "marker": "circle",
+            "stroke": "rgb(167, 90, 8)"
+          },
+          {
+            "key": "flow",
+            "text": "Surface flow cue\nDashed",
+            "dash": "9px, 6px",
+            "marker": "rect",
+            "stroke": "rgb(8, 118, 155)"
+          },
+          {
+            "key": "storage",
+            "text": "Storage cue\nDotted",
+            "dash": "1px, 6px",
+            "marker": "path",
+            "stroke": "rgb(20, 116, 89)"
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-320 accessible chart description states score and place limits",
+      "pass": true
+    },
+    {
+      "label": "light-320 preflight open panel fits viewport without clipping or page overflow",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "light-320 preflight open plot text remains about 12px or larger and labels do not overlap",
+      "pass": false,
+      "detail": {
+        "fonts": [
+          {
+            "text": "0",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "50",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "100",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Land",
+            "font": 11.628571428571428
+          },
+          {
+            "text": "Surface",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Air",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Cloud",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Land",
+            "font": 12.685714285714285
+          },
+          {
+            "text": "Return",
+            "font": 12.685714285714285
+          }
+        ],
+        "collisions": []
+      }
+    },
+    {
+      "label": "light-320 preflight open plot labels clear the heading and shape marks stay inside the scene",
+      "pass": true,
+      "detail": {
+        "heading": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 49,
+              "y": 532.28125,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 226.390625,
+              "bottom": 554.78125
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 49,
+              "y": 558.78125,
+              "w": 123.984375,
+              "h": 18,
+              "right": 172.984375,
+              "bottom": 576.78125
+            }
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 62.53786087036133,
+              "y": 653.4056396484375,
+              "w": 7.999996185302734,
+              "h": 17,
+              "right": 70.53785705566406,
+              "bottom": 670.4056396484375
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 54.94411087036133,
+              "y": 618.5216064453125,
+              "w": 15.596843719482422,
+              "h": 17.00006103515625,
+              "right": 70.54095458984375,
+              "bottom": 635.5216674804688
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 48.81911087036133,
+              "y": 583.6376342773438,
+              "w": 21.726329803466797,
+              "h": 17,
+              "right": 70.54544067382812,
+              "bottom": 600.6376342773438
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 22,
+            "renderedFont": 11.628571428571428,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 190.62440490722656,
+              "y": 576.7094116210938,
+              "w": 28.07965087890625,
+              "h": 16,
+              "right": 218.7040557861328,
+              "bottom": 592.7094116210938
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 53.75841522216797,
+              "y": 672.4332885742188,
+              "w": 41.59751892089844,
+              "h": 17,
+              "right": 95.3559341430664,
+              "bottom": 689.4332885742188
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 108.88040924072266,
+              "y": 672.4332885742188,
+              "w": 17.249771118164062,
+              "h": 17,
+              "right": 126.13018035888672,
+              "bottom": 689.4332885742188
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 144.55709838867188,
+              "y": 672.4332885742188,
+              "w": 32.99998474121094,
+              "h": 17,
+              "right": 177.5570831298828,
+              "bottom": 689.4332885742188
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 190.85877990722656,
+              "y": 672.4332885742188,
+              "w": 27.078125,
+              "h": 17,
+              "right": 217.93690490722656,
+              "bottom": 689.4332885742188
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 12.685714285714285,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 229.2854461669922,
+              "y": 672.4332885742188,
+              "w": 36.90626525878906,
+              "h": 17,
+              "right": 266.19171142578125,
+              "bottom": 689.4332885742188
+            }
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-320 preflight open four semantic groups follow plot inspection stores table DOM order",
+      "pass": true,
+      "detail": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ]
+    },
+    {
+      "label": "light-320 preflight open inspection and stores have visible coherent grouping and named references",
+      "pass": true,
+      "detail": {
+        "heading": "Storage cues by store",
+        "storeAria": "wcSignalStoresTitle",
+        "references": [
+          {
+            "id": "wcSignalStoresTitle",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-320 preflight open values table spans the complete grid below the other groups",
+      "pass": true,
+      "detail": {
+        "grid": {
+          "x": 36,
+          "y": 519.28125,
+          "w": 248,
+          "h": 1274.859375,
+          "right": 284,
+          "bottom": 1794.140625
+        },
+        "values": {
+          "x": 36,
+          "y": 1431.140625,
+          "w": 248,
+          "h": 363,
+          "right": 284,
+          "bottom": 1794.140625
+        }
+      }
+    },
+    {
+      "label": "light-320 preflight open visual groups follow the responsive desktop or phone arrangement",
+      "pass": true,
+      "detail": {
+        "stacked": true,
+        "chart": {
+          "x": 36,
+          "y": 519.28125,
+          "w": 248,
+          "h": 264.4375,
+          "right": 284,
+          "bottom": 783.71875
+        },
+        "inspection": {
+          "x": 36,
+          "y": 795.71875,
+          "w": 248,
+          "h": 287.484375,
+          "right": 284,
+          "bottom": 1083.203125
+        },
+        "stores": {
+          "x": 36,
+          "y": 1095.203125,
+          "w": 248,
+          "h": 323.9375,
+          "right": 284,
+          "bottom": 1419.140625
+        },
+        "values": {
+          "x": 36,
+          "y": 1431.140625,
+          "w": 248,
+          "h": 363,
+          "right": 284,
+          "bottom": 1794.140625
+        }
+      }
+    },
+    {
+      "label": "light-1280 default follows standalone Infiltration at Land",
+      "pass": true,
+      "detail": {
+        "label": "light-1280 default",
+        "stageIndex": 3,
+        "inspectIndex": 3,
+        "inspectChoice": "follow",
+        "followOption": "Follow stage focus · Land",
+        "focusChip": "Focus · Infiltration",
+        "focusChipAria": "Focused stage: Infiltration",
+        "focusState": "infiltration",
+        "markerLabel": "Land",
+        "markerX": 294,
+        "description": "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. Stage focus is Land; inspected values are at Land. Exact scores are available below.",
+        "readoutPlace": "land",
+        "readoutHeader": "Land · Teaching scores\nFollowing stage focus",
+        "readout": [
+          {
+            "key": "energy",
+            "label": "Energy cue",
+            "score": 42
+          },
+          {
+            "key": "flow",
+            "label": "Surface flow cue",
+            "score": 76
+          },
+          {
+            "key": "storage",
+            "label": "Storage cue",
+            "score": 74
+          }
+        ],
+        "rows": [
+          {
+            "place": "surface",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 52,
+              "flow": 51,
+              "storage": 71
+            }
+          },
+          {
+            "place": "air",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 46,
+              "flow": 47,
+              "storage": 52
+            }
+          },
+          {
+            "place": "cloud",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 56,
+              "flow": 66,
+              "storage": 65
+            }
+          },
+          {
+            "place": "land",
+            "highlight": true,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 42,
+              "flow": 76,
+              "storage": 74
+            }
+          },
+          {
+            "place": "return",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 34,
+              "flow": 57,
+              "storage": 56
+            }
+          }
+        ],
+        "series": [
+          {
+            "key": "energy",
+            "stroke": "rgb(167, 90, 8)",
+            "dash": "none",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 130,
+                "y": 97.3,
+                "score": 45.984848484848484
+              },
+              {
+                "x": 212,
+                "y": 84.1,
+                "score": 55.98484848484849
+              },
+              {
+                "x": 294,
+                "y": 102.6,
+                "score": 41.969696969696976
+              },
+              {
+                "x": 376,
+                "y": 113.1,
+                "score": 34.01515151515152
+              }
+            ]
+          },
+          {
+            "key": "flow",
+            "stroke": "rgb(8, 118, 155)",
+            "dash": "9px, 6px",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 90.7,
+                "score": 50.984848484848484
+              },
+              {
+                "x": 130,
+                "y": 96,
+                "score": 46.96969696969697
+              },
+              {
+                "x": 212,
+                "y": 70.9,
+                "score": 65.98484848484848
+              },
+              {
+                "x": 294,
+                "y": 57.7,
+                "score": 75.98484848484848
+              },
+              {
+                "x": 376,
+                "y": 82.8,
+                "score": 56.96969696969697
+              }
+            ]
+          },
+          {
+            "key": "storage",
+            "stroke": "rgb(20, 116, 89)",
+            "dash": "1px, 6px",
+            "width": "4.5px",
+            "opacity": "1",
+            "points": [
+              {
+                "x": 48,
+                "y": 64.3,
+                "score": 70.98484848484848
+              },
+              {
+                "x": 130,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 212,
+                "y": 72.2,
+                "score": 65
+              },
+              {
+                "x": 294,
+                "y": 60.3,
+                "score": 74.01515151515152
+              },
+              {
+                "x": 376,
+                "y": 84.1,
+                "score": 55.98484848484849
+              }
+            ]
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ],
+        "legend": [
+          {
+            "key": "energy",
+            "text": "Energy cue\nSolid",
+            "dash": "none",
+            "marker": "circle",
+            "stroke": "rgb(167, 90, 8)"
+          },
+          {
+            "key": "flow",
+            "text": "Surface flow cue\nDashed",
+            "dash": "9px, 6px",
+            "marker": "rect",
+            "stroke": "rgb(8, 118, 155)"
+          },
+          {
+            "key": "storage",
+            "text": "Storage cue\nDotted",
+            "dash": "1px, 6px",
+            "marker": "path",
+            "stroke": "rgb(20, 116, 89)"
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 612.912109375,
+              "y": 2668.189453125,
+              "w": 11,
+              "h": 25,
+              "right": 623.912109375,
+              "bottom": 2693.189453125
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 602.037109375,
+              "y": 2582.53125,
+              "w": 21.8800048828125,
+              "h": 25,
+              "right": 623.9171142578125,
+              "bottom": 2607.53125
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 593.255859375,
+              "y": 2496.873046875,
+              "w": 30.6585693359375,
+              "h": 25,
+              "right": 623.9144287109375,
+              "bottom": 2521.873046875
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 931.93359375,
+              "y": 2477.4052734375,
+              "w": 43.046875,
+              "h": 25,
+              "right": 974.98046875,
+              "bottom": 2502.4052734375
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 604.662109375,
+              "y": 2714.912109375,
+              "w": 59.046875,
+              "h": 25,
+              "right": 663.708984375,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 728.390625,
+              "y": 2714.912109375,
+              "w": 24.11163330078125,
+              "h": 25,
+              "right": 752.5022583007812,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 823.400390625,
+              "y": 2714.912109375,
+              "w": 47.265625,
+              "h": 25,
+              "right": 870.666015625,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 934.07421875,
+              "y": 2714.912109375,
+              "w": 38.765625,
+              "h": 25,
+              "right": 972.83984375,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 1033.451171875,
+              "y": 2714.912109375,
+              "w": 52.859375,
+              "h": 25,
+              "right": 1086.310546875,
+              "bottom": 2739.912109375
+            }
+          }
+        ],
+        "textCollisions": [],
+        "plotHeading": {
+          "x": 571.875,
+          "y": 2450.4375,
+          "w": 545.125,
+          "h": 22.5,
+          "right": 1117,
+          "bottom": 2472.9375
+        },
+        "headingText": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 571.875,
+              "y": 2450.4375,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 749.265625,
+              "bottom": 2472.9375
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 993.015625,
+              "y": 2453.4375,
+              "w": 123.984375,
+              "h": 18,
+              "right": 1117,
+              "bottom": 2471.4375
+            }
+          }
+        ],
+        "ink": "rgb(25, 63, 71)",
+        "plotRect": {
+          "x": 571.875,
+          "y": 2477.9375,
+          "w": 545.125,
+          "h": 269.953125,
+          "right": 1117,
+          "bottom": 2747.890625
+        },
+        "panelRect": {
+          "x": 137,
+          "y": 2300.5,
+          "w": 1006,
+          "h": 773.78125,
+          "right": 1143,
+          "bottom": 3074.28125
+        },
+        "viewportWidth": 1280,
+        "scrollWidth": 1280,
+        "overflow": [],
+        "folded": true,
+        "tableCaption": "Independent teaching scores (0–100) for each place",
+        "columnScopes": [
+          "col",
+          "col",
+          "col",
+          "col"
+        ],
+        "chartSelect": {
+          "x": 163,
+          "y": 2854.828125,
+          "w": 383.75,
+          "h": 44,
+          "right": 546.75,
+          "bottom": 2898.828125
+        },
+        "summary": {
+          "x": 163,
+          "y": 2966.28125,
+          "w": 954,
+          "h": 44,
+          "right": 1117,
+          "bottom": 3010.28125
+        },
+        "dataWithoutInspection": "{\"wcMode\":\"explore\",\"wcSection\":\"data\",\"journeyView\":\"2d\",\"journeyActive\":false,\"journeyState\":\"idle\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"infiltration\",\"climTemp\":15,\"climSolar\":1,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\",\"wcScenarioBaseline\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\"},\"wcProcessCompare\":{\"first\":\"condensation\",\"second\":\"precipitation\",\"notes\":{\"condensation|precipitation\":\"Cloud particles grow and fall; condensation forms droplets.\"}},\"wcExperimentLog\":[{\"id\":\"signal-inspection-evidence\",\"note\":\"Saved observation must survive chart inspection\",\"inputs\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1}}]}",
+        "parcel": {
+          "active": false,
+          "state": "idle",
+          "stage": "infiltration",
+          "paused": "true",
+          "progress": 0
+        },
+        "solar": 1
+      }
+    },
+    {
+      "label": "light-1280 values table starts folded and has caption and row/column headers",
+      "pass": true
+    },
+    {
+      "label": "light-1280 default all plotted coordinates agree with five-place table",
+      "pass": true,
+      "detail": [
+        {
+          "key": "energy",
+          "plot": [
+            51.96969696969696,
+            45.984848484848484,
+            55.98484848484849,
+            41.969696969696976,
+            34.01515151515152
+          ],
+          "table": [
+            52,
+            46,
+            56,
+            42,
+            34
+          ]
+        },
+        {
+          "key": "flow",
+          "plot": [
+            50.984848484848484,
+            46.96969696969697,
+            65.98484848484848,
+            75.98484848484848,
+            56.96969696969697
+          ],
+          "table": [
+            51,
+            47,
+            66,
+            76,
+            57
+          ]
+        },
+        {
+          "key": "storage",
+          "plot": [
+            70.98484848484848,
+            51.96969696969696,
+            65,
+            74.01515151515152,
+            55.98484848484849
+          ],
+          "table": [
+            71,
+            52,
+            65,
+            74,
+            56
+          ]
+        }
+      ]
+    },
+    {
+      "label": "light-1280 default selected place readout and highlighted table row agree",
+      "pass": true,
+      "detail": {
+        "readout": [
+          {
+            "key": "energy",
+            "label": "Energy cue",
+            "score": 42
+          },
+          {
+            "key": "flow",
+            "label": "Surface flow cue",
+            "score": 76
+          },
+          {
+            "key": "storage",
+            "label": "Storage cue",
+            "score": 74
+          }
+        ],
+        "rows": [
+          {
+            "place": "surface",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 52,
+              "flow": 51,
+              "storage": 71
+            }
+          },
+          {
+            "place": "air",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 46,
+              "flow": 47,
+              "storage": 52
+            }
+          },
+          {
+            "place": "cloud",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 56,
+              "flow": 66,
+              "storage": 65
+            }
+          },
+          {
+            "place": "land",
+            "highlight": true,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 42,
+              "flow": 76,
+              "storage": 74
+            }
+          },
+          {
+            "place": "return",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 34,
+              "flow": 57,
+              "storage": 56
+            }
+          }
+        ],
+        "choice": "follow"
+      }
+    },
+    {
+      "label": "light-1280 default selected shape marks the actual plotted score",
+      "pass": true,
+      "detail": [
+        {
+          "key": "energy",
+          "tag": "circle",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 102.55999755859375
+          },
+          "score": 42.00000184955019,
+          "fill": "rgb(167, 90, 8)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 98.05999755859375,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "flow",
+          "tag": "rect",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 57.68000030517578
+          },
+          "score": 75.99999976880622,
+          "fill": "rgb(8, 118, 155)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 53.18000030517578,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "storage",
+          "tag": "path",
+          "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+          "center": {
+            "x": 294,
+            "y": 60.31999969482422
+          },
+          "score": 74.00000023119378,
+          "fill": "rgb(20, 116, 89)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 288,
+            "y": 54.31999969482422,
+            "w": 12,
+            "h": 12
+          }
+        }
+      ]
+    },
+    {
+      "label": "light-1280 default panel fits viewport without clipping or page overflow",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "light-1280 default plot text remains about 12px or larger and labels do not overlap",
+      "pass": true,
+      "detail": {
+        "fonts": [
+          {
+            "text": "0",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "50",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "100",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Land",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Surface",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Air",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Cloud",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Land",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Return",
+            "font": 18.170833333333334
+          }
+        ],
+        "collisions": []
+      }
+    },
+    {
+      "label": "light-1280 default plot labels clear the heading and shape marks stay inside the scene",
+      "pass": true,
+      "detail": {
+        "heading": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 571.875,
+              "y": 2450.4375,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 749.265625,
+              "bottom": 2472.9375
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 993.015625,
+              "y": 2453.4375,
+              "w": 123.984375,
+              "h": 18,
+              "right": 1117,
+              "bottom": 2471.4375
+            }
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 612.912109375,
+              "y": 2668.189453125,
+              "w": 11,
+              "h": 25,
+              "right": 623.912109375,
+              "bottom": 2693.189453125
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 602.037109375,
+              "y": 2582.53125,
+              "w": 21.8800048828125,
+              "h": 25,
+              "right": 623.9171142578125,
+              "bottom": 2607.53125
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 593.255859375,
+              "y": 2496.873046875,
+              "w": 30.6585693359375,
+              "h": 25,
+              "right": 623.9144287109375,
+              "bottom": 2521.873046875
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 931.93359375,
+              "y": 2477.4052734375,
+              "w": 43.046875,
+              "h": 25,
+              "right": 974.98046875,
+              "bottom": 2502.4052734375
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 604.662109375,
+              "y": 2714.912109375,
+              "w": 59.046875,
+              "h": 25,
+              "right": 663.708984375,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 728.390625,
+              "y": 2714.912109375,
+              "w": 24.11163330078125,
+              "h": 25,
+              "right": 752.5022583007812,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 823.400390625,
+              "y": 2714.912109375,
+              "w": 47.265625,
+              "h": 25,
+              "right": 870.666015625,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 934.07421875,
+              "y": 2714.912109375,
+              "w": 38.765625,
+              "h": 25,
+              "right": 972.83984375,
+              "bottom": 2739.912109375
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 1033.451171875,
+              "y": 2714.912109375,
+              "w": 52.859375,
+              "h": 25,
+              "right": 1086.310546875,
+              "bottom": 2739.912109375
+            }
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280 folded four semantic groups follow plot inspection stores table DOM order",
+      "pass": true,
+      "detail": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ]
+    },
+    {
+      "label": "light-1280 folded inspection and stores have visible coherent grouping and named references",
+      "pass": true,
+      "detail": {
+        "heading": "Storage cues by store",
+        "storeAria": "wcSignalStoresTitle",
+        "references": [
+          {
+            "id": "wcSignalStoresTitle",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280 folded values table spans the complete grid below the other groups",
+      "pass": true,
+      "detail": {
+        "grid": {
+          "x": 150,
+          "y": 2437.4375,
+          "w": 980,
+          "h": 573.84375,
+          "right": 1130,
+          "bottom": 3011.28125
+        },
+        "values": {
+          "x": 150,
+          "y": 2965.28125,
+          "w": 980,
+          "h": 46,
+          "right": 1130,
+          "bottom": 3011.28125
+        }
+      }
+    },
+    {
+      "label": "light-1280 folded visual groups follow the responsive desktop or phone arrangement",
+      "pass": true,
+      "detail": {
+        "stacked": false,
+        "chart": {
+          "x": 558.875,
+          "y": 2437.4375,
+          "w": 571.125,
+          "h": 350.453125,
+          "right": 1130,
+          "bottom": 2787.890625
+        },
+        "inspection": {
+          "x": 150,
+          "y": 2799.890625,
+          "w": 980,
+          "h": 153.390625,
+          "right": 1130,
+          "bottom": 2953.28125
+        },
+        "stores": {
+          "x": 150,
+          "y": 2437.4375,
+          "w": 396.875,
+          "h": 305.9375,
+          "right": 546.875,
+          "bottom": 2743.375
+        },
+        "values": {
+          "x": 150,
+          "y": 2965.28125,
+          "w": 980,
+          "h": 46,
+          "right": 1130,
+          "bottom": 3011.28125
+        }
+      }
+    },
+    {
+      "label": "light-1280 solid dashed dotted styles and circle square diamond shapes match their legend",
+      "pass": true,
+      "detail": {
+        "series": [
+          {
+            "key": "energy",
+            "stroke": "rgb(167, 90, 8)",
+            "dash": "none",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 130,
+                "y": 97.3,
+                "score": 45.984848484848484
+              },
+              {
+                "x": 212,
+                "y": 84.1,
+                "score": 55.98484848484849
+              },
+              {
+                "x": 294,
+                "y": 102.6,
+                "score": 41.969696969696976
+              },
+              {
+                "x": 376,
+                "y": 113.1,
+                "score": 34.01515151515152
+              }
+            ]
+          },
+          {
+            "key": "flow",
+            "stroke": "rgb(8, 118, 155)",
+            "dash": "9px, 6px",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 90.7,
+                "score": 50.984848484848484
+              },
+              {
+                "x": 130,
+                "y": 96,
+                "score": 46.96969696969697
+              },
+              {
+                "x": 212,
+                "y": 70.9,
+                "score": 65.98484848484848
+              },
+              {
+                "x": 294,
+                "y": 57.7,
+                "score": 75.98484848484848
+              },
+              {
+                "x": 376,
+                "y": 82.8,
+                "score": 56.96969696969697
+              }
+            ]
+          },
+          {
+            "key": "storage",
+            "stroke": "rgb(20, 116, 89)",
+            "dash": "1px, 6px",
+            "width": "4.5px",
+            "opacity": "1",
+            "points": [
+              {
+                "x": 48,
+                "y": 64.3,
+                "score": 70.98484848484848
+              },
+              {
+                "x": 130,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 212,
+                "y": 72.2,
+                "score": 65
+              },
+              {
+                "x": 294,
+                "y": 60.3,
+                "score": 74.01515151515152
+              },
+              {
+                "x": 376,
+                "y": 84.1,
+                "score": 55.98484848484849
+              }
+            ]
+          }
+        ],
+        "legend": [
+          {
+            "key": "energy",
+            "text": "Energy cue\nSolid",
+            "dash": "none",
+            "marker": "circle",
+            "stroke": "rgb(167, 90, 8)"
+          },
+          {
+            "key": "flow",
+            "text": "Surface flow cue\nDashed",
+            "dash": "9px, 6px",
+            "marker": "rect",
+            "stroke": "rgb(8, 118, 155)"
+          },
+          {
+            "key": "storage",
+            "text": "Storage cue\nDotted",
+            "dash": "1px, 6px",
+            "marker": "path",
+            "stroke": "rgb(20, 116, 89)"
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280 accessible chart description states score and place limits",
+      "pass": true
+    },
+    {
+      "label": "light-1280 preflight open panel fits viewport without clipping or page overflow",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "light-1280 preflight open plot text remains about 12px or larger and labels do not overlap",
+      "pass": true,
+      "detail": {
+        "fonts": [
+          {
+            "text": "0",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "50",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "100",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Land",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Surface",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Air",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Cloud",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Land",
+            "font": 18.170833333333334
+          },
+          {
+            "text": "Return",
+            "font": 18.170833333333334
+          }
+        ],
+        "collisions": []
+      }
+    },
+    {
+      "label": "light-1280 preflight open plot labels clear the heading and shape marks stay inside the scene",
+      "pass": true,
+      "detail": {
+        "heading": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 571.875,
+              "y": 673.4375,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 749.265625,
+              "bottom": 695.9375
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 993.015625,
+              "y": 676.4375,
+              "w": 123.984375,
+              "h": 18,
+              "right": 1117,
+              "bottom": 694.4375
+            }
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 612.912109375,
+              "y": 891.189453125,
+              "w": 11,
+              "h": 25,
+              "right": 623.912109375,
+              "bottom": 916.189453125
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 602.037109375,
+              "y": 805.53125,
+              "w": 21.8800048828125,
+              "h": 25,
+              "right": 623.9171142578125,
+              "bottom": 830.53125
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 593.255859375,
+              "y": 719.873046875,
+              "w": 30.6585693359375,
+              "h": 25,
+              "right": 623.9144287109375,
+              "bottom": 744.873046875
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 931.93359375,
+              "y": 700.4052734375,
+              "w": 43.046875,
+              "h": 25,
+              "right": 974.98046875,
+              "bottom": 725.4052734375
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 604.662109375,
+              "y": 937.912109375,
+              "w": 59.046875,
+              "h": 25,
+              "right": 663.708984375,
+              "bottom": 962.912109375
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 728.390625,
+              "y": 937.912109375,
+              "w": 24.11163330078125,
+              "h": 25,
+              "right": 752.5022583007812,
+              "bottom": 962.912109375
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 823.400390625,
+              "y": 937.912109375,
+              "w": 47.265625,
+              "h": 25,
+              "right": 870.666015625,
+              "bottom": 962.912109375
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 934.07421875,
+              "y": 937.912109375,
+              "w": 38.765625,
+              "h": 25,
+              "right": 972.83984375,
+              "bottom": 962.912109375
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 14,
+            "renderedFont": 18.170833333333334,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 1033.451171875,
+              "y": 937.912109375,
+              "w": 52.859375,
+              "h": 25,
+              "right": 1086.310546875,
+              "bottom": 962.912109375
+            }
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280 preflight open four semantic groups follow plot inspection stores table DOM order",
+      "pass": true,
+      "detail": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ]
+    },
+    {
+      "label": "light-1280 preflight open inspection and stores have visible coherent grouping and named references",
+      "pass": true,
+      "detail": {
+        "heading": "Storage cues by store",
+        "storeAria": "wcSignalStoresTitle",
+        "references": [
+          {
+            "id": "wcSignalStoresTitle",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280 preflight open values table spans the complete grid below the other groups",
+      "pass": true,
+      "detail": {
+        "grid": {
+          "x": 150,
+          "y": 660.4375,
+          "w": 980,
+          "h": 836.84375,
+          "right": 1130,
+          "bottom": 1497.28125
+        },
+        "values": {
+          "x": 150,
+          "y": 1188.28125,
+          "w": 980,
+          "h": 309,
+          "right": 1130,
+          "bottom": 1497.28125
+        }
+      }
+    },
+    {
+      "label": "light-1280 preflight open visual groups follow the responsive desktop or phone arrangement",
+      "pass": true,
+      "detail": {
+        "stacked": false,
+        "chart": {
+          "x": 558.875,
+          "y": 660.4375,
+          "w": 571.125,
+          "h": 350.453125,
+          "right": 1130,
+          "bottom": 1010.890625
+        },
+        "inspection": {
+          "x": 150,
+          "y": 1022.890625,
+          "w": 980,
+          "h": 153.390625,
+          "right": 1130,
+          "bottom": 1176.28125
+        },
+        "stores": {
+          "x": 150,
+          "y": 660.4375,
+          "w": 396.875,
+          "h": 305.9375,
+          "right": 546.875,
+          "bottom": 966.375
+        },
+        "values": {
+          "x": 150,
+          "y": 1188.28125,
+          "w": 980,
+          "h": 309,
+          "right": 1130,
+          "bottom": 1497.28125
+        }
+      }
+    },
+    {
+      "label": "light-1280-host-390 default follows standalone Infiltration at Land",
+      "pass": true,
+      "detail": {
+        "label": "light-1280-host-390 default",
+        "stageIndex": 3,
+        "inspectIndex": 3,
+        "inspectChoice": "follow",
+        "followOption": "Follow stage focus · Land",
+        "focusChip": "Focus · Infiltration",
+        "focusChipAria": "Focused stage: Infiltration",
+        "focusState": "infiltration",
+        "markerLabel": "Land",
+        "markerX": 294,
+        "description": "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. Stage focus is Land; inspected values are at Land. Exact scores are available below.",
+        "readoutPlace": "land",
+        "readoutHeader": "Land · Teaching scores\nFollowing stage focus",
+        "readout": [
+          {
+            "key": "energy",
+            "label": "Energy cue",
+            "score": 42
+          },
+          {
+            "key": "flow",
+            "label": "Surface flow cue",
+            "score": 76
+          },
+          {
+            "key": "storage",
+            "label": "Storage cue",
+            "score": 74
+          }
+        ],
+        "rows": [
+          {
+            "place": "surface",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 52,
+              "flow": 51,
+              "storage": 71
+            }
+          },
+          {
+            "place": "air",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 46,
+              "flow": 47,
+              "storage": 52
+            }
+          },
+          {
+            "place": "cloud",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 56,
+              "flow": 66,
+              "storage": 65
+            }
+          },
+          {
+            "place": "land",
+            "highlight": true,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 42,
+              "flow": 76,
+              "storage": 74
+            }
+          },
+          {
+            "place": "return",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 34,
+              "flow": 57,
+              "storage": 56
+            }
+          }
+        ],
+        "series": [
+          {
+            "key": "energy",
+            "stroke": "rgb(167, 90, 8)",
+            "dash": "none",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 130,
+                "y": 97.3,
+                "score": 45.984848484848484
+              },
+              {
+                "x": 212,
+                "y": 84.1,
+                "score": 55.98484848484849
+              },
+              {
+                "x": 294,
+                "y": 102.6,
+                "score": 41.969696969696976
+              },
+              {
+                "x": 376,
+                "y": 113.1,
+                "score": 34.01515151515152
+              }
+            ]
+          },
+          {
+            "key": "flow",
+            "stroke": "rgb(8, 118, 155)",
+            "dash": "9px, 6px",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 90.7,
+                "score": 50.984848484848484
+              },
+              {
+                "x": 130,
+                "y": 96,
+                "score": 46.96969696969697
+              },
+              {
+                "x": 212,
+                "y": 70.9,
+                "score": 65.98484848484848
+              },
+              {
+                "x": 294,
+                "y": 57.7,
+                "score": 75.98484848484848
+              },
+              {
+                "x": 376,
+                "y": 82.8,
+                "score": 56.96969696969697
+              }
+            ]
+          },
+          {
+            "key": "storage",
+            "stroke": "rgb(20, 116, 89)",
+            "dash": "1px, 6px",
+            "width": "4.5px",
+            "opacity": "1",
+            "points": [
+              {
+                "x": 48,
+                "y": 64.3,
+                "score": 70.98484848484848
+              },
+              {
+                "x": 130,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 212,
+                "y": 72.2,
+                "score": 65
+              },
+              {
+                "x": 294,
+                "y": 60.3,
+                "score": 74.01515151515152
+              },
+              {
+                "x": 376,
+                "y": 84.1,
+                "score": 55.98484848484849
+              }
+            ]
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ],
+        "legend": [
+          {
+            "key": "energy",
+            "text": "Energy cue\nSolid",
+            "dash": "none",
+            "marker": "circle",
+            "stroke": "rgb(167, 90, 8)"
+          },
+          {
+            "key": "flow",
+            "text": "Surface flow cue\nDashed",
+            "dash": "9px, 6px",
+            "marker": "rect",
+            "stroke": "rgb(8, 118, 155)"
+          },
+          {
+            "key": "storage",
+            "text": "Storage cue\nDotted",
+            "dash": "1px, 6px",
+            "marker": "path",
+            "stroke": "rgb(20, 116, 89)"
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 517.0814208984375,
+              "y": 4432.91357421875,
+              "w": 10,
+              "h": 21,
+              "right": 527.0814208984375,
+              "bottom": 4453.91357421875
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 507.5032958984375,
+              "y": 4388.9169921875,
+              "w": 19.5799560546875,
+              "h": 21,
+              "right": 527.083251953125,
+              "bottom": 4409.9169921875
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 499.7845458984375,
+              "y": 4344.92041015625,
+              "w": 27.30950927734375,
+              "h": 21,
+              "right": 527.0940551757812,
+              "bottom": 4365.92041015625
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 22,
+            "renderedFont": 14.666666666666666,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 678.6207885742188,
+              "y": 4335.9208984375,
+              "w": 35.33282470703125,
+              "h": 20,
+              "right": 713.95361328125,
+              "bottom": 4355.9208984375
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 506.00811767578125,
+              "y": 4456.912109375,
+              "w": 52,
+              "h": 21,
+              "right": 558.0081176757812,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 575.795654296875,
+              "y": 4456.912109375,
+              "w": 21.18646240234375,
+              "h": 21,
+              "right": 596.9821166992188,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 620.528564453125,
+              "y": 4456.912109375,
+              "w": 41.609375,
+              "h": 21,
+              "right": 662.137939453125,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 678.9254760742188,
+              "y": 4456.912109375,
+              "w": 34.140625,
+              "h": 21,
+              "right": 713.0661010742188,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 727.3848876953125,
+              "y": 4456.912109375,
+              "w": 46.546875,
+              "h": 21,
+              "right": 773.9317626953125,
+              "bottom": 4477.912109375
+            }
+          }
+        ],
+        "textCollisions": [],
+        "plotHeading": {
+          "x": 500,
+          "y": 4292.421875,
+          "w": 280,
+          "h": 44.5,
+          "right": 780,
+          "bottom": 4336.921875
+        },
+        "headingText": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 500,
+              "y": 4292.421875,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 677.390625,
+              "bottom": 4314.921875
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 500,
+              "y": 4318.921875,
+              "w": 123.984375,
+              "h": 18,
+              "right": 623.984375,
+              "bottom": 4336.921875
+            }
+          }
+        ],
+        "ink": "rgb(25, 63, 71)",
+        "plotRect": {
+          "x": 500,
+          "y": 4341.921875,
+          "w": 280,
+          "h": 138.65625,
+          "right": 780,
+          "bottom": 4480.578125
+        },
+        "panelRect": {
+          "x": 474,
+          "y": 3977.859375,
+          "w": 332,
+          "h": 1390.75,
+          "right": 806,
+          "bottom": 5368.609375
+        },
+        "viewportWidth": 1280,
+        "scrollWidth": 1280,
+        "overflow": [],
+        "folded": true,
+        "tableCaption": "Independent teaching scores (0–100) for each place",
+        "columnScopes": [
+          "col",
+          "col",
+          "col",
+          "col"
+        ],
+        "chartSelect": {
+          "x": 500,
+          "y": 4623.078125,
+          "w": 280,
+          "h": 44,
+          "right": 780,
+          "bottom": 4667.078125
+        },
+        "summary": {
+          "x": 500,
+          "y": 5224.609375,
+          "w": 280,
+          "h": 44,
+          "right": 780,
+          "bottom": 5268.609375
+        },
+        "dataWithoutInspection": "{\"wcMode\":\"explore\",\"wcSection\":\"data\",\"journeyView\":\"2d\",\"journeyActive\":false,\"journeyState\":\"idle\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"infiltration\",\"climTemp\":15,\"climSolar\":1,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\",\"wcScenarioBaseline\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\"},\"wcProcessCompare\":{\"first\":\"condensation\",\"second\":\"precipitation\",\"notes\":{\"condensation|precipitation\":\"Cloud particles grow and fall; condensation forms droplets.\"}},\"wcExperimentLog\":[{\"id\":\"signal-inspection-evidence\",\"note\":\"Saved observation must survive chart inspection\",\"inputs\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1}}]}",
+        "parcel": {
+          "active": false,
+          "state": "idle",
+          "stage": "infiltration",
+          "paused": "true",
+          "progress": 0
+        },
+        "solar": 1
+      }
+    },
+    {
+      "label": "light-1280-host-390 values table starts folded and has caption and row/column headers",
+      "pass": true
+    },
+    {
+      "label": "light-1280-host-390 default all plotted coordinates agree with five-place table",
+      "pass": true,
+      "detail": [
+        {
+          "key": "energy",
+          "plot": [
+            51.96969696969696,
+            45.984848484848484,
+            55.98484848484849,
+            41.969696969696976,
+            34.01515151515152
+          ],
+          "table": [
+            52,
+            46,
+            56,
+            42,
+            34
+          ]
+        },
+        {
+          "key": "flow",
+          "plot": [
+            50.984848484848484,
+            46.96969696969697,
+            65.98484848484848,
+            75.98484848484848,
+            56.96969696969697
+          ],
+          "table": [
+            51,
+            47,
+            66,
+            76,
+            57
+          ]
+        },
+        {
+          "key": "storage",
+          "plot": [
+            70.98484848484848,
+            51.96969696969696,
+            65,
+            74.01515151515152,
+            55.98484848484849
+          ],
+          "table": [
+            71,
+            52,
+            65,
+            74,
+            56
+          ]
+        }
+      ]
+    },
+    {
+      "label": "light-1280-host-390 default selected place readout and highlighted table row agree",
+      "pass": true,
+      "detail": {
+        "readout": [
+          {
+            "key": "energy",
+            "label": "Energy cue",
+            "score": 42
+          },
+          {
+            "key": "flow",
+            "label": "Surface flow cue",
+            "score": 76
+          },
+          {
+            "key": "storage",
+            "label": "Storage cue",
+            "score": 74
+          }
+        ],
+        "rows": [
+          {
+            "place": "surface",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 52,
+              "flow": 51,
+              "storage": 71
+            }
+          },
+          {
+            "place": "air",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 46,
+              "flow": 47,
+              "storage": 52
+            }
+          },
+          {
+            "place": "cloud",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 56,
+              "flow": 66,
+              "storage": 65
+            }
+          },
+          {
+            "place": "land",
+            "highlight": true,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 42,
+              "flow": 76,
+              "storage": 74
+            }
+          },
+          {
+            "place": "return",
+            "highlight": false,
+            "rowHeader": "row",
+            "scores": {
+              "energy": 34,
+              "flow": 57,
+              "storage": 56
+            }
+          }
+        ],
+        "choice": "follow"
+      }
+    },
+    {
+      "label": "light-1280-host-390 default selected shape marks the actual plotted score",
+      "pass": true,
+      "detail": [
+        {
+          "key": "energy",
+          "tag": "circle",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 102.55999755859375
+          },
+          "score": 42.00000184955019,
+          "fill": "rgb(167, 90, 8)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 98.05999755859375,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "flow",
+          "tag": "rect",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 57.68000030517578
+          },
+          "score": 75.99999976880622,
+          "fill": "rgb(8, 118, 155)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 53.18000030517578,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "storage",
+          "tag": "path",
+          "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+          "center": {
+            "x": 294,
+            "y": 60.31999969482422
+          },
+          "score": 74.00000023119378,
+          "fill": "rgb(20, 116, 89)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 288,
+            "y": 54.31999969482422,
+            "w": 12,
+            "h": 12
+          }
+        }
+      ]
+    },
+    {
+      "label": "light-1280-host-390 default panel fits viewport without clipping or page overflow",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "light-1280-host-390 default plot text remains about 12px or larger and labels do not overlap",
+      "pass": true,
+      "detail": {
+        "fonts": [
+          {
+            "text": "0",
+            "font": 16
+          },
+          {
+            "text": "50",
+            "font": 16
+          },
+          {
+            "text": "100",
+            "font": 16
+          },
+          {
+            "text": "Land",
+            "font": 14.666666666666666
+          },
+          {
+            "text": "Surface",
+            "font": 16
+          },
+          {
+            "text": "Air",
+            "font": 16
+          },
+          {
+            "text": "Cloud",
+            "font": 16
+          },
+          {
+            "text": "Land",
+            "font": 16
+          },
+          {
+            "text": "Return",
+            "font": 16
+          }
+        ],
+        "collisions": []
+      }
+    },
+    {
+      "label": "light-1280-host-390 default plot labels clear the heading and shape marks stay inside the scene",
+      "pass": true,
+      "detail": {
+        "heading": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 500,
+              "y": 4292.421875,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 677.390625,
+              "bottom": 4314.921875
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 500,
+              "y": 4318.921875,
+              "w": 123.984375,
+              "h": 18,
+              "right": 623.984375,
+              "bottom": 4336.921875
+            }
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 517.0814208984375,
+              "y": 4432.91357421875,
+              "w": 10,
+              "h": 21,
+              "right": 527.0814208984375,
+              "bottom": 4453.91357421875
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 507.5032958984375,
+              "y": 4388.9169921875,
+              "w": 19.5799560546875,
+              "h": 21,
+              "right": 527.083251953125,
+              "bottom": 4409.9169921875
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 499.7845458984375,
+              "y": 4344.92041015625,
+              "w": 27.30950927734375,
+              "h": 21,
+              "right": 527.0940551757812,
+              "bottom": 4365.92041015625
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 22,
+            "renderedFont": 14.666666666666666,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 678.6207885742188,
+              "y": 4335.9208984375,
+              "w": 35.33282470703125,
+              "h": 20,
+              "right": 713.95361328125,
+              "bottom": 4355.9208984375
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 506.00811767578125,
+              "y": 4456.912109375,
+              "w": 52,
+              "h": 21,
+              "right": 558.0081176757812,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 575.795654296875,
+              "y": 4456.912109375,
+              "w": 21.18646240234375,
+              "h": 21,
+              "right": 596.9821166992188,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 620.528564453125,
+              "y": 4456.912109375,
+              "w": 41.609375,
+              "h": 21,
+              "right": 662.137939453125,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 678.9254760742188,
+              "y": 4456.912109375,
+              "w": 34.140625,
+              "h": 21,
+              "right": 713.0661010742188,
+              "bottom": 4477.912109375
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 727.3848876953125,
+              "y": 4456.912109375,
+              "w": 46.546875,
+              "h": 21,
+              "right": 773.9317626953125,
+              "bottom": 4477.912109375
+            }
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280-host-390 folded four semantic groups follow plot inspection stores table DOM order",
+      "pass": true,
+      "detail": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ]
+    },
+    {
+      "label": "light-1280-host-390 folded inspection and stores have visible coherent grouping and named references",
+      "pass": true,
+      "detail": {
+        "heading": "Storage cues by store",
+        "storeAria": "wcSignalStoresTitle",
+        "references": [
+          {
+            "id": "wcSignalStoresTitle",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280-host-390 folded values table spans the complete grid below the other groups",
+      "pass": true,
+      "detail": {
+        "grid": {
+          "x": 487,
+          "y": 4279.421875,
+          "w": 306,
+          "h": 990.1875,
+          "right": 793,
+          "bottom": 5269.609375
+        },
+        "values": {
+          "x": 487,
+          "y": 5223.609375,
+          "w": 306,
+          "h": 46,
+          "right": 793,
+          "bottom": 5269.609375
+        }
+      }
+    },
+    {
+      "label": "light-1280-host-390 folded visual groups follow the responsive desktop or phone arrangement",
+      "pass": true,
+      "detail": {
+        "stacked": true,
+        "chart": {
+          "x": 487,
+          "y": 4279.421875,
+          "w": 306,
+          "h": 293.15625,
+          "right": 793,
+          "bottom": 4572.578125
+        },
+        "inspection": {
+          "x": 487,
+          "y": 4584.578125,
+          "w": 306,
+          "h": 291.09375,
+          "right": 793,
+          "bottom": 4875.671875
+        },
+        "stores": {
+          "x": 487,
+          "y": 4887.671875,
+          "w": 306,
+          "h": 323.9375,
+          "right": 793,
+          "bottom": 5211.609375
+        },
+        "values": {
+          "x": 487,
+          "y": 5223.609375,
+          "w": 306,
+          "h": 46,
+          "right": 793,
+          "bottom": 5269.609375
+        }
+      }
+    },
+    {
+      "label": "light-1280-host-390 solid dashed dotted styles and circle square diamond shapes match their legend",
+      "pass": true,
+      "detail": {
+        "series": [
+          {
+            "key": "energy",
+            "stroke": "rgb(167, 90, 8)",
+            "dash": "none",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 130,
+                "y": 97.3,
+                "score": 45.984848484848484
+              },
+              {
+                "x": 212,
+                "y": 84.1,
+                "score": 55.98484848484849
+              },
+              {
+                "x": 294,
+                "y": 102.6,
+                "score": 41.969696969696976
+              },
+              {
+                "x": 376,
+                "y": 113.1,
+                "score": 34.01515151515152
+              }
+            ]
+          },
+          {
+            "key": "flow",
+            "stroke": "rgb(8, 118, 155)",
+            "dash": "9px, 6px",
+            "width": "3px",
+            "opacity": "0.85",
+            "points": [
+              {
+                "x": 48,
+                "y": 90.7,
+                "score": 50.984848484848484
+              },
+              {
+                "x": 130,
+                "y": 96,
+                "score": 46.96969696969697
+              },
+              {
+                "x": 212,
+                "y": 70.9,
+                "score": 65.98484848484848
+              },
+              {
+                "x": 294,
+                "y": 57.7,
+                "score": 75.98484848484848
+              },
+              {
+                "x": 376,
+                "y": 82.8,
+                "score": 56.96969696969697
+              }
+            ]
+          },
+          {
+            "key": "storage",
+            "stroke": "rgb(20, 116, 89)",
+            "dash": "1px, 6px",
+            "width": "4.5px",
+            "opacity": "1",
+            "points": [
+              {
+                "x": 48,
+                "y": 64.3,
+                "score": 70.98484848484848
+              },
+              {
+                "x": 130,
+                "y": 89.4,
+                "score": 51.96969696969696
+              },
+              {
+                "x": 212,
+                "y": 72.2,
+                "score": 65
+              },
+              {
+                "x": 294,
+                "y": 60.3,
+                "score": 74.01515151515152
+              },
+              {
+                "x": 376,
+                "y": 84.1,
+                "score": 55.98484848484849
+              }
+            ]
+          }
+        ],
+        "legend": [
+          {
+            "key": "energy",
+            "text": "Energy cue\nSolid",
+            "dash": "none",
+            "marker": "circle",
+            "stroke": "rgb(167, 90, 8)"
+          },
+          {
+            "key": "flow",
+            "text": "Surface flow cue\nDashed",
+            "dash": "9px, 6px",
+            "marker": "rect",
+            "stroke": "rgb(8, 118, 155)"
+          },
+          {
+            "key": "storage",
+            "text": "Storage cue\nDotted",
+            "dash": "1px, 6px",
+            "marker": "path",
+            "stroke": "rgb(20, 116, 89)"
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280-host-390 accessible chart description states score and place limits",
+      "pass": true
+    },
+    {
+      "label": "light-1280-host-390 preflight open panel fits viewport without clipping or page overflow",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "light-1280-host-390 preflight open plot text remains about 12px or larger and labels do not overlap",
+      "pass": true,
+      "detail": {
+        "fonts": [
+          {
+            "text": "0",
+            "font": 16
+          },
+          {
+            "text": "50",
+            "font": 16
+          },
+          {
+            "text": "100",
+            "font": 16
+          },
+          {
+            "text": "Land",
+            "font": 14.666666666666666
+          },
+          {
+            "text": "Surface",
+            "font": 16
+          },
+          {
+            "text": "Air",
+            "font": 16
+          },
+          {
+            "text": "Cloud",
+            "font": 16
+          },
+          {
+            "text": "Land",
+            "font": 16
+          },
+          {
+            "text": "Return",
+            "font": 16
+          }
+        ],
+        "collisions": []
+      }
+    },
+    {
+      "label": "light-1280-host-390 preflight open plot labels clear the heading and shape marks stay inside the scene",
+      "pass": true,
+      "detail": {
+        "heading": [
+          {
+            "text": "Teaching signals by place",
+            "rect": {
+              "x": 500,
+              "y": 519.421875,
+              "w": 177.390625,
+              "h": 22.5,
+              "right": 677.390625,
+              "bottom": 541.921875
+            }
+          },
+          {
+            "text": "Separate scores · 0–100",
+            "rect": {
+              "x": 500,
+              "y": 545.921875,
+              "w": 123.984375,
+              "h": 18,
+              "right": 623.984375,
+              "bottom": 563.921875
+            }
+          }
+        ],
+        "texts": [
+          {
+            "text": "0",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 517.0814208984375,
+              "y": 659.9137573242188,
+              "w": 10,
+              "h": 21,
+              "right": 527.0814208984375,
+              "bottom": 680.9137573242188
+            }
+          },
+          {
+            "text": "50",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 507.5032958984375,
+              "y": 615.9170532226562,
+              "w": 19.5799560546875,
+              "h": 21,
+              "right": 527.083251953125,
+              "bottom": 636.9170532226562
+            }
+          },
+          {
+            "text": "100",
+            "className": "wc-signal-axis-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(100, 116, 139)",
+            "rect": {
+              "x": 499.7845458984375,
+              "y": 571.9203491210938,
+              "w": 27.30950927734375,
+              "h": 21,
+              "right": 527.0940551757812,
+              "bottom": 592.9203491210938
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-stage-marker-label",
+            "font": 22,
+            "renderedFont": 14.666666666666666,
+            "fill": "rgb(109, 40, 217)",
+            "rect": {
+              "x": 678.6207885742188,
+              "y": 562.921142578125,
+              "w": 35.33282470703125,
+              "h": 20,
+              "right": 713.95361328125,
+              "bottom": 582.921142578125
+            }
+          },
+          {
+            "text": "Surface",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 506.00811767578125,
+              "y": 683.9119873046875,
+              "w": 52,
+              "h": 21,
+              "right": 558.0081176757812,
+              "bottom": 704.9119873046875
+            }
+          },
+          {
+            "text": "Air",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 575.795654296875,
+              "y": 683.9119873046875,
+              "w": 21.18646240234375,
+              "h": 21,
+              "right": 596.9821166992188,
+              "bottom": 704.9119873046875
+            }
+          },
+          {
+            "text": "Cloud",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 620.528564453125,
+              "y": 683.9119873046875,
+              "w": 41.609375,
+              "h": 21,
+              "right": 662.137939453125,
+              "bottom": 704.9119873046875
+            }
+          },
+          {
+            "text": "Land",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 678.9254760742188,
+              "y": 683.9119873046875,
+              "w": 34.140625,
+              "h": 21,
+              "right": 713.0661010742188,
+              "bottom": 704.9119873046875
+            }
+          },
+          {
+            "text": "Return",
+            "className": "wc-signal-place-label",
+            "font": 24,
+            "renderedFont": 16,
+            "fill": "rgb(71, 85, 105)",
+            "rect": {
+              "x": 727.3848876953125,
+              "y": 683.9119873046875,
+              "w": 46.546875,
+              "h": 21,
+              "right": 773.9317626953125,
+              "bottom": 704.9119873046875
+            }
+          }
+        ],
+        "markers": [
+          {
+            "key": "energy",
+            "tag": "circle",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 102.55999755859375
+            },
+            "score": 42.00000184955019,
+            "fill": "rgb(167, 90, 8)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 98.05999755859375,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "flow",
+            "tag": "rect",
+            "shape": null,
+            "center": {
+              "x": 294,
+              "y": 57.68000030517578
+            },
+            "score": 75.99999976880622,
+            "fill": "rgb(8, 118, 155)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 289.5,
+              "y": 53.18000030517578,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "key": "storage",
+            "tag": "path",
+            "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+            "center": {
+              "x": 294,
+              "y": 60.31999969482422
+            },
+            "score": 74.00000023119378,
+            "fill": "rgb(20, 116, 89)",
+            "stroke": "rgb(255, 255, 255)",
+            "bounds": {
+              "x": 288,
+              "y": 54.31999969482422,
+              "w": 12,
+              "h": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280-host-390 preflight open four semantic groups follow plot inspection stores table DOM order",
+      "pass": true,
+      "detail": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ]
+    },
+    {
+      "label": "light-1280-host-390 preflight open inspection and stores have visible coherent grouping and named references",
+      "pass": true,
+      "detail": {
+        "heading": "Storage cues by store",
+        "storeAria": "wcSignalStoresTitle",
+        "references": [
+          {
+            "id": "wcSignalStoresTitle",
+            "exists": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280-host-390 preflight open values table spans the complete grid below the other groups",
+      "pass": true,
+      "detail": {
+        "grid": {
+          "x": 487,
+          "y": 506.421875,
+          "w": 306,
+          "h": 1271.1875,
+          "right": 793,
+          "bottom": 1777.609375
+        },
+        "values": {
+          "x": 487,
+          "y": 1450.609375,
+          "w": 306,
+          "h": 327,
+          "right": 793,
+          "bottom": 1777.609375
+        }
+      }
+    },
+    {
+      "label": "light-1280-host-390 preflight open visual groups follow the responsive desktop or phone arrangement",
+      "pass": true,
+      "detail": {
+        "stacked": true,
+        "chart": {
+          "x": 487,
+          "y": 506.421875,
+          "w": 306,
+          "h": 293.15625,
+          "right": 793,
+          "bottom": 799.578125
+        },
+        "inspection": {
+          "x": 487,
+          "y": 811.578125,
+          "w": 306,
+          "h": 291.09375,
+          "right": 793,
+          "bottom": 1102.671875
+        },
+        "stores": {
+          "x": 487,
+          "y": 1114.671875,
+          "w": 306,
+          "h": 323.9375,
+          "right": 793,
+          "bottom": 1438.609375
+        },
+        "values": {
+          "x": 487,
+          "y": 1450.609375,
+          "w": 306,
+          "h": 327,
+          "right": 793,
+          "bottom": 1777.609375
+        }
+      }
+    },
+    {
+      "label": "No browser runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "Frozen tested source stays unchanged and matches public mirror",
+      "pass": false
+    },
+    {
+      "label": "Browser completes the phone geometry preflight",
+      "pass": true
+    }
+  ],
+  "cases": [
+    {
+      "label": "light-320 default",
+      "stageIndex": 3,
+      "inspectIndex": 3,
+      "inspectChoice": "follow",
+      "followOption": "Follow stage focus · Land",
+      "focusChip": "Focus · Infiltration",
+      "focusChipAria": "Focused stage: Infiltration",
+      "focusState": "infiltration",
+      "markerLabel": "Land",
+      "markerX": 294,
+      "description": "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. Stage focus is Land; inspected values are at Land. Exact scores are available below.",
+      "readoutPlace": "land",
+      "readoutHeader": "Land · Teaching scores\nFollowing stage focus",
+      "readout": [
+        {
+          "key": "energy",
+          "label": "Energy cue",
+          "score": 42
+        },
+        {
+          "key": "flow",
+          "label": "Surface flow cue",
+          "score": 76
+        },
+        {
+          "key": "storage",
+          "label": "Storage cue",
+          "score": 74
+        }
+      ],
+      "rows": [
+        {
+          "place": "surface",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 52,
+            "flow": 51,
+            "storage": 71
+          }
+        },
+        {
+          "place": "air",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 46,
+            "flow": 47,
+            "storage": 52
+          }
+        },
+        {
+          "place": "cloud",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 56,
+            "flow": 66,
+            "storage": 65
+          }
+        },
+        {
+          "place": "land",
+          "highlight": true,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 42,
+            "flow": 76,
+            "storage": 74
+          }
+        },
+        {
+          "place": "return",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 34,
+            "flow": 57,
+            "storage": 56
+          }
+        }
+      ],
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(167, 90, 8)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.85",
+          "points": [
+            {
+              "x": 48,
+              "y": 89.4,
+              "score": 51.96969696969696
+            },
+            {
+              "x": 130,
+              "y": 97.3,
+              "score": 45.984848484848484
+            },
+            {
+              "x": 212,
+              "y": 84.1,
+              "score": 55.98484848484849
+            },
+            {
+              "x": 294,
+              "y": 102.6,
+              "score": 41.969696969696976
+            },
+            {
+              "x": 376,
+              "y": 113.1,
+              "score": 34.01515151515152
+            }
+          ]
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(8, 118, 155)",
+          "dash": "9px, 6px",
+          "width": "3px",
+          "opacity": "0.85",
+          "points": [
+            {
+              "x": 48,
+              "y": 90.7,
+              "score": 50.984848484848484
+            },
+            {
+              "x": 130,
+              "y": 96,
+              "score": 46.96969696969697
+            },
+            {
+              "x": 212,
+              "y": 70.9,
+              "score": 65.98484848484848
+            },
+            {
+              "x": 294,
+              "y": 57.7,
+              "score": 75.98484848484848
+            },
+            {
+              "x": 376,
+              "y": 82.8,
+              "score": 56.96969696969697
+            }
+          ]
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(20, 116, 89)",
+          "dash": "1px, 6px",
+          "width": "4.5px",
+          "opacity": "1",
+          "points": [
+            {
+              "x": 48,
+              "y": 64.3,
+              "score": 70.98484848484848
+            },
+            {
+              "x": 130,
+              "y": 89.4,
+              "score": 51.96969696969696
+            },
+            {
+              "x": 212,
+              "y": 72.2,
+              "score": 65
+            },
+            {
+              "x": 294,
+              "y": 60.3,
+              "score": 74.01515151515152
+            },
+            {
+              "x": 376,
+              "y": 84.1,
+              "score": 55.98484848484849
+            }
+          ]
+        }
+      ],
+      "markers": [
+        {
+          "key": "energy",
+          "tag": "circle",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 102.55999755859375
+          },
+          "score": 42.00000184955019,
+          "fill": "rgb(167, 90, 8)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 98.05999755859375,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "flow",
+          "tag": "rect",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 57.68000030517578
+          },
+          "score": 75.99999976880622,
+          "fill": "rgb(8, 118, 155)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 53.18000030517578,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "storage",
+          "tag": "path",
+          "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+          "center": {
+            "x": 294,
+            "y": 60.31999969482422
+          },
+          "score": 74.00000023119378,
+          "fill": "rgb(20, 116, 89)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 288,
+            "y": 54.31999969482422,
+            "w": 12,
+            "h": 12
+          }
+        }
+      ],
+      "legend": [
+        {
+          "key": "energy",
+          "text": "Energy cue\nSolid",
+          "dash": "none",
+          "marker": "circle",
+          "stroke": "rgb(167, 90, 8)"
+        },
+        {
+          "key": "flow",
+          "text": "Surface flow cue\nDashed",
+          "dash": "9px, 6px",
+          "marker": "rect",
+          "stroke": "rgb(8, 118, 155)"
+        },
+        {
+          "key": "storage",
+          "text": "Storage cue\nDotted",
+          "dash": "1px, 6px",
+          "marker": "path",
+          "stroke": "rgb(20, 116, 89)"
+        }
+      ],
+      "texts": [
+        {
+          "text": "0",
+          "className": "wc-signal-axis-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 62.53786087036133,
+            "y": 4214.40576171875,
+            "w": 7.999996185302734,
+            "h": 17,
+            "right": 70.53785705566406,
+            "bottom": 4231.40576171875
+          }
+        },
+        {
+          "text": "50",
+          "className": "wc-signal-axis-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 54.94411087036133,
+            "y": 4179.521484375,
+            "w": 15.596843719482422,
+            "h": 17,
+            "right": 70.54095458984375,
+            "bottom": 4196.521484375
+          }
+        },
+        {
+          "text": "100",
+          "className": "wc-signal-axis-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 48.81911087036133,
+            "y": 4144.6376953125,
+            "w": 21.726329803466797,
+            "h": 17,
+            "right": 70.54544067382812,
+            "bottom": 4161.6376953125
+          }
+        },
+        {
+          "text": "Land",
+          "className": "wc-signal-stage-marker-label",
+          "font": 22,
+          "renderedFont": 11.628571428571428,
+          "fill": "rgb(109, 40, 217)",
+          "rect": {
+            "x": 190.62440490722656,
+            "y": 4137.70947265625,
+            "w": 28.07965087890625,
+            "h": 16,
+            "right": 218.7040557861328,
+            "bottom": 4153.70947265625
+          }
+        },
+        {
+          "text": "Surface",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 53.75841522216797,
+            "y": 4233.43310546875,
+            "w": 41.59751892089844,
+            "h": 17,
+            "right": 95.3559341430664,
+            "bottom": 4250.43310546875
+          }
+        },
+        {
+          "text": "Air",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 108.88040924072266,
+            "y": 4233.43310546875,
+            "w": 17.249771118164062,
+            "h": 17,
+            "right": 126.13018035888672,
+            "bottom": 4250.43310546875
+          }
+        },
+        {
+          "text": "Cloud",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 144.55709838867188,
+            "y": 4233.43310546875,
+            "w": 32.99998474121094,
+            "h": 17,
+            "right": 177.5570831298828,
+            "bottom": 4250.43310546875
+          }
+        },
+        {
+          "text": "Land",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 190.85877990722656,
+            "y": 4233.43310546875,
+            "w": 27.078125,
+            "h": 17,
+            "right": 217.93690490722656,
+            "bottom": 4250.43310546875
+          }
+        },
+        {
+          "text": "Return",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 12.685714285714285,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 229.2854461669922,
+            "y": 4233.43310546875,
+            "w": 36.90626525878906,
+            "h": 17,
+            "right": 266.19171142578125,
+            "bottom": 4250.43310546875
+          }
+        }
+      ],
+      "textCollisions": [],
+      "plotHeading": {
+        "x": 49,
+        "y": 4093.28125,
+        "w": 222,
+        "h": 44.5,
+        "right": 271,
+        "bottom": 4137.78125
+      },
+      "headingText": [
+        {
+          "text": "Teaching signals by place",
+          "rect": {
+            "x": 49,
+            "y": 4093.28125,
+            "w": 177.390625,
+            "h": 22.5,
+            "right": 226.390625,
+            "bottom": 4115.78125
+          }
+        },
+        {
+          "text": "Separate scores · 0–100",
+          "rect": {
+            "x": 49,
+            "y": 4119.78125,
+            "w": 123.984375,
+            "h": 18,
+            "right": 172.984375,
+            "bottom": 4137.78125
+          }
+        }
+      ],
+      "ink": "rgb(25, 63, 71)",
+      "plotRect": {
+        "x": 49,
+        "y": 4142.78125,
+        "w": 222,
+        "h": 109.9375,
+        "right": 271,
+        "bottom": 4252.71875
+      },
+      "panelRect": {
+        "x": 23,
+        "y": 3767.171875,
+        "w": 274,
+        "h": 1387.96875,
+        "right": 297,
+        "bottom": 5155.140625
+      },
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "overflow": [],
+      "folded": true,
+      "tableCaption": "Independent teaching scores (0–100) for each place",
+      "columnScopes": [
+        "col",
+        "col",
+        "col",
+        "col"
+      ],
+      "chartSelect": {
+        "x": 49,
+        "y": 4395.21875,
+        "w": 222,
+        "h": 44,
+        "right": 271,
+        "bottom": 4439.21875
+      },
+      "summary": {
+        "x": 49,
+        "y": 4993.140625,
+        "w": 222,
+        "h": 44,
+        "right": 271,
+        "bottom": 5037.140625
+      },
+      "dataWithoutInspection": "{\"wcMode\":\"explore\",\"wcSection\":\"data\",\"journeyView\":\"2d\",\"journeyActive\":false,\"journeyState\":\"idle\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"infiltration\",\"climTemp\":15,\"climSolar\":1,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\",\"wcScenarioBaseline\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\"},\"wcProcessCompare\":{\"first\":\"condensation\",\"second\":\"precipitation\",\"notes\":{\"condensation|precipitation\":\"Cloud particles grow and fall; condensation forms droplets.\"}},\"wcExperimentLog\":[{\"id\":\"signal-inspection-evidence\",\"note\":\"Saved observation must survive chart inspection\",\"inputs\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1}}]}",
+      "parcel": {
+        "active": false,
+        "state": "idle",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": 0
+      },
+      "solar": 1
+    },
+    {
+      "label": "light-1280 default",
+      "stageIndex": 3,
+      "inspectIndex": 3,
+      "inspectChoice": "follow",
+      "followOption": "Follow stage focus · Land",
+      "focusChip": "Focus · Infiltration",
+      "focusChipAria": "Focused stage: Infiltration",
+      "focusState": "infiltration",
+      "markerLabel": "Land",
+      "markerX": 294,
+      "description": "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. Stage focus is Land; inspected values are at Land. Exact scores are available below.",
+      "readoutPlace": "land",
+      "readoutHeader": "Land · Teaching scores\nFollowing stage focus",
+      "readout": [
+        {
+          "key": "energy",
+          "label": "Energy cue",
+          "score": 42
+        },
+        {
+          "key": "flow",
+          "label": "Surface flow cue",
+          "score": 76
+        },
+        {
+          "key": "storage",
+          "label": "Storage cue",
+          "score": 74
+        }
+      ],
+      "rows": [
+        {
+          "place": "surface",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 52,
+            "flow": 51,
+            "storage": 71
+          }
+        },
+        {
+          "place": "air",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 46,
+            "flow": 47,
+            "storage": 52
+          }
+        },
+        {
+          "place": "cloud",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 56,
+            "flow": 66,
+            "storage": 65
+          }
+        },
+        {
+          "place": "land",
+          "highlight": true,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 42,
+            "flow": 76,
+            "storage": 74
+          }
+        },
+        {
+          "place": "return",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 34,
+            "flow": 57,
+            "storage": 56
+          }
+        }
+      ],
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(167, 90, 8)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.85",
+          "points": [
+            {
+              "x": 48,
+              "y": 89.4,
+              "score": 51.96969696969696
+            },
+            {
+              "x": 130,
+              "y": 97.3,
+              "score": 45.984848484848484
+            },
+            {
+              "x": 212,
+              "y": 84.1,
+              "score": 55.98484848484849
+            },
+            {
+              "x": 294,
+              "y": 102.6,
+              "score": 41.969696969696976
+            },
+            {
+              "x": 376,
+              "y": 113.1,
+              "score": 34.01515151515152
+            }
+          ]
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(8, 118, 155)",
+          "dash": "9px, 6px",
+          "width": "3px",
+          "opacity": "0.85",
+          "points": [
+            {
+              "x": 48,
+              "y": 90.7,
+              "score": 50.984848484848484
+            },
+            {
+              "x": 130,
+              "y": 96,
+              "score": 46.96969696969697
+            },
+            {
+              "x": 212,
+              "y": 70.9,
+              "score": 65.98484848484848
+            },
+            {
+              "x": 294,
+              "y": 57.7,
+              "score": 75.98484848484848
+            },
+            {
+              "x": 376,
+              "y": 82.8,
+              "score": 56.96969696969697
+            }
+          ]
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(20, 116, 89)",
+          "dash": "1px, 6px",
+          "width": "4.5px",
+          "opacity": "1",
+          "points": [
+            {
+              "x": 48,
+              "y": 64.3,
+              "score": 70.98484848484848
+            },
+            {
+              "x": 130,
+              "y": 89.4,
+              "score": 51.96969696969696
+            },
+            {
+              "x": 212,
+              "y": 72.2,
+              "score": 65
+            },
+            {
+              "x": 294,
+              "y": 60.3,
+              "score": 74.01515151515152
+            },
+            {
+              "x": 376,
+              "y": 84.1,
+              "score": 55.98484848484849
+            }
+          ]
+        }
+      ],
+      "markers": [
+        {
+          "key": "energy",
+          "tag": "circle",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 102.55999755859375
+          },
+          "score": 42.00000184955019,
+          "fill": "rgb(167, 90, 8)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 98.05999755859375,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "flow",
+          "tag": "rect",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 57.68000030517578
+          },
+          "score": 75.99999976880622,
+          "fill": "rgb(8, 118, 155)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 53.18000030517578,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "storage",
+          "tag": "path",
+          "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+          "center": {
+            "x": 294,
+            "y": 60.31999969482422
+          },
+          "score": 74.00000023119378,
+          "fill": "rgb(20, 116, 89)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 288,
+            "y": 54.31999969482422,
+            "w": 12,
+            "h": 12
+          }
+        }
+      ],
+      "legend": [
+        {
+          "key": "energy",
+          "text": "Energy cue\nSolid",
+          "dash": "none",
+          "marker": "circle",
+          "stroke": "rgb(167, 90, 8)"
+        },
+        {
+          "key": "flow",
+          "text": "Surface flow cue\nDashed",
+          "dash": "9px, 6px",
+          "marker": "rect",
+          "stroke": "rgb(8, 118, 155)"
+        },
+        {
+          "key": "storage",
+          "text": "Storage cue\nDotted",
+          "dash": "1px, 6px",
+          "marker": "path",
+          "stroke": "rgb(20, 116, 89)"
+        }
+      ],
+      "texts": [
+        {
+          "text": "0",
+          "className": "wc-signal-axis-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 612.912109375,
+            "y": 2668.189453125,
+            "w": 11,
+            "h": 25,
+            "right": 623.912109375,
+            "bottom": 2693.189453125
+          }
+        },
+        {
+          "text": "50",
+          "className": "wc-signal-axis-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 602.037109375,
+            "y": 2582.53125,
+            "w": 21.8800048828125,
+            "h": 25,
+            "right": 623.9171142578125,
+            "bottom": 2607.53125
+          }
+        },
+        {
+          "text": "100",
+          "className": "wc-signal-axis-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 593.255859375,
+            "y": 2496.873046875,
+            "w": 30.6585693359375,
+            "h": 25,
+            "right": 623.9144287109375,
+            "bottom": 2521.873046875
+          }
+        },
+        {
+          "text": "Land",
+          "className": "wc-signal-stage-marker-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(109, 40, 217)",
+          "rect": {
+            "x": 931.93359375,
+            "y": 2477.4052734375,
+            "w": 43.046875,
+            "h": 25,
+            "right": 974.98046875,
+            "bottom": 2502.4052734375
+          }
+        },
+        {
+          "text": "Surface",
+          "className": "wc-signal-place-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 604.662109375,
+            "y": 2714.912109375,
+            "w": 59.046875,
+            "h": 25,
+            "right": 663.708984375,
+            "bottom": 2739.912109375
+          }
+        },
+        {
+          "text": "Air",
+          "className": "wc-signal-place-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 728.390625,
+            "y": 2714.912109375,
+            "w": 24.11163330078125,
+            "h": 25,
+            "right": 752.5022583007812,
+            "bottom": 2739.912109375
+          }
+        },
+        {
+          "text": "Cloud",
+          "className": "wc-signal-place-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 823.400390625,
+            "y": 2714.912109375,
+            "w": 47.265625,
+            "h": 25,
+            "right": 870.666015625,
+            "bottom": 2739.912109375
+          }
+        },
+        {
+          "text": "Land",
+          "className": "wc-signal-place-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 934.07421875,
+            "y": 2714.912109375,
+            "w": 38.765625,
+            "h": 25,
+            "right": 972.83984375,
+            "bottom": 2739.912109375
+          }
+        },
+        {
+          "text": "Return",
+          "className": "wc-signal-place-label",
+          "font": 14,
+          "renderedFont": 18.170833333333334,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 1033.451171875,
+            "y": 2714.912109375,
+            "w": 52.859375,
+            "h": 25,
+            "right": 1086.310546875,
+            "bottom": 2739.912109375
+          }
+        }
+      ],
+      "textCollisions": [],
+      "plotHeading": {
+        "x": 571.875,
+        "y": 2450.4375,
+        "w": 545.125,
+        "h": 22.5,
+        "right": 1117,
+        "bottom": 2472.9375
+      },
+      "headingText": [
+        {
+          "text": "Teaching signals by place",
+          "rect": {
+            "x": 571.875,
+            "y": 2450.4375,
+            "w": 177.390625,
+            "h": 22.5,
+            "right": 749.265625,
+            "bottom": 2472.9375
+          }
+        },
+        {
+          "text": "Separate scores · 0–100",
+          "rect": {
+            "x": 993.015625,
+            "y": 2453.4375,
+            "w": 123.984375,
+            "h": 18,
+            "right": 1117,
+            "bottom": 2471.4375
+          }
+        }
+      ],
+      "ink": "rgb(25, 63, 71)",
+      "plotRect": {
+        "x": 571.875,
+        "y": 2477.9375,
+        "w": 545.125,
+        "h": 269.953125,
+        "right": 1117,
+        "bottom": 2747.890625
+      },
+      "panelRect": {
+        "x": 137,
+        "y": 2300.5,
+        "w": 1006,
+        "h": 773.78125,
+        "right": 1143,
+        "bottom": 3074.28125
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "overflow": [],
+      "folded": true,
+      "tableCaption": "Independent teaching scores (0–100) for each place",
+      "columnScopes": [
+        "col",
+        "col",
+        "col",
+        "col"
+      ],
+      "chartSelect": {
+        "x": 163,
+        "y": 2854.828125,
+        "w": 383.75,
+        "h": 44,
+        "right": 546.75,
+        "bottom": 2898.828125
+      },
+      "summary": {
+        "x": 163,
+        "y": 2966.28125,
+        "w": 954,
+        "h": 44,
+        "right": 1117,
+        "bottom": 3010.28125
+      },
+      "dataWithoutInspection": "{\"wcMode\":\"explore\",\"wcSection\":\"data\",\"journeyView\":\"2d\",\"journeyActive\":false,\"journeyState\":\"idle\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"infiltration\",\"climTemp\":15,\"climSolar\":1,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\",\"wcScenarioBaseline\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\"},\"wcProcessCompare\":{\"first\":\"condensation\",\"second\":\"precipitation\",\"notes\":{\"condensation|precipitation\":\"Cloud particles grow and fall; condensation forms droplets.\"}},\"wcExperimentLog\":[{\"id\":\"signal-inspection-evidence\",\"note\":\"Saved observation must survive chart inspection\",\"inputs\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1}}]}",
+      "parcel": {
+        "active": false,
+        "state": "idle",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": 0
+      },
+      "solar": 1
+    },
+    {
+      "label": "light-1280-host-390 default",
+      "stageIndex": 3,
+      "inspectIndex": 3,
+      "inspectChoice": "follow",
+      "followOption": "Follow stage focus · Land",
+      "focusChip": "Focus · Infiltration",
+      "focusChipAria": "Focused stage: Infiltration",
+      "focusState": "infiltration",
+      "markerLabel": "Land",
+      "markerX": 294,
+      "description": "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. Stage focus is Land; inspected values are at Land. Exact scores are available below.",
+      "readoutPlace": "land",
+      "readoutHeader": "Land · Teaching scores\nFollowing stage focus",
+      "readout": [
+        {
+          "key": "energy",
+          "label": "Energy cue",
+          "score": 42
+        },
+        {
+          "key": "flow",
+          "label": "Surface flow cue",
+          "score": 76
+        },
+        {
+          "key": "storage",
+          "label": "Storage cue",
+          "score": 74
+        }
+      ],
+      "rows": [
+        {
+          "place": "surface",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 52,
+            "flow": 51,
+            "storage": 71
+          }
+        },
+        {
+          "place": "air",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 46,
+            "flow": 47,
+            "storage": 52
+          }
+        },
+        {
+          "place": "cloud",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 56,
+            "flow": 66,
+            "storage": 65
+          }
+        },
+        {
+          "place": "land",
+          "highlight": true,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 42,
+            "flow": 76,
+            "storage": 74
+          }
+        },
+        {
+          "place": "return",
+          "highlight": false,
+          "rowHeader": "row",
+          "scores": {
+            "energy": 34,
+            "flow": 57,
+            "storage": 56
+          }
+        }
+      ],
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(167, 90, 8)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.85",
+          "points": [
+            {
+              "x": 48,
+              "y": 89.4,
+              "score": 51.96969696969696
+            },
+            {
+              "x": 130,
+              "y": 97.3,
+              "score": 45.984848484848484
+            },
+            {
+              "x": 212,
+              "y": 84.1,
+              "score": 55.98484848484849
+            },
+            {
+              "x": 294,
+              "y": 102.6,
+              "score": 41.969696969696976
+            },
+            {
+              "x": 376,
+              "y": 113.1,
+              "score": 34.01515151515152
+            }
+          ]
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(8, 118, 155)",
+          "dash": "9px, 6px",
+          "width": "3px",
+          "opacity": "0.85",
+          "points": [
+            {
+              "x": 48,
+              "y": 90.7,
+              "score": 50.984848484848484
+            },
+            {
+              "x": 130,
+              "y": 96,
+              "score": 46.96969696969697
+            },
+            {
+              "x": 212,
+              "y": 70.9,
+              "score": 65.98484848484848
+            },
+            {
+              "x": 294,
+              "y": 57.7,
+              "score": 75.98484848484848
+            },
+            {
+              "x": 376,
+              "y": 82.8,
+              "score": 56.96969696969697
+            }
+          ]
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(20, 116, 89)",
+          "dash": "1px, 6px",
+          "width": "4.5px",
+          "opacity": "1",
+          "points": [
+            {
+              "x": 48,
+              "y": 64.3,
+              "score": 70.98484848484848
+            },
+            {
+              "x": 130,
+              "y": 89.4,
+              "score": 51.96969696969696
+            },
+            {
+              "x": 212,
+              "y": 72.2,
+              "score": 65
+            },
+            {
+              "x": 294,
+              "y": 60.3,
+              "score": 74.01515151515152
+            },
+            {
+              "x": 376,
+              "y": 84.1,
+              "score": 55.98484848484849
+            }
+          ]
+        }
+      ],
+      "markers": [
+        {
+          "key": "energy",
+          "tag": "circle",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 102.55999755859375
+          },
+          "score": 42.00000184955019,
+          "fill": "rgb(167, 90, 8)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 98.05999755859375,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "flow",
+          "tag": "rect",
+          "shape": null,
+          "center": {
+            "x": 294,
+            "y": 57.68000030517578
+          },
+          "score": 75.99999976880622,
+          "fill": "rgb(8, 118, 155)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 289.5,
+            "y": 53.18000030517578,
+            "w": 9,
+            "h": 9
+          }
+        },
+        {
+          "key": "storage",
+          "tag": "path",
+          "shape": "M 294 54.32 l 6 6 -6 6 -6 -6 Z",
+          "center": {
+            "x": 294,
+            "y": 60.31999969482422
+          },
+          "score": 74.00000023119378,
+          "fill": "rgb(20, 116, 89)",
+          "stroke": "rgb(255, 255, 255)",
+          "bounds": {
+            "x": 288,
+            "y": 54.31999969482422,
+            "w": 12,
+            "h": 12
+          }
+        }
+      ],
+      "legend": [
+        {
+          "key": "energy",
+          "text": "Energy cue\nSolid",
+          "dash": "none",
+          "marker": "circle",
+          "stroke": "rgb(167, 90, 8)"
+        },
+        {
+          "key": "flow",
+          "text": "Surface flow cue\nDashed",
+          "dash": "9px, 6px",
+          "marker": "rect",
+          "stroke": "rgb(8, 118, 155)"
+        },
+        {
+          "key": "storage",
+          "text": "Storage cue\nDotted",
+          "dash": "1px, 6px",
+          "marker": "path",
+          "stroke": "rgb(20, 116, 89)"
+        }
+      ],
+      "texts": [
+        {
+          "text": "0",
+          "className": "wc-signal-axis-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 517.0814208984375,
+            "y": 4432.91357421875,
+            "w": 10,
+            "h": 21,
+            "right": 527.0814208984375,
+            "bottom": 4453.91357421875
+          }
+        },
+        {
+          "text": "50",
+          "className": "wc-signal-axis-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 507.5032958984375,
+            "y": 4388.9169921875,
+            "w": 19.5799560546875,
+            "h": 21,
+            "right": 527.083251953125,
+            "bottom": 4409.9169921875
+          }
+        },
+        {
+          "text": "100",
+          "className": "wc-signal-axis-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(100, 116, 139)",
+          "rect": {
+            "x": 499.7845458984375,
+            "y": 4344.92041015625,
+            "w": 27.30950927734375,
+            "h": 21,
+            "right": 527.0940551757812,
+            "bottom": 4365.92041015625
+          }
+        },
+        {
+          "text": "Land",
+          "className": "wc-signal-stage-marker-label",
+          "font": 22,
+          "renderedFont": 14.666666666666666,
+          "fill": "rgb(109, 40, 217)",
+          "rect": {
+            "x": 678.6207885742188,
+            "y": 4335.9208984375,
+            "w": 35.33282470703125,
+            "h": 20,
+            "right": 713.95361328125,
+            "bottom": 4355.9208984375
+          }
+        },
+        {
+          "text": "Surface",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 506.00811767578125,
+            "y": 4456.912109375,
+            "w": 52,
+            "h": 21,
+            "right": 558.0081176757812,
+            "bottom": 4477.912109375
+          }
+        },
+        {
+          "text": "Air",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 575.795654296875,
+            "y": 4456.912109375,
+            "w": 21.18646240234375,
+            "h": 21,
+            "right": 596.9821166992188,
+            "bottom": 4477.912109375
+          }
+        },
+        {
+          "text": "Cloud",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 620.528564453125,
+            "y": 4456.912109375,
+            "w": 41.609375,
+            "h": 21,
+            "right": 662.137939453125,
+            "bottom": 4477.912109375
+          }
+        },
+        {
+          "text": "Land",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 678.9254760742188,
+            "y": 4456.912109375,
+            "w": 34.140625,
+            "h": 21,
+            "right": 713.0661010742188,
+            "bottom": 4477.912109375
+          }
+        },
+        {
+          "text": "Return",
+          "className": "wc-signal-place-label",
+          "font": 24,
+          "renderedFont": 16,
+          "fill": "rgb(71, 85, 105)",
+          "rect": {
+            "x": 727.3848876953125,
+            "y": 4456.912109375,
+            "w": 46.546875,
+            "h": 21,
+            "right": 773.9317626953125,
+            "bottom": 4477.912109375
+          }
+        }
+      ],
+      "textCollisions": [],
+      "plotHeading": {
+        "x": 500,
+        "y": 4292.421875,
+        "w": 280,
+        "h": 44.5,
+        "right": 780,
+        "bottom": 4336.921875
+      },
+      "headingText": [
+        {
+          "text": "Teaching signals by place",
+          "rect": {
+            "x": 500,
+            "y": 4292.421875,
+            "w": 177.390625,
+            "h": 22.5,
+            "right": 677.390625,
+            "bottom": 4314.921875
+          }
+        },
+        {
+          "text": "Separate scores · 0–100",
+          "rect": {
+            "x": 500,
+            "y": 4318.921875,
+            "w": 123.984375,
+            "h": 18,
+            "right": 623.984375,
+            "bottom": 4336.921875
+          }
+        }
+      ],
+      "ink": "rgb(25, 63, 71)",
+      "plotRect": {
+        "x": 500,
+        "y": 4341.921875,
+        "w": 280,
+        "h": 138.65625,
+        "right": 780,
+        "bottom": 4480.578125
+      },
+      "panelRect": {
+        "x": 474,
+        "y": 3977.859375,
+        "w": 332,
+        "h": 1390.75,
+        "right": 806,
+        "bottom": 5368.609375
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "overflow": [],
+      "folded": true,
+      "tableCaption": "Independent teaching scores (0–100) for each place",
+      "columnScopes": [
+        "col",
+        "col",
+        "col",
+        "col"
+      ],
+      "chartSelect": {
+        "x": 500,
+        "y": 4623.078125,
+        "w": 280,
+        "h": 44,
+        "right": 780,
+        "bottom": 4667.078125
+      },
+      "summary": {
+        "x": 500,
+        "y": 5224.609375,
+        "w": 280,
+        "h": 44,
+        "right": 780,
+        "bottom": 5268.609375
+      },
+      "dataWithoutInspection": "{\"wcMode\":\"explore\",\"wcSection\":\"data\",\"journeyView\":\"2d\",\"journeyActive\":false,\"journeyState\":\"idle\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"infiltration\",\"climTemp\":15,\"climSolar\":1,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\",\"wcScenarioBaseline\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1,\"landRainIntensity\":55,\"landSaturation\":45,\"landPermeability\":\"medium\",\"landSlope\":\"moderate\",\"landCover\":\"grass\"},\"wcProcessCompare\":{\"first\":\"condensation\",\"second\":\"precipitation\",\"notes\":{\"condensation|precipitation\":\"Cloud particles grow and fall; condensation forms droplets.\"}},\"wcExperimentLog\":[{\"id\":\"signal-inspection-evidence\",\"note\":\"Saved observation must survive chart inspection\",\"inputs\":{\"climSolar\":1,\"climTemp\":15,\"climWind\":1}}]}",
+      "parcel": {
+        "active": false,
+        "state": "idle",
+        "stage": "infiltration",
+        "paused": "true",
+        "progress": 0
+      },
+      "solar": 1
+    }
+  ],
+  "layouts": [
+    {
+      "label": "light-320 folded",
+      "viewport": 320,
+      "host": {
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 5938.25,
+        "right": 320,
+        "bottom": 5938.25
+      },
+      "panel": {
+        "x": 23,
+        "y": 3767.171875,
+        "w": 274,
+        "h": 1387.96875,
+        "right": 297,
+        "bottom": 5155.140625
+      },
+      "grid": {
+        "x": 36,
+        "y": 4080.28125,
+        "w": 248,
+        "h": 957.859375,
+        "right": 284,
+        "bottom": 5038.140625
+      },
+      "chart": {
+        "x": 36,
+        "y": 4080.28125,
+        "w": 248,
+        "h": 264.4375,
+        "right": 284,
+        "bottom": 4344.71875
+      },
+      "inspection": {
+        "x": 36,
+        "y": 4356.71875,
+        "w": 248,
+        "h": 287.484375,
+        "right": 284,
+        "bottom": 4644.203125
+      },
+      "stores": {
+        "x": 36,
+        "y": 4656.203125,
+        "w": 248,
+        "h": 323.9375,
+        "right": 284,
+        "bottom": 4980.140625
+      },
+      "values": {
+        "x": 36,
+        "y": 4992.140625,
+        "w": 248,
+        "h": 46,
+        "right": 284,
+        "bottom": 5038.140625
+      },
+      "lastBar": {
+        "x": 51,
+        "y": 4931.953125,
+        "w": 218,
+        "h": 33.1875,
+        "right": 269,
+        "bottom": 4965.140625
+      },
+      "unusedHeightBelowLastBar": 0,
+      "tableOpen": false,
+      "domOrder": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ],
+      "storeHeading": "Storage cues by store",
+      "storeHeadingRect": {
+        "x": 51,
+        "y": 4671.203125,
+        "w": 218,
+        "h": 21,
+        "right": 269,
+        "bottom": 4692.203125
+      },
+      "storeAria": "wcSignalStoresTitle",
+      "storeAriaReferences": [
+        {
+          "id": "wcSignalStoresTitle",
+          "exists": true
+        }
+      ],
+      "selectInInspection": true,
+      "readingInInspection": true,
+      "tableCaption": "",
+      "panelText": "◒\nWhat the model is showing\nCurrent condition cues\nFocus · Infiltration\n\nBars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast.\n\nWHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.\nTeaching signals by place\nSeparate scores · 0–100\n0\n50\n100\nLand\nSurface\nAir\nCloud\nLand\nReturn\nEnergy cue\nSolid\nSurface flow cue\nDashed\nStorage cue\nDotted\nInspect a place\nFollow stage focus · Land\nSurface\nAir\nCloud\nLand\nReturn\n\nSelect a place to read its cues, or follow the stage focus.\n\nLand · Teaching scores\nFollowing stage focus\nEnergy cue\n42/100\nSurface flow cue\n76/100\nStorage cue\n74/100\nStorage cues by store\n\nCompare each store with itself as conditions change.\n\nSurface water\n71/100\nAtmosphere\n52/100\nSoil water\n61/100\nGroundwater\n56/100\nPlant storage\n52/100\nRead all chart values\n\nScores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance."
+    },
+    {
+      "label": "light-320 preflight open",
+      "viewport": 320,
+      "host": {
+        "x": 0,
+        "y": -3561,
+        "w": 320,
+        "h": 6255.25,
+        "right": 320,
+        "bottom": 2694.25
+      },
+      "panel": {
+        "x": 23,
+        "y": 206.171875,
+        "w": 274,
+        "h": 1704.96875,
+        "right": 297,
+        "bottom": 1911.140625
+      },
+      "grid": {
+        "x": 36,
+        "y": 519.28125,
+        "w": 248,
+        "h": 1274.859375,
+        "right": 284,
+        "bottom": 1794.140625
+      },
+      "chart": {
+        "x": 36,
+        "y": 519.28125,
+        "w": 248,
+        "h": 264.4375,
+        "right": 284,
+        "bottom": 783.71875
+      },
+      "inspection": {
+        "x": 36,
+        "y": 795.71875,
+        "w": 248,
+        "h": 287.484375,
+        "right": 284,
+        "bottom": 1083.203125
+      },
+      "stores": {
+        "x": 36,
+        "y": 1095.203125,
+        "w": 248,
+        "h": 323.9375,
+        "right": 284,
+        "bottom": 1419.140625
+      },
+      "values": {
+        "x": 36,
+        "y": 1431.140625,
+        "w": 248,
+        "h": 363,
+        "right": 284,
+        "bottom": 1794.140625
+      },
+      "lastBar": {
+        "x": 51,
+        "y": 1370.953125,
+        "w": 218,
+        "h": 33.1875,
+        "right": 269,
+        "bottom": 1404.140625
+      },
+      "unusedHeightBelowLastBar": 0,
+      "tableOpen": true,
+      "domOrder": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ],
+      "storeHeading": "Storage cues by store",
+      "storeHeadingRect": {
+        "x": 51,
+        "y": 1110.203125,
+        "w": 218,
+        "h": 21,
+        "right": 269,
+        "bottom": 1131.203125
+      },
+      "storeAria": "wcSignalStoresTitle",
+      "storeAriaReferences": [
+        {
+          "id": "wcSignalStoresTitle",
+          "exists": true
+        }
+      ],
+      "selectInInspection": true,
+      "readingInInspection": true,
+      "tableCaption": "Independent teaching scores (0–100) for each place",
+      "panelText": "◒\nWhat the model is showing\nCurrent condition cues\nFocus · Infiltration\n\nBars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast.\n\nWHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.\nTeaching signals by place\nSeparate scores · 0–100\n0\n50\n100\nLand\nSurface\nAir\nCloud\nLand\nReturn\nEnergy cue\nSolid\nSurface flow cue\nDashed\nStorage cue\nDotted\nInspect a place\nFollow stage focus · Land\nSurface\nAir\nCloud\nLand\nReturn\n\nSelect a place to read its cues, or follow the stage focus.\n\nLand · Teaching scores\nFollowing stage focus\nEnergy cue\n42/100\nSurface flow cue\n76/100\nStorage cue\n74/100\nStorage cues by store\n\nCompare each store with itself as conditions change.\n\nSurface water\n71/100\nAtmosphere\n52/100\nSoil water\n61/100\nGroundwater\n56/100\nPlant storage\n52/100\nRead all chart values\nIndependent teaching scores (0–100) for each place\nPlace\tEnergy cue\tSurface flow cue\tStorage cue\nSurface\t52\t51\t71\nAir\t46\t47\t52\nCloud\t56\t66\t65\nLand\t42\t76\t74\nReturn\t34\t57\t56\n\nScores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance."
+    },
+    {
+      "label": "light-1280 folded",
+      "viewport": 1280,
+      "host": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 3577.21875,
+        "right": 1280,
+        "bottom": 3577.21875
+      },
+      "panel": {
+        "x": 137,
+        "y": 2300.5,
+        "w": 1006,
+        "h": 773.78125,
+        "right": 1143,
+        "bottom": 3074.28125
+      },
+      "grid": {
+        "x": 150,
+        "y": 2437.4375,
+        "w": 980,
+        "h": 573.84375,
+        "right": 1130,
+        "bottom": 3011.28125
+      },
+      "chart": {
+        "x": 558.875,
+        "y": 2437.4375,
+        "w": 571.125,
+        "h": 350.453125,
+        "right": 1130,
+        "bottom": 2787.890625
+      },
+      "inspection": {
+        "x": 150,
+        "y": 2799.890625,
+        "w": 980,
+        "h": 153.390625,
+        "right": 1130,
+        "bottom": 2953.28125
+      },
+      "stores": {
+        "x": 150,
+        "y": 2437.4375,
+        "w": 396.875,
+        "h": 305.9375,
+        "right": 546.875,
+        "bottom": 2743.375
+      },
+      "values": {
+        "x": 150,
+        "y": 2965.28125,
+        "w": 980,
+        "h": 46,
+        "right": 1130,
+        "bottom": 3011.28125
+      },
+      "lastBar": {
+        "x": 165,
+        "y": 2695.1875,
+        "w": 366.875,
+        "h": 33.1875,
+        "right": 531.875,
+        "bottom": 2728.375
+      },
+      "unusedHeightBelowLastBar": 59.515625,
+      "tableOpen": false,
+      "domOrder": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ],
+      "storeHeading": "Storage cues by store",
+      "storeHeadingRect": {
+        "x": 165,
+        "y": 2452.4375,
+        "w": 366.875,
+        "h": 21,
+        "right": 531.875,
+        "bottom": 2473.4375
+      },
+      "storeAria": "wcSignalStoresTitle",
+      "storeAriaReferences": [
+        {
+          "id": "wcSignalStoresTitle",
+          "exists": true
+        }
+      ],
+      "selectInInspection": true,
+      "readingInInspection": true,
+      "tableCaption": "",
+      "panelText": "◒\nWhat the model is showing\nCurrent condition cues\nFocus · Infiltration\n\nBars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast.\n\nWHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.\nTeaching signals by place\nSeparate scores · 0–100\n0\n50\n100\nLand\nSurface\nAir\nCloud\nLand\nReturn\nEnergy cue\nSolid\nSurface flow cue\nDashed\nStorage cue\nDotted\nInspect a place\nFollow stage focus · Land\nSurface\nAir\nCloud\nLand\nReturn\n\nSelect a place to read its cues, or follow the stage focus.\n\nLand · Teaching scores\nFollowing stage focus\nEnergy cue\n42/100\nSurface flow cue\n76/100\nStorage cue\n74/100\nStorage cues by store\n\nCompare each store with itself as conditions change.\n\nSurface water\n71/100\nAtmosphere\n52/100\nSoil water\n61/100\nGroundwater\n56/100\nPlant storage\n52/100\nRead all chart values\n\nScores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance."
+    },
+    {
+      "label": "light-1280 preflight open",
+      "viewport": 1280,
+      "host": {
+        "x": 0,
+        "y": -1777,
+        "w": 1280,
+        "h": 3840.21875,
+        "right": 1280,
+        "bottom": 2063.21875
+      },
+      "panel": {
+        "x": 137,
+        "y": 523.5,
+        "w": 1006,
+        "h": 1036.78125,
+        "right": 1143,
+        "bottom": 1560.28125
+      },
+      "grid": {
+        "x": 150,
+        "y": 660.4375,
+        "w": 980,
+        "h": 836.84375,
+        "right": 1130,
+        "bottom": 1497.28125
+      },
+      "chart": {
+        "x": 558.875,
+        "y": 660.4375,
+        "w": 571.125,
+        "h": 350.453125,
+        "right": 1130,
+        "bottom": 1010.890625
+      },
+      "inspection": {
+        "x": 150,
+        "y": 1022.890625,
+        "w": 980,
+        "h": 153.390625,
+        "right": 1130,
+        "bottom": 1176.28125
+      },
+      "stores": {
+        "x": 150,
+        "y": 660.4375,
+        "w": 396.875,
+        "h": 305.9375,
+        "right": 546.875,
+        "bottom": 966.375
+      },
+      "values": {
+        "x": 150,
+        "y": 1188.28125,
+        "w": 980,
+        "h": 309,
+        "right": 1130,
+        "bottom": 1497.28125
+      },
+      "lastBar": {
+        "x": 165,
+        "y": 918.1875,
+        "w": 366.875,
+        "h": 33.1875,
+        "right": 531.875,
+        "bottom": 951.375
+      },
+      "unusedHeightBelowLastBar": 59.515625,
+      "tableOpen": true,
+      "domOrder": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ],
+      "storeHeading": "Storage cues by store",
+      "storeHeadingRect": {
+        "x": 165,
+        "y": 675.4375,
+        "w": 366.875,
+        "h": 21,
+        "right": 531.875,
+        "bottom": 696.4375
+      },
+      "storeAria": "wcSignalStoresTitle",
+      "storeAriaReferences": [
+        {
+          "id": "wcSignalStoresTitle",
+          "exists": true
+        }
+      ],
+      "selectInInspection": true,
+      "readingInInspection": true,
+      "tableCaption": "Independent teaching scores (0–100) for each place",
+      "panelText": "◒\nWhat the model is showing\nCurrent condition cues\nFocus · Infiltration\n\nBars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast.\n\nWHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.\nTeaching signals by place\nSeparate scores · 0–100\n0\n50\n100\nLand\nSurface\nAir\nCloud\nLand\nReturn\nEnergy cue\nSolid\nSurface flow cue\nDashed\nStorage cue\nDotted\nInspect a place\nFollow stage focus · Land\nSurface\nAir\nCloud\nLand\nReturn\n\nSelect a place to read its cues, or follow the stage focus.\n\nLand · Teaching scores\nFollowing stage focus\nEnergy cue\n42/100\nSurface flow cue\n76/100\nStorage cue\n74/100\nStorage cues by store\n\nCompare each store with itself as conditions change.\n\nSurface water\n71/100\nAtmosphere\n52/100\nSoil water\n61/100\nGroundwater\n56/100\nPlant storage\n52/100\nRead all chart values\nIndependent teaching scores (0–100) for each place\nPlace\tEnergy cue\tSurface flow cue\tStorage cue\nSurface\t52\t51\t71\nAir\t46\t47\t52\nCloud\t56\t66\t65\nLand\t42\t76\t74\nReturn\t34\t57\t56\n\nScores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance."
+    },
+    {
+      "label": "light-1280-host-390 folded",
+      "viewport": 1280,
+      "host": {
+        "x": 445,
+        "y": 0,
+        "w": 390,
+        "h": 7964.984375,
+        "right": 835,
+        "bottom": 7964.984375
+      },
+      "panel": {
+        "x": 474,
+        "y": 3977.859375,
+        "w": 332,
+        "h": 1390.75,
+        "right": 806,
+        "bottom": 5368.609375
+      },
+      "grid": {
+        "x": 487,
+        "y": 4279.421875,
+        "w": 306,
+        "h": 990.1875,
+        "right": 793,
+        "bottom": 5269.609375
+      },
+      "chart": {
+        "x": 487,
+        "y": 4279.421875,
+        "w": 306,
+        "h": 293.15625,
+        "right": 793,
+        "bottom": 4572.578125
+      },
+      "inspection": {
+        "x": 487,
+        "y": 4584.578125,
+        "w": 306,
+        "h": 291.09375,
+        "right": 793,
+        "bottom": 4875.671875
+      },
+      "stores": {
+        "x": 487,
+        "y": 4887.671875,
+        "w": 306,
+        "h": 323.9375,
+        "right": 793,
+        "bottom": 5211.609375
+      },
+      "values": {
+        "x": 487,
+        "y": 5223.609375,
+        "w": 306,
+        "h": 46,
+        "right": 793,
+        "bottom": 5269.609375
+      },
+      "lastBar": {
+        "x": 502,
+        "y": 5163.421875,
+        "w": 276,
+        "h": 33.1875,
+        "right": 778,
+        "bottom": 5196.609375
+      },
+      "unusedHeightBelowLastBar": 0,
+      "tableOpen": false,
+      "domOrder": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ],
+      "storeHeading": "Storage cues by store",
+      "storeHeadingRect": {
+        "x": 502,
+        "y": 4902.671875,
+        "w": 276,
+        "h": 21,
+        "right": 778,
+        "bottom": 4923.671875
+      },
+      "storeAria": "wcSignalStoresTitle",
+      "storeAriaReferences": [
+        {
+          "id": "wcSignalStoresTitle",
+          "exists": true
+        }
+      ],
+      "selectInInspection": true,
+      "readingInInspection": true,
+      "tableCaption": "",
+      "panelText": "◒\nWhat the model is showing\nCurrent condition cues\nFocus · Infiltration\n\nBars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast.\n\nWHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.\nTeaching signals by place\nSeparate scores · 0–100\n0\n50\n100\nLand\nSurface\nAir\nCloud\nLand\nReturn\nEnergy cue\nSolid\nSurface flow cue\nDashed\nStorage cue\nDotted\nInspect a place\nFollow stage focus · Land\nSurface\nAir\nCloud\nLand\nReturn\n\nSelect a place to read its cues, or follow the stage focus.\n\nLand · Teaching scores\nFollowing stage focus\nEnergy cue\n42/100\nSurface flow cue\n76/100\nStorage cue\n74/100\nStorage cues by store\n\nCompare each store with itself as conditions change.\n\nSurface water\n71/100\nAtmosphere\n52/100\nSoil water\n61/100\nGroundwater\n56/100\nPlant storage\n52/100\nRead all chart values\n\nScores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance."
+    },
+    {
+      "label": "light-1280-host-390 preflight open",
+      "viewport": 1280,
+      "host": {
+        "x": 445,
+        "y": -3773,
+        "w": 390,
+        "h": 8245.984375,
+        "right": 835,
+        "bottom": 4472.984375
+      },
+      "panel": {
+        "x": 474,
+        "y": 204.859375,
+        "w": 332,
+        "h": 1671.75,
+        "right": 806,
+        "bottom": 1876.609375
+      },
+      "grid": {
+        "x": 487,
+        "y": 506.421875,
+        "w": 306,
+        "h": 1271.1875,
+        "right": 793,
+        "bottom": 1777.609375
+      },
+      "chart": {
+        "x": 487,
+        "y": 506.421875,
+        "w": 306,
+        "h": 293.15625,
+        "right": 793,
+        "bottom": 799.578125
+      },
+      "inspection": {
+        "x": 487,
+        "y": 811.578125,
+        "w": 306,
+        "h": 291.09375,
+        "right": 793,
+        "bottom": 1102.671875
+      },
+      "stores": {
+        "x": 487,
+        "y": 1114.671875,
+        "w": 306,
+        "h": 323.9375,
+        "right": 793,
+        "bottom": 1438.609375
+      },
+      "values": {
+        "x": 487,
+        "y": 1450.609375,
+        "w": 306,
+        "h": 327,
+        "right": 793,
+        "bottom": 1777.609375
+      },
+      "lastBar": {
+        "x": 502,
+        "y": 1390.421875,
+        "w": 276,
+        "h": 33.1875,
+        "right": 778,
+        "bottom": 1423.609375
+      },
+      "unusedHeightBelowLastBar": 0,
+      "tableOpen": true,
+      "domOrder": [
+        "wc-signal-chart",
+        "wc-signal-inspection",
+        "wc-signal-stores",
+        "wc-signal-values"
+      ],
+      "storeHeading": "Storage cues by store",
+      "storeHeadingRect": {
+        "x": 502,
+        "y": 1129.671875,
+        "w": 276,
+        "h": 21,
+        "right": 778,
+        "bottom": 1150.671875
+      },
+      "storeAria": "wcSignalStoresTitle",
+      "storeAriaReferences": [
+        {
+          "id": "wcSignalStoresTitle",
+          "exists": true
+        }
+      ],
+      "selectInInspection": true,
+      "readingInInspection": true,
+      "tableCaption": "Independent teaching scores (0–100) for each place",
+      "panelText": "◒\nWhat the model is showing\nCurrent condition cues\nFocus · Infiltration\n\nBars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast.\n\nWHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.\nTeaching signals by place\nSeparate scores · 0–100\n0\n50\n100\nLand\nSurface\nAir\nCloud\nLand\nReturn\nEnergy cue\nSolid\nSurface flow cue\nDashed\nStorage cue\nDotted\nInspect a place\nFollow stage focus · Land\nSurface\nAir\nCloud\nLand\nReturn\n\nSelect a place to read its cues, or follow the stage focus.\n\nLand · Teaching scores\nFollowing stage focus\nEnergy cue\n42/100\nSurface flow cue\n76/100\nStorage cue\n74/100\nStorage cues by store\n\nCompare each store with itself as conditions change.\n\nSurface water\n71/100\nAtmosphere\n52/100\nSoil water\n61/100\nGroundwater\n56/100\nPlant storage\n52/100\nRead all chart values\nIndependent teaching scores (0–100) for each place\nPlace\tEnergy cue\tSurface flow cue\tStorage cue\nSurface\t52\t51\t71\nAir\t46\t47\t52\nCloud\t56\t66\t65\nLand\t42\t76\t74\nReturn\t34\t57\t56\n\nScores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance."
+    }
+  ],
+  "audits": [],
+  "failures": [
+    "light-320 default plot text remains about 12px or larger and labels do not overlap",
+    "light-320 preflight open plot text remains about 12px or larger and labels do not overlap",
+    "Frozen tested source stays unchanged and matches public mirror"
+  ],
+  "errors": [],
+  "completed": true,
+  "successful": false,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finalSourceSha256": "ff99c8ed03fb315b3ea98085b68e5c552b06eda2498ac304d842b768f7a5ad72",
+  "finalPublicSha256": "ff99c8ed03fb315b3ea98085b68e5c552b06eda2498ac304d842b768f7a5ad72",
+  "finishedAt": "2026-09-30T15:57:46.669Z",
+  "passed": 63,
+  "failed": 3
+}

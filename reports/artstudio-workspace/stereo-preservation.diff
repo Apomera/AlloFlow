@@ -1,0 +1,822 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-stereogram-pass.js b/stem_lab/stem_tool_artstudio.js
+index 013beafb8..94caeaf04 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-stereogram-pass.js
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -951,6 +951,42 @@ window.StemLab = window.StemLab || {
+     return options[0]||null;
+   }
+   // END ART STUDIO CONTRAST HELPERS
++  // BEGIN ART STUDIO STEREOGRAM HELPERS
++  function artStudioStereoModel(raw) {
++    var d=raw||{};
++    return {stereoPattern:['bw','color','noise','ai'].indexOf(d.stereoPattern)>=0?d.stereoPattern:'bw',
++      stereoDensity:Math.round(artStudioMixerNumber(d.stereoDensity,100,60,150)),
++      stereoStrength:Math.round(artStudioMixerNumber(d.stereoStrength,15,0,30)),
++      stereoSeed:Math.round(artStudioMixerNumber(d.stereoSeed,12345,0,2147483647))};
++  }
++  function artStudioStereoRaster(raw) {
++    if(!raw||!Number.isInteger(raw.width)||!Number.isInteger(raw.height)||raw.width<1||raw.height<1||raw.width>1024||raw.height>1024||!raw.data)return null;
++    var size=raw.width*raw.height*4,data=raw.data;
++    if(typeof data!=='object'||(typeof data.length==='number'?data.length<size:!Object.prototype.hasOwnProperty.call(data,size-1)))return null;
++    return raw;
++  }
++  function artStudioStereoRows(image,depth,model,pattern,start,end) {
++    var W=image.width,H=image.height,data=image.data,d=artStudioStereoModel(model),map=artStudioStereoRaster(depth),tile=artStudioStereoRaster(pattern);
++    for(var y=Math.max(0,start);y<Math.min(H,end);y++){
++      var seed=(y*7919+d.stereoSeed)&0x7fffffff;
++      var rng=function(){seed=(seed*1664525+1013904223)&0x7fffffff;return seed/0x7fffffff;};
++      for(var x=0;x<W;x++){
++        var i=(y*W+x)*4;
++        if(x<d.stereoDensity){
++          if(d.stereoPattern==='ai'&&tile){var t=((y%tile.height)*tile.width+x%tile.width)*4;for(var c=0;c<3;c++)data[i+c]=tile.data[t+c];}
++          else if(d.stereoPattern==='color'){for(var c2=0;c2<3;c2++)data[i+c2]=Math.floor(rng()*200)+55;}
++          else {var value=d.stereoPattern==='bw'?(rng()>.5?230:25):Math.floor(rng()*220)+20;data[i]=data[i+1]=data[i+2]=value;}
++        }else{
++          var depthValue=map?Number(map.data[(Math.floor(y*map.height/H)*map.width+Math.floor(x*map.width/W))*4]):0;
++          var shift=Math.round((Number.isFinite(depthValue)?Math.max(0,Math.min(255,depthValue)):0)/255*d.stereoStrength);
++          var from=(y*W+x-d.stereoDensity+shift)*4;
++          data[i]=data[from];data[i+1]=data[from+1];data[i+2]=data[from+2];
++        }
++        data[i+3]=255;
++      }
++    }
++  }
++  // END ART STUDIO STEREOGRAM HELPERS
+   // BEGIN ART STUDIO HARMONY HELPERS
+   function artStudioHarmonyRecipe(raw) {
+     var d=raw&&typeof raw==='object'?raw:{},h=artStudioMixerNumber(d.baseHue,200,-1e9,1e9);
+@@ -3661,6 +3697,7 @@ const d = labToolData.artStudio || {};
+               else if (canvas._strExportCanvas) canvas = canvas._strExportCanvas();
+               else if (canvas._fractalExportCanvas) canvas = canvas._fractalExportCanvas();
+               else if (canvas._opExportCanvas) canvas = canvas._opExportCanvas();
++              else if (canvas._stereoExportCanvas) canvas = canvas._stereoExportCanvas();
+               var sourceWidth = Math.max(1, canvas.width || canvas.clientWidth || 1);
+               var sourceHeight = Math.max(1, canvas.height || canvas.clientHeight || 1);
+               var scale = Math.min(1, 240 / sourceWidth, 180 / sourceHeight);
+@@ -3755,6 +3792,7 @@ const d = labToolData.artStudio || {};
+             Object.keys(source).forEach(function (key) {
+               if (artStudioLabOwnsStateKey(tabId, key)) payload[key] = cloneArtStudioStudyValue(source[key]);
+             });
++            if(tabId==='stereogram')Object.assign(payload,artStudioStereoModel(source));
+             if(tabId==='harmonyHunt')payload._harmonyHunt=artStudioHarmonyState(source._harmonyHunt);
+             if(tabId==='contrast')Object.assign(payload,artStudioContrastModel(source),{contrastSampleText:typeof source.contrastSampleText==='string'?source.contrastSampleText.slice(0,160):''});
+             var legacyPaletteKey = {
+@@ -3798,7 +3836,7 @@ const d = labToolData.artStudio || {};
+                 ? canvas._watercolorEngine.captureSnapshot()
+                 : canvas._symExportAction ? canvas._symExportAction()
+                   : canvas._spinExportAction ? canvas._spinExportAction()
+-                    : canvas._genExportAction ? canvas._genExportAction() : canvas._spiroExportPNG ? canvas._spiroExportPNG() : canvas._strExportPNG ? canvas._strExportPNG() : canvas._fractalExportPNG ? canvas._fractalExportPNG() : canvas._opExportPNG ? canvas._opExportPNG() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
++                    : canvas._genExportAction ? canvas._genExportAction() : canvas._stereoExportPNG ? canvas._stereoExportPNG() : canvas._spiroExportPNG ? canvas._spiroExportPNG() : canvas._strExportPNG ? canvas._strExportPNG() : canvas._fractalExportPNG ? canvas._fractalExportPNG() : canvas._opExportPNG ? canvas._opExportPNG() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
+             } catch (_) { return null; }
+             if (!src || src === 'data:,') return null;
+             var label = ART_STUDIO_TAB_LABELS[tab] || 'Art Studio artwork';
+@@ -4278,6 +4316,7 @@ const d = labToolData.artStudio || {};
+             if (savedTab === 'gradient') scopedPayload.gradRestoreToken = restoreToken;
+             if (savedTab === 'colorWheel') scopedPayload.wheelRestoreToken = restoreToken;
+             if (savedTab === 'contrast') scopedPayload.contrastRestoreToken = restoreToken;
++            if (savedTab === 'stereogram') scopedPayload.stereoRestoreToken = restoreToken;
+             if (savedTab === 'harmonyHunt') scopedPayload.harmonyRestoreToken = restoreToken;
+             if (savedTab === 'mixer') {
+               // Older untouched studies saved no mixer fields at all. Keep their
+@@ -7163,6 +7202,213 @@ const d = labToolData.artStudio || {};
+             var css='/* WCAG 2.2 contrast: '+contrastRatio.toFixed(4)+':1; target '+contrastGoalTarget+':1; '+(passContrastGoal?'passes':'does not pass')+' */\n.contrast-sample {\n  color: '+artStudioContrastCSS(contrastForeground)+';\n  background-color: '+artStudioContrastCSS(contrastBackground)+';\n}\n';
+             var link=document.createElement('a');link.download='contrast-pair.css';link.href='data:text/css;charset=utf-8,'+encodeURIComponent(css);link.click();
+           }
++          function drawStereoPreset(canvas,preset){
++            var ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;ctx.fillStyle='#000000';ctx.fillRect(0,0,W,H);
++
++
++                          if (preset === 'sphere') {
++
++                            var grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.min(W,H)*0.35);
++
++                            grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#888888'); grad.addColorStop(1, '#000000');
++
++                            ctx.beginPath(); ctx.arc(W/2, H/2, Math.min(W,H)*0.35, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
++
++                          } else if (preset === 'pyramid') {
++
++                            ctx.beginPath(); ctx.moveTo(W/2, H*0.15); ctx.lineTo(W*0.2, H*0.85); ctx.lineTo(W*0.8, H*0.85); ctx.closePath();
++
++                            var pgr = ctx.createLinearGradient(W/2, H*0.15, W/2, H*0.85);
++
++                            pgr.addColorStop(0, '#ffffff'); pgr.addColorStop(1, '#555555'); ctx.fillStyle = pgr; ctx.fill();
++
++                          } else if (preset === 'heart') {
++
++                            ctx.save(); ctx.translate(W/2, H*0.45);
++
++                            var sc = Math.min(W,H) * 0.012; ctx.scale(sc, -sc);
++
++                            ctx.beginPath();
++
++                            for (var ht = 0; ht <= Math.PI * 2; ht += 0.01) {
++
++                              var hx = 16 * Math.pow(Math.sin(ht), 3);
++
++                              var hy = 13 * Math.cos(ht) - 5 * Math.cos(2*ht) - 2 * Math.cos(3*ht) - Math.cos(4*ht);
++
++                              if (ht === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
++
++                            }
++
++                            ctx.closePath(); ctx.restore(); ctx.fillStyle = '#ffffff'; ctx.fill();
++
++                          } else if (preset === 'text') {
++
++                            ctx.fillStyle = '#ffffff'; ctx.font = 'bold ' + Math.round(H * 0.45) + 'px Arial';
++
++                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('HI', W/2, H/2);
++
++                          } else if (preset === 'rings') {
++
++                            for (var ri = 3; ri > 0; ri--) {
++
++                              var rr = ri * Math.min(W,H) * 0.12;
++
++                              var brt = Math.round((4 - ri) / 3 * 255);
++
++                              ctx.beginPath(); ctx.arc(W/2, H/2, rr, 0, Math.PI*2);
++
++                              ctx.lineWidth = 20; ctx.strokeStyle = 'rgb(' + brt + ',' + brt + ',' + brt + ')'; ctx.stroke();
++
++                            }
++
++                          }
++          }
++          const stereoModel=artStudioStereoModel(d),stereoOwner=studioPersistenceScope+'|'+studioThreadKitRunId+'|'+(d.stereoRestoreToken||'');
++          const stereoRuntimeRef=React.useRef({depth:null,output:null});
++          React.useEffect(function(){
++            var depth=stereoRuntimeRef.current.depth,output=stereoRuntimeRef.current.output;
++            return function(){if(output&&output._stereoCancel)output._stereoCancel();};
++          },[tab,d.stereoAnimMode,stereoOwner]);
++          function stereoDepthCheckpoint(){
++            var canvas=stereoRuntimeRef.current.depth;
++            if(!canvas||canvas._artStudioRestoring)return {stereoDepthSnapshot:d.stereoDepthSnapshot||'',stereoPreset:d.stereoPreset||null};
++            return {stereoDepthSnapshot:canvas.toDataURL('image/png'),stereoPreset:canvas._dmPreset||null};
++          }
++          function refreshStereoOutput(){var canvas=stereoRuntimeRef.current.output;if(canvas&&canvas.isConnected&&canvas._stereoRefresh)canvas._stereoRefresh();}
++          function stereoHistory(redo){var canvas=stereoRuntimeRef.current.depth;if(canvas&&canvas._dmHistoryAction)canvas._dmHistoryAction(redo);}
++          function stereoPreset(preset){var canvas=stereoRuntimeRef.current.depth;if(canvas&&canvas._dmEdit)canvas._dmEdit(function(){drawStereoPreset(canvas,preset);},preset);}
++          function exportStereo(){
++            var canvas=stereoRuntimeRef.current.output;if(!canvas)return;
++            var finish=function(){if(!canvas.isConnected)return;try{var src=canvas._stereoExportPNG();if(!src||src==='data:,')throw new Error('Empty image');var link=document.createElement('a');link.download='stereogram.png';link.href=src;link.click();}catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_export_failed','The image could not be exported. Please try again.'),'error');}};
++            if(canvas._artStudioRestoring&&canvas._artStudioReady)canvas._artStudioReady.then(finish);else finish();
++          }
++          function bindStereoDepth(canvas){
++            if(!canvas)return;
++            stereoRuntimeRef.current.depth=canvas;
++            canvas.dataset.touchMode=d.stereoDepthTouchMode==='draw'?'draw':'scroll';canvas.style.touchAction=canvas.dataset.touchMode==='draw'?'none':'pan-y';
++            var ctx=canvas.getContext('2d');if(!ctx)return;
++            var W=canvas.width,H=canvas.height;
++            canvas._dmPublish=function(){var checkpoint=stereoDepthCheckpoint();canvas._dmExpectedSnapshot=checkpoint.stereoDepthSnapshot;updMany(checkpoint);refreshStereoOutput();};
++            canvas._dmBrush={size:artStudioMixerNumber(d.stereoBrush,20,5,60),level:['near','mid','far','erase'].indexOf(d.stereoDepth)>=0?d.stereoDepth:'near'};
++            var incoming=typeof d.stereoDepthSnapshot==='string'&&d.stereoDepthSnapshot.indexOf('data:image/png')===0?d.stereoDepthSnapshot:'';
++            if(canvas._dmInit){if(canvas._dmExpectedSnapshot!==incoming)canvas._dmRestore(incoming,d.stereoPreset,d.stereoStaticDepthSnapshot);return;}
++            canvas._dmInit=true;canvas._dmPreset=d.stereoPreset||null;
++            var history={undo:[],redo:[]},stroke=null,cursor={x:W/2,y:H/2};
++            function snapshot(){return {pixels:ctx.getImageData(0,0,W,H),preset:canvas._dmPreset};}
++            function changed(a,b){var x=a.pixels.data,y=b.pixels.data;if(a.preset!==b.preset)return true;for(var i=0;i<x.length;i++)if(x[i]!==y[i])return true;return false;}
++            function publish(){canvas._dmRevision=(canvas._dmRevision||0)+1;canvas._dmPublish();}
++            function edit(action,preset){
++              if(canvas._artStudioRestoring)return;
++              finish();var before=snapshot();action();canvas._dmPreset=preset||null;var after=snapshot();
++              if(!changed(before,after))return;
++              history.undo.push(before);if(history.undo.length>20)history.undo.shift();history.redo=[];publish();
++            }
++            canvas._dmEdit=edit;
++            canvas._dmHistoryAction=function(redo){
++              if(canvas._artStudioRestoring)return;finish();var from=redo?history.redo:history.undo;if(!from.length)return;
++              (redo?history.undo:history.redo).push(snapshot());var next=from.pop();ctx.putImageData(next.pixels,0,0);canvas._dmPreset=next.preset;publish();
++              if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.stereo_redone','Depth edit redone.'):__alloT('stem.artstudio.stereo_undone','Depth edit undone.'));
++            };
++            canvas._dmHistory=history;
++            function position(event){var rect=canvas.getBoundingClientRect(),point=event.touches&&event.touches[0]||event.changedTouches&&event.changedTouches[0]||event;return {x:Math.max(0,Math.min(W,(point.clientX-rect.left)*W/(rect.width||W))),y:Math.max(0,Math.min(H,(point.clientY-rect.top)*H/(rect.height||H)))};}
++            function brush(from,to){var b=canvas._dmBrush,color={near:'#ffffff',mid:'#999999',far:'#333333',erase:'#000000'}[b.level];ctx.fillStyle=ctx.strokeStyle=color;ctx.lineWidth=b.size*2;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();if(from){ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();}else{ctx.arc(to.x,to.y,b.size,0,Math.PI*2);ctx.fill();}}
++            function start(event){
++              if(stroke||canvas._artStudioRestoring||(event.button!==undefined&&event.button!==0)||!canvasAllowsFingerInteraction(canvas,event))return;
++              event.preventDefault();stroke={before:snapshot(),last:position(event),id:event.pointerId};brush(null,stroke.last);
++              if(event.pointerId!==undefined&&canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId);}catch(_){}
++            }
++            function move(event){
++              if(!stroke||(stroke.id!==undefined&&event.pointerId!==undefined&&event.pointerId!==stroke.id))return;
++              if(event.preventDefault)event.preventDefault();var samples=typeof event.getCoalescedEvents==='function'?event.getCoalescedEvents():[];
++              Array.prototype.slice.call(samples).concat([event]).forEach(function(sample){var next=position(sample);if(!Number.isFinite(next.x)||!Number.isFinite(next.y))return;if(next.x!==stroke.last.x||next.y!==stroke.last.y)brush(stroke.last,next);stroke.last=next;});
++            }
++            function finish(event,cancel){
++              if(!stroke||(event&&stroke.id!==undefined&&event.pointerId!==undefined&&event.pointerId!==stroke.id))return;
++              if(event&&!cancel)move(event);var previous=stroke;stroke=null;var after=snapshot();
++              if(changed(previous.before,after)){history.undo.push(previous.before);if(history.undo.length>20)history.undo.shift();history.redo=[];canvas._dmPreset=null;publish();}
++              if(previous.id!==undefined&&canvas.releasePointerCapture)try{canvas.releasePointerCapture(previous.id);}catch(_){}
++            }
++            canvas._dmFinish=finish;
++            canvas.onpointerdown=start;canvas.onpointermove=move;canvas.onpointerup=function(e){finish(e,false);};canvas.onpointercancel=canvas.onlostpointercapture=function(e){finish(e,true);};
++            // Keep the fallback usable on hosts without PointerEvent and in the
++            // existing embedded touch adapter, without double-painting on modern browsers.
++            canvas.onmousedown=canvas.ontouchstart=function(e){if(typeof window.PointerEvent==='undefined')start(e);};
++            canvas.onmousemove=canvas.ontouchmove=function(e){if(typeof window.PointerEvent==='undefined')move(e);};
++            canvas.onmouseup=canvas.ontouchend=function(e){if(typeof window.PointerEvent==='undefined')finish(e,false);};
++            canvas.onmouseleave=canvas.ontouchcancel=function(e){if(typeof window.PointerEvent==='undefined')finish(e,true);};
++            function updateCursor(show){
++              var overlay=canvas.parentElement&&canvas.parentElement.querySelector('[data-depth-keyboard-cursor="true"]');
++              if(overlay){overlay.style.left=((canvas.offsetLeft||0)+cursor.x/W*(canvas.clientWidth||W)-10)+'px';overlay.style.top=((canvas.offsetTop||0)+cursor.y/H*(canvas.clientHeight||H)-10)+'px';overlay.style.display=show?'block':'none';}
++              canvas.setAttribute('aria-label',formatArtStudioLearningText(__alloT('stem.artstudio.stereo_cursor_label','Depth map drawing canvas. Current brush is {brush}. Keyboard cursor at x {x}, y {y}.'),{brush:__alloT('stem.artstudio.a11y_depth_'+canvas._dmBrush.level,canvas._dmBrush.level),x:Math.round(cursor.x),y:Math.round(cursor.y)}));
++            }
++            canvas.onfocus=function(){updateCursor(true);};canvas.onblur=function(){finish();updateCursor(false);};
++            canvas.onkeydown=function(event){
++              if((event.ctrlKey||event.metaKey)&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();canvas._dmHistoryAction(event.key.toLowerCase()==='y'||event.shiftKey);return;}
++              var before={x:cursor.x,y:cursor.y},step=event.altKey?1:10,moved=true;
++              if(event.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-step);else if(event.key==='ArrowRight')cursor.x=Math.min(W,cursor.x+step);else if(event.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-step);else if(event.key==='ArrowDown')cursor.y=Math.min(H,cursor.y+step);else if(event.key==='Home')cursor.x=W/2,cursor.y=H/2;else moved=false;
++              if(moved){event.preventDefault();if(event.shiftKey)edit(function(){brush(before,cursor);});updateCursor(true);if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(event.shiftKey?__alloT('stem.artstudio.sr_drew_depth_to_x_y','Drew depth to x {value1}, y {value2}.'):__alloT('stem.artstudio.sr_depth_cursor_x_y','Depth cursor x {value1}, y {value2}.'),{value1:Math.round(cursor.x),value2:Math.round(cursor.y)}));}
++              else if(event.key==='Enter'||event.key===' '){event.preventDefault();edit(function(){brush(null,cursor);});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_stamped_depth_at','Stamped {value1} depth at x {value2}, y {value3}.'),{value1:__alloT('stem.artstudio.sr_depth_'+canvas._dmBrush.level,canvas._dmBrush.level),value2:Math.round(cursor.x),value3:Math.round(cursor.y)}));}
++            };
++            canvas._dmRestore=function(saved,preset,rawLegacy){
++              stroke=null;history.undo=[];history.redo=[];canvas._dmExpectedSnapshot=saved;canvas._dmPreset=preset||null;
++              drawStereoPreset(canvas,preset);canvas._dmRevision=(canvas._dmRevision||0)+1;
++              var revision=(canvas._artStudioRestoreRevision||0)+1;canvas._artStudioRestoreRevision=revision;canvas._artStudioRestoring=!!saved;
++              if(saved){
++                canvas._artStudioReady=new Promise(function(resolve){
++                  var img=new Image();
++                  img.onload=function(){
++                    if(!canvas.isConnected||canvas._artStudioRestoreRevision!==revision){resolve();return;}
++                    ctx.drawImage(img,0,0,W,H);canvas._dmRevision++;canvas._artStudioRestoring=false;resolve();refreshStereoOutput();
++                  };
++                  img.onerror=function(){
++                    if(!canvas.isConnected||canvas._artStudioRestoreRevision!==revision){resolve();return;}
++                    canvas._artStudioRestoring=false;resolve();refreshStereoOutput();if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_restore_failed','The saved depth image could not be opened. The depth preset is still available.'),'error');
++                  };
++                  img.src=saved;
++                });
++              }else{
++                canvas._artStudioReady=null;
++                var legacy=artStudioStereoRaster(rawLegacy);
++                if(legacy&&typeof ctx.createImageData==='function'&&typeof ctx.putImageData==='function'){var pixels=ctx.createImageData(W,H);for(var y=0;y<H;y++)for(var x=0;x<W;x++){var i=(y*W+x)*4,j=(Math.floor(y*legacy.height/H)*legacy.width+Math.floor(x*legacy.width/W))*4;for(var c=0;c<4;c++)pixels.data[i+c]=legacy.data[j+c];}ctx.putImageData(pixels,0,0);}
++              }
++            };
++            canvas._dmRestore(incoming,d.stereoPreset,d.stereoStaticDepthSnapshot);
++            updateCursor(document.activeElement===canvas);
++          }
++          function bindStereoOutput(canvas){
++            if(!canvas)return;stereoRuntimeRef.current.output=canvas;
++            var ctx=canvas.getContext('2d');if(!ctx)return;
++            canvas._stereoSettings={model:stereoModel,pattern:d.stereoAiPatternImg,gen:d.stereoGen};
++            canvas._captureArtStudioState=stereoDepthCheckpoint;
++            if(!canvas._stereoRefresh){
++              var job=null,raf=null,signature='',patternRef=null;
++              canvas._stereoCancel=function(){if(raf!==null)cancelAnimationFrame(raf);raf=null;job=null;};
++              function draw(all){
++                if(!job||!canvas.isConnected)return;var end=all?canvas.height:Math.min(canvas.height,job.rows+32);
++                artStudioStereoRows(job.image,job.depth,job.settings.model,job.settings.pattern,job.rows,end);ctx.putImageData(job.image,0,0,0,job.rows,canvas.width,end-job.rows);job.rows=end;
++                canvas.dataset.stereoRows=String(end);canvas.setAttribute('aria-busy',String(end<canvas.height));
++                if(end<canvas.height)raf=requestAnimationFrame(function(){raf=null;draw(false);});
++              }
++              canvas._stereoRefresh=function(force){
++                var depth=stereoRuntimeRef.current.depth;if(!depth||!depth.isConnected)return;
++                canvas._artStudioRestoring=!!depth._artStudioRestoring;canvas._artStudioReady=depth._artStudioReady;canvas._artStudioRestoreRevision=depth._artStudioRestoreRevision;
++                if(depth._artStudioRestoring){canvas._stereoCancel();signature='';return;}
++                var settings=canvas._stereoSettings,next=JSON.stringify([settings.model,settings.gen,depth._dmRevision||0]);
++                if(!force&&signature===next&&patternRef===settings.pattern)return;
++                canvas._stereoCancel();signature=next;patternRef=settings.pattern;
++                var depthContext=depth.getContext('2d');if(!depthContext)return;
++                job={settings:settings,depth:depthContext.getImageData(0,0,depth.width,depth.height),image:ctx.createImageData(canvas.width,canvas.height),rows:0};
++                // Some older capture adapters omit dimensions from ImageData.
++                job.depth={width:depth.width,height:depth.height,data:job.depth.data};
++                ctx.putImageData(job.image,0,0);draw(false);
++              };
++              canvas._stereoExportCanvas=function(){canvas._stereoRefresh();if(canvas._artStudioRestoring)return null;if(raf!==null)cancelAnimationFrame(raf);raf=null;draw(true);return canvas;};
++              canvas._stereoExportPNG=function(){var complete=canvas._stereoExportCanvas();return complete?complete.toDataURL('image/png'):null;};
++            }
++            canvas._stereoRefresh();
++          }
++
+           const harmonyState=artStudioHarmonyState(d._harmonyHunt),harmonyRecipe=artStudioHarmonyRecipe(harmonyState),harmonySignature=JSON.stringify(harmonyRecipe);
+           const harmonyOwner=studioPersistenceScope+'|'+studioThreadKitRunId+'|'+(d.harmonyRestoreToken||'');
+           const harmonyStateRef=React.useRef(harmonyState);harmonyStateRef.current=harmonyState;
+@@ -12832,13 +13078,16 @@ const d = labToolData.artStudio || {};
+ 
+               ),
+ 
++              (d.stereoAnimMode || 'static') === 'static' && React.createElement('div',{role:'group','aria-label':__alloT('stem.artstudio.stereo_workspace_view','Stereogram workspace view'),className:'flex flex-wrap gap-2'},['depth','output'].map(function(view){return React.createElement('button',{key:view,type:'button','aria-controls':'artstudio-stereo-'+view+'-view','aria-pressed':(d.stereoWorkspaceView==='output'?'output':'depth')===view,onClick:function(){upd('stereoWorkspaceView',view);},className:'rounded-lg border border-cyan-600 px-4 py-2 text-sm font-bold min-h-[44px] '+((d.stereoWorkspaceView==='output'?'output':'depth')===view?'bg-cyan-800 text-white':'bg-white text-cyan-800')},view==='depth'?__alloT('stem.artstudio.stereo_edit_depth','Edit depth map'):__alloT('stem.artstudio.stereo_view_output','View stereogram'));})),
++
+               (d.stereoAnimMode || 'static') === 'static' &&
+ 
+-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
++              React.createElement("div", { 'data-stereo-static':'true','data-stereo-view':d.stereoWorkspaceView==='output'?'output':'depth',className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
++                React.createElement('style',null,'[data-stereo-editor-column]{display:contents}[data-stereo-static]{grid-template-columns:minmax(0,1fr)}[data-stereo-controls]{order:2;min-width:0}[data-stereo-depth],[data-stereo-output]{order:1;min-width:0}[data-stereo-depth-export]{order:3}[data-stereo-science]{order:4}[data-stereo-view="depth"] [data-stereo-output],[data-stereo-view="output"] [data-stereo-depth],[data-stereo-view="output"] [data-stereo-depth-export]{display:none}[data-stereo-static] canvas{width:100%;height:auto;max-width:760px!important;margin:auto}[data-stereo-static] button,[data-stereo-static] input{min-height:44px;min-width:44px}[data-stereo-static] button{white-space:normal}[data-stereo-static] input{max-width:100%}@media(min-width:1100px){[data-stereo-static]{grid-template-columns:minmax(0,1fr) 320px;grid-template-areas:"preview controls" "extra controls" "science controls"}[data-stereo-controls]{grid-area:controls;max-height:78dvh;overflow:auto}[data-stereo-depth],[data-stereo-output]{grid-area:preview}[data-stereo-depth-export]{grid-area:extra}[data-stereo-science]{grid-area:science}}'),
+ 
+-                React.createElement("div", { className: "space-y-3" },
++                React.createElement("div", { 'data-stereo-editor-column':'true',className: "space-y-3" },
+ 
+-                  React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
++                  React.createElement("div", { 'data-stereo-controls':'true',className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
+ 
+                     React.createElement("h4", { className: "text-xs font-bold text-cyan-700 mb-3" }, __alloT('stem.artstudio.stereogram_generator', "\uD83D\uDC53 Stereogram Generator")),
+ 
+@@ -12882,11 +13131,11 @@ const d = labToolData.artStudio || {};
+ 
+                     ),
+ 
+-                    [{ k: 'stereoStrength', label: __alloT('stem.artstudio.depth_strength', 'Depth Strength'), min: 5, max: 30, def: 15 },
++                    [{ k: 'stereoStrength', label: __alloT('stem.artstudio.depth_strength', 'Depth Strength'), min: 0, max: 30, def: 15 },
+ 
+                      { k: 'stereoDensity', label: __alloT('stem.artstudio.pattern_width', 'Pattern Width'), min: 60, max: 150, def: 100 }].map(function (s) {
+ 
+-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
++                      var val = stereoModel[s.k];
+ 
+                       return React.createElement("div", { key: s.k, className: "mb-2" },
+ 
+@@ -12900,6 +13149,12 @@ const d = labToolData.artStudio || {};
+ 
+ 
+ 
++                    React.createElement('div',{className:'flex gap-2 my-3'},
++                      React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.stereo_undo','Undo depth edit'),onClick:function(){stereoHistory(false);},className:'flex-1 rounded-lg bg-white border border-cyan-600 text-cyan-800 text-xs font-bold px-2'},__alloT('stem.artstudio.stereo_undo','Undo depth edit')),
++                      React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.stereo_redo','Redo depth edit'),onClick:function(){stereoHistory(true);},className:'flex-1 rounded-lg bg-white border border-cyan-600 text-cyan-800 text-xs font-bold px-2'},__alloT('stem.artstudio.stereo_redo','Redo depth edit'))),
++                    React.createElement('label',{className:'block text-xs font-bold text-cyan-800'},__alloT('stem.artstudio.stereo_seed','Pattern seed'),React.createElement('input',{type:'number',min:0,max:2147483647,step:1,'aria-label':__alloT('stem.artstudio.stereo_seed','Pattern seed'),value:stereoModel.stereoSeed,onChange:function(event){var value=event.target.valueAsNumber;if(Number.isFinite(value))upd('stereoSeed',Math.max(0,Math.min(2147483647,Math.round(value))));},className:'mt-1 block w-full rounded-lg border border-cyan-400 bg-white px-2 text-sm text-slate-900'})),
++                    React.createElement('button',{type:'button',onClick:function(){upd('stereoSeed',(stereoModel.stereoSeed+1)%2147483648);},className:'mt-2 w-full rounded-lg bg-white border border-cyan-600 text-cyan-800 text-xs font-bold px-2'},__alloT('stem.artstudio.stereo_new_pattern','New pattern texture')),
++                    React.createElement('p',{className:'mt-2 text-xs leading-relaxed text-slate-700'},__alloT('stem.artstudio.stereo_live_hint','Depth edits update the stereogram automatically. The same seed and settings reproduce the same texture. PNG export includes the complete image.')),
+                     // --- AI GENERATION ---
+ 
+                     callImagen && React.createElement("div", { className: "mt-4 bg-gradient-to-br from-indigo-50 to-blue-50 p-3 rounded-lg border border-indigo-200" },
+@@ -12935,6 +13190,7 @@ const d = labToolData.artStudio || {};
+ 
+                             if (!d.stereoAiStr) return;
+ 
++                            var requestedDepth=document.getElementById('depthMapCanvas'),requestedOwner=studioCaptureOwnerRef.current;
+                             upd('stereoAiGen', 'Depth Map');
+ 
+                             callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: ' + d.stereoAiStr + '. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
+@@ -12945,15 +13201,14 @@ const d = labToolData.artStudio || {};
+ 
+                                 img.onload = function() {
+ 
+-                                  var cvs = document.getElementById('depthMapCanvas');
++                                  if(studioCaptureOwnerRef.current!==requestedOwner)return;
++                                  var cvs = requestedDepth;
+ 
+-                                  if(cvs) {
++                                  if(cvs&&cvs.isConnected&&cvs._dmEdit) {
+ 
+                                     var ztx = cvs.getContext('2d');
+ 
+-                                    ztx.clearRect(0, 0, cvs.width, cvs.height);
+-
+-                                    ztx.drawImage(img, 0, 0, cvs.width, cvs.height);
++                                    cvs._dmEdit(function(){ztx.clearRect(0,0,cvs.width,cvs.height);ztx.drawImage(img,0,0,cvs.width,cvs.height);});
+ 
+                                   }
+ 
+@@ -12966,6 +13221,7 @@ const d = labToolData.artStudio || {};
+                                 img.src = base64;
+ 
+                               }).catch(function(e) {
++                                if(studioCaptureOwnerRef.current!==requestedOwner)return;
+ 
+                                 upd('stereoAiGen', null);
+ 
+@@ -13041,9 +13297,9 @@ const d = labToolData.artStudio || {};
+ 
+                     React.createElement("div", { className: "flex gap-2 mt-4" },
+ 
+-                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_rendering_stereogram_from_the_current_depth_map', 'Rendering stereogram from the current depth map.')); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-700 to-teal-700 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
++                      React.createElement("button", { onClick: function () { updMany({stereoGen:Date.now(),stereoWorkspaceView:'output'}); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_rendering_stereogram_from_the_current_depth_map', 'Rendering stereogram from the current depth map.')); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-700 to-teal-700 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
+ 
+-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_9', "Clear"), onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
++                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_9', "Clear"), onClick: function () { stereoPreset(null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
+ 
+                     ),
+ 
+@@ -13053,17 +13309,17 @@ const d = labToolData.artStudio || {};
+ 
+                       [{ label: __alloT('stem.artstudio.sphere', 'Sphere'), id: 'sphere' }, { label: __alloT('stem.artstudio.pyramid', 'Pyramid'), id: 'pyramid' }, { label: __alloT('stem.artstudio.heart', 'Heart'), id: 'heart' }, { label: __alloT('stem.artstudio.hi_text', 'HI Text'), id: 'text' }, { label: __alloT('stem.artstudio.rings_2', 'Rings'), id: 'rings' }].map(function (pr) {
+ 
+-                        return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_depth_map_preset', 'Use {value1} depth-map preset'), { value1: pr.label }), "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
++                        return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_depth_map_preset', 'Use {value1} depth-map preset'), { value1: pr.label }), "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { stereoPreset(pr.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
+ 
+                       })
+ 
+                     ),
+ 
+-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
++                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: exportStereo, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
+ 
+                   ),
+ 
+-                  React.createElement("div", { className: "relative" },
++                  React.createElement("div", { id:'artstudio-stereo-depth-view','data-stereo-depth':'true',className: "relative" },
+ 
+                     React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 mb-1" }, __alloT('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
+ 
+@@ -13088,224 +13344,11 @@ const d = labToolData.artStudio || {};
+                       "aria-describedby": "artstudio-depth-map-legend artstudio-depth-map-touch-help artstudio-depth-map-keyboard-help",
+                       "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
+ 
+-                      key: 'dm-' + (d.stereoClear || 0),
++                      key: 'dm-' + stereoOwner,
+ 
+                       className: "rounded-xl border-2 border-cyan-200 shadow-lg cursor-crosshair block focus-visible:ring-4 focus-visible:ring-cyan-600 focus-visible:ring-offset-2", style: { maxWidth: '100%', background: '#000000', touchAction: d.stereoDepthTouchMode === 'draw' ? 'none' : 'pan-y' },
+ 
+-                      ref: function (canvas) {
+-
+-                        if (!canvas) return;
+-
+-                        canvas.dataset.touchMode = d.stereoDepthTouchMode === 'draw' ? 'draw' : 'scroll';
+-                        canvas.style.touchAction = canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
+-
+-                        var ctx = canvas.getContext('2d');
+-
+-                        var W = canvas.width, H = canvas.height;
+-
+-                        if (!canvas._dmInit) {
+-
+-                          canvas._dmInit = true;
+-
+-                          ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H);
+-
+-                          var preset = d.stereoPreset;
+-
+-                          if (preset === 'sphere') {
+-
+-                            var grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.min(W,H)*0.35);
+-
+-                            grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#888888'); grad.addColorStop(1, '#000000');
+-
+-                            ctx.beginPath(); ctx.arc(W/2, H/2, Math.min(W,H)*0.35, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
+-
+-                          } else if (preset === 'pyramid') {
+-
+-                            ctx.beginPath(); ctx.moveTo(W/2, H*0.15); ctx.lineTo(W*0.2, H*0.85); ctx.lineTo(W*0.8, H*0.85); ctx.closePath();
+-
+-                            var pgr = ctx.createLinearGradient(W/2, H*0.15, W/2, H*0.85);
+-
+-                            pgr.addColorStop(0, '#ffffff'); pgr.addColorStop(1, '#555555'); ctx.fillStyle = pgr; ctx.fill();
+-
+-                          } else if (preset === 'heart') {
+-
+-                            ctx.save(); ctx.translate(W/2, H*0.45);
+-
+-                            var sc = Math.min(W,H) * 0.012; ctx.scale(sc, -sc);
+-
+-                            ctx.beginPath();
+-
+-                            for (var ht = 0; ht <= Math.PI * 2; ht += 0.01) {
+-
+-                              var hx = 16 * Math.pow(Math.sin(ht), 3);
+-
+-                              var hy = 13 * Math.cos(ht) - 5 * Math.cos(2*ht) - 2 * Math.cos(3*ht) - Math.cos(4*ht);
+-
+-                              if (ht === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+-
+-                            }
+-
+-                            ctx.closePath(); ctx.restore(); ctx.fillStyle = '#ffffff'; ctx.fill();
+-
+-                          } else if (preset === 'text') {
+-
+-                            ctx.fillStyle = '#ffffff'; ctx.font = 'bold ' + Math.round(H * 0.45) + 'px Arial';
+-
+-                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('HI', W/2, H/2);
+-
+-                          } else if (preset === 'rings') {
+-
+-                            for (var ri = 3; ri > 0; ri--) {
+-
+-                              var rr = ri * Math.min(W,H) * 0.12;
+-
+-                              var brt = Math.round((4 - ri) / 3 * 255);
+-
+-                              ctx.beginPath(); ctx.arc(W/2, H/2, rr, 0, Math.PI*2);
+-
+-                              ctx.lineWidth = 20; ctx.strokeStyle = 'rgb(' + brt + ',' + brt + ',' + brt + ')'; ctx.stroke();
+-
+-                            }
+-
+-                          }
+-
+-                        }
+-
+-                        var depthLevel = d.stereoDepth || 'near';
+-
+-                        var brushSz = typeof d.stereoBrush === 'number' ? d.stereoBrush : 20;
+-
+-                        var depthColors = { near: '#ffffff', mid: '#999999', far: '#333333', erase: '#000000' };
+-
+-                        var painting = false;
+-
+-                        var keyboardCursor = canvas._depthKeyboardCursor || { x: W / 2, y: H / 2 };
+-
+-                        keyboardCursor.x = Math.max(0, Math.min(W, keyboardCursor.x));
+-
+-                        keyboardCursor.y = Math.max(0, Math.min(H, keyboardCursor.y));
+-
+-                        canvas._depthKeyboardCursor = keyboardCursor;
+-
+-                        function updateDepthKeyboardCursor(show) {
+-
+-                          var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-depth-keyboard-cursor="true"]');
+-
+-                          if (cursor) {
+-
+-                            var displayW = canvas.clientWidth || W;
+-
+-                            var displayH = canvas.clientHeight || H;
+-
+-                            cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+-
+-                            cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+-
+-                            cursor.style.display = show ? 'block' : 'none';
+-
+-                          }
+-
+-                          canvas.setAttribute('aria-label', 'Depth map drawing canvas. Current brush is ' + depthLevel +
+-
+-                            '. Keyboard cursor at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
+-
+-                        }
+-
+-                        function getP(e) {
+-
+-                          var rect = canvas.getBoundingClientRect();
+-
+-                          var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+-
+-                          var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+-
+-                          return { x: ex * (W / rect.width), y: ey * (H / rect.height) };
+-
+-                        }
+-
+-                        function doBrush(pos) {
+-
+-                          ctx.beginPath(); ctx.arc(pos.x, pos.y, brushSz, 0, Math.PI * 2);
+-
+-                          ctx.fillStyle = depthColors[depthLevel]; ctx.fill();
+-
+-                        }
+-
+-                        function doBrushLine(from, to) {
+-
+-                          ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
+-
+-                          ctx.lineWidth = brushSz * 2; ctx.lineCap = 'round';
+-
+-                          ctx.strokeStyle = depthColors[depthLevel]; ctx.stroke();
+-
+-                        }
+-
+-                        canvas.onmousedown = canvas.ontouchstart = function (e) { if (!canvasAllowsFingerInteraction(canvas, e)) return; e.preventDefault(); painting = true; doBrush(getP(e)); };
+-
+-                        canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) { if (isFingerInputEvent(e)) e.preventDefault(); doBrush(getP(e)); } };
+-
+-                        canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
+-
+-                        canvas.onmouseleave = function () { painting = false; };
+-
+-                        canvas.onfocus = function () { updateDepthKeyboardCursor(true); };
+-
+-                        canvas.onblur = function () { updateDepthKeyboardCursor(false); };
+-
+-                        canvas.onkeydown = function (event) {
+-
+-                          var step = event.altKey ? 1 : 10;
+-
+-                          var previous = { x: keyboardCursor.x, y: keyboardCursor.y };
+-
+-                          var moved = true;
+-
+-                          if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
+-
+-                          else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
+-
+-                          else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
+-
+-                          else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
+-
+-                          else if (event.key === 'Home') { keyboardCursor.x = W / 2; keyboardCursor.y = H / 2; }
+-
+-                          else moved = false;
+-
+-                          if (moved) {
+-
+-                            event.preventDefault();
+-
+-                            if (event.shiftKey) doBrushLine(previous, keyboardCursor);
+-
+-                            canvas._depthKeyboardCursor = keyboardCursor;
+-
+-                            updateDepthKeyboardCursor(true);
+-
+-                            if (typeof announceToSR === 'function') {
+-
+-                              announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_drew_depth_to_x_y', 'Drew depth to x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_depth_cursor_x_y', 'Depth cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
+-
+-                            }
+-
+-                            return;
+-
+-                          }
+-
+-                          if (event.key === 'Enter' || event.key === ' ') {
+-
+-                            event.preventDefault(); doBrush(keyboardCursor);
+-
+-                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_stamped_depth_at', 'Stamped {value1} depth at x {value2}, y {value3}.'), { value1: __alloT('stem.artstudio.sr_depth_' + String(depthLevel).toLowerCase().replace(/[^a-z0-9]+/g, '_'), depthLevel), value2: Math.round(keyboardCursor.x), value3: Math.round(keyboardCursor.y) }));
+-
+-                          }
+-
+-                        };
+-
+-                        updateDepthKeyboardCursor(typeof document !== 'undefined' && document.activeElement === canvas);
+-
+-                      }
++                      ref: bindStereoDepth
+ 
+                     }),
+ 
+@@ -13323,13 +13366,13 @@ const d = labToolData.artStudio || {};
+ 
+                   ),
+ 
+-                  React.createElement("div", { className: "flex gap-2 mt-2" },
++                  React.createElement("div", { 'data-stereo-depth-export':'true',className: "flex gap-2 mt-2" },
+ 
+-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_depth_map_saved_as_png', '\uD83D\uDCE5 Depth map saved as PNG!'), 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
++                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas');if(!c)return;var finish=function(){if(!c.isConnected)return;try{var src=c.toDataURL('image/png');if(!src||src==='data:,')throw new Error('Empty depth image');var link=document.createElement('a');link.download='depth-map.png';link.href=src;link.click();}catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_export_failed','The image could not be exported. Please try again.'),'error');}};if(c._artStudioRestoring&&c._artStudioReady)c._artStudioReady.then(finish);else finish(); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
+ 
+                   ),
+ 
+-                  React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
++                  React.createElement("div", { 'data-stereo-science':'true',className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
+ 
+                     React.createElement("button", { id: "artstudio-stereogram-info-toggle", "aria-expanded": !!d.showStereoInfo, "aria-controls": "artstudio-stereogram-science", onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-teal-700" },
+ 
+@@ -13357,160 +13400,26 @@ const d = labToolData.artStudio || {};
+ 
+                 ),
+ 
+-                React.createElement("div", { className: "space-y-2" },
++                React.createElement("div", { id:'artstudio-stereo-output-view','data-stereo-output':'true',className: "space-y-2" },
+ 
+                   React.createElement("p", { className: "text-xs font-bold text-teal-700" }, __alloT('stem.artstudio.stereogram_output', "\uD83D\uDC53 Stereogram Output")),
+ 
+                   React.createElement("p", { id: "artstudio-stereogram-output-help", className: "text-[0.6875rem] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
+ 
++                  React.createElement('svg',{'data-stereo-guides':'true',viewBox:'0 0 512 24',role:'img','aria-label':__alloT('stem.artstudio.stereo_guides','Two viewing dots spaced one background repeat apart.'),style:{display:'block',width:'100%',maxWidth:760,margin:'0 auto'}},
++                    React.createElement('circle',{cx:256-stereoModel.stereoDensity/2,cy:12,r:3,fill:'#0f172a'}),
++                    React.createElement('circle',{cx:256+stereoModel.stereoDensity/2,cy:12,r:3,fill:'#0f172a'})),
++
+                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
+                     role: "img",
+                     "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_stereogram_output', 'Stereogram output using the {value1} pattern and {value2} depth map.'), { value1: __alloT('stem.artstudio.a11y_pattern_' + String((d.stereoPattern || 'black and white')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoPattern || 'black and white')), value2: __alloT('stem.artstudio.a11y_preset_' + String((d.stereoPreset || 'drawn')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoPreset || 'drawn')) }),
+                     "aria-describedby": "artstudio-stereogram-output-help",
+ 
+-                    key: 'stereo-' + (d.stereoGen || 0),
++                    key: 'stereo-' + stereoOwner,
+ 
+                     className: "rounded-xl border-2 border-teal-200 shadow-lg block", style: { maxWidth: '100%', background: '#111' },
+ 
+-                    ref: function (canvas) {
+-
+-                      if (!canvas) return;
+-
+-                      if (canvas._stereoInit) return;
+-
+-                      canvas._stereoInit = true;
+-
+-                      var ctx = canvas.getContext('2d');
+-
+-                      var W = canvas.width, H = canvas.height;
+-
+-                      var patternType = d.stereoPattern || 'bw';
+-
+-                      var patternWidth = typeof d.stereoDensity === 'number' ? d.stereoDensity : 100;
+-
+-                      var maxShift = typeof d.stereoStrength === 'number' ? d.stereoStrength : 15;
+-
+-                      var dmCanvas = document.getElementById('depthMapCanvas');
+-
+-                      if (!dmCanvas) {
+-
+-                        ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, W, H);
+-
+-                        ctx.fillStyle = '#444'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+-
+-                        ctx.fillText('Draw on the depth map, then click Generate', W/2, H/2);
+-
+-                        return;
+-
+-                      }
+-
+-                      var dmCtx = dmCanvas.getContext('2d');
+-
+-                      var dmData = dmCtx.getImageData(0, 0, dmCanvas.width, dmCanvas.height).data;
+-
+-                      var dmW = dmCanvas.width, dmH = dmCanvas.height;
+-
+-                      function makeRng(seed) {
+-
+-                        var s = seed; return function () { s = (s * 1664525 + 1013904223) & 0x7FFFFFFF; return s / 0x7FFFFFFF; };
+-
+-                      }
+-
+-                      var imgData = ctx.createImageData(W, H);
+-
+-                      var data = imgData.data;
+-
+-                      var rowsDone = 0;
+-
+-                      function renderChunk() {
+-
+-                        var endRow = Math.min(rowsDone + 32, H);
+-
+-                        for (var y = rowsDone; y < endRow; y++) {
+-
+-                          var rng = makeRng(y * 7919 + 12345);
+-
+-                          var row = new Uint8Array(W * 3);
+-
+-                          for (var x = 0; x < W; x++) {
+-
+-                            if (x < patternWidth) {
+-
+-                              if (patternType === 'bw') { var c = rng() > 0.5 ? 230 : 25; row[x*3] = c; row[x*3+1] = c; row[x*3+2] = c; }
+-
+-                              else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
+-
+-                              else if (patternType === 'ai' && d.stereoAiPatternImg) {
+-
+-                                var pw = d.stereoAiPatternImg.width, ph = d.stereoAiPatternImg.height;
+-
+-                                var pIdx = ((y % ph) * pw + (x % pw)) * 4;
+-
+-                                row[x*3] = d.stereoAiPatternImg.data[pIdx]; row[x*3+1] = d.stereoAiPatternImg.data[pIdx+1]; row[x*3+2] = d.stereoAiPatternImg.data[pIdx+2];
+-
+-                              }
+-
+-                              else { var v = Math.floor(rng() * 220) + 20; row[x*3] = v; row[x*3+1] = v; row[x*3+2] = v; }
+-
+-                            } else {
+-
+-                              var dx = Math.floor(x * dmW / W), dy = Math.floor(y * dmH / H);
+-
+-                              var di = (dy * dmW + dx) * 4;
+-
+-                              var depth = dmData[di] / 255;
+-
+-                              var shift = Math.round(depth * maxShift);
+-
+-                              var srcX = x - patternWidth + shift;
+-
+-                              if (srcX >= 0) { row[x*3] = row[srcX*3]; row[x*3+1] = row[srcX*3+1]; row[x*3+2] = row[srcX*3+2]; }
+-
+-                              else {
+-
+-                                if (patternType === 'bw') { var c2 = rng() > 0.5 ? 230 : 25; row[x*3] = c2; row[x*3+1] = c2; row[x*3+2] = c2; }
+-
+-                                else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
+-
+-                                else if (patternType === 'ai' && d.stereoAiPatternImg) {
+-
+-                                  var pw2 = d.stereoAiPatternImg.width, ph2 = d.stereoAiPatternImg.height;
+-
+-                                  var pIdx2 = ((y % ph2) * pw2 + (x % pw2)) * 4;
+-
+-                                  row[x*3] = d.stereoAiPatternImg.data[pIdx2]; row[x*3+1] = d.stereoAiPatternImg.data[pIdx2+1]; row[x*3+2] = d.stereoAiPatternImg.data[pIdx2+2];
+-
+-                                }
+-
+-                                else { var v2 = Math.floor(rng()*220)+20; row[x*3] = v2; row[x*3+1] = v2; row[x*3+2] = v2; }
+-
+-                              }
+-
+-                            }
+-
+-                          }
+-
+-                          for (var x2 = 0; x2 < W; x2++) {
+-
+-                            var idx = (y * W + x2) * 4;
+-
+-                            data[idx] = row[x2*3]; data[idx+1] = row[x2*3+1]; data[idx+2] = row[x2*3+2]; data[idx+3] = 255;
+-
+-                          }
+-
+-                        }
+-
+-                        ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
+-
+-                        rowsDone = endRow;
+-
+-                        if (rowsDone < H && canvas.isConnected) canvas._stereoAnim = requestAnimationFrame(renderChunk);
+-
+-                      }
+-
+-                      renderChunk();
+-
+-                    }
++                    ref: bindStereoOutput
+ 
+                   }),
+ 

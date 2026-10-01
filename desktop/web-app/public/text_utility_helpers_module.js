@@ -8,28 +8,56 @@ var useMemo = React.useMemo;
 var useCallback = React.useCallback;
 var Fragment = React.Fragment;
 let _glossaryTipSeq = 0;
-const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode, children }) => {
+const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode, children, readerInteractions = false, readerProps = {} }) => {
   const [tip, setTip] = React.useState(null);
+  const termRef = React.useRef(null), hideTimer = React.useRef(null);
   const tipIdRef = React.useRef(null);
   if (!tipIdRef.current) tipIdRef.current = `allo-glossary-tip-${++_glossaryTipSeq}`;
   const show = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const width = 256;
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    const width = Math.min(256, Math.max(160, window.innerWidth - 16));
     const margin = 8;
     const centerX = rect.left + rect.width / 2;
     const left = Math.max(margin, Math.min(centerX - width / 2, window.innerWidth - width - margin));
     const placeAbove = rect.top > 320;
-    setTip({ left, top: placeAbove ? rect.top - 10 : rect.bottom + 10, placeAbove });
+    setTip({ left, top: placeAbove ? rect.top - 10 : rect.bottom + 10, placeAbove, width });
   };
-  const hide = () => setTip(null);
+  const hide = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    setTip(null);
+  };
+  const leave = () => {
+    hideTimer.current = setTimeout(hide, 120);
+  };
+  React.useEffect(() => () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+  }, []);
   React.useEffect(() => {
     if (!tip) return void 0;
-    const close = () => setTip(null);
+    const close = (event) => {
+      if (event?.type === "scroll" && event.target?.nodeType && document.getElementById(tipIdRef.current)?.contains(event.target)) return;
+      if ((event?.type === "scroll" || event?.type === "resize") && termRef.current === document.activeElement) {
+        show({ currentTarget: termRef.current });
+        return;
+      }
+      setTip(null);
+    };
+    const outside = (event) => {
+      if (!termRef.current?.contains(event.target) && !document.getElementById(tipIdRef.current)?.contains(event.target)) close();
+    };
+    const escape = (event) => {
+      if (event.key === "Escape") close();
+    };
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", close);
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
     return () => {
       window.removeEventListener("scroll", close, true);
       window.removeEventListener("resize", close);
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
     };
   }, [!!tip]);
   const lightStyle = isLineFocusMode ? "text-indigo-300 border-indigo-500 hover:bg-indigo-900" : "text-indigo-600 border-indigo-400 hover:bg-indigo-50";
@@ -38,17 +66,34 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
   return /* @__PURE__ */ React.createElement(
     "span",
     {
-      onClick: show,
-      onMouseEnter: show,
-      onMouseLeave: hide,
-      onFocus: show,
-      onBlur: hide,
-      onKeyDown: (e) => {
-        if (e.key === "Escape") hide();
+      ref: termRef,
+      ...readerProps,
+      onClick: (event) => {
+        if (readerInteractions) event.stopPropagation();
+        show(event);
       },
-      tabIndex: 0,
+      onMouseEnter: show,
+      onMouseLeave: leave,
+      onFocus: (event) => {
+        show(event);
+        readerProps.onFocus?.(event);
+      },
+      onBlur: hide,
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          hide();
+        } else if (readerInteractions && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          event.stopPropagation();
+          show(event);
+        } else readerProps.onKeyDown?.(event);
+      },
+      tabIndex: readerProps.tabIndex ?? 0,
+      role: readerInteractions ? "button" : void 0,
+      "aria-expanded": readerInteractions ? !!tip : void 0,
       "aria-describedby": tip ? tipIdRef.current : void 0,
-      className: `allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`
+      className: `allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isDarkBg ? darkStyle : lightStyle}`
     },
     children,
     tip && canPortal && ReactDOM.createPortal(
@@ -57,8 +102,15 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
         {
           id: tipIdRef.current,
           role: "tooltip",
-          className: "fixed block w-64 p-3 bg-slate-800 text-xs rounded shadow-xl pointer-events-none text-left leading-relaxed",
+          onMouseEnter: () => {
+            if (hideTimer.current) clearTimeout(hideTimer.current);
+          },
+          onMouseLeave: leave,
+          className: "fixed block p-3 bg-slate-800 text-sm rounded shadow-xl text-left leading-relaxed",
           style: {
+            width: tip.width + "px",
+            maxHeight: "70vh",
+            overflowY: "auto",
             left: tip.left + "px",
             top: tip.top + "px",
             transform: tip.placeAbove ? "translateY(-100%)" : "none",
@@ -77,14 +129,14 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
         item.image && /* @__PURE__ */ React.createElement(
           "img",
           {
-            src: item.image,
-            alt: item.term,
+            src: typeof item.image === "string" ? item.image : item.image.src,
+            alt: item.image.alt || item.term,
             className: "block mb-2 w-full rounded border border-slate-600 bg-white",
             style: { maxHeight: "115px", objectFit: "contain" },
             loading: "lazy"
           }
         ),
-        /* @__PURE__ */ React.createElement("span", { style: { color: "#ffffff" } }, item.def),
+        /* @__PURE__ */ React.createElement("span", { style: { color: "#ffffff" } }, item.def || item.definition || item.explanation || item.text),
         leveledTextLanguage !== "English" && item.translations && item.translations[leveledTextLanguage] && /* @__PURE__ */ React.createElement("span", { className: "block mt-2 pt-2 border-t border-slate-600 italic", style: { color: "#c7d2fe" } }, item.translations[leveledTextLanguage]),
         /* @__PURE__ */ React.createElement(
           "svg",
@@ -103,6 +155,32 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
       document.body
     )
   );
+};
+const glossaryTextSegments = (value, glossary, language = "English") => {
+  const text = String(value || ""), terms = /* @__PURE__ */ new Map();
+  (Array.isArray(glossary) ? glossary : []).forEach((item) => {
+    if (!item || item.isSelected === false) return;
+    const add = (term) => {
+      if (typeof term === "string" && term.trim()) terms.set(term.trim().toLowerCase(), item);
+    };
+    add(item.term);
+    const translation = language !== "English" && item.translations?.[language];
+    if (typeof translation === "string" && translation.includes(":")) add(translation.split(":")[0]);
+  });
+  if (!text || !terms.size) return [{ text, start: 0, end: text.length }];
+  const escape = (term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(Array.from(terms.keys()).sort((a, b) => b.length - a.length).map(escape).join("|"), "giu");
+  const result = [], word = /[\p{L}\p{N}]/u, unspaced = /[\u3040-\u30ff\u3400-\u9fff\u0e00-\u0e7f]/u;
+  let cursor = 0, match;
+  while (match = pattern.exec(text)) {
+    const start = match.index, end = start + match[0].length;
+    if (!unspaced.test(match[0]) && (word.test(text.slice(0, start).match(/.$/u)?.[0] || "") || word.test(text.slice(end).match(/^./u)?.[0] || ""))) continue;
+    if (start > cursor) result.push({ text: text.slice(cursor, start), start: cursor, end: start });
+    result.push({ text: match[0], start, end, item: terms.get(match[0].toLowerCase()) });
+    cursor = end;
+  }
+  if (cursor < text.length) result.push({ text: text.slice(cursor), start: cursor, end: text.length });
+  return result.length ? result : [{ text, start: 0, end: text.length }];
 };
 const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps, instanceKey) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
@@ -553,6 +631,8 @@ const generateWordSearch = (targetLang, deps, activityData) => {
 };
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.TextUtilityHelpers = {
+  GlossaryTermSpan,
+  glossaryTextSegments,
   highlightGlossaryTerms,
   repairGeneratedText,
   generateHelpfulHint,

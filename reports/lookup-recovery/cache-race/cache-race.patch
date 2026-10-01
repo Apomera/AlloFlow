@@ -1,0 +1,19 @@
+Index: dictionary_loader.js
+===================================================================
+--- dictionary_loader.js
++++ dictionary_loader.js
+@@ -188,7 +188,13 @@
+     try {
+       const response = await fetch(API + encodeURIComponent(w), { signal: options.signal });
+       if (options.signal?.aborted) return result(null, 'cancelled');
+-      if (response.status === 404) { writeCache(w, null); return result(null, 'not_found'); }
++      // A concurrent caller may have cached a usable entry while this request waited.
++      // readCache validates it; a late miss must not erase successful offline help.
++      if (response.status === 404) {
++        const recovered = readCache(w);
++        if (recovered) return result(recovered);
++        writeCache(w, null); return result(null, 'not_found');
++      }
+       if (!response.ok) return result(null, 'request_failed');
+       let rows;
+       try { rows = await response.json(); }

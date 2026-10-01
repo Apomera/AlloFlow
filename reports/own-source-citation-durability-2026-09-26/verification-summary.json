@@ -1,0 +1,42 @@
+{
+  "verifiedAt": "2026-09-27T03:39:38.903Z",
+  "passed": true,
+  "helperHashes": {
+    "own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+    "desktop/web-app/public/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+    "desktop/app-build/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+    "desktop/web-app/build/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a"
+  },
+  "hostHashes": {
+    "AlloFlowANTI.txt": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+    "desktop/web-app/src/AlloFlowANTI.txt": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94",
+    "desktop/web-app/src/App.jsx": "10efb52ce77d7ae5dc0f45153463a7f865ae03d504d77eb30dd82b1d2b270d94"
+  },
+  "pins": {
+    "AlloFlowANTI.txt": "1c5dc26a",
+    "desktop/web-app/src/AlloFlowANTI.txt": "1c5dc26a",
+    "desktop/web-app/src/App.jsx": "1c5dc26a"
+  },
+  "tests": [
+    {
+      "file": "canonical-cache-inspector-tests.json",
+      "total": 57,
+      "passed": 57,
+      "files": 2
+    },
+    {
+      "file": "research-regression-tests.json",
+      "total": 111,
+      "passed": 111,
+      "files": 8
+    }
+  ],
+  "totalTests": 168,
+  "testFiles": 10,
+  "browserScenarios": 5,
+  "browserPageErrors": 0,
+  "syntaxPassed": true,
+  "scopedWhitespacePassed": true,
+  "originalLibraryUnchangedDuringCacheIntegration": true,
+  "deployed": false
+}

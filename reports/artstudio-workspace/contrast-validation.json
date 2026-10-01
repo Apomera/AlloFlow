@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-30",
+  "scope": "Contrast Lab workspace, exact color editing, passing suggestions, history, palette and CSS integration",
+  "sourceSHA256": "378BA374113BF98B9357A913FD5992267892EDA81CFA93128EB50956D118358B",
+  "sourcePublicIdentical": true,
+  "tests": [
+    {"report": "contrast-initial-results.json", "files": 3, "passed": 34},
+    {"report": "contrast-focused-results.json", "files": 2, "passed": 21, "newCases": 21},
+    {"report": "contrast-regression-results.json", "files": 19, "passed": 177, "failed": 0}
+  ],
+  "browser": {"report": "contrast-browser-results.json", "passed": true, "pageErrors": 0, "desktopViewport": [1440, 1000], "desktopPreviewWidth": 1036, "phoneViewport": [390, 844], "phoneOverflow": false, "phonePreviewFirst": true, "touchTargetsMinPx": 44, "cssDownloadMatchesComputedPreview": true, "nativeSliderGestureUndo": true},
+  "previews": ["contrast-focus-desktop.png", "contrast-phone-preview.png", "contrast-phone-controls.png", "contrast-browser-export.css"],
+  "contrastRegistryKeysMatched": 37,
+  "newEnglishStrings": 27,
+  "syntaxCheck": true,
+  "spectralVendorCheck": true,
+  "scopedWhitespaceCheck": true,
+  "prePassPreservationDiffReviewed": true,
+  "committed": false,
+  "deployed": false
+}

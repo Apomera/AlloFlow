@@ -13,17 +13,18 @@
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { JSDOM } from 'jsdom';
 import fs2 from 'node:fs';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, renderTool, resetStemLab } from './helpers/nuclear_lab_reference_harness.js';
 
 const SRC = fs2.readFileSync('stem_lab/stem_tool_nuclearlab.js', 'utf8');
 
 const require = createRequire(import.meta.url);
-let axe;
+let axeSource;
 let host;
 
 beforeAll(() => {
-  axe = require(resolve(process.cwd(), 'desktop/web-app/node_modules', 'axe-core'));
+  axeSource = require(resolve(process.cwd(), 'desktop/web-app/node_modules', 'axe-core')).source;
 });
 
 beforeEach(() => {
@@ -119,27 +120,31 @@ const SURFACES = [
   }],
 ];
 
-// axe keeps a single module-level `_running` flag and clears it on the way out
-// of a completed run. A vitest timeout abandons the promise without unwinding,
-// so the flag stays true and EVERY later surface in this file dies with
-// "Axe is already running" — one slow scan reported itself as 26 accessibility
-// failures, and all 25 of the others passed when run on their own.
-//
-// This bounds the scan itself and, whichever way it ends badly, hands axe back
-// in a usable state so the next surface gets a real answer. The failure is then
-// one honest timeout instead of a cascade.
+// Replacing a large tree repeatedly in one jsdom document makes later axe scans
+// progressively slower. Four scans of the unchanged 1,227-element original took
+// 6.7, 12.2, 12.6 and 15.6 seconds; reloading axe alone did not fix it. Fresh
+// windows stayed at 6.6–8.3 seconds. Keep every surface and rule, but give each
+// scan its own document and axe instance, then release the whole window.
 const AXE_SCAN_BUDGET_MS = 60000;
 
-async function runAxeGuarded(target) {
+async function runAxeGuarded(markup) {
+  const scanDom = new JSDOM('<!doctype html><html><head></head><body><div></div></body></html>', {
+    runScripts: 'outside-only',
+    pretendToBeVisual: true,
+    url: window.location.href,
+  });
   let timer = null;
   try {
+    const target = scanDom.window.document.body.firstElementChild;
+    target.innerHTML = markup;
+    scanDom.window.eval(axeSource);
     return await Promise.race([
-      axe.run(target, { rules: DISABLED, resultTypes: ['violations'] }),
+      scanDom.window.axe.run(target, { rules: DISABLED, resultTypes: ['violations'] }),
       new Promise((_, reject) => {
         timer = setTimeout(
           () => reject(new Error(
             'axe.run exceeded ' + AXE_SCAN_BUDGET_MS + 'ms on this surface. '
-            + 'Cost is superlinear in tree size, so the lever is fewer/smaller scans, not a bigger number.'
+            + 'Inspect this surface before increasing the scan budget.'
           )),
           AXE_SCAN_BUDGET_MS
         );
@@ -147,16 +152,14 @@ async function runAxeGuarded(target) {
     ]);
   } finally {
     if (timer) clearTimeout(timer);
-    // Release the lock the abandoned run would otherwise hold. teardown() also
-    // clears the cached tree axe builds per run; both are safe on a clean exit.
-    try { axe._running = false; } catch (_) {}
-    try { if (typeof axe.teardown === 'function') axe.teardown(); } catch (_) {}
+    // Closing also cancels this window's pending work after a timeout. No shared
+    // axe lock or cached document remains to affect the next surface.
+    scanDom.window.close();
   }
 }
 
 async function auditState(state, ctx) {
-  host.innerHTML = renderTool('nuclearLab', { _nuclearLab: state }, ctx);
-  const results = await runAxeGuarded(host);
+  const results = await runAxeGuarded(renderTool('nuclearLab', { _nuclearLab: state }, ctx));
   return results.violations.map((v) => ({
     id: v.id,
     impact: v.impact,
@@ -172,53 +175,22 @@ function report(violations) {
   ).join('\n');
 }
 
+describe('nuclearLab — axe scan isolation', () => {
+  it('detects planted violations and audits the next window independently', async () => {
+    const broken = await runAxeGuarded('<button></button><img src="fixture.png">');
+    expect(broken.violations.map((violation) => violation.id))
+      .toEqual(expect.arrayContaining(['button-name', 'image-alt']));
+    const repaired = await runAxeGuarded('<button>Measure</button><img src="fixture.png" alt="Decay curve">');
+    expect(repaired.violations).toEqual([]);
+  });
+});
+
 describe('nuclearLab — axe audit of every reachable surface', () => {
   for (const [name, state, ctx] of SURFACES) {
     it(name + ' has no axe violations', async () => {
       const violations = await auditState(state, ctx);
       expect(violations, name + report(violations)).toEqual([]);
-    // Renders twenty sections and runs a full axe scan over them. Roughly a
-    // second each in isolation, but vitest runs test FILES in parallel, and
-    // under that contention the 5 s default started timing out fifteen of these
-    // at once — which reads like a real accessibility failure and is not one.
-    // Raised again from 30 s when the low-dose-risk section took the document
-    // from nineteen sections to twenty: every surface here re-renders the WHOLE
-    // document before scanning it, so each new section lengthens every surface.
-    //
-    // This comment used to advise "render once per surface and share the tree".
-    // That was tried on 2026-09-20 and is WRONG for this library: axe.run's cost
-    // is superlinear in the size of the tree handed to it — measured here at
-    // 1,229 elements = 12.5 s, 2,458 = 74 s, 4,916 = 412 s — so merging the
-    // thirty-one surfaces into one container made a single scan that never
-    // finished at all. Separate scans really are the cheaper shape.
-    // The levers that do work are FEWER scans (fold surfaces that differ only in
-    // which panel is expanded) and a SMALLER scan root (hand axe the section, not
-    // the whole document). A bigger timeout is still not one of them; runAxeGuarded
-    // above now bounds each scan and, critically, stops one slow surface from
-    // stranding axe and failing all the others after it.
-    //
-    // PER-SECTION SCANNING WAS TRIED ON 2026-09-20 AND IT IS SLOWER. Do not
-    // retry it on the strength of the O(n^2.5) argument above; that argument is
-    // real but it is not the whole cost model.
-    //   whole document, 1,227 elements            12.1 s
-    //   all 22 sections scanned individually      20.1 s  (1.7x SLOWER)
-    //   the chrome left over, via include/exclude  1.8 s
-    // An early six-section sample really did total 1.0 s, and extrapolating it
-    // predicted 3.8 s. The extrapolation was wrong twice over: those six are the
-    // SMALLEST sections, and cost here climbs with position in the run rather
-    // than with size. Correlation between a section's element count and its scan
-    // time is only 0.64 — mydose is 3,326 ms for 83 elements while chain is
-    // 1,267 ms for 122. Something in axe accumulates per process (flat node
-    // count and flat heap while repeated scans of the SAME markup went 14 s ->
-    // 56 s; axe.teardown() barely moved it), so splitting one scan into 22 pays
-    // that accumulation 22 times.
-    //
-    // Losslessness is not the blocker if someone finds a way to make it pay:
-    // 1,185 of the 1,227 elements sit inside [data-nk-sec]; a planted image-alt
-    // violation was still found with a section as the root; and heading-order,
-    // the one enabled rule that spans sections, was still reported. Scanning the
-    // chrome via include/exclude does wake document-title, which needs disabling.
-    // The remaining lever is FEWER surfaces, not smaller ones.
+    // Allow concurrent test files some headroom above the bounded scan.
     }, 90000);
   }
 });

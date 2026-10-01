@@ -1,0 +1,12 @@
+{
+  "comparedKeysOnly": true,
+  "batches": [
+    "navigation",
+    "source-generation",
+    "draft"
+  ],
+  "intersections": [],
+  "conflicts": [],
+  "preservesUnownedValues": true,
+  "rawCatalogPatchStackingNotAssumed": true
+}

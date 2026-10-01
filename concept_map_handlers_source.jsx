@@ -35,7 +35,7 @@ const _VO_ACCENTS = ['indigo', 'teal', 'rose', 'amber', 'violet', 'sky'];
 const _VO_ACCENT_HEX = ['#6366f1', '#14b8a6', '#f43f5e', '#f59e0b', '#8b5cf6', '#0ea5e9'];
 
 const handleInitializeMap = async (deps) => {
-  const { generatedContent, conceptMapNodes, conceptMapEdges, mapContainerRef, hasAutoLayoutRunRef, setConceptMapNodes, setConceptMapEdges, setIsConceptMapReady, parseFlowChartData, handleAutoLayout, warnLog } = deps;
+  const { generatedContent, conceptMapNodes, conceptMapEdges, mapContainerRef, hasAutoLayoutRunRef, setConceptMapNodes, setConceptMapEdges, setIsConceptMapReady, parseFlowChartData, handleAutoLayout, warnLog, t } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleInitializeMap fired"); } catch(_) {}
       try {
           if (!generatedContent?.data) return;
@@ -108,11 +108,13 @@ const handleInitializeMap = async (deps) => {
               if (Array.isArray(branches)) {
                   let causeCount = 0;
                   let effectCount = 0;
+                  const sharedRoles = window.AlloModules?.UtilsPure?.organizerBranchRoles?.('Cause and Effect', branches);
                   branches.forEach((branch, bIdx) => {
-                      const titleLower = branch.title.toLowerCase();
-                      const isCause = titleLower.includes('cause');
-                      const isEffect = titleLower.includes('effect') || titleLower.includes('consequence');
-                      const isChain = titleLower.includes('chain') || titleLower.includes('sequence');
+                      const titleLower = String(branch.title || '').toLowerCase();
+                      let isCause = titleLower.includes('cause');
+                      let isEffect = titleLower.includes('effect') || titleLower.includes('consequence');
+                      let isChain = titleLower.includes('chain') || titleLower.includes('sequence');
+                      if (sharedRoles) { isCause = sharedRoles[bIdx] === 'cause'; isEffect = sharedRoles[bIdx] === 'effect'; isChain = sharedRoles[bIdx] === 'chain'; }
                       if (isCause || (!isEffect && !isChain && bIdx === 0)) {
                           // Place cause items in left zone
                           if (Array.isArray(branch.items)) {
@@ -196,7 +198,8 @@ const handleInitializeMap = async (deps) => {
                   type: 'ps-problem',
               });
               if (Array.isArray(branches)) {
-                  const outcomeIdx = branches.findIndex(b =>
+                  const sharedRoles = window.AlloModules?.UtilsPure?.organizerBranchRoles?.('Problem Solution', branches);
+                  const outcomeIdx = sharedRoles ? sharedRoles.indexOf('outcome') : branches.findIndex(b =>
                       b.title.toLowerCase().includes('outcome') ||
                       b.title.toLowerCase().includes('result') ||
                       b.title.toLowerCase().includes('evaluation')
@@ -234,7 +237,8 @@ const handleInitializeMap = async (deps) => {
                   });
                   // Outcome node at bottom
                   const outcomeId = 'outcome';
-                  const outcomeText = outcomeBranch ? outcomeBranch.title : 'Outcome';
+                  const outcomeLabel = typeof t === 'function' ? t('outline.labels.outcome') : '';
+                  const outcomeText = outcomeBranch ? outcomeBranch.title : (outcomeLabel && outcomeLabel !== 'outline.labels.outcome' ? outcomeLabel : 'Outcome');
                   const maxY = Math.max(...newNodes.map(n => n.y), 400);
                   newNodes.push({
                       id: outcomeId,

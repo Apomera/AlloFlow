@@ -905,6 +905,41 @@ const createExport = (deps) => {
             title: 'Question ' + (index + 1) + ' (' + type + ')'
         });
     };
+    // Question and choice pictures travel as QTI matimage files so a picture
+    // choice is never a silent blank; pictures that cannot travel are counted.
+    const _qtiImageTypes = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg' };
+    const _qtiImageXml = (source, label, media, name) => {
+        if (typeof source !== 'string' || !source.trim()) return '';
+        const match = source.trim().match(/^data:([^;,]+)(?:;[^,]*)?;base64,([a-z0-9+/=\s]+)$/i);
+        const mime = match ? match[1].toLowerCase() : '';
+        const payload = match ? match[2].replace(/\s+/g, '') : '';
+        if (!_qtiImageTypes[mime] || !payload || payload.length > 20 * 1024 * 1024) { media.omitted += 1; return ''; }
+        const path = 'images/' + name + '.' + _qtiImageTypes[mime];
+        media.files.push({ path, base64: payload });
+        return '\n          <matimage imagtype="' + mime + '" uri="' + path + '" label="' + _escapeExportText(label) + '"/>';
+    };
+    const _qtiWithImages = (xml, q, index, media) => {
+        if (!xml || !q || typeof q !== 'object') return xml;
+        let out = xml;
+        const stem = _qtiImageXml(q.imageUrl, q.imageAltText || q.question || 'Question image', media, 'q' + (index + 1));
+        if (stem) out = out.replace(/(<\/mattext>)(\s*<\/material>)/, (_, text, close) => text + stem + close);
+        const options = Array.isArray(q.options) ? q.options : [];
+        const alts = Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts : [];
+        (Array.isArray(q.optionImageUrls) ? q.optionImageUrls : []).forEach((source, optionIndex) => {
+            if (typeof source !== 'string' || !source.trim()) return;
+            const at = out.indexOf('<response_label ident="OPT_' + optionIndex + '">');
+            if (at < 0) { media.omitted += 1; return; }
+            const image = _qtiImageXml(source, alts[optionIndex] || options[optionIndex] || 'Choice ' + (optionIndex + 1), media, 'q' + (index + 1) + '-choice-' + (optionIndex + 1));
+            const close = out.indexOf('</mattext>', at) + '</mattext>'.length;
+            if (image) out = out.slice(0, close) + image + out.slice(close);
+        });
+        return out;
+    };
+    const _qtiText = (t, key, fallback, count) => {
+        let text = fallback;
+        try { const translated = typeof t === 'function' ? t(key) : ''; if (translated && translated !== key) text = String(translated); } catch (_) {}
+        return text.split('{count}').join(String(count));
+    };
 
     const handleExportQTI = async (options = {}) => {
         const live = liveRef.current;
@@ -912,11 +947,11 @@ const createExport = (deps) => {
         const { sourceTopic, addToast, t } = live;
         if (!window.JSZip) {
             addToast(t('export_status.lib_loading'), "error");
-            return;
+            return false;
         }
         if (!generatedContent || generatedContent.type !== 'quiz') {
             addToast(t('export_status.qti_quiz_only'), "error");
-            return;
+            return false;
         }
         addToast(t('export_status.packaging_qti'), "info");
         const zip = new window.JSZip();
@@ -949,7 +984,6 @@ const createExport = (deps) => {
     </resource>
   </resources>
 </manifest>`;
-        zip.file("imsmanifest.xml", manifestXml);
         const assessmentXmlHeader = `<?xml version="1.0" encoding="UTF-8"?>
 <questestinterop xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/ims_qtiasiv1p2 http://www.imsglobal.org/xsd/ims_qtiasiv1p2p1.xsd">
   <assessment ident="${assessmentId}" title="${title}">
@@ -964,8 +998,9 @@ const createExport = (deps) => {
                 ? generatedContent.data.scoringPolicy
                 : {}
         );
+        const media = { files: [], omitted: 0 };
         const questionItems = rawQuestions.map((question, questionIndex) =>
-            _qtiQuestionItemXml(question, questionIndex, scoringPolicy)
+            _qtiWithImages(_qtiQuestionItemXml(question, questionIndex, scoringPolicy), question, questionIndex, media)
         );
         const validQuestionItems = questionItems.filter(Boolean);
         const reflectionEntries = (Array.isArray(generatedContent && generatedContent.data && generatedContent.data.reflections)
@@ -980,7 +1015,7 @@ const createExport = (deps) => {
 
         if (!validQuestionItems.length && !reflectionEntries.length) {
             addToast('No valid assessment questions or reflections are ready for QTI export.', "error");
-            return;
+            return false;
         }
         itemsXml += validQuestionItems.join('');
         if (validQuestionItems.length < rawQuestions.length) {
@@ -1010,7 +1045,9 @@ const createExport = (deps) => {
   </assessment>
 </questestinterop>`;
         const assessmentXmlContent = assessmentXmlHeader + itemsXml + assessmentXmlFooter;
+        zip.file("imsmanifest.xml", manifestXml.replace('<file href="assessment.xml"/>', '<file href="assessment.xml"/>' + media.files.map(file => '\n      <file href="' + file.path + '"/>').join('')));
         zip.file("assessment.xml", assessmentXmlContent);
+        media.files.forEach(file => zip.file(file.path, file.base64, { base64: true }));
         try {
             const content = await zip.generateAsync({ type: "blob" });
             const url = URL.createObjectURL(content);
@@ -1022,9 +1059,13 @@ const createExport = (deps) => {
             document.body.removeChild(link);
             window.setTimeout(() => URL.revokeObjectURL(url), 1000);
             addToast(t('export_status.qti_success'), "success");
+            if (media.files.length) addToast(_qtiText(t, 'export_status.qti_images_packaged', '{count} picture(s) are packaged in this QTI file. Check them after import, because some LMSs do not import quiz pictures.', media.files.length), "info");
+            if (media.omitted) addToast(_qtiText(t, 'export_status.qti_images_omitted', '{count} picture(s) could not be packaged (only pictures stored inside the quiz can travel), so those questions or choices appear without their picture.', media.omitted), "warning");
+            return true;
         } catch (err) {
             warnLog("QTI Package generation failed", err);
             addToast(t('export_status.package_error'), "error");
+            return false;
         }
     };
     // --- handleExportH5P ------------------------------------------------
@@ -1442,14 +1483,14 @@ const createExport = (deps) => {
         } = liveRef.current;
         if (!window.JSZip) {
             addToast(t('export_status.lib_loading'), "error");
-            return;
+            return false;
         }
         const sourceHistory = _readingSourcePairsForExport(history);
         const liveHtml = typeof options.liveHtml === 'string' ? options.liveHtml.trim() : '';
         const liveTitle = String(options.liveTitle || sourceTopic || t('export.ims_resource_pack') || 'AlloFlow Document').trim();
         if (sourceHistory.length === 0 && !liveHtml) {
             addToast(t('export_status.no_content'), "error");
-            return;
+            return false;
         }
         addToast(t('export_status.packaging_ims'), "info");
         const zip = new window.JSZip();
@@ -1518,7 +1559,7 @@ const createExport = (deps) => {
         });
         if (!packagedEntries.length) {
             addToast('No IMS-compatible resources are ready to package yet.', 'error');
-            return;
+            return false;
         }
         let profileSummary;
         try {
@@ -1639,9 +1680,11 @@ const createExport = (deps) => {
             } else {
                 addToast(t('export_status.ims_success'), "success");
             }
+            return true;
         } catch (err) {
             warnLog("Package generation failed", err);
             addToast(t('export_status.package_error'), "error");
+            return false;
         }
     };
 
@@ -2788,6 +2831,14 @@ function flashcardExportImageAlt(item) {
             else if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'error');
             return;
         }
+        // A short credit on each card; the full credit, with its licence and source
+        // addresses, on a closing page (CC BY/BY-SA ask for both, and "edited").
+        const pictureCredits = [];
+        const cardCreditLine = credit => {
+            const line = window.AlloModules?.AltText?.openImageCreditLine;
+            return typeof line === 'function' ? line(credit)
+                : [credit.set, credit.author, credit.license, credit.modified === true ? 'edited' : ''].filter(value => typeof value === 'string' && value.trim()).join(' · ');
+        };
         const renderSet = (lang = null) => {
             const header = lang
                 ? (isLanguageMode ? `${t('languages.english')} ⟷ ${lang}` : lang)
@@ -2837,7 +2888,8 @@ function flashcardExportImageAlt(item) {
                 if (image) {
                     const alt = flashcardExportImageAlt(item);
                     const credit = item.imageAttribution;
-                    const creditText = credit && typeof credit === 'object' ? [credit.set, credit.author, credit.license].filter(value => typeof value === 'string' && value.trim()).join(' · ') : '';
+                    const creditText = credit && typeof credit === 'object' ? cardCreditLine(credit) : '';
+                    if (creditText) pictureCredits.push(credit);
                     frontContent = '<figure class="card-picture"><img src="' + _escapeExportText(image) + '" alt="' + _escapeExportText(alt) + '"' + (alt ? '' : ' role="presentation"') + '>' + (creditText ? '<figcaption>' + _escapeExportText(creditText) + '</figcaption>' : '') + '</figure>' + frontContent;
                 }
                 htmlBody += `
@@ -2855,6 +2907,17 @@ function flashcardExportImageAlt(item) {
                 if (index > 0) htmlBody += `<div style="page-break-before: always;"></div>`;
                 renderSet(lang);
             });
+        }
+        const listedCredits = new Set();
+        const creditEntries = pictureCredits.map(credit => {
+            const where = [];
+            if (/^https:\/\//i.test(credit.licenseUrl || '')) where.push((t('flashcards.credit_license') || 'License') + ': ' + credit.licenseUrl);
+            if (/^https?:\/\//i.test(credit.url || '')) where.push((t('flashcards.credit_source') || 'Source') + ': ' + credit.url);
+            return cardCreditLine(credit) + (where.length ? ' (' + where.join('; ') + ')' : '');
+        }).filter(line => line && !listedCredits.has(line) && listedCredits.add(line));
+        if (creditEntries.length) {
+            htmlBody += '<section class="picture-credits" data-picture-credits style="page-break-before: always;"><h2>' + _escapeExportText(t('flashcards.picture_credits') || 'Picture credits') + '</h2><ul>'
+                + creditEntries.map(line => '<li>' + _escapeExportText(line) + '</li>').join('') + '</ul></section>';
         }
         const fullHtml = `
             <!DOCTYPE html>

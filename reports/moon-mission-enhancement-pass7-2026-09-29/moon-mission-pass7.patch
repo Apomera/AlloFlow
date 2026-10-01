@@ -1,0 +1,947 @@
+--- a/stem_lab/stem_tool_moonmission.js
++++ b/stem_lab/stem_tool_moonmission.js
+@@ -535,6 +535,23 @@
+   }
+   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { cleanLoiPlayback: mmCleanLoiPlayback }); } catch (e) {}
+ 
++  function mmCleanTransitPlayback(raw) {
++    raw = mmIsObj(raw) ? raw : {};
++    var plan = mmNormalizeTransitPlan(raw.transitPlan), saved = raw.transitRun, result = null, run = null;
++    if (mmIsObj(saved) && saved.version === 1 && mmNum(saved.time)) {
++      var expected = mmTransitProfile(plan).summary, claimed = raw.transitResult;
++      var valid = mmIsObj(claimed) && claimed.version === 1 && Object.keys(expected).every(function(key) {
++        return typeof expected[key] === 'number' ? mmNum(claimed[key]) && Math.abs(claimed[key] - expected[key]) < 0.001 : claimed[key] === expected[key];
++      });
++      run = { version: 1, time: Math.max(0, Math.min(expected.duration, saved.time)), recorded: saved.recorded === true && valid };
++      if (run.recorded) result = Object.assign({ version: 1 }, expected);
++    }
++    return { transitPlan: plan, transitRun: run, transitResult: result, transitPaused: raw.transitPaused === true,
++      transitPlaybackRate: [1, 60, 600, 3600].indexOf(raw.transitPlaybackRate) >= 0 ? raw.transitPlaybackRate : 3600,
++      transitView: raw.transitView === 'moon' ? 'moon' : 'system', transitAwarded: raw.transitAwarded === true };
++  }
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { cleanTransitPlayback: mmCleanTransitPlayback }); } catch (e) {}
++
+   function mmFlightSummary(d, totals, when) {
+     totals = totals || {};
+     var dl = Array.isArray(d.decisionLog) ? d.decisionLog.filter(mmIsObj) : [];
+@@ -545,6 +562,7 @@
+       when: when || '',
+       difficulty: MM_MODE_NAMES[d.difficulty] ? d.difficulty : 'pilot',
+       launch: d.launchRun && d.launchRun.recorded === true ? mmCleanLaunchResult(d.launchResult) : null,
++      transit: mmCleanTransitPlayback(d).transitResult,
+       loi: mmCleanLoiPlayback(d).loiResult,
+       ascent: mmCleanAscentPlayback(d).ascentResult,
+       docking: mmCleanAscentPlayback(d).ascentResult ? mmCleanDockingPlayback(d).dockingResult : null,
+@@ -563,17 +581,18 @@
+   }
+   // Each graded call and what it caused, in the order it was flown. The flight record
+   // already explains each call on its own; this is the part that was missing: how the
+-  // TLI timing set up the correction, and the correction set up the landing.
++  // Timing, measured navigation and the separate landing exercise are identified explicitly.
+   function mmCauseChain(sum) {
+     var steps = [];
+     var D = MM_DESCENT;
+     if (sum.tli) {
+       steps.push(sum.tli.onTime
+-        ? { call: 'TLI fired inside the burn window', result: 'your path already led to the Moon, so the coast needed no correction' }
+-        : { call: 'TLI fired ' + sum.tli.offByDeg + MM_DEG_SIGN + ' ' + sum.tli.side, result: 'the path would have missed its target, so a mid-course correction was offered' });
++        ? { call: 'TLI fired inside the burn window', result: 'the timing exercise met its target; outbound navigation starts from its own departure preset' }
++        : { call: 'TLI fired ' + sum.tli.offByDeg + MM_DEG_SIGN + ' ' + sum.tli.side, result: 'the timing exercise missed its window; outbound navigation measures a separately specified departure' });
+     }
+-    if (sum.mcc === 'corrected') steps.push({ call: 'You burned the mid-course correction', result: 'the Service Module engine fixed the error while it was small, and the landing kept its full fuel budget' });
+-    else if (sum.mcc === 'skipped') steps.push({ call: 'You declined the correction', result: 'the error grew all the way to the Moon: the landing started with ' + D.skipFuel + ' s less hover fuel and ' + D.skipDrift + ' m/s more drift to cancel' });
++    if (sum.transit && mmNum(sum.transit.propellantUsed)) steps.push({ call: 'Outbound navigation recorded ' + sum.transit.outcome,
++      result: 'the Service Module used ' + sum.transit.propellantUsed.toFixed(1) + ' kg of SPS propellant' + (mmNum(sum.transit.closestAltitude) ? ' and reached a closest lunar altitude of ' + (sum.transit.closestAltitude / 1000).toFixed(1) + ' km' : '') + '; Lunar Module descent uses its own approach preset and fuel tank' });
++    else if (sum.mcc === 'corrected' || sum.mcc === 'skipped') steps.push({ call: sum.mcc === 'corrected' ? 'You burned the mid-course correction' : 'You declined the correction', result: 'this earlier save records the decision without a measured trajectory or SPS propellant use' });
+     (sum.events ? sum.events.items : []).forEach(function (it) {
+       steps.push({ call: 'At ' + it.title + ' you chose "' + it.chosen + '"', result: it.note.charAt(0).toLowerCase() + it.note.slice(1) });
+     });
+@@ -592,9 +611,8 @@
+         ? { call: crashCall, result: 'a hard landing (' + crashLimit + ')' + (L.fuel <= 0 ? ', with the tanks dry' : '') }
+         : { call: 'You touched down at ' + L.vVel.toFixed(1) + ' m/s', result: 'landing grade ' + L.grade + ', with ' + fuelTxt };
+       var shortParts = [];
+-      if (sum.mcc === 'skipped') shortParts.push(D.skipFuel + ' s from the skipped correction');
+       (sum.events ? sum.events.items : []).forEach(function (it) { if (it.fuel) shortParts.push(it.fuel + ' s from ' + it.title); });
+-      var shortBy = (sum.mcc === 'skipped' ? D.skipFuel : 0) + (sum.events ? sum.events.fuel : 0);
++      var shortBy = sum.events ? sum.events.fuel : 0;
+       if (shortBy > 0) land.result += '. Your earlier calls are part of that: you started ' + shortBy + ' s short (' + shortParts.join(', ') + ')';
+       if (sum.events && sum.events.boulders && !L.crashed) land.result += '. Setting down among the boulders cost points on the score';
+       steps.push(land);
+@@ -664,7 +682,9 @@
+     if (sum.ascent && mmNum(sum.ascent.duration) && mmNum(sum.ascent.perilune) && mmNum(sum.ascent.apolune)) ln('Lunar ascent model: ' + sum.ascent.duration.toFixed(1) + ' s burn; ' + (sum.ascent.perilune / 1000).toFixed(1) + ' by ' + (sum.ascent.apolune / 1000).toFixed(1) + ' km insertion orbit.');
+     if (sum.docking && mmNum(sum.docking.closingSpeed) && mmNum(sum.docking.offset) && mmNum(sum.docking.propellantRemaining)) ln('Final docking exercise: contact at ' + sum.docking.closingSpeed.toFixed(3) + ' m/s, radial offset ' + sum.docking.offset.toFixed(2) + ' m, RCS propellant remaining ' + sum.docking.propellantRemaining.toFixed(2) + ' kg. Intervening rendezvous burns were not simulated.');
+     ln('TLI burn: ' + (!sum.tli ? 'not flown' : sum.tli.onTime ? 'inside the window' : sum.tli.offByDeg + MM_DEG_SIGN + ' ' + sum.tli.side + ', outside the window'));
+-    ln('Mid-course correction: ' + (sum.mcc === 'corrected' ? 'burned' : sum.mcc === 'skipped' ? 'declined' : 'not needed'));
++    if (sum.transit && mmNum(sum.transit.actualBurn) && mmNum(sum.transit.propellantUsed)) ln('Outbound navigation: ' + sum.transit.outcome + '; coast duration ' + (sum.transit.duration / 3600).toFixed(2) + ' h, SPS correction ' + sum.transit.actualBurn.toFixed(2) + ' s, propellant used ' + sum.transit.propellantUsed.toFixed(2) + ' kg' +
++      (mmNum(sum.transit.closestAltitude) ? '; closest lunar altitude ' + (sum.transit.closestAltitude / 1000).toFixed(2) + ' km, Moon-relative speed ' + (sum.transit.closestSpeed / 1000).toFixed(3) + ' km/s.' : '.') + ' Lunar insertion begins from a separate arrival preset.');
++    else ln('Mid-course correction: ' + (sum.mcc === 'corrected' ? 'earlier burn decision; no measured trajectory stored' : sum.mcc === 'skipped' ? 'earlier decision to decline; no measured trajectory stored' : 'not recorded'));
+     if (sum.loi && mmNum(sum.loi.actualBurn) && mmNum(sum.loi.propellantUsed)) ln('Lunar orbit insertion: ' + sum.loi.outcome + '; SPS burn ' + sum.loi.actualBurn.toFixed(1) + ' s, propellant used ' + sum.loi.propellantUsed.toFixed(1) + ' kg; ' +
+       (mmNum(sum.loi.perilune) ? 'perilune ' + (sum.loi.perilune / 1000).toFixed(1) + ' km' : 'perilune unavailable') +
+       (mmNum(sum.loi.apolune) ? ', apolune ' + (sum.loi.apolune / 1000).toFixed(1) + ' km.' : ', open escape trajectory.'));
+@@ -1051,7 +1071,7 @@
+     isp: 311, earthG: 9.80665, engineLag: 0.11, attitudeLag: 0.23,
+     maxAcc: 46700 / 7000, maxTilt: 0.35, maxStep: 1 / 120,
+     handoverAlt: 300, handoverVv: -9, handoverHv: 4,
+-    pilotFuel: 110, skipFuel: 25, skipDrift: 7,
++    pilotFuel: 110, skipFuel: 25, skipDrift: 7, // legacy data constants; SPS corrections do not alter LM descent
+     landV: 3, landH: 5
+   };
+   var MM_CALLOUT_BANDS = [250, 200, 150, 100, 75, 50, 30, 20, 10, 5];
+@@ -1900,6 +1920,150 @@
+     drawLOIScene: mmDrawLOIScene, drawLOIStack: mmDrawLOIStack, drawLunarAtlas: mmDrawLunarAtlas
+   }); } catch (e) {}
+ 
++  var _mmTransitPictureBounds = typeof WeakMap === 'function' ? new WeakMap() : null;
++  function mmTransitSystemBounds(profile) {
++    if (_mmTransitPictureBounds && _mmTransitPictureBounds.has(profile)) return _mmTransitPictureBounds.get(profile);
++    var C = MM_TRANSIT;
++    var bounds = { minX: -C.earthRadius, maxX: C.earthRadius, minY: -C.earthRadius, maxY: C.earthRadius };
++    profile.samples.forEach(function (point) {
++      bounds.minX = Math.min(bounds.minX, point.x, point.moonX - C.moonRadius);
++      bounds.maxX = Math.max(bounds.maxX, point.x, point.moonX + C.moonRadius);
++      bounds.minY = Math.min(bounds.minY, point.y, point.moonY - C.moonRadius);
++      bounds.maxY = Math.max(bounds.maxY, point.y, point.moonY + C.moonRadius);
++    });
++    // Fixed camera bounds let a learner compare a changing path without the
++    // full-system view zooming at every frame. They do not draw future states.
++    if (_mmTransitPictureBounds) _mmTransitPictureBounds.set(profile, bounds);
++    return bounds;
++  }
++
++  // Both coast cameras use one meters-to-pixels scale on each axis. Body-size
++  // exaggeration affects only the drawn discs, never their centers or paths.
++  // Each Moon-frame history point subtracts its own simultaneous lunar state.
++  function mmDrawTransitScene(ctx, W, H, sample, profile, opts) {
++    opts = opts || {};
++    var C = MM_TRANSIT, view = opts.view === 'moon' ? 'moon' : 'system';
++    var trueScale = opts.trueScale === true, preview = opts.preview === true;
++    var plotTop = 73, plotBottom = H - 56, plotHeight = Math.max(90, plotBottom - plotTop);
++    var centerX = W / 2, centerY = (plotTop + plotBottom) / 2;
++    var scale, originX, originY;
++    if (view === 'moon') {
++      var localSpan = Math.max(C.moonRadius * 2.1, sample.moonDistance * 1.22);
++      scale = Math.min((W - 74) / 2, plotHeight / 2) / localSpan;
++      originX = 0; originY = 0;
++    } else {
++      var bounds = mmTransitSystemBounds(profile);
++      originX = (bounds.minX + bounds.maxX) / 2; originY = (bounds.minY + bounds.maxY) / 2;
++      scale = Math.min((W - 82) / Math.max(C.earthRadius * 4, bounds.maxX - bounds.minX),
++        (plotHeight - 40) / Math.max(C.earthRadius * 4, bounds.maxY - bounds.minY));
++    }
++    function point(x, y) { return { x: centerX + (x - originX) * scale, y: centerY - (y - originY) * scale }; }
++    function shipPoint(state) { return view === 'moon' ? point(state.x - state.moonX, state.y - state.moonY) : point(state.x, state.y); }
++    var earth = view === 'moon' ? point(-sample.moonX, -sample.moonY) : point(0, 0);
++    var moon = view === 'moon' ? point(0, 0) : point(sample.moonX, sample.moonY);
++    var craft = shipPoint(sample), firing = sample.engineOn === true && sample.thrust > 0;
++    var earthRadius = C.earthRadius * scale, moonRadius = C.moonRadius * scale;
++    var drawnEarthRadius = trueScale ? earthRadius : Math.max(22, earthRadius);
++    var drawnMoonRadius = trueScale ? moonRadius : Math.max(11, moonRadius);
++    var frameVx = sample.vx - (view === 'moon' ? sample.moonVx : 0);
++    var frameVy = sample.vy - (view === 'moon' ? sample.moonVy : 0);
++    var vectorSpeed = Math.hypot(frameVx, frameVy);
++    // During an MCC the SPS nozzle faces opposite the actual thrust vector.
++    // Outside the burn, the illustration is aligned with travel, with SPS aft.
++    var orientation = firing && Math.hypot(sample.thrustX, sample.thrustY) > 0
++      ? Math.atan2(sample.thrustY, -sample.thrustX) : Math.atan2(-sample.vy, sample.vx) + Math.PI;
++    ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
++    drawStarfield(ctx, W, H, sample.time * 0.001, 90);
++    ctx.textAlign = 'left'; ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 11px system-ui'; ctx.fillText('TRANS-LUNAR COAST', 16, 22);
++    ctx.textAlign = 'right'; ctx.fillStyle = firing ? '#fbbf24' : '#cbd5e1'; ctx.font = 'bold 9px monospace'; ctx.fillText(firing ? 'MCC BURN' : 'ENGINE OFF', W - 16, 22);
++    ctx.textAlign = 'left'; ctx.fillStyle = '#94a3b8'; ctx.font = '10px system-ui';
++    ctx.fillText(view === 'moon' ? 'Moon-relative frame \u00b7 equal axes \u00b7 auto zoom' : 'Earth-centered fixed axes \u00b7 equal distance scale', 16, 39);
++    mmAscentCanvasCaption(ctx, trueScale ? 'Body sizes at true scale \u00b7 spacecraft enlarged' : 'Body discs and spacecraft enlarged; centers to scale', 16, 55, W - 32, 12);
++    ctx.save(); ctx.beginPath(); ctx.rect(8, plotTop - 5, W - 16, plotHeight + 15); ctx.clip();
++    // Moon trail belongs to the Earth-centered frame. It is stationary by
++    // definition in the Moon-relative camera, so no false lunar trail is drawn.
++    var stride = Math.max(1, Math.ceil(profile.samples.length / 750));
++    if (view === 'system') {
++      ctx.strokeStyle = 'rgba(192,132,252,0.67)'; ctx.lineWidth = 1.25; ctx.setLineDash([3, 4]); ctx.beginPath();
++      var moonStarted = false;
++      for (var mi = 0; mi < profile.samples.length; mi += stride) {
++        var moonRow = profile.samples[mi]; if (moonRow.time > sample.time) break;
++        var mp = point(moonRow.moonX, moonRow.moonY);
++        if (!moonStarted) { ctx.moveTo(mp.x, mp.y); moonStarted = true; } else ctx.lineTo(mp.x, mp.y);
++      }
++      ctx.lineTo(moon.x, moon.y); ctx.stroke(); ctx.setLineDash([]);
++    }
++    function path(future) {
++      var started = false; ctx.beginPath();
++      for (var si = 0; si < profile.samples.length; si += stride) {
++        var row = profile.samples[si];
++        if (future ? row.time < sample.time : row.time > sample.time) continue;
++        var p = shipPoint(row);
++        if (!started) { ctx.moveTo(p.x, p.y); started = true; } else ctx.lineTo(p.x, p.y);
++      }
++      if (!future) ctx.lineTo(craft.x, craft.y);
++      ctx.stroke();
++    }
++    if (preview) { ctx.strokeStyle = 'rgba(148,163,184,0.48)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); path(true); ctx.setLineDash([]); }
++    ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.6; path(false);
++    // Detailed body assets are visual glyphs; only the circles and positions
++    // above define the diagram's distance scale.
++    var earthOnScreen = earth.x + drawnEarthRadius > 0 && earth.x - drawnEarthRadius < W && earth.y + drawnEarthRadius > plotTop && earth.y - drawnEarthRadius < plotBottom;
++    if (earthOnScreen) drawDetailedEarth(ctx, earth.x, earth.y, drawnEarthRadius, sample.time * (360 / 86164) / MM_EARTH_DEG_PER_TICK);
++    drawDetailedMoon(ctx, moon.x, moon.y, drawnMoonRadius);
++    // Small rings locate actual centers even when enlarged discs overlap an
++    // early departure or the close lunar encounter.
++    ctx.strokeStyle = 'rgba(226,232,240,0.85)'; ctx.lineWidth = 0.9;
++    ctx.beginPath(); ctx.arc(moon.x, moon.y, 2, 0, Math.PI * 2); ctx.stroke();
++    if (earthOnScreen) { ctx.beginPath(); ctx.arc(earth.x, earth.y, 2, 0, Math.PI * 2); ctx.stroke(); }
++    ctx.textAlign = 'center'; ctx.font = '10px system-ui'; ctx.fillStyle = '#cbd5e1';
++    if (earthOnScreen) ctx.fillText('Earth', Math.max(30, Math.min(W - 30, earth.x)), Math.max(plotTop + 11, earth.y - drawnEarthRadius - 8));
++    ctx.fillText('Moon', Math.max(30, Math.min(W - 30, moon.x)), Math.max(plotTop + 11, moon.y - drawnMoonRadius - 8));
++    ['ignition', 'cutoff'].forEach(function (name) {
++      var event = profile.events && profile.events[name];
++      if (!event || event.time > sample.time || !(event.thrust > 0 || profile.summary.actualBurn > 0)) return;
++      var ep = shipPoint(event); ctx.fillStyle = name === 'ignition' ? '#fbbf24' : '#a7f3d0';
++      ctx.beginPath(); ctx.arc(ep.x, ep.y, 2.2, 0, Math.PI * 2); ctx.fill();
++    });
++    var closest = profile.events && profile.events.closest, closestShown = !!(closest && (preview || closest.time <= sample.time + 1e-7));
++    var closestPoint = closestShown ? shipPoint(closest) : null;
++    if (closestPoint) {
++      var closestMoon = view === 'moon' ? point(0, 0) : point(closest.moonX, closest.moonY);
++      ctx.strokeStyle = 'rgba(251,191,36,0.75)'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
++      ctx.beginPath(); ctx.moveTo(closestMoon.x, closestMoon.y); ctx.lineTo(closestPoint.x, closestPoint.y); ctx.stroke(); ctx.setLineDash([]);
++    }
++    mmDrawLOIStack(ctx, craft.x, craft.y, Math.min(0.48, Math.max(0.28, W / 1700)), orientation,
++      { time: sample.time, engineOn: firing, thrust: sample.thrust });
++    if (vectorSpeed > 0) mmAscentVector(ctx, craft.x, craft.y, frameVx / vectorSpeed * 34, -frameVy / vectorSpeed * 34, '#67e8f9');
++    var forceLength = Math.hypot(sample.thrustX, sample.thrustY);
++    if (firing && forceLength > 0) mmAscentVector(ctx, craft.x, craft.y, sample.thrustX / forceLength * 29, -sample.thrustY / forceLength * 29, '#fbbf24');
++    ctx.fillStyle = '#67e8f9'; ctx.beginPath(); ctx.arc(craft.x, craft.y, 2.2, 0, Math.PI * 2); ctx.fill();
++    if (closestPoint) {
++      ctx.strokeStyle = '#020617'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(closestPoint.x, closestPoint.y, 5, 0, Math.PI * 2); ctx.stroke();
++      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
++    }
++    ctx.restore();
++    // An observed closest approach or an explicit forecast is labelled in DOM
++    // instruments too; the canvas annotation never replaces its measured value.
++    ctx.textAlign = 'left'; ctx.font = '10px system-ui'; ctx.fillStyle = '#fcd34d';
++    if (closestShown) ctx.fillText(closest.time <= sample.time + 1e-7 ? 'Closest approach observed' : 'Closest approach preview', 16, H - 44);
++    var ruler = 58 / scale, power = Math.pow(10, Math.floor(Math.log10(ruler)));
++    ruler = (ruler / power >= 5 ? 5 : ruler / power >= 2 ? 2 : 1) * power;
++    var rulerWidth = ruler * scale;
++    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(W - 16 - rulerWidth, H - 44); ctx.lineTo(W - 16, H - 44);
++    ctx.moveTo(W - 16 - rulerWidth, H - 47); ctx.lineTo(W - 16 - rulerWidth, H - 41); ctx.moveTo(W - 16, H - 47); ctx.lineTo(W - 16, H - 41); ctx.stroke();
++    ctx.textAlign = 'right'; ctx.fillStyle = '#cbd5e1'; ctx.font = '9px system-ui'; ctx.fillText((ruler / 1000).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' km', W - 16, H - 51);
++    ctx.textAlign = 'left'; ctx.font = '10px system-ui'; ctx.fillStyle = '#cbd5e1';
++    mmAscentCanvasCaption(ctx, preview ? 'Dashed: future preview. Cyan: spacecraft. Amber: thrust.' : view === 'moon'
++      ? 'Cyan: Moon-relative path + velocity. Amber: MCC thrust.'
++      : 'Cyan: spacecraft path + velocity. Violet: moving Moon.', 16, H - 25, W - 32, 13);
++    ctx.restore();
++    return { view: view, trueScale: trueScale, engineVisible: firing, plumeVisible: firing, pictureScale: scale,
++      earthX: earth.x, earthY: earth.y, moonX: moon.x, moonY: moon.y, craftX: craft.x, craftY: craft.y,
++      earthRadius: drawnEarthRadius, moonRadius: drawnMoonRadius, craftAngle: orientation, closestShown: closestShown };
++  }
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { drawTransitScene: mmDrawTransitScene }); } catch (e) {}
++
+   // ── Saturn V, drawn in its real proportions ──
+   // Top to bottom: visible height in metres, diameter at the top and bottom of each
+   // section. Each stage's own engines hang inside the interstage below it, so only
+@@ -2916,6 +3080,197 @@
+   }
+ 
+   // ── Enhanced starfield with size/color variation ──
++
++  // Planar circular restricted Earth-Moon model, in fixed Earth-centered axes.
++  // Lunar acceleration includes motion of the origin (NASA TP20220014814 §7.6.1).
++  // Departure and circular Moon are teaching presets, not a historical ephemeris.
++  var MM_TRANSIT = Object.freeze({
++    earthRadius: 6371000, moonRadius: 1737400, distance: 384400000,
++    muEarth: 3.98600435507e14, muMoon: 4.902800118e12,
++    angularRate: Math.sqrt((3.98600435507e14 + 4.902800118e12) / Math.pow(384400000, 3)),
++    moonPhase: 2.0456704593962067, initialAltitude: 334436, initialSpeed: 10834.3, initialAngle: 7.367,
++    thrust: 20500 * 4.4482216152605, isp: 314, g0: 9.80665, dryMass: 25500, propellant: 18000,
++    ignitionTime: 86400, minSpeedError: -5, maxSpeedError: 5, minAngleError: -0.05, maxAngleError: 0.05,
++    minRadialDeltaV: -20, maxRadialDeltaV: 20, minTangentialDeltaV: -20, maxTangentialDeltaV: 20,
++    safeAltitude: 60000, maxAltitude: 500000, maxTime: 432000,
++    positionTolerance: 0.01, velocityTolerance: 1e-8, maxStep: 300, burnStep: 0.05,
++    correctedRadialDeltaV: -6.1058696657419205,
++    defaultPlan: Object.freeze({ speedError: 0, angleError: 0, radialDeltaV: 0, tangentialDeltaV: 0 })
++  });
++  function mmNormalizeTransitPlan(raw) {
++    raw = raw && typeof raw === 'object' ? raw : {};
++    function field(key, low, high) { return Number.isFinite(raw[key]) ? Math.max(low, Math.min(high, raw[key])) : 0; }
++    return { speedError: field('speedError', -5, 5), angleError: field('angleError', -0.05, 0.05),
++      radialDeltaV: field('radialDeltaV', -20, 20), tangentialDeltaV: field('tangentialDeltaV', -20, 20) };
++  }
++  function mmTransitMoonState(time) {
++    var C = MM_TRANSIT, t = Number.isFinite(time) ? time : 0, a = C.moonPhase + C.angularRate * t;
++    var x = C.distance * Math.cos(a), y = C.distance * Math.sin(a);
++    return { x: x, y: y, vx: -C.angularRate * y, vy: C.angularRate * x };
++  }
++  // State: x,y,vx,vy,mass,integrated thrust delta-v,thrust change in dimensional Jacobi integral.
++  function mmTransitDerivative(time, s, direction) {
++    var C = MM_TRANSIT, m = mmTransitMoonState(time), r = Math.hypot(s[0], s[1]);
++    var dx = m.x - s[0], dy = m.y - s[1], q = Math.hypot(dx, dy), d3 = Math.pow(C.distance, 3);
++    var ax = -C.muEarth * s[0] / Math.pow(r, 3) + C.muMoon * (dx / Math.pow(q, 3) - m.x / d3);
++    var ay = -C.muEarth * s[1] / Math.pow(r, 3) + C.muMoon * (dy / Math.pow(q, 3) - m.y / d3);
++    var tx = direction ? C.thrust * direction[0] / s[4] : 0, ty = direction ? C.thrust * direction[1] / s[4] : 0;
++    return [s[2], s[3], ax + tx, ay + ty, direction ? -C.thrust / (C.isp * C.g0) : 0,
++      direction ? C.thrust / s[4] : 0,
++      -2 * ((s[2] + C.angularRate * s[1]) * tx + (s[3] - C.angularRate * s[0]) * ty)];
++  }
++  function mmTransitRK4(time, s, dt, direction) {
++    var a = mmTransitDerivative(time, s, direction);
++    var b = mmTransitDerivative(time + dt / 2, s.map(function (v, i) { return v + dt * a[i] / 2; }), direction);
++    var c = mmTransitDerivative(time + dt / 2, s.map(function (v, i) { return v + dt * b[i] / 2; }), direction);
++    var d = mmTransitDerivative(time + dt, s.map(function (v, i) { return v + dt * c[i]; }), direction);
++    return s.map(function (v, i) { return v + dt * (a[i] + 2 * b[i] + 2 * c[i] + d[i]) / 6; });
++  }
++  function mmTransitFineStep(time, s, dt, direction) {
++    return mmTransitRK4(time + dt / 2, mmTransitRK4(time, s, dt / 2, direction), dt / 2, direction);
++  }
++  function mmTransitMetric(time, s, kind, direction) {
++    var C = MM_TRANSIT, m = mmTransitMoonState(time), dx = s[0] - m.x, dy = s[1] - m.y;
++    if (kind === 'moon') return Math.hypot(dx, dy) - C.moonRadius;
++    if (kind === 'earth') return Math.hypot(s[0], s[1]) - C.earthRadius;
++    if (kind === 'closest') return dx * (s[2] - m.vx) + dy * (s[3] - m.vy);
++    var d = mmTransitDerivative(time, s, direction); return s[2] * d[2] + s[3] * d[3];
++  }
++  function mmTransitRoot(time, s, dt, direction, kind, increasing) {
++    var low = 0, high = dt;
++    for (var i = 0; i < 40; i++) {
++      var mid = (low + high) / 2, z = mmTransitFineStep(time, s, mid, direction);
++      if ((mmTransitMetric(time + mid, z, kind, direction) >= 0) === increasing) high = mid; else low = mid;
++    }
++    var h = (low + high) / 2; return { time: time + h, state: mmTransitFineStep(time, s, h, direction) };
++  }
++  function mmTransitSnapshot(time, s, direction, initialMass, phase) {
++    var C = MM_TRANSIT, m = mmTransitMoonState(time), r = Math.hypot(s[0], s[1]);
++    var dx = s[0] - m.x, dy = s[1] - m.y, q = Math.hypot(dx, dy);
++    var dvx = s[2] - m.vx, dvy = s[3] - m.vy, eta = C.muMoon / (C.muEarth + C.muMoon);
++    var rvx = s[2] + C.angularRate * s[1], rvy = s[3] - C.angularRate * s[0];
++    var c = Math.pow(C.angularRate, 2) * (Math.pow(s[0] - eta * m.x, 2) + Math.pow(s[1] - eta * m.y, 2)) +
++      2 * C.muEarth / r + 2 * C.muMoon / q - rvx * rvx - rvy * rvy;
++    var unit = (C.muEarth + C.muMoon) / C.distance, thrust = direction ? C.thrust : 0;
++    return { time: time, x: s[0], y: s[1], vx: s[2], vy: s[3], moonX: m.x, moonY: m.y, moonVx: m.vx, moonVy: m.vy,
++      earthDistance: r, moonDistance: q, earthAltitude: r - C.earthRadius, moonAltitude: q - C.moonRadius,
++      earthSpeed: Math.hypot(s[2], s[3]), moonSpeed: Math.hypot(dvx, dvy), moonRadialSpeed: (dx * dvx + dy * dvy) / q,
++      mass: s[4], propellant: Math.max(0, s[4] - C.dryMass), propellantUsed: initialMass - s[4],
++      thrust: thrust, thrustX: direction ? thrust * direction[0] : 0, thrustY: direction ? thrust * direction[1] : 0,
++      massFlow: thrust / (C.isp * C.g0), engineOn: !!direction, phase: phase || (direction ? 'burn' : 'coast'),
++      idealDeltaV: s[5], jacobi: c / unit, jacobiChange: s[6] / unit };
++  }
++  var _mmTransitCache = [];
++  function mmTransitProfile(options) {
++    var C = MM_TRANSIT, opts = options && typeof options === 'object' ? options : {};
++    var controls = mmNormalizeTransitPlan(opts), key = JSON.stringify(controls);
++    var custom = Number.isFinite(opts.toleranceScale) || Number.isFinite(opts.propellant);
++    if (!custom) for (var ci = 0; ci < _mmTransitCache.length; ci++) if (_mmTransitCache[ci].key === key) return _mmTransitCache[ci].profile;
++    var tolerance = Number.isFinite(opts.toleranceScale) ? Math.max(0.01, Math.min(10, opts.toleranceScale)) : 1;
++    var propellant = Number.isFinite(opts.propellant) ? Math.max(0, Math.min(C.propellant, opts.propellant)) : C.propellant;
++    var initialMass = C.dryMass + propellant, v = C.initialSpeed + controls.speedError;
++    var angle = (C.initialAngle + controls.angleError) * Math.PI / 180;
++    var s = [C.earthRadius + C.initialAltitude, 0, v * Math.sin(angle), v * Math.cos(angle), initialMass, 0, 0];
++    var command = Math.hypot(controls.radialDeltaV, controls.tangentialDeltaV), flow = C.thrust / (C.isp * C.g0);
++    var requestedFuel = initialMass * -Math.expm1(-command / (C.isp * C.g0));
++    var actualBurn = Math.min(propellant, requestedFuel) / flow, cutoff = C.ignitionTime + actualBurn;
++    var cutoffReason = command === 0 ? 'no-burn' : requestedFuel > propellant ? 'fuel' : 'commanded';
++    var samples = [], events = { ignition: null, cutoff: null, closest: null, impact: null, minimumEarthSpeed: null };
++    var time = 0, nextStep = 10, direction = null, ignitionDone = false, cutoffDone = false, impactBody = null;
++    function record(phase) {
++      var row = mmTransitSnapshot(time, s, direction, initialMass, phase); samples.push(row);
++      if (!events.minimumEarthSpeed || row.earthSpeed < events.minimumEarthSpeed.earthSpeed) events.minimumEarthSpeed = row;
++      return row;
++    }
++    record();
++    while (time < C.maxTime) {
++      if (!ignitionDone && time >= C.ignitionTime) {
++        ignitionDone = true;
++        if (actualBurn > 0) {
++          var r = Math.hypot(s[0], s[1]), ux = s[0] / r, uy = s[1] / r;
++          direction = [(controls.radialDeltaV * ux - controls.tangentialDeltaV * uy) / command,
++            (controls.radialDeltaV * uy + controls.tangentialDeltaV * ux) / command];
++        }
++        events.ignition = record();
++      }
++      if (ignitionDone && !cutoffDone && time >= cutoff) { direction = null; cutoffDone = true; events.cutoff = record(); }
++      var dt = Math.min(nextStep, direction ? C.burnStep : C.maxStep, C.maxTime - time);
++      if (!ignitionDone) dt = Math.min(dt, C.ignitionTime - time);
++      else if (!cutoffDone) dt = Math.min(dt, cutoff - time);
++      // Boundaries are assigned exactly. Even very small positive remainders are integrated.
++      if (!(dt > 0)) break;
++      var full = mmTransitRK4(time, s, dt, direction), fine = mmTransitFineStep(time, s, dt, direction), error = 0;
++      for (var ei = 0; ei < 4; ei++) error = Math.max(error, Math.abs(full[ei] - fine[ei]) /
++        (15 * tolerance * (ei < 2 ? C.positionTolerance : C.velocityTolerance)));
++      var factor = error > 0 ? Math.max(0.2, Math.min(3, 0.9 * Math.pow(error, -0.2))) : 3;
++      nextStep = Math.max(1e-5, Math.min(C.maxStep, dt * factor));
++      if (error > 1 && dt > 1e-5) continue;
++      var endTime = time + dt, terminal = null, terminalKind = null;
++      ['earth', 'moon'].forEach(function (body) {
++        if (mmTransitMetric(endTime, fine, body, direction) <= 0) {
++          var hit = mmTransitRoot(time, s, dt, direction, body, false);
++          if (!terminal || hit.time < terminal.time) { terminal = hit; terminalKind = body; }
++        }
++      });
++      if (mmTransitMetric(time, s, 'closest', direction) < 0 && mmTransitMetric(endTime, fine, 'closest', direction) >= 0) {
++        var closest = mmTransitRoot(time, s, dt, direction, 'closest', true);
++        if (mmTransitMetric(closest.time, closest.state, 'moon', direction) <= 0) {
++          var grazingHit = mmTransitRoot(time, s, closest.time - time, direction, 'moon', false);
++          if (!terminal || grazingHit.time < terminal.time) { terminal = grazingHit; terminalKind = 'moon'; }
++        } else if (!terminal || closest.time < terminal.time) { terminal = closest; terminalKind = 'closest'; }
++      }
++      var limit = terminal ? terminal.time - time : dt;
++      if (mmTransitMetric(time, s, 'speed', direction) < 0 &&
++          mmTransitMetric(time + limit, terminal ? terminal.state : fine, 'speed', direction) >= 0) {
++        var slow = mmTransitRoot(time, s, limit, direction, 'speed', true);
++        var slowRow = mmTransitSnapshot(slow.time, slow.state, direction, initialMass);
++        if (!events.minimumEarthSpeed || slowRow.earthSpeed < events.minimumEarthSpeed.earthSpeed) events.minimumEarthSpeed = slowRow;
++      }
++      if (terminal) {
++        time = terminal.time; s = terminal.state;
++        if (terminalKind === 'closest') events.closest = record('closest');
++        else { impactBody = terminalKind; direction = null; events.impact = record('impact'); }
++        break;
++      }
++      time = endTime; s = fine;
++      if (Math.abs(time - C.ignitionTime) < 1e-8) time = C.ignitionTime;
++      if (Math.abs(time - cutoff) < 1e-8) time = cutoff;
++      record(time >= C.maxTime ? 'horizon' : undefined);
++    }
++    var end = samples[samples.length - 1], closestEvent = events.closest;
++    var outcome = events.impact ? 'impact' : !closestEvent ? 'horizon' :
++      closestEvent.moonAltitude < C.safeAltitude ? 'hazardous' : closestEvent.moonAltitude > C.maxAltitude ? 'miss' : 'encounter';
++    var summary = { outcome: outcome, duration: end.time,
++      closestTime: closestEvent ? closestEvent.time : null, closestAltitude: closestEvent ? closestEvent.moonAltitude : null,
++      closestSpeed: closestEvent ? closestEvent.moonSpeed : null, impactBody: impactBody,
++      burnStart: events.ignition ? events.ignition.time : null, burnEnd: events.cutoff ? events.cutoff.time : null,
++      actualBurn: end.propellantUsed / flow, cutoffReason: events.impact && !cutoffDone ? 'impact' : cutoffReason,
++      propellantUsed: end.propellantUsed, propellantRemaining: end.propellant, idealDeltaV: end.idealDeltaV,
++      minimumEarthSpeed: events.minimumEarthSpeed.earthSpeed, minimumEarthSpeedTime: events.minimumEarthSpeed.time };
++    samples.forEach(Object.freeze); Object.keys(events).forEach(function (key) { if (events[key]) Object.freeze(events[key]); });
++    var profile = Object.freeze({ version: 1, controls: Object.freeze(controls), samples: Object.freeze(samples),
++      events: Object.freeze(events), summary: Object.freeze(summary), initialMass: initialMass });
++    if (!custom) { _mmTransitCache.push({ key: key, profile: profile }); if (_mmTransitCache.length > 6) _mmTransitCache.shift(); }
++    return profile;
++  }
++  function mmTransitSample(profile, seconds) {
++    var rows = profile.samples, time = Number.isFinite(seconds) ? Math.max(0, Math.min(profile.summary.duration, seconds)) : 0;
++    if (time >= profile.summary.duration) return Object.assign({}, rows[rows.length - 1]);
++    var low = 0, high = rows.length;
++    while (low < high) { var mid = (low + high) >> 1; if (rows[mid].time <= time) low = mid + 1; else high = mid; }
++    var a = rows[Math.max(0, low - 1)], direction = a.engineOn ? [a.thrustX / a.thrust, a.thrustY / a.thrust] : null;
++    if (time === a.time) return Object.assign({}, a);
++    var unit = (MM_TRANSIT.muEarth + MM_TRANSIT.muMoon) / MM_TRANSIT.distance;
++    var state = [a.x, a.y, a.vx, a.vy, a.mass, a.idealDeltaV, a.jacobiChange * unit];
++    state = mmTransitFineStep(a.time, state, time - a.time, direction);
++    return mmTransitSnapshot(time, state, direction, profile.initialMass);
++  }
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { transit: MM_TRANSIT,
++    normalizeTransitPlan: mmNormalizeTransitPlan, transitProfile: mmTransitProfile,
++    transitSample: mmTransitSample, transitMoonState: mmTransitMoonState }); } catch (e) {}
++
++
++
+   function drawStarfield(ctx, W, H, tick, count) {
+     var rng = _seededRand(7919); // fixed seed for stable positions
+     var colors = ['#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff',
+@@ -4572,6 +4927,8 @@
+         });
+         Object.assign(s, mmCleanEntryState(s));
+         Object.assign(s, mmCleanLaunchPlayback(s));
++        Object.assign(s, mmCleanTransitPlayback(s));
++        if (s.mccChoice !== 'corrected' && s.mccChoice !== 'skipped') s.mccChoice = null;
+         Object.assign(s, mmCleanLoiPlayback(s));
+         Object.assign(s, mmCleanAscentPlayback(s));
+         Object.assign(s, mmCleanDockingPlayback(s));
+@@ -4640,14 +4997,14 @@
+           wait: t('stem.moonmission.predict_tli_wait', 'Watch where the green burn window opens.'),
+           explain: t('stem.moonmission.predict_tli_explain', 'The burn does not aim at the Moon. It raises the far end of your orbit out to the distance of the Moon, so you fire opposite that far end and coast half an orbit out to meet it. That is why the window opened on the far side.') },
+         { id: 'coast_speed', short: t('stem.moonmission.predict_coast_short', 'Speed on the way to the Moon'),
+-          question: t('stem.moonmission.predict_coast_q', 'Nothing pushes the spacecraft on the coast to the Moon. What does its speed do?'),
++          question: t('stem.moonmission.predict_coast_q', 'In the nominal unpowered departure, what happens to speed measured relative to Earth?'),
+           options: [
+             { id: 'steady', label: t('stem.moonmission.predict_coast_steady', 'Stays the same: there is no air to slow it') },
+             { id: 'slows', label: t('stem.moonmission.predict_coast_slows', 'Slows down the whole way') },
+             { id: 'dip', label: t('stem.moonmission.predict_coast_dip', 'Slows down, then speeds up near the Moon') }],
+           correct: 'dip',
+-          wait: t('stem.moonmission.predict_coast_wait', 'Watch the SPEED readout above the coast.'),
+-          explain: t('stem.moonmission.predict_coast_explain', 'Earth pulls back on you the whole way out, so you keep losing speed: by the point where the Moon starts to pull harder than Earth you are going about a tenth as fast as when you left. From there the Moon takes over and you speed up again.') },
++          wait: t('stem.moonmission.predict_coast_wait', 'Inspect the measured Earth-relative speed during the nominal coast.'),
++          explain: t('stem.moonmission.predict_coast_explain', 'In this nominal trajectory, the spacecraft loses Earth-relative speed as it climbs away, then gains speed near the moving Moon. The minimum is measured from the integrated path. Moon-relative speed is a different measurement; equal gravitational pulls do not define a universal speed minimum.') },
+         { id: 'rendezvous_catch', short: t('stem.moonmission.predict_rdv_short', 'How Eagle catches Columbia'),
+           question: t('stem.moonmission.predict_rdv_q', 'After lifting off, Eagle is behind Columbia in orbit around the Moon. How does it catch up?'),
+           options: [
+@@ -4852,9 +5209,6 @@
+         _mmProceedLock = { phase: phase, at: now };
+         return true;
+       }
+-      // An off-window TLI must be answered at the coast: pressing Arrive without
+-      // choosing used to cost nothing at all, which beat both real options.
+-      var mccPending = !!(d.tliAccuracy && !d.tliAccuracy.onTime && !d.mccChoice);
+ 
+       function advancePhase(targetPhase) {
+         if (d.activeEvent || d.eventOutcome) return;
+@@ -4996,7 +5350,7 @@
+         ['S-IVB', t('stem.moonmission.gl_sivb', 'The third stage of the Saturn V. It finishes the climb to orbit, then fires again for TLI.')],
+         [t('stem.moonmission.gl_gravturn_term', 'Gravity turn'), t('stem.moonmission.gl_gravturn', 'Tipping the rocket over during ascent so the climb becomes sideways speed. Orbit is mostly about going sideways very fast.')],
+         [t('stem.moonmission.gl_orbit_term', 'Orbit'), t('stem.moonmission.gl_orbit', 'Falling around a world so fast that you keep missing it. At 185 km that takes about 28,000 km/h.')],
+-        [t('stem.moonmission.gl_mcc_term', 'Mid-course correction'), t('stem.moonmission.gl_mcc', 'A small burn during the coast that fixes a trajectory error before it grows. Apollo flew one on nearly every leg.')],
++        [t('stem.moonmission.gl_mcc_term', 'Mid-course correction'), t('stem.moonmission.gl_mcc_physical', 'A small engine burn during the coast that changes the spacecraft trajectory before lunar arrival.')],
+         [t('stem.moonmission.gl_los_term', 'Loss of signal (LOS)'), t('stem.moonmission.gl_los', 'Behind the Moon there is no line of sight to Earth, so the radio goes quiet until the spacecraft comes back around.')],
+         [t('stem.moonmission.gl_regolith_term', 'Regolith'), t('stem.moonmission.gl_regolith', 'The loose, powdery surface layer of the Moon, ground up by billions of years of impacts.')],
+         [t('stem.moonmission.gl_mare_term', 'Mare / highlands'), t('stem.moonmission.gl_mare', 'Maria are the dark plains of ancient lava; the highlands are the bright, older, heavily cratered terrain.')],
+@@ -5298,8 +5652,8 @@
+       var PHASE_TASKS = [
+         t('stem.moonmission.task_0', 'Pick a difficulty, look over the mission profile, then press Begin Mission.'),
+         t('stem.moonmission.task_1', 'Watch the Saturn V climb. When the banner turns green you are in orbit \u2014 press Proceed to Orbit.'),
+-        t('stem.moonmission.task_2', 'Timing call: wait for the green burn window, then fire TLI. Firing early is allowed, but it costs a correction later.'),
+-        t('stem.moonmission.task_3', 'Answer the knowledge check, decide on the mid-course correction if one is offered, then head for lunar orbit.'),
++        t('stem.moonmission.task_2_timing', 'Timing call: wait for the green burn window, then fire TLI. Your timing result is recorded for the flight report.'),
++        t('stem.moonmission.task_3_navigation', 'Compare departure and correction plans, review a measured lunar encounter, then prepare lunar orbit insertion.'),
+         t('stem.moonmission.task_4_burn', 'Plan the insertion burn, verify a safe lunar orbit, then prepare Eagle for descent.'),
+         t('stem.moonmission.task_5', 'Fly the landing: W or \u2191 for thrust, A/D to slide. Touch down under 3 m/s down and 5 m/s sideways.'),
+         t('stem.moonmission.task_6', 'Walk the surface: collect 4 rocks with F, deploy the seismometer, then End EVA.'),
+@@ -6928,250 +7282,112 @@
+         ),
+ 
+         // ═══ PHASE 3: TRANS-LUNAR COAST (Animated Canvas) ═══
+-        phase === 3 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+-            h('div', { className: 'relative', style: { height: '280px' } },
+-              h('canvas', { 
+-                role: 'img',
+-                'data-a11y-static': 'true',
+-                'aria-describedby': 'mm-transit-description',
+-                'aria-label': t('stem.moonmission.tlc_canvas_alt', 'Animated trans-lunar coast along a figure-8 free-return path, the route that would swing behind the Moon and back to Earth with no engine burn. A marker shows where the Moon\'s pull becomes stronger than Earth\'s. Live readouts show distance from Earth, distance to the Moon and speed. An optional true-scale view shrinks Earth and the Moon to their real sizes and spacing.'),
+-                style: { width: '100%', height: '100%', display: 'block' },
+-                ref: function(cvEl) {
+-                  if (!cvEl || cvEl._transitInit) return;
+-                  cvEl._transitInit = true;
+-                  var ctx = cvEl.getContext('2d');
+-                  var W = cvEl.offsetWidth || 500, H3 = cvEl.offsetHeight || 280;
+-                  cvEl.width = W * 2; cvEl.height = H3 * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H3)) { W = nw; H3 = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
+-                  var tick = 0;
+-                  var tClock = { last: null, acc: 0 };
+-                  var _coastReported = false;   // the slowest point, published once for the prediction card
+-                  function drawTransit(ts) {
+-                    if (_mmAnimPaused && tick > 0) { tClock.last = null; if (document.contains(cvEl)) requestAnimationFrame(drawTransit); return; }
+-                    tick += mmFrameSteps(tClock, ts);
+-                    ctx.clearRect(0, 0, W, H3);
+-                    // Space background
+-                    ctx.fillStyle = '#010108'; ctx.fillRect(0, 0, W, H3);
+-                    // Enhanced starfield
+-                    drawStarfield(ctx, W, H3, tick, 150);
+-                    // Where the craft is comes from the energy equation (mmCoastAt), so it
+-                    // races off Earth, crawls through the long middle and speeds up only
+-                    // near the Moon. It used to slide across at one steady speed.
+-                    var coast = mmCoastAt(Math.min(1, tick / 2400));
+-                    var frac = (coast.r - MM_TLC_R0) / (MM_COAST_END - MM_TLC_R0);
+-                    var trueScale = _mmTrueScale, cy3 = H3 * 0.5;
+-                    var earthX = trueScale ? 60 : 70 + frac * 15;
+-                    var moonX = W - (trueScale ? 60 : 50 + (1 - frac) * 10);
+-                    var gap = moonX - earthX;
+-                    // True scale: Earth 12,742 km across, the Moon 3,475, and 384,400 km apart.
+-                    var earthR = trueScale ? gap * 6371 / MM_EM_D : Math.max(8, 55 * (1 - frac * 0.5));
+-                    var moonR = trueScale ? gap * 1737.4 / MM_EM_D : 8 + frac * 30;
+-                    // ── The free-return figure 8 ──
+-                    // Out over the top from behind Earth (where TLI fires), across, round
+-                    // behind the Moon (where LOI fires) and, with no burn at all, back to
+-                    // Earth. Apollo 11 flew out on one. The coast used to be a single arc.
+-                    var cx8 = (earthX + moonX) / 2, aL = gap / 2 + earthR + 8, aR = gap / 2 + moonR + 12, b8 = H3 * 0.5;
+-                    function fr8(t) { var c = Math.cos(t); return [cx8 + (c < 0 ? aL : aR) * c, cy3 + b8 * Math.sin(t) * c]; }
+-                    function fr8T(x) { var c = x < cx8 ? (x - cx8) / aL : (x - cx8) / aR; return Math.acos(Math.max(-1, Math.min(1, c))); }
+-                    var tNow = fr8T(earthX + gap * coast.r / MM_EM_D);   // pi at TLI, 0 behind the Moon
+-                    ctx.save();
+-                    ctx.setLineDash([3, 5]); ctx.lineWidth = 1;
+-                    ctx.strokeStyle = 'rgba(148,163,184,0.3)';
+-                    ctx.beginPath();
+-                    for (var k8 = 0; k8 <= 160; k8++) { var p8 = fr8(Math.PI - k8 / 80 * Math.PI); if (k8) ctx.lineTo(p8[0], p8[1]); else ctx.moveTo(p8[0], p8[1]); }
+-                    ctx.stroke();
+-                    ctx.setLineDash([]);
+-                    ctx.strokeStyle = 'rgba(56,189,248,0.6)'; ctx.lineWidth = 1.4;   // flown so far
+-                    ctx.beginPath();
+-                    for (var k9 = 0; k9 <= 60; k9++) { var p9 = fr8(Math.PI - (Math.PI - tNow) * k9 / 60); if (k9) ctx.lineTo(p9[0], p9[1]); else ctx.moveTo(p9[0], p9[1]); }
+-                    ctx.stroke();
+-                    ctx.restore();
+-                    drawDetailedEarth(ctx, earthX, cy3, earthR, tick);
+-                    drawDetailedMoon(ctx, moonX, cy3, moonR);
+-                    ctx.font = '8px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(148,163,184,0.75)';
+-                    ctx.fillText('Free-return path: no burn needed to get home', cx8, cy3 - b8 * 0.5 - 6);
+-                    // Where the Moon's pull overtakes Earth's: the slowest point of the trip.
+-                    var pEq = fr8(fr8T(earthX + gap * MM_EQUAL_PULL / MM_EM_D));
+-                    var passedEq = coast.r >= MM_EQUAL_PULL;
+-                    if (passedEq && !_coastReported) {
+-                      _coastReported = true;
+-                      upd('coastSlowest', { v: Math.round(mmCoastSpeed(MM_EQUAL_PULL) * 100) / 100, toMoonKm: Math.round(MM_EM_D - MM_EQUAL_PULL) });
+-                    }
+-                    ctx.fillStyle = passedEq ? '#fbbf24' : 'rgba(251,191,36,0.6)';
+-                    ctx.beginPath(); ctx.arc(pEq[0], pEq[1], 2.5, 0, Math.PI * 2); ctx.fill();
+-                    ctx.fillStyle = passedEq ? '#fde68a' : 'rgba(253,230,138,0.7)';
+-                    ctx.fillText('Moon\'s pull beats Earth\'s here', pEq[0], pEq[1] + 13);
+-                    // Spacecraft, pointing along its path.
+-                    var scPt = fr8(tNow), ahead = fr8(tNow - 0.02);
+-                    var scX = scPt[0], scY = scPt[1];
+-                    ctx.save();
+-                    ctx.translate(scX, scY);
+-                    ctx.rotate(Math.atan2(ahead[1] - scY, ahead[0] - scX));
+-                    // Blue engine glow
+-                    ctx.fillStyle = 'rgba(56,189,248,0.3)';
+-                    ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+-                    // Service module (silver rectangle)
+-                    ctx.fillStyle = '#c0c8d0';
+-                    ctx.fillRect(-8, -2.5, 10, 5);
+-                    // Command module (white cone)
+-                    ctx.fillStyle = '#e8ecf0';
+-                    ctx.beginPath(); ctx.moveTo(5, 0); ctx.lineTo(2, -3); ctx.lineTo(-1, -3); ctx.lineTo(-1, 3); ctx.lineTo(2, 3); ctx.closePath(); ctx.fill();
+-                    // Window
+-                    ctx.fillStyle = '#38bdf8';
+-                    ctx.fillRect(1, -1, 2, 2);
+-                    // LM adapter (wider section behind SM)
+-                    ctx.fillStyle = '#a0a8b0';
+-                    ctx.fillRect(-12, -3.5, 4, 7);
+-                    ctx.restore();
+-                    if (trueScale) {
+-                      ctx.fillStyle = 'rgba(186,230,253,0.8)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+-                      ctx.fillText('spacecraft not to scale', scX, scY - 10);
+-                    }
+-                    // ── Distance readout ──
+-                    // These two lines used to be centred ON the spacecraft, one 12px above
+-                    // and one 18px below, so both ran straight through the hull and each
+-                    // other. In a HUD panel like every other phase uses.
+-                    var distFromEarth = Math.round(coast.r);
+-                    var distToMoon = MM_EM_D - distFromEarth;
+-                    // A bar across the top, above the flight path: as a tall corner panel
+-                    // it sat on top of Earth.
+-                    var cw = Math.min(130, (W - 28) / 3);
+-                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+-                    ctx.fillRect(8, 6, cw * 3 + 12, 46);
+-                    ctx.textAlign = 'left';
+-                    [['FROM EARTH', distFromEarth.toLocaleString() + ' km', '#fff'],
+-                     ['TO MOON', distToMoon.toLocaleString() + ' km', '#fff'],
+-                     ['SPEED', coast.v.toFixed(2) + ' km/s ' + (passedEq ? '\u25B2' : '\u25BC'), passedEq ? '#fde68a' : '#fff']
+-                    ].forEach(function(cell, ci) {
+-                      ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#38bdf8';
+-                      ctx.fillText(cell[0], 14 + ci * cw, 17);
+-                      ctx.font = 'bold 11px monospace'; ctx.fillStyle = cell[2];
+-                      ctx.fillText(cell[1], 14 + ci * cw, 30);
+-                    });
+-                    ctx.font = '8px system-ui'; ctx.fillStyle = '#cbd5e1';
+-                    ctx.fillText(passedEq ? 'Speeding up: falling toward the Moon.' : 'Slowing down: climbing out of Earth\'s pull.', 14, 45);
+-                    // Comms chatter
+-                    var commsMessages = [
+-                      'Houston: "You are GO for TLI."',
+-                      'CMP: "Transposition and docking complete."',
+-                      'CDR: "The Earth is getting smaller every hour."',
+-                      'LMP: "Mid-course correction burn nominal."',
+-                      'Houston: "Apollo, you are GO for LOI."',
+-                      'CDR: "We can see the Moon growing. Incredible."'
+-                    ];
+-                    var commsIdx = Math.floor(tick / 300) % commsMessages.length;
+-                    var commsFade = Math.min(1, (tick % 300) < 240 ? (tick % 300) / 30 : (300 - tick % 300) / 60);
+-                    ctx.globalAlpha = commsFade * 0.7;
+-                    ctx.font = 'italic 10px system-ui';
+-                    ctx.fillStyle = '#a5b4fc';
+-                    ctx.fillText(commsMessages[commsIdx], W * 0.5, H3 - 12);
+-                    ctx.globalAlpha = 1;
+-                    drawVignette(ctx, W, H3, 0.25);
+-                    if (document.contains(cvEl)) requestAnimationFrame(drawTransit);
+-                  }
+-                  drawTransit();
++        phase === 3 && (function() {
++          var tp = mmTransitProfile(d.transitPlan), tr = d.transitRun || { time: 0, recorded: false };
++          var transitReady = !!(tr.recorded && d.transitResult && d.transitResult.outcome === 'encounter');
++          var pausedUI = d.transitPaused || _mmAnimPaused;
++          var buttonStyle = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#f8fafc', fontSize: '13px', fontWeight: 600 };
++          var cardStyle = { background: '#0f172a', color: '#e2e8f0', padding: '14px', borderRadius: '12px', border: '1px solid #334155' };
++          function transitControl(ev, action, value) { var host = ev.currentTarget.closest('[data-transit-workspace]'), cv = host && host.querySelector('[data-transit-canvas]'); if (cv && cv._transitAction) cv._transitAction(action, value); }
++          function outcomeText(result) {
++            var altitudeText = mmNum(result.closestAltitude) ? (Math.max(0, result.closestAltitude) / 1000).toFixed(1) + ' km' : 'unavailable';
++            if (result.outcome === 'encounter') return 'Lunar encounter verified: closest altitude ' + altitudeText + ', Moon-relative speed ' + (result.closestSpeed / 1000).toFixed(3) + ' km/s. Ready for the separate lunar insertion exercise.';
++            if (result.outcome === 'impact') return 'Surface impact: the integrated path reached ' + (result.impactBody === 'earth' ? 'Earth' : 'the Moon') + '. Adjust the departure or correction, then review again.';
++            if (result.outcome === 'horizon') return 'No lunar closest approach occurred within the 120-hour simulation. Try a different departure or correction.';
++            return (result.outcome === 'hazardous' ? 'Low encounter: ' : 'Wide flyby: ') + 'closest lunar altitude ' + altitudeText + '. This exercise requires 60 to 500 km of clearance before proceeding. Adjust the plan and review again.';
++          }
++          return h('div', { 'data-transit-workspace': true, className: 'space-y-3' },
++            h('section', { style: cardStyle },
++              h('p', { style: { color: '#7dd3fc', fontSize: '11px', letterSpacing: '0.12em', margin: 0 } }, 'COLUMBIA + EAGLE / OUTBOUND NAVIGATION'),
++              h('h3', { style: { color: '#f8fafc', fontSize: '19px', fontWeight: 700, margin: '5px 0' } }, 'Meet a moving Moon'),
++              h('p', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Compare a nominal departure with a small navigation error, then use the Service Module engine to change the arrival. Earth and Moon gravity act throughout the flight. The Moon keeps moving.'),
++              h('div', { role: 'group', 'aria-label': 'Outbound navigation presets', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' } },
++                [['nominal', 'Nominal departure'], ['error', 'Departure speed +1 m/s'], ['corrected', 'Correct the speed error']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-transit-preset': item[0], style: buttonStyle, onClick: function(ev) { transitControl(ev, 'plan', item[0] === 'nominal' ? {} : { speedError: 1, radialDeltaV: item[0] === 'corrected' ? MM_TRANSIT.correctedRadialDeltaV : 0 }); } }, item[1]); })),
++              h('details', { style: { margin: '10px 0', fontSize: '13px' } }, h('summary', { style: { cursor: 'pointer', minHeight: '32px' } }, 'Tune the departure and correction'),
++                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: '10px', marginTop: '10px' } },
++                  [['speedError', 'Departure speed error', -5, 5, 0.1, 'm/s'], ['angleError', 'Departure angle error', -0.05, 0.05, 0.001, '\u00b0'], ['radialDeltaV', 'Radial correction', -20, 20, 0.001, 'm/s'], ['tangentialDeltaV', 'Transverse correction', -20, 20, 0.1, 'm/s']].map(function(item) {
++                    return h('div', { key: item[0] }, h('label', { htmlFor: 'mm-transit-' + item[0], style: { display: 'block', color: '#e2e8f0' } }, item[1] + ': ', h('strong', null, d.transitPlan[item[0]].toFixed(item[4] < 0.1 ? 3 : 1) + ' ' + item[5])),
++                      h('input', { id: 'mm-transit-' + item[0], 'data-transit-plan': item[0], 'aria-label': item[1], type: 'range', min: item[2], max: item[3], step: item[4], value: d.transitPlan[item[0]], style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { var next = Object.assign({}, d.transitPlan); next[item[0]] = Number(ev.target.value); transitControl(ev, 'plan', next); } }));
++                  })),
++                h('p', { style: { color: '#cbd5e1', lineHeight: 1.6 } }, 'Correction components are commanded delta-v at 24 hours after injection: radial is positive away from Earth; transverse is positive counterclockwise. The direction is fixed in space when the finite burn starts. Changing a plan clears its recorded result.')),
++              h('p', { 'data-transit-plan-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'This navigation exercise starts from a specified post-injection state. The earlier TLI timing score does not set these departure errors. The next lunar insertion exercise uses a separate arrival and mass preset.'),
++              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '10px 0' } },
++                h('label', { style: { fontSize: '12px' } }, 'View ', h('select', { 'data-transit-view': true, 'aria-label': 'Transit view', value: d.transitView, style: buttonStyle, onChange: function(ev) { transitControl(ev, 'view', ev.target.value); } }, h('option', { value: 'system' }, 'Earth\u2013Moon system'), h('option', { value: 'moon' }, 'Moon-relative approach'))),
++                h('button', { type: 'button', 'aria-pressed': !!d.trueScale, 'data-moonmission-true-scale': true, style: buttonStyle, onClick: function(ev) { transitControl(ev, 'scale', !d.trueScale); } }, 'Show true-size Earth and Moon')),
++              h('canvas', { 'data-transit-canvas': true, role: 'img', 'aria-label': 'Measured outbound spacecraft trajectory and moving Moon. Switch between Earth-centered and Moon-relative views. Distances, speeds and engine status follow below.', style: { display: 'block', width: '100%', height: '360px', borderRadius: '8px' }, ref: function(cv) {
++                if (!cv || cv._transitInit) return; cv._transitInit = true;
++                var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 360;
++                var profile = tp, plan = Object.assign({}, d.transitPlan), time = tr.time, recorded = tr.recorded, paused = !!d.transitPaused, rate = d.transitPlaybackRate, view = d.transitView, trueScale = !!d.trueScale;
++                var lastTs = null, lastPublish = -Infinity, stamp = '', observer;
++                if (!recorded) upd('transitResult', null);
++                function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); }
++                resize(); if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(cv); }
++                function persist() {
++                  if (time >= profile.summary.duration && !recorded) { recorded = true; upd('transitResult', Object.assign({ version: 1 }, profile.summary)); if (typeof announceToSR === 'function') announceToSR(outcomeText(profile.summary)); }
++                  var nextStamp = time + ':' + recorded; if (nextStamp === stamp) return; stamp = nextStamp;
++                  upd('transitRun', { version: 1, time: time, recorded: recorded });
+                 }
+-              })
+-            ),
+-            h('div', { className: 'p-3 border-t border-slate-700' },
+-              h('div', { id: 'mm-transit-description', className: 'space-y-1.5 mb-2' },
+-                [
+-                  'The Command Module extracts the Lunar Module from the S-IVB third stage.',
+-                  'The spacecraft rotates slowly ("BBQ roll") to evenly distribute solar heating.',
+-                  'Even a 1\u00B0 trajectory error would miss the Moon by thousands of kilometers.'
+-                ].map(function(fact, i) {
+-                  return h('p', { key: i, className: 'text-[0.6875rem] text-slate-400' }, '\u2022 ' + fact);
+-                })
+-              ),
+-              h('p', { 'data-coast-model-note': 'true', className: 'text-xs text-slate-300 mb-3' },
+-                t('stem.moonmission.coast_model_note', 'Model: distance and speed share one gravity calculation with a fixed Moon. Distances are measured from body centers. The curved route is a schematic; the calculated coast is radial.') + ' ' +
+-                t('stem.moonmission.coast_model_duration', 'Model coast duration:') + ' ' + mmCoastAt(1).totalDays.toFixed(2) + ' ' + t('stem.moonmission.coast_model_days', 'days.')),
+-              h('div', { className: 'mb-2' }, (function() {
+-                var cs = d.coastSlowest;
+-                var seen = mmIsObj(cs) && typeof cs.v === 'number' && isFinite(cs.v) && typeof cs.toMoonKm === 'number' && isFinite(cs.toMoonKm);
+-                return predictCard('coast_speed', seen, seen
+-                  ? t('stem.moonmission.predict_coast_observed', 'Slowest point:') + ' ' + cs.v.toFixed(2) + ' km/s, ' + cs.toMoonKm.toLocaleString('en-US') + ' km from the Moon (you left at ' + MM_TLC_V0 + ' km/s).'
+-                  : null);
+-              })()),
+-              h('button', { type: 'button', 'aria-pressed': d.trueScale ? 'true' : 'false', 'data-moonmission-true-scale': 'true',
+-                onClick: function() { upd('trueScale', !d.trueScale); },
+-                className: 'w-full min-h-[44px] px-3 mb-2 rounded-lg border text-xs font-bold transition-colors ' +
+-                  (d.trueScale ? 'border-sky-400 bg-sky-400/15 text-sky-100' : 'border-slate-600 bg-slate-800 text-slate-200 hover:border-sky-400') },
+-                t('stem.moonmission.true_scale_toggle', '\uD83D\uDD2D Show Earth and the Moon at true scale')),
+-              d.trueScale && h('p', { className: 'mb-2 text-[0.6875rem] text-sky-200', 'data-moonmission-true-scale-note': 'true' },
+-                t('stem.moonmission.true_scale_note', 'At true scale about 30 Earths would fit side by side in the gap. The spacecraft is not to scale: it would be far too small to see.')),
+-              h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20 mb-2' },
+-                h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
+-              )
+-            )
+-          ),
+-          // \u2500\u2500 Mid-course correction \u2500\u2500
+-          // The TLI phase already tells a student who burns outside the window that they
+-          // have bought a mid-course correction. Until now that was a sentence and
+-          // nothing else happened, which teaches that the timing did not matter after
+-          // all. This is the bill arriving, and it is a real choice with a real cost on
+-          // both sides: propellant spent here is propellant the landing does not have,
+-          // and skipping it means arriving faster than you want to be going.
+-          (function() {
+-            var acc = d.tliAccuracy;
+-            if (!acc) return null;                       // reached this phase another way
+-            if (acc.onTime) {
+-              return phaseStatus(true, '',
+-                'Trajectory nominal. The TLI burn was inside the window, so no mid-course correction is needed \u2014 and that is propellant you keep for the landing.');
+-            }
+-            var choice = d.mccChoice;
+-            if (choice) {
+-              return phaseStatus(true, '',
+-                choice === 'corrected'
+-                  ? 'Mid-course correction complete. The Service Module\'s engine put you back on the nominal path, and the landing keeps its full fuel budget.'
+-                  : 'Correction declined. You will arrive off the nominal path and faster across the ground, which the landing will have to absorb.');
+-            }
+-            return h('div', { className: 'mb-2 rounded-xl p-3 border border-amber-500/50 bg-slate-900' },
+-              h('p', { className: 'text-[0.6875rem] font-bold text-amber-200 mb-1' },
+-                '\u26A0\uFE0F MID-COURSE CORRECTION \u2014 your TLI burn was ' + acc.offByDeg + '\u00B0 off the aim point'),
+-              h('p', { className: 'text-[0.6875rem] text-amber-50 mb-2 leading-relaxed' },
+-                'A small error at the burn becomes a large one over 384,400 km. Apollo carried propellant for exactly this and used it on nearly every flight. Correcting now costs a little Service Module propellant. Not correcting lets the error grow, and the Lunar Module pays for it at the landing in hover fuel and drift.'),
+-              h('div', { className: 'flex gap-2 flex-wrap' },
+-                h('button', {
+-                  title: t('stem.moonmission.burn_the_correction', 'Burn the mid-course correction with the Service Module engine. Puts you back on the nominal trajectory; the landing keeps its full fuel budget.'),
+-                  onClick: function() {
+-                    upd('mccChoice', 'corrected');
+-                    log('\uD83D\uDEE0\uFE0F Mid-course correction burned \u2014 back on the nominal path.');
+-                    addXP(15);
+-                    if (addToast) addToast('\uD83D\uDEE0\uFE0F Correction burned. Back on track, with a lighter fuel margin for the landing.', 'success');
+-                    if (typeof announceToSR === 'function') announceToSR('Mid-course correction executed. Trajectory nominal; the landing keeps its full fuel budget.');
+-                  },
+-                  className: 'flex-1 min-w-[150px] py-2 rounded-lg text-[0.6875rem] font-bold text-white bg-emerald-700 hover:bg-emerald-800'
+-                }, t('stem.moonmission.burn_correction_label', '\uD83D\uDEE0\uFE0F Burn the correction now')),
+-                h('button', {
+-                  title: t('stem.moonmission.press_on_uncorrected', 'Press on without correcting. Saves Service Module propellant now, but the landing starts with less hover fuel and more drift.'),
+-                  onClick: function() {
+-                    upd('mccChoice', 'skipped');
+-                    log('\u27A1\uFE0F Correction declined \u2014 arriving off-nominal to save fuel.');
+-                    addXP(5);
+-                    if (addToast) addToast('\u27A1\uFE0F Pressing on. You keep the fuel, but you will arrive moving faster across the ground.', 'info');
+-                    if (typeof announceToSR === 'function') announceToSR('Correction declined. You will arrive off the nominal path with additional horizontal speed at the landing.');
+-                  },
+-                  className: 'flex-1 min-w-[150px] py-2 rounded-lg text-[0.6875rem] font-bold text-white bg-slate-600 hover:bg-slate-700'
+-                }, t('stem.moonmission.press_on_label', '\u27A1\uFE0F Press on without correcting'))
+-              )
+-            );
+-          })(),
+-          h('button', {
+-            title: t('stem.moonmission.arrive_prepare_insertion', 'Arrive at the Moon and prepare the lunar orbit insertion burn'),
+-            disabled: eventPending || mccPending,
+-                onClick: function() {
+-                  if (mccPending || !canProceed()) return;
+-              advancePhase(4);
+-              log('\uD83C\uDF15 Approaching the Moon. Preparing for lunar orbit insertion.');
+-              addXP(15);
+-              if (addToast) addToast('\uD83C\uDF15 The Moon fills the window! Preparing LOI burn.', 'success');
+-            },
+-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
+-          }, t('stem.moonmission.arrive_plan_insertion', '\uD83C\uDF15 Arrive at the Moon \u2014 Plan Lunar Insertion')),
+-          mccPending && h('p', { className: 'mt-1 text-[0.6875rem] text-slate-600 text-center', 'data-moonmission-mcc-required': 'true' },
+-            t('stem.moonmission.mcc_choose_first', 'Choose above: burn the correction or press on. Arrival waits for that decision.'))
+-        ),
++                function visibility() { lastTs = null; persist(); }
++                document.addEventListener('visibilitychange', visibility);
++                cv._transitAction = function(action, value) {
++                  if (action === 'plan') { plan = mmNormalizeTransitPlan(value); profile = mmTransitProfile(plan); time = 0; recorded = false; paused = true; stamp = ''; upd('transitPlan', plan); upd('transitResult', null); upd('transitPaused', true); }
++                  if (action === 'seek' || action === 'burn') { time = Math.max(0, Math.min(profile.summary.duration, Number(value) || 0)); paused = true; upd('transitPaused', true); if (action === 'burn') { rate = 1; upd('transitPlaybackRate', 1); } }
++                  if (action === 'result') { time = profile.summary.duration; paused = true; upd('transitPaused', true); }
++                  if (action === 'pause') { paused = !!value; upd('transitPaused', paused); if (!paused) upd('animPaused', false); }
++                  if (action === 'rate' && [1, 60, 600, 3600].indexOf(Number(value)) >= 0) { rate = Number(value); upd('transitPlaybackRate', rate); }
++                  if (action === 'view') { view = value === 'moon' ? 'moon' : 'system'; upd('transitView', view); }
++                  if (action === 'scale') { trueScale = !!value; upd('trueScale', trueScale); }
++                  lastTs = null; persist();
++                };
++                function paint(ts) {
++                  if (!document.contains(cv)) { if (observer) observer.disconnect(); document.removeEventListener('visibilitychange', visibility); return; }
++                  var running = !paused && !_mmAnimPaused && !document.hidden;
++                  if (running && lastTs !== null) time = Math.min(profile.summary.duration, time + Math.max(0, Math.min(0.1, (ts - lastTs) / 1000)) * rate);
++                  lastTs = running && Number.isFinite(ts) ? ts : null;
++                  var sample = mmTransitSample(profile, time), picture = mmDrawTransitScene(ctx, width, height, sample, profile, { view: view, trueScale: trueScale });
++                  cv.dataset.transitTime = String(time); cv.dataset.transitEarthDistance = String(sample.earthDistance); cv.dataset.transitMoonDistance = String(sample.moonDistance);
++                  cv.dataset.transitEarthSpeed = String(sample.earthSpeed); cv.dataset.transitMoonSpeed = String(sample.moonSpeed); cv.dataset.transitMass = String(sample.mass);
++                  cv.dataset.transitPropellant = String(sample.propellant); cv.dataset.transitThrust = String(sample.thrust); cv.dataset.transitEngine = sample.engineOn ? 'on' : 'off'; cv.dataset.transitPlume = picture && picture.plumeVisible ? 'on' : 'off';
++                  var values = { time: (time / 3600).toFixed(3) + ' h', earthDistance: (sample.earthDistance / 1000).toFixed(0) + ' km', moonDistance: (sample.moonDistance / 1000).toFixed(0) + ' km', earthSpeed: (sample.earthSpeed / 1000).toFixed(3) + ' km/s', moonSpeed: (sample.moonSpeed / 1000).toFixed(3) + ' km/s', mass: (sample.mass / 1000).toFixed(3) + ' t', propellant: sample.propellant.toFixed(1) + ' kg', thrust: (sample.thrust / 1000).toFixed(1) + ' kN' };
++                  var host = cv.closest('[data-transit-workspace]'); if (host) { host.querySelectorAll('[data-transit-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-transit-value')] || ''; }); var slider = host.querySelector('[data-transit-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time); var status = host.querySelector('[data-transit-status]'); if (status) status.textContent = sample.engineOn ? 'SPS correction firing' : time >= profile.summary.duration ? 'Trajectory complete' : 'Unpowered coast'; }
++                  if (Number.isFinite(ts) && ts - lastPublish >= 250 || time >= profile.summary.duration) { lastPublish = ts; persist(); }
++                  requestAnimationFrame(paint);
++                }
++                requestAnimationFrame(paint);
++              } }),
++              h('p', { 'data-transit-status': true, style: { color: '#a5f3fc', fontSize: '13px', fontWeight: 700, margin: '10px 0 4px' } }, 'Unpowered coast'),
++              h('p', { 'data-moonmission-true-scale-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Positions and paths share one distance scale. Body icons are enlarged unless true size is selected; the spacecraft is always enlarged. Distances below are measured from each body\u2019s center.'),
++              h('dl', { 'data-transit-readouts': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } }, [['time', 'Time since injection'], ['earthDistance', 'Distance from Earth'], ['moonDistance', 'Distance from Moon'], ['earthSpeed', 'Earth-relative speed'], ['moonSpeed', 'Moon-relative speed'], ['mass', 'Docked stack mass'], ['propellant', 'SPS propellant'], ['thrust', 'SPS thrust']].map(function(item) {
++                return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-transit-value': item[0], 'data-transit-time': item[0] === 'time' ? true : undefined, style: { margin: 0, minHeight: '22px', color: '#f8fafc', fontWeight: 700, fontSize: '15px', fontVariantNumeric: 'tabular-nums' } }, '\u2014'));
++              })),
++              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' } },
++                h('button', { type: 'button', 'data-transit-play-pause': true, style: buttonStyle, onClick: function(ev) { transitControl(ev, 'pause', !pausedUI); } }, pausedUI ? 'Play trajectory' : 'Pause trajectory'),
++                h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'data-transit-rate': true, 'aria-label': 'Transit playback speed', value: d.transitPlaybackRate, style: buttonStyle, onChange: function(ev) { transitControl(ev, 'rate', ev.target.value); } }, [1, 60, 600, 3600].map(function(n) { return h('option', { key: n, value: n }, n + '\u00d7'); }))),
++                h('button', { type: 'button', 'data-transit-result': true, style: buttonStyle, onClick: function(ev) { transitControl(ev, 'result'); } }, 'Review arrival result')),
++              h('label', { htmlFor: 'mm-transit-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Inspect the computed trajectory'),
++              h('input', { id: 'mm-transit-playback', 'data-transit-seek': true, type: 'range', min: 0, max: Math.ceil(tp.summary.duration * 10) / 10, step: 0.1, defaultValue: tr.time, style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { transitControl(ev, 'seek', ev.target.value); } }),
++              h('div', { role: 'group', 'aria-label': 'Outbound milestones', style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
++                tp.summary.actualBurn > 0 && h('button', { type: 'button', 'data-transit-milestone': 'ignition', style: buttonStyle, onClick: function(ev) { transitControl(ev, 'seek', tp.events.ignition.time); } }, 'Correction ignition'),
++                tp.summary.actualBurn > 0 && h('button', { type: 'button', 'data-transit-milestone': 'burn', style: buttonStyle, onClick: function(ev) { transitControl(ev, 'burn', (tp.events.ignition.time + tp.events.cutoff.time) / 2); } }, 'Inspect correction burn'),
++                tp.summary.actualBurn > 0 && h('button', { type: 'button', 'data-transit-milestone': 'cutoff', style: buttonStyle, onClick: function(ev) { transitControl(ev, 'seek', tp.events.cutoff.time); } }, 'Engine cutoff'),
++                tp.events.closest && h('button', { type: 'button', 'data-transit-milestone': 'closest', style: buttonStyle, onClick: function(ev) { transitControl(ev, 'seek', tp.events.closest.time); } }, 'Closest lunar approach')),
++              d.transitResult && h('div', { 'data-transit-outcome': d.transitResult.outcome, role: 'status', style: { color: transitReady ? '#86efac' : '#fde68a', fontSize: '13px', lineHeight: 1.6, marginTop: '12px' } },
++                h('p', null, outcomeText(d.transitResult)), h('p', null, 'Actual SPS burn: ' + d.transitResult.actualBurn.toFixed(2) + ' s. Propellant used: ' + d.transitResult.propellantUsed.toFixed(2) + ' kg. Engine delta-v: ' + d.transitResult.idealDeltaV.toFixed(3) + ' m/s.')),
++              !tr.recorded && d.mccChoice && h('p', { style: { color: '#fde68a', fontSize: '12px' } }, 'This save contains an earlier correction decision. Review a computed trajectory to verify the encounter.'),
++              h('details', { 'data-coast-model-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, marginTop: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'How the navigation model works'),
++                h('p', null, 'The model integrates a planar spacecraft trajectory under Earth and Moon gravity in Earth-centered fixed axes. The Moon follows a circular orbit; the acceleration of Earth toward the Moon is included. The initial Moon phase is calibrated for a nominal encounter. This is an educational departure preset, not a reconstruction from historical ephemerides.'),
++                h('p', null, 'A correction uses finite SPS thrust and decreasing spacecraft mass at 24 hours after injection. The lunar encounter corridor of 60 to 500 km is a teaching limit. No position or velocity is snapped to the target. Playback ends at first closest approach, surface impact, or 120 hours; it does not simulate capture or guarantee a return to Earth.'),
++                h('p', null, 'The Sun, inclination, navigation uncertainty, uneven gravity, attitude dynamics and engine transients are omitted. Review arrival result inspects the computed run immediately and awards no points. SPS fuel belongs to the Service Module; the later Lunar Module descent starts from its own approach and fuel preset.'),
++                h('a', { href: 'https://ntrs.nasa.gov/citations/20220014814', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA spacecraft dynamics reference'))),
++            predictCard('coast_speed', !!(d.transitResult && d.transitPlan.speedError === 0 && d.transitPlan.angleError === 0 && d.transitPlan.radialDeltaV === 0 && d.transitPlan.tangentialDeltaV === 0), d.transitResult ? 'Measured minimum Earth-relative speed: ' + (d.transitResult.minimumEarthSpeed / 1000).toFixed(3) + ' km/s at ' + (d.transitResult.minimumEarthSpeedTime / 3600).toFixed(2) + ' h.' : null),
++            h('button', { type: 'button', 'data-transit-proceed': true, title: 'Arrive at the Moon and prepare the lunar orbit insertion burn', disabled: eventPending || !transitReady, className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed', onClick: function() {
++              if (!transitReady || !canProceed()) return;
++              advancePhase(4); log('Outbound encounter verified. Beginning the separate lunar insertion preset.');
++              if (!d.transitAwarded) { upd('transitAwarded', true); addXP(15); }
++              if (addToast) addToast('Encounter verified. Plan lunar orbit insertion.', 'success');
++            } }, 'Arrive at the Moon \u2014 Plan Lunar Insertion'),
++            !transitReady && h('p', { 'data-moonmission-mcc-required': true, className: 'text-xs text-center', style: { color: '#e2e8f0', background: '#0f172a', padding: '10px', borderRadius: '8px' } }, 'Review a trajectory that reaches the 60\u2013500 km lunar encounter corridor to continue.'));
++        })(),
+ 
+         // ═══ PHASE 4: LUNAR ORBIT (Animated Canvas) ═══
+         phase === 4 && (function() {
+@@ -7259,7 +7475,7 @@
+               h('details', { 'data-loi-model-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, marginTop: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'How the insertion model works'),
+                 h('p', null, 'The model integrates a two-dimensional incoming trajectory around a spherical Moon. The SPS burns at fixed thrust while vehicle mass decreases. Its direction stays opposite the current velocity. After cutoff, orbital energy and angular momentum determine whether the path is bound and how close it comes to the surface.'),
+                 h('p', null, 'Negative orbital energy means a bound orbit; it does not guarantee clearance above the surface. This exercise requires at least 60 km perilune and at most 2,000 km apolune before descent. These are teaching limits. No burn is cut short automatically to hit them.'),
+-                h('p', null, 'This is a specified lunar arrival encounter, separate from the earlier simplified coast. Earth perturbations, uneven lunar gravity, attitude dynamics and engine transients are omitted. Radio visibility uses a distant Earth direction and the physical lunar radius; display scale cannot change signal loss. The orbital-plane diagram and near-side geographic reference are separate views.'),
++                h('p', null, 'This is a specified lunar arrival encounter, separate from the outbound navigation trajectory and its remaining SPS propellant. Earth perturbations, uneven lunar gravity, attitude dynamics and engine transients are omitted. Radio visibility uses a distant Earth direction and the physical lunar radius; display scale cannot change signal loss. The orbital-plane diagram and near-side geographic reference are separate views.'),
+                 h('p', null, 'Review insertion result inspects the integrated trajectory immediately and awards no points. The later descent uses its own approach preset after undocking and descent-orbit preparation.'),
+                 h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA Apollo 11 Mission Report'))),
+             h('section', { style: cardStyle }, h('h4', { style: { color: '#f8fafc', fontSize: '16px', margin: '0 0 8px' } }, 'Near-side landing reference'),
+@@ -7312,16 +7528,8 @@
+             ),
+             h('p', { className: 'text-[0.6875rem] text-sky-300 mb-4' },
+               t('stem.moonmission.descent_touch_hint', '\uD83D\uDC46 No keyboard? The same three controls sit along the bottom of the flight view \u2014 hold them with a finger or the mouse.')),
+-            // Carry the coast decision forward in words, not just in the numbers. A
+-            // student who declined the correction should not have to work out for
+-            // themselves why the ground is moving faster than the briefing implied.
+-            d.mccChoice && h('div', { className: 'rounded-lg p-3 border mb-4 max-w-sm mx-auto ' +
+-              (d.mccChoice === 'corrected' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-orange-500/10 border-orange-500/30') },
+-              h('p', { className: 'text-[0.6875rem] font-bold ' + (d.mccChoice === 'corrected' ? 'text-emerald-300' : 'text-orange-300') },
+-                d.mccChoice === 'corrected'
+-                  ? '\uD83D\uDEE0\uFE0F You burned the mid-course correction with the Service Module\'s engine, so you arrive on the nominal path with the full landing fuel budget.'
+-                  : '\u27A1\uFE0F You declined the correction, so the descent computer had to steer out the error during braking: ' + MM_DESCENT.skipFuel + ' fewer seconds of hover fuel, and ' + MM_DESCENT.skipDrift + ' m/s more drift to cancel.')
+-            ),
++            h('div', { className: 'rounded-lg p-3 border mb-4 max-w-sm mx-auto bg-sky-500/10 border-sky-500/30', 'data-moonmission-separate-propulsion': true },
++              h('p', { className: 'text-xs text-sky-200' }, 'Eagle has its own descent engine and fuel tank. This landing starts from a separate approach preset; Service Module correction burns do not subtract Lunar Module hover fuel.')),
+             (function() {
+               var ec = mmEventCosts(d.decisionLog);
+               if (!ec.items.length) return null;
+@@ -7369,15 +7577,11 @@
+                   // touchdown 1.1 s later. Now the whole approach runs at real speed.
+                   var alt = MM_DESCENT.handoverAlt;
+                   var vVel = MM_DESCENT.handoverVv;   // negative = descending
+-                  // ── Where the trans-lunar decisions actually land ──
+-                  // A correction burned on the coast used the Service Module's engine and
+-                  // costs the landing nothing. Declining it leaves an error the descent
+-                  // computer has to steer out during braking: less hover fuel at the
+-                  // hand-over and extra drift to cancel. Cheap early, expensive late.
+-                  var _mcc = d.mccChoice || null;
+-                  var _evCost = mmEventCosts(d.decisionLog);   // the 1202 and boulder-field choices
+-                  var hVel = MM_DESCENT.handoverHv + (_mcc === 'skipped' ? MM_DESCENT.skipDrift : 0) + _evCost.drift;
+-                  var fuel = Math.max(10, ((diffSettings && diffSettings.fuel) || MM_DESCENT.pilotFuel) - (_mcc === 'skipped' ? MM_DESCENT.skipFuel : 0) - _evCost.fuel);   // seconds of hover
++                  // This independent LM approach retains genuine descent-event costs.
++                  // Earlier Service Module burns use a different propulsion system.
++                  var _evCost = mmEventCosts(d.decisionLog);
++                  var hVel = MM_DESCENT.handoverHv + _evCost.drift;
++                  var fuel = Math.max(10, ((diffSettings && diffSettings.fuel) || MM_DESCENT.pilotFuel) - _evCost.fuel);   // seconds of hover
+                   var _calloutBandIdx = 0;
+                   var _fuelCallIdx = 0;
+                   while (_fuelCallIdx < MM_FUEL_CALLS.length && MM_FUEL_CALLS[_fuelCallIdx] >= fuel) _fuelCallIdx++;
+@@ -7553,7 +7757,7 @@
+                       // Sideways used to be free: the keys added 0.5 m/s a step with no
+                       // thrust and no fuel, and hVel *= 0.999 bled drift away like air
+                       // drag on an airless Moon. Now the only sideways force is the tilted
+-                      // main engine, so declining the mid-course correction really costs.
++                      // main engine, so steering uses the same finite descent fuel supply.
+                       var _in = {
+                         thrust: !!(padCtl.thrust || keys['arrowup'] || keys['w']),
+                         throttle: (padCtl.thrust || keys['arrowup'] || keys['w']) ? 1 : throttleSetting,
+@@ -12528,20 +12732,15 @@
+                     : '\ud83d\ude80 TLI ' + d.tliAccuracy.offByDeg + '\u00b0 ' + (d.tliAccuracy.side === 'late' ? 'LATE' : 'EARLY') + ' \u2014 outside the burn window'),
+                 h('p', { className: 'text-[0.6875rem] text-slate-200' },
+                   d.tliAccuracy.onTime
+-                    ? 'Your velocity vector pointed at where the Moon was going to be, so the coast needed no correcting.'
+-                    : 'Apollo flew mid-course corrections for exactly this. It is recoverable \u2014 it just costs propellant you might want later.')
++                    ? 'The burn met the timing target. Outbound navigation starts from its own specified departure state.'
++                    : 'The burn missed the timing target. The navigation exercise measures separately chosen departure errors and their corrections.')
+               ),
+-              // Mid-course correction \u2014 the bill for an off-window TLI, and what it bought.
+-              d.mccChoice && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
+-                h('p', { className: 'text-[0.6875rem] font-bold mb-0.5 ' + (d.mccChoice === 'corrected' ? 'text-green-300' : 'text-yellow-300') },
+-                  d.mccChoice === 'corrected'
+-                    ? '\uD83D\uDEE0\uFE0F MID-COURSE CORRECTION BURNED \u2014 back on the nominal path'
+-                    : '\u27A1\uFE0F CORRECTION DECLINED \u2014 arrived off-nominal'),
+-                h('p', { className: 'text-[0.6875rem] text-slate-200' },
+-                  d.mccChoice === 'corrected'
+-                    ? 'It used a little Service Module propellant on the coast, the trade Apollo made on almost every flight: fix a small error early, while it is still small.'
+-                    : 'The error grew all the way to the Moon, and the landing paid for it: ' + MM_DESCENT.skipFuel + ' fewer seconds of hover fuel and ' + MM_DESCENT.skipDrift + ' m/s more drift. Cheap early, expensive late.')
+-              ),
++              d.transitResult && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2', 'data-transit-flight-record': true },
++                h('p', { className: 'text-xs font-bold text-sky-200' }, 'OUTBOUND NAVIGATION: ' + d.transitResult.outcome),
++                h('p', { className: 'text-xs text-slate-200' }, 'SPS correction: ' + d.transitResult.actualBurn.toFixed(2) + ' s, ' + d.transitResult.propellantUsed.toFixed(2) + ' kg of propellant used. ' + (mmNum(d.transitResult.closestAltitude) ? 'Closest lunar altitude: ' + (Math.max(0, d.transitResult.closestAltitude) / 1000).toFixed(1) + ' km.' : 'No closest lunar approach recorded.'))),
++              !d.transitResult && d.mccChoice && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
++                h('p', { className: 'text-xs font-bold text-sky-200' }, d.mccChoice === 'corrected' ? 'MID-COURSE CORRECTION: earlier burn decision' : 'MID-COURSE CORRECTION: earlier decision to decline'),
++                h('p', { className: 'text-xs text-slate-200' }, 'This earlier save stores a choice without a measured trajectory or SPS propellant use. The Lunar Module has its own descent engine and fuel tank.')),
+               // Landing performance \u2014 computed inside the descent canvas and, until now,
+               // thrown away with it. The one piloting task in the mission deserves a line
+               // in the debrief alongside samples and quiz.
+@@ -12819,6 +13018,8 @@
+                 upd('dockingRun', null); upd('dockingResult', null); upd('dockingPaused', true); upd('dockingGuided', false);
+                 upd('reentryStatus', null);
+                 upd('orbitStatus', null);
++                upd('transitPlan', null); upd('transitRun', null); upd('transitResult', null);
++                upd('transitPaused', false); upd('transitPlaybackRate', 3600); upd('transitView', 'system'); upd('transitAwarded', false);
+                 upd('loiPlan', null); upd('loiRun', null); upd('loiResult', null);
+                 upd('loiPaused', false); upd('loiPlaybackRate', 60); upd('loiAwarded', false);
+                 upd('seismoDeployed', false);

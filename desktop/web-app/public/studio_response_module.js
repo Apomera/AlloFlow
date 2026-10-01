@@ -5,7 +5,25 @@
   const appliedFields = ['sourceRecords', 'reasoningReferences', 'workspace', 'evidenceLedger', 'criteriaCheck', 'validationCycles', 'stressTest', 'feedback', 'coachHint'];
   const noteFields = ['title', 'author', 'pageRange', 'cues', 'notes', 'summary', 'question', 'hypothesis', 'materials', 'procedure', 'data', 'analysis', 'conclusion', 'favoriteLine', 'thinkings', 'connection', 'entries', 'blanks', 'notesExtra', 'pairs', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'];
   const anchorFields = ['studentAnswers', 'feedback', 'prevFeedbackScore'];
-  const supports = type => ['memory-aid', 'applied-challenge', 'note-taking', 'anchor-chart'].includes(type);
+  // Learner-owned Notes fields: teacher authoring never writes them into the shared resource.
+  const noteLearnerRows = { notes: 'text', entries: 'response', blanks: 'studentAnswer' };
+  const noteLearnerKeys = data => ['summary', 'hypothesis', 'data', 'analysis', 'conclusion', 'thinkings', 'connection', 'notesExtra', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'].concat(data?.templateType === 'reading-response' ? ['favoriteLine', 'question', 'pageRange'] : []);
+  // Memory Aid visuals stay teacher-owned unless the card is student-authored and the learner changed them.
+  const memoryLearnerFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint'];
+  function memoryOwned(card, base, writing) {
+    card = card && typeof card === 'object' ? card : {};
+    const out = pick(card, memoryLearnerFields), value = (row, key) => row?.[key] ?? null;
+    const differs = key => { const a = value(card, key), b = value(base, key); return typeof a === 'object' || typeof b === 'object' ? !same(a, b) : a !== b; };
+    if ('visualNeedsReview' in card && (!writing || differs('visualNeedsReview'))) out.visualNeedsReview = card.visualNeedsReview;
+    if (base?.mode !== 'student-authored') return out;
+    const ownPicture = !writing || differs('visualImage');
+    memoryFields.filter(key => key.startsWith('visual') && key !== 'visualNeedsReview' && key in card).forEach(key => {
+      if (ownPicture || (key === 'visualCheck' ? card[key] && differs(key) : ['visualPrompt', 'visualAlt'].includes(key) ? differs(key) : key === 'visualAltSource' && differs('visualAlt'))) out[key] = card[key];
+    });
+    return out;
+  }
+  const memoryLearnerAlt = (card, base) => base?.mode === 'student-authored' && typeof card?.visualAlt === 'string' && !!card.visualAlt.trim() && card.visualAlt !== (base.visualAlt || '') && !['vision', 'planning'].includes(card.visualAltSource);
+  const supports =type => ['memory-aid', 'applied-challenge', 'note-taking', 'anchor-chart'].includes(type);
   const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
   function anchorSections(data) {
     const seen = new Set();
@@ -19,6 +37,19 @@
   }
   function anchorAnswers(data, value) {
     return Object.fromEntries(anchorSections(data).map(section => [section.id, Object.fromEntries(section.bulletIds.map((id, i) => [id, String(value?.[section.id]?.[id] ?? value?.[section.id]?.[i] ?? '').slice(0,12000)]))]));
+  }
+  // AI feedback stays while the learner revises; a submission marks whether it was
+  // about an earlier draft, from the fingerprint the view stored with it.
+  function anchorDraftFingerprint(answers) {
+    const text = JSON.stringify(answers || {}); let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    return 'anchor-v1:' + (hash >>> 0).toString(16);
+  }
+  function markedFeedback(feedback, draft, legacy) {
+    if (!record(feedback)) return feedback;
+    if (typeof draft !== 'string') return undefined;
+    const fp = feedback.draftFingerprint;
+    return { ...feedback, earlierDraft: !fp || (fp !== draft && fp !== legacy) };
   }
   function legacyNotes(data) {
     const base = pick(data, ['notes', 'summary', 'hypothesis', 'data', 'analysis', 'conclusion', 'thinkings', 'connection', 'notesExtra', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore']);
@@ -85,10 +116,10 @@
       const key=text(row?.factKey,80); if(!/^link:[a-zA-Z0-9_-]+$/.test(key)||seen.has(key)) return false; seen.add(key); return true;
     }).slice(-20).map(row => ({factKey:text(row.factKey,80),cue:text(row.cue,200),explanation:text(row.explanation,600),cueKey:text(row.cueKey,80)}));
   }
-  function responseFromData(type, data) {
+  function responseFromData(type, data, reference) {
     if (type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(data, data.studentAnswers), feedback: data.feedback || null, prevFeedbackScore: Number(data.prevFeedbackScore) || 0 };
     if (type === 'note-taking') return { schemaVersion: 1, ...legacyNotes(data || {}) };
-    if (type === 'memory-aid') return { schemaVersion: 1, cards: memoryCards(data).map(card => ({ id: card.id, ...pick(card, memoryFields) })) };
+    if (type === 'memory-aid') { const base = memoryCards(reference || data); return { schemaVersion: 1, cards: memoryCards(data).map(card => ({ id: card.id, ...memoryOwned(card, base.find(item => item.id === card.id), true) })) }; }
     return { schemaVersion: 1, ...pick(data, appliedFields) };
   }
   function project(resource, response) {
@@ -101,7 +132,7 @@
     }
     if (!response) return resource.type === 'memory-aid' ? { ...resource, data: { ...data, cards: memoryCards(data) } } : resource;
     if (resource.type === 'memory-aid') {
-      const cards = memoryCards(data).map(card => ({ ...card, ...pick((response.cards || []).find(item => item.id === card.id), memoryFields) }));
+      const cards = memoryCards(data).map(card => ({ ...card, ...memoryOwned((response.cards || []).find(item => item?.id === card.id), card, false) }));
       return { ...resource, data: { ...data, cards } };
     }
     return { ...resource, data: { ...data, ...pick(response, appliedFields) } };
@@ -121,14 +152,19 @@
   }
   function toSubmission(resource, response) {
     const raw = response || responseFromData(resource.type, resource.data || {});
-    if (resource.type === 'note-taking') return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: noteSubmission(resource,raw) };
+    if (resource.type === 'note-taking') {
+      const notes = noteSubmission(resource,raw), draftOf = window.AlloModules?.NoteTakingDraftFingerprint;
+      if (record(notes.feedback)) { const marked = markedFeedback(notes.feedback, typeof draftOf === 'function' ? draftOf(project(resource, raw).data) : undefined); if (marked) notes.feedback = marked; else delete notes.feedback; }
+      return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: notes };
+    }
     if (resource.type === 'anchor-chart') {
       const answers = anchorAnswers(resource.data, raw.studentAnswers);
       const sections = anchorSections(resource.data).slice(0,100).map(section => ({ id: section.id, label: String(section.label || '').slice(0,300), bulletIds: section.bulletIds.slice(0,100), bullets: section.bulletIds.slice(0,100).map(id => answers[section.id][id]) }));
-      return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: { schemaVersion: 1, sections, studentAnswers: Object.fromEntries(sections.map(s=>[s.id,Object.fromEntries(s.bulletIds.map((id,i)=>[id,s.bullets[i]]))])), feedback: safeNoteTree(raw.feedback || null), prevFeedbackScore: Math.max(0,Math.min(120,Number(raw.prevFeedbackScore)||0)) } };
+      return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: { schemaVersion: 1, sections, studentAnswers: Object.fromEntries(sections.map(s=>[s.id,Object.fromEntries(s.bulletIds.map((id,i)=>[id,s.bullets[i]]))])), feedback: markedFeedback(safeNoteTree(raw.feedback || null), anchorDraftFingerprint(answers), JSON.stringify(answers)), prevFeedbackScore: Math.max(0,Math.min(120,Number(raw.prevFeedbackScore)||0)) } };
     }
+    const baseCards = resource.type === 'memory-aid' ? memoryCards(resource.data) : [];
     const data = resource.type === 'memory-aid'
-      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', 'visualAlt', 'feedback', 'coachHint'])), studentConnections: memoryConnections(card?.studentConnections) })) }
+      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), studentConnections: memoryConnections(card?.studentConnections) })) }
       : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(raw[key])])) };
     return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0, 300), data };
   }
@@ -215,6 +251,7 @@
       if (['feedback', 'stressTest'].some(key => key in raw && raw[key] !== null && !record(raw[key]))) throw new Error('Invalid response feedback');
     }
     const restored = resource.type === 'note-taking' ? { schemaVersion:1, ...pick(noteSubmission(resource,raw),noteFields) } : toSubmission(resource, raw).data;
+    if (record(restored.feedback)) delete restored.feedback.earlierDraft;
     if (resource.type === 'memory-aid' && previous) restored.cards = restored.cards.map(card => ({ ...pick((previous.cards || []).find(item => item.id === card.id), memoryFields), ...card }));
     return restored;
   }
@@ -242,7 +279,14 @@
       if (state.isTeacherMode && !state.preview) {
         // Teacher editing can update the template, never learner fields.
         if (state.resource.type === 'applied-challenge' && appliedFields.includes(key)) return;
-        if (state.resource.type === 'memory-aid' && key === 'cards') {
+        if (state.resource.type === 'note-taking' && noteLearnerKeys(state.resource.data).includes(key)) return;
+        if (state.resource.type === 'note-taking' && noteLearnerRows[key]) {
+          const field = noteLearnerRows[key];
+          viewProps.handleNoteUpdate(key, old => {
+            const next = typeof change === 'function' ? change(old) : change, prior = Array.isArray(old) ? old : [];
+            return (Array.isArray(next) ? next : []).map((row, i) => ({ ...row, [field]: prior.find((item, idx) => String(item?.id || idx) === String(row?.id || i))?.[field] || '' }));
+          });
+        } else if (state.resource.type === 'memory-aid' && key === 'cards') {
           viewProps.handleNoteUpdate(key, old => {
             const next = typeof change === 'function' ? change(old) : change;
             return next.map(card => {
@@ -255,8 +299,7 @@
       }
       if (!(state.resource.type === 'memory-aid' ? key === 'cards' : state.resource.type === 'anchor-chart' ? anchorFields.includes(key) : state.resource.type === 'note-taking' ? noteFields.includes(key) : appliedFields.includes(key))) return;
       const value = typeof change === 'function' ? change(shown.data?.[key]) : change;
-      const next = state.resource.type === 'note-taking' ? { ...(state.response || responseFromData(state.resource.type, shown.data)), [key]: noteResponseField(key,value) } : responseFromData(state.resource.type, { ...shown.data, [key]: value });
-      if (state.resource.type === 'note-taking' && !['feedback','feedbackCount','prevFeedbackScore'].includes(key)) next.feedback = null;
+      const next = state.resource.type === 'note-taking' ? { ...(state.response || responseFromData(state.resource.type, shown.data)), [key]: noteResponseField(key,value) } : responseFromData(state.resource.type, { ...shown.data, [key]: value }, state.resource.data);
       // Update immediately so multiple functional writes in one event compose.
       current.current = { ...state, response: next };
       if (state.isTeacherMode) { previewOwner.current = scope; setPreviewResponse(next); }

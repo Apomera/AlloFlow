@@ -1,7 +1,7 @@
 /**
  * AlloFlow — Kokoro Offer Modal Module
  *
- * Modal shown when Gemini TTS is unavailable (quota/network) offering the
+ * Modal shown when cloud speech is unavailable, offering the
  * user the option to download Kokoro (~88MB browser-based offline voice).
  *
  * Pure props-driven; zero internal state. Conditional render lives at the
@@ -64,14 +64,14 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
           <div className="bg-amber-100 p-3 rounded-full"><span role="img" aria-label="Microphone" className="text-2xl">{'\uD83C\uDFA4'}</span></div>
           <div>
             <h2 id="kokoro-offer-title" className="text-lg font-bold text-slate-800">Cloud Voice Unavailable</h2>
-            <p id="kokoro-offer-reason" className="text-xs text-slate-600">Gemini TTS is temporarily unavailable (quota or network issue)</p>
+            <p id="kokoro-offer-reason" className="text-xs text-slate-600">Cloud speech did not complete. Check the audio status or technical details for the reported cause.</p>
           </div>
         </div>
         <p id="kokoro-offer-description" className="text-sm text-slate-600 mb-4">
-          Would you like to download a free browser-based voice? It's ~88MB and works completely offline — no cloud needed.
+          Download Kokoro, a free voice model (~88MB). Once ready on this device, it generates English speech locally. The first clip may still take time to generate.
         </p>
         <p id="kokoro-offer-note" className="text-xs text-slate-600 mb-4">
-          Note: In this environment, the download won't persist between sessions.
+          This download prepares the voice model. Preparing and saving sentence clips for offline playback are separate steps. Model retention depends on this browser's storage; clearing it may require another download.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <button type="button" onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors text-sm">
@@ -79,19 +79,23 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
           </button>
           <button type="button" onClick={() => {
             setShowKokoroOfferModal(false);
+            if (window.__kokoroTTSDownloading) {
+              addToast('Voice model preparation is already running. Check audio status for progress.', 'info');
+              return;
+            }
             if (typeof window.__loadKokoroTTS !== 'function') {
               addToast('Offline voice loader is unavailable. Please try again later.', 'error');
               return;
             }
             window.__kokoroTTSDownloading = true;
-            addToast('Downloading Kokoro voice model (~88MB)...', 'info');
+            addToast('Preparing Kokoro voice model (~88MB download if not already stored)...', 'info');
             Promise.resolve(window.__loadKokoroTTS()).then(ok => {
               window.__kokoroTTSDownloading = false;
-              if (ok) { addToast('Kokoro voice ready! Switching to offline voice.', 'success'); setSelectedVoice('af_heart'); }
-              else addToast('Download failed; please try again later.', 'error');
+              if (ok && window._kokoroTTS?.ready) { addToast('Kokoro voice model ready. Sentence clips are prepared and saved separately.', 'success'); setSelectedVoice('af_heart'); }
+              else addToast('Voice model preparation did not finish. Check network access or browser storage, then try again.', 'error');
             }).catch(() => {
               window.__kokoroTTSDownloading = false;
-              addToast('Download failed; please try again later.', 'error');
+              addToast('Voice model preparation did not finish. Check network access or browser storage, then try again.', 'error');
             });
           }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors text-sm">
             Download Voice

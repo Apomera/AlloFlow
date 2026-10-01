@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:26:5 › landmark navigation cycles features, reads sources and returns to the whole specimen without scale travel (15.0s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:48:5 › phone controls stay separate from the model, and fullscreen and chart switching remain usable (9.8s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:66:5 › dust fades smoothly with ambience paused, settles without an idle render loop, and snaps for reduced motion (20.6s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:81:5 › unavailable planetary textures cannot be entered through the navigator (4.8s)
+
+  4 passed (1.2m)

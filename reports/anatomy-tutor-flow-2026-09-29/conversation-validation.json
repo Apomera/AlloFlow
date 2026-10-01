@@ -1,0 +1,18 @@
+{
+  "initial": {
+    "height": 358,
+    "total": 7864,
+    "scroll": 7506
+  },
+  "beforeJump": {
+    "answerTop": 7581.890625,
+    "logBottom": 355.390625
+  },
+  "afterJump": {
+    "answerTop": 614.890625,
+    "answerBottom": 803.140625,
+    "logTop": 460.390625,
+    "logBottom": 820.390625
+  },
+  "errors": []
+}

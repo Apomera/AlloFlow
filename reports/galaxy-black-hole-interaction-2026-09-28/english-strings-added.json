@@ -1,0 +1,20 @@
+{
+  "bh_fragments_outside": "{count} fragments outside the horizon · independent paths",
+  "bh_fragments_intact": "Object intact · fragment paths appear when tides overcome the illustrative threshold",
+  "bh_experiment_unbound": "Observation complete. This trajectory has enough energy to escape, although it has not reached the outer boundary.",
+  "bh_center_captured": "The object center reached the horizon. Fragments outside it continue along their own paths.",
+  "bh_debris_complete": "Debris observation complete. Scrub backward to inspect how separate parts followed different paths.",
+  "bh_center_horizon": "Center at horizon · {count} fragments still outside",
+  "bh_launch_set": "Release updated. The yellow arrow shows the initial push; the dashed path shows the prediction.",
+  "bh_canvas_tools": "Scene interaction",
+  "bh_tool_camera": "Move camera",
+  "bh_tool_place": "Place object",
+  "bh_tool_aim": "Aim throw",
+  "bh_place_help": "Click or drag between the guide rings to place the object. Arrow keys change its angle and distance. Escape cancels a drag.",
+  "bh_aim_help": "Drag away from the object to set its push. Left/right arrows change sideways motion; up/down changes outward/inward motion. Escape cancels.",
+  "bh_camera_help": "Drag to orbit the camera. Choose Place object or Aim throw to edit a release; editing resets the current run.",
+  "bh_launch_angle": "Launch angle: {value}°",
+  "bh_radial_push": "Radial push: {value}",
+  "bh_velocity_help": "Negative radial push aims inward; positive aims outward. Negative sideways motion reverses the orbit. Values use normalized model units.",
+  "bh_release_btn": "Release object"
+}

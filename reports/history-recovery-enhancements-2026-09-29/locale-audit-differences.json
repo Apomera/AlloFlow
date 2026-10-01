@@ -1,0 +1,2670 @@
+[
+  {
+    "path": "ui_strings.js",
+    "firstByteDifference": 2601927,
+    "expectedAtDifference": "\n    },\n    \"calculus\": {\n      \"tab_fundamental_theorem\": \"Fundamental theorem\",\n      \"tab_explore_derivativ",
+    "actualAtDifference": ",\n      \"seismic_scene_dissipated\": \"Dissipated\",\n      \"seismic_scene_elastic\": \"Elastic\",\n      \"seismic_sce",
+    "changedKeys": [
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.bridgelab.seismic_scene_dissipated",
+      "stem.bridgelab.seismic_scene_elastic",
+      "stem.bridgelab.seismic_scene_energy",
+      "stem.bridgelab.seismic_scene_energy_scope",
+      "stem.bridgelab.seismic_scene_kinetic",
+      "stem.bridgelab.seismic_scene_readout",
+      "stem.bridgelab.seismic_scene_units",
+      "stem.bridgelab.viewpoint_deck",
+      "stem.bridgelab.viewpoint_entrance",
+      "stem.bridgelab.viewpoint_presets",
+      "stem.bridgelab.viewpoint_river",
+      "stem.firstresponse.visual_key_reference",
+      "stem.firstresponse.realism_camera_arms",
+      "stem.firstresponse.realism_camera_head",
+      "stem.physics.investigation_reference_choice_help",
+      "stem.physics.investigation_trials_missing",
+      "stem.physics.investigation_trials_selected",
+      "stem.physics.investigation_recent_trials",
+      "stem.physics.investigation_trial",
+      "stem.physics.investigation_matching_run",
+      "stem.physics.investigation_no_matching_run",
+      "stem.physics.investigation_controls_match",
+      "stem.physics.investigation_controls_apply",
+      "stem.physics.investigation_match_requirements",
+      "stem.physics.investigation_select_trials",
+      "stem.physics.investigation_launch_controls",
+      "stem.physics.investigation_selection_reference_help",
+      "stem.physics.investigation_reference_run",
+      "stem.platetectonics.ql_angle_entry_help",
+      "stem.platetectonics.ql_summary_captured",
+      "stem.platetectonics.ql_summary_live",
+      "stem.platetectonics.ql_sample_captured",
+      "stem.platetectonics.ql_sample_live",
+      "stem.platetectonics.ql_no_slab_observations",
+      "stem.platetectonics.ql_no_observations",
+      "stem.platetectonics.ql_angle_help",
+      "stem.platetectonics.ql_exact_angle",
+      "stem.platetectonics.ql_legend_guess",
+      "stem.platetectonics.ql_legend_fit",
+      "stem.platetectonics.ql_sr_checked",
+      "stem.platetectonics.ql_check_angle",
+      "stem.platetectonics.ql_result_sample",
+      "stem.platetectonics.ql_sr_revise",
+      "stem.platetectonics.ql_revise",
+      "stem.platetectonics.fl_workflow",
+      "stem.platetectonics.fl_prediction_baseline",
+      "stem.platetectonics.fl_observe_title",
+      "stem.platetectonics.fl_watch_cut",
+      "stem.platetectonics.fl_watch_approach",
+      "stem.platetectonics.fl_watch_collision",
+      "stem.platetectonics.fl_watch_one",
+      "stem.platetectonics.fl_watch_paused",
+      "stem.platetectonics.fl_observations_title",
+      "stem.platetectonics.fl_observations_kept",
+      "stem.platetectonics.fl_observed_cut",
+      "stem.platetectonics.fl_observed_continent",
+      "stem.platetectonics.fl_before_cut",
+      "stem.platetectonics.fl_before_collision",
+      "stem.platetectonics.fl_after_cut",
+      "stem.platetectonics.fl_after_collision",
+      "stem.platetectonics.fl_observed_mountains",
+      "stem.platetectonics.fl_recorded_prediction",
+      "stem.platetectonics.fl_compare_prompt",
+      "stem.platetectonics.ex_stress_convergent",
+      "stem.platetectonics.ex_stress_divergent",
+      "stem.platetectonics.ex_stress_transform",
+      "stem.platetectonics.ex_stress_held",
+      "stem.platetectonics.ex_stress_thrust",
+      "stem.platetectonics.ex_stress_normal",
+      "stem.platetectonics.ex_stress_strike",
+      "stem.platetectonics.ex_depth_relevance",
+      "stem.platetectonics.ex_ev_magnitude_record",
+      "stem.platetectonics.ex_magnitude_relevance",
+      "stem.platetectonics.ex_cut_relevance",
+      "stem.platetectonics.ex_continent_relevance",
+      "stem.platetectonics.ex_hawaii_relevance",
+      "stem.platetectonics.ex_ev_stress_record",
+      "stem.platetectonics.ex_stress_relevance",
+      "stem.platetectonics.ex_card_added",
+      "stem.platetectonics.ex_card_add",
+      "stem.platetectonics.ex_intro_revision",
+      "stem.platetectonics.ex_choose_evidence",
+      "stem.platetectonics.ex_other_observations",
+      "stem.platetectonics.ex_other_guidance",
+      "stem.platetectonics.ex_build_stage",
+      "stem.platetectonics.ex_word_count",
+      "stem.platetectonics.ex_review_stage",
+      "stem.platetectonics.ex_review_length",
+      "stem.platetectonics.ex_review_claim",
+      "stem.platetectonics.ex_review_evidence",
+      "stem.platetectonics.ex_review_reasoning",
+      "stem.platetectonics.ex_revision_kept",
+      "stem.platetectonics.ex_save_revision",
+      "stem.platetectonics.ex_length_ready",
+      "stem.platetectonics.ex_view_saved",
+      "stem.platetectonics.vent_stage_pressure_name",
+      "stem.platetectonics.vent_stage_pressure_basalt",
+      "stem.platetectonics.vent_stage_pressure_sticky",
+      "stem.platetectonics.vent_stage_lava_name",
+      "stem.platetectonics.vent_stage_explosive_name",
+      "stem.platetectonics.vent_stage_blast_basalt",
+      "stem.platetectonics.vent_stage_blast_rhyolite",
+      "stem.platetectonics.vent_stage_blast_andesite",
+      "stem.platetectonics.vent_stage_drain_name",
+      "stem.platetectonics.vent_stage_drain_why",
+      "stem.platetectonics.vent_stage_subside_name",
+      "stem.platetectonics.vent_stage_collapse_name",
+      "stem.platetectonics.vent_stage_collapse_basalt",
+      "stem.platetectonics.vent_stage_collapse_rhyolite",
+      "stem.platetectonics.vent_stage_collapse_andesite",
+      "stem.platetectonics.vent_stage_quiet",
+      "stem.platetectonics.vent_stage_model_note",
+      "stem.nuclearlab.studio_nucleus_pair_switched",
+      "stem.nuclearlab.studio_nucleus_pair_label",
+      "stem.nuclearlab.studio_nucleus_check_spotted_neutrons",
+      "stem.nuclearlab.studio_nucleus_check_spotted_protons",
+      "stem.nuclearlab.studio_nucleus_check_question",
+      "stem.nuclearlab.studio_nucleus_check_group",
+      "stem.nuclearlab.studio_nucleus_check_protons",
+      "stem.nuclearlab.studio_nucleus_check_neutrons",
+      "stem.nuclearlab.studio_nucleus_check_neutrons_hint",
+      "stem.nuclearlab.studio_nucleus_check_protons_hint"
+    ],
+    "changes": [
+      {
+        "key": "stem.bridgelab.seismic_scene_dissipated",
+        "after": "Dissipated"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_elastic",
+        "after": "Elastic"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_energy",
+        "after": "Energy in this frame"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_energy_scope",
+        "after": "Kinetic uses relative motion. Dissipated energy is cumulative."
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_kinetic",
+        "after": "Kinetic"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_readout",
+        "after": "Earthquake scene readout"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_units",
+        "after": "J/kg · same fixed scale as the energy timeline"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_deck",
+        "after": "Along the deck"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_entrance",
+        "after": "Look back toward entrance"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_presets",
+        "after": "Bridge viewpoints"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_river",
+        "after": "River overlook"
+      },
+      {
+        "key": "stem.firstresponse.visual_key_reference",
+        "after": "Reference depth"
+      },
+      {
+        "key": "stem.firstresponse.realism_camera_arms",
+        "after": "Hands + arms"
+      },
+      {
+        "key": "stem.firstresponse.realism_camera_head",
+        "after": "Head close-up"
+      },
+      {
+        "key": "stem.physics.investigation_reference_choice_help",
+        "after": "Use the reference selector above to change the baseline for these comparisons."
+      },
+      {
+        "key": "stem.physics.investigation_trials_missing",
+        "after": "Both trials need matching completed measurements in the recent log."
+      },
+      {
+        "key": "stem.physics.investigation_trials_selected",
+        "after": "Recorded trials selected. Compare the measured results below."
+      },
+      {
+        "key": "stem.physics.investigation_recent_trials",
+        "after": "trials matched in the recent log"
+      },
+      {
+        "key": "stem.physics.investigation_trial",
+        "after": "Trial"
+      },
+      {
+        "key": "stem.physics.investigation_matching_run",
+        "after": "Latest matching recorded run:"
+      },
+      {
+        "key": "stem.physics.investigation_no_matching_run",
+        "after": "No matching completed run in the recent log."
+      },
+      {
+        "key": "stem.physics.investigation_controls_match",
+        "after": "Current launch controls match this trial."
+      },
+      {
+        "key": "stem.physics.investigation_controls_apply",
+        "after": "Apply this trial’s settings before launching."
+      },
+      {
+        "key": "stem.physics.investigation_match_requirements",
+        "after": "Completed runs must match every trial setting and the current simulation model."
+      },
+      {
+        "key": "stem.physics.investigation_select_trials",
+        "after": "Select recorded trial pair"
+      },
+      {
+        "key": "stem.physics.investigation_launch_controls",
+        "after": "Go to launch controls"
+      },
+      {
+        "key": "stem.physics.investigation_selection_reference_help",
+        "after": "Select the runs to keep, then choose a reference for the comparisons. Every selected run is copied into the saved report."
+      },
+      {
+        "key": "stem.physics.investigation_reference_run",
+        "after": "Reference run"
+      },
+      {
+        "key": "stem.platetectonics.ql_angle_entry_help",
+        "after": "Type an angle, then press Enter or leave the field to update your line."
+      },
+      {
+        "key": "stem.platetectonics.ql_summary_captured",
+        "after": "📊 Quake log: checked sample ({n} earthquakes)"
+      },
+      {
+        "key": "stem.platetectonics.ql_summary_live",
+        "after": "📊 Quake log: latest observations ({n} earthquakes)"
+      },
+      {
+        "key": "stem.platetectonics.ql_sample_captured",
+        "after": "Showing the {n} model earthquakes captured when you checked your angle. This plot stays fixed while the simulator continues. Revise your angle to compare against the latest observations."
+      },
+      {
+        "key": "stem.platetectonics.ql_sample_live",
+        "after": "Showing the latest {n} model earthquakes (up to 200), plotted by distance from the boundary and depth. For subduction, estimate an angle from the band, then check it against the data."
+      },
+      {
+        "key": "stem.platetectonics.ql_no_slab_observations",
+        "after": "This model’s observations are shallow and close to the boundary. No plate is sinking here, so there is no dipping slab band to fit. Switch to Convergent to compare."
+      },
+      {
+        "key": "stem.platetectonics.ql_no_observations",
+        "after": "No earthquakes are plotted yet. Run this boundary to gather observations. Switch to Convergent to investigate a dipping slab."
+      },
+      {
+        "key": "stem.platetectonics.ql_angle_help",
+        "after": "Angle is measured down from the horizontal, in degrees. The axes use different scales; use the coordinates as well as the band’s appearance."
+      },
+      {
+        "key": "stem.platetectonics.ql_exact_angle",
+        "after": "Exact slab angle in degrees"
+      },
+      {
+        "key": "stem.platetectonics.ql_legend_guess",
+        "after": "Your estimate (dashed)"
+      },
+      {
+        "key": "stem.platetectonics.ql_legend_fit",
+        "after": "Data fit (solid)"
+      },
+      {
+        "key": "stem.platetectonics.ql_sr_checked",
+        "after": "Angle checked. The run is paused and the sample is captured. Compare your dashed estimate with the solid data fit."
+      },
+      {
+        "key": "stem.platetectonics.ql_check_angle",
+        "after": "Check my angle against this sample"
+      },
+      {
+        "key": "stem.platetectonics.ql_result_sample",
+        "after": "The solid line fits {n} captured earthquakes at 70 km or deeper: about {f}° from horizontal. Your estimate was {g}°. In real subduction zones, the dipping earthquake band (Wadati–Benioff zone) helps trace the sinking slab. Deep earthquakes occur within the slab."
+      },
+      {
+        "key": "stem.platetectonics.ql_sr_revise",
+        "after": "Your estimate is editable again. The current run and observations are kept."
+      },
+      {
+        "key": "stem.platetectonics.ql_revise",
+        "after": "Revise my angle"
+      },
+      {
+        "key": "stem.platetectonics.fl_workflow",
+        "after": "Choose one change, predict its effect, then observe plate A. Each test pauses when its outcome is ready to compare. Reset starts a fresh model and keeps your completed observations."
+      },
+      {
+        "key": "stem.platetectonics.fl_prediction_baseline",
+        "after": "Before this change, plate A moves at {v} cm per year. Compare its speed after the change."
+      },
+      {
+        "key": "stem.platetectonics.fl_observe_title",
+        "after": "Observe one change"
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_cut",
+        "after": "Observe for 3 million model years after the cut: {t} of 3 completed."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_approach",
+        "after": "The continent is still approaching: about {d} km remain before it reaches the trench."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_collision",
+        "after": "The continent has reached the trench. Observe the slowdown, slab breakoff and mountain growth: {t} of 8 million model years completed."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_one",
+        "after": "Finish observing this change before testing another. Reset cancels this unfinished test."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_paused",
+        "after": "Time is paused. Use Run time or +1 million years to continue this observation. Reset cancels this unfinished test."
+      },
+      {
+        "key": "stem.platetectonics.fl_observations_title",
+        "after": "Compare your recorded observations"
+      },
+      {
+        "key": "stem.platetectonics.fl_observations_kept",
+        "after": "These are the latest completed results from your tests, kept through resets and visits to other activities. They describe the recorded change; the live model can keep evolving when you resume time."
+      },
+      {
+        "key": "stem.platetectonics.fl_observed_cut",
+        "after": "Cutting the slab"
+      },
+      {
+        "key": "stem.platetectonics.fl_observed_continent",
+        "after": "A continent reaches the trench"
+      },
+      {
+        "key": "stem.platetectonics.fl_before_cut",
+        "after": "Before the cut"
+      },
+      {
+        "key": "stem.platetectonics.fl_before_collision",
+        "after": "Before collision"
+      },
+      {
+        "key": "stem.platetectonics.fl_after_cut",
+        "after": "Immediately after the cut"
+      },
+      {
+        "key": "stem.platetectonics.fl_after_collision",
+        "after": "After slowdown and slab breakoff"
+      },
+      {
+        "key": "stem.platetectonics.fl_observed_mountains",
+        "after": "Mountain height at this observation: {m} km."
+      },
+      {
+        "key": "stem.platetectonics.fl_recorded_prediction",
+        "after": "Your prediction: {p}"
+      },
+      {
+        "key": "stem.platetectonics.fl_compare_prompt",
+        "after": "Which force changed, and which force kept acting? Use the before-and-after speeds to explain why plate A slowed without stopping."
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_convergent",
+        "after": "convergent"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_divergent",
+        "after": "divergent"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_transform",
+        "after": "transform"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_held",
+        "after": "held with no slip"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_thrust",
+        "after": "thrust faulting"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_normal",
+        "after": "normal faulting"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_strike",
+        "after": "strike-slip faulting"
+      },
+      {
+        "key": "stem.platetectonics.ex_depth_relevance",
+        "after": "Start here: this comparison directly addresses the earthquake-depth pattern in the question. Name the model that produced your values."
+      },
+      {
+        "key": "stem.platetectonics.ex_ev_magnitude_record",
+        "after": "My largest recorded simulator earthquake had model magnitude M {m}."
+      },
+      {
+        "key": "stem.platetectonics.ex_magnitude_relevance",
+        "after": "Magnitude describes event size. Use depth observations to address how deep earthquakes occur."
+      },
+      {
+        "key": "stem.platetectonics.ex_cut_relevance",
+        "after": "This tests the slab’s effect on plate motion in the model. Explain how that process connects to your claim about earthquake depth."
+      },
+      {
+        "key": "stem.platetectonics.ex_continent_relevance",
+        "after": "This compares a collision with the earlier sinking-slab model. Identify which part of the result helps your explanation."
+      },
+      {
+        "key": "stem.platetectonics.ex_hawaii_relevance",
+        "after": "This estimates plate motion over time. It does not measure earthquake depths; explain any connection you make."
+      },
+      {
+        "key": "stem.platetectonics.ex_ev_stress_record",
+        "after": "In one recorded {boundary} model trial, stress was {force}% and friction was {friction}%; I observed {outcome}."
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_relevance",
+        "after": "One trial records an outcome at those settings. Compare trials with one changed input before explaining what caused a difference."
+      },
+      {
+        "key": "stem.platetectonics.ex_card_added",
+        "after": "Added to your evidence"
+      },
+      {
+        "key": "stem.platetectonics.ex_card_add",
+        "after": "Add this observation"
+      },
+      {
+        "key": "stem.platetectonics.ex_intro_revision",
+        "after": "Choose observations that help answer this question. State your claim, describe the evidence, and explain the connection. You can edit an added observation in your own words."
+      },
+      {
+        "key": "stem.platetectonics.ex_choose_evidence",
+        "after": "1. Choose evidence for this question"
+      },
+      {
+        "key": "stem.platetectonics.ex_other_observations",
+        "after": "Other observations: decide how they connect"
+      },
+      {
+        "key": "stem.platetectonics.ex_other_guidance",
+        "after": "You do not need every card. Use an observation when you can explain how it supports your claim; the prompts below identify what each activity tested."
+      },
+      {
+        "key": "stem.platetectonics.ex_build_stage",
+        "after": "2. Build your explanation"
+      },
+      {
+        "key": "stem.platetectonics.ex_word_count",
+        "after": "{count} words · minimum {min}"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_stage",
+        "after": "3. Review and save"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_length",
+        "after": "The length check counts words. Use these questions to review the science and revise your explanation."
+      },
+      {
+        "key": "stem.platetectonics.ex_review_claim",
+        "after": "Does my claim answer both parts of the question?"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_evidence",
+        "after": "Have I named the model, boundaries, and depth values or patterns I observed?"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_reasoning",
+        "after": "Have I explained why those observations support my claim?"
+      },
+      {
+        "key": "stem.platetectonics.ex_revision_kept",
+        "after": "You are editing a draft revision. Your last saved version stays unchanged until you choose to save the revision."
+      },
+      {
+        "key": "stem.platetectonics.ex_save_revision",
+        "after": "Save revision for my teacher"
+      },
+      {
+        "key": "stem.platetectonics.ex_length_ready",
+        "after": "Length requirement met. Review your explanation before saving."
+      },
+      {
+        "key": "stem.platetectonics.ex_view_saved",
+        "after": "View your last saved version"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_pressure_name",
+        "after": "Pressure builds"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_pressure_basalt",
+        "after": "Runny basaltic magma collects below the broad shield. Watch the chamber swell and gas bubbles rise toward the vent."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_pressure_sticky",
+        "after": "Magma collects in the chamber and gas bubbles form in the conduit. Watch the chamber swell before the eruption."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_lava_name",
+        "after": "Lava erupts"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_explosive_name",
+        "after": "Explosive eruption"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_blast_basalt",
+        "after": "In this model, gas escapes in a lava fountain while runny lava flows down the broad flanks. Compare how little ash forms."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_blast_rhyolite",
+        "after": "In this model, stiff, gas-rich magma drives a dense ash column and pyroclastic flows. Flowing lava is not shown on the flanks."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_blast_andesite",
+        "after": "In this model, trapped gas fragments some magma into ash. Watch both the ash column and the shorter lava flows."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_drain_name",
+        "after": "Chamber drains"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_drain_why",
+        "after": "Magma leaves faster than it is resupplied. Watch the chamber shrink and the eruption weaken."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_subside_name",
+        "after": "Summit subsides"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_name",
+        "after": "Summit collapses"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_basalt",
+        "after": "Only a small summit drop is shown here. Compare this with the much larger collapse in the rhyolite model."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_rhyolite",
+        "after": "The large summit drop widens the crater into a caldera. Compare the new basin with the volcano before the eruption."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_andesite",
+        "after": "The summit lowers as the chamber drains, leaving a wider crater. Compare this intermediate amount of collapse with the basalt and rhyolite models."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_quiet",
+        "after": "The vent is quiet. Press Erupt to run the sequence, and watch which stage each thing you see belongs to."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_model_note",
+        "after": "This is a simplified comparison of three model eruptions, not a prediction of an individual volcano."
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_pair_switched",
+        "after": "Viewing the saved comparison of {first} and {second}."
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_pair_label",
+        "after": "{first} → {second}"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_spotted_neutrons",
+        "after": "✓ Neutron count changed"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_spotted_protons",
+        "after": "✓ Proton count changed"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_question",
+        "after": "Quick check: which count changed?"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_group",
+        "after": "Which particle count changed between these saved nuclei?"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_protons",
+        "after": "Proton count"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_neutrons",
+        "after": "Neutron count"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_neutrons_hint",
+        "after": "Both nuclei have 6 protons. Look at the neutron counts and try again."
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_protons_hint",
+        "after": "Both nuclei have 8 neutrons. Look at the proton counts and try again."
+      }
+    ]
+  },
+  {
+    "path": "desktop/web-app/public/ui_strings.js",
+    "firstByteDifference": 2601927,
+    "expectedAtDifference": "\n    },\n    \"calculus\": {\n      \"tab_fundamental_theorem\": \"Fundamental theorem\",\n      \"tab_explore_derivativ",
+    "actualAtDifference": ",\n      \"seismic_scene_dissipated\": \"Dissipated\",\n      \"seismic_scene_elastic\": \"Elastic\",\n      \"seismic_sce",
+    "changedKeys": [
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.bridgelab.seismic_scene_dissipated",
+      "stem.bridgelab.seismic_scene_elastic",
+      "stem.bridgelab.seismic_scene_energy",
+      "stem.bridgelab.seismic_scene_energy_scope",
+      "stem.bridgelab.seismic_scene_kinetic",
+      "stem.bridgelab.seismic_scene_readout",
+      "stem.bridgelab.seismic_scene_units",
+      "stem.bridgelab.viewpoint_deck",
+      "stem.bridgelab.viewpoint_entrance",
+      "stem.bridgelab.viewpoint_presets",
+      "stem.bridgelab.viewpoint_river",
+      "stem.firstresponse.visual_key_reference",
+      "stem.firstresponse.realism_camera_arms",
+      "stem.firstresponse.realism_camera_head",
+      "stem.physics.investigation_reference_choice_help",
+      "stem.physics.investigation_trials_missing",
+      "stem.physics.investigation_trials_selected",
+      "stem.physics.investigation_recent_trials",
+      "stem.physics.investigation_trial",
+      "stem.physics.investigation_matching_run",
+      "stem.physics.investigation_no_matching_run",
+      "stem.physics.investigation_controls_match",
+      "stem.physics.investigation_controls_apply",
+      "stem.physics.investigation_match_requirements",
+      "stem.physics.investigation_select_trials",
+      "stem.physics.investigation_launch_controls",
+      "stem.physics.investigation_selection_reference_help",
+      "stem.physics.investigation_reference_run",
+      "stem.platetectonics.ql_angle_entry_help",
+      "stem.platetectonics.ql_summary_captured",
+      "stem.platetectonics.ql_summary_live",
+      "stem.platetectonics.ql_sample_captured",
+      "stem.platetectonics.ql_sample_live",
+      "stem.platetectonics.ql_no_slab_observations",
+      "stem.platetectonics.ql_no_observations",
+      "stem.platetectonics.ql_angle_help",
+      "stem.platetectonics.ql_exact_angle",
+      "stem.platetectonics.ql_legend_guess",
+      "stem.platetectonics.ql_legend_fit",
+      "stem.platetectonics.ql_sr_checked",
+      "stem.platetectonics.ql_check_angle",
+      "stem.platetectonics.ql_result_sample",
+      "stem.platetectonics.ql_sr_revise",
+      "stem.platetectonics.ql_revise",
+      "stem.platetectonics.fl_workflow",
+      "stem.platetectonics.fl_prediction_baseline",
+      "stem.platetectonics.fl_observe_title",
+      "stem.platetectonics.fl_watch_cut",
+      "stem.platetectonics.fl_watch_approach",
+      "stem.platetectonics.fl_watch_collision",
+      "stem.platetectonics.fl_watch_one",
+      "stem.platetectonics.fl_watch_paused",
+      "stem.platetectonics.fl_observations_title",
+      "stem.platetectonics.fl_observations_kept",
+      "stem.platetectonics.fl_observed_cut",
+      "stem.platetectonics.fl_observed_continent",
+      "stem.platetectonics.fl_before_cut",
+      "stem.platetectonics.fl_before_collision",
+      "stem.platetectonics.fl_after_cut",
+      "stem.platetectonics.fl_after_collision",
+      "stem.platetectonics.fl_observed_mountains",
+      "stem.platetectonics.fl_recorded_prediction",
+      "stem.platetectonics.fl_compare_prompt",
+      "stem.platetectonics.ex_stress_convergent",
+      "stem.platetectonics.ex_stress_divergent",
+      "stem.platetectonics.ex_stress_transform",
+      "stem.platetectonics.ex_stress_held",
+      "stem.platetectonics.ex_stress_thrust",
+      "stem.platetectonics.ex_stress_normal",
+      "stem.platetectonics.ex_stress_strike",
+      "stem.platetectonics.ex_depth_relevance",
+      "stem.platetectonics.ex_ev_magnitude_record",
+      "stem.platetectonics.ex_magnitude_relevance",
+      "stem.platetectonics.ex_cut_relevance",
+      "stem.platetectonics.ex_continent_relevance",
+      "stem.platetectonics.ex_hawaii_relevance",
+      "stem.platetectonics.ex_ev_stress_record",
+      "stem.platetectonics.ex_stress_relevance",
+      "stem.platetectonics.ex_card_added",
+      "stem.platetectonics.ex_card_add",
+      "stem.platetectonics.ex_intro_revision",
+      "stem.platetectonics.ex_choose_evidence",
+      "stem.platetectonics.ex_other_observations",
+      "stem.platetectonics.ex_other_guidance",
+      "stem.platetectonics.ex_build_stage",
+      "stem.platetectonics.ex_word_count",
+      "stem.platetectonics.ex_review_stage",
+      "stem.platetectonics.ex_review_length",
+      "stem.platetectonics.ex_review_claim",
+      "stem.platetectonics.ex_review_evidence",
+      "stem.platetectonics.ex_review_reasoning",
+      "stem.platetectonics.ex_revision_kept",
+      "stem.platetectonics.ex_save_revision",
+      "stem.platetectonics.ex_length_ready",
+      "stem.platetectonics.ex_view_saved",
+      "stem.platetectonics.vent_stage_pressure_name",
+      "stem.platetectonics.vent_stage_pressure_basalt",
+      "stem.platetectonics.vent_stage_pressure_sticky",
+      "stem.platetectonics.vent_stage_lava_name",
+      "stem.platetectonics.vent_stage_explosive_name",
+      "stem.platetectonics.vent_stage_blast_basalt",
+      "stem.platetectonics.vent_stage_blast_rhyolite",
+      "stem.platetectonics.vent_stage_blast_andesite",
+      "stem.platetectonics.vent_stage_drain_name",
+      "stem.platetectonics.vent_stage_drain_why",
+      "stem.platetectonics.vent_stage_subside_name",
+      "stem.platetectonics.vent_stage_collapse_name",
+      "stem.platetectonics.vent_stage_collapse_basalt",
+      "stem.platetectonics.vent_stage_collapse_rhyolite",
+      "stem.platetectonics.vent_stage_collapse_andesite",
+      "stem.platetectonics.vent_stage_quiet",
+      "stem.platetectonics.vent_stage_model_note",
+      "stem.nuclearlab.studio_nucleus_pair_switched",
+      "stem.nuclearlab.studio_nucleus_pair_label",
+      "stem.nuclearlab.studio_nucleus_check_spotted_neutrons",
+      "stem.nuclearlab.studio_nucleus_check_spotted_protons",
+      "stem.nuclearlab.studio_nucleus_check_question",
+      "stem.nuclearlab.studio_nucleus_check_group",
+      "stem.nuclearlab.studio_nucleus_check_protons",
+      "stem.nuclearlab.studio_nucleus_check_neutrons",
+      "stem.nuclearlab.studio_nucleus_check_neutrons_hint",
+      "stem.nuclearlab.studio_nucleus_check_protons_hint"
+    ],
+    "changes": [
+      {
+        "key": "stem.bridgelab.seismic_scene_dissipated",
+        "after": "Dissipated"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_elastic",
+        "after": "Elastic"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_energy",
+        "after": "Energy in this frame"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_energy_scope",
+        "after": "Kinetic uses relative motion. Dissipated energy is cumulative."
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_kinetic",
+        "after": "Kinetic"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_readout",
+        "after": "Earthquake scene readout"
+      },
+      {
+        "key": "stem.bridgelab.seismic_scene_units",
+        "after": "J/kg · same fixed scale as the energy timeline"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_deck",
+        "after": "Along the deck"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_entrance",
+        "after": "Look back toward entrance"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_presets",
+        "after": "Bridge viewpoints"
+      },
+      {
+        "key": "stem.bridgelab.viewpoint_river",
+        "after": "River overlook"
+      },
+      {
+        "key": "stem.firstresponse.visual_key_reference",
+        "after": "Reference depth"
+      },
+      {
+        "key": "stem.firstresponse.realism_camera_arms",
+        "after": "Hands + arms"
+      },
+      {
+        "key": "stem.firstresponse.realism_camera_head",
+        "after": "Head close-up"
+      },
+      {
+        "key": "stem.physics.investigation_reference_choice_help",
+        "after": "Use the reference selector above to change the baseline for these comparisons."
+      },
+      {
+        "key": "stem.physics.investigation_trials_missing",
+        "after": "Both trials need matching completed measurements in the recent log."
+      },
+      {
+        "key": "stem.physics.investigation_trials_selected",
+        "after": "Recorded trials selected. Compare the measured results below."
+      },
+      {
+        "key": "stem.physics.investigation_recent_trials",
+        "after": "trials matched in the recent log"
+      },
+      {
+        "key": "stem.physics.investigation_trial",
+        "after": "Trial"
+      },
+      {
+        "key": "stem.physics.investigation_matching_run",
+        "after": "Latest matching recorded run:"
+      },
+      {
+        "key": "stem.physics.investigation_no_matching_run",
+        "after": "No matching completed run in the recent log."
+      },
+      {
+        "key": "stem.physics.investigation_controls_match",
+        "after": "Current launch controls match this trial."
+      },
+      {
+        "key": "stem.physics.investigation_controls_apply",
+        "after": "Apply this trial’s settings before launching."
+      },
+      {
+        "key": "stem.physics.investigation_match_requirements",
+        "after": "Completed runs must match every trial setting and the current simulation model."
+      },
+      {
+        "key": "stem.physics.investigation_select_trials",
+        "after": "Select recorded trial pair"
+      },
+      {
+        "key": "stem.physics.investigation_launch_controls",
+        "after": "Go to launch controls"
+      },
+      {
+        "key": "stem.physics.investigation_selection_reference_help",
+        "after": "Select the runs to keep, then choose a reference for the comparisons. Every selected run is copied into the saved report."
+      },
+      {
+        "key": "stem.physics.investigation_reference_run",
+        "after": "Reference run"
+      },
+      {
+        "key": "stem.platetectonics.ql_angle_entry_help",
+        "after": "Type an angle, then press Enter or leave the field to update your line."
+      },
+      {
+        "key": "stem.platetectonics.ql_summary_captured",
+        "after": "📊 Quake log: checked sample ({n} earthquakes)"
+      },
+      {
+        "key": "stem.platetectonics.ql_summary_live",
+        "after": "📊 Quake log: latest observations ({n} earthquakes)"
+      },
+      {
+        "key": "stem.platetectonics.ql_sample_captured",
+        "after": "Showing the {n} model earthquakes captured when you checked your angle. This plot stays fixed while the simulator continues. Revise your angle to compare against the latest observations."
+      },
+      {
+        "key": "stem.platetectonics.ql_sample_live",
+        "after": "Showing the latest {n} model earthquakes (up to 200), plotted by distance from the boundary and depth. For subduction, estimate an angle from the band, then check it against the data."
+      },
+      {
+        "key": "stem.platetectonics.ql_no_slab_observations",
+        "after": "This model’s observations are shallow and close to the boundary. No plate is sinking here, so there is no dipping slab band to fit. Switch to Convergent to compare."
+      },
+      {
+        "key": "stem.platetectonics.ql_no_observations",
+        "after": "No earthquakes are plotted yet. Run this boundary to gather observations. Switch to Convergent to investigate a dipping slab."
+      },
+      {
+        "key": "stem.platetectonics.ql_angle_help",
+        "after": "Angle is measured down from the horizontal, in degrees. The axes use different scales; use the coordinates as well as the band’s appearance."
+      },
+      {
+        "key": "stem.platetectonics.ql_exact_angle",
+        "after": "Exact slab angle in degrees"
+      },
+      {
+        "key": "stem.platetectonics.ql_legend_guess",
+        "after": "Your estimate (dashed)"
+      },
+      {
+        "key": "stem.platetectonics.ql_legend_fit",
+        "after": "Data fit (solid)"
+      },
+      {
+        "key": "stem.platetectonics.ql_sr_checked",
+        "after": "Angle checked. The run is paused and the sample is captured. Compare your dashed estimate with the solid data fit."
+      },
+      {
+        "key": "stem.platetectonics.ql_check_angle",
+        "after": "Check my angle against this sample"
+      },
+      {
+        "key": "stem.platetectonics.ql_result_sample",
+        "after": "The solid line fits {n} captured earthquakes at 70 km or deeper: about {f}° from horizontal. Your estimate was {g}°. In real subduction zones, the dipping earthquake band (Wadati–Benioff zone) helps trace the sinking slab. Deep earthquakes occur within the slab."
+      },
+      {
+        "key": "stem.platetectonics.ql_sr_revise",
+        "after": "Your estimate is editable again. The current run and observations are kept."
+      },
+      {
+        "key": "stem.platetectonics.ql_revise",
+        "after": "Revise my angle"
+      },
+      {
+        "key": "stem.platetectonics.fl_workflow",
+        "after": "Choose one change, predict its effect, then observe plate A. Each test pauses when its outcome is ready to compare. Reset starts a fresh model and keeps your completed observations."
+      },
+      {
+        "key": "stem.platetectonics.fl_prediction_baseline",
+        "after": "Before this change, plate A moves at {v} cm per year. Compare its speed after the change."
+      },
+      {
+        "key": "stem.platetectonics.fl_observe_title",
+        "after": "Observe one change"
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_cut",
+        "after": "Observe for 3 million model years after the cut: {t} of 3 completed."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_approach",
+        "after": "The continent is still approaching: about {d} km remain before it reaches the trench."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_collision",
+        "after": "The continent has reached the trench. Observe the slowdown, slab breakoff and mountain growth: {t} of 8 million model years completed."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_one",
+        "after": "Finish observing this change before testing another. Reset cancels this unfinished test."
+      },
+      {
+        "key": "stem.platetectonics.fl_watch_paused",
+        "after": "Time is paused. Use Run time or +1 million years to continue this observation. Reset cancels this unfinished test."
+      },
+      {
+        "key": "stem.platetectonics.fl_observations_title",
+        "after": "Compare your recorded observations"
+      },
+      {
+        "key": "stem.platetectonics.fl_observations_kept",
+        "after": "These are the latest completed results from your tests, kept through resets and visits to other activities. They describe the recorded change; the live model can keep evolving when you resume time."
+      },
+      {
+        "key": "stem.platetectonics.fl_observed_cut",
+        "after": "Cutting the slab"
+      },
+      {
+        "key": "stem.platetectonics.fl_observed_continent",
+        "after": "A continent reaches the trench"
+      },
+      {
+        "key": "stem.platetectonics.fl_before_cut",
+        "after": "Before the cut"
+      },
+      {
+        "key": "stem.platetectonics.fl_before_collision",
+        "after": "Before collision"
+      },
+      {
+        "key": "stem.platetectonics.fl_after_cut",
+        "after": "Immediately after the cut"
+      },
+      {
+        "key": "stem.platetectonics.fl_after_collision",
+        "after": "After slowdown and slab breakoff"
+      },
+      {
+        "key": "stem.platetectonics.fl_observed_mountains",
+        "after": "Mountain height at this observation: {m} km."
+      },
+      {
+        "key": "stem.platetectonics.fl_recorded_prediction",
+        "after": "Your prediction: {p}"
+      },
+      {
+        "key": "stem.platetectonics.fl_compare_prompt",
+        "after": "Which force changed, and which force kept acting? Use the before-and-after speeds to explain why plate A slowed without stopping."
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_convergent",
+        "after": "convergent"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_divergent",
+        "after": "divergent"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_transform",
+        "after": "transform"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_held",
+        "after": "held with no slip"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_thrust",
+        "after": "thrust faulting"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_normal",
+        "after": "normal faulting"
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_strike",
+        "after": "strike-slip faulting"
+      },
+      {
+        "key": "stem.platetectonics.ex_depth_relevance",
+        "after": "Start here: this comparison directly addresses the earthquake-depth pattern in the question. Name the model that produced your values."
+      },
+      {
+        "key": "stem.platetectonics.ex_ev_magnitude_record",
+        "after": "My largest recorded simulator earthquake had model magnitude M {m}."
+      },
+      {
+        "key": "stem.platetectonics.ex_magnitude_relevance",
+        "after": "Magnitude describes event size. Use depth observations to address how deep earthquakes occur."
+      },
+      {
+        "key": "stem.platetectonics.ex_cut_relevance",
+        "after": "This tests the slab’s effect on plate motion in the model. Explain how that process connects to your claim about earthquake depth."
+      },
+      {
+        "key": "stem.platetectonics.ex_continent_relevance",
+        "after": "This compares a collision with the earlier sinking-slab model. Identify which part of the result helps your explanation."
+      },
+      {
+        "key": "stem.platetectonics.ex_hawaii_relevance",
+        "after": "This estimates plate motion over time. It does not measure earthquake depths; explain any connection you make."
+      },
+      {
+        "key": "stem.platetectonics.ex_ev_stress_record",
+        "after": "In one recorded {boundary} model trial, stress was {force}% and friction was {friction}%; I observed {outcome}."
+      },
+      {
+        "key": "stem.platetectonics.ex_stress_relevance",
+        "after": "One trial records an outcome at those settings. Compare trials with one changed input before explaining what caused a difference."
+      },
+      {
+        "key": "stem.platetectonics.ex_card_added",
+        "after": "Added to your evidence"
+      },
+      {
+        "key": "stem.platetectonics.ex_card_add",
+        "after": "Add this observation"
+      },
+      {
+        "key": "stem.platetectonics.ex_intro_revision",
+        "after": "Choose observations that help answer this question. State your claim, describe the evidence, and explain the connection. You can edit an added observation in your own words."
+      },
+      {
+        "key": "stem.platetectonics.ex_choose_evidence",
+        "after": "1. Choose evidence for this question"
+      },
+      {
+        "key": "stem.platetectonics.ex_other_observations",
+        "after": "Other observations: decide how they connect"
+      },
+      {
+        "key": "stem.platetectonics.ex_other_guidance",
+        "after": "You do not need every card. Use an observation when you can explain how it supports your claim; the prompts below identify what each activity tested."
+      },
+      {
+        "key": "stem.platetectonics.ex_build_stage",
+        "after": "2. Build your explanation"
+      },
+      {
+        "key": "stem.platetectonics.ex_word_count",
+        "after": "{count} words · minimum {min}"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_stage",
+        "after": "3. Review and save"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_length",
+        "after": "The length check counts words. Use these questions to review the science and revise your explanation."
+      },
+      {
+        "key": "stem.platetectonics.ex_review_claim",
+        "after": "Does my claim answer both parts of the question?"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_evidence",
+        "after": "Have I named the model, boundaries, and depth values or patterns I observed?"
+      },
+      {
+        "key": "stem.platetectonics.ex_review_reasoning",
+        "after": "Have I explained why those observations support my claim?"
+      },
+      {
+        "key": "stem.platetectonics.ex_revision_kept",
+        "after": "You are editing a draft revision. Your last saved version stays unchanged until you choose to save the revision."
+      },
+      {
+        "key": "stem.platetectonics.ex_save_revision",
+        "after": "Save revision for my teacher"
+      },
+      {
+        "key": "stem.platetectonics.ex_length_ready",
+        "after": "Length requirement met. Review your explanation before saving."
+      },
+      {
+        "key": "stem.platetectonics.ex_view_saved",
+        "after": "View your last saved version"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_pressure_name",
+        "after": "Pressure builds"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_pressure_basalt",
+        "after": "Runny basaltic magma collects below the broad shield. Watch the chamber swell and gas bubbles rise toward the vent."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_pressure_sticky",
+        "after": "Magma collects in the chamber and gas bubbles form in the conduit. Watch the chamber swell before the eruption."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_lava_name",
+        "after": "Lava erupts"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_explosive_name",
+        "after": "Explosive eruption"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_blast_basalt",
+        "after": "In this model, gas escapes in a lava fountain while runny lava flows down the broad flanks. Compare how little ash forms."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_blast_rhyolite",
+        "after": "In this model, stiff, gas-rich magma drives a dense ash column and pyroclastic flows. Flowing lava is not shown on the flanks."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_blast_andesite",
+        "after": "In this model, trapped gas fragments some magma into ash. Watch both the ash column and the shorter lava flows."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_drain_name",
+        "after": "Chamber drains"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_drain_why",
+        "after": "Magma leaves faster than it is resupplied. Watch the chamber shrink and the eruption weaken."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_subside_name",
+        "after": "Summit subsides"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_name",
+        "after": "Summit collapses"
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_basalt",
+        "after": "Only a small summit drop is shown here. Compare this with the much larger collapse in the rhyolite model."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_rhyolite",
+        "after": "The large summit drop widens the crater into a caldera. Compare the new basin with the volcano before the eruption."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_collapse_andesite",
+        "after": "The summit lowers as the chamber drains, leaving a wider crater. Compare this intermediate amount of collapse with the basalt and rhyolite models."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_quiet",
+        "after": "The vent is quiet. Press Erupt to run the sequence, and watch which stage each thing you see belongs to."
+      },
+      {
+        "key": "stem.platetectonics.vent_stage_model_note",
+        "after": "This is a simplified comparison of three model eruptions, not a prediction of an individual volcano."
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_pair_switched",
+        "after": "Viewing the saved comparison of {first} and {second}."
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_pair_label",
+        "after": "{first} → {second}"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_spotted_neutrons",
+        "after": "✓ Neutron count changed"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_spotted_protons",
+        "after": "✓ Proton count changed"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_question",
+        "after": "Quick check: which count changed?"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_group",
+        "after": "Which particle count changed between these saved nuclei?"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_protons",
+        "after": "Proton count"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_neutrons",
+        "after": "Neutron count"
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_neutrons_hint",
+        "after": "Both nuclei have 6 protons. Look at the neutron counts and try again."
+      },
+      {
+        "key": "stem.nuclearlab.studio_nucleus_check_protons_hint",
+        "after": "Both nuclei have 8 neutrons. Look at the proton counts and try again."
+      }
+    ]
+  },
+  {
+    "path": "lang/french.js",
+    "firstByteDifference": 2921342,
+    "expectedAtDifference": "Homeostasis explanation\",\n      \"hypothesis_input\": \"Homeostasis hypothesis\",\n      \"alveolus_deep_dive\": \"Alv",
+    "actualAtDifference": "Explication sur l’homéostasie\",\n      \"hypothesis_input\": \"Hypothèse sur l’homéostasie\",\n      \"alveolus_deep_",
+    "changedKeys": [
+      "stem.anatomy.explanation_input",
+      "stem.anatomy.hypothesis_input",
+      "stem.anatomy.arterial_blood_ph_reference_prompt",
+      "stem.anatomy.compare_outside_reference_counts",
+      "stem.anatomy.explain_homeostasis_model_limit",
+      "stem.anatomy.fasting_glucose_mg_dl",
+      "stem.anatomy.homeostasis_model_limit",
+      "stem.anatomy.homeostasis_reference_hypothesis",
+      "stem.anatomy.one_variable_outside_reference",
+      "stem.anatomy.three_variables_outside_reference",
+      "stem.anatomy.two_variables_outside_reference",
+      "stem.anatomy.within_teaching_references",
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.anatomy.homeo_recap_q1",
+      "stem.anatomy.homeo_recap_q1_a",
+      "stem.anatomy.homeo_recap_q1_b",
+      "stem.anatomy.homeo_recap_q1_c",
+      "stem.anatomy.homeo_recap_q2",
+      "stem.anatomy.homeo_recap_q2_a",
+      "stem.anatomy.homeo_recap_q2_b",
+      "stem.anatomy.homeo_recap_q2_c",
+      "stem.anatomy.homeo_recap_q3",
+      "stem.anatomy.homeo_recap_q3_a",
+      "stem.anatomy.homeo_recap_q3_b",
+      "stem.anatomy.homeo_recap_q3_c",
+      "stem.anatomy.homeo_recap_title",
+      "stem.anatomy.homeo_recap_score",
+      "stem.anatomy.homeo_recap_all",
+      "stem.anatomy.homeo_recap_some",
+      "stem.anatomy.recap_correct_short",
+      "stem.anatomy.recap_incorrect_short",
+      "stem.anatomy.a11y_logged_homeostasis_observations"
+    ],
+    "changes": [
+      {
+        "key": "stem.anatomy.explanation_input",
+        "before": "Homeostasis explanation",
+        "after": "Explication sur l’homéostasie"
+      },
+      {
+        "key": "stem.anatomy.hypothesis_input",
+        "before": "Homeostasis hypothesis",
+        "after": "Hypothèse sur l’homéostasie"
+      },
+      {
+        "key": "stem.anatomy.arterial_blood_ph_reference_prompt",
+        "before": "A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.",
+        "after": "Un intervalle de référence courant pour le pH du sang artériel est de 7.35–7.45. Cherche pourquoi il est si étroit."
+      },
+      {
+        "key": "stem.anatomy.compare_outside_reference_counts",
+        "before": "Find settings with one, two, and three variables outside the reference ranges. What changes?",
+        "after": "Trouve des réglages avec une, deux et trois variables hors des intervalles de référence. Qu’est-ce qui change ?"
+      },
+      {
+        "key": "stem.anatomy.explain_homeostasis_model_limit",
+        "before": "Explain why a reference-range flag alone cannot diagnose a person.",
+        "after": "Explique pourquoi le simple signalement d’une valeur hors de l’intervalle de référence ne permet pas de poser un diagnostic."
+      },
+      {
+        "key": "stem.anatomy.fasting_glucose_mg_dl",
+        "before": "Fasting glucose (mg/dL)",
+        "after": "Glucose à jeun (mg/dL)"
+      },
+      {
+        "key": "stem.anatomy.homeostasis_model_limit",
+        "before": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
+        "after": "Modèle pédagogique uniquement, sans score clinique ni diagnostic. L’interprétation réelle dépend de l’âge, du contexte, des symptômes, de la méthode de mesure, des tendances et de la vitesse de changement."
+      },
+      {
+        "key": "stem.anatomy.homeostasis_reference_hypothesis",
+        "before": "Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?",
+        "after": "Hypothèse : que contribue à réguler chaque variable ? Pourquoi ne peut-on pas comparer des largeurs d’intervalle exprimées dans des unités différentes ?"
+      },
+      {
+        "key": "stem.anatomy.one_variable_outside_reference",
+        "before": "1 variable outside reference",
+        "after": "1 variable hors de l’intervalle de référence"
+      },
+      {
+        "key": "stem.anatomy.three_variables_outside_reference",
+        "before": "3 variables outside reference",
+        "after": "3 variables hors des intervalles de référence"
+      },
+      {
+        "key": "stem.anatomy.two_variables_outside_reference",
+        "before": "2 variables outside reference",
+        "after": "2 variables hors des intervalles de référence"
+      },
+      {
+        "key": "stem.anatomy.within_teaching_references",
+        "before": "All within teaching references",
+        "after": "Toutes dans les intervalles pédagogiques"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1",
+        "after": "La température corporelle est de 39.0 °C. Par rapport à l’intervalle pédagogique de 36.5–37.5 °C, quelle affirmation est vraie ?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_a",
+        "after": "Elle est au-dessus de l’intervalle : le corps est trop chaud"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_b",
+        "after": "Elle est dans l’intervalle"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_c",
+        "after": "Elle est en dessous de l’intervalle : le corps est trop froid"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2",
+        "after": "Le pH du sang artériel est de 7.25. Par rapport à l’intervalle de 7.35–7.45, quelle affirmation convient ?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_a",
+        "after": "Il est dans l’intervalle"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_b",
+        "after": "Il est au-dessus de l’intervalle : plus alcalin que la normale"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_c",
+        "after": "Il est en dessous de l’intervalle : plus acide que la normale"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3",
+        "after": "Quelle phrase décrit la rétroaction négative, la boucle qui maintient ces valeurs stables ?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_a",
+        "after": "Le corps détecte un changement et l’accentue dans le même sens"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_b",
+        "after": "Le corps ignore les petits changements jusqu’à ce qu’ils deviennent importants"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_c",
+        "after": "Le corps détecte un changement et répond pour ramener la valeur vers sa valeur de référence"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_title",
+        "after": "✓ Vérifie tes découvertes"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_score",
+        "after": " réponses correctes. "
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_all",
+        "after": "Tu sais situer une valeur dans son intervalle et expliquer la boucle qui l’y maintient."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_some",
+        "after": "Place à nouveau une valeur hors de l’intervalle et observe dans quel sens le corps devrait la ramener."
+      },
+      {
+        "key": "stem.anatomy.recap_correct_short",
+        "after": "Correct."
+      },
+      {
+        "key": "stem.anatomy.recap_incorrect_short",
+        "after": "Pas tout à fait."
+      },
+      {
+        "key": "stem.anatomy.a11y_logged_homeostasis_observations",
+        "after": "Observations enregistrées sur l’homéostasie"
+      }
+    ]
+  },
+  {
+    "path": "desktop/web-app/public/lang/french.js",
+    "firstByteDifference": 2921342,
+    "expectedAtDifference": "Homeostasis explanation\",\n      \"hypothesis_input\": \"Homeostasis hypothesis\",\n      \"alveolus_deep_dive\": \"Alv",
+    "actualAtDifference": "Explication sur l’homéostasie\",\n      \"hypothesis_input\": \"Hypothèse sur l’homéostasie\",\n      \"alveolus_deep_",
+    "changedKeys": [
+      "stem.anatomy.explanation_input",
+      "stem.anatomy.hypothesis_input",
+      "stem.anatomy.arterial_blood_ph_reference_prompt",
+      "stem.anatomy.compare_outside_reference_counts",
+      "stem.anatomy.explain_homeostasis_model_limit",
+      "stem.anatomy.fasting_glucose_mg_dl",
+      "stem.anatomy.homeostasis_model_limit",
+      "stem.anatomy.homeostasis_reference_hypothesis",
+      "stem.anatomy.one_variable_outside_reference",
+      "stem.anatomy.three_variables_outside_reference",
+      "stem.anatomy.two_variables_outside_reference",
+      "stem.anatomy.within_teaching_references",
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.anatomy.homeo_recap_q1",
+      "stem.anatomy.homeo_recap_q1_a",
+      "stem.anatomy.homeo_recap_q1_b",
+      "stem.anatomy.homeo_recap_q1_c",
+      "stem.anatomy.homeo_recap_q2",
+      "stem.anatomy.homeo_recap_q2_a",
+      "stem.anatomy.homeo_recap_q2_b",
+      "stem.anatomy.homeo_recap_q2_c",
+      "stem.anatomy.homeo_recap_q3",
+      "stem.anatomy.homeo_recap_q3_a",
+      "stem.anatomy.homeo_recap_q3_b",
+      "stem.anatomy.homeo_recap_q3_c",
+      "stem.anatomy.homeo_recap_title",
+      "stem.anatomy.homeo_recap_score",
+      "stem.anatomy.homeo_recap_all",
+      "stem.anatomy.homeo_recap_some",
+      "stem.anatomy.recap_correct_short",
+      "stem.anatomy.recap_incorrect_short",
+      "stem.anatomy.a11y_logged_homeostasis_observations"
+    ],
+    "changes": [
+      {
+        "key": "stem.anatomy.explanation_input",
+        "before": "Homeostasis explanation",
+        "after": "Explication sur l’homéostasie"
+      },
+      {
+        "key": "stem.anatomy.hypothesis_input",
+        "before": "Homeostasis hypothesis",
+        "after": "Hypothèse sur l’homéostasie"
+      },
+      {
+        "key": "stem.anatomy.arterial_blood_ph_reference_prompt",
+        "before": "A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.",
+        "after": "Un intervalle de référence courant pour le pH du sang artériel est de 7.35–7.45. Cherche pourquoi il est si étroit."
+      },
+      {
+        "key": "stem.anatomy.compare_outside_reference_counts",
+        "before": "Find settings with one, two, and three variables outside the reference ranges. What changes?",
+        "after": "Trouve des réglages avec une, deux et trois variables hors des intervalles de référence. Qu’est-ce qui change ?"
+      },
+      {
+        "key": "stem.anatomy.explain_homeostasis_model_limit",
+        "before": "Explain why a reference-range flag alone cannot diagnose a person.",
+        "after": "Explique pourquoi le simple signalement d’une valeur hors de l’intervalle de référence ne permet pas de poser un diagnostic."
+      },
+      {
+        "key": "stem.anatomy.fasting_glucose_mg_dl",
+        "before": "Fasting glucose (mg/dL)",
+        "after": "Glucose à jeun (mg/dL)"
+      },
+      {
+        "key": "stem.anatomy.homeostasis_model_limit",
+        "before": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
+        "after": "Modèle pédagogique uniquement, sans score clinique ni diagnostic. L’interprétation réelle dépend de l’âge, du contexte, des symptômes, de la méthode de mesure, des tendances et de la vitesse de changement."
+      },
+      {
+        "key": "stem.anatomy.homeostasis_reference_hypothesis",
+        "before": "Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?",
+        "after": "Hypothèse : que contribue à réguler chaque variable ? Pourquoi ne peut-on pas comparer des largeurs d’intervalle exprimées dans des unités différentes ?"
+      },
+      {
+        "key": "stem.anatomy.one_variable_outside_reference",
+        "before": "1 variable outside reference",
+        "after": "1 variable hors de l’intervalle de référence"
+      },
+      {
+        "key": "stem.anatomy.three_variables_outside_reference",
+        "before": "3 variables outside reference",
+        "after": "3 variables hors des intervalles de référence"
+      },
+      {
+        "key": "stem.anatomy.two_variables_outside_reference",
+        "before": "2 variables outside reference",
+        "after": "2 variables hors des intervalles de référence"
+      },
+      {
+        "key": "stem.anatomy.within_teaching_references",
+        "before": "All within teaching references",
+        "after": "Toutes dans les intervalles pédagogiques"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1",
+        "after": "La température corporelle est de 39.0 °C. Par rapport à l’intervalle pédagogique de 36.5–37.5 °C, quelle affirmation est vraie ?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_a",
+        "after": "Elle est au-dessus de l’intervalle : le corps est trop chaud"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_b",
+        "after": "Elle est dans l’intervalle"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_c",
+        "after": "Elle est en dessous de l’intervalle : le corps est trop froid"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2",
+        "after": "Le pH du sang artériel est de 7.25. Par rapport à l’intervalle de 7.35–7.45, quelle affirmation convient ?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_a",
+        "after": "Il est dans l’intervalle"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_b",
+        "after": "Il est au-dessus de l’intervalle : plus alcalin que la normale"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_c",
+        "after": "Il est en dessous de l’intervalle : plus acide que la normale"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3",
+        "after": "Quelle phrase décrit la rétroaction négative, la boucle qui maintient ces valeurs stables ?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_a",
+        "after": "Le corps détecte un changement et l’accentue dans le même sens"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_b",
+        "after": "Le corps ignore les petits changements jusqu’à ce qu’ils deviennent importants"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_c",
+        "after": "Le corps détecte un changement et répond pour ramener la valeur vers sa valeur de référence"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_title",
+        "after": "✓ Vérifie tes découvertes"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_score",
+        "after": " réponses correctes. "
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_all",
+        "after": "Tu sais situer une valeur dans son intervalle et expliquer la boucle qui l’y maintient."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_some",
+        "after": "Place à nouveau une valeur hors de l’intervalle et observe dans quel sens le corps devrait la ramener."
+      },
+      {
+        "key": "stem.anatomy.recap_correct_short",
+        "after": "Correct."
+      },
+      {
+        "key": "stem.anatomy.recap_incorrect_short",
+        "after": "Pas tout à fait."
+      },
+      {
+        "key": "stem.anatomy.a11y_logged_homeostasis_observations",
+        "after": "Observations enregistrées sur l’homéostasie"
+      }
+    ]
+  },
+  {
+    "path": "lang/spanish_latin_america.js",
+    "firstByteDifference": 2860901,
+    "expectedAtDifference": "Homeostasis explanation\",\n      \"hypothesis_input\": \"Homeostasis hypothesis\",\n      \"alveolus_deep_dive\": \"Alv",
+    "actualAtDifference": "Explicación sobre la homeostasis\",\n      \"hypothesis_input\": \"Hipótesis sobre la homeostasis\",\n      \"alveolus",
+    "changedKeys": [
+      "stem.anatomy.explanation_input",
+      "stem.anatomy.hypothesis_input",
+      "stem.anatomy.arterial_blood_ph_reference_prompt",
+      "stem.anatomy.compare_outside_reference_counts",
+      "stem.anatomy.explain_homeostasis_model_limit",
+      "stem.anatomy.fasting_glucose_mg_dl",
+      "stem.anatomy.homeostasis_model_limit",
+      "stem.anatomy.homeostasis_reference_hypothesis",
+      "stem.anatomy.one_variable_outside_reference",
+      "stem.anatomy.three_variables_outside_reference",
+      "stem.anatomy.two_variables_outside_reference",
+      "stem.anatomy.within_teaching_references",
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.anatomy.homeo_recap_q1",
+      "stem.anatomy.homeo_recap_q1_a",
+      "stem.anatomy.homeo_recap_q1_b",
+      "stem.anatomy.homeo_recap_q1_c",
+      "stem.anatomy.homeo_recap_q2",
+      "stem.anatomy.homeo_recap_q2_a",
+      "stem.anatomy.homeo_recap_q2_b",
+      "stem.anatomy.homeo_recap_q2_c",
+      "stem.anatomy.homeo_recap_q3",
+      "stem.anatomy.homeo_recap_q3_a",
+      "stem.anatomy.homeo_recap_q3_b",
+      "stem.anatomy.homeo_recap_q3_c",
+      "stem.anatomy.homeo_recap_title",
+      "stem.anatomy.homeo_recap_score",
+      "stem.anatomy.homeo_recap_all",
+      "stem.anatomy.homeo_recap_some",
+      "stem.anatomy.recap_correct_short",
+      "stem.anatomy.recap_incorrect_short",
+      "stem.anatomy.a11y_logged_homeostasis_observations"
+    ],
+    "changes": [
+      {
+        "key": "stem.anatomy.explanation_input",
+        "before": "Homeostasis explanation",
+        "after": "Explicación sobre la homeostasis"
+      },
+      {
+        "key": "stem.anatomy.hypothesis_input",
+        "before": "Homeostasis hypothesis",
+        "after": "Hipótesis sobre la homeostasis"
+      },
+      {
+        "key": "stem.anatomy.arterial_blood_ph_reference_prompt",
+        "before": "A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.",
+        "after": "Un intervalo de referencia común para el pH de la sangre arterial es de 7.35–7.45. Investiga por qué es tan estrecho."
+      },
+      {
+        "key": "stem.anatomy.compare_outside_reference_counts",
+        "before": "Find settings with one, two, and three variables outside the reference ranges. What changes?",
+        "after": "Busca ajustes con una, dos y tres variables fuera de los intervalos de referencia. ¿Qué cambia?"
+      },
+      {
+        "key": "stem.anatomy.explain_homeostasis_model_limit",
+        "before": "Explain why a reference-range flag alone cannot diagnose a person.",
+        "after": "Explica por qué señalar un valor fuera del intervalo de referencia no basta para diagnosticar a una persona."
+      },
+      {
+        "key": "stem.anatomy.fasting_glucose_mg_dl",
+        "before": "Fasting glucose (mg/dL)",
+        "after": "Glucosa en ayunas (mg/dL)"
+      },
+      {
+        "key": "stem.anatomy.homeostasis_model_limit",
+        "before": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
+        "after": "Solo es un modelo para aprender, sin puntuación clínica ni diagnóstico. La interpretación real depende de la edad, el contexto, los síntomas, el método de medición, las tendencias y la rapidez del cambio."
+      },
+      {
+        "key": "stem.anatomy.homeostasis_reference_hypothesis",
+        "before": "Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?",
+        "after": "Hipótesis: ¿Qué ayuda a regular cada variable? ¿Por qué no podemos comparar la amplitud de intervalos expresados en distintas unidades?"
+      },
+      {
+        "key": "stem.anatomy.one_variable_outside_reference",
+        "before": "1 variable outside reference",
+        "after": "1 variable fuera del intervalo de referencia"
+      },
+      {
+        "key": "stem.anatomy.three_variables_outside_reference",
+        "before": "3 variables outside reference",
+        "after": "3 variables fuera de los intervalos de referencia"
+      },
+      {
+        "key": "stem.anatomy.two_variables_outside_reference",
+        "before": "2 variables outside reference",
+        "after": "2 variables fuera de los intervalos de referencia"
+      },
+      {
+        "key": "stem.anatomy.within_teaching_references",
+        "before": "All within teaching references",
+        "after": "Todas dentro de los intervalos para aprender"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1",
+        "after": "La temperatura corporal es de 39.0 °C. Frente al intervalo para aprender de 36.5–37.5 °C, ¿qué afirmación es verdadera?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_a",
+        "after": "Está por encima del intervalo: el cuerpo está demasiado caliente"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_b",
+        "after": "Está dentro del intervalo"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_c",
+        "after": "Está por debajo del intervalo: el cuerpo está demasiado frío"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2",
+        "after": "El pH de la sangre arterial es de 7.25. Frente al intervalo de 7.35–7.45, ¿qué afirmación corresponde?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_a",
+        "after": "Está dentro del intervalo"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_b",
+        "after": "Está por encima del intervalo: más alcalino de lo normal"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_c",
+        "after": "Está por debajo del intervalo: más ácido de lo normal"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3",
+        "after": "¿Qué frase describe la retroalimentación negativa, el ciclo que mantiene estables estos valores?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_a",
+        "after": "El cuerpo detecta un cambio y lo aumenta en la misma dirección"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_b",
+        "after": "El cuerpo ignora los cambios pequeños hasta que se vuelven grandes"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_c",
+        "after": "El cuerpo detecta un cambio y responde para acercar el valor a su punto de ajuste"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_title",
+        "after": "✓ Comprueba lo que descubriste"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_score",
+        "after": " correctas. "
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_all",
+        "after": "Puedes comparar un valor con su intervalo y explicar el ciclo que lo mantiene allí."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_some",
+        "after": "Mueve otra vez un valor fuera del intervalo y observa en qué dirección el cuerpo tendría que devolverlo."
+      },
+      {
+        "key": "stem.anatomy.recap_correct_short",
+        "after": "Correcto."
+      },
+      {
+        "key": "stem.anatomy.recap_incorrect_short",
+        "after": "No del todo."
+      },
+      {
+        "key": "stem.anatomy.a11y_logged_homeostasis_observations",
+        "after": "Observaciones de homeostasis registradas"
+      }
+    ]
+  },
+  {
+    "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+    "firstByteDifference": 2860901,
+    "expectedAtDifference": "Homeostasis explanation\",\n      \"hypothesis_input\": \"Homeostasis hypothesis\",\n      \"alveolus_deep_dive\": \"Alv",
+    "actualAtDifference": "Explicación sobre la homeostasis\",\n      \"hypothesis_input\": \"Hipótesis sobre la homeostasis\",\n      \"alveolus",
+    "changedKeys": [
+      "stem.anatomy.explanation_input",
+      "stem.anatomy.hypothesis_input",
+      "stem.anatomy.arterial_blood_ph_reference_prompt",
+      "stem.anatomy.compare_outside_reference_counts",
+      "stem.anatomy.explain_homeostasis_model_limit",
+      "stem.anatomy.fasting_glucose_mg_dl",
+      "stem.anatomy.homeostasis_model_limit",
+      "stem.anatomy.homeostasis_reference_hypothesis",
+      "stem.anatomy.one_variable_outside_reference",
+      "stem.anatomy.three_variables_outside_reference",
+      "stem.anatomy.two_variables_outside_reference",
+      "stem.anatomy.within_teaching_references",
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.anatomy.homeo_recap_q1",
+      "stem.anatomy.homeo_recap_q1_a",
+      "stem.anatomy.homeo_recap_q1_b",
+      "stem.anatomy.homeo_recap_q1_c",
+      "stem.anatomy.homeo_recap_q2",
+      "stem.anatomy.homeo_recap_q2_a",
+      "stem.anatomy.homeo_recap_q2_b",
+      "stem.anatomy.homeo_recap_q2_c",
+      "stem.anatomy.homeo_recap_q3",
+      "stem.anatomy.homeo_recap_q3_a",
+      "stem.anatomy.homeo_recap_q3_b",
+      "stem.anatomy.homeo_recap_q3_c",
+      "stem.anatomy.homeo_recap_title",
+      "stem.anatomy.homeo_recap_score",
+      "stem.anatomy.homeo_recap_all",
+      "stem.anatomy.homeo_recap_some",
+      "stem.anatomy.recap_correct_short",
+      "stem.anatomy.recap_incorrect_short",
+      "stem.anatomy.a11y_logged_homeostasis_observations"
+    ],
+    "changes": [
+      {
+        "key": "stem.anatomy.explanation_input",
+        "before": "Homeostasis explanation",
+        "after": "Explicación sobre la homeostasis"
+      },
+      {
+        "key": "stem.anatomy.hypothesis_input",
+        "before": "Homeostasis hypothesis",
+        "after": "Hipótesis sobre la homeostasis"
+      },
+      {
+        "key": "stem.anatomy.arterial_blood_ph_reference_prompt",
+        "before": "A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.",
+        "after": "Un intervalo de referencia común para el pH de la sangre arterial es de 7.35–7.45. Investiga por qué es tan estrecho."
+      },
+      {
+        "key": "stem.anatomy.compare_outside_reference_counts",
+        "before": "Find settings with one, two, and three variables outside the reference ranges. What changes?",
+        "after": "Busca ajustes con una, dos y tres variables fuera de los intervalos de referencia. ¿Qué cambia?"
+      },
+      {
+        "key": "stem.anatomy.explain_homeostasis_model_limit",
+        "before": "Explain why a reference-range flag alone cannot diagnose a person.",
+        "after": "Explica por qué señalar un valor fuera del intervalo de referencia no basta para diagnosticar a una persona."
+      },
+      {
+        "key": "stem.anatomy.fasting_glucose_mg_dl",
+        "before": "Fasting glucose (mg/dL)",
+        "after": "Glucosa en ayunas (mg/dL)"
+      },
+      {
+        "key": "stem.anatomy.homeostasis_model_limit",
+        "before": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
+        "after": "Solo es un modelo para aprender, sin puntuación clínica ni diagnóstico. La interpretación real depende de la edad, el contexto, los síntomas, el método de medición, las tendencias y la rapidez del cambio."
+      },
+      {
+        "key": "stem.anatomy.homeostasis_reference_hypothesis",
+        "before": "Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?",
+        "after": "Hipótesis: ¿Qué ayuda a regular cada variable? ¿Por qué no podemos comparar la amplitud de intervalos expresados en distintas unidades?"
+      },
+      {
+        "key": "stem.anatomy.one_variable_outside_reference",
+        "before": "1 variable outside reference",
+        "after": "1 variable fuera del intervalo de referencia"
+      },
+      {
+        "key": "stem.anatomy.three_variables_outside_reference",
+        "before": "3 variables outside reference",
+        "after": "3 variables fuera de los intervalos de referencia"
+      },
+      {
+        "key": "stem.anatomy.two_variables_outside_reference",
+        "before": "2 variables outside reference",
+        "after": "2 variables fuera de los intervalos de referencia"
+      },
+      {
+        "key": "stem.anatomy.within_teaching_references",
+        "before": "All within teaching references",
+        "after": "Todas dentro de los intervalos para aprender"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1",
+        "after": "La temperatura corporal es de 39.0 °C. Frente al intervalo para aprender de 36.5–37.5 °C, ¿qué afirmación es verdadera?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_a",
+        "after": "Está por encima del intervalo: el cuerpo está demasiado caliente"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_b",
+        "after": "Está dentro del intervalo"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_c",
+        "after": "Está por debajo del intervalo: el cuerpo está demasiado frío"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2",
+        "after": "El pH de la sangre arterial es de 7.25. Frente al intervalo de 7.35–7.45, ¿qué afirmación corresponde?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_a",
+        "after": "Está dentro del intervalo"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_b",
+        "after": "Está por encima del intervalo: más alcalino de lo normal"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_c",
+        "after": "Está por debajo del intervalo: más ácido de lo normal"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3",
+        "after": "¿Qué frase describe la retroalimentación negativa, el ciclo que mantiene estables estos valores?"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_a",
+        "after": "El cuerpo detecta un cambio y lo aumenta en la misma dirección"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_b",
+        "after": "El cuerpo ignora los cambios pequeños hasta que se vuelven grandes"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_c",
+        "after": "El cuerpo detecta un cambio y responde para acercar el valor a su punto de ajuste"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_title",
+        "after": "✓ Comprueba lo que descubriste"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_score",
+        "after": " correctas. "
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_all",
+        "after": "Puedes comparar un valor con su intervalo y explicar el ciclo que lo mantiene allí."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_some",
+        "after": "Mueve otra vez un valor fuera del intervalo y observa en qué dirección el cuerpo tendría que devolverlo."
+      },
+      {
+        "key": "stem.anatomy.recap_correct_short",
+        "after": "Correcto."
+      },
+      {
+        "key": "stem.anatomy.recap_incorrect_short",
+        "after": "No del todo."
+      },
+      {
+        "key": "stem.anatomy.a11y_logged_homeostasis_observations",
+        "after": "Observaciones de homeostasis registradas"
+      }
+    ]
+  },
+  {
+    "path": "lang/arabic.js",
+    "firstByteDifference": 2310866,
+    "expectedAtDifference": "Homeostasis explanation\",\n      \"hypothesis_input\": \"Homeostasis hypothesis\",\n      \"alveolus_deep_dive\": \"Alv",
+    "actualAtDifference": "تفسير حول الاتزان الداخلي\",\n      \"hypothesis_input\": \"فرضية حول الاتزان الداخلي\",\n      \"alveolus_deep_dive\":",
+    "changedKeys": [
+      "stem.anatomy.explanation_input",
+      "stem.anatomy.hypothesis_input",
+      "stem.anatomy.arterial_blood_ph_reference_prompt",
+      "stem.anatomy.compare_outside_reference_counts",
+      "stem.anatomy.explain_homeostasis_model_limit",
+      "stem.anatomy.fasting_glucose_mg_dl",
+      "stem.anatomy.homeostasis_model_limit",
+      "stem.anatomy.homeostasis_reference_hypothesis",
+      "stem.anatomy.one_variable_outside_reference",
+      "stem.anatomy.three_variables_outside_reference",
+      "stem.anatomy.two_variables_outside_reference",
+      "stem.anatomy.within_teaching_references",
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.anatomy.homeo_flow_temp_reason",
+      "stem.anatomy.homeo_flow_ph_reason",
+      "stem.anatomy.homeo_flow_feedback_reason",
+      "stem.anatomy.homeo_flow_measurements_reset",
+      "stem.anatomy.homeo_flow_observations_cleared",
+      "stem.anatomy.homeo_flow_checks_restarted",
+      "stem.anatomy.homeo_flow_observation_saved",
+      "stem.anatomy.homeo_flow_prediction_again",
+      "stem.anatomy.homeo_flow_models_compared",
+      "stem.anatomy.homeo_flow_intro",
+      "stem.anatomy.homeo_flow_navigation",
+      "stem.anatomy.homeo_flow_experiment",
+      "stem.anatomy.homeo_flow_ranges",
+      "stem.anatomy.homeo_flow_range_intro",
+      "stem.anatomy.homeo_flow_outside_count",
+      "stem.anatomy.homeo_flow_teaching_range",
+      "stem.anatomy.homeo_flow_below",
+      "stem.anatomy.homeo_flow_above",
+      "stem.anatomy.homeo_flow_within",
+      "stem.anatomy.homeo_flow_log",
+      "stem.anatomy.homeo_flow_reset_measurements",
+      "stem.anatomy.homeo_flow_clear_observations",
+      "stem.anatomy.homeo_flow_reset_help",
+      "stem.anatomy.homeo_flow_observations",
+      "stem.anatomy.homeo_flow_outside_column",
+      "stem.anatomy.homeo_flow_log_count",
+      "stem.anatomy.homeo_flow_hypothesis",
+      "stem.anatomy.homeo_flow_explanation",
+      "stem.anatomy.homeo_flow_question",
+      "stem.anatomy.homeo_flow_your_answer",
+      "stem.anatomy.homeo_flow_correct_answer",
+      "stem.anatomy.homeo_flow_latest_score",
+      "stem.anatomy.homeo_flow_restart_checks",
+      "stem.anatomy.homeo_flow_restart_help",
+      "stem.anatomy.homeo_flow_pulse_key",
+      "stem.anatomy.homeo_recap_q1",
+      "stem.anatomy.homeo_recap_q1_a",
+      "stem.anatomy.homeo_recap_q1_b",
+      "stem.anatomy.homeo_recap_q1_c",
+      "stem.anatomy.homeo_recap_q2",
+      "stem.anatomy.homeo_recap_q2_a",
+      "stem.anatomy.homeo_recap_q2_b",
+      "stem.anatomy.homeo_recap_q2_c",
+      "stem.anatomy.homeo_recap_q3",
+      "stem.anatomy.homeo_recap_q3_a",
+      "stem.anatomy.homeo_recap_q3_b",
+      "stem.anatomy.homeo_recap_q3_c",
+      "stem.anatomy.homeo_recap_title",
+      "stem.anatomy.homeo_recap_score",
+      "stem.anatomy.homeo_recap_all",
+      "stem.anatomy.homeo_recap_some",
+      "stem.anatomy.recap_correct_short",
+      "stem.anatomy.recap_incorrect_short",
+      "stem.anatomy.a11y_logged_homeostasis_observations"
+    ],
+    "changes": [
+      {
+        "key": "stem.anatomy.explanation_input",
+        "before": "Homeostasis explanation",
+        "after": "تفسير حول الاتزان الداخلي"
+      },
+      {
+        "key": "stem.anatomy.hypothesis_input",
+        "before": "Homeostasis hypothesis",
+        "after": "فرضية حول الاتزان الداخلي"
+      },
+      {
+        "key": "stem.anatomy.arterial_blood_ph_reference_prompt",
+        "before": "A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.",
+        "after": "النطاق المرجعي الشائع لـpH الدم الشرياني هو من 7.35 إلى 7.45. ابحث لماذا هو ضيق جدًا."
+      },
+      {
+        "key": "stem.anatomy.compare_outside_reference_counts",
+        "before": "Find settings with one, two, and three variables outside the reference ranges. What changes?",
+        "after": "ابحث عن إعدادات تجعل متغيرًا واحدًا ثم متغيرين ثم ثلاثة متغيرات خارج النطاقات المرجعية. ما الذي يتغيّر؟"
+      },
+      {
+        "key": "stem.anatomy.explain_homeostasis_model_limit",
+        "before": "Explain why a reference-range flag alone cannot diagnose a person.",
+        "after": "فسّر لماذا لا يكفي تحديد قيمة خارج النطاق المرجعي لتشخيص حالة شخص."
+      },
+      {
+        "key": "stem.anatomy.fasting_glucose_mg_dl",
+        "before": "Fasting glucose (mg/dL)",
+        "after": "الغلوكوز أثناء الصيام (mg/dL)"
+      },
+      {
+        "key": "stem.anatomy.homeostasis_model_limit",
+        "before": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
+        "after": "نموذج تعليمي فقط، دون درجة سريرية أو تشخيص. يعتمد التفسير الفعلي على العمر والسياق والأعراض وطريقة القياس والاتجاهات ومعدل التغيّر."
+      },
+      {
+        "key": "stem.anatomy.homeostasis_reference_hypothesis",
+        "before": "Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?",
+        "after": "فرضية: ما الذي يساعد كل متغير على تنظيمه؟ لماذا لا يمكن مقارنة اتساع نطاقات تُقاس بوحدات مختلفة؟"
+      },
+      {
+        "key": "stem.anatomy.one_variable_outside_reference",
+        "before": "1 variable outside reference",
+        "after": "متغير واحد خارج النطاق المرجعي"
+      },
+      {
+        "key": "stem.anatomy.three_variables_outside_reference",
+        "before": "3 variables outside reference",
+        "after": "ثلاثة متغيرات خارج النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.two_variables_outside_reference",
+        "before": "2 variables outside reference",
+        "after": "متغيران خارج النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.within_teaching_references",
+        "before": "All within teaching references",
+        "after": "جميع القيم ضمن النطاقات التعليمية"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_temp_reason",
+        "after": "39.0 °C أعلى من الحد التعليمي الأعلى البالغ 37.5 °C. تصف هذه المقارنة النطاق، ولا تشخّص حالة شخص."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_ph_reason",
+        "after": "7.25 أقل من 7.35. يكون pH الأقل أكثر حمضية، ويكون pH الأعلى أكثر قلوية."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_feedback_reason",
+        "after": "تقاوم التغذية الراجعة السلبية الاضطراب. في مقارنة درجات الحرارة، تقل الاستجابة الفعّالة كلما قل الفرق عن القيمة الابتدائية."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_measurements_reset",
+        "after": "أُعيدت القياسات إلى قيمها الابتدائية. كتابتك وملاحظاتك وإجابات أسئلة المراجعة محفوظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_observations_cleared",
+        "after": "مُسحت الملاحظات. كتابتك وإجابات أسئلة المراجعة محفوظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_checks_restarted",
+        "after": "محاولة جديدة لأسئلة المراجعة. نتيجة آخر محاولة مكتملة وكتابتك محفوظتان."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_observation_saved",
+        "after": "حُفظت الملاحظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_prediction_again",
+        "after": "قدّم توقّعًا جديدًا. تفسيرك محفوظ."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_models_compared",
+        "after": "تظهر الآن مقارنة النموذجين. اقرأ التفسير وقارن الخطين."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_intro",
+        "after": "توقّع كيف تستجيب التغذية الراجعة لدرجة الحرارة، ثم استكشف ثلاثة نطاقات مرجعية تعليمية. تبقى كتابتك وملاحظاتك محفوظة عند التنقل بين هذه الأنشطة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_navigation",
+        "after": "أنشطة الاتزان الداخلي"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_experiment",
+        "after": "التغذية الراجعة لدرجة الحرارة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_ranges",
+        "after": "النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_range_intro",
+        "after": "عدّل درجة حرارة الجسم وpH الدم الشرياني وغلوكوز البلازما أثناء الصيام. قارن كل قيمة بنطاقها المرجعي التعليمي للبالغين؛ تستخدم القياسات وحدات مختلفة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_outside_count",
+        "after": "{outside} من أصل {total} قياسات خارج النطاقات المرجعية التعليمية."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_teaching_range",
+        "after": "النطاق التعليمي: ⁦{range}⁩"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_below",
+        "after": "أقل من النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_above",
+        "after": "أعلى من النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_within",
+        "after": "ضمن النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_log",
+        "after": "تسجيل ملاحظة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_reset_measurements",
+        "after": "إعادة ضبط القياسات"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_clear_observations",
+        "after": "مسح الملاحظات"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_reset_help",
+        "after": "إعادة ضبط القياسات تستعيد القيم الابتدائية الثلاث. مسح الملاحظات يفرغ الجدول. تحتفظ العمليتان بكتابتك وإجابات أسئلة المراجعة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_observations",
+        "after": "الملاحظات: حُفظ {count} من أصل {maximum}"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_outside_column",
+        "after": "خارج النطاقات"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_log_count",
+        "after": "{count} من أصل {total}"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_hypothesis",
+        "after": "فرضيتك"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_explanation",
+        "after": "فسّر حدود النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_question",
+        "after": "السؤال {question} من {total}"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_your_answer",
+        "after": "إجابتك"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_correct_answer",
+        "after": "الإجابة الصحيحة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_latest_score",
+        "after": "آخر أسئلة مراجعة مكتملة: {correct}/{total} إجابات صحيحة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_restart_checks",
+        "after": "إعادة أسئلة المراجعة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_restart_help",
+        "after": "البدء من جديد يمسح إجابات هذه المحاولة. تبقى نتيجة آخر محاولة مكتملة وكتابتك وملاحظاتك محفوظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_pulse_key",
+        "after": "المنطقة المظللة: يستمر تطبيق الاضطراب حتى الخطوة 8."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1",
+        "after": "تبلغ درجة حرارة الجسم 39.0 °C. مقارنةً بالنطاق التعليمي من 36.5 °C إلى 37.5 °C، أي عبارة صحيحة؟"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_a",
+        "after": "هي أعلى من النطاق: الجسم أدفأ مما ينبغي"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_b",
+        "after": "هي ضمن النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_c",
+        "after": "هي أقل من النطاق: الجسم أبرد مما ينبغي"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2",
+        "after": "يبلغ pH الدم الشرياني 7.25. مقارنةً بالنطاق من 7.35 إلى 7.45، أي عبارة تنطبق؟"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_a",
+        "after": "هو ضمن النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_b",
+        "after": "هو أعلى من النطاق: أكثر قلوية من المعتاد"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_c",
+        "after": "هو أقل من النطاق: أكثر حمضية من المعتاد"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3",
+        "after": "أي عبارة تصف التغذية الراجعة السلبية، وهي الحلقة التي تحافظ على استقرار هذه القيم؟"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_a",
+        "after": "يلاحظ الجسم تغيّرًا ويدفعه أكثر في الاتجاه نفسه"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_b",
+        "after": "يتجاهل الجسم التغيّرات الصغيرة حتى تصبح كبيرة"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_c",
+        "after": "يلاحظ الجسم تغيّرًا ويستجيب لإعادة القيمة نحو نقطة الضبط"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_title",
+        "after": "✓ راجع ما اكتشفته"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_score",
+        "after": " إجابات صحيحة. "
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_all",
+        "after": "يمكنك مقارنة قيمة بنطاقها وتفسير الحلقة التي تبقيها ضمنه."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_some",
+        "after": "حرّك قيمة خارج النطاق مجددًا ولاحظ الاتجاه الذي يحتاج الجسم إلى دفعها فيه لإعادتها."
+      },
+      {
+        "key": "stem.anatomy.recap_correct_short",
+        "after": "صحيح."
+      },
+      {
+        "key": "stem.anatomy.recap_incorrect_short",
+        "after": "ليس تمامًا."
+      },
+      {
+        "key": "stem.anatomy.a11y_logged_homeostasis_observations",
+        "after": "ملاحظات الاتزان الداخلي المسجّلة"
+      }
+    ]
+  },
+  {
+    "path": "desktop/web-app/public/lang/arabic.js",
+    "firstByteDifference": 2310866,
+    "expectedAtDifference": "Homeostasis explanation\",\n      \"hypothesis_input\": \"Homeostasis hypothesis\",\n      \"alveolus_deep_dive\": \"Alv",
+    "actualAtDifference": "تفسير حول الاتزان الداخلي\",\n      \"hypothesis_input\": \"فرضية حول الاتزان الداخلي\",\n      \"alveolus_deep_dive\":",
+    "changedKeys": [
+      "stem.anatomy.explanation_input",
+      "stem.anatomy.hypothesis_input",
+      "stem.anatomy.arterial_blood_ph_reference_prompt",
+      "stem.anatomy.compare_outside_reference_counts",
+      "stem.anatomy.explain_homeostasis_model_limit",
+      "stem.anatomy.fasting_glucose_mg_dl",
+      "stem.anatomy.homeostasis_model_limit",
+      "stem.anatomy.homeostasis_reference_hypothesis",
+      "stem.anatomy.one_variable_outside_reference",
+      "stem.anatomy.three_variables_outside_reference",
+      "stem.anatomy.two_variables_outside_reference",
+      "stem.anatomy.within_teaching_references",
+      "history.resource_incomplete",
+      "history.open_failed",
+      "stem.anatomy.homeo_flow_temp_reason",
+      "stem.anatomy.homeo_flow_ph_reason",
+      "stem.anatomy.homeo_flow_feedback_reason",
+      "stem.anatomy.homeo_flow_measurements_reset",
+      "stem.anatomy.homeo_flow_observations_cleared",
+      "stem.anatomy.homeo_flow_checks_restarted",
+      "stem.anatomy.homeo_flow_observation_saved",
+      "stem.anatomy.homeo_flow_prediction_again",
+      "stem.anatomy.homeo_flow_models_compared",
+      "stem.anatomy.homeo_flow_intro",
+      "stem.anatomy.homeo_flow_navigation",
+      "stem.anatomy.homeo_flow_experiment",
+      "stem.anatomy.homeo_flow_ranges",
+      "stem.anatomy.homeo_flow_range_intro",
+      "stem.anatomy.homeo_flow_outside_count",
+      "stem.anatomy.homeo_flow_teaching_range",
+      "stem.anatomy.homeo_flow_below",
+      "stem.anatomy.homeo_flow_above",
+      "stem.anatomy.homeo_flow_within",
+      "stem.anatomy.homeo_flow_log",
+      "stem.anatomy.homeo_flow_reset_measurements",
+      "stem.anatomy.homeo_flow_clear_observations",
+      "stem.anatomy.homeo_flow_reset_help",
+      "stem.anatomy.homeo_flow_observations",
+      "stem.anatomy.homeo_flow_outside_column",
+      "stem.anatomy.homeo_flow_log_count",
+      "stem.anatomy.homeo_flow_hypothesis",
+      "stem.anatomy.homeo_flow_explanation",
+      "stem.anatomy.homeo_flow_question",
+      "stem.anatomy.homeo_flow_your_answer",
+      "stem.anatomy.homeo_flow_correct_answer",
+      "stem.anatomy.homeo_flow_latest_score",
+      "stem.anatomy.homeo_flow_restart_checks",
+      "stem.anatomy.homeo_flow_restart_help",
+      "stem.anatomy.homeo_flow_pulse_key",
+      "stem.anatomy.homeo_recap_q1",
+      "stem.anatomy.homeo_recap_q1_a",
+      "stem.anatomy.homeo_recap_q1_b",
+      "stem.anatomy.homeo_recap_q1_c",
+      "stem.anatomy.homeo_recap_q2",
+      "stem.anatomy.homeo_recap_q2_a",
+      "stem.anatomy.homeo_recap_q2_b",
+      "stem.anatomy.homeo_recap_q2_c",
+      "stem.anatomy.homeo_recap_q3",
+      "stem.anatomy.homeo_recap_q3_a",
+      "stem.anatomy.homeo_recap_q3_b",
+      "stem.anatomy.homeo_recap_q3_c",
+      "stem.anatomy.homeo_recap_title",
+      "stem.anatomy.homeo_recap_score",
+      "stem.anatomy.homeo_recap_all",
+      "stem.anatomy.homeo_recap_some",
+      "stem.anatomy.recap_correct_short",
+      "stem.anatomy.recap_incorrect_short",
+      "stem.anatomy.a11y_logged_homeostasis_observations"
+    ],
+    "changes": [
+      {
+        "key": "stem.anatomy.explanation_input",
+        "before": "Homeostasis explanation",
+        "after": "تفسير حول الاتزان الداخلي"
+      },
+      {
+        "key": "stem.anatomy.hypothesis_input",
+        "before": "Homeostasis hypothesis",
+        "after": "فرضية حول الاتزان الداخلي"
+      },
+      {
+        "key": "stem.anatomy.arterial_blood_ph_reference_prompt",
+        "before": "A common arterial blood pH reference range is 7.35-7.45. Investigate why it is so narrow.",
+        "after": "النطاق المرجعي الشائع لـpH الدم الشرياني هو من 7.35 إلى 7.45. ابحث لماذا هو ضيق جدًا."
+      },
+      {
+        "key": "stem.anatomy.compare_outside_reference_counts",
+        "before": "Find settings with one, two, and three variables outside the reference ranges. What changes?",
+        "after": "ابحث عن إعدادات تجعل متغيرًا واحدًا ثم متغيرين ثم ثلاثة متغيرات خارج النطاقات المرجعية. ما الذي يتغيّر؟"
+      },
+      {
+        "key": "stem.anatomy.explain_homeostasis_model_limit",
+        "before": "Explain why a reference-range flag alone cannot diagnose a person.",
+        "after": "فسّر لماذا لا يكفي تحديد قيمة خارج النطاق المرجعي لتشخيص حالة شخص."
+      },
+      {
+        "key": "stem.anatomy.fasting_glucose_mg_dl",
+        "before": "Fasting glucose (mg/dL)",
+        "after": "الغلوكوز أثناء الصيام (mg/dL)"
+      },
+      {
+        "key": "stem.anatomy.homeostasis_model_limit",
+        "before": "Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.",
+        "after": "نموذج تعليمي فقط، دون درجة سريرية أو تشخيص. يعتمد التفسير الفعلي على العمر والسياق والأعراض وطريقة القياس والاتجاهات ومعدل التغيّر."
+      },
+      {
+        "key": "stem.anatomy.homeostasis_reference_hypothesis",
+        "before": "Hypothesis: Which reference range is narrowest, and why might the body regulate it tightly?",
+        "after": "فرضية: ما الذي يساعد كل متغير على تنظيمه؟ لماذا لا يمكن مقارنة اتساع نطاقات تُقاس بوحدات مختلفة؟"
+      },
+      {
+        "key": "stem.anatomy.one_variable_outside_reference",
+        "before": "1 variable outside reference",
+        "after": "متغير واحد خارج النطاق المرجعي"
+      },
+      {
+        "key": "stem.anatomy.three_variables_outside_reference",
+        "before": "3 variables outside reference",
+        "after": "ثلاثة متغيرات خارج النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.two_variables_outside_reference",
+        "before": "2 variables outside reference",
+        "after": "متغيران خارج النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.within_teaching_references",
+        "before": "All within teaching references",
+        "after": "جميع القيم ضمن النطاقات التعليمية"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_temp_reason",
+        "after": "39.0 °C أعلى من الحد التعليمي الأعلى البالغ 37.5 °C. تصف هذه المقارنة النطاق، ولا تشخّص حالة شخص."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_ph_reason",
+        "after": "7.25 أقل من 7.35. يكون pH الأقل أكثر حمضية، ويكون pH الأعلى أكثر قلوية."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_feedback_reason",
+        "after": "تقاوم التغذية الراجعة السلبية الاضطراب. في مقارنة درجات الحرارة، تقل الاستجابة الفعّالة كلما قل الفرق عن القيمة الابتدائية."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_measurements_reset",
+        "after": "أُعيدت القياسات إلى قيمها الابتدائية. كتابتك وملاحظاتك وإجابات أسئلة المراجعة محفوظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_observations_cleared",
+        "after": "مُسحت الملاحظات. كتابتك وإجابات أسئلة المراجعة محفوظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_checks_restarted",
+        "after": "محاولة جديدة لأسئلة المراجعة. نتيجة آخر محاولة مكتملة وكتابتك محفوظتان."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_observation_saved",
+        "after": "حُفظت الملاحظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_prediction_again",
+        "after": "قدّم توقّعًا جديدًا. تفسيرك محفوظ."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_models_compared",
+        "after": "تظهر الآن مقارنة النموذجين. اقرأ التفسير وقارن الخطين."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_intro",
+        "after": "توقّع كيف تستجيب التغذية الراجعة لدرجة الحرارة، ثم استكشف ثلاثة نطاقات مرجعية تعليمية. تبقى كتابتك وملاحظاتك محفوظة عند التنقل بين هذه الأنشطة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_navigation",
+        "after": "أنشطة الاتزان الداخلي"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_experiment",
+        "after": "التغذية الراجعة لدرجة الحرارة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_ranges",
+        "after": "النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_range_intro",
+        "after": "عدّل درجة حرارة الجسم وpH الدم الشرياني وغلوكوز البلازما أثناء الصيام. قارن كل قيمة بنطاقها المرجعي التعليمي للبالغين؛ تستخدم القياسات وحدات مختلفة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_outside_count",
+        "after": "{outside} من أصل {total} قياسات خارج النطاقات المرجعية التعليمية."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_teaching_range",
+        "after": "النطاق التعليمي: ⁦{range}⁩"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_below",
+        "after": "أقل من النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_above",
+        "after": "أعلى من النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_within",
+        "after": "ضمن النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_log",
+        "after": "تسجيل ملاحظة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_reset_measurements",
+        "after": "إعادة ضبط القياسات"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_clear_observations",
+        "after": "مسح الملاحظات"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_reset_help",
+        "after": "إعادة ضبط القياسات تستعيد القيم الابتدائية الثلاث. مسح الملاحظات يفرغ الجدول. تحتفظ العمليتان بكتابتك وإجابات أسئلة المراجعة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_observations",
+        "after": "الملاحظات: حُفظ {count} من أصل {maximum}"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_outside_column",
+        "after": "خارج النطاقات"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_log_count",
+        "after": "{count} من أصل {total}"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_hypothesis",
+        "after": "فرضيتك"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_explanation",
+        "after": "فسّر حدود النطاقات المرجعية"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_question",
+        "after": "السؤال {question} من {total}"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_your_answer",
+        "after": "إجابتك"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_correct_answer",
+        "after": "الإجابة الصحيحة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_latest_score",
+        "after": "آخر أسئلة مراجعة مكتملة: {correct}/{total} إجابات صحيحة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_restart_checks",
+        "after": "إعادة أسئلة المراجعة"
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_restart_help",
+        "after": "البدء من جديد يمسح إجابات هذه المحاولة. تبقى نتيجة آخر محاولة مكتملة وكتابتك وملاحظاتك محفوظة."
+      },
+      {
+        "key": "stem.anatomy.homeo_flow_pulse_key",
+        "after": "المنطقة المظللة: يستمر تطبيق الاضطراب حتى الخطوة 8."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1",
+        "after": "تبلغ درجة حرارة الجسم 39.0 °C. مقارنةً بالنطاق التعليمي من 36.5 °C إلى 37.5 °C، أي عبارة صحيحة؟"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_a",
+        "after": "هي أعلى من النطاق: الجسم أدفأ مما ينبغي"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_b",
+        "after": "هي ضمن النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q1_c",
+        "after": "هي أقل من النطاق: الجسم أبرد مما ينبغي"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2",
+        "after": "يبلغ pH الدم الشرياني 7.25. مقارنةً بالنطاق من 7.35 إلى 7.45، أي عبارة تنطبق؟"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_a",
+        "after": "هو ضمن النطاق"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_b",
+        "after": "هو أعلى من النطاق: أكثر قلوية من المعتاد"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q2_c",
+        "after": "هو أقل من النطاق: أكثر حمضية من المعتاد"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3",
+        "after": "أي عبارة تصف التغذية الراجعة السلبية، وهي الحلقة التي تحافظ على استقرار هذه القيم؟"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_a",
+        "after": "يلاحظ الجسم تغيّرًا ويدفعه أكثر في الاتجاه نفسه"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_b",
+        "after": "يتجاهل الجسم التغيّرات الصغيرة حتى تصبح كبيرة"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_q3_c",
+        "after": "يلاحظ الجسم تغيّرًا ويستجيب لإعادة القيمة نحو نقطة الضبط"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_title",
+        "after": "✓ راجع ما اكتشفته"
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_score",
+        "after": " إجابات صحيحة. "
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_all",
+        "after": "يمكنك مقارنة قيمة بنطاقها وتفسير الحلقة التي تبقيها ضمنه."
+      },
+      {
+        "key": "stem.anatomy.homeo_recap_some",
+        "after": "حرّك قيمة خارج النطاق مجددًا ولاحظ الاتجاه الذي يحتاج الجسم إلى دفعها فيه لإعادتها."
+      },
+      {
+        "key": "stem.anatomy.recap_correct_short",
+        "after": "صحيح."
+      },
+      {
+        "key": "stem.anatomy.recap_incorrect_short",
+        "after": "ليس تمامًا."
+      },
+      {
+        "key": "stem.anatomy.a11y_logged_homeostasis_observations",
+        "after": "ملاحظات الاتزان الداخلي المسجّلة"
+      }
+    ]
+  }
+]

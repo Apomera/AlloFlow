@@ -1,0 +1,6 @@
+{
+  "_doc": "Committed golden-master baselines for tests/table_ro_eval.test.js. table fixtures use minScore (TEDS must be >=); reading-order fixtures use maxDistance (normalized edit distance must be <=). Re-baseline ONLY after a deliberate, reviewed improvement. Synthetic baselines are loose placeholders; tighten per-item once real OmniDocBench / Canvas-captured ground truth lands.",
+  "synthetic-emit-header-row": { "minScore": 0.99, "note": "deterministic emitter must preserve cells/spans/text exactly" },
+  "synthetic-captured-borderless-rowspan": { "minScore": 0.85, "note": "captured vision output; one-cell tolerance on a ~13-node tree" },
+  "synthetic-multicol-reading-order": { "maxDistance": 0.05, "note": "human column order preserved (0 distance)" }
+}

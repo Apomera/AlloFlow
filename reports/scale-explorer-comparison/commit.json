@@ -1,0 +1,18 @@
+{
+  "commit": "88db49a9da893462fd33f90a3e47d68f5f9a2d71",
+  "parent": "321fac7ab933a70e88caa6c1f7779fe8ca963ca1",
+  "files": [
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/ui_strings.js",
+    "reports/scale-explorer-comparison/README.md",
+    "reports/scale-explorer-comparison/earth-moon-studio.png",
+    "reports/scale-explorer-comparison/phone-diagram.png",
+    "reports/scale-explorer-comparison/subpixel-locator.png",
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "tests/e2e/scale-explorer-atlas.spec.ts",
+    "tests/e2e/scale-explorer-comparison.spec.ts",
+    "tests/scale_explorer.test.js",
+    "tests/scale_explorer_comparison.test.js",
+    "ui_strings.js"
+  ]
+}

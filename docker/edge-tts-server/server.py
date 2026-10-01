@@ -5,12 +5,52 @@ Returns WAV audio matching the OpenAI TTS API format.
 """
 import asyncio
 import io
+import os
 import edge_tts
+from urllib.parse import urlsplit
 from flask import Flask, request, Response, jsonify
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+
+
+def is_allowed_origin(origin):
+    """Allow native clients, loopback apps and explicitly trusted web origins."""
+    if origin is None:
+        return True
+    if not isinstance(origin, str) or not origin or origin != origin.strip():
+        return False
+    try:
+        parsed = urlsplit(origin)
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username or parsed.password or parsed.path
+                or parsed.query or parsed.fragment
+                or (parsed.port is not None and not 0 < parsed.port <= 65535)):
+            return False
+    except ValueError:
+        return False
+    if parsed.hostname in ("localhost", "127.0.0.1", "::1"):
+        return True
+    trusted = {"https://alloflow-cdn.pages.dev"}
+    trusted.update(value.strip() for value in
+                   os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","))
+    return origin in trusted
+
+
+@app.before_request
+def guard_browser_origin():
+    if not is_allowed_origin(request.headers.get("Origin")):
+        return jsonify({"error": "Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."}), 403
+
+
+@app.after_request
+def add_cors_headers(response):
+    response.vary.add("Origin")
+    origin = request.headers.get("Origin")
+    if origin and is_allowed_origin(origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 # Map OpenAI-style voice IDs to actual Edge TTS voice names
 VOICE_MAP = {

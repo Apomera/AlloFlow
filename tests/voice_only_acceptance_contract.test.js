@@ -1,14 +1,17 @@
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import { describe, expect, it } from 'vitest';
 
-const commands = fs.readFileSync('allo_commands_source.jsx', 'utf8');
-const host = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-const talk = fs.readFileSync('view_misc_modals_source.jsx', 'utf8');
-const launch = fs.readFileSync('view_launch_pad_source.jsx', 'utf8');
-const roles = fs.readFileSync('ui_modals_source.jsx', 'utf8');
-const testPrep = fs.readFileSync('test_prep_hub_source.jsx', 'utf8');
-const quiz = fs.readFileSync('view_quiz_source.jsx', 'utf8');
-const voice = fs.readFileSync('voice_module.js', 'utf8');
+const commands = readSourceFile('allo_commands_source.jsx', 'utf8');
+const host = readSourceFile('AlloFlowANTI.txt', 'utf8');
+const talk = readSourceFile('view_misc_modals_source.jsx', 'utf8');
+const launch = readSourceFile('view_launch_pad_source.jsx', 'utf8');
+const roles = readSourceFile('ui_modals_source.jsx', 'utf8');
+const testPrep = readSourceFile('test_prep_hub_source.jsx', 'utf8');
+const quiz = readSourceFile('view_quiz_source.jsx', 'utf8');
+const voice = readSourceFile('voice_module.js', 'utf8');
 
 describe('voice-only acceptance contract (pointer and keyboard remain supported)', () => {
   it('has an honest assisted bootstrap and never removes other input modes', () => {

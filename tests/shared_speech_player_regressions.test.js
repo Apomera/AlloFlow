@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sliceTopLevelBlock } from './helpers/host_source.js';
 
 const HOST_FILES = [
   'AlloFlowANTI.txt',
@@ -9,10 +10,8 @@ const HOST_FILES = [
 
 function playerBlock(file = HOST_FILES[0]) {
   const source = fs.readFileSync(file, 'utf8');
-  const start = source.indexOf("if (typeof window !== 'undefined' && !window.AlloSpeechPlayer)");
-  const end = source.indexOf('/**', start);
-  if (start < 0 || end < 0) throw new Error('shared player block not found in ' + file);
-  return source.slice(start, end);
+  // Ended at the next '/**' until the ANTI comment ratchet removed it (8dce94eed); slice through the block's own closing brace.
+  return sliceTopLevelBlock(source, "if (typeof window !== 'undefined' && !window.AlloSpeechPlayer)", { file });
 }
 
 function deferred() {

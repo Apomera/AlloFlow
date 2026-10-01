@@ -1,0 +1,5 @@
+Improve anatomy practice navigation and feedback
+
+Place practice navigation near the anatomy canvas, focus answer feedback, and keep imaging questions aligned with the active scan.
+
+Validate focused regressions, browser interaction, responsive layouts, and accessibility.

@@ -858,7 +858,7 @@ function HeaderBar(props) {
                   <button type="button"
                     onClick={handleSetActiveViewToDashboard}
                     data-help-key="header_dashboard"
-                    className={`hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
                     title={dashboardNavLabel}
                     aria-label={dashboardNavLabel}
                   >

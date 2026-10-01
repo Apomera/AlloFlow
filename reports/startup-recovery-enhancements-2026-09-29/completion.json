@@ -1,0 +1,66 @@
+{
+  "at": "2026-09-29T23:39:15.750Z",
+  "status": "complete",
+  "behavior": [
+    "Save waits for PhaseKHelpers and requested AlloCrypto; duplicate pending saves are blocked and Save shows a busy state.",
+    "Pending saves are cancelled when the dialog or project changes, including after builder snapshots, privacy confirmation and encryption.",
+    "Requested encryption fails without a download when the crypto API is missing or rejects.",
+    "Student progress save metadata updates only after the browser accepts the download.",
+    "Adventure setup and dice completion wait for their modules; stale, duplicate and detached requests do not change another story or turn.",
+    "Adventure restart rechecks its original context after asynchronous confirmation."
+  ],
+  "targetedFiles": 11,
+  "targetedAssertions": 202,
+  "newTargetedAssertions": 73,
+  "unitCommand": "vitest run <11 selected files> --fileParallelism=false --testTimeout=60000 --reporter=json",
+  "fullAppFlows": [
+    {
+      "scenario": "plain",
+      "passed": true,
+      "filename": "Verified-plain.json",
+      "decryptionVerified": false,
+      "cryptoRequests": 1
+    },
+    {
+      "scenario": "cancel-encryption",
+      "passed": true,
+      "filename": "Verified-retry.enc.json",
+      "decryptionVerified": true,
+      "cryptoRequests": 1
+    },
+    {
+      "scenario": "failed-encryption",
+      "passed": true,
+      "filename": "Verified-failed-encryption.enc.json",
+      "decryptionVerified": true,
+      "cryptoRequests": 3
+    }
+  ],
+  "mutationProofs": 6,
+  "audit": {
+    "hostsEqual": true,
+    "hostsParse": true,
+    "phaseKMirrorEqual": true,
+    "adventureMirrorEqual": true,
+    "cryptoMirrorEqual": true,
+    "surroundingPhaseKPreserved": true,
+    "surroundingAdventurePreserved": true,
+    "validationAdditive": true,
+    "testsSelected": true,
+    "fullAppUsesCurrentHost": true,
+    "proofInputsCurrent": true,
+    "proofInputsUnchanged": true,
+    "sixProofsRejected": true,
+    "phaseKBuildCurrent": true,
+    "adventureBuildCurrent": true
+  },
+  "changedDuringValidation": [],
+  "gitWritesPerformed": false,
+  "deployed": false,
+  "qualifications": [
+    "The parallel final run recorded 201/202 passes; the existing synchronous Adventure build check exceeded the 15-second test budget (24.9 seconds). The serial run with a 60-second budget passed all 202 checks.",
+    "An initial encrypted-file test read a nonexistent settings.inputText field. It now verifies the actual history schema and the decrypted lesson title.",
+    "Initial full-app attempts used an ambiguous role selector and then a project import that waited for the deliberately delayed crypto module. The final harness selects role_teacher and seeds the supported offline history snapshot with the actual idb-keyval vendor before app hydration. Raw attempts are retained.",
+    "These are targeted local checks. Live AI rehearsal and the normal shared-tree release validation remain separate."
+  ]
+}

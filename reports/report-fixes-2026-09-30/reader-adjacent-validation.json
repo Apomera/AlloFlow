@@ -1,0 +1,126 @@
+{
+  "started": "2026-10-01T00:35:02.845Z",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/glossary_term_click_reaches_read_aloud.test.js",
+    "tests/prepared_word_help_regressions.test.js",
+    "tests/prepared_help_popup_layout.test.js",
+    "tests/original_reader_listen_supports.test.js",
+    "tests/reader_keyboard_a11y.test.js",
+    "tests/reader_both_view_listen_scroll_width.test.js",
+    "tests/reader_exact_sentence_start.test.js",
+    "tests/reader_preview_focus_narration.test.js",
+    "--maxWorkers=1",
+    "--pool=threads",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=reports/report-fixes-2026-09-30/reader-adjacent-tests.json"
+  ],
+  "suiteInputHashes": {
+    "tests/glossary_term_click_reaches_read_aloud.test.js": {
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/glossary_term_click_reaches_read_aloud.test.js": "990278f44ff65ad663e1a13b107d43d2c614e78dd22edc006a4cb9fdb5d9bcd7",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/prepared_word_help_regressions.test.js": {
+      "content_engine_module.js": "c1f3b1bfdc46cb71cba6cb5ccf0c0a6e125cae9826c5a488fe5c3d425350c286",
+      "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+      "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+      "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+      "tests/prepared_word_help_regressions.test.js": "8eaaecbf3b7ff0dea4d67747e0d4dbdefa8b9b0e45bb5b13e9fbd546f0766173",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/prepared_help_popup_layout.test.js": {
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/prepared_help_popup_layout.test.js": "890b235bedf0163926af051c327c3088faa552d32f4a564edfe9d97562755165",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/original_reader_listen_supports.test.js": {
+      "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+      "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/original_reader_listen_supports.test.js": "f915e20ae140081ca1731c30adf1e46c5625ef903d68b94c3408e8ef673db98f",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/reader_keyboard_a11y.test.js": {
+      "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+      "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/reader_keyboard_a11y.test.js": "946ad99266910e35c3b18f56d114cda0691318d88b4868f9e71e2f96205af78e",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+      "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+      "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/reader_both_view_listen_scroll_width.test.js": {
+      "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+      "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/reader_both_view_listen_scroll_width.test.js": "62947c7f3c212024a8c66065a0f8648f96107ed23ab7b732d9d8183221e59882",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/reader_exact_sentence_start.test.js": {
+      "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+      "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    "tests/reader_preview_focus_narration.test.js": {
+      "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "tests/helpers/reader_focus_effect.cjs": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5",
+      "tests/reader_preview_focus_narration.test.js": "f73db405921e734eed0b4dff08e323405285a102872953e0215b167282a7e9e0",
+      "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    }
+  },
+  "inputHashMethod": "Literal on-disk inputs declared by each suite plus shared setup; source/generated reader pairs monitored separately.",
+  "monitoredInputs": {
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "tests/glossary_term_click_reaches_read_aloud.test.js": "990278f44ff65ad663e1a13b107d43d2c614e78dd22edc006a4cb9fdb5d9bcd7",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "content_engine_module.js": "c1f3b1bfdc46cb71cba6cb5ccf0c0a6e125cae9826c5a488fe5c3d425350c286",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+    "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+    "tests/prepared_word_help_regressions.test.js": "8eaaecbf3b7ff0dea4d67747e0d4dbdefa8b9b0e45bb5b13e9fbd546f0766173",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "tests/prepared_help_popup_layout.test.js": "890b235bedf0163926af051c327c3088faa552d32f4a564edfe9d97562755165",
+    "tests/original_reader_listen_supports.test.js": "f915e20ae140081ca1731c30adf1e46c5625ef903d68b94c3408e8ef673db98f",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "tests/reader_keyboard_a11y.test.js": "946ad99266910e35c3b18f56d114cda0691318d88b4868f9e71e2f96205af78e",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+    "tests/reader_both_view_listen_scroll_width.test.js": "62947c7f3c212024a8c66065a0f8648f96107ed23ab7b732d9d8183221e59882",
+    "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "tests/helpers/reader_focus_effect.cjs": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5",
+    "tests/reader_preview_focus_narration.test.js": "f73db405921e734eed0b4dff08e323405285a102872953e0215b167282a7e9e0",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83"
+  },
+  "exitCode": 0,
+  "changedInputs": [],
+  "completed": "2026-10-01T00:35:13.992Z",
+  "status": "passed"
+}

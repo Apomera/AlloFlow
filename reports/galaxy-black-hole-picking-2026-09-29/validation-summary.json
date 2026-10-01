@@ -1,0 +1,48 @@
+{
+  "passed": 89,
+  "failed": 0,
+  "success": true,
+  "suites": [
+    {
+      "file": "galaxy_black_hole_optics.test.js",
+      "passed": 12,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_black_hole_physics.test.js",
+      "passed": 41,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_modes_smoke.test.js",
+      "passed": 6,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_readability_contracts.test.js",
+      "passed": 20,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_visual_layout.test.js",
+      "passed": 10,
+      "status": "passed"
+    }
+  ],
+  "hashes": {
+    "stem_lab/stem_tool_galaxy.js": "71b2770ea3fefe89212545130073d921b07862bec999b9b0a29cc58e3dad0ae1",
+    "desktop/web-app/public/stem_lab/stem_tool_galaxy.js": "71b2770ea3fefe89212545130073d921b07862bec999b9b0a29cc58e3dad0ae1",
+    "tests/galaxy_black_hole_physics.test.js": "f4541e61a9094a8017fb27e9274f503bbdaa2f647c728e7cd3442e1a7a2f2fd6",
+    "dev-tools/galaxy_black_hole_qa.cjs": "206c75b1f581424c16a0acb6975b1f21d4a7fd3d5e293c480b80aaafd8a8cabf",
+    "dev-tools/i18n/stem_galaxy_en.json": "056551a0250b0439c12129ad6c34d79a407e1b547f5e0a840bc4a18d5739e513"
+  },
+  "galaxyCatalogHash": "df226623adc7addecc0b5aa173e12cec4a100989678f12c8935b671eec15fe88",
+  "runs": [
+    "galaxy-tests.json",
+    "picking-browser-results.json",
+    "regression/debris-browser-results.json",
+    "regression/browser-results.json"
+  ],
+  "sourceParity": true,
+  "newEnglishStrings": 7
+}

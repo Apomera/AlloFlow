@@ -1,0 +1,102 @@
+{
+  "tests": [
+    {
+      "file": "full-regression.json",
+      "success": true,
+      "files": 57,
+      "total": 895,
+      "passed": 895,
+      "failed": 0
+    },
+    {
+      "file": "numerical-final.json",
+      "success": true,
+      "files": 5,
+      "total": 103,
+      "passed": 103,
+      "failed": 0
+    },
+    {
+      "file": "workflow-tests.json",
+      "success": true,
+      "files": 3,
+      "total": 19,
+      "passed": 19,
+      "failed": 0
+    }
+  ],
+  "hashes": {
+    "stem_lab/stem_tool_circuit.js": "05d4bc61719a2c1ddf9d27a670dadba6fd57b10bf5777120f45e8e7bc9180291",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "05d4bc61719a2c1ddf9d27a670dadba6fd57b10bf5777120f45e8e7bc9180291",
+    "stem_lab/stem_lab_module.js": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7",
+    "desktop/web-app/public/stem_lab/stem_lab_module.js": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7"
+  },
+  "benchmark": {
+    "date": "2026-09-27T17:23:50.270Z",
+    "engine": "Chromium",
+    "version": "148.0.7778.96",
+    "sourceSha256": "05d4bc61719a2c1ddf9d27a670dadba6fd57b10bf5777120f45e8e7bc9180291",
+    "method": "Both versions use the current source in one blank Chromium page. The exhaustive reference bypasses reduction and restores the duplicate end-time solve. Each measurement is synchronous browser main-thread model execution. Other development/test activity may affect absolute timings.",
+    "measurements": [
+      {
+        "mode": "exhaustive-reference",
+        "count": 1,
+        "ms": 121.19999998807907,
+        "ok": true,
+        "steps": 384,
+        "frames": 769,
+        "regionsPerSolve": 3
+      },
+      {
+        "mode": "optimized",
+        "count": 1,
+        "ms": 101.5,
+        "ok": true,
+        "steps": 384,
+        "frames": 769,
+        "regionsPerSolve": 3
+      },
+      {
+        "mode": "exhaustive-reference",
+        "count": 4,
+        "ms": 1562.9000000357628,
+        "ok": true,
+        "steps": 384,
+        "frames": 769,
+        "regionsPerSolve": 81
+      },
+      {
+        "mode": "optimized",
+        "count": 4,
+        "ms": 134.80000001192093,
+        "ok": true,
+        "steps": 384,
+        "frames": 769,
+        "regionsPerSolve": 12
+      }
+    ]
+  },
+  "browser": {
+    "passed": true,
+    "checks": 5,
+    "axe": [
+      {
+        "workspace": "Simple circuits",
+        "violations": []
+      },
+      {
+        "workspace": "Mixed circuits",
+        "violations": []
+      },
+      {
+        "workspace": "Active electronics",
+        "violations": []
+      },
+      {
+        "workspace": "Connected circuits",
+        "violations": []
+      }
+    ],
+    "layouts": 12
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "browser": "webkit",
+  "completed": [
+    "Reactivating the same keyboard trigger returns focus to the prepared card",
+    "Exact formatted occurrence; keyboard Enter/Space; Escape focus return; no sentence playback",
+    "Closing stops the actual card-owned audio ID",
+    "Comparison change view dismisses an open card",
+    "Same-item readers keep distinct heading IDs and spotlight ownership; list keyboard/popup references remain valid",
+    "Closing cancels owned pending audio while the host still reports isPlaying false",
+    "Both pending pronunciation controls stop the request on a second activation without requesting speech twice",
+    "In-place hiding, removal and revised explanations invalidate cards and owned pending audio; reopening uses current prepared text",
+    "Learner changes dismiss the previous card and stop its audio; current learner can reopen prepared help",
+    "Cross-paragraph prepared phrase underlines and spotlight contain only matched source text; translated words do not open that support",
+    "More help preserves exact phrase and source context from the last inline word and the keyboard-accessible list",
+    "Prepared help stays available in Read mode without offering a lookup action the host ignores"
+  ],
+  "errors": [],
+  "error": "Expected values to be strictly equal:\n\n0 !== 1\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\dev-tools\\reader-prepared-help\\browser-check.cjs:323:14"
+}

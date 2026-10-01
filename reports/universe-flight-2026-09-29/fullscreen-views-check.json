@@ -1,0 +1,468 @@
+{
+  "checks": [
+    "disabled empty saved-view selector and help",
+    "shared draft labels and length limits",
+    "normal drafts appear in fullscreen",
+    "native fullscreen typing syncs to normal draft",
+    "drafts survive panel close and fullscreen exit",
+    "trimmed title and multiline note persist with exact paused snapshot",
+    "save stays open clears both surfaces and reveals status",
+    "saved selector shares the host records and scene label",
+    "writing pauses free motion and isolates native keyboard input",
+    "writing pauses relativity motion and isolates native keyboard input",
+    "writing pauses orbit motion and isolates native keyboard input",
+    "writing pauses approach motion and isolates native keyboard input",
+    "empty title uses the selected destination name",
+    "save without editing pauses moving travel before capturing the snapshot",
+    "exact saved neighborhood pose display destination and clock restore",
+    "exact saved galaxy pose display destination and clock restore",
+    "exact saved cosmic pose display destination and clock restore",
+    "exact saved relativity comparison pose display destination and clock restore",
+    "restores retain current travel speed playback and smoothing preferences",
+    "restore closes controls focuses canvas and retains fullscreen",
+    "failed fixture-invalid-pose stops travel preserves state and explains the failure",
+    "failed fixture-unsupported-scene stops travel preserves state and explains the failure",
+    "saved records survive explorer close and reopen",
+    "clean-view saved controls work and retain draft and overlay preferences",
+    "twelve-view capacity disables save and explains recovery",
+    "full capacity retains drafts and removal frees a slot",
+    "phone notes and saved selector scroll within fixed tabs and Close",
+    "phone native typing and saved restore stay reachable",
+    "landscape notes and saved selector scroll within fixed tabs and Close",
+    "landscape native typing and saved restore stay reachable"
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "empty-explore",
+      "violations": []
+    },
+    {
+      "name": "empty-compose",
+      "violations": []
+    },
+    {
+      "name": "populated-compose",
+      "violations": []
+    },
+    {
+      "name": "populated-explore",
+      "violations": []
+    },
+    {
+      "name": "phone-notes",
+      "violations": []
+    },
+    {
+      "name": "phone-saved",
+      "violations": []
+    },
+    {
+      "name": "landscape-notes",
+      "violations": []
+    },
+    {
+      "name": "landscape-saved",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "phone-notes",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "shell": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 590
+      },
+      "body": {
+        "x": 29,
+        "y": 181,
+        "width": 262,
+        "height": 452
+      },
+      "control": {
+        "x": 44,
+        "y": 364.328125,
+        "width": 232,
+        "height": 84.390625
+      }
+    },
+    {
+      "name": "phone-saved",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "shell": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 590
+      },
+      "body": {
+        "x": 29,
+        "y": 181,
+        "width": 262,
+        "height": 452
+      },
+      "control": {
+        "x": 57,
+        "y": 384.71875,
+        "width": 206,
+        "height": 44
+      }
+    },
+    {
+      "name": "landscape-notes",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "control": {
+        "x": 258,
+        "y": 77.328125,
+        "width": 276,
+        "height": 84.390625
+      }
+    },
+    {
+      "name": "landscape-saved",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "control": {
+        "x": 271,
+        "y": 97.71875,
+        "width": 250,
+        "height": 44
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "fixture-invalid-pose",
+      "text": "This saved view could not be restored. Its data may be incomplete.",
+      "box": {
+        "x": 1127,
+        "y": 769.71875,
+        "width": 282,
+        "height": 63.375
+      },
+      "body": {
+        "x": 1125,
+        "y": 181,
+        "width": 286,
+        "height": 652
+      },
+      "state": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 82,
+          "exposure": 0.7,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0.6833080460451657
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0.6833080460451657,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    },
+    {
+      "name": "fixture-unsupported-scene",
+      "text": "This saved view could not be restored. Its data may be incomplete.",
+      "box": {
+        "x": 1127,
+        "y": 711.71875,
+        "width": 282,
+        "height": 63.375
+      },
+      "body": {
+        "x": 1125,
+        "y": 181,
+        "width": 286,
+        "height": 652
+      },
+      "state": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 82,
+          "exposure": 0.7,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            1.1797086142391877
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 1.1797086142391877,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    }
+  ],
+  "saved": [
+    {
+      "id": "flight-1790738936501-0gxmr",
+      "title": "Stellar notebook",
+      "note": "Nearby stars shift.\nThe distant sky stays steady.",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    },
+    {
+      "id": "flight-1790738947316-s3jvh",
+      "title": "Amber star",
+      "note": "A star-centered observation.",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.2646394935021289,
+            0.0012923571948243837,
+            -0.07958523471694398
+          ],
+          "yaw": -0.3191781720155742,
+          "pitch": 0.11007912727557931,
+          "distanceLy": 0.2880532089622067,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "id": "flight-1790738947939-m62ld",
+      "title": "Travel paused by save",
+      "note": "",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -0.2652663703001128,
+            0.0015131639133382996,
+            -0.07768835320658805
+          ],
+          "yaw": -0.3191781720155742,
+          "pitch": 0.11007912727557931,
+          "distanceLy": 0.2900631566210081,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "id": "flight-1790738949051-az0a9",
+      "title": "Blue star survey",
+      "note": "Scene neighborhood observation.",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 53,
+          "exposure": 1.25,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            2.5,
+            -1.2,
+            -3.7
+          ],
+          "yaw": 0.16999999999999993,
+          "pitch": -0.06,
+          "distanceLy": 17,
+          "universeYears": 2,
+          "travelerYears": 1.5
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "id": "flight-1790738953734-2vb4b",
+      "title": "Across the spiral",
+      "note": "Scene galaxy observation.",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 71,
+          "exposure": 0.85,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -68000,
+            16000,
+            5000
+          ],
+          "yaw": 0.33999999999999986,
+          "pitch": -0.12,
+          "distanceLy": 40,
+          "universeYears": 3,
+          "travelerYears": 2
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "id": "flight-1790738960066-xsq23",
+      "title": "Companion portrait",
+      "note": "Scene cosmic observation.",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 47,
+          "exposure": 1.65,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -480000,
+            190000,
+            650000
+          ],
+          "yaw": 0.5099999999999998,
+          "pitch": -0.18,
+          "distanceLy": 63,
+          "universeYears": 4,
+          "travelerYears": 2.5
+        },
+        "targetId": "companion-galaxy"
+      }
+    },
+    {
+      "id": "flight-1790738964313-0uu0i",
+      "title": "Stationary comparison",
+      "note": "Scene neighborhood observation.",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": true,
+          "fov": 82,
+          "exposure": 0.7,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            -2.1,
+            0.8,
+            4.2
+          ],
+          "yaw": 0.6799999999999997,
+          "pitch": -0.24,
+          "distanceLy": 86,
+          "universeYears": 5,
+          "travelerYears": 3
+        },
+        "targetId": "amber-star"
+      }
+    }
+  ],
+  "finalCount": 12
+}

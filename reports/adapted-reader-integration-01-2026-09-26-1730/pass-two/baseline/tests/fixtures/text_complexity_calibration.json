@@ -1,0 +1,128 @@
+{
+  "fixtureId": "alloflow-source-calibration-offline-v1",
+  "requireProviderModel": true,
+  "gradeAliases": [
+    { "input": "K", "expected": "Kindergarten" },
+    { "input": "grade k", "expected": "Kindergarten" },
+    { "input": "1", "expected": "1st Grade" },
+    { "input": "Grade 2", "expected": "2nd Grade" },
+    { "input": "3rd grade", "expected": "3rd Grade" },
+    { "input": "4", "expected": "4th Grade" },
+    { "input": "Grade 5", "expected": "5th Grade" },
+    { "input": "6th Grade", "expected": "6th Grade" },
+    { "input": "grade 7", "expected": "7th Grade" },
+    { "input": "8", "expected": "8th Grade" },
+    { "input": "Grade 9", "expected": "9th Grade" },
+    { "input": "10th", "expected": "10th Grade" },
+    { "input": "grade 11", "expected": "11th Grade" },
+    { "input": "12th Grade", "expected": "12th Grade" },
+    { "input": "College Level", "expected": "College" },
+    { "input": "postgraduate", "expected": "Graduate Level" }
+  ],
+  "calibrationBands": [
+    { "requestedGrade": "K", "expectedRequestedGrade": "Kindergarten", "expectedPromptGrade": "Pre-K" },
+    { "requestedGrade": "1st Grade", "expectedPromptGrade": "Pre-K" },
+    { "requestedGrade": "Grade 2", "expectedPromptGrade": "1st Grade" },
+    { "requestedGrade": "3", "expectedPromptGrade": "1st Grade" },
+    { "requestedGrade": "4th", "expectedRequestedGrade": "4th Grade", "expectedPromptGrade": "3rd Grade" },
+    { "requestedGrade": "Grade 5", "expectedPromptGrade": "3rd Grade" },
+    { "requestedGrade": "6", "expectedPromptGrade": "5th Grade" },
+    { "requestedGrade": "Grade 8", "expectedPromptGrade": "5th Grade" },
+    { "requestedGrade": "9th", "expectedRequestedGrade": "9th Grade", "expectedPromptGrade": "8th Grade" },
+    { "requestedGrade": "12", "expectedPromptGrade": "8th Grade" },
+    { "requestedGrade": "college", "expectedPromptGrade": "12th Grade" },
+    { "requestedGrade": "Graduate Level", "expectedPromptGrade": "College" }
+  ],
+  "samples": [
+    {
+      "id": "kindergarten-simple-actions",
+      "requestedGrade": "K",
+      "language": "English",
+      "text": "Cats nap. Dogs run. We play.",
+      "generation": { "provider": "offline-fixture", "model": "synthetic-text-v1" },
+      "expected": {
+        "requestedGrade": "Kindergarten",
+        "calibrationTarget": "Pre-K",
+        "policyVersion": "empirical-undershoot/v1",
+        "measuredGrade": 0,
+        "status": "within-target",
+        "requireProviderModel": true
+      }
+    },
+    {
+      "id": "grade-two-plant-process",
+      "requestedGrade": "Grade 2",
+      "language": "English",
+      "text": "Plants need light and water. Roots take in water from the soil. Leaves use light to help each plant grow.",
+      "generation": { "provider": "offline-fixture", "model": "synthetic-text-v1" },
+      "expected": {
+        "requestedGrade": "2nd Grade",
+        "calibrationTarget": "1st Grade",
+        "policyVersion": "empirical-undershoot/v1",
+        "measuredGrade": 0,
+        "status": "below-target",
+        "requireProviderModel": true
+      }
+    },
+    {
+      "id": "grade-five-water-cycle",
+      "requestedGrade": "5",
+      "language": "English",
+      "text": "Water evaporates when sunlight warms a lake. The vapor rises, cools, and forms tiny droplets in clouds. Gravity eventually pulls the water back to Earth as rain or snow.",
+      "provenance": { "provider": "offline-fixture", "model": "synthetic-text-v2" },
+      "expected": {
+        "requestedGrade": "5th Grade",
+        "calibrationTarget": "3rd Grade",
+        "policyVersion": "empirical-undershoot/v1",
+        "measuredGrade": 5.7,
+        "status": "within-target",
+        "requireProviderModel": true
+      }
+    },
+    {
+      "id": "grade-eight-ecosystem-evidence",
+      "requestedGrade": "Grade 8",
+      "language": "English",
+      "text": "Ecologists compare population records across several seasons because one observation may hide an unusual drought or migration. When the same pattern appears repeatedly, the accumulated evidence supports a stronger explanation of how the ecosystem responds to change.",
+      "sourceProvenance": { "providerId": "offline-local", "modelId": "fixture-8b" },
+      "expected": {
+        "requestedGrade": "8th Grade",
+        "calibrationTarget": "5th Grade",
+        "policyVersion": "empirical-undershoot/v1",
+        "measuredGrade": 15.9,
+        "status": "above-target",
+        "requireProviderModel": true
+      }
+    },
+    {
+      "id": "grade-eleven-scientific-argument",
+      "requestedGrade": "11th",
+      "language": "English",
+      "text": "Although correlation can reveal a meaningful association between variables, it cannot independently establish causation. Researchers therefore examine plausible mechanisms, eliminate competing explanations, and replicate findings before advancing a defensible causal claim.",
+      "provider": "offline-local",
+      "model": "fixture-8b",
+      "expected": {
+        "requestedGrade": "11th Grade",
+        "calibrationTarget": "8th Grade",
+        "policyVersion": "empirical-undershoot/v1",
+        "measuredGrade": 18,
+        "status": "above-target",
+        "requireProviderModel": true
+      }
+    },
+    {
+      "id": "non-english-no-fk-claim",
+      "requestedGrade": "Grade 6",
+      "language": "Spanish",
+      "text": "Las plantas usan la luz del sol para producir alimento y crecer.",
+      "generation": { "provider": "offline-fixture", "model": "synthetic-multilingual-v1" },
+      "expected": {
+        "requestedGrade": "6th Grade",
+        "calibrationTarget": "5th Grade",
+        "policyVersion": "empirical-undershoot/v1",
+        "status": "unavailable",
+        "requireProviderModel": true
+      }
+    }
+  ]
+}

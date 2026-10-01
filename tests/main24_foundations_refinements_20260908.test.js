@@ -15,7 +15,7 @@ beforeAll(() => {
 afterEach(()=>{
   if(root)act(()=>root.unmount());host?.remove();root=null;host=null;
   vi.restoreAllMocks();vi.unstubAllGlobals();
-  delete window.__alloPrepareReadAloud;delete window.__alloRegenerateSentenceAudio;
+  delete window.__alloPrepareReadAloud;delete window.__alloRegenerateSentenceAudio;delete window.__alloInspectReadAloudAudio;
   delete window.__alloPrepareReadAloudCancel; delete window.ai;
 });
 function mount(name, props) {
@@ -42,9 +42,13 @@ describe('FAQ audio request ownership and recovery',()=>{
   });
   it('catches save failures and retries without duplicate submissions',async()=>{
     const pending=deferred();window.__alloPrepareReadAloud=vi.fn(()=>pending.promise);
-    mount('FaqView',faq());const save=byText('Save TTS');click(save);
+    window.__alloRegenerateSentenceAudio=vi.fn();
+    window.__alloInspectReadAloudAudio=entry=>({status:'missing',segment:{resourceId:'faq-a',segmentId:entry.segmentId,spokenText:entry.text}});
+    mount('FaqView',faq());
+    expect([...host.querySelectorAll('button[aria-label*="Regenerate audio"]')].some(b=>b.getAttribute('aria-disabled')==='false')).toBe(true);
+    const save=byText('Save TTS');click(save);
     expect(window.__alloPrepareReadAloud).toHaveBeenCalledOnce();
-    expect([...host.querySelectorAll('button[aria-label*="Regenerate audio"]')].every(b=>b.disabled)).toBe(true);
+    expect([...host.querySelectorAll('button[aria-label*="Regenerate audio"]')].every(b=>b.getAttribute('aria-disabled')==='true')).toBe(true);
     await act(async()=>pending.reject(new Error('provider offline')));
     expect(host.textContent).toContain('could not be saved');expect(byText('Save TTS').disabled).toBe(false);
     window.__alloPrepareReadAloud.mockResolvedValue({ok:true});click(byText('Save TTS'));await settle();expect(window.__alloPrepareReadAloud).toHaveBeenCalledTimes(2);
@@ -76,7 +80,9 @@ describe('FAQ audio request ownership and recovery',()=>{
   });
   it.each([null,Promise.reject])('reports regeneration failures and releases the Save button (%s)',async result=>{
     window.__alloRegenerateSentenceAudio=vi.fn(()=>result===null?Promise.resolve(null):Promise.reject(new Error('unavailable')));
+    window.__alloInspectReadAloudAudio=entry=>({status:'missing',segment:{resourceId:'faq-a',segmentId:entry.segmentId,spokenText:entry.text}});
     mount('FaqView',faq());click(host.querySelector('button[aria-label*="Regenerate audio"]'));await settle();
+    expect(window.__alloRegenerateSentenceAudio).toHaveBeenCalledOnce();
     expect(host.textContent).toContain('could not be generated');expect(byText('Save TTS').disabled).toBe(false);
   });
   it('resets disclosure state between resources and reflects external speed changes',()=>{

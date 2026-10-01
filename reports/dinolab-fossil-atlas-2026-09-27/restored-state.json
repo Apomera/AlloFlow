@@ -1,0 +1,22 @@
+{
+  "tab": "anatomy",
+  "fossilLibraryOpen": true,
+  "notebook": {
+    "microraptor": {
+      "question": "Could it glide?"
+    }
+  },
+  "evidenceWorkbench": {
+    "caseId": "quills",
+    "cases": {
+      "quills": {
+        "claim": "My developing idea"
+      }
+    }
+  },
+  "fossilReference": "eggs",
+  "evidenceIdx": 3,
+  "evidencePicked": "bones",
+  "evidenceAnswered": true,
+  "fossilMatchingOpen": true
+}

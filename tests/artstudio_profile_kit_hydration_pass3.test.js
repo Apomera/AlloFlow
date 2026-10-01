@@ -238,6 +238,27 @@ describe('Art Studio profile hydration keeps legacy kits with their saved runs',
     await settle();
   }
 
+  it('keeps an exact edited hex color through workflow storage and a fresh mount', async () => {
+    seedWorkflow({ studioFreeProjectId: 'palette-run', studioCurrentProjectRunId: 'palette-run',
+      studioThreadKit: { schemaVersion: 2, runs: [{ schemaVersion: 1, runId: 'palette-run', accessibilityTarget: 7,
+        palette: { sourceTab: 'colorWheel', harmony: 'custom', colors: [{ h: 30.25, s: 80.5, l: 45.125 }] } }] } });
+    await mount();
+    const field = host.querySelector('#artstudio-kit-hex');
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(field, '#123456');
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+    await settle();
+    const saved = structuredClone(storedWorkflow().studioThreadKit);
+    expect(saved.runs[0].palette.colors[0]).toEqual({ h: 210, s: 65.3846153846154, l: 20.392156862745097 });
+    await mount();
+    expect(latestToolData.artStudio.studioThreadKit).toEqual(saved);
+    expect(host.querySelector('#artstudio-kit-hex').value).toBe('#123456');
+    expect([...host.querySelectorAll('button')].find(node => accessibleName(node) === 'Undo palette edit').disabled).toBe(true);
+    expect(saved.runs[0].accessibilityTarget).toBe(7);
+  });
+
   it('retains a legacy saved palette under its original run when a new thread starts during a profile switch', async () => {
     const palette = { sourceTab: 'colorWheel', harmony: 'triadic', colors: [{ h: 20, s: 80, l: 45 }, { h: 140, s: 80, l: 45 }] };
     seedWorkflow({ studioThreadId: 'tiny-night-world', studioThreadRunId: 'b-saved-run',

@@ -1,0 +1,355 @@
+===================================================================
+--- a/generation_helpers_source.jsx
++++ b/generation_helpers_source.jsx
+@@ -3696,8 +3696,14 @@
+             `;
+         }
+         let result = prepared ? prepared.data : (!jsonMode && generatedContent.type === 'simplified')
+-            ? await generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate, {
+-                translationKeepTerms: vocabularyAudit.required.filter(entry => entry.panes.some(pane => pane.pane === 'translation')).map(entry => entry.term)
++            ? await generateBilingualText(prompt, effectiveLanguage, callGemini, {
++                ..._xlate,
++                // The existing host shim forwards four arguments. Keep adaptation
++                // controls in that forwarded object so old hosts retain them.
++                adaptation: {
++                    isCurrent,
++                    translationKeepTerms: vocabularyAudit.required.filter(entry => entry.panes.some(pane => pane.pane === 'translation')).map(entry => entry.term)
++                }
+             })
+             : await callGemini(prompt, jsonMode);
+         if (!isCurrent()) return { status: 'stale' };
+@@ -3998,26 +4004,36 @@
+         if (parts.length > 2 || /---\s*TRANSLATION\s*---/i.test(body)) throw new Error('ambiguous-language-panes');
+         return { primary: blocks(parts[0]), ...(parts.length === 2 ? { translation: blocks(parts[1]) } : {}) };
+     };
+-    const count = (texts, term) => {
++    // Index boundaries once per region, not once per requested term. This is
++    // request-local: no reading text or segmentation data survives in a cache.
++    const indexPanes = (text, splitReferences) => {
+         if (typeof Intl?.Segmenter !== 'function') throw new Error('word-boundaries-unavailable');
+-        const segmenter = new Intl.Segmenter('und', { granularity: 'word' });
+-        return (texts || []).reduce((total, text) => {
+-            const words = Array.from(segmenter.segment(text)).filter(part => part.isWordLike);
+-            let offset = 0, hits = 0;
+-            while ((offset = text.indexOf(term, offset)) >= 0) {
+-                const end = offset + term.length;
+-                if (!words.some(word => (word.index < offset && offset < word.index + word.segment.length)
+-                    || (word.index < end && end < word.index + word.segment.length))) hits++;
+-                offset = end;
++        const words = new Intl.Segmenter('und', { granularity: 'word' });
++        const graphemes = new Intl.Segmenter('und', { granularity: 'grapheme' });
++        return Object.fromEntries(Object.entries(panes(text, splitReferences)).map(([pane, texts]) => [pane, texts.map(text => {
++            const boundaries = new Uint8Array(text.length + 1);
++            for (const part of graphemes.segment(text)) boundaries[part.index] = 1;
++            boundaries[text.length] = 1;
++            for (const part of words.segment(text)) if (part.isWordLike) {
++                boundaries.fill(0, part.index + 1, part.index + part.segment.length);
+             }
+-            return total + hits;
+-        }, 0);
++            return { text, boundaries };
++        })]));
+     };
++    const count = (regions, term) => (regions || []).reduce((total, { text, boundaries }) => {
++        let offset = 0, hits = 0;
++        while ((offset = text.indexOf(term, offset)) >= 0) {
++            const end = offset + term.length;
++            if (boundaries[offset] && boundaries[end]) hits++;
++            offset = end;
++        }
++        return total + hits;
++    }, 0);
+     const prepare = (source, requested, splitReferences) => {
+         const result = { ...normalize(requested), required: [], absentFromSource: [], missingTerms: [] };
+         if (!result.valid || !result.terms.length) return result;
+         try {
+-            const sourcePanes = panes(source, splitReferences);
++            const sourcePanes = indexPanes(source, splitReferences);
+             for (const term of result.terms) {
+                 const occurrences = Object.keys(sourcePanes).map(pane => ({ pane, count: count(sourcePanes[pane], term) })).filter(entry => entry.count);
+                 if (!occurrences.length) result.absentFromSource.push(term);
+@@ -4031,7 +4047,7 @@
+         const result = prepare(source, requested, splitReferences);
+         if (!result.valid || !result.terms.length) return result;
+         try {
+-            const candidatePanes = panes(candidate, splitReferences);
++            const candidatePanes = indexPanes(candidate, splitReferences);
+             for (const entry of result.required) for (const original of entry.panes) {
+                 if (!count(candidatePanes[original.pane], entry.term)) result.missingTerms.push({ term: entry.term, pane: original.pane });
+             }
+===================================================================
+--- a/text_pipeline_helpers_source.jsx
++++ b/text_pipeline_helpers_source.jsx
+@@ -258,12 +258,34 @@
+     return { tree, blocks, plain };
+ })();
+ 
+-const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, translationPolicy, adaptation = {}) => {
++const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, translationPolicy, adaptation) => {
++    // Accept direct callers' optional fifth argument and the four-argument host
++    // shim's forwarded policy envelope. Neither changes the translation policy.
++    const controls = adaptation ?? translationPolicy?.adaptation ?? {};
+     const stripFences = (s) => String(s || "")
+         .replace(/^```[a-zA-Z]*\n/i, '')
+         .replace(/^```\s*/, '')
+         .replace(/```\s*$/, '')
+         .trim();
++    const ensureCurrent = () => {
++        if (typeof controls?.isCurrent === 'function' && !controls.isCurrent()) {
++            const error = new Error('This adaptation request is no longer current.');
++            error.code = 'adaptation-request-stale';
++            throw error;
++        }
++    };
++    const requestText = async prompt => {
++        ensureCurrent();
++        try {
++            const raw = await callGeminiFn(prompt);
++            ensureCurrent();
++            return stripFences(raw);
++        } catch (error) {
++            // An obsolete provider failure belongs to the cancelled request.
++            ensureCurrent();
++            throw error;
++        }
++    };
+     // Explicit URL preservation rules — Gemini has a persistent quirk where it inserts spaces
+     // into URLs (treating `.com` as a sentence boundary) and occasionally drops trailing chars
+     // on the last citation when the input text is wrapped in surrounding quotes.
+@@ -283,18 +305,17 @@
+         ? translationPolicy
+         : resolveTranslationPolicy(TRANSLATION_MODE_AUTO, targetLang, 'English');
+     if (!targetLang || targetLang === 'English') {
+-        const raw = await callGeminiFn(basePrompt + '\n\n' + urlPreservationRules);
+-        return stripFences(raw);
++        return requestText(basePrompt + '\n\n' + urlPreservationRules);
+     }
+     const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${policy.enabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
+-    const targetResult = stripFences(await callGeminiFn(targetPrompt));
++    const targetResult = await requestText(targetPrompt);
+     // Translations off (or nothing sensible to translate into): one call, one
+     // block, no delimiter. Every downstream consumer already handles a string
+     // without the delimiter — that is the English-output case they see today.
+     if (!policy.enabled) return targetResult;
+     // Use triple-pipe fences instead of "..." wrapping so trailing ")" on the last citation
+     // doesn't butt up against a closing quote (which Gemini sometimes eats).
+-    const preservedTranslationTerms = Array.isArray(adaptation.translationKeepTerms) ? adaptation.translationKeepTerms : [];
++    const preservedTranslationTerms = Array.isArray(controls?.translationKeepTerms) ? controls.translationKeepTerms : [];
+     const termDirective = preservedTranslationTerms.length
+         ? 'Keep each of these source-translation terms at least once, exactly as written (including case and punctuation). Use them naturally in the translation; do not replace them with synonyms: ' + JSON.stringify(preservedTranslationTerms)
+         : '';
+@@ -311,7 +332,7 @@
+ ${targetResult}
+ |||END ${targetLang.toUpperCase()}|||
+     `;
+-    const translatedResult = stripFences(await callGeminiFn(translationPrompt));
++    const translatedResult = await requestText(translationPrompt);
+     // The delimiter stays the literal '--- ENGLISH TRANSLATION ---' whatever the
+     // destination language is. It is a MACHINE TOKEN, not user-facing copy: it
+     // is parsed by extractSourceTextForProcessing, BilingualFieldRenderer,
+===================================================================
+--- /dev/null
++++ b/tests/preserved_vocabulary_enhancements.test.js
+@@ -0,0 +1,136 @@
++import { beforeAll, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++import { readFileSync } from 'node:fs';
++
++let helpers, vocabulary, pipeline, hostBilingual;
++beforeAll(() => {
++  loadAlloModule('text_pipeline_helpers_module.js');
++  loadAlloModule('generation_helpers_module.js');
++  helpers = window.AlloModules.GenerationHelpers;
++  vocabulary = helpers.preservedVocabulary;
++  pipeline = window.AlloModules.TextPipelineHelpers;
++  const source = readFileSync('AlloFlowANTI.txt', 'utf8');
++  const start = source.indexOf('const generateBilingualText = async');
++  const end = source.indexOf('const extractSourceTextForProcessing', start);
++  if (start < 0 || end < 0) throw new Error('Host bilingual wrapper was not found');
++  hostBilingual = new Function('window', source.slice(start, end) + '\nreturn generateBilingualText;')(window);
++});
++const validate = (source, candidate, terms) => vocabulary.validate(source, candidate, terms, pipeline.splitReferencesFromBody);
++
++describe('preserved terms respect complete Unicode characters', () => {
++  it.each([
++    ['👩', '👩‍🏫'], ['👩', '👩🏽'], ['❤', '❤️'], ['🇺', '🇺🇸'], ['1', '1️⃣']
++  ])('does not preserve %s using the partial grapheme in %s', (term, replacement) => {
++    expect(validate('Keep ' + term + ' here.', 'Keep ' + replacement + ' here.', [term])).toMatchObject({
++      valid: false, missingTerms: [{ term, pane: 'primary' }]
++    });
++    expect(vocabulary.prepare('Keep ' + replacement + ' here.', [term], pipeline.splitReferencesFromBody)).toMatchObject({
++      valid: false, absentFromSource: [term]
++    });
++  });
++  it.each(['👩‍🏫', '👩🏽', '❤️', '🇺🇸', '1️⃣', 'क्ष', '水鸟', 'طيور الماء', 'C++'])('preserves the complete term %s', term => {
++    expect(validate('Keep ' + term + ' here.', 'Here is ' + term + '.', [term]).valid).toBe(true);
++  });
++  it('keeps canonical accent equivalence and exact word boundaries', () => {
++    expect(validate('Café', 'Cafe\u0301', ['Café']).valid).toBe(true);
++    expect(validate('fish', 'selfish', ['fish']).valid).toBe(false);
++    expect(validate('bird’s nest', "bird's nest", ['bird’s nest']).valid).toBe(false);
++  });
++});
++
++describe('bounded vocabulary segmentation', () => {
++  it('does not re-segment every passage for each requested term', () => {
++    const NativeSegmenter = Intl.Segmenter;
++    const terms = Array.from({ length: 30 }, (_, i) => 'term' + i);
++    const source = Array.from({ length: 12 }, () => terms.join(' ') + '.').join('\n\n');
++    const measure = requested => {
++      let calls = 0;
++      try {
++        Intl.Segmenter = class {
++          constructor(...args) { this.segmenter = new NativeSegmenter(...args); }
++          segment(text) { calls++; return this.segmenter.segment(text); }
++        };
++        expect(validate(source, source, requested).valid).toBe(true);
++      } finally { Intl.Segmenter = NativeSegmenter; }
++      return calls;
++    };
++    const oneTerm = measure(terms.slice(0, 1)), thirtyTerms = measure(terms);
++    expect(thirtyTerms).toBe(oneTerm);
++    expect(thirtyTerms).toBeLessThanOrEqual(12 * 2 * 2); // each region, each side, word + grapheme
++  });
++  it('retains source occurrence counts and independent bilingual requirements', () => {
++    const source = 'fish fish selfish' + '\n\n--- ENGLISH TRANSLATION ---\n\n' + 'fish';
++    const audit = validate(source, 'fish' + '\n\n--- ENGLISH TRANSLATION ---\n\n' + 'selfish', ['fish']);
++    expect(audit.required).toEqual([{ term: 'fish', panes: [{ pane: 'primary', count: 2 }, { pane: 'translation', count: 1 }] }]);
++    expect(audit.missingTerms).toEqual([{ term: 'fish', pane: 'translation' }]);
++  });
++});
++
++describe('cancellation between bilingual generation stages', () => {
++  const policy = { enabled: true, target: 'English', mode: 'auto' };
++  it.each(['English', 'Spanish', ''])('does not start a provider call for an obsolete %s request', async language => {
++    const provider = vi.fn();
++    await expect(pipeline.generateBilingualText('Rewrite.', language, provider, policy, { isCurrent: () => false })).rejects.toMatchObject({ code: 'adaptation-request-stale' });
++    expect(provider).not.toHaveBeenCalled();
++  });
++  it('does not start translation after the primary generation becomes obsolete', async () => {
++    let current = true, finish;
++    const provider = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finish = resolve; })).mockResolvedValueOnce('The birds eat.');
++    const result = pipeline.generateBilingualText('Rewrite.', 'Spanish', provider, policy, { isCurrent: () => current, translationKeepTerms: ['wading birds'] });
++    current = false; finish('Las aves comen.');
++    await expect(result).rejects.toMatchObject({ code: 'adaptation-request-stale' });
++    expect(provider).toHaveBeenCalledTimes(1);
++  });
++  it('discards an obsolete translation already in flight', async () => {
++    let current = true, finish;
++    const provider = vi.fn().mockResolvedValueOnce('Las aves comen.').mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
++    const result = pipeline.generateBilingualText('Rewrite.', 'Spanish', provider, policy, { isCurrent: () => current });
++    await vi.waitFor(() => expect(provider).toHaveBeenCalledTimes(2));
++    current = false; finish('The birds eat.');
++    await expect(result).rejects.toMatchObject({ code: 'adaptation-request-stale' });
++  });
++  it('classifies a late provider failure as cancellation but retains current failures', async () => {
++    let current = true, fail;
++    const error = new Error('Provider failure');
++    const result = pipeline.generateBilingualText('Rewrite.', 'Spanish', () => new Promise((_, reject) => { fail = reject; }), policy, { isCurrent: () => current });
++    current = false; fail(error);
++    await expect(result).rejects.toMatchObject({ code: 'adaptation-request-stale' });
++    await expect(pipeline.generateBilingualText('Rewrite.', 'Spanish', async () => { throw error; }, policy, { isCurrent: () => true })).rejects.toBe(error);
++  });
++  it('keeps translation instructions and legacy callers working', async () => {
++    const provider = vi.fn().mockResolvedValueOnce('Las aves comen.').mockResolvedValueOnce('The wading birds eat.');
++    expect(await pipeline.generateBilingualText('Rewrite.', 'Spanish', provider, policy, { translationKeepTerms: ['wading birds'] })).toContain('--- ENGLISH TRANSLATION ---');
++    expect(provider.mock.calls[1][0]).toContain('["wading birds"]');
++    expect(await pipeline.generateBilingualText('Rewrite.', 'English', async () => 'Birds eat.', policy, null)).toBe('Birds eat.');
++  });
++  it('keeps terms and request ownership through the real four-argument host wrapper', async () => {
++    const provider = vi.fn().mockResolvedValueOnce('Las aves comen.').mockResolvedValueOnce('The wading birds eat.');
++    const controls = { isCurrent: () => true, translationKeepTerms: ['wading birds'] };
++    expect(await hostBilingual('Rewrite.', 'Spanish', provider, { ...policy, adaptation: controls })).toContain('The wading birds eat.');
++    expect(provider.mock.calls[1][0]).toContain('["wading birds"]');
++    provider.mockClear(); controls.isCurrent = () => false;
++    await expect(hostBilingual('Rewrite.', 'Spanish', provider, { ...policy, adaptation: controls })).rejects.toMatchObject({ code: 'adaptation-request-stale' });
++    expect(provider).not.toHaveBeenCalled();
++  });
++  it('threads request ownership from the helper and retains source/history when cancelled', async () => {
++    let current = true, finish;
++    const text = 'Las aves zancudas comen.' + '\n\n--- ENGLISH TRANSLATION ---\n\n' + 'Herons are wading birds.';
++    const generatedContent = { id: 'cancel-1', type: 'simplified', data: text, config: { language: 'Spanish' }, instructionalText: { form: 'adapted' } };
++    const provider = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finish = resolve; })).mockResolvedValueOnce('The birds eat.');
++    const d = {
++      generatedContent, complexityLevel: 5, gradeLevel: 'Grade 4', leveledTextLanguage: 'Spanish', saveOriginalOnAdjust: false,
++      adaptationPlan: { preview: true, isCurrent: () => current, options: { keepTerms: ['wading birds'] } },
++      setIsProcessing: vi.fn(), setComplexityLevel: vi.fn(), setGeneratedContent: vi.fn(), setHistory: vi.fn(),
++      setWordSoundsCustomTerms: vi.fn(), setWsPreloadedWords: vi.fn(), setError: vi.fn(), addToast: vi.fn(), warnLog: vi.fn(),
++      callGemini: provider, cleanJson: value => value, t: key => key, getDefaultTitle: () => 'Reading',
++      extractSourceTextForProcessing: pipeline.extractSourceTextForProcessing, generateBilingualText: hostBilingual
++    };
++    const result = helpers.handleComplexityAdjustment(d);
++    current = false; finish('Las aves comen.');
++    expect(await result).toEqual({ status: 'stale' });
++    expect(provider).toHaveBeenCalledTimes(1);
++    expect(d.setGeneratedContent).not.toHaveBeenCalled(); expect(d.setHistory).not.toHaveBeenCalled();
++    expect(d.addToast).not.toHaveBeenCalled(); expect(d.setError).not.toHaveBeenCalled();
++    expect(d.setIsProcessing).toHaveBeenLastCalledWith(false);
++  });
++});
+===================================================================
+--- a/tests/track07-browser-fixture.js
++++ b/tests/track07-browser-fixture.js
+@@ -11,7 +11,8 @@
+   const content={id:'fixture-1', type:'simplified', data, config:{language:options.language || 'English'}, sourceSnapshot:original.sourceSnapshot, instructionalText:{form:'adapted',role:'supplemental'}};
+   const extra={};
+   const props={ ComplexityGauge: () => null, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, setReadingTheme: noop, setSelectionMenu: noop, setIsCustomReviseOpen: noop, setInteractionMode: noop, setIsCompareMode: noop, setIsFluencyMode: noop, stopPlayback: noop, closeDefinition: noop, closePhonics: noop, closeRevision: noop, handleToggleIsEditingLeveledText: noop, t: k => k, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: false, isEditingLeveledText: false, isImmersiveReaderActive: false, isCompareMode: false, isSideBySide: false, isZenMode: true, isProcessing: false, isPlaying: false, interactionMode: 'read', history: [content], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: content, readingLearnerKey: 'learner|Blue Fox', ...extra };
+-  window.fixture={...options, initial:content, toasts:[], requests:[], preview:null};
++  const hostBilingual = (prompt, language, provider, policy) => AlloModules.TextPipelineHelpers.generateBilingualText(prompt, language, provider, policy);
++  window.fixture={...options, initial:content, toasts:[], requests:[], providerCalls:0, preview:null};
+   function Host() {
+     const [current,setCurrent]=React.useState(content), [history,setHistory]=React.useState([content]);
+     const [processing,setProcessing]=React.useState(false),[level,setLevel]=React.useState(5);
+@@ -22,9 +23,9 @@
+       const result=await AlloModules.GenerationHelpers.handleComplexityAdjustment({generatedContent:current, complexityLevel:level, gradeLevel:'Grade 4',leveledTextLanguage:content.config.language,
+         adaptationPlan:plan,saveOriginalOnAdjust:!!fixture.keepOriginal,setIsProcessing:setProcessing,setComplexityLevel:setLevel,setGeneratedContent,setHistory,
+         setWordSoundsCustomTerms:noop,setWsPreloadedWords:noop,setError:noop,addToast:(message,tone)=>fixture.toasts.push({message,tone}),warnLog:noop,
+-        callGemini:noop,cleanJson:value=>value,t:key=>key,getDefaultTitle:()=> 'Reading',
++        callGemini:async()=>{ fixture.providerCalls++; if(fixture.staged && fixture.providerCalls===1) return new Promise(resolve=>fixture.finishPrimary=resolve); return 'The birds eat.'; },cleanJson:value=>value,t:key=>key,getDefaultTitle:()=> 'Reading',
+         extractSourceTextForProcessing:AlloModules.TextPipelineHelpers.extractSourceTextForProcessing,
+-        generateBilingualText:async(...args)=>{fixture.requests.push(args);return fixture.delayed ? new Promise(resolve=>fixture.finish=resolve) : fixture.candidate || 'Herons are wading birds. They catch fish.';}
++        generateBilingualText:async(...args)=>{fixture.requests.push(args);if(fixture.staged) return hostBilingual(...args);return fixture.delayed ? new Promise(resolve=>fixture.finish=resolve) : fixture.candidate || 'Herons are wading birds. They catch fish.';}
+       });
+       if(result?.status==='preview') fixture.preview=result;
+       return result;
+===================================================================
+--- a/tests/track07-browser-acceptance.cjs
++++ b/tests/track07-browser-acceptance.cjs
+@@ -77,6 +77,28 @@
+         assert.equal(await page.evaluate(source=>AlloModules.GenerationHelpers.preservedVocabulary.validate(source,source,['wading birds'],AlloModules.TextPipelineHelpers.splitReferencesFromBody).valid,source),true);
+       }
+     });
++    await check('emoji extensions do not satisfy preserved symbols',async()=>{
++      await mount({source:'Learners see 👩.',candidate:'Learners see 👩‍🏫.'});await preview('👩');
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing: “👩”');
++      await expect(page.locator('[data-adaptation-apply]')).toHaveCount(0);
++      assert.equal(await page.evaluate(()=>fixture.state.current.data),'Learners see 👩.');
++    });
++    await check('partial emoji source terms fail before a model call',async()=>{
++      await mount({source:'Learners see 👩‍🏫.'});await preview('👩');
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('not found exactly');
++      assert.equal(await page.evaluate(()=>fixture.requests.length),0);
++    });
++    await check('changing readings during primary generation prevents the translation call',async()=>{
++      const source='Las aves zancudas comen.\n\n--- ENGLISH TRANSLATION ---\n\nHerons are wading birds.';
++      await mount({source,language:'Spanish',staged:true});await preview('wading birds');
++      await expect.poll(()=>page.evaluate(()=>fixture.providerCalls)).toBe(1);
++      await page.evaluate(()=>fixture.changeSource('A different reading.'));
++      await page.evaluate(()=>fixture.finishPrimary('Las aves comen.'));
++      await expect.poll(()=>page.evaluate(()=>fixture.state.processing)).toBe(false);
++      assert.equal(await page.evaluate(()=>fixture.providerCalls),1);
++      await expect(page.locator('[data-adaptation-apply]')).toHaveCount(0);
++      assert.equal(await page.evaluate(()=>fixture.state.current.data),'A different reading.');
++    });
+     await check('Discard restores keyboard focus',async()=>{
+       await mount();await preview();await page.locator('[data-adaptation-discard]').focus();await page.keyboard.press('Enter');
+       await expect(page.locator('[data-apply-complexity]')).toBeFocused();
+@@ -84,6 +106,6 @@
+     });
+     assert.deepEqual(errors,[]);
+   } catch(error) { results.push({name:'browser harness',status:'failed',error:error.stack});failures.push('browser harness'); }
+-  finally { fs.writeFileSync(path.join(root,'track07-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
++  finally { fs.writeFileSync(path.join(root,'track07-enhancement-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
+   if(failures.length) process.exitCode=1;
+-})();
++})();

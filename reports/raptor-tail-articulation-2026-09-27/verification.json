@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-27",
+  "scope": "Curved tail feathers with rounded caps, rigidly rotated fan endpoints for rest/pull-up/dive, and guided tail comparisons",
+  "runs": [
+    { "suites": ["raptor-tail-articulation.spec.ts: peregrine/redTail"], "output": "initial-browser-results", "passed": 0, "failed": 1, "notRun": 1, "retries": 0, "note": "New test incorrectly expected an unmatched camera button although the selected default tail view already matched. Test now chooses Side before matching. Visual review also prompted width-proportioned rounded caps." },
+    { "suites": ["raptor-tail-articulation.spec.ts: peregrine/redTail"], "output": "refined-browser-results", "passed": 2, "failed": 0, "skipped": 0, "retries": 0, "duration": "1.2 minutes" },
+    { "suites": ["raptor-tail-articulation.spec.ts", "raptor-tail-rest.spec.ts", "raptor-study-anatomy.spec.ts"], "output": "final-browser-results", "passed": 9, "failed": 0, "skipped": 0, "retries": 0, "duration": "6.7 minutes" }
+  ],
+  "uniqueScenariosValidated": 9,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "visualInspection": "pass",
+    "endpointRootAndFeatherDimensionInvariants": "pass",
+    "finiteGeometryAndUnitNormals": "pass",
+    "nondegenerateTriangles": "pass",
+    "wideAndNarrowControlTransitions": "pass",
+    "fixedTailMeshScale": "pass",
+    "stableGeometryAndTextureBuffers": "pass",
+    "frozenReadingsAndNoIdleStudyRedraws": "pass",
+    "morphedTailFraming": "pass",
+    "phoneReducedMotionAndShortFullscreen": "pass",
+    "savedViewMatchingAndCameraRestoration": "pass",
+    "notebookExportAndSessionRestoration": "pass",
+    "landingFootContactAndTakeoff": "pass",
+    "restartCleanup": "pass",
+    "scopedAxeViolations": 0
+  },
+  "resources": {
+    "previousTail": { "vertices": 96, "triangles": 84, "morphTargets": 1 },
+    "lowTail": { "vertices": 264, "triangles": 312, "morphTargets": 3 },
+    "balancedAndHighTail": { "vertices": 408, "triangles": 504, "morphTargets": 3 },
+    "extraMeshes": 0, "extraMaterials": 0, "extraTextures": 0, "extraDrawCalls": 0, "extraAnimationLoops": 0,
+    "runtime": "Existing animation loop updates three morph weights and existing steering/lift rotations; no geometry regeneration or attribute uploads."
+  },
+  "sourceFiles": [
+    { "path": "stem_lab/stem_tool_raptorhunt.js", "sha256": "e6b9992b66046238ce82bc5f49d3324738d969e3e2fb106f942888cb6530927a" },
+    { "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js", "sha256": "e6b9992b66046238ce82bc5f49d3324738d969e3e2fb106f942888cb6530927a" }
+  ],
+  "newTranslationKeys": 1,
+  "translationStatus": "English fallback implemented; shared language-pack integration pending",
+  "limitations": "Morph endpoints preserve feather dimensions; linear transitions can temporarily contract a vane slightly. Local Chromium/WebGL verification, not a physical-device performance benchmark.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

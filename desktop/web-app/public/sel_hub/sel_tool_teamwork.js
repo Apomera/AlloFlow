@@ -1886,7 +1886,7 @@ window.SelHub = window.SelHub || {
               earlierTeamChoices.length > 0 && h('details', { style: scenarioDisclosure },
                 h('summary', { style: scenarioSummary }, 'Earlier scenario choices'),
                 h('p', null, 'These choices came from the earlier scored quiz. They are historical records, not recommended responses or a measure of teamwork skill. They have not been copied into the new practice.'),
-                earlierTeamChoices.map(function(item) { return h('p', { key: item.id }, h('strong', null, TEAMWORK_PRACTICE.find(function(current) { return current.id === item.id; }).title + ': '), item.choices[oldScenarioResponses[item.id]].label); }))
+                earlierTeamChoices.map(function(item) { return h('p', { key: item.id }, h('strong', null, (TEAMWORK_PRACTICE.find(function(current) { return current.id === item.id; }) || item).title + ': '), item.choices[oldScenarioResponses[item.id]].label); }))
             ),
             h('details', { style: { margin: '16px auto', padding: 16, maxWidth: 760, background: scenarioSurface, color: scenarioInk, border: '1px solid ' + scenarioEdge, borderRadius: 12 } },
               h('summary', { style: scenarioSummary }, 'Optional AI teamwork coach'),
@@ -2349,7 +2349,7 @@ window.SelHub = window.SelHub || {
             earlierVirtual.length > 0 && h('details', { style: virtualDisclosure },
               h('summary', { style: virtualSummary }, 'Earlier virtual-team choices'),
               h('p', null, 'These choices came from the earlier scored activity. They are historical records, not recommended norms or a measure of collaboration skill. They have not been copied into your new agreement.'),
-              earlierVirtual.map(function(item) { return h('p', { key: item.id }, h('strong', null, VIRTUAL_TEAM_PRACTICE.find(function(current) { return current.id === item.id; }).title + ': '), item.choices[oldVirtualAnswers[item.id]].text); }))
+              earlierVirtual.map(function(item) { return h('p', { key: item.id }, h('strong', null, (VIRTUAL_TEAM_PRACTICE.find(function(current) { return current.id === item.id; }) || item).title + ': '), item.choices[oldVirtualAnswers[item.id]].text); }))
           );
         }
 
@@ -2487,12 +2487,12 @@ window.SelHub = window.SelHub || {
                 h('textarea', { id: 'teamwork-retro-copy', readOnly: true, rows: 10, value: retroReviewText, style: Object.assign({}, retroControl, { lineHeight: 1.6, resize: 'vertical' }) }),
                 h('button', { type: 'button', style: Object.assign({}, retroControl, { margin: '10px 0', cursor: 'pointer', fontWeight: 700 }), onClick: function() {
                   function copyResult(ok) {
-                    var message = ok ? 'Retrospective notes copied.' : 'Copy unavailable. Select the review text and copy it manually.';
+                    var message = ok ? 'Retrospective notes copied.' : ((window.SelHub && window.SelHub.COPY_UNAVAILABLE) || 'Copy unavailable. Select the review text and copy it manually.');
                     if (typeof addToast === 'function') addToast(message, ok ? 'success' : 'info');
                     if (announceToSR) announceToSR(message);
                   }
                   try {
-                    var copying = window.SelHub && typeof window.SelHub.copyText === 'function' ? window.SelHub.copyText(retroReviewText) : navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(retroReviewText).then(function() { return true; }) : false;
+                    var copying = window.SelHub && typeof window.SelHub.copyText === 'function' ? window.SelHub.copyText(retroReviewText) : false;
                     Promise.resolve(copying).then(function(ok) { copyResult(ok === true); }).catch(function() { copyResult(false); });
                   } catch (e) { copyResult(false); }
                 } }, 'Copy review text')),

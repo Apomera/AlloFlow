@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "inputRoot": "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated",
+  "readerSha256": "242d3a4ff4a7f30adb95551ac3573524b5b50c1075f667345f25f19b80af97b7",
+  "checks": [
+    "preview is outside the teacher reader",
+    "background is inert and aria-hidden",
+    "preview spotlight remains in preview",
+    "preview audio remains disabled",
+    "preview has no More control or lookup capability in Word meaning mode",
+    "card Escape keeps preview open and returns focus",
+    "second Escape closes preview",
+    "teacher spotlight and All word help stay in teacher reader after preview closes"
+  ],
+  "errors": []
+}

@@ -1,0 +1,96 @@
+{
+  "practice": {
+    "errors": [],
+    "scans": [
+      {
+        "width": 390,
+        "theme": "light",
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "contrast",
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "violations": []
+      }
+    ],
+    "sizes": [
+      {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      {
+        "width": 768,
+        "scrollWidth": 768
+      },
+      {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    ],
+    "initial3d": [
+      {
+        "createdBy": "page",
+        "lost": false,
+        "draws": 413,
+        "renders": 7
+      }
+    ],
+    "target": "humerus",
+    "arabic": {
+      "width": 320,
+      "hint": "يستخدم وضع تحديد البنى الأطلس ثنائي الأبعاد لعرض علامة التصويب. أنهِ الاختبار للعودة إلى المنظر الذي اخترته.",
+      "fontSize": "17px"
+    },
+    "restored3d": [
+      {
+        "createdBy": "page",
+        "lost": false,
+        "draws": 354,
+        "renders": 6
+      }
+    ]
+  },
+  "restoration": {
+    "restored": [
+      {
+        "answered": false,
+        "requested3d": true,
+        "requestedModel": "blueprint",
+        "target": "skull",
+        "feedback": null
+      },
+      {
+        "answered": true,
+        "requested3d": true,
+        "requestedModel": "blueprint",
+        "target": "skull",
+        "feedback": "ribs"
+      }
+    ],
+    "errors": []
+  }
+}

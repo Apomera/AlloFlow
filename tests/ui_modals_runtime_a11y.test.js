@@ -33,58 +33,15 @@ beforeAll(() => {
   window.__uiModalWrites = [];
   window._fbDoc = (_db, ...parts) => parts.join('/');
   window._fbUpdateDoc = async (ref, payload) => { window.__uiModalWrites.push({ ref, payload }); };
-  window.__alloHooks = {
-    useFocusTrap(ref, isOpen, onEscape) {
-      const escapeRef = React.useRef(onEscape);
-      escapeRef.current = onEscape;
-      React.useEffect(() => {
-        if (!isOpen || !ref.current) return undefined;
-        const dialog = ref.current;
-        const previousFocus = document.activeElement;
-        const stack = window.__alloFocusTrapStack;
-        const trap = { root: dialog };
-        stack.push(trap);
-        const isTop = () => stack.at(-1) === trap;
-        const focusable = () => Array.from(dialog.querySelectorAll(
-          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
-        ));
-        const onKeyDown = (event) => {
-          if (!isTop()) return;
-          if (event.key === 'Escape') {
-            if (escapeRef.current) {
-              event.preventDefault();
-              event.stopPropagation();
-              escapeRef.current();
-            }
-            return;
-          }
-          if (event.key !== 'Tab') return;
-          const items = focusable();
-          const first = items[0];
-          const last = items.at(-1);
-          if (!dialog.contains(document.activeElement)) {
-            event.preventDefault();
-            (event.shiftKey ? last : first)?.focus();
-          } else if (event.shiftKey && document.activeElement === first) {
-            event.preventDefault();
-            last?.focus();
-          } else if (!event.shiftKey && document.activeElement === last) {
-            event.preventDefault();
-            first?.focus();
-          }
-        };
-        document.addEventListener('keydown', onKeyDown);
-        (focusable()[0] || dialog).focus();
-        return () => {
-          document.removeEventListener('keydown', onKeyDown);
-          const wasTop = isTop();
-          const index = stack.indexOf(trap);
-          if (index >= 0) stack.splice(index, 1);
-          if (wasTop && previousFocus?.isConnected) previousFocus.focus();
-        };
-      }, [isOpen, ref]);
-    },
-  };
+  // The REAL focus trap from the host. A hand copy here fell behind it (it never
+  // learned `data-autofocus`), so focus bugs and fixes were measured against a
+  // hook the app does not run.
+  const hostSource = require('node:fs').readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const trapStart = hostSource.indexOf('const useFocusTrap = (ref, isOpen, onEscape) => {');
+  const trapEnd = hostSource.indexOf('window.__alloHooks = { useFocusTrap };', trapStart);
+  if (trapStart < 0 || trapEnd < 0) throw new Error('useFocusTrap not found in AlloFlowANTI.txt');
+  const realUseFocusTrap = new Function('useRef', 'useEffect', hostSource.slice(trapStart, trapEnd) + '\nreturn useFocusTrap;')(React.useRef, React.useEffect);
+  window.__alloHooks = { useFocusTrap: realUseFocusTrap };
   loadAlloModule('ui_modals_module.js');
   components = window.AlloModules;
 });
@@ -248,7 +205,17 @@ describe('Shared UI modals rendered accessibility', () => {
         responseReceipts: { 'student-1': payload[receiptKey] },
       },
     });
-    expect(host.querySelector('[role="dialog"]').textContent).toContain('quiz.status.result_incorrect');
+    // Since 2026-09-08 (0bb48eb97) an answer that reached the teacher only as a
+    // participation receipt was never scored, so there is no Correct/Incorrect
+    // card: the student is told it was not scored, and the options still mark
+    // the right answer and their own pick.
+    const revealedText = host.querySelector('[role="dialog"]').textContent;
+    expect(revealedText).toContain('quiz.live_student.receipt_not_scored');
+    expect(revealedText).not.toContain('quiz.status.result_incorrect');
+    expect(revealedText).not.toContain('quiz.status.result_correct');
+    const revealedOptions = Array.from(host.querySelectorAll('button[data-help-key="quiz_student_answer_option"]'));
+    expect(revealedOptions[0].className).toContain('bg-green-700');
+    expect(revealedOptions[1].className).toContain('bg-red-600');
   });
 
   it('does not publish a receipt when the P2P answer succeeds', async () => {
@@ -472,21 +439,27 @@ describe('Shared UI modals rendered accessibility', () => {
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.getAttribute('aria-labelledby')).toBe('student-quiz-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('student-quiz-question');
+    // Name the element: <body>'s text contains "Alpha" too.
+    expect(document.activeElement.getAttribute('data-help-key')).toBe('quiz_student_answer_option');
     expect(document.activeElement.textContent).toContain('Alpha');
     await expectNoSeriousAxe(dialog);
 
-    const first = dialog.querySelector('button[data-help-key="quiz_student_answer_option"]');
-    const exit = dialog.querySelector('button[aria-label="Leave live quiz view"]');
-    exit.focus();
+    // Focus stays inside: Tab from the last control wraps to the first (Minimize,
+    // first in the header since 2026-09-08) and Shift+Tab wraps back.
+    const exit = dialog.querySelector('button[aria-label="quiz.live_student.minimize_aria"]');
+    const enabled = Array.from(dialog.querySelectorAll('button:not([disabled])'));
+    expect(enabled[0]).toBe(exit);
+    const last = enabled[enabled.length - 1];
+    last.focus();
     act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })));
-    expect(document.activeElement).toBe(first);
-    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true })));
     expect(document.activeElement).toBe(exit);
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true })));
+    expect(document.activeElement).toBe(last);
 
     act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
     await act(async () => { await Promise.resolve(); });
     expect(host.querySelector('[role="dialog"]')).toBeNull();
-    expect(host.querySelector('button').textContent).toContain('Return to live quiz');
+    expect(host.querySelector('button').textContent).toContain('quiz.live_student.return_to_quiz');
     expect(document.activeElement).toBe(opener);
   });
 
@@ -542,20 +515,30 @@ describe('Shared UI modals rendered accessibility', () => {
       type: 'quiz',
       data: { questions: [{ question: 'Choose the verb.', options: ['Run', 'Blue'], correctAnswer: 'Run' }] },
     };
-    await mount(React.createElement(components.StudentQuizOverlay, {
-      sessionData,
-      generatedContent,
-      user: { uid: 'student-1' },
-      activeSessionCode: 'BOSS1',
-      targetAppId: 'app-1',
-    }));
+    // The boss's NAME must reach screen readers, which only a translator that
+    // fills {placeholders} can show: resolve from the real registry, as the host does.
+    const uiStrings = JSON.parse(require('node:fs').readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8'));
+    const registryT = (key, params = {}) => {
+      let value = String(key).split('.').reduce((node, part) => node && node[part], uiStrings);
+      if (typeof value !== 'string') return undefined;
+      Object.keys(params || {}).forEach((name) => { value = value.replace('{' + name + '}', params[name]); });
+      return value;
+    };
+    await mount(React.createElement(window.AlloLanguageContext.Provider, { value: { t: registryT } },
+      React.createElement(components.StudentQuizOverlay, {
+        sessionData,
+        generatedContent,
+        user: { uid: 'student-1' },
+        activeSessionCode: 'BOSS1',
+        targetAppId: 'app-1',
+      })));
     const dialog = host.querySelector('[role="dialog"]');
     const progressbars = Array.from(dialog.querySelectorAll('[role="progressbar"]'));
     expect(progressbars).toHaveLength(2);
     expect(progressbars[0].getAttribute('aria-label')).toBe('Syntax Serpent health');
     expect(progressbars[0].getAttribute('aria-valuenow')).toBe('70');
     expect(progressbars[0].getAttribute('aria-valuemax')).toBe('100');
-    expect(progressbars[1].getAttribute('aria-label')).toBe('quiz.boss.class_hp');
+    expect(progressbars[1].getAttribute('aria-label')).toBe(uiStrings.quiz.boss.class_hp);
     expect(progressbars[1].getAttribute('aria-valuenow')).toBe('85');
     expect(dialog.querySelectorAll('[role="status"]').length).toBeGreaterThanOrEqual(2);
     await expectNoSeriousAxe(dialog);

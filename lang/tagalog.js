@@ -1,4 +1,1223 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Mga Sona ng Damdamin",
+          "desc": "Tukuyin ang iyong sona (asul, berde, dilaw, pula) at tuklasin ang mga estratehiya para mapamahalaan ang sarili."
+        },
+        "emotions": {
+          "label": "Tagatuklas ng Damdamin",
+          "desc": "Palawakin ang bokabularyo ng damdamin — tukuyin, pangalanan, at sukatin ang tindi ng iyong nararamdaman."
+        },
+        "strengths": {
+          "label": "Tagahanap ng Kalakasan",
+          "desc": "Tuklasin at pagnilayan ang iyong mga personal na kalakasan, talento, at mga bahaging maaari pang palaguin."
+        },
+        "viaStrengths": {
+          "label": "Mga Kalakasan ng VIA",
+          "desc": "Pinasimpleng sariling pag-uuri ng 24 na Kalakasan ng Pagkatao ng VIA (Peterson at Seligman, 2004), kasama ang 6 na birtud at pagtukoy sa iyong mga natatanging kalakasan. Para sa opisyal at libreng survey, pumunta sa viacharacter.org. Mapagnilay na pagsasanay, hindi psychometric na pagsukat."
+        },
+        "wheelOfLife": {
+          "label": "Gulong ng Buhay",
+          "desc": "Tsart na hugis-sapot ng 8 larangan ng buhay, bawat isa ay minamarkahan mula 1 hanggang 10. Isang larawan ng sarili kung saan puno ang buhay at kung saan ito kulang sa ngayon. Mula sa tradisyon ng coaching (Meyer, dekada 1960; Co-Active Coaching). Heuristic; hindi validated na psychometric na kasangkapan."
+        },
+        "perma": {
+          "label": "Kagalingan ng PERMA",
+          "desc": "Pagsusuri sa sarili sa limang larangan ng PERMA kasama ang pagninilay sa Kalusugan: Positibong emosyon, Pakikilahok, Mga Relasyon, Kahulugan, Tagumpay, at Kalusugan. 24 na aytem, resulta sa bar chart, pagninilay sa bawat larangan. Mula kay Seligman; kapares ng Mga Kalakasan ng VIA."
+        },
+        "coping": {
+          "label": "Kasangkapan sa Pagkaya",
+          "desc": "Tuklasin at sanayin ang mga estratehiya sa pagkaya — paghinga, pagbabalik sa kasalukuyan, paggalaw, at iba pa."
+        },
+        "windowOfTolerance": {
+          "label": "Bintana ng Pagtitiis",
+          "desc": "Biswal para sa kamalayan sa sarili na may kaalaman sa trauma. Tatlong sona ng pagkapukaw (hyperarousal, bintana, hypoarousal). Imapa ang iyong mga personal na palatandaan sa bawat sona, ang iyong mga trigger, at ang mga gawaing nagbabalik sa iyo. Batay kay Siegel (1999); pamantayan sa mga paaralang may kaalaman sa trauma."
+        },
+        "stressBucket": {
+          "label": "Balde ng Stress",
+          "desc": "Biswal ng kapasidad. Pumapasok ang mga sanhi ng stress; inilalabas ito ng mga gawain sa pagkaya. Tingnan kung balanse ang iyong pumapasok at lumalabas. Kasangkapan mula sa tradisyon ng CBT (Brabban at Turkington 2002), ginagamit sa NHS IAPT at Mind UK. Tapat tungkol sa mga istruktural na sanhi ng stress."
+        },
+        "tipp": {
+          "desc": "Apat na kasanayan sa DBT para makaraos sa krisis (Temperature/temperatura, Intense exercise/matinding ehersisyo, Paced breathing/kontroladong paghinga, Paired muscle relaxation/magkapares na pagpapahinga ng kalamnan) para sa MATINDING pagkabagabag. Pinakakalma nito ang katawan sa loob ng 30 segundo hanggang 10 minuto bago mo subukang mag-isip ng paraan palabas. Pundasyong kasanayan ng DBT sa Pagtitiis sa Pagkabagabag (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Kasangkapan sa Pagkabalisa",
+          "desc": "Mga kasanayang batay sa CBT para harapin ang pagkabalisa: sikoedukasyon, ang puno ng pag-aalala (produktibo vs hindi produktibong pag-aalala), nakatakdang oras ng pag-aalala, pagpapahupa ng pinakamasamang akala, mga kasanayan sa pagbabalik sa kasalukuyan, at personal na imbentaryo ng mga pattern. Mula sa Beck Institute, AACAP, ADAA. Kapares ng Bintana ng Pagtitiis at Balde ng Stress."
+        },
+        "sleep": {
+          "label": "Tulog at Pahinga",
+          "desc": "Krisis sa kalusugang pampubliko ang tulog ng mga kabataan. Bihirang maabot ang 8-10 oras na inirerekomenda ng AAP. Sikoedukasyon, pagsusuri sa sarili, 8 karaniwang hadlang + ang epektibo para sa bawat isa, at talaarawan ng tulog. Mula sa AAP, CDC, NSF, at pananaliksik ni Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Regulasyong Pandama",
+          "desc": "Kasangkapang gumagalang sa neurodiversity para maunawaan ang sarili mong pagproseso ng pandama sa 8 sistemang pandama. Bumuo ng personal na profile, magplano ng sensory diet, tukuyin ang mga akomodasyon sa paaralan. Wikang inuuna ang pagkakakilanlan; nakabatay kina Ayres / Dunn / iskolarsyip na pinamumunuan ng mga autistic."
+        },
+        "bigFeelings": {
+          "label": "Malalaking Damdamin (Galit)",
+          "desc": "Sikoedukasyon at pagbuo ng kasanayan na nakatuon sa galit. Ang galit bilang impormasyon, hindi bilang problema; ang reaktibong agresyon ang bitag. Nakabatay sa tradisyong Coping Power ni Lochman + sa ebidensya ng CBT para sa galit. Talaan ng mga inis, imbentaryo ng mga trigger, ang sandali ng pagpili, at mga personal na paraan ng pagpapalamig ng ulo."
+        },
+        "substancePsychoed": {
+          "label": "Paggamit ng Substansiya",
+          "desc": "Sikoedukasyong nakatuon sa pagbabawas ng pinsala tungkol sa mga substansiya (alak, cannabis, nikotina, opioid, stimulant, benzo, hallucinogen). Mga panganib sa utak ng kabataan. Edukasyon tungkol sa naloxone. HINDI kasangkapan sa screening, HINDI puro pag-iwas lang. Malakas na referral sa SAMHSA. Espasyo ng pagninilay na nakaayon sa MI."
+        },
+        "behavioralActivation": {
+          "label": "Aktibasyon ng Pag-uugali",
+          "desc": "Magplano ng maliliit na gawain, gawin ang mga ito, at markahan para sa kahusayan (pakiramdam na may kakayahan) at kasiyahan (nag-enjoy). Pansinin kung ano ang akma at pumili ng kayang susunod na hakbang. Humuhugot ang gawaing pagpaplanong ito sa aktibasyon ng pag-uugali; hindi ito nagbibigay o sumusuri ng isang kurso ng terapiya."
+        },
+        "mindfulness": {
+          "label": "Sulok ng Mindfulness",
+          "desc": "Mga ginabayang ehersisyo sa paghinga, pag-scan sa katawan, at mga gawain sa mindfulness."
+        },
+        "quietQuestions": {
+          "label": "Tahimik na mga Tanong",
+          "desc": "Lingguhang pagsasanay ng panloob na pagtatanong. Samahan ang isang bukas na tanong sa loob ng isang buong linggo. 20 umiikot na tanong tungkol sa atensyon, pananabik, hirap, koneksyon, at pagiging. Hango sa tradisyon ng pagtatanong ng mga Quaker; sekular at hindi nagdidikta."
+        },
+        "orientations": {
+          "label": "Mga Oryentasyon",
+          "desc": "Mga Paraan ng Pamumuhay, Pinaghambing. Walong pilosopikal na tradisyon (Daoismo, Zen, Stoisismo, Eksistensyalismo, etikang Confucian, Ubuntu, relasyonalidad ng mga Katutubo, Etika ng Malasakit) na pinaghahambing sa malalaking tanong sa buhay. Hindi nagdidikta; bawat tradisyon ay may tapat na panel na \"kung ano ang hindi nito nagagawa nang mahusay\"."
+        },
+        "thoughtRecord": {
+          "label": "Talaan ng Kaisipan ng CBT",
+          "desc": "Ang 7-kolum na talaan ng kaisipan mula sa Kognitibo-Pang-asal na Terapiya. Dumaan sa isang mahirap na sandali: sitwasyon, emosyon, awtomatikong kaisipan, ebidensya para at laban, balanseng kaisipan, muling pagmamarka ng emosyon. Nagse-save ng mga entry sa paglipas ng panahon. Mula kina Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Grid ng Gastos at Pakinabang",
+          "desc": "Isang 2x2 na grid sa pagpapasya mula sa Dialektikal na Pang-asal na Terapiya. Mga pakinabang at kawalan ng isang desisyon sa maikli at mahabang panahon, magkatabi. Kapaki-pakinabang kapag itinutulak ka ng emosyon sa isang opsyon. Mula kay Linehan."
+        },
+        "sfbt": {
+          "label": "Nakatuon sa Solusyon",
+          "desc": "Maikling Terapiyang Nakatuon sa Solusyon: ang Tanong ng Himala, Pagsusukat, Paghahanap ng Eksepsiyon, at mga Papuri. Tumitingin pasulong sa halip na paatras, at nagtatanong kung ano ang gumagana na. Ang pinakaginagamit na teknik sa paggabay sa paaralan sa US. Mula kina de Shazer at Berg."
+        },
+        "careConstellations": {
+          "label": "Mga Konstelasyon ng Malasakit",
+          "desc": "Isang mapa ng ugnayan kung sino ang nagmamalasakit sa iyo at kung sino ang pinagmamalasakitan mo. Tinatanggihan ang indibidwalista o konsyumeristang balangkas ng \"self-care\". May kasamang malalim na pilosopikal na pananaw sa Pag-aaruga sa Sarili vs \"self-care\" (Foucault, Griyegong epimeleia heautou, Audre Lorde, eudaimonic vs hedonic)."
+        },
+        "ecomap": {
+          "desc": "Mapa ng ugnayan ng tao-sa-kapaligiran. Ikaw ang nasa gitna; ang 12 pangunahing sistema ng buhay ay nasa paligid mo. Bawat koneksyon ay minamarkahan ayon sa lakas, stress, at direksyon ng enerhiya. Karaniwang kasangkapan sa social work mula pa kay Hartman (1978); ginagamit sa mga IEP, pagtatasa sa pamilya, at personal na imbentaryo ng buhay."
+        },
+        "circlesOfSupport": {
+          "label": "Mga Bilog ng Suporta",
+          "desc": "Apat na magkakapatong na bilog ng ugnayan: Pagiging Malapit, Pagkakaibigan, Pakikilahok, Palitan (may bayad). Ipinapakita kung sino talaga ang malapit, kabilang kung mga taong may bayad ang pumupuno sa mga panloob na bilog. Mula kina Forest at Snow sa Inclusion Press."
+        },
+        "genogram": {
+          "desc": "Tatlong-henerasyong mapa ng pamilya gamit ang karaniwang simbolo ng family systems. Para lamang sa personal na pag-unawa sa sarili (HINDI klinikal na pagtatasa). Batay sa teorya ng family systems ni Bowen at sa notasyong McGoldrick-Gerson-Petry. May kasamang kitang-kitang gabay para sa ligtas na paglalahad."
+        },
+        "griefLoss": {
+          "label": "Dalamhati at Pagkawala",
+          "desc": "Isang ginabayang kasama para sa sarili sa panahon ng dalamhati. Pagkamatay ng tao o alagang hayop, pagbabago sa pamilya, pagkawala ng kaibigan, pagkawala ng pagkakakilanlan, malabong pagkawala — lahat ay kasama. Dumaan sa apat na gawain ng pagluluksa ni Worden, sumulat ng liham, magplano ng mga ritwal. Malakas na paalala sa kaligtasan na tumuturo sa Kasama sa Krisis / 988 para sa matindi o komplikadong dalamhati."
+        },
+        "traumaPsychoed": {
+          "label": "Pag-unawa sa Trauma",
+          "desc": "Sikoedukasyon lamang (HINDI kasangkapan sa screening). Kung ano ang trauma at kung ano ang hindi, neurobiology sa simpleng wika, mga karaniwang tugon na tinitingnan bilang pag-aangkop, ang 6 na prinsipyo ng SAMHSA, mga paggamot na batay sa ebidensya. Para sa mga estudyante at guro. May kasamang kitang-kitang paalala sa kaligtasan kung bakit hindi ligtas ang screening nang walang follow-up."
+        },
+        "bodyStory": {
+          "label": "Kuwento ng Katawan",
+          "desc": "Kasangkapan para sa pagtanggap sa katawan at pagiging buo sa katawan. HINDI nakatuon sa timbang, HINDI kaugnay ng diyeta, HINDI kasangkapan sa screening. Nakabatay sa pagpapahalaga sa katawan ni Tylka, mga prinsipyo ng intuitibong pagkain, at literasiya sa media. Bukas sa lahat ng katawan, lahat ng kasarian, lahat ng laki. Malakas na referral sa NEDA para sa mga karamdaman sa pagkain."
+        },
+        "sourcesOfStrength": {
+          "label": "Mga Pinagmumulan ng Lakas",
+          "desc": "Imapa ang iyong 8 salik na pananggalang. Tuklasin ang mga suportang pananggalang na hango sa programang Sources of Strength. Ang sariling-gabay na mapang ito ay isang adaptasyon, hindi pagpapatupad ng nasuring programa sa paaralan."
+        },
+        "crisiscompanion": {
+          "label": "Kasama sa Krisis",
+          "desc": "Mga kasanayan sa suporta ng kapwa at pag-iwas sa pagpapakamatay: ano ang gagawin kung ikaw o ang isang kaibigan ay may depresyon, nasa krisis, o nag-iisip na saktan ang sarili — pagkilala sa mga palatandaan, ano ang sasabihin (at hindi sasabihin), pagsasabi sa isang pinagkakatiwalaang adulto, pati ang 988 at isang personal na plano sa kaligtasan. May babala sa nilalaman bago pumasok. Nakaayon sa NEDA, AFSP, Sources of Strength, at 988. Ang katapat na suporta sa matinding sitwasyon ng Mga Pinagmumulan ng Lakas."
+        },
+        "identitySupport": {
+          "label": "Suporta sa Pagkakakilanlan",
+          "desc": "Inklusibo at nagpapatibay na espasyo para sa mga tanong tungkol sa pagkakakilanlang pangkasarian, sekswal na oryentasyon, romantikong oryentasyon, at mas malawak na pagkakakilanlan. Bokabularyo, pag-unlad ng pagkakakilanlan, paghahanap ng komunidad, kaligtasan para sa trans na kabataan, gabay para sa mga kakampi. Nakabatay sa Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Mga Tinig ng May Kapansanan",
+          "desc": "Mga totoong autistic at may-kapansanang tagapagtaguyod na ang gawain ay humubog, at pumuna, sa praktika tungkol sa kapansanan. Mga sipi, konteksto, at piniling listahan ng babasahin. Ginawa upang ang mga taong dati ay PINAGGAGAWAN lamang ng larangang ito ang nasa gitna, hindi itinatabi sa gilid ng isang kasangkapan sa agham ng pag-uugali. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Tagapagtakda ng Layunin",
+          "desc": "Magtakda ng mga SMART na layunin, subaybayan ang progreso, at ipagdiwang ang mahahalagang yugto."
+        },
+        "howlTracker": {
+          "label": "Tagasubaybay ng HOWL",
+          "desc": "Pagtatasa sa sarili ng Habits of Work and Learning (Mga Gawi sa Trabaho at Pag-aaral) para sa oras ng Crew. Lingguhang pagkumusta, quarterly na layunin, tsart ng trend, mga tanong para sa usapan sa Crew. Nakaayon sa balangkas ng HOWL ng EL Education."
+        },
+        "onePageProfile": {
+          "label": "Isang-Pahinang Profile",
+          "desc": "Madaling dalhin at i-print na profile na kasya sa isang pahina. Tatlong bahagi: ang gusto at hinahangaan ng mga tao sa akin, ang mahalaga sa akin, kung paano ako pinakamahusay na susuportahan. Dokumento ng pagpaplanong nakasentro sa tao para sa mga pulong ng IEP, transisyon, substitute na guro, o Crew. Batay sa format ng Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Paggawa ng mga Plano ng Aksiyon). Walong tanong nang sunud-sunod (Aking Kuwento, Pangarap, Bangungot, Sino Ako, Mga Kaloob, Mga Pangangailangan, Plano ng Aksiyon, Mga Unang Hakbang). Biswal na nakasentro sa tao mula kina Pearpoint, O'Brien, at Forest sa Inclusion Press; malawakang ginagamit sa pagpaplano ng transisyon."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Pagpaplano ng Alternatibong Bukas nang may Pag-asa). Biswal sa pagpaplano ng hinaharap: walong yugto mula sa iyong pangmatagalang Hilagang Bituin pabalik sa mga unang hakbang sa loob ng dalawang linggo. Pearpoint, O'Brien, at Forest sa Inclusion Press; kapares ng MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Mga Pinahahalagahan at Aksiyon",
+          "desc": "Pagbukud-bukurin ang mahalaga, pangalanan ang iyong mga pangunahing pinahahalagahan, at gawing isang maliit at kongkretong aksiyon ngayong linggo ang bawat isa. Mula sa Terapiya ng Pagtanggap at Pangako (Hayes); balangkas na DNA-V para sa kabataan. Ang pagkakaiba ng ACT sa pagitan ng mga pinahahalagahan (direksyon) at mga layunin (destinasyon)."
+        },
+        "careerCompass": {
+          "label": "Kompas ng Karera",
+          "desc": "Tuklasin ang mga karera sa pamamagitan ng iyong mga interes. Ang 36-aytem na RIASEC na pagsusuri sa sarili ay nagbibigay ng nangungunang tatlong Holland code; tingnan ang mga karera, ang 16 na pederal na Career Cluster, at mga kongkretong susunod na hakbang (pagmamasid sa trabaho, panayam para sa impormasyon, CTE, pag-aaprentis). Nakabatay sa balangkas ni Holland; tumuturo sa opisyal na O*NET Interest Profiler sa mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio ng Pagtataguyod sa Sarili",
+          "desc": "Bumuo ng kongkretong plano ng suporta sa paaralan para sa mga tanong tungkol sa IEP o 504, mga akomodasyon, mga pagpili sa paglalahad, at paghingi ng tulong sa mga pinagkakatiwalaang adulto."
+        },
+        "perspective": {
+          "label": "Lente ng Pananaw",
+          "desc": "Tingnan ang mga sitwasyon mula sa iba't ibang pananaw — sanayin ang empatiya at ang pag-unawa sa pananaw ng iba."
+        },
+        "community": {
+          "label": "Komunidad at Kultura",
+          "desc": "Tuklasin ang pagkakaiba-iba, kamalayang pangkultura, at pakiramdam ng pagiging bahagi ng komunidad."
+        },
+        "conflict": {
+          "label": "Paglutas ng Alitan",
+          "desc": "Magsanay sa isang mababa ang taya o haka-hakang alitan gamit ang pag-unawa sa pananaw ng iba, mga pahayag na \"Ako\", pagpapahupa ng tensyon, at mga pagpili para sa pag-aayos. Kung may taong hindi ligtas, humingi ng tulong sa adulto sa halip na makipagnegosasyon nang mag-isa."
+        },
+        "social": {
+          "label": "Lab ng Kasanayang Panlipunan",
+          "desc": "Sanayin ang mga kasanayan sa pakikipag-usap, aktibong pakikinig, wika ng katawan, at pakikipagtulungan."
+        },
+        "teamwork": {
+          "label": "Tagabuo ng Pagtutulungan",
+          "desc": "Mga hamong sama-sama at pagtuklas sa mga papel sa koponan."
+        },
+        "dearMan": {
+          "desc": "Bumuo ng iskrip para sa isang mahirap na pakiusap sa pitong hakbang: Describe (Ilarawan), Express (Ipahayag), Assert (Igiit), Reinforce (Palakasin), Mindful (Manatiling nakatuon), Appear confident (Magmukhang kumpiyansa), Negotiate (Makipagnegosasyon). Mula sa Interpersonal na Bisa ng DBT (Linehan); ang pinakaginagamit na iskrip para sa mapanindigang komunikasyon sa paggabay sa paaralan. Kapares ng Pagtataguyod sa Sarili."
+        },
+        "motivationalInterviewing": {
+          "label": "Motibasyonal na Pakikipanayam",
+          "desc": "Balangkas ng pag-uusap para matulungan ang isang tao (o ang sarili mo) na pag-isipan ang isang pagbabago. Alamin ang mga kasanayang OARS (Open questions/bukas na tanong, Affirmations/pagpapatibay, Reflections/pagsasalamin, Summaries/buod), ang tatlong panukat, at ang Usapang Pagbabago. Mula kina Miller at Rollnick; pundasyon ng paggabay sa paaralan at ng suporta ng kapwa."
+        },
+        "crewProtocols": {
+          "label": "Mga Protokol ng Crew",
+          "desc": "Aklatan ng mga istrukturadong format ng grupo para sa oras ng Crew, advisory, o homeroom: mga pampabuo ng komunidad, pambungad, pangwakas, mga bilog na restoratibo, mga protokol ng pagninilay, mga format ng pagdiriwang, at mga gabay sa mahihirap na usapan. Kasama rin ang pinagsama-samang lahat ng tanong para sa Crew mula sa buong SEL Hub. Nakabatay sa EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Malulusog na Relasyon",
+          "desc": "Ang spectrum (malusog / hindi malusog / mapang-abuso) sa 8 dimensyon ng anumang malapit na relasyon. Detalyadong pagtalakay sa pahintulot, pag-iwas sa karahasan sa pakikipag-date, kaligtasan + mga helpline. Nakabatay sa balangkas ng Loveisrespect / NDVH. Bukas sa mga queer, neurodivergent, at may kapansanan."
+        },
+        "decisions": {
+          "label": "Lab ng Pagpapasya",
+          "desc": "Harapin ang mga sitwasyon sa totoong buhay gamit ang balangkas na huminto-mag-isip-kumilos."
+        },
+        "journal": {
+          "label": "Journal ng Damdamin",
+          "desc": "Pang-araw-araw na journal ng pagkumusta — itala ang iyong kalooban, mga trigger, at mga pagninilay sa paglipas ng panahon."
+        },
+        "safety": {
+          "label": "Kaligtasan at Hangganan",
+          "desc": "Alamin ang tungkol sa mga personal na hangganan, mga pinagkakatiwalaang adulto, at mga ligtas vs. hindi ligtas na sitwasyon."
+        },
+        "landPlace": {
+          "label": "Lupa at Lugar",
+          "desc": "Studio ng Pangangalaga para sa patuloy na ugnayan sa lupang tinitirhan mo. Tatlong hibla (kasaysayan, ekolohiya, kasalukuyan), kritikal na pagninilay sa pagkilala sa lupa bilang praktika at hindi palabas, mga organisasyong pinamumunuan ng Wabanaki bilang may-awtoridad na tinig, at pribadong journal ng pagninilay."
+        },
+        "somaticReset": {
+          "label": "Reset ng Katawan at Hininga",
+          "desc": "Pumili ng isang bahagi ng katawan at sundan ang isang maikling reset na kayang gawin habang nakaupo — katahimikan, paghinga, o banayad na paggalaw — na may pribadong pagkumusta bago at pagkatapos."
+        },
+        "restorativeCircle": {
+          "label": "Bilog na Restoratibo",
+          "desc": "Pangasiwaan ang mga bilog na restoratibo at pampabuo ng komunidad na may itinakdang pamantayan, gabay ng adulto, at malasakit sa mga ugat ng kultura. Hindi para sa sapilitang paglalahad o sa aktibong panganib sa kaligtasan."
+        },
+        "compassion": {
+          "label": "Habag at Pakikipag-usap sa Sarili",
+          "desc": "Sanayin ang habag sa sarili, baguhin ang pananaw sa panloob na kritiko, at bumuo ng mas mabait na panloob na tinig."
+        },
+        "friendship": {
+          "label": "Tagabuo ng Pagkakaibigan",
+          "desc": "Tuklasin ang mga istilo ng pagkakaibigan, mga estratehiya sa pag-aayos, at malulusog na pattern ng relasyon."
+        },
+        "transitions": {
+          "label": "Mga Pagbabago sa Buhay",
+          "desc": "Harapin ang mga pagbabago tulad ng paglipat ng bahay, bagong paaralan, at paglaki."
+        },
+        "upstander": {
+          "label": "Pagsasanay sa Pagtatanggol",
+          "desc": "Matutong ipagtanggol ang iba nang ligtas — mula sa pagiging tagamasid tungo sa pagiging tagapagtanggol."
+        },
+        "growthmindset": {
+          "label": "Pag-iisip na Lumalago",
+          "desc": "Agham ng utak, pagtingin sa mga hamon sa bagong paraan, at pagbuo ng katatagan."
+        },
+        "execfunction": {
+          "label": "Ehekutibong Paggana",
+          "desc": "Mga estratehiya para sa mas mahihirap na bahagi ng pagtatapos ng mga gawain: pagsisimula ng gawain, pagpapanatili ng pokus, pagpaplano nang maaga, at pagsubaybay sa oras."
+        },
+        "advocacy": {
+          "label": "Pagsasanay sa Pagtataguyod",
+          "desc": "Sanayin ang mga pangkalahatang iskrip para sa pagpapahayag ng pangangailangan, paghingi ng suporta, at pagsasalita sa mga pang-araw-araw na sitwasyon."
+        },
+        "civicAction": {
+          "label": "Sibikong Aksiyon at Pag-asa",
+          "desc": "Iproseso ang mabibigat na damdamin tungkol sa kawalang-katarungan, bumuo ng kakayahang pansibiko, at linangin ang pag-asa sa pamamagitan ng aksiyon."
+        },
+        "ethicalReasoning": {
+          "label": "Lab ng Etikal na Pangangatwiran",
+          "desc": "Tuklasin ang mga kasalukuyang etikal na dilema gamit ang iba't ibang balangkas at Sokratikong diyalogo sa AI."
+        },
+        "cultureExplorer": {
+          "label": "Tagatuklas ng Kultura",
+          "desc": "Sumisid nang malalim sa mga kultura ng mundo sa tulong ng AI, may kasamang mga larawan at audio."
+        },
+        "voicedetective": {
+          "label": "Detektib ng Boses",
+          "desc": "Makinig sa mga boses at tukuyin ang mga emosyon mula sa tono."
+        },
+        "practiceJourneys": {
+          "label": "Mga Paglalakbay sa Pagsasanay (Pagsubok)",
+          "desc": "Sanayin ang paghingi ng suporta sa pamamagitan ng apat na magkakaugnay na tagpo. Tumugon gamit ang mga pagpipilian, sarili mong salita, o pareho. Magsulat sa journal at sumubok ng ibang ruta."
+        },
+        "sociallab": {
+          "label": "Pagsasadula ng Kasanayang Panlipunan",
+          "desc": "Sanayin ang mga sitwasyong panlipunan at pagsasadula kasama ang isang AI na kapwa-estudyante, na may sumasangang diyalogo."
+        },
+        "peersupport": {
+          "label": "Coach sa Suporta ng Kapwa",
+          "desc": "Alamin ang mga kasanayan sa pakikinig na OARS at kung kailan dapat humingi ng tulong sa adulto."
+        },
+        "conflicttheater": {
+          "label": "Teatro ng Alitan",
+          "desc": "Magsanay sa isang kathang-isip na alitan kasama ang dalawang karakter na AI sa isang nakalulubog na eksena. Beta na pagsasadula lamang; huwag itong gamitin para mamagitan sa pananakit na nangyayari ngayon."
+        },
+        "digitalWellbeing": {
+          "label": "Studio ng Digital na Kagalingan",
+          "desc": "Suriin ang iyong ugnayan sa social media at mga AI chatbot, bumuo ng mas malusog na gawi sa telepono, bumangon mula sa cyberbullying, mapansin ang manipulasyon sa feed, harapin nang ligtas ang mga relasyon sa chatbot, at humanap ng tulong kapag kailangan mo."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Kamalayan sa Sarili",
+          "desc": "Pagkilala sa mga emosyon, kalakasan, at mga bahaging maaari pang palaguin"
+        },
+        "self-regulation": {
+          "label": "Regulasyon ng Sarili",
+          "desc": "Pamamahala sa emosyon, pagkapukaw, at atensyon; pagsasanay sa pagkaya"
+        },
+        "self-direction": {
+          "label": "Sariling Direksiyon",
+          "desc": "Pagtatakda ng layunin, sariling kakayahang kumilos, ehekutibong paggana, pag-iisip na lumalago"
+        },
+        "inner-work": {
+          "label": "Panloob na Gawain",
+          "desc": "Mga gawaing mapagmuni-muni at mapagnilay"
+        },
+        "care-of-self": {
+          "label": "Pag-aaruga sa Sarili",
+          "desc": "Habag sa sarili, pag-aalaga sa sarili na nakaugat sa ugnayan"
+        },
+        "social-awareness": {
+          "label": "Kamalayang Panlipunan",
+          "desc": "Empatiya, pag-unawa sa pananaw ng iba, at pagpapahalaga sa pagkakaiba-iba"
+        },
+        "relationship-skills": {
+          "label": "Kasanayan sa Relasyon",
+          "desc": "Komunikasyon, pagtutulungan, at paglutas ng alitan"
+        },
+        "responsible-decision-making": {
+          "label": "Responsableng Pagpapasya",
+          "desc": "Etikal na pagpili, pagsusuri sa mga kahihinatnan, at paglutas ng problema"
+        },
+        "stewardship": {
+          "label": "Pangangalaga",
+          "desc": "Pag-aalaga sa komunidad, katarungan, lupa, at hinaharap"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 minuto",
+          "purpose": "Pangalanan ang iyong kasalukuyang sona at pumili ng akmang estratehiya sa pamamahala ng sarili.",
+          "next": "Tingnan ang iyong sona, pumili ng isang estratehiya, at i-save kung gusto mo itong balikan."
+        },
+        "coping": {
+          "time": "3-10 minuto",
+          "purpose": "Pumili ng isang estratehiya sa pagkaya at sanayin ito nang isang beses na may malinaw na hintuan.",
+          "next": "Pumili ng isang estratehiyang nakabatay sa katawan o sa pagbabalik sa kasalukuyan, subukan ito, at pansinin kung nakatulong."
+        },
+        "journal": {
+          "time": "5-12 minuto",
+          "purpose": "Sumulat ng pribadong pagninilay at pansinin ang mga pattern na baka gusto mong itabi.",
+          "next": "Pumili ng isang tanong, sumulat nang tapat, at i-save o i-export bago isara."
+        },
+        "emotions": {
+          "time": "4-8 minuto",
+          "purpose": "Palawakin ang bokabularyo ng damdamin at pangalanan nang mas tiyak ang iyong nararamdaman.",
+          "next": "Pumili ng isang damdamin, sukatin ang tindi nito, at pumili ng isang salitang pinakaakma."
+        },
+        "mindfulness": {
+          "time": "2-10 minuto",
+          "purpose": "Huminto sandali, huminga, at sanayin ang atensyon nang hindi kailangang magsulat ng kahit ano.",
+          "next": "Pumili ng isang maikling pagsasanay, tapusin ito, at pansinin kung ano ang nagbago."
+        },
+        "somaticReset": {
+          "time": "3-8 minuto",
+          "purpose": "Gumamit ng pribadong pagkumusta sa mga bahagi ng katawan para pumili ng maikling reset na kayang gawin habang nakaupo.",
+          "next": "Pumili ng isang bahagi ng katawan, subukan ang isang opsyon ng katahimikan, paghinga, o banayad na paggalaw, at pansinin kung ano ang nagbago."
+        },
+        "thoughtRecord": {
+          "time": "8-15 minuto",
+          "purpose": "Pabagalin ang isang mahirap na kaisipan at humanap ng mas balanseng pananaw.",
+          "next": "Pangalanan ang sitwasyon, markahan ang damdamin, at subukin ang kaisipan laban sa ebidensya."
+        },
+        "anxietyToolkit": {
+          "time": "5-12 minuto",
+          "purpose": "Pagbukud-bukurin ang pag-aalala, bawasan ang tindi ng pagkabalisa, at pumili ng praktikal na susunod na hakbang.",
+          "next": "Piliin ang pinakamalakas na pag-aalala, sumubok ng isang estratehiya, at i-save ang plano kung nakatulong."
+        },
+        "sleep": {
+          "time": "4-10 minuto",
+          "purpose": "Pansinin ang mga hadlang sa tulog at pumili ng isang gawi sa pahinga na susubukan mo.",
+          "next": "Tingnan kung ano ang humahadlang, pumili ng isang maliit na pagbabago, at balikan ito mamaya."
+        },
+        "goals": {
+          "time": "5-10 minuto",
+          "purpose": "Gawing kongkreto at makatotohanang susunod na aksiyon ang isang hangarin.",
+          "next": "Sumulat ng isang layunin, pumili ng unang hakbang, at i-save ang plano bago isara."
+        },
+        "friendship": {
+          "time": "5-10 minuto",
+          "purpose": "Pag-isipan ang mga pangangailangan sa pagkakaibigan, ang pakiramdam ng pagiging kabilang, at mga pagpili tungkol sa kapwa.",
+          "next": "Pumili ng isang sitwasyon sa pagkakaibigan at tukuyin ang isang mabait na susunod na hakbang."
+        },
+        "conflict": {
+          "time": "6-12 minuto",
+          "purpose": "Unawain ang isang alitan at maghanda ng tugong nakatuon sa pag-aayos.",
+          "next": "Pangalanan ang nangyari, isaalang-alang ang dalawang panig, at pumili ng isang aksiyon sa pag-aayos."
+        },
+        "safety": {
+          "time": "8-15 minuto",
+          "purpose": "Gumawa ng praktikal na plano sa kaligtasan at tukuyin ang mga pinagkakatiwalaang suporta.",
+          "next": "Idagdag ang mga babalang palatandaan, mga hakbang sa pagkaya, at mga taong maaaring kontakin; i-save bago isara."
+        },
+        "crisiscompanion": {
+          "time": "3-10 minuto",
+          "purpose": "Gumamit ng istrukturadong daan ng suporta kapag parang apurahan o hindi ligtas ang iyong emosyon.",
+          "next": "Piliin ang pinakamalapit na opsyon ng suporta at isama ang isang pinagkakatiwalaang adulto o serbisyo para sa krisis kapag kailangan."
+        },
+        "conflicttheater": {
+          "time": "8-15 minuto",
+          "purpose": "Magsanay sa isang kathang-isip na eksena ng alitan at subukan ang wikang restoratibo nang hindi itinuturing ang kasangkapan bilang pamamagitan.",
+          "next": "Pumili ng kathang-isip na eksena, sumubok ng isang tugon, at pag-usapan pagkatapos kung ano ang mangangailangan ng suporta ng adulto sa totoong buhay."
+        },
+        "restorativeCircle": {
+          "time": "15-30 minuto",
+          "purpose": "Magplano o mangasiwa ng restoratibong proseso ng grupo na may malinaw na pamantayan at gabay ng adulto.",
+          "next": "Itakda muna ang mga kasunduan ng bilog, pagkatapos ay pumili ng tanong; huwag kailanman obligahin ang paglalahad sa harap ng iba."
+        },
+        "strengths": {
+          "time": "5-10 minuto",
+          "next": "Piliin ang mga kalakasang pakiramdam mo ay ikaw, pagkatapos ay humanap ng isang totoong sandali mula sa trimester na ito na nagpapakita ng bawat isa."
+        },
+        "viaStrengths": {
+          "time": "8-15 minuto",
+          "purpose": "Gamitin ang sariling pag-uuring hango sa VIA bilang gawain sa pagninilay, hindi pormal na pagtatasa.",
+          "next": "Pagbukud-bukurin ang mga kalakasan, pansinin ang mga pattern, at sumulat ng isang halimbawang nagpapatibay sa resulta."
+        },
+        "perma": {
+          "time": "8-15 minuto",
+          "purpose": "Kumuha ng mapagnilay na larawan ng iyong kagalingan sa mga larangan ng PERMA kasama ang Kalusugan.",
+          "next": "Gamitin ang larawang ito para pumili ng usapan o maliit na eksperimento, hindi para lagyan ng label ang sarili mo."
+        },
+        "advocacy": {
+          "time": "5-12 minuto",
+          "purpose": "Sanayin ang pang-araw-araw na wika sa pagpapahayag ng pangangailangan at paghingi ng suporta.",
+          "next": "Pumili ng sitwasyon, gumawa ng maikling pakiusap, at magpasya kung sino ang maaaring tumulong."
+        },
+        "selfAdvocacy": {
+          "time": "10-20 minuto",
+          "purpose": "Bumuo ng kongkretong plano ng suporta sa paaralan para sa IEP, 504, mga akomodasyon, o mga pagpili sa paglalahad.",
+          "next": "Pumili ng isang pangangailangan sa suporta, tipunin ang iyong mga tanong, at tukuyin ang isang pinagkakatiwalaang adultong isasama."
+        },
+        "crewProtocols": {
+          "time": "10-20 minuto",
+          "next": "Mag-browse ayon sa layunin, pumili ng isang protokol para ngayong araw, at itala sa Aking Plano sa Crew kung kailan mo ito gagawin."
+        },
+        "perspective": {
+          "time": "6-12 minuto",
+          "next": "Pumili ng sitwasyon, unahin ang pananaw ng iba, at sabihin kung ano ang gagawin mo nang naiiba."
+        },
+        "windowOfTolerance": {
+          "time": "8-12 minuto",
+          "next": "Magdagdag ng isang palatandaan sa bawat isa sa iyong tatlong sona, at gamitin ang Pagkumusta para ilagay kung nasaan ka ngayon."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 minuto",
+          "next": "Magsimula sa Ano ang pandama?, at markahan ang mga sistemang malakas o tahimik para sa iyo."
+        },
+        "execfunction": {
+          "time": "5-10 minuto",
+          "next": "Pumunta sa Simula at pumili ng isang panimulang hakbang para ngayong araw, pagkatapos ay sa Hawak para piliin kung saan mo itatala ang mga ideya."
+        },
+        "growthmindset": {
+          "time": "5-10 minuto",
+          "next": "Buksan ang Baguhin ang Pananaw, isulat ang di-nagbabagong kaisipan, at gawin itong tiyak at kayang gawin."
+        },
+        "dearMan": {
+          "time": "8-12 minuto",
+          "next": "Isulat ang iyong pakiusap sa isang pangungusap, gumawa ng burador ng pitong hakbang, at sanayin ito nang isang beses."
+        },
+        "howlTracker": {
+          "time": "5-10 minuto",
+          "next": "Mag-log ng Pulso, pagkatapos ay gawin ang Lingguhang pagkumusta: markahan ang bawat HOWL at magdagdag ng isang tiyak na halimbawa."
+        },
+        "peersupport": {
+          "time": "5-10 minuto",
+          "next": "Pumili ng dalawang bukas na tanong na maaari mong itanong sa isang kaibigan, pagkatapos ay subukan ang isa sa isang kathang-isip na sitwasyon sa tab ng pagsasanay."
+        },
+        "upstander": {
+          "time": "8-12 minuto",
+          "next": "Basahin ang hagdan ng tapang sa Mga Hakbang at piliin ang dalawang pinakamaliit na hakbang na talagang kaya mong gawin ngayong linggo."
+        },
+        "digitalWellbeing": {
+          "time": "8-12 minuto",
+          "next": "Gawin nang tapat ang Pagsusuri sa Sarili, pagkatapos ay pumili ng isang gawi mula sa Mga Kasangkapan at isang hangganang itatakda mo nang maaga."
+        },
+        "teamwork": {
+          "time": "8-12 minuto",
+          "next": "Tingnan ang Mga Papel, pagkatapos ay sumulat ng Plano sa Komunikasyon para sa isang totoong grupo: sino ang gagawa ng ano, saan, at hanggang kailan."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Magsimula rito",
+        "name_it": "Pangalanan ito",
+        "calm_now": "Kumalma ngayon",
+        "body_reset": "Reset ng katawan",
+        "make_a_plan": "Gumawa ng plano",
+        "understand_patterns": "Unawain ang mga pattern",
+        "practice_repair": "Magsanay mag-ayos",
+        "role_play": "Pagsasadula",
+        "facilitated_group": "Grupong may tagapangasiwa",
+        "reflect": "Magnilay",
+        "practice_speaking_up": "Magsanay magsalita",
+        "make_a_support_plan": "Gumawa ng plano ng suporta",
+        "urgent_support": "Apurahang suporta",
+        "get_support": "Kumuha ng suporta",
+        "move_gently": "Kumilos nang marahan",
+        "learn_not_diagnose": "Matuto, hindi mag-diyagnosis",
+        "learn_and_get_support": "Matuto at kumuha ng suporta",
+        "check_boundaries": "Suriin ang mga hangganan",
+        "explore_identity": "Tuklasin ang pagkakakilanlan",
+        "practice_body_respect": "Magsanay igalang ang katawan",
+        "map_carefully": "Magmapa nang maingat",
+        "understand_needs": "Unawain ang mga pangangailangan"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Pangalanan kung ano ang nangyayari bago pumili ng estratehiya."
+        },
+        "emotions": {
+          "note": "Bumuo ng mas tiyak na mga salita para sa damdamin at pansinin ang tindi nito."
+        },
+        "coping": {
+          "note": "Sumubok ng isang estratehiya sa katawan o sa pagbabalik sa kasalukuyan, at pansinin kung ano ang nagbago."
+        },
+        "mindfulness": {
+          "note": "Isang paghinto na kaunti lang ang pagsusulat, para sa paghinga, atensyon, o kamalayan sa katawan."
+        },
+        "somaticReset": {
+          "note": "Pumili ng isang bahagi ng katawan, pagkatapos ay subukan ang isang maikling pagsasanay ng katahimikan, paghinga, o banayad na paggalaw. Pinapanatili ng isang siksik na pamimilian na magagamit sa keyboard na madaling hawakan ang bawat biswal sa maliliit na screen. Kabilang sa mga biswal ang Umaagos na Alon na nagpapares ng LANGHAP · TAAS sa buong linya at bilog na marker, BUGA · HUPA sa tuldok-tuldok na linya at diyamanteng marker, at NAKAHINTO sa mga bar ng paghinto; ang Namumukadkad na Talulot na nagpapares ng LANGHAP · BUKAS sa buong balangkas ng talulot at bilog na gitna, BUGA · LAMBOT sa tuldok-tuldok na balangkas at diyamanteng gitna, at NAKAHINTO sa mga bar ng paghinto sa gitna; ang Nakaugat na Abot-tanaw na nagpapares ng LANGHAP · TAAS sa buong balangkas ng araw at bilog na gitna, BUGA · HUPA sa tuldok-tuldok na balangkas ng araw at diyamanteng gitna, at NAKAHINTO sa mga bar ng paghinto ng araw; isang madaling hulaang tuwid na daanan na may marka ng direksyon, direktang label na LANGHAP at BUGA, bilog na target ng LANGHAP at diyamanteng target ng BUGA, bakas mula sa aktibong pinagmulan, at may balangkas na susunod na destinasyon; at isang dalawang-bahaging Orbit ng Hininga na may buo at tuldok-tuldok na arko ng yugto na kumakapal kapag aktibo, isang katugmang singsing sa gitna na may pattern ng yugto, direktang label na LANGHAP at BUGA, simbolo sa gitna kapag nakahinto, may balangkas na susunod na punto ng pasahan, marker na paikot pakanan na hugis ayon sa yugto, mapa ng ritmo na may kodigo ng hugis, at mga pahiwatig ng yugto para sa screen reader. Maaaring subukan ng mga estudyante ang isang hininga ng galaw bago magsimula ang timer, at pagkatapos ay palakihin, patigilin ang galaw, o i-off ang gabay. Sa Tahimik na View, nagiging kontrol na simula/hinto ang pinalaking biswal na magagamit sa keyboard at sa pagpindot. Maaaring itago ang countdown; ang mga salita ng gabay ay maaaring buo, yugto lamang, o nakatago; at opsyonal ang pagbilang ng hininga at ang mga numerong marka.",
+          "boundary": "Hindi ito paggamot o diyagnosis. Panatilihing maliit at walang sakit ang galaw; huminto kapag may sakit, pagkahilo, o pamamanhid at sabihin sa isang pinagkakatiwalaang adulto o propesyonal sa kalusugan."
+        },
+        "anxietyToolkit": {
+          "note": "Paghiwalayin ang pag-aalala at ang aksiyon at pumili ng isang praktikal na susunod na hakbang."
+        },
+        "windowOfTolerance": {
+          "note": "Imapa ang mga palatandaan ng pagkapukaw at mga suporta sa paglipas ng panahon; hindi ito diyagnosis."
+        },
+        "stressBucket": {
+          "note": "Tingnan nang sabay ang mga presyon at suporta, kabilang ang mga presyong wala sa iyong kontrol."
+        },
+        "bigFeelings": {
+          "note": "Gamitin ang galit bilang impormasyon at magplano ng mas ligtas na paghinto o pag-aayos."
+        },
+        "conflict": {
+          "note": "Pinakamainam para sa pagsasanay sa alitang mababa ang taya o haka-haka lamang.",
+          "boundary": "Kung may banta, pamimilit, pambu-bully, pang-aabuso, o hindi ligtas na pagkakaiba sa kapangyarihan, huminto at isama ang isang pinagkakatiwalaang adulto sa halip na makipagnegosasyon nang mag-isa."
+        },
+        "conflicttheater": {
+          "note": "Beta na nakalulubog na pagsasanay kasama ang mga kathang-isip na karakter; huwag itong gamitin para mamagitan sa pananakit na nangyayari ngayon.",
+          "boundary": "Ang totoong banta, pang-aabuso, o pambu-bully ay nangangailangan ng suporta ng adulto at tugon para sa kaligtasan, hindi ng ehersisyo sa pagsasadula."
+        },
+        "restorativeCircle": {
+          "note": "Gamitin kasama ang itinakdang pamantayan ng bilog at isang adultong tagapangasiwa.",
+          "boundary": "Huwag gumamit ng bilog para pilitin ang isang tao na maglahad sa harap ng iba o para harapin ang aktibong panganib sa kaligtasan."
+        },
+        "strengths": {
+          "note": "Bukas na pagninilay sa kalakasan na walang iskor, ranggo, o diyagnosis."
+        },
+        "viaStrengths": {
+          "note": "Sariling pag-uuri para sa pagninilay, hindi ang opisyal na survey ng VIA o isang psychometric na resulta."
+        },
+        "perma": {
+          "note": "Isang larawan ng kagalingan para magbukas ng usapan, hindi pagtatasa sa kalusugang pangkaisipan."
+        },
+        "advocacy": {
+          "note": "Pangkalahatang iskrip at pagsasanay para sa pagpapahayag ng pangangailangan at paghingi ng suporta."
+        },
+        "selfAdvocacy": {
+          "note": "Gamitin para sa kongkretong pagpaplano ng IEP, 504, akomodasyon, paglalahad, o suporta sa paaralan."
+        },
+        "crisiscompanion": {
+          "note": "Gabay sa suporta para sa iyo o sa isang kaibigan; hindi ito kasangkapan sa screening ng krisis o kapalit ng adulto.",
+          "boundary": "Kung may taong maaaring nasa agarang panganib o maaaring kumilos batay sa mga kaisipang saktan ang sarili, huminto rito at kontakin ngayon din ang isang pinagkakatiwalaang adulto o serbisyong pang-emergency/pang-krisis."
+        },
+        "safety": {
+          "note": "Alamin ang mga hangganan at ang mga hakbang kasama ang pinagkakatiwalaang adulto; hindi ito pagsusulit kung ligtas ang isang sitwasyon.",
+          "boundary": "Kung ikaw ay nasa agarang panganib o may nananakit sa iyo, huminto at kontakin ngayon din ang isang pinagkakatiwalaang adulto o serbisyong pang-emergency."
+        },
+        "griefLoss": {
+          "note": "Isang pribadong kasama para sa dalamhati at pagkawala; laktawan ang anumang pakiramdam mo ay sobra na.",
+          "boundary": "Kung hindi na makayanan ang dalamhati, pakiramdam mo ay hindi ka ligtas, o may ibang taong nasa panganib, isama ang isang pinagkakatiwalaang adulto o suporta sa krisis."
+        },
+        "traumaPsychoed": {
+          "note": "Sikoedukasyon tungkol sa mga tugon sa trauma; hindi kasangkapan sa screening o paggamot.",
+          "boundary": "Hindi mo kailangang ilahad ang trauma dito. Huminto sandali at lumapit sa isang pinagkakatiwalaang adulto o counselor kung may lumitaw na hindi ligtas dahil sa nilalaman."
+        },
+        "substancePsychoed": {
+          "note": "Impormasyon at pagninilay na nakatuon sa pagbabawas ng pinsala; hindi kasangkapan sa screening o pahintulot na gumamit ng mga substansiya.",
+          "boundary": "Huwag gamitin ang kasangkapang ito para sa overdose o apurahang sitwasyong medikal; kontakin ang emergency na tulong o isang pinagkakatiwalaang adulto."
+        },
+        "healthyRelationships": {
+          "note": "Tuklasin ang pahintulot at mga pattern ng relasyon nang hindi nilalagyan ng label ang isang tao o relasyon.",
+          "boundary": "Kung may banta, pamimilit, o karahasan sa isang relasyon, humingi ng tulong sa adulto; huwag harapin ang isang tao nang mag-isa."
+        },
+        "identitySupport": {
+          "note": "Nagpapatibay na pagninilay at suporta ng komunidad; opsyonal ang pagbabahagi.",
+          "boundary": "Panatilihing pribado ang personal na impormasyon at isama ang isang pinagkakatiwalaang adulto kung pakiramdam mo ay hindi ka ligtas."
+        },
+        "bodyStory": {
+          "note": "Pagpapahalaga sa katawan at literasiya sa media; hindi pagpapapayat o pagtatasa ng karamdaman sa pagkain.",
+          "boundary": "Kung ang pagkain, imahe ng katawan, o ehersisyo ay pakiramdam mo'y hindi ligtas o umuubos na sa iyo, kausapin ang isang pinagkakatiwalaang adulto o propesyonal sa kalusugan."
+        },
+        "genogram": {
+          "note": "Personal na pagninilay sa pamilya; hindi klinikal na pagtatasa at opsyonal ang pagbabahagi.",
+          "boundary": "Laktawan ang mga detalye ng pamilya na pakiramdam mo'y hindi ligtas o pribado; humingi ng suporta sa isang pinagkakatiwalaang adulto."
+        },
+        "sensoryRegulation": {
+          "note": "Bumuo ng profile sa pandama at mga akomodasyon; hindi diyagnosis.",
+          "boundary": "Pumili ng mga suportang pakiramdam mo'y ligtas; ibahagi lamang ang mga akomodasyon kapag gusto mo."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Pagkumusta sa Umaga",
+          "desc": "Simulan ang araw sa pagtingin sa kalooban, paghinga, at pagtatakda ng layunin"
+        },
+        "calm_down": {
+          "name": "Sulok ng Pagpapakalma",
+          "desc": "Mga estratehiya sa pamamahala ng sarili kapag mataas ang emosyon"
+        },
+        "conflict_unit": {
+          "name": "Yunit sa Paglutas ng Alitan",
+          "desc": "Magsanay sa paglutas ng hindi pagkakasundo at pagbuo ng kasanayan sa pag-aayos"
+        },
+        "empathy_week": {
+          "name": "Linggo ng Empatiya at Pananaw",
+          "desc": "Bumuo ng empatiya sa pamamagitan ng pag-unawa sa pananaw ng iba at kamalayang pangkultura"
+        },
+        "decision_making": {
+          "name": "Malalimang Pagtalakay sa Pagpapasya",
+          "desc": "Sanayin ang etikal na pangangatwiran at responsableng pagpili"
+        },
+        "self_discovery": {
+          "name": "Paglalakbay sa Pagtuklas sa Sarili",
+          "desc": "Tuklasin kung sino ka — mga kalakasan, emosyon, at pag-iisip na lumalago"
+        },
+        "friendship": {
+          "name": "Pagkakaibigan at Kasanayang Panlipunan",
+          "desc": "Bumuo ng malulusog na pagkakaibigan at kasanayan sa komunikasyon"
+        },
+        "transitions": {
+          "name": "Pagharap sa Pagbabago",
+          "desc": "Suportahan ang mga estudyante sa mga pagbabago sa buhay at mga bagong karanasan"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Pansinin kung ano ang kailangan mo at pumili ng isang kayang susunod na hakbang.",
+          "model": "Hindi ako mapakali. Puwede akong mag-unat, pagkatapos ay piliin ang unang bahagi ng aking gawain.",
+          "practice": "Pangalanan ang isang damdamin, ituro ang isang pagpipilian, o tahimik na pansinin. Sumubok ng isang suporta at pumili ng maliit na layunin.",
+          "reflect": "Ano ang napansin mo? Ano ang gusto mong panatilihin o baguhin?",
+          "transfer": "Pagsisimula ng susunod na aralin, puwede kong subukan ang ____. Kung kailangan ko ng tulong, puwede akong magtanong kay ____."
+        },
+        "calm_down": {
+          "goal": "Tuklasin ang isang suportang akma sa iyong katawan at sa sandaling ito.",
+          "model": "Hindi nakatutulong ang pagsasanay sa paghinga ngayong araw. Puwede kong subukang tumingin-tingin sa paligid ng silid o humingi ng makakasama.",
+          "practice": "Pumili lang ng isang komportableng estratehiya. Ang pag-upo, panonood, o pagpapahinga ay mga balidong pagpipilian.",
+          "reflect": "Nakatulong ba, pareho lang ang pakiramdam, o hindi komportable? Puwede kang huminto o pumili ng ibang paraan.",
+          "transfer": "Kapag napansin ko ang ____, puwede kong subukan ang ____ o humingi ng suporta kay ____."
+        },
+        "conflict_unit": {
+          "goal": "Isaalang-alang ang iba't ibang pananaw at sanayin ang magalang na tugon sa isang pang-araw-araw na hindi pagkakasundo.",
+          "model": "Pareho nating gusto ang iisang materyales. Puwede kong itanong kung ano ang kailangan mo, ipaliwanag ang kailangan ko, at magmungkahing magsalitan tayo.",
+          "practice": "Gumamit ng gawa-gawang hindi pagkakasundo na mababa ang taya. Sanayin ang isang tanong sa pakikinig at isang posibleng susunod na hakbang.",
+          "reflect": "Kaninong mga pangangailangan ang tinugunan ng tugon? Ano ang maaaring kailangang baguhin?",
+          "transfer": "Sa isang ligtas na hindi pagkakasundo, puwede kong ____. Para sa banta, pambu-bully, o pamimilit, puwede akong humingi ng tulong sa isang pinagkakatiwalaang adulto."
+        },
+        "empathy_week": {
+          "goal": "Tuklasin ang ibang pananaw nang hindi inaakalang alam mo na ang nararamdaman ng isang tao.",
+          "model": "Tahimik sila. Baka pagod sila o nag-iisip; puwede akong magtanong sa halip na magpasya para sa kanila.",
+          "practice": "Gumamit ng kathang-isip na halimbawa. Pangalanan ang dalawang posibleng pananaw at isang magalang na tanong na puwede mong itanong.",
+          "reflect": "Ano ang alam mo, at ano ang hula mo lang? Paano mo ito masusuri?",
+          "transfer": "Bago mag-akala ngayong linggo, puwede kong itanong ang ____."
+        },
+        "decision_making": {
+          "goal": "Paghambingin ang mga pagpipilian ayon sa epekto nito sa iyo at sa iba.",
+          "model": "Bago mag-post ng litrato ng grupo, puwede akong humingi ng pahintulot at isipin kung sino ang maaaring makakita nito.",
+          "practice": "Pumili ng gawa-gawang desisyon. Paghambingin ang dalawang opsyon, ang posibleng epekto, at isang taong maaaring tumulong.",
+          "reflect": "Anong impormasyon ang kulang? May mas ligtas o mas patas bang opsyon?",
+          "transfer": "Bago ako magpasya tungkol sa ____, puwede akong huminto sandali para suriin ang ____."
+        },
+        "self_discovery": {
+          "goal": "Kilalanin ang isang kalakasan at pumili ng paraan para gamitin ito nang may suporta.",
+          "model": "Nagtatanong ako ng mga kapaki-pakinabang na tanong. Magagamit ko ang kalakasang iyon kapag hindi malinaw ang isang gawain at humingi ng halimbawa.",
+          "practice": "Pumili ng kalakasang akma sa iyo, o sa isang kathang-isip na tauhan. Magbigay ng isang halimbawa nito na ginagamit.",
+          "reflect": "Ano ang tumulong para lumabas ang kalakasang iyon? Anong suporta ang magpapangyari sa susunod na hakbang?",
+          "transfer": "Magagamit ko ang ____ kapag ____. Ang tao o mapagkukunang makatutulong ay ____."
+        },
+        "friendship": {
+          "goal": "Sanayin ang komunikasyong gumagalang sa iyong mga pangangailangan at sa mga hangganan ng ibang tao.",
+          "model": "Puwede kong imbitahan ang isang tao na sumali sa amin at tanggapin ang kanyang pasya kung tumanggi siya.",
+          "practice": "Sanayin ang isang imbitasyon, isang tanong sa pakikinig, o isang magalang na hangganan. Pagsasalita, pagsusulat, o AAC — lahat ay puwede.",
+          "reflect": "Nagkaroon ba ng totoong pagpipilian ang bawat tao? Ano ang makapagpapadama na mas malugod ang pakikipag-ugnayan?",
+          "transfer": "Sa isang ligtas na pakikipag-ugnayan ngayong linggo, puwede kong subukan ang ____ at pansinin ang ____."
+        },
+        "transitions": {
+          "goal": "Tukuyin kung ano ang nagbabago, kung ano ang maaaring manatiling matatag, at isang mapagkukunan ng suporta.",
+          "model": "Hindi pa tiyak ang pakiramdam sa bagong klase. Puwede kong hanapin muna ang silid at itanong kung sino ang makatutulong.",
+          "practice": "Pumili ng totoo o kathang-isip na pagbabago. Pangalanan ang isang di-katiyakan, isang matatag na suporta, at isang maliit na susunod na hakbang.",
+          "reflect": "Aling bahagi ang nasa iyong kontrol? Anong tulong o akomodasyon ang magiging kapaki-pakinabang?",
+          "transfer": "Bago ang pagbabago, puwede kong ____. Kung kailangang magbago ang plano, puwede kong ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 minuto",
+          "format": "Mag-isa o grupo",
+          "cue": "Kapaki-pakinabang na unang pagkumusta bago ang anumang pagbabahagi."
+        },
+        "emotions": {
+          "time": "5-8 minuto",
+          "format": "Mag-isa o dalawahan",
+          "cue": "Mahusay na pampainit para sa bokabularyo."
+        },
+        "coping": {
+          "time": "3-10 minuto",
+          "format": "Mag-isa o grupo",
+          "cue": "Pinakamainam para sa reset sa pamamahala ng sarili."
+        },
+        "mindfulness": {
+          "time": "2-10 minuto",
+          "format": "Buong klase",
+          "cue": "Opsyon sa pamamahala ng sarili na kaunti ang pagsusulat."
+        },
+        "somaticReset": {
+          "time": "3-8 minuto",
+          "format": "Mag-isa o buong klase",
+          "cue": "Pinapanatili ng siksik na pamimilian ng biswal na magagamit ang bawat gabay nang walang masikip na grid ng mga button. Pinapares ng Orbit ng Hininga ang buo at tuldok-tuldok na arko sa mas makapal na aktibong yugto, sa katugmang buo-o-tuldok-tuldok na singsing sa gitna, at sa direktang label na LANGHAP at BUGA; nagiging mga bar ng paghinto ang tuldok sa gitna nito kapag nakahinto, at tinutukoy ng may balangkas na diyamante o singsing nito ang susunod na pasahan ng yugto, habang pinapanatiling nababasa nang walang kulay ang yugto at ang opsyonal na bilang sa pamamagitan ng bilog-o-diyamanteng marker na paikot pakanan, diyamante ng pasahan, singsing ng pagbalik, maiikling bar ng paglanghap, at mga hungkag na tuldok ng pagbuga. Hayaang subukan ng mga estudyante ang isang hininga ng galaw bago ang timer, o piliin ang Tigil. Mag-alok ng buo, yugto lamang, o nakatagong mga salita ng gabay. Ginagawa ng Tahimik na View ang pinalaking biswal na direktang kontrol na simula/hinto. Gumagamit ang Umaagos na Alon ng LANGHAP · TAAS na may buong linya at bilog na marker, BUGA · HUPA na may tuldok-tuldok na linya at diyamanteng marker, at mga bar ng paghinto para sa nakahintong sesyon. Gumagamit ang Namumukadkad na Talulot ng LANGHAP · BUKAS na may buong balangkas ng talulot at bilog na gitna, BUGA · LAMBOT na may tuldok-tuldok na balangkas at diyamanteng gitna, at mga bar ng paghinto sa gitna para sa nakahintong sesyon. Gumagamit ang Nakaugat na Abot-tanaw ng LANGHAP · TAAS na may buong balangkas ng araw at bilog na gitna, BUGA · HUPA na may tuldok-tuldok na balangkas ng araw at diyamanteng gitna, at mga bar ng paghinto ng araw kapag nakahinto. Gumagamit ang Daanan ng Hininga ng bilog na target ng LANGHAP, diyamanteng target ng BUGA, bakas mula sa aktibong pinagmulan, at may balangkas na susunod na destinasyon para hindi nakadepende sa kulay ang direksyon. Mag-alok ng mga pahiwatig ng yugto para sa screen reader, pati ng mga pagpipiliang nakatagong countdown, nakatagong gabay, walang galaw, walang biswal, natural na paghinga, at walang numero; huwag kailanman obligahin ang pagmamarka o pagpapaliwanag ng mga pakiramdam sa katawan."
+        },
+        "journal": {
+          "time": "5-12 minuto",
+          "format": "Mag-isa",
+          "cue": "Pribadong pagninilay. Dapat opsyonal ang pagbabahagi."
+        },
+        "goals": {
+          "time": "5-10 minuto",
+          "format": "Mag-isa o advisory",
+          "cue": "Mahusay na pangwakas na hakbang pagkatapos ng pagninilay."
+        },
+        "conflict": {
+          "time": "8-12 minuto",
+          "format": "Dalawahan o maliit na grupo",
+          "cue": "I-preview muna ang mga pamantayan bago ang pagsasadula."
+        },
+        "restorativeCircle": {
+          "time": "15-30 minuto",
+          "format": "Bilog",
+          "cue": "Gamitin kasama ang itinakdang pamantayan ng bilog."
+        },
+        "peersupport": {
+          "time": "8-15 minuto",
+          "format": "Pagsasanay nang dalawahan",
+          "cue": "Malakas para sa pagsasanay ng kasanayan sa pakikinig."
+        },
+        "perspective": {
+          "time": "6-12 minuto",
+          "format": "Dalawahan o grupo",
+          "cue": "Mahusay na tulay ng empatiya bago ang talakayan."
+        },
+        "digitalWellbeing": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa o advisory",
+          "cue": "Kapaki-pakinabang bago pag-usapan ang mga patakaran sa telepono o AI."
+        },
+        "sleep": {
+          "time": "5-10 minuto",
+          "format": "Mag-isa",
+          "cue": "Mahusay para sa mga yunit tungkol sa kalusugan sa advisory."
+        },
+        "safety": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa",
+          "cue": "I-preview muna; iwasan ang sapilitang paglalahad."
+        },
+        "crisiscompanion": {
+          "time": "3-10 minuto",
+          "format": "Mag-isa",
+          "cue": "Para sa mga kasanayan sa apurahang suporta, hindi takdang-aralin sa klase."
+        },
+        "griefLoss": {
+          "time": "10-20 minuto",
+          "format": "Mag-isa",
+          "cue": "I-preview muna; gumamit ng mga alternatibo para sa mga pipiliing hindi sumali."
+        },
+        "identitySupport": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa",
+          "cue": "Gamitin nang may pag-iingat sa privacy at may opsyong hindi sumali."
+        },
+        "traumaPsychoed": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa o ginagabayan ng guro",
+          "cue": "Sikoedukasyon lamang; mag-alok ng opsyong hindi sumali at daan patungo sa isang pinagkakatiwalaang adulto."
+        },
+        "substancePsychoed": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa o aralin sa kalusugan",
+          "cue": "I-preview ang balangkas ng pagbabawas ng pinsala at magbigay ng suporta mula sa adulto/medikal."
+        },
+        "healthyRelationships": {
+          "time": "10-20 minuto",
+          "format": "Mag-isa o aralin sa kalusugan",
+          "cue": "I-preview ang wika tungkol sa pahintulot at kaligtasan; huwag kailanman obligahin ang personal na paglalahad."
+        },
+        "bodyStory": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa",
+          "cue": "Balangkas na gumagalang sa katawan; mag-alok ng opsyong hindi sumali at iwasan ang talakayang nakatuon sa timbang."
+        },
+        "genogram": {
+          "time": "10-20 minuto",
+          "format": "Mag-isa",
+          "cue": "Pagninilay sa pamilya lamang; dapat opsyonal ang pagbabahagi."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 minuto",
+          "format": "Mag-isa o pagpaplano ng suporta",
+          "cue": "Gumamit ng wikang nagpapatibay sa pagkakakilanlan at hayaang pumili ang mga estudyante kung ano ang ibabahagi."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Pagkumusta sa umaga sa advisory",
+          "time": "10-15 minuto",
+          "format": "Buong klase",
+          "focus": "Kalooban, hininga, isang susunod na hakbang",
+          "studentView": "Pribadong tinitingnan ng mga estudyante ang kanilang sona, sumusubok ng isang opsyon sa pamamahala ng sarili, at pagkatapos ay pumipili ng isang pangangailangan para sa araw o lumalaktaw.",
+          "teacherMove": "Ipakita muna ang opsyong lumaktaw. Mag-anyaya ng pagbabahagi ng isang salita o kulay pagkatapos lamang ng pribadong pagsasanay.",
+          "privacyBoundary": "Walang kinokolektang teksto mula sa journal; ang mga estudyante ang magpapasya mamaya kung may checkpoint na isasama sa isang Pakete ng Pagbabahagi.",
+          "note": "Magsimula sa pribadong pagtingin sa sona, pagkatapos ay mag-alok ng paghinga o pagtatakda ng layunin. Maaaring magbahagi ang mga estudyante ng isang salita, isang kulay, o lumaktaw."
+        },
+        "calm_reset": {
+          "name": "Limang-minutong reset para kumalma",
+          "time": "5-8 minuto",
+          "format": "Buong klase o sulok ng pagpapakalma",
+          "focus": "Pamamahala sa katawan",
+          "studentView": "Pinapansin ng mga estudyante ang kasalukuyang kalagayan ng kanilang katawan at pumipili ng isang pagsasanay para kumalma ang katawan.",
+          "teacherMove": "Panatilihing kaunti ang usapan at may takdang oras ang gawain. Mag-alok ng paggalaw, paghinga, o tahimik na alternatibo.",
+          "privacyBoundary": "Maaaring mag-save ng checkpoint ang mga estudyante para sa kanilang sarili; walang kailangang magpaliwanag kung bakit kailangan nila ng reset.",
+          "note": "Panatilihing kaunti ang usapan. Pumipili ang mga estudyante ng isang pagsasanay sa pamamahala ng sarili at pinapansin kung ano ang nagbago."
+        },
+        "repair_routine": {
+          "name": "Gawain sa pag-aayos pagkatapos ng alitan",
+          "time": "15-25 minuto",
+          "format": "Maliit na grupo o advisory",
+          "focus": "Pananaw, pag-aayos, susunod na aksiyon",
+          "studentView": "Maaaring gumamit ang mga estudyante ng totoo, haka-haka, o ibinigay ng guro na sitwasyon para sanayin ang wika ng pag-aayos.",
+          "teacherMove": "Itakda muna ang mga pamantayan sa pag-aayos at iwasan ang pampublikong pag-amin. Huminto kung kailangan ng sitwasyon ang pamamagitan ng adulto.",
+          "privacyBoundary": "Ang mga estudyante ang pipili kung ano ang ibabahagi; hindi dapat maging ebidensya sa klase ang mga pribadong pagninilay tungkol sa alitan.",
+          "note": "Gamitin pagkatapos maitakda ang mga pamantayan. Ituon sa wika ng pag-aayos, hindi sa pampublikong pag-amin."
+        },
+        "digital_reset": {
+          "name": "Maikling aralin sa digital na kagalingan",
+          "time": "12-20 minuto",
+          "format": "Advisory o kalusugan",
+          "focus": "Telepono, tulog, AI, at mga hangganan",
+          "studentView": "Sinusuri ng mga estudyante ang kanilang mga gawi, pumipili ng isang hangganang susubukan, at maaaring panatilihing pribado ang dahilan kung gusto nila.",
+          "teacherMove": "Ituring ito bilang pagdidisenyo ng gawi, hindi pag-audit ng telepono. Iwasang hilingin sa mga estudyante na ipakita ang mga screenshot o datos ng paggamit.",
+          "privacyBoundary": "Maaaring magbahagi ang mga estudyante ng layunin sa hangganan, ngunit mananatiling opsyonal ang mga personal na detalye tungkol sa tulog, telepono, o AI.",
+          "note": "Ituring ito bilang pagdidisenyo ng gawi, hindi pag-audit ng telepono. Pumipili ang mga estudyante ng isang hangganang susubukan."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Pamamaraang may batayan sa pananaliksik",
+          "title": "Ang pananaliksik ay tungkol sa pinagbabatayang pamamaraan; hindi pa nasusuri dito ang digital na adaptasyong ito"
+        },
+        "emerging": {
+          "label": "Limitadong ebidensya ng pamamaraan",
+          "title": "Nangangako ngunit limitado o halo-halo ang ebidensya"
+        },
+        "contested": {
+          "label": "Pinagtatalunang modelo",
+          "title": "Popular ngunit pinagtatalunan sa agham; pinakamainam gamitin bilang metapora, hindi mekanismo"
+        },
+        "practice": {
+          "label": "Mapagnilay na pagsasanay",
+          "title": "Isang istrukturadong pagsasanay o heuristic, hindi isang empirikal na pag-aangkin ng bisa"
+        }
+      },
+      "ui": {
+        "sel_practice": "Pagsasanay sa SEL",
+        "default_purpose": "Sanayin ang isang kasanayan sa SEL nang may malasakit.",
+        "default_next": "Tapusin ang isang maliit na hakbang, pagkatapos ay magpasya kung magse-save.",
+        "private_checkpoint": "Pribadong checkpoint",
+        "share_packet_eligible": "Puwedeng isama sa Pakete ng Pagbabahagi",
+        "saving_preparing": "Inihahanda ang pag-save ng iyong gawa sa SEL...",
+        "save_requested": "Hiniling ang pag-save para sa {title}",
+        "returned_to_grid": "Bumalik sa grid ng mga kasangkapan",
+        "back_to_sel_tools": "Bumalik sa mga kasangkapan ng SEL",
+        "export_now_aria": "I-export ngayon ang file ng proyekto ng SEL",
+        "export_now": "I-export ngayon",
+        "purpose": "Layunin",
+        "next_step": "Susunod na hakbang",
+        "saved_work": "Mga naka-save na gawa",
+        "checkpoints_private": "Nananatiling pribado rito ang mga checkpoint ng kasangkapan maliban kung pipiliin mo ang mga ito para sa isang Pakete ng Pagbabahagi.",
+        "use_with_care_label": "Gamitin nang maingat:",
+        "tool_open_failed_title": "Hindi mabuksan ang kasangkapang ito",
+        "tool_open_failed_body": "May bahagi ng naka-save na impormasyon para sa gawaing ito na hindi nag-load. Hindi ito dahil may ginawa kang mali.",
+        "saved_work_kept": "Hindi nabura ang iyong mga naka-save na gawa.",
+        "back_to_hub": "Bumalik sa SEL Hub",
+        "tell_teacher": "Kung patuloy itong nangyayari, sabihin sa iyong guro kung aling gawain ito.",
+        "load_did_not_start": "Na-download ang kasangkapan pero hindi ito nagsimula.",
+        "load_too_long": "Masyadong natagalan ang pag-load ng kasangkapan.",
+        "this_sel_tool": "Ang kasangkapang ito ng SEL",
+        "tool_opening": "Binubuksan ang {name}...",
+        "tool_open_retry": "Hindi mabuksan ang {name}. Subukan muli, o pumili ng ibang kasangkapan.",
+        "station_link_missing": "Tumutukoy ang link na ito sa isang station na wala sa proyektong ito. I-load ang pack na naglalaman nito, o magsimula ng isa mula sa mga SEL Station sa panel ng Kasaysayan.",
+        "started_station": "Sinimulan ang station na {name}",
+        "tool_could_not_open": "Hindi mabuksan ang {name}.",
+        "tool_not_available": "Hindi magagamit ang {name} sa SEL Hub na ito.",
+        "try_again": "Subukan muli",
+        "dismiss": "Isantabi",
+        "back_to_tools": "Bumalik sa mga kasangkapan",
+        "band_elementary": "Elementarya",
+        "band_middle": "Gitnang Paaralan",
+        "band_high": "Mataas na Paaralan",
+        "unsaved_aria": "May mga pagbabago kang hindi pa naka-save",
+        "unsaved_title": "Mga pagbabagong hindi pa naka-save",
+        "unsaved": "Hindi pa naka-save",
+        "unsaved_hint": "May mga pagbabago kang hindi pa naka-save — pindutin ang I-export ngayon para i-save ang mga ito",
+        "educators_opened": "Nabuksan ang gabay na Para sa mga Guro",
+        "educators_aria": "Para sa mga Guro: kung paano gamitin nang responsable ang Hub na ito",
+        "for_educators": "Para sa mga Guro",
+        "theme_aria": "Palitan ang tema (maliwanag / madilim / mataas na kontrast)",
+        "theme_contrast": "Mataas na Kontrast",
+        "theme_dark": "Madilim na Mode",
+        "theme_light": "Maliwanag na Mode",
+        "theme_contrast_short": "Kontrast",
+        "theme_dark_short": "Madilim",
+        "theme_light_short": "Maliwanag",
+        "xp_aria": "{count} puntos ng karanasan sa SEL",
+        "close_hub": "Isara ang SEL Hub",
+        "keep_share_title": "Piliin kung ano ang itatabi at ibabahagi",
+        "keep_share_body": "Nagse-save ang ilang gawain sa device na ito; ang ibang gawa ay tumatagal lamang sa tab na ito. Hindi nabubura ang lahat kapag isinara ang tab. Mag-export ng file para magtabi ng kopya. Sa device na ginagamit din ng iba, suriin ang Data at privacy sa Para sa mga Guro. Gumagamit ang mga feature ng AI at pagbabahagi ng mga serbisyong itinakda mo.",
+        "got_it_aria": "Nakuha ko, simulan nang gamitin ang SEL Hub",
+        "got_it": "Nakuha ko",
+        "practice_support": "Suporta sa pagsasanay",
+        "learning_guide": "Gabay sa pag-aaral at mga paraan ng pagsasanay",
+        "what_you_can_explore": "Ano ang maaari mong tuklasin",
+        "worked_example": "Isang halimbawang nagawa na",
+        "try_one_step": "Sumubok ng isang hakbang",
+        "reflect_transfer": "Magnilay at gamitin sa ibang lugar",
+        "look_closer": "Tingnan nang mas malapitan",
+        "next_use": "Isang posibleng susunod na gamit",
+        "adapt_together": "Iangkop nang sama-sama ang pagsasanay",
+        "adapt_smaller": "Magsimula nang mas maliit: magpakita ng halimbawang isang pangungusap o pagpili, gumamit ng larawan o kongkretong bagay, at magbigay ng oras para mag-isip.",
+        "adapt_deeper": "Palalimin: paghambingin ang dalawang tugon, tukuyin ang kulang na impormasyon, at ipaliwanag kung ano ang maaaring magpabago sa iyong pasya.",
+        "adapt_context": "Baguhin ang konteksto: gumamit ng kathang-isip na sitwasyong akma sa wika, interes, kultura, at pangangailangan sa access ng mag-aaral.",
+        "adapt_check": "Suriin ang pag-unawa sa pamamagitan ng piniling halimbawa o paliwanag, hindi ng obligadong personal na kuwento, pagbabago ng emosyon, o iskor.",
+        "optional_prompts": "Hindi nagsusumite ng sagot, hindi nagbibigay ng pagkumpleto, at hindi pumapalit sa sariling mga tagubilin at impormasyon sa kaligtasan ng gawain ang mga opsyonal na tanong na ito.",
+        "returned_to_activities": "Bumalik sa mga gawain. Walang naitalang pagkumpleto ng pagsasanay dahil sa aksiyong ito.",
+        "return_to_activities": "Bumalik sa mga gawain",
+        "chooser_first_reset_coping": "Pumili ng isang komportableng opsyon sa pagbabalik sa kasalukuyan. Pansinin kung akma ito; puwedeng huminto.",
+        "chooser_first_reset_journal": "Isulat ang isang bagay na magpapagaan sa susunod na ilang minuto. Hindi kailangan ng personal na kuwento.",
+        "chooser_first_feelings_zones": "Ituro ang isang damdamin o tahimik na pansinin. Pumili ng isang suporta; walang tamang sona na kailangang maabot.",
+        "chooser_first_feelings_emotions": "Tuklasin ang dalawang salita ng damdamin para sa isang kathang-isip na tauhan. Higit sa isang sagot ang maaaring akma.",
+        "chooser_first_feelings_journal": "Sumulat ng isang salita o maikling pagninilay tungkol sa isang kathang-isip o pang-araw-araw na sitwasyon.",
+        "chooser_first_conversation_advocacy": "Gumamit ng kathang-isip na sitwasyon para sanayin ang isang pakiusap nang malakas, gamit ang AAC, o tahimik, nang hiwalay sa form.",
+        "chooser_first_conversation_journal": "Gumawa ng burador ng isang magalang na pakiusap para sa isang ligtas at pang-araw-araw na sitwasyon; hindi mo kailangang ipadala ito.",
+        "chooser_first_decision_decisions": "Pag-isipan ang dalawang pagpipilian sa isang kathang-isip na sitwasyon at ang isang posibleng epekto ng bawat isa.",
+        "chooser_first_decision_goals": "Gumawa ng burador ng isang makatotohanang susunod na hakbang at isang suportang maaari mong hingin.",
+        "try_a_reset": "Sumubok ng reset",
+        "need_feeling": "Unawain ang isang damdamin",
+        "need_conversation": "Maghanda para sa isang usapan",
+        "need_decision": "Pumili ng susunod na hakbang",
+        "help_choose": "Tulungan akong pumili ng gawain",
+        "help_choose_intro": "Piliin kung ano ang gusto mong subukan. Ang mga mungkahi ay batay lamang sa mga pagpiling ito; hindi nito sinusuri ang iyong damdamin. Ang mga oras ay para sa unang hakbang, hindi para sa buong gawain.",
+        "what_would_help": "Ano ang makatutulong?",
+        "time_first_step": "Oras para sa unang hakbang",
+        "n_minutes": "{count} minuto",
+        "how_respond": "Paano mo gustong tumugon?",
+        "respond_any": "Kahit anong paraan",
+        "respond_offline": "Mag-isip, magsalita, gumuhit, o AAC",
+        "respond_write": "Sumulat ng maikling tugon",
+        "options_one": "Panimulang opsyon para sa iyong mga pinili: {count}.",
+        "options_many": "Mga panimulang opsyon para sa iyong mga pinili: {count}.",
+        "options_none": "Wala pang panimulang opsyon na tumutugma. Subukan ang mas mahabang oras o ibang format ng tugon; magagamit pa rin ang buong katalogo.",
+        "why_option_write": "Bakit ang opsyong ito: {need}, na may mungkahing {minutes}-minutong unang hakbang at maikling nakasulat na tugon.",
+        "why_option_offline": "Bakit ang opsyong ito: {need}, na may mungkahing {minutes}-minutong unang hakbang at paraan ng pagsasanay nang hindi nagta-type.",
+        "open_named": "Buksan ang {name}",
+        "open_named_unavailable": "Buksan ang {name} (hindi magagamit)",
+        "pathway_guide": "Gabay sa pagsasanay sa landas",
+        "pathway_opened": "Nabuksan ang {opened} sa {total} kasangkapan. Hindi ibig sabihin ng pagbukas ng kasangkapan na nasanay mo na ang kasanayan.",
+        "exit_pathway_aria": "Lumabas sa mode ng landas",
+        "pathway_cleared": "Tinapos ang landas",
+        "exit_pathway": "Lumabas sa landas",
+        "practice_goal": "Layunin ng pagsasanay:",
+        "pathway_intro": "Pumili ng isang gawain o sundin ang iminumungkahing pagkakasunod-sunod. Maaari kang lumaktaw, gumamit ng kathang-isip na halimbawa, o tumugon sa pamamagitan ng pagsasalita, pagguhit, pagsusulat, o AAC. Opsyonal ang pagbabahagi.",
+        "model_practice_reflect": "Ipakita, sanayin, at pagnilayan",
+        "an_example": "Isang halimbawa",
+        "notice_adjust": "Pansinin at iangkop",
+        "take_with_you": "Dalhin mo ito",
+        "self_check_aria": "Opsyonal na pagsusuri sa sarili sa pagsasanay",
+        "self_check_intro": "Pagkatapos sumubok ng isang hakbang, piliin ang akma. Opsyonal ito at walang marka; mananatili ito sa sesyong ito ng landas.",
+        "i_tried": "Sumubok ako ng isang hakbang",
+        "another_way": "Kailangan ko ng ibang paraan",
+        "pass_for_now": "Laktawan muna",
+        "tried_feedback": "Pansinin kung ano ang nakatulong, ano ang hindi, at saan mo maaaring subukan muli ang kasanayan.",
+        "adapt_feedback": "Sumubok ng mas maliit na hakbang, ibang paraan ng pagtugon, ibang kasangkapan, o suporta mula sa taong pinagkakatiwalaan mo.",
+        "pass_feedback": "Balidong pagpili ang paglaktaw. Maaari kang bumalik mamaya o humingi ng suporta.",
+        "next_option": "Susunod na opsyon: {name}",
+        "open_next": "Buksan ang susunod: {name}",
+        "view_pathway_tools": "Tingnan ang mga kasangkapan sa landas",
+        "revisit_any": "Maaari mong balikan ang anumang gawain. Pumili ng isang ideyang susubukan sa labas ng hub; hindi kailangang tapusin ang bawat kasangkapan.",
+        "station_activities": "Mga gawain sa station",
+        "active_station": "Aktibong SEL Station: {name}",
+        "steps_recorded_passed": "{done} sa {total} hakbang ang naitala · {passed} ang nilaktawan muna. Talaan ito ng pagsasanay, hindi marka.",
+        "steps_recorded": "{done} sa {total} hakbang ang naitala. Talaan ito ng pagsasanay, hindi marka.",
+        "active_minutes_done": "{mins} sa {goal} aktibong minuto rito. Naitala ang hakbang.",
+        "active_minutes_counting": "{mins} sa {goal} aktibong minuto rito. Binibilang habang nakikita ang tab na ito at ginagamit mo ito.",
+        "exit_station_aria": "Lumabas sa mode ng station",
+        "station_cleared": "Tinapos ang station",
+        "exit_station": "Lumabas sa station",
+        "station_tools_steps": "Mga kasangkapan, hakbang, at pagninilay sa station",
+        "station_steps": "Mga hakbang at pagninilay sa station",
+        "station_privacy": "Naka-save sa device na ito ang mga hakbang at tala at maaaring isama sa mga file ng proyekto. Gumamit ng kathang-isip na halimbawa o huwag isama ang mga personal na detalye. Piliin kung ano ang ibabahagi.",
+        "step_passed": "Nilaktawan muna. Maaari kang bumalik kapag handa ka na.",
+        "step_marked": "Minarkahan mong tapos na ang hakbang na ito.",
+        "step_target": "Naitala ang target ng gawain; hindi nito sinusukat ang kasanayan o kagalingan.",
+        "step_ready": "Nandito lang ito kapag handa ka na.",
+        "open_step_activity": "Buksan ang gawain para sa hakbang na ito",
+        "xp_progress": "{xp} / {target} kabuuang SEL XP. Kasama rito ang mga naunang gawain; hindi ito iskor ng kasanayan.",
+        "time_progress": "{mins} / {target} aktibong minuto. Hindi ebidensya ng pagkatuto ang oras.",
+        "default_reflect": "Ano ang napansin mo? Ano ang gusto mong panatilihin o baguhin?",
+        "self_check_ways": "Mag-isip, gumuhit, magsalita, gumamit ng wikang pasenyas, o gumamit ng AAC. Opsyonal ang nakasulat na tala. Ikaw mismo ang magmarka na tapos na ang hakbang, o laktawan muna.",
+        "length_target": "Gumagamit ang naka-save na hakbang na ito ng target na haba: {count} / {target} na karakter. Hindi sinusukat ng haba ang kalidad ng pagninilay. Maaari mo pa ring i-edit ang iyong tala.",
+        "reflection_for": "Pagninilay para sa {name}",
+        "optional_note": "Opsyonal na tala: ano ang nakatulong, o ano ang maaari mong subukan sa susunod...",
+        "write_reflection": "Sumulat ng pagninilay...",
+        "mark_complete_aria": "Markahan ang \"{name}\" bilang tapos na",
+        "step_reopened": "Binuksan muli ang hakbang: {name}",
+        "step_marked_named": "Minarkahan mong tapos na ang hakbang na ito: {name}",
+        "mark_complete": "Markahang tapos",
+        "step_passed_named": "Nilaktawan muna: {name}",
+        "filter_pathway": "landas: {name}",
+        "filter_station": "SEL Station: {name}",
+        "no_tools_match": "Walang kasangkapang tumutugma sa {filters}",
+        "results_one": "{count} sa {total} kasangkapan ang tumutugma sa {filters}",
+        "results_many": "{count} sa {total} kasangkapan ang tumutugma sa {filters}",
+        "showing_all": "Ipinapakita ang lahat ng {total} kasangkapan",
+        "crisis_elementary": "Kung hindi ka agad makahanap ng adulto, patuloy na humingi ng tulong hanggang may makinig. Karapat-dapat kang matulungan.",
+        "crisis_call_or_text": "Tumawag o mag-text sa",
+        "crisis_988": "988 Suicide & Crisis Lifeline, linya para sa krisis at pag-iwas sa pagpapakamatay (libre, kumpidensyal, 24/7).",
+        "crisis_text": "Mag-text sa",
+        "crisis_text_line": "Crisis Text Line, linya para sa krisis sa pamamagitan ng text (libre, kumpidensyal, 24/7).",
+        "tool_selection": "Pagpili ng kasangkapan sa SEL Hub",
+        "jumped_to_list": "Tumalon sa listahan ng mga kasangkapan. {summary}.",
+        "skip_to_list": "Lumaktaw sa listahan ng mga kasangkapan",
+        "start_here": "Magsimula rito",
+        "quick_route": "Pumili ng mabilis na ruta, o mag-browse sa ibaba.",
+        "browsing_all": "Tinitingnan ang lahat ng kasangkapan sa SEL",
+        "continue": "Magpatuloy",
+        "continue_desc": "Ituloy ang huling kasangkapan sa SEL na binuksan mo.",
+        "starting_idea": "Panimulang ideya",
+        "starting_idea_desc": "{name}: isang iminumungkahing gawain para sa antas ng baitang na ito, na may mga halimbawang maaari mong iangkop.",
+        "starting_idea_none": "Magbukas ng panimulang gawaing angkop sa baitang.",
+        "try_a_reset_desc": "Tuklasin ang isang komportableng estratehiya; hindi kailangang kalmado ka.",
+        "journal": "Pag-journal",
+        "journal_desc": "Sumulat ng pagninilay; suriin ang mga pagpipilian sa pag-save at pagbabahagi.",
+        "browse_all": "Tingnan Lahat",
+        "browse_all_desc": "Maghanap o mag-filter sa buong katalogo.",
+        "need_chip_calm": "Pakalmahin ang katawan ko",
+        "need_chip_feelings": "Pangalanan ang damdamin",
+        "need_chip_stress": "Stress o pag-aalala",
+        "need_chip_friend": "Alitan sa kaibigan",
+        "need_chip_write": "Isulat ito",
+        "need_chip_decision": "Gumawa ng desisyon",
+        "need_chip_sleep": "Tulog o pagod",
+        "need_chip_crisis": "Hindi ligtas o nasa krisis",
+        "need_chip_relationshipsafety": "Kaligtasan sa relasyon",
+        "need_chip_schoolsupport": "Suporta sa paaralan",
+        "need_chip_grief": "Dalamhati o pagkawala",
+        "storage_notice": "Nakaimbak sa device na ito ang ilang gawa sa SEL. Gumagamit ang mga feature ng AI ng serbisyong itinakda mo. Piliin kung ano ang ise-save o ibabahagi, lalo na sa device na ginagamit din ng iba.",
+        "save_now_aria": "I-save o i-export ngayon ang gawa sa SEL",
+        "save_now": "I-save ngayon",
+        "recent_work": "Mga kamakailang gawa sa SEL",
+        "saved_here": "Naka-save dito. I-export para maitabi ito pagkatapos isara.",
+        "create_packet_aria": "Gumawa ng Pakete ng Pagbabahagi ng SEL mula sa mga naka-save na checkpoint",
+        "review_packets_aria": "Suriin ang mga naka-save na Pakete ng Pagbabahagi ng SEL",
+        "create_packet": "Gumawa ng Pakete ng Pagbabahagi",
+        "review_packets": "Suriin ang mga Pakete ng Pagbabahagi",
+        "open_related": "Buksan ang kaugnay na kasangkapan.",
+        "related_unavailable": "Hindi magagamit ang kaugnay na kasangkapan sa SEL Hub na ito.",
+        "streak_aria": "{count}-araw na streak sa SEL. Pinakamahaba: {longest} araw.",
+        "streak": "{count}-araw na streak",
+        "streak_best": "pinakamahusay: {count}",
+        "find_activity": "Humanap ng gawain",
+        "search_placeholder": "Maghanap ng damdamin, kaibigan, stress, layunin...",
+        "search_aria": "Maghanap ng mga kasangkapan sa SEL",
+        "support_options": "Mga opsyon ng suporta",
+        "crisis_hard_moment": "Parang mahirap na sandali ito.",
+        "crisis_tell_adult": "Hindi mo kailangang ayusin ito nang mag-isa, at hindi mo kailangang hanapin muna ang tamang kasangkapan. Pakisabi ngayon sa isang pinagkakatiwalaang adulto — isang school counselor, guro, magulang, o ibang adultong pinagkakatiwalaan mo. Walang sinasabihan ang paghahanap dito; malalaman lang ng isang tao kung sasabihin mo sa kanya.",
+        "open_crisis_companion": "Buksan ang Kasama sa Krisis",
+        "find_by_need": "Humanap ng mga kasangkapan sa SEL ayon sa pangangailangan",
+        "i_need": "Kailangan ko ng...",
+        "cleared_search": "Binura ang paghahanap sa SEL",
+        "clear_search_aria": "Burahin ang paghahanap sa SEL",
+        "clear": "Burahin",
+        "cleared_need": "Binura ang filter ng pangangailangan sa SEL",
+        "showing_for": "Ipinapakita ang mga kasangkapan sa SEL para sa {name}",
+        "clear_need_aria": "Burahin ang filter ng pangangailangan: {name}",
+        "find_for_aria": "Humanap ng mga kasangkapan para sa: {name}",
+        "browse_by_area": "Mag-browse ayon sa larangan ng kasanayan",
+        "filter_by_category": "I-filter ang mga kasangkapan sa SEL ayon sa kategorya",
+        "showing_all_categories": "Ipinapakita ang lahat ng kategorya",
+        "show_all_categories_aria": "Ipakita ang lahat ng kategorya ({count} kasangkapan)",
+        "all": "Lahat",
+        "filtered_to": "Naka-filter sa {name}",
+        "filter_chip_aria": "Filter: {name} ({count} kasangkapan)",
+        "pathways_heading": "Mga Landas ng SEL — Piniling Pagkakasunod-sunod ng Pag-aaral",
+        "started_pathway": "Sinimulan ang landas: {name}",
+        "pathway_started": "Nagsimula na ang landas na {name}!",
+        "n_activities": "{count} gawain",
+        "grades_range": "mga baitang {range}",
+        "use_with_care": "Gamitin nang maingat",
+        "visits_many": "{count} pagbisita",
+        "visits_one": "{count} pagbisita",
+        "best_for": "Pinakamainam para sa: {mode}.",
+        "teacher_cue": "Paalala sa guro: {time}, {format}. {cue}",
+        "preview_first": "I-preview muna",
+        "evidence_tradition": "Tradisyon ng ebidensya: {tag}",
+        "approach_context": "Konteksto ng pamamaraan: {label}. {title}. Hindi pinatutunayan ng badge na ito ang bisa para sa app na ito o para sa isang partikular na mag-aaral.",
+        "step_opened": "Hakbang {n} · Nabuksan",
+        "step_not_opened": "Hakbang {n} · Hindi pa nabubuksan",
+        "suggested_grades": "Iminumungkahing mga baitang {range}",
+        "no_tools_current_view": "Walang kasangkapang tumutugma sa kasalukuyang view",
+        "empty_try": "Subukan ang kalma, damdamin, stress, kaibigan, pagsulat, desisyon, o tulog.",
+        "filters_cleared": "Binura ang mga filter. Ipinapakita ang lahat ng {total} kasangkapan.",
+        "show_all_tools": "Ipakita ang lahat ng {total} kasangkapan",
+        "error_loading": "Error sa pag-load ng {name}",
+        "unknown_error": "Hindi kilalang error",
+        "back_to_tools_error": "Bumalik sa mga Kasangkapan",
+        "tool_load_failed": "Hindi ma-load ang kasangkapang ito.",
+        "loading_tool": "Nilo-load ang kasangkapan...",
+        "file_not_arrived": "Hindi dumating ang file.",
+        "check_connection": "Suriin ang koneksyon, pagkatapos ay subukan muli.",
+        "plugin_fetching": "Kinukuha pa ang file ng plugin.",
+        "research_about": "Tungkol sa mga label ng pananaliksik",
+        "research_summary": "Ano ang ibig sabihin ng mga label ng pananaliksik",
+        "research_context": "Konteksto ng pamamaraan: {label}.",
+        "research_not_app": "Hindi pinatutunayan ng pananaliksik sa isang terapiya, kurikulum, o balangkas na may parehong epekto ang digital na gawaing ito. Inilalarawan ng mga label ang pamamaraan; hindi nito minamarkahan ang app na ito o ang isang mag-aaral.",
+        "research_check": "Bago pumili ng gawain, suriin ang mga binanggit na sanggunian, ang mga edad at kapaligirang pinag-aralan, ang kinakailangang suporta, at ang mga resultang sinukat. Hindi pa napatutunayan ng mga label na ito ang pagiging angkop sa populasyon at ang bisa ng adaptasyong ito.",
+        "research_casel_link": "CASEL: pagpili at pagsusuri ng isang programa sa SEL",
+        "project_save_failed": "Nabigo ang kahilingang i-save ang proyekto. Panatilihing bukas ang hub na ito at subukan ang I-save / I-export sa pangunahing app.",
+        "project_save_requested": "Hiniling ang pag-save ng proyekto. Tapusin ang proseso ng pag-save sa pangunahing app; hindi pa nakukumpirma rito na may na-save na file.",
+        "saving_aria": "Pag-save at pagbabahagi sa SEL",
+        "saving_failed_alert": "Hindi ma-save sa device na ito ang ilang pagbabago sa SEL. Panatilihing bukas ang hub na ito at mag-save ng kopya ng proyekto; kailangang i-save bilang station ang mga burador ng station para mapasama sa kopyang iyon.",
+        "saving_attention": "Kailangang tingnan ang pag-save",
+        "saving_title": "Pag-save at pagbabahagi",
+        "saving_failed_body": "Nananatiling magagamit ang kasalukuyang gawa sa bukas na hub na ito. Maaaring mag-iwan ng mas lumang kopya sa device na ito ang isang nabigong lokal na pag-save.",
+        "saving_ok_body": "Iniimbak sa device na ito ang mga naka-save na station, tala ng station, at checkpoint ng hub. May sariling kontrol sa pag-save ang bawat gawain; hindi kinukumpirma ng status na ito na na-save ang bawat input ng gawain.",
+        "saving_drafts": "Nananatili sa device na ito ang mga burador ng station para sa pagbawi. Ang pag-save ng station ay nagdaragdag nito sa datos ng proyekto na magagamit sa I-save / I-export; hindi kinukumpirma ng paghiling ng pag-save ng proyekto na may naisulat na file.",
+        "saving_live": "May nakakonektang live na sesyon. Maaari itong magpadala ng mga senyales ng progreso o kaligtasan sa host. Ipinapadala ng opsyonal na AI ang teksto ng gawain sa itinakdang serbisyo. Suriin ang isang Pakete ng Pagbabahagi bago magpasyang ibahagi ito.",
+        "saving_ai": "Ipinapadala ng opsyonal na AI ang teksto ng gawain sa itinakdang serbisyo. Naglalaman ang isang Pakete ng Pagbabahagi ng mga item at antas ng detalye na pinili mo; suriin ang preview nito bago magbahagi.",
+        "saving_retry": "Subukang muli ang lokal na pag-save",
+        "saving_request": "Humiling ng pag-save ng proyekto",
+        "removed_stations": "Mga tinanggal na station",
+        "removed_body": "I-undo ang pagtanggal ng station habang bukas ang hub na ito. Nananatili ang mga umiiral na talaan ng pagsasanay.",
+        "station_restored": "Naibalik ang station: {name}",
+        "undo_removal": "I-undo ang pagtanggal: {name}",
+        "launch_routines_aria": "Mga rutinang panimula ng guro",
+        "launch_title": "Panimula ng guro",
+        "launch_note": "Panatilihing walang marka ang pagsasanay at opsyonal ang pagbabahagi. Ipaliwanag ang pag-iimbak sa device, ang mga itinakdang feature ng AI, at ang pagbabahagi bago magsimula. Gumamit ng kathang-isip na halimbawa; anyayahan ang mga estudyante na humingi ng tulong o lumaktaw.",
+        "launch_guardrails_aria": "Mga pananggalang sa panimula ng guro",
+        "launch_step_boundary": "Itakda ang hangganan",
+        "launch_step_boundary_body": "Sabihin kung ano ang pribado, kung ano ang opsyonal, at kung paano makalalaktaw ang mga estudyante.",
+        "launch_step_run": "Patakbuhin ang rutina",
+        "launch_step_run_body": "Gamitin ang mga kasangkapan bilang pagsasanay. Panatilihing pangkaunlaran at walang marka ang pagninilay.",
+        "launch_step_close": "Magtapos nang may pagpipilian",
+        "launch_step_close_body": "Ang mga estudyante ang magpapasya kung magse-save, mag-e-export, o magsasama ng checkpoint sa ibang pagkakataon.",
+        "launch_student_sees": "Nakikita ng estudyante",
+        "launch_student_sees_default": "Tatapusin ng mga estudyante ang isang pribadong rutina sa SEL at pipiliin kung ano ang ibabahagi.",
+        "launch_teacher_move": "Hakbang ng guro",
+        "launch_teacher_move_default": "Ituring ito bilang pagsasanay, hindi pagtatasa.",
+        "launch_sharing_boundary": "Hangganan sa pagbabahagi",
+        "launch_sharing_boundary_default": "Nananatiling kontrolado ng estudyante ang pagbabahagi.",
+        "launch_tools_loading": "Nilo-load ang mga kasangkapan...",
+        "launch_still_loading": "Nilo-load pa: {tools}",
+        "launch_preview_sensitive": "I-preview muna ang mga sensitibong kasangkapan: {tools}",
+        "launch_load_aria": "I-load ang plano ng panimula ng guro: {name}",
+        "launch_finish_draft": "Tapusin o itapon muna ang kasalukuyang burador",
+        "launch_waiting": "Hinihintay ang mga kasangkapan",
+        "launch_loading": "Nilo-load",
+        "launch_load": "I-load sa Tagabuo ng Station",
+        "builder_note_student": "Nakikita ng estudyante: {text}",
+        "builder_note_teacher": "Hakbang ng guro: {text}",
+        "builder_note_sharing": "Hangganan sa pagbabahagi: {text}",
+        "builder_note_note": "Tala ng guro: {text}",
+        "launch_finish_existing": "Tapusin o itapon muna ang umiiral mong burador ng station.",
+        "launch_tools_still_loading": "Nilo-load pa ang mga kasangkapan sa panimula ng guro. Subukan muli maya-maya.",
+        "launch_tools_still_loading_sr": "Nilo-load pa ang mga kasangkapan sa panimula ng guro.",
+        "launch_default_name": "Rutina sa SEL sa silid-aralan",
+        "launch_default_short": "Rutina sa SEL",
+        "launch_loaded_sr": "Na-load ang plano ng panimula ng guro sa tagabuo ng station: {name}",
+        "launch_loaded_toast": "Na-load ang plano ng panimula ng guro sa Tagabuo ng Station.",
+        "stations_summary": "Mga Pasadyang SEL Station — mga bungkos na binuo ng guro",
+        "station_delete_aria": "Tanggalin ang station na {name}",
+        "station_removed_sr": "Tinanggal ang station. Maaaring i-undo hanggang maisara ang hub na ito.",
+        "station_removed": "Tinanggal ang station",
+        "station_tools_count": "{count} kasangkapan",
+        "station_quests_count": "{count} misyon",
+        "station_activated_sr": "Na-activate ang SEL Station: {name}",
+        "station_started": "Nagsimula na ang {name}!",
+        "station_activate_aria": "I-activate ang station na {name}",
+        "station_start": "Simulan ang station",
+        "station_adapt_aria": "Iangkop ang isang kopya ng station na {name}",
+        "station_adapt": "Iangkop ang isang kopya",
+        "draft_aria": "Burador ng station na maaaring mabawi",
+        "draft_untitled": "Station na walang pamagat",
+        "draft_body": "May hindi pa tapos na burador ng station na naka-save sa device na ito: {name}. Ituloy o itapon ito bago magsimula ng iba.",
+        "draft_resume": "Ituloy ang burador ng station",
+        "draft_discard": "Itapon ang burador ng station",
+        "builder_opened": "Nabuksan ang tagabuo ng station",
+        "build_station_aria": "Bumuo ng bagong pasadyang SEL Station",
+        "build_station": "+ Bumuo ng Pasadyang Station"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Naka-pause ang koneksyon ng guro — itinatabi ang iyong puwesto habang muling kumokonekta ang AlloFlow.",
+    "host_stale": "Luma na ang pagsusuri sa status ng guro — maaaring nakakonekta pa rin ang live na sesyon. Nananatili sa device na ito ang iyong gawa.",
+    "dismiss": "Isara",
+    "dismiss_aria": "Isara ang babala tungkol sa status ng guro",
+    "connecting": "Kumokonekta sa klase…",
+    "retrying": "Naka-pause ang mga update ng klase. Awtomatikong muling kumokonekta…",
+    "failed": "Naputol ang mga update ng klase. Suriin ang iyong koneksyon at subukang muling kumonekta.",
+    "access": "Tinanggihan ang access sa klase. Hilingin sa iyong guro na suriin ang access, pagkatapos ay muling kumonekta.",
+    "sign_in": "Mag-sign in muli para maibalik ang access sa klase, pagkatapos ay muling kumonekta.",
+    "reconnect": "Muling kumonekta"
+  },
   "_version": "20260526T1779819431709",
   "tour": {
     "input_panel_title": "input panel",
@@ -5283,9 +6502,98 @@
     "measured_on_target": "Bagay para sa {grade}",
     "measured_above": "Mas mataas sa antas na {grade}",
     "measured_below": "Mas mababa sa antas na {grade}",
-    "measured_note": "Flesch-Kincaid, sinukat sa tekstong ito. Gamitin ang Suriin antas para sa mas buong pagsusuri."
+    "measured_note": "Flesch-Kincaid, sinukat sa tekstong ito. Gamitin ang Suriin antas para sa mas buong pagsusuri.",
+    "listen_along": "Makinig habang sumusunod",
+    "compare_listen_here": "Makinig dito",
+    "compare_listen_here_original": "Makinig dito sa orihinal na teksto",
+    "compare_listen_here_adapted": "Makinig dito sa inangkop na teksto",
+    "compare_stop_reading_original": "Itigil ang pagbasa ng orihinal na teksto",
+    "compare_stop_reading_adapted": "Itigil ang pagbasa ng inangkop na teksto",
+    "compare_scroll_together": "Sabay na mag-scroll",
+    "reading_width": "Lapad ng pagbasa",
+    "width_narrow": "Makitid",
+    "width_medium": "Katamtaman",
+    "width_wide": "Malapad",
+    "width_extra_wide": "Napakalapad",
+    "reading_width_characters": "mga {count} titik bawat linya",
+    "original_support_spoken": "Tulong sa salitang “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "I-type ang nawawalang salita o parirala",
+      "explain_thinking": "Ipaliwanag ang iyong pag-iisip",
+      "write_response": "Isulat ang iyong sagot",
+      "submit_response": "Isumite ang sagot",
+      "numeric_answer": "Sagot na numero",
+      "unit_named": "Yunit ({unit})",
+      "unit_optional": "Yunit (opsyonal)",
+      "submit_numeric": "Isumite ang sagot na numero",
+      "select_all_apply": "Piliin ang lahat ng sagot na angkop",
+      "submit_selections": "Isumite ang mga pinili",
+      "part1": "Bahagi 1 — Piliin ang pinakamahusay na sagot",
+      "part2": "Bahagi 2 — {prompt}",
+      "default_evidence_prompt": "Piliin ang pinakamahusay na ebidensyang sumusuporta sa sagot.",
+      "submit_answer_evidence": "Isumite ang sagot at ebidensya",
+      "order_check": "Tama ba ang pagkakasunod-sunod na ito?",
+      "order_yes": "Oo, tama ito",
+      "order_no": "Hindi, may nasa maling puwesto",
+      "select_misplaced": "Pumili sa itaas ng aytem na nasa maling puwesto.",
+      "arrange_instructions": "Ayusin ang mga aytem sa tamang pagkakasunod-sunod. Kung tama na ang mga ito, hayaan na lang.",
+      "your_order": "Ang iyong pagkakasunod-sunod",
+      "move_up": "Itaas: {item}",
+      "move_down": "Ibaba: {item}",
+      "done_arranging": "Tapos na ang pag-aayos",
+      "principle_question": "Ano ang batayan ng pagkakasunod-sunod?",
+      "principle_chronological": "ayon sa panahon",
+      "principle_cause_effect": "sanhi at bunga",
+      "principle_process": "mga hakbang ng proseso",
+      "principle_size": "laki",
+      "principle_hierarchy": "ranggo",
+      "find_mismatch": "Hanapin ang pares na hindi magkatugma",
+      "choose_mismatch": "Piliin ang pares na hindi kabilang.",
+      "pair_with_question": "Saan dapat ipares ang napiling aytem?",
+      "replacement_partner": "Kapalit na kapares",
+      "submit_replacement": "Isumite ang kapalit",
+      "retry_failed": "Hindi naipadala ang iyong sagot. Naitala pa rin ang iyong pakikilahok; subukang muli kapag may koneksyon na.",
+      "return_to_quiz": "Bumalik sa live na pagsusulit",
+      "minimize": "Paliitin",
+      "minimize_aria": "Umalis sa view ng live na pagsusulit",
+      "battle_result": "Resulta ng laban",
+      "class_victory": "Panalo ang klase!",
+      "battle_complete": "Tapos na ang laban",
+      "regroup": "Pagkakataong maghanda muli nang sama-sama",
+      "end_no_scored": "Ang mga tanong na ito ay para sa talakayan o pagsusuri ng guro. Walang iskor sa laban na ibinigay.",
+      "end_questions_complete": "Tapos na ang lahat ng tanong. Inihahambing ng resulta ang porsyento ng natitirang buhay; kapag tabla, panalo ang klase.",
+      "end_victory": "Sama-samang tinalo ng inyong klase ang halimaw.",
+      "end_regroup": "Gamitin ang paliwanag sa ibaba para sama-samang planuhin ang susunod ninyong subok.",
+      "end_review_last": "Suriin ang huling tanong sa ibaba. Maaaring simulan muli ng iyong guro ang laban.",
+      "boss_hp": "HP ng {name}",
+      "boss_health": "Buhay ng {name}",
+      "battle_scoring_paused": "Naka-pause ang pag-iskor sa laban",
+      "tick_of": "{value} sa {total}",
+      "confidence_legend": "Gaano ka kasigurado?",
+      "confidence_knew": "Alam ko ito",
+      "confidence_guessed": "Nanghula ako nang may batayan",
+      "confidence_unsure": "Hindi ako sigurado",
+      "confidence_help": "Nakatutulong ito sa iyong guro na makita ang matibay na kaalaman at maling akala. Hindi nito kailanman binabago kung tama ang sagot o ang puntos.",
+      "retry_send": "Subukang ipadala muli ang sagot",
+      "waiting_for_teacher": "Hinihintay ang iyong guro na simulan ang tanong na ito.",
+      "sending": "Ipinapadala ang iyong sagot…",
+      "receipt_only": "Naitala ang pakikilahok. Hindi pa nakarating sa guro ang iyong sagot para mamarkahan.",
+      "complete_and_submit": "Kumpletuhin at isumite ang iyong sagot",
+      "poll_closed": "Sarado na ang tanong na ito para sa opinyon.",
+      "receipt_not_scored": "Pakikilahok lang ang natanggap ng iyong guro. Hindi namarkahan ang sagot na ito.",
+      "no_answer_submitted": "Walang naisumiteng sagot para sa tanong na ito. Suriin ito kasama ng iyong klase.",
+      "answer_review": "Pagsusuri ng sagot",
+      "review_answer": "Suriin ang sagot",
+      "discuss_with_teacher": "Talakayin ang sagot kasama ng iyong guro.",
+      "response_correct": "Tamang sagot.",
+      "response_partial": "Bahagyang tamang sagot.",
+      "response_incorrect": "Kailangang tingnan muli ang sagot na ito.",
+      "response_none": "Walang naisumiteng sagot.",
+      "response_submitted": "Naisumite ang sagot para masuri.",
+      "explanation": "Paliwanag"
+    },
     "title": "Suriin",
     "mcq_count": "MCQ Bilangin",
     "reflections": "Repleksyon",

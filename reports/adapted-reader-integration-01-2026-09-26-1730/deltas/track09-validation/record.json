@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-26T22:52:16.750Z",
+  "label": "track09-validation",
+  "patch": "2bed2ad736ff11fdd18d5dc9b10db2137af377ce592c51902c0ef04fe54fda42",
+  "plans": [
+    {
+      "target": "tests/reader_preview_isolation.test.js",
+      "targets": [
+        "tests/reader_preview_isolation.test.js"
+      ],
+      "before": "df76bc68bce3e50703f012cff3ba7ccfbe136151e94726ca9f8b9b8231d40a8f",
+      "after": "8590ca2d5f700e82f2a118e0c30828ad23f9ad11a5c13b5daf0ecbdbd2ac1e63",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_preview_host_boundary.test.js",
+      "targets": [
+        "tests/reader_preview_host_boundary.test.js"
+      ],
+      "before": null,
+      "after": "28decc45d87754213dc14a3cb5fd17d5a2e55dfb9a1198cea4b400e23d69fa31",
+      "changed": true
+    },
+    {
+      "target": "reports/reader-preview-followup/prepare-delta.cjs",
+      "targets": [
+        "reports/reader-preview-followup/prepare-delta.cjs"
+      ],
+      "before": null,
+      "after": "aa5ef453f4cd7b17f866ccdeb5e19359a140401329384ab037c9c3afa67ec885",
+      "changed": true
+    },
+    {
+      "target": "reports/reader-preview-followup/browser-check.cjs",
+      "targets": [
+        "reports/reader-preview-followup/browser-check.cjs"
+      ],
+      "before": null,
+      "after": "d6f70fd1cb5b3ae83200a7473dffc4d0617961811bbeedd8a2b75f42f832e678",
+      "changed": true
+    }
+  ]
+}

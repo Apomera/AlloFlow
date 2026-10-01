@@ -95,7 +95,9 @@ describe('legacy resource response integration',()=>{
   await act(async()=>switchTo('b'));await act(async()=>finish('data:image/png;base64,AAAA'));
   expect(records.a.data.sections[0]).toMatchObject({label:'Changed while pending',iconUrl:'data:image/png;base64,AAAA'});expect(records.b.data.sections[0].iconUrl).toBeUndefined();expect(host.querySelector('h1').textContent).toBe('b');
  });
- it('persists Notes feedback through reopening and invalidates it on learner edits',async()=>{
+ // Since 2026-09-28 (owner decision) a learner edit keeps the saved feedback and marks it
+ // as about an earlier draft, on screen and in the submission; it no longer deletes it.
+ it('persists Notes feedback through reopening and keeps it, marked as an earlier draft, after learner edits',async()=>{
   const r=notes();r.data.notes=[{id:'n1',text:'One explanation'},{id:'n2',text:'Another explanation'}];
   const provider=vi.fn().mockResolvedValue(JSON.stringify({strength:'Specific strong reasoning',growthNudge:'Try an example',rubric:{completion:3,quality:10,alignment:4}}));
   const get=harness(r,{allowRuntimeAi:true,callGemini:provider,handleScoreUpdate:vi.fn()});
@@ -103,7 +105,10 @@ describe('legacy resource response integration',()=>{
   expect(get().responses.n.studio.feedback.strength).toBe('Specific strong reasoning');
   expect(JSON.stringify(api.toSubmission(r,get().responses.n.studio))).not.toContain('TEACHER PROMPT');
   await act(async()=>get().setResource(notes('other')));await act(async()=>get().setResource(r));expect(host.textContent).toContain('Specific strong reasoning');
-  await change(host.querySelectorAll('textarea')[1],'Changed reasoning');expect(get().responses.n.studio.feedback).toBeNull();
+  expect(host.textContent).not.toContain('Feedback on an earlier draft');expect(api.toSubmission(r,get().responses.n.studio).data.feedback.earlierDraft).toBe(false);
+  await change(host.querySelectorAll('textarea')[1],'Changed reasoning');expect(get().responses.n.studio.feedback.strength).toBe('Specific strong reasoning');
+  expect(host.textContent).toContain('Specific strong reasoning');expect(host.textContent).toContain('Feedback on an earlier draft');
+  expect(api.toSubmission(r,get().responses.n.studio).data.feedback).toMatchObject({strength:'Specific strong reasoning',earlierDraft:true});
  });
  it('keeps teacher Notes preview edits temporary and never awards preview XP',async()=>{
   const r=notes(),before=JSON.stringify(r),save=vi.fn(),author=vi.fn(),score=vi.fn();

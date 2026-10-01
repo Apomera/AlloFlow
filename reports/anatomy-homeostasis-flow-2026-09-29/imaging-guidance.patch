@@ -1,0 +1,50 @@
+diff --git a/stem_lab/stem_tool_anatomy.js b/stem_lab/stem_tool_anatomy.js
+--- a/stem_lab/stem_tool_anatomy.js
++++ b/stem_lab/stem_tool_anatomy.js
+@@ -1274,9 +1274,10 @@
+   function countStoredTrueFlags(value, allowedIds) {
+     if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
+     return allowedIds.filter(function(id) { return value[id] === true; }).length;
+   }
+ 
++  var ANATOMY_IMAGING_PIXEL_SPACING_MM = 0.8;
+   function drawAnatomyImagingSlice(cx, W, H, state) {
+     // Synthetic teaching phantom. Schematic on purpose (never a scan), but laid out with real
+     // radiological conventions: axial slices are viewed from the feet (anterior at the top,
+     // patient right on the image left), coronal from the front, sagittal from the patient's left.
+@@ -1883,7 +1884,7 @@
+     // sagittal = S/I and A/P. (Axial slices were previously labelled S/I, which is wrong.)
+     var markers = plane === 'axial' ? { top: 'A', bottom: 'P', left: 'R', right: 'L' } : plane === 'coronal' ? { top: 'S', bottom: 'I', left: 'R', right: 'L' } : { top: 'S', bottom: 'I', left: 'A', right: 'P' };
+     cx.textAlign = 'center'; cx.fillStyle = '#f8fafc'; cx.fillText(markers.left, scanX + 12, midY); cx.fillText(markers.right, scanX + scanW - 12, midY); cx.fillText(markers.top, midX, scanY + 12); cx.fillText(markers.bottom, midX, scanY + scanH - 12);
+-    line(scanX + 16, scanY + scanH - 18, scanX + 86, scanY + scanH - 18, '#fff', 3); cx.textAlign = 'left'; cx.fillText('50 mm', scanX + 92, scanY + scanH - 18); cx.restore();
++    line(scanX + 16, scanY + scanH - 18, scanX + 16 + 50 / ANATOMY_IMAGING_PIXEL_SPACING_MM, scanY + scanH - 18, '#fff', 3); cx.textAlign = 'left'; cx.fillText('50 mm', scanX + 92, scanY + scanH - 18); cx.restore();
+     return { modality: modality, region: region, plane: plane, slice: slice, windowWidth: windowWidth, windowLevel: windowLevel, labelCount: labels.length, focusLabelCount: focusLabelCount, annotationCount: annotations.length, regions: regions };
+   }
+   // Geometry-only run of the phantom painter: returns the labelled hit regions for a slice
+@@ -1909,7 +1910,7 @@
+       axial: {
+         definition: 'Axial sections divide the body into superior and inferior portions.',
+         orientation: 'Imagine looking upward from the patient’s feet: patient right appears on the image’s left.',
+-        positions: ['Inferior slice band', 'Central slice band', 'Superior slice band']
++        positions: ['Superior slice band', 'Central slice band', 'Inferior slice band']
+       },
+       coronal: {
+         definition: 'Coronal sections divide the body into anterior and posterior portions.',
+@@ -16059,7 +16060,7 @@
+                   var regionBands = { head: [18, 60], chest: [58, 116], abdomen: [112, 169] };
+                   var band = regionBands[region];
+-                  var axialY = band[1] - (sliceValue / 100) * (band[1] - band[0]);
++                  var axialY = band[0] + (sliceValue / 100) * (band[1] - band[0]);
+                   var sagittalX = 52 + (sliceValue / 100) * 76;
+                   var coronalX = 240 + (sliceValue / 100) * 58;
+                   var planeName = plane.charAt(0).toUpperCase() + plane.slice(1);
+                   return h('section', {
+@@ -16223,7 +16224,7 @@
+                   if (imagingTool === 'ruler' && savedImaging.rulerStart && typeof savedImaging.rulerStart === 'object') {
+                     var start = savedImaging.rulerStart;
+                     var dx = (x - start.x) * 552, dy = (y - start.y) * 408;
+-                    var distance = Math.sqrt(dx * dx + dy * dy) * 0.8;
++                    var distance = Math.sqrt(dx * dx + dy * dy) * ANATOMY_IMAGING_PIXEL_SPACING_MM;
+                     var ruler = { id: 'img-' + Date.now(), type: 'ruler', x: start.x, y: start.y, x2: x, y2: y, distanceMm: Math.round(distance * 10) / 10, note: imagingNote || 'Measured span', modality: modality, region: region, plane: plane, slice: sliceValue };
+                     setImaging({ annotations: allImagingAnnotations.concat([ruler]).slice(-12), rulerStart: null, note: '' });
+                     if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_ruler_recorded_millimeters_in_this_teaching_phant', 'Ruler recorded: {value1} millimeters in this teaching phantom.'), { value1: ruler.distanceMm }));

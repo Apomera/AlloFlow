@@ -1,0 +1,145 @@
+===================================================================
+--- a/personas_source.jsx	existing local source body from canonical baseline
++++ b/personas_source.jsx	report recovery candidate
+@@ -100,10 +100,12 @@
+         const timeoutError = new Error('Persona model request timed out');
+         timeoutError.name = 'TimeoutError';
+         const timeoutPromise = new Promise((_, reject) => {
+             timeoutId = setTimeout(() => {
+-                abortModelRequest(request);
+                 reject(timeoutError);
++                // An abort-aware provider may reject synchronously. Settle the
++                // timeout first so its reason survives cancellation of the work.
++                abortModelRequest(request);
+             }, timeoutMs);
+         });
+         try {
+             return await Promise.race([
+@@ -138,8 +140,71 @@
+         }
+         return current;
+     };
+ 
++    // A failed search must never be presented as a successful, sourced interview.
++    // Error text is inspected only for classification; provider details remain in
++    // warnLog and are not copied into the student/teacher recovery message.
++    const getPersonaCandidateRecovery = (error) => {
++        const code = String(error && error.code || '');
++        const kind = String(error && error.classification && error.classification.kind || '');
++        const status = Number(error && (error.httpStatus || error.status || error.statusCode)) || 0;
++        const message = String(error && error.message || '');
++        if (code === 'allo/search-no-attribution' || /no attributable sources?/i.test(message)) {
++            return ['persona.candidates_no_sources', 'No new interview candidates were created because search returned no attributable sources. Use a more specific lesson source or topic, then try Find Interview Candidates again. Sources will not be invented.'];
++        }
++        if ((error && error.name === 'TimeoutError') || kind === 'timeout' || /timeout|timed out|etimedout/i.test(message)) {
++            return ['persona.candidates_timeout', 'The interview search or AI request took too long. Check the connection, then try Find Interview Candidates again.'];
++        }
++        if (kind === 'auth' || status === 401 || status === 403 || code === 'allo/no-api-key' || /\b(?:401|403|UNAUTHENTICATED|PERMISSION_DENIED)\b|invalid (?:api )?key|authentication|access denied/i.test(message)) {
++            return ['persona.candidates_access', 'The AI or search connection was rejected. Check AI Backend Settings and approved access, then try Find Interview Candidates again.'];
++        }
++        if (kind === 'quota' || (error && error.isQuota) || /quota|resource_exhausted|usage (?:limit|allowance)|daily limit/i.test(message)) {
++            return ['persona.candidates_quota', 'The AI or search provider reported a usage limit. Check its usage allowance, then retry when it is available.'];
++        }
++        if (status === 429 || kind === 'rate_limit' || /rate limit|too many requests|throttl/i.test(message)) {
++            return ['persona.candidates_rate_limit', 'The AI or search provider is receiving too many requests. Wait briefly, then try Find Interview Candidates again.'];
++        }
++        if (code === 'allo/search-unavailable') {
++            return ['persona.candidates_search_unavailable', 'Interview web search is unavailable. Check the connection, then retry when search is available.'];
++        }
++        if (kind === 'network' || kind === 'transient' || status >= 500 || /failed to fetch|network|connection|offline/i.test(message)) {
++            return ['persona.candidates_connection', 'The AI or search connection failed. Check the connection, then try Find Interview Candidates again.'];
++        }
++        if (code === 'allo/persona-response-invalid' || (error && error.name === 'SyntaxError')) {
++            return ['persona.candidates_response_invalid', 'The AI response did not contain usable interview candidates. Try Find Interview Candidates again.'];
++        }
++        return ['persona.candidates_generate_failed', 'Interview candidates could not be created. Try Find Interview Candidates again; if the problem continues, inspect the diagnostic details.'];
++    };
++    const candidateRecoveryText = (t, key, fallback) => {
++        const translated = typeof t === 'function' ? t(key) : '';
++        return typeof translated === 'string' && translated.trim() && translated !== key ? translated : fallback;
++    };
++    const getExplicitCandidateSearchGrounding = (result) => {
++        if (!result || typeof result !== 'object' || Array.isArray(result)) return null;
++        const values = [];
++        for (const envelope of [result, result.candidates && result.candidates[0]]) {
++            if (!envelope || typeof envelope !== 'object') continue;
++            for (const key of ['groundingMetadata', 'grounding']) {
++                if (Object.prototype.hasOwnProperty.call(envelope, key)) values.push(envelope[key]);
++            }
++        }
++        return values.length ? { value: values } : null;
++    };
++    const hasAttributableCandidateSearchSource = (grounding) => {
++        const queue = [grounding];
++        const seen = new Set();
++        for (let visited = 0; queue.length && visited < 1500; visited += 1) {
++            const current = queue.shift();
++            if (!current || typeof current !== 'object' || seen.has(current)) continue;
++            seen.add(current);
++            const uri = current.uri || current.url || current.link || current.sourceUrl;
++            if (typeof uri === 'string' && /^https?:\/\/[^\s]+$/i.test(uri.trim())) return true;
++            Object.values(current).forEach(child => { if (child && typeof child === 'object') queue.push(child); });
++        }
++        return false;
++    };
++
+     const clampInteger = (value, min, max, fallback = 0) => {
+         const numeric = Number(value);
+         if (!Number.isFinite(numeric)) return fallback;
+         return Math.max(min, Math.min(max, Math.round(numeric)));
+@@ -954,16 +1019,27 @@
+               ]
+             `;
+             const result = await callPersonaModel(prompt, false, true, generationRequest, PERSONA_MODEL_TIMEOUTS.candidates);
+             if (!isFreshGeneration()) return;
++            // A current search envelope that explicitly lacks source URLs must
++            // refuse publication. Earlier lesson-analysis sources cannot prove
++            // this new search succeeded. Legacy passage-based response shapes
++            // remain supported and make no new web-verification claim.
++            const explicitSearchGrounding = getExplicitCandidateSearchGrounding(result);
++            if (explicitSearchGrounding && !hasAttributableCandidateSearchSource(explicitSearchGrounding.value)) {
++                const unavailable = new Error('Interview search returned no attributable sources.');
++                unavailable.code = 'allo/search-no-attribution';
++                throw unavailable;
++            }
+             const generationPayload = unwrapModelResult(result);
+             let parsedOptions = Array.isArray(generationPayload) ? generationPayload : [];
+             if (!Array.isArray(generationPayload)) {
+                 const textToParse = String(generationPayload || "");
+                 if (!textToParse.includes('[') && !textToParse.includes('{')) {
+                     warnLog("Persona Gen: No JSON found in response.");
+-                    addToast(t('toasts.character_data_not_found'), "warning");
+-                    return;
++                    const invalid = new Error('Interview response did not contain candidate JSON.');
++                    invalid.code = 'allo/persona-response-invalid';
++                    throw invalid;
+                 }
+                 try {
+                     parsedOptions = JSON.parse(cleanJson(textToParse));
+                 } catch (e) {
+@@ -1009,13 +1085,23 @@
+                 setGeneratedContent(newItem);
+                 return;
+             } else {
+                 warnLog("Persona Gen: Parsed data was not a valid array.");
+-                addToast(t('toasts.ai_format_error'), "error");
++                const invalid = new Error('Interview response did not contain usable candidates.');
++                invalid.code = 'allo/persona-response-invalid';
++                throw invalid;
+             }
+         } catch (err) {
+             warnLog("Persona Generation Error:", err);
+-            if (isFreshGeneration()) addToast(t('toasts.character_generate_failed'), "error");
++            if (isFreshGeneration()) {
++                const [key, fallback] = getPersonaCandidateRecovery(err);
++                let recovery = candidateRecoveryText(t, key, fallback);
++                const retainedResource = liveRef.current.generatedContent;
++                if (retainedResource && retainedResource.type === 'persona' && Array.isArray(retainedResource.data) && retainedResource.data.length > 0) {
++                    recovery += ' ' + candidateRecoveryText(t, 'persona.candidates_previous_kept', 'Your previous interview candidates are kept.');
++                }
++                addToast(recovery, "error");
++            }
+         } finally {
+             if (activePersonaGenerationRequest === generationRequest) {
+                 activePersonaGenerationRequest = null;
+                 setIsGeneratingPersona(false);

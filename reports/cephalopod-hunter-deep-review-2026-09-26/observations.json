@@ -1,0 +1,174 @@
+{
+  "baseline": {
+    "hud": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n97\n⏸ resting 1.0 cal/s\nCAMO   \n100%\n🏖 on sand · still\nSCORE 0\nTIME 7s\nINK     ",
+    "census": {
+      "renders": 498,
+      "draws": 17085,
+      "hasScene": true,
+      "objects": 639,
+      "meshes": 568,
+      "visibleMeshes": 568,
+      "lines": 0,
+      "points": 2,
+      "sprites": 0,
+      "lights": 2
+    },
+    "scene": {
+      "player": [
+        0,
+        0.5000000553542446,
+        0
+      ],
+      "floor": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "errors": [],
+  "pause": {
+    "before": "🐙 Common Octopus\n🌙 Night\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n96\n⏸ resting 1.0 cal/s\nCAMO   \n100%\n🏖 on sand · still\nSCORE 0\nTIME 7s\nINK     ",
+    "after": "🐙 Common Octopus\n🌙 Night\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n96\n⏸ resting 1.0 cal/s\nCAMO   \n100%\n🏖 on sand · still\nSCORE 0\nTIME 10s\nINK     "
+  },
+  "ascent": {
+    "player": [
+      0,
+      3.962763361546269,
+      0
+    ],
+    "floor": [
+      0,
+      0,
+      0
+    ]
+  },
+  "blur": {
+    "start": {
+      "player": [
+        0,
+        4.004411846902548,
+        1.245399999922514
+      ],
+      "floor": [
+        0,
+        0,
+        1.245399999922514
+      ]
+    },
+    "end": {
+      "player": [
+        0,
+        3.932052875651354,
+        3.4925799999535085
+      ],
+      "floor": [
+        0,
+        0,
+        3.4925799999535085
+      ]
+    },
+    "hud": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n16m · 3 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n92\n🦵 crawling 1.6 cal/s\nCAMO   \n0%\n🌊 off the bottom — nothing behind you to match (0%)\nSCORE 0\nTIME 13s\nINK     "
+  },
+  "beforeSurface": {
+    "leaderboard": null
+  },
+  "surface": {
+    "storage": {
+      "allo.cephalopodlab.achievements.v1": "{\"firstDive\":{\"unlockedAt\":1790457746304},\"firstCamo90\":{\"unlockedAt\":1790457749980}}"
+    },
+    "contexts": [
+      {
+        "id": 1,
+        "type": "webgl2",
+        "mount": 1,
+        "createdBy": "page",
+        "lost": false,
+        "lostBy": null,
+        "draws": 50930,
+        "renders": 2688,
+        "lastDrawAgoMs": 948,
+        "connected": false,
+        "inWrap": false,
+        "width": 800,
+        "height": 500,
+        "creator": [
+          "initHuntSim3D (stem_lab/stem_tool_cephalopodlab.js:11265:24)",
+          "ref (stem_lab/stem_tool_cephalopodlab.js:11227:21)"
+        ]
+      }
+    ],
+    "summaryVisible": 0
+  },
+  "rockTopology": {
+    "indexed": false,
+    "vertices": 540,
+    "uniquePositions": 92
+  },
+  "hudChurn": {
+    "seconds": 1,
+    "frames": 20,
+    "hudReplacements": 20
+  },
+  "denVertical": {
+    "den": [
+      -28,
+      0,
+      5
+    ],
+    "atGround": {
+      "scene": {
+        "player": [
+          -25.234974957528276,
+          0.5738417452963123,
+          9.828276302849915
+        ],
+        "floor": [
+          -25.234974957528276,
+          0,
+          9.828276302849915
+        ]
+      },
+      "hud": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n80\n⏸ resting 1.0 cal/s\nCAMO   \n5%\n🏖 on sand · moving\nSCORE 0\nTIME 17s\nINK     "
+    },
+    "above": {
+      "scene": {
+        "player": [
+          -25.234974957528276,
+          6.030775060052819,
+          9.828276302849915
+        ],
+        "floor": [
+          -25.234974957528276,
+          0,
+          9.828276302849915
+        ]
+      },
+      "hud": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n11m · 2 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n77\n⏸ resting 1.0 cal/s\nCAMO   \n0%\n🌊 off the bottom — nothing behind you to match (0%)\nSCORE 0\nTIME 19s\nINK     "
+    }
+  },
+  "mobile": {
+    "viewport": 390,
+    "canvas": {
+      "x": 20,
+      "y": 595.78125,
+      "width": 350,
+      "height": 218.75,
+      "top": 595.78125,
+      "right": 370,
+      "bottom": 814.53125,
+      "left": 20
+    },
+    "hud": {
+      "x": 30,
+      "y": 605.78125,
+      "width": 340,
+      "height": 258.3125,
+      "top": 605.78125,
+      "right": 370,
+      "bottom": 864.09375,
+      "left": 30
+    },
+    "controls": 0
+  }
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "dark": true,
+    "width": 1180,
+    "scrollWidth": 1180,
+    "navigatorWidth": 1180,
+    "readoutWidth": 366.71875,
+    "errors": []
+  },
+  {
+    "dark": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "navigatorWidth": 320,
+    "readoutWidth": 298,
+    "errors": []
+  }
+]

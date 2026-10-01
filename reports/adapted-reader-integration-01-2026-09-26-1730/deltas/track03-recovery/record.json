@@ -1,0 +1,26 @@
+{
+  "at": "2026-09-26T22:08:49.906Z",
+  "label": "track03-recovery",
+  "patch": "3809b410060b02d8775191273ae2619f47f5afe8abee6826d8ab72e920c06d52",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "6dfd5a626db9a6b5bae5a963542ce916635bf159b93616a8bf470dba0f26d0d4",
+      "after": "17abb5fd47438420c8a25ea4f69527b5b117f8ee8716ef1f49aaa8646fe98e1d",
+      "changed": true
+    },
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "8548ad57a1cf810b23c5086642f9de7f3ac4e9dece6aaf9aaf534b5386303927",
+      "after": "a11932c6ceeae9953ee4a7cccb6dd09f131e424bdf9dedcffecc575007d9b7ec",
+      "changed": true
+    }
+  ]
+}

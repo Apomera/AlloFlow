@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-30",
+  "result": "passed",
+  "parent": "4d71a4e0ebf95f84b1a4aa8fac6a97211161894b",
+  "unitTests": {
+    "passed": 224,
+    "files": 3,
+    "finalRunSeconds": 49.78,
+    "suites": {
+      "firstresponse_depth_explorer": 91,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "fullRunPassed": 23,
+    "distinctScenariosPassed": 23,
+    "summary": "23 passed (8.9m)",
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "legAndPoseReviewScenarios": 4,
+    "manikinRealismScenarios": 3,
+    "markerVisualScenarios": 3
+  },
+  "coverage": [
+    "Review only completed poses; stored selection is bounded to available steps",
+    "Review preserves progress; continuing and resetting clear the review selection",
+    "Final-position message matches the displayed pose",
+    "Head, arm and leg camera presets use the inspected pose; same canvas survives review",
+    "Closed hip shell, outward unit normals and smooth tapered limb seams for all ages",
+    "Existing fixed leg lengths, foot clearance, cheek contact and compression mechanics",
+    "Real WebGL framing, AED picking, recovery order, coaching and canvas cleanup",
+    "Phone keyboard controls, text spacing, reduced motion, forced colors, app contrast, accessibility and reflow"
+  ],
+  "screenshots": {
+    "captured": 29,
+    "reviewed": 16,
+    "reviewedFiles": [
+      "adult-support-leg.png",
+      "adult-review-raised-knee.png",
+      "adult-review-roll.png",
+      "adult-review-completed.png",
+      "child-support-leg.png",
+      "child-review-raised-knee.png",
+      "child-review-roll.png",
+      "child-review-completed.png",
+      "infant-support-leg.png",
+      "infant-review-raised-knee.png",
+      "infant-review-roll.png",
+      "infant-review-completed.png",
+      "phone-review-controls.png",
+      "phone-review-raised-knee.png",
+      "contrast-support-leg.png",
+      "forced-colors-support-leg.png"
+    ]
+  },
+  "synchronization": {
+    "moduleCopies": "identical",
+    "firstResponseCatalogs": "identical",
+    "newEnglishStrings": 8
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "a3e6bcf42f3bbb8bd855e113f325c0b38fc22324775d925bf7ff776718048aa4",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "a3e6bcf42f3bbb8bd855e113f325c0b38fc22324775d925bf7ff776718048aa4",
+    "tests/firstresponse_depth_explorer.test.js": "1d7db764a19577ad763c80ac2d68890c84e6ed3b3a9fe47596729e6d18a59742",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/e2e/firstresponse-leg-inspection.spec.ts": "b2dece67d3b5c12981da2f0e24f600d741ce7f63e0a26e49bf8a044e366af41f"
+  }
+}

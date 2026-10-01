@@ -1,0 +1,99 @@
+{
+  "build": {
+    "source": "stem_lab/stem_tool_astronomy.js",
+    "mirror": "desktop/web-app/public/stem_lab/stem_tool_astronomy.js",
+    "sha256": "e9a2713af78d2ffb1b75600e8f55978313efa3bc5111968e2e382f97c2858855",
+    "sourceMirrorIdentical": true,
+    "englishKeysChecked": 27,
+    "englishKeyParity": true,
+    "syntaxChecksPassed": true,
+    "scopedWhitespaceCheckPassed": true
+  },
+  "unitTests": {
+    "passed": 153,
+    "failed": 0,
+    "report": "unit-tests.json"
+  },
+  "browserScenarios": {
+    "passed": 8,
+    "failedAfterRecovery": 0,
+    "initialReport": "browser-tests.json",
+    "recoveryReport": "browser-recovery-tests.json",
+    "infrastructureRecovery": "The measured-clock scenario was repeated after ENOSPC interrupted screenshot saving. Its full rerun passed.",
+    "scenarios": [
+      {
+        "title": "transit explorer links measured radii, scene scale, chart cursor, controls and reference text",
+        "status": "passed"
+      },
+      {
+        "title": "transit charts remain readable and interactive on a 320px contrast screen",
+        "status": "passed"
+      },
+      {
+        "title": "grazing, missed and total occultation geometries keep both views consistent",
+        "status": "passed"
+      },
+      {
+        "title": "transit playback stops, replays, pauses on input and releases its clock on leaving",
+        "status": "passed"
+      },
+      {
+        "title": "brightness choices and native controls link the scene and comparison without changing geometry",
+        "status": "passed"
+      },
+      {
+        "title": "measured example preserves the clock across brightness changes and removes it on geometry changes",
+        "status": "passed"
+      },
+      {
+        "title": "320px contrast charts have readable labels, touch scrubbing and unclipped comparison curves",
+        "status": "passed"
+      },
+      {
+        "title": "dim-edge playback pauses on input, releases its timer and restores corrupt saved state",
+        "status": "passed"
+      }
+    ]
+  },
+  "modelPerformance": {
+    "browser": "Chromium",
+    "scope": "Model calculation for 241 curve samples; excludes rendering",
+    "cases": [
+      {
+        "name": "small planet",
+        "samples": 241,
+        "medianMs": 9.599999997764826,
+        "maxMs": 97.09999999776483
+      },
+      {
+        "name": "central gas giant",
+        "samples": 241,
+        "medianMs": 7.800000000745058,
+        "maxMs": 27.899999998509884
+      },
+      {
+        "name": "grazing crossing",
+        "samples": 241,
+        "medianMs": 0.6999999992549419,
+        "maxMs": 1.300000000745058
+      },
+      {
+        "name": "large occulting disc",
+        "samples": 241,
+        "medianMs": 1.5999999977648258,
+        "maxMs": 2.400000002235174
+      },
+      {
+        "name": "published orbit",
+        "samples": 241,
+        "medianMs": 1.5,
+        "maxMs": 2.5
+      }
+    ]
+  },
+  "scope": {
+    "fluxModel": "Uniform brightness or chosen linear limb darkening; numerical integration tested against an independent Cartesian integral within 0.02 ppm in selected cases.",
+    "reference": "Agol et al. (2021) inputs from NASA Exoplanet Archive; circular orbit approximation; chosen brightness coefficient; simulated light curve."
+  },
+  "preview": "measured-transit-desktop.png"
+}

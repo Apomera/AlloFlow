@@ -1,0 +1,53 @@
+{
+  "snapshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.codex-artifacts\\reader-navigation-track17",
+  "inputs": [
+    {
+      "file": "view_simplified_source.jsx",
+      "capturedBeforeSha256": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+      "testInputSha256": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+      "sharedSha256": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31"
+    },
+    {
+      "file": "reader_place_store.js",
+      "capturedBeforeSha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "testInputSha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "sharedSha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "capturedBeforeSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "testInputSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "sharedSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "ui_strings.js",
+      "capturedBeforeSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "testInputSha256": "610763fdeddffc56a2ec6706b5e9ce9664e51aeeba8f4c1b79579f030ec3d9f8",
+      "sharedSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "capturedBeforeSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "testInputSha256": "610763fdeddffc56a2ec6706b5e9ce9664e51aeeba8f4c1b79579f030ec3d9f8",
+      "sharedSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "capturedBeforeSha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce",
+      "testInputSha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce",
+      "sharedSha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce"
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "capturedBeforeSha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48",
+      "testInputSha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48",
+      "sharedSha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "capturedBeforeSha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+      "testInputSha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+      "sharedSha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    }
+  ]
+}

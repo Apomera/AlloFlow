@@ -1,0 +1,38 @@
+{
+  "status": "incomplete-unbounded-harness",
+  "observedAtUtc": "2026-10-01T00:25:54.9240727Z",
+  "processId": 14216,
+  "creationDate": "2026-09-30T20:20:42.19967-04:00",
+  "verifiedChromeIds": [
+    24952,
+    37364,
+    18056,
+    51284
+  ],
+  "screenshots": [
+    {
+      "Name": "compact-audio-default320.png",
+      "LastWriteTimeUtc": "2026-10-01T00:20:47.3016472Z",
+      "Length": 39388
+    }
+  ],
+  "inputHashesCapturedBeforeStop": {
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "reports/report-fixes-2026-09-30/compact-audio-browser.cjs": "be92c662a80233ea2a1d2e3027e2527f1e9008d5b9a9f64a7a65178f58d2ca34",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+  },
+  "inputHashScope": "Captured at diagnostic stop, not a recovered start-of-run record. No product failure inferred.",
+  "reason": "Owned harness still active after more than five minutes without a final report. Prior browser result remains the separately preserved disclosure failure."
+}

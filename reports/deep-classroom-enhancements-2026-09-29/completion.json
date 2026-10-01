@@ -1,0 +1,48 @@
+{
+  "at": "2026-09-29T22:30:38.778Z",
+  "status": "complete",
+  "targetedFiles": 14,
+  "targetedAssertions": 145,
+  "layoutAndAxeCases": 6,
+  "fullAppFlows": [
+    {
+      "role": "Parent",
+      "width": 1280,
+      "passed": true,
+      "headingY": 119
+    },
+    {
+      "role": "Parent",
+      "width": 390,
+      "passed": true,
+      "headingY": 124.1875
+    },
+    {
+      "role": "Independent",
+      "width": 1280,
+      "passed": true,
+      "headingY": 119
+    }
+  ],
+  "mutationProofs": 6,
+  "changedDuringValidation": [],
+  "checks": {
+    "hostsEqual": true,
+    "teacherMirrorEqual": true,
+    "stylesMirrorEqual": true,
+    "headerMirrorEqual": true,
+    "surroundingStylesPreserved": true,
+    "surroundingTeacherSourcePreserved": true,
+    "themeCurrent": true,
+    "localized": true
+  },
+  "localizedLabels": 10,
+  "languages": [
+    "English",
+    "French",
+    "Latin American Spanish",
+    "Arabic"
+  ],
+  "gitWritesPerformed": false,
+  "deployed": false
+}

@@ -1,0 +1,10 @@
+{
+  "visual_key_rest": "Resting height",
+  "visual_key_reference": "Reference depth",
+  "visual_key_current_b": "Current B height",
+  "visual_key_current": "Current chest height",
+  "visual_key_saved": "Saved A height",
+  "visual_key_travel": "Movement per push",
+  "visual_key_direction": "Direction of movement",
+  "visual_key_title": "Read the 3D markers"
+}

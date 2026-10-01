@@ -1,0 +1,12 @@
+import {beforeAll,describe,it,expect} from 'vitest';
+import {createRequire} from 'node:module';import {resolve} from 'node:path';import {loadAlloModule} from './setup.js';
+const require=createRequire(import.meta.url);let api;
+beforeAll(()=>{globalThis.React=window.React=require(resolve('desktop/web-app/node_modules/react'));window.AlloIcons=new Proxy({},{get:()=>()=>null});loadAlloModule('story_forge_module.js');api=window.AlloModules.StoryForge._meta;});
+describe('optional coach safety',()=>{
+ it('rejects the browser-reproduced Show vs Tell crash payload',()=>{expect(()=>api.normalizeStoryForgeCoach('show',{tellings:{},summary:'x'})).toThrow();});
+ it('rejects object-valued display text and invalid collections',()=>{for(const [kind,value] of [['help',{suggestions:[{}]}],['senses',{counts:{sight:{}}}],['arcs',{characters:[{name:'Maya',beats:{}}]}],['dialogue',{tagCounts:{said:2},issues:[{line:{}}]}],['revision',{tasks:{}}],['mentor',{mentor:{title:{}}}]])expect(()=>api.normalizeStoryForgeCoach(kind,value)).toThrow();});
+ it('keeps valid empty analysis arrays and bounded strings',()=>{expect(api.normalizeStoryForgeCoach('show',{tellings:[],summary:'Well done'})).toEqual({tellings:[],summary:'Well done'});expect(api.normalizeStoryForgeCoach('help',{suggestions:['x'.repeat(7000)]}).suggestions[0]).toHaveLength(6000);});
+ it('rejects unsafe mentor links and withholds uncertain excerpts',()=>{expect(()=>api.normalizeStoryForgeCoach('mentor',{mentor:{sourceUrl:'javascript:alert(1)'}})).toThrow();expect(api.normalizeStoryForgeCoach('mentor',{mentor:{sourceUrl:'https://example.org/story',uncertain:true,text:'unverified'}}).mentor.text).toBe('');});
+ it('recovers writing without granting reviewed status for malformed imported feedback',()=>{const value={_storyForgeVersion:2,storyTitle:'Keep me',paragraphs:[{id:'p1',text:'My story survives.'}],gradingResult:{scores:{}}};const result=api.validateStoryForgeImport(value);expect(result).toMatchObject({valid:true,hasReviewData:false,invalidReviewData:true,review:{gradingResult:null}});expect(result.snapshot.paragraphs[0].text).toBe('My story survives.');});
+ it('retains valid legacy imported feedback and recalculates its total',()=>{const result=api.validateStoryForgeImport({_storyForgeVersion:2,storyTitle:'Story',paragraphs:[{id:'p1',text:'My story'}],gradingResult:{scores:[{criteria:'Story',score:'4/5'}],feedback:{glow:'Clear',grow:'More detail'},totalScore:'999'}});expect(result.hasReviewData).toBe(true);expect(result.review.gradingResult.totalScore).toBe('4/5');});
+});

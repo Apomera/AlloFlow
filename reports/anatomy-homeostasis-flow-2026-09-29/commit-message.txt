@@ -1,0 +1,5 @@
+Refine anatomy homeostasis learning and imaging guidance
+
+Keep Homeostasis predictions and retrieval answers aligned with the lesson state, and clarify imaging plane labels and geometric measurements.
+
+Validate focused regressions, browser interaction, responsive layouts, and accessibility.

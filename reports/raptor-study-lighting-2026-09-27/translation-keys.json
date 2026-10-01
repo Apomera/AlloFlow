@@ -1,0 +1,14 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    { "key": "stem.raptorhunt.study_light", "fallback": "Studio light" },
+    { "key": "stem.raptorhunt.study_light_soft", "fallback": "Soft · balanced detail" },
+    { "key": "stem.raptorhunt.study_light_side", "fallback": "Side · feather texture" },
+    { "key": "stem.raptorhunt.study_light_rim", "fallback": "Rim · outline" },
+    { "key": "stem.raptorhunt.study_light_help", "fallback": "Choose Studio to adjust the light. Side light reveals surface texture; rim light traces the outline." },
+    { "key": "stem.raptorhunt.study_side_light_label", "fallback": "Studio side lighting" },
+    { "key": "stem.raptorhunt.study_rim_light_label", "fallback": "Studio rim lighting" },
+    { "key": "stem.raptorhunt.study_lights_differ", "fallback": "These moments use different studio lights. Highlights and shadows can change which details stand out. Use Match saved view to compare under the same light." },
+    { "key": "stem.raptorhunt.study_light_matched_announced", "fallback": "View and lighting matched to moment A. Flight remains frozen." }
+  ]
+}

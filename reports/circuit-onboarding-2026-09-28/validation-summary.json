@@ -1,0 +1,159 @@
+{
+  "verifiedAt": "2026-09-29T03:42:26.676Z",
+  "source": {
+    "path": "stem_lab/stem_tool_circuit.js",
+    "sha256": "8bd4f6d605e0180e5147a0e7cf70f07943800ffe16aabcdcdee23a2a9ef39191",
+    "mirror": "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+    "mirrorMatches": true
+  },
+  "regression": {
+    "scope": "Affected onboarding, learning, targets, history, accessibility, and Simple circuit suites",
+    "method": "Use the latest result for each file. Ten suites passed in the initial run; the six setup-timeout suites and ten missing suites were rerun with one worker. The final narrow focus change was followed by another run of the affected learning and onboarding suites and the complete browser workflow checks.",
+    "files": 26,
+    "total": 208,
+    "passed": 208,
+    "failed": 0,
+    "pending": 0,
+    "suites": [
+      {
+        "file": "tests/circuit_onboarding.test.js",
+        "resultFile": "regression-focus.json",
+        "passed": 5
+      },
+      {
+        "file": "tests/circuit_guided_journey.test.js",
+        "resultFile": "regression-focus.json",
+        "passed": 6
+      },
+      {
+        "file": "tests/circuit_workbench_guide.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 5
+      },
+      {
+        "file": "tests/circuit_challenge_engagement.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 17
+      },
+      {
+        "file": "tests/circuit_learning.test.js",
+        "resultFile": "regression-focus.json",
+        "passed": 10
+      },
+      {
+        "file": "tests/circuit_learning_regressions.test.js",
+        "resultFile": "regression-focus.json",
+        "passed": 12
+      },
+      {
+        "file": "tests/circuit_investigation.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 25
+      },
+      {
+        "file": "tests/circuit_reorder_parts.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 9
+      },
+      {
+        "file": "tests/circuit_a11y.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 3
+      },
+      {
+        "file": "tests/circuit_svg_alternatives_a11y.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_workspace_tabs_a11y.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 3
+      },
+      {
+        "file": "tests/circuit_localization.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_snapshots.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 3
+      },
+      {
+        "file": "tests/circuit_reference_workflows.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 11
+      },
+      {
+        "file": "tests/circuit_confirmation_dialog_a11y.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 5
+      },
+      {
+        "file": "tests/circuit_form_labels_a11y.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_reduced_motion_a11y.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_canvas_alternative_a11y.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 3
+      },
+      {
+        "file": "tests/circuit_table_semantics_a11y.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_ai_tutor.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 17
+      },
+      {
+        "file": "tests/circuit_files.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 20
+      },
+      {
+        "file": "tests/circuit_model.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 14
+      },
+      {
+        "file": "tests/circuit_panels_smoke.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_image_export.test.js",
+        "resultFile": "regression-rerun.json",
+        "passed": 5
+      },
+      {
+        "file": "tests/circuit_meter_safety.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 4
+      },
+      {
+        "file": "tests/circuit_probe_practice.test.js",
+        "resultFile": "regression-initial.json",
+        "passed": 7
+      }
+    ]
+  },
+  "browser": {
+    "workflows": 4,
+    "axeScans": 4,
+    "violations": 0,
+    "layoutChecks": 12,
+    "pageErrors": 0
+  },
+  "syntaxCheck": "passed",
+  "patchWhitespaceCheck": "passed"
+}

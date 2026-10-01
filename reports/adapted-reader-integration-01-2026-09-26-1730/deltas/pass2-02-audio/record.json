@@ -1,0 +1,71 @@
+{
+  "at": "2026-09-26T23:37:59.134Z",
+  "label": "pass2-02-audio",
+  "patch": "b69ac58192d138884d14a0e445929cf3d0a68248c0c5723b51cebad39deddeeb",
+  "plans": [
+    {
+      "target": "karaoke_audio_store_module.js",
+      "targets": [
+        "karaoke_audio_store_module.js"
+      ],
+      "before": "5f7c36d96c3d9c713da7f34cc95ec96ac46b0c775cca6e35a0c1b65a3460316e",
+      "after": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "changed": true
+    },
+    {
+      "target": "read_aloud_audio_service_source.jsx",
+      "targets": [
+        "read_aloud_audio_service_source.jsx"
+      ],
+      "before": "520d6cf0661453c288e8935ec3a0f3209ce96e4f88b7fbdeb622b7610b0b9df7",
+      "after": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "changed": true
+    },
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "84fb40614036007b195612810721ed8617ef4a3df176a62fd53994c2fdd73b8a",
+      "after": "653d66d3278c0c4680b658611558411263e80e7d2a52c6c6a3420e6af02b3f50",
+      "changed": true
+    },
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "dec2d522cccae1e7bb5baf676d3dc8bdf780eda5730443f3e19c4e0d46dd71e3",
+      "after": "f8f611a6894a9cf58e0ce976d871686521c3608a737751dfa7311112f52e381b",
+      "changed": true
+    },
+    {
+      "target": "tests/read_aloud_recovery.test.js",
+      "targets": [
+        "tests/read_aloud_recovery.test.js"
+      ],
+      "before": null,
+      "after": "318a3002473807beb1d4bf10e16e0de855aa1951858fd3f28c649f366b8c9587",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_audio_readiness.test.js",
+      "targets": [
+        "tests/reader_audio_readiness.test.js"
+      ],
+      "before": "aae158ebb8895a5e7848f637667739f50d74bab4f9c5b04dcd2a70efe1d3ff75",
+      "after": "80030c68a40d78608132f87f21907289b2f44c642fc735f09ac76f0f404990d7",
+      "changed": true
+    },
+    {
+      "target": "tests/browser/audio_readiness.cjs",
+      "targets": [
+        "tests/browser/audio_readiness.cjs"
+      ],
+      "before": "cf341e87d599dd262bd7ac06051b1ad25b398080546a09c8f43694c92869be5e",
+      "after": "76afd7f61e250067b0c0c4119a426129776e3ab53898caa613ee78d8b0b8d3c5",
+      "changed": true
+    }
+  ]
+}

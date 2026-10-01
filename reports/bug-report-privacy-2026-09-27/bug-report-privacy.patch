@@ -1,0 +1,1770 @@
+diff --git a/error_reporter_module.js b/error_reporter_module.js
+index a5e88db..b81a71b 100644
+--- a/error_reporter_module.js
++++ b/error_reporter_module.js
+@@ -1,7 +1,7 @@
+ /**
+  * AlloFlow Error Reporter Module
+  *
+- * In-app error capture + one-click bug report. Solves the problem that
++ * In-app error capture + reviewed district bug reporting. Solves the problem that
+  * users in Canvas (or any LMS embed) can't easily access browser DevTools,
+  * and most teachers/students don't know F12 exists.
+  *
+@@ -10,9 +10,9 @@
+  *   badge in the bottom-right ONLY after at least one error is captured.
+  * - Clicking the badge opens a modal with the captured log + metadata
+  *   (URL, user agent, viewport size, timestamps).
+- * - "Send to Developers" pre-fills a Google Form with the report and opens it
+- *   in a new tab so the user reviews before submitting (privacy-respecting
+- *   — no silent fetch).
++ * - External reporting is disabled unless a district gateway is configured.
++ * - Reports contain only reviewed, manually entered fields; captured logs stay local.
++ * - Submission failures never fall back to another destination.
+  *
+  * Capture policy (default):
+  *   ✓ Uncaught Errors (window.onerror)
+@@ -37,18 +37,152 @@
+     return;
+   }
+ 
+-  // ── Google Form configuration (extracted from FB_PUBLIC_LOAD_DATA_) ──
+-  var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform?usp=pp_url';
+-  var ENTRY_TYPE   = '640908447';   // Type of Issue (Bug Report / Feature Request / Other)
+-  var ENTRY_WHAT   = '234547532';   // What happened? (the error log)
+-  var ENTRY_STEPS  = '1969020676';  // Steps to Reproduce / What were you doing?
+-  var ENTRY_BROWSER = '937961519';  // Browser & Device
+-
+-  // Primary submit path: the community Cloudflare Worker → PRIVATE KV. Bug reports carry error
+-  // logs + free text that can include FERPA-sensitive data, so they go to private KV, NOT the
+-  // public repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
+-  // pre-filled Google Form (private responses Sheet) so a report is never lost.
+-  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
++  // Host-controlled path to an authenticated district gateway, never a public
++  // collector or a browser-held service credential. Missing config is local-only.
++  var reportDraft = null;
++  function reportingBase() {
++    var base = window.__alloBugReportBasePath;
++    if (location.protocol !== 'https:' || typeof base !== 'string' ||
++        !/^\/[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(base)) return null;
++    return base;
++  }
++  function reportPolicy(value) {
++    var id = function (v) { return typeof v === 'string' && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(v); };
++    try {
++      var notice = new URL(value.noticeUrl);
++      if (value.ok !== true || !id(value.districtId) || !id(value.policyId) ||
++          typeof value.destinationName !== 'string' || !value.destinationName.trim() || value.destinationName.length > 120 ||
++          typeof value.approvedUntil !== 'string' || !Number.isFinite(Date.parse(value.approvedUntil)) || Date.parse(value.approvedUntil) <= Date.now() ||
++          !Number.isInteger(value.retentionSeconds) || value.retentionSeconds < 60 || value.retentionSeconds > 2592000 ||
++          notice.protocol !== 'https:' || notice.username || notice.password || notice.hash) return null;
++      return { districtId: value.districtId, policyId: value.policyId, destinationName: value.destinationName,
++        noticeUrl: notice.href, approvedUntil: value.approvedUntil, retentionSeconds: value.retentionSeconds };
++    } catch (_) { return null; }
++  }
++  function reportFetch(draft, suffix, options) {
++    if (reportingBase() !== draft.base || !draft.base) return Promise.reject(new Error('reporting-unavailable'));
++    return fetch(draft.base + suffix, Object.assign({
++      credentials: 'same-origin', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
++      signal: draft.controller.signal
++    }, options));
++  }
++  function renderReportDraft() {
++    if (!panel || !reportDraft) return;
++    var focusedId = document.activeElement && document.activeElement.id;
++    panel.innerHTML = reportDraftHtml();
++    wirePanelHandlers();
++    var target = focusedId && document.getElementById(focusedId);
++    if (target && !target.disabled) target.focus();
++    else document.getElementById('aer-report-status').focus();
++  }
++  function startReportDraft() {
++    var base = reportingBase();
++    reportDraft = { base: base, summary: '', steps: '', category: 'other', policy: null,
++      preview: null, status: base ? 'Checking reporting availability…' : 'External reporting is disabled. Contact your district support team.',
++      loading: !!base, sending: false, sent: false, controller: new AbortController() };
++    var draft = reportDraft;
++    renderReportDraft();
++    var close = document.getElementById('aer-report-close');
++    if (close) close.focus();
++    if (!base) return;
++    reportFetch(draft, '/policy', { method: 'GET', headers: { Accept: 'application/json' } })
++      .then(function (r) { if (!r.ok) throw new Error('policy-unavailable'); return r.json(); })
++      .then(function (data) {
++        if (reportDraft !== draft || !panel) return;
++        draft.policy = reportPolicy(data);
++        draft.loading = false;
++        draft.status = draft.policy ? '' : 'External reporting is unavailable. Contact your district support team.';
++        renderReportDraft();
++        var summary = document.getElementById('aer-report-summary');
++        if (summary) summary.focus();
++      }).catch(function () {
++        if (reportDraft !== draft || !panel) return;
++        draft.loading = false;
++        draft.status = 'External reporting is unavailable. Contact your district support team.';
++        renderReportDraft();
++      });
++  }
++  function reportDraftHtml() {
++    var d = reportDraft, p = d.policy;
++    var retention = p && p.retentionSeconds;
++    var retentionUnit = retention % 86400 === 0 ? 86400 : retention % 3600 === 0 ? 3600 : retention % 60 === 0 ? 60 : 1;
++    var retentionLabel = retentionUnit === 86400 ? 'day' : retentionUnit === 3600 ? 'hour' : retentionUnit === 60 ? 'minute' : 'second';
++    var style = 'display:block;width:100%;box-sizing:border-box;margin:6px 0 14px;padding:10px;border:1px solid #64748b;border-radius:6px;font:14px/1.5 system-ui,sans-serif;';
++    var button = 'padding:10px 14px;min-height:44px;border:1px solid #475569;border-radius:6px;background:#fff;color:#0f172a;font:600 14px system-ui,sans-serif;';
++    var body = '<p>Captured logs, URLs, student records, and diagnostic traces are not attached. Describe the software problem without student names or records.</p>';
++    if (p) body += '<p><strong>Destination:</strong> ' + escapeHtml(p.destinationName) +
++      '<br><strong>Report retention:</strong> ' + escapeHtml(String(retention / retentionUnit)) + ' ' + retentionLabel + (retention === retentionUnit ? '' : 's') +
++      '. <a href="' + escapeHtml(p.noticeUrl) + '" target="_blank" rel="noopener noreferrer">District reporting notice</a></p>';
++    if (p && !d.preview && !d.sent) {
++      body += '<label for="aer-report-category">Problem area</label><select id="aer-report-category" style="' + style + '">' +
++        ['reading', 'audio', 'navigation', 'export', 'other'].map(function (v) { return '<option value="' + v + '"' + (d.category === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') +
++        '</select><label for="aer-report-summary">What went wrong?</label><textarea id="aer-report-summary" maxlength="2000" rows="3" style="' + style + '">' + escapeHtml(d.summary) +
++        '</textarea><label for="aer-report-steps">Steps to reproduce (optional)</label><textarea id="aer-report-steps" maxlength="4000" rows="4" style="' + style + '">' + escapeHtml(d.steps) +
++        '</textarea><button id="aer-report-review" type="button" style="' + button + '">Review report</button>';
++    } else if (d.preview && !d.sent) {
++      body += '<h3>Review your report</h3><dl style="white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;padding:12px;">' +
++        '<dt>Problem area</dt><dd id="aer-preview-category">' + escapeHtml(d.preview.category) + '</dd>' +
++        '<dt>What went wrong?</dt><dd id="aer-preview-summary">' + escapeHtml(d.preview.summary) + '</dd>' +
++        '<dt>Steps to reproduce</dt><dd id="aer-preview-steps">' + escapeHtml(d.preview.steps) + '</dd></dl>' +
++        '<label style="display:block;margin:14px 0;"><input id="aer-report-reviewed" type="checkbox"' + (d.sending ? ' disabled' : '') + '> I reviewed this report and removed student information.</label>' +
++        '<p>This review does not replace district authorization.</p>' +
++        '<button id="aer-report-edit" type="button"' + (d.sending ? ' disabled' : '') + ' style="' + button + '">Edit</button> ' +
++        '<button id="aer-report-submit" type="button" disabled style="' + button + '">' + (d.sending ? 'Sending…' : 'Send report') + '</button>';
++    }
++    return '<section style="background:#fff;color:#0f172a;border-radius:12px;width:min(680px,100%);max-height:88vh;overflow:auto;padding:24px;box-sizing:border-box;font:14px/1.5 system-ui,sans-serif;">' +
++      '<h2>Report a software problem</h2>' + body + '<p id="aer-report-status" role="status" aria-live="polite" tabindex="-1">' + escapeHtml(d.status) +
++      '</p><button id="aer-report-close" type="button" style="' + button + '">Close</button></section>';
++  }
++  function wireReportDraft() {
++    var d = reportDraft;
++    var get = function (id) { return document.getElementById(id); };
++    get('aer-report-close').onclick = closePanel;
++    if (get('aer-report-summary')) get('aer-report-summary').oninput = function (event) { d.summary = event.target.value; };
++    if (get('aer-report-steps')) get('aer-report-steps').oninput = function (event) { d.steps = event.target.value; };
++    if (get('aer-report-category')) get('aer-report-category').onchange = function (event) { d.category = event.target.value; };
++    if (get('aer-report-review')) get('aer-report-review').onclick = function () {
++      if (!d.summary.trim()) { d.status = 'Describe the software problem before reviewing.'; renderReportDraft(); get('aer-report-summary').focus(); return; }
++      d.preview = { schema_version: '2.0', district_id: d.policy.districtId, policy_id: d.policy.policyId,
++        retention_seconds: d.policy.retentionSeconds, reviewed: true, category: d.category, summary: d.summary.trim(), steps: d.steps.trim() };
++      d.status = '';
++      renderReportDraft();
++      get('aer-report-reviewed').focus();
++    };
++    if (get('aer-report-edit')) get('aer-report-edit').onclick = function () { d.preview = null; d.status = ''; renderReportDraft(); get('aer-report-summary').focus(); };
++    if (get('aer-report-reviewed')) get('aer-report-reviewed').onchange = function (event) { get('aer-report-submit').disabled = !event.target.checked || d.sending; };
++    if (get('aer-report-submit')) get('aer-report-submit').onclick = function () {
++      if (d.sending || !get('aer-report-reviewed').checked || !d.preview) return;
++      // Recheck live host configuration and expiry; the server independently checks
++      // the current district, policy, role, and retention for every submission.
++      if (!reportPolicy(Object.assign({ ok: true }, d.policy)) || reportingBase() !== d.base) {
++        d.status = 'Reporting authorization changed. Close this form and reopen it before sending.';
++        renderReportDraft(); return;
++      }
++      d.sending = true;
++      d.status = 'Sending to ' + d.policy.destinationName + '…';
++      renderReportDraft();
++      reportFetch(d, '/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AlloFlow-Report': '2' }, body: JSON.stringify(d.preview) })
++        .then(function (r) { return r.json().then(function (value) { return { status: r.status, value: value }; }); })
++        .then(function (result) {
++          if (reportDraft !== d || !panel) return;
++          d.sending = false;
++          if (result.status === 201 && result.value && result.value.ok === true) {
++            d.sent = true; d.preview = null; d.summary = ''; d.steps = '';
++            d.status = 'Report sent. Your district support team can arrange deletion.';
++          } else if (result.status === 422) {
++            d.preview = null; d.status = 'Remove personal information, links, and credentials, then review again.';
++          } else {
++            d.status = 'Sending was not confirmed. Your draft remains here. Check with district support before retrying.';
++          }
++          renderReportDraft();
++        }).catch(function () {
++          if (reportDraft !== d || !panel) return;
++          d.sending = false;
++          d.status = 'Sending was not confirmed. Your draft remains here. Check with district support before retrying.';
++          renderReportDraft();
++        });
++    };
++  }
+ 
+   var STORAGE_KEY = 'alloflow_error_log';
+   var STORAGE_PREFS = 'alloflow_error_log_prefs';
+@@ -337,14 +471,6 @@
+     };
+   }
+ 
+-  function buildPrefilledFormUrl() {
+-    var p = buildReportPayload();
+-    return FORM_BASE +
+-      '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
+-      '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
+-      '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
+-      '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
+-  }
+ 
+   // ── DOM UI ──
+   var badge = null;
+@@ -680,6 +806,7 @@
+   }
+ 
+   function panelHtml() {
++    if (reportDraft) return reportDraftHtml();
+     var visible = buffer.filter(function (e) {
+       return prefs.filter === 'all' ? true : (e.level === 'error' || (prefs.filter === 'errors_warns' && e.level === 'warn'));
+     });
+@@ -721,9 +848,9 @@
+       // Footer / submit
+       '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
+         '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;flex:1;min-width:200px;">' +
+-          'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
++          'Review a separate report for district support. Captured logs are not attached.' +
+         '</p>' +
+-        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
++        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">Review a report</button>' +
+       '</footer>';
+     } else if (activeTab === 'session') {
+       body = sessionTabHtml();
+@@ -739,7 +866,7 @@
+         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
+           '<div>' +
+             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
+-            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
++            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Captured logs remain local unless you copy them.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
+             '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
+           '</div>' +
+           '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
+@@ -784,16 +911,26 @@
+     // ESC closes
+     panel.addEventListener('keydown', function (ev) {
+       if (ev.key === 'Escape') { ev.preventDefault(); closePanel(); }
++      if (reportDraft && ev.key === 'Tab') {
++        var focusable = Array.prototype.slice.call(panel.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]'));
++        // Preserve document order even in hosts that group selector-list results.
++        focusable.sort(function (a, b) { return a.compareDocumentPosition(b) & 2 ? 1 : -1; });
++        if (!focusable.length) return;
++        var first = focusable[0], last = focusable[focusable.length - 1];
++        if (ev.shiftKey && (document.activeElement === first || !Array.prototype.includes.call(focusable, document.activeElement))) { ev.preventDefault(); last.focus(); }
++        else if (!ev.shiftKey && (document.activeElement === last || !Array.prototype.includes.call(focusable, document.activeElement))) { ev.preventDefault(); first.focus(); }
++      }
+     });
+   }
+ 
+   function closePanel() {
++    if (reportDraft) { reportDraft.controller.abort(); reportDraft = null; }
+     if (panel) { panel.remove(); panel = null; }
+     if (badge) badge.focus();
+   }
+ 
+   function refreshPanelIfOpen() {
+-    if (!panel) return;
++    if (!panel || reportDraft) return;
+     panel.innerHTML = panelHtml();
+     wirePanelHandlers();
+   }
+@@ -829,6 +966,7 @@
+   }
+ 
+   function wirePanelHandlers() {
++    if (reportDraft) { wireReportDraft(); return; }
+     var $ = function (id) { return document.getElementById(id); };
+     if ($('aer-close')) $('aer-close').onclick = closePanel;
+     if ($('aer-tab-errors')) $('aer-tab-errors').onclick = function () {
+@@ -988,43 +1126,7 @@
+         copyFallback(text);
+       }
+     };
+-    if ($('aer-send')) $('aer-send').onclick = function () {
+-      var btn = $('aer-send');
+-      // Fallback: the original Google-Form path (private responses Sheet), used if the worker POST fails.
+-      var openFormFallback = function () {
+-        try {
+-          var url = buildPrefilledFormUrl();
+-          // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
+-          // If we exceed, drop stack traces from older entries.
+-          if (url.length > 7500) {
+-            var p = buildReportPayload();
+-            p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
+-            url = FORM_BASE +
+-              '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
+-              '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
+-              '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
+-              '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
+-          }
+-          var win = window.open(url, '_blank', 'noopener,noreferrer');
+-          if (!win) {
+-            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(function () {}); }
+-            if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
+-          }
+-        } catch (e) { origConsoleError('[ErrorReporter] Submit failed:', e); }
+-      };
+-      // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
+-      var p = buildReportPayload();
+-      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
+-      btn.disabled = true; btn.textContent = 'Sending…';
+-      var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
+-      var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
+-      try {
+-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+-          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
+-          .then(function (res) { if (res.ok && res.j && res.j.ok) done('Sent ✓ Thank you!', '#15803d'); else fail(); })
+-          .catch(function () { fail(); });
+-      } catch (_) { fail(); }
+-    };
++    if ($('aer-send')) $('aer-send').onclick = startReportDraft;
+   }
+ 
+   // ── Public API on window.AlloModules ──
+diff --git a/desktop/web-app/public/error_reporter_module.js b/desktop/web-app/public/error_reporter_module.js
+index a5e88db..b81a71b 100644
+--- a/desktop/web-app/public/error_reporter_module.js
++++ b/desktop/web-app/public/error_reporter_module.js
+@@ -1,7 +1,7 @@
+ /**
+  * AlloFlow Error Reporter Module
+  *
+- * In-app error capture + one-click bug report. Solves the problem that
++ * In-app error capture + reviewed district bug reporting. Solves the problem that
+  * users in Canvas (or any LMS embed) can't easily access browser DevTools,
+  * and most teachers/students don't know F12 exists.
+  *
+@@ -10,9 +10,9 @@
+  *   badge in the bottom-right ONLY after at least one error is captured.
+  * - Clicking the badge opens a modal with the captured log + metadata
+  *   (URL, user agent, viewport size, timestamps).
+- * - "Send to Developers" pre-fills a Google Form with the report and opens it
+- *   in a new tab so the user reviews before submitting (privacy-respecting
+- *   — no silent fetch).
++ * - External reporting is disabled unless a district gateway is configured.
++ * - Reports contain only reviewed, manually entered fields; captured logs stay local.
++ * - Submission failures never fall back to another destination.
+  *
+  * Capture policy (default):
+  *   ✓ Uncaught Errors (window.onerror)
+@@ -37,18 +37,152 @@
+     return;
+   }
+ 
+-  // ── Google Form configuration (extracted from FB_PUBLIC_LOAD_DATA_) ──
+-  var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform?usp=pp_url';
+-  var ENTRY_TYPE   = '640908447';   // Type of Issue (Bug Report / Feature Request / Other)
+-  var ENTRY_WHAT   = '234547532';   // What happened? (the error log)
+-  var ENTRY_STEPS  = '1969020676';  // Steps to Reproduce / What were you doing?
+-  var ENTRY_BROWSER = '937961519';  // Browser & Device
+-
+-  // Primary submit path: the community Cloudflare Worker → PRIVATE KV. Bug reports carry error
+-  // logs + free text that can include FERPA-sensitive data, so they go to private KV, NOT the
+-  // public repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
+-  // pre-filled Google Form (private responses Sheet) so a report is never lost.
+-  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
++  // Host-controlled path to an authenticated district gateway, never a public
++  // collector or a browser-held service credential. Missing config is local-only.
++  var reportDraft = null;
++  function reportingBase() {
++    var base = window.__alloBugReportBasePath;
++    if (location.protocol !== 'https:' || typeof base !== 'string' ||
++        !/^\/[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(base)) return null;
++    return base;
++  }
++  function reportPolicy(value) {
++    var id = function (v) { return typeof v === 'string' && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(v); };
++    try {
++      var notice = new URL(value.noticeUrl);
++      if (value.ok !== true || !id(value.districtId) || !id(value.policyId) ||
++          typeof value.destinationName !== 'string' || !value.destinationName.trim() || value.destinationName.length > 120 ||
++          typeof value.approvedUntil !== 'string' || !Number.isFinite(Date.parse(value.approvedUntil)) || Date.parse(value.approvedUntil) <= Date.now() ||
++          !Number.isInteger(value.retentionSeconds) || value.retentionSeconds < 60 || value.retentionSeconds > 2592000 ||
++          notice.protocol !== 'https:' || notice.username || notice.password || notice.hash) return null;
++      return { districtId: value.districtId, policyId: value.policyId, destinationName: value.destinationName,
++        noticeUrl: notice.href, approvedUntil: value.approvedUntil, retentionSeconds: value.retentionSeconds };
++    } catch (_) { return null; }
++  }
++  function reportFetch(draft, suffix, options) {
++    if (reportingBase() !== draft.base || !draft.base) return Promise.reject(new Error('reporting-unavailable'));
++    return fetch(draft.base + suffix, Object.assign({
++      credentials: 'same-origin', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
++      signal: draft.controller.signal
++    }, options));
++  }
++  function renderReportDraft() {
++    if (!panel || !reportDraft) return;
++    var focusedId = document.activeElement && document.activeElement.id;
++    panel.innerHTML = reportDraftHtml();
++    wirePanelHandlers();
++    var target = focusedId && document.getElementById(focusedId);
++    if (target && !target.disabled) target.focus();
++    else document.getElementById('aer-report-status').focus();
++  }
++  function startReportDraft() {
++    var base = reportingBase();
++    reportDraft = { base: base, summary: '', steps: '', category: 'other', policy: null,
++      preview: null, status: base ? 'Checking reporting availability…' : 'External reporting is disabled. Contact your district support team.',
++      loading: !!base, sending: false, sent: false, controller: new AbortController() };
++    var draft = reportDraft;
++    renderReportDraft();
++    var close = document.getElementById('aer-report-close');
++    if (close) close.focus();
++    if (!base) return;
++    reportFetch(draft, '/policy', { method: 'GET', headers: { Accept: 'application/json' } })
++      .then(function (r) { if (!r.ok) throw new Error('policy-unavailable'); return r.json(); })
++      .then(function (data) {
++        if (reportDraft !== draft || !panel) return;
++        draft.policy = reportPolicy(data);
++        draft.loading = false;
++        draft.status = draft.policy ? '' : 'External reporting is unavailable. Contact your district support team.';
++        renderReportDraft();
++        var summary = document.getElementById('aer-report-summary');
++        if (summary) summary.focus();
++      }).catch(function () {
++        if (reportDraft !== draft || !panel) return;
++        draft.loading = false;
++        draft.status = 'External reporting is unavailable. Contact your district support team.';
++        renderReportDraft();
++      });
++  }
++  function reportDraftHtml() {
++    var d = reportDraft, p = d.policy;
++    var retention = p && p.retentionSeconds;
++    var retentionUnit = retention % 86400 === 0 ? 86400 : retention % 3600 === 0 ? 3600 : retention % 60 === 0 ? 60 : 1;
++    var retentionLabel = retentionUnit === 86400 ? 'day' : retentionUnit === 3600 ? 'hour' : retentionUnit === 60 ? 'minute' : 'second';
++    var style = 'display:block;width:100%;box-sizing:border-box;margin:6px 0 14px;padding:10px;border:1px solid #64748b;border-radius:6px;font:14px/1.5 system-ui,sans-serif;';
++    var button = 'padding:10px 14px;min-height:44px;border:1px solid #475569;border-radius:6px;background:#fff;color:#0f172a;font:600 14px system-ui,sans-serif;';
++    var body = '<p>Captured logs, URLs, student records, and diagnostic traces are not attached. Describe the software problem without student names or records.</p>';
++    if (p) body += '<p><strong>Destination:</strong> ' + escapeHtml(p.destinationName) +
++      '<br><strong>Report retention:</strong> ' + escapeHtml(String(retention / retentionUnit)) + ' ' + retentionLabel + (retention === retentionUnit ? '' : 's') +
++      '. <a href="' + escapeHtml(p.noticeUrl) + '" target="_blank" rel="noopener noreferrer">District reporting notice</a></p>';
++    if (p && !d.preview && !d.sent) {
++      body += '<label for="aer-report-category">Problem area</label><select id="aer-report-category" style="' + style + '">' +
++        ['reading', 'audio', 'navigation', 'export', 'other'].map(function (v) { return '<option value="' + v + '"' + (d.category === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') +
++        '</select><label for="aer-report-summary">What went wrong?</label><textarea id="aer-report-summary" maxlength="2000" rows="3" style="' + style + '">' + escapeHtml(d.summary) +
++        '</textarea><label for="aer-report-steps">Steps to reproduce (optional)</label><textarea id="aer-report-steps" maxlength="4000" rows="4" style="' + style + '">' + escapeHtml(d.steps) +
++        '</textarea><button id="aer-report-review" type="button" style="' + button + '">Review report</button>';
++    } else if (d.preview && !d.sent) {
++      body += '<h3>Review your report</h3><dl style="white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;padding:12px;">' +
++        '<dt>Problem area</dt><dd id="aer-preview-category">' + escapeHtml(d.preview.category) + '</dd>' +
++        '<dt>What went wrong?</dt><dd id="aer-preview-summary">' + escapeHtml(d.preview.summary) + '</dd>' +
++        '<dt>Steps to reproduce</dt><dd id="aer-preview-steps">' + escapeHtml(d.preview.steps) + '</dd></dl>' +
++        '<label style="display:block;margin:14px 0;"><input id="aer-report-reviewed" type="checkbox"' + (d.sending ? ' disabled' : '') + '> I reviewed this report and removed student information.</label>' +
++        '<p>This review does not replace district authorization.</p>' +
++        '<button id="aer-report-edit" type="button"' + (d.sending ? ' disabled' : '') + ' style="' + button + '">Edit</button> ' +
++        '<button id="aer-report-submit" type="button" disabled style="' + button + '">' + (d.sending ? 'Sending…' : 'Send report') + '</button>';
++    }
++    return '<section style="background:#fff;color:#0f172a;border-radius:12px;width:min(680px,100%);max-height:88vh;overflow:auto;padding:24px;box-sizing:border-box;font:14px/1.5 system-ui,sans-serif;">' +
++      '<h2>Report a software problem</h2>' + body + '<p id="aer-report-status" role="status" aria-live="polite" tabindex="-1">' + escapeHtml(d.status) +
++      '</p><button id="aer-report-close" type="button" style="' + button + '">Close</button></section>';
++  }
++  function wireReportDraft() {
++    var d = reportDraft;
++    var get = function (id) { return document.getElementById(id); };
++    get('aer-report-close').onclick = closePanel;
++    if (get('aer-report-summary')) get('aer-report-summary').oninput = function (event) { d.summary = event.target.value; };
++    if (get('aer-report-steps')) get('aer-report-steps').oninput = function (event) { d.steps = event.target.value; };
++    if (get('aer-report-category')) get('aer-report-category').onchange = function (event) { d.category = event.target.value; };
++    if (get('aer-report-review')) get('aer-report-review').onclick = function () {
++      if (!d.summary.trim()) { d.status = 'Describe the software problem before reviewing.'; renderReportDraft(); get('aer-report-summary').focus(); return; }
++      d.preview = { schema_version: '2.0', district_id: d.policy.districtId, policy_id: d.policy.policyId,
++        retention_seconds: d.policy.retentionSeconds, reviewed: true, category: d.category, summary: d.summary.trim(), steps: d.steps.trim() };
++      d.status = '';
++      renderReportDraft();
++      get('aer-report-reviewed').focus();
++    };
++    if (get('aer-report-edit')) get('aer-report-edit').onclick = function () { d.preview = null; d.status = ''; renderReportDraft(); get('aer-report-summary').focus(); };
++    if (get('aer-report-reviewed')) get('aer-report-reviewed').onchange = function (event) { get('aer-report-submit').disabled = !event.target.checked || d.sending; };
++    if (get('aer-report-submit')) get('aer-report-submit').onclick = function () {
++      if (d.sending || !get('aer-report-reviewed').checked || !d.preview) return;
++      // Recheck live host configuration and expiry; the server independently checks
++      // the current district, policy, role, and retention for every submission.
++      if (!reportPolicy(Object.assign({ ok: true }, d.policy)) || reportingBase() !== d.base) {
++        d.status = 'Reporting authorization changed. Close this form and reopen it before sending.';
++        renderReportDraft(); return;
++      }
++      d.sending = true;
++      d.status = 'Sending to ' + d.policy.destinationName + '…';
++      renderReportDraft();
++      reportFetch(d, '/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AlloFlow-Report': '2' }, body: JSON.stringify(d.preview) })
++        .then(function (r) { return r.json().then(function (value) { return { status: r.status, value: value }; }); })
++        .then(function (result) {
++          if (reportDraft !== d || !panel) return;
++          d.sending = false;
++          if (result.status === 201 && result.value && result.value.ok === true) {
++            d.sent = true; d.preview = null; d.summary = ''; d.steps = '';
++            d.status = 'Report sent. Your district support team can arrange deletion.';
++          } else if (result.status === 422) {
++            d.preview = null; d.status = 'Remove personal information, links, and credentials, then review again.';
++          } else {
++            d.status = 'Sending was not confirmed. Your draft remains here. Check with district support before retrying.';
++          }
++          renderReportDraft();
++        }).catch(function () {
++          if (reportDraft !== d || !panel) return;
++          d.sending = false;
++          d.status = 'Sending was not confirmed. Your draft remains here. Check with district support before retrying.';
++          renderReportDraft();
++        });
++    };
++  }
+ 
+   var STORAGE_KEY = 'alloflow_error_log';
+   var STORAGE_PREFS = 'alloflow_error_log_prefs';
+@@ -337,14 +471,6 @@
+     };
+   }
+ 
+-  function buildPrefilledFormUrl() {
+-    var p = buildReportPayload();
+-    return FORM_BASE +
+-      '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
+-      '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
+-      '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
+-      '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
+-  }
+ 
+   // ── DOM UI ──
+   var badge = null;
+@@ -680,6 +806,7 @@
+   }
+ 
+   function panelHtml() {
++    if (reportDraft) return reportDraftHtml();
+     var visible = buffer.filter(function (e) {
+       return prefs.filter === 'all' ? true : (e.level === 'error' || (prefs.filter === 'errors_warns' && e.level === 'warn'));
+     });
+@@ -721,9 +848,9 @@
+       // Footer / submit
+       '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
+         '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;flex:1;min-width:200px;">' +
+-          'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
++          'Review a separate report for district support. Captured logs are not attached.' +
+         '</p>' +
+-        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
++        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">Review a report</button>' +
+       '</footer>';
+     } else if (activeTab === 'session') {
+       body = sessionTabHtml();
+@@ -739,7 +866,7 @@
+         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
+           '<div>' +
+             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
+-            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
++            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Captured logs remain local unless you copy them.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
+             '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
+           '</div>' +
+           '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
+@@ -784,16 +911,26 @@
+     // ESC closes
+     panel.addEventListener('keydown', function (ev) {
+       if (ev.key === 'Escape') { ev.preventDefault(); closePanel(); }
++      if (reportDraft && ev.key === 'Tab') {
++        var focusable = Array.prototype.slice.call(panel.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]'));
++        // Preserve document order even in hosts that group selector-list results.
++        focusable.sort(function (a, b) { return a.compareDocumentPosition(b) & 2 ? 1 : -1; });
++        if (!focusable.length) return;
++        var first = focusable[0], last = focusable[focusable.length - 1];
++        if (ev.shiftKey && (document.activeElement === first || !Array.prototype.includes.call(focusable, document.activeElement))) { ev.preventDefault(); last.focus(); }
++        else if (!ev.shiftKey && (document.activeElement === last || !Array.prototype.includes.call(focusable, document.activeElement))) { ev.preventDefault(); first.focus(); }
++      }
+     });
+   }
+ 
+   function closePanel() {
++    if (reportDraft) { reportDraft.controller.abort(); reportDraft = null; }
+     if (panel) { panel.remove(); panel = null; }
+     if (badge) badge.focus();
+   }
+ 
+   function refreshPanelIfOpen() {
+-    if (!panel) return;
++    if (!panel || reportDraft) return;
+     panel.innerHTML = panelHtml();
+     wirePanelHandlers();
+   }
+@@ -829,6 +966,7 @@
+   }
+ 
+   function wirePanelHandlers() {
++    if (reportDraft) { wireReportDraft(); return; }
+     var $ = function (id) { return document.getElementById(id); };
+     if ($('aer-close')) $('aer-close').onclick = closePanel;
+     if ($('aer-tab-errors')) $('aer-tab-errors').onclick = function () {
+@@ -988,43 +1126,7 @@
+         copyFallback(text);
+       }
+     };
+-    if ($('aer-send')) $('aer-send').onclick = function () {
+-      var btn = $('aer-send');
+-      // Fallback: the original Google-Form path (private responses Sheet), used if the worker POST fails.
+-      var openFormFallback = function () {
+-        try {
+-          var url = buildPrefilledFormUrl();
+-          // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
+-          // If we exceed, drop stack traces from older entries.
+-          if (url.length > 7500) {
+-            var p = buildReportPayload();
+-            p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
+-            url = FORM_BASE +
+-              '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
+-              '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
+-              '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
+-              '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
+-          }
+-          var win = window.open(url, '_blank', 'noopener,noreferrer');
+-          if (!win) {
+-            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(function () {}); }
+-            if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
+-          }
+-        } catch (e) { origConsoleError('[ErrorReporter] Submit failed:', e); }
+-      };
+-      // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
+-      var p = buildReportPayload();
+-      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
+-      btn.disabled = true; btn.textContent = 'Sending…';
+-      var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
+-      var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
+-      try {
+-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+-          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
+-          .then(function (res) { if (res.ok && res.j && res.j.ok) done('Sent ✓ Thank you!', '#15803d'); else fail(); })
+-          .catch(function () { fail(); });
+-      } catch (_) { fail(); }
+-    };
++    if ($('aer-send')) $('aer-send').onclick = startReportDraft;
+   }
+ 
+   // ── Public API on window.AlloModules ──
+diff --git a/catalog/cloudflare-worker/src/index.js b/catalog/cloudflare-worker/src/index.js
+index 45779e0..79b1c7d 100644
+--- a/catalog/cloudflare-worker/src/index.js
++++ b/catalog/cloudflare-worker/src/index.js
+@@ -1,3 +1,5 @@
++import { handleBugReports } from './bug-reports.js';
++
+ /**
+  * AlloFlow Catalog Submission Worker
+  *
+@@ -20,7 +22,9 @@
+  *   POST /submitBug          accept a bug report (-> PRIVATE BUG_REPORTS KV)
+  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
+  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
+- *   GET  /bugs              token-gated bug-report reader
++ *   GET  /bugs              district-scoped report metadata (individual read credential)
++ *   GET, DELETE /bugs/:id    audited report read / deletion request
++ *   GET /bug-report-policy  current policy for the authenticated district gateway
+  *   GET  /pdSubmissions     token-gated PD-submission reader
+  *   GET  /pluginSubmissions token-gated plugin-submission reader (?source=1 to include code)
+  *   POST /issuePd           issue an Ed25519-signed PD completion attestation (opt-in)
+@@ -403,24 +407,6 @@ async function handleItemCorrectionSubmit(request, env) {
+   return jsonResponse({ ok: true, pack_id: record.pack_id, item_id: record.item_id, pii_findings_count: piiFindings.length }, 201);
+ }
+ 
+-// ── Bug reports → Cloudflare KV (PRIVATE, not GitHub) ──
+-// Unlike lessons/translations, bug reports carry error logs + free text that can include
+-// student-identifiable data (FERPA). The AlloFlow repo is PUBLIC, so these must NOT go to GitHub.
+-// They're stored in the private BUG_REPORTS KV namespace instead. Defense-in-depth PII scan still
+-// runs so findings are flagged. Read them via GET /bugs (token-gated) or `wrangler kv key list`.
+-// Requires a KV binding `BUG_REPORTS` in wrangler.toml. Read route requires the ADMIN_TOKEN secret.
+-
+-function validateBug(p) {
+-  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
+-  const what = typeof p.what === 'string' ? p.what : '';
+-  const steps = typeof p.steps === 'string' ? p.steps : '';
+-  if (!what.trim() && !steps.trim()) return 'Report needs a description (what/steps).';
+-  for (const [f, max] of [['type', 60], ['what', 16000], ['steps', 8000], ['browser', 500], ['url', 500]]) {
+-    if (p[f] != null && (typeof p[f] !== 'string' || p[f].length > max)) return `${f} must be a string up to ${max} chars.`;
+-  }
+-  return null;
+-}
+-
+ // ── PD module submissions → Cloudflare KV (PRIVATE, not GitHub) ──
+ // PD modules are educator-authored and may reference student/classroom detail, so
+ // like bug reports they are staged in PRIVATE KV (PD_SUBMISSIONS), NOT committed to
+@@ -816,59 +802,6 @@ async function handlePdSubmit(request, env) {
+   return jsonResponse({ ok: true, id, slug, module_content_digest: moduleContentDigest, pii_findings_count: piiFindings.length }, 201);
+ }
+ 
+-async function handleBugSubmit(request, env) {
+-  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing BUG_REPORTS KV binding.' }, 500);
+-  const contentType = request.headers.get('Content-Type') || '';
+-  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+-  const rawBody = await request.text();
+-  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+-  let p;
+-  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+-  const err = validateBug(p);
+-  if (err) return jsonResponse({ ok: false, error: err }, 400);
+-
+-  const piiFindings = scanForPii([p.what, p.steps].filter(Boolean).join('\n'));
+-  const submittedAt = new Date().toISOString();
+-  const record = {
+-    schema_version: '1.0',
+-    kind: 'bug_report',
+-    submitted_at: submittedAt,
+-    type: (p.type || 'Bug Report').slice(0, 60),
+-    what: (p.what || '').slice(0, 16000),
+-    steps: (p.steps || '').slice(0, 8000),
+-    browser: (p.browser || '').slice(0, 500),
+-    url: (p.url || '').slice(0, 500),
+-    pii_scan: { ran_server_side: true, findings: piiFindings },
+-    submitter: {
+-      ip_country: request.cf?.country || null,
+-      user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
+-    },
+-  };
+-  // Key sorts by time (13-digit epoch). No TTL — reports persist until manually purged.
+-  const id = `bug:${Date.now()}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+-  try {
+-    await env.BUG_REPORTS.put(id, JSON.stringify(record), {
+-      metadata: { submitted_at: submittedAt, pii: piiFindings.length > 0, country: record.submitter.ip_country },
+-    });
+-  } catch (e) {
+-    return jsonResponse({ ok: false, error: 'Could not store report: ' + e.message }, 502);
+-  }
+-  return jsonResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
+-}
+-
+-async function handleBugList(request, env, url) {
+-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /bugs (or use `wrangler kv key list`).' }, 501);
+-  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Missing BUG_REPORTS KV binding.' }, 500);
+-  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+-  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+-  const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit });
+-  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+-  const reports = [];
+-  for (const k of keys) { const v = await env.BUG_REPORTS.get(k); if (v) { try { reports.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
+-  return jsonResponse({ ok: true, count: reports.length, reports });
+-}
+-
+ async function handlePdList(request, env, url) {
+   if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501);
+   if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
+@@ -2091,6 +2024,9 @@ async function handleSearch(request, env, url) {
+ export default {
+   async fetch(request, env) {
+     const url = new URL(request.url);
++    if (url.pathname === '/submitBug' || url.pathname === '/bug-report-policy' || url.pathname === '/bugs' || url.pathname.startsWith('/bugs/')) {
++      return handleBugReports(request, env, url);
++    }
+ 
+     if (request.method === 'OPTIONS') {
+       return new Response(null, { status: 204, headers: corsHeaders });
+@@ -2119,18 +2055,10 @@ export default {
+       return handleItemCorrectionSubmit(request, env);
+     }
+ 
+-    if (request.method === 'POST' && url.pathname === '/submitBug') {
+-      return handleBugSubmit(request, env);
+-    }
+-
+     if (request.method === 'POST' && url.pathname === '/submitPd') {
+       return handlePdSubmit(request, env);
+     }
+ 
+-    if (request.method === 'GET' && url.pathname === '/bugs') {
+-      return handleBugList(request, env, url);
+-    }
+-
+     if (request.method === 'GET' && url.pathname === '/pdSubmissions') {
+       return handlePdList(request, env, url);
+     }
+diff --git a/catalog/cloudflare-worker/wrangler.toml b/catalog/cloudflare-worker/wrangler.toml
+index ef88c1d..1b710a0 100644
+--- a/catalog/cloudflare-worker/wrangler.toml
++++ b/catalog/cloudflare-worker/wrangler.toml
+@@ -11,6 +11,10 @@ compatibility_date = "2026-05-04"
+ GITHUB_OWNER = "Apomera"
+ GITHUB_REPO  = "AlloFlow"
+ GITHUB_BRANCH = "main"
++BUG_REPORTS_ENABLED = "false"
++# Reporting stays disabled until district approval, authenticated gateway,
++# BUG_REPORTS_POLICY, BUG_REPORTS_PRINCIPALS, and dedicated private report/audit
++# storage are configured. See BUG_REPORTING.md. Never put credentials in vars.
+ 
+ # OPTIONAL — reviewed PD credential adapter (POST /issuePd, /verifyPd, GET /pdIssuerKey).
+ # Keep every setting below unset until an authorized issuer assigns the identity,
+@@ -45,12 +49,11 @@ GITHUB_BRANCH = "main"
+ # optional: PD_SELF_PACED_KEY_ID, PD_SELF_PACED_ISSUER_NAME, PD_SELF_PACED_ISSUER_ID
+ # Never reuse reviewed signing keys or reviewed issuer identities for this profile.
+ 
+-# Private KV store for bug reports (POST /submitBug). These carry error logs + free
+-# text that can include student-identifiable data, so they go to PRIVATE KV — NOT the
+-# public GitHub repo (unlike lessons/translations). One-time setup:
+-#   npx wrangler kv namespace create BUG_REPORTS
+-# then paste the printed id below (and, optionally, create a preview namespace for dev).
+-# Optional: `npx wrangler secret put ADMIN_TOKEN` to enable the token-gated GET /bugs reader.
++# Existing legacy report namespace. New district deployments must bind a new,
++# approved namespace and a separate BUG_REPORT_AUDIT namespace before enabling.
++# This binding alone no longer enables collection or reading. ADMIN_TOKEN does
++# not authorize bug reports. Legacy records require a separately authorized purge.
++# See BUG_REPORTING.md; no live bindings are created by this change.
+ [[kv_namespaces]]
+ binding = "BUG_REPORTS"
+ id = "b8dddf6fa1404c088ab63376255e2620"
+diff --git a/catalog/cloudflare-worker/README.md b/catalog/cloudflare-worker/README.md
+index 0062b19..636975a 100644
+--- a/catalog/cloudflare-worker/README.md
++++ b/catalog/cloudflare-worker/README.md
+@@ -129,22 +129,9 @@ PII-rescans, commits one record to `translations/pending/<ts>-<lang>-<keyslug>.j
+ string suggestions), so public-repo storage is acceptable — same as lessons. Maintainer applies via
+ `node dev-tools/i18n/ingest_translation_feedback.cjs --apply`. No extra setup beyond the existing PAT.
+ 
+-### `POST /submitBug` → Cloudflare KV (PRIVATE)
+-Bug reports from the in-app error reporter. Validates `{what|steps, type?, browser?, url?}`, PII-rescans,
+-and stores the record in the **private** `BUG_REPORTS` KV namespace — **NOT** GitHub, because error
+-logs + free text can contain FERPA-sensitive student data and this repo is public. One-time setup:
++### District bug reporting (disabled by default)
+ 
+-```
+-wrangler kv namespace create BUG_REPORTS      # paste the printed id into wrangler.toml
+-wrangler secret put ADMIN_TOKEN               # optional — enables the GET /bugs reader
+-wrangler deploy
+-```
+-
+-Read reports either with the CLI (`wrangler kv key list --binding BUG_REPORTS`,
+-`wrangler kv key get --binding BUG_REPORTS <id>`) or, if `ADMIN_TOKEN` is set, via
+-`GET /bugs?token=<ADMIN_TOKEN>&limit=50` (returns newest-first JSON). KV reports persist until
+-manually purged; periodically delete handled ones (and remember KV is private but still contains PII —
+-treat accordingly). Smoke test for all routes: `npm test`.
++`POST /submitBug`, `GET /bug-report-policy`, `GET /bugs`, and `GET`/`DELETE /bugs/:id` require the district policy and scoped credentials described in [BUG_REPORTING.md](BUG_REPORTING.md). Captured logs, URLs, and automatic Google Form fallback are excluded. Reports have bounded expiry and audited access. Private storage alone does not authorize collection. Legacy reports are not migrated or purged automatically.
+ 
+ ### `POST /submitPd` → Cloudflare KV (PRIVATE)
+ Professional-development module submissions from the in-app PD catalogue (Educator Hub → Community
+diff --git a/catalog/cloudflare-worker/smoke_test.mjs b/catalog/cloudflare-worker/smoke_test.mjs
+index da7afe7..9cb6360 100644
+--- a/catalog/cloudflare-worker/smoke_test.mjs
++++ b/catalog/cloudflare-worker/smoke_test.mjs
+@@ -109,39 +109,12 @@ const run = async () => {
+   };
+   const ENVKV = { ...ENV, BUG_REPORTS: KV };
+ 
+-  // 11. missing KV binding → 500
+-  r = await worker.fetch(jsonPost('/submitBug', { what: 'boom' }), ENV);
+-  ok(r.status === 500, '/submitBug without KV binding → 500 (got ' + r.status + ')');
+-
+-  // 12. validation: empty report → 400
+-  r = await worker.fetch(jsonPost('/submitBug', { type: 'Bug Report' }), ENVKV);
+-  ok(r.status === 400, '/submitBug with no what/steps → 400 (got ' + r.status + ')');
+-
+-  // 13. happy path → 201, stored in KV
+-  r = await worker.fetch(jsonPost('/submitBug', { type: 'Bug Report', what: 'TypeError at line 5', steps: 'clicked export', browser: 'UA', url: 'https://app/x' }), ENVKV);
+-  ok(r.status === 201, '/submitBug valid → 201 (got ' + r.status + ')');
+-  const bbody = await r.json();
+-  ok(bbody.ok === true && /^bug:\d+:/.test(bbody.id), 'returns ok + bug:<ts>:<rand> id');
+-  ok(kvStore.size === 1, 'report written to KV');
+-  const stored = JSON.parse([...kvStore.values()][0]);
+-  ok(stored.kind === 'bug_report' && stored.what === 'TypeError at line 5', 'stored record shape correct');
+-
+-  // 14. PII flagged (does not block)
+-  r = await worker.fetch(jsonPost('/submitBug', { what: 'student Jamie, ssn 123-45-6789' }), ENVKV);
+-  const pb = await r.json();
+-  ok(r.status === 201 && pb.pii_findings_count >= 1, '/submitBug flags PII (SSN) → count >= 1');
+-
+-  // 15. GET /bugs disabled without ADMIN_TOKEN → 501
+-  r = await worker.fetch(req('/bugs'), ENVKV);
+-  ok(r.status === 501, 'GET /bugs without ADMIN_TOKEN → 501 (got ' + r.status + ')');
+-
+-  // 16. GET /bugs wrong token → 401; right token → 200 list
+-  const ENVADMIN = { ...ENVKV, ADMIN_TOKEN: 'sekret' };
+-  r = await worker.fetch(req('/bugs?token=nope'), ENVADMIN);
+-  ok(r.status === 401, 'GET /bugs wrong token → 401 (got ' + r.status + ')');
+-  r = await worker.fetch(req('/bugs?token=sekret'), ENVADMIN);
+-  const lb = await r.json();
+-  ok(r.status === 200 && lb.ok === true && lb.count === 2, 'GET /bugs valid token → 200 + lists 2 reports (got ' + r.status + '/' + (lb && lb.count) + ')');
++  // Bug reporting now fails closed; full governance paths have focused tests.
++  r = await worker.fetch(jsonPost('/submitBug', { what: 'legacy log' }), ENVKV);
++  ok(r.status === 503, '/submitBug disabled without governance');
++  r = await worker.fetch(req('/bugs?token=legacy'), { ...ENVKV, ADMIN_TOKEN: 'legacy' });
++  ok(r.status === 401, '/bugs rejects query-string credentials');
++  ok(kvStore.size === 0, 'unconfigured bug reporting stores nothing');
+ 
+   // ── /submit (lessons): validation + happy path + GitHub-failure → 502 ──
+   const validAff = { author_or_authorized: true, no_pii: true, license_agreed: true, age_eligible: true };
+diff --git a/tests/error_reporter_stale_entries_and_secrets.test.js b/tests/error_reporter_stale_entries_and_secrets.test.js
+index b212687..cd9fb34 100644
+--- a/tests/error_reporter_stale_entries_and_secrets.test.js
++++ b/tests/error_reporter_stale_entries_and_secrets.test.js
+@@ -47,9 +47,14 @@ const oldEntry = (ageMs, message, extra = {}) => ({
+ });
+ 
+ function reportOf(w) {
++  // Inspect the explicit local Copy log action. External submission is separately
++  // covered by error_reporter_privacy.test.js and never attaches this payload.
++  let copied = '';
++  Object.defineProperty(w.navigator, 'clipboard', { configurable: true, value: { writeText: text => { copied = text; return Promise.resolve(); } } });
+   w.AlloModules.ErrorReporter.openPanel('errors');
+-  w.document.getElementById('aer-send').click();
+-  return w.__sent[w.__sent.length - 1];
++  w.document.getElementById('aer-copy').click();
++  const context = copied.slice(copied.indexOf('Context:\n') + 9, copied.indexOf('\n\nLog:'));
++  return { what: copied.slice(copied.indexOf('Log:\n') + 5), steps: context, url: context.split('\n')[0].slice(5) };
+ }
+ 
+ describe('stale entries do not reach the badge', () => {
+@@ -112,8 +117,8 @@ describe('module timeouts that recovered', () => {
+   });
+ });
+ 
+-describe('the live-session join secret never leaves the page', () => {
+-  it('is scrubbed from new entries, the report, and the worker payload', () => {
++describe('local diagnostic exports redact live-session join secrets', () => {
++  it('is scrubbed from new entries and explicit local log exports', () => {
+     const w = boot();
+     w.console.error('fetch failed for https://x.example/api?key=AIzaSECRETKEY&v=1');
+     const entry = w.AlloModules.ErrorReporter.getBuffer()[0];
+diff --git a/tests/error_reporter_tts_tab.test.js b/tests/error_reporter_tts_tab.test.js
+index 0934efb..3f0bbca 100644
+--- a/tests/error_reporter_tts_tab.test.js
++++ b/tests/error_reporter_tts_tab.test.js
+@@ -81,12 +81,12 @@ describe('error reporter TTS tab', () => {
+     expect(panel.textContent).toContain('1 module(s) FAILED: TTS');
+   });
+ 
+-  it('Send-to-Developers payload carries identity + both trace tails', () => {
++  it('explicit local Copy log retains identity + both trace tails', () => {
+     // The clear-trace test above emptied the ring; repopulate so the report
+     // has a read-aloud tail to attach.
+     window.__alloTtsTrace.push({ at: Date.now(), event: 'pk:seq', detail: { idx: 1, source: 'buffer' } });
+-    // The report body is what reaches the bug form/worker — drive it via the
+-    // Copy log button, which renders the same payload.
++    // Raw diagnostics remain available through explicit local Copy log;
++    // the district submission flow never attaches them.
+     document.getElementById('aer-tab-errors').click();
+     let copied = '';
+     window.navigator.clipboard || Object.defineProperty(window.navigator, 'clipboard', { value: {}, configurable: true });
+diff --git a/catalog/cloudflare-worker/read-queues.ps1 b/catalog/cloudflare-worker/read-queues.ps1
+index 95edb5a..b7c8a1a 100644
+--- a/catalog/cloudflare-worker/read-queues.ps1
++++ b/catalog/cloudflare-worker/read-queues.ps1
+@@ -1,3 +1,4 @@
++# Bug reports are excluded: use the audited district endpoints in BUG_REPORTING.md.
+ # Read the submission queues WITHOUT ADMIN_TOKEN.
+ #
+ #   powershell -ExecutionPolicy Bypass -File catalog\cloudflare-worker\read-queues.ps1
+@@ -20,7 +21,6 @@ $WorkerDir = Join-Path $RepoRoot 'catalog\cloudflare-worker'
+ $Wrangler = Join-Path $RepoRoot 'dev-tools\wrangler.cjs'
+ 
+ $Queues = @(
+-    @{ Binding = 'BUG_REPORTS';        Label = 'Bug reports' },
+     @{ Binding = 'PD_SUBMISSIONS';     Label = 'PD module submissions' },
+     @{ Binding = 'PLUGIN_SUBMISSIONS'; Label = 'Tool Forge plugin submissions' }
+ )
+diff --git a/catalog/cloudflare-worker/set-admin-token.ps1 b/catalog/cloudflare-worker/set-admin-token.ps1
+index e33440a..85b966e 100644
+--- a/catalog/cloudflare-worker/set-admin-token.ps1
++++ b/catalog/cloudflare-worker/set-admin-token.ps1
+@@ -1,10 +1,11 @@
++# This legacy helper does not authorize bug reports; see BUG_REPORTING.md.
+ # Generate a strong ADMIN_TOKEN, store it on the Worker, and show it to you once.
+ #
+ #   powershell -ExecutionPolicy Bypass -File catalog\cloudflare-worker\set-admin-token.ps1
+ #
+-# ADMIN_TOKEN gates the browser-readable queue endpoints (/bugs, /pdSubmissions,
++# ADMIN_TOKEN gates the browser-readable queue endpoints (/pdSubmissions,
+ # /pluginSubmissions). Those queues can contain student-identifiable text from
+-# bug reports, so treat it as a FERPA-relevant credential:
++# educator submissions, so handle it as a sensitive credential:
+ #
+ #   - Save it in your password manager. Nowhere else.
+ #   - Never put it in the repo (that repo is PUBLIC), in a doc, or in a chat.
+@@ -48,7 +49,7 @@ Start-Sleep -Seconds 5
+ 
+ Write-Host ''
+ Write-Host 'Verifying the reader endpoint...' -ForegroundColor Cyan
+-$Check = & curl.exe --silent --show-error --max-time 45 "$Base/bugs?token=$Token&limit=1"
++$Check = & curl.exe --silent --show-error --max-time 45 "$Base/pdSubmissions?token=$Token&limit=1"
+ 
+ if ($Check -match '"ok"\s*:\s*true') {
+     Write-Host 'Queue readers are now unlocked.' -ForegroundColor Green
+@@ -69,7 +70,6 @@ Write-Host 'retrieved from Cloudflare afterwards (only overwritten by re-running
+ Write-Host 'this script).'
+ Write-Host ''
+ Write-Host 'Your queue URLs:'
+-Write-Host "  $Base/bugs?token=YOURTOKEN"
+ Write-Host "  $Base/pdSubmissions?token=YOURTOKEN"
+ Write-Host "  $Base/pluginSubmissions?token=YOURTOKEN"
+ Write-Host ''
+diff --git a/catalog/cloudflare-worker/SETUP.md b/catalog/cloudflare-worker/SETUP.md
+index 66bacce..73f0120 100644
+--- a/catalog/cloudflare-worker/SETUP.md
++++ b/catalog/cloudflare-worker/SETUP.md
+@@ -1,71 +1,6 @@
+-# Bug-report KV setup — quick steps
++# District bug reporting
+ 
+-One-time setup so bug reports save to a **private** Cloudflare KV store (not the public repo).
+-Translation corrections do NOT need any of this.
+-
+-## Where to run these
+-Use a terminal **inside this folder** (`catalog/cloudflare-worker/`). Easiest in VS Code:
+-1. **Terminal → New Terminal** (or press **Ctrl + `** — the backtick key, top-left).
+-2. It usually opens at the project root. Move into the worker folder:
+-   ```
+-   cd catalog/cloudflare-worker
+-   ```
+-   (If it opens somewhere else, run: `cd "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/catalog/cloudflare-worker"`)
+-
+-You do **not** need to install wrangler — `npx wrangler` fetches it automatically.
+-
+-## The steps
+-
+-### 1. Create the private KV store
+-```
+-npx wrangler kv namespace create BUG_REPORTS
+-```
+-- The **first** wrangler command may open a browser and ask you to **log in / authorize Cloudflare** — approve it. (This is the part only you can do.)
+-- When it finishes it prints an `id = "…long string…"`. **Copy that id** — or paste it to Claude and it'll put it in the config for you.
+-- *(If you ever see "unknown argument", your wrangler is older — use `npx wrangler kv:namespace create BUG_REPORTS` instead.)*
+-
+-### 2. Put the id in the config
+-Open `wrangler.toml` (same folder), find this line:
+-```
+-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+-```
+-Replace `REPLACE_WITH_KV_NAMESPACE_ID` with the id from step 1 (keep the quotes), save.
+-*(Or just send the id to Claude.)*
+-
+-### 3. Deploy the worker
+-```
+-npx wrangler deploy
+-```
+-Publishes the worker with the new bug-report route. Prints the worker URL + "Published" when done.
+-
+-### Optional — browser reader for reports
+-```
+-npx wrangler secret put ADMIN_TOKEN
+-```
+-Type any password you like, press Enter. Then you can view reports at:
+-`https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/bugs?token=YOURPASSWORD`
+-
+-Skip it if you prefer; you can always read reports from the terminal:
+-```
+-npx wrangler kv key list --binding BUG_REPORTS
+-npx wrangler kv key get  --binding BUG_REPORTS "bug:….the-id"
+-```
+-
+-## Check it worked
+-```
+-curl https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/healthz
+-```
+-Should print `{"ok":true}`.
+-
+----
+-
+-**No rush:** until you deploy the worker, the in-app error reporter falls back to the
+-Google Form automatically, so nothing is broken in the meantime.
+-
+-**Troubleshooting:** if `npx wrangler` errors, run `npm install` once in this folder, then retry.
+-If a command says you're not logged in, run `npx wrangler login` and approve in the browser.
+-
+----
++Bug reporting is disabled by default. Follow [BUG_REPORTING.md](BUG_REPORTING.md) for district authorization, gateway requirements, scoped credentials, retention, and legacy-data handling. The old shared-token reader and Google Form fallback are retired. A successful health probe does not establish reporting authorization.
+ 
+ # Plugin submissions (Tool Forge)
+ 
+@@ -132,7 +67,7 @@ npx wrangler deploy
+ Publishes the worker with the new `/submitPlugin` route.
+ 
+ ### Reading the submission queue
+-No new password needed — the **same `ADMIN_TOKEN`** you set for bug reports also gates
++No new password needed — the **`ADMIN_TOKEN`** used for PD submissions also gates
+ the plugin reader:
+ `https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/pluginSubmissions?token=YOURPASSWORD`
+ Add `&source=1` to include each submission's full source code.
+diff --git a/catalog/cloudflare-worker/CLOUDFLARE_SETUP.md b/catalog/cloudflare-worker/CLOUDFLARE_SETUP.md
+index a9f2fb1..b094eaf 100644
+--- a/catalog/cloudflare-worker/CLOUDFLARE_SETUP.md
++++ b/catalog/cloudflare-worker/CLOUDFLARE_SETUP.md
+@@ -1,3 +1,7 @@
++# Current bug-reporting requirement
++
++The historical deployment notes below do not establish current deployment state. Bug reporting now fails closed unless district governance is configured; `ADMIN_TOKEN` does not enable `/bugs`. Follow [BUG_REPORTING.md](BUG_REPORTING.md).
++
+ # Cloudflare Worker setup
+ 
+ **Deployed 2026-07-27** (version `573c807d`). KV namespaces created, bindings
+diff --git a/catalog/cloudflare-worker/src/bug-reports.js b/catalog/cloudflare-worker/src/bug-reports.js
+new file mode 100644
+index 0000000..ec03004
+--- /dev/null
++++ b/catalog/cloudflare-worker/src/bug-reports.js
+@@ -0,0 +1,188 @@
++// District reporting boundary. No public CORS and no browser-held service secrets.
++// The authenticated district gateway owns staff eligibility, CSRF protection, and
++// per-user submission auditing. Separate administrator credentials identify readers.
++const ID = /^[a-z0-9][a-z0-9_-]{0,63}$/;
++const isId = value => typeof value === 'string' && ID.test(value);
++const REPORT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
++const CATEGORIES = new Set(['reading', 'audio', 'navigation', 'export', 'other']);
++const ROLES = new Set(['submit', 'read', 'delete']);
++const MAX_BYTES = 24576;
++const MAX_RETENTION = 30 * 86400;
++function response(body, status = 200) {
++  return new Response(JSON.stringify(body), { status, headers: {
++    'Content-Type': 'application/json', 'Cache-Control': 'no-store, private',
++    'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff',
++  } });
++}
++const refuse = (status, error) => response({ ok: false, error }, status);
++const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
++const exact = (v, keys) => object(v) && Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
++const seconds = (v, max) => Number.isInteger(v) && v >= 60 && v <= max;
++function config(env) {
++  try {
++    const p = JSON.parse(env.BUG_REPORTS_POLICY || 'null');
++    if (!exact(p, ['districtId', 'policyId', 'destinationName', 'noticeUrl', 'approvedUntil', 'retentionSeconds', 'auditRetentionSeconds'])) return null;
++    const notice = new URL(p.noticeUrl);
++    if (!isId(p.districtId) || !isId(p.policyId) ||
++        typeof p.destinationName !== 'string' || !p.destinationName.trim() || p.destinationName.length > 120 ||
++        notice.protocol !== 'https:' || notice.username || notice.password || notice.hash ||
++        typeof p.approvedUntil !== 'string' || !Number.isFinite(Date.parse(p.approvedUntil)) ||
++        !seconds(p.retentionSeconds, MAX_RETENTION) || !seconds(p.auditRetentionSeconds, 365 * 86400) ||
++        !env.BUG_REPORTS || !env.BUG_REPORT_AUDIT) return null;
++    const principals = JSON.parse(env.BUG_REPORTS_PRINCIPALS || 'null');
++    if (!Array.isArray(principals) || !principals.length || principals.length > 50) return null;
++    const ids = new Set(), hashes = new Set();
++    for (const principal of principals) {
++      if (!exact(principal, ['id', 'tokenSha256', 'roles']) || !isId(principal.id) ||
++          typeof principal.tokenSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(principal.tokenSha256) ||
++          ids.has(principal.id) || hashes.has(principal.tokenSha256) ||
++          !Array.isArray(principal.roles) || !principal.roles.length ||
++          principal.roles.some(role => !ROLES.has(role))) return null;
++      ids.add(principal.id); hashes.add(principal.tokenSha256);
++    }
++    return { policy: p, principals };
++  } catch (_) { return null; }
++}
++async function authenticate(request, principals, role) {
++  const auth = request.headers.get('Authorization') || '';
++  if (!/^Bearer [A-Za-z0-9_-]{43,128}$/.test(auth)) return null;
++  const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(auth.slice(7))));
++  let match = null;
++  for (const p of principals) {
++    let difference = 0;
++    for (let i = 0; i < hash.length; i++) difference |= hash[i] ^ parseInt(p.tokenSha256.slice(i * 2, i * 2 + 2), 16);
++    if (difference === 0) match = p;
++  }
++  return match && match.roles.includes(role) ? match : null;
++}
++async function readBody(request) {
++  if (request.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() !== 'application/json') return { error: refuse(415, 'json-required') };
++  if (Number(request.headers.get('Content-Length')) > MAX_BYTES) return { error: refuse(413, 'report-too-large') };
++  const reader = request.body?.getReader();
++  if (!reader) return { error: refuse(400, 'invalid-report') };
++  const chunks = [];
++  let length = 0;
++  try {
++    while (true) {
++      const { done, value } = await reader.read();
++      if (done) break;
++      length += value.byteLength;
++      if (length > MAX_BYTES) { await reader.cancel(); return { error: refuse(413, 'report-too-large') }; }
++      chunks.push(value);
++    }
++    const bytes = new Uint8Array(length);
++    let offset = 0;
++    for (const part of chunks) { bytes.set(part, offset); offset += part.byteLength; }
++    return { data: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) };
++  } catch (_) { return { error: refuse(400, 'invalid-report') }; }
++  finally { reader.releaseLock(); }
++}
++function validReport(p, policy) {
++  return exact(p, ['schema_version', 'district_id', 'policy_id', 'retention_seconds', 'reviewed', 'category', 'summary', 'steps']) &&
++    p.schema_version === '2.0' && p.district_id === policy.districtId && p.policy_id === policy.policyId &&
++    p.retention_seconds === policy.retentionSeconds && p.reviewed === true && CATEGORIES.has(p.category) &&
++    typeof p.summary === 'string' && !!p.summary.trim() && p.summary.length <= 2000 &&
++    typeof p.steps === 'string' && p.steps.length <= 4000;
++}
++// Defense in depth only; this is not a de-identification claim. No matched text
++// is logged, returned, or persisted. Human review and the district agreement remain necessary.
++function sensitiveText(p) {
++  return /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\b\d{3}-\d{2}-\d{4}\b|(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}|\b(?:Mr|Mrs|Ms|Dr|Mx)\.?\s+[A-Z][a-z]+|\b(?:ADHD|ASD|IEP|504\sPlan)\b|https?:\/\/|(?:api[_ -]?key|password|bearer|token)\s*[:= ]\s*\S+/i.test(p.summary + '\n' + p.steps);
++}
++const prefix = p => 'bug:v2:' + p.districtId + ':';
++const reportKey = (p, id) => prefix(p) + id;
++async function audit(env, policy, principal, action, stage, id = null) {
++  const at = new Date().toISOString();
++  await env.BUG_REPORT_AUDIT.put('bug-audit:' + policy.districtId + ':' + crypto.randomUUID(), JSON.stringify({
++    district_id: policy.districtId, policy_id: policy.policyId, principal_id: principal.id,
++    action, stage, report_id: id, at,
++  }), { expirationTtl: policy.auditRetentionSeconds });
++}
++async function load(env, policy, id) {
++  if (await env.BUG_REPORTS.get('bug-deleted:' + policy.districtId + ':' + id)) return null;
++  const raw = await env.BUG_REPORTS.get(reportKey(policy, id));
++  if (!raw) return null;
++  const r = JSON.parse(raw);
++  const created = Date.parse(r.created_at), expires = Date.parse(r.expires_at);
++  if (r.schema_version !== '2.0' || r.district_id !== policy.districtId || r.id !== id ||
++      !Number.isFinite(created) || !Number.isFinite(expires) ||
++      Math.min(expires, created + policy.retentionSeconds * 1000) <= Date.now()) return null;
++  // Explicit projection avoids accidentally exposing future fields or legacy logs.
++  return { id, district_id: r.district_id, policy_id: r.policy_id, created_at: r.created_at,
++    expires_at: new Date(Math.min(expires, created + policy.retentionSeconds * 1000)).toISOString(),
++    category: r.category, summary: r.summary, steps: r.steps };
++}
++export async function handleBugReports(request, env, url = new URL(request.url)) {
++  // A dedicated gateway is the browser boundary; public catalog CORS never applies.
++  if (request.method === 'OPTIONS') return refuse(403, 'district-gateway-required');
++  if (url.searchParams.has('token')) return refuse(401, 'header-authorization-required');
++  const cfg = config(env);
++  if (!cfg) return refuse(503, 'reporting-not-configured');
++  const p = cfg.policy;
++  const submitting = url.pathname === '/submitBug' || url.pathname === '/bug-report-policy';
++  const id = url.pathname.startsWith('/bugs/') ? url.pathname.slice(6) : null;
++  const role = submitting ? 'submit' : request.method === 'DELETE' ? 'delete' : 'read';
++  const principal = await authenticate(request, cfg.principals, role);
++  if (!principal) return refuse(401, 'unauthorized');
++  const active = env.BUG_REPORTS_ENABLED === 'true' && Date.parse(p.approvedUntil) > Date.now();
++  if (submitting && !active) return refuse(403, 'reporting-disabled');
++  try {
++    if (url.pathname === '/bug-report-policy' && request.method === 'GET') {
++      return response({ ok: true, districtId: p.districtId, policyId: p.policyId,
++        destinationName: p.destinationName, noticeUrl: p.noticeUrl,
++        approvedUntil: p.approvedUntil, retentionSeconds: p.retentionSeconds });
++    }
++    if (url.pathname === '/submitBug' && request.method === 'POST') {
++      const body = await readBody(request);
++      if (body.error) return body.error;
++      if (!validReport(body.data, p)) return refuse(409, 'report-or-policy-mismatch');
++      if (sensitiveText(body.data)) return refuse(422, 'remove-sensitive-details');
++      const reportId = crypto.randomUUID();
++      const created = Date.now();
++      const record = { schema_version: '2.0', id: reportId, district_id: p.districtId,
++        policy_id: p.policyId, submitted_by: principal.id,
++        created_at: new Date(created).toISOString(), expires_at: new Date(created + p.retentionSeconds * 1000).toISOString(),
++        category: body.data.category, summary: body.data.summary.trim(), steps: body.data.steps.trim() };
++      await audit(env, p, principal, 'submit', 'authorized', reportId);
++      await env.BUG_REPORTS.put(reportKey(p, reportId), JSON.stringify(record), { expirationTtl: p.retentionSeconds });
++      await audit(env, p, principal, 'submit', 'completed', reportId);
++      return response({ ok: true, id: reportId, expires_at: record.expires_at }, 201);
++    }
++    if (id !== null && !REPORT_ID.test(id)) return refuse(400, 'invalid-report-id');
++    if (url.pathname === '/bugs' && request.method === 'GET') {
++      const cursor = url.searchParams.get('cursor') || undefined;
++      if (cursor && cursor.length > 1024) return refuse(400, 'invalid-cursor');
++      await audit(env, p, principal, 'list', 'authorized');
++      const listed = await env.BUG_REPORTS.list({ prefix: prefix(p), limit: 50, ...(cursor ? { cursor } : {}) });
++      const reports = [];
++      for (const key of listed.keys) {
++        const reportId = key.name.slice(prefix(p).length);
++        if (!key.name.startsWith(prefix(p)) || !REPORT_ID.test(reportId)) continue;
++        const report = await load(env, p, reportId);
++        if (report) reports.push({ id: report.id, created_at: report.created_at, expires_at: report.expires_at, category: report.category });
++      }
++      await audit(env, p, principal, 'list', 'completed');
++      return response({ ok: true, reports, cursor: listed.list_complete ? null : listed.cursor || null });
++    }
++    if (id && request.method === 'GET') {
++      await audit(env, p, principal, 'read', 'authorized', id);
++      const report = await load(env, p, id);
++      if (!report) return refuse(404, 'report-not-found');
++      await audit(env, p, principal, 'read', 'completed', id);
++      return response({ ok: true, report });
++    }
++    if (id && request.method === 'DELETE') {
++      await audit(env, p, principal, 'delete', 'authorized', id);
++      // KV is eventually consistent. The tombstone suppresses cached records once
++      // propagated; 202 acknowledges the request, not instantaneous global erasure.
++      await env.BUG_REPORTS.put('bug-deleted:' + p.districtId + ':' + id, '1', { expirationTtl: MAX_RETENTION + 86400 });
++      await env.BUG_REPORTS.delete(reportKey(p, id));
++      await audit(env, p, principal, 'delete', 'completed', id);
++      return response({ ok: true, id, status: 'deletion-requested' }, 202);
++    }
++    return refuse(405, 'method-not-allowed');
++  } catch (_) {
++    // Never include exception messages, report contents, or credentials in responses/logs.
++    return refuse(503, 'reporting-unavailable');
++  }
++}
+diff --git a/catalog/cloudflare-worker/BUG_REPORTING.md b/catalog/cloudflare-worker/BUG_REPORTING.md
+new file mode 100644
+index 0000000..4de6c30
+--- /dev/null
++++ b/catalog/cloudflare-worker/BUG_REPORTING.md
+@@ -0,0 +1,85 @@
++# District-controlled bug reporting
++
++This change defaults reporting to **disabled**. It does not establish a signed agreement, district authorization, a FERPA compliance determination, or deployed protection. Configure nothing with real student data until the district has approved the complete collection and support chain.
++
++## Behavior
++
++The diagnostic log and explicit local Copy log action remain available. External reports contain only a manually entered summary (2,000 characters maximum), optional reproduction steps (4,000), a category, and the district/policy/retention/review fields. Logs, stack traces, traces, URLs, user agents, screen sizes, student identifiers, and IP/country fields are not automatically attached.
++
++The user first reviews the actual category, summary and steps, then acknowledges removing student information and explicitly sends. This acknowledgement is not FERPA consent or district approval. A small server-side sensitive-pattern check rejects recognizable identifiers/links/credentials without retaining samples. It cannot recognize every student name or education record, so the approved governance boundary remains required.
++
++There is no Google Form, popup, report-URL clipboard, or alternate-destination fallback. An ambiguous failure leaves the draft in memory and never retries automatically. Closing the form discards the draft and aborts its request; abort cannot retract a report already received by the server.
++
++## District gateway: required integration, not provisioned by this patch
++
++The district host may set window.__alloBugReportBasePath to a path such as /api/bug-reports, only after it has configured an authenticated gateway on the same HTTPS origin. Only simple same-origin paths are accepted; absolute URLs, query strings, fragments, encoded segments and HTTP/file origins cannot enable reporting. Do not expose this setting as a learner preference or load it from localStorage or URL parameters.
++
++The gateway must:
++
++- Authenticate each eligible staff user against the district's identity system. Deny learners/anonymous callers unless the district explicitly authorizes their reporting workflow.
++- Apply CSRF protection (validate Origin, require the X-AlloFlow-Report: 2 header for submissions, use appropriate session-cookie settings) and per-user rate limits.
++- Map GET {base}/policy to Worker GET /bug-report-policy, and POST {base}/reports to POST /submitBug. Forward only these methods/routes; never forward browser requests to the admin read/delete endpoints.
++- Use a server-held, submit-only credential. Discard any browser Authorization header and set the gateway credential itself. Never embed this credential in JavaScript, localStorage, URLs, HTML or logs.
++- Forward the payload unchanged. The Worker checks the district, policy and retention rather than trusting client approval flags.
++- Record the authenticated staff actor and returned report ID in the district's covered audit system, without copying report contents. The Worker's submit audit identifies the gateway service, not the individual staff user.
++- Disable response caching and request-body/header logging. Do not redirect requests or send them to an alternate collector on failure.
++- Bind the deployment to one approved district and approved backend destination. Do not use a caller-supplied district ID to choose a credential or destination.
++
++The gateway is deliberately not invented or enabled here: its district identity provider, host, agreement and operators were not supplied. Unconfigured clients perform no reporting network requests.
++
++## Worker configuration
++
++Use a dedicated district deployment with separate approved private BUG_REPORTS and BUG_REPORT_AUDIT KV namespaces. Do not reuse the shared legacy namespace for a new district. Cloudflare account owners and direct KV credentials can bypass application auditing; restrict those credentials and use the district's approved infrastructure audit procedures.
++
++BUG_REPORTS_ENABLED is the exact string "true" only after approval. It defaults to "false" in wrangler.toml.
++
++BUG_REPORTS_POLICY is JSON with exactly these fields:
++
++| Field | Meaning |
++| --- | --- |
++| districtId | Stable lowercase identifier, 1–64 characters: letters, digits, underscore, hyphen |
++| policyId | Versioned reference to the district's approval and agreement record; same identifier format |
++| destinationName | Human-readable district support destination, at most 120 characters |
++| noticeUrl | HTTPS district reporting notice, without credentials or a fragment |
++| approvedUntil | ISO date/time when collection authorization expires |
++| retentionSeconds | Required integer, 60–2,592,000 seconds (30-day implementation ceiling; choose the approved duration) |
++| auditRetentionSeconds | Required integer, 60–31,536,000 seconds (choose the approved audit duration) |
++
++The bounds are product constraints, not FERPA-prescribed periods. Changing the destination, purpose, agreement, or retention requires a new policyId and renewed district review. Disabled or expired approval stops collection. Existing authorized readers/deleters can finish handling and deletion; revoke their credentials separately when access must end.
++
++BUG_REPORTS_PRINCIPALS is a Worker secret containing an array of objects with exactly id, tokenSha256 and roles. IDs and SHA-256 hashes must be unique. Valid roles are submit, read, delete. Give the gateway only submit. Assign each administrator their own credential and only the needed roles. Do not reuse the catalog ADMIN_TOKEN, distribute shared administrator tokens, or store raw credentials in this repository.
++
++Generate each credential from at least 32 cryptographically random bytes, encode with base64url, and store only its lowercase SHA-256 hex digest in the principal configuration. The caller sends the raw credential in Authorization: Bearer <credential>; accepted token length is 43–128 base64url characters. Rotate/revoke a credential by replacing/removing its principal entry. Use the approved secret manager and administrative client; do not paste real tokens into chats or command history.
++
++The Worker rejects reporting CORS preflights and adds no public CORS headers to these routes. Gateway/server authorization is still mandatory; CORS alone is not an access control.
++
++## Access, retention and deletion
++
++- GET /bugs with a read credential returns up to 50 records' IDs, category and timestamps, plus a pagination cursor. It does not return summary/steps. Follow the returned cursor until null; an empty page may still have a cursor.
++- GET /bugs/{id} requires read and returns the individual report.
++- DELETE /bugs/{id} requires delete, writes an expiring deletion marker and deletes the report. A 202 receipt means deletion was requested, not instant global erasure.
++- The old /bugs?token=... path and shared ADMIN_TOKEN cannot authorize these routes.
++- Every authorized submit/list/read/delete attempt and successful completion has a mandatory content-free audit record with principal, district, policy, action, stage, report ID where applicable, and time. Audit-storage failure blocks access. A completion-audit failure after a storage write can yield an ambiguous 503; do not blindly retry.
++- Reports and audit records receive KV expiry. Reads also reject expired records independently of KV cleanup. Increasing policy retention never extends an existing record's saved expiry.
++- Shortening retention immediately hides older records through these APIs, but does not rewrite their original physical KV expiry. The operator must enumerate and delete those records under the approved retention procedure. Audit-retention changes likewise require handling older audit records.
++- KV changes propagate eventually. Verification must include the covered regions and any authorized downstream copies, not just a successful DELETE response. Deletion markers contain only random report IDs and expire after 31 days, beyond the maximum report lifetime.
++- Disabling collection does not delete data. Revoking a reader does not delete their prior exports. Copies, backups, gateway logging, infrastructure logs, support exports, incident handling and deletion obligations belong in the district's approved operational procedure.
++
++Cloudflare reference: https://developers.cloudflare.com/kv/api/write-key-value-pairs/ and https://developers.cloudflare.com/kv/concepts/how-kv-works/
++
++## Existing reports and rollout
++
++1. Verify the deployed client and Worker versions separately; this source snapshot is not proof of a deployed release.
++2. Have the authorized operator stop the legacy collection path while the replacement ships. Updating only the Worker leaves old clients capable of opening the Google Form fallback. Updating only the client leaves the old Worker accepting legacy callers. Coordinate both, clear/invalidate applicable caches and validate deployed network behavior.
++3. Inventory the old BUG_REPORTS namespace, Google Form response sheets, saved report URLs, logs and any exports through the approved incident/retention process. Do not copy their contents into this repository, a public issue or a developer chat.
++4. Determine with the district what must be returned, preserved or deleted. Obtain authorization before deleting existing records. This patch neither migrates legacy reports nor silently purges them.
++5. Use scoped infrastructure access for any authorized legacy cleanup and record completion in the covered audit system. The generic read-queues.ps1 helper now excludes bug reports.
++6. Deploy the default-disabled client and Worker. Verify no default upload or fallback, including old cached clients.
++7. Configure and validate the district gateway, storage, principal permissions, notice, agreement record, retention and deletion process using synthetic data.
++8. Enable only after that end-to-end validation and district authorization.
++
++## Focused verification
++
++Run the reporter privacy, existing local diagnostic, and Worker governance suites from the repository's existing test environment. Run catalog/cloudflare-worker/smoke_test.mjs for neighboring endpoint routing. All fixtures use synthetic data, mocked KV and mocked transport; these checks do not certify a deployed gateway or the district's agreements.
++
++Acceptance includes missing/expired configuration, credential roles/revocation, cross-district and stale-policy rejection, unknown payload fields, reviewed-only transmission, no raw logs/URLs/traces, no fallback, bounded bodies, rejection without PII samples, expiring data and audit records, audited read/delete, legacy isolation, storage/audit failures, and close/late-response lifecycle behavior.
+diff --git a/tests/bug_report_governance.test.js b/tests/bug_report_governance.test.js
+new file mode 100644
+index 0000000..cafe9d4
+--- /dev/null
++++ b/tests/bug_report_governance.test.js
+@@ -0,0 +1,215 @@
++// @vitest-environment node
++import { describe, it, expect, vi } from 'vitest';
++import worker from '../catalog/cloudflare-worker/src/index.js';
++const gateway = 'g'.repeat(43), reader = 'r'.repeat(43), deleter = 'd'.repeat(43);
++async function hash(token) {
++  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))), b => b.toString(16).padStart(2, '0')).join('');
++}
++function kv() {
++  const values = new Map(), writes = [];
++  return { values, writes,
++    put: vi.fn(async (key, value, options) => { writes.push({ key, value, options }); values.set(key, value); }),
++    get: vi.fn(async key => values.get(key) || null),
++    delete: vi.fn(async key => { values.delete(key); }),
++    list: vi.fn(async ({ prefix }) => ({ keys: [...values.keys()].filter(key => key.startsWith(prefix)).map(name => ({ name })), list_complete: true })),
++  };
++}
++async function fixture(overrides = {}) {
++  const policy = { districtId: 'district-a', policyId: 'approved-v1', destinationName: 'District support',
++    noticeUrl: 'https://district.example/support/privacy', approvedUntil: new Date(Date.now() + 86400000).toISOString(),
++    retentionSeconds: 86400, auditRetentionSeconds: 604800 };
++  const env = { BUG_REPORTS_ENABLED: 'true', BUG_REPORTS_POLICY: JSON.stringify(policy),
++    BUG_REPORTS_PRINCIPALS: JSON.stringify([
++      { id: 'district-gateway', tokenSha256: await hash(gateway), roles: ['submit'] },
++      { id: 'operator-a', tokenSha256: await hash(reader), roles: ['read'] },
++      { id: 'operator-b', tokenSha256: await hash(deleter), roles: ['delete'] },
++    ]), BUG_REPORTS: kv(), BUG_REPORT_AUDIT: kv(), ...overrides };
++  const payload = { schema_version: '2.0', district_id: policy.districtId, policy_id: policy.policyId,
++    retention_seconds: policy.retentionSeconds, reviewed: true, category: 'audio',
++    summary: 'Read aloud stops after the first paragraph.', steps: 'Open a sample reading and press play.' };
++  const request = (path, { token = gateway, method = 'GET', body, headers = {} } = {}) =>
++    worker.fetch(new Request('https://worker.example' + path, { method,
++      headers: { Authorization: 'Bearer ' + token, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...headers },
++      ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }), env);
++  const submit = body => request('/submitBug', { method: 'POST', body: body || payload });
++  return { env, policy, payload, request, submit };
++}
++describe('district reporting boundary', () => {
++  it('rejects old clients and admin URLs when governance is not configured', async () => {
++    const env = { BUG_REPORTS: kv(), ADMIN_TOKEN: 'legacy' };
++    for (const [path, method] of [['/submitBug', 'POST'], ['/bugs', 'GET'], ['/bug-report-policy', 'GET']]) {
++      const r = await worker.fetch(new Request('https://worker.example' + path, { method }), env);
++      expect(r.status).toBe(503);
++      expect(r.headers.get('Access-Control-Allow-Origin')).toBeNull();
++    }
++    expect((await worker.fetch(new Request('https://worker.example/bugs?token=legacy'), env)).status).toBe(401);
++    expect(env.BUG_REPORTS.put).not.toHaveBeenCalled();
++  });
++  it('keeps the public catalog CORS but denies reporting preflights', async () => {
++    const f = await fixture();
++    expect((await f.request('/submitTranslation', { method: 'OPTIONS' })).status).toBe(204);
++    const r = await f.request('/submitBug', { method: 'OPTIONS' });
++    expect(r.status).toBe(403);
++    expect(r.headers.get('Access-Control-Allow-Origin')).toBeNull();
++  });
++  it.each(['BUG_REPORTS_POLICY', 'BUG_REPORTS_PRINCIPALS', 'BUG_REPORTS', 'BUG_REPORT_AUDIT'])('fails closed without %s', async key => {
++    const f = await fixture({ [key]: undefined });
++    expect((await f.submit()).status).toBe(503);
++  });
++  it.each([0, 30, 2592001, '86400'])('rejects invalid retention %s', async retentionSeconds => {
++    const f = await fixture();
++    f.env.BUG_REPORTS_POLICY = JSON.stringify({ ...f.policy, retentionSeconds });
++    expect((await f.submit()).status).toBe(503);
++  });
++  it('rejects malformed identifiers and duplicate principal credentials', async () => {
++    const f = await fixture();
++    f.env.BUG_REPORTS_POLICY = JSON.stringify({ ...f.policy, districtId: 123 });
++    expect((await f.submit()).status).toBe(503);
++    f.env.BUG_REPORTS_POLICY = JSON.stringify(f.policy);
++    const principals = JSON.parse(f.env.BUG_REPORTS_PRINCIPALS);
++    principals[1].tokenSha256 = principals[0].tokenSha256;
++    f.env.BUG_REPORTS_PRINCIPALS = JSON.stringify(principals);
++    expect((await f.submit()).status).toBe(503);
++  });
++  it('requires an authenticated submitter and returns only the current policy', async () => {
++    const f = await fixture();
++    expect((await f.request('/bug-report-policy', { token: reader })).status).toBe(401);
++    expect((await f.request('/bug-report-policy', { token: 'x'.repeat(43) })).status).toBe(401);
++    const r = await f.request('/bug-report-policy');
++    expect(r.status).toBe(200);
++    expect(await r.json()).toEqual({ ok: true, ...Object.fromEntries(Object.entries(f.policy).filter(([k]) => k !== 'auditRetentionSeconds')) });
++    expect(r.headers.get('Cache-Control')).toContain('no-store');
++  });
++  it('stops collection when disabled or approval expires while allowing authorized deletion', async () => {
++    const f = await fixture();
++    const { id } = await (await f.submit()).json();
++    f.env.BUG_REPORTS_ENABLED = 'false';
++    expect((await f.submit()).status).toBe(403);
++    expect((await f.request('/bugs/' + id, { token: deleter, method: 'DELETE' })).status).toBe(202);
++    f.env.BUG_REPORTS_ENABLED = 'true';
++    f.env.BUG_REPORTS_POLICY = JSON.stringify({ ...f.policy, approvedUntil: '2020-01-01T00:00:00.000Z' });
++    expect((await f.submit()).status).toBe(403);
++  });
++  it.each([
++    { what: 'legacy raw log' }, { url: 'https://school.example/student/name' },
++    { district_id: 'district-b' }, { policy_id: 'stale-v0' }, { retention_seconds: 172800 },
++    { reviewed: false }, { category: 'student-name' }, { summary: '' },
++  ])('rejects stale, cross-district, unreviewed or unexpected fields: %j', async change => {
++    const f = await fixture();
++    expect((await f.submit({ ...f.payload, ...change })).status).toBe(409);
++    expect(f.env.BUG_REPORTS.put).not.toHaveBeenCalled();
++    expect(f.env.BUG_REPORT_AUDIT.put).not.toHaveBeenCalled();
++  });
++  it.each(['Email pupil@example.test', 'SSN 123-45-6789', 'Visit https://example.test/student', 'token=private'])('rejects detectable sensitive text without persisting samples: %s', async summary => {
++    const f = await fixture();
++    const r = await f.submit({ ...f.payload, summary });
++    expect(r.status).toBe(422);
++    expect(await r.text()).not.toContain(summary);
++    expect(f.env.BUG_REPORTS.put).not.toHaveBeenCalled();
++    expect(f.env.BUG_REPORT_AUDIT.put).not.toHaveBeenCalled();
++  });
++  it('bounds streamed bodies even without Content-Length', async () => {
++    const f = await fixture();
++    const r = await f.request('/submitBug', { method: 'POST', body: { ...f.payload, summary: '🙂'.repeat(7000) } });
++    expect(r.status).toBe(413);
++    expect(f.env.BUG_REPORTS.put).not.toHaveBeenCalled();
++  });
++  it('stores the allowlisted report with expiry and content-free per-principal audit events', async () => {
++    const f = await fixture();
++    const r = await f.submit();
++    expect(r.status).toBe(201);
++    const receipt = await r.json();
++    const write = f.env.BUG_REPORTS.writes[0];
++    expect(write.key).toBe('bug:v2:district-a:' + receipt.id);
++    expect(write.options.expirationTtl).toBe(86400);
++    const record = JSON.parse(write.value);
++    expect(record.summary).toBe(f.payload.summary);
++    expect(record.submitted_by).toBe('district-gateway');
++    expect(record).not.toHaveProperty('url');
++    expect(record).not.toHaveProperty('pii_scan');
++    expect(Date.parse(record.expires_at) - Date.parse(record.created_at)).toBe(86400000);
++    const events = f.env.BUG_REPORT_AUDIT.writes.map(w => JSON.parse(w.value));
++    expect(events.map(e => e.stage)).toEqual(['authorized', 'completed']);
++    expect(events.every(e => e.principal_id === 'district-gateway')).toBe(true);
++    expect(JSON.stringify(events)).not.toContain(f.payload.summary);
++    expect(JSON.stringify(events)).not.toContain(gateway);
++    expect(f.env.BUG_REPORT_AUDIT.writes.every(w => w.options.expirationTtl === 604800)).toBe(true);
++  });
++  it('separates submit/read/delete roles and never lets legacy ADMIN_TOKEN authorize', async () => {
++    const f = await fixture({ ADMIN_TOKEN: gateway });
++    const { id } = await (await f.submit()).json();
++    expect((await f.request('/bugs', { token: gateway })).status).toBe(401);
++    expect((await f.request('/bugs/' + id, { token: reader, method: 'DELETE' })).status).toBe(401);
++    expect((await f.request('/submitBug', { token: reader, method: 'POST', body: f.payload })).status).toBe(401);
++    expect((await f.request('/bugs?token=' + reader, { token: reader })).status).toBe(401);
++    expect((await f.request('/bugs/' + id, { token: reader })).status).toBe(200);
++    const last = JSON.parse(f.env.BUG_REPORT_AUDIT.writes.at(-1).value);
++    expect(last).toMatchObject({ principal_id: 'operator-a', action: 'read', stage: 'completed', report_id: id });
++  });
++  it('lists metadata only, excludes legacy/cross-district keys and supports cursor pagination', async () => {
++    const f = await fixture();
++    const { id } = await (await f.submit()).json();
++    f.env.BUG_REPORTS.values.set('bug:legacy', '{"what":"old student text"}');
++    f.env.BUG_REPORTS.values.set('bug:v2:district-b:' + id, f.env.BUG_REPORTS.writes[0].value);
++    const r = await f.request('/bugs', { token: reader });
++    const body = await r.json();
++    expect(body.reports).toHaveLength(1);
++    expect(body.reports[0]).not.toHaveProperty('summary');
++    expect(body.cursor).toBeNull();
++    f.env.BUG_REPORTS.list.mockResolvedValueOnce({ keys: [], list_complete: false, cursor: 'next-page' });
++    expect((await (await f.request('/bugs?cursor=first-page', { token: reader })).json()).cursor).toBe('next-page');
++    expect(f.env.BUG_REPORTS.list).toHaveBeenLastCalledWith({ prefix: 'bug:v2:district-a:', limit: 50, cursor: 'first-page' });
++  });
++  it('revokes a reader immediately on the next request without deleting reports', async () => {
++    const f = await fixture();
++    const { id } = await (await f.submit()).json();
++    expect((await f.request('/bugs/' + id, { token: reader })).status).toBe(200);
++    f.env.BUG_REPORTS_PRINCIPALS = JSON.stringify(JSON.parse(f.env.BUG_REPORTS_PRINCIPALS).filter(p => p.id !== 'operator-a'));
++    expect((await f.request('/bugs/' + id, { token: reader })).status).toBe(401);
++    expect(f.env.BUG_REPORTS.values.has('bug:v2:district-a:' + id)).toBe(true);
++  });
++  it('rejects a policy changed after review and never extends existing report expiry', async () => {
++    const f = await fixture();
++    const { id, expires_at } = await (await f.submit()).json();
++    f.env.BUG_REPORTS_POLICY = JSON.stringify({ ...f.policy, policyId: 'approved-v2', retentionSeconds: 172800 });
++    expect((await f.submit()).status).toBe(409);
++    const result = await (await f.request('/bugs/' + id, { token: reader })).json();
++    expect(result.report.expires_at).toBe(expires_at);
++    expect(f.env.BUG_REPORTS.put).toHaveBeenCalledTimes(1);
++  });
++  it('filters expired records and respects a shortened policy even before KV expiry', async () => {
++    const f = await fixture();
++    const { id } = await (await f.submit()).json();
++    const key = 'bug:v2:district-a:' + id;
++    const record = JSON.parse(f.env.BUG_REPORTS.values.get(key));
++    f.env.BUG_REPORTS.values.set(key, JSON.stringify({ ...record, created_at: new Date(Date.now() - 120000).toISOString() }));
++    f.env.BUG_REPORTS_POLICY = JSON.stringify({ ...f.policy, retentionSeconds: 60 });
++    expect((await f.request('/bugs/' + id, { token: reader })).status).toBe(404);
++    expect((await (await f.request('/bugs', { token: reader })).json()).reports).toEqual([]);
++  });
++  it('blocks disclosure and mutation when mandatory auditing fails', async () => {
++    const f = await fixture();
++    const { id } = await (await f.submit()).json();
++    f.env.BUG_REPORT_AUDIT.put.mockRejectedValue(new Error('sensitive internal error'));
++    for (const [path, method, token] of [['/bugs/' + id, 'GET', reader], ['/bugs/' + id, 'DELETE', deleter], ['/submitBug', 'POST', gateway]]) {
++      const r = await f.request(path, { method, token, ...(method === 'POST' ? { body: f.payload } : {}) });
++      expect(r.status).toBe(503);
++      expect(await r.text()).not.toContain('sensitive');
++    }
++    expect(f.env.BUG_REPORTS.delete).not.toHaveBeenCalled();
++    expect(f.env.BUG_REPORTS.put).toHaveBeenCalledTimes(1);
++  });
++  it('returns generic storage errors and reports deletion as accepted, with a tombstone', async () => {
++    const f = await fixture();
++    const { id } = await (await f.submit()).json();
++    const deleted = await f.request('/bugs/' + id, { method: 'DELETE', token: deleter });
++    expect(deleted.status).toBe(202);
++    expect(f.env.BUG_REPORTS.values.has('bug:v2:district-a:' + id)).toBe(false);
++    expect(f.env.BUG_REPORTS.values.has('bug-deleted:district-a:' + id)).toBe(true);
++    expect((await f.request('/bugs/' + id, { token: reader })).status).toBe(404);
++    f.env.BUG_REPORTS.put.mockRejectedValue(new Error('student name in storage exception'));
++    const r = await f.submit();
++    expect(r.status).toBe(503);
++    expect(await r.text()).not.toContain('student name');
++  });
++});
+diff --git a/tests/error_reporter_privacy.test.js b/tests/error_reporter_privacy.test.js
+new file mode 100644
+index 0000000..6f2d1b6
+--- /dev/null
++++ b/tests/error_reporter_privacy.test.js
+@@ -0,0 +1,176 @@
++// @vitest-environment node
++import { describe, it, expect, afterEach, vi } from 'vitest';
++import fs from 'node:fs';
++import { JSDOM, VirtualConsole } from 'jsdom';
++const source = fs.readFileSync(new URL('../error_reporter_module.js', import.meta.url), 'utf8');
++const windows = [];
++afterEach(() => { for (const w of windows.splice(0)) w.close(); });
++const policy = () => ({ ok: true, districtId: 'district-a', policyId: 'approved-v1',
++  destinationName: 'District support', noticeUrl: 'https://district.example/privacy',
++  approvedUntil: new Date(Date.now() + 86400000).toISOString(), retentionSeconds: 86400 });
++const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
++function boot({ base, url = 'https://school.example/app?student=SensitiveName&allo_mb=JOINSECRET', fetcher } = {}) {
++  const w = new JSDOM('<!doctype html><html><body></body></html>', { url, runScripts: 'outside-only', virtualConsole: new VirtualConsole() }).window;
++  windows.push(w);
++  w.__alloBugReportBasePath = base;
++  w.fetch = vi.fn(fetcher || (async (_url, init) => ({ ok: true, status: init.method === 'GET' ? 200 : 201,
++    json: async () => init.method === 'GET' ? policy() : { ok: true, id: 'synthetic-receipt' } })));
++  w.open = vi.fn();
++  Object.defineProperty(w.navigator, 'clipboard', { value: { writeText: vi.fn(async () => {}) }, configurable: true });
++  w.__alloTtsTrace = [{ at: Date.now(), event: 'audio', detail: { text: 'SensitiveName scored 72' } }];
++  w.eval(source);
++  w.console.error('SensitiveName scored 72', 'token=PRIVATE');
++  w.AlloModules.ErrorReporter.openPanel('errors');
++  w.document.getElementById('aer-send').click();
++  return w;
++}
++const get = (w, id) => w.document.getElementById(id);
++function enter(w) {
++  for (const [id, value] of [['aer-report-summary', 'Read aloud stops early.'], ['aer-report-steps', 'Open a sample reading and press play.']]) {
++    get(w, id).value = value;
++    get(w, id).dispatchEvent(new w.Event('input'));
++  }
++  get(w, 'aer-report-review').click();
++}
++function agree(w) {
++  get(w, 'aer-report-reviewed').checked = true;
++  get(w, 'aer-report-reviewed').dispatchEvent(new w.Event('change'));
++}
++describe('reviewed district report submission', () => {
++  it('defaults to local-only without any request, popup, or clipboard fallback', () => {
++    const w = boot();
++    expect(w.fetch).not.toHaveBeenCalled();
++    expect(w.open).not.toHaveBeenCalled();
++    expect(w.navigator.clipboard.writeText).not.toHaveBeenCalled();
++    expect(get(w, 'allo-err-panel').textContent).toContain('External reporting is disabled');
++  });
++  it.each(['https://collector.example', '//collector.example', '/api/../collector', '/api/reports?token=x', '/api/%2fexternal'])('rejects an unsafe gateway base %s', base => {
++    const w = boot({ base });
++    expect(w.fetch).not.toHaveBeenCalled();
++  });
++  it('does not enable reporting from insecure/file/null origins', () => {
++    for (const url of ['http://school.example/', 'file:///example.html']) {
++      const w = boot({ base: '/api/reporting', url });
++      expect(w.fetch).not.toHaveBeenCalled();
++    }
++  });
++  it('fetches only the same-origin policy and never places credentials or context in its URL', async () => {
++    const w = boot({ base: '/api/reporting' });
++    await flush();
++    expect(w.fetch).toHaveBeenCalledTimes(1);
++    const [url, init] = w.fetch.mock.calls[0];
++    expect(url).toBe('/api/reporting/policy');
++    expect(init).toMatchObject({ method: 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer' });
++    expect(init.headers).not.toHaveProperty('Authorization');
++    expect(get(w, 'allo-err-panel').textContent).toContain('District support');
++    expect(get(w, 'aer-report-summary').value).toBe('');
++  });
++  it.each([null, { ...policy(), districtId: 123 }, { ...policy(), retentionSeconds: 0 }, { ...policy(), noticeUrl: 'javascript:alert(1)' }, { ...policy(), approvedUntil: '2020-01-01T00:00:00Z' }])('fails closed on invalid or expired policy', async value => {
++    const w = boot({ base: '/api/reporting', fetcher: async () => ({ ok: true, json: async () => value }) });
++    await flush();
++    expect(get(w, 'aer-report-review')).toBeNull();
++    expect(w.fetch).toHaveBeenCalledTimes(1);
++  });
++  it('requires review plus acknowledgement and sends exactly the shown allowlisted payload', async () => {
++    const w = boot({ base: '/api/reporting' });
++    await flush();
++    enter(w);
++    expect(w.fetch).toHaveBeenCalledTimes(1);
++    expect(get(w, 'aer-report-submit').disabled).toBe(true);
++    const shown = { category: get(w, 'aer-preview-category').textContent, summary: get(w, 'aer-preview-summary').textContent, steps: get(w, 'aer-preview-steps').textContent };
++    agree(w);
++    get(w, 'aer-report-submit').click();
++    await flush();
++    expect(w.fetch).toHaveBeenCalledTimes(2);
++    const [url, init] = w.fetch.mock.calls[1];
++    expect(url).toBe('/api/reporting/reports');
++    expect(JSON.parse(init.body)).toMatchObject(shown);
++    expect(JSON.parse(init.body)).toEqual({ schema_version: '2.0', district_id: 'district-a', policy_id: 'approved-v1',
++      retention_seconds: 86400, reviewed: true, category: 'other', summary: 'Read aloud stops early.', steps: 'Open a sample reading and press play.' });
++    expect(init.body).not.toMatch(/SensitiveName|JOINSECRET|PRIVATE|audio|student=|userAgent/);
++    expect(get(w, 'aer-report-status').textContent).toContain('Report sent');
++    expect(w.open).not.toHaveBeenCalled();
++  });
++  it('editing resets acknowledgement, and live errors do not erase the draft', async () => {
++    const w = boot({ base: '/api/reporting' });
++    await flush();
++    enter(w); agree(w);
++    get(w, 'aer-report-edit').click();
++    expect(get(w, 'aer-report-summary').value).toBe('Read aloud stops early.');
++    w.console.error('another live error');
++    expect(get(w, 'aer-report-summary').value).toBe('Read aloud stops early.');
++    get(w, 'aer-report-review').click();
++    expect(get(w, 'aer-report-reviewed').checked).toBe(false);
++    expect(get(w, 'aer-report-submit').disabled).toBe(true);
++  });
++  it('blocks a changed reporting destination before any POST', async () => {
++    const w = boot({ base: '/api/reporting' });
++    await flush(); enter(w); agree(w);
++    w.__alloBugReportBasePath = '/api/other';
++    get(w, 'aer-report-submit').click();
++    expect(w.fetch).toHaveBeenCalledTimes(1);
++    expect(get(w, 'aer-report-status').textContent).toContain('authorization changed');
++  });
++  it('keeps report markup as text and traps keyboard focus inside review', async () => {
++    const w = boot({ base: '/api/reporting' });
++    await flush();
++    const field = get(w, 'aer-report-summary');
++    field.value = '<img src=x onerror=alert(1)>';
++    field.dispatchEvent(new w.Event('input'));
++    get(w, 'aer-report-review').click();
++    expect(get(w, 'aer-preview-summary').textContent).toBe(field.value);
++    expect(w.document.querySelector('#allo-err-panel img')).toBeNull();
++    get(w, 'aer-report-close').focus();
++    get(w, 'aer-report-close').dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
++    expect(w.document.activeElement.tagName).toBe('A');
++  });
++  it('keeps failures local and preserves the draft without opening a form or copying report URLs', async () => {
++    const w = boot({ base: '/api/reporting', fetcher: async (_url, init) => {
++      if (init.method === 'GET') return { ok: true, json: async () => policy() };
++      throw new Error('network down');
++    } });
++    await flush(); enter(w); agree(w); get(w, 'aer-report-submit').click(); await flush();
++    expect(get(w, 'aer-report-status').textContent).toContain('not confirmed');
++    expect(w.open).not.toHaveBeenCalled();
++    expect(w.navigator.clipboard.writeText).not.toHaveBeenCalled();
++    get(w, 'aer-report-edit').click();
++    expect(get(w, 'aer-report-summary').value).toBe('Read aloud stops early.');
++  });
++  it('returns a rejected sensitive report to editing without echoing server error text', async () => {
++    const w = boot({ base: '/api/reporting', fetcher: async (_url, init) => init.method === 'GET'
++      ? { ok: true, json: async () => policy() }
++      : { status: 422, json: async () => ({ error: 'SensitiveName secret server error' }) } });
++    await flush(); enter(w); agree(w); get(w, 'aer-report-submit').click(); await flush();
++    expect(get(w, 'aer-report-summary').value).toBe('Read aloud stops early.');
++    expect(get(w, 'allo-err-panel').textContent).not.toContain('SensitiveName');
++    expect(get(w, 'aer-report-status').textContent).toContain('Remove personal information');
++  });
++  it('aborts on close and ignores a late policy response after another dialog opens', async () => {
++    let resolve;
++    const w = boot({ base: '/api/reporting', fetcher: () => new Promise(r => { resolve = r; }) });
++    const signal = w.fetch.mock.calls[0][1].signal;
++    get(w, 'aer-report-close').click();
++    expect(signal.aborted).toBe(true);
++    w.AlloModules.ErrorReporter.openPanel('errors');
++    resolve({ ok: true, json: async () => policy() });
++    await flush();
++    expect(get(w, 'aer-report-summary')).toBeNull();
++    expect(get(w, 'aer-send')).not.toBeNull();
++  });
++  it('ignores a late submission result after close and never resubmits automatically', async () => {
++    let resolve;
++    const w = boot({ base: '/api/reporting', fetcher: (_url, init) => init.method === 'GET'
++      ? Promise.resolve({ ok: true, json: async () => policy() })
++      : new Promise(r => { resolve = r; }) });
++    await flush(); enter(w); agree(w); get(w, 'aer-report-submit').click();
++    const signal = w.fetch.mock.calls[1][1].signal;
++    get(w, 'aer-report-close').click();
++    expect(signal.aborted).toBe(true);
++    w.AlloModules.ErrorReporter.openPanel('errors');
++    resolve({ status: 201, json: async () => ({ ok: true }) });
++    await flush();
++    expect(w.fetch).toHaveBeenCalledTimes(2);
++    expect(get(w, 'aer-send')).not.toBeNull();
++    expect(get(w, 'aer-report-status')).toBeNull();
++  });
++});

@@ -1,0 +1,64 @@
+{
+  "verifiedAt": "2026-10-01T00:10:48.544Z",
+  "sourceSHA256": "c8ef90bbccda1e8cee09f641dca8f3e8e3b9bfcff2ce0ab50e15d7336b98ace3",
+  "rootOutputSHA256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+  "publicOutputSHA256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+  "canonicalCandidateSHA256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+  "rootPublicExactlyEqual": true,
+  "rootCanonicalExactlyEqual": true,
+  "sourceMatchesFrozenTests": true,
+  "sourceMatchesBuildClaim": true,
+  "outputMatchesTestedCanonicalCandidate": true,
+  "generatedSyntaxPassed": true,
+  "tests": {
+    "sourceCandidateReport": "interview-focused-tests.json",
+    "sourceCandidateSummary": "interview-focused-validation-summary.json",
+    "passed": 77,
+    "total": 77,
+    "failed": 0,
+    "executionClean": true,
+    "inputStable": true,
+    "rationale": "The generated artifact exactly equals the canonical wrapper of the frozen source executed by the passing focused tests; no repeated test run was needed for identical code."
+  },
+  "historicalEvidence": {
+    "olderPatch": "interview-source-fix.patch",
+    "olderPatchIsFinalSource": false,
+    "earlier167DifferentSource": "interview-167-prior-run-summary.json",
+    "laterIncompleteRun": "interview-validation-e288-worker-start-failure.json"
+  },
+  "workerWroteGeneratedOrHostFiles": false,
+  "translationRegistryApplied": false,
+  "productionDeployment": false,
+  "inputHashes": {
+    "personas_source.jsx": "c8ef90bbccda1e8cee09f641dca8f3e8e3b9bfcff2ce0ab50e15d7336b98ace3",
+    "generate_dispatcher_source.jsx": "189b2d246636c394d7dde7086a3e77797525458d2f94be79e0bab5155fd9195b",
+    "generation_helpers_source.jsx": "375ef69704a9e0d2ca9956bad30703089f9180328ad2cfc09da4d5cd0434a6c5",
+    "tests/report_generation_recovery.candidate.setup.js": "4830e22ef5480cc5583aa1a2622dc13ba4fd6b058a3f9a3d9761aeff2eccac14",
+    "tests/report_generation_recovery_interview.candidate.setup.js": "d7033fcbc01d50e918adf8d269284748b993c730b70330cbb4233b082ea3d05d",
+    "tests/report_generation_recovery_interview.vitest.config.js": "f04cd10836781a8d7b472cae49a08ea3eab94c18dd8a8e84587242e1b0ca3559",
+    "tests/report_generation_recovery_interview.test.js": "0df59165cdf1b7308f32a404e52197834a5ad50ba0d841cc4bd1dc97fec4f7df",
+    "tests/persona_core_enhancements.test.js": "e02ab764ff0f459b30cc3a1a73de4fadfbb4ae10e810dd1eceae274577619da1",
+    "tests/persona_interview_behavior.test.js": "788d7516017f75c08ae42e6e3a52f0b9957cf8a3e973211572f5f65ed6625247",
+    "_build_personas_module.js": "11c282ecaf424ff522ab29d8c0496f3318a0dc6e30b6dcf3dabacac426a23ba6",
+    "_build_simple_iife_module.js": "c7db9787c6e43b64a02a20481130ece19ea017f6260e6b59609e14834a3dfbc0",
+    "personas_module.js": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+    "desktop/web-app/public/personas_module.js": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33"
+  },
+  "inputHashesVerifiedAt": "2026-10-01T00:12:24.217Z",
+  "authorizedGeneratedTransition": {
+    "reason": "Root-owned canonical build after the passing frozen source-candidate run",
+    "from": {
+      "personas_module.js": "64d8d4d73c62fc6c6a48e2fcea262da724382b701e79a05967f04bdb40ea0927",
+      "desktop/web-app/public/personas_module.js": "64d8d4d73c62fc6c6a48e2fcea262da724382b701e79a05967f04bdb40ea0927"
+    },
+    "to": {
+      "personas_module.js": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+      "desktop/web-app/public/personas_module.js": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33"
+    },
+    "testedCanonicalCandidateSHA256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+    "generatedArtifactsMatchTestedCanonicalWrapper": true,
+    "testsExecutedOnFrozenSourceCandidate": true,
+    "testsRepeatedOnGeneratedArtifacts": false,
+    "nonGeneratedInputsUnchanged": true
+  }
+}

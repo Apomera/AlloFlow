@@ -1,0 +1,248 @@
+{
+  "passed": 653,
+  "failed": 0,
+  "snapshots": 99,
+  "audits": 18,
+  "axeViolations": 0,
+  "captures": 34,
+  "downloads": 8,
+  "errors": [],
+  "completed": true,
+  "successful": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "sourceSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "publicSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "finalSourceSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "finalPublicSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "testedRuntimeSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+  "baselineRuntimeSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+  "minOpenTableFont": 12,
+  "geometry": [
+    {
+      "label": "light-320 folded",
+      "columns": "236px",
+      "cardWidths": [
+        236
+      ],
+      "closedHeightRange": [
+        488.6875,
+        513.328125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 97,
+          "h": 54.375
+        },
+        {
+          "text": "Remove",
+          "w": 97,
+          "h": 54.375
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "light-390 folded",
+      "columns": "306px",
+      "cardWidths": [
+        306
+      ],
+      "closedHeightRange": [
+        462.3125,
+        462.3125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 132,
+          "h": 44
+        },
+        {
+          "text": "Remove",
+          "w": 132,
+          "h": 44
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "light-768 folded",
+      "columns": "672px",
+      "cardWidths": [
+        672
+      ],
+      "closedHeightRange": [
+        373.625,
+        373.625
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 315,
+          "h": 44
+        },
+        {
+          "text": "Remove",
+          "w": 315,
+          "h": 44
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "light-1280 folded",
+      "columns": "477px 477px",
+      "cardWidths": [
+        477
+      ],
+      "closedHeightRange": [
+        443.125,
+        443.125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 217.5,
+          "h": 44
+        },
+        {
+          "text": "Remove",
+          "w": 217.5,
+          "h": 44
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "dark-1280 folded",
+      "columns": "477px 477px",
+      "cardWidths": [
+        477
+      ],
+      "closedHeightRange": [
+        443.125,
+        443.125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 217.5,
+          "h": 44
+        },
+        {
+          "text": "Remove",
+          "w": 217.5,
+          "h": 44
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "light-forced-320 folded",
+      "columns": "236px",
+      "cardWidths": [
+        236
+      ],
+      "closedHeightRange": [
+        488.6875,
+        513.328125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 97,
+          "h": 54.375
+        },
+        {
+          "text": "Remove",
+          "w": 97,
+          "h": 54.375
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "dark-forced-1280 folded",
+      "columns": "477px 477px",
+      "cardWidths": [
+        477
+      ],
+      "closedHeightRange": [
+        443.125,
+        443.125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 217.5,
+          "h": 44
+        },
+        {
+          "text": "Remove",
+          "w": 217.5,
+          "h": 44
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "light-1280-host390 folded",
+      "columns": "294px",
+      "cardWidths": [
+        294
+      ],
+      "closedHeightRange": [
+        462.3125,
+        462.3125
+      ],
+      "buttons": [
+        {
+          "text": "Replay settings",
+          "w": 126,
+          "h": 44
+        },
+        {
+          "text": "Remove",
+          "w": 126,
+          "h": 44
+        }
+      ],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    },
+    {
+      "label": "legacy320 folded",
+      "columns": "236px",
+      "cardWidths": [
+        236
+      ],
+      "closedHeightRange": [
+        513.1875,
+        586.828125
+      ],
+      "buttons": [],
+      "minTileLabel": 13,
+      "minTileValue": 15,
+      "overflowCount": 0
+    }
+  ],
+  "capturesPresent": true,
+  "downloadsPresent": true
+}

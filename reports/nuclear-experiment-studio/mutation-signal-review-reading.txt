@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:538:5 › signal detective reviews saved readings without changing the next planned test or its evidence (17.0s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:538:5 › signal detective reviews saved readings without changing the next planned test or its evidence 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-case-reading]')
+    Expected: "21.4%"
+    Received: "25.0%"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-case-reading]')
+        33 × locator resolved to <strong data-ns-case-reading="true">25.0%</strong>
+           - unexpected value "25.0%"
+
+
+      548 |   await expect(reading).toHaveText('25.0%');
+      549 |   await review.focus(); await page.keyboard.press('ArrowUp');
+    > 550 |   await expect(reading).toHaveText('21.4%');
+          |                         ^
+      551 |   await expect(review).toHaveValue('closer');
+      552 |   await expect(review).toBeFocused();
+      553 |   await expect(page.locator('[data-ns-case-measured]')).toHaveText('Saved test: 1 m · 2 cm lead');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:550:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-signal-review-reading\43-nuclearlab-experiment-s-31802-lanned-test-or-its-evidence-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-signal-review-reading\43-nuclearlab-experiment-s-31802-lanned-test-or-its-evidence-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-signal-review-reading\43-nuclearlab-experiment-s-31802-lanned-test-or-its-evidence-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-signal-review-reading\43-nuclearlab-experiment-s-31802-lanned-test-or-its-evidence-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-signal-review-reading\43-nuclearlab-experiment-s-31802-lanned-test-or-its-evidence-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:538:5 › signal detective reviews saved readings without changing the next planned test or its evidence 
+(node:23016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-signal-review-reading.js in place of stem_lab/stem_tool_nuclearlab.js

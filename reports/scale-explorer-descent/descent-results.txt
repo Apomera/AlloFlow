@@ -1,0 +1,35 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:42:5 › a centered descent changes measured scale, keeps rendering with ambience paused, and arrives cleanly (10.3s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:68:5 › phone arrival controls fit and return keyboard focus while the route restores its origin (6.3s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:80:5 › Escape, a new destination and a change to reduced motion each settle an active approach (11.4s)
+  x  4 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:93:5 › reduced motion bypasses the descent and changing to the chart releases its overlays (36.3s)
+
+
+  1) [chromium] › tests\e2e\scale-explorer-descent.spec.ts:93:5 › reduced motion bypasses the descent and changing to the chart releases its overlays 
+
+    TimeoutError: locator.click: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Immersive atlas', exact: true })[22m
+
+
+       97 |   await page.getByRole('button',{name:'Scale chart',exact:true}).click();
+       98 |   await expect(page.getByRole('region',{name:'Scale approach',exact:true})).toHaveCount(0);
+    >  99 |   await page.getByRole('button',{name:'Immersive atlas',exact:true}).click();await settled(page,'jupiter');
+          |                                                                      ^
+      100 | });
+      101 |
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\scale-explorer-descent.spec.ts:99:70
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\scale-explorer-descent\test-results\scale-explorer-descent-red-1a89b-chart-releases-its-overlays-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\scale-explorer-descent\test-results\scale-explorer-descent-red-1a89b-chart-releases-its-overlays-chromium\error-context.md
+
+    Error Context: reports\scale-explorer-descent\test-results\scale-explorer-descent-red-1a89b-chart-releases-its-overlays-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\scale-explorer-descent.spec.ts:93:5 › reduced motion bypasses the descent and changing to the chart releases its overlays 
+  3 passed (1.5m)

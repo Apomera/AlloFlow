@@ -1,0 +1,521 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2052,7 +2052,8 @@
+     var ttsPrepNoticeState = React.useState('');
+     var ttsPrepNotice = ttsPrepNoticeState[0], setTtsPrepNotice = ttsPrepNoticeState[1];
+     var ttsPrepRequestRef = React.useRef(null);
+-    var ttsPrepContext = JSON.stringify([generatedContent && generatedContent.id, simplifiedReadAloudText, selectedVoice, leveledTextLanguage]);
++    var audioProfileRevision = typeof window !== 'undefined' ? window.__alloReadAloudProfileRevision : null;
++    var ttsPrepContext = JSON.stringify([generatedContent && generatedContent.id, simplifiedReadAloudText, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision]);
+     var ttsPrepContextRef = React.useRef(ttsPrepContext);
+     ttsPrepContextRef.current = ttsPrepContext;
+     React.useEffect(function () {
+@@ -2139,7 +2140,7 @@
+     var setEditAudioPlaybackErrors = editAudioPlaybackErrors_state[1];
+     var regenAudioKey = regenAudioKey_state[0];
+     var setRegenAudioKey = regenAudioKey_state[1];
+-    var setAudioStatusTick = React.useState(0)[1];
++    var [audioStatusTick, setAudioStatusTick] = React.useState(0);
+     var editAudioOpen_state = React.useState(false);
+     var editAudioOpen = editAudioOpen_state[0];
+     var setEditAudioOpen = editAudioOpen_state[1];
+@@ -2229,6 +2230,7 @@
+       });
+     };
+     var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error, identityOptions) {
++      if (error && error.name === 'AbortError') return;
+       if (error && error.name === 'NotAllowedError') {
+         setEditAudioNotice(viewText('simplified.audio_audio_playback_was_blocked_press_play', 'Audio playback was blocked. Press Play again.'));
+         return;
+@@ -2238,6 +2240,15 @@
+         reason: 'The saved audio could not be decoded or loaded.'
+       }, identityOptions);
+       setEditAudioNotice('Saved audio for sentence ' + sentenceNumber + ' could not be played. Rebuild or replace it.');
++      // Share a confirmed decoder/load failure with preparation and every reader.
++      // Autoplay denial above is not evidence that the saved clip is corrupt.
++      try {
++        if (typeof window.__alloQuarantineReadAloudAudio === 'function') {
++          Promise.resolve(window.__alloQuarantineReadAloudAudio(sentence, {
++            code: 'media-playback-failed', reason: 'The saved audio could not be decoded or loaded.'
++          }, identityOptions || {})).then(function () { setAudioStatusTick(function (n) { return n + 1; }); }).catch(function () {});
++        }
++      } catch (_) {}
+     };
+     var setSaveTtsAsPlayedEnabled = function (value) {
+       var next = !!value;
+@@ -2246,7 +2257,11 @@
+     };
+     React.useEffect(function () {
+       if (typeof window === 'undefined') return;
+-      var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
++      var onAudioUpdate = function (event) {
++        var resourceId = event && event.detail && event.detail.resourceId;
++        if (resourceId && generatedContent && generatedContent.id && resourceId !== generatedContent.id) return;
++        setAudioStatusTick(function (n) { return n + 1; });
++      };
+       var onAudioCapture = function (event) {
+         var detail = event && event.detail ? event.detail : {};
+         if (generatedContent && generatedContent.id && detail.resourceId && detail.resourceId !== generatedContent.id) return;
+@@ -2288,9 +2303,13 @@
+       };
+       window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+       window.addEventListener('alloflow:karaoke-audio-capture', onAudioCapture);
++      window.addEventListener('alloflow:read-aloud-reconciled', onAudioUpdate);
++      window.addEventListener('alloflow:module-registry-changed', onAudioUpdate);
+       return function () {
+         window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+         window.removeEventListener('alloflow:karaoke-audio-capture', onAudioCapture);
++        window.removeEventListener('alloflow:read-aloud-reconciled', onAudioUpdate);
++        window.removeEventListener('alloflow:module-registry-changed', onAudioUpdate);
+       };
+     }, [generatedContent && generatedContent.id]);
+     React.useEffect(function () { setSavingAudioKeys({}); setCaptureAudioErrors({}); setEditAudioPlaybackErrors({}); }, [generatedContent && generatedContent.id]);
+@@ -2497,11 +2516,29 @@
+       try {
+         var summaryResolver = typeof window !== 'undefined' && window.__alloGetReadAloudAudioSummary;
+         if (typeof summaryResolver === 'function') {
+-          sharedSummary = summaryResolver(entries.map(function (entry) { return entry.text; }), 'reference', { entries: entries });
++          sharedSummary = summaryResolver(entries.map(function (entry) { return entry.text; }), 'reference', { entries: entries, profile: getReadAloudIdentityOptions().profile });
+         }
+       } catch (_) {}
+-      var saved = sharedSummary
+-        ? Number(sharedSummary.ready || 0) + Number(sharedSummary.stale || 0)
++      // Raw storage presence is useful in Edit Audio but is not readiness.
++      // A missing bridge cannot establish current segment/profile compatibility.
++      var count = function (value) { return Number.isFinite(Number(value)) ? Math.max(0, Math.min(entries.length, Math.floor(Number(value)))) : 0; };
++      var ready = count(sharedSummary && sharedSummary.ready);
++      var stale = count(sharedSummary && sharedSummary.stale);
++      var corrupt = count(sharedSummary && sharedSummary.corrupt);
++      var missing = Math.max(count(sharedSummary && sharedSummary.missing), entries.length - ready - stale - corrupt);
++      var unverifiedFailure = false;
++      entries.forEach(function (entry) {
++        var options = getReadAloudIdentityOptions(entry);
++        if (!editAudioPlaybackErrors[getReadAloudAudioKey(entry.text, options)]) return;
++        var inspection = null;
++        try { inspection = window.__alloInspectReadAloudAudio && window.__alloInspectReadAloudAudio(entry.text, 'reference', options); } catch (_) {}
++        if (inspection && inspection.status === 'ready') { ready = Math.max(0, ready - 1); corrupt += 1; }
++        else if (!inspection || !['stale', 'corrupt', 'missing'].includes(inspection.status)) unverifiedFailure = true;
++      });
++      // Fail closed if an editor failure cannot be matched to the shared summary.
++      var unavailable = !sharedSummary || unverifiedFailure;
++      if (unavailable) { ready = 0; missing = Math.max(0, entries.length - stale - corrupt); }
++      var saved = sharedSummary ? count(sharedSummary.ready) + stale
+         : entries.reduce(function (n, entry) { return n + (hasStoredReadAloudAudio(entry.text, getReadAloudIdentityOptions(entry)) ? 1 : 0); }, 0);
+       var bytes = sharedSummary ? Number(sharedSummary.estimatedBytes || 0) : 0;
+       var maxBytes = 0;
+@@ -2510,7 +2547,7 @@
+         if (!sharedSummary && st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
+         if (st && typeof st.limits === 'function') maxBytes = st.limits().maxBytes || 0;
+       } catch (_) {}
+-      return { saved: saved, total: entries.length, bytes: bytes, maxBytes: maxBytes };
++      return { saved: saved, ready: ready, stale: stale, corrupt: corrupt, missing: missing, unavailable: unavailable, total: entries.length, bytes: bytes, maxBytes: maxBytes };
+     };
+     var getReadAloudSentenceEntriesForText = function (rawText, sourceLanguage) {
+       var text = typeof rawText === 'string' ? rawText : String(rawText || '');
+@@ -3520,7 +3557,7 @@
+     var reviewAudio = React.useMemo(function () {
+       if (!showReviewSummary) return null;
+       try { return getReadAloudAudioSummary(getReadAloudSentenceEntriesForText(simplifiedReadAloudText)); } catch (_) { return null; }
+-    }, [showReviewSummary, simplifiedReadAloudText, generatedContent?.id, ttsPrepState.done, ttsPrepState.busy, isPlaying]);
++    }, [showReviewSummary, simplifiedReadAloudText, generatedContent?.id, generatedContent?.karaokeAudio, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision, audioStatusTick, editAudioPlaybackErrors, ttsPrepState.done, ttsPrepState.busy, isPlaying]);
+     var [studentPreview, setStudentPreview] = React.useState(null);
+     var studentPreviewRef = React.useRef(null), studentPreviewCloseRef = React.useRef(null), studentPreviewOpener = React.useRef(null);
+     React.useEffect(function () { if (studentPreview && studentPreviewCloseRef.current) studentPreviewCloseRef.current.focus(); }, [!!studentPreview]);
+@@ -3553,10 +3590,13 @@
+           label: help.status === 'stale' || (helpCount && !help.shown) ? viewText('simplified.review_help_needs_review', 'Word help needs review') : helpCount ? viewText('simplified.review_help_shown', 'Word help shown to students') : viewText('simplified.review_help_none', 'No word help'),
+           detail: help.status === 'stale' ? viewText('simplified.review_help_stale_detail', 'The text changed after word help was made, so students do not see it.') : helpCount ? (helpCount === 1 ? viewText('simplified.word_help_summary_one', '1 support') : viewText('simplified.word_help_summary_count', '{count} supports', { count: helpCount })) + (help.shown ? '' : ' · ' + viewText('simplified.word_help_summary_hidden', 'Hidden from students')) : viewText('simplified.review_help_none_detail', 'Optional explanations for hard words.'),
+           actions: [['help', viewText('simplified.review_open_help', 'Review word help'), openWordHelpReview]] },
+-        reviewAudio && reviewAudio.total > 0 && { key: 'audio', tone: reviewAudio.saved >= reviewAudio.total ? 'ok' : 'neutral',
+-          label: reviewAudio.saved >= reviewAudio.total ? viewText('simplified.review_audio_ready', 'Audio prepared') : reviewAudio.saved ? viewText('simplified.review_audio_partial', 'Audio partly prepared') : viewText('simplified.review_audio_none', 'Audio not prepared'),
+-          detail: viewText('simplified.review_audio_detail', '{saved} of {total} sentences saved, so they play without waiting.', { saved: Math.min(reviewAudio.saved, reviewAudio.total), total: reviewAudio.total }),
+-          actions: [reviewAudio.saved < reviewAudio.total && typeof handlePrepareReadAloudAudio === 'function' && !ttsPrepState.busy && ['audio', viewText('simplified.save_audio', 'Save audio'), () => handlePrepareReadAloudAudio()]] }
++        reviewAudio && reviewAudio.total > 0 && { key: 'audio', tone: !reviewAudio.unavailable && reviewAudio.ready === reviewAudio.total ? 'ok' : 'neutral',
++          label: reviewAudio.unavailable ? viewText('simplified.review_audio_unavailable', 'Audio status unavailable') : reviewAudio.ready === reviewAudio.total ? viewText('simplified.review_audio_ready', 'Audio prepared') : reviewAudio.ready ? viewText('simplified.review_audio_partial', 'Audio partly prepared') : viewText('simplified.review_audio_none', 'Audio not prepared'),
++          detail: viewText('simplified.review_audio_current_detail', '{ready} of {total} sentence clips ready for these settings on this device.', { ready: reviewAudio.ready, total: reviewAudio.total }),
++          actions: [(reviewAudio.unavailable || reviewAudio.ready < reviewAudio.total || ttsPrepState.busy) && ['audio', ttsPrepState.busy ? viewText('simplified.save_audio_stop', 'Stop saving audio') : viewText('simplified.save_audio', 'Save audio'), () => {
++            if (ttsPrepState.busy) { var request = ttsPrepRequestRef.current; if (request && request.controller) request.controller.abort(); return; }
++            handlePrepareReadAloudAudio();
++          }]] }
+       ].filter(Boolean);
+       var tones = { ok: 'border-emerald-300 bg-emerald-50 text-emerald-900', attention: 'border-amber-400 bg-amber-50 text-amber-950', neutral: 'border-slate-300 bg-slate-50 text-slate-800' };
+       return <section data-teacher-review-summary aria-labelledby="simplified-review-summary-title" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-3 text-left text-sm text-slate-800">
+diff --git a/read_aloud_audio_service_source.jsx b/read_aloud_audio_service_source.jsx
+--- a/read_aloud_audio_service_source.jsx
++++ b/read_aloud_audio_service_source.jsx
+@@ -321,10 +321,10 @@
+             return found;
+         }
+ 
+-        function profileFor(segment, operation) {
++        function profileFor(segment, operation, requestedProfile) {
+             const resource = liveResource({ segment, operation });
+             const base = getSynthesisProfile(context({ resource, segment, operation })) || {};
+-            const profile = Object.assign({}, base);
++            const profile = Object.assign({}, base, requestedProfile || {});
+             const overrides = segment && segment.fields && (
+                 segment.fields.synthesisProfile || segment.fields.profile
+             );
+@@ -392,9 +392,11 @@
+             if (typeof store.inspect === 'function') {
+                 const inspected = store.inspect(key, compatibility);
+                 if (inspected && typeof inspected === 'object') {
+-                    const status = ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)
++                    let status = ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)
+                         ? inspected.status
+                         : (inspected.url != null ? 'ready' : 'missing');
++                    // Presence/profile metadata alone cannot certify a playable clip.
++                    if (status === 'ready' && !(typeof inspected.url === 'string' && inspected.url.trim())) status = 'missing';
+                     return {
+                         status,
+                         url: status === 'ready' && inspected.url != null ? inspected.url : null,
+@@ -424,7 +426,7 @@
+             }
+             if (!exists && (url != null || storedUrl != null)) exists = true;
+             return {
+-                status: url != null ? 'ready' : (exists ? 'stale' : 'missing'),
++                status: typeof url === 'string' && url.trim() ? 'ready' : (exists ? 'stale' : 'missing'),
+                 url: url == null ? null : url,
+                 storedUrl: storedUrl == null ? null : storedUrl,
+                 source,
+@@ -441,12 +443,12 @@
+             return inspectDescriptor(segment, store, profile);
+         }
+ 
+-        function summary() {
++        function summary(options = {}) {
+             const list = segments();
+             const store = liveStore({ operation: 'summary' });
+             const result = { total: list.length, ready: 0, stale: 0, corrupt: 0, missing: 0, estimatedBytes: 0 };
+             list.forEach((segment) => {
+-                const status = inspectDescriptor(segment, store, profileFor(segment, 'summary')).status;
++                const status = inspectDescriptor(segment, store, profileFor(segment, 'summary', options.profile)).status;
+                 result[status] += 1;
+             });
+             if (store && typeof store.estimateBytes === 'function') {
+@@ -1418,10 +1420,11 @@
+         } catch (_) { return null; }
+     }
+ 
+-    function summary(sentences, lane) {
+-        const binding = bindingFor(Array.isArray(sentences) ? sentences : null, lane || 'reference');
++    function summary(sentences, lane, options = {}) {
++        const supplied = Array.isArray(options.entries) ? options.entries : (Array.isArray(sentences) ? sentences : null);
++        const binding = bindingFor(supplied, lane || 'reference');
+         if (!binding) return null;
+-        try { return binding.controller.summary(); } catch (_) { return null; }
++        try { return binding.controller.summary({ profile: options.profile }); } catch (_) { return null; }
+     }
+ 
+     return {
+diff --git a/AlloFlowANTI.txt b/AlloFlowANTI.txt
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -32798,9 +32798,12 @@
+       ? bridge.reconcile(lane || 'reference', options || {})
+       : null;
+   };
+-  window.__alloGetReadAloudAudioSummary = (sentences, lane, _summaryOptions) => {
++  // Provider/model changes also affect stored compatibility, even when reader
++  // text, voice, and speed props remain the same.
++  window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider || 'auto', _aiConfig.backend || 'gemini', (_aiConfig.models && _aiConfig.models.tts) || GEMINI_MODELS.tts || '']);
++  window.__alloGetReadAloudAudioSummary = (sentences, lane, summaryOptions) => {
+     const bridge = _getReadAloudBridge();
+-    return bridge ? bridge.summary(sentences, lane || 'reference') : null;
++    return bridge ? bridge.summary(sentences, lane || 'reference', summaryOptions || {}) : null;
+   };
+   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
+     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6614,6 +6614,8 @@
+     "review_help_none_detail": "Optional explanations for hard words.",
+     "review_open_help": "Review word help",
+     "review_audio_ready": "Audio prepared",
++    "review_audio_unavailable": "Audio status unavailable",
++    "review_audio_current_detail": "{ready} of {total} sentence clips ready for these settings on this device.",
+     "review_audio_partial": "Audio partly prepared",
+     "review_audio_none": "Audio not prepared",
+     "review_audio_detail": "{saved} of {total} sentences saved, so they play without waiting.",
+diff --git a/tests/read_aloud_audio_service.test.js b/tests/read_aloud_audio_service.test.js
+--- a/tests/read_aloud_audio_service.test.js
++++ b/tests/read_aloud_audio_service.test.js
+@@ -407,6 +407,13 @@
+ }
+ 
+ describe('ReadAloudAudioService structured store inspection', () => {
++  it.each([null, '', '   '])('does not count a reported ready clip without a playable URL (%s)', (url) => {
++    const harness = makeHarness({
++      store: { inspect: () => ({ status: 'ready', url }), get: () => null },
++    });
++    expect(harness.bound.summary()).toMatchObject({ total: 3, ready: 0, missing: 3 });
++  });
++
+   it('preserves a v4 stale result even when raw has() would report missing', () => {
+     const structuredStore = {
+       inspect: vi.fn(() => ({
+@@ -633,6 +640,55 @@
+ });
+ 
+ describe('ReadAloudAudioService legacy compatibility bridge', () => {
++  it('summarizes the same descriptors and profiles that preparation saved', async () => {
++    const canonical = [
++      { segmentId: 'first', text: 'AlloFlow.', language: 'English' },
++      { segmentId: 'second', text: 'AlloFlow.', language: 'English' },
++    ];
++    const entries = [
++      { segmentId: 'first', text: 'AlloFlow.', occurrence: 0, language: 'Spanish' },
++      { segmentId: 'second', text: 'AlloFlow.', occurrence: 1, language: 'English' },
++    ];
++    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () => canonical });
++    await harness.bridge.prepare(entries.map(entry => entry.text), null, { entries });
++    expect(harness.bridge.summary(entries.map(entry => entry.text), 'reference', { entries }))
++      .toMatchObject({ total: 2, ready: 2, stale: 0 });
++    expect(harness.bridge.summary(entries.map(entry => entry.text), 'reference', { entries, profile: { voice: 'Aoede' } }))
++      .toMatchObject({ total: 2, ready: 0, stale: 2 });
++    expect(harness.bridge.summary(entries.map(entry => entry.text), 'reference', { entries: [entries[1]] }))
++      .toMatchObject({ total: 1, ready: 1 });
++  });
++
++  it('keeps human recordings ready through synthesis setting changes but not text identity edits', async () => {
++    let text = 'Teacher narration.';
++    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () => [{ segmentId: 'one', text }] });
++    await harness.bridge.saveRecording(text, { b64: clipB64('teacher'), mime: 'audio/mpeg' });
++    expect(harness.bridge.summary([text], 'reference', { profile: { voice: 'Aoede', synthesisRate: 0.7 } }))
++      .toMatchObject({ ready: 1, stale: 0 });
++    text = 'Changed teacher narration.';
++    expect(harness.bridge.summary([text], 'reference')).toMatchObject({ ready: 0, stale: 1 });
++    expect(harness.synthesize).not.toHaveBeenCalled();
++  });
++
++  it('tracks corruption, removal, reload, and resource-store clearing', async () => {
++    const entries = [{ segmentId: 'one', text: 'First.' }, { segmentId: 'two', text: 'Second.' }];
++    const harness = makeLegacyBridgeHarness({ enumerateResourceSegments: () => entries });
++    await harness.bridge.prepare(entries);
++    const payload = harness.referenceStore.serialize();
++    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 2 });
++    await harness.bridge.quarantine('First.', { code: 'media-error' });
++    await harness.bridge.remove('Second.');
++    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 0, corrupt: 1, missing: 1 });
++    harness.referenceStore.clear();
++    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 0, missing: 2 });
++    harness.referenceStore.hydrate(JSON.parse(JSON.stringify(payload)));
++    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 2, corrupt: 0, missing: 0 });
++    const malformed = JSON.parse(JSON.stringify(payload));
++    Object.values(malformed.entries)[0].audio = 'not-audio';
++    harness.referenceStore.clear(); harness.referenceStore.hydrate(malformed);
++    expect(harness.bridge.summary(entries)).toMatchObject({ ready: 1, missing: 1 });
++  });
++
+   it('resolves a compatible stored clip without synthesizing and exposes its inspection', async () => {
+     const harness = makeLegacyBridgeHarness();
+     await harness.bridge.regenerate('Already stored.');
+diff --git a/tests/reader_audio_readiness.test.js b/tests/reader_audio_readiness.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_audio_readiness.test.js
+@@ -0,0 +1,203 @@
++// Truthful local audio readiness: identity, lifecycle updates, and recovery.
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { readFileSync } from 'node:fs';
++import { loadAlloModule } from './setup.js';
++import { validAudioBase64 } from './lib/audio_fixtures.js';
++const require = createRequire(import.meta.url);
++let React, createRoot, act, View, root, host, pure, phase;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  act = React.act;
++  global.React = window.React = React;
++  global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
++  loadAlloModule('view_simplified_module.js');
++  pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
++});
++beforeEach(() => { localStorage.clear(); });
++afterEach(() => {
++  if (root) act(() => root.unmount()); host?.remove(); root = null; host = null;
++  vi.restoreAllMocks(); vi.unstubAllGlobals();
++  for (const key of ['__alloGetReadAloudAudioSummary', '__alloInspectReadAloudAudio', '__alloPrepareReadAloud', '__alloQuarantineReadAloudAudio', '__alloReadAloudProfileRevision']) delete window[key];
++});
++const TEXT = 'Plants need light. Roots take in water.';
++function mount(extra = {}) {
++  const noop = () => {};
++  let props = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'audio-1', type: 'simplified', data: TEXT, config: { language: 'English' }, instructionalText: { form: 'adapted', role: 'supplemental' } }, selectedVoice: 'Kore', voiceSpeed: 1, leveledTextLanguage: 'English', isTeacherMode: true, isZenMode: false, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [], setFocusedParagraphIndex: noop, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, handleToggleIsEditingLeveledText: noop, handleSimplifiedTextChange: noop, handleFormatText: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, setSelectionMenu: noop, ...extra };
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  const render = next => { props = { ...props, ...next }; act(() => root.render(React.createElement(View, props))); };
++  render({}); return { render, get props() { return props; } };
++}
++const row = () => host.querySelector('[data-review-state="audio"]');
++const recovery = () => row()?.querySelector('[data-review-action="audio"]');
++const update = type => act(() => window.dispatchEvent(new CustomEvent(type, { detail: { resourceId: 'audio-1' } })));
++const summary = (ready, stale = 0, corrupt = 0, missing = 2 - ready - stale - corrupt) => ({ total: 2, ready, stale, corrupt, missing });
++
++describe('teacher audio readiness', () => {
++  it.each([
++    ['all stale', summary(0, 2), 'Audio not prepared', 0],
++    ['mixed ready/stale', summary(1, 1), 'Audio partly prepared', 1],
++    ['corrupt and missing', summary(0, 0, 1, 1), 'Audio not prepared', 0],
++    ['partially missing', summary(1), 'Audio partly prepared', 1],
++  ])('%s keeps preparation available', (_name, state, label, ready) => {
++    window.__alloGetReadAloudAudioSummary = () => state;
++    mount();
++    expect(row().textContent).toContain(label);
++    expect(row().textContent).toContain(`${ready} of 2`);
++    expect(row().textContent).not.toContain('without waiting');
++    expect(recovery()).not.toBeNull();
++    expect(row().getAttribute('data-review-tone')).not.toBe('ok');
++  });
++  it('only all-ready audio is prepared, with a device-scoped claim', () => {
++    window.__alloGetReadAloudAudioSummary = () => summary(2);
++    mount();
++    expect(row().textContent).toContain('Audio prepared');
++    expect(row().textContent).toContain('on this device');
++    expect(recovery()).toBeNull();
++  });
++  it.each([['selectedVoice', 'Aoede'], ['voiceSpeed', 0.8], ['leveledTextLanguage', 'Spanish']])('rechecks a changed %s without playback', (key, value) => {
++    let state = summary(2);
++    const resolver = window.__alloGetReadAloudAudioSummary = vi.fn(() => state);
++    const view = mount();
++    state = summary(0, 2);
++    view.render(key === 'leveledTextLanguage'
++      ? { generatedContent: { ...view.props.generatedContent, config: { language: value } } }
++      : { [key]: value });
++    expect(row().textContent).toContain('Audio not prepared');
++    expect(recovery()).not.toBeNull();
++    const options = resolver.mock.calls.at(-1)[2];
++    expect(options.profile).toMatchObject({ voice: key === 'selectedVoice' ? value : 'Kore', synthesisRate: key === 'voiceSpeed' ? value : 1 });
++    expect(options.entries.every(entry => entry.language === (key === 'leveledTextLanguage' ? value : 'English'))).toBe(true);
++  });
++  it.each(['alloflow:karaoke-audio-updated', 'alloflow:karaoke-audio-capture', 'alloflow:read-aloud-reconciled'])('rechecks store changes after %s', type => {
++    let state = summary(2); window.__alloGetReadAloudAudioSummary = () => state;
++    mount(); state = summary(1);
++    act(() => window.dispatchEvent(new CustomEvent(type, { detail: { resourceId: 'audio-1', sentence: 'Plants need light.', status: 'saved' } })));
++    expect(row().textContent).toContain('1 of 2'); expect(recovery()).not.toBeNull();
++    state = summary(2); update('alloflow:karaoke-audio-updated');
++    expect(row().textContent).toContain('Audio prepared');
++  });
++  it('rechecks same-ID payload replacement in both directions', () => {
++    let state = summary(2); window.__alloGetReadAloudAudioSummary = () => state;
++    const view = mount();
++    state = summary(0); view.render({ generatedContent: { ...view.props.generatedContent, karaokeAudio: { version: 4, entries: {} } } });
++    expect(row().textContent).toContain('Audio not prepared');
++    state = summary(2); view.render({ generatedContent: { ...view.props.generatedContent, karaokeAudio: { version: 4, entries: { restored: true } } } });
++    expect(row().textContent).toContain('Audio prepared');
++  });
++  it('recovers from unavailable tools when the module registry changes', () => {
++    mount();
++    expect(row().textContent).toContain('Audio status unavailable');
++    expect(recovery()).not.toBeNull();
++    window.__alloGetReadAloudAudioSummary = () => summary(2);
++    update('alloflow:module-registry-changed');
++    expect(row().textContent).toContain('Audio prepared');
++  });
++  it('rechecks text and resource changes and does not resplit on unrelated renders', () => {
++    const resolver = window.__alloGetReadAloudAudioSummary = vi.fn(texts => ({ ready: texts.filter(t => t === 'Plants need light.' || t === 'Roots take in water.').length }));
++    const view = mount(); const before = resolver.mock.calls.length;
++    view.render({ chunkReaderSweepPct: 42 }); expect(resolver).toHaveBeenCalledTimes(before);
++    view.render({ generatedContent: { ...view.props.generatedContent, data: 'Plants need light. Birds sing.' } });
++    expect(row().textContent).toContain('1 of 2');
++    const afterText = resolver.mock.calls.length;
++    view.render({ generatedContent: { ...view.props.generatedContent, id: 'audio-2' } });
++    expect(resolver.mock.calls.length).toBeGreaterThan(afterText);
++  });
++  it.each(['speed', 'provider/model'])('cancels %s-invalidated preparation and retains retry after partial completion', async change => {
++    window.__alloGetReadAloudAudioSummary = () => summary(0);
++    let finish; let signal;
++    window.__alloPrepareReadAloud = vi.fn((_texts, _progress, options) => { signal = options.signal; return new Promise(resolve => { finish = resolve; }); });
++    const view = mount();
++    await act(async () => { recovery().click(); });
++    expect(recovery()?.textContent).toContain('Stop');
++    if (change === 'speed') view.render({ voiceSpeed: 0.8 });
++    else { window.__alloReadAloudProfileRevision = 'new-provider/model'; view.render({}); }
++    expect(signal.aborted).toBe(true);
++    await act(async () => { finish({ ok: true, remaining: 0 }); });
++    expect(row().textContent).toContain('Audio not prepared');
++    expect(recovery().textContent).toContain('Save audio');
++    expect(host.querySelector('[data-tts-prep-status]').textContent).not.toContain('saved for all');
++  });
++
++  it.each(['NotSupportedError', 'NotAllowedError', 'AbortError'])('handles edit-audio %s without a false prepared claim', async name => {
++    let state = summary(2);
++    window.__alloGetReadAloudAudioSummary = () => state;
++    window.__alloInspectReadAloudAudio = sentence => ({
++      status: state.corrupt && sentence === 'Plants need light.' ? 'corrupt' : 'ready',
++      url: 'blob:clip', storedUrl: 'blob:clip', source: 'ai', metadata: { voice: 'Kore' }
++    });
++    window.__alloQuarantineReadAloudAudio = vi.fn(async () => { state = summary(1, 0, 1); return true; });
++    vi.stubGlobal('Audio', class {
++      play() { return Promise.reject(Object.assign(new Error('Media failed'), { name })); }
++      pause() {}
++    });
++    mount({ isEditingLeveledText: true, t: key => key === 'common.play' ? 'Play' : key });
++    await act(async () => { host.querySelector('button[aria-controls^="allo-edit-audio-"]').click(); });
++    await act(async () => { host.querySelector('button[aria-label="Play 1"]').click(); });
++    if (name === 'NotAllowedError' || name === 'AbortError') {
++      expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();
++      expect(row().textContent).toContain('Audio prepared');
++    } else {
++      expect(window.__alloQuarantineReadAloudAudio).toHaveBeenCalledWith('Plants need light.', expect.objectContaining({ code: 'media-playback-failed' }), expect.objectContaining({ occurrence: 0 }));
++      expect(row().textContent).toContain('1 of 2');
++      expect(recovery()).not.toBeNull();
++    }
++  });
++
++  it('rechecks provider/model identity when the host revision changes', () => {
++    let state = summary(2); window.__alloGetReadAloudAudioSummary = () => state;
++    window.__alloReadAloudProfileRevision = 'gemini/model-a';
++    const view = mount();
++    state = summary(0, 2); window.__alloReadAloudProfileRevision = 'gemini/model-b';
++    view.render({});
++    expect(row().textContent).toContain('Audio not prepared');
++    expect(recovery()).not.toBeNull();
++  });
++
++  it('the actual host wrapper forwards summary descriptors and profile', () => {
++    const source = readFileSync(resolve('AlloFlowANTI.txt'), 'utf8');
++    const start = source.indexOf('window.__alloGetReadAloudAudioSummary =');
++    const end = source.indexOf('\n  };', start) + '\n  };'.length;
++    const hostWindow = {};
++    const bridge = { summary: vi.fn(() => summary(2)) };
++    new Function('window', '_getReadAloudBridge', source.slice(start, end))(hostWindow, () => bridge);
++    const options = { entries: [{ text: 'Hola.', language: 'Spanish' }], profile: { voice: 'Aoede' } };
++    hostWindow.__alloGetReadAloudAudioSummary(['Hola.'], 'reference', options);
++    expect(bridge.summary).toHaveBeenCalledWith(['Hola.'], 'reference', options);
++  });
++
++  it('deleting temporary TTS cache does not delete saved resource audio', async () => {
++    loadAlloModule('karaoke_audio_store_module.js');
++    loadAlloModule('read_aloud_audio_service_module.js');
++    vi.stubGlobal('URL', { createObjectURL: () => 'blob:durable', revokeObjectURL: vi.fn() });
++    const store = window.AlloModules.KaraokeAudioStore.createStore();
++    const entries = [{ text: 'Plants need light.', segmentId: 'one' }, { text: 'Roots take in water.', segmentId: 'two' }];
++    const bridge = window.AlloModules.createReadAloudLegacyBridge({
++      getResource: () => ({ id: 'audio-1', type: 'simplified', data: TEXT }),
++      getStore: () => store,
++      getProfile: () => ({ voice: 'Kore', language: 'English', synthesisRate: 1, voiceResolverVersion: 2 }),
++      enumerateResourceSegments: () => entries,
++      synthesize: async () => ({ b64: validAudioBase64(), mime: 'audio/mpeg' }),
++    });
++    await bridge.prepare(entries);
++    window.__alloGetReadAloudAudioSummary = (...args) => bridge.summary(...args);
++    mount();
++    const source = readFileSync(resolve('AlloFlowANTI.txt'), 'utf8');
++    const start = source.indexOf('window.__clearAlloTtsCacheForWord =');
++    const end = source.indexOf('\n  };', start) + '\n  };'.length;
++    const hostWindow = {};
++    const cache = new Map([['plants need light.__Kore', 'blob:temporary']]);
++    new Function('window', 'globalTtsUrlCache', source.slice(start, end))(hostWindow, cache);
++    expect(hostWindow.__clearAlloTtsCacheForWord('Plants need light.')).toBe(1);
++    update('alloflow:karaoke-audio-updated');
++    expect(row().textContent).toContain('Audio prepared');
++    expect(bridge.summary(entries)).toMatchObject({ ready: 2, missing: 0 });
++    store.clear(); update('alloflow:karaoke-audio-updated');
++    expect(row().textContent).toContain('Audio not prepared');
++    expect(recovery()).not.toBeNull();
++  });
++});

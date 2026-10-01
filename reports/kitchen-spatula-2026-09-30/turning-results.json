@@ -1,0 +1,39 @@
+{
+  "checks": [
+    "A tap and a turned-but-still-lifted slice record no action, cooking time or food change.",
+    "Escape, incorrect directions and pointer cancellation restore the slice and spatula without saving a turn.",
+    "Only a complete slide, lift, turn, lower and release records one canonical flip. Actual surface colors, width, position and prior damage are preserved.",
+    "Native turn provenance survives reload; its close-up opens the same slice without changing cooking evidence.",
+    "The keyboard equivalent focuses the selected slice and uses the same canonical flip without advancing cooking time.",
+    "Turning also works for tomato pieces in a wide pan on the trivet, using the pan’s actual position.",
+    "Picking up the spatula pauses a running kitchen and holds cooking time during the movement.",
+    "After deliberate placement, Pan explorer routes into the spatula routine or its keyboard controls without automatically turning anything.",
+    "A real phone touch completes all four movements and records a single turn; the page fits 390px and passes accessibility checks.",
+    "Replay reconstructs the recorded turn while keeping physical and keyboard cooking controls read-only.",
+    "Compact and forced-color layouts pass. Graphics loss cancels a lifted slice and leaves the keyboard equivalent usable."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop spatula",
+      "violations": []
+    },
+    {
+      "name": "390px touch spatula",
+      "violations": []
+    },
+    {
+      "name": "320px spatula",
+      "violations": []
+    },
+    {
+      "name": "Forced-color spatula",
+      "violations": []
+    },
+    {
+      "name": "Graphics-loss turn controls",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

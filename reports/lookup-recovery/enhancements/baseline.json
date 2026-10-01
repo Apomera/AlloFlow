@@ -1,0 +1,25 @@
+{
+  "head": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "files": {
+    "host_handlers_source.jsx": {
+      "sourceSha256": "dc6ca4a0a8d9f80c435f55e8ae64e8418d8fcc16998ffa951386ad2c5f25566a",
+      "normalizedSourceSha256": "dc6ca4a0a8d9f80c435f55e8ae64e8418d8fcc16998ffa951386ad2c5f25566a",
+      "candidateSourceSha256": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848"
+    },
+    "dictionary_loader.js": {
+      "sourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "normalizedSourceSha256": "a7cd103d5fac9dcee6b673fb6638835df3c802f2973262b059f591a902343d22",
+      "candidateSourceSha256": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9"
+    },
+    "content_engine_source.jsx": {
+      "sourceSha256": "646dc4a0447fb418c26b6c372b90349df7543e700011333e893f463a028a320f",
+      "normalizedSourceSha256": "247061bf58611539f8354de49b6b85ac4f076b535266ddbc333bfda0b6ddc3b6",
+      "candidateSourceSha256": "538214d73fcd94023179b65d224631597decdd5a2ff6f8b0470e1e588fd9b36c"
+    },
+    "view_simplified_source.jsx": {
+      "sourceSha256": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+      "normalizedSourceSha256": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+      "candidateSourceSha256": "ef359ae49da5a2c1ed49f70f97541fc25f84a4b99ace0622b3338cdfe7c40676"
+    }
+  }
+}

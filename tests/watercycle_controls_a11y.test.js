@@ -19,7 +19,7 @@ describe('Water Cycle control accessibility', () => {
       // what this suite should hold.
       expect(source).toMatch(/"aria-valuetext":[^\n]*climSolar[^\n]*toFixed\(0\) \+ "% solar intensity"/);
       expect(source).toMatch(/"aria-valuetext":[^\n]*climTemp[^\n]*\+ " degrees Celsius"/);
-      expect(source).toMatch(/"aria-valuetext":[^\n]*climWind[^\n]*toFixed\(1\) \+ " times baseline wind"/);
+      expect(source).toMatch(/"aria-valuetext":[^\n]*climWind[^\n]*toFixed\(1\) \+ " times reference wind"/);
       expect(source).toContain('"aria-valuetext": landRainIntensity + " out of 100 rainfall intensity"');
       expect(source).toContain('"aria-valuetext": landSaturation + " out of 100 soil saturation"');
       expect(source).toContain('var wcClimateInterpretation = evaporationIndex >= 1.35');

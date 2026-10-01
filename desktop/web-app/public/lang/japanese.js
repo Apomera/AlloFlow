@@ -1,4 +1,2491 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "温度",
+          "headline": "冷たい水に顔をつける",
+          "steps": {
+            "0": "ボウルに冷たい水を入れます（氷があれば入れましょう）。",
+            "1": "息を止めます。",
+            "2": "前かがみになり、眉毛の上からほお骨の下まで顔を水につけて、15-30 秒保ちます。（顔を水につけられない場合は、代わりに保冷剤かぬれたタオルを目とほおの上のほうに当てます。）",
+            "3": "顔を上げて、ふつうに呼吸します。",
+            "4": "必要なら、もう一度くり返します。"
+          },
+          "why": "顔が冷たさを感じると、哺乳類の潜水反射が起こります。心拍が遅くなり、血液が手足から移動し、副交感神経系がはたらき始めます。数秒で効きます。極度の苦痛を断ち切るための、体を使ったいちばん速い方法です。",
+          "caution": "心臓の病気、摂食障害、または心拍が遅くなると危険なおそれがある状態がある人は、行わないでください。わからない場合は、まず医師か保健室の先生に相談してください。水は冷たく（約 10-15°C、50-60°F）しますが、氷のような冷たさにはしないでください。"
+        },
+        "intense": {
+          "label": "激しい運動",
+          "headline": "高ぶったエネルギーを燃やしきる",
+          "steps": {
+            "0": "5 分から 10 分、体を激しく動かすことをします。",
+            "1": "たとえば：全力ダッシュ、ジャンピングジャック、バーピー、階段かけ上がり、限界までの腕立てふせ、速い縄とび、思いきりダンス。",
+            "2": "本当に息が切れて、心拍が上がるのを感じるくらいまでやりましょう。",
+            "3": "そのあと歩くペースに落として、体を落ち着かせます。"
+          },
+          "why": "過覚醒（闘争・逃走）の状態のとき、体は本来使われるためのストレスホルモンであふれています。激しい運動はアドレナリンを燃やしつくし、体に「やりきった」という合図を送ります。過覚醒のままじっと座っていると、エンジンを空ぶかしし続けることになります。",
+          "caution": "運動が制限される病気やけが（心臓の病気、ぜんそく、最近のけが）がある場合は、強度の低い動きにするか、別の TIPP スキルを選んでください。けがをするほど激しい運動はしないでください。"
+        },
+        "paced": {
+          "label": "ペースを整えた呼吸",
+          "headline": "吸うより長く吐く",
+          "steps": {
+            "0": "楽な姿勢で座るか、横になります。",
+            "1": "4 つ数えながら鼻から息を吸います。",
+            "2": "6 から 8 まで数えながら、口からゆっくり吐きます（吸う時間より長く）。",
+            "3": "このリズムを 1 分から 2 分続けます。",
+            "4": "がんばったり力んだりする必要はありません。「長く吐くこと」こそが効き目のカギです。"
+          },
+          "why": "吸う息より吐く息を長くすると、自律神経系が副交感神経優位（「休息と消化」）へ切り替わります。ペース呼吸の研究では、90 秒以内に心拍変動のストレス指標がはっきり下がることがわかっています。ねらいはリラックスではなく、体のしくみです。",
+          "caution": "ゆっくり呼吸するとかえって不安が強くなる場合（パニック症やトラウマのある人に起こることがあります）は、別の TIPP スキルを試してください。無理にやらないでください。"
+        },
+        "paired": {
+          "label": "組み合わせ筋弛緩",
+          "headline": "力を入れて、ゆるめる。筋肉ごとに",
+          "steps": {
+            "0": "座るか、横になります。ゆっくり息を吸います。",
+            "1": "息を吸いながら、ひとつの筋肉のグループに強く力を入れます（こぶしをにぎる、肩をすくめる、顔をぎゅっとしかめる）。",
+            "2": "力を入れたまま 5 秒保ちます。",
+            "3": "息を吐きながら、力を完全にぬきます。力が入っているときと、ぬけたときのちがいに気づきましょう。",
+            "4": "体を順番に進めます：手、腕、肩、顔、首、胸、おなか、脚、足。",
+            "5": "全部で約 5 分かかります。"
+          },
+          "why": "筋肉に最大限に力を入れてからゆるめると、ただリラックスしようとするよりも深くリラックスできます（Jacobson による漸進的筋弛緩法の研究で、1930 年代に体系化されました）。ゆるめるたびに息を吐くことで、ふたつの効果が重なります。",
+          "caution": "けが、痛みの症候群、関節の過可動性がある場合は、痛む筋肉のグループはとばしてください。力はしっかり入れますが、決して痛くなるほどにはしないでください。"
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "急性の苦痛のための、四つの DBT 危機サバイバルスキル（温度 Temperature、激しい運動 Intense exercise、ペースを整えた呼吸 Paced breathing、組み合わせ筋弛緩 Paired muscle relaxation）。考えて抜け出そうとする【前に】、30 秒から 10 分で体を落ち着かせるためのものです。Linehan による DBT の苦痛耐性の基礎スキルです。",
+        "back_to_sel_hub": "SEL Hub に戻る",
+        "back": "← 戻る",
+        "four_dbt_crisis_survival_skills_for": "急性の苦痛のための、四つの DBT 危機サバイバルスキル。まず動いて、考えるのはそのあと。",
+        "tipp_sections": "TIPP のセクション",
+        "tipp_is_for_acute_distress_not": "🆘 TIPP は日常のストレスではなく、【急性】の苦痛のためのものです。 ",
+        "if_you_are_in_crisis_right": "今まさに危機の中にいるなら（自分を傷つけることを考えている、差し迫った危険の中にいる）、この SEL Hub のクライシス・コンパニオンを使うか、988（Suicide and Crisis Lifeline：自殺・危機ライフライン）に電話するか、741741 に HOME とテキストメッセージを送ってください（Crisis Text Line）。TIPP は次の 5 分を乗りきる助けになります。でも、人ならもっと長くそばにいてくれます。",
+        "tipp_is_a_real_dbt_skill": "TIPP は本物の DBT スキルですが、治療ではありません。TIPP に頼ることが多いと気づいたら、それ自体が大切な情報です。スクールカウンセラーや学校心理士に相談してください。",
+        "tipp_quick_chooser": "TIPP クイック選択",
+        "body_first_chooser": "体から選ぶ",
+        "match_the_skill_to_the_signal": "今、あなたの体が出しているサインに合うスキルを選びましょう。",
+        "helped_logcount_helped": "{helped}/{logCount} 回役立った",
+        "no_sessions_logged": "記録はまだありません",
+        "start_label": "{label}を始める",
+        "choose": "選ぶ",
+        "pick_one_do_it_notice_if": "ひとつ選ぶ。やってみる。気持ちのメーターが動くか確かめる。",
+        "you_do_not_need_to_do": "四つ全部やる必要はありません。今のあなたに合うものをひとつ選んでください。TIPP は【速く】効きます：30 秒から 10 分です。",
+        "duration_seconds": "約 {duration} 秒",
+        "duration_min": "約 {duration} 分",
+        "logged_glad_it_helped": "記録しました——役に立ってよかったです。",
+        "logged_try_a_different_tipp_next": "記録しました——次は別の TIPP を試してみましょう。",
+        "tipp_session_logged": "TIPP の練習を記録しました。",
+        "active_letter": "実行中 · {letter}",
+        "steps": "手順",
+        "why_this_works": "🧠 効くしくみ",
+        "caution": "⚖️ 注意： ",
+        "done_that_helped": "✓ できた。役に立った。",
+        "done_try_a_different_one": "できた。別のものを試す。",
+        "try_a_different_one": "⤴ 別のものを試す",
+        "exit_without_logging": "記録せずに終了",
+        "exit": "終了",
+        "no_tipp_sessions_logged_yet": "TIPP の記録はまだありません。",
+        "after_you_do_a_tipp_skill": "TIPP スキルをやったら記録して、どれが自分に効くかを知りましょう。",
+        "total_sessions": "合計回数",
+        "helped": "役立った",
+        "by_skill": "スキル別",
+        "recent_sessions": "最近の記録",
+        "unknown": "（不明）",
+        "helped_2": "✓ 役立った",
+        "tried_another": "⤴ 別のものを試した",
+        "read_this_first": "🆘 最初に読んでください",
+        "tipp_is_for_acute_distress_the": "TIPP は【急性】の苦痛のためのものです。後悔するようなことをしてしまいそうな瞬間や、次の 5 分さえ耐えられないと感じるときに使います。日常のストレス、気分の落ちこみ、不安な考えのためのものでは【ありません】。TIPP は速く、体を使う方法で、次の数分を乗りきり、話すこと・振り返ること・助けを求めることがもう一度できるようにするためのものです。危機の中にいるなら、クライシス・コンパニオンを使うか、988 に電話 / 741741 に HOME とテキストメッセージを送ってください。",
+        "what_tipp_is": "TIPP とは",
+        "tipp_is_a_set_of_four": "TIPP は、心より先に体にはたらきかける、四つの DBT 危機サバイバルスキルのセットです。過覚醒の状態（心臓がドキドキし、頭の中がぐるぐるして、衝動的に動いてしまいそうなとき）では、「考えて抜け出そう」としてもほとんどうまくいきません。考える脳がオフラインになっているからです。まず体を取り戻す必要があります。",
+        "each_tipp_skill_uses_a_physiological": "TIPP のスキルはどれも、ストレス反応を断ち切る体のしくみを使います。顔を冷やすと潜水反射が起こり、激しい運動はアドレナリンを燃やし、ペースを整えた呼吸は自律神経のバランスを切り替え、組み合わせ筋弛緩は力をぬいたあとのゆるみを生みます。何日もかかるのではなく、30 秒から 10 分で効きます。",
+        "where_tipp_comes_from": "TIPP の由来",
+        "tipp_is_part_of_the_distress": "TIPP は、弁証法的行動療法（DBT）の苦痛耐性モジュールの一部です。DBT は Marsha Linehan が 1980 年代から開発したもので、感情を強く、反応的に経験する人のためにつくられました。最初は、慢性的に自殺の危険が続く境界性パーソナリティ障害の患者さんを対象としていました。苦痛耐性スキルは「危機を生きのびる」瞬間のためのもので、次の数分間に事態を悪化させないことだけが目標です。現在 TIPP は、小児・思春期のメンタルヘルス、トラウマインフォームドな学校、外来の DBT スキルグループで広く教えられています。",
+        "sources_and_learn_more": "📚 出典とさらに学ぶ",
+        "authoritative_resources_for_tipp_and_dbt": "TIPP と DBT についての信頼できる資料。",
+        "the_standard_manual_tipp_is_in": "標準的なマニュアルです。TIPP は苦痛耐性モジュールに入っています。",
+        "practical_worksheets_including_tipp_handouts": "TIPP の配布資料を含む、実践的なワークシート。",
+        "linehan_founded_organization_for_dbt_training": "Linehan が設立した、DBT の研修と認定の団体。",
+        "free_open_educational_resource_covers_tipp": "無料のオープン教育リソース。TIPP やほかの苦痛耐性スキルを扱っています。",
+        "honest_limits": "⚖️ 正直な限界",
+        "tipp_is_a_survival_skill_not": "TIPP は生きのびるためのスキルで、解決策ではありません。次の 5 分を乗りきる助けにはなりますが、なぜ苦しいのかという原因には対処しません。",
+        "if_you_find_yourself_reaching_for": "毎日のように TIPP に頼っていると気づいたら、それはあなたの生活の中でもっと大きなことが起きているサインです。カウンセラーやセラピストにいっしょに向き合ってもらう価値があります。",
+        "tipp_works_on_hyperarousal_too_activated": "TIPP は過覚醒（高ぶりすぎ）に効きます。低覚醒（シャットダウン、無感覚、解離）には効き【ません】。その場合は、別の DBT スキル（セルフ・スージング Self-Soothe、ACCEPTS）や、ただ人とつながることのほうが役に立ちます。",
+        "the_cautions_on_each_skill_are": "各スキルの注意は本当に大切です。「温度」は心臓の病気や一部の摂食障害がある人には禁忌です。激しい運動は一部の病気がある人には禁忌です。スキルがしっくりこないと感じたら、ペースを落として少しずつやめてください。",
+        "tipp_is_best_learned_in_a": "TIPP は、必要になる前に練習しておけるよう、危機ではないときに【身につける】のがいちばんです。落ち着いているときに一度やっておくことが、最高の準備になります。",
+        "notes_for_educators": "📝 教育者の方へ： ",
+        "tipp_is_most_useful_when_students": "TIPP がいちばん役立つのは、危機の中で初めて出会うのではなく、Crew の時間に一、二度練習したことがあるときです。シンプルな Crew のプロトコル：TIPP スキルをひとつ（教室ではペースを整えた呼吸がいちばん簡単です）いっしょにやってみて、残りの三つの名前を紹介し、このツールを案内します。急性の苦痛のパターンが見られる生徒には、クライシス・コンパニオンと組み合わせて使ってください。",
+        "tipp_pocket_card": "🖨 TIPP ポケットカード。 ",
+        "print_and_fold_carry_in_a": "印刷して折りたたみ、ポケット、財布、手帳に入れて持ち歩きましょう。大切なのは、必要になる【前に】四つのスキルを手元に置いておくことです。ポケットカードは一枚に印刷されます。注意書きは大切なので残してあります。",
+        "print_save_as_pdf": "🖨 印刷 / PDF として保存",
+        "tipp_pocket_card_2": "TIPP · ポケットカード",
+        "dbt_distress_tolerance_linehan": "DBT 苦痛耐性 · Linehan",
+        "when_to_use": "使うとき： ",
+        "acute_distress_where_you_might_do": "後悔するようなことをしてしまいそうな、急性の苦痛のとき。まず体のことをして、話すのはそのあと。危機の中にいるなら、988 に電話するか、741741 に HOME とテキストメッセージを送ってください。",
+        "caution_2": "注意： ",
+        "practice_tipp_once_in_a_calm": "必要になる前に、落ち着いているときに一度 TIPP を練習しましょう。AlloFlow SEL Hub から印刷。出典：Linehan, DBT Skills Training Manual (2014)。",
+        "tipp_crisis_survival_skills": "TIPP 危機サバイバルスキル"
+      },
+      "tabs": {
+        "home": {
+          "label": "今すぐ必要"
+        },
+        "log": {
+          "label": "わたしの記録"
+        },
+        "print": {
+          "label": "ポケットカード"
+        },
+        "about": {
+          "label": "このツールについて"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "カッとなる・衝動的",
+          "fit": "いちばん速いリセット"
+        },
+        "1": {
+          "signal": "アドレナリンが高い",
+          "fit": "体を使う"
+        },
+        "2": {
+          "signal": "呼吸で導ける",
+          "fit": "いちばん静かな方法"
+        },
+        "3": {
+          "signal": "こわばっている・力が入っている",
+          "fit": "緊張をほどく"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "対象： ",
+      "label_what": "内容： ",
+      "crisis_resources": {
+        "988": {
+          "label": "988 Suicide & Crisis Lifeline（自殺・危機ライフライン）",
+          "contact": "988 に電話またはテキストメッセージ",
+          "script": "「友だちのことが心配なんです」と言うだけで大丈夫です。それで十分です。そこから先は相手が会話をリードしてくれます。"
+        },
+        "crisistext": {
+          "label": "Crisis Text Line（クライシス・テキストライン）",
+          "contact": "741741 に HOME とテキストメッセージを送る",
+          "script": "「友だちが自分を傷つけたいと言っていて、どうしたらいいかわからない」と送れば、それで大丈夫です。"
+        },
+        "trevor": {
+          "contact": "1-866-488-7386 に電話 · 678-678 に START とテキストメッセージ",
+          "script": "電話かテキストで「LGBTQ+ の友だちがいて、今すごくつらい時期を過ごしているんです」と伝えられます。"
+        },
+        "911": {
+          "label": "911 緊急通報",
+          "contact": "911 に電話",
+          "script": "「友だちが危ない状態で、どうしたらいいかわからない」と言えば大丈夫です。助けてくれます。"
+        },
+        "211": {
+          "label": "211 —— 地域の支援窓口",
+          "contact": "211 に電話 · または 211.org へ",
+          "script": "「友だちのために、この地域のメンタルヘルス危機サービスを探しています」と言えば、適切な地域の機関につないでくれます。"
+        },
+        "namilocator": {
+          "label": "NAMI 支部検索（全国ディレクトリ）",
+          "contact": "nami.org/findsupport へ",
+          "script": "サイトで：郵便番号を入力 → 「Find My Local NAMI」 → 地域の連絡先、プログラム、相談電話番号を確認。"
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov（連邦のディレクトリ）",
+          "contact": "findtreatment.gov へ · または 1-800-662-HELP (4357)",
+          "script": "サイトで：郵便番号を入力 → 「Mental Health Services」で絞りこむ → 支払える金額や保険でさらに絞る。サイトを見るのが大変なときは、電話のヘルプラインがおすすめです。"
+        },
+        "befrienders": {
+          "contact": "befrienders.org へ",
+          "script": "サイトで：自分の国を選ぶ → 地域の相談電話番号、受付時間、対応言語、連絡方法を確認。"
+        },
+        "iasp": {
+          "label": "IASP —— 国際自殺予防学会（International Association for Suicide Prevention）",
+          "contact": "iasp.info/resources/Crisis_Centres へ",
+          "script": "サイトで：自分の国を選ぶ → 危機ラインの連絡方法と受付時間を確認。"
+        },
+        "mainecrisis": {
+          "label": "Maine Crisis Line（メイン州危機ライン）",
+          "contact": "1-888-568-1112 に電話",
+          "script": "できれば、住んでいる郡や町を伝えてください。適切な地域のチームにつないでくれます。"
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance（カンバーランド郡 + 州全体）",
+          "contact": "代表：207-553-5800 · 危機：1-888-568-1112",
+          "script": "カンバーランド郡で友だちが今まさに危機にあるとき：1-888-568-1112 に電話し、移動危機チームが友だちのいる場所に来られるか聞いてください。危機ではないサポートや、家族を継続的なサービスにつなぎたいとき：営業時間内に代表番号に電話してください。"
+        },
+        "namimaine": {
+          "label": "NAMI Maine HelpLine（NAMI メイン州ヘルプライン）",
+          "contact": "1-800-464-5767 に電話",
+          "script": "急ぎではない質問に向いています：「友だちがセラピストを見つけるのをどう手伝えばいい？」「家族はどこでサポートを受けられる？」ほかにも：「うちの学校で Ending the Silence をやっていますか？」"
+        },
+        "school": {
+          "label": "学校のスクールカウンセラーや学校心理士",
+          "contact": "直接行く、メモを渡す、どの先生にでも連れて行ってもらう",
+          "script": "「友だちのことが心配なんです」と言えば大丈夫です。声に出して言えないときは、付せんに書いて渡しましょう。"
+        }
+      },
+      "res_988_who": "米国にいる人なら誰でも——友だちのことが心配な子どもも含みます",
+      "res_988_what": "無料、秘密厳守、24/7 対応。訓練を受けた危機カウンセラーが対応します。必要なら地域のサービスにつないでくれます。",
+      "res_crisistext_who": "米国、カナダ、英国、アイルランドにいる人なら誰でも（国によって番号が異なります）——話したくないときは、テキストだけでも大丈夫です",
+      "res_crisistext_what": "無料、秘密厳守、24/7 対応。本物の人間のカウンセラーがテキストで返信します。平均の待ち時間は 5 分未満です。",
+      "res_trevor_who": "LGBTQ+ の若者と、その人を支える友だち（米国）",
+      "res_trevor_what": "無料、秘密厳守、24/7 対応。LGBTQ+ の若者の危機に特化した訓練を受けています。LGBTQ+ の子どもたちは自殺を考える割合がより高く、この窓口はその現実のためにつくられています。",
+      "res_911_who": "今まさに、誰かが差し迫った身体的な危険にあるとき（米国）",
+      "res_911_what": "進行中の緊急事態のために：誰かが自分を傷つけている、何かを飲んでしまった、今安全ではない。警察・消防・救急が出動します。",
+      "res_211_who": "米国またはカナダにいる人なら誰でも——市外局番で自動的に地域のサービスにつながります",
+      "res_211_what": "無料、秘密厳守、24/7 対応。地域のメンタルヘルス危機サービス、食料支援、住まい、家族支援、そのほか何百もの地域プログラムにつないでくれます。United Way と地域の非営利団体が運営しています。988 とは別のもので——211 はより幅広い地域サービスの窓口です。",
+      "res_namilocator_who": "米国にいる人なら誰でも——郵便番号（ZIP コード）を入れると、地域の NAMI 支部が見つかります",
+      "res_namilocator_what": "どの州にも少なくとも一つの NAMI 支部があり、複数ある州も多いです。地域の支部では、無料の家族支援グループ、ピア主導の回復プログラム、教育クラス（Family-to-Family、学校での Ending the Silence）、ウォームラインを提供しています。NAMI HelpLine：1-800-950-6264。",
+      "res_samhsa_who": "米国で、継続的なメンタルヘルスや物質使用のケアを探している人なら誰でも",
+      "res_samhsa_what": "約 13,000 の治療施設を収めた連邦のデータベース——セラピー、精神科、集中外来、入所治療、重複診断。郵便番号、加入している保険、言語、提供されるサービスで絞りこめます。SAMHSA には 24/7 対応の全国ヘルプライン（1-800-662-4357）もあり、無料で紹介をしてくれます。",
+      "res_befrienders_who": "米国以外で、自分の国の危機支援を探している人なら誰でも",
+      "res_befrienders_what": "30 か国以上にある、心のサポートをするボランティアセンターの世界的なネットワーク。サイトで国を入力すると、地域の相談電話番号やチャットの選択肢がわかります。ほとんどの窓口は無料、秘密厳守、24/7 対応です。",
+      "res_iasp_who": "米国以外にいる人なら誰でも——包括的な世界の危機ライン一覧",
+      "res_iasp_what": "IASP は、自殺予防の危機ラインについて最も完全な国際リストを管理しています。国ごとに検索でき、電話、テキスト、オンラインチャットの選択肢があります。Befrienders に自分の国が載っていない場合、最初に見るのにいちばんよい場所であることが多いです。",
+      "res_mainecrisis_who": "メイン州にいる人なら誰でも——州全体の危機サービスにつながります",
+      "res_mainecrisis_what": "無料、秘密厳守、24/7 対応。メイン州のカウンセラーが対応します。メイン州南部は The Opportunity Alliance が、州内のほかの地域はそれぞれの地域の事業者が運営しています。必要なときは地域の移動危機チームを派遣できます。",
+      "res_opportunityalliance_who": "カンバーランド郡とメイン州全体の子ども、ティーン、家族、大人",
+      "res_opportunityalliance_what": "カンバーランド郡の危機モバイル対応チームを運営しています——ポートランドと周辺の地域で 1-888-568-1112 から出動するとき、実際にあなたのところへ来てくれる人たちです。子どもの行動保健サービス、家庭訪問型の行動保健サービス、家族支援、メイン州南部の 211 Maine の中核も担っています。",
+      "res_namimaine_who": "メイン州で、メンタルヘルスの情報、サポート、紹介を求めている人なら誰でも",
+      "res_namimaine_what": "危機ラインではありませんが、メンタルヘルスの仕組み、ピアサポート、地域のプログラムを知るための、日中に使える頼れる窓口です。Ending the Silence という学校向けプログラムも運営していて、生徒と年の近い発表者が中学・高校の教室で直接、精神疾患について教えています。",
+      "res_school_who": "米国のすべての公立学校には訓練を受けたカウンセラーがいます。ほとんどの中学・高校には学校心理士もいます",
+      "res_school_what": "こういうときのための訓練を受けています。安全に関わること以外は守秘義務があります。外部の専門的なケアにつなぎ、あなたといっしょに保護者と話し、最後までそばにいてくれます。",
+      "resource_groups": {
+        "national": {
+          "label": "米国のどこでも使える",
+          "desc": "この四つが、どこでも使える基本の窓口です。988 を覚えておきましょう。"
+        },
+        "lookup": {
+          "label": "地域の支援を探す（米国）",
+          "desc": "あなたの地域のサービスにつないでくれるディレクトリ検索です。危機の電話のあとの、継続的なケアを探すのに役立ちます。"
+        },
+        "international": {
+          "label": "米国以外にいますか？",
+          "desc": "988、211、Trevor、SAMHSA は米国内だけのサービスです。これらのディレクトリは世界のほかの地域をカバーしています。"
+        },
+        "maine": {
+          "label": "メイン州のパートナー（地域の機関名つき）",
+          "desc": "King Middle と Portland Public Schools がこのツールの試行の場であるため、具体的な名前を挙げています。ほかの地域にいる場合は、上のディレクトリ検索で、あなたの地域の同じような窓口を探してください。"
+        },
+        "school": {
+          "label": "学校での支援",
+          "desc": "学校にいる間、いちばん声をかけやすい大人であることが多いです。米国のすべての公立学校にいます。"
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "続く気分の落ちこみ",
+          "desc": "悲しさ、むなしさ、または平らで無感覚な感じが、一日のほとんど、ほぼ毎日、何週間も続く。来ては去っていく、ふつうの悲しい日とはちがいます。"
+        },
+        "irritability": {
+          "label": "イライラが増える",
+          "desc": "特に思春期には、うつは悲しさよりもイライラや怒りとして表れることが多いです。小さなことでキレる、いつも心がヒリヒリしている。"
+        },
+        "withdrawal": {
+          "label": "活動から離れる",
+          "desc": "趣味、スポーツ、友だち、前は楽しんでいたことから離れていく。予定を何度もキャンセルする。前よりずっと長い時間をひとりで過ごす。"
+        },
+        "sleep": {
+          "label": "睡眠の変化",
+          "desc": "いつもよりずっと多く眠る、またはほとんど眠れない。寝つけない、起きてもへとへと、日中ずっと寝ている。"
+        },
+        "appetite": {
+          "label": "食欲の変化",
+          "desc": "いつもよりずっと多く、またはずっと少なく食べる。食事を抜く、または楽しめないまま食べ続ける。数週間で体重がはっきり変わる。"
+        },
+        "energy": {
+          "label": "元気が出ない / 疲れやすい",
+          "desc": "何もかもが重く感じる。小さなことでさえ無理に思える。寝たあとでもずっと疲れていると話すかもしれません。"
+        },
+        "school": {
+          "label": "学校への取り組みが落ちる",
+          "desc": "成績が下がる、課題を出さない、前は問題なかった授業についていけなくなる。学校を休む日が増えることもよくあります。"
+        },
+        "selfcare": {
+          "label": "セルフケアが減る",
+          "desc": "前は続けていた身だしなみ、見た目、毎日の習慣に気をつかわなくなる。ファッションが変わったのではなく——もうどうでもよくなったように見えるのです。"
+        },
+        "hopeless": {
+          "label": "絶望的な言葉や自分を責める言葉",
+          "desc": "「何の意味があるの」「何もかもどうでもいい」「自分には価値がない」「自分はお荷物だ」といった言葉をよく口にする。軽い調子で言っていても、真剣に受け止めるべき言葉のパターンです。"
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "言葉——その人が言っていること",
+        "mood_what_you_re_seeing": "気分——あなたが見ていること",
+        "behavior_what_they_re_doing": "行動——その人がしていること",
+        "a_friend_opens_up_at_lunch": "友だちがランチのときに打ち明ける",
+        "a_direct_disclosure_over_text": "メッセージでのはっきりした打ち明け",
+        "the_aftermath_your_friend_is_now": "そのあと——友だちは今、治療を受けている",
+        "help_is_available_right_now": "今すぐ助けを求められます",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline（自殺・危機ライフライン） · 988 に電話またはテキストメッセージ",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line · 741741 に HOME とテキストメッセージ",
+        "tell_a_school_counselor_teacher_parent": "🏫 スクールカウンセラー、先生、保護者、または信頼できる大人に伝えましょう",
+        "box_breathing_started_4_seconds_in": "ボックス呼吸を始めました。4 秒吸って、4 秒止めて、4 秒吐いて、4 秒止めます。",
+        "box_breathing_paused": "ボックス呼吸を一時停止しました。",
+        "box_breathing_pacer": "🌬️ ボックス呼吸ペーサー",
+        "a_4_4_4_4_rhythm": "4-4-4-4 のリズム：4 秒吸って、4 秒止めて、4 秒吐いて、4 秒止めます。臨床家や救急隊員が神経系を落ち着かせるために使っている方法です。息を吸うと円が大きくなり、吐くと小さくなります。",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}、{cyclesDone} 回目",
+        "breathing_pacer_ready": "呼吸ペーサーの準備ができました",
+        "ready": "準備完了",
+        "cycle_cyclesdone": "{cyclesDone} 回目",
+        "start_box_breathing_pacer": "ボックス呼吸ペーサーを始める",
+        "start": "▶ スタート",
+        "pause_box_breathing_pacer": "ボックス呼吸ペーサーを一時停止する",
+        "pause": "⏸ 一時停止",
+        "if_breathing_exercises_feel_uncomfortable_or": "呼吸の練習が不快に感じたり、かえって不安が強くなったりするのは、実はよくあることです——やめて、代わりにグラウンディングを試してください。「動きを減らす」設定がオンのときは、円は動かず、段階の表示をたよりに呼吸します。",
+        "grounding_complete_you_ve_returned_to": "グラウンディング完了。今この瞬間に戻ってきました。",
+        "grounding_reset": "グラウンディングをリセットしました。",
+        "5_4_3_2_1_grounding": "👁️ 5-4-3-2-1 グラウンディング",
+        "a_sensory_anchor_when_your_thoughts": "考えがぐるぐるしているときや、自分が切り離されたように感じるときの、感覚の錨（いかり）です。感覚をひとつずつ順番にたどりましょう。何も書かなくてかまいません——ただ気づくだけです。",
+        "you_ve_come_back_to_the": "今この瞬間に戻ってきました。",
+        "grounding_doesn_t_make_hard_feelings": "グラウンディングで、つらい気持ちが消えるわけではありません。少しの間、気持ちの居場所を小さくして、波が過ぎ去るのを待てるようにするだけです。",
+        "do_it_again": "↻ もう一度やる",
+        "step_stepidx_of_groundstepscount": "ステップ {stepIdx} / {GROUNDSTEPSCount}",
+        "optional_jot_what_you_notice_private": "任意：気づいたことをメモ（非公開、保存されません）。",
+        "notes_for_step_stepidx": "ステップ {stepIdx} のメモ",
+        "reset_grounding_to_first_step": "グラウンディングを最初のステップに戻す",
+        "reset": "↻ リセット",
+        "next_step": "次のステップ",
+        "finish_grounding_exercise": "グラウンディングを終える",
+        "next": "次へ →",
+        "finish": "終了 ✓",
+        "this_device_would_not_save_it": "このデバイスでは保存できませんでした。内容はまだ画面に残っています——このページを閉じる前に、エクスポートか印刷でコピーを残してください。",
+        "added_to_your_toolkit": "ツールキットに追加しました",
+        "removed_from_your_toolkit": "ツールキットから削除しました",
+        "my_coping_toolkit": "🧰 わたしのコーピング・ツールキット",
+        "tap_any_strategy_to_add_it": "どの方法でもタップすると、あなた専用のツールキットに追加されます。保存されるのはあなたのデバイスだけで——何もアップロードされません。これまで本当に役に立ったことを 5-7 個リストにしておけば、つらい瞬間が来たときに一から考えなくてすみます。",
+        "my_toolkit_savedcount": "✓ わたしのツールキット（{savedCount}）",
+        "remove_label_from_toolkit": "ツールキットから「{label}」を削除",
+        "remove_from_toolkit": "ツールキットから削除： ",
+        "add_to_toolkit": "ツールキットに追加： ",
+        "note_this_toolkit_is_a_complement": "注意：このツールキットは専門的なサポートを補うもので、代わりになるものではありません。危機の中にいるなら、988 に電話かテキストメッセージをしてください。",
+        "e_g_when_i_haven_t": "例：「眠れていなくて、週末ずっとひとりだったとき」",
+        "e_g_listen_to_a_calming": "例：「落ち着くプレイリストを聞く、散歩する、顔に冷たい水をかける」",
+        "e_g_library_after_school_my": "例：「放課後の図書館、友だちの Maya、あのカフェ」",
+        "e_g_mom_cell_aunt_liz": "例：「お母さん（携帯 ____）、Liz おばさん（携帯 ____）、カウンセラーの K 先生（204 号室）」",
+        "e_g_988_lifeline_call_or": "例：「988 Lifeline（電話かテキスト）、Crisis Text Line（741741 に HOME とテキスト）、____ クリニックの ____ 先生、スクールカウンセラー」",
+        "e_g_give_my_medications_to": "例：「薬をお母さんに渡して、鍵をかけてしまってもらう。地下室に行かない。本当につらいときは、夜は誰かといっしょにいる。」",
+        "could_not_open_print_window_your": "印刷ウィンドウを開けませんでした——ブラウザにブロックされた可能性があります。",
+        "print_preview_opened": "印刷プレビューを開きました。",
+        "print_could_not_be_opened": "印刷を開けませんでした。",
+        "my_safety_plan_stanley_brown": "📋 わたしの安全計画（Stanley-Brown）",
+        "best_built_with_a_counselor_or": "カウンセラーやセラピストと【いっしょに】つくるのがいちばんです。 ",
+        "a_safety_plan_is_most_effective": "安全計画は、あなたのことを知っている大人が記入を手伝ってくれるときに最も効果があります——あなたが見落としそうなことに気づいてくれるし、すでに助けを求める練習をした相手になるからです。ここで始めて、保存して、いっしょに仕上げることができます。保存されるのはこのデバイスだけです。",
+        "filledcount_stepscount_filled": "{filledCount} / {STEPSCount} 記入済み",
+        "print_save_as_pdf": "🖨 印刷 / PDF として保存",
+        "clear_my_saved_safety_plan": "保存した安全計画を消去する",
+        "clear_plan": "✕ 計画を消去",
+        "stanley_brown_safety_planning_intervention_is": "Stanley-Brown の安全計画介入（Safety Planning Intervention）は、自殺予防リソースセンター（Suicide Prevention Resource Center）に推奨されている、最もよく研究された根拠のある安全計画のひとつです。臨床で使う完全版は、訓練を受けた専門家といっしょに進めます。",
+        "you_are_not_the_therapist": "あなたはセラピストではありません",
+        "your_job_ended_when_you_connected": "友だちを大人につないだところで、あなたの役目は終わりました。ここからは、あなたの役割は友だちでいることに戻ります——それがちょうどいい大きさです。治療、安全計画、その後のフォロー——それは訓練を受けた専門家の仕事です。あなたの役目は、そばにいること、友だちでいること、そして消えないことです。",
+        "if_your_friend_goes_to_treatment": "友だちが治療を受けるなら、それは成功です——見捨てることではありません",
+        "when_a_friend_gets_professional_help": "友だちが専門的な助けを受けるとき——セラピー、薬、集中的なプログラム、ときには入院——友情が一時停止したように感じるかもしれません。そうではありません。治療は、あなたが実現を手伝ったものです。友だちは、ここにいつづけるための大変な努力をしています。メッセージを送りましょう。ランチの席をとっておきましょう。戻ってきたとき、そこにいてあげましょう。",
+        "concrete_moves_that_help": "役に立つ具体的な行動",
+        "tell_another_adult_you_trust": "ほかの信頼できる大人にも話す。 ",
+        "even_if_the_situation_has_been": "状況が「片づいた」としても、【あなた】も大変なことを経験しました。保護者、カウンセラー、セラピストが、気持ちの整理を手伝ってくれます。",
+        "pause_platforms_that_are_amplifying_it": "不安を大きくするプラットフォームから離れる。 ",
+        "if_social_media_is_making_your": "SNS で心配がひどくなるなら、休みましょう。ミュートする、フォローを外す、一日アプリを閉じる。",
+        "keep_your_own_routines": "自分の生活リズムを守る。 ",
+        "sleep_food_school_hobbies_these_are": "睡眠、食事、学校、趣味。これはあなたを支える床板です——この重さを抱えている間も、くずさないようにしましょう。",
+        "ask_for_breaks_when_you_need": "必要なときは休みをもらう。 ",
+        "you_are_allowed_to_not_text": "すぐに返信しなくていいのです。数時間、連絡がとれなくてもいいのです。友だちの回復のために、あなたがずっと待機している必要はありません。",
+        "notice_your_own_feelings": "自分の気持ちに気づく。 ",
+        "sadness_anger_fear_exhaustion_are_normal": "悲しみ、怒り、恐れ、疲れはふつうのことです。何も感じないのも、ふつうのことです。重い気持ちが二、三週間以上続くなら、カウンセラーに話すタイミングです。",
+        "keep_your_other_friendships": "ほかの友だち関係も大切にする。 ",
+        "don_t_let_supporting_one_friend": "ひとりの友だちを支えることで、ほかのみんなから孤立しないようにしましょう。あなたを支えているのは、人とのつながり全体です。",
+        "when_supporting_a_friend_has_hit": "友だちを支えることが【あなた】にも重くのしかかっているとき",
+        "if_you_re_losing_sleep_having": "眠れない、いやな考えが頭から離れない、何も感じない、あるいは自分自身も自分を傷つけることを考え始めている——それは、あなたにもサポートが必要だというサインです。988 に電話する、741741 に HOME とテキストメッセージを送る、スクールカウンセラーに話す。助ける人にも助けが必要です。助けが必要なことは、少しも恥ずかしくありません。",
+        "you_showed_up_you_noticed_you": "あなたはそこにいた。気づいた。声をかけた。誰かに伝えた。それで十分です。それがすべてです。",
+        "today": "今日",
+        "yesterday": "昨日",
+        "value_days_ago": "{value} 日前",
+        "value_weeks_ago": "{value} 週間前",
+        "value_months_ago": "{value} か月前",
+        "if_you_are_in_crisis_right": "🚨 今まさに危機の中にいるなら：",
+        "call_or_text": "電話またはテキストメッセージ： ",
+        "us_suicide_crisis_lifeline": " （US Suicide + Crisis Lifeline：米国の自殺・危機ライフライン）。 ",
+        "maine_mobile_crisis": "Maine Mobile Crisis（メイン州移動危機サービス）： ",
+        "text": "テキストメッセージで ",
+        "to": " を ",
+        "crisis_text_line": " に送信（Crisis Text Line）。 ",
+        "reach_a_real_person_24_7": "24/7 いつでも本物の人につながります。",
+        "my_safety_plan": "わたしの安全計画",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012——自殺の再企図を減らすうえで、最も強い根拠のある介入。落ち着いているときに【自分の】計画をつくりましょう。",
+        "why_this_works": "🎓 効くしくみ： ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry。落ち着いているときにこの計画を書いておくと、危機のときに使いやすくなります。信頼できる人——カウンセラー、保護者、友だち——と共有しましょう。",
+        "need_a_sign": "サインを入力してください。",
+        "my_warning_signs_log": "わたしの警告サイン記録",
+        "track_when_warning_signs_appear_so": "警告サインが出たときを記録して、パターンが見えるようにしましょう。自分のパターンを知る = 早めに気づける。",
+        "what_sign_showed_up_e_g": "どんなサインが出た？（例：「午後ずっと何も感じなかった」「消えたかった」）",
+        "context_where_what_was_happening": "状況（どこで、何が起きていたか）",
+        "intensity": "強さ： ",
+        "what_helped_if_anything": "役立ったこと（あれば）",
+        "log_it": "💾 記録する",
+        "helped_whathelped": "✓ 役立った：{whatHelped}",
+        "add_a_few_words_first_then": "まず少し言葉を入れてから、もう一度ボタンを押してください。",
+        "my_coping_arsenal": "わたしのコーピング・リスト",
+        "strategies_that_have_actually_worked_for": "【わたし】に本当に効いた方法。役に立ったら「+1」をタップ——効くものを記録しましょう。",
+        "a_strategy_that_worked_for_me": "自分に効いた方法（例：「顔を冷たい水で冷やす」「お母さんに電話する」）",
+        "add_to_arsenal": "+ リストに追加",
+        "used_value": "{value} 回使用",
+        "a_name_is_needed_before_this": "保存するには名前が必要です。",
+        "my_support_contacts": "わたしのサポート連絡先",
+        "quick_access_list_of_people_crisis": "すぐに見られる、人 + 危機ラインのリストと、それぞれに連絡するタイミング。財布に入れるカード。",
+        "name": "名前",
+        "role_mom_therapist_friend": "関係（お母さん、セラピスト、友だち）",
+        "contact_phone_text": "連絡先（電話 / テキスト）",
+        "when_to_reach_out_to_this": "【この人】に連絡するタイミング",
+        "add": "+ 追加",
+        "need_a_brief_description": "短い説明を入力してください。",
+        "my_recovery_notes": "わたしの回復ノート",
+        "after_a_hard_moment_log_what": "つらい瞬間のあとに、役立ったこと + 役立たなかったことを記録しましょう。少しずつ自分のことがわかってきます。",
+        "what_happened_brief": "何があった？（短く）",
+        "what_helped": "✓ 役立ったこと",
+        "what_didn_t_help_or_made": "✗ 役立たなかったこと（または悪化させたこと）",
+        "what_i_want_future_me_to": "💌 未来の自分に、このことから覚えておいてほしいこと",
+        "save": "💾 保存",
+        "helped": "✓ 役立った： ",
+        "didn_t": "✗ 役立たなかった： ",
+        "write_something_first_then_press_add": "まず何か書いてから、「追加」を押してください。",
+        "my_hope_list": "わたしの希望リスト",
+        "reasons_to_keep_going_people_plans": "前に進みつづける理由。人、予定、場所、なんでも。つらいときに読みましょう。",
+        "one_of_your_reasons": "💛 あなたの理由のひとつ",
+        "a_reason_to_keep_going_small": "前に進みつづける理由（小さくても大きくても、なんでも）",
+        "my_safety_kit": "🛡 わたしのセーフティキット",
+        "personal_crisis_support_tools": "自分のための危機サポートツール",
+        "6_tools_to_build_your_safety": "【自分の】安全計画 + コーピング・リストをつくる 6 つのツール。危機ラインの番号はいつでも表示されます。データはすべてあなたのブラウザの中に保存されます。",
+        "open": "開く →",
+        "my_safety_kit_2": "← わたしのセーフティキット",
+        "crisis_companion": "クライシス・コンパニオン",
+        "peer_support_and_suicide_prevention_skills": "ピアサポートと自殺予防のスキル。友だちが落ちこんでいるように見えるとき、危機にあるとき、自分を傷つけることを考えているときにどうするか。サインに気づくこと、何を言うか（そして言わないか）、信頼できる大人への伝え方。NEDA、AFSP、「強さの源」（Sources of Strength）、988 に沿っています。コンテンツ警告を確認してから入ります。",
+        "safety_plan_cleared": "安全計画を消去しました。",
+        "all_distress_readings_cleared": "つらさの記録をすべて消去しました。",
+        "clear_your_saved_safety_plan": "保存した安全計画を消去しますか？",
+        "clear_all_distress_readings": "つらさの記録をすべて消去しますか？",
+        "this_permanently_removes_every_step_of": "保存した安全計画のすべてのステップが、このデバイスから完全に削除されます。元に戻すことはできません。必要になるかもしれない場合は、先に印刷するかコピーを保存してください。",
+        "this_permanently_deletes_your_entire_distress": "つらさの記録の履歴が、メモや推移のデータも含めてすべて完全に削除されます。元に戻すことはできません。",
+        "cancel": "キャンセル",
+        "clear_safety_plan": "安全計画を消去",
+        "clear_all_readings": "すべての記録を消去",
+        "now_viewing_label": "表示中：{label}",
+        "content_note_before_you_continue": "先に進む前に：内容についての注意",
+        "this_module_is_about_what_to": "このモジュールは、友だちが落ちこんでいるとき、危機にあるとき、自分を傷つけることを考えているとき——自殺も含めて——どうすればいいかについてのものです。扱う内容：",
+        "recognizing_signs_of_depression_in_a": "友だちのうつのサインに気づく",
+        "crisis_warning_signs_at_a_general": "危機の警告サイン——大まかなレベルで、詳しい手順ではありません",
+        "how_to_ask_listen_and_respond": "聞き方、耳のかたむけ方、応え方",
+        "how_and_when_to_tell_a": "信頼できる大人に、いつ、どう伝えるか",
+        "crisis_helplines_and_what_to_say": "危機の相談窓口と、電話したときに何を言えばいいか",
+        "how_to_take_care_of_yourself": "友だちを支えたあと、自分をどう大切にするか",
+        "what_this_module_does_not_include": "このモジュールに含まれて【いない】もの： ",
+        "specific_methods_of_self_harm_descriptions": "自分を傷つける具体的な方法、自殺未遂の描写、「ビフォー／アフター」の話、そのほかやり方の手引きになりうる内容。情報はあえて大まかにしてあります——気づくこと、支えること、人を助けにつなぐことに焦点を当てています。",
+        "if_reading_about_these_topics_is": "今、こうした話題を読むのがつらいなら、",
+        "please_consider_one_of_these_instead": "代わりに次のどれかを考えてみてください：",
+        "talk_with_a_trusted_adult_before": "先に進む前に、信頼できる大人——スクールカウンセラー、保護者、先生——と話す",
+        "skip_this_module_and_explore_other": "このモジュールをとばして、SEL Hub のほかのツールを見る",
+        "the_988_suicide_crisis_lifeline_free": " —— 988 Suicide & Crisis Lifeline（自殺・危機ライフライン、無料、秘密厳守、24/7 対応）",
+        "home_to_741741": "HOME を 741741 に送信",
+        "crisis_text_line_free_confidential_24": " —— Crisis Text Line（無料、秘密厳守、24/7 対応）",
+        "continuing_into_crisis_companion": "クライシス・コンパニオンに進みます",
+        "i_understand_the_content_note_and": "内容についての注意を理解したうえで、クライシス・コンパニオンに進みます",
+        "i_understand_continue": "✓ わかりました——進む",
+        "returning_to_sel_hub_menu": "SEL Hub のメニューに戻ります",
+        "take_me_back_to_the_menu": "← メニューに戻る",
+        "visitedcount_sectionscount_sections_visited": "{visitedCount} / {SECTIONSCount} セクション閲覧済み",
+        "crisis_companion_sections": "クライシス・コンパニオンのセクション",
+        "visited": " （閲覧済み）",
+        "next_label": "次へ：{label} →",
+        "breath_pacer": "呼吸ペーサー",
+        "a_visual_breathing_pacer_watch_the": "目で見る呼吸ペーサーです。円が大きくなったり小さくなったりするのを見て、呼吸を合わせましょう。難しい会話の前やあと、または体が心より先に高ぶっているときなど、急なストレスの瞬間に役立ちます。これは【使う】ためのツールです——このモジュールのほかの部分にある支えの代わりにはなりません。",
+        "cycle_cycles": "{cycles} 回目",
+        "keep_going_as_long_as_feels": " · 心地よいと感じる間は続けましょう",
+        "press_start_when_you_re_ready": "準備ができたら「スタート」を押してください",
+        "stop": "■ 停止",
+        "restart": "↺ やり直す",
+        "when_to_use_which": "💡 どれをいつ使う？： ",
+        "box_breathing_4_4_4_4": "ボックス呼吸（4-4-4-4）はふだんの調整に——軍や救急隊員も使っています。 ",
+        "4_7_8_for_falling_asleep": "4-7-8 は寝つくときや、急な高ぶりをすばやく落ち着かせたいときに——長く吐く息が副交感神経系をはたらかせます。 ",
+        "equal_breath_6_6_for_sustainable": "イコール呼吸（6-6）は毎日続けて使うのに——息を止めないので、続けやすいです。",
+        "write_something_first_then_press_the": "まず何か書いてから、もう一度ボタンを押してください。",
+        "grounding_5_4_3_2_1": "グラウンディング 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "頭の中がぐるぐるしたり、不安が高まったりしているとき、5-4-3-2-1 のテクニックは注意を体と今この瞬間に引き戻します。5 つの感覚のどれを使ってもかまいません。使えない感覚があっても——覚えているもの、想像するもの、かいでみたいにおいを挙げましょう。それでも効果があります。",
+        "itemscount_of_count_added": "{count} 個中 {itemsCount} 個追加",
+        "remove": "削除",
+        "finish_2": "✓ 終了",
+        "grounding_complete": "グラウンディング完了",
+        "you_named_15_specific_things_in": "今この瞬間にある具体的なものを 15 個挙げました。始めたときと比べて、今どう感じているか気づいてみましょう。",
+        "start_again": "↺ もう一度始める",
+        "distress_reading_saved": "つらさの記録を保存しました。",
+        "calm": "落ち着いている",
+        "mild_stress": "軽いストレス",
+        "notable_distress": "はっきりしたつらさ",
+        "high_distress": "強いつらさ",
+        "crisis_level_distress": "危機レベルのつらさ",
+        "distress_check": "つらさチェック",
+        "a_quick_way_to_track_how": "時間とともに気持ちがどう変わるかを記録する、手軽な方法です。つらさを 0–10 で評価し、必要ならメモを加えましょう。一週間のパターンは、言葉だけではわからないことを教えてくれます。 ",
+        "if_your_reading_is_8_or": "数値が 8 以上の状態が一時間以上続くなら、信頼できる大人に連絡するか、741741 に HOME とテキストメッセージを送ってください。",
+        "right_now_i_m_feeling": "今の気持ち：",
+        "0_calm": "0 · 落ち着いている",
+        "10_crisis": "10 · 危機",
+        "optional_note_what_s_going_on": "メモ（任意・何があった？）：",
+        "e_g_math_test_in_3rd": "例：3 時間目に数学のテスト、ほとんど眠れていない",
+        "log_this_reading": "💾 この数値を記録する",
+        "this_is_a_hard_moment": "⚠ 今はつらい瞬間です。",
+        "you_re_in_real_distress_the": "あなたは今、本当につらい状態です。呼吸ペーサー（ひとつ上のセクション）とグラウンディング 5-4-3-2-1 が、すぐここにあります。 ",
+        "if_thoughts_of_self_harm_are": "自分を傷つける考えがあるなら、今すぐ 741741 に HOME とテキストメッセージを送るか（Crisis Text Line）、988 に電話かテキストメッセージをしてください。",
+        "above_average_distress": "平均より高いつらさです。",
+        "worth_pausing_for_try_the_breath": "立ち止まる価値があります。呼吸ペーサーかグラウンディングを試してみましょう。このレベルがくり返し続くなら、信頼できる大人に伝えるのがよい一歩です。",
+        "your_pattern": "📊 あなたのパターン",
+        "7_day_avg_avg_sevendayreadingscount_readings": "7 日間の平均：{avg} · {sevenDayReadingsCount} 件の記録",
+        "distress_over_time_chart": "つらさの推移グラフ",
+        "recent_readings_readingscount": "📋 最近の記録（{readingsCount}）",
+        "why_this_matters": "なぜ大切なのか",
+        "you_don_t_have_to_be": "カウンセラーである必要はありません。何を言えばいいかわかっている必要もありません。何かを解決する必要もありません。",
+        "you_have_to_be_a_person": "必要なのは、気づく人であること、",
+        "and_a_person_who_tells_an": "そして大人に伝える人であること。それだけです。どちらのスキルも身につけることができ、どちらも命を救います。",
+        "friends_are_usually_the_first_to": "何かがおかしいと最初に気づくのは、たいてい友だちです。思春期の人は親や先生より友だちに心を開くので、大人は早いサインを見のがしがちです。それは問題ではなく——あなたの年ごろの友情の自然なかたちです。ただ、それはあなたの役割が大切だということを意味しています。",
+        "what_this_module_teaches": "このモジュールで学ぶこと",
+        "how_to_recognize_when_a_friend": "友だちの気分や行動のパターンが、うつに向かっていることに気づく方法",
+        "how_to_recognize_warning_signs_of": "危機の警告サインに気づく方法——自殺を考えていることも含めて",
+        "how_to_ask_listen_and_respond_2": "聞き方、耳のかたむけ方、応え方——助けになる言葉と、そうでない言葉も含めて",
+        "how_to_tell_a_trusted_adult": "信頼できる大人への伝え方——いつ、誰に、どうやって",
+        "crisis_resources_you_can_call_or": "いつでも電話やテキストメッセージができる危機の相談先——友だちのためにも、自分のためにも",
+        "how_to_take_care_of_yourself_2": "重いことを抱えた友だちを支えたあと、自分をどう大切にするか",
+        "what_this_module_does_not_do": "このモジュールがし【ない】こと",
+        "it_does_not_turn_you_into": "あなたをセラピストにするものではありません。あなたの役割は、そばにいて、助けにつなぐことです。",
+        "it_does_not_require_you_to": "秘密を守ることを求めるものではありません。安全に関わるなら、大人に伝えることは裏切りではなく、友情です。",
+        "it_does_not_describe_specific_methods": "自分を傷つける具体的な方法は説明しません。警告となる行動については、あえて大まかに書いています。",
+        "it_does_not_replace_professional_help": "専門的な助けの代わりにはなりません。専門的な助けへの橋わたしになる方法を教えるものです。",
+        "sources_framework": "出典と枠組み",
+        "this_module_aligns_with_safe_messaging": "このモジュールは、AFSP (afsp.org)、SAMHSA、Reporting on Suicide のメディアガイドライン (reportingonsuicide.org)、「強さの源」Sources of Strength (sourcesofstrength.org)、QPR Institute、NIMH、AAP の思春期の健康に関する指針による、安全なメッセージングのガイドラインに沿っています。中学生・高校生向けに学校心理士が作成し、安全なメッセージングのガイドラインに照らして編集上のチェックを受けています。",
+        "recognizing_depression_in_a_friend": "友だちのうつに気づく",
+        "every_kid_has_bad_days_every": "誰にでも、いやな日はあります。誰にでも、ときにはつらい一週間があります。それは人間らしさであって、うつではありません。",
+        "depression_is_a_pattern": "うつは【パターン】です。 ",
+        "it_s_a_cluster_of_changes": "一日のいやな日ではなく、何週間も続く変化の集まりです。下のサインは、【いくつか】が同時に起きていて、【しかも】ふつうの不調の時期より長く続いているときに、真剣に受け止める価値があります。",
+        "a_useful_question_to_keep_in": "心にとめておくとよい質問：「この変化のパターンは、長く続いている？ ひどくなっている？ 毎日の生活のじゃまになっている？」",
+        "patterns_to_notice_over_weeks_not": "気づきたいパターン（数日ではなく、数週間単位で）",
+        "important_nuance": "大切なポイント",
+        "in_adolescents_especially_depression_often_shows": "特に思春期には、うつは悲しさよりも【イライラ】として表れることが多いです。何週間もピリピリしている、小さなことで傷つく、低い温度でじわじわ燃えているように見える友だちは、目に見えて悲しそうな人よりも苦しんでいるかもしれません。",
+        "boys_athletes_kids_of_color_larger": "男子、運動部の人、有色人種の子ども、体の大きい子ども、成績のいい子どもは、「うつのティーン」というイメージに当てはまらないため見のがされがちです。友だちがどう見えるかに関係なく、変化の集まりを真剣に受け止めましょう。",
+        "what_to_do_if_you_re": "パターンに気づいたらどうするか",
+        "reach_out_send_a_text_sit": "声をかけましょう。メッセージを送る。ランチでとなりに座る。あなたが気にかけているというサインが大切です。",
+        "ask_gently_and_specifically_i_ve": "やさしく、具体的に聞きましょう：「最近すごく疲れてて静かだなって思ってたんだ。本当のところ、どうしてる？」",
+        "listen_don_t_fix_most_people": "耳をかたむけましょう。解決しようとしないで。ほとんどの人は解決策がほしいのではなく、ひとりぼっちじゃないと感じたいのです。",
+        "if_they_share_something_heavy_that": "重いことを打ち明けてくれたら、もっと難しい質問をするタイミングです（次のセクション：危機の警告サイン）。",
+        "if_you_re_worried_about_them": "心配なら、信頼できる大人に伝えましょう。確信はいりません。心配だけで十分です。",
+        "crisis_warning_signs": "危機の警告サイン",
+        "when_depression_deepens_into_crisis_including": "うつが深まって危機になるとき——自殺を考えることも含めて——たいてい警告サインがあります。米国自殺予防財団（AFSP）は、これらを三つのグループに分けています： ",
+        "talk": "言葉",
+        "mood": "気分",
+        "and": "、そして",
+        "behavior": "行動",
+        "a_note_about_how_this_section": "このセクションの書き方について：やり方のチェックリストになりうる具体的な行動は、あえて挙げて【いません】。何かがおかしいと友だちが気づくには、大まかなカテゴリーで十分です。これらがいくつも重なって見えたら、それは行動するタイミングです——ひとりでさらに調べるタイミングではありません。",
+        "examples": "例",
+        "note": "注： ",
+        "if_you_see_any_of_these": "これらのサインが【ひとつでも】見えたら、次にすることは：",
+        "stay_with_them_if_you_can": "できれば、そばにいましょう。 ",
+        "don_t_leave_them_alone_if": "差し迫ってつらい状態なら、ひとりにしないでください。",
+        "ask_directly": "直接聞きましょう。 ",
+        "are_you_thinking_about_hurting_yourself": "「自分を傷つけたいと思ってる？」直接聞いても、その考えを植えつけることは【ありません】（次のセクションで研究を説明します）。",
+        "tell_a_trusted_adult_today": "信頼できる大人に伝えましょう——今日のうちに。 ",
+        "not_next_week_today": "来週ではなく、今日です。",
+        "call_or_text_988": "988 に電話またはテキストメッセージを ",
+        "if_you_re_unsure_what_to": "——どうすればいいかわからないときに。友だちを助ける方法を、【あなた】に教えてくれます。",
+        "call_911": "911 に電話を ",
+        "if_your_friend_is_in_immediate": "——友だちが今まさに、差し迫った身体的な危険にあるときに。",
+        "question_persuade_refer": "質問 · 説得 · 紹介",
+        "qpr": "QPR（",
+        "question_persuade_refer_2": "Question・Persuade・Refer：質問・説得・紹介",
+        "is_the_most_widely_taught_suicide": "）は、専門家ではない人向けの自殺予防の枠組みとして、最も広く教えられているものです。世界中の学校、病院、地域のプログラムで使われています。この枠組みはあえてシンプルにつくられています：三つのステップで、どれも友だちにできることです。",
+        "you_re_not_the_therapist_you": "あなたはセラピストではありません。苦しんでいる人と、助けるための訓練を受けた人とをつなぐ存在です。そのつながりこそが命を救います。",
+        "question_ask_directly": "質問——直接聞く",
+        "if_you_suspect_your_friend_is": "友だちが自殺を考えているかもしれないと思ったら、聞いてください。まっすぐに、やさしく。どんな言葉を使うかより、聞こうとする気持ちのほうが大切です。",
+        "examples_2": "例： ",
+        "are_you_thinking_about_hurting_yourself_2": "「自分を傷つけたいと思ってる？」 · 「自殺を考えてる？」 · 「命を終わらせようと考えてる？」",
+        "the_most_cited_barrier_to_asking": "🔬 聞けない理由としていちばんよく挙げられるものは、まちがいです： ",
+        "asking_does_not_plant_the_idea": "聞くことで、その考えを植えつけることは【ありません】。複数のメタ分析（Dazzi et al., 2014, Psychological Medicine）や、AFSP、NIMH、QPR Institute による何十年もの研究が確かめています：直接聞くことは守りになります。むしろほっとされることが多いのです——その人は、誰かが気づいてくれるのを待っていたのです。",
+        "persuade_listen_and_stay": "説得——耳をかたむけ、そばにいる",
+        "persuade_doesn_t_mean_talking_them": "「説得」とは、その人の気持ちを言いくるめることではありません。しっかり耳をかたむけ、つらいのは当然だと受け止め、助けを求めることに「うん」と言えるよう手伝うことです。",
+        "listen_without_judgment": "否定せずに聞く。 ",
+        "don_t_debate_don_t_minimize": "言い争わない。軽く扱わない。自分の話で張り合わない。",
+        "reflect": "気持ちを言葉にして返す。 ",
+        "it_sounds_like_you_ve_been": "「ずっといろんなことを抱えてきて、もうへとへとなんだね。」聞いてもらえたと感じてもらうことが薬です。",
+        "don_t_promise_secrecy": "秘密にすると約束しない。 ",
+        "you_can_say_i_care_about": "こう言えます：「大事だからこそ、これを自分の中だけにしておけないんだ。本当に力になってくれる人に、いっしょに話そう。」",
+        "stay_with_them": "そばにいる。 ",
+        "don_t_leave_them_alone_if_2": "差し迫ってつらい状態なら、ひとりにしないでください。座る。歩く。ただ、そばにいる。",
+        "skip_the_promise_me_trap": "⚠ 「約束して」のわなを避ける： ",
+        "don_t_ask_them_to_promise": "何もしないと「約束」させないでください。守れないかもしれない約束をさせることになり、恥ずかしさを増やしてしまいます。代わりに：「安全でいてほしいんだ。今すぐ、いっしょに助けを探そう。」",
+        "refer_connect_them_to_help": "紹介——助けにつなぐ",
+        "refer_means_getting_them_to_someone": "「紹介」とは、あなたよりも多くのことができる人のところへ連れて行くことです。ここは、【あなた】もひとりではないという部分です。",
+        "best_walk_with_them_to_a": "いちばんいいのは：スクールカウンセラー、学校心理士、または信頼できる大人のところへ、いっしょに歩いて行くこと。今すぐに。",
+        "if_that_s_not_possible_call": "それができないなら：いっしょに 988 に電話する（または、本人が電話やテキストをする間そばにいる）。988 は危険にある本人のためだけでなく、助けようとしている友だちの【ためにも】あります。",
+        "if_they_refuse_to_tell_anyone": "本人が誰にも言いたくないと言ったら： ",
+        "tell_an_adult_yourself": "あなたが大人に伝えましょう。 ",
+        "you_re_not_breaking_trust_you": "信頼を裏切っているのではありません——その人の危機にふさわしい友情にもとづいて行動しているのです。あとになって、きっとほっとしてくれるでしょう。",
+        "if_immediate_physical_danger_911_not": "差し迫った身体的な危険があるなら：911。来週ではなく、今すぐ。",
+        "the_whole_framework_in_one_sentence": "枠組み全体をひと言で： ",
+        "ask_directly_listen_fully_and_bring": "直接聞いて、しっかり耳をかたむけて、助けになる大人を呼ぶ。",
+        "what_to_say_and_what_not": "何を言えばいいか（そして言わないほうがいいこと）",
+        "you_don_t_need_a_perfect": "完璧なセリフはいりません。賢くなくてもかまいません。必要なのは、そばにいること、正直であること、大人を呼ぶ気持ちがあることです。下の言い方はあくまで例です——本当の会話は、あなた自身の言葉になります。",
+        "a_useful_frame_would_what_i": "役に立つ考え方：これから言うことで、友だちは話し続けるのが【より安全】だと感じるだろうか、それとも【より不安】に感じるだろうか？",
+        "these_help": "助けになる言葉",
+        "why": "理由： ",
+        "these_don_t_help_even_when": "助けにならない言葉（善意からでも）",
+        "if_you_said_one_of_the": "前に「言わないほうがいい」ことを言ってしまっていたとしても—— ",
+        "that_s_ok_you_didn_t": "大丈夫です。知らなかったのです。誰も生まれつきこれを知っているわけではありません。今はほかの言葉があります。次の会話は、ちがうものにできます。",
+        "telling_a_trusted_adult": "信頼できる大人に伝える",
+        "this_is_the_most_important_skill": "これは、このモジュール全体でいちばん大切なスキルです。 ",
+        "telling_an_adult_is_what_turns": "大人に伝えることで、あなたの心配が、結果を本当に変える助けになります。これはいちばん大事な一歩です——専門家が、訓練してきたことをできるようになる瞬間です。",
+        "loyalty_not_betrayal": "裏切りではなく、友情",
+        "a_friend_in_crisis_may_ask": "危機にある友だちは、誰にも言わないでと頼むかもしれません。約束させようとするかもしれません。こわかったり、恥ずかしかったり、言ったらもっと悪くなると思いこんでいたりするかもしれません。",
+        "tell_anyway": "それでも伝えましょう。 ",
+        "safety_overrides_secrecy_telling_an_adult": "安全は秘密より優先されます。友だちの命や心身の健康が危険にさらされているとき、大人に伝えることは、友だちにできる最も誠実なことです。こうして守られた人のほとんどは、あとで【感謝】しています——そのときは怒っていたとしても。友情はつらい会話を乗りこえられます。でも、友だちを失ってしまったら、乗りこえることはできません。",
+        "when_to_tell_every_time": "伝えるとき——毎回必ず",
+        "your_friend_mentioned_wanting_to_die": "友だちが、死にたい、自分を傷つけたい、命を終わらせたいと口にした——軽い調子であっても",
+        "you_re_seeing_a_cluster_of": "危機の警告サインがいくつも重なって見える（言葉 / 気分 / 行動）",
+        "your_friend_has_a_plan_a": "友だちに計画、手段、または時期の見通しがある——あいまいであっても",
+        "your_friend_has_hurt_themselves_even": "友だちが自分を傷つけたことがある——少しだけであっても",
+        "you_re_scared_and_you_don": "あなたがこわくて、どうしたらいいかわからない——それだけでも伝える十分な理由です",
+        "who_to_tell_pick_whoever_you": "誰に伝えるか——いちばん早く連絡できる人を選ぶ",
+        "how": "方法： ",
+        "how_to_tell_practical_moves": "伝え方——実際にできること",
+        "you_don_t_need_a_script": "セリフはいりません。「友だちのことで、大事なことを手伝ってほしいんです」で十分です。",
+        "you_can_write_it_down_if": "声に出して言えないなら、書いてもかまいません。メモ、テキストメッセージ、メール、どれでも大丈夫です。",
+        "you_can_ask_another_friend_to": "ほかの友だちに、カウンセラー室までいっしょに来てもらってもかまいません。",
+        "you_can_leave_class_to_do": "このために授業をぬけてもかまいません。先生に「カウンセラーに会わないといけないんです——急ぎです」と伝えましょう。ほとんどの先生は、何も聞かずに行かせてくれます。",
+        "if_the_first_adult_doesn_t": "最初の大人が真剣に受け止めてくれなかったら——実際にそういうこともあります——別の人に話しましょう。誰かが聞いてくれるまで続けてください。",
+        "if_it_s_outside_school_hours": "学校の時間外なら、988 に電話しましょう。どうすればいいか、いっしょに考えてくれます。",
+        "in_maine_schools": "🍎 メイン州の学校では",
+        "school_counselors_and_school_psychologists_are": "スクールカウンセラーと学校心理士には通報義務があります——安全に関わる心配には、対応することが法律で求められています。あなたの親に伝えて終わり、ということは【ありません】。友だちの状態の評価、家族への安全な連絡、継続的なケアへのつなぎを含む手順に従って対応します。通報義務は罰ではなく、安全を守るためのガードレールです。",
+        "marked_as_myth_correct": "思いこみと判断——正解",
+        "marked_as_truth_but_research_says": "本当と判断——でも研究によると、これは思いこみです",
+        "myths_debunked": "思いこみを正す",
+        "six_of_the_most_cited_myths": "危機にある友だちを助けるのをさまたげる、よく聞く六つの思いこみ。それぞれについて、その主張が【思いこみ】か【本当】かを考えてから、出典つきの根拠にもとづく答えを読みましょう。",
+        "score_so_far_correctcount_totalanswered_answered": "ここまでのスコア：{totalAnswered} 問中 {correctCount} 問正解。",
+        "myth_value_of_mythscount": "思いこみ {value} / {MYTHSCount}",
+        "this_is_a_myth": "これは【思いこみ】",
+        "this_is_true": "これは【本当】",
+        "correct_this_is_a_myth": "✓ 正解——これは思いこみです。",
+        "common_misconception_this_is_actually_a": "⚠ よくある誤解——実はこれは思いこみです。",
+        "what_the_evidence_says": "根拠が示していること： ",
+        "sources_cite": "出典：{cite}",
+        "what_to_say": "言えること： ",
+        "crisis_resources": "危機のときの相談先",
+        "every_resource_here_is_free_confidential": "ここにある窓口はどれも、無料で、秘密が守られ、訓練を受けた人が対応します。友だちの【ために】、友だちと【いっしょに】、または自分のために電話できます。相談窓口は、危機にある本人だけのものではありません——どうしたらいいか考えている友だち、保護者、支える人のためのものでもあります。",
+        "below": "この下に： ",
+        "national": "全国",
+        "works_anywhere_in_the_u_s": " （米国のどこでも使える）→ ",
+        "find_your_local_help": "地域の支援を探す",
+        "directory_lookups_by_zip": " （郵便番号で探せるディレクトリ）→ ",
+        "outside_the_u_s": "米国以外にいますか？",
+        "maine_partners": "メイン州のパートナー",
+        "named_local_agencies": " （地域の機関名つき）→ ",
+        "school_based": "学校での支援",
+        "you_don_t_need_to_know": "何を言えばいいか、わかっていなくて大丈夫です。相手は会話を始めるための訓練を受けています。かけ直してもいいし、電話を切ってもかまいません。まちがったやり方なんてありません。",
+        "a_note_about_lgbtq_youth": "LGBTQ+ の若者について",
+        "research_consistently_shows_lgbtq_youth_and": "研究では一貫して、LGBTQ+ の若者——特にトランスジェンダーの若者——は、LGBTQ+ ではない同年代の人より、自殺を考えたり試みたりする割合がかなり高いことが示されています。理由はよく記録されています：家族からの拒絶、学校でのいやがらせ、自分を肯定してくれるケアの不足、マイノリティ・ストレス。The Trevor Project（1-866-488-7386 / 678-678 に START とテキストメッセージ）には、こうした現実のために特別な訓練を受けたスタッフがいます。友だちが LGBTQ+ なら、この窓口はまさにその人のためのものです。",
+        "self_care_sub_sections": "セルフケアのサブセクション",
+        "supporting_a_friend_through_a_mental": "メンタルヘルスの危機にある友だちを支えるのは、重いことです。あなた自身も変わります。研究者はこれを",
+        "secondary_stress": "「二次的ストレス」",
+        "the_way_that_being_close_to": "と呼んでいます——ほかの人の痛みの近くにいることで、自分の心身の健康にも影響が出ることです。これは本当に起こることで、気にかける価値があります。",
+        "taking_care_of_yourself_is_not": "自分を大切にすることは、わがままではありません。そばにいつづけられるための方法です。",
+        "interactive_tools_above": "🧰 上にあるインタラクティブなツール",
+        "the_tabs_at_the_top_of": "このセクションの上にあるタブには、今すぐ使える実用的なツールがあります：ガイドつきの",
+        "breathing_pacer": "呼吸ペーサー",
+        "a_sensory": "、感覚を使う",
+        "grounding_exercise": "グラウンディング",
+        "a_personal": "、自分で作れる、あなた専用の",
+        "coping_toolkit": "コーピング・ツールキット",
+        "you_can_build_and_the_evidence": "、そして根拠のある",
+        "stanley_brown_safety_plan": "Stanley-Brown の安全計画",
+        "they_re_for_you_and_for": "。どれもあなたのためのもので、【そして】つらい思いをしている友だちと共有することもできます。",
+        "caring_for_yourself_when_you_ve": "友だちを支えたあと、自分を大切にする",
+        "helpful_response": "助けになる返事",
+        "this_response_could_harm_see_explanation": "この返事は傷つけるおそれがあります——説明を見てください",
+        "neutral_response_see_explanation": "どちらでもない返事——説明を見てください",
+        "practice_three_scenarios": "練習——三つの場面",
+        "three_short_scenarios_drawn_from_typical": "思春期によくある経験をもとにした、三つの短い場面です。それぞれ、いちばん助けになると思う返事を選んでください。完璧な答えはありません——その場面でより助けになる答えと、あまり助けにならない答えがあるだけです。「強さの源」（Sources of Strength）の練習プロトコルをもとにしています。",
+        "loaded_scenario_title": "場面を読みこみました：{title}",
+        "scenario_value": "場面 {value}",
+        "how_would_you_respond": "あなたならどう返す？",
+        "helpful": "✓ 助けになる—— ",
+        "harmful": "× 傷つける—— ",
+        "neutral": "~ どちらでもない—— ",
+        "a_note_on_practice": "練習について： ",
+        "real_conversations_are_messier_than_scripted": "本当の会話は、台本のある場面よりずっとごちゃごちゃしています。練習の目的はセリフを覚えることではなく——聞く、耳をかたむける、そばにいる、伝える、という【直感】を育てることです。練習するほど、その直感は速くはたらくようになります。",
+        "loading": "読みこみ中…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "死にたい、痛みを終わらせたい、自分はお荷物だ、未来がない、といったことを直接的または間接的に話す。軽い調子や冗談として言うこともあります。どんな言い方であっても、真剣に受け止めてください。",
+          "examples": {
+            "0": "「死にたい」や「ここにいなければよかった」",
+            "1": "「自分がいないほうが、みんな幸せになれる」",
+            "2": "「もう無理」",
+            "3": "「とにかく全部終わってほしい」",
+            "4": "「もうすぐ私のこと心配しなくてよくなるから」",
+            "5": "さりげなくても、最後のお別れのように感じる言い方でさよならを言う"
+          },
+          "note": "友だちが冗談で死にたいと言ったときも、やさしく声をかける場面です。のちに自殺を試みる人の多くは、誰かに話しています——軽い調子だったり、何気ないひと言に聞こえたりすることもあります。"
+        },
+        "mood": {
+          "desc": "特に短い期間での、気分の大きな変化。苦しい時期の【あと】に急に落ち着いたりほっとしたりするのは、深刻なサインのことがあります——危険にある人が計画を決めて、一時的に穏やかな気持ちになることがあるからです。",
+          "examples": {
+            "0": "よくならない、続くうつや不安",
+            "1": "長くつらい時期のあとの、急な落ち着きや「もう全部大丈夫」という感じ",
+            "2": "未来への絶望",
+            "3": "激しい怒りや、仕返しをほのめかす話",
+            "4": "前は大切にしていたことへの興味がなくなる"
+          },
+          "note": "長くつらい時期のあとに急によくなるのは、治療やサポートや休養のあとなら良いことです。何のきっかけもないとき——何週間も苦しんだあと、落ち着きが突然どこからともなく現れたとき——は警告サインです。"
+        },
+        "behavior": {
+          "desc": "行動のパターン、特に準備のパターン。ここでは、やり方の手引きになりうる具体的なことを、あえて挙げて【いません】。何かがおかしいと友だちが気づくには、大まかなカテゴリーで十分です。",
+          "examples": {
+            "0": "友だち、家族、前は大好きだった活動から離れていく",
+            "1": "物質の使用が増える（お酒、大麻、薬、ベイプがいつもより多い）",
+            "2": "大切にしている持ち物を人にあげてしまう",
+            "3": "最後のお別れのように感じる言い方で、人にさよならを言う",
+            "4": "無謀な行動をとる、ふだんならしないような危険をおかす",
+            "5": "自分を傷つける方法をネットで調べる（おかしな時間にスクリーンタイムが急に増えていたり、隠している検索履歴があることに気づいたりするかもしれません）"
+          },
+          "note": "確信がなくてもかまいません。これらがいくつも重なって見えるなら、やさしく声をかけ、【そして】信頼できる大人に伝えるタイミングです。確信はいりません——心配だけで十分です。"
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "「最近すごく落ちこんでるみたいだね。大事に思ってるから気になってるんだ。本当のところ、どうしてる？」",
+          "why": "具体的で、思いやりがあり、話すきっかけをつくります。「本当のところ」は、いつもの「大丈夫」より先の話を聞きたいという合図になります。"
+        },
+        "1": {
+          "say": "「自分を傷つけたいと思ってる？ 自殺を考えてる？」",
+          "why": "直接聞いても、その考えを植えつけることは【ありません】——研究ではっきりしています。むしろほっとされることが多いです。誰かが気づいてくれるのを待っていたのかもしれません。"
+        },
+        "2": {
+          "say": "「話してくれてうれしい。勇気がいったよね。」",
+          "why": "打ち明けてくれたことを受け止めます。すぐに解決しようとせず——まず信頼してくれたことに感謝しましょう。"
+        },
+        "3": {
+          "say": "「これは私ひとりじゃ抱えきれないし、ちゃんと安全でいてほしいんだ。いっしょに誰かに話そう？」",
+          "why": "自分の限界に正直です。大人に伝えることを、裏切りではなく愛情の行動として示します。「いっしょに」が大切です——あなたは逃げ出すわけではありません。"
+        },
+        "4": {
+          "say": "「ここにいるよ。どこにも行かない。よかったら、何も話さずにいっしょに座っていよう。」",
+          "why": "そばにいることが薬です。答えを持っていなくていいのです。ただ、そこにいればいいのです。"
+        },
+        "5": {
+          "say": "「信頼してる人で、今すぐ話せるように私が手伝える人っている？」",
+          "why": "次のステップは大人の助けだと示しつつ、誰にするかは本人に選んでもらいます。"
+        },
+        "6": {
+          "say": "「大好きだよ。何かあったらと思うとこわい。お願いだから、手伝わせて。」",
+          "why": "まっすぐな気持ちの正直さ。「こわい」と言っていいのです——それが本当の気持ちだし、あなたにとってこれが大事なことだと伝わります。"
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "「そんなふうに感じるべきじゃないよ。」",
+          "why": "その人の気持ちがまちがっていると伝えてしまいます。気持ちを否定されると、もう何も話してくれなくなります。"
+        },
+        "1": {
+          "say": "「もっと大変な人だっているよ。」",
+          "why": "痛みは比べるものではありません。打ち明けることをやめさせ、恥ずかしさを増やしてしまいます。"
+        },
+        "2": {
+          "say": "「誰にも言わないで。私も言わないから。」",
+          "why": "安全に関わる場面で秘密を約束することは、助けとは正反対です。安全は秘密より優先されます。ここでの本当の友情は、伝えることです。"
+        },
+        "3": {
+          "say": "「何もしないって約束して。」",
+          "why": "本人に守る力がないかもしれない約束をさせることになり——守れなかったときに、あなたをがっかりさせたという気持ちまで背負わせます。代わりに：「安全でいてほしいんだ。いっしょに助けを探そう。」"
+        },
+        "4": {
+          "say": "「生きる理由がたくさんあるじゃない。」",
+          "why": "善意からでも、どん底の気持ちのときには、本当にそう感じることができません。「感謝すべきだ」と言われたように受け取られることがあり——痛みに恥ずかしさを重ねてしまいます。"
+        },
+        "5": {
+          "say": "「さっさと立ち直りなよ / 元気出して / もっとがんばって。」",
+          "why": "うつは自分で選べるものではありません。別の選び方をしろと言うのは、その人が経験していることをわかっていないと伝えることになります。"
+        },
+        "6": {
+          "say": "「なんでそんなふうに考えるの？」（イライラした口調で）",
+          "why": "イライラは否定として伝わります。本当に理解したいなら、やさしく聞きましょう——「今どんな気持ちなのか、わかるように教えてくれる？」——そして、何を言われても受け止める姿勢でいましょう。"
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "スクールカウンセラーや学校心理士",
+          "pro": "こういうことのための訓練を受けています。学校にいる間にいちばん会いやすいことが多いです。安全に関わること以外は守秘義務があります。保護者に伝えるのを手伝い、外部のケアにつないでくれます。",
+          "how": "直接行く。メモを渡す。どの先生にでも連れて行ってもらう。言えないときは、書いて伝えてもかまいません。"
+        },
+        "1": {
+          "label": "信頼できる先生",
+          "pro": "いつもあなたに会っていて、友だち関係も知っています。通報義務のある人なので——どうすればいいかわかっています。",
+          "how": "授業のあと、質問を受けつけている時間、またはメモで。「友だちのことで、大事な話があります。」"
+        },
+        "2": {
+          "label": "保健室の先生（スクールナース）",
+          "pro": "学校にある、秘密を守ってくれる医療・メンタルヘルスの窓口です。カウンセラーより会いやすいことも多いです。",
+          "how": "保健室に行きましょう。話を聞く時間をつくってくれます。"
+        },
+        "3": {
+          "label": "親、保護者、年上のきょうだい",
+          "pro": "あなたを愛しています。助けたいと思っています。どうすればいいかわからなくても、あなたといっしょに次の一歩をふみ出せます。",
+          "how": "落ち着いているときを選びましょう。「友だちのことで、大事なことを手伝ってほしいんだ」と切り出して、いっしょに座って話せるか聞いてみましょう。"
+        },
+        "4": {
+          "label": "かかりつけ医や小児科医",
+          "pro": "秘密を守る医療の専門家です。メンタルヘルスのケアを紹介したり、友だちの家族と話したり、学校と連携したりできます。",
+          "how": "病院に電話して、先生と話したいと伝えられます。多くの病院は、思春期の患者の秘密を守ってくれます。"
+        },
+        "5": {
+          "label": "コーチや部活・クラブの顧問",
+          "pro": "活動を通して、あなたと友だちをすでに知っている大人です。スクールカウンセラーとつながりがあることも多いです。",
+          "how": "練習や集まりのあとに。「心配していることがあって、話を聞いてほしいんです。」"
+        },
+        "6": {
+          "label": "宗教の指導者（家族が信仰のコミュニティに属している場合）",
+          "pro": "宗教の指導者と信頼関係のある家族にとっては、最初に相談する意味のある相手になりえます。",
+          "how": "ほとんどの人は、こうした相談を歓迎してくれます。トラウマインフォームドの研修を受けている人も多いです。"
+        },
+        "7": {
+          "label": "セラピスト（あなたか友だちのどちらかにいれば）",
+          "pro": "まさにこういう会話のための訓練をすでに受けています。あなたか友だちがすでにセラピストにかかっているなら、いちばん直接的な道です。",
+          "how": "相談先に電話しましょう。「安全について心配なことがあって、今日話す必要があります。」"
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "自殺を考えているかどうか聞くと、その考えを植えつけてしまう。",
+          "truth": "まちがいです。研究の結果は一貫していて、はっきりしています：聞くことでリスクが高まることは【ありません】。むしろほっとされることが多いです——その人は、誰かが気づいてくれるのを待っていたのです。聞くことは、友だちにできる最も守りになる行動のひとつです。",
+          "cite": "Dazzi et al., Psychological Medicine (2014) メタ分析 · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "自殺について話す人は、注目されたいだけだ。本当に何かするわけではない。",
+          "truth": "危険な思いこみです。のちに自殺を試みる人の多くは、先に誰かに話しています——軽い調子のときも、冗談のときもあります。打ち明けられたら、どれも本気で応える価値があります。「かまってほしいだけ」というのは、多くの場合「苦しんでいて、ほかに助けを求める方法がない」という意味です。"
+        },
+        "2": {
+          "claim": "本当に死にたいと思っている人は、誰にも言わない。",
+          "truth": "まちがいです。事実はその逆です。自殺を試みる人の多くは、周りの人に直接的または間接的な警告サインを出しています。誰かに話すことは、迷いのしるしであることが多いのです——その人の一部は生きたいと思い、手をのばしているのです。",
+          "cite": "Reporting on Suicide ガイドライン · AFSP · Sources of Strength"
+        },
+        "3": {
+          "claim": "友だちにできることは何もない——助けられるのは医師やセラピストだけだ。",
+          "truth": "仲間がそばにいることには守る力があると記録されています。何かを解決する必要はありません。話を聞くこと、真剣に受け止めること、信頼できる大人につなぐ手助けをすることは、本物の助けです。「強さの源」（Sources of Strength）のようなプログラムは、友だちが大切だという事実をもとにつくられています。",
+          "cite": "Sources of Strength の研究 · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "自殺について話すと、状況が悪くなる。",
+          "truth": "それが当てはまるのは、【安全でない】伝え方をしたときだけです——美化する、方法を説明する、センセーショナルに扱う。思いやりをもって話し、安全な伝え方の言葉を使い、助けにつなぐことは、守りになります。主要な自殺予防の団体はどこも、正直に話すことをすすめています。",
+          "cite": "Reporting on Suicide ガイドライン (reportingonsuicide.org) · AFSP · WHO"
+        },
+        "5": {
+          "claim": "自殺は前ぶれなく起こる。",
+          "truth": "まちがいです。研究では一貫して、ほとんどの場合に警告サインがあったことが示されています——あとからふり返って初めてはっきりわかることもありますが。だからこそピアサポートの研修が大切なのです：その場で何に気づけばいいかを教えてくれます。",
+          "cite": "AFSP · CDC YRBSS · NIMH の研究のまとめ"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "あなたと Maya はランチでいっしょに座っています。最近、Maya はいつもより口数が少なめです。食べ物をつつきながら、ほとんど何気ない調子で言います：「正直さ、ときどき、もう全部なんの意味があるのかわかんなくなる。」",
+          "responses": {
+            "0": {
+              "text": "「どういう意味？ そんなこと言わないでよ。」",
+              "why": "打ち明けることをやめさせてしまいます。「そんなこと言わないで」と言うのは、その人の気持ちがまちがっていると伝えることであり、【さらに】あなたには正直に話せないと伝えることにもなります。きっと心を閉ざしてしまうでしょう。"
+            },
+            "1": {
+              "text": "「すごく重たいね。最近何があったのか、もう少し聞かせてくれる？ 大事に思ってるよ。」",
+              "why": "否定せずに気持ちを受け止めています。無理強いせずに、もっと話すよう誘っています。「大事に思ってる」があると、話し続けても安全だと感じられます。これで、次のもっと難しい質問への扉が開きます：「自分を傷つけたいと思うことはある？」"
+            },
+            "2": {
+              "text": "「わかる、最近学校ほんとストレスだよね。」",
+              "why": "害はありませんが、Maya が本当に言ったことを見のがしています。「全部なんの意味があるのかわからない」は、学校のストレス以上のことです。当たりさわりのない返事では、聞いてもらえなかったと感じさせてしまうかもしれません。確かめるために、もうひとつ質問してみましょう。"
+            }
+          }
+        },
+        "sc2": {
+          "setting": "火曜日の夜 11 時。友だちの Jamie からメッセージが来ます：「みんな、自分がいなくても平気なんだろうなってずっと考えてる。」読んだ瞬間、心臓が止まりそうになります。",
+          "responses": {
+            "0": {
+              "text": "「ここにいるよ。何もしないで。今すぐお母さんを呼んで、助けに来てもらうから。」",
+              "why": "まっすぐで、そばにいて、真剣に受け止め、すぐに大人を巻きこんでいます。「お母さんを呼ぶ」で、何をするかがはっきりしています。待っている間もメッセージや電話でつながっていられるなら、そうしましょう。安全に直接会いに行けるなら、そうしましょう。"
+            },
+            "1": {
+              "text": "「えっ大丈夫？？ 生きる理由いっぱいあるじゃん！！」",
+              "why": "気持ちは正しくても、伝わり方がまちがっています。「生きる理由がたくさんある」は、どん底のときには罪悪感を押しつけられたように感じることがあります。よりよい方法：自分がこわいと伝え、大好きだと伝え、大人を巻きこみましょう。"
+            },
+            "2": {
+              "text": "「誰にも言わないけど、今夜は何もしないでね、いい？」",
+              "why": "安全に関わる場面で秘密を約束すると、事態は悪くなります。ここでいちばん友だち思いの行動は、大人に伝えることです——Jamie に言わないでと頼まれても。安全は秘密より優先されます。今夜、誰かに伝えましょう。"
+            }
+          }
+        },
+        "sc3": {
+          "setting": "先週、友だちはとてもつらい夜のあと入院しました。大人に伝えたのはあなたです。今日、友だちは学校に戻ってきましたが、とても疲れて見えます。廊下であなたのほうを見ません。怒っているんじゃないかと、あなたはこわくなっています。",
+          "responses": {
+            "0": {
+              "text": "近くに行って：「やあ。ずっと気になってたんだ。今日来てくれてうれしい。話したくなったら——そのことでも、全然関係ないことでも——いつでもいるからね。」",
+              "why": "自分の話にせずに、まだそばにいることを伝えています。何も求めていません。「そのことでも、全然関係ないことでも」で、ペースを自分で選んでいいと伝えています。これが、伝えた【あと】の友情のかたちです。"
+            },
+            "1": {
+              "text": "気まずい思いをさせないように、友だちを避ける。",
+              "why": "わかる気持ちですが、いないことは拒絶として伝わります——今その人が必要としていることの正反対です。「やあ、来てくれてうれしい」と小さく声をかけるだけでも大切です。何を言えばいいかわかっていなくてもかまいません。"
+            },
+            "2": {
+              "text": "あとでメッセージを送る：「大好きで、こわかったから言ったんだ。怒ってる？」",
+              "why": "正直ですが、あなたの決断について、友だちに【あなた】をなぐさめさせることになります。そういう気持ちは、あとで信頼できる大人やセラピストと話せます。友だちには、まずこう伝えましょう：「来てくれてうれしい。必要なときはいつでもいるよ。」"
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "体を動かす",
+        "sensory": "感覚",
+        "connection": "つながり",
+        "creative": "創作",
+        "cognitive": "考え方",
+        "inhale": "吸って",
+        "exhale": "吐いて",
+        "hold": "止めて"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "外を 5 分歩く"
+        },
+        "stretch": {
+          "label": "5 分間ゆっくりストレッチする"
+        },
+        "pushwall": {
+          "label": "壁を押す（緊張を逃がす）"
+        },
+        "run_stairs": {
+          "label": "階段を一往復かけ上がって下りる"
+        },
+        "cold_water": {
+          "label": "顔や手首に冷たい水をかける"
+        },
+        "ice_cube": {
+          "label": "氷をひとつ手に持つ"
+        },
+        "heavy_blanket": {
+          "label": "重めの毛布にくるまる"
+        },
+        "rain_sounds": {
+          "label": "雨や波の音を聞く"
+        },
+        "safe_smell": {
+          "label": "好きなにおいをかぐ（ローション、食べ物、キャンドル）"
+        },
+        "text_friend": {
+          "label": "信頼できる友だちに「ふと思い出したよ」とメッセージを送る"
+        },
+        "hug_pet": {
+          "label": "ペットやぬいぐるみをぎゅっとする"
+        },
+        "call_family": {
+          "label": "安心できる家族に電話する"
+        },
+        "with_someone": {
+          "label": "安心できる人といっしょに座る（話さなくていい）"
+        },
+        "playlist": {
+          "label": "お気に入りの、落ち着くプレイリストを聞く"
+        },
+        "doodle": {
+          "label": "絵やらくがきをかく（目標もルールもなし）"
+        },
+        "journal": {
+          "label": "頭の中にあることを書く。一文だけでもいい"
+        },
+        "make": {
+          "label": "手を動かして何かをつくる（折り紙、お菓子づくり、組み立て）"
+        },
+        "three_okay": {
+          "label": "今「まあ大丈夫」と思える小さなことを 3 つ書く"
+        },
+        "five_breaths": {
+          "label": "ゆっくり 5 回呼吸する（4 で吸って、4 で吐く）"
+        },
+        "will_pass": {
+          "label": "「この気持ちは過ぎ去る」と自分に言い聞かせる"
+        },
+        "one_step": {
+          "label": "次にやる小さなことをひとつ選ぶ（ひとつだけ）"
+        }
+      },
+      "phaselabel": {
+        "0": "吸って",
+        "1": "止めて",
+        "2": "吐いて"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "今、周りに【見える】ものを 5 つ挙げましょう。",
+          "helper": "何でもかまいません。電気スタンド。机の角。雲。"
+        },
+        "1": {
+          "prompt": "【感じる】ものを 4 つ挙げましょう。",
+          "helper": "床についている足。シャツの生地。肌にふれる空気。"
+        },
+        "2": {
+          "prompt": "【聞こえる】ものを 3 つ挙げましょう。",
+          "helper": "時計の音。車の音。自分の呼吸。"
+        },
+        "3": {
+          "prompt": "【におう】ものを 2 つ挙げましょう。",
+          "helper": "（近くに何もなければ、においを思い出せるものでもかまいません。）"
+        },
+        "4": {
+          "prompt": "【味わえる】ものを 1 つ挙げましょう。",
+          "helper": "（または最後に飲んだ水や、好きな食べ物でもかまいません。）"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. 警告サイン",
+          "sub": "つらい波が来そうだと教えてくれる考え、気持ち、状況は？"
+        },
+        "internal": {
+          "label": "2. ひとりでできること（自分でできるコーピング）",
+          "sub": "少しでも気分がましになったことで、誰の助けもなくできること。"
+        },
+        "distract": {
+          "label": "3. 気をまぎらわせてくれる人と場所（よい意味で）",
+          "sub": "メッセージを送れる友だち、ただいるだけで大丈夫と思える場所。危機のときの支えのためでは【ありません】——ただ気持ちをそらすためのものです。",
+          "label_2": "3. 気をまぎらわせてくれる人と場所"
+        },
+        "helpers": {
+          "label": "4. 直接助けを求められる人",
+          "sub": "事情を知っている友だちや家族、または打ち明けられるくらい信頼している人。名前 + 連絡方法を書きましょう。",
+          "label_2": "4. 助けを求められる人"
+        },
+        "professionals": {
+          "label": "5. 専門家 + 危機ライン",
+          "sub": "わたしのセラピスト（いれば）、精神科医、医師、スクールカウンセラー、それに 24/7 対応の危機ライン。"
+        },
+        "environment": {
+          "label": "6. 身の回りをより安全にする",
+          "sub": "自分を傷つけるのに使ってしまうかもしれないものから距離をとるために、わたし（または信頼できる人）に何ができる？ これは最も根拠のあるステップです。"
+        },
+        "warning": {
+          "label": "1. 警告サイン（考え、気持ち、状況）"
+        },
+        "coping": {
+          "label": "2. ひとりでできるコーピング"
+        },
+        "pros": {
+          "label": "5. 専門家 + 危機ライン"
+        },
+        "safer": {
+          "label": "6. 身の回りをより安全にする"
+        },
+        "0": {
+          "label": "【見える】もの 5 つ",
+          "prompt": "周りを見まわして、今見えるものを 5 つ挙げましょう。具体的に——「本」ではなく「本の角」のように。"
+        },
+        "1": {
+          "label": "【さわれる】もの 4 つ",
+          "prompt": "手をのばして、ちがうものに 4 つさわってみましょう。手ざわりに注目します。冷たい？ あたたかい？ なめらか？ ざらざら？"
+        },
+        "2": {
+          "label": "【聞こえる】もの 3 つ",
+          "prompt": "耳をすましましょう。ちがう音を 3 つ挙げます——近くても遠くても、大きくても小さくてもかまいません。"
+        },
+        "3": {
+          "label": "【におう】もの 2 つ",
+          "prompt": "においを 2 つ見つけましょう。何もにおわなければ、好きだったにおいを 2 つ思い出して挙げましょう。"
+        },
+        "4": {
+          "label": "【味わえる】もの 1 つ",
+          "prompt": "口の中の味を 1 つ感じてみましょう——最後に飲んだり食べたりしたものの味、または空気の味だけでもかまいません。"
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 からだ"
+        },
+        "mind": {
+          "label": "🧠 こころ"
+        },
+        "distract": {
+          "label": "🎮 気分転換"
+        },
+        "connect": {
+          "label": "🤝 つながる"
+        },
+        "creative": {
+          "label": "🎨 創作"
+        },
+        "spirit": {
+          "label": "🌅 スピリチュアル"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "わたしの安全計画",
+          "desc": "Stanley + Brown の 6 ステップの計画",
+          "stat": "{Count} ステップ記入済み"
+        },
+        "warning": {
+          "label": "わたしの警告サイン記録",
+          "desc": "サインを記録しつづける = パターン",
+          "stat": "{Count} 件記録"
+        },
+        "arsenal": {
+          "label": "わたしのコーピング・リスト",
+          "desc": "【わたし】に効く方法",
+          "stat": "{Count} 件保存"
+        },
+        "contacts": {
+          "label": "わたしのサポート連絡先",
+          "desc": "いつ誰に連絡するか、すぐわかる",
+          "stat": "{Count} 人"
+        },
+        "recovery": {
+          "label": "わたしの回復ノート",
+          "desc": "つらい瞬間のあと——効いたこと",
+          "stat": "{Count} 件のメモ"
+        },
+        "hope": {
+          "label": "わたしの希望リスト",
+          "desc": "前に進みつづける理由。ランダムに表示。",
+          "stat": "{Count} 個の理由"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "わたしのセーフティキット"
+        },
+        "breath": {
+          "label": "呼吸ペーサー"
+        },
+        "grounding": {
+          "label": "グラウンディング 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "つらさチェック"
+        },
+        "whyMatters": {
+          "label": "なぜ大切なのか"
+        },
+        "recognizeDepression": {
+          "label": "うつに気づく"
+        },
+        "crisisSigns": {
+          "label": "危機の警告サイン"
+        },
+        "qpr": {
+          "label": "質問 · 説得 · 紹介"
+        },
+        "whatToSay": {
+          "label": "何を言えばいいか"
+        },
+        "tellingAdult": {
+          "label": "信頼できる大人に伝える"
+        },
+        "myths": {
+          "label": "思いこみを正す"
+        },
+        "resources": {
+          "label": "危機のときの相談先"
+        },
+        "selfCare": {
+          "label": "自分を大切にする"
+        },
+        "practice": {
+          "label": "練習"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "ボックス呼吸（4-4-4-4）"
+        },
+        "fourseven": {
+          "name": "4-7-8 の落ち着く呼吸"
+        },
+        "equal": {
+          "name": "イコール呼吸（6-6）"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "読む"
+        },
+        "breath": {
+          "label": "呼吸ペーサー"
+        },
+        "ground": {
+          "label": "5-4-3-2-1 グラウンディング"
+        },
+        "toolkit": {
+          "label": "わたしのツールキット"
+        },
+        "safety": {
+          "label": "安全計画"
+        }
+      },
+      "print": {
+        "title": "わたしの安全計画",
+        "intro": "Stanley-Brown の安全計画介入にもとづいて作成。カウンセラーやセラピストといっしょに見直すと、いちばん役に立ちます。",
+        "empty": "（まだ記入されていません）",
+        "crisis_head": "今まさに危機の中にいるなら：",
+        "crisis_body": "{call} に電話またはテキストメッセージ（24/7 対応）。テキストメッセージ：{text}。信頼できる大人に伝えましょう。",
+        "created": "作成日：{date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "zones_of_regulation": "ゾーンズ・オブ・レギュレーション",
+        "positive_psychology": "ポジティブ心理学",
+        "coaching_tradition": "コーチングの伝統",
+        "trauma_informed": "トラウマインフォームド",
+        "media_literacy": "メディアリテラシー",
+        "contemplative": "観想的実践",
+        "trauma_informed_practice": "トラウマインフォームド・プラクティス",
+        "philosophy_ethics": "哲学 / 倫理学",
+        "social_work": "ソーシャルワーク",
+        "person_centered_planning": "本人中心の計画づくり",
+        "family_systems": "家族システム",
+        "self_determination_theory": "自己決定理論",
+        "executive_function": "実行機能",
+        "bystander_intervention": "傍観者介入",
+        "restorative_practices": "修復的実践",
+        "motivational_interviewing": "動機づけ面接",
+        "place_based_education": "地域に根ざした教育",
+        "harm_reduction": "ハームリダクション",
+        "body_appreciation": "ボディ・アプリシエーション",
+        "sources_of_strength": "強さの源",
+        "occupational_therapy": "作業療法",
+        "grief_counseling": "グリーフカウンセリング",
+        "holland_riasec": "ホランド RIASEC",
+        "neurodiversity_paradigm": "ニューロダイバーシティ・パラダイム",
+        "suicide_prevention": "自殺予防"
+      },
+      "tool": {
+        "zones": {
+          "label": "感情ゾーン",
+          "desc": "自分のゾーン（青・緑・黄・赤）を見きわめ、自分で気持ちを整えるための方法を探ります。"
+        },
+        "emotions": {
+          "label": "感情エクスプローラー",
+          "desc": "感情の語彙を増やしましょう。気持ちに気づき、名前をつけ、その強さを評価します。"
+        },
+        "strengths": {
+          "label": "強み発見",
+          "desc": "自分の強み、才能、伸びしろを発見し、振り返ります。"
+        },
+        "viaStrengths": {
+          "label": "VIA 強み",
+          "desc": "24 の VIA 性格の強み（Peterson と Seligman、2004）を簡略化した自己分類で、6 つの美徳と、あなたらしさを表す強み（シグネチャー・ストレングス）の特定を含みます。正式な無料調査は viacharacter.org で受けられます。振り返りの練習であり、心理測定ではありません。"
+        },
+        "wheelOfLife": {
+          "label": "ホイール・オブ・ライフ",
+          "desc": "8 つの生活領域をそれぞれ 1 から 10 で評価するレーダーチャートです。今の生活のどこが満ちていて、どこが薄いかを映す自画像になります。コーチングの伝統に由来します（Meyer、1960 年代；コーアクティブ・コーチング）。経験則にもとづくもので、妥当性が検証された心理測定ではありません。"
+        },
+        "perma": {
+          "label": "PERMA ウェルビーイング",
+          "desc": "PERMA の 5 領域に健康の振り返りを加えたセルフチェックです：ポジティブ感情（Positive emotion）、没頭（Engagement）、人間関係（Relationships）、意味（Meaning）、達成（Accomplishment）、健康（Health）。全 24 項目で、結果は棒グラフで表示され、領域ごとに振り返ります。Seligman に由来し、VIA 強みと組み合わせて使えます。"
+        },
+        "coping": {
+          "label": "コーピング・ツールキット",
+          "desc": "呼吸、グラウンディング、体を動かすことなど、コーピングの方法を探して練習します。"
+        },
+        "windowOfTolerance": {
+          "label": "耐性の窓",
+          "desc": "トラウマインフォームドな自己認識のための図です。3 つの覚醒ゾーン（過覚醒、耐性の窓、低覚醒）。各ゾーンでの自分のサイン、きっかけ（トリガー）、そして窓の中に戻るための実践を書き出します。Siegel（1999）にもとづき、トラウマインフォームドな学校で標準的に使われています。"
+        },
+        "stressBucket": {
+          "label": "ストレスバケツ",
+          "desc": "容量を表す図です。ストレス要因が流れ込み、コーピングの実践で流れ出ていきます。流入と流出のバランスが取れているか確かめましょう。CBT の伝統にもとづくツール（Brabban と Turkington、2002）で、英国の NHS IAPT や Mind UK で広く使われています。構造的なストレス要因についても率直に扱います。"
+        },
+        "tipp": {
+          "desc": "急性の苦痛のための、4 つの DBT 危機サバイバルスキル（温度 Temperature、激しい運動 Intense exercise、ペースを整えた呼吸 Paced breathing、組み合わせ筋弛緩 Paired muscle relaxation）。考えて抜け出そうとする前に、30 秒から 10 分で体を落ち着かせます。DBT の苦痛耐性スキルの基礎です（Linehan）。"
+        },
+        "anxietyToolkit": {
+          "label": "不安ツールキット",
+          "desc": "不安に取り組むための CBT にもとづくスキル：心理教育、心配の木（役に立つ心配と役に立たない心配）、心配する時間を決めること、破局的思考をほぐすこと、グラウンディングのスキル、自分のパターンの一覧。Beck Institute、AACAP、ADAA に由来します。耐性の窓やストレスバケツと組み合わせて使えます。"
+        },
+        "sleep": {
+          "label": "睡眠と休息",
+          "desc": "思春期の睡眠不足は公衆衛生上の危機です。AAP が推奨する 8-10 時間はめったに満たされていません。心理教育、セルフチェック、よくある 8 つの障壁とそれぞれに効く方法、睡眠日誌を含みます。AAP、CDC、NSF、Carskadon の研究に由来します。"
+        },
+        "sensoryRegulation": {
+          "label": "感覚調整",
+          "desc": "ニューロダイバーシティを肯定するツールで、8 つの感覚系にわたる自分の感覚処理を理解するのに役立ちます。自分のプロフィールを作り、センサリーダイエットを計画し、学校での合理的配慮を見つけます。アイデンティティ・ファーストの言葉づかいを採用し、Ayres、Dunn、自閉症当事者が主導する研究にもとづいています。"
+        },
+        "bigFeelings": {
+          "label": "大きな気持ち（怒り）",
+          "desc": "怒りに特化した心理教育とスキルづくり。怒りは問題そのものではなく情報であり、落とし穴は反応的な攻撃です。Lochman の Coping Power の伝統と、怒りに対する CBT のエビデンスにもとづいています。イライラ記録、きっかけの一覧、選択のポイント、自分に合ったクールダウン方法を含みます。"
+        },
+        "substancePsychoed": {
+          "label": "物質使用",
+          "desc": "物質（アルコール、大麻、ニコチン、オピオイド、刺激薬、ベンゾジアゼピン系、幻覚剤）についてのハームリダクション（害の低減）の心理教育。思春期の脳へのリスク。ナロキソンについての知識。スクリーニングではなく、断つことだけを説くものでもありません。SAMHSA への紹介をはっきり示します。動機づけ面接（MI）に沿った振り返りの場です。"
+        },
+        "behavioralActivation": {
+          "label": "行動活性化",
+          "desc": "小さな活動を計画して実行し、達成感（できたと感じた）と喜び（楽しめた）で評価します。自分に合うものに気づき、無理のない次の一歩を選びます。この計画活動は行動活性化を参考にしていますが、治療を提供したり評価したりするものではありません。"
+        },
+        "mindfulness": {
+          "label": "マインドフルネス・コーナー",
+          "desc": "ガイド付きの呼吸エクササイズ、ボディスキャン、マインドフルネスの活動。"
+        },
+        "quietQuestions": {
+          "label": "静かな問い",
+          "desc": "週に一度の内なる問いの実践。ひとつの開かれた問いと丸一週間向き合います。注意、あこがれ、困難、つながり、成長にわたる 20 の問いが順番に巡ります。クエーカーの問いの伝統に着想を得ていますが、宗教色はなく、答えを押しつけません。"
+        },
+        "orientations": {
+          "label": "生き方の方向性",
+          "desc": "生き方の比較。8 つの哲学的伝統（道教、禅、ストア派、実存主義、儒教倫理、ウブントゥ、先住民の関係性の思想、ケアの倫理）を人生の大きな問いについて比べます。答えを押しつけず、それぞれの伝統に「うまくできないこと」を率直に示す欄があります。"
+        },
+        "thoughtRecord": {
+          "label": "CBT 思考記録",
+          "desc": "認知行動療法の 7 コラム思考記録。つらい場面を順にたどります：状況、感情、自動思考、根拠と反証、バランスの取れた考え、感情の再評価。記録は時間をかけて保存できます。Beck、Burns、Padesky に由来します。"
+        },
+        "costBenefit": {
+          "label": "メリット・デメリット表",
+          "desc": "弁証法的行動療法の 2x2 の意思決定表。ある決定の短期的・長期的なメリットとデメリットを並べて示します。感情がひとつの選択肢へと押しているときに役立ちます。Linehan に由来します。"
+        },
+        "sfbt": {
+          "label": "解決志向",
+          "desc": "解決志向ブリーフセラピー：ミラクル・クエスチョン、スケーリング、例外探し、コンプリメント。過去ではなく未来に目を向け、すでにうまくいっていることを尋ねます。米国のスクールカウンセリングで最もよく使われる技法です。de Shazer と Berg に由来します。"
+        },
+        "careConstellations": {
+          "label": "ケアの星座",
+          "desc": "誰があなたをケアし、あなたが誰をケアしているかを示す関係の地図。個人主義的・消費主義的な「セルフケア」の枠組みを退けます。「自己への配慮」と「セルフケア」についての本格的な哲学的視点を含みます（フーコー、ギリシア語の epimeleia heautou、Audre Lorde、エウダイモニア的幸福と快楽的幸福）。"
+        },
+        "ecomap": {
+          "label": "エコマップ",
+          "desc": "「環境の中の人」の関係図。中心にあなたがいて、その周りに 12 の主な生活システムがあります。各つながりを強さ、ストレス、エネルギーの向きで評価します。Hartman（1978）以来のソーシャルワークの標準ツールで、IEP、家族アセスメント、個人の生活の棚卸しに使われます。"
+        },
+        "circlesOfSupport": {
+          "label": "サポートの輪",
+          "desc": "4 つの同心円の関係の輪：親密、友情、参加、交換（有償）。有償の人が内側の輪を占めている場合も含め、本当に身近なのは誰かを見えるようにします。Inclusion Press の Forest と Snow に由来します。"
+        },
+        "genogram": {
+          "label": "ジェノグラム",
+          "desc": "家族システムの標準記号を使った 3 世代の家族図。個人の自己理解のためだけのものです（臨床評価ではありません）。Bowen の家族システム理論と McGoldrick-Gerson-Petry の表記法にもとづいています。安全に配慮した枠組みの案内を目立つ形で含みます。"
+        },
+        "griefLoss": {
+          "label": "悲嘆と喪失",
+          "desc": "悲しみに寄り添うセルフガイド。人やペットの死、家族の変化、友だちとの別れ、アイデンティティの喪失、あいまいな喪失——どれも含まれます。Worden の喪の 4 つの課題をたどり、手紙を書き、儀式を計画します。深刻な悲嘆や複雑な悲嘆にはクライシス・コンパニオン / 988 を案内する、明確な安全の枠組みがあります。"
+        },
+        "traumaPsychoed": {
+          "label": "トラウマを理解する",
+          "desc": "心理教育のみ（スクリーニングではありません）。トラウマとは何か・何でないか、わかりやすい言葉での神経生物学、よくある反応を適応として捉え直すこと、SAMHSA の 6 原則、エビデンスにもとづく治療。生徒と教育者向けです。フォローアップのないスクリーニングがなぜ危険かについて、目立つ形で安全の枠組みを示します。"
+        },
+        "bodyStory": {
+          "label": "からだの物語",
+          "desc": "からだの受容と身体性のためのツール。体重を中心にせず、ダイエットとも関係なく、スクリーニングでもありません。Tylka のボディ・アプリシエーション、直観的食事の原則、メディアリテラシーにもとづいています。あらゆる体、あらゆるジェンダー、あらゆるサイズを包み込みます。摂食障害については NEDA への紹介をはっきり示します。"
+        },
+        "sourcesOfStrength": {
+          "label": "強さの源",
+          "desc": "あなたの 8 つの保護因子を書き出します。「強さの源」（Sources of Strength）プログラムに着想を得た保護的なサポートを探ります。このセルフガイドの地図は翻案であり、評価済みの学校プログラムを実施するものではありません。"
+        },
+        "crisiscompanion": {
+          "label": "クライシス・コンパニオン",
+          "desc": "ピアサポートと自殺予防のスキル：あなたや友だちが落ち込んでいるとき、危機にあるとき、自傷を考えているときにどうするか——サインに気づくこと、何を言うか（そして言わないか）、信頼できる大人に伝えること、そして 988 と個人の安全計画。コンテンツ警告を確認してから入ります。NEDA、AFSP、「強さの源」（Sources of Strength）プログラム、988 に沿っています。強さの源と対になる、急性期サポートのツールです。"
+        },
+        "identitySupport": {
+          "label": "アイデンティティ・サポート",
+          "desc": "性自認、性的指向、恋愛的指向、より広いアイデンティティの問いのための、包括的で肯定的な場。用語、アイデンティティの発達、コミュニティの見つけ方、トランスジェンダーの若者の安全、アライ（支援者）のためのガイドを含みます。Trevor Project、GLSEN、PFLAG にもとづいています。"
+        },
+        "disabilityVoices": {
+          "label": "障害当事者の声",
+          "desc": "障害をめぐる実践を形づくり、批判もしてきた、実在の自閉症当事者と障害当事者のアドボケイトたち。引用、背景、厳選した読書リストを収めています。この分野で「対象にされてきた」人々が、行動科学ツールの脇に追いやられるのではなく中心に置かれるように作られています。Ari Ne'eman、Temple Grandin、Damian Milton、Henny Kupferstein、Kassiane Asasumasu、Mel Baggs、Ly Xīnzhèn M. Zhǎngsūn Brown、Patty Berne。"
+        },
+        "goals": {
+          "label": "目標設定",
+          "desc": "SMART な目標を立て、進み具合を記録し、節目をお祝いします。"
+        },
+        "howlTracker": {
+          "label": "HOWL トラッカー",
+          "desc": "Crew の時間のための「学びと仕事の習慣」（Habits of Work and Learning）の自己評価。毎週のチェックイン、四半期ごとの目標、推移グラフ、Crew での話し合いのプロンプト。EL Education の HOWL の枠組みに沿っています。"
+        },
+        "onePageProfile": {
+          "label": "ワンページ・プロフィール",
+          "desc": "1 ページに収まる、持ち運びやすく印刷できるプロフィール。3 つのセクション：周りの人が私について好きなところ・すごいと思うところ、私にとって大切なこと、私をいちばんうまく支える方法。本人中心の計画づくりの成果物で、IEP の会議、移行期、代わりの先生、Crew に使えます。Helen Sanderson Associates の形式にもとづいています。"
+        },
+        "maps": {
+          "desc": "行動計画づくり（Making Action Plans）。順番に進む 8 つのプロンプト（私の物語、夢、悪夢、私は誰か、ギフト、ニーズ、行動計画、最初の一歩）。Inclusion Press の Pearpoint、O'Brien、Forest による本人中心の図で、移行計画に広く使われています。"
+        },
+        "path": {
+          "desc": "希望をもって別の明日を計画する（Planning Alternative Tomorrows with Hope）。未来を計画する図：遠い将来の北極星から、2 週間以内の最初の一歩までさかのぼる 8 つの段階。Inclusion Press の Pearpoint、O'Brien、Forest によるもので、MAPS と組み合わせて使えます。"
+        },
+        "valuesCommittedAction": {
+          "label": "価値と行動",
+          "desc": "大切なことを整理し、いちばん大事な価値に名前をつけ、それぞれを今週できる小さな具体的行動に変えます。アクセプタンス＆コミットメント・セラピー（Hayes）に由来し、思春期向けの DNA-V の枠組みを使います。ACT における価値（方向）と目標（目的地）の区別を扱います。"
+        },
+        "careerCompass": {
+          "label": "キャリア・コンパス",
+          "desc": "興味から仕事を探ります。36 項目の RIASEC セルフチェックで上位 3 つのホランド・コードがわかります。職業や米国連邦の 16 のキャリア・クラスター、具体的な次の一歩（職場体験の日、インフォメーショナル・インタビュー、CTE（職業技術教育）、見習い制度）を見てみましょう。ホランドの理論にもとづき、mynextmove.org の信頼できる O*NET 興味プロファイラーを案内します。"
+        },
+        "selfAdvocacy": {
+          "label": "セルフアドボカシー・スタジオ",
+          "desc": "IEP や 504 に関する疑問、合理的配慮、開示するかどうかの選択、信頼できる大人に助けを求めることについて、具体的な学校での支援計画を作ります。"
+        },
+        "perspective": {
+          "label": "視点レンズ",
+          "desc": "さまざまな視点から状況を見て、共感と視点取得を練習します。"
+        },
+        "community": {
+          "label": "コミュニティと文化",
+          "desc": "多様性、文化への気づき、コミュニティへの所属感を探ります。"
+        },
+        "conflict": {
+          "label": "対立解決",
+          "desc": "視点取得、I メッセージ、緊張を和らげること、関係修復の選択を使って、リスクの低い対立や仮定の対立を練習します。誰かが安全でない場合は、ひとりで交渉せず大人に入ってもらいましょう。"
+        },
+        "social": {
+          "label": "ソーシャルスキル・ラボ",
+          "desc": "会話のスキル、積極的傾聴、ボディランゲージ、協力を練習します。"
+        },
+        "teamwork": {
+          "label": "チームワーク・ビルダー",
+          "desc": "協力して取り組むチャレンジと、チームでの役割の探究。"
+        },
+        "dearMan": {
+          "desc": "言いにくいお願いのための台本を 7 つのステップで作ります：描写する（Describe）、表現する（Express）、主張する（Assert）、強化する（Reinforce）、意識を保つ（Mindful）、自信があるように見せる（Appear confident）、交渉する（Negotiate）。DBT の対人関係効果性スキル（Linehan）に由来し、スクールカウンセリングで最もよく使われるアサーティブなコミュニケーションの台本です。セルフアドボカシー・スタジオと組み合わせて使えます。"
+        },
+        "motivationalInterviewing": {
+          "label": "動機づけ面接",
+          "desc": "誰か（または自分自身）が変化について考え抜くのを助ける会話の枠組み。OARS のスキル（開かれた質問 Open questions、是認 Affirmations、聞き返し Reflections、要約 Summaries）、3 つのものさし、チェンジトークを学びます。Miller と Rollnick に由来し、スクールカウンセリングとピアサポートの土台です。"
+        },
+        "crewProtocols": {
+          "label": "Crew プロトコル",
+          "desc": "Crew の時間、アドバイザリー、ホームルームのための構造化されたグループ形式のライブラリ：コミュニティづくり、オープニング、クロージング、修復的サークル、振り返りのプロトコル、お祝いの形式、難しい対話のガイド。さらに SEL Hub 全体の Crew プロンプトをまとめています。EL Education の Crew、修復的実践、Tribes、Responsive Classroom にもとづいています。"
+        },
+        "healthyRelationships": {
+          "label": "健全な人間関係",
+          "desc": "あらゆる親密な関係の 8 つの側面にわたるスペクトラム（健全 / 不健全 / 虐待的）。同意についての詳しい説明、デート DV の予防、安全と相談窓口。Loveisrespect / NDVH の枠組みにもとづいています。クィア、ニューロダイバージェント、障害のある人々を包み込みます。"
+        },
+        "decisions": {
+          "label": "意思決定ラボ",
+          "desc": "「止まる・考える・行動する」の枠組みを使って、実生活の場面に取り組みます。"
+        },
+        "journal": {
+          "label": "気持ちジャーナル",
+          "desc": "毎日のチェックイン・ジャーナル。気分、きっかけ、振り返りを継続して記録します。"
+        },
+        "safety": {
+          "label": "安全と境界線",
+          "desc": "個人の境界線、信頼できる大人、安全な状況と安全でない状況について学びます。"
+        },
+        "landPlace": {
+          "label": "土地と場所",
+          "desc": "自分が暮らす土地と継続的な関係を築くためのスチュワードシップ・スタジオ。3 つの糸（歴史、生態、現在）、ランド・アクノレッジメントをパフォーマンスではなく実践として批判的に振り返ること、ワバナキの人々が主導する団体を信頼できる声とすること、そして非公開の振り返りジャーナル。"
+        },
+        "somaticReset": {
+          "label": "からだと呼吸のリセット",
+          "desc": "体のゾーンを選び、椅子に座ったままでもできる短い静止・呼吸・やさしい動きのリセットを行います。前後に非公開のチェックインがあります。"
+        },
+        "restorativeCircle": {
+          "label": "修復的サークル",
+          "desc": "確立されたルール、大人の導き、文化的なルーツへの配慮のもとで、修復的なサークルやコミュニティづくりのサークルを進行します。開示の強制や、現在進行中の安全上のリスクには使いません。"
+        },
+        "compassion": {
+          "label": "コンパッションとセルフトーク",
+          "desc": "セルフ・コンパッションを練習し、内なる批判者を捉え直し、よりやさしい内なる声を育てます。"
+        },
+        "friendship": {
+          "label": "友情づくり",
+          "desc": "友情のスタイル、関係修復の方法、健全な関係のパターンを探ります。"
+        },
+        "transitions": {
+          "label": "人生の変化",
+          "desc": "引っ越し、新しい学校、成長することなどの変化を乗り越えます。"
+        },
+        "upstander": {
+          "label": "アップスタンダー・トレーニング",
+          "desc": "安全に誰かのために立ち上がる方法を学びます。傍観者からアップスタンダーになるためのスキルです。"
+        },
+        "growthmindset": {
+          "label": "成長マインドセット",
+          "desc": "脳科学、困難の捉え直し、レジリエンスを育てること。"
+        },
+        "execfunction": {
+          "label": "実行機能",
+          "desc": "物事をやり遂げるうえで難しい部分のための方法：課題に取りかかる、集中を保つ、先の計画を立てる、時間を把握する。"
+        },
+        "advocacy": {
+          "label": "アドボカシー練習",
+          "desc": "日常の場面でニーズを伝える、サポートを求める、声を上げるための一般的な台本をリハーサルします。"
+        },
+        "civicAction": {
+          "label": "市民としての行動と希望",
+          "desc": "不正義についてのつらい気持ちを受けとめ、市民としての主体性を育て、行動を通して希望を育みます。"
+        },
+        "ethicalReasoning": {
+          "label": "倫理的思考ラボ",
+          "desc": "複数の枠組みと AI とのソクラテス式対話を通して、現代の倫理的ジレンマを探ります。"
+        },
+        "cultureExplorer": {
+          "label": "カルチャー・エクスプローラー",
+          "desc": "イラストと音声つきで、AI とともに世界の文化を深く探ります。"
+        },
+        "voicedetective": {
+          "label": "声の探偵",
+          "desc": "声を聞いて、口調から感情を見分けます。"
+        },
+        "practiceJourneys": {
+          "label": "練習ジャーニー（試行版）",
+          "desc": "4 つのつながった出会いを通して、サポートを求める練習をします。選択肢、自分の言葉、またはその両方で答えましょう。ジャーナルをつけ、別のルートも試してみましょう。"
+        },
+        "sociallab": {
+          "label": "ソーシャルスキル・ロールプレイ",
+          "desc": "分岐する会話で、社会的な場面や AI の仲間とのロールプレイを練習します。"
+        },
+        "peersupport": {
+          "label": "ピアサポート・コーチ",
+          "desc": "OARS の傾聴スキルと、大人の助けを得るべきタイミングを学びます。"
+        },
+        "conflicttheater": {
+          "label": "対立シアター",
+          "desc": "没入型のシーンで、2 人の AI キャラクターと架空の対立を練習します。ベータ版のロールプレイ専用です。現在起きている危害の仲裁には使わないでください。"
+        },
+        "digitalWellbeing": {
+          "label": "デジタル・ウェルビーイング・スタジオ",
+          "desc": "SNS や AI チャットボットとの関係をセルフチェックし、より健康的なスマホ習慣をつくり、ネットいじめから回復し、フィードの中の操作に気づき、チャットボットとの関係に安全に向き合い、必要なときに助けを見つけます。"
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "自己認識",
+          "desc": "感情、強み、伸びしろに気づくこと"
+        },
+        "self-regulation": {
+          "label": "自己調整",
+          "desc": "感情、覚醒、注意を調整すること；コーピングの練習"
+        },
+        "self-direction": {
+          "label": "自己主導",
+          "desc": "目標設定、主体性、実行機能、成長マインドセット"
+        },
+        "inner-work": {
+          "label": "内面のワーク",
+          "desc": "観想と振り返りの実践"
+        },
+        "care-of-self": {
+          "label": "自己への配慮",
+          "desc": "セルフ・コンパッション、関係の中でのセルフケア"
+        },
+        "social-awareness": {
+          "label": "社会的認識",
+          "desc": "共感、視点取得、多様性を尊重すること"
+        },
+        "relationship-skills": {
+          "label": "対人関係スキル",
+          "desc": "コミュニケーション、チームワーク、対立の解決"
+        },
+        "responsible-decision-making": {
+          "label": "責任ある意思決定",
+          "desc": "倫理的な選択、結果の検討、問題解決"
+        },
+        "stewardship": {
+          "label": "スチュワードシップ",
+          "desc": "コミュニティ、正義、土地、未来を大切にすること"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8分",
+          "purpose": "今の自分のゾーンに名前をつけ、合う調整方法を選びます。",
+          "next": "ゾーンを確かめ、方法をひとつ選び、あとで見返したければ保存しましょう。"
+        },
+        "coping": {
+          "time": "3-10分",
+          "purpose": "コーピングの方法をひとつ選び、終わりをはっきり決めて一度練習します。",
+          "next": "体を使う方法かグラウンディングの方法をひとつ選んで試し、役に立ったかどうか気づいてみましょう。"
+        },
+        "journal": {
+          "time": "5-12分",
+          "purpose": "非公開の振り返りを書き、残しておきたいパターンに気づきます。",
+          "next": "プロンプトを選び、正直に書いて、閉じる前に保存かエクスポートをしましょう。"
+        },
+        "emotions": {
+          "time": "4-8分",
+          "purpose": "感情の語彙を増やし、今の気持ちをより正確に言葉にします。",
+          "next": "気持ちをひとつ選び、その強さを評価し、いちばんぴったりな言葉をひとつ選びましょう。"
+        },
+        "mindfulness": {
+          "time": "2-10分",
+          "purpose": "何も書かずに、立ち止まり、呼吸し、注意を向ける練習をします。",
+          "next": "短い練習をひとつ選んで最後まで行い、何が変わったか気づいてみましょう。"
+        },
+        "somaticReset": {
+          "time": "3-8分",
+          "purpose": "非公開の体のゾーン・チェックインで、椅子に座ったままできる短いリセットを選びます。",
+          "next": "体の部位を選び、静止・呼吸・やさしい動きのどれかを試し、何が変わったか気づいてみましょう。"
+        },
+        "thoughtRecord": {
+          "time": "8-15分",
+          "purpose": "つらい考えをゆっくりほどき、よりバランスの取れた見方を探します。",
+          "next": "状況に名前をつけ、気持ちの強さを評価し、その考えを根拠に照らして確かめましょう。"
+        },
+        "anxietyToolkit": {
+          "time": "5-12分",
+          "purpose": "心配を整理し、不安の強さを和らげ、現実的な次の一歩を選びます。",
+          "next": "いちばん大きな心配を選び、方法をひとつ試し、役に立ったら計画を保存しましょう。"
+        },
+        "sleep": {
+          "time": "4-10分",
+          "purpose": "睡眠の妨げに気づき、次に試す休息の習慣をひとつ選びます。",
+          "next": "何が妨げになっているか確かめ、小さな変化をひとつ選び、あとでまた見直しましょう。"
+        },
+        "goals": {
+          "time": "5-10分",
+          "purpose": "思いを、具体的で現実的な次の行動に変えます。",
+          "next": "目標をひとつ書き、最初の一歩を選び、閉じる前に計画を保存しましょう。"
+        },
+        "friendship": {
+          "time": "5-10分",
+          "purpose": "友情のニーズ、所属感、仲間との関わりの選択について考えます。",
+          "next": "友情の場面をひとつ選び、思いやりのある次の一手をひとつ見つけましょう。"
+        },
+        "conflict": {
+          "time": "6-12分",
+          "purpose": "対立を理解し、関係修復を目指した対応を準備します。",
+          "next": "何が起きたかを言葉にし、両方の立場を考え、修復の行動をひとつ選びましょう。"
+        },
+        "safety": {
+          "time": "8-15分",
+          "purpose": "実用的な安全計画を作り、信頼できるサポートを見つけます。",
+          "next": "注意サイン、対処の手順、連絡する人を書き加え、閉じる前に保存しましょう。"
+        },
+        "crisiscompanion": {
+          "time": "3-10分",
+          "purpose": "気持ちが切迫している、または安全でないと感じるときに、構造化されたサポートの道筋を使います。",
+          "next": "いちばん近いサポートの選択肢を選び、必要なときは信頼できる大人や危機支援サービスに関わってもらいましょう。"
+        },
+        "conflicttheater": {
+          "time": "8-15分",
+          "purpose": "架空の対立シーンを練習し、修復的な言葉を試します。このツールを仲裁として扱わないでください。",
+          "next": "架空のシーンを選び、対応をひとつ試し、現実ならどこで大人のサポートが必要になるかを振り返りましょう。"
+        },
+        "restorativeCircle": {
+          "time": "15-30分",
+          "purpose": "明確なルールと大人の導きのもとで、修復的なグループのプロセスを計画または進行します。",
+          "next": "まずサークルの約束を決めてからプロンプトを選びます。人前での開示は決して求めないでください。"
+        },
+        "strengths": {
+          "time": "5-10分",
+          "next": "自分らしいと感じる強みを選び、それぞれについて、この学期の中でその強みが表れた実際の場面をひとつ見つけましょう。"
+        },
+        "viaStrengths": {
+          "time": "8-15分",
+          "purpose": "VIA に着想を得た自己分類を、正式な評価ではなく振り返りの活動として使います。",
+          "next": "強みを分類し、パターンに気づき、結果を裏づける例をひとつ書きましょう。"
+        },
+        "perma": {
+          "time": "8-15分",
+          "purpose": "PERMA の各領域と健康について、振り返りのためのウェルビーイングのスナップショットをとります。",
+          "next": "このスナップショットは自分にラベルを貼るためではなく、話し合いや小さな実験を選ぶために使いましょう。"
+        },
+        "advocacy": {
+          "time": "5-12分",
+          "purpose": "ニーズを伝え、サポートを求めるための日常の言葉を練習します。",
+          "next": "場面を選び、短いお願いを下書きし、誰が助けてくれそうか決めましょう。"
+        },
+        "selfAdvocacy": {
+          "time": "10-20分",
+          "purpose": "IEP、504、合理的配慮、開示の選択について、具体的な学校での支援計画を作ります。",
+          "next": "支援のニーズをひとつ選び、質問をまとめ、関わってもらう信頼できる大人を決めましょう。"
+        },
+        "crewProtocols": {
+          "time": "10-20分",
+          "next": "目的別に見て、今日のプロトコルをひとつ選び、「私の Crew 計画」にいつ行うかをメモしましょう。"
+        },
+        "perspective": {
+          "time": "6-12分",
+          "next": "場面を選び、まず相手の視点で見てから、自分なら何を変えるかを言ってみましょう。"
+        },
+        "windowOfTolerance": {
+          "time": "8-12分",
+          "next": "3 つのゾーンそれぞれにサインをひとつ加え、「チェックイン」で今日の位置を示しましょう。"
+        },
+        "sensoryRegulation": {
+          "time": "8-15分",
+          "next": "「感覚とは？」から始め、自分にとって強く感じる感覚系と弱く感じる感覚系に印をつけましょう。"
+        },
+        "execfunction": {
+          "time": "5-10分",
+          "next": "「スタート」で今日の取りかかり方をひとつ選び、「キープ」でメモする場所を選びましょう。"
+        },
+        "growthmindset": {
+          "time": "5-10分",
+          "next": "「捉え直す」を開き、固定的な考えを書いて、具体的で実行できる考えに変えましょう。"
+        },
+        "dearMan": {
+          "time": "8-12分",
+          "next": "お願いを一文で書き、7 つのステップを下書きし、一度リハーサルしましょう。"
+        },
+        "howlTracker": {
+          "time": "5-10分",
+          "next": "「パルス」を記録してから「毎週のチェックイン」を行いましょう。それぞれの HOWL を評価し、具体的な例をひとつ加えます。"
+        },
+        "peersupport": {
+          "time": "5-10分",
+          "next": "友だちに聞ける開かれた質問を 2 つ選び、練習タブで架空の場面を使ってひとつ試しましょう。"
+        },
+        "upstander": {
+          "time": "8-12分",
+          "next": "「行動」の勇気のはしごを読み、今週本当にできそうないちばん小さな行動を 2 つ選びましょう。"
+        },
+        "digitalWellbeing": {
+          "time": "8-12分",
+          "next": "「セルフチェック」に正直に答え、「ツールキット」から習慣をひとつと、前もって決めておく境界線をひとつ選びましょう。"
+        },
+        "teamwork": {
+          "time": "8-12分",
+          "next": "「役割」を見てから、実際のグループのためのコミュニケーション計画を書きましょう：誰が、何を、どこで、いつまでにするか。"
+        }
+      },
+      "guidance_mode": {
+        "start_here": "ここから始める",
+        "name_it": "名前をつける",
+        "calm_now": "今すぐ落ち着く",
+        "body_reset": "からだのリセット",
+        "make_a_plan": "計画を立てる",
+        "understand_patterns": "パターンを理解する",
+        "practice_repair": "修復を練習する",
+        "role_play": "ロールプレイ",
+        "facilitated_group": "進行役のいるグループ",
+        "reflect": "振り返る",
+        "practice_speaking_up": "声を上げる練習",
+        "make_a_support_plan": "支援計画を作る",
+        "urgent_support": "緊急のサポート",
+        "get_support": "サポートを得る",
+        "move_gently": "ゆっくり進む",
+        "learn_not_diagnose": "診断ではなく学ぶ",
+        "learn_and_get_support": "学んでサポートを得る",
+        "check_boundaries": "境界線を確かめる",
+        "explore_identity": "アイデンティティを探る",
+        "practice_body_respect": "からだを大切にする練習",
+        "map_carefully": "慎重に描く",
+        "understand_needs": "ニーズを理解する"
+      },
+      "guidance": {
+        "zones": {
+          "note": "方法を選ぶ前に、何が起きているかを言葉にします。"
+        },
+        "emotions": {
+          "note": "気持ちを表す正確な言葉を身につけ、強さに気づきます。"
+        },
+        "coping": {
+          "note": "体を使う方法かグラウンディングの方法をひとつ試し、何が変わったか気づきます。"
+        },
+        "mindfulness": {
+          "note": "呼吸、注意、体への気づきのための、書くことの少ないひと休み。"
+        },
+        "somaticReset": {
+          "note": "体の部位を選び、短い静止・呼吸・やさしい動きの練習を試します。キーボードで操作できるコンパクトなピッカーにより、小さな画面でもすべての図を扱いやすくしています。図には次のものがあります。「流れる波」は、「吸う · 上がる」を実線と丸い印、「吐く · 落ち着く」を点線とひし形の印、「一時停止中」を一時停止バーで示します。「花びらが開く」は、「吸う · 開く」を実線の花びらの輪郭と丸い中心、「吐く · ゆるむ」を点線の輪郭とひし形の中心、「一時停止中」を中心の一時停止バーで示します。「グラウンディングの地平線」は、「吸う · 上がる」を実線の太陽の輪郭と円い中心、「吐く · 落ち着く」を点線の太陽の輪郭とひし形の中心、「一時停止中」を太陽の一時停止バーで示します。方向が示された予測しやすい直線の道には、「吸う」「吐く」の直接のラベル、丸い「吸う」の目標とひし形の「吐く」の目標、現在の出発点からの軌跡、輪郭で示された次の目的地があります。2 つの部分からなる「呼吸の軌道」には、進行中に太くなる実線と点線のフェーズの弧、フェーズの模様に合わせた中心のリング、「吸う」「吐く」の直接のラベル、一時停止中の中心記号、輪郭で示された次の受け渡し地点、フェーズの形をした時計回りの印、形で区別されたリズムの図、スクリーンリーダー用のフェーズの合図があります。生徒はタイマーが始まる前に呼吸の動きを 1 回分試してから、ガイドを拡大、静止、またはオフにできます。「静かな表示」では、拡大した図がキーボードとタッチで操作できる開始/一時停止のボタンになります。カウントダウンは非表示にでき、ガイドの言葉は全文・フェーズのみ・非表示から選べ、呼吸の回数や数字での評価は任意です。",
+          "boundary": "これは治療や診断ではありません。動きは小さく、痛みのない範囲にしてください。痛み、めまい、しびれがあればやめて、信頼できる大人か医療の専門家に伝えてください。"
+        },
+        "anxietyToolkit": {
+          "note": "心配と行動を分け、現実的な次の一歩をひとつ選びます。"
+        },
+        "windowOfTolerance": {
+          "note": "覚醒のサインとサポートを継続して書き出します。診断ではありません。"
+        },
+        "stressBucket": {
+          "note": "自分ではどうにもできない負担も含めて、負担とサポートを一緒に見ます。"
+        },
+        "bigFeelings": {
+          "note": "怒りを情報として使い、より安全なひと休みや関係修復を計画します。"
+        },
+        "conflict": {
+          "note": "リスクの低い対立や仮定の対立の練習に最適です。",
+          "boundary": "脅し、強要、いじめ、虐待、または安全でない力の差がある場合は、ひとりで交渉せず、いったん止めて信頼できる大人に関わってもらいましょう。"
+        },
+        "conflicttheater": {
+          "note": "架空のキャラクターとのベータ版の没入型練習です。現在起きている危害の仲裁には使わないでください。",
+          "boundary": "実際の脅し、虐待、いじめには、ロールプレイの練習ではなく、大人のサポートと安全のための対応が必要です。"
+        },
+        "restorativeCircle": {
+          "note": "確立されたサークルのルールのもと、大人の進行役とともに使います。",
+          "boundary": "誰かに人前での開示を迫るため、または現在進行中の安全上のリスクに対処するためにサークルを使わないでください。"
+        },
+        "strengths": {
+          "note": "点数、順位、診断のない、自由な強みの振り返り。"
+        },
+        "viaStrengths": {
+          "note": "振り返りのための自己分類であり、公式の VIA 調査や心理測定の結果ではありません。"
+        },
+        "perma": {
+          "note": "話し合いのきっかけにするウェルビーイングのスナップショットであり、メンタルヘルスの評価ではありません。"
+        },
+        "advocacy": {
+          "note": "ニーズを伝え、サポートを求めるための一般的な台本とリハーサル。"
+        },
+        "selfAdvocacy": {
+          "note": "IEP、504、合理的配慮、開示、学校での支援について具体的に計画するときに使います。"
+        },
+        "crisiscompanion": {
+          "note": "あなたや友だちのためのサポートガイドです。危機のスクリーニングではなく、大人の代わりにもなりません。",
+          "boundary": "誰かが差し迫った危険にあるかもしれない、または自傷の考えを実行に移すかもしれない場合は、ここでやめて、今すぐ信頼できる大人か緊急・危機支援に連絡してください。"
+        },
+        "safety": {
+          "note": "境界線と、信頼できる大人に頼る手順を学びます。状況が安全かどうかを判定するテストではありません。",
+          "boundary": "あなたが差し迫った危険にある場合や、誰かに傷つけられている場合は、やめて、今すぐ信頼できる大人か緊急支援に連絡してください。"
+        },
+        "griefLoss": {
+          "note": "悲嘆と喪失に寄り添う、非公開の場です。つらすぎると感じるものは飛ばしてかまいません。",
+          "boundary": "悲しみに耐えられないと感じる、安全でないと感じる、または他の誰かに危険がある場合は、信頼できる大人か危機支援に関わってもらいましょう。"
+        },
+        "traumaPsychoed": {
+          "note": "トラウマ反応についての心理教育です。スクリーニングや治療ではありません。",
+          "boundary": "ここでトラウマを打ち明ける必要はありません。内容によって安全でない何かがよみがえったら、いったん止めて、信頼できる大人かカウンセラーを頼ってください。"
+        },
+        "substancePsychoed": {
+          "note": "ハームリダクションの情報と振り返りです。スクリーニングではなく、物質を使ってよいという許可でもありません。",
+          "boundary": "過剰摂取や緊急の医療状況ではこのツールを使わず、救急の助けか信頼できる大人に連絡してください。"
+        },
+        "healthyRelationships": {
+          "note": "人や関係にラベルを貼ることなく、同意と関係のパターンを探ります。",
+          "boundary": "関係の中に脅し、強要、暴力がある場合は、大人の助けを求めてください。ひとりで相手と対決しないでください。"
+        },
+        "identitySupport": {
+          "note": "肯定的な振り返りとコミュニティのサポートです。共有するかどうかは任意です。",
+          "boundary": "個人情報は守り、安全でないと感じたら信頼できる大人に関わってもらいましょう。"
+        },
+        "bodyStory": {
+          "note": "ボディ・アプリシエーションとメディアリテラシー。減量や摂食障害の評価ではありません。",
+          "boundary": "食べ物、ボディイメージ、運動が安全でないと感じる、または頭から離れないときは、信頼できる大人か医療の専門家に話してください。"
+        },
+        "genogram": {
+          "note": "個人的な家族の振り返りです。臨床評価ではなく、共有するかどうかは任意です。",
+          "boundary": "安全でない、または個人的だと感じる家族の詳細は飛ばしてかまいません。信頼できる大人にサポートを求めましょう。"
+        },
+        "sensoryRegulation": {
+          "note": "感覚プロフィールと合理的配慮をまとめます。診断ではありません。",
+          "boundary": "安全だと感じるサポートを選びましょう。合理的配慮について共有するのは、そうしたいときだけで大丈夫です。"
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "朝のチェックイン",
+          "desc": "気分のチェック、呼吸、目標設定で一日を始める"
+        },
+        "calm_down": {
+          "name": "落ち着きコーナー",
+          "desc": "感情が高ぶったときの調整方法"
+        },
+        "conflict_unit": {
+          "name": "対立解決ユニット",
+          "desc": "意見の違いを解決し、関係修復のスキルを育てる練習"
+        },
+        "empathy_week": {
+          "name": "共感と視点の週",
+          "desc": "視点取得と文化への気づきを通して共感を育てる"
+        },
+        "decision_making": {
+          "name": "意思決定をじっくり探る",
+          "desc": "倫理的思考と責任ある選択を練習する"
+        },
+        "self_discovery": {
+          "name": "自分発見の旅",
+          "desc": "自分とは誰かを探る——強み、感情、成長マインドセット"
+        },
+        "friendship": {
+          "name": "友情とソーシャルスキル",
+          "desc": "健全な友情とコミュニケーションのスキルを育てる"
+        },
+        "transitions": {
+          "name": "変化を乗り越える",
+          "desc": "人生の変化や新しい経験を乗り越える生徒を支える"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "自分に必要なことに気づき、無理のない次の一歩をひとつ選びます。",
+          "model": "そわそわしている。ストレッチをしてから、課題の最初の部分を選んでみよう。",
+          "practice": "気持ちに名前をつける、選択肢を指さす、または静かに気づくだけでもかまいません。サポートをひとつ試し、小さな目標を選びましょう。",
+          "reflect": "何に気づきましたか？ 続けたいこと、変えたいことは何ですか？",
+          "transfer": "次の授業が始まったら、____ を試せる。助けが必要なら、____ に頼める。"
+        },
+        "calm_down": {
+          "goal": "今の自分の体とこの瞬間に合うサポートを探ります。",
+          "model": "今日は呼吸の練習が役に立つ気がしない。部屋を見回してみるか、誰かにそばにいてもらおう。",
+          "practice": "心地よい方法をひとつだけ選びましょう。座っている、眺める、休憩するのも立派な選択肢です。",
+          "reflect": "役に立ちましたか、変わりませんでしたか、それとも不快でしたか？ やめても、別の方法を選んでもかまいません。",
+          "transfer": "____ に気づいたら、____ を試すか、____ にサポートを頼める。"
+        },
+        "conflict_unit": {
+          "goal": "いろいろな視点を考え、日常の意見の違いに対する敬意のある対応をリハーサルします。",
+          "model": "ふたりとも同じ材料を使いたい。あなたに何が必要かを聞き、自分に必要なことを説明して、交代で使うことを提案できる。",
+          "practice": "作り話の、リスクの低い意見の違いを使いましょう。聞くための質問をひとつと、考えられる次の一歩をひとつリハーサルします。",
+          "reflect": "その対応は誰のニーズに応えていましたか？ 何を変える必要がありそうですか？",
+          "transfer": "安全な意見の違いなら、____ ができる。脅し、いじめ、強要があるときは、信頼できる大人に助けを求められる。"
+        },
+        "empathy_week": {
+          "goal": "相手の気持ちをわかっていると決めつけずに、別の視点を探ります。",
+          "model": "あの人たちは静かだ。疲れているのかもしれないし、考えているのかもしれない。決めつけずに聞いてみよう。",
+          "practice": "架空の例を使いましょう。考えられる視点を 2 つと、相手に聞ける敬意のある質問をひとつ挙げます。",
+          "reflect": "わかっていることと、推測していることは何ですか？ どうやって確かめられますか？",
+          "transfer": "今週、思い込みで判断する前に、____ と聞ける。"
+        },
+        "decision_making": {
+          "goal": "自分と他の人への影響によって選択肢を比べます。",
+          "model": "グループ写真を投稿する前に、許可をもらい、誰が見るかもしれないか考えられる。",
+          "practice": "作り話の決断を選びましょう。2 つの選択肢、考えられる影響、助けてくれそうな人を比べます。",
+          "reflect": "足りない情報は何ですか？ もっと安全な、またはもっと公平な選択肢はありますか？",
+          "transfer": "____ について決める前に、立ち止まって ____ を確かめられる。"
+        },
+        "self_discovery": {
+          "goal": "強みに気づき、サポートを受けながらそれを生かす方法を選びます。",
+          "model": "私は役に立つ質問ができる。課題がはっきりしないときにその強みを生かして、例を見せてほしいと頼める。",
+          "practice": "自分に合う強み、または架空のキャラクターの強みを選びましょう。それが発揮されている例をひとつ挙げます。",
+          "reflect": "何がその強みを引き出しましたか？ 次の一歩を可能にするには、どんなサポートがあるとよいですか？",
+          "transfer": "____ のときに ____ を生かせる。助けてくれそうな人や資源は ____。"
+        },
+        "friendship": {
+          "goal": "自分のニーズと他の人の境界線の両方を尊重するコミュニケーションを練習します。",
+          "model": "誰かを仲間に誘って、もし断られても、その人の選択を受け入れられる。",
+          "practice": "誘い方、聞くための質問、または敬意のある境界線の伝え方をリハーサルしましょう。話す、書く、AAC のどれでもかまいません。",
+          "reflect": "一人ひとりに本当の選択肢がありましたか？ どうすればもっと歓迎されるやりとりになりますか？",
+          "transfer": "今週の安全なやりとりの中で、____ を試して、____ に気づいてみる。"
+        },
+        "transitions": {
+          "goal": "何が変わるのか、何が変わらずにいられるのか、そしてサポートの源をひとつ見つけます。",
+          "model": "新しいクラスは不安だ。前もって教室を見つけておき、誰が助けてくれるか聞いておける。",
+          "practice": "実際の変化か架空の変化を選びましょう。不確かなことをひとつ、変わらないサポートをひとつ、小さな次の一歩をひとつ挙げます。",
+          "reflect": "自分でコントロールできるのはどの部分ですか？ どんな助けや合理的配慮があると役立ちますか？",
+          "transfer": "変化の前に、____ ができる。計画を変える必要があれば、____ ができる。"
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8分",
+          "format": "個人またはグループ",
+          "cue": "何かを共有する前の最初のチェックインに役立ちます。"
+        },
+        "emotions": {
+          "time": "5-8分",
+          "format": "個人またはペア",
+          "cue": "語彙のウォーミングアップに最適です。"
+        },
+        "coping": {
+          "time": "3-10分",
+          "format": "個人またはグループ",
+          "cue": "調整のためのリセットに最適です。"
+        },
+        "mindfulness": {
+          "time": "2-10分",
+          "format": "クラス全体",
+          "cue": "書くことの少ない調整の選択肢です。"
+        },
+        "somaticReset": {
+          "time": "3-8分",
+          "format": "個人またはクラス全体",
+          "cue": "コンパクトな図のピッカーで、ボタンが密集したグリッドを使わずにすべてのガイドを利用できます。「呼吸の軌道」は、実線と点線の弧に、太くなる進行中のフェーズ、それに合わせた実線または点線の中心リング、「吸う」「吐く」の直接のラベルを組み合わせています。一時停止中は中心が点から一時停止バーに変わり、輪郭で示されたひし形またはリングが次のフェーズの受け渡しを示します。丸またはひし形の時計回りの印、受け渡しのひし形、戻りのリング、短い吸う息のバー、中空の吐く息の点により、色に頼らなくてもフェーズと任意のカウントが読み取れます。タイマーの前に呼吸の動きを 1 回分試せるようにするか、「静止」を選べるようにしましょう。ガイドの言葉は全文・フェーズのみ・非表示から選べるようにします。「静かな表示」では、拡大した図がそのまま開始/一時停止のボタンになります。「流れる波」は、「吸う · 上がる」を実線と丸い印、「吐く · 落ち着く」を点線とひし形の印で示し、一時停止中は一時停止バーを表示します。「花びらが開く」は、「吸う · 開く」を実線の花びらの輪郭と丸い中心、「吐く · ゆるむ」を点線の輪郭とひし形の中心で示し、一時停止中は中心の一時停止バーを表示します。「グラウンディングの地平線」は、「吸う · 上がる」を実線の太陽の輪郭と円い中心、「吐く · 落ち着く」を点線の太陽の輪郭とひし形の中心で示し、一時停止中は太陽の一時停止バーを表示します。「呼吸の小道」は、丸い「吸う」の目標、ひし形の「吐く」の目標、現在の出発点からの軌跡、輪郭で示された次の目的地を使い、方向が色に頼らずわかるようにしています。スクリーンリーダー用のフェーズの合図に加えて、カウントダウン非表示、ガイド非表示、動きの静止、図なし、自然な呼吸、数字なしの選択肢を用意しましょう。評価や体の感覚の説明は決して求めないでください。"
+        },
+        "journal": {
+          "time": "5-12分",
+          "format": "個人",
+          "cue": "非公開の振り返りです。共有は任意にしてください。"
+        },
+        "goals": {
+          "time": "5-10分",
+          "format": "個人またはアドバイザリー",
+          "cue": "振り返りのあとの締めくくりに最適です。"
+        },
+        "conflict": {
+          "time": "8-12分",
+          "format": "ペアまたは小グループ",
+          "cue": "ロールプレイの前にルールを確認しましょう。"
+        },
+        "restorativeCircle": {
+          "time": "15-30分",
+          "format": "サークル",
+          "cue": "確立されたサークルのルールのもとで使います。"
+        },
+        "peersupport": {
+          "time": "8-15分",
+          "format": "ペアでの練習",
+          "cue": "傾聴スキルのリハーサルに効果的です。"
+        },
+        "perspective": {
+          "time": "6-12分",
+          "format": "ペアまたはグループ",
+          "cue": "話し合いの前の共感の橋渡しに最適です。"
+        },
+        "digitalWellbeing": {
+          "time": "8-15分",
+          "format": "個人またはアドバイザリー",
+          "cue": "スマホや AI のルールを決める前に役立ちます。"
+        },
+        "sleep": {
+          "time": "5-10分",
+          "format": "個人",
+          "cue": "アドバイザリーの健康単元に最適です。"
+        },
+        "safety": {
+          "time": "8-15分",
+          "format": "個人",
+          "cue": "事前に確認し、開示の強制は避けてください。"
+        },
+        "crisiscompanion": {
+          "time": "3-10分",
+          "format": "個人",
+          "cue": "緊急時のサポートスキルのためのもので、授業の課題ではありません。"
+        },
+        "griefLoss": {
+          "time": "10-20分",
+          "format": "個人",
+          "cue": "事前に確認し、参加しない選択肢（代替活動）を用意してください。"
+        },
+        "identitySupport": {
+          "time": "8-15分",
+          "format": "個人",
+          "cue": "プライバシーに配慮し、参加しない選択肢を用意して使ってください。"
+        },
+        "traumaPsychoed": {
+          "time": "8-15分",
+          "format": "個人または教育者のガイド付き",
+          "cue": "心理教育のみです。参加しない選択肢と、信頼できる大人につながる道筋を用意してください。"
+        },
+        "substancePsychoed": {
+          "time": "8-15分",
+          "format": "個人または保健の授業",
+          "cue": "ハームリダクションの枠組みを事前に確認し、大人や医療のサポートを用意してください。"
+        },
+        "healthyRelationships": {
+          "time": "10-20分",
+          "format": "個人または保健の授業",
+          "cue": "同意と安全に関する言葉を事前に確認してください。個人的な開示は決して求めないでください。"
+        },
+        "bodyStory": {
+          "time": "8-15分",
+          "format": "個人",
+          "cue": "からだを大切にする枠組みで扱います。参加しない選択肢を用意し、体重を中心にした話し合いは避けてください。"
+        },
+        "genogram": {
+          "time": "10-20分",
+          "format": "個人",
+          "cue": "家族の振り返りのためだけに使います。共有は任意にしてください。"
+        },
+        "sensoryRegulation": {
+          "time": "8-15分",
+          "format": "個人または支援計画",
+          "cue": "アイデンティティを肯定する言葉を使い、何を共有するかは生徒に選んでもらいましょう。"
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "朝のアドバイザリー・チェックイン",
+          "time": "10-15分",
+          "format": "クラス全体",
+          "focus": "気分、呼吸、次の一歩ひとつ",
+          "studentView": "生徒は自分のゾーンを非公開で確かめ、調整の選択肢を試してから、その日のニーズをひとつ選ぶか、パスします。",
+          "teacherMove": "まずパスの選択肢をやって見せます。一語や色での共有は、非公開の練習のあとにだけ呼びかけます。",
+          "privacyBoundary": "ジャーナルの文章は収集されません。どのチェックポイントを共有パックに入れるかは、あとで生徒が決めます。",
+          "note": "まず非公開のゾーン・チェックを行い、次に呼吸か目標設定を提案します。生徒は一語、色、またはパスで共有できます。"
+        },
+        "calm_reset": {
+          "name": "5 分間の落ち着きリセット",
+          "time": "5-8分",
+          "format": "クラス全体または落ち着きコーナー",
+          "focus": "からだの調整",
+          "studentView": "生徒は今の体の状態に気づき、体を落ち着かせる練習をひとつ選びます。",
+          "teacherMove": "話すことを少なくし、時間を区切った流れにします。体を動かす、呼吸する、静かに過ごすといった代わりの選択肢を用意します。",
+          "privacyBoundary": "生徒は自分のためにチェックポイントを保存できます。なぜリセットが必要だったかを誰も説明する必要はありません。",
+          "note": "話すことは少なめに。生徒は調整の練習をひとつ選び、何が変わったか気づきます。"
+        },
+        "repair_routine": {
+          "name": "対立後の修復ルーティン",
+          "time": "15-25分",
+          "format": "小グループまたはアドバイザリー",
+          "focus": "視点、修復、次の行動",
+          "studentView": "生徒は実際の場面、仮定の場面、または先生が用意した場面を使って、修復の言葉を練習できます。",
+          "teacherMove": "まず修復のルールを決め、人前での告白は避けます。大人による仲裁が必要な状況なら、いったん止めてください。",
+          "privacyBoundary": "何を共有するかは生徒が選びます。非公開の対立の振り返りをクラスの証拠資料にしてはいけません。",
+          "note": "ルールを決めてから使います。人前での告白ではなく、修復の言葉に焦点を当てます。"
+        },
+        "digital_reset": {
+          "name": "デジタル・ウェルビーイングのミニ授業",
+          "time": "12-20分",
+          "format": "アドバイザリーまたは保健",
+          "focus": "スマホ、睡眠、AI と境界線",
+          "studentView": "生徒は習慣を見直し、試してみる境界線をひとつ選びます。理由は、望めば非公開のままにできます。",
+          "teacherMove": "スマホの監査ではなく、習慣のデザインとして扱います。スクリーンショットや利用データを見せるよう生徒に求めないでください。",
+          "privacyBoundary": "生徒は境界線の目標を共有できますが、個人的な睡眠、スマホ、AI の詳細は任意のままです。",
+          "note": "スマホの監査ではなく、習慣のデザインとして扱います。生徒は試してみる境界線をひとつ選びます。"
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "研究にもとづくアプローチ",
+          "title": "研究は根底にあるアプローチに関するものです。このデジタル版の翻案はここでは評価されていません"
+        },
+        "emerging": {
+          "label": "アプローチのエビデンスは限定的",
+          "title": "有望だが、エビデンスは限られているか、結果がまちまち"
+        },
+        "contested": {
+          "label": "議論のあるモデル",
+          "title": "広く知られているが科学的には異論がある。仕組みとしてではなく、たとえとして使うのが最適"
+        },
+        "practice": {
+          "label": "振り返りの実践",
+          "title": "構造化された実践または経験則であり、効果を実証的に主張するものではありません"
+        }
+      },
+      "ui": {
+        "sel_practice": "SEL の練習",
+        "default_purpose": "SEL のスキルをひとつ、ていねいに練習します。",
+        "default_next": "小さなステップをひとつ終えてから、保存するかどうか決めましょう。",
+        "private_checkpoint": "非公開のチェックポイント",
+        "share_packet_eligible": "共有パックに追加できます",
+        "saving_preparing": "SEL の作業を保存する準備をしています...",
+        "save_requested": "{title} の保存をリクエストしました",
+        "returned_to_grid": "ツール一覧に戻りました",
+        "back_to_sel_tools": "SEL ツールに戻る",
+        "export_now_aria": "SEL プロジェクトファイルを今すぐエクスポートする",
+        "export_now": "今すぐエクスポート",
+        "purpose": "目的",
+        "next_step": "次のステップ",
+        "saved_work": "保存した作業",
+        "checkpoints_private": "ツールのチェックポイントは、あなたが共有パックに選ばない限り、ここで非公開のままです。",
+        "use_with_care_label": "注意して使う：",
+        "tool_open_failed_title": "このツールを開けませんでした",
+        "tool_open_failed_body": "この活動の保存された情報の一部が読み込まれませんでした。あなたが何か間違えたわけではありません。",
+        "saved_work_kept": "保存した作業は削除されていません。",
+        "back_to_hub": "SEL Hub に戻る",
+        "tell_teacher": "何度も起きる場合は、どの活動だったかを先生に伝えてください。",
+        "load_did_not_start": "ツールはダウンロードされましたが、起動しませんでした。",
+        "load_too_long": "ツールの読み込みに時間がかかりすぎました。",
+        "this_sel_tool": "この SEL ツール",
+        "tool_opening": "{name} を開いています...",
+        "tool_open_retry": "{name} を開けませんでした。もう一度試すか、別のツールを選んでください。",
+        "station_link_missing": "このリンクが指すステーションは、このプロジェクトにありません。そのステーションを含むパックを読み込むか、「履歴」パネルの「SEL Station」から新しく始めてください。",
+        "started_station": "ステーション {name} を開始しました",
+        "tool_could_not_open": "{name} を開けませんでした。",
+        "tool_not_available": "{name} はこの SEL Hub では利用できません。",
+        "try_again": "もう一度試す",
+        "dismiss": "閉じる",
+        "back_to_tools": "ツールに戻る",
+        "band_elementary": "小学校",
+        "band_middle": "中学校",
+        "band_high": "高校",
+        "unsaved_aria": "保存されていない変更があります",
+        "unsaved_title": "未保存の変更",
+        "unsaved": "未保存",
+        "unsaved_hint": "保存されていない変更があります。「今すぐエクスポート」をタップして保存してください",
+        "educators_opened": "「教育者向け」ガイドを開きました",
+        "educators_aria": "教育者向け：この Hub を責任をもって使う方法",
+        "for_educators": "教育者向け",
+        "theme_aria": "テーマを切り替える（ライト / ダーク / ハイコントラスト）",
+        "theme_contrast": "ハイコントラスト",
+        "theme_dark": "ダークモード",
+        "theme_light": "ライトモード",
+        "theme_contrast_short": "高コントラスト",
+        "theme_dark_short": "ダーク",
+        "theme_light_short": "ライト",
+        "xp_aria": "SEL 経験値 {count} ポイント",
+        "close_hub": "SEL Hub を閉じる",
+        "keep_share_title": "残すものと共有するものを選ぶ",
+        "keep_share_body": "このデバイスに作業を保存する活動もあれば、このタブの中だけで保たれる作業もあります。タブを閉じても、すべてが消えるわけではありません。コピーを残すにはファイルをエクスポートしてください。共有のデバイスでは、「教育者向け」の「データとプライバシー」を確認してください。AI と共有の機能は、あなたが設定したサービスを使います。",
+        "got_it_aria": "わかりました。SEL Hub を使い始めます",
+        "got_it": "わかりました",
+        "practice_support": "練習のサポート",
+        "learning_guide": "学習ガイドと練習の方法",
+        "what_you_can_explore": "探れること",
+        "worked_example": "解説つきの例",
+        "try_one_step": "ステップをひとつ試す",
+        "reflect_transfer": "振り返って、ほかの場面で生かす",
+        "look_closer": "もっとよく見る",
+        "next_use": "次に生かせる場面",
+        "adapt_together": "一緒に練習を調整する",
+        "adapt_smaller": "もっと小さく始める：一文やひとつの選択をやって見せ、絵や具体物を使い、考える時間をとります。",
+        "adapt_deeper": "もっと深める：2 つの対応を比べ、足りない情報を見つけ、何があれば選択が変わるかを説明します。",
+        "adapt_context": "場面を変える：学習者の言語、興味、文化、アクセスのニーズに合った架空の場面を使います。",
+        "adapt_check": "理解の確認は、生徒が選んだ例や説明で行い、個人的な話、気持ちの変化、点数を求めないでください。",
+        "optional_prompts": "これらの任意のプロンプトは、答えを提出したり、完了を記録したり、活動そのものの説明や安全情報に代わったりするものではありません。",
+        "returned_to_activities": "活動一覧に戻りました。この操作では練習の完了は記録されていません。",
+        "return_to_activities": "活動一覧に戻る",
+        "chooser_first_reset_coping": "心地よいグラウンディングの方法をひとつ選びましょう。合うかどうか気づいてみてください。途中でやめてもかまいません。",
+        "chooser_first_reset_journal": "次の数分を少し乗り切りやすくすることをひとつ書きましょう。個人的な話は必要ありません。",
+        "chooser_first_feelings_zones": "気持ちを指さすか、静かに気づくだけでもかまいません。サポートをひとつ選びましょう。たどり着くべき正しいゾーンはありません。",
+        "chooser_first_feelings_emotions": "架空のキャラクターの気持ちを表す言葉を 2 つ探しましょう。当てはまる答えはひとつとは限りません。",
+        "chooser_first_feelings_journal": "架空の場面や日常の場面について、一語か短い振り返りを書きましょう。",
+        "chooser_first_conversation_advocacy": "架空の場面を使って、お願いをひとつリハーサルしましょう。声に出しても、AAC を使っても、フォームから離れて静かに行ってもかまいません。",
+        "chooser_first_conversation_journal": "安全な日常の場面のために、敬意のあるお願いをひとつ下書きしましょう。実際に送る必要はありません。",
+        "chooser_first_decision_decisions": "架空の場面で 2 つの選択肢と、それぞれの考えられる影響をひとつずつ考えましょう。",
+        "chooser_first_decision_goals": "現実的な次の一歩と、お願いできるサポートをひとつずつ下書きしましょう。",
+        "try_a_reset": "リセットを試す",
+        "need_feeling": "気持ちを理解する",
+        "need_conversation": "会話の準備をする",
+        "need_decision": "次の一歩を選ぶ",
+        "help_choose": "活動選びを手伝って",
+        "help_choose_intro": "試したいことを選んでください。おすすめはこの選択だけをもとにしていて、あなたの気持ちを評価するものではありません。時間は活動全体ではなく、最初の一歩の目安です。",
+        "what_would_help": "何が役に立ちそうですか？",
+        "time_first_step": "最初の一歩にかける時間",
+        "n_minutes": "{count}分",
+        "how_respond": "どのように答えたいですか？",
+        "respond_any": "どの方法でも",
+        "respond_offline": "考える、話す、描く、または AAC",
+        "respond_write": "短い答えを書く",
+        "options_one": "あなたの選択に合う最初の選択肢が {count} 件あります。",
+        "options_many": "あなたの選択に合う最初の選択肢が {count} 件あります。",
+        "options_none": "まだ合う最初の選択肢がありません。時間を増やすか、別の答え方を試してください。カタログ全体は引き続き利用できます。",
+        "why_option_write": "この選択肢の理由：{need}。{minutes} 分の最初の一歩と、短く書いて答える形式をおすすめします。",
+        "why_option_offline": "この選択肢の理由：{need}。{minutes} 分の最初の一歩と、入力せずに練習できる方法をおすすめします。",
+        "open_named": "{name} を開く",
+        "open_named_unavailable": "{name} を開く（利用できません）",
+        "pathway_guide": "学習パスの練習ガイド",
+        "pathway_opened": "{total} 個中 {opened} 個のツールを開きました。ツールを開いただけでは、スキルを練習したことにはなりません。",
+        "exit_pathway_aria": "学習パスモードを終了する",
+        "pathway_cleared": "学習パスを解除しました",
+        "exit_pathway": "学習パスを終了",
+        "practice_goal": "練習の目標：",
+        "pathway_intro": "活動をひとつ選ぶか、おすすめの順番で進めましょう。パスしても、架空の例を使っても、話す・描く・書く・AAC で答えてもかまいません。共有は任意です。",
+        "model_practice_reflect": "お手本、練習、振り返り",
+        "an_example": "例",
+        "notice_adjust": "気づいて調整する",
+        "take_with_you": "持ち帰ろう",
+        "self_check_aria": "任意の練習セルフチェック",
+        "self_check_intro": "ステップを試したら、当てはまるものを選んでください。これは任意で、成績はつきません。この学習パスのセッションの中だけに残ります。",
+        "i_tried": "ステップを試した",
+        "another_way": "別の方法が必要",
+        "pass_for_now": "今はパス",
+        "tried_feedback": "何が役立ち、何が役立たなかったか、そしてどこでまたこのスキルを試せそうかに気づきましょう。",
+        "adapt_feedback": "もっと小さなステップ、別の答え方、別のツール、または信頼できる人からのサポートを試してみましょう。",
+        "pass_feedback": "パスするのも立派な選択です。あとで戻ってきても、サポートを求めてもかまいません。",
+        "next_option": "次の選択肢：{name}",
+        "open_next": "次を開く：{name}",
+        "view_pathway_tools": "学習パスのツールを見る",
+        "revisit_any": "どの活動にも戻ってこられます。Hub の外で試すアイデアをひとつ選びましょう。すべてのツールを終える必要はありません。",
+        "station_activities": "ステーションの活動",
+        "active_station": "実行中の SEL Station：{name}",
+        "steps_recorded_passed": "{total} ステップ中 {done} ステップを記録 · {passed} ステップは今はパス。これは練習の記録であり、成績ではありません。",
+        "steps_recorded": "{total} ステップ中 {done} ステップを記録。これは練習の記録であり、成績ではありません。",
+        "active_minutes_done": "ここでのアクティブ時間は {goal} 分中 {mins} 分です。ステップを記録しました。",
+        "active_minutes_counting": "ここでのアクティブ時間は {goal} 分中 {mins} 分です。このタブが表示されていて、あなたが使っている間だけカウントされます。",
+        "exit_station_aria": "ステーションモードを終了する",
+        "station_cleared": "ステーションを解除しました",
+        "exit_station": "ステーションを終了",
+        "station_tools_steps": "ステーションのツール、ステップ、振り返り",
+        "station_steps": "ステーションのステップと振り返り",
+        "station_privacy": "ステップとメモはこのデバイスに保存され、プロジェクトファイルに含まれることがあります。架空の例を使うか、個人的な詳細は書かないでください。何を共有するかは自分で選びましょう。",
+        "step_passed": "今はパスしました。準備ができたら戻ってこられます。",
+        "step_marked": "このステップを完了にしました。",
+        "step_target": "活動の目標を記録しました。これはスキルやウェルビーイングを測るものではありません。",
+        "step_ready": "準備ができたら始めましょう。",
+        "open_step_activity": "このステップの活動を開く",
+        "xp_progress": "SEL XP 合計 {xp} / {target}。以前の活動も含まれます。スキルの点数ではありません。",
+        "time_progress": "アクティブ時間 {mins} / {target} 分。時間は学びの証拠ではありません。",
+        "default_reflect": "何に気づきましたか？ 続けたいこと、変えたいことは何ですか？",
+        "self_check_ways": "考える、描く、話す、手話を使う、AAC を使う、どれでもかまいません。書いたメモは任意です。ステップを自分で完了にするか、今はパスしましょう。",
+        "length_target": "この保存されたステップには長さの目標があります：{count} / {target} 文字。長さは振り返りの質を測るものではありません。メモは引き続き編集できます。",
+        "reflection_for": "{name} の振り返り",
+        "optional_note": "任意のメモ：何が役立ったか、次に何を試したいか...",
+        "write_reflection": "振り返りを書く...",
+        "mark_complete_aria": "「{name}」を完了にする",
+        "step_reopened": "ステップを再開しました：{name}",
+        "step_marked_named": "このステップを完了にしました：{name}",
+        "mark_complete": "完了にする",
+        "step_passed_named": "今はパス：{name}",
+        "filter_pathway": "学習パス：{name}",
+        "filter_station": "ステーション：{name}",
+        "no_tools_match": "{filters} に合うツールはありません",
+        "results_one": "{total} 個中 {count} 個のツールが {filters} に合っています",
+        "results_many": "{total} 個中 {count} 個のツールが {filters} に合っています",
+        "showing_all": "全 {total} 個のツールを表示中",
+        "crisis_elementary": "すぐに大人が見つからなくても、誰かが聞いてくれるまで頼み続けてください。あなたは助けてもらっていいのです。",
+        "crisis_call_or_text": "電話またはテキストメッセージで連絡：",
+        "crisis_988": "988 自殺・危機ライフライン（無料、秘密厳守、24/7 対応）。",
+        "crisis_text": "テキストメッセージで連絡：",
+        "crisis_text_line": "Crisis Text Line（クライシス・テキストライン、無料、秘密厳守、24/7 対応）。",
+        "tool_selection": "SEL Hub のツール選択",
+        "jumped_to_list": "ツール一覧に移動しました。{summary}。",
+        "skip_to_list": "ツール一覧へスキップ",
+        "start_here": "ここから始める",
+        "quick_route": "クイックルートを選ぶか、下から探してください。",
+        "browsing_all": "すべての SEL ツールを表示中",
+        "continue": "続ける",
+        "continue_desc": "最後に開いた SEL ツールを再開します。",
+        "starting_idea": "はじめのアイデア",
+        "starting_idea_desc": "{name}：この学年帯におすすめの活動で、アレンジできる例がついています。",
+        "starting_idea_none": "学年に合ったスタート地点を開きます。",
+        "try_a_reset_desc": "心地よい方法を探してみましょう。落ち着けなくてもかまいません。",
+        "journal": "ジャーナル",
+        "journal_desc": "振り返りを書き、保存と共有の選択肢を確認します。",
+        "browse_all": "すべて見る",
+        "browse_all_desc": "カタログ全体を検索または絞り込みます。",
+        "need_chip_calm": "体を落ち着かせる",
+        "need_chip_feelings": "気持ちに名前をつける",
+        "need_chip_stress": "ストレスや心配",
+        "need_chip_friend": "友だちとの対立",
+        "need_chip_write": "書き出す",
+        "need_chip_decision": "決断する",
+        "need_chip_sleep": "睡眠・疲れ",
+        "need_chip_crisis": "安全でない・危機にある",
+        "need_chip_relationshipsafety": "人間関係の安全",
+        "need_chip_schoolsupport": "学校での支援",
+        "need_chip_grief": "悲嘆や喪失",
+        "storage_notice": "SEL の作業の一部はこのデバイスに保存されます。AI の機能はあなたが設定したサービスを使います。特に共有のデバイスでは、何を保存・共有するかを選んでください。",
+        "save_now_aria": "SEL の作業を今すぐ保存またはエクスポートする",
+        "save_now": "今すぐ保存",
+        "recent_work": "最近の SEL の作業",
+        "saved_here": "ここに保存されています。閉じたあとも残すにはエクスポートしてください。",
+        "create_packet_aria": "保存したチェックポイントから SEL 共有パックを作成する",
+        "review_packets_aria": "保存した SEL 共有パックを確認する",
+        "create_packet": "共有パックを作成",
+        "review_packets": "共有パックを確認",
+        "open_related": "関連するツールを開きます。",
+        "related_unavailable": "関連するツールはこの SEL Hub では利用できません。",
+        "streak_aria": "SEL ストリーク {count} 日。最長：{longest} 日。",
+        "streak": "{count}日のストリーク",
+        "streak_best": "最高 {count}",
+        "find_activity": "活動を探す",
+        "search_placeholder": "気持ち、友だち、ストレス、目標などを検索...",
+        "search_aria": "SEL ツールを検索",
+        "support_options": "サポートの選択肢",
+        "crisis_hard_moment": "今、つらいときなのかもしれませんね。",
+        "crisis_tell_adult": "ひとりで解決しなくていいし、先に正しいツールを見つける必要もありません。今すぐ信頼できる大人に伝えてください。スクールカウンセラー、先生、保護者、またはあなたが信頼する他の大人です。ここで検索しても誰にも知らされません。あなたが伝えない限り、誰にもわかりません。",
+        "open_crisis_companion": "クライシス・コンパニオンを開く",
+        "find_by_need": "ニーズから SEL ツールを探す",
+        "i_need": "必要なのは...",
+        "cleared_search": "SEL の検索をクリアしました",
+        "clear_search_aria": "SEL の検索をクリアする",
+        "clear": "クリア",
+        "cleared_need": "SEL のニーズの絞り込みをクリアしました",
+        "showing_for": "{name} 向けの SEL ツールを表示中",
+        "clear_need_aria": "ニーズの絞り込みをクリアする：{name}",
+        "find_for_aria": "{name} 向けのツールを探す",
+        "browse_by_area": "スキル領域から探す",
+        "filter_by_category": "カテゴリーで SEL ツールを絞り込む",
+        "showing_all_categories": "すべてのカテゴリーを表示中",
+        "show_all_categories_aria": "すべてのカテゴリーを表示する（{count} 個のツール）",
+        "all": "すべて",
+        "filtered_to": "{name} で絞り込み中",
+        "filter_chip_aria": "絞り込み：{name}（{count} 個のツール）",
+        "pathways_heading": "SEL 学習パス——厳選された学習の流れ",
+        "started_pathway": "学習パスを開始しました：{name}",
+        "pathway_started": "{name} の学習パスを開始しました！",
+        "n_activities": "{count} 個の活動",
+        "grades_range": "{range} 年生",
+        "use_with_care": "注意して使う",
+        "visits_many": "{count} 回の訪問",
+        "visits_one": "{count} 回の訪問",
+        "best_for": "最適な使い方：{mode}。",
+        "teacher_cue": "先生へのヒント：{time}、{format}。{cue}",
+        "preview_first": "事前に確認",
+        "evidence_tradition": "エビデンスの伝統：{tag}",
+        "approach_context": "アプローチの背景：{label}。{title}。このバッジは、このアプリや特定の学習者に対する効果を示すものではありません。",
+        "step_opened": "ステップ {n} · 開きました",
+        "step_not_opened": "ステップ {n} · まだ開いていません",
+        "suggested_grades": "推奨学年 {range}",
+        "no_tools_current_view": "現在の表示に合うツールはありません",
+        "empty_try": "落ち着く、気持ち、ストレス、友だち、書く、決断、睡眠などで試してみてください。",
+        "filters_cleared": "絞り込みをクリアしました。全 {total} 個のツールを表示中です。",
+        "show_all_tools": "全 {total} 個のツールを表示",
+        "error_loading": "{name} の読み込み中にエラーが発生しました",
+        "unknown_error": "不明なエラー",
+        "back_to_tools_error": "ツールに戻る",
+        "tool_load_failed": "このツールを読み込めませんでした。",
+        "loading_tool": "ツールを読み込んでいます...",
+        "file_not_arrived": "ファイルが届きませんでした。",
+        "check_connection": "接続を確認してから、もう一度試してください。",
+        "plugin_fetching": "プラグインファイルをまだ取得しています。",
+        "research_about": "研究ラベルについて",
+        "research_summary": "研究ラベルの意味",
+        "research_context": "アプローチの背景：{label}。",
+        "research_not_app": "ある療法、カリキュラム、枠組みについての研究があっても、このデジタル活動に同じ効果があることにはなりません。ラベルはアプローチを説明するもので、このアプリや学習者を評価するものではありません。",
+        "research_check": "活動を選ぶ前に、引用されている出典、研究対象の年齢と環境、必要なサポート、測定された成果を確認してください。この翻案が対象の集団に合うかどうかや、効果があるかどうかは、これらのラベルでは確立されていません。",
+        "research_casel_link": "CASEL：SEL プログラムの選び方と評価",
+        "project_save_failed": "プロジェクトの保存リクエストに失敗しました。この Hub を開いたまま、メインアプリで「保存 / エクスポート」を試してください。",
+        "project_save_requested": "プロジェクトの保存をリクエストしました。メインアプリで保存の手順を完了してください。ここではファイルの保存はまだ確認されていません。",
+        "saving_aria": "SEL の保存と共有",
+        "saving_failed_alert": "一部の SEL の変更をこのデバイスに保存できませんでした。この Hub を開いたまま、プロジェクトのコピーを保存してください。ステーションの下書きは、ステーションとして保存しないとそのコピーに含まれません。",
+        "saving_attention": "保存に注意が必要です",
+        "saving_title": "保存と共有",
+        "saving_failed_body": "現在の作業は、開いているこの Hub の中では引き続き利用できます。ローカル保存に失敗すると、このデバイスに古いコピーが残る場合があります。",
+        "saving_ok_body": "保存したステーション、ステーションのメモ、Hub のチェックポイントをこのデバイスに保存しています。個々の活動にはそれぞれの保存操作があります。この表示は、すべての活動の入力が保存されたことを確認するものではありません。",
+        "saving_drafts": "ステーションの下書きは、復元のためにこのデバイスに残ります。ステーションを保存すると、「保存 / エクスポート」で使えるプロジェクトデータに追加されます。プロジェクトの保存をリクエストしても、ファイルが書き込まれたことは確認されません。",
+        "saving_live": "ライブセッションに接続しています。進み具合や安全に関する合図がホストに送られる場合があります。任意の AI 機能は、活動のテキストを設定済みのサービスに送ります。共有を選ぶ前に共有パックを確認してください。",
+        "saving_ai": "任意の AI 機能は、活動のテキストを設定済みのサービスに送ります。共有パックには、あなたが選んだ項目と詳しさが含まれます。共有する前にプレビューを確認してください。",
+        "saving_retry": "ローカル保存を再試行",
+        "saving_request": "プロジェクトの保存をリクエスト",
+        "removed_stations": "削除したステーション",
+        "removed_body": "この Hub を開いている間は、ステーションの削除を元に戻せます。既存の練習の記録は残ります。",
+        "station_restored": "ステーションを復元しました：{name}",
+        "undo_removal": "削除を元に戻す：{name}",
+        "launch_routines_aria": "先生向けの導入ルーティン",
+        "launch_title": "先生向けの導入",
+        "launch_note": "練習には成績をつけず、共有は任意にしてください。始める前に、デバイスへの保存、設定済みの AI 機能、共有について説明しましょう。架空の例を使い、生徒には助けを求めたりパスしたりしてよいと伝えましょう。",
+        "launch_guardrails_aria": "先生向け導入のガードレール",
+        "launch_step_boundary": "境界線を決める",
+        "launch_step_boundary_body": "何が非公開で、何が任意で、生徒がどうやってパスできるかを伝えます。",
+        "launch_step_run": "ルーティンを行う",
+        "launch_step_run_body": "ツールを練習として使います。振り返りは形成的なものとし、成績はつけません。",
+        "launch_step_close": "選択で締めくくる",
+        "launch_step_close_body": "保存するか、エクスポートするか、あとでチェックポイントを含めるかは生徒が決めます。",
+        "launch_student_sees": "生徒に見えるもの",
+        "launch_student_sees_default": "生徒は非公開の SEL ルーティンを行い、何を共有するかを選びます。",
+        "launch_teacher_move": "先生の動き",
+        "launch_teacher_move_default": "評価ではなく、練習として位置づけましょう。",
+        "launch_sharing_boundary": "共有の境界線",
+        "launch_sharing_boundary_default": "共有するかどうかは、引き続き生徒が決めます。",
+        "launch_tools_loading": "ツールを読み込み中...",
+        "launch_still_loading": "まだ読み込み中：{tools}",
+        "launch_preview_sensitive": "配慮が必要なツールは事前に確認してください：{tools}",
+        "launch_load_aria": "先生向けの導入プランを読み込む：{name}",
+        "launch_finish_draft": "先に現在の下書きを完成させるか破棄してください",
+        "launch_waiting": "ツールを待っています",
+        "launch_loading": "読み込み中",
+        "launch_load": "ステーション・ビルダーに読み込む",
+        "builder_note_student": "生徒の画面：{text}",
+        "builder_note_teacher": "先生の動き：{text}",
+        "builder_note_sharing": "共有の境界線：{text}",
+        "builder_note_note": "先生のメモ：{text}",
+        "launch_finish_existing": "先に既存のステーションの下書きを完成させるか破棄してください。",
+        "launch_tools_still_loading": "先生向けの導入ツールはまだ読み込み中です。少ししてからもう一度試してください。",
+        "launch_tools_still_loading_sr": "先生向けの導入ツールはまだ読み込み中です。",
+        "launch_default_name": "SEL の授業ルーティン",
+        "launch_default_short": "SEL ルーティン",
+        "launch_loaded_sr": "先生向けの導入プランをステーション・ビルダーに読み込みました：{name}",
+        "launch_loaded_toast": "先生向けの導入プランをステーション・ビルダーに読み込みました。",
+        "stations_summary": "カスタム SEL Station——先生が作成した活動セット",
+        "station_delete_aria": "ステーション {name} を削除する",
+        "station_removed_sr": "ステーションを削除しました。この Hub を閉じるまでは元に戻せます。",
+        "station_removed": "ステーションを削除しました",
+        "station_tools_count": "{count} 個のツール",
+        "station_quests_count": "{count} 個のクエスト",
+        "station_activated_sr": "SEL Station を有効にしました：{name}",
+        "station_started": "{name} を開始しました！",
+        "station_activate_aria": "ステーション {name} を有効にする",
+        "station_start": "ステーションを開始",
+        "station_adapt_aria": "ステーション {name} のコピーをアレンジする",
+        "station_adapt": "コピーをアレンジ",
+        "draft_aria": "復元できるステーションの下書き",
+        "draft_untitled": "無題のステーション",
+        "draft_body": "未完成のステーションの下書きがこのデバイスに保存されています：{name}。別のものを始める前に、再開するか破棄してください。",
+        "draft_resume": "ステーションの下書きを再開",
+        "draft_discard": "ステーションの下書きを破棄",
+        "builder_opened": "ステーション・ビルダーを開きました",
+        "build_station_aria": "新しいカスタム SEL Station を作成する",
+        "build_station": "+ カスタム・ステーションを作成"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "先生の接続が一時停止しています。AlloFlowが再接続するまで、あなたの進み具合はそのまま保たれます。",
+    "host_stale": "先生の状態の確認が古くなっています。ライブセッションはまだつながっているかもしれません。あなたの作業はこの端末に残ります。",
+    "dismiss": "閉じる",
+    "dismiss_aria": "先生の状態に関する警告を閉じる",
+    "connecting": "クラスに接続しています…",
+    "retrying": "クラスの更新が一時停止しています。自動的に再接続しています…",
+    "failed": "クラスの更新が切断されました。接続を確認して、再接続してみてください。",
+    "access": "クラスへのアクセスが拒否されました。先生にアクセスを確認してもらってから、再接続してください。",
+    "sign_in": "もう一度サインインしてクラスへのアクセスを戻してから、再接続してください。",
+    "reconnect": "再接続"
+  },
   "_version": "20260526T1779819426639",
   "_slug": "japanese",
   "_display": "Japanese",
@@ -606,7 +3093,7 @@
     "ai_backend_config": "AIバックエンド設定",
     "ai_diagnostics_canvas": "AI 設定とモデル診断",
     "app_language": "アプリ言語",
-    "app_name": "AlloFlow。",
+    "app_name": "AlloFlow",
     "applied_standard": "適用基準： {code}",
     "bridge_aria": "ファミリーブリッジ翻訳",
     "bridge_tooltip": "ファミリーブリッジ: 多言語の家庭や児童生徒と話すためのリアルタイム翻訳",
@@ -772,7 +3259,7 @@
     "tool_anchor_chart": "アンカーチャート",
     "tool_wordsounds": "言葉の音",
     "open_storyforge_aria": "StoryForgeを開く",
-    "storyforge_label": "StoryForge。",
+    "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ドキュメントベースの質問",
     "open_stem_lab_explore_aria": "STEAM Lab Explore を開く",
     "stem_lab_explore": "探索",
@@ -1005,7 +3492,7 @@
     "compare_with_ai": "比較私の評価 AI 分析。",
     "get_ai_feedback_doc": "文書分析についてAIフィードバックを取得",
     "perspective_comparison": "視点の比較に対する回答",
-    "fab_open_palette": "Palette。",
+    "fab_open_palette": "パレット",
     "restart_crawl": "最初から読み上げを再開",
     "restart_first_sentence": "最初の文から再開",
     "reading_progress": "読解進捗。",
@@ -1032,7 +3519,7 @@
     "chart_title": "チャートタイトル。",
     "rubric_key_concepts": "ルーブリックまたはキー概念。",
     "pictionary_canvas": "Pictionary 描画キャンバス",
-    "eraser": "Eraser。",
+    "eraser": "消しゴム",
     "undo_last_stroke": "最後のストロークを取り消し",
     "clear_canvas": "明確 canvas。",
     "pictionary_host_dashboard": "Concept Pictionary ホスト用ダッシュボード",
@@ -1046,11 +3533,11 @@
     "section_divider": "セクション区切り",
     "remove_divider": "区切りを削除",
     "remove_page_break": "改ページを削除",
-    "callout": "Callout。",
+    "callout": "吹き出し",
     "remove_callout": "コールアウトを削除",
     "remove_quote": "削除引用。",
     "remove_checklist": "チェックリストを削除",
-    "checklist": "Checklist。",
+    "checklist": "チェックリスト",
     "remove_steps": "削除ステップ。",
     "step_by_step": "ステップごとに指示。",
     "remove_accordion": "アコーディオンを削除",
@@ -1092,7 +3579,7 @@
     "programming_language": "プログラミング言語",
     "copy_code_clipboard": "コードをクリップボードにコピー",
     "code_example": "コード例。",
-    "inner_thought": "Inner thought。",
+    "inner_thought": "心の声",
     "vocabulary_term": "語彙用語。",
     "term_definition": "用語定義。",
     "custom_art_style": "カスタムアートスタイル説明。",
@@ -1116,7 +3603,7 @@
     "dismiss_character_arcs": "キャラクターアークの結果を閉じる",
     "dismiss_dialogue_tuneup": "却下ダイアログチューニング-上。",
     "dismiss_revision_plan": "改訂プランを閉じる",
-    "prioritized_revision_tasks": "Prioritized revision tasks。",
+    "prioritized_revision_tasks": "優先順位付きの修正タスク",
     "section_break": "セクション区切り",
     "section_break_resumed": "セクション区切り — 再開された補習セッション",
     "end_completed_pages": "終了の完了ページ。",
@@ -1153,7 +3640,7 @@
     "close_annotation_list": "閉じるアノテーションリスト。",
     "a11y_info": "アクセシビリティ情報。",
     "fragment_failed": "フラグメント {n} の処理に失敗しました",
-    "fragment_recovery": "Fragment {n} recovery。",
+    "fragment_recovery": "断片{n}の復元",
     "comic_panel": "コミックパネル {n}",
     "sound_effect": "効果音:{fx}",
     "paragraph_n": "段落 {n}。",
@@ -1167,7 +3654,7 @@
     "fishbone_for": "{topic} の特性要因図",
     "concept_map_of": "コンセプトマップ:{topic}",
     "mind_map_branch": "マインドマップのブランチ {n} / {total}:{title}",
-    "mind_map_of": "Mind map: {topic}。",
+    "mind_map_of": "マインドマップ: {topic}",
     "tier_score": "ティア {tier}、スコア {score}",
     "draggable_item": "ドラッグ可能な項目",
     "read_aloud_with_text": "読み上げ: {text}",
@@ -3179,7 +5666,7 @@
     "preview_not_ready": "プレビューない準備完了まだ — レンダリングが完了するまで待ってから、もう一度お試しください。",
     "word_art_render_failed": "ワードアートを描画できませんでした",
     "diff_engine_load_failed": "差分エンジンの読み込みに失敗しました（ネットワークがブロックされている可能性があります）。接続を確認して、再度お試しください。",
-    "brf_downloaded": "Electronic Braille (BRF) downloaded。",
+    "brf_downloaded": "電子点字（BRF）をダウンロードしました",
     "no_content_available": "No 生成コンテンツ利用可能。",
     "loaded_current_content": "読み込み現在生成コンテンツ。",
     "select_image_file": "画像ファイルを選択してください。",
@@ -3192,8 +5679,8 @@
     "kokoro_downloading": "Kokoro音声モデルをダウンロード中（約40MB）…",
     "kokoro_ready": "Kokoro音声の準備ができました！",
     "kokoro_download_failed": "Kokoroのダウンロードに失敗しました。Gemini TTSを使用します",
-    "station_removed": "Station removed。",
-    "sel_station_removed": "SEL Station removed。",
+    "station_removed": "ステーションを削除しました",
+    "sel_station_removed": "SELステーションを削除しました",
     "rti_csv_downloaded": "RTI進捗モニタリング用のCSVをダウンロードしました",
     "image_too_large_10mb_alt": "画像が大きすぎます（最大10MB）",
     "kokoro_ready_switching": "Kokoro音声の準備ができました！オフライン音声に切り替えます。",
@@ -4190,7 +6677,21 @@
     "measured_on_target": "{grade} に合っています",
     "measured_above": "{grade} の目標より上",
     "measured_below": "{grade} の目標より下",
-    "measured_note": "Flesch-Kincaid。この文章で測定しました。詳しく調べるにはレベルを確認を使ってください。"
+    "measured_note": "Flesch-Kincaid。この文章で測定しました。詳しく調べるにはレベルを確認を使ってください。",
+    "listen_along": "聞きながら読む",
+    "compare_listen_here": "ここで聞く",
+    "compare_listen_here_original": "原文をここで聞く",
+    "compare_listen_here_adapted": "適応版をここで聞く",
+    "compare_stop_reading_original": "原文の読み上げを停止",
+    "compare_stop_reading_adapted": "適応版の読み上げを停止",
+    "compare_scroll_together": "一緒にスクロール",
+    "reading_width": "本文の幅",
+    "width_narrow": "狭い",
+    "width_medium": "標準",
+    "width_wide": "広い",
+    "width_extra_wide": "とても広い",
+    "reading_width_characters": "1行あたり約{count}文字",
+    "original_support_spoken": "「{word}」の語句サポート：{support}"
   },
   "outline": {
     "title": "ビジュアル整理ツール",
@@ -4654,6 +7155,82 @@
     "edit_question_translation": "質問の翻訳を編集"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "抜けている語句を入力してください",
+      "explain_thinking": "考えを説明してください",
+      "write_response": "回答を書いてください",
+      "submit_response": "回答を送信",
+      "numeric_answer": "数値の回答",
+      "unit_named": "単位（{unit}）",
+      "unit_optional": "単位（任意）",
+      "submit_numeric": "数値の回答を送信",
+      "select_all_apply": "当てはまる答えをすべて選んでください",
+      "submit_selections": "選んだ答えを送信",
+      "part1": "パート1：最も適切な答えを選んでください",
+      "part2": "パート2：{prompt}",
+      "default_evidence_prompt": "答えを最もよく裏付ける根拠を選んでください。",
+      "submit_answer_evidence": "答えと根拠を送信",
+      "order_check": "この順番は正しいですか？",
+      "order_yes": "はい、正しいです",
+      "order_no": "いいえ、位置が違うものがあります",
+      "select_misplaced": "上から、位置が違う項目を1つ選んでください。",
+      "arrange_instructions": "項目を正しい順番に並べてください。すでに正しければ、そのままにしてください。",
+      "your_order": "あなたの並び順",
+      "move_up": "上へ移動：{item}",
+      "move_down": "下へ移動：{item}",
+      "done_arranging": "並べ終わりました",
+      "principle_question": "どのような基準で並んでいますか？",
+      "principle_chronological": "時間の順",
+      "principle_cause_effect": "原因と結果",
+      "principle_process": "手順",
+      "principle_size": "大きさ",
+      "principle_hierarchy": "階層",
+      "find_mismatch": "合っていない組み合わせを見つけよう",
+      "choose_mismatch": "合っていない組み合わせを選んでください。",
+      "pair_with_question": "選んだ項目は何と組み合わせるべきですか？",
+      "replacement_partner": "新しい組み合わせ相手",
+      "submit_replacement": "組み合わせの変更を送信",
+      "retry_failed": "回答を送信できませんでした。参加は記録されています。接続されたら、もう一度お試しください。",
+      "return_to_quiz": "ライブクイズに戻る",
+      "minimize": "最小化",
+      "minimize_aria": "ライブクイズの画面を離れる",
+      "battle_result": "バトルの結果",
+      "class_victory": "クラスの勝利！",
+      "battle_complete": "バトル終了",
+      "regroup": "作戦を立て直すチャンス",
+      "end_no_scored": "これらの質問は、話し合いや先生の確認のためのものでした。バトルのスコアはつけられていません。",
+      "end_questions_complete": "すべての質問が終わりました。結果は残りの体力の割合で比べます。同じ場合はクラスの勝ちです。",
+      "end_victory": "クラスのみんなで力を合わせて、モンスターを倒しました。",
+      "end_regroup": "下の解説を使って、次の挑戦をみんなで計画しましょう。",
+      "end_review_last": "下の最後の質問を見直しましょう。先生はバトルをやり直すことができます。",
+      "boss_default_name": "ボス",
+      "boss_hp": "{name}のHP",
+      "boss_health": "{name}の体力",
+      "battle_scoring_paused": "バトルの採点は一時停止中です",
+      "tick_of": "{total}中{value}",
+      "confidence_legend": "どのくらい自信がありましたか？",
+      "confidence_knew": "知っていた",
+      "confidence_guessed": "考えて推測した",
+      "confidence_unsure": "自信がなかった",
+      "confidence_help": "先生が、しっかり理解できていることや思い違いを見つけるのに役立ちます。正解かどうかや得点が変わることはありません。",
+      "retry_send": "回答をもう一度送信",
+      "waiting_for_teacher": "先生がこの質問を始めるのを待っています。",
+      "sending": "回答を送信しています…",
+      "receipt_only": "参加は記録されました。回答はまだ採点のために先生に届いていません。",
+      "complete_and_submit": "回答を完成させて送信してください",
+      "poll_closed": "この意見の質問は締め切られました。",
+      "receipt_not_scored": "先生には参加の記録だけが届きました。この回答は採点されていません。",
+      "no_answer_submitted": "この質問には回答が送信されませんでした。クラスで一緒に見直しましょう。",
+      "answer_review": "答えの確認",
+      "review_answer": "答えを確認する",
+      "discuss_with_teacher": "この回答について先生と話し合いましょう。",
+      "response_correct": "正解です。",
+      "response_partial": "一部正解です。",
+      "response_incorrect": "この回答はもう一度見直しましょう。",
+      "response_none": "回答は送信されませんでした。",
+      "response_submitted": "回答は確認のために送信されました。",
+      "explanation": "解説"
+    },
     "title": "評価",
     "mcq_count": "MCQ数",
     "reflections": "振り返り",
@@ -10554,7 +13131,7 @@
     "subtitle": "探求するツールを選択",
     "stem_title": "STEAMラボ",
     "stem_desc": "100以上のインタラクティブな数学・科学探究",
-    "storyforge_title": "StoryForge。",
+    "storyforge_title": "StoryForge",
     "storyforge_desc": "AI作文ツールでイラスト付きの物語を作成",
     "sel_title": "SELハブ",
     "sel_desc": "自己認識と成長のための社会的・感情的学習",
@@ -13770,7 +16347,7 @@
           "color": "amber"
         },
         {
-          "title": "StoryForge。",
+          "title": "StoryForge",
           "icon": "Quote",
           "desc": "AIイラスト、ナレーション、カスタムルーブリック、18言語サポート付きの6フェーズスキャフォールド付き創造的ライティング。",
           "category": "creation",
@@ -79112,7 +81689,7 @@
     "cer_template": "主張。",
     "lab_conclusion": "Restate 仮説、 summarize 結果、 reflect 何学習。",
     "title_of_reading": "タイトルの何読む。",
-    "author": "Author。",
+    "author": "著者",
     "pages_or_chapter": "ページまたは章。",
     "reading_reflection": "Reflect 何 came 上間読解。",
     "lingering_question": "何's 一つ質問まだ後この読解？。",
@@ -79123,7 +81700,7 @@
     "panel_narrator": "何's happening このパネル？ (narrator 音声)。",
     "who_speaker": "誰？。",
     "character_thinking": "何キャラクター思考。",
-    "sound_effect_example": "BOOM! CRASH! WHOOSH!。",
+    "sound_effect_example": "ドカーン！ガシャーン！ヒューッ！",
     "missing_word": "タイプ missing 単語…。",
     "short_response": "タイプ 1-2 文応答…。",
     "explain_own_words": "説明自身単語 (3-5 文)…。",
@@ -79135,11 +81712,11 @@
     "section_divider": "セクション divider。",
     "remove_divider": "削除 divider。",
     "remove_page_break": "削除ページ break。",
-    "callout": "Callout。",
+    "callout": "吹き出し",
     "remove_callout": "削除 callout。",
     "remove_quote": "削除引用。",
     "remove_checklist": "削除 checklist。",
-    "checklist": "Checklist。",
+    "checklist": "チェックリスト",
     "remove_steps": "削除ステップ。",
     "step_by_step": "ステップごとに指示。",
     "remove_accordion": "削除 accordion。",
@@ -79221,7 +81798,7 @@
     "remove_text": "削除テキスト。",
     "explain_concept_action": "説明この概念。",
     "explain_to_class": "説明クラス。",
-    "try_again": "試す再度。",
+    "try_again": "もう一度試す",
     "edit_response": "編集応答。",
     "submit_reflection": "送信振り返り。",
     "completed": "完了",
@@ -79240,11 +81817,11 @@
   "alts": {
     "scene_visualization": "シーン Visualization。",
     "document_image": "ドキュメント画像。",
-    "boss": "Boss。",
-    "cover": "Cover。",
+    "boss": "ボス",
+    "cover": "表紙",
     "book_cover": "ブック cover。",
     "visual": "ビジュアル。",
-    "alloflow": "AlloFlow。"
+    "alloflow": "AlloFlow"
   },
   "tooltips": {
     "save_close": "保存 & 閉じる。",
@@ -79268,8 +81845,8 @@
     "move_down": "移動 down。",
     "theme_light": "明るい (教師デフォルト)。",
     "theme_dark": "暗いモード。",
-    "theme_sepia": "Sepia (warm, low-glare)。",
-    "theme_high_contrast": "High Contrast (WCAG AAA)。",
+    "theme_sepia": "セピア（暖色・まぶしさ軽減）",
+    "theme_high_contrast": "ハイコントラスト（WCAG AAA）",
     "add_sticky_note": "追加スティッキーノート。",
     "highlight_text": "ハイライトテキスト。",
     "voice_note_device": "音声ノート: クリックで録音開始(最大60秒、お使いのデバイスに保存)",
@@ -79309,15 +81886,15 @@
     "content_accuracy": "コンテンツ精度。",
     "differentiation_coverage": "差別化 coverage。",
     "cognitive_load_pacing": "認知読み込み / pacing。",
-    "cultural_responsiveness": "Cultural responsiveness。",
+    "cultural_responsiveness": "文化への配慮",
     "open_audit_remediator": "開く監査 Remediator: レビューと適用 fixes。",
     "insert_image": "Insert 画像にドキュメント。",
     "bullet_list": "Bullet リスト。",
     "numbered_list": "番号付きリスト。",
-    "insert_link": "Insert link。",
+    "insert_link": "リンクを挿入",
     "clear_formatting": "明確 formatting。",
-    "undo": "Undo。",
-    "redo": "Redo。",
+    "undo": "元に戻す",
+    "redo": "やり直す",
     "export_preview_edit": "エクスポートプレビュー — クリック任意テキスト編集。",
     "click_to_rename": "クリック名前変更。",
     "add_to_category": "追加アイテムこのカテゴリ。",
@@ -79349,7 +81926,7 @@
     "download_gradebook_csv": "成績簿をCSVとしてダウンロード — Excel / Google スプレッドシート / Numbersで開けます",
     "remove_teacher_override": "削除教師 override (revert AI / deterministic 学年)。",
     "generate_concept_explainer": "生成 60-90 単語概念説明クラス。",
-    "ai_graded": "AI-graded。",
+    "ai_graded": "AI採点",
     "play_explainer_aloud": "Play 説明音読。",
     "send_explainer_to_students": "送信この説明各生徒's 画面今。",
     "one_click_remove_text": "ワンクリック： 削除テキストからこの画像。",
@@ -79411,7 +81988,7 @@
     "replace_program_with_template": "現在のプログラムをテンプレートで置き換えますか？"
   },
   "headings": {
-    "story_forge": "StoryForge。",
+    "story_forge": "StoryForge",
     "narrate_story": "Narrate 物語。",
     "review_feedback": "レビュー & フィードバック。",
     "character_name_check": "キャラクター名前チェック。",

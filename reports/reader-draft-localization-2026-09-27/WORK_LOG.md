@@ -1,0 +1,5 @@
+# Track 17 draft localization ownership
+
+Preparing an isolated seven-message reader draft/save candidate after the repeated continuation authorization. Scope: isolated reader notice/call-site patch, English registration, five locale packs/public mirrors, a bounded updater, fixtures and tests. Track 01 retains shared reader/host/generated integration. No shared runtime/catalog writes, Git mutation, deployment or messages to other sessions. Existing English behavior copy is frozen; no semantic rewrite.
+
+Completed locally: seven frozen keys, 35 translations, 20-file isolated patch. 178 distinct checks pass; 66 affected checks pass again after preserving newer English/Spanish catalogs. The owned reader/editor/word helpers and actual host translator remained unchanged during concurrent integration. Strict read-only git apply check passed at HEAD 286e09850680047d44efcc836075916cf488eff6. No shared runtime/catalog edits. Integration remains with Track 01. Patch SHA-256: cf2e82dd514c2b19ab350236aae7ca2e49f62196bebf790d21d443f1b79f8b97.

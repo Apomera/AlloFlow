@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:38448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K(node:38448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2256:5 › individual chance follows real parent identities across trials and saves separate evidence
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2307:5 › individual chance without WebGL explains identical and different survivors after actual extinction
+[1A[2K  3 passed (2.7m)

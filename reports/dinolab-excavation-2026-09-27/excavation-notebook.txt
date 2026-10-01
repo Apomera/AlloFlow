@@ -1,0 +1,53 @@
+DINO LAB | FIELD NOTEBOOK
+Student observations and explanations
+Catalog measurements are estimates. Model observations are not direct observations of living extinct animals.
+
+Magyarosaurus (Magyarosaurus dacus)
+Late Cretaceous | 70–66 mya | Europe (Romania)
+Catalog evidence: Many bones from Romania’s Haţeg Island fauna.
+Catalog uncertainty: How its island geography worked is reconstructed from rocks.
+
+My question:
+(not recorded)
+
+Evidence I noticed:
+(not recorded)
+
+My explanation:
+The combined clues distinguish this candidate in the catalog. A real fossil would need diagnostic anatomy and its geological context.
+
+What I still wonder:
+(not recorded)
+
+---
+
+Microraptor (Microraptor gui)
+Early Cretaceous | 125–120 mya | Asia (China)
+Catalog evidence: Many beautifully preserved specimens from China’s Jehol deposits.
+Catalog uncertainty: Exactly how it used four wings is still modeled.
+
+My question:
+How did it glide?
+
+Evidence I noticed:
+(not recorded)
+
+My explanation:
+(not recorded)
+
+What I still wonder:
+(not recorded)
+
+---
+
+REFERENCE CONTEXT | Catalog excavation exercise #1
+Candidate: Magyarosaurus
+Cited catalog clues:
+Time: Cretaceous · Late Cretaceous
+Diet: Herbivore
+Group: Sauropodomorph
+Estimated length: 6 m
+Fossil region: Europe (Romania)
+Catalog trait: Tiny for a titanosaur
+Prompt: Which clue ruled out your closest alternative? What would you still need to identify a real fossil?
+The grid fragments are symbolic. These clues are catalog information, not observations of an actual fossil.

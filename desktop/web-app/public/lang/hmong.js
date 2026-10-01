@@ -1,4 +1,1223 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Cheeb Tsam Kev Xav",
+          "desc": "Paub koj cheeb tsam (xiav, ntsuab, daj, liab) thiab tshawb cov tswv yim los tswj koj tus kheej."
+        },
+        "emotions": {
+          "label": "Tshawb Kev Xav Hauv Siab",
+          "desc": "Kawm cov lus hais txog kev xav hauv siab — paub, hu npe, thiab ntsuas seb koj xav hnyav npaum li cas."
+        },
+        "strengths": {
+          "label": "Nrhiav Koj Lub Zog",
+          "desc": "Nrhiav thiab xav txog koj lub zog, koj tej txuj ci, thiab tej yam uas koj tseem loj hlob tau."
+        },
+        "viaStrengths": {
+          "label": "Lub Zog VIA",
+          "desc": "Kev faib yooj yim rau koj tus kheej ntawm 24 Lub Zog Tus Cwj Pwm VIA (Peterson thiab Seligman, 2004), nrog rau 6 yam kev zoo thiab kev nrhiav koj lub zog tshwj xeeb. Yog xav ua daim ntawv nug raug cai uas pub dawb, mus rau viacharacter.org. Yog kev xyaum xav rov qab, tsis yog kev ntsuas psychometric."
+        },
+        "wheelOfLife": {
+          "label": "Lub Log Neej",
+          "desc": "Daim duab zoo li kab laug sab qhia 8 yam hauv lub neej, txhua yam muab ntsuas 1 txog 10. Ib daim duab ntawm koj tus kheej qhia tias qhov twg hauv lub neej puv npo thiab qhov twg tseem tsawg nyob rau tam sim no. Los ntawm kev cob qhia (Meyer xyoo 1960; Co-Active Coaching). Yog ib txoj kev kwv yees; tsis yog kev ntsuas psychometric uas tau lees paub lawm."
+        },
+        "perma": {
+          "label": "Kev Noj Qab Nyob Zoo PERMA",
+          "desc": "Kev kuaj xyuas koj tus kheej rau tsib yam PERMA ntxiv rau kev xav txog Kev Noj Qab Haus Huv: Kev xav zoo, Kev koom siab, Kev sib raug zoo, Lub ntsiab lus, Kev ua tiav, thiab Kev Noj Qab Haus Huv. 24 lo lus nug, qhov tshwm sim yog daim duab kab, thiab kev xav rov qab rau txhua yam. Los ntawm Seligman; siv ua ke nrog Lub Zog VIA."
+        },
+        "coping": {
+          "label": "Cuab Yeej Tiv Taus",
+          "desc": "Tshawb thiab xyaum cov tswv yim tiv taus — ua pa, rov los nyob tam sim no, txav lub cev, thiab ntau yam ntxiv."
+        },
+        "windowOfTolerance": {
+          "label": "Qhov Rais Kev Ua Siab Ntev",
+          "desc": "Daim duab paub txog tus kheej uas nkag siab txog kev raug mob siab. Peb cheeb tsam kev ntxhov ntawm lub cev (siab dhau, qhov rais, qis dhau). Kos koj tej cim qhia ntawm txhua cheeb tsam, tej yam ua rau koj ntxhov siab, thiab tej kev xyaum uas coj koj rov qab los. Raws li Siegel (1999); yog tus qauv hauv cov tsev kawm ntawv uas nkag siab txog kev raug mob siab."
+        },
+        "stressBucket": {
+          "label": "Thoob Kev Ntxhov Siab",
+          "desc": "Daim duab qhia koj lub peev xwm. Tej yam ua rau ntxhov siab nchuav los rau hauv; kev xyaum tiv taus tso nws tawm. Saib seb qhov nkag los thiab qhov tawm mus puas sib npaug. Yog cuab yeej los ntawm CBT (Brabban thiab Turkington 2002), siv hauv NHS IAPT thiab Mind UK. Hais ncaj txog kev ntxhov siab uas los ntawm tej txheej txheem hauv zej zog."
+        },
+        "tipp": {
+          "desc": "Plaub txuj ci DBT kom dim tau thaum kub ntxhov (Temperature/kub txias, Intense exercise/ua si hnyav, Paced breathing/ua pa qeeb qeeb, Paired muscle relaxation/so leeg nqaij ua khub) rau thaum muaj kev nyuaj siab HNYAV HEEV. Ua kom lub cev txias zog hauv 30 vib nas this txog 10 feeb ua ntej koj sim xav nrhiav kev tawm. Yog txuj ci hauv paus ntawm DBT Kev Zam Kev Nyuaj Siab (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Cuab Yeej Kev Txhawj Ntxhov",
+          "desc": "Cov txuj ci raws li CBT los daws kev txhawj ntxhov: kev kawm txog lub siab, tsob ntoo kev txhawj (kev txhawj uas pab tau vs pab tsis tau), sijhawm teem tseg rau kev txhawj, kev txo qhov xav tias yuav phem tshaj plaws, txuj ci rov los nyob tam sim no, thiab kev sau koj tus kheej tus qauv. Los ntawm Beck Institute, AACAP, ADAA. Siv ua ke nrog Qhov Rais Kev Ua Siab Ntev thiab Thoob Kev Ntxhov Siab."
+        },
+        "sleep": {
+          "label": "Pw Tsaug Zog & So",
+          "desc": "Kev pw tsaug zog ntawm cov hluas yog ib qho teeb meem loj rau pej xeem txoj kev noj qab haus huv. Tsis tshua muaj leej twg pw tau 8-10 teev raws li AAP pom zoo. Kev kawm txog lub siab, kev kuaj xyuas tus kheej, 8 yam teeb meem uas pom ntau + tej yam uas pab tau rau txhua yam, thiab phau ntawv sau kev pw. Los ntawm AAP, CDC, NSF, thiab kev tshawb fawb ntawm Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Tswj Kev Hnov Ntawm Lub Cev",
+          "desc": "Cuab yeej uas hwm cov neeg muaj lub hlwb txawv, pab koj nkag siab seb koj lub cev hnov tej yam li cas hauv 8 lub cev kev hnov. Tsim koj daim ntawv qhia tus kheej, npaj koj cov kev pab rau kev hnov, thiab nrhiav tej kev pab tshwj xeeb hauv tsev kawm ntawv. Siv lus uas muab tus kheej ua ntej; raws li Ayres / Dunn / kev tshawb fawb uas cov neeg autistic coj."
+        },
+        "bigFeelings": {
+          "label": "Kev Xav Loj (Npau Taws)",
+          "desc": "Kev kawm txog lub siab thiab kev xyaum txuj ci tshwj xeeb txog kev npau taws. Kev npau taws yog cov ntaub ntawv qhia, tsis yog qhov teeb meem; kev tawm tsam tam sim ntawd yog lub cuab. Raws li Lochman txoj kev Coping Power + cov pov thawj CBT rau kev npau taws. Ntawv sau tej yam ua rau chim, ntawv sau tej yam tsa kev npau taws, lub sijhawm xaiv, thiab koj tus kheej tej kev ua kom txias siab."
+        },
+        "substancePsychoed": {
+          "label": "Kev Siv Yeeb Tshuaj",
+          "desc": "Kev kawm txog lub siab uas txo kev puas tsuaj txog yeeb tshuaj (cawv, kaj ntsig, nicotine, opioid, tshuaj txhawb zog, benzo, tshuaj ua rau pom tej yam tsis muaj tseeb). Kev phom sij rau lub hlwb ntawm cov hluas. Kev kawm txog naloxone. TSIS YOG cuab yeej kuaj ntsuas, TSIS YOG tsuas qhia kom tsis txhob siv kiag li xwb. Qhia meej kom mus nrhiav SAMHSA. Chaw xav rov qab uas raws li MI."
+        },
+        "behavioralActivation": {
+          "label": "Kev Txhawb Kom Ua Ub No",
+          "desc": "Npaj tej yam me me los ua, ua lawv, ces ntsuas seb koj ua tau zoo npaum li cas (xav tias koj muaj peev xwm) thiab zoo siab npaum li cas (nyiam ua). Saib seb yam twg haum thiab xaiv ib kauj ruam tom ntej uas koj ua tau. Txoj kev npaj no siv tswv yim los ntawm kev txhawb kom ua ub no; nws tsis yog muab lossis ntsuas ib txoj kev kho mob."
+        },
+        "mindfulness": {
+          "label": "Ces Kaum Nco Ntsoov Tam Sim No",
+          "desc": "Kev xyaum ua pa uas muaj kev coj, kev tshawb xyuas lub cev, thiab tej yam xyaum nco ntsoov tam sim no."
+        },
+        "quietQuestions": {
+          "label": "Cov Lus Nug Ntsiag To",
+          "desc": "Kev xyaum nug sab hauv txhua lub lim tiam. Nyob nrog ib lo lus nug qhib tag nrho ib lub lim tiam. 20 lo lus nug hloov mus los txog kev mloog, kev ntshaw, kev nyuaj, kev sib txuas, thiab kev los ua ib tug neeg. Tau tswv yim los ntawm cov Quaker txoj kev nug; tsis yog kev ntseeg thiab tsis yuam."
+        },
+        "orientations": {
+          "label": "Kev Taw Qhia Lub Neej",
+          "desc": "Cov Kev Ua Neej, Muab Piv. Yim txoj kev xav (Daoism, Zen, Stoicism, Existentialism, Confucian kev ncaj ncees, Ubuntu, kev sib txuas ntawm cov neeg Ib Txwm, Kev Ncaj Ncees ntawm Kev Saib Xyuas) muab piv rau cov lus nug loj txog lub neej. Tsis yuam; txhua txoj muaj ib daim ncaj ncees qhia \"tej yam nws ua tsis tau zoo\"."
+        },
+        "thoughtRecord": {
+          "label": "Ntawv Sau Kev Xav CBT",
+          "desc": "Daim ntawv sau kev xav 7 kem los ntawm Kev Kho Kev Xav Thiab Tus Cwj Pwm. Taug ib lub sijhawm nyuaj: qhov xwm txheej, kev xav hauv siab, kev xav tshwm los tam sim, pov thawj txhawb thiab tawm tsam, kev xav uas sib npaug, rov ntsuas kev xav hauv siab. Khaws cov ntawv sau mus ntev. Los ntawm Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Rooj Qhov Zoo & Qhov Tsis Zoo",
+          "desc": "Rooj 2x2 los pab txiav txim siab los ntawm Kev Kho Tus Cwj Pwm Dialectical. Qhov zoo thiab qhov tsis zoo luv luv thiab ntev ntawm ib qho kev txiav txim, muab tso ib sab rau ib sab. Pab tau thaum kev xav hauv siab thawb koj mus rau ib qho. Los ntawm Linehan."
+        },
+        "sfbt": {
+          "label": "Tsom Rau Kev Daws Teeb Meem",
+          "desc": "Kev Kho Luv Luv Tsom Rau Kev Daws Teeb Meem: Lo Lus Nug Txuj Ci Tseem Ceeb, Kev Ntsuas Qib, Nrhiav Lub Sijhawm Uas Txawv, thiab Cov Lus Qhuas. Saib mus tom ntej es tsis saib rov qab, nug seb dab tsi twb ua haujlwm lawm. Yog txoj kev siv ntau tshaj plaws hauv kev pab tswv yim hauv tsev kawm ntawv hauv Teb Chaws Meskas. Los ntawm de Shazer thiab Berg."
+        },
+        "careConstellations": {
+          "label": "Pawg Hnub Qub Kev Saib Xyuas",
+          "desc": "Daim ntawv qhia kev sib txuas txog leej twg saib xyuas koj thiab koj saib xyuas leej twg. Tsis lees txais lub tswv yim \"self-care\" uas tsuas xav txog tus kheej lossis kev yuav khoom. Muaj kev xav tob txog Kev Saib Xyuas Tus Kheej vs \"self-care\" (Foucault, lus Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic)."
+        },
+        "ecomap": {
+          "desc": "Daim ntawv qhia kev sib raug zoo ntawm tus neeg thiab nws ib puag ncig. Koj nyob hauv nruab nrab; 12 yam tseem ceeb hauv lub neej nyob ib puag ncig koj. Txhua txoj kev sib txuas muab ntsuas raws li lub zog, kev ntxhov siab, thiab kev ntws ntawm lub zog. Yog cuab yeej ib txwm siv hauv kev ua haujlwm pab zej zog txij li Hartman (1978); siv rau IEP, kev ntsuas tsev neeg, thiab kev sau txog koj lub neej."
+        },
+        "circlesOfSupport": {
+          "label": "Voj Voog Kev Txhawb Nqa",
+          "desc": "Plaub lub voj voog ntawm kev sib raug zoo: Kev Ze Siab, Kev Phooj Ywg, Kev Koom Nrog, Kev Pauv (them nyiaj). Qhia pom tias leej twg ze tiag tiag, suav nrog thaum cov neeg uas tau nyiaj puv cov voj voog sab hauv. Los ntawm Forest thiab Snow ntawm Inclusion Press."
+        },
+        "genogram": {
+          "desc": "Daim ntawv qhia tsev neeg peb tiam siv cov cim ib txwm siv rau tsev neeg. Tsuas yog rau koj nkag siab koj tus kheej xwb (TSIS YOG kev ntsuam xyuas kho mob). Raws li Bowen txoj kev xav txog tsev neeg thiab McGoldrick-Gerson-Petry cov cim. Muaj cov lus qhia pom tseeb kom qhia tau kom nyab xeeb."
+        },
+        "griefLoss": {
+          "label": "Kev Quaj Ntsuag & Kev Poob",
+          "desc": "Ib tug khub uas coj koj thaum koj quaj ntsuag. Kev tuag ntawm ib tug neeg lossis tsiaj txhu, kev hloov pauv hauv tsev neeg, poob phooj ywg, poob tus kheej, kev poob uas tsis meej — suav tag. Taug Worden plaub txoj haujlwm ntawm kev quaj ntsuag, sau ib tsab ntawv, npaj tej kev cai. Muaj lus ceeb toom kev nyab xeeb meej uas taw rau Khub Thaum Kub Ntxhov / 988 rau kev quaj ntsuag hnyav lossis nyuaj."
+        },
+        "traumaPsychoed": {
+          "label": "Nkag Siab Txog Kev Raug Mob Siab",
+          "desc": "Tsuas yog kev kawm txog lub siab xwb (TSIS YOG cuab yeej kuaj ntsuas). Kev raug mob siab yog dab tsi thiab tsis yog dab tsi, lub hlwb ua haujlwm li cas piav ua lus yooj yim, tej kev teb uas pom ntau muab saib ua kev hloov kom dim, SAMHSA 6 lub hauv paus ntsiab lus, thiab kev kho uas muaj pov thawj. Rau cov tub ntxhais kawm ntawv thiab cov xib fwb. Muaj lus ceeb toom kev nyab xeeb meej txog vim li cas kev kuaj ntsuas uas tsis muaj kev pab tom qab thiaj tsis nyab xeeb."
+        },
+        "bodyStory": {
+          "label": "Zaj Dab Neeg Lub Cev",
+          "desc": "Cuab yeej rau kev txais yuav koj lub cev thiab nyob hauv koj lub cev. TSIS tsom rau qhov hnyav, TSIS cuam tshuam txog kev noj zaub mov kom yuag, TSIS YOG cuab yeej kuaj ntsuas. Raws li Tylka txoj kev txaus siab rau lub cev, kev noj mov raws li lub cev xav tau, thiab kev nkag siab txog xov xwm. Txais tos txhua lub cev, txhua poj txiv neej, txhua qhov loj me. Qhia meej kom mus nrhiav NEDA rau kev mob txog kev noj mov."
+        },
+        "sourcesOfStrength": {
+          "label": "Hauv Paus Lub Zog",
+          "desc": "Kos koj 8 yam uas tiv thaiv koj. Tshawb tej kev txhawb nqa tiv thaiv uas tau tswv yim los ntawm qhov program Sources of Strength. Daim ntawv qhia uas koj ua koj tus kheej no yog kev hloov kho, tsis yog kev ua qhov program hauv tsev kawm ntawv uas tau ntsuas lawm."
+        },
+        "crisiscompanion": {
+          "label": "Khub Thaum Kub Ntxhov",
+          "desc": "Txuj ci txhawb nqa phooj ywg thiab tiv thaiv kev tua tus kheej: yuav ua li cas yog koj lossis ib tug phooj ywg nyuaj siab heev, muaj kev kub ntxhov, lossis xav ua mob rau tus kheej — paub cov cim qhia, yuav hais dab tsi (thiab tsis txhob hais dab tsi), qhia rau tus neeg laus uas koj ntseeg siab, ntxiv rau 988 thiab koj txoj kev npaj kev nyab xeeb. Muaj lus ceeb toom txog cov ntsiab lus ua ntej nkag. Raws li NEDA, AFSP, Sources of Strength, thiab 988. Yog qhov kev txhawb nqa thaum xwm txheej ceev uas ua ke nrog Hauv Paus Lub Zog."
+        },
+        "identitySupport": {
+          "label": "Txhawb Nqa Kev Paub Tus Kheej",
+          "desc": "Chaw uas txais tos thiab lees paub rau cov lus nug txog koj poj txiv neej tus kheej, kev nyiam poj niam txiv neej, kev nyiam hlub, thiab lwm yam txog tus kheej. Cov lus, kev loj hlob ntawm tus kheej, nrhiav zej zog, kev nyab xeeb rau cov hluas trans, lus qhia rau cov neeg txhawb nqa. Raws li Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Lub Suab Neeg Xiam Oob Qhab",
+          "desc": "Cov neeg autistic thiab cov neeg xiam oob qhab tiag tiag uas tawm suab, uas lawv tej haujlwm tau tsim, thiab thuam, kev ua haujlwm txog kev xiam oob qhab. Cov lus hais, keeb kwm, thiab daim ntawv teev cov ntawv nyeem uas xaiv tseg. Tsim kom cov neeg uas txoj haujlwm no tsuas ua RAU lawv xwb los nyob hauv nruab nrab, tsis yog muab tso rau ib sab hauv ib lub cuab yeej kev tshawb fawb txog tus cwj pwm. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Teeb Hom Phiaj",
+          "desc": "Teeb hom phiaj SMART, taug qab koj txoj kev nce qib, thiab ua kev zoo siab rau tej kauj ruam tseem ceeb."
+        },
+        "howlTracker": {
+          "label": "Taug Qab HOWL",
+          "desc": "Kev ntsuas tus kheej txog Habits of Work and Learning (Tus Cwj Pwm Ua Haujlwm thiab Kawm) rau sijhawm Crew. Kev kuaj xyuas txhua lub lim tiam, hom phiaj txhua peb hlis, daim duab qhia kev hloov, thiab cov lus nug rau kev sib tham hauv Crew. Raws li EL Education lub HOWL."
+        },
+        "onePageProfile": {
+          "label": "Ntaub Ntawv Qhia Txog Kuv Ib Nplooj",
+          "desc": "Daim ntawv qhia txog koj uas nqa tau thiab luam tau, haum rau ib nplooj ntawv. Peb ntu: tej yam uas neeg nyiam thiab qhuas txog kuv, tej yam tseem ceeb rau kuv, thiab yuav pab kuv li cas thiaj zoo tshaj. Yog ntaub ntawv npaj uas muab tus neeg ua hauv paus rau kev sib tham IEP, kev hloov chaw, xib fwb hloov chaw, lossis Crew. Raws li Helen Sanderson Associates tus qauv."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Ua Txoj Kev Npaj Ua). Yim lo lus nug raws kab (Kuv Zaj Dab Neeg, Npau Suav Zoo, Npau Suav Phem, Kuv Yog Leej Twg, Txuj Ci, Kev Xav Tau, Txoj Kev Npaj Ua, Thawj Kauj Ruam). Daim duab uas muab tus neeg ua hauv paus los ntawm Pearpoint, O'Brien, thiab Forest ntawm Inclusion Press; siv dav rau kev npaj hloov mus rau theem tom ntej."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Npaj Tag Kis Lwm Yam Nrog Kev Cia Siab). Daim duab npaj yav tom ntej: yim theem txij ntawm koj Lub Hnub Qub Qaum Teb yav deb rov qab los rau thawj kauj ruam hauv ob lub lim tiam. Pearpoint, O'Brien, thiab Forest ntawm Inclusion Press; siv ua ke nrog MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Qhov Muaj Nqis & Kev Ua",
+          "desc": "Faib tej yam tseem ceeb, hu npe koj tej yam muaj nqis tshaj, thiab hloov txhua yam ua ib qho kev ua me me tiag tiag rau lub lim tiam no. Los ntawm Kev Kho Kev Txais Yuav thiab Kev Cog Lus (Hayes); siv DNA-V rau cov hluas. ACT qhia qhov txawv ntawm tej yam muaj nqis (kev taw qhia) thiab hom phiaj (qhov chaw mus txog)."
+        },
+        "careerCompass": {
+          "label": "Koob Qhia Kev Ua Haujlwm",
+          "desc": "Tshawb tej haujlwm los ntawm koj tej kev nyiam. Kev kuaj xyuas tus kheej RIASEC 36 lo lus nug muab peb tus Holland code siab tshaj; saib tej haujlwm, 16 Pawg Haujlwm ntawm tsoom fwv, thiab tej kauj ruam tom ntej tiag tiag (hnub mus saib neeg ua haujlwm, xam phaj nug xov xwm, CTE, kev kawm ua haujlwm nrog tus xib hwb). Raws li Holland; taw rau O*NET Interest Profiler raug cai ntawm mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Chaw Tawm Suab Rau Tus Kheej",
+          "desc": "Tsim ib txoj kev npaj kev pab hauv tsev kawm ntawv tiag tiag rau cov lus nug txog IEP lossis 504, kev pab tshwj xeeb, kev xaiv seb puas qhia, thiab thov kev pab ntawm cov neeg laus uas koj ntseeg siab."
+        },
+        "perspective": {
+          "label": "Tsom Iav Saib Lwm Sab",
+          "desc": "Saib tej xwm txheej los ntawm ntau sab — xyaum kev nkag siab lwm tus lub siab thiab kev xav raws li lwm tus."
+        },
+        "community": {
+          "label": "Zej Zog & Kab Lis Kev Cai",
+          "desc": "Tshawb txog kev sib txawv, kev paub txog kab lis kev cai, thiab kev ua ib feem ntawm zej zog."
+        },
+        "conflict": {
+          "label": "Kev Daws Kev Tsis Sib Haum",
+          "desc": "Xyaum ib qho kev tsis sib haum me me lossis cuav nrog kev xav raws li lwm tus, cov lus \"Kuv\", kev ua kom txias zog, thiab kev xaiv los kho. Yog muaj ib tug neeg tsis nyab xeeb, cia ib tug neeg laus los koom es tsis txhob sib tham ib leeg xwb."
+        },
+        "social": {
+          "label": "Chaw Xyaum Txuj Ci Sib Raug Zoo",
+          "desc": "Xyaum txuj ci sib tham, mloog zoo zoo, lus ntawm lub cev, thiab kev koom tes."
+        },
+        "teamwork": {
+          "label": "Tsim Kev Koom Tes Ua Pab Pawg",
+          "desc": "Tej kev sib tw ua ke thiab tshawb txog tej lub luag haujlwm hauv pab pawg."
+        },
+        "dearMan": {
+          "desc": "Tsim ib zaj lus rau kev thov uas nyuaj hauv xya kauj ruam: Describe (Piav), Express (Qhia koj kev xav), Assert (Hais kom meej), Reinforce (Txhawb), Mindful (Nco ntsoov), Appear confident (Ua kom zoo li muaj kev ntseeg siab), Negotiate (Sib tham). Los ntawm DBT Kev Sib Raug Zoo Kom Muaj Txiaj Ntsig (Linehan); zaj lus hais kom meej uas siv ntau tshaj hauv kev pab tswv yim hauv tsev kawm ntawv. Siv ua ke nrog Chaw Tawm Suab Rau Tus Kheej."
+        },
+        "motivationalInterviewing": {
+          "label": "Kev Xam Phaj Txhawb Zog",
+          "desc": "Ib txoj kev sib tham los pab ib tug neeg (lossis koj tus kheej) xav txog ib qho kev hloov. Kawm txuj ci OARS (Open questions/lus nug qhib, Affirmations/lus lees paub, Reflections/rov hais dua, Summaries/xaus lus), peb tus pas ntsuas, thiab Lus Hais Txog Kev Hloov. Los ntawm Miller thiab Rollnick; yog lub hauv paus ntawm kev pab tswv yim hauv tsev kawm ntawv thiab kev txhawb nqa phooj ywg."
+        },
+        "crewProtocols": {
+          "label": "Cov Txheej Txheem Crew",
+          "desc": "Lub tsev qiv ntawv ntawm cov qauv pab pawg uas muaj kev npaj rau sijhawm Crew, chav qhia tswv yim, lossis homeroom: tsim zej zog, qhib, kaw, voj voog kho kev sib raug zoo, txheej txheem xav rov qab, qauv ua kev zoo siab, thiab lus qhia rau kev sib tham nyuaj. Ntxiv rau kev sau ua ke tag nrho cov lus nug Crew los ntawm thoob plaws SEL Hub. Raws li EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Kev Sib Raug Zoo Uas Noj Qab Haus Huv",
+          "desc": "Kab ntsuas (noj qab haus huv / tsis noj qab haus huv / tsim txom) hauv 8 yam ntawm txhua txoj kev sib raug zoo ze. Kev pom zoo ntxaws ntxaws, tiv thaiv kev ua phem thaum sib tham hluas nraug hluas nkauj, kev nyab xeeb + cov xov tooj pab. Raws li Loveisrespect / NDVH. Txais tos cov neeg queer, cov neeg muaj lub hlwb txawv, thiab cov neeg xiam oob qhab."
+        },
+        "decisions": {
+          "label": "Chaw Xyaum Txiav Txim Siab",
+          "desc": "Daws tej xwm txheej hauv lub neej tiag tiag siv txoj kev nres-xav-ua."
+        },
+        "journal": {
+          "label": "Phau Ntawv Teev Kev Xav Hauv Siab",
+          "desc": "Phau ntawv teev kev kuaj xyuas txhua hnub — sau koj lub siab, tej yam ua rau koj ntxhov siab, thiab kev xav rov qab mus ntev."
+        },
+        "safety": {
+          "label": "Kev Nyab Xeeb & Ciam Teb",
+          "desc": "Kawm txog ciam teb ntawm tus kheej, cov neeg laus uas koj ntseeg siab, thiab tej xwm txheej nyab xeeb vs. tsis nyab xeeb."
+        },
+        "landPlace": {
+          "label": "Av & Qhov Chaw",
+          "desc": "Chaw Kev Tu Thiab Saib Xyuas rau kev sib raug zoo mus ntev nrog thaj av uas koj nyob. Peb txoj xov (keeb kwm, ib puag ncig, tam sim no), kev xav tob txog kev lees paub thaj av ua ib qho kev xyaum es tsis yog kev ua yeeb yam, cov koom haum uas Wabanaki coj ua lub suab muaj cai, thiab phau ntawv teev kev xav rov qab ntiag tug."
+        },
+        "somaticReset": {
+          "label": "Rov Pib Lub Cev & Kev Ua Pa",
+          "desc": "Xaiv ib cheeb tsam ntawm lub cev thiab ua raws ib qho kev rov pib dua luv luv uas zaum saum rooj zaum ua tau — nyob twj ywm, ua pa, lossis txav maj mam — nrog kev kuaj xyuas ntiag tug ua ntej thiab tom qab."
+        },
+        "restorativeCircle": {
+          "label": "Voj Voog Kho Kev Sib Raug Zoo",
+          "desc": "Coj cov voj voog kho kev sib raug zoo thiab tsim zej zog nrog cov cai uas twb teeb tseg, kev coj ntawm tus neeg laus, thiab kev saib xyuas cov keeb kwm kab lis kev cai. Tsis yog rau kev yuam kom qhia lossis kev phom sij uas tab tom muaj."
+        },
+        "compassion": {
+          "label": "Kev Khuv Leej & Kev Hais Lus Rau Tus Kheej",
+          "desc": "Xyaum khuv leej koj tus kheej, hloov lub suab thuam sab hauv, thiab tsim ib lub suab sab hauv uas siab zoo dua."
+        },
+        "friendship": {
+          "label": "Tsim Kev Phooj Ywg",
+          "desc": "Tshawb txog tej hom kev phooj ywg, tswv yim kho kev sib raug zoo, thiab tus qauv kev sib raug zoo uas noj qab haus huv."
+        },
+        "transitions": {
+          "label": "Kev Hloov Pauv Hauv Lub Neej",
+          "desc": "Taug kev hla tej kev hloov xws li tsiv tsev, tsev kawm ntawv tshiab, thiab loj hlob."
+        },
+        "upstander": {
+          "label": "Kawm Sawv Tiv Thaiv Lwm Tus",
+          "desc": "Kawm sawv tiv thaiv lwm tus kom nyab xeeb — txuj ci hloov ntawm tus neeg sawv saib xwb mus ua tus neeg sawv tiv thaiv."
+        },
+        "growthmindset": {
+          "label": "Kev Xav Loj Hlob",
+          "desc": "Kev tshawb fawb txog lub hlwb, saib tej kev nyuaj rau lwm sab, thiab tsim kev ua siab tawv."
+        },
+        "execfunction": {
+          "label": "Kev Tswj Lub Hlwb Ua Haujlwm",
+          "desc": "Tswv yim rau tej yam nyuaj ntawm kev ua tej yam kom tiav: pib ua haujlwm, tsom siab, npaj ua ntej, thiab taug qab lub sijhawm."
+        },
+        "advocacy": {
+          "label": "Xyaum Tawm Suab",
+          "desc": "Xyaum cov lus hais dav dav los qhia koj tej kev xav tau, thov kev txhawb nqa, thiab tawm suab hauv tej xwm txheej txhua hnub."
+        },
+        "civicAction": {
+          "label": "Kev Ua Pej Xeem & Kev Cia Siab",
+          "desc": "Daws tej kev xav hnyav txog kev tsis ncaj ncees, tsim koj lub peev xwm ua pej xeem, thiab cog kev cia siab los ntawm kev ua."
+        },
+        "ethicalReasoning": {
+          "label": "Chaw Xyaum Xav Txog Kev Ncaj Ncees",
+          "desc": "Tshawb tej teeb meem txog kev ncaj ncees niaj hnub no los ntawm ntau txoj kev xav thiab kev sib tham nug teb Socratic nrog AI."
+        },
+        "cultureExplorer": {
+          "label": "Tshawb Kab Lis Kev Cai",
+          "desc": "Tshawb tob tob txog kab lis kev cai thoob ntiaj teb nrog AI pab, muaj duab thiab suab."
+        },
+        "voicedetective": {
+          "label": "Neeg Tshawb Suab",
+          "desc": "Mloog tej suab thiab paub tej kev xav hauv siab los ntawm lub suab."
+        },
+        "practiceJourneys": {
+          "label": "Kev Taug Kev Xyaum (Sim)",
+          "desc": "Xyaum thov kev txhawb nqa los ntawm plaub zaug ntsib uas sib txuas. Teb los ntawm kev xaiv, koj tus kheej cov lus, lossis ob qho. Sau phau ntawv teev tseg thiab sim lwm txoj kev."
+        },
+        "sociallab": {
+          "label": "Ua Yeeb Yam Xyaum Txuj Ci Sib Raug Zoo",
+          "desc": "Xyaum tej xwm txheej sib raug zoo thiab ua yeeb yam nrog ib tug phooj ywg AI uas muaj kev sib tham tawg ceg."
+        },
+        "peersupport": {
+          "label": "Kws Qhia Kev Txhawb Nqa Phooj Ywg",
+          "desc": "Kawm txuj ci mloog OARS thiab thaum twg yuav tsum nrhiav tus neeg laus pab."
+        },
+        "conflicttheater": {
+          "label": "Yeeb Yam Kev Tsis Sib Haum",
+          "desc": "Xyaum ib qho kev tsis sib haum cuav nrog ob tug cim AI hauv ib qho yeeb yam uas koj nkag mus tiag. Tsuas yog ua yeeb yam beta xwb; tsis txhob siv los daws kev ua phem uas tab tom muaj."
+        },
+        "digitalWellbeing": {
+          "label": "Chaw Kev Noj Qab Nyob Zoo Digital",
+          "desc": "Kuaj xyuas koj txoj kev sib raug zoo nrog social media thiab AI chatbot, tsim tus cwj pwm siv xov tooj kom noj qab haus huv dua, rov zoo los ntawm kev thab plaub hauv online, pom kev dag ntxias hauv feed, siv kev sib raug zoo nrog chatbot kom nyab xeeb, thiab nrhiav kev pab thaum koj xav tau."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Kev Paub Tus Kheej",
+          "desc": "Paub koj tej kev xav hauv siab, lub zog, thiab tej yam uas tseem loj hlob tau"
+        },
+        "self-regulation": {
+          "label": "Kev Tswj Tus Kheej",
+          "desc": "Tswj kev xav hauv siab, kev ntxhov ntawm lub cev, kev mloog; xyaum tiv taus"
+        },
+        "self-direction": {
+          "label": "Kev Coj Tus Kheej",
+          "desc": "Teeb hom phiaj, lub peev xwm ua, kev tswj lub hlwb ua haujlwm, kev xav loj hlob"
+        },
+        "inner-work": {
+          "label": "Kev Ua Haujlwm Sab Hauv",
+          "desc": "Kev xyaum xav tob thiab xav rov qab"
+        },
+        "care-of-self": {
+          "label": "Kev Saib Xyuas Tus Kheej",
+          "desc": "Khuv leej tus kheej, kev tu tus kheej los ntawm kev sib raug zoo"
+        },
+        "social-awareness": {
+          "label": "Kev Paub Txog Lwm Tus",
+          "desc": "Nkag siab lwm tus lub siab, xav raws li lwm tus, thiab hwm kev sib txawv"
+        },
+        "relationship-skills": {
+          "label": "Txuj Ci Sib Raug Zoo",
+          "desc": "Kev sib txuas lus, kev koom tes ua pab pawg, thiab kev daws kev tsis sib haum"
+        },
+        "responsible-decision-making": {
+          "label": "Kev Txiav Txim Siab Uas Muaj Lub Luag Haujlwm",
+          "desc": "Kev xaiv ncaj ncees, ntsuas tej yam yuav tshwm sim, thiab daws teeb meem"
+        },
+        "stewardship": {
+          "label": "Kev Tu Thiab Saib Xyuas",
+          "desc": "Saib xyuas zej zog, kev ncaj ncees, thaj av, thiab yav tom ntej"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 feeb",
+          "purpose": "Hu npe koj cheeb tsam tam sim no thiab xaiv ib txoj kev tswj tus kheej uas haum.",
+          "next": "Kuaj xyuas koj cheeb tsam, xaiv ib txoj tswv yim, ces khaws cia yog koj xav rov qab saib."
+        },
+        "coping": {
+          "time": "3-10 feeb",
+          "purpose": "Xaiv ib txoj tswv yim tiv taus thiab xyaum nws ib zaug nrog qhov chaw nres uas meej.",
+          "next": "Xaiv ib txoj tswv yim siv lub cev lossis rov los nyob tam sim no, sim nws, ces saib seb puas pab tau."
+        },
+        "journal": {
+          "time": "5-12 feeb",
+          "purpose": "Sau ib zaj kev xav rov qab ntiag tug thiab saib tej qauv uas koj yuav xav khaws cia.",
+          "next": "Xaiv ib lo lus nug, sau kom ncaj, ces khaws cia lossis xa tawm ua ntej kaw."
+        },
+        "emotions": {
+          "time": "4-8 feeb",
+          "purpose": "Kawm cov lus hais txog kev xav hauv siab thiab hu npe koj qhov xav kom meej dua.",
+          "next": "Xaiv ib qho kev xav, ntsuas seb hnyav npaum li cas, ces xaiv ib lo lus uas haum tshaj."
+        },
+        "mindfulness": {
+          "time": "2-10 feeb",
+          "purpose": "Nres ib pliag, ua pa, thiab xyaum kev mloog yam tsis tas sau dab tsi li.",
+          "next": "Xaiv ib qho kev xyaum luv luv, ua kom tiav, ces saib seb dab tsi hloov lawm."
+        },
+        "somaticReset": {
+          "time": "3-8 feeb",
+          "purpose": "Siv kev kuaj xyuas cheeb tsam lub cev ntiag tug los xaiv ib qho kev rov pib dua luv luv uas zaum ua tau.",
+          "next": "Xaiv ib qho chaw ntawm lub cev, sim ib qho kev nyob twj ywm, ua pa, lossis txav maj mam, ces saib seb dab tsi hloov lawm."
+        },
+        "thoughtRecord": {
+          "time": "8-15 feeb",
+          "purpose": "Ua kom qeeb ib qho kev xav nyuaj thiab nrhiav ib txoj kev saib uas sib npaug dua.",
+          "next": "Hu npe qhov xwm txheej, ntsuas qhov kev xav hauv siab, ces kuaj qhov kev xav nrog pov thawj."
+        },
+        "anxietyToolkit": {
+          "time": "5-12 feeb",
+          "purpose": "Faib kev txhawj, txo kev txhawj ntxhov, thiab xaiv ib kauj ruam tom ntej uas ua tau tiag.",
+          "next": "Xaiv qhov kev txhawj uas nrov tshaj, sim ib txoj tswv yim, ces khaws txoj kev npaj yog nws pab tau."
+        },
+        "sleep": {
+          "time": "4-10 feeb",
+          "purpose": "Saib tej yam thaiv koj kev pw thiab xaiv ib tus cwj pwm so los sim tom ntej.",
+          "next": "Saib seb dab tsi thaiv, xaiv ib qho kev hloov me me, ces rov qab saib tom qab."
+        },
+        "goals": {
+          "time": "5-10 feeb",
+          "purpose": "Hloov ib lub siab xav ua ib qho kev ua tom ntej uas meej thiab ua tau tiag.",
+          "next": "Sau ib lub hom phiaj, xaiv thawj kauj ruam, thiab khaws txoj kev npaj ua ntej kaw."
+        },
+        "friendship": {
+          "time": "5-10 feeb",
+          "purpose": "Xav txog tej kev xav tau hauv kev phooj ywg, kev ua ib feem, thiab kev xaiv txog phooj ywg.",
+          "next": "Xaiv ib qho xwm txheej hauv kev phooj ywg thiab nrhiav ib kauj ruam siab zoo tom ntej."
+        },
+        "conflict": {
+          "time": "6-12 feeb",
+          "purpose": "Nkag siab ib qho kev tsis sib haum thiab npaj ib qho lus teb uas tsom rau kev kho.",
+          "next": "Hu npe qhov tshwm sim, xav txog ob sab, ces xaiv ib qho kev ua los kho."
+        },
+        "safety": {
+          "time": "8-15 feeb",
+          "purpose": "Tsim ib txoj kev npaj kev nyab xeeb uas ua tau tiag thiab nrhiav cov neeg txhawb nqa uas koj ntseeg siab.",
+          "next": "Ntxiv cov cim ceeb toom, kauj ruam tiv taus, thiab cov neeg uas yuav hu tau; khaws cia ua ntej kaw."
+        },
+        "crisiscompanion": {
+          "time": "3-10 feeb",
+          "purpose": "Siv ib txoj kev txhawb nqa uas muaj kev npaj thaum kev xav hauv siab zoo li ceev lossis tsis nyab xeeb.",
+          "next": "Xaiv qhov kev txhawb nqa uas ze tshaj thiab cia ib tug neeg laus uas koj ntseeg siab lossis kev pab thaum kub ntxhov los koom thaum tsim nyog."
+        },
+        "conflicttheater": {
+          "time": "8-15 feeb",
+          "purpose": "Xyaum ib qho yeeb yam kev tsis sib haum cuav thiab sim cov lus kho kev sib raug zoo yam tsis muab cuab yeej no suav ua kev sib hais haum.",
+          "next": "Xaiv ib qho yeeb yam cuav, sim ib qho lus teb, ces sib tham seb dab tsi yuav xav tau tus neeg laus pab hauv lub neej tiag."
+        },
+        "restorativeCircle": {
+          "time": "15-30 feeb",
+          "purpose": "Npaj lossis coj ib qho kev ua pab pawg kho kev sib raug zoo nrog cov cai meej thiab kev coj ntawm tus neeg laus.",
+          "next": "Teeb cov kev pom zoo ntawm lub voj voog ua ntej, ces xaiv ib lo lus nug; tsis txhob yuam kom leej twg qhia rau pej xeem li."
+        },
+        "strengths": {
+          "time": "5-10 feeb",
+          "next": "Xaiv cov lub zog uas zoo li koj, ces nrhiav ib lub sijhawm tiag los ntawm theem kawm no uas qhia txhua lub zog."
+        },
+        "viaStrengths": {
+          "time": "8-15 feeb",
+          "purpose": "Siv kev faib tus kheej raws li VIA ua ib qho kev xav rov qab, tsis yog kev ntsuam xyuas raug cai.",
+          "next": "Faib cov lub zog, saib tej qauv, thiab sau ib qho piv txwv uas txhawb qhov tshwm sim."
+        },
+        "perma": {
+          "time": "8-15 feeb",
+          "purpose": "Thaij ib daim duab kev xav rov qab txog koj kev noj qab nyob zoo hauv cov yam PERMA ntxiv rau Kev Noj Qab Haus Huv.",
+          "next": "Siv daim duab no los xaiv ib qho kev sib tham lossis kev sim me me, tsis yog los muab npe rau koj tus kheej."
+        },
+        "advocacy": {
+          "time": "5-12 feeb",
+          "purpose": "Xyaum cov lus txhua hnub los qhia koj tej kev xav tau thiab thov kev txhawb nqa.",
+          "next": "Xaiv ib qho xwm txheej, sau ib qho kev thov luv luv, thiab txiav txim siab seb leej twg pab tau."
+        },
+        "selfAdvocacy": {
+          "time": "10-20 feeb",
+          "purpose": "Tsim ib txoj kev npaj kev pab hauv tsev kawm ntawv tiag tiag rau IEP, 504, kev pab tshwj xeeb, lossis kev xaiv seb puas qhia.",
+          "next": "Xaiv ib qho kev xav tau kev pab, sau koj cov lus nug, thiab nrhiav ib tug neeg laus uas koj ntseeg siab los koom."
+        },
+        "crewProtocols": {
+          "time": "10-20 feeb",
+          "next": "Saib raws li lub hom phiaj, xaiv ib txoj txheej txheem rau hnub no, ces sau rau hauv Kuv Txoj Kev Npaj Crew seb thaum twg koj yuav ua."
+        },
+        "perspective": {
+          "time": "6-12 feeb",
+          "next": "Xaiv ib qho xwm txheej, xav raws li lwm tus ua ntej, ces hais seb koj yuav ua dab tsi txawv."
+        },
+        "windowOfTolerance": {
+          "time": "8-12 feeb",
+          "next": "Ntxiv ib qho cim rau txhua peb lub cheeb tsam, ces siv Kuaj Xyuas los qhia seb hnub no koj nyob qhov twg."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 feeb",
+          "next": "Pib nrog Kev hnov yog dab tsi?, ces cim cov kev hnov uas nrov lossis ntsiag to rau koj."
+        },
+        "execfunction": {
+          "time": "5-10 feeb",
+          "next": "Mus rau Pib thiab xaiv ib qho kev pib rau hnub no, ces mus rau Tuav los xaiv qhov chaw sau koj tej tswv yim."
+        },
+        "growthmindset": {
+          "time": "5-10 feeb",
+          "next": "Qhib Hloov Kev Xav, sau qhov kev xav uas ruaj khov, thiab hloov nws ua ib qho kev xav meej thiab ua tau."
+        },
+        "dearMan": {
+          "time": "8-12 feeb",
+          "next": "Sau koj qhov kev thov ua ib kab lus, sau xya kauj ruam, ces xyaum ib zaug."
+        },
+        "howlTracker": {
+          "time": "5-10 feeb",
+          "next": "Sau ib qho Plawv Dhia, ces ua Kev Kuaj Xyuas Txhua Lub Lim Tiam: ntsuas txhua HOWL thiab ntxiv ib qho piv txwv meej."
+        },
+        "peersupport": {
+          "time": "5-10 feeb",
+          "next": "Xaiv ob lo lus nug qhib uas koj nug tau ib tug phooj ywg, ces sim ib lo rau ib qho xwm txheej cuav hauv tab xyaum."
+        },
+        "upstander": {
+          "time": "8-12 feeb",
+          "next": "Nyeem tus ntaiv kev ua siab loj hauv Kev Txav, ces xaiv ob qho kev txav me tshaj uas koj ua tau tiag lub lim tiam no."
+        },
+        "digitalWellbeing": {
+          "time": "8-12 feeb",
+          "next": "Ua Kev Kuaj Xyuas Tus Kheej kom ncaj, ces xaiv ib tus cwj pwm los ntawm Cuab Yeej thiab ib qho ciam teb uas koj teeb ua ntej."
+        },
+        "teamwork": {
+          "time": "8-12 feeb",
+          "next": "Saib Lub Luag Haujlwm, ces sau ib Txoj Kev Npaj Sib Txuas Lus rau ib pab pawg tiag: leej twg ua dab tsi, qhov twg, thiab thaum twg yuav tsum tiav."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Pib ntawm no",
+        "name_it": "Hu npe",
+        "calm_now": "Txias siab tam sim no",
+        "body_reset": "Rov pib lub cev",
+        "make_a_plan": "Npaj ib txoj kev",
+        "understand_patterns": "Nkag siab tej qauv",
+        "practice_repair": "Xyaum kho",
+        "role_play": "Ua yeeb yam",
+        "facilitated_group": "Pab pawg uas muaj tus coj",
+        "reflect": "Xav rov qab",
+        "practice_speaking_up": "Xyaum tawm suab",
+        "make_a_support_plan": "Npaj kev pab",
+        "urgent_support": "Kev pab ceev",
+        "get_support": "Nrhiav kev pab",
+        "move_gently": "Txav maj mam",
+        "learn_not_diagnose": "Kawm, tsis yog kuaj mob",
+        "learn_and_get_support": "Kawm thiab nrhiav kev pab",
+        "check_boundaries": "Kuaj xyuas ciam teb",
+        "explore_identity": "Tshawb tus kheej",
+        "practice_body_respect": "Xyaum hwm lub cev",
+        "map_carefully": "Kos kom zoo zoo",
+        "understand_needs": "Nkag siab tej kev xav tau"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Hu npe tej yam tab tom tshwm sim ua ntej xaiv ib txoj tswv yim."
+        },
+        "emotions": {
+          "note": "Tsim cov lus meej rau kev xav hauv siab thiab saib seb hnyav npaum li cas."
+        },
+        "coping": {
+          "note": "Sim ib txoj tswv yim siv lub cev lossis rov los nyob tam sim no, ces saib seb dab tsi hloov lawm."
+        },
+        "mindfulness": {
+          "note": "Ib qho kev nres uas sau me ntsis xwb, rau kev ua pa, kev mloog, lossis kev paub txog lub cev."
+        },
+        "somaticReset": {
+          "note": "Xaiv ib qho chaw ntawm lub cev, ces sim ib qho kev xyaum luv luv nyob twj ywm, ua pa, lossis txav maj mam. Ib lub xaiv me me uas siv tau nrog keyboard ua rau txhua daim duab yooj yim siv ntawm lub vijtsam me. Cov duab muaj Nthwv Dej Ntws uas muab NQUS PA · NCE nrog kab puv thiab lub cim kheej, TSO PA · NQIS nrog kab teev teev thiab lub cim pob zeb diamond, thiab NRES nrog cov kab nres; Paj Tawg uas muab NQUS PA · QHIB nrog ntug nplooj paj puv thiab nruab nrab kheej, TSO PA · MOS nrog ntug teev teev thiab nruab nrab pob zeb diamond, thiab NRES nrog cov kab nres hauv nruab nrab; Qab Ntuj Ruaj Khov uas muab NQUS PA · NCE nrog ntug hnub puv thiab nruab nrab voj voog, TSO PA · NQIS nrog ntug hnub teev teev thiab nruab nrab pob zeb diamond, thiab NRES nrog cov kab nres ntawm lub hnub; ib txoj kab ncaj uas paub ua ntej tau thiab muaj cim qhia kev, cov npe NQUS PA thiab TSO PA ncaj qha, lub hom phiaj NQUS PA kheej thiab lub hom phiaj TSO PA pob zeb diamond, txoj kab taw los ntawm qhov pib uas tab tom ua, thiab qhov chaw tom ntej uas muaj ntug kos; thiab ib lub Voj Ncig Ua Pa ob ntu nrog cov kab nkhaus theem puv thiab teev teev uas tuab dua thaum tab tom ua, ib lub nplhaib nruab nrab uas muaj tus qauv theem zoo ib yam, cov npe NQUS PA thiab TSO PA ncaj qha, lub cim nruab nrab thaum nres, qhov chaw hloov theem tom ntej uas muaj ntug kos, lub cim tig raws moos uas muaj duab raws theem, daim ntawv qhia lub sijhawm ua pa uas siv duab ua cim, thiab cov lus qhia theem rau lub tshuab nyeem vijtsam. Cov tub ntxhais kawm ntawv sim tau ib pa ntawm kev txav ua ntej lub moos pib, ces ua kom loj, ua kom tsis txav, lossis kaw txoj kev coj. Hauv Chaw Saib Ntsiag To, daim duab uas loj lawm ua lub khawm pib/nres uas siv tau nrog keyboard thiab kov. Muab zais tau lub moos suav rov qab; cov lus coj muaj tau tag nrho, tsuas yog theem, lossis zais; thiab kev suav pa thiab kev ntsuas ua lej yog xaiv tau.",
+          "boundary": "Qhov no tsis yog kev kho mob lossis kev kuaj mob. Txav me me xwb thiab tsis txhob kom mob; nres yog mob, kiv taub hau, lossis loog, thiab qhia rau tus neeg laus uas koj ntseeg siab lossis tus kws kho mob."
+        },
+        "anxietyToolkit": {
+          "note": "Cais kev txhawj ntawm kev ua thiab xaiv ib kauj ruam tom ntej uas ua tau tiag."
+        },
+        "windowOfTolerance": {
+          "note": "Kos cov cim kev ntxhov ntawm lub cev thiab kev txhawb nqa mus ntev; qhov no tsis yog kev kuaj mob."
+        },
+        "stressBucket": {
+          "note": "Saib tej kev nias siab thiab kev txhawb nqa ua ke, suav nrog tej kev nias siab uas koj tswj tsis tau."
+        },
+        "bigFeelings": {
+          "note": "Siv kev npau taws ua ntaub ntawv qhia thiab npaj ib qho kev nres lossis kev kho uas nyab xeeb dua."
+        },
+        "conflict": {
+          "note": "Zoo tshaj rau kev xyaum kev tsis sib haum me me lossis cuav.",
+          "boundary": "Yog muaj kev hem, kev yuam, kev thab plaub, kev tsim txom, lossis lub hwj chim sib txawv uas tsis nyab xeeb, nres thiab cia ib tug neeg laus uas koj ntseeg siab los koom es tsis txhob sib tham ib leeg xwb."
+        },
+        "conflicttheater": {
+          "note": "Kev xyaum beta uas koj nkag mus tiag nrog cov cim cuav; tsis txhob siv los daws kev ua phem uas tab tom muaj.",
+          "boundary": "Kev hem tiag, kev tsim txom, lossis kev thab plaub xav tau tus neeg laus pab thiab kev teb rau kev nyab xeeb, tsis yog kev xyaum ua yeeb yam."
+        },
+        "restorativeCircle": {
+          "note": "Siv nrog cov cai voj voog uas twb teeb tseg thiab ib tug neeg laus coj.",
+          "boundary": "Tsis txhob siv lub voj voog los yuam kom ib tug neeg qhia rau pej xeem lossis los daws kev phom sij uas tab tom muaj."
+        },
+        "strengths": {
+          "note": "Kev xav rov qab qhib txog lub zog uas tsis muaj qhab nia, qib, lossis kev kuaj mob."
+        },
+        "viaStrengths": {
+          "note": "Kev faib tus kheej rau kev xav rov qab, tsis yog daim ntawv nug VIA raug cai lossis qhov tshwm sim psychometric."
+        },
+        "perma": {
+          "note": "Ib daim duab kev noj qab nyob zoo los pib kev sib tham, tsis yog kev ntsuam xyuas kev noj qab haus huv ntawm lub hlwb."
+        },
+        "advocacy": {
+          "note": "Cov lus hais dav dav thiab kev xyaum rau kev qhia koj tej kev xav tau thiab thov kev txhawb nqa."
+        },
+        "selfAdvocacy": {
+          "note": "Siv rau kev npaj IEP, 504, kev pab tshwj xeeb, kev qhia, lossis kev pab hauv tsev kawm ntawv tiag tiag."
+        },
+        "crisiscompanion": {
+          "note": "Ib qho lus qhia kev txhawb nqa rau koj lossis ib tug phooj ywg; nws tsis yog cuab yeej kuaj ntsuas kev kub ntxhov lossis los hloov tus neeg laus.",
+          "boundary": "Yog leej twg yuav muaj kev phom sij tam sim no lossis yuav ua raws li kev xav ua mob rau tus kheej, nres ntawm no thiab hu rau ib tug neeg laus uas koj ntseeg siab lossis kev pab xwm txheej ceev/kub ntxhov tam sim no."
+        },
+        "safety": {
+          "note": "Kawm txog ciam teb thiab cov kauj ruam nrog tus neeg laus uas koj ntseeg siab; qhov no tsis yog kev xeem seb ib qho xwm txheej puas nyab xeeb.",
+          "boundary": "Yog koj muaj kev phom sij tam sim no lossis muaj ib tug neeg ua mob rau koj, nres thiab hu rau ib tug neeg laus uas koj ntseeg siab lossis kev pab xwm txheej ceev tam sim no."
+        },
+        "griefLoss": {
+          "note": "Ib tug khub ntiag tug rau kev quaj ntsuag thiab kev poob; hla txhua yam uas zoo li hnyav dhau.",
+          "boundary": "Yog kev quaj ntsuag hnyav dhau ris tsis taus, koj xav tias tsis nyab xeeb, lossis lwm tus muaj kev phom sij, cia ib tug neeg laus uas koj ntseeg siab lossis kev pab thaum kub ntxhov los koom."
+        },
+        "traumaPsychoed": {
+          "note": "Kev kawm txog lub siab txog tej kev teb rau kev raug mob siab; tsis yog cuab yeej kuaj ntsuas lossis kev kho mob.",
+          "boundary": "Koj tsis tas qhia txog koj kev raug mob siab ntawm no. Nres ib pliag thiab nrhiav ib tug neeg laus uas koj ntseeg siab lossis tus kws pab tswv yim yog cov ntsiab lus ua rau muaj tej yam tsis nyab xeeb tshwm los."
+        },
+        "substancePsychoed": {
+          "note": "Ntaub ntawv thiab kev xav rov qab txog kev txo kev puas tsuaj; tsis yog cuab yeej kuaj ntsuas lossis kev tso cai siv yeeb tshuaj.",
+          "boundary": "Tsis txhob siv cuab yeej no rau kev noj tshuaj ntau dhau lossis xwm txheej kho mob ceev; hu rau kev pab xwm txheej ceev lossis ib tug neeg laus uas koj ntseeg siab."
+        },
+        "healthyRelationships": {
+          "note": "Tshawb txog kev pom zoo thiab tus qauv kev sib raug zoo yam tsis muab npe rau ib tug neeg lossis ib txoj kev sib raug zoo.",
+          "boundary": "Yog ib txoj kev sib raug zoo muaj kev hem, kev yuam, lossis kev ua phem, nrhiav tus neeg laus pab; tsis txhob mus tawm tsam ib tug neeg ib leeg xwb."
+        },
+        "identitySupport": {
+          "note": "Kev xav rov qab uas lees paub thiab kev txhawb nqa ntawm zej zog; kev qhia rau lwm tus yog xaiv tau.",
+          "boundary": "Khaws koj tej ntaub ntawv ntiag tug cia thiab cia ib tug neeg laus uas koj ntseeg siab los koom yog koj xav tias tsis nyab xeeb."
+        },
+        "bodyStory": {
+          "note": "Kev txaus siab rau lub cev thiab kev nkag siab txog xov xwm; tsis yog kev ua kom yuag lossis kev ntsuam xyuas kev mob txog kev noj mov.",
+          "boundary": "Yog zaub mov, kev xav txog koj lub cev, lossis kev ua si zoo li tsis nyab xeeb lossis nyob puv koj lub siab, tham nrog ib tug neeg laus uas koj ntseeg siab lossis tus kws kho mob."
+        },
+        "genogram": {
+          "note": "Kev xav rov qab txog tsev neeg ntiag tug; tsis yog kev ntsuam xyuas kho mob thiab kev qhia rau lwm tus yog xaiv tau.",
+          "boundary": "Hla tej ntsiab lus txog tsev neeg uas zoo li tsis nyab xeeb lossis ntiag tug; thov kev pab ntawm ib tug neeg laus uas koj ntseeg siab."
+        },
+        "sensoryRegulation": {
+          "note": "Tsim daim ntawv qhia kev hnov thiab kev pab tshwj xeeb; tsis yog kev kuaj mob.",
+          "boundary": "Xaiv tej kev txhawb nqa uas koj xav tias nyab xeeb; qhia txog kev pab tshwj xeeb tsuas yog thaum koj xav qhia xwb."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Kuaj Xyuas Thaum Sawv Ntxov",
+          "desc": "Pib hnub nrog kev kuaj xyuas koj lub siab, ua pa, thiab teeb hom phiaj"
+        },
+        "calm_down": {
+          "name": "Ces Kaum Ua Kom Txias Siab",
+          "desc": "Cov tswv yim tswj tus kheej rau thaum kev xav hauv siab nce siab"
+        },
+        "conflict_unit": {
+          "name": "Chav Kawm Daws Kev Tsis Sib Haum",
+          "desc": "Xyaum daws kev tsis pom zoo thiab tsim txuj ci kho kev sib raug zoo"
+        },
+        "empathy_week": {
+          "name": "Lub Lim Tiam Nkag Siab Lwm Tus & Kev Xav Raws Li Lwm Tus",
+          "desc": "Tsim kev nkag siab lwm tus lub siab los ntawm kev xav raws li lwm tus thiab kev paub txog kab lis kev cai"
+        },
+        "decision_making": {
+          "name": "Kawm Tob Txog Kev Txiav Txim Siab",
+          "desc": "Xyaum kev xav txog kev ncaj ncees thiab kev xaiv uas muaj lub luag haujlwm"
+        },
+        "self_discovery": {
+          "name": "Kev Taug Kev Nrhiav Koj Tus Kheej",
+          "desc": "Tshawb seb koj yog leej twg — lub zog, kev xav hauv siab, thiab kev xav loj hlob"
+        },
+        "friendship": {
+          "name": "Kev Phooj Ywg & Txuj Ci Sib Raug Zoo",
+          "desc": "Tsim kev phooj ywg uas noj qab haus huv thiab txuj ci sib txuas lus"
+        },
+        "transitions": {
+          "name": "Taug Kev Hla Kev Hloov Pauv",
+          "desc": "Txhawb nqa cov tub ntxhais kawm ntawv thaum muaj kev hloov pauv hauv lub neej thiab tej kev paub tshiab"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Saib seb koj xav tau dab tsi thiab xaiv ib kauj ruam tom ntej uas koj ua tau.",
+          "model": "Kuv xav tsis tus. Kuv sim tau ncab kuv lub cev, ces xaiv thawj ntu ntawm kuv txoj haujlwm.",
+          "practice": "Hu npe ib qho kev xav, taw rau ib qho kev xaiv, lossis saib ntsiag to hauv siab. Sim ib qho kev txhawb nqa thiab xaiv ib lub hom phiaj me me.",
+          "reflect": "Koj pom dab tsi? Koj yuav khaws dab tsi lossis hloov dab tsi?",
+          "transfer": "Thaum zaj lus qhia tom ntej pib, kuv sim tau ____. Yog kuv xav tau kev pab, kuv nug tau ____."
+        },
+        "calm_down": {
+          "goal": "Tshawb ib qho kev txhawb nqa uas haum rau koj lub cev thiab lub sijhawm no.",
+          "model": "Kev xyaum ua pa zoo li tsis pab kuv hnub no. Kuv sim tau saib ib ncig hauv chav lossis thov kom muaj neeg nrog kuv nyob.",
+          "practice": "Xaiv ib txoj tswv yim uas koj xis nyob xwb. Zaum, saib, lossis so yog tej kev xaiv uas siv tau.",
+          "reflect": "Nws puas pab, zoo li qub, lossis tsis xis nyob? Koj nres tau lossis xaiv lwm txoj kev.",
+          "transfer": "Thaum kuv pom ____, kuv sim tau ____ lossis thov kev txhawb nqa ntawm ____."
+        },
+        "conflict_unit": {
+          "goal": "Xav txog ntau txoj kev xav thiab xyaum ib qho lus teb uas hwm rau ib qho kev tsis pom zoo txhua hnub.",
+          "model": "Peb ob leeg xav tau tib yam khoom. Kuv nug tau tias koj xav tau dab tsi, piav kuv qhov kev xav tau, thiab hais kom peb sib hloov.",
+          "practice": "Siv ib qho kev tsis pom zoo cuav uas me me. Xyaum ib lo lus nug mloog thiab ib kauj ruam tom ntej uas ua tau.",
+          "reflect": "Qhov lus teb pab tau leej twg tej kev xav tau? Dab tsi tej zaum yuav tsum hloov?",
+          "transfer": "Hauv ib qho kev tsis pom zoo uas nyab xeeb, kuv ua tau ____. Rau kev hem, kev thab plaub, lossis kev yuam, kuv thov tau ib tug neeg laus uas kuv ntseeg siab pab."
+        },
+        "empathy_week": {
+          "goal": "Tshawb lwm txoj kev xav yam tsis xav tias koj twb paub lwm tus xav li cas lawm.",
+          "model": "Nws nyob ntsiag to. Tej zaum nws nkees lossis tab tom xav; kuv nug tau es tsis txhob txiav txim rau nws.",
+          "practice": "Siv ib qho piv txwv cuav. Hu npe ob txoj kev xav uas yuav muaj thiab ib lo lus nug uas hwm uas koj nug tau.",
+          "reflect": "Koj paub dab tsi, thiab koj tab tom twv dab tsi? Koj yuav kuaj xyuas li cas?",
+          "transfer": "Ua ntej kuv xav tias kuv paub lub lim tiam no, kuv nug tau ____."
+        },
+        "decision_making": {
+          "goal": "Muab tej kev xaiv los piv raws li lawv cuam tshuam rau koj thiab lwm tus li cas.",
+          "model": "Ua ntej muab duab pab pawg tso rau online, kuv thov tau kev tso cai thiab xav seb leej twg yuav pom.",
+          "practice": "Xaiv ib qho kev txiav txim cuav. Piv ob qho kev xaiv, tej yam uas yuav tshwm sim, thiab ib tug neeg uas pab tau.",
+          "reflect": "Dab tsi tseem tsis tau paub? Puas muaj ib qho kev xaiv uas nyab xeeb dua lossis ncaj ncees dua?",
+          "transfer": "Ua ntej kuv txiav txim txog ____, kuv nres tau ib pliag los kuaj xyuas ____."
+        },
+        "self_discovery": {
+          "goal": "Paub ib lub zog thiab xaiv ib txoj kev siv nws nrog kev txhawb nqa.",
+          "model": "Kuv nug tej lus nug uas pab tau. Kuv siv tau lub zog ntawd thaum ib txoj haujlwm tsis meej thiab thov ib qho piv txwv.",
+          "practice": "Xaiv ib lub zog uas haum koj, lossis haum ib tug cim cuav. Muab ib qho piv txwv thaum siv lub zog ntawd.",
+          "reflect": "Dab tsi pab kom lub zog ntawd tshwm los? Kev txhawb nqa dab tsi yuav pab kom ua tau kauj ruam tom ntej?",
+          "transfer": "Kuv siv tau ____ thaum ____. Ib tug neeg lossis ib qho kev pab uas pab tau yog ____."
+        },
+        "friendship": {
+          "goal": "Xyaum kev sib txuas lus uas hwm koj tej kev xav tau thiab lwm tus tej ciam teb.",
+          "model": "Kuv caw tau ib tug neeg los koom nrog peb thiab lees txais nws qhov kev xaiv yog nws hais tias tsis kam.",
+          "practice": "Xyaum ib qho kev caw, ib lo lus nug mloog, lossis ib qho ciam teb uas hwm. Hais lus, sau ntawv, lossis AAC suav tag.",
+          "reflect": "Txhua tus puas muaj kev xaiv tiag? Dab tsi yuav ua rau kev sib cuag txais tos dua?",
+          "transfer": "Hauv ib qho kev sib cuag uas nyab xeeb lub lim tiam no, kuv sim tau ____ thiab saib ____."
+        },
+        "transitions": {
+          "goal": "Paub seb dab tsi tab tom hloov, dab tsi tseem ruaj tau, thiab ib qho chaw txhawb nqa.",
+          "model": "Ib chav kawm tshiab zoo li tsis paub meej. Kuv nrhiav tau chav ua ntej thiab nug seb leej twg pab tau.",
+          "practice": "Xaiv ib qho kev hloov tiag lossis cuav. Hu npe ib qho uas tsis paub meej, ib qho kev txhawb nqa uas ruaj, thiab ib kauj ruam me me tom ntej.",
+          "reflect": "Ntu twg koj tswj tau? Kev pab lossis kev pab tshwj xeeb dab tsi yuav pab tau?",
+          "transfer": "Ua ntej qhov kev hloov, kuv ua tau ____. Yog txoj kev npaj yuav tsum hloov, kuv ua tau ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 feeb",
+          "format": "Ib leeg lossis pab pawg",
+          "cue": "Zoo rau kev kuaj xyuas thawj zaug ua ntej muaj kev qhia rau lwm tus."
+        },
+        "emotions": {
+          "time": "5-8 feeb",
+          "format": "Ib leeg lossis ob leeg",
+          "cue": "Zoo rau kev npaj cov lus ua ntej."
+        },
+        "coping": {
+          "time": "3-10 feeb",
+          "format": "Ib leeg lossis pab pawg",
+          "cue": "Zoo tshaj rau kev rov pib dua los tswj tus kheej."
+        },
+        "mindfulness": {
+          "time": "2-10 feeb",
+          "format": "Tag nrho chav kawm",
+          "cue": "Kev xaiv tswj tus kheej uas sau me ntsis xwb."
+        },
+        "somaticReset": {
+          "time": "3-8 feeb",
+          "format": "Ib leeg lossis tag nrho chav kawm",
+          "cue": "Lub xaiv duab me me ua rau txhua txoj kev coj siv tau yam tsis muaj ib pawg khawm ntom ntom. Lub Voj Ncig Ua Pa muab cov kab nkhaus puv thiab teev teev nrog theem tab tom ua uas tuab dua, lub nplhaib nruab nrab puv-lossis-teev-teev uas zoo ib yam, thiab cov npe NQUS PA thiab TSO PA ncaj qha; nws qhov nruab nrab hloov ntawm ib lub teev mus ua cov kab nres thaum nres, thiab nws lub pob zeb diamond lossis nplhaib uas muaj ntug kos qhia qhov hloov theem tom ntej, thaum nws lub cim tig raws moos kheej-lossis-pob-zeb-diamond, lub pob zeb diamond hloov theem, lub nplhaib rov qab, cov kab luv luv rau nqus pa, thiab cov teev khoob rau tso pa ua rau theem thiab kev suav uas xaiv tau nyeem tau yam tsis siv xim. Cia cov tub ntxhais kawm ntawv sim ib pa ntawm kev txav ua ntej lub moos, lossis xaiv Tsis Txav. Muab cov lus coj tag nrho, tsuas yog theem, lossis zais. Chaw Saib Ntsiag To ua rau daim duab uas loj lawm ua lub khawm pib/nres ncaj qha. Nthwv Dej Ntws siv NQUS PA · NCE nrog kab puv thiab lub cim kheej, TSO PA · NQIS nrog kab teev teev thiab lub cim pob zeb diamond, thiab cov kab nres rau thaum nres. Paj Tawg siv NQUS PA · QHIB nrog ntug nplooj paj puv thiab nruab nrab kheej, TSO PA · MOS nrog ntug teev teev thiab nruab nrab pob zeb diamond, thiab cov kab nres hauv nruab nrab rau thaum nres. Qab Ntuj Ruaj Khov siv NQUS PA · NCE nrog ntug hnub puv thiab nruab nrab voj voog, TSO PA · NQIS nrog ntug hnub teev teev thiab nruab nrab pob zeb diamond, thiab cov kab nres ntawm lub hnub thaum nres. Txoj Kab Ua Pa siv lub hom phiaj NQUS PA kheej, lub hom phiaj TSO PA pob zeb diamond, txoj kab taw los ntawm qhov pib uas tab tom ua, thiab qhov chaw tom ntej uas muaj ntug kos kom kev taw qhia tsis tas siv xim. Muab cov lus qhia theem rau lub tshuab nyeem vijtsam, ntxiv rau kev xaiv zais lub moos suav rov qab, zais txoj kev coj, tsis txav, tsis muaj duab, ua pa li qub, thiab tsis muaj lej; tsis txhob yuam kom ntsuas lossis piav txog tej kev hnov hauv lub cev li."
+        },
+        "journal": {
+          "time": "5-12 feeb",
+          "format": "Ib leeg",
+          "cue": "Kev xav rov qab ntiag tug. Kev qhia rau lwm tus yuav tsum yog xaiv tau."
+        },
+        "goals": {
+          "time": "5-10 feeb",
+          "format": "Ib leeg lossis chav qhia tswv yim",
+          "cue": "Zoo rau kauj ruam kawg tom qab xav rov qab."
+        },
+        "conflict": {
+          "time": "8-12 feeb",
+          "format": "Ob leeg lossis pab pawg me",
+          "cue": "Saib cov cai ua ntej ua yeeb yam."
+        },
+        "restorativeCircle": {
+          "time": "15-30 feeb",
+          "format": "Voj voog",
+          "cue": "Siv nrog cov cai voj voog uas twb teeb tseg."
+        },
+        "peersupport": {
+          "time": "8-15 feeb",
+          "format": "Xyaum ob leeg",
+          "cue": "Zoo heev rau kev xyaum txuj ci mloog."
+        },
+        "perspective": {
+          "time": "6-12 feeb",
+          "format": "Ob leeg lossis pab pawg",
+          "cue": "Zoo rau kev txuas kev nkag siab lwm tus ua ntej sib tham."
+        },
+        "digitalWellbeing": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg lossis chav qhia tswv yim",
+          "cue": "Pab tau ua ntej teeb cov cai siv xov tooj lossis AI."
+        },
+        "sleep": {
+          "time": "5-10 feeb",
+          "format": "Ib leeg",
+          "cue": "Zoo rau cov ntu kawm txog kev noj qab haus huv hauv chav qhia tswv yim."
+        },
+        "safety": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg",
+          "cue": "Saib ua ntej; zam kev yuam kom qhia."
+        },
+        "crisiscompanion": {
+          "time": "3-10 feeb",
+          "format": "Ib leeg",
+          "cue": "Rau txuj ci kev pab ceev, tsis yog haujlwm hauv chav kawm."
+        },
+        "griefLoss": {
+          "time": "10-20 feeb",
+          "format": "Ib leeg",
+          "cue": "Saib ua ntej; siv lwm yam haujlwm rau cov uas xaiv tsis koom."
+        },
+        "identitySupport": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg",
+          "cue": "Siv nrog kev ceev ntiag tug thiab kev saib xyuas cov uas xaiv tsis koom."
+        },
+        "traumaPsychoed": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg lossis xib fwb coj",
+          "cue": "Tsuas yog kev kawm txog lub siab xwb; muab kev xaiv tsis koom thiab txoj kev mus cuag tus neeg laus uas lawv ntseeg siab."
+        },
+        "substancePsychoed": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg lossis zaj lus qhia txog kev noj qab haus huv",
+          "cue": "Saib ua ntej cov lus txo kev puas tsuaj thiab muab kev pab ntawm cov neeg laus/kws kho mob."
+        },
+        "healthyRelationships": {
+          "time": "10-20 feeb",
+          "format": "Ib leeg lossis zaj lus qhia txog kev noj qab haus huv",
+          "cue": "Saib ua ntej cov lus txog kev pom zoo thiab kev nyab xeeb; tsis txhob yuam kom qhia tej yam ntiag tug li."
+        },
+        "bodyStory": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg",
+          "cue": "Cov lus uas hwm lub cev; muab kev xaiv tsis koom thiab zam kev sib tham uas tsom rau qhov hnyav."
+        },
+        "genogram": {
+          "time": "10-20 feeb",
+          "format": "Ib leeg",
+          "cue": "Tsuas yog kev xav rov qab txog tsev neeg xwb; kev qhia rau lwm tus yuav tsum yog xaiv tau."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 feeb",
+          "format": "Ib leeg lossis npaj kev pab",
+          "cue": "Siv lus uas lees paub tus kheej thiab cia cov tub ntxhais kawm ntawv xaiv seb yuav qhia dab tsi."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Kuaj xyuas thaum sawv ntxov hauv chav qhia tswv yim",
+          "time": "10-15 feeb",
+          "format": "Tag nrho chav kawm",
+          "focus": "Lub siab, kev ua pa, ib kauj ruam tom ntej",
+          "studentView": "Cov tub ntxhais kawm ntawv kuaj xyuas lawv cheeb tsam ntiag tug, sim ib qho kev tswj tus kheej, ces xaiv ib qho kev xav tau rau hnub no lossis hla.",
+          "teacherMove": "Qhia ua piv txwv txog kev xaiv hla ua ntej. Caw kom qhia ib lo lus lossis ib xim tsuas yog tom qab xyaum ntiag tug lawm.",
+          "privacyBoundary": "Tsis sau ib lo lus twg los ntawm phau ntawv teev tseg; cov tub ntxhais kawm ntawv txiav txim tom qab seb puas muab qhov khaws tseg twg tso rau hauv Pob Sib Qhia.",
+          "note": "Pib nrog kev kuaj xyuas cheeb tsam ntiag tug, ces muab kev ua pa lossis teeb hom phiaj. Cov tub ntxhais kawm ntawv qhia tau ib lo lus, ib xim, lossis hla."
+        },
+        "calm_reset": {
+          "name": "Rov pib dua kom txias siab tsib feeb",
+          "time": "5-8 feeb",
+          "format": "Tag nrho chav kawm lossis ces kaum txias siab",
+          "focus": "Tswj lub cev",
+          "studentView": "Cov tub ntxhais kawm ntawv saib lawv lub cev tam sim no thiab xaiv ib qho kev xyaum ua kom lub cev txias.",
+          "teacherMove": "Ua kom tsis tshua hais lus thiab muaj sijhawm txwv. Muab kev txav lub cev, ua pa, lossis lwm yam ntsiag to.",
+          "privacyBoundary": "Cov tub ntxhais kawm ntawv khaws tau ib qho khaws tseg rau lawv tus kheej; tsis muaj leej twg yuav tsum piav tias vim li cas lawv thiaj xav tau kev rov pib dua.",
+          "note": "Ua kom tsis tshua hais lus. Cov tub ntxhais kawm ntawv xaiv ib qho kev xyaum tswj tus kheej thiab saib seb dab tsi hloov lawm."
+        },
+        "repair_routine": {
+          "name": "Kev kho tom qab tsis sib haum",
+          "time": "15-25 feeb",
+          "format": "Pab pawg me lossis chav qhia tswv yim",
+          "focus": "Kev xav raws li lwm tus, kev kho, kev ua tom ntej",
+          "studentView": "Cov tub ntxhais kawm ntawv siv tau ib qho xwm txheej tiag, cuav, lossis uas xib fwb muab los xyaum cov lus kho.",
+          "teacherMove": "Teeb cov cai kho ua ntej thiab zam kev lees txim rau pej xeem. Nres yog qhov xwm txheej xav tau tus neeg laus los sib hais haum.",
+          "privacyBoundary": "Cov tub ntxhais kawm ntawv xaiv seb yuav qhia dab tsi; kev xav rov qab ntiag tug txog kev tsis sib haum yuav tsum tsis txhob ua pov thawj hauv chav kawm.",
+          "note": "Siv tom qab teeb cov cai lawm. Tsom rau cov lus kho, tsis yog kev lees txim rau pej xeem."
+        },
+        "digital_reset": {
+          "name": "Zaj lus qhia luv txog kev noj qab nyob zoo digital",
+          "time": "12-20 feeb",
+          "format": "Chav qhia tswv yim lossis kev noj qab haus huv",
+          "focus": "Xov tooj, kev pw, AI, thiab ciam teb",
+          "studentView": "Cov tub ntxhais kawm ntawv saib lawv tus cwj pwm, xaiv ib qho ciam teb los sim, thiab khaws qhov laj thawj cia ntiag tug tau yog lawv xav.",
+          "teacherMove": "Muab saib ua kev tsim tus cwj pwm, tsis yog kev kuaj xyuas xov tooj. Zam kev thov kom cov tub ntxhais kawm ntawv qhia duab screenshot lossis cov ntaub ntawv siv xov tooj.",
+          "privacyBoundary": "Cov tub ntxhais kawm ntawv qhia tau lub hom phiaj ciam teb, tab sis tej ntsiab lus ntiag tug txog kev pw, xov tooj, lossis AI tseem yog xaiv tau.",
+          "note": "Muab saib ua kev tsim tus cwj pwm, tsis yog kev kuaj xyuas xov tooj. Cov tub ntxhais kawm ntawv xaiv ib qho ciam teb los sim."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Txoj kev uas muaj kev tshawb fawb txhawb",
+          "title": "Kev tshawb fawb yog txog txoj kev hauv paus; qhov kev hloov ua digital no tseem tsis tau muab ntsuas ntawm no"
+        },
+        "emerging": {
+          "label": "Pov thawj txog txoj kev tseem tsawg",
+          "title": "Zoo li yuav pab tau tab sis pov thawj tseem tsawg lossis tsis sib xws"
+        },
+        "contested": {
+          "label": "Tus qauv uas tseem sib cav",
+          "title": "Neeg nyiam tab sis kws tshawb fawb tseem sib cav; zoo tshaj yog siv ua piv txwv, tsis yog piav tias nws ua haujlwm li cas tiag"
+        },
+        "practice": {
+          "label": "Kev xyaum xav rov qab",
+          "title": "Ib qho kev xyaum uas muaj kev npaj lossis txoj kev kwv yees, tsis yog kev hais tias nws pab tau raws li kev tshawb fawb"
+        }
+      },
+      "ui": {
+        "sel_practice": "Kev xyaum SEL",
+        "default_purpose": "Xyaum ib qho txuj ci SEL kom ua tib zoo.",
+        "default_next": "Ua kom tiav ib kauj ruam me me, ces txiav txim seb puas yuav khaws cia.",
+        "private_checkpoint": "Qhov khaws tseg ntiag tug",
+        "share_packet_eligible": "Muab tso tau rau hauv Pob Sib Qhia",
+        "saving_preparing": "Tab tom npaj khaws koj tej haujlwm SEL...",
+        "save_requested": "Tau thov kom khaws {title}",
+        "returned_to_grid": "Rov qab mus rau daim phiaj cuab yeej",
+        "back_to_sel_tools": "Rov qab mus rau cov cuab yeej SEL",
+        "export_now_aria": "Xa tawm fais txoj haujlwm SEL tam sim no",
+        "export_now": "Xa tawm tam sim no",
+        "purpose": "Lub hom phiaj",
+        "next_step": "Kauj ruam tom ntej",
+        "saved_work": "Tej haujlwm uas khaws cia",
+        "checkpoints_private": "Cov qhov khaws tseg ntawm cuab yeej nyob ntiag tug ntawm no tshwj tsis yog koj xaiv lawv rau ib Pob Sib Qhia.",
+        "use_with_care_label": "Siv kom ceev faj:",
+        "tool_open_failed_title": "Cuab yeej no qhib tsis tau",
+        "tool_open_failed_body": "Ib yam dab tsi hauv cov ntaub ntawv uas khaws cia rau qhov kev ua ub no tsis tau thauj los. Qhov no tsis yog koj ua yuam kev.",
+        "saved_work_kept": "Koj tej haujlwm uas khaws cia tsis tau raug rho tawm.",
+        "back_to_hub": "Rov qab mus rau SEL Hub",
+        "tell_teacher": "Yog qhov no tseem tshwm sim ntxiv, qhia koj tus xib fwb seb yog qhov kev ua ub no twg.",
+        "load_did_not_start": "Cuab yeej tau rub los lawm tab sis tsis pib.",
+        "load_too_long": "Cuab yeej siv sijhawm ntev dhau los thauj.",
+        "this_sel_tool": "Lub cuab yeej SEL no",
+        "tool_opening": "Tab tom qhib {name}...",
+        "tool_open_retry": "Qhib tsis tau {name}. Sim dua, lossis xaiv lwm lub cuab yeej.",
+        "station_link_missing": "Qhov txuas no hais txog ib lub station uas tsis muaj nyob hauv txoj haujlwm no. Thauj lub pob uas muaj nws, lossis pib ib lub los ntawm SEL Station hauv ntu Keeb Kwm.",
+        "started_station": "Tau pib station {name}",
+        "tool_could_not_open": "Qhib tsis tau {name}.",
+        "tool_not_available": "{name} tsis muaj nyob hauv SEL Hub no.",
+        "try_again": "Sim dua",
+        "dismiss": "Kaw",
+        "back_to_tools": "Rov qab mus rau cov cuab yeej",
+        "band_elementary": "Tsev Kawm Ntawv Theem Qis",
+        "band_middle": "Tsev Kawm Ntawv Theem Nrab",
+        "band_high": "Tsev Kawm Ntawv Theem Siab",
+        "unsaved_aria": "Koj muaj tej kev hloov uas tseem tsis tau khaws cia",
+        "unsaved_title": "Tej kev hloov uas tsis tau khaws",
+        "unsaved": "Tsis tau khaws",
+        "unsaved_hint": "Koj muaj tej kev hloov uas tseem tsis tau khaws cia — nias Xa tawm tam sim no los khaws lawv",
+        "educators_opened": "Tau qhib phau lus qhia Rau Cov Xib Fwb",
+        "educators_aria": "Rau Cov Xib Fwb: yuav siv lub Hub no li cas kom muaj lub luag haujlwm",
+        "for_educators": "Rau Cov Xib Fwb",
+        "theme_aria": "Hloov xim (kaj / tsaus / sib txawv siab)",
+        "theme_contrast": "Sib Txawv Siab",
+        "theme_dark": "Hom Tsaus",
+        "theme_light": "Hom Kaj",
+        "theme_contrast_short": "Sib Txawv",
+        "theme_dark_short": "Tsaus",
+        "theme_light_short": "Kaj",
+        "xp_aria": "{count} qhab nia kev paub dhau los SEL",
+        "close_hub": "Kaw SEL Hub",
+        "keep_share_title": "Xaiv seb yuav khaws thiab qhia dab tsi",
+        "keep_share_body": "Muaj tej kev ua ub no khaws koj tej haujlwm rau ntawm lub tshuab no; lwm yam haujlwm tsuas nyob hauv lub tab no xwb. Kaw lub tab yuav tsis rho tag txhua yam. Xa tawm ib daim fais los khaws ib daim qauv. Ntawm lub tshuab uas siv ua ke, saib Cov Ntaub Ntawv & kev ceev ntiag tug hauv Rau Cov Xib Fwb. Cov yam AI thiab kev qhia siv cov kev pab uas koj tau teeb tseg.",
+        "got_it_aria": "Paub lawm, pib siv SEL Hub",
+        "got_it": "Paub lawm",
+        "practice_support": "Kev txhawb nqa kev xyaum",
+        "learning_guide": "Phau lus qhia kev kawm thiab txoj kev xyaum",
+        "what_you_can_explore": "Tej yam koj tshawb tau",
+        "worked_example": "Ib qho piv txwv uas ua tiav lawm",
+        "try_one_step": "Sim ib kauj ruam",
+        "reflect_transfer": "Xav rov qab thiab siv rau lwm qhov",
+        "look_closer": "Saib kom ze dua",
+        "next_use": "Ib qho kev siv tom ntej uas ua tau",
+        "adapt_together": "Hloov kev xyaum ua ke",
+        "adapt_smaller": "Pib me dua: ua piv txwv ib kab lus lossis ib qho kev xaiv, siv ib daim duab lossis ib yam khoom tiag, thiab muab sijhawm xav.",
+        "adapt_deeper": "Mus tob dua: piv ob qho lus teb, nrhiav cov ntaub ntawv uas tseem tsis muaj, thiab piav seb dab tsi yuav hloov koj qhov kev xaiv.",
+        "adapt_context": "Hloov qhov xwm txheej: siv ib qho xwm txheej cuav uas haum rau tus kawm tus lus, tej kev nyiam, kab lis kev cai, thiab kev xav tau kom siv tau.",
+        "adapt_check": "Kuaj xyuas kev nkag siab los ntawm ib qho piv txwv lossis kev piav uas xaiv, tsis yog ib zaj dab neeg ntiag tug, kev hloov kev xav hauv siab, lossis qhab nia uas yuam.",
+        "optional_prompts": "Cov lus nug uas xaiv tau no tsis xa lus teb, tsis muab kev ua tiav, thiab tsis hloov qhov kev ua ub no tus kheej cov lus qhia thiab cov ntaub ntawv kev nyab xeeb.",
+        "returned_to_activities": "Rov qab mus rau cov kev ua ub no. Qhov kev ua no tsis tau sau tseg tias ua tiav kev xyaum dab tsi.",
+        "return_to_activities": "Rov qab mus rau cov kev ua ub no",
+        "chooser_first_reset_coping": "Xaiv ib qho kev rov los nyob tam sim no uas xis nyob. Saib seb puas haum; nres tau.",
+        "chooser_first_reset_journal": "Sau ib yam uas yuav ua rau ob peb feeb tom ntej yooj yim dua. Tsis tas muaj zaj dab neeg ntiag tug.",
+        "chooser_first_feelings_zones": "Taw rau ib qho kev xav lossis saib ntsiag to hauv siab. Xaiv ib qho kev txhawb nqa; tsis muaj cheeb tsam twg raug uas yuav tsum mus txog.",
+        "chooser_first_feelings_emotions": "Tshawb ob lo lus kev xav hauv siab rau ib tug cim cuav. Ntau tshaj ib lo lus teb haum tau.",
+        "chooser_first_feelings_journal": "Sau ib lo lus lossis kev xav rov qab luv luv txog ib qho xwm txheej cuav lossis txhua hnub.",
+        "chooser_first_conversation_advocacy": "Siv ib qho xwm txheej cuav los xyaum ib qho kev thov hais nrov nrov, nrog AAC, lossis ntsiag to, sab nraum daim ntawv.",
+        "chooser_first_conversation_journal": "Sau ib qho kev thov uas hwm rau ib qho xwm txheej txhua hnub uas nyab xeeb; koj tsis tas xa nws.",
+        "chooser_first_decision_decisions": "Xav txog ob qho kev xaiv hauv ib qho xwm txheej cuav thiab ib yam uas yuav tshwm sim ntawm txhua qho.",
+        "chooser_first_decision_goals": "Sau ib kauj ruam tom ntej uas ua tau tiag thiab ib qho kev txhawb nqa uas koj thov tau.",
+        "try_a_reset": "Sim rov pib dua",
+        "need_feeling": "Nkag siab ib qho kev xav",
+        "need_conversation": "Npaj ib qho kev sib tham",
+        "need_decision": "Xaiv ib kauj ruam tom ntej",
+        "help_choose": "Pab kuv xaiv ib qho kev ua ub no",
+        "help_choose_intro": "Xaiv seb koj xav sim dab tsi. Cov lus pom zoo tsuas siv cov kev xaiv no xwb; lawv tsis ntsuas koj tej kev xav hauv siab. Lub sijhawm yog rau thawj kauj ruam, tsis yog tag nrho qhov kev ua ub no.",
+        "what_would_help": "Dab tsi yuav pab tau?",
+        "time_first_step": "Sijhawm rau thawj kauj ruam",
+        "n_minutes": "{count} feeb",
+        "how_respond": "Koj xav teb li cas?",
+        "respond_any": "Txhua txoj kev",
+        "respond_offline": "Xav, hais, kos duab, lossis AAC",
+        "respond_write": "Sau ib qho lus teb luv luv",
+        "options_one": "{count} qhov kev xaiv pib rau koj tej kev xaiv.",
+        "options_many": "{count} qhov kev xaiv pib rau koj tej kev xaiv.",
+        "options_none": "Tseem tsis tau muaj qhov kev xaiv pib twg haum. Sim sijhawm ntau dua lossis lwm hom lus teb; tag nrho cov npe tseem muaj.",
+        "why_option_write": "Vim li cas thiaj yog qhov no: {need}, nrog thawj kauj ruam {minutes} feeb uas pom zoo thiab ib qho lus teb luv luv uas sau.",
+        "why_option_offline": "Vim li cas thiaj yog qhov no: {need}, nrog thawj kauj ruam {minutes} feeb uas pom zoo thiab ib txoj kev xyaum uas tsis tas ntaus ntawv.",
+        "open_named": "Qhib {name}",
+        "open_named_unavailable": "Qhib {name} (tsis muaj)",
+        "pathway_guide": "Phau lus qhia xyaum txoj kev kawm",
+        "pathway_opened": "Tau qhib {opened} ntawm {total} lub cuab yeej. Qhib ib lub cuab yeej tsis txhais tias koj twb xyaum txuj ci ntawd lawm.",
+        "exit_pathway_aria": "Tawm ntawm hom txoj kev kawm",
+        "pathway_cleared": "Tau tso txoj kev kawm tseg",
+        "exit_pathway": "Tawm txoj kev kawm",
+        "practice_goal": "Lub hom phiaj xyaum:",
+        "pathway_intro": "Xaiv ib qho kev ua ub no lossis ua raws li qhov kev txiav txim uas pom zoo. Koj hla tau, siv ib qho piv txwv cuav, lossis teb los ntawm kev hais lus, kos duab, sau ntawv, lossis AAC. Kev qhia rau lwm tus yog xaiv tau.",
+        "model_practice_reflect": "Ua piv txwv, xyaum, thiab xav rov qab",
+        "an_example": "Ib qho piv txwv",
+        "notice_adjust": "Saib thiab kho",
+        "take_with_you": "Nqa nws mus nrog koj",
+        "self_check_aria": "Kev kuaj xyuas tus kheej txog kev xyaum uas xaiv tau",
+        "self_check_intro": "Tom qab sim ib kauj ruam, xaiv qhov uas haum. Qhov no yog xaiv tau thiab tsis muaj qhab nia; nws nyob hauv lub sijhawm txoj kev kawm no xwb.",
+        "i_tried": "Kuv tau sim ib kauj ruam",
+        "another_way": "Kuv xav tau lwm txoj kev",
+        "pass_for_now": "Hla ua ntej",
+        "tried_feedback": "Saib seb dab tsi pab tau, dab tsi tsis pab, thiab qhov twg koj yuav sim txuj ci ntawd dua.",
+        "adapt_feedback": "Sim ib kauj ruam me dua, lwm txoj kev teb, lwm lub cuab yeej, lossis kev txhawb nqa los ntawm ib tug neeg uas koj ntseeg siab.",
+        "pass_feedback": "Kev hla yog ib qho kev xaiv uas siv tau. Koj rov qab los tau tom qab lossis thov kev txhawb nqa.",
+        "next_option": "Qhov kev xaiv tom ntej: {name}",
+        "open_next": "Qhib qhov tom ntej: {name}",
+        "view_pathway_tools": "Saib cov cuab yeej hauv txoj kev kawm",
+        "revisit_any": "Koj rov qab mus saib tau txhua qhov kev ua ub no. Xaiv ib lub tswv yim los sim sab nraum lub hub; tsis tas ua kom tiav txhua lub cuab yeej.",
+        "station_activities": "Cov kev ua ub no hauv station",
+        "active_station": "SEL Station uas tab tom siv: {name}",
+        "steps_recorded_passed": "Tau sau {done} ntawm {total} kauj ruam · {passed} hla ua ntej. Qhov no yog ntaub ntawv xyaum, tsis yog qhab nia.",
+        "steps_recorded": "Tau sau {done} ntawm {total} kauj ruam. Qhov no yog ntaub ntawv xyaum, tsis yog qhab nia.",
+        "active_minutes_done": "{mins} ntawm {goal} feeb siv tiag ntawm no. Tau sau kauj ruam lawm.",
+        "active_minutes_counting": "{mins} ntawm {goal} feeb siv tiag ntawm no. Suav thaum lub tab no pom tau thiab koj tab tom siv nws.",
+        "exit_station_aria": "Tawm ntawm hom station",
+        "station_cleared": "Tau tso station tseg",
+        "exit_station": "Tawm station",
+        "station_tools_steps": "Cov cuab yeej, kauj ruam, thiab kev xav rov qab hauv station",
+        "station_steps": "Cov kauj ruam thiab kev xav rov qab hauv station",
+        "station_privacy": "Cov kauj ruam thiab ntawv sau raug khaws rau ntawm lub tshuab no thiab tej zaum yuav muab tso rau hauv cov fais txoj haujlwm. Siv cov piv txwv cuav lossis tsis txhob sau tej ntsiab lus ntiag tug. Xaiv seb yuav qhia dab tsi.",
+        "step_passed": "Hla ua ntej. Koj rov qab los tau thaum koj npaj txhij.",
+        "step_marked": "Koj tau cim tias kauj ruam no tiav lawm.",
+        "step_target": "Tau sau lub hom phiaj kev ua ub no; qhov no tsis ntsuas txuj ci lossis kev noj qab nyob zoo.",
+        "step_ready": "Pib thaum twg koj npaj txhij.",
+        "open_step_activity": "Qhib qhov kev ua ub no rau kauj ruam no",
+        "xp_progress": "{xp} / {target} tag nrho SEL XP. Qhov no suav nrog tej kev ua ub no yav dhau los; nws tsis yog qhab nia txuj ci.",
+        "time_progress": "{mins} / {target} feeb siv tiag. Lub sijhawm tsis yog pov thawj ntawm kev kawm.",
+        "default_reflect": "Koj pom dab tsi? Koj yuav khaws dab tsi lossis hloov dab tsi?",
+        "self_check_ways": "Xav, kos duab, hais lus, siv lus piav tes, lossis siv AAC. Ntawv sau yog xaiv tau. Koj cim tias kauj ruam tiav koj tus kheej, lossis hla ua ntej.",
+        "length_target": "Kauj ruam uas khaws cia no siv lub hom phiaj ntev: {count} / {target} tus ntawv. Qhov ntev tsis ntsuas qhov zoo ntawm kev xav rov qab. Koj tseem kho tau koj daim ntawv sau.",
+        "reflection_for": "Kev xav rov qab rau {name}",
+        "optional_note": "Ntawv sau xaiv tau: dab tsi pab tau, lossis dab tsi koj yuav sim tom ntej...",
+        "write_reflection": "Sau ib zaj kev xav rov qab...",
+        "mark_complete_aria": "Cim \"{name}\" tias tiav lawm",
+        "step_reopened": "Rov qhib kauj ruam: {name}",
+        "step_marked_named": "Koj tau cim tias kauj ruam no tiav lawm: {name}",
+        "mark_complete": "Cim tias tiav",
+        "step_passed_named": "Hla ua ntej: {name}",
+        "filter_pathway": "txoj kev kawm: {name}",
+        "filter_station": "lub station: {name}",
+        "no_tools_match": "Tsis muaj cuab yeej twg haum {filters}",
+        "results_one": "{count} ntawm {total} lub cuab yeej haum {filters}",
+        "results_many": "{count} ntawm {total} lub cuab yeej haum {filters}",
+        "showing_all": "Qhia tag nrho {total} lub cuab yeej",
+        "crisis_elementary": "Yog koj nrhiav tsis tau ib tug neeg laus tam sim ntawd, nug mus ntxiv kom txog thaum muaj ib tug mloog. Koj tsim nyog tau txais kev pab.",
+        "crisis_call_or_text": "Hu lossis xa ntawv rau",
+        "crisis_988": "988 Suicide & Crisis Lifeline, xov tooj pab thaum kub ntxhov thiab tiv thaiv kev tua tus kheej (pub dawb, zais cia, 24/7).",
+        "crisis_text": "Xa ntawv rau",
+        "crisis_text_line": "Crisis Text Line, kev pab thaum kub ntxhov los ntawm kev xa ntawv (pub dawb, zais cia, 24/7).",
+        "tool_selection": "Kev xaiv cuab yeej hauv SEL Hub",
+        "jumped_to_list": "Dhia mus rau daim ntawv teev cuab yeej. {summary}.",
+        "skip_to_list": "Hla mus rau daim ntawv teev cuab yeej",
+        "start_here": "Pib ntawm no",
+        "quick_route": "Xaiv ib txoj kev ceev, lossis saib hauv qab no.",
+        "browsing_all": "Tab tom saib tag nrho cov cuab yeej SEL",
+        "continue": "Mus ntxiv",
+        "continue_desc": "Rov qab mus rau lub cuab yeej SEL kawg uas koj tau qhib.",
+        "starting_idea": "Lub tswv yim pib",
+        "starting_idea_desc": "{name}: ib qho kev ua ub no uas pom zoo rau qib kawm no, nrog cov piv txwv uas koj hloov tau.",
+        "starting_idea_none": "Qhib ib qho chaw pib uas haum rau qib kawm.",
+        "try_a_reset_desc": "Tshawb ib txoj tswv yim uas xis nyob; koj tsis tas yuav xav tias txias siab.",
+        "journal": "Phau Ntawv Teev Tseg",
+        "journal_desc": "Sau ib zaj kev xav rov qab; saib tej kev xaiv khaws thiab qhia.",
+        "browse_all": "Saib Tag Nrho",
+        "browse_all_desc": "Nrhiav lossis lim tag nrho cov npe.",
+        "need_chip_calm": "Ua kom kuv lub cev txias",
+        "need_chip_feelings": "Hu npe kev xav",
+        "need_chip_stress": "Ntxhov siab lossis txhawj",
+        "need_chip_friend": "Tsis sib haum nrog phooj ywg",
+        "need_chip_write": "Sau tawm",
+        "need_chip_decision": "Txiav txim siab",
+        "need_chip_sleep": "Pw tsaug zog lossis nkees",
+        "need_chip_crisis": "Tsis nyab xeeb lossis kub ntxhov",
+        "need_chip_relationshipsafety": "Kev nyab xeeb hauv kev sib raug zoo",
+        "need_chip_schoolsupport": "Kev pab hauv tsev kawm ntawv",
+        "need_chip_grief": "Quaj ntsuag lossis poob",
+        "storage_notice": "Muaj tej haujlwm SEL khaws rau ntawm lub tshuab no. Cov yam AI siv kev pab uas koj tau teeb tseg. Xaiv seb yuav khaws lossis qhia dab tsi, tshwj xeeb yog ntawm lub tshuab uas siv ua ke.",
+        "save_now_aria": "Khaws lossis xa tawm tej haujlwm SEL tam sim no",
+        "save_now": "Khaws tam sim no",
+        "recent_work": "Tej haujlwm SEL tsis ntev los no",
+        "saved_here": "Khaws cia ntawm no lawm. Xa tawm kom tseem muaj tom qab kaw.",
+        "create_packet_aria": "Tsim ib Pob Sib Qhia SEL los ntawm cov qhov khaws tseg uas khaws cia",
+        "review_packets_aria": "Saib cov Pob Sib Qhia SEL uas khaws cia",
+        "create_packet": "Tsim Pob Sib Qhia",
+        "review_packets": "Saib Cov Pob Sib Qhia",
+        "open_related": "Qhib lub cuab yeej uas cuam tshuam.",
+        "related_unavailable": "Lub cuab yeej uas cuam tshuam tsis muaj nyob hauv SEL Hub no.",
+        "streak_aria": "SEL {count} hnub sib law liag. Ntev tshaj: {longest} hnub.",
+        "streak": "{count} hnub sib law liag",
+        "streak_best": "zoo tshaj {count}",
+        "find_activity": "Nrhiav ib qho kev ua ub no",
+        "search_placeholder": "Nrhiav kev xav, phooj ywg, kev ntxhov siab, hom phiaj...",
+        "search_aria": "Nrhiav cov cuab yeej SEL",
+        "support_options": "Kev xaiv pab",
+        "crisis_hard_moment": "Zoo li qhov no yog ib lub sijhawm nyuaj.",
+        "crisis_tell_adult": "Koj tsis tas daws qhov no ib leeg, thiab koj tsis tas nrhiav lub cuab yeej raug ua ntej. Thov qhia rau ib tug neeg laus uas koj ntseeg siab tam sim no — ib tug kws pab tswv yim hauv tsev kawm ntawv, ib tug xib fwb, niam txiv, lossis lwm tus neeg laus uas koj ntseeg siab. Kev nrhiav ntawm no tsis qhia rau leej twg; ib tug neeg tsuas paub yog koj qhia lawv xwb.",
+        "open_crisis_companion": "Qhib Khub Thaum Kub Ntxhov",
+        "find_by_need": "Nrhiav cov cuab yeej SEL raws li kev xav tau",
+        "i_need": "Kuv xav tau...",
+        "cleared_search": "Tau tshem kev nrhiav SEL",
+        "clear_search_aria": "Tshem kev nrhiav SEL",
+        "clear": "Tshem",
+        "cleared_need": "Tau tshem lub lim kev xav tau SEL",
+        "showing_for": "Qhia cov cuab yeej SEL rau {name}",
+        "clear_need_aria": "Tshem lub lim kev xav tau: {name}",
+        "find_for_aria": "Nrhiav cov cuab yeej rau: {name}",
+        "browse_by_area": "Saib raws li txuj ci",
+        "filter_by_category": "Lim cov cuab yeej SEL raws li pawg",
+        "showing_all_categories": "Qhia tag nrho cov pawg",
+        "show_all_categories_aria": "Qhia tag nrho cov pawg ({count} lub cuab yeej)",
+        "all": "Tag Nrho",
+        "filtered_to": "Lim rau {name}",
+        "filter_chip_aria": "Lim: {name} ({count} lub cuab yeej)",
+        "pathways_heading": "Cov Txoj Kev Kawm SEL — Kev Kawm Uas Xaiv Tseg Raws Kab",
+        "started_pathway": "Tau pib txoj kev kawm: {name}",
+        "pathway_started": "Txoj kev kawm {name} tau pib lawm!",
+        "n_activities": "{count} qhov kev ua ub no",
+        "grades_range": "qib {range}",
+        "use_with_care": "Siv kom ceev faj",
+        "visits_many": "{count} zaug mus saib",
+        "visits_one": "{count} zaug mus saib",
+        "best_for": "Zoo tshaj rau: {mode}.",
+        "teacher_cue": "Lus qhia rau xib fwb: {time}, {format}. {cue}",
+        "preview_first": "Saib ua ntej",
+        "evidence_tradition": "Keeb kwm pov thawj: {tag}",
+        "approach_context": "Keeb kwm txoj kev: {label}. {title}. Daim paib no tsis ua pov thawj tias nws pab tau rau lub app no lossis rau ib tug neeg kawm twg.",
+        "step_opened": "Kauj ruam {n} · Tau qhib",
+        "step_not_opened": "Kauj ruam {n} · Tsis tau qhib",
+        "suggested_grades": "Qib pom zoo {range}",
+        "no_tools_current_view": "Tsis muaj cuab yeej twg haum qhov saib tam sim no",
+        "empty_try": "Sim txias siab, kev xav, ntxhov siab, phooj ywg, sau, txiav txim, lossis pw.",
+        "filters_cleared": "Tau tshem cov lim. Qhia tag nrho {total} lub cuab yeej.",
+        "show_all_tools": "Qhia tag nrho {total} lub cuab yeej",
+        "error_loading": "Muaj teeb meem thauj {name}",
+        "unknown_error": "Teeb meem uas tsis paub",
+        "back_to_tools_error": "Rov qab mus rau Cov Cuab Yeej",
+        "tool_load_failed": "Lub cuab yeej no thauj tsis tau.",
+        "loading_tool": "Tab tom thauj cuab yeej...",
+        "file_not_arrived": "Daim fais tsis tuaj txog.",
+        "check_connection": "Kuaj xyuas kev txuas, ces sim dua.",
+        "plugin_fetching": "Tseem tab tom rub daim fais plugin.",
+        "research_about": "Txog cov npe kev tshawb fawb",
+        "research_summary": "Cov npe kev tshawb fawb txhais li cas",
+        "research_context": "Keeb kwm txoj kev: {label}.",
+        "research_not_app": "Kev tshawb fawb txog ib txoj kev kho mob, kev kawm, lossis lub tswv yim tsis ua pov thawj tias qhov kev ua ub no digital no muaj txiaj ntsig zoo ib yam. Cov npe piav txog txoj kev; lawv tsis ntsuas lub app no lossis ib tug neeg kawm.",
+        "research_check": "Ua ntej xaiv ib qho kev ua ub no, kuaj xyuas nws cov chaw siv los, cov hnub nyoog thiab qhov chaw uas tau kawm, kev pab uas xav tau, thiab cov txiaj ntsig uas tau ntsuas. Cov npe no tsis tau ua pov thawj tias haum rau cov neeg twg thiab tias qhov kev hloov no pab tau.",
+        "research_casel_link": "CASEL: xaiv thiab ntsuas ib qho program SEL",
+        "project_save_failed": "Kev thov khaws txoj haujlwm tsis tiav. Qhib lub hub no cia thiab sim Khaws / Xa Tawm hauv lub app loj.",
+        "project_save_requested": "Tau thov khaws txoj haujlwm. Ua kom tiav kev khaws hauv lub app loj; ntawm no tseem tsis tau paub meej tias muaj daim fais khaws cia lawm.",
+        "saving_aria": "Kev khaws thiab kev qhia SEL",
+        "saving_failed_alert": "Tej kev hloov SEL khaws tsis tau rau ntawm lub tshuab no. Qhib lub hub no cia thiab khaws ib daim qauv ntawm txoj haujlwm; cov station uas tseem sau tsis tiav yuav tsum khaws ua station thiaj nkag tau rau daim qauv ntawd.",
+        "saving_attention": "Kev khaws xav tau kev saib",
+        "saving_title": "Kev khaws thiab kev qhia",
+        "saving_failed_body": "Tej haujlwm tam sim no tseem muaj nyob hauv lub hub uas qhib no. Kev khaws hauv lub tshuab uas tsis tiav tej zaum yuav tseg ib daim qauv qub rau ntawm lub tshuab no.",
+        "saving_ok_body": "Cov station uas khaws cia, ntawv sau ntawm station, thiab cov qhov khaws tseg ntawm hub tab tom raug khaws rau ntawm lub tshuab no. Txhua qhov kev ua ub no muaj nws tus kheej lub khawm khaws; qhov xwm txheej no tsis lees paub tias txhua yam uas sau rau hauv kev ua ub no tau khaws lawm.",
+        "saving_drafts": "Cov station uas sau tsis tiav nyob rau ntawm lub tshuab no kom rov qab tau. Khaws ib lub station yuav ntxiv nws rau cov ntaub ntawv txoj haujlwm uas muaj rau Khaws / Xa Tawm; kev thov khaws txoj haujlwm tsis lees paub tias tau sau ib daim fais lawm.",
+        "saving_live": "Muaj ib lub sijhawm live tab tom txuas. Nws yuav xa tej cim qhia txog kev nce qib lossis kev nyab xeeb mus rau tus tswv. AI uas xaiv tau xa cov lus ntawm kev ua ub no mus rau kev pab uas tau teeb tseg. Saib ib Pob Sib Qhia ua ntej xaiv qhia nws.",
+        "saving_ai": "AI uas xaiv tau xa cov lus ntawm kev ua ub no mus rau kev pab uas tau teeb tseg. Ib Pob Sib Qhia muaj cov khoom thiab qib ntsiab lus uas koj xaiv; saib nws daim saib ua ntej ua ntej qhia.",
+        "saving_retry": "Sim khaws hauv lub tshuab dua",
+        "saving_request": "Thov khaws txoj haujlwm",
+        "removed_stations": "Cov station uas tau tshem",
+        "removed_body": "Rov thim kev tshem station thaum lub hub no tseem qhib. Cov ntaub ntawv xyaum uas twb muaj lawm tseem khaws cia.",
+        "station_restored": "Tau rov qab tau station: {name}",
+        "undo_removal": "Rov thim kev tshem: {name}",
+        "launch_routines_aria": "Cov txheej txheem pib ntawm xib fwb",
+        "launch_title": "Xib fwb pib",
+        "launch_note": "Cia kev xyaum tsis muaj qhab nia thiab kev qhia yog xaiv tau. Piav txog kev khaws rau ntawm lub tshuab, cov yam AI uas tau teeb tseg, thiab kev qhia ua ntej pib. Siv cov piv txwv cuav; caw cov tub ntxhais kawm ntawv thov kev pab lossis hla.",
+        "launch_guardrails_aria": "Cov ciam teb kev nyab xeeb rau xib fwb pib",
+        "launch_step_boundary": "Teeb ciam teb",
+        "launch_step_boundary_body": "Hais seb dab tsi yog ntiag tug, dab tsi yog xaiv tau, thiab cov tub ntxhais kawm ntawv hla tau li cas.",
+        "launch_step_run": "Ua raws li txheej txheem",
+        "launch_step_run_body": "Siv cov cuab yeej ua kev xyaum. Cia kev xav rov qab yog rau kev loj hlob thiab tsis muaj qhab nia.",
+        "launch_step_close": "Xaus nrog kev xaiv",
+        "launch_step_close_body": "Cov tub ntxhais kawm ntawv txiav txim seb puas yuav khaws, xa tawm, lossis muab ib qho khaws tseg tso rau hauv tom qab.",
+        "launch_student_sees": "Tub ntxhais kawm ntawv pom",
+        "launch_student_sees_default": "Cov tub ntxhais kawm ntawv ua kom tiav ib qho txheej txheem SEL ntiag tug thiab xaiv seb yuav qhia dab tsi.",
+        "launch_teacher_move": "Xib fwb ua",
+        "launch_teacher_move_default": "Muab qhov no ua kev xyaum, tsis yog kev ntsuam xyuas.",
+        "launch_sharing_boundary": "Ciam teb kev qhia",
+        "launch_sharing_boundary_default": "Kev qhia tseem yog tub ntxhais kawm ntawv tswj.",
+        "launch_tools_loading": "Tab tom thauj cov cuab yeej...",
+        "launch_still_loading": "Tseem tab tom thauj: {tools}",
+        "launch_preview_sensitive": "Saib cov cuab yeej uas rhiab ua ntej: {tools}",
+        "launch_load_aria": "Thauj txoj kev npaj xib fwb pib: {name}",
+        "launch_finish_draft": "Ua kom tiav lossis muab qhov uas tab tom sau tam sim no pov tseg ua ntej",
+        "launch_waiting": "Tos cov cuab yeej",
+        "launch_loading": "Tab tom thauj",
+        "launch_load": "Thauj rau hauv Lub Tsim Station",
+        "builder_note_student": "Tub ntxhais kawm ntawv pom: {text}",
+        "builder_note_teacher": "Xib fwb ua: {text}",
+        "builder_note_sharing": "Ciam teb kev qhia: {text}",
+        "builder_note_note": "Xib fwb sau tseg: {text}",
+        "launch_finish_existing": "Ua kom tiav lossis muab koj lub station uas tseem sau tsis tiav pov tseg ua ntej.",
+        "launch_tools_still_loading": "Cov cuab yeej xib fwb pib tseem tab tom thauj. Sim dua tom qab ib pliag.",
+        "launch_tools_still_loading_sr": "Cov cuab yeej xib fwb pib tseem tab tom thauj.",
+        "launch_default_name": "Txheej txheem SEL hauv chav kawm",
+        "launch_default_short": "Txheej txheem SEL",
+        "launch_loaded_sr": "Tau thauj txoj kev npaj xib fwb pib rau hauv lub tsim station: {name}",
+        "launch_loaded_toast": "Tau thauj txoj kev npaj xib fwb pib rau hauv Lub Tsim Station.",
+        "stations_summary": "SEL Station Tshwj Xeeb — cov pob uas xib fwb tsim",
+        "station_delete_aria": "Rho station {name} tawm",
+        "station_removed_sr": "Tau tshem station. Rov thim tau txog thaum lub hub no kaw.",
+        "station_removed": "Tau tshem station",
+        "station_tools_count": "{count} lub cuab yeej",
+        "station_quests_count": "{count} qhov kev nrhiav",
+        "station_activated_sr": "Tau qhib SEL Station: {name}",
+        "station_started": "{name} tau pib lawm!",
+        "station_activate_aria": "Qhib station {name}",
+        "station_start": "Pib station",
+        "station_adapt_aria": "Hloov ib daim qauv ntawm station {name}",
+        "station_adapt": "Hloov ib daim qauv",
+        "draft_aria": "Lub station uas sau tsis tiav uas rov qab tau",
+        "draft_untitled": "Station tsis muaj npe",
+        "draft_body": "Muaj ib lub station uas sau tsis tiav khaws rau ntawm lub tshuab no: {name}. Sau ntxiv lossis muab pov tseg ua ntej pib lwm lub.",
+        "draft_resume": "Sau ntxiv lub station uas tsis tiav",
+        "draft_discard": "Muab lub station uas tsis tiav pov tseg",
+        "builder_opened": "Tau qhib lub tsim station",
+        "build_station_aria": "Tsim ib lub SEL Station tshwj xeeb tshiab",
+        "build_station": "+ Tsim Ib Lub Station Tshwj Xeeb"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Xib fwb txoj kev txuas nres ib pliag — tseem khaws koj qhov chaw thaum AlloFlow rov txuas.",
+    "host_stale": "Kev kuaj xyuas xib fwb txoj xwm txheej qub lawm - lub rooj kawm ncaj qha tej zaum tseem txuas nyob. Koj tej hauj lwm nyob ntawm lub cuab yeej no.",
+    "dismiss": "Kaw",
+    "dismiss_aria": "Kaw lus ceeb toom txog xib fwb txoj xwm txheej",
+    "connecting": "Tab tom txuas rau chav kawm…",
+    "retrying": "Kev hloov tshiab ntawm chav kawm nres ib pliag. Tab tom rov txuas nws tus kheej…",
+    "failed": "Kev hloov tshiab ntawm chav kawm tu lawm. Kuaj xyuas koj txoj kev txuas thiab sim rov txuas.",
+    "access": "Tsis pub nkag rau chav kawm. Hais kom koj tus xib fwb kuaj xyuas kev nkag, ces rov txuas.",
+    "sign_in": "Kos npe nkag dua kom rov qab tau kev nkag rau chav kawm, ces rov txuas.",
+    "reconnect": "Rov txuas"
+  },
   "_version": "20260526T1779819424931",
   "tour": {
     "input_panel_title": "kev nkag phab ntsa",
@@ -5283,9 +6502,99 @@
     "measured_on_target": "Haum rau {grade}",
     "measured_above": "Siab dua theem {grade}",
     "measured_below": "Qis dua theem {grade}",
-    "measured_note": "Flesch-Kincaid, ntsuas ntawm cov ntawv no. Siv Check theem yog xav kuaj kom tseeb dua."
+    "measured_note": "Flesch-Kincaid, ntsuas ntawm cov ntawv no. Siv Check theem yog xav kuaj kom tseeb dua.",
+    "listen_along": "Mloog nrog",
+    "compare_listen_here": "Mloog ntawm no",
+    "compare_listen_here_original": "Mloog ntawm no: tsab ntawv qub",
+    "compare_listen_here_adapted": "Mloog ntawm no: tsab ntawv hloov kho",
+    "compare_stop_reading_original": "Nres: nyeem tsab ntawv qub",
+    "compare_stop_reading_adapted": "Nres: nyeem tsab ntawv hloov kho",
+    "compare_scroll_together": "Scroll ua ke",
+    "reading_width": "Qhov dav nyeem",
+    "width_narrow": "Nqaim",
+    "width_medium": "Nruab nrab",
+    "width_wide": "Dav",
+    "width_extra_wide": "Dav heev",
+    "reading_width_characters": "kwv yees li {count} tus ntawv ib kab",
+    "original_support_spoken": "Kev pab rau lo lus “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Ntaus lo lus los sis nqe lus uas ploj lawm",
+      "explain_thinking": "Piav qhia koj txoj kev xav",
+      "write_response": "Sau koj cov lus teb",
+      "submit_response": "Xa cov lus teb",
+      "numeric_answer": "Lus teb ua tus lej",
+      "unit_named": "Chav ntsuas ({unit})",
+      "unit_optional": "Chav ntsuas (tsis tas yuav sau)",
+      "submit_numeric": "Xa cov lus teb ua tus lej",
+      "select_all_apply": "Xaiv txhua cov lus teb uas haum",
+      "submit_selections": "Xa cov uas koj xaiv",
+      "part1": "Ntu 1 — Xaiv cov lus teb zoo tshaj plaws",
+      "part2": "Ntu 2 — {prompt}",
+      "default_evidence_prompt": "Xaiv cov pov thawj uas txhawb nqa zoo tshaj plaws.",
+      "submit_answer_evidence": "Xa cov lus teb thiab pov thawj",
+      "order_check": "Qhov kev sib law liag no puas raug?",
+      "order_yes": "Yog, nws raug lawm",
+      "order_no": "Tsis yog, muaj ib yam nyob tsis raug qhov chaw",
+      "select_misplaced": "Xaiv ib yam saum toj no uas nyob tsis raug qhov chaw.",
+      "arrange_instructions": "Muab cov khoom teeb kom raug ntu zus. Yog tias lawv twb raug lawm, cia li tseg lawv li qub.",
+      "your_order": "Koj qhov kev teeb",
+      "move_up": "Txav mus saum toj: {item}",
+      "move_down": "Txav mus hauv qab: {item}",
+      "done_arranging": "Teeb tiav lawm",
+      "principle_question": "Lawv raug teeb raws li dab tsi?",
+      "principle_chronological": "raws sij hawm",
+      "principle_cause_effect": "ua rau thiab tshwm sim",
+      "principle_process": "cov kauj ruam",
+      "principle_size": "qhov loj me",
+      "principle_hierarchy": "qib siab qis",
+      "find_mismatch": "Nrhiav tus khub uas tsis sib haum",
+      "choose_mismatch": "Xaiv tus khub uas tsis haum nrog lwm cov.",
+      "pair_with_question": "Yam uas koj xaiv yuav tsum ua khub nrog dab tsi?",
+      "replacement_partner": "Tus khub tshiab",
+      "submit_replacement": "Xa qhov hloov",
+      "retry_failed": "Xa tsis tau koj cov lus teb. Koj txoj kev koom nrog tseem raug sau tseg lawm; sim dua thaum koj txuas tau.",
+      "return_to_quiz": "Rov qab mus rau kev xeem ncaj qha",
+      "minimize": "Ua kom me",
+      "minimize_aria": "Tawm ntawm qhov saib kev xeem ncaj qha",
+      "battle_result": "Txiaj ntsig kev sib ntaus",
+      "class_victory": "Chav kawm yeej!",
+      "battle_complete": "Kev sib ntaus tiav lawm",
+      "regroup": "Lub caij rov npaj dua",
+      "end_no_scored": "Cov lus nug no yog rau kev sib tham los sis rau xib fwb tshuaj xyuas. Tsis muaj qhab nia kev sib ntaus.",
+      "end_questions_complete": "Txhua lo lus nug tiav lawm. Cov txiaj ntsig muab feem pua ntawm lub zog uas tseem tshuav los piv; yog sib npaug, chav kawm yeej.",
+      "end_victory": "Koj chav kawm tau koom tes kov yeej tus dab lawm.",
+      "end_regroup": "Siv cov lus piav qhia hauv qab no los npaj nej zaum tom ntej ua ke.",
+      "end_review_last": "Rov saib lo lus nug kawg hauv qab no. Koj tus xib fwb muaj peev xwm pib kev sib ntaus dua.",
+      "boss_default_name": "Tus Thawj Dab",
+      "boss_hp": "HP ntawm {name}",
+      "boss_health": "Lub zog ntawm {name}",
+      "battle_scoring_paused": "Kev suav qhab nia sib ntaus nres lawm",
+      "tick_of": "{value} ntawm {total}",
+      "confidence_legend": "Koj paub tseeb npaum li cas?",
+      "confidence_knew": "Kuv paub qhov no",
+      "confidence_guessed": "Kuv twv raws li kuv paub",
+      "confidence_unsure": "Kuv tsis paub tseeb",
+      "confidence_help": "Qhov no pab koj tus xib fwb pom tej yam koj paub tseeb thiab tej yam koj nkag siab yuam kev. Nws yeej tsis hloov qhov raug los sis qhab nia.",
+      "retry_send": "Sim xa cov lus teb dua",
+      "waiting_for_teacher": "Tos koj tus xib fwb pib lo lus nug no.",
+      "sending": "Tab tom xa koj cov lus teb…",
+      "receipt_only": "Sau tseg tias koj koom nrog lawm. Koj cov lus teb tseem tsis tau mus txog xib fwb rau kev muab qhab nia.",
+      "complete_and_submit": "Ua kom tiav thiab xa koj cov lus teb",
+      "poll_closed": "Lo lus nug txog kev xav no kaw lawm.",
+      "receipt_not_scored": "Koj tus xib fwb tsuas tau txais tias koj koom nrog xwb. Cov lus teb no tsis tau muab qhab nia.",
+      "no_answer_submitted": "Tsis muaj lus teb xa rau lo lus nug no. Rov saib nws nrog koj chav kawm.",
+      "answer_review": "Rov saib lus teb",
+      "review_answer": "Rov saib cov lus teb",
+      "discuss_with_teacher": "Sib tham txog cov lus teb nrog koj tus xib fwb.",
+      "response_correct": "Lus teb raug.",
+      "response_partial": "Lus teb raug ib nrab.",
+      "response_incorrect": "Cov lus teb no yuav tsum rov saib dua.",
+      "response_none": "Tsis muaj lus teb xa tuaj.",
+      "response_submitted": "Lus teb xa mus tshuaj xyuas lawm.",
+      "explanation": "Kev piav qhia"
+    },
     "title": "Ntsuas",
     "mcq_count": "MCQ Suav",
     "reflections": "Xav txog",

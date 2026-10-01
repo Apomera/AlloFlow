@@ -1,0 +1,1160 @@
+{
+  "completed": true,
+  "checks": [
+    "desktop-launcher exposes all three readable and reachable scenic launch buttons",
+    "galaxy scenic launch resets position and counters with a planned twenty second pace",
+    "galaxy scenic launch preserves physics and quality preferences",
+    "galaxy scenic first half visibly changes rendered scenery during actual travel",
+    "galaxy scenic arrival pauses at the real destination radius",
+    "galaxy scenic pause freezes position and retains its resumable approach",
+    "scenic arrival retains free look with frozen position and clocks",
+    "neighborhood scenic launch resets position and counters with a planned twenty second pace",
+    "neighborhood scenic launch preserves physics and quality preferences",
+    "neighborhood scenic first half visibly changes rendered scenery during actual travel",
+    "neighborhood scenic arrival pauses at the real destination radius",
+    "neighborhood scenic pause freezes position and retains its resumable approach",
+    "a scenic launch from the physical light chase explicitly switches to free exploration",
+    "cosmic scenic launch resets position and counters with a planned twenty second pace",
+    "cosmic scenic launch preserves physics and quality preferences",
+    "cosmic scenic first half visibly changes rendered scenery during actual travel",
+    "cosmic scenic arrival pauses at the real destination radius",
+    "cosmic scenic pause freezes position and retains its resumable approach",
+    "scenic launch works from a different scene scale without losing the approach to React settings",
+    "nearby free flight traverses genuine scene depth",
+    "nearby stars and emission regions change visibly during real camera motion",
+    "nearby pause retains native free look and fixed clocks",
+    "local emission regions occupy changing world-space positions",
+    "nearby emission clouds remain visible from inside the scene",
+    "phone-normal-launcher exposes all three readable and reachable scenic launch buttons",
+    "phone normal scenic launch supports native keyboard activation and returns focus to the view",
+    "phone-fullscreen-launcher exposes all three readable and reachable scenic launch buttons",
+    "phone fullscreen scenic launch works from physical mode and closes the controls",
+    "landscape-normal-launcher exposes all three readable and reachable scenic launch buttons",
+    "landscape normal scenic launch supports native keyboard activation and returns focus to the view",
+    "landscape-fullscreen-launcher exposes all three readable and reachable scenic launch buttons",
+    "landscape fullscreen scenic launch works from physical mode and closes the controls"
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "desktop-launcher",
+      "violations": []
+    },
+    {
+      "name": "scenic-galaxy-arrival",
+      "violations": []
+    },
+    {
+      "name": "physical-mode-scenic-launch",
+      "violations": []
+    },
+    {
+      "name": "scenic-neighborhood-arrival",
+      "violations": []
+    },
+    {
+      "name": "scenic-cosmic-arrival",
+      "violations": []
+    },
+    {
+      "name": "nearby-paused",
+      "violations": []
+    },
+    {
+      "name": "phone-normal-launcher",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-launcher",
+      "violations": []
+    },
+    {
+      "name": "landscape-normal-launcher",
+      "violations": []
+    },
+    {
+      "name": "landscape-fullscreen-launcher",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "scenic-galaxy-initial",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            26930.47794579187,
+            -84781.13427378923
+          ],
+          "yaw": 0,
+          "pitch": -0.30756710840533347,
+          "distanceLy": 229.6421610486361,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "stats": {
+        "width": 1280,
+        "height": 800,
+        "mean": 10.11202083334734,
+        "luminousFraction": 0.25346875,
+        "colorFraction": 0.200890625,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-galaxy-middle",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            15760.774954628734,
+            -49617.25448679426
+          ],
+          "yaw": 0,
+          "pitch": -0.30756710840533347,
+          "distanceLy": 37124.90888437011,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "stats": {
+        "width": 1280,
+        "height": 800,
+        "mean": 22.530744791641915,
+        "luminousFraction": 0.62403125,
+        "colorFraction": 0.471328125,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-galaxy-arrival",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            5449.334608383487,
+            -17155.312656022157
+          ],
+          "yaw": 0,
+          "pitch": -0.30756710840533347,
+          "distanceLy": 71185.20056601339,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "stats": {
+        "width": 1280,
+        "height": 800,
+        "mean": 72.19623437496433,
+        "luminousFraction": 0.834328125,
+        "colorFraction": 0.61103125,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-galaxy-paused-look",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            5449.334608383487,
+            -17155.312656022157
+          ],
+          "yaw": 0.1200000000000001,
+          "pitch": -0.18756710840533347,
+          "distanceLy": 71185.20056601339,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "stats": {
+        "width": 1280,
+        "height": 800,
+        "mean": 78.79725520832989,
+        "luminousFraction": 0.966734375,
+        "colorFraction": 0.66515625,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-neighborhood-initial",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0.008506719386678711,
+            0.03140942542773678,
+            0.3140942542773677
+          ],
+          "yaw": 0.02707671430845675,
+          "pitch": 0.09963236009874116,
+          "distanceLy": 0.315775421542716,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 7.26285322952801,
+        "luminousFraction": 0.19818339100346022,
+        "colorFraction": 0.13427768166089965,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-neighborhood-middle",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0.33110606020474054,
+            1.2225454530636588,
+            12.22545453063658
+          ],
+          "yaw": 0.02707671430845675,
+          "pitch": 0.09963236009874116,
+          "distanceLy": 12.29089041072997,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 8.145350346021505,
+        "luminousFraction": 0.25694204152249134,
+        "colorFraction": 0.198810553633218,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-neighborhood-arrival",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0.6230608565254409,
+            2.3005323933247035,
+            23.005323933247038
+          ],
+          "yaw": 0.02707671430845675,
+          "pitch": 0.09963236009874116,
+          "distanceLy": 23.128458301350282,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 8.053885524798812,
+        "luminousFraction": 0.26634948096885813,
+        "colorFraction": 0.20802335640138409,
+        "max": 255
+      }
+    },
+    {
+      "name": "scenic-cosmic-initial",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -2121289.529899094
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 78710.4701009046,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 3.998861014996422,
+        "luminousFraction": 0.02097750865051903,
+        "colorFraction": 0.013689446366782007,
+        "max": 252
+      }
+    },
+    {
+      "name": "scenic-cosmic-middle",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -1225609.0746028337
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 974390.9253971806,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 4.3072015570961115,
+        "luminousFraction": 0.030168685121107267,
+        "colorFraction": 0.020307093425605535,
+        "max": 236
+      }
+    },
+    {
+      "name": "scenic-cosmic-arrival",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -360000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 1840000.0000000033,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 6.93233131487404,
+        "luminousFraction": 0.10888840830449827,
+        "colorFraction": 0.08040657439446366,
+        "max": 255
+      }
+    },
+    {
+      "name": "nearby-origin",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 8.136389850059027,
+        "luminousFraction": 0.25330882352941175,
+        "colorFraction": 0.18382352941176472,
+        "max": 255
+      }
+    },
+    {
+      "name": "nearby-passing",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            38.33670000000275
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 38.33670000000275,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 6.7079008073838855,
+        "luminousFraction": 0.2060553633217993,
+        "colorFraction": 0.09413927335640139,
+        "max": 255
+      }
+    },
+    {
+      "name": "nearby-paused-look",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            38.33670000000275
+          ],
+          "yaw": 0.1087510068590225,
+          "pitch": 0.10875100685902273,
+          "distanceLy": 38.33670000000275,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 5.259717416381366,
+        "luminousFraction": 0.1315311418685121,
+        "colorFraction": 0.05932093425605536,
+        "max": 255
+      }
+    },
+    {
+      "name": "nearby-cloud-front",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            13,
+            -7,
+            24
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 7.674992791236714,
+        "luminousFraction": 0.263689446366782,
+        "colorFraction": 0.17837370242214534,
+        "max": 255
+      }
+    },
+    {
+      "name": "nearby-cloud-behind",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            13,
+            -7,
+            52
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "stats": {
+        "width": 1088,
+        "height": 680,
+        "mean": 5.558347750864112,
+        "luminousFraction": 0.1206098615916955,
+        "colorFraction": 0.05032439446366782,
+        "max": 255
+      }
+    },
+    {
+      "name": "phone-fullscreen-launch",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            26200.99876986185,
+            -82484.62575697235
+          ],
+          "yaw": 0,
+          "pitch": -0.30756710840533347,
+          "distanceLy": 2639.2253689764157,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "stats": {
+        "width": 272,
+        "height": 629,
+        "mean": 23.47120873666234,
+        "luminousFraction": 0.5952159344750558,
+        "colorFraction": 0.4714259121370067,
+        "max": 255
+      }
+    },
+    {
+      "name": "landscape-fullscreen-launch",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.77,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            26669.98600061066,
+            -83961.0670389595
+          ],
+          "yaw": 0,
+          "pitch": -0.30756710840533347,
+          "distanceLy": 1090.0875824122252,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "stats": {
+        "width": 483,
+        "height": 272,
+        "mean": 9.601482741855424,
+        "luminousFraction": 0.23432182790471562,
+        "colorFraction": 0.18351968886728245,
+        "max": 255
+      }
+    }
+  ],
+  "journeys": [
+    {
+      "name": "scenic-galaxy",
+      "fromMode": "explore",
+      "fromRegion": "neighborhood",
+      "launchRecord": {
+        "arguments": [
+          "galactic-center",
+          1
+        ],
+        "snapshot": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "galaxy",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              0,
+              27000,
+              -85000
+            ],
+            "yaw": 0,
+            "pitch": -0.3075671084053334,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "galactic-center"
+        },
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "speed": 3442.9109602494727,
+          "smoothTravel": true,
+          "beta": 0.9,
+          "timeScale": 1,
+          "running": false,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto",
+          "orbitRate": 3,
+          "orbitDirection": 1
+        },
+        "at": 1790811541494,
+        "accepted": true
+      },
+      "plannedSeconds": 20.675876137341387,
+      "activePlaybackWallMs": 80860,
+      "wallMs": 88962,
+      "middleProgress": 0.521525662485737,
+      "arrivalRadiusLy": 18000,
+      "movingDifference": {
+        "changedFraction": 0.5935,
+        "meanAbsolute": 13.948963541666695
+      },
+      "arrivalDifference": {
+        "changedFraction": 0.8380625,
+        "meanAbsolute": 62.12361979166639
+      },
+      "event": {
+        "message": "Arrived at Galactic center. Travel is paused; look around or choose another destination.",
+        "detail": {
+          "kind": "arrival",
+          "region": "galaxy",
+          "mode": "explore",
+          "position": [
+            0,
+            5449.334608383487,
+            -17155.312656022157
+          ],
+          "targetId": "galactic-center",
+          "targetName": "Galactic center",
+          "arrivalRadiusLy": 18000
+        }
+      }
+    },
+    {
+      "name": "scenic-neighborhood",
+      "fromMode": "relativity",
+      "fromRegion": "neighborhood",
+      "launchRecord": {
+        "arguments": [
+          "pale-star",
+          1
+        ],
+        "snapshot": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.77,
+            "compareRest": false,
+            "fov": 75,
+            "exposure": 1,
+            "quality": "low"
+          },
+          "state": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "yaw": 0.02707671430845693,
+            "pitch": 0.09963236009874116,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "pale-star"
+        },
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "speed": 1.262758215936133,
+          "smoothTravel": true,
+          "beta": 0.77,
+          "timeScale": 10,
+          "running": false,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "low",
+          "orbitRate": 3,
+          "orbitDirection": 1
+        },
+        "at": 1790811660490,
+        "accepted": true
+      },
+      "plannedSeconds": 19.087862816777516,
+      "activePlaybackWallMs": 51488,
+      "wallMs": 58241,
+      "middleProgress": 0.5314184910462613,
+      "arrivalRadiusLy": 0.999999999999999,
+      "movingDifference": {
+        "changedFraction": 0.15832612456747405,
+        "meanAbsolute": 2.600965974625048
+      },
+      "arrivalDifference": {
+        "changedFraction": 0.22512975778546712,
+        "meanAbsolute": 3.6045991926183367
+      },
+      "event": {
+        "message": "Arrived at Pale star. Travel is paused; look around or choose another destination.",
+        "detail": {
+          "kind": "arrival",
+          "region": "neighborhood",
+          "mode": "explore",
+          "position": [
+            0.6230608565254409,
+            2.3005323933247035,
+            23.005323933247038
+          ],
+          "targetId": "pale-star",
+          "targetName": "Pale star",
+          "arrivalRadiusLy": 1
+        }
+      }
+    },
+    {
+      "name": "scenic-cosmic",
+      "fromMode": "explore",
+      "fromRegion": "neighborhood",
+      "launchRecord": {
+        "arguments": [
+          "near-galaxy",
+          1
+        ],
+        "snapshot": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "cosmic",
+            "beta": 0.77,
+            "compareRest": false,
+            "fov": 60,
+            "exposure": 1,
+            "quality": "low"
+          },
+          "state": {
+            "position": [
+              0,
+              0,
+              -2200000
+            ],
+            "yaw": 0,
+            "pitch": 0,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "near-galaxy"
+        },
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "speed": 89125.09381337457,
+          "smoothTravel": true,
+          "beta": 0.77,
+          "timeScale": 10,
+          "running": false,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "low",
+          "orbitRate": 3,
+          "orbitDirection": 1
+        },
+        "at": 1790811728325,
+        "accepted": true
+      },
+      "plannedSeconds": 20.645139559156124,
+      "activePlaybackWallMs": 28460,
+      "wallMs": 28804,
+      "middleProgress": 0.5295602855419381,
+      "arrivalRadiusLy": 360000,
+      "movingDifference": {
+        "changedFraction": 0.04987024221453287,
+        "meanAbsolute": 1.466486447520186
+      },
+      "arrivalDifference": {
+        "changedFraction": 0.12776816608996538,
+        "meanAbsolute": 3.923594290657471
+      },
+      "event": {
+        "message": "Arrived at Nearby spiral. Travel is paused; look around or choose another destination.",
+        "detail": {
+          "kind": "arrival",
+          "region": "cosmic",
+          "mode": "explore",
+          "position": [
+            0,
+            0,
+            -360000
+          ],
+          "targetId": "near-galaxy",
+          "targetName": "Nearby spiral",
+          "arrivalRadiusLy": 360000
+        }
+      }
+    },
+    {
+      "name": "nearby-free-flight",
+      "difference": {
+        "changedFraction": 0.23929498269896193,
+        "meanAbsolute": 3.9815167243369607
+      },
+      "cloudDifference": {
+        "changedFraction": 0.18103373702422146,
+        "meanAbsolute": 2.6064085928488385
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "name": "desktop-launcher",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "boxes": [
+        {
+          "x": 60,
+          "y": 735.828125,
+          "width": 381.328125,
+          "height": 55.796875
+        },
+        {
+          "x": 449.328125,
+          "y": 735.828125,
+          "width": 381.328125,
+          "height": 55.796875
+        },
+        {
+          "x": 838.65625,
+          "y": 735.828125,
+          "width": 381.34375,
+          "height": 55.796875
+        }
+      ]
+    },
+    {
+      "name": "phone-normal-launcher",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "boxes": [
+        {
+          "x": 42,
+          "y": 580.046875,
+          "width": 236,
+          "height": 55.796875
+        },
+        {
+          "x": 42,
+          "y": 643.84375,
+          "width": 236,
+          "height": 55.796875
+        },
+        {
+          "x": 42,
+          "y": 684.640625,
+          "width": 236,
+          "height": 55.796875
+        }
+      ]
+    },
+    {
+      "name": "phone-fullscreen-launcher",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "boxes": [
+        {
+          "x": 44,
+          "y": 342.765625,
+          "width": 232,
+          "height": 55.796875
+        },
+        {
+          "x": 44,
+          "y": 406.5625,
+          "width": 232,
+          "height": 55.796875
+        },
+        {
+          "x": 44,
+          "y": 470.359375,
+          "width": 232,
+          "height": 55.796875
+        }
+      ]
+    },
+    {
+      "name": "landscape-normal-launcher",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "boxes": [
+        {
+          "x": 42,
+          "y": -0.390625,
+          "width": 484,
+          "height": 55.796875
+        },
+        {
+          "x": 42,
+          "y": 63.40625,
+          "width": 484,
+          "height": 55.796875
+        },
+        {
+          "x": 42,
+          "y": 127.203125,
+          "width": 484,
+          "height": 55.796875
+        }
+      ]
+    },
+    {
+      "name": "landscape-fullscreen-launcher",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "boxes": [
+        {
+          "x": 258,
+          "y": 92.171875,
+          "width": 276,
+          "height": 55.796875
+        },
+        {
+          "x": 258,
+          "y": 110.96875,
+          "width": 276,
+          "height": 55.796875
+        },
+        {
+          "x": 258,
+          "y": 91.765625,
+          "width": 276,
+          "height": 55.796875
+        }
+      ]
+    }
+  ],
+  "graphics": [
+    {
+      "name": "scenic-galaxy-initial",
+      "error": 0
+    },
+    {
+      "name": "scenic-galaxy-middle",
+      "error": 0
+    },
+    {
+      "name": "scenic-galaxy-arrival",
+      "error": 0
+    },
+    {
+      "name": "scenic-galaxy-paused-look",
+      "error": 0
+    },
+    {
+      "name": "scenic-neighborhood-initial",
+      "error": 0
+    },
+    {
+      "name": "scenic-neighborhood-middle",
+      "error": 0
+    },
+    {
+      "name": "scenic-neighborhood-arrival",
+      "error": 0
+    },
+    {
+      "name": "scenic-cosmic-initial",
+      "error": 0
+    },
+    {
+      "name": "scenic-cosmic-middle",
+      "error": 0
+    },
+    {
+      "name": "scenic-cosmic-arrival",
+      "error": 0
+    },
+    {
+      "name": "nearby-origin",
+      "error": 0
+    },
+    {
+      "name": "nearby-passing",
+      "error": 0
+    },
+    {
+      "name": "nearby-paused-look",
+      "error": 0
+    },
+    {
+      "name": "nearby-cloud-front",
+      "error": 0
+    },
+    {
+      "name": "nearby-cloud-behind",
+      "error": 0
+    },
+    {
+      "name": "phone-fullscreen-launch",
+      "error": 0
+    },
+    {
+      "name": "landscape-fullscreen-launch",
+      "error": 0
+    }
+  ]
+}

@@ -1,0 +1,702 @@
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\AlloFlowANTI.txt" b/AlloFlowANTI.txt
+index f3b55bbeb..341858023 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\AlloFlowANTI.txt"
++++ b/AlloFlowANTI.txt
+@@ -36083,10 +36083,40 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   }, [generatedContent, studentResponses]);
+   const downloadSubmissionBackup = (...__a) => _alloHostHandlers().downloadSubmissionBackup(...__a);
+   const handleSubmitAssignment = async (...__a) => _alloHostHandlers().handleSubmitAssignment(...__a);
+-  const executeSaveFile = (interactionOptions) => {
+-    const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
+-    if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile(_alloPhaseKHelpersDeps(), interactionOptions || {});
+-    throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
++  const projectSaveRequestRef = useRef(0);
++  const projectSaveBusyRef = useRef(false);
++  const projectSaveContextRef = useRef(null);
++  const [isProjectSaving, setIsProjectSaving] = useState(false);
++  const projectSaveContext = [showSaveModal, saveType, saveFileName, saveEncryptPassword, inputText, history, generatedContent, studentNickname, studentProjectSettings, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!projectSaveContextRef.current || !projectSaveContextRef.current.values.every((value, index) => value === projectSaveContext[index])) {
++    projectSaveContextRef.current = { values: projectSaveContext };
++  }
++  projectSaveContextRef.current.getDeps = _alloPhaseKHelpersDeps;
++  useEffect(() => () => { ++projectSaveRequestRef.current; projectSaveContextRef.current = null; }, []);
++  const executeSaveFile = async (interactionOptions) => {
++    if (projectSaveBusyRef.current) return { ok: false, reason: 'save-in-progress', narration: 'A project save is already in progress.' };
++    const context = projectSaveContextRef.current;
++    const request = ++projectSaveRequestRef.current;
++    const isCurrent = () => request === projectSaveRequestRef.current && context === projectSaveContextRef.current && context.values[0];
++    const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
++    if (!context || !isCurrent()) return cancelled;
++    projectSaveBusyRef.current = true;
++    setIsProjectSaving(true);
++    try {
++      const modules = [['PhaseKHelpersModule', 'PhaseKHelpers']];
++      if (context.values[3]) modules.push(['AlloCrypto', 'AlloCrypto']);
++      await _alloAwaitModules(modules, 'project save');
++      if (!isCurrent()) return cancelled;
++      const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
++      if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
++      return await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
++    } catch (error) {
++      warnLog('Project save failed:', error);
++      return { ok: false, reason: 'save-failed', narration: 'The project file was not saved. Check the connection, then try again.' };
++    } finally {
++      projectSaveBusyRef.current = false;
++      if (request === projectSaveRequestRef.current) setIsProjectSaving(false);
++    }
+   };
+   const _studentSavePrivateFilenameTokens = [studentNickname, studentProjectSettings && studentProjectSettings.nickname]
+     .map((value) => String(value || '').trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase())
+@@ -36098,7 +36128,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     filenameReady: !!String(saveFileName || '').trim(),
+     filename: String(saveFileName || ''),
+     filenameContainsPrivateCodename: _saveFilenameContainsPrivateCodename,
+-    saving: studentSaveVoiceInProgressRef.current,
++    saving: studentSaveVoiceInProgressRef.current || isProjectSaving,
+     startSaving: () => { if (studentSaveVoiceInProgressRef.current) return false; studentSaveVoiceInProgressRef.current = true; return true; },
+     finishSaving: () => { studentSaveVoiceInProgressRef.current = false; },
+     setFilename: (value) => setSaveFileName(String(value || '').trim().slice(0, 160)),
+@@ -37548,10 +37578,25 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     if (!_m) return _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'this tool').then(() => generateNarrativeLedger(currentHistory));
+     throw new Error("[generateNarrativeLedger] AdventureSessionHandlers module not loaded - reload the page");
+   };
+-  const handleDiceRollComplete = () => {
+-    const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
+-    if (_m && typeof _m.handleDiceRollComplete === "function") return _m.handleDiceRollComplete(_alloAdventureSessionHandlersDeps());
+-    throw new Error("[handleDiceRollComplete] AdventureSessionHandlers module not loaded - reload the page");
++  const diceCompleteRequestRef = useRef(0);
++  const diceCompleteContextRef = useRef(null);
++  const diceCompleteContext = [pendingAdventureUpdate, adventureState.currentScene, adventureState.turnCount, activeView, showDice, activeSessionCode, activeSessionAppId, isTeacherMode, adventureChanceMode, adventureDifficulty, adventureInputMode, adventureFreeResponseEnabled];
++  if (!diceCompleteContextRef.current || !diceCompleteContextRef.current.values.every((value, index) => value === diceCompleteContext[index])) {
++    diceCompleteContextRef.current = { values: diceCompleteContext };
++  }
++  diceCompleteContextRef.current.getDeps = _alloAdventureSessionHandlersDeps;
++  useEffect(() => () => { ++diceCompleteRequestRef.current; diceCompleteContextRef.current = null; }, []);
++  const handleDiceRollComplete = async () => {
++    const request = ++diceCompleteRequestRef.current;
++    const context = diceCompleteContextRef.current;
++    if (!context) return false;
++    try {
++      await _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'adventure turn');
++      if (request !== diceCompleteRequestRef.current || context !== diceCompleteContextRef.current) return false;
++      const api = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
++      if (typeof api?.handleDiceRollComplete !== 'function') throw new Error('Adventure turn is unavailable');
++      return api.handleDiceRollComplete(context.getDeps());
++    } catch (error) { warnLog('Adventure turn could not finish:', error); return false; }
+   };
+   const detectClimaxArchetype = async (text, instructions) => {
+     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+@@ -37714,10 +37759,29 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(value) || 20) }));
+   };
+   const saveAdventureFluencyResult = useCallback(async (...__a) => _alloHostHandlers().saveAdventureFluencyResult(...__a), [addToast, t]);
+-  const handleStartAdventure = () => {
+-    const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+-    if (_m && typeof _m.handleStartAdventure === "function") return _m.handleStartAdventure(_alloAdventureHandlersDeps());
+-    throw new Error("[handleStartAdventure] AdventureHandlers module not loaded - reload the page");
++  const adventureStartRequestRef = useRef(0);
++  const adventureStartBusyRef = useRef(false);
++  const adventureStartContextRef = useRef(null);
++  const adventureStartContext = [activeView, inputText, history, generatedContent, adventureState, showNewGameSetup, isProcessing, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!adventureStartContextRef.current || !adventureStartContextRef.current.values.every((value, index) => value === adventureStartContext[index])) {
++    adventureStartContextRef.current = { values: adventureStartContext };
++  }
++  adventureStartContextRef.current.getDeps = _alloAdventureHandlersDeps;
++  useEffect(() => () => { ++adventureStartRequestRef.current; adventureStartContextRef.current = null; }, []);
++  const handleStartAdventure = async () => {
++    if (adventureStartBusyRef.current) return false;
++    const request = ++adventureStartRequestRef.current;
++    const context = adventureStartContextRef.current;
++    if (!context) return false;
++    adventureStartBusyRef.current = true;
++    try {
++      await _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'adventure setup');
++      if (request !== adventureStartRequestRef.current || context !== adventureStartContextRef.current) return false;
++      const api = window.AlloModules && window.AlloModules.AdventureHandlers;
++      if (typeof api?.handleStartAdventure !== 'function') throw new Error('Adventure setup is unavailable');
++      return await api.handleStartAdventure({ ...context.getDeps(), isAdventureStartCurrent: () => request === adventureStartRequestRef.current && context === adventureStartContextRef.current });
++    } catch (error) { warnLog('Adventure setup could not open:', error); return false; }
++    finally { adventureStartBusyRef.current = false; }
+   };
+   const handleResumeAdventure = async () => {
+     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+@@ -43939,7 +44003,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+                         placeholder={t('modals.save_project.placeholder')}
+                         className="w-full text-lg p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700 font-bold"
+                         autoFocus
+-                        onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
++                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); executeSaveFile(); } }}
+                     />
+                     <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
+                 </div>
+@@ -43969,10 +44033,11 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+                     <button
+                         aria-label={t('common.save')}
+                         onClick={executeSaveFile}
+-                        disabled={!saveFileName.trim()}
++                        disabled={!saveFileName.trim() || isProjectSaving}
++                        aria-busy={isProjectSaving}
+                         className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
+                     >
+-                        <Save size={18} /> {t('modals.save_project.save_btn')}
++                        {isProjectSaving ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Save size={18} />} {isProjectSaving ? t('common.saving') : t('modals.save_project.save_btn')}
+                     </button>
+                 </div>
+             </div>
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt" b/desktop/web-app/src/AlloFlowANTI.txt
+index f3b55bbeb..341858023 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt"
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -36083,10 +36083,40 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   }, [generatedContent, studentResponses]);
+   const downloadSubmissionBackup = (...__a) => _alloHostHandlers().downloadSubmissionBackup(...__a);
+   const handleSubmitAssignment = async (...__a) => _alloHostHandlers().handleSubmitAssignment(...__a);
+-  const executeSaveFile = (interactionOptions) => {
+-    const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
+-    if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile(_alloPhaseKHelpersDeps(), interactionOptions || {});
+-    throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
++  const projectSaveRequestRef = useRef(0);
++  const projectSaveBusyRef = useRef(false);
++  const projectSaveContextRef = useRef(null);
++  const [isProjectSaving, setIsProjectSaving] = useState(false);
++  const projectSaveContext = [showSaveModal, saveType, saveFileName, saveEncryptPassword, inputText, history, generatedContent, studentNickname, studentProjectSettings, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!projectSaveContextRef.current || !projectSaveContextRef.current.values.every((value, index) => value === projectSaveContext[index])) {
++    projectSaveContextRef.current = { values: projectSaveContext };
++  }
++  projectSaveContextRef.current.getDeps = _alloPhaseKHelpersDeps;
++  useEffect(() => () => { ++projectSaveRequestRef.current; projectSaveContextRef.current = null; }, []);
++  const executeSaveFile = async (interactionOptions) => {
++    if (projectSaveBusyRef.current) return { ok: false, reason: 'save-in-progress', narration: 'A project save is already in progress.' };
++    const context = projectSaveContextRef.current;
++    const request = ++projectSaveRequestRef.current;
++    const isCurrent = () => request === projectSaveRequestRef.current && context === projectSaveContextRef.current && context.values[0];
++    const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
++    if (!context || !isCurrent()) return cancelled;
++    projectSaveBusyRef.current = true;
++    setIsProjectSaving(true);
++    try {
++      const modules = [['PhaseKHelpersModule', 'PhaseKHelpers']];
++      if (context.values[3]) modules.push(['AlloCrypto', 'AlloCrypto']);
++      await _alloAwaitModules(modules, 'project save');
++      if (!isCurrent()) return cancelled;
++      const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
++      if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
++      return await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
++    } catch (error) {
++      warnLog('Project save failed:', error);
++      return { ok: false, reason: 'save-failed', narration: 'The project file was not saved. Check the connection, then try again.' };
++    } finally {
++      projectSaveBusyRef.current = false;
++      if (request === projectSaveRequestRef.current) setIsProjectSaving(false);
++    }
+   };
+   const _studentSavePrivateFilenameTokens = [studentNickname, studentProjectSettings && studentProjectSettings.nickname]
+     .map((value) => String(value || '').trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase())
+@@ -36098,7 +36128,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     filenameReady: !!String(saveFileName || '').trim(),
+     filename: String(saveFileName || ''),
+     filenameContainsPrivateCodename: _saveFilenameContainsPrivateCodename,
+-    saving: studentSaveVoiceInProgressRef.current,
++    saving: studentSaveVoiceInProgressRef.current || isProjectSaving,
+     startSaving: () => { if (studentSaveVoiceInProgressRef.current) return false; studentSaveVoiceInProgressRef.current = true; return true; },
+     finishSaving: () => { studentSaveVoiceInProgressRef.current = false; },
+     setFilename: (value) => setSaveFileName(String(value || '').trim().slice(0, 160)),
+@@ -37548,10 +37578,25 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     if (!_m) return _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'this tool').then(() => generateNarrativeLedger(currentHistory));
+     throw new Error("[generateNarrativeLedger] AdventureSessionHandlers module not loaded - reload the page");
+   };
+-  const handleDiceRollComplete = () => {
+-    const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
+-    if (_m && typeof _m.handleDiceRollComplete === "function") return _m.handleDiceRollComplete(_alloAdventureSessionHandlersDeps());
+-    throw new Error("[handleDiceRollComplete] AdventureSessionHandlers module not loaded - reload the page");
++  const diceCompleteRequestRef = useRef(0);
++  const diceCompleteContextRef = useRef(null);
++  const diceCompleteContext = [pendingAdventureUpdate, adventureState.currentScene, adventureState.turnCount, activeView, showDice, activeSessionCode, activeSessionAppId, isTeacherMode, adventureChanceMode, adventureDifficulty, adventureInputMode, adventureFreeResponseEnabled];
++  if (!diceCompleteContextRef.current || !diceCompleteContextRef.current.values.every((value, index) => value === diceCompleteContext[index])) {
++    diceCompleteContextRef.current = { values: diceCompleteContext };
++  }
++  diceCompleteContextRef.current.getDeps = _alloAdventureSessionHandlersDeps;
++  useEffect(() => () => { ++diceCompleteRequestRef.current; diceCompleteContextRef.current = null; }, []);
++  const handleDiceRollComplete = async () => {
++    const request = ++diceCompleteRequestRef.current;
++    const context = diceCompleteContextRef.current;
++    if (!context) return false;
++    try {
++      await _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'adventure turn');
++      if (request !== diceCompleteRequestRef.current || context !== diceCompleteContextRef.current) return false;
++      const api = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
++      if (typeof api?.handleDiceRollComplete !== 'function') throw new Error('Adventure turn is unavailable');
++      return api.handleDiceRollComplete(context.getDeps());
++    } catch (error) { warnLog('Adventure turn could not finish:', error); return false; }
+   };
+   const detectClimaxArchetype = async (text, instructions) => {
+     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+@@ -37714,10 +37759,29 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(value) || 20) }));
+   };
+   const saveAdventureFluencyResult = useCallback(async (...__a) => _alloHostHandlers().saveAdventureFluencyResult(...__a), [addToast, t]);
+-  const handleStartAdventure = () => {
+-    const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+-    if (_m && typeof _m.handleStartAdventure === "function") return _m.handleStartAdventure(_alloAdventureHandlersDeps());
+-    throw new Error("[handleStartAdventure] AdventureHandlers module not loaded - reload the page");
++  const adventureStartRequestRef = useRef(0);
++  const adventureStartBusyRef = useRef(false);
++  const adventureStartContextRef = useRef(null);
++  const adventureStartContext = [activeView, inputText, history, generatedContent, adventureState, showNewGameSetup, isProcessing, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!adventureStartContextRef.current || !adventureStartContextRef.current.values.every((value, index) => value === adventureStartContext[index])) {
++    adventureStartContextRef.current = { values: adventureStartContext };
++  }
++  adventureStartContextRef.current.getDeps = _alloAdventureHandlersDeps;
++  useEffect(() => () => { ++adventureStartRequestRef.current; adventureStartContextRef.current = null; }, []);
++  const handleStartAdventure = async () => {
++    if (adventureStartBusyRef.current) return false;
++    const request = ++adventureStartRequestRef.current;
++    const context = adventureStartContextRef.current;
++    if (!context) return false;
++    adventureStartBusyRef.current = true;
++    try {
++      await _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'adventure setup');
++      if (request !== adventureStartRequestRef.current || context !== adventureStartContextRef.current) return false;
++      const api = window.AlloModules && window.AlloModules.AdventureHandlers;
++      if (typeof api?.handleStartAdventure !== 'function') throw new Error('Adventure setup is unavailable');
++      return await api.handleStartAdventure({ ...context.getDeps(), isAdventureStartCurrent: () => request === adventureStartRequestRef.current && context === adventureStartContextRef.current });
++    } catch (error) { warnLog('Adventure setup could not open:', error); return false; }
++    finally { adventureStartBusyRef.current = false; }
+   };
+   const handleResumeAdventure = async () => {
+     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+@@ -43939,7 +44003,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+                         placeholder={t('modals.save_project.placeholder')}
+                         className="w-full text-lg p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700 font-bold"
+                         autoFocus
+-                        onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
++                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); executeSaveFile(); } }}
+                     />
+                     <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
+                 </div>
+@@ -43969,10 +44033,11 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+                     <button
+                         aria-label={t('common.save')}
+                         onClick={executeSaveFile}
+-                        disabled={!saveFileName.trim()}
++                        disabled={!saveFileName.trim() || isProjectSaving}
++                        aria-busy={isProjectSaving}
+                         className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
+                     >
+-                        <Save size={18} /> {t('modals.save_project.save_btn')}
++                        {isProjectSaving ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Save size={18} />} {isProjectSaving ? t('common.saving') : t('modals.save_project.save_btn')}
+                     </button>
+                 </div>
+             </div>
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx" b/desktop/web-app/src/App.jsx
+index f3b55bbeb..341858023 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx"
++++ b/desktop/web-app/src/App.jsx
+@@ -36083,10 +36083,40 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   }, [generatedContent, studentResponses]);
+   const downloadSubmissionBackup = (...__a) => _alloHostHandlers().downloadSubmissionBackup(...__a);
+   const handleSubmitAssignment = async (...__a) => _alloHostHandlers().handleSubmitAssignment(...__a);
+-  const executeSaveFile = (interactionOptions) => {
+-    const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
+-    if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile(_alloPhaseKHelpersDeps(), interactionOptions || {});
+-    throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
++  const projectSaveRequestRef = useRef(0);
++  const projectSaveBusyRef = useRef(false);
++  const projectSaveContextRef = useRef(null);
++  const [isProjectSaving, setIsProjectSaving] = useState(false);
++  const projectSaveContext = [showSaveModal, saveType, saveFileName, saveEncryptPassword, inputText, history, generatedContent, studentNickname, studentProjectSettings, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!projectSaveContextRef.current || !projectSaveContextRef.current.values.every((value, index) => value === projectSaveContext[index])) {
++    projectSaveContextRef.current = { values: projectSaveContext };
++  }
++  projectSaveContextRef.current.getDeps = _alloPhaseKHelpersDeps;
++  useEffect(() => () => { ++projectSaveRequestRef.current; projectSaveContextRef.current = null; }, []);
++  const executeSaveFile = async (interactionOptions) => {
++    if (projectSaveBusyRef.current) return { ok: false, reason: 'save-in-progress', narration: 'A project save is already in progress.' };
++    const context = projectSaveContextRef.current;
++    const request = ++projectSaveRequestRef.current;
++    const isCurrent = () => request === projectSaveRequestRef.current && context === projectSaveContextRef.current && context.values[0];
++    const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
++    if (!context || !isCurrent()) return cancelled;
++    projectSaveBusyRef.current = true;
++    setIsProjectSaving(true);
++    try {
++      const modules = [['PhaseKHelpersModule', 'PhaseKHelpers']];
++      if (context.values[3]) modules.push(['AlloCrypto', 'AlloCrypto']);
++      await _alloAwaitModules(modules, 'project save');
++      if (!isCurrent()) return cancelled;
++      const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
++      if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
++      return await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
++    } catch (error) {
++      warnLog('Project save failed:', error);
++      return { ok: false, reason: 'save-failed', narration: 'The project file was not saved. Check the connection, then try again.' };
++    } finally {
++      projectSaveBusyRef.current = false;
++      if (request === projectSaveRequestRef.current) setIsProjectSaving(false);
++    }
+   };
+   const _studentSavePrivateFilenameTokens = [studentNickname, studentProjectSettings && studentProjectSettings.nickname]
+     .map((value) => String(value || '').trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase())
+@@ -36098,7 +36128,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     filenameReady: !!String(saveFileName || '').trim(),
+     filename: String(saveFileName || ''),
+     filenameContainsPrivateCodename: _saveFilenameContainsPrivateCodename,
+-    saving: studentSaveVoiceInProgressRef.current,
++    saving: studentSaveVoiceInProgressRef.current || isProjectSaving,
+     startSaving: () => { if (studentSaveVoiceInProgressRef.current) return false; studentSaveVoiceInProgressRef.current = true; return true; },
+     finishSaving: () => { studentSaveVoiceInProgressRef.current = false; },
+     setFilename: (value) => setSaveFileName(String(value || '').trim().slice(0, 160)),
+@@ -37548,10 +37578,25 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     if (!_m) return _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'this tool').then(() => generateNarrativeLedger(currentHistory));
+     throw new Error("[generateNarrativeLedger] AdventureSessionHandlers module not loaded - reload the page");
+   };
+-  const handleDiceRollComplete = () => {
+-    const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
+-    if (_m && typeof _m.handleDiceRollComplete === "function") return _m.handleDiceRollComplete(_alloAdventureSessionHandlersDeps());
+-    throw new Error("[handleDiceRollComplete] AdventureSessionHandlers module not loaded - reload the page");
++  const diceCompleteRequestRef = useRef(0);
++  const diceCompleteContextRef = useRef(null);
++  const diceCompleteContext = [pendingAdventureUpdate, adventureState.currentScene, adventureState.turnCount, activeView, showDice, activeSessionCode, activeSessionAppId, isTeacherMode, adventureChanceMode, adventureDifficulty, adventureInputMode, adventureFreeResponseEnabled];
++  if (!diceCompleteContextRef.current || !diceCompleteContextRef.current.values.every((value, index) => value === diceCompleteContext[index])) {
++    diceCompleteContextRef.current = { values: diceCompleteContext };
++  }
++  diceCompleteContextRef.current.getDeps = _alloAdventureSessionHandlersDeps;
++  useEffect(() => () => { ++diceCompleteRequestRef.current; diceCompleteContextRef.current = null; }, []);
++  const handleDiceRollComplete = async () => {
++    const request = ++diceCompleteRequestRef.current;
++    const context = diceCompleteContextRef.current;
++    if (!context) return false;
++    try {
++      await _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'adventure turn');
++      if (request !== diceCompleteRequestRef.current || context !== diceCompleteContextRef.current) return false;
++      const api = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
++      if (typeof api?.handleDiceRollComplete !== 'function') throw new Error('Adventure turn is unavailable');
++      return api.handleDiceRollComplete(context.getDeps());
++    } catch (error) { warnLog('Adventure turn could not finish:', error); return false; }
+   };
+   const detectClimaxArchetype = async (text, instructions) => {
+     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+@@ -37714,10 +37759,29 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+     setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(value) || 20) }));
+   };
+   const saveAdventureFluencyResult = useCallback(async (...__a) => _alloHostHandlers().saveAdventureFluencyResult(...__a), [addToast, t]);
+-  const handleStartAdventure = () => {
+-    const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+-    if (_m && typeof _m.handleStartAdventure === "function") return _m.handleStartAdventure(_alloAdventureHandlersDeps());
+-    throw new Error("[handleStartAdventure] AdventureHandlers module not loaded - reload the page");
++  const adventureStartRequestRef = useRef(0);
++  const adventureStartBusyRef = useRef(false);
++  const adventureStartContextRef = useRef(null);
++  const adventureStartContext = [activeView, inputText, history, generatedContent, adventureState, showNewGameSetup, isProcessing, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!adventureStartContextRef.current || !adventureStartContextRef.current.values.every((value, index) => value === adventureStartContext[index])) {
++    adventureStartContextRef.current = { values: adventureStartContext };
++  }
++  adventureStartContextRef.current.getDeps = _alloAdventureHandlersDeps;
++  useEffect(() => () => { ++adventureStartRequestRef.current; adventureStartContextRef.current = null; }, []);
++  const handleStartAdventure = async () => {
++    if (adventureStartBusyRef.current) return false;
++    const request = ++adventureStartRequestRef.current;
++    const context = adventureStartContextRef.current;
++    if (!context) return false;
++    adventureStartBusyRef.current = true;
++    try {
++      await _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'adventure setup');
++      if (request !== adventureStartRequestRef.current || context !== adventureStartContextRef.current) return false;
++      const api = window.AlloModules && window.AlloModules.AdventureHandlers;
++      if (typeof api?.handleStartAdventure !== 'function') throw new Error('Adventure setup is unavailable');
++      return await api.handleStartAdventure({ ...context.getDeps(), isAdventureStartCurrent: () => request === adventureStartRequestRef.current && context === adventureStartContextRef.current });
++    } catch (error) { warnLog('Adventure setup could not open:', error); return false; }
++    finally { adventureStartBusyRef.current = false; }
+   };
+   const handleResumeAdventure = async () => {
+     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+@@ -43939,7 +44003,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+                         placeholder={t('modals.save_project.placeholder')}
+                         className="w-full text-lg p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700 font-bold"
+                         autoFocus
+-                        onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
++                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); executeSaveFile(); } }}
+                     />
+                     <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
+                 </div>
+@@ -43969,10 +44033,11 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+                     <button
+                         aria-label={t('common.save')}
+                         onClick={executeSaveFile}
+-                        disabled={!saveFileName.trim()}
++                        disabled={!saveFileName.trim() || isProjectSaving}
++                        aria-busy={isProjectSaving}
+                         className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
+                     >
+-                        <Save size={18} /> {t('modals.save_project.save_btn')}
++                        {isProjectSaving ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Save size={18} />} {isProjectSaving ? t('common.saving') : t('modals.save_project.save_btn')}
+                     </button>
+                 </div>
+             </div>
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\phase_k_helpers_source.jsx" b/phase_k_helpers_source.jsx
+index dc7fef594..e0f57440a 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\phase_k_helpers_source.jsx"
++++ b/phase_k_helpers_source.jsx
+@@ -2034,6 +2034,9 @@ const buildStudentProgressSummary = ({
+ const executeSaveFile = async (deps, interactionOptions = {}) => {
+   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureTypingPaceEnabled, adventureFluencyEnabled, adventureConsistentCharacters, isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle, adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, conceptMasteryLocal, user } = deps;
+   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired"); } catch(_) {}
++      const saveStillCurrent = () => typeof deps.isSaveRequestCurrent !== 'function' || deps.isSaveRequestCurrent();
++      const cancelledSave = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
++      if (!saveStillCurrent()) return cancelledSave;
+       if (!saveFileName.trim()) return { ok: false, reason: 'filename-required', narration: 'A filename is required before saving.' };
+       let currentLog = [...studentProgressLog];
+       if (saveType === 'student') {
+@@ -2072,10 +2075,10 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+         } else {
+             currentLog.push(newLogEntry);
+         }
+-        setStudentProgressLog(currentLog);
+       }
+       const filename = saveFileName.trim().endsWith('.json') ? saveFileName.trim() : `${saveFileName.trim()}.json`;
+       const resolvedBuilderDraft = saveType === 'teacher' ? await Promise.resolve(deps.builderDraft || null) : null;
++      if (!saveStillCurrent()) return cancelledSave;
+       let dataStr = "";
+       // SEL Hub engagement state (streak, per-tool usage). Lives at
+       // window.__alloflowSelEngagement, written by sel_hub_module.js whenever
+@@ -2410,12 +2413,15 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+               outName = _dot > 0 ? outName.slice(0, _dot) + '_CONFIDENTIAL' + outName.slice(_dot) : outName + '_CONFIDENTIAL';
+           }
+       }
++      if (!saveStillCurrent()) return cancelledSave;
+       // Optional educator encryption (AES-256-GCM, key derived from the password via
+       // PBKDF2). Without the password the file is unreadable ciphertext, so there is no
+       // gate to bypass, and there is NO recovery if the password is lost (warned at save time).
+-      if (deps.saveEncryptPassword && window.AlloModules && window.AlloModules.AlloCrypto) {
++      if (deps.saveEncryptPassword) {
+           try {
+-              const _env = await window.AlloModules.AlloCrypto.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
++              const cryptoApi = window.AlloModules && window.AlloModules.AlloCrypto;
++              if (typeof cryptoApi?.encryptJSON !== 'function') throw new Error('Encryption is unavailable');
++              const _env = await cryptoApi.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
+               dataStr = JSON.stringify(_env);
+               if (!/\.enc(\.|$)/i.test(outName)) {
+                   const _d = outName.lastIndexOf('.');
+@@ -2426,6 +2432,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+               return { ok: false, reason: 'encryption-failed', narration: t('save.encrypt_failed') || 'Could not encrypt the file. Save cancelled.' };
+           }
+       }
++      if (!saveStillCurrent()) return cancelledSave;
+       const blob = new Blob([dataStr], { type: 'application/json' });
+       const url = URL.createObjectURL(blob);
+       const link = document.createElement('a');
+@@ -2443,6 +2450,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+           return { ok: false, reason: 'download-blocked', narration: _dlMsg };
+       }
+       addToast(`Project saved as ${outName}`, "success");
++      if (saveType === 'student') setStudentProgressLog(currentLog);
+       setLastJsonFileSave(Date.now());
+       setIsSaveActionPulsing(false);
+       setShowSaveModal(false);
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\phase_k_helpers_module.js" b/phase_k_helpers_module.js
+index e341a98d0..6af14e42d 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\phase_k_helpers_module.js"
++++ b/phase_k_helpers_module.js
+@@ -1908,6 +1908,9 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+     if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired");
+   } catch (_) {
+   }
++  const saveStillCurrent = () => typeof deps.isSaveRequestCurrent !== "function" || deps.isSaveRequestCurrent();
++  const cancelledSave = { ok: false, cancelled: true, reason: "save-context-changed", narration: "Save cancelled because the dialog or project changed. Save again to download the current project." };
++  if (!saveStillCurrent()) return cancelledSave;
+   if (!saveFileName.trim()) return { ok: false, reason: "filename-required", narration: "A filename is required before saving." };
+   let currentLog = [...studentProgressLog];
+   if (saveType === "student") {
+@@ -1946,10 +1949,10 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+     } else {
+       currentLog.push(newLogEntry);
+     }
+-    setStudentProgressLog(currentLog);
+   }
+   const filename = saveFileName.trim().endsWith(".json") ? saveFileName.trim() : `${saveFileName.trim()}.json`;
+   const resolvedBuilderDraft = saveType === "teacher" ? await Promise.resolve(deps.builderDraft || null) : null;
++  if (!saveStillCurrent()) return cancelledSave;
+   let dataStr = "";
+   const selEngagement = typeof window !== "undefined" && window.__alloflowSelEngagement || null;
+   const birdLab = typeof window !== "undefined" && window.__alloflowBirdLab || null;
+@@ -2230,9 +2233,12 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+       outName = _dot > 0 ? outName.slice(0, _dot) + "_CONFIDENTIAL" + outName.slice(_dot) : outName + "_CONFIDENTIAL";
+     }
+   }
+-  if (deps.saveEncryptPassword && window.AlloModules && window.AlloModules.AlloCrypto) {
++  if (!saveStillCurrent()) return cancelledSave;
++  if (deps.saveEncryptPassword) {
+     try {
+-      const _env = await window.AlloModules.AlloCrypto.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
++      const cryptoApi = window.AlloModules && window.AlloModules.AlloCrypto;
++      if (typeof cryptoApi?.encryptJSON !== "function") throw new Error("Encryption is unavailable");
++      const _env = await cryptoApi.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
+       dataStr = JSON.stringify(_env);
+       if (!/\.enc(\.|$)/i.test(outName)) {
+         const _d = outName.lastIndexOf(".");
+@@ -2246,6 +2252,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+       return { ok: false, reason: "encryption-failed", narration: t("save.encrypt_failed") || "Could not encrypt the file. Save cancelled." };
+     }
+   }
++  if (!saveStillCurrent()) return cancelledSave;
+   const blob = new Blob([dataStr], { type: "application/json" });
+   const url = URL.createObjectURL(blob);
+   const link = document.createElement("a");
+@@ -2273,6 +2280,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+     return { ok: false, reason: "download-blocked", narration: _dlMsg };
+   }
+   addToast(`Project saved as ${outName}`, "success");
++  if (saveType === "student") setStudentProgressLog(currentLog);
+   setLastJsonFileSave(Date.now());
+   setIsSaveActionPulsing(false);
+   setShowSaveModal(false);
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\phase_k_helpers_module.js" b/desktop/web-app/public/phase_k_helpers_module.js
+index e341a98d0..6af14e42d 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\phase_k_helpers_module.js"
++++ b/desktop/web-app/public/phase_k_helpers_module.js
+@@ -1908,6 +1908,9 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+     if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired");
+   } catch (_) {
+   }
++  const saveStillCurrent = () => typeof deps.isSaveRequestCurrent !== "function" || deps.isSaveRequestCurrent();
++  const cancelledSave = { ok: false, cancelled: true, reason: "save-context-changed", narration: "Save cancelled because the dialog or project changed. Save again to download the current project." };
++  if (!saveStillCurrent()) return cancelledSave;
+   if (!saveFileName.trim()) return { ok: false, reason: "filename-required", narration: "A filename is required before saving." };
+   let currentLog = [...studentProgressLog];
+   if (saveType === "student") {
+@@ -1946,10 +1949,10 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+     } else {
+       currentLog.push(newLogEntry);
+     }
+-    setStudentProgressLog(currentLog);
+   }
+   const filename = saveFileName.trim().endsWith(".json") ? saveFileName.trim() : `${saveFileName.trim()}.json`;
+   const resolvedBuilderDraft = saveType === "teacher" ? await Promise.resolve(deps.builderDraft || null) : null;
++  if (!saveStillCurrent()) return cancelledSave;
+   let dataStr = "";
+   const selEngagement = typeof window !== "undefined" && window.__alloflowSelEngagement || null;
+   const birdLab = typeof window !== "undefined" && window.__alloflowBirdLab || null;
+@@ -2230,9 +2233,12 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+       outName = _dot > 0 ? outName.slice(0, _dot) + "_CONFIDENTIAL" + outName.slice(_dot) : outName + "_CONFIDENTIAL";
+     }
+   }
+-  if (deps.saveEncryptPassword && window.AlloModules && window.AlloModules.AlloCrypto) {
++  if (!saveStillCurrent()) return cancelledSave;
++  if (deps.saveEncryptPassword) {
+     try {
+-      const _env = await window.AlloModules.AlloCrypto.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
++      const cryptoApi = window.AlloModules && window.AlloModules.AlloCrypto;
++      if (typeof cryptoApi?.encryptJSON !== "function") throw new Error("Encryption is unavailable");
++      const _env = await cryptoApi.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
+       dataStr = JSON.stringify(_env);
+       if (!/\.enc(\.|$)/i.test(outName)) {
+         const _d = outName.lastIndexOf(".");
+@@ -2246,6 +2252,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+       return { ok: false, reason: "encryption-failed", narration: t("save.encrypt_failed") || "Could not encrypt the file. Save cancelled." };
+     }
+   }
++  if (!saveStillCurrent()) return cancelledSave;
+   const blob = new Blob([dataStr], { type: "application/json" });
+   const url = URL.createObjectURL(blob);
+   const link = document.createElement("a");
+@@ -2273,6 +2280,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
+     return { ok: false, reason: "download-blocked", narration: _dlMsg };
+   }
+   addToast(`Project saved as ${outName}`, "success");
++  if (saveType === "student") setStudentProgressLog(currentLog);
+   setLastJsonFileSave(Date.now());
+   setIsSaveActionPulsing(false);
+   setShowSaveModal(false);
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json" b/dev-tools/remediation_validation.json
+index 106daec3a..530ac3d8f 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json"
++++ b/dev-tools/remediation_validation.json
+@@ -46,7 +46,9 @@
+     "tests/k5_deep_action_readiness.test.js",
+     "tests/dashboard_progress_workspace.test.js",
+     "tests/dashboard_close_routing.test.js",
+-    "tests/learner_progress_scope_browser.test.js"
++    "tests/learner_progress_scope_browser.test.js",
++    "tests/k5_save_adventure_readiness.test.js",
++    "tests/project_save_cancellation_encryption.test.js"
+   ],
+   "browser": [
+     "tests/e2e/document_dependency_parity.spec.ts",
+@@ -144,6 +146,16 @@
+     "desktop/web-app/public/lang/arabic.js",
+     "view_header_source.jsx",
+     "view_header_module.js",
+-    "desktop/web-app/public/view_header_module.js"
++    "desktop/web-app/public/view_header_module.js",
++    "phase_k_helpers_source.jsx",
++    "phase_k_helpers_module.js",
++    "desktop/web-app/public/phase_k_helpers_module.js",
++    "adventure_handlers_source.jsx",
++    "adventure_handlers_module.js",
++    "desktop/web-app/public/adventure_handlers_module.js",
++    "tests/k5_save_adventure_readiness.test.js",
++    "tests/project_save_cancellation_encryption.test.js",
++    "allo_crypto_module.js",
++    "desktop/web-app/public/allo_crypto_module.js"
+   ]
+ }
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\adventure_handlers_source.jsx" b/adventure_handlers_source.jsx
+index cd98f764a..66920a17e 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\adventure_handlers_source.jsx"
++++ b/adventure_handlers_source.jsx
+@@ -667,6 +667,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
+ 
+ let adventureRestartPromptPending = false;
+ const handleStartAdventure = async (deps) => {
++  if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
+   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true || adventureRestartPromptPending) return false;
+   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
+@@ -692,6 +693,7 @@ const handleStartAdventure = async (deps) => {
+               return false;
+           } finally { adventureRestartPromptPending = false; }
+       }
++      if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
+       if (alloBotRef.current) {
+           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+       }
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\adventure_handlers_module.js" b/adventure_handlers_module.js
+index 228818850..2bc13c222 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\adventure_handlers_module.js"
++++ b/adventure_handlers_module.js
+@@ -670,6 +670,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
+ 
+ let adventureRestartPromptPending = false;
+ const handleStartAdventure = async (deps) => {
++  if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
+   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true || adventureRestartPromptPending) return false;
+   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
+@@ -695,6 +696,7 @@ const handleStartAdventure = async (deps) => {
+               return false;
+           } finally { adventureRestartPromptPending = false; }
+       }
++      if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
+       if (alloBotRef.current) {
+           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+       }
+diff --git "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\adventure_handlers_module.js" b/desktop/web-app/public/adventure_handlers_module.js
+index 228818850..2bc13c222 100644
+--- "a/reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\adventure_handlers_module.js"
++++ b/desktop/web-app/public/adventure_handlers_module.js
+@@ -670,6 +670,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
+ 
+ let adventureRestartPromptPending = false;
+ const handleStartAdventure = async (deps) => {
++  if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
+   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true || adventureRestartPromptPending) return false;
+   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
+@@ -695,6 +696,7 @@ const handleStartAdventure = async (deps) => {
+               return false;
+           } finally { adventureRestartPromptPending = false; }
+       }
++      if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
+       if (alloBotRef.current) {
+           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+       }

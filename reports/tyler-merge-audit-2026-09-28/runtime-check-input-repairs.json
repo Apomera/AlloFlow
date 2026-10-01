@@ -1,0 +1,138 @@
+{
+  "recordedAt": "2026-09-29T03:58:07.694Z",
+  "candidate": "C:/tmp/tyler_integration_candidate",
+  "entries": [
+    {
+      "path": "ui_strings.js",
+      "action": "add-header-catalog-keys",
+      "before": "dd096ae4f48a32f4adf90ae4100a9a193b028ce4cfdb297fd2571b3df7eb5253",
+      "after": "cfe7ed29782ec43af9562e15bc048b5696b9e1b2dec2bb07839baeeba39a63b4"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "action": "add-header-catalog-keys",
+      "before": "dd096ae4f48a32f4adf90ae4100a9a193b028ce4cfdb297fd2571b3df7eb5253",
+      "after": "cfe7ed29782ec43af9562e15bc048b5696b9e1b2dec2bb07839baeeba39a63b4"
+    },
+    {
+      "path": "stem_lab/stem_lab_module.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 639471,
+      "sha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa"
+    },
+    {
+      "path": "stem_lab/stem_tool_printingpress.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 2149714,
+      "sha256": "dc8c129413213941b2e6d92a1103e1917b2a90546b9de0edccde7d383c5c3076"
+    },
+    {
+      "path": "app/ai_backend_module.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    {
+      "path": "app/alloflow_desktop_bridge.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 7935,
+      "sha256": "83b288e1075e38588888235bc8cfee3e82fbfba7f0b97f6bba7011a382f26a2d"
+    },
+    {
+      "path": "app/asset-manifest.json",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 240,
+      "sha256": "1c49de1ae3fc8415cd55d7c1078471657cccabe13231763a31eaa5fcafb3ffc8"
+    },
+    {
+      "path": "app/index.html",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 5918,
+      "sha256": "10c3a86e5cb8d69d3f67bef8d1f757f74d6db8bd44ed99afec58b4305c0f95a1"
+    },
+    {
+      "path": "app/qrcode.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 56694,
+      "sha256": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780"
+    },
+    {
+      "path": "app/static/css/main.e0dc1514.css",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 624163,
+      "sha256": "1c8c03c71f7d635e62bdd8f4f7a398766fe86b761df7d7f27a6085d9a5b5a136"
+    },
+    {
+      "path": "app/static/js/main.aefc6e2d.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 1944117,
+      "sha256": "fe15b85a79837a532568d7ca123a7a6d18f13300304435580320316c3792af4a"
+    },
+    {
+      "path": "app/static/js/main.aefc6e2d.js.LICENSE.txt",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 10144,
+      "sha256": "a2971f0429fa672618f64ad390cb12e09043ce58066034bbf594be3ff335d274"
+    },
+    {
+      "path": "app/sw.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 6448,
+      "sha256": "315c2e8c563347c561bd83ea5dfe1f677c61bc21e7b19e19e87299c731aa8ec8"
+    },
+    {
+      "path": "desktop/web-app/public/app/ai_backend_module.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    {
+      "path": "desktop/web-app/public/app/alloflow_desktop_bridge.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 7935,
+      "sha256": "83b288e1075e38588888235bc8cfee3e82fbfba7f0b97f6bba7011a382f26a2d"
+    },
+    {
+      "path": "desktop/web-app/public/app/asset-manifest.json",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 240,
+      "sha256": "1c49de1ae3fc8415cd55d7c1078471657cccabe13231763a31eaa5fcafb3ffc8"
+    },
+    {
+      "path": "desktop/web-app/public/app/index.html",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 5918,
+      "sha256": "10c3a86e5cb8d69d3f67bef8d1f757f74d6db8bd44ed99afec58b4305c0f95a1"
+    },
+    {
+      "path": "desktop/web-app/public/app/qrcode.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 56694,
+      "sha256": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780"
+    },
+    {
+      "path": "desktop/web-app/public/app/static/css/main.e0dc1514.css",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 624163,
+      "sha256": "1c8c03c71f7d635e62bdd8f4f7a398766fe86b761df7d7f27a6085d9a5b5a136"
+    },
+    {
+      "path": "desktop/web-app/public/app/static/js/main.aefc6e2d.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 1944117,
+      "sha256": "fe15b85a79837a532568d7ca123a7a6d18f13300304435580320316c3792af4a"
+    },
+    {
+      "path": "desktop/web-app/public/app/static/js/main.aefc6e2d.js.LICENSE.txt",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 10144,
+      "sha256": "a2971f0429fa672618f64ad390cb12e09043ce58066034bbf594be3ff335d274"
+    },
+    {
+      "path": "desktop/web-app/public/app/sw.js",
+      "action": "materialize-missing-current-main-fixture",
+      "bytes": 6448,
+      "sha256": "315c2e8c563347c561bd83ea5dfe1f677c61bc21e7b19e19e87299c731aa8ec8"
+    }
+  ]
+}

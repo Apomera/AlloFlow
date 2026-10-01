@@ -1,0 +1,40 @@
+{
+  "checks": [
+    "Taps and a circle without the inward pasta fold record no mixing or elapsed time.",
+    "A completed preview visibly lifts the spoon and strands; Escape restores them without incorporating the splash.",
+    "A counterclockwise gather, inward fold and release records exactly one canonical mix and an accurate 30 mL receipt.",
+    "Inspection routing changes no evidence; the keyboard mixing control preserves the same cooking effect.",
+    "The last mixing receipt derives from saved actions and survives a reload.",
+    "Before pasta is combined, a full pan sweep commits on release and omits the inward folding step.",
+    "Leaving the pan during a fold and pointer cancellation discard the preview and leave the liquid unmixed.",
+    "Switching tools cancels previews, and a complete fold works inside the expanded kitchen.",
+    "Finished cooks and historical replay keep mixing locked without changing saved evidence.",
+    "A real phone touch gather and inward fold records only on release, with no horizontal overflow.",
+    "The folding panel fits 320px, supports forced colors, and retains the direct gesture in reduced-motion mode.",
+    "Graphics-loss fallback retains a working equivalent mixing action."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop fold receipt",
+      "violations": []
+    },
+    {
+      "name": "Expanded kitchen",
+      "violations": []
+    },
+    {
+      "name": "Phone touch fold",
+      "violations": []
+    },
+    {
+      "name": "Compact forced colors",
+      "violations": []
+    },
+    {
+      "name": "Graphics-loss mixing fallback",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

@@ -11,7 +11,8 @@ const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
 
 describe.each(Object.entries(hosts))('%s', (_, source) => {
   it('offers "Skip to resource" right after "Skip to Content", before the main area', () => {
-    const content = source.indexOf("{t('a11y.skip_content')}");
+    // 548a67131 (WCAG 2.2 pass) added an English fallback to the link text.
+    const content = source.indexOf("{t('a11y.skip_content') || 'Skip to content'}");
     const resource = source.indexOf('href="#allo-resource"');
     const main = source.indexOf('id="main-content"');
     expect(content).toBeGreaterThan(-1);

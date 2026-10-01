@@ -1,0 +1,74 @@
+Track 18 — sentence Generate/Remove ownership and keyboard focus
+
+The isolated candidate prevents delayed sentence-audio actions from changing another reading's status or busy controls. It passes cancellation signals to the existing service, rejects duplicate and conflicting sentence actions, keeps the active control focusable while busy, and moves focus to the same sentence's Generate button when Remove disappears. An empty removal result is reported as unconfirmed. Completion wording points to device-save status instead of asserting durability.
+
+Baseline: working-tree snapshot captured **2026-09-27 14:09:50 UTC**, HEAD **af3c6b82ab76dad40a5d44f785bf828d1adea86c**. Reader SHA256: `dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31`. HEAD and reader hash remained unchanged at packaging, **14:17:52 UTC**. This is not a deployed-release check. No applicable AGENTS.md was found in the inspected repository or ancestry.
+
+The previous [recording-retry candidate](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-recording-retry-track18-2026-09-27/HANDOFF.md), including its lifecycle prerequisite, remains absent from shared source. It was applied only in this isolated fixture before the new changes. This handoff offers cumulative and incremental alternatives to avoid duplicate integration.
+
+Ranked evidence:
+
+| Priority / classification | Frozen evidence | Result and minimal correction |
+| --- | --- | --- |
+| P1 — source gap, reproduced with controlled component promises | [raw-basis/view_simplified_source.jsx:3192](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:3192), [3211](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:3211) | Generation has no request/context guard, signal or immediate duplicate guard. Old completion can change the next reading's notice, while its busy key can block the next reading. Bind each operation to a request and the text/reading/language/voice/rate/provider context; clear invalidated state and ignore stale completion. |
+| P1 — source gap, reproduced with controlled component promises | [raw-basis/view_simplified_source.jsx:3405](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:3405) | Late Remove completion can overwrite the next reading's notice or clear a newer removal's busy state. Scope removal to reading/text/language/teacher eligibility, supply its signal, and preserve removal across an AI-voice-only change. Serialize sentence Generate/Remove against each other and against recording. |
+| P2 — source gap, component reproduction and candidate Chromium verification | [raw-basis/view_simplified_source.jsx:3734](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:3734) | Native disabled state can drop focus while an action is busy. A store update can remove the focused Remove button before persistence settles. Keep the active action focusable with guarded `aria-disabled`/`aria-busy`, retain busy Remove through settlement, then restore focus to the same sentence's Generate control only if the user has not moved focus. |
+| P2 — source gap, reproduced empty-return case | [raw-basis/view_simplified_source.jsx:3416](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:3416) | Only literal false was rejected; undefined could be called a successful removal. Require a truthy result and use “Could not confirm audio removal … Check the sentence before trying again.” |
+| Unverified risk, outside this patch | [raw-basis/view_simplified_source.jsx:3229](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:3229) | Paused-preview resume awaits `current.play()` without the token check used by the fresh-player branch. A delayed resume across navigation deserves a separate controlled/native reproduction. Do not infer an observed production failure from this source pattern. |
+
+Candidate implementation anchors: [request ownership and cancellation](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/candidate/view_simplified_source.jsx:2611), [focus restoration](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/candidate/view_simplified_source.jsx:2627), [generation](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/candidate/view_simplified_source.jsx:3247), [removal](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/candidate/view_simplified_source.jsx:3492), [control availability](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/candidate/view_simplified_source.jsx:3839).
+
+Existing safeguards and nonfindings:
+
+- Playback badges already say **ready for playback** at [source:2135](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/raw-basis/view_simplified_source.jsx:2135). This work does not claim to have introduced that distinction. Existing device-readiness/retry controls remain authoritative for verified persistence.
+- Narration access is already separate from Edit text on Original, Adapted and Both. Protected Original text, sentence identity options, recording recovery and the existing host API are preserved.
+- The host forwards Generate/Remove options, and the service consumes their signals: [generation](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.tmp/reader-sentence-actions18/raw-basis/read_aloud_audio_service_source.jsx:1286), [removal](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.tmp/reader-sentence-actions18/raw-basis/read_aloud_audio_service_source.jsx:1486). No host API or storage schema change is proposed.
+- Cancellation is cooperative. The service removes from its live store before awaiting persistence at [service:818](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.tmp/reader-sentence-actions18/raw-basis/read_aloud_audio_service_source.jsx:818). Aborting cannot be described as undoing a committed removal. The legacy host fallback may not honor the signal. This candidate guarantees reader ownership checks, not storage rollback.
+
+Validation completed:
+
+| Check | Result | Scope |
+| --- | --- | --- |
+| New 19-case suite against recording-prerequisite-only source | **18 failed, 1 passed** | Controlled component reproduction of this step's gaps. The prerequisite baseline already includes the previous recording fixes. |
+| Final candidate, six focused suites | **108 passed, 0 failed** | Sentence actions, recording lifecycle/retry, edit audio UI, narration access/recovery and reader audio readiness. |
+| Chromium production-reader fixture | **14 scenarios passed**, no page errors | Original/Adapted/Both × normal/spacing/200%-computed-font at 320×640; Generate/Remove navigation; Escape then failure; unconfirmed removal; moved focus. |
+| Candidate build / generated mirrors / patches | Successful; mirror hashes equal; both patches reconstruct their candidate | Only isolated files were built. Babel emitted its informational large-source formatting notice. |
+
+The browser fixture verifies focus visibility, no document horizontal overflow in tested modes, no invalid nested controls, guarded repeat activation, visible results after collapse, polite atomic status semantics, and retention of busy Remove after a simulated early store update. It includes simulated touch activation and reduced motion. Audio generation, removal and persistence are mocked; it uses no microphone, live app, provider or real saved audio. There is no claim that automated DOM checks prove screen-reader or hardware-mobile behavior.
+
+Focused reproduction and acceptance tasks:
+
+| Route / task | Required outcome |
+| --- | --- |
+| Original, Adapted and Both: focus sentence Generate; Enter twice; leave its promise pending | One request. Focus stays on the busy action, exposed as busy/unavailable. Other conflicting sentence actions cannot start. On completion the same control remains focused and an audio-ready status points to device-save status. |
+| Focus Remove; Enter/Space; update the store before its persistence promise settles | Busy Remove stays in the DOM and keeps focus. When it settles and the button disappears, focus moves to the same sentence's Generate button, visibly within the nested scrolling panel. If focus moved to Close or elsewhere, preserve it. |
+| Return false/undefined or reject Remove | Announce unconfirmed removal; do not state successful device deletion. If the clip remains, Remove stays available and retains focus. If the store already removed it, Generate is the recovery focus target. Review actual persistence separately. |
+| Start either action on reading A, navigate to B, start another action and complete/reject A | A's signal is aborted. Its result cannot overwrite B's message, clear B's busy state or steal B's focus. B remains independently usable. |
+| During generation, change text, language, AI voice, rate or provider; also test loss of teacher eligibility and unmount | Invalidate and signal cancellation of the old request. No stale success/error or locked controls. For removal, an AI-voice-only change preserves the request; text/language/reading changes invalidate it. |
+| While an action runs, Escape from narration; then complete/fail it in the same reading | Close remains reachable and focus returns to Manage narration. Result stays visible outside the collapsed panel and does not steal focus. Closing this panel alone does not cancel a valid same-reading action. |
+| 320 CSS-pixel layout, spacing overrides, actual 200% text enlargement and 400% desktop browser zoom | No lost status/label/control, no horizontal scrolling for ordinary content, no obscured focused Generate/Remove/Close/Manage. Fixture covered 320px, spacing and computed font doubling; actual browser text zoom and 400% zoom still need manual checks. |
+| All themes; reduced motion; immersive/sticky/nested overlays; hardware touch | Focus indication and contrast remain usable; close/save/recovery actions are reachable without traps. These assembled/hardware cases remain manual work. |
+| NVDA with Firefox/Chromium and VoiceOver with Safari | Verify meaningful sentence/action context, busy/unavailable states, a single understandable result announcement, focus after removal and absence of a keyboard trap. DOM semantics are not announcement proof. |
+| Real service: quota/denied storage/eviction, interrupted request, reopen application | Verify resource/occurrence ownership, persisted removal/generation and device-readiness receipts. Do not infer durability or transactional rollback from these mocked browser cases. |
+
+Status semantics follow [WCAG 4.1.3 guidance](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html); narrow-layout acceptance follows [WCAG reflow guidance](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html). This is targeted verification, not a conformance claim. Inline word target exceptions remain relevant; this work does not label every sub-44px inline target a failure.
+
+Integration handoff:
+
+1. Reader owner/01: choose **one** patch. [cumulative-from-current-reader.patch](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/cumulative-from-current-reader.patch) includes recording lifecycle, recording retry and this step against the captured shared reader. It supersedes applying earlier cumulative patches separately. [incremental-after-recording-retry.patch](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/incremental-after-recording-retry.patch) contains just this step if both recording improvements are already integrated. Reconcile newer edits; full source copies are comparison artifacts.
+2. This step changes only `view_simplified_source.jsx` and adds `tests/reader_sentence_audio_actions.test.js` and `dev-tools/reader_sentence_audio_actions_browser.cjs`. The cumulative patch carries the earlier recording test/fixtures as dependencies. Regenerate root/desktop reader modules through the owner build process; generated files are not overwrite artifacts in the patch.
+3. Preserve 02's readiness/identity work and 15's persistence contract. Actual cancellation boundaries, legacy fallback and durable receipts need integration verification. Final accessibility checks require assembled **04/09/10**, latest 02/15 and a separately verified deployed baseline.
+4. Localization: add `simplified.audio_generated_ready`, `simplified.audio_removed_check_device`, and `simplified.audio_remove_unconfirmed`; English fallbacks are included. Retain earlier recording keys when applying the cumulative patch.
+5. Run the six focused suites plus the new browser fixture, then manual AT/zoom/storage cases. The earlier browser fixtures are included for integration regression use but were not rerun in this step; do not roll their earlier counts into the 14 reported here.
+
+Reproduction commands from an isolated candidate checkout with captured dependencies:
+
+```powershell
+node _build_view_simplified_module.js
+node node_modules/vitest/vitest.mjs run tests/reader_sentence_audio_actions.test.js tests/reader_recording_lifecycle.test.js tests/edit_audio_ui.test.js tests/reader_narration_access.test.js tests/reader_narration_recovery.test.js tests/reader_audio_readiness.test.js --reporter=json --outputFile=validation/sentence-actions-after.json
+node dev-tools/reader_sentence_audio_actions_browser.cjs
+```
+
+Evidence: [snapshot](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/snapshot.json), [manifest/hashes](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/manifest.json), [before](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/validation/sentence-actions-before.json), [after](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/validation/sentence-actions-after.json), [browser](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-sentence-actions-track18-2026-09-27/validation/sentence-actions-browser.json).
+
+Only isolated candidates and reports were changed. No shared reader/host/generated file, Git state, saved application state, deployment or other session was modified or contacted.

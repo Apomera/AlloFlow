@@ -6,13 +6,13 @@
 <text x="15" y="21" font-size="3.2">Model length = real length × 1.26 × 10⁻⁸. One model centimetre represents 796000 m.</text>
 <text x="15" y="36" font-size="3.5">1. The Earth · 1.27 × 10⁷ m · across</text>
 <g stroke="#146675" stroke-width=".55" fill="none">
-<line data-drawing-measure="0" data-model-mm="160" transform="translate(15 0)" x1="0" y1="50" x2="160" y2="50"/>
+<line data-drawing-measure="0" data-drawing-item="earth" data-model-mm="160" transform="translate(15 0)" x1="0" y1="50" x2="160" y2="50"/>
 <path d="M15 48v4M175 48v4"/>
 </g>
 <text x="15" y="57" font-size="3.5">160 mm</text>
 <text x="15" y="70" font-size="3.5">2. The Moon · 3.48 × 10⁶ m · across</text>
 <g stroke="#92541b" stroke-width=".55" fill="none">
-<line data-drawing-measure="1" data-model-mm="43.63522210014126" transform="translate(15 0)" x1="0" y1="84" x2="43.63522210014126" y2="84"/>
+<line data-drawing-measure="1" data-drawing-item="moon" data-model-mm="43.63522210014126" transform="translate(15 0)" x1="0" y1="84" x2="43.63522210014126" y2="84"/>
 <path d="M15 82v4M58.63522210014126 82v4"/>
 </g>
 <text x="15" y="91" font-size="3.5">43.6 mm</text>

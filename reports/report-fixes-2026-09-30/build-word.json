@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-01T00:26:26.301Z",
+  "phase": "word",
+  "hostIntegration": "held",
+  "modules": [
+    {
+      "output": "word_sounds_module.js",
+      "sha256": "032fb0760c307f25ff7b1701ff48e6fabc99d3ab2160bdaabe7e4f6c3c06e0a4",
+      "inputs": {
+        "word_sounds_core.js": "bbd734af219f59ad4c4b43c52db32666167e278365f8f3bc3c9c26a5e8fb9b16",
+        "word_sounds_setup_source.jsx": "bf32bc321ae526c72335035fd0eaa4b1bcb91789a23ab406cc352b78ed35648a",
+        "dev-tools/sync_word_sounds_core.cjs": "0e0fd7f6f0d796935e9a7fefb6e657eae3d47db5c308a0b18630f921688f367f",
+        "_build_word_sounds_setup_module.js": "570a34ab9ad3d2231352f52ef8a1a1e606d1f206a2ce0514636f16a3fb342ffb"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "word_sounds_setup_module.js",
+      "sha256": "156f5ddcf8c03e2c3bea909c874cc50e5d78a93015a8230f077526b11ee31c2b",
+      "inputs": {
+        "word_sounds_core.js": "bbd734af219f59ad4c4b43c52db32666167e278365f8f3bc3c9c26a5e8fb9b16",
+        "word_sounds_setup_source.jsx": "bf32bc321ae526c72335035fd0eaa4b1bcb91789a23ab406cc352b78ed35648a",
+        "dev-tools/sync_word_sounds_core.cjs": "0e0fd7f6f0d796935e9a7fefb6e657eae3d47db5c308a0b18630f921688f367f",
+        "_build_word_sounds_setup_module.js": "570a34ab9ad3d2231352f52ef8a1a1e606d1f206a2ce0514636f16a3fb342ffb"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

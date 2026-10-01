@@ -4400,7 +4400,7 @@ var d = labToolData || {};
           React.createElement('style',null,'.gp-controls button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}.gp-controls legend{float:none;padding:0}'),
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
-            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
+            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':__alloT('stem.geo.a11y_back', 'Back')},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
             React.createElement('h3',{className:'text-lg font-bold text-violet-800' + onHostInk},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-700'},exploreScore.correct+'/'+exploreScore.total),

@@ -1,0 +1,37 @@
+{
+  "created": "2026-09-26T22:47:10.888Z",
+  "basisHead": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "lastObservedHead": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "scope": "Reader UX delta only; apply semantically to current integration, never replace shared reader wholesale",
+  "files": [
+    "view_simplified_source.jsx",
+    "tests/edit_audio_ui.test.js",
+    "tests/reader_narration_access.test.js",
+    "dev-tools/reader_narration_browser.cjs"
+  ],
+  "patchSha256": "cd64d0fb465214a3ee391135b894f430f30030ecd65429fff3f7de9d1a294737",
+  "candidateModuleSha256": "ff053cb5c24b921d1829f04818c770457dc13c4bf19136cfbaf4729cbd5707ba",
+  "patchReconstructionVerified": true,
+  "entries": [
+    {
+      "file": "view_simplified_source.jsx",
+      "basisSha256": "687866a6202a20700ba8dd40bcf59a7b8a5edc0552ffed4091f8c764a01ba9f1",
+      "candidateSha256": "a3eff9ae55927b7297f2398c36f6ede7617b507cf7e9f8ceb16b845e1ced28d7"
+    },
+    {
+      "file": "tests/edit_audio_ui.test.js",
+      "basisSha256": "53ea411dfe48dadaee5a43a8120f9684125602867278cd23ab2be2e6680dd53b",
+      "candidateSha256": "a23ffe4887a3a73e20049ac715dc7351ffe75bcbed087bd3be1e7eec8002cdf7"
+    },
+    {
+      "file": "tests/reader_narration_access.test.js",
+      "basisSha256": null,
+      "candidateSha256": "6a5b917b7d2507dfee7afd9f9b57f482ac969fd26bab59b4ad0a2e03f0125fe4"
+    },
+    {
+      "file": "dev-tools/reader_narration_browser.cjs",
+      "basisSha256": null,
+      "candidateSha256": "e504694e7c2621e672a0aaf66d0b895cbfec7ac191f2ea385c2b5f4c03d92fa8"
+    }
+  ]
+}

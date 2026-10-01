@@ -15,6 +15,8 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
+// Like the app's t(): a known key resolves, an unknown one does not (the view routes its own chrome through t).
+const appLikeT = key => (key === 'a11y.curriculum_audit_summary' ? 'Curriculum audit summary' : key);
 const dispatcher = readFileSync(resolve(process.cwd(), 'generate_dispatcher_source.jsx'), 'utf8');
 const view = readFileSync(resolve(process.cwd(), 'view_alignment_report_source.jsx'), 'utf8');
 
@@ -111,7 +113,7 @@ describe('view: the Content accessibility section survives object entries under 
       studentImpacts: [IMPACT, 'A student with low vision cannot enlarge the chart labels.', { count: 3 }],
       fixes: [{ fix: 'Write a one-sentence alt text for each of the three undescribed figures.' }, 'Break the 400-word passage into paragraphs.'],
     };
-    expect(() => mount(React.createElement(View, { generatedContent: report(llmReview), t: () => 'Curriculum audit summary' }))).not.toThrow();
+    expect(() => mount(React.createElement(View, { generatedContent: report(llmReview), t: appLikeT }))).not.toThrow();
     const section = host.querySelector('#audit-accessibility');
     expect(section).toBeTruthy();
     const items = Array.from(section.querySelectorAll('li')).map((li) => li.textContent.trim());
@@ -137,7 +139,7 @@ describe('view: the Content accessibility section survives object entries under 
     const poisoned = report({ status: 'Not Aligned', narrative: 'Most figures lack descriptions.', studentImpacts: [], fixes: [] });
     poisoned.data.comprehensive.accessibility.notes = { text: 'not a string' };
     poisoned.data.comprehensive.vocabulary = { status: 'Not evaluated', notEvaluated: true, recommendations: ['No vocabulary evidence was available.'] };
-    expect(() => mount(React.createElement(View, { generatedContent: poisoned, t: () => 'Curriculum audit summary' }))).not.toThrow();
+    expect(() => mount(React.createElement(View, { generatedContent: poisoned, t: appLikeT }))).not.toThrow();
     const failed = host.querySelector('#audit-accessibility[data-audit-section-failed="true"]');
     expect(failed).toBeTruthy();
     expect(failed.textContent).toContain('Content accessibility could not be displayed');

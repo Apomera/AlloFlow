@@ -1,0 +1,55 @@
+{
+  "at": "2026-09-30T21:49:01.837Z",
+  "phase": "core",
+  "hostIntegration": "paused pending shared writer clarification",
+  "modules": [
+    {
+      "output": "generate_dispatcher_module.js",
+      "sha256": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+      "inputs": {
+        "generate_dispatcher_source.jsx": "189b2d246636c394d7dde7086a3e77797525458d2f94be79e0bab5155fd9195b"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "generation_helpers_module.js",
+      "sha256": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+      "inputs": {
+        "generation_helpers_source.jsx": "375ef69704a9e0d2ca9956bad30703089f9180328ad2cfc09da4d5cd0434a6c5"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "gemini_api_module.js",
+      "sha256": "ca2fcf3e44e2d6ae575be4d22ec208d4ade8001fa17b687701029b0bb0ba3213",
+      "inputs": {
+        "gemini_api_source.jsx": "66e3100c9a7ceffa24b5cdac325ee07f65bc8913f6ae56b0ba3c382a3600f4b9"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "guided_mode_config_module.js",
+      "sha256": "580a8cfa661a80ce2f81fd7a7f61886265dcd13403d682f546d8df28c2baefb8",
+      "inputs": {
+        "guided_mode_config_source.jsx": "db9ce27cfa4c69a090dd66f2a8f8d187216350755a69e132a29045995e9e03f5"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "error_reporter_module.js",
+      "sha256": "7ef1e9083e16a0e761aab9046911e8768cfe0d2fa2ecfe37c9e10c471f96570d",
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

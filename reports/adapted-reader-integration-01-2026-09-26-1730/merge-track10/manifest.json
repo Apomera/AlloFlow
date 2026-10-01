@@ -1,0 +1,17 @@
+[
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 7
+  },
+  {
+    "file": "tests/adapted_word_help_ui.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/prepared_word_help_regressions.test.js",
+    "existed": true,
+    "conflicts": 1
+  }
+]

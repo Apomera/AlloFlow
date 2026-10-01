@@ -1,0 +1,189 @@
+{
+  "checks": [
+    {
+      "id": "html.utf8-encoding",
+      "status": "passed",
+      "observed": {
+        "declaredCharsets": [
+          "utf-8"
+        ]
+      },
+      "expected": "valid UTF-8 with compatible declarations"
+    },
+    {
+      "id": "html.document-identity",
+      "status": "passed",
+      "observed": {
+        "title": "Residual export fixes",
+        "language": "en"
+      },
+      "expected": {
+        "title": "Residual export fixes",
+        "language": "en"
+      }
+    },
+    {
+      "id": "html.main-landmark",
+      "status": "passed",
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "html.heading-navigation-semantics",
+      "status": "passed",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "id": "html.reading-order",
+      "status": "passed",
+      "observed": {
+        "anchorsInOrder": true
+      },
+      "expected": []
+    },
+    {
+      "id": "html.no-positive-tabindex",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.table-1",
+      "status": "failed",
+      "observed": {
+        "caption": "Course scores",
+        "rows": [
+          [
+            {
+              "text": "Cafe",
+              "role": "TH",
+              "scope": "col"
+            },
+            {
+              "text": "Score",
+              "role": "TH",
+              "scope": "col"
+            }
+          ],
+          [
+            {
+              "text": "Ada",
+              "role": "TD",
+              "scope": null
+            },
+            {
+              "text": "95",
+              "role": "TD",
+              "scope": null
+            }
+          ]
+        ],
+        "accessibility": [
+          [
+            {
+              "exposed": true,
+              "role": "columnheader",
+              "name": "Cafe",
+              "requiredRole": "columnheader",
+              "inRow": true,
+              "inTable": true
+            },
+            {
+              "exposed": true,
+              "role": "columnheader",
+              "name": "Score",
+              "requiredRole": "columnheader",
+              "inRow": true,
+              "inTable": true
+            }
+          ],
+          [
+            {
+              "exposed": true,
+              "role": "cell",
+              "name": "Ada",
+              "requiredRole": "cell",
+              "inRow": true,
+              "inTable": true
+            },
+            {
+              "exposed": true,
+              "role": "cell",
+              "name": "95",
+              "requiredRole": "cell",
+              "inRow": true,
+              "inTable": true
+            }
+          ]
+        ],
+        "exposure": {
+          "table": true,
+          "columnHeaders": [
+            true,
+            true
+          ],
+          "rowHeaders": [
+            false
+          ]
+        }
+      },
+      "expected": {
+        "caption": "Course scores",
+        "headers": [
+          "Café",
+          "Score"
+        ],
+        "rows": [
+          [
+            "Ada",
+            "95"
+          ]
+        ],
+        "rowHeaders": false
+      }
+    },
+    {
+      "id": "html.table-count",
+      "status": "passed",
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "html.no-required-network",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.inspection-coverage",
+      "status": "passed",
+      "observed": {
+        "reasons": [],
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0
+        }
+      }
+    }
+  ],
+  "coverage": {
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "blocked": 0,
+    "scripts": 0,
+    "unresolved": 0,
+    "animations": 0
+  },
+  "limitations": [
+    "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+    "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+    "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+    "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-01T00:28:46.204Z",
+  "inputHashes": {
+    "word_sounds_core.js": "bbd734af219f59ad4c4b43c52db32666167e278365f8f3bc3c9c26a5e8fb9b16",
+    "word_sounds_setup_source.jsx": "bf32bc321ae526c72335035fd0eaa4b1bcb91789a23ab406cc352b78ed35648a",
+    "word_sounds_module.js": "032fb0760c307f25ff7b1701ff48e6fabc99d3ab2160bdaabe7e4f6c3c06e0a4",
+    "word_sounds_setup_module.js": "156f5ddcf8c03e2c3bea909c874cc50e5d78a93015a8230f077526b11ee31c2b",
+    "desktop/web-app/public/word_sounds_module.js": "032fb0760c307f25ff7b1701ff48e6fabc99d3ab2160bdaabe7e4f6c3c06e0a4",
+    "desktop/web-app/public/word_sounds_setup_module.js": "156f5ddcf8c03e2c3bea909c874cc50e5d78a93015a8230f077526b11ee31c2b",
+    "dev-tools/sync_word_sounds_core.cjs": "0e0fd7f6f0d796935e9a7fefb6e657eae3d47db5c308a0b18630f921688f367f",
+    "_build_word_sounds_setup_module.js": "570a34ab9ad3d2231352f52ef8a1a1e606d1f206a2ce0514636f16a3fb342ffb",
+    "_build_simple_iife_module.js": "c7db9787c6e43b64a02a20481130ece19ea017f6260e6b59609e14834a3dfbc0",
+    "tests/helpers/word_sounds_core.js": "a2e215dc46625a6efdfd2226147609547b0a205f03c979925ea6f095a48a8cd0",
+    "tests/helpers/word_sounds_pack_fixture.js": "a56fe72a7a521efde697db1d167933cfcd5b251f1f71d34ad20cf8d8f32be960",
+    "tests/helpers/word_sounds_harness.js": "12b971d9ee55a5d5c11b25dba9391c669639c3a87c65eec06a39989d1356c89d",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "reports/report-fixes-2026-09-30/word-sounds-navigation-host-proposal.patch": "42ca0c52555d8b976d1f1bdd03757ef3e50017978072685542c8c52af27c9dde",
+    "tests/report_word_sounds_content_guard.test.js": "1fa2b348d01030910aea18a23679003964c52ad81c3c4b138b1061ca4da4f0b9",
+    "tests/report_word_sounds_built_contract.test.js": "ba2a9ed791cb2cb123ada1afc6ac061e036b9f641dda8f1bd43a47b5a16ab299",
+    "tests/report_word_sounds_navigation_proposal.test.js": "ba94f1957b5ef2ff20ce582660eca575d63b229c2bd97f51633f63c3bc27f6d1",
+    "tests/word_sounds_grading.test.js": "c6f5a063284834a9b67ae56983d652ec2ab28f4910763af05b1bf9dc8268c6e0",
+    "tests/word_sounds_phoneme_check.test.js": "983c8604983e48d4d5da9b188236f829237d8541cef62f34506e87bb2e483ba4",
+    "tests/word_sounds_language_gating.test.js": "abb937e775d2bb81b62b3dae99e3e055a3c22e4bf336239c10e40b456178c617",
+    "tests/word_sounds_board_lifecycle.test.js": "f17776ee94b26bc9a9b9de9df7c56f56963719cb773c7a1cf256102a4e077551",
+    "tests/word_sounds_fixed_form_runtime_deep_regression.test.js": "494ae8a9de607dea44afcfdd59c1ef199bf7a467023d3ff187ca001d80162c1b",
+    "tests/word_sounds_graded_rows.test.js": "9369d188ce41c93b8aadb2ab64b5daa7ed9e4f587e07b7db2c01e9148dc3f584"
+  },
+  "testFiles": [
+    "tests/report_word_sounds_content_guard.test.js",
+    "tests/report_word_sounds_built_contract.test.js",
+    "tests/report_word_sounds_navigation_proposal.test.js",
+    "tests/word_sounds_grading.test.js",
+    "tests/word_sounds_phoneme_check.test.js",
+    "tests/word_sounds_language_gating.test.js",
+    "tests/word_sounds_board_lifecycle.test.js",
+    "tests/word_sounds_fixed_form_runtime_deep_regression.test.js",
+    "tests/word_sounds_graded_rows.test.js"
+  ]
+}

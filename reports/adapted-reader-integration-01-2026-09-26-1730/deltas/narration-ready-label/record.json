@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T22:59:13.339Z",
+  "label": "narration-ready-label",
+  "patch": "f38591411108b1336958997931972b6cc5f021c752eba1eae5b7625896c62dba",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "069c3751a49d02356db0093c996266ed96ba1687501458afd9acee494f8aa595",
+      "after": "afe7ba74c50f3ce9663855883c43289dd8f4e9e7b05d331be80284687dae4995",
+      "changed": true
+    }
+  ]
+}

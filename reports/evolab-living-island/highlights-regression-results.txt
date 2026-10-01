@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:16936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K(node:16936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K  2 passed (1.0m)

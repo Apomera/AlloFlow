@@ -1,0 +1,50 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "projection": [
+        0,
+        4.1560029009054445e-16,
+        0.9835316865019836
+      ]
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "projection": [
+        0,
+        4.1560029009054445e-16,
+        0.9835316865019836
+      ]
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "projection": [
+        0,
+        4.1560029009054445e-16,
+        0.9835316865019836
+      ]
+    }
+  ],
+  "performance": [
+    {
+      "releaseMs": 52.30000000074506,
+      "duration": 33.25000000000489
+    },
+    {
+      "releaseMs": 905.4000000003725,
+      "duration": 119.9999999999566
+    }
+  ],
+  "fullObservation": true,
+  "noFrozenEscape": true,
+  "selection": true,
+  "rewind": true,
+  "capture": true,
+  "keyboard": true,
+  "viewPreserved": true,
+  "contextRecovered": true
+}

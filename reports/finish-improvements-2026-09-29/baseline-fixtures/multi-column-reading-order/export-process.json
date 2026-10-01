@@ -1,0 +1,16 @@
+{
+  "artifacts": {
+    "accessibilityReport": "multi-column-scrambled-accessibility-report.json",
+    "accessibleHtml": "multi-column-scrambled-accessible.html",
+    "privacyReceipt": "multi-column-scrambled-privacy-receipt.json",
+    "taggedPdf": "multi-column-scrambled-alloflow-accessible.pdf"
+  },
+  "humanReviewRequired": true,
+  "ok": true,
+  "outputDirectory": "export",
+  "outputPathRedacted": true,
+  "pdfUaCompliant": null,
+  "pdfUaValidation": "not_run",
+  "taggedPdfGeneration": "completed",
+  "verdict": "pdf_generated_unverified_review_required"
+}

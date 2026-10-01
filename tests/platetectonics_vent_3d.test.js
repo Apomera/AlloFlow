@@ -15,7 +15,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it, beforeAll, afterEach, vi } from 'vitest';
 
-const SRC = 'stem_lab/stem_tool_platetectonics.js';
+// PT_TEST_SOURCE: see platetectonics_boundary_model.test.js.
+const SRC = process.env.PT_TEST_SOURCE || 'stem_lab/stem_tool_platetectonics.js';
 const MIRRORS = [
   'desktop/web-app/public/stem_lab/stem_tool_platetectonics.js',
   'desktop/app-build/stem_lab/stem_tool_platetectonics.js'
@@ -154,7 +155,7 @@ afterEach(() => {
 // 1.8 MB tool; re-rendering it synchronously per state change ran the suite into
 // a worker crash. Tests that need the tool to observe its own writes call
 // rerender() explicitly.
-function renderTool(toolState) {
+function renderTool(toolState, ctxExtra, preserveMount = false) {
   const registry = globalThis.window.StemLab._registry;
   const cfg = registry.plateTectonics;
   expect(cfg, 'plateTectonics must register itself on load').toBeTruthy();
@@ -165,7 +166,7 @@ function renderTool(toolState) {
 
   const patches = [];
   const Icons = new Proxy({}, { get: () => () => React.createElement('span') });
-  let state = { plateTectonics: Object.assign({ simTab: 'sim' }, toolState) };
+  let state = { plateTectonics: Object.assign({ _ptPicked: true, simTab: 'sim' }, toolState) };
 
   const ctx = {
     React,
@@ -192,8 +193,12 @@ function renderTool(toolState) {
     icons: Icons,
     t: (k, fb) => (fb == null ? k : fb)
   };
+  Object.assign(ctx, ctxExtra || {});
 
-  const rerender = () => ReactDOM.render(React.createElement(() => cfg.render(ctx)), host);
+  // Most older tests explicitly remount to reset their widget state. Reward
+  // receipts must be tested across commits of the SAME mounted component.
+  const Tool = () => cfg.render(ctx);
+  const rerender = () => ReactDOM.render(React.createElement(preserveMount ? Tool : () => cfg.render(ctx)), host);
   rerender();
 
   return { host, ctx, patches, rerender, getState: () => state.plateTectonics };
@@ -327,6 +332,31 @@ describe('3D volcano cutaway: controls', () => {
     expect(on[0].getAttribute('data-pt-vent-magma')).toBe('rhyolite');
   });
 
+  it('describes the eruption that each composition actually displays', () => {
+    const expected = {
+      basalt: ['Lava erupts', 'lava fountain', 'how little ash'],
+      andesite: ['Explosive eruption', 'ash column', 'shorter lava flows'],
+      rhyolite: ['Explosive eruption', 'dense ash column', 'Flowing lava is not shown']
+    };
+    for (const magma of Object.keys(expected)) {
+      const { host } = renderTool({ ptVent3D: true, ptVentMagma: magma, ptEruptPhase: 'blast' });
+      const stage = host.querySelector('[data-pt-vent-phase="blast"]');
+      expect(stage).toBeTruthy();
+      expected[magma].forEach(text => expect(stage.textContent).toContain(text));
+      expect(stage.textContent).toContain('simplified comparison of three model eruptions');
+      if (magma === 'basalt') expect(stage.textContent).not.toContain('shatters');
+    }
+  });
+
+  it('distinguishes the small basalt summit drop from the larger rhyolite collapse', () => {
+    const basalt = renderTool({ ptVent3D: true, ptVentMagma: 'basalt', ptEruptPhase: 'caldera' }).host.querySelector('[data-pt-vent-phase]');
+    expect(basalt.textContent).toContain('Summit subsides');
+    expect(basalt.textContent).toContain('Only a small summit drop');
+    const rhyolite = renderTool({ ptVent3D: true, ptVentMagma: 'rhyolite', ptEruptPhase: 'caldera' }).host.querySelector('[data-pt-vent-phase]');
+    expect(rhyolite.textContent).toContain('Summit collapses');
+    expect(rhyolite.textContent).toContain('widens the crater into a caldera');
+  });
+
   it('describes the canvas for a student who cannot see it', () => {
     const { host } = renderTool({ ptVent3D: true });
     const canvas = host.querySelector('[data-pt-vent-gl]');
@@ -334,16 +364,40 @@ describe('3D volcano cutaway: controls', () => {
     expect(canvas.getAttribute('role')).toBe('img');
     expect(canvas.getAttribute('aria-label')).toBeTruthy();
 
-    const descId = canvas.getAttribute('aria-describedby');
-    expect(descId).toBeTruthy();
-    const desc = host.querySelector('[id="' + descId + '"]');
-    expect(desc, 'aria-describedby must point at a node that exists').toBeTruthy();
-    // The description has to carry the CAUSAL chain, not just name the parts:
-    // that text is the only route a nonvisual user has to the whole lesson.
-    expect(desc.textContent).toMatch(/magma chamber/i);
-    expect(desc.textContent).toMatch(/caldera/i);
-    expect(desc.textContent).toMatch(/basalt/i);
-    expect(desc.textContent).toMatch(/rhyolite/i);
+    const ids = canvas.getAttribute('aria-describedby').split(/\s+/);
+    const descriptions = ids.map(id => host.querySelector('[id="' + id + '"]'));
+    descriptions.forEach(description => expect(description, 'each description must exist').toBeTruthy());
+    const text = descriptions.map(description => description.textContent).join(' ');
+    expect(text).toMatch(/magma chamber/i);
+    expect(text).toMatch(/centre slice/i);
+    expect(text).toMatch(/Medium silica/);
+    expect(text).toMatch(/sticky/);
+    expect(text).toMatch(/steep stratovolcano/);
+    expect(text).toMatch(/vent is quiet/i);
+    expect(canvas.getAttribute('aria-label')).toContain('Andesitic');
+  });
+
+  it('keeps slice controls synchronized with shape, interior and keyboard reset views', () => {
+    const { host, patches } = renderTool({ ptVent3D: true });
+    const gl = window.__alloVentGL;
+    const slider = host.querySelector('#pt-vent-cut');
+    const output = host.querySelector('#pt-vent-cut-reading');
+    gl.zoom(1.0); gl.setCut(-20);
+    host.querySelector('[data-pt-vent-preset="shape"]').click();
+    expect(gl.getCam()).toEqual({ rotX: -22, rotY: 34, scale: 1, cut: null });
+    expect(slider.value).toBe('30');
+    expect(slider.getAttribute('aria-valuetext')).toBe(output.textContent);
+    expect(output.textContent).toContain('Whole volcano');
+    host.querySelector('[data-pt-vent-preset="inside"]').click();
+    expect(gl.getCam()).toEqual({ rotX: -7, rotY: -17, scale: 1, cut: 0 });
+    expect(slider.value).toBe('0');
+    expect(output.textContent).toBe('Centre slice');
+    gl.zoom(0.8); gl.setCam(-65, 90); gl.setCut(null);
+    keyOn(host.querySelector('[data-pt-vent-gl]'), 'Home');
+    expect(gl.getCam()).toEqual({ rotX: -7, rotY: -17, scale: 1, cut: 0 });
+    expect(slider.value).toBe('0');
+    expect(output.textContent).toBe('Centre slice');
+    expect(patches.some(patch => 'eruptions' in patch || 'researchPoints' in patch)).toBe(false);
   });
 });
 
@@ -562,8 +616,11 @@ describe('quiz: answer positions cannot be gamed', () => {
     const literal = lines.slice(start, end + 1).join('\n')
       .replace(/^\s*var QUIZZES = ptBalanceAnswers\(/, '')
       .replace(/\);\s*$/, '');
+    // The bank is translated (__alloT wraps every string the student reads), so
+    // evaluate it with an English-fallback shim, as the myth-bank tests do: the
+    // balance invariants must hold in any language.
     // eslint-disable-next-line no-eval
-    return (0, eval)('(' + literal + ')');
+    return (0, eval)('(function (__alloT) { return (' + literal + '); })')((k, fb) => fb);
   };
 
   it('spreads the correct answer evenly across the option slots', () => {
@@ -651,11 +708,17 @@ describe('earthquake lab: the magnitude scale is named correctly', () => {
   });
 
   it('still states the saturation limit that makes the distinction matter', () => {
-    // Renaming the slider without keeping the explanation would trade one
-    // inaccuracy for a silent gap.
-    const source = read(SRC);
-    expect(source).toMatch(/saturates above/i);
-    expect(source).toMatch(/Charles Richter's original 1935 scale/);
+    // Keep the scientific distinction in the rendered optional notes, using
+    // the working ML range listed by USGS rather than a universal M7 cutoff.
+    const { host } = renderTool({ simTab: 'earthquake' });
+    const note = host.querySelector('[data-pt-eq-magnitude-scales]');
+    expect(note).not.toBeNull();
+    expect(note.closest('[data-pt-eq-model-limits]')).not.toBeNull();
+    expect(note.textContent).toMatch(/moment magnitude \(Mw\).*fault area, slip and rock rigidity/);
+    expect(note.textContent).toMatch(/Charles Richter’s original 1935 scale \(local magnitude, ML\)/);
+    expect(note.textContent).toMatch(/ML saturates for large earthquakes/);
+    expect(note.textContent).toMatch(/working range as about M2–6\.5/);
+    expect(note.textContent).toMatch(/Moment magnitude remains useful for the M8–9/);
   });
 });
 
@@ -710,40 +773,51 @@ describe('research points: an award cannot be counted twice', () => {
   // the window before React re-renders used to read the SAME stale
   // completedChallenges and researchPoints from the render closure, so the same
   // challenge was awarded twice and the second write overwrote the first total.
-  const finalState = (r) => r.getState();
-
-  it('never lists the same challenge twice after normal play', () => {
+  it('commits one challenge and celebrates once across repeated checks and renders', () => {
     vi.useFakeTimers();
     try {
-      const r = renderTool({ quakeCount: 1, researchPoints: 0, totalRP: 0, completedChallenges: [] });
+      const addToast = vi.fn();
+      const r = renderTool({ researchPoints: 0, totalRP: 0, completedChallenges: [] }, { addToast }, true);
       const canvas = r.host.querySelector('[data-pt-main-canvas]');
-      keyOn(canvas, 'ArrowDown');
-      keyOn(canvas, 'ArrowRight', { shiftKey: true });
-      vi.advanceTimersByTime(500);
-      keyOn(canvas, 'ArrowRight', { shiftKey: true });
-      vi.advanceTimersByTime(500);
-      const done = r.getState().completedChallenges || [];
-      expect(done.length, 'no challenge id may appear twice').toBe(new Set(done).size);
+      r.ctx.setToolData((prev) => ({ ...prev, plateTectonics: { ...prev.plateTectonics, ptMadeQuakes: 1 } }));
+      const check = canvas._ptLive.checkChallenges;
+      check();
+      check();
+      expect(r.getState().completedChallenges).toEqual(['first_quake']);
+      expect(r.getState().researchPoints).toBe(10);
+      expect(r.getState().totalRP).toBe(10);
+      expect(addToast, 'feedback waits for the award to commit').not.toHaveBeenCalled();
+      const act = React.act || React.unstable_act;
+      act(() => r.rerender());
+      expect(addToast).toHaveBeenCalledTimes(1);
+      expect(addToast.mock.calls[0][0]).toContain('Plate Boundary Shaker');
+      check();
+      act(() => r.rerender());
+      act(() => r.rerender());
+      vi.advanceTimersByTime(1000);
+      expect(addToast).toHaveBeenCalledTimes(1);
+      expect(r.getState().completedChallenges).toEqual(['first_quake']);
+      expect(r.getState().researchPoints).toBe(10);
     } finally {
       vi.useRealTimers();
     }
   });
 
-  // HONESTY NOTE. The two behavioural tests first written here did NOT
-  // discriminate: reverting the fix left them green. Reproducing the race needs
-  // two checkChallenges calls inside one pre-re-render window, and the host
-  // deliberately does not re-render (doing so crashed the worker on a component
-  // this size), so that window never opens here.
-  //
-  // Rather than keep coverage that cannot fail, this pins the specific dangerous
-  // pattern at the source. It is a weaker kind of test than the rest of this
-  // file and is only used because the behavioural route is genuinely unavailable
-  // — but it does flip: both halves of the fix, reverted independently, fail it.
+  it('does not replay celebrations for awards loaded from a saved lab', () => {
+    const addToast = vi.fn();
+    const r = renderTool({ ptMadeQuakes: 1, researchPoints: 10, totalRP: 10, completedChallenges: ['first_quake'] }, { addToast }, true);
+    const act = React.act || React.unstable_act;
+    act(() => r.rerender());
+    expect(addToast).not.toHaveBeenCalled();
+    expect(r.getState().researchPoints).toBe(10);
+  });
+
+  // Keep the updater's purity contract alongside the behavioral checks above.
   it('computes points and the earned list from live state, not the closure', () => {
     const source = read(SRC);
     const start = source.indexOf('function checkChallenges()');
     expect(start).toBeGreaterThan(-1);
-    const body = source.slice(start, start + 1800);
+    const body = source.slice(start, source.indexOf('// Track tab views automatically.', start));
 
     // Read-modify-write must start from `cur`, the state React hands the updater.
     // Type-guarded now (`|| []` admitted a truthy non-array, and .slice threw);
@@ -764,9 +838,10 @@ describe('research points: an award cannot be counted twice', () => {
     // there would replay for a single win, so both must happen outside it.
     const source = read(SRC);
     const start = source.indexOf('function checkChallenges()');
-    const body = source.slice(start, start + 1800);
+    const body = source.slice(start, source.indexOf('// Track tab views automatically.', start));
     const updaterStart = body.indexOf('updFn(function(cur)');
-    const updaterEnd = body.indexOf('});', updaterStart);
+    const updaterEnd = body.indexOf('// Notify only after', updaterStart);
+    expect(updaterEnd).toBeGreaterThan(updaterStart);
     const updaterBody = body.slice(updaterStart, updaterEnd);
     expect(updaterBody).not.toContain('addToast');
     expect(updaterBody).not.toContain('sfxTectCorrect');
@@ -864,6 +939,848 @@ describe('boundary stress lab: friction resists slip', () => {
   it('describes what each slider does, now that one is inverted from before', () => {
     const { host } = renderTool({ simTab: 'boundaryHunt' });
     expect(host.textContent).toMatch(/friction holds it back|friction resists slip/i);
+  });
+});
+
+describe('boundary stress lab: the model is earned, not handed out', () => {
+  // The meter, its failure line, the equation and "thrusts need the most
+  // stress" ARE the answer to the panel's own hypothesis prompt. They open only
+  // after evidence at every boundary type plus the student's own explanation,
+  // or for a teacher.
+  const MODEL = /fails past|net = stress|Thrusts need the most stress/;
+  const state = (log, explanation) => ({ simTab: 'boundaryHunt', boundaryHunt: {
+    btype: 'convergent', force: 60, friction: 20, hypothesis: '', stuckRevealed: false,
+    understood: !!explanation, explanation: explanation || '', log: log || [] } });
+  const row = (bt, st) => ({ bt, f: 60, fr: 20, st });
+  const ALL = [row('convergent', 'thrust'), row('divergent', 'normal'), row('transform', 'strikeSlip')];
+  const WHY = 'Friction holds each fault until the push beats it; thrusts need the biggest push.';
+
+  it('hides the model from a student who has not earned it yet', () => {
+    const { host } = renderTool(state());
+    expect(host.querySelector('[data-pt-stress-reveal]').getAttribute('data-pt-stress-reveal')).toBe('earning');
+    expect(host.textContent).not.toMatch(MODEL);
+    // and the figure's accessible name does not leak it either
+    const svg = host.querySelector('[data-pt-stress-diagram]');
+    expect(svg.getAttribute('aria-label')).not.toMatch(/failure line/);
+    // the developer's design note is not student copy
+    expect(host.textContent).not.toMatch(/Design note|no reveal/i);
+  });
+
+  it('keeps it hidden with evidence but no explanation, or an explanation but gaps in the evidence', () => {
+    expect(renderTool(state(ALL, '')).host.textContent).not.toMatch(MODEL);
+    expect(renderTool(state(ALL.slice(0, 2), WHY)).host.textContent).not.toMatch(MODEL);
+  });
+
+  it('opens once every boundary type is logged and the student has explained it', () => {
+    const { host } = renderTool(state(ALL, WHY));
+    expect(host.querySelector('[data-pt-stress-reveal]').getAttribute('data-pt-stress-reveal')).toBe('open');
+    expect(host.textContent).toMatch(MODEL);
+  });
+
+  it('opens straight away for a teacher', () => {
+    const { host } = renderTool(state(), { isTeacherMode: true });
+    expect(host.textContent).toMatch(MODEL);
+  });
+});
+
+describe('Erupt! erupts the volcano the model has, or says why not', () => {
+  it('does nothing but explain when no subduction zone or ridge is on screen', () => {
+    // At rest every seam sits in the untouched resting gap, so there is no
+    // boundary at all, let alone one that can erupt.
+    const { host, ctx, patches, rerender } = renderTool({ ptErupting: false });
+    host.querySelector('[data-pt-erupt]').click();
+    expect(patches.some((p) => Object.prototype.hasOwnProperty.call(p, 'eruptionCount'))).toBe(false);
+    expect(ctx._sr.join(' ')).toMatch(/No volcano to erupt yet/);
+    rerender();
+    expect(host.querySelector('[data-pt-erupt-hint]'), 'a sighted student sees the reason too').toBeTruthy();
+  });
+});
+
+describe('What moves the plates: the force balance behaves like Earth', () => {
+  // The force lab replaces the conveyor belt with slab pull + ridge push against
+  // mantle drag. These run the lab's own engine, not a copy of it.
+  const F = () => globalThis.window.__alloPtForces;
+  const run = (w, myr) => { for (let i = 0; i < Math.round(myr / 0.05); i++) F().step(w, 0.05); };
+
+  it('moves a plate with a sinking slab several times faster than a continent plate without one', () => {
+    const w = F().make();
+    expect(w.vA).toBeGreaterThan(5);
+    expect(Math.abs(w.vB)).toBeLessThan(2);
+    expect(w.vA / Math.abs(w.vB)).toBeGreaterThan(5);
+  });
+
+  it('slows a plate sharply when its slab is cut, without stopping it, and lets it recover as new slab sinks', () => {
+    const w = F().make();
+    run(w, 5);
+    const before = w.vA;
+    F().cut(w);
+    expect(w.vA).toBeLessThan(before * 0.3);
+    expect(w.vA).toBeGreaterThan(0);
+    const justAfter = w.vA;
+    run(w, 25);
+    expect(w.vA, 'slab pull rebuilds as new plate sinks').toBeGreaterThan(justAfter * 2);
+  });
+
+  it('jams the trench with a continent, breaks the slab off, and builds mountains', () => {
+    const w = F().make();
+    expect(F().continent(w)).toBe(true);
+    const events = [];
+    for (let i = 0; i < 900; i++) { F().step(w, 0.05); events.push(...w.events.splice(0)); }
+    expect(events).toContain('collision');
+    expect(events).toContain('breakoff');
+    expect(events.indexOf('collision')).toBeLessThan(events.indexOf('breakoff'));
+    expect(w.vA).toBeLessThan(w.collision.vBefore * 0.3);
+    expect(w.mtn).toBeGreaterThan(1);
+    expect(w.contA.x1, 'the continent does not go down').toBeLessThanOrEqual(F().PTF.X_TRENCH);
+  });
+
+  it('prints mirror-image magnetic stripes and ages on both sides of the ridge', () => {
+    const w = F().make();
+    run(w, 15);
+    [50, 200, 400, 700].forEach((d) => {
+      const bA = F().birthAt(w.stripsA, w.xR + d), bB = F().birthAt(w.stripsB, w.xR - d);
+      expect(bA).not.toBeNull(); expect(bB).not.toBeNull();
+      expect(Math.abs((w.t - bA) - (w.t - bB))).toBeLessThan(0.05);
+      expect(F().polAt(bA)).toBe(F().polAt(bB));
+    });
+  });
+
+  it('makes the sea floor older with distance from the ridge', () => {
+    const w = F().make();
+    run(w, 10);
+    const ages = [100, 600, 1200, 2000].map((d) => w.t - F().birthAt(w.stripsA, w.xR + d));
+    for (let i = 1; i < ages.length; i++) expect(ages[i]).toBeGreaterThan(ages[i - 1]);
+  });
+
+  it('pulls harder with older, denser plate at the trench', () => {
+    const old = F().make();
+    const young = F().make();
+    young.t -= 50;           // same geometry, every strip 50 Myr younger
+    F().solve(young); F().solve(old);
+    expect(young.fsp).toBeLessThan(old.fsp);
+  });
+});
+
+describe('What moves the plates: predict first, then watch', () => {
+  it('lives in the Interactive Sim category with a name', () => {
+    const text = read(SRC);
+    expect(text).toMatch(/tabs: \["sim", "forces", /);
+    expect(text).toMatch(/forces: __alloT\('stem\.platetectonics\.tabname_forces', "⚖️ What Moves Plates"\)/);
+  });
+
+  it('describes the running model in words, with real units', () => {
+    const { host } = renderTool({ simTab: 'forces' });
+    const cv = host.querySelector('[data-pt-forces-canvas]');
+    expect(cv).toBeTruthy();
+    expect(cv.getAttribute('aria-label')).toMatch(/cm per year/);
+    expect(cv.getAttribute('aria-label')).toMatch(/slab pull/);
+    expect(host.querySelector('[data-pt-forces-balance]').textContent).toMatch(/slab pull [\d.]+ \+ ridge push [\d.]+ = mantle drag [\d.]+/);
+  });
+
+  it('asks for a prediction before cutting the slab, and records it', () => {
+    // No rerender() here: the harness's rerender remounts the tool, which would
+    // wipe the lab's own state. React re-renders the lab itself after each click.
+    const { host, ctx, getState } = renderTool({ simTab: 'forces' });
+    const cvBefore = host.querySelector('[data-pt-forces-readout]').textContent;
+    host.querySelector('[data-pt-forces-cut]').click();
+    const fs = host.querySelector('[data-pt-forces-predict]');
+    expect(fs, 'a prediction is asked for first').toBeTruthy();
+    const lock = host.querySelector('[data-pt-forces-lock]');
+    expect(lock.disabled, 'cannot lock in without choosing').toBe(true);
+    // Nothing has happened to the model yet.
+    expect(host.querySelector('[data-pt-forces-readout]').textContent).toBe(cvBefore);
+    fs.querySelectorAll('input[type=radio]')[1].click();
+    host.querySelector('[data-pt-forces-lock]').click();
+    const saved = getState().ptForce;
+    expect(saved && saved.preds && saved.preds.length).toBe(1);
+    expect(saved.preds[0]).toMatchObject({ a: 'cut', c: 1, ok: true });
+    expect(ctx._sr.join(' ')).toMatch(/Prediction saved/);
+    expect(host.querySelector('[data-pt-forces-readout]').textContent, 'the cut happened after the prediction').not.toBe(cvBefore);
+  });
+
+  it('records measured evidence once the cut outcome finishes, not when predicted', async () => {
+    const { host, getState, patches } = renderTool({ simTab: 'forces' });
+    // Parent updates merge the previous completed records into draft-only
+    // checkpoints. Count newly saved arrays, not every snapshot carrying them.
+    const forceChanges = () => {
+      let previous = {};
+      return patches.filter((p) => p.ptForce).map(({ ptForce: current }) => {
+        const change = {
+          draft: current.draft !== previous.draft,
+          prediction: current.preds !== previous.preds,
+          observation: current.observations !== previous.observations
+        };
+        previous = current;
+        return change;
+      });
+    };
+    expect(forceChanges()).toHaveLength(0);
+    host.querySelector('[data-pt-forces-cut]').click();
+    host.querySelector('[data-pt-forces-predict] input[type=radio]').click();
+    host.querySelector('[data-pt-forces-lock]').click();
+    expect(forceChanges().some((change) => change.draft && !change.prediction && !change.observation)).toBe(true);
+    expect(forceChanges().filter((change) => change.prediction)).toHaveLength(1);
+    expect(forceChanges().filter((change) => change.observation)).toHaveLength(0);
+    expect(getState().ptForce.preds).toHaveLength(1);
+    expect(getState().ptForce.preds[0]).toMatchObject({ a: 'cut', c: 0, ok: false });
+    expect(getState().ptForce.observations).toBeUndefined();
+    expect(window.__alloPtEvidenceFrom(getState())).not.toContain('cut');
+    host.querySelector('[data-pt-forces-run]').click();
+    const step = () => [...host.querySelectorAll('button')].find((b) => /\+1 million years/.test(b.textContent)).click();
+    for (let i = 0; i < 4; i++) step();
+    await vi.waitFor(() => expect(getState().ptForce.observations).toHaveLength(1));
+    const observed = getState().ptForce.observations[0];
+    expect(observed.a).toBe('cut');
+    expect(observed.vBefore).toBeGreaterThan(observed.vAfter);
+    expect(observed.vAfter).toBeGreaterThan(0);
+    expect(window.__alloPtEvidenceFrom(getState())).toContain('cut');
+    step(); step();
+    expect(forceChanges().filter((change) => change.prediction)).toHaveLength(1);
+    expect(forceChanges().filter((change) => change.observation)).toHaveLength(1);
+    expect(getState().ptForce.observations).toHaveLength(1);
+  });
+
+  it('reports collision and slab breakoff when the student advances time in steps', () => {
+    const { host, ctx } = renderTool({ simTab: 'forces' });
+    host.querySelector('[data-pt-forces-continent]').click();
+    host.querySelector('[data-pt-forces-predict] input[type=radio]').click();
+    host.querySelector('[data-pt-forces-lock]').click();
+    host.querySelector('[data-pt-forces-run]').click();
+    for (let i = 0; i < 120 && !ctx._sr.some((m) => /slab has broken off/.test(m)); i++) {
+      host.querySelector('[data-pt-forces-step]').click();
+    }
+    expect(ctx._sr.filter((m) => /continent has reached the trench/.test(m))).toHaveLength(1);
+    expect(ctx._sr.filter((m) => /slab has broken off/.test(m))).toHaveLength(1);
+    expect(host.textContent).toMatch(/slab has broken off/);
+  });
+});
+
+describe('Hotspot data lab: the student fits the Pacific plate speed', () => {
+  it('fits real NOAA ages and distances to about 9.8 cm per year', () => {
+    const H = globalThis.window.__alloPtHawaii;
+    expect(H.data.length).toBe(11);
+    const midway = H.data.find((p) => p.id === 'midway');
+    expect(midway).toMatchObject({ a: 27.7, d: 2432 });
+    // least squares through the origin, recomputed independently from the data
+    let sad = 0, saa = 0;
+    H.data.forEach((p) => { sad += p.a * p.d; saa += p.a * p.a; });
+    expect(H.fitKmPerMyr).toBeCloseTo(sad / saa, 6);
+    expect(H.fitKmPerMyr / 10).toBeGreaterThan(8);
+    expect(H.fitKmPerMyr / 10).toBeLessThan(11);
+  });
+
+  it('hides the best fit until the student commits an estimate', () => {
+    const { host, getState } = renderTool({ simTab: 'hotspots' });
+    const lab = host.querySelector('[data-pt-hotspot-lab]');
+    expect(lab.getAttribute('data-pt-hotspot-lab')).toBe('fitting');
+    expect(host.textContent).not.toMatch(/Best fit \(blue\)/);
+    host.querySelector('[data-pt-hotspot-commit]').click();
+    expect(getState().ptHotspot && typeof getState().ptHotspot.est).toBe('number');
+  });
+
+  it('shows the fit once an estimate is saved', () => {
+    const { host } = renderTool({ simTab: 'hotspots', ptHotspot: { est: 95 } });
+    expect(host.querySelector('[data-pt-hotspot-lab]').getAttribute('data-pt-hotspot-lab')).toBe('fitted');
+    expect(host.querySelector('[data-pt-hotspot-result]').getAttribute('data-pt-hotspot-result')).toBe('close');
+    expect(host.textContent).toMatch(/Best fit \(blue\)/);
+  });
+
+  it('marks a far-off estimate as off, and the quest hook agrees', () => {
+    const { host } = renderTool({ simTab: 'hotspots', ptHotspot: { est: 40 } });
+    expect(host.querySelector('[data-pt-hotspot-result]').getAttribute('data-pt-hotspot-result')).toBe('off');
+    const hooks = globalThis.window.StemLab._registry.plateTectonics.questHooks;
+    const hr = hooks.find((q) => q.id === 'hotspot_rate');
+    expect(hr.check({ ptHotspot: { est: 40 } })).toBe(false);
+    expect(hr.check({ ptHotspot: { est: 95 } })).toBe(true);
+  });
+});
+
+describe('Explain It: claim, evidence and reasoning from the student\'s own findings', () => {
+  const WORDS = (n) => Array.from({ length: n }, (_, i) => 'word' + i).join(' ');
+
+  it('does not turn predictions or an unsupported hotspot estimate into evidence', () => {
+    const evidence = window.__alloPtEvidenceFrom;
+    const predictionsOnly = evidence({ ptForce: { preds: [{ a: 'cut' }, { a: 'continent' }] } });
+    expect(predictionsOnly).not.toContain('cut');
+    expect(predictionsOnly).not.toContain('continent');
+    for (const hs of [{ est: 40, dir: 'nw' }, { est: 95, dir: 'se' }, { est: 95 }, { est: Infinity, dir: 'nw' }]) {
+      expect(evidence({ ptHotspot: hs })).not.toContain('hawaii');
+    }
+    expect(evidence({ ptHotspot: { est: 95, dir: 'nw' } })).toContain('hawaii');
+    expect(evidence({ ptForce: { observations: [{ a: 'continent', vBefore: 8, vAfter: 2, mountainKm: 3 }] } })).toContain('continent');
+    for (const o of [{ a: 'cut', vBefore: 2, vAfter: 8 }, { a: 'cut', vBefore: Infinity, vAfter: 1 }, { a: 'continent', vBefore: 8, vAfter: 2, mountainKm: 0 }]) {
+      expect(evidence({ ptForce: { observations: [o] } })).not.toContain(o.a);
+    }
+  });
+
+  it('offers only evidence the student has actually collected', () => {
+    const { host } = renderTool({ simTab: 'explain', ptForce: { observations: [{ a: 'cut', vBefore: 8, vAfter: 1.5 }] }, ptHotspot: { est: 95, dir: 'nw' } });
+    const have = (id) => host.querySelector('[data-pt-evidence="' + id + '"]').getAttribute('data-pt-evidence-have');
+    expect(have('cut')).toBe('true');
+    expect(have('hawaii')).toBe('true');
+    expect(have('continent')).toBe('false');
+    expect(have('stress')).toBe('false');
+  });
+
+  it('will not save until each part says something, then saves with the evidence for the teacher', () => {
+    const snaps = [];
+    const { host, getState } = renderTool({ simTab: 'explain', ptForce: { observations: [{ a: 'cut', vBefore: 8, vAfter: 1.5 }] } },
+      { saveSnapshot: (tool, label, data) => snaps.push({ tool, label, data }) });
+    const save = () => host.querySelector('[data-pt-cer-save]');
+    expect(save().disabled).toBe(true);
+    const type = (k, text) => {
+      const ta = host.querySelector('[data-pt-cer="' + k + '"]');
+      const setter = Object.getOwnPropertyDescriptor(globalThis.window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(ta, text);
+      ta.dispatchEvent(new globalThis.window.Event('input', { bubbles: true }));
+    };
+    type('claim', WORDS(6)); type('evidence', WORDS(9)); type('reasoning', WORDS(9));
+    expect(save().disabled).toBe(false);
+    save().click();
+    expect(getState().ptCER && getState().ptCER.claim).toBe(WORDS(6));
+    expect(snaps.length).toBe(1);
+    expect(snaps[0].tool).toBe('plateTectonics');
+    expect(snaps[0].data.evidence).toContain('cut');
+    expect(snaps[0].data.cer.reasoning).toBe(WORDS(9));
+  });
+
+  it('shows the teacher guide only in teacher mode', () => {
+    expect(renderTool({ simTab: 'explain' }).host.querySelector('[data-pt-teacher-guide]')).toBeNull();
+    const t = renderTool({ simTab: 'explain', ptQuizResult: { score: 5, total: 8, band: '6-8', missed: ['Convection'] } }, { isTeacherMode: true });
+    const g = t.host.querySelector('[data-pt-teacher-guide]');
+    expect(g).toBeTruthy();
+    expect(g.querySelector('[data-pt-teacher-evidence]').textContent).toMatch(/Latest completed quiz: 5 of 8 \(grades 6-8\); concepts missed: Convection/);
+  });
+});
+
+describe('Plate Boundary Simulator: the quake log reads the slab dip off the data', () => {
+  it('logs every quake with distance and depth, and clears it on reset', () => {
+    const text = read(SRC);
+    // A restored checked sample is copied for inspection. Its provenance
+    // prevents those old points from joining the next live run's observations.
+    expect(text).toMatch(/qlog: restoredSlab \? restoredSlab\.points\.map\(function \(p\) \{ return Object\.assign\(\{\}, p\); \}\) : \[\],/);
+    expect(text).toMatch(/qlogRestored: !!restoredSlab,/);
+    expect(text).toMatch(/var liveLog = cur\.qlogRestored \? \[\] : \(Array\.isArray\(cur\.qlog\) \? cur\.qlog : \[\]\);/);
+    expect(text).toMatch(/if \(cur\.qlogRestored\) \{ patch\.qlog = \[\]; patch\.qlogRestored = false; \}/);
+    // Keep the original coordinate/depth recording and bounded history checks.
+    expect(text).toMatch(/patch\.qlog = liveLog\.concat\(\[\{ x: Math\.round\(distKm\), z: Math\.round\(depthKm\), m: Math\.round\(magnitude \* 10\) \/ 10 \}\]\)\.slice\(-200\);/);
+    expect(text).toMatch(/qlog: \[\], dipLocked: false, dipSample: null, dipRestored: false, qlogRestored: false \}\);/);
+  });
+
+  it('fits only the deep quakes, through the boundary, and asks for a guess first', () => {
+    const text = read(SRC);
+    const i = text.indexOf('var deep = log.filter(function (q) { return q.z >= 70; });');
+    expect(i).toBeGreaterThan(-1);
+    const blk = text.slice(i, text.indexOf('// Educational cards', i));
+    expect(blk).toMatch(/fitDip = Math\.atan\(sxz \/ sxx\) \* 180 \/ Math\.PI/);
+    expect(blk).toMatch(/s\.dipLocked && fitDip != null/);
+    expect(blk).toMatch(/var canLock = s\.mode === 'convergent' && deep\.length >= \d+;/);
+  });
+
+  it('renders the log collapsed, with its chart built only when opened', () => {
+    const { host } = renderTool({});
+    const log = host.querySelector('[data-pt-quake-log]');
+    expect(log).toBeTruthy();
+    expect(log.open).toBe(false);
+    expect(log.querySelector('svg')).toBeNull();
+  });
+
+  it('preserves the current run and paused state when its selected boundary is clicked again', () => {
+    const act = React.act || React.unstable_act;
+    const oldRAF = globalThis.requestAnimationFrame, oldCancel = globalThis.cancelAnimationFrame;
+    const frames = new Map(); let frameId = 0;
+    globalThis.requestAnimationFrame = window.requestAnimationFrame = callback => { frames.set(++frameId, callback); return frameId; };
+    globalThis.cancelAnimationFrame = window.cancelAnimationFrame = id => frames.delete(id);
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
+    const host = document.createElement('div'); document.body.appendChild(host); mounted.push(host);
+    const announcements = [];
+    try {
+      act(() => ReactDOM.render(React.createElement(window.AlloTectonicsInteractive, { darkMode: true, announceToSR: text => announcements.push(text) }), host));
+      let now = performance.now();
+      for (let i = 0; i < 3; i++) act(() => {
+        now += 1000;
+        const pending = [...frames.values()]; frames.clear(); pending.forEach(callback => callback(now));
+      });
+      const pause = [...host.querySelectorAll('button')].find(button => button.textContent === '⏸ Pause');
+      act(() => pause.click());
+      const snapshot = () => ({
+        time: host.querySelector('[data-pt-model-reading="time"]').textContent,
+        movement: host.querySelector('[data-pt-model-reading="movement"]').textContent,
+        log: host.querySelector('[data-pt-quake-log]').getAttribute('data-pt-quake-log'),
+        paused: [...host.querySelectorAll('button')].some(button => button.textContent === '▶ Play'),
+        announcements: announcements.length
+      });
+      const before = snapshot();
+      expect(before.time).not.toBe('0 years'); expect(before.movement).not.toBe('0 m'); expect(Number(before.log)).toBeGreaterThan(0);
+      expect(before.paused).toBe(true);
+      expect(host.querySelector('[data-pt-model-readings]').getAttribute('aria-live')).toBe('off');
+      act(() => host.querySelector('[data-tect-mode="convergent"]').click());
+      expect(snapshot()).toEqual(before);
+      act(() => host.querySelector('[data-tect-mode="divergent"]').click());
+      expect(snapshot()).toMatchObject({ time: '0 years', movement: '0 km', log: '0', paused: true });
+    } finally {
+      act(() => ReactDOM.unmountComponentAtNode(host));
+      random.mockRestore();
+      globalThis.requestAnimationFrame = window.requestAnimationFrame = oldRAF;
+      globalThis.cancelAnimationFrame = window.cancelAnimationFrame = oldCancel;
+    }
+  });
+
+  it('draws a slab guide only for subduction and keeps axis descriptions appropriate to the boundary', () => {
+    const act = React.act || React.unstable_act;
+    const host = document.createElement('div'); document.body.appendChild(host); mounted.push(host);
+    act(() => ReactDOM.render(React.createElement(window.AlloTectonicsInteractive, { darkMode: true }), host));
+    const log = host.querySelector('[data-pt-quake-log]');
+    act(() => { log.open = true; log.dispatchEvent(new window.Event('toggle')); });
+    const guess = host.querySelector('[data-pt-slab-line="guess"]');
+    expect(guess).toBeTruthy();
+    // Presentation changes must not move the data origin or change the axes.
+    expect(Number(guess.getAttribute('x1'))).toBeCloseTo(52 + 150 / 950 * (460 - 52 - 12));
+    expect(Number(guess.getAttribute('y1'))).toBe(14);
+    expect(host.querySelector('[data-pt-quake-axis="distance"]').textContent).toContain('overriding plate');
+    expect(log.querySelector('svg').getAttribute('aria-label')).toContain('70 km or deeper');
+    expect(log.querySelectorAll('svg text')).toHaveLength(9);
+    expect([...log.querySelectorAll('svg text')].every(text => Number(text.getAttribute('font-size')) >= 18)).toBe(true);
+    const endpoint = [...log.querySelectorAll('svg text')].find(text => text.textContent === '800');
+    expect(endpoint.getAttribute('text-anchor')).toBe('end');
+    for (const mode of ['divergent', 'transform']) {
+      act(() => host.querySelector('[data-tect-mode="' + mode + '"]').click());
+      expect(host.querySelector('[data-pt-slab-line]')).toBeNull();
+      expect(host.querySelector('[data-pt-quake-axis="distance"]').textContent).not.toContain('overriding');
+      expect(log.querySelector('svg').getAttribute('aria-label')).toContain('No slab-angle line');
+    }
+  });
+});
+
+describe('Epicenter: a mystery quake is found from the readings, not dragged into place', () => {
+  it('hides the epicenter and the distances, and asks for a guess', () => {
+    const { host } = renderTool({});
+    host.querySelector('[data-pt-mystery-start]').click();
+    const panel = host.querySelector('[data-pt-mystery]');
+    expect(panel.getAttribute('data-pt-mystery')).toBe('hunting');
+    // the readings still show S-P times, but not the answer
+    expect(panel.textContent).toMatch(/\d+\.\ds/);
+    expect(host.textContent).toMatch(/\? km/);
+    expect(host.querySelector('[data-pt-mystery-check]').disabled, 'no guess yet').toBe(true);
+    const description = host.querySelector('[data-pt-epicenter-canvas]').getAttribute('aria-label');
+    expect(description).toMatch(/true epicenter and distances are hidden/);
+    expect(description).toMatch(/BRK \d+\.\d seconds/);
+    expect(description).not.toMatch(/\d+ kilometers/);
+    expect(description).toMatch(/No guess placed/);
+  });
+
+  it('describes the keyboard guess with distances from that guess, without revealing the solution', () => {
+    const { host, ctx } = renderTool({});
+    host.querySelector('[data-pt-mystery-start]').click();
+    const cv = host.querySelector('[data-pt-epicenter-canvas]');
+    keyOn(cv, 'ArrowRight');
+    const first = cv.getAttribute('aria-label');
+    expect(first).toMatch(/Your guess is 1104 km right and 720 km down/);
+    expect(first).toMatch(/Distances from your guess to stations: BRK 827 km/);
+    expect(first).not.toMatch(/\d+ kilometers/);
+    keyOn(cv, 'ArrowDown');
+    expect(cv.getAttribute('aria-label')).toMatch(/Your guess is 1104 km right and 744 km down/);
+    expect(ctx._sr.at(-1)).toMatch(/Your guess is 1104 km right and 744 km down/);
+    expect(host.querySelector('[data-pt-mystery-check]').disabled).toBe(false);
+  });
+
+  it('lets the keyboard move a selected station while the other station readings stay fixed', () => {
+    const { host, ctx } = renderTool({});
+    const cv = host.querySelector('[data-pt-epicenter-canvas]');
+    const select = host.querySelector('[data-pt-epicenter-target]');
+    const before = cv.getAttribute('aria-label');
+    Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set.call(select, 'BRK');
+    select.dispatchEvent(new window.Event('change', { bubbles: true }));
+    keyOn(cv, 'ArrowRight');
+    const after = cv.getAttribute('aria-label');
+    expect(after.match(/BRK ([\d.]+) seconds/)[1]).not.toBe(before.match(/BRK ([\d.]+) seconds/)[1]);
+    expect(after.match(/PAS ([\d.]+) seconds/)[1]).toBe(before.match(/PAS ([\d.]+) seconds/)[1]);
+    expect(ctx._sr.at(-1)).toMatch(/BRK moved/);
+  });
+
+  it('scores a placed guess in km and records the best one', () => {
+    const { host, getState } = renderTool({});
+    host.querySelector('[data-pt-mystery-start]').click();
+    const cv = host.querySelector('[data-pt-epicenter-canvas]');
+    keyOn(cv, 'ArrowRight');
+    const check = host.querySelector('[data-pt-mystery-check]');
+    expect(check.disabled).toBe(false);
+    check.click();
+    const err = host.querySelector('[data-pt-mystery-err]');
+    expect(err, 'result shown').toBeTruthy();
+    expect(Number(err.getAttribute('data-pt-mystery-err'))).toBeGreaterThanOrEqual(0);
+    const saved = getState().ptEpi;
+    expect(typeof (saved && saved.mysteryBestKm)).toBe('number');
+    expect(saved.mysteryTries).toBe(1);
+  });
+
+  it('awards the quest only for a location within 50 km', () => {
+    const hook = globalThis.window.StemLab._registry.plateTectonics.questHooks.find((q) => q.id === 'mystery_quake');
+    expect(hook.check({ ptEpi: { mysteryBestKm: 120 } })).toBe(false);
+    expect(hook.check({ ptEpi: { mysteryBestKm: 42 } })).toBe(true);
+  });
+});
+
+describe('AI tutor: grounded in the scene, and coaching rather than telling', () => {
+  const stubAI = (reply) => {
+    const prompts = [];
+    return { prompts, callGemini: (p) => { prompts.push(p); return Promise.resolve(reply); } };
+  };
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+  const focus = { kind: 'subduction', label: 'Convergent', a: 'Nazca', b: 'S. American', aType: 'oceanic', bType: 'continental' };
+
+  it('describes the boundary on screen and keeps the driving force right', async () => {
+    const ai = stubAI('An ocean plate is sinking.');
+    const { host } = renderTool({ aiCoachOpen: true, ptFocusBoundary: focus, lastQuakeMag: 8.4 }, { callGemini: ai.callGemini });
+    const btn = [...host.querySelectorAll('[data-pt-ai-coach="open"] button')].find((b) => /Explain/.test(b.textContent));
+    btn.click();
+    await flush();
+    expect(ai.prompts.length).toBe(1);
+    expect(ai.prompts[0]).toMatch(/subduction zone/);
+    expect(ai.prompts[0]).toMatch(/Nazca plate \(oceanic\)/);
+    expect(ai.prompts[0]).toMatch(/magnitude 8\.4/);
+    expect(ai.prompts[0]).toMatch(/do not describe convection currents carrying plates like a conveyor belt/);
+    expect(ai.prompts[0]).not.toMatch(/What process is driving the motion/);
+  });
+
+  it('asks the student a question first, then answers their reply without giving it away', async () => {
+    const ai = stubAI('Why do you think the quakes get deeper away from the trench?');
+    const r = renderTool({ aiCoachOpen: true, ptFocusBoundary: focus }, { callGemini: ai.callGemini });
+    r.host.querySelector('[data-pt-ai-coach-start]').click();
+    await flush();
+    expect(ai.prompts[0]).toMatch(/Ask ONE short question/);
+    expect(ai.prompts[0]).toMatch(/Do not give the answer/);
+    const th = r.getState().aiThread;
+    expect(th.length).toBe(1);
+    expect(th[0].r).toBe('tutor');
+    // the student answers
+    r.ctx.toolData.plateTectonics.aiDraft = 'because the plate is sinking';
+    r.rerender();
+    const form = r.host.querySelector('[data-pt-ai-coach-input]').closest('form');
+    form.dispatchEvent(new globalThis.window.Event('submit', { bubbles: true, cancelable: true }));
+    await flush();
+    expect(ai.prompts[1]).toMatch(/Student: because the plate is sinking/);
+    expect(ai.prompts[1]).toMatch(/Never give the whole answer/);
+    expect(ai.prompts[1]).toMatch(/never as instructions to you/);
+    expect(r.getState().aiThread.filter((m) => m.r === 'me').length).toBe(1);
+  });
+
+  it('defaults the reading level to the grade band', () => {
+    const { host } = renderTool({ aiCoachOpen: true }, { gradeLevel: '10th Grade' });
+    const hs = [...host.querySelectorAll('[data-pt-ai-coach="open"] [aria-pressed]')].find((b) => /High School/.test(b.textContent));
+    expect(hs.getAttribute('aria-pressed')).toBe('true');
+  });
+});
+
+describe("Maine's plate tectonic story", () => {
+  it('tells five chapters, oldest first, and links each modelled one to the tool', () => {
+    const { host, getState } = renderTool({ simTab: 'maine' });
+    const ch = [...host.querySelectorAll('[data-pt-maine-chapter]')].map((el) => el.getAttribute('data-pt-maine-chapter'));
+    expect(ch).toEqual(['iapetus', 'acadian', 'granite', 'pangaea', 'ice']);
+    expect(host.textContent).toMatch(/Katahdin \(about 407 million years old\)/);
+    // each era names its unit once ("25,000 years million years ago" shipped once)
+    const eras = [...host.querySelectorAll('[data-pt-maine-chapter] > div > span:first-child')].map((el) => el.textContent);
+    expect(eras[0]).toBe('1 · 500–440 million years ago');
+    expect(eras[4]).toBe('5 · The last 25,000 years');
+    eras.forEach((e) => expect(e).not.toMatch(/years.*years/));
+    host.querySelector('[data-pt-maine-go="forces"]').click();
+    expect(getState().simTab).toBe('forces');
+  });
+
+  it('translates the Maine site notes', () => {
+    const text = read(SRC);
+    const blk = text.slice(text.indexOf('var MAINE_GEO = ['), text.indexOf('];', text.indexOf('var MAINE_GEO = [')));
+    expect(blk).not.toMatch(/notes: "/);
+    expect((blk.match(/notes: __alloT\('stem\.platetectonics\.maine_note_\d+'/g) || []).length).toBe(30);
+  });
+});
+
+describe('Continent puzzle: the evidence Wegener started from', () => {
+  const F = () => globalThis.window.__alloPtFit;
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const gapOf = (host) => +host.querySelector('[data-pt-fit-gap]').getAttribute('data-pt-fit-gap');
+
+  it('searches for the best fit, and there the evidence lines up across the join', () => {
+    const f = F();
+    const b = f.best();
+    const at = (lon, lat) => f.place(f.proj(lon, lat), b.t);
+    expect(f.gap({ dx: 0, dy: 0, rot: 0 }).km, 'today the coasts are an ocean apart').toBeGreaterThan(3000);
+    expect(b.km).toBeLessThan(320);
+    expect(b.overlap).toBeLessThanOrEqual(f.OVERLAP_MAX);
+    // Brazil's bulge tucks into the Bight of Biafra, and Sao Luis lands by Accra,
+    // where Hurley's team predicted the rock-age boundary would reach Brazil.
+    expect(dist(at(-34.9, -8.1), f.proj(9.7, 4.0))).toBeLessThan(400);
+    expect(dist(at(-44.3, -2.5), f.proj(-0.2, 5.6))).toBeLessThan(700);
+    // Mesosaurus: the Parana basin sits beside Namibia.
+    const m = f.EVIDENCE.meso;
+    expect(dist(at(m.sa[0][0], m.sa[0][1]), f.proj(m.af[0][0], m.af[0][1]))).toBeLessThan(900);
+    // The opening rate the fit implies is the real South Atlantic's, 3-5 cm a year.
+    const r = f.cmPerYr(f.recifeMovedKm(b.t), f.OPEN_MYR);
+    expect(r).toBeGreaterThan(3);
+    expect(r).toBeLessThan(5);
+  });
+
+  it('can be solved with the big 200 km / 5 degree buttons alone', () => {
+    const f = F();
+    const close = f.best().km * f.CLOSE_FACTOR;
+    let ok = false;
+    for (let dx = 5000; dx <= 6600 && !ok; dx += 200) for (let dy = -400; dy <= 1000 && !ok; dy += 200) for (let rot = 15; rot <= 35 && !ok; rot += 5) {
+      const g = f.gap({ dx, dy, rot });
+      if (g.overlap <= f.OVERLAP_MAX && g.km <= close) ok = true;
+    }
+    expect(ok).toBe(true);
+  });
+
+  it('measures the gap from the geometry as the student moves South America', () => {
+    const { host, ctx } = renderTool({ simTab: 'fit' });
+    const gap0 = gapOf(host);
+    expect(gap0).toBeGreaterThan(3000);
+    const east = host.querySelector('[data-pt-fit-move="e"]');
+    for (let i = 0; i < 5; i++) east.click();
+    expect(gapOf(host)).toBe(Math.round(F().gap({ dx: 1000, dy: 0, rot: 0 }).km));
+    expect(gapOf(host)).toBeLessThan(gap0 - 500);
+    expect(ctx._sr[ctx._sr.length - 1]).toMatch(/Average gap/);
+    expect(host.querySelector('[data-pt-fit-question]'), 'no question before a fit').toBeNull();
+  });
+
+  it('records a close fit, then asks the evidence question and scores it', () => {
+    const f = F();
+    const b = f.best();
+    const { host, getState, rerender } = renderTool({ simTab: 'fit', ptFit: { t: { dx: b.t.dx - 200, dy: b.t.dy, rot: b.t.rot } } });
+    host.querySelector('[data-pt-fit-move="e"]').click();
+    expect(getState().ptFit.fitted).toBe(true);
+    rerender();
+    expect(host.querySelector('[data-pt-fit-question]')).toBeTruthy();
+    const hook = globalThis.window.StemLab._registry.plateTectonics.questHooks.find((q) => q.id === 'continents_fit');
+    host.querySelector('[data-pt-fit-answer="bridge"]').click();
+    expect(getState().ptFit.answer).toBe('bridge');
+    expect(hook.check(getState())).toBe(false);
+    rerender();
+    expect(host.querySelector('[data-pt-fit-feedback]').getAttribute('data-pt-fit-feedback')).toBe('rethink');
+    host.querySelector('[data-pt-fit-answer="joined"]').click();
+    expect(hook.check(getState())).toBe(true);
+    // The rate is measured from where this student put South America.
+    const rate = +host.querySelector('[data-pt-fit-rate]').getAttribute('data-pt-fit-rate');
+    expect(rate).toBeCloseTo(f.cmPerYr(f.recifeMovedKm(getState().ptFit.t), f.OPEN_MYR), 1);
+  });
+
+  it('pins the evidence to the continents, so the layers ride with South America', () => {
+    const { host } = renderTool({ simTab: 'fit' });
+    host.querySelector('[data-pt-fit-toggle="meso"]').click();
+    const paths = () => [...host.querySelectorAll('[data-pt-fit-layer="meso"]')].map((p) => p.getAttribute('d'));
+    const before = paths();
+    expect(before.length).toBe(4);
+    host.querySelector('[data-pt-fit-move="e"]').click();
+    const after = paths();
+    // Africa's two areas stay put; South America's two move.
+    expect(after.filter((d) => before.includes(d)).length).toBe(2);
+  });
+
+  it('sends the Pangaea activities and the fixed-continents myth to the puzzle', () => {
+    const text = read(SRC);
+    expect(text.includes("'Pangaea Puzzle': ['fit',")).toBe(true);
+    expect(text.includes("'Continental Drift Evidence Lab': ['fit',")).toBe(true);
+    expect(/mytry_20', "[^"]+"\), go: 'fit' \}/.test(text)).toBe(true);
+  });
+});
+
+describe('Fossils tab: evidence, not only a list', () => {
+  it('shows where the sea fossils on mountains are, which the myth sends students to find', () => {
+    const { host, getState } = renderTool({ simTab: 'fossils' });
+    const card = host.querySelector('[data-pt-everest]');
+    expect(card, 'the Everest card').toBeTruthy();
+    expect(card.textContent).toMatch(/summit of Everest is limestone/);
+    expect(card.textContent).toMatch(/trilobites, crinoids/);
+    // the myth that points here promises exactly this
+    expect(read(SRC)).toMatch(/mytry_6', "Open the Fossils tab and see where marine fossils turn up\."\), go: 'fossils'/);
+    host.querySelector('[data-pt-fossils-go="fit"]').click();
+    expect(getState().simTab).toBe('fit');
+  });
+
+  it('translates every fossil note and era, and fixes the names that taught the wrong thing', () => {
+    const text = read(SRC);
+    const blk = text.slice(text.indexOf('var FOSSIL_DB = ['), text.indexOf('];', text.indexOf('var FOSSIL_DB = [')));
+    expect(blk).not.toMatch(/notes: "/);
+    expect(blk).not.toMatch(/era: "/);
+    expect((blk.match(/notes: __alloT\('stem\.platetectonics\.fossil_note_\d+'/g) || []).length).toBe(40);
+    expect(blk).not.toMatch(/Tetrapod \(Tiktaalik\)/);
+    expect(blk).not.toMatch(/Crocodile \(Phytosauria\)/);
+    expect(blk).not.toMatch(/Largest arthropod ever/);
+  });
+
+  it('reads in dark mode: no white cards left in the list', () => {
+    const { host } = renderTool({ simTab: 'fossils' }, { isDark: true });
+    const list = host.querySelector('[data-pt-fossil-list]');
+    expect(list.children.length).toBe(40);
+    expect(list.querySelectorAll('.bg-white').length).toBe(0);
+  });
+});
+
+describe('Read aloud', () => {
+  const focus = { kind: 'subduction', label: 'Convergent — ocean sinks under continent', a: 'Nazca', b: 'S. American', aType: 'oceanic', bType: 'continental' };
+
+  it('reads the boundary explanation through the host TTS, as a user action', () => {
+    const calls = [];
+    const callTTS = (text, voice, speed, opts) => { calls.push({ text, opts }); return Promise.resolve('blob:x'); };
+    const { host } = renderTool({ ptFocusBoundary: focus }, { callTTS });
+    const btn = host.querySelector('[data-pt-boundary-explainer] [data-pt-read-aloud]');
+    expect(btn, 'a read-aloud button on the explainer').toBeTruthy();
+    btn.click();
+    expect(calls.length).toBe(1);
+    expect(calls[0].text).toMatch(/ocean sinks under continent/);
+    expect(calls[0].text).toMatch(/moving TOWARD each other/);
+    expect(calls[0].opts).toMatchObject({ force: true });
+  });
+
+  it('falls back to the browser speech engine when the host has none', () => {
+    const spoken = [];
+    const w = globalThis.window;
+    const prevS = w.speechSynthesis, prevU = w.SpeechSynthesisUtterance;
+    w.speechSynthesis = { cancel() {}, speak(u) { spoken.push(u.text); } };
+    w.SpeechSynthesisUtterance = function (t) { this.text = t; };
+    try {
+      const { host } = renderTool({ simTab: 'quiz' }, { callTTS: null, gradeLevel: '10th Grade' });
+      host.querySelector('[data-pt-read-aloud]').click();
+      expect(spoken.length).toBe(1);
+      // the question and its lettered choices
+      expect(spoken[0]).toMatch(/Himalayas\?.*A: .*B: .*C: .*D: /);
+    } finally {
+      w.speechSynthesis = prevS; w.SpeechSynthesisUtterance = prevU;
+    }
+  });
+});
+
+describe('Myths: Try it goes there', () => {
+  it('sends the student to the tab the hint names', () => {
+    const myth = { idx: 0, s: 'x', t: true, why: 'y', tryIt: 'Measure the sea floor.', go: 'forces', answered: true, chosen: true };
+    const { host, getState } = renderTool({ simTab: 'quiz', ptMyth: myth, quizIdx: 99 });
+    const go = host.querySelector('[data-pt-myth-go="forces"]');
+    expect(go, 'a Go there button').toBeTruthy();
+    go.click();
+    expect(getState().simTab).toBe('forces');
+    expect(getState()._ptCategory).toBe('sim_quiz');
+  });
+});
+
+describe('Simulation: three real boundary missions', () => {
+  const done = (host, id) => host.querySelector('[data-pt-mission="' + id + '"]').getAttribute('data-pt-mission-done');
+
+  it('starts with nothing done and a hint for each', () => {
+    const { host } = renderTool({});
+    expect(host.querySelector('[data-pt-missions]').getAttribute('data-pt-missions')).toBe('0');
+    ['sink', 'open', 'collide'].forEach((id) => expect(done(host, id)).toBe('false'));
+    expect(host.textContent).toMatch(/Push India into Eurasia/);
+    expect(host.textContent).not.toMatch(/slide them sideways/);
+  });
+
+  it('requires boundaries the learner made, even when all kinds have been seen', () => {
+    const { host } = renderTool({ ptSeenKinds: { subduction: true, ocean_ridge: true, collision: true }, ptMadeMaxMag: 8.4 });
+    expect(host.querySelector('[data-pt-missions]').getAttribute('data-pt-missions')).toBe('0');
+    ['sink', 'open', 'collide'].forEach((id) => expect(done(host, id)).toBe('false'));
+  });
+
+  it('ticks off boundaries the learner made, and asks for the M8 on the sinking one', () => {
+    const half = renderTool({ ptMadeKinds: { subduction: true, collision: true }, ptMadeMaxMag: 7.6 });
+    expect(done(half.host, 'sink'), 'a subduction zone alone is not the mission').toBe('false');
+    expect(done(half.host, 'collide')).toBe('true');
+    const all = renderTool({ ptMadeKinds: { subduction: true, ocean_ridge: true, collision: true }, ptMadeMaxMag: 8.4 });
+    expect(all.host.querySelector('[data-pt-missions]').getAttribute('data-pt-missions')).toBe('3');
+    expect(all.host.textContent).toMatch(/All three boundaries built/);
+  });
+
+  it('records every boundary kind the sim shows', () => {
+    const text = read(SRC);
+    expect(text).toMatch(/if \(!seenK\[kk\]\) \{ var addK = \{\}; addK\[kk\] = true; focusPatch\.ptSeenKinds = Object\.assign\(\{\}, seenK, addK\); \}/);
+  });
+});
+
+describe('Force lab: measuring the sea floor', () => {
+  const setVal = (el, v) => {
+    const proto = el.tagName === 'SELECT' ? globalThis.window.HTMLSelectElement.prototype : globalThis.window.HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, String(v));
+    el.dispatchEvent(new globalThis.window.Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+  };
+  const measure = (host, km, side) => {
+    const panel = host.querySelector('[data-pt-forces-probe]');
+    setVal(panel.querySelector('[data-pt-forces-probe-km]'), km);
+    setVal(panel.querySelector('select'), side);
+    panel.querySelector('form').dispatchEvent(new globalThis.window.Event('submit', { bubbles: true, cancelable: true }));
+  };
+  const rows = (host) => [...host.querySelectorAll('[data-pt-forces-probe] tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent));
+
+  it('reads older crust farther from the ridge, on both plates, at one rate', () => {
+    const { host } = renderTool({ simTab: 'forces' });
+    measure(host, 300, 'A');
+    measure(host, 1200, 'A');
+    measure(host, 300, 'B');
+    const r = rows(host);
+    expect(r.length).toBe(3);
+    const age = (i) => parseFloat(r[i][3]);
+    const rate = (i) => parseFloat(r[i][4]);
+    expect(age(1)).toBeGreaterThan(age(0));
+    // mirror image: the same distance on the other side is the same age
+    expect(Math.abs(age(2) - age(0))).toBeLessThan(0.2);
+    // distance / age is the half-spreading rate, the same at each point
+    expect(Math.abs(rate(1) - rate(0))).toBeLessThan(0.3);
+    expect(host.querySelector('[data-pt-forces-probe-note]')).toBeTruthy();
+  });
+
+  it('says so when there is no sea floor at that distance', () => {
+    const { host } = renderTool({ simTab: 'forces' });
+    measure(host, 5000, 'B');
+    expect(rows(host).length).toBe(0);
+    expect(host.textContent).toMatch(/There is no sea floor at that distance/);
+  });
+
+  it('clears measurements when a reset starts a new world', () => {
+    const { host } = renderTool({ simTab: 'forces' });
+    measure(host, 300, 'A');
+    measure(host, 1200, 'A');
+    expect(rows(host)).toHaveLength(2);
+    host.querySelector('[data-pt-forces-reset]').click();
+    expect(rows(host)).toHaveLength(0);
+    expect(host.querySelector('[data-pt-probe-pair]')).toBeNull();
+    expect(host.querySelector('[data-pt-probe-next]').textContent).toContain('two different distances on the same plate');
+  });
+});
+
+describe('Quiz: grades 3-5 get their own bank', () => {
+  const bank35 = () => {
+    const text = read(SRC);
+    const a = text.indexOf('var QUIZZES_35 = ptBalanceAnswers([');
+    expect(a).toBeGreaterThan(-1);
+    const b = text.indexOf('\n          ]);', a);
+    // eslint-disable-next-line no-new-func
+    return new Function('__alloT', 'return (' + text.slice(text.indexOf('[', a), b + 12) + ')')((k, fb) => fb);
+  };
+
+  it('shows a 4th grader the plainer bank and a 10th grader the main one', () => {
+    const young = renderTool({ simTab: 'quiz' }, { gradeLevel: '4th Grade' });
+    expect(young.host.textContent).toMatch(/giant moving pieces of Earth's outer shell/);
+    const old = renderTool({ simTab: 'quiz' }, { gradeLevel: '10th Grade' });
+    expect(old.host.textContent).toMatch(/What kind of plate boundary built the Himalayas\?/);
+  });
+
+  it('keeps the 3-5 key from being guessable by length, and its feedback aligned', () => {
+    const qs = globalThis.window.__alloPtBalanceAnswers(bank35());
+    const ranks = {};
+    qs.forEach((q) => {
+      const L = q.opts.map((o) => o.length);
+      const r = [...L].sort((x, y) => y - x).indexOf(L[q.ans]) + 1;
+      ranks[r] = (ranks[r] || 0) + 1;
+      expect(q.wrongFeedback[q.ans]).toMatch(/^Correct/);
+    });
+    Object.values(ranks).forEach((n) => expect(n / qs.length, JSON.stringify(ranks)).toBeLessThanOrEqual(0.4));
+  });
+
+  it('names a concept card for every 3-5 question', () => {
+    const text = read(SRC);
+    bank35().forEach((q) => {
+      // A boolean, not toContain on the whole 2.5 MB source: a failing toContain
+      // makes vitest diff the entire file, which hangs the run instead of failing it.
+      const needle = "'" + q.concept + "': __alloT('stem.platetectonics.vocab_";
+      expect(text.includes(needle), 'no vocabulary card for ' + q.concept).toBe(true);
+    });
   });
 });
 

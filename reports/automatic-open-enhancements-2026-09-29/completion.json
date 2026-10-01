@@ -1,0 +1,20 @@
+{
+  "completed": "2026-09-30",
+  "hostSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+  "unit": {
+    "passed": 245,
+    "total": 246,
+    "skipped": [
+      {
+        "file": "canvas_workspace_recovery.test.js",
+        "name": "Canvas workspace recovery integration contracts OPEN QUESTION (2026-07-20, for the LaunchPad-extraction owner): the old landing predicate hard-blocked the launch pad on Canvas until canvasRecoveryDecisionMade — the inlined gates dropped that term. The recovery dialog still overlays at z-[13000], but the launch pad now MOUNTS behind it before a decision. If the hard gate was intentional, restore `(!isCanvas || canvasRecoveryDecisionMade)` in both inline gates and unskip."
+      }
+    ]
+  },
+  "browser": 5,
+  "regressionProofs": 13,
+  "auditChecks": 16,
+  "inputs": 53,
+  "committed": false,
+  "deployed": false
+}

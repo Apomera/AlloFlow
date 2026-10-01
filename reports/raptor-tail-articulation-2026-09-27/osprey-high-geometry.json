@@ -1,0 +1,35 @@
+{
+  "vertices": 408,
+  "triangles": 504,
+  "poses": [
+    "resting-fan",
+    "wide-fan",
+    "narrow-fan"
+  ],
+  "widths": [
+    0.735310971736908,
+    0.42341917753219604,
+    0.9912489056587219,
+    0.5639448761940002
+  ],
+  "maxRootError": 0,
+  "maxLengthError": 5.000911185160106e-8,
+  "maxWidthError": 1.4046709795323409e-8,
+  "minArea": 0.000011343551945856026,
+  "finite": true,
+  "normalError": 2.9890885877570383e-8,
+  "version": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "textures": [
+    "E03E05EA-CBCA-4959-BA87-979FDD5978F8",
+    "A4F70795-BF44-4F29-9EF1-A985F18B2948",
+    "A87AEF1E-F383-4833-82DE-74C745F52AAF"
+  ],
+  "shared": true,
+  "bands": true,
+  "children": 0
+}

@@ -1,0 +1,78 @@
+{
+  "started": "2026-09-27T18:03:04.745Z",
+  "base": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "files": [
+    "generation_helpers_source.jsx",
+    "text_pipeline_helpers_source.jsx",
+    "tests/preserved_vocabulary_literal_text.test.js",
+    "tests/track07-literal-browser.cjs",
+    "generation_helpers_module.js",
+    "text_pipeline_helpers_module.js",
+    "desktop/web-app/public/generation_helpers_module.js",
+    "desktop/web-app/public/text_pipeline_helpers_module.js",
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "before": {
+    "generation_helpers_source.jsx": "e6cae59ad87040b2b06242c1a8dcd5fd3d8c54546707735d9a55c1eccd51905d",
+    "text_pipeline_helpers_source.jsx": "93a7370b35414bdb601d748a0e3c8535d7b71a32348ad03670071c1c8507cae9",
+    "tests/preserved_vocabulary_literal_text.test.js": null,
+    "tests/track07-literal-browser.cjs": null,
+    "generation_helpers_module.js": "d308e94c32a52b04871353f618ea4d220ba80a04b34112049893fe31779a7198",
+    "text_pipeline_helpers_module.js": "50f47633a8c535cfd277b6bf5f7fede4355791637191826c49103d7a9518ef93",
+    "desktop/web-app/public/generation_helpers_module.js": "d308e94c32a52b04871353f618ea4d220ba80a04b34112049893fe31779a7198",
+    "desktop/web-app/public/text_pipeline_helpers_module.js": "50f47633a8c535cfd277b6bf5f7fede4355791637191826c49103d7a9518ef93",
+    "AlloFlowANTI.txt": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+    "desktop/web-app/src/AlloFlowANTI.txt": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66",
+    "desktop/web-app/src/App.jsx": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66"
+  },
+  "readerInputs": [
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66"
+    },
+    {
+      "file": "tests/track07-browser-fixture.js",
+      "sha256": "9a2c5acb1ed6b8e316075b5a22cf238224c890b0dee36ca8119b38d4a48dba03"
+    },
+    {
+      "file": "tests/original_reader_markdown.test.js",
+      "sha256": "c3dab554f1347ce48291fddc77500609b4b6703a55259c73aea63abe32ebeac9"
+    },
+    {
+      "file": "tests/reader_sentence_links.test.js",
+      "sha256": "4f493df8198ea9e477968d350855877a77a4c180008077cc955dd2008b1880e4"
+    }
+  ],
+  "pins": {
+    "generation_helpers_module.js": "46f32889",
+    "text_pipeline_helpers_module.js": "850e17ed"
+  },
+  "after": {
+    "generation_helpers_source.jsx": "ae818e2e196abf1211ea4dd36feb5fa8b14c0b447d6433ad2f350556a9966a4a",
+    "text_pipeline_helpers_source.jsx": "6fbc07018756d71f841b89b768290934e9e13eba4dd72bf344a669b3938952c0",
+    "tests/preserved_vocabulary_literal_text.test.js": "c2c64ebc1c1fed3183a929703cd17f65c4066da23fba0ba0ee034c91bb18bc2d",
+    "tests/track07-literal-browser.cjs": "921b00fc62a27305a794d023bba178e1e91ecd0dbb8f689a1af10b3fb4ebd867",
+    "generation_helpers_module.js": "46f32889df0bb79dbde01ca867d46d86bd92d5b137932a789e4d30b6ac2e18df",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "desktop/web-app/public/generation_helpers_module.js": "46f32889df0bb79dbde01ca867d46d86bd92d5b137932a789e4d30b6ac2e18df",
+    "desktop/web-app/public/text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "AlloFlowANTI.txt": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+    "desktop/web-app/src/AlloFlowANTI.txt": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+    "desktop/web-app/src/App.jsx": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961"
+  },
+  "integrated": "2026-09-27T18:03:52.839Z"
+}

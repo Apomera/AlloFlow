@@ -3906,17 +3906,33 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         .find(item => item && item.type === 'lesson-plan' && item.data && Array.isArray(item.data.successCriteria) && item.data.successCriteria.length > 0);
       return plan ? plan.data.successCriteria : [];
     }, [history]);
+    const criterionLiveByKey = React.useMemo(() => {
+      const utils = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.UtilsPure : null;
+      if (!criterionRollup || !utils || typeof utils.resolvePlanCriterionRollup !== 'function') return null;
+      return utils.resolvePlanCriterionRollup(null, { byConcept: criterionRollup.byConcept });
+    }, [criterionRollup]);
+    const criterionLiveStat = (id) => {
+      const utils = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.UtilsPure : null;
+      if (criterionLiveByKey && utils && typeof utils.criterionRollupStat === 'function') return utils.criterionRollupStat(criterionLiveByKey, id);
+      return criterionRollup && criterionRollup.byConcept ? criterionRollup.byConcept[id] || null : null;
+    };
+    // A pre-check runs before teaching, so it is never published as criteria met;
+    // the quiz id, title and mode travel with the counts so the plan can name them.
+    const liveQuizMode = String(generatedContent?.data?.mode || 'exit-ticket');
     useEffect(() => {
-      if (typeof window === 'undefined' || !criterionRollup || !criterionRollup.byConcept || !Object.keys(criterionRollup.byConcept).length) return;
+      if (typeof window === 'undefined' || !activeSessionCode || liveQuizMode === 'pre-check' || !criterionRollup || !criterionRollup.byConcept || !Object.keys(criterionRollup.byConcept).length) return;
       window.__alloCriterionRollup = {
         byConcept: criterionRollup.byConcept,
         respondents: criterionRollup.respondents,
         quizId: generatedContent?.id || null,
-        sessionLabel: activeSessionCode ? `live session ${activeSessionCode}` : 'the live session',
+        quizTitle: typeof generatedContent?.title === 'string' ? generatedContent.title : '',
+        quizMode: liveQuizMode,
+        sessionCode: String(activeSessionCode),
+        sessionLabel: `live session ${activeSessionCode}`,
         updatedAt: Date.now()
       };
       try { window.dispatchEvent(new CustomEvent('alloflow:criterion-rollup')); } catch (_) {}
-    }, [criterionRollup, generatedContent?.id, activeSessionCode]);
+    }, [criterionRollup, generatedContent?.id, generatedContent?.title, liveQuizMode, activeSessionCode]);
     const quizLiveAggregators = (typeof window !== 'undefined' && window.AlloModules)
       ? window.AlloModules.QuizLiveAggregators : null;
     const battleQuestionCount = (generatedContent?.data?.questions || []).filter(item => quizLiveAggregators?.presentationQuestionIsGameScorable
@@ -4570,13 +4586,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                   <span className="ml-1 font-black text-purple-800">This prompt remains distribution-only.</span>
                 )}
             </div>
-            {planCriteria.length > 0 && criterionRollup && criterionRollup.byConcept && (
+            {planCriteria.length > 0 && liveQuizMode !== 'pre-check' && criterionRollup && criterionRollup.byConcept && (
               <div className="border-b border-indigo-100 bg-white px-4 py-2 text-xs" data-live-success-criteria="true">
                 <div className="font-black uppercase tracking-wider text-indigo-700 mb-1">Success criteria (this lesson plan)</div>
                 <ul className="space-y-1">
                   {planCriteria.map((c, i) => {
                     if (!c || typeof c !== 'object') return null;
-                    const s = criterionRollup.byConcept[c.id];
+                    const s = criterionLiveStat(c.id);
                     const pct = s && s.total > 0 ? Math.round((s.met / s.total) * 100) : null;
                     return <li key={c.id || i} className="flex flex-wrap items-center gap-2">
                       <span className="text-slate-700">{typeof c.statement === 'string' ? c.statement : ''}</span>
@@ -5211,8 +5227,9 @@ const calculateAnalyticsMetrics = (dashboardData) => {
     const adventureItems = history.filter(h => h.type === 'adventure');
     if (adventureItems.length > 0) {
         const lastAdventure = adventureItems[adventureItems.length - 1];
-        const level = lastAdventure.data?.level || 1;
-        if (typeof level === 'number') {
+        // The game saves progress under data.snapshot; data.level is the legacy shape.
+        const level = Number(lastAdventure.data?.snapshot?.level ?? lastAdventure.data?.level);
+        if (Number.isFinite(level) && level > 0) {
             totalAdventureLevels += level;
             studentsWithAdventureData++;
         }
@@ -5385,17 +5402,23 @@ const _BUILTIN_METRIC_REGISTRY = [
     // ConceptSortGame's conceptSortAttempt event into gameCompletions).
     misconceptions: (dashboardData) => {
       const csKey = (p) => `${(p.itemText || '').toLowerCase().trim()}|${(p.placedCategoryLabel || '').toLowerCase().trim()}|${(p.correctCategoryLabel || '').toLowerCase().trim()}`;
+      // Counted per STUDENT: one student retrying the same board (each check is
+      // an attempt event) must not look like a class-wide pattern.
       const csAgg = new Map();
       let csTotalAttempts = 0;
       (dashboardData || []).forEach(s => {
         const gc = s.gameCompletions || {};
         const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
+        if (!attempts.length) return;
+        csTotalAttempts++;
+        const studentKeys = new Set();
         attempts.forEach(att => {
-          csTotalAttempts++;
           const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
           incPlacements.forEach(p => {
-            if (!p.itemText) return;
+            if (!p || !p.itemText) return;
             const key = csKey(p);
+            if (studentKeys.has(key)) return;
+            studentKeys.add(key);
             if (!csAgg.has(key)) {
               csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
             }
@@ -6279,15 +6302,30 @@ const LearnerProgressView = React.memo(({
         : Object.values(gameCompletions || {}).flat().filter((g) => g && typeof g === 'object');
     const [showDiagnostics, setShowDiagnostics] = useState(() => isIndependentMode);
     const [selectedChild, setSelectedChild] = useState(null);
+    const [sessionLimit, setSessionLimit] = useState(10);
+    const headingRef = useRef(null);
+    const panelId = React.useId();
+    const progressText = (key, fallback) => {
+        const value = typeof t === 'function' ? t(key) : '';
+        return typeof value === 'string' && value && value !== key ? value : fallback;
+    };
+    useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, []);
+    useEffect(() => { setSessionLimit(10); }, [selectedChild]);
     const childProfiles = useMemo(() => {
         if (!isParentMode || !rosterKey?.students) return [];
         return Object.entries(rosterKey.students).map(([name, groupId]) => ({
             name,
             groupId,
-            lastSession: rosterKey?.progressHistory?.[name]?.slice(-1)?.[0]?.timestamp || null,
-            sessionCount: rosterKey?.progressHistory?.[name]?.length || 0
+            sessions: (Array.isArray(rosterKey?.progressHistory?.[name]) ? rosterKey.progressHistory[name] : []).filter(row => row && typeof row === 'object' && !Array.isArray(row))
         }));
     }, [isParentMode, rosterKey]);
+    useEffect(() => {
+        if (selectedChild && !childProfiles.some(child => child.name === selectedChild)) setSelectedChild(null);
+    }, [childProfiles, selectedChild]);
+    const savedSessions = childProfiles.flatMap(child => !selectedChild || selectedChild === child.name
+        ? child.sessions.map(row => ({ child: child.name, row })) : [])
+        .sort((a, b) => (Date.parse(b.row.timestamp) || 0) - (Date.parse(a.row.timestamp) || 0));
+    const sessionValue = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.round(value) : '—';
     const isPhonemeMastered = (value) => {
         if (!value || typeof value !== 'object') return false;
         const independentAttempts = Number(value.independentAttempts || 0);
@@ -6341,42 +6379,44 @@ const LearnerProgressView = React.memo(({
         };
     }, [history, wordSoundsHistory, phonemeMastery, gameCompletions, fluencyAssessments, labelChallengeResults, studentProgressLog]);
     const heading = isParentMode
-        ? (selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey")
-        : "My Learning Progress";
+        ? progressText('parent_mode.dashboard_title', 'Family Dashboard')
+        : progressText('learner.my_learning_journey', 'My Learning Journey');
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500" data-help-key="learner_progress_panel">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+        <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 md:p-6 space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500" data-help-key="learner_progress_panel">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 basis-56">
+                    <h2 ref={headingRef} tabIndex={-1} id={panelId + "-heading"} className="text-2xl md:text-3xl font-black text-slate-800 flex items-start gap-3 break-words">
+                        <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                             <TrendingUp size={22} className="text-white" />
                         </div>
                         {heading}
                     </h2>
                     <p className="text-sm text-slate-600 mt-1 font-medium">
-                        {isParentMode ? "Track your family's learning growth" : "Track your learning growth over time"}
+                        {isParentMode ? progressText('learner.device_activity_notice', 'Activity totals show work saved on this device. Choose a family member to view their saved sessions.') : progressText('learner.progress_intro', 'Track your learning growth over time')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button type="button"
                         onClick={() => setShowDiagnostics(prev => !prev)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none ${
+                        aria-expanded={showDiagnostics}
+                        aria-controls={panelId + "-details"}
+                        className={`min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none ${
                             showDiagnostics
                                 ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
-                        title={showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics"}
+                        title={progressText('learner.progress_details', 'Details')}
                         data-help-key="learner_progress_details_toggle"
                     >
                         <BarChart3 size={14} />
-                        {showDiagnostics ? 'Details On' : 'Details'}
+                        {progressText('learner.progress_details', 'Details')}
                     </button>
                     {onClose && (
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none"
-                            aria-label={t('common.close_dashboard') || t('common.close') || 'Close progress dashboard'}
+                            className="min-h-11 min-w-11 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none"
+                            aria-label={progressText('common.close', 'Close progress dashboard')}
                         >
                             <X aria-hidden="true" size={18} />
                         </button>
@@ -6384,38 +6424,61 @@ const LearnerProgressView = React.memo(({
                 </div>
             </div>
             {isParentMode && childProfiles.length > 0 && (
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100" data-help-key="learner_progress_family_filter">
+                <div className="bg-white rounded-2xl p-4 border border-slate-300" data-help-key="learner_progress_family_filter">
                     <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                        <Users size={14} /> Family Members
+                        <Users aria-hidden="true" size={14} /> {progressText('learner.family_members', 'Family members')}
                     </h3>
-                    <div className="flex flex-wrap gap-2">
+                    <div role="group" aria-label={progressText("learner.family_members", "Family members")} className="flex flex-wrap gap-2">
                         <button type="button"
                             onClick={() => setSelectedChild(null)}
-                            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none ${
+                            aria-pressed={!selectedChild}
+                            className={`min-h-11 max-w-full break-words px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none ${
                                 !selectedChild ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300' : 'bg-white/60 text-slate-600 hover:bg-white'
                             }`}
                         >
-                            Everyone
+                            {progressText('learner.all_family_members', 'Everyone')}
                         </button>
                         {childProfiles.map(child => (
                             <button type="button"
                                 key={child.name}
                                 onClick={() => setSelectedChild(child.name)}
-                                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                                aria-pressed={selectedChild === child.name}
+                                className={`min-h-11 max-w-full break-words px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     selectedChild === child.name ? 'bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300' : 'bg-white/60 text-slate-600 hover:bg-white'
                                 }`}
                             >
-                                {child.name}
-                                {child.sessionCount > 0 && (
+                                <span className="min-w-0 break-words">{child.name}</span>
+                                {child.sessions.length > 0 && (
                                     <span className="text-[11px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono">
-                                        {child.sessionCount} sessions
+                                        {child.sessions.length} {progressText('learner.sessions', 'Sessions')}
                                     </span>
                                 )}
                             </button>
                         ))}
                     </div>
+                    <section className="mt-4 rounded-xl bg-white p-3 text-slate-800" aria-labelledby={panelId + '-sessions'} data-help-key="learner_progress_saved_sessions">
+                        <h4 id={panelId + '-sessions'} className="font-bold break-words">{selectedChild && <span>{selectedChild} · </span>}{progressText('learner.session_history', 'Session History')} ({savedSessions.length})</h4>
+                        {savedSessions.length === 0 ? <p className="mt-2 text-sm">{progressText('learner.no_saved_sessions', 'No saved sessions for this family member yet.')}</p> : (
+                            <ul id={panelId + '-session-list'} className="mt-2 space-y-2">
+                                {savedSessions.slice(0, sessionLimit).map(({ child, row }, index) => {
+                                    const date = new Date(row.timestamp);
+                                    const validDate = row.timestamp && Number.isFinite(date.getTime());
+                                    return <li key={child + ':' + (row.sessionId || 'session') + ':' + index} className="rounded-lg border border-slate-300 p-2 text-sm break-words">
+                                        {!selectedChild && <div className="font-bold">{child}</div>}
+                                        <div>{validDate ? <time dateTime={date.toISOString()}>{date.toLocaleDateString()}</time> : '—'}</div>
+                                        <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                                            <div><dt className="inline">{progressText('learner.saved_responses', 'Responses')}: </dt><dd className="inline font-bold">{sessionValue(row.responseCount)}</dd></div>
+                                            <div><dt className="inline">{progressText('learner.resources_opened', 'Resources opened')}: </dt><dd className="inline font-bold">{sessionValue(row.resourcesOpened)}</dd></div>
+                                        </dl>
+                                    </li>;
+                                })}
+                            </ul>
+                        )}
+                        {savedSessions.length > sessionLimit && <button type="button" aria-controls={panelId + '-session-list'} onClick={() => setSessionLimit(limit => limit + 10)} className="mt-3 min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800">{progressText('common.show_more', 'Show more')}</button>}
+                    </section>
                 </div>
             )}
+            {isParentMode && <h3 className="font-bold text-slate-800">{progressText('learner.device_activity', 'Activity on this device')}</h3>}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none">
                     <div className="flex items-center gap-3 mb-4">
@@ -6531,7 +6594,7 @@ const LearnerProgressView = React.memo(({
                                 <div>
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-sm font-bold text-slate-600">{t('learner.ws_accuracy')}</span>
-                                        <span className={`text-sm font-black ${stats.wsAccuracy >= 80 ? 'text-green-600' : stats.wsAccuracy >= 60 ? 'text-yellow-600' : 'text-orange-500'}`}>
+                                        <span className={`text-sm font-black ${stats.wsAccuracy >= 80 ? 'text-green-800' : stats.wsAccuracy >= 60 ? 'text-amber-800' : 'text-orange-800'}`}>
                                             {stats.wsAccuracy}%
                                         </span>
                                     </div>
@@ -6559,7 +6622,7 @@ const LearnerProgressView = React.memo(({
                             )}
                             {stats.masteredPhonemes.length > 0 && (
                                 <div>
-                                    <div className="text-[11px] font-bold text-green-600 uppercase tracking-wider mb-1.5">
+                                    <div className="text-[11px] font-bold text-green-800 uppercase tracking-wider mb-1.5">
                                         ✨ {stats.masteredPhonemes.length} Sounds Mastered
                                     </div>
                                     <div className="flex flex-wrap gap-1">
@@ -6674,7 +6737,7 @@ const LearnerProgressView = React.memo(({
                                 {todayXP.slice(0, 8).map((entry, i) => (
                                     <div key={entry.id || i} className="flex justify-between items-center text-xs px-2 py-1 rounded bg-white/60">
                                         <span className="text-slate-600 font-medium truncate max-w-[220px]">{entry.activity}</span>
-                                        <span className="font-bold text-green-600 whitespace-nowrap">+{entry.points} XP</span>
+                                        <span className="font-bold text-green-800 whitespace-nowrap">+{entry.points} XP</span>
                                     </div>
                                 ))}
                             </div>
@@ -6687,7 +6750,8 @@ const LearnerProgressView = React.memo(({
                 const weekAgo = new Date(now);
                 weekAgo.setDate(now.getDate() - 7);
                 const weekXP = pointHistory.filter(e => e.timestamp && new Date(e.timestamp) >= weekAgo);
-                const weekWords = wordSoundsHistory.filter(h => h.timestamp && new Date(h.timestamp) >= weekAgo);
+                const weekWords = wordSoundsHistory.filter(h => h && h.timestamp && new Date(h.timestamp) >= weekAgo && new Date(h.timestamp) <= now);
+                const weekGradedWords = weekWords.filter(h => h.practiceOnly !== true && h.activity !== 'letter_tracing');
                 const weekGames = gameCompletions?.filter(g => g.timestamp && new Date(g.timestamp) >= weekAgo) || [];
                 const prevWeekStart = new Date(weekAgo);
                 prevWeekStart.setDate(prevWeekStart.getDate() - 7);
@@ -6695,7 +6759,7 @@ const LearnerProgressView = React.memo(({
                 const weekTotalXP = weekXP.reduce((s, e) => s + (e.points || 0), 0);
                 const prevTotalXP = prevWeekXP.reduce((s, e) => s + (e.points || 0), 0);
                 const xpDelta = weekTotalXP - prevTotalXP;
-                const weekAccuracy = weekWords.length > 0 ? Math.round(weekWords.filter(w => w.correct).length / weekWords.length * 100) : null;
+                const weekAccuracy = weekGradedWords.length > 0 ? Math.round(weekGradedWords.filter(w => w.correct).length / weekGradedWords.length * 100) : null;
                 if (weekXP.length === 0 && weekWords.length === 0) return null;
                 return (
                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-5">
@@ -6717,12 +6781,12 @@ const LearnerProgressView = React.memo(({
                                 <div className="text-[11px] font-bold text-emerald-700 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
-                                <div className="text-lg font-black text-emerald-700">{weekWords.filter(w => w.correct).length}/{weekWords.length}</div>
+                                <div className="text-lg font-black text-emerald-700">{weekWords.length}</div>
                                 <div className="text-[11px] font-bold text-emerald-700 uppercase">{t('learner.words_this_week')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekAccuracy !== null ? weekAccuracy + '%' : '—'}</div>
-                                <div className="text-[11px] font-bold text-emerald-700 uppercase">Accuracy</div>
+                                <div className="text-[11px] font-bold text-emerald-700 uppercase">{progressText("learner.ws_accuracy", "Word Sounds Accuracy")}</div>
                             </div>
                         </div>
                         {weekGames.length > 0 && (
@@ -6741,8 +6805,8 @@ const LearnerProgressView = React.memo(({
                     <LongitudinalProgressChart logs={studentProgressLog} />
                 </div>
             )}
-            {showDiagnostics && (
-                <div className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-300" data-help-key="learner_progress_diagnostics_panel">
+            <>
+                <div id={panelId + "-details"} hidden={!showDiagnostics} className="bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-300" data-help-key="learner_progress_diagnostics_panel">
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                         <BarChart3 size={14} /> Detailed Metrics
                     </h3>
@@ -6773,14 +6837,14 @@ const LearnerProgressView = React.memo(({
                                 {pointHistory.slice(0, 10).map((entry, i) => (
                                     <div key={entry.id || i} className="flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white">
                                         <span className="text-slate-600 font-medium truncate max-w-[200px]">{entry.activity}</span>
-                                        <span className="font-bold text-green-600">+{entry.points} XP</span>
+                                        <span className="font-bold text-green-800">+{entry.points} XP</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
                 </div>
-            )}
+            </>
             <div className="flex flex-wrap justify-center gap-3 pt-2">
                 <button type="button"
                     onClick={() => {
@@ -6863,7 +6927,7 @@ const LearnerProgressView = React.memo(({
                         className="px-5 py-2.5 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
                         data-help-key="learner_progress_share_teacher_btn"
                     >
-                        <Share2 size={16} /> Share Progress with Teacher
+                        <Download aria-hidden="true" size={16} /> {progressText("learner.download_device_progress_report", "Download device progress report")}
                     </button>
                 )}
             </div>
@@ -7168,9 +7232,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   const getStudentLevel = (history) => {
       if (!history || !Array.isArray(history)) return "N/A";
       const adventureItem = history.slice().reverse().find(item => item.type === 'adventure');
-      if (adventureItem && adventureItem.data && adventureItem.data.level) {
-          return adventureItem.data.level;
-      }
+      const adventureLevel = adventureItem && adventureItem.data ? Number(adventureItem.data.snapshot?.level ?? adventureItem.data.level) : NaN;
+      if (Number.isFinite(adventureLevel) && adventureLevel > 0) return adventureLevel;
       return "N/A";
   };
   const getClassMetrics = () => {
@@ -7590,7 +7653,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
         const adventureItem = student.history.slice().reverse().find(item => item.type === 'adventure');
-        const level = (adventureItem && adventureItem.data && adventureItem.data.level) ? adventureItem.data.level : "N/A";
+        const adventureLevel = adventureItem && adventureItem.data ? Number(adventureItem.data.snapshot?.level ?? adventureItem.data.level) : NaN;
+        const level = Number.isFinite(adventureLevel) && adventureLevel > 0 ? adventureLevel : "N/A";
         let totalQuizScore = 0;
         let quizCount = 0;
         const quizzes = student.history.filter(h => h.type === 'quiz');

@@ -1,0 +1,195 @@
+{
+  "fonts": [
+    {
+      "tag": "P",
+      "text": "9/30/2026 · Built from what you viewed, rated, missed, ",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "🖨 Print / save as PDF",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "📋 Copy as text",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Download text",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Download study record",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Close",
+      "size": 12
+    },
+    {
+      "tag": "LABEL",
+      "text": "Browsing collectionAll collectionsSkeletalMuscularCircu",
+      "size": 12
+    },
+    {
+      "tag": "SELECT",
+      "text": "All collectionsSkeletalMuscularCirculatoryNervousOrgan ",
+      "size": 16
+    },
+    {
+      "tag": "LABEL",
+      "text": "ShowAll recorded structuresNeeds reviewWith notesGot it",
+      "size": 12
+    },
+    {
+      "tag": "SELECT",
+      "text": "All recorded structuresNeeds reviewWith notesGot it",
+      "size": 16
+    },
+    {
+      "tag": "P",
+      "text": "3 catalog entries shown. Print uses these filters; text",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "Preview ready. Review the counts, then merge to add thi",
+      "size": 12
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "Resume from a study record",
+      "size": 13
+    },
+    {
+      "tag": "P",
+      "text": "Import structure notes, ratings, and review dates from ",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "Scored practice and activity explanations are included ",
+      "size": 12
+    },
+    {
+      "tag": "LABEL",
+      "text": "Choose Anatomy study record (.json)",
+      "size": 16
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "2 ratings · 2 notes · 0 unrecognized structures skipped",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "0 practice records · 0 activity reflections",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Merge study record",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cancel import",
+      "size": 12
+    },
+    {
+      "tag": "SUMMARY",
+      "text": "What these records mean",
+      "size": 13
+    },
+    {
+      "tag": "P",
+      "text": "Totals cover all saved work. Each anatomical structure ",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "Viewed means opened, not learned. Ratings guide practic",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "This tool suggests review now for Need practice, after ",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "Repeated entries share ratings and scored-answer record",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "Next step: Review Ribs (1-12) — 1 structure marked for ",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "⏰ Re-check today: Skull (Cranium). Try recalling each f",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Review this collection",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Skull (Cranium)",
+      "size": 12
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Ribs (1-12)",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–",
+      "size": 11
+    },
+    {
+      "tag": "P",
+      "text": "In my words: My current ribs explanation.",
+      "size": 11
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Femur",
+      "size": 12
+    },
+    {
+      "tag": "P",
+      "text": "The femur is the thigh bone and usually the longest bon",
+      "size": 11
+    },
+    {
+      "tag": "P",
+      "text": "In my words: The femur supports the thigh.",
+      "size": 11
+    }
+  ],
+  "previewText": "2 recognized structures\n\n2 ratings · 2 notes · 0 unrecognized structures skipped\n\n0 practice records · 0 activity reflections\n\nMerge study recordCancel import",
+  "mergeFocus": {
+    "tag": "BODY",
+    "id": ""
+  },
+  "cancelFocus": {
+    "tag": "BODY",
+    "id": ""
+  },
+  "invalidNotice": "Import failed. Choose a version 1 Anatomy study record.",
+  "errors": []
+}

@@ -1,0 +1,29 @@
+{
+  "pass": true,
+  "mirroredAssets": 22,
+  "assets": [
+    "recipe_lab.css",
+    "recipe_lab.html",
+    "recipe_lab.js",
+    "recipe_lab_clock.js",
+    "recipe_lab_compare.js",
+    "recipe_lab_compare_ui.js",
+    "recipe_lab_crushing.js",
+    "recipe_lab_drying.js",
+    "recipe_lab_engine.js",
+    "recipe_lab_garlic.js",
+    "recipe_lab_hands.css",
+    "recipe_lab_hands.js",
+    "recipe_lab_hands_ui.js",
+    "recipe_lab_heat.js",
+    "recipe_lab_inspection.css",
+    "recipe_lab_inspection.js",
+    "recipe_lab_pasta.js",
+    "recipe_lab_scene.js",
+    "recipe_lab_serving.js",
+    "recipe_lab_stir.js",
+    "recipe_lab_water.js",
+    "recipe_lab_weighing.js"
+  ],
+  "syntax": "All kitchen runtime scripts and updated browser QA scripts parse successfully."
+}

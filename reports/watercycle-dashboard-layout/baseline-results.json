@@ -1,0 +1,903 @@
+{
+  "title": "Water Cycle dashboard and nearby Conditions layout audit",
+  "startedAt": "2026-09-30T15:41:43.802Z",
+  "sourceSha256": "78d924001e4e1de6167aae3804405f976ade6d4809f4d9d06cd47816a6a967e8",
+  "method": "Frozen actual runtime with owned ephemeral server and isolated Chromium. Read-only rendered audit; no learner tabs, preview port, runtime edits, or Git writes.",
+  "snapshots": [
+    {
+      "label": "desktop-or-phone-folded-1280",
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "dashboard": {
+        "x": 137,
+        "y": 2300.5,
+        "w": 1006,
+        "h": 882.09375,
+        "right": 1143,
+        "bottom": 3182.59375
+      },
+      "chart": {
+        "x": 557.6875,
+        "y": 2437.4375,
+        "w": 572.3125,
+        "h": 682.15625,
+        "right": 1130,
+        "bottom": 3119.59375
+      },
+      "bars": {
+        "x": 150,
+        "y": 2437.4375,
+        "w": 397.6875,
+        "h": 682.15625,
+        "right": 547.6875,
+        "bottom": 3119.59375
+      },
+      "lastBar": {
+        "x": 150,
+        "y": 2591.4375,
+        "w": 397.6875,
+        "h": 31.5,
+        "right": 547.6875,
+        "bottom": 2622.9375
+      },
+      "unusedHeightBelowLastBar": 496.65625,
+      "unusedColumnArea": 197513.982421875,
+      "tableOpen": false,
+      "gridDomOrder": [
+        "wc-signal-bars",
+        "wc-signal-chart"
+      ],
+      "storageHeading": null,
+      "storageAria": "Water storage comparisons",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "readout": "Cloud · Teaching scores\nInspecting this place · stage focus Land\nEnergy cue\n56/100\nSurface flow cue\n66/100\nStorage cue\n65/100",
+      "chartText": [
+        "0",
+        "50",
+        "100",
+        "Land",
+        "Surface",
+        "Air",
+        "Cloud",
+        "Land",
+        "Return"
+      ]
+    },
+    {
+      "label": "desktop-or-phone-open-1280",
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "dashboard": {
+        "x": 137,
+        "y": 458.5,
+        "w": 1006,
+        "h": 1133.09375,
+        "right": 1143,
+        "bottom": 1591.59375
+      },
+      "chart": {
+        "x": 557.6875,
+        "y": 595.4375,
+        "w": 572.3125,
+        "h": 933.15625,
+        "right": 1130,
+        "bottom": 1528.59375
+      },
+      "bars": {
+        "x": 150,
+        "y": 595.4375,
+        "w": 397.6875,
+        "h": 933.15625,
+        "right": 547.6875,
+        "bottom": 1528.59375
+      },
+      "lastBar": {
+        "x": 150,
+        "y": 749.4375,
+        "w": 397.6875,
+        "h": 31.5,
+        "right": 547.6875,
+        "bottom": 780.9375
+      },
+      "unusedHeightBelowLastBar": 747.65625,
+      "unusedColumnArea": 297333.544921875,
+      "tableOpen": true,
+      "gridDomOrder": [
+        "wc-signal-bars",
+        "wc-signal-chart"
+      ],
+      "storageHeading": null,
+      "storageAria": "Water storage comparisons",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "readout": "Cloud · Teaching scores\nInspecting this place · stage focus Land\nEnergy cue\n56/100\nSurface flow cue\n66/100\nStorage cue\n65/100",
+      "chartText": [
+        "0",
+        "50",
+        "100",
+        "Land",
+        "Surface",
+        "Air",
+        "Cloud",
+        "Land",
+        "Return"
+      ]
+    },
+    {
+      "label": "conditions-1280",
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "labs": [
+        {
+          "classes": "wc-climate-lab wc-control-panel rounded-xl p-3 mb-3 shadow-md border-2 bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200",
+          "rect": {
+            "x": 137,
+            "y": 1049,
+            "w": 1006,
+            "h": 572.359375,
+            "right": 1143,
+            "bottom": 1621.359375
+          },
+          "open": true,
+          "summary": "Climate Lab\nTune the weather",
+          "heading": "Climate Lab",
+          "controls": [
+            {
+              "id": "wcScenarioPreset",
+              "label": "Choose a Water Cycle experiment preset",
+              "rect": {
+                "x": 890,
+                "y": 1124,
+                "w": 236,
+                "h": 44,
+                "right": 1126,
+                "bottom": 1168
+              }
+            },
+            {
+              "id": "wc-climate-solar",
+              "label": "Solar intensity",
+              "rect": {
+                "x": 169,
+                "y": 1307.484375,
+                "w": 286,
+                "h": 34,
+                "right": 455,
+                "bottom": 1341.484375
+              }
+            },
+            {
+              "id": "wc-climate-temperature",
+              "label": "Temperature in degrees Celsius",
+              "rect": {
+                "x": 497,
+                "y": 1307.484375,
+                "w": 286,
+                "h": 34,
+                "right": 783,
+                "bottom": 1341.484375
+              }
+            },
+            {
+              "id": "wc-climate-wind",
+              "label": "Wind speed multiplier",
+              "rect": {
+                "x": 825,
+                "y": 1307.484375,
+                "w": 286,
+                "h": 34,
+                "right": 1111,
+                "bottom": 1341.484375
+              }
+            },
+            {
+              "id": "",
+              "label": "Reset climate settings",
+              "rect": {
+                "x": 429.40625,
+                "y": 1576.359375,
+                "w": 55.828125,
+                "h": 28,
+                "right": 485.234375,
+                "bottom": 1604.359375
+              }
+            }
+          ],
+          "fontSizes": [
+            {
+              "text": "Experiment\nCustom controls\nBalanced baseline\nHeatwave and dry ground\nHeavy storm\nForest an",
+              "font": "12px"
+            },
+            {
+              "text": "EXPERIMENT FOCUS\nChoose a preset or tune one control at a time; compare the resulting indi",
+              "font": "10px"
+            },
+            {
+              "text": "☀️ Sunlight\n100%",
+              "font": "13px"
+            },
+            {
+              "text": "Sunlight supplies the energy that lets liquid water become water vapor.",
+              "font": "12px"
+            },
+            {
+              "text": "🌡️ Temperature\n15°C",
+              "font": "13px"
+            },
+            {
+              "text": "Temperature changes molecular motion and helps determine whether water is liquid, ice, or ",
+              "font": "12px"
+            },
+            {
+              "text": "🌬️ Wind\n1.0x",
+              "font": "13px"
+            },
+            {
+              "text": "Wind transports vapor and replaces moist surface air; it is not the cycle's energy source.",
+              "font": "12px"
+            },
+            {
+              "text": "Evaporation is moderate: solar energy and temperature are near the teaching baseline; wind",
+              "font": "12px"
+            },
+            {
+              "text": "Science note: sunlight supplies energy, temperature affects molecular motion and phase, an",
+              "font": "12px"
+            }
+          ]
+        },
+        {
+          "classes": "wc-land-lab",
+          "rect": {
+            "x": 137,
+            "y": 1633.359375,
+            "w": 1006,
+            "h": 603.3125,
+            "right": 1143,
+            "bottom": 2236.671875
+          },
+          "open": true,
+          "summary": "Land-surface pathways\nCompare runoff and infiltration",
+          "heading": "Land-Surface Scenario Lab",
+          "controls": [
+            {
+              "id": "",
+              "label": "Reset land-surface scenario",
+              "rect": {
+                "x": 1062.234375,
+                "y": 1708.609375,
+                "w": 63.765625,
+                "h": 40,
+                "right": 1126,
+                "bottom": 1748.609375
+              }
+            },
+            {
+              "id": "wc-land-rain",
+              "label": "Rainfall intensity index",
+              "rect": {
+                "x": 154,
+                "y": 1783.359375,
+                "w": 481,
+                "h": 36,
+                "right": 635,
+                "bottom": 1819.359375
+              }
+            },
+            {
+              "id": "wc-land-saturation",
+              "label": "Antecedent soil saturation index",
+              "rect": {
+                "x": 645,
+                "y": 1783.359375,
+                "w": 481,
+                "h": 36,
+                "right": 1126,
+                "bottom": 1819.359375
+              }
+            },
+            {
+              "id": "",
+              "label": "Soil permeability: Low",
+              "rect": {
+                "x": 154,
+                "y": 1859.859375,
+                "w": 157,
+                "h": 44,
+                "right": 311,
+                "bottom": 1903.859375
+              }
+            },
+            {
+              "id": "",
+              "label": "Soil permeability: Medium (selected)",
+              "rect": {
+                "x": 316,
+                "y": 1859.859375,
+                "w": 157,
+                "h": 44,
+                "right": 473,
+                "bottom": 1903.859375
+              }
+            },
+            {
+              "id": "",
+              "label": "Soil permeability: High",
+              "rect": {
+                "x": 478,
+                "y": 1859.859375,
+                "w": 157,
+                "h": 44,
+                "right": 635,
+                "bottom": 1903.859375
+              }
+            },
+            {
+              "id": "",
+              "label": "Slope: Gentle",
+              "rect": {
+                "x": 645,
+                "y": 1859.859375,
+                "w": 157,
+                "h": 44,
+                "right": 802,
+                "bottom": 1903.859375
+              }
+            },
+            {
+              "id": "",
+              "label": "Slope: Moderate (selected)",
+              "rect": {
+                "x": 807,
+                "y": 1859.859375,
+                "w": 157,
+                "h": 44,
+                "right": 964,
+                "bottom": 1903.859375
+              }
+            },
+            {
+              "id": "",
+              "label": "Slope: Steep",
+              "rect": {
+                "x": 969,
+                "y": 1859.859375,
+                "w": 157,
+                "h": 44,
+                "right": 1126,
+                "bottom": 1903.859375
+              }
+            },
+            {
+              "id": "",
+              "label": "Land cover: Forest",
+              "rect": {
+                "x": 154,
+                "y": 1938.359375,
+                "w": 157,
+                "h": 44,
+                "right": 311,
+                "bottom": 1982.359375
+              }
+            },
+            {
+              "id": "",
+              "label": "Land cover: Grass (selected)",
+              "rect": {
+                "x": 316,
+                "y": 1938.359375,
+                "w": 157,
+                "h": 44,
+                "right": 473,
+                "bottom": 1982.359375
+              }
+            },
+            {
+              "id": "",
+              "label": "Land cover: Urban",
+              "rect": {
+                "x": 478,
+                "y": 1938.359375,
+                "w": 157,
+                "h": 44,
+                "right": 635,
+                "bottom": 1982.359375
+              }
+            }
+          ],
+          "fontSizes": [
+            {
+              "text": "Explore how storm and landscape conditions influence pathways after water reaches the grou",
+              "font": "11px"
+            },
+            {
+              "text": "Rainfall intensity: 55",
+              "font": "13px"
+            },
+            {
+              "text": "Soil saturation: 45",
+              "font": "13px"
+            },
+            {
+              "text": "Soil permeability",
+              "font": "13px"
+            },
+            {
+              "text": "Slope",
+              "font": "13px"
+            },
+            {
+              "text": "Land cover",
+              "font": "13px"
+            },
+            {
+              "text": "Largest modeled runoff influence: rainfall intensity; largest modeled infiltration influen",
+              "font": "12px"
+            },
+            {
+              "text": "The signals are balanced: compare runoff and infiltration rather than treating either as c",
+              "font": "12px"
+            },
+            {
+              "text": "Try a one-control test: change one input, compare both indices, and reset before trying an",
+              "font": "12px"
+            },
+            {
+              "text": "Qualitative teaching indices, not measured percentages or a forecast. They are independent",
+              "font": "11px"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "desktop-or-phone-folded-320",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "dashboard": {
+        "x": 23,
+        "y": 3767.171875,
+        "w": 274,
+        "h": 1230.421875,
+        "right": 297,
+        "bottom": 4997.59375
+      },
+      "chart": {
+        "x": 36,
+        "y": 4068.390625,
+        "w": 248,
+        "h": 616.703125,
+        "right": 284,
+        "bottom": 4685.09375
+      },
+      "bars": {
+        "x": 36,
+        "y": 4695.09375,
+        "w": 248,
+        "h": 185.5,
+        "right": 284,
+        "bottom": 4880.59375
+      },
+      "lastBar": {
+        "x": 36,
+        "y": 4849.09375,
+        "w": 248,
+        "h": 31.5,
+        "right": 284,
+        "bottom": 4880.59375
+      },
+      "unusedHeightBelowLastBar": 0,
+      "unusedColumnArea": 0,
+      "tableOpen": false,
+      "gridDomOrder": [
+        "wc-signal-bars",
+        "wc-signal-chart"
+      ],
+      "storageHeading": null,
+      "storageAria": "Water storage comparisons",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "readout": "Cloud · Teaching scores\nInspecting this place · stage focus Land\nEnergy cue\n56/100\nSurface flow cue\n66/100\nStorage cue\n65/100",
+      "chartText": [
+        "0",
+        "50",
+        "100",
+        "Land",
+        "Surface",
+        "Air",
+        "Cloud",
+        "Land",
+        "Return"
+      ]
+    },
+    {
+      "label": "desktop-or-phone-open-320",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "dashboard": {
+        "x": 23,
+        "y": 285.171875,
+        "w": 274,
+        "h": 1517.421875,
+        "right": 297,
+        "bottom": 1802.59375
+      },
+      "chart": {
+        "x": 36,
+        "y": 586.390625,
+        "w": 248,
+        "h": 903.703125,
+        "right": 284,
+        "bottom": 1490.09375
+      },
+      "bars": {
+        "x": 36,
+        "y": 1500.09375,
+        "w": 248,
+        "h": 185.5,
+        "right": 284,
+        "bottom": 1685.59375
+      },
+      "lastBar": {
+        "x": 36,
+        "y": 1654.09375,
+        "w": 248,
+        "h": 31.5,
+        "right": 284,
+        "bottom": 1685.59375
+      },
+      "unusedHeightBelowLastBar": 0,
+      "unusedColumnArea": 0,
+      "tableOpen": true,
+      "gridDomOrder": [
+        "wc-signal-bars",
+        "wc-signal-chart"
+      ],
+      "storageHeading": null,
+      "storageAria": "Water storage comparisons",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "readout": "Cloud · Teaching scores\nInspecting this place · stage focus Land\nEnergy cue\n56/100\nSurface flow cue\n66/100\nStorage cue\n65/100",
+      "chartText": [
+        "0",
+        "50",
+        "100",
+        "Land",
+        "Surface",
+        "Air",
+        "Cloud",
+        "Land",
+        "Return"
+      ]
+    },
+    {
+      "label": "conditions-320",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "labs": [
+        {
+          "classes": "wc-climate-lab wc-control-panel rounded-xl p-3 mb-3 shadow-md border-2 bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200",
+          "rect": {
+            "x": 23,
+            "y": 358.171875,
+            "w": 274,
+            "h": 1268.765625,
+            "right": 297,
+            "bottom": 1626.9375
+          },
+          "open": true,
+          "summary": "Climate Lab\nTune the weather",
+          "heading": "Climate Lab",
+          "controls": [
+            {
+              "id": "wcScenarioPreset",
+              "label": "Choose a Water Cycle experiment preset",
+              "rect": {
+                "x": 111.078125,
+                "y": 467.171875,
+                "w": 172.921875,
+                "h": 44,
+                "right": 284,
+                "bottom": 511.171875
+              }
+            },
+            {
+              "id": "wc-climate-solar",
+              "label": "Solar intensity",
+              "rect": {
+                "x": 51,
+                "y": 690.9375,
+                "w": 218,
+                "h": 34,
+                "right": 269,
+                "bottom": 724.9375
+              }
+            },
+            {
+              "id": "wc-climate-temperature",
+              "label": "Temperature in degrees Celsius",
+              "rect": {
+                "x": 51,
+                "y": 870.125,
+                "w": 218,
+                "h": 34,
+                "right": 269,
+                "bottom": 904.125
+              }
+            },
+            {
+              "id": "wc-climate-wind",
+              "label": "Wind speed multiplier",
+              "rect": {
+                "x": 51,
+                "y": 1067.90625,
+                "w": 218,
+                "h": 34,
+                "right": 269,
+                "bottom": 1101.90625
+              }
+            },
+            {
+              "id": "",
+              "label": "Reset climate settings",
+              "rect": {
+                "x": 36,
+                "y": 1585.9375,
+                "w": 248,
+                "h": 28,
+                "right": 284,
+                "bottom": 1613.9375
+              }
+            }
+          ],
+          "fontSizes": [
+            {
+              "text": "Experiment\nCustom controls\nBalanced baseline\nHeatwave and dry ground\nHeavy storm\nForest an",
+              "font": "12px"
+            },
+            {
+              "text": "EXPERIMENT FOCUS\nChoose a preset or tune one control at a time; compare the resulting indi",
+              "font": "10px"
+            },
+            {
+              "text": "☀️ Sunlight\n100%",
+              "font": "13px"
+            },
+            {
+              "text": "Sunlight supplies the energy that lets liquid water become water vapor.",
+              "font": "12px"
+            },
+            {
+              "text": "🌡️ Temperature\n15°C",
+              "font": "13px"
+            },
+            {
+              "text": "Temperature changes molecular motion and helps determine whether water is liquid, ice, or ",
+              "font": "12px"
+            },
+            {
+              "text": "🌬️ Wind\n1.0x",
+              "font": "13px"
+            },
+            {
+              "text": "Wind transports vapor and replaces moist surface air; it is not the cycle's energy source.",
+              "font": "12px"
+            },
+            {
+              "text": "Evaporation is moderate: solar energy and temperature are near the teaching baseline; wind",
+              "font": "12px"
+            },
+            {
+              "text": "Science note: sunlight supplies energy, temperature affects molecular motion and phase, an",
+              "font": "12px"
+            }
+          ]
+        },
+        {
+          "classes": "wc-land-lab",
+          "rect": {
+            "x": 23,
+            "y": 1638.9375,
+            "w": 274,
+            "h": 1133.9375,
+            "right": 297,
+            "bottom": 2772.875
+          },
+          "open": true,
+          "summary": "Land-surface pathways\nCompare runoff and infiltration",
+          "heading": "Land-Surface Scenario Lab",
+          "controls": [
+            {
+              "id": "",
+              "label": "Reset land-surface scenario",
+              "rect": {
+                "x": 36,
+                "y": 1784.9375,
+                "w": 248,
+                "h": 40,
+                "right": 284,
+                "bottom": 1824.9375
+              }
+            },
+            {
+              "id": "wc-land-rain",
+              "label": "Rainfall intensity index",
+              "rect": {
+                "x": 36,
+                "y": 1859.4375,
+                "w": 248,
+                "h": 36,
+                "right": 284,
+                "bottom": 1895.4375
+              }
+            },
+            {
+              "id": "wc-land-saturation",
+              "label": "Antecedent soil saturation index",
+              "rect": {
+                "x": 36,
+                "y": 1935.9375,
+                "w": 248,
+                "h": 36,
+                "right": 284,
+                "bottom": 1971.9375
+              }
+            },
+            {
+              "id": "",
+              "label": "Soil permeability: Low",
+              "rect": {
+                "x": 36,
+                "y": 2012.4375,
+                "w": 79.328125,
+                "h": 57,
+                "right": 115.328125,
+                "bottom": 2069.4375
+              }
+            },
+            {
+              "id": "",
+              "label": "Soil permeability: Medium (selected)",
+              "rect": {
+                "x": 120.328125,
+                "y": 2012.4375,
+                "w": 79.328125,
+                "h": 57,
+                "right": 199.65625,
+                "bottom": 2069.4375
+              }
+            },
+            {
+              "id": "",
+              "label": "Soil permeability: High",
+              "rect": {
+                "x": 204.65625,
+                "y": 2012.4375,
+                "w": 79.34375,
+                "h": 57,
+                "right": 284,
+                "bottom": 2069.4375
+              }
+            },
+            {
+              "id": "",
+              "label": "Slope: Gentle",
+              "rect": {
+                "x": 36,
+                "y": 2103.9375,
+                "w": 79.328125,
+                "h": 57,
+                "right": 115.328125,
+                "bottom": 2160.9375
+              }
+            },
+            {
+              "id": "",
+              "label": "Slope: Moderate (selected)",
+              "rect": {
+                "x": 120.328125,
+                "y": 2103.9375,
+                "w": 79.328125,
+                "h": 57,
+                "right": 199.65625,
+                "bottom": 2160.9375
+              }
+            },
+            {
+              "id": "",
+              "label": "Slope: Steep",
+              "rect": {
+                "x": 204.65625,
+                "y": 2103.9375,
+                "w": 79.34375,
+                "h": 57,
+                "right": 284,
+                "bottom": 2160.9375
+              }
+            },
+            {
+              "id": "",
+              "label": "Land cover: Forest",
+              "rect": {
+                "x": 36,
+                "y": 2195.4375,
+                "w": 79.328125,
+                "h": 44,
+                "right": 115.328125,
+                "bottom": 2239.4375
+              }
+            },
+            {
+              "id": "",
+              "label": "Land cover: Grass (selected)",
+              "rect": {
+                "x": 120.328125,
+                "y": 2195.4375,
+                "w": 79.328125,
+                "h": 44,
+                "right": 199.65625,
+                "bottom": 2239.4375
+              }
+            },
+            {
+              "id": "",
+              "label": "Land cover: Urban",
+              "rect": {
+                "x": 204.65625,
+                "y": 2195.4375,
+                "w": 79.34375,
+                "h": 44,
+                "right": 284,
+                "bottom": 2239.4375
+              }
+            }
+          ],
+          "fontSizes": [
+            {
+              "text": "Explore how storm and landscape conditions influence pathways after water reaches the grou",
+              "font": "11px"
+            },
+            {
+              "text": "Rainfall intensity: 55",
+              "font": "13px"
+            },
+            {
+              "text": "Soil saturation: 45",
+              "font": "13px"
+            },
+            {
+              "text": "Soil permeability",
+              "font": "13px"
+            },
+            {
+              "text": "Slope",
+              "font": "13px"
+            },
+            {
+              "text": "Land cover",
+              "font": "13px"
+            },
+            {
+              "text": "Largest modeled runoff influence: rainfall intensity; largest modeled infiltration influen",
+              "font": "12px"
+            },
+            {
+              "text": "The signals are balanced: compare runoff and infiltration rather than treating either as c",
+              "font": "12px"
+            },
+            {
+              "text": "Try a one-control test: change one input, compare both indices, and reset before trying an",
+              "font": "12px"
+            },
+            {
+              "text": "Qualitative teaching indices, not measured percentages or a forecast. They are independent",
+              "font": "11px"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finishedAt": "2026-09-30T15:41:48.581Z"
+}

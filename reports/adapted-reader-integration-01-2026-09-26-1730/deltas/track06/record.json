@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-26T22:41:35.032Z",
+  "label": "track06",
+  "patch": "9d23fd5e80371a494260ff673d57a27d9f6bc00d10f2453a637976c6a1b7044e",
+  "plans": [
+    {
+      "target": "content_engine_source.jsx",
+      "targets": [
+        "content_engine_source.jsx"
+      ],
+      "before": "646dc4a0447fb418c26b6c372b90349df7543e700011333e893f463a028a320f",
+      "after": "ee971d7cc4ec230db41f77b30f39724be743ab99c60dd2a2523b9415ffde2f96",
+      "changed": true
+    },
+    {
+      "target": "tests/revision_target.test.js",
+      "targets": [
+        "tests/revision_target.test.js"
+      ],
+      "before": "81c59c81ae51c15a2e035049add1f734086d45ac9868e144eccd812573e74e00",
+      "after": "cd72aeadd436520fe68066f37807b77182a17b9d96dbcca68db1ad1f12b3df0b",
+      "changed": true
+    },
+    {
+      "target": "tests/free_var_crashes_2026_09_14.test.js",
+      "targets": [
+        "tests/free_var_crashes_2026_09_14.test.js"
+      ],
+      "before": "b11468685956f8f2b984add11f8cc17408811e82ceda85aff0d043c29022f036",
+      "after": "92513e73937e5dbed3b39ba4b356b24c3ffe634300835e42a48af3caa80570da",
+      "changed": true
+    },
+    {
+      "target": "tests/bilingual_revision_transaction.test.js",
+      "targets": [
+        "tests/bilingual_revision_transaction.test.js"
+      ],
+      "before": null,
+      "after": "ec4aaea50a8548b1864bfcde6eece36635c322781f49ca698df474646931125d",
+      "changed": true
+    }
+  ]
+}

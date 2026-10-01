@@ -1,0 +1,64 @@
+[
+  {
+    "name": "preferred structured record with matching fields",
+    "input": {
+      "metadataStatus": "ok",
+      "preferredDomain": true,
+      "expected": {
+        "title": "The Yellow Wallpaper",
+        "creator": "Charlotte Perkins Gilman",
+        "edition": "1892"
+      },
+      "metadata": {
+        "title": "The Yellow Wallpaper",
+        "creator": "Charlotte Perkins Gilman",
+        "date": "1892",
+        "canonicalUrl": "https://www.gutenberg.org/ebooks/1952",
+        "doi": "",
+        "isbn": "",
+        "signals": { "jsonLd": true, "citationMeta": true }
+      }
+    },
+    "expected": { "level": "high", "minScore": 7 }
+  },
+  {
+    "name": "partial catalog metadata",
+    "input": {
+      "metadataStatus": "ok",
+      "preferredDomain": false,
+      "expected": {
+        "title": "Yellow Wallpaper",
+        "creator": "",
+        "edition": "1890"
+      },
+      "metadata": {
+        "title": "The Yellow Wallpaper and Other Stories",
+        "creator": "",
+        "date": "1892",
+        "canonicalUrl": "https://example.org/catalog",
+        "signals": { "citationMeta": true }
+      }
+    },
+    "expected": { "level": "medium", "minScore": 4 }
+  },
+  {
+    "name": "mismatched general web record",
+    "input": {
+      "metadataStatus": "ok",
+      "preferredDomain": false,
+      "expected": { "title": "The Yellow Wallpaper", "creator": "Charlotte Perkins Gilman", "edition": "1892" },
+      "metadata": { "title": "A Different Story", "creator": "Another Writer", "date": "2020", "signals": {} }
+    },
+    "expected": { "level": "low", "maxScore": 10 }
+  },
+  {
+    "name": "verification unavailable",
+    "input": {
+      "metadataStatus": "error",
+      "preferredDomain": true,
+      "expected": { "title": "The Yellow Wallpaper" },
+      "metadata": {}
+    },
+    "expected": { "level": "unknown", "score": 0 }
+  }
+]

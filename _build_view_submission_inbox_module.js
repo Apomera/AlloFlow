@@ -74,6 +74,8 @@ ${compiled}
       responseManifestSchemaVersion: SI_RESPONSE_MANIFEST_SCHEMA_VERSION,
       responseEntryModels: siResponseEntryModels,
       responseRequiresManualReview: siResponseRequiresManualReview,
+      assessmentReport: siAssessmentReport,
+      AssessmentReport: SiAssessmentReport,
       prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
       getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
       buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope

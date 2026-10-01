@@ -5,7 +5,9 @@
 //   fields), and no-verdict language anywhere in the module.
 // Design: docs/PROCESS_PROVENANCE_DESIGN_2026-08-04.md
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { createRequire } from 'node:module';
 
 const require2 = createRequire(import.meta.url);

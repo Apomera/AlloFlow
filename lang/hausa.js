@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Yankunan Motsin Rai",
+          "desc": "Gano yankinka (shuɗi, kore, rawaya, ja) ka kuma bincika dabarun daidaita kanka."
+        },
+        "emotions": {
+          "label": "Mai Binciken Motsin Rai",
+          "desc": "Gina kalmomin motsin rai — gano, sanya suna, ka kuma auna ƙarfin yadda kake ji."
+        },
+        "strengths": {
+          "label": "Mai Gano Ƙarfi",
+          "desc": "Gano ka kuma yi tunani kan ƙarfinka, baiwarka, da wuraren da za ka ci gaba."
+        },
+        "viaStrengths": {
+          "label": "Ƙarfin VIA",
+          "desc": "Rarrabewar kai mai sauƙi ta Ƙarfin Ɗabi'a 24 na VIA (Peterson da Seligman, 2004), tare da kyawawan halaye 6 da gano ƙarfinka na musamman. Don cikakken bincike na hukuma kyauta, je zuwa viacharacter.org. Atisayen tunani ne, ba gwajin auna tunani na kimiyya ba."
+        },
+        "wheelOfLife": {
+          "label": "Dabaran Rayuwa",
+          "desc": "Taswirar gizo-gizo ta fannonin rayuwa 8, ana auna kowanne daga 1 zuwa 10. Hoton kanka na inda rayuwa ta cika da inda ta yi siriri a yanzu. Daga al'adar koyarwa ta coaching (Meyer shekarun 1960; Co-Active Coaching). Hasashe ne; ba gwajin auna tunani da aka tabbatar ba."
+        },
+        "perma": {
+          "label": "Walwalar PERMA",
+          "desc": "Duba kai kan fannonin PERMA guda biyar tare da tunani kan Lafiya: Motsin rai mai kyau, Shiga ciki, Dangantaka, Ma'ana, Nasara, da Lafiya. Tambayoyi 24, sakamako a jadawalin sanduna, tunani kan kowane fanni. Daga Seligman; yana tafiya tare da Ƙarfin VIA."
+        },
+        "coping": {
+          "label": "Kayan Aikin Jurewa",
+          "desc": "Bincika ka kuma yi atisayen dabarun jurewa — numfashi, tsayar da hankali, motsa jiki, da ƙari."
+        },
+        "windowOfTolerance": {
+          "label": "Tagar Haƙuri (Window of Tolerance)",
+          "desc": "Hoton sanin kai mai la'akari da raunin zuciya. Yankunan tashin jiki uku (tashin jiki mai yawa, taga, raguwar kuzari mai yawa). Zana alamunka na kowane yanki, abubuwan da ke tayar maka da hankali, da atisayen da ke dawo da kai. Bisa Siegel (1999); ana amfani da shi a makarantu masu la'akari da raunin zuciya."
+        },
+        "stressBucket": {
+          "label": "Bokitin Matsin Lamba",
+          "desc": "Hoton iya ɗauka. Abubuwan matsin lamba suna zubowa ciki; atisayen jurewa suna zubar da su waje. Duba ko shigowa da fitarwa sun daidaita. Kayan aiki daga al'adar CBT (Brabban da Turkington 2002), ana amfani da shi a NHS IAPT da Mind UK. Yana faɗin gaskiya game da matsin lamba da ke fitowa daga tsarin al'umma."
+        },
+        "tipp": {
+          "desc": "Ƙwarewar DBT guda huɗu ta tsira daga rikici (Temperature/zafin jiki, Intense exercise/motsa jiki mai ƙarfi, Paced breathing/numfashi a hankali, Paired muscle relaxation/sassauta tsokoki) don damuwa MAI TSANANI ta nan take. Suna kwantar da jiki cikin daƙiƙa 30 zuwa minti 10 kafin ka yi ƙoƙarin tunanin mafita. Ƙwarewar tushe ta DBT ta Jurewa Wahala (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Kayan Aikin Damuwa",
+          "desc": "Ƙwarewa bisa CBT don magance damuwa: ilimin lafiyar tunani, bishiyar damuwa (damuwa mai amfani da mara amfani), lokacin damuwa da aka tsara, rage tunanin bala'i, ƙwarewar tsayar da hankali, da jerin salon naka. Daga Beck Institute, AACAP, ADAA. Yana tafiya tare da Tagar Haƙuri (Window of Tolerance) da Bokitin Matsin Lamba."
+        },
+        "sleep": {
+          "label": "Barci da Hutu",
+          "desc": "Barcin matasa babbar matsala ce ta lafiyar jama'a. Ba kasafai ake samun awa 8-10 da AAP ta ba da shawara ba. Ilimin lafiyar tunani, duba kai, matsaloli 8 da aka saba da abin da ke aiki ga kowanne, da diary na barci. Daga AAP, CDC, NSF, binciken Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Daidaita Gaɓoɓin Ji",
+          "desc": "Kayan aiki mai girmama bambancin ƙwaƙwalwa don fahimtar yadda jikinka ke sarrafa abubuwan da yake ji a cikin tsarin ji guda 8. Gina bayanin kanka, tsara jadawalin ji, gano gyare-gyaren makaranta. Harshe mai sa asali a gaba; an gina shi bisa Ayres / Dunn / binciken da masu autism ke jagoranta."
+        },
+        "bigFeelings": {
+          "label": "Manyan Ji (Fushi)",
+          "desc": "Ilimin lafiyar tunani da gina ƙwarewa na musamman game da fushi. Fushi a matsayin bayani, ba shi ne matsalar ba; tashin hankali na mayar da martani shi ne tarkon. An gina shi bisa al'adar Coping Power ta Lochman + shaidun CBT na fushi. Rikodin abubuwan ɓacin rai, jerin abubuwan da ke tayar da fushi, wurin zaɓi, hanyoyin huce haushi na kanka."
+        },
+        "substancePsychoed": {
+          "label": "Amfani da Kayan Maye",
+          "desc": "Ilimin lafiyar tunani mai rage illa game da kayan maye (barasa, wiwi, nicotine, opioids, magungunan ƙara kuzari, benzos, masu sa ruɗi). Haɗari ga ƙwaƙwalwar matashi. Ilimi kan Naloxone. BA gwajin tantancewa ba ne, BA koyarwar ƙauracewa kaɗai ba ce. Turawa zuwa SAMHSA mai ƙarfi. Wurin tunani da ya dace da MI."
+        },
+        "behavioralActivation": {
+          "label": "Ƙarfafa Ayyuka (Behavioral Activation)",
+          "desc": "Tsara ƙananan ayyuka, yi su, ka kuma auna su don ƙwarewa (ka ji kana iyawa) da jin daɗi (ka ji daɗinsa). Lura da abin da ya dace ka kuma zaɓi mataki na gaba mai sauƙin sarrafawa. Wannan aikin tsarawa ya samo asali daga ƙarfafa ayyuka (behavioral activation); ba ya ba da magani kuma ba ya kimanta tsarin magani."
+        },
+        "mindfulness": {
+          "label": "Kusurwar Natsuwa",
+          "desc": "Atisayen numfashi masu jagora, binciken jiki, da ayyukan natsuwa da lura."
+        },
+        "quietQuestions": {
+          "label": "Tambayoyin Shiru",
+          "desc": "Atisayen binciken zuci na mako-mako. Zauna da tambaya ɗaya mai buɗaɗɗen amsa na tsawon mako guda. Tambayoyi 20 masu juyawa kan hankali, buri, wahala, alaƙa, da girma. An samo wahayi daga al'adar tambayoyin Quaker; ba na addini ba ne kuma ba ya tilasta komai."
+        },
+        "orientations": {
+          "label": "Mahangar Rayuwa",
+          "desc": "Hanyoyin Rayuwa, An Kwatanta. Al'adun falsafa takwas (Daoism, Zen, Stoicism, Existentialism, ɗabi'ar Confucius, Ubuntu, dangantakar 'Yan Asali, Ɗabi'ar Kulawa) an kwatanta su kan manyan tambayoyin rayuwa. Ba ya tilasta komai; kowace al'ada tana da sashe na gaskiya na \"abin da ba za ta iya yi da kyau ba\"."
+        },
+        "thoughtRecord": {
+          "label": "Rikodin Tunani na CBT",
+          "desc": "Rikodin tunani mai ginshiƙai 7 daga Cognitive Behavioral Therapy (CBT). Bi ta wani lokaci mai wuya: yanayi, motsin rai, tunani na kai-tsaye, shaida mai goyon baya da mai adawa, daidaitaccen tunani, sake auna motsin rai. Yana ajiye rubuce-rubuce a tsawon lokaci. Daga Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Teburin Riba da Asara",
+          "desc": "Teburin yanke shawara na 2x2 daga Dialectical Behavior Therapy (DBT). Fa'idodi da rashin fa'idar wani shawara na ɗan gajeren lokaci da na dogon lokaci, gefe da gefe. Yana da amfani idan motsin rai yana tura ka zuwa zaɓi ɗaya. Daga Linehan."
+        },
+        "sfbt": {
+          "label": "Mai Mayar da Hankali kan Mafita",
+          "desc": "Maganin Gajeren Lokaci Mai Mayar da Hankali kan Mafita (Solution-Focused Brief Therapy): Tambayar Mu'ujiza, Aunawa, Neman Keɓancewa, da Yabo. Yana duba gaba maimakon baya, yana tambayar abin da ke aiki tuni. Dabarar da aka fi amfani da ita wajen ba da shawara a makarantun Amurka. Daga de Shazer da Berg."
+        },
+        "careConstellations": {
+          "label": "Taurarin Kulawa",
+          "desc": "Taswirar dangantaka ta waɗanda ke kula da kai da waɗanda kake kula da su. Tana ƙin tsarin \"kula da kai\" na son kai ko na saye-saye. Ta haɗa da cikakken ra'ayin falsafa kan Renon Kai da Kula da Kai (Foucault, epimeleia heautou na Girka, Audre Lorde, eudaimonic da hedonic)."
+        },
+        "ecomap": {
+          "label": "Taswirar Muhalli",
+          "desc": "Taswirar dangantakar mutum da muhallinsa. Kai a tsakiya; manyan tsarin rayuwa 12 a kewaye da kai. Ana auna kowace alaƙa don ƙarfi, matsin lamba, da hanyar kuzari. Kayan aikin jin daɗin jama'a na yau da kullum tun Hartman (1978); ana amfani da shi a IEP, kimanta iyali, da jerin rayuwar mutum."
+        },
+        "circlesOfSupport": {
+          "label": "Da'irorin Tallafi",
+          "desc": "Zobba huɗu masu kewaye juna na dangantaka: Kusanci, Abota, Shiga ciki, Musaya (ana biya). Yana nuna waɗanda suke kusa da gaske, har da lokacin da mutanen da ake biya suka cike zobban ciki. Daga Forest da Snow a Inclusion Press."
+        },
+        "genogram": {
+          "label": "Taswirar Zuri'a",
+          "desc": "Taswirar iyali ta zuri'a uku ta amfani da alamomin tsarin iyali na yau da kullum. Don fahimtar kai kaɗai (BA kimantawar asibiti ba ce). Bisa ka'idar tsarin iyali ta Bowen da rubutun McGoldrick-Gerson-Petry. Ya haɗa da jagorar tsari mai aminci da aka nuna a fili."
+        },
+        "griefLoss": {
+          "label": "Baƙin Ciki da Rashi",
+          "desc": "Abokin tafiya na kai don baƙin ciki. Mutuwar mutum ko dabbar gida, canje-canjen iyali, rashin aboki, rashin asali, rashi mara tabbas — duk suna da muhimmanci. Bi ta ayyuka huɗu na makoki na Worden, rubuta wasiƙa, tsara al'adu. Tsarin tsaro mai ƙarfi da ke nuna Abokin Lokacin Rikici / 988 don baƙin ciki mai tsanani ko mai sarƙaƙiya."
+        },
+        "traumaPsychoed": {
+          "label": "Fahimtar Raunin Zuciya",
+          "desc": "Ilimin lafiyar tunani kaɗai (BA gwajin tantancewa ba ne). Menene raunin zuciya da abin da ba shi ba, ilimin ƙwaƙwalwa a harshe mai sauƙi, martanin da aka saba da su a matsayin hanyoyin daidaitawa, ƙa'idoji 6 na SAMHSA, magunguna masu tushe a shaida. Don ɗalibai da malamai. Ya haɗa da tsarin tsaro da aka nuna a fili kan dalilin da ya sa tantancewa ba tare da bibiya ba ba ta da aminci."
+        },
+        "bodyStory": {
+          "label": "Labarin Jiki",
+          "desc": "Kayan aikin karɓar jiki da zama cikin jiki. BA mai mayar da hankali kan nauyi ba, BA mai kusanci da tsarin rage kiba ba, BA gwajin tantancewa ba. An gina shi bisa godiya ga jiki ta Tylka, ƙa'idojin cin abinci bisa saurarar jiki, da ilimin kafofin watsa labarai. Ya haɗa duk jiki, duk jinsi, duk girma. Tsarin turawa zuwa NEDA mai ƙarfi don matsalolin cin abinci."
+        },
+        "sourcesOfStrength": {
+          "label": "Tushen Ƙarfi",
+          "desc": "Zana abubuwa 8 da ke kare ka. Bincika tallafi masu kariya da shirin Sources of Strength ya zaburar. Wannan taswirar da kake bi da kanka gyararren siga ce, ba aiwatar da shirin makaranta da aka kimanta ba."
+        },
+        "crisiscompanion": {
+          "label": "Abokin Lokacin Rikici",
+          "desc": "Tallafin abokai da ƙwarewar hana kashe kai: abin da za ka yi idan kai ko aboki kuna cikin baƙin ciki mai zurfi, kuna cikin rikici, ko kuna tunanin cutar da kanku — gane alamomi, abin da za a faɗa (da abin da ba za a faɗa ba), faɗa wa babba da ka amince da shi, tare da 988 da tsarin tsaro na kanka. Ana buɗe shi bayan gargaɗin abun ciki. Ya dace da NEDA, AFSP, Sources of Strength, da 988. Abokin tallafin gaggawa na Tushen Ƙarfi."
+        },
+        "identitySupport": {
+          "label": "Tallafin Asali",
+          "desc": "Wuri mai karɓa da tabbatarwa don asalin jinsi, sha'awar jima'i, sha'awar soyayya, da tambayoyin asali masu faɗi. Kalmomi, ci gaban asali, samun al'umma, tsaro ga matasa trans, jagora ga masu goyon baya. An gina shi bisa Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Muryoyin Masu Naƙasa",
+          "desc": "Ainihin masu fafutuka masu autism da masu naƙasa waɗanda aikinsu ya tsara, ya kuma soki, ayyukan naƙasa. Maganganu, bayanan baya, da jerin karatu da aka zaɓa. An gina shi ne domin mutanen da aka yi wa aikin fannin a KANSU su kasance a tsakiya, ba a ajiye su a gefe a cikin kayan aikin kimiyyar ɗabi'a ba. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Mai Kafa Buri",
+          "desc": "Kafa burin SMART, bibiyi ci gaba, ka kuma yi murnar nasarori."
+        },
+        "howlTracker": {
+          "label": "Mai Bibiyar HOWL",
+          "desc": "Kimanta kai kan Halayen Aiki da Koyo (HOWL) don lokacin Crew. Duba kai na mako-mako, buri na kwata, jadawalin yanayi, tambayoyin tattaunawa na Crew. Ya dace da tsarin HOWL na EL Education."
+        },
+        "onePageProfile": {
+          "label": "Bayanin Kai a Shafi Ɗaya",
+          "desc": "Bayanin kai mai sauƙin ɗauka da bugawa wanda ya dace a shafi ɗaya. Sassa uku: abin da mutane ke so da yabawa game da ni, abin da ke da muhimmanci a gare ni, yadda za a fi tallafa mini. Takardar tsari mai mayar da hankali kan mutum don tarurrukan IEP, sauye-sauye, malaman wucin gadi, ko Crew. Bisa tsarin Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Yin Shirin Aiki). Tambayoyi takwas a jere (Labarina, Mafarki, Mummunan Mafarki, Ni Wanene, Baiwa, Buƙatu, Shirin Aiki, Matakan Farko). Hoto mai mayar da hankali kan mutum daga Pearpoint, O'Brien, da Forest a Inclusion Press; ana amfani da shi sosai wajen tsara sauye-sauye."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Tsara Wata Gobe da Bege). Hoton tsara makoma: matakai takwas daga Tauraron Arewa na nesa zuwa baya har zuwa matakan farko cikin makonni biyu. Pearpoint, O'Brien, da Forest a Inclusion Press; yana tafiya tare da MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Ƙima da Aiki",
+          "desc": "Rarraba abin da ke da muhimmanci, sanya suna ga manyan ƙimominka, ka kuma mayar da kowanne zuwa ƙaramin aiki na zahiri a wannan makon. Daga Acceptance and Commitment Therapy (Hayes); tsarin DNA-V na matasa. Bambancin ACT tsakanin ƙimomi (alkibla) da buri (inda za a kai)."
+        },
+        "careerCompass": {
+          "label": "Kamfas na Sana'a",
+          "desc": "Bincika sana'o'i ta hanyar abubuwan da kake so. Duba kai na RIASEC mai tambayoyi 36 yana ba da manyan lambobin Holland uku; duba sana'o'i, Rukunnan Sana'a 16 na tarayya, da matakai na gaba na zahiri (kwanakin bin ma'aikaci, tambayoyin neman bayani, CTE, koyon sana'a). An gina shi bisa tsarin Holland; yana nuna O*NET Interest Profiler na hukuma a mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Ɗakin Kare Haƙƙin Kai",
+          "desc": "Gina tsarin tallafin makaranta na zahiri don tambayoyin IEP ko 504, gyare-gyare, zaɓin bayyanawa, da neman taimako daga manya da ka amince da su."
+        },
+        "perspective": {
+          "label": "Gilashin Mahanga",
+          "desc": "Duba yanayi daga mahanga daban-daban — yi atisayen tausayi da duba abu ta idon wani."
+        },
+        "community": {
+          "label": "Al'umma da Al'ada",
+          "desc": "Bincika bambance-bambance, sanin al'adu, da jin kasancewa cikin al'umma."
+        },
+        "conflict": {
+          "label": "Warware Rikici",
+          "desc": "Yi atisayen rikici mara haɗari ko na hasashe tare da duba abu ta idon wani, maganganu masu farawa da \"Ni\", sassauta tashin hankali, da zaɓin gyara. Idan wani ba shi da aminci, sa babba a ciki maimakon ka yi sulhu kai kaɗai."
+        },
+        "social": {
+          "label": "Ɗakin Ƙwarewar Zamantakewa",
+          "desc": "Yi atisayen ƙwarewar tattaunawa, sauraro da kyau, harshen jiki, da haɗin kai."
+        },
+        "teamwork": {
+          "label": "Mai Gina Aiki Tare",
+          "desc": "Ƙalubalen haɗin gwiwa da binciken matsayi a cikin ƙungiya."
+        },
+        "dearMan": {
+          "desc": "Gina rubutun magana don buƙata mai wuya a matakai bakwai: Describe (Bayyana), Express (Faɗi yadda kake ji), Assert (Nemi abin da kake so), Reinforce (Nuna amfaninsa), Mindful (Mai da hankali), Appear confident (Nuna ƙarfin gwiwa), Negotiate (Yi sulhu). Daga Ingancin Mu'amala na DBT (Linehan); rubutun sadarwa mai ƙarfin gwiwa da aka fi amfani da shi wajen ba da shawara a makaranta. Yana tafiya tare da Ɗakin Kare Haƙƙin Kai."
+        },
+        "motivationalInterviewing": {
+          "label": "Tattaunawar Ƙarfafa Gwiwa (Motivational Interviewing)",
+          "desc": "Tsarin tattaunawa don taimaka wa wani (ko kanka) ya yi tunani kan canji. Koyi ƙwarewar OARS (Open questions/buɗaɗɗun tambayoyi, Affirmations/tabbatarwa, Reflections/maimaita abin da aka ji, Summaries/taƙaitawa), ma'aunai uku, da Maganar Canji. Daga Miller da Rollnick; tushen ba da shawara a makaranta da aikin tallafin abokai."
+        },
+        "crewProtocols": {
+          "label": "Ƙa'idojin Crew",
+          "desc": "Tarin tsare-tsaren ƙungiya masu tsari don lokacin Crew, lokacin shawarwari, ko ajin farko: masu gina al'umma, buɗewa, rufewa, da'irorin gyara, ƙa'idojin tunani, tsarin murna, da jagororin tattaunawa masu wuya. Tare da tarin duk tambayoyin Crew daga ko'ina a cikin SEL Hub. An gina shi bisa EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Dangantaka Mai Lafiya",
+          "desc": "Ma'auni (mai lafiya / mara lafiya / na cin zarafi) a cikin fannoni 8 na kowace dangantaka ta kusa. Yarda dalla-dalla, hana tashin hankali a soyayya, tsaro + layukan taimako. An gina shi bisa tsarin Loveisrespect / NDVH. Ya haɗa da mutanen queer, masu bambancin ƙwaƙwalwa, da masu naƙasa."
+        },
+        "decisions": {
+          "label": "Ɗakin Yanke Shawara",
+          "desc": "Bi ta yanayin rayuwa na gaske ta amfani da tsarin tsaya-yi tunani-yi aiki."
+        },
+        "journal": {
+          "label": "Diary na Motsin Rai",
+          "desc": "Diary na duba kai na kullum — rubuta yanayin zuciya, abubuwan da ke tayar da ji, da tunani a tsawon lokaci."
+        },
+        "safety": {
+          "label": "Tsaro da Iyakoki",
+          "desc": "Koyi game da iyakokin kai, manya da ka amince da su, da yanayi masu aminci da marasa aminci."
+        },
+        "landPlace": {
+          "label": "Ƙasa da Wuri",
+          "desc": "Ɗakin Kula da Ƙasa don dangantaka mai ɗorewa da ƙasar da kake zaune a kai. Zare uku (tarihi, muhalli, yanzu), tunani mai zurfi kan amincewa da ƙasa a matsayin aiki maimakon nuni, ƙungiyoyin da 'yan Wabanaki ke jagoranta a matsayin muryoyi masu iko, da diary na tunani na sirri."
+        },
+        "somaticReset": {
+          "label": "Sake Saita Jiki da Numfashi",
+          "desc": "Zaɓi wani yanki na jiki ka bi ɗan gajeren sake saiti na natsuwa, numfashi, ko motsi mai laushi da za a iya yi a kan kujera, tare da duba kai na sirri kafin da bayan."
+        },
+        "restorativeCircle": {
+          "label": "Da'irar Gyara",
+          "desc": "Jagoranci da'irorin gyara da gina al'umma tare da ƙa'idoji da aka kafa, jagorancin babba, da kulawa game da tushen al'adu. Ba don tilasta bayyana abu ba ko haɗarin tsaro da ke faruwa."
+        },
+        "compassion": {
+          "label": "Tausayi da Maganar Zuci",
+          "desc": "Yi atisayen tausaya wa kanka, sake duba mai sukar zuci, ka kuma gina murya ta ciki mai kirki."
+        },
+        "friendship": {
+          "label": "Mai Gina Abota",
+          "desc": "Bincika salon abota, dabarun gyara, da salon dangantaka mai lafiya."
+        },
+        "transitions": {
+          "label": "Sauye-sauyen Rayuwa",
+          "desc": "Wuce ta canje-canje kamar ƙaura, sabbin makarantu, da girma."
+        },
+        "upstander": {
+          "label": "Horon Tsayawa don Wasu",
+          "desc": "Koyi yadda za ka tsaya don wasu cikin aminci — ƙwarewar sauyawa daga mai kallo zuwa mai tsayawa."
+        },
+        "growthmindset": {
+          "label": "Tunanin Ci Gaba",
+          "desc": "Kimiyyar ƙwaƙwalwa, sake duba ƙalubale, da gina juriya."
+        },
+        "execfunction": {
+          "label": "Gudanarwar Ƙwaƙwalwa",
+          "desc": "Dabaru don sassa mafi wuya na kammala abubuwa: fara ayyuka, riƙe hankali, tsara gaba, da bibiyar lokaci."
+        },
+        "advocacy": {
+          "label": "Atisayen Kare Haƙƙi",
+          "desc": "Gwada rubutun magana na gaba ɗaya don bayyana buƙatu, neman tallafi, da yin magana a yanayin yau da kullum."
+        },
+        "civicAction": {
+          "label": "Aikin Al'umma da Bege",
+          "desc": "Sarrafa ji masu wuya game da rashin adalci, gina ikon shiga harkokin al'umma, ka kuma raya bege ta hanyar aiki."
+        },
+        "ethicalReasoning": {
+          "label": "Ɗakin Tunanin Ɗabi'a",
+          "desc": "Bincika matsalolin ɗabi'a na zamani ta hanyar tsare-tsare da dama da tattaunawar tambaya-da-amsa irin ta Socrates tare da AI."
+        },
+        "cultureExplorer": {
+          "label": "Mai Binciken Al'adu",
+          "desc": "Yi zurfin bincike kan al'adun duniya tare da taimakon AI, da hotuna da sauti."
+        },
+        "voicedetective": {
+          "label": "Mai Binciken Murya",
+          "desc": "Saurari muryoyi ka gano motsin rai daga sautin murya."
+        },
+        "practiceJourneys": {
+          "label": "Tafiye-tafiyen Atisaye (Gwaji)",
+          "desc": "Yi atisayen neman tallafi ta haɗuwa huɗu masu alaƙa. Amsa da zaɓi, da kalmominka, ko duka biyu. Ajiye diary ka kuma gwada wata hanya daban."
+        },
+        "sociallab": {
+          "label": "Wasan Kwaikwayon Ƙwarewar Zamantakewa",
+          "desc": "Yi atisayen yanayin zamantakewa da wasan kwaikwayo da abokin AI tare da tattaunawa mai rassa."
+        },
+        "peersupport": {
+          "label": "Kocin Tallafin Abokai",
+          "desc": "Koyi ƙwarewar sauraro ta OARS da lokacin da za a nemi taimakon babba."
+        },
+        "conflicttheater": {
+          "label": "Gidan Wasan Rikici",
+          "desc": "Yi atisayen rikicin ƙage tare da haruffan AI biyu a cikin yanayi mai nutsarwa. Wasan kwaikwayo na gwaji (beta) kaɗai; kada ka yi amfani da shi don sasanta cutarwa da ke faruwa."
+        },
+        "digitalWellbeing": {
+          "label": "Ɗakin Walwalar Dijital",
+          "desc": "Duba dangantakarka da kafofin sada zumunta da chatbot na AI, gina ɗabi'un waya masu lafiya, murmure daga cin zarafi ta intanet, gano yaudara a cikin abubuwan da ake nuna maka, kula da dangantaka da chatbot cikin aminci, ka kuma nemi taimako lokacin da kake buƙata."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Sanin Kai",
+          "desc": "Gane motsin rai, ƙarfi, da wuraren ci gaba"
+        },
+        "self-regulation": {
+          "label": "Daidaita Kai",
+          "desc": "Daidaita motsin rai, tashin jiki, hankali; atisayen jurewa"
+        },
+        "self-direction": {
+          "label": "Jagorancin Kai",
+          "desc": "Kafa buri, ikon kai, gudanarwar ƙwaƙwalwa, tunanin ci gaba"
+        },
+        "inner-work": {
+          "label": "Aikin Zuci",
+          "desc": "Atisayen tunani mai zurfi da natsuwa"
+        },
+        "care-of-self": {
+          "label": "Renon Kai",
+          "desc": "Tausaya wa kai, kula da kai ta hanyar dangantaka"
+        },
+        "social-awareness": {
+          "label": "Sanin Zamantakewa",
+          "desc": "Tausayi, duba abu ta idon wani, da girmama bambance-bambance"
+        },
+        "relationship-skills": {
+          "label": "Ƙwarewar Dangantaka",
+          "desc": "Sadarwa, aiki tare, da warware rikici"
+        },
+        "responsible-decision-making": {
+          "label": "Yanke Shawara Mai Alhaki",
+          "desc": "Zaɓi na ɗabi'a, kimanta sakamako, da warware matsaloli"
+        },
+        "stewardship": {
+          "label": "Kula da Amana",
+          "desc": "Kula da al'umma, adalci, ƙasa, da makoma"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "minti 5-8",
+          "purpose": "Sanya suna ga yankinka na yanzu ka kuma zaɓi dabarar daidaitawa da ta dace.",
+          "next": "Duba yankinka, zaɓi dabara ɗaya, sannan ka ajiye idan kana son komawa gare ta."
+        },
+        "coping": {
+          "time": "minti 3-10",
+          "purpose": "Zaɓi dabarar jurewa ka yi atisayenta sau ɗaya tare da wurin tsayawa bayyananne.",
+          "next": "Zaɓi dabara ɗaya ta jiki ko ta tsayar da hankali, gwada ta, sannan ka lura ko ta taimaka."
+        },
+        "journal": {
+          "time": "minti 5-12",
+          "purpose": "Rubuta tunani na sirri ka kuma lura da salon da kake so ka riƙe.",
+          "next": "Zaɓi tambaya, rubuta da gaskiya, ka kuma ajiye ko ka fitar kafin rufewa."
+        },
+        "emotions": {
+          "time": "minti 4-8",
+          "purpose": "Gina kalmomin motsin rai ka kuma sanya suna ga abin da kake ji daidai-wa-daida.",
+          "next": "Zaɓi wani ji, auna ƙarfinsa, sannan ka zaɓi kalma ɗaya da ta fi dacewa."
+        },
+        "mindfulness": {
+          "time": "minti 2-10",
+          "purpose": "Tsaya, yi numfashi, ka kuma yi atisayen mai da hankali ba tare da buƙatar rubuta komai ba.",
+          "next": "Zaɓi ɗan gajeren atisaye ɗaya, bi shi har ƙarshe, sannan ka lura da abin da ya canza."
+        },
+        "somaticReset": {
+          "time": "minti 3-8",
+          "purpose": "Yi amfani da duba yankin jiki na sirri don zaɓar ɗan gajeren sake saiti da za a iya yi a kan kujera.",
+          "next": "Zaɓi wani sashe na jiki, gwada zaɓi ɗaya na natsuwa, numfashi, ko motsi mai laushi, sannan ka lura da abin da ya canza."
+        },
+        "thoughtRecord": {
+          "time": "minti 8-15",
+          "purpose": "Rage saurin tunani mai wuya ka kuma nemi mahanga mafi daidaito.",
+          "next": "Sanya suna ga yanayin, auna yadda kake ji, sannan ka gwada tunanin da shaida."
+        },
+        "anxietyToolkit": {
+          "time": "minti 5-12",
+          "purpose": "Rarraba damuwa, rage ƙarfin damuwa, ka kuma zaɓi mataki na gaba mai amfani.",
+          "next": "Zaɓi damuwar da ta fi ƙara, gwada dabara ɗaya, sannan ka ajiye shirin idan ya taimaka."
+        },
+        "sleep": {
+          "time": "minti 4-10",
+          "purpose": "Lura da abubuwan da ke hana barci ka kuma zaɓi ɗabi'ar hutu ɗaya da za ka gwada gaba.",
+          "next": "Duba abin da ke kawo cikas, zaɓi ƙaramin canji ɗaya, sannan ka sake dubawa daga baya."
+        },
+        "goals": {
+          "time": "minti 5-10",
+          "purpose": "Mayar da niyya zuwa aiki na gaba na zahiri kuma mai yiwuwa.",
+          "next": "Rubuta buri ɗaya, zaɓi matakin farko, ka kuma ajiye shirin kafin rufewa."
+        },
+        "friendship": {
+          "time": "minti 5-10",
+          "purpose": "Yi tunani kan buƙatun abota, kasancewa cikin jama'a, da zaɓin abokai.",
+          "next": "Zaɓi yanayin abota ɗaya ka kuma gano mataki na gaba ɗaya mai kirki."
+        },
+        "conflict": {
+          "time": "minti 6-12",
+          "purpose": "Fahimci rikici ka kuma shirya martani mai mayar da hankali kan gyara.",
+          "next": "Sanya suna ga abin da ya faru, yi la'akari da ɓangarorin biyu, sannan ka zaɓi aikin gyara ɗaya."
+        },
+        "safety": {
+          "time": "minti 8-15",
+          "purpose": "Ƙirƙiri tsarin tsaro na zahiri ka kuma gano tallafin da ka amince da su.",
+          "next": "Ƙara alamun gargaɗi, matakan jurewa, da mutanen da za a tuntuɓa; ajiye kafin rufewa."
+        },
+        "crisiscompanion": {
+          "time": "minti 3-10",
+          "purpose": "Yi amfani da hanyar tallafi mai tsari lokacin da motsin rai ya zama na gaggawa ko mara aminci.",
+          "next": "Zaɓi zaɓin tallafi mafi kusa ka kuma sa babba da ka amince da shi ko sabis na rikici a ciki idan ana buƙata."
+        },
+        "conflicttheater": {
+          "time": "minti 8-15",
+          "purpose": "Yi atisayen yanayin rikicin ƙage ka kuma gwada harshen gyara ba tare da ɗaukar kayan aikin a matsayin sulhu ba.",
+          "next": "Zaɓi yanayin ƙage, gwada martani ɗaya, ka kuma tattauna abin da zai buƙaci tallafin babba a rayuwa ta gaske."
+        },
+        "restorativeCircle": {
+          "time": "minti 15-30",
+          "purpose": "Tsara ko jagoranci tsarin gyara na ƙungiya tare da ƙa'idoji bayyanannu da jagorancin babba.",
+          "next": "Fara kafa yarjejeniyoyin da'ira, sannan ka zaɓi tambaya; kada ka taɓa tilasta bayyana abu a gaban jama'a."
+        },
+        "strengths": {
+          "time": "minti 5-10",
+          "next": "Zaɓi ƙarfin da suka yi kama da kai, sannan ka nemo lokaci ɗaya na gaske daga wannan zangon karatu da ke nuna kowanne."
+        },
+        "viaStrengths": {
+          "time": "minti 8-15",
+          "purpose": "Yi amfani da rarrabewar kai da VIA ta zaburar a matsayin aikin tunani, ba kimantawa ta hukuma ba.",
+          "next": "Rarraba ƙarfin, lura da salo, ka kuma rubuta misali ɗaya da ke tabbatar da sakamakon."
+        },
+        "perma": {
+          "time": "minti 8-15",
+          "purpose": "Ɗauki hoton walwala na tunani a fannonin PERMA tare da Lafiya.",
+          "next": "Yi amfani da hoton don zaɓar tattaunawa ko ƙaramin gwaji, ba don sanya wa kanka lakabi ba."
+        },
+        "advocacy": {
+          "time": "minti 5-12",
+          "purpose": "Yi atisayen harshen yau da kullum don bayyana buƙatu da neman tallafi.",
+          "next": "Zaɓi wani yanayi, rubuta gajeriyar buƙata, ka kuma yanke shawarar wanda zai iya taimakawa."
+        },
+        "selfAdvocacy": {
+          "time": "minti 10-20",
+          "purpose": "Gina tsarin tallafin makaranta na zahiri don IEP, 504, gyare-gyare, ko zaɓin bayyanawa.",
+          "next": "Zaɓi buƙatar tallafi ɗaya, tattara tambayoyinka, ka kuma gano babba da ka amince da shi da za a sa a ciki."
+        },
+        "crewProtocols": {
+          "time": "minti 10-20",
+          "next": "Duba ta manufa, zaɓi ƙa'ida ɗaya don yau, sannan ka rubuta a cikin Shirin Crew Nawa lokacin da za ka gudanar da ita."
+        },
+        "perspective": {
+          "time": "minti 6-12",
+          "next": "Zaɓi wani yanayi, fara duba ra'ayin ɗayan, sannan ka faɗi abin da za ka yi daban."
+        },
+        "windowOfTolerance": {
+          "time": "minti 8-12",
+          "next": "Ƙara alama ɗaya ga kowanne daga cikin yankunanka uku, sannan ka yi amfani da Duba Kai don sanya yau."
+        },
+        "sensoryRegulation": {
+          "time": "minti 8-15",
+          "next": "Fara da Menene gaɓoɓin ji?, sannan ka yi alama ga tsarin da ke da ƙara ko shiru a gare ka."
+        },
+        "execfunction": {
+          "time": "minti 5-10",
+          "next": "Je zuwa Fara ka zaɓi motsin farawa ɗaya don yau, sannan zuwa Riƙe don zaɓar wurin rubuta abubuwa."
+        },
+        "growthmindset": {
+          "time": "minti 5-10",
+          "next": "Buɗe Sake Duba Shi, rubuta tunani mai kafe, ka kuma mayar da shi na musamman kuma mai yiwuwa."
+        },
+        "dearMan": {
+          "time": "minti 8-12",
+          "next": "Rubuta buƙatarka a jumla ɗaya, tsara matakai bakwai, sannan ka maimaita ta sau ɗaya."
+        },
+        "howlTracker": {
+          "time": "minti 5-10",
+          "next": "Rubuta Bugun Yanayi, sannan ka yi Duba Kai na Mako-mako: auna kowane HOWL ka kuma ƙara misali ɗaya na musamman."
+        },
+        "peersupport": {
+          "time": "minti 5-10",
+          "next": "Zaɓi buɗaɗɗun tambayoyi biyu da za ka iya yi wa aboki, sannan ka gwada ɗaya kan yanayin ƙage a shafin atisaye."
+        },
+        "upstander": {
+          "time": "minti 8-12",
+          "next": "Karanta tsanin jarunta a cikin Motsi ka zaɓi ƙananan motsi biyu mafi ƙanƙanta da za ka iya yi a zahiri a wannan makon."
+        },
+        "digitalWellbeing": {
+          "time": "minti 8-12",
+          "next": "Yi Duba Kanka da gaskiya, sannan ka zaɓi ɗabi'a ɗaya daga Kayan Aiki da iyaka ɗaya da ka kafa tun kafin lokaci."
+        },
+        "teamwork": {
+          "time": "minti 8-12",
+          "next": "Duba Matsayi, sannan ka rubuta Shirin Sadarwa don ƙungiya ta gaske: wa zai yi me, a ina, kuma zuwa yaushe."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Fara a nan",
+        "name_it": "Sanya masa suna",
+        "calm_now": "Natsu yanzu",
+        "body_reset": "Sake saita jiki",
+        "make_a_plan": "Yi shiri",
+        "understand_patterns": "Fahimci salo",
+        "practice_repair": "Yi atisayen gyara",
+        "role_play": "Wasan kwaikwayo",
+        "facilitated_group": "Ƙungiya mai jagora",
+        "reflect": "Yi tunani",
+        "practice_speaking_up": "Yi atisayen yin magana",
+        "make_a_support_plan": "Yi shirin tallafi",
+        "urgent_support": "Tallafin gaggawa",
+        "get_support": "Nemi tallafi",
+        "move_gently": "Tafi a hankali",
+        "learn_not_diagnose": "Koyo, ba gano cuta ba",
+        "learn_and_get_support": "Koyi ka kuma nemi tallafi",
+        "check_boundaries": "Duba iyakoki",
+        "explore_identity": "Bincika asali",
+        "practice_body_respect": "Yi atisayen girmama jiki",
+        "map_carefully": "Zana a hankali",
+        "understand_needs": "Fahimci buƙatu"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Sanya suna ga abin da ke faruwa kafin zaɓar dabara."
+        },
+        "emotions": {
+          "note": "Gina kalmomin ji daidai ka kuma lura da ƙarfinsu."
+        },
+        "coping": {
+          "note": "Gwada dabara ɗaya ta jiki ko ta tsayar da hankali, sannan ka lura da abin da ya canza."
+        },
+        "mindfulness": {
+          "note": "Tsayawa mai ƙarancin rubutu don numfashi, mai da hankali, ko sanin jiki."
+        },
+        "somaticReset": {
+          "note": "Zaɓi wani sashe na jiki, sannan ka gwada ɗan gajeren atisayen natsuwa, numfashi, ko motsi mai laushi. Ƙaramin mai zaɓi da ake iya sarrafawa da madannai yana sa kowane hoto ya zama mai sauƙin amfani a ƙananan allo. Hotunan sun haɗa da Igiyar Ruwa Mai Gudana wadda ke haɗa SHAƘA · TASHI da layi mai ƙarfi da alama mai zagaye, FITAR · SAUKA da layin ɗigo-ɗigo da alama mai siffar lu'u-lu'u, da AN DAKATA da sandunan dakatarwa; Furen da ke Buɗewa wanda ke haɗa SHAƘA · BUƊE da layukan ganyen fure masu ƙarfi da tsakiya mai zagaye, FITAR · SASSAUTA da layukan ɗigo-ɗigo da tsakiya mai siffar lu'u-lu'u, da AN DAKATA da sandunan dakatarwa a tsakiya; Sararin Sama Mai Tsayar da Hankali wanda ke haɗa SHAƘA · TASHI da layin rana mai ƙarfi da tsakiya mai da'ira, FITAR · SAUKA da layin rana na ɗigo-ɗigo da tsakiya mai siffar lu'u-lu'u, da AN DAKATA da sandunan dakatarwa na rana; hanya madaidaiciya mai alamar alkibla da ake iya hasashe tare da alamun SHAƘA da FITAR kai-tsaye, maƙasudin SHAƘA mai zagaye da maƙasudin FITAR mai siffar lu'u-lu'u, sawun asalin da ke aiki, da wurin zuwa na gaba mai layin kewaye; da Kewayen Numfashi mai sassa biyu tare da baka-bakan mataki masu ƙarfi da na ɗigo-ɗigo waɗanda ke ƙara kauri lokacin da suke aiki, zoben tsakiya mai salon matakin da ya dace, alamun SHAƘA da FITAR kai-tsaye, alamar tsakiya ta lokacin dakatarwa, wurin miƙa mataki na gaba mai layin kewaye, alama mai siffar mataki da ke juyawa kamar agogo, taswirar taki mai lambar siffa, da alamun mataki don mai karanta allo. Ɗalibai za su iya gwada motsi na numfashi ɗaya kafin agogon ƙirga ya fara, sannan su girmata, su tsayar, ko su kashe jagorar. A Yanayin Shiru, hoton da aka girmata yana zama maɓallin fara/dakatarwa da ake iya sarrafawa da madannai da taɓawa. Ana iya ɓoye ƙirgawar baya; kalmomin jagora na iya zama cikakku, na mataki kaɗai, ko a ɓoye; kuma ƙirga numfashi da auna lambobi zaɓi ne.",
+          "boundary": "Wannan ba magani ba ne ko gano cuta. Ka sa motsi ya zama ƙarami kuma ba tare da ciwo ba; tsaya idan akwai ciwo, jiri, ko rashin ji a jiki ka kuma faɗa wa babba da ka amince da shi ko ma'aikacin lafiya."
+        },
+        "anxietyToolkit": {
+          "note": "Raba damuwa da aiki ka kuma zaɓi mataki na gaba ɗaya mai amfani."
+        },
+        "windowOfTolerance": {
+          "note": "Zana alamun tashin jiki da tallafi a tsawon lokaci; ba gano cuta ba ne."
+        },
+        "stressBucket": {
+          "note": "Duba matsi da tallafi tare, har da matsin da ba ka da iko a kansu."
+        },
+        "bigFeelings": {
+          "note": "Yi amfani da fushi a matsayin bayani ka kuma tsara tsayawa ko gyara mafi aminci."
+        },
+        "conflict": {
+          "note": "Ya fi dacewa da atisayen rikici mara haɗari ko na hasashe.",
+          "boundary": "Idan akwai barazana, tilastawa, cin zali, cin zarafi, ko bambancin iko mara aminci, tsaya ka sa babba da ka amince da shi a ciki maimakon ka yi sulhu kai kaɗai."
+        },
+        "conflicttheater": {
+          "note": "Atisaye mai nutsarwa na gwaji (beta) tare da haruffan ƙage; kada ka yi amfani da shi don sasanta cutarwa da ke faruwa.",
+          "boundary": "Barazana ta gaske, cin zarafi, ko cin zali suna buƙatar tallafin babba da matakin tsaro, ba aikin wasan kwaikwayo ba."
+        },
+        "restorativeCircle": {
+          "note": "Yi amfani da shi tare da ƙa'idojin da'ira da aka kafa da babba mai jagoranci.",
+          "boundary": "Kada ka yi amfani da da'ira don matsa wa wani ya bayyana abu a gaban jama'a ko don magance haɗarin tsaro da ke faruwa."
+        },
+        "strengths": {
+          "note": "Tunani kan ƙarfi mai buɗaɗɗen amsa ba tare da maki, matsayi, ko gano cuta ba."
+        },
+        "viaStrengths": {
+          "note": "Rarrabewar kai don tunani, ba binciken VIA na hukuma ko sakamakon gwajin auna tunani ba."
+        },
+        "perma": {
+          "note": "Hoton walwala don fara tattaunawa, ba kimanta lafiyar ƙwaƙwalwa ba."
+        },
+        "advocacy": {
+          "note": "Rubutun magana na gaba ɗaya da maimaitawa don bayyana buƙatu da neman tallafi."
+        },
+        "selfAdvocacy": {
+          "note": "Yi amfani da shi don tsara IEP, 504, gyare-gyare, bayyanawa, ko tallafin makaranta na zahiri."
+        },
+        "crisiscompanion": {
+          "note": "Jagorar tallafi gare ka ko aboki; ba gwajin tantance rikici ba ne kuma ba ya maye gurbin babba.",
+          "boundary": "Idan wani na iya kasancewa cikin haɗari nan take ko zai iya aikata tunanin cutar da kansa, tsaya nan ka tuntuɓi babba da ka amince da shi ko tallafin gaggawa/rikici yanzu."
+        },
+        "safety": {
+          "note": "Koyi iyakoki da matakan neman babba da ka amince da shi; wannan ba gwaji ba ne na ko wani yanayi yana da aminci.",
+          "boundary": "Idan kana cikin haɗari nan take ko wani yana cutar da kai, tsaya ka tuntuɓi babba da ka amince da shi ko tallafin gaggawa yanzu."
+        },
+        "griefLoss": {
+          "note": "Abokin tafiya na sirri don baƙin ciki da rashi; tsallake duk abin da ya yi maka yawa.",
+          "boundary": "Idan baƙin ciki ya fi ƙarfin jurewa, ba ka jin kana cikin aminci, ko wani yana cikin haɗari, sa babba da ka amince da shi ko tallafin rikici a ciki."
+        },
+        "traumaPsychoed": {
+          "note": "Ilimin lafiyar tunani game da martanin raunin zuciya; ba gwajin tantancewa ko magani ba ne.",
+          "boundary": "Ba dole ba ne ka bayyana raunin zuciya a nan. Tsaya ka nemi babba da ka amince da shi ko mai ba da shawara idan abun ciki ya tayar da wani abu mara aminci."
+        },
+        "substancePsychoed": {
+          "note": "Bayani da tunani mai rage illa; ba gwajin tantancewa ba ne kuma ba izinin amfani da kayan maye ba ne.",
+          "boundary": "Kada ka yi amfani da wannan kayan aikin don shan kayan maye fiye da kima ko yanayin gaggawa na lafiya; tuntuɓi taimakon gaggawa ko babba da ka amince da shi."
+        },
+        "healthyRelationships": {
+          "note": "Bincika yarda da salon dangantaka ba tare da sanya wa mutum ko dangantaka lakabi ba.",
+          "boundary": "Idan dangantaka tana da barazana, tilastawa, ko tashin hankali, nemi taimakon babba; kada ka fuskanci wani kai kaɗai."
+        },
+        "identitySupport": {
+          "note": "Tunani mai tabbatarwa da tallafin al'umma; rabawa zaɓi ne.",
+          "boundary": "Ka riƙe bayananka na kai a sirri ka kuma sa babba da ka amince da shi a ciki idan ba ka jin kana cikin aminci."
+        },
+        "bodyStory": {
+          "note": "Godiya ga jiki da ilimin kafofin watsa labarai; ba kimanta rage kiba ko matsalar cin abinci ba ne.",
+          "boundary": "Idan abinci, yadda kake ganin jikinka, ko motsa jiki ya zama mara aminci ko ya mamaye ka, yi magana da babba da ka amince da shi ko ma'aikacin lafiya."
+        },
+        "genogram": {
+          "note": "Tunani kan iyalinka na kai; ba kimantawar asibiti ba ce kuma rabawa zaɓi ne.",
+          "boundary": "Tsallake bayanan iyali da ba su da aminci ko na sirri ne; nemi tallafi daga babba da ka amince da shi."
+        },
+        "sensoryRegulation": {
+          "note": "Gina bayanin gaɓoɓin jinka da gyare-gyare; ba gano cuta ba ne.",
+          "boundary": "Zaɓi tallafin da ke da aminci a gare ka; raba gyare-gyare ne kawai lokacin da kake so."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Duba Kai na Safe",
+          "desc": "Fara rana da duba yanayin zuciya, numfashi, da kafa buri"
+        },
+        "calm_down": {
+          "name": "Kusurwar Kwantar da Hankali",
+          "desc": "Dabarun daidaitawa don lokacin da motsin rai ya yi zafi"
+        },
+        "conflict_unit": {
+          "name": "Darasin Warware Rikici",
+          "desc": "Yi atisayen warware saɓani da gina ƙwarewar gyara"
+        },
+        "empathy_week": {
+          "name": "Makon Tausayi da Mahanga",
+          "desc": "Gina tausayi ta hanyar duba abu ta idon wani da sanin al'adu"
+        },
+        "decision_making": {
+          "name": "Zurfafa Yanke Shawara",
+          "desc": "Yi atisayen tunanin ɗabi'a da zaɓi mai alhaki"
+        },
+        "self_discovery": {
+          "name": "Tafiyar Gano Kai",
+          "desc": "Bincika ko kai wanene — ƙarfi, motsin rai, da tunanin ci gaba"
+        },
+        "friendship": {
+          "name": "Abota da Ƙwarewar Zamantakewa",
+          "desc": "Gina abota mai lafiya da ƙwarewar sadarwa"
+        },
+        "transitions": {
+          "name": "Wuce Ta Canji",
+          "desc": "Tallafa wa ɗalibai a sauye-sauyen rayuwa da sabbin abubuwa"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Lura da abin da kake buƙata ka kuma zaɓi mataki na gaba ɗaya mai sauƙin sarrafawa.",
+          "model": "Ina jin rashin natsuwa. Zan iya gwada miƙe jiki, sannan in zaɓi sashen farko na aikina.",
+          "practice": "Sanya suna ga wani ji, nuna wani zaɓi, ko ka lura a shiru. Gwada tallafi ɗaya ka kuma zaɓi ƙaramin buri.",
+          "reflect": "Me ka lura? Me za ka riƙe ko ka canza?",
+          "transfer": "Lokacin da darasi na gaba ya fara, zan iya gwada ____. Idan ina buƙatar taimako, zan iya tambayar ____."
+        },
+        "calm_down": {
+          "goal": "Bincika tallafin da ya dace da jikinka da wannan lokacin.",
+          "model": "Atisayen numfashi ba ya taimaka mini yau. Zan iya gwada kallon ɗakin ko in nemi wani ya kasance tare da ni.",
+          "practice": "Zaɓi dabara ɗaya kawai mai daɗi. Zama, kallo, ko ɗaukar hutu duk zaɓuɓɓuka ne masu inganci.",
+          "reflect": "Ya taimaka, ya zama ɗaya, ko ya ji ba daɗi? Za ka iya tsayawa ko ka zaɓi wata hanya.",
+          "transfer": "Lokacin da na lura da ____, zan iya gwada ____ ko in nemi tallafi daga ____."
+        },
+        "conflict_unit": {
+          "goal": "Yi la'akari da mahanga ka kuma maimaita martani mai ladabi ga saɓani na yau da kullum.",
+          "model": "Dukanmu muna son abu ɗaya. Zan iya tambayar abin da kake buƙata, in bayyana buƙatata, in kuma ba da shawarar mu yi bi-da-bi.",
+          "practice": "Yi amfani da saɓani na ƙage mara haɗari. Maimaita tambayar sauraro ɗaya da mataki na gaba ɗaya mai yiwuwa.",
+          "reflect": "Buƙatun wa martanin ya magance? Me zai iya buƙatar canji?",
+          "transfer": "A cikin saɓani mai aminci, zan iya ____. Don barazana, cin zali, ko tilastawa, zan iya neman taimako daga babba da na amince da shi."
+        },
+        "empathy_week": {
+          "goal": "Bincika wata mahanga ba tare da ɗauka cewa ka san yadda wani yake ji ba.",
+          "model": "Sun yi shiru. Wataƙila sun gaji ko suna tunani; zan iya tambaya maimakon in yanke shawara a madadinsu.",
+          "practice": "Yi amfani da misalin ƙage. Sanya suna ga mahanga biyu masu yiwuwa da tambaya mai ladabi da za ka iya yi.",
+          "reflect": "Me ka sani, kuma me kake hasashe? Ta yaya za ka tabbatar?",
+          "transfer": "Kafin in yi zato a wannan makon, zan iya tambayar ____."
+        },
+        "decision_making": {
+          "goal": "Kwatanta zaɓuɓɓuka ta tasirinsu a kanka da kan wasu.",
+          "model": "Kafin in wallafa hoton ƙungiya, zan iya neman izini in kuma yi la'akari da wanda zai iya ganinsa.",
+          "practice": "Zaɓi shawarar ƙage. Kwatanta zaɓuɓɓuka biyu, tasirin da za su iya yi, da wanda zai iya taimakawa.",
+          "reflect": "Wane bayani ne ya ɓace? Akwai zaɓi mafi aminci ko mafi adalci?",
+          "transfer": "Kafin in yanke shawara game da ____, zan iya tsayawa in duba ____."
+        },
+        "self_discovery": {
+          "goal": "Gane wani ƙarfi ka kuma zaɓi hanyar amfani da shi tare da tallafi.",
+          "model": "Ina yin tambayoyi masu amfani. Zan iya amfani da wannan ƙarfin lokacin da aiki bai bayyana ba in kuma nemi misali.",
+          "practice": "Zaɓi ƙarfin da ya dace da kai, ko na wani hali na ƙage. Ba da misali ɗaya na yadda yake aiki.",
+          "reflect": "Me ya taimaka wannan ƙarfin ya bayyana? Wane tallafi zai sa mataki na gaba ya yiwu?",
+          "transfer": "Zan iya amfani da ____ lokacin da ____. Mutum ko abin da zai iya taimakawa shi ne ____."
+        },
+        "friendship": {
+          "goal": "Yi atisayen sadarwa mai girmama buƙatunka da iyakokin wasu.",
+          "model": "Zan iya gayyatar wani ya kasance tare da mu in kuma karɓi zaɓinsa idan ya ce a'a.",
+          "practice": "Maimaita gayyata, tambayar sauraro, ko iyaka mai ladabi. Magana, rubutu, ko AAC duk suna da inganci.",
+          "reflect": "Kowane mutum yana da zaɓi na gaske? Me zai sa mu'amalar ta fi karɓar kowa?",
+          "transfer": "A cikin mu'amala mai aminci a wannan makon, zan iya gwada ____ in kuma lura da ____."
+        },
+        "transitions": {
+          "goal": "Gano abin da ke canzawa, abin da zai iya tsayawa daram, da tushen tallafi ɗaya.",
+          "model": "Sabon aji yana jin kamar ba tabbas. Zan iya nemo ɗakin tun kafin lokaci in kuma tambayi wanda zai iya taimakawa.",
+          "practice": "Zaɓi canji na gaske ko na ƙage. Sanya suna ga rashin tabbas ɗaya, tallafi ɗaya mai ɗorewa, da ƙaramin mataki na gaba ɗaya.",
+          "reflect": "Wane sashe ne ke cikin ikonka? Wane taimako ko gyara zai yi amfani?",
+          "transfer": "Kafin canjin, zan iya ____. Idan shirin yana buƙatar canzawa, zan iya ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "minti 5-8",
+          "format": "Kai kaɗai ko ƙungiya",
+          "cue": "Duba kai na farko mai amfani kafin kowace rabawa."
+        },
+        "emotions": {
+          "time": "minti 5-8",
+          "format": "Kai kaɗai ko bibbiyu",
+          "cue": "Kyakkyawan share fage na kalmomi."
+        },
+        "coping": {
+          "time": "minti 3-10",
+          "format": "Kai kaɗai ko ƙungiya",
+          "cue": "Ya fi dacewa don sake saita daidaituwa."
+        },
+        "mindfulness": {
+          "time": "minti 2-10",
+          "format": "Duk aji",
+          "cue": "Zaɓin daidaitawa mai ƙarancin rubutu."
+        },
+        "somaticReset": {
+          "time": "minti 3-8",
+          "format": "Kai kaɗai ko duk aji",
+          "cue": "Ƙaramin mai zaɓin hoto yana sa kowace jagora ta kasance ba tare da tarin maɓallai masu cunkoso ba. Kewayen Numfashi yana haɗa baka-baka masu ƙarfi da na ɗigo-ɗigo tare da matakin da ke aiki mai ƙarin kauri, zoben tsakiya mai ƙarfi-ko-ɗigo da ya dace, da alamun SHAƘA da FITAR kai-tsaye; tsakiyarsa tana canzawa daga ɗigo zuwa sandunan dakatarwa idan an dakata, kuma lu'u-lu'unsa ko zobensa mai layin kewaye yana nuna miƙa mataki na gaba, yayin da alamarsa mai zagaye-ko-lu'u-lu'u da ke juyawa kamar agogo, lu'u-lu'un miƙawa, zoben dawowa, gajerun sandunan shaƙa, da ɗigogin fitar numfashi marasa cika suna sa mataki da ƙirgawa na zaɓi su bayyana ba tare da launi ba. Bari ɗalibai su gwada motsi na numfashi ɗaya kafin agogon ƙirga, ko su zaɓi Tsayayye. Ba da kalmomin jagora cikakku, na mataki kaɗai, ko a ɓoye. Yanayin Shiru yana mayar da hoton da aka girmata ya zama maɓallin fara/dakatarwa kai-tsaye. Igiyar Ruwa Mai Gudana tana amfani da SHAƘA · TASHI da layi mai ƙarfi da alama mai zagaye, FITAR · SAUKA da layin ɗigo-ɗigo da alama mai siffar lu'u-lu'u, da sandunan dakatarwa don zaman da aka dakatar. Furen da ke Buɗewa yana amfani da SHAƘA · BUƊE da layukan ganyen fure masu ƙarfi da tsakiya mai zagaye, FITAR · SASSAUTA da layukan ɗigo-ɗigo da tsakiya mai siffar lu'u-lu'u, da sandunan dakatarwa a tsakiya don zaman da aka dakatar. Sararin Sama Mai Tsayar da Hankali yana amfani da SHAƘA · TASHI da layin rana mai ƙarfi da tsakiya mai da'ira, FITAR · SAUKA da layin rana na ɗigo-ɗigo da tsakiya mai siffar lu'u-lu'u, da sandunan dakatarwa na rana idan an dakata. Hanyar Numfashi tana amfani da maƙasudin SHAƘA mai zagaye, maƙasudin FITAR mai siffar lu'u-lu'u, sawun asalin da ke aiki, da wurin zuwa na gaba mai layin kewaye domin alkibla kada ta dogara ga launi. Ba da alamun mataki don mai karanta allo, tare da zaɓin ɓoye ƙirgawar baya, ɓoye jagora, motsi a tsaye, babu hoto, numfashi na yau da kullum, da babu lambobi; kada ka taɓa tilasta auna ko bayanin yadda jiki yake ji."
+        },
+        "journal": {
+          "time": "minti 5-12",
+          "format": "Kai kaɗai",
+          "cue": "Tunani na sirri. Rabawa ya kamata ya zama zaɓi."
+        },
+        "goals": {
+          "time": "minti 5-10",
+          "format": "Kai kaɗai ko lokacin shawarwari",
+          "cue": "Kyakkyawan matakin rufewa bayan tunani."
+        },
+        "conflict": {
+          "time": "minti 8-12",
+          "format": "Bibbiyu ko ƙaramar ƙungiya",
+          "cue": "Duba ƙa'idoji tukuna kafin wasan kwaikwayo."
+        },
+        "restorativeCircle": {
+          "time": "minti 15-30",
+          "format": "Da'ira",
+          "cue": "Yi amfani da shi tare da ƙa'idojin da'ira da aka kafa."
+        },
+        "peersupport": {
+          "time": "minti 8-15",
+          "format": "Atisayen bibbiyu",
+          "cue": "Mai kyau sosai don maimaita ƙwarewar sauraro."
+        },
+        "perspective": {
+          "time": "minti 6-12",
+          "format": "Bibbiyu ko ƙungiya",
+          "cue": "Kyakkyawar gadar tausayi kafin tattaunawa."
+        },
+        "digitalWellbeing": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai ko lokacin shawarwari",
+          "cue": "Mai amfani kafin kafa ƙa'idojin waya ko AI."
+        },
+        "sleep": {
+          "time": "minti 5-10",
+          "format": "Kai kaɗai",
+          "cue": "Mai kyau don darussan lafiya na lokacin shawarwari."
+        },
+        "safety": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai",
+          "cue": "Duba tukuna; guji tilasta bayyana abu."
+        },
+        "crisiscompanion": {
+          "time": "minti 3-10",
+          "format": "Kai kaɗai",
+          "cue": "Don ƙwarewar tallafin gaggawa, ba aikin aji ba."
+        },
+        "griefLoss": {
+          "time": "minti 10-20",
+          "format": "Kai kaɗai",
+          "cue": "Duba tukuna; yi amfani da madadin ayyuka ga masu zaɓin ficewa."
+        },
+        "identitySupport": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai",
+          "cue": "Yi amfani da shi tare da kiyaye sirri da kulawar zaɓin ficewa."
+        },
+        "traumaPsychoed": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai ko tare da jagorar malami",
+          "cue": "Ilimin lafiyar tunani kaɗai; ba da zaɓin ficewa da hanyar zuwa babba da aka amince da shi."
+        },
+        "substancePsychoed": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai ko darasin lafiya",
+          "cue": "Duba tsarin rage illa tukuna ka kuma samar da tallafin manya/na lafiya."
+        },
+        "healthyRelationships": {
+          "time": "minti 10-20",
+          "format": "Kai kaɗai ko darasin lafiya",
+          "cue": "Duba harshen yarda da tsaro tukuna; kada ka taɓa tilasta bayyana bayanan kai."
+        },
+        "bodyStory": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai",
+          "cue": "Tsarin girmama jiki; ba da zaɓin ficewa ka kuma guji tattaunawa mai mayar da hankali kan nauyi."
+        },
+        "genogram": {
+          "time": "minti 10-20",
+          "format": "Kai kaɗai",
+          "cue": "Tunani kan iyali kaɗai; rabawa ya kamata ya zama zaɓi."
+        },
+        "sensoryRegulation": {
+          "time": "minti 8-15",
+          "format": "Kai kaɗai ko tsara tallafi",
+          "cue": "Yi amfani da harshe mai tabbatar da asali ka kuma bar ɗalibai su zaɓi abin da za su raba."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Duba kai na lokacin shawarwari na safe",
+          "time": "minti 10-15",
+          "format": "Duk aji",
+          "focus": "Yanayin zuciya, numfashi, mataki na gaba ɗaya",
+          "studentView": "Ɗalibai suna duba yankinsu a sirri, su gwada zaɓin daidaitawa, sannan su zaɓi buƙata ɗaya don ranar ko su wuce.",
+          "teacherMove": "Fara nuna zaɓin wucewa. Gayyaci rabawa ta kalma ɗaya ko launi kawai bayan atisaye na sirri.",
+          "privacyBoundary": "Ba a tattara rubutun diary; ɗalibai ne ke yanke shawara daga baya ko wani wurin ajiya zai shiga Kunshin Rabawa.",
+          "note": "Fara da duba yanki na sirri, sannan ka ba da numfashi ko kafa buri. Ɗalibai za su iya raba kalma ɗaya, launi, ko su wuce."
+        },
+        "calm_reset": {
+          "name": "Sake saita natsuwa na minti biyar",
+          "time": "minti 5-8",
+          "format": "Duk aji ko kusurwar kwantar da hankali",
+          "focus": "Daidaita jiki",
+          "studentView": "Ɗalibai suna lura da yanayin jikinsu na yanzu su zaɓi atisaye ɗaya na kwantar da jiki.",
+          "teacherMove": "Ka sa al'adar ta kasance mai ƙarancin magana kuma mai iyakar lokaci. Ba da zaɓin motsi, numfashi, ko shiru.",
+          "privacyBoundary": "Ɗalibai za su iya ajiye wurin ajiya don kansu; ba wanda ya zama dole ya bayyana dalilin da ya sa ya buƙaci sake saiti.",
+          "note": "Ka sa wannan ya kasance mai ƙarancin magana. Ɗalibai suna zaɓar atisayen daidaitawa ɗaya su lura da abin da ya canza."
+        },
+        "repair_routine": {
+          "name": "Al'adar gyara bayan rikici",
+          "time": "minti 15-25",
+          "format": "Ƙaramar ƙungiya ko lokacin shawarwari",
+          "focus": "Mahanga, gyara, aiki na gaba",
+          "studentView": "Ɗalibai za su iya amfani da yanayi na gaske, na hasashe, ko wanda malami ya bayar don yin atisayen harshen gyara.",
+          "teacherMove": "Fara kafa ƙa'idojin gyara ka kuma guji ikirari a gaban jama'a. Tsaya idan yanayin yana buƙatar sulhun babba.",
+          "privacyBoundary": "Ɗalibai ne ke zaɓar abin da za su raba; tunanin rikici na sirri kada ya zama shaidar aji.",
+          "note": "Yi amfani da shi bayan an kafa ƙa'idoji. Ka mayar da hankali kan harshen gyara, ba ikirari a gaban jama'a ba."
+        },
+        "digital_reset": {
+          "name": "Ƙaramin darasi kan walwalar dijital",
+          "time": "minti 12-20",
+          "format": "Lokacin shawarwari ko lafiya",
+          "focus": "Waya, barci, AI da iyakoki",
+          "studentView": "Ɗalibai suna duba ɗabi'unsu, su zaɓi iyaka ɗaya da za su gwada, su kuma riƙe dalilin a sirri idan suna so.",
+          "teacherMove": "Gabatar da shi a matsayin tsara ɗabi'a, ba binciken waya ba. Guji neman ɗalibai su bayyana hotunan allo ko bayanan amfani.",
+          "privacyBoundary": "Ɗalibai za su iya raba burin iyaka, amma bayanan barci, waya, ko AI na kansu suna nan a matsayin zaɓi.",
+          "note": "Gabatar da shi a matsayin tsara ɗabi'a, ba binciken waya ba. Ɗalibai suna zaɓar iyaka ɗaya da za su gwada."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Hanya mai tushe a bincike",
+          "title": "Bincike yana da alaƙa da hanyar da ke ƙarƙashi; ba a kimanta wannan sigar dijital a nan ba"
+        },
+        "emerging": {
+          "label": "Ƙarancin shaidar hanya",
+          "title": "Mai alƙawari amma shaida kaɗan ce ko gauraye"
+        },
+        "contested": {
+          "label": "Tsarin da ake jayayya a kai",
+          "title": "Sananne amma masana kimiyya suna jayayya a kai; ya fi kyau a yi amfani da shi a matsayin misali, ba a matsayin yadda abu ke aiki ba"
+        },
+        "practice": {
+          "label": "Atisayen tunani",
+          "title": "Atisaye mai tsari ko hasashe, ba iƙirarin tasiri bisa gwajin kimiyya ba"
+        }
+      },
+      "ui": {
+        "sel_practice": "Atisayen SEL",
+        "default_purpose": "Yi atisayen ƙwarewar SEL ɗaya cikin kulawa.",
+        "default_next": "Kammala ƙaramin mataki ɗaya, sannan ka yanke shawara ko za ka ajiye.",
+        "private_checkpoint": "Wurin ajiya na sirri",
+        "share_packet_eligible": "Ya cancanci shiga Kunshin Rabawa",
+        "saving_preparing": "Ana shirin ajiye aikinka na SEL...",
+        "save_requested": "An nemi ajiye {title}",
+        "returned_to_grid": "An koma jerin kayan aiki",
+        "back_to_sel_tools": "Koma kayan aikin SEL",
+        "export_now_aria": "Fitar da fayil ɗin aikin SEL yanzu",
+        "export_now": "Fitar yanzu",
+        "purpose": "Manufa",
+        "next_step": "Mataki na gaba",
+        "saved_work": "Aikin da aka ajiye",
+        "checkpoints_private": "Wuraren ajiya na kayan aiki suna nan a sirri a nan sai dai idan ka zaɓe su don Kunshin Rabawa.",
+        "use_with_care_label": "Yi amfani cikin kulawa:",
+        "tool_open_failed_title": "Wannan kayan aikin bai buɗe ba",
+        "tool_open_failed_body": "Wani abu a cikin bayanan da aka ajiye don wannan aikin bai buɗe ba. Wannan ba laifinka ba ne.",
+        "saved_work_kept": "Ba a goge aikinka da aka ajiye ba.",
+        "back_to_hub": "Koma SEL Hub",
+        "tell_teacher": "Idan wannan ya ci gaba da faruwa, faɗa wa malaminka wane aiki ne.",
+        "load_did_not_start": "An sauke kayan aikin amma bai fara ba.",
+        "load_too_long": "Kayan aikin ya ɗauki lokaci mai tsawo kafin ya buɗe.",
+        "this_sel_tool": "Wannan kayan aikin SEL",
+        "tool_opening": "Ana buɗe {name}...",
+        "tool_open_retry": "Ba a iya buɗe {name} ba. Sake gwadawa, ko ka zaɓi wani kayan aiki.",
+        "station_link_missing": "Wannan mahaɗin yana ambaton tashar da ba ta cikin wannan fayil ɗin aiki. Buɗe fakitin da ke ɗauke da ita, ko ka fara ɗaya daga Tashoshin SEL a cikin allon Tarihi.",
+        "started_station": "An fara tasha {name}",
+        "tool_could_not_open": "{name} bai buɗe ba.",
+        "tool_not_available": "{name} ba ya samuwa a cikin wannan SEL Hub.",
+        "try_again": "Sake gwadawa",
+        "dismiss": "Kau da",
+        "back_to_tools": "Koma kayan aiki",
+        "band_elementary": "Firamare",
+        "band_middle": "Ƙaramar Sakandare",
+        "band_high": "Babbar Sakandare",
+        "unsaved_aria": "Kana da canje-canjen da ba a ajiye ba",
+        "unsaved_title": "Canje-canjen da ba a ajiye ba",
+        "unsaved": "Ba a ajiye ba",
+        "unsaved_hint": "Kana da canje-canjen da ba a ajiye ba — taɓa Fitar yanzu don ajiye su",
+        "educators_opened": "An buɗe jagorar Don Malamai",
+        "educators_aria": "Don Malamai: yadda za a yi amfani da wannan Hub cikin alhaki",
+        "for_educators": "Don Malamai",
+        "theme_aria": "Canja jigo (haske / duhu / bambanci mai ƙarfi)",
+        "theme_contrast": "Bambanci Mai Ƙarfi",
+        "theme_dark": "Yanayin Duhu",
+        "theme_light": "Yanayin Haske",
+        "theme_contrast_short": "Bambanci",
+        "theme_dark_short": "Duhu",
+        "theme_light_short": "Haske",
+        "xp_aria": "Maki {count} na gogewar SEL",
+        "close_hub": "Rufe SEL Hub",
+        "keep_share_title": "Zaɓi abin da za ka riƙe da abin da za ka raba",
+        "keep_share_body": "Wasu ayyuka suna ajiye aiki a kan wannan na'ura; wani aikin yana wanzuwa ne kawai a cikin wannan shafin. Idan ka rufe shafin, ba duk abubuwa ne za su goge ba. Fitar da fayil don riƙe kwafi. A kan na'urar da ake rabawa, duba Bayanai da sirri a cikin Don Malamai. Fasalolin AI da rabawa suna amfani da sabis ɗin da aka saita maka.",
+        "got_it_aria": "Na gane, fara amfani da SEL Hub",
+        "got_it": "Na gane",
+        "practice_support": "Tallafin atisaye",
+        "learning_guide": "Jagorar koyo da hanyoyin atisaye",
+        "what_you_can_explore": "Abin da za ka iya bincika",
+        "worked_example": "Misali da aka warware",
+        "try_one_step": "Gwada mataki ɗaya",
+        "reflect_transfer": "Yi tunani ka kuma yi amfani da shi a wani wuri",
+        "look_closer": "Duba da kyau",
+        "next_use": "Amfani na gaba mai yiwuwa",
+        "adapt_together": "Daidaita atisayen tare",
+        "adapt_smaller": "Fara da ƙarami: nuna jumla ɗaya ko zaɓi ɗaya, yi amfani da hoto ko abu na zahiri, ka kuma ba da lokacin tunani.",
+        "adapt_deeper": "Zurfafa: kwatanta martani biyu, gano bayanin da ya ɓace, ka kuma bayyana abin da zai iya canza zaɓinka.",
+        "adapt_context": "Canza yanayi: yi amfani da yanayin ƙage da ya dace da harshen mai koyo, abubuwan da yake so, al'adarsa, da buƙatun samun damarsa.",
+        "adapt_check": "Duba fahimta ta hanyar misali ko bayani da aka zaɓa, ba labarin kai na tilas, canjin motsin rai, ko maki ba.",
+        "optional_prompts": "Waɗannan tambayoyin na zaɓi ba sa aika amsoshi, ba sa ba da shaidar kammalawa, kuma ba sa maye gurbin umarni da bayanan tsaro na aikin da kansa.",
+        "returned_to_activities": "An koma ayyuka. Wannan mataki bai rubuta kammala wani atisaye ba.",
+        "return_to_activities": "Koma ayyuka",
+        "chooser_first_reset_coping": "Zaɓi zaɓi ɗaya mai daɗi na tsayar da hankali. Lura ko ya dace; ana iya tsayawa.",
+        "chooser_first_reset_journal": "Rubuta abu ɗaya da zai sa 'yan mintuna masu zuwa su fi sauƙin sarrafawa. Ba a buƙatar labarin kai.",
+        "chooser_first_feelings_zones": "Nuna wani ji ko ka lura a shiru. Zaɓi tallafi ɗaya; babu wani yanki daidai da ya zama dole ka kai gare shi.",
+        "chooser_first_feelings_emotions": "Bincika kalmomin ji biyu don wani hali na ƙage. Fiye da amsa ɗaya na iya dacewa.",
+        "chooser_first_feelings_journal": "Rubuta kalma ko ɗan gajeren tunani game da yanayi na ƙage ko na yau da kullum.",
+        "chooser_first_conversation_advocacy": "Yi amfani da yanayin ƙage don maimaita buƙata ɗaya da babbar murya, da AAC, ko a shiru, nesa da fom ɗin.",
+        "chooser_first_conversation_journal": "Tsara buƙata ɗaya mai ladabi don yanayi mai aminci na yau da kullum; ba dole ba ne ka aika ta.",
+        "chooser_first_decision_decisions": "Yi tunani kan zaɓuɓɓuka biyu a cikin yanayin ƙage da tasiri ɗaya mai yiwuwa na kowanne.",
+        "chooser_first_decision_goals": "Tsara mataki na gaba ɗaya mai yiwuwa da tallafin da za ka iya nema.",
+        "try_a_reset": "Gwada sake saiti",
+        "need_feeling": "Fahimci wani ji",
+        "need_conversation": "Shirya tattaunawa",
+        "need_decision": "Zaɓi mataki na gaba",
+        "help_choose": "Taimaka mini in zaɓi aiki",
+        "help_choose_intro": "Zaɓi abin da kake son gwadawa. Shawarwarin suna amfani da waɗannan zaɓuɓɓukan kaɗai; ba sa kimanta yadda kake ji. Lokutan suna bayyana matakin farko, ba cikakken aikin ba.",
+        "what_would_help": "Me zai taimaka?",
+        "time_first_step": "Lokaci don matakin farko",
+        "n_minutes": "Minti {count}",
+        "how_respond": "Ta yaya kake son amsawa?",
+        "respond_any": "Kowace hanya",
+        "respond_offline": "Yi tunani, magana, zane, ko AAC",
+        "respond_write": "Rubuta gajeriyar amsa",
+        "options_one": "Zaɓin farawa {count} don zaɓuɓɓukanka.",
+        "options_many": "Zaɓuɓɓukan farawa {count} don zaɓuɓɓukanka.",
+        "options_none": "Babu zaɓin farawa da ya dace tukuna. Gwada ƙarin lokaci ko wani salon amsa; cikakken kundin yana nan har yanzu.",
+        "why_option_write": "Dalilin wannan zaɓin: {need}, tare da matakin farko na minti {minutes} da aka ba da shawara da gajeriyar amsa a rubuce.",
+        "why_option_offline": "Dalilin wannan zaɓin: {need}, tare da matakin farko na minti {minutes} da aka ba da shawara da hanyar yin atisaye ba tare da bugawa ba.",
+        "open_named": "Buɗe {name}",
+        "open_named_unavailable": "Buɗe {name} (ba ya samuwa)",
+        "pathway_guide": "Jagorar atisayen hanyar koyo",
+        "pathway_opened": "An buɗe kayan aiki {opened} daga cikin {total}. Buɗe kayan aiki ba ya nufin ka yi atisayen ƙwarewar.",
+        "exit_pathway_aria": "Fita daga yanayin hanyar koyo",
+        "pathway_cleared": "An share hanyar koyo",
+        "exit_pathway": "Fita daga hanyar koyo",
+        "practice_goal": "Burin atisaye:",
+        "pathway_intro": "Zaɓi aiki ɗaya ko ka bi jerin da aka ba da shawara. Za ka iya wucewa, amfani da misalin ƙage, ko amsa ta magana, zane, rubutu, ko AAC. Rabawa zaɓi ne.",
+        "model_practice_reflect": "Nuna misali, yi atisaye, ka kuma yi tunani",
+        "an_example": "Misali",
+        "notice_adjust": "Lura ka kuma daidaita",
+        "take_with_you": "Tafi da shi",
+        "self_check_aria": "Duba kai na atisaye na zaɓi",
+        "self_check_intro": "Bayan ka gwada mataki, zaɓi abin da ya dace. Wannan na zaɓi ne kuma ba a ba da maki; yana nan a cikin wannan zaman hanyar koyo.",
+        "i_tried": "Na gwada mataki",
+        "another_way": "Ina buƙatar wata hanya",
+        "pass_for_now": "Wuce a yanzu",
+        "tried_feedback": "Lura da abin da ya taimaka, abin da bai taimaka ba, da inda za ka iya sake gwada ƙwarewar.",
+        "adapt_feedback": "Gwada ƙaramin mataki, wata hanyar amsawa, wani kayan aiki daban, ko tallafi daga wanda ka amince da shi.",
+        "pass_feedback": "Wucewa zaɓi ne mai inganci. Za ka iya dawowa daga baya ko ka nemi tallafi.",
+        "next_option": "Zaɓi na gaba: {name}",
+        "open_next": "Buɗe na gaba: {name}",
+        "view_pathway_tools": "Duba kayan aikin hanyar koyo",
+        "revisit_any": "Za ka iya sake ziyartar kowane aiki. Zaɓi ra'ayi ɗaya da za ka gwada a wajen hub; babu buƙatar kammala kowane kayan aiki.",
+        "station_activities": "Ayyukan tasha",
+        "active_station": "Tashar SEL mai aiki: {name}",
+        "steps_recorded_passed": "An rubuta matakai {done} daga cikin {total} · an wuce {passed} a yanzu. Wannan rikodin atisaye ne, ba maki ba.",
+        "steps_recorded": "An rubuta matakai {done} daga cikin {total}. Wannan rikodin atisaye ne, ba maki ba.",
+        "active_minutes_done": "Minti {mins} na aiki daga cikin {goal} a nan. An rubuta mataki.",
+        "active_minutes_counting": "Minti {mins} na aiki daga cikin {goal} a nan. Ana ƙirga lokacin da wannan shafin yake bayyane kuma kana amfani da shi.",
+        "exit_station_aria": "Fita daga yanayin tasha",
+        "station_cleared": "An share tasha",
+        "exit_station": "Fita daga tasha",
+        "station_tools_steps": "Kayan aikin tasha, matakai da tunani",
+        "station_steps": "Matakan tasha da tunani",
+        "station_privacy": "Ana ajiye matakai da bayanan kula a kan wannan na'ura kuma ana iya saka su a cikin fayilolin aiki. Yi amfani da misalan ƙage ko ka bar bayanan kai a waje. Zaɓi abin da za ka raba.",
+        "step_passed": "An wuce a yanzu. Za ka iya dawowa lokacin da ka shirya.",
+        "step_marked": "Ka yi wa wannan mataki alamar an kammala.",
+        "step_target": "An rubuta maƙasudin aiki; wannan ba ya auna ƙwarewa ko walwala.",
+        "step_ready": "Muna jiran ka a duk lokacin da ka shirya.",
+        "open_step_activity": "Buɗe aikin wannan mataki",
+        "xp_progress": "{xp} / {target} jimillar XP na SEL. Wannan ya haɗa da ayyukan baya; ba makin ƙwarewa ba ne.",
+        "time_progress": "Minti {mins} / {target} na aiki. Lokaci ba shaida ba ne na koyo.",
+        "default_reflect": "Me ka lura? Me za ka riƙe ko ka canza?",
+        "self_check_ways": "Yi tunani, zana, yi magana, yi alama da hannu, ko ka yi amfani da AAC. Rubutaccen bayani zaɓi ne. Yi wa matakin alamar an kammala da kanka, ko ka wuce a yanzu.",
+        "length_target": "Wannan mataki da aka ajiye yana amfani da maƙasudin tsawo: haruffa {count} / {target}. Tsawo ba ya auna ingancin tunani. Har yanzu za ka iya gyara bayaninka.",
+        "reflection_for": "Tunani don {name}",
+        "optional_note": "Bayani na zaɓi: abin da ya taimaka, ko abin da za ka gwada na gaba...",
+        "write_reflection": "Rubuta tunani...",
+        "mark_complete_aria": "Yi wa \"{name}\" alamar an kammala",
+        "step_reopened": "An sake buɗe mataki: {name}",
+        "step_marked_named": "Ka yi wa wannan mataki alamar an kammala: {name}",
+        "mark_complete": "Yi alamar an kammala",
+        "step_passed_named": "An wuce a yanzu: {name}",
+        "filter_pathway": "hanyar koyo: {name}",
+        "filter_station": "tasha: {name}",
+        "no_tools_match": "Babu kayan aikin da ya dace da {filters}",
+        "results_one": "Kayan aiki {count} daga cikin {total} ya dace da {filters}",
+        "results_many": "Kayan aiki {count} daga cikin {total} sun dace da {filters}",
+        "showing_all": "Ana nuna duk kayan aiki {total}",
+        "crisis_elementary": "Idan ba ka iya samun babba nan da nan ba, ci gaba da tambaya har sai wani ya saurare ka. Ka cancanci taimako.",
+        "crisis_call_or_text": "Kira ko aika saƙon rubutu zuwa",
+        "crisis_988": "layin taimako na 988 kan kashe kai da rikici (kyauta, a sirri, 24/7).",
+        "crisis_text": "Aika saƙon rubutu zuwa",
+        "crisis_text_line": "Crisis Text Line (kyauta, a sirri, 24/7).",
+        "tool_selection": "Zaɓin kayan aikin SEL Hub",
+        "jumped_to_list": "An tsallaka zuwa jerin kayan aiki. {summary}.",
+        "skip_to_list": "Tsallaka zuwa jerin kayan aiki",
+        "start_here": "Fara a nan",
+        "quick_route": "Zaɓi hanya mai sauri, ko ka duba ƙasa.",
+        "browsing_all": "Ana duba duk kayan aikin SEL",
+        "continue": "Ci gaba",
+        "continue_desc": "Ci gaba da kayan aikin SEL na ƙarshe da ka buɗe.",
+        "starting_idea": "Ra'ayin farawa",
+        "starting_idea_desc": "{name}: aikin da aka ba da shawara don wannan rukunin aji, tare da misalai da za ka iya daidaitawa.",
+        "starting_idea_none": "Buɗe wurin farawa da ya dace da aji.",
+        "try_a_reset_desc": "Bincika dabara mai daɗi; ba dole ba ne ka ji natsuwa.",
+        "journal": "Diary",
+        "journal_desc": "Rubuta tunani; duba zaɓin ajiyewa da rabawa.",
+        "browse_all": "Duba Duka",
+        "browse_all_desc": "Bincika ko tace cikakken kundin.",
+        "need_chip_calm": "Kwantar da jikina",
+        "need_chip_feelings": "Sanya suna ga ji",
+        "need_chip_stress": "Matsin lamba ko damuwa",
+        "need_chip_friend": "Rikici da aboki",
+        "need_chip_write": "Rubuta shi",
+        "need_chip_decision": "Yanke shawara",
+        "need_chip_sleep": "Barci ko gajiya",
+        "need_chip_crisis": "Rashin aminci ko cikin rikici",
+        "need_chip_relationshipsafety": "Tsaro a dangantaka",
+        "need_chip_schoolsupport": "Tallafin makaranta",
+        "need_chip_grief": "Baƙin ciki ko rashi",
+        "storage_notice": "Ana ajiye wasu ayyukan SEL a kan wannan na'ura. Fasalolin AI suna amfani da sabis ɗin da aka saita maka. Zaɓi abin da za ka ajiye ko ka raba, musamman a kan na'urar da ake rabawa.",
+        "save_now_aria": "Ajiye ko fitar da aikin SEL yanzu",
+        "save_now": "Ajiye yanzu",
+        "recent_work": "Aikin SEL na kwanan nan",
+        "saved_here": "An ajiye a nan. Fitar da shi don riƙe shi bayan rufewa.",
+        "create_packet_aria": "Ƙirƙiri Kunshin Rabawa na SEL daga wuraren ajiya da aka ajiye",
+        "review_packets_aria": "Duba Kunshe-kunshen Rabawa na SEL da aka ajiye",
+        "create_packet": "Ƙirƙiri Kunshin Rabawa",
+        "review_packets": "Duba Kunshe-kunshen Rabawa",
+        "open_related": "Buɗe kayan aiki mai alaƙa.",
+        "related_unavailable": "Kayan aiki mai alaƙa ba ya samuwa a cikin wannan SEL Hub.",
+        "streak_aria": "Jerin SEL na kwanaki {count}. Mafi tsawo: kwanaki {longest}.",
+        "streak": "Jerin kwanaki {count}",
+        "streak_best": "mafi kyau {count}",
+        "find_activity": "Nemo aiki",
+        "search_placeholder": "Bincika ji, abokai, matsin lamba, buri...",
+        "search_aria": "Bincika kayan aikin SEL",
+        "support_options": "Zaɓuɓɓukan tallafi",
+        "crisis_hard_moment": "Da alama wannan na iya zama lokaci mai wuya.",
+        "crisis_tell_adult": "Ba dole ba ne ka warware wannan kai kaɗai, kuma ba dole ba ne ka fara nemo kayan aikin da ya dace. Don Allah faɗa wa babba da ka amince da shi yanzu — mai ba da shawara a makaranta, malami, iyaye, ko wani babba da ka amince da shi. Bincike a nan ba ya sanar da kowa; mutum zai sani ne kawai idan ka faɗa masa.",
+        "open_crisis_companion": "Buɗe Abokin Lokacin Rikici",
+        "find_by_need": "Nemo kayan aikin SEL ta buƙata",
+        "i_need": "Ina buƙatar...",
+        "cleared_search": "An share binciken SEL",
+        "clear_search_aria": "Share binciken SEL",
+        "clear": "Share",
+        "cleared_need": "An share matatar buƙatar SEL",
+        "showing_for": "Ana nuna kayan aikin SEL don {name}",
+        "clear_need_aria": "Share matatar buƙata: {name}",
+        "find_for_aria": "Nemo kayan aiki don: {name}",
+        "browse_by_area": "Duba ta fannin ƙwarewa",
+        "filter_by_category": "Tace kayan aikin SEL ta rukuni",
+        "showing_all_categories": "Ana nuna duk rukunoni",
+        "show_all_categories_aria": "Nuna duk rukunoni (kayan aiki {count})",
+        "all": "Duka",
+        "filtered_to": "An tace zuwa {name}",
+        "filter_chip_aria": "Matata: {name} (kayan aiki {count})",
+        "pathways_heading": "Hanyoyin Koyo na SEL — Jerin Koyo da Aka Zaɓa",
+        "started_pathway": "An fara hanyar koyo: {name}",
+        "pathway_started": "An fara hanyar koyo ta {name}!",
+        "n_activities": "Ayyuka {count}",
+        "grades_range": "aji {range}",
+        "use_with_care": "Yi amfani cikin kulawa",
+        "visits_many": "Ziyara {count}",
+        "visits_one": "Ziyara {count}",
+        "best_for": "Ya fi dacewa don: {mode}.",
+        "teacher_cue": "Alamar malami: {time}, {format}. {cue}",
+        "preview_first": "Duba tukuna",
+        "evidence_tradition": "Al'adar shaida: {tag}",
+        "approach_context": "Mahallin hanya: {label}. {title}. Wannan alamar ba ta tabbatar da tasiri ga wannan manhaja ko ga wani mai koyo ba.",
+        "step_opened": "Mataki {n} · An buɗe",
+        "step_not_opened": "Mataki {n} · Ba a buɗe ba",
+        "suggested_grades": "Ajin da aka ba da shawara {range}",
+        "no_tools_current_view": "Babu kayan aikin da ya dace da abin da ake nunawa yanzu",
+        "empty_try": "Gwada natsuwa, ji, matsin lamba, aboki, rubutu, shawara, ko barci.",
+        "filters_cleared": "An share matatu. Ana nuna duk kayan aiki {total}.",
+        "show_all_tools": "Nuna duk kayan aiki {total}",
+        "error_loading": "Kuskure wajen buɗe {name}",
+        "unknown_error": "Kuskuren da ba a sani ba",
+        "back_to_tools_error": "Koma Kayan Aiki",
+        "tool_load_failed": "Wannan kayan aikin bai buɗe ba.",
+        "loading_tool": "Ana buɗe kayan aiki...",
+        "file_not_arrived": "Fayil ɗin bai iso ba.",
+        "check_connection": "Duba haɗin intanet, sannan ka sake gwadawa.",
+        "plugin_fetching": "Ana ci gaba da ɗauko fayil ɗin plugin.",
+        "research_about": "Game da alamun bincike",
+        "research_summary": "Abin da alamun bincike ke nufi",
+        "research_context": "Mahallin hanya: {label}.",
+        "research_not_app": "Bincike kan wani magani, tsarin karatu, ko tsari ba ya tabbatar da cewa wannan aikin dijital yana da tasiri iri ɗaya. Alamun suna bayyana hanyar; ba sa kimanta wannan manhaja ko mai koyo.",
+        "research_check": "Kafin zaɓar wani aiki, duba majiyoyin da aka ambata, shekaru da wuraren da aka yi nazari, tallafin da ake buƙata, da sakamakon da aka auna. Waɗannan alamun ba su tabbatar da dacewa da jama'a ko tasirin wannan sigar ba.",
+        "research_casel_link": "CASEL: zaɓa da kimanta shirin SEL",
+        "project_save_failed": "Buƙatar ajiye fayil ɗin aiki ta gaza. Ka bar wannan hub a buɗe ka gwada Ajiye / Fitar a babban manhajar.",
+        "project_save_requested": "An nemi ajiye fayil ɗin aiki. Kammala matakan ajiyewa a babban manhajar; ba a tabbatar da fayil ɗin da aka ajiye a nan ba.",
+        "saving_aria": "Ajiyewa da rabawa na SEL",
+        "saving_failed_alert": "Ba a iya ajiye wasu canje-canjen SEL a kan wannan na'ura ba. Ka bar wannan hub a buɗe ka ajiye kwafin fayil ɗin aiki; dole ne a ajiye daftarin tasha a matsayin tasha kafin su shiga wannan kwafin.",
+        "saving_attention": "Ajiyewa na buƙatar kulawa",
+        "saving_title": "Ajiyewa da rabawa",
+        "saving_failed_body": "Aikin na yanzu yana nan a cikin wannan hub da ke buɗe. Ajiyewar gida da ta gaza na iya barin tsohon kwafi a kan wannan na'ura.",
+        "saving_ok_body": "Ana ajiye tashoshin da aka ajiye, bayanan kula na tasha, da wuraren ajiya na hub a kan wannan na'ura. Kowane aiki yana da nasa maɓallan ajiyewa; wannan matsayi ba ya tabbatar da cewa an ajiye duk abin da aka shigar a kowane aiki.",
+        "saving_drafts": "Daftarin tasha suna nan a kan wannan na'ura don dawo da su. Ajiye tasha yana ƙara ta ga bayanan fayil ɗin aiki da ake samu a Ajiye / Fitar; neman ajiye fayil ɗin aiki ba ya tabbatar da cewa an rubuta fayil.",
+        "saving_live": "An haɗa zaman kai-tsaye. Yana iya aika bayanan ci gaba ko alamun tsaro ga mai jagorantar zaman. AI na zaɓi yana aika rubutun aiki ga sabis ɗin da aka saita. Duba Kunshin Rabawa kafin ka zaɓi raba shi.",
+        "saving_ai": "AI na zaɓi yana aika rubutun aiki ga sabis ɗin da aka saita. Kunshin Rabawa yana ɗauke da abubuwa da matakan dalla-dalla da ka zaɓa; duba samfotinsa kafin rabawa.",
+        "saving_retry": "Sake gwada ajiyewa a gida",
+        "saving_request": "Nemi ajiye fayil ɗin aiki",
+        "removed_stations": "Tashoshin da aka cire",
+        "removed_body": "Soke cire tasha yayin da wannan hub yake buɗe. Ana riƙe rikodin atisayen da ke akwai.",
+        "station_restored": "An dawo da tasha: {name}",
+        "undo_removal": "Soke cirewa: {name}",
+        "launch_routines_aria": "Al'adun farawa na malami",
+        "launch_title": "Farawar malami",
+        "launch_note": "Ka sa atisaye ya kasance ba tare da maki ba kuma rabawa ya zama zaɓi. Bayyana ajiya a na'ura, fasalolin AI da aka saita, da rabawa kafin farawa. Yi amfani da misalan ƙage; gayyaci ɗalibai su nemi taimako ko su wuce.",
+        "launch_guardrails_aria": "Ƙa'idojin kariya na farawar malami",
+        "launch_step_boundary": "Kafa iyaka",
+        "launch_step_boundary_body": "Faɗi abin da ke sirri, abin da ke zaɓi, da yadda ɗalibai za su iya wucewa.",
+        "launch_step_run": "Gudanar da al'adar",
+        "launch_step_run_body": "Yi amfani da kayan aikin a matsayin atisaye. Ka sa tunani ya kasance na koyo kuma ba tare da maki ba.",
+        "launch_step_close": "Rufe da zaɓi",
+        "launch_step_close_body": "Ɗalibai ne ke yanke shawara ko za su ajiye, fitar, ko saka wurin ajiya daga baya.",
+        "launch_student_sees": "Abin da ɗalibi yake gani",
+        "launch_student_sees_default": "Ɗalibai suna kammala al'adar SEL ta sirri su zaɓi abin da za su raba.",
+        "launch_teacher_move": "Matakin malami",
+        "launch_teacher_move_default": "Gabatar da wannan a matsayin atisaye, ba kimantawa ba.",
+        "launch_sharing_boundary": "Iyakar rabawa",
+        "launch_sharing_boundary_default": "Rabawa yana ƙarƙashin ikon ɗalibi.",
+        "launch_tools_loading": "Ana buɗe kayan aiki...",
+        "launch_still_loading": "Har yanzu ana buɗewa: {tools}",
+        "launch_preview_sensitive": "Duba kayan aiki masu buƙatar kulawa tukuna: {tools}",
+        "launch_load_aria": "Buɗe shirin farawar malami: {name}",
+        "launch_finish_draft": "Kammala ko watsar da daftarin yanzu tukuna",
+        "launch_waiting": "Ana jiran kayan aiki",
+        "launch_loading": "Ana buɗewa",
+        "launch_load": "Saka cikin Mai Gina Tasha",
+        "builder_note_student": "Abin da ɗalibi yake gani: {text}",
+        "builder_note_teacher": "Matakin malami: {text}",
+        "builder_note_sharing": "Iyakar rabawa: {text}",
+        "builder_note_note": "Bayanin malami: {text}",
+        "launch_finish_existing": "Kammala ko watsar da daftarin tasharka da ke akwai tukuna.",
+        "launch_tools_still_loading": "Har yanzu ana buɗe kayan aikin farawar malami. Sake gwadawa nan ba da jimawa ba.",
+        "launch_tools_still_loading_sr": "Har yanzu ana buɗe kayan aikin farawar malami.",
+        "launch_default_name": "Al'adar SEL ta aji",
+        "launch_default_short": "Al'adar SEL",
+        "launch_loaded_sr": "An saka shirin farawar malami cikin mai gina tasha: {name}",
+        "launch_loaded_toast": "An saka shirin farawar malami cikin Mai Gina Tasha.",
+        "stations_summary": "Tashoshin SEL na Musamman — tarin ayyuka da malamai suka tsara",
+        "station_delete_aria": "Goge tasha {name}",
+        "station_removed_sr": "An cire tasha. Ana iya soke wannan har sai an rufe wannan hub.",
+        "station_removed": "An cire tasha",
+        "station_tools_count": "Kayan aiki {count}",
+        "station_quests_count": "Ƙalubale {count}",
+        "station_activated_sr": "An kunna Tashar SEL: {name}",
+        "station_started": "An fara {name}!",
+        "station_activate_aria": "Kunna tasha {name}",
+        "station_start": "Fara tasha",
+        "station_adapt_aria": "Daidaita kwafin tasha {name}",
+        "station_adapt": "Daidaita kwafi",
+        "draft_aria": "Daftarin tasha da za a iya dawo da shi",
+        "draft_untitled": "Tasha mara suna",
+        "draft_body": "Akwai daftarin tasha da ba a kammala ba da aka ajiye a kan wannan na'ura: {name}. Ci gaba da shi ko ka watsar da shi kafin fara wata.",
+        "draft_resume": "Ci gaba da daftarin tasha",
+        "draft_discard": "Watsar da daftarin tasha",
+        "builder_opened": "An buɗe mai gina tasha",
+        "build_station_aria": "Gina sabuwar Tashar SEL ta musamman",
+        "build_station": "+ Gina Tasha ta Musamman"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "An dakatar da haɗin malami — ana riƙe wurinka yayin da AlloFlow ke sake haɗawa.",
+    "host_stale": "Binciken matsayin malami ya tsufa - zaman kai tsaye yana iya kasancewa a haɗe. Aikinka yana nan a wannan na'urar.",
+    "dismiss": "Rufe",
+    "dismiss_aria": "Rufe gargaɗin matsayin malami",
+    "connecting": "Ana haɗawa da ajin…",
+    "retrying": "An dakatar da sabuntawar aji. Ana sake haɗawa ta atomatik…",
+    "failed": "An katse sabuntawar aji. Duba haɗinka kuma ka sake gwada haɗawa.",
+    "access": "An hana shiga ajin. Ka roƙi malaminka ya duba damar shiga, sannan ka sake haɗawa.",
+    "sign_in": "Sake shiga asusunka don dawo da damar shiga aji, sannan ka sake haɗawa.",
+    "reconnect": "Sake haɗawa"
+  },
   "_version": "20260526T1779819423891",
   "tour": {
     "input_panel_title": "shigarwa panel",
@@ -5283,9 +6504,99 @@
     "measured_on_target": "Ya dace da {grade}",
     "measured_above": "Sama da matakin {grade}",
     "measured_below": "Kasa da matakin {grade}",
-    "measured_note": "Flesch-Kincaid, an auna a kan wannan rubutun. Yi amfani da Check matakin don cikakken duba."
+    "measured_note": "Flesch-Kincaid, an auna a kan wannan rubutun. Yi amfani da Check matakin don cikakken duba.",
+    "listen_along": "Saurara tare",
+    "compare_listen_here": "Saurara a nan",
+    "compare_listen_here_original": "Saurara a nan: rubutun asali",
+    "compare_listen_here_adapted": "Saurara a nan: rubutun da aka sauƙaƙa",
+    "compare_stop_reading_original": "Tsayar: karanta rubutun asali",
+    "compare_stop_reading_adapted": "Tsayar: karanta rubutun da aka sauƙaƙa",
+    "compare_scroll_together": "Gungura tare",
+    "reading_width": "Faɗin karatu",
+    "width_narrow": "Kunkuntar",
+    "width_medium": "Matsakaici",
+    "width_wide": "Faɗi",
+    "width_extra_wide": "Faɗi sosai",
+    "reading_width_characters": "kusan haruffa {count} a kowane layi",
+    "original_support_spoken": "Taimako kan kalmar “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Rubuta kalma ko jumlar da ta ɓace",
+      "explain_thinking": "Bayyana yadda ka yi tunani",
+      "write_response": "Rubuta amsarka",
+      "submit_response": "Mika amsa",
+      "numeric_answer": "Amsa ta lamba",
+      "unit_named": "Ma'auni ({unit})",
+      "unit_optional": "Ma'auni (ba dole ba)",
+      "submit_numeric": "Mika amsa ta lamba",
+      "select_all_apply": "Zaɓi duk amsoshin da suka dace",
+      "submit_selections": "Mika zaɓuɓɓuka",
+      "part1": "Kashi na 1 — Zaɓi amsa mafi dacewa",
+      "part2": "Kashi na 2 — {prompt}",
+      "default_evidence_prompt": "Zaɓi shaida mafi kyau da ke goyon bayan amsar.",
+      "submit_answer_evidence": "Mika amsa da shaida",
+      "order_check": "Shin wannan jeri daidai ne?",
+      "order_yes": "I, daidai ne",
+      "order_no": "A'a, akwai abin da ba a wurinsa ba",
+      "select_misplaced": "Zaɓi abin da ba a wurinsa ba a sama.",
+      "arrange_instructions": "Jera abubuwan a tsari daidai. Idan sun riga sun yi daidai, bar su yadda suke.",
+      "your_order": "Jerinka",
+      "move_up": "Matsa sama: {item}",
+      "move_down": "Matsa ƙasa: {item}",
+      "done_arranging": "Na gama jerawa",
+      "principle_question": "Bisa me aka jera abubuwan?",
+      "principle_chronological": "lokaci",
+      "principle_cause_effect": "dalili da sakamako",
+      "principle_process": "matakai",
+      "principle_size": "girma",
+      "principle_hierarchy": "matsayi",
+      "find_mismatch": "Nemo haɗin da bai dace ba",
+      "choose_mismatch": "Zaɓi haɗin da bai dace da sauran ba.",
+      "pair_with_question": "Da me ya kamata a haɗa abin da aka zaɓa?",
+      "replacement_partner": "Sabon abokin haɗi",
+      "submit_replacement": "Mika canjin",
+      "retry_failed": "Ba a iya aika amsarka ba. Har yanzu an rubuta shigarka; sake gwadawa idan ka samu haɗi.",
+      "return_to_quiz": "Koma zuwa jarrabawar kai tsaye",
+      "minimize": "Rage",
+      "minimize_aria": "Bar shafin jarrabawar kai tsaye",
+      "battle_result": "Sakamakon yaƙi",
+      "class_victory": "Nasarar aji!",
+      "battle_complete": "Yaƙi ya ƙare",
+      "regroup": "Dama don sake shiri",
+      "end_no_scored": "Waɗannan tambayoyin na tattaunawa ne ko don malami ya duba. Ba a ba da makin yaƙi ba.",
+      "end_questions_complete": "An kammala duk tambayoyin. Sakamakon yana kwatanta kashi na lafiyar da ta rage; idan an yi kunnen doki, aji ne ke nasara.",
+      "end_victory": "Ajinku ya kayar da dodon tare.",
+      "end_regroup": "Yi amfani da bayanin da ke ƙasa don ku shirya ƙoƙarinku na gaba tare.",
+      "end_review_last": "Duba tambaya ta ƙarshe da ke ƙasa. Malaminka zai iya sake fara yaƙin.",
+      "boss_default_name": "Babban Dodo",
+      "boss_hp": "HP na {name}",
+      "boss_health": "Lafiyar {name}",
+      "battle_scoring_paused": "An dakatar da makin yaƙi",
+      "tick_of": "{value} cikin {total}",
+      "confidence_legend": "Yaya kake da tabbaci?",
+      "confidence_knew": "Na san wannan",
+      "confidence_guessed": "Na yi hasashe bisa ilimi",
+      "confidence_unsure": "Ban tabbata ba",
+      "confidence_help": "Wannan yana taimaka wa malaminka ya gano ilimin da ka tabbatar da kuskuren fahimta. Ba ya taɓa canza daidaito ko maki.",
+      "retry_send": "Sake gwada aika amsa",
+      "waiting_for_teacher": "Ana jiran malaminka ya fara wannan tambayar.",
+      "sending": "Ana aika amsarka…",
+      "receipt_only": "An rubuta shigarka. Amsarka ba ta isa ga malami ba tukuna don a ba da maki.",
+      "complete_and_submit": "Kammala kuma ka mika amsarka",
+      "poll_closed": "An rufe wannan tambayar ra'ayi.",
+      "receipt_not_scored": "Malaminka ya karɓi shigarka kawai. Ba a ba wannan amsar maki ba.",
+      "no_answer_submitted": "Ba a mika amsa ga wannan tambayar ba. Duba ta tare da ajinka.",
+      "answer_review": "Bitar amsa",
+      "review_answer": "Duba amsar",
+      "discuss_with_teacher": "Tattauna amsar da malaminka.",
+      "response_correct": "Amsa daidai.",
+      "response_partial": "Amsa daidai a wani ɓangare.",
+      "response_incorrect": "Wannan amsar tana buƙatar a sake duba ta.",
+      "response_none": "Ba a mika amsa ba.",
+      "response_submitted": "An mika amsa don bita.",
+      "explanation": "Bayani"
+    },
     "title": "Tantance",
     "mcq_count": "MCQ Ƙirga",
     "reflections": "Tunani",

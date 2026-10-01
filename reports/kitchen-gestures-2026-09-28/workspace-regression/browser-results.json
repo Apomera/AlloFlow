@@ -1,0 +1,36 @@
+{
+  "checks": [
+    "Tool groups, card selection, prerequisite guidance, native selector, and camera framing stay synchronized without changing the cook.",
+    "Real raycasting reveals the packet hint. Top view works. Expanded view contains focus, restores the original scene and focus on Escape, and preserves recipe state.",
+    "Lift, carry, and tilt pours pasta in the expanded scene. Escape cancels the pour; recording commits it. Expanded burner and clock controls update the cook. The keyboard route exits and focuses the same scale.",
+    "320px and tablet layouts fit without horizontal scrolling. Replay locks controls, and graphics loss closes the expanded view and restores the fallback. Accessibility scans pass."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop workspace",
+      "issues": []
+    },
+    {
+      "label": "Expanded workspace",
+      "issues": []
+    },
+    {
+      "label": "Expanded 320px",
+      "issues": []
+    },
+    {
+      "label": "Expanded 768px",
+      "issues": []
+    },
+    {
+      "label": "320px forced colors",
+      "issues": []
+    },
+    {
+      "label": "Graphics fallback",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

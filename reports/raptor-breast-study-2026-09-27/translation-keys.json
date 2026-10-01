@@ -1,0 +1,11 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    { "key": "stem.raptorhunt.study_region_body", "fallback": "Breast feathers" },
+    { "key": "stem.raptorhunt.study_body_question", "fallback": "What pattern do the breast feathers make?" },
+    { "key": "stem.raptorhunt.study_peregrine_breast", "fallback": "Follow the fine dark bars across this adult peregrine’s pale underparts. Compare their direction with the streaks on a red-tailed hawk. Keep a view and describe the pattern you can see." },
+    { "key": "stem.raptorhunt.study_horned_breast", "fallback": "Find the pale throat patch, then follow the darker bars across the lower breast. How do the markings change from one area to the next? Keep a view to record your observation." },
+    { "key": "stem.raptorhunt.study_redtail_breast", "fallback": "Look for the dark streaks gathered into a belly band. Compare their direction with the bars on a peregrine or great horned owl. Keep a view and describe the difference." },
+    { "key": "stem.raptorhunt.study_body_copy", "fallback": "Follow the overlapping feathers from the breast toward the tail. Orbit to compare light and dark areas, then keep a view that shows a feature you could use to describe this bird." }
+  ]
+}

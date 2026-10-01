@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-river.spec.ts:29:5 › river distance guides the camera through bends without changing the measured terrain (9.9s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-river.spec.ts:45:5 › phone keyboard controls stay reachable and preserve position when leaving the journey (6.8s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-river.spec.ts:58:5 › notebook restores river position, relief and manual camera direction and exports the route context (8.7s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-river.spec.ts:72:5 › animated travel follows the river and becomes idle with ambience paused (12.6s)
+  ok 5 [chromium] › tests\e2e\scale-explorer-river.spec.ts:92:5 › WebGL 1 renders the route marker and scene after a river journey (6.8s)
+
+  5 passed (46.0s)

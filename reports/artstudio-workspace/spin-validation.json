@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-29",
+  "scope": "Spin Art paused painting, pointer completion, undo/redo, thickness and direction, timed playback, saved paint, exports, and responsive workspace",
+  "sourcePublicParity": true,
+  "sourceSHA256": "1ABBFBC8C33B2C949477DADD65FD08D2716EA59F5A12221D25D6E82F43A264A5",
+  "tests": {
+    "verifiedFiles": 9,
+    "uniqueVerifiedTests": 87,
+    "newRegressionCases": 12,
+    "log": "spin-final-tests.log",
+    "pool": "forks",
+    "failedTestsInFinalRun": 0,
+    "repositoryTimeoutConfigurationChanged": false,
+    "fullRepositorySuiteRun": false
+  },
+  "browser": {
+    "passed": true,
+    "report": "spin-browser-results.json",
+    "pageErrors": [],
+    "pausedPaintVisibleImmediately": true,
+    "wholeStrokeUndoRedo": true,
+    "clearUndo": true,
+    "oneClickResume": true,
+    "pausePreservesExactFrame": true,
+    "tabRoundTripPreservesPaintAndParticles": true,
+    "translucentRimRoundTripExact": true,
+    "transparentExportChannelDifference": 0,
+    "paintPixelsOutsideDisc": 0,
+    "opaqueExportPixels": 262144,
+    "actualPngDownloads": true,
+    "paperPreservesPaint": true,
+    "desktopFocusCanvasPx": 760,
+    "phoneViewportWidthPx": 390,
+    "phonePreviewBeforeControls": true,
+    "phoneHorizontalOverflow": false,
+    "minimumButtonHeightPx": 44,
+    "buttonLabelsFit": true,
+    "screenshotsVisuallyReviewed": true
+  },
+  "engine": {
+    "identicalPaintAt60And120Hz": true,
+    "pausedHiddenEmptyAndDisposedLoopsIdle": true,
+    "historyLimit": 20,
+    "legacySnapshotsSupported": true,
+    "restoredParticlesValidated": true
+  },
+  "syntaxCheck": "passed",
+  "diffWhitespaceCheck": "passed",
+  "deployed": false
+}

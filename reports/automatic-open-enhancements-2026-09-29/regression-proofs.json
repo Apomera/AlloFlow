@@ -1,0 +1,227 @@
+{
+  "at": "2026-09-30T12:04:07.752Z",
+  "method": "Isolated candidate files, no shared source mutations; assertion failures required.",
+  "proofs": [
+    {
+      "name": "startup-normalization-tracking",
+      "test": "tests/student_entry_recovery_race.test.js",
+      "pattern": "records the exact previous and normalized",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "9bc4d880f555baffae8b3b67a49e93ad2bacbc6941eb17fa397f8b396af8ac5c",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "production startup history upgrade tracking records the exact previous and normalized arrays from the real module upgrade event",
+          "messages": [
+            "AssertionError: expected null to match object { previous: [ { …(2) } ], …(1) }\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_entry_recovery_race.test.js:84:27\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "legacy-normalization-context",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "opens the normalized legacy packet",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "68ee4186c37c62e453fd1681960e3ada73c6a85db0d7c9cb2024aa741739c693",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "cold student assignment restore opens the normalized legacy packet after the actual startup history upgrade",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'legacy-packet', …(5) }, …(2) ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:119:37\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "legacy-normalized-payload",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "opens the normalized legacy packet",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "446aaffa6a4d801d4eb6e40e36065eb2b193cc7e4821bde2479bfa8f39ffde70",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "cold student assignment restore opens the normalized legacy packet after the actual startup history upgrade",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'legacy-packet', …(5) }, …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,9 +1,8 @@\n  [\n    {\n-     \"data\": \"Hydrated reading\",\n-     \"dataEncoding\": \"text/v1\",\n+     \"data\": \"Good and bad seem reversed.\",\n      \"id\": \"legacy-packet\",\n      \"readingSupports\": {\n        \"annotations\": [\n          {\n            \"origin\": \"educator\",\n@@ -21,7 +20,9 @@\n      \"type\": \"simplified\",\n    },\n    {\n      \"suppressLiveFollow\": true,\n    },\n-   Any<Object>,\n+   {\n+     \"marker\": \"current-host-deps\",\n+   },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:119:37\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "student-delivery-preservation",
+      "test": "tests/student_entry_recovery_race.test.js",
+      "pattern": "keeps an already delivered packet.*false",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "8818365380b9533a115579a4a1f311aa16d43fa942218b0ec4478cd1a915f49c",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "student-entry recovery and homework startup keeps an already delivered packet when recovery starts late (Canvas=false)",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array []\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_entry_recovery_race.test.js:38:49\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "student-entry-once",
+      "test": "tests/student_entry_recovery_race.test.js",
+      "pattern": "does not clear again while",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "7336295474b6fb5a7732adbd1b1e033ce141993469429ecc9b3e55b16294be89",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "student-entry recovery and homework startup does not clear again while the learner is waiting for delivery",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once, but got 2 times\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_entry_recovery_race.test.js:50:45\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "homework-helper-readiness",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "waits for PureHelpers even",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "f901f2f520f692cc60c66db619a245efc851cdc7e30b70060c9dc0b794df6f0d",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "cold student assignment restore waits for PureHelpers even when the resource handler is ready",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"Good and bad seem reversed.\",\n        \"id\": \"waiting-for-PureHelpers\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"origin\": \"educator\",\n              \"pinned\": true,\n              \"quote\": \"Fair\",\n              \"text\": \"Teacher-selected meaning\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"schemaVersion\": 1,\n          \"text\": \"Fair is foul.\r\n    And foul is fair.\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {\n        \"suppressLiveFollow\": true,\n      },\n      Object {\n        \"marker\": \"current-host-deps\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:133:41\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "homework-workspace-cancellation",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "stops a late automatic open when",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "752836998074a2812f064ad1848b5f24af43813333284415dc80a805928830ef",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "cold student assignment restore stops a late automatic open when the workspace changes and leaves homework recoverable",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"Good and bad seem reversed.\",\n        \"id\": \"navigation-cancelled\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"origin\": \"educator\",\n              \"pinned\": true,\n              \"quote\": \"Fair\",\n              \"text\": \"Teacher-selected meaning\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"schemaVersion\": 1,\n          \"text\": \"Fair is foul.\r\n    And foul is fair.\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {\n        \"suppressLiveFollow\": true,\n      },\n      Object {\n        \"marker\": \"current-host-deps\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:157:41\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "homework-confirmed-save-context",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "asks once without a false failure",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "6c810bd230da790fdc99a940bd4af12176cbceb8a0816cee4ae4e3cda2ea470b",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "automatic homework during unsaved reading-support edits asks once without a false failure and opens after Save and continue updates the workspace",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'save-and-open', …(4) }, …(2) ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:34:39\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "homework-draft-prompt-recovery",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "asks once without a false failure",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "57fc301457f299341fc08c543a8f4921bebe67143298751ab7716e2db9b165d9",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "automatic homework during unsaved reading-support edits asks once without a false failure and opens after Save and continue updates the workspace",
+          "messages": [
+            "AssertionError: expected [ [ …(2) ] ] to have a length of +0 but got 1\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:32:112\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "homework-obsolete-confirmation",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "does not open a replaced packet",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "12c991030f4fe60afcefbb9ae09192802f22d01f24b185233d6287dc735f6d3d",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "automatic homework during unsaved reading-support edits does not open a replaced packet when an old confirmation is accepted",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"Good and bad seem reversed.\",\n        \"id\": \"old-prompt\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"origin\": \"educator\",\n              \"pinned\": true,\n              \"quote\": \"Fair\",\n              \"text\": \"Teacher-selected meaning\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"schemaVersion\": 1,\n          \"text\": \"Fair is foul.\r\n    And foul is fair.\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {\n        \"suppressLiveFollow\": true,\n      },\n      Object {\n        \"marker\": \"current-host-deps\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:47:43\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "homework-deferred-unmount",
+      "test": "tests/student_assignment_restore_readiness.test.js",
+      "pattern": "does not run a deferred automatic open",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "b81eafc52a92b17bbf22dad9dbb43b30a53882fd4f72fa1d31fb7b4ece342aa8",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "automatic homework during unsaved reading-support edits does not run a deferred automatic open after unmount",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"Good and bad seem reversed.\",\n        \"id\": \"unmounted-prompt\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"origin\": \"educator\",\n              \"pinned\": true,\n              \"quote\": \"Fair\",\n              \"text\": \"Teacher-selected meaning\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"schemaVersion\": 1,\n          \"text\": \"Fair is foul.\r\n    And foul is fair.\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {\n        \"suppressLiveFollow\": true,\n      },\n      Object {\n        \"marker\": \"current-host-deps\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/student_assignment_restore_readiness.test.js:51:88\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "learning-web-production-bridge",
+      "test": "tests/learning_web_resource_readiness.test.js",
+      "pattern": "accepts a selection synchronously",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "7a2b7126956792e3e5beb6e673938581ac13d01183eabcb5049dd24370a5374a",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "Learning Web saved-resource readiness accepts a selection synchronously and waits for the complete reader chain through the production bridge",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called with arguments: [ [ [ …(2) ], [ …(2) ], …(2) ], …(1) ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/learning_web_resource_readiness.test.js:52:37\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "obsolete-load-error",
+      "test": "tests/learning_web_resource_readiness.test.js",
+      "pattern": "keeps an obsolete loading failure quiet",
+      "baselineSha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f",
+      "candidateSha256": "582e3128dceee039135b5a86cc293c59b6bf2f970c30d17d3bcd88cbe1696e74",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "Learning Web saved-resource readiness keeps an obsolete loading failure quiet after navigation",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"Could not open this saved resource. Check the connection and try again.\",\n      \"error\",\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/learning_web_resource_readiness.test.js:79:75\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

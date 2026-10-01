@@ -1,0 +1,251 @@
+{
+  "width": 274.40625,
+  "scrollWidth": 272,
+  "clientWidth": 272,
+  "cards": [
+    {
+      "height": 167.84375,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "height": 167.84375,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "height": 104,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "height": 104,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "height": 104,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "height": 104,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    },
+    {
+      "height": 150.78125,
+      "width": 122.609375,
+      "scrollWidth": 121,
+      "clientWidth": 121
+    }
+  ],
+  "text": [
+    {
+      "text": "Use arrow keys to select a tool, then check its readiness and calibration.",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Selected",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Next step",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "• Probe",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Press · drag",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "↕ Forceps",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Later step",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Press · drag",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "✒ Scalpel",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Later step",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Stroke",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "✂ Scissors",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Later step",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Stroke",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "◆ Pins",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Later step",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Press · drag",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "◉ Dropper",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Press · drag",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "▧ Absorbent Wick",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "No excess fluid",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Press · drag",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Active tool: Probe",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Inspect ventral landmarks and confirm symmetry before using a cutting instrument.",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Action readiness · Prediction required",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "80/100",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Sequence · ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Predict + explain · needs attention",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Calibration · ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Field + view · ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Contact · ready",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Complete the prediction checkpoint before this instrument can contact the specimen.",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Instrument calibration · Probe pressure",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Adjust before contact; this setting changes tissue response and scoring.",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "30%",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Calibrated 100%",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "18–38% traces anatomy gently.",
+      "size": 16,
+      "clipped": false
+    }
+  ]
+}

@@ -10,10 +10,24 @@
 const { execFileSync } = require('child_process');
 const LIMIT = 25 * 1024 * 1024;
 
-const staged = execFileSync('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=ACM'], { encoding: 'utf8' })
+const staged = execFileSync('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=ACM'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
   .split('\0').filter(Boolean);
 const offenders = [];
-for (const file of staged) {
+const ordinary = staged.filter((file) => !/[\r\n]/.test(file));
+if (ordinary.length) {
+  // Read staged blob metadata in one process instead of one Git launch per file.
+  const rows = execFileSync('git', ['cat-file', '--batch-check=%(objecttype) %(objectsize)'], {
+    encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    input: ordinary.map((file) => ':' + file).join('\n') + '\n',
+  }).trimEnd().split('\n');
+  for (let i = 0; i < ordinary.length; i++) {
+    const match = /^blob (\d+)$/.exec(rows[i] || '');
+    if (match && Number(match[1]) >= LIMIT) offenders.push({ file: ordinary[i], size: Number(match[1]) });
+  }
+}
+// Keep newline-bearing filenames safe on filesystems that permit them; the
+// newline-delimited batch protocol cannot represent these object names.
+for (const file of staged.filter((file) => /[\r\n]/.test(file))) {
   try {
     const size = parseInt(execFileSync('git', ['cat-file', '-s', ':' + file], { encoding: 'utf8' }).trim(), 10);
     if (size >= LIMIT) offenders.push({ file, size });

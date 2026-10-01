@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
@@ -111,7 +113,9 @@ describe('auto-continue canonical verification', () => {
     // new issues count as a regression only once the automated violations are clear
     expect(roundRegressed({ newDet: 90, prevDet: 90, violations: 0, newIssues: 3, prevIssues: 1 })).toBe(true);
     expect(roundRegressed({ newDet: 90, prevDet: 90, violations: 5, newIssues: 3, prevIssues: 1 })).toBe(false);
-    expect(loop).toContain('if (result._auditOnly) break;');
+    // b4d7ed714 (09-13): the audit-only refresh stays single-shot only while it finds nothing actionable;
+    // recovered AI issues or axe/second-engine failures now use the remaining round budget.
+    expect(loop).toMatch(/if \(result\._auditOnly && _aiIssuesOf\(cur\)\.length === 0\s*&& !\(cur\.axeAudit && cur\.axeAudit\.totalViolations > 0\)\s*&& !\(cur\.secondEngineAudit && cur\.secondEngineAudit\.failViolations > 0\)\) break;/);
   });
 
   it('syncs canonical verification, score provenance, and expert-review state to rendered and saved-ref snapshots', () => {

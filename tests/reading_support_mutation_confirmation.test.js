@@ -39,8 +39,8 @@ const button = text => [...host.querySelectorAll('button')].find(node => node.te
 const click = async node => act(async () => { expect(node).toBeTruthy(); node.click(); });
 const draft = () => host.querySelector('[data-gloss-draft]');
 const entryPin = () => host.querySelector('input[aria-label^="Always show in lighter view:"]');
-const remove = () => host.querySelector('button[aria-label^="Remove gloss for"]');
-async function edit() { await click(button('Review word supports')); await click(host.querySelector('button[aria-label^="Edit gloss for"]')); }
+const remove = () => host.querySelector('button[aria-label^="Remove word help: "], button[aria-label^="Remove gloss for"]');
+async function edit() { await click(button('Review word supports')); await click(host.querySelector('button[aria-label^="Edit word help: "], button[aria-label^="Edit gloss for"]')); }
 function type(value) { act(() => { const node = draft().querySelector('textarea'); node.focus(); Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); }); }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
 

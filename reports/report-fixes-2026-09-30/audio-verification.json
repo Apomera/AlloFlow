@@ -1,0 +1,23 @@
+{
+  "verifiedAt": "2026-09-30T22:28:42.346Z",
+  "runtimeSourcesUntouched": true,
+  "sourceHashes": {
+    "tts_source.jsx": "fb28894c66e247437026c95b4a7dd5473faee1e483a090d2d47e5c47f8d866a2",
+    "view_kokoro_offer_modal_source.jsx": "04d3dee251dcc4a00d8f819daec48d3b7a95904fc9fcd0c53fa61f05fd95fca6",
+    "tests/tts_pipeline_source_resilience.test.js": "bf3aa959becd42b5302f790a77adca698134d41e27b3fb33c11694ae437cef45"
+  },
+  "tests": {
+    "total": 65,
+    "passed": 65,
+    "failed": 0,
+    "success": true
+  },
+  "fixtureRepair": "Select the two actionable Adapted sentence controls rather than the noninteractive glossary wrapper, and evaluate only the current-sentence predicate; keep aria-current true/undefined truth-table checks.",
+  "evidence": [
+    "audio-tests.json",
+    "audio-tests-before-fixture-repair.json"
+  ],
+  "remaining": [
+    "Shared-host Test voice route and compact preparation panel remain outside this verification; host proposal is not applied."
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "at": "2026-09-29T04:26:10.946Z",
+  "kind": "full generated app plus generated teacher component",
+  "candidate": "C:\\tmp\\tyler_integration_candidate",
+  "checks": [
+    {
+      "name": "full generated app boots from local public modules",
+      "passed": true
+    },
+    {
+      "name": "launch-pad E2E suite",
+      "passed": true
+    }
+  ],
+  "served": {
+    "tool_index.json": {
+      "sha256": "9722634dbd174bec3a2194c6f7c26265b81b1390702eeece5f590c3195aa0b5e",
+      "size": 128759
+    },
+    "error_reporter_module.js": {
+      "sha256": "cf87a08307ab4a976e6830cbaa0d91e2c1bafe84687b87401debfdbcece2488f",
+      "size": 56044
+    },
+    "ai_backend_module.js": {
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "size": 174802
+    },
+    "allo_data_module.js": {
+      "sha256": "ebbfe60009527715a7710ecac2748040eb8c4a003054f1fc85d9861492c1522f",
+      "size": 81018
+    },
+    "tool_catalog_module.js": {
+      "sha256": "c8c7fb96aba239580504b49d5bf95b3cf9a7249db46d4e4101ce911e92f4caea",
+      "size": 12171
+    },
+    "utils_pure_module.js": {
+      "sha256": "3e87aae7ff4dd8d57d38333f21bbf4540e73221bec37273a647b6ef57d12bbf1",
+      "size": 95699
+    },
+    "misc_components_module.js": {
+      "sha256": "4b6e97ce82052ff3ca9e173a04e9218d3938a03a00ad5cf4c2421c566143193b",
+      "size": 102071
+    },
+    "ui_modals_module.js": {
+      "sha256": "7d1b86431aad1de7507a0cdc917b0dc4f011418c068ce746f1ed602aaa5c9f52",
+      "size": 123295
+    },
+    "view_sidebar_tabs_nav_module.js": {
+      "sha256": "c83eea2f35ac19157e8e2ee78ec096e7ed883845d89208f8c5505824a9c005cc",
+      "size": 4889
+    },
+    "view_confirm_dialog_module.js": {
+      "sha256": "2a9b9672ef3b35628e19454dac1151e3bc075a8e51e5680511c5adbf7b3def10",
+      "size": 7459
+    },
+    "view_prompt_dialog_module.js": {
+      "sha256": "8fabeebb002abc1fb94ea2ef031d6c006e3c5eeabad7f27c1e8fc4ba4d0c4281",
+      "size": 6704
+    },
+    "view_header_module.js": {
+      "sha256": "a81f16ed4350aa9676d64c23729b60d83841ec90dc48e834faa4bb80a49294cb",
+      "size": 138112
+    },
+    "view_history_panel_module.js": {
+      "sha256": "875a75a84a9502c3396fc493933f35ce3f5812058dec7c0cf8ac18d20e67b487",
+      "size": 94484
+    },
+    "ui_language_selector_module.js": {
+      "sha256": "03c5310430b87278e367747c9036f0fa922fdcc14dbfd7c8d960e46f6d54d51f",
+      "size": 16663
+    },
+    "app_styles_module.js": {
+      "sha256": "e22ea40fca57130a4862003734c9cd0e86bf8c079a578f75907a25871968bbff",
+      "size": 300472
+    },
+    "live_aac_module.js": {
+      "sha256": "331853a5935bbcb5331445b82b0e1a0e273b21851c0657f91ab62ef3b728c7b2",
+      "size": 72294
+    },
+    "shared_activity_module.js": {
+      "sha256": "95f75b7cc021949d87c191d7e350016ba251c65ddccf0a422b57a4ae57277191",
+      "size": 111117
+    },
+    "guided_mode_config_module.js": {
+      "sha256": "a4fb306da9240ef2dd470f14e8afe004b355ef03c6cd6769f643683343d0bf1f",
+      "size": 22969
+    },
+    "identifier_redaction_module.js": {
+      "sha256": "d0cccb7d3c2a556547938d94498b2d85cba1a34c46d4a74354a23d2c8a35ab5f",
+      "size": 9724
+    },
+    "view_launch_pad_module.js": {
+      "sha256": "29c496ac61412e8c03946e295a9f999e2f0003149c8120da1635546dc14e99da",
+      "size": 79772
+    },
+    "onboarding_coach_module.js": {
+      "sha256": "20167e80365294dfda822016cfebbdf0aceeb42375f6136d38e973869c69ea65",
+      "size": 44565
+    },
+    "allo_commands_module.js": {
+      "sha256": "6a65da357d11f53a9edc38c38aec1c3c0cabc1988dbf465a580ad49950b40c89",
+      "size": 426717
+    },
+    "allo_command_context_module.js": {
+      "sha256": "d9950c8d98574e5b45fbbaba3c603dc154d47aeb6ba4461b7b5396d3e058a574",
+      "size": 114765
+    },
+    "host_handlers_module.js": {
+      "sha256": "d2ca5eb27227c62611044e91a5ace3b628c8ee31a80c29f5188ae4000b7e99b1",
+      "size": 513291
+    },
+    "onboarding_helpers_module.js": {
+      "sha256": "d9efe9d3c7440f52ad6cc7dc0784b129a49a7efa93d45b9c0c18185d64e4693d",
+      "size": 71448
+    },
+    "allo_device_storage_module.js": {
+      "sha256": "e040340f63419c44a7f8b4671b2f9e2834b44a472678e006d1820d0d1e37d2da",
+      "size": 67650
+    },
+    "view_sidebar_panels_module.js": {
+      "sha256": "1f636d34035c536da2e4390b44089a480cbf87cbc5bf02583faf2e19fd9bd71c",
+      "size": 379624
+    },
+    "rainbow-book.jpg": {
+      "sha256": "c8a772b1cf664152d588e566651aac16f850b95bb32f223036b1552f475e2573",
+      "size": 16336
+    },
+    "view_full_pack_run_module.js": {
+      "sha256": "0beef268d3c3fab377c06c729decb68228ec52998e47678940cde933251029d6",
+      "size": 73651
+    },
+    "view_educator_hub_modal_module.js": {
+      "sha256": "14dde05adbcba3a58558a7ea4ad75ffff2e939cc2d7d70428101aa1ca234deff",
+      "size": 94599
+    },
+    "quickstart_module.js": {
+      "sha256": "cf8889ea5c3cb503ce3a3983a6d1bb4521e5e8d50a3cbf6d62580fce7c8e836d",
+      "size": 112784
+    },
+    "view_guided_mode_banner_module.js": {
+      "sha256": "f4f0209a9a39728164381048120dd1c793cd64d20bf3214412108c65470f5aac",
+      "size": 332513
+    },
+    "translation_feedback_module.js": {
+      "sha256": "98d1a3da918f3e33833f0a55b3806ff39d4e884190413573e1f329f587ade74d",
+      "size": 15585
+    },
+    "item_correction_module.js": {
+      "sha256": "044859ebc49640114d3b7bbdc830d7acb74057c0209ac9263df39ce65dfac9fd",
+      "size": 14315
+    },
+    "submission_crypto_module.js": {
+      "sha256": "89b94938586b3d7c475a5f52cfe5c3c0fdecc107ef0fa93d5e354abdf09341ca",
+      "size": 8025
+    },
+    "allo_crypto_module.js": {
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+      "size": 22716
+    },
+    "device_access_code_module.js": {
+      "sha256": "b73bf61b14c47c76e499c622ab903b6164ad2a608d5dba89a49c4e7af30f7edc",
+      "size": 9158
+    },
+    "allo_device_vault_module.js": {
+      "sha256": "f22f9699c9b7e9c2c1e331e0d93aaa501203b034853d9d8254f6a8c6e9383a53",
+      "size": 40891
+    },
+    "allo_recovery_vault_integration_module.js": {
+      "sha256": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+      "size": 3818
+    }
+  },
+  "blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+    "https://cdn.jsdelivr.net/npm/idb-keyval@6.2.0/dist/umd.js",
+    "https://alloflow-cdn.pages.dev/lang/manifest.json",
+    "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
+    "https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json",
+    "https://unpkg.com/idb-keyval@6.2.0/dist/umd.js",
+    "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js",
+    "https://alloflow-cdn.pages.dev/audio_bank/index.json",
+    "https://alloflow-cdn.pages.dev/audio_bank_kokoro.json",
+    "https://alloflow-cdn.pages.dev/ui_strings.js?v=1790653236232",
+    "https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank/index.json",
+    "https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank_kokoro.json",
+    "https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js",
+    "https://alloflow-cdn.pages.dev/audio_bank.json",
+    "https://alloflow-cdn.pages.dev/help_strings.js?v=1790653236232",
+    "https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank.json",
+    "https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js"
+  ],
+  "errors": [],
+  "hostHash": "69dbbfe8ea38fbcecc2c1039a0d08be75313f60a7639fb3b34d34fbf0b5baaad",
+  "origin": "http://127.0.0.1:51382"
+}

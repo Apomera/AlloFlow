@@ -1,9 +1,11 @@
 import fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sliceTopLevelBlock } from './helpers/host_source.js';
 
 const hostSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-const playerStart = hostSource.indexOf("if (typeof window !== 'undefined' && !window.AlloSpeechPlayer)");
-const playerSource = hostSource.slice(playerStart, hostSource.indexOf('/**', playerStart));
+// The player block ended at the next '/**' until the ANTI comment ratchet removed it (8dce94eed):
+// slice through the block's own closing brace instead.
+const playerSource = sliceTopLevelBlock(hostSource, "if (typeof window !== 'undefined' && !window.AlloSpeechPlayer)", { file: 'AlloFlowANTI.txt' });
 const helperSource = fs.readFileSync('audio_helpers_module.js', 'utf8');
 let cleanups = [];
 beforeEach(() => localStorage.removeItem('alloflow_ai_config'));

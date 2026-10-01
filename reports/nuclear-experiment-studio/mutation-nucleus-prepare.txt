@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:630:5 › nucleus builder preparation updates the picture while saved comparisons wait for Save in the light palette (17.2s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:630:5 › nucleus builder preparation updates the picture while saved comparisons wait for Save in the light palette 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-ns-nucleus-notebook] tbody tr')
+    Expected: 2
+    Received: 3
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 15000ms
+      - waiting for locator('[data-ns-nucleus-notebook] tbody tr')
+        33 × locator resolved to 3 elements
+           - unexpected value "3"
+
+
+      639 |   await expect(page.locator('[data-ns-nucleus-name]')).toHaveText('Nitrogen-15');
+      640 |   await expect(page.locator('[data-ns-nucleus-mass]')).toHaveText('7 + 8 = 15');
+    > 641 |   await expect(page.locator('[data-ns-nucleus-notebook] tbody tr')).toHaveCount(2);
+          |                                                                     ^
+      642 |   await expect(page.locator('[data-ns-explain]')).toHaveCount(0);
+      643 |   await page.keyboard.press('Enter');
+      644 |   await expect(page.locator('[data-ns-nucleus-notebook] tbody tr')).toHaveCount(3);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:641:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-prepare\43-nuclearlab-experiment-s-4b3f6-r-Save-in-the-light-palette-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-prepare\43-nuclearlab-experiment-s-4b3f6-r-Save-in-the-light-palette-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-prepare\43-nuclearlab-experiment-s-4b3f6-r-Save-in-the-light-palette-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-prepare\43-nuclearlab-experiment-s-4b3f6-r-Save-in-the-light-palette-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-nucleus-prepare\43-nuclearlab-experiment-s-4b3f6-r-Save-in-the-light-palette-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:630:5 › nucleus builder preparation updates the picture while saved comparisons wait for Save in the light palette 
+(node:5640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-nucleus-prepare.js in place of stem_lab/stem_tool_nuclearlab.js

@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-29",
+  "scope": "String Art connection rules, construction guide, complete PNG/SVG/CSV exports, playback checkpoints, and responsive layout",
+  "sourcePublicParity": true,
+  "sourceSHA256": "57543E7BC0367E64DFB4B493033B98C0651B492D10D3E8164E7F28351EAC8494",
+  "tests": {
+    "verifiedFiles": 11,
+    "uniqueVerifiedTests": 97,
+    "newRegressionCases": 12,
+    "initialRun": {"passedFiles":3,"passedTests":32,"log":"string-initial-tests.log"},
+    "constructionRun": {"passedFiles":4,"passedTests":34,"log":"string-construction-tests.log"},
+    "accessibilityRun": {"passedFiles":5,"passedTests":35,"log":"string-accessibility-tests.log"},
+    "overlappingTests": 4,
+    "pool": "forks",
+    "failedTests": 0,
+    "repositoryTimeoutConfigurationChanged": false,
+    "fullRepositorySuiteRun": false
+  },
+  "browser": {
+    "passed": true,
+    "report": "string-browser-results.json",
+    "pageErrors": [],
+    "frameShapesChecked": ["circle","square","triangle","star"],
+    "svgPngMeanChannelDifferences": [0.4418447257646541,0.46197263430925783,0.5473512936261746,0.5088186077043112],
+    "downloadedCsvMatchesGuide": true,
+    "actualPngAndSvgDownloads": true,
+    "exportsKeepPausedPreview": true,
+    "desktopFocusPreviewPx": 760,
+    "phoneViewportWidthPx": 390,
+    "phonePreviewPx": 374,
+    "phonePreviewBeforeControls": true,
+    "phoneHorizontalOverflow": false,
+    "minimumButtonHeightPx": 44,
+    "pauseResumeFinish": true,
+    "speedPreservesCanvas": true,
+    "tabRoundTripRestoresProgress": true,
+    "screenshotsVisuallyReviewed": true
+  },
+  "syntaxCheck": "passed",
+  "diffWhitespaceCheck": "passed",
+  "deployed": false
+}

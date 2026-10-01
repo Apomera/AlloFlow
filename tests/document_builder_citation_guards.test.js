@@ -52,7 +52,8 @@ describe('anti-drift: the guards ship in source', () => {
     expect(ce).toContain('if (citNum > groundingChunks.length) return \'\';');
   });
   it('B8: line.line is guarded like line.action (no raw `${action} ${line.line}` interpolation)', () => {
-    expect(ce).toContain('const lineText = line.line ?');
+    // c8d9adc2d tightened the guard: only a non-blank string line is interpolated.
+    expect(ce).toContain("const lineText = typeof line.line === 'string' && line.line.trim() ? ` ${line.line}` : '';");
     expect(ce).toContain('${action}${lineText}');
     expect(ce).not.toContain('${action} ${line.line}');
   });

@@ -1,0 +1,339 @@
+{
+  "uncommitted": true,
+  "unitChecks": 1095,
+  "unitSuites": 17,
+  "newBehaviorChecks": 152,
+  "newLocalizationChecks": 23,
+  "browserJourneys": 4,
+  "accessibilityScans": 72,
+  "newAccessibilityScans": 18,
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "noHorizontalOverflow": true,
+  "accessibilityScanScope": "Study-sheet and activity components exercised by four browser journeys",
+  "minimumLargerTextPx": 17,
+  "printThemeChecks": 6,
+  "newPrintChecks": [
+    {
+      "theme": "light",
+      "metrics": {
+        "paper": {
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)"
+        },
+        "rows": [
+          "ribs",
+          "femur"
+        ],
+        "text": [
+          {
+            "text": "📄 ورقة دراستي للتشريح",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "البنى المسجّلة",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The ribs protect the chest. هذا شرح محفوظ للتركيب. My latest note connects protection with movement.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The femur transfers weight through the thigh.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "النشاط البدني: من القوة إلى تبادل الغازات",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "Exercise links muscle force with oxygen delivery. شرح النشاط محفوظ. My latest writing follows the chain across systems.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "Both situations depend on transport and exchange.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارة · تبريد وجيز",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The cooling response becomes smaller as the disturbance decreases.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        ],
+        "hidden": {
+          "workbench": "none",
+          "actions": "none"
+        }
+      }
+    },
+    {
+      "theme": "dark",
+      "metrics": {
+        "paper": {
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)"
+        },
+        "rows": [
+          "ribs",
+          "femur"
+        ],
+        "text": [
+          {
+            "text": "📄 ورقة دراستي للتشريح",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "البنى المسجّلة",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The ribs protect the chest. هذا شرح محفوظ للتركيب. My latest note connects protection with movement.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The femur transfers weight through the thigh.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "النشاط البدني: من القوة إلى تبادل الغازات",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "Exercise links muscle force with oxygen delivery. شرح النشاط محفوظ. My latest writing follows the chain across systems.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "Both situations depend on transport and exchange.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارة · تبريد وجيز",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The cooling response becomes smaller as the disturbance decreases.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        ],
+        "hidden": {
+          "workbench": "none",
+          "actions": "none"
+        }
+      }
+    },
+    {
+      "theme": "contrast",
+      "metrics": {
+        "paper": {
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)"
+        },
+        "rows": [
+          "ribs",
+          "femur"
+        ],
+        "text": [
+          {
+            "text": "📄 ورقة دراستي للتشريح",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "البنى المسجّلة",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The ribs protect the chest. هذا شرح محفوظ للتركيب. My latest note connects protection with movement.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The femur transfers weight through the thigh.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "النشاط البدني: من القوة إلى تبادل الغازات",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "Exercise links muscle force with oxygen delivery. شرح النشاط محفوظ. My latest writing follows the chain across systems.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "Both situations depend on transport and exchange.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارة · تبريد وجيز",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          },
+          {
+            "text": "The cooling response becomes smaller as the disturbance decreases.",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        ],
+        "hidden": {
+          "workbench": "none",
+          "actions": "none"
+        }
+      }
+    }
+  ],
+  "sourceMirrorsMatch": true,
+  "sourceSha256": "0df0664a7fe5c183e00a1ea5bfefb1aa427a078a4b0345456ba17482a5692425",
+  "sourceHashLineEndings": "LF",
+  "localeMirrorsMatch": true,
+  "translatedLabelsPerCatalog": 8,
+  "localeKeys": [
+    "study_return_rounds_title",
+    "study_return_resume",
+    "study_return_help",
+    "study_return_filter_scope",
+    "study_return_copy_working",
+    "study_return_copy_interrupted",
+    "study_return_reflections_only",
+    "study_return_structures_title"
+  ],
+  "localeLanguages": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "screenshots": [
+    "after-phone.png",
+    "after-dark.png",
+    "after-arabic.png",
+    "resumed-card-phone.png",
+    "reflection-only-phone.png"
+  ],
+  "screenshotSizes": [
+    {
+      "file": "after-phone.png",
+      "width": 386,
+      "height": 3453
+    },
+    {
+      "file": "after-dark.png",
+      "width": 386,
+      "height": 3453
+    },
+    {
+      "file": "after-arabic.png",
+      "width": 316,
+      "height": 4608
+    },
+    {
+      "file": "resumed-card-phone.png",
+      "width": 316,
+      "height": 1842
+    },
+    {
+      "file": "reflection-only-phone.png",
+      "width": 316,
+      "height": 3187
+    }
+  ],
+  "unitFiles": [
+    {
+      "file": "tests/anatomy_activity_writing_localization.test.js",
+      "checks": 15
+    },
+    {
+      "file": "tests/anatomy_comparison_navigation.test.js",
+      "checks": 62
+    },
+    {
+      "file": "tests/anatomy_homeostasis_flow.test.js",
+      "checks": 42
+    },
+    {
+      "file": "tests/anatomy_lab_science.test.js",
+      "checks": 155
+    },
+    {
+      "file": "tests/anatomy_learning_continuity.test.js",
+      "checks": 30
+    },
+    {
+      "file": "tests/anatomy_motion_editor_continuity.test.js",
+      "checks": 106
+    },
+    {
+      "file": "tests/anatomy_reflection_continuity.test.js",
+      "checks": 144
+    },
+    {
+      "file": "tests/anatomy_reflection_localization.test.js",
+      "checks": 9
+    },
+    {
+      "file": "tests/anatomy_search_continuity.test.js",
+      "checks": 56
+    },
+    {
+      "file": "tests/anatomy_study_clarity.test.js",
+      "checks": 23
+    },
+    {
+      "file": "tests/anatomy_study_localization.test.js",
+      "checks": 9
+    },
+    {
+      "file": "tests/anatomy_study_portfolio.test.js",
+      "checks": 16
+    },
+    {
+      "file": "tests/anatomy_study_record_localization.test.js",
+      "checks": 75
+    },
+    {
+      "file": "tests/anatomy_study_record_refinements.test.js",
+      "checks": 72
+    },
+    {
+      "file": "tests/anatomy_study_return_continuity.test.js",
+      "checks": 152
+    },
+    {
+      "file": "tests/anatomy_study_return_localization.test.js",
+      "checks": 23
+    },
+    {
+      "file": "tests/anatomy_tutor_draft_continuity.test.js",
+      "checks": 106
+    }
+  ],
+  "testTimeoutMs": 30000,
+  "hookTimeoutMs": 30000,
+  "screenshotsReviewed": true,
+  "staged": false,
+  "committed": false
+}

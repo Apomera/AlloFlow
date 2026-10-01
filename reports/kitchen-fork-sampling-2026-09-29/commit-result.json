@@ -1,0 +1,24 @@
+{
+  "shortSha": "df95488b9",
+  "paths": [
+    "stem_lab/kitchen_studio/recipe_lab.html",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html",
+    "stem_lab/kitchen_studio/recipe_lab.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js",
+    "stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "stem_lab/kitchen_studio/recipe_lab_sampling.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_sampling.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.css",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.css",
+    "stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "tests/kitchen_recipe_sampling.test.js",
+    "dev-tools/kitchen_recipe_sampling_qa.cjs",
+    "reports/kitchen-fork-sampling-2026-09-29/validation-summary.json"
+  ]
+}

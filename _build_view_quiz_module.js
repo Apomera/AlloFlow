@@ -18,6 +18,8 @@ const result = babel.transformSync(source, {
   babelrc: false,
   configFile: false,
   parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+  // compact:false: Babel's default 'auto' minifies once the source passes 500KB.
+  compact: false,
   generatorOpts: { jsescOption: { minimal: true } },
 });
 if (!result || !result.code) { console.error('Babel transform failed'); process.exit(1); }

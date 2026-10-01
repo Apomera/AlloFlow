@@ -1,0 +1,1039 @@
+{
+  "browser": "chromium",
+  "navigation": {
+    "Tab": "link",
+    "Alt+Tab": "before"
+  },
+  "tabKey": "Tab",
+  "creditLinkKeyboard": "Verified by native keyboard traversal",
+  "sourceSha256": "242d3a4ff4a7f30adb95551ac3573524b5b50c1075f667345f25f19b80af97b7",
+  "results": [
+    {
+      "test": {
+        "name": "desktop-long",
+        "width": 1280,
+        "height": 900,
+        "font": 16
+      },
+      "geometry": {
+        "left": 328.5,
+        "right": 648.5,
+        "top": 442,
+        "bottom": 884,
+        "width": 320,
+        "height": 442,
+        "scrollWidth": 316,
+        "clientWidth": 316,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 859,
+        "clientHeight": 438,
+        "viewport": {
+          "width": 1280,
+          "height": 900,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 44,
+          "visibleWidth": 44,
+          "height": 44,
+          "width": 44,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.890625,
+          "height": 44,
+          "width": 225.890625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 250.046875,
+          "height": 44,
+          "width": 250.046875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 44,
+          "visibleWidth": 255.46875,
+          "height": 44,
+          "width": 255.46875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.984375,
+          "height": 44,
+          "width": 225.984375,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 16,
+          "visibleWidth": 36.1875,
+          "height": 16,
+          "width": 36.1875,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 16,
+          "visibleWidth": 38.53125,
+          "height": 16,
+          "width": 38.53125,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "phone-long",
+        "width": 320,
+        "height": 568,
+        "font": 16
+      },
+      "geometry": {
+        "left": 8,
+        "right": 312,
+        "top": 276,
+        "bottom": 552,
+        "width": 304,
+        "height": 276,
+        "scrollWidth": 300,
+        "clientWidth": 300,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 885,
+        "clientHeight": 272,
+        "viewport": {
+          "width": 320,
+          "height": 568,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 44,
+          "visibleWidth": 44,
+          "height": 44,
+          "width": 44,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.890625,
+          "height": 44,
+          "width": 225.890625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 250.046875,
+          "height": 44,
+          "width": 250.046875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 44,
+          "visibleWidth": 255.46875,
+          "height": 44,
+          "width": 255.46875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.984375,
+          "height": 44,
+          "width": 225.984375,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 16,
+          "visibleWidth": 36.1875,
+          "height": 16,
+          "width": 36.1875,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 16,
+          "visibleWidth": 38.53125,
+          "height": 16,
+          "width": 38.53125,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "phone-large-text",
+        "width": 390,
+        "height": 844,
+        "font": 32
+      },
+      "geometry": {
+        "left": 8,
+        "right": 382,
+        "top": 8,
+        "bottom": 836,
+        "width": 374,
+        "height": 828,
+        "scrollWidth": 370,
+        "clientWidth": 370,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 2597,
+        "clientHeight": 824,
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 88,
+          "visibleWidth": 88,
+          "height": 88,
+          "width": 88,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 88,
+          "visibleWidth": 306,
+          "height": 88,
+          "width": 306,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 88,
+          "visibleWidth": 306,
+          "height": 88,
+          "width": 306,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 88,
+          "visibleWidth": 306,
+          "height": 88,
+          "width": 306,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 88,
+          "visibleWidth": 306,
+          "height": 88,
+          "width": 306,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 32,
+          "visibleWidth": 72.375,
+          "height": 32,
+          "width": 72.375,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 32,
+          "visibleWidth": 77.0625,
+          "height": 32,
+          "width": 77.0625,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "landscape",
+        "width": 844,
+        "height": 390,
+        "font": 16
+      },
+      "geometry": {
+        "left": 110.5,
+        "right": 430.5,
+        "top": 8,
+        "bottom": 382,
+        "width": 320,
+        "height": 374,
+        "scrollWidth": 316,
+        "clientWidth": 316,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 859,
+        "clientHeight": 370,
+        "viewport": {
+          "width": 844,
+          "height": 390,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 44,
+          "visibleWidth": 44,
+          "height": 44,
+          "width": 44,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.890625,
+          "height": 44,
+          "width": 225.890625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 250.046875,
+          "height": 44,
+          "width": 250.046875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 44,
+          "visibleWidth": 255.46875,
+          "height": 44,
+          "width": 255.46875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.984375,
+          "height": 44,
+          "width": 225.984375,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 16,
+          "visibleWidth": 36.1875,
+          "height": 16,
+          "width": 36.1875,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 16,
+          "visibleWidth": 38.53125,
+          "height": 16,
+          "width": 38.53125,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "landscape-large-text",
+        "width": 568,
+        "height": 320,
+        "font": 32
+      },
+      "geometry": {
+        "left": 8,
+        "right": 560,
+        "top": 8,
+        "bottom": 312,
+        "width": 552,
+        "height": 304,
+        "scrollWidth": 548,
+        "clientWidth": 548,
+        "firstExplanationLineVisible": false,
+        "scrollHeight": 1905,
+        "clientHeight": 300,
+        "viewport": {
+          "width": 568,
+          "height": 320,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 88,
+          "visibleWidth": 88,
+          "height": 88,
+          "width": 88,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 88,
+          "visibleWidth": 449.765625,
+          "height": 88,
+          "width": 449.765625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 88,
+          "visibleWidth": 484,
+          "height": 88,
+          "width": 484,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 88,
+          "visibleWidth": 484,
+          "height": 88,
+          "width": 484,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 88,
+          "visibleWidth": 451.953125,
+          "height": 88,
+          "width": 451.953125,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 32,
+          "visibleWidth": 72.375,
+          "height": 32,
+          "width": 72.375,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 32,
+          "visibleWidth": 77.0625,
+          "height": 32,
+          "width": 77.0625,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "zoom-400-equivalent",
+        "width": 320,
+        "height": 225,
+        "font": 16
+      },
+      "geometry": {
+        "left": 8,
+        "right": 312,
+        "top": 8,
+        "bottom": 217,
+        "width": 304,
+        "height": 209,
+        "scrollWidth": 300,
+        "clientWidth": 300,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 885,
+        "clientHeight": 205,
+        "viewport": {
+          "width": 320,
+          "height": 225,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 44,
+          "visibleWidth": 44,
+          "height": 44,
+          "width": 44,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.890625,
+          "height": 44,
+          "width": 225.890625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 250.046875,
+          "height": 44,
+          "width": 250.046875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 44,
+          "visibleWidth": 255.46875,
+          "height": 44,
+          "width": 255.46875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.984375,
+          "height": 44,
+          "width": 225.984375,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 16,
+          "visibleWidth": 36.1875,
+          "height": 16,
+          "width": 36.1875,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 16,
+          "visibleWidth": 38.53125,
+          "height": 16,
+          "width": 38.53125,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "arabic-phone",
+        "width": 390,
+        "height": 844,
+        "font": 16,
+        "arabic": true
+      },
+      "geometry": {
+        "left": 62,
+        "right": 382,
+        "top": 414,
+        "bottom": 828,
+        "width": 320,
+        "height": 414,
+        "scrollWidth": 316,
+        "clientWidth": 316,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 885,
+        "clientHeight": 410,
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 44,
+          "visibleWidth": 44,
+          "height": 44,
+          "width": 44,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.890625,
+          "height": 44,
+          "width": 225.890625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 44,
+          "visibleWidth": 250.046875,
+          "height": 44,
+          "width": 250.046875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 44,
+          "visibleWidth": 255.46875,
+          "height": 44,
+          "width": 255.46875,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 44,
+          "visibleWidth": 225.984375,
+          "height": 44,
+          "width": 225.984375,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 16,
+          "visibleWidth": 36.1875,
+          "height": 16,
+          "width": 36.1875,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 16,
+          "visibleWidth": 38.53125,
+          "height": 16,
+          "width": 38.53125,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "arabic-landscape-large-text",
+        "width": 568,
+        "height": 320,
+        "font": 32,
+        "arabic": true
+      },
+      "geometry": {
+        "left": 8,
+        "right": 560,
+        "top": 8,
+        "bottom": 312,
+        "width": 552,
+        "height": 304,
+        "scrollWidth": 548,
+        "clientWidth": 548,
+        "firstExplanationLineVisible": false,
+        "scrollHeight": 1905,
+        "clientHeight": 300,
+        "viewport": {
+          "width": 568,
+          "height": 320,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 88,
+          "visibleWidth": 88,
+          "height": 88,
+          "width": 88,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 88,
+          "visibleWidth": 449.765625,
+          "height": 88,
+          "width": 449.765625,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 88,
+          "visibleWidth": 484,
+          "height": 88,
+          "width": 484,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 88,
+          "visibleWidth": 484,
+          "height": 88,
+          "width": 484,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 88,
+          "visibleWidth": 451.953125,
+          "height": 88,
+          "width": 451.953125,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 32,
+          "visibleWidth": 72.375,
+          "height": 32,
+          "width": 72.375,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 32,
+          "visibleWidth": 77.0625,
+          "height": 32,
+          "width": 77.0625,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "test": {
+        "name": "mixed-long-token",
+        "width": 320,
+        "height": 568,
+        "font": 32,
+        "arabic": true,
+        "longToken": true
+      },
+      "geometry": {
+        "left": 8,
+        "right": 312,
+        "top": 8,
+        "bottom": 560,
+        "width": 304,
+        "height": 552,
+        "scrollWidth": 300,
+        "clientWidth": 300,
+        "firstExplanationLineVisible": true,
+        "scrollHeight": 4101,
+        "clientHeight": 548,
+        "viewport": {
+          "width": 320,
+          "height": 568,
+          "left": 0,
+          "top": 0
+        }
+      },
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "name": "Close",
+          "visibleHeight": 88,
+          "visibleWidth": 88,
+          "height": 88,
+          "width": 88,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Das ausgewählte Wort vorlesen",
+          "visibleHeight": 122,
+          "visibleWidth": 236,
+          "height": 122,
+          "width": 236,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Die vorbereitete Erklärung vorlesen",
+          "visibleHeight": 162,
+          "visibleWidth": 236,
+          "height": 162,
+          "width": 236,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Weitere Informationen über dieses Wort",
+          "visibleHeight": 120,
+          "visibleWidth": 236,
+          "height": 120,
+          "width": 236,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Alle vorbereiteten Worterklärungen",
+          "visibleHeight": 88,
+          "visibleWidth": 236,
+          "height": 88,
+          "width": 236,
+          "outline": "solid",
+          "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgb(79, 70, 229) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "A",
+          "name": "Source",
+          "visibleHeight": 32,
+          "visibleWidth": 72.375,
+          "height": 32,
+          "width": 72.375,
+          "outline": "auto",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "A",
+          "name": "License",
+          "visibleHeight": 32,
+          "visibleWidth": 77.0625,
+          "height": 32,
+          "width": 77.0625,
+          "outline": "auto",
+          "boxShadow": "none"
+        }
+      ],
+      "creditLinks": [
+        {
+          "name": "Source",
+          "href": "https://mulberrysymbols.org",
+          "focusedAndVisible": true
+        },
+        {
+          "name": "License",
+          "href": "https://creativecommons.org/licenses/by-sa/4.0/",
+          "focusedAndVisible": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "name": "touch-arabic-rotation",
+      "landscape": {
+        "top": 8,
+        "maxHeight": "374px"
+      },
+      "portrait": {
+        "top": 414,
+        "maxHeight": "414px"
+      },
+      "passed": true
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "limits": "Production reader CSS fixture with mock speech/AI callbacks. The 320x225 viewport models 1280x900 at 400% reflow; it is not an actual browser toolbar zoom operation. Doubled root font is a separate text-size check. WebKit is not a Safari device/AT certification."
+}

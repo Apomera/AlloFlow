@@ -1,0 +1,42 @@
+[
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 5
+  },
+  {
+    "file": "tests/reader_render_cost.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/immersive_reader_word_timing_source.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader-performance/README.md",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader-performance/fixtures.cjs",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader-performance/instrumentation.js",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader-performance/harness.jsx",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader-performance/run.cjs",
+    "existed": false,
+    "conflicts": 0
+  }
+]

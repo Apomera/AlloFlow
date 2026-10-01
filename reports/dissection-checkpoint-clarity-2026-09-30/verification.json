@@ -1,0 +1,136 @@
+{
+  "sourceSha256": "d637e7adcf315e026a2da7d4cc4d95a432c590cfdb2d9661e0cb21db5e3adf8d",
+  "mirrorEqual": true,
+  "javascriptSyntax": "pass",
+  "scopedDiffWhitespace": "pass",
+  "specWhitespace": "pass",
+  "browser": {
+    "verifiedScenarios": 11,
+    "runs": [
+      {
+        "file": "browser-final-results.json",
+        "stats": {
+          "startTime": "2026-09-30T23:37:26.293Z",
+          "duration": 846504.777,
+          "expected": 9,
+          "skipped": 0,
+          "unexpected": 2,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "browser-recheck-results.json",
+        "stats": {
+          "startTime": "2026-09-30T23:54:12.520Z",
+          "duration": 95167.38,
+          "expected": 2,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "browser-embedded-results.json",
+        "stats": {
+          "startTime": "2026-09-30T23:57:14.454Z",
+          "duration": 39820.551,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "browser-focus-fixed-results.json",
+        "stats": {
+          "startTime": "2026-10-01T00:19:26.400Z",
+          "duration": 39343.475,
+          "expected": 2,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    ],
+    "scenarios": {
+      "chromium|checkpoint phone keeps readable answers and original names": "passed",
+      "chromium|checkpoint tablet keeps readable answers and original names": "passed",
+      "chromium|checkpoint embedded-large keeps readable answers and original names": "passed",
+      "chromium|checkpoint desktop keeps readable answers and original names": "passed",
+      "chromium|checkpoint forced-colors keeps readable answers and original names": "passed",
+      "chromium|reflection is readable and verifies only the explicit explanation": "passed",
+      "chromium|keyboard browsing, coaching and explicit confirmation preserve specimen progress": "passed",
+      "chromium|confirmed plan shortcuts focus the required instrument and specimen": "passed",
+      "chromium|guided observation browsing and coaching require explicit evidence confirmation": "passed",
+      "chromium|quiz keeps planning checkpoints hidden": "passed",
+      "chromium|practical keeps planning checkpoints hidden": "passed"
+    }
+  },
+  "regression": {
+    "file": "unit-focus-results.json",
+    "total": 258,
+    "passed": 258,
+    "failed": 0
+  },
+  "accessibility": [
+    {
+      "file": "axe-coaching.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-desktop.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-embedded-large.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-forced-colors.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-guided.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-perform.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-phone.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-reflection.json",
+      "violations": 0
+    },
+    {
+      "file": "axe-tablet.json",
+      "violations": 0
+    }
+  ],
+  "screenshots": [
+    "after-coaching.png",
+    "after-desktop.png",
+    "after-embedded-large.png",
+    "after-forced-colors.png",
+    "after-guided.png",
+    "after-perform.png",
+    "after-phone.png",
+    "after-reflection.png",
+    "after-tablet.png",
+    "before-desktop.png",
+    "before-embedded-large.png",
+    "before-forced-colors.png",
+    "before-phone.png",
+    "before-reflection.png",
+    "before-tablet.png",
+    "focus-desktop.png",
+    "focus-embedded-large.png",
+    "focus-forced-colors.png",
+    "focus-phone.png",
+    "focus-tablet.png"
+  ],
+  "committed": false
+}

@@ -55,6 +55,8 @@ try {
   RDS = require(path.join(MODULES, 'react-dom', 'server'));
 } catch (e) {
   console.warn('[check_sel_a11y] SKIPPED - React/jsdom not found at ' + MODULES + ' (' + e.message + ')');
+  // The verify.yml gate job installs these deps and sets ALLOFLOW_REQUIRE_RENDER_DEPS=1, so there a skip would be a gate passing without running.
+  if (process.env.ALLOFLOW_REQUIRE_RENDER_DEPS === '1') { console.error('[check_sel_a11y] FAILED: ALLOFLOW_REQUIRE_RENDER_DEPS=1 but React/jsdom did not load from desktop/web-app/node_modules'); process.exit(1); }
   process.exit(0);
 }
 

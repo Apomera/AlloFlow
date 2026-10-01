@@ -1,0 +1,283 @@
+ M AGENT_HANDOFF.md
+ M AlloFlowANTI.txt
+ M _build_export_module.js
+ M _build_quickstart_module.js
+ M _build_view_simplified_module.js
+ M _build_view_storybook_export_modal_module.js
+ M ai_backend_module.js
+ M content_engine_module.js
+ M content_engine_source.jsx
+ M desktop/web-app/public/ai_backend_module.js
+ M desktop/web-app/public/content_engine_module.js
+ M desktop/web-app/public/dictionary_loader.js
+ M desktop/web-app/public/export_module.js
+ M desktop/web-app/public/generate_dispatcher_module.js
+ M desktop/web-app/public/generation_helpers_module.js
+ M desktop/web-app/public/host_handlers_module.js
+ M desktop/web-app/public/immersive_reader_module.js
+ M desktop/web-app/public/karaoke_audio_store_module.js
+ M desktop/web-app/public/lang/arabic.js
+ M desktop/web-app/public/lang/chinese_simplified.js
+ M desktop/web-app/public/lang/spanish_castilian.js
+ M desktop/web-app/public/lang/spanish_latin_america.js
+ M desktop/web-app/public/lang/thai.js
+ M desktop/web-app/public/live_aac_module.js
+ M desktop/web-app/public/own_sources_module.js
+ M desktop/web-app/public/phase_n_misc_helpers_module.js
+ M desktop/web-app/public/phase_o_misc_handlers_module.js
+ M desktop/web-app/public/quickstart_module.js
+ M desktop/web-app/public/read_aloud_artifact_audio_module.js
+ M desktop/web-app/public/read_aloud_audio_service_module.js
+ M desktop/web-app/public/shared_activity_module.js
+ M desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html
+ M desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js
+ M desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js
+ M desktop/web-app/public/stem_lab/stem_lumen_evidence.js
+ M desktop/web-app/public/stem_lab/stem_tool_evolab.js
+ M desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js
+ M desktop/web-app/public/text_pipeline_helpers_module.js
+ M desktop/web-app/public/ui_strings.js
+ M desktop/web-app/public/utils_pure_module.js
+ M desktop/web-app/public/view_live_session_dock_module.js
+ M desktop/web-app/public/view_misc_panels_module.js
+ M desktop/web-app/public/view_share_session_surfaces_module.js
+ M desktop/web-app/public/view_sidebar_panels_module.js
+ M desktop/web-app/public/view_simplified_module.js
+ M desktop/web-app/public/view_storybook_export_modal_module.js
+ M desktop/web-app/src/AlloFlowANTI.txt
+ M desktop/web-app/src/App.jsx
+ M desktop/web-app/src/content_engine_source.jsx
+ M dev-tools/check_search_queries.cjs
+ M dev-tools/host_handlers_wave3_manifest.json
+ M dictionary_loader.js
+ M export_module.js
+ M export_source.jsx
+ M generate_dispatcher_module.js
+ M generate_dispatcher_source.jsx
+ M generation_helpers_module.js
+ M generation_helpers_source.jsx
+ M host_handlers_module.js
+ M host_handlers_source.jsx
+ M immersive_reader_module.js
+ M immersive_reader_source.jsx
+ M karaoke_audio_store_module.js
+ M lang/arabic.js
+ M lang/chinese_simplified.js
+ M lang/spanish_castilian.js
+ M lang/spanish_latin_america.js
+ M lang/thai.js
+ M live_aac_module.js
+ M live_aac_source.jsx
+ M own_sources_module.js
+ M phase_n_misc_helpers_module.js
+ M phase_n_misc_helpers_source.jsx
+ M phase_o_misc_handlers_module.js
+ M phase_o_misc_handlers_source.jsx
+ M quickstart_module.js
+ M quickstart_source.jsx
+ M read_aloud_artifact_audio_module.js
+ M read_aloud_artifact_audio_source.jsx
+ M read_aloud_audio_service_module.js
+ M read_aloud_audio_service_source.jsx
+ M reports/own-source-research-fix-2026-09-25/browser-check.cjs
+ M reports/own-source-research-fix-2026-09-25/excluded-document.png
+ M reports/own-source-research-fix-2026-09-25/tests.json
+ M shared_activity_module.js
+ M shared_activity_source.jsx
+ M stem_lab/kitchen_studio/recipe_lab.html
+ M stem_lab/kitchen_studio/recipe_lab.js
+ M stem_lab/kitchen_studio/recipe_lab_engine.js
+ M stem_lab/stem_lumen_evidence.js
+ M stem_lab/stem_tool_evolab.js
+ M stem_lab/stem_tool_raptorhunt.js
+ M tests/adapted_reading_enhancements.test.js
+ M tests/adapted_reading_popup_read_aloud.test.js
+ M tests/adapted_word_help_ui.test.js
+ M tests/adventure_storybook_read_aloud_export.test.js
+ M tests/edit_audio_ui.test.js
+ M tests/free_var_crashes_2026_09_14.test.js
+ M tests/glossary_resource_lifecycle.test.js
+ M tests/immersive_reader_word_timing_source.test.js
+ M tests/leveled_text_karaoke_persistence_e2e.test.js
+ M tests/mailbox_image_delivery.test.js
+ M tests/novak_delivery_preview.test.js
+ M tests/original_reader_markdown.test.js
+ M tests/own_source_controls_load_timing.test.js
+ M tests/own_source_grounding.test.js
+ M tests/own_source_rag_and_citation_tokens.test.js
+ M tests/own_source_toggle_ui.test.js
+ M tests/own_sources_import.test.js
+ M tests/phase_n_formatted_links_a11y.test.js
+ M tests/quickstart_wizard_render.test.js
+ M tests/read_aloud_audio_service.test.js
+ M tests/reader_display_menu.test.js
+ M tests/reader_keyboard_a11y.test.js
+ M tests/reader_layout_quick_wins.test.js
+ M tests/reader_place_review_adapt.test.js
+ M tests/reader_render_cost.test.js
+ M tests/reader_sentence_links.test.js
+ M tests/reader_sentence_numbering.test.js
+ M tests/revision_target.test.js
+ M tests/student_ai_hidden_host_guard.test.js
+ M tests/text_complexity_freshness.test.js
+ M tests/view_simplified_dialog_a11y.test.js
+ M text_pipeline_helpers_module.js
+ M text_pipeline_helpers_source.jsx
+ M ui_strings.js
+ M utils_pure_module.js
+ M utils_pure_source.jsx
+ M view_live_session_dock_module.js
+ M view_live_session_dock_source.jsx
+ M view_misc_panels_module.js
+ M view_misc_panels_source.jsx
+ M view_share_session_surfaces_module.js
+ M view_share_session_surfaces_source.jsx
+ M view_sidebar_panels_module.js
+ M view_sidebar_panels_source.jsx
+ M view_simplified_module.js
+ M view_simplified_source.jsx
+ M view_storybook_export_modal_module.js
+ M view_storybook_export_modal_source.jsx
+?? desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.css
+?? desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.js
+?? desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands_ui.js
+?? desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_inspection.css
+?? desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_inspection.js
+?? desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js
+?? dev-tools/check_offline_media_recovery.cjs
+?? dev-tools/check_offline_storybook_recovery.cjs
+?? dev-tools/evolab_island_preview.cjs
+?? dev-tools/i18n/apply_reader_contract_locales.cjs
+?? dev-tools/kitchen_recipe_hands_qa.cjs
+?? dev-tools/kitchen_recipe_inspection_qa.cjs
+?? dev-tools/kitchen_recipe_scene_edges_qa.cjs
+?? dev-tools/kitchen_recipe_scene_qa.cjs
+?? dev-tools/prepare_reading_lookup_adapter.cjs
+?? dev-tools/prepare_reading_lookup_enhancements.cjs
+?? dev-tools/prepare_reading_lookup_followup.cjs
+?? dev-tools/prepare_reading_lookup_resilience.cjs
+?? dev-tools/reader-performance/
+?? dev-tools/reader_narration_browser.cjs
+?? dev-tools/reader_narration_recovery_browser.cjs
+?? dev-tools/reader_overlay_browser.cjs
+?? dev-tools/reader_route_browser.cjs
+?? dev-tools/register_evolab_island_strings.cjs
+?? dev-tools/verify_reading_lookup_resilience.cjs
+?? docs/reader-localization-contract.md
+?? docs/reader-place-persistence-contract.md
+?? docs/reader-recovery-localization.md
+?? reader_place_store.js
+?? reader_support_drafts.js
+?? reports/adapted-reader-integration-01-2026-09-26-1730/
+?? reports/cephalopod-hunter-deep-review-2026-09-26/
+?? reports/connected-delivery-track13/
+?? reports/evolab-living-island/
+?? reports/kitchen-hands-on-2026-09-26/
+?? reports/kitchen-inspection-2026-09-26/
+?? reports/kitchen-spatial-2026-09-26/
+?? reports/lookup-recovery/
+?? reports/offline-media-recovery/
+?? reports/own-source-research-fix-2026-09-25/README.md
+?? reports/own-source-research-fix-2026-09-25/final-followup-tests.json
+?? reports/own-source-research-improvements-2026-09-26/
+?? reports/own-source-research-reliability-2026-09-26/
+?? reports/raptor-3d-observations-2026-09-26/
+?? reports/raptor-3d-study-2026-09-26/
+?? reports/raptor-engagement-2026-09-26/
+?? reports/reader-accessibility-track18-2026-09-26/
+?? reports/reader-accessibility-track18-followup-2026-09-26/
+?? reports/reader-edit-vocabulary-followup-2026-09-26/
+?? reports/reader-listen-along-enhancement-2026-09-26/
+?? reports/reader-localization-2026-09-26/
+?? reports/reader-localization-preview-2026-09-26/
+?? reports/reader-localization-recovery-2026-09-26/
+?? reports/reader-narration-access-track18-2026-09-26/
+?? reports/reader-narration-recovery-track18-2026-09-26/
+?? reports/reader-place-copy-controls/
+?? reports/reader-place-lifecycle-enhancement/
+?? reports/reader-place-recovery-enhancement/
+?? reports/reader-preview-followup/
+?? reports/reader-preview-locale-layout/
+?? reports/reader-recovery-layout/
+?? reports/reader-route-a11y/
+?? reports/source-research-phase-regression/
+?? stem_lab/kitchen_studio/recipe_lab_hands.css
+?? stem_lab/kitchen_studio/recipe_lab_hands.js
+?? stem_lab/kitchen_studio/recipe_lab_hands_ui.js
+?? stem_lab/kitchen_studio/recipe_lab_inspection.css
+?? stem_lab/kitchen_studio/recipe_lab_inspection.js
+?? stem_lab/kitchen_studio/recipe_lab_scene.js
+?? tests/bilingual_revision_transaction.test.js
+?? tests/browser/
+?? tests/connected_delivery_followup.test.js
+?? tests/connected_delivery_host_delta.test.js
+?? tests/connected_reading_delivery.test.js
+?? tests/dictionary_lookup_cancellation.test.js
+?? tests/document_citation_adaptation.test.js
+?? tests/document_citation_renderer_transform.test.js
+?? tests/e2e/evolab-living-island.spec.ts
+?? tests/e2e/raptor-investigations.spec.ts
+?? tests/e2e/raptor-study-mode.spec.ts
+?? tests/e2e/raptor-study-observations.spec.ts
+?? tests/evolab_living_island.test.js
+?? tests/fixtures/reader_locales.json
+?? tests/fixtures/reader_preview_locales.json
+?? tests/fixtures/reader_recovery_locales.json
+?? tests/helpers/reader_locale_harness.js
+?? tests/helpers/reader_preview_locale_harness.js
+?? tests/helpers/reader_recovery_locale_harness.js
+?? tests/immersive_preference_persistence.test.js
+?? tests/karaoke_audio_store_notifications.test.js
+?? tests/kitchen_recipe_hands.test.js
+?? tests/kitchen_recipe_inspection.test.js
+?? tests/kitchen_recipe_spatial.test.js
+?? tests/lumen_storage_load_state.test.js
+?? tests/lumen_storage_recovery.test.js
+?? tests/offline_media_reader_integration.test.js
+?? tests/offline_media_recovery.test.js
+?? tests/own_source_documents_only.test.js
+?? tests/own_source_evidence_inspector.test.js
+?? tests/own_source_lesson_controls.test.js
+?? tests/own_source_library_recovery_controls.test.js
+?? tests/own_source_sidebar_prop_chain.test.js
+?? tests/own_source_workspace_settings.test.js
+?? tests/own_sources_duplicates_selection.test.js
+?? tests/own_sources_mutation_recovery.test.js
+?? tests/own_sources_read_recovery.test.js
+?? tests/prepared_word_help_regressions.test.js
+?? tests/preserved_vocabulary.test.js
+?? tests/preserved_vocabulary_enhancements.test.js
+?? tests/read_aloud_recovery.test.js
+?? tests/reader_audio_readiness.test.js
+?? tests/reader_language_contract_handoff.test.js
+?? tests/reader_listen_along_access.test.js
+?? tests/reader_locale_catalogs.test.js
+?? tests/reader_locale_layout.test.js
+?? tests/reader_locale_runtime.test.js
+?? tests/reader_narration_access.test.js
+?? tests/reader_narration_recovery.test.js
+?? tests/reader_place_lifecycle.test.js
+?? tests/reader_place_persistence.test.js
+?? tests/reader_preview_host_boundary.test.js
+?? tests/reader_preview_isolation.test.js
+?? tests/reader_preview_locale_layout.test.js
+?? tests/reader_recovery_locale_catalogs.test.js
+?? tests/reader_recovery_locale_layout.test.js
+?? tests/reader_recovery_locales.test.js
+?? tests/reader_route_a11y.test.js
+?? tests/reader_terms_locales.test.js
+?? tests/reading_lookup_candidate.js
+?? tests/reading_lookup_popup_adapter.test.js
+?? tests/reading_lookup_recovery.test.js
+?? tests/reading_support_draft_host.test.js
+?? tests/reading_support_draft_transitions.test.js
+?? tests/reading_word_image_ownership.test.js
+?? tests/source_research_phase.test.js
+?? tests/source_research_query_transport.test.js
+?? tests/track07-browser-acceptance.cjs
+?? tests/track07-browser-fixture.js
+?? track07-browser-results.json
+?? track07-enhancement-browser-results.json
+?? translations/reader-contract-locales.json
+?? translations/reader-recovery-locales.json
+?? translations/reader-terms-locales.json

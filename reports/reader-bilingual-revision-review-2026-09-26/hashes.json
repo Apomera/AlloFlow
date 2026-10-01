@@ -1,0 +1,18 @@
+{
+  "base/content_engine_source.jsx": "b541b4d6e29c097f8955314acb87f82344e62f6ce2c4418879ddc4275d6edee8",
+  "candidate/content_engine_source.jsx": "44662897ee617e38af97b6cf3e936d3b17e1b19a2165296718307e4f8bbb7fd9",
+  "base/view_simplified_source.jsx": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+  "candidate/view_simplified_source.jsx": "f9b8c7412407d4470704a72da9294028ce940aa7d956c3e260e18a771a8408cd",
+  "base/reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+  "base/reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+  "base/_build_simple_iife_module.js": "c7db9787c6e43b64a02a20481130ece19ea017f6260e6b59609e14834a3dfbc0",
+  "candidate/view_simplified_module.js": "3dc1c990ab69fe14f90e0d6c091ab36ee0ea4b1dc11c383578f04de42ce0ac6c",
+  "candidate/content_engine_module.js": "d0e905192ce328ea04f3eec1895bc293d0f43a8b8ee9b8d598a573f3b38e96c8",
+  "candidate/tests/reader_bilingual_revision_review.test.js": "b210cb1fc1f3c4abab79ca7d5b10eb6a75edae6107f14c6f3dbfb97815024eb7",
+  "bilingual_revision_review.test.js": "47805538ed553e639d40476906d8df6e385d40518ea8ddc1c3ad1c52a17793f1",
+  "regressions/bilingual_revision_transaction.test.js": "d7129d6ac97a2405d6de4a69dff8689c4855b8efd5ae272cde2ca392a9a58b84",
+  "build.cjs": "5a3bb8c8bab996cbc5e0b93a957f71d04b6a0eac7ef30e52f56b0634f6fc3bc1",
+  "vitest.config.mjs": "d14a7921ece16995fef89b4c9f191528ae75529ed045fdd3c520f84770ef2ce9",
+  "strings.json": "25c59a8dacdb140b654bee05c567802a8b16a7bf8cd93a6918ccd3382804708e",
+  "bilingual-review-source.patch": "81af9f05ede9044ee18b9cf2272270f2d1fa631ca6ae163b991f5f110b173275"
+}

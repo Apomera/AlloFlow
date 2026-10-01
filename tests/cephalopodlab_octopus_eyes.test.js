@@ -23,7 +23,9 @@ function points(mesh){mesh.updateWorldMatrix(true,false);return Array.from({leng
 // Pass sixteen excludes only the four approved nautilus eye subtrees; other species and anatomy remain protected.
 function insideNautilusEye(o){let eye=false;for(let p=o;p;p=p.parent){if(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight'].includes(p.name))eye=true;if(p.userData.species==='nautilus')return eye;}return false;}
 function insideNautilusShell(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
-function fingerprint(animal,excludeEyes){const rows=meshes(animal).filter(o=>(!excludeEyes||!eyeNames.has(o.name))&&!insideNautilusShell(o)&&!insideNautilusEye(o)).map(o=>[o.name,Object.entries(o.geometry.attributes).map(([name,attr])=>[name,Array.from(attr.array)]),o.geometry.index?Array.from(o.geometry.index.array):null,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.isInstancedMesh?Array.from(o.instanceMatrix.array):null]);return createHash('sha256').update(JSON.stringify(rows)).digest('hex');}
+// Pass twenty-three excludes only Humboldt's intentionally replaced siphon subtree.
+function insideSquidSiphon(o){let siphon=false;for(let p=o;p;p=p.parent){if(p.name==='cl-siphon')siphon=true;if(p.userData.species==='humboldtSquid')return siphon;}return false;}
+function fingerprint(animal,excludeEyes){const rows=meshes(animal).filter(o=>(!excludeEyes||!eyeNames.has(o.name))&&!insideNautilusShell(o)&&!insideNautilusEye(o)&&!insideSquidSiphon(o)).map(o=>[o.name,Object.entries(o.geometry.attributes).map(([name,attr])=>[name,Array.from(attr.array)]),o.geometry.index?Array.from(o.geometry.index.array):null,o.position.toArray(),o.quaternion.toArray(),o.scale.toArray(),o.isInstancedMesh?Array.from(o.instanceMatrix.array):null]);return createHash('sha256').update(JSON.stringify(rows)).digest('hex');}
 afterEach(()=>{for(const animal of allocated.splice(0)){const geometries=new Set(),materials=new Set();meshes(animal).forEach(o=>{geometries.add(o.geometry);materials.add(o.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());}});
 
 describe('Benthic octopus curved eye surfaces',()=>{
@@ -100,7 +102,7 @@ describe('Benthic octopus curved eye surfaces',()=>{
     // Captured before pass-thirteen integration; exclusions are only the five named eye surfaces/groups.
     const baseline={
       commonOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',blueRinged:'ea6f4965d8a861670c745ce8917aace25b764808cb51a14e8c6305841b367adc',mimicOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',giantPacific:'041016f41d929ad094747fabd9fe30a2b5b94ce4b7b2a7551f36aa155777ed0f',caribReef:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',coconutOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',
-      humboldtSquid:'584d69c9bd479e1645bb017557896d69c4d23b13bbf65c2d6f6f4e0db632f246',nautilus:'3223bcf0ce8d008ac1baf5492a1896e7106e039c25f12313c922d9f0d4a5d85d',cuttlefish:'a0d4bb51fae780771b4dcf1c7c7890cd3c0c7a8e796e9d95ad739eb5e15c8b31',bobtailSquid:'28d6ae5749d749c3d82f9490dab425630b9fd431aa263e213b582433a8761c81',dumboOcto:'bf6090a22eae7b8421c7c0f67107978d4cccd199dd9923d17e12a9fb6fdae55b',vampireSquid:'7bb9a0fb32f9b95dfb53cc7c6664924bc8303155b12cef82870c00c5faaeb232'
+      humboldtSquid:'651dbdf184c597b08a810f7e3b133c34f4c10fc70470f47a180bce9ca6e9b377',nautilus:'3223bcf0ce8d008ac1baf5492a1896e7106e039c25f12313c922d9f0d4a5d85d',cuttlefish:'a0d4bb51fae780771b4dcf1c7c7890cd3c0c7a8e796e9d95ad739eb5e15c8b31',bobtailSquid:'28d6ae5749d749c3d82f9490dab425630b9fd431aa263e213b582433a8761c81',dumboOcto:'bf6090a22eae7b8421c7c0f67107978d4cccd199dd9923d17e12a9fb6fdae55b',vampireSquid:'7bb9a0fb32f9b95dfb53cc7c6664924bc8303155b12cef82870c00c5faaeb232'
     };
     for(const [id,expected]of Object.entries(baseline))expect(fingerprint(rig(id),ids.includes(id)),id).toBe(expected);
   });

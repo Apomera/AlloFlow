@@ -397,7 +397,10 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
   expect([stageFlow.readoutPosition, stageFlow.keyPosition, stageFlow.tipPosition]).toEqual(['static', 'static', 'static']);
   expect(stageFlow.canvasLayout).toBe('compact');
   expect(stageFlow.canvas.height).toBeGreaterThanOrEqual(339);
-  expect(stageFlow.rail.height).toBeLessThan(230);
+  // The readable distance/speed tiles add vertical room below the map. Keep the
+  // supporting console bounded and shorter than the canvas, with no overlap.
+  expect(stageFlow.rail.height).toBeLessThan(300);
+  expect(stageFlow.rail.height).toBeLessThan(stageFlow.canvas.height);
   expect(Math.abs(stageFlow.logicalWidth - stageFlow.canvas.width)).toBeLessThanOrEqual(2);
   expect(Math.abs(stageFlow.logicalHeight - stageFlow.canvas.height)).toBeLessThanOrEqual(2);
   expect(stageFlow.backingWidth / stageFlow.logicalWidth).toBeCloseTo(stageFlow.dpr, 1);
@@ -1248,6 +1251,22 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
     },
   }, undefined, { expectCanvas: false });
 
+  const expectStageMetricSync = async () => {
+    await expect.poll(() => page.evaluate(() => {
+      const metricIds = ['orrery-stage-distance-value', 'orrery-stage-speed-value', 'orrery-stage-phase-value'];
+      const metrics = metricIds.map((id) => document.getElementById(id));
+      if (metrics.some((node) => !node || node.children.length || !node.textContent?.trim())) return false;
+      const [distance, speed, phase] = metrics.map((node) => node!.textContent!.trim());
+      const legacy = document.getElementById('orrery-stage-readout-values')?.textContent?.trim();
+      return legacy === 'Distance ' + distance + ' AU \u00b7 speed ' + speed + ' km/s \u00b7 ' + phase;
+    })).toBe(true);
+  };
+
+  await expect(page.locator('#orrery-stage-distance-value')).toBeVisible();
+  await expect(page.locator('#orrery-stage-speed-value')).toBeVisible();
+  await expect(page.locator('#orrery-stage-phase-value')).toBeVisible();
+  await expectStageMetricSync();
+
   await expect(page.locator('#orrery-live-selected-summary')).toContainText('Earth: distance');
   await expect(page.locator('#orrery-stage-readout-body')).toHaveText('Earth');
   await expect(page.locator('#orrery-stage-readout-values')).toContainText('Distance');
@@ -1262,6 +1281,8 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
   await page.locator('#orrery-timeline-jump-2').click();
   await expect(page.locator('#orrery-live-orbit-position')).toContainText('near aphelion');
   await expect(page.locator('#orrery-stage-readout-values')).toContainText('Near aphelion');
+  await expect(page.locator('#orrery-stage-phase-value')).toHaveText('Near aphelion');
+  await expectStageMetricSync();
   expect(await page.locator('#orrery-stage-readout-values').textContent()).not.toBe(initialStageReadout);
   const aphelionOrbitalMarker = await page.locator('#orrery-live-orbit-position-marker').getAttribute('style');
   expect(aphelionOrbitalMarker).toContain('left: 100%');
@@ -1289,6 +1310,9 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
   await page.locator('#orrery-timeline-jump-0').click();
   await expect(page.locator('#orrery-live-timeline-value')).toContainText('Earth year 1 · day 1');
   const before = await page.locator('#orrery-live-timeline-value').textContent();
+  const retainedMetricNodes = await page.evaluateHandle(() =>
+    ['orrery-stage-distance-value', 'orrery-stage-speed-value', 'orrery-stage-phase-value']
+      .map((id) => document.getElementById(id)));
   await page.evaluate(() => {
     const ctx = (window as any).__ctx;
     ctx.updateMulti('solarSystem', { orr_speed: 1, orr_paused: false });
@@ -1297,11 +1321,24 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
 
   const after = await page.locator('#orrery-live-timeline-value').textContent();
   expect(after).not.toBe(before);
+  await expectStageMetricSync();
+  expect(await page.evaluate((nodes) => nodes.every((node) =>
+    !!node && document.getElementById(node.id) === node && node.children.length === 0), retainedMetricNodes)).toBe(true);
   expect(Number(await page.locator('#orrery-phase-scrubber').inputValue())).toBeGreaterThan(0);
   expect(await page.locator('#orrery-phase-scrubber').getAttribute('aria-valuetext')).toContain('years into Earth');
   expect(await page.locator('#orrery-timeline-jump-0').getAttribute('aria-pressed')).toBe('false');
   expect(await page.locator('#orrery-timeline-mark-0').getAttribute('aria-current')).toBe('false');
   expect(await page.locator('#orrery-timeline-mark-0').evaluate((element) => getComputedStyle(element).borderTopColor)).not.toBe(activeMarkBorder);
+
+  const phaseScrubber = page.locator('#orrery-phase-scrubber');
+  await phaseScrubber.focus();
+  await phaseScrubber.press('Home');
+  await expect(phaseScrubber).toHaveValue('0');
+  await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('aria-live', 'polite');
+  await phaseScrubber.press('ArrowRight');
+  expect(Number(await phaseScrubber.inputValue())).toBeGreaterThan(0);
+  await expectStageMetricSync();
+  await retainedMetricNodes.dispose();
 
   await harness.destroy(page);
 });

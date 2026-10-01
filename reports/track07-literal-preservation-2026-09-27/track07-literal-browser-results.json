@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "name": "a displayed literal mismatch is rejected before generation",
+      "status": "passed"
+    },
+    {
+      "name": "a candidate cannot hide a missing phrase in literal code",
+      "status": "passed"
+    },
+    {
+      "name": "Apply rechecks a literal mismatch and never acknowledges a save",
+      "status": "passed"
+    },
+    {
+      "name": "the actual literal phrase survives preview and acknowledged Apply",
+      "status": "passed"
+    },
+    {
+      "name": "shorter inner fences do not expose payload terms",
+      "status": "passed"
+    },
+    {
+      "name": "translated feedback keeps literal placeholders and dollar signs",
+      "status": "passed"
+    }
+  ],
+  "errors": []
+}

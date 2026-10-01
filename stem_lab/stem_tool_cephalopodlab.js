@@ -11385,20 +11385,78 @@ function createCLHuntAnimal(T, species) {
     hp.needsUpdate=true;head.geometry.computeVertexNormals();head.geometry.computeBoundingSphere();
     ellipsoid('cl-mantle-collar',0.245,0,0.04,0.19,1.08,0.90,0.46,skin);
   }
-  // A short open tube nestles against the head; a recessed lumen gives the opening depth.
+  function createCLHuntSquidSiphonGeometry(T){
+    // Shared rings join the muscular exterior, rolled outlet and deep inner wall.
+    // Coordinates are in the existing siphon Group; the opening faces +Z.
+    var columns=24,outerLastRow=11,innerFirstRow=15,profiles=[
+      [0.016,0.010,-0.125,0.044],[0.036,0.023,-0.122,0.043],
+      [0.059,0.039,-0.116,0.036],[0.080,0.054,-0.103,0.024],
+      [0.094,0.063,-0.083,0.012],[0.092,0.065,-0.058,0.001],
+      [0.082,0.062,-0.030,-0.004],[0.071,0.057,0.000,-0.005],
+      [0.062,0.051,0.030,-0.004],[0.057,0.047,0.061,-0.002],
+      [0.058,0.045,0.090,0.000],[0.060,0.046,0.112,0.000],
+      [0.059,0.045,0.121,0.000],[0.0555,0.0415,0.127,0.000],
+      [0.050,0.0365,0.128,0.000],[0.045,0.0315,0.125,0.000],
+      [0.0415,0.0285,0.118,-0.0005],[0.041,0.028,0.098,-0.001],
+      [0.042,0.029,0.067,-0.002],[0.044,0.031,0.032,-0.003],
+      [0.045,0.033,-0.005,-0.002],[0.043,0.033,-0.038,0.003],
+      [0.033,0.027,-0.064,0.014],[0.017,0.014,-0.079,0.020]
+    ],positions=[],colors=[],indices=[],parts=[],rings=[];
+    var outerTint=new T.Color(0xf6ebe0).convertSRGBToLinear(),foldTint=new T.Color(0xd9c5b2).convertSRGBToLinear();
+    var lipTint=new T.Color(0xfff2dc).convertSRGBToLinear(),innerTint=new T.Color(0x9a806e).convertSRGBToLinear(),deepTint=new T.Color(0x2d211d).convertSRGBToLinear(),shade=new T.Color();
+    function vertex(point,color,tone){var v=positions.length/3;positions.push(point[0],point[1],point[2]);tone=tone===undefined?1:tone;colors.push(color.r*tone,color.g*tone,color.b*tone);return v;}
+    function bridge(a,b){for(var c=0;c<columns;c++){var next=(c+1)%columns;indices.push(a[c],a[next],b[c],a[next],b[next],b[c]);}}
+    function part(name,vertexStart,vertexCount,indexStart){var count=indices.length-indexStart;parts.push({name:name,vertexStart:vertexStart,vertexCount:vertexCount,indexStart:indexStart,indexCount:count,triangleStart:indexStart/3,triangleCount:count/3});}
+    var basalPole=vertex([0,0.044,-0.126],outerTint,0.97);
+    for(var row=0;row<profiles.length;row++){
+      var entry=profiles[row],rx=entry[0],ry=entry[1],z=entry[2],cy=entry[3],ring=[];
+      for(var c=0;c<columns;c++){
+        var angle=c/columns*Math.PI*2,outerWeight=row<=outerLastRow?Math.sin(Math.PI*row/(outerLastRow+1)):0;
+        var fold=(0.0012*Math.sin(angle*3+z*4)+0.0006*Math.cos(angle*5-z*3))*outerWeight;
+        var tone=0.99+0.010*Math.sin(angle*3+z*8);
+        if(row<=outerLastRow){shade.copy(outerTint).lerp(foldTint,0.05+0.08*(0.5+0.5*Math.cos(angle*3+z*4)));}
+        else if(row<=innerFirstRow){shade.copy(outerTint).lerp(lipTint,0.65);tone=1;}
+        else{var depth=Math.max(0,Math.min(1,(0.118-z)/0.202));shade.copy(innerTint).lerp(deepTint,Math.pow(depth,0.80)*0.94);tone=1;}
+        ring.push(vertex([Math.cos(angle)*(rx+fold),cy+Math.sin(angle)*(ry+fold*0.65),z],shade,tone));
+      }
+      rings.push(ring);
+    }
+    var start=indices.length;
+    for(var c=0;c<columns;c++)indices.push(basalPole,rings[0][(c+1)%columns],rings[0][c]);
+    for(var row=0;row<outerLastRow;row++)bridge(rings[row],rings[row+1]);
+    part('outer-muscle',0,1+(outerLastRow+1)*columns,start);
+    start=indices.length;for(var row=outerLastRow;row<innerFirstRow;row++)bridge(rings[row],rings[row+1]);
+    part('rolled-outlet',1+(outerLastRow+1)*columns,(innerFirstRow-outerLastRow)*columns,start);
+    start=indices.length;for(var row=innerFirstRow;row<profiles.length-1;row++)bridge(rings[row],rings[row+1]);
+    var floor=vertex([0,0.022,-0.084],deepTint,0.96),last=rings[rings.length-1];
+    for(var c=0;c<columns;c++)indices.push(last[c],last[(c+1)%columns],floor);
+    part('inner-recess',1+(innerFirstRow+1)*columns,positions.length/3-(1+(innerFirstRow+1)*columns),start);
+    var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+    var center=[0,0,0];rings[innerFirstRow].forEach(function(v){for(var d=0;d<3;d++)center[d]+=positions[v*3+d]/columns;});
+    var attachment=[basalPole];[2,3,4].forEach(function(row){[5,6,7].forEach(function(c){attachment.push(rings[row][c]);});});
+    geometry.userData.clSquidSiphonParts=parts;
+    geometry.userData.clSquidSiphonGeometry={authoredFrame:'cl-siphon-group',columns:columns,profiles:profiles,sectionRingIndices:rings,outerOutletRingIndices:rings[outerLastRow].slice(),innerOutletRingIndices:rings[innerFirstRow].slice(),outletCrestRingIndices:rings[14].slice(),basalPoleVertexIndex:basalPole,basalAttachmentVertexIndices:attachment,recessFloorVertexIndex:floor,openingCenter:center,openingDirection:[0,0,1],minimumRecessDepth:0.17};
+    return geometry;
+  }
+  // A muscular Humboldt funnel has one continuous thick wall and a recessed opening.
   var siphonTint=new T.Color(0xa68d78).convertSRGBToLinear();
   var siphonMat=new T.MeshStandardMaterial({color:species.bodyColor,roughness:0.60});
-  var siphonInnerMat=new T.MeshStandardMaterial({color:0x392d2b,roughness:0.78,side:T.BackSide});
   var siphon=new T.Group();siphon.name='cl-siphon';siphon.position.set(0,-0.215*scale,0.31*scale);siphon.scale.setScalar(scale);root.add(siphon);
-  var siphonRadius=squid?0.057:0.075,siphonLength=squid?0.25:0.28;
-  var siphonTube=new T.Mesh(new T.CylinderGeometry(siphonRadius,siphonRadius*1.28,siphonLength,20,1,true),siphonMat);
-  siphonTube.name='cl-siphon-tube';siphonTube.rotation.x=Math.PI/2;siphon.add(siphonTube);
-  var siphonInner=new T.Mesh(new T.CylinderGeometry(siphonRadius*0.74,siphonRadius*0.92,siphonLength*0.94,20,1,true),siphonInnerMat);
-  siphonInner.rotation.x=Math.PI/2;siphon.add(siphonInner);
-  var siphonLip=new T.Mesh(new T.TorusGeometry(siphonRadius*0.88,siphonRadius*0.12,7,20),siphonMat);
-  siphonLip.position.z=siphonLength/2;siphon.add(siphonLip);
-  var siphonLumen=new T.Mesh(new T.CircleGeometry(siphonRadius*0.92,20),new T.MeshStandardMaterial({color:0x201c1a,roughness:0.95}));
-  siphonLumen.position.z=-siphonLength*0.40;siphon.add(siphonLumen);
+  if(squid){
+    siphonMat.vertexColors=true;siphonMat.name='cl-squid-siphon-material';
+    var siphonTube=new T.Mesh(createCLHuntSquidSiphonGeometry(T),siphonMat);siphonTube.name='cl-siphon-tube';siphon.add(siphonTube);
+  }else{
+    var siphonInnerMat=new T.MeshStandardMaterial({color:0x392d2b,roughness:0.78,side:T.BackSide});
+    var siphonRadius=squid?0.057:0.075,siphonLength=squid?0.25:0.28;
+    var siphonTube=new T.Mesh(new T.CylinderGeometry(siphonRadius,siphonRadius*1.28,siphonLength,20,1,true),siphonMat);
+    siphonTube.name='cl-siphon-tube';siphonTube.rotation.x=Math.PI/2;siphon.add(siphonTube);
+    var siphonInner=new T.Mesh(new T.CylinderGeometry(siphonRadius*0.74,siphonRadius*0.92,siphonLength*0.94,20,1,true),siphonInnerMat);
+    siphonInner.rotation.x=Math.PI/2;siphon.add(siphonInner);
+    var siphonLip=new T.Mesh(new T.TorusGeometry(siphonRadius*0.88,siphonRadius*0.12,7,20),siphonMat);
+    siphonLip.position.z=siphonLength/2;siphon.add(siphonLip);
+    var siphonLumen=new T.Mesh(new T.CircleGeometry(siphonRadius*0.92,20),new T.MeshStandardMaterial({color:0x201c1a,roughness:0.95}));
+    siphonLumen.position.z=-siphonLength*0.40;siphon.add(siphonLumen);
+  }
   if(squid){
     var squidIrisMat=new T.MeshStandardMaterial({color:0xffffff,roughness:0.36,metalness:0.20,vertexColors:true});
     var squidPupilMat=new T.MeshPhysicalMaterial({color:0x030507,roughness:0.17,metalness:0,clearcoat:0.82,clearcoatRoughness:0.12});
@@ -12078,8 +12136,36 @@ function createCLHuntFish(T,index){
           }
           for(var leafStrip=0;leafStrip<6;leafStrip++)for(var leafCell=0;leafCell<2;leafCell++){var la=leafStart+leafStrip*3+leafCell,lb=la+1,lc=la+3,ld=lc+1;indices.push(la,lb,lc,lb,ld,lc);}
         }
+        // Four closed floats sit between the accepted blade-base and first blade-row centers.
+        // Append independent indices so every existing ribbon position, color, UV and normal stays exact.
+        var bladderParts=kelp?[]:null;
+        if(kelp)for(var bladder=0;bladder<4;bladder++){
+          var bladderSide=(bladder%2?1:-1)*sign,rootVertex=(4+bladder*3)*3+(bladderSide<0?0:2),bladeVertex=57+bladder*21+4;
+          var rootAt=rootVertex*3,bladeAt=bladeVertex*3,rx=positions[rootAt],ry=positions[rootAt+1],rz=positions[rootAt+2];
+          var dx=positions[bladeAt]-rx,dy=positions[bladeAt+1]-ry,dz=positions[bladeAt+2]-rz,axisLength=Math.sqrt(dx*dx+dy*dy+dz*dz);
+          var wx=dx/axisLength,wy=dy/axisLength,wz=dz/axisLength,basisLength=Math.sqrt(wx*wx+wy*wy),ux=wy/basisLength,uy=-wx/basisLength;
+          var vx=-wz*uy,vy=wz*ux,vz=wx*uy-wy*ux;
+          var radius=0.105+((variant*5+bladder*3)%11)/10*0.020,first=positions.length/3,indexStart=indices.length;
+          positions.push(rx,ry,rz);colors.push(colors[rootAt],colors[rootAt+1],colors[rootAt+2]);uvs.push(0.5,0);
+          for(var latitude=1;latitude<5;latitude++){
+            var phi=latitude/5*Math.PI,t=(1-Math.cos(phi))/2,radial=radius*Math.sin(phi),warm=Math.sin(phi)*0.34;
+            for(var around=0;around<8;around++){
+              var angle=around/8*Math.PI*2,cosAngle=Math.cos(angle),sinAngle=Math.sin(angle);
+              positions.push(rx+dx*t+radial*(ux*cosAngle+vx*sinAngle),ry+dy*t+radial*(uy*cosAngle+vy*sinAngle),rz+dz*t+radial*vz*sinAngle);
+              var red=colors[rootAt]+(colors[bladeAt]-colors[rootAt])*t,green=colors[rootAt+1]+(colors[bladeAt+1]-colors[rootAt+1])*t,blue=colors[rootAt+2]+(colors[bladeAt+2]-colors[rootAt+2])*t;
+              colors.push(red+(0.14-red)*warm,green+(0.18-green)*warm,blue+(0.045-blue)*warm);uvs.push(around/8,latitude/5);
+            }
+          }
+          var tip=positions.length/3;positions.push(positions[bladeAt],positions[bladeAt+1],positions[bladeAt+2]);colors.push(colors[bladeAt],colors[bladeAt+1],colors[bladeAt+2]);uvs.push(0.5,1);
+          for(var around=0;around<8;around++)indices.push(first,first+1+(around+1)%8,first+1+around);
+          for(var ring=0;ring<3;ring++)for(var around=0;around<8;around++){
+            var a=first+1+ring*8+around,b=first+1+ring*8+(around+1)%8,c=a+8,d=b+8;indices.push(a,b,c,b,d,c);
+          }
+          for(var around=0;around<8;around++)indices.push(first+25+around,first+25+(around+1)%8,tip);
+          bladderParts.push({name:'blade-float-'+bladder,vertexStart:first,vertexCount:34,indexStart:indexStart,indexCount:192,rootVertex:rootVertex,bladeVertex:bladeVertex,rootPole:first,bladePole:tip});
+        }
         var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
-        geometry.userData={clPlantKind:kind,clPlantHeight:height,clPlantVariant:variant,clPlantSections:sections,clPlantColumns:columns};return geometry;
+        geometry.userData={clPlantKind:kind,clPlantHeight:height,clPlantVariant:variant,clPlantSections:sections,clPlantColumns:columns};if(kelp)geometry.userData.clKelpBladders={version:1,sides:8,latitudeIntervals:5,parts:bladderParts};return geometry;
       }
 
       // One shared, irregular floc silhouette. Food anchors and gathering remain simulation state.
@@ -12126,6 +12212,31 @@ function createCLHuntFish(T,index){
         if(observation)return mode+' · Field study · energy conserved';
         var rate=Number.isFinite(state.hungerRate)?Math.max(0,state.hungerRate):1;
         return mode+' · '+rate.toFixed(1)+' energy/s';
+      }
+
+      // Shelter guidance reads the existing bonuses, lifespan and spatial rules.
+      function clHuntShelterCarryText(info,carryCost) {
+        var penalty=Math.round(info.speedPenalty*(carryCost==null?1:carryCost)*1000)/10;
+        return penalty?penalty+'% slower':'no carry slowdown';
+      }
+      function clHuntShelterTradeoffText(info,carryCost) {
+        var text='+'+Math.round(info.camoBonus*100)+'% camo';
+        return info.carriable?text+' · '+clHuntShelterCarryText(info,carryCost)+' · '+Math.round(info.dropLifeMs/1000)+'s placed cover':text+' · anchored';
+      }
+      function clHuntPlacedShelterText(info,data,now) {
+        var text=info.label+' · +'+Math.round(info.camoBonus*100)+'% camo';
+        return data.state==='static'?text+' · anchored':text+' · '+Math.max(0,Math.ceil((info.dropLifeMs-(now-data.createdAt))/1000))+'s left';
+      }
+      function clHuntNearestPlacedShelter(shelters,position,radius,maxY) {
+        var nearest=null,best=radius*radius;
+        for(var i=0;i<shelters.length;i++){
+          var shelter=shelters[i],state=shelter.userData.state;
+          if(state!=='dropped'&&state!=='static')continue;
+          if(!(Math.abs(position.y-shelter.position.y)<maxY))continue;
+          var dx=position.x-shelter.position.x,dz=position.z-shelter.position.z,distance=dx*dx+dz*dz;
+          if(distance<best){best=distance;nearest=shelter;}
+        }
+        return nearest;
       }
 
       function initHuntSim3D(canvasEl) {
@@ -13084,125 +13195,303 @@ function createCLHuntFish(T,index){
           },
         };
         var shelters = [];
-        function makeCoconutMesh() {
-          var g = new THREE.Group();
-          var halfMat = new THREE.MeshStandardMaterial({ color: 0x5a3a20, roughness: 0.9 });
-          var insideMat = new THREE.MeshStandardMaterial({ color: 0xeed2a4, roughness: 0.7 });
-          var topGeo = new THREE.SphereGeometry(0.32, 10, 7, 0, Math.PI * 2, 0, Math.PI / 2);
-          var top = new THREE.Mesh(topGeo, halfMat);
-          top.position.y = 0.05;
-          g.add(top);
-          var bottomGeo = new THREE.SphereGeometry(0.32, 10, 7, 0, Math.PI * 2, 0, Math.PI / 2);
-          var bottom = new THREE.Mesh(bottomGeo, halfMat);
-          bottom.rotation.x = Math.PI;
-          bottom.position.y = -0.05;
-          g.add(bottom);
-          var insideGeo = new THREE.SphereGeometry(0.27, 8, 6);
-          var inside = new THREE.Mesh(insideGeo, insideMat);
-          g.add(inside);
-          for (var fi = 0; fi < 6; fi++) {
-            var lineGeo = new THREE.TorusGeometry(0.31, 0.018, 4, 12, Math.PI * 1.8);
-            var line = new THREE.Mesh(lineGeo, new THREE.MeshStandardMaterial({ color: 0x3a2010 }));
-            line.rotation.y = (fi / 6) * Math.PI * 2;
-            line.rotation.x = Math.PI / 2;
-            g.add(line);
+        function createCLHuntCoconutGeometry(T){
+          // A single hollow half-shell rests on the existing terrain-relative shelter root.
+          var columns=48,outerLastRow=11,innerFirstRow=16,profiles=[
+            [0.018,-0.119,1.00],[0.052,-0.116,1.00],[0.100,-0.103,1.00],[0.140,-0.080,1.00],
+            [0.184,-0.040,1.00],[0.220,0.010,1.00],[0.257,0.061,1.00],[0.284,0.105,1.00],
+            [0.307,0.150,0.80],[0.322,0.184,0.60],[0.330,0.209,0.35],[0.333,0.223,0.18],
+            [0.335,0.230,0.05],[0.332,0.236,0.00],[0.320,0.238,0.00],[0.306,0.236,0.00],[0.292,0.230,0.00],
+            [0.282,0.219,0.00],[0.279,0.199,0.00],[0.271,0.172,0.00],[0.258,0.139,0.00],
+            [0.239,0.100,0.00],[0.212,0.059,0.00],[0.179,0.024,0.00],[0.140,-0.004,0.00],
+            [0.098,-0.026,0.00],[0.058,-0.042,0.00],[0.022,-0.049,0.00]
+          ],positions=[],colors=[],indices=[],parts=[],rings=[];
+          var cortexTint=new T.Color(0x674229).convertSRGBToLinear(),fiberTint=new T.Color(0x3e281a).convertSRGBToLinear(),soilTint=new T.Color(0x38291a).convertSRGBToLinear();
+          var edgeTint=new T.Color(0xe8d4ac).convertSRGBToLinear(),grainTint=new T.Color(0xc8aa7d).convertSRGBToLinear(),innerTint=new T.Color(0xd7bd94).convertSRGBToLinear(),floorTint=new T.Color(0x9b7d55).convertSRGBToLinear(),shade=new T.Color();
+          function vertex(point,color,tone){var index=positions.length/3;positions.push(point[0],point[1],point[2]);tone=tone===undefined?1:tone;colors.push(color.r*tone,color.g*tone,color.b*tone);return index;}
+          function bridge(a,b){for(var column=0;column<columns;column++){var next=(column+1)%columns;indices.push(a[column],b[column],a[next],a[next],b[column],b[next]);}}
+          function part(name,vertexStart,vertexCount,indexStart){var indexCount=indices.length-indexStart;parts.push({name:name,vertexStart:vertexStart,vertexCount:vertexCount,indexStart:indexStart,indexCount:indexCount,triangleStart:indexStart/3,triangleCount:indexCount/3});}
+          var base=vertex([0,-0.120,0],soilTint,0.94);
+          for(var row=0;row<profiles.length;row++){
+            var entry=profiles[row],radius=entry[0],height=entry[1],fiberWeight=entry[2],rimWeight=Math.max(0,Math.min(1,(height+0.075)/0.300)),ring=[];
+            rimWeight=rimWeight*rimWeight*(3-2*rimWeight);
+            for(var column=0;column<columns;column++){
+              var angle=column/columns*Math.PI*2,outline=(0.008*Math.sin(angle*2+0.4)+0.005*Math.sin(angle*3-0.7)+0.003*Math.cos(angle*5))*radius/0.335;
+              var fiber=(0.0035*Math.sin(angle*16+height*5)+0.0020*Math.cos(angle*21-height*8))*fiberWeight;
+              var chip=0.004*Math.pow(Math.max(0,Math.cos(angle*5+0.9)),10),warp=(0.007*Math.sin(angle*3)+0.004*Math.cos(angle*7)+0.003*Math.sin(angle*11)-chip)*rimWeight;
+              var sculptedRadius=radius+outline+fiber,tone=0.96+0.035*Math.sin(angle*5+height*9)+0.018*Math.cos(angle*13-height*4);
+              if(row<=outerLastRow){var grain=0.5+0.5*Math.cos(angle*16+height*5);shade.copy(cortexTint).lerp(fiberTint,grain*0.34).lerp(soilTint,Math.max(0,1-(height+0.12)/0.18)*0.28);}
+              else if(row<=innerFirstRow){shade.copy(edgeTint).lerp(grainTint,0.06+0.045*(0.5+0.5*Math.sin(angle*9)));}
+              else{var depth=Math.max(0,Math.min(1,(0.219-height)/0.270));shade.copy(innerTint).lerp(floorTint,0.70*Math.pow(depth,1.2));tone=0.98+0.018*Math.cos(angle*8+height*8);}
+              ring.push(vertex([Math.cos(angle)*sculptedRadius,height+warp,Math.sin(angle)*sculptedRadius],shade,tone));
+            }
+            rings.push(ring);
           }
+          var start=indices.length;
+          for(var column=0;column<columns;column++)indices.push(base,rings[0][column],rings[0][(column+1)%columns]);
+          for(var row=0;row<outerLastRow;row++)bridge(rings[row],rings[row+1]);
+          part('outer-cortex',0,1+(outerLastRow+1)*columns,start);
+          start=indices.length;for(var row=outerLastRow;row<innerFirstRow;row++)bridge(rings[row],rings[row+1]);
+          part('ivory-cut-edge',1+(outerLastRow+1)*columns,(innerFirstRow-outerLastRow)*columns,start);
+          start=indices.length;var vertexStart=1+(innerFirstRow+1)*columns;
+          for(var row=innerFirstRow;row<profiles.length-1;row++)bridge(rings[row],rings[row+1]);
+          var floor=vertex([0,-0.051,0],floorTint,0.96),last=rings[rings.length-1];
+          for(var column=0;column<columns;column++)indices.push(last[column],floor,last[(column+1)%columns]);
+          part('inner-bowl',vertexStart,positions.length/3-vertexStart,start);
+          var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          var openingCenter=[0,0,0];rings[innerFirstRow].forEach(function(index){for(var d=0;d<3;d++)openingCenter[d]+=positions[index*3+d]/columns;});
+          geometry.userData.clCoconutParts=parts;
+          geometry.userData.clCoconutGeometry={authoredFrame:'shelter-root',columns:columns,profiles:profiles,sectionRingIndices:rings,outerRimRingIndices:rings[outerLastRow].slice(),innerRimRingIndices:rings[innerFirstRow].slice(),cutEdgeCrestRingIndices:rings[14].slice(),innerBowlSectionRingIndices:rings.slice(innerFirstRow+1),baseVertexIndex:base,bowlFloorVertexIndex:floor,groundOffset:0.12,openingCenter:openingCenter,openingDirection:[0,1,0],apertureRayOrigin:[openingCenter[0],openingCenter[1]+0.20,openingCenter[2]],apertureRayDirection:[0,-1,0],apertureMinimumRecess:0.18};
+          return geometry;
+        }
+        function makeCoconutMesh() {
+          var g=new THREE.Group();
+          var geometry=createCLHuntCoconutGeometry(THREE);
+          var material=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.88,vertexColors:true});
+          material.name='cl-coconut-material';
+          var shell=new THREE.Mesh(geometry,material);shell.name='cl-coconut-shell';g.add(shell);
           return g;
         }
+        // Two static, independently owned surface slots meet at exact profile rings.
+        // The translucent walls are hollow; the opaque rolled lip and thick base never cover the mouth.
+        function createCLHuntBottleVisual(THREE){
+          var sides=32;
+          // [radius, axial height]: original envelope, continuous heel/shoulder/neck, then interior.
+          var profile=[
+            [0.185,-0.325],[0.206,-0.321],[0.216,-0.310],[0.220,-0.290],
+            [0.219,-0.250],[0.217,-0.160],[0.213,-0.030],[0.208,0.100],
+            [0.200,0.200],[0.188,0.265],[0.170,0.312],[0.146,0.345],
+            [0.117,0.378],[0.094,0.412],[0.081,0.445],[0.079,0.490],
+            [0.080,0.545],[0.090,0.565],[0.097,0.581],[0.099,0.598],
+            [0.097,0.612],[0.090,0.619],[0.080,0.616],[0.072,0.608],
+            [0.069,0.594],[0.069,0.580],[0.068,0.540],[0.068,0.490],
+            [0.069,0.445],[0.079,0.412],[0.102,0.378],[0.132,0.345],
+            [0.158,0.312],[0.175,0.265],[0.186,0.200],[0.195,0.100],
+            [0.200,-0.030],[0.204,-0.160],[0.205,-0.250],[0.195,-0.280]
+          ];
+          var glass=new THREE.Color(0x5a896e).convertSRGBToLinear(),thinGlass=new THREE.Color(0x9abc9f).convertSRGBToLinear();
+          var innerGlass=new THREE.Color(0x47765b).convertSRGBToLinear(),edgeGlass=new THREE.Color(0x91b399).convertSRGBToLinear();
+          var baseGlass=new THREE.Color(0x527d66).convertSRGBToLinear(),deepGlass=new THREE.Color(0x40664b).convertSRGBToLinear();
+          function builder(component){
+            var positions=[],colors=[],indices=[],parts=[],map={},shade=new THREE.Color();
+            function vertex(x,y,z,tint,tone){positions.push(x,y,z);colors.push(tint.r*tone,tint.g*tone,tint.b*tone);return positions.length/3-1;}
+            function ring(row){
+              if(map[row]!==undefined)return map[row];
+              var first=positions.length/3,radius=profile[row][0],height=profile[row][1];map[row]=first;
+              if(component==='wall'){
+                if(row<=17)shade.copy(glass).lerp(thinGlass,Math.max(0,Math.min(0.70,(height+0.325)/0.945*0.70)));
+                else shade.copy(glass).lerp(innerGlass,0.30);
+              }else if(row<=3)shade.copy(baseGlass);
+              else if(row<=25)shade.copy(edgeGlass).lerp(innerGlass,Math.max(0,Math.min(0.48,(row-21)/4*0.48)));
+              else shade.copy(deepGlass);
+              for(var side=0;side<sides;side++){
+                var angle=side/sides*Math.PI*2,tone=0.97+0.025*Math.cos(angle*2)+0.015*Math.sin(angle*3+height*3);
+                vertex(Math.cos(angle)*radius,height,Math.sin(angle)*radius,shade,tone);
+              }
+              return first;
+            }
+            function wall(name,first,last){
+              var start=indices.length;
+              for(var row=first;row<last;row++){
+                var lower=ring(row),upper=ring(row+1);
+                for(var side=0;side<sides;side++){
+                  var next=(side+1)%sides,a=lower+side,b=lower+next,c=upper+side,d=upper+next;
+                  indices.push(a,c,b,b,c,d);
+                }
+              }
+              parts.push({name:name,start:start,count:indices.length-start});
+            }
+            function finish(extra){
+              var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+              geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);
+              geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+              geometry.userData.clBottleParts=parts;
+              geometry.userData.clBottleVisual={version:1,component:component,sides:sides,profile:profile,profileToRing:map,landmarks:extra};
+              return geometry;
+            }
+            return {vertex:vertex,ring:ring,wall:wall,finish:finish,positions:positions,colors:colors,indices:indices,parts:parts,map:map};
+          }
+          var walls=builder('wall');walls.wall('outer-wall',3,17);walls.wall('inner-wall',25,39);
+          var wallGeometry=walls.finish({outerBodyRing:walls.map[4],shoulderRing:walls.map[10],outerNeckRing:walls.map[15],innerNeckRing:walls.map[27],innerBodyRing:walls.map[36],innerFloorRing:walls.map[39]});
+          var edge=builder('finish');edge.wall('base-heel',0,3);edge.wall('rolled-mouth',17,25);
+          var floorRing=edge.ring(39),floorCenter=edge.vertex(0,-0.282,0,deepGlass,0.90),floorStart=edge.indices.length;
+          for(var side=0;side<sides;side++)edge.indices.push(floorRing+side,floorCenter,floorRing+(side+1)%sides);
+          edge.parts.push({name:'cavity-floor',start:floorStart,count:edge.indices.length-floorStart});
+          // Copied underside vertices preserve the thick heel's physical closure with a clean base normal.
+          var baseRing=edge.ring(0),baseCapRing=edge.positions.length/3;
+          for(var side=0;side<sides;side++){
+            var at=(baseRing+side)*3;edge.positions.push(edge.positions[at],edge.positions[at+1],edge.positions[at+2]);
+            edge.colors.push(edge.colors[at]*0.92,edge.colors[at+1]*0.92,edge.colors[at+2]*0.92);
+          }
+          var baseCenter=edge.vertex(0,-0.325,0,baseGlass,0.92),baseStart=edge.indices.length;
+          for(var side=0;side<sides;side++)edge.indices.push(baseCapRing+side,baseCapRing+(side+1)%sides,baseCenter);
+          edge.parts.push({name:'base',start:baseStart,count:edge.indices.length-baseStart});
+          var finishGeometry=edge.finish({outerBaseRing:edge.map[0],heelRing:edge.map[3],rimOuterRing:edge.map[19],rimCrestRing:edge.map[21],rimInnerRing:edge.map[24],neckJoinRing:edge.map[25],innerFloorRing:floorRing,floorCenter:floorCenter,baseCapRing:baseCapRing,baseCenter:baseCenter});
+          return {wallGeometry:wallGeometry,finishGeometry:finishGeometry};
+        }
         function makeBottleMesh() {
-          var g = new THREE.Group();
-          // Translucent green glass. Real beach-glass + freshly-dumped bottles.
-          var bodyGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.65, 12);
-          var bodyMat = new THREE.MeshStandardMaterial({
-            color: 0x4a7a4a, roughness: 0.18, metalness: 0.15,
-            transparent: true, opacity: 0.55,
-          });
-          var body = new THREE.Mesh(bodyGeo, bodyMat);
-          g.add(body);
-          // Neck
-          var neckGeo = new THREE.CylinderGeometry(0.09, 0.16, 0.22, 10);
-          var neck = new THREE.Mesh(neckGeo, bodyMat);
-          neck.position.y = 0.45;
-          g.add(neck);
-          // Cap (oxidized metal)
-          var capGeo = new THREE.CylinderGeometry(0.10, 0.10, 0.06, 10);
-          var capMat = new THREE.MeshStandardMaterial({ color: 0x76675a, roughness: 0.75 });
-          var cap = new THREE.Mesh(capGeo, capMat);
-          cap.position.y = 0.59;
-          g.add(cap);
+          var g = new THREE.Group(),visual=createCLHuntBottleVisual(THREE);
+          var wallMat=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.18,metalness:0,transparent:true,opacity:0.38,side:THREE.DoubleSide,depthWrite:false});
+          var walls=new THREE.Mesh(visual.wallGeometry,wallMat);walls.name='cl-glass-bottle-wall';g.add(walls);
+          var finishMat=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.30,metalness:0});
+          var finish=new THREE.Mesh(visual.finishGeometry,finishMat);finish.name='cl-glass-bottle-finish';g.add(finish);
           g.rotation.z = Math.PI / 2;     // bottles lie on their side on the seafloor
           return g;
         }
+        function createCLHuntConchGeometry(T){
+          // Empty conch shelter: one continuous static surface from spire to lip to recessed interior.
+          var rows=50,columns=28,spireLastRow=28,positions=[],colors=[],indices=[],parts=[],frames=[],rings=[];
+          var exterior=new T.Color(0xd8bb98).convertSRGBToLinear(),ridgeTint=new T.Color(0xb08a62).convertSRGBToLinear();
+          var lipTint=new T.Color(0xe9b2a0).convertSRGBToLinear(),innerTint=new T.Color(0xbd7d70).convertSRGBToLinear(),deepTint=new T.Color(0x5c4139).convertSRGBToLinear(),shade=new T.Color();
+          function center(u){var angle=(u-1)*Math.PI*6,radius=0.016+0.190*Math.pow(u,1.8);return [radius*Math.cos(angle),0.660*(1-0.55*u-0.45*u*u),radius*Math.sin(angle)];}
+          function frame(u){
+            var point=center(u),lo=center(Math.max(0,u-0.0001)),hi=center(Math.min(1,u+0.0001)),axis=[hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2]],length=Math.hypot(axis[0],axis[1],axis[2]);
+            for(var d=0;d<3;d++)axis[d]/=length;
+            var angle=(u-1)*Math.PI*6,radial=[Math.cos(angle),0,Math.sin(angle)],dot=radial[0]*axis[0]+radial[2]*axis[2];
+            for(var d=0;d<3;d++)radial[d]-=axis[d]*dot;
+            length=Math.hypot(radial[0],radial[1],radial[2]);for(var d=0;d<3;d++)radial[d]/=length;
+            var upright=[axis[1]*radial[2]-axis[2]*radial[1],axis[2]*radial[0]-axis[0]*radial[2],axis[0]*radial[1]-axis[1]*radial[0]];
+            return {center:point,axis:axis,radial:radial,upright:upright,radiusX:0.012+0.123*Math.pow(u,2.1),radiusY:0.016+0.267*Math.pow(u,2.1)};
+          }
+          function vertex(point,color,tone){var index=positions.length/3;positions.push(point[0],point[1],point[2]);tone=tone===undefined?1:tone;colors.push(color.r*tone,color.g*tone,color.b*tone);return index;}
+          function part(name,vertexStart,vertexCount,indexStart){var indexCount=indices.length-indexStart;parts.push({name:name,vertexStart:vertexStart,vertexCount:vertexCount,indexStart:indexStart,indexCount:indexCount,triangleStart:indexStart/3,triangleCount:indexCount/3});}
+          function bridge(a,b){for(var column=0;column<columns;column++){var next=(column+1)%columns;indices.push(a[column],a[next],b[column],a[next],b[next],b[column]);}}
+          function pointOnRing(f,column,sx,sy,advance,relief){
+            var angle=column/columns*Math.PI*2,x=Math.cos(angle)*f.radiusX*sx*relief,y=Math.sin(angle)*f.radiusY*sy*relief;
+            return [f.center[0]+f.radial[0]*x+f.upright[0]*y+f.axis[0]*advance,f.center[1]+f.radial[1]*x+f.upright[1]*y+f.axis[1]*advance,f.center[2]+f.radial[2]*x+f.upright[2]*y+f.axis[2]*advance];
+          }
+          var firstFrame=frame(0),tip=vertex(firstFrame.center.map(function(value,d){return value-firstFrame.axis[d]*0.011;}),exterior,0.91);
+          for(var row=0;row<rows;row++){
+            var u=row/(rows-1),f=frame(u),ring=[];frames.push(f);
+            for(var column=0;column<columns;column++){
+              var angle=column/columns*Math.PI*2,raised=Math.pow(Math.max(0,Math.cos(angle*7-u*11)),4),shoulder=Math.pow(Math.max(0,Math.sin(angle)),3);
+              var ribs=0.024*Math.sin(angle*12+u*25)+0.040*raised*shoulder*Math.sin(Math.PI*u),relief=1+ribs;
+              var weathering=0.5+0.5*Math.sin(angle*5+u*21)*Math.sin(angle*9-u*13),stain=0.08+0.15*weathering+0.12*raised;
+              shade.copy(exterior).lerp(ridgeTint,stain);ring.push(vertex(pointOnRing(f,column,1,1,0,relief),shade,0.95+0.045*Math.cos(angle*3-u*17)));
+            }
+            rings.push(ring);
+          }
+          var start=indices.length;
+          for(var column=0;column<columns;column++)indices.push(tip,rings[0][(column+1)%columns],rings[0][column]);
+          for(var row=0;row<spireLastRow;row++)bridge(rings[row],rings[row+1]);
+          part('spire-outer',0,1+(spireLastRow+1)*columns,start);
+          start=indices.length;for(var row=spireLastRow;row<rows-1;row++)bridge(rings[row],rings[row+1]);
+          part('body-whorl',1+(spireLastRow+1)*columns,(rows-spireLastRow-1)*columns,start);
+          var mouthFrame=frames[rows-1],outerMouthRing=rings[rows-1],lipRings=[],lipProfiles=[[1.045,1.010,0.053],[1.100,1.035,0.102],[1.109,1.040,0.113],[1.080,1.015,0.123],[1.045,0.985,0.123],[1.020,0.955,0.112]];
+          var vertexStart=positions.length/3;start=indices.length;var previous=outerMouthRing;
+          for(var layer=0;layer<lipProfiles.length;layer++){
+            var profile=lipProfiles[layer],ring=[];
+            for(var column=0;column<columns;column++){
+              var angle=column/columns*Math.PI*2,flare=1+0.025*Math.max(0,Math.cos(angle)),scallop=1+0.007*Math.cos(angle*7),color=layer===0?shade.copy(exterior).lerp(lipTint,0.40):lipTint;
+              ring.push(vertex(pointOnRing(mouthFrame,column,profile[0]*flare,profile[1],profile[2]+0.006*Math.sin(angle)*Math.sin(angle),scallop),color,0.96+0.025*Math.sin(angle*5)));
+            }
+            bridge(previous,ring);lipRings.push(ring);previous=ring;
+          }
+          part('flared-lip',vertexStart,positions.length/3-vertexStart,start);
+          var innerProfiles=[[0.970,0.900,0.038],[0.790,0.680,-0.060],[0.500,0.430,-0.135],[0.200,0.170,-0.172]],innerRings=[];
+          vertexStart=positions.length/3;start=indices.length;
+          for(var layer=0;layer<innerProfiles.length;layer++){
+            var profile=innerProfiles[layer],ring=[];shade.copy(innerTint).lerp(deepTint,layer/3*0.79);
+            for(var column=0;column<columns;column++){var angle=column/columns*Math.PI*2;ring.push(vertex(pointOnRing(mouthFrame,column,profile[0],profile[1],profile[2],1),shade,0.96+0.025*Math.cos(angle*4)));}
+            bridge(previous,ring);innerRings.push(ring);previous=ring;
+          }
+          var cavityBack=vertex(mouthFrame.center.map(function(value,d){return value-mouthFrame.axis[d]*0.190;}),deepTint,0.86);
+          for(var column=0;column<columns;column++)indices.push(previous[column],previous[(column+1)%columns],cavityBack);
+          part('aperture-recess',vertexStart,positions.length/3-vertexStart,start);
+          var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          var openingCenter=mouthFrame.center.map(function(value,d){return value+mouthFrame.axis[d]*0.112;}),openingDirection=mouthFrame.axis.slice();
+          geometry.userData.clConchParts=parts;
+          geometry.userData.clConchGeometry={authoredFrame:'shelter-root',rows:rows,columns:columns,spireLastRow:spireLastRow,apertureSide:'+X',openingForward:'+Z',centerline:frames.map(function(f){return f.center.slice();}),sectionRingIndices:rings,spireBodyRingIndices:rings[spireLastRow].slice(),outerMouthRingIndices:outerMouthRing.slice(),lipOuterRingIndices:lipRings[2].slice(),lipInnerRingIndices:lipRings[5].slice(),lipSectionRingIndices:lipRings,apertureSectionRingIndices:innerRings,cavityBackVertexIndex:cavityBack,openingCenter:openingCenter,openingDirection:openingDirection,apertureRayOrigin:openingCenter.map(function(value,d){return value+openingDirection[d]*0.20;}),apertureRayDirection:openingDirection.map(function(value){return -value;}),apertureMinimumRecess:0.06,tipVertexIndex:tip};
+          return geometry;
+        }
         function makeConchMesh() {
-          var g = new THREE.Group();
-          // Coiled spire approximated by a stack of decreasing cones + a
-          // wider aperture cone. Pink-peach gradient.
-          var spireMat = new THREE.MeshStandardMaterial({ color: 0xe8c4a8, roughness: 0.55 });
-          var aperture = new THREE.Mesh(
-            new THREE.SphereGeometry(0.35, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.65),
-            new THREE.MeshStandardMaterial({ color: 0xf2a890, roughness: 0.4, side: THREE.DoubleSide })
-          );
-          aperture.rotation.x = Math.PI;
-          aperture.scale.set(1.0, 0.85, 1.4);
-          aperture.position.set(0, -0.05, 0);
-          g.add(aperture);
-          // Spiral spire
-          for (var sci = 0; sci < 5; sci++) {
-            var r = 0.28 - sci * 0.045;
-            var seg = new THREE.Mesh(
-              new THREE.ConeGeometry(r, 0.15, 8),
-              spireMat
-            );
-            seg.position.set(Math.cos(sci * 0.9) * 0.05, 0.1 + sci * 0.13, Math.sin(sci * 0.9) * 0.05);
-            seg.rotation.x = 0.1;
-            g.add(seg);
-          }
-          // Ridges
-          for (var sri = 0; sri < 4; sri++) {
-            var ridgeGeo = new THREE.TorusGeometry(0.27 - sri * 0.05, 0.012, 4, 12);
-            var ridge = new THREE.Mesh(ridgeGeo,
-              new THREE.MeshStandardMaterial({ color: 0xc89578, roughness: 0.7 }));
-            ridge.position.y = 0.06 + sri * 0.1;
-            ridge.rotation.x = Math.PI / 2;
-            g.add(ridge);
-          }
+          var g=new THREE.Group();
+          var geometry=createCLHuntConchGeometry(THREE);
+          var material=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.58,vertexColors:true});
+          material.name='cl-conch-material';
+          var shell=new THREE.Mesh(geometry,material);shell.name='cl-conch-shell';g.add(shell);
           return g;
+        }
+        // One static thick-walled barrel: a continuous fluted outer wall, rolled lip and real cavity.
+        // The basal skirt offsets only the visual geometry; the shelter root and aura stay unchanged.
+        function createCLHuntBarrelSpongeGeometry(THREE,variant){
+          var sides=40,form=((variant%3)+3)%3,phase=variant*0.81,scale=1+(form-1)*0.012;
+          // [radius, height, flute weight]; ordered from the basal ring over the lip into the bowl.
+          var profile=[
+            [0.480,-0.120,1.00],[0.493,-0.060,1.00],[0.508,0.060,1.00],
+            [0.529,0.200,1.00],[0.544,0.400,1.00],[0.550,0.670,1.00],
+            [0.548,0.890,1.00],[0.542,1.100,1.00],[0.534,1.270,0.95],
+            [0.518,1.440,0.85],[0.505,1.520,0.70],[0.496,1.555,0.52],
+            [0.480,1.578,0.30],[0.460,1.584,0.14],[0.439,1.578,0.08],
+            [0.423,1.558,0.10],[0.414,1.527,0.14],[0.407,1.460,0.12],
+            [0.390,1.340,0.10],[0.365,1.160,0.08],[0.324,0.905,0.06],
+            [0.260,0.635,0.04],[0.176,0.380,0.02],[0.075,0.240,0.00]
+          ];
+          var positions=[],colors=[],indices=[],parts=[];
+          var basal=new THREE.Color(0x956d50).convertSRGBToLinear(),shoulder=new THREE.Color(0xb88963).convertSRGBToLinear();
+          var lip=new THREE.Color(0xcfa680).convertSRGBToLinear(),inner=new THREE.Color(0x866348).convertSRGBToLinear();
+          var floor=new THREE.Color(0x423227).convertSRGBToLinear(),shade=new THREE.Color();
+          function vertex(x,y,z,tint,tone){
+            positions.push(x,y,z);colors.push(tint.r*tone,tint.g*tone,tint.b*tone);return positions.length/3-1;
+          }
+          for(var row=0;row<profile.length;row++){
+            var entry=profile[row],height=entry[1],t=(height+0.12)/1.72;
+            var warpT=Math.max(0,Math.min(1,(height-0.90)/0.66)),warpWeight=warpT*warpT*(3-2*warpT);
+            if(row<=10)shade.copy(basal).lerp(shoulder,Math.max(0,Math.min(1,t)));
+            else if(row<=13)shade.copy(shoulder).lerp(lip,(row-10)/3);
+            else if(row<=16)shade.copy(lip).lerp(inner,(row-13)/3);
+            else shade.copy(inner).lerp(floor,(row-16)/7);
+            for(var side=0;side<sides;side++){
+              var angle=side/sides*Math.PI*2;
+              var ridgeAngle=angle*10+phase*0.42+0.09*Math.sin(t*3.4+phase);
+              var flute=(0.013+0.005*Math.sin(t*Math.PI))*Math.cos(ridgeAngle)*entry[2];
+              var outline=(0.006*Math.sin(angle*3+phase)+0.004*Math.cos(angle*2-phase*0.6))*entry[0]/0.55;
+              var radius=entry[0]*scale+flute+outline;
+              var warp=(0.016*Math.sin(angle*3+phase)+0.008*Math.sin(angle*5-phase*0.7))*warpWeight;
+              var tone=0.98+0.035*Math.cos(ridgeAngle)*entry[2]+0.010*Math.sin(angle*7+row*1.91+phase)+0.016*Math.sin(angle*3+row*0.71);
+              vertex(Math.cos(angle)*radius,height+warp,Math.sin(angle)*radius,shade,tone);
+            }
+          }
+          function wall(name,first,last){
+            var start=indices.length;
+            for(var row=first;row<last;row++)for(var side=0;side<sides;side++){
+              var next=(side+1)%sides,a=row*sides+side,b=row*sides+next,c=a+sides,d=b+sides;
+              indices.push(a,c,b,b,c,d);
+            }
+            parts.push({name:name,start:start,count:indices.length-start});
+          }
+          wall('outer-wall',0,10);wall('rim',10,16);wall('inner-wall',16,23);
+          var floorCenter=vertex(0,0.220,0,floor,0.98),floorStart=indices.length;
+          for(var side=0;side<sides;side++)indices.push(23*sides+side,floorCenter,23*sides+(side+1)%sides);
+          parts.push({name:'floor',start:floorStart,count:indices.length-floorStart});
+          // Identical basal positions preserve a closed physical shell while isolating underside shading.
+          var baseCapRing=positions.length/3;
+          for(var side=0;side<sides;side++){
+            var at=side*3;positions.push(positions[at],positions[at+1],positions[at+2]);
+            colors.push(colors[at]*0.82,colors[at+1]*0.82,colors[at+2]*0.82);
+          }
+          var baseCenter=vertex(0,-0.120,0,basal,0.82),baseStart=indices.length;
+          for(var side=0;side<sides;side++)indices.push(baseCapRing+side,baseCapRing+(side+1)%sides,baseCenter);
+          parts.push({name:'base',start:baseStart,count:indices.length-baseStart});
+          var geometry=new THREE.BufferGeometry();
+          geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+          geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          geometry.userData.clSpongeParts=parts;
+          geometry.userData.clSpongeVisual={
+            version:1,variant:variant,form:form,sides:sides,rings:profile.length,flutes:10,profile:profile,
+            baseRing:0,outerShoulderRing:6*sides,rimOuterRing:10*sides,rimCrestRing:13*sides,
+            rimInnerRing:16*sides,innerFloorRing:23*sides,floorCenter:floorCenter,
+            baseCapRing:baseCapRing,baseCenter:baseCenter,localFloorY:0.220,localRootY:-0.120
+          };
+          return geometry;
         }
         function makeSpongeMesh() {
           var g = new THREE.Group();
-          // Tall yellow-orange barrel sponge with vertical ridges + interior hollow.
-          var bodyGeo = new THREE.CylinderGeometry(0.55, 0.5, 1.6, 14, 1, true);
-          var bodyMat = new THREE.MeshStandardMaterial({
-            color: 0xd4934a, roughness: 0.95, side: THREE.DoubleSide,
-          });
-          var body = new THREE.Mesh(bodyGeo, bodyMat);
-          body.position.y = 0.8;
+          var bodyGeo=createCLHuntBarrelSpongeGeometry(THREE,shelters.length);
+          var bodyMat=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.94,metalness:0});
+          var body=new THREE.Mesh(bodyGeo,bodyMat);body.name='cl-barrel-sponge';
           g.add(body);
-          // Top ring (open-mouth aperture)
-          var topRingGeo = new THREE.TorusGeometry(0.5, 0.06, 5, 16);
-          var topRing = new THREE.Mesh(topRingGeo,
-            new THREE.MeshStandardMaterial({ color: 0xa86628, roughness: 0.9 }));
-          topRing.position.y = 1.55;
-          topRing.rotation.x = Math.PI / 2;
-          g.add(topRing);
-          // Dark interior shadow disk so the aperture reads as a hole
-          var shadowGeo = new THREE.CircleGeometry(0.45, 16);
-          var shadow = new THREE.Mesh(shadowGeo,
-            new THREE.MeshBasicMaterial({ color: 0x080608 }));
-          shadow.position.y = 1.45;
-          shadow.rotation.x = -Math.PI / 2;
-          g.add(shadow);
-          // Vertical ridges
-          for (var spi = 0; spi < 10; spi++) {
-            var rdg = new THREE.Mesh(
-              new THREE.BoxGeometry(0.04, 1.5, 0.08),
-              new THREE.MeshStandardMaterial({ color: 0xb87838, roughness: 0.9 })
-            );
-            var rdgAng = (spi / 10) * Math.PI * 2;
-            rdg.position.set(Math.cos(rdgAng) * 0.53, 0.8, Math.sin(rdgAng) * 0.53);
-            rdg.rotation.y = rdgAng;
-            g.add(rdg);
-          }
           return g;
         }
         function makeShelterMesh(type) {
@@ -14557,6 +14846,7 @@ function createCLHuntFish(T,index){
         canvasEl.parentElement.appendChild(actionPrompt);
         function setActionPrompt(text, color) {
           if (!text) {
+            actionPrompt.textContent = '';
             actionPrompt.style.opacity = '0';
             return;
           }
@@ -14894,7 +15184,7 @@ function createCLHuntFish(T,index){
         var huntButton=uiButton('Strike [E]',function(){clickRequested=true;canvasEl.focus();});huntButton.className='cl-hunt-desktop';
         var descendButton=uiButton('Explore depths',function(){
           if(gameState.gameOver)return;octopus.position.x=42;gameState.verticalY=Math.max(0.55,gameState.verticalY);
-          recordEvent('Habitat','Moved to the drop-off; Q rises and Z descends');clAnnounce('At the reef drop-off. Q rises; Z descends. Return toward the reef to shelter.');canvasEl.focus();
+          recordEvent('Habitat','Moved to the drop-off; Q rises and Z descends');clAnnounce(__alloT('stem.cephalopodlab.sr_at_the_reef_drop_off_q_rises_z_descends_return_to', 'At the reef drop-off. Q rises; Z descends. Return toward the reef to shelter.'));canvasEl.focus();
         });descendButton.className='cl-hunt-desktop';
         missionHud=document.createElement('div');missionHud.className='cl-hunt-mission';missionHud.setAttribute('role','status');missionHud.setAttribute('aria-live','off');
         missionHud.style.cssText='position:absolute;top:12px;left:274px;right:155px;max-width:430px;color:#edf8f6;background:rgba(7,29,42,.88);border:1px solid #497985;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.45;pointer-events:none;z-index:3';stage.appendChild(missionHud);
@@ -15184,17 +15474,17 @@ function createCLHuntFish(T,index){
         }
         function beginPredatorSearch(predator,returnState){
           var u=predator.userData;u.state='searching';u.searchFor=0;u.searchReturnState=returnState;u.searchOrigin=(u.lastSeen||predator.position).clone();u.searchYaw=predator.rotation.y;u.awareness=0;u.canBite=false;
-          recordEvent('Cover','Broke pursuit; predator is searching the last seen position');clAnnounce('Predator lost sight of you and is searching. Stay behind cover.');
+          recordEvent('Cover','Broke pursuit; predator is searching the last seen position');clAnnounce(__alloT('stem.cephalopodlab.sr_predator_lost_sight_of_you_and_is_searching_stay', 'Predator lost sight of you and is searching. Stay behind cover.'));
         }
         function searchForPrey(predator,range,attackState,dt){
           var u=predator.userData;u.searchFor+=dt;u.canBite=false;
           if(gameState.inDen){u.state=u.searchReturnState;u.cooldownUntil=gameNow+3500;u.awareness=0;u.lastSeen=null;return;}
-          if(detects(predator,range,dt)){u.state=attackState;u.stateTimer=0;u.lostFor=0;sfxPredatorAlert();clAnnounce('Predator spotted you again. Break its view or reach shelter.');return;}
+          if(detects(predator,range,dt)){u.state=attackState;u.stateTimer=0;u.lostFor=0;sfxPredatorAlert();clAnnounce(__alloT('stem.cephalopodlab.sr_predator_spotted_you_again_break_its_view_or_reac', 'Predator spotted you again. Break its view or reach shelter.'));return;}
           var origin=u.searchOrigin;movePredatorToward(predator,origin,u.speed*0.35,dt);
           if(Math.hypot(origin.x-predator.position.x,origin.z-predator.position.z)>0.1){predator.lookAt(origin.x,predator.position.y,origin.z);u.searchYaw=predator.rotation.y;}
           predator.rotation.y=(u.searchYaw||0)+(gameState.a11y.reducedMotion?0:Math.sin(u.searchFor*3.5)*0.35);
           gameState.threatText='Predator searching your last seen position — stay covered or move away.';
-          if(u.searchFor>3.2){u.state=u.searchReturnState;u.cooldownUntil=gameNow+3500;u.awareness=0;u.lostFor=0;u.lastSeen=null;u.canBite=false;recordEvent('Escape','Stayed out of sight until the predator gave up');clAnnounce('Predator gave up the search.');}
+          if(u.searchFor>3.2){u.state=u.searchReturnState;u.cooldownUntil=gameNow+3500;u.awareness=0;u.lostFor=0;u.lastSeen=null;u.canBite=false;recordEvent('Escape','Stayed out of sight until the predator gave up');clAnnounce(__alloT('stem.cephalopodlab.sr_predator_gave_up_the_search', 'Predator gave up the search.'));}
         }
         function preyReadiness(prey){
           if(!prey||!prey.userData.alive)return {ready:false,reason:'missing',distance:Infinity};
@@ -15219,7 +15509,7 @@ function createCLHuntFish(T,index){
           var food=(capabilities.diet==='detritus'?marineSnow:clams).filter(forageReady).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];
           if(!food){clAnnounce(capabilities.diet==='detritus'?'Move within reach of marine snow, then tap Forage.':'Settle beside a clam, then tap Forage.');canvasEl.focus();return;}
           gameState.forageTarget=food;gameState.forageStartedAt=gameNow;gameState.forageProgress=0;
-          forageButton.setAttribute('aria-pressed','true');clAnnounce('Foraging started. Stay still; R or Forage stops.');canvasEl.focus();
+          forageButton.setAttribute('aria-pressed','true');clAnnounce(__alloT('stem.cephalopodlab.sr_foraging_started_stay_still_r_or_forage_stops', 'Foraging started. Stay still; R or Forage stops.'));canvasEl.focus();
         }
         function updateForaging(){
           if(!gameState.forageTarget)return;
@@ -15277,7 +15567,7 @@ function createCLHuntFish(T,index){
         function updateSnow(dt){
           gameState.forageProgress=0;
           marineSnow.forEach(function(snow){snow.position.y-=dt*0.14;if(snow.position.distanceTo(octopus.position)>16){snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));}
-            if((keys.KeyE||gameState.forageTarget===snow)&&forageReady(snow)){snow.userData.gather=(snow.userData.gather||0)+dt;gameState.forageProgress=Math.max(gameState.forageProgress,Math.min(1,snow.userData.gather/0.65));if(snow.userData.gather>0.65){if(gameState.forageTarget===snow)cancelForage();snow.userData.gather=0;snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));gameState.hunger=Math.min(gameState.maxHunger,gameState.hunger+18);gameState.score+=2;gameState.runStats.marineSnow=(gameState.runStats.marineSnow||0)+1;recordEvent('Meal','Gathered marine snow with feeding filaments');clAnnounce('Marine snow gathered. Energy restored.');}}else snow.userData.gather=0;
+            if((keys.KeyE||gameState.forageTarget===snow)&&forageReady(snow)){snow.userData.gather=(snow.userData.gather||0)+dt;gameState.forageProgress=Math.max(gameState.forageProgress,Math.min(1,snow.userData.gather/0.65));if(snow.userData.gather>0.65){if(gameState.forageTarget===snow)cancelForage();snow.userData.gather=0;snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));gameState.hunger=Math.min(gameState.maxHunger,gameState.hunger+18);gameState.score+=2;gameState.runStats.marineSnow=(gameState.runStats.marineSnow||0)+1;recordEvent('Meal','Gathered marine snow with feeding filaments');clAnnounce(__alloT('stem.cephalopodlab.sr_marine_snow_gathered_energy_restored', 'Marine snow gathered. Energy restored.'));}}else snow.userData.gather=0;
           });clickRequested=false;
         }
 
@@ -15624,7 +15914,7 @@ function createCLHuntFish(T,index){
                 // Drop
                 octopus.remove(carriedShelter);
                 scene.add(carriedShelter);
-                carriedShelter.position.set(octopus.position.x, 0.32, octopus.position.z);
+                carriedShelter.position.set(octopus.position.x, terrainHeight(octopus.position.x,octopus.position.z)+0.12, octopus.position.z);
                 carriedShelter.rotation.set(0, 0, 0);
                 if (carriedShelter.userData.shelterType === 'bottle') {
                   carriedShelter.rotation.z = Math.PI / 2;  // bottle lies sideways
@@ -16569,7 +16859,8 @@ function createCLHuntFish(T,index){
               var cld = Math.sqrt(cldx * cldx + cldz * cldz);
               if (Math.abs(octopus.position.y-clams[clci].position.y)<1.0 && cld < nearestClamD && !rockBlocks(octopus.position,clams[clci].position)) { nearestClam = clams[clci]; nearestClamD = cld; }
             }
-            if (heldE && capabilities.diet!=='detritus' && nearestClam && !isMoving && now-gameState.tookHitAt>250) {
+            var clamGatheringThisFrame = !!(heldE && capabilities.diet!=='detritus' && nearestClam && !isMoving && now-gameState.tookHitAt>250);
+            if (clamGatheringThisFrame) {
               gameState.drillingClam = nearestClam;
               gameState.drillProgress = Math.min(1, gameState.drillProgress + dt / DRILL_DURATION);gameState.forageProgress=gameState.drillProgress;
               nearestClam.children[1].rotation.x = -gameState.drillProgress * Math.PI / 6;
@@ -16735,14 +17026,14 @@ function createCLHuntFish(T,index){
                   var visualPrey=selectedPrey&&selectedPrey.userData.alive?selectedPrey:null;
                   squidStrikeVisual={startedAt:now,aimWorld:visualPrey?visualPrey.position.clone():octopus.localToWorld(new THREE.Vector3(0,-0.10*bodyScale,2.60*bodyScale))};
                 }
-              }else clAnnounce('Recovering. Wait for IN RANGE before striking again.');
+              }else clAnnounce(__alloT('stem.cephalopodlab.sr_recovering_wait_for_in_range_before_striking_agai', 'Recovering. Wait for IN RANGE before striking again.'));
             }
             // Follow only the committed living prey until contact, including its final moved position this frame.
             if(squidStrikeVisual&&gameState.pendingStrike){var visualTarget=gameState.pendingStrike.target;if(visualTarget&&visualTarget.userData.alive)squidStrikeVisual.aimWorld.copy(visualTarget.position);}
             if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){
               var attemptedPrey=gameState.pendingStrike.target;gameState.pendingStrike=null;
               var readiness=preyReadiness(attemptedPrey),nearest=readiness.ready?attemptedPrey:null,prey=readiness.kind;
-              if(!nearest&&!nearestClam){
+              if(!nearest&&!clamGatheringThisFrame){
                 gameState.strikeMessage=readiness.reason==='cover'?'Strike blocked. Move around the rock.':attemptedPrey?'Missed. Move closer and match the target depth.':'No prey in reach. T selects a nearby target.';
                 gameState.strikeMessageUntil=now+1800;clAnnounce(gameState.strikeMessage);
               }else gameState.strikeMessage='';
@@ -16920,7 +17211,8 @@ function createCLHuntFish(T,index){
             if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — Q to rise');else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — Q to rise');
             if(gameState.inDen)status.push('IN DEN — safe, regenerating');
             if(gameState.isInked)status.push('INKED — harder to track');
-            if(carriedShelter)status.push('Carrying '+SHELTER_TYPES[carriedShelter.userData.shelterType].label+' · G drops');
+            if(carriedShelter){var carryInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];status.push('Carrying '+carryInfo.label+' · '+clHuntShelterCarryText(carryInfo,capabilities.carryCost)+' · G drops');}
+            else if(gameState.inShelterDen){var activeCover=clHuntNearestPlacedShelter(shelters,octopus.position,SHELTER_DEN_RADIUS,1.0);if(activeCover)status.push(clHuntPlacedShelterText(SHELTER_TYPES[activeCover.userData.shelterType],activeCover.userData,now));}
             if(gameState.isMimicking)status.push('Mimicking · predators wary');
             hudText('status',status.join(' · '));
             huntButton.disabled=gameState.paused||gameState.gameOver||now<gameState.strikeReadyAt;
@@ -16940,7 +17232,8 @@ function createCLHuntFish(T,index){
             var prompt = '';
             var pColor = 'rgba(167,139,250,0.5)';
             if (carriedShelter) {
-              prompt = '<span style="color:#fbbf24">[G]</span> drop ' + SHELTER_TYPES[carriedShelter.userData.shelterType].label;
+              var carriedInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];
+              prompt = '<span style="color:#fbbf24">[G]</span> drop ' + carriedInfo.label + ' <span style="color:#94a3b8;font-weight:400">(' + Math.round(carriedInfo.dropLifeMs/1000) + 's cover)</span>';
               pColor = 'rgba(160,120,64,0.7)';
             } else {
               // Pearl pickup hint takes priority over shelter/clam/crab
@@ -16950,7 +17243,7 @@ function createCLHuntFish(T,index){
                 var ppdx = pearls[ppi].position.x - octopus.position.x;
                 var ppdz = pearls[ppi].position.z - octopus.position.z;
                 var ppd = Math.sqrt(ppdx * ppdx + ppdz * ppdz);
-                if (ppd < pPearlD) { pNearestPearl = pearls[ppi]; pPearlD = ppd; }
+                if (Math.abs(octopus.position.y-pearls[ppi].position.y)<1.5 && ppd < pPearlD) { pNearestPearl = pearls[ppi]; pPearlD = ppd; }
               }
               if (pNearestPearl) {
                 prompt = '<span style="color:#fff0aa">[G]</span> collect pearl <span style="color:#94a3b8;font-weight:400">(treasure)</span>';
@@ -16964,7 +17257,7 @@ function createCLHuntFish(T,index){
                 var psdx = shelters[psi].position.x - octopus.position.x;
                 var psdz = shelters[psi].position.z - octopus.position.z;
                 var psd = Math.sqrt(psdx * psdx + psdz * psdz);
-                if (psd < pNearestShD) { pNearestSh = shelters[psi]; pNearestShD = psd; }
+                if (Math.abs(octopus.position.y-shelters[psi].position.y)<1.2 && psd < pNearestShD) { pNearestSh = shelters[psi]; pNearestShD = psd; }
               }
               // Nearest clam
               var pNearestCl = null, pNearestClD = DRILL_RANGE;
@@ -16980,7 +17273,7 @@ function createCLHuntFish(T,index){
               var pStrikeReady=capabilities.diet!=='detritus'&&!gameState.pendingStrike&&now>=gameState.strikeReadyAt&&preyReadiness(pTrackedPrey).ready;
               if (pNearestSh) {
                 var sht2 = SHELTER_TYPES[pNearestSh.userData.shelterType];
-                prompt = '<span style="color:#fbbf24">[G]</span> pick up ' + sht2.label + ' <span style="color:#94a3b8;font-weight:400">(+' + (sht2.camoBonus * 100).toFixed(0) + '% camo)</span>';
+                prompt = '<span style="color:#fbbf24">[G]</span> pick up ' + sht2.label + ' <span style="color:#94a3b8;font-weight:400">(' + clHuntShelterTradeoffText(sht2,capabilities.carryCost) + ')</span>';
                 pColor = 'rgba(160,120,64,0.7)';
               } else if (pNearestCl) {
                 prompt = '<span style="color:#fbbf24">[R]</span> forage clam <span style="font-weight:400">or hold E</span>';
@@ -16989,6 +17282,9 @@ function createCLHuntFish(T,index){
                 var pStrikeLabel=pTrackedPrey.userData.cfg?(pTrackedPrey.userData.type||'rock')+' crab':'silverside';
                 prompt = '<span style="color:#fbbf24">[E]</span> strike '+pStrikeLabel;
                 pColor = 'rgba(252,146,60,0.6)';
+              } else {
+                var nearbyPlaced=clHuntNearestPlacedShelter(shelters,octopus.position,SHELTER_DEN_RADIUS,1.2);
+                if(nearbyPlaced){prompt=clHuntPlacedShelterText(SHELTER_TYPES[nearbyPlaced.userData.shelterType],nearbyPlaced.userData,now);pColor='rgba(125,211,167,0.65)';}
               }
               }   // close pearl-fallback else
             }
@@ -17416,7 +17712,7 @@ function createCLHuntFish(T,index){
               if (prior._evasionArmToken !== token || !prior._evasionArmed) return {};
               return { _evasionShowGo: true, _evasionGoRealAt: Date.now() };
             });
-            clAnnounce('Strike! Escape now.');
+            clAnnounce(__alloT('stem.cephalopodlab.sr_strike_escape_now', 'Strike! Escape now.'));
           }, delay);
         }
         function react() {
@@ -17425,7 +17721,7 @@ function createCLHuntFish(T,index){
           if (!go) {
             // False start: bolting before the strike.
             setCL({ _evasionArmed: false, _evasionShowGo: false, _evasionFalseStarts: falseStarts + 1, _evasionArmToken: null });
-            clAnnounce('Too early. That was a false start.');
+            clAnnounce(__alloT('stem.cephalopodlab.sr_too_early_that_was_a_false_start', 'Too early. That was a false start.'));
             return;
           }
           var ms = Math.max(1, Date.now() - (d._evasionGoRealAt || Date.now()));
@@ -22966,7 +23262,7 @@ function createCLHuntFish(T,index){
         var scoreboard = ratedCount > 0 ? h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.myth_tally_title', '📊 What your ratings say')),
-            h('button', { type: 'button', onClick: function() { setCL({ mythConfidence: {}, mythRevealAll: false }); clAnnounce('Ratings cleared.'); },
+            h('button', { type: 'button', onClick: function() { setCL({ mythConfidence: {}, mythRevealAll: false }); clAnnounce(__alloT('stem.cephalopodlab.sr_ratings_cleared', 'Ratings cleared.')); },
               style: { fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.4)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontFamily: 'inherit' } },
               __alloT('stem.cephalopodlab.myth_reset', 'Clear ratings'))),
           h('div', { role: 'status', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 10 } },
@@ -23075,7 +23371,7 @@ function createCLHuntFish(T,index){
           nextTally[last] = Math.max(0, (nextTally[last] || 0) - 1);
           if (!nextTally[last]) delete nextTally[last];
           setCL({ ethoTally: nextTally, ethoLog: log.slice(0, -1) });
-          clAnnounce('Removed the last sample.');
+          clAnnounce(__alloT('stem.cephalopodlab.sr_removed_the_last_sample', 'Removed the last sample.'));
         };
         var ranked = Object.keys(tally).filter(function(c) { return tally[c] > 0; })
           .sort(function(a, b) { return tally[b] - tally[a]; });
@@ -23112,7 +23408,7 @@ function createCLHuntFish(T,index){
                 cursor: samples ? 'pointer' : 'default', background: 'transparent',
                 color: samples ? '#cbd5e1' : '#64748b', border: '1px solid rgba(148,163,184,0.4)' } },
               __alloT('stem.cephalopodlab.etho_undo', '↶ Undo last sample')),
-            samples ? h('button', { type: 'button', onClick: function() { setCL({ ethoTally: {}, ethoLog: [] }); clAnnounce('Observation cleared.'); },
+            samples ? h('button', { type: 'button', onClick: function() { setCL({ ethoTally: {}, ethoLog: [] }); clAnnounce(__alloT('stem.cephalopodlab.sr_observation_cleared', 'Observation cleared.')); },
               style: { padding: '6px 11px', borderRadius: 7, fontSize: 11, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer',
                 background: 'transparent', color: '#fca5a5', border: '1px solid rgba(220,38,38,0.4)' } },
               __alloT('stem.cephalopodlab.etho_clear', '✕ Clear observation')) : null));

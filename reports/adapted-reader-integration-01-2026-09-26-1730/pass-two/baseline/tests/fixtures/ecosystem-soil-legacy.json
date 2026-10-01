@@ -1,0 +1,30 @@
+[
+  {
+    "config": {},
+    "baseline": "41f02a33e3ae93bc243e37ab417ded105b85129aacca7a4b7f41fbca41a95d77",
+    "experiment": "e995a9e74dfd3d75a4f64895180022cc2186a8412576c4153a7f5a0874b253e1",
+    "csv": "504d632817fc2646cf2d3d216c440221d0ea10337278c463bb7daf092e139712"
+  },
+  {
+    "config": {
+      "enabled": {
+        "caterpillars": true,
+        "bluetits": true
+      },
+      "event": "reduce",
+      "target": "caterpillars"
+    },
+    "baseline": "8c7273b4d084a7e8c2027532824ba6773cc2d627db32f290e0c48a90268746fe",
+    "experiment": "00f1776c5e839ce7ec8da0daad91a823ca0f3ab840c29837185fd6981e5201b1",
+    "csv": "bd7d7420223258bee72dc792b472bd33f8c86c5a9eade2e9afc17553c8c3e832"
+  },
+  {
+    "config": {
+      "cover": 10,
+      "event": "restoreCover"
+    },
+    "baseline": "f692c3a0f61e83951ef09c875ed95f576a2f38cf52719ddffe30e45cbb180744",
+    "experiment": "8b3efb609c3133ea1cf18c650ab3c8a49bd5306087a2af1e66063438ae8173e2",
+    "csv": "fffffef5a5e38c6077b466a04b5534aa9cec8ae8392e3cd130c6dd480cc3b314"
+  }
+]

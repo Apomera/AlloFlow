@@ -14,6 +14,7 @@ Environment:
   PIPER_VOICES_DIR   Writable directory for downloaded voice models
                      (default: ./piper-voices next to this script)
   PIPER_PORT         Port to listen on (default: 5500)
+  ALLOFLOW_TTS_ALLOWED_ORIGINS  Additional comma-separated exact browser origins
 """
 
 import http.server
@@ -22,6 +23,30 @@ import subprocess
 import os
 import sys
 import struct
+from urllib.parse import urlsplit
+
+
+def is_allowed_origin(origin):
+    """Allow native clients, loopback apps and explicitly trusted web origins."""
+    if origin is None:
+        return True
+    if not isinstance(origin, str) or not origin or origin != origin.strip():
+        return False
+    try:
+        parsed = urlsplit(origin)
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username or parsed.password or parsed.path
+                or parsed.query or parsed.fragment
+                or (parsed.port is not None and not 0 < parsed.port <= 65535)):
+            return False
+    except ValueError:
+        return False
+    if parsed.hostname in ("localhost", "127.0.0.1", "::1"):
+        return True
+    trusted = {"https://alloflow-cdn.pages.dev"}
+    trusted.update(value.strip() for value in
+                   os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","))
+    return origin in trusted
 
 PORT = int(os.environ.get("PIPER_PORT", "5500"))
 
@@ -118,16 +143,30 @@ def synthesize(text, voice_name, speed):
 
 
 class TTSHandler(http.server.BaseHTTPRequestHandler):
+    def _add_cors_headers(self):
+        self.send_header("Vary", "Origin")
+        origin = self.headers.get("Origin")
+        if origin and is_allowed_origin(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+
+    def _reject_untrusted_origin(self):
+        if is_allowed_origin(self.headers.get("Origin")):
+            return False
+        self._send_json(403, {"error": "Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."})
+        return True
+
     def _send_json(self, status, obj):
         body = json.dumps(obj).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._add_cors_headers()
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
     def do_POST(self):
+        if self._reject_untrusted_origin():
+            return
         if self.path != "/v1/audio/speech":
             self.send_response(404)
             self.end_headers()
@@ -168,7 +207,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "audio/wav")
             self.send_header("Content-Length", str(len(wav_audio)))
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._add_cors_headers()
             self.end_headers()
             self.wfile.write(wav_audio)
             print(f"[Piper TTS] Generated {len(wav_audio)} bytes "
@@ -182,13 +221,17 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 pass
 
     def do_OPTIONS(self):
+        if self._reject_untrusted_origin():
+            return
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._add_cors_headers()
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
 
     def do_GET(self):
+        if self._reject_untrusted_origin():
+            return
         if self.path in ("/health", "/"):
             return self._send_json(200, {
                 "status": "ok",

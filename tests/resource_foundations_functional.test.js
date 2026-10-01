@@ -1,5 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -47,7 +49,8 @@ describe('paragraph scaffold handoffs use persisted blank identities', () => {
     const start = source.indexOf('  const launchGradingSession = () => {');
     const end = source.indexOf('  const submitGradingSession',start);
     let session;
-    const run = new Function('window','generatedContent','studentResponses','setGradingSession',source.slice(start,end)+'\nreturn launchGradingSession;')(window,paragraph,{'frame-1':answers},value=>session=value);
+    // The handler (host_handlers_source.jsx) now also reads gradingSession so a relaunch keeps an open draft; none is open here.
+    const run = new Function('window','generatedContent','studentResponses','setGradingSession','gradingSession',source.slice(start,end)+'\nreturn launchGradingSession;')(window,paragraph,{'frame-1':answers},value=>session=value,null);
     run(); expect(session.draftText).toBe('The cause is rain and the effect is flooding.');
   });
   it('reports failed saving truthfully and makes retry available', () => {

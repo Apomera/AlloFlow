@@ -1,0 +1,110 @@
+{
+  "status": "passed",
+  "completedAt": "2026-09-30T01:12:46.212Z",
+  "section": "Sky Lab: Observe — Eyepiece field lab",
+  "changes": [
+    "True angular scale replaces target enlargement and shrinking-to-fit; a circular SVG clip crops the field",
+    "Aperture and telescope focal length are independent native controls",
+    "Quick eyepiece comparisons keep magnification controls beside the field",
+    "Readable captions, field width, exit pupil, focal ratio and a live status stay outside the circular image",
+    "Gaussian seeing blur uses the same angular scale as the target",
+    "Bortle qualitatively changes sky brightness and sketch contrast without making detection claims",
+    "Measured telescope dimensions and included eyepieces provide real instrument presets",
+    "The Whirlpool Galaxy and Double Cluster have distinct schematic views"
+  ],
+  "data": {
+    "referenceInstrument": {
+      "name": "Celestron AstroMaster 130EQ",
+      "apertureMm": 130,
+      "focalLengthMm": 650,
+      "includedEyepiecesMm": [
+        20,
+        10
+      ],
+      "calculatedMagnifications": [
+        32.5,
+        65
+      ],
+      "source": "https://www.celestron.com/products/astromaster-130eq-telescope"
+    },
+    "moon": {
+      "exampleDiameterArcmin": 30,
+      "source": "https://imagine.gsfc.nasa.gov/educators/programs/fermi/classroom/agn_guide.html"
+    },
+    "equations": {
+      "magnification": "telescope focal length / eyepiece focal length",
+      "field": "apparent field / magnification (approximation)",
+      "exitPupil": "aperture / magnification",
+      "seeing": "Gaussian sigma = seeing FWHM / field width in arcsec × field diameter in pixels / 2.355"
+    },
+    "opticsSource": "https://www.celestron.com/blogs/knowledgebase/how-to-determine-which-eyepieces-to-use-with-your-telescope",
+    "fieldSource": "https://www.celestron.com/blogs/knowledgebase/astronomy-glossary-of-terms",
+    "scope": "Targets use fixed example angular extents. Shapes, colors, phases and star positions are illustrative. Apparent field defaults to 60 degrees as a teaching choice, and instrument presets preserve this user setting. Field-stop measurements and eyepiece distortion are omitted. Seeing is a Gaussian approximation, independent of the Dawes double-star criterion. Bortle contrast is qualitative. Diffraction, optical aberrations and eye response are omitted; the sketch does not predict detectability tonight."
+  },
+  "unit": {
+    "passed": 139,
+    "failed": 0,
+    "files": [
+      {
+        "file": "astronomy_eyepiece_field.test.js",
+        "passed": 39
+      },
+      {
+        "file": "astronomy_functional_regressions.test.js",
+        "passed": 20
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "passed": 80
+      }
+    ],
+    "report": "unit-tests.json"
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "project": "chromium",
+    "viewportWidths": [
+      1280,
+      320
+    ],
+    "themes": [
+      "dark",
+      "contrast"
+    ],
+    "checks": [
+      "Angular field geometry and clipping",
+      "Independent controls, keyboard steps, preserved focus and saved state",
+      "Instrument presets preserve apparent field and sky settings",
+      "Seeing and qualitative contrast effects",
+      "Malformed settings recover safely",
+      "All twelve targets remain selectable",
+      "Minimum 44px touch controls and no horizontal overflow",
+      "No runtime errors or unhandled promise rejections in tested scenarios"
+    ],
+    "report": "browser-tests.json"
+  },
+  "parity": {
+    "sourceAndPublicMatch": true,
+    "sha256": "13a3601c705765f5554c6029457f278c6a889a1d14ea9f45f10ed1ffedbf939b",
+    "priorSourceSha256": "35fd3e7a4e5a5cf72bdc25f3635b97b3cd465a3ba18599aada5106d3d9e85a4d",
+    "newEnglishLabels": 42,
+    "labelsMatchBothRegistries": true
+  },
+  "checks": {
+    "sourceAndMirrorSyntax": true,
+    "scopedDiffWhitespace": true
+  },
+  "visualReview": {
+    "status": "reviewed",
+    "images": [
+      "moon-wide-desktop.png",
+      "moon-cropped-desktop.png",
+      "whirlpool-desktop.png",
+      "double-cluster-desktop.png",
+      "orion-phone-contrast.png"
+    ]
+  }
+}

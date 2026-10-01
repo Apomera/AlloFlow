@@ -1,0 +1,52 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sha256": {
+    "stem_tool_bridgelab.js": "eae1b72a885ea32618daf256b3cdf05286868402c3804671ec3adb18de007ffa",
+    "stem_lab_module.js": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa"
+  },
+  "matchingEnglishKeys": 797,
+  "missingEnglishKeys": 0,
+  "mismatchedEnglishFallbacks": 0,
+  "testReports": [
+    {
+      "report": "final-unit-results.json",
+      "passed": 120,
+      "skipped": 225
+    },
+    {
+      "report": "final-unit-followup-results.json",
+      "passed": 14,
+      "skipped": 0
+    },
+    {
+      "report": "final-snapshot-results.json",
+      "passed": 1,
+      "skipped": 35
+    }
+  ],
+  "coveredFiles": 22,
+  "focusedChecksPassed": 135,
+  "browserRuns": [
+    {
+      "report": "final-browser-results.json",
+      "startTime": "2026-09-29T03:51:33.493Z",
+      "duration": 646950.51,
+      "expected": 16,
+      "skipped": 8,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    {
+      "report": "followup-browser-results.json",
+      "startTime": "2026-09-29T04:05:03.801Z",
+      "duration": 238520.746,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  ],
+  "browserChecksPassed": 25,
+  "totalChecksPassed": 160
+}

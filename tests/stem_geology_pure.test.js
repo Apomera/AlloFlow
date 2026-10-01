@@ -35,7 +35,8 @@ describe('Geology Explorer — strata generator (characterization lock)', () => 
 
   it('rockKeyAt places the cross-cutting pluton + contact aureole at the centre', () => {
     expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');  // pluton core
-    expect(P.rockKeyAt(10, 7, 7)).toBe('marble');    // baked limestone rim (y in 6..8)
+    expect(P.rockKeyAt(10, 6, 7)).toBe('marble');    // baked rim beside the LIMESTONE rows
+    expect(P.rockKeyAt(10, 7, 7)).toBe('basement');  // no marble made of granite: the rim alters only the layer it touches
   });
 
   it('computeCore merges the column into ordered bands (oldest deepest)', () => {
@@ -53,7 +54,7 @@ describe('Geology Explorer — resolution / detail refactor (world↔voxel decou
     // and the strata generator is unchanged at Standard
     expect(P.rockKeyAt(1, 0, 1)).toBe('soil');
     expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');
-    expect(P.rockKeyAt(10, 7, 7)).toBe('marble');
+    expect(P.rockKeyAt(10, 6, 7)).toBe('marble');
   });
 
   it('total crust depth (NY × km/voxel) stays physically constant across every detail level', () => {
@@ -94,7 +95,7 @@ describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
   it('crust geotherm matches the original linear shallow-crust model (no regression)', () => {
     // tempC = 15 + depthKm*25, presMPa = depthKm*27
     expect(P.crustGeotherm(2.7, 'shale')).toEqual({ tempC: 83, presMPa: 73, state: 'solid' });
-    expect(P.crustGeotherm(10, 'magma').tempC).toBe('≈ 1000+');
+    expect(P.crustGeotherm(10, 'magma').tempC).toBe('≈ 700–1200');   // granite melt ~700-850 °C, basalt ~1100-1200 °C
   });
 
   it('geode generator carves a hollow void, lines it with crystal, and hosts it in basalt (a gas bubble in lava)', () => {
@@ -352,7 +353,7 @@ describe('Geology Explorer — first-person explorer (grounded mining + Deep Ear
     const magma = P.fpProbe(-5.5, -5.5, -5.5);         // edge column, bottom row → magma
     expect(magma.key).toBe('magma');
     const a = P.fpAnnounceText(magma);
-    expect(a).toMatch(/1000/);
+    expect(a).toMatch(/700–1200/);
     expect(a).toMatch(/degrees Celsius/);              // unit must not be dropped for the string temp
     P.setScene('crust');
   });
@@ -619,7 +620,7 @@ describe('Geology Explorer — directional core rig', () => {
     expect(P.coreRigTrajectoryScan([null, {}, 42], null, 3).loadCounts).toEqual({
       preserve: 0, cruise: 3, torque: 0,
     });
-    expect(P.coreRigTrajectorySummary(volatile)).toMatch(/6\/9 recoverable.*volatile resistance.*5 load shifts.*caution boundary risk/i);
+    expect(P.coreRigTrajectorySummary(volatile)).toMatch(/6\/9 recoverable.*volatile resistance.*load shifts: 5.*caution boundary risk/i);
 
     const secretInput = [{
       key: 'secret-magma-key', type: 'Secret Type', name: 'Secret Basalt',

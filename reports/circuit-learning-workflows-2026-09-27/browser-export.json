@@ -1,0 +1,46 @@
+{
+  "format": "alloflow-connected-circuit",
+  "version": 1,
+  "design": {
+    "components": [
+      {
+        "id": 1,
+        "type": "voltage",
+        "a": "A",
+        "b": "0",
+        "value": 5,
+        "waveform": {
+          "shape": "dc",
+          "amplitude": 5,
+          "frequency": 10,
+          "phase": 0,
+          "duty": 50,
+          "edge": 2
+        }
+      },
+      {
+        "id": 2,
+        "type": "resistor",
+        "a": "A",
+        "b": "B",
+        "value": 1000
+      },
+      {
+        "id": 3,
+        "type": "capacitor",
+        "a": "B",
+        "b": "0",
+        "value": 100,
+        "initial": 0
+      }
+    ],
+    "analysis": "time",
+    "duration": 0.5,
+    "integration": "backward-euler"
+  },
+  "view": {
+    "probeRed": "B",
+    "probeBlack": "0",
+    "selected": 3
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:39:00.559Z",
+  "label": "pass2-10-help",
+  "patch": "837c661ee4d13c5004d01f8306176ac866fbe34ee96ec1a2805f3630c9449122",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "3912431cad4d46325d13afbee2bd420c9d144709ca0ec74037836e3be9a1a3ae",
+      "after": "68c20f031a5896d913177992679f8b5ceff0353d8064046afc9f7cca678633c3",
+      "changed": true
+    }
+  ]
+}

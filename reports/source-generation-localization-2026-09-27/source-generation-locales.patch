@@ -1,0 +1,494 @@
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -3961,7 +3961,9 @@
+     "empty_student_heading": "Waiting for your class",
+     "empty_desc_student_live": "You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.",
+     "empty_student_homework_heading": "Loading your homework",
+-    "empty_desc_student_homework": "Your homework is loading. If nothing appears, ask your teacher for a new link or QR code."
++    "empty_desc_student_homework": "Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.",
++    "error_no_source_content": "No usable source text was generated. Your existing source and reading have been kept. Please try again.",
++    "source_partial_generation": "{failed} of {total} sections could not be generated. The rest were kept. Try again to fill the gaps."
+   },
+   "universal": {
+     "title": "Universal Settings",
+diff --git a/desktop/web-app/public/ui_strings.js b/desktop/web-app/public/ui_strings.js
+--- a/desktop/web-app/public/ui_strings.js
++++ b/desktop/web-app/public/ui_strings.js
+@@ -3961,7 +3961,9 @@
+     "empty_student_heading": "Waiting for your class",
+     "empty_desc_student_live": "You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.",
+     "empty_student_homework_heading": "Loading your homework",
+-    "empty_desc_student_homework": "Your homework is loading. If nothing appears, ask your teacher for a new link or QR code."
++    "empty_desc_student_homework": "Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.",
++    "error_no_source_content": "No usable source text was generated. Your existing source and reading have been kept. Please try again.",
++    "source_partial_generation": "{failed} of {total} sections could not be generated. The rest were kept. Try again to fill the gaps."
+   },
+   "universal": {
+     "title": "Universal Settings",
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -3078,7 +3078,9 @@
+     "qs_find": "Buscar un recurso en línea",
+     "qs_find_sub": "Pega un enlace o deja que la IA busque",
+     "qs_generate": "Generar a partir de un tema",
+-    "qs_generate_sub": "La IA lo escribe por ti"
++    "qs_generate_sub": "La IA lo escribe por ti",
++    "error_no_source_content": "No se generó ningún texto fuente utilizable. Se conservaron tu texto fuente y tu lectura existentes. Inténtalo de nuevo.",
++    "source_partial_generation": "No se pudieron generar {failed} de {total} secciones. Se conservaron las demás. Inténtalo de nuevo para completar las que faltan."
+   },
+   "prompts": {
+     "verified_correct": "**Respuesta Correcta Verificada:**",
+diff --git a/desktop/web-app/public/lang/spanish_latin_america.js b/desktop/web-app/public/lang/spanish_latin_america.js
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -3078,7 +3078,9 @@
+     "qs_find": "Buscar un recurso en línea",
+     "qs_find_sub": "Pega un enlace o deja que la IA busque",
+     "qs_generate": "Generar a partir de un tema",
+-    "qs_generate_sub": "La IA lo escribe por ti"
++    "qs_generate_sub": "La IA lo escribe por ti",
++    "error_no_source_content": "No se generó ningún texto fuente utilizable. Se conservaron tu texto fuente y tu lectura existentes. Inténtalo de nuevo.",
++    "source_partial_generation": "No se pudieron generar {failed} de {total} secciones. Se conservaron las demás. Inténtalo de nuevo para completar las que faltan."
+   },
+   "prompts": {
+     "verified_correct": "**Respuesta Correcta Verificada:**",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -3070,7 +3070,9 @@
+     "qs_find": "Buscar un recurso en línea",
+     "qs_find_sub": "Pega un enlace o deja que la IA busque",
+     "qs_generate": "Generar a partir de un tema",
+-    "qs_generate_sub": "La IA lo escribe por ti"
++    "qs_generate_sub": "La IA lo escribe por ti",
++    "error_no_source_content": "No se generó ningún texto fuente utilizable. Se conservaron tu texto fuente y tu lectura existentes. Inténtalo de nuevo.",
++    "source_partial_generation": "No se pudieron generar {failed} de {total} secciones. Se conservaron las demás. Inténtalo de nuevo para completar las que faltan."
+   },
+   "prompts": {
+     "verified_correct": "**Respuesta Correcta Verificada:**",
+diff --git a/desktop/web-app/public/lang/spanish_castilian.js b/desktop/web-app/public/lang/spanish_castilian.js
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -3070,7 +3070,9 @@
+     "qs_find": "Buscar un recurso en línea",
+     "qs_find_sub": "Pega un enlace o deja que la IA busque",
+     "qs_generate": "Generar a partir de un tema",
+-    "qs_generate_sub": "La IA lo escribe por ti"
++    "qs_generate_sub": "La IA lo escribe por ti",
++    "error_no_source_content": "No se generó ningún texto fuente utilizable. Se conservaron tu texto fuente y tu lectura existentes. Inténtalo de nuevo.",
++    "source_partial_generation": "No se pudieron generar {failed} de {total} secciones. Se conservaron las demás. Inténtalo de nuevo para completar las que faltan."
+   },
+   "prompts": {
+     "verified_correct": "**Respuesta Correcta Verificada:**",
+diff --git a/lang/arabic.js b/lang/arabic.js
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -2954,7 +2954,9 @@
+     "qs_find": "ابحث عن مورد على الإنترنت",
+     "qs_find_sub": "الصق رابطًا أو دع الذكاء الاصطناعي يبحث",
+     "qs_generate": "أنشئ من موضوع",
+-    "qs_generate_sub": "الذكاء الاصطناعي يكتبه نيابة عنك"
++    "qs_generate_sub": "الذكاء الاصطناعي يكتبه نيابة عنك",
++    "error_no_source_content": "لم يتم إنشاء نص مصدر صالح للاستخدام. تم الاحتفاظ بنص المصدر والقراءة الموجودين لديك. يرجى المحاولة مرة أخرى.",
++    "source_partial_generation": "تعذّر إنشاء {failed} من أصل {total} أقسام. تم الاحتفاظ بالبقية. حاول مرة أخرى لإكمال الأقسام الناقصة."
+   },
+   "prompts": {
+     "verified_correct": "**الإجابة الصحيحة الموثَّقة:**",
+diff --git a/desktop/web-app/public/lang/arabic.js b/desktop/web-app/public/lang/arabic.js
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -2954,7 +2954,9 @@
+     "qs_find": "ابحث عن مورد على الإنترنت",
+     "qs_find_sub": "الصق رابطًا أو دع الذكاء الاصطناعي يبحث",
+     "qs_generate": "أنشئ من موضوع",
+-    "qs_generate_sub": "الذكاء الاصطناعي يكتبه نيابة عنك"
++    "qs_generate_sub": "الذكاء الاصطناعي يكتبه نيابة عنك",
++    "error_no_source_content": "لم يتم إنشاء نص مصدر صالح للاستخدام. تم الاحتفاظ بنص المصدر والقراءة الموجودين لديك. يرجى المحاولة مرة أخرى.",
++    "source_partial_generation": "تعذّر إنشاء {failed} من أصل {total} أقسام. تم الاحتفاظ بالبقية. حاول مرة أخرى لإكمال الأقسام الناقصة."
+   },
+   "prompts": {
+     "verified_correct": "**الإجابة الصحيحة الموثَّقة:**",
+diff --git a/lang/chinese_simplified.js b/lang/chinese_simplified.js
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -2946,7 +2946,9 @@
+     "qs_find": "在线查找资源",
+     "qs_find_sub": "粘贴链接或让 AI 搜索",
+     "qs_generate": "根据主题生成",
+-    "qs_generate_sub": "AI 为你撰写"
++    "qs_generate_sub": "AI 为你撰写",
++    "error_no_source_content": "未能生成可用的原文。已有原文和阅读文本均已保留。请重试。",
++    "source_partial_generation": "共有 {total} 个章节，其中 {failed} 个未能生成。其余章节已保留。请重试以补全缺失的章节。"
+   },
+   "prompts": {
+     "verified_correct": "**已核实的正确答案：**",
+diff --git a/desktop/web-app/public/lang/chinese_simplified.js b/desktop/web-app/public/lang/chinese_simplified.js
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -2946,7 +2946,9 @@
+     "qs_find": "在线查找资源",
+     "qs_find_sub": "粘贴链接或让 AI 搜索",
+     "qs_generate": "根据主题生成",
+-    "qs_generate_sub": "AI 为你撰写"
++    "qs_generate_sub": "AI 为你撰写",
++    "error_no_source_content": "未能生成可用的原文。已有原文和阅读文本均已保留。请重试。",
++    "source_partial_generation": "共有 {total} 个章节，其中 {failed} 个未能生成。其余章节已保留。请重试以补全缺失的章节。"
+   },
+   "prompts": {
+     "verified_correct": "**已核实的正确答案：**",
+diff --git a/lang/thai.js b/lang/thai.js
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -4634,7 +4634,9 @@
+     "qs_find": "ค้นหาแหล่งข้อมูลออนไลน์",
+     "qs_find_sub": "วางลิงก์หรือให้ AI ค้นหา",
+     "qs_generate": "สร้างจากหัวข้อ",
+-    "qs_generate_sub": "AI เขียนให้คุณ"
++    "qs_generate_sub": "AI เขียนให้คุณ",
++    "error_no_source_content": "ไม่สามารถสร้างข้อความต้นฉบับที่ใช้งานได้ ข้อความต้นฉบับและบทอ่านเดิมของคุณยังคงอยู่ โปรดลองอีกครั้ง",
++    "source_partial_generation": "ไม่สามารถสร้างได้ {failed} จากทั้งหมด {total} ส่วน ส่วนที่เหลือยังคงอยู่ ลองอีกครั้งเพื่อเติมส่วนที่ขาด"
+   },
+   "analysis": {
+     "title": "วิเคราะห์เนื้อหาต้นฉบับ",
+diff --git a/desktop/web-app/public/lang/thai.js b/desktop/web-app/public/lang/thai.js
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -4634,7 +4634,9 @@
+     "qs_find": "ค้นหาแหล่งข้อมูลออนไลน์",
+     "qs_find_sub": "วางลิงก์หรือให้ AI ค้นหา",
+     "qs_generate": "สร้างจากหัวข้อ",
+-    "qs_generate_sub": "AI เขียนให้คุณ"
++    "qs_generate_sub": "AI เขียนให้คุณ",
++    "error_no_source_content": "ไม่สามารถสร้างข้อความต้นฉบับที่ใช้งานได้ ข้อความต้นฉบับและบทอ่านเดิมของคุณยังคงอยู่ โปรดลองอีกครั้ง",
++    "source_partial_generation": "ไม่สามารถสร้างได้ {failed} จากทั้งหมด {total} ส่วน ส่วนที่เหลือยังคงอยู่ ลองอีกครั้งเพื่อเติมส่วนที่ขาด"
+   },
+   "analysis": {
+     "title": "วิเคราะห์เนื้อหาต้นฉบับ",
+diff --git a/translations/source-generation-locales.json b/translations/source-generation-locales.json
+new file mode 100644
+--- /dev/null
++++ b/translations/source-generation-locales.json
+@@ -0,0 +1,32 @@
++{
++  "schemaVersion": 1,
++  "sourceRevision": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
++  "sourceState": "Captured working source; deployed state not verified. Exact frozen messages from the completed preservation handoff.",
++  "scope": "Two source-generation failure/partial-success messages. AI-authored translations; native-speaker review pending. Independent of reader navigation catalogs.",
++  "english": {
++    "input.error_no_source_content": "No usable source text was generated. Your existing source and reading have been kept. Please try again.",
++    "input.source_partial_generation": "{failed} of {total} sections could not be generated. The rest were kept. Try again to fill the gaps."
++  },
++  "locales": {
++    "spanish_latin_america": {
++      "input.error_no_source_content": "No se generó ningún texto fuente utilizable. Se conservaron tu texto fuente y tu lectura existentes. Inténtalo de nuevo.",
++      "input.source_partial_generation": "No se pudieron generar {failed} de {total} secciones. Se conservaron las demás. Inténtalo de nuevo para completar las que faltan."
++    },
++    "spanish_castilian": {
++      "input.error_no_source_content": "No se generó ningún texto fuente utilizable. Se conservaron tu texto fuente y tu lectura existentes. Inténtalo de nuevo.",
++      "input.source_partial_generation": "No se pudieron generar {failed} de {total} secciones. Se conservaron las demás. Inténtalo de nuevo para completar las que faltan."
++    },
++    "arabic": {
++      "input.error_no_source_content": "لم يتم إنشاء نص مصدر صالح للاستخدام. تم الاحتفاظ بنص المصدر والقراءة الموجودين لديك. يرجى المحاولة مرة أخرى.",
++      "input.source_partial_generation": "تعذّر إنشاء {failed} من أصل {total} أقسام. تم الاحتفاظ بالبقية. حاول مرة أخرى لإكمال الأقسام الناقصة."
++    },
++    "chinese_simplified": {
++      "input.error_no_source_content": "未能生成可用的原文。已有原文和阅读文本均已保留。请重试。",
++      "input.source_partial_generation": "共有 {total} 个章节，其中 {failed} 个未能生成。其余章节已保留。请重试以补全缺失的章节。"
++    },
++    "thai": {
++      "input.error_no_source_content": "ไม่สามารถสร้างข้อความต้นฉบับที่ใช้งานได้ ข้อความต้นฉบับและบทอ่านเดิมของคุณยังคงอยู่ โปรดลองอีกครั้ง",
++      "input.source_partial_generation": "ไม่สามารถสร้างได้ {failed} จากทั้งหมด {total} ส่วน ส่วนที่เหลือยังคงอยู่ ลองอีกครั้งเพื่อเติมส่วนที่ขาด"
++    }
++  }
++}
+diff --git a/dev-tools/i18n/apply_source_generation_locales.cjs b/dev-tools/i18n/apply_source_generation_locales.cjs
+new file mode 100644
+--- /dev/null
++++ b/dev-tools/i18n/apply_source_generation_locales.cjs
+@@ -0,0 +1,70 @@
++#!/usr/bin/env node
++// Independent two-message batch; leaves all reader and unrelated catalog values intact.
++const fs = require('node:fs');
++const path = require('node:path');
++const ROOT = path.resolve(__dirname, '../..');
++const LOCALES = ['spanish_latin_america', 'spanish_castilian', 'arabic', 'chinese_simplified', 'thai'];
++const COPY = Object.freeze({
++  'input.error_no_source_content': 'No usable source text was generated. Your existing source and reading have been kept. Please try again.',
++  'input.source_partial_generation': '{failed} of {total} sections could not be generated. The rest were kept. Try again to fill the gaps.',
++});
++const KEYS = Object.keys(COPY);
++const lookup = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
++const placeholders = text => [...text.matchAll(/\{([^{}]+)\}/g)].map(match => match[1]).sort();
++const sameKeys = (object, keys) => object && JSON.stringify(Object.keys(object).sort()) === JSON.stringify([...keys].sort());
++function validatePayload(payload) {
++  if (payload?.schemaVersion !== 1 || !sameKeys(payload.english, KEYS) || !sameKeys(payload.locales, LOCALES)) throw Error('Expected the frozen two-message source-generation contract and five locales.');
++  for (const key of KEYS) if (payload.english[key] !== COPY[key]) throw Error('English copy changed; review before translating: ' + key);
++  for (const locale of LOCALES) {
++    const values = payload.locales[locale];
++    if (!sameKeys(values, KEYS)) throw Error('Key coverage differs: ' + locale);
++    for (const key of KEYS) {
++      const value = values[key];
++      if (typeof value !== 'string' || !value.trim() || value.includes('input.') || value === COPY[key]) throw Error('Missing translation: ' + locale + ' ' + key);
++      if (JSON.stringify(placeholders(value)) !== JSON.stringify(placeholders(COPY[key]))) throw Error('Placeholder mismatch: ' + locale + ' ' + key);
++    }
++  }
++  return KEYS;
++}
++function mergePack(pack, values) {
++  if (!sameKeys(values, KEYS)) throw Error('Unexpected merge keys.');
++  const next = { ...pack, input: { ...pack.input } };
++  for (const key of KEYS) {
++    const leaf = key.slice('input.'.length), existing = next.input[leaf];
++    if (existing !== undefined && existing !== values[key]) throw Error('Existing catalog value differs; resolve ownership first: ' + key);
++    next.input[leaf] = values[key];
++  }
++  return next;
++}
++function plan(root = ROOT) {
++  const payload = JSON.parse(fs.readFileSync(path.join(root, 'translations/source-generation-locales.json'), 'utf8'));
++  validatePayload(payload);
++  const targets = [['ui_strings.js', payload.english], ['desktop/web-app/public/ui_strings.js', payload.english]];
++  for (const locale of LOCALES) for (const prefix of ['lang', 'desktop/web-app/public/lang']) targets.push([prefix + '/' + locale + '.js', payload.locales[locale]]);
++  const changes = [];
++  for (const [relative, values] of targets) {
++    const file = path.join(root, relative), original = fs.readFileSync(file, 'utf8'), pack = JSON.parse(original), next = mergePack(pack, values);
++    if (KEYS.some(key => lookup(pack, key) !== values[key])) changes.push({ file, original, contents: JSON.stringify(next, null, 2) + (original.endsWith('\n') ? '\n' : '') });
++  }
++  return changes;
++}
++function run(apply = false, root = ROOT) {
++  const changes = plan(root);
++  if (!apply && changes.length) throw Error(changes.length + ' catalogs need the scoped merge; run with --apply.');
++  // Validate all targets before any write; preserve concurrent edits and use per-file atomic replacement.
++  for (const change of changes) if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Catalog changed during merge: ' + change.file);
++  for (const change of changes) {
++    if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Catalog changed during merge: ' + change.file);
++    const temporary = change.file + '.source-generation-locale-' + process.pid + '.tmp';
++    try { fs.writeFileSync(temporary, change.contents); fs.renameSync(temporary, change.file); }
++    finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
++  }
++  return { keys: KEYS.length, locales: LOCALES.length, changedFiles: changes.length, mode: apply ? 'apply' : 'check' };
++}
++function parseArgs(args) {
++  if (!args.length || args.length === 1 && args[0] === '--check') return false;
++  if (args.length === 1 && args[0] === '--apply') return true;
++  throw Error('Use --check (default) or --apply.');
++}
++module.exports = { COPY, KEYS, LOCALES, lookup, placeholders, validatePayload, mergePack, plan, run, parseArgs };
++if (require.main === module) console.log(JSON.stringify(run(parseArgs(process.argv.slice(2))), null, 2));
+diff --git a/tests/fixtures/source_generation_locales.json b/tests/fixtures/source_generation_locales.json
+new file mode 100644
+--- /dev/null
++++ b/tests/fixtures/source_generation_locales.json
+@@ -0,0 +1,50 @@
++[
++  {
++    "id": "source_generation_en_v1",
++    "locale": "English",
++    "tag": "en",
++    "dir": "ltr",
++    "oldInput": "The original passage is retained.",
++    "uiLanguage": "English"
++  },
++  {
++    "id": "source_generation_es419_v1",
++    "locale": "spanish_latin_america",
++    "tag": "es-419",
++    "dir": "ltr",
++    "oldInput": "Se conserva el texto original.",
++    "uiLanguage": "Spanish (Latin America)"
++  },
++  {
++    "id": "source_generation_esES_v1",
++    "locale": "spanish_castilian",
++    "tag": "es-ES",
++    "dir": "ltr",
++    "oldInput": "Se conserva el texto original.",
++    "uiLanguage": "Spanish (Castilian)"
++  },
++  {
++    "id": "source_generation_ar_rtl_v1",
++    "locale": "arabic",
++    "tag": "ar",
++    "dir": "rtl",
++    "oldInput": "يُحتفظ بالنص الأصلي.",
++    "uiLanguage": "Arabic"
++  },
++  {
++    "id": "source_generation_zh_unspaced_v1",
++    "locale": "chinese_simplified",
++    "tag": "zh-Hans",
++    "dir": "ltr",
++    "oldInput": "原文保持不变。",
++    "uiLanguage": "Chinese (Simplified)"
++  },
++  {
++    "id": "source_generation_th_unspaced_v1",
++    "locale": "thai",
++    "tag": "th",
++    "dir": "ltr",
++    "oldInput": "ข้อความต้นฉบับยังคงอยู่",
++    "uiLanguage": "Thai"
++  }
++]
+diff --git a/tests/helpers/source_generation_locale_harness.js b/tests/helpers/source_generation_locale_harness.js
+new file mode 100644
+--- /dev/null
++++ b/tests/helpers/source_generation_locale_harness.js
+@@ -0,0 +1,43 @@
++import { readFileSync } from 'node:fs';
++import { vi } from 'vitest';
++import { loadAlloModule } from '../setup.js';
++export const fixtures = JSON.parse(readFileSync('tests/fixtures/source_generation_locales.json', 'utf8'));
++export const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++export const BODY = 'The sun warms water in lakes. Water evaporates into the air, cools into clouds, and falls as rain. Rivers carry water back to lakes.';
++let createContentEngine;
++const hostSource = readFileSync('AlloFlowANTI.txt', 'utf8');
++const translators = [...hostSource.matchAll(/const t = useCallback\((\(keyString, params = \{\}\) => \{[\s\S]+?\}), \[languagePack\]\);/g)];
++if (translators.length !== 1) throw Error('Host translator boundary changed; review fixture extraction.');
++const createTranslator = new Function('languagePack', 'UI_STRINGS', 'WORD_SOUNDS_STRINGS', 'return (' + translators[0][1] + ');');
++const localePacks = new Map(fixtures.map(fixture => [fixture.locale, fixture.locale === 'English' ? {} : JSON.parse(readFileSync('lang/' + fixture.locale + '.js', 'utf8'))]));
++export function hostTranslator(locale, overridePack) {
++  return createTranslator(overridePack ?? localePacks.get(locale), english, {});
++}
++export function setupEngine() {
++  loadAlloModule('text_pipeline_helpers_module.js');
++  loadAlloModule('own_sources_module.js');
++  window.__alloUtils = { ...window.AlloModules.TextPipelineHelpers, cleanJson: value => String(value || '').trim(), safeJsonParse: value => { try { return JSON.parse(value); } catch (_) { return null; } } };
++  new Function(readFileSync('content_engine_source.jsx', 'utf8'))();
++  createContentEngine = window.AlloModules.createContentEngine;
++}
++export function sourceHarness(fixture, { partial = false, translate = hostTranslator(fixture.locale) } = {}) {
++  vi.useFakeTimers();
++  const priorReading = { id: 'existing-' + fixture.id, data: fixture.oldInput, config: { language: fixture.tag } };
++  const state = { inputText: fixture.oldInput, generatedContent: priorReading, activeView: 'output', error: null,
++    gradeLevel: '5th Grade', sourceTopic: 'Water cycle', currentUiLanguage: fixture.uiLanguage, leveledTextLanguage: 'English',
++    selectedLanguages: [], studentInterests: [], selectedConcepts: [], sourceCustomInstructions: '', sourceLength: partial ? '1500' : '250',
++    sourceLevel: '5th Grade', sourceTone: 'Informative', sourceVocabulary: '', resourceCount: 1, targetStandards: [], dokLevel: '', selectedFont: 'Default',
++    includeSourceCitations: false, useOwnSources: false, documentsOnly: false, standardsPromptString: '', ai: { backend: 'gemini' },
++    alloBotRef: { current: null }, showSourceGen: true, isGeneratingSource: false, generationStep: '', recordSourceProvenance: vi.fn() };
++  for (const key of ['activeView','error','generatedContent','generationStep','inputText','isGeneratingSource','showSourceGen']) state['set' + key[0].toUpperCase() + key.slice(1)] = vi.fn(value => { state[key] = typeof value === 'function' ? value(state[key]) : value; });
++  let articleCalls = 0; const unexpected = [];
++  const callGemini = vi.fn(async prompt => {
++    if (/Plan a comprehensive educational article/.test(prompt)) return JSON.stringify(['Evaporation','Condensation','Rain']);
++    if (/Write a self-contained educational article|Write the section/.test(prompt)) { articleCalls++; return partial && articleCalls === 2 ? '## Condensation\n\n' + BODY : ''; }
++    unexpected.push(prompt); throw Error('Unexpected request: ' + String(prompt).slice(0,80));
++  });
++  const addToast = vi.fn(), engine = createContentEngine({ callGemini, addToast, t: translate, getState: () => state, flyToElement: () => {} });
++  return { state, priorReading, callGemini, addToast, engine, unexpected };
++}
++export async function finish(h) { const operation = h.engine.handleGenerateSource(); const completed = operation.then(value => ({ value }), error => ({ error })); await vi.runAllTimersAsync(); const result = await completed; if (result.error) throw result.error; }
++export function cleanupEngine() { delete window.callGemini; delete window.__contentEngineState; vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); }
+diff --git a/tests/source_generation_locales.test.js b/tests/source_generation_locales.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/source_generation_locales.test.js
+@@ -0,0 +1,47 @@
++import { beforeAll, afterEach, describe, it, expect } from 'vitest';
++import { fixtures, english, BODY, hostTranslator, setupEngine, sourceHarness, finish, cleanupEngine } from './helpers/source_generation_locale_harness.js';
++const errorKey = 'input.error_no_source_content', partialKey = 'input.source_partial_generation';
++const lookup = key => key.split('.').reduce((object, part) => object[part], english);
++const readable = text => { expect(typeof text).toBe('string'); expect(text.trim()).not.toBe(''); expect(text).not.toMatch(/input\.(?:error_no_source_content|source_partial_generation)|\{(?:failed|total)\}/); };
++beforeAll(setupEngine);
++afterEach(cleanupEngine);
++describe('source-generation notices use real locale packs and host interpolation', () => {
++  for (const fixture of fixtures) {
++    it(fixture.id + ': empty generation explains preservation in the interface language', async () => {
++      const h = sourceHarness(fixture); await finish(h);
++      expect(h.state.error).toBe(hostTranslator(fixture.locale)(errorKey)); readable(h.state.error);
++      expect(h.callGemini.mock.calls[0][0]).toContain(fixture.uiLanguage);
++      expect(h.state.inputText).toBe(fixture.oldInput); expect(h.state.generatedContent).toBe(h.priorReading); expect(h.state.activeView).toBe('output');
++      expect(h.state.recordSourceProvenance).not.toHaveBeenCalled(); expect(h.state.setInputText).not.toHaveBeenCalled();
++      expect(h.state.showSourceGen).toBe(true); expect(h.state.isGeneratingSource).toBe(false); expect(h.unexpected).toEqual([]);
++    });
++    it(fixture.id + ': partial generation interpolates the exact missing/total counts', async () => {
++      const h = sourceHarness(fixture, { partial: true }); await finish(h);
++      const warnings = h.addToast.mock.calls.filter(([, level]) => level === 'warning');
++      expect(warnings).toHaveLength(1);
++      expect(warnings[0][0]).toBe(hostTranslator(fixture.locale)(partialKey, { failed: 2, total: 3 })); readable(warnings[0][0]);
++      expect(h.state.inputText).toContain(BODY); expect(h.state.inputText).not.toContain('## Evaporation'); expect(h.state.inputText).not.toContain('## Rain');
++      expect(h.state.setInputText).toHaveBeenCalledTimes(1); expect(h.state.recordSourceProvenance).toHaveBeenCalledTimes(1); expect(h.state.error).toBeNull(); expect(h.unexpected).toEqual([]);
++    });
++    it(fixture.id + ': respects translator placeholder order and numeric zero', () => {
++      const t = hostTranslator(fixture.locale), message = t(partialKey, { failed: 0, total: 12 });
++      expect(message).toContain('0'); expect(message).toContain('12'); readable(message);
++      if (fixture.locale === 'chinese_simplified') expect(message.indexOf('12')).toBeLessThan(message.indexOf('0'));
++    });
++  }
++  for (const mode of ['missing','echoed','blank','throwing','non-string']) it(mode + ': the owned messages retain readable English fallback for both outcomes', async () => {
++    const faulty = mode === 'missing' ? () => undefined : mode === 'echoed' ? key => key : mode === 'blank' ? () => '  ' : mode === 'non-string' ? () => ({ value: 'bad catalog' }) : () => { throw Error('Catalog unavailable'); };
++    const base = hostTranslator('arabic'), translate = (key, values) => [errorKey,partialKey].includes(key) ? faulty(key, values) : base(key, values);
++    const failed = sourceHarness(fixtures.find(f => f.locale === 'arabic'), { translate }); await finish(failed);
++    expect(failed.state.error).toBe(lookup(errorKey)); readable(failed.state.error);
++    expect(failed.state.inputText).toBe(fixtures.find(f => f.locale === 'arabic').oldInput);
++    const partial = sourceHarness(fixtures.find(f => f.locale === 'arabic'), { translate, partial: true }); await finish(partial);
++    const message = partial.addToast.mock.calls.find(([, level]) => level === 'warning')[0];
++    expect(message).toBe(lookup(partialKey).replace('{failed}', '2').replace('{total}', '3')); readable(message);
++  });
++  it('a missing Arabic pack entry uses the registered English catalog while preserving the Arabic reading', async () => {
++    const fixture = fixtures.find(f => f.locale === 'arabic'), translate = hostTranslator(fixture.locale, {});
++    const h = sourceHarness(fixture, { translate }); await finish(h);
++    expect(h.state.error).toBe(lookup(errorKey)); expect(h.state.generatedContent.config.language).toBe('ar'); expect(h.state.inputText).toBe(fixture.oldInput);
++  });
++});
+diff --git a/tests/source_generation_locale_catalogs.test.js b/tests/source_generation_locale_catalogs.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/source_generation_locale_catalogs.test.js
+@@ -0,0 +1,54 @@
++import { describe, it, expect } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++const require = createRequire(import.meta.url);
++const { COPY, KEYS, LOCALES, lookup, placeholders, validatePayload, mergePack, run, parseArgs } = require('../dev-tools/i18n/apply_source_generation_locales.cjs');
++const payload = JSON.parse(readFileSync('translations/source-generation-locales.json', 'utf8'));
++describe('bounded source-generation catalog contract', () => {
++  it('freezes both exact English source literals, with registered mirrors', () => {
++    const ast = require('@babel/parser').parse(readFileSync('content_engine_source.jsx', 'utf8'), { sourceType: 'script' });
++    const source = new Map();
++    function visit(node) {
++      if (!node || typeof node !== 'object') return;
++      if (node.type === 'CallExpression' && node.callee?.name === 'sourceMessage' && node.arguments[0]?.type === 'StringLiteral' && node.arguments[1]?.type === 'StringLiteral') source.set(node.arguments[0].value, node.arguments[1].value);
++      for (const value of Object.values(node)) if (Array.isArray(value)) value.forEach(visit); else if (value && typeof value === 'object') visit(value);
++    }
++    visit(ast);
++    expect(validatePayload(payload)).toEqual(KEYS);
++    for (const key of KEYS) {
++      expect(source.get(key)).toBe(COPY[key]);
++      for (const file of ['ui_strings.js','desktop/web-app/public/ui_strings.js']) expect(lookup(JSON.parse(readFileSync(file, 'utf8')), key)).toBe(COPY[key]);
++    }
++  });
++  for (const locale of LOCALES) it(locale + ': exact coverage, reordered placeholders and root/public parity', () => {
++    const root = JSON.parse(readFileSync('lang/' + locale + '.js', 'utf8')), mirror = JSON.parse(readFileSync('desktop/web-app/public/lang/' + locale + '.js', 'utf8'));
++    for (const key of KEYS) { expect(lookup(root,key)).toBe(payload.locales[locale][key]); expect(lookup(mirror,key)).toBe(payload.locales[locale][key]); expect(placeholders(lookup(root,key))).toEqual(placeholders(COPY[key])); }
++  });
++  it.each(['missing','renamed','duplicated'])('rejects a %s count placeholder', mode => {
++    const p = structuredClone(payload), key = 'input.source_partial_generation';
++    p.locales.thai[key] = p.locales.thai[key].replace('{failed}', mode === 'missing' ? '2' : mode === 'renamed' ? '{missing}' : '{failed} {failed}');
++    expect(() => validatePayload(p)).toThrow(/Placeholder mismatch/);
++  });
++  it.each(['blank','echoed','embedded key','English'])('rejects %s translations', mode => {
++    const p = structuredClone(payload), key = KEYS[0];
++    p.locales.arabic[key] = mode === 'blank' ? ' ' : mode === 'echoed' ? key : mode === 'embedded key' ? 'Error: ' + key : COPY[key];
++    expect(() => validatePayload(p)).toThrow(/Missing translation/);
++  });
++  it('rejects changed English, an extra key, or an extra locale before merging', () => {
++    const p = structuredClone(payload); p.english[KEYS[0]] += ' Changed.'; expect(() => validatePayload(p)).toThrow(/English copy changed/);
++    p.english[KEYS[0]] = COPY[KEYS[0]]; p.locales.thai['input.unowned'] = 'extra'; expect(() => validatePayload(p)).toThrow(/coverage/);
++    delete p.locales.thai['input.unowned']; p.locales.extra = p.locales.thai; expect(() => validatePayload(p)).toThrow(/five locales/);
++  });
++  it('refuses existing conflicting copy and leaves original/unrelated values untouched', () => {
++    const original = { input: { label: 'Keep', source_partial_generation: 'Different owner wording' }, simplified: { read: 'Keep this too' } }, before = JSON.stringify(original);
++    expect(() => mergePack(original, payload.locales.thai)).toThrow(/resolve ownership/); expect(JSON.stringify(original)).toBe(before);
++    delete original.input.source_partial_generation;
++    const merged = mergePack(original, payload.locales.thai);
++    expect(original.input.error_no_source_content).toBeUndefined(); expect(merged.input.label).toBe('Keep'); expect(merged.simplified).toBe(original.simplified);
++  });
++  it('has zero pending catalog writes and rejects ambiguous CLI modes', () => {
++    expect(run(false)).toEqual({ keys: 2, locales: 5, changedFiles: 0, mode: 'check' });
++    expect(parseArgs([])).toBe(false); expect(parseArgs(['--check'])).toBe(false); expect(parseArgs(['--apply'])).toBe(true);
++    expect(() => parseArgs(['--check','--apply'])).toThrow(); expect(() => parseArgs(['--apply-all'])).toThrow();
++  });
++});

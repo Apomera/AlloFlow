@@ -1,0 +1,50 @@
+{
+  "en": {
+    "device_activity_notice": "Activity totals show work saved on this device. Choose a family member to view their saved sessions.",
+    "progress_intro": "Track your learning growth over time",
+    "family_members": "Family members",
+    "no_saved_sessions": "No saved sessions for this family member yet.",
+    "resources_opened": "Resources opened",
+    "device_activity": "Activity on this device",
+    "saved_responses": "Responses",
+    "download_device_progress_report": "Download device progress report",
+    "progress_details": "Details",
+    "all_family_members": "Everyone"
+  },
+  "french": {
+    "device_activity_notice": "Les totaux correspondent au travail enregistré sur cet appareil. Choisissez un membre de la famille pour consulter ses séances enregistrées.",
+    "progress_intro": "Suivez vos progrès au fil du temps",
+    "family_members": "Membres de la famille",
+    "no_saved_sessions": "Aucune séance enregistrée pour ce membre de la famille.",
+    "resources_opened": "Ressources ouvertes",
+    "device_activity": "Activité sur cet appareil",
+    "saved_responses": "Réponses",
+    "download_device_progress_report": "Télécharger le rapport de progression de cet appareil",
+    "progress_details": "Détails",
+    "all_family_members": "Tout le monde"
+  },
+  "spanish_latin_america": {
+    "device_activity_notice": "Los totales muestran el trabajo guardado en este dispositivo. Elige un miembro de la familia para ver sus sesiones guardadas.",
+    "progress_intro": "Sigue tu progreso a lo largo del tiempo",
+    "family_members": "Miembros de la familia",
+    "no_saved_sessions": "Este miembro de la familia aún no tiene sesiones guardadas.",
+    "resources_opened": "Recursos abiertos",
+    "device_activity": "Actividad en este dispositivo",
+    "saved_responses": "Respuestas",
+    "download_device_progress_report": "Descargar el informe de progreso de este dispositivo",
+    "progress_details": "Detalles",
+    "all_family_members": "Todos"
+  },
+  "arabic": {
+    "device_activity_notice": "تعرض الإجماليات العمل المحفوظ على هذا الجهاز. اختر أحد أفراد الأسرة لعرض جلساته المحفوظة.",
+    "progress_intro": "تابع تقدمك في التعلم بمرور الوقت",
+    "family_members": "أفراد الأسرة",
+    "no_saved_sessions": "لا توجد جلسات محفوظة لهذا الفرد من الأسرة حتى الآن.",
+    "resources_opened": "الموارد المفتوحة",
+    "device_activity": "النشاط على هذا الجهاز",
+    "saved_responses": "الإجابات",
+    "download_device_progress_report": "تنزيل تقرير التقدم لهذا الجهاز",
+    "progress_details": "التفاصيل",
+    "all_family_members": "الجميع"
+  }
+}

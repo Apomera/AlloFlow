@@ -1,0 +1,18 @@
+{
+  "commit": "3b2aac2c721c30a8fe7dcd1125cfdbe9c2120a09",
+  "parent": "f871ef9cdc35ce48e359738b11e6e6920dd1f3d4",
+  "files": [
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/ui_strings.js",
+    "dev-tools/scale_explorer_visual_review.cjs",
+    "reports/scale-explorer-notebook/README.md",
+    "reports/scale-explorer-notebook/desktop-notebook.png",
+    "reports/scale-explorer-notebook/phone-notebook.png",
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "tests/e2e/scale-explorer-inspection.spec.ts",
+    "tests/e2e/scale-explorer-landmarks.spec.ts",
+    "tests/e2e/scale-explorer-notebook.spec.ts",
+    "tests/scale_explorer_notebook.test.js",
+    "ui_strings.js"
+  ]
+}

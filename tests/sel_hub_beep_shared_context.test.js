@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
 // `var _selAudioCtx = null;` lived INSIDE SelHubModal, so it was re-declared
@@ -155,11 +155,13 @@ describe('the celebration fanfare rides on the same context', () => {
 });
 
 describe('the SEL hub mirrors stay in step', () => {
-  for (const mirror of [
-    'desktop/web-app/public/sel_hub/sel_hub_module.js',
-    'desktop/web-app/build/sel_hub/sel_hub_module.js'
+  // desktop/web-app/build/ is a gitignored build output (absent in CI): check it only once built.
+  for (const [mirror, buildOutput] of [
+    ['desktop/web-app/public/sel_hub/sel_hub_module.js', false],
+    ['desktop/web-app/build/sel_hub/sel_hub_module.js', true]
   ]) {
-    it(mirror + ' is byte-identical', () => {
+    const unbuilt = buildOutput && !existsSync(mirror);
+    it.skipIf(unbuilt)(mirror + ' is byte-identical' + (unbuilt ? ' (skipped: gitignored build output not present)' : ''), () => {
       expect(readFileSync(mirror, 'utf8')).toBe(source());
     });
   }

@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Actual 3D presses meet resistance on firm tomatoes, split softened pieces, then flatten them into pulp. Their finite juice transfers into the sauce without advancing time or creating saved pasta water.",
+    "Illustrated dragging and keyboard presses use the same model. Partial, sideways, and cancelled presses preserve the food. Fully crushed pieces cannot supply extra juice; partial texture survives reload.",
+    "Pressing after a dish check invalidates it. The mixer and spoon inspection identify unmixed tomato juice; folding incorporates it and a new sample records the chosen texture.",
+    "The masher follows a wide pan onto the trivet. Pressing scorched tomatoes preserves both their damage and visible scorch coloring.",
+    "Graphics-context loss cancels an uncommitted press and leaves accessible pressing controls available.",
+    "Historical texture and juice release appear in locked replay and exported evidence. Genuine earlier tomato cooks retain their original model.",
+    "Real touch presses work without WebGL and touch cancellation keeps the piece unchanged. Desktop, narrow layouts, and forced colors pass automated accessibility checks."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop tomato press",
+      "issues": []
+    },
+    {
+      "label": "320px tomato press",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

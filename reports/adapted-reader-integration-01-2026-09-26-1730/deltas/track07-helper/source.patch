@@ -1,0 +1,605 @@
+diff --git a/generation_helpers_source.jsx b/generation_helpers_source.jsx
+index 90c3facad..e81cba3a5 100644
+--- a/generation_helpers_source.jsx
++++ b/generation_helpers_source.jsx
+@@ -3495,10 +3495,21 @@ const handleComplexityAdjustment = async (deps) => {
+     // adaptationPlan (reader, 2026-09-26): { options } adds precise changes;
+     // preview returns the candidate without saving; apply saves a previewed one.
+     const plan = deps.adaptationPlan && typeof deps.adaptationPlan === 'object' ? deps.adaptationPlan : null;
+-    const planOptions = generatedContent?.type === 'simplified' && plan && plan.options ? plan.options : {};
+-    const keepTerms = (Array.isArray(planOptions.keepTerms) ? planOptions.keepTerms : []).map(term => String(term || '').trim()).filter(Boolean).slice(0, 30);
+-    const hasPlanOptions = !!(planOptions.shorterSentences || planOptions.explainVocabulary || keepTerms.length);
+     const prepared = plan && plan.apply && typeof plan.apply === 'object' ? plan.apply : null;
++    const preparedRequest = prepared ? _adaptationPreviewRequests.get(prepared) : null;
++    const planOptions = generatedContent?.type === 'simplified' ? (preparedRequest?.options || plan?.options || {}) : {};
++    const requestedTerms = preparedRequest?.requestedTerms || (planOptions.keepTerms === undefined ? [] : planOptions.keepTerms);
++    const normalizedTerms = _preservedVocabulary.normalize(requestedTerms);
++    const keepTerms = normalizedTerms.terms;
++    const hasPlanOptions = !!(planOptions.shorterSentences || planOptions.explainVocabulary || keepTerms.length || !normalizedTerms.valid);
++    const vocabularyPolicy = JSON.stringify([effectiveLanguage, !!_xlate.enabled, _xlate.target || '', _xlate.mode || '']);
++    let vocabularyRejected = false;
++    const rejectVocabulary = audit => {
++        vocabularyRejected = true;
++        const message = _preservedVocabulary.feedback(audit);
++        addToast(message, 'warning');
++        return { status: 'rejected', reason: audit.reason || 'invalid-preserved-terms', sourceRetained: true, message, vocabulary: audit };
++    };
+     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
+     if ((complexityLevel === 5 && !hasPlanOptions && !prepared) || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
+     const originalForm = generatedContent.instructionalText?.form || generatedContent.config?.instructionalText?.form;
+@@ -3514,6 +3525,17 @@ const handleComplexityAdjustment = async (deps) => {
+         addToast(t('simplified.adapt_preview_stale'), 'warning');
+         return { status: 'stale' };
+     }
++    if (preparedRequest && generatedContent.type !== 'simplified') return { status: 'stale' };
++    if (prepared && generatedContent.type === 'simplified') {
++        if (!preparedRequest) return rejectVocabulary({ status: 'unverified', reason: 'preview-validation-unavailable' });
++        const currentOptions = plan.options && { shorterSentences: !!plan.options.shorterSentences, explainVocabulary: !!plan.options.explainVocabulary, keepTerms: plan.options.keepTerms === undefined ? [] : plan.options.keepTerms };
++        if (preparedRequest.resourceId !== requestResourceId || preparedRequest.baseData !== requestResourceData
++            || preparedRequest.policy !== vocabularyPolicy || preparedRequest.complexityLevel !== Number(complexityLevel)
++            || (currentOptions && (JSON.stringify(currentOptions) !== JSON.stringify(preparedRequest.options)))) {
++            addToast(t('simplified.adapt_preview_stale'), 'warning');
++            return { status: 'stale' };
++        }
++    }
+     setIsProcessing(true);
+     try {
+         const isSimpler = complexityLevel < 5;
+@@ -3564,6 +3586,13 @@ const handleComplexityAdjustment = async (deps) => {
+                 afterCount: candidateOccurrences.length
+             };
+         };
++        // Require the real reference splitter for vocabulary evidence; the legacy
++        // citation fallback must not make reference-only matches count as body text.
++        const vocabularySplit = window.AlloModules?.TextPipelineHelpers?.splitReferencesFromBody
++            || window.AlloModules?.GenDispatcher?.splitAdaptationReferences;
++        let vocabularyAudit = generatedContent.type === 'simplified'
++            ? _preservedVocabulary.prepare(requestResourceData, requestedTerms, vocabularySplit) : null;
++        if (vocabularyAudit && !vocabularyAudit.valid) return rejectVocabulary(vocabularyAudit);
+         let prompt = '';
+         let jsonMode = false;
+         let simplifiedCitationContext = null;
+@@ -3580,10 +3609,11 @@ const handleComplexityAdjustment = async (deps) => {
+                 wasBilingual: !!sourceExtraction.isBilingual
+             };
+             const direction = complexityLevel === 5 ? "About the same reading level" : isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
++            const primaryKeepTerms = vocabularyAudit.required.filter(entry => entry.panes.some(pane => pane.pane === 'primary')).map(entry => entry.term);
+             const planLines = [
+                 planOptions.shorterSentences ? '- Break long sentences into shorter ones, with one main idea per sentence.' : '',
+                 planOptions.explainVocabulary ? '- When an unfamiliar or technical word is needed, keep it and explain it briefly in plain words where it first appears.' : '',
+-                keepTerms.length ? `- Keep these essential terms exactly as written; do not replace or simplify them: ${keepTerms.join('; ')}.` : ''
++                primaryKeepTerms.length ? `- Keep these essential terms exactly as written; do not replace or simplify them: ${primaryKeepTerms.join('; ')}.` : ''
+             ].filter(Boolean).join('\n                ');
+             prompt = `
+                 Rewrite the following educational text as an adapted companion to the unchanged original.
+@@ -3660,14 +3690,17 @@ const handleComplexityAdjustment = async (deps) => {
+                 Return ONLY JSON matching the input structure exactly.
+             `;
+         }
+-        let result = prepared ? null : (!jsonMode && generatedContent.type === 'simplified')
++        let result = prepared ? prepared.data : (!jsonMode && generatedContent.type === 'simplified')
+             ? await generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate)
+             : await callGemini(prompt, jsonMode);
+-        if (!prepared && generatedContent.type === 'simplified' && simplifiedCitationContext) {
++        if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
+             const candidateParts = splitReferenceTrailer(result);
+             const candidateBody = candidateParts.body.trim();
+             const candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
+             const candidateTarget = candidateExtraction.targetLangBlock || candidateExtraction.text;
++            const finalCandidate = [candidateBody, simplifiedCitationContext.references].filter(Boolean).join('\n\n');
++            vocabularyAudit = _preservedVocabulary.validate(requestResourceData, finalCandidate, requestedTerms, vocabularySplit);
++            if (!vocabularyAudit.valid) return rejectVocabulary(vocabularyAudit);
+             const originalForValidation = simplifiedCitationContext.wasBilingual
+                 ? simplifiedCitationContext.sourceBody
+                 : simplifiedCitationContext.sourceTarget;
+@@ -3705,14 +3738,11 @@ const handleComplexityAdjustment = async (deps) => {
+                 citationError.details = conservation;
+                 throw citationError;
+             }
+-            result = [
+-                candidateBody,
+-                simplifiedCitationContext.references
+-            ].filter(Boolean).join('\n\n');
++            result = finalCandidate;
+         }
+         let updatedData;
+         if (prepared) {
+-            updatedData = prepared.data;
++            updatedData = generatedContent.type === 'simplified' ? result : prepared.data;
+         } else if (jsonMode) {
+             const parsed = JSON.parse(cleanJson(result));
+             if (generatedContent.type === 'quiz') {
+@@ -3741,8 +3771,8 @@ const handleComplexityAdjustment = async (deps) => {
+         const priorAudit = priorConfig.citationAudit && typeof priorConfig.citationAudit === 'object'
+             ? priorConfig.citationAudit
+             : null;
+-        const adjustedConfig = prepared && prepared.config ? prepared.config : {
+-            ...priorConfig,
++        const adjustedConfig = {
++            ...(prepared && prepared.config ? prepared.config : priorConfig),
+             ...(complexityCitationAudit ? {
+                 citationAudit: {
+                     ...(priorAudit || {
+@@ -3841,7 +3871,18 @@ const handleComplexityAdjustment = async (deps) => {
+             return freshItem;
+         };
+         if (plan && plan.preview) {
+-            return { status: 'preview', resourceId: requestResourceId, baseData: requestResourceData, data: updatedData, config: adjustedConfig, changeLabel };
++            const preview = { status: 'preview', resourceId: requestResourceId, baseData: requestResourceData, data: updatedData, config: adjustedConfig, changeLabel, vocabulary: vocabularyAudit };
++            if (generatedContent.type === 'simplified') {
++                // Request identity stays private. Serialized/old previews require a
++                // fresh preview; editing public audit fields cannot weaken Apply.
++                _adaptationPreviewRequests.set(preview, {
++                    resourceId: requestResourceId, baseData: requestResourceData,
++                    requestedTerms: normalizedTerms.requestedTerms.slice(),
++                    options: { shorterSentences: !!planOptions.shorterSentences, explainVocabulary: !!planOptions.explainVocabulary, keepTerms: normalizedTerms.requestedTerms.slice() },
++                    policy: vocabularyPolicy, complexityLevel: Number(complexityLevel)
++                });
++            }
++            return preview;
+         }
+         if (saveOriginalOnAdjust) {
+             const newItem = refreshSimplifiedComplexity({
+@@ -3874,10 +3915,223 @@ const handleComplexityAdjustment = async (deps) => {
+         addToast(t('toasts.adjustment_failed'), "error");
+     } finally {
+         setIsProcessing(false);
+-        if (!(plan && plan.preview)) setComplexityLevel(5);
++        if (!(plan && plan.preview) && !vocabularyRejected) setComplexityLevel(5);
+     }
+ };
+ 
++// Essential vocabulary v1 checks exact visible presence in each source pane.
++// It does not assert occurrence-count or semantic conservation.
++const _adaptationPreviewRequests = new WeakMap();
++const _preservedVocabulary = (() => {
++    const version = 1;
++    const limits = Object.freeze({ terms: 30, termCharacters: 256, totalCharacters: 4096 });
++    const normalizeText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim();
++    const normalize = requested => {
++        const result = { version, valid: true, status: 'valid', requestedTerms: [], terms: [], duplicates: [], errors: [], limits };
++        if (!Array.isArray(requested)) result.errors.push({ code: 'invalid-term-list' });
++        else {
++            const seen = new Set();
++            requested.forEach((value, index) => {
++                if (typeof value !== 'string') { result.errors.push({ code: 'invalid-term', index }); return; }
++                result.requestedTerms.push(value);
++                const term = normalizeText(value);
++                if (!term) return;
++                if (seen.has(term)) { result.duplicates.push({ term, index }); return; }
++                seen.add(term); result.terms.push(term);
++                if (Array.from(term).length > limits.termCharacters) result.errors.push({ code: 'term-too-long', term, limit: limits.termCharacters });
++            });
++            if (result.terms.length > limits.terms) result.errors.push({ code: 'too-many-terms', count: result.terms.length, limit: limits.terms });
++            const total = result.terms.reduce((sum, term) => sum + Array.from(term).length, 0);
++            if (total > limits.totalCharacters) result.errors.push({ code: 'terms-too-long', count: total, limit: limits.totalCharacters });
++        }
++        if (result.errors.length) { result.valid = false; result.status = 'invalid'; }
++        else if (!result.terms.length) result.status = 'not-requested';
++        return result;
++    };
++    // Quoted entries support literal commas/semicolons and doubled quote marks.
++    const parseInput = input => {
++        const terms = []; let value = '', quoted = false, closed = false;
++        for (let i = 0; i < input.length; i++) {
++            const char = input[i];
++            if (char === '"' && (quoted || !value.trim())) {
++                if (quoted && input[i + 1] === '"') { value += '"'; i++; }
++                else { quoted = !quoted; closed = !quoted; }
++            } else if (!quoted && /[,;\n\r]/.test(char)) {
++                if (value.trim()) terms.push(value.trim()); value = ''; closed = false;
++            } else {
++                if (closed && char.trim()) return { valid: false, terms, reason: 'Use a separator after a quoted term.' };
++                value += char;
++            }
++        }
++        if (quoted) return { valid: false, terms, reason: 'Close the quotation mark around the term.' };
++        if (value.trim()) terms.push(value.trim());
++        return { valid: true, terms };
++    };
++    const balanced = (text, start, open, close) => {
++        let depth = 0;
++        for (let i = start; i < text.length; i++) {
++            if (text[i] === '\\') { i++; continue; }
++            if (text[i] === open) depth++;
++            else if (text[i] === close && --depth === 0) return i;
++        }
++        return -1;
++    };
++    const inline = text => {
++        let result = '';
++        for (let i = 0; i < text.length; i++) {
++            // Code spans display punctuation literally; do not reinterpret their
++            // HTML or Markdown as invisible formatting.
++            if (text.charCodeAt(i) === 96) {
++                let width = 1;
++                while (text.charCodeAt(i + width) === 96) width++;
++                const delimiter = String.fromCharCode(96).repeat(width);
++                let end = text.indexOf(delimiter, i + width);
++                while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
++                if (end < 0) throw new Error('unclosed-formatting');
++                result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
++                i = end + width - 1; continue;
++            }
++            const image = text[i] === '!' && text[i + 1] === '[';
++            const start = image ? i + 1 : i;
++            if (text[start] === '[') {
++                const end = balanced(text, start, '[', ']');
++                const next = text[end + 1];
++                const destination = end >= 0 && (next === '(' || next === '[')
++                    ? balanced(text, end + 1, next, next === '(' ? ')' : ']') : -1;
++                if (destination >= 0) {
++                    const label = text.slice(start + 1, end);
++                    result += image || /^⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾$/.test(label) ? '\u0001' : inline(label);
++                    i = destination; continue;
++                }
++            }
++            if (text[i] === '\\' && /[\\`*_[\]{}()#+.!|>-]/.test(text[i + 1] || '')) {
++                result += '&#' + text.charCodeAt(++i) + ';'; continue;
++            }
++            result += text[i];
++        }
++        return result.replace(/~~[^~]+~~/g, '\u0001')
++            .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, (_, a, b) => a || b)
++            .replace(/(^|[^\p{L}\p{N}])_([^_]+)_(?=$|[^\p{L}\p{N}])/gu, '$1$2')
++            .replace(/\*([^*]+)\*/g, '$1').replace(/`([^`]+)`/g, '$1');
++    };
++    const blocks = raw => {
++        if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
++        // Keep hidden HTML spanning lines from being split into independent
++        // Markdown paragraphs. Unsupported cross-line HTML is unverified.
++        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw new Error('unclosed-formatting');
++        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
++        const chunks = []; let paragraph = [], fence = '';
++        const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
++        for (const line of raw.replace(/\r\n?/g, '\n').split('\n')) {
++            const marker = line.match(/^\s*(`{3,}|~{3,})/);
++            if (marker) { flush(); if (!fence) fence = marker[1][0]; else if (marker[1][0] === fence) fence = ''; continue; }
++            if (fence) continue; // Chart/code payloads are not vocabulary evidence.
++            const htmlTags = inline(line).match(/<\/?[A-Za-z][^<>]*>/g) || [];
++            const stack = [];
++            for (const tag of htmlTags) {
++                const name = tag.match(/^<\/?([A-Za-z][\w:-]*)/)[1].toUpperCase();
++                if (/^(CODE|PRE)$/.test(name)) throw new Error('unsupported-formatting');
++                if (/^<\//.test(tag)) { if (stack.pop() !== name) throw new Error('unsupported-formatting'); }
++                else if (!/\/>$/.test(tag) && !/^(BR|HR|IMG|INPUT|META|LINK|SOURCE|AREA|BASE|COL|EMBED|PARAM|TRACK|WBR)$/.test(name)) stack.push(name);
++            }
++            if (stack.length) throw new Error('unsupported-formatting');
++            if (!line.trim() || /^\s*\[[^\]]+\]:\s*\S/.test(line) || /^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) { flush(); continue; }
++            if (/^\s*\|.*\|\s*$/.test(line)) { flush(); chunks.push(...line.trim().slice(1, -1).split(/(?<!\\)\|/)); continue; }
++            const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
++            if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
++        }
++        if (fence) throw new Error('unclosed-formatting');
++        flush();
++        const output = [];
++        const allowed = new Set('BODY P DIV SPAN STRONG B EM I U CODE PRE A BR UL OL LI TABLE THEAD TBODY TFOOT TR TD TH H1 H2 H3 H4 H5 H6 BLOCKQUOTE DL DT DD FIGURE FIGCAPTION SUB SUP HR'.split(' '));
++        const blockTags = new Set('P DIV PRE LI TD TH H1 H2 H3 H4 H5 H6 BLOCKQUOTE DT DD FIGCAPTION HR'.split(' '));
++        for (const chunk of chunks) {
++            const doc = new DOMParser().parseFromString(inline(chunk), 'text/html');
++            let current = '';
++            const finish = () => { output.push(...current.replace(/\b(?:https?:\/\/|www\.|mailto:)\S+/gi, '\u0001').split('\u0001').map(normalizeText).filter(Boolean)); current = ''; };
++            const visit = node => {
++                if (node.nodeType === 3) { current += node.data; return; }
++                if (node.nodeType !== 1) return;
++                const tag = node.tagName;
++                if (/^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT|IMG|SVG|MATH|BUTTON|DEL|S|STRIKE)$/.test(tag)
++                    || node.hasAttribute('hidden') || node.getAttribute('aria-hidden') === 'true'
++                    || /(?:display\s*:\s*none|visibility\s*:\s*hidden)/i.test(node.getAttribute('style') || '')) { finish(); return; }
++                if (!allowed.has(tag) || node.hasAttribute('class') || node.hasAttribute('style')) throw new Error('unsupported-formatting');
++                if (tag === 'BR') { current += ' '; return; }
++                const boundary = blockTags.has(tag);
++                if (boundary) finish();
++                for (const child of node.childNodes) visit(child);
++                if (boundary) finish();
++            };
++            visit(doc.body); finish();
++        }
++        return output;
++    };
++    const panes = (text, splitReferences) => {
++        if (typeof text !== 'string' || typeof splitReferences !== 'function') throw new Error('text-parser-unavailable');
++        const body = splitReferences(text).body;
++        if (typeof body !== 'string') throw new Error('text-parser-unavailable');
++        const parts = body.split(/^\s*---\s*ENGLISH TRANSLATION\s*---\s*$/im);
++        if (parts.length > 2 || /---\s*TRANSLATION\s*---/i.test(body)) throw new Error('ambiguous-language-panes');
++        return { primary: blocks(parts[0]), ...(parts.length === 2 ? { translation: blocks(parts[1]) } : {}) };
++    };
++    const count = (texts, term) => {
++        if (typeof Intl?.Segmenter !== 'function') throw new Error('word-boundaries-unavailable');
++        const segmenter = new Intl.Segmenter('und', { granularity: 'word' });
++        return (texts || []).reduce((total, text) => {
++            const words = Array.from(segmenter.segment(text)).filter(part => part.isWordLike);
++            let offset = 0, hits = 0;
++            while ((offset = text.indexOf(term, offset)) >= 0) {
++                const end = offset + term.length;
++                if (!words.some(word => (word.index < offset && offset < word.index + word.segment.length)
++                    || (word.index < end && end < word.index + word.segment.length))) hits++;
++                offset = end;
++            }
++            return total + hits;
++        }, 0);
++    };
++    const prepare = (source, requested, splitReferences) => {
++        const result = { ...normalize(requested), required: [], absentFromSource: [], missingTerms: [] };
++        if (!result.valid || !result.terms.length) return result;
++        try {
++            const sourcePanes = panes(source, splitReferences);
++            for (const term of result.terms) {
++                const occurrences = Object.keys(sourcePanes).map(pane => ({ pane, count: count(sourcePanes[pane], term) })).filter(entry => entry.count);
++                if (!occurrences.length) result.absentFromSource.push(term);
++                else result.required.push({ term, panes: occurrences });
++            }
++            if (result.absentFromSource.length) { result.valid = false; result.status = 'invalid'; result.reason = 'terms-absent-from-source'; }
++        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
++        return result;
++    };
++    const validate = (source, candidate, requested, splitReferences) => {
++        const result = prepare(source, requested, splitReferences);
++        if (!result.valid || !result.terms.length) return result;
++        try {
++            const candidatePanes = panes(candidate, splitReferences);
++            for (const entry of result.required) for (const original of entry.panes) {
++                if (!count(candidatePanes[original.pane], entry.term)) result.missingTerms.push({ term: entry.term, pane: original.pane });
++            }
++            if (result.missingTerms.length) { result.valid = false; result.status = 'invalid'; result.reason = 'essential-terms-missing'; }
++        } catch (error) { result.valid = false; result.status = 'unverified'; result.reason = error.message; }
++        return result;
++    };
++    const feedback = audit => {
++        if (audit.missingTerms?.length) return 'Current text kept. The proposed version is missing: ' + audit.missingTerms.map(entry => '“' + entry.term + '” (' + (entry.pane === 'primary' ? 'primary reading' : 'translation') + ')').join('; ') + '. Retry or edit the preserved-term list.';
++        if (audit.absentFromSource?.length) return 'Current text kept. These terms were not found exactly in the source: ' + audit.absentFromSource.map(term => '“' + term + '”').join('; ') + '. Check spelling and case, or remove them from the list.';
++        if (audit.errors?.length) {
++            const details = audit.errors.map(error => error.code === 'too-many-terms' ? error.count + ' distinct terms exceeds the limit of ' + error.limit + '.'
++                : error.code === 'term-too-long' ? 'A term exceeds ' + error.limit + ' characters.'
++                : error.code === 'terms-too-long' ? error.count + ' total characters exceeds the limit of ' + error.limit + '.'
++                : 'Each term must be a text entry.').join(' ');
++            return 'Current text kept. ' + details + ' No terms were dropped. Correct the list and preview again.';
++        }
++        if (audit.reason === 'preview-validation-unavailable') return 'Current text kept. This preview can no longer be verified. Preview the change again.';
++        return 'Current text kept. Essential terms could not be verified. Preview again using supported text formatting.';
++    };
++    return { version, limits, normalize, parseInput, prepare, validate, feedback };
++})();
++
+ const _waitForGenerationMatrixReady = async (deps = {}) => {
+   if (_getGenerationMatrixModule()) return true;
+   try {
+@@ -4632,4 +4886,5 @@ window.AlloModules.GenerationHelpers = {
+   estimateFullPackRowProviderWork: (row, settings) => _cloneFullPackValue(_estimateFullPackRowProviderWork(row, settings || {})),
+   estimateFullPackCapacity: _estimateFullPackCapacity,
+   handleComplexityAdjustment,
++  preservedVocabulary: _preservedVocabulary,
+ };
+diff --git a/tests/text_complexity_freshness.test.js b/tests/text_complexity_freshness.test.js
+index d5ff9b60b..8ee3984d3 100644
+--- a/tests/text_complexity_freshness.test.js
++++ b/tests/text_complexity_freshness.test.js
+@@ -243,7 +243,8 @@ describe('complexity adjustment freshness', () => {
+     expect(prompt).toContain('ARTIFACT STANDARD');
+     expect(prompt).not.toContain('AMBIENT STANDARD');
+     expect(h.resolveTranslationPolicy).toHaveBeenCalledWith('off', 'English', 'English');
+-    const saved = h.setGeneratedContent.mock.calls[0][0];
++    const update = h.setGeneratedContent.mock.calls[0][0];
++    const saved = typeof update === 'function' ? update(h.generatedContent) : update;
+     expect(saved.levelCheck).toBeUndefined();
+     expect(saved.alignmentCheck).toBeUndefined();
+     expect(saved.localStats.score).toBe('5.4');
+@@ -268,7 +269,8 @@ describe('complexity adjustment freshness', () => {
+ 
+     await makeComplexityAdjustment()(h.deps);
+ 
+-    const saved = h.setGeneratedContent.mock.calls[0][0];
++    const update = h.setGeneratedContent.mock.calls[0][0];
++    const saved = typeof update === 'function' ? update(h.generatedContent) : update;
+     expect(h.generateBilingualText.mock.calls[0][3]).toMatchObject({
+       enabled: true,
+       target: 'English',
+diff --git a/tests/preserved_vocabulary.test.js b/tests/preserved_vocabulary.test.js
+new file mode 100644
+index 000000000..58fc41b15
+--- /dev/null
++++ b/tests/preserved_vocabulary.test.js
+@@ -0,0 +1,202 @@
++import { beforeAll, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++
++let helpers, vocabulary, split;
++const SOURCE = 'Herons are wading birds. They eat fish.';
++const DELIMITER = '\n\n--- ENGLISH TRANSLATION ---\n\n';
++beforeAll(() => {
++  loadAlloModule('text_pipeline_helpers_module.js');
++  loadAlloModule('generation_helpers_module.js');
++  helpers = window.AlloModules.GenerationHelpers;
++  vocabulary = helpers.preservedVocabulary;
++  split = window.AlloModules.TextPipelineHelpers.splitReferencesFromBody;
++});
++function deps(candidate = 'Herons are wading birds. They catch fish.', extra = {}) {
++  return {
++    generatedContent: { id: 'terms-1', type: 'simplified', data: SOURCE, config: { language: 'English' }, instructionalText: { form: 'adapted' } },
++    complexityLevel: 5, gradeLevel: 'Grade 4', leveledTextLanguage: 'English', saveOriginalOnAdjust: false,
++    adaptationPlan: { preview: true, options: { shorterSentences: false, explainVocabulary: false, keepTerms: ['wading birds'] } },
++    setIsProcessing: vi.fn(), setComplexityLevel: vi.fn(), setGeneratedContent: vi.fn(), setHistory: vi.fn(),
++    setWordSoundsCustomTerms: vi.fn(), setWsPreloadedWords: vi.fn(), setError: vi.fn(), addToast: vi.fn(), warnLog: vi.fn(),
++    callGemini: vi.fn(), cleanJson: value => value, t: key => key, getDefaultTitle: () => 'Reading',
++    extractSourceTextForProcessing: window.AlloModules.TextPipelineHelpers.extractSourceTextForProcessing,
++    generateBilingualText: vi.fn(async () => candidate), ...extra
++  };
++}
++const valid = (source, candidate, terms) => vocabulary.validate(source, candidate, terms, split);
++const unchanged = d => {
++  expect(d.setGeneratedContent).not.toHaveBeenCalled();
++  expect(d.setHistory).not.toHaveBeenCalled();
++  expect(d.setWordSoundsCustomTerms).not.toHaveBeenCalled();
++  expect(d.setWsPreloadedWords).not.toHaveBeenCalled();
++  expect(d.addToast.mock.calls.some(([, tone]) => tone === 'success')).toBe(false);
++};
++
++describe('preserved vocabulary contract', () => {
++  it.each([
++    'These are wading **birds**.', 'These are **wading** birds.',
++    'These are wading [birds](https://example.org/a_(b)).',
++    'These are wading <em>birds</em>.', 'These are wading&nbsp;birds.',
++    'These are wading\nbirds.', 'These are wading\t birds.', 'These are “wading birds,” yes.'
++  ])('accepts visible exact phrases across inline formatting: %s', candidate => {
++    expect(valid(SOURCE, candidate, ['wading birds']).valid).toBe(true);
++  });
++  it.each([
++    'Herons are birds that wade.', 'Herons are Wading birds.', 'Herons are wading-birds.',
++    'wading\n\nbirds', '- wading\n- birds', '| wading | birds |',
++    '<p>wading</p><p>birds</p>', '[other](https://example.org/wading birds)',
++    'Other text.\n\n## References\n\nwading birds', '<span hidden>wading birds</span>',
++    '<span aria-hidden="true">wading birds</span>', '<span style="display:none">wading birds</span>',
++    '<!-- wading birds -->', '<script>wading birds</script>', '![wading birds](picture.png)',
++    '```chart\nwading birds\n```', '~~wading birds~~', 'wading `<b>` birds', '`wading **birds**`', '``wading **birds**``'
++  ])('rejects missing, changed, or non-body-only matches: %s', candidate => {
++    expect(valid(SOURCE, candidate, ['wading birds'])).toMatchObject({ valid: false, missingTerms: [{ term: 'wading birds', pane: 'primary' }] });
++  });
++  it('uses NFC, exact case/accents/punctuation, and Unicode word boundaries', () => {
++    expect(valid('Café', 'Cafe\u0301', ['Café']).valid).toBe(true);
++    expect(valid('Café', 'Cafe', ['Café']).valid).toBe(false);
++    expect(valid('Café', 'Сafé', ['Café']).valid).toBe(false); // Cyrillic C
++    expect(valid('fish', 'selfish', ['fish']).valid).toBe(false);
++    expect(valid('fish', 'https://fish.example', ['fish']).valid).toBe(false);
++    expect(valid('C++', 'C++ is a language.', ['C++']).valid).toBe(true);
++    expect(valid('bird’s nest', "bird's nest", ['bird’s nest']).valid).toBe(false);
++    expect(valid('水鸟在水里。', '水鸟吃鱼。', ['水鸟']).valid).toBe(true);
++    expect(valid('طيور الماء', 'هذه طيور الماء.', ['طيور الماء']).valid).toBe(true);
++  });
++  it('deduplicates normalized entries without folding case or dropping requests', () => {
++    const result = vocabulary.normalize([' wading birds ', 'wading\u00a0birds', 'Wading birds', '']);
++    expect(result.terms).toEqual(['wading birds', 'Wading birds']);
++    expect(result.requestedTerms).toHaveLength(4);
++    expect(result.duplicates).toEqual([{ term: 'wading birds', index: 1 }]);
++  });
++  it('rejects absent terms rather than inserting or silently excluding them', () => {
++    expect(vocabulary.prepare(SOURCE, ['Wading birds', 'pelican'], split)).toMatchObject({ valid: false, absentFromSource: ['Wading birds', 'pelican'] });
++  });
++  it('enforces explicit limits without silently truncating the list or term text', () => {
++    const thirty = Array.from({ length: 30 }, (_, i) => 'term' + i);
++    expect(vocabulary.normalize(thirty).valid).toBe(true);
++    expect(vocabulary.normalize([...thirty, thirty[0]]).valid).toBe(true);
++    const over = vocabulary.normalize([...thirty, 'term30']);
++    expect(over.valid).toBe(false); expect(over.terms).toHaveLength(31);
++    expect(over.errors).toContainEqual({ code: 'too-many-terms', count: 31, limit: 30 });
++    expect(vocabulary.normalize(['a'.repeat(256)]).valid).toBe(true);
++    expect(vocabulary.normalize(['a'.repeat(257)]).valid).toBe(false);
++    expect(vocabulary.normalize(Array.from({ length: 17 }, (_, i) => String(i).padStart(2, '0') + 'a'.repeat(254))).valid).toBe(false);
++    expect(vocabulary.normalize('fish').valid).toBe(false);
++    expect(vocabulary.normalize([null, 123, {}]).valid).toBe(false);
++  });
++  it('parses quoted punctuation and rejects incomplete entries', () => {
++    expect(vocabulary.parseInput('"Washington, D.C."; "a;b"\nfish')).toEqual({ valid: true, terms: ['Washington, D.C.', 'a;b', 'fish'] });
++    expect(vocabulary.parseInput('"say ""hello""", fish').terms).toEqual(['say "hello"', 'fish']);
++    expect(vocabulary.parseInput('"fish').valid).toBe(false);
++    expect(vocabulary.parseInput('"fish" birds').valid).toBe(false);
++  });
++  it('requires each term in every source pane where it occurs', () => {
++    const source = 'Las aves zancudas comen peces.' + DELIMITER + SOURCE;
++    expect(valid(source, 'Las aves zancudas comen.' + DELIMITER + SOURCE, ['aves zancudas', 'wading birds']).valid).toBe(true);
++    const swapped = SOURCE + DELIMITER + 'Las aves zancudas comen peces.';
++    expect(valid(source, swapped, ['aves zancudas', 'wading birds']).missingTerms).toEqual([
++      { term: 'aves zancudas', pane: 'primary' }, { term: 'wading birds', pane: 'translation' }
++    ]);
++    expect(valid('DNA' + DELIMITER + 'DNA', 'DNA' + DELIMITER + 'Other', ['DNA']).valid).toBe(false);
++    expect(valid(SOURCE, SOURCE + DELIMITER + 'Las aves comen.', ['wading birds']).valid).toBe(true);
++    expect(valid(source, 'Las aves zancudas comen.', ['wading birds']).valid).toBe(false);
++  });
++  it('reports that an empty request has no vocabulary guarantee', () => {
++    expect(valid(SOURCE, 'Other text.', [])).toMatchObject({ valid: true, status: 'not-requested', terms: [] });
++  });
++  it('fails closed when projection or segmentation is unavailable', () => {
++    expect(valid(SOURCE, '<unknown>wading birds</unknown>', ['wading birds']).status).toBe('unverified');
++    for (const candidate of ['<span hidden>\n\nwading birds\n\n</span>', '<script>\n## wading birds\n</script>', '<pre>wading **birds**</pre>', '<code>wading **birds**</code>']) {
++      expect(valid(SOURCE, candidate, ['wading birds']).status).toBe('unverified');
++    }
++    expect(vocabulary.validate(SOURCE, SOURCE, ['wading birds'], undefined).status).toBe('unverified');
++    const original = Intl.Segmenter;
++    try { Intl.Segmenter = undefined; expect(valid(SOURCE, SOURCE, ['wading birds']).status).toBe('unverified'); }
++    finally { Intl.Segmenter = original; }
++  });
++});
++
++describe('candidate and Apply share the vocabulary contract', () => {
++  it.each([false, true])('retains source on a violating candidate (saveOriginal=%s)', async saveOriginalOnAdjust => {
++    const d = deps('Herons are birds that wade.', { saveOriginalOnAdjust });
++    const result = await helpers.handleComplexityAdjustment(d);
++    expect(result).toMatchObject({ status: 'rejected', sourceRetained: true, reason: 'essential-terms-missing', vocabulary: { missingTerms: [{ term: 'wading birds', pane: 'primary' }] } });
++    expect(result.message).toContain('wading birds'); unchanged(d);
++    expect(d.setComplexityLevel).not.toHaveBeenCalled();
++  });
++  it('does not call the model for absent or over-limit terms', async () => {
++    for (const keepTerms of [['absent'], Array.from({ length: 31 }, (_, i) => 'term' + i)]) {
++      const d = deps(SOURCE, { adaptationPlan: { preview: true, options: { keepTerms } } });
++      expect((await helpers.handleComplexityAdjustment(d)).status).toBe('rejected');
++      expect(d.generateBilingualText).not.toHaveBeenCalled(); unchanged(d);
++    }
++  });
++  it.each([false, true])('applies compliant previews without regenerating (saveOriginal=%s)', async saveOriginalOnAdjust => {
++    const d = deps(); const preview = await helpers.handleComplexityAdjustment(d);
++    const apply = deps('', { saveOriginalOnAdjust, adaptationPlan: { apply: preview } });
++    expect((await helpers.handleComplexityAdjustment(apply)).status).toBe('applied');
++    expect(apply.generateBilingualText).not.toHaveBeenCalled();
++    const saved = apply.setGeneratedContent.mock.calls[0][0](apply.generatedContent);
++    expect(saved.data).toBe(preview.data);
++  });
++  it('revalidates changed candidate data and ignores a weakened public audit', async () => {
++    const preview = await helpers.handleComplexityAdjustment(deps());
++    preview.data = 'Herons are birds that wade.';
++    preview.vocabulary = { valid: true, requestedTerms: [], terms: [] };
++    const d = deps('', { adaptationPlan: { apply: preview } });
++    expect((await helpers.handleComplexityAdjustment(d)).reason).toBe('essential-terms-missing'); unchanged(d);
++  });
++  it('rejects reconstructed previews, changed options, changed policy and stale base text', async () => {
++    const preview = await helpers.handleComplexityAdjustment(deps());
++    const cases = [
++      { adaptationPlan: { apply: { ...preview } } },
++      { adaptationPlan: { apply: preview, options: { keepTerms: [] } } },
++      { adaptationPlan: { apply: preview }, complexityLevel: 3 },
++      { adaptationPlan: { apply: preview }, resolveTranslationPolicy: () => ({ enabled: true, target: 'Spanish', mode: 'custom' }) },
++      { adaptationPlan: { apply: preview }, generatedContent: { ...deps().generatedContent, data: 'Changed source.' } }
++    ];
++    for (const extra of cases) {
++      const d = deps('', extra); expect(['rejected', 'stale']).toContain((await helpers.handleComplexityAdjustment(d)).status); unchanged(d);
++    }
++  });
++  it('checks direct apply requests and keeps original-form protection', async () => {
++    const direct = deps('Herons are birds that wade.', { adaptationPlan: { options: { keepTerms: ['wading birds'] } } });
++    expect((await helpers.handleComplexityAdjustment(direct)).status).toBe('rejected'); unchanged(direct);
++    const original = deps('', { generatedContent: { ...deps().generatedContent, instructionalText: { form: 'original' } } });
++    expect(await helpers.handleComplexityAdjustment(original)).toBeUndefined(); unchanged(original);
++  });
++  it('enforces translation-only terms without requesting them in the primary-language rewrite', async () => {
++    const data = 'Las aves zancudas comen peces.' + DELIMITER + SOURCE;
++    const generatedContent = { ...deps().generatedContent, data, config: { language: 'Spanish' } };
++    const d = deps(data, { generatedContent });
++    const preview = await helpers.handleComplexityAdjustment(d);
++    expect(preview.status).toBe('preview');
++    expect(preview.vocabulary.required).toEqual([{ term: 'wading birds', panes: [{ pane: 'translation', count: 1 }] }]);
++    expect(d.generateBilingualText.mock.calls[0][0]).not.toContain('exactly as written; do not replace or simplify them: wading birds');
++    preview.data = 'Las aves zancudas comen peces.' + DELIMITER + 'Herons are birds that wade.';
++    const apply = deps('', { generatedContent, adaptationPlan: { apply: preview } });
++    expect((await helpers.handleComplexityAdjustment(apply)).vocabulary.missingTerms).toEqual([{ term: 'wading birds', pane: 'translation' }]);
++    unchanged(apply);
++  });
++  it('reports missing vocabulary even when the candidate also changes a citation', async () => {
++    const data = SOURCE + ' [⁽¹⁾](https://example.org/source)';
++    const d = deps('Other text. [⁽¹⁾](https://changed.example)', { generatedContent: { ...deps().generatedContent, data } });
++    expect((await helpers.handleComplexityAdjustment(d)).reason).toBe('essential-terms-missing');
++    unchanged(d);
++  });
++  it('accepts the same options with different property ordering during Apply', async () => {
++    const preview = await helpers.handleComplexityAdjustment(deps());
++    const apply = deps('', { adaptationPlan: { apply: preview, options: { keepTerms: ['wading birds'], explainVocabulary: false, shorterSentences: false } } });
++    expect((await helpers.handleComplexityAdjustment(apply)).status).toBe('applied');
++  });
++  it('rechecks citations during Apply before any write', async () => {
++    const data = SOURCE + ' [⁽¹⁾](https://example.org/source)';
++    const d = deps(data, { generatedContent: { ...deps().generatedContent, data } });
++    const preview = await helpers.handleComplexityAdjustment(d);
++    preview.data = SOURCE + ' [⁽¹⁾](https://changed.example)';
++    const apply = deps('', { generatedContent: d.generatedContent, adaptationPlan: { apply: preview } });
++    expect(await helpers.handleComplexityAdjustment(apply)).toBeUndefined(); unchanged(apply);
++    expect(apply.addToast).toHaveBeenCalledWith(expect.stringContaining('source citation'), 'warning');
++  });
++});

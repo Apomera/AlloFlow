@@ -1,0 +1,95 @@
+{
+  "head": "286e09850680047d44efcc836075916cf488eff6",
+  "capturedAt": "2026-09-27T13:12:02.0352916-04:00",
+  "prerequisite": "reader-device-save-track18-2026-09-27",
+  "files": [
+    {
+      "path": "view_faq_source.jsx",
+      "sha256": "5BFC4CF001FB4CCE287AC40E5525A9BA940519A3B48212A2494AA7E473F01DB5"
+    },
+    {
+      "path": "resource_read_aloud_module.js",
+      "sha256": "12B996325CEFE3276F7073C351FA0679DC02EB7EA9BC17EFE063AEACC0026D91"
+    },
+    {
+      "path": "view_faq_module.js",
+      "sha256": "83D72094BE0AC51B272ED9984B954ED8A8C2FA09E854C3E9EE8B6487BE4D9115"
+    },
+    {
+      "path": "_build_view_faq_module.js",
+      "sha256": "90013F66A171FB7E60004F47086E1BFD0646CA0DA9265E909F04C76B5032F162"
+    },
+    {
+      "path": "read_aloud_audio_service_source.jsx",
+      "sha256": "1F134BD24EFE5D971C8C0175DD055EFF8D75083F4721B7D679C80B8089D45BF7"
+    },
+    {
+      "path": "read_aloud_audio_service_module.js",
+      "sha256": "961229E6FF3B2F0B330153520935616DAC4B7A36F119011F29C1FBC92F34C047"
+    },
+    {
+      "path": "karaoke_audio_store_module.js",
+      "sha256": "9B9D88B8F07E695D5A7EFB7F4A148B660A5E63C48C9DF5823E6D6D85845194DF"
+    },
+    {
+      "path": "phase_k_helpers_module.js",
+      "sha256": "78FD1C76A6E407312E5E0B24B2F159EDD39385A87649A9DBE4A2CB581F627AD8"
+    },
+    {
+      "path": "phase_k_helpers_source.jsx",
+      "sha256": "B901E3A43AF2062D4B3FCD355A803EC84ACB150BA34915FBCEF5A9C2BEE05A1C"
+    },
+    {
+      "path": "pure_helpers_module.js",
+      "sha256": "8C7A4A5331A048851D8D6E505D53A454665F50551675B1FCA19BDA04617E00A9"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ED145399195F3BCA18ADCB900E76AD8785ABF2048D2457333B6DEDF1F08C675E"
+    },
+    {
+      "path": "vitest.config.js",
+      "sha256": "04B97BF606FC9425141CCAD8396EF0DA8E784B74E0AD88D8F586DEE02AF51B04"
+    },
+    {
+      "path": "ui_strings.js",
+      "sha256": "DA68C641B21B41A6736A4E39649386B0377ADE485CC40818B14218D7313B0727"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "14C59A16F3A88B0E304D0BE30D323D8E4439FC81DFD4AAAFC168ED5551531FDE"
+    },
+    {
+      "path": "desktop/web-app/package.json",
+      "sha256": "F58B9AB62234DC5907E949C743580C4D32581D8568CEEBC9C31501A48D64DDEF"
+    },
+    {
+      "path": "desktop/web-app/tailwind.config.js",
+      "sha256": "EDF463FF8E14A9536F7F0047B32D0367D07AE0F100263620E0E2F6CE9A8F503E"
+    },
+    {
+      "path": "tests/setup.js",
+      "sha256": "F6100B28ABEC183CC8499663DB55FC7688284C721504C5653FA7FC9F669DA88E"
+    },
+    {
+      "path": "tests/lib/audio_fixtures.js",
+      "sha256": "D62F6BE5A63251E72842F153437EAF1515B79E18938E732D9A9FD272D5F4D994"
+    },
+    {
+      "path": "tests/faq_controls_a11y.test.js",
+      "sha256": "864A7EAB11EFB37E4AD25B2541247C057FBD9216F1B37CA8AC5046A965027B5A"
+    },
+    {
+      "path": "tests/faq_audio_parity.test.js",
+      "sha256": "CED3C2DF292FFF5BC846EB671C372671D5990387997244B0685F9043E746F252"
+    },
+    {
+      "path": "tests/faq_toggle_all.test.js",
+      "sha256": "D9BF92D1BBA08B7650F220C98E78790B4001F15A68529D3AD69B7486BCCB8A91"
+    },
+    {
+      "path": "tests/read_aloud_audio_service.test.js",
+      "sha256": "6E188CD5F2C7F36119BC2FF836384537F372850FD3D33C266D2620CAB966A983"
+    }
+  ]
+}

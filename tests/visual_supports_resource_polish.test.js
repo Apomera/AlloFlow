@@ -15,7 +15,7 @@ describe('Visual Supports resource polish', () => {
 
   it('supports search, read aloud, and explicit ordered schedule progress', () => {
     expect(viewer).toContain('id="visual-supports-search"');
-    expect(viewer).toContain("aria-label={schedule.title + ' ordered steps'}");
+    expect(viewer).toContain("aria-label={tr('schedule_steps', '{title} ordered steps', { title: schedule.title })}");
     expect(viewer).toContain("aria-current={isCurrent ? 'step' : undefined}");
     expect(viewer).toContain('toggleScheduleStepComplete');
     expect(viewer).toContain('getInitialScheduleProgress');

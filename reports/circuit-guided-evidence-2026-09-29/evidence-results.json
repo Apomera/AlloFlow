@@ -1,0 +1,1377 @@
+{
+  "sourceSha256": "3b677c9ee7980cf412d36ee003b6f4860ee0fd405131923d2ac66d85ebe07b23",
+  "baseline": false,
+  "checks": [
+    {
+      "name": "resistance: evidence withheld until Test; saved prediction, exact shared-scale currents, one result focus, stable explanation, undoable baseline/result controls, and independent notebook preserved"
+    },
+    {
+      "name": "paths: evidence withheld until Test; saved prediction, exact shared-scale currents, one result focus, stable explanation, undoable baseline/result controls, and independent notebook preserved"
+    },
+    {
+      "name": "loop: evidence withheld until Test; saved prediction, exact shared-scale currents, one result focus, stable explanation, undoable baseline/result controls, and independent notebook preserved"
+    },
+    {
+      "name": "Changed live bench leaves saved evidence intact; baseline and result load exact circuits with Undo, stable lesson records, preserved notebook, and no rewards"
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "name": "resistance-result",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "resistance-result",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "resistance-result",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "paths-result",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "paths-result",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "paths-result",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "loop-result",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "loop-result",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "loop-result",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "changed-bench",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "changed-bench",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "changed-bench",
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "resistance-result",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "resistance-result",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "resistance-result",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "paths-result",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "paths-result",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "paths-result",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "loop-result",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "loop-result",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "loop-result",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "changed-bench",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "changed-bench",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "changed-bench",
+      "width": 320,
+      "scrollWidth": 320
+    }
+  ],
+  "actions": [
+    {
+      "name": "resistance-result",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Give charge another path",
+          "width": 206.578125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resistance-result",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Give charge another path",
+          "width": 287,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resistance-result",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Give charge another path",
+          "width": 217,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Complete the loop",
+          "width": 168.640625,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Complete the loop",
+          "width": 287,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Complete the loop",
+          "width": 217,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "loop-result",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "loop-result",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "loop-result",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "changed-bench",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 385,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "changed-bench",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 288,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "changed-bench",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Load experiment baseline",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 218,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "transitionDuration": "1e-05s"
+        }
+      ]
+    }
+  ],
+  "focus": [
+    {
+      "name": "resistance-result baseline",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resistance-result result",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resistance-result baseline",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resistance-result result",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resistance-result baseline",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "resistance-result result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result baseline",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result result",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result baseline",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result result",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result baseline",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "paths-result result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "loop-result baseline",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "loop-result result",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "loop-result baseline",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "loop-result result",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "loop-result baseline",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "loop-result result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "changed-bench baseline",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "changed-bench result",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "changed-bench baseline",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "changed-bench result",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "changed-bench baseline",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "changed-bench result",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    }
+  ],
+  "charts": [
+    {
+      "name": "resistance-result",
+      "width": 1280,
+      "sharedMaximum": 0.09,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current90.00 mA9 V · series · 100 Ω resistor",
+          "styleWidth": "100%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 362,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current45.00 mA9 V · series · 200 Ω resistor",
+          "styleWidth": "50%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 181,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resistance-result",
+      "width": 390,
+      "sharedMaximum": 0.09,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current90.00 mA9 V · series · 100 Ω resistor",
+          "styleWidth": "100%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 129,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current45.00 mA9 V · series · 200 Ω resistor",
+          "styleWidth": "50%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 64.5,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "resistance-result",
+      "width": 320,
+      "sharedMaximum": 0.09,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current90.00 mA9 V · series · 100 Ω resistor",
+          "styleWidth": "100%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 94,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current45.00 mA9 V · series · 200 Ω resistor",
+          "styleWidth": "50%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 47,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result",
+      "width": 1280,
+      "sharedMaximum": 0.18,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current90.00 mA9 V · parallel · 100 Ω resistor",
+          "styleWidth": "50%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 181,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current180.00 mA9 V · parallel · 100 Ω resistor + 100 Ω resistor",
+          "styleWidth": "100%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 362,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result",
+      "width": 390,
+      "sharedMaximum": 0.18,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current90.00 mA9 V · parallel · 100 Ω resistor",
+          "styleWidth": "50%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 64.5,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current180.00 mA9 V · parallel · 100 Ω resistor + 100 Ω resistor",
+          "styleWidth": "100%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 129,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "paths-result",
+      "width": 320,
+      "sharedMaximum": 0.18,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current90.00 mA9 V · parallel · 100 Ω resistor",
+          "styleWidth": "50%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 47,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current180.00 mA9 V · parallel · 100 Ω resistor + 100 Ω resistor",
+          "styleWidth": "100%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 94,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "loop-result",
+      "width": 1280,
+      "sharedMaximum": 0.08999910000899991,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current0 A9 V · series · 100 Ω bulb + switch open",
+          "styleWidth": "0%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 0,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current90.00 mA9 V · series · 100 Ω bulb + switch closed",
+          "styleWidth": "100%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 362,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "loop-result",
+      "width": 390,
+      "sharedMaximum": 0.08999910000899991,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current0 A9 V · series · 100 Ω bulb + switch open",
+          "styleWidth": "0%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 0,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current90.00 mA9 V · series · 100 Ω bulb + switch closed",
+          "styleWidth": "100%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 129,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "loop-result",
+      "width": 320,
+      "sharedMaximum": 0.08999910000899991,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current0 A9 V · series · 100 Ω bulb + switch open",
+          "styleWidth": "0%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 0,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current90.00 mA9 V · series · 100 Ω bulb + switch closed",
+          "styleWidth": "100%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 94,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "changed-bench",
+      "width": 1280,
+      "sharedMaximum": 0.08999910000899991,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current0 A9 V · series · 100 Ω bulb + switch open",
+          "styleWidth": "0%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 0,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current90.00 mA9 V · series · 100 Ω bulb + switch closed",
+          "styleWidth": "100%",
+          "trackWidth": 364,
+          "contentWidth": 362,
+          "barWidth": 362,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "changed-bench",
+      "width": 390,
+      "sharedMaximum": 0.08999910000899991,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current0 A9 V · series · 100 Ω bulb + switch open",
+          "styleWidth": "0%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 0,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current90.00 mA9 V · series · 100 Ω bulb + switch closed",
+          "styleWidth": "100%",
+          "trackWidth": 131,
+          "contentWidth": 129,
+          "barWidth": 129,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "changed-bench",
+      "width": 320,
+      "sharedMaximum": 0.08999910000899991,
+      "rows": [
+        {
+          "stage": "before",
+          "text": "Before · source current0 A9 V · series · 100 Ω bulb + switch open",
+          "styleWidth": "0%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 0,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "stage": "after",
+          "text": "After · source current90.00 mA9 V · series · 100 Ω bulb + switch closed",
+          "styleWidth": "100%",
+          "trackWidth": 96,
+          "contentWidth": 94,
+          "barWidth": 94,
+          "trackHidden": "true",
+          "transitionDuration": "1e-05s",
+          "animationName": "none",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    }
+  ],
+  "motion": [
+    {
+      "name": "resistance result",
+      "before": {
+        "tick": 0,
+        "focusEvents": 1,
+        "reduced": true,
+        "paused": false
+      },
+      "after": {
+        "tick": 0,
+        "focusEvents": 1,
+        "animations": []
+      }
+    },
+    {
+      "name": "paths result",
+      "before": {
+        "tick": 0,
+        "focusEvents": 2,
+        "reduced": true,
+        "paused": false
+      },
+      "after": {
+        "tick": 0,
+        "focusEvents": 2,
+        "animations": []
+      }
+    },
+    {
+      "name": "loop result",
+      "before": {
+        "tick": 0,
+        "focusEvents": 3,
+        "reduced": true,
+        "paused": false
+      },
+      "after": {
+        "tick": 0,
+        "focusEvents": 3,
+        "animations": []
+      }
+    },
+    {
+      "name": "Changed bench retains stable saved evidence",
+      "before": {
+        "tick": 0,
+        "focusEvents": 3,
+        "reduced": true,
+        "paused": false
+      },
+      "after": {
+        "tick": 0,
+        "focusEvents": 3,
+        "animations": []
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "resistance-result",
+      "width": 1280,
+      "file": "resistance-result-1280.png",
+      "clip": {
+        "x": 228,
+        "y": 1286,
+        "width": 824,
+        "height": 1214
+      }
+    },
+    {
+      "name": "resistance-result",
+      "width": 390,
+      "file": "resistance-result-390.png",
+      "clip": {
+        "x": 32,
+        "y": 1704,
+        "width": 326,
+        "height": 1526
+      }
+    },
+    {
+      "name": "resistance-result",
+      "width": 320,
+      "file": "resistance-result-320.png",
+      "clip": {
+        "x": 32,
+        "y": 1845,
+        "width": 256,
+        "height": 1680
+      }
+    },
+    {
+      "name": "paths-result",
+      "width": 1280,
+      "file": "paths-result-1280.png",
+      "clip": {
+        "x": 228,
+        "y": 1286,
+        "width": 824,
+        "height": 1237
+      }
+    },
+    {
+      "name": "paths-result",
+      "width": 390,
+      "file": "paths-result-390.png",
+      "clip": {
+        "x": 32,
+        "y": 1704,
+        "width": 326,
+        "height": 1597
+      }
+    },
+    {
+      "name": "paths-result",
+      "width": 320,
+      "file": "paths-result-320.png",
+      "clip": {
+        "x": 32,
+        "y": 1845,
+        "width": 256,
+        "height": 1752
+      }
+    },
+    {
+      "name": "loop-result",
+      "width": 1280,
+      "file": "loop-result-1280.png",
+      "clip": {
+        "x": 228,
+        "y": 1286,
+        "width": 824,
+        "height": 1183
+      }
+    },
+    {
+      "name": "loop-result",
+      "width": 390,
+      "file": "loop-result-390.png",
+      "clip": {
+        "x": 32,
+        "y": 1704,
+        "width": 326,
+        "height": 1556
+      }
+    },
+    {
+      "name": "loop-result",
+      "width": 320,
+      "file": "loop-result-320.png",
+      "clip": {
+        "x": 32,
+        "y": 1845,
+        "width": 256,
+        "height": 1710
+      }
+    },
+    {
+      "name": "changed-bench",
+      "width": 1280,
+      "file": "changed-bench-1280.png",
+      "clip": {
+        "x": 228,
+        "y": 1286,
+        "width": 824,
+        "height": 1183
+      }
+    },
+    {
+      "name": "changed-bench",
+      "width": 390,
+      "file": "changed-bench-390.png",
+      "clip": {
+        "x": 32,
+        "y": 1704,
+        "width": 326,
+        "height": 1556
+      }
+    },
+    {
+      "name": "changed-bench",
+      "width": 320,
+      "file": "changed-bench-320.png",
+      "clip": {
+        "x": 32,
+        "y": 1845,
+        "width": 256,
+        "height": 1710
+      }
+    }
+  ],
+  "visualIssues": [],
+  "passed": true,
+  "sourceSha256AtEnd": "3b677c9ee7980cf412d36ee003b6f4860ee0fd405131923d2ac66d85ebe07b23",
+  "sourceChangedDuringRun": false
+}

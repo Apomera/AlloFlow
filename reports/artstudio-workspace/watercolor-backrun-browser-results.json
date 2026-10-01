@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "backrun": {
+        "initial": {
+          "core": 362.43998670578003,
+          "rim": 547.0399799346924,
+          "total": 2107.55992269516
+        },
+        "quiet": {
+          "core": 352.92691111564636,
+          "rim": 557.8996564745903,
+          "total": 2107.5599038770015
+        },
+        "responsive": {
+          "core": 273.7202506661415,
+          "rim": 639.9092227816582,
+          "total": 2107.5599252003594
+        },
+        "restored": {
+          "core": 273.7201878428459,
+          "rim": 639.9093236923218,
+          "total": 2107.558474287973
+        },
+        "compactVersion": 9
+      }
+    },
+    {
+      "tray": {
+        "color": "#598341",
+        "granulation": 67,
+        "staining": 38,
+        "opacity": 53,
+        "mobility": 48
+      }
+    },
+    "Loading a mixture leaves the existing rendered painting unchanged",
+    {
+      "phoneTrayTargets": [
+        {
+          "id": "artstudio-watercolor-mix-a",
+          "height": 44
+        },
+        {
+          "id": "artstudio-watercolor-mix-b",
+          "height": 44
+        },
+        {
+          "id": "artstudio-watercolor-mix-ratio",
+          "height": 44
+        },
+        {
+          "id": "artstudio-watercolor-load-mixture",
+          "height": 44
+        }
+      ]
+    },
+    "Phone mixing tray has no horizontal overflow"
+  ],
+  "errors": []
+}

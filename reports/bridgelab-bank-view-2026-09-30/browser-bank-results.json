@@ -1,0 +1,321 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/bridgelab-bank-view-2026-09-30/bank-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "26-bridgelab-gl.spec.ts",
+      "file": "26-bridgelab-gl.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bridge Lab — real WebGL",
+          "file": "26-bridgelab-gl.spec.ts",
+          "line": 215,
+          "column": 6,
+          "specs": [
+            {
+              "title": "riverbank observer: same moment, independent poses and fullscreen A/B at 1000px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 16890,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"geometries\": 156,\u001b[39m\n\u001b[31m+   \"geometries\": 158,\u001b[39m\n\u001b[2m    \"textures\": 1,\u001b[22m\n\u001b[2m  }\u001b[22m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"geometries\": 156,\u001b[39m\n\u001b[31m+   \"geometries\": 158,\u001b[39m\n\u001b[2m    \"textures\": 1,\u001b[22m\n\u001b[2m  }\u001b[22m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1302:75",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                          "column": 75,
+                          "line": 1302
+                        },
+                        "snippet": "  1300 |       await expect(page.getByRole('button', { name: 'Replay scene', exact: true })).toBeDisabled();\n  1301 |       await expect.poll(() => page.evaluate(() => (window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);\n> 1302 |       expect(await page.evaluate(() => (window as any).__gl().resources)).toEqual(before.resources);\n       |                                                                           ^\n  1303 |       await page.getByRole('button', { name: 'Exit fullscreen 3D bridge (Escape)', exact: true }).click();\n  1304 |       await page.getByRole('button', { name: 'Labelled 2D view', exact: true }).click();\n  1305 |       await expect(page.locator('[data-bridge-observer-switch]')).toHaveCount(0);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 75,
+                            "line": 1302
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"geometries\": 156,\u001b[39m\n\u001b[31m+   \"geometries\": 158,\u001b[39m\n\u001b[2m    \"textures\": 1,\u001b[22m\n\u001b[2m  }\u001b[22m\n\n  1300 |       await expect(page.getByRole('button', { name: 'Replay scene', exact: true })).toBeDisabled();\n  1301 |       await expect.poll(() => page.evaluate(() => (window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);\n> 1302 |       expect(await page.evaluate(() => (window as any).__gl().resources)).toEqual(before.resources);\n       |                                                                           ^\n  1303 |       await page.getByRole('button', { name: 'Exit fullscreen 3D bridge (Escape)', exact: true }).click();\n  1304 |       await page.getByRole('button', { name: 'Labelled 2D view', exact: true }).click();\n  1305 |       await expect(page.locator('[data-bridge-observer-switch]')).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1302:75"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-30T21:08:25.182Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7ee86-nd-fullscreen-A-B-at-1000px-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7ee86-nd-fullscreen-A-B-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7ee86-nd-fullscreen-A-B-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7ee86-nd-fullscreen-A-B-at-1000px-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                        "column": 75,
+                        "line": 1302
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-1c54e04972119965031c",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1233,
+              "column": 9
+            },
+            {
+              "title": "riverbank observer: same moment, independent poses and fullscreen A/B at 320px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15073,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"geometries\": 150,\u001b[39m\n\u001b[31m+   \"geometries\": 151,\u001b[39m\n\u001b[2m    \"textures\": 1,\u001b[22m\n\u001b[2m  }\u001b[22m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"geometries\": 150,\u001b[39m\n\u001b[31m+   \"geometries\": 151,\u001b[39m\n\u001b[2m    \"textures\": 1,\u001b[22m\n\u001b[2m  }\u001b[22m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1302:75",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                          "column": 75,
+                          "line": 1302
+                        },
+                        "snippet": "  1300 |       await expect(page.getByRole('button', { name: 'Replay scene', exact: true })).toBeDisabled();\n  1301 |       await expect.poll(() => page.evaluate(() => (window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);\n> 1302 |       expect(await page.evaluate(() => (window as any).__gl().resources)).toEqual(before.resources);\n       |                                                                           ^\n  1303 |       await page.getByRole('button', { name: 'Exit fullscreen 3D bridge (Escape)', exact: true }).click();\n  1304 |       await page.getByRole('button', { name: 'Labelled 2D view', exact: true }).click();\n  1305 |       await expect(page.locator('[data-bridge-observer-switch]')).toHaveCount(0);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 75,
+                            "line": 1302
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"geometries\": 150,\u001b[39m\n\u001b[31m+   \"geometries\": 151,\u001b[39m\n\u001b[2m    \"textures\": 1,\u001b[22m\n\u001b[2m  }\u001b[22m\n\n  1300 |       await expect(page.getByRole('button', { name: 'Replay scene', exact: true })).toBeDisabled();\n  1301 |       await expect.poll(() => page.evaluate(() => (window as any).__gl().sceneBuilds)).toBe(before.sceneBuilds);\n> 1302 |       expect(await page.evaluate(() => (window as any).__gl().resources)).toEqual(before.resources);\n       |                                                                           ^\n  1303 |       await page.getByRole('button', { name: 'Exit fullscreen 3D bridge (Escape)', exact: true }).click();\n  1304 |       await page.getByRole('button', { name: 'Labelled 2D view', exact: true }).click();\n  1305 |       await expect(page.locator('[data-bridge-observer-switch]')).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1302:75"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-30T21:09:46.399Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-fbfe7-and-fullscreen-A-B-at-320px-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-fbfe7-and-fullscreen-A-B-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-fbfe7-and-fullscreen-A-B-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-fbfe7-and-fullscreen-A-B-at-320px-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                        "column": 75,
+                        "line": 1302
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-5fbd49dfb1f9bf91f4b1",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1233,
+              "column": 9
+            },
+            {
+              "title": "riverbank observer: WebGL recovery preserves the selected observer without resuming motion",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 36087,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('canvas[data-bridge-gl=\"true\"]') to be visible\u001b[22m\n\u001b[2m    60 × locator resolved to hidden <canvas width=\"866\" height=\"478\" aria-hidden=\"true\" data-bridge-gl=\"true\"></canvas>\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('canvas[data-bridge-gl=\"true\"]') to be visible\u001b[22m\n\u001b[2m    60 × locator resolved to hidden <canvas width=\"866\" height=\"478\" aria-hidden=\"true\" data-bridge-gl=\"true\"></canvas>\u001b[22m\n\n    at mount (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:145:14)\n    at mountWorkflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:155:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1315:5",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                          "column": 14,
+                          "line": 145
+                        },
+                        "snippet": "  143 |   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.bridgeLab);\n  144 |   await page.evaluate((b) => (window as any).__mount(b), Object.assign({ tab: 'build' }, bucket));\n> 145 |   await page.waitForSelector('canvas[data-bridge-gl=\"true\"]', { timeout: 30000 });\n      |              ^\n  146 |   // The viewer deliberately suspends repainting offscreen. Exercise changes\n  147 |   // with the stage visible, as a learner would, instead of sampling stale GL state.\n  148 |   await page.locator('canvas[data-bridge-gl=\"true\"]').scrollIntoViewIfNeeded();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 14,
+                            "line": 145
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('canvas[data-bridge-gl=\"true\"]') to be visible\u001b[22m\n\u001b[2m    60 × locator resolved to hidden <canvas width=\"866\" height=\"478\" aria-hidden=\"true\" data-bridge-gl=\"true\"></canvas>\u001b[22m\n\n\n  143 |   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.bridgeLab);\n  144 |   await page.evaluate((b) => (window as any).__mount(b), Object.assign({ tab: 'build' }, bucket));\n> 145 |   await page.waitForSelector('canvas[data-bridge-gl=\"true\"]', { timeout: 30000 });\n      |              ^\n  146 |   // The viewer deliberately suspends repainting offscreen. Exercise changes\n  147 |   // with the stage visible, as a learner would, instead of sampling stale GL state.\n  148 |   await page.locator('canvas[data-bridge-gl=\"true\"]').scrollIntoViewIfNeeded();\n    at mount (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:145:14)\n    at mountWorkflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:155:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1315:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-30T21:11:14.945Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7d8cb-ver-without-resuming-motion-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7d8cb-ver-without-resuming-motion-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7d8cb-ver-without-resuming-motion-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-bank-view-2026-09-30\\bank-artifacts\\26-bridgelab-gl-Bridge-Lab-7d8cb-ver-without-resuming-motion-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                        "column": 14,
+                        "line": 145
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-19635efb49cc67517892",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1314,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T21:08:23.516Z",
+    "duration": 217641.62099999998,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

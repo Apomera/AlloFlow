@@ -1,0 +1,26 @@
+{
+  "base": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "source": "Refreshed shared working tree after reader integration; not HEAD content or deployed release",
+  "inputs": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "d669ed5e7a37d56cb3fdff3f11c5993831b93078296f46bf892ad75ecff729ee"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "d669ed5e7a37d56cb3fdff3f11c5993831b93078296f46bf892ad75ecff729ee"
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "687866a6202a20700ba8dd40bcf59a7b8a5edc0552ffed4091f8c764a01ba9f1"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "b3255e2e310b65fcf71d4bebde17b42e258c45f4495f2324514ccf423498936c"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    }
+  ]
+}

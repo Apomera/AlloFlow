@@ -83,6 +83,23 @@ function adventureEpisodeDepleted(state) {
   return Number.isFinite(energy) && energy <= 0 && !state.canStartSequel;
 }
 
+// The storybook setting counts XP EARNED in the adventure, but state.xp restarts at
+// each level-up (adventure_session_handlers: the first level takes 100, each next
+// one 1.5 times the last). Add the finished levels back. The host's Mission Report
+// card uses the same numbers through window.AlloModules.AdventureStorybookGate.
+function adventureXpEarned(state) {
+  var xp = Number.isFinite(Number(state && state.xp)) ? Math.max(0, Number(state.xp)) : 0;
+  var level = Math.max(1, Math.min(100, Math.floor(Number(state && state.level) || 1)));
+  for (var i = 1, need = 100; i < level; i++) { xp += need; need = Math.floor(need * 1.5); }
+  return xp;
+}
+function adventureStorybookXpNeeded(state, minimumXP) {
+  var threshold = Number.isFinite(Number(minimumXP)) ? Math.max(0, Number(minimumXP)) : 0;
+  return Math.max(0, threshold - adventureXpEarned(state));
+}
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.AdventureStorybookGate = { xpEarned: adventureXpEarned, xpNeeded: adventureStorybookXpNeeded };
+
 function AdventureEpisodeRecap({ state, t, theme, immersive = false, mode, social,
   minimumXP, isProcessing, onExport, onSequel, canContinue = true }) {
   if (!state.isGameOver) return null;
@@ -90,7 +107,7 @@ function AdventureEpisodeRecap({ state, t, theme, immersive = false, mode, socia
   const _isDefeat = adventureEpisodeDepleted(state);
   const completed = adventureDecisionCount(state);
   const level = Number(state.level);
-  const xp = Number.isFinite(Number(state.xp)) ? Math.max(0, Number(state.xp)) : 0;
+  const xp = adventureXpEarned(state);
   const threshold = Number.isFinite(Number(minimumXP)) ? Math.max(0, Number(minimumXP)) : 0;
   const concepts = Array.from(new Map((Array.isArray(state.stats?.conceptsFound) ? state.stats.conceptsFound : [])
     .filter(value => typeof value === 'string' && value.trim())
@@ -917,6 +934,18 @@ function AdventureView(props) {
   var isDebateSetup = adventureInputMode === 'debate' && adventureState.debatePhase === 'setup';
   var hasDebatePositions = isDebateSetup && Array.isArray(adventureState.currentScene?.options) && adventureState.currentScene.options.length > 0;
   var usesWrittenResponse = adventureFreeResponseEnabled && !hasDebatePositions;
+  // A restored finished choice story has no options; offer its ending instead of an empty choice area.
+  var sceneHasNoChoices = !!adventureState.currentScene && !adventureState.isGameOver && !adventureState.isLoading && !usesWrittenResponse
+    && !(Array.isArray(adventureState.currentScene.options) && adventureState.currentScene.options.length);
+  var renderStoryEndedActions = function () {
+    return <div data-adventure-story-ended className="flex flex-col items-center gap-3 p-4 text-center">
+      <p className="text-sm font-semibold text-[var(--av-ink)]">{adventureSettingsText(t, 'story_ended_notice', 'This story has reached its ending.')}</p>
+      <div className="flex flex-wrap justify-center gap-2">
+        {typeof setAdventureState === 'function' && <button type="button" onClick={() => setAdventureState(prev => ({ ...prev, isGameOver: true, isLoading: false }))} className="min-h-11 px-4 py-2 rounded-xl font-bold text-sm border-2 border-[var(--av-accent)] bg-[var(--av-wash)] text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2">{adventureSettingsText(t, 'show_ending', 'Show the ending and recap')}</button>}
+        {typeof handleStartAdventure === 'function' && !(!isTeacherMode && activeSessionCode) && <button type="button" onClick={handleStartAdventure} disabled={isProcessing} className="min-h-11 px-4 py-2 rounded-xl font-bold text-sm border border-[var(--av-control)] bg-[var(--av-surface)] text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 disabled:opacity-50">{adventureSettingsText(t, 'restart_confirm_button', 'Open new adventure setup')}</button>}
+      </div>
+    </div>;
+  };
   var renderDebateSetupGuide = function () {
     if (!isDebateSetup) return null;
     return <p data-adventure-debate-setup className="text-sm leading-relaxed text-[var(--av-muted)]">{hasDebatePositions
@@ -1000,6 +1029,10 @@ function AdventureView(props) {
     : 'solo:' + String((adventureThemeAnchor && adventureThemeAnchor.text) || (adventureState.currentScene && adventureState.currentScene.text) || adventureInputMode || 'adventure');
   var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
   var democracyActive = !!(sessionData && sessionData.democracy && sessionData.democracy.isActive);
+  // A live student with class voting off cannot choose (the handler only shows a
+  // toast), so the choices are disabled and say why instead of looking live.
+  var liveStudentWaiting = !isTeacherMode && !!activeSessionCode && !democracyActive;
+  var storybookXpNeeded = adventureStorybookXpNeeded(adventureState, studentProjectSettings && studentProjectSettings.adventureMinXP);
   var democracyVotes = democracyActive && sessionData.democracy.votes && typeof sessionData.democracy.votes === 'object'
     ? sessionData.democracy.votes : {};
   var democracyTotalVotes = Object.keys(democracyVotes).length;
@@ -1012,6 +1045,17 @@ function AdventureView(props) {
     return String(typeof option === 'object' && option && option.action ? option.action : option).trim();
   };
   var renderDemocracyStatus = function (isDark) {
+    if (!democracyActive && liveStudentWaiting) {
+      return (
+        <div role="status" data-adventure-live-wait
+          className={(isDark
+            ? 'md:col-span-2 bg-indigo-950/80 border-indigo-300 text-indigo-100'
+            : 'sm:col-span-2 bg-indigo-50 border-indigo-300 text-indigo-950') + ' rounded-xl border px-3 py-2 text-xs'}>
+          <strong className="block">{t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'}</strong>
+          <span className="mt-0.5 block">{t('adventure.wait_for_class_vote') || 'When your teacher opens class voting, you can choose here.'}</span>
+        </div>
+      );
+    }
     if (!democracyActive) return null;
     var message = isTeacherMode
       ? (democracyAudienceTotal > 0
@@ -1197,13 +1241,15 @@ function AdventureView(props) {
                                     {adventureState.narrativeLedger || t('adventure.ledger_empty')}
                                 </div>
                                 <div className="mt-4 flex flex-col gap-2">
+                                    {/* Same XP lock as the episode recap (it was bypassed here). */}
+                                    {storybookXpNeeded > 0 && <p data-ledger-storybook-locked className="text-xs text-slate-700">{t('adventure.storybook_locked', { needed: storybookXpNeeded })}</p>}
                                     <button type="button"
                                         aria-label={t('adventure.storybook')}
                                         onClick={() => {
                                             setShowLedger(false);
                                             setShowStorybookExportModal(true);
                                         }}
-                                        disabled={isProcessing || adventureState.history.length === 0} aria-busy={isProcessing}
+                                        disabled={isProcessing || adventureState.history.length === 0 || storybookXpNeeded > 0} aria-busy={isProcessing}
                                         className="min-h-11 w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                     >
                                         {isProcessing ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Download size={18} aria-hidden="true" />}
@@ -1424,12 +1470,13 @@ function AdventureView(props) {
                                 <span className="hidden sm:inline">{t('adventure.view_button')}</span>
                             </button>
                             )}
-                            <button type="button"
+                            {/* Not for a live student: the teacher's next broadcast overwrites a student's restart. */}
+                            {!(!isTeacherMode && activeSessionCode) && <button type="button"
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure} disabled={adventureState.isLoading || isProcessing}
                                 className="min-w-11 min-h-11 flex items-center gap-2 bg-[var(--av-surface)] text-[var(--av-ink)] border border-[var(--av-control)] px-3 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--av-wash)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
                             >
                                 <RefreshCw size={14} className={adventureState.isLoading ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden="true" /> {t('adventure.restart')}
-                            </button>
+                            </button>}
 </div>
                         </details>
                     </div>
@@ -1895,7 +1942,7 @@ function AdventureView(props) {
                                                     <AdventureTurnRecovery t={t} theme={theme} immersive loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} />
                                                 ) : (
                                                     adventureState.currentScene && (
-                                                        usesWrittenResponse ? (
+                                                        sceneHasNoChoices ? renderStoryEndedActions() : usesWrittenResponse ? (
                                                             <div className="flex flex-col gap-3">
                                                                 {!isTeacherMode && activeSessionCode ? (
                                                                     <div role="status" className="rounded-xl border border-indigo-300 bg-indigo-950/80 p-4 text-sm text-indigo-100">
@@ -1940,7 +1987,7 @@ function AdventureView(props) {
                                                                         return (
                                                                             <div key={idx} data-adventure-choice data-reading={isReadingThisOption || undefined} className={adventureChoiceClass(isMyVote, isReadingThisOption)}>
                                                                                 <div className="flex items-start gap-1">
-                                                                                    <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading}
+                                                                                    <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading || liveStudentWaiting}
                                                                                         aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}
                                                                                         className="min-h-11 min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-3 rounded-xl text-left text-sm leading-relaxed font-semibold hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed">
                                                                                         <span aria-hidden="true" className="w-7 h-7 shrink-0 rounded-lg border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-accent)] flex items-center justify-center text-xs font-bold">{idx + 1}</span>
@@ -2103,6 +2150,8 @@ function AdventureView(props) {
                                                 </button>
                                             </div>
                                         </div>
+                                    ) : sceneHasNoChoices ? (
+                                        renderStoryEndedActions()
                                     ) : (!usesWrittenResponse) ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {renderDemocracyStatus(false)}
@@ -2122,7 +2171,7 @@ function AdventureView(props) {
                                                     return (
                                                         <div key={idx} data-adventure-choice data-reading={isReadingThisOption || undefined} className={adventureChoiceClass(isMyVote, isReadingThisOption)}>
                                                             <div className="flex items-start gap-1">
-                                                                <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading}
+                                                                <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading || liveStudentWaiting}
                                                                     aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}
                                                                     className="min-h-11 min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-3 rounded-xl text-left text-sm leading-relaxed font-semibold hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed">
                                                                     <span aria-hidden="true" className="w-7 h-7 shrink-0 rounded-lg border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-accent)] flex items-center justify-center text-xs font-bold">{isDebateSetup ? <Scale size={14} aria-hidden="true" /> : idx + 1}</span>
@@ -2135,6 +2184,11 @@ function AdventureView(props) {
                                                     );
                                                 });
                                             })()}
+                                        </div>
+                                    ) : !isTeacherMode && activeSessionCode ? (
+                                        <div role="status" data-adventure-live-wait className="rounded-xl border border-indigo-300 bg-indigo-50 p-4 text-sm text-indigo-950">
+                                            <strong className="block">{t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'}</strong>
+                                            <span className="mt-1 block">{t('adventure.wait_for_action_round') || 'When a class-action round opens, submit your idea in the private live prompt. Free responses and votes are sent peer to peer.'}</span>
                                         </div>
                                     ) : (
                                         renderAdventureComposer(false)

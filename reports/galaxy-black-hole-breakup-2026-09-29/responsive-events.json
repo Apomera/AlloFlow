@@ -1,0 +1,23 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "paused": true,
+      "visibleFragments": 48
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "paused": true,
+      "visibleFragments": 48
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "paused": true,
+      "visibleFragments": 48
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "depth_inspect_hands": "Show rescuer hands and arms",
+  "depth_inspect_ruler": "Measure movement between release and peak",
+  "depth_inspect_title": "Depth and movement start at different heights",
+  "depth_inspect_key": "Each short ruler tick is 1 cm in this model. The white bracket spans the released height to the deepest point; it stays fixed while the amber marker moves.",
+  "depth_inspect_peak": "Peak depth from rest",
+  "depth_inspect_lean": "Depression at release",
+  "depth_inspect_travel": "Movement per push",
+  "depth_inspect_equation": "{peak} cm − {release} cm = {travel} cm of movement.",
+  "depth_inspect_full": "With full recoil, the released height is the resting height, so movement and peak depth match.",
+  "depth_inspect_leaning": "With leaning, the next push starts below rest. The movement is smaller than the peak depth because some depression remains between pushes.",
+  "depth_inspect_compare": "Movement from release to peak: saved A {a} cm; current B {b} cm.",
+  "depth_inspect_scope": "These distances describe the illustrated chest. They do not measure force, blood flow, or your hands-on technique.",
+  "depth_inspect_close": "Chest close-up"
+}

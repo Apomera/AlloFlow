@@ -1,0 +1,113 @@
+{
+  "at": "2026-09-30T12:11:09.908Z",
+  "checks": [
+    {
+      "name": "Host parses and all three mirrors match",
+      "passed": true,
+      "detail": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f"
+    },
+    {
+      "name": "All host changes stay within the saved-resource and student-entry edits",
+      "passed": true,
+      "detail": "Exact preimage restored by removing only this pass"
+    },
+    {
+      "name": "All fourteen original homework regression bodies remain unchanged",
+      "passed": true,
+      "detail": 14
+    },
+    {
+      "name": "Manifest selection preserves existing entries and adds all three readiness tests",
+      "passed": true,
+      "detail": {
+        "addedTests": 3,
+        "addedInputs": 8
+      }
+    },
+    {
+      "name": "misc_handlers module syntax and public mirror",
+      "passed": true,
+      "detail": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d"
+    },
+    {
+      "name": "pure_helpers module syntax and public mirror",
+      "passed": true,
+      "detail": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "name": "phase_n_misc_helpers module syntax and public mirror",
+      "passed": true,
+      "detail": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019"
+    },
+    {
+      "name": "text_utility_helpers module syntax and public mirror",
+      "passed": true,
+      "detail": "e685d686af7ddda9b67043a351bc254f9fb62de32c116d4dc3d5727eaf6badc5"
+    },
+    {
+      "name": "host_handlers module syntax and public mirror",
+      "passed": true,
+      "detail": "d2ca5eb27227c62611044e91a5ace3b628c8ee31a80c29f5188ae4000b7e99b1"
+    },
+    {
+      "name": "ui_modals module syntax and public mirror",
+      "passed": true,
+      "detail": "b696d6c9fbc9c6d8d7021ea98526441fea74c23609053dc0362ebd166cf0a567"
+    },
+    {
+      "name": "view_history_panel module syntax and public mirror",
+      "passed": true,
+      "detail": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    {
+      "name": "view_simplified module syntax and public mirror",
+      "passed": true,
+      "detail": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2"
+    },
+    {
+      "name": "Final targeted checks passed",
+      "passed": true,
+      "detail": {
+        "passed": 245,
+        "pending": 1,
+        "total": 246,
+        "files": 14
+      }
+    },
+    {
+      "name": "Five full-app homework workflows passed for the final host",
+      "passed": true,
+      "detail": [
+        "reader-chain",
+        "failed-retry",
+        "navigation",
+        "phone",
+        "cached-history"
+      ]
+    },
+    {
+      "name": "Thirteen isolated regression proofs detected assertion failures for the final host",
+      "passed": true,
+      "detail": 13
+    },
+    {
+      "name": "Verification inputs remain stable",
+      "passed": true,
+      "detail": {
+        "inputs": 53,
+        "codeChanges": 0,
+        "concurrentLocaleChanges": 2
+      }
+    }
+  ],
+  "notes": [
+    {
+      "name": "Concurrent locale edits preserved; common and History messages unchanged",
+      "paths": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ]
+    }
+  ],
+  "passed": true
+}

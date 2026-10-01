@@ -88,9 +88,15 @@ beforeEach(function() {
   window.localStorage.removeItem('allo.geometryworld.hud.v1');
   window.THREE = makeThreeStub();
   window[ENGINE_KEY] = makeEngine();
+  // jsdom reports the HOST's CPU count here (os.cpus().length), and Auto treats <= 4 cores as
+  // low power. A 4-vCPU CI runner therefore resolved Auto to "Battery saver" while an 8+ core
+  // laptop resolved "Detailed". Pin a desktop-class value so the test does not depend on the
+  // machine it runs on; the low-power branch is covered directly by the resolver test below.
+  Object.defineProperty(window.navigator, 'hardwareConcurrency', { configurable: true, get: function() { return 8; } });
 });
 
 afterEach(function() {
+  delete window.navigator.hardwareConcurrency;
   if (mounted) { React.act(function() { mounted.root.unmount(); }); mounted.container.remove(); mounted = null; }
   delete window[ENGINE_KEY];
   delete window[ENGINE_KEY + '_failed'];

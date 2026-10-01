@@ -185,6 +185,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         chance: clamp(thermal * predation * energy * env.food, 0.02, 0.95) };
     }
     function chance(o, env, selection) { return survivalDetails(o, env, selection).chance; }
+    function sampleSurvivors(population, env, selection, r, onDraw) {
+      return population.filter(function(o) {
+        var number = r.next(), probability = chance(o, env, selection);
+        if (typeof onDraw === 'function') onDraw(o.id, number, probability);
+        return number < probability;
+      });
+    }
+    function survivalSample(population, habitat, selection, seed, onDraw) {
+      if (!Array.isArray(population) || !Object.prototype.hasOwnProperty.call(habitats, habitat) || typeof selection !== 'boolean' || !Number.isInteger(seed) || seed < 0 || seed > 4294967295) return null;
+      return sampleSurvivors(population, habitats[habitat], selection, rng(seed), onDraw).map(function(o) { return o.id; });
+    }
     function create(seed) {
       seed = Number.isFinite(Number(seed)) ? Number(seed) >>> 0 : 2026;
       var r = rng(seed), pop = [];
@@ -213,7 +224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (!plan) return world;
       var gen = plan.generation, habitat = plan.habitat, event = plan.event;
       var env = habitats[habitat], before = world.history[world.generation].population;
-      var survivors = before.filter(function(o) { return r.next() < chance(o, env, world.selection); });
+      var survivors = sampleSurvivors(before, env, world.selection, r);
       var pop = [], nextId = world.nextId, mutations = 0;
       // Non-overlapping, sexually reproducing generations; no forced rescue.
       var count = survivors.length >= 2 ? Math.min(60, Math.floor(survivors.length * 2.65)) : 0;
@@ -294,7 +305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       world.history.forEach(function(f) { rows.push(['Living Island v1', world.seed, f.generation, f.habitat, f.selection, f.population.length, f.survivors.length, f.mutations].concat(traits.map(function(k) { var v = f.stats.means[k]; return v == null ? '' : v.toFixed(5); })).concat(f.stats.diversity.toFixed(5), f.mutationRate).join(',')); });
       return rows.join('\r\n');
     }
-    return { create: create, step: step, preview: preview, restore: restore, value: geneValue, stats: stats, chance: chance, survivalDetails: survivalDetails, family: family, csv: csv, traits: traits, habitats: habitats };
+    return { create: create, step: step, preview: preview, restore: restore, value: geneValue, stats: stats, chance: chance, survivalDetails: survivalDetails, survivalSample: survivalSample, family: family, csv: csv, traits: traits, habitats: habitats };
   })();
   window.StemLab.evoIslandModel = IslandModel;
 
@@ -364,9 +375,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       world.history.forEach(function(f) { f.population.forEach(function(o) { index[o.id] = o; if (o.id === id) found = o; }); });
       if (!found) return null;
       var next = world.history[found.born + 1];
-      return { organism: found, parents: found.parents.map(function(p) { return index[p]; }),
+      return { organism: found, birthHabitat: world.history[found.born].habitat,
+        round: next ? { generation: next.generation, habitat: next.habitat, selection: next.selection,
+          chance: IslandModel.chance(found, IslandModel.habitats[next.habitat], next.selection), survived: next.survivors.indexOf(id) >= 0,
+          parentCount: world.history[found.born].population.length, survivorCount: next.survivors.length, offspringCount: next.population.length } : null,
+        parents: found.parents.map(function(p) { return index[p]; }),
         children: next ? next.population.filter(function(o) { return o.parents.indexOf(id) >= 0; }) : [],
         outcome: !next ? 'pending' : next.survivors.indexOf(id) < 0 ? 'not-survived' : next.population.some(function(o) { return o.parents.indexOf(id) >= 0; }) ? 'offspring' : 'no-offspring' };
+    },
+    siblings: function(world, id) {
+      var family = IslandStudy.lineage(world, id);
+      if (!family || family.parents.length !== 2) return null;
+      var o = family.organism, full = [], half = [];
+      world.history[o.born].population.forEach(function(other) {
+        if (other.id === o.id) return;
+        var shared = other.parents.filter(function(parentId) { return o.parents.indexOf(parentId) >= 0; }).length;
+        if (shared === 2) full.push(other);
+        else if (shared === 1) half.push(other);
+      });
+      return { organism: o, full: full, half: half };
+    },
+    resemblance: function(family, trait) {
+      if (!family || family.parents.length !== 2 || IslandModel.traits.indexOf(trait) < 0) return null;
+      var child = family.organism, parents = family.parents, values = parents.concat([child]).map(function(o) { return IslandModel.value(o, trait); });
+      var pairings = [];
+      parents[0].genes[trait].forEach(function(a, i) { parents[1].genes[trait].forEach(function(b, j) {
+        pairings.push({ copies: [i, j], alleles: [a, b], value: (a + b) / 2 });
+      }); });
+      var events = child.inheritance && child.inheritance[trait], actual = events ? events[0].copy * 2 + events[1].copy : null;
+      return { values: values, pairings: pairings, actual: actual,
+        mutationCount: events ? events.filter(function(e) { return e.delta !== null; }).length : null,
+        position: values[2] < Math.min(values[0], values[1]) ? 'below' : values[2] > Math.max(values[0], values[1]) ? 'above' : 'within' };
     },
     // A family is the union of descendants through either parent. Overlapping
     // branches count an individual once; future rounds are never fabricated.
@@ -417,16 +456,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   // Observation tools read recorded organisms; they never change genes, order,
   // survival probabilities, or the biological random stream.
   var IslandObservation = {
-    lens: function(value) { return IslandModel.traits.indexOf(value) >= 0 ? value : 'natural'; },
-    range: function(population, trait) {
-      if (IslandModel.traits.indexOf(trait) < 0 || !population.length) return null;
+    lens: function(value) { return value === 'survival' || IslandModel.traits.indexOf(value) >= 0 ? value : 'natural'; },
+    measure: function(organism, lens, habitat, selection) {
+      if (IslandModel.traits.indexOf(lens) >= 0) return IslandModel.value(organism, lens);
+      if (lens === 'survival' && Object.prototype.hasOwnProperty.call(IslandModel.habitats, habitat)) return IslandModel.chance(organism, IslandModel.habitats[habitat], selection);
+      return null;
+    },
+    distribution: function(population, trait) {
+      if (IslandModel.traits.indexOf(trait) < 0) return null;
+      var bins = [0, 1, 2, 3, 4].map(function(i) { return { index: i, lower: i / 5, upper: (i + 1) / 5, members: [], count: 0, share: null }; }), sum = 0;
+      population.forEach(function(o) {
+        var value = IslandModel.value(o, trait), index = Math.min(4, Math.floor(value * 5));
+        bins[index].members.push(o); sum += value;
+      });
+      bins.forEach(function(bin) { bin.count = bin.members.length; bin.share = population.length ? bin.count / population.length : null; });
+      return { total: population.length, mean: population.length ? sum / population.length : null, bins: bins };
+    },
+    range: function(population, trait, habitat, selection) {
+      if (!population.length || IslandObservation.measure(population[0], trait, habitat, selection) === null) return null;
       var low = population[0], high = population[0], sum = 0;
       population.forEach(function(o) {
-        var value = IslandModel.value(o, trait); sum += value;
-        if (value < IslandModel.value(low, trait) || (value === IslandModel.value(low, trait) && o.id < low.id)) low = o;
-        if (value > IslandModel.value(high, trait) || (value === IslandModel.value(high, trait) && o.id < high.id)) high = o;
+        var value = IslandObservation.measure(o, trait, habitat, selection); sum += value;
+        if (value < IslandObservation.measure(low, trait, habitat, selection) || (value === IslandObservation.measure(low, trait, habitat, selection) && o.id < low.id)) low = o;
+        if (value > IslandObservation.measure(high, trait, habitat, selection) || (value === IslandObservation.measure(high, trait, habitat, selection) && o.id < high.id)) high = o;
       });
-      return { low: low, high: high, minimum: IslandModel.value(low, trait), maximum: IslandModel.value(high, trait), mean: sum / population.length, count: population.length };
+      return { low: low, high: high, minimum: IslandObservation.measure(low, trait, habitat, selection), maximum: IslandObservation.measure(high, trait, habitat, selection), mean: sum / population.length, count: population.length };
+    },
+    forecast: function(world) {
+      var plan = IslandModel.preview(world);
+      if (!plan) return null;
+      var population = world.history[world.generation].population;
+      return { generation: plan.generation, habitat: plan.habitat, selection: plan.selection, count: population.length,
+        expected: population.reduce(function(sum, o) { return sum + IslandModel.chance(o, IslandModel.habitats[plan.habitat], plan.selection); }, 0) };
     },
     briefing: function(world, generation) {
       var transition = IslandStudy.transition(world, generation);
@@ -458,6 +519,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }
   };
   window.StemLab.evoIslandObservation = IslandObservation;
+
+  // Separate chance streams repeat survival only. They never advance the expedition,
+  // resample its climate, reproduce, or consume any of its saved RNG state.
+  var IslandChanceTrials = {
+    limit: 20,
+    run: function(world, index) {
+      if (!Number.isInteger(index) || index < 1 || index > IslandChanceTrials.limit) return null;
+      var plan = IslandObservation.forecast(world);
+      if (!plan) return null;
+      var seed = (world.rng + Math.imul(index, 0x9e3779b9)) >>> 0;
+      var survivors = IslandModel.survivalSample(world.history[world.generation].population, plan.habitat, plan.selection, seed);
+      return { index: index, seed: seed, count: survivors.length, survivors: survivors };
+    },
+    // Observe the same private trial stream. No expedition draws are consumed or inferred.
+    draw: function(world, index, id) {
+      if (!Number.isInteger(id)) return null;
+      var trial = IslandChanceTrials.run(world, index), plan = IslandObservation.forecast(world);
+      if (!trial || !plan) return null;
+      var result = null;
+      IslandModel.survivalSample(world.history[world.generation].population, plan.habitat, plan.selection, trial.seed, function(residentId, number, probability) {
+        if (residentId === id) result = { id: id, index: index, seed: trial.seed, habitat: plan.habitat, selection: plan.selection, number: number, probability: probability, survived: number < probability };
+      });
+      return result;
+    },
+    compare: function(world, recordedIds, index) {
+      var trial = IslandChanceTrials.run(world, index), plan = IslandObservation.forecast(world);
+      if (!trial || !Array.isArray(recordedIds)) return null;
+      var parents = world.history[world.generation].population, ids = new Set(parents.map(function(o) { return o.id; }));
+      var recorded = new Set(recordedIds), sampled = new Set(trial.survivors);
+      if (recorded.size !== recordedIds.length || recordedIds.some(function(id) { return !ids.has(id); })) return null;
+      var groups = { both: 0, recorded: 0, trial: 0, neither: 0 };
+      var rows = parents.map(function(o) {
+        var a = recorded.has(o.id), b = sampled.has(o.id), group = a ? (b ? 'both' : 'recorded') : (b ? 'trial' : 'neither');
+        groups[group]++;
+        return { organism: o, recorded: a, trial: b, group: group, chance: IslandModel.chance(o, IslandModel.habitats[plan.habitat], plan.selection) };
+      });
+      return { index: index, seed: trial.seed, rows: rows, groups: groups, changed: groups.recorded + groups.trial, sameCount: recordedIds.length === trial.count };
+    }
+  };
+  window.StemLab.evoIslandChanceTrials = IslandChanceTrials;
 
 
   // Highlights describe immutable recorded events. Collections store only
@@ -833,6 +934,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           for (var marker = 0; marker < 60; marker++) markerFill.setColorAt(marker, markerLow);
           markerFill.count = 0;
           var markerIds = [];
+          var rangeMat = new T.MeshBasicMaterial({ color: new T.Color('#087f9c').convertSRGBToLinear() }); materials.push(rangeMat);
+          var rangeMarks = new T.InstancedMesh(ringGeo, rangeMat, 60), rangeTransform = new T.Object3D(), rangeIds = [];
+          rangeMarks.name = 'Trait range spotlight'; rangeMarks.frustumCulled = false; rangeMarks.count = 0; scene.add(rangeMarks);
+          remove.push(function() { if (rangeMarks.dispose) rangeMarks.dispose(); });
           var specimenBase = mesh(geo(new T.CylinderGeometry(1.25, 1.35, 0.12, 48)), '#e3dbc4', scene, 0, 0, 0);
           specimenBase.name = 'Specimen inspection stand'; specimenBase.visible = false; specimenBase.receiveShadow = true;
           // One bounded particle field, driven only by the independent visual seed.
@@ -1009,6 +1114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var distance = (focal ? showMeasurements ? clamp(view.distance * 0.20, 4.2, 7) : clamp(view.distance * 0.17, 3.2, 6.2) : view.distance) * Math.max(1, 1.3 / camera.aspect);
             var cameraAngle = focal ? view.angle + focal.angle : view.angle, cameraElevation = focal ? 0.40 : view.elevation;
             camera.position.set(targetX + Math.sin(cameraAngle) * Math.cos(cameraElevation) * distance, targetY + Math.sin(cameraElevation) * distance, targetZ + Math.cos(cameraAngle) * Math.cos(cameraElevation) * distance); camera.lookAt(targetX, targetY, targetZ);
+            var rangeIndex = 0; rangeIds = [];
             residents.forEach(function(a) {
               a.root.visible = !focal || a.id === focal.id;
               var phase = motion ? visualTime * 0.6 + a.id : a.id;
@@ -1024,11 +1130,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               a.ring.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), normal);
               a.ring.visible = p.selected === a.id || p.family.has(a.id);
               a.ring.material = mat(p.selected === a.id ? '#fff8d6' : '#e1ae39');
+              if (!p.compact && p.spotlight && p.spotlight.has(a.id) && a.root.visible) {
+                rangeTransform.position.copy(a.root.position); rangeTransform.position.y += 0.045;
+                rangeTransform.quaternion.copy(a.root.quaternion).multiply(a.ring.quaternion);
+                rangeTransform.scale.set(1.3, 1.3, 1.3); rangeTransform.updateMatrix();
+                rangeMarks.setMatrixAt(rangeIndex++, rangeTransform.matrix); rangeIds.push(a.id);
+              }
             });
+            rangeMarks.count = rangeIndex; rangeMarks.instanceMatrix.needsUpdate = true; rangeMarks.userData.organismIds = rangeIds;
             var lens = IslandObservation.lens(p.lens), markerIndex = 0; markerIds = [];
             if (!p.compact && lens !== 'natural') residents.forEach(function(a) {
               if (!a.root.visible) return;
-              var value = IslandModel.value(a.organism, lens), base = a.root.position.y + a.markerBase + a.body.position.y;
+              var value = IslandObservation.measure(a.organism, lens, p.habitat, p.selection), base = a.root.position.y + a.markerBase + a.body.position.y;
               markerTransform.quaternion.copy(camera.quaternion);
               markerOffset.set(0, 0.6, 0).applyQuaternion(camera.quaternion);
               markerTransform.position.set(a.root.position.x, base, a.root.position.z).add(markerOffset);
@@ -1073,9 +1186,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ray.setFromCamera(new T.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera);
             var targets = latest.current.focused ? hitMeshes.filter(function(m) { return m.userData.organismId === latest.current.selected; }) : hitMeshes;
             if (markerFill.count) targets = targets.concat([markerFill, markerBack]);
+            if (rangeMarks.count) targets = targets.concat([rangeMarks]);
             var hits = ray.intersectObjects(targets, false);
             if (hits.length) {
-              var hit = hits[0], id = hit.object === markerFill || hit.object === markerBack ? markerIds[hit.instanceId] : hit.object.userData.organismId;
+              var hit = hits[0], id = hit.object === rangeMarks ? rangeIds[hit.instanceId] : hit.object === markerFill || hit.object === markerBack ? markerIds[hit.instanceId] : hit.object.userData.organismId;
               if (id != null) latest.current.onSelect(id);
             }
           });
@@ -1093,10 +1207,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       else fail();
       return function() { disposed = true; clearTimeout(timer); cancelAnimationFrame(raf); engine.current = null; if (observer) observer.disconnect(); remove.forEach(function(fn) { fn(); }); geometries.forEach(function(g) { g.dispose(); }); materials.forEach(function(m) { m.dispose(); }); textures.forEach(function(t) { t.dispose(); }); if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); } };
     }, []);
-    R.useEffect(function() { if (engine.current) engine.current.refresh(); }, [props.frame, props.habitat, props.seed, props.selected, props.family, props.moving, props.reduced, props.lens, focused]);
+    R.useEffect(function() { if (engine.current) engine.current.refresh(); }, [props.frame, props.habitat, props.selection, props.seed, props.selected, props.family, props.moving, props.reduced, props.lens, props.spotlight, focused]);
+    R.useEffect(function() { if (props.rangeView) setFocused(false); }, [props.rangeView]);
     function move(action) { if (engine.current) engine.current.move(action); }
     var tx = props.tx, activeLens = IslandObservation.lens(props.lens);
-    var lensLabels = { shade: tx('shade', 'Coat lightness'), fur: tx('fur', 'Insulation'), legs: tx('legs', 'Leg length') };
+    var lensLabels = { shade: tx('shade', 'Coat lightness'), fur: tx('fur', 'Insulation'), legs: tx('legs', 'Leg length'), survival: tx('survival_lens', 'Survival chance') };
     var visibleSelection = props.frame.population.filter(function(o) { return o.id === props.selected; })[0];
     return h('div', { className: 'ei-stage-wrap' + (props.compact ? ' ei-scene-compact' : '') },
       h('div', { className: 'ei-scene', ref: host, role: 'group', 'aria-label': props.compact ? props.sceneLabel : tx('scene', 'Living Island habitat. Use the organism selector below to inspect any creature.'), 'data-island-scene': status },
@@ -1105,15 +1220,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h('p', null, tx('fallback', 'Habitat map · 3D is unavailable on this device. All experiments and family records still work.')),
           !props.compact && h('div', { className: 'ei-map', style: { background: IslandModel.habitats[props.habitat].ground } }, props.frame.population.map(function(o) {
             var value = IslandModel.value(o, 'shade');
-            return h('button', { key: o.id, type: 'button', onClick: function() { props.onSelect(o.id); }, 'aria-label': tx('inspect', 'Inspect Spriglet') + ' ' + o.id + (activeLens === 'natural' ? '' : ' · ' + lensLabels[activeLens] + ' ' + (IslandModel.value(o, activeLens) * 100).toFixed(1) + '/100'), className: 'ei-map-creature', style: { background: 'hsl(38 28% ' + (28 + value * 58) + '%)', outline: props.family.has(o.id) ? '3px solid #ffda78' : undefined } }, o.id, activeLens !== 'natural' && h('small', null, (IslandModel.value(o, activeLens) * 100).toFixed(0)));
+            return h('button', { key: o.id, type: 'button', onClick: function() { props.onSelect(o.id); }, 'aria-label': tx('inspect', 'Inspect Spriglet') + ' ' + o.id + (activeLens === 'natural' ? '' : ' · ' + lensLabels[activeLens] + ' ' + (IslandObservation.measure(o, activeLens, props.habitat, props.selection) * 100).toFixed(1) + (activeLens === 'survival' ? '%' : '/100')), className: 'ei-map-creature', 'data-spotlight': !!(props.spotlight && props.spotlight.has(o.id)), style: { background: 'hsl(38 28% ' + (28 + value * 58) + '%)', outline: props.family.has(o.id) ? '3px solid #ffda78' : undefined } }, o.id, activeLens !== 'natural' && h('small', null, (IslandObservation.measure(o, activeLens, props.habitat, props.selection) * 100).toFixed(0) + (activeLens === 'survival' ? '%' : '')));
           })))),
       h('div', { className: 'ei-camera', role: 'group', 'aria-label': tx('camera', 'Island camera') },
         [['left', '↶', tx('left', 'Rotate left')], ['right', '↷', tx('right', 'Rotate right')], ['in', '+', tx('zoom_in', 'Zoom in')], ['out', '−', tx('zoom_out', 'Zoom out')], ['reset', '⌂', tx('reset_camera', 'Reset camera')]].map(function(b) { return h('button', { key: b[0], type: 'button', onClick: function() { move(b[0]); }, disabled: status !== 'ready', 'aria-label': b[2], title: b[2] }, b[1]); })),
-      !props.compact && props.selectedName && visibleSelection && h('div', { className: 'ei-name-chip' }, props.selectedName + ' · #' + props.selected, activeLens !== 'natural' && h('small', null, lensLabels[activeLens] + ' ' + (IslandModel.value(visibleSelection, activeLens) * 100).toFixed(1) + '/100')),
+      !props.compact && props.selectedName && visibleSelection && h('div', { className: 'ei-name-chip' }, props.selectedName + ' · #' + props.selected, activeLens !== 'natural' && h('small', null, lensLabels[activeLens] + ' ' + (IslandObservation.measure(visibleSelection, activeLens, props.habitat, props.selection) * 100).toFixed(1) + (activeLens === 'survival' ? '%' : '/100'))),
       !props.compact && h('button', { type: 'button', className: 'ei-closeup', disabled: status !== 'ready' || (!focused && !props.frame.population.some(function(o) { return o.id === props.selected; })), onClick: function() { setFocused(!focused); }, 'aria-pressed': focused }, focused ? tx('overview', 'Island overview') : tx('closeup', 'Creature close-up')),
       !props.compact && h('div', { className: 'ei-landscape-bar' }, h('div', null, h('strong', null, tx('landscape_title', 'A volcanic field island')), h('small', null, tx('landscape_inspiration', 'Galápagos-inspired · fictional research habitat'))),
         h('div', { className: 'ei-viewpoints', role: 'group', 'aria-label': tx('viewpoints', 'Scenic viewpoints') },
           [['reset', tx('view_island', 'Island')], ['coast', tx('view_coast', 'Lava coast')], ['highlands', tx('view_highlands', 'Highlands')]].map(function(b) { return h('button', { key: b[0], type: 'button', disabled: status !== 'ready', onClick: function() { setFocused(false); move(b[0]); } }, b[1]); }))),
+      !props.compact && props.spotlight && h('div', { className: 'ei-spotlight-legend', 'data-spotlight-count': props.spotlight.size }, h('i', { 'aria-hidden': true }), props.spotlight.size + ' / ' + props.frame.population.length + ' · ' + tx('variation_ring_legend', 'Blue outer rings mark the chosen trait range. All organisms remain on the island.')),
       h('div', { className: 'ei-scene-caption' }, props.compact ? tx('trial_camera_hint', 'Drag to orbit · compare the population data below') : focused && visibleSelection ? tx('specimen_view_hint', 'Specimen view · isolated on a display stand for inspection. Drag to turn the view; the organism’s place on the island stays unchanged.') : tx('camera_hint', 'Drag to orbit · tap a creature to meet it · pale rings mark your selection, gold rings its family')));
   }
 
@@ -1135,9 +1251,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     .ei-name-chip{position:absolute;top:calc(var(--ei-scene-h) - 94px);left:15px;max-width:calc(100% - 30px);padding:6px 11px;border-radius:20px;border:1px solid #b9cda7;background:#fffdebeF;color:#294536;font-size:12px;font-weight:750;overflow-wrap:anywhere;pointer-events:none}.ei-resident-nav{display:grid;grid-template-columns:42px 1fr 42px;gap:6px}.ei-app .ei-resident-nav button{padding:7px;font-size:12px}.ei-pressure{display:grid;gap:9px;padding:12px;background:#f0f3e8;border:1px solid #d4dfd5;border-radius:11px}.ei-pressure>strong{font-size:12px}.ei-pressure small{font-size:10px}.ei-pressure .ei-trait{font-size:11px}.ei-organism h3,.ei-family-member strong,.ei-family-focus strong{overflow-wrap:anywhere}.ei-family-member strong{max-width:82px}.ei-family-focus strong{max-width:60px}.ei-trial-launch{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border:1px solid #b8c7c7;background:linear-gradient(105deg,#dce9e3,#e4eaf0 55%,#eee7da);padding:16px 18px;border-radius:15px;margin-bottom:17px}.ei-trial-launch p{font-size:12px;max-width:760px;margin-top:4px}.ei-trial-launch .ei-kicker,.ei-trial-heading .ei-kicker{color:#415e55}.ei-trial-saved{margin-bottom:17px}.ei-trial-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:6px 0}.ei-trial-heading h2{font-size:30px;letter-spacing:-.7px;line-height:1.2;margin:5px 0}.ei-trial-setup,.ei-twins,.ei-trial-settings{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ei-trial-setup{align-items:start}.ei-trial-toolbar{background:#e5ecde;border:1px solid #c5d3c0;border-radius:12px;padding:13px;font-size:13px;font-weight:700}.ei-twin{min-width:0;border:1px solid #b6c9bc;border-radius:16px;overflow:hidden;background:#fffef9}.ei-twin-head{display:flex;align-items:center;gap:10px;padding:14px;background:#e8efe2}.ei-twin-head>strong{margin-left:auto;font-size:14px}.ei-twin-letter{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#255c47;color:#fffef7;font-weight:800;flex-shrink:0}.ei-twin:last-child .ei-twin-letter{background:#8c5620}.ei-twin:last-child .ei-twin-head{background:#f1eadd}.ei-twin-head small{font-size:11px}.ei-twin .ei-scene-compact{--ei-scene-h:315px}.ei-twin-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:13px 18px}.ei-twin-stats strong{display:block;font-size:25px;line-height:1.2}.ei-twin-stats small{font-size:11px}.ei-twin .ei-fallback{inset:20px 15px 65px}.ei-trial-evidence .ei-chart{max-height:230px}.ei-trial-evidence caption{white-space:normal}.ei-trial-evidence{gap:10px}.ei-comparison h2:focus{outline:2px solid #ae591d;outline-offset:5px}.ei-trial-launch button{flex-shrink:0}
     @media(max-width:760px){.ei-twins,.ei-trial-setup,.ei-trial-settings{grid-template-columns:1fr}.ei-twin .ei-scene-compact{--ei-scene-h:280px}.ei-trial-heading h2{font-size:26px}.ei-trial-launch{padding:14px}.ei-trial-launch button{width:100%}}
     @media(prefers-reduced-motion:reduce){.ei-app *{scroll-behavior:auto!important}}@media(forced-colors:active){.ei-app button{border:1px solid ButtonText}.ei-meter{border:1px solid CanvasText}.ei-stage-label,.ei-name-chip{background:Canvas;color:CanvasText}.ei-chart polyline{stroke:CanvasText}.ei-replay-phases button[aria-pressed=true]{outline:2px solid Highlight}.ei-distribution circle{fill:CanvasText}.ei-twin-letter{border:1px solid CanvasText}}
+    .ei-survival-lens{min-width:0;grid-template-columns:minmax(0,1fr)}.ei-survival-lens>details{min-width:0}.ei-survival-lens .ei-lens-table:focus-visible{outline:3px solid #ae591d;outline-offset:2px}
+    .ei-survival-context{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:5px 12px;padding:9px 11px;background:#e3eee8;border:1px solid #bcd0c4;border-radius:9px}.ei-survival-context strong{font-size:12px}.ei-survival-context small{font-size:11px}.ei-survival-lens>small{line-height:1.5}.ei-survival-lens .ei-lens-specimen b{font-size:18px}.ei-survival-lens [data-survival-chance]{font-variant-numeric:tabular-nums;white-space:nowrap}
     .ei-lenses{padding:12px 18px;background:#f8faf0;border-top:1px solid #c6d8c6;gap:7px}.ei-lenses h2{font-size:15px}.ei-lenses>div:first-child small{font-size:11px}.ei-lenses .ei-trait-select{max-width:185px;min-height:38px}.ei-lens-scale{display:grid;grid-template-columns:auto 100px auto 1fr;gap:8px;align-items:center;font-size:11px;font-weight:700}.ei-lens-scale>div{height:7px;border-radius:6px;background:linear-gradient(90deg,#28739b,#bb6b19)}.ei-lens-scale small{font-size:11px;font-weight:400}.ei-lens-specimens{display:grid;grid-template-columns:1fr 1fr;gap:9px}.ei-app .ei-lens-specimen{display:flex;align-items:center;gap:9px;text-align:left;padding:8px 11px;min-width:0}.ei-lens-specimen .ei-portrait{width:38px;height:45px}.ei-lens-specimen span{min-width:0}.ei-lens-specimen strong{display:block;font-size:12px;overflow-wrap:anywhere}.ei-lens-specimen small{display:block;font-size:10px}.ei-lens-specimen b{margin-left:auto;font-size:20px;flex-shrink:0}.ei-app .ei-lens-specimen[aria-pressed=true]{border:2px solid #5c7856;background:#eaf0dc;padding:7px 10px}.ei-lens-table{max-height:230px}.ei-lens-table button{min-height:34px;font-size:11px;padding:5px 8px}.ei-name-chip{top:auto;bottom:calc(100% - var(--ei-scene-h) + 67px)}.ei-name-chip small{display:block;font-size:10px;color:#294536}.ei-map-creature small{display:block;color:white;font-size:10px}.ei-generation-story{padding:11px 18px;background:#fff9eb;border-top:1px solid #dbd4bd;display:grid;gap:10px}.ei-generation-story>.ei-row>strong{font-size:12px}.ei-generation-story button{font-size:12px;min-height:36px;padding:7px 10px}.ei-story-chapter{display:grid;grid-template-columns:34px 1fr;gap:12px}.ei-story-chapter h3{font-size:14px;margin-bottom:5px}.ei-story-chapter p{font-size:12px;color:#4c5d4e;line-height:1.5}.ei-chapter-number{display:grid;place-items:center;align-self:start;background:#6a5b31;color:#fffdf5;width:34px;height:34px;border-radius:50%;font-size:17px;font-weight:800}.ei-story-chapter .ei-story-readings{font-weight:700;color:#3e543f;margin-top:7px}.ei-generation-story>small{font-size:10px}
     @media(max-width:480px){.ei-lenses,.ei-generation-story{padding:11px}.ei-lens-scale{grid-template-columns:auto 1fr auto}.ei-lens-scale small{grid-column:1/-1}.ei-lens-specimens{grid-template-columns:1fr}.ei-lenses .ei-trait-select{max-width:230px}.ei-story-chapter{grid-template-columns:28px 1fr;gap:8px}.ei-chapter-number{width:28px;height:28px;font-size:14px}}
     @media(forced-colors:active){.ei-lens-scale>div{border:1px solid CanvasText}.ei-app .ei-lens-specimen[aria-pressed=true]{outline:2px solid Highlight}}
+    .ei-app .ei-discovery-nav .ei-compass-launch{background:#173e35;color:#fff;border-color:#173e35;padding-left:16px;padding-right:16px}.ei-app .ei-discovery-nav .ei-compass-launch[aria-expanded=true]{background:#315f4c}
+    .ei-compass{margin-bottom:20px;padding:24px;border:1px solid #b8c7b7;border-radius:18px;background:linear-gradient(135deg,#f1f3e5,#e7efe9);color:#173e35;scroll-margin-top:18px}.ei-compass-heading{display:flex;align-items:center;gap:16px}.ei-compass-mark{flex:0 0 60px;width:60px;height:60px}.ei-compass-heading-copy{flex:1;min-width:0}.ei-compass h2{margin:5px 0;font-size:24px;line-height:1.2}.ei-compass p{margin:8px 0;line-height:1.5}.ei-compass-close{align-self:flex-start}.ei-compass-context{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0;font-size:12px;color:#476353}.ei-compass-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.ei-compass-card{display:flex;flex-direction:column;min-width:0;padding:18px;background:#fffef7;border:1px solid #ced7c8;border-radius:12px}.ei-compass-card h3{font-size:17px;line-height:1.35;margin:13px 0 2px;color:#173e35}.ei-compass-card p{font-size:13px;color:#476353}.ei-compass-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.ei-compass-number{font-variant-numeric:tabular-nums;margin-right:9px;color:#617461}.ei-compass-badge{font-size:10px;font-weight:700;white-space:nowrap;padding:4px 7px;border-radius:10px;background:#e4eccc;color:#304d20}.ei-compass-recommended{border-color:#72936b;box-shadow:inset 0 3px #72936b}.ei-compass-specimen{overflow-wrap:anywhere;font-size:11px!important;border-top:1px dashed #d7decd;padding-top:10px}.ei-compass-action{margin-top:auto;padding-top:10px}.ei-app .ei-compass-action button{width:100%;min-height:42px;background:#eef3e9;border-color:#bacdb3;color:#244734}.ei-app .ei-compass-action button:disabled{opacity:1;color:#637265;background:#f2f3ed;border-color:#d4dacd}.ei-compass-action .ei-small{font-size:12px}.ei-compass :focus-visible{outline:3px solid #346bd1;outline-offset:3px}
+    @media(max-width:1000px){.ei-compass-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:600px){.ei-compass{padding:16px}.ei-compass-heading{gap:10px;flex-wrap:wrap}.ei-compass-mark{flex-basis:42px;width:42px;height:42px}.ei-compass h2{font-size:20px}.ei-compass-heading-copy{flex-basis:calc(100% - 60px)}.ei-compass-close{margin-left:auto}.ei-compass-grid{grid-template-columns:minmax(0,1fr)}.ei-compass-context{margin-top:12px}.ei-compass-card{padding:16px}}
+    @media(forced-colors:active){.ei-compass,.ei-compass-card{border:1px solid CanvasText}.ei-compass-recommended{border:2px solid Highlight}.ei-compass-badge{border:1px solid CanvasText}}
     .ei-discovery-nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.ei-app .ei-discovery-nav button{font-size:12px;min-height:36px;padding:7px 12px;border-radius:20px;background:transparent}.ei-first-discovery{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 19px;background:#e7eedc;border:1px solid #c7d6b9;border-radius:15px;margin-bottom:16px}.ei-intro-copy{display:flex;align-items:center;gap:13px;min-width:0}.ei-intro-copy>div{min-width:0}.ei-intro-copy .ei-portrait{width:53px;height:65px}.ei-first-discovery .ei-kicker{color:#425e4c}.ei-intro-copy h2{font-size:18px;margin:4px 0}.ei-intro-copy p{font-size:12px;max-width:680px}.ei-intro-copy small{display:block;margin-top:4px;overflow-wrap:anywhere}.ei-intro-actions{display:grid;gap:5px;flex-shrink:0}.ei-app .ei-intro-actions button{font-size:12px}.ei-app .ei-intro-actions .ei-quiet{min-height:30px;border-color:transparent}.ei-family-journey{grid-template-columns:minmax(0,1fr);background:linear-gradient(140deg,#fffdf4,#f2f1df);border-color:#d6caa5}.ei-family-journey .ei-portrait{width:46px;height:56px}.ei-family-journey>.ei-row small{overflow-wrap:anywhere}.ei-family-journey button{font-size:12px}.ei-family-timeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.ei-app .ei-family-timeline button{display:grid;gap:4px;padding:9px 7px;min-width:0;text-align:left;border-color:#cec9ad}.ei-family-timeline strong{font-size:25px;line-height:1.1}.ei-family-timeline small{font-size:11px;color:inherit}.ei-app .ei-family-timeline button[aria-pressed=true]{background:#5d572d;color:#fffdf4;border-color:#5d572d}.ei-family-share{height:4px;border-radius:5px;background:#9a976e33;overflow:hidden}.ei-family-share i{display:block;height:100%;background:#b59b35;min-width:0}.ei-family-timeline button[aria-pressed=true] .ei-family-share{background:#ffffff33}.ei-family-timeline button[aria-pressed=true] .ei-family-share i{background:#f5d868}.ei-family-relative{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 12px;background:#fffdf5;border:1px solid #ddd7bc;border-radius:11px}.ei-family-relative>div{flex:1;min-width:120px}.ei-family-relative strong,.ei-family-relative small{display:block;overflow-wrap:anywhere}.ei-family-relative strong{font-size:14px}.ei-family-relative .ei-portrait{width:48px;height:58px}.ei-family-journey>details{min-width:0}.ei-family-record{max-width:100%;max-height:260px}.ei-family-record caption{white-space:normal;text-align:left}.ei-investigations{margin-top:18px}.ei-app :is(.ei-first-discovery,.ei-family-journey,.ei-investigations,.ei-trial-launch,.ei-stage):focus{outline:3px solid #ae591d;outline-offset:3px}
     @media(max-width:760px){.ei-first-discovery{align-items:stretch;gap:10px;flex-direction:column;padding:13px}.ei-intro-copy h2{font-size:16px}.ei-intro-actions{display:flex;flex-wrap:wrap;align-items:center}.ei-discovery-nav{gap:5px}.ei-app .ei-discovery-nav button{font-size:11px;padding:6px 9px}.ei-family-timeline{gap:5px}.ei-app .ei-family-timeline button{padding:8px 5px}.ei-family-timeline strong{font-size:22px}.ei-family-timeline small{font-size:10px}}
     @media(forced-colors:active){.ei-family-timeline button[aria-pressed=true]{outline:2px solid Highlight}.ei-family-share{border:1px solid CanvasText}.ei-family-share i{background:CanvasText}}
@@ -1164,8 +1287,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
     .ei-highlights{grid-template-columns:minmax(0,1fr);background:linear-gradient(140deg,#fffdf4,#edf2e7);border-color:#b9cbbb}.ei-highlights:focus{outline:3px solid #ae591d;outline-offset:3px}.ei-highlights .ei-kicker{color:#45654f;letter-spacing:1.2px}.ei-highlights .ei-row>div{min-width:0}.ei-highlight-navigation{display:flex;justify-content:space-between;align-items:center;font-size:12px}.ei-highlight-navigation button{min-width:44px}.ei-highlight-moment{display:grid;gap:12px;border:1px solid #c3d2bb;background:#fffef8;border-radius:13px;padding:13px;min-width:0}.ei-highlight-banner{display:flex;gap:12px;align-items:center;background:#e7edd9;padding:12px;border-radius:9px;color:#294a39}.ei-highlight-banner strong,.ei-highlight-banner small{display:block}.ei-highlight-banner strong{font-size:24px;line-height:1.5}.ei-highlight-banner .ei-portrait{width:54px;height:64px}.ei-highlight-icon{font-size:35px;width:52px;text-align:center;flex-shrink:0}.ei-highlight-moment h3{font-size:18px}.ei-highlight-fact{font-weight:750;font-size:15px;overflow-wrap:anywhere}.ei-highlight-delta{font-size:22px;font-weight:750;color:#3b6042}.ei-highlight-cohorts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.ei-highlight-cohorts>div{border:1px solid #d6dfcc;padding:9px 6px;border-radius:8px;text-align:center;background:#f2f4e8}.ei-highlight-cohorts strong{display:block;font-size:22px}.ei-highlight-cohorts small{display:block;font-size:10px}.ei-highlight-collection{border-top:1px solid #c6d3bc;padding-top:14px}.ei-highlight-chips{display:grid;gap:7px}.ei-highlight-chips button{text-align:left;font-size:11px}.ei-highlight-chips button[aria-pressed=true]{border-color:#45694c;background:#e0eacf}.ei-highlights select{font-size:12px;min-width:0}.ei-highlights details{min-width:0}.ei-highlights summary{font-size:12px}
 
+    .ei-app .ei-forecast-launch{margin-left:auto;padding:5px 10px;min-height:30px;font-size:11px;white-space:nowrap;background:#fffdf4;border-color:#b6c6a1}.ei-round-forecast{min-width:0;padding:17px;background:#f4f5e9;border:1px solid #b7cdb8;border-radius:15px;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}.ei-round-forecast h2{font-size:21px;margin:4px 0}.ei-round-forecast>small{font-size:11px;line-height:1.5;color:#415c4d}.ei-forecast-entry{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:18px;align-items:end}.ei-forecast-entry label{display:block;font-size:12px;margin-bottom:7px}.ei-forecast-entry input[type=range]{width:100%;min-height:40px}.ei-forecast-entry input[type=number]{width:100%;font-weight:700;font-size:20px}.ei-forecast-preview{padding:10px 12px;border-radius:10px;background:#e7eef0;border:1px solid #bdced1}.ei-forecast-preview strong{font-size:14px}.ei-forecast-dots{display:block;width:100%;max-width:400px;margin:7px 0 0}.ei-forecast-clue summary{font-size:12px;font-weight:700;cursor:pointer}.ei-forecast-clue p{margin-top:8px}.ei-forecast-result{padding:12px;margin:12px 0;border:1px solid #b8cebd;border-radius:11px;background:#f1f6eb}.ei-forecast-result>strong{font-size:14px;color:#2f573d}.ei-forecast-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ei-forecast-comparison small{display:block;font-size:11px}.ei-forecast-comparison b{font-size:25px;line-height:1.4}.ei-forecast-result button{justify-self:start}.ei-round-forecast:focus{outline:3px solid #ae591d;outline-offset:2px}@media(max-width:600px){.ei-round-forecast{padding:12px}.ei-forecast-entry{grid-template-columns:minmax(0,1fr) 80px;gap:10px}.ei-forecast-comparison{grid-template-columns:minmax(0,1fr);gap:12px}.ei-app .ei-forecast-launch{margin-left:0}.ei-forecast-result{padding:10px}.ei-round-forecast h2{font-size:19px}}
+    .ei-draw-details{min-width:0;border:1px solid #b8cccb;border-radius:11px;background:#edf4f2;padding:12px;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}.ei-draw-details>summary{cursor:pointer;font-size:13px;font-weight:750;padding:3px 0}.ei-draw-microscope{margin-top:14px;min-width:0;grid-template-columns:minmax(0,1fr)}.ei-draw-microscope h3{font-size:19px;margin:6px 0}.ei-draw-microscope h4{font-size:15px;margin:0}.ei-draw-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#365548}.ei-draw-legend>span{display:flex;align-items:center;gap:6px}.ei-draw-legend i{width:13px;height:13px;border-radius:3px;border:1px solid #617a70;display:inline-block}.ei-draw-zone{background:#b5d1b5}.ei-draw-outside{background:#eadfd4}.ei-draw-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.ei-draw-panel{min-width:0;background:#fffef7;border:1px solid #c4d6ce;border-radius:10px;padding:12px}.ei-draw-panel>.ei-row{gap:5px;flex-wrap:wrap}.ei-draw-panel small{overflow-wrap:anywhere}.ei-draw-chart{width:100%;height:auto;display:block;margin:12px 0 3px}.ei-draw-chart[data-draw-chart=practice]{touch-action:none;cursor:grab}.ei-draw-chart[data-draw-chart=practice]:active{cursor:grabbing}.ei-draw-result{border-left:3px solid #58796b;padding:9px 10px;background:#f0f4e9;margin:8px 0;min-width:0}.ei-draw-result strong{font-size:14px}.ei-draw-result p{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ei-draw-result small{display:block;font-size:11px;line-height:1.5}.ei-draw-practice input{display:block;width:100%;min-height:40px;margin:4px 0;accent-color:#236783}.ei-draw-practice>label{font-size:12px}.ei-draw-practice>.ei-small{display:block;margin-top:10px}.ei-draw-panel button{width:100%;font-size:12px}.ei-draw-precision{font-size:11px;margin-top:10px}.ei-draw-precision summary{cursor:pointer}.ei-draw-precision dl{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;font-variant-numeric:tabular-nums}.ei-draw-precision dd{margin:0 0 7px;overflow-wrap:anywhere}.ei-draw-details :focus-visible{outline:3px solid #346bd1;outline-offset:3px}@media(max-width:650px){.ei-draw-panels{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ei-draw-details,.ei-draw-panel,.ei-draw-result{border:1px solid CanvasText}.ei-draw-chart{forced-color-adjust:none}}
+    .ei-chance-residents{min-width:0;padding:12px;border:1px solid #b9ccbd;border-radius:12px;background:#fffdf4;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}.ei-chance-residents>summary{font-size:13px;font-weight:750;cursor:pointer;padding:4px 0}.ei-chance-residents>.ei-stack{grid-template-columns:minmax(0,1fr);margin-top:12px;min-width:0}.ei-chance-residents select{width:100%;min-width:0;font-size:12px}.ei-chance-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.ei-chance-groups>div{padding:9px;border-radius:9px;background:#eef2e7;border:1px solid #d0dac9}.ei-chance-groups b{display:block;font-size:22px}.ei-chance-groups small{display:block;font-size:11px}.ei-chance-identity{padding:10px;border-left:3px solid #6f8a51;background:#f0f3e4}.ei-chance-resident-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ei-app .ei-chance-resident-nav button{justify-self:stretch}.ei-chance-resident-card{min-width:0;border:1px solid #c4d0c0;border-radius:11px;background:#f2f6ed;padding:13px}.ei-chance-resident-head{display:flex;align-items:center;gap:14px}.ei-chance-resident-head>div{min-width:0}.ei-chance-resident-head strong{display:block;overflow-wrap:anywhere;font-size:17px}.ei-chance-resident-head small{display:block;font-size:11px}.ei-chance-resident-head b{display:block;font-size:26px;margin-top:6px}.ei-chance-resident-head .ei-portrait{width:78px;height:86px;flex-shrink:0}.ei-chance-resident-traits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #cbd6c6}.ei-chance-resident-traits small{display:block;font-size:11px}.ei-chance-resident-traits b{display:block;font-size:17px}.ei-chance-resident-scale{display:block;font-size:10px;margin-top:7px}.ei-chance-outcomes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.ei-chance-outcomes>div{background:#ecebe2;border:1px solid #c9cabc;padding:10px;border-radius:8px}.ei-chance-outcomes>div[data-survived=true]{background:#e1efdf;border-color:#98b395}.ei-chance-outcomes small{display:block;font-size:11px}.ei-chance-outcomes strong{display:block;font-size:14px;margin-top:3px}.ei-chance-trail-label{font-size:13px;margin:0}.ei-chance-trail{display:grid;grid-template-columns:repeat(auto-fit,minmax(42px,1fr));gap:6px}.ei-app .ei-chance-trail button{min-height:48px;justify-self:stretch;display:grid;place-items:center;gap:2px;padding:5px;font-size:12px;background:#eeeee6;border-color:#bac8b7}.ei-app .ei-chance-trail button[data-survived=true]{background:#e1efdf}.ei-app .ei-chance-trail button[aria-pressed=true]{border:2px solid #315942;box-shadow:inset 0 0 0 1px #315942}.ei-chance-trail button span{font-size:15px;line-height:1}.ei-chance-trail button b{font-size:11px}@media(max-width:600px){.ei-chance-residents{padding:10px}.ei-chance-groups{grid-template-columns:1fr 1fr;gap:6px}.ei-chance-resident-head{gap:9px}.ei-chance-resident-head .ei-portrait{width:58px;height:68px}.ei-chance-resident-head strong{font-size:15px}.ei-chance-resident-head b{font-size:23px}.ei-chance-outcomes{grid-template-columns:minmax(0,1fr)}.ei-chance-resident-card{padding:10px}.ei-chance-resident-traits small{font-size:10px}}@media(forced-colors:active){.ei-app .ei-chance-trail button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:2px}}
+    .ei-chance-lab{min-width:0;scroll-margin-top:calc(var(--ei-command-height,140px) + 14px);border-top:1px solid #c1d1bd;padding-top:12px}.ei-chance-lab>summary{font-weight:700;font-size:13px;cursor:pointer;padding:6px 0}.ei-chance-lab>.ei-stack{min-width:0;grid-template-columns:minmax(0,1fr);margin-top:12px}.ei-chance-lab .ei-kicker{font-size:10px;line-height:1.6;color:#466453}.ei-chance-lab label{font-size:12px}.ei-chance-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px;background:#fffdf4;border:1px solid #d3d9c6;border-radius:10px}.ei-chance-stats small{display:block;font-size:11px}.ei-chance-stats b{display:block;font-size:23px}.ei-chance-chart{min-width:0;background:#fffdf6;padding:8px;border:1px solid #d3d9c6;border-radius:10px}.ei-chance-chart svg{display:block;width:100%;max-height:270px}.ei-chance-chart small{display:block;font-size:11px;margin-top:8px}.ei-chance-legend{display:flex;flex-wrap:wrap;gap:7px 16px;font-size:11px}.ei-chance-legend span{display:flex;gap:5px;align-items:center}.ei-chance-legend i{width:20px;border-top:2px solid #92621f}.ei-chance-legend .ei-chance-expected-key{border-color:#386a86;border-top-style:dashed}.ei-chance-browse{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:stretch}.ei-chance-browse select{min-width:0;width:100%;font-size:12px}.ei-app .ei-chance-browse button{justify-self:stretch;font-size:11px}.ei-chance-inspected{padding:10px 12px;border:1px solid #bfd1c5;background:#e8f0e7;border-radius:10px}.ei-chance-inspected strong{font-size:15px}.ei-chance-inspected small{display:block;font-size:11px;margin-top:3px}.ei-chance-boundary{font-size:11px;line-height:1.6;color:#415c4d}.ei-chance-data{min-width:0;font-size:12px}.ei-chance-data summary{font-weight:700;cursor:pointer}.ei-chance-data table{width:100%;font-size:12px;border-collapse:collapse;margin-top:8px}.ei-chance-data th,.ei-chance-data td{text-align:left;padding:6px;border-bottom:1px solid #d3d9c6}.ei-chance-data caption{text-align:left;font-size:11px;padding:5px}.ei-chance-status{min-height:2em}@media(max-width:600px){.ei-chance-browse{grid-template-columns:1fr 1fr;gap:6px}.ei-chance-browse select{grid-column:1/-1;grid-row:1}.ei-chance-stats{padding:9px;gap:6px}.ei-chance-stats b{font-size:20px}.ei-chance-stats small{font-size:10px}.ei-chance-chart{padding:6px}.ei-chance-chart svg text{font-size:20px}.ei-chance-data table{font-size:11px}.ei-chance-data th,.ei-chance-data td{padding:5px 3px}}@media(forced-colors:active){.ei-chance-chart svg rect{fill:CanvasText}.ei-chance-chart svg line{stroke:CanvasText}.ei-chance-chart svg text{fill:CanvasText}.ei-chance-legend i{border-color:CanvasText}}
     .ei-next-round{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 12px;margin:8px 0 4px;padding:7px 10px;border-left:3px solid #8b9d59;background:#eef2e5;border-radius:3px 9px 9px 3px}.ei-next-round strong{font-size:12px}.ei-next-round small{font-size:11px;color:#415b4f}.ei-watch-guide{padding:14px 16px;margin-bottom:12px;background:#fffaf0;border:1px solid #cfbd94;border-radius:15px;scroll-margin-top:calc(var(--ei-command-height,120px) + 18px)}.ei-watch-guide:focus{outline:3px solid #ae591d;outline-offset:2px}.ei-watch-guide>.ei-row>strong{font-size:16px}.ei-watch-guide .ei-tag{font-size:10px}.ei-watch-steps{display:flex;gap:8px;margin:10px 0;padding:0;list-style:none}.ei-watch-steps li{flex:1;display:flex;align-items:center;gap:7px;font-size:11px;padding:6px 8px;border-radius:8px;background:#f0eddf;color:#526154}.ei-watch-steps li[aria-current=step]{background:#2b5d48;color:white}.ei-watch-steps li>span{display:grid;place-items:center;width:20px;height:20px;border:1px solid currentColor;border-radius:50%;flex-shrink:0}.ei-watch-explanation{display:flex;align-items:center;gap:15px;margin:10px 0}.ei-watch-count{font-size:37px;line-height:1.1;min-width:76px;text-align:center;color:#31533f}.ei-watch-count small{display:block;font-size:11px;margin-top:5px}.ei-watch-explanation h2{font-size:17px;margin:0 0 5px}.ei-watch-explanation p{font-size:12px;margin:0;max-width:680px}.ei-watch-guide button{font-size:12px}.ei-watch-guide>small{display:block;margin-top:8px;color:#53604a;font-size:10px}.ei-watch-guide .ei-quiet{font-size:11px}
     @media(max-width:600px){.ei-watch-guide{padding:12px}.ei-watch-explanation{align-items:flex-start;gap:10px}.ei-watch-count{font-size:29px;min-width:54px}.ei-watch-explanation h2{font-size:15px}.ei-watch-explanation p{font-size:11px}.ei-watch-steps{gap:4px}.ei-watch-steps li{padding:5px;font-size:10px;gap:4px}.ei-watch-guide>.ei-row>.ei-row{gap:6px}.ei-watch-guide button{font-size:11px;padding:8px}.ei-next-round{gap:2px;margin-top:6px}.ei-next-round strong{font-size:11px}.ei-next-round small{font-size:10px}}
+
+    .ei-stage{scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}
+    .ei-variation{padding:13px;border:1px solid #c8d8d8;background:#f5faf7;border-radius:13px;min-width:0}.ei-variation>small{font-size:10px;color:#4d645d}.ei-variation-bars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.ei-app .ei-variation-bars button{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;padding:8px 6px;border-radius:9px;background:#fffef9;border-color:#bfd2ce;text-align:center}.ei-variation-bars strong{font-size:19px}.ei-variation-bars small{font-size:10px;white-space:nowrap}.ei-variation-bar{height:72px;display:flex;align-items:flex-end;background:repeating-linear-gradient(to top,#e1e9e6 0,#e1e9e6 1px,transparent 1px,transparent 24px);border-bottom:1px solid #8ca8a0}.ei-variation-bar i{display:block;width:100%;background:#5c886e;border-radius:4px 4px 0 0}.ei-app .ei-variation-bars button[aria-pressed=true]{border:2px solid #08758f;padding:7px 5px;background:#e2f3f5}.ei-variation-bars button[aria-pressed=true] i{background:#08758f}.ei-variation-detail{padding-top:11px;border-top:1px solid #c8d8d8}.ei-variation-detail>.ei-row>strong{font-size:13px}.ei-variation-detail button{font-size:11px}.ei-variation-detail>small{font-size:10px;color:#4d645d}.ei-variation-cohorts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.ei-app .ei-variation-cohorts button{display:grid;gap:6px;min-width:0;padding:9px 7px;text-align:left;background:#fffef9}.ei-variation-cohorts small{font-size:10px}.ei-variation-cohorts strong{font-size:20px}.ei-app .ei-variation-cohorts button[aria-pressed=true]{background:#e2f3f5;border-color:#08758f}.ei-variation-share{height:5px;border-radius:5px;overflow:hidden;background:#cddfdc}.ei-variation-share i{display:block;height:100%;background:#08758f}.ei-spotlight-legend{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#e2f3f5;border-top:1px solid #afccd1;font-size:11px;color:#214e5b}.ei-spotlight-legend i{width:15px;height:15px;flex-shrink:0;border:3px solid #087f9c;border-radius:50%}.ei-app .ei-map-creature[data-spotlight=true]{box-shadow:0 0 0 5px #087f9c,0 0 0 7px #e2f3f5}
+    @media(max-width:600px){.ei-variation{padding:10px}.ei-variation-bars{gap:4px}.ei-app .ei-variation-bars button{padding:7px 3px}.ei-app .ei-variation-bars button[aria-pressed=true]{padding:6px 2px}.ei-variation-bars small{font-size:9px}.ei-variation-bar{height:60px}.ei-variation-cohorts{gap:5px}.ei-variation-detail>.ei-row{gap:7px}.ei-variation-detail button{font-size:10px}.ei-spotlight-legend{font-size:10px}}
+    .ei-life-name{display:block;overflow-wrap:anywhere;font-size:13px}.ei-life .ei-portrait{width:56px;height:62px;flex-shrink:0}.ei-life-steps{list-style:none;margin:0;padding:0;display:grid;gap:0}.ei-life-steps>li{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;padding:14px 0}.ei-life-steps>li:not(:last-child):before{content:"";position:absolute;left:12px;top:35px;bottom:-14px;width:2px;background:#c6d7c8}.ei-life-number{position:relative;z-index:1;display:grid;place-items:center;border-radius:50%;width:26px;height:26px;background:#2c614e;color:#fff;font-size:12px;font-weight:700}.ei-life-steps h3{font-size:14px;margin:2px 0}.ei-life .ei-stack{gap:9px}.ei-life-result{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:11px;background:#edf2e6;border:1px solid #d1dfcd;border-radius:10px}.ei-life-result strong{display:block;font-size:19px;line-height:1.25}.ei-life-result small{display:block;font-size:10px;margin-top:5px}.ei-life-change{padding-left:9px;border-left:3px solid #a47b38}.ei-app .ei-life-link{display:grid;text-align:left;gap:3px;background:#e9f1e6;border-color:#a9c3ac}.ei-life-link small{font-weight:400;font-size:11px}.ei-life-context{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 16px;background:#f4f3e5;border-bottom:1px solid #becfbd}.ei-life-context>div{flex:1 1 240px;min-width:0}.ei-life-context strong{font-size:13px;overflow-wrap:anywhere}.ei-life-context button{font-size:11px}.ei-life{scroll-margin-top:calc(var(--ei-command-height,140px) + 14px)}
+    .ei-resemblance-details{border:1px solid #bfd2c4;border-radius:10px;background:#f6f7ee;padding:10px}.ei-resemblance-details>summary,.ei-pairing-details>summary{font-size:12px;font-weight:700;cursor:pointer;line-height:1.5}.ei-resemblance-details[open]>.ei-resemblance{margin-top:12px}.ei-resemblance-family{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.ei-resemblance-member{display:grid;grid-template-rows:auto 45px 1fr auto auto 5px;justify-items:center;align-content:stretch;gap:5px;border:1px solid #d2dccc;border-radius:9px;padding:8px 4px;min-width:0;background:#fffef9;text-align:center}.ei-resemblance-member.ei-resemblance-child{border-color:#72957d;background:#e9f0e3}.ei-life .ei-resemblance-member .ei-portrait{width:40px;height:45px}.ei-resemblance-member strong{font-size:11px;overflow-wrap:anywhere;max-width:100%}.ei-resemblance-member small{font-size:10px}.ei-resemblance-member b{font-size:15px;font-variant-numeric:tabular-nums}.ei-resemblance-member .ei-meter{width:100%;height:5px;margin-top:2px}.ei-resemblance-member .ei-meter span{background:#436e57}.ei-resemblance-insight{border-left:3px solid #64886c;padding-left:9px}.ei-pairing-details>.ei-stack{margin-top:10px}.ei-pairing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ei-app .ei-pairing-grid button{display:grid;gap:4px;padding:9px 5px;text-align:center;font-size:11px}.ei-pairing-grid button strong{font-size:19px}.ei-pairing-grid button small{font-size:9px}.ei-pairing-grid button[data-recorded-pair=true]{border:2px solid #96722f}.ei-app .ei-pairing-grid button[aria-pressed=true]{background:#e0edf0;color:#184e5e;border-color:#35768a;box-shadow:inset 0 0 0 1px #35768a}.ei-pairing-result,.ei-resemblance-record{padding:10px;border-radius:8px;background:#e6ede2;font-size:12px}.ei-pairing-result p{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ei-resemblance small{line-height:1.5}.ei-app .ei-resemblance-details select{font-size:12px}
+    .ei-siblings{border-top:1px solid #c7d7c5;padding-top:10px}.ei-siblings>summary{font-size:12px;font-weight:700;cursor:pointer;line-height:1.5}.ei-siblings>.ei-stack{margin-top:10px}.ei-sibling-groups,.ei-sibling-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ei-app .ei-sibling-groups button{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:9px 8px;font-size:11px}.ei-app .ei-sibling-groups button[aria-pressed=true]{background:#255c47;color:#fffef7;border-color:#255c47}.ei-sibling-groups span{font-variant-numeric:tabular-nums}.ei-sibling-browse{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:5px;text-align:center}.ei-app .ei-sibling-browse button{font-size:10px;padding:7px 4px;min-height:36px}.ei-sibling-browse small{font-variant-numeric:tabular-nums}.ei-sibling-parents{overflow-wrap:anywhere}.ei-siblings{min-width:0}.ei-siblings select{max-width:100%;min-width:0}
+    .ei-app .ei-birth-shortcut{display:grid;gap:3px;text-align:left;background:#f0eee1;border-color:#c4bb96}.ei-birth-shortcut small{font-size:11px;font-weight:400}.ei-birth-resemblance>summary{scroll-margin-top:12px}.ei-birth-intro{margin:10px 0!important}.ei-parent-visits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ei-app .ei-parent-visits button{display:grid;gap:4px;padding:8px 5px;min-width:0;font-size:11px}.ei-parent-visits small{font-size:10px;overflow-wrap:anywhere;font-weight:400}.ei-parent-return{display:grid;gap:7px;padding:12px;border:1px solid #b9ccbf;border-radius:10px;background:#edf2e6}.ei-parent-return>small{font-size:11px}.ei-parent-return>strong{font-size:13px;overflow-wrap:anywhere}
 `;
 
   function IslandPortrait(props) {
@@ -1446,6 +1581,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('tbody', null, ['parents', 'survivors', 'offspring'].map(function(phase) { return h('tr', { key: phase }, h('th', { scope: 'row' }, labels[phase]), h('td', null, data[phase].length), h('td', null, data.means[phase][props.trait] == null ? '—' : data.means[phase][props.trait].toFixed(4))); }))))));
   }
 
+  function IslandVariationExplorer(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, data = props.data, refs = R.useRef([]);
+    if (!data) return null;
+    var bin = props.bin === null ? null : data.bins[props.bin];
+    var labels = { parents: tx('replay_parents', 'Parents'), survivors: tx('replay_survivors', 'Survivors'), offspring: tx('replay_offspring', 'Offspring') };
+    function interval(b) { return Math.round(b.lower * 100) + (b.index === 4 ? '–' : '–<') + Math.round(b.upper * 100); }
+    function percent(share) { return share === null ? '—' : (share * 100).toFixed(1) + '%'; }
+    function clear() { props.onChange(null); if (refs.current[props.bin]) refs.current[props.bin].focus(); }
+    return h('section', { className: 'ei-variation ei-stack', 'aria-label': tx('variation_title', 'Variation explorer'), 'data-variation-trait': props.trait },
+      h('div', { className: 'ei-row ei-between' }, h('h3', null, tx('variation_title', 'Variation explorer')), h('small', null, props.label + ' · 0–100')),
+      h('p', { className: 'ei-small' }, tx('variation_intro', 'Choose a range to find its organisms on the island. Bar height shows the share of this cohort on a fixed 0–100% scale.')),
+      h('div', { className: 'ei-variation-bars', role: 'group', 'aria-label': tx('variation_choose', 'Spotlight a trait range') }, data.bins.map(function(b) {
+        var spokenRange = Math.round(b.lower * 100) + ' ' + (b.index === 4 ? tx('variation_to', 'to') : tx('variation_below', 'to below')) + ' ' + Math.round(b.upper * 100);
+        return h('button', { key: b.index, type: 'button', ref: function(el) { refs.current[b.index] = el; }, 'data-variation-bin': b.index, 'data-bin-count': b.count, 'aria-pressed': props.bin === b.index, 'aria-label': props.label + ' ' + spokenRange + ' · ' + b.count + ' / ' + data.total + ' · ' + tx('variation_spotlight', 'Spotlight this range'), onClick: function() { props.onChange(props.bin === b.index ? null : b.index); } },
+          h('strong', null, b.count), h('span', { className: 'ei-variation-bar', 'aria-hidden': true }, h('i', { style: { height: ((b.share || 0) * 100) + '%' } })), h('small', null, interval(b)));
+      })),
+      h('small', { className: 'ei-variation-boundaries' }, tx('variation_bounds', 'Ranges include the lower value and stop before the upper value; the last range includes 100. Unrounded trait values determine the groups.')),
+      bin && h('div', { className: 'ei-variation-detail ei-stack', 'data-selected-range': bin.index },
+        h('div', { className: 'ei-row ei-between' }, h('strong', null, interval(bin) + ' · ' + bin.count + ' / ' + data.total + ' · ' + percent(bin.share)), h('button', { type: 'button', className: 'ei-quiet', onClick: clear }, tx('variation_clear', 'Clear spotlight'))),
+        !bin.count && h('p', { className: 'ei-small' }, tx('variation_empty', 'No organisms fall in this range in the current stage. Try another stage or range.')),
+        h('div', { className: 'ei-row' }, h('button', { type: 'button', disabled: !bin.count, onClick: props.onFind }, tx('variation_find', 'Find this range on the island')), h('button', { type: 'button', disabled: !bin.count, onClick: props.onMeet }, tx('variation_meet', 'Meet the next match'))),
+        props.comparison ? h(R.Fragment, null, h('p', { className: 'ei-small' }, tx('variation_compare', 'How common was this range at each stage? Compare proportions as well as counts.')),
+          h('div', { className: 'ei-variation-cohorts', role: 'group', 'aria-label': tx('variation_cohorts', 'Compare this range across the recorded round') }, ['parents', 'survivors', 'offspring'].map(function(key) {
+            var cohort = props.comparison[key], b = cohort.bins[bin.index];
+            return h('button', { key: key, type: 'button', 'data-range-phase': key, 'data-range-count': b.count, 'data-range-total': cohort.total, 'aria-pressed': props.phase === key, onClick: function() { props.onPhase(key); } }, h('small', null, labels[key]), h('strong', null, percent(b.share)), h('small', null, b.count + ' / ' + cohort.total), h('span', { className: 'ei-variation-share', 'aria-hidden': true }, h('i', { style: { width: ((b.share || 0) * 100) + '%' } })));
+          }))) : h('p', { className: 'ei-small' }, tx('variation_start', 'Advance once to compare this range among recorded parents, survivors and offspring.')),
+        h('small', null, tx('variation_not_family', 'A trait range is not a family. Matching offspring are new individuals; a change in one round does not establish its cause. An empty cohort has no percentage.'))));
+  }
+
+  function IslandSurvivalLens(props) {
+    var R = props.React, h = R.createElement, tx = props.tx;
+    var range = R.useMemo(function() { return IslandObservation.range(props.population, 'survival', props.habitat, props.selection); }, [props.population, props.habitat, props.selection]);
+    var recordedRound = props.recorded && props.phase !== 'offspring' && props.transition;
+    function chance(o) { return IslandObservation.measure(o, 'survival', props.habitat, props.selection); }
+    function pct(v) { return (v * 100).toFixed(1) + '%'; }
+    function specimen(o, high) {
+      return h('button', { type: 'button', className: 'ei-lens-specimen', 'aria-label': high ? tx('survival_inspect_high', 'Inspect highest survival chance') : tx('survival_inspect_low', 'Inspect lowest survival chance'), 'aria-pressed': props.selected === o.id, onClick: function() { props.onInspect(o.id); } },
+        h(IslandPortrait, { React: R, organism: o }), h('span', null, h('small', null, high ? tx('survival_high', 'Highest chance here') : tx('survival_low', 'Lowest chance here')), h('strong', null, props.nameOf(o.id)), h('small', null, '#' + o.id)), h('b', null, pct(chance(o))));
+    }
+    return h('div', { className: 'ei-survival-lens ei-stack', 'data-chance-habitat': props.habitat, 'data-chance-selection': props.selection, 'data-chance-phase': props.phase },
+      h('div', { className: 'ei-survival-context' }, h('strong', null, tx('survival_context', 'Chances in the displayed habitat') + ' · ' + tx('habitat_' + props.habitat, IslandModel.habitats[props.habitat].name)),
+        h('small', null, props.selection ? tx('detective_selection', 'Traits affect survival') : tx('detective_neutral', 'Trait-neutral survival'))),
+      h('div', { className: 'ei-lens-scale' }, h('span', null, '0%'), h('div', { 'aria-hidden': true }), h('span', null, '100%'), h('small', null, tx('survival_scale', 'Colored fill = modeled survival probability. Tap a bar to inspect. Genes and coats stay unchanged.'))),
+      h('p', { className: 'ei-small' }, recordedRound ? props.phase === 'survivors' ? tx('survival_recorded_subset', 'These organisms actually survived this recorded round. Their bars show their original probabilities, not 100% certainty. Survivors are a selected subset of the parents.') : tx('survival_recorded_parents', 'These are the probabilities the parents faced in this recorded round. Open the table to compare them with actual survival outcomes.') : tx('survival_hypothetical', 'For these residents, this is a what-if estimate in the displayed habitat, not a recorded survival result. A later round may use different conditions.')),
+      !props.recorded && props.nextRound && props.nextRound.habitat !== props.habitat && h('p', { className: 'ei-callout', 'data-chance-next-habitat': props.nextRound.habitat }, tx('survival_next_change', 'Living climate will change the habitat before the next survival draw') + ': ' + tx('habitat_' + props.nextRound.habitat, IslandModel.habitats[props.nextRound.habitat].name) + '. ' + tx('survival_still_displayed', 'The bars still describe the habitat displayed now.')),
+      !props.selection && h('p', { className: 'ei-small' }, tx('survival_neutral_help', 'Trait advantages are off. Every resident has the same chance here: 0.68 × the habitat’s food factor. Random survival still occurs.')),
+      range ? h(R.Fragment, null,
+        h('p', { className: 'ei-small', 'data-chance-range': range.count }, range.count + ' ' + tx('lens_count', 'organisms in this view') + ' · ' + tx('survival_range', 'Chance range') + ': ' + pct(range.minimum) + '–' + pct(range.maximum)),
+        range.minimum === range.maximum ? h('div', { className: 'ei-row' }, h('small', null, tx('survival_equal', 'Every organism has the same modeled chance in this view.')), h('button', { type: 'button', onClick: function() { props.onInspect(range.low.id); } }, tx('survival_meet', 'Meet a resident'))) :
+          h('details', null, h('summary', { className: 'ei-small' }, tx('survival_contrast', 'Compare low and high chances')), h('div', { className: 'ei-lens-specimens' }, specimen(range.low, false), specimen(range.high, true))),
+        h('details', null, h('summary', { className: 'ei-small' }, tx('survival_table', 'Read every survival chance')), h('div', { className: 'ei-table-wrap ei-lens-table', tabIndex: 0, role: 'region', 'aria-label': tx('survival_table_region', 'Survival chance table') }, h('table', null,
+          h('caption', { className: 'ei-small' }, tx('survival_table_caption', 'Modeled probabilities in the displayed habitat; values are rounded.')),
+          h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('lens_resident', 'Resident')), h('th', { scope: 'col' }, tx('survival_lens', 'Survival chance')), recordedRound && h('th', { scope: 'col' }, tx('survival_outcome', 'Recorded outcome')), h('th', { scope: 'col' }, tx('lens_inspect', 'Inspect')))),
+          h('tbody', null, props.population.map(function(o) {
+            var survived = recordedRound && props.transition.survivors.some(function(survivor) { return survivor.id === o.id; });
+            return h('tr', { key: o.id, 'data-chance-organism': o.id }, h('th', { scope: 'row' }, props.nameOf(o.id) + ' · #' + o.id), h('td', { 'data-survival-chance': chance(o) }, pct(chance(o))), recordedRound && h('td', { 'data-chance-outcome': survived }, survived ? tx('life_survived', 'Survived') : tx('life_died', 'Did not survive')), h('td', null, h('button', { type: 'button', onClick: function() { props.onInspect(o.id); } }, tx('lens_inspect', 'Inspect') + ' #' + o.id)));
+          })))))) : h('p', { className: 'ei-small' }, tx('survival_empty', 'There are no organisms in this view, so no individual survival probabilities to display. Revisit the parents or survivors.')),
+      h('small', null, tx('survival_limit', 'A higher chance is not a promise of survival or offspring. These probabilities come from this teaching model; they are not measurements from real animals.')));
+  }
+
   function IslandLenses(props) {
     var R = props.React, h = R.createElement, tx = props.tx, lens = props.lens;
     var range = R.useMemo(function() { return IslandObservation.range(props.population, lens); }, [props.population, lens]);
@@ -1457,10 +1652,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     return h('section', { className: 'ei-lenses ei-stack', 'aria-label': tx('lenses_title', 'Field lenses') },
       h('div', { className: 'ei-row ei-between' }, h('div', null, h('h2', null, tx('lenses_title', 'Field lenses')), h('small', null, tx('lenses_subtitle', 'See the variation hiding in plain sight.'))),
         h('label', { className: 'ei-row' }, tx('lens_label', 'View'), h('select', { id: 'ei-lens', value: lens, className: 'ei-trait-select', onChange: function(e) { props.onLens(e.target.value); } },
-          h('option', { value: 'natural' }, tx('lens_natural', 'Natural appearance')), IslandModel.traits.map(function(k) { return h('option', { key: k, value: k }, props.labels[k]); })))),
-      lens === 'natural' ? h('p', { className: 'ei-small' }, tx('lenses_hint', 'Choose a trait to reveal measurement bars above the spriglets. Inspect two contrasting residents, then follow that variation through a generation.')) :
+          h('option', { value: 'natural' }, tx('lens_natural', 'Natural appearance')), h('option', { value: 'survival' }, tx('survival_lens', 'Survival chance')), IslandModel.traits.map(function(k) { return h('option', { key: k, value: k }, props.labels[k]); })))),
+      lens === 'survival' ? h(IslandSurvivalLens, props) : lens === 'natural' ? h('p', { className: 'ei-small' }, tx('lenses_hint', 'Choose an inherited trait or survival chance to reveal bars above the spriglets. Inspect contrasting residents, then follow a recorded generation.')) :
         h(R.Fragment, null,
           h('div', { className: 'ei-lens-scale' }, h('span', null, '0'), h('div', { 'aria-hidden': true }), h('span', null, '100'), h('small', null, tx('lens_scale', 'Colored fill = trait value (0–100). Tap a bar to inspect. Coats and genes stay unchanged.'))),
+          h(IslandVariationExplorer, { React: R, tx: tx, data: props.variation, trait: lens, label: props.labels[lens], bin: props.spotlightBin, comparison: props.comparison, phase: props.phase, onChange: props.onSpotlight, onFind: props.onFindSpotlight, onMeet: props.onMeetSpotlight, onPhase: props.onPhase }),
           range ? h(R.Fragment, null, h('details', null, h('summary', { className: 'ei-small' }, tx('lens_find_contrast', 'Find two contrasting residents')), h('div', { className: 'ei-lens-specimens' }, specimen(range.low, false), specimen(range.high, true))),
             h('p', { className: 'ei-small' }, range.count + ' ' + tx('lens_count', 'organisms in this view') + ' · ' + tx('mean', 'Mean') + ' ' + fmt(range.mean) + '/100. ' + (range.minimum === range.maximum ? tx('lens_equal', 'All have the same value for this trait.') : tx('lens_extremes', 'One example at each extreme; ties are possible.'))),
             h('details', null, h('summary', { className: 'ei-small' }, tx('lens_table', 'Read every measurement')), h('div', { className: 'ei-table-wrap ei-lens-table' }, h('table', null,
@@ -1565,6 +1761,183 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     return { title: title, body: body, number: n };
   }
 
+  function IslandForecastDots(props) {
+    var h = props.React.createElement, rows = Math.max(1, Math.ceil(props.total / 20));
+    return h('svg', { className: 'ei-forecast-dots', viewBox: '0 0 400 ' + (rows * 18), 'aria-hidden': true, focusable: 'false' }, Array.from({ length: props.total }, function(_, i) {
+      return h('circle', { key: i, cx: 10 + (i % 20) * 20, cy: 9 + Math.floor(i / 20) * 18, r: 5.5, fill: i < props.count ? props.color : '#e0e4d6', stroke: i < props.count ? props.color : '#91a191', strokeWidth: 1 });
+    }));
+  }
+
+  function IslandRoundForecast(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, plan = props.plan;
+    var guessState = R.useState(Math.round(plan.count / 2)), guess = guessState[0];
+    var valid = Number.isInteger(guess) && guess >= 0 && guess <= plan.count;
+    var display = valid ? guess : Math.round(plan.count / 2);
+    return h('section', { className: 'ei-round-forecast ei-stack', ref: props.sectionRef, tabIndex: -1, 'aria-label': tx('forecast_title', 'Forecast this round'), 'data-forecast-generation': plan.generation },
+      h('div', { className: 'ei-row ei-between' }, h('div', null, h('div', { className: 'ei-kicker' }, tx('forecast_kicker', 'Your call, before the round runs')), h('h2', null, tx('forecast_question', 'How many will survive?'))), h('span', { className: 'ei-tag' }, 'G' + (plan.generation - 1) + ' → G' + plan.generation)),
+      h('p', { className: 'ei-small' }, tx('forecast_conditions', 'The coming survival round uses') + ' ' + tx('habitat_' + plan.habitat, IslandModel.habitats[plan.habitat].name) + '. ' + (plan.selection ? tx('forecast_traits', 'Traits influence the odds; chance is part of each outcome.') : tx('forecast_neutral', 'Trait advantages are off. Equal chances do not guarantee equal outcomes.'))),
+      h('div', { className: 'ei-forecast-entry' }, h('div', null, h('label', { htmlFor: 'ei-forecast-range' }, tx('forecast_adjust', 'Adjust your forecast')), h('input', { id: 'ei-forecast-range', type: 'range', min: 0, max: plan.count, step: 1, value: display, onChange: function(e) { guessState[1](Number(e.target.value)); } })),
+        h('div', null, h('label', { htmlFor: 'ei-forecast-number' }, tx('forecast_count', 'Survivors')), h('input', { id: 'ei-forecast-number', type: 'number', inputMode: 'numeric', min: 0, max: plan.count, step: 1, value: guess, 'aria-invalid': !valid, onChange: function(e) { guessState[1](e.target.value === '' ? '' : Number(e.target.value)); } }))),
+      h('div', { className: 'ei-forecast-preview' }, h('strong', null, valid ? guess + ' / ' + plan.count + ' · ' + tx('forecast_yours', 'your forecast') : tx('forecast_invalid', 'Choose a whole number from 0 to the population size.') + ' ' + plan.count), h(IslandForecastDots, { React: R, total: plan.count, count: valid ? guess : 0, color: '#357184' })),
+      h('details', { className: 'ei-forecast-clue' }, h('summary', null, tx('forecast_clue', 'Reveal a probability clue')), h('p', { className: 'ei-small' }, tx('forecast_average', 'Adding every resident’s survival probability gives an expected survivor count of') + ' ' + plan.expected.toFixed(1) + '. ' + tx('forecast_average_help', 'That is an average over many repetitions with these same residents and conditions, not a promise for this round. The actual count must be a whole number.'))),
+      h('div', { className: 'ei-row' }, h('button', { type: 'button', className: 'ei-primary', disabled: !valid, onClick: function() { props.onRun(guess); } }, tx('forecast_run', 'Lock forecast & watch')), h('button', { type: 'button', className: 'ei-quiet', onClick: props.onCancel }, tx('forecast_cancel', 'Cancel forecast'))),
+      h('small', null, tx('forecast_once', 'Locking runs one real generation with the coming habitat. Exploring the clue does not run the simulation.')));
+  }
+
+  function IslandChanceMicroscope(props) {
+    var R = props.React, h = R.createElement, tx = props.tx;
+    var draw = R.useMemo(function() { return IslandChanceTrials.draw(props.world, props.index, props.id); }, [props.world, props.index, props.id]);
+    var revealState = R.useState(false), revealed = revealState[0], practiceState = R.useState(0.5), practice = practiceState[0];
+    if (!draw) return null;
+    var survives = practice < draw.probability;
+    function movePractice(e) {
+      var bounds = e.currentTarget.getBoundingClientRect();
+      if (bounds.width) practiceState[1](Math.max(0, Math.min(1, ((e.clientX - bounds.left) / bounds.width * 600 - 24) / 552)));
+    }
+    function startPracticeDrag(e) { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); movePractice(e); }
+    function continuePracticeDrag(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) movePractice(e); }
+    function endPracticeDrag(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); }
+    function outcome(value) { return value ? tx('chance_resident_survived', 'Survived') : tx('chance_resident_not_survived', 'Did not survive'); }
+    function chart(number, kind) {
+      var threshold = 24 + draw.probability * 552, marker = number === null ? null : 24 + number * 552;
+      return h('svg', { className: 'ei-draw-chart', viewBox: '0 0 600 160', 'aria-hidden': true, focusable: false, 'data-draw-chart': kind, onPointerDown: kind === 'practice' ? startPracticeDrag : undefined, onPointerMove: kind === 'practice' ? continuePracticeDrag : undefined, onPointerUp: kind === 'practice' ? endPracticeDrag : undefined, onPointerCancel: kind === 'practice' ? endPracticeDrag : undefined },
+        h('rect', { x: 24, y: 44, width: 552, height: 44, rx: 6, fill: '#eadfd4' }),
+        h('rect', { x: 24, y: 44, width: draw.probability * 552, height: 44, rx: 6, fill: '#b5d1b5' }),
+        h('line', { x1: threshold, x2: threshold, y1: 33, y2: 97, stroke: '#264f3b', strokeWidth: 3, strokeDasharray: '5 3' }),
+        h('text', { x: Math.max(80, Math.min(520, threshold)), y: 28, textAnchor: 'middle', fill: '#264f3b', fontSize: 26 }, (draw.probability * 100).toFixed(2) + '%'),
+        marker !== null && h('g', { 'data-draw-marker': number, transform: 'translate(' + marker + ',0)' },
+          h('line', { x1: 0, x2: 0, y1: 55, y2: 102, stroke: '#236783', strokeWidth: 3 }),
+          h('path', { d: 'M0 38L9 50L0 62L-9 50Z', fill: '#236783', stroke: '#fff', strokeWidth: 2 })),
+        h('text', { x: 24, y: 144, textAnchor: 'middle', fill: '#365548', fontSize: 26 }, '0'),
+        h('text', { x: 576, y: 144, textAnchor: 'middle', fill: '#365548', fontSize: 26 }, '100'));
+    }
+    return h('div', { className: 'ei-draw-microscope ei-stack', 'data-microscope-id': draw.id, 'data-microscope-index': draw.index },
+      h('div', null, h('div', { className: 'ei-kicker' }, tx('draw_kicker', 'Inside one survival decision')), h('h3', null, tx('draw_title', 'Chance becomes a draw')),
+        h('p', { className: 'ei-small' }, tx('draw_intro', 'The simulation gives each individual a uniform random number from 0 up to, but not including, 1. It survives when that number is strictly below its survival probability.'))),
+      h('div', { className: 'ei-draw-legend' }, h('span', null, h('i', { className: 'ei-draw-zone', 'aria-hidden': true }), tx('draw_below', 'Below threshold: survives')),
+        h('span', null, h('i', { className: 'ei-draw-outside', 'aria-hidden': true }), tx('draw_above', 'At or above: does not survive'))),
+      h('div', { className: 'ei-draw-panels' },
+        h('section', { className: 'ei-draw-panel', 'aria-label': tx('draw_trial_title', 'The selected trial draw') },
+          h('div', { className: 'ei-row ei-between' }, h('h4', null, tx('chance_trial', 'Trial') + ' ' + draw.index), h('small', null, props.name + ' · #' + draw.id)),
+          chart(revealed ? draw.number : null, 'trial'),
+          h('button', { type: 'button', className: revealed ? 'ei-quiet' : 'ei-primary', 'aria-expanded': revealed, 'aria-controls': revealed ? 'ei-selected-trial-draw' : undefined, onClick: function() { revealState[1](!revealed); } }, revealed ? tx('draw_hide', 'Hide this trial’s draw') : tx('draw_reveal', 'Reveal this trial’s draw')),
+          revealed && h('div', { id: 'ei-selected-trial-draw', className: 'ei-draw-result', role: 'status', 'data-trial-draw': draw.number, 'data-trial-threshold': draw.probability, 'data-trial-survived': draw.survived },
+            h('strong', null, outcome(draw.survived)), h('p', { className: 'ei-small' }, tx('draw_number', 'Random number') + ': ' + draw.number.toFixed(6) + ' ' + (draw.survived ? '<' : '≥') + ' ' + draw.probability.toFixed(6) + ' · ' + tx('draw_probability', 'Survival probability')),
+            h('small', null, tx('draw_trial_evidence', 'This explains the selected trial. The recorded round keeps its own outcome.'))),
+          revealed && h('details', { className: 'ei-draw-precision' }, h('summary', null, tx('draw_precision', 'Exact values & trial seed')),
+            h('dl', null, h('dt', null, tx('draw_number', 'Random number')), h('dd', null, String(draw.number)), h('dt', null, tx('draw_probability', 'Survival probability')), h('dd', null, String(draw.probability)), h('dt', null, tx('draw_seed', 'Trial seed')), h('dd', null, String(draw.seed))))),
+        h('section', { className: 'ei-draw-panel ei-draw-practice', 'aria-label': tx('draw_practice_title', 'Move a practice draw') },
+          h('h4', null, tx('draw_practice_title', 'Move a practice draw')), h('p', { className: 'ei-small' }, tx('draw_practice_help', 'Drag the blue marker or use the slider below. The spriglet’s probability stays fixed; only this practice number changes.')),
+          chart(practice, 'practice'),
+          h('label', { htmlFor: 'ei-practice-draw' }, tx('draw_practice_label', 'Practice number · 0–100 scale')),
+          h('input', { id: 'ei-practice-draw', type: 'range', min: 0, max: 100, step: 'any', value: practice * 100, onChange: function(e) { practiceState[1](Number(e.target.value) / 100); }, 'aria-valuetext': (practice * 100).toFixed(2) + ' / 100 · ' + outcome(survives) }),
+          h('div', { className: 'ei-draw-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-practice-draw': practice, 'data-practice-survived': survives },
+            h('strong', null, survives ? tx('draw_practice_survives', 'This practice draw passes') : tx('draw_practice_fails', 'This practice draw does not pass')),
+            h('p', { className: 'ei-small' }, practice.toFixed(6) + ' ' + (survives ? '<' : '≥') + ' ' + draw.probability.toFixed(6)),
+            h('small', null, practice === draw.probability ? tx('draw_equal', 'Exactly at the threshold: the strict less-than rule means it does not survive.') : survives ? tx('draw_practice_below', 'The practice number is below the survival threshold.') : tx('draw_practice_above', 'The practice number is above the survival threshold.'))),
+          h('button', { type: 'button', onClick: function() { practiceState[1](draw.probability); } }, tx('draw_test_threshold', 'Test the exact threshold')),
+          h('small', { className: 'ei-small' }, tx('draw_practice_boundary', 'Practice values include the endpoints. Actual random draws stay below 1. Practice changes do not sample a trial or change the island.')))),
+      h('small', { className: 'ei-small' }, tx('draw_fresh', 'Every individual gets its own draw. A new trial uses fresh draws with the same original traits and probabilities.')));
+  }
+
+  function IslandChanceResidents(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, forecast = props.forecast;
+    var data = R.useMemo(function() { return IslandChanceTrials.compare(forecast.world, forecast.result.survivors, props.index); }, [forecast.world, forecast.result.survivors, props.index]);
+    var selectionState = R.useState(null), selectedId = selectionState[0];
+    if (!data) return null;
+    var selected = data.rows.find(function(row) { return row.organism.id === selectedId; }) || data.rows[0], o = selected.organism;
+    var position = data.rows.indexOf(selected), changed = data.rows.filter(function(row) { return row.recorded !== row.trial; });
+    var trail = props.trials.map(function(trial) { return { index: trial.index, survived: trial.survivors.indexOf(o.id) >= 0 }; });
+    var successes = trail.filter(function(row) { return row.survived; }).length;
+    var groupLabels = { both: tx('chance_resident_both', 'Survived in both'), recorded: tx('chance_resident_recorded_only', 'Recorded only'), trial: tx('chance_resident_trial_only', 'Trial only'), neither: tx('chance_resident_neither', 'Neither') };
+    var traitLabels = { shade: tx('shade', 'Coat lightness'), fur: tx('fur', 'Insulation'), legs: tx('legs', 'Leg length') };
+    function outcome(value) { return value ? tx('chance_resident_survived', 'Survived') : tx('chance_resident_not_survived', 'Did not survive'); }
+    function choose(id) { selectionState[1](Number(id)); }
+    function findChanged() { if (!changed.length) return; var next = changed.findIndex(function(row) { return row.organism.id === o.id; }); choose(changed[(next + 1) % changed.length].organism.id); }
+    return h('details', { className: 'ei-chance-residents', 'data-resident-trial': props.index },
+      h('summary', null, tx('chance_resident_title', 'Who survived? Follow an individual')),
+      h('div', { className: 'ei-stack' },
+        h('p', { className: 'ei-small' }, tx('chance_resident_intro', 'Choose a spriglet, then switch trials to follow its outcomes. Its inherited traits and modeled chance stay the same.')),
+        h('div', { className: 'ei-chance-groups', 'aria-label': tx('chance_resident_groups', 'Survivors in the recorded round and selected trial') }, ['both', 'recorded', 'trial', 'neither'].map(function(key) { return h('div', { key: key }, h('b', { 'data-outcome-group': key }, data.groups[key]), h('small', null, groupLabels[key])); })),
+        h('p', { className: 'ei-small ei-chance-identity', role: 'status', 'aria-live': 'polite', 'data-changed-outcomes': data.changed },
+          data.sameCount && data.changed ? tx('chance_resident_same_count', 'Same survivor count, different individuals. Matching totals can hide different outcomes.') : !data.changed ? tx('chance_resident_same_set', 'The same individuals survived in this comparison. Another trial can still differ.') : __alloFill(tx('chance_resident_changed', '{changed} of {total} individuals have different outcomes in the recorded round and this trial.'), { changed: data.changed, total: data.rows.length })),
+        h('label', { htmlFor: 'ei-chance-resident' }, tx('chance_resident_choose', 'Individual to follow')),
+        h('select', { id: 'ei-chance-resident', value: o.id, onChange: function(e) { choose(e.target.value); } }, data.rows.map(function(row) { return h('option', { key: row.organism.id, value: row.organism.id }, props.nameOf(row.organism.id) + ' · #' + row.organism.id); })),
+        h('div', { className: 'ei-chance-resident-nav' }, h('button', { type: 'button', disabled: position === 0, onClick: function() { choose(data.rows[position - 1].organism.id); } }, tx('chance_resident_previous', 'Previous individual')),
+          h('button', { type: 'button', disabled: position === data.rows.length - 1, onClick: function() { choose(data.rows[position + 1].organism.id); } }, tx('chance_resident_next', 'Next individual'))),
+        h('button', { type: 'button', disabled: !changed.length, onClick: findChanged }, tx('chance_resident_find', 'Find a changed outcome')),
+        h('div', { className: 'ei-chance-resident-card', 'data-chance-resident': o.id },
+          h('div', { className: 'ei-chance-resident-head' }, h(IslandPortrait, { React: R, organism: o }), h('div', null, h('strong', null, props.nameOf(o.id)), h('small', null, '#' + o.id + ' · ' + tx('generation', 'Generation') + ' ' + o.born),
+            h('b', { 'data-resident-chance': selected.chance }, (selected.chance * 100).toFixed(1) + '%'), h('small', null, tx('chance_resident_probability', 'Modeled survival chance in every trial')))),
+          h('div', { className: 'ei-chance-resident-traits' }, IslandModel.traits.map(function(key) { return h('div', { key: key }, h('small', null, traitLabels[key]), h('b', { 'data-resident-trait': key }, (IslandModel.value(o, key) * 100).toFixed(1))); })),
+          h('small', { className: 'ei-chance-resident-scale' }, tx('chance_resident_scale', 'Inherited traits · 0–100 teaching scale. Higher is not always better.')),
+          h('div', { className: 'ei-chance-outcomes' }, ['recorded', 'trial'].map(function(key) { return h('div', { key: key, 'data-resident-outcome': key, 'data-survived': selected[key] }, h('small', null, key === 'recorded' ? tx('chance_recorded', 'Recorded round') : tx('chance_trial', 'Trial') + ' ' + props.index), h('strong', null, h('span', { 'aria-hidden': true }, selected[key] ? '✓ ' : '— '), outcome(selected[key]))); }))),
+        h('details', { className: 'ei-draw-details' }, h('summary', null, tx('draw_open', 'Chance microscope: see the survival draw')), h(IslandChanceMicroscope, { key: o.id + ':' + props.index, React: R, tx: tx, world: forecast.world, index: props.index, id: o.id, name: props.nameOf(o.id) })),
+        h('h3', { className: 'ei-chance-trail-label' }, tx('chance_resident_trail', 'Follow this individual across trials')),
+        h('div', { className: 'ei-chance-trail', role: 'group', 'aria-label': tx('chance_resident_trail', 'Follow this individual across trials') }, trail.map(function(row) { return h('button', { key: row.index, type: 'button', 'data-resident-trial-chip': row.index, 'data-survived': row.survived, 'aria-pressed': props.index === row.index, 'aria-label': tx('chance_trial', 'Trial') + ' ' + row.index + ' · ' + outcome(row.survived), onClick: function() { props.onTrial(row.index - 1); } }, h('span', { 'aria-hidden': true }, row.survived ? '✓' : '—'), h('b', null, row.index)); })),
+        h('p', { className: 'ei-small' }, __alloFill(tx('chance_resident_frequency', 'Survived {count} of {total} explored trials. This observed share can differ from its modeled probability.'), { count: successes, total: trail.length })),
+        h('small', { className: 'ei-chance-boundary' }, tx('chance_resident_boundary', 'Trial survival does not change the recorded life or imply offspring. Each trial gives the original individual a fresh survival draw.')),
+        h('button', { type: 'button', onClick: function() { props.onRecord({ id: o.id, index: props.index }); } }, tx('chance_resident_save', 'Save individual comparison'))));
+  }
+
+  function IslandChanceLab(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, forecast = props.forecast, plan = forecast.plan;
+    var countState = R.useState(0), count = countState[0], choiceState = R.useState(null), choice = choiceState[0];
+    var rows = R.useMemo(function() { return Array.from({ length: count }, function(_, i) { return IslandChanceTrials.run(forecast.world, i + 1); }); }, [forecast.world, count]);
+    var position = choice === null ? count - 1 : choice, selected = rows[position];
+    var minimum = count ? Math.min.apply(null, rows.map(function(row) { return row.count; })) : null;
+    var maximum = count ? Math.max.apply(null, rows.map(function(row) { return row.count; })) : null;
+    var mean = count ? rows.reduce(function(sum, row) { return sum + row.count; }, 0) / count : null;
+    function add(n) { choiceState[1](null); countState[1](function(previous) { return Math.min(IslandChanceTrials.limit, previous + n); }); }
+    var slot = 560 / Math.max(5, count), barWidth = Math.min(36, slot - 9);
+    function y(value) { return 172 - value / plan.count * 140; }
+    return h('details', { className: 'ei-chance-lab', 'data-chance-trials': count },
+      h('summary', null, tx('chance_title', 'Explore chance: repeat this round')),
+      h('div', { className: 'ei-stack' },
+        h('div', null, h('div', { className: 'ei-kicker' }, tx('chance_kicker', 'Same parents. Same habitat. Fresh survival draws.')),
+          h('p', { className: 'ei-small' }, tx('chance_intro', 'Try another possible survival outcome. Every trial starts with all the same parents and their original chances, including parents that did not survive your recorded round.'))),
+        h('div', { className: 'ei-row' }, h('button', { type: 'button', className: 'ei-primary', disabled: count >= IslandChanceTrials.limit, onClick: function() { add(1); } }, tx('chance_one', 'Try one survival trial')),
+          h('button', { type: 'button', disabled: count >= IslandChanceTrials.limit, onClick: function() { add(5); } }, tx('chance_five', 'Try five trials'))),
+        h('p', { className: 'ei-small ei-chance-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, !count ? tx('chance_empty', 'Your recorded round stays fixed. Add trials to discover the range of possible counts.') :
+          __alloFill(tx('chance_progress', '{trials} of 20 trials explored. Latest trial: {latest} survivors. Counts so far: {low}–{high}.'), { trials: count, latest: rows[count - 1].count, low: minimum, high: maximum })),
+        !!count && h(R.Fragment, null,
+          h('div', { className: 'ei-chance-stats' }, h('div', null, h('small', null, tx('chance_recorded', 'Recorded round')), h('b', { 'data-chance-recorded': forecast.result.actual }, forecast.result.actual + ' / ' + plan.count)),
+            h('div', null, h('small', null, tx('chance_range', 'Trial range')), h('b', { 'data-chance-range': minimum + ':' + maximum }, minimum + '–' + maximum)),
+            h('div', null, h('small', null, tx('chance_mean', 'Trial average')), h('b', { 'data-chance-mean': mean }, mean.toFixed(1)))),
+          h('div', { className: 'ei-chance-chart' },
+            h('svg', { viewBox: '0 0 620 210', 'aria-hidden': true, focusable: 'false' },
+              [0, plan.count / 2, plan.count].map(function(value) { return h('g', { key: value }, h('line', { x1: 34, x2: 602, y1: y(value), y2: y(value), stroke: '#d7dfd0' }), h('text', { x: 25, y: y(value) + 4, textAnchor: 'end', fontSize: 12, fill: '#415c4d' }, value)); }),
+              rows.map(function(row) { return h('g', { key: row.index }, h('rect', { x: 40 + (row.index - 1) * slot, y: y(row.count), width: barWidth, height: Math.max(1, 172 - y(row.count)), rx: 2, fill: row.index === position + 1 ? '#255c47' : '#527b72', 'data-chance-trial': row.index, 'data-trial-count': row.count }), h('text', { x: 40 + barWidth / 2 + (row.index - 1) * slot, y: 191, textAnchor: 'middle', fontSize: 11, fill: '#415c4d' }, row.index)); }),
+              h('line', { x1: 34, x2: 602, y1: y(forecast.result.actual), y2: y(forecast.result.actual), stroke: '#92621f', strokeWidth: 2 }),
+              h('line', { x1: 34, x2: 602, y1: y(plan.expected), y2: y(plan.expected), stroke: '#386a86', strokeWidth: 2, strokeDasharray: '6 4' })),
+            h('div', { className: 'ei-chance-legend' }, h('span', null, h('i', { className: 'ei-chance-actual-key', 'aria-hidden': true }), tx('chance_recorded', 'Recorded round') + ' · ' + forecast.result.actual), h('span', null, h('i', { className: 'ei-chance-expected-key', 'aria-hidden': true }), tx('chance_expected', 'Expected count') + ' · ' + plan.expected.toFixed(1))),
+            h('small', null, tx('chance_chart_help', 'Each bar is one trial; height shows its survivor count. The darker bar is the trial you are inspecting.'))),
+          h('label', { htmlFor: 'ei-chance-trial' }, tx('chance_inspect', 'Inspect a trial')),
+          h('div', { className: 'ei-chance-browse' }, h('button', { type: 'button', disabled: position <= 0, onClick: function() { choiceState[1](position - 1); } }, tx('chance_previous', 'Previous trial')),
+            h('select', { id: 'ei-chance-trial', value: position, onChange: function(e) { choiceState[1](Number(e.target.value)); } }, rows.map(function(row, i) { return h('option', { key: row.index, value: i }, tx('chance_trial', 'Trial') + ' ' + row.index + ' · ' + row.count + ' / ' + plan.count); })),
+            h('button', { type: 'button', disabled: position >= count - 1, onClick: function() { choiceState[1](position + 1); } }, tx('chance_next', 'Next trial'))),
+          h('div', { className: 'ei-chance-inspected', 'data-inspected-trial': selected.index }, h('strong', null, tx('chance_trial', 'Trial') + ' ' + selected.index + ' · ' + selected.count + ' / ' + plan.count), h('small', null, tx('chance_survivors', 'survivors in this trial')), h(IslandForecastDots, { React: R, total: plan.count, count: selected.count, color: '#527b72' })),
+          h(IslandChanceResidents, { React: R, tx: tx, forecast: forecast, index: selected.index, trials: rows, nameOf: props.nameOf, onTrial: choiceState[1], onRecord: function(focus) { props.onRecord(count, focus); } }),
+          h('p', { className: 'ei-small' }, tx('chance_lesson', 'Same traits and conditions can give different outcomes. A small set of trials need not average to the expected count; it does not tell us which outcome must happen next.')),
+          h('details', { className: 'ei-chance-data' }, h('summary', null, tx('chance_data', 'Read trial counts and seeds')), h('table', null, h('caption', null, tx('chance_table', 'Repeated survival trials')), h('thead', null, h('tr', null, h('th', { scope: 'col' }, tx('chance_trial', 'Trial')), h('th', { scope: 'col' }, tx('forecast_count', 'Survivors')), h('th', { scope: 'col' }, tx('chance_seed', 'Chance seed')))), h('tbody', null, rows.map(function(row) { return h('tr', { key: row.index }, h('th', { scope: 'row' }, row.index), h('td', null, row.count + ' / ' + plan.count), h('td', null, row.seed)); })))),
+          h('button', { type: 'button', onClick: function() { props.onRecord(count); } }, tx('chance_save', 'Save chance trials to journal'))),
+        h('small', { className: 'ei-chance-boundary' }, tx('chance_boundary', 'These trials repeat survival only. No offspring are produced, and your island history stays unchanged.'))));
+  }
+
+  function IslandForecastResult(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, forecast = props.forecast, plan = forecast.plan, result = forecast.result;
+    return h('div', { className: 'ei-forecast-result ei-stack', 'data-forecast-revealed': forecast.revealed, 'data-forecast-guess': forecast.guess },
+      h('strong', null, forecast.revealed ? tx('forecast_complete', 'Forecast explored') : tx('forecast_locked', 'Forecast locked')),
+      !forecast.revealed ? h('p', { className: 'ei-small' }, forecast.guess + ' / ' + plan.count + ' · ' + tx('forecast_locked_help', 'your forecast. Reveal the survivors to compare with the recorded result.')) : h(R.Fragment, null,
+        h('div', { className: 'ei-forecast-comparison', role: 'status', 'aria-live': 'polite' },
+          h('div', null, h('small', null, tx('forecast_yours', 'your forecast')), h('b', null, forecast.guess + ' / ' + plan.count), h(IslandForecastDots, { React: R, total: plan.count, count: forecast.guess, color: '#357184' })),
+          h('div', null, h('small', null, tx('forecast_actual', 'recorded survivors')), h('b', { 'data-forecast-actual': result.actual }, result.actual + ' / ' + plan.count), h(IslandForecastDots, { React: R, total: plan.count, count: result.actual, color: '#426c4b' }))),
+        h('p', { className: 'ei-small' }, forecast.guess === result.actual ? tx('forecast_match', 'Your forecast matched this round. A match does not make the next outcome certain.') : tx('forecast_difference', 'The recorded count differed from your forecast. Each organism faced its own random draw, so even a well-reasoned estimate can differ from the result.')),
+        h('p', { className: 'ei-small' }, tx('forecast_expected', 'Probability-based expected count') + ': ' + plan.expected.toFixed(1) + '. ' + tx('forecast_result_help', 'An expected count is a long-run average, not a target the simulation tries to reach. Surviving also does not guarantee offspring.')),
+        h('button', { type: 'button', onClick: props.onRecord }, tx('forecast_save', 'Save forecast to journal')),
+        h(IslandChanceLab, { React: R, tx: tx, forecast: forecast, onRecord: props.onRecordChance, nameOf: props.nameOf })));
+  }
+
   function IslandRoundWalkthrough(props) {
     var h = props.React.createElement, tx = props.tx, chapter = props.chapter, copy = islandChapterCopy(tx, chapter);
     var phases = ['parents', 'survivors', 'offspring'], labels = [tx('replay_parents', 'Parents'), tx('replay_survivors', 'Survivors'), tx('replay_offspring', 'Offspring')];
@@ -1572,6 +1945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       h('div', { className: 'ei-row ei-between' }, h('strong', null, tx('watch_title', 'A generation, step by step')), h('span', { className: 'ei-tag' }, 'G' + (chapter.generation - 1) + ' → G' + chapter.generation + ' · ' + props.habitat)),
       h('ol', { className: 'ei-watch-steps', 'aria-label': tx('watch_stages', 'Generation stages') }, phases.map(function(phase, i) { return h('li', { key: phase, 'aria-current': chapter.phase === phase ? 'step' : undefined }, h('span', { 'aria-hidden': true }, i + 1), labels[i]); })),
       h('div', { className: 'ei-watch-explanation', role: 'status', 'aria-atomic': true }, h('b', { className: 'ei-watch-count' }, chapter.count, h('small', null, labels[copy.number - 1])), h('div', null, h('h2', null, copy.title), h('p', null, copy.body))),
+      props.forecast && h(IslandForecastResult, { React: props.React, tx: tx, forecast: props.forecast, onRecord: props.onRecordForecast, onRecordChance: props.onRecordChance, nameOf: props.nameOf }),
       h('div', { className: 'ei-row ei-between' }, h('div', { className: 'ei-row' },
         h('button', { type: 'button', disabled: copy.number === 1, onClick: function() { props.onPhase(phases[copy.number - 2]); } }, tx('watch_back', 'Previous stage')),
         h('button', { type: 'button', className: 'ei-primary', onClick: function() { if (copy.number === 3) props.onFinish(); else props.onPhase(phases[copy.number]); } }, copy.number === 1 ? tx('watch_survivors', 'Reveal survivors →') : copy.number === 2 ? tx('watch_offspring', 'Meet the offspring →') : tx('watch_finish', 'Finish walkthrough'))),
@@ -1649,6 +2023,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('button', { type: 'button', className: 'ei-primary', onClick: next, disabled: step === 3 }, tx('inherit_next', 'Next inheritance step')),
         h('button', { type: 'button', onClick: function() { if (playing) pause(); else { props.onWatch(); stepState[1](0); active.current = true; playState[1](true); } } }, playing ? tx('inherit_pause', 'Pause inheritance') : tx('inherit_watch', 'Watch inheritance')),
         h('button', { type: 'button', onClick: function() { pause(); stepState[1](0); } }, tx('inherit_rewind', 'Start reveal again'))));
+  }
+
+  function IslandSiblings(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, o = props.family.organism;
+    var data = R.useMemo(function() { return IslandStudy.siblings(props.world, o.id); }, [props.world.history, o.id]);
+    var groupState = R.useState(null), selectionState = R.useState(null);
+    R.useEffect(function() { groupState[1](null); selectionState[1](null); }, [o.id]);
+    if (!data) return null;
+    var group = groupState[0] && groupState[0].id === o.id ? groupState[0].group : data.full.length ? 'full' : 'half';
+    var members = data[group], choice = selectionState[0], sibling = members.find(function(member) { return choice && choice.id === o.id && choice.group === group && member.id === choice.siblingId; }) || members[0];
+    var position = sibling ? members.indexOf(sibling) : -1, inputId = props.id + '-sibling', traitId = props.id + '-sibling-trait';
+    function choose(id) { props.onPause(); selectionState[1]({ id: o.id, group: group, siblingId: Number(id) }); }
+    function value(member) { return (IslandModel.value(member, props.trait) * 100).toFixed(2); }
+    return h('details', { className: 'ei-siblings', 'data-siblings-for': o.id, onToggle: function(e) { if (e.currentTarget.open) props.onPause(); } },
+      h('summary', null, tx('siblings_title', 'Meet the siblings') + ' · ' + (data.full.length + data.half.length)),
+      h('div', { className: 'ei-stack' },
+        h('p', { className: 'ei-small' }, tx('siblings_help', 'Compare other offspring from this birth generation. Exploring these recorded relatives keeps your selected spriglet and the island unchanged.')),
+        h('div', { className: 'ei-sibling-groups', role: 'group', 'aria-label': tx('siblings_groups', 'Shared parents') }, ['full', 'half'].map(function(key) {
+          return h('button', { key: key, type: 'button', 'data-sibling-group': key, 'aria-pressed': group === key, onClick: function() { props.onPause(); groupState[1]({ id: o.id, group: key }); selectionState[1](null); } },
+            h('strong', null, key === 'full' ? tx('siblings_both', 'Both parents') : tx('siblings_one', 'One parent')), h('span', null, String(data[key].length)));
+        })),
+        h('p', { className: 'ei-small' }, group === 'full' ? tx('siblings_full_help', 'Full siblings share both recorded parents, even when the parents appear in a different order.') : tx('siblings_half_help', 'Half siblings share exactly one recorded parent. Their other parents differ.')),
+        !sibling ? h('p', { className: 'ei-callout', 'data-siblings-empty': group }, group === 'full' ? tx('siblings_no_full', 'No other offspring with both of these parents was recorded in this birth generation.') : tx('siblings_no_half', 'No other offspring sharing exactly one of these parents was recorded in this birth generation.')) :
+          h(R.Fragment, null,
+            h('label', { htmlFor: inputId }, tx('siblings_choose', 'Sibling to compare')),
+            h('select', { id: inputId, value: sibling.id, onChange: function(e) { choose(e.target.value); } }, members.map(function(member) { return h('option', { key: member.id, value: member.id }, props.nameOf(member.id) + ' · #' + member.id); })),
+            h('div', { className: 'ei-sibling-browse' },
+              h('button', { type: 'button', disabled: position === 0, onClick: function() { choose(members[position - 1].id); } }, tx('siblings_previous', 'Previous sibling')),
+              h('small', null, (position + 1) + ' / ' + members.length),
+              h('button', { type: 'button', disabled: position === members.length - 1, onClick: function() { choose(members[position + 1].id); } }, tx('siblings_next', 'Next sibling'))),
+            h('label', { htmlFor: traitId }, tx('siblings_trait', 'Trait to compare')),
+            h('select', { id: traitId, value: props.trait, onChange: function(e) { props.onTrait(e.target.value); } }, IslandModel.traits.map(function(key) { return h('option', { key: key, value: key }, props.labels[key]); })),
+            h('div', { className: 'ei-sibling-comparison', 'data-compared-sibling': sibling.id }, [o, sibling].map(function(member, i) {
+              return h('div', { key: member.id, className: 'ei-resemblance-member' + (i === 0 ? ' ei-resemblance-child' : ''), 'data-sibling-member': member.id },
+                h('small', null, i === 0 ? tx('siblings_selected', 'This offspring') : tx('siblings_relative', 'Sibling')), h(IslandPortrait, { React: R, organism: member }),
+                h('strong', null, props.nameOf(member.id)), h('small', null, '#' + member.id), h('b', { 'data-sibling-value': member.id }, value(member)),
+                h('div', { className: 'ei-meter', 'aria-hidden': true }, h('span', { style: { width: IslandModel.value(member, props.trait) * 100 + '%' } })));
+            })),
+            h('small', null, props.labels[props.trait] + ' · ' + tx('resemblance_scale', '0–100 teaching scale; values are rounded. Higher is not always better.')),
+            h('p', { className: 'ei-small ei-sibling-parents' }, h('strong', null, tx('siblings_shared', 'Shared recorded parents') + ': '), props.family.parents.filter(function(parent) { return sibling.parents.indexOf(parent.id) >= 0; }).map(function(parent) { return props.nameOf(parent.id) + ' · #' + parent.id; }).join(' / ')),
+            h('p', { className: 'ei-small' }, tx('siblings_variation', 'Sharing parents does not guarantee identical traits. Allele copies are sampled at each birth; mutations can also contribute. Matching trait values do not prove identical genes.')))));
+  }
+
+  function IslandResemblance(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, family = props.family;
+    var traitState = R.useState('fur'), trait = traitState[0], pairState = R.useState(null), choice = pairState[0];
+    var chosen = choice && choice.id === family.organism.id && choice.trait === trait ? choice.index : null;
+    R.useEffect(function() { pairState[1](null); }, [family.organism.id]);
+    var data = IslandStudy.resemblance(family, trait), members = family.parents.concat([family.organism]);
+    if (!data) return null;
+    var pairing = chosen == null ? null : data.pairings[chosen], traitId = props.traitId || 'ei-resemblance-trait';
+    function value(v) { return (v * 100).toFixed(2); }
+    function chooseTrait(key) { props.onPause(); traitState[1](key); pairState[1](null); }
+    return h('div', { className: 'ei-resemblance ei-stack', 'data-resemblance-child': family.organism.id },
+      h('label', { htmlFor: traitId }, tx('resemblance_trait', 'Compare an inherited trait')),
+      h('select', { id: traitId, value: trait, onChange: function(e) { chooseTrait(e.target.value); } }, IslandModel.traits.map(function(key) { return h('option', { value: key, key: key }, props.labels[key]); })),
+      h('div', { className: 'ei-resemblance-family' }, members.map(function(o, i) {
+        return h('div', { key: o.id, className: 'ei-resemblance-member' + (i === 2 ? ' ei-resemblance-child' : ''), 'data-resemblance-member': o.id },
+          h('small', null, i === 2 ? tx('resemblance_child', 'Offspring') : tx('inherit_parent', 'Parent') + ' ' + (i + 1)), h(IslandPortrait, { React: R, organism: o }),
+          h('strong', null, props.nameOf(o.id)), h('small', null, '#' + o.id),
+          h('b', { 'data-resemblance-value': i }, value(data.values[i])),
+          h('div', { className: 'ei-meter', 'aria-hidden': true }, h('span', { style: { width: data.values[i] * 100 + '%' } })));
+      })),
+      props.onParent && h('div', { className: 'ei-parent-visits' }, family.parents.map(function(parent, i) { return h('button', { key: parent.id, type: 'button', 'data-visit-parent': parent.id, onClick: function() { props.onParent(parent.id); } }, h('strong', null, tx('birth_visit_parent', 'Visit parent') + ' ' + (i + 1)), h('small', null, props.nameOf(parent.id) + ' · #' + parent.id)); })),
+      h('p', { className: 'ei-small' }, props.labels[trait] + ' · ' + tx('resemblance_scale', '0–100 teaching scale; values are rounded. Higher is not always better.')),
+      h('p', { className: 'ei-small ei-resemblance-insight', 'data-resemblance-position': data.position },
+        data.position === 'below' ? tx('resemblance_below', 'This offspring’s trait value is lower than both parents’ values.') : data.position === 'above' ? tx('resemblance_above', 'This offspring’s trait value is higher than both parents’ values.') : tx('resemblance_within', 'This offspring’s trait value falls within the parents’ range.'), ' ',
+        tx('resemblance_mechanism', 'In this model, the offspring averages its two inherited allele values. It does not simply average the parents’ trait values.')),
+      h('details', { className: 'ei-pairing-details' }, h('summary', null, tx('resemblance_explore', 'Try the four allele pairings')),
+        h('div', { className: 'ei-stack' },
+          h('p', { className: 'ei-small' }, tx('resemblance_pair_help', 'Choose one copy from each parent. These possibilities use the parents’ actual alleles before any mutation; exploring them does not create an organism.')),
+          h('div', { className: 'ei-pairing-grid', role: 'group', 'aria-label': tx('resemblance_pair_group', 'Possible allele pairings before mutation') }, data.pairings.map(function(p, i) {
+            var actual = data.actual === i;
+            return h('button', { key: i, type: 'button', 'data-allele-pair': i, 'data-recorded-pair': actual, 'aria-pressed': chosen === i, onClick: function() { props.onPause(); pairState[1]({ id: family.organism.id, trait: trait, index: i }); } },
+              h('span', null, tx('inherit_copy', 'Copy') + ' ' + (p.copies[0] + 1) + ' + ' + tx('inherit_copy', 'Copy') + ' ' + (p.copies[1] + 1)),
+              h('strong', null, value(p.value)), actual && h('small', null, tx('resemblance_recorded', 'Recorded pairing')));
+          })),
+          h('small', null, tx('resemblance_equal', 'First copy label: Parent 1. Second: Parent 2. Each pairing has a 1 in 4 chance in this model. Different pairings can produce the same trait value.')),
+          pairing && h('div', { className: 'ei-pairing-result', role: 'status', 'aria-live': 'polite' }, h('strong', null, tx('resemblance_possible', 'Possible trait before mutation')), h('p', { 'data-pairing-value': chosen }, '(' + value(pairing.alleles[0]) + ' + ' + value(pairing.alleles[1]) + ') ÷ 2 ≈ ' + value(pairing.value)), h('small', null, tx('resemblance_unchanged', 'The recorded offspring stays unchanged.'))),
+          data.actual == null ? h('p', { className: 'ei-small' }, tx('resemblance_unknown', 'This older birth has no detailed copy record. The possible pairings are known; which one occurred and whether mutations happened are unknown.')) :
+            h('div', { className: 'ei-resemblance-record' }, h('strong', null, tx('resemblance_actual', 'What happened in this birth')),
+              h('p', { className: 'ei-small' }, tx('resemblance_before', 'Before mutation') + ': ' + value(data.pairings[data.actual].value) + ' → ' + tx('resemblance_actual_trait', 'Recorded trait') + ': ' + value(data.values[2])),
+              h('p', { className: 'ei-small' }, data.mutationCount === 0 ? tx('resemblance_no_mutation', 'Neither inherited copy mutated for this trait. Different combinations alone can make offspring differ from both parents.') : data.mutationCount + ' ' + tx('resemblance_mutated', 'of the two inherited copies mutated for this trait. Mutation is random with respect to what the habitat favors.'))))),
+      h(IslandSiblings, { React: R, tx: tx, world: props.world, family: family, labels: props.labels, nameOf: props.nameOf, onPause: props.onPause, id: traitId, trait: trait, onTrait: chooseTrait }));
+  }
+
+  function IslandLifeStory(props) {
+    var R = props.React, h = R.createElement, tx = props.tx, data = props.family, o = data.organism, round = data.round;
+    var childState = R.useState(''), childId = data.children.some(function(child) { return String(child.id) === childState[0]; }) ? childState[0] : data.children.length ? String(data.children[0].id) : '';
+    var childFamily = R.useMemo(function() { return childId ? IslandStudy.lineage(props.world, Number(childId)) : null; }, [props.world.history, childId]);
+    function habitat(key) { return tx('habitat_' + key, IslandModel.habitats[key].name); }
+    function visit(key, label) { return h('button', { type: 'button', onClick: function() { props.onVisit(key); }, 'data-life-visit': key }, label); }
+    return h('section', { ref: props.sectionRef, tabIndex: -1, className: 'ei-card ei-stack ei-life', 'aria-label': tx('life_title', 'Life story'), 'data-life-id': o.id, 'data-life-outcome': data.outcome },
+      h('div', { className: 'ei-row' }, h(IslandPortrait, { React: R, organism: o }), h('div', null, h('div', { className: 'ei-kicker' }, tx('life_kicker', 'One spriglet. Its recorded story.')), h('h2', null, tx('life_title', 'Life story')), h('strong', { className: 'ei-life-name' }, props.nameOf(o.id) + ' · #' + o.id))),
+      props.returnChild && h('div', { className: 'ei-parent-return' }, h('small', null, tx('birth_return_context', 'You came from this offspring')), h('strong', null, props.nameOf(props.returnChild.id) + ' · #' + props.returnChild.id), h('button', { type: 'button', onClick: props.onReturnChild }, tx('birth_return', 'Back to this offspring'))),
+      h('ol', { className: 'ei-life-steps' },
+        h('li', { 'data-life-step': 'birth' }, h('span', { className: 'ei-life-number', 'aria-hidden': true }, '1'), h('div', { className: 'ei-stack' },
+          h('h3', null, tx('life_birth', 'Where it began') + ' · G' + o.born), h('p', { className: 'ei-small' }, habitat(data.birthHabitat) + ' · ' + (data.parents.length ? tx('life_inherited', 'Two parents; a new combination of inherited alleles.') : tx('life_founder', 'One of the founding residents. No earlier parents are recorded.'))),
+          visit('birth', tx('life_visit_birth', 'Find at birth')),
+          data.parents.length === 2 && h('details', { className: 'ei-resemblance-details ei-birth-resemblance', ref: props.birthCompareRef, 'data-birth-comparison': o.id, onToggle: function(e) { if (e.currentTarget.open) props.onPause(); } },
+            h('summary', null, tx('birth_compare', 'Compare with parents')),
+            h('p', { className: 'ei-small ei-birth-intro' }, tx('birth_compare_help', 'Meet the two parents behind this spriglet’s inherited traits. You can explore this birth even before its own survival round.')),
+            h(IslandResemblance, { React: R, tx: tx, world: props.world, family: data, labels: props.labels, nameOf: props.nameOf, onPause: props.onPause, traitId: 'ei-birth-resemblance-trait', onParent: props.onParent })))),
+        h('li', { 'data-life-step': 'survival' }, h('span', { className: 'ei-life-number', 'aria-hidden': true }, '2'), h('div', { className: 'ei-stack' },
+          h('h3', null, tx('life_survival', 'The survival round') + ' · G' + (o.born + 1)),
+          round ? h(R.Fragment, null,
+            h('p', { className: 'ei-small' }, habitat(round.habitat) + ' · ' + (round.selection ? tx('trial_selection_on', 'traits affect survival') : tx('trial_selection_off', 'trait-neutral survival'))),
+            round.habitat !== data.birthHabitat && h('p', { className: 'ei-small ei-life-change' }, tx('life_changed', 'The habitat changed after this organism was born. Its inherited traits stayed the same.')),
+            h('div', { className: 'ei-life-result' }, h('div', null, h('strong', { 'data-life-chance': round.chance }, (round.chance * 100).toFixed(1) + '%'), h('small', null, tx('life_chance', 'Chance before the draw'))), h('div', null, h('strong', null, round.survived ? tx('life_survived', 'Survived') : tx('life_died', 'Did not survive')), h('small', null, tx('life_actual', 'Actual recorded outcome')))),
+            h('p', { className: 'ei-small' }, round.survivorCount + ' / ' + round.parentCount + ' ' + tx('life_cohort_survived', 'residents survived this round. Chance is part of every result; one outcome does not tell us which trait caused it.')),
+            h('div', { className: 'ei-row' }, visit('parents', tx('life_before', 'Before survival')), visit('survivors', tx('life_after', 'After survival'))))
+          : h('p', { className: 'ei-small' }, o.born >= 60 ? tx('life_limit', 'This expedition ends at generation 60. A later survival outcome is unknown.') : tx('life_pending', 'This round has not happened yet. Use Watch a generation to discover what happens.')))),
+        h('li', { 'data-life-step': 'offspring' }, h('span', { className: 'ei-life-number', 'aria-hidden': true }, '3'), h('div', { className: 'ei-stack' },
+          h('h3', null, tx('life_offspring', 'What it passed on')),
+          round ? h(R.Fragment, null,
+            h('strong', { 'data-life-children': data.children.length }, data.children.length + ' ' + tx('direct_children', 'direct offspring')),
+            h('p', { className: 'ei-small' }, data.children.length ? tx('life_children_help', 'Each offspring is a new individual with alleles from two parents. Choose any one to continue the story.') : round.survived ? tx('family_no_offspring', 'This organism survived but left no recorded offspring. Survival does not guarantee parenthood.') : tx('life_no_children', 'It did not survive to reproduce, so it left no direct offspring in this round.')),
+            round.survived && round.survivorCount < 2 && h('p', { className: 'ei-small' }, tx('life_no_partner', 'Fewer than two residents survived. This model needs two distinct surviving parents to produce offspring.')),
+            data.children.length > 0 && h(R.Fragment, null, h('label', { htmlFor: 'ei-life-child' }, tx('life_choose_child', 'Continue with an offspring')), h('select', { id: 'ei-life-child', value: childId, onChange: function(e) { props.onPause(); childState[1](e.target.value); } }, data.children.map(function(child) { return h('option', { key: child.id, value: child.id }, props.nameOf(child.id) + ' · #' + child.id); })), h('details', { className: 'ei-resemblance-details', onToggle: function(e) { if (e.currentTarget.open) props.onPause(); } }, h('summary', null, tx('resemblance_title', 'Compare this offspring with both parents')), childFamily && h(IslandResemblance, { React: R, tx: tx, world: props.world, family: childFamily, labels: props.labels, nameOf: props.nameOf, onPause: props.onPause })), h('button', { type: 'button', className: 'ei-primary', onClick: function() { props.onChild(Number(childId)); } }, tx('life_meet_child', 'Follow this offspring'))),
+            visit('offspring', tx('life_view_next', 'View next generation')))
+          : h('p', { className: 'ei-small' }, tx('life_children_pending', 'No result yet. Unrecorded offspring are unknown, not zero.'))))),
+      h('p', { className: 'ei-small' }, tx('life_model', 'In this model each generation replaces the last. Surviving parents do not remain as residents. Revisit a stage without changing the recorded result.')));
   }
 
   function IslandFamily(props) {
@@ -1841,6 +2337,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h(IslandTrialEvidence, { React: R, tx: tx, summary: summary, onRecord: props.onRecord })));
   }
 
+  function IslandDiscoveryCompass(props) {
+    var h = props.React.createElement, tx = props.tx;
+    return h('section', { id: 'ei-discovery-compass', className: 'ei-compass', ref: props.sectionRef, tabIndex: -1,
+      'aria-label': tx('compass_title', 'Discovery compass'), onKeyDown: function(e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); props.onClose(); } } },
+      h('div', { className: 'ei-compass-heading' },
+        h('svg', { className: 'ei-compass-mark', viewBox: '0 0 64 64', 'aria-hidden': true, focusable: false },
+          h('circle', { cx: 32, cy: 32, r: 28, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }),
+          h('path', { d: 'M32 8v6M32 50v6M8 32h6M50 32h6', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }),
+          h('path', { d: 'M43 21L36 36L21 43L28 28Z', fill: '#e8c171', stroke: 'currentColor', strokeWidth: 1.5 }),
+          h('circle', { cx: 32, cy: 32, r: 3, fill: 'currentColor' })),
+        h('div', { className: 'ei-compass-heading-copy' }, h('div', { className: 'ei-kicker' }, tx('compass_kicker', 'Follow your curiosity')),
+          h('h2', null, tx('compass_heading', 'What will you discover next?')),
+          h('p', null, tx('compass_help', 'Choose a question. Your island holds the evidence.'))),
+        h('button', { type: 'button', className: 'ei-compass-close', onClick: props.onClose, 'aria-label': tx('compass_close', 'Close discovery compass') }, tx('compass_close_short', 'Close'))),
+      h('div', { className: 'ei-compass-context' },
+        h('span', null, tx('compass_viewing', 'Viewing generation') + ' ' + props.cursor + ' · ' + tx('compass_recorded', 'Recorded through') + ' ' + props.generation),
+        !props.live && h('button', { type: 'button', onClick: props.onPresent }, tx('compass_present', 'Explore the present generation'))),
+      h('div', { className: 'ei-compass-grid' }, props.items.map(function(item, index) {
+        var reasonId = 'ei-compass-reason-' + item.key;
+        return h('article', { key: item.key, className: 'ei-compass-card' + (item.key === props.recommended ? ' ei-compass-recommended' : ''), 'data-discovery': item.key },
+          h('div', { className: 'ei-compass-card-top' }, h('span', { className: 'ei-kicker' }, h('span', { className: 'ei-compass-number', 'aria-hidden': true }, '0' + (index + 1)), item.label),
+            item.key === props.recommended && h('span', { className: 'ei-compass-badge' }, tx('compass_start', 'Start here'))),
+          h('h3', null, item.title), h('p', null, item.description),
+          item.context && h('p', { className: 'ei-compass-specimen' }, item.context),
+          h('div', { className: 'ei-compass-action' },
+            item.reason && h('p', { id: reasonId, className: 'ei-small' }, item.reason),
+            h('button', { type: 'button', disabled: !!item.reason, 'aria-describedby': item.reason ? reasonId : undefined, onClick: function() { props.onChoose(item.key); } }, item.action)));
+      })));
+  }
+
   function LivingIsland(props) {
     var R = props.React, h = R.createElement;
     function tx(k, fb) { return __alloT('stem.evolab.island_' + k, fb); }
@@ -1858,7 +2384,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     function chooseDesk(value) { stopReel(); setPlaying(false); setDesk(value); }
     function revealDesk(value, ref) { chooseDesk(value); setTimeout(function() { reveal(ref); }, 0); }
     var introState = R.useState(study.introDismissed === true), introDismissed = introState[0], setIntroDismissed = introState[1];
-    var introRef = R.useRef(null), introButton = R.useRef(null), questionsRef = R.useRef(null), futuresRef = R.useRef(null), journeyRef = R.useRef(null), stageRef = R.useRef(null), residentRef = R.useRef(null), inheritanceRef = R.useRef(null), highlightsRef = R.useRef(null);
+    var compassState = R.useState(false), compassOpen = compassState[0], setCompassOpen = compassState[1];
+    var compassRef = R.useRef(null), compassButton = R.useRef(null);
+    function openCompass() { stopReel(); setPlaying(false); setCompassOpen(true); setTimeout(function() { reveal(compassRef); }, 0); }
+    function closeCompass() { setCompassOpen(false); setTimeout(function() { reveal(compassButton); }, 0); }
+    var introRef = R.useRef(null), introButton = R.useRef(null), questionsRef = R.useRef(null), futuresRef = R.useRef(null), journeyRef = R.useRef(null), stageRef = R.useRef(null), residentRef = R.useRef(null), inheritanceRef = R.useRef(null), highlightsRef = R.useRef(null), lifeRef = R.useRef(null), birthCompareRef = R.useRef(null);
     function reveal(ref) { if (ref.current) { ref.current.scrollIntoView({ block: 'start' }); ref.current.focus({ preventScroll: true }); } }
     function dismissIntro() { setIntroDismissed(true); if (introButton.current) introButton.current.focus(); }
     function reopenIntro() { setIntroDismissed(false); setTimeout(function() { reveal(introRef); }, 0); }
@@ -1867,20 +2397,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var keptHighlights = R.useMemo(function() { return highlights.map(function(record) { return IslandHighlights.resolve(record, world); }).filter(Boolean); }, [highlights, world.history]);
     var familyTraitState = R.useState(function() { return IslandModel.traits.indexOf(study.familyTrait) >= 0 ? study.familyTrait : 'fur'; }), familyTrait = familyTraitState[0], setFamilyTrait = familyTraitState[1];
     var lensState = R.useState(function() { return IslandObservation.lens(study.lens); }), lens = lensState[0], setLens = lensState[1];
+    var spotState = R.useState(null), spotlightBin = spotState[0], setSpotlightBin = spotState[1];
+    var parentVisitState = R.useState(null), parentVisit = parentVisitState[0], setParentVisit = parentVisitState[1];
+    var lifeViewState = R.useState(null), lifeView = lifeViewState[0], setLifeView = lifeViewState[1];
+    var rangeViewState = R.useState(0), rangeView = rangeViewState[0], setRangeView = rangeViewState[1];
     var watchState = R.useState(null), watchGeneration = watchState[0], setWatchGeneration = watchState[1];
+    var forecastState = R.useState(null), forecast = forecastState[0], setForecast = forecastState[1];
+    var forecastRef = R.useRef(null), forecastButtonRef = R.useRef(null), forecastDraft = R.useRef(null);
+    forecastDraft.current = forecast;
+    var forecasting = !!(forecast && !forecast.result);
     var watchActive = R.useRef(null), watchGuideRef = R.useRef(null), watchButtonRef = R.useRef(null);
-    function endWatch() { watchActive.current = null; setWatchGeneration(null); }
+    function endWatch() { watchActive.current = null; setWatchGeneration(null); setForecast(null); }
     var reelState = R.useState(false), reelPlaying = reelState[0], setReelPlaying = reelState[1];
     var reelOpenState = R.useState(false), reelOpen = reelOpenState[0], setReelOpen = reelOpenState[1];
     var reel = R.useRef({ active: false, generation: null });
     function stopReel() { reel.current.active = false; setReelPlaying(false); }
-    function closeReel() { endWatch(); stopReel(); setReelOpen(false); setReplayPhase('offspring'); }
+    function closeReel() { endWatch(); stopReel(); setLifeView(null); setReelOpen(false); setReplayPhase('offspring'); }
     function startReel() {
       if (!transition) return;
       endWatch(); setPlaying(false); setReplayPhase('parents'); setReelOpen(true);
       reel.current = { active: true, generation: cursor }; setReelPlaying(true);
     }
-    function changeLens(value) { stopReel(); setPlaying(false); var next = IslandObservation.lens(value); setLens(next); if (next !== 'natural') setReplayTrait(next); }
+    function changeLens(value) { stopReel(); setPlaying(false); var next = IslandObservation.lens(value); if (next !== lens) setSpotlightBin(null); setLens(next); if (IslandModel.traits.indexOf(next) >= 0) setReplayTrait(next); }
     var namesState = R.useState(function() { return IslandNames.restore(study.names, world); }), names = namesState[0], setNames = namesState[1];
     var detectiveState = R.useState(function() { return IslandDetective.restore(study.detective, world); }), detective = detectiveState[0], setDetective = detectiveState[1];
     var detectiveData = R.useMemo(function() { return IslandDetective.observe(world, detective); }, [world, detective]);
@@ -1897,7 +2435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     }, [comparing]);
     var compareButton = R.useRef(null);
     function nameOf(id) { return IslandNames.get(world.seed, id, names); }
-    function openComparison() { stopReel(); setPlaying(false); setComparing(true); }
+    function openComparison() { setCompassOpen(false); stopReel(); setPlaying(false); setComparing(true); }
     function closeComparison() { setComparing(false); setTimeout(function() { if (compareButton.current) compareButton.current.focus(); }, 0); }
     function repeatSavedTrial() {
       stopReel(); setPlaying(false);
@@ -1939,7 +2477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var playingState = R.useState(false), playing = playingState[0], playback = R.useRef(false);
     function setPlaying(value) { if (value) { stopReel(); setReelOpen(false); } playback.current = value; playingState[1](value); }
     var cursorState = R.useState(world.generation), cursor = cursorState[0];
-    function setCursor(value) { endWatch(); stopReel(); setReelOpen(false); cursorState[1](value); }
+    function setCursor(value) { endWatch(); stopReel(); setLifeView(null); setReelOpen(false); cursorState[1](value); }
     var selectedState = R.useState(Number.isInteger(study.selectedId) && study.selectedId < world.nextId ? study.selectedId : null), selectedId = selectedState[0], setSelected = selectedState[1];
     var trackedState = R.useState(Number.isInteger(study.trackedId) && study.trackedId < world.nextId ? study.trackedId : null), trackedId = trackedState[0], setTracked = trackedState[1];
     var movingState = R.useState(false), moving = movingState[0], setMoving = movingState[1];
@@ -1957,6 +2495,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var briefing = R.useMemo(function() { return IslandObservation.briefing(world, cursor); }, [world.history, cursor]);
     var phase = transition ? replayPhase : 'offspring';
     var sceneFrame = R.useMemo(function() { return phase === 'offspring' ? frame : Object.assign({}, frame, { population: transition[phase] }); }, [frame, transition, phase]);
+    var variation = R.useMemo(function() { return IslandObservation.distribution(sceneFrame.population, lens); }, [sceneFrame.population, lens]);
+    var variationComparison = R.useMemo(function() {
+      if (!transition || IslandModel.traits.indexOf(lens) < 0) return null;
+      var out = {}; ['parents', 'survivors', 'offspring'].forEach(function(key) { out[key] = IslandObservation.distribution(transition[key], lens); }); return out;
+    }, [transition, lens]);
+    var spotlight = R.useMemo(function() { return variation && spotlightBin !== null ? new Set(variation.bins[spotlightBin].members.map(function(o) { return o.id; })) : null; }, [variation, spotlightBin]);
+    function chooseSpotlight(index) { stopReel(); setPlaying(false); setSpotlightBin(Number.isInteger(index) && index >= 0 && index < 5 ? index : null); }
+    function meetSpotlight() {
+      if (!variation || spotlightBin === null) return;
+      var members = variation.bins[spotlightBin].members; if (!members.length) return;
+      var index = members.findIndex(function(o) { return o.id === selectedId; }); inspect(members[(index + 1) % members.length].id);
+    }
     var recordedView = reelOpen || phase !== 'offspring' || !live;
     var shownHabitat = recordedView ? frame.habitat : world.habitat, env = IslandModel.habitats[shownHabitat], shownSelection = recordedView ? frame.selection : world.selection;
     var missionProgress = R.useMemo(function() { return IslandStudy.progress(world, mission); }, [world.history, mission]);
@@ -1986,10 +2536,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       setReplayPhase('parents'); setReelOpen(true);
       watchActive.current = next.generation; setWatchGeneration(next.generation);
       setTimeout(function() { reveal(watchGuideRef); }, 0);
+      return next;
+    }
+    function openForecast() {
+      var now = current.current, plan = IslandObservation.forecast(now);
+      if (!plan || !live || watchActive.current !== null) return;
+      closeReel(); setPlaying(false);
+      setForecast({ world: now, plan: plan, result: null });
+      setTimeout(function() { reveal(forecastRef); }, 0);
+    }
+    function cancelForecast() {
+      setForecast(null);
+      setTimeout(function() { if (forecastButtonRef.current) forecastButtonRef.current.focus(); }, 0);
+    }
+    function runForecast(guess) {
+      var draft = forecastDraft.current;
+      if (!draft || draft.result || draft.world !== current.current || !Number.isInteger(guess) || guess < 0 || guess > draft.plan.count) return;
+      var next = watchNext(); if (!next) return;
+      var result = { generation: next.generation, actual: next.history[next.generation].survivors.length, survivors: next.history[next.generation].survivors.slice() };
+      setForecast({ world: draft.world, plan: draft.plan, guess: guess, result: result, revealed: false });
+    }
+    function recordForecast() {
+      if (!forecast || !forecast.result || !forecast.revealed) return;
+      var p = forecast.plan, f = world.history[forecast.result.generation];
+      var text = 'Living Island · round forecast · seed ' + world.seed + ' · G' + (p.generation - 1) + ' → G' + p.generation + '\nForecast: ' + forecast.guess + ' / ' + p.count + ' survivors.\nRecorded survivors: ' + f.survivors.length + ' / ' + p.count + '. Offspring: ' + f.population.length + '.\nHabitat: ' + p.habitat + '. Trait selection: ' + p.selection + '. Expected survivor count: ' + p.expected.toFixed(3) + '.\nThe forecast was locked before this round ran. The expected count sums individual modeled probabilities; it is an average over repetitions with the same residents and conditions, not a guaranteed outcome. Chance affects each survival draw, and survival does not guarantee offspring.';
+      callbacks.current.onFinding(text, 'forecast');
+      setStatus(tx('forecast_saved', 'Forecast evidence saved to its own Learning Journal entry. Your written field note is preserved.'));
+    }
+    function recordChanceTrials(count, focus) {
+      var f = forecastDraft.current;
+      if (!f || !f.result || !f.revealed || !Number.isInteger(count) || count < 1 || count > IslandChanceTrials.limit) return;
+      var rows = Array.from({ length: count }, function(_, i) { return IslandChanceTrials.run(f.world, i + 1); });
+      if (focus) {
+        if (!Number.isInteger(focus.id) || !Number.isInteger(focus.index) || focus.index < 1 || focus.index > count) return;
+        var comparison = IslandChanceTrials.compare(f.world, f.result.survivors, focus.index);
+        var resident = comparison && comparison.rows.find(function(row) { return row.organism.id === focus.id; });
+        if (!resident) return;
+        var survived = rows.filter(function(row) { return row.survivors.indexOf(focus.id) >= 0; }).length;
+        var trialDraw = IslandChanceTrials.draw(f.world, focus.index, focus.id);
+        var evidence = 'Living Island · individual chance evidence · expedition seed ' + f.world.seed + ' · G' + (f.plan.generation - 1) + ' → G' + f.plan.generation + '\nIndividual #' + focus.id + ' (' + nameOf(focus.id) + '); habitat: ' + f.plan.habitat + '; trait selection: ' + f.plan.selection + '.\nModeled probability: ' + resident.chance.toFixed(6) + '. Recorded survival: ' + resident.recorded + '. Trial ' + focus.index + ' survival: ' + resident.trial + '; chance seed: ' + comparison.seed + '.\nSelected trial draw (0–1): ' + trialDraw.number + '; exact probability: ' + trialDraw.probability + '. Survival rule: draw < probability; at or above the threshold does not survive. This draw explains the selected survival-only trial.\nOriginal inherited traits (0–100): ' + IslandModel.traits.map(function(key) { return key + ' ' + (IslandModel.value(resident.organism, key) * 100).toFixed(3); }).join(', ') + '.\nIndividual survived ' + survived + ' / ' + count + ' explored trials. Selected comparison: survived in both ' + comparison.groups.both + ', recorded only ' + comparison.groups.recorded + ', trial only ' + comparison.groups.trial + ', neither ' + comparison.groups.neither + '.\nThese trials reuse the same original individual and modeled probability with fresh seeded survival draws. Observed survival frequency does not replace the modeled probability or guarantee a next outcome. Trial survival does not change the recorded life or produce offspring.';
+        callbacks.current.onFinding(evidence, 'chanceResident');
+        setStatus(tx('chance_resident_saved', 'Individual comparison saved to its own Learning Journal entry. Your trial summary and written notes are preserved.'));
+        return;
+      }
+      var counts = rows.map(function(row) { return row.count; }), mean = counts.reduce(function(sum, n) { return sum + n; }, 0) / count;
+      var text = 'Living Island · chance trials · expedition seed ' + f.world.seed + ' · G' + (f.plan.generation - 1) + ' → G' + f.plan.generation + '\nSame ' + f.plan.count + ' parents; habitat: ' + f.plan.habitat + '; trait selection: ' + f.plan.selection + '. Recorded survivors: ' + f.result.actual + '. Original forecast: ' + f.guess + '.\nExpected count: ' + f.plan.expected.toFixed(3) + '. ' + count + ' survival-only trials: ' + counts.join(', ') + '.\nTrial range: ' + Math.min.apply(null, counts) + '–' + Math.max.apply(null, counts) + '; trial average: ' + mean.toFixed(3) + '.\nChance seeds (trial order): ' + rows.map(function(row) { return row.seed; }).join(', ') + '.\nEvery trial reuses all the original parents and their probabilities with a separate seeded survival stream. No offspring are produced; the recorded island history is unchanged. A small sample need not average to the expected count and does not establish a general conclusion about other populations or habitats.';
+      callbacks.current.onFinding(text, 'chanceTrials');
+      setStatus(tx('chance_saved', 'Chance trials saved to their own Learning Journal entry. Your forecast and written field note are preserved.'));
     }
     function finishWatch() {
+      var button = forecast ? forecastButtonRef : watchButtonRef;
       closeReel();
-      setTimeout(function() { if (watchButtonRef.current && !watchButtonRef.current.disabled) watchButtonRef.current.focus(); else reveal(stageRef); }, 0);
+      setTimeout(function() { if (button.current && !button.current.disabled) button.current.focus(); else reveal(stageRef); }, 0);
     }
     R.useEffect(function() {
       if (!playing) return;
@@ -2023,7 +2621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       else if (_motionQuery && _motionQuery.addListener) _motionQuery.addListener(motion);
       return function() { document.removeEventListener('visibilitychange', pauseHidden); if (_motionQuery && _motionQuery.removeEventListener) _motionQuery.removeEventListener('change', motion); else if (_motionQuery && _motionQuery.removeListener) _motionQuery.removeListener(motion); };
     }, []);
-    function inspect(id) { stopReel(); setPlaying(false); setSelected(Number(id)); }
+    function inspect(id) { stopReel(); setPlaying(false); setLifeView(null); if (Number(id) !== selectedId) setParentVisit(null); setSelected(Number(id)); }
     function visitFamily(generation) {
       if (!chronicle) return;
       var target = chronicle.frames[generation - chronicle.founder.born]; if (!target) return;
@@ -2068,11 +2666,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       } else { visitFamily(world.generation); revealDesk('families', journeyRef); }
     }
     function visitOrganism(id) { var o = all[id]; if (!o) return; setPlaying(false); setCursor(o.born); setReplayPhase('offspring'); inspect(id); }
+    function openBirthComparison() {
+      chooseDesk('families');
+      setTimeout(function() {
+        var box = birthCompareRef.current;
+        if (!box) return;
+        box.open = true;
+        var summary = box.querySelector('summary');
+        if (summary) { summary.scrollIntoView({ block: 'start' }); summary.focus({ preventScroll: true }); }
+      }, 0);
+    }
+    function visitBirthParent(parentId) {
+      if (!connections || connections.organism.parents.indexOf(parentId) < 0) return;
+      var childId = connections.organism.id;
+      visitOrganism(parentId); setReelOpen(true); chooseDesk('families');
+      setRangeView(function(value) { return value + 1; });
+      setParentVisit({ parentId: parentId, childId: childId });
+      setTimeout(function() { reveal(lifeRef); }, 0);
+    }
+    var returnChild = parentVisit && parentVisit.parentId === selectedId && all[parentVisit.childId] && all[parentVisit.childId].parents.indexOf(selectedId) >= 0 ? all[parentVisit.childId] : null;
+    R.useEffect(function() { if (parentVisit && !returnChild) setParentVisit(null); }, [world.seed, selectedId, returnChild]);
+    function returnToBirthChild() {
+      if (!returnChild) return;
+      visitOrganism(returnChild.id); setReelOpen(true);
+      setRangeView(function(value) { return value + 1; });
+      openBirthComparison();
+    }
+    function visitLife(chapter) {
+      if (!connections || (chapter !== 'birth' && !connections.round)) return;
+      var gen = chapter === 'birth' ? connections.organism.born : connections.round.generation, targetPhase = chapter === 'birth' ? 'offspring' : chapter;
+      // Even the present birth cohort uses its recorded habitat, not queued settings.
+      setPlaying(false); setCursor(gen); setReplayPhase(targetPhase); setReelOpen(true);
+      setRangeView(function(value) { return value + 1; });
+      setLifeView({ id: selectedId, generation: gen, phase: targetPhase, chapter: chapter });
+      setTimeout(function() { reveal(stageRef); }, 0);
+    }
+    var lifeContext = lifeView && connections && lifeView.id === selectedId && lifeView.generation === cursor && lifeView.phase === phase && recordedView ?
+      lifeView.chapter === 'birth' ? tx('life_scene_birth', 'Here with its birth generation. Its inherited traits are already set.') :
+      lifeView.chapter === 'parents' ? tx('life_scene_parents', 'Here before the survival draw, in the habitat it actually faced.') :
+      lifeView.chapter === 'survivors' ? connections.round.survived ? tx('life_scene_survived', 'Still here among the recorded survivors. Its traits have not changed.') : tx('life_scene_absent', 'Absent from this survivor group: it did not survive this round. Rewind to see it before survival.') :
+      connections.children.length + ' ' + tx('life_scene_children', 'direct offspring in this new generation. You are viewing the entire offspring cohort; surviving parents are no longer residents.') : null;
     function showPhase(value, generation) {
       var gen = generation == null ? cursor : generation;
       var keepWatch = watchActive.current === gen;
       setPlaying(false); setCursor(gen); setReplayPhase(value); setReelOpen(true);
-      if (keepWatch) { watchActive.current = gen; setWatchGeneration(gen); }
+      if (keepWatch) { watchActive.current = gen; setWatchGeneration(gen); if (forecast && forecast.result && forecast.result.generation === gen) setForecast(Object.assign({}, forecast, { revealed: forecast.revealed || value !== 'parents' })); }
       if (missionProgress && missionProgress.ready && gen === missionProgress.end) setMission(Object.assign({}, mission, { reviewedAt: gen }));
     }
     function startMission(kind) {
@@ -2155,7 +2793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
     function changeHabitat(key) { setPlaying(false); setCursor(world.generation); setReplayPhase('offspring'); save(Object.assign({}, current.current, { habitat: key, living: false })); setStatus(tx('habitat_queued', 'Habitat changed. Run the next generation to test survival here. Living climate is now off so you can control this experiment.')); }
     function setting(key, value) { closeReel(); setPlaying(false); setReplayPhase('offspring'); var change = {}; change[key] = value; save(Object.assign({}, current.current, change)); }
-    function restart(seed) { setDesk('explore'); var next = IslandModel.create(seed); setPlaying(false); setMission(null); setNotes({}); setIntroDismissed(false); setLens('natural'); setFamilyTrait('fur'); setNames({}); setLastTrial(null); setDetective(null); setHighlights([]); setComparing(false); setReplayPhase('offspring'); setPrediction(null); setPredictionChoice(''); setCursor(0); setSelected(null); setTracked(null); setSeedText(String(next.seed)); save(next); setResetOpen(false); setStatus(tx('new_world_status', 'A fresh population is ready. Start by meeting a spriglet.')); }
+    function restart(seed) { setCompassOpen(false); setDesk('explore'); var next = IslandModel.create(seed); setPlaying(false); setMission(null); setNotes({}); setIntroDismissed(false); setLens('natural'); setSpotlightBin(null); setFamilyTrait('fur'); setNames({}); setLastTrial(null); setDetective(null); setHighlights([]); setComparing(false); setReplayPhase('offspring'); setPrediction(null); setPredictionChoice(''); setCursor(0); setSelected(null); setTracked(null); setSeedText(String(next.seed)); save(next); setResetOpen(false); setStatus(tx('new_world_status', 'A fresh population is ready. Start by meeting a spriglet.')); }
     function recordPrediction() { if (!predictionChoice || !frame.population.length) return; setPrediction({ start: world.generation, mean: world.history[world.generation].stats.means.fur, choice: predictionChoice, habitat: world.habitat }); setStatus(tx('prediction_saved', 'Prediction locked. Observe five more generations, then compare the evidence.')); }
     var evaluated = prediction && (world.generation >= prediction.start + 5 || !world.history[world.generation].population.length);
     var predFrame = evaluated ? world.history[Math.min(world.generation, prediction.start + 5)] : null;
@@ -2163,6 +2801,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     var observed = difference == null ? 'extinct' : Math.abs(difference) < 0.03 ? 'same' : difference > 0 ? 'more' : 'less';
     var choices = { more: tx('more_fur', 'More insulation'), less: tx('less_fur', 'Less insulation'), same: tx('same_fur', 'Little change (under 3 points)') };
     var extinct = !world.history[world.generation].population.length, ended = extinct || world.generation >= 60;
+    // The compass only locates recorded evidence; opening or following it never draws from the model RNG.
+    var compassResident = sceneFrame.population.find(function(o) { return o.id === selectedId; }) || sceneFrame.population[0] || world.history[0].population[0] || null;
+    var compassFamily = all[trackedId] || selected || compassResident;
+    var compassBirth = R.useMemo(function() {
+      if (selected && selected.parents.length === 2) return selected;
+      for (var g = world.history.length - 1; g >= 0; g--) {
+        var child = world.history[g].population.find(function(o) { return o.parents.length === 2; });
+        if (child) return child;
+      }
+      return null;
+    }, [selected, world.history]);
+    function compassSpecimen(o) { return o ? nameOf(o.id) + ' · #' + o.id + ' · ' + tx('compass_born', 'Born in generation') + ' ' + o.born : ''; }
+    var compassPresentReason = !live ? tx('compass_need_present', 'Return to the present generation to begin this investigation.') : ended ? (extinct ? tx('compass_extinct', 'This population is extinct. Its recorded story is still yours to explore.') : tx('compass_finished', 'This expedition has reached generation 60. Explore its recorded discoveries.')) : '';
+    var compassItems = [
+      { key: 'meet', label: tx('compass_variation', 'Variation'), title: tx('compass_meet_question', 'What makes a spriglet different?'),
+        description: tx('compass_meet_help', 'Meet an individual and explore its inherited traits on the island.'), context: compassSpecimen(compassResident),
+        action: tx('compass_meet_action', 'Meet a resident'), reason: compassResident ? '' : tx('compass_no_residents', 'This expedition has no recorded individuals.') },
+      { key: 'predict', label: tx('compass_selection', 'Survival & chance'), title: watching ? tx('compass_round_question', 'What happened in your round?') : tx('compass_predict_question', 'Can you predict survival?'),
+        description: watching ? tx('compass_round_help', 'Return to the recorded round. Reveal survivors, explore chance, and meet the offspring.') : forecasting ? tx('compass_draft_help', 'Your prediction is waiting. Pick up exactly where you left off.') : tx('compass_predict_help', 'Make a forecast, reveal the survivors, then discover how chance affects the result.'),
+        action: watching ? tx('compass_round_action', 'Continue this round') : forecasting ? tx('compass_draft_action', 'Continue your prediction') : tx('compass_predict_action', 'Make a prediction'), reason: forecasting || watching ? '' : compassPresentReason },
+      { key: 'family', label: tx('compass_family', 'Generations'), title: tx('compass_family_question', 'How does a family change?'),
+        description: tx('compass_family_help', 'Follow a family through the generations and look for changes among its descendants.'), context: compassSpecimen(compassFamily),
+        action: tx('compass_family_action', 'Follow a family'), reason: compassFamily ? '' : tx('compass_no_residents', 'This expedition has no recorded individuals.') },
+      { key: 'birth', label: tx('compass_inheritance', 'Inheritance'), title: tx('compass_birth_question', 'Where do inherited traits come from?'),
+        description: tx('compass_birth_help', 'Trace a real offspring back to its parents and inspect the record of its birth.'), context: compassSpecimen(compassBirth),
+        action: tx('compass_birth_action', 'Trace an inheritance'), reason: compassBirth ? '' : ended ? tx('compass_no_birth', 'This expedition has no recorded offspring. Explore its founders and survival evidence.') : tx('compass_need_birth', 'A recorded birth is needed. Run a generation to look for offspring.') },
+      { key: 'futures', label: tx('compass_experiment', 'Experiment'), title: tx('compass_futures_question', 'Can the same start lead elsewhere?'),
+        description: tx('compass_futures_help', 'Set up two copies of your population, change one condition, and compare their futures.'),
+        action: tx('compass_futures_action', 'Compare two futures'), reason: compassPresentReason || (world.generation > 55 ? tx('compass_need_time', 'A comparison needs five generations left. Explore recorded evidence or start a new expedition.') : '') },
+      { key: 'moments', label: tx('compass_evidence', 'Evidence'), title: tx('compass_moments_question', 'What happened along the way?'),
+        description: tx('compass_moments_help', 'Revisit your expedition highlights and turn a recorded moment into evidence.'),
+        action: tx('compass_moments_action', 'Find a recorded moment'), reason: world.generation ? '' : tx('compass_need_history', 'Record a generation to begin exploring the expedition story.') }
+    ];
+    var compassRecommended = forecasting || watching ? 'predict' : !selected && compassResident ? 'meet' : !compassPresentReason ? 'predict' : compassBirth ? 'birth' : compassFamily ? 'family' : world.generation ? 'moments' : null;
+    function chooseDiscovery(key) {
+      var item = compassItems.find(function(entry) { return entry.key === key; });
+      if (!item || item.reason) return;
+      setCompassOpen(false);
+      if (key === 'meet') {
+        if (sceneFrame.population.some(function(o) { return o.id === compassResident.id; })) inspect(compassResident.id); else visitOrganism(compassResident.id);
+        revealDesk('explore', residentRef);
+      } else if (key === 'predict') {
+        if (forecasting || watching) setTimeout(function() { reveal(watching ? watchGuideRef : forecastRef); }, 0); else openForecast();
+      } else if (key === 'family') { setTracked(compassFamily.id); inspect(compassFamily.id); revealDesk('families', journeyRef); }
+      else if (key === 'birth') { visitOrganism(compassBirth.id); revealDesk('families', inheritanceRef); }
+      else if (key === 'futures') revealDesk('investigate', futuresRef);
+      else if (key === 'moments') revealDesk('evidence', highlightsRef);
+    }
+    function compassPresent() { setCursor(world.generation); setReplayPhase('offspring'); setTimeout(function() { reveal(compassRef); }, 0); }
+
     var previous = cursor ? world.history[cursor - 1] : null;
     var story = !cursor ? tx('arrival_story', '36 spriglets have arrived, each with a different mix of inherited traits. Meet one, make a prediction, then advance a generation.') :
       frame.population.length ? frame.survivors.length + ' / ' + previous.population.length + ' ' + tx('survived_story', 'survived to breed. Their offspring form the new generation. Parents keep their original traits.') : tx('extinct_story', 'Fewer than two spriglets survived to breed. This population left no next generation. Rewind to investigate, or start a new expedition.');
@@ -2184,36 +2872,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('div', { className: 'ei-row' }, h('button', { type: 'button', onClick: function() { setPlaying(false); props.onMenu(); } }, tx('all_labs', '← All EvoLab activities')), h('button', { type: 'button', onClick: function() { setPlaying(false); props.onJournal(); } }, tx('journal', 'Field journal ↗')))),
       h('div', { className: 'ei-shell' },
         !comparing && h('nav', { className: 'ei-discovery-nav', 'aria-label': tx('discovery_nav', 'Explore the expedition') },
+          h('button', { type: 'button', ref: compassButton, className: 'ei-compass-launch', 'aria-expanded': compassOpen, 'aria-controls': compassOpen ? 'ei-discovery-compass' : undefined, onClick: compassOpen ? closeCompass : openCompass }, tx('compass_title', 'Discovery compass')),
           h('button', { type: 'button', ref: introButton, onClick: reopenIntro }, tx('intro_title', 'Your first discovery')),
           h('button', { type: 'button', onClick: function() { revealDesk('investigate', questionsRef); } }, mission ? tx('intro_active_question', 'Your investigation') + ' · ' + Math.min(missionProgress.elapsed, missionProgress.total) + '/' + missionProgress.total : tx('intro_questions', 'Choose a question')),
           h('button', { type: 'button', onClick: function() { revealDesk('investigate', futuresRef); } }, tx('intro_futures', 'Two futures')),
           h('button', { type: 'button', onClick: function() { revealDesk('evidence', highlightsRef); } }, tx('highlights_title', 'Expedition highlights')),
           chronicle && h('button', { type: 'button', onClick: function() { revealDesk('families', journeyRef); } }, tx('journey_title', 'Family journey'))),
+        !comparing && compassOpen && h(IslandDiscoveryCompass, { React: R, tx: tx, sectionRef: compassRef, cursor: cursor, generation: world.generation, live: live, items: compassItems, recommended: compassRecommended, onClose: closeCompass, onChoose: chooseDiscovery, onPresent: compassPresent }),
         !comparing && !introDismissed && h(IslandFirstDiscovery, { React: R, tx: tx, sectionRef: introRef, live: live,
           step: !selected && !chronicle ? 0 : !chronicle ? 1 : world.generation === chronicle.founder.born && !ended ? 2 : 3,
           organism: chronicle ? chronicle.founder : selected, nameOf: nameOf, onAction: firstDiscovery, onDismiss: dismissIntro }),
         comparing && h(IslandComparison, { React: R, tx: tx, world: world, reduced: reduced, onClose: closeComparison, onSummary: setLastTrial, onRecord: recordComparison }),
         !comparing && h('div', { className: 'ei-commandbar', ref: commandRef }, h('div', { className: 'ei-transport' },
                 h('div', { className: 'ei-row ei-between' }, h('div', { className: 'ei-row' },
-                  h('button', { type: 'button', ref: watchButtonRef, className: 'ei-primary', disabled: ended || !live || playing || watching, onClick: watchNext }, tx('watch_next', 'Watch a generation')),
-                  h('button', { type: 'button', disabled: ended || watching, onClick: function() { setCursor(world.generation); setReplayPhase('offspring'); setPlaying(!playing); } }, playing ? tx('pause', 'Ⅱ Pause evolution') : tx('play', '▶ Play evolution')),
-                  h('button', { type: 'button', disabled: ended || !live || playing || watching, onClick: advance }, tx('step', 'Next generation →')))),
+                  h('button', { type: 'button', ref: watchButtonRef, className: 'ei-primary', disabled: ended || !live || playing || watching || forecasting, onClick: watchNext }, tx('watch_next', 'Watch a generation')),
+                  h('button', { type: 'button', disabled: ended || watching || forecasting, onClick: function() { setCursor(world.generation); setReplayPhase('offspring'); setPlaying(!playing); } }, playing ? tx('pause', 'Ⅱ Pause evolution') : tx('play', '▶ Play evolution')),
+                  h('button', { type: 'button', disabled: ended || !live || playing || watching || forecasting, onClick: advance }, tx('step', 'Next generation →')))),
                 !watching && !reelOpen && live && nextRound && h('div', { className: 'ei-next-round', 'aria-label': tx('next_conditions', 'Next generation conditions'), 'data-next-habitat': nextRound.habitat, 'data-next-generation': nextRound.generation },
                   h('strong', null, tx('next_round', 'Next round') + ' · G' + nextRound.generation + ' · ' + IslandModel.habitats[nextRound.habitat].icon + ' ' + tx('habitat_' + nextRound.habitat, IslandModel.habitats[nextRound.habitat].name)),
-                  h('small', null, nextRound.event === 'climate' ? tx('next_climate', 'Living climate changes the habitat before survival.') : tx('next_fixed', 'The selected habitat applies before survival.'), ' ', nextRound.selection ? tx('next_traits', 'Traits and chance both matter.') : tx('next_neutral', 'Trait-neutral survival.'))),
+                  h('small', null, nextRound.event === 'climate' ? tx('next_climate', 'Living climate changes the habitat before survival.') : tx('next_fixed', 'The selected habitat applies before survival.'), ' ', nextRound.selection ? tx('next_traits', 'Traits and chance both matter.') : tx('next_neutral', 'Trait-neutral survival.')), h('button', { type: 'button', ref: forecastButtonRef, className: 'ei-forecast-launch', disabled: forecasting || playing, onClick: openForecast }, tx('forecast_open', 'Predict this round'))),
                 mission && h('button', { type: 'button', className: 'ei-mission-link', onClick: function() { revealDesk('investigate', questionsRef); } }, tx('intro_active_question', 'Your investigation') + ' · ' + Math.min(missionProgress.elapsed, missionProgress.total) + '/' + missionProgress.total),
-                h('div', { className: 'ei-generations' }, h('label', { htmlFor: 'ei-time' }, tx('rewind', 'Time travel')), h('input', { id: 'ei-time', type: 'range', min: 0, max: world.generation, value: cursor, disabled: world.generation === 0, 'aria-valuetext': tx('generation', 'Generation') + ' ' + cursor + ' / ' + world.generation, onChange: function(e) { setPlaying(false); setReplayPhase('offspring'); setCursor(Number(e.target.value)); } }), h('span', { className: 'ei-generation' }, cursor + ' / ' + world.generation), h('label', { className: 'ei-row ei-pace' }, h('span', null, tx('pace', 'Pace')), h('select', { className: 'ei-speed', 'aria-label': tx('pace', 'Pace'), value: speed, onChange: function(e) { setSpeed(Number(e.target.value)); } }, h('option', { value: 1800 }, '1×'), h('option', { value: 900 }, '2×'), h('option', { value: 450 }, '4×')))),
+                h('div', { className: 'ei-generations' }, h('label', { htmlFor: 'ei-time' }, tx('rewind', 'Time travel')), h('input', { id: 'ei-time', type: 'range', min: 0, max: world.generation, value: cursor, disabled: world.generation === 0 || forecasting, 'aria-valuetext': tx('generation', 'Generation') + ' ' + cursor + ' / ' + world.generation, onChange: function(e) { setPlaying(false); setReplayPhase('offspring'); setCursor(Number(e.target.value)); } }), h('span', { className: 'ei-generation' }, cursor + ' / ' + world.generation), h('label', { className: 'ei-row ei-pace' }, h('span', null, tx('pace', 'Pace')), h('select', { className: 'ei-speed', 'aria-label': tx('pace', 'Pace'), value: speed, onChange: function(e) { setSpeed(Number(e.target.value)); } }, h('option', { value: 1800 }, '1×'), h('option', { value: 900 }, '2×'), h('option', { value: 450 }, '4×')))),
                 !live && h('button', { type: 'button', onClick: function() { setReplayPhase('offspring'); setCursor(world.generation); } }, tx('return_present', 'Return to present')),
                 h('p', { className: 'ei-report-announcement', role: playing || watching ? undefined : 'status', 'aria-live': playing || watching ? 'off' : 'polite' }, story),
                 ended && h('div', { className: 'ei-callout ei-warning' }, extinct ? tx('extinction', 'Your population went extinct. This is evidence to investigate, not a failed score. Rewind the timeline and inspect the last breeding generation.') : tx('finished', '60 generations recorded. Your expedition is complete: explore the timeline, export your data, and explain what changed.')))),
         !comparing && h('div', { className: 'ei-board ei-workspace' },
-          h('main', { className: 'ei-main', tabIndex: 0, 'aria-label': tx('desk_island_pane', 'Island and generation report') }, watching && h(IslandRoundWalkthrough, { React: R, tx: tx, sectionRef: watchGuideRef, chapter: IslandObservation.chapter(world, cursor, phase, lens === 'natural' ? replayTrait : lens), habitat: tx('habitat_' + shownHabitat, env.name), onPhase: showPhase, onFinish: finishWatch }), h('section', { className: 'ei-stage', ref: stageRef, tabIndex: -1, 'aria-label': tx('habitat_view', 'Habitat and generation controls') },
+          h('main', { className: 'ei-main', tabIndex: 0, 'aria-label': tx('desk_island_pane', 'Island and generation report') }, forecasting && h(IslandRoundForecast, { React: R, tx: tx, plan: forecast.plan, sectionRef: forecastRef, onRun: runForecast, onCancel: cancelForecast }), watching && h(IslandRoundWalkthrough, { React: R, tx: tx, sectionRef: watchGuideRef, chapter: IslandObservation.chapter(world, cursor, phase, IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens), habitat: tx('habitat_' + shownHabitat, env.name), onPhase: showPhase, onFinish: finishWatch, forecast: forecast && forecast.result && forecast.result.generation === cursor ? forecast : null, onRecordForecast: recordForecast, onRecordChance: recordChanceTrials, nameOf: nameOf }), h('section', { className: 'ei-stage', ref: stageRef, tabIndex: -1, 'aria-label': tx('habitat_view', 'Habitat and generation controls') },
               h('div', { className: 'ei-stage-top' }, h('div', { className: 'ei-stage-label' }, h('strong', null, env.icon + ' ' + tx('habitat_' + shownHabitat, env.name)), h('small', null, tx('seed', 'World seed') + ' ' + world.seed)),
                 h('div', { className: 'ei-stage-label' }, h('strong', { 'data-island-generation': cursor }, h('span', { className: 'ei-live-dot' }), tx('generation', 'Generation') + ' ' + cursor), h('small', { 'data-island-phase': phase }, phase === 'parents' ? tx('viewing_parents', 'Replay · parent population') : phase === 'survivors' ? tx('viewing_survivors', 'Replay · actual survivors') : reelOpen ? tx('viewing_recorded_offspring', 'Replay · recorded offspring') : live ? tx('present', 'Present day') : tx('past', 'Looking into the past')))),
-              h(IslandScene, { React: R, tx: tx, frame: sceneFrame, layoutPopulation: phase === 'survivors' ? transition.parents : null, habitat: shownHabitat, seed: world.seed, selected: selectedId, selectedName: selected ? nameOf(selected.id) : null, family: family, lens: lens, moving: !reelOpen && phase === 'offspring' && (moving || playing), reduced: reduced, onSelect: function(id) { inspect(id); setDesk('explore'); setTimeout(function() { reveal(residentRef); }, 0); } }),
-              h(IslandLenses, { React: R, tx: tx, lens: lens, onLens: changeLens, population: sceneFrame.population, selected: selectedId, onInspect: inspect, nameOf: nameOf, labels: labels }),
+              h(IslandScene, { React: R, tx: tx, frame: sceneFrame, layoutPopulation: phase === 'survivors' ? transition.parents : null, habitat: shownHabitat, selection: shownSelection, seed: world.seed, selected: selectedId, selectedName: selected ? nameOf(selected.id) : null, family: family, lens: lens, spotlight: spotlight, rangeView: rangeView, moving: !reelOpen && phase === 'offspring' && (moving || playing), reduced: reduced, onSelect: function(id) { inspect(id); setDesk('explore'); setTimeout(function() { reveal(residentRef); }, 0); } }),
+              lifeContext && h('div', { className: 'ei-life-context', role: 'status' }, h('div', null, h('strong', null, nameOf(selectedId) + ' · #' + selectedId), h('p', { className: 'ei-small' }, lifeContext)), h('button', { type: 'button', onClick: function() { revealDesk('families', lifeRef); } }, tx('life_back', 'Back to life story'))),
+              h(IslandLenses, { React: R, tx: tx, habitat: shownHabitat, selection: shownSelection, recorded: recordedView, nextRound: nextRound, transition: transition, lens: lens, onLens: changeLens, population: sceneFrame.population, selected: selectedId, onInspect: inspect, nameOf: nameOf, labels: labels, variation: variation, comparison: variationComparison, phase: phase, spotlightBin: spotlightBin, onSpotlight: chooseSpotlight, onMeetSpotlight: meetSpotlight, onFindSpotlight: function() { stopReel(); setPlaying(false); setRangeView(function(n) { return n + 1; }); reveal(stageRef); }, onPhase: showPhase }),
               transition && h(IslandPhaseControls, { React: R, tx: tx, data: transition, phase: phase, onPhase: function(value) { showPhase(value); } }),
-              transition && !watching && h(IslandGenerationStory, { React: R, tx: tx, chapter: IslandObservation.chapter(world, cursor, phase, lens === 'natural' ? replayTrait : lens), label: labels[lens === 'natural' ? replayTrait : lens], open: reelOpen, playing: reelPlaying, onPlay: startReel, onPause: stopReel, onClose: closeReel })), briefing ? h(IslandFieldReport, { React: R, tx: tx, report: briefing, labels: labels, nameOf: nameOf,
+              transition && !watching && h(IslandGenerationStory, { React: R, tx: tx, chapter: IslandObservation.chapter(world, cursor, phase, IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens), label: labels[IslandModel.traits.indexOf(lens) < 0 ? replayTrait : lens], open: reelOpen, playing: reelPlaying, onPlay: startReel, onPause: stopReel, onClose: closeReel })), briefing ? h(IslandFieldReport, { React: R, tx: tx, report: briefing, labels: labels, nameOf: nameOf,
               onReplay: function(trait) { changeLens(trait); showPhase('survivors'); reveal(stageRef); },
               onInspect: function(id) { setDesk('explore'); visitOrganism(id); reveal(stageRef); } }) :
             h('div', { className: 'ei-loop', 'aria-label': tx('generation_summary', 'Generation summary') },
@@ -2248,6 +2939,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('button', { type: 'button', disabled: !sceneFrame.population.length, onClick: function() { nextResident(1); }, 'aria-label': tx('next_resident', 'Next resident') }, '→')),
               selected ? h(R.Fragment, null,
                 h('div', { className: 'ei-organism' }, h(IslandPortrait, { React: R, organism: selected }), h('div', null, h('h3', null, nameOf(selected.id)), h('p', { className: 'ei-small' }, tx('spriglet', 'Spriglet') + ' #' + selected.id), h('p', { className: 'ei-small' }, tx('born', 'Born in generation') + ' ' + selected.born), h('span', { className: 'ei-tag' }, selected.mutations + ' ' + tx('new_variants', 'new mutations')))),
+                h('button', { type: 'button', className: 'ei-life-link', onClick: function() { revealDesk('families', lifeRef); } }, h('strong', null, tx('life_follow', 'Follow this life')), h('small', null, connections.round ? (connections.round.survived ? tx('life_survived', 'Survived') : tx('life_died', 'Did not survive')) + ' · ' + connections.children.length + ' ' + tx('direct_children', 'direct offspring') : tx('life_unwritten', 'Its next chapter is still unwritten'))),
+                selected.parents.length === 2 && h('button', { type: 'button', className: 'ei-birth-shortcut', onClick: openBirthComparison }, h('strong', null, tx('birth_compare', 'Compare with parents')), h('small', null, tx('birth_compare_shortcut', 'Explore the traits and allele choices behind this birth'))),
                 h(IslandNameEditor, { key: selected.id, React: R, tx: tx, name: names[selected.id], onSave: rename }),
                 IslandModel.traits.map(traitLine),
                 h('p', { className: 'ei-small' }, tx('survival_outlook', 'Model survival chance in this habitat') + ': ' + fmt(IslandModel.chance(selected, env, shownSelection)) + '. ' + tx('chance_help', 'A probability, not a guarantee.')),
@@ -2259,7 +2952,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               trackedId != null && h('div', { className: 'ei-callout' }, h('strong', null, tx('family_of', 'Family of') + ' #' + trackedId), h('p', null, descendants.length + ' ' + tx('descendants', 'descendants in this generation.')), descendants.length > 0 && h('button', { type: 'button', onClick: function() { inspect(descendants[0].id); } }, tx('meet_descendant', 'Meet a descendant')), h('p', { className: 'ei-small' }, tx('family_help', 'A descendant may inherit no particular allele from a distant ancestor. Relatedness is not identical traits.')))))),
               h('div', { id: 'ei-panel-families', role: 'tabpanel', 'aria-labelledby': 'ei-tab-families', hidden: desk !== 'families', tabIndex: 0, className: 'ei-stack' },
                 !connections && h('div', { className: 'ei-card ei-stack' }, h('h2', null, tx('desk_meet', 'Every family starts with someone')), h('p', { className: 'ei-small' }, tx('desk_meet_help', 'Choose a spriglet on the island, then trace its parents, offspring, and inherited traits.')), h('button', { type: 'button', onClick: function() { chooseDesk('explore'); nextResident(0); } }, tx('surprise_resident', 'Meet someone new'))),
-                h(IslandFamilyJourney, { React: R, tx: tx, data: chronicle, generation: cursor, trait: familyTrait, labels: labels, onTrait: changeFamilyTrait, onTraitFind: findFamilyTrait, onRecord: recordFamilyTrait, nameOf: nameOf, selected: selectedId, sectionRef: journeyRef, onVisit: visitFamily, onMeet: meetRelative, onFind: function(id) { visitOrganism(id); reveal(stageRef); } }), h(IslandFamily, { React: R, tx: tx, family: connections, labels: labels, nameOf: nameOf, onVisit: visitOrganism, visible: desk === 'families' && !playing && !reelPlaying, inheritanceRef: inheritanceRef, onWatch: function() { stopReel(); setPlaying(false); } })),
+                connections && h(IslandLifeStory, { key: world.seed + ':' + selectedId, React: R, tx: tx, world: world, labels: labels, family: connections, nameOf: nameOf, sectionRef: lifeRef, birthCompareRef: birthCompareRef, returnChild: returnChild, onParent: visitBirthParent, onReturnChild: returnToBirthChild, onPause: function() { stopReel(); setPlaying(false); }, onVisit: visitLife, onChild: function(id) { visitOrganism(id); setTimeout(function() { reveal(lifeRef); }, 0); } }),
+                 h(IslandFamilyJourney, { React: R, tx: tx, data: chronicle, generation: cursor, trait: familyTrait, labels: labels, onTrait: changeFamilyTrait, onTraitFind: findFamilyTrait, onRecord: recordFamilyTrait, nameOf: nameOf, selected: selectedId, sectionRef: journeyRef, onVisit: visitFamily, onMeet: meetRelative, onFind: function(id) { visitOrganism(id); reveal(stageRef); } }), h(IslandFamily, { React: R, tx: tx, family: connections, labels: labels, nameOf: nameOf, onVisit: visitOrganism, visible: desk === 'families' && !playing && !reelPlaying, inheritanceRef: inheritanceRef, onWatch: function() { stopReel(); setPlaying(false); } })),
               h('div', { id: 'ei-panel-investigate', role: 'tabpanel', 'aria-labelledby': 'ei-tab-investigate', hidden: desk !== 'investigate', tabIndex: 0, className: 'ei-stack' }, h(IslandSurvivalDetective, { React: R, tx: tx, record: detective, data: detectiveData, labels: labels, colors: colors, nameOf: nameOf, canStart: live && !ended && frame.population.length >= 2, onStart: startDetective, onLock: lockDetective, onRun: runDetective, onRecord: recordDetective, onReplay: function() { chooseDesk('evidence'); showPhase('survivors', detective.start + 1); reveal(stageRef); }, onInspect: function(id) { chooseDesk('explore'); visitOrganism(id); reveal(stageRef); } }), h(IslandInvestigations, { React: R, tx: tx, sectionRef: questionsRef, mission: mission, progress: missionProgress, badges: Object.keys(notes), canStart: live && !ended, ended: ended, generation: world.generation, playing: playing, onStart: startMission, onAdvance: advance, onChoose: function() { setPlaying(false); setMission(null); }, onReview: function() { setDesk('evidence'); showPhase('survivors', missionProgress.end); }, onRecord: recordMission }),
         h('section', { className: 'ei-trial-launch', ref: futuresRef, tabIndex: -1, 'aria-label': tx('trial_launch', 'Compare two futures') },
           h('div', null, h('div', { className: 'ei-kicker' }, tx('trial_launch_kicker', 'A new way to investigate')), h('h2', null, tx('trial_launch', 'Compare two futures')),
@@ -2636,6 +3330,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         livingIslandHighlights: t('stem.evolab.island_note_highlights', 'Living Island · collected moments'),
         livingIslandTraitTrail: t('stem.evolab.island_note_trait_trail', 'Living Island · family trait evidence'),
         livingIslandDetective: t('stem.evolab.island_note_detective', 'Living Island · survival detective'),
+        livingIslandForecast: t('stem.evolab.island_note_forecast', 'Living Island · round forecast'),
+        livingIslandChanceTrials: t('stem.evolab.island_note_chance_trials', 'Living Island · chance trials'),
+        livingIslandChanceResident: t('stem.evolab.island_note_chance_resident', 'Living Island · individual chance evidence'),
         livingIslandComparison: t('stem.evolab.island_note_comparison', 'Living Island · two futures'),
         livingIslandCold: t('stem.evolab.island_note_cold', 'Living Island — Cold snap'),
         livingIslandFamily: t('stem.evolab.island_note_family', 'Living Island — Family detective'),
@@ -16145,7 +16842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         onStudy: function(study) { upd('islandStudy', study); },
         onMenu: function() { goto('menu'); },
         onJournal: function() { goto('journal'); },
-        onFinding: function(text, investigation) { var noteKeys = { cold: 'livingIslandCold', family: 'livingIslandFamily', drift: 'livingIslandDrift', comparison: 'livingIslandComparison', detective: 'livingIslandDetective', traitTrail: 'livingIslandTraitTrail', highlights: 'livingIslandHighlights' }; saveNote(Object.prototype.hasOwnProperty.call(noteKeys, investigation) ? noteKeys[investigation] : 'livingIslandData', text); },
+        onFinding: function(text, investigation) { var noteKeys = { cold: 'livingIslandCold', family: 'livingIslandFamily', drift: 'livingIslandDrift', comparison: 'livingIslandComparison', detective: 'livingIslandDetective', traitTrail: 'livingIslandTraitTrail', highlights: 'livingIslandHighlights', forecast: 'livingIslandForecast', chanceTrials: 'livingIslandChanceTrials', chanceResident: 'livingIslandChanceResident' }; saveNote(Object.prototype.hasOwnProperty.call(noteKeys, investigation) ? noteKeys[investigation] : 'livingIslandData', text); },
         fieldNote: h(FieldNote, { moduleId: 'livingIsland', prompt: t('stem.evolab.island_note_prompt', 'What changed in your population? Use a before-and-after number, explain inheritance and survival, and name one limit of this model.') })
       });
       if (view === 'predatorVision') return h(stableType('PredatorVisionLab', PredatorVisionLab));

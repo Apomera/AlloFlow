@@ -145,6 +145,330 @@
     return letters.filter(function(letter) { return letter.trim(); });
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // ROOM DATA CHECKS
+  // Model output, saved rooms and teacher edits all pass through one checker.
+  // It repairs only what is broken, so a valid room keeps its exact content
+  // (and its score id). Puzzles that cannot be played are removed and reported.
+  // ═══════════════════════════════════════════════════════════════
+
+  var ESCAPE_PUZZLE_TYPES = ['mcq', 'sequence', 'cipher', 'matching', 'scramble', 'fillin'];
+  var ESCAPE_TYPE_ALIASES = {
+    multiplechoice: 'mcq', multiplechoicequestion: 'mcq', ordering: 'sequence', order: 'sequence',
+    matchingpairs: 'matching', match: 'matching', fillintheblank: 'fillin', fillintheblanks: 'fillin',
+    cloze: 'fillin', wordriddle: 'cipher', riddle: 'cipher', wordscramble: 'scramble', anagram: 'scramble'
+  };
+  var normalizeEscapePuzzleType = function(type) {
+    var normalized = String(type || '').toLowerCase().replace(/[^a-z]/g, '');
+    return ESCAPE_TYPE_ALIASES[normalized] || normalized;
+  };
+  var isPlainObject = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+  var escapeText = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' && isFinite(value) ? String(value) : ''); };
+  var hasText = function(value) { return escapeText(value).trim().length > 0; };
+  var sameEscapeWord = function(a, b) { return normalizeEscapeAnswer(a) === normalizeEscapeAnswer(b); };
+  var sameJson = function(a, b) { return JSON.stringify(a) === JSON.stringify(b); };
+  var isIndexOrder = function(order, count, base) {
+    if (!Array.isArray(order) || order.length !== count) return false;
+    var seen = {};
+    return order.every(function(value) {
+      var ok = Number.isInteger(value) && value >= base && value < count + base && !seen[value];
+      seen[value] = true;
+      return ok;
+    });
+  };
+  var uniqueEscapeId = function(base, taken) {
+    var id = base, n = 2;
+    while (taken[id]) id = base + '_' + (n++);
+    return id;
+  };
+  var withoutKeys = function(obj, keys) {
+    var out = {};
+    Object.keys(obj).forEach(function(key) { if (keys.indexOf(key) === -1) out[key] = obj[key]; });
+    return out;
+  };
+  // Distinct, non-empty words. The answer is always present, so the puzzle stays winnable.
+  var escapeWordList = function(list, answer) {
+    var words = [];
+    (Array.isArray(list) ? list : []).forEach(function(word) {
+      var text = escapeText(word);
+      if (hasText(text) && !words.some(function(w) { return sameEscapeWord(w, text); })) words.push(text);
+    });
+    var added = false;
+    if (hasText(answer) && !words.some(function(w) { return sameEscapeWord(w, answer); })) { words.push(escapeText(answer)); added = true; }
+    return { words: words, added: added };
+  };
+  // A changed answer replaces its old entry in the word bank rather than adding a stray word.
+  var replaceEscapeAnswer = function(list, oldAnswer, newAnswer) {
+    var words = (Array.isArray(list) ? list : []).slice();
+    var at = hasText(oldAnswer) ? words.findIndex(function(w) { return sameEscapeWord(w, oldAnswer); }) : -1;
+    if (at >= 0) words[at] = newAnswer;
+    else if (hasText(newAnswer) && !words.some(function(w) { return sameEscapeWord(w, newAnswer); })) words.push(newAnswer);
+    return words.filter(function(w, i) { return !hasText(w) || words.findIndex(function(x) { return sameEscapeWord(x, w); }) === i; });
+  };
+  var inferEscapePuzzleType = function(p) {
+    if (Array.isArray(p.options)) return 'mcq';
+    if (Array.isArray(p.items)) return 'sequence';
+    if (Array.isArray(p.pairs)) return 'matching';
+    if (hasText(p.encodedText) || hasText(p.riddle)) return 'cipher';
+    if (hasText(p.scrambledWord)) return 'scramble';
+    if (hasText(p.sentence)) return 'fillin';
+    return '';
+  };
+  var parseEscapeRoomJson = function(text) {
+    var cleaned = String(text == null ? '' : text).replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
+    var start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}');
+    var candidates = [cleaned];
+    if (start >= 0 && end > start) candidates.push(cleaned.slice(start, end + 1));
+    candidates.push(candidates[candidates.length - 1].replace(/,\s*([}\]])/g, '$1'));
+    for (var i = 0; i < candidates.length; i++) {
+      try { return JSON.parse(candidates[i]); } catch (e) {}
+    }
+    return null;
+  };
+
+  // Checks one puzzle. Returns { puzzle } (possibly a repaired copy) with notes for the
+  // teacher, or { error } when the puzzle cannot be played as written.
+  var checkEscapePuzzle = function(raw) {
+    var p = raw, notes = [];
+    var edit = function(patch) { if (p === raw) p = Object.assign({}, raw); Object.assign(p, patch); };
+    var type = normalizeEscapePuzzleType(raw.type);
+    if (ESCAPE_PUZZLE_TYPES.indexOf(type) === -1) type = inferEscapePuzzleType(raw);
+    if (!type) return { error: 'has an unsupported type "' + escapeText(raw.type) + '"' };
+    if (raw.type !== type) edit({ type: type });
+    if (p.hint != null && typeof p.hint !== 'string') edit({ hint: escapeText(p.hint) });
+    if (type === 'mcq') {
+      if (!hasText(p.question)) return { error: 'is missing its question' };
+      var options = Array.isArray(p.options) ? p.options.map(escapeText) : [];
+      var index = p.correctIndex;
+      if (typeof index === 'string' && /^\s*\d+\s*$/.test(index)) index = Number(index);
+      else if (typeof index === 'string' && /^\s*[A-Fa-f]\s*$/.test(index)) index = index.trim().toUpperCase().charCodeAt(0) - 65;
+      if (!(Number.isInteger(index) && index >= 0 && index < options.length && hasText(options[index]))) {
+        var keyed = hasText(p.correctAnswer) ? p.correctAnswer : p.answer;
+        index = hasText(keyed) ? options.findIndex(function(o) { return sameEscapeWord(o, keyed); }) : -1;
+      }
+      if (index < 0) return { error: 'has no valid correct option' };
+      var cleaned = [];
+      options.forEach(function(o) { if (hasText(o) && !cleaned.some(function(c) { return sameEscapeWord(c, o); })) cleaned.push(o); });
+      if (cleaned.length < 2) return { error: 'needs at least two different options' };
+      var cleanIndex = cleaned.findIndex(function(c) { return sameEscapeWord(c, options[index]); });
+      if (!sameJson(cleaned, p.options)) notes.push('options_cleaned');
+      if (!sameJson(cleaned, p.options) || cleanIndex !== p.correctIndex) edit({ options: cleaned, correctIndex: cleanIndex });
+    } else if (type === 'sequence') {
+      if (!hasText(p.question)) return { error: 'is missing its ordering instructions' };
+      var items = Array.isArray(p.items) ? p.items.map(escapeText) : [];
+      if (items.length < 2 || items.some(function(i) { return !hasText(i); })) return { error: 'needs at least two items to order' };
+      if (items.some(function(item, i) { return items.findIndex(function(x) { return sameEscapeWord(x, item); }) !== i; })) return { error: 'has two identical items, so the order is ambiguous' };
+      var order = p.correctOrder;
+      if (Array.isArray(order) && order.every(function(v) { return typeof v === 'string' && /^\s*\d+\s*$/.test(v); })) order = order.map(Number);
+      if (order == null) order = items.map(function(_, i) { return i; });
+      else if (!isIndexOrder(order, items.length, 0)) {
+        if (isIndexOrder(order, items.length, 1)) { order = order.map(function(v) { return v - 1; }); notes.push('order_renumbered'); }
+        else return { error: 'has a correctOrder that is not an ordering of its items' };
+      }
+      if (!sameJson(items, p.items) || !sameJson(order, p.correctOrder)) edit({ items: items, correctOrder: order });
+      if (items.length < 3) notes.push('few_items');
+    } else if (type === 'matching') {
+      var pairs = [];
+      (Array.isArray(p.pairs) ? p.pairs : []).forEach(function(pair) {
+        if (!isPlainObject(pair) || !hasText(pair.left) || !hasText(pair.right)) return;
+        var left = escapeText(pair.left), right = escapeText(pair.right);
+        if (pairs.some(function(x) { return sameEscapeWord(x.left, left) || sameEscapeWord(x.right, right); })) return;
+        pairs.push(pair.left === left && pair.right === right ? pair : Object.assign({}, pair, { left: left, right: right }));
+      });
+      if (!pairs.length) return { error: 'has no complete matching pairs' };
+      if (pairs.length !== (Array.isArray(p.pairs) ? p.pairs.length : 0)) notes.push('pairs_removed');
+      if (!sameJson(pairs, p.pairs)) edit({ pairs: pairs });
+      if (pairs.length < 3) notes.push('few_pairs');
+      if (!hasText(p.question)) notes.push('missing_question');
+    } else {
+      // fillin, cipher and scramble are all graded against one answer word.
+      if (!hasText(p.answer)) return { error: 'is missing its answer' };
+      if (typeof p.answer !== 'string') edit({ answer: escapeText(p.answer) });
+      var answer = p.answer;
+      if (type === 'scramble') {
+        if (escapeRoomLetters(answer).length < 2) return { error: 'has an answer too short to unscramble' };
+        if (!hasText(p.scrambledWord)) edit({ scrambledWord: answer });
+      } else {
+        if (type === 'cipher' && !hasText(p.encodedText) && hasText(p.riddle)) edit({ encodedText: escapeText(p.riddle) });
+        var prompt = type === 'fillin' ? p.sentence : p.encodedText;
+        if (!hasText(prompt) && !hasText(p.question)) return { error: type === 'fillin' ? 'is missing its sentence' : 'is missing its riddle' };
+        if (type === 'fillin' && hasText(p.sentence) && !/_{3,}/.test(p.sentence)) {
+          var at = p.sentence.toLowerCase().indexOf(answer.toLowerCase());
+          if (at >= 0 && answer.trim().length > 1) { edit({ sentence: p.sentence.slice(0, at) + '_____' + p.sentence.slice(at + answer.length) }); notes.push('blank_added'); }
+          else notes.push('no_blank');
+        }
+        if (type === 'cipher' && hasText(p.encodedText) && normalizeEscapeAnswer(p.encodedText).indexOf(normalizeEscapeAnswer(answer)) >= 0) notes.push('answer_in_riddle');
+        if (Array.isArray(p.wordbank)) {
+          var bank = escapeWordList(p.wordbank, answer);
+          if (bank.added) notes.push('answer_added');
+          if (!sameJson(bank.words, p.wordbank)) edit({ wordbank: bank.words });
+        } else notes.push('typed_answer');
+      }
+    }
+    return { puzzle: p, notes: notes };
+  };
+
+  var checkEscapeFinalDoor = function(raw) {
+    if (raw == null) return { door: null };
+    if (!isPlainObject(raw) || !(hasText(raw.sentence) || hasText(raw.question)) || !hasText(raw.answer)) return { door: null, removed: true };
+    var door = raw;
+    var edit = function(patch) { if (door === raw) door = Object.assign({}, raw); Object.assign(door, patch); };
+    if (typeof raw.answer !== 'string') edit({ answer: escapeText(raw.answer) });
+    if (raw.acceptableAnswers != null) {
+      var accepted = (Array.isArray(raw.acceptableAnswers) ? raw.acceptableAnswers : []).map(escapeText).filter(hasText);
+      if (!sameJson(accepted, raw.acceptableAnswers)) edit({ acceptableAnswers: accepted });
+    }
+    if (Array.isArray(raw.wordbank)) {
+      var answers = [door.answer].concat(door.acceptableAnswers || []);
+      var bank = escapeWordList(raw.wordbank, answers.some(function(a) { return (raw.wordbank || []).some(function(w) { return sameEscapeWord(w, a); }); }) ? null : door.answer);
+      if (!sameJson(bank.words, raw.wordbank)) edit({ wordbank: bank.words });
+    }
+    return { door: door };
+  };
+
+  // opts: requireObjects (saved rooms must carry their objects), expectedCount (trim
+  // extras and report a shortfall), minPuzzles (how many must survive to be usable).
+  var prepareEscapeRoomData = function(data, opts) {
+    opts = opts || {};
+    var result = { ok: false, room: null, objects: [], puzzles: [], finalDoor: null, problems: [], notes: { room: [], byId: {} }, dropped: 0 };
+    if (!isPlainObject(data) || !Array.isArray(data.puzzles)) {
+      result.problems.push('The JSON needs a "puzzles" array (plus "room" and "objects").');
+      return result;
+    }
+    var rawObjects = Array.isArray(data.objects) ? data.objects : [];
+    if (opts.requireObjects && !rawObjects.some(isPlainObject)) {
+      result.problems.push('The room has no objects.');
+      return result;
+    }
+    var roomIn = isPlainObject(data.room) ? data.room : {};
+    result.room = hasText(roomIn.theme) && typeof roomIn.description === 'string' ? data.room :
+      Object.assign({}, roomIn, { theme: hasText(roomIn.theme) ? escapeText(roomIn.theme) : 'Puzzle Challenge', description: escapeText(roomIn.description) });
+    var objects = [], objectIds = {};
+    rawObjects.forEach(function(o, i) {
+      if (!isPlainObject(o)) return;
+      var obj = o;
+      var id = typeof o.id === 'string' && o.id.trim() ? o.id : '';
+      if (!id || objectIds[id]) obj = Object.assign({}, o, { id: uniqueEscapeId(hasText(o.id) ? escapeText(o.id).trim() : 'obj' + (i + 1), objectIds) });
+      if (!hasText(obj.name) || !hasText(obj.emoji)) obj = Object.assign({}, obj, { name: hasText(obj.name) ? obj.name : 'Puzzle ' + (i + 1), emoji: hasText(obj.emoji) ? obj.emoji : '\uD83D\uDD2E' });
+      objectIds[obj.id] = true;
+      objects.push(obj);
+    });
+    var puzzleIds = {}, checked = [];
+    data.puzzles.forEach(function(raw, i) {
+      var label = 'Puzzle ' + (i + 1) + (isPlainObject(raw) && hasText(raw.id) ? ' ("' + escapeText(raw.id) + '")' : '');
+      if (!isPlainObject(raw)) { result.problems.push(label + ' is not an object.'); result.dropped++; return; }
+      var check = checkEscapePuzzle(raw);
+      if (check.error) { result.problems.push(label + ' ' + check.error + '.'); result.dropped++; return; }
+      var p = check.puzzle;
+      if (typeof p.id !== 'string' || !p.id.trim() || puzzleIds[p.id]) p = Object.assign({}, p, { id: uniqueEscapeId(hasText(p.id) ? escapeText(p.id).trim() : 'p' + (i + 1), puzzleIds) });
+      puzzleIds[p.id] = true;
+      checked.push({ puzzle: p, index: i, notes: check.notes });
+    });
+    if (opts.expectedCount && checked.length > opts.expectedCount) checked = checked.slice(0, opts.expectedCount);
+    if (opts.expectedCount && checked.length < opts.expectedCount) result.problems.push('Only ' + checked.length + ' of the ' + opts.expectedCount + ' requested puzzles can be played.');
+    // Every puzzle needs its own object. A missing or shared link is re-bound, never guessed away.
+    var used = {};
+    checked.forEach(function(entry, n) {
+      var p = entry.puzzle;
+      var link = p.linkedObjectId == null ? '' : String(p.linkedObjectId);
+      var target = objects.find(function(o) { return o.id === link && !used[o.id]; });
+      if (!target && objects[entry.index] && !used[objects[entry.index].id]) target = objects[entry.index];
+      if (!target) target = objects.find(function(o) { return !used[o.id]; });
+      if (!target) {
+        target = { id: uniqueEscapeId('obj_' + p.id, objectIds), emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (n + 1) };
+        objectIds[target.id] = true;
+        objects.push(target);
+      }
+      used[target.id] = true;
+      if (p.linkedObjectId !== target.id) entry.puzzle = Object.assign({}, p, { linkedObjectId: target.id });
+    });
+    var keptIds = {};
+    checked.forEach(function(entry) { keptIds[entry.puzzle.id] = true; });
+    result.puzzles = checked.map(function(entry) {
+      var p = entry.puzzle;
+      if (p.revealsClueFor != null && (!keptIds[p.revealsClueFor] || p.revealsClueFor === p.id || !hasText(p.revealedClue))) p = withoutKeys(p, ['revealsClueFor', 'revealedClue']);
+      if (entry.notes.length) result.notes.byId[p.id] = entry.notes;
+      return p;
+    });
+    result.objects = objects.filter(function(o) { return used[o.id]; });
+    var door = checkEscapeFinalDoor(data.finalDoor);
+    result.finalDoor = door.door;
+    if (door.removed) result.notes.room.push({ code: 'final_door_removed' });
+    if (result.dropped) result.notes.room.push({ code: 'puzzles_removed', count: result.dropped });
+    result.ok = result.puzzles.length >= Math.max(1, opts.minPuzzles || 1);
+    if (!result.puzzles.length) result.problems.push('No puzzle can be played.');
+    return result;
+  };
+
+  // Shuffled display fields are derived here and never stored in saved rooms.
+  var ESCAPE_DISPLAY_FIELDS = ['linkedObject', 'shuffledItems', 'displayLetters', 'leftColumn', 'rightColumn'];
+  var processEscapeRoomPuzzles = function(puzzles, objects) {
+    return puzzles.map(function(p, i) {
+      var processed = Object.assign({}, p, {
+        linkedObject: (objects || []).find(function(o) { return o.id === p.linkedObjectId; }) || (objects || [])[i] || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i + 1) }
+      });
+      if (p.type === 'sequence' && p.items) {
+        // Deranged against the correct order, so a room never opens already solved.
+        processed.shuffledItems = derangeShuffle(isIndexOrder(p.correctOrder, p.items.length, 0) ? p.correctOrder : p.items.map(function(_, idx) { return idx; }));
+      }
+      if (p.type === 'scramble' && p.scrambledWord) {
+        processed.displayLetters = derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord));
+      }
+      if (p.type === 'matching' && p.pairs) {
+        processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
+        processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
+      }
+      if ((p.type === 'fillin' || p.type === 'cipher') && p.wordbank) {
+        processed.wordbank = derangeShuffle(p.wordbank);
+      }
+      return processed;
+    });
+  };
+  var toSavedEscapePuzzle = function(p) {
+    var out = {};
+    Object.keys(p).forEach(function(key) { if (ESCAPE_DISPLAY_FIELDS.indexOf(key) === -1 && p[key] !== undefined) out[key] = p[key]; });
+    return out;
+  };
+  var savedEscapeRoomFrom = function(room) {
+    return { room: room.room, objects: room.objects || [], puzzles: (room.puzzles || []).map(toSavedEscapePuzzle), finalDoor: room.finalDoorPuzzle || null };
+  };
+  var hasEscapeRoomDraftIn = function(room) {
+    return !!(room && room.room && Array.isArray(room.puzzles) && room.puzzles.length && !room.isActive && !room.isPreview && !room.isGenerating);
+  };
+  // The live race asks for this exact mix; a near miss is accepted after one repair.
+  var ESCAPE_LIVE_MIX = { mcq: 2, sequence: 2, matching: 2, fillin: 2, cipher: 1, scramble: 1 };
+  var escapeMixCounts = function(puzzles) {
+    var counts = {};
+    (puzzles || []).forEach(function(p) { counts[p.type] = (counts[p.type] || 0) + 1; });
+    return counts;
+  };
+  var escapeMixIsBalanced = function(puzzles) {
+    var counts = escapeMixCounts(puzzles);
+    return (puzzles || []).length === 10 && Object.keys(ESCAPE_LIVE_MIX).every(function(type) { return counts[type] === ESCAPE_LIVE_MIX[type]; });
+  };
+  var escapeMixIsPlayable = function(puzzles) {
+    var counts = escapeMixCounts(puzzles);
+    return (puzzles || []).length >= 8 && (counts.mcq || 0) <= 2 && ESCAPE_PUZZLE_TYPES.every(function(type) { return counts[type] > 0; });
+  };
+  // Pending AI requests. Module scope, because the host recreates the engine on every render.
+  var escapeRoomRequests = { room: null, puzzle: null };
+  var newEscapeRequestId = function() { return 'req_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2); };
+  var ESCAPE_TYPE_CONTRACT = 'FIELD RULES: every puzzle has "id", "type", "linkedObjectId", "question" and a vague "hint". ' +
+    '"mcq": 4 different "options" and "correctIndex" (0-based). ' +
+    '"sequence": "items" listed in the CORRECT order and "correctOrder" [0,1,2,...]; the question names the ordering rule. ' +
+    '"matching": 4 "pairs" of {"left","right"}, every left and right value different. ' +
+    '"fillin": "sentence" with _____ where the answer goes, "answer", and "wordbank" with the answer plus 3 decoys. ' +
+    '"cipher": "encodedText" (a riddle that does not contain its answer), "answer", and "wordbank" with the answer plus 3 decoys. ' +
+    '"scramble": "answer" (one key term) and "scrambledWord".';
+  var reportEscapeRoomIssue = function(stage, problems) {
+    var message = '[Puzzle Challenge] ' + stage + ': ' + problems.slice(0, 8).join(' | ');
+    try {
+      var reporter = window.AlloModules && window.AlloModules.ErrorReporter;
+      if (reporter && typeof reporter.record === 'function') reporter.record('warn', message, '', 'escape_room_module.js', 0, 0);
+    } catch (e) {}
+    return message;
+  };
+
   // A shared keyboard contract for the solo and editor dialogs.
   function useEscapeRoomDialog(open, close) {
     var ref = useRef(null);
@@ -258,6 +582,8 @@
         state.isEscapeTimerRunning !== false && (room.timerEnabled === false || !Number.isFinite(state.escapeTimeLeft) || state.escapeTimeLeft > 0);
     };
     var awardXP = function(state, points, suffix) {
+      // A teacher's trial run of the preview never earns or records XP.
+      if (state.escapeRoomState && state.escapeRoomState.isTrial) return 0;
       var id = escapeRoomScoreId(state.escapeRoomState) + ':' + suffix;
       var previous = state.completedActivities && typeof state.completedActivities.get === 'function' ? state.completedActivities.get(id) || 0 : 0;
       handleScoreUpdate(points, 'Puzzle Challenge', id);
@@ -282,10 +608,16 @@
       var selectedDifficulty = (escapeRoomState && escapeRoomState.difficulty) || 'normal';
       var preset = difficultyPresets[selectedDifficulty] || difficultyPresets.normal;
       var totalTime = puzzleCount * preset.timePerPuzzle;
+      var requestId = newEscapeRequestId();
+      escapeRoomRequests.room = requestId;
       setState.setEscapeRoomState(function(prev) {
         return Object.assign({}, prev, escapeRoomAttempt(), {
           isActive: true,
           isGenerating: true,
+          isPreview: false,
+          isTrial: false,
+          confirmDiscard: false,
+          previewNotes: null,
           room: null,
           puzzles: [],
           solvedPuzzles: new Set(),
@@ -318,7 +650,7 @@ inputText.substring(0, 6000) + '\n' +
 'Generate a themed puzzle challenge with ' + puzzleCount + ' interactive objects. Each object hides a DIFFERENT TYPE of puzzle.\n' +
 'PUZZLE TYPES (use a variety - ensure good mix):\n' +
 '1. "mcq" - Multiple choice question with 4 options\n' +
-'2. "sequence" - Put 4-5 items in the correct order (chronological, size, importance, etc.)\n' +
+'2. "sequence" - Put 4-5 items in the correct order (chronological, size, importance, etc.). List "items" already in the CORRECT order and set "correctOrder" to [0,1,2,...]; the game shuffles them. The question must name the ordering rule.\n' +
 '3. "cipher" - A content-based RIDDLE with word options. The riddle clues to a key vocabulary word. MUST include "wordbank" array with 1 correct + 3-4 decoy words\n' +
 '4. "matching" - Match 4 pairs of related items (term<->definition, cause<->effect, etc.)\n' +
 '5. "scramble" - Unscramble letters to form a key vocabulary word from the content\n' +
@@ -338,6 +670,7 @@ inputText.substring(0, 6000) + '\n' +
 '- Each object needs a thematic emoji and evocative name\n' +
 '- Questions should test understanding, not just memorization\n' +
 '- HINTS MUST BE VAGUE AND INDIRECT: Hints should NEVER reveal or strongly suggest the correct answer. Good hints encourage thinking about the topic area without pointing to specific answers. Bad: "The answer is the first option" or "It starts with P". Good: "Think about what you learned about energy..." or "Consider the time period...". Hints are a nudge in the right direction, NOT a giveaway.\n' +
+ESCAPE_TYPE_CONTRACT + '\n' +
 'Return ONLY valid JSON (no markdown wrapper):\n' +
 '{\n' +
 '  "room": {\n' +
@@ -419,101 +752,110 @@ inputText.substring(0, 6000) + '\n' +
 '  }\n' +
 '}';
       try {
-        var response = await callGemini(escapeRoomPrompt, true);
-        var jsonText = response.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
-        var data = JSON.parse(jsonText);
-        if (data.room && data.objects && data.puzzles) {
-          var processedPuzzles = data.puzzles.map(function(p, i) {
-            var processed = Object.assign({}, p, {
-              linkedObject: data.objects.find(function(o) { return o.id === p.linkedObjectId; }) || data.objects[i]
-            });
-            if (p.type === 'sequence' && p.items) {
-              var indices = p.items.map(function(_, idx) { return idx; });
-              processed.shuffledItems = derangeShuffle(indices);
-            }
-            if (p.type === 'scramble' && p.scrambledWord) {
-              processed.displayLetters = derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord));
-            }
-            if (p.type === 'matching' && p.pairs) {
-              processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
-              processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
-            }
-            if (p.type === 'fillin' && p.wordbank) {
-              processed.wordbank = derangeShuffle(p.wordbank);
-            }
-            if (p.type === 'cipher' && p.wordbank) {
-              processed.wordbank = derangeShuffle(p.wordbank);
-            }
-            return processed;
-          });
-          var processedFinalDoor = data.finalDoor || null;
-          if (processedFinalDoor && processedFinalDoor.wordbank) {
-            processedFinalDoor = Object.assign({}, processedFinalDoor, {
-              wordbank: derangeShuffle(processedFinalDoor.wordbank)
-            });
-          }
-          setState.setEscapeRoomState(function(prev) {
-            return Object.assign({}, prev, {
-              isGenerating: false,
-              isActive: false,
-              room: data.room,
-              puzzles: processedPuzzles,
-              objects: data.objects,
-              totalPuzzles: processedPuzzles.length,
-              finalDoorPuzzle: processedFinalDoor,
-              savedEscapeRoom: { room: data.room, objects: data.objects, puzzles: data.puzzles, finalDoor: data.finalDoor || processedFinalDoor },
-              isPreview: true
-            });
-          });
-          playSound('correct');
-        } else {
-          throw new Error('Invalid escape room data structure');
-        }
+        var prepared = await requestEscapeRoomData(escapeRoomPrompt, function(data) {
+          return prepareEscapeRoomData(data, { expectedCount: puzzleCount, minPuzzles: Math.max(3, Math.ceil(puzzleCount * 0.6)) });
+        }, function(result) { return result.ok && !result.problems.length; });
+        if (escapeRoomRequests.room !== requestId) return;
+        if (!prepared.ok) throw escapeRoomUnusable(prepared);
+        showEscapeRoomPreview(prepared, { target: 'solo', requested: puzzleCount, difficulty: selectedDifficulty });
+        playSound('correct');
       } catch (e) {
-        warnLog('Escape room generation failed:', e);
-        addToast(t('errors.generation_failed'), 'error');
-        setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false, isGenerating: false }); });
+        failEscapeRoomGeneration(requestId, e);
       }
+    };
+
+    // ── Shared generation helpers ──
+    // One model call, plus at most one repair call that sends back the specific
+    // problems. Provider failures are not retried here; the host retries transient errors.
+    var requestEscapeRoomData = async function(prompt, check, isGood) {
+      var attempt = async function(text) {
+        var response = await callGemini(text, true);
+        var raw = typeof response === 'string' ? response.trim() : '';
+        // callGemini answers "{}" for refusals and a missing key: an outage, not a room to repair.
+        if (!raw || raw === '{}') { var empty = new Error('The AI returned no room.'); empty.provider = true; throw empty; }
+        var parsed = parseEscapeRoomJson(raw);
+        return { response: raw, prepared: parsed ? check(parsed) : { ok: false, puzzles: [], problems: ['The response was not valid JSON.'] } };
+      };
+      var first = await attempt(prompt);
+      if (isGood(first.prepared)) return first.prepared;
+      reportEscapeRoomIssue('generation check', first.prepared.problems);
+      var second = null;
+      try {
+        second = await attempt(prompt + '\nREPAIR: Your previous JSON had these problems:\n- ' + first.prepared.problems.slice(0, 20).join('\n- ') +
+          '\nReturn the COMPLETE corrected JSON for the whole room, following every rule above. Keep the puzzles that had no problems.\nPREVIOUS JSON:\n' + first.response.slice(0, 30000));
+      } catch (e) {
+        warnLog('Escape room repair request failed:', e);
+      }
+      if (!second) return first.prepared;
+      if (!isGood(second.prepared)) reportEscapeRoomIssue('repair check', second.prepared.problems);
+      if (isGood(second.prepared)) return second.prepared;
+      if (isGood(first.prepared) || (first.prepared.ok && !second.prepared.ok)) return first.prepared;
+      if (second.prepared.ok && !first.prepared.ok) return second.prepared;
+      return (second.prepared.puzzles || []).length > (first.prepared.puzzles || []).length ? second.prepared : first.prepared;
+    };
+    var escapeRoomUnusable = function(prepared) {
+      var error = new Error('Unusable escape room: ' + ((prepared && prepared.problems) || []).slice(0, 5).join(' '));
+      error.unusable = true;
+      return error;
+    };
+    var failEscapeRoomGeneration = function(requestId, e) {
+      if (escapeRoomRequests.room !== requestId) return;
+      escapeRoomRequests.room = null;
+      warnLog('Escape room generation failed:', e);
+      addToast(e && e.unusable
+        ? (t('escape_room.generation_unusable') || 'The AI returned puzzles that could not be played, even after a repair attempt. Try again, or use a shorter source text.')
+        : t('errors.generation_failed'), 'error');
+      setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false, isGenerating: false }); });
+    };
+    // Opens the teacher preview for a checked room. Nothing reaches students from here.
+    var showEscapeRoomPreview = function(prepared, meta) {
+      escapeRoomRequests.room = null;
+      var preset = escapeRoomPresets[meta.difficulty] || escapeRoomPresets.normal;
+      var puzzles = processEscapeRoomPuzzles(prepared.puzzles, prepared.objects);
+      var finalDoor = prepared.finalDoor && prepared.finalDoor.wordbank
+        ? Object.assign({}, prepared.finalDoor, { wordbank: derangeShuffle(prepared.finalDoor.wordbank) }) : prepared.finalDoor;
+      var totalTime = puzzles.length * preset.timePerPuzzle;
+      var roomNotes = prepared.notes.room.slice();
+      if (meta.requested && puzzles.length < meta.requested) roomNotes.push({ code: 'count_short', count: puzzles.length, requested: meta.requested });
+      if (meta.target === 'live' && !escapeMixIsBalanced(prepared.puzzles)) roomNotes.push({ code: 'mix_relaxed' });
+      setState.setEscapeRoomState(function(prev) {
+        var next = Object.assign({}, prev, escapeRoomAttempt(), {
+          isGenerating: false, isActive: false, isPreview: true, isTrial: false, isPublishing: false, confirmDiscard: false,
+          previewTarget: meta.target, previewNotes: { room: roomNotes, byId: prepared.notes.byId },
+          room: prepared.room, objects: prepared.objects, puzzles: puzzles, totalPuzzles: puzzles.length, finalDoorPuzzle: finalDoor,
+          difficulty: meta.difficulty || prev.difficulty || 'normal', lives: preset.lives, maxLives: preset.lives,
+          hintsRemaining: preset.hints, maxHints: preset.hints, xpMultiplier: preset.xpMultiplier, timeRemaining: totalTime, maxTime: totalTime
+        });
+        next.savedEscapeRoom = savedEscapeRoomFrom(next);
+        return next;
+      });
+      setState.setEscapeTimeLeft(totalTime);
+      setState.setIsEscapeTimerRunning(false);
+    };
+    // Recomputes everything derived from the puzzle list after a teacher edit.
+    var withEscapeRoomEdits = function(prev, patch) {
+      var next = Object.assign({}, prev, patch);
+      var linked = {};
+      (next.puzzles || []).forEach(function(p) { linked[p.linkedObjectId] = true; });
+      next.objects = (next.objects || []).filter(function(o) { return linked[o.id]; });
+      next.totalPuzzles = (next.puzzles || []).length;
+      next.savedEscapeRoom = savedEscapeRoomFrom(next);
+      return next;
     };
 
     // ── launchCollaborativeEscapeRoom ──
     // Collaborative rooms use the same six interaction types as the solo
     // escape room. Keep the generated mix explicit so a model cannot silently
-    // fall back to the MCQ-only example in the output schema.
-    var normalizeCollaborativePuzzleType = function(type) {
-      var normalized = String(type || '').toLowerCase().replace(/[^a-z]/g, '');
-      var aliases = {
-        'multiplechoice': 'mcq',
-        'multiplechoicequestion': 'mcq',
-        'ordering': 'sequence',
-        'order': 'sequence',
-        'matchingpairs': 'matching',
-        'match': 'matching',
-        'fillintheblank': 'fillin',
-        'fillintheblanks': 'fillin',
-        'wordriddle': 'cipher',
-        'wordscramble': 'scramble'
-      };
-      return aliases[normalized] || normalized;
-    };
-    var validateCollaborativePuzzleMix = function(puzzles) {
-      var requiredTypes = ['mcq', 'sequence', 'cipher', 'matching', 'scramble', 'fillin'];
-      var expectedCounts = { mcq: 2, sequence: 2, matching: 2, fillin: 2, cipher: 1, scramble: 1 };
-      if (!Array.isArray(puzzles) || puzzles.length !== 10) {
-        return { valid: false, reason: 'exactly 10 puzzles are required' };
+    // fall back to the MCQ-only example in the output schema. The room opens in
+    // the teacher preview first; publishEscapeRoomLive sends it to the class.
+    var liveMixCheck = function(data) {
+      var result = prepareEscapeRoomData(data, { expectedCount: 10, minPuzzles: 8 });
+      if (result.ok && !escapeMixIsBalanced(result.puzzles)) {
+        var counts = escapeMixCounts(result.puzzles);
+        result.problems.push('Unbalanced collaborative puzzle mix: use exactly 2 mcq, 2 sequence, 2 matching, 2 fillin, 1 cipher and 1 scramble (this room has ' +
+          Object.keys(counts).map(function(type) { return counts[type] + ' ' + type; }).join(', ') + ').');
       }
-      var counts = {};
-      for (var i = 0; i < puzzles.length; i++) {
-        var type = normalizeCollaborativePuzzleType(puzzles[i] && puzzles[i].type);
-        if (requiredTypes.indexOf(type) === -1) {
-          return { valid: false, reason: 'unsupported puzzle type: ' + (puzzles[i] && puzzles[i].type) };
-        }
-        counts[type] = (counts[type] || 0) + 1;
-      }
-      var incorrectType = requiredTypes.find(function(type) { return counts[type] !== expectedCounts[type]; });
-      if (incorrectType) return { valid: false, reason: 'expected ' + expectedCounts[incorrectType] + ' ' + incorrectType + ' puzzles' };
-      if ((counts.mcq || 0) > 2) return { valid: false, reason: 'MCQs may not exceed two of ten puzzles' };
-      return { valid: true, counts: counts };
+      return result;
     };
 
     var createLiveTeamProgress = function() {
@@ -530,24 +872,33 @@ inputText.substring(0, 6000) + '\n' +
       };
     };
 
-    var launchCollaborativeEscapeRoom = async function() {
+    var launchCollaborativeEscapeRoom = async function(options) {
       var state = getState();
       var inputText = state.inputText;
       var activeSessionCode = state.activeSessionCode;
-      var user = state.user;
-      var activeSessionAppId = state.activeSessionAppId;
-      if (!inputText || !inputText.trim()) {
-        addToast(t('errors.no_text'), 'error');
-        return;
-      }
       if (!activeSessionCode) {
         addToast(t('errors.no_session'), 'error');
         return;
       }
+      // A room the teacher already reviewed opens again instead of being replaced.
+      if (!(options && options.fresh) && hasEscapeRoomDraftIn(state.escapeRoomState)) {
+        setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: true, previewTarget: 'live', confirmDiscard: false, showSettings: false }); });
+        addToast(t('escape_room.preview_reopened') || 'Your reviewed room is open again. Choose New room to generate a different one.', 'info');
+        return;
+      }
+      if (!inputText || !inputText.trim()) {
+        addToast(t('errors.no_text'), 'error');
+        return;
+      }
+      var requestId = newEscapeRequestId();
+      escapeRoomRequests.room = requestId;
       setState.setEscapeRoomState(function(prev) {
         return Object.assign({}, prev, {
           isActive: true,
           isGenerating: true,
+          isPreview: false,
+          isTrial: false,
+          confirmDiscard: false,
           room: null,
           puzzles: [],
           solvedPuzzles: new Set(),
@@ -562,6 +913,7 @@ inputText.substring(0, 6000) + '\n' +
 'Generate a themed puzzle challenge with exactly 10 interactive objects and exactly 10 puzzles. Each object hides one puzzle.\n' +
 'BALANCED PUZZLE MIX - this is mandatory: use exactly 2 "mcq", 2 "sequence", 2 "matching", 2 "fillin", 1 "cipher", and 1 "scramble". Every listed type must appear at least once, and MCQs must never exceed 2 of the 10 puzzles. Do not convert non-MCQ puzzles into multiple choice.\n' +
 'TYPE CONTRACT: "mcq" has options + correctIndex; "sequence" has items + correctOrder; "matching" has pairs with left/right values; "fillin" has sentence + answer + wordbank; "cipher" has encodedText + answer + wordbank; "scramble" has scrambledWord + answer. Use these exact lowercase type names.\n' +
+ESCAPE_TYPE_CONTRACT + '\n' +
 'Return ONLY valid JSON:\n' +
 '{\n' +
 '  "room": { "theme": "string", "description": "2-3 sentence description" },\n' +
@@ -583,81 +935,79 @@ inputText.substring(0, 6000) + '\n' +
 '  ]\n' +
 '}';
       try {
-        var response = await callGemini(escapeRoomPrompt, true);
-        var jsonText = response.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
-        var data = JSON.parse(jsonText);
-        if (data.room && Array.isArray(data.objects) && data.objects.length === 10 && Array.isArray(data.puzzles)) {
-          var collaborativeMix = validateCollaborativePuzzleMix(data.puzzles);
-          if (!collaborativeMix.valid) throw new Error("Unbalanced collaborative puzzle mix: " + collaborativeMix.reason);
-          var processedPuzzles = data.puzzles.map(function(p, i) {
-            var normalizedType = normalizeCollaborativePuzzleType(p.type);
-            var shuffledItems = null;
-            var correctOrder = p.correctOrder || null;
-            if (normalizedType === 'sequence' && p.items) {
-              var indices = p.items.map(function(_, idx) { return idx; });
-              shuffledItems = derangeShuffle(indices);
-              correctOrder = p.correctOrder || indices;
-            }
-            var processed = Object.assign({}, p, {
-              type: normalizedType,
-              linkedObject: data.objects.find(function(o) { return o.id === p.linkedObjectId; }) || data.objects[i],
-              shuffledItems: shuffledItems,
-              correctOrder: correctOrder,
-              displayLetters: normalizedType === 'scramble' && p.scrambledWord ? derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord)) : null
-            });
-            if (normalizedType === 'matching' && p.pairs) {
-              processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
-              processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
-            }
-            if ((normalizedType === 'fillin' || normalizedType === 'cipher') && p.wordbank) {
-              processed.wordbank = derangeShuffle(p.wordbank);
-            }
-            return processed;
-          });
-          if (doc && db && updateDoc) {
-            var appId = activeSessionAppId;
-            var sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-            await updateDoc(sessionRef, {
-              'escapeRoomState': {
-                isActive: true,
-                room: data.room,
-                puzzles: processedPuzzles,
-                objects: data.objects,
-                teams: {},
-                teamProgress: {
-                  Red: createLiveTeamProgress(),
-                  Blue: createLiveTeamProgress(),
-                  Green: createLiveTeamProgress(),
-                  Yellow: createLiveTeamProgress()
-                },
-                timeRemaining: 300,
-                endsAt: Date.now() + 300000,
-                isGameOver: false,
-                isPaused: false,
-                startedAt: Date.now(),
-                hostId: (user && user.uid) || null
-              }
-            });
-          }
-          setState.setEscapeRoomState(function(prev) {
-            return Object.assign({}, prev, {
-              isGenerating: false,
-              room: data.room,
-              puzzles: processedPuzzles,
-              objects: data.objects,
-              totalPuzzles: processedPuzzles.length
-            });
-          });
-          playSound('correct');
-          addToast(t('escape_room.team_race'), 'success');
-        } else {
-          throw new Error('Invalid escape room data');
-        }
+        var prepared = await requestEscapeRoomData(escapeRoomPrompt, liveMixCheck, function(result) { return result.ok && !result.problems.length; });
+        if (escapeRoomRequests.room !== requestId) return;
+        if (!prepared.ok || !escapeMixIsPlayable(prepared.puzzles)) throw escapeRoomUnusable(prepared);
+        showEscapeRoomPreview(prepared, { target: 'live', requested: 10, difficulty: 'normal' });
+        playSound('correct');
       } catch (e) {
-        warnLog('Collaborative escape room failed:', e);
-        addToast(t('errors.generation_failed'), 'error');
-        setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false, isGenerating: false }); });
+        failEscapeRoomGeneration(requestId, e);
       }
+    };
+
+    // ── publishEscapeRoomLive ──
+    // Sends the room the teacher reviewed (with any edits) to the live session.
+    var publishEscapeRoomLive = async function() {
+      var state = getState();
+      var room = state.escapeRoomState || {};
+      var live = state.sessionData || {};
+      if (!state.activeSessionCode || !(doc && db && updateDoc)) {
+        addToast(t('errors.no_session'), 'error');
+        return false;
+      }
+      if ((live.escapeRoomState && live.escapeRoomState.isActive) || (live.quizState && live.quizState.isActive)) {
+        addToast(t('escape_room.end_live_activity_first') || 'End the current live activity before launching this room.', 'error');
+        return false;
+      }
+      if (room.isPublishing) return false;
+      var prepared = prepareEscapeRoomData(savedEscapeRoomFrom(room), { requireObjects: true });
+      if (!prepared.ok) {
+        addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
+        return false;
+      }
+      // Firestore rejects undefined values; a JSON round trip drops them.
+      var puzzles = JSON.parse(JSON.stringify(processEscapeRoomPuzzles(prepared.puzzles, prepared.objects)));
+      var objects = JSON.parse(JSON.stringify(prepared.objects));
+      var roomInfo = JSON.parse(JSON.stringify(prepared.room));
+      setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPublishing: true }); });
+      try {
+        var sessionRef = doc(db, 'artifacts', state.activeSessionAppId, 'public', 'data', 'sessions', state.activeSessionCode);
+        await updateDoc(sessionRef, {
+          'escapeRoomState': {
+            isActive: true,
+            room: roomInfo,
+            puzzles: puzzles,
+            objects: objects,
+            teams: {},
+            teamProgress: {
+              Red: createLiveTeamProgress(),
+              Blue: createLiveTeamProgress(),
+              Green: createLiveTeamProgress(),
+              Yellow: createLiveTeamProgress()
+            },
+            timeRemaining: 300,
+            endsAt: Date.now() + 300000,
+            isGameOver: false,
+            isPaused: false,
+            startedAt: Date.now(),
+            hostId: (state.user && state.user.uid) || null
+          }
+        });
+      } catch (e) {
+        warnLog('Collaborative escape room launch failed:', e);
+        addToast(t('escape_room.launch_failed') || 'The room could not be sent to the class. Check the connection and try again.', 'error');
+        setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPublishing: false }); });
+        return false;
+      }
+      setState.setEscapeRoomState(function(prev) {
+        return Object.assign({}, prev, {
+          isPublishing: false, isPreview: false, isActive: true, isGenerating: false, isTrial: false, confirmDiscard: false, previewTarget: null,
+          room: roomInfo, puzzles: puzzles, objects: objects, totalPuzzles: puzzles.length
+        });
+      });
+      playSound('correct');
+      addToast(t('escape_room.team_race'), 'success');
+      return true;
     };
 
     // ── launchConceptQuest ──
@@ -743,6 +1093,8 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var activeSessionCode = state.activeSessionCode;
       var activeSessionAppId = state.activeSessionAppId;
+      // Closing a teacher's local trial must not touch the live session.
+      if (state.escapeRoomState && state.escapeRoomState.isTrial) { endEscapeRoomTrial(); return; }
       if (!activeSessionCode) return;
       try {
         if (doc && db && updateDoc) {
@@ -810,7 +1162,7 @@ inputText.substring(0, 6000) + '\n' +
           scrambleLetters: []
         });
       });
-      if (activeSessionCode && sessionData && sessionData.escapeRoomState && sessionData.escapeRoomState.isActive && user && user.uid) {
+      if (!escapeRoomState.isTrial && activeSessionCode && sessionData && sessionData.escapeRoomState && sessionData.escapeRoomState.isActive && user && user.uid) {
         var userTeam = sessionData.escapeRoomState.teams && sessionData.escapeRoomState.teams[user.uid];
         if (userTeam && doc && db && updateDoc) {
           // Path fix 2026-07-02: this ref was missing the 'public','data'
@@ -1027,6 +1379,10 @@ inputText.substring(0, 6000) + '\n' +
 
     // ── resetEscapeRoom ──
     var resetEscapeRoom = function(options) {
+      var current = getState().escapeRoomState || {};
+      // Closing a trial run returns the teacher to the preview with their edits intact.
+      if (!(options && options.replay === true) && current.isTrial && current.room) { endEscapeRoomTrial(); return; }
+      if (!(options && options.replay === true)) { escapeRoomRequests.room = null; escapeRoomRequests.puzzle = null; }
       setState.setIsEscapeTimerRunning(false);
       if (options && options.replay === true) {
         var room = getState().escapeRoomState;
@@ -1139,72 +1495,204 @@ inputText.substring(0, 6000) + '\n' +
 
     // ── confirmEscapeRoomPreview ──
     var confirmEscapeRoomPreview = function() {
+      var current = getState().escapeRoomState || {};
+      var preset = escapeRoomPresets[current.difficulty] || escapeRoomPresets.normal;
+      // Edits can remove puzzles, so the clock follows the final puzzle count.
+      var totalTime = (current.puzzles || []).length * preset.timePerPuzzle;
       setState.setEscapeRoomState(function(prev) {
         return Object.assign({}, prev, {
           isPreview: false,
           isActive: true,
-          timerPaused: true
-        });
+          timerPaused: true,
+          confirmDiscard: false
+        }, totalTime ? { timeRemaining: totalTime, maxTime: totalTime } : {});
       });
+      if (totalTime) setState.setEscapeTimeLeft(totalTime);
       playSound('correct');
       addToast(t('escape_room.preview_confirmed') || '\u2705 Puzzle Challenge locked \u2014 ready to play!', 'success');
     };
 
     // ── updateEscapeRoomPuzzle ──
+    // Every field a teacher can change in the preview, answer keys included. The
+    // saved copy is re-derived from the edited puzzles, so the two never drift.
     var updateEscapeRoomPuzzle = function(puzzleIndex, field, value) {
       setState.setEscapeRoomState(function(prev) {
-        var newPuzzles = prev.puzzles.slice();
-        var puzzle = Object.assign({}, newPuzzles[puzzleIndex]);
-        if (field === 'question') puzzle.question = value;
-        else if (field === 'hint') puzzle.hint = value;
-        else if (field === 'answer') puzzle.answer = value;
-        else if (field === 'sentence') puzzle.sentence = value;
-        else if (field === 'encodedText') puzzle.encodedText = value;
-        else if (field === 'options' && puzzle.type === 'mcq') {
-          var newOptions = puzzle.options.slice();
-          newOptions[value.index] = value.text;
-          puzzle.options = newOptions;
-        }
-        newPuzzles[puzzleIndex] = puzzle;
-        var savedPuzzles = prev.savedEscapeRoom ? prev.savedEscapeRoom.puzzles.slice() : [];
-        if (savedPuzzles[puzzleIndex]) {
-          savedPuzzles[puzzleIndex] = Object.assign({}, savedPuzzles[puzzleIndex]);
-          if (field === 'question') savedPuzzles[puzzleIndex].question = value;
-          else if (field === 'hint') savedPuzzles[puzzleIndex].hint = value;
-          else if (field === 'answer') savedPuzzles[puzzleIndex].answer = value;
-          else if (field === 'sentence') savedPuzzles[puzzleIndex].sentence = value;
-          else if (field === 'encodedText') savedPuzzles[puzzleIndex].encodedText = value;
-          else if (field === 'options' && puzzle.type === 'mcq') {
-            var newOpts = savedPuzzles[puzzleIndex].options.slice();
-            newOpts[value.index] = value.text;
-            savedPuzzles[puzzleIndex].options = newOpts;
-          }
-        }
-        return Object.assign({}, prev, {
-          puzzles: newPuzzles,
-          savedEscapeRoom: prev.savedEscapeRoom ? Object.assign({}, prev.savedEscapeRoom, { puzzles: savedPuzzles }) : null
-        });
+        var old = prev.puzzles && prev.puzzles[puzzleIndex];
+        if (!old) return prev;
+        var p = Object.assign({}, old);
+        if (['question', 'hint', 'sentence', 'encodedText'].indexOf(field) >= 0) p[field] = escapeText(value);
+        else if (field === 'answer') {
+          var answer = escapeText(value);
+          if (Array.isArray(p.wordbank)) p.wordbank = replaceEscapeAnswer(p.wordbank, p.answer, answer);
+          p.answer = answer;
+          if (p.type === 'scramble') { p.scrambledWord = answer; p.displayLetters = derangeShuffle(escapeRoomLetters(answer)); }
+        } else if (field === 'options' && p.type === 'mcq') {
+          p.options = p.options.slice();
+          p.options[value.index] = escapeText(value.text);
+        } else if (field === 'correctIndex' && p.type === 'mcq') {
+          var index = Number(value);
+          if (!Number.isInteger(index) || index < 0 || index >= p.options.length) return prev;
+          p.correctIndex = index;
+        } else if (field === 'wordbank' && (p.type === 'fillin' || p.type === 'cipher')) {
+          p.wordbank = escapeWordList(value, p.answer).words;
+        } else if (field === 'item' && p.type === 'sequence') {
+          // value.position counts in the correct order shown to the teacher.
+          p.items = p.items.slice();
+          p.items[p.correctOrder[value.position]] = escapeText(value.text);
+        } else if (field === 'moveItem' && p.type === 'sequence') {
+          var order = p.correctOrder.slice(), from = value.position, to = value.position + value.delta;
+          if (to < 0 || to >= order.length) return prev;
+          var moved = order[from]; order[from] = order[to]; order[to] = moved;
+          p.correctOrder = order;
+          p.shuffledItems = derangeShuffle(order);
+        } else if (field === 'pair' && p.type === 'matching') {
+          p.pairs = p.pairs.slice();
+          var pair = Object.assign({}, p.pairs[value.index]);
+          pair[value.side === 'right' ? 'right' : 'left'] = escapeText(value.text);
+          p.pairs[value.index] = pair;
+          p.leftColumn = derangeShuffle(p.pairs.map(function(x) { return x.left; }));
+          p.rightColumn = derangeShuffle(p.pairs.map(function(x) { return x.right; }));
+        } else return prev;
+        var puzzles = prev.puzzles.slice();
+        puzzles[puzzleIndex] = p;
+        return withEscapeRoomEdits(prev, { puzzles: puzzles });
       });
     };
 
     // ── updateEscapeRoomFinalDoor ──
     var updateEscapeRoomFinalDoor = function(field, value) {
       setState.setEscapeRoomState(function(prev) {
-        var upd = {};
-        upd[field] = value;
-        var newFinalDoor = Object.assign({}, prev.finalDoorPuzzle, upd);
-        var newSaved = null;
-        if (prev.savedEscapeRoom) {
-          var fdUpd = {};
-          fdUpd[field] = value;
-          newSaved = Object.assign({}, prev.savedEscapeRoom, {
-            finalDoor: Object.assign({}, prev.savedEscapeRoom.finalDoor || prev.finalDoorPuzzle, fdUpd)
-          });
-        }
-        return Object.assign({}, prev, {
-          finalDoorPuzzle: newFinalDoor,
-          savedEscapeRoom: newSaved
+        if (!prev.finalDoorPuzzle) return prev;
+        var door = Object.assign({}, prev.finalDoorPuzzle);
+        if (field === 'sentence') door.sentence = escapeText(value);
+        else if (field === 'answer') {
+          var answer = escapeText(value);
+          if (Array.isArray(door.wordbank)) door.wordbank = replaceEscapeAnswer(door.wordbank, door.answer, answer);
+          door.answer = answer;
+        } else if (field === 'acceptableAnswers') door.acceptableAnswers = escapeWordList(value).words;
+        else if (field === 'wordbank') door.wordbank = escapeWordList(value, door.answer).words;
+        else return prev;
+        return withEscapeRoomEdits(prev, { finalDoorPuzzle: door });
+      });
+    };
+
+    // ── updateEscapeRoomRoom ── (theme and description)
+    var updateEscapeRoomRoom = function(field, value) {
+      if (field !== 'theme' && field !== 'description') return;
+      setState.setEscapeRoomState(function(prev) {
+        var info = Object.assign({}, prev.room);
+        info[field] = escapeText(value);
+        return withEscapeRoomEdits(prev, { room: info });
+      });
+    };
+
+    // ── removeEscapeRoomPuzzle ──
+    var removeEscapeRoomPuzzle = function(puzzleIndex) {
+      setState.setEscapeRoomState(function(prev) {
+        if (!prev.puzzles || prev.puzzles.length <= 1 || !prev.puzzles[puzzleIndex]) return prev;
+        var removedId = prev.puzzles[puzzleIndex].id;
+        var puzzles = prev.puzzles.filter(function(_, i) { return i !== puzzleIndex; }).map(function(p) {
+          return p.revealsClueFor === removedId ? withoutKeys(p, ['revealsClueFor', 'revealedClue']) : p;
         });
+        return withEscapeRoomEdits(prev, { puzzles: puzzles });
+      });
+    };
+
+    // ── regenerateEscapeRoomPuzzle ──
+    // Replaces one puzzle with a new version of the same type. The current puzzle
+    // stays in place unless the replacement passes the same checks as a full room.
+    var regenerateEscapeRoomPuzzle = async function(puzzleIndex) {
+      var state = getState();
+      var room = state.escapeRoomState || {};
+      var puzzle = room.puzzles && room.puzzles[puzzleIndex];
+      var inputText = state.inputText || '';
+      if (!puzzle || room.regeneratingPuzzleId || !inputText.trim()) {
+        if (puzzle && !inputText.trim()) addToast(t('errors.no_text'), 'error');
+        return false;
+      }
+      var requestId = newEscapeRequestId();
+      escapeRoomRequests.puzzle = requestId;
+      setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { regeneratingPuzzleId: puzzle.id }); });
+      var others = room.puzzles.filter(function(_, i) { return i !== puzzleIndex; })
+        .map(function(p) { return '- ' + escapeText(p.question || p.sentence || p.encodedText).slice(0, 160); }).join('\n');
+      var prompt = escapeRoomLanguageDirective(state) + 'Write ONE new puzzle for an educational Puzzle Challenge, based on the source content below.\n' +
+        'SOURCE CONTENT:\n' + inputText.substring(0, 6000) + '\n' +
+        'Keep "id": "' + puzzle.id + '", "type": "' + puzzle.type + '" and "linkedObjectId": "' + puzzle.linkedObjectId + '". Test a different idea from the current puzzle and from the other puzzles. It must be answerable from the source.\n' +
+        ESCAPE_TYPE_CONTRACT + '\n' +
+        'CURRENT PUZZLE (replace it):\n' + JSON.stringify(toSavedEscapePuzzle(puzzle)).slice(0, 4000) + '\n' +
+        'OTHER PUZZLES (do not repeat them):\n' + others + '\n' +
+        'Return ONLY the JSON object for this one puzzle.';
+      var fresh = null;
+      try {
+        var parsed = parseEscapeRoomJson(await callGemini(prompt, true));
+        if (parsed && Array.isArray(parsed.puzzles)) parsed = parsed.puzzles[0];
+        else if (parsed && isPlainObject(parsed.puzzle)) parsed = parsed.puzzle;
+        if (isPlainObject(parsed)) {
+          var candidate = Object.assign({}, parsed, { id: puzzle.id, type: puzzle.type, linkedObjectId: puzzle.linkedObjectId });
+          if (puzzle.revealsClueFor && !candidate.revealsClueFor) Object.assign(candidate, { revealsClueFor: puzzle.revealsClueFor, revealedClue: puzzle.revealedClue });
+          var check = checkEscapePuzzle(candidate);
+          if (check.error) reportEscapeRoomIssue('puzzle regeneration check', ['The new puzzle ' + check.error + '.']);
+          else fresh = check;
+        }
+      } catch (e) {
+        warnLog('Escape room puzzle regeneration failed:', e);
+      }
+      if (escapeRoomRequests.puzzle !== requestId) return false;
+      escapeRoomRequests.puzzle = null;
+      setState.setEscapeRoomState(function(prev) {
+        var at = (prev.puzzles || []).findIndex(function(p) { return p.id === puzzle.id; });
+        if (!fresh || at < 0) return Object.assign({}, prev, { regeneratingPuzzleId: null });
+        var puzzles = prev.puzzles.slice();
+        puzzles[at] = processEscapeRoomPuzzles([fresh.puzzle], prev.objects)[0];
+        var byId = Object.assign({}, prev.previewNotes && prev.previewNotes.byId);
+        if (fresh.notes.length) byId[puzzle.id] = fresh.notes; else delete byId[puzzle.id];
+        return withEscapeRoomEdits(prev, { puzzles: puzzles, regeneratingPuzzleId: null, previewNotes: Object.assign({ room: [] }, prev.previewNotes, { byId: byId }) });
+      });
+      if (fresh) playSound('correct');
+      else addToast(t('escape_room.regenerate_failed') || 'A new version could not be made. The current puzzle is unchanged.', 'error');
+      return !!fresh;
+    };
+
+    // ── Preview lifecycle ──
+    var closeEscapeRoomPreview = function() {
+      setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: false, confirmDiscard: false }); });
+    };
+    var reopenEscapeRoomPreview = function() {
+      setState.setEscapeRoomState(function(prev) {
+        return hasEscapeRoomDraftIn(prev) ? Object.assign({}, prev, { isPreview: true, showSettings: false, confirmDiscard: false }) : prev;
+      });
+    };
+    var hasEscapeRoomDraft = function() { return hasEscapeRoomDraftIn(getState().escapeRoomState); };
+    var discardEscapeRoomPreview = function() {
+      escapeRoomRequests.room = null;
+      escapeRoomRequests.puzzle = null;
+      setState.setEscapeRoomState(function(prev) {
+        return Object.assign({}, prev, { isPreview: false, isActive: false, isTrial: false, confirmDiscard: false, room: null, puzzles: [], objects: [],
+          savedEscapeRoom: null, finalDoorPuzzle: null, previewNotes: null, previewTarget: null, regeneratingPuzzleId: null });
+      });
+    };
+    var generateNewEscapeRoom = function() {
+      var room = getState().escapeRoomState || {};
+      if (room.previewTarget === 'live') return launchCollaborativeEscapeRoom({ fresh: true });
+      return generateEscapeRoom();
+    };
+    // A teacher plays the previewed room as a student would: same rules, no XP,
+    // nothing sent to the class. Closing it returns to the preview.
+    var startEscapeRoomTrial = function() {
+      var room = getState().escapeRoomState || {};
+      if (!_hydrateConfig(savedEscapeRoomFrom(room), room.difficulty)) return;
+      setState.setEscapeRoomState(function(prev) {
+        return Object.assign({}, prev, { isPreview: false, isActive: true, isTrial: true, timerPaused: true, confirmDiscard: false,
+          previewNotes: room.previewNotes || null, previewTarget: room.previewTarget || null });
+      });
+      addToast(t('escape_room.trial_started') || 'Trial run: play as a student would. No XP is awarded. Choose Back to preview when you are done.', 'info');
+    };
+    var endEscapeRoomTrial = function() {
+      var room = getState().escapeRoomState || {};
+      setState.setIsEscapeTimerRunning(false);
+      if (!_hydrateConfig(savedEscapeRoomFrom(room), room.difficulty)) return;
+      setState.setEscapeRoomState(function(prev) {
+        return Object.assign({}, prev, { isTrial: false, previewNotes: room.previewNotes || null, previewTarget: room.previewTarget || null });
       });
     };
 
@@ -1221,7 +1709,7 @@ inputText.substring(0, 6000) + '\n' +
           difficulty: escapeRoomState.difficulty,
           puzzleCount: escapeRoomState.puzzleCount || config.puzzles.length,
           timestamp: Date.now(),
-          sourceTextHash: inputText.substring(0, 100)
+          sourceTextHash: String(inputText || '').substring(0, 100)
         };
         safeSetItem('allo_saved_escape_room', JSON.stringify(saveData));
         // Embed into the active exit ticket / quiz resource so the
@@ -1255,34 +1743,15 @@ inputText.substring(0, 6000) + '\n' +
     // loadEscapeRoomFromConfig (resource-embedded path). Random
     // shuffle on every call — by design; repeat plays vary.
     var _hydrateConfig = function(config, difficulty) {
-      if (!config || !config.room || !Array.isArray(config.puzzles) || !config.puzzles.length || !Array.isArray(config.objects) || !config.objects.length || config.puzzles.some(function(p) { return !p || !p.id || !config.objects.some(function(o) { return o && o.id === p.linkedObjectId; }); })) {
+      // Saved rooms pass the same checks as new ones. Rooms saved before those checks
+      // existed (e.g. with a mismatched object link) are repaired instead of refused.
+      var prepared = isPlainObject(config) && config.room ? prepareEscapeRoomData(config, { requireObjects: true }) : null;
+      if (!prepared || !prepared.ok) {
         addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
         return false;
       }
-      var processedPuzzles = config.puzzles.map(function(p, i) {
-        var processed = Object.assign({}, p, {
-          linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
-        });
-        if (p.type === 'sequence' && p.items) {
-          var indices = p.items.map(function(_, idx) { return idx; });
-          processed.shuffledItems = derangeShuffle(indices);
-        }
-        if (p.type === 'scramble' && p.scrambledWord) {
-          processed.displayLetters = derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord));
-        }
-        if (p.type === 'matching' && p.pairs) {
-          processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
-          processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
-        }
-        if (p.type === 'fillin' && p.wordbank) {
-          processed.wordbank = derangeShuffle(p.wordbank);
-        }
-        if (p.type === 'cipher' && p.wordbank) {
-          processed.wordbank = derangeShuffle(p.wordbank);
-        }
-        return processed;
-      });
-      var processedFinalDoor = config.finalDoor || null;
+      var processedPuzzles = processEscapeRoomPuzzles(prepared.puzzles, prepared.objects);
+      var processedFinalDoor = prepared.finalDoor;
       if (processedFinalDoor && processedFinalDoor.wordbank) {
         processedFinalDoor = Object.assign({}, processedFinalDoor, { wordbank: derangeShuffle(processedFinalDoor.wordbank) });
       }
@@ -1295,17 +1764,18 @@ inputText.substring(0, 6000) + '\n' +
       var preset = diffPresets[diff] || diffPresets.normal;
       var totalTime = processedPuzzles.length * preset.timePerPuzzle;
       setState.setEscapeRoomState(function(prev) {
-        return Object.assign({}, prev, escapeRoomAttempt(), {
+        var next = Object.assign({}, prev, escapeRoomAttempt(), {
           isActive: false,
           isPreview: true,
           isGenerating: false,
           showSettings: false,
-          room: config.room,
+          confirmDiscard: false,
+          previewNotes: { room: prepared.notes.room, byId: prepared.notes.byId },
+          room: prepared.room,
           puzzles: processedPuzzles,
-          objects: config.objects,
+          objects: prepared.objects,
           totalPuzzles: processedPuzzles.length,
           finalDoorPuzzle: processedFinalDoor,
-          savedEscapeRoom: config,
           solvedPuzzles: new Set(),
           isEscaped: false,
           timeRemaining: totalTime,
@@ -1321,6 +1791,8 @@ inputText.substring(0, 6000) + '\n' +
           isGameOver: false,
           timerPaused: true
         });
+        next.savedEscapeRoom = savedEscapeRoomFrom(next);
+        return next;
       });
       setState.setEscapeTimeLeft(totalTime);
       setState.setIsEscapeTimerRunning(false);
@@ -1401,7 +1873,18 @@ inputText.substring(0, 6000) + '\n' +
       saveEscapeRoomConfig: saveEscapeRoomConfig,
       loadSavedEscapeRoom: loadSavedEscapeRoom,
       loadEscapeRoomFromConfig: loadEscapeRoomFromConfig,
-      hasSavedEscapeRoom: hasSavedEscapeRoom
+      hasSavedEscapeRoom: hasSavedEscapeRoom,
+      publishEscapeRoomLive: publishEscapeRoomLive,
+      updateEscapeRoomRoom: updateEscapeRoomRoom,
+      removeEscapeRoomPuzzle: removeEscapeRoomPuzzle,
+      regenerateEscapeRoomPuzzle: regenerateEscapeRoomPuzzle,
+      closeEscapeRoomPreview: closeEscapeRoomPreview,
+      reopenEscapeRoomPreview: reopenEscapeRoomPreview,
+      hasEscapeRoomDraft: hasEscapeRoomDraft,
+      discardEscapeRoomPreview: discardEscapeRoomPreview,
+      generateNewEscapeRoom: generateNewEscapeRoom,
+      startEscapeRoomTrial: startEscapeRoomTrial,
+      endEscapeRoomTrial: endEscapeRoomTrial
     };
   }
 
@@ -1556,9 +2039,12 @@ inputText.substring(0, 6000) + '\n' +
             className: 'bg-purple-600 text-white px-6 py-3 rounded-full font-bold hover:bg-purple-700 transition-colors flex items-center gap-2'
           }, h(RefreshCw, { size: 18 }), t('escape_room.play_again')),
           h('button', {
-            onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false }); }); },
+            onClick: function() {
+              if (escapeRoomState.isTrial) handlers.resetEscapeRoom();
+              else setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false }); });
+            },
             className: 'bg-slate-700 text-white px-6 py-3 rounded-full font-bold hover:bg-slate-600 transition-colors'
-          }, t('escape_room.close') || 'Close')
+          }, escapeRoomState.isTrial ? (t('escape_room.back_to_preview') || 'Back to preview') : (t('escape_room.close') || 'Close'))
         )
       );
     };
@@ -1571,7 +2057,8 @@ inputText.substring(0, 6000) + '\n' +
         h('p', { className: 'text-purple-300' }, t('escape_room.xp_earned', { xp: escapeRoomState.xpEarned || 0 })),
         h('div', { className: 'flex flex-wrap gap-3 justify-center' },
           h('button', { onClick: function() { handlers.resetEscapeRoom({ replay: true }); }, className: 'bg-purple-600 text-white px-6 py-3 rounded-full font-bold focus:ring-2 focus:ring-purple-300' }, t('escape_room.play_again')),
-          h('button', { onClick: function() { handlers.resetEscapeRoom(); }, className: 'bg-slate-700 text-white px-6 py-3 rounded-full font-bold focus:ring-2 focus:ring-slate-300' }, t('escape_room.close'))
+          h('button', { onClick: function() { handlers.resetEscapeRoom(); }, className: 'bg-slate-700 text-white px-6 py-3 rounded-full font-bold focus:ring-2 focus:ring-slate-300' },
+            escapeRoomState.isTrial ? (t('escape_room.back_to_preview') || 'Back to preview') : t('escape_room.close'))
         )
       );
     };
@@ -2273,6 +2760,15 @@ inputText.substring(0, 6000) + '\n' +
             }, soundEnabled ? h(Volume2, { size: 20 }) : h(MicOff, { size: 20 }))
           )
         ),
+        // Trial runs are marked so a teacher never mistakes one for the class's room.
+        escapeRoomState.isTrial
+          ? h('div', { 'data-escape-room-trial': '', className: 'relative z-10 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400 bg-amber-100 px-4 py-3 text-amber-950' },
+              h('p', { className: 'text-sm font-bold' }, t('escape_room.trial_banner') || 'Trial run: you are playing as a student would. No XP is awarded and nothing is sent to the class.'),
+              h('button', {
+                onClick: function() { handlers.resetEscapeRoom(); },
+                className: 'min-h-11 rounded-lg bg-amber-800 px-4 py-2 text-sm font-bold text-white hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500'
+              }, t('escape_room.back_to_preview') || 'Back to preview'))
+          : null,
         // Main content
         mainContent,
         // Selected object puzzle dialog
@@ -2304,6 +2800,28 @@ inputText.substring(0, 6000) + '\n' +
   // COMPONENT: EscapeRoomDialogs (Settings + Preview)
   // ═══════════════════════════════════════════════════════════════
 
+  // A comma-separated word list that commits on blur or Enter, so typing a comma
+  // never fights the controlled value.
+  var ESCAPE_LIST_SEPARATOR = new RegExp('[,;' + String.fromCharCode(0xFF0C, 0x3001, 0x060C) + ']');
+  function EscapeListInput(props) {
+    var joined = (props.value || []).join(', ');
+    var draftState = useState(joined);
+    var draft = draftState[0], setDraft = draftState[1];
+    useEffect(function() { setDraft(joined); }, [joined]);
+    var commit = function() {
+      var list = draft.split(ESCAPE_LIST_SEPARATOR).map(function(word) { return word.trim(); }).filter(Boolean);
+      if (list.join(', ') !== joined) props.onCommit(list);
+      else setDraft(joined);
+    };
+    return h('input', {
+      type: 'text', value: draft, 'aria-label': props.label, disabled: props.disabled,
+      onChange: function(e) { setDraft(e.target.value); },
+      onBlur: commit,
+      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); commit(); } },
+      className: props.className
+    });
+  }
+
   var EscapeRoomDialogs = React.memo(function EscapeRoomDialogs(props) {
     var escapeRoomState = props.escapeRoomState;
     var setEscapeRoomState = props.setEscapeRoomState;
@@ -2325,6 +2843,7 @@ inputText.substring(0, 6000) + '\n' +
     // ── Settings Dialog ──
     if (escapeRoomState.showSettings) {
       var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
+      var hasDraft = typeof handlers.hasEscapeRoomDraft === 'function' ? !!handlers.hasEscapeRoomDraft() : false;
       settingsDialog = h('div', {
         className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
         onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); }
@@ -2384,16 +2903,25 @@ inputText.substring(0, 6000) + '\n' +
                   type: 'range',
                   min: '5',
                   max: '15',
-                  value: escapeRoomState.puzzleCount || 30,
+                  value: escapeRoomState.puzzleCount || 10,
                   onChange: function(e) { handlers.updateEscapeRoomSetting('puzzleCount', parseInt(e.target.value)); },
                   className: 'flex-grow h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500'
                 }),
                 h('span', { className: 'w-10 text-center font-bold text-amber-800 bg-amber-50 rounded-lg py-1 border border-amber-200' },
-                  escapeRoomState.puzzleCount || 30
+                  escapeRoomState.puzzleCount || 10
                 )
               )
             )
           ),
+          // A room closed from the preview stays available until it is discarded.
+          hasDraft
+            ? h('button', {
+                type: 'button',
+                'data-escape-room-reopen': '',
+                onClick: handlers.reopenEscapeRoomPreview,
+                className: 'w-full mb-3 py-3 rounded-xl border-2 border-amber-600 text-amber-800 font-bold hover:bg-amber-50 transition-colors flex items-center justify-center gap-2'
+              }, h(Eye, { size: 18, 'aria-hidden': 'true' }), t('escape_room.return_to_preview') || 'Return to your room preview')
+            : null,
           // Action buttons
           h('div', { className: 'flex gap-3' },
             hasSaved
@@ -2421,7 +2949,257 @@ inputText.substring(0, 6000) + '\n' +
     }
 
     // ── Preview Dialog ──
+    // Teacher-only review before anyone plays: every answer key is visible and
+    // editable, each puzzle can be rewritten or removed, and the room can be tried
+    // as a student would play it. Nothing reaches the class from here except
+    // through Launch for class.
     if (escapeRoomState.isPreview && escapeRoomState.room) {
+      var previewNotes = escapeRoomState.previewNotes || { room: [], byId: {} };
+      var previewPuzzles = escapeRoomState.puzzles || [];
+      var isPublishing = !!escapeRoomState.isPublishing;
+      var previewBusy = !!(escapeRoomState.regeneratingPuzzleId || isPublishing || escapeRoomState.isGenerating);
+      var liveSession = !!props.liveSession;
+      var fieldClass = 'w-full mt-1 p-2 text-sm border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors';
+      var smallFieldClass = 'flex-1 min-w-0 p-1.5 text-xs border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1';
+      var smallButtonClass = 'min-h-9 px-2.5 py-1 rounded-lg border border-slate-400 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1';
+      var puzzleLabel = function(idx, what) { return t('share_collect.q_aria', { n: idx + 1 }) + ': ' + what; };
+      var answerLabel = t('escape_room.answer_field') || 'Answer';
+      var wordBankLabel = t('simplified.word_bank') || 'Word bank';
+      var checkText = {
+        options_cleaned: t('escape_room.check_options_cleaned') || 'Duplicate or empty options were removed.',
+        order_renumbered: t('escape_room.check_order_renumbered') || 'The order was renumbered. Check that it is right.',
+        few_items: t('escape_room.check_few_items') || 'Only two items to put in order.',
+        pairs_removed: t('escape_room.check_pairs_removed') || 'Duplicate or incomplete pairs were removed.',
+        few_pairs: t('escape_room.check_few_pairs') || 'Fewer than three pairs to match.',
+        missing_question: t('escape_room.check_missing_question') || 'Add instructions for students.',
+        blank_added: t('escape_room.check_blank_added') || 'The answer appeared in the sentence, so it was replaced with a blank.',
+        no_blank: t('escape_room.check_no_blank') || 'The sentence has no blank (_____).',
+        answer_in_riddle: t('escape_room.check_answer_in_riddle') || 'The riddle contains its own answer.',
+        answer_added: t('escape_room.check_answer_added') || 'The answer was missing from the word bank, so it was added.',
+        typed_answer: t('escape_room.check_typed_answer') || 'No word bank: students must type the exact answer.'
+      };
+      var roomCheckText = function(note) {
+        if (note.code === 'count_short') return t('escape_room.check_count_short', { count: note.count, requested: note.requested }) || (note.count + ' of ' + note.requested + ' requested puzzles passed the checks.');
+        if (note.code === 'puzzles_removed') return t('escape_room.check_puzzles_removed', { count: note.count }) || ('Puzzles removed because they could not be played: ' + note.count);
+        if (note.code === 'final_door_removed') return t('escape_room.check_final_door_removed') || 'The final door was incomplete, so it was removed. Students escape after the last puzzle.';
+        if (note.code === 'mix_relaxed') return t('escape_room.check_mix_relaxed') || 'The puzzle mix differs from the usual balance of 2 of each type (1 riddle, 1 scramble).';
+        return '';
+      };
+      var roomChecks = (previewNotes.room || []).map(roomCheckText).filter(Boolean);
+
+      var puzzleCards = previewPuzzles.map(function(puzzle, idx) {
+        var typeColorClass =
+          puzzle.type === 'mcq' ? 'bg-blue-100 text-blue-800' :
+          puzzle.type === 'sequence' ? 'bg-purple-100 text-purple-800' :
+          puzzle.type === 'cipher' ? 'bg-red-100 text-red-800' :
+          puzzle.type === 'matching' ? 'bg-green-100 text-green-800' :
+          puzzle.type === 'scramble' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-teal-100 text-teal-800';
+        var regenerating = escapeRoomState.regeneratingPuzzleId === puzzle.id;
+        var puzzleChecks = (previewNotes.byId && previewNotes.byId[puzzle.id]) || [];
+        var puzzleChildren = [];
+        // Header row: object, type, and per-puzzle actions
+        puzzleChildren.push(
+          h('div', { key: 'hdr', className: 'flex flex-wrap items-center gap-2 mb-2' },
+            h('span', { className: 'text-xl', 'aria-hidden': 'true' }, (puzzle.linkedObject && puzzle.linkedObject.emoji) || '?'),
+            h('span', { className: 'font-bold text-slate-700' }, (puzzle.linkedObject && puzzle.linkedObject.name) || t('share_collect.q_aria', { n: idx + 1 })),
+            h('span', { className: 'px-2 py-0.5 rounded-full text-xs font-bold uppercase ' + typeColorClass }, t('escape_room.type_' + puzzle.type) || puzzle.type),
+            h('span', { className: 'flex-grow' }),
+            h('button', {
+              type: 'button',
+              'data-regenerate-puzzle': puzzle.id,
+              disabled: previewBusy,
+              'aria-busy': regenerating,
+              'aria-label': puzzleLabel(idx, t('escape_room.regenerate_puzzle') || 'Write a new version'),
+              onClick: function() { handlers.regenerateEscapeRoomPuzzle(idx); },
+              className: smallButtonClass
+            }, h(RefreshCw, { size: 14, 'aria-hidden': 'true', className: regenerating ? 'animate-spin motion-reduce:animate-none' : '' }),
+              regenerating ? (t('escape_room.regenerating') || 'Writing...') : (t('escape_room.regenerate_puzzle') || 'Write a new version')),
+            h('button', {
+              type: 'button',
+              'data-remove-puzzle': puzzle.id,
+              disabled: previewBusy || previewPuzzles.length <= 1,
+              'aria-label': puzzleLabel(idx, t('escape_room.remove_puzzle') || 'Remove puzzle'),
+              onClick: function() { handlers.removeEscapeRoomPuzzle(idx); },
+              className: smallButtonClass
+            }, h(X, { size: 14, 'aria-hidden': 'true' }), t('escape_room.remove_puzzle') || 'Remove puzzle')
+          )
+        );
+        if (puzzleChecks.length) {
+          puzzleChildren.push(
+            h('ul', { key: 'checks', 'data-puzzle-checks': puzzle.id, className: 'text-xs text-amber-950 bg-amber-50 border border-amber-400 rounded-lg px-3 py-2 list-disc list-inside space-y-0.5' },
+              puzzleChecks.map(function(code) { return h('li', { key: code }, checkText[code] || code); }))
+          );
+        }
+        // Question input
+        var editField = puzzle.sentence != null ? 'sentence' : (puzzle.encodedText != null ? 'encodedText' : 'question');
+        var editLabel = editField === 'sentence' ? t('escape_room.sentence_with_blank') : editField === 'encodedText' ? t('escape_room.riddle_challenge') : t('quiz.question_label');
+        puzzleChildren.push(
+          h('div', { key: 'q' },
+            h('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, editLabel,
+              h('input', {
+                type: 'text',
+                value: puzzle[editField] || '',
+                'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + editLabel,
+                onChange: function(e) {
+                  handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
+                },
+                className: fieldClass
+              })
+            )
+          )
+        );
+        // MCQ options and the correct option
+        if (puzzle.type === 'mcq' && puzzle.options) {
+          puzzleChildren.push(
+            h('div', { key: 'opts', className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+              puzzle.options.map(function(opt, optIdx) {
+                return h('div', { key: optIdx, className: 'flex items-center gap-1' },
+                  h('span', {
+                    'aria-hidden': 'true',
+                    className: 'w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ' +
+                      (optIdx === puzzle.correctIndex ? 'bg-green-700 text-white' : 'bg-slate-200 text-slate-700')
+                  }, String.fromCharCode(65 + optIdx)),
+                  h('input', {
+                    type: 'text',
+                    value: opt,
+                    'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + t('escape_room.option') + ' ' + String.fromCharCode(65 + optIdx),
+                    onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value }); },
+                    className: smallFieldClass + ' ' + (optIdx === puzzle.correctIndex ? 'border-green-700 bg-green-50' : '')
+                  })
+                );
+              })
+            ),
+            h('label', { key: 'correct', className: 'flex items-center gap-2 text-xs font-bold text-slate-700' },
+              t('escape_room.correct_option') || 'Correct option',
+              h('select', {
+                value: String(puzzle.correctIndex),
+                'aria-label': puzzleLabel(idx, t('escape_room.correct_option') || 'Correct option'),
+                onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'correctIndex', Number(e.target.value)); },
+                className: 'p-1.5 text-xs border border-slate-400 rounded-lg bg-white'
+              }, puzzle.options.map(function(opt, optIdx) {
+                return h('option', { key: optIdx, value: String(optIdx) }, String.fromCharCode(65 + optIdx) + '. ' + String(opt).slice(0, 60));
+              }))
+            )
+          );
+        }
+        // Answers for the single-word puzzle types
+        if (puzzle.type === 'scramble' || puzzle.type === 'fillin' || puzzle.type === 'cipher') {
+          puzzleChildren.push(
+            h('div', { key: 'answer', className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+              h('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, answerLabel,
+                h('input', {
+                  type: 'text',
+                  value: puzzle.answer || '',
+                  'aria-label': puzzleLabel(idx, answerLabel),
+                  onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'answer', e.target.value); },
+                  className: fieldClass
+                })
+              ),
+              puzzle.type !== 'scramble'
+                ? h('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, wordBankLabel,
+                    h(EscapeListInput, {
+                      value: puzzle.wordbank || [],
+                      label: puzzleLabel(idx, wordBankLabel),
+                      onCommit: function(list) { handlers.updateEscapeRoomPuzzle(idx, 'wordbank', list); },
+                      className: fieldClass
+                    })
+                  )
+                : null
+            )
+          );
+        }
+        // Sequence: items shown in the correct order, editable and reorderable
+        if (puzzle.type === 'sequence' && puzzle.items) {
+          var order = isIndexOrder(puzzle.correctOrder, puzzle.items.length, 0) ? puzzle.correctOrder : puzzle.items.map(function(_, i) { return i; });
+          var orderLabel = t('escape_room.correct_order') || 'Correct order';
+          puzzleChildren.push(
+            h('div', { key: 'seq' },
+              h('p', { className: 'text-xs font-bold text-slate-600 uppercase', id: 'escape-order-' + idx }, orderLabel),
+              h('ol', { className: 'space-y-1 mt-1', 'aria-labelledby': 'escape-order-' + idx },
+                order.map(function(itemIndex, position) {
+                  var itemLabel = t('escape_room.order_item', { n: position + 1 }) || ('Item ' + (position + 1));
+                  return h('li', { key: itemIndex, className: 'flex items-center gap-1' },
+                    h('span', { className: 'w-6 text-xs font-bold text-slate-600', 'aria-hidden': 'true' }, (position + 1) + '.'),
+                    h('input', {
+                      type: 'text',
+                      value: puzzle.items[itemIndex] || '',
+                      'aria-label': puzzleLabel(idx, itemLabel),
+                      onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'item', { position: position, text: e.target.value }); },
+                      className: smallFieldClass
+                    }),
+                    h('button', {
+                      type: 'button',
+                      disabled: position === 0,
+                      'aria-label': puzzleLabel(idx, t('escape_room.move_item_up', { n: position + 1 }) || ('Move item ' + (position + 1) + ' up')),
+                      onClick: function() { handlers.updateEscapeRoomPuzzle(idx, 'moveItem', { position: position, delta: -1 }); },
+                      className: smallButtonClass
+                    }, h(ChevronUp, { size: 14, 'aria-hidden': 'true' })),
+                    h('button', {
+                      type: 'button',
+                      disabled: position === order.length - 1,
+                      'aria-label': puzzleLabel(idx, t('escape_room.move_item_down', { n: position + 1 }) || ('Move item ' + (position + 1) + ' down')),
+                      onClick: function() { handlers.updateEscapeRoomPuzzle(idx, 'moveItem', { position: position, delta: 1 }); },
+                      className: smallButtonClass
+                    }, h(ChevronDown, { size: 14, 'aria-hidden': 'true' }))
+                  );
+                })
+              )
+            )
+          );
+        }
+        // Matching pairs
+        if (puzzle.type === 'matching' && puzzle.pairs) {
+          puzzleChildren.push(
+            h('div', { key: 'pairs' },
+              h('p', { className: 'text-xs font-bold text-slate-600 uppercase' }, t('matching.pairs')),
+              h('div', { className: 'space-y-1 mt-1' },
+                puzzle.pairs.map(function(pair, pairIdx) {
+                  return h('div', { key: pairIdx, className: 'grid grid-cols-2 gap-1' },
+                    h('input', {
+                      type: 'text',
+                      value: pair.left || '',
+                      'aria-label': puzzleLabel(idx, t('escape_room.pair_left', { n: pairIdx + 1 }) || ('Pair ' + (pairIdx + 1) + ', left')),
+                      onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'pair', { index: pairIdx, side: 'left', text: e.target.value }); },
+                      className: smallFieldClass
+                    }),
+                    h('input', {
+                      type: 'text',
+                      value: pair.right || '',
+                      'aria-label': puzzleLabel(idx, t('escape_room.pair_right', { n: pairIdx + 1 }) || ('Pair ' + (pairIdx + 1) + ', right')),
+                      onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'pair', { index: pairIdx, side: 'right', text: e.target.value }); },
+                      className: smallFieldClass
+                    })
+                  );
+                })
+              )
+            )
+          );
+        }
+        // Hint input (always shown, so an empty hint can be written and cleared)
+        puzzleChildren.push(
+          h('div', { key: 'hint' },
+            h('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, t('escape_room.hint'),
+              h('input', {
+                type: 'text',
+                value: puzzle.hint || '',
+                'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + t('escape_room.hint'),
+                onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'hint', e.target.value); },
+                className: fieldClass
+              })
+            )
+          )
+        );
+        return h('div', {
+          key: (puzzle.id || idx),
+          'data-preview-puzzle': puzzle.id,
+          className: 'p-4 bg-slate-50 rounded-xl border border-slate-400 hover:border-amber-300 transition-colors'
+        },
+          h('div', { className: 'space-y-2' }, puzzleChildren)
+        );
+      });
+
+      var finalDoor = escapeRoomState.finalDoorPuzzle;
       previewDialog = h('div', {
         className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
         style: { overflowY: 'auto' }
@@ -2435,177 +3213,161 @@ inputText.substring(0, 6000) + '\n' +
           'aria-modal': 'true',
           onClick: function(e) { e.stopPropagation(); }
         },
-          // Close button
+          // Close keeps the room; Discard is the only action that deletes it.
           h('button', {
-            onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: false, isActive: false, room: null, puzzles: [], savedEscapeRoom: null }); }); },
-            className: 'absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors z-10',
+            onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: false, confirmDiscard: false }); }); },
+            className: 'absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors z-10',
             'aria-label': t('common.close')
           }, h(X, { size: 20 })),
           // Header
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm' },
-              h(Key, { size: 32, className: 'text-amber-600' })
+              h(Key, { size: 32, className: 'text-amber-700' })
             ),
-            h('h2', { className: 'text-2xl font-black text-slate-800 mb-1' },
-              '\uD83D\uDC41\uFE0F ' + (t('escape_room.preview_title') || 'Preview Puzzle Challenge')
+            h('h2', { className: 'text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2' },
+              h(Eye, { size: 24, 'aria-hidden': 'true' }), t('escape_room.preview_title') || 'Preview Puzzle Challenge'
             ),
-            h('p', { className: 'text-slate-500 text-sm' }, t('escape_room.preview_desc') || 'Review and edit puzzles before students play. Click any field to edit.')
+            h('p', { className: 'text-slate-600 text-sm' }, t('escape_room.preview_desc') || 'Review and edit puzzles before students play. Click any field to edit.'),
+            liveSession
+              ? h('p', { className: 'text-slate-700 text-sm font-bold mt-1' }, t('escape_room.preview_live_note') || 'Students see nothing until you choose Launch for class.')
+              : null
           ),
-          // Room theme banner
-          h('div', { className: 'mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200' },
-            h('h3', { className: 'font-bold text-amber-800 text-lg' }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDFF0 '), escapeRoomState.room.theme),
-            h('p', { className: 'text-amber-700 text-sm mt-1' }, escapeRoomState.room.description)
+          roomChecks.length
+            ? h('ul', { 'data-escape-room-checks': '', className: 'mb-4 text-sm text-amber-950 bg-amber-50 border-2 border-amber-400 rounded-xl px-4 py-3 list-disc list-inside space-y-1' },
+                roomChecks.map(function(text, i) { return h('li', { key: i }, text); }))
+            : null,
+          // Room theme and description
+          h('div', { className: 'mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-300 space-y-2' },
+            h('label', { className: 'block text-xs font-bold text-amber-900 uppercase' }, t('escape_room.room_theme') || 'Room theme',
+              h('input', {
+                type: 'text',
+                value: escapeRoomState.room.theme || '',
+                'aria-label': t('escape_room.room_theme') || 'Room theme',
+                onChange: function(e) { handlers.updateEscapeRoomRoom('theme', e.target.value); },
+                className: fieldClass + ' font-bold text-amber-900'
+              })
+            ),
+            h('label', { className: 'block text-xs font-bold text-amber-900 uppercase' }, t('escape_room.room_description') || 'Room description',
+              h('textarea', {
+                rows: 2,
+                value: escapeRoomState.room.description || '',
+                'aria-label': t('escape_room.room_description') || 'Room description',
+                onChange: function(e) { handlers.updateEscapeRoomRoom('description', e.target.value); },
+                className: fieldClass
+              })
+            )
           ),
           // Puzzles list
-          h('div', { className: 'space-y-3 mb-6' },
-            escapeRoomState.puzzles.map(function(puzzle, idx) {
-              var typeColorClass =
-                puzzle.type === 'mcq' ? 'bg-blue-100 text-blue-700' :
-                puzzle.type === 'sequence' ? 'bg-purple-100 text-purple-700' :
-                puzzle.type === 'cipher' ? 'bg-red-100 text-red-700' :
-                puzzle.type === 'matching' ? 'bg-green-100 text-green-700' :
-                puzzle.type === 'scramble' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-teal-100 text-teal-700';
-
-              var puzzleChildren = [];
-              // Header row
-              puzzleChildren.push(
-                h('div', { key: 'hdr', className: 'flex items-center gap-2 mb-2' },
-                  h('span', { className: 'text-xl' }, (puzzle.linkedObject && puzzle.linkedObject.emoji) || '\uD83D\uDD2E'),
-                  h('span', { className: 'font-bold text-slate-700' }, (puzzle.linkedObject && puzzle.linkedObject.name) || t('share_collect.q_aria', { n: idx + 1 })),
-                  h('span', { className: 'px-2 py-0.5 rounded-full text-xs font-bold uppercase ' + typeColorClass }, puzzle.type)
-                )
-              );
-              // Question input
-              var editField = puzzle.sentence != null ? 'sentence' : (puzzle.encodedText != null ? 'encodedText' : 'question');
-              var editLabel = editField === 'sentence' ? t('escape_room.sentence_with_blank') : editField === 'encodedText' ? t('escape_room.riddle_challenge') : t('quiz.question_label');
-              puzzleChildren.push(
-                h('div', { key: 'q' },
-                  h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, editLabel),
-                  h('input', {
-                    type: 'text',
-                    value: puzzle[editField] || '',
-                    'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + editLabel,
-                    onChange: function(e) {
-                      handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
-                    },
-                    className: 'w-full mt-1 p-2 text-sm border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors'
-                  })
-                )
-              );
-              // MCQ options
-              if (puzzle.type === 'mcq' && puzzle.options) {
-                puzzleChildren.push(
-                  h('div', { key: 'opts', className: 'grid grid-cols-2 gap-2' },
-                    puzzle.options.map(function(opt, optIdx) {
-                      return h('div', { key: optIdx, className: 'flex items-center gap-1' },
-                        h('span', {
-                          className: 'w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ' +
-                            (optIdx === puzzle.correctIndex ? 'bg-green-700 text-white' : 'bg-slate-200 text-slate-600')
-                        }, String.fromCharCode(65 + optIdx)),
-                        h('input', {
-                          type: 'text',
-                          value: opt,
-                          'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + t('escape_room.option') + ' ' + String.fromCharCode(65 + optIdx),
-                          onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value }); },
-                          className: 'flex-1 p-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 transition-colors ' +
-                            (optIdx === puzzle.correctIndex ? 'border-green-600 bg-green-50' : 'border-slate-200')
-                        })
-                      );
-                    })
-                  )
-                );
-              }
-              // Scramble answer
-              if (puzzle.type === 'scramble') {
-                puzzleChildren.push(
-                  h('p', { key: 'scr-ans', className: 'text-xs text-slate-500' },
-                    t('export.answer_label') + ' ', h('strong', null, puzzle.answer)
-                  )
-                );
-              }
-              // Fillin/cipher answer
-              if (puzzle.type === 'fillin' || puzzle.type === 'cipher') {
-                puzzleChildren.push(
-                  h('p', { key: 'fil-ans', className: 'text-xs text-slate-500' },
-                    t('export.answer_label') + ' ', h('strong', null, puzzle.answer), ' | ' + t('simplified.word_bank') + ': ' + ((puzzle.wordbank || []).join(', '))
-                  )
-                );
-              }
-              // Sequence order
-              if (puzzle.type === 'sequence' && puzzle.items) {
-                puzzleChildren.push(
-                  h('p', { key: 'seq-ans', className: 'text-xs text-slate-500' },
-                    '\uD83D\uDCCB Correct order: ' + puzzle.items.join(' \u2192 ')
-                  )
-                );
-              }
-              // Matching pairs
-              if (puzzle.type === 'matching' && puzzle.pairs) {
-                puzzleChildren.push(
-                  h('p', { key: 'match-ans', className: 'text-xs text-slate-500' },
-                    t('matching.pairs') + ': ' + puzzle.pairs.map(function(p) { return p.left + '\u2194' + p.right; }).join(', ')
-                  )
-                );
-              }
-              // Hint input
-              if (puzzle.hint) {
-                puzzleChildren.push(
-                  h('div', { key: 'hint' },
-                    h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, t('escape_room.hint')),
-                    h('input', {
-                      type: 'text',
-                      value: puzzle.hint,
-                      'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + t('escape_room.hint'),
-                      onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'hint', e.target.value); },
-                      className: 'w-full mt-1 p-2 text-xs border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
-                    })
-                  )
-                );
-              }
-
-              return h('div', {
-                key: (puzzle.id || idx),
-                className: 'p-4 bg-slate-50 rounded-xl border border-slate-400 hover:border-amber-300 transition-colors'
-              },
-                h('div', { className: 'space-y-2' }, puzzleChildren)
-              );
-            })
-          ),
+          h('div', { className: 'space-y-3 mb-6' }, puzzleCards),
           // Final door puzzle
-          escapeRoomState.finalDoorPuzzle
-            ? h('div', { className: 'mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-200' },
-                h('h4', { className: 'font-bold text-red-800 mb-2' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEAA '), t('escape_room.final_door_title')),
+          finalDoor
+            ? h('div', { className: 'mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-300 space-y-2' },
+                h('h4', { className: 'font-bold text-red-900 flex items-center gap-2' }, h(DoorOpen, { size: 18, 'aria-hidden': 'true' }), t('escape_room.final_door_title')),
                 h('input', {
                   type: 'text',
-                  value: escapeRoomState.finalDoorPuzzle.sentence || '',
+                  value: finalDoor.sentence || '',
                   'aria-label': t('escape_room.final_door_title') + ': ' + t('escape_room.sentence_with_blank'),
                   onChange: function(e) { handlers.updateEscapeRoomFinalDoor('sentence', e.target.value); },
-                  className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 mb-2'
+                  className: 'w-full p-2 text-sm border border-red-300 rounded-lg focus:border-red-500'
                 }),
-                h('p', { className: 'text-xs text-red-600' },
-                  t('export.answer_label') + ' ', h('strong', null, escapeRoomState.finalDoorPuzzle.answer)
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                  h('label', { className: 'text-xs font-bold text-red-900 uppercase' }, answerLabel,
+                    h('input', {
+                      type: 'text',
+                      value: finalDoor.answer || '',
+                      'aria-label': t('escape_room.final_door_title') + ': ' + answerLabel,
+                      onChange: function(e) { handlers.updateEscapeRoomFinalDoor('answer', e.target.value); },
+                      className: fieldClass
+                    })
+                  ),
+                  h('label', { className: 'text-xs font-bold text-red-900 uppercase' }, t('escape_room.acceptable_answers') || 'Also accept',
+                    h(EscapeListInput, {
+                      value: finalDoor.acceptableAnswers || [],
+                      label: t('escape_room.final_door_title') + ': ' + (t('escape_room.acceptable_answers') || 'Also accept'),
+                      onCommit: function(list) { handlers.updateEscapeRoomFinalDoor('acceptableAnswers', list); },
+                      className: fieldClass
+                    })
+                  ),
+                  Array.isArray(finalDoor.wordbank)
+                    ? h('label', { className: 'text-xs font-bold text-red-900 uppercase sm:col-span-2' }, wordBankLabel,
+                        h(EscapeListInput, {
+                          value: finalDoor.wordbank,
+                          label: t('escape_room.final_door_title') + ': ' + wordBankLabel,
+                          onCommit: function(list) { handlers.updateEscapeRoomFinalDoor('wordbank', list); },
+                          className: fieldClass
+                        })
+                      )
+                    : null
+                )
+              )
+            : null,
+          // Discard asks first: generated rooms are expensive to recreate.
+          escapeRoomState.confirmDiscard
+            ? h('div', { role: 'group', 'aria-label': t('common.discard_preview'), 'data-escape-room-discard-confirm': '', className: 'mb-4 p-4 rounded-xl border-2 border-red-400 bg-red-50' },
+                h('p', { className: 'text-sm font-bold text-red-950' }, t('escape_room.discard_confirm') || 'Discard this room? Edits you have not saved will be lost.'),
+                h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+                  h('button', {
+                    type: 'button',
+                    autoFocus: true,
+                    onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { confirmDiscard: false }); }); },
+                    className: 'min-h-11 px-4 py-2 rounded-lg border-2 border-slate-400 bg-white font-bold text-slate-800 hover:bg-slate-50'
+                  }, t('escape_room.keep_editing') || 'Keep editing'),
+                  h('button', {
+                    type: 'button',
+                    onClick: handlers.discardEscapeRoomPreview,
+                    className: 'min-h-11 px-4 py-2 rounded-lg bg-red-700 font-bold text-white hover:bg-red-800'
+                  }, t('escape_room.confirm_discard') || 'Discard room')
                 )
               )
             : null,
           // Action buttons
-          h('div', { className: 'flex gap-3' },
+          h('div', { className: 'flex flex-wrap gap-3' },
             h('button', {
+              type: 'button',
               'aria-label': t('common.discard_preview'),
-              onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: false, isActive: false, room: null, puzzles: [], savedEscapeRoom: null }); }); },
-              className: 'flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors'
-            }, t('common.discard') || '\uD83D\uDDD1\uFE0F Discard'),
+              onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { confirmDiscard: true }); }); },
+              className: 'flex-1 min-w-[8rem] py-3 rounded-xl border-2 border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition-colors'
+            }, t('common.discard') || 'Discard'),
             h('button', {
+              type: 'button',
+              'data-escape-room-new': '',
+              disabled: previewBusy,
+              onClick: handlers.generateNewEscapeRoom,
+              className: 'flex-1 min-w-[8rem] py-3 rounded-xl border-2 border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2'
+            }, h(RefreshCw, { size: 16, 'aria-hidden': 'true' }), t('escape_room.new_room') || 'New room'),
+            h('button', {
+              type: 'button',
+              'data-escape-room-try': '',
+              disabled: previewBusy,
+              onClick: handlers.startEscapeRoomTrial,
+              className: 'flex-1 min-w-[8rem] py-3 rounded-xl border-2 border-indigo-400 text-indigo-800 font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2'
+            }, h(Play, { size: 16, 'aria-hidden': 'true' }), t('escape_room.try_room') || 'Try as a student'),
+            h('button', {
+              type: 'button',
               'aria-label': t('common.save_escape_room_configuration'),
               onClick: handlers.saveEscapeRoomConfig,
-              className: 'flex-1 py-3 rounded-xl border-2 border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
-            }, '\uD83D\uDCBE ' + (t('escape_room.save_config') || 'Save')),
-            h('button', {
-              'aria-label': t('common.confirm_and_launch_escape_room'),
-              onClick: handlers.confirmEscapeRoomPreview,
-              className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 transition-all shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-2'
-            }, '\uD83D\uDE80 ' + (t('escape_room.launch') || 'Launch!'))
-          )
+              className: 'flex-1 min-w-[8rem] py-3 rounded-xl border-2 border-emerald-500 text-emerald-800 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
+            }, h(Save, { size: 16, 'aria-hidden': 'true' }), t('escape_room.save_config') || 'Save'),
+            liveSession
+              ? h('button', {
+                  type: 'button',
+                  'data-escape-room-launch-live': '',
+                  disabled: previewBusy || !!props.liveBusy,
+                  'aria-busy': isPublishing,
+                  onClick: handlers.publishEscapeRoomLive,
+                  className: 'flex-1 min-w-[10rem] py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+                }, h(Rocket, { size: 16, 'aria-hidden': 'true' }), isPublishing ? (t('escape_room.launching_live') || 'Sending to the class...') : (t('escape_room.launch_live') || 'Launch for class'))
+              : h('button', {
+                  type: 'button',
+                  'aria-label': t('common.confirm_and_launch_escape_room'),
+                  disabled: previewBusy,
+                  onClick: handlers.confirmEscapeRoomPreview,
+                  className: 'flex-1 min-w-[8rem] py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 transition-all shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2'
+                }, h(Rocket, { size: 16, 'aria-hidden': 'true' }), t('escape_room.launch') || 'Launch!')
+          ),
+          liveSession && props.liveBusy
+            ? h('p', { className: 'mt-3 text-sm text-slate-700' }, t('escape_room.end_live_activity_first') || 'End the current live activity before launching this room.')
+            : null
         )
       );
     }
@@ -2621,6 +3383,7 @@ inputText.substring(0, 6000) + '\n' +
   window.AlloModules.createEscapeRoomEngine = createEscapeRoomEngine;
   window.AlloModules.EscapeRoomGameplay = EscapeRoomGameplay;
   window.AlloModules.EscapeRoomDialogs = EscapeRoomDialogs;
+  window.AlloModules.EscapeRoomData = { prepare: prepareEscapeRoomData, process: processEscapeRoomPuzzles, parse: parseEscapeRoomJson, toSaved: savedEscapeRoomFrom };
   window.AlloModules.useEscapeRoomTimer = useEscapeRoomTimer;
   window.AlloModules.startEscapeRoomClock = startEscapeRoomClock;
   window.AlloModules.EscapeRoomModule = true;

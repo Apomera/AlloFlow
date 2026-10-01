@@ -2260,12 +2260,12 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
                                                     h('div', { className: 'flex justify-end gap-1' },
                                                         callGemini && h('button', { "aria-label": 'Restorative questions for ' + rowLabel(entry),
                                                             onClick: () => handleRestorativeQuestions(entry),
-                                                            className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-800' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
+                                                            className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-800' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
                                                             title: tt('behavior_lens.restorative_questions', 'Restorative Questions')
                                                         }, restorativeLoading && restorativeId === entry.id ? '⏳' : '💬'),
                                                         callGemini && h('button', { 'aria-label': 'Edit with AI: ' + rowLabel(entry), 'aria-expanded': nlEditId === entry.id ? 'true' : 'false',
                                                             onClick: () => { setNlEditId(nlEditId === entry.id ? null : entry.id); setNlEditInput(''); },
-                                                            className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-800' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
+                                                            className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-800' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-800'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
                                                             title: tt('behavior_lens.ai_edit', 'AI Edit')
                                                         }, '✏️🧠'),
                                                         h('button', { 'aria-label': 'Edit entry: ' + rowLabel(entry),
@@ -16313,7 +16313,7 @@ Respond helpfully and concisely as AlloBot:`;
                 ),
                 messages.length > 0 && h('button', { "aria-label": "Clear chat history",
                     onClick: clearChat,
-                    className: 'text-xs px-3 py-1.5 border border-red-600 text-red-500 rounded-lg hover:bg-red-50 transition-colors font-medium',
+                    className: 'text-xs px-3 py-1.5 border border-red-600 text-red-700 rounded-lg hover:bg-red-50 transition-colors font-medium',
                     title: (tt('behavior_lens.raw.clear_chat_history', 'Clear chat history'))
                 }, '🗑️ Clear')
             ),
@@ -20747,7 +20747,7 @@ Keep it under 150 words.`);
                                     className: 'w-full ps-8 pe-3 py-2 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none'
                                 })
                             ),
-                            items.length > 3 && h('button', { type: 'button', onClick: () => removeItem(idx), 'aria-label': 'Remove preference item ' + (idx + 1) + (it ? ': ' + it : ''), className: 'p-2 text-red-500 hover:bg-red-50 rounded-lg' }, '🗑️')
+                            items.length > 3 && h('button', { type: 'button', onClick: () => removeItem(idx), 'aria-label': 'Remove preference item ' + (idx + 1) + (it ? ': ' + it : ''), className: 'p-2 text-red-700 hover:bg-red-50 rounded-lg' }, '🗑️')
                         ))
                     ),
                     h('button', { onClick: addItem, className: 'mt-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors' }, '+ Add Item'),
@@ -24558,9 +24558,9 @@ Keep the language professional but accessible.`;
 
                                 h('button', { onClick: () => setEditingIdx(editingIdx === idx ? null : idx), className: 'px-2 py-1 text-[11px] font-bold text-violet-600 hover:bg-violet-50 rounded' }, editingIdx === idx ? '✓ Done' : '✏️ Edit'),
 
-                                h('button', { onClick: () => addToLog(entry), className: 'px-2 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-50 rounded' }, '➕ Add'),
+                                h('button', { onClick: () => addToLog(entry), className: 'px-2 py-1 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 rounded' }, '➕ Add'),
 
-                                h('button', { onClick: () => removeParsed(idx), title: 'Discard this entry', 'aria-label': 'Discard entry ' + (idx + 1), className: 'px-2 py-1 text-[11px] font-bold text-red-500 hover:bg-red-50 rounded' }, '✕')
+                                h('button', { onClick: () => removeParsed(idx), title: 'Discard this entry', 'aria-label': 'Discard entry ' + (idx + 1), className: 'px-2 py-1 text-[11px] font-bold text-red-700 hover:bg-red-50 rounded' }, '✕')
 
                             )
 
@@ -32673,7 +32673,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         activePanel !== 'hub' && !isParentMode && h('div', { className: 'relative' },
                             h('button', { 'aria-label': 'Export this tool', 'aria-expanded': showExportMenu,
                                 onClick: () => setShowExportMenu(v => !v),
-                                className: 'p-2 rounded-full text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors',
+                                className: 'p-2 rounded-full text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors',
                                 title: (t('behavior_lens.raw.export_this_tool') || "Export this tool's data")
                             }, '📤'),
                             showExportMenu && h('div', {

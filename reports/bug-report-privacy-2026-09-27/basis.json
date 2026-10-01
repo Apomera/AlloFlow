@@ -1,0 +1,19 @@
+{
+  "sourceHead": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "createdAt": "2026-09-27T18:30:05.476Z",
+  "hashes": {
+    "error_reporter_module.js": "cf87a08307ab4a976e6830cbaa0d91e2c1bafe84687b87401debfdbcece2488f",
+    "desktop/web-app/public/error_reporter_module.js": "cf87a08307ab4a976e6830cbaa0d91e2c1bafe84687b87401debfdbcece2488f",
+    "catalog/cloudflare-worker/src/index.js": "27047f078a4499c7f953f3279e2df1f695496922cf04d4e2b518a463098d9002",
+    "catalog/cloudflare-worker/wrangler.toml": "f5b852ca8208f5ce30a6491c45a4d914177fd27bf24d4332a8ff697db43bfeee",
+    "catalog/cloudflare-worker/README.md": "1e034d785c0ffcc7dcac580e4fd82b675a082755231e9fc9135388ef627e1b8c",
+    "catalog/cloudflare-worker/smoke_test.mjs": "38c2b31b09e6e3d4a686bd87f69c31e65e3cb3a342bf48d6e0b75463cddc0374",
+    "catalog/cloudflare-worker/package.json": "7e69dd090642bb76d6f885842887246537512e787daba05ad0b7b2b998734fd5",
+    "tests/error_reporter_stale_entries_and_secrets.test.js": "2c1ff920ab657dadabeff8645bf1ecda4040f4d291fd3cc9029b819e7b480414",
+    "tests/error_reporter_tts_tab.test.js": "562d863e2d48c743ee89e10f975e7b792cc4b65e9e05e90b2259681f41f66cba",
+    "catalog/cloudflare-worker/read-queues.ps1": "83b33040a2691091ca03e929997afd8f720376c099b99afc2278c42a4279cf33",
+    "catalog/cloudflare-worker/set-admin-token.ps1": "c36c35b892ebd326baefce555f06fdb8cfd2d2c9b5988e4f602caac181fba916",
+    "catalog/cloudflare-worker/SETUP.md": "cbb1676c420b777729135068d4ca0dce9ca6de96131b099ea45ccf8c9d28e598",
+    "catalog/cloudflare-worker/CLOUDFLARE_SETUP.md": "94047a0cc668f1b865f27de809f5c5d32a1851d54c3a968eec1743197cbd9822"
+  }
+}

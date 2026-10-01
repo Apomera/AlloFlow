@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-09-27T15:02:32.113Z",
+  "testedEngineSha256": "de3cb4c3030a40b0af8fbf21112379bfca7033d202c5d3738f78ffcadbeb99cc",
+  "currentEngineSha256": "34d1d8ac5c667ef5844eefe36ee1f332842a19ac0d9ef71d66329d9769d82335",
+  "testedHostSha256": "a4462e3f7c7aa7a18fc0a70134ad1829eb578dd6dd3f8324a253fc7ac01cba95",
+  "currentHostSha256": "94bee9c4194511caadd93b5ab3d1a7f687653531c842e28b898aebca263872e9",
+  "messageHelperUnchanged": true,
+  "hostTranslatorUnchanged": true,
+  "ownedCallLiteralsUnchanged": [
+    "input.error_no_source_content",
+    "input.source_partial_generation"
+  ],
+  "otherSourceChangesNotRevalidated": true
+}

@@ -1,0 +1,146 @@
+name = "alloflow-catalog-submit"
+main = "src/index.js"
+# Matches what is already live on the deployed worker (checked 2026-07-27).
+# The file previously said 2026-04-01, which would have quietly rolled the
+# runtime back a month on the next deploy from this config.
+compatibility_date = "2026-05-04"
+
+# The GitHub repo this Worker writes to. Override per-deploy via wrangler vars
+# if you fork. Do NOT put any secret here. Secrets live in `wrangler secret put`.
+[vars]
+GITHUB_OWNER = "Apomera"
+GITHUB_REPO  = "AlloFlow"
+GITHUB_BRANCH = "main"
+BUG_REPORTS_ENABLED = "false"
+# Reporting stays disabled until district approval, authenticated gateway,
+# BUG_REPORTS_POLICY, BUG_REPORTS_PRINCIPALS, and dedicated private report/audit
+# storage are configured. See BUG_REPORTING.md. Never put credentials in vars.
+
+# OPTIONAL — reviewed PD credential adapter (POST /issuePd, /verifyPd, GET /pdIssuerKey).
+# Keep every setting below unset until an authorized issuer assigns the identity,
+# key custody, and trusted upstream review service. Reviewed issuance requires:
+# PD_ISSUER_PUBLIC_KEY = "REPLACE_WITH_REVIEWED_SPKI_BASE64"  # public [vars] value
+# PD_ISSUER_NAME = "REPLACE_WITH_AUTHORIZED_ISSUER_NAME"
+# PD_ISSUER_ID = "REPLACE_WITH_AUTHORIZED_ISSUER_ID"
+# PD_ISSUER_KEY_ID = "REPLACE_WITH_REVIEWED_KEY_ID"
+# secret: wrangler secret put PD_ISSUER_PRIVATE_KEY
+# secret: wrangler secret put PD_ISSUER_AUTH_TOKEN
+# Never ship either secret in browser code, module JSON, localStorage, or LMS URLs.
+# The Worker authenticates the review-service caller and validates internal bindings;
+# the upstream service remains responsible for identity, authorization, evidence,
+# accessibility review, and replay prevention within that upstream workflow.
+# The Worker separately enforces create-once credential issuance by decision ID.
+#
+# Reviewed issuance also requires a PRIVATE, strongly consistent R2 ledger.
+# Do not substitute an eventually consistent KV namespace:
+#   npx wrangler r2 bucket create alloflow-pd-issuance-ledger
+# Then uncomment and set the deployment bucket name:
+# [[r2_buckets]]
+# binding = "PD_ISSUANCE_LEDGER"
+# bucket_name = "alloflow-pd-issuance-ledger"
+# Missing, corrupt, or unavailable ledger storage disables reviewed issuance.
+# The self-paced lane below does not use this institutional ledger.
+#
+# Browser-requested self-paced signing is OFF by default. If deliberately enabled,
+# it requires a separate keypair and identity and remains explicitly non-institutional:
+# PD_ALLOW_SELF_PACED_ISSUANCE = "true"
+# PD_SELF_PACED_PUBLIC_KEY = "REPLACE_WITH_SELF_PACED_SPKI_BASE64"
+# secret: wrangler secret put PD_SELF_PACED_PRIVATE_KEY
+# optional: PD_SELF_PACED_KEY_ID, PD_SELF_PACED_ISSUER_NAME, PD_SELF_PACED_ISSUER_ID
+# Never reuse reviewed signing keys or reviewed issuer identities for this profile.
+
+# Existing legacy report namespace. New district deployments must bind a new,
+# approved namespace and a separate BUG_REPORT_AUDIT namespace before enabling.
+# This binding alone no longer enables collection or reading. ADMIN_TOKEN does
+# not authorize bug reports. Legacy records require a separately authorized purge.
+# See BUG_REPORTING.md; no live bindings are created by this change.
+[[kv_namespaces]]
+binding = "BUG_REPORTS"
+id = "b8dddf6fa1404c088ab63376255e2620"
+
+# Private KV store for PD module submissions (POST /submitPd). Educator-authored
+# PD modules are staged here for manual review, NOT committed to the public repo.
+# One-time setup:
+#   npx wrangler kv namespace create PD_SUBMISSIONS
+# then paste the printed id below. Until then, /submitPd returns 500 (fail-closed).
+[[kv_namespaces]]
+binding = "PD_SUBMISSIONS"
+id = "5543fca1369f40bb9b0b9ad6f2d8054c"
+
+# Private KV store for Tool Forge plugin submissions (POST /submitPlugin). A submission
+# is one self-registering plugin .js file + metadata + the client validator report,
+# staged here for MANUAL review — never auto-committed and never run server-side. The
+# maintainer reviews source + report + a sandboxed preview, then drops the file into
+# PLUGIN_FILES and deploys (the human gate). One-time setup:
+#   npx wrangler kv namespace create PLUGIN_SUBMISSIONS
+# then paste the printed id below. Until then, /submitPlugin returns 500 (fail-closed).
+# Read the queue with the ADMIN_TOKEN-gated GET /pluginSubmissions (?source=1 for code).
+# This namespace EXISTS and is bound on the deployed worker. The id was
+# previously left as a placeholder here, so deploying from this config would
+# have silently dropped the binding and fail-closed /submitPlugin on a worker
+# that is currently accepting submissions. Verified against the live worker
+# 2026-07-27 via `node dev-tools/cf_worker.cjs status`.
+[[kv_namespaces]]
+binding = "PLUGIN_SUBMISSIONS"
+id = "e2fa9793121b416080524e95e274ed26"
+
+# Per-IP rate-limit counters for GET /search. Optional: without this binding the
+# search endpoint still works and still caches, but the per-IP cap is skipped.
+# Counters expire after 120s, so the namespace stays tiny.
+#   npx wrangler kv namespace create SEARCH_RATE
+# then paste the printed id below.
+[[kv_namespaces]]
+binding = "SEARCH_RATE"
+id = "84bea9a6204f41828c92cf96fa408bad"
+
+# Per-IP rate-limit and duplicate-body counters for POST /submit (lesson submissions).
+# WITHOUT this binding /submit still works but is UNGUARDED: every accepted request is a
+# commit through the GitHub token, so an unattended script could push commits at Worker
+# speed. Bind it BEFORE opening the catalog form to the public. Counters expire on their
+# own (120s / 48h / 24h), so the namespace stays tiny.
+#   npx wrangler kv namespace create SUBMIT_RATE
+# then paste the printed id below and uncomment. (Left commented rather than given a
+# placeholder id: a bogus id silently drops the binding on deploy — see PLUGIN_SUBMISSIONS.)
+# Tunables, all optional [vars]: SUBMIT_RATE_PER_MINUTE (3), SUBMIT_RATE_PER_DAY (20),
+# SUBMIT_DEDUPE_TTL_SECONDS (86400).
+# Optional secret: `npx wrangler secret put TURNSTILE_SECRET` makes /submit REQUIRE a
+# Cloudflare Turnstile token in the payload (`turnstile_token`). Do not set it until the
+# in-app form renders the widget and that has been verified inside Gemini Canvas.
+# [[kv_namespaces]]
+# binding = "SUBMIT_RATE"
+# id = "paste-the-printed-id-here"
+
+# GET /search — web-search proxy for Gemini Canvas, which cannot use Google's
+# google_search grounding tool and has no backend of its own. The Serper.dev key
+# is a SECRET and never reaches the browser:
+#   npx wrangler secret put SERPER_API_KEY
+# Until that secret exists, /search returns 503 search-not-configured and the app
+# falls back to clearly-labelled unverified AI knowledge.
+# Emergency kill switch (stops all spend without a redeploy of the app):
+#   npx wrangler secret put DISABLE_SEARCH_PROXY     # value: true
+#
+# Search budget tuning. Defaults suit Serper's free tier, which is a ONE-TIME
+# 2,500-search credit rather than a monthly refill — so SEARCH_DAILY_BUDGET is
+# the guard that matters, and SEARCH_RATE_PER_MINUTE is left loose because an
+# entire school shares one NAT address. Raise both on a paid plan.
+#   free tier   : DAILY_BUDGET 500  -> the 2,500 credit lasts 5+ days worst case
+#   paid ($50/mo): DAILY_BUDGET 1500, RATE_PER_MINUTE 120 is comfortable
+# Cache hits cost no credit and do not count against either limit.
+# To override, add these to the [vars] block at the TOP of this file (wrangler
+# vars must be flat keys under a single [vars] table):
+#   SEARCH_RATE_PER_MINUTE = "60"
+#   SEARCH_DAILY_BUDGET = "500"
+
+# Worker-level CPU limit. DISABLED because this account is on the Workers Free
+# plan, which rejects the whole deploy with:
+#   "CPU limits are not supported for the Free plan" [code: 100328]
+# So this block was never actually deployable — it silently blocked any
+# `wrangler deploy` from this config. Re-enable if the account moves to paid.
+# The handler enforces submission size and search caps itself, so this was only
+# ever a backstop.
+# [limits]
+# cpu_ms = 50
+
+# Local dev settings
+[dev]
+port = 8787

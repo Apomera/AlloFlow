@@ -1,0 +1,16 @@
+
+Running 4 tests using 1 worker
+
+
+
+[1A[2K(node:57264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:57264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1333:5 › watch a generation records one climate-boundary round and explores its real cohorts in 3D
+[1A[2K[2/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1465:5 › variation explorer spotlights real trait ranges in 3D and compares recorded cohorts without changing organisms
+[1A[2K[3/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1533:5 › variation explorer on a phone supports exact boundary values, keyboard spotlight and zero-valued organisms
+[1A[2K[4/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1563:5 › variation explorer without WebGL follows a watched extinction with no invented percentage
+[1A[2K  4 passed (4.1m)

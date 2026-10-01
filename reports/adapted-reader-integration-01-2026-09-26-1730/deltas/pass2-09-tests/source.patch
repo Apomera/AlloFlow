@@ -1,0 +1,82 @@
+===================================================================
+--- a/tests/reader_preview_isolation.test.js
++++ b/tests/reader_preview_isolation.test.js
+@@ -226,3 +226,78 @@
+      for(const detail of changes)expect(Object.keys(detail).sort()).toEqual(['active','owner']);
+    } finally {window.removeEventListener('alloflow:reading-preview',listen);}
+  });
++
++describe('preview snapshot refresh',()=>{
++  it('describes available reading behavior instead of inviting unavailable sentence playback',()=>{
++    mount();expect(host.textContent).toContain('Choose any sentence to listen from there.');open();
++    expect(dialog().textContent).not.toContain('Choose any sentence to listen from there.');expect(dialog().textContent).toContain('Display changes the appearance of this preview.');
++    expect(dialog().querySelector('[data-reader-listen]').disabled).toBe(true);
++  });
++  it('starts from the current appearance even when preference writes fail',()=>{
++    mount({isCompareMode:true});
++    const set=vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw Error('Storage unavailable');});
++    click(host.querySelector('[data-reader-display]'));change(host.querySelector('select[aria-label="Reading width"]'),'40');
++    click(host.querySelector('input[aria-label="Show changes"]'));set.mockClear();
++    open();expect(dialog().querySelector('[data-reader-display]').getAttribute('aria-expanded')).toBe('true');
++    expect(dialog().querySelector('select[aria-label="Reading width"]').value).toBe('40');
++    click(dialog().querySelector('[data-reading-version="both"]'));expect(dialog().querySelector('input[aria-label="Show changes"]').checked).toBe(true);
++    expect(set).not.toHaveBeenCalled();
++  });
++  it('refreshes only on request without restarting the modal lifetime or entering host services',()=>{
++    const rerender=mount({generatedContent:withHelp()});const changes=[];const listen=e=>changes.push(e.detail.active);window.addEventListener('alloflow:reading-preview',listen);
++    try {
++      open();const modal=dialog();rerender({generatedContent:item('The new reading.'),readingTheme:'dark'});
++      expect(modal.textContent).toContain('The heron walked slowly.');expect(modal.textContent).not.toContain('The new reading.');
++      expect(modal.textContent).toContain('stays the same until you refresh or reopen it');
++      props.stopPlayback.mockClear();const set=vi.spyOn(Storage.prototype,'setItem'),fetch=vi.fn();vi.stubGlobal('fetch',fetch);
++      const lesson=JSON.stringify(props.generatedContent),history=JSON.stringify(props.history);
++      const refresh=modal.querySelector('[data-student-preview-refresh]');expect(refresh.getAttribute('aria-describedby')).toBeTruthy();click(refresh);
++      expect(dialog()).toBe(modal);expect(modal.textContent).toContain('The new reading.');expect(modal.textContent).not.toContain('The heron walked slowly.');
++      expect(modal.querySelector('[data-adapted-theme-picker]').value).toBe('dark');expect(document.activeElement).toBe(refresh);
++      expect(modal.querySelector('[data-preview-refresh-status]').textContent).toContain('Preview refreshed');expect(changes).toEqual([true]);
++      for(const fn of [set,fetch,props.handleSpeak,props.stopPlayback,props.callTTS,props.setGeneratedContent,props.setHistory])expect(fn).not.toHaveBeenCalled();
++      expect(JSON.stringify(props.generatedContent)).toBe(lesson);expect(JSON.stringify(props.history)).toBe(history);
++      click(modal.querySelector('[data-student-preview-close]'));expect(changes).toEqual([true,false]);
++    } finally {window.removeEventListener('alloflow:reading-preview',listen);}
++  });
++  it('discards local answers, navigation and appearance on refresh without saving them',()=>{
++    mount();open();click(dialog().querySelector('[data-reader-display]'));change(dialog().querySelector('select[aria-label="Reading width"]'),'40');
++    click(dialog().querySelector('[data-reading-outline-toggle]'));click(dialog().querySelector('[data-reading-bookmark]'));
++    const prompt=()=>dialog().querySelector('[data-section-prompts-toggle]')||[...dialog().querySelectorAll('button')].find(el=>el.textContent==='Think about this section');
++    click(prompt());const answer=dialog().querySelector('[data-section-prompt="mainIdea"]');
++    act(()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(answer,'A temporary answer');answer.dispatchEvent(new Event('input',{bubbles:true}));});expect(answer.value).toBe('A temporary answer');
++    const set=vi.spyOn(Storage.prototype,'setItem'),remove=vi.spyOn(Storage.prototype,'removeItem');
++    expect(dialog().textContent).toContain('discarded when you refresh or close it');click(dialog().querySelector('[data-student-preview-refresh]'));
++    expect(dialog().querySelector('select[aria-label="Reading width"]').value).toBe('72');expect(dialog().querySelector('[data-reader-display]').getAttribute('aria-expanded')).toBe('false');
++    click(dialog().querySelector('[data-reading-outline-toggle]'));click(prompt());expect(dialog().querySelector('[data-section-prompt="mainIdea"]').value).toBe('');
++    expect(set).not.toHaveBeenCalled();expect(remove).not.toHaveBeenCalled();
++  });
++  it('refreshes prepared help and removes the old preview card and ranges',()=>{
++    const registry=new Map();vi.stubGlobal('CSS',{highlights:registry});vi.stubGlobal('Highlight',class extends Set {constructor(...ranges){super(ranges);}});
++    const reading=withHelp(),rerender=mount({generatedContent:reading});const hostReader=host.querySelector('[data-adapted-reader]');open();
++    click(dialog().querySelector('[data-reading-mode="define"]'));click([...dialog().querySelectorAll('[data-reading-word]')].find(el=>el.textContent==='heron'));
++    const oldRange=[...registry.get('allo-word-help')].find(range=>dialog().contains(range.startContainer));
++    const updated=withHelp();updated.adaptedReadingSupports={...updated.adaptedReadingSupports,annotations:updated.adaptedReadingSupports.annotations.map(entry=>({...entry,text:'A long-legged water bird.'}))};rerender({generatedContent:updated});
++    expect(dialog().querySelector('[data-word-help-card-text]').textContent).toBe('A water bird.');
++    click(dialog().querySelector('[data-student-preview-refresh]'));
++    expect(dialog().querySelector('[data-word-help-card]')).toBe(null);expect(document.activeElement).toBe(dialog().querySelector('[data-student-preview-refresh]'));
++    const ranges=[...registry.get('allo-word-help')];expect(ranges.some(range=>dialog().contains(range.startContainer))).toBe(true);expect(ranges).not.toContain(oldRange);
++    click(dialog().querySelector('[data-reading-mode="define"]'));click([...dialog().querySelectorAll('[data-reading-word]')].find(el=>el.textContent==='heron'));
++    expect(dialog().querySelector('[data-word-help-card-text]').textContent).toBe('A long-legged water bird.');
++    const ids=[...host.querySelectorAll('[id]')].map(el=>el.id);expect(new Set(ids).size).toBe(ids.length);
++  });
++  it('preserves host highlights when refreshing an unchanged snapshot',()=>{
++    const registry=new Map();vi.stubGlobal('CSS',{highlights:registry});vi.stubGlobal('Highlight',class extends Set {constructor(...ranges){super(ranges);}});
++    mount({generatedContent:withHelp()});const hostReader=host.querySelector('[data-adapted-reader]');open();
++    const before=[...registry.get('allo-word-help')],hostRange=before.find(range=>hostReader.contains(range.startContainer)),previewRange=before.find(range=>dialog().contains(range.startContainer));
++    expect(hostRange).toBeTruthy();expect(previewRange).toBeTruthy();click(dialog().querySelector('[data-student-preview-refresh]'));
++    const after=[...registry.get('allo-word-help')];expect(after).toHaveLength(2);expect(after).toContain(hostRange);expect(after).not.toContain(previewRange);
++    click(dialog().querySelector('[data-student-preview-close]'));expect([...registry.get('allo-word-help')]).toEqual([hostRange]);
++  });
++  it('keeps the snapshot available and explains refresh being unavailable after switching away',()=>{
++    const rerender=mount();open();rerender({generatedContent:api.createSupportedReading('Another original.',{id:'other',sourceFamilyId:'other'})});
++    expect(dialog().textContent).toContain('The heron walked slowly.');const refresh=dialog().querySelector('[data-student-preview-refresh]');
++    expect(refresh.disabled).toBe(true);expect(dialog().textContent).toContain('A current adapted reading is needed to refresh');
++    click(refresh);expect(dialog().textContent).toContain('The heron walked slowly.');click(dialog().querySelector('[data-student-preview-close]'));expect(dialog()).toBe(null);
++  });
++});

@@ -1,0 +1,56 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:56984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:56984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:536:5 › phone family journey stays usable across long histories and reports a lost lineage
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1051:5 › family time machine scrubs real history, compares inherited traits, finds members and saves evidence
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1124:5 › family time machine on a phone leaves a lost lineage undefined and makes the exact record keyboard-scrollable
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1162:5 › family time machine without WebGL handles a single zero-valued ancestor and a later-born family
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:1162:5 › family time machine without WebGL handles a single zero-valued ancestor and a later-born family 
+
+    TimeoutError: locator.click: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Follow this family' })[22m
+
+
+      1184 |   const child = await page.locator('#ei-organism option').nth(1).getAttribute('value');
+      1185 |   await page.selectOption('#ei-organism', child!);
+    > 1186 |   await page.getByRole('button', { name: 'Follow this family', exact: false }).click();
+           |                                                                                ^
+      1187 |   await page.getByRole('tab', { name: 'Families', exact: true }).click();
+      1188 |   await expect(page.locator('#ei-family-time')).toHaveAttribute('min', '1');
+      1189 |   await expect(page.locator('#ei-family-time')).toBeDisabled();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:1186:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\family-time-final-artifacts\evolab-living-island-famil-a6946-tor-and-a-later-born-family-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\family-time-final-artifacts\evolab-living-island-famil-a6946-tor-and-a-later-born-family-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\family-time-final-artifacts\evolab-living-island-famil-a6946-tor-and-a-later-born-family-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\family-time-final-artifacts\evolab-living-island-famil-a6946-tor-and-a-later-born-family-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\family-time-final-artifacts\evolab-living-island-famil-a6946-tor-and-a-later-born-family-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\family-time-final-artifacts\evolab-living-island-famil-a6946-tor-and-a-later-born-family-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1162:5 › family time machine without WebGL handles a single zero-valued ancestor and a later-born family 
+  4 passed (2.5m)

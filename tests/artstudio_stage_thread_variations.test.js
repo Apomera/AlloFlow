@@ -202,6 +202,44 @@ describe('Art Studio stage, Thread Kit, and branching variations', () => {
     return host.querySelector('#' + tab.getAttribute('aria-controls'));
   }
 
+  it.each([['pixel','pixelCanvas'],['symmetry','symmetryCanvas'],['generative','genCanvas'],['gradient','gradientCanvas']])('focuses the %s workspace without replacing its live canvas', async (tab,canvasId) => {
+    await mount({artStudio:{tab,studioHome:false,studioStarted:true,pixelData:{'2,3':'red'},genPaused:true}});
+    const canvas=host.querySelector('#'+canvasId);
+    expect(canvas).not.toBeNull();
+    await click(findButton(host,/^Focus workspace$/));
+    expect(host.querySelector('[data-artstudio-root]').dataset.artstudioFocus).toBe('true');
+    expect(host.querySelector('[data-artstudio-grouped-nav]').hidden).toBe(true);
+    expect(host.querySelector('#'+canvasId)).toBe(canvas);
+    expect(latestToolData.artStudio.pixelData).toEqual({'2,3':'red'});
+    expect(latestToolData.artStudio.studioFocusView).toBeUndefined();
+    await act(async()=>host.querySelector('[data-artstudio-workspace]').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})));
+    expect(host.querySelector('[data-artstudio-root]').dataset.artstudioFocus).toBe('false');
+    expect(host.querySelector('#'+canvasId)).toBe(canvas);
+  });
+
+  it('keeps focus view while changing tools, and restores the inspector when opening the Kit', async () => {
+    await mount({artStudio:{tab:'pixel',studioHome:false,pixelData:{'1,1':'blue'}}});
+    await click(findButton(host,/^Focus workspace$/));
+    await act(async()=>{const picker=host.querySelector('[aria-label="Studio tool"]');picker.value='gradient';picker.dispatchEvent(new Event('change',{bubbles:true}));});
+    expect(host.querySelector('#gradientCanvas')).not.toBeNull();
+    expect(latestToolData.artStudio.pixelData).toEqual({'1,1':'blue'});
+    expect(host.querySelector('[data-artstudio-root]').dataset.artstudioFocus).toBe('true');
+    await click(findButton(host,/^Open Thread Kit$/));
+    expect(host.querySelector('[data-artstudio-root]').dataset.artstudioFocus).toBe('false');
+    expect(host.querySelector('[data-artstudio-grouped-nav]').hidden).toBe(false);
+  });
+
+  it('transfers full palette colors into Gradient and back to the current project kit', async () => {
+    await mount({artStudio:{tab:'gradient',studioHome:false,studioFreeProjectId:'gradient-project',pixelData:{'1,1':'blue'},studioThreadKit:{schemaVersion:1,runId:'gradient-project',palette:{sourceTab:'colorWheel',colors:[{h:20,s:0,l:0},{h:210,s:35,l:80},{h:0,s:0,l:100}]}}}});
+    await click(findButton(host,/^Use Thread Kit colors in Gradient$/));
+    expect(latestToolData.artStudio.gradStops).toEqual([{hue:20,sat:0,lit:0,pos:0},{hue:210,sat:35,lit:80,pos:50},{hue:0,sat:0,lit:100,pos:100}]);
+    expect(latestToolData.artStudio.pixelData).toEqual({'1,1':'blue'});
+    await click(findButton(host,/^Add gradient palette to Thread Kit$/));
+    const palette=latestToolData.artStudio.studioThreadKit.runs.find(entry=>entry.runId==='gradient-project').palette;
+    expect(palette.sourceTab).toBe('gradient');
+    expect(palette.colors).toEqual([{h:20,s:0,l:0},{h:210,s:35,l:80},{h:0,s:0,l:100}]);
+  });
+
   it('puts the active creative stage before a labelled Make, Guide, and Process inspector', async () => {
     await mount({
       artStudio: {

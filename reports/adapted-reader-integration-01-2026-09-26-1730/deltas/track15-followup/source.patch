@@ -1,0 +1,929 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -32593,8 +32593,9 @@
+     // retaining its original bytes is the safe fallback when none is available.
+     if (container.mime === 'audio/wav') return _normalizeRecordedAudioForStore(blob);
+     return { b64: await _blobToBase64(blob), mime: blob.type };
+   };
++  window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider, _aiConfig.backend, _aiConfig.models?.tts, GEMINI_MODELS.tts]);
+   const _getReadAloudBridge = () => {
+     const createBridge = window.AlloModules && window.AlloModules.createReadAloudLegacyBridge;
+     if (typeof createBridge !== 'function') return null;
+     _ensureKaraokeStore('reference');
+@@ -32889,9 +32890,9 @@
+   };
+   // Track 02 can present these device-scoped counts alongside its current
+   // identity summary. Reading IndexedDB again detects eviction and text-only
+   // autosave; this never infers package or reader-shell portability.
+-  window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference') => {
++  window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference', options = {}) => {
+     const requestOwner = window.__alloGetReadAloudReadiness;
+     const bridge = _getReadAloudBridge();
+     if (!bridge?.readiness) return null;
+     const resourceId = generatedContent?.id || generatedContent?.resourceId;
+@@ -32902,14 +32903,16 @@
+       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+       const saved = snapshot?.items?.find(item => String(item.id || item.resourceId) === String(resourceId));
+       if (saved && durableStore) durableStore.hydrate(saved[lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio']);
+       return { resourceId, ...bridge.readiness(sentences, lane, {
++        entries: options.entries, profile: options.profile, failure: options.failure,
+         durableStore, receipt: { verified: true, verifiedAt: new Date().toISOString() },
+         preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+       }), pictureOmissions: saved?.offlineMediaOmissions || [] };
+     } catch (error) {
+       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+       return { resourceId, ...bridge.readiness(sentences, lane, {
++        entries: options.entries, profile: options.profile,
+         failure: error, preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+       }), code: error?.code || error?.name || 'storage-failed' };
+     } finally { durableStore?.clear(); }
+   };
+@@ -33677,22 +33680,32 @@
+   // Studio views receive this as `onPrint`. worksheet=true yields the student
+   // sheet (Memory Aid: cue-first, answer-free); teacherKey adds the appendix.
+   // Returns false when it could not render so the caller can fall back.
+   const handlePrintResourceSheet = (...__a) => _alloHostHandlers().handlePrintResourceSheet(...__a);
++  const artifactAudioRecoveryRef = useRef(null);
+   const prepareReadAloudArtifactAudio = async (options = {}) => {
+       const moduleValue = window.AlloModules && window.AlloModules.ReadAloudArtifactAudio;
+       if (!moduleValue || typeof moduleValue.create !== 'function') {
+           const error = new Error('Read-aloud artifact audio is still loading. Please try again.');
+           error.code = 'artifact-audio-unavailable';
+           throw error;
+       }
+       const preparer = moduleValue.create({ callTTS });
+-      return preparer.prepare({
++      const request = {
+           ...options,
+           defaultVoice: options.defaultVoice || selectedVoice || 'Kore',
+           language: options.language || leveledTextLanguage || currentUiLanguage || 'English',
+           speed: options.speed || voiceSpeed || 1,
+-      });
++      };
++      if (options.recoverPreparedAudio === true && typeof moduleValue.createRecovery === 'function') {
++          if (!artifactAudioRecoveryRef.current) artifactAudioRecoveryRef.current = moduleValue.createRecovery();
++          return artifactAudioRecoveryRef.current.prepare(request, {
++              storage: storageDB,
++              writeVerifiedStorageSnapshot: window.AlloModules.UtilsPure?.writeVerifiedStorageSnapshot,
++              prepare: value => preparer.prepare(value),
++          });
++      }
++      return preparer.prepare(request);
+   };
+   const _getPrivatePersonaArtifactStorage = async () => {
+       return _alloGetCanvasDeviceStorage();
+   };
+===================================================================
+--- a/_build_export_module.js
++++ b/_build_export_module.js
+@@ -1,11 +1,18 @@
+ #!/usr/bin/env node
+ /**
+  * Build export_module.js from export_source.jsx.
+- * Source already includes window.AlloModules registration; this script just
+- * wraps with the IIFE + duplicate-load guard.
++ * Match build.js's Export compile pair, including its Babel formatting.
+  */
+-require('./_build_simple_iife_module.js').build({
+-  name: 'export',
+-  guardKey: 'Export',
+-  logTag: 'Export'
+-});
++const fs = require('fs');
++const path = require('path');
++const babel = require('@babel/core');
++const { Script } = require('vm');
++const source = fs.readFileSync(path.join(__dirname, 'export_source.jsx'), 'utf8');
++const compiled = babel.transformSync(source, {
++  plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false,
++}).code;
++const output = '(function() {\n' + "'use strict';\n" +
++  "if (window.AlloModules && window.AlloModules.Export) { console.log('[CDN] Export already loaded, skipping'); return; }\n" + compiled + '\n})();\n';
++new Script(output, { filename: 'export_module.js' });
++for (const file of ['export_module.js', 'desktop/web-app/public/export_module.js']) fs.writeFileSync(path.join(__dirname, file), output);
++console.log('[Export] Built and synchronized release-format modules');
+===================================================================
+--- a/_build_view_storybook_export_modal_module.js
++++ b/_build_view_storybook_export_modal_module.js
+@@ -58,5 +58,6 @@
+ })();
+ `;
+ 
+ fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
++fs.writeFileSync(path.join(ROOT, 'desktop/web-app/public/view_storybook_export_modal_module.js'), outputCode, 'utf-8');
+ console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
+===================================================================
+--- /dev/null
++++ b/dev-tools/check_offline_storybook_recovery.cjs
+@@ -0,0 +1,110 @@
++// Actual Storybook export + actual host preparation wrapper, disposable data only.
++const fs = require('node:fs');
++const path = require('node:path');
++const os = require('node:os');
++const http = require('node:http');
++const { pathToFileURL } = require('node:url');
++const { chromium } = require('playwright');
++const root = path.resolve(__dirname, '..');
++const read = name => fs.readFileSync(path.join(root, name), 'utf8');
++const modules = ['karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js', 'read_aloud_artifact_contract_module.js', 'export_module.js'];
++const html = '<!doctype html><meta charset="utf-8"><title>Disposable Storybook author</title>' + modules.map(name => '<script>' + read(name).replace(/<\/script/gi, '<\\/script') + '</script>').join('');
++const host = read('AlloFlowANTI.txt'), hostStart = host.indexOf('const artifactAudioRecoveryRef = useRef(null);');
++const hostWrapper = host.slice(hostStart, host.indexOf('  const _getPrivatePersonaArtifactStorage', hostStart));
++const utils = read('utils_pure_source.jsx'), writeStart = utils.indexOf('const writeVerifiedStorageSnapshot =');
++const writer = utils.slice(writeStart, utils.indexOf('\n};', writeStart) + 3);
++if (hostStart < 0 || !writer) throw Error('Recovery integration anchors missing');
++function wave() {
++  const frames = 800, data = Buffer.alloc(44 + frames * 2);
++  data.write('RIFF'); data.writeUInt32LE(data.length - 8, 4); data.write('WAVEfmt ', 8); data.writeUInt32LE(16, 16);
++  data.writeUInt16LE(1, 20); data.writeUInt16LE(1, 22); data.writeUInt32LE(8000, 24); data.writeUInt32LE(16000, 28);
++  data.writeUInt16LE(2, 32); data.writeUInt16LE(16, 34); data.write('data', 36); data.writeUInt32LE(frames * 2, 40);
++  for (let n = 0; n < frames; n++) data.writeInt16LE(Math.round(2000 * Math.sin(n * Math.PI * 440 / 4000)), 44 + n * 2);
++  return data.toString('base64');
++}
++async function exportFixture(page, failScene) {
++  return page.evaluate(async ({ hostWrapper, writer, wave, failScene }) => {
++    const database = await new Promise((resolve, reject) => {
++      const request = indexedDB.open('disposable-storybook', 1); request.onupgradeneeded = () => request.result.createObjectStore('checkpoints');
++      request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
++    });
++    const storage = {
++      get: key => new Promise((resolve, reject) => { const request = database.transaction('checkpoints').objectStore('checkpoints').get(key); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }),
++      set: (key, value) => new Promise((resolve, reject) => { const tx = database.transaction('checkpoints', 'readwrite'); tx.objectStore('checkpoints').put(value, key); tx.oncomplete = () => resolve(true); tx.onerror = () => reject(tx.error); }),
++    };
++    window.AlloModules.UtilsPure = { writeVerifiedStorageSnapshot: new Function(writer + '; return writeVerifiedStorageSnapshot;')() };
++    const synthesis = [], batches = [], warnings = [], downloads = [], urls = new Map();
++    const originalCreate = URL.createObjectURL.bind(URL);
++    URL.createObjectURL = blob => { const url = originalCreate(blob); urls.set(url, blob); return url; };
++    HTMLAnchorElement.prototype.click = function () { downloads.push({ filename: this.download, blob: urls.get(this.href) }); };
++    const prepare = new Function('useRef', 'callTTS', 'storageDB', 'selectedVoice', 'leveledTextLanguage', 'currentUiLanguage', 'voiceSpeed',
++      hostWrapper + '; return prepareReadAloudArtifactAudio;')(() => ({ current: null }), async text => {
++        synthesis.push(text); if (failScene && text === 'First scene.') throw new Error('Simulated network loss');
++        return { b64: wave, mime: 'audio/wav' };
++      }, storage, 'Kore', 'English', 'English', 1);
++    const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32; const paint = canvas.getContext('2d'); paint.fillStyle = '#15803d'; paint.fillRect(0, 0, 32, 32);
++    const escape = text => String(text || '').replace(/[<>&"]/g, char => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[char]));
++    window.callGemini = async () => 'You completed the journey.';
++    const live = { adventureState: { history: [{ type: 'scene', text: 'First scene.', image: canvas.toDataURL('image/png') }], level: 3 },
++      generatedContent: { id: 'disposable-story' }, sourceTopic: 'A Safe Journey', selectedVoice: 'Kore', voiceSpeed: 1, currentUiLanguage: 'English',
++      setShowStorybookExportModal() {}, setIsProcessing() {}, rehydrateHistoryWithImages: async values => values,
++      parseMarkdownToHTML: text => '<p>' + escape(text) + '</p>', addToast: (text, tone) => { if (tone === 'warning') warnings.push(text); },
++      prepareReadAloudArtifactAudio: async options => { const batch = await prepare(options); batches.push({ available: batch.available, skipped: batch.skipped, recovery: batch.recovery }); return batch; },
++      t: key => ({ 'export.storybook.page_title': 'A Safe Journey', 'export.storybook.epilogue_badge': 'Epilogue', 'export.storybook.log_header': 'Your journey', 'export.storybook.print_button': 'Print Storybook' }[key] || '') };
++    const api = window.AlloModules.createExport({ liveRef: { current: live }, warnLog: (...args) => warnings.push(args.map(value => value?.message || String(value)).join(' ')), debugLog() {}, escapeXml: escape, generateUUID: () => 'disposable-story' });
++    const ok = await api.handleExportStorybook({ includeImages: true, includeNarration: true, keepModalOpen: true });
++    const files = await Promise.all(downloads.map(async item => ({ filename: item.filename, contents: await item.blob.text() })));
++    database.close();
++    return { ok, synthesis, batches, warnings, files };
++  }, { hostWrapper, writer, wave: wave(), failScene });
++}
++async function verifyRecipient(page) {
++  await page.locator('.scene-img').scrollIntoViewIfNeeded();
++  return page.evaluate(async () => {
++    const context = new AudioContext(), durations = [];
++    for (const source of document.querySelectorAll('audio source')) durations.push((await context.decodeAudioData(await (await fetch(source.src)).arrayBuffer())).duration);
++    await context.close();
++    const images = Array.from(document.querySelectorAll('.scene-img')); await Promise.all(images.map(image => image.decode()));
++    const artifact = JSON.parse(document.querySelector('#alloflow-read-aloud-artifact').textContent);
++    return { durations, pictureWidths: images.map(image => image.naturalWidth), mediaSummary: document.querySelector('.media-availability').textContent,
++      artifactSegments: artifact.scenes.flatMap(scene => scene.segments).length };
++  });
++}
++(async () => {
++  let browser, server;
++  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-storybook-offline-'));
++  try {
++    server = http.createServer((_request, response) => { response.setHeader('Content-Type', 'text/html'); response.end(html); });
++    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
++    browser = await chromium.launch({ headless: true });
++    const authorContext = await browser.newContext(), author = await authorContext.newPage();
++    author.on('pageerror', error => console.error('Author fixture error: ' + error.message));
++    await author.goto(`http://127.0.0.1:${server.address().port}/`);
++    const interrupted = await exportFixture(author, true);
++    if (!interrupted.ok || interrupted.batches[0]?.available !== 1 || interrupted.batches[0]?.recovery.state !== 'saved') throw Error('Partial checkpoint was not saved: ' + JSON.stringify({ ok: interrupted.ok, batches: interrupted.batches, warnings: interrupted.warnings }));
++    await author.reload();
++    const resumed = await exportFixture(author, false);
++    if (!resumed.ok || resumed.synthesis.join('|') !== 'First scene.' || resumed.batches[0].available !== 2 || resumed.batches[0].skipped !== 1) throw Error('Reload did not reuse current accepted narration');
++    const portable = path.join(temporary, 'actual-storybook.html');
++    fs.writeFileSync(portable, resumed.files.find(file => file.filename.endsWith('.html')).contents);
++    await authorContext.close();
++    const recipientContext = await browser.newContext({ offline: true, viewport: { width: 390, height: 844 } }), recipient = await recipientContext.newPage();
++    const networkRequests = [], errors = [];
++    recipient.on('request', request => { if (/^https?:/.test(request.url())) networkRequests.push(request.url()); }); recipient.on('pageerror', error => errors.push(error.message));
++    await recipient.goto(pathToFileURL(portable).href);
++    const received = await verifyRecipient(recipient);
++    await recipient.evaluate(() => { const button = document.createElement('button'); button.id = 'fixture-play'; button.textContent = 'Verify narration playback'; button.onclick = async () => { const audio = document.querySelector('audio'); audio.onended = () => window.fixturePlayed = true; await audio.play(); }; document.body.prepend(button); });
++    await recipient.click('#fixture-play'); await recipient.waitForFunction(() => window.fixturePlayed === true);
++    await recipient.reload(); const reloaded = await verifyRecipient(recipient);
++    if ([received, reloaded].some(value => value.durations.length !== 2 || value.durations.some(time => time <= 0) || value.pictureWidths[0] !== 32) || networkRequests.length || errors.length) throw Error('Actual exported Storybook failed offline verification');
++    const output = path.join(root, 'reports/offline-media-recovery');
++    await recipient.screenshot({ path: path.join(output, 'storybook-offline-390.png'), fullPage: true });
++    const report = { status: 'passed', initial: { synthesis: interrupted.synthesis.length, available: interrupted.batches[0].available }, resumed: { synthesis: resumed.synthesis.length, ...resumed.batches[0] },
++      received, reloaded, actualPlayback: true, networkRequests, errors, scope: 'Actual Storybook export and host recovery wrapper, real disposable IndexedDB reload, then a fresh offline recipient; no deployed app data.' };
++    fs.writeFileSync(path.join(output, 'storybook-browser-verification.json'), JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify(report, null, 2));
++    await recipientContext.close();
++  } finally {
++    if (browser) await browser.close(); if (server) await new Promise(resolve => server.close(resolve));
++    if (path.dirname(temporary) === os.tmpdir() && path.basename(temporary).startsWith('alloflow-storybook-offline-')) fs.rmSync(temporary, { recursive: true, force: true });
++  }
++})().catch(error => { console.error(error); process.exitCode = 1; });
+===================================================================
+--- a/export_source.jsx
++++ b/export_source.jsx
+@@ -2181,8 +2181,11 @@
+ 
+     // ─── handleExportStorybook ────────────────────────────────────────
+     const handleExportStorybook = async (rawOptions = false) => {
+         const options = _normalizeStorybookExportOptions(rawOptions);
++        const checkCancelled = () => {
++            if (options.signal?.aborted) throw Object.assign(new Error('Storybook export cancelled.'), { name: 'AbortError' });
++        };
+         const { includeImages, includeNarration } = options;
+         const current = liveRef.current || {};
+         const {
+             adventureState, sourceTopic, generatedContent,
+@@ -2198,12 +2201,14 @@
+         if (typeof setIsProcessing === 'function') setIsProcessing(true);
+         if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_writing'), "info");
+         _storybookProgress(options, { phase: 'story', message: 'Preparing your Storybook…' });
+         try {
++            checkCancelled();
+             const hydrated = typeof rehydrateHistoryWithImages === 'function'
+                 ? await rehydrateHistoryWithImages(adventureState.history || [], adventureState.imageCache || {})
+                 : (adventureState.history || []).slice();
+             const fullStory = Array.isArray(hydrated) ? hydrated.slice() : [];
++            checkCancelled();
+             if (adventureState.currentScene) {
+                 fullStory.push({ type: 'scene', text: adventureState.currentScene.text, image: adventureState.sceneImage });
+             }
+             const historyText = fullStory.map((entry) => (
+@@ -2221,8 +2226,9 @@
+               Write in the second person ("You started by... then you decided to...").
+               Return ONLY the narrative text.
+             `;
+             const summary = String(await window.callGemini(prompt) || '').trim();
++            checkCancelled();
+             const title = String(sourceTopic || t('adventure.title'));
+             const date = new Date().toLocaleDateString();
+             const strPageTitle = t('export.storybook.page_title', { title });
+             const strSubtitle = t('export.storybook.subtitle');
+@@ -2290,8 +2296,9 @@
+                                 const numericSpeed = Number(voiceSpeed);
+                                 const narrationSpeed = Number.isFinite(numericSpeed) && numericSpeed > 0 ? numericSpeed : 1;
+                                 prepared = await prepareReadAloudArtifactAudio({
+                                     ownerApproved: true,
++                                    recoverPreparedAudio: true,
+                                     resourceId: storyId,
+                                     resourceType: 'adventure-storybook-read-aloud',
+                                     adapterId: 'adventure-storybook-artifact',
+                                     scopeId: 'story',
+@@ -2341,9 +2348,14 @@
+                             if (rejectedClips) {
+                                 narrationWarning = `${rejectedClips} narration clip${rejectedClips === 1 ? '' : 's'} could not be included. The Storybook text remains complete.`;
+                             } else if (!Object.keys(acceptedAudio).length && !narrationWarning) {
+                                 narrationWarning = 'No narrated audio was returned. The complete text Storybook will still be downloaded.';
++                            } else if (Object.keys(acceptedAudio).length < totalSegments && !narrationWarning) {
++                                narrationWarning = `${totalSegments - Object.keys(acceptedAudio).length} narration clips are missing. Retry the export to prepare the missing clips; completed narration is retained.`;
+                             }
++                            if (prepared?.recovery?.state === 'session-only') {
++                                narrationWarning += ' Prepared narration could not be saved for recovery on this device. Keep this page open to retry, or keep the downloaded Storybook.';
++                            }
+                         } else {
+                             narrationWarning = 'Narration is not connected in this build yet. The complete text Storybook will still be downloaded.';
+                             if (typeof warnLog === 'function') warnLog('prepareReadAloudArtifactAudio was not injected for Storybook export');
+                         }
+@@ -2387,12 +2399,18 @@
+             const epilogueHtml = epilogueScene
+                 ? epilogueScene.segments.map((segment) => `${renderMarkdown(segment.text)}${renderAudio(segment, epilogueScene.title)}`).join('')
+                 : renderMarkdown(summary);
+             let chaptersHtml = '';
++            let embeddedPictureCount = 0, externalPictureCount = 0, omittedPictureCount = 0;
+             journeyScenes.forEach((scene, sceneIndex) => {
+                 const safeImage = /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(String(scene.image || ''))
+                     ? String(scene.image)
+                     : '';
++                if (includeImages && scene.image) {
++                    if (!safeImage) omittedPictureCount++;
++                    else if (safeImage.startsWith('data:')) embeddedPictureCount++;
++                    else externalPictureCount++;
++                }
+                 const segmentHtml = scene.segments.map((segment) => {
+                     const audioHtml = renderAudio(segment, scene.title);
+                     if (segment.kind === 'choice') {
+                         return `<div class="choice" data-segment-id="${_escapeExportText(segment.segmentId)}">${safeUser}: ${_escapeExportText(segment.text)}${audioHtml}</div>`;
+@@ -2412,8 +2430,15 @@
+             });
+             const embeddedArtifact = serializedReadAloudArtifact
+                 ? `<script type="application/json" id="alloflow-read-aloud-artifact">${_jsonForHtmlScript(readAloudArtifact)}</script>`
+                 : '';
++            const mediaSummary = includeNarration
++                ? `${Number(readAloudStats.audioClips) || 0} of ${normalizedScenes.reduce((count, scene) => count + scene.segments.length, 0)} narration clips included.`
++                : '';
++            const pictureSummary = includeImages ? `Pictures embedded: ${embeddedPictureCount}. Pictures requiring the original source: ${externalPictureCount}. Pictures omitted: ${omittedPictureCount}.` : '';
++            if (includeImages && (externalPictureCount || omittedPictureCount) && typeof addToast === 'function') {
++                addToast('Some Storybook pictures are not embedded. Their availability on another device is not verified.', 'warning');
++            }
+             const storyHtml = `
+               <!DOCTYPE html>
+               <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
+               <head>
+@@ -2456,13 +2481,15 @@
+                       ${epilogueHtml}
+                   </div>
+                   <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 40px;">${_escapeExportText(strLogHeader)}</h2>
+                   <div class="log-section">${chaptersHtml}</div>
++                  <p class="media-availability" role="status">${_escapeExportText([mediaSummary, pictureSummary].filter(Boolean).join(' '))}</p>
+                   <div style="text-align: center; margin-top: 50px; color: #64748b; font-size: 0.8em;">${_escapeExportText(strFooter)}</div>
+                   ${embeddedArtifact}
+               </body>
+               </html>
+             `;
++            checkCancelled();
+             const storyItems = normalizedScenes.flatMap((scene) => scene.segments.map((segment) => ({
+                 id: segment.segmentId,
+                 title: segment.kind === 'epilogue' ? 'Epilogue' :
+                     segment.kind === 'choice' ? 'Student choice' :
+@@ -2485,8 +2512,9 @@
+                 sceneCount: readAloudArtifact ? readAloudArtifact.transcript.sceneCount : normalizedScenes.length,
+                 segmentCount: readAloudArtifact ? readAloudArtifact.transcript.segmentCount : storyItems.length,
+                 audioClipCount: Number(readAloudStats.audioClips) || 0,
+                 totalAudioBytes: Number(readAloudStats.totalAudioBytes) || 0,
++                pictures: { embedded: embeddedPictureCount, external: externalPictureCount, omitted: omittedPictureCount, decoding: 'unverified' },
+             } : null;
+             try {
+                 const artifact = {
+                     id: `adventure-storybook-${ts}`,
+@@ -2497,9 +2525,9 @@
+                     title,
+                     summary: `Student-controlled Adventure Mode storybook with ${Math.max(0, storyItems.length - 1)} journey entries`,
+                     privacy: 'student-controlled',
+                     privacySummary: includeNarration
+-                        ? 'Student-controlled. Storybook text and a lightweight download reference are saved on this device; narration audio remains only in downloaded files.'
++                        ? 'Student-controlled. Storybook text and a lightweight download reference are saved on this device. Narration is included in downloaded files, and a separate recovery copy may be saved on this device for export retries.'
+                         : 'Student-controlled. Storybook text is saved on this device for the AlloHaven Portfolio.',
+                     sourceSummary: 'Saved from Adventure Mode storybook export',
+                     lifecycleStatus: 'saved',
+                     version: 1,
+@@ -2540,16 +2568,17 @@
+             } catch (saveError) {
+                 if (typeof warnLog === 'function') warnLog('Storybook manifest could not be saved', saveError);
+             }
+             _storybookProgress(options, { phase: 'download', message: 'Finishing your Storybook download…' });
++            checkCancelled();
+             if (includeNarration) {
+                 _downloadStorybookFile(storyHtml, 'text/html;charset=utf-8', htmlFilename);
+                 if (serializedReadAloudArtifact) {
+                     _downloadStorybookFile(serializedReadAloudArtifact, 'application/json;charset=utf-8', jsonFilename);
+                 }
+                 if (typeof addToast === 'function') {
+                     addToast(readAloudStats.audioClips > 0
+-                        ? 'Downloaded the narrated Storybook as self-contained HTML and JSON files.'
++                        ? 'Downloaded the Storybook as HTML and JSON files with embedded narration. Check the included media counts before sharing.'
+                         : 'Downloaded the Storybook as text-first HTML and JSON files.', 'success');
+                 }
+             } else {
+                 const printWindow = window.open('', '_blank');
+===================================================================
+--- a/read_aloud_artifact_audio_source.jsx
++++ b/read_aloud_artifact_audio_source.jsx
+@@ -332,12 +332,65 @@
+ 
+     return { prepare };
+ };
+ 
++// Owner-requested export recovery. Callers keep this object for their lifetime;
++// each call supplies current dependencies, avoiding stale host/profile closures.
++const createReadAloudArtifactRecovery = () => {
++    const checkpoints = new Map();
++    const jobs = new Set();
++    const errorCode = error => typeof error?.code === 'string' ? error.code : error?.name || 'checkpoint-storage-failed';
++    async function prepare(options, dependencies) {
++        if (options.ownerApproved !== true) throw Object.assign(new Error('Choose to include narration before preparing it.'), { code: 'owner-approval-required' });
++        const identity = [options.resourceId, options.resourceType, options.adapterId, options.scopeId];
++        if (identity.some(value => typeof value !== 'string' || !value.trim())) throw Object.assign(new Error('Export recovery requires a stable artifact identity.'), { code: 'checkpoint-identity-required' });
++        const key = 'allo_read_aloud_checkpoint:' + encodeURIComponent(JSON.stringify(identity));
++        if (jobs.has(key)) throw Object.assign(new Error('Narration for this export is already being prepared.'), { code: 'preparation-in-progress' });
++        jobs.add(key);
++        let recovery = { state: 'session-only', verifiedAt: null, code: null, resumed: false };
++        let checkpoint = options.checkpoint || checkpoints.get(key) || null;
++        const save = async value => {
++            checkpoints.set(key, value);
++            try {
++                const receipt = await dependencies.writeVerifiedStorageSnapshot(dependencies.storage, key, value);
++                if (receipt?.verified !== true) throw Object.assign(new Error('Checkpoint save was not verified.'), { code: 'checkpoint-unverified' });
++                recovery = { ...recovery, state: 'saved', verifiedAt: receipt.verifiedAt, code: null };
++            } catch (error) {
++                recovery = { ...recovery, state: 'session-only', verifiedAt: null, code: errorCode(error) };
++            }
++            if (typeof options.onCheckpoint === 'function') await options.onCheckpoint(value);
++            return { status: recovery.state === 'saved' ? 'saved' : 'attached', verified: recovery.state === 'saved' };
++        };
++        try {
++            if (!checkpoint) {
++                try { checkpoint = await dependencies.storage.get(key, { throwOnError: true, localOnly: true }); }
++                catch (error) { recovery.code = errorCode(error); }
++            }
++            if (checkpoint && (checkpoint.version !== 1 || checkpoint.payload?.version !== 4 ||
++                ['resourceId', 'resourceType', 'adapterId', 'scopeId'].some(field => checkpoint[field] !== options[field]))) {
++                checkpoint = null;
++                checkpoints.delete(key);
++                recovery.code = 'checkpoint-invalid';
++            }
++            recovery.resumed = !!checkpoint;
++            const result = await dependencies.prepare({ ...options, checkpoint, onCheckpoint: save });
++            if (result.checkpoint) await save(result.checkpoint);
++            return { ...result, recovery };
++        } catch (error) {
++            if (error.checkpoint) checkpoints.set(key, error.checkpoint);
++            if (error.partialResult) error.partialResult.recovery = recovery;
++            error.recovery = recovery;
++            throw error;
++        } finally { jobs.delete(key); }
++    }
++    return { prepare };
++};
++
+ if (typeof window !== 'undefined') {
+     window.AlloModules = window.AlloModules || {};
+     window.AlloModules.ReadAloudArtifactAudio = {
+         create: createReadAloudArtifactAudio,
++        createRecovery: createReadAloudArtifactRecovery,
+     };
+     window.AlloModules.createReadAloudArtifactAudio = createReadAloudArtifactAudio;
+     window.AlloModules.ReadAloudArtifactAudioModule = true;
+ }
+===================================================================
+--- a/read_aloud_audio_service_source.jsx
++++ b/read_aloud_audio_service_source.jsx
+@@ -1509,10 +1509,11 @@
+         if (!binding) return null;
+         try { return binding.controller.summary({ profile: options.profile }); } catch (_) { return null; }
+     }
+ 
+-    function readiness(sentences, lane, options) {
+-        const binding = bindingFor(Array.isArray(sentences) ? sentences : null, lane || 'reference');
++    function readiness(sentences, lane, options = {}) {
++        const supplied = Array.isArray(options.entries) ? options.entries : (Array.isArray(sentences) ? sentences : null);
++        const binding = bindingFor(supplied, lane || 'reference');
+         return binding ? binding.controller.readiness(options || {}) : null;
+     }
+ 
+     async function retryPersistence(lane, options) {
+===================================================================
+--- a/tests/adventure_storybook_read_aloud_export.test.js
++++ b/tests/adventure_storybook_read_aloud_export.test.js
+@@ -124,8 +124,29 @@
+   },
+ });
+ 
+ describe('Adventure narrated Storybook artifact export', () => {
++  it('reports external pictures without declaring the entire download self-contained', async () => {
++    const downloads = installDownloadCapture();
++    window.callGemini = vi.fn().mockResolvedValue('You completed the journey.');
++    const live = storyLive({ adventureState: { history: [{ type: 'scene', text: 'A river rises.', image: 'https://example.test/river.png' }], level: 3 },
++      prepareReadAloudArtifactAudio: async () => ({ audioBySegmentId: { 'epilogue:summary': contractAudio('Z29vZA==') } }) });
++    const save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
++    expect(await createExport(live).handleExportStorybook({ includeNarration: true, includeImages: true })).toBe(true);
++    const html = downloads.find(item => item.filename.endsWith('.html')).blob.content;
++    expect(html).toContain('Pictures requiring the original source: 1');
++    expect(live.addToast).toHaveBeenCalledWith(expect.stringContaining('not embedded'), 'warning');
++    expect(save.mock.calls[0][0].artifact.readAloudReference.pictures).toMatchObject({ external: 1, decoding: 'unverified' });
++    expect(live.addToast.mock.calls.some(([text]) => text.includes('self-contained'))).toBe(false);
++  });
++  it('does not save a manifest or download after cancellation during story preparation', async () => {
++    const downloads = installDownloadCapture(), controller = new AbortController();
++    const save = vi.fn(); window.AlloModules.StudentArtifactStore = { save };
++    window.callGemini = vi.fn(async () => { controller.abort(); return 'You completed the journey.'; });
++    const prepareReadAloudArtifactAudio = vi.fn();
++    expect(await createExport(storyLive({ prepareReadAloudArtifactAudio })).handleExportStorybook({ includeNarration: true, signal: controller.signal })).toBe(false);
++    expect(prepareReadAloudArtifactAudio).not.toHaveBeenCalled(); expect(save).not.toHaveBeenCalled(); expect(downloads).toHaveLength(0);
++  });
+   it('uses the shared flat-segment callback, embeds valid clips, and saves only a lightweight manifest', async () => {
+     const downloads = installDownloadCapture();
+     const save = vi.fn();
+     window.AlloModules.StudentArtifactStore = { save };
+@@ -160,8 +181,9 @@
+     expect(prepareReadAloudArtifactAudio).toHaveBeenCalledOnce();
+     const request = prepareReadAloudArtifactAudio.mock.calls[0][0];
+     expect(request).toMatchObject({
+       ownerApproved: true,
++      recoverPreparedAudio: true,
+       resourceType: 'adventure-storybook-read-aloud',
+       adapterId: 'adventure-storybook-artifact',
+       scopeId: 'story',
+       source: 'adventure-owner-export',
+@@ -226,8 +248,25 @@
+   });
+ });
+ 
+ describe('Storybook export modal narration progress', () => {
++  it('stops an active export without dismissing the dialog and offers another attempt', async () => {
++    let finish, request;
++    const close = vi.fn();
++    const handleExportStorybook = vi.fn(options => { request = options; return new Promise(resolve => { finish = resolve; }); });
++    host = document.createElement('div'); document.body.append(host); root = ReactDOMClient.createRoot(host);
++    await act(async () => root.render(React.createElement(StorybookExportModal, { handleExportStorybook, handleSetShowStorybookExportModalToFalse: close,
++      setShowStorybookExportModal: close, isProcessing: false, t: key => key })));
++    expect(host.textContent).toContain('recovery copy is saved on this device when space allows');
++    await act(async () => host.querySelector('[data-help-key="export_storybook_images"]').click());
++    const stop = [...host.querySelectorAll('button')].find(button => button.textContent === 'Stop export');
++    expect(stop.disabled).toBe(false);
++    await act(async () => stop.click()); expect(request.signal.aborted).toBe(true);
++    await act(async () => finish(false));
++    expect(close).not.toHaveBeenCalled();
++    expect(host.querySelector('[role="status"]').textContent).toContain('Completed narration is kept');
++    expect(host.querySelector('[data-help-key="export_storybook_images"]').disabled).toBe(false);
++  });
+   it('offers an accessible opt-in and keeps live spinner/progress feedback visible until export completes', async () => {
+     let finish;
+     const pending = new Promise((resolvePromise) => { finish = resolvePromise; });
+     const handleExportStorybook = vi.fn(() => pending);
+===================================================================
+--- /dev/null
++++ b/tests/offline_media_reader_integration.test.js
+@@ -0,0 +1,91 @@
++import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++let React, createRoot, act, View, pure, phase, root, host;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'))); act = React.act;
++  window.React = global.React = React; global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'view_simplified_module.js'].forEach(loadAlloModule);
++  View = window.AlloModules.SimplifiedView; pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers;
++});
++afterEach(() => {
++  if (root) act(() => root.unmount()); host?.remove(); root = null; host = null; vi.restoreAllMocks();
++  for (const key of ['__alloGetReadAloudAudioSummary', '__alloGetReadAloudReadiness', '__alloRetryReadAloudPersistence', '__alloPrepareReadAloud', '__alloReadAloudProfileRevision']) delete window[key];
++});
++function mount(extra = {}) {
++  const noop = () => {};
++  let props = { ComplexityGauge: () => null, t: key => key,
++    generatedContent: { id: 'r', type: 'simplified', data: 'Plants need light. Roots need water.', instructionalText: { form: 'adapted', role: 'supplemental' } },
++    selectedVoice: 'Kore', voiceSpeed: 1, leveledTextLanguage: 'English', isTeacherMode: true, isZenMode: false,
++    interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: text => pure.splitTextToSentences(text, {}),
++    getSideBySideContent: () => null, handleSpeak: noop, cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false,
++    renderFormattedText: text => text, formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: text => text, latestGlossary: [], MathSymbol: ({ text }) => text }),
++    SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: text => text, latestGlossary: [],
++    setFocusedParagraphIndex: noop, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, handleToggleIsEditingLeveledText: noop,
++    handleSimplifiedTextChange: noop, handleFormatText: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, setSelectionMenu: noop, ...extra };
++  window.__alloGetReadAloudAudioSummary = () => ({ total: 2, ready: 2, stale: 0, corrupt: 0, missing: 0 });
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  const render = async next => { props = { ...props, ...next }; await act(async () => root.render(React.createElement(View, props))); };
++  return { render, get props() { return props; } };
++}
++const row = () => host.querySelector('[data-review-state="audio"]');
++const action = key => row()?.querySelector(`[data-review-action="${key}"]`);
++const result = (state, extra = {}) => ({ resourceId: 'r', scope: 'device-audio', state, total: 2, ready: 2, durableReady: 0, sessionOnly: 2, remaining: 0, protectedRecordings: 0, nextActions: ['retry-save'], pictureOmissions: [], ...extra });
++
++describe('verified device audio in the reader', () => {
++  it('does not turn in-memory preparation into a verified save', async () => {
++    const view = mount(); await view.render({});
++    expect(row().textContent).toContain('Device audio not verified');
++    expect(row().getAttribute('data-review-tone')).not.toBe('ok');
++    expect(action('audio-check')).toBeTruthy();
++  });
++  it('retries saving retained clips without synthesis and refreshes after the save receipt', async () => {
++    let state = result('session-only');
++    window.__alloGetReadAloudReadiness = vi.fn(async () => state);
++    window.__alloRetryReadAloudPersistence = vi.fn(async () => false);
++    window.__alloPrepareReadAloud = vi.fn();
++    const view = mount(); await view.render({});
++    expect(row().textContent).toContain('Audio available for this session');
++    await act(async () => action('audio-retry-save').click());
++    expect(window.__alloRetryReadAloudPersistence).toHaveBeenCalledOnce();
++    expect(window.__alloPrepareReadAloud).not.toHaveBeenCalled();
++    expect(row().getAttribute('data-review-tone')).toBe('attention');
++    state = result('ready', { durableReady: 2, sessionOnly: 0, nextActions: [] });
++    await act(async () => window.dispatchEvent(new CustomEvent('alloflow:offline-media-persistence')));
++    expect(row().textContent).toContain('Audio saved on this device');
++    expect(row().textContent).toContain('2 of 2');
++    expect(row().getAttribute('data-review-tone')).toBe('ok');
++  });
++  it('shows missing pictures and protected recordings separately from missing AI audio', async () => {
++    window.__alloGetReadAloudReadiness = async () => result('partial', { ready: 0, sessionOnly: 0, remaining: 2, protectedRecordings: 1, nextActions: ['prepare-missing', 'review-recordings'], pictureOmissions: [{ id: 'picture' }] });
++    const view = mount(); await view.render({});
++    expect(row().textContent).toContain('Support pictures omitted from the device save: 1');
++    expect(action('audio')).toBeTruthy(); expect(action('audio-recordings')).toBeTruthy(); expect(action('audio-pictures')).toBeTruthy();
++    expect(action('audio-retry-save')).toBeNull();
++  });
++  it('drops a late check after voice settings change and forwards current identity options', async () => {
++    let finish;
++    window.__alloGetReadAloudReadiness = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finish = resolve; })).mockResolvedValue(result('partial', { ready: 0, sessionOnly: 0, remaining: 2, nextActions: ['prepare-missing'] }));
++    const view = mount(); await view.render({}); await view.render({ selectedVoice: 'Aoede', voiceSpeed: 0.8 });
++    await act(async () => finish(result('ready', { durableReady: 2, sessionOnly: 0 })));
++    expect(row().textContent).toContain('Audio partly prepared');
++    expect(window.__alloGetReadAloudReadiness.mock.calls.at(-1)[2].profile).toMatchObject({ voice: 'Aoede', synthesisRate: 0.8 });
++    expect(action('audio')).toBeTruthy();
++  });
++  it('keeps cancellation usable and never announces an unverified preparation as saved', async () => {
++    let finish, signal;
++    window.__alloGetReadAloudReadiness = async () => result('partial', { ready: 0, sessionOnly: 0, remaining: 2, nextActions: ['prepare-missing'] });
++    window.__alloPrepareReadAloud = vi.fn((_text, _progress, options) => { signal = options.signal; return new Promise(resolve => { finish = resolve; }); });
++    const view = mount(); await view.render({}); await act(async () => action('audio').click());
++    expect(row().textContent).toContain('Preparing audio');
++    await act(async () => action('audio-stop').click()); expect(signal.aborted).toBe(true);
++    await act(async () => finish({ cancelled: true, remaining: 1 }));
++    expect(host.textContent).toContain('Completed clips are kept');
++    expect(row().getAttribute('data-review-tone')).not.toBe('ok');
++    expect(action('audio')).toBeTruthy();
++  });
++});
+===================================================================
+--- a/tests/offline_media_recovery.test.js
++++ b/tests/offline_media_recovery.test.js
+@@ -210,8 +210,59 @@
+     expect(get).toHaveBeenCalledWith('history', { throwOnError: true, localOnly: true });
+   });
+ });
+ 
++describe('export checkpoint persistence integration', () => {
++  const options = { ownerApproved: true, resourceId: 'story-r', resourceType: 'adventure-storybook-read-aloud', adapterId: 'adventure-storybook-artifact', scopeId: 'story',
++    segments: [{ segmentId: 'a', text: 'One.' }, { segmentId: 'b', text: 'Two.' }] };
++  function setup() {
++    const saved = new Map();
++    const storage = { set: vi.fn(async (key, value) => { saved.set(key, JSON.parse(JSON.stringify(value))); return true; }),
++      get: vi.fn(async key => saved.get(key)) };
++    const callTTS = vi.fn(async () => audio());
++    const helper = createArtifact({ callTTS });
++    return { saved, storage, callTTS, dependencies: { storage, writeVerifiedStorageSnapshot: writeVerified, prepare: value => helper.prepare(value) } };
++  }
++  it('resumes accepted clips from device storage in a fresh recovery instance', async () => {
++    const h = setup(); h.callTTS.mockImplementation(async text => { if (text === 'Two.') throw new Error('network lost'); return audio(); });
++    const first = await window.AlloModules.ReadAloudArtifactAudio.createRecovery().prepare(options, h.dependencies);
++    expect(first).toMatchObject({ available: 1, recovery: { state: 'saved', resumed: false } });
++    h.callTTS.mockImplementation(async () => audio()); h.callTTS.mockClear();
++    const second = await window.AlloModules.ReadAloudArtifactAudio.createRecovery().prepare(options, h.dependencies);
++    expect(second).toMatchObject({ available: 2, skipped: 1, recovery: { state: 'saved', resumed: true } });
++    expect(h.callTTS.mock.calls.map(([text]) => text)).toEqual(['Two.']);
++  });
++  it('keeps a quota-failed checkpoint in the session and retries storage without synthesis', async () => {
++    const h = setup(), recovery = window.AlloModules.ReadAloudArtifactAudio.createRecovery();
++    h.storage.set.mockRejectedValue(new DOMException('Full', 'QuotaExceededError'));
++    expect(await recovery.prepare(options, h.dependencies)).toMatchObject({ available: 2, failed: 0, recovery: { state: 'session-only', code: 'QuotaExceededError' } });
++    h.storage.set.mockImplementation(async (key, value) => { h.saved.set(key, JSON.parse(JSON.stringify(value))); return true; });
++    h.callTTS.mockClear();
++    expect(await recovery.prepare(options, h.dependencies)).toMatchObject({ skipped: 2, recovery: { state: 'saved' } });
++    expect(h.callTTS).not.toHaveBeenCalled();
++  });
++  it('retains a cancelled partial checkpoint for reload and blocks a duplicate active job', async () => {
++    const h = setup(), recovery = window.AlloModules.ReadAloudArtifactAudio.createRecovery();
++    let release; h.callTTS.mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
++    const controller = new AbortController();
++    const first = recovery.prepare({ ...options, signal: controller.signal, onProgress: p => { if (p.prepared === 1) controller.abort(); } }, h.dependencies);
++    await vi.waitFor(() => expect(release).toBeTypeOf('function'));
++    await expect(recovery.prepare(options, h.dependencies)).rejects.toMatchObject({ code: 'preparation-in-progress' });
++    release(audio());
++    await expect(first).rejects.toMatchObject({ name: 'AbortError', partialResult: { available: 1 }, recovery: { state: 'saved' } });
++    h.callTTS.mockClear();
++    expect(await window.AlloModules.ReadAloudArtifactAudio.createRecovery().prepare(options, h.dependencies)).toMatchObject({ available: 2, skipped: 1 });
++    expect(h.callTTS.mock.calls.map(([text]) => text)).toEqual(['Two.']);
++  });
++  it('recovers a malformed checkpoint and requires approval before reading storage', async () => {
++    const h = setup(); h.storage.get.mockResolvedValueOnce({ version: 999, payload: {} });
++    const recovery = window.AlloModules.ReadAloudArtifactAudio.createRecovery();
++    await expect(recovery.prepare({ ...options, ownerApproved: false }, h.dependencies)).rejects.toMatchObject({ code: 'owner-approval-required' });
++    expect(h.storage.get).not.toHaveBeenCalled();
++    expect(await recovery.prepare(options, h.dependencies)).toMatchObject({ available: 2, recovery: { resumed: false, state: 'saved' } });
++  });
++});
++
+ describe('host autosave media receipts', () => {
+   it.each(['quota', 'false', 'readback', 'ok'])('reports the actual %s save result without changing in-memory media', async mode => {
+     const host = readFileSync('AlloFlowANTI.txt', 'utf8');
+     const start = host.indexOf('        const retention = ALLO_WORKSPACE_RECOVERY.resolvePolicy(', host.indexOf('const saveHistory ='));
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2395,15 +2395,17 @@
+     var ttsPrepState = ttsPrepState_state[0];
+     var setTtsPrepState = ttsPrepState_state[1];
+     var ttsPrepNoticeState = React.useState('');
+     var ttsPrepNotice = ttsPrepNoticeState[0], setTtsPrepNotice = ttsPrepNoticeState[1];
++    var [ttsPrepFailure, setTtsPrepFailure] = React.useState(null);
+     var ttsPrepRequestRef = React.useRef(null);
+     var audioProfileRevision = typeof window !== 'undefined' ? window.__alloReadAloudProfileRevision : null;
+     var ttsPrepContext = JSON.stringify([generatedContent && generatedContent.id, simplifiedReadAloudText, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision]);
+     var ttsPrepContextRef = React.useRef(ttsPrepContext);
+     ttsPrepContextRef.current = ttsPrepContext;
+     React.useEffect(function () {
+       setTtsPrepNotice('');
++      setTtsPrepFailure(null);
+       setTtsPrepState({ busy: false, done: 0, total: 0 });
+       return function () {
+         var request = ttsPrepRequestRef.current;
+         ttsPrepRequestRef.current = null;
+@@ -3057,27 +3059,33 @@
+       // teacher's explicit opt-out survives pressing Save TTS.
+       var request = { context: ttsPrepContext, controller: typeof AbortController === 'function' ? new AbortController() : null };
+       ttsPrepRequestRef.current = request;
+       setTtsPrepNotice('');
++      setTtsPrepFailure(null);
+       setTtsPrepState({ busy: true, done: 0, total: sentences.length });
+       try {
+         var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
+           if (ownsTtsPreparation(request)) setTtsPrepState({ busy: true, done: done, total: total || sentences.length });
+         }, { entries: entries, signal: request.controller && request.controller.signal });
+         if (!ownsTtsPreparation(request)) return;
+-        if (result && result.remaining) {
++        if (result && result.cancelled) {
++          setTtsPrepNotice(viewText('simplified.offline_audio_stopped', 'Audio preparation stopped. Completed clips are kept; prepare missing audio to continue.'));
++        } else if (result && result.remaining) {
++          setTtsPrepFailure(result.failure || { code: 'preparation-incomplete' });
+           setTtsPrepNotice((result.failure && result.failure.reason) || (result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.'));
+         } else if (result && result.ok) {
+-          setTtsPrepNotice(viewText('simplified.audio_read_aloud_audio_is_saved_for', 'Read-aloud audio is saved for all sentences.'));
++          setTtsPrepNotice(viewText('simplified.offline_audio_prepared_checking', 'Audio is prepared. Checking whether it is saved on this device.'));
+         }
+-      } catch (_) {
++      } catch (error) {
++        if (ownsTtsPreparation(request) && !request.controller?.signal.aborted) setTtsPrepFailure({ code: error?.code || 'preparation-failed' });
+         if (ownsTtsPreparation(request)) setTtsPrepNotice(request.controller && request.controller.signal.aborted
+           ? 'Audio saving stopped. Save TTS again to finish any missing clips.'
+           : 'Audio could not be saved. Please try again.');
+       } finally {
+         if (ownsTtsPreparation(request)) {
+           ttsPrepRequestRef.current = null;
+           setTtsPrepState({ busy: false, done: 0, total: 0 });
++          if (deviceAudioRefreshRef.current) deviceAudioRefreshRef.current();
+         }
+       }
+     };
+     var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
+@@ -4277,9 +4285,77 @@
+     var reviewAudio = React.useMemo(function () {
+       if (!showReviewSummary) return null;
+       try { return getReadAloudAudioSummary(getReadAloudSentenceEntriesForText(simplifiedReadAloudText)); } catch (_) { return null; }
+     }, [showReviewSummary, simplifiedReadAloudText, generatedContent?.id, generatedContent?.karaokeAudio, selectedVoice, voiceSpeed, leveledTextLanguage, audioProfileRevision, audioStatusTick, readAloudStore, readAloudStoreRevision, editAudioPlaybackErrors, ttsPrepState.done, ttsPrepState.busy, isPlaying]);
++    // Device durability is checked independently of the in-memory preparation
++    // summary. Never promote a store-presence count into a saved-device claim.
++    var [deviceAudioResult, setDeviceAudioResult] = React.useState(null);
++    var [deviceAudioSaveBusy, setDeviceAudioSaveBusy] = React.useState(false);
++    var deviceAudioRefreshRef = React.useRef(null), deviceAudioSaveRef = React.useRef(null);
++    var deviceAudio = deviceAudioResult && deviceAudioResult.context === ttsPrepContext && deviceAudioResult.payload === generatedContent?.karaokeAudio && deviceAudioResult.store === readAloudStore && deviceAudioResult.revision === readAloudStoreRevision ? deviceAudioResult.value : null;
+     React.useEffect(function () {
++      if (!showReviewSummary) return;
++      var alive = true, sequence = 0;
++      var resourceId = String(generatedContent.id), payload = generatedContent.karaokeAudio;
++      var entries = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
++      var profile = getReadAloudIdentityOptions().profile;
++      async function refresh(event) {
++        if (event?.detail?.resourceId && String(event.detail.resourceId) !== resourceId) return;
++        var request = ++sequence, result = null;
++        try {
++          if (typeof window.__alloGetReadAloudReadiness === 'function') result = await window.__alloGetReadAloudReadiness(entries.map(entry => entry.text), 'reference', { entries, profile, failure: ttsPrepFailure });
++        } catch (_) {}
++        if (!alive || request !== sequence) return;
++        if (result && String(result.resourceId) !== resourceId) result = null;
++        setDeviceAudioResult({ context: ttsPrepContext, payload, store: readAloudStore, revision: readAloudStoreRevision, value: result });
++      }
++      deviceAudioRefreshRef.current = refresh;
++      var events = ['alloflow:offline-media-persistence', 'alloflow:karaoke-audio-updated', 'alloflow:karaoke-audio-capture', 'alloflow:read-aloud-reconciled', 'alloflow:module-registry-changed', 'focus', 'pageshow'];
++      events.forEach(name => window.addEventListener(name, refresh));
++      function visible() { if (document.visibilityState === 'visible') refresh(); }
++      document.addEventListener('visibilitychange', visible);
++      refresh();
++      return function () {
++        alive = false; sequence++;
++        events.forEach(name => window.removeEventListener(name, refresh));
++        document.removeEventListener('visibilitychange', visible);
++        if (deviceAudioRefreshRef.current === refresh) deviceAudioRefreshRef.current = null;
++      };
++    }, [showReviewSummary, ttsPrepContext, generatedContent?.karaokeAudio, ttsPrepState.busy, ttsPrepFailure, readAloudStore, readAloudStoreRevision, editAudioPlaybackErrors, audioStatusTick]);
++    async function retryDeviceAudioSave() {
++      if (deviceAudioSaveRef.current) return;
++      var request = { context: ttsPrepContext };
++      deviceAudioSaveRef.current = request; setDeviceAudioSaveBusy(true);
++      try {
++        if (typeof window.__alloRetryReadAloudPersistence !== 'function') throw new Error('Audio save tools are still loading.');
++        await window.__alloRetryReadAloudPersistence('reference');
++        if (ttsPrepContextRef.current === request.context && deviceAudioRefreshRef.current) await deviceAudioRefreshRef.current();
++      } catch (_) {
++        if (ttsPrepContextRef.current === request.context) setTtsPrepNotice(viewText('simplified.offline_audio_save_failed', 'Audio could not be saved on this device. Keep this page open and try saving again.'));
++      } finally {
++        if (deviceAudioSaveRef.current === request) { deviceAudioSaveRef.current = null; setDeviceAudioSaveBusy(false); }
++      }
++    }
++    function deviceAudioReviewRow() {
++      var state = ttsPrepState.busy ? 'preparing' : deviceAudio?.state || 'unverified';
++      var labels = { ready: ['saved', 'Audio saved on this device'], partial: ['partial', 'Audio partly prepared'], preparing: ['preparing', 'Preparing audio'], failed: ['failed', 'Audio needs recovery'], 'session-only': ['session', 'Audio available for this session'], unverified: ['unverified', 'Device audio not verified'] };
++      var label = labels[state] || labels.unverified;
++      var detail = deviceAudio ? viewText('simplified.offline_audio_counts', '{saved} of {total} clips saved on this device; {remaining} still need preparation.', { saved: deviceAudio.durableReady, total: deviceAudio.total, remaining: deviceAudio.remaining }) : viewText('simplified.offline_audio_check', 'Check device storage before relying on saved audio.');
++      if (deviceAudio?.sessionOnly) detail += ' ' + viewText('simplified.offline_audio_session_count', '{count} usable clips have not been verified in device storage.', { count: deviceAudio.sessionOnly });
++      var omitted = deviceAudio?.pictureOmissions?.length || 0;
++      if (omitted) detail += ' ' + viewText('simplified.offline_audio_pictures', 'Support pictures omitted from the device save: {count}.', { count: omitted });
++      return { key: 'audio', tone: state === 'ready' && !omitted ? 'ok' : state === 'session-only' || state === 'failed' || omitted ? 'attention' : 'neutral',
++        label: viewText('simplified.offline_audio_' + label[0], label[1]), detail,
++        actions: [
++          state === 'preparing' && ['audio-stop', viewText('simplified.save_audio_stop', 'Stop saving audio'), () => { ttsPrepRequestRef.current?.controller?.abort(); window.__alloCancelPrepareReadAloud?.(); }],
++          state !== 'preparing' && deviceAudio?.nextActions?.includes('prepare-missing') && ['audio', viewText('simplified.offline_audio_prepare_missing', 'Prepare missing audio'), handlePrepareReadAloudAudio],
++          state !== 'preparing' && deviceAudio?.sessionOnly > 0 && !deviceAudioSaveBusy && ['audio-retry-save', viewText('simplified.offline_audio_retry_save', 'Retry saving audio'), retryDeviceAudioSave],
++          state !== 'preparing' && !deviceAudio && ['audio-check', viewText('simplified.offline_audio_check_again', 'Check device save'), () => deviceAudioRefreshRef.current?.()],
++          deviceAudio?.protectedRecordings > 0 && ['audio-recordings', viewText('simplified.offline_audio_review_recordings', 'Review recordings'), () => { if (!isEditingLeveledText) handleToggleIsEditingLeveledText?.(); }],
++          omitted > 0 && ['audio-pictures', viewText('simplified.review_open_help', 'Review word help'), openWordHelpReview],
++        ] };
++    }
++    React.useEffect(function () {
+       if (!studentPreview || !studentPreviewRef.current) return;
+       var modal = studentPreviewRef.current, opener = studentPreviewOpener.current;
+       var background = [];
+       // The modal is a sibling of the reader. Hide every sibling on the path to
+@@ -4329,15 +4405,9 @@
+         help && { key: 'help', tone: help.status === 'stale' || (helpCount && !help.shown) ? 'attention' : helpCount ? 'ok' : 'neutral',
+           label: help.status === 'stale' || (helpCount && !help.shown) ? viewText('simplified.review_help_needs_review', 'Word help needs review') : helpCount ? viewText('simplified.review_help_shown', 'Word help shown to students') : viewText('simplified.review_help_none', 'No word help'),
+           detail: help.status === 'stale' ? viewText('simplified.review_help_stale_detail', 'The text changed after word help was made, so students do not see it.') : helpCount ? (helpCount === 1 ? viewText('simplified.word_help_summary_one', '1 support') : viewText('simplified.word_help_summary_count', '{count} supports', { count: helpCount })) + (help.shown ? '' : ' · ' + viewText('simplified.word_help_summary_hidden', 'Hidden from students')) : viewText('simplified.review_help_none_detail', 'Optional explanations for hard words.'),
+           actions: [['help', viewText('simplified.review_open_help', 'Review word help'), openWordHelpReview]] },
+-        reviewAudio && reviewAudio.total > 0 && { key: 'audio', tone: !reviewAudio.unavailable && reviewAudio.ready === reviewAudio.total ? 'ok' : 'neutral',
+-          label: reviewAudio.unavailable ? viewText('simplified.review_audio_unavailable', 'Audio status unavailable') : reviewAudio.ready === reviewAudio.total ? viewText('simplified.review_audio_ready', 'Audio prepared') : reviewAudio.ready ? viewText('simplified.review_audio_partial', 'Audio partly prepared') : viewText('simplified.review_audio_none', 'Audio not prepared'),
+-          detail: viewText('simplified.review_audio_current_detail', '{ready} of {total} sentence clips ready for these settings on this device.', { ready: reviewAudio.ready, total: reviewAudio.total }),
+-          actions: [(reviewAudio.unavailable || reviewAudio.ready < reviewAudio.total || ttsPrepState.busy) && ['audio', ttsPrepState.busy ? viewText('simplified.save_audio_stop', 'Stop saving audio') : viewText('simplified.save_audio', 'Save audio'), () => {
+-            if (ttsPrepState.busy) { var request = ttsPrepRequestRef.current; if (request && request.controller) request.controller.abort(); return; }
+-            handlePrepareReadAloudAudio();
+-          }]] }
++        reviewAudio && reviewAudio.total > 0 && deviceAudioReviewRow()
+       ].filter(Boolean);
+       var tones = { ok: 'border-emerald-300 bg-emerald-50 text-emerald-900', attention: 'border-amber-400 bg-amber-50 text-amber-950', neutral: 'border-slate-300 bg-slate-50 text-slate-800' };
+       return <section data-teacher-review-summary aria-labelledby={readerId('simplified-review-summary-title')} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-3 text-left text-sm text-slate-800">
+         <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={readerId('simplified-review-summary-title')} className="text-base font-bold text-slate-900">{viewText('simplified.review_title', 'Before you share')}</h3><button type="button" data-student-preview-open onClick={event => { studentPreviewOpener.current = event.currentTarget; previewSessionRef.current += 1; setStudentPreview(captureReadingPreview(props)); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{viewText('simplified.layout_preview_open', 'Preview reading layout')}</button></div>
+===================================================================
+--- a/view_storybook_export_modal_source.jsx
++++ b/view_storybook_export_modal_source.jsx
+@@ -94,30 +94,38 @@
+   const [localProcessing, setLocalProcessing] = React.useState(false);
+   const [progress, setProgress] = React.useState(null);
+   const busy = !!isProcessing || localProcessing;
+   const dialogRef = React.useRef(null);
++  const requestRef = React.useRef(null);
++  React.useEffect(() => () => { requestRef.current?.abort(); requestRef.current = null; }, []);
+   _useStorybookDialogFocus(dialogRef, handleSetShowStorybookExportModalToFalse, busy);
+ 
+   const runExport = async (includeImages) => {
+-    if (busy) return;
++    if (busy || requestRef.current) return;
++    const controller = new AbortController();
++    requestRef.current = controller;
+     setLocalProcessing(true);
+     setProgress({ phase: 'story', completed: 0, total: 0, message: 'Preparing your Storybook…' });
+     try {
+       const result = await handleExportStorybook({
+         includeImages,
+         includeNarration,
+         keepModalOpen: true,
+-        onProgress: (update) => setProgress(update || null),
++        signal: controller.signal,
++        onProgress: (update) => { if (requestRef.current === controller) setProgress(update || null); },
+       });
+-      if (result !== false) {
++      if (requestRef.current !== controller) return;
++      if (controller.signal.aborted) {
++        setProgress({ phase: 'cancelled', message: 'Export stopped. Completed narration is kept for your next attempt.' });
++      } else if (result !== false) {
+         setShowStorybookExportModal(false);
+       } else {
+         setProgress({ phase: 'error', completed: 0, total: 0, message: 'Storybook export could not be completed.' });
+       }
+     } catch (_) {
+-      setProgress({ phase: 'error', completed: 0, total: 0, message: 'Storybook export could not be completed.' });
++      if (requestRef.current === controller) setProgress({ phase: controller.signal.aborted ? 'cancelled' : 'error', completed: 0, total: 0, message: controller.signal.aborted ? 'Export stopped. Completed narration is kept for your next attempt.' : 'Storybook export could not be completed.' });
+     } finally {
+-      setLocalProcessing(false);
++      if (requestRef.current === controller) { requestRef.current = null; setLocalProcessing(false); }
+     }
+   };
+ 
+   const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
+@@ -170,9 +178,9 @@
+             />
+             <label htmlFor="storybook-include-narration" className="cursor-pointer text-sm text-slate-800">
+               <span className="block font-bold">Include narrated TTS audio</span>
+               <span className="mt-1 block text-xs leading-relaxed text-slate-600">
+-                Creates self-contained HTML and JSON downloads. Audio is not saved in the AlloHaven browser store.
++                Creates HTML and JSON downloads with embedded audio. A separate narration recovery copy is saved on this device when space allows, so interrupted exports can resume.
+               </span>
+             </label>
+           </div>
+         </div>
+@@ -203,13 +211,16 @@
+           </button>
+           <button
+             type="button"
+             data-alloflow-close-on-escape="true"
+-            onClick={handleSetShowStorybookExportModalToFalse}
+-            disabled={busy}
++            onClick={() => {
++              if (requestRef.current) { requestRef.current.abort(); setProgress({ phase: 'stopping', message: 'Stopping export… Completed narration will be kept.' }); }
++              else if (!busy) handleSetShowStorybookExportModalToFalse();
++            }}
++            disabled={busy && !localProcessing}
+             className="w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+-            {t('common.cancel')}
++            {localProcessing ? 'Stop export' : t('common.cancel')}
+           </button>
+         </div>
+ 
+         <div

@@ -1,0 +1,82 @@
+AlloFlowANTI.txt
+SHA256 14c59a16f3a88b0e304d0be30d323d8e4439fc81dfd4aaafc168ed5551531fde
+
+32495:   const _normalizeReadAloudBridgeText = (value) => {
+32496:     try {
+32497:       const phaseK = window.AlloModules && window.AlloModules.PhaseKHelpers;
+32498:       if (phaseK && typeof phaseK.toSpokenText === 'function') return phaseK.toSpokenText(value);
+32499:     } catch (_) {}
+32500:     return String(value || '').replace(/\s+/g, ' ').trim();
+32501:   };
+
+32537:   const _enumerateReadAloudResourceSegments = (resource) => {
+32538:     const adapters = window.AlloModules?.ResourceReadAloud;
+32539:     if (adapters?.supports(resource?.type)) return adapters.enumerate(resource);
+32540:     if (!resource) return [];
+32541:     if (String(resource.type || '').toLowerCase() === 'glossary') {
+32542:       const activeResource = _ensureGlossaryReadAloudEntryIds() || resource;
+32543:       const enumerateGlossary = window.AlloModules && window.AlloModules.enumerateGlossaryReadAloudSegments;
+32544:       return typeof enumerateGlossary === 'function'
+32545:         ? enumerateGlossary(activeResource, {
+32546:             defaultLanguage: activeResource.language || activeResource.baseLanguage ||
+32547:               leveledTextLanguage || currentUiLanguage || 'English',
+32548:           })
+32549:         : [];
+32550:     }
+32551:     if (resource.type !== 'simplified' && resource.type !== 'faq') return [];
+32552:     const splitPart = (part) => {
+32553:       try {
+32554:         const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+32555:         if (KS && typeof KS.splitSentences === 'function') return KS.splitSentences(part);
+32556:       } catch (_) {}
+32557:       return splitTextToSentences(String(part || ''));
+32558:     };
+32559:     const segments = [];
+32560:     const resourceLanguage = leveledTextLanguage || currentUiLanguage || 'English';
+32561:     const addPart = (part, prefix, language = resourceLanguage) => {
+32562:       if (!part || String(part).trim().startsWith('|') || String(part).includes('\n|')) return;
+32563:       splitPart(part).forEach((text, sentenceIndex) => {
+32564:         if (String(text || '').trim()) segments.push({ text, segmentId: prefix + '/' + sentenceIndex, scopeId: 'main', language });
+32565:       });
+32566:     };
+32567:     if (resource.type === 'faq') {
+32568:       (Array.isArray(resource.data) ? resource.data : []).forEach((item, faqIndex) => {
+32569:         if (!item) return;
+32570:         addPart(item.question, 'faq/' + faqIndex + '/question');
+32571:         addPart(item.answer, 'faq/' + faqIndex + '/answer');
+32572:       });
+32573:       return segments;
+32574:     }
+32575:     const raw = typeof resource.data === 'string' ? resource.data : String(resource.data || '');
+32576:     const paired = getSideBySideContent(raw);
+32577:     if (paired) {
+
+32638:       getStore: (lane) => _ensureKaraokeStore(lane === 'student' ? 'student' : 'reference'),
+32639:       getProfile: () => {
+32640:         const rate = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
+32641:         const profile = {
+32642:           voice: selectedVoice || window.__alloSelectedVoice || 'Kore',
+32643:           language: leveledTextLanguage || currentUiLanguage || 'English',
+32644:           speed: rate,
+32645:           synthesisRate: rate,
+32646:           voiceResolverVersion: 2,
+32647:         };
+32648:         const provider = String(_aiConfig.ttsProvider || 'auto').toLowerCase();
+32649:         profile.requestedProvider = provider === 'auto' ? 'auto:' + (_aiConfig.backend || 'gemini') : provider;
+32650:         if ((provider === 'auto' || provider === 'gemini') && !/^(af_|am_|bf_|bm_)/i.test(profile.voice)) {
+32651:           profile.requestedModel = String((_aiConfig.models && _aiConfig.models.tts) || GEMINI_MODELS.tts || '');
+32652:         }
+32653:         return profile;
+32654:       },
+
+32797:   window.__alloInspectReadAloudAudio = (sentence, lane, inspectOptions) => {
+32798:     const bridge = _getReadAloudBridge();
+32799:     return bridge && typeof bridge.inspect === 'function'
+32800:       ? bridge.inspect(sentence, lane || 'reference', inspectOptions)
+32801:       : null;
+32802:   };
+32803:   window.__alloRegenerateSentenceAudio = async (sentence, options) => {
+32804:     const bridge = _getReadAloudBridge();
+32805:     return bridge ? bridge.regenerate(sentence, options || {}) : _legacyReadAloudApi.regenerate(sentence, options || {});
+32806:   };
+32807:   window.__alloPrepareReadAloud = async (sentences, onProgress, prepareOptions) => {

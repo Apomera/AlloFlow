@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T22:41:35.366Z",
+  "label": "track11-reader-followup",
+  "patch": "80a02ea02867ca8dd5d6fc2b38339160e02d2a965f29243b7f4d65c6747fd7da",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+      "after": "5b78ec654069026d36916299eaf36fed37fbc7f59f6cef5dabef1162e2d40ac2",
+      "changed": true
+    }
+  ]
+}

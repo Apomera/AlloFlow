@@ -49,7 +49,10 @@ describe('wave-3 host handler extraction', () => {
       // so identity and staleness semantics are exactly the original callback's.
       const shim = hooked.has(name)
         ? new RegExp(`const ${name} = (React\\.)?useCallback\\((async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\)(, \\[[\\s\\S]*?\\])?\\);`)
-        : new RegExp(`(const ${name} = (async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\);|function ${name}\\(\\.\\.\\.__a\\) \\{ return _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\); \\})`);
+        : new RegExp(`(const ${name} = (async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\);|function ${name}\\(\\.\\.\\.__a\\) \\{ return _alloHostHandlers\\(\\)\\.${name}\\(\\.\\.\\.__a\\); \\}`
+          // Soft shim (archiveLivePlan, resetCanvasWorkspaceSettings): a no-op before the module
+          // lands, where throwing would take the session down; it still delegates, never duplicates.
+          + `|const ${name} = \\(\\.\\.\\.__a\\) => \\{\\s*const handlers = _alloHostHandlersOptional\\(\\);\\s*return handlers \\? handlers\\.${name}\\(\\.\\.\\.__a\\) : undefined;\\s*\\};)`);
       expect(host, name).toMatch(shim);
       expect(source, name).toMatch(new RegExp(`(const ${name} = |function ${name}\\()`));
     }

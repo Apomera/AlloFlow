@@ -1,0 +1,45 @@
+{
+  "cases": [
+    {
+      "name": "native PCM preview reaches playing and ended",
+      "passed": true
+    },
+    {
+      "name": "fresh document hydrates serialized clips and plays without synthesis",
+      "passed": true
+    },
+    {
+      "name": "unsupported codec is quarantined after real decoder failure and preparation recovers",
+      "passed": true
+    },
+    {
+      "name": "revoked blob fails native playback and keeps recovery available",
+      "passed": true
+    },
+    {
+      "name": "damaged WAV passes container screening but native decoding rejects it and allows repair",
+      "passed": true
+    },
+    {
+      "name": "direct clear and delayed hydration update the mounted reader without host events",
+      "passed": true
+    },
+    {
+      "name": "real MediaRecorder teacher take remains playable and survives synthesis setting changes",
+      "passed": true
+    },
+    {
+      "name": "native autoplay denial preserves readiness and a trusted click can retry",
+      "passed": true
+    }
+  ],
+  "browser": "148.0.7778.96",
+  "liveRequests": [],
+  "recording": {
+    "saved": true,
+    "mime": "audio/webm;codecs=opus",
+    "size": 2093
+  },
+  "passed": true,
+  "pageErrors": []
+}

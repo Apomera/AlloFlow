@@ -1,8 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
+import { readHostSource } from './helpers/host_source.js';
 
-const host = readFileSync('AlloFlowANTI.txt', 'utf8');
+// Builder handlers moved to host_handlers_source.jsx (09-13); read them inlined at their host shims.
+const host = readHostSource('AlloFlowANTI.txt');
 const start = host.indexOf('  const selectBuilderResources =');
 const end = host.indexOf('  // ── Builder crop-chrome sweeper', start);
 if (start < 0 || end < 0) throw new Error('Builder handoff boundary missing');

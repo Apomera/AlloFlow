@@ -1,0 +1,822 @@
+{
+  "numTotalTestSuites": 3,
+  "numPassedTestSuites": 3,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 64,
+  "numPassedTests": 64,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790781657367,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations standalone collection follows the correct named place",
+          "status": "passed",
+          "title": "standalone collection follows the correct named place",
+          "duration": 1.728399999999965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations standalone evaporation follows the correct named place",
+          "status": "passed",
+          "title": "standalone evaporation follows the correct named place",
+          "duration": 0.4296999999999116,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations standalone condensation follows the correct named place",
+          "status": "passed",
+          "title": "standalone condensation follows the correct named place",
+          "duration": 0.23020000000019536,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations standalone precipitation follows the correct named place",
+          "status": "passed",
+          "title": "standalone precipitation follows the correct named place",
+          "duration": 0.21080000000006294,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations standalone infiltration follows the correct named place",
+          "status": "passed",
+          "title": "standalone infiltration follows the correct named place",
+          "duration": 0.22610000000008768,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations standalone transpiration follows the correct named place",
+          "status": "passed",
+          "title": "standalone transpiration follows the correct named place",
+          "duration": 0.21050000000013824,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active ocean and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active ocean and its replay use the existing stage mapping",
+          "duration": 0.5023999999998523,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active river_runoff and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active river_runoff and its replay use the existing stage mapping",
+          "duration": 0.4762000000000626,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active evaporating and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active evaporating and its replay use the existing stage mapping",
+          "duration": 0.3002000000001317,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active condensing and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active condensing and its replay use the existing stage mapping",
+          "duration": 0.3127999999999247,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active precipitating and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active precipitating and its replay use the existing stage mapping",
+          "duration": 0.309099999999944,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active ground_choice and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active ground_choice and its replay use the existing stage mapping",
+          "duration": 0.30529999999998836,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active infiltrating and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active infiltrating and its replay use the existing stage mapping",
+          "duration": 0.2341999999998734,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active aquifer_flow and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active aquifer_flow and its replay use the existing stage mapping",
+          "duration": 0.22649999999998727,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active plant_absorb and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active plant_absorb and its replay use the existing stage mapping",
+          "duration": 0.24400000000014188,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active transpiring and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active transpiring and its replay use the existing stage mapping",
+          "duration": 0.22119999999995343,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations active complete and its replay use the existing stage mapping",
+          "status": "passed",
+          "title": "active complete and its replay use the existing stage mapping",
+          "duration": 0.2160999999998694,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations manual inspection of surface keeps the separate current-stage marker",
+          "status": "passed",
+          "title": "manual inspection of surface keeps the separate current-stage marker",
+          "duration": 0.5218999999999596,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations manual inspection of air keeps the separate current-stage marker",
+          "status": "passed",
+          "title": "manual inspection of air keeps the separate current-stage marker",
+          "duration": 0.15239999999994325,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations manual inspection of cloud keeps the separate current-stage marker",
+          "status": "passed",
+          "title": "manual inspection of cloud keeps the separate current-stage marker",
+          "duration": 0.13259999999991123,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations manual inspection of land keeps the separate current-stage marker",
+          "status": "passed",
+          "title": "manual inspection of land keeps the separate current-stage marker",
+          "duration": 0.14000000000010004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations manual inspection of return keeps the separate current-stage marker",
+          "status": "passed",
+          "title": "manual inspection of return keeps the separate current-stage marker",
+          "duration": 0.14989999999988868,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations manual inspection is retained while live stage and replay focus change",
+          "status": "passed",
+          "title": "manual inspection is retained while live stage and replay focus change",
+          "duration": 0.16340000000013788,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations missing, malformed, and prototype-like restored preferences fall back to following",
+          "status": "passed",
+          "title": "missing, malformed, and prototype-like restored preferences fall back to following",
+          "duration": 0.8544000000001688,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations unknown restored journey stages fall back to a valid inspection index",
+          "status": "passed",
+          "title": "unknown restored journey stages fall back to a valid inspection index",
+          "duration": 0.7300999999999931,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations inspecting another place does not change any generated score or saved state",
+          "status": "passed",
+          "title": "inspecting another place does not change any generated score or saved state",
+          "duration": 0.8760999999999513,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations retains the four original score initializers from the pre-inspection source",
+          "status": "passed",
+          "title": "retains the four original score initializers from the pre-inspection source",
+          "duration": 8.373299999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual inspection derivations"
+          ],
+          "fullName": "Water Cycle signal chart: actual inspection derivations each existing series supplies one finite 0–100 score per named place",
+          "status": "passed",
+          "title": "each existing series supplies one finite 0–100 score per named place",
+          "duration": 1.0123000000000957,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering renders the native follow/places select with a selected restored place",
+          "status": "passed",
+          "title": "renders the native follow/places select with a selected restored place",
+          "duration": 37.42010000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the native selector updates only the inspection preference",
+          "status": "passed",
+          "title": "the native selector updates only the inspection preference",
+          "duration": 2.2888000000000375,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the three series keep distinct persistent dash styles and an accessible description",
+          "status": "passed",
+          "title": "the three series keep distinct persistent dash styles and an accessible description",
+          "duration": 14.194200000000137,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the surface readout and all table rows match the original evaluated series",
+          "status": "passed",
+          "title": "the surface readout and all table rows match the original evaluated series",
+          "duration": 26.22609999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the air readout and all table rows match the original evaluated series",
+          "status": "passed",
+          "title": "the air readout and all table rows match the original evaluated series",
+          "duration": 18.863799999999856,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the cloud readout and all table rows match the original evaluated series",
+          "status": "passed",
+          "title": "the cloud readout and all table rows match the original evaluated series",
+          "duration": 15.178199999999833,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the land readout and all table rows match the original evaluated series",
+          "status": "passed",
+          "title": "the land readout and all table rows match the original evaluated series",
+          "duration": 16.455299999999852,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the return readout and all table rows match the original evaluated series",
+          "status": "passed",
+          "title": "the return readout and all table rows match the original evaluated series",
+          "duration": 16.271999999999935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the collection follow readout exposes the same place as the selected stage",
+          "status": "passed",
+          "title": "the collection follow readout exposes the same place as the selected stage",
+          "duration": 8.228700000000117,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the evaporation follow readout exposes the same place as the selected stage",
+          "status": "passed",
+          "title": "the evaporation follow readout exposes the same place as the selected stage",
+          "duration": 8.267599999999902,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the condensation follow readout exposes the same place as the selected stage",
+          "status": "passed",
+          "title": "the condensation follow readout exposes the same place as the selected stage",
+          "duration": 7.820100000000139,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the precipitation follow readout exposes the same place as the selected stage",
+          "status": "passed",
+          "title": "the precipitation follow readout exposes the same place as the selected stage",
+          "duration": 8.134699999999839,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the infiltration follow readout exposes the same place as the selected stage",
+          "status": "passed",
+          "title": "the infiltration follow readout exposes the same place as the selected stage",
+          "duration": 7.581000000000131,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the transpiration follow readout exposes the same place as the selected stage",
+          "status": "passed",
+          "title": "the transpiration follow readout exposes the same place as the selected stage",
+          "duration": 15.759599999999864,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed ocean readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed ocean readout match their stage and actual series",
+          "duration": 13.010600000000068,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed river_runoff readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed river_runoff readout match their stage and actual series",
+          "duration": 12.855599999999868,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed evaporating readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed evaporating readout match their stage and actual series",
+          "duration": 14.625099999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed condensing readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed condensing readout match their stage and actual series",
+          "duration": 15.459299999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed precipitating readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed precipitating readout match their stage and actual series",
+          "duration": 15.87130000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed ground_choice readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed ground_choice readout match their stage and actual series",
+          "duration": 39.90779999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed infiltrating readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed infiltrating readout match their stage and actual series",
+          "duration": 12.746399999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed aquifer_flow readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed aquifer_flow readout match their stage and actual series",
+          "duration": 12.436400000000049,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed plant_absorb readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed plant_absorb readout match their stage and actual series",
+          "duration": 11.856400000000122,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed transpiring readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed transpiring readout match their stage and actual series",
+          "duration": 12.248799999999846,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the active and scrubbed complete readout match their stage and actual series",
+          "status": "passed",
+          "title": "the active and scrubbed complete readout match their stage and actual series",
+          "duration": 11.824200000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering invalid restored inspection preferences render the native follow option and valid readings",
+          "status": "passed",
+          "title": "invalid restored inspection preferences render the native follow option and valid readings",
+          "duration": 56.68029999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering unknown and prototype-like saved stage names render valid fallback readings",
+          "status": "passed",
+          "title": "unknown and prototype-like saved stage names render valid fallback readings",
+          "duration": 54.61990000000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the inspected surface markers match the actual path coordinates and legend shapes",
+          "status": "passed",
+          "title": "the inspected surface markers match the actual path coordinates and legend shapes",
+          "duration": 6.27780000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the inspected air markers match the actual path coordinates and legend shapes",
+          "status": "passed",
+          "title": "the inspected air markers match the actual path coordinates and legend shapes",
+          "duration": 4.796499999999924,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the inspected cloud markers match the actual path coordinates and legend shapes",
+          "status": "passed",
+          "title": "the inspected cloud markers match the actual path coordinates and legend shapes",
+          "duration": 4.474500000000035,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the inspected land markers match the actual path coordinates and legend shapes",
+          "status": "passed",
+          "title": "the inspected land markers match the actual path coordinates and legend shapes",
+          "duration": 4.504400000000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the inspected return markers match the actual path coordinates and legend shapes",
+          "status": "passed",
+          "title": "the inspected return markers match the actual path coordinates and legend shapes",
+          "duration": 5.275200000000041,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering manual inspection and following preserve the separate current stage through replay",
+          "status": "passed",
+          "title": "manual inspection and following preserve the separate current stage through replay",
+          "duration": 21.311100000000124,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the focus chip, description, selector, and reading name the live stage context",
+          "status": "passed",
+          "title": "the focus chip, description, selector, and reading name the live stage context",
+          "duration": 14.220800000000054,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering the focus chip, description, selector, and reading name the scrubbed replay context",
+          "status": "passed",
+          "title": "the focus chip, description, selector, and reading name the scrubbed replay context",
+          "duration": 20.19730000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle signal chart: actual chart-only rendering"
+          ],
+          "fullName": "Water Cycle signal chart: actual chart-only rendering source and public signal inspection implementations are identical",
+          "status": "passed",
+          "title": "source and public signal inspection implementations are identical",
+          "duration": 8.040700000000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790781658533,
+      "endTime": 1790781659130.0408,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_signal_chart.test.js"
+    }
+  ],
+  "waterCycleSignalVerification": {
+    "runtimeSha256": "78d924001e4e1de6167aae3804405f976ade6d4809f4d9d06cd47816a6a967e8",
+    "publicMirrorSha256": "78d924001e4e1de6167aae3804405f976ade6d4809f4d9d06cd47816a6a967e8",
+    "testSha256": "a6924db6657886cff8feb6eb962b5db6f96b8f5982488481281f1d56509b6c5c",
+    "baselineSha256": "2ab8cb80d55de3063122677d50df18c4047ab1ad41fc198b86d5093ae9c83ccf",
+    "originalScoreInitializersUnchanged": true,
+    "originalScoreInitializerSha256": {
+      "wcSignalReservoirs": "982c75e76c179b1e30f9009319f95c58dac0506fb8b552e9cc63e479e633e531",
+      "wcSignalEnergySeries": "8a771c16632d6c5158f45c5028ee65b7a79a9ea4825c503f013f7727535f4dcf",
+      "wcSignalFlowSeries": "fb804faec8e6c0a8c1ed86cfb32595de4ede4cf2f6e27fd1b0eb45113b4b6378",
+      "wcSignalStorageSeries": "1543ffb8eb449b31edf7a292840bef718bf9a5bdb86bed911cdd61fd2e6bf461"
+    },
+    "command": "node node_modules/vitest/vitest.mjs run tests/watercycle_signal_chart.test.js --maxWorkers=1 --reporter=json --outputFile=reports/watercycle-signal-inspection/unit-results.json"
+  }
+}

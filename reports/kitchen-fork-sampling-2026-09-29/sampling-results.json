@@ -1,0 +1,39 @@
+{
+  "checks": [
+    "Carrying and pressing without lifting records no sample, action, time or food change.",
+    "Escape, lateral scrubbing and pointer cancellation restore the scene without saving incomplete evidence.",
+    "A complete carry, press, lift and release records exactly one canonical pasta inspection and reveals its actual hard core.",
+    "Native provenance and observation survive reload. Cooking marks the saved sample stale; a fresh check retains the previous label and time.",
+    "Tender and overcooked checks use the engine observation, with corresponding recorded core and compression visuals.",
+    "The native keyboard shortcut focuses the existing food check and records equivalent inspection evidence without advancing time.",
+    "Picking up a fork pauses a running kitchen and holds cooking time during the inspection.",
+    "The sauce quest leads learners into the native fork routine when a pasta check is needed, without automatically recording a check.",
+    "Replay reveals only checks recorded by its selected frame and locks native cooking actions.",
+    "A real touch carry, press and lift records a sample at 390px; touch cancellation saves nothing and the page fits the viewport.",
+    "The complete routine works at 320px and in forced colors. Graphics loss cancels a carry and leaves the equivalent food check usable."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Native fork reading",
+      "violations": []
+    },
+    {
+      "name": "Equivalent keyboard check",
+      "violations": []
+    },
+    {
+      "name": "Historical fork observation",
+      "violations": []
+    },
+    {
+      "name": "320px fork inspection",
+      "violations": []
+    },
+    {
+      "name": "Forced-color fork inspection",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

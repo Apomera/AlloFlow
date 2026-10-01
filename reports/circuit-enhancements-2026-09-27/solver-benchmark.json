@@ -1,0 +1,45 @@
+{
+  "date": "2026-09-27T17:23:50.270Z",
+  "engine": "Chromium",
+  "version": "148.0.7778.96",
+  "sourceSha256": "05d4bc61719a2c1ddf9d27a670dadba6fd57b10bf5777120f45e8e7bc9180291",
+  "method": "Both versions use the current source in one blank Chromium page. The exhaustive reference bypasses reduction and restores the duplicate end-time solve. Each measurement is synchronous browser main-thread model execution. Other development/test activity may affect absolute timings.",
+  "measurements": [
+    {
+      "mode": "exhaustive-reference",
+      "count": 1,
+      "ms": 121.19999998807907,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "regionsPerSolve": 3
+    },
+    {
+      "mode": "optimized",
+      "count": 1,
+      "ms": 101.5,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "regionsPerSolve": 3
+    },
+    {
+      "mode": "exhaustive-reference",
+      "count": 4,
+      "ms": 1562.9000000357628,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "regionsPerSolve": 81
+    },
+    {
+      "mode": "optimized",
+      "count": 4,
+      "ms": 134.80000001192093,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "regionsPerSolve": 12
+    }
+  ]
+}

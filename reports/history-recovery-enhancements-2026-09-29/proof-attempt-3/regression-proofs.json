@@ -1,0 +1,168 @@
+{
+  "at": "2026-09-30T02:42:28.136Z",
+  "method": "Isolated candidates; shared production sources remain unchanged. A timeout or syntax error is not accepted as proof.",
+  "proofs": [
+    {
+      "name": "formatting-helper-readiness",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "280485cbf41719185230e7ebdbc980d7958e548215a644a62d70f68de73dd0a1",
+      "candidateSha256": "bb4ca565456ba9915b530c35160d9d7b9cc22c0649ba777daaa95e48b1c0bd7f",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "waits for shared formatting helpers when",
+      "failures": [
+        {
+          "name": "History resource opening waits for shared formatting helpers when the resource handler is already ready",
+          "messages": [
+            "AssertionError: expected [ Array(2) ] to deep equally contain [ 'PhaseNHelpersModule', …(1) ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:68:54\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "reader-helper-readiness",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "280485cbf41719185230e7ebdbc980d7958e548215a644a62d70f68de73dd0a1",
+      "candidateSha256": "a560fbf17dad13fdaded530957d41e78bbb75fd7ef9fcaa28fdb92ba3d5e7508",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "waits for shared reader helpers when",
+      "failures": [
+        {
+          "name": "History resource opening waits for shared reader helpers when the resource handler is already ready",
+          "messages": [
+            "AssertionError: expected [ Array(2) ] to deep equally contain [ 'PureHelpersModule', 'PureHelpers' ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:62:54\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "latest-request",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "280485cbf41719185230e7ebdbc980d7958e548215a644a62d70f68de73dd0a1",
+      "candidateSha256": "8f3cdf7ea05a45c9452a07a1ff4222ecefc4613848d88e45d9bd630e7341a663",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "opens only the latest resource selected",
+      "failures": [
+        {
+          "name": "History resource opening opens only the latest resource selected during loading",
+          "messages": [
+            "AssertionError: expected undefined to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:73:35\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "context-change",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "280485cbf41719185230e7ebdbc980d7958e548215a644a62d70f68de73dd0a1",
+      "candidateSha256": "5e96953859dd0a99b869bb62d0ee3b62e4479ec7c699e412a915c59c5f7a0a9e",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "when isTeacherMode changes",
+      "failures": [
+        {
+          "name": "History resource opening discards a request when isTeacherMode changes while loading",
+          "messages": [
+            "AssertionError: expected undefined to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:83:27\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "production-wiring",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "280485cbf41719185230e7ebdbc980d7958e548215a644a62d70f68de73dd0a1",
+      "candidateSha256": "93d1cdee7a060c83d9d3cc60182f6c416dd2644536a7a61b872cbe366c7efb42",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "passes the loading-safe opener",
+      "failures": [
+        {
+          "name": "History production wiring passes the loading-safe opener and its pending resource to the actual HistoryPanel",
+          "messages": [
+            "AssertionError: expected 'handleRestoreView' to be 'handleOpenHistoryResource' // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:144:42\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "assignment-reservation",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "280485cbf41719185230e7ebdbc980d7958e548215a644a62d70f68de73dd0a1",
+      "candidateSha256": "d93fba83fd7063c35783e6e0c1ed8ff337543f7df121a5e80b948eb4599f7513",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "reserves a manual selection before loading",
+      "failures": [
+        {
+          "name": "History resource opening reserves a manual selection before loading so an earlier homework opener cannot override it",
+          "messages": [
+            "AssertionError: expected +0 to be 1 // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:116:34\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "missing-type-validation",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d",
+      "candidateSha256": "03861c1ed2a1979bc9754be6674ac3f465686c0ce674ab45291b4b80d101f1f9",
+      "test": "tests/saved_resource_restore_validation.test.js",
+      "pattern": "rejects missing type before",
+      "failures": [
+        {
+          "name": "incomplete saved resources rejects missing type before workspace, visited state or live follow changes",
+          "messages": [
+            "AssertionError: expected undefined to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/saved_resource_restore_validation.test.js:26:52\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "empty-transcript-validation",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d",
+      "candidateSha256": "3647bdc1c5708f24ad6a24415e58378f28c08f4b83abacda4c5e8397c4668a18",
+      "test": "tests/saved_resource_restore_validation.test.js",
+      "pattern": "rejects empty transcript before",
+      "failures": [
+        {
+          "name": "incomplete saved resources rejects empty transcript before workspace, visited state or live follow changes",
+          "messages": [
+            "AssertionError: expected undefined to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/saved_resource_restore_validation.test.js:26:52\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "row-busy-state",
+      "exitCode": 1,
+      "signal": null,
+      "baselineSha256": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824",
+      "candidateSha256": "03aab397c0916f2b0d860c8e8abf0a217d06ee37fc6f96e2fccf512bef7c9f23",
+      "test": "tests/history_resource_loading_ui.test.js",
+      "pattern": "marks only the selected pending row busy",
+      "failures": [
+        {
+          "name": "History resource loading status marks only the selected pending row busy and announces loading",
+          "messages": [
+            "AssertionError: expected null to be 'true' // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_loading_ui.test.js:37:56\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+          ]
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

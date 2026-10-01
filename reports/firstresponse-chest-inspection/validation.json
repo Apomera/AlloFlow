@@ -1,0 +1,27 @@
+{
+  "date": "2026-09-29",
+  "result": "passed",
+  "unitChecks": {
+    "passedUnique": 172,
+    "files": ["tests/firstresponse_depth_explorer.test.js", "tests/firstresponse_body_3d.test.js", "tests/stem_firstresponse_hook_order.test.js"],
+    "initialRun": "172 passed in 10.71 seconds",
+    "finalRun": "171 passed; one hook-order timing check exceeded its explicit 20-second timeout",
+    "targetedRerun": "All four hook-order checks passed in 2.89 seconds",
+    "infrastructureRetry": "An overlapping run failed to start three workers and executed no tests. Browser and unit runs were then separated."
+  },
+  "browserChecks": {
+    "passedUnique": 14,
+    "newInspectionScenarios": 3,
+    "existingRegressionScenarios": 11,
+    "rendering": "Actual WebGL with ANGLE SwiftShader, one worker, no trace or video",
+    "coverage": ["adult, child, and infant close-up framing", "heel contact and connected hands", "ruler and movement bracket", "stable scene and canvas", "A/B comparison and predictions", "WebGL fallback", "320px reflow", "keyboard focus visibility", "reduced motion", "enlarged text spacing", "forced colors", "axe WCAG A/AA"]
+  },
+  "sourceParity": "source and public modules identical",
+  "englishStrings": 13,
+  "modelScope": "Illustrative chest distances; no force, blood-flow, or hands-on performance measurement",
+  "medicalSourcesChecked": [
+    "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-life-support",
+    "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/pediatric-basic-life-support"
+  ],
+  "visualsReviewed": ["adult-close-up.png", "adult-contact.png", "child-contact.png", "infant-contact.png", "movement-inspection.png", "phone-controls.png", "phone-text-spacing.png", "phone-forced-colors.png"]
+}

@@ -1022,3 +1022,458 @@ describe('Living Island next-round preview', () => {
     expect(model.step(saved)).toEqual(reference);
   });
 });
+
+
+describe('Living Island variation ranges', () => {
+  it('partitions unrounded values once, includes 100, and retains actual organism references', () => {
+    const values = [0, 0.199999999, 0.2, 0.399999999, 0.4, 0.599999999, 0.6, 0.799999999, 0.8, 0.999999999, 1];
+    const population = values.map((v, i) => ({ id: i + 1, genes: { shade: [v, v], fur: [v, v], legs: [v, v] } }));
+    const before = JSON.stringify(population), observation = window.StemLab.evoIslandObservation;
+    for (const trait of model.traits) {
+      const d = observation.distribution(population, trait);
+      expect(d.total).toBe(11);
+      expect(d.bins.map(b => b.count)).toEqual([2, 2, 2, 2, 3]);
+      expect(d.bins.flatMap(b => b.members)).toEqual(population);
+      expect(d.bins[4].members[2]).toBe(population[10]);
+      expect(d.bins.reduce((sum, b) => sum + b.share, 0)).toBeCloseTo(1, 12);
+      expect(d.mean).toBeCloseTo(values.reduce((sum, v) => sum + v, 0) / 11, 12);
+      expect(d.bins[1].members[0].id).toBe(3);
+      expect(d.bins[0].members[1].id).toBe(2); // Rounding to 20 would put this in the wrong bin.
+    }
+    expect(JSON.stringify(population)).toBe(before);
+  });
+
+  it('distinguishes an empty cohort from a genuine zero or a uniform trait', () => {
+    const distribution = window.StemLab.evoIslandObservation.distribution;
+    const empty = distribution([], 'fur');
+    expect(empty.total).toBe(0); expect(empty.mean).toBeNull();
+    expect(empty.bins.map(b => b.share)).toEqual([null, null, null, null, null]);
+    expect(empty.bins.every(b => b.count === 0 && b.members.length === 0)).toBe(true);
+    for (const trait of ['natural', '__proto__', null, 4]) expect(distribution([], trait)).toBeNull();
+    for (const v of [0, 0.4, 1]) {
+      const pop = [1,2,3].map(id => ({ id, genes: { fur: [v, v] } })), d = distribution(pop, 'fur');
+      expect(d.mean).toBeCloseTo(v, 14);
+      if (v === 0) expect(d.mean).toBe(0);
+      expect(d.bins.filter(b => b.count > 0)).toHaveLength(1);
+      expect(d.bins.find(b => b.count > 0).share).toBe(1);
+    }
+  });
+
+  it('compares actual parent, survivor and offspring denominators without changing ancestry or RNG', () => {
+    const world = run(model.create(2026), 5), before = JSON.stringify(world);
+    const transition = window.StemLab.evoIslandStudy.transition(world, 5), distribution = window.StemLab.evoIslandObservation.distribution;
+    for (const trait of model.traits) {
+      const p = distribution(transition.parents, trait), s = distribution(transition.survivors, trait), o = distribution(transition.offspring, trait);
+      expect(p.total).toBe(transition.parents.length); expect(s.total).toBe(transition.survivors.length); expect(o.total).toBe(transition.offspring.length);
+      for (let i = 0; i < 5; i++) {
+        expect(s.bins[i].members.every(member => p.bins[i].members.includes(member))).toBe(true);
+        expect(s.bins[i].share).toBe(s.bins[i].count / transition.survivors.length);
+        expect(o.bins[i].share).toBe(o.bins[i].count / transition.offspring.length);
+        expect(o.bins[i].members.every(member => !transition.parents.some(parent => parent.id === member.id))).toBe(true);
+      }
+    }
+    expect(JSON.stringify(world)).toBe(before);
+    expect(model.step(world)).toEqual(model.step(JSON.parse(before)));
+  });
+
+  it('retains a surviving parent but no offspring percentage after extinction', () => {
+    let world;
+    for (let seed = 1; seed < 50; seed++) {
+      const first = model.create(seed); first.history[0].population = first.history[0].population.slice(0, 2); first.history[0].stats = model.stats(first.history[0].population);
+      const candidate = model.step(first); if (candidate.history[1].survivors.length === 1) { world = candidate; break; }
+    }
+    expect(world).toBeTruthy();
+    const t = window.StemLab.evoIslandStudy.transition(world, 1), distribution = window.StemLab.evoIslandObservation.distribution;
+    const parent = distribution(t.parents, 'fur'), survivor = distribution(t.survivors, 'fur'), offspring = distribution(t.offspring, 'fur');
+    expect(parent.total).toBe(2); expect(survivor.total).toBe(1); expect(offspring.total).toBe(0);
+    expect(survivor.bins.find(b => b.count === 1).share).toBe(1);
+    expect(offspring.bins.map(b => b.share)).toEqual([null, null, null, null, null]);
+  });
+});
+
+describe('Living Island individual life stories', () => {
+  it('uses the actual next-round habitat and selection, including a climate shift, without changing any history', () => {
+    const world = run(model.create(2026), 6), study = window.StemLab.evoIslandStudy;
+    world.habitat = 'snow'; world.selection = false;
+    const before = JSON.stringify(world), birth = world.history[4], round = world.history[5];
+    expect(birth.habitat).not.toBe(round.habitat);
+    for (const organism of birth.population) {
+      const life = study.lineage(world, organism.id);
+      expect(life.organism).toBe(organism); expect(life.birthHabitat).toBe(birth.habitat);
+      expect(life.round).toEqual({ generation: 5, habitat: round.habitat, selection: round.selection,
+        chance: model.chance(organism, model.habitats[round.habitat], round.selection),
+        survived: round.survivors.includes(organism.id), parentCount: birth.population.length,
+        survivorCount: round.survivors.length, offspringCount: round.population.length });
+      expect(life.children).toEqual(round.population.filter(child => child.parents.includes(organism.id)));
+      expect(life.children.every(child => world.history[5].population.includes(child))).toBe(true);
+    }
+    expect(JSON.stringify(world)).toBe(before);
+    expect(model.step(world)).toEqual(model.step(JSON.parse(before)));
+    expect(study.lineage(world, -1)).toBeNull();
+  });
+
+  it('keeps an unwritten outcome unknown, even at the generation limit', () => {
+    const study = window.StemLab.evoIslandStudy;
+    for (const world of [model.create(4), run({ ...model.create(2026), living: false, selection: false }, 60)]) {
+      const organism = world.history[world.generation].population[0];
+      expect(organism).toBeTruthy();
+      const life = study.lineage(world, organism.id);
+      expect(life.round).toBeNull(); expect(life.outcome).toBe('pending'); expect(life.children).toEqual([]);
+      expect(life.birthHabitat).toBe(world.history[world.generation].habitat);
+    }
+  });
+
+  it('distinguishes death, surviving without offspring, and direct parenthood', () => {
+    const study = window.StemLab.evoIslandStudy;
+    const world = run(model.create(2026), 12), outcomes = new Set();
+    for (const frame of world.history.slice(0, -1)) for (const o of frame.population) {
+      const life = study.lineage(world, o.id); outcomes.add(life.outcome);
+      if (!life.round.survived) { expect(life.outcome).toBe('not-survived'); expect(life.children).toEqual([]); }
+      else if (!life.children.length) expect(life.outcome).toBe('no-offspring');
+      else { expect(life.outcome).toBe('offspring'); expect(new Set(life.children.map(c => c.id)).size).toBe(life.children.length); }
+      for (const c of life.children) { expect(c.born).toBe(o.born + 1); expect(c.parents).toContain(o.id); }
+    }
+    expect([...outcomes].sort()).toEqual(['no-offspring', 'not-survived', 'offspring']);
+  });
+
+  it('retains a lone survivor honestly when the whole population leaves no offspring', () => {
+    let world;
+    for (let seed = 1; seed < 50; seed++) {
+      const w = model.create(seed); w.history[0].population = w.history[0].population.slice(0, 2);
+      w.history[0].stats = model.stats(w.history[0].population); w.nextId = 3;
+      const next = model.step(w); if (next.history[1].survivors.length === 1) { world = next; break; }
+    }
+    expect(model.restore(world)).toBeTruthy();
+    const life = window.StemLab.evoIslandStudy.lineage(world, world.history[1].survivors[0]);
+    expect(life.outcome).toBe('no-offspring'); expect(life.round.survived).toBe(true);
+    expect(life.round.parentCount).toBe(2); expect(life.round.survivorCount).toBe(1); expect(life.round.offspringCount).toBe(0);
+    expect(life.children).toEqual([]); expect(life.organism.genes).toEqual(world.history[0].population.find(o => o.id === life.organism.id).genes);
+  });
+});
+
+describe('Living Island family resemblance and possible allele pairings', () => {
+  const family = (a, b, c) => ({ parents: [{ id: 1, genes: { fur: a } }, { id: 2, genes: { fur: b } }], organism: { id: 3, genes: { fur: c } } });
+  it('uses actual allele averages, keeps four equiprobable copy pairings, and accepts true zero', () => {
+    const compare = window.StemLab.evoIslandStudy.resemblance;
+    const f = family([0, 0.8], [0.2, 1], [0, 0.2]), before = JSON.stringify(f), result = compare(f, 'fur');
+    expect(result.values).toEqual([0.4, 0.6, 0.1]);
+    expect(result.pairings.map(p => p.copies)).toEqual([[0,0], [0,1], [1,0], [1,1]]);
+    expect(result.pairings.map(p => p.alleles)).toEqual([[0,0.2], [0,1], [0.8,0.2], [0.8,1]]);
+    expect(result.pairings.map(p => p.value)).toEqual([0.1, 0.5, 0.5, 0.9]);
+    const uniform = compare(family([0,0], [0,0], [0,0]), 'fur');
+    expect(uniform.values).toEqual([0,0,0]); expect(uniform.pairings).toHaveLength(4);
+    expect(uniform.pairings.every(p => p.value === 0)).toBe(true); expect(uniform.position).toBe('within');
+    expect(JSON.stringify(f)).toBe(before);
+    for (const trait of ['natural', '__proto__', '', null]) expect(compare(f, trait)).toBeNull();
+    expect(compare(null, 'fur')).toBeNull(); expect(compare({parents:[],organism:f.organism}, 'fur')).toBeNull();
+  });
+
+  it('can fall beyond both parental trait values without any mutation', () => {
+    const compare = window.StemLab.evoIslandStudy.resemblance;
+    for (const [copy, value, position] of [[0,0,'below'], [1,1,'above']]) {
+      const f = family([0,1], [0,1], [value,value]);
+      f.organism.inheritance = {fur:[{copy,delta:null},{copy,delta:null}]};
+      const d=compare(f,'fur'); expect(d.values).toEqual([0.5,0.5,value]); expect(d.position).toBe(position);
+      expect(d.actual).toBe(copy*3); expect(d.mutationCount).toBe(0); expect(d.pairings[d.actual].value).toBe(value);
+    }
+    expect(compare(family([0,0.4],[0.4,1],[0.4,0.4]),'fur').position).toBe('within');
+  });
+
+  it('uses copy provenance and never guesses it from matching values or legacy records', () => {
+    const compare = window.StemLab.evoIslandStudy.resemblance;
+    const f=family([0.5,0.5],[0.5,0.5],[0.6,0.4]);
+    f.organism.inheritance={fur:[{copy:1,delta:0.1},{copy:0,delta:-0.1}]};
+    const d=compare(f,'fur');expect(d.actual).toBe(2);expect(d.mutationCount).toBe(2);
+    expect(d.pairings[d.actual].value).toBe(0.5);expect(d.values[2]).toBe(0.5); // Mutations can offset in the trait mean.
+    delete f.organism.inheritance;
+    const old=compare(f,'fur');expect(old.actual).toBeNull();expect(old.mutationCount).toBeNull();expect(old.pairings).toEqual(d.pairings);
+  });
+
+  it('observes every real child and trait without rerolling, changing genes, or altering the next generation', () => {
+    const world=run({...model.create(2026),mutation:0.2},3), before=JSON.stringify(world), study=window.StemLab.evoIslandStudy;
+    let mutations=0;
+    for(const o of world.history[3].population) for(const trait of model.traits) {
+      const f=study.lineage(world,o.id), d=study.resemblance(f,trait), events=o.inheritance[trait];
+      expect(d.values).toEqual(f.parents.concat([o]).map(member=>model.value(member,trait)));
+      expect(d.actual).toBe(events[0].copy*2+events[1].copy);
+      expect(d.pairings[d.actual].alleles).toEqual(f.parents.map((p,i)=>p.genes[trait][events[i].copy]));
+      expect(d.mutationCount).toBe(events.filter(e=>e.delta!==null).length);mutations+=d.mutationCount;
+    }
+    expect(mutations).toBeGreaterThan(0);expect(JSON.stringify(world)).toBe(before);
+    expect(model.step(world)).toEqual(model.step(JSON.parse(before)));
+  });
+});
+
+
+describe('Living Island recorded siblings', () => {
+  it('uses both parent IDs in either order, excluding self and unrelated residents', () => {
+    const world = model.create(2026), base = world.history[0].population[0];
+    const child = (id, parents) => ({ ...base, id, born: 1, parents });
+    const children = [child(37, [1, 2]), child(38, [2, 1]), child(39, [1, 3]), child(40, [4, 2]), child(41, [3, 4])];
+    world.history.push({ ...world.history[0], generation: 1, population: children, survivors: [1, 2, 3, 4] });
+    world.generation = 1;
+    const before = JSON.stringify(world), study = window.StemLab.evoIslandStudy;
+    const siblings = study.siblings(world, 37);
+    expect(siblings.organism).toBe(children[0]);
+    expect(siblings.full.map(o => o.id)).toEqual([38]);
+    expect(siblings.half.map(o => o.id)).toEqual([39, 40]);
+    // Equal trait values do not change the recorded relationship.
+    expect(study.siblings(world, 38).full.map(o => o.id)).toEqual([37]);
+    expect(study.siblings(world, 41).full).toEqual([]);
+    expect(study.siblings(world, 41).half.map(o => o.id)).toEqual([39, 40]);
+    expect(JSON.stringify(world)).toBe(before);
+  });
+
+  it('keeps founders, missing residents and genuinely empty groups honest', () => {
+    const world = model.create(2026), study = window.StemLab.evoIslandStudy;
+    expect(study.siblings(world, 1)).toBeNull();
+    expect(study.siblings(world, -1)).toBeNull();
+    const only = { ...world.history[0].population[0], id: 37, born: 1, parents: [1, 2] };
+    world.history.push({ ...world.history[0], generation: 1, population: [only], survivors: [1, 2] });
+    world.generation = 1;
+    expect(study.siblings(world, 37)).toEqual({ organism: only, full: [], half: [] });
+  });
+
+  it('revisits exact birth cohorts in old and new saves without changing future evolution', () => {
+    const world = run(model.create(2026), 6), before = JSON.stringify(world), study = window.StemLab.evoIslandStudy;
+    const legacy = JSON.parse(before);
+    legacy.history.forEach(frame => frame.population.forEach(o => delete o.inheritance));
+    expect(model.restore(legacy)).toBeTruthy();
+    for (const frame of world.history.slice(1)) for (const o of frame.population) {
+      const result = study.siblings(world, o.id), old = study.siblings(legacy, o.id);
+      const full = frame.population.filter(other => other.id !== o.id && o.parents.every(p => other.parents.includes(p))).map(other => other.id);
+      const half = frame.population.filter(other => other.id !== o.id && o.parents.filter(p => other.parents.includes(p)).length === 1).map(other => other.id);
+      expect(result.full.map(other => other.id)).toEqual(full);
+      expect(result.half.map(other => other.id)).toEqual(half);
+      expect(old.full.map(other => other.id)).toEqual(full);
+      expect(old.half.map(other => other.id)).toEqual(half);
+    }
+    expect(JSON.stringify(world)).toBe(before);
+    expect(model.step(world)).toEqual(model.step(JSON.parse(before)));
+  });
+});
+
+
+describe('Living Island survival chance lens', () => {
+  it('uses the exact model probability across all habitats without changing inherited measurements', () => {
+    const world = run(model.create(2026), 2), before = JSON.stringify(world), observation = window.StemLab.evoIslandObservation;
+    const population = world.history[2].population;
+    expect(observation.lens('survival')).toBe('survival');
+    for (const habitat of Object.keys(model.habitats)) for (const selection of [true, false]) {
+      const values = population.map(o => model.chance(o, model.habitats[habitat], selection));
+      population.forEach((o, i) => expect(observation.measure(o, 'survival', habitat, selection)).toBe(values[i]));
+      const range = observation.range(population, 'survival', habitat, selection);
+      expect(range.minimum).toBe(Math.min(...values)); expect(range.maximum).toBe(Math.max(...values));
+      expect(range.mean).toBeCloseTo(values.reduce((a, b) => a + b, 0) / values.length, 14);
+      for (const trait of model.traits) for (const o of population) expect(observation.measure(o, trait, habitat, selection)).toBe(model.value(o, trait));
+    }
+    expect(JSON.stringify(world)).toBe(before); expect(model.step(world)).toEqual(model.step(JSON.parse(before)));
+  });
+
+  it('retains equal neutral chances, stable ties and undefined empty or invalid views', () => {
+    const population = model.create(2026).history[0].population, observation = window.StemLab.evoIslandObservation;
+    const range = observation.range(population.slice().reverse(), 'survival', 'drought', false);
+    expect(range.minimum).toBe(0.68 * model.habitats.drought.food);expect(range.maximum).toBe(range.minimum);
+    expect(range.low.id).toBe(1);expect(range.high.id).toBe(1);
+    expect(observation.range([], 'survival', 'snow', true)).toBeNull();
+    for (const habitat of [null, undefined, 'unknown', '__proto__', 'toString']) {
+      expect(observation.measure(population[0], 'survival', habitat, true)).toBeNull();
+      expect(observation.range(population, 'survival', habitat, true)).toBeNull();
+    }
+    expect(observation.measure(population[0], 'unknown', 'snow', true)).toBeNull();
+    expect(observation.distribution(population, 'survival')).toBeNull();
+  });
+
+  it('keeps survivors at their original probabilities instead of reporting certainty', () => {
+    const world = run(model.create(2026), 5), observation = window.StemLab.evoIslandObservation, transition = window.StemLab.evoIslandStudy.transition(world, 5);
+    expect(transition.survivors.length).toBeGreaterThan(0);
+    for (const o of transition.survivors) {
+      const chance = observation.measure(o, 'survival', transition.habitat, transition.selection);
+      expect(chance).toBe(model.chance(o, model.habitats[world.history[5].habitat], world.history[5].selection));
+      expect(chance).toBeLessThan(1);expect(transition.parents.find(parent => parent.id === o.id)).toBe(o);
+    }
+    // A later intervention cannot replace the historical conditions used by the lens.
+    const before = observation.range(transition.parents, 'survival', transition.habitat, transition.selection);
+    world.habitat = transition.habitat === 'snow' ? 'forest' : 'snow';world.selection = false;
+    expect(observation.range(transition.parents, 'survival', transition.habitat, transition.selection)).toEqual(before);
+  });
+});
+
+
+describe('Living Island pre-round forecasts', () => {
+  it('uses the upcoming climate without sampling survivors or advancing the random stream', () => {
+    const world = run(model.create(2026), 4), before = JSON.stringify(world), observation = window.StemLab.evoIslandObservation;
+    const plan = model.preview(world), forecast = observation.forecast(world);
+    expect(plan.habitat).not.toBe(world.habitat);
+    expect(forecast).toMatchObject({ generation: 5, habitat: plan.habitat, selection: world.selection, count: world.history[4].population.length });
+    const expected = world.history[4].population.reduce((sum, o) => sum + model.chance(o, model.habitats[plan.habitat], world.selection), 0);
+    expect(forecast.expected).toBe(expected);
+    for (let i = 0; i < 5; i++) expect(observation.forecast(world)).toEqual(forecast);
+    expect(JSON.stringify(world)).toBe(before);expect(model.step(world)).toEqual(model.step(JSON.parse(before)));
+    expect(model.step(world).history[5].habitat).toBe(forecast.habitat);
+  });
+
+  it('sums the actual individual chances, including neutral and one-resident worlds', () => {
+    const observation = window.StemLab.evoIslandObservation;
+    for (const habitat of Object.keys(model.habitats)) for (const selection of [true, false]) {
+      const world = { ...model.create(2026), habitat, selection, living: false }, population = world.history[0].population;
+      const forecast = observation.forecast(world);
+      expect(forecast.expected).toBeCloseTo(population.reduce((sum, o) => sum + model.chance(o, model.habitats[habitat], selection), 0), 12);
+      if (!selection) expect(forecast.expected).toBeCloseTo(population.length * 0.68 * model.habitats[habitat].food, 12);
+    }
+    const single = model.create(2026);single.history[0].population = single.history[0].population.slice(0, 1);single.history[0].stats = model.stats(single.history[0].population);single.nextId = 2;
+    expect(observation.forecast(single).count).toBe(1);
+    expect(observation.forecast(single).expected).toBe(model.chance(single.history[0].population[0], model.habitats.meadow, true));
+  });
+
+  it('does not create a future forecast after extinction or the expedition limit', () => {
+    const observation = window.StemLab.evoIslandObservation, empty = model.create(2026);
+    empty.history[0].population = [];empty.history[0].stats = model.stats([]);empty.nextId = 1;
+    expect(observation.forecast(empty)).toBeNull();
+    const end = run({ ...model.create(2026), selection: false, living: false }, 60);
+    expect(end.generation).toBe(60);expect(observation.forecast(end)).toBeNull();
+  });
+});
+
+
+describe('Living Island isolated chance trials', () => {
+  it('uses the same survival sampler as a real round without reproduction or RNG mutation', () => {
+    for (const habitat of Object.keys(model.habitats)) for (const selection of [true, false]) {
+      const world = { ...model.create(2026), habitat, selection, living: false }, before = JSON.stringify(world);
+      const parents = world.history[0].population, expected = model.step(world).history[1].survivors;
+      expect(model.survivalSample(parents, habitat, selection, world.rng)).toEqual(expected);
+      expect(model.survivalSample(parents, habitat, selection, world.rng)).toEqual(expected);
+      expect(JSON.stringify(world)).toBe(before);
+    }
+    expect(model.survivalSample([], 'meadow', true, 0)).toEqual([]);
+    const parents = model.create(1).history[0].population;
+    for (const habitat of ['missing', '__proto__', 'toString']) expect(model.survivalSample(parents, habitat, true, 1)).toBeNull();
+    for (const seed of [-1, 0.5, 4294967296, NaN]) expect(model.survivalSample(parents, 'meadow', true, seed)).toBeNull();
+    expect(model.survivalSample(parents, 'meadow', null, 1)).toBeNull();
+  });
+
+  it('repeats all original parents in the upcoming climate with 20 distinct bounded streams', () => {
+    const world = run(model.create(2026), 4), before = JSON.stringify(world), next = model.step(world);
+    const trials = window.StemLab.evoIslandChanceTrials, plan = model.preview(world), seeds = new Set();
+    expect(plan.habitat).not.toBe(world.habitat);
+    for (let index = 1; index <= trials.limit; index++) {
+      const trial = trials.run(world, index);seeds.add(trial.seed);
+      let state = trial.seed;
+      const expected = world.history[4].population.filter(o => {
+        state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+        return state / 4294967296 < model.chance(o, model.habitats[plan.habitat], world.selection);
+      }).map(o => o.id);
+      expect(trial).toEqual({ index, seed: trial.seed, count: expected.length, survivors: expected });
+      expect(trial.seed).not.toBe(world.rng);expect(trial.seed).toBeGreaterThanOrEqual(0);expect(trial.seed).toBeLessThanOrEqual(4294967295);
+      expect(trials.run(world, index)).toEqual(trial);
+    }
+    expect(seeds.size).toBe(20);expect(JSON.stringify(world)).toBe(before);expect(model.step(world)).toEqual(next);
+  });
+
+  it('keeps equal neutral odds independent of genes and retains zero/one-survivor trials', () => {
+    const trials = window.StemLab.evoIslandChanceTrials, world = { ...model.create(2026), selection: false, living: false, habitat: 'drought' };
+    const altered = JSON.parse(JSON.stringify(world));altered.history[0].population.forEach(o => model.traits.forEach(key => { o.genes[key] = [1, 1]; }));
+    for (let i = 1; i <= 20; i++) expect(trials.run(world, i)).toEqual(trials.run(altered, i));
+    const small = model.create(1);small.history[0].population = small.history[0].population.slice(0, 2);small.history[0].stats = model.stats(small.history[0].population);small.nextId = 3;
+    const samples = Array.from({ length: 20 }, (_, i) => trials.run(small, i + 1));
+    expect(samples.some(row => row.count === 0)).toBe(true);expect(samples.some(row => row.count === 1)).toBe(true);
+    samples.forEach(row => {expect(row.survivors.length).toBe(row.count);expect(row.survivors.every(id => id === 1 || id === 2)).toBe(true);});
+    expect(small.generation).toBe(0);expect(small.history).toHaveLength(1);expect(small.nextId).toBe(3);
+  });
+
+  it('rejects extra trials and unavailable source rounds without manufacturing future evidence', () => {
+    const trials = window.StemLab.evoIslandChanceTrials, world = model.create(1);
+    for (const index of [0, -1, 21, 1.2, null, undefined, NaN, '1']) expect(trials.run(world, index)).toBeNull();
+    const empty = model.create(1);empty.history[0].population = [];empty.history[0].stats = model.stats([]);empty.nextId = 1;
+    expect(trials.run(empty, 1)).toBeNull();
+    const end = run({ ...model.create(2026), living: false, selection: false }, 60);
+    expect(end.generation).toBe(60);expect(trials.run(end, 1)).toBeNull();
+  });
+});
+
+
+describe('Living Island individual chance outcomes', () => {
+  it('partitions every original parent using real recorded and trial IDs in the upcoming habitat', () => {
+    const world = run(model.create(2026), 4), before = JSON.stringify(world), next = model.step(world), recorded = next.history[5].survivors;
+    const trials = window.StemLab.evoIslandChanceTrials;
+    for (const index of [1, 5, 20]) {
+      const trial = trials.run(world, index), comparison = trials.compare(world, recorded, index);
+      expect(comparison.rows.map(row => row.organism.id)).toEqual(world.history[4].population.map(o => o.id));
+      const groups = { both: 0, recorded: 0, trial: 0, neither: 0 };
+      comparison.rows.forEach((row, i) => {
+        const a = recorded.includes(row.organism.id), b = trial.survivors.includes(row.organism.id);
+        expect(row.organism).toBe(world.history[4].population[i]);expect(row.recorded).toBe(a);expect(row.trial).toBe(b);
+        expect(row.chance).toBe(model.chance(row.organism, model.habitats[next.history[5].habitat], next.history[5].selection));
+        groups[a ? b ? 'both' : 'recorded' : b ? 'trial' : 'neither']++;
+      });
+      expect(comparison.groups).toEqual(groups);expect(Object.values(groups).reduce((a,b)=>a+b,0)).toBe(world.history[4].population.length);
+      expect(comparison.changed).toBe(groups.recorded+groups.trial);expect(comparison.sameCount).toBe(recorded.length===trial.count);
+      expect(comparison.rows.filter(row=>!row.recorded).length).toBe(world.history[4].population.length-recorded.length);
+    }
+    expect(JSON.stringify(world)).toBe(before);expect(model.step(world)).toEqual(next);
+  });
+
+  it('distinguishes identical totals from identical survivors and rejects incomplete identity evidence', () => {
+    const world = model.create(2026), trials = window.StemLab.evoIslandChanceTrials, trial = trials.run(world, 1);
+    const different = trial.survivors.slice();different[0] = world.history[0].population.find(o=>!trial.survivors.includes(o.id)).id;
+    const changed = trials.compare(world, different, 1);
+    expect(changed.sameCount).toBe(true);expect(changed.changed).toBe(2);expect(changed.groups.recorded).toBe(1);expect(changed.groups.trial).toBe(1);
+    const identical = trials.compare(world, trial.survivors.slice().reverse(), 1);
+    expect(identical.sameCount).toBe(true);expect(identical.changed).toBe(0);expect(identical.groups.both).toBe(trial.count);
+    for (const ids of [null, undefined, [1,1], [world.nextId], ['1']]) expect(trials.compare(world, ids, 1)).toBeNull();
+    expect(trials.compare(world, [], 21)).toBeNull();expect(trials.compare(world, [], 0)).toBeNull();
+  });
+
+  it('preserves neutral probabilities and individual outcomes when the real round cannot reproduce', () => {
+    const trials = window.StemLab.evoIslandChanceTrials, world = { ...model.create(1), selection: false, living: false, habitat: 'drought' };
+    world.history[0].population=world.history[0].population.slice(0,2);world.history[0].stats=model.stats(world.history[0].population);world.nextId=3;
+    for (const recorded of [[], [1]]) for (let index=1;index<=20;index++) {
+      const comparison=trials.compare(world, recorded, index);
+      expect(comparison.rows).toHaveLength(2);expect(comparison.rows[0].recorded).toBe(recorded.length===1);expect(comparison.rows[1].recorded).toBe(false);
+      comparison.rows.forEach(row=>expect(row.chance).toBe(0.68*model.habitats.drought.food));
+      expect(comparison.groups.both+comparison.groups.recorded).toBe(recorded.length);
+    }
+    expect(world.nextId).toBe(3);expect(world.history).toHaveLength(1);
+  });
+});
+
+
+describe('Living Island chance microscope', () => {
+  it('reveals the exact seeded uniform draw behind every selected trial outcome in the upcoming habitat', () => {
+    const world=run(model.create(2026),4), before=JSON.stringify(world), next=model.step(world), trials=window.StemLab.evoIslandChanceTrials;
+    const parents=world.history[4].population, habitat=model.preview(world).habitat;
+    for(const index of [1,5,20]){
+      const trial=trials.run(world,index);let state=trial.seed;
+      for(const o of parents){
+        state=(Math.imul(state,1664525)+1013904223)>>>0;
+        const number=state/4294967296, probability=model.chance(o,model.habitats[habitat],world.selection), draw=trials.draw(world,index,o.id);
+        expect(draw).toEqual({id:o.id,index,seed:trial.seed,habitat,selection:world.selection,number,probability,survived:number<probability});
+        expect(draw.survived).toBe(trial.survivors.includes(o.id));expect(draw.number).toBeGreaterThanOrEqual(0);expect(draw.number).toBeLessThan(1);
+      }
+    }
+    expect(JSON.stringify(world)).toBe(before);expect(model.step(world)).toEqual(next);
+  });
+
+  it('observes each sampler decision in order without changing the existing survivors or probability arithmetic', () => {
+    const world=model.create(17), parents=world.history[0].population, before=JSON.stringify(parents);
+    for(const habitat of Object.keys(model.habitats))for(const selection of [true,false]){
+      const observed=[], survivors=model.survivalSample(parents,habitat,selection,0,(id,number,probability)=>observed.push({id,number,probability}));
+      expect(survivors).toEqual(model.survivalSample(parents,habitat,selection,0));expect(observed.map(row=>row.id)).toEqual(parents.map(o=>o.id));
+      expect(survivors).toEqual(observed.filter(row=>row.number<row.probability).map(row=>row.id));
+      if(!selection)observed.forEach(row=>expect(row.probability).toBe(0.68*model.habitats[habitat].food));
+    }
+    const observed=[];expect(model.survivalSample([], 'meadow',true,1,(...args)=>observed.push(args))).toEqual([]);expect(observed).toEqual([]);expect(JSON.stringify(parents)).toBe(before);
+  });
+
+  it('rejects non-residents and invalid trials and keeps original-parent evidence valid after actual extinction', () => {
+    const trials=window.StemLab.evoIslandChanceTrials,world={...model.create(1),living:false,selection:false,habitat:'drought'};
+    world.history[0].population=world.history[0].population.slice(0,1);world.history[0].stats=model.stats(world.history[0].population);world.nextId=2;
+    const next=model.step(world);expect(next.history[1].population).toHaveLength(0);
+    for(let index=1;index<=20;index++){
+      const draw=trials.draw(world,index,1);expect(draw.probability).toBe(0.68*model.habitats.drought.food);expect(draw.survived).toBe(trials.run(world,index).survivors.includes(1));
+    }
+    for(const id of [0,2,-1,'1',null,NaN,1.5])expect(trials.draw(world,1,id)).toBeNull();
+    for(const index of [0,21,-1,'1',NaN,1.5])expect(trials.draw(world,index,1)).toBeNull();
+    expect(trials.draw(next,1,1)).toBeNull();expect(trials.draw({...world,generation:60},1,1)).toBeNull();
+  });
+});

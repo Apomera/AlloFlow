@@ -1,0 +1,50 @@
+{
+  "controlledDen": {
+    "den": [
+      -28,
+      0,
+      5
+    ],
+    "before": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n99\n⏸ resting 1.0 cal/s\nCAMO   \n39%\n🏖 on sand · still\nSCORE 0\nTIME 6s\nINK     \n🏠 IN DEN — safe, regenerating",
+    "after": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n15m · 2 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n97\n⏸ resting 1.0 cal/s\nCAMO   \n0%\n🌊 off the bottom — nothing behind you to match (0%)\nSCORE 0\nTIME 9s\nINK     \n🏠 IN DEN — safe, regenerating",
+    "player": [
+      -28,
+      4.505946228417001,
+      5
+    ]
+  },
+  "catches": [
+    {
+      "hud": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n100\n⏸ resting 1.0 cal/s\nCAMO   \n63%\n🏖 on sand · still\nSCORE 3\nTIME 4s\nINK     ",
+      "saved": 1
+    },
+    {
+      "hud": "🐙 Common Octopus\n☀️ Day\n🪸 Reef Zone\n26m · 4 atm\nHEALTH \n100\nSTAMINA\n100\nHUNGER \n100\n⏸ resting 1.0 cal/s\nCAMO   \n97%\n🏖 on sand · still\nSCORE 5\nTIME 5s\nINK     ",
+      "saved": 1
+    }
+  ],
+  "afterExit": {
+    "contexts": [
+      {
+        "id": 1,
+        "type": "webgl2",
+        "mount": 1,
+        "createdBy": "page",
+        "lost": false,
+        "lostBy": null,
+        "draws": 8988,
+        "renders": 712,
+        "lastDrawAgoMs": 3395,
+        "connected": false,
+        "inWrap": false,
+        "width": 800,
+        "height": 500,
+        "creator": [
+          "initHuntSim3D (stem_lab/stem_tool_cephalopodlab.js:11265:24)",
+          "ref (stem_lab/stem_tool_cephalopodlab.js:11227:21)"
+        ]
+      }
+    ],
+    "leaderboard": null
+  }
+}

@@ -98,3 +98,75 @@ The 3D lens reports the renderer's actual camera mode. Dragging or using camera 
 On phones, the 3D camera dock and route choices sit below the scene. The model keeps at least 380px of height, and its controls keep their large targets. The scene and controls remain in the same fullscreen view; the model grows when space allows, and the view scrolls when the controls need more space.
 
 See [handoff guide review](../reports/watercycle-handoff-guide/README.md) for phone and desktop captures, water-state checks, camera controls, and accessibility verification.
+
+## Show movement and storage in process figures
+
+The comparison cards place **Before** and **After** above larger illustrations, with the physical-state description below. Precipitation shows cloud particles followed by falling liquid and solid particles. Collection shows incoming water followed by a store containing liquid and ice. The accompanying phase and energy descriptions retain their existing scope, including separate freezing and melting processes.
+
+Standalone 3D previews derive their orientation lens from the selected process. An inactive parcel's remembered position no longer labels a different preview. Active scene captions, the camera dock, and view status share the existing human journey names, including **Plant uptake**, **River runoff**, and **Aquifer flow**.
+
+See [process figure review](../reports/watercycle-process-diagrams/README.md) for matched captures, comparison interactions, scene-context checks, and accessibility verification.
+
+## Inspect teaching signals by place
+
+The signal chart now gives its three cues persistent identities: a solid line with circles for energy, a dashed line with squares for surface flow, and a dotted line with diamonds for storage. Phone labels have room to stay readable, and forced colors use system text and strokes.
+
+**Inspect a place** lets learners read the existing scores at Surface, Air, Cloud, Land, or Return. The readout and folded table use the same values as the plotted lines. Following the stage focus tracks the selected process or journey; a replay is explicitly labeled **Replay focus**. Manual inspection keeps a separate stage marker and preserves the learner's conditions, paused parcel, writing, and evidence. Standalone Infiltration correctly focuses Land.
+
+The chart explains that its horizontal categories are places, rather than elapsed time or a required droplet route. Each 0–100 cue is an independent illustration to compare with itself as conditions change. The scores do not form a water or energy balance. Existing score calculations are unchanged.
+
+See [signal inspection review](../reports/watercycle-signal-inspection/README.md) for matched captures, exact-value checks, native controls, and contrast verification.
+
+## Give dashboard comparisons room to breathe
+
+The dashboard groups its plot, place inspection, storage cues, and exact-value table into separate cards. Wide panels put the storage cues beside the plot and give the inspection row and table the full width below. Narrow panels use the same plot → inspection → stores → table order as the document, so the visual and keyboard reading order agree.
+
+Layout and graph text respond to the panel's actual width, including a narrow embedded tool on a large screen. The storage bars have a visible group heading, and the table has space for its column labels. Native selection and disclosure controls retain their large targets and visible keyboard focus.
+
+Forced colors use system strokes for the axes, grid guides, and stage marker, including when dark mode is also active. Line patterns and marker shapes continue to distinguish the three teaching cues.
+
+The header identifies **Current condition cues**. The scope note explains that replay changes the focus while scores use current conditions. The existing independent teaching scores and all learner evidence remain unchanged.
+
+See [dashboard layout review](../reports/watercycle-dashboard-layout/README.md) for matched captures, measured layout changes, interaction checks, and accessibility verification.
+
+## Explain weather and ground inputs
+
+Climate Lab separates the model's reference sunlight and wind from the learner's saved comparison baseline. The native ranges show endpoint values, linked explanations, a thin track, and a clear thumb within a 44px target. The evaporation meter exposes the exact current teaching index as text inside the existing live response. Wind retains its transport role in the model.
+
+Land-surface pathways shows rainfall and starting soil wetness on explicit 0–100 teaching scales. Brief definitions explain permeability, slope, and land cover beside their choices. Selected labels keep their checkmark on the same line, including on phones. **Reset climate** and **Reset land** identify each action's existing scope. A selected preset explains that it sets weather and land inputs together.
+
+The two Land result cards pair exact scores with fixed illustrations: runoff moves over the ground surface, while infiltration enters soil pore spaces. Their arrows show direction. The separate indices are not measured water amounts or complementary shares, and infiltration alone does not establish aquifer recharge. The existing driver, interpretation, comparison prompt, and scope note remain beside the readings.
+
+Both labs arrange their controls using the panel's actual width. Narrow embedded panels stack the climate controls and response; wider panels use columns. Forced colors give the soil guides, direction arrows, and expanded/collapsed cues explicit system colors. The labs remain foldable.
+
+The final review passed 137 tests, 771 browser checks, and 18 scoped accessibility audits. Exact source comparisons also confirm that 15 calculation and state blocks are unchanged. Browser interactions preserve the paused parcel, saved baseline, comparison writing, and observation evidence. Source and desktop public runtime copies match.
+
+See [Conditions clarity review](../reports/watercycle-conditions-clarity/README.md) for matched captures, measurements, interaction coverage, and the saved verification command.
+
+## Read a comparison step by step
+
+Scenario Compare names its baseline actions directly: **Restore baseline**, **Save current as baseline**, and **Clear baseline**. Nearby help explains each action and confirms that saved observations remain in the notebook. The comparison method shows whether inputs match, one input changed, several changed, or the baseline is incomplete. The isolation control links its restoration hint for assistive technology.
+
+The three reading cards show full Baseline and Current labels, exact signed changes, and the meaning of **Current minus baseline**. Solid baseline bars with circle markers and patterned current bars with square markers keep both readings distinguishable. Each teaching index is compared with itself; the independent indices do not form a water budget. An incomplete legacy baseline explicitly identifies the use of display defaults for missing inputs.
+
+The normalized **Pathway mix** sits in a native disclosure, with a separate explanation of its relative journey-branch shares. Core readings remain visible when it is folded. Comparison and claim layouts respond to their actual panel widths, including narrow embedded tools on large screens. Dark and forced-color text uses the verified contrast and system-color overrides.
+
+Claim choices use their full wording. Choosing a claim focuses the revealed feedback heading; **Choose again** returns to that claim's button. **Save observation** returns focus to feedback after the button becomes Saved. Restore and the existing isolation action focus the updated comparison method, while Clear returns to the persistent baseline button. These handoffs keep the keyboard destination visible as controls disappear or become disabled.
+
+The final review passed 129 distinct tests, 788 browser checks, and 16 scoped accessibility audits. Twenty-four existing calculation and state anchors remain unchanged, as do the full comparison derivation ranges. Browser actions preserve the paused parcel, prior saved evidence, and learner writing. Source and desktop public runtime copies match.
+
+See [comparison clarity review](../reports/watercycle-comparison-clarity/README.md) for before-and-after captures, focus evidence, scope notes, and the saved verification command.
+
+## Read saved evidence in the notebook
+
+Each observation has a named heading, a description of its recorded input changes, and three readable **Saved changes** rows. Positive and negative values retain their signs; zero remains a recorded zero. Missing or nonfinite changes say **Not recorded**, and an older record without a claim result says **Claim check not recorded**. These displays use the stored evidence.
+
+The native **Explain this observation** disclosure groups the saved claim, evidence summary, recorded input changes, **Saved baseline / Saved scenario** table, relative pathway mix, and three writing prompts. Land changes use index points, and the table retains the independent 0–100 scales. Guidance distinguishes these readings from water volumes and explains that changing current controls leaves recorded evidence unchanged.
+
+**Replay settings** identifies its scope and loads the observation's saved condition settings into the current workspace. Keyboard focus moves to the comparison method, or to **Set baseline** when the record has no saved baseline. Partial records explain the use of model defaults for missing settings. Remove, Clear trail, and Undo retain their notebook focus handoffs and existing history behavior.
+
+Cards respond to the notebook's available width. Narrow embedded tools use one column, and an expanded explanation leaves neighboring cards at their natural height. Readings, table labels, writing prompts, and disclosure cues have explicit readable sizes and system colors.
+
+The final review passed 80 distinct tests, 653 browser checks and 18 scoped accessibility audits. Thirty-four calculation and state anchors and the full comparison and signal derivation ranges remain unchanged. Native flows preserve recorded evidence, learner writing and the paused parcel. Source and public runtime copies match, and the local preview serves the tested version.
+
+See [notebook clarity review](../reports/watercycle-notebook-clarity/README.md) for matched captures, legacy-record checks, preservation evidence, and the saved verification command.

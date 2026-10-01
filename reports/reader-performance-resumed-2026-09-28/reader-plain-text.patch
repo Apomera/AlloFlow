@@ -1,0 +1,87 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index fc319a381..7de0d69c3 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1,3 +1,27 @@
++  // Plain-text parsing is pure, but the shared Markdown/HTML parser is costly.
++  // Keep bounded strings per reader; never retain DOM, callbacks, or support state.
++  function useSimplifiedPlainTextCache(item, learnerScope) {
++    const readingText = window.AlloModules?.TextPipelineHelpers?.readingText;
++    const parse = readingText?.plain;
++    return React.useMemo(() => {
++      const entries = new Map();
++      let characters = 0;
++      return text => {
++        const value = String(text || '');
++        if (entries.has(value)) return entries.get(value);
++        if (!parse) return simplifiedPlainInline(value);
++        let plain;
++        try { plain = parse(value); } catch (_) { return simplifiedPlainInline(value); }
++        const size = value.length + plain.length;
++        // Once full, compute new inputs normally; existing useful entries remain.
++        if (entries.size < 2048 && characters + size <= 262144) {
++          entries.set(value, plain); characters += size;
++        }
++        return plain;
++      };
++    }, [item?.id, item?.data, item?.sourceSnapshot?.text, learnerScope, parse, readingText?.tree]);
++  }
++
+ 
+   // Keep one validated result per reader instance, never a process-wide cache.
+   // The envelope is serialized so an in-place support edit also invalidates it.
+@@ -1466,8 +1490,8 @@
+     for (var i = 1; i < points.length; i++) if (top <= points[i][0]) { var p = points[i - 1], q = points[i]; return Math.round(p[1] + (q[1] - p[1]) * (top - p[0]) / (q[0] - p[0])); }
+     return toMax;
+   }
+-  function simplifiedComparisonPlainText(raw) {
+-    return simplifiedExactBlocks(raw, true).map(block => block.type === 'hidden' ? '' : simplifiedPlainInline(block.text) + block.separator).join('');
++  function simplifiedComparisonPlainText(raw, plain = simplifiedPlainInline) {
++    return simplifiedExactBlocks(raw, true).map(block => block.type === 'hidden' ? '' : plain(block.text) + block.separator).join('');
+   }
+   function simplifiedParagraphBlocks(text) {
+     var lines = String(text || '').split('\n');
+@@ -4431,6 +4455,7 @@
+     var readingLanguage = generatedContent?.config?.language || generatedContent?.instructionalText?.complexity?.language || leveledTextLanguage || 'English';
+     // Teacher-prepared word help students can see on this adapted text.
+     var learnerScope = JSON.stringify([props.readingLearnerKey, isTeacherMode, !!props.isStudentPreview]);
++    const plainReadingText = useSimplifiedPlainTextCache(generatedContent, learnerScope);
+     var adaptedSupportView = useSimplifiedAdaptedSupportView(generatedContent, learnerScope);
+     var shownWordHelpCount = adaptedSupportView.help?.shown && adaptedSupportView.help.status !== 'stale' ? adaptedSupportView.help.annotations.length : 0;
+     var hiddenPassageIdentityRef = React.useRef(null);
+@@ -5748,7 +5773,7 @@
+       var comparisonGlosses = showReadingGlosses ? (readingContract?.selectReadingSupports ? readingContract.selectReadingSupports(comparisonSupportOwner, comparisonSupports, { density: glossDensity }) : (comparisonSupports?.annotations || [])) : [];
+       // Tokenize whitespace too, so comparison preserves paragraphs and line breaks.
+       // Bound the quadratic work; long texts use complete, unchanged source panels.
+-      var oldTokens = simplifiedComparisonPlainText(sourceText).match(/\s+|\S+/g) || [], newTokens = simplifiedComparisonPlainText(targetText).match(/\s+|\S+/g) || [];
++      var oldTokens = simplifiedComparisonPlainText(sourceText, plainReadingText).match(/\s+|\S+/g) || [], newTokens = simplifiedComparisonPlainText(targetText, plainReadingText).match(/\s+|\S+/g) || [];
+       var tooLarge = oldTokens.length * newTokens.length > 1000000;
+       var mismatch = simplifiedLanguageTag(originalLanguage) && simplifiedLanguageTag(targetLanguage) && simplifiedLanguageTag(originalLanguage).split('-')[0] !== simplifiedLanguageTag(targetLanguage).split('-')[0];
+       var showDiff = showComparisonChanges && !tooLarge && !mismatch && sourceText && targetText;
+@@ -5777,7 +5802,7 @@
+         }
+         diff.reverse();
+       }
+-      var count = text => simplifiedWordSegments(simplifiedPlainInline(text), targetLanguage).filter(part => part.word).length;
++      var count = text => simplifiedWordSegments(plainReadingText(text), targetLanguage).filter(part => part.word).length;
+       // The original pane plays as its own sequence: its clips belong to the original.
+       var bothChoices = [
+         { key: 'source', pane: 'source', contentId: 'simplified-source', language: originalLanguage || readingLanguage, plan: sourceText ? cachedListenPlan(sourceText, showDiff ? [] : comparisonGlosses, originalLanguage || readingLanguage) : null },
+@@ -5892,7 +5917,7 @@
+               var read = event => { if (event.type === 'click' && window.getSelection?.().toString().trim()) return; event.stopPropagation(); listen.readFrom(sentence.start); };
+               if (!startedSentences.has(sentence.start)) {
+                 startedSentences.add(sentence.start);
+-                body = <span role="button" data-exact-sentence={sentence.start} data-exact-sentence-stop tabIndex={sentenceStops++ === 0 ? 0 : -1} aria-current={now && now.start === sentence.start ? 'true' : undefined} aria-label={readSentenceLabel + ': ' + simplifiedPlainInline(piece).trim()} title={t('common.click_read_from_here')} onClick={read} onFocus={claimSentenceStop} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); read(event); return; } moveSentenceStop(event); }} className="cursor-pointer rounded hover:bg-indigo-100/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{piece}</span>;
++                body = <span role="button" data-exact-sentence={sentence.start} data-exact-sentence-stop tabIndex={sentenceStops++ === 0 ? 0 : -1} aria-current={now && now.start === sentence.start ? 'true' : undefined} aria-label={readSentenceLabel + ': ' + plainReadingText(piece).trim()} title={t('common.click_read_from_here')} onClick={read} onFocus={claimSentenceStop} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); read(event); return; } moveSentenceStop(event); }} className="cursor-pointer rounded hover:bg-indigo-100/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{piece}</span>;
+               } else body = <span data-exact-sentence={sentence.start} onClick={read} className="cursor-pointer">{piece}</span>;
+             }
+             var content = <>{body}{(annotations || []).filter(entry => entry.end > from && entry.end <= to).map(renderGlossChip)}</>;
+@@ -5913,7 +5938,7 @@
+         var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : 'span';
+         var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : undefined;
+         var isRelated = !!relatedRange && relatedRange.end > lineStart && relatedRange.start < lineStart + line.length;
+-        const explanationText = formatted ? simplifiedPlainInline(block.text) : line;
++        const explanationText = interactionMode === 'explain' ? (formatted ? plainReadingText(block.text) : line) : '';
+         const explain = event => {
+           if (interactionMode !== 'explain') return;
+           const control = event.target.closest('a, button, input, select, textarea, [role="button"]');

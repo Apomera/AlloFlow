@@ -92,8 +92,10 @@ describe('Geology Explorer scene-aware measurements', () => {
 // pressure, the lower mantle showed 125 GPa at 2,000 km (PREM: about 88), and the ridge's magma
 // lens sat SHALLOWER than the vent on the seafloor above it.
 describe('displayed depths, pressures and temperatures agree with the real Earth', () => {
-  // PREM (Dziewonski & Anderson 1981) pressure in GPa at depth in km; linear between points.
-  const PREM = [[0, 0], [35, 1.0], [400, 13.4], [660, 23.8], [1000, 38.5], [1500, 62], [2000, 88], [2500, 114], [2891, 135.8], [4000, 231], [5150, 328.9], [6000, 358], [6371, 363.9]];
+  // PREM (Dziewonski & Anderson 1981) pressure in GPa at depth in km; linear between points. The
+  // 4,000 km point is PREM's integrated pressure (246 GPa); it once held 231, a straight line between
+  // the core-mantle and inner-core boundaries, which passed the model's own 230 GPa.
+  const PREM = [[0, 0], [35, 1.0], [400, 13.4], [660, 23.8], [1000, 38.5], [1500, 62], [2000, 88], [2500, 114], [2891, 135.8], [4000, 246.4], [5150, 328.9], [6000, 358], [6371, 363.9]];
   const prem = (d) => { for (let i = 1; i < PREM.length; i++) if (d <= PREM[i][0]) { const [d0, p0] = PREM[i - 1], [d1, p1] = PREM[i]; return p0 + (p1 - p0) * (d - d0) / (d1 - d0); } return 363.9; };
   const LAYERS = { crust: [0, 70], upperMantle: [35, 660], lowerMantle: [660, 2891], outerCore: [2891, 5150], innerCore: [5150, 6371] };
 
@@ -106,12 +108,12 @@ describe('displayed depths, pressures and temperatures agree with the real Earth
     }
   });
 
-  it('each Deep Earth shell shows the PREM pressure at that depth (within 10%), and temperature rises inward', () => {
+  it('each Deep Earth shell shows the PREM pressure at that depth (within 3%), and temperature rises inward', () => {
     P.setScene('deepEarth'); P.setGrid('standard');
     let lastT = -Infinity;
     for (const key of Object.keys(LAYERS)) {
       const f = P.rockFacts(key, 0), depth = Number(f.depthKm), gpa = Number(f.presMPa) / 1000, want = prem(depth);
-      expect(Math.abs(gpa - want) / want, key + ': ' + gpa + ' GPa at ' + depth + ' km, PREM ' + want.toFixed(1)).toBeLessThan(0.1);
+      expect(Math.abs(gpa - want) / want, key + ': ' + gpa + ' GPa at ' + depth + ' km, PREM ' + want.toFixed(1)).toBeLessThan(0.03);
       expect(Number(f.tempC), key).toBeGreaterThan(lastT);
       lastT = Number(f.tempC);
     }
@@ -130,5 +132,20 @@ describe('displayed depths, pressures and temperatures agree with the real Earth
     const f = P.rockFacts('shale', 4), depth = Number(f.depthKm);
     expect(Number(f.presMPa) / depth).toBeGreaterThan(25);
     expect(Number(f.presMPa) / depth).toBeLessThan(29);
+  });
+
+  // Ocean-scene depths are from sea level. Seawater (~1.03 g/cm3) adds ~10 MPa per km, rock ~30: rock
+  // under 2.5 km of water is not under 2.5 km of rock. (It read 75 MPa at a vent where the sea gives 25.)
+  it('under the sea, the water column is water, not rock', () => {
+    const pres = (scene, key) => { P.setScene(scene); P.setGrid('standard'); return Number(P.rockFacts(key, 0).presMPa); };
+    const near = (value, want, tol) => expect(Math.abs(value - want), value + ' vs ' + want).toBeLessThanOrEqual(tol);
+    near(pres('ridge', 'vent'), 25, 3);            // seafloor at the axis, ~2.5 km of seawater
+    near(pres('ridge', 'sediment'), 30, 4);        // older flank seafloor, ~3 km of water
+    near(pres('ridge', 'gabbro'), 130, 15);        // 2.5 km water + 3.5 km rock
+    near(pres('hotspot', 'seamount'), 10, 2);      // drowned summit ~1 km down
+    near(pres('hotspot', 'oceanCrust'), 140, 20);  // ~5 km water + 3 km rock
+    near(pres('subduction', 'oceanCrust'), 90, 15);
+    near(pres('subduction', 'contCrust'), 600, 30);   // on land: unchanged, all rock
+    expect(pres('ridge', 'oceanWater')).toBe(0);
   });
 });

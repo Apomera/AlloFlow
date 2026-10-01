@@ -1,0 +1,12 @@
+Index: view_simplified_source.jsx
+===================================================================
+--- view_simplified_source.jsx
++++ view_simplified_source.jsx
+@@ -3035,6 +3035,7 @@
+         {!blocked && status === 'error' && typeof data.retry === 'function' && <button type="button" data-lookup-retry={kind} onClick={() => { stopHelpAudio(); data.retry(); }} className="min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-900">{helpText('simplified.lookup_retry', 'Try word help again')}</button>}
+         {data.dictionaryStatus === 'loading' && <p role="status" className="my-2 text-sm text-slate-700">{helpText('simplified.lookup_dictionary_loading', 'Looking for a dictionary entry…')}</p>}
+         {data.dictionaryStatus === 'unavailable' && <p className="my-2 text-sm text-slate-700">{helpText('simplified.lookup_dictionary_unavailable', 'No dictionary entry is available.')}</p>}
++        {data.dictionaryStatus === 'unavailable' && typeof data.retryDictionary === 'function' && <button type="button" data-dictionary-retry={kind} onClick={() => data.retryDictionary()} className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{helpText('simplified.lookup_dictionary_retry', 'Try dictionary again')}</button>}
+       </div>;
+     };
+     var renderDefinitionSpeech = function (data) {

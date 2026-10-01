@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Layer 1: Skin, locked during assessment",
+    "state": "revealed",
+    "disabled": true,
+    "current": null
+  },
+  {
+    "name": "Layer 2: Muscle, locked during assessment",
+    "state": "revealed",
+    "disabled": true,
+    "current": null
+  },
+  {
+    "name": "Layer 3: Organs, locked during assessment",
+    "state": "current",
+    "disabled": true,
+    "current": "step"
+  },
+  {
+    "name": "Layer 4: Skeleton, locked during assessment",
+    "state": "locked",
+    "disabled": true,
+    "current": null
+  },
+  {
+    "name": "Layer 5: Nervous, locked during assessment",
+    "state": "locked",
+    "disabled": true,
+    "current": null
+  }
+]

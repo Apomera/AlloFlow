@@ -1,0 +1,56 @@
+{
+  "head": "13ebcc73f5784436643adc7c12ff8d83d5b29028",
+  "files": {
+    "content_engine_source.jsx": {
+      "sourceSha256": "f6c49b768835626a70cf22f94890133d064309571edc46b02b19513594686678",
+      "candidateSha256": "a36dff74891d3abb547fa4833ab5cb09779d379cf59014067f6df82758e2bb40"
+    },
+    "view_simplified_source.jsx": {
+      "sourceSha256": "4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265",
+      "candidateSha256": "5eebd7ec550327c698c28dd8f0eebb29bf2f59f3d58376f0222a723a554c966f"
+    },
+    "host_handlers_source.jsx": {
+      "sourceSha256": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848",
+      "candidateSha256": "9c7b31074e0fff668e94aca55cb00824251e248d9a903e9ee4d18896081bde12"
+    },
+    "dictionary_loader.js": {
+      "sourceSha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+      "candidateSha256": "dfc9c12a13c655d719f3fe19619998d73b8a8e320388b4ae33d5c7ecea7e39c0"
+    }
+  },
+  "dependencies": {
+    "reader_place_store.js": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "dev-tools/prepare_reading_lookup_availability.cjs": "3ebab0fa01dce5d727c734e8bbd6bb7c72fed5903c667dae38859b8d41a93bb3",
+    "dev-tools/prepare_reading_lookup_media.cjs": "a67e0c9ae30541e76537d0d35bf37ae5df41a75540d65e75f166685edaec00d7",
+    "dev-tools/prepare_reading_lookup_resilience.cjs": "7265c5fd6b3a56cf184f8e73f0cbfda74a3453b34bcda2fc13c510ecde3cd67d",
+    "dev-tools/prepare_reading_lookup_enhancements.cjs": "ddd942f3f55f0b8030d752eb3295bcbe8f4927b526702c311835b267a75cfb37",
+    "dev-tools/prepare_dictionary_cache_recovery.cjs": "509b68fb2610599dc4b48f43ef0e64bc917c482d5fa2ec6919bd898b79ab58d9",
+    "dev-tools/prepare_dictionary_cache_race.cjs": "65f5fc83a3a4c56d064451694a9bbff4db02b73c75a23bebc29a49bcc57b6860",
+    "tests/reading_lookup_candidate.js": "92fa3f39668ce4dc337d4dc2aef714689e545f8f3ed5795313677cd76c22a77a",
+    "tests/reading_lookup_recovery.test.js": "a0061d62e7cc5f31efbd012260f2ab157e9d087713da41aa8bb29f5c8d577b65",
+    "tests/reading_lookup_popup_adapter.test.js": "bba00dc1f0f2c29d90efe32f27abb85bdc2d0f61633b513bbd5eacd3525cab72"
+  },
+  "artifacts": {
+    "engine.patch": "ce271ef6e2b1207cb28366a6bad364ae33fd3381ec301b63a2e7153f9c3faf12",
+    "engine.baseline.source.js": "f6c49b768835626a70cf22f94890133d064309571edc46b02b19513594686678",
+    "engine.candidate.source.js": "a36dff74891d3abb547fa4833ab5cb09779d379cf59014067f6df82758e2bb40",
+    "engine-availability.patch": "98189f0489dd7c85d4214f4fde7b6a2fd6f45ec68598e3403b359c9795eb851e",
+    "content_engine_module.candidate.js": "b0698e9ba567ce8b4a93b53adb7aee0654b017ea3a487cd5ea9e62051fc64ee6",
+    "content_engine_module.baseline.js": "607cdf6e9f17ea786efe13838b1bdaa9a194e14851e8b22844bd9d591951b6e4",
+    "reader.patch": "6ab1a04dc8767d21e16f63abf3cf1d2a1a8ab716161a3b83390cde0cea265597",
+    "reader.baseline.source.js": "4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265",
+    "reader.candidate.source.js": "5eebd7ec550327c698c28dd8f0eebb29bf2f59f3d58376f0222a723a554c966f",
+    "reader-availability.patch": "559841dada6079c668129aeb910eff57dc83745dbb9ada3c2b1c2f16caf534da",
+    "view_simplified_module.candidate.js": "d4a06037693467dcc8b1a232f4a210b80cd52426f6363b2c192544df14bd1da7",
+    "view_simplified_module.baseline.js": "4a3f0b8d450cae6ced0c2008e845fb02ad1d2a341e7a14456d0d73338f8dbbbb",
+    "host.patch": "3d59d07cc7eaf6e321fd9575f47fe85a1ae2c5ae11dcbeb0bd7c586837814c0b",
+    "host.baseline.source.js": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848",
+    "host.candidate.source.js": "9c7b31074e0fff668e94aca55cb00824251e248d9a903e9ee4d18896081bde12",
+    "dictionary.patch": "3bcf6979c2a47a87811c5dfc2aa4b723a73e1e36d59ea0a4dc23fa5bfb1a9937",
+    "dictionary.baseline.source.js": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+    "dictionary.candidate.source.js": "dfc9c12a13c655d719f3fe19619998d73b8a8e320388b4ae33d5c7ecea7e39c0"
+  }
+}

@@ -1,0 +1,1484 @@
+diff --git a/desktop/web-app/public/stem_lab/stem_tool_moonmission.js b/desktop/web-app/public/stem_lab/stem_tool_moonmission.js
+index 744dda8c0..756e250b6 100644
+--- a/desktop/web-app/public/stem_lab/stem_tool_moonmission.js
++++ b/desktop/web-app/public/stem_lab/stem_tool_moonmission.js
+@@ -2038,10 +2038,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+       if (keepClear(cx, cz, -1.2)) continue;
+       addRock(cx, cz, 0.035 + Math.pow(rr(), 2.2) * 0.2, rr() < 0.4);
+     }
+-    // Massifs past the horizon, like the walls of Taurus-Littrow: smooth, rounded,
+-    // sandblasted by four billion years of micrometeorites. [dist m, bearing deg, height, radius]
+-    var massifs = [[9000, -120, 1900, 4200], [12500, -68, 1350, 3600], [7200, 172, 950, 2700],
+-      [14000, 100, 1650, 4800], [10500, 32, 720, 3000], [16000, -158, 1150, 3800], [11000, 138, 800, 2600]].map(function (m, mk) {
++    // Beyond the horizon, the low relief of the Sea of Tranquility: broad wrinkle ridges
++    // and old crater rims a hundred or two metres high, 6-12 km out. From Tranquility
++    // Base no mountains show; these barely lift the skyline above the curve of the
++    // ground. (They were 1-2 km massifs, the valley walls of Apollo 15 and 17, not 11.)
++    // [dist m, bearing deg, height, radius]
++    var massifs = [[6600, -120, 180, 3400], [9000, -68, 140, 3000], [7000, 172, 110, 2600],
++      [11000, 100, 230, 4200], [8000, 32, 90, 2400], [12000, -158, 160, 3600], [9500, 138, 120, 2800]].map(function (m, mk) {
+       var a = m[1] * Math.PI / 180;
+       return { x: Math.cos(a) * m[0], z: Math.sin(a) * m[0], h: m[2], r: m[3], seed: 40 + mk };
+     });
+@@ -2137,22 +2140,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+     mat.onBeforeCompile = function (shader) {
+       shader.uniforms.uLunarOpp = { value: rock ? 0.4 : 0.62 };
+       shader.uniforms.uLunarBounce = { value: rock ? 0.34 : 0.3 };
++      shader.uniforms.uLunarCbs = { value: rock ? 0.2 : 0.42 };
++      if (kind === 'ground') shader.uniforms.uLunarBumpRes = { value: (mat.bumpMap && mat.bumpMap.image && mat.bumpMap.image.width) || 512 };
+       var vary = rock ? 'varying vec2 vLunarInst;\n' : 'varying vec3 vLunarBake;\n';
+       shader.vertexShader = (rock ? 'attribute vec2 lunarInst;\n' : 'attribute vec3 lunarBake;\n') + vary +
+         'varying vec2 vLunarXZ;\n' + shader.vertexShader.replace('#include <project_vertex>',
+         '#include <project_vertex>\nvec4 lunarW = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\nlunarW = instanceMatrix * lunarW;\n#endif\n' +
+         'vLunarXZ = (modelMatrix * lunarW).xz;\n' + (rock ? 'vLunarInst = lunarInst;\n' : 'vLunarBake = lunarBake;\n'));
+-      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
++      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nuniform float uLunarCbs;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
+       var fs = shader.fragmentShader;
+       fs = fs.replace('#include <map_fragment>', rock ? '#include <map_fragment>\ndiffuseColor.rgb *= vLunarInst.y;' :
+         '#ifdef USE_MAP\nvec3 lunarT1 = mapTexelToLinear(texture2D(map, vLunarXZ * 0.29)).rgb;\n' +
+         'vec3 lunarT2 = mapTexelToLinear(texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vLunarXZ * 0.061 + 0.37)).rgb;\n' +
+         'diffuseColor.rgb *= lunarT1 * lunarT2 * 21.0;\n#endif\ndiffuseColor.rgb *= vLunarBake.z;');
+-      if (!rock) {
++      if (kind === 'ground') {   // a 'print' keeps the standard UV bump: its own relief
+         fs = fs.replace('#include <bumpmap_pars_fragment>', THREE.ShaderChunk.bumpmap_pars_fragment.replace(
+           /vec2 dHdxy_fwd\(\) \{[\s\S]*?return vec2\( dBx, dBy \);\s*\}/,
+-          'float lunarBumpH(vec2 p) {\n  return texture2D(bumpMap, p * 0.29).x' +
+-          (lowPower ? '' : ' + 1.6 * texture2D(bumpMap, mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21).x') + ';\n}\n' +
++          // Cubic B-spline filtered height from four bilinear taps. A bilinear texel has
++          // one constant slope, so looking down at your boots the relief broke into 2 cm
++          // facets (the coarse octave spreads 512 texels over 12 m); this slope is smooth.
++          'uniform float uLunarBumpRes;\nfloat lunarTexB(vec2 uv) {\n' +
++          '  vec2 st = uv * uLunarBumpRes - 0.5, i = floor(st), f = st - i;\n' +
++          '  vec2 w0 = (1.0 - f) * (1.0 - f) * (1.0 - f) / 6.0, w3 = f * f * f / 6.0;\n' +
++          '  vec2 w1 = (4.0 - 6.0 * f * f + 3.0 * f * f * f) / 6.0, w2 = 1.0 - w0 - w1 - w3;\n' +
++          '  vec2 g0 = w0 + w1, g1 = w2 + w3;\n' +
++          '  vec2 h0 = (i - 0.5 + w1 / g0) / uLunarBumpRes, h1 = (i + 1.5 + w3 / g1) / uLunarBumpRes;\n' +
++          '  return g0.y * (g0.x * texture2D(bumpMap, h0).x + g1.x * texture2D(bumpMap, vec2(h1.x, h0.y)).x) +\n' +
++          '    g1.y * (g0.x * texture2D(bumpMap, vec2(h0.x, h1.y)).x + g1.x * texture2D(bumpMap, h1).x);\n}\n' +
++          'float lunarBumpH(vec2 p) {\n  return lunarTexB(p * 0.29)' +
++          (lowPower ? '' : ' + 1.6 * lunarTexB(mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21)') + ';\n}\n' +
+           'vec2 dHdxy_fwd() {\n  vec2 dx = dFdx(vLunarXZ), dy = dFdy(vLunarXZ);\n  float H = bumpScale * lunarBumpH(vLunarXZ);\n' +
+           '  return vec2(bumpScale * lunarBumpH(vLunarXZ + dx) - H, bumpScale * lunarBumpH(vLunarXZ + dy) - H);\n}'));
+       }
+@@ -2164,6 +2180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+         '  float cg = clamp(dot(directLight.direction, geometry.viewDir), -0.999, 1.0);\n' +
+         '  float tg = sqrt((1.0 - cg) / (1.0 + cg));\n' +
+         '  float surge = 1.0 + uLunarOpp / (1.0 + tg / 0.07);\n' +
++        '  surge += uLunarCbs / (1.0 + tg / 0.012);\n' +   // the narrow core, within a degree or two
+         '  float phase = mix(1.0, 0.62, smoothstep(0.0, 1.0, 0.5 - 0.5 * cg));\n' +
+         '  reflectedLight.directDiffuse += directLight.color * (ls * surge * phase * lunarSunVis) * material.diffuseColor;\n' +
+         '}\n#define RE_Direct RE_Direct_Lunar\n');
+@@ -2231,6 +2248,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+ 
+   // One boulder shape: an icosahedron pushed about by noise and cut flat underneath.
+   // Faces stay flat-normalled, because lunar boulders are angular, not pebbles.
++  // What each moonwalk sample looks like where it lies, in LUNAR_SAMPLES_DATA order:
++  // bright anorthosite, dark basalt, mottled breccia, a core tube (a drive tube hammered
++  // into the soil), a patch of orange volcanic glass soil, dark KREEP basalt, glassy
++  // impact melt and white anorthosite. Colours sit beside the scene's own rock
++  // (0x282722): the rock is what you find, a faint ring on the ground keeps it findable.
++  var MM_EVA_SAMPLE_LOOK = [
++    { color: 0x6e6c67, rough: 0.9, s: 0.2 }, { color: 0x201f1d, rough: 0.85, s: 0.22 },
++    { color: 0x3a3632, rough: 0.95, s: 0.24 }, { tube: true, color: 0x8a8e94 },
++    { color: 0x5a2a0e, rough: 1, s: 0.3, flat: 0.18 }, { color: 0x1d1b19, rough: 0.8, s: 0.2 },
++    { color: 0x121316, rough: 0.28, metal: 0.15, s: 0.14 }, { color: 0x7a7872, rough: 0.85, s: 0.18 }
++  ];
++  // Regolith thrown up by a wheel or a boot, as a velocity in the mover's frame (fwd
++  // along travel, side to the right, up) from three uniform randoms. With no air,
++  // every grain, however fine, then flies a clean parabola and lands with the rocks:
++  // nothing billows, hangs or fades out in mid-air.
++  //  'tread': a rolling wheel's tread point, phi past the contact, moves over the
++  //    ground at v (1 - cos phi, sin phi). It leaves the ground at rest and climbs
++  //    steeply, so grains stream back and up from the rover while still moving
++  //    forward. Most come free low on the wheel; the fender catches what is carried
++  //    past about 40 degrees. At the 11 km/h of the Apollo 16 "Grand Prix" the
++  //    rooster tail stands about a metre high.
++  //  'kick': a toe-off flicks a fan ahead at up to 0.8 of stride speed, 15-45
++  //    degrees up: knee-high arcs that land about a stride ahead.
++  //  'splash': a landing (v = its downward speed) pushes soil out low, all round.
++  var MM_TREAD_PHI_MAX = 40 * Math.PI / 180;
++  function mmDustGrain(kind, v, u1, u2, u3) {
++    if (kind === 'tread') {
++      var phi = 0.12 + (MM_TREAD_PHI_MAX - 0.12) * u1 * u1;
++      return { fwd: v * (1 - Math.cos(phi)), up: v * Math.sin(phi), side: v * (u2 - 0.5) * 0.12, phi: phi };
++    }
++    var kick = kind === 'kick';
++    var s = v * (kick ? 0.3 + 0.5 * u1 : 0.2 + 0.3 * u1);
++    var el = (kick ? 15 + 30 * u2 : 10 + 25 * u2) * Math.PI / 180;
++    var az = kick ? (u3 - 0.5) * 1.0 : u3 * Math.PI * 2;
++    return { fwd: s * Math.cos(el) * Math.cos(az), up: s * Math.sin(el), side: s * Math.cos(el) * Math.sin(az) };
++  }
++  // An Apollo bootprint, as height and alpha over its decal (x across, y along; the
++  // decal is MM_PRINT_W x MM_PRINT_L metres). The overshoe left a print about 33 cm by
++  // 14 cm: a depression a couple of centimetres deep with steep walls, a floor ribbed by
++  // the sole's transverse bars, and a low rim of pushed-up soil. Heights 0..1 (ground
++  // 0.55); the low Sun then lights one wall and shadows the other through the normal.
++  var MM_PRINT_W = 0.2, MM_PRINT_L = 0.38, MM_PRINT_BARS = 14;
++  function mmBootprintMaps(nx, ny) {
++    var h = new Float32Array(nx * ny), a = new Float32Array(nx * ny);
++    var ha = 0.07, hb = 0.165, rr = 0.06;                          // half width, half length, corner
++    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
++      var x = ((i + 0.5) / nx - 0.5) * MM_PRINT_W, y = ((j + 0.5) / ny - 0.5) * MM_PRINT_L;
++      var qx = Math.abs(x) - ha + rr, qy = Math.abs(y) - hb + rr;
++      var sd = Math.sqrt(Math.max(qx, 0) * Math.max(qx, 0) + Math.max(qy, 0) * Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - rr;
++      var ground = 0.55, floor = 0.24 + 0.07 * (0.5 + 0.5 * Math.cos(2 * Math.PI * ((y / MM_PRINT_L + 0.5) * MM_PRINT_BARS + Math.abs(x) * 3)));
++      var v;
++      if (sd < -0.01) v = floor;
++      else if (sd < 0) v = floor + (ground - floor) * mmSmooth(-0.01, 0, sd);
++      else v = ground + 0.08 * Math.exp(-((sd - 0.006) * (sd - 0.006)) / 0.00003);
++      h[j * nx + i] = v;
++      a[j * nx + i] = 1 - mmSmooth(0.012, 0.03, sd);
++    }
++    return { nx: nx, ny: ny, height: h, alpha: a };
++  }
+   function mmBoulderGeometry(THREE, seed) {
+     var g = new THREE.IcosahedronGeometry(1, 1), p = g.attributes.position.array;
+     for (var i = 0; i < p.length; i += 3) {
+@@ -2607,7 +2683,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+     return st;
+   }
+ 
+-  var MM_EVA_GAIT = { g: 1.62, walk: 1.25, lope: 2.3, comfort: 0.7, grip: 1.9, brake: 1.45, air: 0.12, lopeAfter: 1.1 };
++  // The suited astronaut: about 166 kg (crew member plus A7L suit and backpack). That
++  // mass resists every start, stop and turn exactly as it would on Earth, but in one
++  // sixth gravity it weighs what 27 kg does at home, and friction scales with weight:
++  // boot on regolith (mu about 0.9) can push or brake at no more than mu g = 1.46 m/s^2.
++  // The gait follows the Froude number v^2 / (g L). People change from walking to
++  // running near Fr = 0.5, which for 0.9 m legs is 2.1 m/s on Earth but only 0.85 m/s
++  // on the Moon: above a stroll the natural lunar gait is the lope.
++  var MM_EVA_MASS = 166, MM_EVA_LEG = 0.9, MM_EVA_MU = 0.9;
++  var MM_EVA_GAIT = { g: 1.62, walk: Math.sqrt(0.45 * 1.62 * MM_EVA_LEG), lope: 2.3, comfort: 0.9,
++    grip: MM_EVA_MU * 1.62, brake: MM_EVA_MU * 1.62, air: 0.12, lopeAfter: 1.1,
++    switchSpeed: Math.sqrt(0.5 * 1.62 * MM_EVA_LEG) };
+   // v: {x, z} velocity (m/s), mutated. wishX/wishZ: unit direction or zero.
+   // grade: rise per metre along +x and +z. Returns v.
+   function mmEvaFootVelocity(v, wishX, wishZ, lope, comfort, grounded, gradeX, gradeZ, dt) {
+@@ -2638,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+     }
+     return v;
+   }
+-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { roverState: mmCreateRoverState, roverStep: mmRoverStep, lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { roverState: mmCreateRoverState, roverStep: mmRoverStep, lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, bootprintMaps: mmBootprintMaps, dustGrain: mmDustGrain, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
+ 
+   // ═══════════════════════════════════════════════════════════════
+   // 3D POWERED DESCENT  (mmBuildDescent3D)
+@@ -3512,7 +3598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+         var ok = function () { said(t('stem.moonmission.report_copied', 'Flight report copied. Paste it wherever your teacher collects work.'), 'success'); };
+         var fail = function () { said(t('stem.moonmission.report_copy_failed', 'Copying is blocked here. Open "Show the report text" and copy it from there.'), 'info'); };
+         try {
+-          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fail); return; }
++          (window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(ok, fail); return;
+         } catch (e) {}
+         fail();
+       }
+@@ -7241,7 +7327,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           var c = rtHdr ? new T.EffectComposer(renderer, rtHdr) : new T.EffectComposer(renderer);
+                           c.addPass(new T.RenderPass(scene, camera));
+                           // Threshold above sunlit regolith, so only the Sun, Earth and foil glints glow.
+-                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.4, 0.9));
++                          // In the HDR target the down-Sun regolith passed 0.9 and its glow hazed
++                          // the black sky above the horizon, a haze of air the Moon does not have.
++                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.35, 1.0));
+                           composer = c;
+                         } catch (e) { composer = null; }
+                       });
+@@ -7274,13 +7362,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         var g = new THREE.BufferGeometry();
+                         g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                         g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+-                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false });
++                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false, transparent: true, opacity: 0 });
+                         var pts = new THREE.Points(g, m);
+                         pts.renderOrder = -10; pts.frustumCulled = false;
+                         skyGroup.add(pts); skyGeos.push(g); skyMats.push(m);
+                       });
+                     })();
+                     scene.add(skyGroup);
++                    var _starFwd = new THREE.Vector3(), _starLevel = 0, _starShown = 0;
+ 
+                     // ── Earth as a billboard sprite ──
+                     // Draw the marble onto a canvas (centered, square), then attach as a
+@@ -7504,19 +7593,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // bloom pass (tuned for "Earth + sun glow") finally has a sun to bloom.
+                     var _sunSprite = null;
+                     (function addSunDisc() {
+-                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 128; sc.height = 128;
++                      // The Sun from the Moon: no air to scatter it, so no sky glow and no
++                      // aureole around it, only a hard white disc half a degree across (drawn
++                      // at 0.8 so it reads), slightly darker at the limb, and the small glare
++                      // a camera or visor adds. It was a soft glow five degrees wide.
++                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 256; sc.height = 256;
+                       var sg = sc.getContext('2d');
+-                      var grad = sg.createRadialGradient(64, 64, 4, 64, 64, 64);
+-                      grad.addColorStop(0, 'rgba(255,255,250,1)');
+-                      grad.addColorStop(0.25, 'rgba(255,246,220,0.9)');
+-                      grad.addColorStop(0.6, 'rgba(255,240,200,0.25)');
+-                      grad.addColorStop(1, 'rgba(255,240,200,0)');
+-                      sg.fillStyle = grad; sg.fillRect(0, 0, 128, 128);
++                      var glare = sg.createRadialGradient(128, 128, 0, 128, 128, 128);
++                      glare.addColorStop(0, 'rgba(255,250,236,0.5)');
++                      glare.addColorStop(0.12, 'rgba(255,248,230,0.18)');
++                      glare.addColorStop(0.4, 'rgba(255,245,225,0.04)');
++                      glare.addColorStop(1, 'rgba(255,245,225,0)');
++                      sg.fillStyle = glare; sg.fillRect(0, 0, 256, 256);
++                      var discR = 128 * 0.8 / 8;                       // the sprite spans 8 degrees
++                      var disc = sg.createRadialGradient(128, 128, 0, 128, 128, discR);
++                      disc.addColorStop(0, '#ffffff'); disc.addColorStop(0.75, '#fffdf7'); disc.addColorStop(1, '#fff1d8');
++                      sg.fillStyle = disc; sg.beginPath(); sg.arc(128, 128, discR, 0, Math.PI * 2); sg.fill();
+                       var st = new THREE.CanvasTexture(sc);
+                       var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: st, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+                       var sd = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z).multiplyScalar(170);
+                       sunSprite.position.copy(sd);
+-                      sunSprite.scale.set(15, 15, 1);
++                      var sunSpan = 2 * 170 * Math.tan(4 * Math.PI / 180);
++                      sunSprite.scale.set(sunSpan, sunSpan, 1);
+                       scene.add(sunSprite);
+                       _sunSprite = sunSprite;
+                     })();
+@@ -7753,7 +7851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // Ballistic regolith grains: lunar dust falls instead of billowing
+                     // because there is no atmosphere. A fixed pool keeps this feedback
+                     // inexpensive and avoids creating objects during the render loop.
+-                    var LRV_DUST_COUNT = _evaLowPower ? 18 : 42;
++                    var LRV_DUST_COUNT = _evaLowPower ? 120 : 360;   // enough that no grain is recycled in flight
+                     var lrvDustSeed = 0x51f15e;
+                     function lrvDustRand() {
+                       lrvDustSeed = (Math.imul(lrvDustSeed, 1664525) + 1013904223) >>> 0;
+@@ -7767,13 +7865,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     for (var ldi = 0; ldi < LRV_DUST_COUNT; ldi++) lrvDustPositions[ldi * 3 + 1] = -100;
+                     var lrvDustGeo = new THREE.BufferGeometry();
+                     lrvDustGeo.setAttribute('position', new THREE.BufferAttribute(lrvDustPositions, 3));
++                    // Round, soft-edged clumps (an untextured point is a square). A grain in
++                    // the air faces the Sun square-on while the ground takes it at 17 degrees,
++                    // so sunlit dust reads a shade brighter than the soil it flies over: that
++                    // is how the Apollo film shows a rooster tail at all. Untoned, so the tone
++                    // curve cannot sink it back into the ground.
++                    var lrvDustCv = document.createElement('canvas'); lrvDustCv.setAttribute('aria-hidden', 'true');
++                    lrvDustCv.width = lrvDustCv.height = 32;
++                    var lrvDustCx = lrvDustCv.getContext('2d');
++                    if (lrvDustCx) {
++                      var lrvDustGr = lrvDustCx.createRadialGradient(16, 16, 0, 16, 16, 16);
++                      lrvDustGr.addColorStop(0, 'rgba(255,255,255,1)'); lrvDustGr.addColorStop(0.45, 'rgba(255,255,255,0.8)'); lrvDustGr.addColorStop(1, 'rgba(255,255,255,0)');
++                      lrvDustCx.fillStyle = lrvDustGr; lrvDustCx.fillRect(0, 0, 32, 32);
++                    }
++                    var lrvDustTex = new THREE.CanvasTexture(lrvDustCv);
+                     var lrvDustMat = new THREE.PointsMaterial({
+-                      color: 0xb8afa3, size: _evaLowPower ? 0.07 : 0.09,
+-                      transparent: true, opacity: 0.42, depthWrite: false, sizeAttenuation: true
++                      color: 0xdad4ca, size: _evaLowPower ? 0.09 : 0.075, map: lrvDustTex, toneMapped: false,
++                      transparent: true, opacity: 0.8, depthWrite: false, sizeAttenuation: true
+                     });
+                     var lrvDust = new THREE.Points(lrvDustGeo, lrvDustMat);
++                    // Never culled: the bounding sphere is computed once, from the idle pool
++                    // parked at y = -100, so near the LM the whole spray was culled as
++                    // off-screen and no dust was ever drawn.
++                    lrvDust.frustumCulled = false;
+                     scene.add(lrvDust);
+                     var lrvDustCursor = 0, lrvDustAccumulator = 0;
++                    // The live pool, read by tests (a property, so no DOM write per frame).
++                    canvasEl._evaDust = { pos: lrvDustPositions, vy: lrvDustVY, life: lrvDustLife, count: LRV_DUST_COUNT, ground: _terrainHeightAt };
+                     var roverDistance = 0;
+                     var lrvImpactSignal = 0, lrvImpactCount = 0, lrvImpactCooldown = 0;
+                     var lrvImpactArmTime = 0, lrvImpactContactValid = false;
+@@ -7791,26 +7909,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     canvasEl.dataset.lrvConsoleState = 'parked';
+                     canvasEl.dataset.lrvGroundedWheels = '4';
+ 
+-                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
++                    // Each grain from mmDustGrain, released `reach` out along its own heading,
++                    // then a pure parabola until it lands (the loop retires it there). The
++                    // life is only a backstop, longer than any flight: grains used to
++                    // vanish in mid-air after half a second.
++                    function emitDustGrains(kind, x, z, forwardX, forwardZ, speed, count, reach) {
+                       var burstCount = Math.min(LRV_DUST_COUNT, Math.max(1, count | 0));
+                       for (var ldb = 0; ldb < burstCount; ldb++) {
+                         var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
+                         var dustO = dustI * 3;
+-                        var dustAngle = (ldb / burstCount) * Math.PI * 2 + dustI * 0.37 +
+-                          (lrvDustRand() - 0.5) * 0.42;
+-                        var dustSpread = (0.12 + strength * 0.28) *
+-                          (0.78 + lrvDustRand() * 0.44);
+-                        lrvDustPositions[dustO] = x + Math.cos(dustAngle) * 0.24;
+-                        lrvDustPositions[dustO + 2] = z + Math.sin(dustAngle) * 0.24;
++                        var grain = mmDustGrain(kind, speed, lrvDustRand(), lrvDustRand(), lrvDustRand());
++                        var grainX = forwardX * grain.fwd - forwardZ * grain.side, grainZ = forwardZ * grain.fwd + forwardX * grain.side;
++                        var grainH = Math.sqrt(grainX * grainX + grainZ * grainZ) || 1;
++                        lrvDustPositions[dustO] = x + grainX / grainH * reach;
++                        lrvDustPositions[dustO + 2] = z + grainZ / grainH * reach;
+                         lrvDustPositions[dustO + 1] = _terrainHeightAt(
+-                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.055;
+-                        lrvDustVX[dustI] = Math.cos(dustAngle) * dustSpread - forwardX * strength * 0.08;
+-                        lrvDustVY[dustI] = (0.12 + strength * 0.32) *
+-                          (0.82 + lrvDustRand() * 0.36);
+-                        lrvDustVZ[dustI] = Math.sin(dustAngle) * dustSpread - forwardZ * strength * 0.08;
+-                        lrvDustLife[dustI] = 0.28 + strength * 0.36 + lrvDustRand() * 0.12;
++                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.05;
++                        lrvDustVX[dustI] = grainX; lrvDustVY[dustI] = grain.up; lrvDustVZ[dustI] = grainZ;
++                        lrvDustLife[dustI] = 2 * grain.up / 1.62 + 1;
+                       }
+                     }
++                    // A landing or a wheel bump: strength 0..1 is a downward speed of 1-2.5 m/s.
++                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
++                      emitDustGrains('splash', x, z, forwardX, forwardZ, 1 + 1.5 * strength, count, 0.24);
++                    }
+ 
+                     function resetLrvImpactContact() {
+                       if (lrvPhysics) { lrvPhysics.accumulator = 0; lrvPhysics.tracks.length = 0; lrvPhysics.impacts.length = 0; }
+@@ -7855,7 +7977,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // carries a baked sun visibility (a boulder down in a shadowed crater bowl
+                     // must not glow) and a tint; the big ones are solid to walk into.
+                     var _rockGeos = [0, 1, 2].map(function (k) { return mmBoulderGeometry(THREE, 3 + k * 7); });
+-                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x191816, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
++                    // Fresh blocks are a little brighter than the mature soil around them (space
++                    // weathering darkens the soil); at 0x191816 they read as black lumps.
++                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x282722, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
+                     var _rockMeshes = [], _evaRockObstacles = [];
+                     (function placeRocks() {
+                       var byShape = [[], [], []], dummy = new THREE.Object3D();
+@@ -7926,10 +8050,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     lunarHorizon.frustumCulled = false;
+                     scene.add(lunarHorizon);
+ 
+-                    // ── Massifs beyond the horizon ──
+-                    // 7 to 16 km out and up to 1.9 km high, their feet hidden by the curve
+-                    // of the ground, as the valley walls stood around Apollo 15 and 17.
+-                    // Highland rock is brighter than the dark mare plain you stand on.
++                    // ── Low ridges beyond the horizon ──
++                    // Mare Tranquillitatis wrinkle ridges, 6-12 km out and 90-230 m high,
++                    // their feet hidden by the curve of the ground (mmLunarField). Mare
++                    // basalt, the same dark rock as the plain you stand on.
+                     var _massifMeshes = [];
+                     _lunarField.massifs.forEach(function (m) {
+                       var n = _evaLowPower ? 30 : 64, span = m.r * 2.4, x0 = m.x - span / 2, z0 = m.z - span / 2, step = span / (n - 1);
+@@ -7941,7 +8065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         pos[o * 3] = x; pos[o * 3 + 1] = h; pos[o * 3 + 2] = z;
+                         bake[o * 3] = 1;   // shaded by facing alone: a coarse baked edge breaks up into shards
+                         bake[o * 3 + 1] = 1;
+-                        bake[o * 3 + 2] = 0.95 + 0.12 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
++                        bake[o * 3 + 2] = 0.97 + 0.05 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
+                         if (j < n - 1 && i < n - 1) idx.push(o, o + n, o + 1, o + n, o + n + 1, o + 1);
+                       }
+                       var geo = new THREE.BufferGeometry();
+@@ -8061,14 +8185,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       var oz = 8 + (Math.random() - 0.5) * 60;
+                       var oy = _terrainHeightAt(ox, oz) + 0.4;
+                       var orbGroup = new THREE.Group();
+-                      var orbGeo = new THREE.DodecahedronGeometry(0.3, 0);
+-                      var orbMat = new THREE.MeshStandardMaterial({ color: 0xccccaa, emissive: 0xfbbf24, emissiveIntensity: 1.0, transparent: true, opacity: 0.8 }); // sample orbs bloom as findable beacons
+-                      orbGroup.add(new THREE.Mesh(orbGeo, orbMat));
++                      // The rock itself lying on the ground (or, for the core, the drive tube),
++                      // not a glowing crystal floating over it. The group stays 0.4 m up so the
++                      // 2 m pickup reach and the bearing are unchanged; its parts sit below.
++                      var look = MM_EVA_SAMPLE_LOOK[sdi % MM_EVA_SAMPLE_LOOK.length], orbMesh;
++                      if (look.tube) {
++                        orbMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.42, 12),
++                          new THREE.MeshStandardMaterial({ color: look.color, metalness: 0.7, roughness: 0.35, envMap: _evaEnvMap || null }));
++                        orbMesh.position.y = -0.4 + 0.14; orbMesh.rotation.z = 0.12;
++                      } else {
++                        var lookFlat = look.flat || 0.62;
++                        orbMesh = new THREE.Mesh(mmBoulderGeometry(THREE, 11 + sdi * 5),
++                          new THREE.MeshStandardMaterial({ color: look.color, roughness: look.rough, metalness: look.metal || 0, envMap: look.metal ? (_evaEnvMap || null) : null }));
++                        orbMesh.scale.set(look.s, look.s * lookFlat, look.s * 0.85);
++                        orbMesh.position.y = -0.4 + look.s * lookFlat * 0.3;
++                        orbMesh.rotation.y = sdi * 1.7;
++                      }
++                      orbMesh.castShadow = true;
++                      orbGroup.add(orbMesh);
+                       var ringG = new THREE.Mesh(
+-                        new THREE.RingGeometry(0.45, 0.55, 12),
+-                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
++                        new THREE.RingGeometry(0.42, 0.48, 28),
++                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })
+                       );
+-                      ringG.rotation.x = -Math.PI / 2; ringG.position.y = -0.2;
++                      ringG.rotation.x = -Math.PI / 2; ringG.position.y = -0.34;
+                       orbGroup.add(ringG);
+                       orbGroup.position.set(ox, oy, oz);
+                       orbGroup._sampleData = sd;
+@@ -8126,12 +8265,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       fact: 'Angular fragments fused by an ancient impact record how the lunar surface was repeatedly broken and welded together.'
+                     };
+                     var gtSpecimen = new THREE.Group();
+-                    var gtSpecimenGeo = new THREE.DodecahedronGeometry(0.34, 0);
+-                    var gtSpecimenMat = new THREE.MeshStandardMaterial({
+-                      color: 0x9b8a78, emissive: 0x22d3ee, emissiveIntensity: 0.65,
+-                      transparent: true, opacity: 0.92, roughness: 0.88
+-                    });
+-                    gtSpecimen.add(new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat));
++                    var gtSpecimenGeo = mmBoulderGeometry(THREE, 77);
++                    var gtSpecimenMat = new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.95 });   // a breccia block, as found
++                    var gtSpecimenRock = new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat);
++                    gtSpecimenRock.scale.set(0.3, 0.2, 0.26); gtSpecimenRock.position.y = -0.35 + 0.06; gtSpecimenRock.castShadow = true;
++                    gtSpecimen.add(gtSpecimenRock);
+                     var gtSpecimenRingGeo = new THREE.RingGeometry(0.48, 0.6, 16);
+                     var gtSpecimenRingMat = new THREE.MeshBasicMaterial({
+                       color: 0x67e8f9, transparent: true, opacity: 0.38,
+@@ -8503,13 +8641,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // Fixed one-draw instance ring: long EVAs never add scene nodes or
+                     // allocate geometry/materials in the animation loop.
+                     var EVA_BOOTPRINT_CAP = _evaLowPower ? 64 : 160;
+-                    var evaBootprintGeo = new THREE.PlaneGeometry(0.15, 0.25);
+-                    var evaBootprintMat = new THREE.MeshBasicMaterial({
+-                      color: 0x4b4946, transparent: true,
+-                      opacity: _evaLowPower ? 0.22 : 0.3,
++                    // A real print, not a dark rectangle: the same lunar shading and world-space
++                    // regolith as the ground around it (so no seam), a height map for the
++                    // depression, tread and rim that the Sun lights through the normal, and a
++                    // soft alpha edge (mmBootprintMaps). Compacted soil is a shade darker.
++                    var evaBootprintGeo = new THREE.PlaneGeometry(MM_PRINT_W, MM_PRINT_L);
++                    evaBootprintGeo.setAttribute('lunarBake', new THREE.BufferAttribute(new Float32Array([1, 1, 0.9, 1, 1, 0.9, 1, 1, 0.9, 1, 1, 0.9]), 3));
++                    var _printMaps = mmBootprintMaps(64, 128);
++                    var _printMapCv = function (vals) {
++                      var pc = document.createElement('canvas'); pc.setAttribute('aria-hidden', 'true'); pc.width = 64; pc.height = 128;
++                      var pcx = pc.getContext('2d'), pim = pcx.createImageData(64, 128);
++                      for (var pk = 0; pk < 64 * 128; pk++) {
++                        var pv = Math.max(0, Math.min(255, Math.round(vals[pk] * 255)));
++                        pim.data[pk * 4] = pim.data[pk * 4 + 1] = pim.data[pk * 4 + 2] = pv; pim.data[pk * 4 + 3] = 255;
++                      }
++                      pcx.putImageData(pim, 0, 0);
++                      return new THREE.CanvasTexture(pc);
++                    };
++                    var evaPrintHeightTex = _printMapCv(_printMaps.height), evaPrintAlphaTex = _printMapCv(_printMaps.alpha);
++                    var evaBootprintMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({
++                      color: 0x2a2927, map: terrainTex, bumpMap: evaPrintHeightTex, bumpScale: 0.05,
++                      alphaMap: evaPrintAlphaTex, transparent: true, roughness: 0.96, metalness: 0,
+                       depthWrite: false, side: THREE.DoubleSide,
+                       polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2
+-                    });
++                    }), 'print', _evaLowPower);
+                     var evaBootprints = new THREE.InstancedMesh(
+                       evaBootprintGeo, evaBootprintMat, EVA_BOOTPRINT_CAP);
+                     if (evaBootprints.instanceMatrix.setUsage && THREE.DynamicDrawUsage) {
+@@ -8517,7 +8672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     }
+                     evaBootprints.frustumCulled = false;
+                     evaBootprints.castShadow = false;
+-                    evaBootprints.receiveShadow = false;
++                    evaBootprints.receiveShadow = true;   // the LM's and your own shadow fall across them
+                     evaBootprints.renderOrder = 1;
+                     scene.add(evaBootprints);
+                     var evaBootprintDummy = new THREE.Object3D();
+@@ -8680,9 +8835,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // to layer 1, which the camera does not draw but the shadow camera is
+                     // told to include: the full silhouette still falls across the regolith,
+                     // while what you actually see when you look down is your legs and boots.
++                    // It never did cast: three r128's shadow pass draws only what the MAIN
++                    // camera's layers include, so layer 1 took the upper body out of the
++                    // shadow as well, and the Sun threw a pair of legs. Instead the upper body
++                    // stays on layer 0 with a material that writes neither colour nor depth:
++                    // nothing on screen, while the shadow pass renders it with its own depth
++                    // material. A helmet, arms and the full-height backpack (with its
++                    // oxygen purge system on top) exist only for the shadow, so the Sun throws
++                    // the whole 1.8 m figure, about 5.9 m long, helmet last: where the
++                    // opposition glow gathers in the Apollo photographs.
++                    var suitShadowOnly = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+                     [torso, plss].concat(typeof shoulder !== 'undefined' && shoulder ? [shoulder] : [])
+-                      .forEach(function (m) { if (m) m.layers.set(1); });
+-                    if (!_evaLowPower) sun.shadow.camera.layers.enable(1);
++                      .forEach(function (m) { if (m) m.material = suitShadowOnly; });
++                    // Unseen now, so placed where a suited 1.8 m astronaut's body is (it sat low
++                    // to stay out of the down-view): shoulders ~1.5 m up, hips filled in, the
++                    // backpack up to the helmet. Positions are off the eye, 1.8 m above ground.
++                    torso.position.y = -0.62;
++                    if (typeof shoulder !== 'undefined' && shoulder) shoulder.position.y = -0.31;
++                    plss.position.set(0, -0.6, 0.25); plss.scale.y = 1.4;
++                    var shadowHips = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.32, 0.24), suitShadowOnly);
++                    shadowHips.position.set(0, -1.02, 0);
++                    suitGroup.add(shadowHips);
++                    var shadowHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 8), suitShadowOnly);
++                    shadowHelmet.position.set(0, -0.04, 0.02);
++                    var shadowOps = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.22), suitShadowOnly);
++                    shadowOps.position.set(0, -0.2, 0.26);
++                    suitGroup.add(shadowHelmet, shadowOps);
++                    [-1, 1].forEach(function (side) {
++                      var shadowArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.065, 0.62, 6), suitShadowOnly);
++                      shadowArm.position.set(side * 0.28, -0.66, 0.02); shadowArm.rotation.z = side * 0.12;
++                      suitGroup.add(shadowArm);
++                    });
++                    suitGroup.traverse(function (n) { if (n.isMesh) { n.castShadow = !_evaLowPower; n.receiveShadow = false; } });
+                     scene.add(suitGroup);
+                     // Unit vector toward the sun, matching the DirectionalLight above.
+                     var _sunDir = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z);
+@@ -8691,13 +8875,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+ 
+                     // Visor glare overlay — a DOM layer rather than a post pass, so it costs
+                     // nothing on the GPU and degrades to "no glare" if anything goes wrong.
+-                    var glareEl = null;
++                    // Looking into the Sun: camera and visor optics, not sky. A tight glare on
++                    // the Sun itself, and faint hexagonal flare ghosts (the lens aperture's
++                    // shape) strung along the line from the Sun through the middle of the
++                    // frame, as in the up-Sun Apollo photographs. There is no air to scatter
++                    // the light, so the sky around it stays black; this used to be one soft
++                    // wash over half the frame, which read as an atmosphere.
++                    var glareEl = null, _glareCore = null, _flareEls = [], _glareKey = '', _glareSun = new THREE.Vector3();
+                     try {
+                       glareEl = document.createElement('div');
+                       glareEl.setAttribute('aria-hidden', 'true');
+-                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;'
+-                        + 'background:radial-gradient(circle at 50% 42%, rgba(255,252,238,0.85) 0%, rgba(255,246,214,0.45) 18%, rgba(255,240,200,0.12) 42%, rgba(255,240,200,0) 68%);'
+-                        + 'transition:opacity 0.12s linear';
++                      glareEl.setAttribute('data-eva-lens-glare', 'true');
++                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;overflow:hidden;transition:opacity 0.12s linear';
++                      _glareCore = document.createElement('div');
++                      _glareCore.style.cssText = 'position:absolute;left:0;top:0;border-radius:50%;'
++                        + 'background:radial-gradient(circle, rgba(255,253,244,0.9) 0%, rgba(255,248,228,0.3) 8%, rgba(255,242,210,0.06) 25%, rgba(255,240,200,0) 50%)';
++                      glareEl.appendChild(_glareCore);
++                      // [position along Sun->centre (1 = the centre), size as a share of the frame, colour, alpha]
++                      [[0.35, 0.05, '255,214,150', 0.10], [0.62, 0.028, '160,210,255', 0.14], [1.0, 0.09, '200,170,255', 0.06],
++                        [1.35, 0.045, '255,200,140', 0.10], [1.7, 0.13, '150,220,210', 0.05]].forEach(function (g) {
++                        var f = document.createElement('div');
++                        f._t = g[0]; f._size = g[1];
++                        f.setAttribute('data-eva-flare-ghost', String(g[0]));
++                        f.style.cssText = 'position:absolute;left:0;top:0;clip-path:polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%);'
++                          + 'background:radial-gradient(circle, rgba(' + g[2] + ',' + g[3] + ') 58%, rgba(' + g[2] + ',' + (g[3] * 1.8).toFixed(3) + ') 90%, rgba(' + g[2] + ',0) 100%)';
++                        glareEl.appendChild(f); _flareEls.push(f);
++                      });
+                       if (canvasEl.parentElement) canvasEl.parentElement.appendChild(glareEl);
+                     } catch (eGl) { glareEl = null; }
+ 
+@@ -9102,6 +9305,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       '<span style="color:#64748b">\uD83D\uDC63</span><span id="eva-steps">0 steps</span>' +
+                       '<span style="color:#64748b" title="Bearing to the nearest rock still on the ground">\uD83C\uDFAF ROCK</span><span id="eva-target">\u2014</span>' +
+                       '<span style="color:#64748b">MODE</span><span id="eva-mode">On foot</span>' +
++                      '<span style="color:#64748b" title="Walk below about ' + MM_EVA_GAIT.switchSpeed.toFixed(2) + ' m/s; above it the Moon' + '\'' + 's weak gravity makes a lope the natural gait">GAIT</span><span id="eva-gait">Standing</span>' +
++                      '<span style="color:#64748b" title="What a scale would read: one sixth gravity">WEIGHT</span><span id="eva-weight">like ' + Math.round(MM_EVA_MASS * MM_EVA_GAIT.g / 9.81) + ' kg</span>' +
++                      '<span style="color:#64748b" title="Suited astronaut: the same inertia to start, stop and turn as on Earth">MASS</span><span>' + MM_EVA_MASS + ' kg</span>' +
+                       '<span style="color:#64748b">LRV</span><span id="eva-lrv-speed">Parked</span>' +
+                       '<span class="eva-lrv-row" style="color:#64748b;display:none">GRADE</span><span class="eva-lrv-row" style="display:none" id="eva-lrv-terrain">--</span>' +
+                       '<span class="eva-lrv-row" style="color:#64748b;display:none">GRIP</span><span class="eva-lrv-row" style="display:none" id="eva-lrv-grip">--</span>' +
+@@ -9314,29 +9520,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         roverVisualShell.position.y = lrvImpactSpring * lrvImpactVisualScale;
+                         var lrvDustContactFactor = lrvGroundedWheelCount * 0.25;
+                         lrvDustAccumulator += Math.abs(roverSpeed) * evaDt *
+-                          (_evaLowPower ? 2.0 : 4.0) * (1 + lrvSlipSignal * 2.2) *
++                          (_evaLowPower ? 6.0 : 14.0) * (1 + lrvSlipSignal * 2.2) *
+                           lrvDustContactFactor;
+                         var lrvDustEmitBudget = _evaLowPower ? 2 : 4;
+                         var lrvDustTravelSign = roverSpeed < 0 ? -1 : 1;
++                        var dustCos = Math.cos(roverHeading), dustSin = Math.sin(roverHeading);
++                        var dustFX = lrvForward.x * lrvDustTravelSign, dustFZ = lrvForward.z * lrvDustTravelSign;
+                         while (lrvDustAccumulator >= 1 && lrvDustEmitBudget-- > 0) {
+                           lrvDustAccumulator -= 1;
++                          // The trailing pair in turn (the leading pair's spray goes up under
++                          // the chassis), from the back of the contact patch, wheel radius 0.2.
++                          var dustW = (lrvDustTravelSign > 0 ? 2 : 0) + (lrvDustCursor & 1);
++                          if (!lrvPhysics.wheels[dustW].engaged) { lrvDustCursor++; continue; }
++                          var dustMount = roverWheelMounts[dustW];
+                           var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
+-                          var dustSide = dustI % 2 ? 0.65 : -0.65;
+-                          dustSide += (lrvDustRand() - 0.5) * 0.10;
++                          var dustGrain = mmDustGrain('tread', Math.abs(roverSpeed), lrvDustRand(), lrvDustRand(), 0);
++                          var dustBack = 0.2 * Math.sin(dustGrain.phi);
+                           var dustO = dustI * 3;
+-                          lrvDustPositions[dustO] = roverGrp.position.x -
+-                            lrvForward.x * 0.55 * lrvDustTravelSign + lrvRight.x * dustSide;
+-                          lrvDustPositions[dustO + 2] = roverGrp.position.z -
+-                            lrvForward.z * 0.55 * lrvDustTravelSign + lrvRight.z * dustSide;
+-                          lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.07;
+-                          var dustRearSpeed = 0.22 + lrvDustRand() * 0.18;
+-                          var dustLateralSpeed = (lrvDustRand() - 0.5) * 0.25;
+-                          lrvDustVX[dustI] = -lrvForward.x * lrvDustTravelSign * dustRearSpeed +
+-                            lrvRight.x * dustLateralSpeed;
+-                          lrvDustVY[dustI] = 0.18 + lrvDustRand() * 0.22;
+-                          lrvDustVZ[dustI] = -lrvForward.z * lrvDustTravelSign * dustRearSpeed +
+-                            lrvRight.z * dustLateralSpeed;
+-                          lrvDustLife[dustI] = 0.45 + lrvDustRand() * 0.35;
++                          lrvDustPositions[dustO] = roverGrp.position.x + dustMount._lrvX * dustCos + dustMount._lrvZ * dustSin - dustFX * dustBack;
++                          lrvDustPositions[dustO + 2] = roverGrp.position.z - dustMount._lrvX * dustSin + dustMount._lrvZ * dustCos - dustFZ * dustBack;
++                          lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) +
++                            0.2 * (1 - Math.cos(dustGrain.phi)) + 0.02;
++                          lrvDustVX[dustI] = dustFX * dustGrain.fwd + lrvRight.x * dustGrain.side;
++                          lrvDustVY[dustI] = dustGrain.up;
++                          lrvDustVZ[dustI] = dustFZ * dustGrain.fwd + lrvRight.z * dustGrain.side;
++                          lrvDustLife[dustI] = 2 * dustGrain.up / 1.62 + 1;
+                         }
+                         lrvDustAccumulator = Math.min(lrvDustAccumulator, 1.5);
+                         playerPos.set(roverGrp.position.x, roverGrp.position.y + 1.02, roverGrp.position.z);
+@@ -9422,7 +9630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                             canvasEl.dataset.evaLandingImpact = evaLandingImpact.toFixed(3);
+                             emitLunarDustBurst(playerPos.x, playerPos.z,
+                               -Math.sin(yaw), -Math.cos(yaw), evaLandingImpact,
+-                              _evaLowPower ? 2 : 5);
++                              _evaLowPower ? 6 : 14);
+                           }
+                           if (evaWasAirborne && evaHopStart !== null) {
+                             // The hop timer the moonwalk prediction is checked against.
+@@ -9438,13 +9646,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           isJumping = false;
+                         }
+                         // Lope bob and knee flex are visual; the physics above is the truth.
+-                        // Each loping footfall kicks a little regolith that arcs and falls clean.
++                        // Each footfall's toe-off kicks regolith ahead that arcs and falls clean.
+                         if (!isJumping && evaSpdH > 0.1) {
+                           var evaPrevPhase = evaGaitPhase;
+                           evaGaitPhase += evaSpdH * evaMoveDt / (evaLope ? 1.9 : 1.3);
+-                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 1.1) {
+-                            emitLunarDustBurst(playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
+-                              Math.min(0.45, evaSpdH * 0.15), _evaLowPower ? 1 : 3);
++                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 0.5) {
++                            emitDustGrains('kick', playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
++                              evaSpdH, _evaLowPower ? 3 : 8, 0.3);
+                           }
+                         }
+                         var evaBobScale = comfortMode ? 0.3 : (gtReducedMotion ? 0.35 : 1);
+@@ -9583,6 +9791,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       if (_sunSprite) _sunSprite.position.copy(playerPos).addScaledVector(_sunDir, 170);
+                       earthSprite.position.set(playerPos.x - 60, playerPos.y + 68, playerPos.z - 120);
+                       skyGroup.position.copy(camera.position);
++                      // Stars only once the sunlit ground is out of view. With bright regolith
++                      // in the frame the eye, and every Apollo camera, is set for daylight and
++                      // the sky reads black: the surface photographs show no stars. Look up,
++                      // away from the ground and the Sun, and they come out over a couple of
++                      // seconds as the eye adjusts. (Ground share of the frame: 0.5 - tan(pitch)
++                      // / (2 tan(half fov)).)
++                      _starFwd.set(0, 0, -1).applyQuaternion(camera.quaternion);
++                      var starPitchTan = _starFwd.y / Math.max(0.05, Math.sqrt(1 - _starFwd.y * _starFwd.y));
++                      var starGround = Math.max(0, Math.min(1, 0.5 - starPitchTan / (2 * Math.tan(camera.fov * Math.PI / 360))));
++                      var starWant = mmSmooth(0.3, 0.02, starGround) * (1 - mmSmooth(0.55, 0.85, _starFwd.dot(_sunDir)));
++                      _starLevel += (starWant - _starLevel) * (1 - Math.exp(-evaDt / 1.6));
++                      if (Math.abs(_starLevel - _starShown) > 0.01 || (_starLevel < 0.005 && _starShown !== 0)) {
++                        _starShown = _starLevel < 0.005 ? 0 : _starLevel;
++                        skyMats.forEach(function (m) { m.opacity = _starShown; });
++                        canvasEl.dataset.evaStars = _starShown.toFixed(2);
++                      }
+ 
+                       // ── Visor glare ──
+                       // With no atmosphere the sun is a bare arc-lamp: turning into it washes
+@@ -9602,6 +9826,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           _glarePrev = glare;
+                           glareEl.style.opacity = glare.toFixed(2);
+                         }
++                        // The glare sits on the Sun's place in the frame and the ghosts line up
++                        // through the centre, as in a real lens. Only while it shows, and only
++                        // when the Sun has moved on screen: transforms, so no layout.
++                        if (glare > 0 && _glareCore) {
++                          _glareSun.copy(camera.position).addScaledVector(_sunDir, 100).project(camera);
++                          var gW = canvasEl.clientWidth || W, gH = canvasEl.clientHeight || H2;
++                          var gsx = (_glareSun.x + 1) / 2 * gW, gsy = (1 - _glareSun.y) / 2 * gH;
++                          var gKey = Math.round(gsx) + ',' + Math.round(gsy) + ',' + gW + ',' + gH;
++                          if (gKey !== _glareKey) {
++                            _glareKey = gKey;
++                            var gMin = Math.min(gW, gH), gS = gMin * 0.3, gvx = gW / 2 - gsx, gvy = gH / 2 - gsy;
++                            _glareCore.style.width = _glareCore.style.height = gS + 'px';
++                            _glareCore.style.transform = 'translate(' + (gsx - gS / 2).toFixed(1) + 'px,' + (gsy - gS / 2).toFixed(1) + 'px)';
++                            canvasEl.dataset.evaSunScreen = Math.round(gsx) + ',' + Math.round(gsy);
++                            _flareEls.forEach(function (f) {
++                              var fsz = f._size * gMin;
++                              f.style.width = f.style.height = fsz + 'px';
++                              f.style.transform = 'translate(' + (gsx + gvx * f._t - fsz / 2).toFixed(1) + 'px,' + (gsy + gvy * f._t - fsz / 2).toFixed(1) + 'px)';
++                            });
++                          }
++                        }
+                       }
+ 
+                       // O2 and interaction timers share active elapsed time, independent
+@@ -9653,8 +9898,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       lunarSampleOrbs.forEach(function(orb) {
+                         if (orb._collected || !orb.visible) return;
+                         if (orb._isTraverseSample && (!gtActive || gtStep !== 3)) return;
+-                        orb.children[0].rotation.y += 1.2 * evaResourceDt;
+-                        orb.children[0].material.opacity = 0.6 + Math.sin(evaResources.elapsed * 3 + orb._pulsePhase) * 0.2;
++                        // The rock stays put (it is a rock); its ring on the ground breathes.
++                        var orbRing = orb.children[1];
++                        if (orbRing && orbRing.material) orbRing.material.opacity = 0.24 + Math.sin(evaResources.elapsed * 2.4 + orb._pulsePhase) * 0.12;
+                         var sDist = playerPos.distanceTo(orb.position);
+                         if (sDist < 2 && moveState.sample && evaResources.cooldown <= 0 && !o2Exhausted) {
+                           orb._collected = true; orb.visible = false;
+@@ -9813,6 +10059,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         if (sampEl) sampEl.textContent = evaSampleCount + ' / ' + LUNAR_SAMPLES_DATA.length + ' samples';
+                         if (stepsEl) stepsEl.textContent = evaSteps + ' steps';
+                         if (modeEl) { modeEl.textContent = roverBoarded ? 'LRV traverse' : 'On foot'; modeEl.style.color = roverBoarded ? '#fde68a' : '#38bdf8'; }
++                        var gaitEl = document.getElementById('eva-gait');
++                        if (gaitEl) {
++                          var gaitV = Math.sqrt(evaVel.x * evaVel.x + evaVel.z * evaVel.z);
++                          var gaitName = roverBoarded ? 'Riding' : isJumping ? 'Hop' : gaitV < 0.05 ? 'Standing' : gaitV > MM_EVA_GAIT.switchSpeed ? 'Lope' : 'Walk';
++                          gaitEl.textContent = gaitName + (gaitName === 'Walk' || gaitName === 'Lope' ? ' ' + gaitV.toFixed(1) + ' m/s' : '');
++                          canvasEl.dataset.evaGait = gaitName.toLowerCase();
++                        }
+                         if (lrvSpeedEl) lrvSpeedEl.textContent = roverBoarded
+                           ? (Math.abs(roverSpeed) * 3.6).toFixed(1) + ' km/h \u2022 ' + Math.round(roverDistance) + ' m'
+                           : (roverPlanarDistance() <= LRV_BOARD_RANGE ? 'Ready to board' : Math.ceil(roverPlanarDistance()) + ' m away');
+@@ -9973,6 +10226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       gtActive = false;
+                       if (evaRaf) { cancelAnimationFrame(evaRaf); evaRaf = 0; }
+                       canvasEl._evaCleanup = null;
++                      canvasEl._evaDust = null;
+                       try { if (_evaVRBtnOff) _evaVRBtnOff(); } catch (e) {}
+                       try { if (_evaVR && _evaVR.destroy) _evaVR.destroy(); _evaVR = null; } catch (e) {}
+                       canvasEl.removeEventListener('keydown', onEvaKeyDown);
+@@ -10028,13 +10282,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           });
+                         });
+                         lrvDustGeo.dispose();
+-                        lrvDustMat.dispose();
++                        lrvDustMat.dispose(); lrvDustTex.dispose();
+                         lrvTrackGeo.dispose();
+                         lrvTrackMat.dispose();
+                         lrvWheelContactGeo.dispose();
+                         lrvWheelContactMat.dispose();
+                         evaBootprintGeo.dispose();
+                         evaBootprintMat.dispose();
++                        evaPrintHeightTex.dispose(); evaPrintAlphaTex.dispose();
+                         gtBeaconGeo.dispose();
+                         gtBeaconMat.dispose();
+                         gtBeaconPinGeo.dispose();
+@@ -10059,6 +10314,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         _rockMat.dispose();
+                         _massifMeshes.forEach(function (m) { scene.remove(m); m.geometry.dispose(); });
+                         lmGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
++                        suitGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
++                        suitShadowOnly.dispose();
+                         (lmGroup.userData.mmMaterials || []).forEach(function (m) { m.dispose(); });
+                         (lmGroup.userData.mmTextures || []).forEach(function (tx) { tx.dispose(); });
+                         if (_evaEnvRT) { _evaEnvRT.dispose(); _evaEnvRT = _evaEnvMap = null; }
+@@ -11696,7 +11953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                   h('textarea', { readOnly: true, rows: 12, value: report, 'data-moonmission-report-text': 'true',
+                     'aria-label': t('stem.moonmission.report_text_label', 'Flight report text'),
+                     onFocus: function(e) { try { e.target.select(); } catch (_selErr) {} },
+-                    className: 'w-full text-[0.6875rem] font-mono rounded-lg p-2 bg-slate-950 text-slate-200 border border-slate-600' })),
++                    className: 'w-full text-[0.6875rem] font-mono rounded-lg p-2 bg-slate-950 text-slate-200 border border-slate-500' })),
+                 history.length > 0 && h('div', { className: 'mt-3', 'data-moonmission-history': 'true' },
+                   h('p', { className: 'text-[0.6875rem] text-fuchsia-200 font-bold mb-1' }, t('stem.moonmission.history_title', 'YOUR FLIGHTS')),
+                   h('p', { className: 'text-[0.6875rem] text-slate-200 mb-1', 'data-moonmission-compare': 'true' },
+diff --git a/stem_lab/stem_tool_moonmission.js b/stem_lab/stem_tool_moonmission.js
+index 744dda8c0..756e250b6 100644
+--- a/stem_lab/stem_tool_moonmission.js
++++ b/stem_lab/stem_tool_moonmission.js
+@@ -2038,10 +2038,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+       if (keepClear(cx, cz, -1.2)) continue;
+       addRock(cx, cz, 0.035 + Math.pow(rr(), 2.2) * 0.2, rr() < 0.4);
+     }
+-    // Massifs past the horizon, like the walls of Taurus-Littrow: smooth, rounded,
+-    // sandblasted by four billion years of micrometeorites. [dist m, bearing deg, height, radius]
+-    var massifs = [[9000, -120, 1900, 4200], [12500, -68, 1350, 3600], [7200, 172, 950, 2700],
+-      [14000, 100, 1650, 4800], [10500, 32, 720, 3000], [16000, -158, 1150, 3800], [11000, 138, 800, 2600]].map(function (m, mk) {
++    // Beyond the horizon, the low relief of the Sea of Tranquility: broad wrinkle ridges
++    // and old crater rims a hundred or two metres high, 6-12 km out. From Tranquility
++    // Base no mountains show; these barely lift the skyline above the curve of the
++    // ground. (They were 1-2 km massifs, the valley walls of Apollo 15 and 17, not 11.)
++    // [dist m, bearing deg, height, radius]
++    var massifs = [[6600, -120, 180, 3400], [9000, -68, 140, 3000], [7000, 172, 110, 2600],
++      [11000, 100, 230, 4200], [8000, 32, 90, 2400], [12000, -158, 160, 3600], [9500, 138, 120, 2800]].map(function (m, mk) {
+       var a = m[1] * Math.PI / 180;
+       return { x: Math.cos(a) * m[0], z: Math.sin(a) * m[0], h: m[2], r: m[3], seed: 40 + mk };
+     });
+@@ -2137,22 +2140,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+     mat.onBeforeCompile = function (shader) {
+       shader.uniforms.uLunarOpp = { value: rock ? 0.4 : 0.62 };
+       shader.uniforms.uLunarBounce = { value: rock ? 0.34 : 0.3 };
++      shader.uniforms.uLunarCbs = { value: rock ? 0.2 : 0.42 };
++      if (kind === 'ground') shader.uniforms.uLunarBumpRes = { value: (mat.bumpMap && mat.bumpMap.image && mat.bumpMap.image.width) || 512 };
+       var vary = rock ? 'varying vec2 vLunarInst;\n' : 'varying vec3 vLunarBake;\n';
+       shader.vertexShader = (rock ? 'attribute vec2 lunarInst;\n' : 'attribute vec3 lunarBake;\n') + vary +
+         'varying vec2 vLunarXZ;\n' + shader.vertexShader.replace('#include <project_vertex>',
+         '#include <project_vertex>\nvec4 lunarW = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\nlunarW = instanceMatrix * lunarW;\n#endif\n' +
+         'vLunarXZ = (modelMatrix * lunarW).xz;\n' + (rock ? 'vLunarInst = lunarInst;\n' : 'vLunarBake = lunarBake;\n'));
+-      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
++      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nuniform float uLunarCbs;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
+       var fs = shader.fragmentShader;
+       fs = fs.replace('#include <map_fragment>', rock ? '#include <map_fragment>\ndiffuseColor.rgb *= vLunarInst.y;' :
+         '#ifdef USE_MAP\nvec3 lunarT1 = mapTexelToLinear(texture2D(map, vLunarXZ * 0.29)).rgb;\n' +
+         'vec3 lunarT2 = mapTexelToLinear(texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vLunarXZ * 0.061 + 0.37)).rgb;\n' +
+         'diffuseColor.rgb *= lunarT1 * lunarT2 * 21.0;\n#endif\ndiffuseColor.rgb *= vLunarBake.z;');
+-      if (!rock) {
++      if (kind === 'ground') {   // a 'print' keeps the standard UV bump: its own relief
+         fs = fs.replace('#include <bumpmap_pars_fragment>', THREE.ShaderChunk.bumpmap_pars_fragment.replace(
+           /vec2 dHdxy_fwd\(\) \{[\s\S]*?return vec2\( dBx, dBy \);\s*\}/,
+-          'float lunarBumpH(vec2 p) {\n  return texture2D(bumpMap, p * 0.29).x' +
+-          (lowPower ? '' : ' + 1.6 * texture2D(bumpMap, mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21).x') + ';\n}\n' +
++          // Cubic B-spline filtered height from four bilinear taps. A bilinear texel has
++          // one constant slope, so looking down at your boots the relief broke into 2 cm
++          // facets (the coarse octave spreads 512 texels over 12 m); this slope is smooth.
++          'uniform float uLunarBumpRes;\nfloat lunarTexB(vec2 uv) {\n' +
++          '  vec2 st = uv * uLunarBumpRes - 0.5, i = floor(st), f = st - i;\n' +
++          '  vec2 w0 = (1.0 - f) * (1.0 - f) * (1.0 - f) / 6.0, w3 = f * f * f / 6.0;\n' +
++          '  vec2 w1 = (4.0 - 6.0 * f * f + 3.0 * f * f * f) / 6.0, w2 = 1.0 - w0 - w1 - w3;\n' +
++          '  vec2 g0 = w0 + w1, g1 = w2 + w3;\n' +
++          '  vec2 h0 = (i - 0.5 + w1 / g0) / uLunarBumpRes, h1 = (i + 1.5 + w3 / g1) / uLunarBumpRes;\n' +
++          '  return g0.y * (g0.x * texture2D(bumpMap, h0).x + g1.x * texture2D(bumpMap, vec2(h1.x, h0.y)).x) +\n' +
++          '    g1.y * (g0.x * texture2D(bumpMap, vec2(h0.x, h1.y)).x + g1.x * texture2D(bumpMap, h1).x);\n}\n' +
++          'float lunarBumpH(vec2 p) {\n  return lunarTexB(p * 0.29)' +
++          (lowPower ? '' : ' + 1.6 * lunarTexB(mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21)') + ';\n}\n' +
+           'vec2 dHdxy_fwd() {\n  vec2 dx = dFdx(vLunarXZ), dy = dFdy(vLunarXZ);\n  float H = bumpScale * lunarBumpH(vLunarXZ);\n' +
+           '  return vec2(bumpScale * lunarBumpH(vLunarXZ + dx) - H, bumpScale * lunarBumpH(vLunarXZ + dy) - H);\n}'));
+       }
+@@ -2164,6 +2180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+         '  float cg = clamp(dot(directLight.direction, geometry.viewDir), -0.999, 1.0);\n' +
+         '  float tg = sqrt((1.0 - cg) / (1.0 + cg));\n' +
+         '  float surge = 1.0 + uLunarOpp / (1.0 + tg / 0.07);\n' +
++        '  surge += uLunarCbs / (1.0 + tg / 0.012);\n' +   // the narrow core, within a degree or two
+         '  float phase = mix(1.0, 0.62, smoothstep(0.0, 1.0, 0.5 - 0.5 * cg));\n' +
+         '  reflectedLight.directDiffuse += directLight.color * (ls * surge * phase * lunarSunVis) * material.diffuseColor;\n' +
+         '}\n#define RE_Direct RE_Direct_Lunar\n');
+@@ -2231,6 +2248,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+ 
+   // One boulder shape: an icosahedron pushed about by noise and cut flat underneath.
+   // Faces stay flat-normalled, because lunar boulders are angular, not pebbles.
++  // What each moonwalk sample looks like where it lies, in LUNAR_SAMPLES_DATA order:
++  // bright anorthosite, dark basalt, mottled breccia, a core tube (a drive tube hammered
++  // into the soil), a patch of orange volcanic glass soil, dark KREEP basalt, glassy
++  // impact melt and white anorthosite. Colours sit beside the scene's own rock
++  // (0x282722): the rock is what you find, a faint ring on the ground keeps it findable.
++  var MM_EVA_SAMPLE_LOOK = [
++    { color: 0x6e6c67, rough: 0.9, s: 0.2 }, { color: 0x201f1d, rough: 0.85, s: 0.22 },
++    { color: 0x3a3632, rough: 0.95, s: 0.24 }, { tube: true, color: 0x8a8e94 },
++    { color: 0x5a2a0e, rough: 1, s: 0.3, flat: 0.18 }, { color: 0x1d1b19, rough: 0.8, s: 0.2 },
++    { color: 0x121316, rough: 0.28, metal: 0.15, s: 0.14 }, { color: 0x7a7872, rough: 0.85, s: 0.18 }
++  ];
++  // Regolith thrown up by a wheel or a boot, as a velocity in the mover's frame (fwd
++  // along travel, side to the right, up) from three uniform randoms. With no air,
++  // every grain, however fine, then flies a clean parabola and lands with the rocks:
++  // nothing billows, hangs or fades out in mid-air.
++  //  'tread': a rolling wheel's tread point, phi past the contact, moves over the
++  //    ground at v (1 - cos phi, sin phi). It leaves the ground at rest and climbs
++  //    steeply, so grains stream back and up from the rover while still moving
++  //    forward. Most come free low on the wheel; the fender catches what is carried
++  //    past about 40 degrees. At the 11 km/h of the Apollo 16 "Grand Prix" the
++  //    rooster tail stands about a metre high.
++  //  'kick': a toe-off flicks a fan ahead at up to 0.8 of stride speed, 15-45
++  //    degrees up: knee-high arcs that land about a stride ahead.
++  //  'splash': a landing (v = its downward speed) pushes soil out low, all round.
++  var MM_TREAD_PHI_MAX = 40 * Math.PI / 180;
++  function mmDustGrain(kind, v, u1, u2, u3) {
++    if (kind === 'tread') {
++      var phi = 0.12 + (MM_TREAD_PHI_MAX - 0.12) * u1 * u1;
++      return { fwd: v * (1 - Math.cos(phi)), up: v * Math.sin(phi), side: v * (u2 - 0.5) * 0.12, phi: phi };
++    }
++    var kick = kind === 'kick';
++    var s = v * (kick ? 0.3 + 0.5 * u1 : 0.2 + 0.3 * u1);
++    var el = (kick ? 15 + 30 * u2 : 10 + 25 * u2) * Math.PI / 180;
++    var az = kick ? (u3 - 0.5) * 1.0 : u3 * Math.PI * 2;
++    return { fwd: s * Math.cos(el) * Math.cos(az), up: s * Math.sin(el), side: s * Math.cos(el) * Math.sin(az) };
++  }
++  // An Apollo bootprint, as height and alpha over its decal (x across, y along; the
++  // decal is MM_PRINT_W x MM_PRINT_L metres). The overshoe left a print about 33 cm by
++  // 14 cm: a depression a couple of centimetres deep with steep walls, a floor ribbed by
++  // the sole's transverse bars, and a low rim of pushed-up soil. Heights 0..1 (ground
++  // 0.55); the low Sun then lights one wall and shadows the other through the normal.
++  var MM_PRINT_W = 0.2, MM_PRINT_L = 0.38, MM_PRINT_BARS = 14;
++  function mmBootprintMaps(nx, ny) {
++    var h = new Float32Array(nx * ny), a = new Float32Array(nx * ny);
++    var ha = 0.07, hb = 0.165, rr = 0.06;                          // half width, half length, corner
++    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
++      var x = ((i + 0.5) / nx - 0.5) * MM_PRINT_W, y = ((j + 0.5) / ny - 0.5) * MM_PRINT_L;
++      var qx = Math.abs(x) - ha + rr, qy = Math.abs(y) - hb + rr;
++      var sd = Math.sqrt(Math.max(qx, 0) * Math.max(qx, 0) + Math.max(qy, 0) * Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - rr;
++      var ground = 0.55, floor = 0.24 + 0.07 * (0.5 + 0.5 * Math.cos(2 * Math.PI * ((y / MM_PRINT_L + 0.5) * MM_PRINT_BARS + Math.abs(x) * 3)));
++      var v;
++      if (sd < -0.01) v = floor;
++      else if (sd < 0) v = floor + (ground - floor) * mmSmooth(-0.01, 0, sd);
++      else v = ground + 0.08 * Math.exp(-((sd - 0.006) * (sd - 0.006)) / 0.00003);
++      h[j * nx + i] = v;
++      a[j * nx + i] = 1 - mmSmooth(0.012, 0.03, sd);
++    }
++    return { nx: nx, ny: ny, height: h, alpha: a };
++  }
+   function mmBoulderGeometry(THREE, seed) {
+     var g = new THREE.IcosahedronGeometry(1, 1), p = g.attributes.position.array;
+     for (var i = 0; i < p.length; i += 3) {
+@@ -2607,7 +2683,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+     return st;
+   }
+ 
+-  var MM_EVA_GAIT = { g: 1.62, walk: 1.25, lope: 2.3, comfort: 0.7, grip: 1.9, brake: 1.45, air: 0.12, lopeAfter: 1.1 };
++  // The suited astronaut: about 166 kg (crew member plus A7L suit and backpack). That
++  // mass resists every start, stop and turn exactly as it would on Earth, but in one
++  // sixth gravity it weighs what 27 kg does at home, and friction scales with weight:
++  // boot on regolith (mu about 0.9) can push or brake at no more than mu g = 1.46 m/s^2.
++  // The gait follows the Froude number v^2 / (g L). People change from walking to
++  // running near Fr = 0.5, which for 0.9 m legs is 2.1 m/s on Earth but only 0.85 m/s
++  // on the Moon: above a stroll the natural lunar gait is the lope.
++  var MM_EVA_MASS = 166, MM_EVA_LEG = 0.9, MM_EVA_MU = 0.9;
++  var MM_EVA_GAIT = { g: 1.62, walk: Math.sqrt(0.45 * 1.62 * MM_EVA_LEG), lope: 2.3, comfort: 0.9,
++    grip: MM_EVA_MU * 1.62, brake: MM_EVA_MU * 1.62, air: 0.12, lopeAfter: 1.1,
++    switchSpeed: Math.sqrt(0.5 * 1.62 * MM_EVA_LEG) };
+   // v: {x, z} velocity (m/s), mutated. wishX/wishZ: unit direction or zero.
+   // grade: rise per metre along +x and +z. Returns v.
+   function mmEvaFootVelocity(v, wishX, wishZ, lope, comfort, grounded, gradeX, gradeZ, dt) {
+@@ -2638,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+     }
+     return v;
+   }
+-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { roverState: mmCreateRoverState, roverStep: mmRoverStep, lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { roverState: mmCreateRoverState, roverStep: mmRoverStep, lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, bootprintMaps: mmBootprintMaps, dustGrain: mmDustGrain, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
+ 
+   // ═══════════════════════════════════════════════════════════════
+   // 3D POWERED DESCENT  (mmBuildDescent3D)
+@@ -3512,7 +3598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+         var ok = function () { said(t('stem.moonmission.report_copied', 'Flight report copied. Paste it wherever your teacher collects work.'), 'success'); };
+         var fail = function () { said(t('stem.moonmission.report_copy_failed', 'Copying is blocked here. Open "Show the report text" and copy it from there.'), 'info'); };
+         try {
+-          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fail); return; }
++          (window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(ok, fail); return;
+         } catch (e) {}
+         fail();
+       }
+@@ -7241,7 +7327,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           var c = rtHdr ? new T.EffectComposer(renderer, rtHdr) : new T.EffectComposer(renderer);
+                           c.addPass(new T.RenderPass(scene, camera));
+                           // Threshold above sunlit regolith, so only the Sun, Earth and foil glints glow.
+-                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.4, 0.9));
++                          // In the HDR target the down-Sun regolith passed 0.9 and its glow hazed
++                          // the black sky above the horizon, a haze of air the Moon does not have.
++                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.35, 1.0));
+                           composer = c;
+                         } catch (e) { composer = null; }
+                       });
+@@ -7274,13 +7362,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         var g = new THREE.BufferGeometry();
+                         g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                         g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+-                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false });
++                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false, transparent: true, opacity: 0 });
+                         var pts = new THREE.Points(g, m);
+                         pts.renderOrder = -10; pts.frustumCulled = false;
+                         skyGroup.add(pts); skyGeos.push(g); skyMats.push(m);
+                       });
+                     })();
+                     scene.add(skyGroup);
++                    var _starFwd = new THREE.Vector3(), _starLevel = 0, _starShown = 0;
+ 
+                     // ── Earth as a billboard sprite ──
+                     // Draw the marble onto a canvas (centered, square), then attach as a
+@@ -7504,19 +7593,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // bloom pass (tuned for "Earth + sun glow") finally has a sun to bloom.
+                     var _sunSprite = null;
+                     (function addSunDisc() {
+-                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 128; sc.height = 128;
++                      // The Sun from the Moon: no air to scatter it, so no sky glow and no
++                      // aureole around it, only a hard white disc half a degree across (drawn
++                      // at 0.8 so it reads), slightly darker at the limb, and the small glare
++                      // a camera or visor adds. It was a soft glow five degrees wide.
++                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 256; sc.height = 256;
+                       var sg = sc.getContext('2d');
+-                      var grad = sg.createRadialGradient(64, 64, 4, 64, 64, 64);
+-                      grad.addColorStop(0, 'rgba(255,255,250,1)');
+-                      grad.addColorStop(0.25, 'rgba(255,246,220,0.9)');
+-                      grad.addColorStop(0.6, 'rgba(255,240,200,0.25)');
+-                      grad.addColorStop(1, 'rgba(255,240,200,0)');
+-                      sg.fillStyle = grad; sg.fillRect(0, 0, 128, 128);
++                      var glare = sg.createRadialGradient(128, 128, 0, 128, 128, 128);
++                      glare.addColorStop(0, 'rgba(255,250,236,0.5)');
++                      glare.addColorStop(0.12, 'rgba(255,248,230,0.18)');
++                      glare.addColorStop(0.4, 'rgba(255,245,225,0.04)');
++                      glare.addColorStop(1, 'rgba(255,245,225,0)');
++                      sg.fillStyle = glare; sg.fillRect(0, 0, 256, 256);
++                      var discR = 128 * 0.8 / 8;                       // the sprite spans 8 degrees
++                      var disc = sg.createRadialGradient(128, 128, 0, 128, 128, discR);
++                      disc.addColorStop(0, '#ffffff'); disc.addColorStop(0.75, '#fffdf7'); disc.addColorStop(1, '#fff1d8');
++                      sg.fillStyle = disc; sg.beginPath(); sg.arc(128, 128, discR, 0, Math.PI * 2); sg.fill();
+                       var st = new THREE.CanvasTexture(sc);
+                       var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: st, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+                       var sd = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z).multiplyScalar(170);
+                       sunSprite.position.copy(sd);
+-                      sunSprite.scale.set(15, 15, 1);
++                      var sunSpan = 2 * 170 * Math.tan(4 * Math.PI / 180);
++                      sunSprite.scale.set(sunSpan, sunSpan, 1);
+                       scene.add(sunSprite);
+                       _sunSprite = sunSprite;
+                     })();
+@@ -7753,7 +7851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // Ballistic regolith grains: lunar dust falls instead of billowing
+                     // because there is no atmosphere. A fixed pool keeps this feedback
+                     // inexpensive and avoids creating objects during the render loop.
+-                    var LRV_DUST_COUNT = _evaLowPower ? 18 : 42;
++                    var LRV_DUST_COUNT = _evaLowPower ? 120 : 360;   // enough that no grain is recycled in flight
+                     var lrvDustSeed = 0x51f15e;
+                     function lrvDustRand() {
+                       lrvDustSeed = (Math.imul(lrvDustSeed, 1664525) + 1013904223) >>> 0;
+@@ -7767,13 +7865,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     for (var ldi = 0; ldi < LRV_DUST_COUNT; ldi++) lrvDustPositions[ldi * 3 + 1] = -100;
+                     var lrvDustGeo = new THREE.BufferGeometry();
+                     lrvDustGeo.setAttribute('position', new THREE.BufferAttribute(lrvDustPositions, 3));
++                    // Round, soft-edged clumps (an untextured point is a square). A grain in
++                    // the air faces the Sun square-on while the ground takes it at 17 degrees,
++                    // so sunlit dust reads a shade brighter than the soil it flies over: that
++                    // is how the Apollo film shows a rooster tail at all. Untoned, so the tone
++                    // curve cannot sink it back into the ground.
++                    var lrvDustCv = document.createElement('canvas'); lrvDustCv.setAttribute('aria-hidden', 'true');
++                    lrvDustCv.width = lrvDustCv.height = 32;
++                    var lrvDustCx = lrvDustCv.getContext('2d');
++                    if (lrvDustCx) {
++                      var lrvDustGr = lrvDustCx.createRadialGradient(16, 16, 0, 16, 16, 16);
++                      lrvDustGr.addColorStop(0, 'rgba(255,255,255,1)'); lrvDustGr.addColorStop(0.45, 'rgba(255,255,255,0.8)'); lrvDustGr.addColorStop(1, 'rgba(255,255,255,0)');
++                      lrvDustCx.fillStyle = lrvDustGr; lrvDustCx.fillRect(0, 0, 32, 32);
++                    }
++                    var lrvDustTex = new THREE.CanvasTexture(lrvDustCv);
+                     var lrvDustMat = new THREE.PointsMaterial({
+-                      color: 0xb8afa3, size: _evaLowPower ? 0.07 : 0.09,
+-                      transparent: true, opacity: 0.42, depthWrite: false, sizeAttenuation: true
++                      color: 0xdad4ca, size: _evaLowPower ? 0.09 : 0.075, map: lrvDustTex, toneMapped: false,
++                      transparent: true, opacity: 0.8, depthWrite: false, sizeAttenuation: true
+                     });
+                     var lrvDust = new THREE.Points(lrvDustGeo, lrvDustMat);
++                    // Never culled: the bounding sphere is computed once, from the idle pool
++                    // parked at y = -100, so near the LM the whole spray was culled as
++                    // off-screen and no dust was ever drawn.
++                    lrvDust.frustumCulled = false;
+                     scene.add(lrvDust);
+                     var lrvDustCursor = 0, lrvDustAccumulator = 0;
++                    // The live pool, read by tests (a property, so no DOM write per frame).
++                    canvasEl._evaDust = { pos: lrvDustPositions, vy: lrvDustVY, life: lrvDustLife, count: LRV_DUST_COUNT, ground: _terrainHeightAt };
+                     var roverDistance = 0;
+                     var lrvImpactSignal = 0, lrvImpactCount = 0, lrvImpactCooldown = 0;
+                     var lrvImpactArmTime = 0, lrvImpactContactValid = false;
+@@ -7791,26 +7909,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     canvasEl.dataset.lrvConsoleState = 'parked';
+                     canvasEl.dataset.lrvGroundedWheels = '4';
+ 
+-                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
++                    // Each grain from mmDustGrain, released `reach` out along its own heading,
++                    // then a pure parabola until it lands (the loop retires it there). The
++                    // life is only a backstop, longer than any flight: grains used to
++                    // vanish in mid-air after half a second.
++                    function emitDustGrains(kind, x, z, forwardX, forwardZ, speed, count, reach) {
+                       var burstCount = Math.min(LRV_DUST_COUNT, Math.max(1, count | 0));
+                       for (var ldb = 0; ldb < burstCount; ldb++) {
+                         var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
+                         var dustO = dustI * 3;
+-                        var dustAngle = (ldb / burstCount) * Math.PI * 2 + dustI * 0.37 +
+-                          (lrvDustRand() - 0.5) * 0.42;
+-                        var dustSpread = (0.12 + strength * 0.28) *
+-                          (0.78 + lrvDustRand() * 0.44);
+-                        lrvDustPositions[dustO] = x + Math.cos(dustAngle) * 0.24;
+-                        lrvDustPositions[dustO + 2] = z + Math.sin(dustAngle) * 0.24;
++                        var grain = mmDustGrain(kind, speed, lrvDustRand(), lrvDustRand(), lrvDustRand());
++                        var grainX = forwardX * grain.fwd - forwardZ * grain.side, grainZ = forwardZ * grain.fwd + forwardX * grain.side;
++                        var grainH = Math.sqrt(grainX * grainX + grainZ * grainZ) || 1;
++                        lrvDustPositions[dustO] = x + grainX / grainH * reach;
++                        lrvDustPositions[dustO + 2] = z + grainZ / grainH * reach;
+                         lrvDustPositions[dustO + 1] = _terrainHeightAt(
+-                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.055;
+-                        lrvDustVX[dustI] = Math.cos(dustAngle) * dustSpread - forwardX * strength * 0.08;
+-                        lrvDustVY[dustI] = (0.12 + strength * 0.32) *
+-                          (0.82 + lrvDustRand() * 0.36);
+-                        lrvDustVZ[dustI] = Math.sin(dustAngle) * dustSpread - forwardZ * strength * 0.08;
+-                        lrvDustLife[dustI] = 0.28 + strength * 0.36 + lrvDustRand() * 0.12;
++                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.05;
++                        lrvDustVX[dustI] = grainX; lrvDustVY[dustI] = grain.up; lrvDustVZ[dustI] = grainZ;
++                        lrvDustLife[dustI] = 2 * grain.up / 1.62 + 1;
+                       }
+                     }
++                    // A landing or a wheel bump: strength 0..1 is a downward speed of 1-2.5 m/s.
++                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
++                      emitDustGrains('splash', x, z, forwardX, forwardZ, 1 + 1.5 * strength, count, 0.24);
++                    }
+ 
+                     function resetLrvImpactContact() {
+                       if (lrvPhysics) { lrvPhysics.accumulator = 0; lrvPhysics.tracks.length = 0; lrvPhysics.impacts.length = 0; }
+@@ -7855,7 +7977,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // carries a baked sun visibility (a boulder down in a shadowed crater bowl
+                     // must not glow) and a tint; the big ones are solid to walk into.
+                     var _rockGeos = [0, 1, 2].map(function (k) { return mmBoulderGeometry(THREE, 3 + k * 7); });
+-                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x191816, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
++                    // Fresh blocks are a little brighter than the mature soil around them (space
++                    // weathering darkens the soil); at 0x191816 they read as black lumps.
++                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x282722, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
+                     var _rockMeshes = [], _evaRockObstacles = [];
+                     (function placeRocks() {
+                       var byShape = [[], [], []], dummy = new THREE.Object3D();
+@@ -7926,10 +8050,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     lunarHorizon.frustumCulled = false;
+                     scene.add(lunarHorizon);
+ 
+-                    // ── Massifs beyond the horizon ──
+-                    // 7 to 16 km out and up to 1.9 km high, their feet hidden by the curve
+-                    // of the ground, as the valley walls stood around Apollo 15 and 17.
+-                    // Highland rock is brighter than the dark mare plain you stand on.
++                    // ── Low ridges beyond the horizon ──
++                    // Mare Tranquillitatis wrinkle ridges, 6-12 km out and 90-230 m high,
++                    // their feet hidden by the curve of the ground (mmLunarField). Mare
++                    // basalt, the same dark rock as the plain you stand on.
+                     var _massifMeshes = [];
+                     _lunarField.massifs.forEach(function (m) {
+                       var n = _evaLowPower ? 30 : 64, span = m.r * 2.4, x0 = m.x - span / 2, z0 = m.z - span / 2, step = span / (n - 1);
+@@ -7941,7 +8065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         pos[o * 3] = x; pos[o * 3 + 1] = h; pos[o * 3 + 2] = z;
+                         bake[o * 3] = 1;   // shaded by facing alone: a coarse baked edge breaks up into shards
+                         bake[o * 3 + 1] = 1;
+-                        bake[o * 3 + 2] = 0.95 + 0.12 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
++                        bake[o * 3 + 2] = 0.97 + 0.05 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
+                         if (j < n - 1 && i < n - 1) idx.push(o, o + n, o + 1, o + n, o + n + 1, o + 1);
+                       }
+                       var geo = new THREE.BufferGeometry();
+@@ -8061,14 +8185,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       var oz = 8 + (Math.random() - 0.5) * 60;
+                       var oy = _terrainHeightAt(ox, oz) + 0.4;
+                       var orbGroup = new THREE.Group();
+-                      var orbGeo = new THREE.DodecahedronGeometry(0.3, 0);
+-                      var orbMat = new THREE.MeshStandardMaterial({ color: 0xccccaa, emissive: 0xfbbf24, emissiveIntensity: 1.0, transparent: true, opacity: 0.8 }); // sample orbs bloom as findable beacons
+-                      orbGroup.add(new THREE.Mesh(orbGeo, orbMat));
++                      // The rock itself lying on the ground (or, for the core, the drive tube),
++                      // not a glowing crystal floating over it. The group stays 0.4 m up so the
++                      // 2 m pickup reach and the bearing are unchanged; its parts sit below.
++                      var look = MM_EVA_SAMPLE_LOOK[sdi % MM_EVA_SAMPLE_LOOK.length], orbMesh;
++                      if (look.tube) {
++                        orbMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.42, 12),
++                          new THREE.MeshStandardMaterial({ color: look.color, metalness: 0.7, roughness: 0.35, envMap: _evaEnvMap || null }));
++                        orbMesh.position.y = -0.4 + 0.14; orbMesh.rotation.z = 0.12;
++                      } else {
++                        var lookFlat = look.flat || 0.62;
++                        orbMesh = new THREE.Mesh(mmBoulderGeometry(THREE, 11 + sdi * 5),
++                          new THREE.MeshStandardMaterial({ color: look.color, roughness: look.rough, metalness: look.metal || 0, envMap: look.metal ? (_evaEnvMap || null) : null }));
++                        orbMesh.scale.set(look.s, look.s * lookFlat, look.s * 0.85);
++                        orbMesh.position.y = -0.4 + look.s * lookFlat * 0.3;
++                        orbMesh.rotation.y = sdi * 1.7;
++                      }
++                      orbMesh.castShadow = true;
++                      orbGroup.add(orbMesh);
+                       var ringG = new THREE.Mesh(
+-                        new THREE.RingGeometry(0.45, 0.55, 12),
+-                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
++                        new THREE.RingGeometry(0.42, 0.48, 28),
++                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })
+                       );
+-                      ringG.rotation.x = -Math.PI / 2; ringG.position.y = -0.2;
++                      ringG.rotation.x = -Math.PI / 2; ringG.position.y = -0.34;
+                       orbGroup.add(ringG);
+                       orbGroup.position.set(ox, oy, oz);
+                       orbGroup._sampleData = sd;
+@@ -8126,12 +8265,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       fact: 'Angular fragments fused by an ancient impact record how the lunar surface was repeatedly broken and welded together.'
+                     };
+                     var gtSpecimen = new THREE.Group();
+-                    var gtSpecimenGeo = new THREE.DodecahedronGeometry(0.34, 0);
+-                    var gtSpecimenMat = new THREE.MeshStandardMaterial({
+-                      color: 0x9b8a78, emissive: 0x22d3ee, emissiveIntensity: 0.65,
+-                      transparent: true, opacity: 0.92, roughness: 0.88
+-                    });
+-                    gtSpecimen.add(new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat));
++                    var gtSpecimenGeo = mmBoulderGeometry(THREE, 77);
++                    var gtSpecimenMat = new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.95 });   // a breccia block, as found
++                    var gtSpecimenRock = new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat);
++                    gtSpecimenRock.scale.set(0.3, 0.2, 0.26); gtSpecimenRock.position.y = -0.35 + 0.06; gtSpecimenRock.castShadow = true;
++                    gtSpecimen.add(gtSpecimenRock);
+                     var gtSpecimenRingGeo = new THREE.RingGeometry(0.48, 0.6, 16);
+                     var gtSpecimenRingMat = new THREE.MeshBasicMaterial({
+                       color: 0x67e8f9, transparent: true, opacity: 0.38,
+@@ -8503,13 +8641,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // Fixed one-draw instance ring: long EVAs never add scene nodes or
+                     // allocate geometry/materials in the animation loop.
+                     var EVA_BOOTPRINT_CAP = _evaLowPower ? 64 : 160;
+-                    var evaBootprintGeo = new THREE.PlaneGeometry(0.15, 0.25);
+-                    var evaBootprintMat = new THREE.MeshBasicMaterial({
+-                      color: 0x4b4946, transparent: true,
+-                      opacity: _evaLowPower ? 0.22 : 0.3,
++                    // A real print, not a dark rectangle: the same lunar shading and world-space
++                    // regolith as the ground around it (so no seam), a height map for the
++                    // depression, tread and rim that the Sun lights through the normal, and a
++                    // soft alpha edge (mmBootprintMaps). Compacted soil is a shade darker.
++                    var evaBootprintGeo = new THREE.PlaneGeometry(MM_PRINT_W, MM_PRINT_L);
++                    evaBootprintGeo.setAttribute('lunarBake', new THREE.BufferAttribute(new Float32Array([1, 1, 0.9, 1, 1, 0.9, 1, 1, 0.9, 1, 1, 0.9]), 3));
++                    var _printMaps = mmBootprintMaps(64, 128);
++                    var _printMapCv = function (vals) {
++                      var pc = document.createElement('canvas'); pc.setAttribute('aria-hidden', 'true'); pc.width = 64; pc.height = 128;
++                      var pcx = pc.getContext('2d'), pim = pcx.createImageData(64, 128);
++                      for (var pk = 0; pk < 64 * 128; pk++) {
++                        var pv = Math.max(0, Math.min(255, Math.round(vals[pk] * 255)));
++                        pim.data[pk * 4] = pim.data[pk * 4 + 1] = pim.data[pk * 4 + 2] = pv; pim.data[pk * 4 + 3] = 255;
++                      }
++                      pcx.putImageData(pim, 0, 0);
++                      return new THREE.CanvasTexture(pc);
++                    };
++                    var evaPrintHeightTex = _printMapCv(_printMaps.height), evaPrintAlphaTex = _printMapCv(_printMaps.alpha);
++                    var evaBootprintMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({
++                      color: 0x2a2927, map: terrainTex, bumpMap: evaPrintHeightTex, bumpScale: 0.05,
++                      alphaMap: evaPrintAlphaTex, transparent: true, roughness: 0.96, metalness: 0,
+                       depthWrite: false, side: THREE.DoubleSide,
+                       polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2
+-                    });
++                    }), 'print', _evaLowPower);
+                     var evaBootprints = new THREE.InstancedMesh(
+                       evaBootprintGeo, evaBootprintMat, EVA_BOOTPRINT_CAP);
+                     if (evaBootprints.instanceMatrix.setUsage && THREE.DynamicDrawUsage) {
+@@ -8517,7 +8672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     }
+                     evaBootprints.frustumCulled = false;
+                     evaBootprints.castShadow = false;
+-                    evaBootprints.receiveShadow = false;
++                    evaBootprints.receiveShadow = true;   // the LM's and your own shadow fall across them
+                     evaBootprints.renderOrder = 1;
+                     scene.add(evaBootprints);
+                     var evaBootprintDummy = new THREE.Object3D();
+@@ -8680,9 +8835,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                     // to layer 1, which the camera does not draw but the shadow camera is
+                     // told to include: the full silhouette still falls across the regolith,
+                     // while what you actually see when you look down is your legs and boots.
++                    // It never did cast: three r128's shadow pass draws only what the MAIN
++                    // camera's layers include, so layer 1 took the upper body out of the
++                    // shadow as well, and the Sun threw a pair of legs. Instead the upper body
++                    // stays on layer 0 with a material that writes neither colour nor depth:
++                    // nothing on screen, while the shadow pass renders it with its own depth
++                    // material. A helmet, arms and the full-height backpack (with its
++                    // oxygen purge system on top) exist only for the shadow, so the Sun throws
++                    // the whole 1.8 m figure, about 5.9 m long, helmet last: where the
++                    // opposition glow gathers in the Apollo photographs.
++                    var suitShadowOnly = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+                     [torso, plss].concat(typeof shoulder !== 'undefined' && shoulder ? [shoulder] : [])
+-                      .forEach(function (m) { if (m) m.layers.set(1); });
+-                    if (!_evaLowPower) sun.shadow.camera.layers.enable(1);
++                      .forEach(function (m) { if (m) m.material = suitShadowOnly; });
++                    // Unseen now, so placed where a suited 1.8 m astronaut's body is (it sat low
++                    // to stay out of the down-view): shoulders ~1.5 m up, hips filled in, the
++                    // backpack up to the helmet. Positions are off the eye, 1.8 m above ground.
++                    torso.position.y = -0.62;
++                    if (typeof shoulder !== 'undefined' && shoulder) shoulder.position.y = -0.31;
++                    plss.position.set(0, -0.6, 0.25); plss.scale.y = 1.4;
++                    var shadowHips = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.32, 0.24), suitShadowOnly);
++                    shadowHips.position.set(0, -1.02, 0);
++                    suitGroup.add(shadowHips);
++                    var shadowHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 8), suitShadowOnly);
++                    shadowHelmet.position.set(0, -0.04, 0.02);
++                    var shadowOps = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.22), suitShadowOnly);
++                    shadowOps.position.set(0, -0.2, 0.26);
++                    suitGroup.add(shadowHelmet, shadowOps);
++                    [-1, 1].forEach(function (side) {
++                      var shadowArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.065, 0.62, 6), suitShadowOnly);
++                      shadowArm.position.set(side * 0.28, -0.66, 0.02); shadowArm.rotation.z = side * 0.12;
++                      suitGroup.add(shadowArm);
++                    });
++                    suitGroup.traverse(function (n) { if (n.isMesh) { n.castShadow = !_evaLowPower; n.receiveShadow = false; } });
+                     scene.add(suitGroup);
+                     // Unit vector toward the sun, matching the DirectionalLight above.
+                     var _sunDir = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z);
+@@ -8691,13 +8875,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+ 
+                     // Visor glare overlay — a DOM layer rather than a post pass, so it costs
+                     // nothing on the GPU and degrades to "no glare" if anything goes wrong.
+-                    var glareEl = null;
++                    // Looking into the Sun: camera and visor optics, not sky. A tight glare on
++                    // the Sun itself, and faint hexagonal flare ghosts (the lens aperture's
++                    // shape) strung along the line from the Sun through the middle of the
++                    // frame, as in the up-Sun Apollo photographs. There is no air to scatter
++                    // the light, so the sky around it stays black; this used to be one soft
++                    // wash over half the frame, which read as an atmosphere.
++                    var glareEl = null, _glareCore = null, _flareEls = [], _glareKey = '', _glareSun = new THREE.Vector3();
+                     try {
+                       glareEl = document.createElement('div');
+                       glareEl.setAttribute('aria-hidden', 'true');
+-                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;'
+-                        + 'background:radial-gradient(circle at 50% 42%, rgba(255,252,238,0.85) 0%, rgba(255,246,214,0.45) 18%, rgba(255,240,200,0.12) 42%, rgba(255,240,200,0) 68%);'
+-                        + 'transition:opacity 0.12s linear';
++                      glareEl.setAttribute('data-eva-lens-glare', 'true');
++                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;overflow:hidden;transition:opacity 0.12s linear';
++                      _glareCore = document.createElement('div');
++                      _glareCore.style.cssText = 'position:absolute;left:0;top:0;border-radius:50%;'
++                        + 'background:radial-gradient(circle, rgba(255,253,244,0.9) 0%, rgba(255,248,228,0.3) 8%, rgba(255,242,210,0.06) 25%, rgba(255,240,200,0) 50%)';
++                      glareEl.appendChild(_glareCore);
++                      // [position along Sun->centre (1 = the centre), size as a share of the frame, colour, alpha]
++                      [[0.35, 0.05, '255,214,150', 0.10], [0.62, 0.028, '160,210,255', 0.14], [1.0, 0.09, '200,170,255', 0.06],
++                        [1.35, 0.045, '255,200,140', 0.10], [1.7, 0.13, '150,220,210', 0.05]].forEach(function (g) {
++                        var f = document.createElement('div');
++                        f._t = g[0]; f._size = g[1];
++                        f.setAttribute('data-eva-flare-ghost', String(g[0]));
++                        f.style.cssText = 'position:absolute;left:0;top:0;clip-path:polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%);'
++                          + 'background:radial-gradient(circle, rgba(' + g[2] + ',' + g[3] + ') 58%, rgba(' + g[2] + ',' + (g[3] * 1.8).toFixed(3) + ') 90%, rgba(' + g[2] + ',0) 100%)';
++                        glareEl.appendChild(f); _flareEls.push(f);
++                      });
+                       if (canvasEl.parentElement) canvasEl.parentElement.appendChild(glareEl);
+                     } catch (eGl) { glareEl = null; }
+ 
+@@ -9102,6 +9305,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       '<span style="color:#64748b">\uD83D\uDC63</span><span id="eva-steps">0 steps</span>' +
+                       '<span style="color:#64748b" title="Bearing to the nearest rock still on the ground">\uD83C\uDFAF ROCK</span><span id="eva-target">\u2014</span>' +
+                       '<span style="color:#64748b">MODE</span><span id="eva-mode">On foot</span>' +
++                      '<span style="color:#64748b" title="Walk below about ' + MM_EVA_GAIT.switchSpeed.toFixed(2) + ' m/s; above it the Moon' + '\'' + 's weak gravity makes a lope the natural gait">GAIT</span><span id="eva-gait">Standing</span>' +
++                      '<span style="color:#64748b" title="What a scale would read: one sixth gravity">WEIGHT</span><span id="eva-weight">like ' + Math.round(MM_EVA_MASS * MM_EVA_GAIT.g / 9.81) + ' kg</span>' +
++                      '<span style="color:#64748b" title="Suited astronaut: the same inertia to start, stop and turn as on Earth">MASS</span><span>' + MM_EVA_MASS + ' kg</span>' +
+                       '<span style="color:#64748b">LRV</span><span id="eva-lrv-speed">Parked</span>' +
+                       '<span class="eva-lrv-row" style="color:#64748b;display:none">GRADE</span><span class="eva-lrv-row" style="display:none" id="eva-lrv-terrain">--</span>' +
+                       '<span class="eva-lrv-row" style="color:#64748b;display:none">GRIP</span><span class="eva-lrv-row" style="display:none" id="eva-lrv-grip">--</span>' +
+@@ -9314,29 +9520,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         roverVisualShell.position.y = lrvImpactSpring * lrvImpactVisualScale;
+                         var lrvDustContactFactor = lrvGroundedWheelCount * 0.25;
+                         lrvDustAccumulator += Math.abs(roverSpeed) * evaDt *
+-                          (_evaLowPower ? 2.0 : 4.0) * (1 + lrvSlipSignal * 2.2) *
++                          (_evaLowPower ? 6.0 : 14.0) * (1 + lrvSlipSignal * 2.2) *
+                           lrvDustContactFactor;
+                         var lrvDustEmitBudget = _evaLowPower ? 2 : 4;
+                         var lrvDustTravelSign = roverSpeed < 0 ? -1 : 1;
++                        var dustCos = Math.cos(roverHeading), dustSin = Math.sin(roverHeading);
++                        var dustFX = lrvForward.x * lrvDustTravelSign, dustFZ = lrvForward.z * lrvDustTravelSign;
+                         while (lrvDustAccumulator >= 1 && lrvDustEmitBudget-- > 0) {
+                           lrvDustAccumulator -= 1;
++                          // The trailing pair in turn (the leading pair's spray goes up under
++                          // the chassis), from the back of the contact patch, wheel radius 0.2.
++                          var dustW = (lrvDustTravelSign > 0 ? 2 : 0) + (lrvDustCursor & 1);
++                          if (!lrvPhysics.wheels[dustW].engaged) { lrvDustCursor++; continue; }
++                          var dustMount = roverWheelMounts[dustW];
+                           var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
+-                          var dustSide = dustI % 2 ? 0.65 : -0.65;
+-                          dustSide += (lrvDustRand() - 0.5) * 0.10;
++                          var dustGrain = mmDustGrain('tread', Math.abs(roverSpeed), lrvDustRand(), lrvDustRand(), 0);
++                          var dustBack = 0.2 * Math.sin(dustGrain.phi);
+                           var dustO = dustI * 3;
+-                          lrvDustPositions[dustO] = roverGrp.position.x -
+-                            lrvForward.x * 0.55 * lrvDustTravelSign + lrvRight.x * dustSide;
+-                          lrvDustPositions[dustO + 2] = roverGrp.position.z -
+-                            lrvForward.z * 0.55 * lrvDustTravelSign + lrvRight.z * dustSide;
+-                          lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.07;
+-                          var dustRearSpeed = 0.22 + lrvDustRand() * 0.18;
+-                          var dustLateralSpeed = (lrvDustRand() - 0.5) * 0.25;
+-                          lrvDustVX[dustI] = -lrvForward.x * lrvDustTravelSign * dustRearSpeed +
+-                            lrvRight.x * dustLateralSpeed;
+-                          lrvDustVY[dustI] = 0.18 + lrvDustRand() * 0.22;
+-                          lrvDustVZ[dustI] = -lrvForward.z * lrvDustTravelSign * dustRearSpeed +
+-                            lrvRight.z * dustLateralSpeed;
+-                          lrvDustLife[dustI] = 0.45 + lrvDustRand() * 0.35;
++                          lrvDustPositions[dustO] = roverGrp.position.x + dustMount._lrvX * dustCos + dustMount._lrvZ * dustSin - dustFX * dustBack;
++                          lrvDustPositions[dustO + 2] = roverGrp.position.z - dustMount._lrvX * dustSin + dustMount._lrvZ * dustCos - dustFZ * dustBack;
++                          lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) +
++                            0.2 * (1 - Math.cos(dustGrain.phi)) + 0.02;
++                          lrvDustVX[dustI] = dustFX * dustGrain.fwd + lrvRight.x * dustGrain.side;
++                          lrvDustVY[dustI] = dustGrain.up;
++                          lrvDustVZ[dustI] = dustFZ * dustGrain.fwd + lrvRight.z * dustGrain.side;
++                          lrvDustLife[dustI] = 2 * dustGrain.up / 1.62 + 1;
+                         }
+                         lrvDustAccumulator = Math.min(lrvDustAccumulator, 1.5);
+                         playerPos.set(roverGrp.position.x, roverGrp.position.y + 1.02, roverGrp.position.z);
+@@ -9422,7 +9630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                             canvasEl.dataset.evaLandingImpact = evaLandingImpact.toFixed(3);
+                             emitLunarDustBurst(playerPos.x, playerPos.z,
+                               -Math.sin(yaw), -Math.cos(yaw), evaLandingImpact,
+-                              _evaLowPower ? 2 : 5);
++                              _evaLowPower ? 6 : 14);
+                           }
+                           if (evaWasAirborne && evaHopStart !== null) {
+                             // The hop timer the moonwalk prediction is checked against.
+@@ -9438,13 +9646,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           isJumping = false;
+                         }
+                         // Lope bob and knee flex are visual; the physics above is the truth.
+-                        // Each loping footfall kicks a little regolith that arcs and falls clean.
++                        // Each footfall's toe-off kicks regolith ahead that arcs and falls clean.
+                         if (!isJumping && evaSpdH > 0.1) {
+                           var evaPrevPhase = evaGaitPhase;
+                           evaGaitPhase += evaSpdH * evaMoveDt / (evaLope ? 1.9 : 1.3);
+-                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 1.1) {
+-                            emitLunarDustBurst(playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
+-                              Math.min(0.45, evaSpdH * 0.15), _evaLowPower ? 1 : 3);
++                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 0.5) {
++                            emitDustGrains('kick', playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
++                              evaSpdH, _evaLowPower ? 3 : 8, 0.3);
+                           }
+                         }
+                         var evaBobScale = comfortMode ? 0.3 : (gtReducedMotion ? 0.35 : 1);
+@@ -9583,6 +9791,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       if (_sunSprite) _sunSprite.position.copy(playerPos).addScaledVector(_sunDir, 170);
+                       earthSprite.position.set(playerPos.x - 60, playerPos.y + 68, playerPos.z - 120);
+                       skyGroup.position.copy(camera.position);
++                      // Stars only once the sunlit ground is out of view. With bright regolith
++                      // in the frame the eye, and every Apollo camera, is set for daylight and
++                      // the sky reads black: the surface photographs show no stars. Look up,
++                      // away from the ground and the Sun, and they come out over a couple of
++                      // seconds as the eye adjusts. (Ground share of the frame: 0.5 - tan(pitch)
++                      // / (2 tan(half fov)).)
++                      _starFwd.set(0, 0, -1).applyQuaternion(camera.quaternion);
++                      var starPitchTan = _starFwd.y / Math.max(0.05, Math.sqrt(1 - _starFwd.y * _starFwd.y));
++                      var starGround = Math.max(0, Math.min(1, 0.5 - starPitchTan / (2 * Math.tan(camera.fov * Math.PI / 360))));
++                      var starWant = mmSmooth(0.3, 0.02, starGround) * (1 - mmSmooth(0.55, 0.85, _starFwd.dot(_sunDir)));
++                      _starLevel += (starWant - _starLevel) * (1 - Math.exp(-evaDt / 1.6));
++                      if (Math.abs(_starLevel - _starShown) > 0.01 || (_starLevel < 0.005 && _starShown !== 0)) {
++                        _starShown = _starLevel < 0.005 ? 0 : _starLevel;
++                        skyMats.forEach(function (m) { m.opacity = _starShown; });
++                        canvasEl.dataset.evaStars = _starShown.toFixed(2);
++                      }
+ 
+                       // ── Visor glare ──
+                       // With no atmosphere the sun is a bare arc-lamp: turning into it washes
+@@ -9602,6 +9826,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           _glarePrev = glare;
+                           glareEl.style.opacity = glare.toFixed(2);
+                         }
++                        // The glare sits on the Sun's place in the frame and the ghosts line up
++                        // through the centre, as in a real lens. Only while it shows, and only
++                        // when the Sun has moved on screen: transforms, so no layout.
++                        if (glare > 0 && _glareCore) {
++                          _glareSun.copy(camera.position).addScaledVector(_sunDir, 100).project(camera);
++                          var gW = canvasEl.clientWidth || W, gH = canvasEl.clientHeight || H2;
++                          var gsx = (_glareSun.x + 1) / 2 * gW, gsy = (1 - _glareSun.y) / 2 * gH;
++                          var gKey = Math.round(gsx) + ',' + Math.round(gsy) + ',' + gW + ',' + gH;
++                          if (gKey !== _glareKey) {
++                            _glareKey = gKey;
++                            var gMin = Math.min(gW, gH), gS = gMin * 0.3, gvx = gW / 2 - gsx, gvy = gH / 2 - gsy;
++                            _glareCore.style.width = _glareCore.style.height = gS + 'px';
++                            _glareCore.style.transform = 'translate(' + (gsx - gS / 2).toFixed(1) + 'px,' + (gsy - gS / 2).toFixed(1) + 'px)';
++                            canvasEl.dataset.evaSunScreen = Math.round(gsx) + ',' + Math.round(gsy);
++                            _flareEls.forEach(function (f) {
++                              var fsz = f._size * gMin;
++                              f.style.width = f.style.height = fsz + 'px';
++                              f.style.transform = 'translate(' + (gsx + gvx * f._t - fsz / 2).toFixed(1) + 'px,' + (gsy + gvy * f._t - fsz / 2).toFixed(1) + 'px)';
++                            });
++                          }
++                        }
+                       }
+ 
+                       // O2 and interaction timers share active elapsed time, independent
+@@ -9653,8 +9898,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       lunarSampleOrbs.forEach(function(orb) {
+                         if (orb._collected || !orb.visible) return;
+                         if (orb._isTraverseSample && (!gtActive || gtStep !== 3)) return;
+-                        orb.children[0].rotation.y += 1.2 * evaResourceDt;
+-                        orb.children[0].material.opacity = 0.6 + Math.sin(evaResources.elapsed * 3 + orb._pulsePhase) * 0.2;
++                        // The rock stays put (it is a rock); its ring on the ground breathes.
++                        var orbRing = orb.children[1];
++                        if (orbRing && orbRing.material) orbRing.material.opacity = 0.24 + Math.sin(evaResources.elapsed * 2.4 + orb._pulsePhase) * 0.12;
+                         var sDist = playerPos.distanceTo(orb.position);
+                         if (sDist < 2 && moveState.sample && evaResources.cooldown <= 0 && !o2Exhausted) {
+                           orb._collected = true; orb.visible = false;
+@@ -9813,6 +10059,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         if (sampEl) sampEl.textContent = evaSampleCount + ' / ' + LUNAR_SAMPLES_DATA.length + ' samples';
+                         if (stepsEl) stepsEl.textContent = evaSteps + ' steps';
+                         if (modeEl) { modeEl.textContent = roverBoarded ? 'LRV traverse' : 'On foot'; modeEl.style.color = roverBoarded ? '#fde68a' : '#38bdf8'; }
++                        var gaitEl = document.getElementById('eva-gait');
++                        if (gaitEl) {
++                          var gaitV = Math.sqrt(evaVel.x * evaVel.x + evaVel.z * evaVel.z);
++                          var gaitName = roverBoarded ? 'Riding' : isJumping ? 'Hop' : gaitV < 0.05 ? 'Standing' : gaitV > MM_EVA_GAIT.switchSpeed ? 'Lope' : 'Walk';
++                          gaitEl.textContent = gaitName + (gaitName === 'Walk' || gaitName === 'Lope' ? ' ' + gaitV.toFixed(1) + ' m/s' : '');
++                          canvasEl.dataset.evaGait = gaitName.toLowerCase();
++                        }
+                         if (lrvSpeedEl) lrvSpeedEl.textContent = roverBoarded
+                           ? (Math.abs(roverSpeed) * 3.6).toFixed(1) + ' km/h \u2022 ' + Math.round(roverDistance) + ' m'
+                           : (roverPlanarDistance() <= LRV_BOARD_RANGE ? 'Ready to board' : Math.ceil(roverPlanarDistance()) + ' m away');
+@@ -9973,6 +10226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                       gtActive = false;
+                       if (evaRaf) { cancelAnimationFrame(evaRaf); evaRaf = 0; }
+                       canvasEl._evaCleanup = null;
++                      canvasEl._evaDust = null;
+                       try { if (_evaVRBtnOff) _evaVRBtnOff(); } catch (e) {}
+                       try { if (_evaVR && _evaVR.destroy) _evaVR.destroy(); _evaVR = null; } catch (e) {}
+                       canvasEl.removeEventListener('keydown', onEvaKeyDown);
+@@ -10028,13 +10282,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                           });
+                         });
+                         lrvDustGeo.dispose();
+-                        lrvDustMat.dispose();
++                        lrvDustMat.dispose(); lrvDustTex.dispose();
+                         lrvTrackGeo.dispose();
+                         lrvTrackMat.dispose();
+                         lrvWheelContactGeo.dispose();
+                         lrvWheelContactMat.dispose();
+                         evaBootprintGeo.dispose();
+                         evaBootprintMat.dispose();
++                        evaPrintHeightTex.dispose(); evaPrintAlphaTex.dispose();
+                         gtBeaconGeo.dispose();
+                         gtBeaconMat.dispose();
+                         gtBeaconPinGeo.dispose();
+@@ -10059,6 +10314,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                         _rockMat.dispose();
+                         _massifMeshes.forEach(function (m) { scene.remove(m); m.geometry.dispose(); });
+                         lmGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
++                        suitGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
++                        suitShadowOnly.dispose();
+                         (lmGroup.userData.mmMaterials || []).forEach(function (m) { m.dispose(); });
+                         (lmGroup.userData.mmTextures || []).forEach(function (tx) { tx.dispose(); });
+                         if (_evaEnvRT) { _evaEnvRT.dispose(); _evaEnvRT = _evaEnvMap = null; }
+@@ -11696,7 +11953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
+                   h('textarea', { readOnly: true, rows: 12, value: report, 'data-moonmission-report-text': 'true',
+                     'aria-label': t('stem.moonmission.report_text_label', 'Flight report text'),
+                     onFocus: function(e) { try { e.target.select(); } catch (_selErr) {} },
+-                    className: 'w-full text-[0.6875rem] font-mono rounded-lg p-2 bg-slate-950 text-slate-200 border border-slate-600' })),
++                    className: 'w-full text-[0.6875rem] font-mono rounded-lg p-2 bg-slate-950 text-slate-200 border border-slate-500' })),
+                 history.length > 0 && h('div', { className: 'mt-3', 'data-moonmission-history': 'true' },
+                   h('p', { className: 'text-[0.6875rem] text-fuchsia-200 font-bold mb-1' }, t('stem.moonmission.history_title', 'YOUR FLIGHTS')),
+                   h('p', { className: 'text-[0.6875rem] text-slate-200 mb-1', 'data-moonmission-compare': 'true' },

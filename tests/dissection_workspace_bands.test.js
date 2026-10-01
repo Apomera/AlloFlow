@@ -763,11 +763,10 @@ describe('dissection workspace bands', () => {
     expect(source).toContain("ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';");
     expect(source).toContain('var legendRowHeight = 13 * canvasHudScale;');
     expect(source).toContain('ctx.beginPath(); ctx.arc(lx, ly, 3.2 * canvasHudScale, 0, Math.PI * 2);');
-    // Compass: type scales, width follows the text so the panel does not swell into the
-    // corridor safety label, and the authored widths stay the floor.
+    // Compass: width follows its reading-size text and retains the authored width floor.
     expect(source).toContain('var hudCompassTitleWidth = 0;');
-    expect(source).toContain('? Math.max(188, hudCompassTitleWidth + 30 * canvasHudScale)');
-    expect(source).toContain(': Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);');
+    expect(source).toContain('? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)');
+    expect(source).toContain(': Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);');
     expect(source).not.toContain("var compassW = compass.axis === 'horizontal' ? 188 : 126;");
     // One derivation: the compass reads the box published before the corridor label runs.
     expect(source).toContain('var compassW = hudCompassW;');

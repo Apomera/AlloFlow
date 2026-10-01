@@ -189,7 +189,9 @@ describe('Adventure Mode runtime regressions', () => {
     expect(state.isImageLoading).toBe(false);
   });
 
-  it('turns an unrecoverable malformed AI reply into a playable fallback turn', async () => {
+  // 2026-09-27 (AD4): an unreadable reply no longer invents an English "data stream
+  // error" scene that spent the turn, energy and XP. Nothing advances; retry is offered.
+  it('keeps the turn unchanged and offers a retry when the AI reply cannot be read', async () => {
     const { handleAdventureTextSubmit } = loadAdventureHandlers();
     let state = {
       currentScene: { text: 'A data storm surrounds the ship.', options: [] },
@@ -220,13 +222,17 @@ describe('Adventure Mode runtime regressions', () => {
       t: (key) => key,
     }, { get: (target, property) => property in target ? target[property] : vi.fn() });
 
+    const before = structuredClone(state);
     await handleAdventureTextSubmit(null, deps);
 
-    expect(pendingUpdate.scene.text).toContain('data stream error');
-    expect(pendingUpdate.scene.options).toEqual([]); // Written-response mode stays open, including recovery.
-    expect(pendingUpdate.isTerminalTurn).toBe(false);
-    expect(pendingUpdate.choiceSource).toBe('freetext');
-    expect(addToast).toHaveBeenCalledWith('toasts.auto_repair_fallback', 'warning');
+    expect(pendingUpdate).toBeUndefined();
+    expect(deps.setFailedAdventureAction).toHaveBeenCalledWith({ type: 'text', payload: 'Scan the storm.' });
+    expect(state.currentScene).toEqual(before.currentScene);
+    expect(state.turnCount).toBe(before.turnCount);
+    expect(state.energy).toBe(before.energy);
+    expect(state.isLoading).toBe(false);
+    expect(addToast).toHaveBeenCalledWith('toasts.adventure_reply_unreadable', 'error');
+    expect(addToast).not.toHaveBeenCalledWith('toasts.auto_repair_fallback', 'warning');
   });
 
   it('restores the saved Adventure state and every persisted mode setting', async () => {

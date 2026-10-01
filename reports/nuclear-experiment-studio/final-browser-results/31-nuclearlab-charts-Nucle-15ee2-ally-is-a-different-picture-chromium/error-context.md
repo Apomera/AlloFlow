@@ -1,0 +1,1194 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: 31-nuclearlab-charts.spec.ts >> Nuclear Lab — charts in a real browser >> the light theme really is a different picture
+- Location: tests\e2e\31-nuclearlab-charts.spec.ts:198:7
+
+# Error details
+
+```
+Tearing down "context" exceeded the test timeout of 180000ms.
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation "Nuclear Lab views" [ref=e4]:
+    - button "Experiment studio" [ref=e5] [cursor=pointer]
+    - button "All topics & routes" [pressed] [ref=e6] [cursor=pointer]
+    - button "Reactor control room" [ref=e7] [cursor=pointer]
+  - region "All topics & routes" [ref=e8]:
+    - generic [ref=e9]:
+      - button "Skip topic controls and start reading" [ref=e10] [cursor=pointer]
+      - generic [ref=e12]:
+        - button "Back to tools" [ref=e13] [cursor=pointer]
+        - generic [ref=e14]:
+          - heading "☢️ Nuclear & Radiation Lab" [level=3] [ref=e15]
+          - text: What the numbers actually say — including where they are disputed
+        - list "Nuclear lab learning progress" [ref=e16]:
+          - listitem [ref=e17]: 5 guided questions
+          - listitem [ref=e18]: 0/5 routes complete
+          - listitem [ref=e19]: 0/5 evidence mastered
+      - navigation "Nuclear lab topics" [ref=e20]:
+        - generic [ref=e21]:
+          - button "Routes & display. Show 5 question routes and the topic index, 21 topics" [ref=e22] [cursor=pointer]: 🧭 Routes & display ▸
+          - generic [ref=e23]:
+            - generic [ref=e24]: § 20 of 21 · Operate a reactor
+            - progressbar "§ 20 of 21 · Operate a reactor" [ref=e25]
+            - generic [ref=e26]: · 20/21
+      - 'generic "⏳ 1. Half-life: stable under ordinary conditions" [ref=e27]':
+        - 'heading "⏳ 1. Half-life: stable under ordinary conditions" [level=4] [ref=e28]'
+        - paragraph [ref=e29]: For a large sample, each half-life leaves half of what was there before — not half the original amount. Under ordinary laboratory and environmental conditions, temperature, pressure and chemistry do not measurably change most nuclear decay rates. Tiny exceptions exist for a few decay modes, especially electron capture, so “unchangeable” is an excellent practical rule rather than a universal law.
+        - generic [ref=e30]:
+          - button "Technetium-99m. Use Technetium-99m, half-life 6.0 hours" [ref=e31] [cursor=pointer]: Technetium-99m
+          - button "Radon-222. Use Radon-222, half-life 3.8 days" [ref=e32] [cursor=pointer]: Radon-222
+          - button "Iodine-131. Use Iodine-131, half-life 8.0 days" [ref=e33] [cursor=pointer]: Iodine-131
+          - button "Cobalt-60. Use Cobalt-60, half-life 5.3 years" [ref=e34] [cursor=pointer]: Cobalt-60
+          - button "Tritium. Use Tritium, half-life 12.3 years" [ref=e35] [cursor=pointer]: Tritium
+          - button "Caesium-137. Use Caesium-137, half-life 30.1 years" [pressed] [ref=e36] [cursor=pointer]: Caesium-137
+          - button "Carbon-14. Use Carbon-14, half-life 5,730 years" [ref=e37] [cursor=pointer]: Carbon-14
+          - button "Plutonium-239. Use Plutonium-239, half-life 24,110 years" [ref=e38] [cursor=pointer]: Plutonium-239
+          - button "Uranium-235. Use Uranium-235, half-life 704 million years" [ref=e39] [cursor=pointer]: Uranium-235
+          - button "Potassium-40. Use Potassium-40, half-life 1.25 billion years" [ref=e40] [cursor=pointer]: Potassium-40
+          - button "Uranium-238. Use Uranium-238, half-life 4.47 billion years" [ref=e41] [cursor=pointer]: Uranium-238
+        - generic [ref=e42]:
+          - generic [ref=e43]: Try another option
+          - progressbar "0 of 3 isotopes deliberately compared" [ref=e44]
+          - generic [ref=e45]: 0 of 3 isotopes deliberately compared
+        - generic [ref=e46]:
+          - button "View the decay curve fullscreen" [ref=e47] [cursor=pointer]:
+            - generic [ref=e48]: ⛶
+          - img "Decay curve. After 3.3 half-lives, 10.5 percent of the Caesium-137 remains. The curve halves at every step and never quite reaches zero." [ref=e49]
+        - generic [ref=e50]:
+          - generic [ref=e51]: Half-lives
+          - slider "Half-lives" [ref=e52]: "3.25"
+          - status [ref=e53]: "3.25"
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - paragraph [ref=e56]: Still radioactive
+            - paragraph [ref=e57]: 10.51%
+          - generic [ref=e58]:
+            - paragraph [ref=e59]: Time passed
+            - paragraph [ref=e60]: 98 years
+          - generic [ref=e61]:
+            - paragraph [ref=e62]: Half-life
+            - paragraph [ref=e63]: 30.1 years
+        - paragraph [ref=e64]: "Caesium-137 (Beta + gamma): The contaminant that defines the Chernobyl and Fukushima exclusion zones. Chemically like potassium, so it spreads through soil and food chains."
+        - generic [ref=e65]:
+          - paragraph [ref=e66]: 🤔 Set the model to 7 half-lives. What fraction is left, and why is "ten half-lives and it is gone" only roughly true?
+          - button "Worked it out? Check" [ref=e67] [cursor=pointer]
+      - generic "🦴 2. Read a date out of the decay" [ref=e68]:
+        - heading "🦴 2. Read a date out of the decay" [level=4] [ref=e69]
+        - paragraph [ref=e70]: Living things take in carbon-14 while alive and stop at death. Measure how much is left and you can run the half-life backwards to a date.
+        - generic [ref=e71]:
+          - generic [ref=e72]: C-14 remaining
+          - slider "C-14 remaining" [ref=e73]: "50"
+          - status [ref=e74]: 50%
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77]: Your estimate (years)
+            - spinbutton "Your estimate (years)" [ref=e78]
+          - button "Reveal. Calculate the age of the sample" [ref=e79] [cursor=pointer]: Reveal
+      - generic "⛓️ 3. The chain from uranium to lead — and why radon is in basements" [ref=e80]:
+        - heading "⛓️ 3. The chain from uranium to lead — and why radon is in basements" [level=4] [ref=e81]
+        - paragraph [ref=e82]: Most heavy nuclei do not reach stability in one step. Uranium-238 takes fourteen, alternating alpha and beta, and finishes as lead. One member of that chain is a gas, and that changes everything.
+        - img "The uranium-238 chain plotted on the chart of nuclides, neutrons across and protons up. It starts at uranium-238 with 92 protons and 146 neutrons, top right, and walks down-left to lead-206 with 82 protons and 124 neutrons, bottom left. Each of the eight alpha steps moves two protons down and two neutrons left; each of the six beta steps moves one proton up and one neutron left, which is the zigzag. Radon-222, the only gas, sits in the middle at 86 protons and 136 neutrons." [ref=e84]
+        - paragraph [ref=e85]: Every alpha step takes the same diagonal down-left; every beta step kicks back up-left at a shallower one. That sawtooth is not decoration — it is why the chain crosses the same elements more than once, and why uranium appears twice in the list below. Choose a row to light up its nucleus here.
+        - list "Uranium-238 decay chain steps" [ref=e86]:
+          - listitem [ref=e87]:
+            - button "1 U-238 4.468 billion y α" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: "1"
+                - generic [ref=e91]: U-238
+                - generic [ref=e92]: 4.468 billion y
+                - generic [ref=e93]: α
+          - listitem [ref=e94]:
+            - button "2 Th-234 24.1 days β" [ref=e95] [cursor=pointer]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: "2"
+                - generic [ref=e98]: Th-234
+                - generic [ref=e99]: 24.1 days
+                - generic [ref=e100]: β
+          - listitem [ref=e101]:
+            - button "3 Pa-234m 1.17 minutes β" [ref=e102] [cursor=pointer]:
+              - generic [ref=e103]:
+                - generic [ref=e104]: "3"
+                - generic [ref=e105]: Pa-234m
+                - generic [ref=e106]: 1.17 minutes
+                - generic [ref=e107]: β
+          - listitem [ref=e108]:
+            - button "4 U-234 245,500 y α" [ref=e109] [cursor=pointer]:
+              - generic [ref=e110]:
+                - generic [ref=e111]: "4"
+                - generic [ref=e112]: U-234
+                - generic [ref=e113]: 245,500 y
+                - generic [ref=e114]: α
+          - listitem [ref=e115]:
+            - button "5 Th-230 75,380 y α" [ref=e116] [cursor=pointer]:
+              - generic [ref=e117]:
+                - generic [ref=e118]: "5"
+                - generic [ref=e119]: Th-230
+                - generic [ref=e120]: 75,380 y
+                - generic [ref=e121]: α
+          - listitem [ref=e122]:
+            - button "6 Ra-226 1,600 y α" [ref=e123] [cursor=pointer]:
+              - generic [ref=e124]:
+                - generic [ref=e125]: "6"
+                - generic [ref=e126]: Ra-226
+                - generic [ref=e127]: 1,600 y
+                - generic [ref=e128]: α
+          - listitem [ref=e129]:
+            - button "7 Rn-222 3.82 days GAS α" [expanded] [ref=e130] [cursor=pointer]:
+              - generic [ref=e131]:
+                - generic [ref=e132]: "7"
+                - generic [ref=e133]: Rn-222
+                - generic [ref=e134]: 3.82 days
+                - generic [ref=e135]: GAS
+                - generic [ref=e136]: α
+            - generic [ref=e137]: RADON. The only GAS in the chain. Everything above and below is a metal locked in rock — but radon can seep out through soil and cracks, and collect in a basement. That single fact is why the chain matters to you.
+          - listitem [ref=e138]:
+            - button "8 Po-218 3.10 minutes α" [ref=e139] [cursor=pointer]:
+              - generic [ref=e140]:
+                - generic [ref=e141]: "8"
+                - generic [ref=e142]: Po-218
+                - generic [ref=e143]: 3.10 minutes
+                - generic [ref=e144]: α
+          - listitem [ref=e145]:
+            - button "9 Pb-214 26.8 minutes β" [ref=e146] [cursor=pointer]:
+              - generic [ref=e147]:
+                - generic [ref=e148]: "9"
+                - generic [ref=e149]: Pb-214
+                - generic [ref=e150]: 26.8 minutes
+                - generic [ref=e151]: β
+          - listitem [ref=e152]:
+            - button "10 Bi-214 19.9 minutes β" [ref=e153] [cursor=pointer]:
+              - generic [ref=e154]:
+                - generic [ref=e155]: "10"
+                - generic [ref=e156]: Bi-214
+                - generic [ref=e157]: 19.9 minutes
+                - generic [ref=e158]: β
+          - listitem [ref=e159]:
+            - button "11 Po-214 164 microseconds α" [ref=e160] [cursor=pointer]:
+              - generic [ref=e161]:
+                - generic [ref=e162]: "11"
+                - generic [ref=e163]: Po-214
+                - generic [ref=e164]: 164 microseconds
+                - generic [ref=e165]: α
+          - listitem [ref=e166]:
+            - button "12 Pb-210 22.3 y β" [ref=e167] [cursor=pointer]:
+              - generic [ref=e168]:
+                - generic [ref=e169]: "12"
+                - generic [ref=e170]: Pb-210
+                - generic [ref=e171]: 22.3 y
+                - generic [ref=e172]: β
+          - listitem [ref=e173]:
+            - button "13 Bi-210 5.01 days β" [ref=e174] [cursor=pointer]:
+              - generic [ref=e175]:
+                - generic [ref=e176]: "13"
+                - generic [ref=e177]: Bi-210
+                - generic [ref=e178]: 5.01 days
+                - generic [ref=e179]: β
+          - listitem [ref=e180]:
+            - button "14 Po-210 138.4 days α" [ref=e181] [cursor=pointer]:
+              - generic [ref=e182]:
+                - generic [ref=e183]: "14"
+                - generic [ref=e184]: Po-210
+                - generic [ref=e185]: 138.4 days
+                - generic [ref=e186]: α
+          - listitem [ref=e187]:
+            - button "15 Pb-206 stable ■" [ref=e188] [cursor=pointer]:
+              - generic [ref=e189]:
+                - generic [ref=e190]: "15"
+                - generic [ref=e191]: Pb-206
+                - generic [ref=e192]: stable
+                - generic [ref=e193]: ■
+        - generic [ref=e194]:
+          - generic [ref=e195]: Try another option
+          - progressbar "0 of 4 chain steps deliberately compared" [ref=e196]
+          - generic [ref=e197]: 0 of 4 chain steps deliberately compared
+        - generic [ref=e198]:
+          - paragraph [ref=e199]: Why the whole chain runs at uranium-238's pace
+          - paragraph [ref=e200]: "Every step below the parent is far faster than it, so each daughter decays about as fast as it is made. The chain settles into secular equilibrium and the whole thing ticks along at the rate of the slowest step — 4.47 billion years. That is why radon keeps appearing in a basement year after year and never runs out: it is being made continuously from uranium in the ground beneath, and the supply lasts as long as the planet does."
+        - generic [ref=e201]:
+          - paragraph [ref=e202]: 🤔 Radon has a half-life of under four days. Sealing a basement for a fortnight would clear what is already there. Why does that not fix the problem?
+          - button "Worked it out? Check" [ref=e203] [cursor=pointer]
+      - 'generic "🔢 4. Enrichment: why reactor fuel is not a bomb" [ref=e204]':
+        - 'heading "🔢 4. Enrichment: why reactor fuel is not a bomb" [level=4] [ref=e205]'
+        - paragraph [ref=e206]: Natural uranium is 99.3% U-238 and only 0.72% the fissile U-235. Separating them is the hardest industrial step in the whole business — and the reason a power reactor is not a weapon waiting to happen.
+        - list [ref=e207]:
+          - listitem [ref=e208]:
+            - button "0.72% Natural uranium" [ref=e209] [cursor=pointer]:
+              - generic [ref=e210]:
+                - generic [ref=e211]: 0.72%
+                - generic [ref=e212]: Natural uranium
+          - listitem [ref=e215]:
+            - button "3.5% Reactor fuel (LEU)" [ref=e216] [cursor=pointer]:
+              - generic [ref=e217]:
+                - generic [ref=e218]: 3.5%
+                - generic [ref=e219]: Reactor fuel (LEU)
+          - listitem [ref=e222]:
+            - button "5% Upper limit for most fuel" [ref=e223] [cursor=pointer]:
+              - generic [ref=e224]:
+                - generic [ref=e225]: 5%
+                - generic [ref=e226]: Upper limit for most fuel
+          - listitem [ref=e229]:
+            - button "19.75% HALEU ceiling" [ref=e230] [cursor=pointer]:
+              - generic [ref=e231]:
+                - generic [ref=e232]: 19.75%
+                - generic [ref=e233]: HALEU ceiling
+          - listitem [ref=e236]:
+            - button "20% The safeguards line" [ref=e237] [cursor=pointer]:
+              - generic [ref=e238]:
+                - generic [ref=e239]: 20%
+                - generic [ref=e240]: The safeguards line
+          - listitem [ref=e243]:
+            - button "90% Weapons-grade" [ref=e244] [cursor=pointer]:
+              - generic [ref=e245]:
+                - generic [ref=e246]: 90%
+                - generic [ref=e247]: Weapons-grade
+        - generic [ref=e250]:
+          - generic [ref=e251]: Try another option
+          - progressbar "0 of 3 enrichment levels deliberately compared" [ref=e252]
+          - generic [ref=e253]: 0 of 3 enrichment levels deliberately compared
+        - generic [ref=e254]:
+          - paragraph [ref=e255]: The answer to "could a reactor explode like a bomb?"
+          - paragraph [ref=e256]: "No, and not because of the safety systems. A weapon needs a fast chain reaction in material enriched above about 90%, held together for the microseconds it takes to run. Reactor fuel at 3–5% cannot sustain a fast chain reaction at ANY mass or shape: the U-238 that makes up the other 95% absorbs the fast neutrons before they find a U-235 nucleus. The fuel only works at all because a moderator slows the neutrons down first — and moderated neutrons are far too slow for the runaway a weapon needs. Chernobyl was a steam explosion that wrecked the building, not a nuclear detonation."
+        - paragraph [ref=e257]: This is also why enrichment is what arms-control regimes actually watch. The centrifuge cascade that takes uranium from 0.72% to 5% is most of the way, in separative work, to one that could reach 90% — so the equipment matters more than the material.
+      - generic "🛡️ 5. What actually stops it" [ref=e258]:
+        - heading "🛡️ 5. What actually stops it" [level=4] [ref=e259]
+        - paragraph [ref=e260]: "\"Radiation\" is four different things that behave nothing alike. Pick one and try to stop it."
+        - generic [ref=e261]:
+          - button "α Alpha. Study Alpha radiation" [ref=e262] [cursor=pointer]: α Alpha
+          - button "β Beta. Study Beta radiation" [ref=e263] [cursor=pointer]: β Beta
+          - button "γ Gamma. Study Gamma radiation" [pressed] [ref=e264] [cursor=pointer]: γ Gamma
+          - button "n Neutron. Study Neutron radiation" [ref=e265] [cursor=pointer]: n Neutron
+        - generic [ref=e266]:
+          - generic [ref=e267]: Try another option
+          - progressbar "0 of 4 radiation types deliberately compared" [ref=e268]
+          - generic [ref=e269]: 0 of 4 radiation types deliberately compared
+        - generic [ref=e270]:
+          - button "Air. Shield with Air" [ref=e271] [cursor=pointer]: Air
+          - button "Water. Shield with Water" [ref=e272] [cursor=pointer]: Water
+          - button "Concrete. Shield with Concrete" [ref=e273] [cursor=pointer]: Concrete
+          - button "Steel. Shield with Steel" [ref=e274] [cursor=pointer]: Steel
+          - button "Lead. Shield with Lead" [pressed] [ref=e275] [cursor=pointer]: Lead
+        - generic [ref=e276]:
+          - generic [ref=e277]: Thickness
+          - slider "Thickness" [ref=e278]: "2"
+          - status [ref=e279]: 2 cm
+        - generic [ref=e280]:
+          - paragraph [ref=e283]: 21.4% of the gamma gets through 2 cm of lead
+          - status [ref=e284]
+          - paragraph [ref=e285]: Substantially attenuated. The "half-value layer" for this material is 0.9 cm — every one of those halves the intensity again.
+        - generic [ref=e286]:
+          - paragraph [ref=e287]: γ Gamma
+          - paragraph [ref=e288]: A high-energy photon. No mass, no charge — just light far beyond violet.
+          - paragraph [ref=e289]: "Stopped by: Nothing stops it completely. Lead or concrete cuts it exponentially."
+          - paragraph [ref=e290]: "Why it matters: Passes right through you, so it irradiates every organ. This is the dominant external hazard after an accident."
+        - paragraph [ref=e291]: The densest practical shield. Thin lead does what thick concrete does — which is why aprons are lead, not concrete.
+      - generic "⚛️ 6. The chain reaction, and what holds it steady" [ref=e292]:
+        - heading "⚛️ 6. The chain reaction, and what holds it steady" [level=4] [ref=e293]
+        - paragraph [ref=e294]: A uranium-235 nucleus absorbs a neutron, splits, and releases 2 or 3 more. k is how many of those go on to cause another fission. Everything about reactor control is holding k at exactly 1.
+        - paragraph [ref=e295]: The core is shut down. Withdraw the rods until k reads exactly 1.000.
+        - generic [ref=e296]:
+          - generic [ref=e297]: Control rods in
+          - slider "Control rods in" [ref=e298]: "65"
+          - status [ref=e299]: 65%
+        - generic [ref=e300]:
+          - generic [ref=e301]:
+            - paragraph [ref=e302]: k (neutron multiplication)
+            - paragraph [ref=e303]: "0.910"
+          - generic [ref=e304]:
+            - paragraph [ref=e305]: State
+            - paragraph [ref=e306]: subcritical
+          - generic [ref=e307]:
+            - paragraph [ref=e308]: After 12 generations
+            - paragraph [ref=e309]: 35 neutrons
+        - paragraph [ref=e323]: Neutrons per generation, on a log scale. Twelve generations is under a thousandth of a second.
+        - paragraph [ref=e324]: "Subcritical: k < 1. The chain dies out. This is a shut-down reactor — though it still needs cooling, because decay heat continues for days. That is precisely what went wrong at Fukushima: the reactors shut down correctly and then could not be cooled."
+        - generic [ref=e325]:
+          - paragraph [ref=e326]: 🤔 A bomb needs k far above 1 with fast neutrons and over 90% enrichment. Reactor fuel is 3–5%. Why can a power reactor not explode like a weapon, whatever else goes wrong?
+          - button "Worked it out? Check" [ref=e327] [cursor=pointer]
+      - generic "⛰️ 7. One curve explains fission AND fusion" [ref=e328]:
+        - heading "⛰️ 7. One curve explains fission AND fusion" [level=4] [ref=e329]
+        - paragraph [ref=e330]: Binding energy per nucleon is how tightly each particle is held. The curve climbs steeply from hydrogen, peaks, then falls slowly — and HIGHER on this curve means more tightly bound. Move toward the peak from either side and the nuclei end up more tightly bound than they started, so the leftover energy comes out. Light nuclei get there by joining; heavy ones get there by splitting. One curve, two industries.
+        - img "Binding energy per nucleon against mass number. It climbs steeply from hydrogen at zero, through helium-4 at 7.07, peaks at nickel-62 at 8.795 MeV, then falls slowly to uranium-238 at 7.57. Light nuclei release energy by fusing up the left slope; heavy nuclei release it by splitting down the right slope." [ref=e332]
+        - paragraph [ref=e333]: Mass number across, MeV per nucleon up. The marked peak is where nothing can release energy by changing at all.
+        - generic [ref=e334]:
+          - button "Deuterium + tritium. Work out the energy from Deuterium + tritium" [ref=e335] [cursor=pointer]: Deuterium + tritium
+          - button "Proton-proton chain. Work out the energy from Proton-proton chain" [ref=e336] [cursor=pointer]: Proton-proton chain
+          - button "Uranium-235 fission. Work out the energy from Uranium-235 fission" [pressed] [ref=e337] [cursor=pointer]: Uranium-235 fission
+          - button "Burning carbon. Work out the energy from Burning carbon" [ref=e338] [cursor=pointer]: Burning carbon
+        - generic [ref=e339]:
+          - generic [ref=e340]: Try another option
+          - progressbar "0 of 3 reactions deliberately compared" [ref=e341]
+          - generic [ref=e342]: 0 of 3 reactions deliberately compared
+        - generic [ref=e343]:
+          - paragraph [ref=e344]: U-235 + n → Ba-141 + Kr-92 + 3n
+          - generic [ref=e345]:
+            - generic [ref=e346]:
+              - paragraph [ref=e347]: Energy released
+              - paragraph [ref=e348]: 200 MeV
+            - generic [ref=e349]:
+              - paragraph [ref=e350]: Per nucleon
+              - paragraph [ref=e351]: 0.85 MeV
+            - generic [ref=e352]:
+              - paragraph [ref=e353]: Mass converted
+              - paragraph [ref=e354]: 0.091%
+          - paragraph [ref=e355]: A reactor does this about 10²⁰ times a second. The products sit near the peak of the curve, so the drop is large in total even though it is modest per nucleon.
+          - paragraph [ref=e356]: E = Δm c², and 1 atomic mass unit = 931.494 MeV. The mass really is missing — weigh the products and they come out lighter than what went in.
+        - paragraph [ref=e357]: Fusion of deuterium and tritium releases about 3.5 MeV per nucleon; fission of uranium-235 about 0.85. Fusion wins per nucleon by roughly four to one — which is why it is worth the hundred-million-degree problem.
+        - generic [ref=e358]:
+          - paragraph [ref=e359]: A detail almost every textbook gets slightly wrong
+          - paragraph [ref=e360]: The peak is usually given as iron-56. The actual maximum is nickel-62 at 8.795 MeV per nucleon, just above iron-58 and then iron-56 at 8.790. Iron-56 is the most ABUNDANT end point, because stellar burning makes nickel-56 which decays to it — that is a statement about supernovae, not about binding. Both facts are true; they are answers to different questions.
+        - generic [ref=e361]:
+          - paragraph [ref=e362]: 🤔 Nothing past the peak can release energy by fusing, and nothing before it by splitting. What does that mean for a star once its core is iron and nickel?
+          - button "Worked it out? Check" [ref=e363] [cursor=pointer]
+      - 'generic "🎚️ 8. Gray and sievert: the same joule, weighted twice" [ref=e364]':
+        - 'heading "🎚️ 8. Gray and sievert: the same joule, weighted twice" [level=4] [ref=e365]'
+        - paragraph [ref=e366]: Everything below this point is quoted in millisieverts, and a sievert is not a physical measurement. It is a physical measurement multiplied by two judgements about biology. Both multiplications are worth seeing, because alpha has little penetrating power through intact skin but is far more damaging when contamination reaches living tissue.
+        - generic [ref=e367]:
+          - generic [ref=e368]: Energy absorbed
+          - slider "Energy absorbed" [ref=e369]: "1"
+          - status [ref=e370]: 1 mGy
+        - paragraph [ref=e371]: The gray is joules per kilogram of tissue, and nothing else. It does not know what kind of radiation delivered them or which organ received them. It is the one honestly physical quantity here.
+        - paragraph [ref=e372]: Delivered by
+        - generic [ref=e373]:
+          - button "γ Gamma / X-ray ×1. Gamma / X-ray, radiation weighting factor 1" [pressed] [ref=e374] [cursor=pointer]: γ Gamma / X-ray ×1
+          - button "β Beta (electrons) ×1. Beta (electrons), radiation weighting factor 1" [ref=e375] [cursor=pointer]: β Beta (electrons) ×1
+          - button "p Protons ×2. Protons, radiation weighting factor 2" [ref=e376] [cursor=pointer]: p Protons ×2
+          - button "n Neutrons (fission energy) ×20. Neutrons (fission energy), radiation weighting factor 20" [ref=e377] [cursor=pointer]: n Neutrons (fission energy) ×20
+          - button "α Alpha ×20. Alpha, radiation weighting factor 20" [ref=e378] [cursor=pointer]: α Alpha ×20
+        - generic [ref=e379]:
+          - generic [ref=e380]: Try another option
+          - progressbar "0 of 3 radiation types deliberately compared" [ref=e381]
+          - generic [ref=e382]: 0 of 3 radiation types deliberately compared
+        - paragraph [ref=e383]: The reference. A photon deposits its energy thinly along a track metres long, so the damage is spread out and cells usually repair it.
+        - paragraph [ref=e384]: To which tissue
+        - generic [ref=e385]:
+          - button "Whole body 1.00. Whole body, tissue weighting factor 1" [pressed] [ref=e386] [cursor=pointer]: Whole body 1.00
+          - button "Red bone marrow 0.12. Red bone marrow, tissue weighting factor 0.12" [ref=e387] [cursor=pointer]: Red bone marrow 0.12
+          - button "Colon 0.12. Colon, tissue weighting factor 0.12" [ref=e388] [cursor=pointer]: Colon 0.12
+          - button "Lung 0.12. Lung, tissue weighting factor 0.12" [ref=e389] [cursor=pointer]: Lung 0.12
+          - button "Stomach 0.12. Stomach, tissue weighting factor 0.12" [ref=e390] [cursor=pointer]: Stomach 0.12
+          - button "Breast 0.12. Breast, tissue weighting factor 0.12" [ref=e391] [cursor=pointer]: Breast 0.12
+          - button "Remainder tissues 0.12. Remainder tissues, tissue weighting factor 0.12" [ref=e392] [cursor=pointer]: Remainder tissues 0.12
+          - button "Gonads 0.08. Gonads, tissue weighting factor 0.08" [ref=e393] [cursor=pointer]: Gonads 0.08
+          - button "Bladder 0.04. Bladder, tissue weighting factor 0.04" [ref=e394] [cursor=pointer]: Bladder 0.04
+          - button "Oesophagus 0.04. Oesophagus, tissue weighting factor 0.04" [ref=e395] [cursor=pointer]: Oesophagus 0.04
+          - button "Liver 0.04. Liver, tissue weighting factor 0.04" [ref=e396] [cursor=pointer]: Liver 0.04
+          - button "Thyroid 0.04. Thyroid, tissue weighting factor 0.04" [ref=e397] [cursor=pointer]: Thyroid 0.04
+          - button "Bone surface 0.01. Bone surface, tissue weighting factor 0.01" [ref=e398] [cursor=pointer]: Bone surface 0.01
+          - button "Brain 0.01. Brain, tissue weighting factor 0.01" [ref=e399] [cursor=pointer]: Brain 0.01
+          - button "Salivary glands 0.01. Salivary glands, tissue weighting factor 0.01" [ref=e400] [cursor=pointer]: Salivary glands 0.01
+          - button "Skin 0.01. Skin, tissue weighting factor 0.01" [ref=e401] [cursor=pointer]: Skin 0.01
+        - generic [ref=e402]:
+          - generic [ref=e403]:
+            - paragraph [ref=e404]: ABSORBED DOSE
+            - paragraph [ref=e405]: 1 mGy
+            - paragraph [ref=e406]: "Pure physics: joules per kilogram."
+          - generic [ref=e407]:
+            - paragraph [ref=e408]: EQUIVALENT DOSE
+            - paragraph [ref=e409]: 1 mSv
+            - paragraph [ref=e410]: × wᴿ = 1, for how concentrated the damage is.
+          - generic [ref=e411]:
+            - paragraph [ref=e412]: EFFECTIVE DOSE
+            - paragraph [ref=e413]: 1 mSv
+            - paragraph [ref=e414]: × wᵀ = 1.00, for how much that tissue contributes to whole-body risk.
+        - paragraph [ref=e415]: With gamma or beta the first multiplication does nothing — 1 mGy is 1 mSv, and this is why the two units get used interchangeably and then quietly confused. Switch to alpha and watch what the same joule becomes.
+        - paragraph [ref=e416]: Irradiate the whole body and every tissue weight applies at once. They are defined to sum to exactly 1.00, so effective dose and equivalent dose come out equal — the weights apportion risk, they never create or destroy it.
+        - generic [ref=e417]:
+          - paragraph [ref=e418]: What effective dose is NOT
+          - paragraph [ref=e419]: "ICRP says this plainly and it is routinely ignored: effective dose is a protection quantity for setting limits and comparing procedures across a population. It is not a measure of harm to a particular person. The weights are averaged over both sexes and all ages, so applying them to one patient — to say \"your scan gave you this much risk\" — uses the number for something it was never built to do. Every figure in this tool is an effective dose, and that caveat rides along with all of them."
+        - paragraph [ref=e420]: Weighting factors from ICRP Publication 103 (2007), Tables 2 and 3. The neutron factor is shown as its ~1 MeV peak; the published value is a continuous function of energy from about 2.5 to 20.
+      - generic "🫀 9. Half-life inside a body is a different number" [ref=e421]:
+        - heading "🫀 9. Half-life inside a body is a different number" [level=4] [ref=e422]
+        - paragraph [ref=e423]: "Every half-life so far has been PHYSICAL — how fast the nuclei fall apart, a rate that is effectively fixed under ordinary conditions. But a nuclide inside a person is also being excreted, and the two processes run at once. Decay and excretion are rates, so they add: 1/Tₑ = 1/Tₚ + 1/Tᵦ. That makes the effective half-life shorter than EITHER of them — always. When the two are far apart the shorter one very nearly sets it on its own; when they are close, as they are for strontium and polonium below, neither number will do and only the formula gets you there."
+        - generic [ref=e424]:
+          - button "Technetium-99m. Compare the physical and biological half-life of Technetium-99m" [ref=e425] [cursor=pointer]: Technetium-99m
+          - button "Tritium (as water). Compare the physical and biological half-life of Tritium (as water)" [ref=e426] [cursor=pointer]: Tritium (as water)
+          - button "Potassium-40. Compare the physical and biological half-life of Potassium-40" [ref=e427] [cursor=pointer]: Potassium-40
+          - button "Iodine-131. Compare the physical and biological half-life of Iodine-131" [ref=e428] [cursor=pointer]: Iodine-131
+          - button "Polonium-210. Compare the physical and biological half-life of Polonium-210" [ref=e429] [cursor=pointer]: Polonium-210
+          - button "Caesium-137. Compare the physical and biological half-life of Caesium-137" [pressed] [ref=e430] [cursor=pointer]: Caesium-137
+          - button "Strontium-90. Compare the physical and biological half-life of Strontium-90" [ref=e431] [cursor=pointer]: Strontium-90
+          - button "Radium-226. Compare the physical and biological half-life of Radium-226" [ref=e432] [cursor=pointer]: Radium-226
+          - button "Plutonium-239. Compare the physical and biological half-life of Plutonium-239" [ref=e433] [cursor=pointer]: Plutonium-239
+        - generic [ref=e434]:
+          - generic [ref=e435]: Try another option
+          - progressbar "0 of 4 nuclides deliberately compared" [ref=e436]
+          - generic [ref=e437]: 0 of 4 nuclides deliberately compared
+        - generic [ref=e438]:
+          - generic [ref=e439]:
+            - paragraph [ref=e440]: Physical half-life
+            - paragraph [ref=e441]: 30 years
+          - generic [ref=e442]:
+            - paragraph [ref=e443]: Biological half-life
+            - paragraph [ref=e444]: 70 days
+          - generic [ref=e445]:
+            - paragraph [ref=e446]: Effective half-life
+            - paragraph [ref=e447]: 69.6 days
+        - paragraph [ref=e448]: "Where it goes: Whole body — it behaves like potassium."
+        - img "How much Caesium-137 is left in the body over time. Radioactive decay alone would leave 97.8 percent after 347.8 days, but with excretion as well only 3.1 percent remains. The effective half-life is 69.6 days." [ref=e450]
+        - paragraph [ref=e451]: "Grey: decay alone. Colour: what is actually left, once the body is also getting rid of it."
+        - paragraph [ref=e452]: Biology is running this one. The physical half-life is 157 times the biological one, so decay barely enters the calculation and the effective half-life lands within 0.6% of the biological figure alone.
+        - paragraph [ref=e453]: "THE misconception in this whole tool. Caesium-137 defines the exclusion zones for thirty years because that is how long it persists in SOIL. Inside a person it is chemically potassium, and the body flushes potassium: about seventy days, and faster in children. The land and the person are two different clocks and they get quoted as one."
+        - generic [ref=e454]:
+          - paragraph [ref=e455]: What potassium iodide tablets do, and what they do not
+          - paragraph [ref=e456]: "KI is one of the most misunderstood things in this entire subject. It is not an anti-radiation pill. It works on exactly one nuclide by exactly one mechanism: it saturates the thyroid with ordinary iodine so there is no room left to take up iodine-131. That is the whole of it. It does nothing about caesium, nothing about external gamma, nothing about any other part of a release — and taken without radioiodine present it is simply a drug with side effects, which is why authorities distribute it in advance and then tell people when to take it rather than leaving it to judgement."
+          - note "Educational safety notice" [ref=e457]:
+            - paragraph [ref=e458]: Educational model — not emergency or medical instructions
+            - paragraph [ref=e459]: Take potassium iodide only when public-health officials tell you to; it does not protect against most radiation hazards.
+            - link "Official NRC emergency guidance ↗" [ref=e460] [cursor=pointer]:
+              - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+        - paragraph [ref=e461]: Biological half-lives from the ICRP 30 and ICRP 137 biokinetic models, rounded. Unlike physical half-lives, which are constants of nature, these vary substantially with age, diet, chemical form and the individual — caesium clears roughly twice as fast in a small child as in an adult. Treat them as the right order of magnitude, not as measurements of you.
+      - generic "🧮 10. Estimate your own annual dose" [ref=e462]:
+        - heading "🧮 10. Estimate your own annual dose" [level=4] [ref=e463]
+        - paragraph [ref=e464]: Everyone is exposed, all the time, mostly from the ground and from radon. Put your own numbers in and see where yours comes from.
+        - note "Educational safety notice" [ref=e465]:
+          - paragraph [ref=e466]: Educational model — not emergency or medical instructions
+          - paragraph [ref=e467]: This personal-dose estimate is educational, not a medical assessment. Ask a qualified clinician, health physicist, or local radon program about a real exposure.
+          - link "Official NRC emergency guidance ↗" [ref=e468] [cursor=pointer]:
+            - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+        - generic [ref=e469]:
+          - generic [ref=e470]: Home altitude
+          - slider "Home altitude" [ref=e471]: "100"
+          - status [ref=e472]: 100 m
+        - generic [ref=e473]:
+          - generic [ref=e474]: Flying per year
+          - slider "Flying per year" [ref=e475]: "4"
+          - status [ref=e476]: 4 hours
+        - paragraph [ref=e477]: Radon at home
+        - generic [ref=e478]:
+          - button "Low (well ventilated, no basement). Set home radon to Low (well ventilated, no basement), 0.4 millisieverts a year" [ref=e479] [cursor=pointer]: Low (well ventilated, no basement)
+          - button "Typical. Set home radon to Typical, 1.3 millisieverts a year" [pressed] [ref=e480] [cursor=pointer]: Typical
+          - button "High (basement, granite region). Set home radon to High (basement, granite region), 4 millisieverts a year" [ref=e481] [cursor=pointer]: High (basement, granite region)
+          - button "Very high (untreated hot spot). Set home radon to Very high (untreated hot spot), 12 millisieverts a year" [ref=e482] [cursor=pointer]: Very high (untreated hot spot)
+        - paragraph [ref=e483]: Scans this year
+        - generic [ref=e484]:
+          - generic [ref=e485]:
+            - generic [ref=e486]: Dental X-ray
+            - generic [ref=e487]: 0.005 mSv
+            - button "One fewer Dental X-ray" [ref=e488] [cursor=pointer]: −
+            - generic [ref=e489]: "0"
+            - button "One more Dental X-ray" [ref=e490] [cursor=pointer]: +
+          - generic [ref=e491]:
+            - generic [ref=e492]: Chest X-ray
+            - generic [ref=e493]: 0.1 mSv
+            - button "One fewer Chest X-ray" [ref=e494] [cursor=pointer]: −
+            - generic [ref=e495]: "0"
+            - button "One more Chest X-ray" [ref=e496] [cursor=pointer]: +
+          - generic [ref=e497]:
+            - generic [ref=e498]: Mammogram
+            - generic [ref=e499]: 0.4 mSv
+            - button "One fewer Mammogram" [ref=e500] [cursor=pointer]: −
+            - generic [ref=e501]: "0"
+            - button "One more Mammogram" [ref=e502] [cursor=pointer]: +
+          - generic [ref=e503]:
+            - generic [ref=e504]: CT head
+            - generic [ref=e505]: 2 mSv
+            - button "One fewer CT head" [ref=e506] [cursor=pointer]: −
+            - generic [ref=e507]: "0"
+            - button "One more CT head" [ref=e508] [cursor=pointer]: +
+          - generic [ref=e509]:
+            - generic [ref=e510]: CT abdomen
+            - generic [ref=e511]: 10 mSv
+            - button "One fewer CT abdomen" [ref=e512] [cursor=pointer]: −
+            - generic [ref=e513]: "0"
+            - button "One more CT abdomen" [ref=e514] [cursor=pointer]: +
+        - generic [ref=e515]:
+          - paragraph [ref=e516]: About 2.38 mSv this year
+          - status [ref=e517]
+          - list [ref=e518]:
+            - listitem "Radon in your home, 1.30 millisieverts" [ref=e519]:
+              - generic [ref=e520]: Radon in your home
+              - generic [ref=e523]: "1.30"
+            - listitem "Ground and buildings, 0.48 millisieverts" [ref=e524]:
+              - generic [ref=e525]: Ground and buildings
+              - generic [ref=e528]: "0.48"
+            - listitem "Cosmic rays, 0.29 millisieverts" [ref=e529]:
+              - generic [ref=e530]: Cosmic rays
+              - generic [ref=e533]: "0.29"
+            - listitem "Inside your own body, 0.29 millisieverts" [ref=e534]:
+              - generic [ref=e535]: Inside your own body
+              - generic [ref=e538]: "0.29"
+            - listitem "Flying, 0.01 millisieverts" [ref=e539]:
+              - generic [ref=e540]: Flying
+              - generic [ref=e543]: "0.01"
+          - paragraph [ref=e544]: Close to or below the 2.4 mSv world average. Note how little of it is anything anyone chose.
+          - paragraph [ref=e545]: For scale, the occupational limit is 20 mSv a year and the lowest dose with a clearly measurable cancer link is around 100 mSv.
+      - generic "📏 11. How much is a lot? The dose ladder" [ref=e546]:
+        - heading "📏 11. How much is a lot? The dose ladder" [level=4] [ref=e547]
+        - paragraph [ref=e548]: Doses span eight orders of magnitude, so this scale is logarithmic — each step along it is ten times the last. Choose any row.
+        - list [ref=e549]:
+          - listitem [ref=e550]:
+            - button "Eating one banana 0.0001 mSv" [ref=e551] [cursor=pointer]:
+              - generic [ref=e552]:
+                - generic [ref=e553]: Eating one banana
+                - generic [ref=e554]: 0.0001 mSv
+          - listitem [ref=e557]:
+            - button "Dental X-ray 0.005 mSv" [ref=e558] [cursor=pointer]:
+              - generic [ref=e559]:
+                - generic [ref=e560]: Dental X-ray
+                - generic [ref=e561]: 0.005 mSv
+          - listitem [ref=e564]:
+            - button "Flight, London to New York 0.04 mSv" [ref=e565] [cursor=pointer]:
+              - generic [ref=e566]:
+                - generic [ref=e567]: Flight, London to New York
+                - generic [ref=e568]: 0.04 mSv
+          - listitem [ref=e571]:
+            - button "Chest X-ray 0.1 mSv" [ref=e572] [cursor=pointer]:
+              - generic [ref=e573]:
+                - generic [ref=e574]: Chest X-ray
+                - generic [ref=e575]: 0.1 mSv
+          - listitem [ref=e578]:
+            - button "Mammogram 0.4 mSv" [ref=e579] [cursor=pointer]:
+              - generic [ref=e580]:
+                - generic [ref=e581]: Mammogram
+                - generic [ref=e582]: 0.4 mSv
+          - listitem [ref=e585]:
+            - button "CT scan, head 2 mSv" [ref=e586] [cursor=pointer]:
+              - generic [ref=e587]:
+                - generic [ref=e588]: CT scan, head
+                - generic [ref=e589]: 2 mSv
+          - listitem [ref=e592]:
+            - button "Natural background, one year 2 mSv" [ref=e593] [cursor=pointer]:
+              - generic [ref=e594]:
+                - generic [ref=e595]: Natural background, one year
+                - generic [ref=e596]: 2 mSv
+          - listitem [ref=e599]:
+            - button "CT scan, abdomen 10 mSv" [ref=e600] [cursor=pointer]:
+              - generic [ref=e601]:
+                - generic [ref=e602]: CT scan, abdomen
+                - generic [ref=e603]: 10 mSv
+          - listitem [ref=e606]:
+            - button "Annual limit, radiation worker 20 mSv" [ref=e607] [cursor=pointer]:
+              - generic [ref=e608]:
+                - generic [ref=e609]: Annual limit, radiation worker
+                - generic [ref=e610]: 20 mSv
+          - listitem [ref=e613]:
+            - button "Lowest dose with clear cancer link 100 mSv" [ref=e614] [cursor=pointer]:
+              - generic [ref=e615]:
+                - generic [ref=e616]: Lowest dose with clear cancer link
+                - generic [ref=e617]: 100 mSv
+          - listitem [ref=e620]:
+            - button "Radiation sickness begins 1,000 mSv" [ref=e621] [cursor=pointer]:
+              - generic [ref=e622]:
+                - generic [ref=e623]: Radiation sickness begins
+                - generic [ref=e624]: 1,000 mSv
+          - listitem [ref=e627]:
+            - button "Fatal without treatment (about half) 4,500 mSv" [ref=e628] [cursor=pointer]:
+              - generic [ref=e629]:
+                - generic [ref=e630]: Fatal without treatment (about half)
+                - generic [ref=e631]: 4,500 mSv
+          - listitem [ref=e634]:
+            - button "Highest Chernobyl responder doses 16,000 mSv" [ref=e635] [cursor=pointer]:
+              - generic [ref=e636]:
+                - generic [ref=e637]: Highest Chernobyl responder doses
+                - generic [ref=e638]: 16,000 mSv
+        - generic [ref=e641]:
+          - generic [ref=e642]: Try another option
+          - progressbar "0 of 5 dose examples deliberately compared" [ref=e643]
+          - generic [ref=e644]: 0 of 5 dose examples deliberately compared
+        - generic [ref=e645]:
+          - paragraph [ref=e646]: Where the science is genuinely unsettled
+          - paragraph [ref=e647]: At and above about 100 mSv, excess cancer risk is measurable in survivor studies. Below that, epidemiological studies have limited statistical power because ordinary cancer is common and the possible addition is small. Regulators use the linear no-threshold model as a cautious protection assumption. Evidence at low dose remains uncertain rather than proving either zero risk or a measured effect; be wary of claims that treat either conclusion as settled.
+      - generic "📉 12. How risky is a small dose? Why one event gets two death tolls" [ref=e648]:
+        - heading "📉 12. How risky is a small dose? Why one event gets two death tolls" [level=4] [ref=e649]
+        - paragraph [ref=e650]: Everything above 100 mSv on the ladder is measured. Everything below it is modelled — and the model you pick is where the public argument actually lives. Two people can quote the same accident, use the same physics, make no arithmetic error, and differ by a factor of a hundred on the death toll. Here is how.
+        - paragraph [ref=e651]: Pick an exposure
+        - generic [ref=e652]:
+          - 'button "One person, one CT of the abdomen. Use the exposure: One person, one CT of the abdomen, 10 millisieverts each" [ref=e653] [cursor=pointer]': One person, one CT of the abdomen
+          - 'button "530,000 Chernobyl recovery workers, 120 mSv each. Use the exposure: 530,000 Chernobyl recovery workers, 120 mSv each, 120 millisieverts each" [ref=e654] [cursor=pointer]': 530,000 Chernobyl recovery workers, 120 mSv each
+          - 'button "100,000 aircrew, 3 mSv a year for 20 years. Use the exposure: 100,000 aircrew, 3 mSv a year for 20 years, 60 millisieverts each" [ref=e655] [cursor=pointer]': 100,000 aircrew, 3 mSv a year for 20 years
+          - 'button "A city of 1 million, 1 mSv each after a release. Use the exposure: A city of 1 million, 1 mSv each after a release, 1 millisieverts each" [pressed] [ref=e656] [cursor=pointer]': A city of 1 million, 1 mSv each after a release
+          - 'button "500 million people, 0.05 mSv each. Use the exposure: 500 million people, 0.05 mSv each, 0.05 millisieverts each" [ref=e657] [cursor=pointer]': 500 million people, 0.05 mSv each
+          - 'button "Everyone on Earth eats a banana a day for a year. Use the exposure: Everyone on Earth eats a banana a day for a year, 0.0365 millisieverts each" [ref=e658] [cursor=pointer]': Everyone on Earth eats a banana a day for a year
+        - generic [ref=e659]:
+          - paragraph [ref=e660]: 1 million people × 1 mSv = 1,000 person-sieverts
+          - paragraph [ref=e661]: One collective dose. Four ways to turn it into a number of people.
+          - list [ref=e662]:
+            - 'listitem "Linear no-threshold: 55 deaths" [ref=e663]':
+              - generic [ref=e664]: LNT (ICRP)
+              - generic [ref=e665]: 55 deaths
+            - 'listitem "Linear, with no low-dose-rate discount: 110 deaths" [ref=e666]':
+              - generic [ref=e667]: Linear, no discount
+              - generic [ref=e668]: 110 deaths
+            - 'listitem "Threshold at 100 mSv: zero" [ref=e669]':
+              - generic [ref=e670]: Threshold
+              - generic [ref=e671]: zero
+            - 'listitem "Hormesis: no defensible number" [ref=e672]':
+              - generic [ref=e673]: Hormesis
+              - generic [ref=e674]: no defensible number
+          - generic [ref=e675]:
+            - paragraph [ref=e676]: Can you use this sum? A planning quantity, not a body count
+            - paragraph [ref=e677]: Between about 1 and 100 mSv the number is below what epidemiology can resolve, but the individual doses are still large enough to be worth managing. Use it to COMPARE options — shelter against evacuate, scan against no scan — and not as a prediction of identifiable deaths.
+          - paragraph [ref=e678]: The emergency-planning case. One millisievert each is small individually and large collectively, and this is exactly the calculation an authority runs to compare sheltering against evacuating. Treat the answer as a planning quantity for comparing OPTIONS, not as a prediction of identifiable deaths.
+        - paragraph [ref=e679]: Now read one model properly
+        - generic [ref=e680]:
+          - button "LNT (ICRP). Explain the Linear no-threshold model" [pressed] [ref=e681] [cursor=pointer]: LNT (ICRP)
+          - button "Linear, no discount. Explain the Linear, with no low-dose-rate discount model" [ref=e682] [cursor=pointer]: Linear, no discount
+          - button "Threshold. Explain the Threshold at 100 mSv model" [ref=e683] [cursor=pointer]: Threshold
+          - button "Hormesis. Explain the Hormesis model" [ref=e684] [cursor=pointer]: Hormesis
+        - generic [ref=e685]:
+          - paragraph [ref=e686]: Linear no-threshold
+          - paragraph [ref=e687]: 5.5% per sievert
+          - generic [ref=e688]:
+            - generic [ref=e689]:
+              - paragraph [ref=e690]: WHAT IT CLAIMS
+              - paragraph [ref=e691]: Risk is proportional to dose all the way down to zero, with no safe threshold. Half the dose, half the risk — never none.
+            - generic [ref=e692]:
+              - paragraph [ref=e693]: WHO USES IT
+              - paragraph [ref=e694]: ICRP, the US NRC, the EPA, and every national regulator. Every dose limit in this tool comes from it.
+            - generic [ref=e695]:
+              - paragraph [ref=e696]: THE CASE FOR IT
+              - paragraph [ref=e697]: It fits the atomic-bomb survivor data well above 100 mSv, it is simple to administer, and it errs in the direction that protects people. The pooled study of over 300,000 nuclear workers exposed slowly across whole careers (INWORKS) finds a dose-response consistent with a straight line rather than with a threshold.
+            - generic [ref=e698]:
+              - paragraph [ref=e699]: THE CASE AGAINST IT
+              - paragraph [ref=e700]: Below about 100 mSv it is an extrapolation, not a measurement. It is routinely applied several orders of magnitude outside the range where anyone has tested it.
+        - generic [ref=e701]:
+          - paragraph [ref=e702]: So why not just go and measure it?
+          - paragraph [ref=e703]: People have tried, and the obstacle is not funding or will — it is arithmetic. About a quarter of everyone dies of cancer anyway, so to see a small addition you need an exposed group and a matched unexposed group big enough that the difference is not noise. Set the dose and read off how many people that takes.
+          - generic [ref=e704]:
+            - generic [ref=e705]: Dose to detect
+            - slider "Dose to detect" [ref=e706]: "20"
+            - status [ref=e707]: 10 mSv
+          - generic [ref=e708]:
+            - generic [ref=e709]:
+              - paragraph [ref=e710]: People needed in each group
+              - paragraph [ref=e711]: 9.7 million
+            - generic [ref=e712]:
+              - paragraph [ref=e713]: Both groups together
+              - paragraph [ref=e714]: 19.5 million
+          - paragraph [ref=e715]: "Ten times smaller dose, a HUNDRED times the people: the excess enters the sizing squared, so the requirement grows as the inverse square of the dose. At 10 mSv — one CT scan — the answer is already larger than any radiation cohort ever assembled; at 1 mSv it exceeds the population of most countries. Published estimates agree: Brenner and colleagues put the 10 mSv study at roughly 5 million per group under slightly more favourable assumptions."
+          - paragraph [ref=e716]: "Slide it to 100 mSv and watch what the calculation says: about a hundred thousand people per group. The atomic-bomb survivor study follows roughly that many — and 100 mSv is exactly where this tool says the excess becomes measurable. That is not a coincidence, and it is the check on this arithmetic: the same formula that says the low-dose question is unanswerable correctly predicts where the answer we DO have came from."
+          - paragraph [ref=e717]: "Two-proportion sample size at 5% significance and 80% power, against a 25% baseline lifetime cancer mortality, using the ICRP coefficient. It assumes something even a perfect study could not have: that every person's dose is known exactly and nothing else differs between the groups. The real requirement is larger."
+        - generic [ref=e718]:
+          - paragraph [ref=e719]: What this section is NOT saying
+          - paragraph [ref=e720]: "Not that low-dose radiation is harmless: no threshold has ever been demonstrated, and the best evidence at low dose RATE — the pooled nuclear-worker cohorts — is consistent with a straight line rather than a floor. Not that the regulators are wrong either: assuming linearity when you cannot measure is the cautious choice, and caution is what a limit is for. What remains genuinely disputed among radiation biologists is the shape of the curve below about 100 mSv, and the honest answer to \"how many will this kill\" at those doses is that the arithmetic gives a number and the world may not. Be equally suspicious of anyone who quotes that number as a body count and of anyone who tells you it is zero."
+          - paragraph [ref=e721]: This is where the Chernobyl range in section 15 comes from. Apply the model to the most exposed few hundred thousand people and you get a projection of a few thousand; apply the same model to a whole continent receiving doses smaller than the difference between two towns' background, and you get tens of thousands. Neither side fabricated anything. They chose a different population, and the model does not know it is being asked something it cannot answer.
+        - note "Educational safety notice" [ref=e722]:
+          - paragraph [ref=e723]: Educational model — not emergency or medical instructions
+          - paragraph [ref=e724]: This personal-dose estimate is educational, not a medical assessment. Ask a qualified clinician, health physicist, or local radon program about a real exposure.
+          - link "Official NRC emergency guidance ↗" [ref=e725] [cursor=pointer]:
+            - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+        - paragraph [ref=e726]:
+          - text: "Sources · reviewed 2026-08:"
+          - link "ICRP Publication 103 (2007)" [ref=e727] [cursor=pointer]:
+            - /url: https://www.icrp.org/publication.asp?id=ICRP%20Publication%20103
+          - text: ·
+          - link "INWORKS worker cohort, BMJ 2023" [ref=e728] [cursor=pointer]:
+            - /url: https://www.bmj.com/content/382/bmj-2022-074520
+          - text: ·
+          - link "UNSCEAR Fukushima 2020/21" [ref=e729] [cursor=pointer]:
+            - /url: https://www.unscear.org/unscear/en/publications/2020_2021_2.html
+      - generic "🔬 13. Measure it yourself — and why one short count lies" [ref=e730]:
+        - heading "🔬 13. Measure it yourself — and why one short count lies" [level=4] [ref=e731]
+        - paragraph [ref=e732]: Every figure above came out of a detector, and a detector does not measure sieverts. It measures clicks — and radioactive decay is random, so the same source counted twice gives two different answers. Neither is wrong. Take some counts and watch it happen.
+        - generic [ref=e733]:
+          - generic [ref=e734]:
+            - paragraph [ref=e735]: Becquerel (Bq)
+            - paragraph [ref=e736]: What the SOURCE does
+            - paragraph [ref=e737]: One decay per second, inside the source. It does not depend on you, your detector, or where you stand.
+          - generic [ref=e738]:
+            - paragraph [ref=e739]: Counts per second
+            - paragraph [ref=e740]: What the DETECTOR sees
+            - paragraph [ref=e741]: Always far less. Most photons miss the window entirely, and the tube ignores most of the ones that arrive. Never quote a count rate without saying which instrument, at what distance.
+          - generic [ref=e742]:
+            - paragraph [ref=e743]: Millisievert (mSv)
+            - paragraph [ref=e744]: What YOUR BODY absorbs
+            - paragraph [ref=e745]: Energy deposited per kilogram of tissue, weighted for how much damage that kind of radiation does. Getting here from counts needs a calibrated instrument and the photon energy.
+        - paragraph [ref=e746]: Put something in front of the tube
+        - generic [ref=e747]:
+          - button "Background only. Measure Background only. No source at all." [ref=e748] [cursor=pointer]: Background only
+          - button "One banana. Measure One banana. ≈0.45 g of potassium, so ≈14 Bq of K-40." [ref=e749] [cursor=pointer]: One banana
+          - button "1 kg salt substitute (KCl). Measure 1 kg salt substitute (KCl). 524 g of potassium at 31.7 Bq/g." [ref=e750] [cursor=pointer]: 1 kg salt substitute (KCl)
+          - button "Cs-137 check source, 37 kBq. Measure Cs-137 check source, 37 kBq. 1 µCi sealed disc, 662 keV gamma in 85.1% of decays." [pressed] [ref=e751] [cursor=pointer]: Cs-137 check source, 37 kBq
+          - button "Co-60 check source, 37 kBq. Measure Co-60 check source, 37 kBq. 1 µCi, and TWO gammas per decay (1.17 and 1.33 MeV)." [ref=e752] [cursor=pointer]: Co-60 check source, 37 kBq
+        - paragraph [ref=e753]: 1 µCi sealed disc, 662 keV gamma in 85.1% of decays. — 37,000 Bq, giving off about 31,487 gammas a second in all directions.
+        - generic [ref=e754]:
+          - generic [ref=e755]: Distance
+          - slider "Distance" [ref=e756]: "10"
+          - status [ref=e757]: 10 cm
+        - paragraph [ref=e758]: Count for
+        - generic [ref=e759]:
+          - button "5 s. Count for 5 seconds" [ref=e760] [cursor=pointer]: 5 s
+          - button "10 s. Count for 10 seconds" [pressed] [ref=e761] [cursor=pointer]: 10 s
+          - button "30 s. Count for 30 seconds" [ref=e762] [cursor=pointer]: 30 s
+          - button "1 min. Count for 60 seconds" [ref=e763] [cursor=pointer]: 1 min
+          - button "5 min. Count for 300 seconds" [ref=e764] [cursor=pointer]: 5 min
+          - button "10 min. Count for 600 seconds" [ref=e765] [cursor=pointer]: 10 min
+        - button "Take a count. Measure Cs-137 check source, 37 kBq for 10 seconds at 10 centimetres, with a matching background count" [ref=e767] [cursor=pointer]: ⏱️ Take a count
+        - paragraph [ref=e768]: "No counts yet. Each press runs the detector twice: once with the source, once with it removed, for the same length of time. That second run is not optional — you cannot subtract a background you never measured."
+        - 'img "Net count rate against distance for Cs-137 check source, 37 kBq. The curve follows the inverse square law: at 10 centimetres the true rate is 1.543 counts per second, and doubling the distance to 20 centimetres quarters it to 0.386." [ref=e770]'
+        - paragraph [ref=e771]: The curve is the inverse square law, and it is not a property of radiation — it is a property of spheres. The same gammas spread over a surface four times larger when you step twice as far back. Doubling your distance does more than most shielding, costs nothing, and is why the first rule of a radiation area is stand further away.
+        - generic [ref=e772]:
+          - paragraph [ref=e773]: The trap in every cheap counter
+          - paragraph [ref=e774]: "Consumer Geiger counters show a number in µSv/h, which makes them look like dose meters. They are not. The tube counts clicks and the display multiplies by one fixed factor — almost always the one that is correct for caesium-137 at 662 keV. Point the same instrument at a lower-energy source and the reading can be out by a factor of several, in either direction. This is the single most common way a well-meaning measurement ends up wrong on the internet: the instrument is fine, the counting is fine, and the conversion was never valid for what was being measured."
+        - paragraph [ref=e775]: "End-window GM tube, 6.16 cm² window, intrinsic efficiency 0.8–1.0% and background 25 counts/min — typical of school apparatus at sea level. Counts are drawn from a Poisson distribution, the real statistics of decay. Detection threshold is the Currie critical level for a paired background, 2.33√(2N_b), a 5% chance of crying wolf. Source activities: 37 kBq check sources, potassium at 31.7 Bq per gram of natural K, K-40 emitting its 1461 keV gamma in 10.6% of decays."
+      - generic "⏱️ 14. Time, distance, shielding — all three levers" [ref=e776]:
+        - heading "⏱️ 14. Time, distance, shielding — all three levers" [level=4] [ref=e777]
+        - note "Educational safety notice" [ref=e778]:
+          - paragraph [ref=e779]: Educational model — not emergency or medical instructions
+          - paragraph [ref=e780]: Follow the nuclear-medicine team's written discharge instructions. Never use this calculator to set a real contact time or handle a sealed source.
+          - link "Official NRC emergency guidance ↗" [ref=e781] [cursor=pointer]:
+            - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+        - paragraph [ref=e782]: "Section 5 covered what stops radiation and section 13 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Dose is dose rate accumulated over time. A steady rate is simple multiplication; when a radionuclide is decaying, the rate must be integrated as it falls."
+        - paragraph [ref=e783]: What are you standing near?
+        - generic [ref=e784]:
+          - button "Someone who has just had a bone scan. Someone who has just had a bone scan, Tc-99m, 0.8 gigabecquerels" [ref=e785] [cursor=pointer]: Someone who has just had a bone scan
+          - button "A patient treated for thyroid cancer. A patient treated for thyroid cancer, I-131, 5.5 gigabecquerels" [ref=e786] [cursor=pointer]: A patient treated for thyroid cancer
+          - button "An industrial thickness gauge. An industrial thickness gauge, Cs-137, 37 gigabecquerels" [pressed] [ref=e787] [cursor=pointer]: An industrial thickness gauge
+          - button "A sterilisation source. A sterilisation source, Co-60, 37 gigabecquerels" [ref=e788] [cursor=pointer]: A sterilisation source
+        - paragraph [ref=e789]: "Cs-137, 37 GBq — initially 0.077 mSv/h at 1 metre per GBq, worked out from its decay scheme. Physical half-life: 30.1 years."
+        - generic [ref=e790]:
+          - generic [ref=e791]: Your distance
+          - slider "Your distance" [ref=e792]: "1"
+          - status [ref=e793]: 1 m
+        - generic [ref=e794]:
+          - button "Air. Shield with Air" [pressed] [ref=e795] [cursor=pointer]: Air
+          - button "Water. Shield with Water" [ref=e796] [cursor=pointer]: Water
+          - button "Concrete. Shield with Concrete" [ref=e797] [cursor=pointer]: Concrete
+          - button "Steel. Shield with Steel" [ref=e798] [cursor=pointer]: Steel
+          - button "Lead. Shield with Lead" [ref=e799] [cursor=pointer]: Lead
+        - generic [ref=e800]:
+          - generic [ref=e801]: Shield thickness
+          - slider "Shield thickness" [ref=e802]: "0"
+          - status [ref=e803]: 0 cm
+        - img "Initial dose rate against distance for Cs-137 at 37 gigabecquerels. Unshielded it is 2.841 millisieverts per hour at 1 metre and 0.114 at 5 metres. At your chosen 1 metres behind 0 centimetres of air it is 2.841 millisieverts per hour." [ref=e805]
+        - generic [ref=e806]:
+          - generic [ref=e807]:
+            - paragraph [ref=e808]: Initial dose rate
+            - paragraph [ref=e809]: 2.84 mSv/h
+          - generic [ref=e810]:
+            - paragraph [ref=e811]: Shield cuts it to
+            - paragraph [ref=e812]: no shield
+          - generic [ref=e813]:
+            - paragraph [ref=e814]: Dose in first hour
+            - paragraph [ref=e815]: 2.84 mSv
+        - paragraph [ref=e816]: How long until you reach…
+        - generic [ref=e817]:
+          - button "Public annual limit (1 mSv). Public annual limit, 1 millisieverts" [pressed] [ref=e818] [cursor=pointer]: Public annual limit (1 mSv)
+          - button "Worker annual limit (20 mSv). Worker annual limit, 20 millisieverts" [ref=e819] [cursor=pointer]: Worker annual limit (20 mSv)
+          - button "Radiation sickness begins (1000 mSv). Radiation sickness begins, 1000 millisieverts" [ref=e820] [cursor=pointer]: Radiation sickness begins (1000 mSv)
+        - generic [ref=e821]:
+          - paragraph [ref=e822]: 21.1 minutes
+          - paragraph [ref=e823]: to accumulate 1 mSv at 1 m, unshielded, after physical decay is included.
+          - paragraph [ref=e824]: "Sealed sources like this are safe because of the housing, not the isotope. Every serious accident with one has the same shape: the source came out of its shielding, or never went back in, and the person nearby had no way to know."
+          - paragraph [ref=e825]: ⏱️ With a steady source, halve your time and you halve your dose. A short-lived source changes while you wait, so this calculator integrates the falling rate.
+        - generic [ref=e826]:
+          - generic [ref=e827]:
+            - paragraph [ref=e828]: ⏱️ TIME
+            - paragraph [ref=e829]: Half target at 10.6 minutes
+            - paragraph [ref=e830]: Time is the free lever. This value includes radioactive decay instead of assuming the initial rate lasts forever.
+          - generic [ref=e831]:
+            - paragraph [ref=e832]: 📏 DISTANCE
+            - paragraph [ref=e833]: Move to 1.4 m
+            - paragraph [ref=e834]: In the point-source, open-air model, multiply distance by 1.41 and the initial dose rate halves. Nearby extended sources and scattered radiation depart from this rule.
+          - generic [ref=e835]:
+            - paragraph [ref=e836]: 🧱 SHIELDING
+            - paragraph [ref=e837]: +8,589.2 cm of air
+            - paragraph [ref=e838]: In this narrow-beam model, one half-value layer halves the initial rate again. Scattered photons make real thick shields perform less neatly.
+        - paragraph [ref=e839]: "For a source whose rate is effectively steady during a visit, the three halves multiply: 1/2 × 1/2 × 1/2 = 1/8 of the starting dose. The time card above uses decay-aware integration instead of forcing that shortcut onto short-lived medical isotopes."
+        - paragraph [ref=e840]: Initial dose rate is computed from each nuclide's decay scheme with NIST mass energy-absorption coefficients for air, and time-to-dose integrates its physical half-life. The results sit within 3% of published gamma constants. The shield still uses the 1 MeV coefficients from section 5 and narrow-beam attenuation with no buildup factor, so a real thick shield performs somewhat worse. Patient geometry and biological clearance are also simplified. Treat this as the right order of magnitude and the right shape, never as a stay-time instruction.
+      - generic "📋 15. The three accidents, in the actual numbers" [ref=e841]:
+        - heading "📋 15. The three accidents, in the actual numbers" [level=4] [ref=e842]
+        - paragraph [ref=e843]: These are the events that shaped how the world thinks about nuclear power. The figures below come from UNSCEAR and the relevant national reports, and where the range is disputed the tool says so.
+        - generic [ref=e844]:
+          - button "Three Mile Island (1979) Pennsylvania, USA · INES 5" [ref=e846] [cursor=pointer]:
+            - generic [ref=e847]:
+              - generic [ref=e848]:
+                - generic [ref=e849]: Three Mile Island (1979)
+                - generic [ref=e850]: Pennsylvania, USA · INES 5
+              - generic [ref=e851]: ›
+          - button "Chernobyl (1986) Ukraine, then USSR · INES 7" [ref=e853] [cursor=pointer]:
+            - generic [ref=e854]:
+              - generic [ref=e855]:
+                - generic [ref=e856]: Chernobyl (1986)
+                - generic [ref=e857]: Ukraine, then USSR · INES 7
+              - generic [ref=e858]: ›
+          - button "Fukushima Daiichi (2011) Japan · INES 7" [ref=e860] [cursor=pointer]:
+            - generic [ref=e861]:
+              - generic [ref=e862]:
+                - generic [ref=e863]: Fukushima Daiichi (2011)
+                - generic [ref=e864]: Japan · INES 7
+              - generic [ref=e865]: ›
+        - paragraph [ref=e866]: "The evidence supports a narrower pattern: emergency responses can cause substantial non-radiological harm through evacuation, displacement, lost care and psychological distress. At Fukushima that harm is well documented; at Chernobyl its scale relative to projected radiation effects remains model-dependent. This is not an argument that radiation is harmless. It is why emergency planning has to weigh both kinds of harm."
+        - paragraph [ref=e867]:
+          - text: "Sources · reviewed 2026-08:"
+          - link "UNSCEAR Fukushima 2020/21" [ref=e868] [cursor=pointer]:
+            - /url: https://www.unscear.org/unscear/en/publications/2020_2021_2.html
+          - text: ·
+          - link "Japan Reconstruction Agency disaster-related deaths (2026)" [ref=e869] [cursor=pointer]:
+            - /url: https://www.reconstruction.go.jp/files/user/topics/main-cat2/sub-cat2-6/20260213_kanrenshi.pdf
+          - text: ·
+          - link "Japan MHLW Fukushima worker health report (2024)" [ref=e870] [cursor=pointer]:
+            - /url: https://www.mhlw.go.jp/english/topics/2011eq/workers/ri/ar/rat_12th.pdf
+      - generic "🏠 16. Shelter or evacuate? Work the numbers" [ref=e871]:
+        - heading "🏠 16. Shelter or evacuate? Work the numbers" [level=4] [ref=e872]
+        - note "Educational safety notice" [ref=e873]:
+          - paragraph [ref=e874]: Educational model — not emergency or medical instructions
+          - paragraph [ref=e875]: In an actual release, follow state and local officials. Whether to shelter, evacuate, or take KI depends on measurements and conditions this model cannot know.
+          - link "Official NRC emergency guidance ↗" [ref=e876] [cursor=pointer]:
+            - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+        - paragraph [ref=e877]: Fukushima Prefecture records 2,350 disaster-related deaths through 2025, a broad legal category that includes illness after injury and the physical burden of evacuation life. No acute radiation deaths occurred, and UNSCEAR has documented no resident health effects directly attributable to radiation. Worker compensation decisions are a separate category and do not prove individual causation. These figures cannot be reduced to a simple evacuation-versus-radiation score; they show why emergency choices have costs on both sides.
+        - paragraph [ref=e878]: "In this deliberately limited dose model, sheltering combines two levers from section 14: a building is shielding, and staying put means less time in the open than driving through a plume. The arithmetic compares those dose paths only; medical vulnerability, changing plume direction and official measurements still govern a real decision."
+        - generic [ref=e879]:
+          - generic [ref=e880]: Outdoor dose rate
+          - slider "Outdoor dose rate" [ref=e881]: "2"
+          - status [ref=e882]: 2 mSv/h
+        - generic [ref=e883]:
+          - generic [ref=e884]: Release lasts
+          - slider "Release lasts" [ref=e885]: "8"
+          - status [ref=e886]: 8 h
+        - generic [ref=e887]:
+          - generic [ref=e888]: Hours to get clear
+          - slider "Hours to get clear" [ref=e889]: "4"
+          - status [ref=e890]: 4 h
+        - paragraph [ref=e891]: Where would you be sheltering?
+        - generic [ref=e892]:
+          - button "Outdoors, or in a car ×0.9. Outdoors, or in a car, dose reduction factor 0.9" [ref=e893] [cursor=pointer]: Outdoors, or in a car ×0.9
+          - button "Wood-frame house, ground floor ×0.4. Wood-frame house, ground floor, dose reduction factor 0.4" [ref=e894] [cursor=pointer]: Wood-frame house, ground floor ×0.4
+          - button "Brick or concrete house ×0.2. Brick or concrete house, dose reduction factor 0.2" [pressed] [ref=e895] [cursor=pointer]: Brick or concrete house ×0.2
+          - button "Basement of a masonry house ×0.05. Basement of a masonry house, dose reduction factor 0.05" [ref=e896] [cursor=pointer]: Basement of a masonry house ×0.05
+          - button "Interior of a large concrete building ×0.02. Interior of a large concrete building, dose reduction factor 0.02" [ref=e897] [cursor=pointer]: Interior of a large concrete building ×0.02
+        - paragraph [ref=e898]: Mass is what matters, and masonry has several times the mass per square metre of a timber wall. Moving to an interior room, away from outside walls and windows, does more again.
+        - paragraph [ref=e899]: "Published range for this kind of building: ×0.1 – 0.3. The tool uses ×0.2."
+        - 'img "Dose against how long it takes to get clear. Sheltering in a brick or concrete house through a 8 hour release gives a flat 3.2 millisieverts. Evacuating gives 7.2 millisieverts after 4 hours in the open. The two are equal at 1.8 hours: get clear faster than that and leaving costs less dose, slower and it costs more." [ref=e901]'
+        - generic [ref=e902]:
+          - generic [ref=e903]:
+            - paragraph [ref=e904]: Shelter here
+            - paragraph [ref=e905]: 3.2 mSv
+          - generic [ref=e906]:
+            - paragraph [ref=e907]: Evacuate now
+            - paragraph [ref=e908]: 7.2 mSv
+        - generic [ref=e909]:
+          - paragraph [ref=e910]: "On dose alone: stay where you are"
+          - paragraph [ref=e911]: Break-even is 1.8 hours in the open. You said it would take 4 hours to get clear, which is longer than that, so the drive costs more dose than the walls save. This is the case people find counter-intuitive, and it is the ordinary one when a release is short and the roads are full.
+          - paragraph [ref=e912]: "Push the release out to several days and watch the answer flip: sheltering is a way of waiting out a plume, not a way of living somewhere contaminated. This classroom comparison cannot issue real guidance: officials may order sheltering or evacuation as measurements and travel conditions change."
+        - paragraph [ref=e913]:
+          - text: "Sources · reviewed 2026-08:"
+          - link "NRC radiological-emergency guidance" [ref=e914] [cursor=pointer]:
+            - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+          - text: ·
+          - link "UNSCEAR Fukushima 2020/21" [ref=e915] [cursor=pointer]:
+            - /url: https://www.unscear.org/unscear/en/publications/2020_2021_2.html
+          - text: ·
+          - link "Japan Reconstruction Agency disaster-related deaths (2026)" [ref=e916] [cursor=pointer]:
+            - /url: https://www.reconstruction.go.jp/files/user/topics/main-cat2/sub-cat2-6/20260213_kanrenshi.pdf
+          - text: ·
+          - link "Japan MHLW Fukushima worker health report (2024)" [ref=e917] [cursor=pointer]:
+            - /url: https://www.mhlw.go.jp/english/topics/2011eq/workers/ri/ar/rat_12th.pdf
+        - paragraph [ref=e918]: Where does that land against the published thresholds?
+        - list [ref=e919]:
+          - listitem [ref=e920]:
+            - paragraph [ref=e921]: US EPA protective action guide, lower bound — 10 mSv, first 4 days
+            - paragraph [ref=e922]: "At a projected 10 mSv, authorities are expected to act — evacuate or shelter, whichever gives the lower dose. Not \"evacuate\": whichever is lower."
+          - listitem [ref=e923]:
+            - paragraph [ref=e924]: US EPA protective action guide, upper bound — 50 mSv, first 4 days
+            - paragraph [ref=e925]: The top of the same range. Above this the case for moving people is strong enough that the disruption is usually judged worth it.
+          - listitem [ref=e926]:
+            - paragraph [ref=e927]: IAEA generic criterion — 100 mSv, first 7 days
+            - paragraph [ref=e928]: The international threshold for urgent protective action. Note it sits at the same 100 mSv as the lowest dose with a clearly measurable cancer link, from section 11.
+        - generic [ref=e929]:
+          - paragraph [ref=e930]: What this calculation leaves out, and it is the important part
+          - paragraph [ref=e931]: "Everything above is dose, and radiation dose was not identified as the cause of deaths in Fukushima’s disaster-related-death total. Moving a hospital ward or a care home has risks that do not appear anywhere in this arithmetic: disrupted treatment, patients on ventilators, people with dementia moved somewhere unfamiliar, and prolonged displacement. Those stresses contributed to the official 2,350 total, but the legal category does not assign every case to one evacuation order. The lesson was not never evacuate; it was to decide per population rather than per map, because moving a frail patient can be more dangerous than moving a healthy adult."
+          - paragraph [ref=e932]: "It also leaves out everything after the plume: contaminated ground, food and water controls, and whether people can return. A dose comparison over the first few days is one input to that decision, not the decision."
+        - paragraph [ref=e933]: "Shielding factors from FEMA and EPA emergency planning guidance for cloud and ground shine, quoted as the ranges they are given as. Thresholds from the US EPA PAG Manual (2017) and IAEA GSR Part 7. The model is deliberately the simplest one that can flip: constant outdoor rate, a single building factor, and no credit for driving away from the plume rather than along it — which in a real evacuation matters as much as the hours do."
+      - generic "🏭 17. Reactor designs, and where SMRs really stand" [ref=e934]:
+        - heading "🏭 17. Reactor designs, and where SMRs really stand" [level=4] [ref=e935]
+        - paragraph [ref=e936]: Every row says how it works, what makes it safe, and — the part usually left out — what the catch is.
+        - generic [ref=e937]:
+          - button "Pressurised water (PWR) operating About 70% of the world fleet" [ref=e939] [cursor=pointer]:
+            - generic [ref=e940]:
+              - generic [ref=e941]: Pressurised water (PWR)
+              - generic [ref=e942]: operating
+              - generic [ref=e943]: ›
+            - generic [ref=e944]: About 70% of the world fleet
+          - button "Boiling water (BWR) operating About 15% of the fleet" [ref=e946] [cursor=pointer]:
+            - generic [ref=e947]:
+              - generic [ref=e948]: Boiling water (BWR)
+              - generic [ref=e949]: operating
+              - generic [ref=e950]: ›
+            - generic [ref=e951]: About 15% of the fleet
+          - button "Heavy water (CANDU) operating Canada, India, and others" [ref=e953] [cursor=pointer]:
+            - generic [ref=e954]:
+              - generic [ref=e955]: Heavy water (CANDU)
+              - generic [ref=e956]: operating
+              - generic [ref=e957]: ›
+            - generic [ref=e958]: Canada, India, and others
+          - button "RBMK (Chernobyl type) legacy A handful still running in Russia" [ref=e960] [cursor=pointer]:
+            - generic [ref=e961]:
+              - generic [ref=e962]: RBMK (Chernobyl type)
+              - generic [ref=e963]: legacy
+              - generic [ref=e964]: ›
+            - generic [ref=e965]: A handful still running in Russia
+          - button "Small modular (SMR) emerging A few operating; many proposed" [ref=e967] [cursor=pointer]:
+            - generic [ref=e968]:
+              - generic [ref=e969]: Small modular (SMR)
+              - generic [ref=e970]: emerging
+              - generic [ref=e971]: ›
+            - generic [ref=e972]: A few operating; many proposed
+          - button "Molten salt proposed Prototypes only" [ref=e974] [cursor=pointer]:
+            - generic [ref=e975]:
+              - generic [ref=e976]: Molten salt
+              - generic [ref=e977]: proposed
+              - generic [ref=e978]: ›
+            - generic [ref=e979]: Prototypes only
+          - button "Fusion research No power on any grid" [ref=e981] [cursor=pointer]:
+            - generic [ref=e982]:
+              - generic [ref=e983]: Fusion
+              - generic [ref=e984]: research
+              - generic [ref=e985]: ›
+            - generic [ref=e986]: No power on any grid
+        - generic [ref=e987]:
+          - paragraph [ref=e988]: On small modular reactors specifically
+          - paragraph [ref=e989]: "The engineering case is real: a small core can be cooled by convection and gravity alone, so a station blackout stops being the scenario that keeps operators awake. Factory production should also beat pouring concrete on site, where Western projects have overrun badly. But as of now almost none are operating commercially — China's HTR-PM since 2023, and a Russian floating plant. NuScale had the first US design approval and its flagship project was cancelled in 2023 when projected power costs rose from about $58 to $89 per MWh. Factory economics need order volume that does not yet exist, and several designs need HALEU fuel with a supply chain still being built. The right posture is interested, not convinced."
+          - paragraph [ref=e990]:
+            - text: "Sources · reviewed 2026-08:"
+            - link "NuScale project termination" [ref=e991] [cursor=pointer]:
+              - /url: https://www.nuscalepower.com/press-releases/2023/utah-associated-municipal-power-systems-and-nuscale-power-agree-to-terminate-the-carbon-free-power-project
+            - text: ·
+            - link "ITER 2024 baseline" [ref=e992] [cursor=pointer]:
+              - /url: https://www.iter.org/node/20687/new-baseline-prioritize-robust-start-exploitation
+            - text: ·
+            - link "LLNL NIF 2022 result" [ref=e993] [cursor=pointer]:
+              - /url: https://annual.llnl.gov/fy-2022/national-ignition-facility-2022
+      - generic "🗄️ 18. The waste question, taken seriously" [ref=e994]:
+        - heading "🗄️ 18. The waste question, taken seriously" [level=4] [ref=e995]
+        - paragraph [ref=e996]: This is the objection that survives every other answer, so it deserves a straight one — including the part that genuinely has no solution.
+        - generic [ref=e997]:
+          - button "How much there is About 400,000 tonnes of spent fuel worldwide, growing by roughly 2,000–2,500 t a year." [ref=e999] [cursor=pointer]:
+            - generic [ref=e1000]:
+              - generic [ref=e1001]:
+                - generic [ref=e1002]: How much there is
+                - generic [ref=e1003]: About 400,000 tonnes of spent fuel worldwide, growing by roughly 2,000–2,500 t a year.
+              - generic [ref=e1004]: ›
+          - button "How long it stays dangerous Radiotoxicity falls back to that of the original uranium ore after roughly 100,000 to 300,000 years." [ref=e1006] [cursor=pointer]:
+            - generic [ref=e1007]:
+              - generic [ref=e1008]:
+                - generic [ref=e1009]: How long it stays dangerous
+                - generic [ref=e1010]: Radiotoxicity falls back to that of the original uranium ore after roughly 100,000 to 300,000 years.
+              - generic [ref=e1011]: ›
+          - button "Where it is right now Mostly on the sites that made it — first in cooling pools, then in dry casks." [ref=e1013] [cursor=pointer]:
+            - generic [ref=e1014]:
+              - generic [ref=e1015]:
+                - generic [ref=e1016]: Where it is right now
+                - generic [ref=e1017]: Mostly on the sites that made it — first in cooling pools, then in dry casks.
+              - generic [ref=e1018]: ›
+          - button "The permanent answer Finland's Onkalo is the first deep geological repository in the world to be built and licensed." [ref=e1020] [cursor=pointer]:
+            - generic [ref=e1021]:
+              - generic [ref=e1022]:
+                - generic [ref=e1023]: The permanent answer
+                - generic [ref=e1024]: Finland's Onkalo is the first deep geological repository in the world to be built and licensed.
+              - generic [ref=e1025]: ›
+          - button "The part nobody solved How do you warn someone 10,000 years from now?" [ref=e1027] [cursor=pointer]:
+            - generic [ref=e1028]:
+              - generic [ref=e1029]:
+                - generic [ref=e1030]: The part nobody solved
+                - generic [ref=e1031]: How do you warn someone 10,000 years from now?
+              - generic [ref=e1032]: ›
+      - generic "⚖️ 19. Compared with the alternatives" [ref=e1033]:
+        - heading "⚖️ 19. Compared with the alternatives" [level=4] [ref=e1034]
+        - paragraph [ref=e1035]: Risk only means something next to the risk of the thing you would do instead. Both charts are full life cycle, including mining, construction and accidents.
+        - generic [ref=e1036]:
+          - paragraph [ref=e1037]: First, commit to an answer
+          - paragraph [ref=e1038]: Answer these before you look. A chart you already agree with teaches you nothing; the gap between what you expected and what the data says is the part worth having.
+          - generic [ref=e1039]:
+            - paragraph [ref=e1040]: Per unit of electricity, which has killed more people?
+            - generic [ref=e1041]:
+              - button "Coal. Coal has caused more deaths per terawatt hour" [ref=e1042] [cursor=pointer]: Coal
+              - button "Nuclear. Nuclear has caused more deaths per terawatt hour" [ref=e1043] [cursor=pointer]: Nuclear
+          - generic [ref=e1044]:
+            - paragraph [ref=e1045]: And which of these two?
+            - generic [ref=e1046]:
+              - button "Hydropower. Hydropower has caused more deaths per terawatt hour" [ref=e1047] [cursor=pointer]: Hydropower
+              - button "Nuclear. Nuclear has caused more deaths per terawatt hour" [ref=e1048] [cursor=pointer]: Nuclear
+          - generic [ref=e1049]:
+            - paragraph [ref=e1050]: One more — which of these?
+            - generic [ref=e1051]:
+              - button "Natural gas. Natural gas has caused more deaths per terawatt hour" [ref=e1052] [cursor=pointer]: Natural gas
+              - button "Solar. Solar has caused more deaths per terawatt hour" [ref=e1053] [cursor=pointer]: Solar
+          - button "Answer all three to compare (0 of 3)" [disabled] [ref=e1054]
+        - paragraph [ref=e1055]: Deaths per terawatt-hour of electricity
+        - paragraph [ref=e1056]: The chart appears once you have answered the three questions above.
+        - paragraph [ref=e1057]: Logarithmic scale. Markandya & Wilkinson (2007) and Sovacool et al. (2016), compiled by Our World in Data. Nuclear's figure includes Chernobyl and Fukushima.
+        - generic [ref=e1058]:
+          - paragraph [ref=e1059]: 🤔 Nuclear power provokes far more fear than several sources that harm more people per unit of energy. What does that tell you about how people weigh a rare, dramatic, involuntary risk against a constant, invisible, familiar one?
+          - button "Worked it out? Check" [ref=e1060] [cursor=pointer]
+      - generic "🎛️ 20. Operate a reactor" [ref=e1061]:
+        - heading "🎛️ 20. Operate a reactor" [level=4] [ref=e1062]
+        - paragraph [ref=e1063]: A modern reactor, run properly. The two accident conditions are here as engineering case studies — the point is to watch the physics do it, not to score a disaster.
+        - generic [ref=e1064]:
+          - generic [ref=e1065]:
+            - 'img "Cutaway view of a pressurised water reactor core: containment shell, pressure vessel, coolant, fuel assemblies and control rods. The rods rise and fall with the control setting, and the coolant colours and fills with steam voids as the fuel heats. Everything it shows is also in the readings below, and each part has a button under \"Parts of the core\"." [ref=e1066]'
+            - status [ref=e1067]:
+              - paragraph [ref=e1068]: The 3D core needs a newer host module than this build has. The control panel beside it still works in full.
+          - img "Reactor control panel showing a power trace, fuel temperature, net reactivity in pcm and xenon level. Use the controls below; every reading is also given as text under the panel." [ref=e1070]
+        - generic "Live reactor readings" [ref=e1071]:
+          - generic [ref=e1072]:
+            - term [ref=e1073]: Power
+            - definition [ref=e1074]:
+              - status [ref=e1075]: 100%
+            - definition [ref=e1076]: Ready
+          - generic [ref=e1077]:
+            - term [ref=e1078]: Fuel temperature
+            - definition [ref=e1079]:
+              - status [ref=e1080]: 320 °C
+            - definition [ref=e1081]: Below 400 °C
+          - generic [ref=e1082]:
+            - term [ref=e1083]: Net reactivity
+            - definition [ref=e1084]:
+              - status [ref=e1085]: "-75 pcm"
+            - definition [ref=e1086]: Power falling
+          - generic [ref=e1087]:
+            - term [ref=e1088]: Xenon level
+            - definition [ref=e1089]:
+              - status [ref=e1090]: 1×
+            - definition [ref=e1091]: Normal
+          - generic [ref=e1092]:
+            - term [ref=e1093]: Simulation state
+            - definition [ref=e1094]:
+              - status [ref=e1095]: Paused
+            - definition [ref=e1096]: Paused
+        - button "Show current status. Read a text snapshot of the reactor" [ref=e1098] [cursor=pointer]: Show current status
+        - group "1. Choose scenario" [ref=e1099]:
+          - generic [ref=e1100]: 1 · Choose scenario
+          - generic [ref=e1101]:
+            - 'button "Hold at full power. Run the scenario: Hold at full power. Keep power between 95% and 105% for 60 seconds." [pressed] [ref=e1102] [cursor=pointer]': Hold at full power
+            - 'button "The xenon pit. Run the scenario: The xenon pit. Drop to 20% power, hold 90 seconds, then get back above 80%." [ref=e1103] [cursor=pointer]': The xenon pit
+            - 'button "Station blackout. Run the scenario: Station blackout. After the scram, keep fuel below 1200 °C for 120 seconds." [ref=e1104] [cursor=pointer]': Station blackout
+          - paragraph [ref=e1105]: Keep power between 95% and 105% for 60 seconds. The ordinary job. Rods trim the reaction against slow drifts. Notice how sluggish the response feels — that lag is the delayed neutrons, and without them this would be uncontrollable.
+          - group "Objective progress" [ref=e1106]:
+            - generic [ref=e1107]:
+              - paragraph [ref=e1108]: Objective progress
+              - generic [ref=e1109]: Ready to begin
+            - paragraph [ref=e1110]: Hold inside the 95–105% power band
+            - progressbar "Hold inside the 95–105% power band" [ref=e1111]
+            - status [ref=e1112]: 0 of 60 continuous seconds in range.
+        - group "2. Choose core design" [ref=e1113]:
+          - generic [ref=e1114]: 2 · Choose core design
+          - generic [ref=e1115]:
+            - button "Modern PWR. Switch the core to Modern PWR" [pressed] [ref=e1116] [cursor=pointer]: Modern PWR
+            - button "RBMK (Chernobyl type). Switch the core to RBMK (Chernobyl type)" [ref=e1117] [cursor=pointer]: RBMK (Chernobyl type)
+          - paragraph [ref=e1118]: Negative temperature AND void coefficients. Heat it up or boil it and the reaction fights back on its own, with no operator and no computer involved.
+        - group "3. Operate the reactor" [ref=e1119]:
+          - generic [ref=e1120]: 3 · Operate the reactor
+          - generic [ref=e1121]:
+            - button "Run. Start the simulation" [ref=e1122] [cursor=pointer]: ▶ Run
+            - 'button "Scram: drop every control rod immediately" [ref=e1123] [cursor=pointer]': 🛑 SCRAM
+            - button "Reset. Return the reactor to its starting condition" [ref=e1124] [cursor=pointer]: ↺ Reset
+            - button "Pumps on. Stop the coolant pumps" [pressed] [ref=e1125] [cursor=pointer]: 💧 Pumps on
+          - generic [ref=e1126]:
+            - generic [ref=e1127]: Control rods
+            - slider "Control rods" [ref=e1128]: "50"
+            - generic [ref=e1129]: 50% in
+        - paragraph [ref=e1130]: Parts of the core
+        - generic [ref=e1131]:
+          - button "Fuel assemblies" [ref=e1132] [cursor=pointer]
+          - button "Control rods" [ref=e1133] [cursor=pointer]
+          - button "Coolant / moderator" [ref=e1134] [cursor=pointer]
+          - button "Pressure vessel" [ref=e1135] [cursor=pointer]
+          - button "Containment" [ref=e1136] [cursor=pointer]
+        - paragraph [ref=e1137]: "One-group point kinetics with the prompt-jump approximation: β = 0.0065, Λ = 10⁻⁴ s, λ = 0.0767 /s. Decay heat uses the Wigner-Way approximation. Temperature, void and xenon feedbacks are order-of-magnitude realistic for teaching, not a licensing model."
+      - 'generic "🔎 21. Evidence challenge: what does the evidence earn?" [ref=e1138]':
+        - 'heading "🔎 21. Evidence challenge: what does the evidence earn?" [level=4] [ref=e1139]'
+        - paragraph [ref=e1140]: Classify each claim using only the evidence given. There is no timer and no penalty for revising an answer. “Not settled” is a full scientific verdict when the evidence cannot distinguish the possibilities.
+        - generic [ref=e1141]:
+          - generic [ref=e1142]: Evidence mastery
+          - progressbar "0 of 5 evidence claims mastered" [ref=e1143]
+          - generic [ref=e1144]: 0 of 5 mastered
+        - navigation "Evidence challenge claims" [ref=e1145]:
+          - list [ref=e1146]:
+            - listitem [ref=e1147]:
+              - button "Claim 1 of 5, not yet mastered" [ref=e1148] [cursor=pointer]: "1"
+            - listitem [ref=e1149]:
+              - button "Claim 2 of 5, not yet mastered" [ref=e1150] [cursor=pointer]: "2"
+            - listitem [ref=e1151]:
+              - button "Claim 3 of 5, not yet mastered" [ref=e1152] [cursor=pointer]: "3"
+            - listitem [ref=e1153]:
+              - button "Claim 4 of 5, not yet mastered" [ref=e1154] [cursor=pointer]: "4"
+            - listitem [ref=e1155]:
+              - button "Claim 5 of 5, not yet mastered" [ref=e1156] [cursor=pointer]: "5"
+        - group "Claim 1 of 5" [ref=e1157]:
+          - generic [ref=e1158]: Claim 1 of 5
+          - paragraph [ref=e1159]: “If every control rod is withdrawn, a power reactor can detonate like a nuclear weapon.”
+          - paragraph [ref=e1160]: Which verdict is justified by the evidence in this lab?
+          - generic [ref=e1161]:
+            - generic [ref=e1162] [cursor=pointer]:
+              - radio "Supported by this evidence" [ref=e1163]
+              - generic [ref=e1164]: Supported by this evidence
+            - generic [ref=e1165] [cursor=pointer]:
+              - radio "Contradicted by this evidence" [ref=e1166]
+              - generic [ref=e1167]: Contradicted by this evidence
+            - generic [ref=e1168] [cursor=pointer]:
+              - radio "Not settled by this evidence" [ref=e1169]
+              - generic [ref=e1170]: Not settled by this evidence
+          - paragraph [ref=e1171]: Choose a verdict to continue.
+          - generic [ref=e1172]:
+            - button "Check the evidence" [disabled] [ref=e1173]
+            - button "Start over" [ref=e1174] [cursor=pointer]
+      - generic "🔗 Take this somewhere" [ref=e1175]:
+        - heading "🔗 Take this somewhere" [level=4] [ref=e1176]
+        - generic [ref=e1177]:
+          - button "Heat & Thermodynamics Lab → A reactor is a heat engine. Carnot caps it at about 33%, which is why two-thirds of the energy goes up the cooling towers." [ref=e1178] [cursor=pointer]:
+            - generic [ref=e1179]:
+              - generic [ref=e1180]: 🌡️
+              - generic [ref=e1181]: Heat & Thermodynamics Lab
+              - generic [ref=e1182]: →
+            - generic [ref=e1183]: A reactor is a heat engine. Carnot caps it at about 33%, which is why two-thirds of the energy goes up the cooling towers.
+          - button "Renewables Lab → Put the deaths and carbon figures next to how each source actually generates power." [ref=e1184] [cursor=pointer]:
+            - generic [ref=e1185]:
+              - generic [ref=e1186]: ⚡
+              - generic [ref=e1187]: Renewables Lab
+              - generic [ref=e1188]: →
+            - generic [ref=e1189]: Put the deaths and carbon figures next to how each source actually generates power.
+          - button "Geology Explorer → Radiometric dating is the half-life maths above, applied to rock. It is how we know the Earth's age." [ref=e1190] [cursor=pointer]:
+            - generic [ref=e1191]:
+              - generic [ref=e1192]: ⛰️
+              - generic [ref=e1193]: Geology Explorer
+              - generic [ref=e1194]: →
+            - generic [ref=e1195]: Radiometric dating is the half-life maths above, applied to rock. It is how we know the Earth's age.
+          - 'button "ChemLab: Reactions & Elements → Nuclear equations balance mass number and charge, not atoms — and the periodic table atlas lives there." [ref=e1196] [cursor=pointer]':
+            - generic [ref=e1197]:
+              - generic [ref=e1198]: ⚖️
+              - generic [ref=e1199]: "ChemLab: Reactions & Elements"
+              - generic [ref=e1200]: →
+            - generic [ref=e1201]: Nuclear equations balance mass number and charge, not atoms — and the periodic table atlas lives there.
+      - generic [ref=e1202]:
+        - paragraph [ref=e1203]: Reviewed 2026-08. Half-lives use NNDC NuDat 3; attenuation uses NIST XCOM at 1 MeV; dose and accident context uses UNSCEAR, ICRP 103 and NCRP 160. Where a figure is disputed, the tool gives the range rather than choosing.
+        - paragraph [ref=e1204]:
+          - text: "Sources · reviewed 2026-08:"
+          - link "NNDC NuDat 3" [ref=e1205] [cursor=pointer]:
+            - /url: https://www.nndc.bnl.gov/nudat3/
+          - text: ·
+          - link "NIST XCOM" [ref=e1206] [cursor=pointer]:
+            - /url: https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
+          - text: ·
+          - link "UNSCEAR Fukushima 2020/21" [ref=e1207] [cursor=pointer]:
+            - /url: https://www.unscear.org/unscear/en/publications/2020_2021_2.html
+          - text: ·
+          - link "ICRP Publication 103 (2007)" [ref=e1208] [cursor=pointer]:
+            - /url: https://www.icrp.org/publication.asp?id=ICRP%20Publication%20103
+          - text: ·
+          - link "INWORKS worker cohort, BMJ 2023" [ref=e1209] [cursor=pointer]:
+            - /url: https://www.bmj.com/content/382/bmj-2022-074520
+          - text: ·
+          - link "NRC radiological-emergency guidance" [ref=e1210] [cursor=pointer]:
+            - /url: https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg
+          - text: ·
+          - link "ITER 2024 baseline" [ref=e1211] [cursor=pointer]:
+            - /url: https://www.iter.org/node/20687/new-baseline-prioritize-robust-start-exploitation
+          - text: ·
+          - link "LLNL NIF 2022 result" [ref=e1212] [cursor=pointer]:
+            - /url: https://annual.llnl.gov/fy-2022/national-ignition-facility-2022
+          - text: ·
+          - link "NuScale project termination" [ref=e1213] [cursor=pointer]:
+            - /url: https://www.nuscalepower.com/press-releases/2023/utah-associated-municipal-power-systems-and-nuscale-power-agree-to-terminate-the-carbon-free-power-project
+```

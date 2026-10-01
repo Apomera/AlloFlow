@@ -1,0 +1,249 @@
+{
+  "at": "2026-09-26T21:32:44.324Z",
+  "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "startHead": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "endHead": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "files": {
+    "AlloFlowANTI.txt": {
+      "bytes": 2777108,
+      "sha256": "9eed9816ff69db02fa4f6e342ceea9cc4d5bae6be2717d5c2f7ba9213e514172"
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "bytes": 2777108,
+      "sha256": "9eed9816ff69db02fa4f6e342ceea9cc4d5bae6be2717d5c2f7ba9213e514172"
+    },
+    "desktop/web-app/src/App.jsx": {
+      "bytes": 2777108,
+      "sha256": "9eed9816ff69db02fa4f6e342ceea9cc4d5bae6be2717d5c2f7ba9213e514172"
+    },
+    "reader_place_store.js": {
+      "bytes": 10782,
+      "sha256": "781608eaa07f0104cf114824d0361e87fe9f59e80bef3a31bbdbb68b8e1985e5"
+    },
+    "_build_view_simplified_module.js": {
+      "bytes": 2872,
+      "sha256": "d87314d82985997d64b5da8f1ae966ce0e5a4ace83411555ed6e24b086b10553"
+    },
+    "dev-tools/build_adapted_reader.cjs": {
+      "bytes": 2227,
+      "sha256": "10c48a4575a17f6666b4eca1362eb9b986bb65f5895183d3bdc1ede410db5ddf"
+    },
+    "desktop/web-app/src/content_engine_source.jsx": {
+      "bytes": 186984,
+      "sha256": "3646378a1fd44fc5f4c0069d5e4c4d039234ff1af8ca1bbd05c3178b652c2bb2"
+    },
+    "view_simplified_source.jsx": {
+      "bytes": 411039,
+      "sha256": "7775056fe10a3083b772e217afe8cd16fbdae072583110e3da336c007cc86fec"
+    },
+    "view_simplified_module.js": {
+      "bytes": 444102,
+      "sha256": "285d9096c14cb9f6d7f5e0cd82b82345dd4d04d7b030b26524c69cfde877a6a2"
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "bytes": 444102,
+      "sha256": "285d9096c14cb9f6d7f5e0cd82b82345dd4d04d7b030b26524c69cfde877a6a2"
+    },
+    "pure_helpers_source.jsx": {
+      "bytes": 30278,
+      "sha256": "48d854fe019ac81e47b5c0b86cd1d64bf041f7c1d7d7723791d7c648c980a82e"
+    },
+    "pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "desktop/web-app/public/pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "content_engine_source.jsx": {
+      "bytes": 185868,
+      "sha256": "af1bbe0d733b5f99107294c3cc6a0b7c45ac67d1f73011b0424cea2d017c1101"
+    },
+    "content_engine_module.js": {
+      "bytes": 186039,
+      "sha256": "87c76ca3368e6561418b9f6f6cdd6f26d5b03cab11e16478c9f2febb0cb8e37f"
+    },
+    "desktop/web-app/public/content_engine_module.js": {
+      "bytes": 186039,
+      "sha256": "87c76ca3368e6561418b9f6f6cdd6f26d5b03cab11e16478c9f2febb0cb8e37f"
+    },
+    "app_styles_source.jsx": {
+      "bytes": 299339,
+      "sha256": "c923bc2f774b913fa1857e2cf41318fe38506b8aba88da749933a674ac9c3f1b"
+    },
+    "app_styles_module.js": {
+      "bytes": 298731,
+      "sha256": "d15f4e168c0d7d1f255232af89d1e2c66b085cac7dc2a868da30937af7d339ee"
+    },
+    "desktop/web-app/public/app_styles_module.js": {
+      "bytes": 298731,
+      "sha256": "d15f4e168c0d7d1f255232af89d1e2c66b085cac7dc2a868da30937af7d339ee"
+    },
+    "generation_helpers_source.jsx": {
+      "bytes": 281137,
+      "sha256": "c9fd75609825dcf746c0390129a0cc38633e489eeac3127360aa2d6d80d219c9"
+    },
+    "generation_helpers_module.js": {
+      "bytes": 281508,
+      "sha256": "3f7204f1e0700e23b318dbb8f14e4962b9948ecf8c0fac5878df191271d0a03b"
+    },
+    "desktop/web-app/public/generation_helpers_module.js": {
+      "bytes": 281508,
+      "sha256": "3f7204f1e0700e23b318dbb8f14e4962b9948ecf8c0fac5878df191271d0a03b"
+    },
+    "read_aloud_audio_service_source.jsx": {
+      "bytes": 73904,
+      "sha256": "7d4cc712db9dc572e3a30b7e50f9e0b3d85ab99eaae86989316589c731509885"
+    },
+    "read_aloud_audio_service_module.js": {
+      "bytes": 74091,
+      "sha256": "32af91278b6049f69c3945d70c54f960de2934f9eaed775c955ff9f5397e798d"
+    },
+    "desktop/web-app/public/read_aloud_audio_service_module.js": {
+      "bytes": 74091,
+      "sha256": "32af91278b6049f69c3945d70c54f960de2934f9eaed775c955ff9f5397e798d"
+    },
+    "live_aac_source.jsx": {
+      "bytes": 60571,
+      "sha256": "d2808f8d4dcf005713f20b61867c2482900671ee13bf8872ad463d149b134e25"
+    },
+    "live_aac_module.js": {
+      "bytes": 61252,
+      "sha256": "ce23404402f77715d4518cbd897477153a0fb36ac7491df8c8150beb20a6e574"
+    },
+    "desktop/web-app/public/live_aac_module.js": {
+      "bytes": 61252,
+      "sha256": "ce23404402f77715d4518cbd897477153a0fb36ac7491df8c8150beb20a6e574"
+    },
+    "shared_activity_source.jsx": {
+      "bytes": 107132,
+      "sha256": "3e89ce50516eeebbf4a8b189fe4f4e711073da8c7e165b055a90e973426a6f88"
+    },
+    "shared_activity_module.js": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "desktop/web-app/public/shared_activity_module.js": {
+      "bytes": 95937,
+      "sha256": "f365b852dc9ed25a8d308417f8a92f29a2bf9a8ed988b65dc2801095cc8777a6"
+    }
+  },
+  "mirrors": [
+    {
+      "module": "view_simplified",
+      "matches": true
+    },
+    {
+      "module": "pure_helpers",
+      "matches": true
+    },
+    {
+      "module": "content_engine",
+      "matches": true
+    },
+    {
+      "module": "app_styles",
+      "matches": true
+    },
+    {
+      "module": "generation_helpers",
+      "matches": true
+    },
+    {
+      "module": "read_aloud_audio_service",
+      "matches": true
+    },
+    {
+      "module": "live_aac",
+      "matches": true
+    },
+    {
+      "module": "shared_activity",
+      "matches": false
+    }
+  ],
+  "hostsMatch": true,
+  "contentSourceMatches": false,
+  "pins": {
+    "AlloFlowANTI.txt": {
+      "view_simplified": [
+        "285d9096"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "55e824a46"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "55e824a46"
+      ],
+      "read_aloud_audio_service": [
+        "32af9127"
+      ],
+      "live_aac": [
+        "55e824a46"
+      ],
+      "shared_activity": [
+        "55e824a46"
+      ]
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "view_simplified": [
+        "285d9096"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "55e824a46"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "55e824a46"
+      ],
+      "read_aloud_audio_service": [
+        "32af9127"
+      ],
+      "live_aac": [
+        "55e824a46"
+      ],
+      "shared_activity": [
+        "55e824a46"
+      ]
+    },
+    "desktop/web-app/src/App.jsx": {
+      "view_simplified": [
+        "285d9096"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "55e824a46"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "55e824a46"
+      ],
+      "read_aloud_audio_service": [
+        "32af9127"
+      ],
+      "live_aac": [
+        "55e824a46"
+      ],
+      "shared_activity": [
+        "55e824a46"
+      ]
+    }
+  },
+  "errors": []
+}

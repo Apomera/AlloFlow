@@ -1,0 +1,13 @@
+{
+  "file": "view_simplified_source.jsx",
+  "beforeSha256": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31",
+  "afterSha256": "b791130d523318746ffcb9e34168b403d174414f1b0eca5cc37c55d68662b00c",
+  "patchSha256": "67ce47f0aca49e129bf9b990a2bc823dbca18b561cb65c8b5dadf3e0bc2ee62e",
+  "changes": [
+    "Wrap prepared-help list rows",
+    "Full-width explanation on narrow screens; automatic width from sm",
+    "Cap both help action buttons to container width"
+  ],
+  "sourceModifiedInIsolatedSnapshot": true,
+  "sharedSourceModified": false
+}

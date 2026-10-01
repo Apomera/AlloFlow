@@ -1,0 +1,14 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1481,7 +1481,9 @@
+   // host's window.__alloT; the English fallback shows until a key is translated.
+   function simplifiedText(key, fallback, params, translate) {
+     var value;
+-    try { value = (translate || (typeof window !== 'undefined' && window.__alloT) || (() => undefined))(key, params); } catch (_) {}
++    // Resolve the catalog template before inserting values. A second interpolation
++    // would reinterpret literal braces in a learner's word or context.
++    try { value = (translate || (typeof window !== 'undefined' && window.__alloT) || (() => undefined))(key); } catch (_) {}
+     var text = typeof value === 'string' && value && value !== key ? value : fallback;
+     return params ? String(text).replace(/\{(\w+)\}/g, (match, name) => params[name] != null ? String(params[name]) : match) : text;
+   }

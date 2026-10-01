@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-27T19:06:47.902Z",
+  "label": "collective-immersive-tests-20260927",
+  "patch": "790c6d83918268f363ec019bd624d3196f6e15275c348071a509425c034f0803",
+  "plans": [
+    {
+      "target": "tests/immersive_reader_review_runtime.test.js",
+      "targets": [
+        "tests/immersive_reader_review_runtime.test.js"
+      ],
+      "before": "c7d010e1a7a76fc7621408474a923d7ab88d26a7ede0c721bd343864de4a3b7d",
+      "after": "e22311dab97d5abf9e8748fc7a30aaadd78d98a432f6e3df999e34a3a71dfbaa",
+      "changed": true
+    }
+  ]
+}

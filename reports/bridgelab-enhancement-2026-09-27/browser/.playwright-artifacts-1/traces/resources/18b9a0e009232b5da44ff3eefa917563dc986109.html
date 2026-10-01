@@ -1,0 +1,74 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>bridgelab harness</title>
+<style>html,body{margin:0;height:100%;background:#0f172a}
+#wrap{width:900px;height:1400px;overflow:hidden}</style></head>
+<body><div id="wrap"></div>
+<script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
+<script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+<script src="/vendor/three-r128/three.min.js"></script>
+<script src="/stem_lab/stem_lab_module.js"></script>
+<script>
+  window.__events = { errors: [], sr: [] };
+  window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
+  window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
+  window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
+</script>
+<script src="/stem_lab/stem_tool_bridgelab.js"></script>
+<script>
+  var e = React.createElement;
+  window.__mount = function (bucket) {
+    var cfg = window.StemLab._registry.bridgeLab;
+    window.__toolData = { bridgeLab: Object.assign({}, bucket || {}) };
+    var bump = null;
+    var ctx = {
+      React: React,
+      get toolData() { return window.__toolData; },
+      setToolData: function (fn) {
+        window.__toolData = typeof fn === 'function' ? fn(window.__toolData) : fn;
+        if (bump) bump();
+      },
+      update: function (b, k, v) {
+        window.__toolData = Object.assign({}, window.__toolData);
+        window.__toolData[b] = Object.assign({}, window.__toolData[b]);
+        window.__toolData[b][k] = v;
+        if (bump) bump();
+      },
+      updateMulti: function (b, patch) {
+        window.__toolData = Object.assign({}, window.__toolData);
+        window.__toolData[b] = Object.assign({}, window.__toolData[b], patch);
+        if (bump) bump();
+      },
+      setStemLabTool: function () {}, setStemLabTab: function () {},
+      addToast: function () {}, awardXP: function () {}, getXP: function () { return 0; },
+      announceToSR: function (m) { window.__events.sr.push(String(m)); },
+      celebrate: function () {}, beep: function () {},
+      callGemini: null, gradeLevel: '8th Grade', toolSnapshots: [], props: {},
+      t: function (k, fb) { return fb || k; },
+      icons: new Proxy({}, { get: function () { return function () { return e('span'); }; } }),
+      a11yClick: function (fn) { return { onClick: fn, role: 'button', tabIndex: 0 }; },
+      srOnly: {}
+    };
+    function Comp() {
+      var st = React.useState(0);
+      bump = function () { st[1](function (n) { return n + 1; }); };
+      window.__bump = bump;
+      return cfg.render(ctx);
+    }
+    window.__root = ReactDOM.createRoot(document.getElementById('wrap'));
+    window.__root.render(e(Comp));
+    return !!cfg;
+  };
+  window.__destroy = function () { if (window.__root) { window.__root.unmount(); window.__root = null; } };
+  window.__gl = function () { return window.__alloBridgeGL ? window.__alloBridgeGL.debug() : null; };
+  window.__bucket = function () { return window.__toolData.bridgeLab; };
+  window.__set = function (patch) {
+    window.__toolData = Object.assign({}, window.__toolData);
+    window.__toolData.bridgeLab = Object.assign({}, window.__toolData.bridgeLab, patch);
+    window.__render();
+  };
+  window.__render = function () { window.__bump && window.__bump(); };
+  window.__canvasCount = function () { return document.querySelectorAll('canvas[data-bridge-gl]').length; };
+  window.__svgCount = function () { return document.querySelectorAll('svg').length; };
+  window.__text = function () { return document.body.innerText; };
+</script>
+</body></html>

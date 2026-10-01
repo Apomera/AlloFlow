@@ -1,0 +1,285 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/bridgelab-frequency-2026-09-29/browser-focused-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "26-bridgelab-gl.spec.ts",
+      "file": "26-bridgelab-gl.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bridge Lab — real WebGL",
+          "file": "26-bridgelab-gl.spec.ts",
+          "line": 203,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "earthquake frequency investigation",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 789,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "scan, select, inspect and compare damping at 1000px",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 180000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 51090,
+                          "error": {
+                            "message": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Try 20% damping', exact: true })\u001b[22m\n",
+                            "stack": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Try 20% damping', exact: true })\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:844:82",
+                            "location": {
+                              "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                              "column": 82,
+                              "line": 844
+                            },
+                            "snippet": "  842 |         await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();\n  843 |         expect(await page.evaluate(() => (window as any).__bucket().seismicTrials[0].inputs.groundFrequencyHz)).toBe(selected);\n> 844 |         await page.getByRole('button', { name: 'Try 20% damping', exact: true }).click();\n      |                                                                                  ^\n  845 |         await expect(scan.locator('[data-seismic-scan-status]')).toHaveAttribute('data-seismic-scan-status', 'stale');\n  846 |         await expect(scan.locator('[data-seismic-scan-results]')).toHaveCount(0);\n  847 |         await page.getByRole('button', { name: 'Run frequency scan', exact: true }).click();"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                                "column": 82,
+                                "line": 844
+                              },
+                              "message": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Try 20% damping', exact: true })\u001b[22m\n\n\n  842 |         await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();\n  843 |         expect(await page.evaluate(() => (window as any).__bucket().seismicTrials[0].inputs.groundFrequencyHz)).toBe(selected);\n> 844 |         await page.getByRole('button', { name: 'Try 20% damping', exact: true }).click();\n      |                                                                                  ^\n  845 |         await expect(scan.locator('[data-seismic-scan-status]')).toHaveAttribute('data-seismic-scan-status', 'stale');\n  846 |         await expect(scan.locator('[data-seismic-scan-results]')).toHaveCount(0);\n  847 |         await page.getByRole('button', { name: 'Run frequency scan', exact: true }).click();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:844:82"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-09-29T23:33:23.643Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-9baa3-d-compare-damping-at-1000px-chromium\\test-failed-1.png"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-9baa3-d-compare-damping-at-1000px-chromium\\error-context.md"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-9baa3-d-compare-damping-at-1000px-chromium\\error-context.md"
+                            },
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-9baa3-d-compare-damping-at-1000px-chromium\\trace.zip"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 82,
+                            "line": 844
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0f4949b97cc65d74f1aa-c5d0658a1e3c1044689a",
+                  "file": "26-bridgelab-gl.spec.ts",
+                  "line": 792,
+                  "column": 11
+                },
+                {
+                  "title": "scan, select, inspect and compare damping at 320px",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 180000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 37089,
+                          "error": {
+                            "message": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Try 20% damping', exact: true })\u001b[22m\n",
+                            "stack": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Try 20% damping', exact: true })\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:844:82",
+                            "location": {
+                              "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                              "column": 82,
+                              "line": 844
+                            },
+                            "snippet": "  842 |         await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();\n  843 |         expect(await page.evaluate(() => (window as any).__bucket().seismicTrials[0].inputs.groundFrequencyHz)).toBe(selected);\n> 844 |         await page.getByRole('button', { name: 'Try 20% damping', exact: true }).click();\n      |                                                                                  ^\n  845 |         await expect(scan.locator('[data-seismic-scan-status]')).toHaveAttribute('data-seismic-scan-status', 'stale');\n  846 |         await expect(scan.locator('[data-seismic-scan-results]')).toHaveCount(0);\n  847 |         await page.getByRole('button', { name: 'Run frequency scan', exact: true }).click();"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                                "column": 82,
+                                "line": 844
+                              },
+                              "message": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Try 20% damping', exact: true })\u001b[22m\n\n\n  842 |         await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();\n  843 |         expect(await page.evaluate(() => (window as any).__bucket().seismicTrials[0].inputs.groundFrequencyHz)).toBe(selected);\n> 844 |         await page.getByRole('button', { name: 'Try 20% damping', exact: true }).click();\n      |                                                                                  ^\n  845 |         await expect(scan.locator('[data-seismic-scan-status]')).toHaveAttribute('data-seismic-scan-status', 'stale');\n  846 |         await expect(scan.locator('[data-seismic-scan-results]')).toHaveCount(0);\n  847 |         await page.getByRole('button', { name: 'Run frequency scan', exact: true }).click();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:844:82"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-09-29T23:34:44.129Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-5f29c-nd-compare-damping-at-320px-chromium\\test-failed-1.png"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-5f29c-nd-compare-damping-at-320px-chromium\\error-context.md"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-5f29c-nd-compare-damping-at-320px-chromium\\error-context.md"
+                            },
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frequency-2026-09-29\\browser-focused-artifacts\\26-bridgelab-gl-Bridge-Lab-5f29c-nd-compare-damping-at-320px-chromium\\trace.zip"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 82,
+                            "line": 844
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "0f4949b97cc65d74f1aa-b97fb8d3123c22c2882d",
+                  "file": "26-bridgelab-gl.spec.ts",
+                  "line": 792,
+                  "column": 11
+                },
+                {
+                  "title": "zero-input scan remains usable in reduced-motion 2D mode",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 180000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 22053,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-09-29T23:36:17.505Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "0f4949b97cc65d74f1aa-6b7053e29a90c1828b8d",
+                  "file": "26-bridgelab-gl.spec.ts",
+                  "line": 861,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-29T23:33:21.233Z",
+    "duration": 225982.12300000002,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,937 @@
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4802,7 +4802,15 @@
+     "place_recovery_copies": "Copias de recuperación de esta página",
+     "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
+     "place_recovery_local": "Tu borrador anterior",
+-    "place_recovery_saved": "Trabajo guardado anteriormente"
++    "place_recovery_saved": "Trabajo guardado anteriormente",
++    "review_audio_unavailable": "Estado del audio no disponible",
++    "review_audio_current_detail": "{ready} de {total} fragmentos de audio de oraciones listos en este dispositivo con estos ajustes.",
++    "layout_preview_open": "Vista previa del diseño de lectura",
++    "layout_preview_title": "Vista previa del diseño de lectura",
++    "layout_preview_note": "Prueba el aspecto, la navegación y la ayuda de palabras preparada para esta copia. Los cambios se descartan al cerrarla. Esta no es una vista previa de una lección enviada.",
++    "layout_preview_limits": "No están disponibles la escucha, la grabación, la ayuda de IA ni la práctica con puntuación. El lector principal sigue controlando cualquier audio que se esté reproduciendo.",
++    "layout_preview_word_help": "Selecciona una palabra subrayada para ver la ayuda preparada. Las demás palabras no tienen ayuda en esta vista previa.",
++    "layout_preview_chart": "Los gráficos no están disponibles en esta vista previa del diseño. Abre la lectura principal para ver el gráfico."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_latin_america.js b/desktop/web-app/public/lang/spanish_latin_america.js
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -4802,7 +4802,15 @@
+     "place_recovery_copies": "Copias de recuperación de esta página",
+     "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
+     "place_recovery_local": "Tu borrador anterior",
+-    "place_recovery_saved": "Trabajo guardado anteriormente"
++    "place_recovery_saved": "Trabajo guardado anteriormente",
++    "review_audio_unavailable": "Estado del audio no disponible",
++    "review_audio_current_detail": "{ready} de {total} fragmentos de audio de oraciones listos en este dispositivo con estos ajustes.",
++    "layout_preview_open": "Vista previa del diseño de lectura",
++    "layout_preview_title": "Vista previa del diseño de lectura",
++    "layout_preview_note": "Prueba el aspecto, la navegación y la ayuda de palabras preparada para esta copia. Los cambios se descartan al cerrarla. Esta no es una vista previa de una lección enviada.",
++    "layout_preview_limits": "No están disponibles la escucha, la grabación, la ayuda de IA ni la práctica con puntuación. El lector principal sigue controlando cualquier audio que se esté reproduciendo.",
++    "layout_preview_word_help": "Selecciona una palabra subrayada para ver la ayuda preparada. Las demás palabras no tienen ayuda en esta vista previa.",
++    "layout_preview_chart": "Los gráficos no están disponibles en esta vista previa del diseño. Abre la lectura principal para ver el gráfico."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4794,7 +4794,15 @@
+     "place_recovery_copies": "Copias de recuperación de esta página",
+     "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
+     "place_recovery_local": "Tu borrador anterior",
+-    "place_recovery_saved": "Trabajo guardado anteriormente"
++    "place_recovery_saved": "Trabajo guardado anteriormente",
++    "review_audio_unavailable": "Estado del audio no disponible",
++    "review_audio_current_detail": "{ready} de {total} fragmentos de audio de oraciones listos en este dispositivo con estos ajustes.",
++    "layout_preview_open": "Vista previa del diseño de lectura",
++    "layout_preview_title": "Vista previa del diseño de lectura",
++    "layout_preview_note": "Prueba el aspecto, la navegación y la ayuda de palabras preparada para esta copia. Los cambios se descartan al cerrarla. Esta no es una vista previa de una lección enviada.",
++    "layout_preview_limits": "No están disponibles la escucha, la grabación, la ayuda de IA ni la práctica con puntuación. El lector principal sigue controlando cualquier audio que se esté reproduciendo.",
++    "layout_preview_word_help": "Selecciona una palabra subrayada para ver la ayuda preparada. Las demás palabras no tienen ayuda en esta vista previa.",
++    "layout_preview_chart": "Los gráficos no están disponibles en esta vista previa del diseño. Abre la lectura principal para ver el gráfico."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_castilian.js b/desktop/web-app/public/lang/spanish_castilian.js
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -4794,7 +4794,15 @@
+     "place_recovery_copies": "Copias de recuperación de esta página",
+     "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
+     "place_recovery_local": "Tu borrador anterior",
+-    "place_recovery_saved": "Trabajo guardado anteriormente"
++    "place_recovery_saved": "Trabajo guardado anteriormente",
++    "review_audio_unavailable": "Estado del audio no disponible",
++    "review_audio_current_detail": "{ready} de {total} fragmentos de audio de oraciones listos en este dispositivo con estos ajustes.",
++    "layout_preview_open": "Vista previa del diseño de lectura",
++    "layout_preview_title": "Vista previa del diseño de lectura",
++    "layout_preview_note": "Prueba el aspecto, la navegación y la ayuda de palabras preparada para esta copia. Los cambios se descartan al cerrarla. Esta no es una vista previa de una lección enviada.",
++    "layout_preview_limits": "No están disponibles la escucha, la grabación, la ayuda de IA ni la práctica con puntuación. El lector principal sigue controlando cualquier audio que se esté reproduciendo.",
++    "layout_preview_word_help": "Selecciona una palabra subrayada para ver la ayuda preparada. Las demás palabras no tienen ayuda en esta vista previa.",
++    "layout_preview_chart": "Los gráficos no están disponibles en esta vista previa del diseño. Abre la lectura principal para ver el gráfico."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/arabic.js b/lang/arabic.js
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -4640,7 +4640,32 @@
+     "place_recovery_copies": "نسخ الاسترداد لهذه الصفحة",
+     "place_recovery_lifetime": "هذه النسخ مؤقتة. انسخ أي عمل تحتاج إليه قبل إغلاق هذه الصفحة أو إعادة تحميلها.",
+     "place_recovery_local": "مسودتك السابقة",
+-    "place_recovery_saved": "العمل المحفوظ سابقًا"
++    "place_recovery_saved": "العمل المحفوظ سابقًا",
++    "review_audio_unavailable": "حالة الصوت غير متاحة",
++    "review_audio_current_detail": "المقاطع الصوتية للجمل الجاهزة على هذا الجهاز بهذه الإعدادات: {ready} من {total}.",
++    "layout_preview_open": "معاينة تنسيق القراءة",
++    "layout_preview_title": "معاينة تنسيق القراءة",
++    "layout_preview_note": "جرّب المظهر والتنقّل ومساعدة الكلمات المُعدّة لهذه النسخة. تُلغى التغييرات عند إغلاق المعاينة. هذه ليست معاينة لدرس تم إرساله.",
++    "layout_preview_limits": "الاستماع والتسجيل ومساعدة الذكاء الاصطناعي والتدريب الذي تُحسب درجاته غير متاحة. يبقى التحكم في أي تشغيل صوتي جارٍ في القارئ الرئيسي.",
++    "layout_preview_word_help": "اختر كلمة تحتها خط لعرض المساعدة المُعدّة. الكلمات الأخرى لا تتوفر لها مساعدة في هذه المعاينة.",
++    "layout_preview_chart": "الرسوم البيانية غير متاحة في معاينة التنسيق هذه. افتح القراءة الرئيسية لعرض الرسم البياني.",
++    "adapt_exact_terms_hint": "افصل المصطلحات بفاصلة (,) أو فاصلة منقوطة (;). ضع المصطلح بين علامتي اقتباس مزدوجتين (\") إذا احتوى على أي منهما. الحد الأقصى 30 مصطلحًا مختلفًا، ويجب أن تكون موجودة أصلًا في النص. نتحقق من بقاء كل مصطلح مرة واحدة على الأقل، بنفس الكتابة وحالة الأحرف وعلامات الترقيم، في لوحة القراءة التي ورد فيها أصلًا.",
++    "adapt_terms_missing": "تم الاحتفاظ بالنص الحالي. تفتقد النسخة المقترحة المصطلحات التالية: {terms}. أعد المحاولة أو عدّل قائمة المصطلحات المطلوب الاحتفاظ بها.",
++    "adapt_terms_absent": "تم الاحتفاظ بالنص الحالي. لم يُعثر على هذه المصطلحات مطابقةً تمامًا في النص الأصلي: {terms}. تحقق من الكتابة وحالة الأحرف، أو أزلها من القائمة.",
++    "adapt_terms_primary": "القراءة الأساسية",
++    "adapt_terms_translation": "الترجمة",
++    "adapt_terms_many": "عدد المصطلحات المختلفة ({count}) يتجاوز الحد المسموح به ({limit}).",
++    "adapt_term_long": "يتجاوز أحد المصطلحات الحد المسموح به وهو {limit} حرفًا.",
++    "adapt_terms_long": "إجمالي الأحرف ({count}) يتجاوز الحد المسموح به ({limit}).",
++    "adapt_terms_text": "يجب إدخال كل مصطلح كنص.",
++    "adapt_terms_invalid": "تم الاحتفاظ بالنص الحالي. {details} لم يُحذف أي مصطلح من القائمة. صحح القائمة واعرض المعاينة مجددًا.",
++    "adapt_terms_unverified": "تم الاحتفاظ بالنص الحالي. تعذر التحقق من المصطلحات الأساسية. أعد المعاينة باستخدام تنسيق نص مدعوم.",
++    "adapt_terms_separator": "استخدم فاصلًا بعد المصطلح المحاط بعلامتي اقتباس.",
++    "adapt_terms_quote": "أغلق علامة الاقتباس حول المصطلح.",
++    "adapt_validation_unavailable": "التحقق من المصطلحات الأساسية غير متاح. أعد تحميل الصفحة قبل المعاينة.",
++    "adapt_not_applied": "لم يُطبّق التغيير. راجع النص الحالي واعرض المعاينة مجددًا.",
++    "adapt_preview_unverified": "تم الاحتفاظ بالنص الحالي. تعذر التحقق من المصطلحات الأساسية. أعد تحميل الصفحة واعرض المعاينة مجددًا.",
++    "adapt_preview_expired": "تم الاحتفاظ بالنص الحالي. لم يعد بالإمكان التحقق من هذه المعاينة. اعرض معاينة التغيير مجددًا."
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/desktop/web-app/public/lang/arabic.js b/desktop/web-app/public/lang/arabic.js
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -4640,7 +4640,32 @@
+     "place_recovery_copies": "نسخ الاسترداد لهذه الصفحة",
+     "place_recovery_lifetime": "هذه النسخ مؤقتة. انسخ أي عمل تحتاج إليه قبل إغلاق هذه الصفحة أو إعادة تحميلها.",
+     "place_recovery_local": "مسودتك السابقة",
+-    "place_recovery_saved": "العمل المحفوظ سابقًا"
++    "place_recovery_saved": "العمل المحفوظ سابقًا",
++    "review_audio_unavailable": "حالة الصوت غير متاحة",
++    "review_audio_current_detail": "المقاطع الصوتية للجمل الجاهزة على هذا الجهاز بهذه الإعدادات: {ready} من {total}.",
++    "layout_preview_open": "معاينة تنسيق القراءة",
++    "layout_preview_title": "معاينة تنسيق القراءة",
++    "layout_preview_note": "جرّب المظهر والتنقّل ومساعدة الكلمات المُعدّة لهذه النسخة. تُلغى التغييرات عند إغلاق المعاينة. هذه ليست معاينة لدرس تم إرساله.",
++    "layout_preview_limits": "الاستماع والتسجيل ومساعدة الذكاء الاصطناعي والتدريب الذي تُحسب درجاته غير متاحة. يبقى التحكم في أي تشغيل صوتي جارٍ في القارئ الرئيسي.",
++    "layout_preview_word_help": "اختر كلمة تحتها خط لعرض المساعدة المُعدّة. الكلمات الأخرى لا تتوفر لها مساعدة في هذه المعاينة.",
++    "layout_preview_chart": "الرسوم البيانية غير متاحة في معاينة التنسيق هذه. افتح القراءة الرئيسية لعرض الرسم البياني.",
++    "adapt_exact_terms_hint": "افصل المصطلحات بفاصلة (,) أو فاصلة منقوطة (;). ضع المصطلح بين علامتي اقتباس مزدوجتين (\") إذا احتوى على أي منهما. الحد الأقصى 30 مصطلحًا مختلفًا، ويجب أن تكون موجودة أصلًا في النص. نتحقق من بقاء كل مصطلح مرة واحدة على الأقل، بنفس الكتابة وحالة الأحرف وعلامات الترقيم، في لوحة القراءة التي ورد فيها أصلًا.",
++    "adapt_terms_missing": "تم الاحتفاظ بالنص الحالي. تفتقد النسخة المقترحة المصطلحات التالية: {terms}. أعد المحاولة أو عدّل قائمة المصطلحات المطلوب الاحتفاظ بها.",
++    "adapt_terms_absent": "تم الاحتفاظ بالنص الحالي. لم يُعثر على هذه المصطلحات مطابقةً تمامًا في النص الأصلي: {terms}. تحقق من الكتابة وحالة الأحرف، أو أزلها من القائمة.",
++    "adapt_terms_primary": "القراءة الأساسية",
++    "adapt_terms_translation": "الترجمة",
++    "adapt_terms_many": "عدد المصطلحات المختلفة ({count}) يتجاوز الحد المسموح به ({limit}).",
++    "adapt_term_long": "يتجاوز أحد المصطلحات الحد المسموح به وهو {limit} حرفًا.",
++    "adapt_terms_long": "إجمالي الأحرف ({count}) يتجاوز الحد المسموح به ({limit}).",
++    "adapt_terms_text": "يجب إدخال كل مصطلح كنص.",
++    "adapt_terms_invalid": "تم الاحتفاظ بالنص الحالي. {details} لم يُحذف أي مصطلح من القائمة. صحح القائمة واعرض المعاينة مجددًا.",
++    "adapt_terms_unverified": "تم الاحتفاظ بالنص الحالي. تعذر التحقق من المصطلحات الأساسية. أعد المعاينة باستخدام تنسيق نص مدعوم.",
++    "adapt_terms_separator": "استخدم فاصلًا بعد المصطلح المحاط بعلامتي اقتباس.",
++    "adapt_terms_quote": "أغلق علامة الاقتباس حول المصطلح.",
++    "adapt_validation_unavailable": "التحقق من المصطلحات الأساسية غير متاح. أعد تحميل الصفحة قبل المعاينة.",
++    "adapt_not_applied": "لم يُطبّق التغيير. راجع النص الحالي واعرض المعاينة مجددًا.",
++    "adapt_preview_unverified": "تم الاحتفاظ بالنص الحالي. تعذر التحقق من المصطلحات الأساسية. أعد تحميل الصفحة واعرض المعاينة مجددًا.",
++    "adapt_preview_expired": "تم الاحتفاظ بالنص الحالي. لم يعد بالإمكان التحقق من هذه المعاينة. اعرض معاينة التغيير مجددًا."
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/lang/chinese_simplified.js b/lang/chinese_simplified.js
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -4807,7 +4807,32 @@
+     "place_recovery_copies": "此页面的恢复副本",
+     "place_recovery_lifetime": "这些副本仅临时保留。请在关闭或重新加载此页面前，复制你需要的内容。",
+     "place_recovery_local": "你之前的草稿",
+-    "place_recovery_saved": "之前保存的内容"
++    "place_recovery_saved": "之前保存的内容",
++    "review_audio_unavailable": "无法获取音频状态",
++    "review_audio_current_detail": "{total} 段句子音频中有 {ready} 段已在此设备上准备就绪，适用于当前设置。",
++    "layout_preview_open": "预览阅读布局",
++    "layout_preview_title": "阅读布局预览",
++    "layout_preview_note": "试用此副本的外观、导航和预先准备的词语帮助。关闭预览后，这里的更改将被丢弃。这不是已发送课程的预览。",
++    "layout_preview_limits": "此处无法收听、录音、使用 AI 帮助或进行计分练习。正在播放的音频仍由主阅读器控制。",
++    "layout_preview_word_help": "选择带下划线的词语，查看预先准备的帮助。此预览中的其他词语没有帮助。",
++    "layout_preview_chart": "此布局预览无法显示图表。请在主阅读页面查看图表。",
++    "adapt_exact_terms_hint": "请用半角逗号 (,) 或分号 (;) 分隔词语；如果词语本身含有这些符号，请用半角双引号 (\") 括起来。最多可填写 30 个不同的词语，且它们必须已出现在原文中。系统会检查每个词语是否在其原有的阅读窗格中至少保留一次，并保持拼写、大小写和标点完全一致。",
++    "adapt_terms_missing": "已保留当前文本。建议版本缺少以下词语：{terms}。请重试或修改需要保留的词语列表。",
++    "adapt_terms_absent": "已保留当前文本。原文中未找到与以下词语完全一致的内容：{terms}。请检查拼写和大小写，或将其从列表中移除。",
++    "adapt_terms_primary": "主要阅读内容",
++    "adapt_terms_translation": "译文",
++    "adapt_terms_many": "{count} 个不同的词语超过了 {limit} 个的上限。",
++    "adapt_term_long": "某个词语超过了 {limit} 个字符的上限。",
++    "adapt_terms_long": "总计 {count} 个字符，超过了 {limit} 个的上限。",
++    "adapt_terms_text": "每个词语都必须以文本形式输入。",
++    "adapt_terms_invalid": "已保留当前文本。{details} 未从列表中丢弃任何词语。请修正列表后重新预览。",
++    "adapt_terms_unverified": "已保留当前文本。无法验证关键术语。请使用支持的文本格式重新预览。",
++    "adapt_terms_separator": "请在引号括起的词语后使用分隔符。",
++    "adapt_terms_quote": "请补齐词语末尾的引号。",
++    "adapt_validation_unavailable": "关键术语验证不可用。请重新加载后再预览。",
++    "adapt_not_applied": "未应用更改。请检查当前文本，然后重新预览。",
++    "adapt_preview_unverified": "已保留当前文本。无法验证关键术语。请重新加载后再次预览。",
++    "adapt_preview_expired": "已保留当前文本。此预览已无法验证。请重新预览更改。"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/desktop/web-app/public/lang/chinese_simplified.js b/desktop/web-app/public/lang/chinese_simplified.js
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -4807,7 +4807,32 @@
+     "place_recovery_copies": "此页面的恢复副本",
+     "place_recovery_lifetime": "这些副本仅临时保留。请在关闭或重新加载此页面前，复制你需要的内容。",
+     "place_recovery_local": "你之前的草稿",
+-    "place_recovery_saved": "之前保存的内容"
++    "place_recovery_saved": "之前保存的内容",
++    "review_audio_unavailable": "无法获取音频状态",
++    "review_audio_current_detail": "{total} 段句子音频中有 {ready} 段已在此设备上准备就绪，适用于当前设置。",
++    "layout_preview_open": "预览阅读布局",
++    "layout_preview_title": "阅读布局预览",
++    "layout_preview_note": "试用此副本的外观、导航和预先准备的词语帮助。关闭预览后，这里的更改将被丢弃。这不是已发送课程的预览。",
++    "layout_preview_limits": "此处无法收听、录音、使用 AI 帮助或进行计分练习。正在播放的音频仍由主阅读器控制。",
++    "layout_preview_word_help": "选择带下划线的词语，查看预先准备的帮助。此预览中的其他词语没有帮助。",
++    "layout_preview_chart": "此布局预览无法显示图表。请在主阅读页面查看图表。",
++    "adapt_exact_terms_hint": "请用半角逗号 (,) 或分号 (;) 分隔词语；如果词语本身含有这些符号，请用半角双引号 (\") 括起来。最多可填写 30 个不同的词语，且它们必须已出现在原文中。系统会检查每个词语是否在其原有的阅读窗格中至少保留一次，并保持拼写、大小写和标点完全一致。",
++    "adapt_terms_missing": "已保留当前文本。建议版本缺少以下词语：{terms}。请重试或修改需要保留的词语列表。",
++    "adapt_terms_absent": "已保留当前文本。原文中未找到与以下词语完全一致的内容：{terms}。请检查拼写和大小写，或将其从列表中移除。",
++    "adapt_terms_primary": "主要阅读内容",
++    "adapt_terms_translation": "译文",
++    "adapt_terms_many": "{count} 个不同的词语超过了 {limit} 个的上限。",
++    "adapt_term_long": "某个词语超过了 {limit} 个字符的上限。",
++    "adapt_terms_long": "总计 {count} 个字符，超过了 {limit} 个的上限。",
++    "adapt_terms_text": "每个词语都必须以文本形式输入。",
++    "adapt_terms_invalid": "已保留当前文本。{details} 未从列表中丢弃任何词语。请修正列表后重新预览。",
++    "adapt_terms_unverified": "已保留当前文本。无法验证关键术语。请使用支持的文本格式重新预览。",
++    "adapt_terms_separator": "请在引号括起的词语后使用分隔符。",
++    "adapt_terms_quote": "请补齐词语末尾的引号。",
++    "adapt_validation_unavailable": "关键术语验证不可用。请重新加载后再预览。",
++    "adapt_not_applied": "未应用更改。请检查当前文本，然后重新预览。",
++    "adapt_preview_unverified": "已保留当前文本。无法验证关键术语。请重新加载后再次预览。",
++    "adapt_preview_expired": "已保留当前文本。此预览已无法验证。请重新预览更改。"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/lang/thai.js b/lang/thai.js
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -5491,7 +5491,32 @@
+     "place_recovery_copies": "สำเนาสำหรับกู้คืนในหน้านี้",
+     "place_recovery_lifetime": "สำเนาเหล่านี้เป็นข้อมูลชั่วคราว คัดลอกงานที่คุณต้องการเก็บไว้ก่อนปิดหรือโหลดหน้านี้ใหม่",
+     "place_recovery_local": "ฉบับร่างก่อนหน้าของคุณ",
+-    "place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้"
++    "place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้",
++    "review_audio_unavailable": "ไม่สามารถแสดงสถานะเสียงได้",
++    "review_audio_current_detail": "คลิปเสียงประโยคพร้อมใช้กับการตั้งค่าเหล่านี้ในอุปกรณ์นี้ {ready} จาก {total} คลิป",
++    "layout_preview_open": "ดูตัวอย่างรูปแบบการอ่าน",
++    "layout_preview_title": "ตัวอย่างรูปแบบการอ่าน",
++    "layout_preview_note": "ลองรูปลักษณ์ การนำทาง และคำอธิบายคำที่เตรียมไว้สำหรับสำเนานี้ การเปลี่ยนแปลงที่นี่จะถูกยกเลิกเมื่อปิด ตัวอย่างนี้ไม่ใช่ตัวอย่างบทเรียนที่ส่งให้ผู้เรียนแล้ว",
++    "layout_preview_limits": "ไม่สามารถฟัง บันทึกเสียง ใช้ความช่วยเหลือจาก AI หรือทำแบบฝึกที่มีการให้คะแนนได้ที่นี่ เสียงที่กำลังเล่นยังคงควบคุมจากหน้าการอ่านหลัก",
++    "layout_preview_word_help": "เลือกคำที่ขีดเส้นใต้เพื่อดูคำอธิบายที่เตรียมไว้ คำอื่นไม่มีคำอธิบายในตัวอย่างนี้",
++    "layout_preview_chart": "แผนภูมิไม่พร้อมแสดงในตัวอย่างรูปแบบนี้ เปิดหน้าการอ่านหลักเพื่อดูแผนภูมิ",
++    "adapt_exact_terms_hint": "คั่นคำด้วยจุลภาค (,) หรืออัฒภาค (;) หากคำมีเครื่องหมายใดเครื่องหมายหนึ่งนี้ ให้ใส่เครื่องหมายอัญประกาศคู่ (\") คร่อมคำนั้น ระบุได้ไม่เกิน 30 คำที่ไม่ซ้ำกัน และคำเหล่านี้ต้องมีอยู่ในข้อความแล้ว ระบบจะตรวจว่าแต่ละคำยังปรากฏอย่างน้อยหนึ่งครั้งในแผงการอ่านเดิม โดยคงการสะกด ตัวพิมพ์ใหญ่และเล็ก และเครื่องหมายวรรคตอนให้ตรงกันทุกประการ",
++    "adapt_terms_missing": "เก็บข้อความปัจจุบันไว้แล้ว ฉบับที่เสนอขาดคำต่อไปนี้: {terms} ลองอีกครั้งหรือแก้ไขรายการคำที่ต้องการเก็บไว้",
++    "adapt_terms_absent": "เก็บข้อความปัจจุบันไว้แล้ว ไม่พบคำเหล่านี้ที่ตรงกันทุกประการในข้อความต้นฉบับ: {terms} ตรวจสอบการสะกดและตัวพิมพ์ใหญ่และเล็ก หรือนำคำเหล่านี้ออกจากรายการ",
++    "adapt_terms_primary": "บทอ่านหลัก",
++    "adapt_terms_translation": "คำแปล",
++    "adapt_terms_many": "คำที่ไม่ซ้ำกัน {count} คำ เกินขีดจำกัด {limit} คำ",
++    "adapt_term_long": "มีคำที่ยาวเกินขีดจำกัด {limit} อักขระ",
++    "adapt_terms_long": "จำนวนอักขระรวม {count} อักขระ เกินขีดจำกัด {limit} อักขระ",
++    "adapt_terms_text": "แต่ละคำต้องป้อนเป็นข้อความ",
++    "adapt_terms_invalid": "เก็บข้อความปัจจุบันไว้แล้ว {details} ไม่มีคำใดถูกตัดออกจากรายการ แก้ไขรายการแล้วดูตัวอย่างอีกครั้ง",
++    "adapt_terms_unverified": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบคำสำคัญได้ ดูตัวอย่างอีกครั้งโดยใช้รูปแบบข้อความที่รองรับ",
++    "adapt_terms_separator": "ใช้ตัวคั่นหลังคำที่อยู่ในเครื่องหมายอัญประกาศ",
++    "adapt_terms_quote": "ปิดเครื่องหมายอัญประกาศที่คร่อมคำให้ครบ",
++    "adapt_validation_unavailable": "ไม่สามารถใช้การตรวจสอบคำสำคัญได้ โหลดหน้าใหม่ก่อนดูตัวอย่าง",
++    "adapt_not_applied": "ยังไม่ได้ใช้การเปลี่ยนแปลง ตรวจสอบข้อความปัจจุบันแล้วดูตัวอย่างอีกครั้ง",
++    "adapt_preview_unverified": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบคำสำคัญได้ โหลดหน้าใหม่แล้วดูตัวอย่างอีกครั้ง",
++    "adapt_preview_expired": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบตัวอย่างนี้ได้อีก โปรดดูตัวอย่างการเปลี่ยนแปลงอีกครั้ง"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/desktop/web-app/public/lang/thai.js b/desktop/web-app/public/lang/thai.js
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -5491,7 +5491,32 @@
+     "place_recovery_copies": "สำเนาสำหรับกู้คืนในหน้านี้",
+     "place_recovery_lifetime": "สำเนาเหล่านี้เป็นข้อมูลชั่วคราว คัดลอกงานที่คุณต้องการเก็บไว้ก่อนปิดหรือโหลดหน้านี้ใหม่",
+     "place_recovery_local": "ฉบับร่างก่อนหน้าของคุณ",
+-    "place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้"
++    "place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้",
++    "review_audio_unavailable": "ไม่สามารถแสดงสถานะเสียงได้",
++    "review_audio_current_detail": "คลิปเสียงประโยคพร้อมใช้กับการตั้งค่าเหล่านี้ในอุปกรณ์นี้ {ready} จาก {total} คลิป",
++    "layout_preview_open": "ดูตัวอย่างรูปแบบการอ่าน",
++    "layout_preview_title": "ตัวอย่างรูปแบบการอ่าน",
++    "layout_preview_note": "ลองรูปลักษณ์ การนำทาง และคำอธิบายคำที่เตรียมไว้สำหรับสำเนานี้ การเปลี่ยนแปลงที่นี่จะถูกยกเลิกเมื่อปิด ตัวอย่างนี้ไม่ใช่ตัวอย่างบทเรียนที่ส่งให้ผู้เรียนแล้ว",
++    "layout_preview_limits": "ไม่สามารถฟัง บันทึกเสียง ใช้ความช่วยเหลือจาก AI หรือทำแบบฝึกที่มีการให้คะแนนได้ที่นี่ เสียงที่กำลังเล่นยังคงควบคุมจากหน้าการอ่านหลัก",
++    "layout_preview_word_help": "เลือกคำที่ขีดเส้นใต้เพื่อดูคำอธิบายที่เตรียมไว้ คำอื่นไม่มีคำอธิบายในตัวอย่างนี้",
++    "layout_preview_chart": "แผนภูมิไม่พร้อมแสดงในตัวอย่างรูปแบบนี้ เปิดหน้าการอ่านหลักเพื่อดูแผนภูมิ",
++    "adapt_exact_terms_hint": "คั่นคำด้วยจุลภาค (,) หรืออัฒภาค (;) หากคำมีเครื่องหมายใดเครื่องหมายหนึ่งนี้ ให้ใส่เครื่องหมายอัญประกาศคู่ (\") คร่อมคำนั้น ระบุได้ไม่เกิน 30 คำที่ไม่ซ้ำกัน และคำเหล่านี้ต้องมีอยู่ในข้อความแล้ว ระบบจะตรวจว่าแต่ละคำยังปรากฏอย่างน้อยหนึ่งครั้งในแผงการอ่านเดิม โดยคงการสะกด ตัวพิมพ์ใหญ่และเล็ก และเครื่องหมายวรรคตอนให้ตรงกันทุกประการ",
++    "adapt_terms_missing": "เก็บข้อความปัจจุบันไว้แล้ว ฉบับที่เสนอขาดคำต่อไปนี้: {terms} ลองอีกครั้งหรือแก้ไขรายการคำที่ต้องการเก็บไว้",
++    "adapt_terms_absent": "เก็บข้อความปัจจุบันไว้แล้ว ไม่พบคำเหล่านี้ที่ตรงกันทุกประการในข้อความต้นฉบับ: {terms} ตรวจสอบการสะกดและตัวพิมพ์ใหญ่และเล็ก หรือนำคำเหล่านี้ออกจากรายการ",
++    "adapt_terms_primary": "บทอ่านหลัก",
++    "adapt_terms_translation": "คำแปล",
++    "adapt_terms_many": "คำที่ไม่ซ้ำกัน {count} คำ เกินขีดจำกัด {limit} คำ",
++    "adapt_term_long": "มีคำที่ยาวเกินขีดจำกัด {limit} อักขระ",
++    "adapt_terms_long": "จำนวนอักขระรวม {count} อักขระ เกินขีดจำกัด {limit} อักขระ",
++    "adapt_terms_text": "แต่ละคำต้องป้อนเป็นข้อความ",
++    "adapt_terms_invalid": "เก็บข้อความปัจจุบันไว้แล้ว {details} ไม่มีคำใดถูกตัดออกจากรายการ แก้ไขรายการแล้วดูตัวอย่างอีกครั้ง",
++    "adapt_terms_unverified": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบคำสำคัญได้ ดูตัวอย่างอีกครั้งโดยใช้รูปแบบข้อความที่รองรับ",
++    "adapt_terms_separator": "ใช้ตัวคั่นหลังคำที่อยู่ในเครื่องหมายอัญประกาศ",
++    "adapt_terms_quote": "ปิดเครื่องหมายอัญประกาศที่คร่อมคำให้ครบ",
++    "adapt_validation_unavailable": "ไม่สามารถใช้การตรวจสอบคำสำคัญได้ โหลดหน้าใหม่ก่อนดูตัวอย่าง",
++    "adapt_not_applied": "ยังไม่ได้ใช้การเปลี่ยนแปลง ตรวจสอบข้อความปัจจุบันแล้วดูตัวอย่างอีกครั้ง",
++    "adapt_preview_unverified": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบคำสำคัญได้ โหลดหน้าใหม่แล้วดูตัวอย่างอีกครั้ง",
++    "adapt_preview_expired": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบตัวอย่างนี้ได้อีก โปรดดูตัวอย่างการเปลี่ยนแปลงอีกครั้ง"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/dev-tools/i18n/apply_reader_contract_locales.cjs b/dev-tools/i18n/apply_reader_contract_locales.cjs
+--- a/dev-tools/i18n/apply_reader_contract_locales.cjs
++++ b/dev-tools/i18n/apply_reader_contract_locales.cjs
+@@ -3,7 +3,7 @@
+ const fs = require('node:fs');
+ const path = require('node:path');
+ const ROOT = path.resolve(__dirname, '../..');
+-const BATCHES = { contract: { file: 'reader-contract-locales.json', keys: 66 }, recovery: { file: 'reader-recovery-locales.json', keys: 34 } };
++const BATCHES = { contract: { file: 'reader-contract-locales.json', keys: 66 }, recovery: { file: 'reader-recovery-locales.json', keys: 34 }, preview: { file: 'reader-preview-locales.json', keys: 8 }, terms: { file: 'reader-terms-locales.json', keys: 17 } };
+ const LOCALES = ['spanish_latin_america', 'spanish_castilian', 'arabic', 'chinese_simplified', 'thai'];
+ const lookup = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
+ const placeholders = value => [...String(value).matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort();
+@@ -37,7 +37,7 @@
+ }
+ function run(apply = false, batch = 'contract') {
+   const names = batch === 'all' ? Object.keys(BATCHES) : [batch];
+-  if (names.some(name => !Object.hasOwn(BATCHES, name))) throw Error('Use --batch=contract, --batch=recovery or --batch=all.');
++  if (names.some(name => !Object.hasOwn(BATCHES, name))) throw Error('Use --batch=contract, --batch=recovery, --batch=preview, --batch=terms or --batch=all.');
+   const english = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui_strings.js'), 'utf8'));
+   const mirrorEnglish = JSON.parse(fs.readFileSync(path.join(ROOT, 'desktop/web-app/public/ui_strings.js'), 'utf8'));
+   const keys = [], values = Object.fromEntries(LOCALES.map(locale => [locale, {}]));
+@@ -74,8 +74,8 @@
+   let apply = false, mode, batch = 'contract', seenBatch = false;
+   for (const arg of args) {
+     if (arg === '--apply' || arg === '--check') { if (mode) throw Error('Choose one of --check or --apply.'); mode = arg; apply = arg === '--apply'; }
+-    else if (/^--batch=(contract|recovery|all)$/.test(arg) && !seenBatch) { batch = arg.slice(8); seenBatch = true; }
+-    else throw Error('Use --check (default) or --apply, and --batch=contract|recovery|all.');
++    else if (/^--batch=(contract|recovery|preview|terms|all)$/.test(arg) && !seenBatch) { batch = arg.slice(8); seenBatch = true; }
++    else throw Error('Use --check (default) or --apply, and --batch=contract|recovery|preview|terms|all.');
+   }
+   return { apply, batch };
+ }
+diff --git a/tests/reader_locale_runtime.test.js b/tests/reader_locale_runtime.test.js
+--- a/tests/reader_locale_runtime.test.js
++++ b/tests/reader_locale_runtime.test.js
+@@ -1,8 +1,9 @@
+ import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+-import { setupReader, mountReader, disposeReader, click, act, fixtures, View } from './helpers/reader_locale_harness.js';
+-beforeAll(setupReader);
+-beforeEach(() => { localStorage.clear(); });
+-afterEach(() => { disposeReader(); vi.restoreAllMocks(); });
++import { mountReader, disposeReader, click, act, fixtures, View } from './helpers/reader_locale_harness.js';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase } from './helpers/reader_recovery_locale_harness.js';
++beforeAll(setupRecoveryReader, 60000);
++beforeEach(prepareRecoveryCase);
++afterEach(cleanupRecoveryCase);
+ describe('named reader language fixtures', () => {
+   for (const fixture of fixtures) {
+     it(fixture.id + ': translated review, bookmarks, prompts and student preview', async () => {
+@@ -24,7 +25,7 @@
+       const before = JSON.stringify(localStorage);
+       await click(host.querySelector('[data-student-preview-open]'));
+       const preview = host.querySelector('[data-student-preview]');
+-      expect(preview.textContent).toContain(t('simplified.preview_note'));
++      expect(preview.textContent).toContain(t('simplified.layout_preview_note'));
+       expect(preview.querySelector('[data-reading-paragraph="1"]').lang).toBe(fixture.tag);
+       await click(preview.querySelector('[data-reading-outline-toggle]'));
+       await click(preview.querySelector('[data-reading-bookmark]'));
+@@ -37,7 +38,7 @@
+       const preview = { status: 'preview', resourceId: fixture.id, baseData: fixture.passage, data: fixture.passage + '\n\n' + fixture.snippet, config: { language: fixture.language } };
+       const handleComplexityAdjustment = vi.fn(async () => preview);
+       const { host, t } = mountReader(fixture, { handleComplexityAdjustment });
+-      expect(host.querySelector('[data-adaptation-controls]').textContent).toContain(t('simplified.adapt_keep_terms_hint'));
++      expect(host.querySelector('[data-adaptation-controls]').textContent).toContain(t('simplified.adapt_exact_terms_hint'));
+       await click(host.querySelector('[data-adapt-option="shorterSentences"]'));
+       await click(host.querySelector('[data-apply-complexity]'));
+       expect(host.querySelector('[data-adaptation-preview]').textContent).toContain(t('simplified.adapt_preview_hint'));
+diff --git a/tests/reader_locale_layout.test.js b/tests/reader_locale_layout.test.js
+--- a/tests/reader_locale_layout.test.js
++++ b/tests/reader_locale_layout.test.js
+@@ -1,15 +1,16 @@
+ // Disposable browser layout checks; no app server, network, AI calls or saved app state.
+-import { beforeAll, afterAll, afterEach, describe, it, expect } from 'vitest';
++import { beforeAll, afterAll, beforeEach, afterEach, describe, it, expect } from 'vitest';
+ import { createRequire } from 'node:module';
+ import { mkdirSync, writeFileSync } from 'node:fs';
+ import { resolve } from 'node:path';
+-import { setupReader, mountReader, disposeReader, click, fixtures, translator } from './helpers/reader_locale_harness.js';
++import { mountReader, disposeReader, click, fixtures, translator } from './helpers/reader_locale_harness.js';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase } from './helpers/reader_recovery_locale_harness.js';
+ const require = createRequire(import.meta.url);
+ const webRequire = createRequire(resolve('desktop/web-app/package.json'));
+ let browser, css;
+ const results = [], report = resolve('reports/reader-localization-layout');
+ beforeAll(async () => {
+-  setupReader();
++  setupRecoveryReader();
+   const postcss = webRequire('postcss'), tailwind = webRequire('tailwindcss');
+   const config = { ...require(resolve('desktop/web-app/tailwind.config.js')), content: [resolve('view_simplified_source.jsx')] };
+   css = (await postcss([tailwind(config)]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined })).css;
+@@ -17,14 +18,15 @@
+   mkdirSync(report, { recursive: true });
+ }, 60000);
+ afterAll(async () => { writeFileSync(resolve(report, 'results.json'), JSON.stringify(results, null, 2)); await browser?.close(); }, 60000);
+-afterEach(disposeReader);
++beforeEach(prepareRecoveryCase);
++afterEach(cleanupRecoveryCase);
+ (process.env.ALLO_READER_LOCALE_LAYOUT === '1' ? describe : describe.skip)('long translated reader labels in Chromium', () => {
+   for (const locale of ['spanish_latin_america','arabic','chinese_simplified','thai']) for (const zoom of [1, 2]) {
+     it(locale + ' at ' + (zoom === 1 ? '320px' : '320 CSS px / 640 device px (2x scale)'), async () => {
+       const fixture = fixtures.find(f => f.locale === locale), base = translator(locale);
+       const t = (key, params) => {
+         const text = base(key, params);
+-        return ['simplified.review_preview', 'simplified.adapt_keep_terms'].includes(key) ? text + ' — ' + text : text;
++        return ['simplified.layout_preview_open', 'simplified.adapt_keep_terms'].includes(key) ? text + ' — ' + text : text;
+       };
+       const { host } = mountReader(fixture, { t });
+       await click(host.querySelector('[data-reading-outline-toggle]'));
+diff --git a/tests/reader_recovery_locale_catalogs.test.js b/tests/reader_recovery_locale_catalogs.test.js
+--- a/tests/reader_recovery_locale_catalogs.test.js
++++ b/tests/reader_recovery_locale_catalogs.test.js
+@@ -23,7 +23,7 @@
+   return { root, files, write, copy, read: file => readFileSync(join(root, file), 'utf8'), exec: (...args) => spawnSync(process.execPath, ['dev-tools/i18n/apply_reader_contract_locales.cjs', ...args], { cwd: root, encoding: 'utf8' }) };
+ }
+ describe('scoped recovery catalog gate', () => {
+-  it('freezes 34 current messages across five locales independently of the first batch', () => { expect(validatePayload(payload, english, 34)).toHaveLength(34); expect(run(false, 'all')).toMatchObject({ keys: 100, changedFiles: 0 }); });
++  it('freezes 34 current messages across five locales independently of the first batch', () => { expect(validatePayload(payload, english, 34)).toHaveLength(34); expect(run(false, 'recovery')).toMatchObject({ keys: 34, changedFiles: 0 }); });
+   it('refuses changed English, missing placeholders, raw keys and incomplete locale coverage', () => {
+     const copy = structuredClone(english); copy.simplified.place_save_failed = 'Different wording';
+     expect(() => validatePayload(payload, copy, 34)).toThrow(/English copy changed/);
+diff --git a/translations/reader-preview-locales.json b/translations/reader-preview-locales.json
+new file mode 100644
+--- /dev/null
++++ b/translations/reader-preview-locales.json
+@@ -0,0 +1,68 @@
++{
++  "schemaVersion": 1,
++  "sourceRevision": "6b63e76e862125e87422f02a54ed60beac68e8fb",
++  "sourceState": "Captured shared working-tree English copy; exact values below guard subsequent changes.",
++  "scope": "Eight audio-readiness and layout-preview messages. AI-authored translations; native-speaker review remains pending.",
++  "english": {
++    "simplified.review_audio_unavailable": "Audio status unavailable",
++    "simplified.review_audio_current_detail": "{ready} of {total} sentence clips ready for these settings on this device.",
++    "simplified.layout_preview_open": "Preview reading layout",
++    "simplified.layout_preview_title": "Reading layout preview",
++    "simplified.layout_preview_note": "Try the appearance, navigation and prepared word help for this snapshot. Changes here are discarded when you close it. This does not preview a delivered lesson.",
++    "simplified.layout_preview_limits": "Listening, recording, AI help and scored practice are unavailable. Any current playback remains controlled by the main reader.",
++    "simplified.layout_preview_word_help": "Select an underlined word to see prepared help. Other words have no help in this preview.",
++    "simplified.layout_preview_chart": "Charts are unavailable in this layout preview. View the main reading to inspect the chart."
++  },
++  "locales": {
++    "spanish_latin_america": {
++      "simplified.review_audio_unavailable": "Estado del audio no disponible",
++      "simplified.review_audio_current_detail": "{ready} de {total} fragmentos de audio de oraciones listos en este dispositivo con estos ajustes.",
++      "simplified.layout_preview_open": "Vista previa del diseño de lectura",
++      "simplified.layout_preview_title": "Vista previa del diseño de lectura",
++      "simplified.layout_preview_note": "Prueba el aspecto, la navegación y la ayuda de palabras preparada para esta copia. Los cambios se descartan al cerrarla. Esta no es una vista previa de una lección enviada.",
++      "simplified.layout_preview_limits": "No están disponibles la escucha, la grabación, la ayuda de IA ni la práctica con puntuación. El lector principal sigue controlando cualquier audio que se esté reproduciendo.",
++      "simplified.layout_preview_word_help": "Selecciona una palabra subrayada para ver la ayuda preparada. Las demás palabras no tienen ayuda en esta vista previa.",
++      "simplified.layout_preview_chart": "Los gráficos no están disponibles en esta vista previa del diseño. Abre la lectura principal para ver el gráfico."
++    },
++    "spanish_castilian": {
++      "simplified.review_audio_unavailable": "Estado del audio no disponible",
++      "simplified.review_audio_current_detail": "{ready} de {total} fragmentos de audio de oraciones listos en este dispositivo con estos ajustes.",
++      "simplified.layout_preview_open": "Vista previa del diseño de lectura",
++      "simplified.layout_preview_title": "Vista previa del diseño de lectura",
++      "simplified.layout_preview_note": "Prueba el aspecto, la navegación y la ayuda de palabras preparada para esta copia. Los cambios se descartan al cerrarla. Esta no es una vista previa de una lección enviada.",
++      "simplified.layout_preview_limits": "No están disponibles la escucha, la grabación, la ayuda de IA ni la práctica con puntuación. El lector principal sigue controlando cualquier audio que se esté reproduciendo.",
++      "simplified.layout_preview_word_help": "Selecciona una palabra subrayada para ver la ayuda preparada. Las demás palabras no tienen ayuda en esta vista previa.",
++      "simplified.layout_preview_chart": "Los gráficos no están disponibles en esta vista previa del diseño. Abre la lectura principal para ver el gráfico."
++    },
++    "arabic": {
++      "simplified.review_audio_unavailable": "حالة الصوت غير متاحة",
++      "simplified.review_audio_current_detail": "المقاطع الصوتية للجمل الجاهزة على هذا الجهاز بهذه الإعدادات: {ready} من {total}.",
++      "simplified.layout_preview_open": "معاينة تنسيق القراءة",
++      "simplified.layout_preview_title": "معاينة تنسيق القراءة",
++      "simplified.layout_preview_note": "جرّب المظهر والتنقّل ومساعدة الكلمات المُعدّة لهذه النسخة. تُلغى التغييرات عند إغلاق المعاينة. هذه ليست معاينة لدرس تم إرساله.",
++      "simplified.layout_preview_limits": "الاستماع والتسجيل ومساعدة الذكاء الاصطناعي والتدريب الذي تُحسب درجاته غير متاحة. يبقى التحكم في أي تشغيل صوتي جارٍ في القارئ الرئيسي.",
++      "simplified.layout_preview_word_help": "اختر كلمة تحتها خط لعرض المساعدة المُعدّة. الكلمات الأخرى لا تتوفر لها مساعدة في هذه المعاينة.",
++      "simplified.layout_preview_chart": "الرسوم البيانية غير متاحة في معاينة التنسيق هذه. افتح القراءة الرئيسية لعرض الرسم البياني."
++    },
++    "chinese_simplified": {
++      "simplified.review_audio_unavailable": "无法获取音频状态",
++      "simplified.review_audio_current_detail": "{total} 段句子音频中有 {ready} 段已在此设备上准备就绪，适用于当前设置。",
++      "simplified.layout_preview_open": "预览阅读布局",
++      "simplified.layout_preview_title": "阅读布局预览",
++      "simplified.layout_preview_note": "试用此副本的外观、导航和预先准备的词语帮助。关闭预览后，这里的更改将被丢弃。这不是已发送课程的预览。",
++      "simplified.layout_preview_limits": "此处无法收听、录音、使用 AI 帮助或进行计分练习。正在播放的音频仍由主阅读器控制。",
++      "simplified.layout_preview_word_help": "选择带下划线的词语，查看预先准备的帮助。此预览中的其他词语没有帮助。",
++      "simplified.layout_preview_chart": "此布局预览无法显示图表。请在主阅读页面查看图表。"
++    },
++    "thai": {
++      "simplified.review_audio_unavailable": "ไม่สามารถแสดงสถานะเสียงได้",
++      "simplified.review_audio_current_detail": "คลิปเสียงประโยคพร้อมใช้กับการตั้งค่าเหล่านี้ในอุปกรณ์นี้ {ready} จาก {total} คลิป",
++      "simplified.layout_preview_open": "ดูตัวอย่างรูปแบบการอ่าน",
++      "simplified.layout_preview_title": "ตัวอย่างรูปแบบการอ่าน",
++      "simplified.layout_preview_note": "ลองรูปลักษณ์ การนำทาง และคำอธิบายคำที่เตรียมไว้สำหรับสำเนานี้ การเปลี่ยนแปลงที่นี่จะถูกยกเลิกเมื่อปิด ตัวอย่างนี้ไม่ใช่ตัวอย่างบทเรียนที่ส่งให้ผู้เรียนแล้ว",
++      "simplified.layout_preview_limits": "ไม่สามารถฟัง บันทึกเสียง ใช้ความช่วยเหลือจาก AI หรือทำแบบฝึกที่มีการให้คะแนนได้ที่นี่ เสียงที่กำลังเล่นยังคงควบคุมจากหน้าการอ่านหลัก",
++      "simplified.layout_preview_word_help": "เลือกคำที่ขีดเส้นใต้เพื่อดูคำอธิบายที่เตรียมไว้ คำอื่นไม่มีคำอธิบายในตัวอย่างนี้",
++      "simplified.layout_preview_chart": "แผนภูมิไม่พร้อมแสดงในตัวอย่างรูปแบบนี้ เปิดหน้าการอ่านหลักเพื่อดูแผนภูมิ"
++    }
++  }
++}
+diff --git a/translations/reader-terms-locales.json b/translations/reader-terms-locales.json
+new file mode 100644
+--- /dev/null
++++ b/translations/reader-terms-locales.json
+@@ -0,0 +1,122 @@
++{
++  "schemaVersion": 1,
++  "sourceRevision": "6b63e76e862125e87422f02a54ed60beac68e8fb",
++  "sourceState": "Captured shared working-tree English copy; exact values below guard subsequent changes.",
++  "scope": "Seventeen vocabulary preservation messages: retain the existing Spanish translations and fill Arabic, Simplified Chinese and Thai gaps. New translations are AI-authored; native-speaker review remains pending. New hints show parser syntax literally.",
++  "english": {
++    "simplified.adapt_exact_terms_hint": "Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.",
++    "simplified.adapt_terms_missing": "Current text kept. The proposed version is missing: {terms}. Retry or edit the preserved-term list.",
++    "simplified.adapt_terms_absent": "Current text kept. These terms were not found exactly in the source: {terms}. Check spelling and case, or remove them from the list.",
++    "simplified.adapt_terms_primary": "primary reading",
++    "simplified.adapt_terms_translation": "translation",
++    "simplified.adapt_terms_many": "{count} distinct terms exceeds the limit of {limit}.",
++    "simplified.adapt_term_long": "A term exceeds {limit} characters.",
++    "simplified.adapt_terms_long": "{count} total characters exceeds the limit of {limit}.",
++    "simplified.adapt_terms_text": "Each term must be a text entry.",
++    "simplified.adapt_terms_invalid": "Current text kept. {details} No terms were dropped. Correct the list and preview again.",
++    "simplified.adapt_terms_unverified": "Current text kept. Essential terms could not be verified. Preview again using supported text formatting.",
++    "simplified.adapt_terms_separator": "Use a separator after a quoted term.",
++    "simplified.adapt_terms_quote": "Close the quotation mark around the term.",
++    "simplified.adapt_validation_unavailable": "Essential-term validation is unavailable. Reload before previewing.",
++    "simplified.adapt_not_applied": "The change was not applied. Review the current text and preview again.",
++    "simplified.adapt_preview_unverified": "Current text kept. Essential terms could not be verified. Reload and preview again.",
++    "simplified.adapt_preview_expired": "Current text kept. This preview can no longer be verified. Preview the change again."
++  },
++  "locales": {
++    "spanish_latin_america": {
++      "simplified.adapt_exact_terms_hint": "Separa los términos con comas o punto y coma; usa comillas si un término contiene alguno de estos signos. Máximo: 30 términos distintos. Deben aparecer en el texto original. Comprobamos que cada uno se conserve al menos una vez en su panel de lectura, con la misma ortografía, mayúsculas y puntuación.",
++      "simplified.adapt_terms_missing": "Se conservó el texto actual. En la versión propuesta faltan: {terms}. Vuelve a intentarlo o modifica la lista de términos que deben conservarse.",
++      "simplified.adapt_terms_absent": "Se conservó el texto actual. Estos términos no aparecen exactamente así en el original: {terms}. Revisa la ortografía y las mayúsculas, o elimínalos de la lista.",
++      "simplified.adapt_terms_primary": "lectura principal",
++      "simplified.adapt_terms_translation": "traducción",
++      "simplified.adapt_terms_many": "{count} términos distintos superan el límite de {limit}.",
++      "simplified.adapt_term_long": "Un término supera los {limit} caracteres.",
++      "simplified.adapt_terms_long": "El total de {count} caracteres supera el límite de {limit}.",
++      "simplified.adapt_terms_text": "Cada término debe ser una entrada de texto.",
++      "simplified.adapt_terms_invalid": "Se conservó el texto actual. {details} No se descartó ningún término. Corrige la lista y crea otra vista previa.",
++      "simplified.adapt_terms_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Crea otra vista previa con un formato de texto compatible.",
++      "simplified.adapt_terms_separator": "Añade un separador después de un término entre comillas.",
++      "simplified.adapt_terms_quote": "Cierra las comillas del término.",
++      "simplified.adapt_validation_unavailable": "La comprobación de términos esenciales no está disponible. Recarga la página antes de crear una vista previa.",
++      "simplified.adapt_not_applied": "No se aplicó el cambio. Revisa el texto actual y crea otra vista previa.",
++      "simplified.adapt_preview_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Recarga la página y crea otra vista previa.",
++      "simplified.adapt_preview_expired": "Se conservó el texto actual. Esta vista previa ya no se puede verificar. Crea otra vista previa del cambio."
++    },
++    "spanish_castilian": {
++      "simplified.adapt_exact_terms_hint": "Separa los términos con comas o punto y coma; usa comillas si un término contiene alguno de estos signos. Máximo: 30 términos distintos. Deben aparecer en el texto original. Comprobamos que cada uno se conserve al menos una vez en su panel de lectura, con la misma ortografía, mayúsculas y puntuación.",
++      "simplified.adapt_terms_missing": "Se conservó el texto actual. En la versión propuesta faltan: {terms}. Vuelve a intentarlo o modifica la lista de términos que deben conservarse.",
++      "simplified.adapt_terms_absent": "Se conservó el texto actual. Estos términos no aparecen exactamente así en el original: {terms}. Revisa la ortografía y las mayúsculas, o elimínalos de la lista.",
++      "simplified.adapt_terms_primary": "lectura principal",
++      "simplified.adapt_terms_translation": "traducción",
++      "simplified.adapt_terms_many": "{count} términos distintos superan el límite de {limit}.",
++      "simplified.adapt_term_long": "Un término supera los {limit} caracteres.",
++      "simplified.adapt_terms_long": "El total de {count} caracteres supera el límite de {limit}.",
++      "simplified.adapt_terms_text": "Cada término debe ser una entrada de texto.",
++      "simplified.adapt_terms_invalid": "Se conservó el texto actual. {details} No se descartó ningún término. Corrige la lista y crea otra vista previa.",
++      "simplified.adapt_terms_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Crea otra vista previa con un formato de texto compatible.",
++      "simplified.adapt_terms_separator": "Añade un separador después de un término entre comillas.",
++      "simplified.adapt_terms_quote": "Cierra las comillas del término.",
++      "simplified.adapt_validation_unavailable": "La comprobación de términos esenciales no está disponible. Recarga la página antes de crear una vista previa.",
++      "simplified.adapt_not_applied": "No se aplicó el cambio. Revisa el texto actual y crea otra vista previa.",
++      "simplified.adapt_preview_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Recarga la página y crea otra vista previa.",
++      "simplified.adapt_preview_expired": "Se conservó el texto actual. Esta vista previa ya no se puede verificar. Crea otra vista previa del cambio."
++    },
++    "arabic": {
++      "simplified.adapt_exact_terms_hint": "افصل المصطلحات بفاصلة (,) أو فاصلة منقوطة (;). ضع المصطلح بين علامتي اقتباس مزدوجتين (\") إذا احتوى على أي منهما. الحد الأقصى 30 مصطلحًا مختلفًا، ويجب أن تكون موجودة أصلًا في النص. نتحقق من بقاء كل مصطلح مرة واحدة على الأقل، بنفس الكتابة وحالة الأحرف وعلامات الترقيم، في لوحة القراءة التي ورد فيها أصلًا.",
++      "simplified.adapt_terms_missing": "تم الاحتفاظ بالنص الحالي. تفتقد النسخة المقترحة المصطلحات التالية: {terms}. أعد المحاولة أو عدّل قائمة المصطلحات المطلوب الاحتفاظ بها.",
++      "simplified.adapt_terms_absent": "تم الاحتفاظ بالنص الحالي. لم يُعثر على هذه المصطلحات مطابقةً تمامًا في النص الأصلي: {terms}. تحقق من الكتابة وحالة الأحرف، أو أزلها من القائمة.",
++      "simplified.adapt_terms_primary": "القراءة الأساسية",
++      "simplified.adapt_terms_translation": "الترجمة",
++      "simplified.adapt_terms_many": "عدد المصطلحات المختلفة ({count}) يتجاوز الحد المسموح به ({limit}).",
++      "simplified.adapt_term_long": "يتجاوز أحد المصطلحات الحد المسموح به وهو {limit} حرفًا.",
++      "simplified.adapt_terms_long": "إجمالي الأحرف ({count}) يتجاوز الحد المسموح به ({limit}).",
++      "simplified.adapt_terms_text": "يجب إدخال كل مصطلح كنص.",
++      "simplified.adapt_terms_invalid": "تم الاحتفاظ بالنص الحالي. {details} لم يُحذف أي مصطلح من القائمة. صحح القائمة واعرض المعاينة مجددًا.",
++      "simplified.adapt_terms_unverified": "تم الاحتفاظ بالنص الحالي. تعذر التحقق من المصطلحات الأساسية. أعد المعاينة باستخدام تنسيق نص مدعوم.",
++      "simplified.adapt_terms_separator": "استخدم فاصلًا بعد المصطلح المحاط بعلامتي اقتباس.",
++      "simplified.adapt_terms_quote": "أغلق علامة الاقتباس حول المصطلح.",
++      "simplified.adapt_validation_unavailable": "التحقق من المصطلحات الأساسية غير متاح. أعد تحميل الصفحة قبل المعاينة.",
++      "simplified.adapt_not_applied": "لم يُطبّق التغيير. راجع النص الحالي واعرض المعاينة مجددًا.",
++      "simplified.adapt_preview_unverified": "تم الاحتفاظ بالنص الحالي. تعذر التحقق من المصطلحات الأساسية. أعد تحميل الصفحة واعرض المعاينة مجددًا.",
++      "simplified.adapt_preview_expired": "تم الاحتفاظ بالنص الحالي. لم يعد بالإمكان التحقق من هذه المعاينة. اعرض معاينة التغيير مجددًا."
++    },
++    "chinese_simplified": {
++      "simplified.adapt_exact_terms_hint": "请用半角逗号 (,) 或分号 (;) 分隔词语；如果词语本身含有这些符号，请用半角双引号 (\") 括起来。最多可填写 30 个不同的词语，且它们必须已出现在原文中。系统会检查每个词语是否在其原有的阅读窗格中至少保留一次，并保持拼写、大小写和标点完全一致。",
++      "simplified.adapt_terms_missing": "已保留当前文本。建议版本缺少以下词语：{terms}。请重试或修改需要保留的词语列表。",
++      "simplified.adapt_terms_absent": "已保留当前文本。原文中未找到与以下词语完全一致的内容：{terms}。请检查拼写和大小写，或将其从列表中移除。",
++      "simplified.adapt_terms_primary": "主要阅读内容",
++      "simplified.adapt_terms_translation": "译文",
++      "simplified.adapt_terms_many": "{count} 个不同的词语超过了 {limit} 个的上限。",
++      "simplified.adapt_term_long": "某个词语超过了 {limit} 个字符的上限。",
++      "simplified.adapt_terms_long": "总计 {count} 个字符，超过了 {limit} 个的上限。",
++      "simplified.adapt_terms_text": "每个词语都必须以文本形式输入。",
++      "simplified.adapt_terms_invalid": "已保留当前文本。{details} 未从列表中丢弃任何词语。请修正列表后重新预览。",
++      "simplified.adapt_terms_unverified": "已保留当前文本。无法验证关键术语。请使用支持的文本格式重新预览。",
++      "simplified.adapt_terms_separator": "请在引号括起的词语后使用分隔符。",
++      "simplified.adapt_terms_quote": "请补齐词语末尾的引号。",
++      "simplified.adapt_validation_unavailable": "关键术语验证不可用。请重新加载后再预览。",
++      "simplified.adapt_not_applied": "未应用更改。请检查当前文本，然后重新预览。",
++      "simplified.adapt_preview_unverified": "已保留当前文本。无法验证关键术语。请重新加载后再次预览。",
++      "simplified.adapt_preview_expired": "已保留当前文本。此预览已无法验证。请重新预览更改。"
++    },
++    "thai": {
++      "simplified.adapt_exact_terms_hint": "คั่นคำด้วยจุลภาค (,) หรืออัฒภาค (;) หากคำมีเครื่องหมายใดเครื่องหมายหนึ่งนี้ ให้ใส่เครื่องหมายอัญประกาศคู่ (\") คร่อมคำนั้น ระบุได้ไม่เกิน 30 คำที่ไม่ซ้ำกัน และคำเหล่านี้ต้องมีอยู่ในข้อความแล้ว ระบบจะตรวจว่าแต่ละคำยังปรากฏอย่างน้อยหนึ่งครั้งในแผงการอ่านเดิม โดยคงการสะกด ตัวพิมพ์ใหญ่และเล็ก และเครื่องหมายวรรคตอนให้ตรงกันทุกประการ",
++      "simplified.adapt_terms_missing": "เก็บข้อความปัจจุบันไว้แล้ว ฉบับที่เสนอขาดคำต่อไปนี้: {terms} ลองอีกครั้งหรือแก้ไขรายการคำที่ต้องการเก็บไว้",
++      "simplified.adapt_terms_absent": "เก็บข้อความปัจจุบันไว้แล้ว ไม่พบคำเหล่านี้ที่ตรงกันทุกประการในข้อความต้นฉบับ: {terms} ตรวจสอบการสะกดและตัวพิมพ์ใหญ่และเล็ก หรือนำคำเหล่านี้ออกจากรายการ",
++      "simplified.adapt_terms_primary": "บทอ่านหลัก",
++      "simplified.adapt_terms_translation": "คำแปล",
++      "simplified.adapt_terms_many": "คำที่ไม่ซ้ำกัน {count} คำ เกินขีดจำกัด {limit} คำ",
++      "simplified.adapt_term_long": "มีคำที่ยาวเกินขีดจำกัด {limit} อักขระ",
++      "simplified.adapt_terms_long": "จำนวนอักขระรวม {count} อักขระ เกินขีดจำกัด {limit} อักขระ",
++      "simplified.adapt_terms_text": "แต่ละคำต้องป้อนเป็นข้อความ",
++      "simplified.adapt_terms_invalid": "เก็บข้อความปัจจุบันไว้แล้ว {details} ไม่มีคำใดถูกตัดออกจากรายการ แก้ไขรายการแล้วดูตัวอย่างอีกครั้ง",
++      "simplified.adapt_terms_unverified": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบคำสำคัญได้ ดูตัวอย่างอีกครั้งโดยใช้รูปแบบข้อความที่รองรับ",
++      "simplified.adapt_terms_separator": "ใช้ตัวคั่นหลังคำที่อยู่ในเครื่องหมายอัญประกาศ",
++      "simplified.adapt_terms_quote": "ปิดเครื่องหมายอัญประกาศที่คร่อมคำให้ครบ",
++      "simplified.adapt_validation_unavailable": "ไม่สามารถใช้การตรวจสอบคำสำคัญได้ โหลดหน้าใหม่ก่อนดูตัวอย่าง",
++      "simplified.adapt_not_applied": "ยังไม่ได้ใช้การเปลี่ยนแปลง ตรวจสอบข้อความปัจจุบันแล้วดูตัวอย่างอีกครั้ง",
++      "simplified.adapt_preview_unverified": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบคำสำคัญได้ โหลดหน้าใหม่แล้วดูตัวอย่างอีกครั้ง",
++      "simplified.adapt_preview_expired": "เก็บข้อความปัจจุบันไว้แล้ว ไม่สามารถตรวจสอบตัวอย่างนี้ได้อีก โปรดดูตัวอย่างการเปลี่ยนแปลงอีกครั้ง"
++    }
++  }
++}
+diff --git a/tests/fixtures/reader_preview_locales.json b/tests/fixtures/reader_preview_locales.json
+new file mode 100644
+--- /dev/null
++++ b/tests/fixtures/reader_preview_locales.json
+@@ -0,0 +1,27 @@
++[
++  {
++    "id": "reader_en_contract_audio_preview_v1",
++    "baseFixture": "reader_en_contract_v1"
++  },
++  {
++    "id": "reader_es419_long_labels_audio_preview_v1",
++    "baseFixture": "reader_es419_long_labels_v1"
++  },
++  {
++    "id": "reader_esES_ui_audio_preview_v1",
++    "baseFixture": "reader_es419_long_labels_v1",
++    "locale": "spanish_castilian"
++  },
++  {
++    "id": "reader_ar_rtl_mixed_audio_preview_v1",
++    "baseFixture": "reader_ar_rtl_mixed_v1"
++  },
++  {
++    "id": "reader_zh_hans_unspaced_audio_preview_v1",
++    "baseFixture": "reader_zh_hans_unspaced_v1"
++  },
++  {
++    "id": "reader_th_unspaced_audio_preview_v1",
++    "baseFixture": "reader_th_unspaced_v1"
++  }
++]
+diff --git a/tests/helpers/reader_preview_locale_harness.js b/tests/helpers/reader_preview_locale_harness.js
+new file mode 100644
+--- /dev/null
++++ b/tests/helpers/reader_preview_locale_harness.js
+@@ -0,0 +1,13 @@
++import { readFileSync } from 'node:fs';
++import { fixtures as baseFixtures, contentFor, translator } from './reader_locale_harness.js';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase, mountReader, disposeReader, act, click } from './reader_recovery_locale_harness.js';
++export { contentFor, translator, mountReader, disposeReader, act, click };
++export const setupPreviewLocales = setupRecoveryReader;
++export const preparePreviewLocale = prepareRecoveryCase;
++export const cleanupPreviewLocale = cleanupRecoveryCase;
++export const previewFixtures = JSON.parse(readFileSync('tests/fixtures/reader_preview_locales.json', 'utf8')).map(f => ({ ...baseFixtures.find(base => base.id === f.baseFixture), ...f }));
++export async function openLocalePreview(fixture, extra = {}) {
++  const view = mountReader(fixture, extra);
++  await click(view.host.querySelector('[data-student-preview-open]'));
++  return { ...view, preview: view.host.querySelector('[data-student-preview]') };
++}
+diff --git a/tests/reader_preview_locales.test.js b/tests/reader_preview_locales.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_preview_locales.test.js
+@@ -0,0 +1,70 @@
++import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
++import { setupPreviewLocales, preparePreviewLocale, cleanupPreviewLocale, previewFixtures, mountReader, openLocalePreview, click } from './helpers/reader_preview_locale_harness.js';
++beforeAll(setupPreviewLocales, 60000);
++beforeEach(preparePreviewLocale);
++afterEach(cleanupPreviewLocale);
++const statusRow = host => host.querySelector('[data-review-state="audio"]');
++const noLeakedKeys = element => expect(element.textContent).not.toMatch(/simplified\.[a-z_]+|\{(?:ready|total)\}/);
++describe('audio readiness and layout preview in named locales', () => {
++  for (const fixture of previewFixtures) {
++    it(fixture.id + ': interpolates actual ready/total counts in locale word order', () => {
++      let total;
++      window.__alloGetReadAloudAudioSummary = vi.fn(texts => { total = texts.length; return { total, ready: 1, stale: total - 1, missing: 0, corrupt: 0 }; });
++      const { host, t } = mountReader(fixture), row = statusRow(host);
++      expect(total).toBeGreaterThan(1);
++      expect(row.textContent).toContain(t('simplified.review_audio_current_detail', { ready: 1, total }));
++      expect(row.textContent).toContain(t('simplified.review_audio_partial'));
++      noLeakedKeys(row);
++    });
++    it.each(['missing', 'throws'])(fixture.id + ': unavailable summary (%s) is named honestly', kind => {
++      if (kind === 'throws') window.__alloGetReadAloudAudioSummary = () => { throw Error('Unavailable bridge'); };
++      const { host, t } = mountReader(fixture), row = statusRow(host);
++      expect(row.textContent).toContain(t('simplified.review_audio_unavailable'));
++      expect(row.textContent).not.toContain(t('simplified.review_audio_ready'));
++      noLeakedKeys(row);
++    });
++    it(fixture.id + ': localized preview limits and prepared-help hint preserve passage language and state', async () => {
++      localStorage.setItem('preview-fixture-sentinel', fixture.snippet);
++      const before = JSON.stringify(localStorage), speak = vi.fn(), stop = vi.fn();
++      const view = await openLocalePreview(fixture, { handleSpeak: speak, stopPlayback: stop }), { host, preview, t } = view;
++      expect(host.querySelector('[data-student-preview-open]').textContent).toBe(t('simplified.layout_preview_open'));
++      expect(preview.getAttribute('role')).toBe('dialog');
++      expect(preview.querySelector('h2').textContent).toBe(t('simplified.layout_preview_title'));
++      expect(preview.textContent).toContain(t('simplified.layout_preview_note'));
++      expect(preview.textContent).toContain(t('simplified.layout_preview_limits'));
++      const paragraph = preview.querySelector('[data-reading-paragraph="1"]');
++      expect(paragraph.lang).toBe(fixture.tag); expect(paragraph.dir).toBe(fixture.dir);
++      for (const button of preview.querySelectorAll('[data-reading-mode]')) if (!['read', 'define'].includes(button.dataset.readingMode)) expect(button.disabled).toBe(true);
++      await click(preview.querySelector('[data-reading-mode="define"]'));
++      const hint = preview.querySelector('[data-reading-mode-status="define"]');
++      expect(hint.textContent).toContain(t('simplified.layout_preview_word_help')); noLeakedKeys(hint);
++      await click(preview.querySelector('[data-student-preview-close]'));
++      expect(host.querySelector('[data-student-preview]')).toBeNull();
++      expect(speak).not.toHaveBeenCalled(); expect(stop).not.toHaveBeenCalled();
++      expect(JSON.stringify(localStorage)).toBe(before);
++    });
++    it(fixture.id + ': explains the chart omission in the selected language', async () => {
++      const chart = { ...fixture, passage: fixture.passage + '\n\n[[CHART:{"type":"bar","title":"Fixture chart","labels":["A"],"datasets":[{"data":[1]}]}]]' };
++      const { preview, t } = await openLocalePreview(chart);
++      const note = preview.querySelector('[data-reading-chart]');
++      expect(note).not.toBeNull(); expect(note.textContent).toContain(t('simplified.layout_preview_chart')); noLeakedKeys(note);
++    });
++  }
++  it.each(['missing', 'echoed'])('keeps English fallback labels readable when the translator is %s', async kind => {
++    const t = kind === 'missing' ? () => undefined : key => key;
++    const { preview, host } = await openLocalePreview(previewFixtures.find(f => f.locale === 'arabic'), { t });
++    expect(preview.querySelector('h2').textContent).toBe('Reading layout preview');
++    expect(preview.textContent).toContain('This does not preview a delivered lesson.');
++    noLeakedKeys(preview.querySelector('h2'));
++    expect(statusRow(host).textContent).toContain('Audio status unavailable');
++    expect(preview.querySelector('[data-reading-paragraph="1"]').lang).toBe('ar');
++    expect(preview.querySelector('[data-reading-paragraph="1"]').dir).toBe('rtl');
++  });
++  it('keeps an Arabic passage RTL under an English preview interface', async () => {
++    const fixture = { ...previewFixtures.find(f => f.locale === 'arabic'), locale: 'English' };
++    const { preview } = await openLocalePreview(fixture);
++    expect(preview.querySelector('h2').textContent).toBe('Reading layout preview');
++    const paragraph = preview.querySelector('[data-reading-paragraph="1"]');
++    expect(paragraph.lang).toBe('ar'); expect(paragraph.dir).toBe('rtl');
++  });
++});
+diff --git a/tests/reader_preview_locale_catalogs.test.js b/tests/reader_preview_locale_catalogs.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_preview_locale_catalogs.test.js
+@@ -0,0 +1,36 @@
++import { describe, expect, it } from 'vitest';
++import { createRequire } from 'node:module';
++import { readFileSync } from 'node:fs';
++import { translator } from './helpers/reader_locale_harness.js';
++const require = createRequire(import.meta.url);
++const { validatePayload, placeholders, lookup, run, parseArgs } = require('../dev-tools/i18n/apply_reader_contract_locales.cjs');
++const payload = JSON.parse(readFileSync('translations/reader-preview-locales.json', 'utf8'));
++const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++describe('frozen eight-key audio/preview locale contract', () => {
++  it('checks this batch independently and includes it in the full scoped gate', () => {
++    expect(validatePayload(payload, english, 8)).toHaveLength(8);
++    expect(run(false, 'preview')).toMatchObject({ keys: 8, locales: 5, changedFiles: 0 });
++    expect(run(false, 'all')).toMatchObject({ keys: 125, changedFiles: 0 });
++    expect(parseArgs(['--check', '--batch=preview'])).toEqual({ apply: false, batch: 'preview' });
++  });
++  it('refuses changed preview semantics, raw keys and incorrect ready/total placeholders', () => {
++    const changed = structuredClone(english); changed.simplified.layout_preview_note = 'This previews a delivered lesson.';
++    expect(() => validatePayload(payload, changed, 8)).toThrow(/English copy changed/);
++    const invalid = structuredClone(payload); invalid.locales.thai['simplified.layout_preview_title'] = 'simplified.layout_preview_title';
++    expect(() => validatePayload(invalid, english, 8)).toThrow(/Missing translation/);
++    invalid.locales.thai['simplified.layout_preview_title'] = payload.locales.thai['simplified.layout_preview_title'];
++    invalid.locales.thai['simplified.review_audio_current_detail'] = 'เสียง {saved} / {total}';
++    expect(() => validatePayload(invalid, english, 8)).toThrow(/Placeholder mismatch/);
++  });
++  for (const [locale, values] of Object.entries(payload.locales)) it(locale + ': both mirrors contain meaningful labels with exact placeholders', () => {
++    for (const prefix of ['lang', 'desktop/web-app/public/lang']) {
++      const pack = JSON.parse(readFileSync(prefix + '/' + locale + '.js', 'utf8'));
++      for (const [key, value] of Object.entries(values)) { expect(lookup(pack, key)).toBe(value); expect(placeholders(value)).toEqual(placeholders(payload.english[key])); expect(value).not.toBe(key); }
++    }
++  });
++  it('allows Chinese to put total before ready without losing zero or repeating the wrong count', () => {
++    const t = translator('chinese_simplified'), value = t('simplified.review_audio_current_detail', { ready: 0, total: 12 });
++    expect(value).toBe('12 段句子音频中有 0 段已在此设备上准备就绪，适用于当前设置。');
++    expect(value).not.toMatch(/\{(?:ready|total)\}/);
++  });
++});
+diff --git a/tests/reader_terms_locales.test.js b/tests/reader_terms_locales.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_terms_locales.test.js
+@@ -0,0 +1,76 @@
++import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { readFileSync } from 'node:fs';
++import { helpers, fixtures, translator } from './helpers/reader_locale_harness.js';
++import { setupRecoveryReader as setupPreviewLocales, prepareRecoveryCase as preparePreviewLocale, cleanupRecoveryCase as cleanupPreviewLocale, mountReader, act } from './helpers/reader_recovery_locale_harness.js';
++const previewFixtures = [...fixtures, { ...fixtures.find(f => f.locale === 'spanish_latin_america'), id: 'reader_esES_vocabulary_contract_v1', locale: 'spanish_castilian' }];
++const require = createRequire(import.meta.url);
++const { validatePayload, placeholders, lookup, run, parseArgs } = require('../dev-tools/i18n/apply_reader_contract_locales.cjs');
++const payload = JSON.parse(readFileSync('translations/reader-terms-locales.json', 'utf8'));
++const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++beforeAll(setupPreviewLocales, 60000);
++beforeEach(preparePreviewLocale);
++afterEach(cleanupPreviewLocale);
++const readable = value => { expect(value).not.toMatch(/simplified\.[a-z_]+|\{(?:terms|count|limit|details)\}/); };
++describe('vocabulary feedback across named reader languages', () => {
++  for (const fixture of previewFixtures) {
++    it(fixture.id + ': preserves learner terms and localizes the source pane names', () => {
++      const t = translator(fixture.locale), vocabulary = helpers.preservedVocabulary;
++      const term = fixture.snippet, literalTerm = '$& <x> NaCl';
++      const terms = '\u201c' + term + '\u201d (' + t('simplified.adapt_terms_primary') + '); \u201c' + literalTerm + '\u201d (' + t('simplified.adapt_terms_translation') + ')';
++      const missing = vocabulary.feedback({ missingTerms: [{ term, pane: 'primary' }, { term: literalTerm, pane: 'translation' }] }, t);
++      expect(missing).toBe(t('simplified.adapt_terms_missing', { terms })); readable(missing);
++      const absent = vocabulary.feedback({ absentFromSource: [term] }, t);
++      expect(absent).toBe(t('simplified.adapt_terms_absent', { terms: '\u201c' + term + '\u201d' })); readable(absent);
++    });
++    it(fixture.id + ': substitutes distinct-count and size limits in nested validation details', () => {
++      const t = translator(fixture.locale), vocabulary = helpers.preservedVocabulary;
++      const errors = [{ code: 'too-many-terms', count: 31, limit: 30 }, { code: 'term-too-long', limit: 256 }, { code: 'terms-too-long', count: 4097, limit: 4096 }, { code: 'invalid-term' }];
++      const details = [t('simplified.adapt_terms_many', errors[0]), t('simplified.adapt_term_long', errors[1]), t('simplified.adapt_terms_long', errors[2]), t('simplified.adapt_terms_text')].join(' ');
++      const result = vocabulary.feedback({ errors }, t);
++      expect(result).toBe(t('simplified.adapt_terms_invalid', { details })); readable(result);
++      expect(vocabulary.feedback({ reason: 'preview-validation-unavailable' }, t)).toBe(t('simplified.adapt_preview_expired'));
++      expect(vocabulary.feedback({}, t)).toBe(t('simplified.adapt_terms_unverified'));
++    });
++    it(fixture.id + ': exposes a localized input error and blocks an invalid request', async () => {
++      const handleComplexityAdjustment = vi.fn(), { host, t } = mountReader(fixture, { handleComplexityAdjustment });
++      const input = host.querySelector('[data-adapt-keep-terms]');
++      expect(host.querySelector('[data-adaptation-controls]').textContent).toContain(t('simplified.adapt_exact_terms_hint'));
++      for (const [value, key] of [['"unclosed', 'adapt_terms_quote'], ['"term"next', 'adapt_terms_separator']]) {
++        await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, value); input.dispatchEvent(new Event('input', { bubbles: true })); });
++        expect(input.getAttribute('aria-invalid')).toBe('true');
++        const error = input.getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id)).find(node => node?.getAttribute('role') === 'alert');
++        expect(error.textContent).toBe(t('simplified.' + key)); readable(error.textContent);
++        expect(host.querySelector('[data-apply-complexity]').disabled).toBe(true);
++      }
++      expect(handleComplexityAdjustment).not.toHaveBeenCalled();
++      expect(helpers.preservedVocabulary.parseInput('"uno,dos";สาม,كلمة')).toEqual({ valid: true, terms: ['uno,dos', 'สาม', 'كلمة'] });
++    });
++  }
++  it.each(['missing', 'echoed', 'throws'])('%s translator produces readable English fallback without modifying learner terms', mode => {
++    const t = mode === 'missing' ? () => undefined : mode === 'echoed' ? key => key : () => { throw Error('translator unavailable'); };
++    const term = 'النهر แม่น้ำ 河流';
++    const text = helpers.preservedVocabulary.feedback({ missingTerms: [{ term, pane: 'primary' }] }, t);
++    expect(text).toBe('Current text kept. The proposed version is missing: \u201c' + term + '\u201d (primary reading). Retry or edit the preserved-term list.'); readable(text);
++  });
++});
++describe('frozen vocabulary locale payload', () => {
++  it('checks all seventeen keys without replacing existing Spanish values', () => {
++    expect(validatePayload(payload, english, 17)).toHaveLength(17);
++    expect(run(false, 'terms')).toMatchObject({ keys: 17, locales: 5, changedFiles: 0 });
++    expect(parseArgs(['--check', '--batch=terms'])).toEqual({ apply: false, batch: 'terms' });
++    for (const locale of ['spanish_latin_america', 'spanish_castilian']) for (const [key, value] of Object.entries(payload.locales[locale])) expect(lookup(JSON.parse(readFileSync('lang/' + locale + '.js', 'utf8')), key)).toBe(value);
++  });
++  it('rejects changed validation copy and broken nested placeholders', () => {
++    const changed = structuredClone(english); changed.simplified.adapt_exact_terms_hint = 'All occurrences remain.';
++    expect(() => validatePayload(payload, changed, 17)).toThrow(/English copy changed/);
++    const invalid = structuredClone(payload); invalid.locales.arabic['simplified.adapt_terms_invalid'] = 'تعذر التحقق {detail}';
++    expect(() => validatePayload(invalid, english, 17)).toThrow(/Placeholder mismatch/);
++  });
++  for (const [locale, values] of Object.entries(payload.locales)) it(locale + ': mirrors every term label and placeholder', () => {
++    for (const prefix of ['lang', 'desktop/web-app/public/lang']) {
++      const pack = JSON.parse(readFileSync(prefix + '/' + locale + '.js', 'utf8'));
++      for (const [key, value] of Object.entries(values)) { expect(lookup(pack, key)).toBe(value); expect(placeholders(value)).toEqual(placeholders(payload.english[key])); }
++    }
++  });
++});
+diff --git a/tests/reader_preview_locale_layout.test.js b/tests/reader_preview_locale_layout.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_preview_locale_layout.test.js
+@@ -0,0 +1,63 @@
++// Real reader markup and production utility CSS in disposable Chromium; no app server or network.
++import { beforeAll, afterAll, beforeEach, afterEach, describe, it, expect } from 'vitest';
++import { createRequire } from 'node:module';
++import { mkdirSync, writeFileSync } from 'node:fs';
++import { resolve } from 'node:path';
++import { setupPreviewLocales, preparePreviewLocale, cleanupPreviewLocale, previewFixtures, mountReader, click, act } from './helpers/reader_preview_locale_harness.js';
++const require = createRequire(import.meta.url), webRequire = createRequire(resolve('desktop/web-app/package.json'));
++const report = resolve('reports/reader-preview-locale-layout'), results = [];
++let browser, css;
++const enabled = process.env.ALLO_READER_PREVIEW_LOCALE_LAYOUT === '1';
++(enabled ? describe : describe.skip)('audio, preview and term labels in narrow Chromium layouts', () => {
++  beforeAll(async () => {
++    setupPreviewLocales();
++    const config = { ...require(resolve('desktop/web-app/tailwind.config.js')), content: [resolve('view_simplified_source.jsx')] };
++    css = (await webRequire('postcss')([webRequire('tailwindcss')(config)]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined })).css;
++    browser = await require('@playwright/test').chromium.launch({ headless: true });
++    mkdirSync(report, { recursive: true });
++  }, 60000);
++  beforeEach(preparePreviewLocale);
++  afterEach(cleanupPreviewLocale);
++  afterAll(async () => { writeFileSync(resolve(report, 'results.json'), JSON.stringify(results, null, 2) + '\n'); await browser?.close(); }, 60000);
++  for (const locale of ['spanish_latin_america', 'arabic', 'chinese_simplified', 'thai']) for (const textScale of [1, 2]) {
++    it(locale + ': 320 CSS px with ' + textScale + 'x root text size', async () => {
++      const fixture = previewFixtures.find(f => f.locale === locale);
++      window.__alloGetReadAloudAudioSummary = texts => ({ ready: 1, total: texts.length, stale: texts.length - 1 });
++      const view = mountReader(fixture), input = view.host.querySelector('[data-adapt-keep-terms]');
++      await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '"unclosed'); input.dispatchEvent(new Event('input', { bubbles: true })); });
++      const page = await browser.newPage({ viewport: { width: 320, height: 900 } });
++      await page.route('**/*', route => route.abort());
++      const html = () => '<html lang="' + fixture.tag + '" dir="' + fixture.dir + '"><head><meta charset="utf-8"><style>' + css + '\nhtml{font-size:' + (16 * textScale) + 'px}</style></head><body>' + view.host.innerHTML + '</body></html>';
++      const overflow = async selector => page.locator(selector).evaluateAll(nodes => nodes.filter(node => {
++        const rect = node.getBoundingClientRect();
++        // An unfocused sr-only skip link is intentionally clipped; focused links remain in scope.
++        if (node.classList.contains('sr-only') && rect.width <= 1 && rect.height <= 1) return false;
++        return rect.width > 0 && (rect.left < -1 || rect.right > innerWidth + 1 || node.scrollWidth > node.clientWidth + 2);
++      }).map(node => ({ element: node.tagName, text: node.textContent.slice(0, 100), scrollWidth: node.scrollWidth, clientWidth: node.clientWidth })));
++      try {
++        await page.setContent(html());
++        await page.locator('details').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
++        expect(await page.locator('[data-adaptation-controls] [role="alert"]').textContent()).toBe(view.t('simplified.adapt_terms_quote'));
++        await page.locator('[data-adapt-keep-terms]').focus();
++        expect(await page.locator('[data-adapt-keep-terms]').evaluate(node => document.activeElement === node)).toBe(true);
++        const termFailures = await overflow('[data-review-state="audio"], [data-adaptation-controls], [data-adaptation-controls] label, [data-adaptation-controls] label span, [data-adaptation-controls] [role="alert"]');
++        await page.locator('[data-adaptation-controls]').screenshot({ path: resolve(report, locale + '-' + textScale + 'x-terms.png') });
++        await click(view.host.querySelector('[data-student-preview-open]'));
++        await click(view.host.querySelector('[data-student-preview] [data-reading-mode="define"]'));
++        await page.setContent(html());
++        const preview = page.locator('[data-student-preview]');
++        expect(await preview.isVisible()).toBe(true);
++        expect(await preview.locator('h2[id^="simplified-student-preview-title-"]').textContent()).toBe(view.t('simplified.layout_preview_title'));
++        expect(await preview.locator('[data-reading-mode-status="define"]').textContent()).toContain(view.t('simplified.layout_preview_word_help'));
++        expect(await preview.locator('[data-reading-paragraph="1"]').getAttribute('dir')).toBe(fixture.dir);
++        expect(await preview.locator('[data-reading-paragraph="1"]').getAttribute('lang')).toBe(fixture.tag);
++        await preview.locator('[data-student-preview-close]').focus();
++        expect(await preview.locator('[data-student-preview-close]').evaluate(node => document.activeElement === node)).toBe(true);
++        const previewFailures = await overflow('[data-student-preview], [data-student-preview] h2, [data-student-preview] p, [data-student-preview] button, [data-student-preview] [data-reading-mode-status]');
++        await page.screenshot({ path: resolve(report, locale + '-' + textScale + 'x-preview.png') });
++        results.push({ fixture: fixture.id, viewportCssPx: 320, rootTextScale: textScale, nativeBrowserZoom: false, termFailures, previewFailures });
++        expect(previewFailures).toEqual([]); expect(termFailures).toEqual([]);
++      } finally { await page.close(); }
++    }, 30000);
++  }
++});

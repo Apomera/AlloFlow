@@ -1,0 +1,55 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "type": "mandelbrot",
+      "distinctColors": 989,
+      "transparentPixels": 0,
+      "exportMatches": true,
+      "rows": 512
+    },
+    {
+      "type": "julia",
+      "distinctColors": 1226,
+      "transparentPixels": 0,
+      "exportMatches": true,
+      "rows": 512
+    },
+    {
+      "type": "burningShip",
+      "distinctColors": 1208,
+      "transparentPixels": 0,
+      "exportMatches": true,
+      "rows": 512
+    },
+    {
+      "type": "sierpinski",
+      "distinctColors": 354,
+      "transparentPixels": 0,
+      "exportMatches": true,
+      "rows": 512
+    },
+    {
+      "partialRenderExportComplete": true,
+      "rowsBefore": 0,
+      "rowsAfter": 0,
+      "exportTimeMs": 245.80000000074506
+    },
+    {
+      "pointerAnchoredWheel": true,
+      "deepDoubleClickCenter": true,
+      "keyboardZoomHistory": true,
+      "canvasAndFocusPreserved": true,
+      "sierpinskiDeterministic": true
+    },
+    {
+      "desktopPreview": 760,
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets": true,
+      "landmarkCentersCorrect": true,
+      "actualPngDownload": true
+    }
+  ],
+  "errors": []
+}

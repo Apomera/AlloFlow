@@ -12,12 +12,13 @@ describe('Collaborative Escape Room puzzle mix', () => {
     for (const file of files) {
       const source = fs.readFileSync(file, 'utf8');
       expect(source).toContain('use exactly 2 "mcq", 2 "sequence", 2 "matching", 2 "fillin", 1 "cipher", and 1 "scramble"');
-      expect(source).toContain('var expectedCounts = { mcq: 2, sequence: 2, matching: 2, fillin: 2, cipher: 1, scramble: 1 };');
+      expect(source).toContain('var ESCAPE_LIVE_MIX = { mcq: 2, sequence: 2, matching: 2, fillin: 2, cipher: 1, scramble: 1 };');
       expect(source).toContain('\"id\": \"obj10\"');
       expect(source).toContain('Unbalanced collaborative puzzle mix');
-      expect(source).toContain('type: normalizedType,');
-      expect(source).toContain("if (normalizedType === 'matching' && p.pairs)");
-      expect(source).toContain("if ((normalizedType === 'fillin' || normalizedType === 'cipher') && p.wordbank)");
+      // Type aliases are normalized by the shared room checker (behavior: escape_room_generation_resilience.test.js).
+      expect(source).toContain('if (raw.type !== type) edit({ type: type });');
+      expect(source).toContain("if (p.type === 'matching' && p.pairs)");
+      expect(source).toContain("if ((p.type === 'fillin' || p.type === 'cipher') && p.wordbank)");
     }
   });
 

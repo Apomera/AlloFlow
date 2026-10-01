@@ -1,0 +1,4 @@
+
+Running 6 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:27:5 › real 3D models, scale travel, orbit, chart switching and clean teardown (1.7m)

@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:4740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K(node:4740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2113:5 › round forecast locks before a climate-boundary round, reveals real evidence and saves a separate journal note
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2144:5 › round forecast on a phone handles keyboard estimates, invalid counts and cancellation when conditions change
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2170:5 › round forecast without WebGL can match a count while extinction still follows the two-parent rule
+[1A[2K  3 passed (30.9s)

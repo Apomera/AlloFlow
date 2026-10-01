@@ -3458,7 +3458,7 @@ describe('galaxy canvas lifecycle', () => {
     expect(realSkyButton).not.toBeNull();
 
     await React.act(async () => {
-      playButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      playButton.click();
     });
     expect(window._galaxyTimeLapse).not.toBeNull();
 

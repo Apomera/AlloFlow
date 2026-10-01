@@ -1,0 +1,20 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt	current held host
++++ AlloFlowANTI.txt	review-only media preservation
+@@ -35194,12 +35194,11 @@
+               }
+           }
+       };
+       const sessionSafeSnapshot = ALLO_WORKSPACE_RECOVERY.stripSessionOnlyAssets(snapshot);
+-      if (existing?.assetPolicy === 'text-only') {
+-          const explicitRemoval = existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media');
+-          return ALLO_WORKSPACE_RECOVERY.stripLargeAssets(
+-              sessionSafeSnapshot, explicitRemoval ? 'user-remove-media' : 'device-quota');
++      if (existing?.assetPolicy === 'text-only'
++          && existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media')) {
++          return ALLO_WORKSPACE_RECOVERY.stripLargeAssets(sessionSafeSnapshot, 'user-remove-media');
+       }
+       return sessionSafeSnapshot;
+   };
+ 

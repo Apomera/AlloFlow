@@ -1,0 +1,315 @@
+{
+  "errors": [],
+  "scans": [
+    {
+      "width": 320,
+      "theme": "light",
+      "locale": "en",
+      "dimensions": {
+        "width": 320,
+        "scroll": 320
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "locale": "en",
+      "dimensions": {
+        "width": 320,
+        "scroll": 320
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "theme": "contrast",
+      "locale": "en",
+      "dimensions": {
+        "width": 320,
+        "scroll": 320
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "locale": "en",
+      "dimensions": {
+        "width": 390,
+        "scroll": 390
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "locale": "en",
+      "dimensions": {
+        "width": 390,
+        "scroll": 390
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "theme": "contrast",
+      "locale": "en",
+      "dimensions": {
+        "width": 390,
+        "scroll": 390
+      },
+      "violations": []
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "locale": "en",
+      "dimensions": {
+        "width": 768,
+        "scroll": 768
+      },
+      "violations": []
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "locale": "en",
+      "dimensions": {
+        "width": 768,
+        "scroll": 768
+      },
+      "violations": []
+    },
+    {
+      "width": 768,
+      "theme": "contrast",
+      "locale": "en",
+      "dimensions": {
+        "width": 768,
+        "scroll": 768
+      },
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "locale": "en",
+      "dimensions": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "locale": "en",
+      "dimensions": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "theme": "contrast",
+      "locale": "en",
+      "dimensions": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "locale": "ar-larger",
+      "dimensions": {
+        "width": 320,
+        "scroll": 320
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "locale": "ar-larger",
+      "dimensions": {
+        "width": 320,
+        "scroll": 320
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "theme": "contrast",
+      "locale": "ar-larger",
+      "dimensions": {
+        "width": 320,
+        "scroll": 320
+      },
+      "violations": []
+    }
+  ],
+  "completedCheck": {
+    "version": 2,
+    "answers": {
+      "temp": "within",
+      "ph": "acid",
+      "feedback": "restore"
+    }
+  },
+  "completedState": {
+    "_activeTab": "homeoHunt",
+    "system": "organs",
+    "complexity": 3,
+    "_startHereDismissed": true,
+    "_structureNotes": {
+      "heart": "My saved anatomy note"
+    },
+    "_structureConfidence": {
+      "heart": "learning"
+    },
+    "_retrievalEvidence": {
+      "heart": {
+        "attempts": 4,
+        "correct": 1
+      }
+    },
+    "_feedbackExperiment": {
+      "direction": "warm",
+      "prediction": "active",
+      "revealed": true,
+      "explanation": "Warm: the response falls as the difference gets smaller.",
+      "token": "muni80eu-u7flewnx8ih",
+      "context": "temperature-feedback-v1|warm",
+      "sessions": {
+        "warm": {
+          "prediction": "active",
+          "revealed": true,
+          "explanation": "Warm: the response falls as the difference gets smaller."
+        },
+        "cool": {
+          "prediction": "active",
+          "revealed": true,
+          "explanation": "Cool: the response opposes the temperature drop."
+        }
+      }
+    },
+    "homeoHunt": {
+      "tempC": 38.5,
+      "pH": 7.4,
+      "glucose": 90,
+      "hypothesis": "Compare each reading against its own reference range.",
+      "explanation": "Units and context matter; a flag is only a comparison.",
+      "log": [
+        {
+          "t": 38.5,
+          "p": 7.25,
+          "g": 90,
+          "st": 2
+        },
+        {
+          "t": 38.5,
+          "p": 7.4,
+          "g": 90,
+          "st": 1
+        }
+      ],
+      "understood": true,
+      "stuckRevealed": false,
+      "recap": {
+        "temp": "within",
+        "ph": "acid",
+        "feedback": "restore"
+      },
+      "recapToken": "muni80ur-bj5dpbhas8",
+      "recapContext": "homeostasis-v2|temp:above:above,within,below|ph:acid:within,alk,acid|feedback:restore:amplify,ignore,restore",
+      "recapFocusId": "feedback",
+      "lastRecap": {
+        "version": 2,
+        "answers": {
+          "temp": "within",
+          "ph": "acid",
+          "feedback": "restore"
+        }
+      }
+    },
+    "_systemsExplored": {
+      "organs": true
+    },
+    "_viewsUsed": {
+      "anterior": true
+    }
+  },
+  "finalState": {
+    "_activeTab": "homeoHunt",
+    "system": "organs",
+    "complexity": 3,
+    "_startHereDismissed": true,
+    "_structureNotes": {
+      "heart": "My saved anatomy note"
+    },
+    "_structureConfidence": {
+      "heart": "learning"
+    },
+    "_retrievalEvidence": {
+      "heart": {
+        "attempts": 4,
+        "correct": 1
+      }
+    },
+    "_feedbackExperiment": {
+      "direction": "warm",
+      "prediction": "active",
+      "revealed": true,
+      "explanation": "Warm: the response falls as the difference gets smaller.",
+      "token": "muni80eu-u7flewnx8ih",
+      "context": "temperature-feedback-v1|warm",
+      "sessions": {
+        "warm": {
+          "prediction": "active",
+          "revealed": true,
+          "explanation": "Warm: the response falls as the difference gets smaller."
+        },
+        "cool": {
+          "prediction": "active",
+          "revealed": true,
+          "explanation": "Cool: the response opposes the temperature drop."
+        }
+      }
+    },
+    "homeoHunt": {
+      "tempC": 37,
+      "pH": 7.4,
+      "glucose": 90,
+      "hypothesis": "Compare each reading against its own reference range.",
+      "explanation": "Units and context matter; a flag is only a comparison.",
+      "log": [],
+      "understood": true,
+      "stuckRevealed": false,
+      "recap": {
+        "temp": "within"
+      },
+      "recapToken": "muni84ss-ukjpog2d",
+      "recapContext": "homeostasis-v2|temp:above:above,within,below|ph:acid:within,alk,acid|feedback:restore:amplify,ignore,restore",
+      "recapFocusId": "temp",
+      "lastRecap": {
+        "version": 2,
+        "answers": {
+          "temp": "within",
+          "ph": "acid",
+          "feedback": "restore"
+        }
+      }
+    },
+    "_systemsExplored": {
+      "organs": true
+    },
+    "_viewsUsed": {
+      "anterior": true
+    },
+    "_readingMode": true
+  }
+}

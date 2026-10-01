@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "feature": "Native press, lift and release tomato handling, visible resistance and compression, textured metal masher, finite juice puddles, texture choices and exact-piece keyboard/lens routes",
+  "unitTests": 49,
+  "unitFiles": 4,
+  "browserChecks": 24,
+  "accessibilityScans": 7,
+  "pageErrors": 0,
+  "runtimeFiles": 44,
+  "desktopMirror": "byte-identical",
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20260930-texture",
+  "commit": "No commit, staging or push performed"
+}

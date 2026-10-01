@@ -1,0 +1,250 @@
+{
+  "at": "2026-10-01T00:36:46.915Z",
+  "status": "passed",
+  "candidateHashes": {
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "reports/report-fixes-2026-09-30/reader-browser.cjs": "d221de68fddd46ab25d32451b2304079b68ae9e894ea029ecf92b2bb84293cc1",
+    "reports/report-fixes-2026-09-30/reader-adjacent-run.cjs": "b9685da7e23a6336fef9d59bbb9f488dd45a8f891511c512dd5c7b353dfa97f3",
+    "reports/report-fixes-2026-09-30/compact-audio-browser.cjs": "117b100125d5da3b253e81370b96b7a0bddea06d4e3158660948ac92f9d9f8e8",
+    "reports/report-fixes-2026-09-30/compact-audio-mounted-run.cjs": "9f41cc48328ee2e9a11ffa56f7e70473e694a7ec27be397f0d64c912e4d2ce69"
+  },
+  "fix": "Compact teacher audio status separates voice-model preparation, synthesis attempts, ready session clips, playback and verified device saves. Expandable details support keyboard/Escape/focus restoration. Audio actions keep the parent Review disclosure open so a status change cannot hide Stop. Duplicate, failed and interrupted actions retain partial clips. Original/adapted/BOTH glossary parity and exact annotations remain covered.",
+  "tests": {
+    "compactMountedReader": {
+      "passed": 16,
+      "failed": 0,
+      "report": "compact-audio-mounted-candidate-tests.json"
+    },
+    "mountedReader": {
+      "passed": 22,
+      "failed": 0,
+      "report": "compact-audio-mounted-candidate-tests.json"
+    },
+    "compactGeneratedChromium": {
+      "passed": 23,
+      "failed": 0,
+      "errors": [],
+      "report": "compact-audio-browser-results.json",
+      "axe": {
+        "violations": [],
+        "incomplete": []
+      }
+    },
+    "generatedModuleChromium": {
+      "passed": 48,
+      "failed": 0,
+      "errors": [],
+      "report": "reader-browser-results.json"
+    },
+    "adjacentReader": {
+      "passed": 149,
+      "failed": 0,
+      "files": 8,
+      "report": "reader-adjacent-tests.json"
+    }
+  },
+  "negativeEvidence": {
+    "nativeFocusProbe": "reader-browser-focus-probe.json",
+    "originalBrowserAttempt": "reader-browser-before-focus.json",
+    "mountedPreFix": "reader-focus-before-tests.json",
+    "initialAdjacentLabelMismatch": "reader-adjacent-before-label-expectation-tests.json",
+    "compactEscapeBehaviorPreFix": "compact-audio-keyboard-before-behavior-tests.json",
+    "compactTimeoutBeforeBehavior": "compact-audio-keyboard-before-tests.json",
+    "compactReviewDisclosureBrowserPreFix": "compact-audio-browser-before-review-disclosure.json",
+    "compactReviewDisclosureMountedPreFix": "compact-audio-review-disclosure-before-tests.json",
+    "compactHarnessUnboundedAttempt": "compact-audio-unbounded-attempt.json",
+    "compactHarnessDeadlineBeforeFixtureFix": "before-promise-fixture-compact-audio-browser-results.json"
+  },
+  "negativeEvidenceNotes": "The native Review disclosure failure and mounted red assertion reproduce a product defect and were fixed in source. The later unbounded/incomplete attempt and bounded deadline failure were caused by the fixture returning an unresolved mock-save promise to page.evaluate before Save activation; they are harness failures, not additional product-failure evidence. The final browser retains explicit action/wait/navigation bounds and an overall deadline.",
+  "screenshotsProduced": [
+    "reader-browser-reflow320-font16.png",
+    "reader-browser-reflow320-font32.png",
+    "compact-audio-default320.png",
+    "compact-audio-save-failure320.png",
+    "compact-audio-font32-320.png"
+  ],
+  "screenshotsInspected": [
+    "reader-browser-reflow320-font16.png",
+    "reader-browser-reflow320-font32.png",
+    "compact-audio-default320.png",
+    "compact-audio-save-failure320.png",
+    "compact-audio-font32-320.png"
+  ],
+  "validationScope": "Local generated reader/helper modules, real React/CSS and canonical host glossary adapter, using fixture props and mocked speech/lookup/audio/storage callbacks. All source, generated, browser and adjacent inputs were explicitly hashed and unchanged across the candidate runs.",
+  "limits": [
+    "Not a full app/student-session/cloud test.",
+    "Root font 16/32px at 320/640 CSSpx tested; actual browser zoom and manual screen reader testing were not performed.",
+    "No WCAG conformance or instructional-content-validity claim.",
+    "Shared host/cache-pin integration remains coordinator-owned and held."
+  ],
+  "labelContractAdaptation": {
+    "at": "2026-09-30T22:46:07.288Z",
+    "status": "label-contract-adaptation",
+    "preexisting": "Not established: Git source lacks the current dirty exact renderer, and no full pre-task dirty source copy is available.",
+    "runtimeChange": false,
+    "sourceHash": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "labelContract": "Each accessible label uses the full raw sentence range, then plainReadingText; callback reads from sentence.start.",
+    "test": "tests/reader_exact_sentence_start.test.js",
+    "beforeTestHash": "db864642f5d20d83addbd592e4566cde3bfbcdfc081a94a45c24b0f303e60a33",
+    "failedReport": "reader-adjacent-before-label-expectation-tests.json",
+    "preservedAssertions": [
+      "visible words included in accessible name",
+      "one Tab stop per line",
+      "read-from-here offsets and actual spoken sentence",
+      "keyboard Enter/Space/arrows/Home/End",
+      "shown and hidden original supports"
+    ],
+    "afterTestHash": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "validation": "All 149 adjacent tests passed after only three expected labels changed."
+  },
+  "exitCode": 0,
+  "inputHashes": {
+    "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+    "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "dev-tools/lib/reader_compiler.cjs": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a",
+    "reports/report-fixes-2026-09-30/compact-audio-mounted-run.cjs": "9f41cc48328ee2e9a11ffa56f7e70473e694a7ec27be397f0d64c912e4d2ce69",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9",
+    "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+    "reports/report-fixes-2026-09-30/compact-audio-browser.cjs": "117b100125d5da3b253e81370b96b7a0bddea06d4e3158660948ac92f9d9f8e8",
+    "tests/glossary_term_click_reaches_read_aloud.test.js": "990278f44ff65ad663e1a13b107d43d2c614e78dd22edc006a4cb9fdb5d9bcd7",
+    "content_engine_module.js": "c1f3b1bfdc46cb71cba6cb5ccf0c0a6e125cae9826c5a488fe5c3d425350c286",
+    "tests/prepared_word_help_regressions.test.js": "8eaaecbf3b7ff0dea4d67747e0d4dbdefa8b9b0e45bb5b13e9fbd546f0766173",
+    "tests/prepared_help_popup_layout.test.js": "890b235bedf0163926af051c327c3088faa552d32f4a564edfe9d97562755165",
+    "tests/original_reader_listen_supports.test.js": "f915e20ae140081ca1731c30adf1e46c5625ef903d68b94c3408e8ef673db98f",
+    "tests/reader_keyboard_a11y.test.js": "946ad99266910e35c3b18f56d114cda0691318d88b4868f9e71e2f96205af78e",
+    "tests/reader_both_view_listen_scroll_width.test.js": "62947c7f3c212024a8c66065a0f8648f96107ed23ab7b732d9d8183221e59882",
+    "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "tests/helpers/reader_focus_effect.cjs": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5",
+    "tests/reader_preview_focus_narration.test.js": "f73db405921e734eed0b4dff08e323405285a102872953e0215b167282a7e9e0",
+    "reports/report-fixes-2026-09-30/reader-browser.cjs": "d221de68fddd46ab25d32451b2304079b68ae9e894ea029ecf92b2bb84293cc1",
+    "reports/report-fixes-2026-09-30/reader-adjacent-run.cjs": "b9685da7e23a6336fef9d59bbb9f488dd45a8f891511c512dd5c7b353dfa97f3"
+  },
+  "frozenBuild": [
+    {
+      "output": "text_utility_helpers_module.js",
+      "sha256": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+      "inputs": {
+        "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed",
+      "reusedUnchanged": true
+    },
+    {
+      "output": "view_simplified_module.js",
+      "sha256": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+      "inputs": {
+        "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+        "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+        "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "mountedInputs": {
+    "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+    "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "dev-tools/lib/reader_compiler.cjs": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a",
+    "reports/report-fixes-2026-09-30/compact-audio-mounted-run.cjs": "9f41cc48328ee2e9a11ffa56f7e70473e694a7ec27be397f0d64c912e4d2ce69"
+  },
+  "compactBrowserInputs": {
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9",
+    "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "reports/report-fixes-2026-09-30/compact-audio-browser.cjs": "117b100125d5da3b253e81370b96b7a0bddea06d4e3158660948ac92f9d9f8e8"
+  },
+  "readerBrowserInputs": {
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9"
+  },
+  "adjacentInputs": {
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "tests/glossary_term_click_reaches_read_aloud.test.js": "990278f44ff65ad663e1a13b107d43d2c614e78dd22edc006a4cb9fdb5d9bcd7",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "content_engine_module.js": "c1f3b1bfdc46cb71cba6cb5ccf0c0a6e125cae9826c5a488fe5c3d425350c286",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+    "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+    "tests/prepared_word_help_regressions.test.js": "8eaaecbf3b7ff0dea4d67747e0d4dbdefa8b9b0e45bb5b13e9fbd546f0766173",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "tests/prepared_help_popup_layout.test.js": "890b235bedf0163926af051c327c3088faa552d32f4a564edfe9d97562755165",
+    "tests/original_reader_listen_supports.test.js": "f915e20ae140081ca1731c30adf1e46c5625ef903d68b94c3408e8ef673db98f",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "tests/reader_keyboard_a11y.test.js": "946ad99266910e35c3b18f56d114cda0691318d88b4868f9e71e2f96205af78e",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+    "tests/reader_both_view_listen_scroll_width.test.js": "62947c7f3c212024a8c66065a0f8648f96107ed23ab7b732d9d8183221e59882",
+    "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "tests/helpers/reader_focus_effect.cjs": "d216dc723dbac744ab67e42f813afab026f341432993f01373dd625f3b3c58e5",
+    "tests/reader_preview_focus_narration.test.js": "f73db405921e734eed0b4dff08e323405285a102872953e0215b167282a7e9e0",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83"
+  }
+}

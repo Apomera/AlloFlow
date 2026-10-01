@@ -1,0 +1,14 @@
+file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:406
+          throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
+                ^
+
+CACError: Unknown option `--minWorkers`
+    at Command.checkUnknownOptions (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:406:17)
+    at CAC.runMatchedCommand (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:606:13)
+    at CAC.parse (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:547:12)
+    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/cli.js:11:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:377:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:671:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.11.1

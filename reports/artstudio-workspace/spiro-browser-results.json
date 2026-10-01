@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "curve": "inside",
+      "ink": 173602,
+      "bounds": {
+        "minX": 16,
+        "minY": 16,
+        "maxX": 495,
+        "maxY": 495
+      },
+      "meanChannelDifference": 0.017085754793453863,
+      "liveProgress": 0,
+      "paths": 360
+    },
+    {
+      "curve": "outside",
+      "ink": 169229,
+      "bounds": {
+        "minX": 16,
+        "minY": 16,
+        "maxX": 495,
+        "maxY": 495
+      },
+      "meanChannelDifference": 0.01522230759165647,
+      "liveProgress": 0,
+      "paths": 360
+    },
+    {
+      "desktopPreview": 760,
+      "phonePreview": 374,
+      "phonePreviewFirst": true,
+      "phoneTouchTargets": true
+    },
+    {
+      "pause": true,
+      "resume": true,
+      "speedPreservesCanvas": true,
+      "finish": true
+    }
+  ],
+  "errors": []
+}

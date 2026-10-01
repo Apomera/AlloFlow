@@ -1,0 +1,254 @@
+===================================================================
+--- a/resource_read_aloud_module.js
++++ b/resource_read_aloud_module.js
+@@ -180,24 +180,42 @@
+       : window.React.createElement(LocalText, { ...props, cue: true });
+   }
+   function Controls(props) {
+     const React = window.React, e = React.createElement;
+-    const { resource, cardId, mode = 'reference', canPrepare = false, allowRuntimeAi = false, t, onActiveSegment, stopPlayback, voiceSpeed = 1, voiceVolume = 1 } = props;
++    const resource = props.referenceResource || props.resource;
++    const { cardId, mode = 'reference', canPrepare = false, allowRuntimeAi = false, t, onActiveSegment, stopPlayback, voiceSpeed = 1, voiceVolume = 1 } = props;
+     const tr = (key, fallback) => { const translated = t?.('resource_read_aloud.' + key); return translated && translated !== 'resource_read_aloud.' + key ? translated : fallback; };
+     const [tick, setTick] = React.useState(0), [active, setActive] = React.useState(-1), [busy, setBusy] = React.useState(false), [progress, setProgress] = React.useState(''), [expanded, setExpanded] = React.useState(false), [message, setMessage] = React.useState('');
+     const [paused, setPaused] = React.useState(false), [pauseBetween, setPauseBetween] = React.useState(false), [followFocus, setFollowFocus] = React.useState(true);
+     const runtime = React.useRef({ token: 0, audio: null, utterance: null, finish: null, prepare: null, paused: false, resume: null });
+     const mounted = React.useRef(true);
+     const instance = React.useRef('read-' + Math.random().toString(36).slice(2));
+     const segments = enumerate(resource, { cardId, mode });
+-    const signature = JSON.stringify([resource?.id, segments]);
++    const resourceId = resource?.id || resource?.resourceId;
++    const rate = Number.isFinite(Number(voiceSpeed)) && Number(voiceSpeed) > 0 ? Number(voiceSpeed) : 1;
++    const profile = { voice: props.selectedVoice || window.__alloSelectedVoice || 'Kore', speed: rate, synthesisRate: rate, voiceResolverVersion: 2 };
++    const signature = JSON.stringify([resourceId, segments, profile, window.__alloReadAloudProfileRevision]);
++    const store = modules().KaraokeAudioStore?.current;
++    const cardNumber = cardId ? (resource?.data?.cards || []).findIndex(card => card.id === cardId) + 1 : 0;
++    const clipLabel = index => (cardNumber > 0 ? tr('card', 'Card') + ' ' + cardNumber + ', ' : '') + tr('clip', 'Clip') + ' ' + (index + 1);
+     const current = React.useRef(null);
+-    current.current = { signature, allowRuntimeAi, canPrepare, resourceId: resource?.id, pauseBetween, followFocus };
+-    const bridge = () => window.__alloGetReadAloudAudioBridge?.();
+-    const inspect = segment => bridge()?.inspect(segment, 'reference') || { status: 'missing' };
+-    const states = segments.map(inspect);
++    current.current = { signature, allowRuntimeAi, canPrepare, resourceId, pauseBetween, followFocus };
++    const bridge = () => { try { return window.__alloGetReadAloudAudioBridge?.(); } catch (_) { return null; } };
++    const inspect = (segment, api = bridge()) => {
++      try {
++        const value = api?.inspect(segment, 'reference', { profile }), selected = value?.segment;
++        if (selected && String(selected.resourceId) === String(resourceId) && selected.segmentId === segment.segmentId && selected.spokenText === spoken(segment.text) && ['ready', 'stale', 'missing', 'corrupt'].includes(value.status)) return value;
++      } catch (_) {}
++      return { status: 'unverified' };
++    };
++    const states = segments.map(segment => inspect(segment));
+     const ready = states.filter(state => state.status === 'ready').length;
+     const stale = states.filter(state => state.status === 'stale').length;
++    const toolsReady = states.every(state => state.status !== 'unverified') && typeof bridge()?.prepare === 'function' && typeof bridge()?.regenerate === 'function';
++    const cancelPreparation = (announce = false) => {
++      const request = runtime.current.prepare; runtime.current.prepare = null; request?.controller.abort();
++      if (mounted.current) { setBusy(false); setProgress(''); if (announce && request) setMessage(tr('preparation_cancelled', 'Audio preparation cancelled. Existing clips are kept.')); }
++    };
+     const stop = () => {
+       const state = runtime.current; state.token += 1; state.playController?.abort();
+       if (state.audio) { state.audio.pause(); state.audio.onended = state.audio.onerror = null; state.audio = null; }
+       if (state.utterance) { window.speechSynthesis?.cancel(); state.utterance = null; }
+@@ -206,27 +224,36 @@
+       if (mounted.current) { setActive(-1); setPaused(false); }
+     };
+     React.useEffect(() => {
+       mounted.current = true;
+-      const refresh = () => setTick(value => value + 1);
++      const refresh = event => { if (event?.detail?.resourceId != null && String(event.detail.resourceId) !== String(current.current.resourceId)) return; setTick(value => value + 1); };
+       const other = event => { if (event.detail !== instance.current) stop(); };
+       const stopped = () => stop();
+-      window.addEventListener('alloflow:karaoke-audio-updated', refresh);
++      const events = ['alloflow:karaoke-audio-updated', 'alloflow:karaoke-audio-capture', 'alloflow:read-aloud-reconciled', 'alloflow:module-registry-changed'];
++      events.forEach(name => window.addEventListener(name, refresh));
++      const unsubscribe = store?.subscribe?.(refresh);
+       window.addEventListener('alloflow:resource-read-aloud-start', other);
+       window.addEventListener('alloflow:playback-stopped', stopped);
+-      return () => { mounted.current = false; stop(); runtime.current.prepare?.abort(); window.removeEventListener('alloflow:karaoke-audio-updated', refresh); window.removeEventListener('alloflow:resource-read-aloud-start', other); window.removeEventListener('alloflow:playback-stopped', stopped); };
+-    }, []);
+-    React.useEffect(() => { stop(); runtime.current.prepare?.abort(); }, [signature, allowRuntimeAi, canPrepare]);
++      return () => { mounted.current = false; stop(); cancelPreparation(); unsubscribe?.(); events.forEach(name => window.removeEventListener(name, refresh)); window.removeEventListener('alloflow:resource-read-aloud-start', other); window.removeEventListener('alloflow:playback-stopped', stopped); };
++    }, [store]);
++    React.useEffect(() => { stop(); cancelPreparation(); setMessage(''); }, [signature, allowRuntimeAi, canPrepare, store]);
+     const prepare = async segment => {
+-      if (!canPrepare || !allowRuntimeAi || busy) return;
+-      const api = bridge(); if (!api) { setMessage(tr('unavailable', 'Read-aloud audio is not available yet.')); return; }
+-      const controller = new AbortController(); runtime.current.prepare = controller;
+-      setBusy(true); setMessage('');
++      if (!current.current.canPrepare || !current.current.allowRuntimeAi || runtime.current.prepare) return;
++      const api = bridge(), targets = segment ? [segment] : segments;
++      if (!api || typeof api.prepare !== 'function' || typeof api.regenerate !== 'function' || targets.some(entry => inspect(entry, api).status === 'unverified')) {
++        setMessage(tr('unavailable', 'Read-aloud audio is not available yet.')); return;
++      }
++      const request = { signature, controller: new AbortController() }; runtime.current.prepare = request;
++      const owns = () => mounted.current && runtime.current.prepare === request && current.current.signature === request.signature && current.current.canPrepare && current.current.allowRuntimeAi && !request.controller.signal.aborted;
++      setBusy(true); setMessage(''); setProgress('');
+       try {
+-        const result = segment ? await api.regenerate(segment, { signal: controller.signal }) : await api.prepare(segments, (done, total) => { if (mounted.current) setProgress(done + '/' + total); }, { signal: controller.signal });
+-        if (!controller.signal.aborted && mounted.current) setMessage(result && !result.failed && !result.cancelled ? tr('saved', 'Audio saved with this resource.') : tr('save_failed', 'Some audio could not be saved. Try again.'));
+-      } catch (error) { if (error?.name !== 'AbortError' && mounted.current) setMessage(tr('save_failed', 'Some audio could not be saved. Try again.')); }
+-      finally { if (runtime.current.prepare === controller) runtime.current.prepare = null; if (mounted.current) { setBusy(false); setProgress(''); setTick(value => value + 1); } }
++        const options = { signal: request.controller.signal, profile };
++        const result = segment ? await api.regenerate(segment, options) : await api.prepare(segments, (done, total) => { if (owns()) setProgress(done + '/' + total); }, options);
++        if (!owns()) return;
++        const prepared = segment ? typeof result === 'string' && !!result : result?.ok === true && !result.failed && !result.cancelled && result.remaining === 0;
++        setMessage(prepared ? tr('prepared', 'Audio prepared. Check device save below.') : tr('prepare_incomplete', 'Some audio could not be prepared. Check the clips and try again.'));
++      } catch (error) { if (owns() && error?.name !== 'AbortError') setMessage(tr('prepare_incomplete', 'Some audio could not be prepared. Check the clips and try again.')); }
++      finally { if (owns()) { runtime.current.prepare = null; setBusy(false); setProgress(''); setTick(value => value + 1); } }
+     };
+     const waitForResume = () => runtime.current.paused ? new Promise(resolve => { runtime.current.resume = resolve; }) : Promise.resolve();
+     const togglePause = () => {
+       const state = runtime.current;
+@@ -249,11 +276,11 @@
+       for (let i = start; i < end && valid(); i++) {
+         await waitForResume(); if (!valid()) break;
+         const segment = segments[i]; setActive(i); if (current.current.followFocus) onActiveSegment?.(segment);
+         try {
+-          const api = bridge(); const saved = api?.inspect(segment, 'reference');
++          const api = bridge(); const saved = inspect(segment, api);
+           let url = saved?.status === 'ready' ? (saved.url || saved.storedUrl) : null;
+-          if (!url && current.current.allowRuntimeAi) url = await api?.resolve(segment, { reason: 'studio-reference-playback', signal: runtime.current.playController.signal });
++          if (!url && saved.status !== 'unverified' && current.current.allowRuntimeAi) url = await api?.resolve(segment, { reason: 'studio-reference-playback', signal: runtime.current.playController.signal, profile });
+           if (!valid()) break;
+           await waitForResume(); if (!valid()) break;
+           await new Promise((resolve, reject) => {
+             runtime.current.finish = resolve;
+@@ -276,26 +303,28 @@
+       }
+       if (valid()) stop();
+     };
+     if (!segments.length) return null;
+-    const buttonClass = 'min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50';
+-    return e('section', { tabIndex: -1, 'data-studio-review': 'audio', className: 'resource-read-aloud my-3 rounded-2xl border border-slate-200 bg-slate-50 p-3', 'aria-label': tr('label', 'Saved read-aloud audio') },
+-      e('style', null, '@media print{.resource-read-aloud,.studio-sharing,.studio-recovery{display:none!important}}'),
++    const buttonClass = 'min-h-11 max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50';
++    return e('section', { tabIndex: -1, 'data-studio-review': 'audio', className: 'resource-read-aloud w-full min-w-0 max-w-full my-3 rounded-2xl border border-slate-200 bg-slate-50 p-3', 'aria-label': tr('audio_label', 'Read-aloud audio'), style: { lineHeight: 1.5, overflowWrap: 'anywhere' } },
++      e('style', null, '.resource-read-aloud [hidden]{display:none!important}.resource-read-aloud p,.resource-read-aloud button,.resource-read-aloud label,.resource-read-aloud span,.resource-read-aloud a{line-height:1.5}@media print{.resource-read-aloud,.studio-sharing,.studio-recovery{display:none!important}}'),
+       e('div', { className: 'flex flex-wrap items-center gap-2' },
+         e('button', { type: 'button', className: buttonClass, onClick: () => active >= 0 ? stop() : play(0) }, active >= 0 ? tr('stop', 'Stop reading') : mode === 'cue' ? tr('read_cue', 'Read cue aloud') : tr('listen', 'Read reference aloud')),
+         active >= 0 && e('button', { type: 'button', className: buttonClass, onClick: togglePause }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')),
+         active >= 0 && e('button', { type: 'button', className: buttonClass, onClick: () => play(active, true) }, tr('repeat', 'Repeat this field')),
+-        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: !allowRuntimeAi, 'aria-busy': busy, onClick: () => busy ? runtime.current.prepare?.abort() : prepare() }, busy ? tr('cancel', 'Cancel saving') + ' ' + progress : tr('save', 'Save TTS')),
+-        e('button', { type: 'button', className: buttonClass, 'aria-expanded': expanded, 'aria-controls': instance.current, onClick: () => setExpanded(value => !value) }, tr('segments', 'Read-along and clips')),
+-        e('span', { role: 'status', 'aria-live': 'polite', className: 'text-xs text-slate-700' }, ready + '/' + segments.length + ' ' + tr('ready', 'ready') + (stale ? '; ' + stale + ' ' + tr('stale', 'stale') : ''))),
+-      e('div', { hidden: !expanded, className: 'mt-3 flex flex-wrap gap-3 text-sm' },
++        canPrepare && e('button', { type: 'button', className: buttonClass, 'data-studio-audio-prepare': true, 'aria-disabled': !allowRuntimeAi || !toolsReady, 'aria-busy': busy, onClick: () => runtime.current.prepare ? cancelPreparation(true) : prepare() }, busy ? tr('cancel_preparation', 'Cancel preparation') + (progress ? ' ' + progress : '') : tr('save', 'Save TTS')),
++        e('button', { type: 'button', className: buttonClass, 'aria-expanded': expanded, 'aria-controls': instance.current + ' ' + instance.current + '-options', onClick: () => setExpanded(value => !value) }, tr('segments', 'Read-along and clips')),
++        e('span', { role: 'status', 'aria-live': active >= 0 ? 'off' : 'polite', 'aria-atomic': 'true', className: 'text-xs text-slate-700' }, ready + '/' + segments.length + ' ' + tr('ready', 'ready') + (stale ? '; ' + stale + ' ' + tr('stale', 'stale') : ''))),
++      e('div', { id: instance.current + '-options', hidden: !expanded, className: 'mt-3 flex flex-wrap gap-3 text-sm' },
+         e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', checked: pauseBetween, onChange: event => setPauseBetween(event.target.checked) }), tr('pause_between', 'Pause after each field')),
+         typeof onActiveSegment === 'function' && e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', checked: followFocus, onChange: event => setFollowFocus(event.target.checked) }), tr('follow_focus', 'Move focus with reading'))),
+       paused && e('p', { role: 'status', className: 'mt-2 text-sm' }, tr('paused', 'Reading paused. Resume when you are ready.')),
+-      message && e('p', { role: 'status', className: 'mt-2 text-sm text-slate-700' }, message),
++      e('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mt-2 text-sm text-slate-700', 'data-studio-audio-notice': true }, message),
++      canPrepare && (!allowRuntimeAi || !toolsReady) && e('p', { className: 'mt-2 text-sm' }, !allowRuntimeAi ? tr('generation_disabled', 'Speech generation is turned off. Existing clips can still be played and saved on this device.') : tr('tools_unavailable', 'Audio tools are not ready for this resource. Try again when loading finishes.')),
++      canPrepare && e(DeviceSaveStatus, { resourceId, contextKey: signature, entries: segments, profile, payload: resource?.karaokeAudio, refreshToken: tick, activePlayback: active >= 0, t }),
+       e('ol', { id: instance.current, hidden: !expanded, className: 'mt-3 max-h-80 space-y-2 overflow-auto' }, segments.map((segment, index) => e('li', { key: segment.segmentId, className: 'rounded-xl border p-2 ' + (active === index ? 'border-teal-600 bg-teal-100 text-slate-950' : 'border-slate-200 bg-white'), 'aria-current': active === index ? 'step' : undefined },
+         e('button', { type: 'button', className: 'min-h-11 w-full rounded-lg p-2 text-start text-sm focus-visible:ring-2 focus-visible:ring-teal-600', onClick: () => play(index) }, segment.text),
+-        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: busy || !allowRuntimeAi, onClick: () => prepare(segment), 'aria-label': tr('regenerate', 'Regenerate clip') + ': ' + segment.text }, tr('regenerate', 'Regenerate clip') + ' · ' + tr(states[index].status, states[index].status)),
++        canPrepare && e('button', { type: 'button', className: buttonClass, 'data-studio-audio-segment': segment.segmentId, 'aria-disabled': busy || !allowRuntimeAi || !toolsReady, 'aria-busy': busy, onClick: () => prepare(segment), 'aria-label': clipLabel(index) + '. ' + (String(states[index].source || '').startsWith('human') ? tr('replace_recording', 'Replace recording with generated audio') : tr('regenerate', 'Regenerate clip')) + ': ' + segment.text }, (String(states[index].source || '').startsWith('human') ? tr('replace_recording', 'Replace recording with generated audio') : tr('regenerate', 'Regenerate clip')) + ' · ' + tr(states[index].status, states[index].status)),
+         states[index].status === 'ready' && e('a', { className: 'inline-flex min-h-11 items-center rounded-lg px-3 text-sm underline focus-visible:ring-2 focus-visible:ring-teal-600', href: states[index].url || states[index].storedUrl, download: 'read-aloud-' + (index + 1) + clipExtension(resource, segment) }, tr('download', 'Download clip'))))));
+   }
+   // Device persistence is a separate operation from generating or attaching clips.
+   // Only the host's current-resource readback can establish the saved count.
+===================================================================
+--- a/applied_challenge_source.jsx
++++ b/applied_challenge_source.jsx
+@@ -3008,9 +3008,9 @@
+       <div className='flex flex-wrap items-start justify-between gap-3'><div className='min-w-0'><p className='mb-2 text-sm font-semibold text-orange-800'>{tx('applied_challenge.product_name', 'Applied Problem Solving')}</p>{isTeacherMode && isEditing ? <input id='applied-challenge-title' aria-label={tx('applied_challenge.aria.title', 'Challenge title')} value={data.title} onChange={event => commitField('title', event.target.value)} className='w-full rounded-xl border p-2 text-xl' /> : <h1 id='applied-challenge-title' className='text-xl font-bold text-slate-900 sm:text-2xl'>{data.title}</h1>}<p className='mt-2 text-sm text-slate-600'>{data.brief.deliverable}</p></div>
+       {isTeacherMode && <button type='button' className='aps-button applied-challenge-no-print' onClick={() => setIsEditing(!isEditing)}>{isEditing ? tx('applied_challenge.teacher.done', 'Done editing') : tx('applied_challenge.teacher.edit', 'Edit challenge brief')}</button>}</div>
+       <div className='mt-3 flex flex-wrap items-start gap-3 applied-challenge-no-print'>
+         {!isTeacherMode && <button type='button' className='aps-button aps-primary' onClick={goToCurrentWork}>{reviewOpen ? tx('applied_challenge.resume.review', 'Go to my review') : workspaceProgress.started ? _apsFill(tx('applied_challenge.resume.stage', 'Continue in {stage}'), { stage: stageLabel(currentStage) }) : tx('applied_challenge.resume.start', 'Start writing')}</button>}
+-      {ReadAloud && <details className='aps-reading-options min-w-0 applied-challenge-no-print'><summary className='min-h-11 cursor-pointer text-sm font-semibold text-slate-700'>{tx('applied_challenge.reading.short', 'Read or listen')}</summary><ReadAloud resource={generatedContent} referenceResource={props.referenceResource} isTeacherMode={isTeacherMode} allowGenerate={isTeacherMode && !props.previewMode} handleNoteUpdate={handleNoteUpdate} callGemini={callGeminiProp} addToast={addToast} t={t} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} /></details>}
++      {ReadAloud && <details className='aps-reading-options min-w-0 applied-challenge-no-print'><summary className='min-h-11 cursor-pointer text-sm font-semibold text-slate-700'>{tx('applied_challenge.reading.short', 'Read or listen')}</summary><ReadAloud resource={props.referenceResource || generatedContent} canPrepare={isTeacherMode && isEditing && !props.previewMode} allowRuntimeAi={allowRuntimeAi} t={t} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} onActiveSegment={segment => { if (segment.phaseId) { setReviewOpen(false); goToPhase(segment.phaseId); } }} /></details>}
+       </div>
+       {SharingCheck && isTeacherMode && <SharingCheck resource={generatedContent} t={t} />}
+     </header>
+     {isTeacherMode ? <>
+===================================================================
+--- a/tests/studio_read_aloud.test.js
++++ b/tests/studio_read_aloud.test.js
+@@ -32,10 +32,10 @@
+ });
+ describe('studio audio controls and accessible preview',()=>{
+  it('plays saved reference audio with runtime AI disabled and highlights the active field',async()=>{const r=memory(),h=harness(r);await h.save();h.synthesize.mockClear();window.__alloGetReadAloudAudioBridge=()=>h.bridge;const audios=[];vi.stubGlobal('Audio',class{constructor(url){this.url=url;audios.push(this);}play(){return Promise.resolve();}pause(){}});mount(api.Controls,{resource:r,allowRuntimeAi:false,canPrepare:false});await act(async()=>button('Read reference aloud').click());expect(audios[0].url).toBe('blob:clip');expect(host.querySelectorAll('[aria-current="step"]')).toHaveLength(1);expect(button('Save TTS')).toBeUndefined();expect(h.synthesize).not.toHaveBeenCalled();expect(host.querySelector('a[download]').download).toMatch(/\.wav$/);await act(async()=>button('Stop reading').click());expect(host.querySelector('[aria-current]')).toBeNull();});
+  it('uses only device speech for student-authored recall cues',async()=>{const h=harness(memory());window.__alloGetReadAloudAudioBridge=()=>h.bridge;const speech={speak:vi.fn(),cancel:vi.fn()};vi.stubGlobal('speechSynthesis',speech);window.speechSynthesis=speech;vi.stubGlobal('SpeechSynthesisUtterance',class{constructor(text){this.text=text;}});mount(api.CueControls,{resource:memory(),cardId:'c1',text:'My private cue',allowRuntimeAi:true});await act(async()=>button('Read cue aloud').click());expect(speech.speak.mock.calls[0][0].text).toBe('My private cue');expect(h.synthesize).not.toHaveBeenCalled();expect(h.persist).not.toHaveBeenCalled();});
+- it('aborts pending preparation when the teacher leaves edit mode',async()=>{let signal;const prepare=vi.fn((_s,_p,o)=>{signal=o.signal;return new Promise(resolve=>signal.addEventListener('abort',()=>resolve({cancelled:true})));});window.__alloGetReadAloudAudioBridge=()=>({inspect:()=>({status:'missing'}),prepare});const r=memory();mount(api.Controls,{resource:r,canPrepare:true,allowRuntimeAi:true});await act(async()=>button('Save TTS').click());expect(signal.aborted).toBe(false);await act(async()=>root.render(React.createElement(api.Controls,{resource:r,canPrepare:false,allowRuntimeAi:true})));expect(signal.aborted).toBe(true);});
++ it('aborts pending preparation when the teacher leaves edit mode',async()=>{let signal;const prepare=vi.fn((_s,_p,o)=>{signal=o.signal;return new Promise(resolve=>signal.addEventListener('abort',()=>resolve({cancelled:true})));});window.__alloGetReadAloudAudioBridge=()=>({inspect:segment=>({status:'missing',segment:{...segment,resourceId:'m1',spokenText:segment.text}}),regenerate:vi.fn(),prepare});const r=memory();mount(api.Controls,{resource:r,canPrepare:true,allowRuntimeAi:true});await act(async()=>button('Save TTS').click());expect(signal.aborted).toBe(false);await act(async()=>root.render(React.createElement(api.Controls,{resource:r,canPrepare:false,allowRuntimeAi:true})));expect(signal.aborted).toBe(true);});
+  it('moves focus to the actual Applied phase while reading its prompt',async()=>{window.__alloGetReadAloudAudioBridge=()=>({inspect:()=>({status:'ready',url:'blob:clip'})});vi.stubGlobal('Audio',class{play(){return Promise.resolve();}pause(){}});mount(window.AlloModules.StudioResponse.Boundary,{View:window.AlloModules.AppliedChallengeView,generatedContent:applied(),isTeacherMode:true,startInPreview:true,allowRuntimeAi:false});await act(async()=>button('Read-along and clips').click());await act(async()=>button('Explain your design').click());expect(document.activeElement.id).toBe('applied-workspace-response');expect(host.querySelector('[aria-current="step"]')).toBeTruthy();});
+- it('stops saving when navigation changes resources with identical text',async()=>{let signal;window.__alloGetReadAloudAudioBridge=()=>({inspect:()=>({status:'missing'}),prepare:(_s,_p,o)=>{signal=o.signal;return new Promise(resolve=>signal.addEventListener('abort',()=>resolve({cancelled:true})));}});const r=memory();mount(api.Controls,{resource:r,canPrepare:true,allowRuntimeAi:true});await act(async()=>button('Save TTS').click());await act(async()=>root.render(React.createElement(api.Controls,{resource:{...r,id:'another-resource'},canPrepare:true,allowRuntimeAi:true})));expect(signal.aborted).toBe(true);});
++ it('stops saving when navigation changes resources with identical text',async()=>{let signal;window.__alloGetReadAloudAudioBridge=()=>({inspect:segment=>({status:'missing',segment:{...segment,resourceId:'m1',spokenText:segment.text}}),regenerate:vi.fn(),prepare:(_s,_p,o)=>{signal=o.signal;return new Promise(resolve=>signal.addEventListener('abort',()=>resolve({cancelled:true})));}});const r=memory();mount(api.Controls,{resource:r,canPrepare:true,allowRuntimeAi:true});await act(async()=>button('Save TTS').click());await act(async()=>root.render(React.createElement(api.Controls,{resource:{...r,id:'another-resource'},canPrepare:true,allowRuntimeAi:true})));expect(signal.aborted).toBe(true);});
+  it('opens the authentic Accessibility Lab view in an isolated student preview',()=>{let child;const save=vi.fn();mount(window.AlloModules.StudioResponse.Boundary,{View:p=>{child=p;return React.createElement('span',null,p.isTeacherMode?'Teacher':'Learner');},generatedContent:applied(),isTeacherMode:true,startInPreview:true,onResponseChange:save});expect(host.textContent).toContain('Close student preview');expect(child.isTeacherMode).toBe(false);act(()=>child.handleNoteUpdate('workspace',{response:'Lab experiment'}));expect(save).not.toHaveBeenCalled();expect(child.generatedContent.data.workspace.response).toBe('Lab experiment');});
+  it('supports translated labels, RTL flow, and accessible controls',async()=>{const translations=JSON.parse(readFileSync('ui_strings.js','utf8')).resource_read_aloud;const t=key=>key==='resource_read_aloud.listen'?'اقرأ المرجع':translations[key.split('.')[1]]||key;mount(api.Controls,{resource:memory(),t});host.dir='rtl';expect(button('اقرأ المرجع')).toBeTruthy();await act(async()=>button('Read-along and clips').click());expect(host.querySelector('button.text-start')).toBeTruthy();const axe=require('axe-core');const report=await axe.run(host,{rules:{'color-contrast':{enabled:false}}});expect(report.violations).toEqual([]);});
+ });
+===================================================================
+--- a/tests/studio_audio_lifecycle.test.js
++++ b/tests/studio_audio_lifecycle.test.js
+@@ -18,8 +18,9 @@
+ beforeEach(()=>{let blob=0;Object.defineProperty(URL,'createObjectURL',{configurable:true,value:()=> 'blob:test-'+(++blob)});Object.defineProperty(URL,'revokeObjectURL',{configurable:true,value:()=>{}});h={resource:memory(),store:KS.createStore(),synthesize:vi.fn(async()=>({b64:validAudioBase64(),mime:'audio/wav'})),persist:vi.fn(async()=>({status:'attached'}))};KS.current=h.store;props={resource:h.resource,canPrepare:true,allowRuntimeAi:true,voiceSpeed:1};h.bridge=window.AlloModules.createReadAloudLegacyBridge({getResource:()=>h.resource,getStore:()=>h.store,getProfile:()=>({voice:'Kore',language:'English',synthesisRate:1,voiceResolverVersion:2}),enumerateResourceSegments:r=>API.enumerate(r),normalize:window.AlloModules.PhaseKHelpers.toSpokenText,synthesize:req=>h.synthesize(req),persist:req=>h.persist(req)});window.__alloGetReadAloudAudioBridge=()=>h.bridge;window.__alloGetReadAloudReadiness=vi.fn(async(entries,lane,options)=>({resourceId:h.resource.id,...h.bridge.readiness(entries,lane,options)}));window.__alloRetryReadAloudPersistence=vi.fn(async()=>false);});
+ afterEach(async()=>{if(root)await act(async()=>root.unmount());root=null;host?.remove();host=null;for(const key of ['__alloGetReadAloudAudioBridge','__alloGetReadAloudReadiness','__alloRetryReadAloudPersistence','__alloReadAloudProfileRevision','__alloSelectedVoice'])delete window[key];KS.current=null;vi.unstubAllGlobals();});
+ async function render(next={},Component=API.Controls){props={...props,...next};if(!root){host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);}await act(async()=>root.render(React.createElement(Component,props)));}
+ describe('studio preparation ownership and honest save feedback',()=>{
++ it('identifies both disclosure regions and hides both when collapsed',async()=>{await render();const disclosure=button('Read-along and clips'),ids=disclosure.getAttribute('aria-controls').split(' ');expect(ids).toHaveLength(2);expect(ids.every(id=>document.getElementById(id)?.hidden)).toBe(true);await click(disclosure);expect(ids.every(id=>!document.getElementById(id)?.hidden)).toBe(true);await click(disclosure);expect(getComputedStyle(host.querySelector('input[type=checkbox]').closest('div')).display).toBe('none');});
+  it('prepares shared fields and leaves durability unverified until host readback',async()=>{await render();await click(prepareButton());expect(h.synthesize).toHaveBeenCalledTimes(API.enumerate(h.resource).length);expect(host.textContent).toContain('Audio prepared.');expect(host.textContent).not.toContain('Audio saved with this resource');expect(host.textContent).toContain('Device save not verified');expect(JSON.stringify(h.synthesize.mock.calls.map(([request])=>request.text))).not.toContain('PRIVATE DRAFT');});
+  it('displays verified device counts independently of generation results',async()=>{window.__alloGetReadAloudReadiness=vi.fn(async()=>({resourceId:h.resource.id,scope:'device-audio',total:API.enumerate(h.resource).length,ready:API.enumerate(h.resource).length,durableReady:1,verifiedAt:new Date().toISOString()}));await render();expect(host.textContent).toContain('1/'+API.enumerate(h.resource).length+' saved on this device');});
+  it.each([false,undefined,{ok:false,failed:0,remaining:0},{ok:true,failed:0,remaining:1}])('does not claim preparation for incomplete result %j',async result=>{h.bridge.prepare=vi.fn(async()=>result);await render();await click(prepareButton());expect(host.textContent).toContain('could not be prepared');expect(host.textContent).not.toContain('Audio saved');});
+  it('guards duplicate same-event regeneration and preserves button focus',async()=>{const pending=deferred();h.synthesize.mockReturnValue(pending.promise);await render();await click(button('Read-along and clips'));const target=regen(1);target.focus();await act(async()=>{target.click();target.click();});expect(h.synthesize).toHaveBeenCalledTimes(1);expect(target.disabled).toBe(false);expect(target.getAttribute('aria-busy')).toBe('true');expect(document.activeElement).toBe(target);await act(async()=>pending.resolve({b64:validAudioBase64(),mime:'audio/wav'}));expect(document.activeElement).toBe(target);expect(Object.values(h.store.serialize().entries)[0].identity.segmentId).toBe('card/c1/cue');});
+===================================================================
+--- /dev/null
++++ b/dev-tools/studio_audio_browser.cjs
+@@ -0,0 +1,53 @@
++const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{createRequire}=require('module');
++const {chromium,expect}=require('@playwright/test'),esbuild=require('esbuild'),root=path.resolve(__dirname,'..'),out=path.join(root,'validation');
++const web=createRequire(path.join(root,'desktop/web-app/package.json'));
++const b=Buffer.alloc(1644,90);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(8000,24);b.writeUInt32LE(8000,28);b.writeUInt16LE(1,32);b.writeUInt16LE(8,34);b.write('data',36);b.writeUInt32LE(b.length-44,40);
++const fixture=String.raw`
++const API=AlloModules.ResourceReadAloud,KS=AlloModules.KaraokeAudioStore;
++const resources={memory:{id:'browser-memory',type:'memory-aid',data:{cards:[{id:'c1',target:'Echo.',aiExample:'Echo.',studentDraft:'PRIVATE DRAFT'}]}},applied:{id:'browser-applied',type:'applied-challenge',data:{title:'Design a garden',scope:'compact',brief:{context:'Plants need light.'},supports:{phasePrompts:{response:'Describe your garden.'}},workspace:{response:'PRIVATE ANSWER'}}}};
++let resource,viewType,settings={},fixtureRoot,bridge,store,durable;
++window.calls=[];window.pending=[];window.auto=false;window.failed=false;window.persistCalls=0;
++const profile=()=>({voice:'Kore',speed:settings.voiceSpeed||1,synthesisRate:settings.voiceSpeed||1,language:'English',voiceResolverVersion:2});
++window.renderView=()=>{const View=viewType==='memory'?AlloModules.MemoryAidView:AlloModules.AppliedChallengeView;fixtureRoot.render(React.createElement(View,{generatedContent:resource,isTeacherMode:settings.teacher,allowRuntimeAi:settings.allowAi,voiceSpeed:settings.voiceSpeed,t:key=>key,handleNoteUpdate:(field,value)=>{resource={...resource,data:{...resource.data,[field]:value}};renderView();}}));};
++window.mount=type=>{fixtureRoot?.unmount();store?.clear();durable?.clear();viewType=type;resource=structuredClone(resources[type]);settings={teacher:true,allowAi:true,voiceSpeed:1};calls=[];pending=[];auto=false;failed=false;persistCalls=0;store=KS.createStore();durable=KS.createStore();KS.current=store;
++ bridge=AlloModules.createReadAloudLegacyBridge({getResource:()=>resource,getStore:()=>store,getProfile:profile,enumerateResourceSegments:r=>API.enumerate(r),normalize:AlloModules.PhaseKHelpers.toSpokenText,
++ synthesize:req=>{calls.push(req);if(failed)return Promise.reject(Error('Fixture provider failure'));if(auto)return Promise.resolve({b64:fixtureAudio,mime:'audio/wav'});return new Promise(resolve=>pending.push(()=>resolve({b64:fixtureAudio,mime:'audio/wav'})));},persist:async({payload})=>{resource={...resource,karaokeAudio:payload};renderView();}});
++ window.__alloGetReadAloudAudioBridge=()=>bridge;window.__alloGetReadAloudReadiness=async(list,lane,options)=>({resourceId:resource.id,...bridge.readiness(list,lane,{...options,durableStore:durable,receipt:{verified:true,verifiedAt:new Date().toISOString()}})});
++ window.__alloRetryReadAloudPersistence=async()=>{persistCalls++;durable.clear();durable.hydrate(store.serialize());return true;};
++ fixtureRoot=ReactDOM.createRoot(document.querySelector('#root'));renderView();};
++window.finishPending=()=>pending.shift()?.();
++window.switchSpeed=()=>{settings.voiceSpeed=1.4;renderView();};
++window.setStudent=()=>{settings.teacher=false;renderView();};
++window.audioCount=()=>Object.keys(store.serialize()?.entries||{}).length;
++`;
++(async()=>{
++ const css=(await web('postcss')([web('tailwindcss')({...web('./tailwind.config.js'),content:['resource_read_aloud_module.js','memory_aid_source.jsx','applied_challenge_source.jsx'].map(f=>path.join(root,f))})]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ const runtime=esbuild.buildSync({stdin:{contents:'window.React=require("react");window.ReactDOM=require("react-dom/client");window.AlloIcons=require("lucide-react");',resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:320,height:640},hasTouch:true,reducedMotion:'reduce'}),report={cases:[],errors:[],requests:[]};page.setDefaultTimeout(10000);page.on('pageerror',e=>report.errors.push(e.message));
++ const check=async(name,task)=>{await task();report.cases.push({name,passed:true});console.log('PASS '+name);};
++ const panel=()=>page.locator('[data-studio-review=audio]').first(),prepare=()=>panel().locator('[data-studio-audio-prepare]'),regenerate=()=>panel().locator('[data-studio-audio-segment]').nth(1);
++ const focusVisible=el=>el.evaluate(node=>{const b=node.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return node===document.activeElement&&node.matches(':focus-visible')&&b.top>=-1&&b.bottom<=innerHeight+1&&(hit===node||node.contains(hit));});
++ async function edit(type){await page.evaluate(type=>mount(type),type);const opener=page.getByRole('button',{name:type==='memory'?'Edit resource':'Edit challenge brief',exact:true});await opener.focus();await page.keyboard.press('Enter');if(type==='applied'){const details=page.locator('.aps-reading-options');await details.locator('summary').focus();await page.keyboard.press('Enter');}await expect(prepare()).toBeVisible();}
++ try{
++  await page.route('**/*',route=>route.request().url()==='https://studio-audio.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><main id="root"></main></html>'}):(report.requests.push(route.request().url()),route.abort()));await page.goto('https://studio-audio.test/');await page.addStyleTag({content:css});await page.addScriptTag({content:runtime});await page.addScriptTag({content:'window.AlloModules={};window.warnLog=window.debugLog=()=>{};window.fixtureAudio='+JSON.stringify(b.toString('base64'))+';'});
++  for(const file of ['karaoke_audio_store_module.js','phase_k_helpers_module.js','read_aloud_audio_service_source.jsx','resource_read_aloud_module.js','memory_aid_module.js','applied_challenge_module.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});await page.addScriptTag({content:fixture});
++  for(const type of ['memory','applied'])for(const mode of ['normal','spacing','200-text'])await check(type+' edit audio at 320px: '+mode,async()=>{
++   await edit(type);await expect(panel().getByLabel('Pause after each field',{exact:true})).toBeHidden();await panel().getByRole('button',{name:'Read-along and clips',exact:true}).focus();await page.keyboard.press('Enter');await expect(regenerate()).toBeVisible();
++   if(mode==='spacing')await panel().evaluate(el=>el.querySelectorAll('*').forEach(node=>{node.style.lineHeight='1.5';node.style.letterSpacing='.12em';node.style.wordSpacing='.16em';if(node.tagName==='P')node.style.marginBottom='2em';}));
++   if(mode==='200-text')await panel().evaluate(el=>{const sizes=[el,...el.querySelectorAll('*')].map(node=>[node,parseFloat(getComputedStyle(node).fontSize)]);sizes.forEach(([node,n])=>node.style.fontSize=n*2+'px');});
++   assert.ok(await panel().evaluate(el=>{const b=el.getBoundingClientRect();return b.left>=0&&b.right<=innerWidth+1&&el.scrollWidth<=el.clientWidth+1;}),'Audio panel overflows');
++   await regenerate().focus();assert.ok(await focusVisible(regenerate()),'Regeneration focus covered');await page.keyboard.press('Space');await page.waitForFunction(()=>calls.length===1);await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>calls.length),1);assert.ok(await focusVisible(regenerate()));
++   await page.evaluate(()=>finishPending());await expect(panel().locator('[data-studio-audio-notice]')).toContainText('Audio prepared.');assert.ok(await focusVisible(regenerate()));await expect(panel().locator('[data-device-audio-count]')).toContainText('0/');
++   const before=await page.evaluate(()=>calls.length),retry=panel().locator('[data-device-audio-retry]');await retry.focus();assert.ok(await focusVisible(retry));await page.keyboard.press('Enter');await expect(panel().locator('[data-device-audio-count]')).toContainText('1/');assert.equal(await page.evaluate(()=>calls.length),before);assert.equal(await page.evaluate(()=>persistCalls),1);assert.ok(await focusVisible(retry));
++   assert.equal(await panel().locator('button button,button a,[role=status] button').count(),0);const cramped=await panel().locator('button,p,label,span').evaluateAll(nodes=>nodes.filter(node=>{const s=getComputedStyle(node);return node.getClientRects().length&&parseFloat(s.lineHeight)<parseFloat(s.fontSize)*1.4;}).length);assert.equal(cramped,0,'Compressed text line boxes');
++   await panel().screenshot({path:path.join(out,type+'-'+mode+'.png')});const done=page.getByRole('button',{name:'Done editing',exact:true}),doneNode=await done.elementHandle();await done.focus();await page.keyboard.press('Enter');await expect(prepare()).toHaveCount(0);assert.equal(await doneNode.evaluate(el=>el===document.activeElement),true);
++  });
++  await check('cancel, restart, late completion, and Done editing',async()=>{await edit('applied');await prepare().focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>calls.length===1);await page.keyboard.press('Space');await expect(prepare()).toHaveAttribute('aria-busy','false');await page.keyboard.press('Enter');await page.waitForFunction(()=>calls.length===2);await page.evaluate(()=>finishPending());await expect(prepare()).toHaveAttribute('aria-busy','true');assert.equal(await page.evaluate(()=>audioCount()),0);await page.getByRole('button',{name:'Done editing',exact:true}).click();assert.ok(await page.evaluate(()=>calls[1].signal.aborted));await page.evaluate(()=>finishPending());assert.equal(await page.evaluate(()=>audioCount()),0);});
++  await check('touch generation and speed invalidation',async()=>{await edit('memory');await panel().getByRole('button',{name:'Read-along and clips',exact:true}).tap();await regenerate().tap();await page.waitForFunction(()=>calls.length===1);await page.evaluate(()=>switchSpeed());await page.waitForFunction(()=>calls[0].signal.aborted);await page.evaluate(()=>finishPending());assert.equal(await page.evaluate(()=>audioCount()),0);await regenerate().tap();assert.equal(await page.evaluate(()=>calls.at(-1).profile.synthesisRate),1.4);await page.evaluate(()=>finishPending());await expect(panel().locator('[data-studio-audio-notice]')).toContainText('Audio prepared.');});
++  await check('failed generation keeps keyboard retry and focus',async()=>{await edit('applied');await panel().getByRole('button',{name:'Read-along and clips',exact:true}).click();await page.evaluate(()=>{failed=true;});await regenerate().focus();await page.keyboard.press('Enter');await expect(panel().locator('[data-studio-audio-notice]')).toContainText('could not be prepared');assert.ok(await focusVisible(regenerate()));await page.evaluate(()=>{failed=false;});await page.keyboard.press('Space');await page.evaluate(()=>finishPending());await expect(panel().locator('[data-studio-audio-notice]')).toContainText('Audio prepared.');});
++  await check('learner route has no preparation or device-save actions',async()=>{await page.evaluate(()=>setStudent());await expect(page.locator('[data-studio-audio-prepare]')).toHaveCount(0);await expect(page.locator('[data-device-audio-status]')).toHaveCount(0);});
++  assert.deepEqual(report.errors,[]);assert.deepEqual(report.requests,[]);
++ }catch(error){report.failure=String(error.stack);await page.screenshot({path:path.join(out,'studio-browser-failure.png'),fullPage:true});throw error;}
++ finally{fs.writeFileSync(path.join(out,'studio-browser.json'),JSON.stringify(report,null,2));await browser.close();}
++ console.log(JSON.stringify({passed:report.cases.length,errors:report.errors}));
++})().catch(error=>{console.error(error);process.exitCode=1;});

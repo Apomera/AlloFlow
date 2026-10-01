@@ -1,4 +1,2491 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "温度",
+          "headline": "用冷水敷脸",
+          "steps": {
+            "0": "在碗里装满冷水（有冰块的话可以加一些）。",
+            "1": "屏住呼吸。",
+            "2": "俯身把脸浸入水中，从眉毛上方到颧骨下方都要浸到，持续 15-30 秒。（如果没办法把脸浸进水里，可以改用冰袋或湿毛巾敷在眼睛和上脸颊上。）",
+            "3": "抬起头，正常呼吸。",
+            "4": "如有需要，再重复一次。"
+          },
+          "why": "冷水接触面部会触发哺乳动物潜水反射：心率减慢，血液从四肢转移，副交感神经系统被激活。它几秒钟内就能起效。这是打断极度痛苦最快的一种生理方法。",
+          "caution": "如果你有心脏疾病、进食障碍，或任何减慢心率可能带来危险的健康状况，请不要使用。如果不确定，请先问医生或校医。水要凉（约 10-15°C 或 50-60°F），但不要冰冷刺骨。"
+        },
+        "intense": {
+          "label": "剧烈运动",
+          "headline": "把身体里的激动消耗掉",
+          "steps": {
+            "0": "用 5 到 10 分钟做一些高强度的身体活动。",
+            "1": "可以选择：冲刺跑、开合跳、波比跳、跑楼梯、做俯卧撑直到做不动、快速跳绳、用力跳舞。",
+            "2": "要真的运动到上气不接下气，感觉到心跳加快。",
+            "3": "然后放慢成走路，让身体慢慢平静下来。"
+          },
+          "why": "当你处于过度唤醒状态（战斗或逃跑）时，身体里充满了本来就是要被用掉的压力激素。剧烈运动能消耗肾上腺素，并给身体一个“我已经做完了”的信号。过度唤醒时一动不动地坐着，就像让引擎一直在空转轰鸣。",
+          "caution": "如果你有限制运动的健康问题（心脏问题、哮喘、近期受伤），请改做强度较低的活动，或选择另一项 TIPP 技能。不要剧烈运动到受伤的程度。"
+        },
+        "paced": {
+          "label": "节奏呼吸",
+          "headline": "呼气比吸气更长",
+          "steps": {
+            "0": "舒服地坐下或躺下。",
+            "1": "用鼻子吸气，数到 4。",
+            "2": "用嘴慢慢呼气，数到 6 到 8（比吸气更长）。",
+            "3": "保持这个节奏 1 到 2 分钟。",
+            "4": "不用用力，也不用勉强；“延长的呼气”才是真正起作用的关键。"
+          },
+          "why": "呼气比吸气长，会让自主神经系统转向副交感神经主导（“休息与消化”）。关于节奏呼吸的研究发现，90 秒内，心率变异性相关的压力指标就会出现可测量的下降。重点不在于放松，而在于生理机制。",
+          "caution": "如果慢慢呼吸反而让你更焦虑（有些患有惊恐障碍或经历过创伤的人会这样），请换一项 TIPP 技能。不要勉强。"
+        },
+        "paired": {
+          "label": "配对肌肉放松",
+          "headline": "先绷紧，再放松，一组一组肌肉来",
+          "steps": {
+            "0": "坐下或躺下。慢慢吸气。",
+            "1": "吸气时，用力绷紧一组肌肉（握紧拳头、耸起肩膀、绷紧脸部）。",
+            "2": "保持紧绷 5 秒。",
+            "3": "呼气时，完全放松。留意紧绷和放松之间的差别。",
+            "4": "依次做遍全身：手、手臂、肩膀、脸、脖子、胸口、肚子、腿、脚。",
+            "5": "整个过程大约需要 5 分钟。"
+          },
+          "why": "把肌肉绷紧到最大程度再放松，比单纯试着放松能带来更深的放松（来自 Jacobson 关于渐进式肌肉放松的研究，在 1930 年代形成体系）。每次放松都配合一次呼气，两种效果会叠加。",
+          "caution": "如果你有伤、疼痛综合征或关节过度活动，请跳过会疼的肌肉群。绷紧要用力，但绝不能疼。"
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "四项 DBT 危机生存技能（温度 Temperature、剧烈运动 Intense exercise、节奏呼吸 Paced breathing、配对肌肉放松 Paired muscle relaxation），用于应对急性痛苦。在你试着靠思考走出困境【之前】，先用 30 秒到 10 分钟让身体平静下来。源自 Linehan 的 DBT 痛苦耐受基础技能。",
+        "back_to_sel_hub": "返回 SEL Hub",
+        "back": "← 返回",
+        "four_dbt_crisis_survival_skills_for": "四项 DBT 危机生存技能，用于应对急性痛苦。先做，再想。",
+        "tipp_sections": "TIPP 板块",
+        "tipp_is_for_acute_distress_not": "🆘 TIPP 是用来应对【急性】痛苦的，不是用于日常压力。 ",
+        "if_you_are_in_crisis_right": "如果你现在正处于危机中（想要伤害自己，或正面临直接的危险），请使用这个 SEL Hub 里的危机陪伴，或拨打 988（Suicide and Crisis Lifeline 自杀与危机生命线），或发短信 HOME 到 741741（Crisis Text Line 危机短信热线）。TIPP 可以帮你撑过接下来的 5 分钟；而真实的人可以陪你更久。",
+        "tipp_is_a_real_dbt_skill": "TIPP 是一项真正的 DBT 技能，但它不是治疗。如果你发现自己经常需要用到 TIPP，这本身就说明了一些问题；请把这件事告诉辅导员或学校心理老师。",
+        "tipp_quick_chooser": "TIPP 快速选择",
+        "body_first_chooser": "身体优先选择",
+        "match_the_skill_to_the_signal": "根据你的身体此刻发出的信号，选择合适的技能。",
+        "helped_logcount_helped": "{helped}/{logCount} 次有帮助",
+        "no_sessions_logged": "还没有记录",
+        "start_label": "开始：{label}",
+        "choose": "选择",
+        "pick_one_do_it_notice_if": "选一项。去做。留意你的感受刻度有没有变化。",
+        "you_do_not_need_to_do": "你不需要四项都做。选一项最适合你此刻状态的就好。TIPP 见效【很快】：30 秒到 10 分钟。",
+        "duration_seconds": "约 {duration} 秒",
+        "duration_min": "约 {duration} 分钟",
+        "logged_glad_it_helped": "已记录——很高兴它有帮助。",
+        "logged_try_a_different_tipp_next": "已记录——下次试试另一项 TIPP。",
+        "tipp_session_logged": "TIPP 练习已记录。",
+        "active_letter": "进行中 · {letter}",
+        "steps": "步骤",
+        "why_this_works": "🧠 为什么有效",
+        "caution": "⚖️ 注意事项： ",
+        "done_that_helped": "✓ 做完了。有帮助。",
+        "done_try_a_different_one": "做完了。换一项试试。",
+        "try_a_different_one": "⤴ 换一项试试",
+        "exit_without_logging": "不记录，直接退出",
+        "exit": "退出",
+        "no_tipp_sessions_logged_yet": "还没有记录任何 TIPP 练习。",
+        "after_you_do_a_tipp_skill": "每做完一项 TIPP 技能就记录下来，了解哪些对你有效。",
+        "total_sessions": "总次数",
+        "helped": "有帮助",
+        "by_skill": "按技能",
+        "recent_sessions": "最近的练习",
+        "unknown": "（未知）",
+        "helped_2": "✓ 有帮助",
+        "tried_another": "⤴ 换了另一项",
+        "read_this_first": "🆘 请先读这里",
+        "tipp_is_for_acute_distress_the": "TIPP 是用来应对【急性】痛苦的：就是你快要做出会后悔的事，或者觉得自己连接下来的 5 分钟都撑不过去的那一刻。它【不是】用来应对日常压力、情绪低落或焦虑想法的。TIPP 见效快，靠的是身体，目的是帮你撑过接下来的几分钟，让交谈、反思或求助重新变得可能。如果你正处于危机中，请使用危机陪伴，或拨打 988 / 发短信 HOME 到 741741。",
+        "what_tipp_is": "TIPP 是什么",
+        "tipp_is_a_set_of_four": "TIPP 是一组四项 DBT 危机生存技能，它们先作用于身体，再作用于头脑。原理是：当你处于过度唤醒状态（心跳加速、思绪飞转、随时可能冲动行事）时，试图“靠思考走出来”几乎行不通，因为负责思考的大脑此时已经“下线”了。必须先让身体恢复过来。",
+        "each_tipp_skill_uses_a_physiological": "每项 TIPP 技能都利用一种能打断应激反应的生理机制：冷水敷脸会触发潜水反射，剧烈运动会消耗肾上腺素，节奏呼吸能调整自主神经的平衡，配对肌肉放松会带来紧绷之后的放松。它们在 30 秒到 10 分钟内起效，而不是要等好几天。",
+        "where_tipp_comes_from": "TIPP 从哪里来",
+        "tipp_is_part_of_the_distress": "TIPP 是辩证行为疗法（DBT）中痛苦耐受模块的一部分。DBT 由 Marsha Linehan 从 1980 年代开始发展，是为那些情绪体验强烈、反应剧烈的人设计的，最初用于有长期自杀倾向的边缘型人格障碍患者。痛苦耐受技能专为“危机生存”时刻设计，目标只是在接下来的几分钟里不让事情变得更糟。如今，TIPP 已在儿童青少年心理健康服务、创伤知情学校和门诊 DBT 技能小组中被广泛教授。",
+        "sources_and_learn_more": "📚 资料来源与延伸阅读",
+        "authoritative_resources_for_tipp_and_dbt": "关于 TIPP 和 DBT 的权威资源。",
+        "the_standard_manual_tipp_is_in": "标准手册；TIPP 在痛苦耐受模块中。",
+        "practical_worksheets_including_tipp_handouts": "实用练习单，包括 TIPP 讲义。",
+        "linehan_founded_organization_for_dbt_training": "由 Linehan 创立的 DBT 培训与认证机构。",
+        "free_open_educational_resource_covers_tipp": "免费的开放教育资源；涵盖 TIPP 和其他痛苦耐受技能。",
+        "honest_limits": "⚖️ 坦诚说明局限",
+        "tipp_is_a_survival_skill_not": "TIPP 是一项求生技能，不是解决办法。它能帮你撑过接下来的 5 分钟，但解决不了你为什么会陷入痛苦。",
+        "if_you_find_yourself_reaching_for": "如果你发现自己每天都需要用到 TIPP，这说明你的生活中可能正在发生更大的事情，值得有一位辅导员或心理治疗师和你一起面对。",
+        "tipp_works_on_hyperarousal_too_activated": "TIPP 适用于过度唤醒（过于激动）。它【不】适用于低唤醒（封闭、麻木、解离）；在那种状态下，另一项 DBT 技能（自我安抚 Self-Soothe、ACCEPTS）或者单纯与人建立联结会更有帮助。",
+        "the_cautions_on_each_skill_are": "每项技能的注意事项都是真实的。有心脏疾病和某些进食障碍的人禁用“温度”技能；有某些健康问题的人禁做剧烈运动；如果某项技能让你感觉不对，就放慢节奏，慢慢停下来。",
+        "tipp_is_best_learned_in_a": "TIPP 最好在非危机时刻【学会】，这样在需要之前就已经练习过了。在平静的时候做一次，就是最好的准备。",
+        "notes_for_educators": "📝 给教育者的说明： ",
+        "tipp_is_most_useful_when_students": "如果学生在 Crew 时间里练习过一两次，而不是在危机中第一次接触，TIPP 会最有用。一个简单的 Crew 流程：一起完整做一遍其中一项 TIPP 技能（节奏呼吸在教室里最容易做），说出另外三项的名称，然后引导学生使用这个工具。对于任何表现出急性痛苦模式的学生，请搭配危机陪伴一起使用。",
+        "tipp_pocket_card": "🖨 TIPP 口袋卡片。 ",
+        "print_and_fold_carry_in_a": "打印并折好；放在口袋、钱包或记事本里随身带着。重点是在【需要之前】就把这四项技能带在身边。口袋卡片打印出来只有一页；注意事项都保留着，因为它们很重要。",
+        "print_save_as_pdf": "🖨 打印 / 另存为 PDF",
+        "tipp_pocket_card_2": "TIPP · 口袋卡片",
+        "dbt_distress_tolerance_linehan": "DBT 痛苦耐受 · Linehan",
+        "when_to_use": "何时使用： ",
+        "acute_distress_where_you_might_do": "处于急性痛苦中、可能会做出让自己后悔的事时。先做身体部分，之后再谈。如果你正处于危机中，请拨打 988 或发短信 HOME 到 741741。",
+        "caution_2": "注意： ",
+        "practice_tipp_once_in_a_calm": "在需要之前，先在平静的时候练习一次 TIPP。打印自 AlloFlow SEL Hub。来源：Linehan, DBT Skills Training Manual (2014)。",
+        "tipp_crisis_survival_skills": "TIPP 危机生存技能"
+      },
+      "tabs": {
+        "home": {
+          "label": "我现在就需要"
+        },
+        "log": {
+          "label": "我的记录"
+        },
+        "print": {
+          "label": "口袋卡片"
+        },
+        "about": {
+          "label": "关于"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "太激动或太冲动",
+          "fit": "最快的重置"
+        },
+        "1": {
+          "signal": "肾上腺素很高",
+          "fit": "用身体来释放"
+        },
+        "2": {
+          "signal": "可以让呼吸带路",
+          "fit": "最安静的选择"
+        },
+        "3": {
+          "signal": "身体紧绷或攥紧",
+          "fit": "释放紧张"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "适用对象： ",
+      "label_what": "服务内容： ",
+      "crisis_resources": {
+        "988": {
+          "label": "988 Suicide & Crisis Lifeline（自杀与危机生命线）",
+          "contact": "拨打电话或发短信给 988",
+          "script": "你可以说：“我很担心我的朋友。”这样就够了。接下来他们会引导对话。"
+        },
+        "crisistext": {
+          "label": "Crisis Text Line（危机短信热线）",
+          "contact": "发短信 HOME 到 741741",
+          "script": "你可以发：“我的朋友在说想伤害自己，我不知道该怎么办。”这样就可以。"
+        },
+        "trevor": {
+          "contact": "拨打 1-866-488-7386 · 发短信 START 到 678-678",
+          "script": "你可以打电话或发短信说：“我有一个 LGBTQ+ 的朋友，正在经历一段非常艰难的时期。”"
+        },
+        "911": {
+          "label": "911 紧急求助",
+          "contact": "拨打 911",
+          "script": "你可以说：“我的朋友有危险，我不知道该怎么办。”他们会帮忙。"
+        },
+        "211": {
+          "label": "211 —— 社区资源热线",
+          "contact": "拨打 211 · 或访问 211.org",
+          "script": "你可以说：“我在帮一个朋友找我们这里的心理健康危机服务。”他们会把你转接到合适的当地机构。"
+        },
+        "namilocator": {
+          "label": "NAMI 分会查询（全国目录）",
+          "contact": "访问 nami.org/findsupport",
+          "script": "在网站上：输入邮政编码 → “Find My Local NAMI” → 查看你所在地区的联系方式、项目和求助热线号码。"
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov（联邦目录）",
+          "contact": "访问 findtreatment.gov · 或拨打 1-800-662-HELP (4357)",
+          "script": "在网站上：输入邮政编码 → 筛选 “Mental Health Services” → 再按你能负担的费用或保险缩小范围。如果网站上的信息让你应接不暇，打求助热线会更好。"
+        },
+        "befrienders": {
+          "contact": "访问 befrienders.org",
+          "script": "在网站上：选择你的国家 → 查看当地的求助热线号码、开放时间、支持的语言和联系方式。"
+        },
+        "iasp": {
+          "label": "IASP —— 国际自杀预防协会（International Association for Suicide Prevention）",
+          "contact": "访问 iasp.info/resources/Crisis_Centres",
+          "script": "在网站上：选择你的国家 → 查看危机热线、联系方式和服务时间。"
+        },
+        "mainecrisis": {
+          "label": "Maine Crisis Line（缅因州危机热线）",
+          "contact": "拨打 1-888-568-1112",
+          "script": "如果可以，请说出你所在的县或城镇。他们会把你转接到合适的当地团队。"
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance（坎伯兰县 + 全州）",
+          "contact": "总机：207-553-5800 · 危机热线：1-888-568-1112",
+          "script": "如果坎伯兰县有朋友正处于危机中：拨打 1-888-568-1112，询问流动危机小组能否到你朋友所在的地方。如果是非危机支持 / 帮一个家庭联系长期服务：请在工作时间拨打总机。"
+        },
+        "namimaine": {
+          "label": "NAMI Maine HelpLine（缅因州 NAMI 求助热线）",
+          "contact": "拨打 1-800-464-5767",
+          "script": "适合问不那么紧急的问题：“我该怎么帮朋友找心理治疗师？”或“家庭可以去哪里获得支持？”也可以问：“我们学校有没有开展 Ending the Silence？”"
+        },
+        "school": {
+          "label": "你的学校辅导员或学校心理老师",
+          "contact": "直接走进去、递张纸条，或请任何一位老师带你去",
+          "script": "你可以说：“我很担心我的朋友。”如果你说不出口，就把它写在便利贴上交给他们。"
+        }
+      },
+      "res_988_who": "美国境内的任何人——包括担心朋友的孩子",
+      "res_988_what": "免费、保密、24/7 全天候。由受过训练的危机辅导员接听。如有需要，会帮你联系当地的服务。",
+      "res_crisistext_who": "美国、加拿大、英国或爱尔兰的任何人（各国号码不同）——如果你不想说话，只发短信也很好",
+      "res_crisistext_what": "免费、保密、24/7 全天候。会有真实的人类辅导员用短信回复你。平均等待时间不到 5 分钟。",
+      "res_trevor_who": "LGBTQ+ 青少年，以及支持他们的朋友（美国）",
+      "res_trevor_what": "免费、保密、24/7 全天候。专门针对 LGBTQ+ 青少年的危机接受过培训。LGBTQ+ 孩子出现自杀念头的比例更高；这个资源正是为这个现实而建立的。",
+      "res_911_who": "有人此刻正面临直接的人身危险时（美国）",
+      "res_911_what": "用于正在发生的紧急情况：有人正在伤害自己、吃下了什么东西，或此刻不安全。会派出警察、消防和急救人员。",
+      "res_211_who": "美国或加拿大的任何人——会根据区号自动转接到你当地的服务",
+      "res_211_what": "免费、保密、24/7 全天候。帮你联系当地的心理健康危机服务、食物援助、住房、家庭支持，以及数百个其他社区项目。由 United Way 和当地非营利机构运营。和 988 不同——211 是范围更广的社区服务热线。",
+      "res_namilocator_who": "美国境内的任何人——输入你的邮政编码，就能看到你当地的 NAMI 分会",
+      "res_namilocator_what": "每个州至少有一个 NAMI 分会，很多州有好几个。当地分会提供免费的家庭支持小组、同伴主导的康复项目、教育课程（Family-to-Family、在学校开展的 Ending the Silence），以及温暖热线。NAMI HelpLine：1-800-950-6264。",
+      "res_samhsa_who": "美国境内正在寻找长期心理健康或物质使用治疗的任何人",
+      "res_samhsa_what": "联邦数据库，收录约 13,000 家治疗机构——心理治疗、精神科、强化门诊、住院治疗、双重诊断。可以按邮政编码、你的保险类型、语言、提供的服务来筛选。SAMHSA 还有一条 24/7 全天候的全国求助热线（1-800-662-4357），提供免费转介。",
+      "res_befrienders_who": "美国以外、想在自己国家寻找危机支持的任何人",
+      "res_befrienders_what": "一个全球性的情绪支持志愿者中心网络，遍布 30 多个国家。在网站上输入你的国家，就能看到你所在地区的求助热线号码和聊天选项。大多数分支机构都是免费、保密、24/7 全天候的。",
+      "res_iasp_who": "美国以外的任何人——全面的全球危机热线目录",
+      "res_iasp_what": "IASP 维护着最完整的国际自杀预防危机热线名单。可以按国家搜索，并提供电话、短信和在线聊天选项。如果 Befrienders 没有列出你的国家，这里通常是最好的起点。",
+      "res_mainecrisis_who": "缅因州的任何人——连接全州的危机服务",
+      "res_mainecrisis_what": "免费、保密、24/7 全天候。由缅因州本地的辅导员接听。缅因州南部由 The Opportunity Alliance 运营，全州其他地区由各区域服务机构运营。需要时可以派出当地的流动危机小组。",
+      "res_opportunityalliance_who": "坎伯兰县及缅因州各地的儿童、青少年、家庭和成年人",
+      "res_opportunityalliance_what": "负责运营坎伯兰县危机流动应对小组——当 1-888-568-1112 在波特兰及周边社区派出人员时，真正来到你身边的就是他们。还提供儿童行为健康服务、居家行为健康服务、家庭支持，以及缅因州南部的 211 Maine 骨干服务。",
+      "res_namimaine_who": "缅因州任何想获得心理健康信息、支持或转介的人",
+      "res_namimaine_what": "不是危机热线，但它是白天了解心理健康服务体系、同伴支持和当地项目的好资源。它还开展 Ending the Silence 学校项目——由与学生年龄相近的讲者直接走进初中和高中课堂讲解精神疾病。",
+      "res_school_who": "美国每所公立学校都有受过训练的辅导员；大多数初中和高中还有学校心理老师",
+      "res_school_what": "他们受过专门的训练。除了涉及安全的情况，他们都有保密义务。他们可以帮你联系校外的专业帮助，陪你一起和家长谈，并全程陪着你。",
+      "resource_groups": {
+        "national": {
+          "label": "在美国任何地方都适用",
+          "desc": "这四个是通用的基础资源。记住 988。"
+        },
+        "lookup": {
+          "label": "查找你当地的帮助（美国）",
+          "desc": "通过目录查询，把你引导到你所在地区的具体服务。适合在危机电话之后寻找长期帮助。"
+        },
+        "international": {
+          "label": "在美国以外？",
+          "desc": "988、211、Trevor 和 SAMHSA 只在美国提供服务。这些目录涵盖世界其他地区。"
+        },
+        "maine": {
+          "label": "缅因州合作机构（具名的当地机构）",
+          "desc": "之所以列出具体名称，是因为 King Middle 和 Portland Public Schools 是这个工具的试点环境。如果你在其他地方，请用上面的目录查询找到你那里的对应机构。"
+        },
+        "school": {
+          "label": "学校里的帮助",
+          "desc": "通常是上学时间里最容易找到的成年人。美国每所公立学校都有。"
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "持续的情绪低落",
+          "desc": "悲伤、空虚，或一种平淡 / 麻木的感觉，一天中大部分时间都这样，几乎每天如此，持续好几周。这和来来去去的普通难过日子不一样。"
+        },
+        "irritability": {
+          "label": "越来越易怒",
+          "desc": "尤其是在青少年身上，抑郁常常更多表现为易怒或愤怒，而不是悲伤。会因为小事发火，总是觉得心里一碰就痛。"
+        },
+        "withdrawal": {
+          "label": "不再参加活动",
+          "desc": "远离爱好、运动、朋友，以及他们以前喜欢的事情。一再取消计划。独处的时间比以前多得多。"
+        },
+        "sleep": {
+          "label": "睡眠变化",
+          "desc": "睡得比平时多得多，或者几乎不睡。难以入睡、醒来时筋疲力尽、白天一直在睡。"
+        },
+        "appetite": {
+          "label": "食欲变化",
+          "desc": "吃得比平时多得多或少得多。不吃饭，或者一直在吃却吃不出滋味。几周内体重明显变化。"
+        },
+        "energy": {
+          "label": "精力不足 / 疲惫",
+          "desc": "什么都觉得很沉重。连小事都觉得做不到。他们可能会说自己一直很累，即使睡过觉也一样。"
+        },
+        "school": {
+          "label": "对学业的投入下降",
+          "desc": "成绩下滑、作业没交、以前没问题的课程也跟不上了。常常还伴随着缺课。"
+        },
+        "selfcare": {
+          "label": "自我照顾变差",
+          "desc": "不太注意个人卫生、外表，或以前一直保持的日常习惯。这不是换了穿衣风格——而是让人感觉他们已经不在乎了。"
+        },
+        "hopeless": {
+          "label": "绝望或自我批评的话",
+          "desc": "经常说“有什么意义”“什么都不重要”“我一文不值”“我是个负担”这样的话。这些语言模式值得认真对待，即使是随口说出来的。"
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "言语——他们在说什么",
+        "mood_what_you_re_seeing": "情绪——你看到了什么",
+        "behavior_what_they_re_doing": "行为——他们在做什么",
+        "a_friend_opens_up_at_lunch": "一位朋友在午餐时敞开心扉",
+        "a_direct_disclosure_over_text": "通过短信直接说出心事",
+        "the_aftermath_your_friend_is_now": "事情过后——你的朋友正在接受治疗",
+        "help_is_available_right_now": "现在就可以获得帮助",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline（自杀与危机生命线）· 拨打电话或发短信给 988",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line 危机短信热线 · 发短信 HOME 到 741741",
+        "tell_a_school_counselor_teacher_parent": "🏫 告诉学校辅导员、老师、家长或可信任的成年人",
+        "box_breathing_started_4_seconds_in": "箱式呼吸已开始。吸气 4 秒，屏息 4 秒，呼气 4 秒，屏息 4 秒。",
+        "box_breathing_paused": "箱式呼吸已暂停。",
+        "box_breathing_pacer": "🌬️ 箱式呼吸节拍器",
+        "a_4_4_4_4_rhythm": "4-4-4-4 的节奏：吸气 4 秒，屏息 4 秒，呼气 4 秒，屏息 4 秒。临床医生和急救人员都用它来让神经系统平静下来。吸气时圆圈会扩大，呼气时会缩小。",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}，第 {cyclesDone} 轮",
+        "breathing_pacer_ready": "呼吸节拍器已就绪",
+        "ready": "准备好了",
+        "cycle_cyclesdone": "第 {cyclesDone} 轮",
+        "start_box_breathing_pacer": "开始箱式呼吸节拍器",
+        "start": "▶ 开始",
+        "pause_box_breathing_pacer": "暂停箱式呼吸节拍器",
+        "pause": "⏸ 暂停",
+        "if_breathing_exercises_feel_uncomfortable_or": "如果呼吸练习让你觉得不舒服或更加焦虑，这其实很常见——停下来，改试试着陆练习。开启“减少动态效果”设置后，圆圈会保持不动，你可以依照阶段提示来呼吸。",
+        "grounding_complete_you_ve_returned_to": "着陆练习完成。你已经回到了当下。",
+        "grounding_reset": "着陆练习已重置。",
+        "5_4_3_2_1_grounding": "👁️ 5-4-3-2-1 着陆练习",
+        "a_sensory_anchor_when_your_thoughts": "当你思绪飞转或觉得和周围脱节时，这是一个感官锚点。一次一种感官，依次进行。你不需要写任何东西——只要留意就好。",
+        "you_ve_come_back_to_the": "你已经回到了当下。",
+        "grounding_doesn_t_make_hard_feelings": "着陆练习不会让难受的感觉消失。它只是暂时给这些感觉一个更小的空间，让这阵浪潮过去。",
+        "do_it_again": "↻ 再做一次",
+        "step_stepidx_of_groundstepscount": "第 {stepIdx} 步，共 {GROUNDSTEPSCount} 步",
+        "optional_jot_what_you_notice_private": "可选：记下你留意到的东西（私密，不会保存）。",
+        "notes_for_step_stepidx": "第 {stepIdx} 步的笔记",
+        "reset_grounding_to_first_step": "把着陆练习重置到第一步",
+        "reset": "↻ 重置",
+        "next_step": "下一步",
+        "finish_grounding_exercise": "完成着陆练习",
+        "next": "下一步 →",
+        "finish": "完成 ✓",
+        "this_device_would_not_save_it": "这台设备无法保存它。你的内容仍然显示在屏幕上——在关闭此页面之前，请使用导出或打印来保留一份副本。",
+        "added_to_your_toolkit": "已添加到你的工具箱",
+        "removed_from_your_toolkit": "已从你的工具箱中移除",
+        "my_coping_toolkit": "🧰 我的应对工具箱",
+        "tap_any_strategy_to_add_it": "点一下任何策略，就能把它加入你的个人工具箱。只保存在你的设备上——不会上传任何内容。列出 5-7 个过去真正对你有用的方法，这样在艰难时刻来临时，你就不用从零开始想了。",
+        "my_toolkit_savedcount": "✓ 我的工具箱（{savedCount}）",
+        "remove_label_from_toolkit": "从工具箱中移除“{label}”",
+        "remove_from_toolkit": "从工具箱中移除： ",
+        "add_to_toolkit": "添加到工具箱： ",
+        "note_this_toolkit_is_a_complement": "注意：这个工具箱是专业支持的补充，而不是替代。如果你正处于危机中，请拨打或发短信给 988。",
+        "e_g_when_i_haven_t": "例如：“当我没睡好，而且整个周末都一个人待着的时候”",
+        "e_g_listen_to_a_calming": "例如：“听舒缓的歌单、散散步、用冷水拍拍脸”",
+        "e_g_library_after_school_my": "例如：“放学后的图书馆、我的朋友 Maya、那家咖啡店”",
+        "e_g_mom_cell_aunt_liz": "例如：“妈妈（手机 ____），Liz 阿姨（手机 ____），辅导员 K 老师（204 室）”",
+        "e_g_988_lifeline_call_or": "例如：“988 Lifeline 生命线（打电话或发短信）、Crisis Text Line（发短信 HOME 到 741741）、____ 诊所的 ____ 医生、学校辅导员”",
+        "e_g_give_my_medications_to": "例如：“把我的药交给妈妈锁起来。不去地下室。如果情况真的很糟，晚上和别人待在一起。”",
+        "could_not_open_print_window_your": "无法打开打印窗口——你的浏览器可能拦截了它。",
+        "print_preview_opened": "已打开打印预览。",
+        "print_could_not_be_opened": "无法打开打印。",
+        "my_safety_plan_stanley_brown": "📋 我的安全计划（Stanley-Brown）",
+        "best_built_with_a_counselor_or": "最好【和】辅导员或心理治疗师一起制定。 ",
+        "a_safety_plan_is_most_effective": "当一位了解你的成年人帮你一起填写时，安全计划最有效——他们会想到你可能遗漏的事情，而且他们是你已经练习过向其求助的人。你可以在这里开始，先保存，然后和他们一起完成。只保存在这台设备上。",
+        "filledcount_stepscount_filled": "已填写 {filledCount} / {STEPSCount}",
+        "print_save_as_pdf": "🖨 打印 / 另存为 PDF",
+        "clear_my_saved_safety_plan": "清除我已保存的安全计划",
+        "clear_plan": "✕ 清除计划",
+        "stanley_brown_safety_planning_intervention_is": "Stanley-Brown 安全计划干预（Safety Planning Intervention）得到了自杀预防资源中心（Suicide Prevention Resource Center）的认可，是研究最多的循证安全计划之一。完整的临床版本会由受过训练的专业人员带着你一起完成。",
+        "you_are_not_the_therapist": "你不是心理治疗师",
+        "your_job_ended_when_you_connected": "当你把朋友和成年人联系起来时，你的任务就完成了。从这里开始，你的角色回归到做一个朋友——这正是合适的分量。治疗、安全计划、后续跟进——这些是受过训练的专业人员的工作。你的任务是陪伴、友谊，以及不要消失。",
+        "if_your_friend_goes_to_treatment": "如果你的朋友去接受治疗，那是成功——不是抛弃",
+        "when_a_friend_gets_professional_help": "当朋友获得专业帮助时——心理治疗、药物、强化项目，有时还有住院——你可能会觉得友谊被按下了暂停键。其实没有。治疗正是你帮忙促成的。你的朋友正在做那些让他们留下来的艰难努力。发条短信。午餐时给他们留个座位。在他们回来的时候，陪在他们身边。",
+        "concrete_moves_that_help": "有帮助的具体做法",
+        "tell_another_adult_you_trust": "告诉另一位你信任的成年人。 ",
+        "even_if_the_situation_has_been": "即使事情已经“处理好了”，【你】也经历了一些事。家长、辅导员或心理治疗师可以帮你消化这些经历。",
+        "pause_platforms_that_are_amplifying_it": "暂停那些让担忧加剧的平台。 ",
+        "if_social_media_is_making_your": "如果社交媒体让你更担心，就休息一下。静音、取消关注，或者关掉应用一天。",
+        "keep_your_own_routines": "保持你自己的日常作息。 ",
+        "sleep_food_school_hobbies_these_are": "睡眠、饮食、学业、爱好。这些是让你站稳的地板——在你承担这些的时候，别让它们松动。",
+        "ask_for_breaks_when_you_need": "需要时就请求休息。 ",
+        "you_are_allowed_to_not_text": "你可以不马上回短信。你可以有几个小时不在线。你朋友的康复并不需要你随时待命。",
+        "notice_your_own_feelings": "留意你自己的感受。 ",
+        "sadness_anger_fear_exhaustion_are_normal": "悲伤、愤怒、害怕、疲惫都是正常的。麻木也是正常的。如果这些沉重的感受持续超过两三周，那就是该找辅导员聊聊的时候了。",
+        "keep_your_other_friendships": "保持你的其他友谊。 ",
+        "don_t_let_supporting_one_friend": "别让支持一位朋友把你和其他所有人隔离开来。你完整的社交网络才是支撑你的力量。",
+        "when_supporting_a_friend_has_hit": "当支持朋友让【你】也深受打击时",
+        "if_you_re_losing_sleep_having": "如果你失眠、脑中反复出现侵入性的念头、感到麻木，或开始有自我伤害的念头——这些都是你也需要支持的信号。拨打 988、发短信 HOME 到 741741，或和学校辅导员谈谈。帮助别人的人也需要帮助。需要帮助没有什么可羞耻的。",
+        "you_showed_up_you_noticed_you": "你出现了。你注意到了。你说出来了。你告诉了别人。这就够了。这就是一切。",
+        "today": "今天",
+        "yesterday": "昨天",
+        "value_days_ago": "{value} 天前",
+        "value_weeks_ago": "{value} 周前",
+        "value_months_ago": "{value} 个月前",
+        "if_you_are_in_crisis_right": "🚨 如果你现在正处于危机中：",
+        "call_or_text": "拨打电话或发短信给 ",
+        "us_suicide_crisis_lifeline": " （US Suicide + Crisis Lifeline 美国自杀与危机生命线）。 ",
+        "maine_mobile_crisis": "Maine Mobile Crisis（缅因州流动危机服务）： ",
+        "text": "发短信 ",
+        "to": " 到 ",
+        "crisis_text_line": " （Crisis Text Line 危机短信热线）。 ",
+        "reach_a_real_person_24_7": "24/7 全天候都有真人接听。",
+        "my_safety_plan": "我的安全计划",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012——在减少再次自杀尝试方面证据最有力的干预方法。在平静的时候制定【你自己的】计划。",
+        "why_this_works": "🎓 为什么有效： ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry。在平静时写下这份计划，能让你在危机中更容易用上它。和你信任的人分享——辅导员、家长、朋友。",
+        "need_a_sign": "请填写一个信号。",
+        "my_warning_signs_log": "我的警示信号记录",
+        "track_when_warning_signs_appear_so": "记录警示信号出现的时候，让规律显现出来。了解自己的规律 = 更早发现它。",
+        "what_sign_showed_up_e_g": "出现了什么信号？（例如：“整个下午都觉得麻木”“想消失”）",
+        "context_where_what_was_happening": "情境（在哪里，发生了什么）",
+        "intensity": "强度： ",
+        "what_helped_if_anything": "什么有帮助（如果有的话）",
+        "log_it": "💾 记录",
+        "helped_whathelped": "✓ 有帮助的：{whatHelped}",
+        "add_a_few_words_first_then": "请先写几个字，然后再按一次按钮。",
+        "my_coping_arsenal": "我的应对法宝库",
+        "strategies_that_have_actually_worked_for": "真正对【我】有用的策略。某个方法有帮助时，点一下“+1”——记录哪些有效。",
+        "a_strategy_that_worked_for_me": "一个对我有用的策略（例如：“冷水敷脸”“打电话给妈妈”）",
+        "add_to_arsenal": "+ 加入法宝库",
+        "used_value": "用过 {value} 次",
+        "a_name_is_needed_before_this": "需要先填写名字才能保存。",
+        "my_support_contacts": "我的支持联系人",
+        "quick_access_list_of_people_crisis": "可快速查看的联系人 + 危机热线清单，以及各自适合联系的时机。钱包卡片。",
+        "name": "名字",
+        "role_mom_therapist_friend": "身份（妈妈、心理治疗师、朋友）",
+        "contact_phone_text": "联系方式（电话 / 短信）",
+        "when_to_reach_out_to_this": "什么时候联系【这个】人",
+        "add": "+ 添加",
+        "need_a_brief_description": "请填写简短描述。",
+        "my_recovery_notes": "我的恢复笔记",
+        "after_a_hard_moment_log_what": "在艰难的时刻过后，记录什么有帮助 + 什么没帮助。随着时间积累对自己的了解。",
+        "what_happened_brief": "发生了什么？（简短）",
+        "what_helped": "✓ 什么有帮助",
+        "what_didn_t_help_or_made": "✗ 什么没帮助（或让情况更糟）",
+        "what_i_want_future_me_to": "💌 我希望未来的自己从这次经历中记住什么",
+        "save": "💾 保存",
+        "helped": "✓ 有帮助： ",
+        "didn_t": "✗ 没帮助： ",
+        "write_something_first_then_press_add": "请先写点什么，然后按“添加”。",
+        "my_hope_list": "我的希望清单",
+        "reasons_to_keep_going_people_plans": "继续走下去的理由。人、计划、地方，什么都可以。难熬的时候读一读。",
+        "one_of_your_reasons": "💛 你的理由之一",
+        "a_reason_to_keep_going_small": "一个继续走下去的理由（大小都行，什么都可以）",
+        "my_safety_kit": "🛡 我的安全工具包",
+        "personal_crisis_support_tools": "个人危机支持工具",
+        "6_tools_to_build_your_safety": "6 个工具，帮你制定【你自己的】安全计划 + 应对法宝库。危机热线号码始终显示。所有数据都保存在你的浏览器中。",
+        "open": "打开 →",
+        "my_safety_kit_2": "← 我的安全工具包",
+        "crisis_companion": "危机陪伴",
+        "peer_support_and_suicide_prevention_skills": "同伴支持与自杀预防技能。当朋友看起来抑郁、处于危机中或想要伤害自己时该怎么做。识别征兆、该说什么（以及不该说什么）、如何告诉可信任的成年人。与 NEDA、AFSP、力量之源（Sources of Strength）和 988 保持一致。需先确认内容警告才能进入。",
+        "safety_plan_cleared": "安全计划已清除。",
+        "all_distress_readings_cleared": "所有痛苦程度记录已清除。",
+        "clear_your_saved_safety_plan": "要清除你已保存的安全计划吗？",
+        "clear_all_distress_readings": "要清除所有痛苦程度记录吗？",
+        "this_permanently_removes_every_step_of": "这会从这台设备上永久删除你已保存的安全计划的每一步。此操作无法撤销。如果你可能还需要它，请先打印或保存一份副本。",
+        "this_permanently_deletes_your_entire_distress": "这会永久删除你全部的痛苦程度记录历史，包括笔记和趋势数据。此操作无法撤销。",
+        "cancel": "取消",
+        "clear_safety_plan": "清除安全计划",
+        "clear_all_readings": "清除所有记录",
+        "now_viewing_label": "正在查看：{label}",
+        "content_note_before_you_continue": "继续之前的内容提示",
+        "this_module_is_about_what_to": "本模块讲的是，如果朋友抑郁、处于危机中或想要伤害自己——包括自杀——你该怎么做。内容包括：",
+        "recognizing_signs_of_depression_in_a": "识别朋友身上的抑郁征兆",
+        "crisis_warning_signs_at_a_general": "危机警示信号——只讲概括性的层面，不提供具体细节",
+        "how_to_ask_listen_and_respond": "如何询问、倾听和回应",
+        "how_and_when_to_tell_a": "如何以及何时告诉可信任的成年人",
+        "crisis_helplines_and_what_to_say": "危机求助热线，以及打电话时该说什么",
+        "how_to_take_care_of_yourself": "在支持朋友之后，如何照顾好自己",
+        "what_this_module_does_not_include": "本模块【不】包含的内容： ",
+        "specific_methods_of_self_harm_descriptions": "具体的自我伤害方式、对自杀尝试的描述、“之前/之后”的故事，或任何可能被当作操作指南的内容。这些信息刻意保持概括——重点在于提高意识、提供支持，以及帮人们获得帮助。",
+        "if_reading_about_these_topics_is": "如果现在阅读这些话题让你觉得难受，",
+        "please_consider_one_of_these_instead": "请考虑改做下面其中一件事：",
+        "talk_with_a_trusted_adult_before": "继续之前，先和一位可信任的成年人谈谈——学校辅导员、家长或老师",
+        "skip_this_module_and_explore_other": "跳过本模块，去看看 SEL Hub 的其他工具",
+        "the_988_suicide_crisis_lifeline_free": " —— 988 Suicide & Crisis Lifeline 自杀与危机生命线（免费、保密、24/7 全天候）",
+        "home_to_741741": "HOME 到 741741",
+        "crisis_text_line_free_confidential_24": " —— Crisis Text Line 危机短信热线（免费、保密、24/7 全天候）",
+        "continuing_into_crisis_companion": "正在进入危机陪伴",
+        "i_understand_the_content_note_and": "我已了解内容提示，想要继续进入危机陪伴",
+        "i_understand_continue": "✓ 我了解了——继续",
+        "returning_to_sel_hub_menu": "正在返回 SEL Hub 菜单",
+        "take_me_back_to_the_menu": "← 带我回到菜单",
+        "visitedcount_sectionscount_sections_visited": "已浏览 {visitedCount} / {SECTIONSCount} 个部分",
+        "crisis_companion_sections": "危机陪伴的各个部分",
+        "visited": " （已浏览）",
+        "next_label": "下一部分：{label} →",
+        "breath_pacer": "呼吸节拍器",
+        "a_visual_breathing_pacer_watch_the": "一个可视化的呼吸节拍器。看着圆圈扩大和缩小，让你的呼吸跟着它。适合在艰难的谈话之前或之后的急性压力时刻使用，或在任何身体比头脑先紧张起来的时候使用。这是一个拿来【用】的工具——它不能替代本模块其他部分中的任何支持。",
+        "cycle_cycles": "第 {cycles} 轮",
+        "keep_going_as_long_as_feels": " · 觉得舒服就一直做下去",
+        "press_start_when_you_re_ready": "准备好了就按“开始”",
+        "stop": "■ 停止",
+        "restart": "↺ 重新开始",
+        "when_to_use_which": "💡 什么时候用哪一种： ",
+        "box_breathing_4_4_4_4": "箱式呼吸（4-4-4-4）适合日常的一般调节——军人和急救人员都在用。 ",
+        "4_7_8_for_falling_asleep": "4-7-8 适合入睡或快速平复急性情绪——长长的呼气会激活副交感神经系统。 ",
+        "equal_breath_6_6_for_sustainable": "等长呼吸（6-6）适合每天持续使用——不需要屏息，容易保持。",
+        "write_something_first_then_press_the": "请先写点什么，然后再按一次按钮。",
+        "grounding_5_4_3_2_1": "着陆练习 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "当你思绪飞转或焦虑不断升高时，5-4-3-2-1 技巧能把注意力拉回到身体和当下。可以使用 5 种感官中的任何一种，即使有些感官用不上——说出你记得的、你想象的、你希望闻到的。它仍然有效。",
+        "itemscount_of_count_added": "已添加 {itemsCount} / {count}",
+        "remove": "移除",
+        "finish_2": "✓ 完成",
+        "grounding_complete": "着陆练习完成",
+        "you_named_15_specific_things_in": "你说出了当下的 15 样具体事物。留意一下，你现在的感觉和刚开始时相比有什么不同。",
+        "start_again": "↺ 重新开始",
+        "distress_reading_saved": "痛苦程度记录已保存。",
+        "calm": "平静",
+        "mild_stress": "轻度压力",
+        "notable_distress": "明显痛苦",
+        "high_distress": "高度痛苦",
+        "crisis_level_distress": "危机级别的痛苦",
+        "distress_check": "痛苦程度检查",
+        "a_quick_way_to_track_how": "一种快速记录你长期感受的方法。给你的痛苦程度打分 0–10。可以加一条备注。一周下来的规律，会告诉你一些单靠语言说不清的东西。 ",
+        "if_your_reading_is_8_or": "如果你的分数在 8 分或以上并持续超过一小时，请联系一位可信任的成年人，或发短信 HOME 到 741741。",
+        "right_now_i_m_feeling": "我现在的感受：",
+        "0_calm": "0 · 平静",
+        "10_crisis": "10 · 危机",
+        "optional_note_what_s_going_on": "可选备注（发生了什么？）：",
+        "e_g_math_test_in_3rd": "例如：第 3 节课有数学考试；几乎没睡",
+        "log_this_reading": "💾 记录这次评分",
+        "this_is_a_hard_moment": "⚠ 这是一个艰难的时刻。",
+        "you_re_in_real_distress_the": "你正处于真实的痛苦中。呼吸节拍器（上面一个部分）和着陆练习 5-4-3-2-1 都在这里。 ",
+        "if_thoughts_of_self_harm_are": "如果你有自我伤害的念头，请现在就发短信 HOME 到 741741（Crisis Text Line 危机短信热线），或拨打 / 发短信给 988。",
+        "above_average_distress": "高于平均的痛苦程度。",
+        "worth_pausing_for_try_the_breath": "值得停下来关注一下。试试呼吸节拍器或着陆练习。如果这个程度反复出现，告诉一位可信任的成年人是个好办法。",
+        "your_pattern": "📊 你的规律",
+        "7_day_avg_avg_sevendayreadingscount_readings": "7 天平均：{avg} · {sevenDayReadingsCount} 次记录",
+        "distress_over_time_chart": "痛苦程度随时间变化图",
+        "recent_readings_readingscount": "📋 最近的记录（{readingsCount}）",
+        "why_this_matters": "为什么这很重要",
+        "you_don_t_have_to_be": "你不需要是辅导员。你不需要知道该说什么。你不需要解决任何问题。",
+        "you_have_to_be_a_person": "你只需要做一个会留意的人，",
+        "and_a_person_who_tells_an": "以及一个会告诉成年人的人。就这些。这两种能力都可以学会，而且都能挽救生命。",
+        "friends_are_usually_the_first_to": "朋友通常是最先发现不对劲的人。成年人常常会错过早期征兆，因为青少年更愿意对朋友敞开心扉，而不是对父母或老师。这不是问题——这是你这个年纪友谊的自然样子。这只是意味着你的角色很重要。",
+        "what_this_module_teaches": "本模块教什么",
+        "how_to_recognize_when_a_friend": "如何识别朋友的情绪或行为模式正在走向抑郁",
+        "how_to_recognize_warning_signs_of": "如何识别危机的警示信号——包括自杀念头",
+        "how_to_ask_listen_and_respond_2": "如何询问、倾听和回应——包括哪些话有帮助，哪些话没有",
+        "how_to_tell_a_trusted_adult": "如何告诉可信任的成年人——什么时候、告诉谁、怎么说",
+        "crisis_resources_you_can_call_or": "随时可以拨打或发短信的危机资源——为你的朋友，也为你自己",
+        "how_to_take_care_of_yourself_2": "在陪朋友经历沉重的事情之后，如何照顾好自己",
+        "what_this_module_does_not_do": "本模块【不】做什么",
+        "it_does_not_turn_you_into": "它不会把你变成心理治疗师。你的角色是陪伴，以及帮他们联系到帮助。",
+        "it_does_not_require_you_to": "它不要求你保守秘密。如果涉及安全，告诉成年人是忠诚，不是背叛。",
+        "it_does_not_describe_specific_methods": "它不描述具体的自我伤害方式。我们刻意对警示行为只做概括性说明。",
+        "it_does_not_replace_professional_help": "它不能替代专业帮助。它教你成为通往专业帮助的桥梁。",
+        "sources_framework": "资料来源与框架",
+        "this_module_aligns_with_safe_messaging": "本模块遵循以下机构的安全表达指南：AFSP (afsp.org)、SAMHSA、Reporting on Suicide 媒体指南 (reportingonsuicide.org)、力量之源 Sources of Strength (sourcesofstrength.org)、QPR Institute、NIMH，以及 AAP 的青少年健康指导。它由一位学校心理学家为初中和高中学生设计，并已对照安全表达指南进行了编辑审核。",
+        "recognizing_depression_in_a_friend": "识别朋友的抑郁",
+        "every_kid_has_bad_days_every": "每个孩子都有糟糕的日子。每个孩子偶尔都会有难熬的一周。那是人之常情，不是抑郁。",
+        "depression_is_a_pattern": "抑郁是一种【模式】。 ",
+        "it_s_a_cluster_of_changes": "它是一系列持续好几周的变化，而不是某一个糟糕的日子。当下面的征兆中有【好几个】同时出现，【并且】持续时间比一般的低潮期更长时，就值得认真对待。",
+        "a_useful_question_to_keep_in": "一个值得记在心里的问题：“这种变化是不是持续得更久、越来越严重，或者已经影响到他们的日常生活？”",
+        "patterns_to_notice_over_weeks_not": "需要留意的模式（以周计，而不是以天计）",
+        "important_nuance": "重要的细微差别",
+        "in_adolescents_especially_depression_often_shows": "尤其是在青少年身上，抑郁常常表现为【易怒】而不是悲伤。一个好几周都一点就着、为小事心烦，或看起来像在低温下慢慢燃烧的朋友，可能比一个明显难过的人更加挣扎。",
+        "boys_athletes_kids_of_color_larger": "男生、运动员、有色人种的孩子、体型较大的孩子和成绩优秀的孩子常常被忽略，因为他们不符合“抑郁青少年”的刻板印象。不管朋友看起来怎么样，都要认真对待这一系列变化。",
+        "what_to_do_if_you_re": "如果你看到了这种模式，该怎么做",
+        "reach_out_send_a_text_sit": "主动联系。发条短信。午餐时坐在他们旁边。让他们知道你在关注，这很重要。",
+        "ask_gently_and_specifically_i_ve": "温和而具体地问：“我注意到你最近好像很累、很安静。你到底过得怎么样？”",
+        "listen_don_t_fix_most_people": "倾听。别急着解决。大多数人不想要解决办法；他们只是想觉得不那么孤单。",
+        "if_they_share_something_heavy_that": "如果他们说出了沉重的事，那就是问出更难的问题的时候了（下一部分：危机警示信号）。",
+        "if_you_re_worried_about_them": "如果你担心他们，就告诉一位可信任的成年人。你不需要确定。担心就足够了。",
+        "crisis_warning_signs": "危机警示信号",
+        "when_depression_deepens_into_crisis_including": "当抑郁加深为危机——包括出现自杀念头——通常会有警示信号。美国自杀预防基金会（AFSP）把这些信号分为三类： ",
+        "talk": "言语",
+        "mood": "情绪",
+        "and": "，以及",
+        "behavior": "行为",
+        "a_note_about_how_this_section": "关于这一部分的写法说明：我们刻意【不】列出可能被当作操作清单的具体行为。这些概括性的类别已经足以让朋友意识到有些不对劲。如果你看到好几个信号同时出现，那就是该行动的时候——而不是该自己进一步调查的时候。",
+        "examples": "例子",
+        "note": "注意： ",
+        "if_you_see_any_of_these": "如果你看到【任何】一个这样的信号，接下来要做的是：",
+        "stay_with_them_if_you_can": "如果可以，陪在他们身边。 ",
+        "don_t_leave_them_alone_if": "如果他们正处于急性痛苦中，不要让他们独处。",
+        "ask_directly": "直接问。 ",
+        "are_you_thinking_about_hurting_yourself": "“你是不是在想伤害自己？”直接问【不会】让对方产生这个念头（下一部分会解释相关研究）。",
+        "tell_a_trusted_adult_today": "告诉一位可信任的成年人——就在今天。 ",
+        "not_next_week_today": "不是下周。就是今天。",
+        "call_or_text_988": "拨打电话或发短信给 988 ",
+        "if_you_re_unsure_what_to": "——在你不确定该怎么做的时候。他们会一步步指导【你】去帮助你的朋友。",
+        "call_911": "拨打 911 ",
+        "if_your_friend_is_in_immediate": "——如果你的朋友此刻正面临直接的人身危险。",
+        "question_persuade_refer": "提问 · 说服 · 转介",
+        "qpr": "QPR（",
+        "question_persuade_refer_2": "提问、说服、转介",
+        "is_the_most_widely_taught_suicide": "）是面向非专业人士、传授最广泛的自杀预防框架。世界各地的学校、医院和社区项目都在使用它。这个框架刻意设计得很简单：三个步骤，每一步都是朋友能做到的。",
+        "you_re_not_the_therapist_you": "你不是心理治疗师。你是正在挣扎的人和受过训练、能提供帮助的人之间的纽带。正是这条纽带在挽救生命。",
+        "question_ask_directly": "提问——直接问",
+        "if_you_suspect_your_friend_is": "如果你怀疑朋友在想自杀，就问。直接而温和地问。确切用什么词，没有愿意开口问那么重要。",
+        "examples_2": "例子： ",
+        "are_you_thinking_about_hurting_yourself_2": "“你是不是在想伤害自己？” · “你有没有自杀的念头？” · “你是不是在想结束自己的生命？”",
+        "the_most_cited_barrier_to_asking": "🔬 最常被提到的“不敢问”的理由是错误的： ",
+        "asking_does_not_plant_the_idea": "询问【不会】让对方产生这个念头。多项元分析（Dazzi et al., 2014, Psychological Medicine）以及 AFSP、NIMH 和 QPR Institute 几十年的研究都证实：直接询问具有保护作用。这常常会让对方松一口气——那个人一直在等有人注意到。",
+        "persuade_listen_and_stay": "说服——倾听并留下来",
+        "persuade_doesn_t_mean_talking_them": "“说服”不是要劝他们不要有那种感受。它的意思是全心倾听，认可这件事确实很难，并帮助他们对寻求帮助说“好”。",
+        "listen_without_judgment": "不带评判地倾听。 ",
+        "don_t_debate_don_t_minimize": "不要争辩。不要轻描淡写。不要拿你自己的经历来比谁更惨。",
+        "reflect": "复述感受。 ",
+        "it_sounds_like_you_ve_been": "“听起来你一直扛着好多事，已经筋疲力尽了。”让他们觉得被听见，就是良药。",
+        "don_t_promise_secrecy": "不要承诺保密。 ",
+        "you_can_say_i_care_about": "你可以说：“我太在乎你了，不能把这件事只放在自己心里。我希望我们一起去找一个真正能帮上忙的人谈谈。”",
+        "stay_with_them": "陪在他们身边。 ",
+        "don_t_leave_them_alone_if_2": "如果他们正处于急性痛苦中，不要让他们独处。坐下来。一起走走。就是陪着。",
+        "skip_the_promise_me_trap": "⚠ 避开“你答应我”的陷阱： ",
+        "don_t_ask_them_to_promise": "不要让他们“答应”你什么都不会做。这会让他们做出一个可能做不到的承诺，还会增加羞耻感。换成：“我希望你平安。我们现在就一起去找人帮忙。”",
+        "refer_connect_them_to_help": "转介——帮他们联系到帮助",
+        "refer_means_getting_them_to_someone": "“转介”的意思是把他们带到比你更有能力帮忙的人那里。在这一步，【你】也不是一个人。",
+        "best_walk_with_them_to_a": "最好的做法：陪他们一起走到学校辅导员、学校心理老师或可信任的成年人那里。就现在。",
+        "if_that_s_not_possible_call": "如果做不到：一起拨打 988（或者在他们打电话 / 发短信时陪在旁边）。988 既是为处于危险中的人准备的，【也】是为正在帮忙的朋友准备的。",
+        "if_they_refuse_to_tell_anyone": "如果他们拒绝告诉任何人： ",
+        "tell_an_adult_yourself": "你自己去告诉成年人。 ",
+        "you_re_not_breaking_trust_you": "你不是在破坏信任——你是在用他们的危机所值得的忠诚来行动。之后他们很可能会松一口气。",
+        "if_immediate_physical_danger_911_not": "如果有直接的人身危险：拨打 911。不是下周。就是现在。",
+        "the_whole_framework_in_one_sentence": "整个框架一句话概括： ",
+        "ask_directly_listen_fully_and_bring": "直接问，全心听，再找一位能帮忙的成年人加入。",
+        "what_to_say_and_what_not": "该说什么（以及不该说什么）",
+        "you_don_t_need_a_perfect": "你不需要完美的台词。你不需要多有智慧。你需要的是陪伴、真诚，以及愿意让成年人加入。下面的措辞只是示例——你真实的对话会用你自己的话。",
+        "a_useful_frame_would_what_i": "一个有用的判断标准：我接下来要说的话，会让朋友觉得继续说下去【更】安全，还是【更不】安全？",
+        "these_help": "这些话有帮助",
+        "why": "原因： ",
+        "these_don_t_help_even_when": "这些话没有帮助（即使出于好意）",
+        "if_you_said_one_of_the": "如果你过去说过其中一句“不该说”的话—— ",
+        "that_s_ok_you_didn_t": "没关系。你当时不知道。我们没有人生来就懂这些。现在你有了别的说法。下一次对话可以不一样。",
+        "telling_a_trusted_adult": "告诉可信任的成年人",
+        "this_is_the_most_important_skill": "这是整个模块中最重要的技能。 ",
+        "telling_an_adult_is_what_turns": "告诉成年人，才能把你的担心变成真正能改变结果的帮助。这是最关键的一步——是让专业人员能够去做他们受训要做的事的那一刻。",
+        "loyalty_not_betrayal": "是忠诚，不是背叛",
+        "a_friend_in_crisis_may_ask": "处于危机中的朋友可能会求你不要告诉任何人。他们可能会让你答应。他们可能很害怕、很羞愧，或者认定说出去会让事情更糟。",
+        "tell_anyway": "还是要说。 ",
+        "safety_overrides_secrecy_telling_an_adult": "安全高于保密。当朋友的生命或健康面临危险时，告诉成年人是朋友能做的最忠诚的事。大多数这样被保护下来的人，事后都会【感激】——即使他们当时很不高兴。友谊可以挺过一次艰难的对话；但失去这位朋友，友谊就无法挺过去了。",
+        "when_to_tell_every_time": "什么时候要说——每一次都要说",
+        "your_friend_mentioned_wanting_to_die": "你的朋友提到想死、想伤害自己或想结束生命——即使是随口说说",
+        "you_re_seeing_a_cluster_of": "你看到了好几个危机警示信号（言语 / 情绪 / 行为）",
+        "your_friend_has_a_plan_a": "你的朋友有计划、有手段或有时间表——即使很模糊",
+        "your_friend_has_hurt_themselves_even": "你的朋友伤害过自己，哪怕只是轻微的",
+        "you_re_scared_and_you_don": "你很害怕，不知道该怎么办——光是这一点就足够成为说出来的理由",
+        "who_to_tell_pick_whoever_you": "告诉谁——选你最快能联系到的人",
+        "how": "怎么做： ",
+        "how_to_tell_practical_moves": "怎么说——实用做法",
+        "you_don_t_need_a_script": "你不需要台词。“我需要你帮忙处理一件关于朋友的严重的事”就足够了。",
+        "you_can_write_it_down_if": "如果说不出口，你可以写下来。纸条、短信、电子邮件都可以。",
+        "you_can_ask_another_friend_to": "你可以请另一个朋友陪你一起去辅导员办公室。",
+        "you_can_leave_class_to_do": "你可以为了这件事离开教室。告诉老师：“我需要去见辅导员——很紧急。”大多数老师不会多问就让你去。",
+        "if_the_first_adult_doesn_t": "如果第一个成年人没有认真对待你——这种情况确实会发生——就去找另一个。一直找下去，直到有人愿意听。",
+        "if_it_s_outside_school_hours": "如果是在上学时间以外，就拨打 988。他们会帮你想清楚该怎么做。",
+        "in_maine_schools": "🍎 在缅因州的学校",
+        "school_counselors_and_school_psychologists_are": "学校辅导员和学校心理老师是法定报告人——法律要求他们对安全方面的担忧采取行动。他们【不会】只是告诉你的父母就走开。他们会遵循一套流程，包括评估你朋友的情况、以安全的方式联系他们的家人，并帮他们获得持续的照护。法定报告是一道护栏，不是惩罚。",
+        "marked_as_myth_correct": "标记为误区——正确",
+        "marked_as_truth_but_research_says": "标记为事实——但研究表明这是一个误区",
+        "myths_debunked": "破除误区",
+        "six_of_the_most_cited_myths": "六个最常见、会阻碍人们帮助处于危机中的朋友的误区。对于每一个，判断：这个说法是【误区】还是【事实】？然后阅读附有引用来源、基于证据的解答。",
+        "score_so_far_correctcount_totalanswered_answered": "目前得分：{totalAnswered} 题中答对 {correctCount} 题。",
+        "myth_value_of_mythscount": "误区 {value} / {MYTHSCount}",
+        "this_is_a_myth": "这是【误区】",
+        "this_is_true": "这是【事实】",
+        "correct_this_is_a_myth": "✓ 正确——这是一个误区。",
+        "common_misconception_this_is_actually_a": "⚠ 常见的误解——这其实是一个误区。",
+        "what_the_evidence_says": "证据怎么说： ",
+        "sources_cite": "来源：{cite}",
+        "what_to_say": "可以这样说： ",
+        "crisis_resources": "危机资源",
+        "every_resource_here_is_free_confidential": "这里的每一个资源都是免费、保密的，并由受过训练的人员提供。你可以【为】朋友打，【和】朋友一起打，或者为你自己打。求助热线不只是为处于危机中的人准备的——也是为正在想办法的朋友、家长或支持者准备的。",
+        "below": "下面依次是： ",
+        "national": "全国",
+        "works_anywhere_in_the_u_s": " （在美国任何地方都适用）→ ",
+        "find_your_local_help": "查找你当地的帮助",
+        "directory_lookups_by_zip": " （按邮政编码查询目录）→ ",
+        "outside_the_u_s": "在美国以外？",
+        "maine_partners": "缅因州合作机构",
+        "named_local_agencies": " （具名的当地机构）→ ",
+        "school_based": "学校内的帮助",
+        "you_don_t_need_to_know": "你不需要知道该说什么。他们受过训练，会主动开启对话。你可以再打回去。你可以挂断。你不会做错。",
+        "a_note_about_lgbtq_youth": "关于 LGBTQ+ 青少年的说明",
+        "research_consistently_shows_lgbtq_youth_and": "研究一致表明，LGBTQ+ 青少年——尤其是跨性别青少年——出现自杀念头和自杀尝试的比例明显高于非 LGBTQ+ 的同龄人。原因已有充分记录：家庭排斥、校园骚扰、缺乏肯定性的照护，以及少数群体压力。The Trevor Project（1-866-488-7386 / 发短信 START 到 678-678）的工作人员专门针对这些现实接受过培训。如果你的朋友是 LGBTQ+，这个资源就是为他们而建的。",
+        "self_care_sub_sections": "自我照顾子板块",
+        "supporting_a_friend_through_a_mental": "陪朋友度过心理健康危机是一件沉重的事。它会改变你。研究人员把这称为",
+        "secondary_stress": "继发性压力",
+        "the_way_that_being_close_to": "——也就是靠近别人的痛苦会影响你自己的身心健康。它是真实存在的，值得重视。",
+        "taking_care_of_yourself_is_not": "照顾好自己不是自私。这是让你能够一直陪伴下去的方法。",
+        "interactive_tools_above": "🧰 上方的互动工具",
+        "the_tabs_at_the_top_of": "这个部分顶部的标签页里有你现在就能用的实用工具：一个引导式的",
+        "breathing_pacer": "呼吸节拍器",
+        "a_sensory": "、一个感官",
+        "grounding_exercise": "着陆练习",
+        "a_personal": "、一个你可以亲手打造的个人",
+        "coping_toolkit": "应对工具箱",
+        "you_can_build_and_the_evidence": "，以及有循证依据的",
+        "stanley_brown_safety_plan": "Stanley-Brown 安全计划",
+        "they_re_for_you_and_for": "。它们是给你用的，【也】可以分享给正在经历困难的朋友。",
+        "caring_for_yourself_when_you_ve": "在支持朋友之后照顾好自己",
+        "helpful_response": "有帮助的回应",
+        "this_response_could_harm_see_explanation": "这个回应可能造成伤害——请看说明",
+        "neutral_response_see_explanation": "中性的回应——请看说明",
+        "practice_three_scenarios": "练习——三个情境",
+        "three_short_scenarios_drawn_from_typical": "三个取材自青少年常见经历的简短情境。在每个情境中，选出你认为最有帮助的回应。没有完美的答案——只有在具体情境中更有帮助或不那么有帮助的回答。参照力量之源（Sources of Strength）的练习流程设计。",
+        "loaded_scenario_title": "已载入情境：{title}",
+        "scenario_value": "情境 {value}",
+        "how_would_you_respond": "你会怎么回应？",
+        "helpful": "✓ 有帮助—— ",
+        "harmful": "× 有害—— ",
+        "neutral": "~ 中性—— ",
+        "a_note_on_practice": "关于练习的说明： ",
+        "real_conversations_are_messier_than_scripted": "真实的对话比写好的情境更混乱。练习的目的不是背台词——而是培养询问、倾听、陪伴和告诉别人的【本能】。多加练习，这种本能就会反应得更快。",
+        "loading": "加载中…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "直接或间接地谈到想死、想结束痛苦、觉得自己是个负担，或觉得没有未来。有时是随口说说或开玩笑。不管以什么方式说出来，都要认真对待。",
+          "examples": {
+            "0": "“我想死”或“我希望自己不在这里”",
+            "1": "“没有我，大家都会过得更好”",
+            "2": "“我真的撑不下去了”",
+            "3": "“我只想让这一切停下来”",
+            "4": "“你很快就不用再为我操心了”",
+            "5": "用一种感觉像是永别的方式道别，即使很含蓄"
+          },
+          "note": "朋友开玩笑说想死，仍然是一个需要温和关心的时刻。大多数后来尝试自杀的人都曾告诉过某个人——有时是随口说出，或看起来像是一句不经意的话。"
+        },
+        "mood": {
+          "desc": "情绪出现明显变化，尤其是在短时间内。在一段痛苦时期【之后】突然变得平静或如释重负，可能是一个严重的信号——有时，处于危险中的人决定了一个计划后，会因此暂时感到平静。",
+          "examples": {
+            "0": "持续不见好转的抑郁或焦虑",
+            "1": "经历了很长一段艰难时期后，突然有一种平静感，或说“现在一切都好了”",
+            "2": "对未来感到绝望",
+            "3": "暴怒或说要报复",
+            "4": "对以前在乎的事情失去兴趣"
+          },
+          "note": "如果突然好转发生在接受治疗、获得支持和好好休息之后，那是好事。如果它毫无缘由地出现——在挣扎了好几周后，平静突然凭空出现——那就是一个警示信号。"
+        },
+        "behavior": {
+          "desc": "行为模式，尤其是做准备的模式。我们在这里刻意【不】列举可能被当作操作指南的具体细节。这些概括性的类别已经足以让朋友意识到有些不对劲。",
+          "examples": {
+            "0": "疏远朋友、家人，或以前热爱的活动",
+            "1": "物质使用增加（酒精、大麻、药片、电子烟用得比平时多）",
+            "2": "把对自己有意义的物品送给别人",
+            "3": "用一种感觉像是永别的方式向别人道别",
+            "4": "行为鲁莽，冒一些平时不会冒的险",
+            "5": "在网上搜索伤害自己的方式（你可能会发现他们在奇怪的时间屏幕使用时间激增，或者注意到他们在隐藏搜索记录）"
+          },
+          "note": "你不需要很确定。如果这些迹象中有好几个同时出现，那就是温和地关心他们、【并且】告诉一位可信任的成年人的时候。你不需要确定——担心就足够了。"
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "“我注意到你最近好像很低落。我很在乎你。你到底过得怎么样？”",
+          "why": "具体、关心，给了对方一个开口的机会。“到底”表示你想听的不只是那句常见的“我没事”。"
+        },
+        "1": {
+          "say": "“你是不是在想伤害自己？你是不是在想自杀？”",
+          "why": "直接问【不会】让对方产生这个念头——研究对此很明确。这常常会让对方松一口气。他们可能一直在等有人注意到。"
+        },
+        "2": {
+          "say": "“我很高兴你告诉我。这需要勇气。”",
+          "why": "肯定对方愿意说出来。不要急着去解决问题——先谢谢他们信任你。"
+        },
+        "3": {
+          "say": "“这件事超出了我一个人能处理的范围，我想确保你是安全的。我们可以一起去告诉某个人吗？”",
+          "why": "坦诚说出你的极限。把告诉成年人说成是一种爱，而不是背叛。“一起”很重要——你并没有丢下他们。"
+        },
+        "4": {
+          "say": "“我在这里。我哪儿也不去。如果你愿意，我们可以就这样安静地坐着。”",
+          "why": "陪伴本身就是良药。你不需要有答案。你只需要留下来。"
+        },
+        "5": {
+          "say": "“有没有你信任的人，我现在可以帮你去跟他谈谈？”",
+          "why": "点明下一步是找成年人帮忙，但让他们自己选择找谁。"
+        },
+        "6": {
+          "say": "“我爱你。我真的很怕你出事。请让我帮你。”",
+          "why": "直接、真诚地表达情感。说“怕”没关系——这是你真实的感受，也让他们知道这件事对你很重要。"
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "“你不应该有那种感觉。”",
+          "why": "这等于告诉他们，他们的感受是错的。如果感受被评判，他们就再也不会告诉你任何事了。"
+        },
+        "1": {
+          "say": "“别人比你惨多了。”",
+          "why": "痛苦不是拿来比较的。这会让对方不再倾诉，还会增加羞耻感。"
+        },
+        "2": {
+          "say": "“别告诉任何人。我也不会说。”",
+          "why": "在涉及安全的情况下承诺保密，恰恰与帮助背道而驰。安全高于保密。在这种时候，忠诚意味着告诉别人。"
+        },
+        "3": {
+          "say": "“你要答应我，你什么都不会做。”",
+          "why": "这是要他们做出一个可能超出他们能力范围的承诺——如果做不到，还会让他们觉得自己辜负了你。换成：“我希望你平安。我们一起去找人帮忙吧。”"
+        },
+        "4": {
+          "say": "“你还有那么多值得活下去的理由。”",
+          "why": "出发点是好的，但在极度低落的时刻，一个人真的感受不到这一点。这句话听起来可能像是“你应该知足”——这会让痛苦之上再添一层羞耻。"
+        },
+        "5": {
+          "say": "“振作起来 / 开心点 / 再努力一点就好了。”",
+          "why": "抑郁不是一种选择。叫一个人换个选择，就是在告诉他们你不理解他们正在经历什么。"
+        },
+        "6": {
+          "say": "“你怎么会这么想？”（用不耐烦的语气）",
+          "why": "不耐烦会被当成评判。如果你真的想理解，就温和地问——“你能帮我理解你现在的感受吗？”——并且对他们说的任何话都保持开放。"
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "学校辅导员或学校心理老师",
+          "pro": "受过专门训练。通常是上学时间里最容易找到的人。除了涉及安全的情况，都有保密义务。可以帮你告诉家长，并联系校外的专业帮助。",
+          "how": "直接走进去。递张纸条。请任何一位老师带你去。如果说不出口，你可以写下来。"
+        },
+        "1": {
+          "label": "你信任的老师",
+          "pro": "经常见到你，了解你的朋友圈。是法定报告人——他们知道该怎么做。",
+          "how": "下课后、在答疑时间，或者递纸条。“我需要跟您谈一件关于朋友的严重的事。”"
+        },
+        "2": {
+          "label": "校医",
+          "pro": "学校里有保密义务的医疗 / 心理健康资源。通常比辅导员更容易找到。",
+          "how": "直接走进医务室。他们会腾出时间来听你说。"
+        },
+        "3": {
+          "label": "父母、监护人或哥哥姐姐",
+          "pro": "他们爱你。他们想帮忙。即使他们也不知道该怎么做，也可以和你一起迈出下一步。",
+          "how": "选一个平静的时刻。先说：“我需要你帮忙处理一件关于朋友的严重的事。”问问能不能一起坐下来谈。"
+        },
+        "4": {
+          "label": "家庭医生或儿科医生",
+          "pro": "有保密义务的医疗专业人员。可以转介心理健康服务、和你朋友的家人沟通，或与学校协调。",
+          "how": "你可以打电话到诊所，说你需要和医生谈谈。很多诊所为青少年提供保密服务。"
+        },
+        "5": {
+          "label": "教练或社团指导老师",
+          "pro": "通过活动已经认识你和你朋友的成年人。通常和学校辅导员有联系。",
+          "how": "训练或活动结束后。“我需要跟您谈一件让我很担心的事。”"
+        },
+        "6": {
+          "label": "宗教领袖（如果你的家庭属于某个信仰团体）",
+          "pro": "对于和宗教领袖有信任关系的家庭来说，他们可以是一个有意义的第一站。",
+          "how": "大多数宗教领袖都欢迎这样的谈话。很多人受过创伤知情方面的培训。"
+        },
+        "7": {
+          "label": "心理治疗师（你的或他们的，如果你们有一方有的话）",
+          "pro": "已经为这种谈话受过专门训练。如果你或你的朋友已经在看心理治疗师，这是最直接的途径。",
+          "how": "打电话到诊所。“我有一个安全方面的担忧，需要今天谈谈。”"
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "问一个人是否在想自杀，会让他产生这个念头。",
+          "truth": "错误。研究结果一致而明确：询问【不会】增加风险。这常常会让对方松一口气——那个人一直在等有人注意到。询问是朋友能做的最具保护作用的事情之一。",
+          "cite": "Dazzi et al., Psychological Medicine (2014) 元分析 · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "谈论自杀的人只是想引起注意。他们不会真的做什么。",
+          "truth": "危险的误区。大多数后来尝试自杀的人都事先告诉过别人——有时是随口说出，有时是开玩笑。每一次说出来都值得认真回应。“想引起注意”往往意味着“正处于痛苦中，没有别的方式求助”。"
+        },
+        "2": {
+          "claim": "如果一个人真的想死，就不会告诉任何人。",
+          "truth": "错误。事实恰恰相反。许多尝试自杀的人都曾向身边的人发出过直接或间接的警示信号。告诉别人常常是内心矛盾的表现——他们的一部分想活下去，正在伸出手求助。",
+          "cite": "Reporting on Suicide 指南 · AFSP · Sources of Strength"
+        },
+        "3": {
+          "claim": "朋友什么也做不了——只有医生或心理治疗师才能帮忙。",
+          "truth": "有研究记录表明，同伴的陪伴具有保护作用。你不需要解决任何问题。倾听、认真对待，并帮他们联系可信任的成年人，就是真正的帮助。像力量之源（Sources of Strength）这样的项目，正是建立在“朋友很重要”这个事实之上的。",
+          "cite": "Sources of Strength 研究 · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "谈论自杀会让情况变得更糟。",
+          "truth": "只有在使用【不安全】的表达方式时才会这样——美化自杀、描述方式、渲染炒作。用关心的态度谈论、使用安全的表达语言、并帮助对方联系支持，是具有保护作用的。每一个主要的自杀预防组织都建议进行坦诚的对话。",
+          "cite": "Reporting on Suicide 指南 (reportingonsuicide.org) · AFSP · WHO"
+        },
+        "5": {
+          "claim": "自杀的发生没有任何征兆。",
+          "truth": "错误。研究一致表明，大多数情况下都存在警示信号——尽管有时只有事后回想才看得清楚。这就是为什么同伴支持培训很重要：它教你在当下就知道该注意什么。",
+          "cite": "AFSP · CDC YRBSS · NIMH 研究摘要"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "你和 Maya 在午餐时坐在一起。她最近比平时安静。她拨弄着食物，几乎是随口说道：“说真的，有时候我真的看不出这一切还有什么意义。”",
+          "responses": {
+            "0": {
+              "text": "“你什么意思？别这样说话。”",
+              "why": "这会让对方不再倾诉。告诉别人“别这样说话”，等于告诉他们，他们的感受是错的，【而且】你不是一个可以坦诚相待的安全对象。他们很可能会退缩。"
+            },
+            "1": {
+              "text": "“听起来真的很沉重。你能多跟我说说最近发生了什么吗？我很在乎你。”",
+              "why": "不带评判地认可对方的感受。邀请对方多说，但不强迫。“我很在乎你”让对方觉得可以安心继续说下去。这也为接下来更难的问题打开了门：“你有没有想过伤害自己？”"
+            },
+            "2": {
+              "text": "“是啊，最近学校压力真的好大。”",
+              "why": "没有伤害，但忽略了她真正说的话。“看不出这一切有什么意义”不只是学业压力。一个中性的回应可能会让她觉得没人听懂她。再追问一个问题确认一下。"
+            }
+          }
+        },
+        "sc2": {
+          "setting": "星期二晚上 11 点。你的朋友 Jamie 发来短信：“我一直在想，没有我大家都会过得很好。”你读完，心都停跳了一拍。",
+          "responses": {
+            "0": {
+              "text": "“我在。什么都别做。我现在就叫我妈过来帮忙。”",
+              "why": "直接、在场、认真对待，并迅速让成年人介入。“叫我妈”说明了你要采取的行动。如果你在等待时还能继续发短信或打电话陪着他们，就这样做。如果你能安全地亲自赶到他们身边，也这样做。"
+            },
+            "1": {
+              "text": "“天哪你还好吗？？你还有那么多值得活下去的理由！！”",
+              "why": "心意是好的，但效果不对。“你还有那么多值得活下去的理由”在极度低落的时刻，可能会让人觉得是在给他们施加愧疚感。更好的做法：说出你的害怕，告诉他们你爱他们，并让成年人介入。"
+            },
+            "2": {
+              "text": "“我不会告诉任何人，但今晚请你什么都别做，好吗？”",
+              "why": "在涉及安全的情况下承诺保密，会让事情变得更糟。这时最忠诚的做法是告诉成年人——即使 Jamie 叫你不要说。安全高于保密。今晚，你就要告诉某个人。"
+            }
+          }
+        },
+        "sc3": {
+          "setting": "上周，你的朋友在经历了一个非常艰难的夜晚后住院了。是你告诉了成年人。他们今天回到学校，看起来筋疲力尽。在走廊里，他们没有看你。你很害怕他们在生你的气。",
+          "responses": {
+            "0": {
+              "text": "你走过去说：“嘿。我一直在想着你。很高兴你今天来了。什么时候你想聊——聊哪件事都行，或者什么都不聊——我都在。”",
+              "why": "让他们知道你还在，而不把重点放在你自己身上。不要求任何东西。“聊哪件事都行，或者什么都不聊”让他们可以自己决定节奏。这就是你说出来【之后】，忠诚的样子。"
+            },
+            "1": {
+              "text": "你躲着他们，免得他们看到你觉得尴尬。",
+              "why": "这种本能可以理解，但不出现会被当成拒绝——恰恰和他们现在需要的相反。哪怕只是一句“嘿，很高兴你来了”也很重要。你不需要知道该说什么。"
+            },
+            "2": {
+              "text": "你后来给他们发短信：“我说出去是因为我爱你，我很害怕。你在生我的气吗？”",
+              "why": "很真诚，但这会让他们反过来要为你的决定安慰【你】。这些感受你之后可以和可信任的成年人或心理治疗师聊。对朋友，先说：“很高兴你回来了。你需要我的时候，我都在。”"
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "活动身体",
+        "sensory": "感官",
+        "connection": "联结",
+        "creative": "创作",
+        "cognitive": "思维",
+        "inhale": "吸气",
+        "exhale": "呼气",
+        "hold": "屏息"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "到外面走 5 分钟"
+        },
+        "stretch": {
+          "label": "慢慢拉伸 5 分钟"
+        },
+        "pushwall": {
+          "label": "用力推墙（释放紧张）"
+        },
+        "run_stairs": {
+          "label": "上下跑一趟楼梯"
+        },
+        "cold_water": {
+          "label": "用冷水拍拍脸或手腕"
+        },
+        "ice_cube": {
+          "label": "手里握一块冰"
+        },
+        "heavy_blanket": {
+          "label": "裹上一条厚重的毯子"
+        },
+        "rain_sounds": {
+          "label": "听雨声或海浪声"
+        },
+        "safe_smell": {
+          "label": "闻一闻你喜欢的味道（乳液、食物、蜡烛）"
+        },
+        "text_friend": {
+          "label": "给一位信任的朋友发短信说“想着你呢”"
+        },
+        "hug_pet": {
+          "label": "抱抱宠物或毛绒玩具"
+        },
+        "call_family": {
+          "label": "打电话给一位让你感到安心的家人"
+        },
+        "with_someone": {
+          "label": "和一个让你感到安心的人坐在一起（不用说话）"
+        },
+        "playlist": {
+          "label": "听一个你信得过的舒缓歌单"
+        },
+        "doodle": {
+          "label": "画画或随手涂鸦（没有目标，没有规则）"
+        },
+        "journal": {
+          "label": "把脑子里的想法写下来，哪怕只有一句"
+        },
+        "make": {
+          "label": "动手做点东西（折纸、烘焙、搭建）"
+        },
+        "three_okay": {
+          "label": "写下此刻 3 件还算好的小事"
+        },
+        "five_breaths": {
+          "label": "做 5 次缓慢的呼吸（吸气数到 4，呼气数到 4）"
+        },
+        "will_pass": {
+          "label": "提醒自己：“这种感觉会过去的”"
+        },
+        "one_step": {
+          "label": "选一件接下来要做的小事（只要一件）"
+        }
+      },
+      "phaselabel": {
+        "0": "吸气",
+        "1": "屏息",
+        "2": "呼气"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "说出你现在周围能【看到】的 5 样东西。",
+          "helper": "什么都算。台灯。桌子的一角。一朵云。"
+        },
+        "1": {
+          "prompt": "说出你能【感觉到】的 4 样东西。",
+          "helper": "你踩在地上的脚。衬衫的布料。皮肤上的空气。"
+        },
+        "2": {
+          "prompt": "说出你能【听到】的 3 种声音。",
+          "helper": "时钟声。车流声。你自己的呼吸声。"
+        },
+        "3": {
+          "prompt": "说出你能【闻到】的 2 种气味。",
+          "helper": "（如果附近什么都闻不到，也可以说你记得的气味。）"
+        },
+        "4": {
+          "prompt": "说出你能【尝到】的 1 种味道。",
+          "helper": "（或者你刚喝的那口水，或一种你最喜欢的食物。）"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. 警示信号",
+          "sub": "哪些想法、感受或情况告诉我，一阵难熬的浪潮要来了？"
+        },
+        "internal": {
+          "label": "2. 我可以自己做的事（内在应对）",
+          "sub": "那些曾让我感觉好一点点、不需要别人也能做的事。"
+        },
+        "distract": {
+          "label": "3. 能分散我注意力的人和地方（以好的方式）",
+          "sub": "可以发短信的朋友，只要待在那里就觉得还好的地方。【不是】用来提供危机支持的——只是为了让我暂时不去想它。",
+          "label_2": "3. 能帮我转移注意力的人和地方"
+        },
+        "helpers": {
+          "label": "4. 我可以直接求助的人",
+          "sub": "知道情况的朋友或家人，或者我足够信任、愿意告诉他们的人。列出名字 + 联系方式。",
+          "label_2": "4. 我可以求助的人"
+        },
+        "professionals": {
+          "label": "5. 专业人员 + 危机热线",
+          "sub": "我的心理治疗师（如果有的话）、精神科医生、医生、学校辅导员，以及 24/7 全天候的危机热线。"
+        },
+        "environment": {
+          "label": "6. 让我的环境更安全",
+          "sub": "我（或我信任的人）可以做些什么，让我和任何可能用来伤害自己的东西保持距离？这是循证依据最充分的一步。"
+        },
+        "warning": {
+          "label": "1. 警示信号（想法、感受、情况）"
+        },
+        "coping": {
+          "label": "2. 我可以自己做的内在应对"
+        },
+        "pros": {
+          "label": "5. 专业人员 + 危机热线"
+        },
+        "safer": {
+          "label": "6. 让我的环境更安全"
+        },
+        "0": {
+          "label": "5 样你能【看到】的东西",
+          "prompt": "看看四周。说出你现在能看到的 5 样东西。要具体——说“书的一角”，而不是“一本书”。"
+        },
+        "1": {
+          "label": "4 样你能【摸到】的东西",
+          "prompt": "伸手摸摸 4 样不同的东西。留意它们的质地。是凉的还是暖的？光滑还是粗糙？"
+        },
+        "2": {
+          "label": "3 种你能【听到】的声音",
+          "prompt": "听一听。说出 3 种不同的声音——可以近也可以远，可以大也可以小。"
+        },
+        "3": {
+          "label": "2 种你能【闻到】的气味",
+          "prompt": "留意 2 种气味。如果什么都闻不到，就说出 2 种你记得、喜欢的气味。"
+        },
+        "4": {
+          "label": "1 种你能【尝到】的味道",
+          "prompt": "留意嘴里的 1 种味道——你刚喝的饮料或吃的东西留下的味道，或者只是空气的味道。"
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 身体"
+        },
+        "mind": {
+          "label": "🧠 心理"
+        },
+        "distract": {
+          "label": "🎮 转移注意力"
+        },
+        "connect": {
+          "label": "🤝 联结"
+        },
+        "creative": {
+          "label": "🎨 创作"
+        },
+        "spirit": {
+          "label": "🌅 心灵"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "我的安全计划",
+          "desc": "Stanley + Brown 6 步计划",
+          "stat": "已填写 {Count} 步"
+        },
+        "warning": {
+          "label": "我的警示信号记录",
+          "desc": "长期记录信号 = 发现规律",
+          "stat": "已记录 {Count} 条"
+        },
+        "arsenal": {
+          "label": "我的应对法宝库",
+          "desc": "对【我】有用的策略",
+          "stat": "已保存 {Count} 个"
+        },
+        "contacts": {
+          "label": "我的支持联系人",
+          "desc": "快速查看：什么时候打给谁",
+          "stat": "{Count} 人"
+        },
+        "recovery": {
+          "label": "我的恢复笔记",
+          "desc": "艰难时刻过后——什么有效",
+          "stat": "{Count} 条笔记"
+        },
+        "hope": {
+          "label": "我的希望清单",
+          "desc": "继续走下去的理由。随机抽一条。",
+          "stat": "{Count} 个理由"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "我的安全工具包"
+        },
+        "breath": {
+          "label": "呼吸节拍器"
+        },
+        "grounding": {
+          "label": "着陆练习 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "痛苦程度检查"
+        },
+        "whyMatters": {
+          "label": "为什么这很重要"
+        },
+        "recognizeDepression": {
+          "label": "识别抑郁"
+        },
+        "crisisSigns": {
+          "label": "危机警示信号"
+        },
+        "qpr": {
+          "label": "提问 · 说服 · 转介"
+        },
+        "whatToSay": {
+          "label": "该说什么"
+        },
+        "tellingAdult": {
+          "label": "告诉可信任的成年人"
+        },
+        "myths": {
+          "label": "破除误区"
+        },
+        "resources": {
+          "label": "危机资源"
+        },
+        "selfCare": {
+          "label": "照顾好自己"
+        },
+        "practice": {
+          "label": "练习"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "箱式呼吸（4-4-4-4）"
+        },
+        "fourseven": {
+          "name": "4-7-8 平静呼吸"
+        },
+        "equal": {
+          "name": "等长呼吸（6-6）"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "阅读"
+        },
+        "breath": {
+          "label": "呼吸节拍器"
+        },
+        "ground": {
+          "label": "5-4-3-2-1 着陆练习"
+        },
+        "toolkit": {
+          "label": "我的工具箱"
+        },
+        "safety": {
+          "label": "安全计划"
+        }
+      },
+      "print": {
+        "title": "我的安全计划",
+        "intro": "依据 Stanley-Brown 安全计划干预制定。和辅导员或心理治疗师一起检查时最有用。",
+        "empty": "（尚未填写）",
+        "crisis_head": "如果你现在正处于危机中：",
+        "crisis_body": "拨打电话或发短信给 {call}（24/7 全天候）。发短信 {text}。告诉一位可信任的成年人。",
+        "created": "创建于 {date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "zones_of_regulation": "情绪调节区域",
+        "positive_psychology": "积极心理学",
+        "coaching_tradition": "教练传统",
+        "trauma_informed": "创伤知情",
+        "media_literacy": "媒体素养",
+        "contemplative": "沉思练习",
+        "trauma_informed_practice": "创伤知情实践",
+        "philosophy_ethics": "哲学 / 伦理学",
+        "social_work": "社会工作",
+        "person_centered_planning": "以人为本的规划",
+        "family_systems": "家庭系统",
+        "self_determination_theory": "自我决定理论",
+        "executive_function": "执行功能",
+        "bystander_intervention": "旁观者干预",
+        "restorative_practices": "修复式实践",
+        "motivational_interviewing": "动机式访谈",
+        "place_based_education": "在地教育",
+        "harm_reduction": "减害",
+        "body_appreciation": "身体欣赏",
+        "sources_of_strength": "力量之源",
+        "occupational_therapy": "作业治疗",
+        "grief_counseling": "哀伤辅导",
+        "holland_riasec": "霍兰德 RIASEC",
+        "neurodiversity_paradigm": "神经多样性范式",
+        "suicide_prevention": "自杀预防"
+      },
+      "tool": {
+        "zones": {
+          "label": "情绪区域",
+          "desc": "找出你所在的区域（蓝、绿、黄、红），并探索自我调节的策略。"
+        },
+        "emotions": {
+          "label": "情绪探索器",
+          "desc": "扩充情绪词汇——识别、命名并评估感受的强度。"
+        },
+        "strengths": {
+          "label": "优势发现",
+          "desc": "发现并反思个人的优势、才能和成长空间。"
+        },
+        "viaStrengths": {
+          "label": "VIA 品格优势",
+          "desc": "对 24 项 VIA 品格优势（Peterson 和 Seligman，2004）进行简化的自我分类，包含 6 种美德，并找出你的标志性优势。如需权威的免费问卷，请访问 viacharacter.org。这是反思练习，不是心理测量。"
+        },
+        "wheelOfLife": {
+          "label": "生命平衡轮",
+          "desc": "包含 8 个生活领域的蛛网图，每个领域按 1 到 10 评分。它像一幅自画像，呈现你现在的生活哪里充实、哪里单薄。源自教练传统（Meyer，1960 年代；Co-Active 教练法）。这是启发式工具，不是经过验证的心理测量。"
+        },
+        "perma": {
+          "label": "PERMA 幸福感",
+          "desc": "对 PERMA 五个领域的自我检查，外加一项健康反思：积极情绪（Positive emotion）、投入（Engagement）、人际关系（Relationships）、意义（Meaning）、成就（Accomplishment）和健康（Health）。共 24 题，以条形图显示结果，并按领域反思。源自 Seligman；可与 VIA 品格优势搭配使用。"
+        },
+        "coping": {
+          "label": "应对工具箱",
+          "desc": "探索并练习应对策略——呼吸、着陆练习、身体活动等。"
+        },
+        "windowOfTolerance": {
+          "label": "容纳之窗",
+          "desc": "以创伤知情为基础的自我觉察图示。三个唤醒区域（过度唤醒、容纳之窗、唤醒不足）。标出你在每个区域的个人信号、你的触发因素，以及帮你回到窗口内的练习。基于 Siegel（1999）；是创伤知情学校的标准工具。"
+        },
+        "stressBucket": {
+          "label": "压力桶",
+          "desc": "一个容量图示。压力源不断流入，应对练习把它们排出。看看你的流入和流出是否平衡。源自 CBT 传统的工具（Brabban 和 Turkington，2002），在英国 NHS IAPT 和 Mind UK 中广泛使用。坦诚面对结构性压力源。"
+        },
+        "tipp": {
+          "desc": "四项 DBT 危机生存技能（温度 Temperature、剧烈运动 Intense exercise、节奏呼吸 Paced breathing、配对肌肉放松 Paired muscle relaxation），用于应对急性痛苦。在你试着靠思考走出困境之前，先在 30 秒到 10 分钟内让身体平静下来。DBT 痛苦耐受的基础技能（Linehan）。"
+        },
+        "anxietyToolkit": {
+          "label": "焦虑工具箱",
+          "desc": "基于 CBT 的焦虑应对技能：心理教育、担忧树（有益的担忧与无益的担忧）、安排担忧时间、去灾难化、着陆技能，以及个人模式清单。源自 Beck Institute、AACAP、ADAA。可与容纳之窗和压力桶搭配使用。"
+        },
+        "sleep": {
+          "label": "睡眠与休息",
+          "desc": "青少年睡眠不足是一场公共卫生危机。AAP 建议的 8-10 小时很少能达到。包括心理教育、自我检查、8 个常见障碍及各自的有效对策，以及睡眠日记。源自 AAP、CDC、NSF 和 Carskadon 的研究。"
+        },
+        "sensoryRegulation": {
+          "label": "感觉调节",
+          "desc": "肯定神经多样性的工具，帮助你了解自己在 8 个感觉系统中的感觉处理方式。建立个人档案、规划感觉餐单、确定学校里的合理便利。采用身份优先的语言；基于 Ayres、Dunn 以及由自闭症人士主导的研究。"
+        },
+        "bigFeelings": {
+          "label": "强烈情绪（愤怒）",
+          "desc": "专门针对愤怒的心理教育与技能培养。愤怒是一种信息，不是问题本身；反应性攻击才是陷阱。基于 Lochman 的“应对力量”（Coping Power）传统和针对愤怒的 CBT 证据基础。包括烦恼记录、触发因素清单、选择点和个性化的冷静方法。"
+        },
+        "substancePsychoed": {
+          "label": "物质使用",
+          "desc": "关于成瘾物质（酒精、大麻、尼古丁、阿片类药物、兴奋剂、苯二氮䓬类、致幻剂）的减害心理教育。青少年大脑面临的风险。纳洛酮知识。这不是筛查工具，也不只宣导完全戒除。明确提供 SAMHSA 转介。符合动机式访谈（MI）理念的反思空间。"
+        },
+        "behavioralActivation": {
+          "label": "行为激活",
+          "desc": "规划一些小活动，去完成它们，再按掌控感（觉得自己能胜任）和愉悦感（感到享受）评分。留意哪些适合你，并选择一个可行的下一步。这个规划活动借鉴了行为激活，但它不提供、也不评估任何疗程。"
+        },
+        "mindfulness": {
+          "label": "正念角落",
+          "desc": "引导式呼吸练习、身体扫描和正念活动。"
+        },
+        "quietQuestions": {
+          "label": "静心之问",
+          "desc": "每周一次的内在探问练习。用整整一周的时间陪伴一个开放式问题。20 个轮换的问题，涵盖注意力、渴望、困难、联结与成长。灵感来自贵格会的探问传统；世俗化，不带规定性。"
+        },
+        "orientations": {
+          "label": "人生取向",
+          "desc": "生活方式比较。八种哲学传统（道家、禅宗、斯多葛主义、存在主义、儒家伦理、乌班图、原住民的关系观、关怀伦理）在人生重大问题上的比较。不带规定性；每种传统都有一个坦诚的“它不擅长什么”面板。"
+        },
+        "thoughtRecord": {
+          "label": "CBT 思维记录",
+          "desc": "认知行为疗法中的 7 栏思维记录表。一步步梳理一个艰难时刻：情境、情绪、自动思维、支持与反对的证据、平衡的想法、情绪重新评分。可长期保存记录。源自 Beck、Burns、Padesky。"
+        },
+        "costBenefit": {
+          "label": "利弊分析表",
+          "desc": "源自辩证行为疗法的 2x2 决策表。把一个决定的短期和长期利弊并排列出。当情绪推着你偏向某个选项时特别有用。源自 Linehan。"
+        },
+        "sfbt": {
+          "label": "焦点解决",
+          "desc": "焦点解决短期治疗：奇迹问句、量尺问句、寻找例外和赞美。向前看而不是向后看，询问哪些方面已经有效。美国学校咨询中最常用的技术。源自 de Shazer 和 Berg。"
+        },
+        "careConstellations": {
+          "label": "关怀星座",
+          "desc": "一张关系图：谁在关怀你，你又在关怀谁。拒绝个人主义或消费主义的“自我护理”框架。包含关于“关照自我”与“自我护理”的深入哲学观点（福柯、希腊语 epimeleia heautou、Audre Lorde、实现论幸福与享乐论幸福）。"
+        },
+        "ecomap": {
+          "label": "生态图",
+          "desc": "“人在环境中”的关系图。你在中心，周围是 12 个主要生活系统。每条联系按强度、压力和能量方向评分。自 Hartman（1978）以来的标准社会工作工具；用于 IEP、家庭评估和个人生活盘点。"
+        },
+        "circlesOfSupport": {
+          "label": "支持圈",
+          "desc": "四个同心关系圈：亲密、友谊、参与、交换（有偿）。让你看清谁真正亲近，包括有偿人员填满内圈的情况。源自 Inclusion Press 的 Forest 和 Snow。"
+        },
+        "genogram": {
+          "label": "家系图",
+          "desc": "使用标准家庭系统符号绘制的三代家庭图。仅用于个人自我了解（不是临床评估）。基于 Bowen 家庭系统理论和 McGoldrick-Gerson-Petry 符号体系。包含醒目的安全框架指引。"
+        },
+        "griefLoss": {
+          "label": "悲伤与失落",
+          "desc": "陪伴你面对悲伤的自助指引。亲人或宠物离世、家庭变化、失去朋友、身份的失落、模糊性失落——都算。一步步完成 Worden 的四项哀悼任务，写一封信，规划纪念仪式。有明确的安全提示，对于严重或复杂的悲伤，会引导你使用危机陪伴 / 988。"
+        },
+        "traumaPsychoed": {
+          "label": "认识创伤",
+          "desc": "仅限心理教育（不是筛查工具）。创伤是什么、不是什么，用浅白的语言讲解神经生物学，把常见反应重新理解为适应，SAMHSA 的 6 项原则，以及循证治疗方法。适合学生和教育者。包含醒目的安全提示，说明为什么没有后续跟进的筛查是不安全的。"
+        },
+        "bodyStory": {
+          "label": "身体故事",
+          "desc": "身体接纳与具身体验工具。不以体重为中心，不涉及节食，也不是筛查工具。基于 Tylka 的身体欣赏研究、直觉饮食原则和媒体素养。包容所有身体、所有性别、所有体型。针对饮食失调提供明确的 NEDA 转介指引。"
+        },
+        "sourcesOfStrength": {
+          "label": "力量之源",
+          "desc": "标出你的 8 个保护因素。探索受“力量之源”（Sources of Strength）项目启发的保护性支持。这张自助地图是改编版本，并非实施经过评估的学校项目。"
+        },
+        "crisiscompanion": {
+          "label": "危机陪伴",
+          "desc": "同伴支持与自杀预防技能：当你或朋友感到抑郁、处于危机中或想到自我伤害时该怎么做——识别征兆、该说什么（以及不该说什么）、告诉可信任的成年人，还有 988 和个人安全计划。需先确认内容警告才能进入。与 NEDA、AFSP、“力量之源”（Sources of Strength）项目和 988 保持一致。是力量之源的急性支持配套工具。"
+        },
+        "identitySupport": {
+          "label": "身份认同支持",
+          "desc": "一个包容、肯定的空间，探讨性别认同、性取向、浪漫取向以及更广泛的身份认同问题。包括相关词汇、身份认同发展、寻找社群、跨性别青少年的安全，以及盟友指引。基于 Trevor Project、GLSEN、PFLAG。"
+        },
+        "disabilityVoices": {
+          "label": "残障者之声",
+          "desc": "真实的自闭症和残障倡导者，他们的工作塑造并批评了残障相关实践。包括引语、背景和精选阅读清单。设计初衷是让那些长期被这个领域“施加于其上”的人成为中心，而不是被放到行为科学工具的边栏里。Ari Ne'eman、Temple Grandin、Damian Milton、Henny Kupferstein、Kassiane Asasumasu、Mel Baggs、Ly Xīnzhèn M. Zhǎngsūn Brown、Patty Berne。"
+        },
+        "goals": {
+          "label": "目标设定",
+          "desc": "设定 SMART 目标，追踪进度，庆祝里程碑。"
+        },
+        "howlTracker": {
+          "label": "HOWL 追踪",
+          "desc": "用于 Crew 时间的学习与工作习惯（Habits of Work and Learning）自我评估。每周签到、季度目标、趋势图、Crew 讨论提示。与 EL Education 的 HOWL 框架一致。"
+        },
+        "onePageProfile": {
+          "label": "一页档案",
+          "desc": "便于携带、可打印、只占一页的个人档案。三个部分：别人喜欢和欣赏我的地方、对我来说重要的事、如何最好地支持我。以人为本规划的成果，可用于 IEP 会议、过渡期、代课老师或 Crew。基于 Helen Sanderson Associates 的格式。"
+        },
+        "maps": {
+          "desc": "制定行动计划（Making Action Plans）。按顺序回答八个提示（我的故事、梦想、噩梦、我是谁、天赋、需求、行动计划、第一步）。源自 Inclusion Press 的 Pearpoint、O'Brien 和 Forest 的以人为本图示；广泛用于过渡规划。"
+        },
+        "path": {
+          "desc": "怀抱希望规划不同的明天（Planning Alternative Tomorrows with Hope）。未来规划图示：八个阶段，从你的长远北极星一路倒推到两周内的第一步。源自 Inclusion Press 的 Pearpoint、O'Brien 和 Forest；可与 MAPS 搭配使用。"
+        },
+        "valuesCommittedAction": {
+          "label": "价值与行动",
+          "desc": "整理对你重要的事，说出你最重要的价值，并把每一项转化为本周一个具体的小行动。源自接纳承诺疗法（Hayes）；采用适合青少年的 DNA-V 框架。ACT 区分价值（方向）与目标（终点）。"
+        },
+        "careerCompass": {
+          "label": "职业指南针",
+          "desc": "通过你的兴趣探索职业。36 题 RIASEC 自我检查会给出前三位的霍兰德代码；浏览职业、16 个联邦职业集群，以及具体的下一步（职场见习日、信息访谈、CTE 职业技术教育、学徒制）。基于霍兰德框架；并指向 mynextmove.org 上权威的 O*NET 兴趣测评。"
+        },
+        "selfAdvocacy": {
+          "label": "自我倡导工作室",
+          "desc": "制定具体的学校支持计划，涉及 IEP 或 504 问题、合理便利、是否披露的选择，以及向可信任的成年人求助。"
+        },
+        "perspective": {
+          "label": "视角透镜",
+          "desc": "从不同的角度看待情境——练习同理心和换位思考。"
+        },
+        "community": {
+          "label": "社区与文化",
+          "desc": "探索多元性、文化意识和社区归属感。"
+        },
+        "conflict": {
+          "label": "冲突解决",
+          "desc": "练习一个低风险或假设的冲突，运用换位思考、“我”陈述、降温和修复的选择。如果有人不安全，请找成年人介入，而不是独自协商。"
+        },
+        "social": {
+          "label": "社交技能实验室",
+          "desc": "练习对话技巧、积极倾听、肢体语言与合作。"
+        },
+        "teamwork": {
+          "label": "团队合作培养",
+          "desc": "协作挑战与团队角色探索。"
+        },
+        "dearMan": {
+          "desc": "用七个步骤为一次困难的请求写好脚本：描述（Describe）、表达（Express）、坚持（Assert）、强化（Reinforce）、保持专注（Mindful）、表现自信（Appear confident）、协商（Negotiate）。源自 DBT 人际效能（Linehan）；是学校咨询中最常用的自信沟通脚本。可与自我倡导工作室搭配使用。"
+        },
+        "motivationalInterviewing": {
+          "label": "动机式访谈",
+          "desc": "一个对话框架，帮助别人（或你自己）想清楚一项改变。学习 OARS 技能（开放式问题 Open questions、肯定 Affirmations、反映 Reflections、摘要 Summaries）、三把量尺和改变语句。源自 Miller 和 Rollnick；是学校咨询和同伴支持工作的基础。"
+        },
+        "crewProtocols": {
+          "label": "Crew 活动流程",
+          "desc": "一套用于 Crew 时间、导师时间或班会的结构化小组形式：社区建设活动、开场、结尾、修复式圆圈、反思流程、庆祝形式和困难对话指南。另外汇总了整个 SEL Hub 中的所有 Crew 提示。基于 EL Education Crew、修复式实践、Tribes 和 Responsive Classroom。"
+        },
+        "healthyRelationships": {
+          "label": "健康的关系",
+          "desc": "任何亲密关系在 8 个维度上的光谱（健康 / 不健康 / 虐待）。详细讲解同意、约会暴力预防、安全须知与求助热线。基于 Loveisrespect / NDVH 框架。包容酷儿、神经多样性和残障人士。"
+        },
+        "decisions": {
+          "label": "决策实验室",
+          "desc": "运用“停下-思考-行动”框架处理真实生活情境。"
+        },
+        "journal": {
+          "label": "情绪日志",
+          "desc": "每日签到日志——长期记录心情、触发因素和反思。"
+        },
+        "safety": {
+          "label": "安全与边界",
+          "desc": "了解个人边界、可信任的成年人，以及安全与不安全的情境。"
+        },
+        "landPlace": {
+          "label": "土地与地方",
+          "desc": "守护工作室，帮助你与所居住的土地建立持续的关系。三条线索（历史、生态、现在），批判性地反思土地致谢应是一种实践而非表演，以 Wabanaki 人主导的组织作为权威声音，以及一本私人反思日志。"
+        },
+        "somaticReset": {
+          "label": "身体与呼吸重置",
+          "desc": "选择一个身体区域，跟着做一个简短、坐在椅子上也能做的静止、呼吸或轻柔活动重置，并在前后各做一次私人自我检查。"
+        },
+        "restorativeCircle": {
+          "label": "修复式圆圈",
+          "desc": "在既定规范、成年人引导和对文化根源的尊重下，主持修复式与社区建设圆圈活动。不可用于强迫披露或存在现实安全风险的情况。"
+        },
+        "compassion": {
+          "label": "关怀与自我对话",
+          "desc": "练习自我关怀，重新看待内心的批评者，建立更友善的内在声音。"
+        },
+        "friendship": {
+          "label": "友谊培养",
+          "desc": "探索交友风格、修复策略和健康的关系模式。"
+        },
+        "transitions": {
+          "label": "人生转变",
+          "desc": "应对搬家、转学和成长等变化。"
+        },
+        "upstander": {
+          "label": "挺身者训练",
+          "desc": "学习安全地为他人挺身而出——从旁观者到挺身者的技能。"
+        },
+        "growthmindset": {
+          "label": "成长型思维",
+          "desc": "大脑科学、重新看待挑战、培养复原力。"
+        },
+        "execfunction": {
+          "label": "执行功能",
+          "desc": "应对做事过程中较难部分的策略：开始任务、保持专注、提前计划和掌握时间。"
+        },
+        "advocacy": {
+          "label": "倡导练习",
+          "desc": "演练在日常情境中表达需求、寻求支持和发声的通用脚本。"
+        },
+        "civicAction": {
+          "label": "公民行动与希望",
+          "desc": "处理面对不公时的难受情绪，培养公民能动性，并通过行动孕育希望。"
+        },
+        "ethicalReasoning": {
+          "label": "伦理推理实验室",
+          "desc": "通过多种框架和 AI 苏格拉底式对话，探索当代伦理困境。"
+        },
+        "cultureExplorer": {
+          "label": "文化探索器",
+          "desc": "借助 AI 深入探索世界各地的文化，配有插图和音频。"
+        },
+        "voicedetective": {
+          "label": "声音侦探",
+          "desc": "聆听声音，从语气中辨认情绪。"
+        },
+        "practiceJourneys": {
+          "label": "练习旅程（试点）",
+          "desc": "通过四个相互关联的情境练习寻求支持。用选项、你自己的话或两者一起来回应。记日志，并尝试另一条路线。"
+        },
+        "sociallab": {
+          "label": "社交技能角色扮演",
+          "desc": "通过分支对话练习社交情境，并与 AI 同伴进行角色扮演。"
+        },
+        "peersupport": {
+          "label": "同伴支持教练",
+          "desc": "学习 OARS 倾听技能，以及何时该寻求成年人的帮助。"
+        },
+        "conflicttheater": {
+          "label": "冲突剧场",
+          "desc": "在沉浸式场景中与两个 AI 角色练习一个虚构冲突。仅为测试版角色扮演；不要用它来调解正在发生的伤害。"
+        },
+        "digitalWellbeing": {
+          "label": "数字健康工作室",
+          "desc": "自我检查你与社交媒体和 AI 聊天机器人的关系，养成更健康的手机习惯，从网络霸凌中恢复，识别信息流中的操纵手法，安全地应对与聊天机器人的关系，并在需要时找到帮助。"
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "自我意识",
+          "desc": "识别情绪、优势和成长空间"
+        },
+        "self-regulation": {
+          "label": "自我调节",
+          "desc": "调节情绪、唤醒水平和注意力；应对练习"
+        },
+        "self-direction": {
+          "label": "自我引导",
+          "desc": "目标设定、能动性、执行功能、成长型思维"
+        },
+        "inner-work": {
+          "label": "内在功课",
+          "desc": "沉思与反思练习"
+        },
+        "care-of-self": {
+          "label": "关照自我",
+          "desc": "自我关怀、关系中的自我护理"
+        },
+        "social-awareness": {
+          "label": "社会意识",
+          "desc": "同理心、换位思考和欣赏多元"
+        },
+        "relationship-skills": {
+          "label": "人际关系技能",
+          "desc": "沟通、团队合作和冲突解决"
+        },
+        "responsible-decision-making": {
+          "label": "负责任的决策",
+          "desc": "合乎伦理的选择、评估后果和解决问题"
+        },
+        "stewardship": {
+          "label": "守护与责任",
+          "desc": "关爱社区、正义、土地和未来"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 分钟",
+          "purpose": "说出你当前所在的区域，并选择一个合适的调节策略。",
+          "next": "检查你的区域，选一个策略，如果想以后再看，可以保存。"
+        },
+        "coping": {
+          "time": "3-10 分钟",
+          "purpose": "选择一个应对策略，练习一次，并设定明确的结束点。",
+          "next": "选一个基于身体或着陆的策略，试一试，然后留意它是否有帮助。"
+        },
+        "journal": {
+          "time": "5-12 分钟",
+          "purpose": "写一段私人反思，留意你可能想记住的模式。",
+          "next": "选一个提示，诚实地写，在关闭前保存或导出。"
+        },
+        "emotions": {
+          "time": "4-8 分钟",
+          "purpose": "扩充情绪词汇，更准确地说出你的感受。",
+          "next": "选一种感受，评估它的强度，然后选出最贴切的一个词。"
+        },
+        "mindfulness": {
+          "time": "2-10 分钟",
+          "purpose": "停一停、呼吸，练习专注，不需要写任何东西。",
+          "next": "选一个简短的练习，完整做完，然后留意有什么变化。"
+        },
+        "somaticReset": {
+          "time": "3-8 分钟",
+          "purpose": "通过私人的身体区域自我检查，选择一个简短、坐在椅子上也能做的重置练习。",
+          "next": "选一个身体部位，试一个静止、呼吸或轻柔活动的选项，然后留意有什么变化。"
+        },
+        "thoughtRecord": {
+          "time": "8-15 分钟",
+          "purpose": "让一个困难的想法慢下来，寻找更平衡的看法。",
+          "next": "说出情境，评估感受的强度，然后用证据检验这个想法。"
+        },
+        "anxietyToolkit": {
+          "time": "5-12 分钟",
+          "purpose": "梳理担忧，降低焦虑强度，并选择一个实际的下一步。",
+          "next": "选出最强烈的那个担忧，试一个策略，如果有帮助就保存计划。"
+        },
+        "sleep": {
+          "time": "4-10 分钟",
+          "purpose": "留意影响睡眠的障碍，选择一个接下来要尝试的休息习惯。",
+          "next": "看看是什么在妨碍你，选一个小改变，之后再回来看看。"
+        },
+        "goals": {
+          "time": "5-10 分钟",
+          "purpose": "把一个意愿变成具体、现实的下一步行动。",
+          "next": "写下一个目标，选择第一步，并在关闭前保存计划。"
+        },
+        "friendship": {
+          "time": "5-10 分钟",
+          "purpose": "想一想友谊中的需求、归属感和与同伴相处的选择。",
+          "next": "选一个友谊情境，找出一个友善的下一步。"
+        },
+        "conflict": {
+          "time": "6-12 分钟",
+          "purpose": "理解一次冲突，准备一个以修复为重点的回应。",
+          "next": "说出发生了什么，考虑双方的立场，然后选择一个修复行动。"
+        },
+        "safety": {
+          "time": "8-15 分钟",
+          "purpose": "制定实用的安全计划，找出可信任的支持。",
+          "next": "添加预警信号、应对步骤和可以联系的人；关闭前保存。"
+        },
+        "crisiscompanion": {
+          "time": "3-10 分钟",
+          "purpose": "当情绪让你觉得紧急或不安全时，使用一条有结构的支持路线。",
+          "next": "选择最接近的支持方式，需要时请可信任的成年人或危机服务介入。"
+        },
+        "conflicttheater": {
+          "time": "8-15 分钟",
+          "purpose": "练习一个虚构的冲突场景，试用修复性语言，但不要把这个工具当作调解。",
+          "next": "选一个虚构场景，试一种回应，然后复盘：在现实生活中哪些情况需要成年人支持。"
+        },
+        "restorativeCircle": {
+          "time": "15-30 分钟",
+          "purpose": "在明确的规范和成年人引导下，规划或主持修复式小组过程。",
+          "next": "先设定圆圈约定，再选择提示；绝不要求公开披露。"
+        },
+        "strengths": {
+          "time": "5-10 分钟",
+          "next": "选出感觉像你的优势，然后为每一项找出本学期中体现它的一个真实时刻。"
+        },
+        "viaStrengths": {
+          "time": "8-15 分钟",
+          "purpose": "把受 VIA 启发的自我分类当作反思活动，而不是正式评估。",
+          "next": "给优势分类，留意其中的模式，并写下一个能支撑结果的例子。"
+        },
+        "perma": {
+          "time": "8-15 分钟",
+          "purpose": "对 PERMA 各领域和健康做一次反思性的幸福感快照。",
+          "next": "用这个快照来选择一次对话或一个小实验，而不是给自己贴标签。"
+        },
+        "advocacy": {
+          "time": "5-12 分钟",
+          "purpose": "练习用日常语言表达需求和寻求支持。",
+          "next": "选一个情境，草拟一个简短的请求，并决定谁可以帮忙。"
+        },
+        "selfAdvocacy": {
+          "time": "10-20 分钟",
+          "purpose": "为 IEP、504、合理便利或是否披露的选择制定具体的学校支持计划。",
+          "next": "选一项支持需求，整理你的问题，并找一位可信任的成年人参与。"
+        },
+        "crewProtocols": {
+          "time": "10-20 分钟",
+          "next": "按目的浏览，为今天选一个流程，然后在“我的 Crew 计划”中记下你打算什么时候进行。"
+        },
+        "perspective": {
+          "time": "6-12 分钟",
+          "next": "选一个情境，先从对方的角度看，然后说说你会有什么不同的做法。"
+        },
+        "windowOfTolerance": {
+          "time": "8-12 分钟",
+          "next": "为你的三个区域各添加一个信号，然后用“签到”标出你今天的位置。"
+        },
+        "sensoryRegulation": {
+          "time": "8-15 分钟",
+          "next": "从“什么是感觉？”开始，然后标出对你来说强烈或微弱的感觉系统。"
+        },
+        "execfunction": {
+          "time": "5-10 分钟",
+          "next": "进入“开始”，为今天选一个启动动作，然后到“保持”选择你的记录位置。"
+        },
+        "growthmindset": {
+          "time": "5-10 分钟",
+          "next": "打开“换个角度想”，写下固定型想法，并把它变成一个具体、可行的想法。"
+        },
+        "dearMan": {
+          "time": "8-12 分钟",
+          "next": "用一句话写下你的请求，草拟七个步骤，然后演练一次。"
+        },
+        "howlTracker": {
+          "time": "5-10 分钟",
+          "next": "记录一次“脉搏”，然后完成“每周签到”：为每项 HOWL 评分，并补充一个具体例子。"
+        },
+        "peersupport": {
+          "time": "5-10 分钟",
+          "next": "选两个可以问朋友的开放式问题，然后在练习标签页中用一个虚构情境试一试。"
+        },
+        "upstander": {
+          "time": "8-12 分钟",
+          "next": "阅读“行动”中的勇气阶梯，选出本周你真的能做到的两个最小行动。"
+        },
+        "digitalWellbeing": {
+          "time": "8-12 分钟",
+          "next": "诚实地完成“自我检查”，然后从“工具箱”中选一个习惯，再提前设定一个边界。"
+        },
+        "teamwork": {
+          "time": "8-12 分钟",
+          "next": "查看“角色”，然后为一个真实小组写一份沟通计划：谁做什么、在哪里做、什么时候完成。"
+        }
+      },
+      "guidance_mode": {
+        "start_here": "从这里开始",
+        "name_it": "说出来",
+        "calm_now": "现在平静下来",
+        "body_reset": "身体重置",
+        "make_a_plan": "制定计划",
+        "understand_patterns": "了解模式",
+        "practice_repair": "练习修复",
+        "role_play": "角色扮演",
+        "facilitated_group": "有人主持的小组",
+        "reflect": "反思",
+        "practice_speaking_up": "练习发声",
+        "make_a_support_plan": "制定支持计划",
+        "urgent_support": "紧急支持",
+        "get_support": "寻求支持",
+        "move_gently": "温和前行",
+        "learn_not_diagnose": "学习，而非诊断",
+        "learn_and_get_support": "学习并寻求支持",
+        "check_boundaries": "检查边界",
+        "explore_identity": "探索身份认同",
+        "practice_body_respect": "练习尊重身体",
+        "map_carefully": "谨慎绘制",
+        "understand_needs": "了解需求"
+      },
+      "guidance": {
+        "zones": {
+          "note": "先说出正在发生什么，再选择策略。"
+        },
+        "emotions": {
+          "note": "学习精准的感受词汇，并留意强度。"
+        },
+        "coping": {
+          "note": "试一个身体或着陆策略，然后留意有什么变化。"
+        },
+        "mindfulness": {
+          "note": "一个少量书写的暂停，用于呼吸、专注或身体觉察。"
+        },
+        "somaticReset": {
+          "note": "选择一个身体区域，然后试一个简短的静止、呼吸或轻柔活动练习。一个紧凑、可用键盘操作的选择器让每种图示在小屏幕上也易于使用。图示包括：“流动波浪”，用实线和圆形标记表示“吸 · 升起”，用虚线和菱形标记表示“呼 · 落下”，用暂停条表示“已暂停”；“花瓣绽放”，用实线花瓣轮廓和圆形中心表示“吸 · 打开”，用虚线轮廓和菱形中心表示“呼 · 放松”，用中心暂停条表示“已暂停”；“着陆地平线”，用实线太阳轮廓和圆形中心表示“吸 · 升起”，用虚线太阳轮廓和菱形中心表示“呼 · 落下”，用太阳暂停条表示“已暂停”；一条方向明确、可预测的线性路径，带有直接的“吸”和“呼”标签、圆形“吸”目标和菱形“呼”目标、从当前起点延伸的轨迹，以及带轮廓的下一个目的地；还有两段式的“呼吸轨道”，其实线和虚线的阶段弧线在进行中会变粗，配有相应阶段图案的中心圆环、直接的“吸”和“呼”标签、暂停状态的中心符号、带轮廓的下一个交接点、与阶段形状对应的顺时针标记、以形状编码的节奏图，以及屏幕阅读器阶段提示。学生可以在计时器开始前先体验一次呼吸动画，然后放大、静止或关闭引导。在“安静视图”中，放大的图示会变成可用键盘和触摸操作的开始/暂停控件。倒计时可以隐藏；引导文字可以完整显示、只显示阶段或隐藏；呼吸计数和数字评分都是可选的。",
+          "boundary": "这不是治疗或诊断。动作保持幅度小且无痛；如果出现疼痛、头晕或麻木，请停下来，并告诉可信任的成年人或医疗专业人员。"
+        },
+        "anxietyToolkit": {
+          "note": "把担忧和行动区分开，选择一个实际的下一步。"
+        },
+        "windowOfTolerance": {
+          "note": "随时间记录唤醒信号和支持；这不是诊断。"
+        },
+        "stressBucket": {
+          "note": "把压力和支持放在一起看，包括你无法控制的压力。"
+        },
+        "bigFeelings": {
+          "note": "把愤怒当作信息，规划一个更安全的暂停或修复。"
+        },
+        "conflict": {
+          "note": "最适合练习低风险或假设的冲突。",
+          "boundary": "如果存在威胁、胁迫、霸凌、虐待或不安全的权力差距，请暂停，并请可信任的成年人介入，而不是独自协商。"
+        },
+        "conflicttheater": {
+          "note": "与虚构角色进行的测试版沉浸式练习；不要用它来调解正在发生的伤害。",
+          "boundary": "真实的威胁、虐待或霸凌需要成年人的支持和安全应对，而不是角色扮演练习。"
+        },
+        "restorativeCircle": {
+          "note": "需在既定的圆圈规范下，由成年人主持使用。",
+          "boundary": "不要用圆圈活动逼迫任何人公开披露，也不要用它处理现实的安全风险。"
+        },
+        "strengths": {
+          "note": "开放式的优势反思，没有分数、排名或诊断。"
+        },
+        "viaStrengths": {
+          "note": "用于反思的自我分类，不是官方 VIA 问卷，也不是心理测量结果。"
+        },
+        "perma": {
+          "note": "用来引发对话的幸福感快照，不是心理健康评估。"
+        },
+        "advocacy": {
+          "note": "用于表达需求和寻求支持的通用脚本与演练。"
+        },
+        "selfAdvocacy": {
+          "note": "用于具体的 IEP、504、合理便利、披露或学校支持规划。"
+        },
+        "crisiscompanion": {
+          "note": "为你或朋友准备的支持指南；它不是危机筛查工具，也不能代替成年人。",
+          "boundary": "如果任何人可能面临即时危险，或可能按自我伤害的念头采取行动，请在这里停下，立即联系可信任的成年人或紧急/危机支持。"
+        },
+        "safety": {
+          "note": "学习边界和向可信任的成年人求助的步骤；这不是判断某个情境是否安全的测试。",
+          "boundary": "如果你正面临即时危险，或有人正在伤害你，请停下来，立即联系可信任的成年人或紧急支持。"
+        },
+        "griefLoss": {
+          "note": "陪伴你面对悲伤与失落的私人空间；任何让你感到难以承受的内容都可以跳过。",
+          "boundary": "如果悲伤让你难以承受、你感到不安全，或其他人有危险，请找可信任的成年人或危机支持。"
+        },
+        "traumaPsychoed": {
+          "note": "关于创伤反应的心理教育；不是筛查工具或治疗。",
+          "boundary": "你不需要在这里透露创伤经历。如果内容引发了让你感到不安全的事情，请暂停，并寻求可信任的成年人或辅导员的帮助。"
+        },
+        "substancePsychoed": {
+          "note": "减害信息与反思；不是筛查工具，也不代表允许使用成瘾物质。",
+          "boundary": "不要在用药过量或紧急医疗情况下使用这个工具；请联系紧急救助或可信任的成年人。"
+        },
+        "healthyRelationships": {
+          "note": "探索同意和关系模式，不给任何人或关系贴标签。",
+          "boundary": "如果一段关系中有威胁、胁迫或暴力，请寻求成年人的帮助；不要独自与对方对质。"
+        },
+        "identitySupport": {
+          "note": "肯定性的反思与社群支持；分享是可选的。",
+          "boundary": "保护好个人信息，如果感到不安全，请找可信任的成年人。"
+        },
+        "bodyStory": {
+          "note": "身体欣赏与媒体素养；不是减重或饮食失调评估。",
+          "boundary": "如果食物、身体形象或运动让你感到不安全或占据了你的生活，请和可信任的成年人或医疗专业人员谈谈。"
+        },
+        "genogram": {
+          "note": "个人的家庭反思；不是临床评估，分享是可选的。",
+          "boundary": "跳过让你感到不安全或属于隐私的家庭细节；请向可信任的成年人寻求支持。"
+        },
+        "sensoryRegulation": {
+          "note": "建立感觉档案和合理便利；不是诊断。",
+          "boundary": "选择让你感到安全的支持；只在你愿意时才分享合理便利的需求。"
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "晨间签到",
+          "desc": "用情绪检查、呼吸和目标设定开始新的一天"
+        },
+        "calm_down": {
+          "name": "平静角落",
+          "desc": "情绪高涨时的调节策略"
+        },
+        "conflict_unit": {
+          "name": "冲突解决单元",
+          "desc": "练习化解分歧，培养修复技能"
+        },
+        "empathy_week": {
+          "name": "同理心与视角周",
+          "desc": "通过换位思考和文化意识培养同理心"
+        },
+        "decision_making": {
+          "name": "决策深度探索",
+          "desc": "练习伦理推理和负责任的选择"
+        },
+        "self_discovery": {
+          "name": "自我发现之旅",
+          "desc": "探索你是谁——优势、情绪和成长型思维"
+        },
+        "friendship": {
+          "name": "友谊与社交技能",
+          "desc": "建立健康的友谊，培养沟通技能"
+        },
+        "transitions": {
+          "name": "应对变化",
+          "desc": "支持学生度过人生转变和新的经历"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "留意你需要什么，选择一个可行的下一步。",
+          "model": "我觉得坐立不安。我可以试着伸展一下，然后选择任务的第一部分。",
+          "practice": "说出一种感受、指向一个选项，或安静地觉察。试一种支持方式，并选一个小目标。",
+          "reflect": "你注意到了什么？你想保留或改变什么？",
+          "transfer": "下一节课开始时，我可以试试 ____。如果需要帮助，我可以问 ____。"
+        },
+        "calm_down": {
+          "goal": "探索一种适合你的身体和此刻的支持方式。",
+          "model": "今天呼吸练习好像没什么帮助。我可以试着看看教室四周，或请人陪着我。",
+          "practice": "只选一个让你舒服的策略。坐着、观察或休息一下，都是有效的选择。",
+          "reflect": "它有帮助、没什么变化，还是让你不舒服？你可以停下来，或选择另一种方式。",
+          "transfer": "当我注意到 ____ 时，我可以试试 ____，或请 ____ 支持我。"
+        },
+        "conflict_unit": {
+          "goal": "考虑不同的观点，针对日常分歧演练一个尊重他人的回应。",
+          "model": "我们都想要同一份材料。我可以问你需要什么，说明我的需要，并提议轮流使用。",
+          "practice": "使用一个编出来的、低风险的分歧。演练一个倾听的问题和一个可能的下一步。",
+          "reflect": "这个回应照顾到了谁的需要？哪些地方可能需要改变？",
+          "transfer": "在安全的分歧中，我可以 ____。遇到威胁、霸凌或胁迫时，我可以请可信任的成年人帮忙。"
+        },
+        "empathy_week": {
+          "goal": "探索另一种视角，不要假定你知道别人的感受。",
+          "model": "他们很安静。他们可能累了或在思考；我可以问一问，而不是替他们下结论。",
+          "practice": "使用一个虚构的例子。说出两种可能的视角，以及一个你可以问的、尊重对方的问题。",
+          "reflect": "哪些是你知道的，哪些是你猜的？你可以怎样确认？",
+          "transfer": "这周在做出假设之前，我可以问 ____。"
+        },
+        "decision_making": {
+          "goal": "根据对自己和他人的影响来比较不同的选择。",
+          "model": "在发布合照之前，我可以先征得同意，并想一想谁可能会看到它。",
+          "practice": "选一个编出来的决定。比较两个选项、可能的影响，以及一个可以帮忙的人。",
+          "reflect": "缺少了哪些信息？有没有更安全或更公平的选项？",
+          "transfer": "在决定 ____ 之前，我可以停下来确认 ____。"
+        },
+        "self_discovery": {
+          "goal": "认识一项优势，并选择一种在支持下运用它的方式。",
+          "model": "我会提出有用的问题。当任务不清楚时，我可以运用这项优势，请别人给个例子。",
+          "practice": "选一项适合你（或某个虚构角色）的优势。举一个它发挥作用的例子。",
+          "reflect": "是什么帮助这项优势展现出来？什么样的支持能让下一步成为可能？",
+          "transfer": "我可以在 ____ 的时候运用 ____。可以帮助我的人或资源是 ____。"
+        },
+        "friendship": {
+          "goal": "练习既尊重自己的需要、也尊重他人边界的沟通方式。",
+          "model": "我可以邀请别人加入我们，如果对方拒绝，也接受他们的选择。",
+          "practice": "演练一次邀请、一个倾听的问题，或一个尊重对方的边界。说、写或使用 AAC 都算。",
+          "reflect": "每个人都有真正的选择吗？怎样能让这次互动更让人感到被欢迎？",
+          "transfer": "这周在一次安全的互动中，我可以试试 ____，并留意 ____。"
+        },
+        "transitions": {
+          "goal": "找出什么在改变、什么可以保持稳定，以及一个支持来源。",
+          "model": "新的班级让人感到不确定。我可以提前找到教室，并问问谁能帮忙。",
+          "practice": "选一个真实或虚构的变化。说出一个不确定的地方、一个稳定的支持和一个小的下一步。",
+          "reflect": "哪一部分在你的掌控之中？什么帮助或合理便利会有用？",
+          "transfer": "在变化到来之前，我可以 ____。如果计划需要改变，我可以 ____。"
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 分钟",
+          "format": "个人或小组",
+          "cue": "适合在任何分享之前作为第一次签到。"
+        },
+        "emotions": {
+          "time": "5-8 分钟",
+          "format": "个人或两人一组",
+          "cue": "很好的词汇热身。"
+        },
+        "coping": {
+          "time": "3-10 分钟",
+          "format": "个人或小组",
+          "cue": "最适合用于调节重置。"
+        },
+        "mindfulness": {
+          "time": "2-10 分钟",
+          "format": "全班",
+          "cue": "少量书写的调节选项。"
+        },
+        "somaticReset": {
+          "time": "3-8 分钟",
+          "format": "个人或全班",
+          "cue": "紧凑的图示选择器让每种引导都可使用，而不需要密集的按钮网格。“呼吸轨道”用实线和虚线弧线搭配更粗的当前阶段、相应的实线或虚线中心圆环，以及直接的“吸”和“呼”标签；暂停时，其中心会从圆点变为暂停条，带轮廓的菱形或圆环标示下一个阶段交接，而圆形或菱形的顺时针标记、交接菱形、返回圆环、短的吸气条和空心的呼气点，让阶段和可选的计数不依赖颜色也清晰可辨。让学生在计时器开始前先体验一次呼吸动画，或选择“静止”。提供完整、仅阶段或隐藏的引导文字。“安静视图”会让放大的图示成为直接的开始/暂停控件。“流动波浪”用实线和圆形标记表示“吸 · 升起”，用虚线和菱形标记表示“呼 · 落下”，暂停时显示暂停条。“花瓣绽放”用实线花瓣轮廓和圆形中心表示“吸 · 打开”，用虚线轮廓和菱形中心表示“呼 · 放松”，暂停时显示中心暂停条。“着陆地平线”用实线太阳轮廓和圆形中心表示“吸 · 升起”，用虚线太阳轮廓和菱形中心表示“呼 · 落下”，暂停时显示太阳暂停条。“呼吸小径”使用圆形“吸”目标、菱形“呼”目标、从当前起点延伸的轨迹和带轮廓的下一个目的地，让方向不依赖颜色。提供屏幕阅读器阶段提示，以及隐藏倒计时、隐藏引导、静止动画、无图示、自然呼吸和不显示数字等选项；绝不要求学生评分或解释身体感觉。"
+        },
+        "journal": {
+          "time": "5-12 分钟",
+          "format": "个人",
+          "cue": "私人反思。分享应当是可选的。"
+        },
+        "goals": {
+          "time": "5-10 分钟",
+          "format": "个人或导师时间",
+          "cue": "反思之后很好的收尾步骤。"
+        },
+        "conflict": {
+          "time": "8-12 分钟",
+          "format": "两人一组或小组",
+          "cue": "角色扮演前先说明规范。"
+        },
+        "restorativeCircle": {
+          "time": "15-30 分钟",
+          "format": "圆圈",
+          "cue": "需在既定的圆圈规范下使用。"
+        },
+        "peersupport": {
+          "time": "8-15 分钟",
+          "format": "两人一组练习",
+          "cue": "非常适合演练倾听技能。"
+        },
+        "perspective": {
+          "time": "6-12 分钟",
+          "format": "两人一组或小组",
+          "cue": "讨论前很好的同理心桥梁。"
+        },
+        "digitalWellbeing": {
+          "time": "8-15 分钟",
+          "format": "个人或导师时间",
+          "cue": "适合在制定手机或 AI 使用规范之前使用。"
+        },
+        "sleep": {
+          "time": "5-10 分钟",
+          "format": "个人",
+          "cue": "适合导师时间的健康主题单元。"
+        },
+        "safety": {
+          "time": "8-15 分钟",
+          "format": "个人",
+          "cue": "先预览；避免强迫披露。"
+        },
+        "crisiscompanion": {
+          "time": "3-10 分钟",
+          "format": "个人",
+          "cue": "用于紧急支持技能，不是课堂作业。"
+        },
+        "griefLoss": {
+          "time": "10-20 分钟",
+          "format": "个人",
+          "cue": "先预览；提供可选择退出的替代活动。"
+        },
+        "identitySupport": {
+          "time": "8-15 分钟",
+          "format": "个人",
+          "cue": "使用时注意隐私，并提供选择退出的机会。"
+        },
+        "traumaPsychoed": {
+          "time": "8-15 分钟",
+          "format": "个人或由教育者引导",
+          "cue": "仅限心理教育；提供选择退出的机会和向可信任成年人求助的途径。"
+        },
+        "substancePsychoed": {
+          "time": "8-15 分钟",
+          "format": "个人或健康课",
+          "cue": "先预览减害框架，并提供成年人/医疗支持。"
+        },
+        "healthyRelationships": {
+          "time": "10-20 分钟",
+          "format": "个人或健康课",
+          "cue": "先预览关于同意和安全的用语；绝不要求个人披露。"
+        },
+        "bodyStory": {
+          "time": "8-15 分钟",
+          "format": "个人",
+          "cue": "以尊重身体为框架；提供选择退出的机会，避免以体重为中心的讨论。"
+        },
+        "genogram": {
+          "time": "10-20 分钟",
+          "format": "个人",
+          "cue": "仅用于家庭反思；分享应当是可选的。"
+        },
+        "sensoryRegulation": {
+          "time": "8-15 分钟",
+          "format": "个人或支持规划",
+          "cue": "使用肯定身份认同的语言，让学生自己选择要分享什么。"
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "晨间导师时间签到",
+          "time": "10-15 分钟",
+          "format": "全班",
+          "focus": "情绪、呼吸、一个下一步",
+          "studentView": "学生私下检查自己的区域，试一个调节选项，然后选择当天的一个需求，或选择跳过。",
+          "teacherMove": "先示范“跳过”选项。只有在私下练习之后，才邀请学生用一个词或一种颜色分享。",
+          "privacyBoundary": "不会收集任何日志文字；学生之后自行决定是否把某个存档点放进分享资料包。",
+          "note": "先做私下的区域检查，再提供呼吸或目标设定。学生可以分享一个词、一种颜色，或选择跳过。"
+        },
+        "calm_reset": {
+          "name": "五分钟平静重置",
+          "time": "5-8 分钟",
+          "format": "全班或平静角落",
+          "focus": "身体调节",
+          "studentView": "学生留意自己当前的身体状态，选择一个让身体平静的练习。",
+          "teacherMove": "保持少说话、有时限的流程。提供活动身体、呼吸或安静的替代选项。",
+          "privacyBoundary": "学生可以为自己保存一个存档点；没有人需要解释自己为什么需要重置。",
+          "note": "尽量少说话。学生选择一个调节练习，并留意有什么变化。"
+        },
+        "repair_routine": {
+          "name": "冲突后的修复流程",
+          "time": "15-25 分钟",
+          "format": "小组或导师时间",
+          "focus": "视角、修复、下一步行动",
+          "studentView": "学生可以使用真实、假设或老师提供的情境来练习修复用语。",
+          "teacherMove": "先设定修复规范，避免公开认错。如果情况需要成年人调解，请暂停。",
+          "privacyBoundary": "学生自己选择分享什么；私人的冲突反思不应成为班级的证据材料。",
+          "note": "在规范设定好之后使用。重点放在修复用语上，而不是公开认错。"
+        },
+        "digital_reset": {
+          "name": "数字健康微课",
+          "time": "12-20 分钟",
+          "format": "导师时间或健康课",
+          "focus": "手机、睡眠、AI 与边界",
+          "studentView": "学生回顾自己的习惯，选择一个要尝试的边界，如果愿意，可以不公开原因。",
+          "teacherMove": "把它定位为习惯设计，而不是手机检查。避免要求学生出示截图或使用数据。",
+          "privacyBoundary": "学生可以分享一个边界目标，但个人的睡眠、手机或 AI 使用细节一律为可选。",
+          "note": "把它定位为习惯设计，而不是手机检查。学生选择一个要尝试的边界。"
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "有研究依据的方法",
+          "title": "研究针对的是其背后的方法；这个数字化改编版本尚未在此经过评估"
+        },
+        "emerging": {
+          "label": "方法证据有限",
+          "title": "有前景，但证据有限或结论不一"
+        },
+        "contested": {
+          "label": "有争议的模型",
+          "title": "广受欢迎，但在科学上有争议；最好当作比喻，而不是机制"
+        },
+        "practice": {
+          "label": "反思练习",
+          "title": "一种结构化练习或启发式方法，并非实证的效果声明"
+        }
+      },
+      "ui": {
+        "sel_practice": "SEL 练习",
+        "default_purpose": "用心练习一项 SEL 技能。",
+        "default_next": "完成一个小步骤，然后决定是否保存。",
+        "private_checkpoint": "私人存档点",
+        "share_packet_eligible": "可放入分享资料包",
+        "saving_preparing": "正在准备保存你的 SEL 作品...",
+        "save_requested": "已请求保存 {title}",
+        "returned_to_grid": "已返回工具网格",
+        "back_to_sel_tools": "返回 SEL 工具",
+        "export_now_aria": "立即导出 SEL 项目文件",
+        "export_now": "立即导出",
+        "purpose": "目的",
+        "next_step": "下一步",
+        "saved_work": "已保存的作品",
+        "checkpoints_private": "工具存档点在这里保持私密，除非你选择把它们放进分享资料包。",
+        "use_with_care_label": "谨慎使用：",
+        "tool_open_failed_title": "无法打开这个工具",
+        "tool_open_failed_body": "这个活动保存的信息中有一部分没有加载成功。这不是你做错了什么。",
+        "saved_work_kept": "你保存的作品没有被删除。",
+        "back_to_hub": "返回 SEL Hub",
+        "tell_teacher": "如果这种情况一直发生，请告诉老师是哪个活动。",
+        "load_did_not_start": "工具已下载，但没有启动。",
+        "load_too_long": "工具加载时间过长。",
+        "this_sel_tool": "这个 SEL 工具",
+        "tool_opening": "正在打开 {name}...",
+        "tool_open_retry": "无法打开 {name}。请再试一次，或选择另一个工具。",
+        "station_link_missing": "这个链接指向的学习站不在这个项目中。请加载包含它的内容包，或从“历史记录”面板中的“SEL 学习站”新建一个。",
+        "started_station": "已开始学习站 {name}",
+        "tool_could_not_open": "无法打开 {name}。",
+        "tool_not_available": "{name} 在这个 SEL Hub 中不可用。",
+        "try_again": "再试一次",
+        "dismiss": "关闭",
+        "back_to_tools": "返回工具",
+        "band_elementary": "小学",
+        "band_middle": "初中",
+        "band_high": "高中",
+        "unsaved_aria": "你有未保存的更改",
+        "unsaved_title": "未保存的更改",
+        "unsaved": "未保存",
+        "unsaved_hint": "你有未保存的更改——点按“立即导出”来保存",
+        "educators_opened": "已打开“教育者专区”指南",
+        "educators_aria": "教育者专区：如何负责任地使用这个 Hub",
+        "for_educators": "教育者专区",
+        "theme_aria": "切换主题（浅色 / 深色 / 高对比度）",
+        "theme_contrast": "高对比度",
+        "theme_dark": "深色模式",
+        "theme_light": "浅色模式",
+        "theme_contrast_short": "高对比",
+        "theme_dark_short": "深色",
+        "theme_light_short": "浅色",
+        "xp_aria": "{count} 点 SEL 经验值",
+        "close_hub": "关闭 SEL Hub",
+        "keep_share_title": "选择要保留和分享的内容",
+        "keep_share_body": "有些活动会把作品保存在这台设备上；其他作品只在这个标签页中保留。关闭标签页并不会清除所有内容。导出文件可以保留一份副本。在共用设备上，请查看“教育者专区”中的“数据与隐私”。AI 和分享功能会使用你配置的服务。",
+        "got_it_aria": "知道了，开始使用 SEL Hub",
+        "got_it": "知道了",
+        "practice_support": "练习支持",
+        "learning_guide": "学习指南和练习方式",
+        "what_you_can_explore": "你可以探索的内容",
+        "worked_example": "示例讲解",
+        "try_one_step": "试一个步骤",
+        "reflect_transfer": "反思，并在其他地方运用",
+        "look_closer": "仔细看看",
+        "next_use": "可能的下一次运用",
+        "adapt_together": "一起调整练习",
+        "adapt_smaller": "从更小的步骤开始：示范一句话或一个选择，使用图片或实物，并留出思考时间。",
+        "adapt_deeper": "更深入一些：比较两种回应，找出缺少的信息，并解释什么可能会改变你的选择。",
+        "adapt_context": "改变情境：使用一个符合学习者的语言、兴趣、文化和无障碍需求的虚构情境。",
+        "adapt_check": "通过学生自选的例子或解释来检查理解，而不是要求讲述个人经历、出现情绪变化或取得分数。",
+        "optional_prompts": "这些可选的提示不会提交答案、不会记录完成，也不会取代活动本身的说明和安全信息。",
+        "returned_to_activities": "已返回活动列表。此操作没有记录任何练习完成情况。",
+        "return_to_activities": "返回活动列表",
+        "chooser_first_reset_coping": "选一个让你舒服的着陆选项。留意它是否适合你；随时可以停下。",
+        "chooser_first_reset_journal": "写下一件能让接下来几分钟更好应对的事。不需要讲个人经历。",
+        "chooser_first_feelings_zones": "指出一种感受，或安静地觉察。选一种支持方式；没有必须达到的“正确”区域。",
+        "chooser_first_feelings_emotions": "为一个虚构角色探索两个感受词。可以有不止一个合适的答案。",
+        "chooser_first_feelings_journal": "针对一个虚构或日常的情境，写一个词或一段简短的反思。",
+        "chooser_first_conversation_advocacy": "用一个虚构情境演练一个请求：可以大声说、用 AAC，或离开表单安静地练习。",
+        "chooser_first_conversation_journal": "为一个安全的日常情境草拟一个尊重对方的请求；你不必把它发出去。",
+        "chooser_first_decision_decisions": "在一个虚构情境中想一想两个选择，以及每个选择可能带来的一个影响。",
+        "chooser_first_decision_goals": "草拟一个现实的下一步，以及一个你可以请求的支持。",
+        "try_a_reset": "试试重置",
+        "need_feeling": "理解一种感受",
+        "need_conversation": "准备一次对话",
+        "need_decision": "选择下一步",
+        "help_choose": "帮我选一个活动",
+        "help_choose_intro": "选择你想尝试的内容。建议只根据这些选择给出；它们不会评估你的感受。时间指的是第一步，而不是整个活动。",
+        "what_would_help": "什么会有帮助？",
+        "time_first_step": "第一步的时间",
+        "n_minutes": "{count} 分钟",
+        "how_respond": "你想怎样回应？",
+        "respond_any": "任何方式",
+        "respond_offline": "思考、说、画或使用 AAC",
+        "respond_write": "写一段简短的回应",
+        "options_one": "有 {count} 个起步选项符合你的选择。",
+        "options_many": "有 {count} 个起步选项符合你的选择。",
+        "options_none": "暂时没有符合的起步选项。试试更多时间或其他回应方式；完整目录仍然可以使用。",
+        "why_option_write": "为什么推荐这个选项：{need}，建议的第一步为 {minutes} 分钟，并写一段简短的书面回应。",
+        "why_option_offline": "为什么推荐这个选项：{need}，建议的第一步为 {minutes} 分钟，并提供一种无需打字的练习方式。",
+        "open_named": "打开 {name}",
+        "open_named_unavailable": "打开 {name}（不可用）",
+        "pathway_guide": "学习路径练习指南",
+        "pathway_opened": "已打开 {total} 个工具中的 {opened} 个。打开工具并不代表你已经练习了这项技能。",
+        "exit_pathway_aria": "退出学习路径模式",
+        "pathway_cleared": "已清除学习路径",
+        "exit_pathway": "退出学习路径",
+        "practice_goal": "练习目标：",
+        "pathway_intro": "选择一个活动，或按照建议的顺序进行。你可以跳过、使用虚构的例子，或用说、画、写或 AAC 来回应。分享是可选的。",
+        "model_practice_reflect": "示范、练习和反思",
+        "an_example": "一个例子",
+        "notice_adjust": "觉察并调整",
+        "take_with_you": "带着它走",
+        "self_check_aria": "可选的练习自我检查",
+        "self_check_intro": "尝试一个步骤后，选择符合你情况的选项。这是可选的，不计分；它只保留在本次学习路径中。",
+        "i_tried": "我试了一个步骤",
+        "another_way": "我需要另一种方式",
+        "pass_for_now": "暂时跳过",
+        "tried_feedback": "留意什么有帮助、什么没有，以及你可以在哪里再次尝试这项技能。",
+        "adapt_feedback": "试一个更小的步骤、另一种回应方式、另一个工具，或向你信任的人寻求支持。",
+        "pass_feedback": "跳过也是有效的选择。你可以稍后再回来，或寻求支持。",
+        "next_option": "下一个选项：{name}",
+        "open_next": "打开下一个：{name}",
+        "view_pathway_tools": "查看学习路径中的工具",
+        "revisit_any": "你可以重新访问任何活动。选一个想法在 Hub 之外尝试；不要求完成每个工具。",
+        "station_activities": "学习站活动",
+        "active_station": "当前 SEL 学习站：{name}",
+        "steps_recorded_passed": "已记录 {total} 个步骤中的 {done} 个 · {passed} 个暂时跳过。这是练习记录，不是成绩。",
+        "steps_recorded": "已记录 {total} 个步骤中的 {done} 个。这是练习记录，不是成绩。",
+        "active_minutes_done": "在这里已活跃 {mins} / {goal} 分钟。步骤已记录。",
+        "active_minutes_counting": "在这里已活跃 {mins} / {goal} 分钟。仅在此标签页可见且你正在使用时计时。",
+        "exit_station_aria": "退出学习站模式",
+        "station_cleared": "已清除学习站",
+        "exit_station": "退出学习站",
+        "station_tools_steps": "学习站工具、步骤和反思",
+        "station_steps": "学习站步骤和反思",
+        "station_privacy": "步骤和笔记会保存在这台设备上，并可能包含在项目文件中。请使用虚构的例子，或不写个人细节。自己选择要分享的内容。",
+        "step_passed": "暂时跳过。准备好后可以再回来。",
+        "step_marked": "你已将此步骤标记为完成。",
+        "step_target": "已记录活动目标；这不衡量技能或身心健康。",
+        "step_ready": "你准备好了就开始。",
+        "open_step_activity": "打开此步骤的活动",
+        "xp_progress": "SEL XP 总计 {xp} / {target}。这包括之前的活动；它不是技能分数。",
+        "time_progress": "活跃时间 {mins} / {target} 分钟。时间不能证明学习成果。",
+        "default_reflect": "你注意到了什么？你想保留或改变什么？",
+        "self_check_ways": "思考、画画、说、打手语或使用 AAC 都可以。书面笔记是可选的。你可以自己把步骤标记为完成，或暂时跳过。",
+        "length_target": "这个已保存的步骤使用长度目标：{count} / {target} 个字符。长度不能衡量反思的质量。你的笔记仍然可以编辑。",
+        "reflection_for": "{name} 的反思",
+        "optional_note": "可选笔记：什么有帮助，或你下次可以试试什么...",
+        "write_reflection": "写下反思...",
+        "mark_complete_aria": "将“{name}”标记为完成",
+        "step_reopened": "已重新打开步骤：{name}",
+        "step_marked_named": "你已将此步骤标记为完成：{name}",
+        "mark_complete": "标记为完成",
+        "step_passed_named": "暂时跳过：{name}",
+        "filter_pathway": "学习路径：{name}",
+        "filter_station": "学习站：{name}",
+        "no_tools_match": "没有工具符合 {filters}",
+        "results_one": "{total} 个工具中有 {count} 个符合 {filters}",
+        "results_many": "{total} 个工具中有 {count} 个符合 {filters}",
+        "showing_all": "显示全部 {total} 个工具",
+        "crisis_elementary": "如果你没办法马上找到大人，就继续问，直到有人愿意听。你值得被帮助。",
+        "crisis_call_or_text": "拨打电话或发短信给",
+        "crisis_988": "988 自杀与危机生命线（免费、保密、24/7 全天候）。",
+        "crisis_text": "发短信给",
+        "crisis_text_line": "Crisis Text Line 危机短信热线（免费、保密、24/7 全天候）。",
+        "tool_selection": "SEL Hub 工具选择",
+        "jumped_to_list": "已跳到工具列表。{summary}。",
+        "skip_to_list": "跳到工具列表",
+        "start_here": "从这里开始",
+        "quick_route": "选择一条快速路线，或在下方浏览。",
+        "browsing_all": "正在浏览所有 SEL 工具",
+        "continue": "继续",
+        "continue_desc": "继续使用你上次打开的 SEL 工具。",
+        "starting_idea": "起步建议",
+        "starting_idea_desc": "{name}：适合这个年级段的推荐活动，附有可调整的示例。",
+        "starting_idea_none": "打开一个适合年级的起点。",
+        "try_a_reset_desc": "探索一个让你舒服的策略；不要求你一定要平静下来。",
+        "journal": "日志",
+        "journal_desc": "写一段反思；查看保存和分享选项。",
+        "browse_all": "浏览全部",
+        "browse_all_desc": "搜索或筛选完整目录。",
+        "need_chip_calm": "让身体平静",
+        "need_chip_feelings": "说出感受",
+        "need_chip_stress": "压力或担忧",
+        "need_chip_friend": "朋友间的冲突",
+        "need_chip_write": "写出来",
+        "need_chip_decision": "做决定",
+        "need_chip_sleep": "睡眠或疲倦",
+        "need_chip_crisis": "不安全或处于危机中",
+        "need_chip_relationshipsafety": "关系安全",
+        "need_chip_schoolsupport": "学校支持",
+        "need_chip_grief": "悲伤或失落",
+        "storage_notice": "部分 SEL 作品保存在这台设备上。AI 功能会使用你配置的服务。请选择要保存或分享的内容，尤其是在共用设备上。",
+        "save_now_aria": "立即保存或导出 SEL 作品",
+        "save_now": "立即保存",
+        "recent_work": "最近的 SEL 作品",
+        "saved_here": "已保存在这里。导出后，关闭页面也能保留。",
+        "create_packet_aria": "用已保存的存档点创建 SEL 分享资料包",
+        "review_packets_aria": "查看已保存的 SEL 分享资料包",
+        "create_packet": "创建分享资料包",
+        "review_packets": "查看分享资料包",
+        "open_related": "打开相关工具。",
+        "related_unavailable": "相关工具在这个 SEL Hub 中不可用。",
+        "streak_aria": "SEL 连胜 {count} 天。最长：{longest} 天。",
+        "streak": "连胜 {count} 天",
+        "streak_best": "最佳 {count}",
+        "find_activity": "查找活动",
+        "search_placeholder": "搜索感受、朋友、压力、目标...",
+        "search_aria": "搜索 SEL 工具",
+        "support_options": "支持选项",
+        "crisis_hard_moment": "听起来这可能是一个艰难的时刻。",
+        "crisis_tell_adult": "你不必独自解决这件事，也不必先找到合适的工具。请现在就告诉一位可信任的成年人——学校辅导员、老师、家长，或其他你信任的成年人。在这里搜索不会通知任何人；只有你告诉别人，别人才会知道。",
+        "open_crisis_companion": "打开危机陪伴",
+        "find_by_need": "按需求查找 SEL 工具",
+        "i_need": "我需要...",
+        "cleared_search": "已清除 SEL 搜索",
+        "clear_search_aria": "清除 SEL 搜索",
+        "clear": "清除",
+        "cleared_need": "已清除 SEL 需求筛选",
+        "showing_for": "正在显示适用于 {name} 的 SEL 工具",
+        "clear_need_aria": "清除需求筛选：{name}",
+        "find_for_aria": "查找适用于 {name} 的工具",
+        "browse_by_area": "按技能领域浏览",
+        "filter_by_category": "按类别筛选 SEL 工具",
+        "showing_all_categories": "正在显示所有类别",
+        "show_all_categories_aria": "显示所有类别（{count} 个工具）",
+        "all": "全部",
+        "filtered_to": "已筛选为 {name}",
+        "filter_chip_aria": "筛选：{name}（{count} 个工具）",
+        "pathways_heading": "SEL 学习路径——精选学习序列",
+        "started_pathway": "已开始学习路径：{name}",
+        "pathway_started": "{name} 学习路径已开始！",
+        "n_activities": "{count} 个活动",
+        "grades_range": "{range} 年级",
+        "use_with_care": "谨慎使用",
+        "visits_many": "{count} 次访问",
+        "visits_one": "{count} 次访问",
+        "best_for": "最适合：{mode}。",
+        "teacher_cue": "教师提示：{time}，{format}。{cue}",
+        "preview_first": "先预览",
+        "evidence_tradition": "证据传统：{tag}",
+        "approach_context": "方法背景：{label}。{title}。此标签并不能证明它对本应用或某位学习者有效。",
+        "step_opened": "第 {n} 步 · 已打开",
+        "step_not_opened": "第 {n} 步 · 未打开",
+        "suggested_grades": "建议年级 {range}",
+        "no_tools_current_view": "当前视图中没有符合的工具",
+        "empty_try": "试试搜索平静、感受、压力、朋友、写作、决定或睡眠。",
+        "filters_cleared": "已清除筛选。显示全部 {total} 个工具。",
+        "show_all_tools": "显示全部 {total} 个工具",
+        "error_loading": "加载 {name} 时出错",
+        "unknown_error": "未知错误",
+        "back_to_tools_error": "返回工具",
+        "tool_load_failed": "无法加载这个工具。",
+        "loading_tool": "正在加载工具...",
+        "file_not_arrived": "文件没有送达。",
+        "check_connection": "请检查网络连接，然后再试一次。",
+        "plugin_fetching": "插件文件仍在获取中。",
+        "research_about": "关于研究标签",
+        "research_summary": "研究标签的含义",
+        "research_context": "方法背景：{label}。",
+        "research_not_app": "关于某种疗法、课程或框架的研究，并不能证明这个数字化活动具有相同的效果。这些标签描述的是方法；它们不是对本应用或学习者的评价。",
+        "research_check": "在选择活动之前，请查看它引用的来源、研究涉及的年龄和环境、所需的支持以及测量的结果。这些标签并不能证明这个改编版本适合特定人群或有效。",
+        "research_casel_link": "CASEL：选择和评估 SEL 项目",
+        "project_save_failed": "项目保存请求失败。请保持此 Hub 打开，并在主应用中尝试“保存 / 导出”。",
+        "project_save_requested": "已请求保存项目。请在主应用中完成保存流程；这里尚未确认文件已保存。",
+        "saving_aria": "SEL 保存与分享",
+        "saving_failed_alert": "部分 SEL 更改无法保存在这台设备上。请保持此 Hub 打开，并保存一份项目副本；学习站草稿必须先保存为学习站，才能包含在该副本中。",
+        "saving_attention": "保存需要注意",
+        "saving_title": "保存与分享",
+        "saving_failed_body": "当前的作品在这个打开的 Hub 中仍然可用。本地保存失败可能会在这台设备上留下较旧的副本。",
+        "saving_ok_body": "已保存的学习站、学习站笔记和 Hub 存档点正在保存到这台设备上。各个活动有自己的保存控件；此状态并不确认每个活动中的输入都已保存。",
+        "saving_drafts": "学习站草稿会保留在这台设备上以便恢复。保存学习站会把它加入可供“保存 / 导出”的项目数据中；请求保存项目并不确认文件已写入。",
+        "saving_live": "已连接实时课堂会话。它可能会向主持者发送进度或安全信号。可选的 AI 功能会把活动文字发送到已配置的服务。在选择分享之前，请先查看分享资料包。",
+        "saving_ai": "可选的 AI 功能会把活动文字发送到已配置的服务。分享资料包包含你选择的项目和详细程度；分享前请先查看预览。",
+        "saving_retry": "重试本地保存",
+        "saving_request": "请求保存项目",
+        "removed_stations": "已移除的学习站",
+        "removed_body": "在此 Hub 打开期间，可以撤销移除学习站。现有的练习记录会被保留。",
+        "station_restored": "已恢复学习站：{name}",
+        "undo_removal": "撤销移除：{name}",
+        "launch_routines_aria": "教师启动流程",
+        "launch_title": "教师启动",
+        "launch_note": "练习不计分，分享是可选的。开始前说明设备存储、已配置的 AI 功能和分享方式。使用虚构的例子；鼓励学生寻求帮助或选择跳过。",
+        "launch_guardrails_aria": "教师启动的防护准则",
+        "launch_step_boundary": "设定边界",
+        "launch_step_boundary_body": "说明哪些是私密的、哪些是可选的，以及学生可以如何跳过。",
+        "launch_step_run": "进行流程",
+        "launch_step_run_body": "把工具当作练习来使用。反思以形成性为主，不计分。",
+        "launch_step_close": "以选择收尾",
+        "launch_step_close_body": "学生决定是否保存、导出，或稍后加入某个存档点。",
+        "launch_student_sees": "学生看到的内容",
+        "launch_student_sees_default": "学生完成一个私人的 SEL 流程，并选择要分享的内容。",
+        "launch_teacher_move": "教师做法",
+        "launch_teacher_move_default": "把它定位为练习，而不是评估。",
+        "launch_sharing_boundary": "分享边界",
+        "launch_sharing_boundary_default": "分享始终由学生掌控。",
+        "launch_tools_loading": "工具加载中...",
+        "launch_still_loading": "仍在加载：{tools}",
+        "launch_preview_sensitive": "请先预览敏感工具：{tools}",
+        "launch_load_aria": "加载教师启动计划：{name}",
+        "launch_finish_draft": "请先完成或放弃当前草稿",
+        "launch_waiting": "正在等待工具",
+        "launch_loading": "加载中",
+        "launch_load": "加载到学习站编辑器",
+        "builder_note_student": "学生视图：{text}",
+        "builder_note_teacher": "教师做法：{text}",
+        "builder_note_sharing": "分享边界：{text}",
+        "builder_note_note": "教师备注：{text}",
+        "launch_finish_existing": "请先完成或放弃你现有的学习站草稿。",
+        "launch_tools_still_loading": "教师启动工具仍在加载中。请稍后再试。",
+        "launch_tools_still_loading_sr": "教师启动工具仍在加载中。",
+        "launch_default_name": "SEL 课堂流程",
+        "launch_default_short": "SEL 流程",
+        "launch_loaded_sr": "教师启动计划已加载到学习站编辑器：{name}",
+        "launch_loaded_toast": "教师启动计划已加载到学习站编辑器。",
+        "stations_summary": "自定义 SEL 学习站——教师编写的活动组合",
+        "station_delete_aria": "删除学习站 {name}",
+        "station_removed_sr": "学习站已移除。在此 Hub 关闭之前都可以撤销。",
+        "station_removed": "学习站已移除",
+        "station_tools_count": "{count} 个工具",
+        "station_quests_count": "{count} 个任务",
+        "station_activated_sr": "已启用 SEL 学习站：{name}",
+        "station_started": "{name} 已开始！",
+        "station_activate_aria": "启用学习站 {name}",
+        "station_start": "开始学习站",
+        "station_adapt_aria": "调整学习站 {name} 的副本",
+        "station_adapt": "调整副本",
+        "draft_aria": "可恢复的学习站草稿",
+        "draft_untitled": "未命名学习站",
+        "draft_body": "这台设备上保存着一个未完成的学习站草稿：{name}。请先继续编辑或放弃它，再开始另一个。",
+        "draft_resume": "继续编辑学习站草稿",
+        "draft_discard": "放弃学习站草稿",
+        "builder_opened": "已打开学习站编辑器",
+        "build_station_aria": "创建新的自定义 SEL 学习站",
+        "build_station": "+ 创建自定义学习站"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "老师的连接已暂停——AlloFlow 重新连接时会保留你的位置。",
+    "host_stale": "老师状态检查已过时——实时课堂可能仍在连接中。你的作业会保留在这台设备上。",
+    "dismiss": "关闭",
+    "dismiss_aria": "关闭老师状态警告",
+    "connecting": "正在连接班级…",
+    "retrying": "班级更新已暂停。正在自动重新连接…",
+    "failed": "班级更新已断开。请检查网络连接，然后尝试重新连接。",
+    "access": "班级访问被拒绝。请让老师检查访问权限，然后重新连接。",
+    "sign_in": "请重新登录以恢复班级访问，然后重新连接。",
+    "reconnect": "重新连接"
+  },
   "common": {
     "student_analytics": "学生分析",
     "add_this_term_to_glossary": "将此术语添加到词汇表",
@@ -4894,7 +7381,21 @@
     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
     "place_copy_save": "保存恢复的作业",
     "place_copy_review_action": "查看副本 {number}",
-    "save_audio_stop": "停止保存音频"
+    "save_audio_stop": "停止保存音频",
+    "listen_along": "边听边读",
+    "compare_listen_here": "在此收听",
+    "compare_listen_here_original": "在此收听原文",
+    "compare_listen_here_adapted": "在此收听改编版",
+    "compare_stop_reading_original": "停止朗读原文",
+    "compare_stop_reading_adapted": "停止朗读改编版",
+    "compare_scroll_together": "同步滚动",
+    "reading_width": "阅读宽度",
+    "width_narrow": "窄",
+    "width_medium": "中等",
+    "width_wide": "宽",
+    "width_extra_wide": "特宽",
+    "reading_width_characters": "每行约 {count} 个字符",
+    "original_support_spoken": "“{word}”的词语帮助：{support}"
   },
   "outline": {
     "title": "可视化组织器",
@@ -5343,6 +7844,81 @@
     "edit_answer": "Edit answer for problem ${pIdx + 1}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "输入缺少的单词或短语",
+      "explain_thinking": "解释你的想法",
+      "write_response": "写下你的回答",
+      "submit_response": "提交回答",
+      "numeric_answer": "数字答案",
+      "unit_named": "单位（{unit}）",
+      "unit_optional": "单位（可选）",
+      "submit_numeric": "提交数字答案",
+      "select_all_apply": "选择所有符合的答案",
+      "submit_selections": "提交所选答案",
+      "part1": "第一部分：选择最佳答案",
+      "part2": "第二部分：{prompt}",
+      "default_evidence_prompt": "选择最有力的支持证据。",
+      "submit_answer_evidence": "提交答案和证据",
+      "order_check": "这个顺序正确吗？",
+      "order_yes": "是的，顺序正确",
+      "order_no": "不，有项目位置不对",
+      "select_misplaced": "在上方选择一个位置不对的项目。",
+      "arrange_instructions": "把项目按正确顺序排列。如果顺序已经正确，就不用移动。",
+      "your_order": "你的顺序",
+      "move_up": "上移：{item}",
+      "move_down": "下移：{item}",
+      "done_arranging": "排列完成",
+      "principle_question": "排序的依据是什么？",
+      "principle_chronological": "时间顺序",
+      "principle_cause_effect": "因果关系",
+      "principle_process": "过程步骤",
+      "principle_size": "大小",
+      "principle_hierarchy": "等级",
+      "find_mismatch": "找出配错的一对",
+      "choose_mismatch": "选择不属于这里的一对。",
+      "pair_with_question": "所选项目应该和什么配对？",
+      "replacement_partner": "替换配对项",
+      "submit_replacement": "提交替换",
+      "retry_failed": "你的答案无法发送。你的参与仍已记录；连接后请重试。",
+      "return_to_quiz": "返回实时测验",
+      "minimize": "最小化",
+      "minimize_aria": "离开实时测验界面",
+      "battle_result": "战斗结果",
+      "class_victory": "全班胜利！",
+      "battle_complete": "战斗结束",
+      "regroup": "重整旗鼓的机会",
+      "end_no_scored": "这些问题用于讨论或由老师评阅。没有计算战斗得分。",
+      "end_questions_complete": "所有问题都已完成。结果比较剩余生命值的百分比；平局时判全班获胜。",
+      "end_victory": "你们班一起打败了怪物。",
+      "end_regroup": "利用下面的解释，一起计划下一次尝试。",
+      "end_review_last": "查看下面的最后一个问题。老师可以重新开始战斗。",
+      "boss_hp": "{name} 的 HP",
+      "boss_health": "{name} 的生命值",
+      "battle_scoring_paused": "战斗计分已暂停",
+      "tick_of": "{value} / {total}",
+      "confidence_legend": "你有多确定？",
+      "confidence_knew": "我知道这个",
+      "confidence_guessed": "我是有根据地猜的",
+      "confidence_unsure": "我不确定",
+      "confidence_help": "这能帮助老师发现你已牢固掌握的知识和错误理解。它不会改变对错或得分。",
+      "retry_send": "重新发送答案",
+      "waiting_for_teacher": "正在等待老师开始这道题。",
+      "sending": "正在发送你的回答…",
+      "receipt_only": "已记录参与。你的答案尚未送达老师进行评分。",
+      "complete_and_submit": "完成并提交你的回答",
+      "poll_closed": "这个意见调查已关闭。",
+      "receipt_not_scored": "老师只收到了你的参与记录。这个答案没有评分。",
+      "no_answer_submitted": "这道题没有提交答案。请和全班一起复习。",
+      "answer_review": "答案回顾",
+      "review_answer": "查看答案",
+      "discuss_with_teacher": "和老师讨论这个回答。",
+      "response_correct": "回答正确。",
+      "response_partial": "回答部分正确。",
+      "response_incorrect": "这个回答需要再看一看。",
+      "response_none": "没有提交回答。",
+      "response_submitted": "回答已提交，等待评阅。",
+      "explanation": "解释"
+    },
     "title": "测评",
     "mcq_count": "MCQ 数量",
     "reflections": "反思",

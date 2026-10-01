@@ -1,0 +1,54 @@
+{
+  "status": "Independent preference snapshot race fixed in source; mixed-resource recovery tested locally. Real Canvas pilot blocker remains open.",
+  "ownership": {
+    "productionSourceChanged": "utils_pure_source.jsx preference hydration/snapshot block only, explicitly assigned by root after transfer from completed URL-key worker",
+    "productionPreserved": "Host/App, bridge, vault and other sources untouched. UtilsPure code outside preference block byte-identical, preserving API-key headers and diagnostic redaction. Generated mirrors owned by root.",
+    "newTests": "tests/report_storage_mixed_recovery.test.js",
+    "proposalOnly": "storage-media-host-proposal.patch"
+  },
+  "preferenceFix": {
+    "sourceBeforeSha256": "8708ca5e6bb39076f52471a04cf6f95e7453912e4d849ba66037c3ce062bba0e",
+    "sourceAfterSha256": "19b83ade09ad2ba0ef7b793a206debc397184d579dbe30f8cebe69d07d83c9da",
+    "outputBeforeSha256": "27116a3c02af5ef6f2c0a558cff3438c9a13b2d7de52f263a8af0b0e0c1c3cde",
+    "problem": "Periodic/pagehide preference snapshots captured empty/default localStorage while initial bridge hydration was pending, then wrote the stale dump after approval/readback, overwriting last-good ls_prefs/all values. Read failure also allowed empty snapshots and repeated writes could land out of order.",
+    "behavior": "Snapshotting requires authoritative successful hydration, captures values after bridge readiness, serializes repeated requests and drains newer edits, uses queue:false, and leaves failed writes retryable. A hydration retry waits for an in-flight write before reading. Failed or pending hydration cannot publish an empty/default snapshot.",
+    "redEvidence": "recovery-followup.race-red.json: 5 desired-invariant failures, 9 passes on old source",
+    "greenEvidence": "recovery-followup.race-green.json: 14/14 passed after fix, including one explicit held-host bug characterization; not 14 fix passes",
+    "finalActualEvidence": "recovery-followup.actual-final.json: 17 passed, 1 candidate-only skipped; 16 desired/invariant passes plus 1 held-host media bug characterization",
+    "validation": "recovery-followup.utils-validation.json records canonical pre-edit wrapper/parity, syntax and unchanged code outside the owned preference block. Root performs generated build and adjacent URL-key tests."
+  },
+  "mediaHostProposal": {
+    "status": "Review-only; actual host remains held and unchanged",
+    "hostBeforeSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "proposalSha256": "e30f3936f2813c8df0db9b14dc6341da7f22923bcc50ea56e2fdf8b629e5d0d6",
+    "sourceLocation": "AlloFlowANTI.txt:35197-35201",
+    "problem": "A harmless session-only blob URL omission marks a snapshot text-only. The next current host save strips valid data-URI glossary pictures, original annotation pictures and audio, recording device-quota without an actual quota rejection.",
+    "proposedBehavior": "Maintain explicit teacher media-removal policy; attempt valid media in other saves and use the existing quota fallback only when the write actually reports quota. Session blob URLs remain omitted with their honest omission reason.",
+    "validation": "recovery-followup.media-validation.json: in-memory patch apply and JSX parse passed, host unchanged. recovery-followup.media-proposal-tests.json: 17 desired/invariant passes, 1 actual-host characterization skipped. Includes mixed dataURI/blob next-save preservation, explicit media removal, real quota rejection fallback and non-quota failure propagation."
+  },
+  "mixedResourceEvidence": {
+    "coverage": "Actual host snapshot builder captures 15 distinct resource shapes including Original exact text/annotations, Adapted source snapshot, glossary image/definition, quiz, FAQ, frames, Cornell notes, memory prompts, discussion, applied challenge, organizer, sequence, Directions choices, teacher Analysis and visual/audio supports. Actual bridge/client functions persist and read through fresh closures; actual vault encrypts/authenticates and restores mixed history; actual host reload function offers recovery choice, preserves locked-vault mode, reports non-authoritative read errors and suppresses stale publication after unmount.",
+    "scope": "Controlled native-API and bridge mocks only. No network, real device storage, deletion, import, credential/account changes or deployment. Resource data are representative fixtures; content instructional validity is not asserted."
+  },
+  "inventoryDiagnosis": {
+    "sources": ["AlloFlowANTI.txt:7749", "AlloFlowANTI.txt:7767", "AlloFlowANTI.txt:7784", "host_handlers_source.jsx:3332", "host_handlers_source.jsx:3418"],
+    "finding": "Saved work categories count matching managed localStorage/IDB keys, classified heuristically by key name; count 42 is not a count of 42 recoverable resources. These totals are merged separately from durable namespace rows and recovery snapshot count. A 42-key/~23KB category fixture coexists with an empty recovery store. None of these summaries proves the old live resource bytes are recoverable or irreversibly lost.",
+    "namespaceSeparation": "ls_prefs/all mirrors localStorage preferences/managed values; app_kv mirrors older storageDB cache values; workspace_recovery/store_v1 contains explicit workspace snapshots. The proven preference race affects ls_prefs and does not establish why old live workspace_recovery appeared empty.",
+    "emptyMetadataBytes": "Current recovery.emptyStore() with legacyMigrationComplete:true serializes to exactly 150 UTF-8 bytes, consistent with the size of metadata-only empty recovery observed live. This size match does not identify the live contents, earlier state, or cause."
+  },
+  "loadingDiagnosis": {
+    "finding": "Current background pump parks under document.hidden or concealed/launch-pad classes and explicit promotion bypasses it; previous actual-source tests verify pause/resume, input starvation release and ReadingLibrary promotion. Conceal state is derived from readiness/mode, while recovery separately gates deep-link launch. No deployed post-reload root cause has been established.",
+    "remainingEvidence": "Inspect frozen candidate's actual registry pending/queued/failed snapshot, body conceal/launch-pad state, promoted requested modules and storage readiness/consent state in the real browser; do not infer network stalls merely from a queued count."
+  },
+  "releaseAndPilotGaps": [
+    "The built local UtilsPure candidate and recovery-dialog copy require an approved local/candidate browser test; the deployed old label 1300a2da3 does not include uncommitted changes.",
+    "Media host fix remains a proposal pending shared-host ownership; it requires host integration, mirror/build/pin reconciliation and browser checks before runtime claims.",
+    "Native Canvas iframe storage partition, approval, delayed/rejected save ACK, teacher restore and full reload remain unverified. The old live empty History/recovery and persistent tool-loading observations remain pilot blockers; irreversible data loss is not established."
+  ],
+  "harnessCorrections": [
+    "Initial follow-up invocation inherited browser-only global setup under Node and ran no tests; dedicated config corrected it.",
+    "One inventory fixture asserted >23000 bytes but measured 22754; its intended roughly-23KB comparison was corrected to >22000 without changing runtime code.",
+    "Canonical build guard initially passed a hashbang into new Function; removing that harness-only hashbang allowed exact output verification.",
+    "Media proposal boundary guard stopped on inspected indentation differences; corrected guard before artifact creation. Actual host was never written."
+  ]
+}

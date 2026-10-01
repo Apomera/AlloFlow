@@ -1,0 +1,72 @@
+{
+  "date": "2026-09-30",
+  "result": "passed",
+  "unitTests": {
+    "passed": 201,
+    "files": 3,
+    "finalRunSeconds": 20.64,
+    "suites": {
+      "firstresponse_depth_explorer": 68,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "distinctScenariosPassed": 19,
+    "fullRunMinutes": 5.8,
+    "fullRunPassed": 19,
+    "finalAffectedScenariosPassed": 3,
+    "finalAffectedRunMinutes": 2,
+    "finalAffectedScope": "All three manikin realism scenarios rerun after the recovery-only cheek-surface contact and elbow solve. The new geometry branch runs when the recovery far hand is at the cheek.",
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "markerVisualScenarios": 3,
+    "manikinRealismScenarios": 3,
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader"
+  },
+  "coverage": [
+    "Resting palms face the mat for adult, child, and infant models",
+    "Extended near palm remains up before and after the recovery roll",
+    "Far hand back rests outside and near the actual posed cheek surface",
+    "Cheek contact follows head tilt and body roll at four recovery stages across ages",
+    "Original far upper-arm and forearm lengths remain fixed while reaching the cheek",
+    "Rescuer wrist pad overlaps the forearm end and stays above the chest contact plane",
+    "Recovery arm camera frames both wrists before and after the roll at a useful size",
+    "Head close-ups show the turned face and verify visible features and cheek contact",
+    "Existing calibrated compression and recoil, fixed back plane and coach heel contact",
+    "Real WebGL, AED picking, age scaling, recovery, both coaching sequences and canvas lifecycle",
+    "Phone reflow, keyboard controls, enlarged text spacing, reduced motion and contrast modes",
+    "Normal axe semantics and contrast, plus system-color checks using the existing auditor diagnostic"
+  ],
+  "synchronization": {
+    "moduleCopies": "identical",
+    "newEnglishStrings": 0,
+    "scopedWhitespaceCheck": "passed"
+  },
+  "visualReview": {
+    "screenshotsReviewed": 13,
+    "result": "passed",
+    "screenshots": [
+      "whole-manikin.png",
+      "adult-arms.png",
+      "child-arms.png",
+      "infant-arms.png",
+      "adult-face.png",
+      "child-face.png",
+      "infant-face.png",
+      "recovery-palm-up.png",
+      "recovery-arms.png",
+      "recovery-head.png",
+      "recovery-body.png",
+      "phone-arms.png",
+      "contrast-arms.png"
+    ]
+  },
+  "resolvedDuringDevelopment": [
+    "Rotating the wrist axis alone did not keep the near recovery palm up during the body roll. Hands now use a complete orthogonal frame for the intended palm orientation.",
+    "The recovery camera test initially required horizontal wrist separation, although the rolled arms are separated mainly vertically. It now checks useful separation along either screen axis and retains the viewport bounds checks.",
+    "Open nose ends and duplicated surface vertices showed hard edges in close-ups. Closed end geometry and shared shading normals smooth the joins.",
+    "Visual review showed the far hand partly inside the head. The actual posed cheek surface now determines its position, and the elbow solve preserves both arm segment lengths. New ray-based contact checks and all three affected browser scenarios passed after this fix."
+  ]
+}

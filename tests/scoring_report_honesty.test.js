@@ -47,9 +47,13 @@ describe('the inserted "Accessibility Statement" no longer asserts certified com
     expect(audit).not.toMatch(/WCAG-compliant document pipeline/);
     expect(audit).not.toMatch(/Insert Compliance Statement/);
   });
-  it('reframes the standards as "built toward … not an independent conformance audit" + a caveat', () => {
-    expect(audit).toMatch(/Built toward WCAG 2\.2 Level AA[\s\S]{0,80}not an independent conformance audit/);
-    expect(audit).toMatch(/Color contrast targeted to WCAG 2\.2 AA/); // was "ratios meeting"
+  it('says it is not a certification, separates what was measured from what a person must check, + a caveat', () => {
+    // 2026-09-28 (G1): "Built toward WCAG 2.2 Level AA" and unmeasured bullets ("Screen reader
+    // compatible", "Keyboard navigable") were replaced by what AlloFlow counted and what a person checks.
+    expect(audit).toMatch(/Prepared with AlloFlow accessibility tools\. Not a certification of WCAG, ADA Title II, Section 508, or PDF\/UA conformance\./);
+    expect(audit).toMatch(/Color contrast was targeted to the WCAG 2\.2 AA ratio/); // was "ratios meeting"
+    expect(audit).toMatch(/Still needs a person's check:/);
+    expect(audit).not.toMatch(/Screen reader compatible with ARIA landmarks/);
     expect(audit).toMatch(/not an independently validated WCAG, ADA, Section 508, or PDF\/UA conformance audit/);
   });
 });

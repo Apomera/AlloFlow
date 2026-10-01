@@ -1,0 +1,11 @@
+{
+  "sourceHash": "256962e61648910055ebd153104b91bc924328baeddf5d403db7083da8d6c873",
+  "mirrorIdentical": true,
+  "syntaxValid": true,
+  "labelsAdded": 73,
+  "labelParity": {
+    "ui_strings.js": true,
+    "desktop/web-app/public/ui_strings.js": true
+  },
+  "sourceChangesLimitedToWaveExplorerAndPlaybackHandoff": true
+}

@@ -1,0 +1,13 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:52216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:52216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:536:5 › phone family journey stays usable across long histories and reports a lost lineage

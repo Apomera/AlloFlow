@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-27T03:39:41.876Z",
+  "label": "followup-04-partial-save",
+  "patch": "2283c0c7d4a9474cf8bf70fd57de205b5db232049e5915d9bd3091bf8ee76ad2",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+      "after": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31",
+      "changed": true
+    },
+    {
+      "target": "tests/reading_support_draft_transitions.test.js",
+      "targets": [
+        "tests/reading_support_draft_transitions.test.js"
+      ],
+      "before": "142bb76fe1c22c9c6bf884fd586ae63ee4eec75e0c7b2b5214a71227cf2fe79a",
+      "after": "cf22f253d3b7d6fca598c45ab6c9e6d8e267d8dd10e257236e5140273acdd5b3",
+      "changed": true
+    }
+  ]
+}

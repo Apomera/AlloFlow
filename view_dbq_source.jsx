@@ -34,6 +34,29 @@ function dbqPrintSourceUrl(value) {
     return '';
   }
 }
+// Generated excerpts are not all quotations. Unknown kinds never read as verbatim.
+function dbqExcerptKind(doc) {
+  const kind = String((doc && doc.excerptKind) || '').trim().toLowerCase();
+  if (['verbatim', 'adapted', 'reconstructed'].includes(kind)) return kind;
+  return doc && (doc.documentType === 'linked' || doc.documentType === 'reconstructed') ? 'reconstructed' : 'adapted';
+}
+function dbqExcerptLabel(kind, t) {
+  const tr = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
+  if (kind === 'verbatim') return { prefix: tr('dbq.source_prefix_verbatim', 'Source:'), badge: tr('dbq.excerpt_badge_verbatim', 'Quoted'), note: tr('dbq.excerpt_note_verbatim', 'Quoted from the source.') };
+  if (kind === 'reconstructed') return { prefix: tr('dbq.source_prefix_reconstructed', 'Reconstructed from:'), badge: tr('dbq.excerpt_badge_reconstructed', 'Reconstructed'), note: tr('dbq.excerpt_note_reconstructed', 'Written by AI to represent this source. It is not a quotation, so check the original.') };
+  return { prefix: tr('dbq.source_prefix_adapted', 'Adapted from:'), badge: tr('dbq.excerpt_badge_adapted', 'Adapted'), note: tr('dbq.excerpt_note_adapted', 'Adapted or shortened from the source. The wording may differ from the original.') };
+}
+// Every document needs a unique id: responses and navigation are keyed by it.
+function dbqNormalizeDocs(documents) {
+  const used = new Set();
+  const nextId = () => { for (let n = 0; ; n++) { const id = String.fromCharCode(65 + (n % 26)) + (n >= 26 ? Math.floor(n / 26) + 1 : ''); if (!used.has(id)) return id; } };
+  return (Array.isArray(documents) ? documents : []).filter(doc => doc && typeof doc === 'object' && !Array.isArray(doc)).map(doc => {
+    let id = doc.id == null ? '' : String(doc.id).trim();
+    if (!id || used.has(id)) id = nextId();
+    used.add(id);
+    return id === doc.id ? doc : { ...doc, id };
+  });
+}
 // Feedback belongs to the source and answer revision that was evaluated.
 function dbqFeedbackFingerprint(key, data, responses, gradeLevel) {
   const docs = Array.isArray(data.documents) ? data.documents : [];
@@ -82,13 +105,15 @@ function DbqView(props) {
     var callTTS = props.callTTS;
     var selectedVoice = props.selectedVoice;
     const dbqData = generatedContent.data;
-    const docs = dbqData.documents || [];
+    const docs = dbqNormalizeDocs(dbqData.documents);
+    const docIdSet = new Set(docs.map(doc => doc.id));
+    const knownDocIds = ids => (Array.isArray(ids) ? ids : []).map(String).filter(id => docIdSet.has(id));
     const rubric = dbqData.rubric || [];
-    const claims = dbqData.corroborationClaims || [];
+    const claims = (Array.isArray(dbqData.corroborationClaims) ? dbqData.corroborationClaims : []).filter(claim => claim && typeof claim === 'object').map(claim => ({ ...claim, supportingDocs: knownDocIds(claim.supportingDocs), challengingDocs: knownDocIds(claim.challengingDocs) }));
     const resId = generatedContent.id;
     const r = studentResponses[resId] || {};
     const dbqTab = r._dbqTab || 'documents';
-    const dbqActiveDoc = r._dbqActiveDoc || docs[0]?.id || 'A';
+    const dbqActiveDoc = String(r._dbqActiveDoc || docs[0]?.id || 'A');
     // The briefing card (title, historical context, print/timer, progress steps)
     // is reference material, not work surface. On a short window, or with a long
     // historical context, it crowded the documents into a few visible lines with
@@ -96,6 +121,17 @@ function DbqView(props) {
     const headerCollapsed = !!r._dbqHeaderCollapsed;
     const feedbackRequests = React.useRef(new Map());
     const [, setFeedbackTick] = React.useState(0);
+    // Which document is being read aloud. Kept here, not in the learner record:
+    // a saved "speaking" flag outlived the audio and stuck the button on Stop.
+    // (The excerpt's Highlight/Listen/Vocab row is a normal row above the text;
+    // it was absolutely positioned over the first lines on phones.)
+    const [speakingDocId, setSpeakingDocId] = React.useState(null);
+    const speechListenerRef = React.useRef(null);
+    const stopSpeechListener = () => {
+      if (speechListenerRef.current) window.removeEventListener('allo-speech-state', speechListenerRef.current);
+      speechListenerRef.current = null;
+    };
+    React.useEffect(() => stopSpeechListener, []);
     const feedbackScope = JSON.stringify([resId, props.feedbackScopeKey || '', typeof callGemini === 'function']);
     const feedbackLive = React.useRef(null);
     feedbackLive.current = { scope: feedbackScope, data: dbqData, responses: r, gradeLevel };
@@ -250,7 +286,7 @@ function DbqView(props) {
                                                 <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || 'Document ' + doc.id)}</h3>
                                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType || 'source')}</span>
                                             </div>
-                                            ${doc.source ? '<p style="font-size:11px;color:#64748b;padding:8px 16px 0;margin:0;font-style:italic">Source: ' + dbqEscapePrintText(doc.source) + '</p>' : ''}
+                                            ${(() => { const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t); return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : ''); })()}
                                             ${dbqPrintSourceUrl(doc.sourceUrl) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqPrintSourceUrl(doc.sourceUrl)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
                 try {
                   return new URL(doc.sourceUrl).hostname;
@@ -348,7 +384,12 @@ function DbqView(props) {
         const essayLen = (essayText || '').split(/\s+/).filter(Boolean).length;
         const hasEssayFb = r._aiFeedback && typeof r._aiFeedback === 'object' && !r._aiFeedback.error;
         const selfDone = Object.keys(selfScores).length === rubric.length && rubric.length > 0;
-        const steps = [{
+        // Without AI feedback, the learner's own answers complete the feedback-gated steps.
+        const aiAvailable = typeof callGemini === 'function';
+        const docQuestionsDone = docs.filter(d => ['sourcing', 'analysis'].every(field => (d[field + 'Questions'] || []).every((_, qi) => String(r[`doc-${d.id}-${field}-${qi}`] || '').trim()))).length;
+        const docQuestionsStarted = docs.some(d => ['sourcing', 'analysis'].some(field => (d[field + 'Questions'] || []).some((_, qi) => String(r[`doc-${d.id}-${field}-${qi}`] || '').trim())));
+        const essayCitesDoc = docs.some(doc => essayText.toLowerCase().includes(`document ${String(doc.id).toLowerCase()}`) || essayText.toLowerCase().includes(`doc ${String(doc.id).toLowerCase()}`));
+        const steps = aiAvailable ? [{
           label: 'Analyze',
           done: docsDone === docs.length && docs.length > 0,
           partial: docsDone > 0,
@@ -366,6 +407,31 @@ function DbqView(props) {
         }, {
           label: 'Essay',
           done: hasEssayFb,
+          partial: essayLen > 0,
+          detail: essayLen > 0 ? `${essayLen}w` : ''
+        }, {
+          label: 'Self-Assess',
+          done: selfDone,
+          partial: Object.keys(selfScores).length > 0,
+          detail: selfDone ? '✓' : ''
+        }] : [{
+          label: 'Analyze',
+          done: docsDone === docs.length && docs.length > 0,
+          partial: docsDone > 0,
+          detail: `${docsDone}/${docs.length} docs`
+        }, {
+          label: 'Questions',
+          done: docQuestionsDone === docs.length && docs.length > 0,
+          partial: docQuestionsStarted,
+          detail: `${docQuestionsDone}/${docs.length}`
+        }, {
+          label: 'Corroborate',
+          done: !!corrobDone,
+          partial: !!corrobDone,
+          detail: corrobDone ? '✓' : ''
+        }, {
+          label: 'Essay',
+          done: essayLen > 0 && essayCitesDoc,
           partial: essayLen > 0,
           detail: essayLen > 0 ? `${essayLen}w` : ''
         }, {
@@ -401,13 +467,16 @@ function DbqView(props) {
                 background: '#7c3aed20',
                 color: '#7c3aed',
                 marginLeft: '4px'
-              }}>⚔️ {activeDoc.perspective}</span>}</div>{activeDoc.source && <p className="text-xs text-slate-600 italic -mt-2 mb-3">Source: {activeDoc.source}</p>}{activeDoc.sourceUrl && <a href={activeDoc.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">🔗 View Original Source<span className="text-[11px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => {
+              }}>⚔️ {activeDoc.perspective}</span>}</div>{(() => {
+                const kindLabel = dbqExcerptLabel(dbqExcerptKind(activeDoc), t);
+                return <div className="-mt-2 mb-3 space-y-1"><p className="text-xs text-slate-700"><span data-dbq-excerpt-kind={dbqExcerptKind(activeDoc)} className="inline-block mr-2 px-2 py-0.5 rounded-full border border-cyan-700 bg-cyan-50 text-cyan-900 text-[11px] font-bold not-italic">{kindLabel.badge}</span>{kindLabel.note}</p>{activeDoc.source && <p className="text-xs text-slate-600 italic">{kindLabel.prefix} {activeDoc.source}</p>}</div>;
+              })()}{dbqPrintSourceUrl(activeDoc.sourceUrl) && <a href={dbqPrintSourceUrl(activeDoc.sourceUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">🔗 View Original Source<span className="text-[11px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => {
                   try {
                     return new URL(activeDoc.sourceUrl).hostname;
                   } catch {
                     return '';
                   }
-                })()}</span></a>}<div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4 text-sm leading-relaxed text-slate-800 relative"><div className="absolute top-2 right-2"><button onClick={() => {
+                })()}</span></a>}<div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4 text-sm leading-relaxed text-slate-800 relative"><div data-dbq-excerpt-tools className="flex flex-wrap justify-end gap-1 mb-2"><button onClick={() => {
                   const sel = window.getSelection()?.toString();
                   if (sel) {
                     const prev = annotations[activeDoc.id] || [];
@@ -434,34 +503,41 @@ function DbqView(props) {
                   // colour, surfaced via the 'allo-speech-state' event below.
                   const text = activeDoc.excerpt || '';
                   if (!text) return;
+                  const docId = activeDoc.id;
                   const player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
-                  if (r[`_docSpeaking_${activeDoc.id}`]) {
+                  const finished = () => { stopSpeechListener(); setSpeakingDocId(current => current === docId ? null : current); };
+                  stopSpeechListener();
+                  if (speakingDocId === docId) {
                     if (player) player.stop(); else if (window.speechSynthesis) window.speechSynthesis.cancel();
-                    setDbq(`_docSpeaking_${activeDoc.id}`, false);
+                    setSpeakingDocId(null);
                     return;
                   }
                   if (player) {
-                    setDbq(`_docSpeaking_${activeDoc.id}`, true);
+                    // speak() first stops any other clip (a "not playing" event that is
+                    // not ours), then announces ours. Wait for ours to start, then treat
+                    // "not playing" or a different clip as the end.
+                    let ourId = null;
                     const onState = (e) => {
-                      const speaking = !!(e.detail && e.detail.isPlaying && e.detail.currentText === text);
-                      if (!speaking) {
-                        setDbq(`_docSpeaking_${activeDoc.id}`, false);
-                        window.removeEventListener('allo-speech-state', onState);
-                      }
+                      const d = e.detail || {};
+                      if (ourId === null) { if (d.isPlaying) ourId = d.currentId; return; }
+                      if (!d.isPlaying || d.currentId !== ourId) finished();
                     };
+                    speechListenerRef.current = onState;
                     window.addEventListener('allo-speech-state', onState);
-                    player.speak(text, { voice: selectedVoice || 'Kore' });
+                    setSpeakingDocId(docId);
+                    // Muted (or nothing to say): speak() resolves null and announces nothing.
+                    Promise.resolve(player.speak(text, { voice: selectedVoice || 'Kore' })).then(result => { if (result === null && ourId === null) finished(); }, finished);
                   } else if (window.speechSynthesis) {
                     // Cold-boot fallback: player module not yet loaded.
-                    setDbq(`_docSpeaking_${activeDoc.id}`, true);
+                    setSpeakingDocId(docId);
                     window.speechSynthesis.cancel();
                     const u = new SpeechSynthesisUtterance(text);
                     u.rate = window.__alloPlaybackRate || 1;
                     u.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
-                    u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false);
+                    u.onend = finished;
                     window.speechSynthesis.speak(u);
                   }
-                }} className={`text-[11px] font-bold px-2 py-1 rounded-full ${r[`_docSpeaking_${activeDoc.id}`] ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`} aria-label={r[`_docSpeaking_${activeDoc.id}`] ? (t('a11y.stop_reading') || 'Stop reading') : (t('a11y.read_aloud') || 'Read aloud')}>{r[`_docSpeaking_${activeDoc.id}`] ? '⏹️ Stop' : '🔊 Listen'}</button><button onClick={async () => {
+                }} data-dbq-listen className={`text-[11px] font-bold px-2 py-1 rounded-full ${speakingDocId === activeDoc.id ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`} aria-label={speakingDocId === activeDoc.id ? (t('a11y.stop_reading') || 'Stop reading') : (t('a11y.read_aloud') || 'Read aloud')}>{speakingDocId === activeDoc.id ? '⏹️ Stop' : '🔊 Listen'}</button><button onClick={async () => {
                   if (feedbackPending(`_docVocab_${activeDoc.id}`)) return;
                   if (feedbackFor(`_docVocab_${activeDoc.id}`)) {
                     setDbq(`_docVocab_${activeDoc.id}`, null);
@@ -640,7 +716,7 @@ Rules:
                     });
                   } finally { endFeedback(request); }
                 }} disabled={!callGemini || feedbackLoading} className="bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2" aria-label={t("a11y.get_ai_feedback_doc")}>{feedbackLoading ? '⏳ Analyzing...' : '✨ Check My Analysis'}</button>{feedbackNotice(`_docFeedback_${activeDoc.id}`)}{docFeedback && typeof docFeedback === 'object' && !docFeedback.error && <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"><div className="flex items-center justify-between"><h4 className="text-sm font-black text-emerald-800">📝 Analysis Feedback</h4><span className={`text-xs font-black px-3 py-1 rounded-full ${docFeedback.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : docFeedback.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`}>{docFeedback.overallRating === 'exemplary' ? '⭐ Exemplary' : docFeedback.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing'}</span></div>{docFeedback.happFeedback && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.entries(docFeedback.happFeedback).map(([k, v]) => v && <div key={k} className="bg-white/60 rounded-lg p-2.5 border border-emerald-100"><div className="text-[11px] font-bold text-emerald-600 uppercase mb-0.5">{k === 'pointOfView' ? 'Point of View' : k.charAt(0).toUpperCase() + k.slice(1)}</div><p className="text-xs text-slate-700">{v}</p></div>)}</div>}{docFeedback.sourcingFeedback && <div className="bg-white/60 rounded-lg p-3"><div className="text-[11px] font-bold text-purple-600 mb-0.5">SOURCING</div><p className="text-xs text-slate-700">{docFeedback.sourcingFeedback}</p></div>}{docFeedback.analysisFeedback && <div className="bg-white/60 rounded-lg p-3"><div className="text-[11px] font-bold text-blue-600 mb-0.5">ANALYSIS</div><p className="text-xs text-slate-700">{docFeedback.analysisFeedback}</p></div>}{docFeedback.strengths?.length > 0 && <div><div className="text-xs font-bold text-green-700 mb-1">💪 Strengths</div><ul className="text-xs text-green-800 space-y-1">{docFeedback.strengths.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-green-500 mt-0.5">✓</span>{s}</li>)}</ul></div>}{docFeedback.nudges?.length > 0 && <div><div className="text-xs font-bold text-amber-700 mb-1">🤔 Think Deeper</div><ul className="text-xs text-amber-800 space-y-1">{docFeedback.nudges.map((s, i) => <li key={i} className="flex items-start gap-1.5"><span className="text-amber-500 mt-0.5">→</span>{s}</li>)}</ul></div>}{docFeedback.modelResponse && <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200"><div className="text-[11px] font-bold text-indigo-700 mb-0.5">💡 EXAMPLE RESPONSE</div><p className="text-xs text-indigo-800 italic">{docFeedback.modelResponse}</p></div>}</div>}{docFeedback?.error && <p className="text-sm text-red-600">{docFeedback.error}</p>}</div>;
-            })()}</div>}</div>}{dbqTab === 'corroboration' && <div className="space-y-5">{dbqData.perspectives && dbqData.perspectives.length >= 2 && <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4"><h3 className="text-base font-black text-purple-800 mb-3">⚔️ Competing Perspectives</h3><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{dbqData.perspectives.map((pov, pi) => <div key={pi} className={`rounded-xl p-4 border-2 ${pi === 0 ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}><h4 className={`text-sm font-black mb-1 ${pi === 0 ? 'text-blue-800' : 'text-red-800'}`}>{pov.label}</h4>{pov.description && <p className="text-xs text-slate-600 mb-2">{pov.description}</p>}<div className="flex gap-1 flex-wrap">{(pov.docIds || []).map(id => <span key={id} className={`text-xs font-bold px-2 py-0.5 rounded-full ${pi === 0 ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>Doc {id}</span>)}</div></div>)}</div><div className="mt-3 bg-white rounded-lg p-3 border border-purple-100"><label className="text-[11px] font-bold text-purple-600 uppercase block mb-1">Which perspective do you find more convincing? Why?</label><textarea value={r._perspectiveResponse || ''} onChange={e => setDbq('_perspectiveResponse', e.target.value)} rows={3} placeholder={t("placeholders.perspective_response")} className="w-full text-sm border border-purple-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-purple-400 outline-none" aria-label={t("a11y.perspective_comparison")} /></div></div>}<div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4"><h3 className="text-base font-black text-emerald-800 mb-1">🔗 Corroboration Matrix</h3><p className="text-xs text-emerald-600 mb-4">Compare how documents agree or disagree on key claims.</p>{claims.length > 0 ? claims.map((claim, ci) => <div key={ci} className="bg-white rounded-xl border border-emerald-100 p-4 mb-4"><h4 className="text-sm font-bold text-slate-800 mb-2">Claim {ci + 1}: "{claim.claim}"</h4>{claim.guideQuestion && <p className="text-xs text-emerald-600 italic mb-3">{claim.guideQuestion}</p>}<div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3"><div className="flex-1"><div className="text-[11px] font-bold text-green-700 uppercase mb-1">✅ Supporting</div><div className="flex gap-1 flex-wrap">{(claim.supportingDocs || []).map(id => <span key={id} className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full border border-green-200">Doc {id}</span>)}</div></div><div className="flex-1"><div className="text-[11px] font-bold text-red-700 uppercase mb-1">❌ Challenging</div><div className="flex gap-1 flex-wrap">{(claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => <span key={id} className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full border border-red-200">Doc {id}</span>) : <span className="text-xs text-slate-600 italic">None</span>}</div></div></div><textarea value={corrobNotes[ci] || ''} onChange={e => setDbq('_corrobNotes', {
+            })()}</div>}</div>}{dbqTab === 'corroboration' && <div className="space-y-5">{dbqData.perspectives && dbqData.perspectives.length >= 2 && <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4"><h3 className="text-base font-black text-purple-800 mb-3">⚔️ Competing Perspectives</h3><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{dbqData.perspectives.map((pov, pi) => <div key={pi} className={`rounded-xl p-4 border-2 ${pi === 0 ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}><h4 className={`text-sm font-black mb-1 ${pi === 0 ? 'text-blue-800' : 'text-red-800'}`}>{pov.label}</h4>{pov.description && <p className="text-xs text-slate-600 mb-2">{pov.description}</p>}<div className="flex gap-1 flex-wrap">{knownDocIds(pov.docIds).map(id => <span key={id} className={`text-xs font-bold px-2 py-0.5 rounded-full ${pi === 0 ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>Doc {id}</span>)}</div></div>)}</div><div className="mt-3 bg-white rounded-lg p-3 border border-purple-100"><label className="text-[11px] font-bold text-purple-600 uppercase block mb-1">Which perspective do you find more convincing? Why?</label><textarea value={r._perspectiveResponse || ''} onChange={e => setDbq('_perspectiveResponse', e.target.value)} rows={3} placeholder={t("placeholders.perspective_response")} className="w-full text-sm border border-purple-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-purple-400 outline-none" aria-label={t("a11y.perspective_comparison")} /></div></div>}<div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4"><h3 className="text-base font-black text-emerald-800 mb-1">🔗 Corroboration Matrix</h3><p className="text-xs text-emerald-600 mb-4">Compare how documents agree or disagree on key claims.</p>{claims.length > 0 ? claims.map((claim, ci) => <div key={ci} className="bg-white rounded-xl border border-emerald-100 p-4 mb-4"><h4 className="text-sm font-bold text-slate-800 mb-2">Claim {ci + 1}: "{claim.claim}"</h4>{claim.guideQuestion && <p className="text-xs text-emerald-600 italic mb-3">{claim.guideQuestion}</p>}<div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3"><div className="flex-1"><div className="text-[11px] font-bold text-green-700 uppercase mb-1">✅ Supporting</div><div className="flex gap-1 flex-wrap">{(claim.supportingDocs || []).map(id => <span key={id} className="text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full border border-green-200">Doc {id}</span>)}</div></div><div className="flex-1"><div className="text-[11px] font-bold text-red-700 uppercase mb-1">❌ Challenging</div><div className="flex gap-1 flex-wrap">{(claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => <span key={id} className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full border border-red-200">Doc {id}</span>) : <span className="text-xs text-slate-600 italic">None</span>}</div></div></div><textarea value={corrobNotes[ci] || ''} onChange={e => setDbq('_corrobNotes', {
                 ...corrobNotes,
                 [ci]: e.target.value
               })} rows={2} placeholder={t("placeholders.doc_support_claim")} className="w-full text-sm border border-emerald-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-emerald-400 outline-none" aria-label={`Corroboration analysis for claim ${ci + 1}`} /></div>) : <div className="overflow-x-auto"><table className="w-full text-xs border-collapse"><thead><tr><th className="border border-slate-400 p-2 bg-slate-50" scope="col">{t("th.document")}</th><th className="border border-slate-400 p-2 bg-slate-50" scope="col">{t("th.key_claim")}</th><th className="border border-slate-400 p-2 bg-slate-50" scope="col">{t("th.agrees_with")}</th><th className="border border-slate-400 p-2 bg-slate-50" scope="col">{t("th.disagrees_with")}</th></tr></thead><tbody>{docs.map(doc => <tr key={doc.id}><td className="border border-slate-400 p-2 font-bold">Doc {doc.id}</td><td className="border border-slate-400 p-1"><input type="text" value={r[`corrob-claim-${doc.id}`] || ''} onChange={e => setDbq(`corrob-claim-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-emerald-300" placeholder={t("placeholders.main_claim")} aria-label={`Key claim from Document ${doc.id}`} /></td><td className="border border-slate-400 p-1"><input type="text" value={r[`corrob-agree-${doc.id}`] || ''} onChange={e => setDbq(`corrob-agree-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-green-300" placeholder={t("placeholders.doc_ids")} aria-label={`Documents agreeing with Document ${doc.id}`} /></td><td className="border border-slate-400 p-1"><input type="text" value={r[`corrob-disagree-${doc.id}`] || ''} onChange={e => setDbq(`corrob-disagree-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-red-300" placeholder={t("placeholders.doc_ids")} aria-label={`Documents disagreeing with Document ${doc.id}`} /></td></tr>)}</tbody></table></div>}</div>{(() => {

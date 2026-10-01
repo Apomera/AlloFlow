@@ -1,0 +1,72 @@
+{
+  "at": "2026-09-27T19:01:58.969Z",
+  "label": "collective-offline-media-20260927",
+  "patch": "6e86e25e29a358d4c26eb30be6e4f1c4efbe0ab48a739808e75361b7c736df74",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "59d730d3a05c2afd20af23464b62ccd2f5bf326853c412c763e8ae76056f620f",
+      "after": "b2adc280a1555fc3b2c09a9650190eb3a6c6fa3371a940f18e68e5d7c80f3185",
+      "changed": true
+    },
+    {
+      "target": "read_aloud_artifact_audio_source.jsx",
+      "targets": [
+        "read_aloud_artifact_audio_source.jsx"
+      ],
+      "before": "d7bb1b09fc1287978ad21367e110ae9742fc0922c657e503f3400216fc4ab8af",
+      "after": "999355fb1f136c6ef71afd3097cd931a46258304f9a545c91a29253b1cad3008",
+      "changed": true
+    },
+    {
+      "target": "export_source.jsx",
+      "targets": [
+        "export_source.jsx"
+      ],
+      "before": "d10603e1b2068af2c264d31878ccf3410edebcda8dceb9b4d1d413fc2d2d17a8",
+      "after": "3e2ca37ac8e030544632dff0b732842c36507b53abf727ae99b3cdca0f9c9482",
+      "changed": true
+    },
+    {
+      "target": "tests/adventure_storybook_read_aloud_export.test.js",
+      "targets": [
+        "tests/adventure_storybook_read_aloud_export.test.js"
+      ],
+      "before": "e7bc1226d7a5f492bbd58a68a06be20761b0d5e68abe8960bc0bbc41947bf274",
+      "after": "2e614dfe6b020210cab3e662d780285753bd4bee538a1b8c79cdad31f0839384",
+      "changed": true
+    },
+    {
+      "target": "tests/read_aloud_artifact_audio.test.js",
+      "targets": [
+        "tests/read_aloud_artifact_audio.test.js"
+      ],
+      "before": "f485f4a6034e4a51aab502a7c3b9504513a1bf9ab7f18b0d440e2c911bc2b3cb",
+      "after": "1c9200a884b14fda3b0438d884381b7ec750da89e26f0e0a55797f5d91ad4932",
+      "changed": true
+    },
+    {
+      "target": "tests/read_aloud_artifact_host_integration.test.js",
+      "targets": [
+        "tests/read_aloud_artifact_host_integration.test.js"
+      ],
+      "before": "d9a8bfd097d24a3b2045992642326a667921ba6769d5a41d47c8a449a0a34af4",
+      "after": "87679430dd40214c0e751e502f24842c9530d9c5a97625cd1c462066c24784b6",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/check_offline_storybook_recovery.cjs",
+      "targets": [
+        "dev-tools/check_offline_storybook_recovery.cjs"
+      ],
+      "before": "b8b0a116df53063c28466f81a542b9740cd653371a782caff2fcaaf9cf52be15",
+      "after": "34a131ac7233a02b0619642acc5af74d9bfe911ed789bb1266f5e7f6011f5df6",
+      "changed": true
+    }
+  ]
+}

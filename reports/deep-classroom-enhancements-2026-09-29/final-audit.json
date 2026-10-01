@@ -1,0 +1,85 @@
+{
+  "at": "2026-09-29T22:30:38.610Z",
+  "checks": {
+    "hostsEqual": true,
+    "teacherMirrorEqual": true,
+    "stylesMirrorEqual": true,
+    "headerMirrorEqual": true,
+    "surroundingStylesPreserved": true,
+    "surroundingTeacherSourcePreserved": true,
+    "themeCurrent": true,
+    "localized": true
+  },
+  "stringChecks": [
+    {
+      "target": "ui_strings.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "desktop/web-app/public/ui_strings.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "lang/french.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/french.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "lang/spanish_latin_america.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "lang/arabic.js",
+      "keys": 10,
+      "passed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/arabic.js",
+      "keys": 10,
+      "passed": true
+    }
+  ],
+  "hostParse": "all three parsed",
+  "changedDuringValidation": [],
+  "identity": {
+    "AlloFlowANTI.txt": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "desktop/web-app/src/AlloFlowANTI.txt": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "desktop/web-app/src/App.jsx": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "teacher_source.jsx": "aed18b2870524fc6b394649568397c3ddaf9a12e264c4aa36ca3b79d5bc378fc",
+    "teacher_module.js": "2d081f04bc812e754226aa8ca37bff65e781ac5eff347369f740c24e5a99cb98",
+    "desktop/web-app/public/teacher_module.js": "2d081f04bc812e754226aa8ca37bff65e781ac5eff347369f740c24e5a99cb98",
+    "tests/dashboard_close_routing.test.js": "a6f795d74827e2c9464bb961a3cd3b60f4c68e3ce8ccdb32612b54eaee82a4db",
+    "ui_strings.js": "a29df0a86adec41a495f572ef95c36202445d97048547f050b09092011399f31",
+    "desktop/web-app/public/ui_strings.js": "1ff52ec3444aa882b9ef82a758863458b298e969f8a9e8087ae8ccbde0e4d42a",
+    "lang/french.js": "a4874807a0bc718e859ddc62bc8435d26e6dee4340794b544d54902377b78000",
+    "desktop/web-app/public/lang/french.js": "a4874807a0bc718e859ddc62bc8435d26e6dee4340794b544d54902377b78000",
+    "lang/spanish_latin_america.js": "5e4e51f821c70ca8eab95048497ba0c9ac4e66a1c51063aa38212f57838a240c",
+    "desktop/web-app/public/lang/spanish_latin_america.js": "5e4e51f821c70ca8eab95048497ba0c9ac4e66a1c51063aa38212f57838a240c",
+    "lang/arabic.js": "ee4633e209534bce5c77054ddb45fa88f20cb6f464c7501378e96d8b773b9ced",
+    "desktop/web-app/public/lang/arabic.js": "ee4633e209534bce5c77054ddb45fa88f20cb6f464c7501378e96d8b773b9ced",
+    "dev-tools/gen_docsuite_theme.cjs": "7bd2d710d41f8ac91517a75bf38f98d9fc873d85c3089e53e8f65c974855d200",
+    "dev-tools/remediation_validation.json": "1c8ba539814cb934e132dcd177d3a2df22f5842eb8e888856932b5a388e93b3c",
+    "app_styles_source.jsx": "72aaafe02784b88f350dbdde8bef446d03995ef0714f12fe0041730ba64905ee",
+    "app_styles_module.js": "18a7f13e4eb4453badea9db8c7afefba0717f39ccc7c34f6e4fa7cc28acddc8d",
+    "desktop/web-app/public/app_styles_module.js": "18a7f13e4eb4453badea9db8c7afefba0717f39ccc7c34f6e4fa7cc28acddc8d",
+    "view_header_source.jsx": "9606bc6d3c9f69bac2e79b3b289e35782641da0fa7dd7b7cb9020d4383127982",
+    "view_header_module.js": "21577ff017415808b10713718807742c035f1e91a3ee6393a47cb0d3f0dca55f",
+    "desktop/web-app/public/view_header_module.js": "21577ff017415808b10713718807742c035f1e91a3ee6393a47cb0d3f0dca55f",
+    "tests/k5_deep_action_readiness.test.js": "a211db82839ac306a87df3fd3ecbde79f5410f6de6e0e333e5b79d1f22dacdf5",
+    "tests/dashboard_progress_workspace.test.js": "4496f9a1f975be72c741a3fdb0e84ff4a54457a267ef5599aca901487ff3a82c",
+    "tests/learner_progress_scope_browser.test.js": "c0ff5029b836a5fa66cb343b12fe7ce55e50fb3c7de60c19bf5e428d0862402d"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending.",
+  "added": [
+    {
+      "key": "stem.raptorhunt.study_regions_differ",
+      "fallback": "These views focus on different regions. Use Match saved view before keeping a new moment to compare the same part of the bird."
+    },
+    {
+      "key": "stem.raptorhunt.study_regions_match",
+      "fallback": "Camera settings and inspected region match. Compare the same feature in both moments."
+    },
+    {
+      "key": "stem.raptorhunt.study_region_whole",
+      "fallback": "Whole bird"
+    },
+    {
+      "key": "stem.raptorhunt.study_region_wing",
+      "fallback": "Wing feathers"
+    },
+    {
+      "key": "stem.raptorhunt.study_region_tail",
+      "fallback": "Tail feathers"
+    },
+    {
+      "key": "stem.raptorhunt.study_region_head",
+      "fallback": "Head and beak"
+    },
+    {
+      "key": "stem.raptorhunt.study_region_feet",
+      "fallback": "Feet and talons"
+    },
+    {
+      "key": "stem.raptorhunt.study_inspect",
+      "fallback": "Inspect"
+    },
+    {
+      "key": "stem.raptorhunt.study_region_announced",
+      "fallback": "Inspecting {region}. Flight remains frozen."
+    },
+    {
+      "key": "stem.raptorhunt.study_wing_rest_question",
+      "fallback": "How does a wing fold away?"
+    },
+    {
+      "key": "stem.raptorhunt.study_wing_question",
+      "fallback": "How do the feathers form a wing?"
+    },
+    {
+      "key": "stem.raptorhunt.study_wing_rest_copy",
+      "fallback": "Trace the folded wing against the body. Resume and take off, then compare the same region with the wing extended."
+    },
+    {
+      "key": "stem.raptorhunt.study_wing_copy",
+      "fallback": "Overlapping flight feathers form an aerodynamic surface. Follow the feather tips, then compare this wing during a glide and a dive. What changes in its outline?"
+    },
+    {
+      "key": "stem.raptorhunt.study_tail_question",
+      "fallback": "How does the tail shape change?"
+    },
+    {
+      "key": "stem.raptorhunt.study_tail_rest_copy",
+      "fallback": "Look for the overlapping tail feathers. Keep a view before takeoff, then compare how widely the tail spreads in flight."
+    },
+    {
+      "key": "stem.raptorhunt.study_tail_copy",
+      "fallback": "Tail feathers help with steering. Keep a view, then turn or pull up and compare the spread and tilt of the tail."
+    },
+    {
+      "key": "stem.raptorhunt.study_owl_question",
+      "fallback": "Which feathers surround the eyes?"
+    },
+    {
+      "key": "stem.raptorhunt.study_head_question",
+      "fallback": "Where does the beak curve?"
+    },
+    {
+      "key": "stem.raptorhunt.study_horned_copy",
+      "fallback": "Facial feathers help direct sound toward the ears. The tufts above this owl’s eyes are feathers, not ears. Compare the face from the front and side."
+    },
+    {
+      "key": "stem.raptorhunt.study_owl_copy",
+      "fallback": "Facial feathers help direct sound toward an owl’s ears. Compare the face from the front and side. Which features become easier to see?"
+    },
+    {
+      "key": "stem.raptorhunt.study_head_copy",
+      "fallback": "A hooked beak helps tear food. Find the curved tip, then orbit around the head. How does the view change which eye you can see?"
+    },
+    {
+      "key": "stem.raptorhunt.study_feet_question",
+      "fallback": "How are the toes arranged?"
+    },
+    {
+      "key": "stem.raptorhunt.study_feet_rest_copy",
+      "fallback": "Inspect the toes and curved talons. Keep this view, then take off and compare how the feet tuck toward the body."
+    },
+    {
+      "key": "stem.raptorhunt.study_feet_copy",
+      "fallback": "Orbit to look beneath the body for the toes and curved talons. Compare with a perched moment to see how the feet extend or tuck."
+    }
+  ]
+}

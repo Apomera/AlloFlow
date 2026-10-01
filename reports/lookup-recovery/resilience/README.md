@@ -1,5 +1,10 @@
 # Track 11: cancellation, dictionary outcomes, and picture retry
 
+**Subsequent status:** This batch is now integrated in the inspected shared source.
+Do not reapply these patches. The next incremental handoff is
+[../media/README.md](../media/README.md), covering picture cancellation/deadlines and
+pronunciation startup recovery with 318 verified cases. The remainder is historical.
+
 This follow-up is implemented as **three isolated patches with 270 passing tests in
 12 files**. Shared application source, host, mirrors, and generated application bundles
 were not edited. Integration remains with their active owners.

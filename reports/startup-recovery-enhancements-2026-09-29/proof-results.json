@@ -1,0 +1,99 @@
+{
+  "at": "2026-09-29T23:34:41.587Z",
+  "before": {
+    "AlloFlowANTI.txt": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "desktop/web-app/src/AlloFlowANTI.txt": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "desktop/web-app/src/App.jsx": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "phase_k_helpers_source.jsx": "966c380e347b1f191b03bb01874739cf61b3a0f7531df920a1e9daed4548bc86",
+    "phase_k_helpers_module.js": "617a14f16f2773fada00bd9cc37cf1e6172b0bd23f4227a4c5887bd148e52fdc",
+    "desktop/web-app/public/phase_k_helpers_module.js": "617a14f16f2773fada00bd9cc37cf1e6172b0bd23f4227a4c5887bd148e52fdc",
+    "dev-tools/remediation_validation.json": "5d5a7c17a95942bccd88f3d57fb536f06c821e70e24bebcbe6da8d9bad3846ec",
+    "adventure_handlers_source.jsx": "c164e1b587b0cddeb84361b25a1c1314c9f87490f84e94da03bc8097a859bf0c",
+    "adventure_handlers_module.js": "ae11966cd4bd90bc3c6eda9021b4c4fe5e05c585a32f03b7d073c1f6fced4e1b",
+    "desktop/web-app/public/adventure_handlers_module.js": "ae11966cd4bd90bc3c6eda9021b4c4fe5e05c585a32f03b7d073c1f6fced4e1b",
+    "tests/k5_save_adventure_readiness.test.js": "77ef40a3a733bb22930e91b120c6f770ca564c1093ebf7f96503ab8eee59dc04",
+    "tests/project_save_cancellation_encryption.test.js": "34aef2fb49905a11195f856b2fb287c37181356761246ddaa12710176a4b24aa"
+  },
+  "after": {
+    "AlloFlowANTI.txt": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "desktop/web-app/src/AlloFlowANTI.txt": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "desktop/web-app/src/App.jsx": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "phase_k_helpers_source.jsx": "966c380e347b1f191b03bb01874739cf61b3a0f7531df920a1e9daed4548bc86",
+    "phase_k_helpers_module.js": "617a14f16f2773fada00bd9cc37cf1e6172b0bd23f4227a4c5887bd148e52fdc",
+    "desktop/web-app/public/phase_k_helpers_module.js": "617a14f16f2773fada00bd9cc37cf1e6172b0bd23f4227a4c5887bd148e52fdc",
+    "dev-tools/remediation_validation.json": "5d5a7c17a95942bccd88f3d57fb536f06c821e70e24bebcbe6da8d9bad3846ec",
+    "adventure_handlers_source.jsx": "c164e1b587b0cddeb84361b25a1c1314c9f87490f84e94da03bc8097a859bf0c",
+    "adventure_handlers_module.js": "ae11966cd4bd90bc3c6eda9021b4c4fe5e05c585a32f03b7d073c1f6fced4e1b",
+    "desktop/web-app/public/adventure_handlers_module.js": "ae11966cd4bd90bc3c6eda9021b4c4fe5e05c585a32f03b7d073c1f6fced4e1b",
+    "tests/k5_save_adventure_readiness.test.js": "77ef40a3a733bb22930e91b120c6f770ca564c1093ebf7f96503ab8eee59dc04",
+    "tests/project_save_cancellation_encryption.test.js": "34aef2fb49905a11195f856b2fb287c37181356761246ddaa12710176a4b24aa"
+  },
+  "results": [
+    {
+      "name": "stale-project-save",
+      "exitCode": 1,
+      "proved": true,
+      "failures": [
+        {
+          "name": "save startup readiness discards a delayed request after saveFileName changes",
+          "message": "AssertionError: expected undefined to be 'save-context-changed' // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/k5_save_adventure_readiness.test.js:69:54\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        }
+      ]
+    },
+    {
+      "name": "stale-adventure-start",
+      "exitCode": 1,
+      "proved": true,
+      "failures": [
+        {
+          "name": "start startup readiness discards a delayed request after adventureState changes",
+          "message": "AssertionError: expected 'dispatched' to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/k5_save_adventure_readiness.test.js:69:54\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        }
+      ]
+    },
+    {
+      "name": "stale-adventure-turn",
+      "exitCode": 1,
+      "proved": true,
+      "failures": [
+        {
+          "name": "dice startup readiness discards a delayed request after pendingAdventureUpdate changes",
+          "message": "AssertionError: expected 'dispatched' to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/k5_save_adventure_readiness.test.js:69:54\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        }
+      ]
+    },
+    {
+      "name": "missing-encryption-plaintext",
+      "exitCode": 1,
+      "proved": true,
+      "failures": [
+        {
+          "name": "requested project encryption does not download plaintext when the crypto API is unavailable (undefined)",
+          "message": "AssertionError: expected { ok: true, confidential: false, …(1) } to match object { ok: false, …(1) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index"
+        }
+      ]
+    },
+    {
+      "name": "download-after-cancel",
+      "exitCode": 1,
+      "proved": true,
+      "failures": [
+        {
+          "name": "save cancellation at async boundaries cancels after encryption completes without creating a download URL",
+          "message": "AssertionError: expected { ok: true, confidential: false, …(1) } to match object { cancelled: true }\n(3 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index"
+        }
+      ]
+    },
+    {
+      "name": "restart-after-context-change",
+      "exitCode": 1,
+      "proved": true,
+      "failures": [
+        {
+          "name": "adventure restart confirmation cancellation keeps the current story if it changes while the restart dialog is open",
+          "message": "AssertionError: expected true to be false // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/project_save_cancellation_encryption.test.js:115:27\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        }
+      ]
+    }
+  ]
+}

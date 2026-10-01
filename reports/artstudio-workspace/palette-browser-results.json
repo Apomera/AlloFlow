@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "exactHexEdit": true,
+      "reorderKeyboardUndoRedo": true,
+      "invalidDraftPreservesArtwork": true
+    },
+    {
+      "cssDownloadExact": true
+    },
+    {
+      "pixelExportExactRgb": [
+        18,
+        52,
+        86,
+        255
+      ],
+      "existingArtworkPreserved": true,
+      "transparentSprite": true
+    },
+    {
+      "gradientRoundTripExact": true
+    },
+    {
+      "mixerBothInputsExact": true
+    },
+    {
+      "watercolorPigmentExact": true
+    },
+    {
+      "phoneNoOverflow": true,
+      "phoneTouchTargets44": true
+    },
+    {
+      "lastRemovalFocusRetained": true,
+      "lastRemovalUndo": true
+    }
+  ],
+  "errors": []
+}

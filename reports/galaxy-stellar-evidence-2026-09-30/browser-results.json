@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "checks": [
+    "Keyboard slider reaches zero and distinguishes the first nonzero abundance; reference stays fixed.",
+    "Restore preserves reference, log, and notes; numeric differences and both charts use the same reference.",
+    "Comparison survives mode changes and the eight-entry log rolling over.",
+    "Clear removes reference geometry; the exact cosmic endpoint receives a formation warning.",
+    "Desktop, 390 px, 320 px, and RTL layouts retain usable controls and stable axis directions.",
+    "Reset clears the comparison, plotted log entries, and notes together."
+  ],
+  "sizes": [
+    {
+      "width": 1440,
+      "noOverflow": true,
+      "touchTargets": true
+    },
+    {
+      "width": 390,
+      "noOverflow": true,
+      "touchTargets": true
+    },
+    {
+      "width": 320,
+      "noOverflow": true,
+      "touchTargets": true
+    }
+  ],
+  "errors": []
+}

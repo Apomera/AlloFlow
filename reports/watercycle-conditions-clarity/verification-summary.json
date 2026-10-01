@@ -1,0 +1,226 @@
+{
+  "title": "Water Cycle Conditions clarity: final verification",
+  "recordedAt": "2026-09-30T21:21:00.177Z",
+  "successful": true,
+  "sourceSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+  "publicSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+  "baselineSha256": "d43969e8c5824b6f2b94b2b7e29b51ef33a24833495059c79cad6e9551951061",
+  "reportSha256": {
+    "baseline-results.json": "50037a3399585e7f7176a1868e1f24b27821306ee04a053ab90bc58ead08791a",
+    "results.json": "7c6dc9a567de1af9911f5c9a9b2f8762cf421dcde75021a4163653cb923ea216",
+    "unit-results.json": "536246b6cbe9f9b54611eb8239306317a97847c40184e9357695a8c727814c6b",
+    "regression-results.json": "3ba60ca4c2d934324ccec405d4853dff3616fc86bb67ad6601ad9dd8ef3a3755"
+  },
+  "tests": {
+    "total": 137,
+    "passed": 137,
+    "focused": 18,
+    "regression": 119,
+    "distinctFiles": 9,
+    "skipped": 0
+  },
+  "browser": {
+    "passed": 771,
+    "failed": 0,
+    "snapshots": 135,
+    "scopedAccessibilityAudits": 18,
+    "violations": 0,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "unchangedCalculationAndStateBlocks": 15,
+  "git": {
+    "scopedWhitespaceCheckPassed": true,
+    "stagedEnhancementFiles": []
+  },
+  "checks": [
+    {
+      "label": "Final source hash matches",
+      "passed": true
+    },
+    {
+      "label": "Final public mirror hash matches",
+      "passed": true
+    },
+    {
+      "label": "Frozen final runtime hash matches",
+      "passed": true
+    },
+    {
+      "label": "Frozen baseline hash matches",
+      "passed": true
+    },
+    {
+      "label": "Recorded report hash: baseline-results.json",
+      "passed": true
+    },
+    {
+      "label": "Recorded report hash: results.json",
+      "passed": true
+    },
+    {
+      "label": "Recorded report hash: unit-results.json",
+      "passed": true
+    },
+    {
+      "label": "Recorded report hash: regression-results.json",
+      "passed": true
+    },
+    {
+      "label": "Baseline review completed and owned resources closed",
+      "passed": true
+    },
+    {
+      "label": "Browser review completed on the exact final runtime",
+      "passed": true
+    },
+    {
+      "label": "All 771 browser checks passed",
+      "passed": true
+    },
+    {
+      "label": "135 browser snapshots recorded",
+      "passed": true
+    },
+    {
+      "label": "18 scoped accessibility audits have zero violations",
+      "passed": true
+    },
+    {
+      "label": "QA browser and server closed",
+      "passed": true
+    },
+    {
+      "label": "Test report is successful with 18 passing tests",
+      "passed": true
+    },
+    {
+      "label": "All recorded assertions passed",
+      "passed": true
+    },
+    {
+      "label": "Expected number of test files",
+      "passed": true
+    },
+    {
+      "label": "Test run pins the final source and public hashes",
+      "passed": true
+    },
+    {
+      "label": "Test files match their recorded hashes",
+      "passed": true
+    },
+    {
+      "label": "Test report is successful with 119 passing tests",
+      "passed": true
+    },
+    {
+      "label": "All recorded assertions passed",
+      "passed": true
+    },
+    {
+      "label": "Expected number of test files",
+      "passed": true
+    },
+    {
+      "label": "Test run pins the final source and public hashes",
+      "passed": true
+    },
+    {
+      "label": "Test files match their recorded hashes",
+      "passed": true
+    },
+    {
+      "label": "137 distinct passing tests, with no duplicated assertions",
+      "passed": true
+    },
+    {
+      "label": "15 calculation and state anchors recorded",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcLandResponse",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcInvestigationInputs",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcInvestigationSnapshot",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcInvestigationChanged",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcInvestigationFair",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: WC_INVESTIGATION_INPUTS",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: evaporationIndex",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: adjustClimate",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: adjustLand",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: resetClimate",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: resetLandScenario",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcSignalReservoirs",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcSignalEnergySeries",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcSignalFlowSeries",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state block: wcSignalStorageSeries",
+      "passed": true
+    },
+    {
+      "label": "C:\\Program Files\\nodejs\\node.exe --check stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "C:\\Program Files\\nodejs\\node.exe --check desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "C:\\Program Files\\nodejs\\node.exe --check dev-tools/watercycle_conditions_clarity_qa.cjs",
+      "passed": true
+    },
+    {
+      "label": "git diff --check -- stem_lab/stem_tool_watercycle.js desktop/web-app/public/stem_lab/stem_tool_watercycle.js tests/watercycle_conditions_clarity.test.js tests/watercycle_controls_a11y.test.js dev-tools/watercycle_conditions_clarity_qa.cjs docs/water-cycle-visual-design.md reports/watercycle-conditions-clarity",
+      "passed": true
+    },
+    {
+      "label": "git diff --cached --name-only -- stem_lab/stem_tool_watercycle.js desktop/web-app/public/stem_lab/stem_tool_watercycle.js tests/watercycle_conditions_clarity.test.js tests/watercycle_controls_a11y.test.js dev-tools/watercycle_conditions_clarity_qa.cjs docs/water-cycle-visual-design.md reports/watercycle-conditions-clarity",
+      "passed": true
+    },
+    {
+      "label": "No enhancement files staged",
+      "passed": true
+    }
+  ]
+}

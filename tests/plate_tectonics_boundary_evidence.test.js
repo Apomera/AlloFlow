@@ -43,7 +43,10 @@ describe('Plate Tectonics boundary evidence simulator', () => {
 
   it('states model limits and convergent-scenario scope', () => {
     const source = readFileSync(PATHS[0], 'utf8');
-    expect(source).toContain('accelerated qualitative cues, not forecasts or calibrated rates');
+    // The clock is now calibrated (rate x time), so the note says which parts
+    // are exact and which are still cues; it must still disclaim forecasting.
+    expect(source).toContain('Rift width and fault offset are rate × time exactly');
+    expect(source).toContain('earthquake timing is a qualitative cue, not a forecast');
     expect(source).toContain('Continental collision looks different');
     expect(source).toContain('moment-magnitude unit');
     expect(source).not.toContain('most earthquakes fire here');

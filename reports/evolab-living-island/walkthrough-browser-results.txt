@@ -1,0 +1,17 @@
+
+Running 5 tests using 1 worker
+
+
+[1A[2K(node:42448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:42448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1333:5 › watch a generation records one climate-boundary round and explores its real cohorts in 3D
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1395:5 › watch a generation on a phone stays self-paced with reduced motion and supports keyboard navigation
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1430:5 › watch a generation without WebGL preserves the real survivor when the population goes extinct
+[1A[2K  5 passed (4.3m)

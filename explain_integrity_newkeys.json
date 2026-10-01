@@ -1,0 +1,18 @@
+{
+  "ex_saved_depth_value": "{type} depth sample: {n} events, {min}–{max} km.",
+  "ex_saved_stress_value": "{type} stress trial: stress {stress}%, friction {friction}%; {outcome}.",
+  "ex_saved_cut_value": "Latest slab-cut observation: {a} → {b} cm per year.",
+  "ex_saved_collision_value": "Latest collision observation: {a} → {b} cm per year; mountains {m} km.",
+  "ex_saved_hotspot_value": "Completed Hawaiian estimate: {rate} cm per year toward the northwest.",
+  "ex_saved_magnitude_value": "Largest recorded simulator magnitude: M {m}.",
+  "ex_saved_quiz_value": "Completed quiz available at save: {score}/{total} (grades {band}).",
+  "ex_saved_context_title": "Observations available when this version was saved",
+  "ex_saved_context_note": "This saved record stays fixed when you run more investigations. It shows what was available, not a check that every observation supports your explanation.",
+  "ex_saved_context_empty": "No validated observations were available when this version was saved.",
+  "ex_ev_hawaii_completed": "In a completed fit of the Hawaiian volcano ages, I estimated Pacific plate motion at about {c} cm per year toward the northwest.",
+  "ex_ev_stress_matched": "At the same model stress ({force}%) and friction ({friction}%), my recorded convergent trial showed {convergent}; divergent showed {divergent}; transform showed {transform}.",
+  "ex_stress_matched_limit": "Stress and friction were held constant while boundary type changed. Compare only these recorded outcomes; this stress model does not measure earthquake depths.",
+  "ex_stress_depth_limit": "Use your depth samples to address the depth question, and explain any connection you make to fault slip.",
+  "ex_stress_choose_record": "Choose a retained boundary record",
+  "ex_saved_context_legacy": "This older saved version has no observation snapshot. Current investigation results are shown separately above."
+}

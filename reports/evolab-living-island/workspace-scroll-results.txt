@@ -1,0 +1,77 @@
+
+Running 1 test using 1 worker
+
+
+
+[1A[2K(node:24180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:24180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/1] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K[chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+DESK_LAYOUT [
+  {
+    k: [32m'.ei-app'[39m,
+    top: [33m-3[39m,
+    height: [33m1965.25[39m,
+    position: [32m'static'[39m,
+    maxHeight: [32m'none'[39m,
+    offset: [32m'auto'[39m,
+    overflow: [32m'visible'[39m,
+    command: [32m'116px'[39m
+  },
+  {
+    k: [32m'.ei-commandbar'[39m,
+    top: [33m186.984375[39m,
+    height: [33m116[39m,
+    position: [32m'sticky'[39m,
+    maxHeight: [32m'none'[39m,
+    offset: [32m'0px'[39m,
+    overflow: [32m'visible'[39m,
+    command: [32m'116px'[39m
+  },
+  {
+    k: [32m'.ei-workspace'[39m,
+    top: [33m316.984375[39m,
+    height: [33m1243.265625[39m,
+    position: [32m'static'[39m,
+    maxHeight: [32m'none'[39m,
+    offset: [32m'auto'[39m,
+    overflow: [32m'visible'[39m,
+    command: [32m'116px'[39m
+  },
+  {
+    k: [32m'.ei-main'[39m,
+    top: [33m316.984375[39m,
+    height: [33m1243.265625[39m,
+    position: [32m'sticky'[39m,
+    maxHeight: [32m'none'[39m,
+    offset: [32m'130px'[39m,
+    overflow: [32m'visible'[39m,
+    command: [32m'116px'[39m
+  },
+  {
+    k: [32m'.ei-desk'[39m,
+    top: [33m316.984375[39m,
+    height: [33m970[39m,
+    position: [32m'sticky'[39m,
+    maxHeight: [32m'none'[39m,
+    offset: [32m'130px'[39m,
+    overflow: [32m'hidden'[39m,
+    command: [32m'116px'[39m
+  },
+  {
+    k: [32m'.ei-desk-body'[39m,
+    top: [33m431.984375[39m,
+    height: [33m854[39m,
+    position: [32m'static'[39m,
+    maxHeight: [32m'854px'[39m,
+    offset: [32m'auto'[39m,
+    overflow: [32m'auto'[39m,
+    command: [32m'116px'[39m
+  }
+]
+
+[1A[2K  1 passed (11.1s)

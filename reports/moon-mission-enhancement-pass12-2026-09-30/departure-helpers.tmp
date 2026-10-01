@@ -1,0 +1,145 @@
+  // Lunar departure laboratory: circular reference orbit after LM jettison.
+  // Finite SPS thrust follows velocity; Moon-only SI Cartesian RK4 dynamics.
+  // The outgoing asymptote is a direction comparison, not an Earth intercept.
+  var MM_DEPARTURE = Object.freeze({ altitude:110000, dryMass:10000, defaultBurn:151,
+    preburn:90, boundary:10000000, maxCoast:14400, step:0.5, coastStep:5 });
+  var _mmDepartureCache=[], _mmDepartureAngle=null;
+  function mmDeparturePlan(raw) {
+    raw=mmIsObj(raw)?raw:{};
+    return { burnSeconds:mmNum(raw.burnSeconds)?Math.max(0,Math.min(300,raw.burnSeconds)):151,
+      offsetSeconds:mmNum(raw.offsetSeconds)?Math.max(-600,Math.min(600,raw.offsetSeconds)):0 };
+  }
+  function mmDepartureFuel(raw) {
+    var loi=mmCleanLoiPlayback(raw), valid=loi.loiResult&&loi.loiResult.outcome==='captured';
+    return { amount:valid?loi.loiResult.propellantRemaining:mmLoiProfile().summary.propellantRemaining,
+      source:valid?'insertion':'preset' };
+  }
+  function mmDepartureStep(q,dt,burning) {
+    var flow=burning?MM_LOI.thrust/(MM_LOI.isp*MM_LOI.g0):0;
+    function derivative(v) {
+      var r=Math.hypot(v[0],v[1]),speed=Math.hypot(v[2],v[3]),g=-MM_LOI.mu/(r*r*r);
+      var a=burning?MM_LOI.thrust/(MM_DEPARTURE.dryMass+Math.max(0,v[4]))/speed:0;
+      return [v[2],v[3],g*v[0]+a*v[2],g*v[1]+a*v[3],-flow];
+    }
+    var a=derivative(q),b=derivative(q.map(function(v,i){return v+dt*a[i]/2;}));
+    var c=derivative(q.map(function(v,i){return v+dt*b[i]/2;}));
+    var d=derivative(q.map(function(v,i){return v+dt*c[i];}));
+    return q.map(function(v,i){return i===4?Math.max(0,v-flow*dt):v+dt*(a[i]+2*b[i]+2*c[i]+d[i])/6;});
+  }
+  function mmDepartureElements(q) {
+    var r=Math.hypot(q[0],q[1]),v2=q[2]*q[2]+q[3]*q[3],dot=q[0]*q[2]+q[1]*q[3];
+    var energy=v2/2-MM_LOI.mu/r,h=q[0]*q[3]-q[1]*q[2];
+    var ex=((v2-MM_LOI.mu/r)*q[0]-dot*q[2])/MM_LOI.mu,ey=((v2-MM_LOI.mu/r)*q[1]-dot*q[3])/MM_LOI.mu,e=Math.hypot(ex,ey);
+    var direction=energy>0&&e>1?Math.atan2(ey,ex)+(h>=0?1:-1)*Math.acos(-1/e):null;
+    return {energy:energy,angularMomentum:h,eccentricity:e,
+      perilune:h*h/(MM_LOI.mu*(1+e))-MM_LOI.radius,
+      apolune:energy<0?-MM_LOI.mu/(2*energy)*(1+e)-MM_LOI.radius:null,
+      excessSpeed:energy>0?Math.sqrt(2*energy):null,direction:direction,
+      directionError:direction===null?null:Math.atan2(Math.sin(direction-Math.PI),Math.cos(direction-Math.PI))*180/Math.PI};
+  }
+  function mmDepartureReferenceAngle() {
+    if(_mmDepartureAngle!==null)return _mmDepartureAngle;
+    var r=MM_LOI.radius+MM_DEPARTURE.altitude,q=[r,0,0,Math.sqrt(MM_LOI.mu/r),mmLoiProfile().summary.propellantRemaining];
+    for(var t=0;t<MM_DEPARTURE.defaultBurn-1e-9;t+=MM_DEPARTURE.step)q=mmDepartureStep(q,Math.min(MM_DEPARTURE.step,MM_DEPARTURE.defaultBurn-t),true);
+    _mmDepartureAngle=Math.PI-mmDepartureElements(q).direction;return _mmDepartureAngle;
+  }
+  function mmDepartureRecord(q,time,p) {
+    var r=Math.hypot(q[0],q[1]),speed=Math.hypot(q[2],q[3]),engine=time>=MM_DEPARTURE.preburn&&time<p.cutoffTime-1e-8;
+    return {time:time,x:q[0],y:q[1],vx:q[2],vy:q[3],propellant:q[4],mass:MM_DEPARTURE.dryMass+q[4],
+      altitude:r-MM_LOI.radius,radius:r,speed:speed,radialSpeed:(q[0]*q[2]+q[1]*q[3])/r,
+      tangentialSpeed:(q[0]*q[3]-q[1]*q[2])/r,escapeSpeed:Math.sqrt(2*MM_LOI.mu/r),energy:speed*speed/2-MM_LOI.mu/r,
+      idealDeltaV:MM_LOI.isp*MM_LOI.g0*Math.log((MM_DEPARTURE.dryMass+p.fuel.amount)/(MM_DEPARTURE.dryMass+q[4])),
+      engineOn:engine,thrust:engine?MM_LOI.thrust:0,loadG:engine?MM_LOI.thrust/((MM_DEPARTURE.dryMass+q[4])*MM_LOI.g0):0,
+      phase:time<MM_DEPARTURE.preburn?'preburn':engine?'burn':'coast',earth:mmLunarEarthLink({x:q[0],y:q[1]})};
+  }
+  function mmDepartureProfile(planRaw,fuelRaw,options) {
+    var plan=mmDeparturePlan(planRaw),fuel=mmIsObj(fuelRaw)&&mmNum(fuelRaw.amount)?
+      {amount:Math.max(0,Math.min(MM_LOI.propellant,fuelRaw.amount)),source:fuelRaw.source==='insertion'?'insertion':'preset'}:mmDepartureFuel({});
+    options=options||{};var step=mmNum(options.step)?Math.max(.05,Math.min(1,options.step)):MM_DEPARTURE.step;
+    var custom=!!options.step,key=plan.burnSeconds+':'+plan.offsetSeconds+':'+fuel.amount+':'+fuel.source;
+    if(!custom)for(var ci=0;ci<_mmDepartureCache.length;ci++)if(_mmDepartureCache[ci].key===key)return _mmDepartureCache[ci].profile;
+    var flow=MM_LOI.thrust/(MM_LOI.isp*MM_LOI.g0),actual=Math.min(plan.burnSeconds,fuel.amount/flow);
+    var p={version:1,plan:Object.freeze(plan),fuel:Object.freeze(fuel),cutoffTime:MM_DEPARTURE.preburn+actual};
+    var r=MM_LOI.radius+MM_DEPARTURE.altitude,n=Math.sqrt(MM_LOI.mu/(r*r*r));
+    var theta=mmDepartureReferenceAngle()+n*(plan.offsetSeconds-MM_DEPARTURE.preburn),v=Math.sqrt(MM_LOI.mu/r);
+    var q=[r*Math.cos(theta),r*Math.sin(theta),-v*Math.sin(theta),v*Math.cos(theta),fuel.amount],time=0;
+    var samples=[Object.freeze(mmDepartureRecord(q,0,p))],events=[],cutoff=null,escapeTime=null,reached=false;
+    function event(kind,label,state,t){events.push(Object.freeze({kind:kind,label:label,time:t,x:state[0],y:state[1]}));}
+    while(time<MM_DEPARTURE.preburn-1e-8){var dt=Math.min(5,MM_DEPARTURE.preburn-time);q=mmDepartureStep(q,dt,false);time+=dt;samples.push(Object.freeze(mmDepartureRecord(q,time,p)));}
+    event('ignition',actual>0?'SPS ignition':'No burn commanded',q,time);
+    while(time<p.cutoffTime-1e-8){
+      var dt=Math.min(step,p.cutoffTime-time),next=mmDepartureStep(q,dt,true),before=mmDepartureElements(q).energy,after=mmDepartureElements(next).energy;
+      if(escapeTime===null&&before<0&&after>=0){var lo=0,hi=dt;for(var k=0;k<38;k++){var mid=(lo+hi)/2;if(mmDepartureElements(mmDepartureStep(q,mid,true)).energy<0)lo=mid;else hi=mid;}escapeTime=time+(lo+hi)/2;event('escape','Zero escape energy',mmDepartureStep(q,(lo+hi)/2,true),escapeTime);}
+      q=next;time+=dt;samples.push(Object.freeze(mmDepartureRecord(q,time,p)));
+    }
+    cutoff=mmDepartureRecord(q,p.cutoffTime,p);event('cutoff',actual+1e-8<plan.burnSeconds?'Fuel exhaustion / cutoff':'SPS cutoff',q,p.cutoffTime);
+    var orbit=mmDepartureElements(q),period=orbit.energy<0?2*Math.PI*Math.sqrt(Math.pow(-MM_LOI.mu/(2*orbit.energy),3)/MM_LOI.mu):Infinity;
+    var endTime=p.cutoffTime+Math.min(MM_DEPARTURE.maxCoast,period);
+    while(time<endTime-1e-8){var dt=Math.min(custom?step:MM_DEPARTURE.coastStep,endTime-time),next=mmDepartureStep(q,dt,false);
+      if(Math.hypot(q[0],q[1])<MM_DEPARTURE.boundary&&Math.hypot(next[0],next[1])>=MM_DEPARTURE.boundary){var lo=0,hi=dt;for(var k=0;k<38;k++){var mid=(lo+hi)/2;if(Math.hypot.apply(null,mmDepartureStep(q,mid,false).slice(0,2))<MM_DEPARTURE.boundary)lo=mid;else hi=mid;}dt=(lo+hi)/2;next=mmDepartureStep(q,dt,false);reached=true;}
+      q=next;time+=dt;samples.push(Object.freeze(mmDepartureRecord(q,time,p)));if(reached)break;
+    }
+    event('end',reached?'10,000 km lunar radius':orbit.energy<0&&period<=MM_DEPARTURE.maxCoast?'One bound revolution':'Coast time limit',q,time);
+    var last=samples[samples.length-1];
+    p.cutoff=Object.freeze(cutoff);p.orbit=Object.freeze(orbit);p.events=Object.freeze(events);p.samples=Object.freeze(samples);
+    p.summary=Object.freeze({version:1,burnSeconds:plan.burnSeconds,offsetSeconds:plan.offsetSeconds,initialFuel:fuel.amount,fuelSource:fuel.source,
+      outcome:orbit.energy>0?'escape':'bound',duration:time,actualBurn:actual,propellantUsed:fuel.amount-cutoff.propellant,propellantRemaining:cutoff.propellant,
+      cutoffMass:cutoff.mass,cutoffSpeed:cutoff.speed,cutoffAltitude:cutoff.altitude,energy:orbit.energy,excessSpeed:orbit.excessSpeed,
+      directionError:orbit.directionError,idealDeltaV:cutoff.idealDeltaV,perilune:orbit.perilune,apolune:orbit.apolune,
+      fuelExhausted:actual+1e-8<plan.burnSeconds,boundaryReached:reached,finalRadius:last.radius,escapeTime:escapeTime});
+    Object.freeze(p);if(!custom){_mmDepartureCache.push({key:key,profile:p});if(_mmDepartureCache.length>8)_mmDepartureCache.shift();}return p;
+  }
+  function mmDepartureSample(p,seconds) {
+    var t=mmNum(seconds)?Math.max(0,Math.min(p.summary.duration,seconds)):0,rows=p.samples;
+    var lo=0,hi=rows.length-1;while(hi-lo>1){var mid=(lo+hi)>>1;if(rows[mid].time<=t)lo=mid;else hi=mid;}
+    var a=t>=p.summary.duration?rows[hi]:rows[lo],q=[a.x,a.y,a.vx,a.vy,a.propellant];
+    if(t>a.time)q=mmDepartureStep(q,t-a.time,a.engineOn);return mmDepartureRecord(q,t,p);
+  }
+  function mmCleanDeparture(raw) {
+    raw=mmIsObj(raw)?raw:{};var plan=mmDeparturePlan(raw.departurePlan),fuel=mmDepartureFuel(raw),saved=raw.departureRun,run=null,result=null;
+    if(mmIsObj(saved)&&saved.version===1&&typeof saved.recorded==='boolean'&&mmNum(saved.time)&&saved.time>=0&&saved.burnSeconds===plan.burnSeconds&&saved.offsetSeconds===plan.offsetSeconds&&saved.initialFuel===fuel.amount&&saved.fuelSource===fuel.source){
+      var expected=mmDepartureProfile(plan,fuel).summary,claimed=raw.departureResult;
+      var valid=mmIsObj(claimed)&&Object.keys(expected).every(function(k){return typeof expected[k]==='number'?mmNum(claimed[k])&&Math.abs(claimed[k]-expected[k])<1e-6:claimed[k]===expected[k];});
+      var recorded=saved.recorded&&valid;run={version:1,burnSeconds:plan.burnSeconds,offsetSeconds:plan.offsetSeconds,initialFuel:fuel.amount,fuelSource:fuel.source,time:saved.time>=expected.duration&&!recorded?0:Math.min(expected.duration,saved.time),recorded:recorded};
+      if(recorded)result=Object.assign({},expected);
+    }
+    return {departureOpen:raw.departureOpen===true,departurePlan:plan,departureRun:run,departureResult:result,
+      departurePaused:raw.departurePaused!==false,departurePlaybackRate:[1,10,60,240].indexOf(raw.departurePlaybackRate)>=0?raw.departurePlaybackRate:60,
+      departureView:raw.departureView==='escape'?'escape':'burn'};
+  }
+  function mmDepartureText(s) {
+    return (s.outcome==='escape'?'Lunar escape':'Still bound to the Moon')+': '+s.actualBurn.toFixed(1)+' s SPS burn; '+s.propellantUsed.toFixed(1)+' kg used, '+s.propellantRemaining.toFixed(1)+' kg remaining. '+
+      (s.excessSpeed===null?'A longer burn is needed to reach positive escape energy.':'Lunar excess speed '+(s.excessSpeed/1000).toFixed(3)+' km/s; outgoing direction '+s.directionError.toFixed(1)+' degrees from the fixed Earth direction.')+
+      (s.fuelExhausted?' Fuel exhausted before commanded cutoff.':'');
+  }
+  function mmDrawDeparture(ctx,w,h,s,p,view) {
+    var escape=view==='escape',pad=28,span=escape?Math.max(2.4e6,p.summary.finalRadius*1.12):2.8e6;
+    var scale=Math.min(w-2*pad,h-110)/(2*span),cx=w/2,cy=(h+25)/2;
+    function point(x,y){return {x:cx+x*scale,y:cy-y*scale};}
+    ctx.save();ctx.fillStyle='#07111f';ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#cbd5e1';ctx.font='11px monospace';ctx.fillText('MOON FRAME / '+(escape?'DEPARTURE COAST':'BURN VIEW'),14,22);
+    ctx.fillStyle='#7dd3fc';ctx.fillText('Earth direction',14,42);ctx.beginPath();ctx.moveTo(110,38);ctx.lineTo(80,38);ctx.lineTo(86,34);ctx.moveTo(80,38);ctx.lineTo(86,42);ctx.strokeStyle='#7dd3fc';ctx.stroke();
+    var mr=MM_LOI.radius*scale;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.fillStyle='#64748b';ctx.fill();ctx.strokeStyle='#cbd5e1';ctx.stroke();
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.clip();ctx.fillStyle='#475569';
+    [[-.4,.2,.12],[.2,-.4,.18],[.45,.28,.11],[-.1,-.13,.2],[-.55,-.45,.08]].forEach(function(c){ctx.beginPath();ctx.arc(cx+c[0]*mr,cy+c[1]*mr,c[2]*mr,0,Math.PI*2);ctx.fill();});ctx.restore();
+    ctx.setLineDash([4,5]);ctx.strokeStyle='#94a3b8';ctx.beginPath();ctx.arc(cx,cy,(MM_LOI.radius+MM_DEPARTURE.altitude)*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.save();ctx.beginPath();ctx.rect(pad,55,w-2*pad,h-85);ctx.clip();
+    var segments=[{from:0,to:MM_DEPARTURE.preburn,color:'#94a3b8'},{from:MM_DEPARTURE.preburn,to:p.cutoffTime,color:'#fb923c'},{from:p.cutoffTime,to:s.time,color:'#67e8f9'}];
+    segments.forEach(function(seg){if(s.time<=seg.from)return;ctx.strokeStyle=seg.color;ctx.lineWidth=2;ctx.beginPath();var started=false;p.samples.forEach(function(a){if(a.time<seg.from||a.time>Math.min(seg.to,s.time))return;var z=point(a.x,a.y);if(!started){ctx.moveTo(z.x,z.y);started=true;}else ctx.lineTo(z.x,z.y);});if(s.time<=seg.to&&started){var z=point(s.x,s.y);ctx.lineTo(z.x,z.y);}ctx.stroke();});
+    var asymptote=s.time>=p.cutoffTime?p.orbit.direction:null;
+    if(asymptote!==null){var c=point(p.cutoff.x,p.cutoff.y);ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+Math.cos(asymptote)*span*3*scale,c.y-Math.sin(asymptote)*span*3*scale);ctx.strokeStyle='#c4b5fd';ctx.setLineDash([6,5]);ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([]);}
+    var z=point(s.x,s.y),radioEnd=s.earth.blocked?s.earth.rayEnd:{x:-span*3,y:0},rz=point(radioEnd.x,radioEnd.y);
+    ctx.beginPath();ctx.moveTo(z.x,z.y);ctx.lineTo(rz.x,rz.y);ctx.strokeStyle=s.earth.blocked?'#fda4af':'#7dd3fc';ctx.lineWidth=1;ctx.setLineDash([2,5]);ctx.stroke();ctx.setLineDash([]);
+    ctx.translate(z.x,z.y);var heading=-Math.atan2(s.vy,s.vx);ctx.rotate(heading);
+    if(s.engineOn){ctx.beginPath();ctx.moveTo(-19,-4);ctx.lineTo(-40,0);ctx.lineTo(-19,4);ctx.fillStyle='#fdba74';ctx.fill();}
+    ctx.fillStyle='#e2e8f0';ctx.fillRect(-18,-5,17,10);ctx.strokeStyle='#94a3b8';ctx.strokeRect(-18,-5,17,10);ctx.beginPath();ctx.moveTo(-1,-7);ctx.lineTo(12,0);ctx.lineTo(-1,7);ctx.closePath();ctx.fillStyle='#f8fafc';ctx.fill();ctx.restore();
+    var z=point(s.x,s.y),len=26+Math.min(20,s.speed/100),vx=s.vx/s.speed,vy=-s.vy/s.speed;
+    ctx.beginPath();ctx.moveTo(z.x,z.y);ctx.lineTo(z.x+vx*len,z.y+vy*len);ctx.strokeStyle='#86efac';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='#cbd5e1';ctx.font='10px monospace';ctx.fillText('Orange: burn  Cyan: coast',14,h-29);ctx.fillText('Purple: outgoing direction',14,h-14);
+    var bar=Math.min(70,w*.2),km=bar/scale/1000;ctx.beginPath();ctx.moveTo(w-14-bar,h-31);ctx.lineTo(w-14,h-31);ctx.strokeStyle='#cbd5e1';ctx.stroke();ctx.textAlign='right';ctx.fillText(km.toFixed(0)+' km',w-14,h-38);ctx.restore();
+    return {scale:scale,cx:cx,cy:cy,moonRadius:mr,craft:point(s.x,s.y),plumeVisible:s.engineOn,asymptoteVisible:asymptote!==null,radioBlocked:s.earth.blocked};
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{departure:MM_DEPARTURE,departurePlan:mmDeparturePlan,departureFuel:mmDepartureFuel,
+    departureStep:mmDepartureStep,departureElements:mmDepartureElements,departureProfile:mmDepartureProfile,departureSample:mmDepartureSample,
+    cleanDeparture:mmCleanDeparture,drawDeparture:mmDrawDeparture});}catch(e){}
+

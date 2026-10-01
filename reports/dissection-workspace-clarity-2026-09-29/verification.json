@@ -1,0 +1,11 @@
+{
+  "browserWorkspaceScenarios": 6,
+  "browserOverlayAndContactScenarios": 9,
+  "browserScenarios": 15,
+  "focusedRegressionChecks": 109,
+  "rendererCopiesMatch": true,
+  "javascriptSyntaxValid": true,
+  "scopedWhitespaceClean": true,
+  "rendererSha256": "cf223468d249a1547fd2eed2d4691c0a759b5d9118fdf26294fe073df6c970cb",
+  "committed": false
+}

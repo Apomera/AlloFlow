@@ -1,0 +1,26 @@
+{
+  "sourceSha256": "191f6e8414940f9a168d3f909af0f0f1c1352ff1e59d75b489ebed9cddf18c4b",
+  "unitTestsPassed": 130,
+  "browserTestsPassed": 13,
+  "unitNote": "124 unit tests passed in the main run. The inquiry file worker timed out during startup; all 6 inquiry tests passed separately in a single thread.",
+  "browserNote": "Everest (5), canyon (5), and planets (3). The batched IntersectionObserver regression was verified to fail before the fix and pass afterward.",
+  "preview": "http://127.0.0.1:54391/?tool=scaleExplorer&focus=everest&v=alpine",
+  "screenshots": [
+    "everest-overview.png",
+    "everest-summit.png",
+    "everest-height-datum.png",
+    "everest-phone-valley.png",
+    "everest-phone-overhead.png"
+  ],
+  "terrain": {
+    "vertices": 58081,
+    "spanMeters": 18000,
+    "spacingMeters": 75,
+    "minMeters": 4477,
+    "maxMeters": 8744,
+    "catalogueHeightMeters": 8849
+  },
+  "date": "2026-09-30T21:45:31.441Z",
+  "commitStatus": "Pending: concurrent Git operations repeatedly held the shared index or changed HEAD. No commit was created and no working files were overwritten to isolate concurrent scale-drawing edits.",
+  "verifiedSource": "reports/scale-explorer-everest/verified-source.js"
+}

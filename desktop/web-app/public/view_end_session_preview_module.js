@@ -175,7 +175,11 @@ function EndSessionPreview({
     className: "text-[11px] text-indigo-800 mt-0.5"
   }, tx('end_session.insight_brief_disclaimer', 'A device-local summary of participation evidence—not an automated judgment of understanding.'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => copyToClipboard(['Live session insight brief', `${endSessionPreview.summary.insightBrief.activityCount || 0} activities · ${endSessionPreview.summary.insightBrief.submissions || 0} submissions · ${endSessionPreview.summary.insightBrief.revisions || 0} revisions`, ...(endSessionPreview.summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`), 'Privacy: aggregate participation evidence only; no raw answers or account IDs.'].join('\n')),
+    onClick: () => copyToClipboard([tx('end_session.brief_heading', 'Live session insight brief'), tx('end_session.brief_counts', '{activities} activities · {submissions} submissions · {revisions} revisions', {
+      activities: endSessionPreview.summary.insightBrief.activityCount || 0,
+      submissions: endSessionPreview.summary.insightBrief.submissions || 0,
+      revisions: endSessionPreview.summary.insightBrief.revisions || 0
+    }), ...(endSessionPreview.summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`), tx('end_session.brief_privacy', 'Privacy: aggregate participation evidence only; no raw answers or account IDs.')].join('\n')),
     className: "rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100"
   }, tx('end_session.copy_brief', 'Copy brief'))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3"
@@ -210,7 +214,7 @@ function EndSessionPreview({
   }, endSessionPreview.summary.insightBrief.byKind.map(item => /*#__PURE__*/React.createElement("span", {
     key: item.kind,
     className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800"
-  }, item.kind.replace(/_/g, ' '), " \xB7 ", item.submitted, "/", item.invited))), (endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.kind_' + item.kind, item.kind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase())), " \xB7 ", item.submitted, "/", item.invited))), (endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "mt-3 rounded-xl border border-violet-200 bg-white p-3",
     "aria-label": tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')
@@ -283,7 +287,10 @@ function EndSessionPreview({
   }, endSessionPreview.summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => /*#__PURE__*/React.createElement("span", {
     key: group.groupId,
     className: "rounded-full bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-900"
-  }, rosterKey?.groups?.[group.groupId]?.name || group.groupId, ": ", group.followUpCount, " follow-up")))), (endSessionPreview.summary.insightBrief.nextMoves || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.group_follow_up', '{name}: {count} follow-up', {
+    name: rosterKey?.groups?.[group.groupId]?.name || group.groupId,
+    count: group.followUpCount
+  }))))), (endSessionPreview.summary.insightBrief.nextMoves || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] font-black uppercase tracking-wide text-indigo-900"

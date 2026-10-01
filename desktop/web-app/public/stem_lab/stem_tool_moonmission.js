@@ -567,6 +567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       transit: mmCleanTransitPlayback(d).transitResult,
       loi: mmCleanLoiPlayback(d).loiResult,
       lunarEnvironment: mmCleanLunarEnvironment(d).lunarEnvironmentResult,
+      departure: mmCleanDeparture(d).departureResult,
       poweredApproach: mmCleanApproachPlayback(d).approachResult,
       returnFlight: mmCleanReturnPlayback(d).returnResult,
       ascent: mmCleanAscentPlayback(d).ascentResult,
@@ -696,6 +697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       (mmNum(sum.loi.perilune) ? 'perilune ' + (sum.loi.perilune / 1000).toFixed(1) + ' km' : 'perilune unavailable') +
       (mmNum(sum.loi.apolune) ? ', apolune ' + (sum.loi.apolune / 1000).toFixed(1) + ' km.' : ', open escape trajectory.'));
     if (sum.lunarEnvironment) ln('Lunar orbit environment: ' + (sum.lunarEnvironment.duration/60).toFixed(2) + ' min orbit; radio blocked ' + (sum.lunarEnvironment.radioBlockedSeconds/60).toFixed(2) + ' min; total eclipse ' + (sum.lunarEnvironment.totalEclipseSeconds/60).toFixed(2) + ' min; partial eclipse ' + sum.lunarEnvironment.partialEclipseSeconds.toFixed(2) + ' s; Sun direction ' + sum.lunarEnvironment.sunAngle + MM_DEG_SIGN + '. Fixed-body geometry in the achieved insertion orbit.');
+    if (sum.departure) ln('Lunar departure exercise: ' + mmDepartureText(sum.departure) + ' Circular 110 km reference orbit; Earth return uses a separate preset.');
     var L = sum.landing;
     ln('Landing: ' + (!L ? 'not flown'
       : (L.crashed ? 'hard landing at ' : 'touchdown at ') + L.vVel.toFixed(1) + ' m/s, drift ' + L.hVel.toFixed(1) + ' m/s, '
@@ -1356,7 +1358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.textAlign='left';ctx.fillStyle='#e2e8f0';ctx.font='10px system-ui';ctx.fillText('0 min',tx,H-12);ctx.textAlign='right';ctx.fillText((p.orbit.period/60).toFixed(1)+' min',W-tx,H-12);ctx.restore();
     return {scaleX:scale,scaleY:scale,moonRadius:mr,spacecraftX:scx,spacecraftY:scy,radioEndX:radioEnd[0],radioEndY:radioEnd[1],plumeVisible:false};
   }
-  function mmRenderLunarEnvironmentCard(h,d,upd) {
+  function mmRenderLunarEnvironmentCard(h, d, upd, announceToSR) {
     var profile=mmLunarEnvironmentProfile(d.loiPlan,d.lunarEnvironmentSunAngle);if(!profile)return null;
     var run=d.lunarEnvironmentRun||{time:0,recorded:false};
     var button={minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#1e293b',color:'#f8fafc',fontSize:'13px',cursor:'pointer'};
@@ -1414,7 +1416,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{drawLunarEnvironment:mmDrawLunarEnvironment});}catch(e){}
 
-  function mmRenderApproachCard(h,d,upd) {
+  function mmRenderDepartureCard(h, d, upd, announceToSR) {
+    var p=mmDepartureProfile(d.departurePlan,mmDepartureFuel(d)),run=d.departureRun||{time:0,recorded:false},pausedUI=d.departurePaused||_mmAnimPaused;
+    var style={minHeight:'44px',padding:'8px 12px',borderRadius:'8px',border:'1px solid #64748b',background:'#1e293b',color:'#f8fafc',fontSize:'13px'};
+    function action(ev,name,value){var host=ev.currentTarget.closest('[data-departure-workspace]'),cv=host&&host.querySelector('[data-departure-canvas]');if(cv&&cv._departureAction)cv._departureAction(name,value);}
+    function planInput(field,value){var next=Object.assign({},d.departurePlan);next[field]=Number(value);return next;}
+    return h('section',{'data-departure-workspace':true,style:{padding:'14px',background:'#0f172a',border:'1px solid #334155',borderRadius:'12px',color:'#e2e8f0'}},
+      h('p',{style:{color:'#7dd3fc',fontSize:'11px',letterSpacing:'.1em',margin:0}},'COLUMBIA / LUNAR DEPARTURE LAB'),
+      h('h3',{style:{fontSize:'20px',color:'#f8fafc',margin:'5px 0'}},'The burn that leaves the Moon'),
+      h('p',{style:{fontSize:'13px',lineHeight:1.65,color:'#cbd5e1'}},'Prograde thrust raises orbital energy. Escape requires positive energy after cutoff; timing rotates the outgoing direction. Compare the burns below, then inspect the separate Earth-return preset. Playing either view pauses the other.'),
+      h('p',{'data-departure-fuel-source':p.fuel.source,style:{fontSize:'12px',lineHeight:1.65,color:'#a5f3fc'}},p.fuel.source==='insertion'?'Starting SPS fuel: '+p.fuel.amount.toFixed(1)+' kg carried from your recorded insertion.':'Starting SPS fuel: '+p.fuel.amount.toFixed(1)+' kg from the reference insertion preset; this save has no validated capture.'),
+      h('div',{role:'group','aria-label':'Departure comparisons',style:{display:'flex',flexWrap:'wrap',gap:'8px'}},[['short','Short burn',80,0],['reference','Reference burn',151,0],['late','Five minutes late',151,300],['exhaustion','Burn to fuel exhaustion',300,0]].map(function(a){return h('button',{key:a[0],type:'button','data-departure-preset':a[0],style:style,onClick:function(ev){action(ev,'plan',{burnSeconds:a[2],offsetSeconds:a[3]});}},a[1]);})),
+      h('label',{style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Commanded SPS burn (seconds)',h('input',{'data-departure-burn':true,'aria-label':'Commanded SPS burn (seconds)',type:'range',min:0,max:300,step:.5,value:d.departurePlan.burnSeconds,style:{width:'100%',minHeight:'44px',accentColor:'#fb923c'},onChange:function(ev){action(ev,'plan',planInput('burnSeconds',ev.target.value));}})),
+      h('label',{style:{display:'block',fontSize:'12px'}},'Ignition offset from reference (seconds)',h('input',{'data-departure-offset':true,'aria-label':'Ignition offset from reference (seconds)',type:'range',min:-600,max:600,step:5,value:d.departurePlan.offsetSeconds,style:{width:'100%',minHeight:'44px',accentColor:'#c4b5fd'},onChange:function(ev){action(ev,'plan',planInput('offsetSeconds',ev.target.value));}})),
+      h('p',{'data-departure-plan-label':true,style:{fontSize:'12px',color:'#fed7aa'}},d.departurePlan.burnSeconds.toFixed(1)+' s commanded; ignition '+d.departurePlan.offsetSeconds.toFixed(0)+' s from reference'),
+      h('label',{style:{fontSize:'12px'}},'Trajectory view ',h('select',{'data-departure-view-control':true,'aria-label':'Departure trajectory view',value:d.departureView,style:style,onChange:function(ev){action(ev,'view',ev.target.value);}},h('option',{value:'burn'},'Lunar burn'),h('option',{value:'escape'},'Departure coast'))),
+      h('canvas',{'data-departure-canvas':true,role:'img','aria-label':'Computed lunar departure: equal-axis Moon, reference orbit, finite burn and coast, velocity, radio ray and outgoing direction. Measurements and controls follow.',style:{display:'block',width:'100%',height:'360px',borderRadius:'8px',marginTop:'10px'},ref:function(cv){
+        if(!cv||cv._departureInit)return;cv._departureInit=true;var ctx=cv.getContext('2d');if(!ctx)return;
+        var profile=p,time=run.time,recorded=run.recorded,paused=!!d.departurePaused,rate=d.departurePlaybackRate,view=d.departureView;
+        var width=cv.offsetWidth||500,height=cv.offsetHeight||360,lastTs=null,lastPublish=-Infinity,stamp='',observer;
+        if(!recorded)upd('departureResult',null);
+        function resize(){width=cv.offsetWidth||width;height=cv.offsetHeight||height;cv.width=width*2;cv.height=height*2;ctx.setTransform(2,0,0,2,0,0);}
+        resize();if(typeof ResizeObserver==='function'){observer=new ResizeObserver(resize);observer.observe(cv);}
+        function persist(){if(time>=profile.summary.duration&&!recorded){recorded=true;upd('departureResult',Object.assign({},profile.summary));if(typeof announceToSR==='function')announceToSR(mmDepartureText(profile.summary));}
+          var next=profile.plan.burnSeconds+':'+profile.plan.offsetSeconds+':'+time+':'+recorded;if(next===stamp)return;stamp=next;
+          upd('departureRun',{version:1,burnSeconds:profile.plan.burnSeconds,offsetSeconds:profile.plan.offsetSeconds,initialFuel:profile.fuel.amount,fuelSource:profile.fuel.source,time:time,recorded:recorded});}
+        function visibility(){lastTs=null;persist();}document.addEventListener('visibilitychange',visibility);
+        cv._departureAction=function(name,value){
+          if(name==='plan'){var next=mmDeparturePlan(value);if(next.burnSeconds!==profile.plan.burnSeconds||next.offsetSeconds!==profile.plan.offsetSeconds){profile=mmDepartureProfile(next,profile.fuel);time=0;recorded=false;paused=true;stamp='';upd('departurePlan',next);upd('departureResult',null);upd('departurePaused',true);}}
+          if(name==='seek'){time=Math.max(0,Math.min(profile.summary.duration,Number(value)||0));paused=true;upd('departurePaused',true);}
+          if(name==='review'){time=profile.summary.duration;paused=true;view='escape';upd('departurePaused',true);upd('departureView',view);}
+          if(name==='pause'){paused=!!value;upd('departurePaused',paused);if(!paused){var host=cv.closest('[data-return-workspace]'),other=host&&host.querySelector('[data-teicoast-canvas]');if(other&&other._returnAction)other._returnAction('pause',true);upd('animPaused',false);}}
+          if(name==='rate'&&[1,10,60,240].indexOf(Number(value))>=0){rate=Number(value);upd('departurePlaybackRate',rate);}
+          if(name==='view'){view=value==='escape'?'escape':'burn';upd('departureView',view);}
+          lastTs=null;persist();
+        };
+        function paint(ts){if(!document.contains(cv)){if(observer)observer.disconnect();document.removeEventListener('visibilitychange',visibility);cv._departureAction=null;return;}
+          var running=!paused&&!_mmAnimPaused&&!document.hidden;if(running&&lastTs!==null)time=Math.min(profile.summary.duration,time+Math.max(0,Math.min(.1,(ts-lastTs)/1000))*rate);lastTs=running&&Number.isFinite(ts)?ts:null;
+          var s=mmDepartureSample(profile,time),pic=mmDrawDeparture(ctx,width,height,s,profile,view);
+          cv.dataset.departureTime=String(time);cv.dataset.departureMass=String(s.mass);cv.dataset.departureFuel=String(s.propellant);cv.dataset.departureSpeed=String(s.speed);cv.dataset.departureEnergy=String(s.energy);cv.dataset.departurePlume=pic.plumeVisible?'on':'off';cv.dataset.departurePhase=s.phase;cv.dataset.departureRadio=!s.earth.visible?'blocked':'contact';cv.dataset.departureScale=String(pic.scale);
+          var values={time:time.toFixed(1)+' s',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',escapeSpeed:(s.escapeSpeed/1000).toFixed(3)+' km/s',energy:(s.energy/1e6).toFixed(3)+' MJ/kg',mass:s.mass.toFixed(1)+' kg',fuel:s.propellant.toFixed(1)+' kg',thrust:(s.thrust/1000).toFixed(2)+' kN',delta:s.idealDeltaV.toFixed(1)+' m/s',radio:!s.earth.visible?'Moon blocks Earth':'Direct link '+s.earth.oneWayDelay.toFixed(3)+' s',direction:time<profile.cutoffTime?'Measured after cutoff':profile.orbit.directionError===null?'Bound orbit':profile.orbit.directionError.toFixed(1)+' degrees',phase:s.phase};
+          var host=cv.closest('[data-departure-workspace]');if(host){host.querySelectorAll('[data-departure-value]').forEach(function(node){node.textContent=values[node.getAttribute('data-departure-value')]||'';});var slider=host.querySelector('[data-departure-seek]');if(slider&&document.activeElement!==slider)slider.value=String(time);var status=host.querySelector('[data-departure-status]');if(status)status.textContent=s.engineOn?'SPS firing: mass falls as orbital energy rises.':s.phase==='preburn'?'Unpowered circular coast before ignition.':s.energy>0?'Engine off: positive lunar escape energy.':'Engine off: the spacecraft remains bound to the Moon.';}
+          if(Number.isFinite(ts)&&ts-lastPublish>=250||time>=profile.summary.duration){lastPublish=ts;persist();}requestAnimationFrame(paint);
+        }requestAnimationFrame(paint);
+      }}),
+      h('p',{'data-departure-status':true,style:{fontSize:'13px',fontWeight:700,color:'#a5f3fc'}},'Coast before ignition'),
+      h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(116px,1fr))',gap:'10px',margin:'12px 0'}},[['time','Elapsed time'],['altitude','Lunar altitude'],['speed','Lunar speed'],['escapeSpeed','Local escape speed'],['energy','Specific orbital energy'],['mass','CSM mass'],['fuel','SPS fuel remaining'],['thrust','SPS thrust'],['delta','Ideal engine delta-v'],['radio','Earth radio'],['direction','Outgoing direction'],['phase','Flight phase']].map(function(a){return h('div',{key:a[0]},h('dt',{style:{fontSize:'11px',color:'#cbd5e1'}},a[1]),h('dd',{'data-departure-value':a[0],style:{margin:0,minHeight:'22px',color:'#f8fafc',fontSize:'14px',fontWeight:700,fontVariantNumeric:'tabular-nums'}},'—'));})),
+      h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px',alignItems:'center'}},h('button',{type:'button','data-departure-pause':true,style:style,onClick:function(ev){action(ev,'pause',!pausedUI);}},pausedUI?'Play departure':'Pause departure'),
+        h('label',{style:{fontSize:'12px'}},'Playback speed ',h('select',{'data-departure-rate':true,'aria-label':'Departure playback speed',value:d.departurePlaybackRate,style:style,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60,240].map(function(n){return h('option',{value:n,key:n},n+'×');}))),
+        h('button',{type:'button','data-departure-review':true,style:style,onClick:function(ev){action(ev,'review');}},'Review departure result')),
+      h('label',{htmlFor:'mm-departure-playback',style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Inspect the computed departure'),
+      h('input',{id:'mm-departure-playback','data-departure-seek':true,type:'range',min:0,max:Math.ceil(p.summary.duration*10)/10,step:.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.key==='Home'||ev.key==='End'){ev.preventDefault();action(ev,ev.key==='End'?'review':'seek',0);}}}),
+      h('div',{role:'group','aria-label':'Departure milestones',style:{display:'flex',flexWrap:'wrap',gap:'8px'}},p.events.map(function(e){return h('button',{key:e.kind,type:'button','data-departure-event':e.kind,style:style,onClick:function(ev){action(ev,'seek',e.time);}},e.label);})),
+      d.departureResult&&h('p',{'data-departure-result':d.departureResult.outcome,role:'status',style:{padding:'12px',border:'1px solid #64748b',borderRadius:'8px',fontSize:'13px',lineHeight:1.7,color:'#ecfdf5',background:'#16352c'}},mmDepartureText(d.departureResult)),
+      h('details',{'data-departure-model-note':true,style:{fontSize:'12px',lineHeight:1.7,color:'#cbd5e1',marginTop:'12px'}},h('summary',{style:{cursor:'pointer'}},'Departure model and limits'),
+        h('p',null,'This separate planar exercise starts in the docking exercise’s circular 110 km reference orbit after LM jettison. A 10,000 kg CSM mass without SPS propellant is a teaching preset, not a reconstructed vehicle mass. Recorded insertion supplies the remaining SPS fuel; intervening CSM burns are omitted.'),
+        h('p',null,'The 20,500 lbf SPS engine uses the insertion model’s rounded 314 s specific impulse. Numerical integration follows velocity with constant thrust, mass flow and spherical lunar gravity. The fixed reference ignition angle aligns the nominal 151 s burn’s outgoing lunar asymptote with a fixed Earth direction. Changing burn length or timing does not retarget that angle.'),
+        h('p',null,'The coast ends at 10,000 km lunar radius, one bound revolution or four hours after cutoff. Moon-only positive energy describes lunar escape; alignment alone cannot establish an Earth intercept or safe entry. Earth and Sun gravity, moving bodies, three-dimensional targeting and attitude dynamics are omitted. The Earth-return model below retains its independent entry-matched preset.'),
+        h('p',null,'Moon and paths share one scale in both views. The spacecraft and velocity arrow are enlarged. The dashed purple line is the outgoing hyperbola asymptote, displaced from the lunar centre by the trajectory’s impact parameter. Radio uses finite-distance Earth blockage. Review is optional and awards no XP.'),
+        h('a',{href:'https://www.nasa.gov/history/50-years-ago-apollo-11-the-journey-home/',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc'}},'NASA: Apollo 11’s departure burn'), ' · ',h('a',{href:'https://ntrs.nasa.gov/citations/19730023031',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc'}},'NASA service propulsion report')));
+  }
+
+  function mmRenderApproachCard(h, d, upd, announceToSR) {
     var profile=mmApproachProfile(d.approachPlan), run=d.approachRun||{time:0,recorded:false};
     var button={minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#1e293b',color:'#f8fafc',fontSize:'13px',cursor:'pointer'};
     function action(ev,name,value) {var root=ev.currentTarget.closest('[data-approach-workspace]'),cv=root&&root.querySelector('[data-approach-canvas]');if(cv&&cv._approachAction)cv._approachAction(name,value);}
@@ -2955,7 +3018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{tliPhysics:MM_TLI,tliPlan:mmTliPlan,tliInitialState:mmTliInitialState,tliStep:mmTliStep,tliElements:mmTliElements,tliProfile:mmTliProfile,tliSample:mmTliSample,cleanTliPlayback:mmCleanTliPlayback,drawTliScene:mmDrawTliScene});}catch(e){}
 
-  function mmRenderTliCard(h,d,upd) {
+  function mmRenderTliCard(h, d, upd, announceToSR) {
     var profile=mmTliProfile(d.tliPlan),run=d.tliRun||{time:0,recorded:false,orbitTime:d.orbitRun?d.orbitRun.time:0};
     var button={minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#1e293b',color:'#f8fafc',fontSize:'13px',cursor:'pointer'};
     function action(ev,name,value){var root=ev.currentTarget.closest('[data-tli-workspace]'),cv=root&&root.querySelector('[data-tli-canvas]');if(cv&&cv._tliAction)cv._tliAction(name,value);}
@@ -3566,6 +3629,156 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     segmentMoon:mmSegmentMoon,lunarEarthLink:mmLunarEarthLink,lunarSunlight:mmLunarSunlight,
     lunarEnvironmentOrbit:mmLunarEnvironmentOrbit,lunarEnvironmentProfile:mmLunarEnvironmentProfile,
     lunarEnvironmentSample:mmLunarEnvironmentSample,cleanLunarEnvironment:mmCleanLunarEnvironment}); } catch(e) {}
+
+  // Lunar departure laboratory: circular reference orbit after LM jettison.
+  // Finite SPS thrust follows velocity; Moon-only SI Cartesian RK4 dynamics.
+  // The outgoing asymptote is a direction comparison, not an Earth intercept.
+  var MM_DEPARTURE = Object.freeze({ altitude:110000, dryMass:10000, defaultBurn:151,
+    preburn:90, boundary:10000000, maxCoast:14400, step:0.5, coastStep:5 });
+  var _mmDepartureCache=[], _mmDepartureAngle=null;
+  function mmDeparturePlan(raw) {
+    raw=mmIsObj(raw)?raw:{};
+    return { burnSeconds:mmNum(raw.burnSeconds)?Math.max(0,Math.min(300,raw.burnSeconds)):151,
+      offsetSeconds:mmNum(raw.offsetSeconds)?Math.max(-600,Math.min(600,raw.offsetSeconds)):0 };
+  }
+  function mmDepartureFuel(raw) {
+    var loi=mmCleanLoiPlayback(raw), valid=loi.loiResult&&loi.loiResult.outcome==='captured';
+    return { amount:valid?loi.loiResult.propellantRemaining:mmLoiProfile().summary.propellantRemaining,
+      source:valid?'insertion':'preset' };
+  }
+  function mmDepartureStep(q,dt,burning) {
+    var flow=burning?MM_LOI.thrust/(MM_LOI.isp*MM_LOI.g0):0;
+    function derivative(v) {
+      var r=Math.hypot(v[0],v[1]),speed=Math.hypot(v[2],v[3]),g=-MM_LOI.mu/(r*r*r);
+      var a=burning?MM_LOI.thrust/(MM_DEPARTURE.dryMass+Math.max(0,v[4]))/speed:0;
+      return [v[2],v[3],g*v[0]+a*v[2],g*v[1]+a*v[3],-flow];
+    }
+    var a=derivative(q),b=derivative(q.map(function(v,i){return v+dt*a[i]/2;}));
+    var c=derivative(q.map(function(v,i){return v+dt*b[i]/2;}));
+    var d=derivative(q.map(function(v,i){return v+dt*c[i];}));
+    return q.map(function(v,i){return i===4?Math.max(0,v-flow*dt):v+dt*(a[i]+2*b[i]+2*c[i]+d[i])/6;});
+  }
+  function mmDepartureElements(q) {
+    var r=Math.hypot(q[0],q[1]),v2=q[2]*q[2]+q[3]*q[3],dot=q[0]*q[2]+q[1]*q[3];
+    var energy=v2/2-MM_LOI.mu/r,h=q[0]*q[3]-q[1]*q[2];
+    var ex=((v2-MM_LOI.mu/r)*q[0]-dot*q[2])/MM_LOI.mu,ey=((v2-MM_LOI.mu/r)*q[1]-dot*q[3])/MM_LOI.mu,e=Math.hypot(ex,ey);
+    var direction=energy>0&&e>1?Math.atan2(ey,ex)+(h>=0?1:-1)*Math.acos(-1/e):null;
+    return {energy:energy,angularMomentum:h,eccentricity:e,
+      perilune:h*h/(MM_LOI.mu*(1+e))-MM_LOI.radius,
+      apolune:energy<0?-MM_LOI.mu/(2*energy)*(1+e)-MM_LOI.radius:null,
+      excessSpeed:energy>0?Math.sqrt(2*energy):null,direction:direction,
+      asymptoteX:energy>0?MM_LOI.mu/(2*energy)*ex:null,asymptoteY:energy>0?MM_LOI.mu/(2*energy)*ey:null,
+      directionError:direction===null?null:Math.atan2(Math.sin(direction-Math.PI),Math.cos(direction-Math.PI))*180/Math.PI};
+  }
+  function mmDepartureReferenceAngle() {
+    if(_mmDepartureAngle!==null)return _mmDepartureAngle;
+    var r=MM_LOI.radius+MM_DEPARTURE.altitude,q=[r,0,0,Math.sqrt(MM_LOI.mu/r),mmLoiProfile().summary.propellantRemaining];
+    for(var t=0;t<MM_DEPARTURE.defaultBurn-1e-9;t+=MM_DEPARTURE.step)q=mmDepartureStep(q,Math.min(MM_DEPARTURE.step,MM_DEPARTURE.defaultBurn-t),true);
+    _mmDepartureAngle=Math.PI-mmDepartureElements(q).direction;return _mmDepartureAngle;
+  }
+  function mmDepartureRecord(q,time,p) {
+    var r=Math.hypot(q[0],q[1]),speed=Math.hypot(q[2],q[3]),engine=time>=MM_DEPARTURE.preburn&&time<p.cutoffTime-1e-8;
+    return {time:time,x:q[0],y:q[1],vx:q[2],vy:q[3],propellant:q[4],mass:MM_DEPARTURE.dryMass+q[4],
+      altitude:r-MM_LOI.radius,radius:r,speed:speed,radialSpeed:(q[0]*q[2]+q[1]*q[3])/r,
+      tangentialSpeed:(q[0]*q[3]-q[1]*q[2])/r,escapeSpeed:Math.sqrt(2*MM_LOI.mu/r),energy:speed*speed/2-MM_LOI.mu/r,
+      idealDeltaV:MM_LOI.isp*MM_LOI.g0*Math.log((MM_DEPARTURE.dryMass+p.fuel.amount)/(MM_DEPARTURE.dryMass+q[4])),
+      engineOn:engine,thrust:engine?MM_LOI.thrust:0,loadG:engine?MM_LOI.thrust/((MM_DEPARTURE.dryMass+q[4])*MM_LOI.g0):0,
+      phase:time<MM_DEPARTURE.preburn?'preburn':engine?'burn':'coast',earth:mmLunarEarthLink({x:q[0],y:q[1]})};
+  }
+  function mmDepartureProfile(planRaw,fuelRaw,options) {
+    var plan=mmDeparturePlan(planRaw),fuel=mmIsObj(fuelRaw)&&mmNum(fuelRaw.amount)?
+      {amount:Math.max(0,Math.min(MM_LOI.propellant,fuelRaw.amount)),source:fuelRaw.source==='insertion'?'insertion':'preset'}:mmDepartureFuel({});
+    options=options||{};var step=mmNum(options.step)?Math.max(.05,Math.min(1,options.step)):MM_DEPARTURE.step;
+    var custom=!!options.step,key=plan.burnSeconds+':'+plan.offsetSeconds+':'+fuel.amount+':'+fuel.source;
+    if(!custom)for(var ci=0;ci<_mmDepartureCache.length;ci++)if(_mmDepartureCache[ci].key===key)return _mmDepartureCache[ci].profile;
+    var flow=MM_LOI.thrust/(MM_LOI.isp*MM_LOI.g0),actual=Math.min(plan.burnSeconds,fuel.amount/flow);
+    var p={version:1,plan:Object.freeze(plan),fuel:Object.freeze(fuel),cutoffTime:MM_DEPARTURE.preburn+actual};
+    var r=MM_LOI.radius+MM_DEPARTURE.altitude,n=Math.sqrt(MM_LOI.mu/(r*r*r));
+    var theta=mmDepartureReferenceAngle()+n*(plan.offsetSeconds-MM_DEPARTURE.preburn),v=Math.sqrt(MM_LOI.mu/r);
+    var q=[r*Math.cos(theta),r*Math.sin(theta),-v*Math.sin(theta),v*Math.cos(theta),fuel.amount],time=0;
+    var samples=[Object.freeze(mmDepartureRecord(q,0,p))],events=[],cutoff=null,escapeTime=null,reached=false;
+    var dt=0,next=null,lo=0,hi=0,mid=0,k=0;
+    function event(kind,label,state,t){events.push(Object.freeze({kind:kind,label:label,time:t,x:state[0],y:state[1]}));}
+    while(time<MM_DEPARTURE.preburn-1e-8){dt=Math.min(5,MM_DEPARTURE.preburn-time);q=mmDepartureStep(q,dt,false);time+=dt;samples.push(Object.freeze(mmDepartureRecord(q,time,p)));}
+    event('ignition',actual>0?'SPS ignition':'No burn commanded',q,time);
+    while(time<p.cutoffTime-1e-8){
+      dt=Math.min(step,p.cutoffTime-time);next=mmDepartureStep(q,dt,true);var before=mmDepartureElements(q).energy,after=mmDepartureElements(next).energy;
+      if(escapeTime===null&&before<0&&after>=0){lo=0;hi=dt;for(k=0;k<38;k++){mid=(lo+hi)/2;if(mmDepartureElements(mmDepartureStep(q,mid,true)).energy<0)lo=mid;else hi=mid;}escapeTime=time+(lo+hi)/2;event('escape','Zero escape energy',mmDepartureStep(q,(lo+hi)/2,true),escapeTime);}
+      q=next;time+=dt;samples.push(Object.freeze(mmDepartureRecord(q,time,p)));
+    }
+    cutoff=mmDepartureRecord(q,p.cutoffTime,p);event('cutoff',actual+1e-8<plan.burnSeconds?'Fuel exhaustion / cutoff':'SPS cutoff',q,p.cutoffTime);
+    var orbit=mmDepartureElements(q),period=orbit.energy<0?2*Math.PI*Math.sqrt(Math.pow(-MM_LOI.mu/(2*orbit.energy),3)/MM_LOI.mu):Infinity;
+    var endTime=p.cutoffTime+Math.min(MM_DEPARTURE.maxCoast,period);
+    while(time<endTime-1e-8){dt=Math.min(custom?step:MM_DEPARTURE.coastStep,endTime-time);next=mmDepartureStep(q,dt,false);
+      if(Math.hypot(q[0],q[1])<MM_DEPARTURE.boundary&&Math.hypot(next[0],next[1])>=MM_DEPARTURE.boundary){lo=0;hi=dt;for(k=0;k<38;k++){mid=(lo+hi)/2;if(Math.hypot.apply(null,mmDepartureStep(q,mid,false).slice(0,2))<MM_DEPARTURE.boundary)lo=mid;else hi=mid;}dt=(lo+hi)/2;next=mmDepartureStep(q,dt,false);reached=true;}
+      q=next;time+=dt;samples.push(Object.freeze(mmDepartureRecord(q,time,p)));if(reached)break;
+    }
+    event('end',reached?'10,000 km lunar radius':orbit.energy<0&&period<=MM_DEPARTURE.maxCoast?'One bound revolution':'Coast time limit',q,time);
+    var last=samples[samples.length-1];
+    p.cutoff=Object.freeze(cutoff);p.orbit=Object.freeze(orbit);p.events=Object.freeze(events);p.samples=Object.freeze(samples);
+    p.maximumRadius=samples.reduce(function(peak,row){return Math.max(peak,row.radius);},r);
+    p.summary=Object.freeze({version:1,burnSeconds:plan.burnSeconds,offsetSeconds:plan.offsetSeconds,initialFuel:fuel.amount,fuelSource:fuel.source,
+      outcome:orbit.energy>0?'escape':'bound',duration:time,actualBurn:actual,propellantUsed:fuel.amount-cutoff.propellant,propellantRemaining:cutoff.propellant,
+      cutoffMass:cutoff.mass,cutoffSpeed:cutoff.speed,cutoffAltitude:cutoff.altitude,energy:orbit.energy,excessSpeed:orbit.excessSpeed,
+      directionError:orbit.directionError,idealDeltaV:cutoff.idealDeltaV,perilune:orbit.perilune,apolune:orbit.apolune,
+      fuelExhausted:actual+1e-8<plan.burnSeconds,boundaryReached:reached,finalRadius:last.radius,escapeTime:escapeTime});
+    Object.freeze(p);if(!custom){_mmDepartureCache.push({key:key,profile:p});if(_mmDepartureCache.length>8)_mmDepartureCache.shift();}return p;
+  }
+  function mmDepartureSample(p,seconds) {
+    var t=mmNum(seconds)?Math.max(0,Math.min(p.summary.duration,seconds)):0,rows=p.samples;
+    var lo=0,hi=rows.length-1;while(hi-lo>1){var mid=(lo+hi)>>1;if(rows[mid].time<=t)lo=mid;else hi=mid;}
+    var a=t>=p.summary.duration?rows[hi]:rows[lo],q=[a.x,a.y,a.vx,a.vy,a.propellant];
+    if(t>a.time)q=mmDepartureStep(q,t-a.time,a.engineOn);return mmDepartureRecord(q,t,p);
+  }
+  function mmCleanDeparture(raw) {
+    raw=mmIsObj(raw)?raw:{};var plan=mmDeparturePlan(raw.departurePlan),saved=raw.departureRun;
+    var clean={departureOpen:raw.departureOpen===true,departurePlan:plan,departureRun:null,departureResult:null,
+      departurePaused:raw.departurePaused!==false,departurePlaybackRate:[1,10,60,240].indexOf(raw.departurePlaybackRate)>=0?raw.departurePlaybackRate:60,
+      departureView:raw.departureView==='escape'?'escape':'burn'};
+    // Closed, unused labs do not calculate the insertion or departure profiles.
+    if(!mmIsObj(saved)||saved.version!==1||typeof saved.recorded!=='boolean'||!mmNum(saved.time)||saved.time<0||saved.burnSeconds!==plan.burnSeconds||saved.offsetSeconds!==plan.offsetSeconds)return clean;
+    var fuel=mmDepartureFuel(raw);if(saved.initialFuel!==fuel.amount||saved.fuelSource!==fuel.source)return clean;
+    var expected=mmDepartureProfile(plan,fuel).summary,claimed=raw.departureResult;
+    var valid=mmIsObj(claimed)&&Object.keys(expected).every(function(k){return typeof expected[k]==='number'?mmNum(claimed[k])&&Math.abs(claimed[k]-expected[k])<1e-6:claimed[k]===expected[k];});
+    var recorded=saved.recorded&&valid;
+    clean.departureRun={version:1,burnSeconds:plan.burnSeconds,offsetSeconds:plan.offsetSeconds,initialFuel:fuel.amount,fuelSource:fuel.source,time:saved.time>=expected.duration&&!recorded?0:Math.min(expected.duration,saved.time),recorded:recorded};
+    if(recorded)clean.departureResult=Object.assign({},expected);return clean;
+  }
+  function mmDepartureText(s) {
+    return (s.outcome==='escape'?'Lunar escape':'Still bound to the Moon')+': '+s.actualBurn.toFixed(1)+' s SPS burn; '+s.propellantUsed.toFixed(1)+' kg used, '+s.propellantRemaining.toFixed(1)+' kg remaining. '+
+      (s.excessSpeed===null?'A longer burn is needed to reach positive escape energy.':'Lunar excess speed '+(s.excessSpeed/1000).toFixed(3)+' km/s; outgoing direction '+s.directionError.toFixed(1)+' degrees from the fixed Earth direction.')+
+      (s.fuelExhausted?' Fuel exhausted before commanded cutoff.':'');
+  }
+  function mmDrawDeparture(ctx,w,h,s,p,view) {
+    var escape=view==='escape',pad=28,span=escape?Math.max(2.4e6,p.maximumRadius*1.12):2.8e6;
+    var scale=Math.min(w-2*pad,h-110)/(2*span),cx=w/2,cy=(h+25)/2;
+    function point(x,y){return {x:cx+x*scale,y:cy-y*scale};}
+    ctx.save();ctx.fillStyle='#07111f';ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#cbd5e1';ctx.font='11px monospace';ctx.fillText('MOON FRAME / '+(escape?'DEPARTURE COAST':'BURN VIEW'),14,22);
+    ctx.fillStyle='#7dd3fc';ctx.fillText('Earth direction',14,42);ctx.beginPath();ctx.moveTo(150,38);ctx.lineTo(120,38);ctx.lineTo(126,34);ctx.moveTo(120,38);ctx.lineTo(126,42);ctx.strokeStyle='#7dd3fc';ctx.stroke();
+    var mr=MM_LOI.radius*scale;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.fillStyle='#64748b';ctx.fill();ctx.strokeStyle='#cbd5e1';ctx.stroke();
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.clip();ctx.fillStyle='#475569';
+    [[-.4,.2,.12],[.2,-.4,.18],[.45,.28,.11],[-.1,-.13,.2],[-.55,-.45,.08]].forEach(function(c){ctx.beginPath();ctx.arc(cx+c[0]*mr,cy+c[1]*mr,c[2]*mr,0,Math.PI*2);ctx.fill();});ctx.restore();
+    ctx.setLineDash([4,5]);ctx.strokeStyle='#94a3b8';ctx.beginPath();ctx.arc(cx,cy,(MM_LOI.radius+MM_DEPARTURE.altitude)*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.save();ctx.beginPath();ctx.rect(pad,55,w-2*pad,h-85);ctx.clip();
+    var segments=[{from:0,to:MM_DEPARTURE.preburn,color:'#94a3b8'},{from:MM_DEPARTURE.preburn,to:p.cutoffTime,color:'#fb923c'},{from:p.cutoffTime,to:s.time,color:'#67e8f9'}];
+    segments.forEach(function(seg){if(s.time<=seg.from)return;ctx.strokeStyle=seg.color;ctx.lineWidth=2;ctx.beginPath();var started=false;p.samples.forEach(function(a){if(a.time<seg.from||a.time>Math.min(seg.to,s.time))return;var z=point(a.x,a.y);if(!started){ctx.moveTo(z.x,z.y);started=true;}else ctx.lineTo(z.x,z.y);});if(s.time<=seg.to&&started){var z=point(s.x,s.y);ctx.lineTo(z.x,z.y);}ctx.stroke();});
+    var asymptote=s.time>=p.cutoffTime?p.orbit.direction:null;
+    if(asymptote!==null){var c=point(p.orbit.asymptoteX,p.orbit.asymptoteY);ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+Math.cos(asymptote)*span*3*scale,c.y-Math.sin(asymptote)*span*3*scale);ctx.strokeStyle='#c4b5fd';ctx.setLineDash([6,5]);ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([]);}
+    var z=point(s.x,s.y),radioEnd=s.earth.hit||s.earth.target,rz=point(radioEnd.x,radioEnd.y);
+    ctx.beginPath();ctx.moveTo(z.x,z.y);ctx.lineTo(rz.x,rz.y);ctx.strokeStyle=!s.earth.visible?'#fda4af':'#7dd3fc';ctx.lineWidth=1;ctx.setLineDash([2,5]);ctx.stroke();ctx.setLineDash([]);
+    ctx.translate(z.x,z.y);var heading=-Math.atan2(s.vy,s.vx);ctx.rotate(heading);
+    if(s.engineOn){ctx.beginPath();ctx.moveTo(-19,-4);ctx.lineTo(-40,0);ctx.lineTo(-19,4);ctx.fillStyle='#fdba74';ctx.fill();}
+    ctx.fillStyle='#e2e8f0';ctx.fillRect(-18,-5,17,10);ctx.strokeStyle='#94a3b8';ctx.strokeRect(-18,-5,17,10);ctx.beginPath();ctx.moveTo(-1,-7);ctx.lineTo(12,0);ctx.lineTo(-1,7);ctx.closePath();ctx.fillStyle='#f8fafc';ctx.fill();ctx.restore();
+    z=point(s.x,s.y);var len=26+Math.min(20,s.speed/100),vx=s.vx/s.speed,vy=-s.vy/s.speed;
+    ctx.beginPath();ctx.moveTo(z.x,z.y);ctx.lineTo(z.x+vx*len,z.y+vy*len);ctx.strokeStyle='#86efac';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='#cbd5e1';ctx.font='10px monospace';ctx.fillText('Orange: burn  Cyan: coast',14,h-29);ctx.fillText('Purple: escape asymptote',14,h-14);
+    var bar=Math.min(70,w*.2),km=bar/scale/1000;ctx.beginPath();ctx.moveTo(w-14-bar,h-31);ctx.lineTo(w-14,h-31);ctx.strokeStyle='#cbd5e1';ctx.stroke();ctx.textAlign='right';ctx.fillText(km.toFixed(0)+' km',w-14,h-38);ctx.restore();
+    return {scale:scale,scaleX:scale,scaleY:scale,radioEnd:rz,cx:cx,cy:cy,moonRadius:mr,craft:point(s.x,s.y),plumeVisible:s.engineOn,asymptoteVisible:asymptote!==null,radioBlocked:!s.earth.visible};
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{departure:MM_DEPARTURE,departurePlan:mmDeparturePlan,departureFuel:mmDepartureFuel,
+    departureStep:mmDepartureStep,departureElements:mmDepartureElements,departureProfile:mmDepartureProfile,departureSample:mmDepartureSample,
+    cleanDeparture:mmCleanDeparture,drawDeparture:mmDrawDeparture});}catch(e){}
 
   // Atmospheric entry: planar point-mass dynamics in SI, on a nonrotating sphere.
   // The rounded 122 km / 11.03 km/s interface is an explicit Apollo-like preset;
@@ -4302,10 +4515,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       if (keepClear(cx, cz, -1.2)) continue;
       addRock(cx, cz, 0.035 + Math.pow(rr(), 2.2) * 0.2, rr() < 0.4);
     }
-    // Massifs past the horizon, like the walls of Taurus-Littrow: smooth, rounded,
-    // sandblasted by four billion years of micrometeorites. [dist m, bearing deg, height, radius]
-    var massifs = [[9000, -120, 1900, 4200], [12500, -68, 1350, 3600], [7200, 172, 950, 2700],
-      [14000, 100, 1650, 4800], [10500, 32, 720, 3000], [16000, -158, 1150, 3800], [11000, 138, 800, 2600]].map(function (m, mk) {
+    // Beyond the horizon, the low relief of the Sea of Tranquility: broad wrinkle ridges
+    // and old crater rims a hundred or two metres high, 6-12 km out. From Tranquility
+    // Base no mountains show; these barely lift the skyline above the curve of the
+    // ground. (They were 1-2 km massifs, the valley walls of Apollo 15 and 17, not 11.)
+    // [dist m, bearing deg, height, radius]
+    var massifs = [[6600, -120, 180, 3400], [9000, -68, 140, 3000], [7000, 172, 110, 2600],
+      [11000, 100, 230, 4200], [8000, 32, 90, 2400], [12000, -158, 160, 3600], [9500, 138, 120, 2800]].map(function (m, mk) {
       var a = m[1] * Math.PI / 180;
       return { x: Math.cos(a) * m[0], z: Math.sin(a) * m[0], h: m[2], r: m[3], seed: 40 + mk };
     });
@@ -4401,22 +4617,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     mat.onBeforeCompile = function (shader) {
       shader.uniforms.uLunarOpp = { value: rock ? 0.4 : 0.62 };
       shader.uniforms.uLunarBounce = { value: rock ? 0.34 : 0.3 };
+      shader.uniforms.uLunarCbs = { value: rock ? 0.2 : 0.42 };
+      if (kind === 'ground') shader.uniforms.uLunarBumpRes = { value: (mat.bumpMap && mat.bumpMap.image && mat.bumpMap.image.width) || 512 };
       var vary = rock ? 'varying vec2 vLunarInst;\n' : 'varying vec3 vLunarBake;\n';
       shader.vertexShader = (rock ? 'attribute vec2 lunarInst;\n' : 'attribute vec3 lunarBake;\n') + vary +
         'varying vec2 vLunarXZ;\n' + shader.vertexShader.replace('#include <project_vertex>',
         '#include <project_vertex>\nvec4 lunarW = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\nlunarW = instanceMatrix * lunarW;\n#endif\n' +
         'vLunarXZ = (modelMatrix * lunarW).xz;\n' + (rock ? 'vLunarInst = lunarInst;\n' : 'vLunarBake = lunarBake;\n'));
-      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
+      var head = vary + 'varying vec2 vLunarXZ;\nuniform float uLunarOpp;\nuniform float uLunarBounce;\nuniform float uLunarCbs;\nfloat lunarSunVis = 1.0;\nfloat lunarAO = 1.0;\n';
       var fs = shader.fragmentShader;
       fs = fs.replace('#include <map_fragment>', rock ? '#include <map_fragment>\ndiffuseColor.rgb *= vLunarInst.y;' :
         '#ifdef USE_MAP\nvec3 lunarT1 = mapTexelToLinear(texture2D(map, vLunarXZ * 0.29)).rgb;\n' +
         'vec3 lunarT2 = mapTexelToLinear(texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vLunarXZ * 0.061 + 0.37)).rgb;\n' +
         'diffuseColor.rgb *= lunarT1 * lunarT2 * 21.0;\n#endif\ndiffuseColor.rgb *= vLunarBake.z;');
-      if (!rock) {
+      if (kind === 'ground') {   // a 'print' keeps the standard UV bump: its own relief
         fs = fs.replace('#include <bumpmap_pars_fragment>', THREE.ShaderChunk.bumpmap_pars_fragment.replace(
           /vec2 dHdxy_fwd\(\) \{[\s\S]*?return vec2\( dBx, dBy \);\s*\}/,
-          'float lunarBumpH(vec2 p) {\n  return texture2D(bumpMap, p * 0.29).x' +
-          (lowPower ? '' : ' + 1.6 * texture2D(bumpMap, mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21).x') + ';\n}\n' +
+          // Cubic B-spline filtered height from four bilinear taps. A bilinear texel has
+          // one constant slope, so looking down at your boots the relief broke into 2 cm
+          // facets (the coarse octave spreads 512 texels over 12 m); this slope is smooth.
+          'uniform float uLunarBumpRes;\nfloat lunarTexB(vec2 uv) {\n' +
+          '  vec2 st = uv * uLunarBumpRes - 0.5, i = floor(st), f = st - i;\n' +
+          '  vec2 w0 = (1.0 - f) * (1.0 - f) * (1.0 - f) / 6.0, w3 = f * f * f / 6.0;\n' +
+          '  vec2 w1 = (4.0 - 6.0 * f * f + 3.0 * f * f * f) / 6.0, w2 = 1.0 - w0 - w1 - w3;\n' +
+          '  vec2 g0 = w0 + w1, g1 = w2 + w3;\n' +
+          '  vec2 h0 = (i - 0.5 + w1 / g0) / uLunarBumpRes, h1 = (i + 1.5 + w3 / g1) / uLunarBumpRes;\n' +
+          '  return g0.y * (g0.x * texture2D(bumpMap, h0).x + g1.x * texture2D(bumpMap, vec2(h1.x, h0.y)).x) +\n' +
+          '    g1.y * (g0.x * texture2D(bumpMap, vec2(h0.x, h1.y)).x + g1.x * texture2D(bumpMap, h1).x);\n}\n' +
+          'float lunarBumpH(vec2 p) {\n  return lunarTexB(p * 0.29)' +
+          (lowPower ? '' : ' + 1.6 * lunarTexB(mat2(0.8, -0.6, 0.6, 0.8) * p * 0.083 + 0.21)') + ';\n}\n' +
           'vec2 dHdxy_fwd() {\n  vec2 dx = dFdx(vLunarXZ), dy = dFdy(vLunarXZ);\n  float H = bumpScale * lunarBumpH(vLunarXZ);\n' +
           '  return vec2(bumpScale * lunarBumpH(vLunarXZ + dx) - H, bumpScale * lunarBumpH(vLunarXZ + dy) - H);\n}'));
       }
@@ -4428,6 +4657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         '  float cg = clamp(dot(directLight.direction, geometry.viewDir), -0.999, 1.0);\n' +
         '  float tg = sqrt((1.0 - cg) / (1.0 + cg));\n' +
         '  float surge = 1.0 + uLunarOpp / (1.0 + tg / 0.07);\n' +
+        '  surge += uLunarCbs / (1.0 + tg / 0.012);\n' +   // the narrow core, within a degree or two
         '  float phase = mix(1.0, 0.62, smoothstep(0.0, 1.0, 0.5 - 0.5 * cg));\n' +
         '  reflectedLight.directDiffuse += directLight.color * (ls * surge * phase * lunarSunVis) * material.diffuseColor;\n' +
         '}\n#define RE_Direct RE_Direct_Lunar\n');
@@ -4495,6 +4725,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
   // One boulder shape: an icosahedron pushed about by noise and cut flat underneath.
   // Faces stay flat-normalled, because lunar boulders are angular, not pebbles.
+  // What each moonwalk sample looks like where it lies, in LUNAR_SAMPLES_DATA order:
+  // bright anorthosite, dark basalt, mottled breccia, a core tube (a drive tube hammered
+  // into the soil), a patch of orange volcanic glass soil, dark KREEP basalt, glassy
+  // impact melt and white anorthosite. Colours sit beside the scene's own rock
+  // (0x282722): the rock is what you find, a faint ring on the ground keeps it findable.
+  var MM_EVA_SAMPLE_LOOK = [
+    { color: 0x6e6c67, rough: 0.9, s: 0.2 }, { color: 0x201f1d, rough: 0.85, s: 0.22 },
+    { color: 0x3a3632, rough: 0.95, s: 0.24 }, { tube: true, color: 0x8a8e94 },
+    { color: 0x5a2a0e, rough: 1, s: 0.3, flat: 0.18 }, { color: 0x1d1b19, rough: 0.8, s: 0.2 },
+    { color: 0x121316, rough: 0.28, metal: 0.15, s: 0.14 }, { color: 0x7a7872, rough: 0.85, s: 0.18 }
+  ];
+  // Regolith thrown up by a wheel or a boot, as a velocity in the mover's frame (fwd
+  // along travel, side to the right, up) from three uniform randoms. With no air,
+  // every grain, however fine, then flies a clean parabola and lands with the rocks:
+  // nothing billows, hangs or fades out in mid-air.
+  //  'tread': a rolling wheel's tread point, phi past the contact, moves over the
+  //    ground at v (1 - cos phi, sin phi). It leaves the ground at rest and climbs
+  //    steeply, so grains stream back and up from the rover while still moving
+  //    forward. Most come free low on the wheel; the fender catches what is carried
+  //    past about 40 degrees. At the 11 km/h of the Apollo 16 "Grand Prix" the
+  //    rooster tail stands about a metre high.
+  //  'kick': a toe-off flicks a fan ahead at up to 0.8 of stride speed, 15-45
+  //    degrees up: knee-high arcs that land about a stride ahead.
+  //  'splash': a landing (v = its downward speed) pushes soil out low, all round.
+  var MM_TREAD_PHI_MAX = 40 * Math.PI / 180;
+  function mmDustGrain(kind, v, u1, u2, u3) {
+    if (kind === 'tread') {
+      var phi = 0.12 + (MM_TREAD_PHI_MAX - 0.12) * u1 * u1;
+      return { fwd: v * (1 - Math.cos(phi)), up: v * Math.sin(phi), side: v * (u2 - 0.5) * 0.12, phi: phi };
+    }
+    var kick = kind === 'kick';
+    var s = v * (kick ? 0.3 + 0.5 * u1 : 0.2 + 0.3 * u1);
+    var el = (kick ? 15 + 30 * u2 : 10 + 25 * u2) * Math.PI / 180;
+    var az = kick ? (u3 - 0.5) * 1.0 : u3 * Math.PI * 2;
+    return { fwd: s * Math.cos(el) * Math.cos(az), up: s * Math.sin(el), side: s * Math.cos(el) * Math.sin(az) };
+  }
+  // An Apollo bootprint, as height and alpha over its decal (x across, y along; the
+  // decal is MM_PRINT_W x MM_PRINT_L metres). The overshoe left a print about 33 cm by
+  // 14 cm: a depression a couple of centimetres deep with steep walls, a floor ribbed by
+  // the sole's transverse bars, and a low rim of pushed-up soil. Heights 0..1 (ground
+  // 0.55); the low Sun then lights one wall and shadows the other through the normal.
+  var MM_PRINT_W = 0.2, MM_PRINT_L = 0.38, MM_PRINT_BARS = 14;
+  function mmBootprintMaps(nx, ny) {
+    var h = new Float32Array(nx * ny), a = new Float32Array(nx * ny);
+    var ha = 0.07, hb = 0.165, rr = 0.06;                          // half width, half length, corner
+    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
+      var x = ((i + 0.5) / nx - 0.5) * MM_PRINT_W, y = ((j + 0.5) / ny - 0.5) * MM_PRINT_L;
+      var qx = Math.abs(x) - ha + rr, qy = Math.abs(y) - hb + rr;
+      var sd = Math.sqrt(Math.max(qx, 0) * Math.max(qx, 0) + Math.max(qy, 0) * Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - rr;
+      var ground = 0.55, floor = 0.24 + 0.07 * (0.5 + 0.5 * Math.cos(2 * Math.PI * ((y / MM_PRINT_L + 0.5) * MM_PRINT_BARS + Math.abs(x) * 3)));
+      var v;
+      if (sd < -0.01) v = floor;
+      else if (sd < 0) v = floor + (ground - floor) * mmSmooth(-0.01, 0, sd);
+      else v = ground + 0.08 * Math.exp(-((sd - 0.006) * (sd - 0.006)) / 0.00003);
+      h[j * nx + i] = v;
+      a[j * nx + i] = 1 - mmSmooth(0.012, 0.03, sd);
+    }
+    return { nx: nx, ny: ny, height: h, alpha: a };
+  }
   function mmBoulderGeometry(THREE, seed) {
     var g = new THREE.IcosahedronGeometry(1, 1), p = g.attributes.position.array;
     for (var i = 0; i < p.length; i += 3) {
@@ -4871,7 +5160,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return st;
   }
 
-  var MM_EVA_GAIT = { g: 1.62, walk: 1.25, lope: 2.3, comfort: 0.7, grip: 1.9, brake: 1.45, air: 0.12, lopeAfter: 1.1 };
+  // The suited astronaut: about 166 kg (crew member plus A7L suit and backpack). That
+  // mass resists every start, stop and turn exactly as it would on Earth, but in one
+  // sixth gravity it weighs what 27 kg does at home, and friction scales with weight:
+  // boot on regolith (mu about 0.9) can push or brake at no more than mu g = 1.46 m/s^2.
+  // The gait follows the Froude number v^2 / (g L). People change from walking to
+  // running near Fr = 0.5, which for 0.9 m legs is 2.1 m/s on Earth but only 0.85 m/s
+  // on the Moon: above a stroll the natural lunar gait is the lope.
+  var MM_EVA_MASS = 166, MM_EVA_LEG = 0.9, MM_EVA_MU = 0.9;
+  var MM_EVA_GAIT = { g: 1.62, walk: Math.sqrt(0.45 * 1.62 * MM_EVA_LEG), lope: 2.3, comfort: 0.9,
+    grip: MM_EVA_MU * 1.62, brake: MM_EVA_MU * 1.62, air: 0.12, lopeAfter: 1.1,
+    switchSpeed: Math.sqrt(0.5 * 1.62 * MM_EVA_LEG) };
   // v: {x, z} velocity (m/s), mutated. wishX/wishZ: unit direction or zero.
   // grade: rise per metre along +x and +z. Returns v.
   function mmEvaFootVelocity(v, wishX, wishZ, lope, comfort, grounded, gradeX, gradeZ, dt) {
@@ -4902,7 +5201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     return v;
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { roverState: mmCreateRoverState, roverStep: mmRoverStep, lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { roverState: mmCreateRoverState, roverStep: mmRoverStep, lunarField: mmLunarField, lunarGrid: mmLunarGrid, sunClearance: mmSunClearance, skyView: mmSkyView, evaSun: function () { return MM_EVA_SUN; }, evaGait: function () { return MM_EVA_GAIT; }, bootprintMaps: mmBootprintMaps, dustGrain: mmDustGrain, evaFootVelocity: mmEvaFootVelocity, craterShape: mmCraterShape, regolithDetail: mmRegolithDetail }); } catch (e) {}
 
   // ═══════════════════════════════════════════════════════════════
   // 3D POWERED DESCENT  (mmBuildDescent3D)
@@ -5639,6 +5938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         if (s.mccChoice !== 'corrected' && s.mccChoice !== 'skipped') s.mccChoice = null;
         Object.assign(s, mmCleanLoiPlayback(s));
         Object.assign(s, mmCleanLunarEnvironment(s));
+        Object.assign(s, mmCleanDeparture(s));
         Object.assign(s, mmCleanAscentPlayback(s));
         Object.assign(s, mmCleanDockingPlayback(s));
         if (!s.ascentResult) { s.dockingRun = null; s.dockingResult = null; }
@@ -5787,7 +6087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         var ok = function () { said(t('stem.moonmission.report_copied', 'Flight report copied. Paste it wherever your teacher collects work.'), 'success'); };
         var fail = function () { said(t('stem.moonmission.report_copy_failed', 'Copying is blocked here. Open "Show the report text" and copy it from there.'), 'info'); };
         try {
-          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fail); return; }
+          (window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(ok, fail); return;
         } catch (e) {}
         fail();
       }
@@ -7971,7 +8271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         phase === 2 && d.tliStarted && h('div', { className: 'space-y-3' },
-          mmRenderTliCard(h, d, upd),
+          mmRenderTliCard(h, d, upd, announceToSR),
           h('p', { className: 'text-xs text-slate-300', 'data-tli-gate-note': true }, 'Review a computed burn that reaches lunar distance to unlock navigation. The next exercise starts from a separate departure preset.'),
           h('button', { type: 'button', 'data-tli-proceed': true, disabled: eventPending || !d.tliResult || d.tliResult.outcome === 'insufficient',
             className: 'w-full min-h-[44px] py-3 rounded-xl text-sm font-bold bg-blue-700 text-white disabled:opacity-50',
@@ -8197,7 +8497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               d.moonLabels && h('div', { 'data-moonmission-moon-sites': true, style: { fontSize: '12px', color: '#e2e8f0', marginTop: '8px' } }, h('p', null, 'All six landings were on the near side, the half that always faces Earth.'),
                 h('ul', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '4px', paddingLeft: '16px' } }, MM_MOON_SITES.map(function(site) { return h('li', { key: site.m }, 'Apollo ' + site.m + ' \u2014 ' + site.name); })))),
             loiReady && h('button', {type:'button', 'data-environment-toggle':true, 'aria-expanded':!!d.lunarEnvironmentOpen, style:buttonStyle, onClick:function(){upd('lunarEnvironmentOpen',!d.lunarEnvironmentOpen);} }, d.lunarEnvironmentOpen ? 'Close radio and sunlight view' : 'Explore radio and sunlight in this orbit'),
-            loiReady && d.lunarEnvironmentOpen && mmRenderLunarEnvironmentCard(h,d,upd),
+            loiReady && d.lunarEnvironmentOpen && mmRenderLunarEnvironmentCard(h, d, upd, announceToSR),
             h('button', { type: 'button', 'data-loi-proceed': true, title: 'Undock Lunar Module Eagle from Command Module Columbia after a verified lunar insertion and prepare powered descent', disabled: eventPending || !loiReady, className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed', onClick: function() {
               if (!loiReady || !canProceed()) return;
               advancePhase(5); log('Verified lunar orbit. Eagle undocked; beginning the separate powered-descent approach.');
@@ -8209,7 +8509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         // ═══ PHASE 5: POWERED DESCENT ═══
         phase === 5 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           predictCard('descent_sideways', !!d.landingResult),
-          !d.descentStarted && mmRenderApproachCard(h, d, upd),
+          !d.descentStarted && mmRenderApproachCard(h, d, upd, announceToSR),
           // Onboarding overlay (before game starts)
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
@@ -9266,7 +9566,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           var c = rtHdr ? new T.EffectComposer(renderer, rtHdr) : new T.EffectComposer(renderer);
                           c.addPass(new T.RenderPass(scene, camera));
                           // Threshold above sunlit regolith, so only the Sun, Earth and foil glints glow.
-                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.4, 0.9));
+                          // In the HDR target the down-Sun regolith passed 0.9 and its glow hazed
+                          // the black sky above the horizon, a haze of air the Moon does not have.
+                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.55 : 0.75, 0.35, 1.0));
                           composer = c;
                         } catch (e) { composer = null; }
                       });
@@ -9299,13 +9601,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         var g = new THREE.BufferGeometry();
                         g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
                         g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false });
+                        var m = new THREE.PointsMaterial({ size: tier[0], sizeAttenuation: false, vertexColors: true, depthWrite: false, toneMapped: false, transparent: true, opacity: 0 });
                         var pts = new THREE.Points(g, m);
                         pts.renderOrder = -10; pts.frustumCulled = false;
                         skyGroup.add(pts); skyGeos.push(g); skyMats.push(m);
                       });
                     })();
                     scene.add(skyGroup);
+                    var _starFwd = new THREE.Vector3(), _starLevel = 0, _starShown = 0;
 
                     // ── Earth as a billboard sprite ──
                     // Draw the marble onto a canvas (centered, square), then attach as a
@@ -9529,19 +9832,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // bloom pass (tuned for "Earth + sun glow") finally has a sun to bloom.
                     var _sunSprite = null;
                     (function addSunDisc() {
-                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 128; sc.height = 128;
+                      // The Sun from the Moon: no air to scatter it, so no sky glow and no
+                      // aureole around it, only a hard white disc half a degree across (drawn
+                      // at 0.8 so it reads), slightly darker at the limb, and the small glare
+                      // a camera or visor adds. It was a soft glow five degrees wide.
+                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 256; sc.height = 256;
                       var sg = sc.getContext('2d');
-                      var grad = sg.createRadialGradient(64, 64, 4, 64, 64, 64);
-                      grad.addColorStop(0, 'rgba(255,255,250,1)');
-                      grad.addColorStop(0.25, 'rgba(255,246,220,0.9)');
-                      grad.addColorStop(0.6, 'rgba(255,240,200,0.25)');
-                      grad.addColorStop(1, 'rgba(255,240,200,0)');
-                      sg.fillStyle = grad; sg.fillRect(0, 0, 128, 128);
+                      var glare = sg.createRadialGradient(128, 128, 0, 128, 128, 128);
+                      glare.addColorStop(0, 'rgba(255,250,236,0.5)');
+                      glare.addColorStop(0.12, 'rgba(255,248,230,0.18)');
+                      glare.addColorStop(0.4, 'rgba(255,245,225,0.04)');
+                      glare.addColorStop(1, 'rgba(255,245,225,0)');
+                      sg.fillStyle = glare; sg.fillRect(0, 0, 256, 256);
+                      var discR = 128 * 0.8 / 8;                       // the sprite spans 8 degrees
+                      var disc = sg.createRadialGradient(128, 128, 0, 128, 128, discR);
+                      disc.addColorStop(0, '#ffffff'); disc.addColorStop(0.75, '#fffdf7'); disc.addColorStop(1, '#fff1d8');
+                      sg.fillStyle = disc; sg.beginPath(); sg.arc(128, 128, discR, 0, Math.PI * 2); sg.fill();
                       var st = new THREE.CanvasTexture(sc);
                       var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: st, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
                       var sd = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z).multiplyScalar(170);
                       sunSprite.position.copy(sd);
-                      sunSprite.scale.set(15, 15, 1);
+                      var sunSpan = 2 * 170 * Math.tan(4 * Math.PI / 180);
+                      sunSprite.scale.set(sunSpan, sunSpan, 1);
                       scene.add(sunSprite);
                       _sunSprite = sunSprite;
                     })();
@@ -9778,7 +10090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Ballistic regolith grains: lunar dust falls instead of billowing
                     // because there is no atmosphere. A fixed pool keeps this feedback
                     // inexpensive and avoids creating objects during the render loop.
-                    var LRV_DUST_COUNT = _evaLowPower ? 18 : 42;
+                    var LRV_DUST_COUNT = _evaLowPower ? 120 : 360;   // enough that no grain is recycled in flight
                     var lrvDustSeed = 0x51f15e;
                     function lrvDustRand() {
                       lrvDustSeed = (Math.imul(lrvDustSeed, 1664525) + 1013904223) >>> 0;
@@ -9792,13 +10104,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     for (var ldi = 0; ldi < LRV_DUST_COUNT; ldi++) lrvDustPositions[ldi * 3 + 1] = -100;
                     var lrvDustGeo = new THREE.BufferGeometry();
                     lrvDustGeo.setAttribute('position', new THREE.BufferAttribute(lrvDustPositions, 3));
+                    // Round, soft-edged clumps (an untextured point is a square). A grain in
+                    // the air faces the Sun square-on while the ground takes it at 17 degrees,
+                    // so sunlit dust reads a shade brighter than the soil it flies over: that
+                    // is how the Apollo film shows a rooster tail at all. Untoned, so the tone
+                    // curve cannot sink it back into the ground.
+                    var lrvDustCv = document.createElement('canvas'); lrvDustCv.setAttribute('aria-hidden', 'true');
+                    lrvDustCv.width = lrvDustCv.height = 32;
+                    var lrvDustCx = lrvDustCv.getContext('2d');
+                    if (lrvDustCx) {
+                      var lrvDustGr = lrvDustCx.createRadialGradient(16, 16, 0, 16, 16, 16);
+                      lrvDustGr.addColorStop(0, 'rgba(255,255,255,1)'); lrvDustGr.addColorStop(0.45, 'rgba(255,255,255,0.8)'); lrvDustGr.addColorStop(1, 'rgba(255,255,255,0)');
+                      lrvDustCx.fillStyle = lrvDustGr; lrvDustCx.fillRect(0, 0, 32, 32);
+                    }
+                    var lrvDustTex = new THREE.CanvasTexture(lrvDustCv);
                     var lrvDustMat = new THREE.PointsMaterial({
-                      color: 0xb8afa3, size: _evaLowPower ? 0.07 : 0.09,
-                      transparent: true, opacity: 0.42, depthWrite: false, sizeAttenuation: true
+                      color: 0xdad4ca, size: _evaLowPower ? 0.09 : 0.075, map: lrvDustTex, toneMapped: false,
+                      transparent: true, opacity: 0.8, depthWrite: false, sizeAttenuation: true
                     });
                     var lrvDust = new THREE.Points(lrvDustGeo, lrvDustMat);
+                    // Never culled: the bounding sphere is computed once, from the idle pool
+                    // parked at y = -100, so near the LM the whole spray was culled as
+                    // off-screen and no dust was ever drawn.
+                    lrvDust.frustumCulled = false;
                     scene.add(lrvDust);
                     var lrvDustCursor = 0, lrvDustAccumulator = 0;
+                    // The live pool, read by tests (a property, so no DOM write per frame).
+                    canvasEl._evaDust = { pos: lrvDustPositions, vy: lrvDustVY, life: lrvDustLife, count: LRV_DUST_COUNT, ground: _terrainHeightAt };
                     var roverDistance = 0;
                     var lrvImpactSignal = 0, lrvImpactCount = 0, lrvImpactCooldown = 0;
                     var lrvImpactArmTime = 0, lrvImpactContactValid = false;
@@ -9816,25 +10148,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     canvasEl.dataset.lrvConsoleState = 'parked';
                     canvasEl.dataset.lrvGroundedWheels = '4';
 
-                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
+                    // Each grain from mmDustGrain, released `reach` out along its own heading,
+                    // then a pure parabola until it lands (the loop retires it there). The
+                    // life is only a backstop, longer than any flight: grains used to
+                    // vanish in mid-air after half a second.
+                    function emitDustGrains(kind, x, z, forwardX, forwardZ, speed, count, reach) {
                       var burstCount = Math.min(LRV_DUST_COUNT, Math.max(1, count | 0));
                       for (var ldb = 0; ldb < burstCount; ldb++) {
                         var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
                         var dustO = dustI * 3;
-                        var dustAngle = (ldb / burstCount) * Math.PI * 2 + dustI * 0.37 +
-                          (lrvDustRand() - 0.5) * 0.42;
-                        var dustSpread = (0.12 + strength * 0.28) *
-                          (0.78 + lrvDustRand() * 0.44);
-                        lrvDustPositions[dustO] = x + Math.cos(dustAngle) * 0.24;
-                        lrvDustPositions[dustO + 2] = z + Math.sin(dustAngle) * 0.24;
+                        var grain = mmDustGrain(kind, speed, lrvDustRand(), lrvDustRand(), lrvDustRand());
+                        var grainX = forwardX * grain.fwd - forwardZ * grain.side, grainZ = forwardZ * grain.fwd + forwardX * grain.side;
+                        var grainH = Math.sqrt(grainX * grainX + grainZ * grainZ) || 1;
+                        lrvDustPositions[dustO] = x + grainX / grainH * reach;
+                        lrvDustPositions[dustO + 2] = z + grainZ / grainH * reach;
                         lrvDustPositions[dustO + 1] = _terrainHeightAt(
-                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.055;
-                        lrvDustVX[dustI] = Math.cos(dustAngle) * dustSpread - forwardX * strength * 0.08;
-                        lrvDustVY[dustI] = (0.12 + strength * 0.32) *
-                          (0.82 + lrvDustRand() * 0.36);
-                        lrvDustVZ[dustI] = Math.sin(dustAngle) * dustSpread - forwardZ * strength * 0.08;
-                        lrvDustLife[dustI] = 0.28 + strength * 0.36 + lrvDustRand() * 0.12;
+                          lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.05;
+                        lrvDustVX[dustI] = grainX; lrvDustVY[dustI] = grain.up; lrvDustVZ[dustI] = grainZ;
+                        lrvDustLife[dustI] = 2 * grain.up / 1.62 + 1;
                       }
+                    }
+                    // A landing or a wheel bump: strength 0..1 is a downward speed of 1-2.5 m/s.
+                    function emitLunarDustBurst(x, z, forwardX, forwardZ, strength, count) {
+                      emitDustGrains('splash', x, z, forwardX, forwardZ, 1 + 1.5 * strength, count, 0.24);
                     }
 
                     function resetLrvImpactContact() {
@@ -9880,7 +10216,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // carries a baked sun visibility (a boulder down in a shadowed crater bowl
                     // must not glow) and a tint; the big ones are solid to walk into.
                     var _rockGeos = [0, 1, 2].map(function (k) { return mmBoulderGeometry(THREE, 3 + k * 7); });
-                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x191816, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
+                    // Fresh blocks are a little brighter than the mature soil around them (space
+                    // weathering darkens the soil); at 0x191816 they read as black lumps.
+                    var _rockMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({ color: 0x282722, roughness: 1, metalness: 0 }), 'rock', _evaLowPower);
                     var _rockMeshes = [], _evaRockObstacles = [];
                     (function placeRocks() {
                       var byShape = [[], [], []], dummy = new THREE.Object3D();
@@ -9951,10 +10289,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     lunarHorizon.frustumCulled = false;
                     scene.add(lunarHorizon);
 
-                    // ── Massifs beyond the horizon ──
-                    // 7 to 16 km out and up to 1.9 km high, their feet hidden by the curve
-                    // of the ground, as the valley walls stood around Apollo 15 and 17.
-                    // Highland rock is brighter than the dark mare plain you stand on.
+                    // ── Low ridges beyond the horizon ──
+                    // Mare Tranquillitatis wrinkle ridges, 6-12 km out and 90-230 m high,
+                    // their feet hidden by the curve of the ground (mmLunarField). Mare
+                    // basalt, the same dark rock as the plain you stand on.
                     var _massifMeshes = [];
                     _lunarField.massifs.forEach(function (m) {
                       var n = _evaLowPower ? 30 : 64, span = m.r * 2.4, x0 = m.x - span / 2, z0 = m.z - span / 2, step = span / (n - 1);
@@ -9966,7 +10304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         pos[o * 3] = x; pos[o * 3 + 1] = h; pos[o * 3 + 2] = z;
                         bake[o * 3] = 1;   // shaded by facing alone: a coarse baked edge breaks up into shards
                         bake[o * 3 + 1] = 1;
-                        bake[o * 3 + 2] = 0.95 + 0.12 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
+                        bake[o * 3 + 2] = 0.97 + 0.05 * mmLunarNoise(x / 1400, z / 1400, m.seed + 3);
                         if (j < n - 1 && i < n - 1) idx.push(o, o + n, o + 1, o + n, o + n + 1, o + 1);
                       }
                       var geo = new THREE.BufferGeometry();
@@ -10086,14 +10424,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var oz = 8 + (Math.random() - 0.5) * 60;
                       var oy = _terrainHeightAt(ox, oz) + 0.4;
                       var orbGroup = new THREE.Group();
-                      var orbGeo = new THREE.DodecahedronGeometry(0.3, 0);
-                      var orbMat = new THREE.MeshStandardMaterial({ color: 0xccccaa, emissive: 0xfbbf24, emissiveIntensity: 1.0, transparent: true, opacity: 0.8 }); // sample orbs bloom as findable beacons
-                      orbGroup.add(new THREE.Mesh(orbGeo, orbMat));
+                      // The rock itself lying on the ground (or, for the core, the drive tube),
+                      // not a glowing crystal floating over it. The group stays 0.4 m up so the
+                      // 2 m pickup reach and the bearing are unchanged; its parts sit below.
+                      var look = MM_EVA_SAMPLE_LOOK[sdi % MM_EVA_SAMPLE_LOOK.length], orbMesh;
+                      if (look.tube) {
+                        orbMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.42, 12),
+                          new THREE.MeshStandardMaterial({ color: look.color, metalness: 0.7, roughness: 0.35, envMap: _evaEnvMap || null }));
+                        orbMesh.position.y = -0.4 + 0.14; orbMesh.rotation.z = 0.12;
+                      } else {
+                        var lookFlat = look.flat || 0.62;
+                        orbMesh = new THREE.Mesh(mmBoulderGeometry(THREE, 11 + sdi * 5),
+                          new THREE.MeshStandardMaterial({ color: look.color, roughness: look.rough, metalness: look.metal || 0, envMap: look.metal ? (_evaEnvMap || null) : null }));
+                        orbMesh.scale.set(look.s, look.s * lookFlat, look.s * 0.85);
+                        orbMesh.position.y = -0.4 + look.s * lookFlat * 0.3;
+                        orbMesh.rotation.y = sdi * 1.7;
+                      }
+                      orbMesh.castShadow = true;
+                      orbGroup.add(orbMesh);
                       var ringG = new THREE.Mesh(
-                        new THREE.RingGeometry(0.45, 0.55, 12),
-                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+                        new THREE.RingGeometry(0.42, 0.48, 28),
+                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })
                       );
-                      ringG.rotation.x = -Math.PI / 2; ringG.position.y = -0.2;
+                      ringG.rotation.x = -Math.PI / 2; ringG.position.y = -0.34;
                       orbGroup.add(ringG);
                       orbGroup.position.set(ox, oy, oz);
                       orbGroup._sampleData = sd;
@@ -10151,12 +10504,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       fact: 'Angular fragments fused by an ancient impact record how the lunar surface was repeatedly broken and welded together.'
                     };
                     var gtSpecimen = new THREE.Group();
-                    var gtSpecimenGeo = new THREE.DodecahedronGeometry(0.34, 0);
-                    var gtSpecimenMat = new THREE.MeshStandardMaterial({
-                      color: 0x9b8a78, emissive: 0x22d3ee, emissiveIntensity: 0.65,
-                      transparent: true, opacity: 0.92, roughness: 0.88
-                    });
-                    gtSpecimen.add(new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat));
+                    var gtSpecimenGeo = mmBoulderGeometry(THREE, 77);
+                    var gtSpecimenMat = new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.95 });   // a breccia block, as found
+                    var gtSpecimenRock = new THREE.Mesh(gtSpecimenGeo, gtSpecimenMat);
+                    gtSpecimenRock.scale.set(0.3, 0.2, 0.26); gtSpecimenRock.position.y = -0.35 + 0.06; gtSpecimenRock.castShadow = true;
+                    gtSpecimen.add(gtSpecimenRock);
                     var gtSpecimenRingGeo = new THREE.RingGeometry(0.48, 0.6, 16);
                     var gtSpecimenRingMat = new THREE.MeshBasicMaterial({
                       color: 0x67e8f9, transparent: true, opacity: 0.38,
@@ -10528,13 +10880,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Fixed one-draw instance ring: long EVAs never add scene nodes or
                     // allocate geometry/materials in the animation loop.
                     var EVA_BOOTPRINT_CAP = _evaLowPower ? 64 : 160;
-                    var evaBootprintGeo = new THREE.PlaneGeometry(0.15, 0.25);
-                    var evaBootprintMat = new THREE.MeshBasicMaterial({
-                      color: 0x4b4946, transparent: true,
-                      opacity: _evaLowPower ? 0.22 : 0.3,
+                    // A real print, not a dark rectangle: the same lunar shading and world-space
+                    // regolith as the ground around it (so no seam), a height map for the
+                    // depression, tread and rim that the Sun lights through the normal, and a
+                    // soft alpha edge (mmBootprintMaps). Compacted soil is a shade darker.
+                    var evaBootprintGeo = new THREE.PlaneGeometry(MM_PRINT_W, MM_PRINT_L);
+                    evaBootprintGeo.setAttribute('lunarBake', new THREE.BufferAttribute(new Float32Array([1, 1, 0.9, 1, 1, 0.9, 1, 1, 0.9, 1, 1, 0.9]), 3));
+                    var _printMaps = mmBootprintMaps(64, 128);
+                    var _printMapCv = function (vals) {
+                      var pc = document.createElement('canvas'); pc.setAttribute('aria-hidden', 'true'); pc.width = 64; pc.height = 128;
+                      var pcx = pc.getContext('2d'), pim = pcx.createImageData(64, 128);
+                      for (var pk = 0; pk < 64 * 128; pk++) {
+                        var pv = Math.max(0, Math.min(255, Math.round(vals[pk] * 255)));
+                        pim.data[pk * 4] = pim.data[pk * 4 + 1] = pim.data[pk * 4 + 2] = pv; pim.data[pk * 4 + 3] = 255;
+                      }
+                      pcx.putImageData(pim, 0, 0);
+                      return new THREE.CanvasTexture(pc);
+                    };
+                    var evaPrintHeightTex = _printMapCv(_printMaps.height), evaPrintAlphaTex = _printMapCv(_printMaps.alpha);
+                    var evaBootprintMat = mmLunarShade(THREE, new THREE.MeshStandardMaterial({
+                      color: 0x2a2927, map: terrainTex, bumpMap: evaPrintHeightTex, bumpScale: 0.05,
+                      alphaMap: evaPrintAlphaTex, transparent: true, roughness: 0.96, metalness: 0,
                       depthWrite: false, side: THREE.DoubleSide,
                       polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2
-                    });
+                    }), 'print', _evaLowPower);
                     var evaBootprints = new THREE.InstancedMesh(
                       evaBootprintGeo, evaBootprintMat, EVA_BOOTPRINT_CAP);
                     if (evaBootprints.instanceMatrix.setUsage && THREE.DynamicDrawUsage) {
@@ -10542,7 +10911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     evaBootprints.frustumCulled = false;
                     evaBootprints.castShadow = false;
-                    evaBootprints.receiveShadow = false;
+                    evaBootprints.receiveShadow = true;   // the LM's and your own shadow fall across them
                     evaBootprints.renderOrder = 1;
                     scene.add(evaBootprints);
                     var evaBootprintDummy = new THREE.Object3D();
@@ -10705,9 +11074,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // to layer 1, which the camera does not draw but the shadow camera is
                     // told to include: the full silhouette still falls across the regolith,
                     // while what you actually see when you look down is your legs and boots.
+                    // It never did cast: three r128's shadow pass draws only what the MAIN
+                    // camera's layers include, so layer 1 took the upper body out of the
+                    // shadow as well, and the Sun threw a pair of legs. Instead the upper body
+                    // stays on layer 0 with a material that writes neither colour nor depth:
+                    // nothing on screen, while the shadow pass renders it with its own depth
+                    // material. A helmet, arms and the full-height backpack (with its
+                    // oxygen purge system on top) exist only for the shadow, so the Sun throws
+                    // the whole 1.8 m figure, about 5.9 m long, helmet last: where the
+                    // opposition glow gathers in the Apollo photographs.
+                    var suitShadowOnly = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
                     [torso, plss].concat(typeof shoulder !== 'undefined' && shoulder ? [shoulder] : [])
-                      .forEach(function (m) { if (m) m.layers.set(1); });
-                    if (!_evaLowPower) sun.shadow.camera.layers.enable(1);
+                      .forEach(function (m) { if (m) m.material = suitShadowOnly; });
+                    // Unseen now, so placed where a suited 1.8 m astronaut's body is (it sat low
+                    // to stay out of the down-view): shoulders ~1.5 m up, hips filled in, the
+                    // backpack up to the helmet. Positions are off the eye, 1.8 m above ground.
+                    torso.position.y = -0.62;
+                    if (typeof shoulder !== 'undefined' && shoulder) shoulder.position.y = -0.31;
+                    plss.position.set(0, -0.6, 0.25); plss.scale.y = 1.4;
+                    var shadowHips = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.32, 0.24), suitShadowOnly);
+                    shadowHips.position.set(0, -1.02, 0);
+                    suitGroup.add(shadowHips);
+                    var shadowHelmet = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 8), suitShadowOnly);
+                    shadowHelmet.position.set(0, -0.04, 0.02);
+                    var shadowOps = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.22), suitShadowOnly);
+                    shadowOps.position.set(0, -0.2, 0.26);
+                    suitGroup.add(shadowHelmet, shadowOps);
+                    [-1, 1].forEach(function (side) {
+                      var shadowArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.065, 0.62, 6), suitShadowOnly);
+                      shadowArm.position.set(side * 0.28, -0.66, 0.02); shadowArm.rotation.z = side * 0.12;
+                      suitGroup.add(shadowArm);
+                    });
+                    suitGroup.traverse(function (n) { if (n.isMesh) { n.castShadow = !_evaLowPower; n.receiveShadow = false; } });
                     scene.add(suitGroup);
                     // Unit vector toward the sun, matching the DirectionalLight above.
                     var _sunDir = new THREE.Vector3(MM_EVA_SUN.x, MM_EVA_SUN.y, MM_EVA_SUN.z);
@@ -10716,13 +11114,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     // Visor glare overlay — a DOM layer rather than a post pass, so it costs
                     // nothing on the GPU and degrades to "no glare" if anything goes wrong.
-                    var glareEl = null;
+                    // Looking into the Sun: camera and visor optics, not sky. A tight glare on
+                    // the Sun itself, and faint hexagonal flare ghosts (the lens aperture's
+                    // shape) strung along the line from the Sun through the middle of the
+                    // frame, as in the up-Sun Apollo photographs. There is no air to scatter
+                    // the light, so the sky around it stays black; this used to be one soft
+                    // wash over half the frame, which read as an atmosphere.
+                    var glareEl = null, _glareCore = null, _flareEls = [], _glareKey = '', _glareSun = new THREE.Vector3();
                     try {
                       glareEl = document.createElement('div');
                       glareEl.setAttribute('aria-hidden', 'true');
-                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;'
-                        + 'background:radial-gradient(circle at 50% 42%, rgba(255,252,238,0.85) 0%, rgba(255,246,214,0.45) 18%, rgba(255,240,200,0.12) 42%, rgba(255,240,200,0) 68%);'
-                        + 'transition:opacity 0.12s linear';
+                      glareEl.setAttribute('data-eva-lens-glare', 'true');
+                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;overflow:hidden;transition:opacity 0.12s linear';
+                      _glareCore = document.createElement('div');
+                      _glareCore.style.cssText = 'position:absolute;left:0;top:0;border-radius:50%;'
+                        + 'background:radial-gradient(circle, rgba(255,253,244,0.9) 0%, rgba(255,248,228,0.3) 8%, rgba(255,242,210,0.06) 25%, rgba(255,240,200,0) 50%)';
+                      glareEl.appendChild(_glareCore);
+                      // [position along Sun->centre (1 = the centre), size as a share of the frame, colour, alpha]
+                      [[0.35, 0.05, '255,214,150', 0.10], [0.62, 0.028, '160,210,255', 0.14], [1.0, 0.09, '200,170,255', 0.06],
+                        [1.35, 0.045, '255,200,140', 0.10], [1.7, 0.13, '150,220,210', 0.05]].forEach(function (g) {
+                        var f = document.createElement('div');
+                        f._t = g[0]; f._size = g[1];
+                        f.setAttribute('data-eva-flare-ghost', String(g[0]));
+                        f.style.cssText = 'position:absolute;left:0;top:0;clip-path:polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%);'
+                          + 'background:radial-gradient(circle, rgba(' + g[2] + ',' + g[3] + ') 58%, rgba(' + g[2] + ',' + (g[3] * 1.8).toFixed(3) + ') 90%, rgba(' + g[2] + ',0) 100%)';
+                        glareEl.appendChild(f); _flareEls.push(f);
+                      });
                       if (canvasEl.parentElement) canvasEl.parentElement.appendChild(glareEl);
                     } catch (eGl) { glareEl = null; }
 
@@ -11127,6 +11544,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       '<span style="color:#64748b">\uD83D\uDC63</span><span id="eva-steps">0 steps</span>' +
                       '<span style="color:#64748b" title="Bearing to the nearest rock still on the ground">\uD83C\uDFAF ROCK</span><span id="eva-target">\u2014</span>' +
                       '<span style="color:#64748b">MODE</span><span id="eva-mode">On foot</span>' +
+                      '<span style="color:#64748b" title="Walk below about ' + MM_EVA_GAIT.switchSpeed.toFixed(2) + ' m/s; above it the Moon' + '\'' + 's weak gravity makes a lope the natural gait">GAIT</span><span id="eva-gait">Standing</span>' +
+                      '<span style="color:#64748b" title="What a scale would read: one sixth gravity">WEIGHT</span><span id="eva-weight">like ' + Math.round(MM_EVA_MASS * MM_EVA_GAIT.g / 9.81) + ' kg</span>' +
+                      '<span style="color:#64748b" title="Suited astronaut: the same inertia to start, stop and turn as on Earth">MASS</span><span>' + MM_EVA_MASS + ' kg</span>' +
                       '<span style="color:#64748b">LRV</span><span id="eva-lrv-speed">Parked</span>' +
                       '<span class="eva-lrv-row" style="color:#64748b;display:none">GRADE</span><span class="eva-lrv-row" style="display:none" id="eva-lrv-terrain">--</span>' +
                       '<span class="eva-lrv-row" style="color:#64748b;display:none">GRIP</span><span class="eva-lrv-row" style="display:none" id="eva-lrv-grip">--</span>' +
@@ -11339,29 +11759,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         roverVisualShell.position.y = lrvImpactSpring * lrvImpactVisualScale;
                         var lrvDustContactFactor = lrvGroundedWheelCount * 0.25;
                         lrvDustAccumulator += Math.abs(roverSpeed) * evaDt *
-                          (_evaLowPower ? 2.0 : 4.0) * (1 + lrvSlipSignal * 2.2) *
+                          (_evaLowPower ? 6.0 : 14.0) * (1 + lrvSlipSignal * 2.2) *
                           lrvDustContactFactor;
                         var lrvDustEmitBudget = _evaLowPower ? 2 : 4;
                         var lrvDustTravelSign = roverSpeed < 0 ? -1 : 1;
+                        var dustCos = Math.cos(roverHeading), dustSin = Math.sin(roverHeading);
+                        var dustFX = lrvForward.x * lrvDustTravelSign, dustFZ = lrvForward.z * lrvDustTravelSign;
                         while (lrvDustAccumulator >= 1 && lrvDustEmitBudget-- > 0) {
                           lrvDustAccumulator -= 1;
+                          // The trailing pair in turn (the leading pair's spray goes up under
+                          // the chassis), from the back of the contact patch, wheel radius 0.2.
+                          var dustW = (lrvDustTravelSign > 0 ? 2 : 0) + (lrvDustCursor & 1);
+                          if (!lrvPhysics.wheels[dustW].engaged) { lrvDustCursor++; continue; }
+                          var dustMount = roverWheelMounts[dustW];
                           var dustI = lrvDustCursor++ % LRV_DUST_COUNT;
-                          var dustSide = dustI % 2 ? 0.65 : -0.65;
-                          dustSide += (lrvDustRand() - 0.5) * 0.10;
+                          var dustGrain = mmDustGrain('tread', Math.abs(roverSpeed), lrvDustRand(), lrvDustRand(), 0);
+                          var dustBack = 0.2 * Math.sin(dustGrain.phi);
                           var dustO = dustI * 3;
-                          lrvDustPositions[dustO] = roverGrp.position.x -
-                            lrvForward.x * 0.55 * lrvDustTravelSign + lrvRight.x * dustSide;
-                          lrvDustPositions[dustO + 2] = roverGrp.position.z -
-                            lrvForward.z * 0.55 * lrvDustTravelSign + lrvRight.z * dustSide;
-                          lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) + 0.07;
-                          var dustRearSpeed = 0.22 + lrvDustRand() * 0.18;
-                          var dustLateralSpeed = (lrvDustRand() - 0.5) * 0.25;
-                          lrvDustVX[dustI] = -lrvForward.x * lrvDustTravelSign * dustRearSpeed +
-                            lrvRight.x * dustLateralSpeed;
-                          lrvDustVY[dustI] = 0.18 + lrvDustRand() * 0.22;
-                          lrvDustVZ[dustI] = -lrvForward.z * lrvDustTravelSign * dustRearSpeed +
-                            lrvRight.z * dustLateralSpeed;
-                          lrvDustLife[dustI] = 0.45 + lrvDustRand() * 0.35;
+                          lrvDustPositions[dustO] = roverGrp.position.x + dustMount._lrvX * dustCos + dustMount._lrvZ * dustSin - dustFX * dustBack;
+                          lrvDustPositions[dustO + 2] = roverGrp.position.z - dustMount._lrvX * dustSin + dustMount._lrvZ * dustCos - dustFZ * dustBack;
+                          lrvDustPositions[dustO + 1] = _terrainHeightAt(lrvDustPositions[dustO], lrvDustPositions[dustO + 2]) +
+                            0.2 * (1 - Math.cos(dustGrain.phi)) + 0.02;
+                          lrvDustVX[dustI] = dustFX * dustGrain.fwd + lrvRight.x * dustGrain.side;
+                          lrvDustVY[dustI] = dustGrain.up;
+                          lrvDustVZ[dustI] = dustFZ * dustGrain.fwd + lrvRight.z * dustGrain.side;
+                          lrvDustLife[dustI] = 2 * dustGrain.up / 1.62 + 1;
                         }
                         lrvDustAccumulator = Math.min(lrvDustAccumulator, 1.5);
                         playerPos.set(roverGrp.position.x, roverGrp.position.y + 1.02, roverGrp.position.z);
@@ -11447,7 +11869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                             canvasEl.dataset.evaLandingImpact = evaLandingImpact.toFixed(3);
                             emitLunarDustBurst(playerPos.x, playerPos.z,
                               -Math.sin(yaw), -Math.cos(yaw), evaLandingImpact,
-                              _evaLowPower ? 2 : 5);
+                              _evaLowPower ? 6 : 14);
                           }
                           if (evaWasAirborne && evaHopStart !== null) {
                             // The hop timer the moonwalk prediction is checked against.
@@ -11463,13 +11885,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           isJumping = false;
                         }
                         // Lope bob and knee flex are visual; the physics above is the truth.
-                        // Each loping footfall kicks a little regolith that arcs and falls clean.
+                        // Each footfall's toe-off kicks regolith ahead that arcs and falls clean.
                         if (!isJumping && evaSpdH > 0.1) {
                           var evaPrevPhase = evaGaitPhase;
                           evaGaitPhase += evaSpdH * evaMoveDt / (evaLope ? 1.9 : 1.3);
-                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 1.1) {
-                            emitLunarDustBurst(playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
-                              Math.min(0.45, evaSpdH * 0.15), _evaLowPower ? 1 : 3);
+                          if (Math.floor(evaGaitPhase) !== Math.floor(evaPrevPhase) && evaSpdH > 0.5) {
+                            emitDustGrains('kick', playerPos.x, playerPos.z, evaVel.x / evaSpdH, evaVel.z / evaSpdH,
+                              evaSpdH, _evaLowPower ? 3 : 8, 0.3);
                           }
                         }
                         var evaBobScale = comfortMode ? 0.3 : (gtReducedMotion ? 0.35 : 1);
@@ -11608,6 +12030,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (_sunSprite) _sunSprite.position.copy(playerPos).addScaledVector(_sunDir, 170);
                       earthSprite.position.set(playerPos.x - 60, playerPos.y + 68, playerPos.z - 120);
                       skyGroup.position.copy(camera.position);
+                      // Stars only once the sunlit ground is out of view. With bright regolith
+                      // in the frame the eye, and every Apollo camera, is set for daylight and
+                      // the sky reads black: the surface photographs show no stars. Look up,
+                      // away from the ground and the Sun, and they come out over a couple of
+                      // seconds as the eye adjusts. (Ground share of the frame: 0.5 - tan(pitch)
+                      // / (2 tan(half fov)).)
+                      _starFwd.set(0, 0, -1).applyQuaternion(camera.quaternion);
+                      var starPitchTan = _starFwd.y / Math.max(0.05, Math.sqrt(1 - _starFwd.y * _starFwd.y));
+                      var starGround = Math.max(0, Math.min(1, 0.5 - starPitchTan / (2 * Math.tan(camera.fov * Math.PI / 360))));
+                      var starWant = mmSmooth(0.3, 0.02, starGround) * (1 - mmSmooth(0.55, 0.85, _starFwd.dot(_sunDir)));
+                      _starLevel += (starWant - _starLevel) * (1 - Math.exp(-evaDt / 1.6));
+                      if (Math.abs(_starLevel - _starShown) > 0.01 || (_starLevel < 0.005 && _starShown !== 0)) {
+                        _starShown = _starLevel < 0.005 ? 0 : _starLevel;
+                        skyMats.forEach(function (m) { m.opacity = _starShown; });
+                        canvasEl.dataset.evaStars = _starShown.toFixed(2);
+                      }
 
                       // ── Visor glare ──
                       // With no atmosphere the sun is a bare arc-lamp: turning into it washes
@@ -11626,6 +12064,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (Math.abs(glare - _glarePrev) > 0.02 || (glare === 0) !== (_glarePrev === 0)) {
                           _glarePrev = glare;
                           glareEl.style.opacity = glare.toFixed(2);
+                        }
+                        // The glare sits on the Sun's place in the frame and the ghosts line up
+                        // through the centre, as in a real lens. Only while it shows, and only
+                        // when the Sun has moved on screen: transforms, so no layout.
+                        if (glare > 0 && _glareCore) {
+                          _glareSun.copy(camera.position).addScaledVector(_sunDir, 100).project(camera);
+                          var gW = canvasEl.clientWidth || W, gH = canvasEl.clientHeight || H2;
+                          var gsx = (_glareSun.x + 1) / 2 * gW, gsy = (1 - _glareSun.y) / 2 * gH;
+                          var gKey = Math.round(gsx) + ',' + Math.round(gsy) + ',' + gW + ',' + gH;
+                          if (gKey !== _glareKey) {
+                            _glareKey = gKey;
+                            var gMin = Math.min(gW, gH), gS = gMin * 0.3, gvx = gW / 2 - gsx, gvy = gH / 2 - gsy;
+                            _glareCore.style.width = _glareCore.style.height = gS + 'px';
+                            _glareCore.style.transform = 'translate(' + (gsx - gS / 2).toFixed(1) + 'px,' + (gsy - gS / 2).toFixed(1) + 'px)';
+                            canvasEl.dataset.evaSunScreen = Math.round(gsx) + ',' + Math.round(gsy);
+                            _flareEls.forEach(function (f) {
+                              var fsz = f._size * gMin;
+                              f.style.width = f.style.height = fsz + 'px';
+                              f.style.transform = 'translate(' + (gsx + gvx * f._t - fsz / 2).toFixed(1) + 'px,' + (gsy + gvy * f._t - fsz / 2).toFixed(1) + 'px)';
+                            });
+                          }
                         }
                       }
 
@@ -11678,8 +12137,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       lunarSampleOrbs.forEach(function(orb) {
                         if (orb._collected || !orb.visible) return;
                         if (orb._isTraverseSample && (!gtActive || gtStep !== 3)) return;
-                        orb.children[0].rotation.y += 1.2 * evaResourceDt;
-                        orb.children[0].material.opacity = 0.6 + Math.sin(evaResources.elapsed * 3 + orb._pulsePhase) * 0.2;
+                        // The rock stays put (it is a rock); its ring on the ground breathes.
+                        var orbRing = orb.children[1];
+                        if (orbRing && orbRing.material) orbRing.material.opacity = 0.24 + Math.sin(evaResources.elapsed * 2.4 + orb._pulsePhase) * 0.12;
                         var sDist = playerPos.distanceTo(orb.position);
                         if (sDist < 2 && moveState.sample && evaResources.cooldown <= 0 && !o2Exhausted) {
                           orb._collected = true; orb.visible = false;
@@ -11838,6 +12298,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (sampEl) sampEl.textContent = evaSampleCount + ' / ' + LUNAR_SAMPLES_DATA.length + ' samples';
                         if (stepsEl) stepsEl.textContent = evaSteps + ' steps';
                         if (modeEl) { modeEl.textContent = roverBoarded ? 'LRV traverse' : 'On foot'; modeEl.style.color = roverBoarded ? '#fde68a' : '#38bdf8'; }
+                        var gaitEl = document.getElementById('eva-gait');
+                        if (gaitEl) {
+                          var gaitV = Math.sqrt(evaVel.x * evaVel.x + evaVel.z * evaVel.z);
+                          var gaitName = roverBoarded ? 'Riding' : isJumping ? 'Hop' : gaitV < 0.05 ? 'Standing' : gaitV > MM_EVA_GAIT.switchSpeed ? 'Lope' : 'Walk';
+                          gaitEl.textContent = gaitName + (gaitName === 'Walk' || gaitName === 'Lope' ? ' ' + gaitV.toFixed(1) + ' m/s' : '');
+                          canvasEl.dataset.evaGait = gaitName.toLowerCase();
+                        }
                         if (lrvSpeedEl) lrvSpeedEl.textContent = roverBoarded
                           ? (Math.abs(roverSpeed) * 3.6).toFixed(1) + ' km/h \u2022 ' + Math.round(roverDistance) + ' m'
                           : (roverPlanarDistance() <= LRV_BOARD_RANGE ? 'Ready to board' : Math.ceil(roverPlanarDistance()) + ' m away');
@@ -11998,6 +12465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       gtActive = false;
                       if (evaRaf) { cancelAnimationFrame(evaRaf); evaRaf = 0; }
                       canvasEl._evaCleanup = null;
+                      canvasEl._evaDust = null;
                       try { if (_evaVRBtnOff) _evaVRBtnOff(); } catch (e) {}
                       try { if (_evaVR && _evaVR.destroy) _evaVR.destroy(); _evaVR = null; } catch (e) {}
                       canvasEl.removeEventListener('keydown', onEvaKeyDown);
@@ -12053,13 +12521,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           });
                         });
                         lrvDustGeo.dispose();
-                        lrvDustMat.dispose();
+                        lrvDustMat.dispose(); lrvDustTex.dispose();
                         lrvTrackGeo.dispose();
                         lrvTrackMat.dispose();
                         lrvWheelContactGeo.dispose();
                         lrvWheelContactMat.dispose();
                         evaBootprintGeo.dispose();
                         evaBootprintMat.dispose();
+                        evaPrintHeightTex.dispose(); evaPrintAlphaTex.dispose();
                         gtBeaconGeo.dispose();
                         gtBeaconMat.dispose();
                         gtBeaconPinGeo.dispose();
@@ -12084,6 +12553,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         _rockMat.dispose();
                         _massifMeshes.forEach(function (m) { scene.remove(m); m.geometry.dispose(); });
                         lmGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
+                        suitGroup.traverse(function (n) { if (n.isMesh && n.geometry) n.geometry.dispose(); });
+                        suitShadowOnly.dispose();
                         (lmGroup.userData.mmMaterials || []).forEach(function (m) { m.dispose(); });
                         (lmGroup.userData.mmTextures || []).forEach(function (tx) { tx.dispose(); });
                         if (_evaEnvRT) { _evaEnvRT.dispose(); _evaEnvRT = _evaEnvMap = null; }
@@ -12291,6 +12762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           var returnButtonStyle = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#f8fafc', fontSize: '13px', fontWeight: 600 };
           function returnControl(ev, action, value) {
             var host = ev.currentTarget.closest('[data-return-workspace]'), cv = host && host.querySelector('[data-teicoast-canvas]');
+            if (action === 'pause' && value === false) { var other = host && host.querySelector('[data-departure-canvas]'); if (other && other._departureAction) other._departureAction('pause', true); }
             if (cv && cv._returnAction) cv._returnAction(action, value);
           }
           function setReturnAngle(value) {
@@ -12302,6 +12774,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             }
           }
           return h('div', { 'data-return-workspace': true, className: 'space-y-3' },
+            h('button', {type:'button','data-departure-toggle':true,'aria-expanded':d.departureOpen,style:returnButtonStyle,onClick:function(){if(!d.departureOpen){if(returnCanvas&&returnCanvas._returnAction)returnCanvas._returnAction('pause',true);else upd('returnPaused',true);}upd('departureOpen',!d.departureOpen);upd('departurePaused',true);}},d.departureOpen?'Close lunar departure lab':'Explore the lunar departure burn'),
+            d.departureOpen && mmRenderDepartureCard(h, d, upd, announceToSR),
             h('section', { style: { background: '#0f172a', color: '#e2e8f0', padding: '14px', borderRadius: '12px', border: '1px solid #334155' } },
               h('p', { style: { color: '#7dd3fc', fontSize: '11px', letterSpacing: '0.1em', margin: 0 } }, 'COLUMBIA / EARTH APPROACH'),
               h('h3', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 700, margin: '5px 0' } }, 'Trans-Earth coast'),
@@ -13145,6 +13619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               !d.transitResult && d.mccChoice && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
                 h('p', { className: 'text-xs font-bold text-sky-200' }, d.mccChoice === 'corrected' ? 'MID-COURSE CORRECTION: earlier burn decision' : 'MID-COURSE CORRECTION: earlier decision to decline'),
                 h('p', { className: 'text-xs text-slate-200' }, 'This earlier save stores a choice without a measured trajectory or SPS propellant use. The Lunar Module has its own descent engine and fuel tank.')),
+              d.departureResult && h('div', {'data-departure-record':true,className:'bg-white/5 rounded-lg p-2 border border-white/10 mb-2'},h('p',{className:'text-xs text-slate-200'},'Lunar departure exercise: '+mmDepartureText(d.departureResult))),
               d.lunarEnvironmentResult && h('div', {'data-lunar-environment-record':true, className:'bg-white/5 rounded-lg p-2 border border-white/10 mb-2'},
                 h('p',{className:'text-xs font-bold text-sky-200'},'LUNAR RADIO AND SUNLIGHT'),
                 h('p',{className:'text-xs text-slate-200'},(d.lunarEnvironmentResult.duration/60).toFixed(1)+' min in the achieved insertion orbit; radio blocked '+(d.lunarEnvironmentResult.radioBlockedSeconds/60).toFixed(1)+' min; total eclipse '+(d.lunarEnvironmentResult.totalEclipseSeconds/60).toFixed(1)+' min; partial eclipse '+d.lunarEnvironmentResult.partialEclipseSeconds.toFixed(1)+' s. Sun comparison: '+d.lunarEnvironmentResult.sunAngle+MM_DEG_SIGN+'.')),
@@ -13356,7 +13831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('textarea', { readOnly: true, rows: 12, value: report, 'data-moonmission-report-text': 'true',
                     'aria-label': t('stem.moonmission.report_text_label', 'Flight report text'),
                     onFocus: function(e) { try { e.target.select(); } catch (_selErr) {} },
-                    className: 'w-full text-[0.6875rem] font-mono rounded-lg p-2 bg-slate-950 text-slate-200 border border-slate-600' })),
+                    className: 'w-full text-[0.6875rem] font-mono rounded-lg p-2 bg-slate-950 text-slate-200 border border-slate-500' })),
                 history.length > 0 && h('div', { className: 'mt-3', 'data-moonmission-history': 'true' },
                   h('p', { className: 'text-[0.6875rem] text-fuchsia-200 font-bold mb-1' }, t('stem.moonmission.history_title', 'YOUR FLIGHTS')),
                   h('p', { className: 'text-[0.6875rem] text-slate-200 mb-1', 'data-moonmission-compare': 'true' },
@@ -13439,6 +13914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('loiPlan', null); upd('loiRun', null); upd('loiResult', null);
                 upd('loiPaused', false); upd('loiPlaybackRate', 60); upd('loiAwarded', false);
                 upd('lunarEnvironmentOpen', false); upd('lunarEnvironmentSunAngle', 45); upd('lunarEnvironmentRun', null); upd('lunarEnvironmentResult', null); upd('lunarEnvironmentPaused', true); upd('lunarEnvironmentPlaybackRate', 60);
+                upd('departureOpen', false); upd('departurePlan', {burnSeconds:151,offsetSeconds:0}); upd('departureRun', null); upd('departureResult', null); upd('departurePaused', true); upd('departurePlaybackRate', 60); upd('departureView', 'burn');
                 upd('seismoDeployed', false);
                 upd('mccChoice', null);
                 upd('entryAngle', null);

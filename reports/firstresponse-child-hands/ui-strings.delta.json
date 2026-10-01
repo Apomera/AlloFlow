@@ -1,0 +1,13 @@
+{
+  "hand_model_child_two": "Two stacked hands on the child manikin.",
+  "hand_model_child_one": "Heel of one hand on the child manikin.",
+  "hand_choice_title": "Compare child hand techniques",
+  "hand_choice_intro": "Choose the hand arrangement shown on the manikin. Both choices keep the heel of the lower hand in the same chest region.",
+  "hand_choice_one": "One hand",
+  "hand_choice_two": "Two stacked hands",
+  "hand_choice_hidden": "Turn on rescuer hands to inspect this choice.",
+  "hand_choice_pending": "Locate the centre of the chest to reveal the selected hand arrangement.",
+  "hand_choice_scope": "Switching hands changes the illustration. Set simulated depth and recoil separately; this display does not predict how much force or depth you would achieve.",
+  "hand_choice_source": "AHA guidance: child compression techniques",
+  "hand_placement_reveal": "The manikin now shows the hand arrangement at this region. Use Chest close-up or Overhead view to inspect the heel and fingers."
+}

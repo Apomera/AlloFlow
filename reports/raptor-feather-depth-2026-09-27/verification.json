@@ -1,0 +1,78 @@
+{
+  "date": "2026-09-27",
+  "scope": "Layered wing coverts, shared feather relief and roughness, depth-aware study framing",
+  "runs": [
+    {
+      "suites": [
+        "raptor-feather-depth.spec.ts"
+      ],
+      "output": "initial-browser-results",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 2,
+      "note": "Fine relief was below the unchanged visible-pixel threshold. Added broad vane curvature to preserve the surface contribution at inspection distance."
+    },
+    {
+      "suites": [
+        "raptor-feather-depth.spec.ts"
+      ],
+      "output": "refined-browser-results",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "durationSeconds": 58.7
+    },
+    {
+      "suites": [
+        "raptor-flight-continuity.spec.ts",
+        "raptor-tail-rest.spec.ts",
+        "raptor-study-anatomy.spec.ts",
+        "raptor-study-studio.spec.ts"
+      ],
+      "output": "regression-browser-results",
+      "passed": 8,
+      "failed": 1,
+      "skipped": 2,
+      "retries": 0,
+      "note": "Head close-up had insufficient panel clearance. Added camera-axis projection of box depth; no assertion changes."
+    },
+    {
+      "suites": [
+        "raptor-feather-depth.spec.ts",
+        "raptor-study-anatomy.spec.ts",
+        "raptor-study-studio.spec.ts"
+      ],
+      "output": "final-browser-results",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "2.9 minutes"
+    }
+  ],
+  "uniqueScenariosValidated": 14,
+  "coverageNote": "Final source passed all 9 feather/anatomy/Studio cases. The 5 flight-continuity and resting-tail cases passed before the final camera-framing-only correction. Geometry and materials were unchanged after those 5 passed.",
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "scopedAxeViolations": 0,
+    "visualInspection": "pass",
+    "extraFeatherDrawCalls": 0
+  },
+  "sourceFiles": [
+    {
+      "path": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "c8e1acd051e2ec6aaf148bf2bd65b488f857cf1775001a35c9ee0c184a1c2789"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "c8e1acd051e2ec6aaf148bf2bd65b488f857cf1775001a35c9ee0c184a1c2789"
+    }
+  ],
+  "newTranslationKeys": 0,
+  "environment": "Local Chromium/WebGL harness, low and high graphics quality. No physical-device frame-rate benchmark.",
+  "deployment": "Not deployed; no commit or push"
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "narration",
+    "exit": 0,
+    "stdout": "{\"passed\":12,\"errors\":[]}\n",
+    "stderr": ""
+  },
+  {
+    "name": "audio",
+    "exit": 0,
+    "stdout": "PASS native PCM preview reaches playing and ended\nPASS fresh document hydrates serialized clips and plays without synthesis\nPASS unsupported codec is quarantined after real decoder failure and preparation recovers\nPASS revoked blob fails native playback and keeps recovery available\nPASS damaged WAV passes container screening but native decoding rejects it and allows repair\nPASS direct clear and delayed hydration update the mounted reader without host events\nPASS real MediaRecorder teacher take remains playable and survives synthesis setting changes\nPASS unknown synthesis settings remain unready until only that clip is regenerated\nPASS partial preparation lists both failures, targets the right sentence and retries only unresolved clips\nPASS native autoplay denial preserves readiness and a trusted click can retry\n",
+    "stderr": ""
+  },
+  {
+    "name": "preview",
+    "exit": 0,
+    "stdout": "[{\"viewport\":{\"width\":1280,\"height\":800},\"status\":\"passed\",\"checks\":[\"native Tab/Shift+Tab loop\",\"inert background\",\"prepared-help Escape and focus return\",\"local theme control under Help capture\",\"unique IDs\",\"no media/network/persistent writes\",\"no host input events\",\"balanced lifecycle through repeated refresh\",\"snapshot stays fixed until requested\",\"keyboard refresh and focus\",\"appearance reset to current reader\",\"truthful read hint\"],\"pageErrors\":[],\"networkRequests\":1},{\"viewport\":{\"width\":390,\"height\":700},\"status\":\"passed\",\"checks\":[\"native Tab/Shift+Tab loop\",\"inert background\",\"prepared-help Escape and focus return\",\"local theme control under Help capture\",\"unique IDs\",\"no media/network/persistent writes\",\"no host input events\",\"balanced lifecycle through repeated refresh\",\"snapshot stays fixed until requested\",\"keyboard refresh and focus\",\"appearance reset to current reader\",\"truthful read hint\"],\"pageErrors\":[],\"networkRequests\":1}]\n",
+    "stderr": ""
+  },
+  {
+    "name": "places",
+    "exit": 1,
+    "stdout": "PASS two real tabs merge independent fields and receive storage events\nPASS two real tabs preserve competing drafts and reject stale conflict choices\nPASS actual reload prompt protects failed work; accepted reload restores only durable work\nPASS queued real Web Lock save is guarded until the lock is released\nPASS denied reads and malformed records keep local text and durable bytes unchanged\nPASS native Chromium quota exhaustion retains the latest answer and the previous durable bytes\nPASS legacy direct writes are detected on retry without migrating a bookmark to revised text\nPASS real reader downloads readable anonymous recovery and keeps reload protection\n",
+    "stderr": "FAIL real reader restores a copy as a draft and saves only after explicit confirmation\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"learner|Blue Fox|adapted-1|source-utf16-v1-487536e2-169\":{\"at\":1790466542843,\"sourceText\":\"## Herons\\\\n\\\\nThe heron walked slowly in the shallow water.\\\\n\\\\n## Food\\\\n\\\\nIt waited for a fish near the reeds. Then it struck fast.\\\\n\\\\n## Nests\\\\n\\\\nHerons build nests high in trees.\",\"responses\":{\"0\":{\"mainIdea\":\"Restored and checked\"}},\"bookmark\":null,\"paragraph\":0,\"snippet\":\"Herons\",\"resume\":false,\"revision\":3}}'\n- '{\"learner|Blue Fox|adapted-1|source-utf16-v1-487536e2-169\":{\"at\":1790466542422,\"sourceText\":\"## Herons\\\\n\\\\nThe heron walked slowly in the shallow water.\\\\n\\\\n## Food\\\\n\\\\nIt waited for a fish near the reeds. Then it struck fast.\\\\n\\\\n## Nests\\\\n\\\\nHerons build nests high in trees.\",\"responses\":{\"0\":{\"mainIdea\":\"Restored and checked\"}},\"bookmark\":null,\"revision\":2}}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\pass-two\\place-browser\\check.cjs:158:106\n    at async test (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\pass-two\\place-browser\\check.cjs:42:9)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\pass-two\\place-browser\\check.cjs:139:3\n"
+  },
+  {
+    "name": "prepared-help",
+    "exit": 0,
+    "stdout": "{\n  \"passed\": true,\n  \"inputRoot\": \"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\",\n  \"readerSha256\": \"9cacc36529da0568318c3aff2f008dfa46686b7c62d18d3507db71fcae3286ad\",\n  \"checks\": [\n    \"preview is outside the teacher reader\",\n    \"background is inert and aria-hidden\",\n    \"preview spotlight remains in preview\",\n    \"preview audio remains disabled\",\n    \"card Escape keeps preview open and returns focus\",\n    \"second Escape closes preview\",\n    \"teacher spotlight and All word help stay in teacher reader after preview closes\"\n  ],\n  \"errors\": []\n}\n",
+    "stderr": ""
+  },
+  {
+    "name": "storybook",
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"passed\",\n  \"initial\": {\n    \"summaries\": 1,\n    \"synthesis\": 2,\n    \"available\": 1\n  },\n  \"resumed\": {\n    \"summaries\": 0,\n    \"synthesis\": 1,\n    \"available\": 2,\n    \"skipped\": 1,\n    \"recovery\": {\n      \"state\": \"saved\",\n      \"verifiedAt\": \"2026-09-26T23:49:05.515Z\",\n      \"code\": null,\n      \"resumed\": true\n    }\n  },\n  \"offlineAuthor\": {\n    \"summaries\": 0,\n    \"synthesis\": 0,\n    \"available\": 2,\n    \"skipped\": 2,\n    \"recovery\": {\n      \"state\": \"saved\",\n      \"verifiedAt\": \"2026-09-26T23:49:05.561Z\",\n      \"code\": null,\n      \"resumed\": true\n    },\n    \"networkRequests\": []\n  },\n  \"received\": {\n    \"durations\": [\n      0.1,\n      0.1\n    ],\n    \"pictureWidths\": [\n      32\n    ],\n    \"mediaSummary\": \"2 of 2 narration clips included. Pictures embedded: 1. Pictures requiring the original source: 0. Pictures omitted: 0.\",\n    \"artifactSegments\": 2\n  },\n  \"reloaded\": {\n    \"durations\": [\n      0.1,\n      0.1\n    ],\n    \"pictureWidths\": [\n      32\n    ],\n    \"mediaSummary\": \"2 of 2 narration clips included. Pictures embedded: 1. Pictures requiring the original source: 0. Pictures omitted: 0.\",\n    \"artifactSegments\": 2\n  },\n  \"actualPlayback\": true,\n  \"networkRequests\": [],\n  \"errors\": [],\n  \"scope\": \"Actual Storybook export and host recovery wrapper, real disposable IndexedDB reload, export offline with both providers unavailable, then a fresh offline recipient; no deployed app data.\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "name": "vocabulary",
+    "exit": 0,
+    "stdout": "PASS acknowledged overwrite and keyboard Apply\nPASS acknowledged new version retains original\nPASS declined save has no success or history entry\nPASS declined unchanged text is not mistaken for a committed rewrite\nPASS Apply revalidation returns focus to preserved terms\nPASS obsolete in-flight preview cannot restore Apply\nPASS bilingual candidate reports the missing translation term\nPASS supported inline markup matches the shared visible-text projection\nPASS emoji extensions do not satisfy preserved symbols\nPASS partial emoji source terms fail before a model call\nPASS changing readings during primary generation prevents the translation call\nPASS Discard restores keyboard focus\n",
+    "stderr": ""
+  },
+  {
+    "name": "routes",
+    "exit": 0,
+    "stdout": "Passed 34 reader route checks in Chromium 148.0.7778.96\n",
+    "stderr": ""
+  }
+]

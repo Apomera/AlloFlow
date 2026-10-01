@@ -1,0 +1,130 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "list": "flex",
+  "cards": [
+    {
+      "height": 86.96875,
+      "width": 221.078125,
+      "scrollWidth": 219,
+      "clientWidth": 219,
+      "opacity": "1"
+    },
+    {
+      "height": 86.96875,
+      "width": 221.078125,
+      "scrollWidth": 219,
+      "clientWidth": 219,
+      "opacity": "1"
+    },
+    {
+      "height": 86.96875,
+      "width": 221.078125,
+      "scrollWidth": 219,
+      "clientWidth": 219,
+      "opacity": "1"
+    },
+    {
+      "height": 86.96875,
+      "width": 221.078125,
+      "scrollWidth": 219,
+      "clientWidth": 219,
+      "opacity": "1"
+    },
+    {
+      "height": 86.96875,
+      "width": 221.078125,
+      "scrollWidth": 219,
+      "clientWidth": 219,
+      "opacity": "1"
+    }
+  ],
+  "text": [
+    {
+      "text": "2 of 5 layers revealed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "🟢 Skin",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Revealed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Locked during assessment",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "💪 Muscle",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Revealed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Locked during assessment",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "🫁 Organs",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Current",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Locked during assessment",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "🦴 Skeleton",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Locked",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Locked during assessment",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "⚡ Nervous",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Locked",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Locked during assessment",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Layer changes are locked during assessment. Scroll to see all layers.",
+      "size": 14,
+      "clipped": false
+    }
+  ]
+}

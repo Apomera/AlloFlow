@@ -1,0 +1,17 @@
+{
+  "commit": "5c2aebba2fd9f826404eb7e0cfe61a7cf3460f6a",
+  "parent": "5a98bb0fa28b9ba2f87f443d2340115c92180a38",
+  "files": [
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js",
+    "tests/scale_explorer_drawing.test.js",
+    "tests/e2e/scale-explorer-drawing.spec.ts",
+    "reports/scale-explorer-drawing/README.md",
+    "reports/scale-explorer-drawing/desktop-workshop.png",
+    "reports/scale-explorer-drawing/phone-workshop.png",
+    "reports/scale-explorer-drawing/printable-drawing.png",
+    "reports/scale-explorer-drawing/earth-moon-drawing.svg"
+  ]
+}

@@ -1,0 +1,63 @@
+
+Running 4 tests using 1 worker
+
+
+
+[1A[2K(node:27844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:27844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1703:5 › family resemblance compares real parents and offspring and explores allele pairings without creating organisms
+[1A[2K[2/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1826:5 › birth comparison opens for a newborn and visits either real parent without losing the way back
+[1A[2K[3/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1870:5 › birth comparison on a phone supports keyboard parent round trips and honest legacy records
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:1870:5 › birth comparison on a phone supports keyboard parent round trips and honest legacy records 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m307[39m
+    Received:    [31m259.203125[39m
+
+      1877 |   await expect(birth.locator('> summary')).toBeFocused();
+      1878 |   const bounds=await birth.locator('> summary').evaluate(el=>({top:el.getBoundingClientRect().top,bar:document.querySelector('.ei-commandbar')!.getBoundingClientRect().bottom,tabs:document.querySelector('.ei-desk-tabs')!.getBoundingClientRect().bottom}));
+    > 1879 |   expect(bounds.top).toBeGreaterThanOrEqual(Math.max(bounds.bar,bounds.tabs)-1);
+           |                      ^
+      1880 |   await birth.getByText('Try the four allele pairings',{exact:true}).focus();await page.keyboard.press('Enter');
+      1881 |   await expect(birth).toContainText('which one occurred and whether mutations happened are unknown');await expect(birth.locator('[data-recorded-pair=true]')).toHaveCount(0);
+      1882 |   await birth.locator('[data-visit-parent]').first().focus();await page.keyboard.press('Enter');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:1879:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\birth-comparison-browser-artifacts\evolab-living-island-birth-ffcc9-s-and-honest-legacy-records-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\birth-comparison-browser-artifacts\evolab-living-island-birth-ffcc9-s-and-honest-legacy-records-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\birth-comparison-browser-artifacts\evolab-living-island-birth-ffcc9-s-and-honest-legacy-records-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\birth-comparison-browser-artifacts\evolab-living-island-birth-ffcc9-s-and-honest-legacy-records-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\birth-comparison-browser-artifacts\evolab-living-island-birth-ffcc9-s-and-honest-legacy-records-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\birth-comparison-browser-artifacts\evolab-living-island-birth-ffcc9-s-and-honest-legacy-records-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K(node:32892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+[1A[2K(node:32892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[4/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:1896:5 › birth comparison without WebGL pauses playback and returns from a parent on the habitat map
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1870:5 › birth comparison on a phone supports keyboard parent round trips and honest legacy records 
+  3 passed (2.3m)

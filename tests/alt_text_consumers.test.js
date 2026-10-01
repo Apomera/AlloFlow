@@ -98,7 +98,7 @@ describe('edits keep descriptions honest', () => {
     expect(src('visual_panel_source.jsx')).toContain('const renderAltField = (panel, panelIdx) =>');
     expect(src('view_timeline_source.jsx')).toContain('const renderTimelineAltField = (item, idx) =>');
     const anti = src('AlloFlowANTI.txt');
-    expect(anti).toContain('const handleUpdateVisualPanel = (panelIdx, patch) => {');
+    expect(anti).toContain('const handleUpdateVisualPanel = (panelIdx, patch, expect) => {');
     expect(anti).toContain("loadModule('AltTextModule'");
   });
 

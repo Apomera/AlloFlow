@@ -1,0 +1,110 @@
+{
+  "passed": 435,
+  "failed": 0,
+  "success": true,
+  "suites": [
+    {
+      "file": "galaxy_animated_selection_runtime.test.js",
+      "passed": 6,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_black_hole_optics.test.js",
+      "passed": 12,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_black_hole_physics.test.js",
+      "passed": 49,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_canvas_lifecycle.test.js",
+      "passed": 106,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_connected_workflows.test.js",
+      "passed": 17,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_fullscreen_fallback.test.js",
+      "passed": 11,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_modes_smoke.test.js",
+      "passed": 6,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_morphology_lod_runtime.test.js",
+      "passed": 5,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_observe_labels.test.js",
+      "passed": 4,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_readability_contracts.test.js",
+      "passed": 20,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_real_sky_workflow.test.js",
+      "passed": 43,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_review_fixes.test.js",
+      "passed": 110,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_scene_build.test.js",
+      "passed": 28,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_visual_layout.test.js",
+      "passed": 10,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_wcag_a11y.test.js",
+      "passed": 8,
+      "status": "passed"
+    }
+  ],
+  "hashes": {
+    "stem_lab/stem_tool_galaxy.js": "473377836a23b6283bed1add6215cc5f53b13f40e222d9bb5e4b0e100b6ae650",
+    "desktop/web-app/public/stem_lab/stem_tool_galaxy.js": "473377836a23b6283bed1add6215cc5f53b13f40e222d9bb5e4b0e100b6ae650",
+    "tests/galaxy_connected_workflows.test.js": "369e2443fad853103c804a25d651f37dcc46f3df23c767083e467cc5a7079d84",
+    "tests/galaxy_canvas_lifecycle.test.js": "81c7b6d833affc418b83567597ca0691a274cc00c24fdd388f4866b89144e587",
+    "tests/galaxy_real_sky_workflow.test.js": "7a9c471c862f072c56916b100a834e4b9f783e1d2df57d439dfe67b9fc224a50",
+    "tests/galaxy_review_fixes.test.js": "1d7febd58f7c65a3aea055bea9c2a5aa736e24797a6c0246a81acf17d6fc267a",
+    "tests/galaxy_wcag_a11y.test.js": "426b0a6b51ed601032910af026a0f78685afd69006c187ffcac2c4b48277c74c",
+    "dev-tools/galaxy_connected_workflows_qa.cjs": "84c535679d854f562008c4d70b9567f5c8cc31e866da9aa929991929ebf559f2",
+    "dev-tools/i18n/stem_galaxy_en.json": "10bcf34876823675e849b77b02a7814eaeddd30fcbc47e5980697f7aab992800"
+  },
+  "galaxyCatalogHash": "872ba1f1f4a1452d20c076824ad4876de015e5c58e6ff8d3ff3b0727432949fc",
+  "newStrings": 17,
+  "revisedStrings": [
+    "quiz_generating_title",
+    "quiz_generating_sub"
+  ],
+  "runs": [
+    "galaxy-tests.json",
+    "browser-results.json",
+    "preview-results.json"
+  ],
+  "sourceParity": true,
+  "galaxyCatalogParity": true,
+  "sourcePredatesFinalTests": true,
+  "preview": "http://127.0.0.1:53693/",
+  "previewMatchesSource": true,
+  "uncommitted": true
+}

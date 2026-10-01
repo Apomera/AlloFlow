@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { hubTile, learningToolsCard } from './helpers/learning_hub';
 
 test.describe('CDN module loading', () => {
   test('AlloModules object is populated after boot', async ({ page }) => {
@@ -19,7 +20,7 @@ test.describe('CDN module loading', () => {
       };
     });
 
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(4000);
 
     const after = await page.evaluate(() => {
@@ -36,10 +37,10 @@ test.describe('CDN module loading', () => {
   test('STEM Lab module lazy-loads after STEM Lab tile click', async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(3000);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
-    await page.locator('button').filter({ hasText: /STEM Lab.*interactive math/i }).first().click({ force: true });
-    await page.waitForTimeout(6000);
+    await hubTile(page, 'stem-lab').click({ force: true });
+    await page.waitForFunction(() => !!(window as any).AlloModules?.StemLab, null, { timeout: 60000 }).catch(() => {}); // the assertions below report a miss
 
     const hasStemLab = await page.evaluate(() => !!((window as any).AlloModules && (window as any).AlloModules.StemLab));
     expect(hasStemLab, 'StemLab module must load after STEM Lab tile click').toBeTruthy();
@@ -48,10 +49,10 @@ test.describe('CDN module loading', () => {
   test('window.StemLab._registry exists for tool registration', async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(3000);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
-    await page.locator('button').filter({ hasText: /STEM Lab.*interactive math/i }).first().click({ force: true });
-    await page.waitForTimeout(8000);
+    await hubTile(page, 'stem-lab').click({ force: true });
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry, null, { timeout: 60000 }).catch(() => {}); // the assertions below report a miss
 
     const reg = await page.evaluate(() => {
       const sl = (window as any).StemLab;

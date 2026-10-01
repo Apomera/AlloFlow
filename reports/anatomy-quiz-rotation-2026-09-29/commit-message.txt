@@ -1,0 +1,5 @@
+Refine anatomy study flow and quiz coverage
+
+Clarify Cards and Quiz layouts, preserve diagram-study return, and cover every structure across four question types while keeping saved answers stable.
+
+Validated with 400 broad checks, 65 final focused checks, three browser walkthroughs, and 15 scoped accessibility scans.

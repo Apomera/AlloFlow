@@ -1,0 +1,22 @@
+[
+  {
+    "file": "host_handlers_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "dictionary_loader.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "content_engine_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  }
+]

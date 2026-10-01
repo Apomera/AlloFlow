@@ -1,0 +1,48 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:30796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:30796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:724:5 › inheritance reveal shows recorded choices, mutations and trait averages without drawing new genes
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling 
+
+    [31mTearing down "context" exceeded the test timeout of 120000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\resemblance-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\resemblance-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\resemblance-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\resemblance-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\resemblance-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:10740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:10740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1702:5 › family resemblance compares real parents and offspring and explores allele pairings without creating organisms
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1758:5 › family resemblance on a phone preserves unknown legacy provenance and supports keyboard exploration
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1785:5 › family resemblance without WebGL explains a zero-valued offspring beyond both parents without mutation
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling 
+  4 passed (6.6m)

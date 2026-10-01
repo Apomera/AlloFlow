@@ -1,0 +1,79 @@
+{
+  "at": "2026-09-26T22:31:14.987Z",
+  "label": "track19",
+  "patch": "76514a130787b1204d5f63a6bffcc7bb1b1cb5732816adcec604b616fbc6353b",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "c56e1432d6b80c9464160e8d69b715e1e200491bdf9f43f869a08d2ba95a0a38",
+      "after": "5a3009fbb1281d94cf5e5bfcf994f5d2d59d4e8dc7432ce8e358aaeea455b106",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_render_cost.test.js",
+      "targets": [
+        "tests/reader_render_cost.test.js"
+      ],
+      "before": "8541b20d8bc321d5a3addcccd217799449708539f4c460521f222adba690b1a5",
+      "after": "2bfe61391ff028e452eaff2cfbc1c4822019824abce0a3f70c0aa2fba91bfc97",
+      "changed": true
+    },
+    {
+      "target": "tests/immersive_reader_word_timing_source.test.js",
+      "targets": [
+        "tests/immersive_reader_word_timing_source.test.js"
+      ],
+      "before": "cc0df7b03db5d6d87906dd07d50369f5a0b7dfc0bee7d5f85218888f338238fd",
+      "after": "e04ae500de207379d25c131136a9be075ac599d8703ca40da5c4d696fb0fc4b9",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/README.md",
+      "targets": [
+        "dev-tools/reader-performance/README.md"
+      ],
+      "before": null,
+      "after": "7270d9350360e14bda350a4acf3d4e63f890beb2bd85f451d1a59de6d3651348",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/fixtures.cjs",
+      "targets": [
+        "dev-tools/reader-performance/fixtures.cjs"
+      ],
+      "before": null,
+      "after": "cf578256464ca57111629fe5c73eb3550f36e69ac58508f0f02ee139a5235627",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/instrumentation.js",
+      "targets": [
+        "dev-tools/reader-performance/instrumentation.js"
+      ],
+      "before": null,
+      "after": "abc25b94e0b6e6238a73e7a76a3f4b5c8af3db7e3fa2129e15674fe4a67891ca",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/harness.jsx",
+      "targets": [
+        "dev-tools/reader-performance/harness.jsx"
+      ],
+      "before": null,
+      "after": "6022c562bbf67e00ef21e1e2d5327f471881e760ac091e2151a3b3f1ee118829",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/run.cjs",
+      "targets": [
+        "dev-tools/reader-performance/run.cjs"
+      ],
+      "before": null,
+      "after": "740c688b5a23ace398d7de032ed59d7d9cf289755d0ad11dd6a048d1da763f32",
+      "changed": true
+    }
+  ]
+}

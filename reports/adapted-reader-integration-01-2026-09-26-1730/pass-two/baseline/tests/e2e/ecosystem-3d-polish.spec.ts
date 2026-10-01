@@ -1,0 +1,48 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_ecosystem.js',toolId:'ecosystem',width:1100,height:900,appStyles:true});
+test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
+test('detailed meadow cameras and selection retain exact simulation data across species and screen sizes',async({page})=>{
+  await page.setViewportSize({width:1140,height:1050});
+  await harness.mount(page,{ecosystem:{tab:'foodweb',tutorialDismissed:true}},undefined,{expectCanvas:false});
+  await page.evaluate(()=>{document.body.className='theme-default';document.getElementById('wrap')!.style.cssText='width:100%;height:auto;display:block;padding:16px;background:white';});
+  await page.getByRole('button',{name:'Habitat restoration',exact:true}).click();
+  const meadow=page.locator('[data-efw-meadow]'),canvas=meadow.locator('canvas'),stage=meadow.locator('.efw-meadow-stage');
+  await expect(canvas).toHaveAttribute('data-camera-mode','habitat');
+  await expect(canvas).toHaveAttribute('data-glyphs-foxes','7');
+  await stage.screenshot({path:'reports/ecosystem-3d-polish/habitat-desktop.png'});
+  const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb));
+  await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).focus();
+  await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).press('Enter');
+  await expect(canvas).toHaveAttribute('data-camera-mode','detail');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb))).toBe(before);
+  for(const [id,name] of [['rabbits','Rabbits'],['foxes','Red foxes'],['voles','Meadow voles'],['owls','Barn owls']]){
+    await meadow.getByRole('button',{name:new RegExp(name+'\\s')}).click();
+    await expect(canvas).toHaveAttribute('data-selected-species',id);
+    await expect(meadow.locator('[data-efw-selection-label]')).toContainText(name);
+    await expect(page.locator('[data-efw-relationships]')).toContainText(name);
+    await stage.screenshot({path:'reports/ecosystem-3d-polish/'+id+'-detail.png'});
+  }
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await expect(meadow).toContainText('Reduced motion is on');
+  await page.setViewportSize({width:390,height:844});
+  await stage.screenshot({path:'reports/ecosystem-3d-polish/mobile-detail.png'});
+  await meadow.getByRole('button',{name:'Reset camera',exact:true}).click();
+  await expect(canvas).toHaveAttribute('data-camera-mode','habitat');
+  await stage.screenshot({path:'reports/ecosystem-3d-polish/mobile-habitat.png'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.setViewportSize({width:320,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  await expect(canvas).toHaveAttribute('data-refuge-cover','50');
+  await meadow.getByLabel('Meadow scene data',{exact:true}).selectOption('baseline');
+  await expect(canvas).toHaveAttribute('data-refuge-cover','10');
+  await page.getByLabel('Disturbance',{exact:true}).selectOption('remove');
+  await page.getByLabel('Affected group',{exact:true}).selectOption('owls');
+  await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  await meadow.getByLabel('Meadow scene data',{exact:true}).selectOption('experiment');
+  await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).click();
+  await expect(canvas).toHaveAttribute('data-glyphs-owls','0');
+  await expect(meadow.locator('[data-efw-selection-label]')).toContainText('0.0 biomass index');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

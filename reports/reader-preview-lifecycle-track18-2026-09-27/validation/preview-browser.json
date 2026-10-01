@@ -1,0 +1,133 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "nativeMutedAudio": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "nativePlayback": true,
+      "muted": true,
+      "busyFocusPreserved": true,
+      "closeStopsPreview": true
+    },
+    {
+      "route": "navigate-during-resume",
+      "newPlaybackPreserved": true,
+      "noWrongQuarantine": true
+    },
+    {
+      "route": "replacement",
+      "oldAudioStopped": true,
+      "newAudioLoaded": true
+    },
+    {
+      "route": "removed-paused-clip",
+      "generateFocused": true
+    },
+    {
+      "route": "injected-autoplay-denial",
+      "retryWorks": true,
+      "noQuarantine": true
+    },
+    {
+      "route": "native-invalid-media",
+      "oneQuarantine": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Silent local WAV and invalid local media; no real user audio or storage writes",
+    "Play acknowledgements are gated for deterministic races; autoplay denial is injected",
+    "DOM semantics are not actual screen-reader announcement verification",
+    "200% computed-font simulation is not actual text-only zoom or 400% browser zoom",
+    "No mobile hardware, Firefox or WebKit verification"
+  ]
+}

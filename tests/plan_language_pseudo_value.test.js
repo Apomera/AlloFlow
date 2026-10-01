@@ -55,7 +55,8 @@ describe('the premise: the pseudo-value is real, selectable, and not a language'
 
   it('other consumers already fall back rather than pass it through', () => {
     expect(engine).toContain("explanationLanguage === 'All Selected Languages' ? 'English' : explanationLanguage");
-    expect(engine).toContain("wordLanguage === 'All Selected Languages' ? 'English' : wordLanguage");
+    // 14a2d9cfa moved the word-lookup fallback into the shared lookup request.
+    expect(engine).toContain("language: language === 'All Selected Languages' ? 'English' : language,");
   });
 });
 

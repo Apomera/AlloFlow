@@ -1,0 +1,51 @@
+
+Running 1 test using 1 worker
+
+
+
+[1A[2K(node:40992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:40992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/1] [chromium] › tests\e2e\evolab-living-island.spec.ts:1465:5 › variation explorer spotlights real trait ranges in 3D and compares recorded cohorts without changing organisms
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:1465:5 › variation explorer spotlights real trait ranges in 3D and compares recorded cohorts without changing organisms 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m115[39m
+    Received:    [31m-0.015625[39m
+
+      1510 |   expect((await sceneData()).count).toBe(bins[chosen].count);
+      1511 |   const placement = await page.evaluate(() => ({ stageTop: document.querySelector('.ei-stage')!.getBoundingClientRect().top, barBottom: document.querySelector('.ei-commandbar')!.getBoundingClientRect().bottom }));
+    > 1512 |   expect(placement.stageTop).toBeGreaterThanOrEqual(placement.barBottom - 1);
+           |                              ^
+      1513 |   await page.locator('.ei-stage-wrap').screenshot({ path: report + '/variation-spotlight-island.png', style: '.ei-commandbar{position:static!important}' });
+      1514 |   await page.locator('.ei-variation').screenshot({ path: report + '/variation-explorer-desktop.png' });
+      1515 |   await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:1512:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\variation-visual-artifacts\evolab-living-island-varia-6c363--without-changing-organisms-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\variation-visual-artifacts\evolab-living-island-varia-6c363--without-changing-organisms-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\variation-visual-artifacts\evolab-living-island-varia-6c363--without-changing-organisms-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\variation-visual-artifacts\evolab-living-island-varia-6c363--without-changing-organisms-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\variation-visual-artifacts\evolab-living-island-varia-6c363--without-changing-organisms-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\variation-visual-artifacts\evolab-living-island-varia-6c363--without-changing-organisms-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1465:5 › variation explorer spotlights real trait ranges in 3D and compares recorded cohorts without changing organisms 

@@ -1,0 +1,56 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const sourcePath = resolve(process.cwd(), 'sel_hub/sel_tool_teamwork.js');
+const publicPath = resolve(process.cwd(), 'desktop/web-app/public/sel_hub/sel_tool_teamwork.js');
+const source = () => readFileSync(sourcePath, 'utf8');
+
+describe('Teamwork clipboard fallback accessibility', () => {
+  it('keeps the deployed copy identical to the audited source', () => {
+    expect(readFileSync(publicPath, 'utf8')).toBe(source());
+  });
+
+  it('provides visible selectable review text when clipboard access is unavailable', () => {
+    const text = source();
+    expect(text).toContain("'Review text to copy'");
+    expect(text).toContain("readOnly: true");
+    expect(text).toContain('Copy unavailable. Select the review text and copy it manually.');
+    // Real browser cases exercise helper success/false/rejection/throw and native fallback.
+  });
+
+  it('provides named roving tabs linked to the active panel', () => {
+    const text = source();
+    expect(text).toContain("role: 'tablist', 'aria-label': 'Teamwork & Collaboration tabs'");
+    expect(text).toContain("'data-teamwork-tab': t.id");
+    expect(text).toContain("'tabIndex': isActive ? 0 : -1");
+    expect(text).toContain("onKeyDown: function(e)");
+    expect(text).toContain("'aria-controls': 'teamwork-tab-panel'");
+    expect(text).toContain("id: 'teamwork-tab-panel', role: 'tabpanel'");
+  });
+
+  it('announces activity progress and exposes coach history semantics', () => {
+    const text = source();
+    expect(text).toContain("role: 'status'");
+    expect(text).toContain("'Earlier conflict-coach records'");
+    expect(text).toContain("'aria-label': 'Team role coach response'");
+    expect(text).toContain("'aria-label': 'Teamwork challenge coach response'");
+    // Scenario practice is now unscored; its keyboard and state semantics have browser coverage.
+    // Communication planning replaces the profile quiz; browser tests cover its editable controls.
+    expect(text).toContain("Draft changed. Review choices reset so you can check the new wording.");
+    expect(text).toContain("announceToSR(message)");
+  });
+
+  it('keeps auxiliary controls descriptive and outside the tablist', () => {
+    const text = source();
+    // Hub-wide toolbar contract (tests/sel_toolbar_toggle_names.test.js): the sound
+    // toggle is a switch named for sound; the badge toggle carries the count.
+    expect(text).toContain("'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled");
+    // shownBadges leaves out retired badges a student never earned (tests/sel_retired_badges.test.js).
+    expect(text).toContain("'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel");
+    // Named by its visible text (WCAG 2.5.3, Label in Name); no overriding label.
+    expect(text).toContain("'Copy review text'");
+    expect(text).not.toContain("'aria-label': 'Export retrospective as text'");
+    expect(text).not.toContain("'aria-label': 'Clear retrospective cards'");
+  });
+});

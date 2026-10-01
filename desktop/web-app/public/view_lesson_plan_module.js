@@ -69,6 +69,69 @@ function _lessonPlanEditedText(previous, value) {
   }
   return value;
 }
+function _lessonPlanHeaderMode(resource, isIndependentMode, isParentMode) {
+  const saved = resource && resource.config && resource.config.generationInputs ? resource.config.generationInputs.mode : null;
+  if (saved === 'study') return 'student';
+  if (saved === 'family') return 'parent';
+  if (saved === 'teacher') return 'teacher';
+  return isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher';
+}
+// Shared criterion key and rollup rules live in UtilsPure; the fallbacks below
+// apply the same rules if that module has not loaded yet.
+function _lessonPlanCriterionKey(value) {
+  const modules = typeof window !== 'undefined' && window.AlloModules;
+  if (modules && modules.UtilsPure && typeof modules.UtilsPure.successCriterionKey === 'function') return modules.UtilsPure.successCriterionKey(value);
+  if (modules && modules.QuizLiveAggregators && typeof modules.QuizLiveAggregators.normalizeConceptId === 'function') return modules.QuizLiveAggregators.normalizeConceptId(value);
+  let s = String(value == null ? '' : value).trim().toLowerCase().replace(/^["'`(\[]+|["'`)\]]+$/g, '');
+  while (/^(the |a |an )/.test(s)) s = s.replace(/^(the |a |an )/, '');
+  return s.replace(/\s+/g, ' ').replace(/[.,;:!?]+$/, '').trim();
+}
+function _lessonPlanRollup(planData, rollup) {
+  const utils = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UtilsPure;
+  if (utils && typeof utils.resolvePlanCriterionRollup === 'function') return utils.resolvePlanCriterionRollup(planData, rollup);
+  const r = rollup && typeof rollup === 'object' && rollup.byConcept && typeof rollup.byConcept === 'object' ? rollup : null;
+  if (!r) return {
+    status: 'none',
+    byKey: {}
+  };
+  const info = {
+    quizId: r.quizId == null ? null : String(r.quizId),
+    quizTitle: typeof r.quizTitle === 'string' ? r.quizTitle.trim() : '',
+    quizMode: String(r.quizMode || 'exit-ticket'),
+    sessionLabel: typeof r.sessionLabel === 'string' ? r.sessionLabel : '',
+    sessionCode: typeof r.sessionCode === 'string' ? r.sessionCode : ''
+  };
+  if (info.quizMode === 'pre-check') return {
+    status: 'pre-check',
+    byKey: {},
+    ...info
+  };
+  const savedQuizId = planData && planData.successCriteriaQuizId != null && planData.successCriteriaQuizId !== '' ? String(planData.successCriteriaQuizId) : '';
+  if (savedQuizId && info.quizId !== savedQuizId) return {
+    status: 'other-quiz',
+    byKey: {},
+    ...info
+  };
+  const byKey = {};
+  Object.keys(r.byConcept).forEach(label => {
+    const key = _lessonPlanCriterionKey(label),
+      s = r.byConcept[label];
+    if (!key || !s || typeof s !== 'object') return;
+    const bucket = byKey[key] || (byKey[key] = {
+      met: 0,
+      partial: 0,
+      total: 0
+    });
+    ['met', 'partial', 'total'].forEach(field => {
+      bucket[field] += Number.isFinite(Number(s[field])) ? Number(s[field]) : 0;
+    });
+  });
+  return {
+    status: 'match',
+    byKey,
+    ...info
+  };
+}
 function _lessonPlanCriterionText(value) {
   return _lessonPlanText(value && typeof value === 'object' && !Array.isArray(value) && 'statement' in value ? value.statement : value);
 }
@@ -354,7 +417,13 @@ function LessonPlanView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isIndependentMode = props.isIndependentMode;
   var isParentMode = props.isParentMode;
-  var isEditingLessonPlan = props.isEditingLessonPlan;
+  // Headings follow the audience the guide was generated for; older plans fall back to the viewer's role.
+  var headerMode = _lessonPlanHeaderMode(generatedContent, isIndependentMode, isParentMode);
+  var tl = (key, fallback) => t(key) || fallback;
+  // Students, families, self-study learners and any delivered copy read the guide
+  // as-is: no editing, teaching scripts, criteria results, stations or next-lesson tools.
+  var audienceView = !isTeacherMode || !!isParentMode || !!isIndependentMode || generatedContent.studentProjection === true;
+  var isEditingLessonPlan = !audienceView && props.isEditingLessonPlan;
   var history = Array.isArray(props.history) ? props.history : [];
   var isGeneratingExtensionGuide = props.isGeneratingExtensionGuide || {};
   var progressionData = props.progressionData;
@@ -418,7 +487,7 @@ function LessonPlanView(props) {
     className: "flex flex-wrap gap-x-3 gap-y-1 break-words text-sm font-bold text-indigo-700"
   }, /*#__PURE__*/React.createElement("span", null, t('lesson_plan.topic_label'), ": ", sourceTopic || 'General'), /*#__PURE__*/React.createElement("span", null, t('lesson_plan.grade_label'), ": ", gradeLevel))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 no-print"
-  }, isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }, !audienceView && /*#__PURE__*/React.createElement("button", {
     "aria-pressed": !!isEditingLessonPlan,
     onClick: handleToggleIsEditingLessonPlan,
     className: `flex min-h-11 items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`,
@@ -439,19 +508,20 @@ function LessonPlanView(props) {
     onClick: handleExportPDF,
     "data-help-key": "export_pdf_button",
     className: "flex min-h-11 items-center gap-1 text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-600 px-3 py-1.5 rounded-full transition-colors shadow-sm",
-    title: t('lesson_plan.tooltip_pdf'),
-    "aria-label": t('lesson_plan.tooltip_pdf')
-  }, /*#__PURE__*/React.createElement(FileDown, {
-    size: 14
-  }), " ", t('lesson_plan.pdf_button')))), /*#__PURE__*/React.createElement(LessonPlanOverview, {
+    "data-lesson-plan-print-pdf": true,
+    title: t('lesson_plan.print_pdf_tooltip') || 'Opens the print window. Choose Save as PDF there to keep a file.'
+  }, /*#__PURE__*/React.createElement(Printer, {
+    size: 14,
+    "aria-hidden": "true"
+  }), " ", t('lesson_plan.print_pdf_button') || 'Print / PDF'))), !audienceView && /*#__PURE__*/React.createElement(LessonPlanOverview, {
     plan: generatedContent,
     t: t
-  }), /*#__PURE__*/React.createElement(PlanningInputsSummary, {
+  }), !audienceView && /*#__PURE__*/React.createElement(PlanningInputsSummary, {
     resource: generatedContent,
     history: history,
     t: t,
     onOpen: props.onOpenPlanningResource
-  }), isTeacherMode && !isParentMode && !isIndependentMode && typeof props.onGenerateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
+  }), !audienceView && typeof props.onGenerateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
     key: String(generatedContent.id),
@@ -520,7 +590,7 @@ function LessonPlanView(props) {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.essentialQuestion`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t(`lesson_headers.${headerMode}.essentialQuestion`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_essential_question') || 'Edit essential question',
     value: _lessonPlanText(generatedContent.data.essentialQuestion),
     onChange: e => handleLessonPlanChange('essentialQuestion', e.target.value),
@@ -537,7 +607,7 @@ function LessonPlanView(props) {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Flag, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.objectives`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement(LessonPlanListEditor, {
+  }), " ", t(`lesson_headers.${headerMode}.objectives`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement(LessonPlanListEditor, {
     key: String(generatedContent.id) + ":objectives",
     field: "objectives",
     value: generatedContent.data.objectives,
@@ -564,7 +634,7 @@ function LessonPlanView(props) {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.hook`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t(`lesson_headers.${headerMode}.hook`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_hook') || 'Edit hook or opener',
     value: _lessonPlanText(generatedContent.data.hook),
     onChange: e => handleLessonPlanChange('hook', e.target.value),
@@ -580,8 +650,14 @@ function LessonPlanView(props) {
     // publish them; Reteach hands a criterion to the existing next-lesson
     // machinery as a Remediation follow-up, nothing new is generated here.
     const criteria = successCriteria;
-    const rollup = typeof window !== 'undefined' && window.__alloCriterionRollup && typeof window.__alloCriterionRollup === 'object' ? window.__alloCriterionRollup : null;
-    const stat = id => rollup && rollup.byConcept && rollup.byConcept[id] ? rollup.byConcept[id] : null;
+    const rollup = audienceView ? {
+      status: 'none',
+      byKey: {}
+    } : _lessonPlanRollup(generatedContent.data, typeof window !== 'undefined' ? window.__alloCriterionRollup : null);
+    const stat = id => rollup.byKey[_lessonPlanCriterionKey(id)] || null;
+    const sourceName = rollup.quizTitle || (rollup.quizMode === 'exit-ticket' ? tl('lesson_plan.criteria_source_exit_ticket', 'the exit ticket') : tl('lesson_plan.criteria_source_live_quiz', 'the live quiz'));
+    const promptSource = rollup.quizTitle ? '"' + rollup.quizTitle + '"' : rollup.quizMode === 'exit-ticket' ? 'the exit ticket' : 'the live quiz';
+    const footer = !criteria.some(item => typeof item?.id === 'string' && item.id || typeof item?.id === 'number') ? tl('lesson_plan.criteria_no_links', 'These saved criteria have no quiz links. Review them alongside student work.') : rollup.status === 'match' ? tl('lesson_plan.criteria_results_from', 'Class results from {quiz}, {session}.').replace('{quiz}', sourceName).replace('{session}', rollup.sessionCode ? tl('lesson_plan.criteria_session_code', 'live session {code}').replace('{code}', rollup.sessionCode) : rollup.sessionLabel || tl('lesson_plan.criteria_live_session', 'the live session')) : rollup.status === 'pre-check' ? tl('lesson_plan.criteria_precheck_ignored', 'The latest live results come from a pre-check, which runs before teaching, so they are not shown as criteria met.') : rollup.status === 'other-quiz' ? tl('lesson_plan.criteria_other_quiz', 'The latest live results come from {quiz}, not the quiz these criteria were built from, so they are not shown here.').replace('{quiz}', sourceName) : tl('lesson_plan.criteria_hint', 'Run the exit ticket in a live session and the share of students meeting each criterion appears here.');
     return /*#__PURE__*/React.createElement("div", {
       className: "bg-white p-4 rounded-lg border border-indigo-100",
       "data-success-criteria": "plan"
@@ -613,34 +689,35 @@ function LessonPlanView(props) {
         className: "min-w-0 flex-1 basis-48 break-words"
       }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
         text: statement
-      })), criterionId && /*#__PURE__*/React.createElement("span", {
+      })), criterionId && !audienceView && /*#__PURE__*/React.createElement("span", {
         className: "max-w-full break-all text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100",
-        title: c.source === 'quiz' ? 'Rolls up from the exit ticket questions carrying this concept label' : 'Derived from an objective'
+        title: c.source === 'quiz' ? tl('lesson_plan.criteria_chip_quiz', 'Rolls up from the quiz questions carrying this concept label') : tl('lesson_plan.criteria_chip_objective', 'Derived from an objective')
       }, criterionId), pct !== null && /*#__PURE__*/React.createElement("span", {
         className: `text-[11px] font-bold px-2 py-0.5 rounded-full border ${pct >= 80 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : pct >= 60 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`,
         "data-criterion-mastery": c.id
-      }, `${pct}% met (${s.met}/${s.total})`), pct !== null && pct < 80 && isTeacherMode && typeof handleActivateNextLesson === 'function' && /*#__PURE__*/React.createElement("button", {
+      }, tl('lesson_plan.criteria_met', '{pct}% met ({met}/{total})').replace('{pct}', pct).replace('{met}', s.met).replace('{total}', s.total)), pct !== null && pct < 80 && !audienceView && typeof handleActivateNextLesson === 'function' && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => handleActivateNextLesson({
           nextTopic: statement,
-          focus: `Reteach so students can meet this success criterion: ${statement}. Only ${pct}% of the class met it on the exit ticket (concept label: ${c.id}).`,
+          focus: `Reteach so students can meet this success criterion: ${statement}. Only ${pct}% of the class met it on ${promptSource} (concept label: ${c.id}).`,
           type: 'Remediation',
-          rationale: `${pct}% of the class met this criterion on the exit ticket.`
+          rationale: `${pct}% of the class met this criterion on ${promptSource}.`
         }, {
           synthetic: true
         }),
         className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50"
       }, t('lesson_plan.reteach') || 'Reteach'));
-    })), /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 text-[11px] text-slate-500"
-    }, !criteria.some(item => typeof item?.id === 'string' && item.id || typeof item?.id === 'number') ? t('lesson_plan.criteria_no_links') || 'These saved criteria have no quiz links. Review them alongside student work.' : rollup && rollup.sessionLabel ? `Class results from ${rollup.sessionLabel}.` : t('lesson_plan.criteria_hint') || 'Run the exit ticket in a live session and the share of students meeting each criterion appears here.'));
+    })), !audienceView && /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-[11px] text-slate-600",
+      "data-criteria-source": rollup.status
+    }, footer));
   })(), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(BookOpen, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.directInstruction`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t(`lesson_headers.${headerMode}.directInstruction`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_direct_instruction') || 'Edit direct instruction',
     value: _lessonPlanText(generatedContent.data.directInstruction),
     onChange: e => handleLessonPlanChange('directInstruction', e.target.value),
@@ -658,7 +735,7 @@ function LessonPlanView(props) {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Users, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.guidedPractice`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t(`lesson_headers.${headerMode}.guidedPractice`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_guided_practice') || 'Edit guided practice',
     value: _lessonPlanText(generatedContent.data.guidedPractice),
     onChange: e => handleLessonPlanChange('guidedPractice', e.target.value),
@@ -673,7 +750,7 @@ function LessonPlanView(props) {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(PenTool, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.independentPractice`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t(`lesson_headers.${headerMode}.independentPractice`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_independent_practice') || 'Edit independent practice',
     value: _lessonPlanText(generatedContent.data.independentPractice),
     onChange: e => handleLessonPlanChange('independentPractice', e.target.value),
@@ -688,7 +765,7 @@ function LessonPlanView(props) {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  }), " ", t(`lesson_headers.${isIndependentMode ? 'student' : isParentMode ? 'parent' : 'teacher'}.closure`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t(`lesson_headers.${headerMode}.closure`)), isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('lesson_plan.edit_closure') || 'Edit closure',
     value: _lessonPlanText(generatedContent.data.closure),
     onChange: e => handleLessonPlanChange('closure', e.target.value),
@@ -740,7 +817,7 @@ function LessonPlanView(props) {
     rows: 4
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: typeof ext === 'string' ? ext : ext.description
-  })), typeof ext !== 'string' && /*#__PURE__*/React.createElement("div", {
+  })), typeof ext !== 'string' && !audienceView && /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-200 pt-3"
   }, ext.guide ? /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-lg p-4 text-sm text-slate-700 border border-slate-400 shadow-sm"
@@ -788,7 +865,9 @@ function LessonPlanView(props) {
     className: "flex flex-wrap items-center justify-between gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-emerald-900 flex items-center gap-2"
-  }, "🔬 Recommended STEAM Lab Tools"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🔬"), " ", tl('lesson_plan.stem_tools_header', 'Recommended STEAM Lab Tools')), !audienceView && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       const tools = recommendedStemTools.map(t => t.id);
       const station = {
@@ -804,18 +883,21 @@ function LessonPlanView(props) {
         if (!Array.isArray(existing)) throw new Error('Station storage is not a list');
         localStorage.setItem('alloflow_stem_stations', JSON.stringify(existing.concat(station)));
       } catch (_) {
-        addToast && addToast('The STEAM station could not be saved on this device. Your saved stations have been kept. Try again after checking device storage.', 'error');
+        addToast && addToast(tl('lesson_plan.stem_station_save_failed', 'The STEAM station could not be saved on this device. Your saved stations have been kept. Try again after checking device storage.'), 'error');
         return;
       }
       setActiveStation && setActiveStation(station);
-      addToast && addToast('✅ STEM Station created! Open STEAM Lab to see your curated tools.');
+      addToast && addToast(tl('lesson_plan.stem_station_created', 'STEAM station created. Open STEAM Lab to see your curated tools.'));
     },
     className: "flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
-  }, "📌 Create Station")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📌"), " ", tl('lesson_plan.stem_create_station', 'Create Station'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, recommendedStemTools.map((tool, idx) => {
-    const registry = window.STEM_TOOL_REGISTRY || [];
-    const meta = registry.find(r => r.id === tool.id);
+    const registry = Array.isArray(window.STEM_TOOL_REGISTRY) ? window.STEM_TOOL_REGISTRY : [];
+    const meta = registry.find(r => r && r.id === tool.id) || registry.find(r => r && typeof r.id === 'string' && r.id.toLowerCase() === tool.id.toLowerCase());
+    const openLabel = tl('lesson_plan.stem_open_tool', 'Open Tool');
     return /*#__PURE__*/React.createElement("div", {
       key: tool.id || idx,
       className: "flex flex-wrap items-start gap-3 bg-white/80 rounded-xl p-3 border border-emerald-100"
@@ -830,15 +912,22 @@ function LessonPlanView(props) {
     }, tool.rationale), tool.suggestedActivity && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-teal-600 mt-1 italic"
     }, "💡 ", tool.suggestedActivity)), /*#__PURE__*/React.createElement("button", {
-      "aria-label": `Open Tool: ${meta ? meta.name : tool.id}`,
+      type: "button",
+      "aria-label": openLabel + ': ' + (meta ? meta.name : tool.id),
       onClick: () => {
-        const toolId = tool.id;
+        const toolId = meta ? meta.id : tool.id;
+        // Setting the active tool does not load its plugin; request it like every other STEAM entry point.
+        try {
+          if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(String(toolId));
+        } catch (_) {}
         setStemLabTool && setStemLabTool(toolId);
         setShowStemLab && setShowStemLab(true);
         setStemLabTab && setStemLabTab('explore');
       },
       className: "text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
-    }, "Open Tool →"));
+    }, openLabel, " ", /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "→")));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center pb-8"
   }, /*#__PURE__*/React.createElement("button", {
@@ -846,7 +935,7 @@ function LessonPlanView(props) {
     className: "flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg"
   }, /*#__PURE__*/React.createElement(Printer, {
     size: 18
-  }), " ", t('lesson_plan.print'))), /*#__PURE__*/React.createElement("div", {
+  }), " ", t('lesson_plan.print'))), !audienceView && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-8 border-t-2 border-dashed border-slate-200"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-black text-slate-600 uppercase tracking-widest mb-4 text-center"

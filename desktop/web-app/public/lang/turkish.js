@@ -1,4 +1,1224 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Duygu Bölgeleri",
+          "desc": "Bölgenizi (mavi, yeşil, sarı, kırmızı) belirleyin ve öz düzenleme stratejilerini keşfedin."
+        },
+        "emotions": {
+          "label": "Duygu Kâşifi",
+          "desc": "Duygu kelime dağarcığınızı geliştirin — duyguları tanıyın, adlandırın ve yoğunluklarını puanlayın."
+        },
+        "strengths": {
+          "label": "Güçlü Yön Bulucu",
+          "desc": "Kişisel güçlü yönlerinizi, yeteneklerinizi ve gelişim alanlarınızı keşfedin ve üzerine düşünün."
+        },
+        "viaStrengths": {
+          "label": "VIA Güçlü Yönleri",
+          "desc": "24 VIA Karakter Gücünün (Peterson ve Seligman, 2004) basitleştirilmiş bir öz sınıflandırması; 6 erdem ve imza güçlerin belirlenmesiyle. Yetkili ücretsiz anket için viacharacter.org adresine gidin. Düşünmeye dayalı bir uygulamadır, psikometrik değildir."
+        },
+        "wheelOfLife": {
+          "label": "Yaşam Çarkı",
+          "desc": "Her biri 1'den 10'a kadar puanlanan 8 yaşam alanından oluşan örümcek grafiği. Hayatın şu anda nerede dolu, nerede zayıf olduğunu gösteren bir öz portre. Koçluk geleneğinden (Meyer, 1960'lar; Co-Active Coaching). Sezgisel bir araçtır; geçerliliği kanıtlanmış bir psikometrik ölçek değildir."
+        },
+        "perma": {
+          "label": "PERMA İyi Oluş",
+          "desc": "Beş PERMA alanı ve ek olarak Sağlık üzerine bir öz kontrol: Olumlu duygu, Bağlılık, İlişkiler, Anlam, Başarı ve Sağlık. 24 madde, sütun grafik sonucu, alan bazında yansıtma. Seligman'dan; VIA Güçlü Yönleri ile birlikte kullanılır."
+        },
+        "coping": {
+          "label": "Başa Çıkma Araç Kutusu",
+          "desc": "Başa çıkma stratejilerini keşfedin ve uygulayın — nefes, topraklanma, hareket ve daha fazlası."
+        },
+        "windowOfTolerance": {
+          "label": "Tolerans Penceresi",
+          "desc": "Travma bilgili bir öz farkındalık görseli. Üç uyarılmışlık bölgesi (aşırı uyarılmışlık, pencere, düşük uyarılmışlık). Her bölgeye ait kişisel işaretlerinizi, tetikleyicilerinizi ve sizi geri getiren uygulamaları haritalayın. Siegel'e (1999) dayanır; travma bilgili okullarda standarttır."
+        },
+        "stressBucket": {
+          "label": "Stres Kovası",
+          "desc": "Bir kapasite görseli. Stres kaynakları içeri dolar; başa çıkma uygulamaları dışarı boşaltır. Giriş ve çıkışınızın dengede olup olmadığını görün. CBT geleneğinden bir araç (Brabban ve Turkington 2002); NHS IAPT ve Mind UK genelinde kullanılır. Yapısal stres kaynakları konusunda dürüsttür."
+        },
+        "tipp": {
+          "desc": "AKUT sıkıntı için dört DBT kriz atlatma becerisi (Sıcaklık, Yoğun egzersiz, Ritimli nefes, Eşli kas gevşemesi). Çıkış yolunu düşünmeye çalışmadan önce bedeni 30 saniye ile 10 dakika içinde sakinleştirir. Temel bir DBT Sıkıntıya Dayanma becerisi (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Kaygı Araç Kutusu",
+          "desc": "Kaygıyla çalışmak için CBT temelli beceriler: psikoeğitim, endişe ağacı (üretken ve üretken olmayan endişe), planlı endişe zamanı, felaketleştirmeyi azaltma, topraklanma becerileri ve kişisel örüntüler envanteri. Beck Institute, AACAP ve ADAA'dan. Tolerans Penceresi ve Stres Kovası ile birlikte kullanılır."
+        },
+        "sleep": {
+          "label": "Uyku ve Dinlenme",
+          "desc": "Ergen uykusu bir halk sağlığı krizidir. AAP'nin önerdiği 8-10 saate nadiren ulaşılır. Psikoeğitim, öz kontrol, 8 yaygın engel + her biri için işe yarayanlar ve bir uyku günlüğü. AAP, CDC, NSF ve Carskadon araştırmalarından."
+        },
+        "sensoryRegulation": {
+          "label": "Duyusal Düzenleme",
+          "desc": "8 duyusal sistem genelinde kendi duyusal işlemenizi anlamak için nöroçeşitliliği olumlayan bir araç. Kişisel bir profil oluşturun, bir duyusal diyet planlayın, okul uyarlamalarını belirleyin. Kimlik öncelikli dil; Ayres / Dunn / otistik bireylerin öncülük ettiği akademik çalışmalar üzerine kurulmuştur."
+        },
+        "bigFeelings": {
+          "label": "Büyük Duygular (Öfke)",
+          "desc": "Öfkeye özgü psikoeğitim ve beceri geliştirme. Öfke sorunun kendisi değil, bir bilgidir; tepkisel saldırganlık ise tuzaktır. Lochman'ın Coping Power geleneği + öfke için CBT kanıt tabanı üzerine kurulmuştur. Günlük sıkıntılar kaydı, tetikleyici envanteri, seçim noktası, kişiselleştirilmiş sakinleşme yolları."
+        },
+        "substancePsychoed": {
+          "label": "Madde Kullanımı",
+          "desc": "Maddeler (alkol, kenevir, nikotin, opioidler, uyarıcılar, benzodiazepinler, halüsinojenler) hakkında zarar azaltma odaklı psikoeğitim. Ergen beynine yönelik riskler. Nalokson eğitimi. Bir tarama aracı DEĞİLDİR, yalnızca uzak durmayı savunan bir yaklaşım DEĞİLDİR. Güçlü SAMHSA yönlendirmesi. Motivasyonel Görüşme (MI) ile uyumlu yansıtma alanı."
+        },
+        "behavioralActivation": {
+          "label": "Davranışsal Aktivasyon",
+          "desc": "Küçük etkinlikler planlayın, yapın ve bunları ustalık (yetkin hissettim) ve keyif (hoşuma gitti) açısından puanlayın. Neyin uyduğunu fark edin ve yönetilebilir bir sonraki adım seçin. Bu planlama etkinliği davranışsal aktivasyondan yararlanır; bir terapi süreci sunmaz veya değerlendirmez."
+        },
+        "mindfulness": {
+          "label": "Bilinçli Farkındalık Köşesi",
+          "desc": "Rehberli nefes egzersizleri, beden taramaları ve bilinçli farkındalık etkinlikleri."
+        },
+        "quietQuestions": {
+          "label": "Sessiz Sorular",
+          "desc": "Haftalık iç sorgulama pratiği. Tek bir açık uçlu soruyla tam bir hafta boyunca kalın. Dikkat, özlem, zorluk, bağ ve oluş üzerine dönüşümlü 20 soru. Quaker soru geleneğinden esinlenmiştir; seküler ve yönlendirici değildir."
+        },
+        "orientations": {
+          "label": "Yönelimler",
+          "desc": "Yaşam Biçimleri, Karşılaştırmalı. Sekiz felsefi gelenek (Taoculuk, Zen, Stoacılık, Varoluşçuluk, Konfüçyüsçü etik, Ubuntu, Yerli ilişkisellik, Bakım Etiği) büyük yaşam soruları üzerinden karşılaştırılır. Yönlendirici değildir; her geleneğin dürüst bir “iyi yapamadıkları” paneli vardır."
+        },
+        "thoughtRecord": {
+          "label": "CBT Düşünce Kaydı",
+          "desc": "Bilişsel Davranışçı Terapi'den 7 sütunlu düşünce kaydı. Zor bir anı adım adım ele alın: durum, duygu, otomatik düşünce, lehte ve aleyhte kanıtlar, dengeli düşünce, duygunun yeniden puanlanması. Kayıtları zaman içinde saklar. Beck, Burns ve Padesky'den."
+        },
+        "costBenefit": {
+          "label": "Maliyet-Fayda Tablosu",
+          "desc": "Diyalektik Davranış Terapisi'nden 2x2 karar verme tablosu. Bir kararın kısa ve uzun vadeli artıları ve eksileri yan yana. Duygu sizi tek bir seçeneğe ittiğinde işe yarar. Linehan'dan."
+        },
+        "sfbt": {
+          "label": "Çözüm Odaklı",
+          "desc": "Çözüm Odaklı Kısa Süreli Terapi: Mucize Sorusu, Ölçekleme, İstisna bulma ve İltifatlar. Geriye değil ileriye bakar, zaten neyin işe yaradığını sorar. ABD'deki okul psikolojik danışmanlığında en çok kullanılan teknik. de Shazer ve Berg'den."
+        },
+        "careConstellations": {
+          "label": "Bakım Takımyıldızları",
+          "desc": "Size kimin özen gösterdiğini ve sizin kime özen gösterdiğinizi gösteren ilişkisel bir harita. Bireyci veya tüketimci “öz bakım” çerçevesini reddeder. Kendine Özen ile Öz Bakım üzerine kapsamlı bir felsefi bakış içerir (Foucault, Yunanca epimeleia heautou, Audre Lorde, eudaimonik ve hedonik)."
+        },
+        "ecomap": {
+          "label": "Ekomap",
+          "desc": "Çevresi içinde birey ilişki haritası. Merkezde siz; çevrenizde 12 temel yaşam sistemi. Her bağlantı güç, stres ve enerji yönü açısından puanlanır. Hartman'dan (1978) bu yana standart bir sosyal hizmet aracı; IEP'lerde, aile değerlendirmesinde ve kişisel yaşam envanterinde kullanılır."
+        },
+        "circlesOfSupport": {
+          "label": "Destek Çemberleri",
+          "desc": "Dört iç içe ilişki halkası: Yakınlık, Arkadaşlık, Katılım, Alışveriş (ücretli). Ücretli kişiler iç halkaları doldurduğunda bile gerçekte kimin yakın olduğunu görünür kılar. Inclusion Press'ten Forest ve Snow'dan."
+        },
+        "genogram": {
+          "desc": "Standart aile sistemleri sembolleriyle üç kuşaklık aile haritası. Yalnızca kişisel öz anlayış içindir (klinik değerlendirme DEĞİLDİR). Bowen aile sistemleri kuramına ve McGoldrick-Gerson-Petry gösterimine dayanır. Belirgin, güvenli çerçeveleme rehberliği içerir."
+        },
+        "griefLoss": {
+          "label": "Yas ve Kayıp",
+          "desc": "Yas için rehberli bir öz yol arkadaşı. Bir kişinin ya da evcil hayvanın ölümü, aile değişiklikleri, arkadaş kayıpları, kimlik kayıpları, belirsiz kayıp — hepsi sayılır. Worden'ın dört yas görevini adım adım izleyin, bir mektup yazın, ritüeller planlayın. Ağır veya karmaşık yas için Kriz Yol Arkadaşı / 988'e yönlendiren güçlü güvenlik çerçevesi."
+        },
+        "traumaPsychoed": {
+          "label": "Travmayı Anlamak",
+          "desc": "Yalnızca psikoeğitim (tarama aracı DEĞİLDİR). Travmanın ne olduğu ve ne olmadığı, sade bir dille nörobiyoloji, uyum olarak yeniden çerçevelenen yaygın tepkiler, SAMHSA'nın 6 ilkesi, kanıta dayalı tedaviler. Öğrenciler ve eğitimciler için. Takip olmadan taramanın neden güvenli olmadığına dair belirgin bir güvenlik çerçevesi içerir."
+        },
+        "bodyStory": {
+          "label": "Beden Hikâyesi",
+          "desc": "Beden kabulü ve bedenlenme aracı. Kilo odaklı DEĞİLDİR, diyetle ilişkili DEĞİLDİR, tarama aracı DEĞİLDİR. Tylka'nın beden takdiri çalışmaları, sezgisel yeme ilkeleri ve medya okuryazarlığı üzerine kurulmuştur. Tüm bedenleri, tüm cinsiyetleri ve tüm ölçüleri kapsar. Yeme bozuklukları için güçlü NEDA yönlendirme çerçevesi."
+        },
+        "sourcesOfStrength": {
+          "label": "Güç Kaynakları",
+          "desc": "8 koruyucu faktörünüzü haritalayın. Sources of Strength programından esinlenen koruyucu destekleri keşfedin. Bu kendi kendine rehberli harita bir uyarlamadır; değerlendirilmiş okul programının uygulanması değildir."
+        },
+        "crisiscompanion": {
+          "label": "Kriz Yol Arkadaşı",
+          "desc": "Akran desteği ve intiharı önleme becerileri: siz veya bir arkadaşınız depresyondaysa, krizdeyse ya da kendine zarar vermeyi düşünüyorsa ne yapmalı — işaretleri tanıma, ne söylemeli (ve ne söylememeli), güvendiğiniz bir yetişkine anlatma, ayrıca 988 ve kişisel bir güvenlik planı. İçerik uyarısıyla korunur. NEDA, AFSP, Sources of Strength ve 988 ile uyumludur. Güç Kaynakları'nın akut destek karşılığıdır."
+        },
+        "identitySupport": {
+          "label": "Kimlik Desteği",
+          "desc": "Cinsiyet kimliği, cinsel yönelim, romantik yönelim ve daha geniş kimlik soruları için kapsayıcı, olumlayıcı bir alan. Kelime dağarcığı, kimlik gelişimi, topluluk bulma, trans gençler için güvenlik, müttefik rehberliği. Trevor Project, GLSEN ve PFLAG üzerine kurulmuştur."
+        },
+        "disabilityVoices": {
+          "label": "Engelli Sesleri",
+          "desc": "Çalışmaları engellilik uygulamalarını şekillendiren ve eleştiren gerçek otistik ve engelli savunucular. Alıntılar, bağlam ve özenle seçilmiş bir okuma listesi. Alanın ÜZERLERİNDE uygulandığı kişiler, bir davranış bilimi aracındaki yan panele itilmek yerine merkeze alınsın diye hazırlandı. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Hedef Belirleyici",
+          "desc": "SMART hedefler belirleyin, ilerlemenizi takip edin ve kilometre taşlarını kutlayın."
+        },
+        "howlTracker": {
+          "label": "HOWL Takipçisi",
+          "desc": "Crew zamanı için Çalışma ve Öğrenme Alışkanlıkları (HOWL) öz değerlendirmesi. Haftalık durum kontrolleri, çeyrek dönem hedefleri, eğilim grafiği, Crew sohbet soruları. EL Education'ın HOWL çerçevesiyle uyumludur."
+        },
+        "onePageProfile": {
+          "label": "Tek Sayfalık Profil",
+          "desc": "Tek sayfaya sığan, taşınabilir ve yazdırılabilir profil. Üç bölüm: insanların bende sevdiği ve takdir ettiği şeyler, benim için önemli olanlar, beni en iyi nasıl destekleyebilecekleri. IEP toplantıları, geçişler, vekil öğretmenler veya Crew için kişi merkezli bir planlama çıktısı. Helen Sanderson Associates formatına dayanır."
+        },
+        "maps": {
+          "desc": "Eylem Planları Oluşturma (Making Action Plans). Sırayla sekiz soru (Hikâyem, Hayal, Kâbus, Ben Kimim, Yetenekler, İhtiyaçlar, Eylem Planı, İlk Adımlar). Inclusion Press'ten Pearpoint, O'Brien ve Forest'ın kişi merkezli görseli; geçiş planlamasında yaygın olarak kullanılır."
+        },
+        "path": {
+          "desc": "Umutla Alternatif Yarınlar Planlama (Planning Alternative Tomorrows with Hope). Gelecek planlama görseli: uzak ufuktaki Kutup Yıldızınızdan geriye doğru, iki hafta içindeki ilk adımlara kadar sekiz aşama. Inclusion Press'ten Pearpoint, O'Brien ve Forest; MAPS ile birlikte kullanılır."
+        },
+        "valuesCommittedAction": {
+          "label": "Değerler ve Eylem",
+          "desc": "Sizin için önemli olanları sıralayın, en önemli değerlerinizi adlandırın ve her birini bu hafta küçük, somut bir eyleme dönüştürün. Kabul ve Kararlılık Terapisi'nden (Hayes); ergenler için DNA-V çerçevesi. ACT'nin değerler (yönler) ile hedefler (varış noktaları) arasındaki ayrımı."
+        },
+        "careerCompass": {
+          "label": "Kariyer Pusulası",
+          "desc": "Kariyerleri ilgi alanlarınız üzerinden keşfedin. 36 maddelik RIASEC öz kontrolü ilk üç Holland kodunuzu verir; kariyerlere, 16 federal Kariyer Kümesine ve somut sonraki adımlara (gölge günleri, bilgi görüşmeleri, CTE, çıraklık) göz atın. Holland'ın çerçevesi üzerine kurulmuştur; mynextmove.org adresindeki yetkili O*NET Interest Profiler'a yönlendirir."
+        },
+        "selfAdvocacy": {
+          "label": "Öz Savunuculuk Stüdyosu",
+          "desc": "IEP veya 504 soruları, uyarlamalar, açıklama tercihleri ve güvendiğiniz yetişkinlerden yardım isteme için somut bir okul destek planı oluşturun."
+        },
+        "perspective": {
+          "label": "Bakış Açısı Merceği",
+          "desc": "Durumları farklı bakış açılarından görün — empati ve bakış açısı almayı çalışın."
+        },
+        "community": {
+          "label": "Topluluk ve Kültür",
+          "desc": "Çeşitliliği, kültürel farkındalığı ve topluluğa aidiyeti keşfedin."
+        },
+        "conflict": {
+          "label": "Çatışma Çözümü",
+          "desc": "Düşük riskli veya varsayımsal bir çatışmayı bakış açısı alma, ben dili, gerilimi azaltma ve onarım seçenekleriyle çalışın. Biri güvende değilse, tek başınıza müzakere etmek yerine bir yetişkini dahil edin."
+        },
+        "social": {
+          "label": "Sosyal Beceriler Laboratuvarı",
+          "desc": "Sohbet becerilerini, etkin dinlemeyi, beden dilini ve iş birliğini çalışın."
+        },
+        "teamwork": {
+          "label": "Takım Çalışması Geliştirici",
+          "desc": "İş birliğine dayalı görevler ve takım rollerini keşfetme."
+        },
+        "dearMan": {
+          "desc": "Zor bir rica için yedi adımda bir metin oluşturun: Tanımla, İfade et, Kendini ortaya koy, Pekiştir, Farkında ol, Kendinden emin görün, Müzakere et. DBT Kişilerarası Etkililik becerilerinden (Linehan); okul psikolojik danışmanlığında en çok kullanılan atılgan iletişim metni. Öz Savunuculuk Stüdyosu ile birlikte kullanılır."
+        },
+        "motivationalInterviewing": {
+          "label": "Motivasyonel Görüşme",
+          "desc": "Birinin (ya da kendinizin) bir değişikliği düşünmesine yardım etmek için bir sohbet çerçevesi. OARS becerilerini (Açık uçlu sorular, Olumlamalar, Yansıtmalar, Özetlemeler), üç cetveli ve Değişim Konuşmasını öğrenin. Miller ve Rollnick'ten; okul psikolojik danışmanlığının ve akran desteği çalışmalarının temeli."
+        },
+        "crewProtocols": {
+          "label": "Crew Protokolleri",
+          "desc": "Crew zamanı, rehberlik saati veya sınıf saati için yapılandırılmış grup formatlarından oluşan bir kütüphane: topluluk oluşturucular, açılışlar, kapanışlar, onarıcı çemberler, yansıtma protokolleri, kutlama formatları ve zor konuşma rehberleri. Ayrıca SEL Hub'ın her yerinden tüm Crew sorularının derlemesi. EL Education Crew, Onarıcı Uygulamalar, Tribes ve Responsive Classroom üzerine kurulmuştur."
+        },
+        "healthyRelationships": {
+          "label": "Sağlıklı İlişkiler",
+          "desc": "Herhangi bir yakın ilişkinin 8 boyutu boyunca yelpaze (sağlıklı / sağlıksız / istismarcı). Ayrıntılı rıza, flört şiddetini önleme, güvenlik + yardım hatları. Loveisrespect / NDVH çerçevesi üzerine kurulmuştur. Queer, nöroçeşitli ve engelli bireyleri kapsar."
+        },
+        "decisions": {
+          "label": "Karar Laboratuvarı",
+          "desc": "Dur-düşün-harekete geç çerçevelerini kullanarak gerçek hayat senaryoları üzerinde çalışın."
+        },
+        "journal": {
+          "label": "Duygu Günlüğü",
+          "desc": "Her gün durum kontrolü için bir günlük — ruh hâlinizi, tetikleyicilerinizi ve yansıtmalarınızı zaman içinde kaydedin."
+        },
+        "safety": {
+          "label": "Güvenlik ve Sınırlar",
+          "desc": "Kişisel sınırlar, güvenilir yetişkinler ve güvenli ile güvensiz durumlar hakkında bilgi edinin."
+        },
+        "landPlace": {
+          "label": "Toprak ve Yer",
+          "desc": "Üzerinde yaşadığınız toprakla süregelen bir ilişki için Koruyuculuk Stüdyosu. Üç iplik (tarih, ekoloji, bugün), toprak tanıma beyanlarının gösteri değil uygulama olarak eleştirel değerlendirmesi, yetkili sesler olarak Wabanaki liderliğindeki kuruluşlar ve özel bir yansıtma günlüğü."
+        },
+        "somaticReset": {
+          "label": "Beden ve Nefes Sıfırlama",
+          "desc": "Bir beden bölgesi seçin ve sandalyede yapılabilen kısa bir durgunluk, nefes veya nazik hareket sıfırlamasını izleyin; öncesi ve sonrası için özel bir durum kontrolüyle."
+        },
+        "restorativeCircle": {
+          "label": "Onarıcı Çember",
+          "desc": "Yerleşik kurallar, yetişkin rehberliği ve kültürel köklere özenle onarıcı ve topluluk oluşturan çemberleri yönetin. Zorla açıklama yaptırmak veya aktif güvenlik riski için değildir."
+        },
+        "compassion": {
+          "label": "Şefkat ve İç Konuşma",
+          "desc": "Öz şefkati çalışın, iç eleştirmeninizi yeniden çerçeveleyin ve daha nazik bir iç ses oluşturun."
+        },
+        "friendship": {
+          "label": "Arkadaşlık Geliştirici",
+          "desc": "Arkadaşlık tarzlarını, onarım stratejilerini ve sağlıklı ilişki örüntülerini keşfedin."
+        },
+        "transitions": {
+          "label": "Yaşam Geçişleri",
+          "desc": "Taşınma, yeni okullar ve büyümek gibi değişikliklerle başa çıkın."
+        },
+        "upstander": {
+          "label": "Harekete Geçen Tanık Eğitimi",
+          "desc": "Başkalarını güvenli bir şekilde savunmayı öğrenin — seyirci kalmaktan harekete geçen tanık olmaya uzanan beceriler."
+        },
+        "growthmindset": {
+          "label": "Gelişim Zihniyeti",
+          "desc": "Beyin bilimi, zorlukları yeniden çerçeveleme ve dayanıklılık geliştirme."
+        },
+        "execfunction": {
+          "label": "Yürütücü İşlevler",
+          "desc": "İşleri halletmenin daha zor kısımları için stratejiler: görevlere başlamak, odağı korumak, önceden planlamak ve zamanı takip etmek."
+        },
+        "advocacy": {
+          "label": "Savunuculuk Pratiği",
+          "desc": "İhtiyaçları ifade etmek, destek istemek ve gündelik durumlarda sesinizi duyurmak için genel metinleri prova edin."
+        },
+        "civicAction": {
+          "label": "Yurttaşlık Eylemi ve Umut",
+          "desc": "Adaletsizlik karşısındaki zor duyguları işleyin, yurttaşlık failliğinizi geliştirin ve eylem yoluyla umudu besleyin."
+        },
+        "ethicalReasoning": {
+          "label": "Etik Akıl Yürütme Laboratuvarı",
+          "desc": "Güncel etik ikilemleri birden çok çerçeve ve yapay zekâ ile Sokratik diyalog aracılığıyla keşfedin."
+        },
+        "cultureExplorer": {
+          "label": "Kültür Kâşifi",
+          "desc": "Çizimler ve seslerle, yapay zekâ destekli derinlemesine keşiflerle dünya kültürlerine dalın."
+        },
+        "voicedetective": {
+          "label": "Ses Dedektifi",
+          "desc": "Sesleri dinleyin ve ses tonundan duyguları tanıyın."
+        },
+        "practiceJourneys": {
+          "label": "Pratik Yolculukları (Pilot)",
+          "desc": "Birbirine bağlı dört karşılaşma üzerinden destek istemeyi çalışın. Seçeneklerle, kendi sözlerinizle ya da ikisiyle birden yanıt verin. Bir günlük tutun ve farklı bir rota deneyin."
+        },
+        "sociallab": {
+          "label": "Sosyal Beceri Rol Oyunu",
+          "desc": "Sosyal senaryoları ve dallanan diyaloglarla yapay zekâ akran rol oyununu çalışın."
+        },
+        "peersupport": {
+          "label": "Akran Desteği Koçu",
+          "desc": "OARS dinleme becerilerini ve ne zaman yetişkin yardımı almanız gerektiğini öğrenin."
+        },
+        "conflicttheater": {
+          "label": "Çatışma Tiyatrosu",
+          "desc": "Sürükleyici bir sahnede iki yapay zekâ karakterle kurgusal bir çatışmayı çalışın. Yalnızca beta rol oyunudur; süregelen bir zararda arabuluculuk için kullanmayın."
+        },
+        "digitalWellbeing": {
+          "label": "Dijital İyi Oluş Stüdyosu",
+          "desc": "Sosyal medya ve yapay zekâ sohbet botlarıyla ilişkinizi kendiniz kontrol edin, daha sağlıklı telefon alışkanlıkları edinin, siber zorbalığın etkilerinden kurtulun, akıştaki manipülasyonu fark edin, sohbet botlarıyla ilişkilerde güvenle hareket edin ve ihtiyaç duyduğunuzda yardım bulun."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Öz Farkındalık",
+          "desc": "Duyguları, güçlü yönleri ve gelişim alanlarını tanıma"
+        },
+        "self-regulation": {
+          "label": "Öz Düzenleme",
+          "desc": "Duyguları, uyarılmışlığı ve dikkati düzenleme; başa çıkma pratiği"
+        },
+        "self-direction": {
+          "label": "Öz Yönlendirme",
+          "desc": "Hedef belirleme, faillik, yürütücü işlevler, gelişim zihniyeti"
+        },
+        "inner-work": {
+          "label": "İç Çalışma",
+          "desc": "Tefekküre ve yansıtmaya dayalı uygulamalar"
+        },
+        "care-of-self": {
+          "label": "Kendine Özen",
+          "desc": "Öz şefkat, ilişkisel öz bakım"
+        },
+        "social-awareness": {
+          "label": "Sosyal Farkındalık",
+          "desc": "Empati, bakış açısı alma ve çeşitliliği takdir etme"
+        },
+        "relationship-skills": {
+          "label": "İlişki Becerileri",
+          "desc": "İletişim, takım çalışması ve çatışma çözümü"
+        },
+        "responsible-decision-making": {
+          "label": "Sorumlu Karar Verme",
+          "desc": "Etik seçimler, sonuçları değerlendirme ve problem çözme"
+        },
+        "stewardship": {
+          "label": "Koruyuculuk",
+          "desc": "Topluluğa, adalete, toprağa ve geleceğe özen gösterme"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 dk",
+          "purpose": "Şu anki bölgenizi adlandırın ve size uyan bir düzenleme stratejisi seçin.",
+          "next": "Bölgenizi kontrol edin, bir strateji seçin, sonra tekrar dönmek isterseniz kaydedin."
+        },
+        "coping": {
+          "time": "3-10 dk",
+          "purpose": "Bir başa çıkma stratejisi seçin ve net bir bitiş noktasıyla bir kez uygulayın.",
+          "next": "Bedene dayalı veya topraklanmaya yönelik bir strateji seçin, deneyin, sonra işe yarayıp yaramadığını fark edin."
+        },
+        "journal": {
+          "time": "5-12 dk",
+          "purpose": "Özel bir yansıtma yazın ve saklamak isteyebileceğiniz örüntüleri fark edin.",
+          "next": "Bir yazma sorusu seçin, dürüstçe yazın ve kapatmadan önce kaydedin veya dışa aktarın."
+        },
+        "emotions": {
+          "time": "4-8 dk",
+          "purpose": "Duygu kelime dağarcığınızı geliştirin ve hissettiğiniz şeyi daha kesin bir şekilde adlandırın.",
+          "next": "Bir duygu seçin, yoğunluğunu puanlayın, sonra ona en iyi uyan kelimeyi seçin."
+        },
+        "mindfulness": {
+          "time": "2-10 dk",
+          "purpose": "Durun, nefes alın ve hiçbir şey yazmanız gerekmeden dikkat pratiği yapın.",
+          "next": "Kısa bir uygulama seçin, sonuna kadar izleyin, sonra neyin değiştiğini fark edin."
+        },
+        "somaticReset": {
+          "time": "3-8 dk",
+          "purpose": "Sandalyede yapılabilen kısa bir sıfırlama seçmek için beden bölgelerine yönelik özel bir durum kontrolü kullanın.",
+          "next": "Bir beden bölgesi seçin, bir durgunluk, nefes veya nazik hareket seçeneği deneyin, sonra neyin değiştiğini fark edin."
+        },
+        "thoughtRecord": {
+          "time": "8-15 dk",
+          "purpose": "Zor bir düşünceyi yavaşlatın ve daha dengeli bir bakış arayın.",
+          "next": "Durumu adlandırın, duyguyu puanlayın, sonra düşünceyi kanıtlarla sınayın."
+        },
+        "anxietyToolkit": {
+          "time": "5-12 dk",
+          "purpose": "Endişeleri ayırın, kaygının yoğunluğunu azaltın ve pratik bir sonraki adım seçin.",
+          "next": "En yüksek sesli endişeyi seçin, bir strateji deneyin, sonra işe yararsa planı kaydedin."
+        },
+        "sleep": {
+          "time": "4-10 dk",
+          "purpose": "Uyku engellerini fark edin ve sırada denemek için bir dinlenme alışkanlığı seçin.",
+          "next": "Neyin engel olduğunu kontrol edin, küçük bir değişiklik seçin, sonra buna daha sonra tekrar bakın."
+        },
+        "goals": {
+          "time": "5-10 dk",
+          "purpose": "Bir niyeti somut, gerçekçi bir sonraki eyleme dönüştürün.",
+          "next": "Bir hedef yazın, bir ilk adım seçin ve kapatmadan önce planı kaydedin."
+        },
+        "friendship": {
+          "time": "5-10 dk",
+          "purpose": "Arkadaşlık ihtiyaçları, aidiyet ve akran tercihleri üzerine düşünün.",
+          "next": "Bir arkadaşlık durumu seçin ve nazik bir sonraki adım belirleyin."
+        },
+        "conflict": {
+          "time": "6-12 dk",
+          "purpose": "Bir çatışmayı anlayın ve onarım odaklı bir yanıt hazırlayın.",
+          "next": "Ne olduğunu adlandırın, iki tarafı da düşünün, sonra bir onarım eylemi seçin."
+        },
+        "safety": {
+          "time": "8-15 dk",
+          "purpose": "Pratik bir güvenlik planı oluşturun ve güvenilir destekleri belirleyin.",
+          "next": "Uyarı işaretlerini, başa çıkma adımlarını ve iletişime geçilecek kişileri ekleyin; kapatmadan önce kaydedin."
+        },
+        "crisiscompanion": {
+          "time": "3-10 dk",
+          "purpose": "Duygular acil veya güvensiz hissettirdiğinde yapılandırılmış bir destek süreci kullanın.",
+          "next": "En yakın destek seçeneğini seçin ve gerektiğinde güvendiğiniz bir yetişkini veya bir kriz hizmetini dahil edin."
+        },
+        "conflicttheater": {
+          "time": "8-15 dk",
+          "purpose": "Kurgusal bir çatışma sahnesini çalışın ve aracı arabuluculuk gibi görmeden onarıcı dili deneyin.",
+          "next": "Kurgusal bir sahne seçin, bir yanıt deneyin ve gerçek hayatta neyin yetişkin desteği gerektireceğini değerlendirin."
+        },
+        "restorativeCircle": {
+          "time": "15-30 dk",
+          "purpose": "Net kurallar ve yetişkin rehberliğiyle onarıcı bir grup sürecini planlayın veya yönetin.",
+          "next": "Önce çember anlaşmalarını belirleyin, sonra bir soru seçin; herkesin önünde açıklama yapılmasını asla şart koşmayın."
+        },
+        "strengths": {
+          "time": "5-10 dk",
+          "next": "Size benzeyen güçlü yönleri seçin, sonra bu dönemden her birini gösteren gerçek bir an bulun."
+        },
+        "viaStrengths": {
+          "time": "8-15 dk",
+          "purpose": "VIA'dan esinlenen bir öz sınıflandırmayı resmi bir değerlendirme olarak değil, bir yansıtma etkinliği olarak kullanın.",
+          "next": "Güçlü yönleri sıralayın, örüntüleri fark edin ve sonucu temellendiren bir örnek yazın."
+        },
+        "perma": {
+          "time": "8-15 dk",
+          "purpose": "PERMA alanları ve Sağlık genelinde iyi oluşunuzun yansıtmaya dayalı bir anlık görüntüsünü alın.",
+          "next": "Anlık görüntüyü kendinize etiket koymak için değil, bir sohbet veya küçük bir deneme seçmek için kullanın."
+        },
+        "advocacy": {
+          "time": "5-12 dk",
+          "purpose": "İhtiyaçları ifade etmek ve destek istemek için gündelik dili çalışın.",
+          "next": "Bir durum seçin, kısa bir rica taslağı yazın ve kimin yardım edebileceğine karar verin."
+        },
+        "selfAdvocacy": {
+          "time": "10-20 dk",
+          "purpose": "IEP, 504, uyarlamalar veya açıklama tercihleri için somut bir okul destek planı oluşturun.",
+          "next": "Bir destek ihtiyacı seçin, sorularınızı toplayın ve dahil edeceğiniz, güvendiğiniz bir yetişkini belirleyin."
+        },
+        "crewProtocols": {
+          "time": "10-20 dk",
+          "next": "Amaca göre göz atın, bugün için bir protokol seçin, sonra “Crew planım” bölümüne ne zaman uygulayacağınızı not edin."
+        },
+        "perspective": {
+          "time": "6-12 dk",
+          "next": "Bir durum seçin, önce diğer bakış açısını alın, sonra neyi farklı yapacağınızı söyleyin."
+        },
+        "windowOfTolerance": {
+          "time": "8-12 dk",
+          "next": "Üç bölgenizin her birine bir işaret ekleyin, sonra bugünü yerleştirmek için “Durum kontrolü” bölümünü kullanın."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 dk",
+          "next": "“Duyusal nedir?” ile başlayın, sonra sizin için yoğun veya sakin olan sistemleri işaretleyin."
+        },
+        "execfunction": {
+          "time": "5-10 dk",
+          "next": "“Başla” bölümüne gidin ve bugün için bir başlangıç hamlesi seçin, sonra not alacağınız yeri seçmek için “Sürdür” bölümüne geçin."
+        },
+        "growthmindset": {
+          "time": "5-10 dk",
+          "next": "“Yeniden Çerçevele” bölümünü açın, sabit düşünceyi yazın ve onu belirli, uygulanabilir bir düşünceye dönüştürün."
+        },
+        "dearMan": {
+          "time": "8-12 dk",
+          "next": "Ricanızı tek cümleyle yazın, yedi adımın taslağını çıkarın, sonra bir kez prova edin."
+        },
+        "howlTracker": {
+          "time": "5-10 dk",
+          "next": "Bir “Nabız” kaydedin, sonra Haftalık durum kontrolünü yapın: her HOWL'u puanlayın ve belirli bir örnek ekleyin."
+        },
+        "peersupport": {
+          "time": "5-10 dk",
+          "next": "Bir arkadaşınıza sorabileceğiniz iki açık uçlu soru seçin, sonra pratik sekmesinde birini kurgusal bir durum üzerinde deneyin."
+        },
+        "upstander": {
+          "time": "8-12 dk",
+          "next": "“Hamleler” bölümündeki cesaret merdivenini okuyun ve bu hafta gerçekten yapabileceğiniz en küçük iki hamleyi seçin."
+        },
+        "digitalWellbeing": {
+          "time": "8-12 dk",
+          "next": "“Öz Kontrol” bölümünü dürüstçe yapın, sonra “Araç Kutusu”ndan bir alışkanlık ve önceden belirlediğiniz bir sınır seçin."
+        },
+        "teamwork": {
+          "time": "8-12 dk",
+          "next": "“Roller” bölümüne bakın, sonra gerçek bir grup için bir “İletişim Planı” yazın: kim neyi, nerede ve ne zamana kadar yapacak."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Buradan başla",
+        "name_it": "Adını koy",
+        "calm_now": "Şimdi sakinleş",
+        "body_reset": "Beden sıfırlama",
+        "make_a_plan": "Plan yap",
+        "understand_patterns": "Örüntüleri anla",
+        "practice_repair": "Onarımı çalış",
+        "role_play": "Rol oyunu",
+        "facilitated_group": "Kolaylaştırıcılı grup",
+        "reflect": "Düşün",
+        "practice_speaking_up": "Sesini duyurmayı çalış",
+        "make_a_support_plan": "Destek planı yap",
+        "urgent_support": "Acil destek",
+        "get_support": "Destek al",
+        "move_gently": "Nazikçe ilerle",
+        "learn_not_diagnose": "Öğren, tanı koyma",
+        "learn_and_get_support": "Öğren ve destek al",
+        "check_boundaries": "Sınırları kontrol et",
+        "explore_identity": "Kimliği keşfet",
+        "practice_body_respect": "Bedene saygıyı çalış",
+        "map_carefully": "Dikkatle haritala",
+        "understand_needs": "İhtiyaçları anla"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Bir strateji seçmeden önce neler olduğunu adlandırın."
+        },
+        "emotions": {
+          "note": "Duygular için kesin kelimeler bulun ve yoğunluğu fark edin."
+        },
+        "coping": {
+          "note": "Bedene dayalı veya topraklanmaya yönelik bir strateji deneyin, sonra neyin değiştiğini fark edin."
+        },
+        "mindfulness": {
+          "note": "Nefes, dikkat veya beden farkındalığı için az yazı gerektiren bir mola."
+        },
+        "somaticReset": {
+          "note": "Bir beden bölgesi seçin, sonra kısa bir durgunluk, nefes veya nazik hareket uygulaması deneyin. Klavyeyle erişilebilen kompakt bir seçici, her görseli küçük ekranlarda kullanışlı tutar. Görseller şunları içerir: NEFES AL · YÜKSEL'i düz çizgi ve yuvarlak işaretle, NEFES VER · YERLEŞ'i noktalı çizgi ve baklava işaretle, DURAKLATILDI'yı duraklatma çubuklarıyla eşleştiren bir Akan Dalga; NEFES AL · AÇIL'ı düz taç yaprağı hatları ve yuvarlak merkezle, NEFES VER · YUMUŞA'yı noktalı hatlar ve baklava merkezle, DURAKLATILDI'yı merkezdeki duraklatma çubuklarıyla eşleştiren bir Açan Çiçek; NEFES AL · YÜKSEL'i düz güneş hattı ve daire merkezle, NEFES VER · YERLEŞ'i noktalı güneş hattı ve baklava merkezle, DURAKLATILDI'yı güneş üzerindeki duraklatma çubuklarıyla eşleştiren bir Topraklayan Ufuk; doğrudan NEFES AL ve NEFES VER etiketleri, yuvarlak NEFES AL ve baklava NEFES VER hedefleri, etkin başlangıç izi ve dış hatlı bir sonraki varış noktası olan, yönü işaretli, öngörülebilir doğrusal bir rota; ve etkinken kalınlaşan düz ve noktalı evre yayları, eşleşen evre desenli merkez halkası, doğrudan NEFES AL ve NEFES VER etiketleri, duraklatılmış durum için merkez simgesi, dış hatlı bir sonraki devir noktası, evre biçimli saat yönünde bir işaretçi, biçimle kodlanmış bir ritim haritası ve ekran okuyucu evre ipuçları olan iki parçalı bir Nefes Yörüngesi. Öğrenciler zamanlayıcı başlamadan önce hareketin bir nefeslik örneğini deneyebilir, sonra rehberi büyütebilir, durağanlaştırabilir veya kapatabilir. Sessiz Görünüm'de büyütülmüş görsel, klavye ve dokunmayla kullanılabilen bir başlat/duraklat denetimine dönüşür. Geri sayım gizlenebilir; rehberlik kelimeleri tam, yalnızca evre veya gizli olabilir; nefes sayıları ve sayısal puanlamalar isteğe bağlıdır.",
+          "boundary": "Bu bir tedavi veya tanı değildir. Hareketleri küçük ve ağrısız tutun; ağrı, baş dönmesi veya uyuşma olursa durun ve güvendiğiniz bir yetişkine ya da bir sağlık uzmanına söyleyin."
+        },
+        "anxietyToolkit": {
+          "note": "Endişeyi eylemden ayırın ve pratik bir sonraki adım seçin."
+        },
+        "windowOfTolerance": {
+          "note": "Uyarılmışlık işaretlerini ve destekleri zaman içinde haritalayın; bu bir tanı değildir."
+        },
+        "stressBucket": {
+          "note": "Baskılara ve desteklere birlikte bakın; kontrolünüz dışındaki baskılar da dahil."
+        },
+        "bigFeelings": {
+          "note": "Öfkeyi bir bilgi olarak kullanın ve daha güvenli bir mola veya onarım planlayın."
+        },
+        "conflict": {
+          "note": "En çok düşük riskli veya varsayımsal çatışma pratiği için uygundur.",
+          "boundary": "Tehdit, zorlama, zorbalık, istismar veya güvensiz bir güç farkı varsa, tek başınıza müzakere etmek yerine durun ve güvendiğiniz bir yetişkini dahil edin."
+        },
+        "conflicttheater": {
+          "note": "Kurgusal karakterlerle beta sürükleyici pratik; süregelen bir zararda arabuluculuk için kullanmayın.",
+          "boundary": "Gerçek tehditler, istismar veya zorbalık bir rol oyunu alıştırmasına değil, yetişkin desteğine ve bir güvenlik müdahalesine ihtiyaç duyar."
+        },
+        "restorativeCircle": {
+          "note": "Yerleşik çember kurallarıyla ve bir yetişkin kolaylaştırıcıyla kullanın.",
+          "boundary": "Bir çemberi, birini herkesin önünde açıklama yapmaya zorlamak veya aktif bir güvenlik riskini ele almak için kullanmayın."
+        },
+        "strengths": {
+          "note": "Puan, sıralama veya tanı içermeyen, açık uçlu bir güçlü yönler yansıtması."
+        },
+        "viaStrengths": {
+          "note": "Resmi VIA anketi veya psikometrik bir sonuç değil, yansıtma için bir öz sınıflandırma."
+        },
+        "perma": {
+          "note": "Bir ruh sağlığı değerlendirmesi değil, sohbeti başlatmak için bir iyi oluş anlık görüntüsü."
+        },
+        "advocacy": {
+          "note": "İhtiyaçları ifade etmek ve destek istemek için genel metinler ve prova."
+        },
+        "selfAdvocacy": {
+          "note": "Somut IEP, 504, uyarlama, açıklama veya okul desteği planlaması için kullanın."
+        },
+        "crisiscompanion": {
+          "note": "Sizin veya bir arkadaşınız için bir destek rehberi; bir kriz tarama aracı veya bir yetişkinin yerine geçecek bir şey değildir.",
+          "boundary": "Herhangi biri yakın tehlikede olabilirse veya kendine zarar verme düşünceleriyle harekete geçebilirse, burada durun ve hemen güvendiğiniz bir yetişkinle ya da acil durum/kriz desteğiyle iletişime geçin."
+        },
+        "safety": {
+          "note": "Sınırları ve güvendiğiniz bir yetişkine başvurma adımlarını öğrenin; bu, bir durumun güvenli olup olmadığını ölçen bir test değildir.",
+          "boundary": "Yakın tehlikedeyseniz veya biri size zarar veriyorsa, durun ve hemen güvendiğiniz bir yetişkinle ya da acil durum desteğiyle iletişime geçin."
+        },
+        "griefLoss": {
+          "note": "Yas ve kayıp için özel bir yol arkadaşı; çok ağır gelen her şeyi atlayın.",
+          "boundary": "Yas dayanılmaz geliyorsa, kendinizi güvende hissetmiyorsanız veya başka biri risk altındaysa, güvendiğiniz bir yetişkini veya kriz desteğini dahil edin."
+        },
+        "traumaPsychoed": {
+          "note": "Travma tepkileri hakkında psikoeğitim; bir tarama aracı veya tedavi değildir.",
+          "boundary": "Burada travmanızı açıklamanız gerekmez. İçerik güvensiz bir şeyi gün yüzüne çıkarırsa ara verin ve güvendiğiniz bir yetişkine veya psikolojik danışmana başvurun."
+        },
+        "substancePsychoed": {
+          "note": "Zarar azaltma bilgisi ve yansıtma; bir tarama aracı veya madde kullanma izni değildir.",
+          "boundary": "Bu aracı aşırı doz veya acil bir tıbbi durum için kullanmayın; acil yardıma ya da güvendiğiniz bir yetişkine başvurun."
+        },
+        "healthyRelationships": {
+          "note": "Rızayı ve ilişki örüntülerini, bir kişiyi veya ilişkiyi etiketlemeden keşfedin.",
+          "boundary": "Bir ilişkide tehdit, zorlama veya şiddet varsa yetişkin yardımı isteyin; kimseyle tek başınıza yüzleşmeyin."
+        },
+        "identitySupport": {
+          "note": "Olumlayıcı yansıtma ve topluluk desteği; paylaşmak isteğe bağlıdır.",
+          "boundary": "Kişisel bilgilerinizi gizli tutun ve kendinizi güvende hissetmiyorsanız güvendiğiniz bir yetişkini dahil edin."
+        },
+        "bodyStory": {
+          "note": "Beden takdiri ve medya okuryazarlığı; kilo verme veya yeme bozukluğu değerlendirmesi değildir.",
+          "boundary": "Yemek, beden imajı veya egzersiz size güvensiz ya da her şeyi kaplayan bir şey gibi geliyorsa, güvendiğiniz bir yetişkinle veya bir sağlık uzmanıyla konuşun."
+        },
+        "genogram": {
+          "note": "Kişisel aile yansıtması; klinik bir değerlendirme değildir ve paylaşmak isteğe bağlıdır.",
+          "boundary": "Güvensiz veya özel gelen aile ayrıntılarını atlayın; destek için güvendiğiniz bir yetişkine başvurun."
+        },
+        "sensoryRegulation": {
+          "note": "Bir duyusal profil ve uyarlamalar oluşturun; bu bir tanı değildir.",
+          "boundary": "Güvenli hissettiren destekleri seçin; uyarlamaları yalnızca istediğinizde paylaşın."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Sabah Durum Kontrolü",
+          "desc": "Güne bir ruh hâli kontrolü, nefes ve hedef belirlemeyle başlayın"
+        },
+        "calm_down": {
+          "name": "Sakinleşme Köşesi",
+          "desc": "Duygular yoğunlaştığında kullanılacak düzenleme stratejileri"
+        },
+        "conflict_unit": {
+          "name": "Çatışma Çözümü Ünitesi",
+          "desc": "Anlaşmazlıkları çözmeyi ve onarım becerileri geliştirmeyi çalışın"
+        },
+        "empathy_week": {
+          "name": "Empati ve Bakış Açısı Haftası",
+          "desc": "Bakış açısı alma ve kültürel farkındalıkla empati geliştirin"
+        },
+        "decision_making": {
+          "name": "Karar Vermeye Derinlemesine Bakış",
+          "desc": "Etik akıl yürütmeyi ve sorumlu seçimleri çalışın"
+        },
+        "self_discovery": {
+          "name": "Kendini Keşif Yolculuğu",
+          "desc": "Kim olduğunuzu keşfedin — güçlü yönler, duygular ve gelişim zihniyeti"
+        },
+        "friendship": {
+          "name": "Arkadaşlık ve Sosyal Beceriler",
+          "desc": "Sağlıklı arkadaşlıklar ve iletişim becerileri geliştirin"
+        },
+        "transitions": {
+          "name": "Değişimle Başa Çıkmak",
+          "desc": "Öğrencileri yaşam geçişlerinde ve yeni deneyimlerde destekleyin"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Neye ihtiyacınız olduğunu fark edin ve yönetilebilir bir sonraki adım seçin.",
+          "model": "Huzursuz hissediyorum. Bir esneme hareketi deneyebilir, sonra görevimin ilk kısmını seçebilirim.",
+          "practice": "Bir duyguyu adlandırın, bir seçeneği gösterin veya sessizce fark edin. Bir destek deneyin ve küçük bir hedef seçin.",
+          "reflect": "Neyi fark ettiniz? Neyi korur veya değiştirirdiniz?",
+          "transfer": "Sonraki ders başladığında ____ deneyebilirim. Yardıma ihtiyacım olursa ____ kişisinden isteyebilirim."
+        },
+        "calm_down": {
+          "goal": "Bedeninize ve bu ana uyan bir desteği keşfedin.",
+          "model": "Nefes pratiği bugün yardımcı gelmiyor. Odanın etrafına bakmayı deneyebilir veya birinin yanımda kalmasını isteyebilirim.",
+          "practice": "Yalnızca rahat bir strateji seçin. Oturmak, izlemek veya mola vermek de geçerli seçeneklerdir.",
+          "reflect": "Yardımcı oldu mu, aynı mı hissettirdi, yoksa rahatsız mı etti? Durabilir veya başka bir yöntem seçebilirsiniz.",
+          "transfer": "____ fark ettiğimde ____ deneyebilir veya ____ kişisinden destek isteyebilirim."
+        },
+        "conflict_unit": {
+          "goal": "Bakış açılarını değerlendirin ve gündelik bir anlaşmazlığa saygılı bir yanıtı prova edin.",
+          "model": "İkimiz de aynı malzemeyi istiyoruz. Neye ihtiyacın olduğunu sorabilir, kendi ihtiyacımı açıklayabilir ve sırayla kullanmayı önerebilirim.",
+          "practice": "Uydurma, düşük riskli bir anlaşmazlık kullanın. Bir dinleme sorusunu ve olası bir sonraki adımı prova edin.",
+          "reflect": "Yanıt kimin ihtiyaçlarını ele aldı? Neyin değişmesi gerekebilir?",
+          "transfer": "Güvenli bir anlaşmazlıkta ____ yapabilirim. Tehdit, zorbalık veya zorlama durumunda güvendiğim bir yetişkinden yardım isteyebilirim."
+        },
+        "empathy_week": {
+          "goal": "Birinin nasıl hissettiğini bildiğinizi varsaymadan başka bir bakış açısını keşfedin.",
+          "model": "Sessizler. Yorgun olabilirler ya da düşünüyor olabilirler; onlar adına karar vermek yerine sorabilirim.",
+          "practice": "Kurgusal bir örnek kullanın. Olası iki bakış açısını ve sorabileceğiniz saygılı bir soruyu adlandırın.",
+          "reflect": "Ne biliyorsunuz, neyi tahmin ediyorsunuz? Nasıl kontrol edebilirsiniz?",
+          "transfer": "Bu hafta bir varsayımda bulunmadan önce ____ sorabilirim."
+        },
+        "decision_making": {
+          "goal": "Seçenekleri sizin ve başkaları üzerindeki etkilerine göre karşılaştırın.",
+          "model": "Bir grup fotoğrafı paylaşmadan önce izin isteyebilir ve onu kimlerin görebileceğini düşünebilirim.",
+          "practice": "Uydurma bir karar seçin. İki seçeneği, olası etkilerini ve yardım edebilecek birini karşılaştırın.",
+          "reflect": "Hangi bilgi eksik? Daha güvenli veya daha adil bir seçenek var mı?",
+          "transfer": "____ hakkında karar vermeden önce durup ____ kontrol edebilirim."
+        },
+        "self_discovery": {
+          "goal": "Bir güçlü yönünüzü tanıyın ve onu destek alarak kullanmanın bir biçimini seçin.",
+          "model": "Faydalı sorular sorarım. Bir görev belirsiz olduğunda bu güçlü yönümü kullanabilir ve bir örnek isteyebilirim.",
+          "practice": "Size ya da kurgusal bir karaktere uyan bir güçlü yön seçin. Bunun iş başındaki bir örneğini verin.",
+          "reflect": "Bu güçlü yönün ortaya çıkmasına ne yardım etti? Hangi destek bir sonraki adımı mümkün kılar?",
+          "transfer": "____ yönümü, ____ olduğunda kullanabilirim. Yardım edebilecek bir kişi veya kaynak: ____."
+        },
+        "friendship": {
+          "goal": "Kendi ihtiyaçlarınıza ve diğer insanların sınırlarına saygı duyan iletişimi çalışın.",
+          "model": "Birini aramıza katılmaya davet edebilir ve hayır derse seçimini kabul edebilirim.",
+          "practice": "Bir daveti, bir dinleme sorusunu veya saygılı bir sınırı prova edin. Konuşmak, yazmak veya AAC — hepsi geçerlidir.",
+          "reflect": "Herkesin gerçek bir seçeneği var mıydı? Etkileşimi daha kucaklayıcı ne yapabilir?",
+          "transfer": "Bu hafta güvenli bir etkileşimde ____ deneyebilir ve ____ fark edebilirim."
+        },
+        "transitions": {
+          "goal": "Neyin değiştiğini, neyin sabit kalabileceğini ve bir destek kaynağını belirleyin.",
+          "model": "Yeni bir sınıf belirsiz geliyor. Sınıfı önceden bulabilir ve kimin yardım edebileceğini sorabilirim.",
+          "practice": "Gerçek veya kurgusal bir değişiklik seçin. Bir belirsizliği, sabit bir desteği ve küçük bir sonraki adımı adlandırın.",
+          "reflect": "Hangi kısım sizin kontrolünüzde? Hangi yardım veya uyarlama faydalı olur?",
+          "transfer": "Değişiklikten önce ____ yapabilirim. Planın değişmesi gerekirse ____ yapabilirim."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 dk",
+          "format": "Bireysel veya grup",
+          "cue": "Herhangi bir paylaşımdan önce faydalı bir ilk durum kontrolü."
+        },
+        "emotions": {
+          "time": "5-8 dk",
+          "format": "Bireysel veya ikili",
+          "cue": "İyi bir kelime dağarcığı ısınması."
+        },
+        "coping": {
+          "time": "3-10 dk",
+          "format": "Bireysel veya grup",
+          "cue": "En çok düzenleme sıfırlaması için uygundur."
+        },
+        "mindfulness": {
+          "time": "2-10 dk",
+          "format": "Tüm sınıf",
+          "cue": "Az yazı gerektiren düzenleme seçeneği."
+        },
+        "somaticReset": {
+          "time": "3-8 dk",
+          "format": "Bireysel veya tüm sınıf",
+          "cue": "Kompakt görsel seçici, yoğun bir düğme ızgarası olmadan her rehberi erişilebilir tutar. Nefes Yörüngesi, düz ve noktalı yayları daha kalın bir etkin evreyle, eşleşen düz veya noktalı bir merkez halkasıyla ve doğrudan NEFES AL ve NEFES VER etiketleriyle eşleştirir; duraklatıldığında merkezi noktadan duraklatma çubuklarına geçer ve dış hatlı baklavası veya halkası bir sonraki evre devrini gösterir; yuvarlak veya baklava biçimli saat yönündeki işaretçisi, devir baklavası, dönüş halkası, kısa nefes alma çubukları ve içi boş nefes verme noktaları ise evreyi ve isteğe bağlı sayımı renge bağlı kalmadan okunur tutar. Öğrencilerin zamanlayıcıdan önce hareketin bir nefeslik örneğini denemesine veya Durağan'ı seçmesine izin verin. Tam, yalnızca evre veya gizli rehberlik kelimeleri sunun. Sessiz Görünüm, büyütülmüş görseli doğrudan bir başlat/duraklat denetimine dönüştürür. Akan Dalga, NEFES AL · YÜKSEL için düz çizgi ve yuvarlak işaret, NEFES VER · YERLEŞ için noktalı çizgi ve baklava işaret, duraklatılmış bir oturum için de duraklatma çubukları kullanır. Açan Çiçek, NEFES AL · AÇIL için düz taç yaprağı hatları ve yuvarlak merkez, NEFES VER · YUMUŞA için noktalı hatlar ve baklava merkez, duraklatılmış bir oturum için de merkezde duraklatma çubukları kullanır. Topraklayan Ufuk, NEFES AL · YÜKSEL için düz güneş hattı ve daire merkez, NEFES VER · YERLEŞ için noktalı güneş hattı ve baklava merkez, duraklatıldığında da güneş üzerinde duraklatma çubukları kullanır. Nefes Rotası, yön renge bağlı olmasın diye yuvarlak bir NEFES AL hedefi, baklava biçimli bir NEFES VER hedefi, etkin başlangıç izi ve dış hatlı bir sonraki varış noktası kullanır. Ekran okuyucu evre ipuçlarının yanı sıra gizli geri sayım, gizli rehberlik, durağan hareket, görselsiz, doğal nefes ve sayısız seçenekleri sunun; beden duyumları için asla puanlama veya açıklama şart koşmayın."
+        },
+        "journal": {
+          "time": "5-12 dk",
+          "format": "Bireysel",
+          "cue": "Özel yansıtma. Paylaşmak isteğe bağlı olmalıdır."
+        },
+        "goals": {
+          "time": "5-10 dk",
+          "format": "Bireysel veya rehberlik saati",
+          "cue": "Yansıtmadan sonra iyi bir kapanış adımı."
+        },
+        "conflict": {
+          "time": "8-12 dk",
+          "format": "İkili veya küçük grup",
+          "cue": "Rol oyunundan önce kuralları gözden geçirin."
+        },
+        "restorativeCircle": {
+          "time": "15-30 dk",
+          "format": "Çember",
+          "cue": "Yerleşik çember kurallarıyla kullanın."
+        },
+        "peersupport": {
+          "time": "8-15 dk",
+          "format": "İkili pratik",
+          "cue": "Dinleme becerileri provası için çok uygun."
+        },
+        "perspective": {
+          "time": "6-12 dk",
+          "format": "İkili veya grup",
+          "cue": "Tartışmadan önce iyi bir empati köprüsü."
+        },
+        "digitalWellbeing": {
+          "time": "8-15 dk",
+          "format": "Bireysel veya rehberlik saati",
+          "cue": "Telefon veya yapay zekâ kurallarından önce faydalı."
+        },
+        "sleep": {
+          "time": "5-10 dk",
+          "format": "Bireysel",
+          "cue": "Sağlık odaklı rehberlik üniteleri için iyi."
+        },
+        "safety": {
+          "time": "8-15 dk",
+          "format": "Bireysel",
+          "cue": "Önce ön izleme yapın; zorla açıklama yaptırmaktan kaçının."
+        },
+        "crisiscompanion": {
+          "time": "3-10 dk",
+          "format": "Bireysel",
+          "cue": "Acil destek becerileri içindir, bir sınıf ödevi değildir."
+        },
+        "griefLoss": {
+          "time": "10-20 dk",
+          "format": "Bireysel",
+          "cue": "Önce ön izleme yapın; katılmama seçeneği olan alternatifler kullanın."
+        },
+        "identitySupport": {
+          "time": "8-15 dk",
+          "format": "Bireysel",
+          "cue": "Gizliliğe ve katılmama seçeneğine özen göstererek kullanın."
+        },
+        "traumaPsychoed": {
+          "time": "8-15 dk",
+          "format": "Bireysel veya eğitimci rehberliğinde",
+          "cue": "Yalnızca psikoeğitim; katılmama seçeneği ve güvenilir bir yetişkine başvurma imkânı sunun."
+        },
+        "substancePsychoed": {
+          "time": "8-15 dk",
+          "format": "Bireysel veya sağlık dersi",
+          "cue": "Zarar azaltma çerçevesini önceden gözden geçirin ve yetişkin/tıbbi destek sağlayın."
+        },
+        "healthyRelationships": {
+          "time": "10-20 dk",
+          "format": "Bireysel veya sağlık dersi",
+          "cue": "Rıza ve güvenlik dilini önceden gözden geçirin; kişisel açıklama yapılmasını asla şart koşmayın."
+        },
+        "bodyStory": {
+          "time": "8-15 dk",
+          "format": "Bireysel",
+          "cue": "Bedene saygı çerçevesi; katılmama seçeneği sunun ve kilo odaklı tartışmalardan kaçının."
+        },
+        "genogram": {
+          "time": "10-20 dk",
+          "format": "Bireysel",
+          "cue": "Yalnızca aile yansıtması; paylaşmak isteğe bağlı olmalıdır."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 dk",
+          "format": "Bireysel veya destek planlaması",
+          "cue": "Kimliği olumlayan bir dil kullanın ve öğrencilerin ne paylaşacaklarını seçmelerine izin verin."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Sabah rehberlik saati durum kontrolü",
+          "time": "10-15 dk",
+          "format": "Tüm sınıf",
+          "focus": "Ruh hâli, nefes, bir sonraki adım",
+          "studentView": "Öğrenciler bölgelerini kendi başlarına kontrol eder, bir düzenleme seçeneği dener, sonra gün için bir ihtiyaç seçer ya da pas geçer.",
+          "teacherMove": "Önce pas geçme seçeneğini modelleyin. Tek kelimeyle veya renkle paylaşıma ancak özel pratikten sonra davet edin.",
+          "privacyBoundary": "Hiçbir günlük metni toplanmaz; öğrenciler herhangi bir kayıt noktasının bir Paylaşım Paketine girip girmeyeceğine daha sonra karar verir.",
+          "note": "Özel bir bölge kontrolüyle başlayın, sonra nefes veya hedef belirleme sunun. Öğrenciler bir kelime, bir renk paylaşabilir ya da pas geçebilir."
+        },
+        "calm_reset": {
+          "name": "Beş dakikalık sakin sıfırlama",
+          "time": "5-8 dk",
+          "format": "Tüm sınıf veya sakinleşme köşesi",
+          "focus": "Beden düzenlemesi",
+          "studentView": "Öğrenciler bedenlerinin şu anki durumunu fark eder ve bedeni sakinleştiren bir uygulama seçer.",
+          "teacherMove": "Rutini az konuşmalı ve zaman sınırlı tutun. Hareket, nefes veya sessiz alternatifler sunun.",
+          "privacyBoundary": "Öğrenciler kendileri için bir kayıt noktası oluşturabilir; kimse neden sıfırlamaya ihtiyaç duyduğunu açıklamak zorunda değildir.",
+          "note": "Bunu az konuşmalı tutun. Öğrenciler bir düzenleme uygulaması seçer ve neyin değiştiğini fark eder."
+        },
+        "repair_routine": {
+          "name": "Çatışma sonrası onarım rutini",
+          "time": "15-25 dk",
+          "format": "Küçük grup veya rehberlik saati",
+          "focus": "Bakış açısı, onarım, sonraki eylem",
+          "studentView": "Öğrenciler onarım dilini çalışmak için gerçek, varsayımsal veya öğretmenin sağladığı bir senaryo kullanabilir.",
+          "teacherMove": "Önce onarım kurallarını belirleyin ve herkesin önünde itiraftan kaçının. Durum yetişkin arabuluculuğu gerektiriyorsa ara verin.",
+          "privacyBoundary": "Öğrenciler ne paylaşacaklarını seçer; özel çatışma yansıtmaları sınıf kanıtına dönüşmemelidir.",
+          "note": "Kurallar belirlendikten sonra kullanın. Odağı herkesin önünde itirafta değil, onarım dilinde tutun."
+        },
+        "digital_reset": {
+          "name": "Dijital iyi oluş mini dersi",
+          "time": "12-20 dk",
+          "format": "Rehberlik saati veya sağlık",
+          "focus": "Telefon, uyku, yapay zekâ ve sınırlar",
+          "studentView": "Öğrenciler alışkanlıklarını gözden geçirir, denemek için bir sınır seçer ve isterlerse nedenini kendilerine saklar.",
+          "teacherMove": "Bunu bir telefon denetimi olarak değil, alışkanlık tasarımı olarak çerçeveleyin. Öğrencilerden ekran görüntüsü veya kullanım verisi paylaşmalarını istemekten kaçının.",
+          "privacyBoundary": "Öğrenciler bir sınır hedefini paylaşabilir, ancak uyku, telefon veya yapay zekâ ile ilgili kişisel ayrıntılar isteğe bağlı kalır.",
+          "note": "Bunu bir telefon denetimi olarak değil, alışkanlık tasarımı olarak çerçeveleyin. Öğrenciler denemek için bir sınır seçer."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Araştırma bilgili yaklaşım",
+          "title": "Araştırma temeldeki yaklaşımla ilgilidir; bu dijital uyarlama burada değerlendirilmemiştir"
+        },
+        "emerging": {
+          "label": "Yaklaşıma dair sınırlı kanıt",
+          "title": "Umut verici ancak kanıtlar sınırlı veya karışık"
+        },
+        "contested": {
+          "label": "Tartışmalı model",
+          "title": "Popüler ancak bilimsel olarak tartışmalı; mekanizma olarak değil, metafor olarak kullanılması en iyisidir"
+        },
+        "practice": {
+          "label": "Yansıtmaya dayalı uygulama",
+          "title": "Yapılandırılmış bir uygulama veya sezgisel bir araç; ampirik bir etkililik iddiası değildir"
+        }
+      },
+      "ui": {
+        "sel_practice": "SEL pratiği",
+        "default_purpose": "Bir SEL becerisini özenle çalışın.",
+        "default_next": "Küçük bir adımı tamamlayın, sonra kaydedip kaydetmeyeceğinize karar verin.",
+        "private_checkpoint": "Özel kayıt noktası",
+        "share_packet_eligible": "Paylaşım Paketine uygun",
+        "saving_preparing": "SEL çalışmanız kaydedilmeye hazırlanıyor...",
+        "save_requested": "{title} için kaydetme istendi",
+        "returned_to_grid": "Araç ızgarasına dönüldü",
+        "back_to_sel_tools": "SEL araçlarına dön",
+        "export_now_aria": "SEL proje dosyasını şimdi dışa aktar",
+        "export_now": "Şimdi dışa aktar",
+        "purpose": "Amaç",
+        "next_step": "Sonraki adım",
+        "saved_work": "Kaydedilen çalışmalar",
+        "checkpoints_private": "Araç kayıt noktaları, bir Paylaşım Paketi için seçmediğiniz sürece burada özel kalır.",
+        "use_with_care_label": "Dikkatli kullanın:",
+        "tool_open_failed_title": "Bu araç açılamadı",
+        "tool_open_failed_body": "Bu etkinliğe ait kayıtlı bilgilerde bir şey yüklenemedi. Bu sizin yaptığınız bir hata değil.",
+        "saved_work_kept": "Kaydedilen çalışmanız silinmedi.",
+        "back_to_hub": "SEL Hub'a dön",
+        "tell_teacher": "Bu tekrar olursa öğretmeninize hangi etkinlik olduğunu söyleyin.",
+        "load_did_not_start": "Araç indirildi ama başlamadı.",
+        "load_too_long": "Aracın yüklenmesi çok uzun sürdü.",
+        "this_sel_tool": "Bu SEL aracı",
+        "tool_opening": "{name} açılıyor...",
+        "tool_open_retry": "{name} açılamadı. Tekrar deneyin veya başka bir araç seçin.",
+        "station_link_missing": "Bu bağlantı, bu projede olmayan bir istasyonu gösteriyor. Onu içeren içerik setini yükleyin veya Geçmiş panelindeki SEL İstasyonları bölümünden bir tane başlatın.",
+        "started_station": "{name} istasyonu başlatıldı",
+        "tool_could_not_open": "{name} açılamadı.",
+        "tool_not_available": "{name} bu SEL Hub'da kullanılamıyor.",
+        "try_again": "Tekrar dene",
+        "dismiss": "Kapat",
+        "back_to_tools": "Araçlara dön",
+        "band_elementary": "İlkokul",
+        "band_middle": "Ortaokul",
+        "band_high": "Lise",
+        "unsaved_aria": "Kaydedilmemiş değişiklikleriniz var",
+        "unsaved_title": "Kaydedilmemiş değişiklikler",
+        "unsaved": "Kaydedilmedi",
+        "unsaved_hint": "Kaydedilmemiş değişiklikleriniz var — kaydetmek için “Şimdi dışa aktar”a dokunun",
+        "educators_opened": "“Eğitimciler İçin” rehberi açıldı",
+        "educators_aria": "Eğitimciler İçin: bu Merkezi sorumlu bir şekilde kullanma",
+        "for_educators": "Eğitimciler İçin",
+        "theme_aria": "Temayı değiştir (açık / koyu / yüksek kontrast)",
+        "theme_contrast": "Yüksek Kontrast",
+        "theme_dark": "Koyu Mod",
+        "theme_light": "Açık Mod",
+        "theme_contrast_short": "Kontrast",
+        "theme_dark_short": "Koyu",
+        "theme_light_short": "Açık",
+        "xp_aria": "{count} SEL deneyim puanı",
+        "close_hub": "SEL Hub'ı kapat",
+        "keep_share_title": "Neyi saklayıp paylaşacağınızı seçin",
+        "keep_share_body": "Bazı etkinlikler çalışmayı bu cihaza kaydeder; diğer çalışmalar yalnızca bu sekmede kalır. Sekmeyi kapatmak her şeyi silmez. Bir kopya saklamak için dosya dışa aktarın. Paylaşılan bir cihazda, “Eğitimciler İçin” bölümündeki “Veri ve gizlilik” kısmını gözden geçirin. Yapay zekâ ve paylaşım özellikleri, yapılandırdığınız hizmetleri kullanır.",
+        "got_it_aria": "Anladım, SEL Hub'ı kullanmaya başla",
+        "got_it": "Anladım",
+        "practice_support": "Pratik desteği",
+        "learning_guide": "Öğrenme rehberi ve pratik yapma yöntemleri",
+        "what_you_can_explore": "Neleri keşfedebilirsiniz",
+        "worked_example": "Çözümlü bir örnek",
+        "try_one_step": "Bir adım dene",
+        "reflect_transfer": "Düşün ve başka yerlerde kullan",
+        "look_closer": "Daha yakından bak",
+        "next_use": "Olası bir sonraki kullanım",
+        "adapt_together": "Pratiği birlikte uyarlayın",
+        "adapt_smaller": "Daha küçük başlayın: bir cümleyi veya seçimi modelleyin, bir resim ya da somut bir nesne kullanın ve düşünme süresi tanıyın.",
+        "adapt_deeper": "Daha derine inin: iki yanıtı karşılaştırın, eksik bilgiyi belirleyin ve seçiminizi neyin değiştirebileceğini açıklayın.",
+        "adapt_context": "Bağlamı değiştirin: öğrencinin diline, ilgi alanlarına, kültürüne ve erişim ihtiyaçlarına uyan kurgusal bir durum kullanın.",
+        "adapt_check": "Anlamayı zorunlu bir kişisel hikâye, duygusal değişim veya puan yerine, seçilen bir örnek ya da açıklama üzerinden kontrol edin.",
+        "optional_prompts": "Bu isteğe bağlı sorular yanıt göndermez, tamamlama kazandırmaz ve etkinliğin kendi yönergelerinin ve güvenlik bilgilerinin yerini almaz.",
+        "returned_to_activities": "Etkinliklere dönüldü. Bu işlemle herhangi bir pratik tamamlama kaydedilmedi.",
+        "return_to_activities": "Etkinliklere dön",
+        "chooser_first_reset_coping": "Rahat bir topraklanma seçeneği seçin. Size uyup uymadığını fark edin; durmak serbesttir.",
+        "chooser_first_reset_journal": "Önümüzdeki birkaç dakikayı daha yönetilebilir kılacak bir şey yazın. Kişisel bir hikâyeye gerek yok.",
+        "chooser_first_feelings_zones": "Bir duyguyu gösterin veya sessizce fark edin. Bir destek seçin; ulaşılması gereken doğru bir bölge yoktur.",
+        "chooser_first_feelings_emotions": "Kurgusal bir karakter için iki duygu kelimesini keşfedin. Birden fazla cevap uyabilir.",
+        "chooser_first_feelings_journal": "Kurgusal veya gündelik bir durum hakkında bir kelime ya da kısa bir yansıtma yazın.",
+        "chooser_first_conversation_advocacy": "Bir ricayı sesli olarak, AAC ile veya sessizce, formdan uzakta prova etmek için kurgusal bir durum kullanın.",
+        "chooser_first_conversation_journal": "Güvenli, gündelik bir durum için saygılı bir rica taslağı yazın; göndermek zorunda değilsiniz.",
+        "chooser_first_decision_decisions": "Kurgusal bir durumdaki iki seçeneği ve her birinin olası bir etkisini düşünün.",
+        "chooser_first_decision_goals": "Gerçekçi bir sonraki adımın ve isteyebileceğiniz bir desteğin taslağını yazın.",
+        "try_a_reset": "Bir sıfırlama dene",
+        "need_feeling": "Bir duyguyu anla",
+        "need_conversation": "Bir konuşmaya hazırlan",
+        "need_decision": "Bir sonraki adımı seç",
+        "help_choose": "Etkinlik seçmeme yardım et",
+        "help_choose_intro": "Ne denemek istediğinizi seçin. Öneriler yalnızca bu seçimleri kullanır; duygularınızı değerlendirmez. Süreler etkinliğin tamamını değil, ilk adımı tanımlar.",
+        "what_would_help": "Ne yardımcı olur?",
+        "time_first_step": "İlk adım için süre",
+        "n_minutes": "{count} dakika",
+        "how_respond": "Nasıl yanıt vermek istersiniz?",
+        "respond_any": "Herhangi bir şekilde",
+        "respond_offline": "Düşün, konuş, çiz veya AAC",
+        "respond_write": "Kısa bir yanıt yaz",
+        "options_one": "Seçimlerinize uygun {count} başlangıç seçeneği.",
+        "options_many": "Seçimlerinize uygun {count} başlangıç seçeneği.",
+        "options_none": "Henüz eşleşen bir başlangıç seçeneği yok. Daha fazla süre veya başka bir yanıt biçimi deneyin; tam katalog hâlâ kullanılabilir.",
+        "why_option_write": "Neden bu seçenek: {need}; önerilen {minutes} dakikalık bir ilk adım ve kısa bir yazılı yanıtla.",
+        "why_option_offline": "Neden bu seçenek: {need}; önerilen {minutes} dakikalık bir ilk adım ve yazmadan pratik yapmanın bir yöntemiyle.",
+        "open_named": "{name} aracını aç",
+        "open_named_unavailable": "{name} aracını aç (kullanılamıyor)",
+        "pathway_guide": "Öğrenme yolu pratik rehberi",
+        "pathway_opened": "{total} araçtan {opened} tanesi açıldı. Bir aracı açmak, beceriyi çalıştığınız anlamına gelmez.",
+        "exit_pathway_aria": "Öğrenme yolu modundan çık",
+        "pathway_cleared": "Öğrenme yolu temizlendi",
+        "exit_pathway": "Öğrenme yolundan çık",
+        "practice_goal": "Pratik hedefi:",
+        "pathway_intro": "Bir etkinlik seçin veya önerilen sırayı izleyin. Pas geçebilir, kurgusal bir örnek kullanabilir ya da konuşarak, çizerek, yazarak veya AAC ile yanıt verebilirsiniz. Paylaşmak isteğe bağlıdır.",
+        "model_practice_reflect": "Modelle, çalış ve düşün",
+        "an_example": "Bir örnek",
+        "notice_adjust": "Fark et ve uyarla",
+        "take_with_you": "Yanında götür",
+        "self_check_aria": "İsteğe bağlı pratik öz kontrolü",
+        "self_check_intro": "Bir adımı denedikten sonra size uyanı seçin. Bu isteğe bağlıdır ve notlandırılmaz; bu öğrenme yolu oturumunda kalır.",
+        "i_tried": "Bir adım denedim",
+        "another_way": "Başka bir yönteme ihtiyacım var",
+        "pass_for_now": "Şimdilik pas geç",
+        "tried_feedback": "Neyin yardımcı olduğunu, neyin olmadığını ve beceriyi nerede tekrar deneyebileceğinizi fark edin.",
+        "adapt_feedback": "Daha küçük bir adım, başka bir yanıt verme biçimi, farklı bir araç veya güvendiğiniz birinden destek deneyin.",
+        "pass_feedback": "Pas geçmek geçerli bir seçimdir. Daha sonra dönebilir veya destek isteyebilirsiniz.",
+        "next_option": "Sonraki seçenek: {name}",
+        "open_next": "Sıradakini aç: {name}",
+        "view_pathway_tools": "Öğrenme yolu araçlarını görüntüle",
+        "revisit_any": "Herhangi bir etkinliğe tekrar dönebilirsiniz. Merkezin dışında denemek için bir fikir seçin; her aracı bitirme zorunluluğu yoktur.",
+        "station_activities": "İstasyon etkinlikleri",
+        "active_station": "Etkin SEL İstasyonu: {name}",
+        "steps_recorded_passed": "{total} adımdan {done} tanesi kaydedildi · {passed} tanesi şimdilik pas geçildi. Bu bir not değil, bir pratik kaydıdır.",
+        "steps_recorded": "{total} adımdan {done} tanesi kaydedildi. Bu bir not değil, bir pratik kaydıdır.",
+        "active_minutes_done": "Burada {goal} etkin dakikanın {mins} dakikası tamamlandı. Adım kaydedildi.",
+        "active_minutes_counting": "Burada {goal} etkin dakikanın {mins} dakikası tamamlandı. Bu sekme görünür olduğu ve siz onu kullandığınız sürece sayılır.",
+        "exit_station_aria": "İstasyon modundan çık",
+        "station_cleared": "İstasyon temizlendi",
+        "exit_station": "İstasyondan çık",
+        "station_tools_steps": "İstasyon araçları, adımlar ve yansıtma",
+        "station_steps": "İstasyon adımları ve yansıtma",
+        "station_privacy": "Adımlar ve notlar bu cihaza kaydedilir ve proje dosyalarına dahil edilebilir. Kurgusal örnekler kullanın veya kişisel ayrıntıları dışarıda bırakın. Neyi paylaşacağınızı seçin.",
+        "step_passed": "Şimdilik pas geçildi. Hazır olduğunuzda dönebilirsiniz.",
+        "step_marked": "Bu adımı tamamlandı olarak işaretlediniz.",
+        "step_target": "Etkinlik hedefi kaydedildi; bu, beceriyi veya iyi oluşu ölçmez.",
+        "step_ready": "Siz hazır olduğunuzda hazırız.",
+        "open_step_activity": "Bu adımın etkinliğini aç",
+        "xp_progress": "{xp} / {target} toplam SEL XP. Buna önceki etkinlikler de dahildir; bir beceri puanı değildir.",
+        "time_progress": "{mins} / {target} etkin dakika. Süre, öğrenmenin kanıtı değildir.",
+        "default_reflect": "Neyi fark ettiniz? Neyi korur veya değiştirirdiniz?",
+        "self_check_ways": "Düşünün, çizin, konuşun, işaret dili veya AAC kullanın. Yazılı not isteğe bağlıdır. Adımı kendiniz tamamlandı olarak işaretleyin veya şimdilik pas geçin.",
+        "length_target": "Bu kaydedilmiş adım bir uzunluk hedefi kullanır: {count} / {target} karakter. Uzunluk, yansıtmanın kalitesini ölçmez. Notunuz düzenlenebilir kalır.",
+        "reflection_for": "{name} için yansıtma",
+        "optional_note": "İsteğe bağlı not: neyin yardımcı olduğu veya sırada neyi deneyebileceğiniz...",
+        "write_reflection": "Bir yansıtma yazın...",
+        "mark_complete_aria": "“{name}” öğesini tamamlandı olarak işaretle",
+        "step_reopened": "Adım yeniden açıldı: {name}",
+        "step_marked_named": "Bu adımı tamamlandı olarak işaretlediniz: {name}",
+        "mark_complete": "Tamamlandı olarak işaretle",
+        "step_passed_named": "Şimdilik pas geçildi: {name}",
+        "filter_pathway": "öğrenme yolu: {name}",
+        "filter_station": "istasyon: {name}",
+        "no_tools_match": "{filters} ile eşleşen araç yok",
+        "results_one": "{total} araçtan {count} tanesi {filters} ile eşleşiyor",
+        "results_many": "{total} araçtan {count} tanesi {filters} ile eşleşiyor",
+        "showing_all": "{total} aracın tümü gösteriliyor",
+        "crisis_elementary": "Hemen bir yetişkin bulamazsanız, biri sizi dinleyene kadar sormaya devam edin. Yardımı hak ediyorsunuz.",
+        "crisis_call_or_text": "Arayın veya mesaj gönderin",
+        "crisis_988": "988 İntihar ve Kriz Yardım Hattı (ücretsiz, gizli, 7/24).",
+        "crisis_text": "Mesaj gönderin",
+        "crisis_text_line": "Crisis Text Line (ücretsiz, gizli, 7/24).",
+        "tool_selection": "SEL Hub araç seçimi",
+        "jumped_to_list": "Araç listesine geçildi. {summary}.",
+        "skip_to_list": "Araç listesine geç",
+        "start_here": "Buradan başla",
+        "quick_route": "Hızlı bir başlangıç seçin veya aşağıdan göz atın.",
+        "browsing_all": "Tüm SEL araçlarına göz atılıyor",
+        "continue": "Devam et",
+        "continue_desc": "Açtığınız son SEL aracına devam edin.",
+        "starting_idea": "Başlangıç fikri",
+        "starting_idea_desc": "{name}: bu sınıf düzeyi için önerilen, uyarlayabileceğiniz örnekler içeren bir etkinlik.",
+        "starting_idea_none": "Sınıf düzeyine uygun bir başlangıç noktası açın.",
+        "try_a_reset_desc": "Rahat bir strateji keşfedin; sakin hissetmek zorunlu değildir.",
+        "journal": "Günlük",
+        "journal_desc": "Bir yansıtma yazın; kaydetme ve paylaşma seçeneklerini gözden geçirin.",
+        "browse_all": "Tümüne Göz At",
+        "browse_all_desc": "Tam katalogda arayın veya filtreleyin.",
+        "need_chip_calm": "Bedenimi sakinleştir",
+        "need_chip_feelings": "Duyguları adlandır",
+        "need_chip_stress": "Stres veya endişe",
+        "need_chip_friend": "Arkadaşla çatışma",
+        "need_chip_write": "Yazıya dök",
+        "need_chip_decision": "Karar ver",
+        "need_chip_sleep": "Uyku veya yorgunluk",
+        "need_chip_crisis": "Güvende değilim veya krizdeyim",
+        "need_chip_relationshipsafety": "İlişkide güvenlik",
+        "need_chip_schoolsupport": "Okul desteği",
+        "need_chip_grief": "Yas veya kayıp",
+        "storage_notice": "Bazı SEL çalışmaları bu cihazda saklanır. Yapay zekâ özellikleri yapılandırdığınız hizmeti kullanır. Özellikle paylaşılan bir cihazda neyi kaydedeceğinizi veya paylaşacağınızı seçin.",
+        "save_now_aria": "SEL çalışmasını şimdi kaydet veya dışa aktar",
+        "save_now": "Şimdi kaydet",
+        "recent_work": "Son SEL çalışmaları",
+        "saved_here": "Burada kaydedildi. Kapattıktan sonra da saklamak için dışa aktarın.",
+        "create_packet_aria": "Kaydedilmiş kayıt noktalarından SEL Paylaşım Paketi oluştur",
+        "review_packets_aria": "Kaydedilmiş SEL Paylaşım Paketlerini gözden geçir",
+        "create_packet": "Paylaşım Paketi oluştur",
+        "review_packets": "Paylaşım Paketlerini gözden geçir",
+        "open_related": "İlgili aracı aç.",
+        "related_unavailable": "İlgili araç bu SEL Hub'da kullanılamıyor.",
+        "streak_aria": "{count} günlük SEL serisi. En uzun: {longest} gün.",
+        "streak": "{count} günlük seri",
+        "streak_best": "en iyi {count}",
+        "find_activity": "Bir etkinlik bul",
+        "search_placeholder": "Duygular, arkadaşlar, stres, hedefler ara...",
+        "search_aria": "SEL araçlarında ara",
+        "support_options": "Destek seçenekleri",
+        "crisis_hard_moment": "Bu zor bir an olabilir gibi görünüyor.",
+        "crisis_tell_adult": "Bunu tek başınıza çözmek zorunda değilsiniz ve önce doğru aracı bulmak zorunda da değilsiniz. Lütfen şimdi güvendiğiniz bir yetişkine anlatın — bir okul psikolojik danışmanına, bir öğretmene, bir ebeveyne veya güvendiğiniz başka bir yetişkine. Burada arama yapmak kimseye haber vermez; bir kişi ancak siz ona anlatırsanız bilir.",
+        "open_crisis_companion": "Kriz Yol Arkadaşı'nı aç",
+        "find_by_need": "İhtiyaca göre SEL araçları bul",
+        "i_need": "İhtiyacım olan...",
+        "cleared_search": "SEL araması temizlendi",
+        "clear_search_aria": "SEL aramasını temizle",
+        "clear": "Temizle",
+        "cleared_need": "SEL ihtiyaç filtresi temizlendi",
+        "showing_for": "{name} için SEL araçları gösteriliyor",
+        "clear_need_aria": "İhtiyaç filtresini temizle: {name}",
+        "find_for_aria": "Şunun için araç bul: {name}",
+        "browse_by_area": "Beceri alanına göre göz at",
+        "filter_by_category": "SEL araçlarını kategoriye göre filtrele",
+        "showing_all_categories": "Tüm kategoriler gösteriliyor",
+        "show_all_categories_aria": "Tüm kategorileri göster ({count} araç)",
+        "all": "Tümü",
+        "filtered_to": "{name} ile filtrelendi",
+        "filter_chip_aria": "Filtre: {name} ({count} araç)",
+        "pathways_heading": "SEL Öğrenme Yolları — Seçilmiş Öğrenme Dizileri",
+        "started_pathway": "Öğrenme yolu başlatıldı: {name}",
+        "pathway_started": "{name} öğrenme yolu başladı!",
+        "n_activities": "{count} etkinlik",
+        "grades_range": "{range}. sınıflar",
+        "use_with_care": "Dikkatli kullanın",
+        "visits_many": "{count} ziyaret",
+        "visits_one": "{count} ziyaret",
+        "best_for": "En uygun olduğu durum: {mode}.",
+        "teacher_cue": "Öğretmen ipucu: {time}, {format}. {cue}",
+        "preview_first": "Önce ön izleme yap",
+        "evidence_tradition": "Kanıt geleneği: {tag}",
+        "approach_context": "Yaklaşım bağlamı: {label}. {title}. Bu rozet, bu uygulama veya belirli bir öğrenci için etkililiği kanıtlamaz.",
+        "step_opened": "Adım {n} · Açıldı",
+        "step_not_opened": "Adım {n} · Açılmadı",
+        "suggested_grades": "Önerilen sınıflar: {range}",
+        "no_tools_current_view": "Geçerli görünümle eşleşen araç yok",
+        "empty_try": "Sakin, duygular, stres, arkadaş, yaz, karar veya uyku deneyin.",
+        "filters_cleared": "Filtreler temizlendi. {total} aracın tümü gösteriliyor.",
+        "show_all_tools": "{total} aracın tümünü göster",
+        "error_loading": "{name} yüklenirken hata oluştu",
+        "unknown_error": "Bilinmeyen hata",
+        "back_to_tools_error": "Araçlara Dön",
+        "tool_load_failed": "Bu araç yüklenemedi.",
+        "loading_tool": "Araç yükleniyor...",
+        "file_not_arrived": "Dosya ulaşmadı.",
+        "check_connection": "Bağlantıyı kontrol edin, sonra tekrar deneyin.",
+        "plugin_fetching": "Eklenti dosyası hâlâ getiriliyor.",
+        "research_about": "Araştırma etiketleri hakkında",
+        "research_summary": "Araştırma etiketleri ne anlama gelir",
+        "research_context": "Yaklaşım bağlamı: {label}.",
+        "research_not_app": "Bir terapi, müfredat veya çerçeve üzerine yapılan araştırmalar, bu dijital etkinliğin aynı etkilere sahip olduğunu kanıtlamaz. Etiketler yaklaşımı tanımlar; bu uygulamayı veya bir öğrenciyi değerlendirmez.",
+        "research_check": "Bir etkinlik seçmeden önce belirtilen kaynaklarını, incelenen yaşları ve ortamları, gereken desteği ve ölçülen sonuçları kontrol edin. Bu uyarlamanın hedef gruba uygunluğu ve etkililiği bu etiketlerle kanıtlanmış değildir.",
+        "research_casel_link": "CASEL: bir SEL programını seçme ve değerlendirme",
+        "project_save_failed": "Proje kaydetme isteği başarısız oldu. Bu merkezi açık tutun ve ana uygulamada “Kaydet / Dışa Aktar”ı deneyin.",
+        "project_save_requested": "Proje kaydetme istendi. Kaydetme adımlarını ana uygulamada tamamlayın; burada kaydedilmiş bir dosya doğrulanmadı.",
+        "saving_aria": "SEL kaydetme ve paylaşma",
+        "saving_failed_alert": "Bazı SEL değişiklikleri bu cihaza kaydedilemedi. Bu merkezi açık tutun ve bir proje kopyası kaydedin; istasyon taslaklarının o kopyaya katılması için istasyon olarak kaydedilmesi gerekir.",
+        "saving_attention": "Kaydetme dikkat gerektiriyor",
+        "saving_title": "Kaydetme ve paylaşma",
+        "saving_failed_body": "Mevcut çalışma bu açık merkezde kullanılabilir durumda kalır. Başarısız bir yerel kayıt, bu cihazda daha eski bir kopya bırakabilir.",
+        "saving_ok_body": "Kaydedilen istasyonlar, istasyon notları ve merkez kayıt noktaları bu cihazda saklanıyor. Her etkinliğin kendi kaydetme denetimleri vardır; bu durum, her etkinlik girdisinin kaydedildiğini doğrulamaz.",
+        "saving_drafts": "İstasyon taslakları kurtarma için bu cihazda kalır. Bir istasyonu kaydetmek, onu “Kaydet / Dışa Aktar” için kullanılabilen proje verilerine ekler; proje kaydetme istemek bir dosyanın yazıldığını doğrulamaz.",
+        "saving_live": "Canlı bir oturum bağlı. Oturum sahibine ilerleme veya güvenlik sinyalleri gönderebilir. İsteğe bağlı yapay zekâ, etkinlik metnini yapılandırılmış hizmete gönderir. Paylaşmayı seçmeden önce bir Paylaşım Paketini gözden geçirin.",
+        "saving_ai": "İsteğe bağlı yapay zekâ, etkinlik metnini yapılandırılmış hizmete gönderir. Bir Paylaşım Paketi, seçtiğiniz öğeleri ve ayrıntı düzeylerini içerir; paylaşmadan önce ön izlemesini gözden geçirin.",
+        "saving_retry": "Yerel kaydetmeyi yeniden dene",
+        "saving_request": "Proje kaydetme iste",
+        "removed_stations": "Kaldırılan istasyonlar",
+        "removed_body": "Bu merkez açıkken istasyon kaldırmayı geri alın. Mevcut pratik kayıtları korunur.",
+        "station_restored": "İstasyon geri yüklendi: {name}",
+        "undo_removal": "Kaldırmayı geri al: {name}",
+        "launch_routines_aria": "Öğretmen başlangıç rutinleri",
+        "launch_title": "Öğretmen başlangıcı",
+        "launch_note": "Pratiği notsuz, paylaşımı isteğe bağlı tutun. Başlamadan önce cihaz depolamasını, yapılandırılmış yapay zekâ özelliklerini ve paylaşımı açıklayın. Kurgusal örnekler kullanın; öğrencileri yardım istemeye veya pas geçmeye davet edin.",
+        "launch_guardrails_aria": "Öğretmen başlangıcı güvenlik önlemleri",
+        "launch_step_boundary": "Sınırı belirle",
+        "launch_step_boundary_body": "Neyin özel, neyin isteğe bağlı olduğunu ve öğrencilerin nasıl pas geçebileceğini söyleyin.",
+        "launch_step_run": "Rutini uygula",
+        "launch_step_run_body": "Araçları pratik olarak kullanın. Yansıtmayı biçimlendirici ve notsuz tutun.",
+        "launch_step_close": "Seçimle kapat",
+        "launch_step_close_body": "Öğrenciler kaydetmeye, dışa aktarmaya veya bir kayıt noktasını dahil etmeye daha sonra kendileri karar verir.",
+        "launch_student_sees": "Öğrencinin gördüğü",
+        "launch_student_sees_default": "Öğrenciler özel bir SEL rutinini tamamlar ve neyi paylaşacaklarını seçer.",
+        "launch_teacher_move": "Öğretmen hamlesi",
+        "launch_teacher_move_default": "Bunu bir değerlendirme olarak değil, pratik olarak çerçeveleyin.",
+        "launch_sharing_boundary": "Paylaşım sınırı",
+        "launch_sharing_boundary_default": "Paylaşım öğrencinin kontrolünde kalır.",
+        "launch_tools_loading": "Araçlar yükleniyor...",
+        "launch_still_loading": "Hâlâ yükleniyor: {tools}",
+        "launch_preview_sensitive": "Önce hassas araçların ön izlemesini yapın: {tools}",
+        "launch_load_aria": "Öğretmen başlangıç planını yükle: {name}",
+        "launch_finish_draft": "Önce mevcut taslağı bitirin veya silin",
+        "launch_waiting": "Araçlar bekleniyor",
+        "launch_loading": "Yükleniyor",
+        "launch_load": "İstasyon Oluşturucu'ya yükle",
+        "builder_note_student": "Öğrenci görünümü: {text}",
+        "builder_note_teacher": "Öğretmen hamlesi: {text}",
+        "builder_note_sharing": "Paylaşım sınırı: {text}",
+        "builder_note_note": "Öğretmen notu: {text}",
+        "launch_finish_existing": "Önce mevcut istasyon taslağınızı bitirin veya silin.",
+        "launch_tools_still_loading": "Öğretmen başlangıç araçları hâlâ yükleniyor. Birazdan tekrar deneyin.",
+        "launch_tools_still_loading_sr": "Öğretmen başlangıç araçları hâlâ yükleniyor.",
+        "launch_default_name": "SEL sınıf rutini",
+        "launch_default_short": "SEL rutini",
+        "launch_loaded_sr": "Öğretmen başlangıç planı istasyon oluşturucuya yüklendi: {name}",
+        "launch_loaded_toast": "Öğretmen başlangıç planı İstasyon Oluşturucu'ya yüklendi.",
+        "stations_summary": "Özel SEL İstasyonları — öğretmenlerin hazırladığı setler",
+        "station_delete_aria": "{name} istasyonunu sil",
+        "station_removed_sr": "İstasyon kaldırıldı. Bu merkez kapanana kadar geri alma kullanılabilir.",
+        "station_removed": "İstasyon kaldırıldı",
+        "station_tools_count": "{count} araç",
+        "station_quests_count": "{count} görev",
+        "station_activated_sr": "SEL İstasyonu etkinleştirildi: {name}",
+        "station_started": "{name} başladı!",
+        "station_activate_aria": "{name} istasyonunu etkinleştir",
+        "station_start": "İstasyonu başlat",
+        "station_adapt_aria": "{name} istasyonunun bir kopyasını uyarla",
+        "station_adapt": "Bir kopya uyarla",
+        "draft_aria": "Kurtarılabilir istasyon taslağı",
+        "draft_untitled": "Adsız istasyon",
+        "draft_body": "Bu cihazda bitmemiş bir istasyon taslağı kayıtlı: {name}. Başka bir tane başlatmadan önce ona devam edin veya silin.",
+        "draft_resume": "İstasyon taslağına devam et",
+        "draft_discard": "İstasyon taslağını sil",
+        "builder_opened": "İstasyon oluşturucu açıldı",
+        "build_station_aria": "Yeni bir özel SEL İstasyonu oluştur",
+        "build_station": "+ Özel İstasyon Oluştur"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Öğretmenin bağlantısı duraklatıldı — AlloFlow yeniden bağlanırken kaldığın yer korunuyor.",
+    "host_stale": "Öğretmen durum bilgisi güncel değil - canlı oturum hâlâ bağlı olabilir. Çalışmaların bu cihazda kalır.",
+    "dismiss": "Kapat",
+    "dismiss_aria": "Öğretmen durum uyarısını kapat",
+    "connecting": "Sınıfa bağlanılıyor…",
+    "retrying": "Sınıf güncellemeleri duraklatıldı. Otomatik olarak yeniden bağlanılıyor…",
+    "failed": "Sınıf güncellemelerinin bağlantısı kesildi. Bağlantını kontrol et ve yeniden bağlanmayı dene.",
+    "access": "Sınıfa erişim reddedildi. Öğretmeninden erişimi kontrol etmesini iste, sonra yeniden bağlan.",
+    "sign_in": "Sınıf erişimini geri almak için yeniden oturum aç, sonra yeniden bağlan.",
+    "reconnect": "Yeniden bağlan"
+  },
   "tour": {
     "input_panel_title": "Girdi Paneli",
     "input_panel_text": "Öğretmek istediğiniz metin parçası veya konuyla başlayın. Kaynak araçlarının çoğu bu kaynak materyali kullanır.\n### Kaynağınızı ekleyin\n• Metni yapıştırın veya yazın, desteklenen bir dosya yükleyin, bir URL içe aktarın ya da kaynak üretme araçlarını kullanın.\n• Devam etmeden önce içe aktarılan veya üretilen metnin eksiksiz ve doğru olduğunu denetleyin. Bazı web siteleri çıkarmayı kısıtlar.\n### Bağlamı belirleyin\n• Sınıf düzeyini, dili ve öğretim tercihlerini gözden geçirmek için Evrensel ayarlar bölümünü açın.\n• Adım adım ilerlemek istiyorsanız Rehberli Mod içinde odaklanmış bir yol seçin. Her sonucu kaynakla ve öğrenme hedefinizle karşılaştırın.",
@@ -5445,9 +6665,98 @@
     "measured_on_target": "{grade} için uygun",
     "measured_above": "{grade} düzeyinin üstünde",
     "measured_below": "{grade} düzeyinin altında",
-    "measured_note": "Flesch-Kincaid, bu metin üzerinde ölçüldü. Daha ayrıntılı bir inceleme için Düzeyi Denetle kullanın."
+    "measured_note": "Flesch-Kincaid, bu metin üzerinde ölçüldü. Daha ayrıntılı bir inceleme için Düzeyi Denetle kullanın.",
+    "listen_along": "Takip ederek dinle",
+    "compare_listen_here": "Burada dinle",
+    "compare_listen_here_original": "Burada dinle: özgün metin",
+    "compare_listen_here_adapted": "Burada dinle: uyarlanmış metin",
+    "compare_stop_reading_original": "Durdur: özgün metin okuması",
+    "compare_stop_reading_adapted": "Durdur: uyarlanmış metin okuması",
+    "compare_scroll_together": "Birlikte kaydır",
+    "reading_width": "Okuma genişliği",
+    "width_narrow": "Dar",
+    "width_medium": "Orta",
+    "width_wide": "Geniş",
+    "width_extra_wide": "Çok geniş",
+    "reading_width_characters": "satır başına yaklaşık {count} karakter",
+    "original_support_spoken": "“{word}” sözcüğü için yardım: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Eksik kelimeyi veya ifadeyi yaz",
+      "explain_thinking": "Düşünceni açıkla",
+      "write_response": "Cevabını yaz",
+      "submit_response": "Cevabı gönder",
+      "numeric_answer": "Sayısal cevap",
+      "unit_named": "Birim ({unit})",
+      "unit_optional": "Birim (isteğe bağlı)",
+      "submit_numeric": "Sayısal cevabı gönder",
+      "select_all_apply": "Uygun olan tüm cevapları seç",
+      "submit_selections": "Seçimleri gönder",
+      "part1": "Bölüm 1 — En iyi cevabı seç",
+      "part2": "Bölüm 2 — {prompt}",
+      "default_evidence_prompt": "En iyi destekleyici kanıtı seç.",
+      "submit_answer_evidence": "Cevabı ve kanıtı gönder",
+      "order_check": "Bu sıralama doğru mu?",
+      "order_yes": "Evet, doğru",
+      "order_no": "Hayır, bir şey yanlış yerde",
+      "select_misplaced": "Yukarıdan yanlış yerdeki bir öğeyi seç.",
+      "arrange_instructions": "Öğeleri doğru sıraya koy. Zaten doğru sıradaysalar, oldukları gibi bırak.",
+      "your_order": "Senin sıralaman",
+      "move_up": "Yukarı taşı: {item}",
+      "move_down": "Aşağı taşı: {item}",
+      "done_arranging": "Sıralamayı bitirdim",
+      "principle_question": "Öğeler neye göre sıralanmış?",
+      "principle_chronological": "zaman sırası",
+      "principle_cause_effect": "neden-sonuç",
+      "principle_process": "süreç",
+      "principle_size": "büyüklük",
+      "principle_hierarchy": "hiyerarşi",
+      "find_mismatch": "Uyumsuz çifti bul",
+      "choose_mismatch": "Diğerlerine uymayan çifti seç.",
+      "pair_with_question": "Seçilen öğe neyle eşleştirilmeli?",
+      "replacement_partner": "Yerine gelecek eş",
+      "submit_replacement": "Değişikliği gönder",
+      "retry_failed": "Cevabın gönderilemedi. Katılımın yine de kaydedildi; bağlantı kurulunca tekrar dene.",
+      "return_to_quiz": "Canlı teste dön",
+      "minimize": "Küçült",
+      "minimize_aria": "Canlı test görünümünden çık",
+      "battle_result": "Savaş sonucu",
+      "class_victory": "Sınıf kazandı!",
+      "battle_complete": "Savaş bitti",
+      "regroup": "Toparlanma fırsatı",
+      "end_no_scored": "Bu sorular tartışma veya öğretmen değerlendirmesi içindi. Savaş puanı verilmedi.",
+      "end_questions_complete": "Tüm sorular tamamlandı. Sonuç, kalan can yüzdesini karşılaştırır; berabere kalınırsa sınıf kazanır.",
+      "end_victory": "Sınıfın canavarı birlikte yendi.",
+      "end_regroup": "Aşağıdaki açıklamayı kullanarak bir sonraki denemeyi birlikte planla.",
+      "end_review_last": "Aşağıdaki son soruyu gözden geçir. Öğretmenin savaşı yeniden başlatabilir.",
+      "boss_hp": "{name} HP'si",
+      "boss_health": "{name} canı",
+      "battle_scoring_paused": "Savaş puanlaması duraklatıldı",
+      "tick_of": "{total} üzerinden {value}",
+      "confidence_legend": "Ne kadar emindin?",
+      "confidence_knew": "Bunu biliyordum",
+      "confidence_guessed": "Bilgiye dayalı bir tahmin yaptım",
+      "confidence_unsure": "Emin değildim",
+      "confidence_help": "Bu, öğretmeninin sağlam bilgileri ve kavram yanılgılarını fark etmesine yardımcı olur. Doğruluğu veya puanları asla değiştirmez.",
+      "retry_send": "Cevabı yeniden göndermeyi dene",
+      "waiting_for_teacher": "Öğretmeninin bu soruyu başlatması bekleniyor.",
+      "sending": "Cevabın gönderiliyor…",
+      "receipt_only": "Katılım kaydedildi. Cevabın puanlama için öğretmene ulaşmadı.",
+      "complete_and_submit": "Cevabını tamamla ve gönder",
+      "poll_closed": "Bu görüş sorusu kapandı.",
+      "receipt_not_scored": "Öğretmenine yalnızca katılım bilgisi ulaştı. Bu cevap puanlanmadı.",
+      "no_answer_submitted": "Bu soru için cevap gönderilmedi. Sınıfınla birlikte gözden geçir.",
+      "answer_review": "Cevap incelemesi",
+      "review_answer": "Cevabı incele",
+      "discuss_with_teacher": "Cevabı öğretmeninle tartış.",
+      "response_correct": "Doğru cevap.",
+      "response_partial": "Kısmen doğru cevap.",
+      "response_incorrect": "Bu cevaba bir kez daha bakmak gerekiyor.",
+      "response_none": "Cevap gönderilmedi.",
+      "response_submitted": "Cevap inceleme için gönderildi.",
+      "explanation": "Açıklama"
+    },
     "title": "Değerlendir",
     "mcq_count": "Çoktan Seçmeli Soru Sayısı",
     "reflections": "Düşünceler",

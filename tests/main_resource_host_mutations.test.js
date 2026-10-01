@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 // Evaluate the actual host callbacks with controlled state and deferred AI calls.
@@ -10,6 +10,38 @@ function actual(name, end, scope) {
   if (start < 0 || finish < 0) throw new Error('Missing host callback boundary: ' + name);
   return new Function(...Object.keys(scope), source.slice(start, finish) + '\nreturn ' + name + ';')(...Object.values(scope));
 }
+// Since wave 3 (c7514f5a5, 2026-09-13) ANTI keeps only a one-line shim for several of these
+// callbacks; their bodies run inside createHostHandlers(__d) in host_handlers_source.jsx and read
+// every host binding as __d.<name>. Run that real factory with the controlled scope as __d.
+// FIX0927_HOST_HANDLERS_SOURCE swaps in a scratch copy for mutation checks.
+const hostHandlersFile = process.env.FIX0927_HOST_HANDLERS_SOURCE || 'host_handlers_source.jsx';
+const createHostHandlers = new Function(readFileSync(hostHandlersFile, 'utf8') + '\nreturn createHostHandlers;')();
+function extracted(name, scope) {
+  const shim = new RegExp('\\n  const ' + name + ' = (?:useCallback\\()?(?:async )?\\(\\.\\.\\.__a\\) => _alloHostHandlers\\(\\)\\.' + name + '\\(\\.\\.\\.__a\\)');
+  if (!shim.test(source)) throw new Error('The host no longer routes ' + name + ' through HostHandlers; retarget this test');
+  const run = createHostHandlers(scope)[name];
+  if (typeof run !== 'function') throw new Error('Missing extracted host handler: ' + name);
+  return run;
+}
+// onCorrectAnalysisText computes fresh evidence with the module-internal
+// _getFreshTextComplexityEvidence and calculateReadability, which __d cannot replace. Drive the real
+// helpers through the InstructionalContext collaborator instead: `fresh` records (artifact, exact
+// corrected text) each time evidence is computed. English text gets real local statistics; other
+// languages cannot use the English formula, so they get none.
+function installEvidence(evidence, fresh) {
+  window.AlloModules.InstructionalContext = {
+    resolveArtifactContext: () => ({ grade: evidence.targetGrade, language: evidence.language }),
+    isEnglishLanguage: language => language === 'English',
+    getInstructionalText: item => ({ item }),
+    withComplexityEvidence: (base, measured, text) => { fresh(base.item, text); return evidence.instructionalText; },
+    invalidateComplexityEvidence: (base, text) => { fresh(base.item, text); return evidence.instructionalText; }
+  };
+}
+const readabilityOf = text => createHostHandlers({}).calculateReadability(text);
+afterEach(() => {
+  delete window.AlloModules.InstructionalContext;
+  delete window.AlloModules.StudioResponse;
+});
 const useCallback = fn => fn;
 function deferred() {
   let resolve, reject;
@@ -28,13 +60,15 @@ function host(history, active = history[0], inputText = '', queued = false) {
     useCallback, _resourceMutationStateRef: ref,
     setHistory: set('history'), setGeneratedContent: set('generatedContent'), setInputText: set('inputText')
   };
-  const onUpdateResource = actual('onUpdateResource', '  const handleNoteUpdate =', scope);
+  const onUpdateResource = extracted('onUpdateResource', scope);
   const h = { state, ref, scope, onUpdateResource, flush: () => { while (pending.length) pending.shift()(); } };
-  h.correct = (evidence = { localStats: { words: 4 }, targetGrade: '5', instructionalText: { text: 'Fresh text' } }) => {
-    const fresh = vi.fn(() => evidence);
+  h.correct = (evidence = { language: 'English', targetGrade: '5', instructionalText: { text: 'Fresh text' } }) => {
+    const fresh = vi.fn();
     const undo = vi.fn();
-    return { fresh, undo, run: actual('onCorrectAnalysisText', '  // ── Global text undo/redo', {
-      ...scope, onUpdateResource, _getFreshTextComplexityEvidence: fresh, _recordTextChange: undo
+    installEvidence(evidence, fresh);
+    return { fresh, undo, run: extracted('onCorrectAnalysisText', {
+      ...scope, onUpdateResource, _recordTextChange: undo, gradeLevel: '9', leveledTextLanguage: 'English',
+      splitReferencesFromBody: text => ({ body: text }), extractSourceTextForProcessing: text => ({ text, isBilingual: false })
     }) };
   };
   return h;
@@ -59,7 +93,7 @@ function extensionHost(h) {
   const addToast = vi.fn();
   return {
     requests, pending, callGemini, busy, setIsGeneratingExtensionGuide, addToast,
-    render: () => actual('handleGenerateExtensionGuide', '  const handleGenerateProgression =', {
+    render: () => extracted('handleGenerateExtensionGuide', {
       generatedContent: h.state.generatedContent, _extensionGuideRequests: requests,
       onUpdateResource: h.onUpdateResource, setIsGeneratingExtensionGuide,
       callGemini, addToast, t: key => key, warnLog: vi.fn(), gradeLevel: '12', _resourceMutationStateRef: h.ref
@@ -93,9 +127,9 @@ function conceptHost(h) {
   scope.csUpdateData = actual('csUpdateData', '  const csDeleteItem =', scope);
   scope.csDeleteItem = actual('csDeleteItem', '  const csUpdateItemText =', scope);
   scope.csUpdateItemText = actual('csUpdateItemText', '  const csMoveItem =', scope);
-  scope.csRegenerateItem = actual('csRegenerateItem', '  const csAddItem =', scope);
+  scope.csRegenerateItem = extracted('csRegenerateItem', scope);
   scope.csClearItemImage = actual('csClearItemImage', '  const handleExplainConceptSortItem =', scope);
-  scope.csRegenerateItemImage = actual('csRegenerateItemImage', '  // Image-to-image refinement', scope);
+  scope.csRegenerateItemImage = extracted('csRegenerateItemImage', scope);
   return { ...scope, live, owner, pending, imageRequests };
 }
 
@@ -162,9 +196,12 @@ describe('main resource host: grammar correction bookkeeping', () => {
   it('persists correction, selected fixed notes, fresh complexity, invalidation, source input and undo', () => {
     const a = analysis(); const h = host([a], { ...a, panel: 'grammar' }, 'The dog run.');
     const correction = h.correct();
+    const freshStats = readabilityOf('The dog runs.');
+    expect(freshStats).toMatchObject({ words: 3, sentences: 1 }); expect(freshStats).not.toEqual(a.data.localStats);
     expect(correction.run(a.id, 'The dog run.', 'The dog runs.', ['Subject-verb agreement'])).toBe(true);
     for (const item of [h.state.history[0], h.state.generatedContent]) {
-      expect(item.data).toMatchObject({ originalText: 'The dog runs.', grammar: ['✓ FIXED: Subject-verb agreement', 'Other note'], localStats: { words: 4 } });
+      expect(item.data).toMatchObject({ originalText: 'The dog runs.', grammar: ['✓ FIXED: Subject-verb agreement', 'Other note'] });
+      expect(item.data.localStats).toEqual(freshStats);
       expect(item).toMatchObject({ targetGradeLevel: '5', instructionalText: { text: 'Fresh text' } });
       expect(item).not.toHaveProperty('levelCheck'); expect(item).not.toHaveProperty('alignmentCheck');
     }
@@ -191,8 +228,9 @@ describe('main resource host: grammar correction bookkeeping', () => {
   });
 
   it('removes old local statistics when fresh complexity evidence has none', () => {
-    const h = host([analysis()]); const correction = h.correct({ targetGrade: '5', instructionalText: null });
-    correction.run('analysis-a', 'The dog run.', 'The dog runs.', []);
+    const h = host([analysis()]); const correction = h.correct({ language: 'Spanish', targetGrade: '5', instructionalText: null });
+    expect(correction.run('analysis-a', 'The dog run.', 'The dog runs.', [])).toBe(true);
+    expect(correction.fresh).toHaveBeenCalledWith(expect.objectContaining({ id: 'analysis-a' }), 'The dog runs.');
     expect(h.state.history[0].data).not.toHaveProperty('localStats');
     expect(h.state.generatedContent.data).not.toHaveProperty('localStats');
   });
@@ -407,13 +445,22 @@ describe('main resource host: learner studio boundaries and Notebook wiring', ()
       history, NON_EXPORTABLE_TYPES: new Set(), window: { AlloModules: { StudioResponse: studio } }, isTeacherMode, studentResponses
     })();
   }
-  function submissionParts(history, studentResponses, studio = null) {
-    const begin = source.indexOf('      const relevantTypes = [', source.indexOf('  const handleSubmitAssignment ='));
-    const end = source.indexOf('      const submissionData =', begin);
-    if (begin < 0 || end < 0) throw new Error('Submission data boundary missing');
-    return new Function('history', 'studentResponses', 'window', 'sanitizeSubmissionData', source.slice(begin, end) + '\nreturn {cleanContent,submissionResponses};')(
-      history, studentResponses, { AlloModules: { StudioResponse: studio } }, items => structuredClone(items)
-    );
+  // Runs the real handleSubmitAssignment and reads the payload it hands to the download lane
+  // (no mailbox or live session here), so both response aliases are checked where they leave.
+  async function submissionParts(history, studentResponses, studio = null) {
+    if (studio) window.AlloModules.StudioResponse = studio; else delete window.AlloModules.StudioResponse;
+    const downloadSubmissionBackup = vi.fn();
+    const submit = extracted('handleSubmitAssignment', {
+      history, studentResponses, sanitizeSubmissionData: items => structuredClone(items),
+      studentProjectSettings: {}, pasteEvents: [], globalPoints: 0, adventureState: { level: 1 }, gameCompletions: {},
+      _alloCheckpointRecordsRef: { current: [] }, _alloLedgerRef: { current: null }, alloStableAssignmentId: () => 'assignment-a',
+      downloadSubmissionBackup, addToast: vi.fn(), setIsSaveActionPulsing: vi.fn(), warnLog: vi.fn(), t: key => key
+    });
+    expect(await submit('Learner', {})).toMatchObject({ ok: true, delivery: 'download' });
+    expect(downloadSubmissionBackup).toHaveBeenCalledOnce();
+    const payload = downloadSubmissionBackup.mock.calls[0][0];
+    expect(payload.answers).toBe(payload.responses);
+    return { cleanContent: payload.content, submissionResponses: payload.responses, payload };
   }
 
   it('omits all four learner studio types from Notebook and export while the response module is unavailable', () => {
@@ -456,22 +503,22 @@ describe('main resource host: learner studio boundaries and Notebook wiring', ()
     expect(setGeneratedContent).toHaveBeenCalledTimes(1);
   });
 
-  it('does not export raw studio responses through either submission lane when the module is unavailable', () => {
+  it('does not export raw studio responses through either submission lane when the module is unavailable', async () => {
     const history = [...entries(), quiz];
     const responses = Object.fromEntries(history.map(item => [item.id, item.type === 'quiz' ? { 0: 'Quiz answer' } : { studio: { notes: 'PRIVATE raw work', image: 'data:image/png;base64,big' } }]));
-    const result = submissionParts(history, responses);
+    const result = await submissionParts(history, responses);
     expect(result.cleanContent).toEqual([quiz]);
     expect(result.submissionResponses.quiz).toEqual({ 0: 'Quiz answer' });
     expect(JSON.stringify(result)).not.toContain('PRIVATE');
     expect(JSON.stringify(result)).not.toContain('data:image');
   });
 
-  it('routes studio submission content and response aliases through the bounded adapter', () => {
+  it('routes studio submission content and response aliases through the bounded adapter', async () => {
     const history = entries();
     const responses = Object.fromEntries(history.map(item => [item.id, { studio: { notes: 'PRIVATE raw notes' } }]));
     const toSubmission = vi.fn(item => ({ id: item.id, type: item.type, data: { response: 'Allowed learner work' } }));
     const toResponseEntries = vi.fn(item => ({ [item.id]: { studio: { response: 'Allowed learner work' } } }));
-    const result = submissionParts(history, responses, { supports: type => kinds.includes(type), toSubmission, toResponseEntries });
+    const result = await submissionParts(history, responses, { supports: type => kinds.includes(type), toSubmission, toResponseEntries });
     expect(toSubmission).toHaveBeenCalledTimes(4); expect(toResponseEntries).toHaveBeenCalledTimes(4);
     expect(result.cleanContent).toHaveLength(4);
     expect(Object.keys(result.submissionResponses)).toHaveLength(4);

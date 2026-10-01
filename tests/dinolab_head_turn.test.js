@@ -1,10 +1,10 @@
-﻿// Dino Lab - the reconstruction breathed, blinked and swayed its tail, but
+// Dino Lab - the reconstruction breathed, blinked and swayed its tail, but
 // its neck only ever CHANGED SCALE. It never turned.
 //
 // An animal that never looks anywhere reads as a model with a chest pump.
-// The idle head-turn is two slow sines on the shared motion clock, so it
-// inherits the pause and reduced-motion contract the rest of the loop already
-// honours rather than carrying its own guard.
+// The idle head-turn is two slow sines on the shared motion clock, so pausing
+// freezes the current pose. The connected-look gate preserves the rest pose
+// in evidence, study and reduced-motion views.
 //
 // These tests run the tool's OWN expressions, extracted from source. A
 // retyped copy passes even when the shipped code is broken - that happened on
@@ -15,12 +15,18 @@ import { readFileSync } from 'node:fs';
 const SRC = readFileSync('stem_lab/stem_tool_dinolab.js', 'utf8');
 
 function lookFn() {
-  const open = SRC.indexOf('var lookY = Math.sin');
-  expect(open, 'the head-turn was not found').toBeGreaterThan(-1);
+  const open = SRC.indexOf('var connectedLook =');
+  expect(open, 'the connected head-turn gate was not found').toBeGreaterThan(-1);
   const close = SRC.indexOf('idleMotion.neck.rotation.y', open);
+  // Extract the production gate as well as both waves. The default fixture is
+  // the moving life view; evidence and reduced-motion contexts stay neutral.
   // eslint-disable-next-line no-new-func
-  return new Function('idleTime', 'idleMotion',
+  const run = new Function('idleTime', 'idleMotion', 'props', 'cameraStudy',
+    'cameraTargetIsEvidence', 'reducedMotionRef',
     SRC.slice(open, close) + '\nreturn { lookY: lookY, lookX: lookX };');
+  return (idleTime, idleMotion, context = {}) => run(idleTime, idleMotion,
+    { showSkeleton: context.showSkeleton ?? false }, context.cameraStudy ?? 'full',
+    context.cameraTargetIsEvidence ?? false, { current: context.reducedMotion ?? false });
 }
 
 function motionStep() {
@@ -82,17 +88,31 @@ describe('the head actually turns', () => {
 
 describe('it obeys the motion contract already in the loop', () => {
   it('freezes when motion is off', () => {
-    // Reduced motion and the pause button both drive running=false. The
-    // head-turn reads idleTime, so a frozen clock must mean a still head.
     const step = motionStep();
     const clock = { last: null, elapsed: 0 };
-    for (let i = 0; i < 60; i++) step(clock, 1000 + i * 16, false);
-    expect(clock.elapsed, 'the clock advances while motion is off').toBe(0);
-
-    const f = lookFn();
-    expect(f(clock.elapsed, { phase: 3.29 })).toEqual(f(clock.elapsed, { phase: 3.29 }));
+    for (let i = 0; i < 60; i++) step(clock, 1000 + i * 16, true);
+    expect(clock.elapsed).toBeGreaterThan(0.5);
+    const f = lookFn(), pausedAt = clock.elapsed;
+    const poseBeforePause = f(pausedAt, { phase: 3.29 });
+    for (let i = 0; i < 60; i++) {
+      step(clock, 3000 + i * 16, false);
+      expect(clock.elapsed, 'the clock advances while paused').toBe(pausedAt);
+      expect(f(clock.elapsed, { phase: 3.29 })).toEqual(poseBeforePause);
+    }
   });
 
+  it.each([
+    { label: 'skeleton view', context: { showSkeleton: true } },
+    { label: 'head study', context: { cameraStudy: 'head' } },
+    { label: 'neck study', context: { cameraStudy: 'neck' } },
+    { label: 'evidence target', context: { cameraTargetIsEvidence: true } },
+    { label: 'reduced motion', context: { reducedMotion: true } },
+  ])('keeps the rest pose in the $label', ({ context }) => {
+    const f = lookFn();
+    for (const t of [0, 5, 30, 90, 240]) {
+      expect(f(t, { phase: 3.29 }, context)).toEqual({ lookY: 0, lookX: 0 });
+    }
+  });
   it('advances when motion is on', () => {
     const step = motionStep();
     const clock = { last: null, elapsed: 0 };
@@ -101,7 +121,7 @@ describe('it obeys the motion contract already in the loop', () => {
   });
 
   it('reads the shared clock rather than wall time', () => {
-    const open = SRC.indexOf('var lookY = Math.sin');
+    const open = SRC.indexOf('var connectedLook =');
     const block = SRC.slice(open, SRC.indexOf('idleMotion.neck.rotation.x', open));
     expect(block).toContain('idleTime');
     expect(block, 'the head-turn bypasses the pausable clock')

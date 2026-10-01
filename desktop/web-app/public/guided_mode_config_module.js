@@ -64,10 +64,10 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
     { id: 'resource-specific', label: 'Resource-specific exports', options: ['Adventure Storybook HTML (optional narration)', 'Persona private-session JSON + HTML transcript'] },
   ];
   const GUIDED_STEPS = [
-    { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Paste or type the text you want to adapt. Everything else builds from it.', success: 'Source captured. Now let us find what students will struggle with.' },
+    { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Choose, paste, or type the original source for your lesson. Keep its wording and learning goal in view as you add supports.', success: 'Source captured. Review the learning goal and the supports students may need.' },
     { id: 'analysis', phase: 'understand', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level, key concepts, and tricky vocabulary.', success: 'Analysis done. That shows you where to scaffold.' },
     { id: 'glossary', phase: 'access', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
-    { id: 'simplified', phase: 'access', label: 'Text Adaptation', action: 'Create a simplified version at a reading level your students can access.', success: 'Adapted text ready. Compare it with the original for accuracy and check that it preserves your learning goal before sharing.' },
+    { id: 'simplified', phase: 'access', label: 'Original with Supports', action: 'Choose Read original with supports to keep the exact source text. Create an adapted companion only when it serves your learning goal; review any changed meaning before sharing.', success: 'Reading ready. Review the original and its word help, check any optional adaptation for accuracy, then preview the student experience before delivery.' },
     { id: 'ui-tool-wordsounds', phase: 'access', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
     { id: 'outline', phase: 'access', label: 'Visual Organizer', action: 'Generate a visual organizer so students can see how the ideas connect.', success: 'Organizer ready. Structure helps content stick.' },
     { id: 'anchor-chart', phase: 'access', label: 'Anchor Charts', action: 'Make an anchor chart of the big ideas to keep on display.', success: 'Anchor chart ready to post.' },
@@ -93,7 +93,7 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
   ];
   const GUIDED_PRESETS = [
     { id: 'core-lesson', label: 'Build a core lesson', description: 'A balanced path from analysis through directions and delivery.', stepIds: ['analysis', 'glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions'] },
-    { id: 'reading-access', label: 'Adapt a reading', description: 'Analyze the passage, add vocabulary, adapt the text, then review and deliver it. Add other supports if needed.', stepIds: ['analysis', 'glossary', 'simplified', 'directions'] },
+    { id: 'reading-access', label: 'Read original with supports', description: 'Choose the source, review vocabulary and the original with supports, then preview and deliver. An adapted companion and other tools are optional.', stepIds: ['analysis', 'glossary', 'simplified', 'directions'] },
     { id: 'assessment', label: 'Build an assessment', description: 'Create questions, evidence tasks, alignment, directions, and a delivery-ready package.', stepIds: ['analysis', 'faq', 'dbq', 'quiz', 'alignment', 'lesson-plan', 'directions'] },
     { id: 'engagement', label: 'Boost engagement', description: 'Add visual, discussion, applied, interactive, and game-based options, then assign and deliver.', stepIds: ['image', 'brainstorm', 'applied-challenge', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'directions'] },
     { id: 'take-home', label: 'Create take-home work', description: 'Build accessible independent work with directions, assessment, and a shareable delivery path.', stepIds: ['analysis', 'glossary', 'simplified', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
@@ -170,9 +170,13 @@ async function generateGuidedPlanFromGoal(rawGoal, refinementContext = null, dep
     const fallbackPlan = () => {
       const refinementLower = refinement.toLowerCase();
       const lower = (goal + ' ' + refinement).toLowerCase();
-      const selected = new Set(refinement && currentPlan?.stepIds?.length ? currentPlan.stepIds : ['analysis', 'lesson-plan']);
+      const readingGoal = /\b(read\w*|passage|text|vocab\w*|language|multilingual|ell)\b/.test(lower);
+      const selected = new Set(refinement && currentPlan?.stepIds?.length ? currentPlan.stepIds : readingGoal ? ['analysis', 'glossary', 'simplified'] : ['analysis', 'lesson-plan']);
       const add = (...ids) => ids.forEach(id => { if (validStepIds.has(id)) selected.add(id); });
-      if (/read|text|vocab|language|multilingual|ell|access|scaffold|differentiat/.test(lower)) add('glossary', 'simplified', 'outline', 'image', 'sentence-frames');
+      if (readingGoal) add('glossary', 'simplified');
+      if (/\b(visual|picture|image|diagram)\b/.test(lower)) add('image');
+      if (/\b(organizer|outline|concept map)\b/.test(lower)) add('outline');
+      if (/\b(writing|sentence frames?|writing scaffolds?)\b/.test(lower)) add('sentence-frames');
       if (/assess|quiz|test|check|evidence|standard/.test(lower)) add('faq', 'dbq', 'quiz', 'alignment');
       if (/engag|discuss|collabor|project|creative|choice|game|interactive/.test(lower)) add('brainstorm', 'concept-sort', 'persona', 'adventure', 'quiz');
       if (/math|stem|science|hands-on|experiment/.test(lower)) add('image', 'math', 'quiz');
@@ -188,7 +192,7 @@ async function generateGuidedPlanFromGoal(rawGoal, refinementContext = null, dep
         const keep = new Set(priorityOrder.filter(id => selected.has(id)).slice(0, 5));
         Array.from(selected).forEach(id => { if (!keep.has(id)) selected.delete(id); });
       }
-      if (selected.size < (refinement ? 2 : 5)) add('glossary', 'simplified', 'image', 'quiz');
+      if (!selected.size) add('analysis');
       const deliverySetting = /offline|paper|print/.test(lower) ? 'print' : /lms|canvas|schoology|moodle|classroom/.test(lower) ? 'lms' : /live|whole class|together/.test(lower) ? 'live' : 'take-home';
       const deliveryPriority = /offline|low.?connect|no internet/.test(lower) ? 'low-connectivity' : /edit|revise|collaborative document/.test(lower) ? 'editable' : /assess|quiz|test/.test(lower) ? 'assessment' : /interactive|engag|game/.test(lower) ? 'interactive' : 'accessible';
       return normalizePlan({
@@ -218,7 +222,7 @@ ${goal}${refinementBlock}
 SUPPORTED OPTIONAL STEPS:
 ${JSON.stringify(catalog)}
 
-Protected steps Source Material, Assignment Directions & Goals, Preview/Package/Deliver, and Review/Finish are added automatically. Select only useful optional step IDs. Prefer a focused path of 4-10 optional steps, ordered as they should be completed. Match the delivery setting and priority to the stated constraints.
+Protected steps Source Material, Assignment Directions & Goals, Preview/Package/Deliver, and Review/Finish are added automatically. Select only useful optional step IDs. Prefer a focused path of 2-7 optional steps, ordered as they should be completed; use more only when the goal needs them. For a reading goal, the simplified step offers the exact original with supports; creating an adapted companion is optional. Preserve the teacher's explicit activity sequence and choices. Match the delivery setting and priority to the stated constraints.
 
 Return ONLY JSON:
 {"title":"short plan name","summary":"what this path will build","rationale":"why this path fits","stepIds":["supported-id"],"stepReasons":{"supported-id":"short reason"},"estimatedMinutes":30,"deliverySetting":"take-home|print|live|lms","deliveryPriority":"accessible|editable|assessment|interactive|low-connectivity","assumptions":["short assumption"]}`;

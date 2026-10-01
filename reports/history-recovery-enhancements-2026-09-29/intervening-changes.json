@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-30T02:09:37.199Z",
+  "paths": [
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js",
+    "lang/french.js",
+    "desktop/web-app/public/lang/french.js",
+    "lang/spanish_latin_america.js",
+    "desktop/web-app/public/lang/spanish_latin_america.js"
+  ]
+}

@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { hubTile, learningToolsCard } from './helpers/learning_hub';
 
 /**
  * Render smoke test — open each major surface and assert it mounts without a
@@ -11,18 +12,19 @@ import { test, expect, Page } from '@playwright/test';
  * object-vs-array TypeError), useEffect-body refs, and anything the host's
  * ErrorBoundary catches. Runs against the deployed app (playwright baseURL).
  *
- * Selectors are the ones proven in specs 06 (STEM Lab) and 07 (SEL Hub /
- * StoryForge / AlloHaven). To extend: add a {name, tile} once the tile's
- * accessible text is confirmed (e.g. Word Sounds, the Teacher dashboard — the
- * surfaces that crashed this cycle; their render-crash class is already covered
- * by the static gate, so this is additive runtime coverage).
+ * Selectors come from ./helpers/learning_hub (shared with specs 03, 04, 06, 07):
+ * the launch pad's [data-pathway="learning"] card, then a tile by its
+ * data-hub-id. To extend: add a {name, hubId} from view_learning_hub_modal_source.jsx
+ * (e.g. Word Sounds, the Teacher dashboard — the surfaces that crashed this cycle;
+ * their render-crash class is already covered by the static gate, so this is
+ * additive runtime coverage).
  */
 
-const SURFACES: { name: string; tile: RegExp }[] = [
-  { name: 'STEM Lab', tile: /STEM Lab.*interactive math/i },
-  { name: 'SEL Hub', tile: /SEL Hub.*self-awareness/i },
-  { name: 'StoryForge', tile: /StoryForge/i },
-  { name: 'AlloHaven', tile: /AlloHaven.*focusing/i },
+const SURFACES: { name: string; hubId: string }[] = [
+  { name: 'STEAM Lab', hubId: 'stem-lab' },
+  { name: 'SEL Hub', hubId: 'sel-hub' },
+  { name: 'StoryForge', hubId: 'storyforge' },
+  { name: 'AlloHaven', hubId: 'allohaven' },
 ];
 
 // App-specific crash signatures: the ErrorBoundary/CDN error logs + uncaught
@@ -47,7 +49,7 @@ function captureFatals(page: Page): string[] {
 async function openLearningTools(page: Page) {
   await page.goto('./');
   await page.waitForTimeout(3000);
-  await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+  await learningToolsCard(page).click({ force: true });
   await page.waitForTimeout(2500);
 }
 
@@ -63,7 +65,7 @@ test.describe('Render smoke — surfaces mount without a fatal error', () => {
     test(`open ${s.name} -> no fatal error`, async ({ page }) => {
       const fatals = captureFatals(page);
       await openLearningTools(page);
-      await page.locator('button').filter({ hasText: s.tile }).first().click({ force: true });
+      await hubTile(page, s.hubId).click({ force: true });
       await page.waitForTimeout(7000);
       expect(fatals, `${s.name} produced fatal(s):\n${fatals.join('\n')}`).toEqual([]);
     });

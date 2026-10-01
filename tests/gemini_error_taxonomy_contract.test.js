@@ -21,7 +21,8 @@ const clsTail = gem.indexOf('\n    };', clsEnd) + 7; // the FUNCTION's close, no
 // _isCanvasEnv is only consulted for user-facing WORDING inside the auth branch — kind is env-free.
 const _classifyGeminiError = new Function('_isCanvasEnv', gem.slice(clsStart, clsTail) + '\nreturn _classifyGeminiError;')(false);
 
-const twStart = gem.indexOf('const _throwClassified = (err) => {');
+const twStart = gem.indexOf('const _throwClassified = (err, showBanner = true) => {');
+if (twStart < 0) throw new Error('typed thrower source anchor not found');
 const twEnd = gem.indexOf('\n    };', twStart) + 7;
 const mkThrower = new Function('_classifyGeminiError', '_showQuotaBanner', '_isCanvasEnv',
   gem.slice(twStart, twEnd) + '\nreturn _throwClassified;');

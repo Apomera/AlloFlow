@@ -1,0 +1,1564 @@
+{
+  "title": "Kitchen Lab recipe evidence",
+  "version": 1,
+  "exportedAt": "2026-09-29T11:32:18.951Z",
+  "scope": "Illustrative recipe simulation; not a validated predictor of real cooking temperatures or times. Written explanations require human review.",
+  "cooks": [
+    {
+      "title": "Tomato & garlic pasta",
+      "servings": 2,
+      "mode": "demonstrate",
+      "simulatedSeconds": 630,
+      "status": "Recipe completed independently",
+      "criteria": [
+        {
+          "label": "Recipe portion measured",
+          "met": true
+        },
+        {
+          "label": "Pasta checked and slightly firm",
+          "met": true
+        },
+        {
+          "label": "Tomatoes cut to size and softened, without scorching",
+          "met": true
+        },
+        {
+          "label": "Sauce coats the pasta",
+          "met": true
+        },
+        {
+          "label": "Dish checked; both burners off",
+          "met": true
+        }
+      ],
+      "questionsCorrect": true,
+      "corrections": 0,
+      "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          10,
+          10,
+          10,
+          10
+        ],
+        "target": 10,
+        "min": 10,
+        "max": 10,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 6,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "juiceSinceMix": 0,
+        "liquidSinceMix": 0,
+        "lastMixedAt": 630,
+        "lastMethod": "simplified"
+      },
+      "panSurface": {
+        "enabled": true,
+        "sizeModel": true,
+        "pieces": [
+          {
+            "index": 0,
+            "x": -0.15634969859648967,
+            "z": -0.08918952712503209,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.94140799999998,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.74
+          },
+          {
+            "index": 1,
+            "x": 0.31206315881874974,
+            "z": -0.07082785404107478,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.001888000000002,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          },
+          {
+            "index": 2,
+            "x": -0.26201571911637933,
+            "z": 0.37808433310033707,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.0018879999999983,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.952,
+            "contact": 0.87
+          },
+          {
+            "index": 3,
+            "x": -0.024328683196856122,
+            "z": -0.1783482973675583,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9701359999999892,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.74
+          },
+          {
+            "index": 4,
+            "x": 0.2460578245022737,
+            "z": 0.2045862825343094,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 1,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9701359999999877,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          },
+          {
+            "index": 5,
+            "x": -0.4594709921591395,
+            "z": 0.022054644959644695,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 1,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9383839999999888,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 0.87
+          },
+          {
+            "index": 6,
+            "x": 0.12674892578919725,
+            "z": -0.12780731517125524,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 1,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.992815999999998,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 7,
+            "x": -0.012683956844939934,
+            "z": 0.31974852187110375,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9928159999999986,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 8,
+            "x": -0.29702384502252477,
+            "z": -0.35125038859485297,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9323359999999992,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 1
+          },
+          {
+            "index": 9,
+            "x": 0.17854443443567494,
+            "z": 0.022844800985015585,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9610640000000013,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.48
+          },
+          {
+            "index": 10,
+            "x": -0.26149042814245255,
+            "z": 0.1844525846657532,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.961063999999995,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 11,
+            "x": 0.09808129902538393,
+            "z": -0.44942191622293326,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 3,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9928159999999944,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 1
+          },
+          {
+            "index": 12,
+            "x": 0.09048655699352512,
+            "z": 0.1556026445901789,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 3,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.992815999999998,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 13,
+            "x": -0.30547213455118655,
+            "z": -0.09532457717053759,
+            "crushed": 2,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 3,
+            "top": 0,
+            "bottom": 0,
+            "soft": 1.9383839999999934,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          }
+        ],
+        "crowded": 8,
+        "scorched": 0,
+        "sizeSummary": "Prepared widths: 10 mm. Each representative piece keeps its width; smaller pieces brown or soften faster under matching conditions.",
+        "summary": "8 of 14 pieces are close together. Crowding reduces contact; the pan center runs hotter."
+      },
+      "panPosition": {
+        "site": "burner",
+        "x": 1.02,
+        "z": -0.45,
+        "heat": 0
+      },
+      "waterHandling": {
+        "capacity": 200,
+        "saved": 150,
+        "used": 50,
+        "remaining": 0,
+        "scoop": 0,
+        "drained": 0
+      },
+      "drying": {
+        "enabled": true,
+        "areas": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "remaining": 0,
+        "fraction": 0,
+        "cloth": 0,
+        "capacity": 8,
+        "surfaceWater": 0,
+        "clothWater": 0,
+        "complete": true
+      },
+      "pastaHandling": {
+        "enabled": true,
+        "groups": [
+          {
+            "index": 0,
+            "x": 0.27712812921102037,
+            "z": 0.15999999999999998,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 1,
+            "x": 1.959434878635765e-17,
+            "z": 0.32,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 2,
+            "x": -0.2771281292110203,
+            "z": 0.16000000000000011,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 3,
+            "x": -0.2771281292110204,
+            "z": -0.15999999999999992,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 4,
+            "x": -5.878304635907295e-17,
+            "z": -0.32,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 5,
+            "x": 0.2771281292110204,
+            "z": -0.1599999999999999,
+            "cling": 0,
+            "separated": true
+          }
+        ],
+        "clumped": 0,
+        "separated": 6,
+        "summary": "Pasta drained. The strands are separated."
+      },
+      "tomatoHandling": {
+        "enabled": true,
+        "pieces": [
+          {
+            "index": 0,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 1,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 2,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 3,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 4,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 5,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 6,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 7,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 8,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 9,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 10,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 11,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 12,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          },
+          {
+            "index": 13,
+            "stage": 2,
+            "juice": 0,
+            "texture": "crushed",
+            "ready": false
+          }
+        ],
+        "crushed": 14,
+        "split": 0,
+        "juiceRemaining": 0,
+        "juiceReleased": 60,
+        "fraction": 1,
+        "summary": "All 14 representative pieces are crushed into the sauce."
+      },
+      "garlicPreparation": {
+        "cloves": [
+          {
+            "index": 0,
+            "stage": 3,
+            "texture": "minced"
+          },
+          {
+            "index": 1,
+            "stage": 3,
+            "texture": "minced"
+          }
+        ],
+        "minced": 2,
+        "passes": 6,
+        "complete": true,
+        "summary": "Prepared garlic is in the sauce pan."
+      },
+      "serving": {
+        "total": 8,
+        "plates": [
+          4,
+          4
+        ],
+        "remaining": 0,
+        "served": 8,
+        "manual": false,
+        "started": false,
+        "balanced": true,
+        "ready": true,
+        "summary": "Plate 1: 4 of 4 spoonfuls · Plate 2: 4 of 4 spoonfuls. 0 left in the pan."
+      },
+      "inspections": [
+        {
+          "kind": "pasta",
+          "time": 600,
+          "label": "Tender with a slight bite",
+          "coreFraction": 0.12,
+          "compression": 0.4,
+          "observation": "A tiny pale center remains. The sample yields with slight resistance.",
+          "clumped": 0,
+          "range": {
+            "min": 0.9928922094810546,
+            "max": 0.9928922094810546
+          }
+        },
+        {
+          "kind": "sauce",
+          "time": 630,
+          "type": "coating",
+          "label": "Coating the spoon",
+          "closureSeconds": 2.6,
+          "observation": "The track closes gradually. A continuous layer stays on the spoon. All 14 representative pieces are crushed into the sauce.",
+          "tomatoTexture": "All 14 representative pieces are crushed into the sauce."
+        }
+      ],
+      "plan": "",
+      "reflection": "",
+      "answers": [
+        0,
+        1
+      ],
+      "explanations": [
+        {
+          "question": "Why did adding pasta lower the water temperature?",
+          "answer": "Cooler pasta absorbed heat."
+        },
+        {
+          "question": "Why lower the pan heat once the tomatoes release their juices?",
+          "answer": "A controlled simmer reduces the sauce with less risk of scorching."
+        }
+      ],
+      "pastaTexture": "Tender with a slight bite",
+      "sauce": "Soft, coating tomato sauce",
+      "review": {
+        "findings": [
+          {
+            "label": "Recipe portion measured",
+            "met": true,
+            "observation": "160 g weighed for 2 servings; recipe target 160 g.",
+            "nextPractice": "Keep weighing against the scaled recipe before cooking."
+          },
+          {
+            "label": "Pasta checked and slightly firm",
+            "met": true,
+            "observation": "Finished pasta: Tender with a slight bite. Last sample: Tender with a slight bite. Pasta was stirred in the pot. Group textures: Tender with a slight bite to Tender with a slight bite.",
+            "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
+          },
+          {
+            "label": "Tomatoes cut to size and softened, without scorching",
+            "met": true,
+            "observation": "Soft, coating tomato sauce. Prepared widths: 10–10 mm (simplified). Standard pan with 300 g of tomatoes.",
+            "nextPractice": "Keep the softened tomatoes at a controlled simmer while coordinating the pot."
+          },
+          {
+            "label": "Sauce coats the pasta",
+            "met": true,
+            "observation": "114 mL modeled sauce moisture; 50 mL reserved water added, 150 mL left in the jug. All 14 representative pieces are crushed into the sauce. 60 mL juice released by pressing.",
+            "nextPractice": "Keep adding saved water in small amounts and checking the coating."
+          },
+          {
+            "label": "Dish checked; both burners off",
+            "met": true,
+            "observation": "Final dish checked; pot burner off, pan burner off.",
+            "nextPractice": "Keep checking after your last adjustment and turning both burners off before plating."
+          }
+        ],
+        "timeline": [
+          {
+            "time": 90,
+            "event": "Produce entered the pan",
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+          },
+          {
+            "time": 120,
+            "event": "Pasta entered the pot",
+            "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+          },
+          {
+            "time": 330,
+            "event": "Garlic added",
+            "observation": "Garlic added. Watch its color as the pan heats."
+          },
+          {
+            "time": 600,
+            "event": "Pasta sampled",
+            "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen."
+          },
+          {
+            "time": 600,
+            "event": "Cooking water reserved",
+            "observation": "200 mL starchy cooking water reserved."
+          },
+          {
+            "time": 600,
+            "event": "Pasta drained",
+            "observation": "Pasta drained. Reserved water is available for the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Sauce loosened with saved water",
+            "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 1 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 1 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 2 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 2 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 3 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 3 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 4 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 4 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 5 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 5 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 6 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 6 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 7 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 7 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 8 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 8 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 9 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 9 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 10 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 10 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 11 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 11 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 12 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 12 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 13 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 13 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 14 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Softened tomato pressed into sauce",
+            "observation": "Piece 14 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Pasta and sauce combined",
+            "observation": "Drained pasta added and tossed through the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Finished dish checked",
+            "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 630,
+            "event": "Dish plated",
+            "observation": "Dish plated. Review the texture, sauce, and choices you made."
+          }
+        ]
+      },
+      "actions": [
+        {
+          "action": "wash",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Soap-and-water handwashing completed for at least 20 seconds in this model."
+        },
+        {
+          "action": "rinse",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Produce rinsed under running water."
+        },
+        {
+          "action": "cut",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Even 10 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
+        },
+        {
+          "action": "dry",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Excess surface water removed."
+        },
+        {
+          "action": "garlicPrep",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Garlic peeled and minced."
+        },
+        {
+          "action": "measure",
+          "value": 160,
+          "time": 0,
+          "accepted": true,
+          "observation": "Measured 160 g of dry pasta. The recipe calls for 160 g."
+        },
+        {
+          "action": "fill",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot filled with 1200 mL of fresh water."
+        },
+        {
+          "action": "potHeat",
+          "value": 3,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot burner high. The water temperature changes gradually."
+        },
+        {
+          "action": "oil",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "15 mL olive oil added."
+        },
+        {
+          "action": "panHeat",
+          "value": 2,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pan burner medium. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 30,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 60,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 90,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Near a simmer; Oil in the pan."
+        },
+        {
+          "action": "produce",
+          "value": null,
+          "time": 90,
+          "accepted": true,
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 120,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Boiling water; Tomatoes still firm."
+        },
+        {
+          "action": "pasta",
+          "value": null,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+        },
+        {
+          "action": "stirPot",
+          "value": null,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta stirred to separate the pieces."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 150,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 180,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 180,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 210,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 240,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 270,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 270,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 300,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 330,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "garlic",
+          "value": null,
+          "time": 330,
+          "accepted": true,
+          "observation": "Garlic added. Watch its color as the pan heats."
+        },
+        {
+          "action": "panHeat",
+          "value": 1,
+          "time": 330,
+          "accepted": true,
+          "observation": "Pan burner low. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 360,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 360,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 390,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 420,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 450,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 450,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 480,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 510,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 540,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 540,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 570,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 600,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "sample",
+          "value": null,
+          "time": 600,
+          "accepted": true,
+          "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen.",
+          "inspection": {
+            "kind": "pasta",
+            "time": 600,
+            "label": "Tender with a slight bite",
+            "coreFraction": 0.12,
+            "compression": 0.4,
+            "observation": "A tiny pale center remains. The sample yields with slight resistance.",
+            "clumped": 0,
+            "range": {
+              "min": 0.9928922094810546,
+              "max": 0.9928922094810546
+            }
+          }
+        },
+        {
+          "action": "reserve",
+          "value": null,
+          "time": 600,
+          "accepted": true,
+          "observation": "200 mL starchy cooking water reserved."
+        },
+        {
+          "action": "drain",
+          "value": null,
+          "time": 600,
+          "accepted": true,
+          "observation": "Pasta drained. Reserved water is available for the sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 600,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 630,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta drained; Dry; needs a splash."
+        },
+        {
+          "action": "water",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+        },
+        {
+          "action": "crushTomato",
+          "value": 0,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 1 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857146
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 0,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 1 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857146
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 1,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 2 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857146
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 1,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 2 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857146
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 2,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 3 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 2,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 3 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 3,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 4 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 3,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 4 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 4,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 5 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 4,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 5 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 5,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 6 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 5,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 6 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 6,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 7 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 6,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 7 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 7,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 8 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 7,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 8 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 8,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 9 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 8,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 9 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 9,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 10 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 9,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 10 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 10,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 11 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 10,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 11 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 11,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 12 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 11,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 12 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 12,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 13 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 12,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 13 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 13,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 14 splits under the masher. Press again for a finer texture. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "crushTomato",
+          "value": 13,
+          "time": 630,
+          "accepted": true,
+          "observation": "Piece 14 breaks down into the sauce. 2.1 mL of its retained juice released. Fold it through before checking the sauce.",
+          "interaction": "masher-press",
+          "transfer": {
+            "to": "sauce",
+            "from": "tomato",
+            "amount": 2.142857142857139
+          }
+        },
+        {
+          "action": "combine",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Drained pasta added and tossed through the sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 630,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "panHeat",
+          "value": 0,
+          "time": 630,
+          "accepted": true,
+          "observation": "Pan burner off. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite.",
+          "inspection": {
+            "kind": "sauce",
+            "time": 630,
+            "type": "coating",
+            "label": "Coating the spoon",
+            "closureSeconds": 2.6,
+            "observation": "The track closes gradually. A continuous layer stays on the spoon. All 14 representative pieces are crushed into the sauce.",
+            "tomatoTexture": "All 14 representative pieces are crushed into the sauce."
+          }
+        },
+        {
+          "action": "plate",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Dish plated. Review the texture, sauce, and choices you made."
+        }
+      ]
+    }
+  ]
+}

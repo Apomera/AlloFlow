@@ -1,0 +1,1977 @@
+{
+  "at": "2026-09-30T22:28:50.605Z",
+  "preview": {
+    "at": "2026-09-30T21:47:58.988Z",
+    "hostSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "shellSha256": "4f475fb818e0ad3541c133f76239ec7f40088a011f9b89ebd697fea6941e1be8",
+    "js": "main.0b99f45c.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "fixture": "Current full local app, real offline-history hydration and actual word-support editor/confirmation; no React state injection; service workers blocked.",
+  "results": [
+    {
+      "scenario": "save",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "storageStages": [
+        {
+          "name": "seeded",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:14:51.540Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:14:51.540Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": false,
+            "library": false
+          },
+          "titles": []
+        },
+        {
+          "name": "launch-ready",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:14:51.540Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:14:51.540Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": true,
+            "library": true
+          },
+          "titles": []
+        },
+        {
+          "name": "history-visible",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰¬v∧噀ݠ࠮砡㑍棄ᭌ.䐬Ꮝ嗷梈Ǽᐠ殉ڤ୯⭠⋳圵惔ᔄ沒䕮㝩ၵ䧭ဢ䖨æ汳ㅙ兠ևߵ筠\\ဠ稠ᯔ⋱㭫䜺䀣ᓩ㴍氨ቈ฼㏃ՀǊ璥穨棎ᐺ欨唢⯰᩵携崪橕䵶堎檕嵾娫䅄ᚒᒣ᫱␢ŢƬё᷁㎨碛匈助␲ᦉ穼㑝䄅!˘μ╃䘰㌩΀㡔㣴䘀ℛ㒶䩄䂾྿截䈱ᑺဠ夰壔⒵䗅ཆ⍤䢆嵏ྦႥ檁氅偀煔⠆涜琧䰰Р⎏!昪糲灢拷セᐬ䂸ᓷᐾↅ䃏⊮Е⁌璼䬘梘ℤ䐲䐁稷援єㄢ烤䀠⾶㕮或䏃౦㦐娠㿀僢ੵ戡崎䟓栾ჾᨾ佂惕慉஦焑ɶ̻⡈州㍯匹暋ዠ獘၇㾑矧ॄ盭ㇸ娚Ԅშݞ䒕༮ⱙ➢嗤⻙⺊䂹癅ሢᡩ䎵䏍匭⴬〢礄䶺璪粟剄ӫ䠰枸ବ⺻ࠡஸ䁩䉃搵䤢筤ਡఠऋ₼㐮䀠㣎őᦷჀ恕口㯑̩巚ሴᘵ䕀灟ᇢ碆瞅殭ˑ甴提咭䐄ࡂ䟁⑆敄䣕垌峞䚠㪠̳ᢺ孶册㣧兦ᴤ੼␢≈䴰扸䜲桔⥯牯䈢Ჳᾧ⧔㥭䂾䈢㳘؆㚪ˠ劘㳖႖⇯⦘㳂䨒໐òሻ䢀屟ӑ乤ʸ㠤䮐彉拼䃂㊲䙌ᗎ࣐✈浈烹佰瀠᥯⁣檐存㋜ẩຎǢ䡱ᔀ%⺠Ǵ硔疂⁕効尠ط晚侩乔ᯐ乌䯈瓎⸱瘔ࢰญ㏍෽劕梳❱ᖣ↶⹌䙨櫘Ꮡ⵮⚠瘈ᙍ䥛㹯⨒¦㋼঒㉌䀥䭸簼㐕痧᪡ᩪ⚰ᠬΰ渵㯕〷πм✰䤶㊠䵀䋂瑫̉〷ࣰሤ妶㉒孶摖嫼堡对濦ዖ氽嬲簡㬖㕿嬦⿊ɦ࠹᫰帷䈀ⱄ㦡ᯅ㫕ࣞ㮖毝㛽⧵㙥ⷠ䄎⛿㦡⏤禾溲签父篾⑱磹៣䠀俬䔞㿽Ⱑ䐨ҡ嫠管紪ީ㡓牁᫭ҁ机⊥晟㓡≄䖞索䜀⩂昹ᕞ汈᧝䗞ᘤ̌Ṗ䈑㨬䄩ῆ喩ᡂ⓹ⷝઽሡ♸澀⫇⢆ഉ᦯␹㩈擹卛ι䞒昷ᵣ栃愆䃙䧩奷⃦巾刧昙ӈᝅ徐ⵥᣎᐥ伄ᕑ㾍喵ⳇរˆ㌵㓔咚狘煵ᅏ摕尹唣䆐瞕廂Ý瓏乮秜㕍ḓ㷭㇑㜀旚㚯Г㒽巕ᶏ䔎Ⓡ珊ɽ熷伭ࠡ瑠⟏㷨ݓ⃒ᰟ⩒㚔㌘䲇ⱘ棽๽焏ࢸㅗᤖᾅ怸а檋✔棭䳠׾儃妫ዎೱℏ烺ƋṔ৘䈤⵽墣䖭ቫ⸥ẓ斶忯ᘶ࣍䲺斿᭹䀦尃⠥繕〱嶏噰c䛲ד೺䐥夐ᗒ䂔ᓢ㮌Ἂⷨ戥注巺㶹㯇ੰ㮟㛐䄎勮ΰ懫$䩛៊㇧ເ✧獚細⹊⛅໫ᷔ为玢ᰉ⊵㣾॒㍀⊉怳䙮ϴ仙岤♛㞷眮牪∊䩓⯼䢶ᗻ䭢ዐ⨸䤗▙眾ܹấ⍜㍬㱊䦘揝⥕୳ὃ回䀶婟撝៺綊㯈⿘ㅿ⨒傰Ⱥਲ绩柕䷹粼⸘㱧祽ᄭ罧匠柂⫠ᕠ栨ᱬް妭ϰጤ獹戀匋Ⳣੀሪ₄Рᰤ̳ࠠ)⥠ᡟᑸ曨務ऌส懬㗢ᐨ刘⁡Ґ䒨᢯ࢩʰ椵⥂境牁⌴ວ籾䈤媧ć䰔ᨤ䁁͡℧â╣䈡䚎沣ゃ॑匶だƁᙊ悌㛥㌺⅘Ṯ㡤䶑壾炂Ω䦗恢痮䌀┤糮ԕनᴭચ̷穂ፂ㑒磥ަ䒂Ę亢㤣墱ಳᥴ䕬䤫㖎☄َ燢䘁὜⢞⩲敜削㋆̕≮䠈ၦ悈䚤榜೰ⴵ勺ς㨷⇀㝡瑾䢙偁ᥕ塓㵤㉊严⡘昕罥䋩䒌ᘽᧀ໡廁妡⟶絿堚歨۠憀⭗䧄!ᖬµรᥓ̓煚⿌䙵ᄣẋ䆲欭ᣲ䵔␘ⱦ砹ⓔ此瓑ົ䐪ᰈ⾪偘ħ⑍㰺ˈሤ໸䶠瀤උ۠ᤲͪⶖံ(ᨮ䈹䖠Ϟ牮⌸䁍ጔň栴樦ѣ₾ᬭ拇捅んͨͨᦁ摜֔ሩɌŃ⻟ᅦᐮ䎰⼧࢖۬+勄˴〳偉᷂燛⤣၀෾ᐣ䱐拢嚰䤂⽝姄⪼ਬ惼̮捓↭∍ⱚ༁欥牚᭽⺩恖䥯ᅷ楤ڴ墥⒏乱๢⏀劁䇁öਉ枌☑ଠℊᣀ⺤Ϋథ峄۲哌卾仨䳼㦍䆩瑱丄ᣫܻ楌䄁狼Ðඹ⅓⏓ટ㋤ባ灩旨ق曐޾ഫ㦣嚽ཙ嶾㌩㻏Ϙ㛋એ䲴㾰䣩રᤨ〼惂ⴜ秠ڦ牼Ȍ䌪ⓤࡋ㠮凐ᤴ䍉Ƃ䁽఩䊸㌥䃤屡㓫ゖᐻ䆷ಪ皖磾ᷤᳯ絹䐠 ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": [
+            "Original heron reading",
+            "Heron lesson",
+            "River lesson"
+          ]
+        }
+      ],
+      "storageLogs": [
+        "[CDN] Attempting to load UtilsPure from: ./utils_pure_module.js?v=1300a2da3",
+        "[UtilsPure] Monolith shim upgraded from CDN module.",
+        "[UtilsPureModule] 17 utilities registered; monolith shim upgraded.",
+        "[CDN] UtilsPure script executed. Registration: SUCCESS"
+      ],
+      "promptVisible": true,
+      "selectedReadingVisible": true,
+      "persistedSupport": "Saved meaning from the manual-open browser workflow.",
+      "viewportOverflow": false,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "discard",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "storageStages": [
+        {
+          "name": "seeded",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:15:20.428Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:15:20.428Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": false,
+            "library": false
+          },
+          "titles": []
+        },
+        {
+          "name": "launch-ready",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:15:20.428Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:15:20.428Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": true,
+            "library": true
+          },
+          "titles": []
+        },
+        {
+          "name": "history-visible",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰¬v∻䀽䀧☮䒘Ôᜈ刻ᘠݤس囵氈㐡渴㒦䈫⟋⁂毴䬀娴犌օ㝗Ⲹ⻭暰ť䐠掌⧑ᳱ‥㎧欛†Ḱ;婂擛◠䵠ƴ擜༌вᐮœ冥အ喔䌚⒈圴ᶋ౵Ջ核喒ᛎ䇔䴶䷇碔崾俍́䤫Ც⋭㑲 傡挢ౡ桹扜ȅ㩉≲Ң妜场ᾈ㥠a⸡朲䠳й䉡堼ഢ㕂砰Ǻ⏇ी➧树ˁѪᎨሾ㉠ƃ㠠์䚩ይ㩾Ἤ〉㓃埫⁡抈俣嬙栯ᡀࠠ䛾ዘᘓ旡֫⻡㙰ᤲば湰㲵䬡庪᰷檢姲՛燁炤रℭ䐈⾯⠰棤◳ठÞ䴕ᶠᲮ䙑അ憈羞䅣Չ殨஗岾ហ㱧㲈㵜䖢殤剎෧挩ⱔ㛀儖㴍ც㉹㙫৬灠໣添ไਛ᫧ょ琳䡣ြ絑扚᳐ા൷৚૙唦㏸⩨҅ኮ⬮坬᫔棠؋䩗嗲؞罨䢆⹣ͼ澺ㅔ池м戡☱ག器ϺၰҀgⴤ燀㨠ǥ㠩䃭岥̡囎৽䐸⌌ᣐ僐噉Π˖෢ᮧ፼㐵䂉匽䛄㙟ၡ੝Հ嬹ᙥ嚻㜅穔Ǵ8䳤櫺䪭㇦ສᤈࡴ煀ᤵ⌈匶拘䭦冪⁴㸰ᤂ䴜൩兪㘠稰ᨅ惏৔⠶ኵ憅墥娖⵭愵ቯ䣕䀦䢰ṣā㱙䖒ဴ懠剻䄙✮瀥䦬䡑僕㮥ŗ↉掺撚⎠è㴢ñ䊹溶炬ⲓ㠮੠䓇 ᖔ.叠厫ड囔最P佑櫜㪑偽岕㊽㏁㨐寏僤忋㔽⒊瘳坠䵚壈ඬ䦕㋲⍵怽妌㥔᷏⁑♮涒ⵯ䠤ֶ炫妵㈠ᙺ搀য嗎泤۲䥔䃠〼䎐ᗭ喠尽@ㅘ䉨㦴ȭࢂⰧ■㱦䂰拴媱૪奁᫮狠竮斞ᢥ宀㛤䰀秧姊㻨᪝⠢ᡠ⓶䌐帯ʁ懴ݽ日垥㧫好㗆癮ᗂᚎȻ㩖㷴ؾ援礔௪箰ᯮ筂ߺ杞癟剛笞㖟穀䁘Ӷ緬ࠈ䡌⛡⾡ݶ呝ݘ椤ᕑ㷚ر打簈牗ɱ獀杉㮁⍭㙕磐ု㎑娷䗰㈰➝櫔❡煚暍౤環祒憛䅥ṣ梛⛬嵟⛱䍚撹氬摛ୀ崊睏ധᨹ摮䛲带欖窰潗查䃉ᔛƒᝥ壟撗惑䜛囔嚅泋氅妨囅ዝ榵Ꮂ圩彞圀⛐ఫϋ唕࠹病庂㧭㇑㞏ถ㚭חō⧄䀏ෘ甍ᔓ㱇奙ᶽ⠢瑬Ẉ㑠篂ɝ帜䇓਩ᆿ磃⎃⎏䃦嫭䘭愄ἶ礩匱㧗㌖⸡䁡ˆ᪇☬擭羭璮ය太獭㈪羕堆ᨃ※䑁䋥涨౺椤嬀ਃḹ㈜㦁〪拨噩磕䰣喾᪠စ⮞৶㶅Ęᒌၫᥭ呣䶯ɻᐣℬᗖ∆剜䙁仴䓽䏺䮺㭅㷓箋.㕌烙਼堿䕃䦘卌㤊㲗彳叱紌勊ℍ᧫▁䝛憾䡉ன焃ᕒ籊伞ᒅき▋嗫䉣妙ᾗ㝤吾ᓍᩝ沨ㅭ峔ŉʡ䜯ᩳ佑矑਀⫳浕⏼唷婙櫃⭕⨔ᵋ瀡嗍级憜埦勚崙䍅碿┩a坁栄仛⓼俱捿巧必樰倐㵐ʚ拄ŴڡǤ憙ᦸ桝Őݑ举Ŏ᫬Ⴢŀ刦⁠Ǡ‱ᢠ 䦴ƥ祅䊌Շ䠮愀嘬捼ᅢ䔿䈤ࡧѨ䆨碤䣉ັ⪢ᑦÁ਩℈C璀⏈㠦㱟⇀␲ࡔᨰ㡌ᅴ㱄ె燨ᬮᡳ͐猤Ķᦁ噆愌୕剳䘄஬⑗֬༺᐀⒴繘ᕼ呉ɐ⏬ࡠ桰䧱⣗凱₁ᄪᅣ➬⡘てဠ⒈᮱涹৩শ⒄朰歱牞⟂㜲ᑾȒኻ珅စ敂僊㹁ೡ乬ͤ㑆䰀暢棍ᛳ浃博ഥ㪗└ϥȑ䇌䆣毣Ŵ灊䋦់穬ቬ䎁ら䴠瘵琭吨㺷椝ῶ娠㈦ବ妜䵀)ⲁ磘爉冺᥏૲嶀㋩ဉࠈႦ溋䚴槂ῢ扗䍤㳄媋⒔墢䷤ฺ瑗䕰ᰢΤᗜദ吲Юᱭ䂐బ㖦愹ण攭㬰ଠк͢瓥䂝垓䝝ౠັ穞ᒈ⊌ͤ⇀༳ڂ市ዀ㠣␣⑉㌄ḡ㨲¢ᘮᅮ御冡⌴ݣ䡏Ψ㬢映׶剼橐ㇸᔍ妑᷉ư‖漴Ϭ⢄愶䱠༦ና憻䋉恀樭恀瑓⨸橎泣ᄆ๐❂ᇉ殈両㓄稵Ẵₙ▨橪簵ą扊ӆᐺࡕㄾ皑房࣐Ȧ冪ഉ䁈奠㗨⁭ᙪ䕑璼䍭⎺沸䝤೾€䢒廂栖㝍怫ݹ਽᫻჆筌⅄༧๼䊂㪋Y烰ᮿ淉愒䷩牐吊硛䆊磂糉☙Ң䢉঱䌾未˭枼ཅ悎摐㉬•审画±㡒䡆᠙壤䲉䍐Ⱔ◤ͭ嬷ち䰺㤐喇ឩ燜⛬忹䱠  ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": [
+            "Original heron reading",
+            "Heron lesson",
+            "River lesson"
+          ]
+        }
+      ],
+      "storageLogs": [
+        "[CDN] Attempting to load UtilsPure from: ./utils_pure_module.js?v=1300a2da3",
+        "[UtilsPure] Monolith shim upgraded from CDN module.",
+        "[UtilsPureModule] 17 utilities registered; monolith shim upgraded.",
+        "[CDN] UtilsPure script executed. Registration: SUCCESS"
+      ],
+      "promptVisible": true,
+      "selectedReadingVisible": true,
+      "persistedSupport": "A wading bird.",
+      "viewportOverflow": false,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "keep-editing",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "storageStages": [
+        {
+          "name": "seeded",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:15:52.503Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:15:52.503Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": false,
+            "library": false
+          },
+          "titles": []
+        },
+        {
+          "name": "launch-ready",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰¬v≌㙀ݩࠧ〡㑍棄ᭌ.䐬Ꮝ嗷梈Ǽᐠ殉ڤ୯⭠⋳圵惔ᔄ沒䕮㝩ၵ䧭ဢ䖨æ汳ㅙ兠ևߵ筠\\ဠ稠ᯔ⋱㭫䜺䀣ᓩ㴍氨ቈ฼㏃ՀǊ璥穨棎ᐺ欨唢⯰᩵携崪橕䵶堎檕嵾娫䅄ᚒᒣ᫱␢ŢƬё᷁㎨碛匈助␲ᦉ穼㑝䄅!˘μ╃䘰㌩΀㡔㣴䘀ℛ㒶䩄䂾྿截䈱ᑮၩ屩Ᵽ昪㉔⒦㗲礘ㄨ⻆ໞⴢܳ⊞㛷杠ᔡ(渀Y䅿\"昨ⴊ瘳㊡䠳ʺ犣摌堵瑱惾吥亳䥿യр䢢ႄὢ糺䂦䙀⸸䠠ؗ⛉汞梔ㆨ李୥簔ਸⅪ屠ᮽ椖㴝戻捣樄ⱚ居ᆐ渾ၪ慃㔥௑暉窃᳭㉸ງȣ㠎仨煃໹噛՟₼䈹ć梮∁斧ᔐ⫘䗷ᑭ⠳Ụ剠〈ᢒ奕婾嗄䘠⼼廙⺰俷穤䅓摠涺猬⊻ָࠡ䁩䉃搵䤡㭤ਡఠऋ₼㐮䀠㣎Ő榷Ⴠ恙团寑̨ᷚሴᘵ䕀灟ᓣ塺瞄⮭ˑ甴提咭䐄ࡂ䟁⑆敄䣙册峞䚡᪠̳ᢊ䍰凬㣡兦ᴤଌ␢≈䴰扸䜲梴㹯猗䈢Ჳᾡ⥴Ⅽ䂎䈢㳘؀㚪ˠ勸ⓖჶ㛩⧸㳇਒᫐òሻ䢀ⱇّ乤ʸ㠤䮐⽉拼㽂㊲㩘ᝎ像䜈ൈ特㝰瀠ᥗ⁣樰啚匌ẩຎǢ䡁ᔀ%⺠Ǵ砤犂⁙効尠ر暺宬乔ϕ์巈瑮⸴瘔ࢵ畍ⷊഽ䲕梃㍴ᖝ↰⹌剭⫘ු⸖⚥㘈੊䦻♩⨒¦㋼Ẓ㉌䀥䭸簼ㄕᗳᤡ᩼⚰ᠬΰ温㣕〷πФ✰䤶㊠㕀䋂瑫Ɖ〷ࣰሰ嬶扌塶ъ嫼堶壹࿦ᅖ氥嬲簶㦖敧堦矊Ʀࠡ᫰帷䈀瑐㬡䯑㥕僆㢖௅㕽燩㖥痠䊎竧㬡緰笾溬硾爪磾⑮穹䟵䠀㟸䚞濥⼞䐿稡⫷㢡紼ҩ桓燡䫹ہ机℥ه㙡籐䟞紴䜀牔昉䕆汈䧅䝞ᘤ̌乖䎑㨬䐑俒圩䡔♹痝ऽሶ♸ྀ⥇炒ຉᦻ✉機♹⍛¹㮌昇䵵攃Ć䉙ㇾ宷署彾刳枙壟摅⾏侥䣚᜙㜐៱澙圵瓓ᒚ峆〵擈囚ዘ玵䅛曵尡堝㺏㒕⻂ɝᓛ䶮ᧄ㟭不㽭懎㜀ׂ㔯帍㘽ⷉ῏㤚♇Ꮚƽ熫䰭࠶瑠篛㾰䳢б䠙ᇝッ៣⎊擦㬇㌏඙磣࡙叓㭎à₠半㇆㪀曟䌕ܥ䱹঒⛂ҟ⫵獉燀㗤Ⴂ攍䐤ⲉ౺瀱炾ᓒ縹バ㦌搶℘᫬ŵ䜺䀷獋⼪欽㊠尰㚀↹䛴Ⅽ䞣䶴Áᨶ嬡煲湦Ⴎ汤⻭涫䕚ው夛㖣笵ᚐᲬ๸௥懡㲳ᩚ㕌㫿ㇱ棼瑲敇㜉懅僫ᶁ䝩撳䖐憶᥼᙮弰㋰ዅ嗹敢⻸㲯㫗㱷睄咺⼄䑱⋼娮ᐢ佦ު⣯क壑珪䨉᫣橵珲ᲊ廊᫑簍ؓ羅唞縆㸷敲ᵴ籣ᴙ࿙Ҡ㽵ყ灮淀港澃俵捿崋灷秽ᠠ㵢倡⨦䄞技㲱䲈ạᠻ᥮༢ᝊ昰儡ၲ̀‡恀¸䀠j䨡䎙⋠㙙ᗨ㮀灶ʃ⸱⁥࿢Ȩ⎤②䒘䑨ᒦ瀹ѐ睄*ࠁ縹∢぀桘Ŝ⿁偄Ĩ僃偘ز⨼ာΖ搻̸䦭ᣓȠ଩ㅶ΃㘳ᣲৡ犓䉄殡䜗ळえ䯞ᣀ瑟挔၅咚䌤ᚯ⢰䒪➶ਚᄳᄤᯘ抡䍘ㄠ籢䅙૸䢬䠹㱧䚁ݕ㝅牺ᆑ慥炏ṉὊ⢞㙳敂刂ჯ瓤旴絨㓞ಉ⚸၍᫲洣党ấ㪗⏼࠻ಊ怹滔ᨅ✢呔㊚俇ℤ柶ଢ䳰ށ佯ⶠ丈㺷椝㧃素バ䖻擲 䫦ப䜶三䆳㣕ᓶᵏࣾ䯞䄯嚆傈䚺ሜᙃ㱔⇺ˇ᪛▨擼₁卣屵ǠΏᦋ惰ᕡ႟㛤氧 數㘡䢰໱⯑Ða倴ᕬⰫ浗ᢓ⣤Ɖែ煦䁆翰∺Α⢊ᖾṊ綿橠ᩣମ∀Ꮑၐᆀ儳₍䤸牑ₔᲢ硘䏐ڀ}ᕁ曃ԽŦ洷Ǻ䠹ğ㬑‼挦㨲㓤ĐᅃἉ告丼݀渠ݽᣁ櫄皬ᨮᄅɒḺ俚䔀ͫ䟞⤉∣婸䋄柮⢖⩂ၲㆡ傢⭁皇㙂碫@ᔸ傮䠢ָμ䰥⥤喳ᝮ摴桙曡䑔❭爠搧ᨋ暏㎒渠塵䭁䧉娒㏒戲ₐㄅ搦ᇆ堡伭˙㻼习征ษ玘ᷢ㕸傜擆粤䙨㒤咁ⱑ礤Ǭ暙怦䎒⸤癣Մ截䗚ݱ堡ଣᒣ冀ᚬӢ䱓ˠɼ⁴旐㬨ౡ䎭զ㢘眽扬戝瓤  ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": []
+        },
+        {
+          "name": "history-visible",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰¬潤ߐ‮䜀ā␡㑍棄ᭌ.䐬Ꮝ嗷梈Ǽᐠ殉ڤ୯⭠⋳圵惔ᔄ沒䕮㝱ၵ䧭ဢ䖨æ汳ㅙ兠ևߵ筠\\ဠ稠ᯔ⋱㭫䜺䀣ᓩ㴍氨ቈ฼㏃ՀǊ璥穨棎ᐺ欨唢⯰᩵携崪橕䵶堎檕嵾娫䉄ᚒᒣ᫱␢ŢƬё᷁㎨碛匈助␲ᦉ穼㑝䄅!˘μ╃䘰㌩΀㡔㣴䘀ℛ㒶䩄䂾྿截䈱ᑺဢ夰楻䢶䨲䲭ु䶔幞ౢ௉䏏䭠䇤壏䷕称Ҡ•ᮘ⦀埠Óȶ⛛ӹ₄ӡ⛙ℒୌ֚ᒐ࿊Ƈ┄埦䏢ࡄ₸ᴯ僞⻀⇃࠷ل\"籓⪖࿔ᴸ打䮥儝紥ذ勎ိ枔㶾羑ܑ儔礶ৎ२屗ިዐ⣺䅥涓᪝ᣮ㍹ᘧ᧡ǻ箷㩘䧧㚋໦俰❁٠㨔⏐碒懪㰵⹂痪㍴ӯㅉေ䉬᳌涍ႊ棃7䝀海⒇渝ᅀ䴒и獜憪厂C㌰ॐ䒙˒₎梢䁃\"ᶈᎭǰ.ᗠ♚㌄ᐸӔ㢖癀慇㝤䊥䋑␼ࠄ塮ཽ泊燀噝⊸瘵ᇐ粢ѱ瑉ӹ⒲ᓕ⶷៱偖倠抆Ͳ檴▮ᣔ⣧₢䎩h䔳∸䬱扺ન⨜䈐䁧ኇ烊㪬⧐ᷰ䁯ᜡ㲭兠場䜭ᛤ۫姊✯ᐲ㹡嘠ᩤ䎒఻܁♓䢠匮²渻敘宿摬剾䒥ᗬ᠑崳┼⭝樼&⼈࢚䨷❔厧元䷠㡲౅ᰠË倠㪾ҽ䱨Ӕ南!䋙孱煳䚤皃䖰甽᧫䉽㺢ኝ㗏㗣㏗໚᲎橥㿈㊫䖲䨊圧㙫⇩傍㴦䗲⮍䧊㹠წ宠⹬䖰Ò欿ά廕㦆恆䡩刦Ơ爻䍎囌̀琡ʩ戲⋬倽␰命ঀ浌̂ᨤ䄶ዤ䞶䫱ݶ家Ƕ孓磤曻˖承Ǯ滵⬖䃣畠烢Ɇ娷䌐㰣Ԯ၊畎曌ᛮ仲盍毂㭍烃㠰ⷡ嬎၀社ᏻ厾䯼䍾審௾⭉科簽碱⿧立㿱!⁚娎偟⁡兆ڜ硊壁㑙捨惑䜍⡀䔱࿿↱尢䖹絉⛻Ԫ㛑៥䂠嶫䛰Ṏ䆰ŋ畵ᅊ֩⭃㟂揄䇩䬳氪攂ൣⵆㄉ㵆䐹⭘枀卞澹紛⧙岐ᳰ❜㡖଀᥷᯴䆙὎ᐥ䓛瀓࣊ᓥ㽝崥ه法ዃᖅ佯ᓬ䋅᜵㝴圼ૈ┙㫗ɕ倍仛呠⟕ᔓ燶㚭׋㿏ᧄ㟭就㙭戏㿍⏛㝇พᳩ└畠珜㎓䇂ǽࠡ甏爫᥀儺習ᡖ⩒粔㇌ⲏ⼖⼐㞠䱑Ꮉ㬯㌀తࡪ㛆媏⚬栙⽰煹䖳᜴楀栓ⵞ㚾ᨮ屢э仸䅥䚳䗎̾⨆䮏斶ଯ᛬䦅ླⳠൺ燈Ξ૓焍㗶⠧䆦渥ᦤ浤೸砥奠⨷℻㐾啍撂Ԍ⑵淽䓚厲⧻⿖墟㕲朣䡁斠籢ᴷ奐揖凧ḑᵽ௮╂化憽ᩦී为瓜䭘眪ᤳᏢᔇ熦⌣⩦屼䱇淇䬗ᮐ┡癪⧍湨䴵ⷫ∂偋瑰竅ⴕཛ༾糅ṳ≜敡㳃囈᪳⢿Ǵ徟煺　㼇榝啓哯呐⿑硰䠠൒ઞ䔃媭検ๅ糼⸘⺡ޟ㷳g削䀵₈<☧䢹䚣栳ϓ㔁炂盌愪ဲՀ㈤<Ȣন Ӊ‸ྴⱦ枲岯㘮ց♕愴ѱ籀₤㡤䐸䎨Ҭ䢉ˉ慸㈒Ⴣਮ䐜⽢ɺ䎠叭稺ɠႣ⃁Π慅⇢ä㞌䇐ㆩᣳ୐‡ザᖀ㙖捓ു᰾❘≭㢸澐兎Ω㰁䆅晢灅ɼ朤窩нʪ㴭చᄳᅄᢘ报䎘ㄠ籪䅙۸䢬䤹≤♱ӕ㝅牚ᖑ慥焏Ṉ彊⦅Ṳᕒ刂ヨೄ柴䍬㓆争䄪梍໲ᵓ刈ᯀ窝撡㣮嚡䜊憾⪐ᕠ挧圚ش☣バ哭̕竤׾吋㻏橺㿴̫ɹ幭ဠӌ゘咐瓡䰹ި榍㏲䒫甛琰Ά㕦䠁⚣懅ᯣ≝偄◀㪉≭截ුᏥ⠼#尶席Ŵठތ⛠㠤۵䎀಩ȍ᫛ࠫ$ഥ⅔拠ỻ㥧ᚬ‶䦚༴㑜㐣Ɂ傗຦兵爂忸组ǄӐ爾͚धĶ̱ᨮ汱佃ਧ⇨ឣ䑛ʆ%楲㚊ᠱ栴囱㤍咡䠷窏ਡ昨め㍯䑱ᖾ㓴ᕮئႎț㺹ᄚ傖娾ݰ皢夶ද卤瀳⑇䃊瓂Ϻ㓂刷杈筆ᆰ⥐⃰䃋ĕ㏖᎘䖠ၵ౰❤ƥ䈢⹼ω≷䧗➄ઌᲶ惤婏✒ࢅΥ琶⿑㦎x᫯჉勹奛如ु㡈猄̲卸˯ڦ峾楮箸溯Ấί䇼፵䕇晪࿯䑄䕨ತᡖぱ⚖㴀ͣ㥎Ɩ↥ኂࠅ尧⣸ࢪ䆴䁑⟮䘤慬ᦢ恢⹀檅塛భ⃭䚥㍚㲇༂ᚆ纬戠  ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": [
+            "Original heron reading",
+            "Heron lesson",
+            "River lesson"
+          ]
+        }
+      ],
+      "storageLogs": [
+        "[CDN] Attempting to load UtilsPure from: ./utils_pure_module.js?v=1300a2da3",
+        "[UtilsPure] Monolith shim upgraded from CDN module.",
+        "[UtilsPureModule] 17 utilities registered; monolith shim upgraded.",
+        "[CDN] UtilsPure script executed. Registration: SUCCESS"
+      ],
+      "promptVisible": true,
+      "retryAfterKeepEditing": true,
+      "selectedReadingVisible": true,
+      "persistedSupport": "A wading bird.",
+      "viewportOverflow": false,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "storage-delayed",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "storageStages": [
+        {
+          "name": "seeded",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:17:40.466Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:17:40.466Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": false,
+            "library": false
+          },
+          "titles": []
+        },
+        {
+          "name": "launch-ready",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:17:40.466Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:17:40.466Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": true,
+            "library": true
+          },
+          "titles": []
+        },
+        {
+          "name": "history-visible",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰¬.∧䏠ݭ༐ÐÔᜈ刻ᘠݤس囵氈㐡渴㒦䈫⟋⁂毴䬀娴犌օ㝗Ⓒ⻭暰ť䐠掌⧑ᳱ‥㎧欛†Ḱ;婂擛◠䵠ƴ擜༌вᐮœ冥အ喔䌚⒈圴ᶋ౵Ջ核喒ᛎ䇔䴶䷇碔崾俍̀䤫Ც⋭㑲 傡挢ౡ桹扜ȅ㩉≲Ң妜场ᾈ㥠a⸡朲䠳й䉡堼ഢ㕂砰Ǻ⏇ी➧树ˁѪᚨČ䐺ⲳ◜漶⍤䦆嵏ྦᆥᩱ氅偀煊Ⰱ涜琧䰰Р⎏ᙌଘ榀䋥垀孈಩ᡈ㝈Ṫ斠潥ห畡ⴉʽ磰硢ҨႦ戔៧吨㒂ጉ䒠⚚仠๧⌸䚒烔㿟⃁䊴痤כ湯௠ṃ幔Ế⋡㗢⤷܃熤嘺᭰⢛ẖ䢅᥌孅䔆㡀ށ眍䜲ԝ䶃塓稩摁䠮㺸焽๸կۋ䓽ռ檣ᨌᕄɒ䥧ᖧ⯆ൺ㒀̕攻欉̟㿄⑓ᝁ䇎㟭ᢺ㙀Ȯㄠ匨䞱⭄ȍࡈɐC嚢㣰ᴠĂ尤悆湢䆠歷Ԏ戬ᆖ౸⡸⬴䇠Ż܁෣䧎ᨪ恔榮捲ᬿ䡀䔾䊰ⶬ䭂歭宒紺Ċ,⚂㖍╦夃ݥಔъ㢰ಪ冔⦫ㅼ◃⣥၊Ἠ಑⚞ۄ棅ᬠ㴨ഒ灷䓺ᐫ४烒汢洛ᛆ炪䥇摺怣⑨ཁ䂐帼拙ࠪ㄀⥍悜厧㠢擦␸桺巢䂻僔燭㉝ᇠạ慬睫㡦ᙙ尧Հ≳䀠૚'⨀⧥䒠歺㎐8➸畾ᵘ桎湚奮姰崘ⷷ梂⿵媮剕㬩毀⚽ⱴۦⓚ妉ᇊ瀮泖Ჺ໷倸升㛙ᛇ搢˫㡥泪夠୍㈐ӧ櫷㚂ΉⒺ₀ᠮ⇘ଆ櫠⸮䀰ᢼ⅄ᳪT䄦䑑ᘣ勠ṃ⁨ㆊ⵨䖅Ⲱ䶇㦀㶇㋟ౢ淐ᮂ☐㴃泵ᾄ൞吡ీኋ↘⼧䅐焊ώ猂毢崅泎嫳㭇૱ୗĭ崻Ἂ̯㈊㲚؅㷨ง㶱Ѝ㎿㬿䁟⤽綟᫟細‼ʋ㼆Д␶ᎀ埠䏋⨾䎼㒢સ廽̨焹縔㤻䅈禰㎴巐准嬺籸ࠧ姘洫挈ᤨᏞ畺Ꮐ碽㍖䙂㩨㲹ポ惂佁瑝历⺿厈憽㉬瘦㈽䖰⺕㮷䚣䴬片⎉⼣㖛㵨㞻琂恴䪝䃙ூ汿牛灸掝歺⭒癵瘒泤⭲䥾瓪䧩⮤澿⮐፸إ䇵檚䐬竲潑ᴆ壸寗䜛᭦䋻䂶哲‗䛼㪖䪙帳沼仮吡㩆པᩀ㷱ľ漞⃹䔤䣯籱凑凗悃ⶆ挦炒ྫ㲤榨峻妛ᜠ恀䅳൓匦㊆翦穧ۭⲥ㧆夥㿚氓഑倭戰憂盤ٍ㒢ⶐԑ伬夞᳐堥ㆄ⭄籺昡櫯ൠࠒ嗟ԋỒ䂜੖ࡅ䳆橁曧䅍䨡傦ૻᄓ⤾⌰枊⊎戍◭ᶲ廹緕䀧᪶㡼䔮Ⱟ抱擜⦶Ვṛ濉樈纖⥵႖䴅勐掽烯␴䗤碑䪹㸵➟੒堶動欅慁泜俛寂⨯੶䴾癤ᣆ湺´䅠控䵉枸篸䔐ᖉ皺刎⪫洼畱喺唚ີ砠櫶罣烞Ⰳ⥽⺜憲籯劤䁀殰琒❽劎⠈燏漃濲用⠘ẸŝㅲÊ͠䄂ボ䳬㐾䂸θ术·ආࡱ°⤣၀Āဨ䱠 ⓪â粲慖ʳ搧ゐ⬦㇎ࣁ⊯愢у䉄⃤㱤␴䝨啡੃p䔤傔1穐ᇴᰣḿ僰ሩкനᰶ࣊Ḳس㤄ට౉䆸㦢«೐欳ゖֺ楉挒צሻ䋦ޭਐቪ㼼૎⨴䄸ሆр㑈┈呻椈偐䢥ࣁ另ᐼᡃࠠቔ෨盬䔄䓫ቒ㎨㗈礿Ᏹᮩ੏ę७秲䝈઩Ⴕճ焨昬犀ᩃ⅔㍡㑶䮉皱榽ڢ嵛劚Ȃ䄘惶⃡瘁䃊㠵Ↄ௵絆ॆ⇐塔暠㬪稦樤Ὣ璞個ⴠᤣ֦Ⳟ⚰$噐籼㤔棭ಷ䖉⻐ᦄ䠔䐔ࡣフ捧炆䈀5丁儡⦢᫲ᵍ㓆焧ۚข吮¡愪漦䇊Ңήᎀᰦ̺懐䙤䂉ͽ䐥䀢ڡ僚ㆀ㾋崃佦ဧ⒝ྪᨱᬡ儰栧䓣ᣎ碩⠼òò੹㤯}Ҡ₫Ψ叏悈恱䔣億௡戽䃓\"痉᝕ౘ瘪ތ屎橠搠ϗ䔡猴ᥐ䗄ሸ䧯ڎેң桗c僭⢃⧛㌬䎸㣡Შ䛇ⷂ㠥劳桴穾⦋㪲弥⁙㢪䅉䔦䈭⳧嶼㢧扌¡咂䍚〪ᙰඒ࠳▲公㵇ჳ⤆孆ᇱ͗䡃ሼ埈娝䷫㠢懶⊧⛖柩廫ࡩϡ掷Ⴘ人怮㱔܄ފ㡜厒㲬ᔚ帮灺幈彊⦞⅃ቊ⊄ャ姢䝓㨇:ϩ㠻夬ಳࠠ圀㵦恄⸬利䖞㙑ጺレଡ঑ó㛥氰㌦๜ᕹ昃岏৓ဖ㌰  ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": [
+            "Original heron reading",
+            "Heron lesson",
+            "River lesson"
+          ]
+        }
+      ],
+      "storageLogs": [
+        "[CDN] Attempting to load UtilsPure from: ./utils_pure_module.js?v=1300a2da3",
+        "[UtilsPure] Monolith shim upgraded from CDN module.",
+        "[UtilsPureModule] 17 utilities registered; monolith shim upgraded.",
+        "[CDN] UtilsPure script executed. Registration: SUCCESS"
+      ],
+      "cacheRetainedBeforeAdapter": true,
+      "promptVisible": true,
+      "selectedReadingVisible": true,
+      "persistedSupport": "Saved meaning from the manual-open browser workflow.",
+      "viewportOverflow": false,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "phone-save",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "storageStages": [
+        {
+          "name": "seeded",
+          "data": {
+            "cache": {
+              "items": [
+                {
+                  "id": "original",
+                  "type": "simplified",
+                  "title": "Original heron reading",
+                  "data": "The heron walked through the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:27:36.606Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "instructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "same-text-supported",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceInstructionalText": {
+                    "schemaVersion": 1,
+                    "role": "primary",
+                    "form": "original",
+                    "sourceArtifactId": null,
+                    "primaryArtifactId": null,
+                    "designationSource": "workflow-default",
+                    "replacementAuthorization": {
+                      "authorized": false,
+                      "source": "none"
+                    },
+                    "complexity": {
+                      "requestedGrade": "",
+                      "calibrationTarget": "",
+                      "measuredGrade": null,
+                      "method": "",
+                      "status": "unavailable",
+                      "contentFingerprint": "",
+                      "measuredAt": "",
+                      "language": "English",
+                      "measurementScope": "",
+                      "measurementVersion": "",
+                      "extractionVersion": "",
+                      "rawFleschKincaidGrade": null,
+                      "displayFleschKincaidGrade": null,
+                      "averageSentenceLength": null,
+                      "averageSyllablesPerWord": null,
+                      "bodyCounts": null,
+                      "artifactCharacterCount": null,
+                      "bodyCharacterCount": null,
+                      "artifactFingerprint": "",
+                      "bodyFingerprint": "",
+                      "legacyArtifactMetrics": null
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "unitId": null,
+                  "config": {
+                    "language": "English",
+                    "instructionalText": {
+                      "schemaVersion": 1,
+                      "role": "primary",
+                      "form": "same-text-supported",
+                      "sourceArtifactId": null,
+                      "primaryArtifactId": null,
+                      "designationSource": "workflow-default",
+                      "replacementAuthorization": {
+                        "authorized": false,
+                        "source": "none"
+                      },
+                      "complexity": {
+                        "requestedGrade": "",
+                        "calibrationTarget": "",
+                        "measuredGrade": null,
+                        "method": "",
+                        "status": "unavailable",
+                        "contentFingerprint": "",
+                        "measuredAt": "",
+                        "language": "English",
+                        "measurementScope": "",
+                        "measurementVersion": "",
+                        "extractionVersion": "",
+                        "rawFleschKincaidGrade": null,
+                        "displayFleschKincaidGrade": null,
+                        "averageSentenceLength": null,
+                        "averageSyllablesPerWord": null,
+                        "bodyCounts": null,
+                        "artifactCharacterCount": null,
+                        "bodyCharacterCount": null,
+                        "artifactFingerprint": "",
+                        "bodyFingerprint": "",
+                        "legacyArtifactMetrics": null
+                      }
+                    }
+                  },
+                  "_artifactInstanceId": "original-instance"
+                },
+                {
+                  "id": "adapted",
+                  "_artifactInstanceId": "adapted-instance",
+                  "type": "simplified",
+                  "title": "Heron lesson",
+                  "data": "The heron walked slowly in the shallow water.",
+                  "dataEncoding": "text/v1",
+                  "sourceSnapshot": {
+                    "schemaVersion": 1,
+                    "text": "The heron walked through the shallow water.",
+                    "language": "English",
+                    "format": "plain-text",
+                    "sourceArtifactId": null,
+                    "capturedAt": "2026-09-30T22:27:36.606Z",
+                    "fingerprint": "source-utf16-v1-d039b683-43",
+                    "provenance": {
+                      "selection": "selected-text",
+                      "origin": "selected-source",
+                      "note": ""
+                    }
+                  },
+                  "sourceFamilyId": "birds",
+                  "instructionalText": {
+                    "form": "adapted",
+                    "role": "supplemental"
+                  },
+                  "config": {
+                    "language": "English",
+                    "grade": "3"
+                  },
+                  "adaptedReadingSupports": {
+                    "schemaVersion": 1,
+                    "sourceFingerprint": "source-utf16-v1-0561403b-45",
+                    "annotations": [
+                      {
+                        "id": "heron",
+                        "kind": "gloss",
+                        "start": 4,
+                        "end": 9,
+                        "quote": "heron",
+                        "text": "A wading bird.",
+                        "language": "English",
+                        "origin": "educator",
+                        "pinned": false,
+                        "priority": "helpful"
+                      }
+                    ],
+                    "suppressedAnnotations": [],
+                    "rejectedCount": 0,
+                    "coveredRanges": [],
+                    "skippedRanges": [],
+                    "status": "complete",
+                    "passageLength": 45,
+                    "shown": false
+                  }
+                },
+                {
+                  "id": "other",
+                  "_artifactInstanceId": "other-instance",
+                  "type": "simplified",
+                  "title": "River lesson",
+                  "data": "Rivers carry rainwater to the sea.",
+                  "dataEncoding": "text/v1",
+                  "config": {
+                    "language": "English"
+                  }
+                }
+              ]
+            },
+            "adapter": false,
+            "library": false
+          },
+          "titles": []
+        },
+        {
+          "name": "launch-ready",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰渠癤+Ϡݦ瘮砡㑍棄ᭌ.䐬Ꮝ嗷梈Ǽᐠ殉ڤ୯⭠⋳圵惔ᔄ沒䕮㝩ၵ䧭ဢ䖨æ汳ㅙ兠ևߵ筠\\ဠ稠ᮠᆢ棛◧ൠƴ擜県вᐮ๓冥အ喔䌚⒍圴උѵŋ根ᖒێ䋕ආ嗇篕ᶎ埍̀䤫Ც⃭㑲 傠挢౮桹扜ȅ㩉≲Ҭ妜场ᾈ㥠a⸡朲䤃й䉡堼഼㕂砰Ǻ⏇ी➧树ˁѪᖪႉቻ愐㌘妷☃烤テ䩚糔м⛹籛⾽ēȡ(渀Y䅿Ṍࡸ欌ᎅưጥ܅ϩⳐจ几廈ᖽၳ强༨₱ɠ硞䌘媡ڬ≽ᢰ+獯⧸Ǩ璃࣮⸶䈗琴ᡲ付䃗㷩熚緤㯦䏳摸᫘╂烼㹐䫠⎊ԯ㛮椬卅䮄墼朤֌ḽ焂┿姌㬲㽡Ფᤡ柳ຣ凫݉灵㢫坋൰㍝䋄䁦⥈狐㖔滋€~Ჽㅽᄿ᠔䒦㏨ö㇭ᣒ㙀Ɇㄡጨ䞰⭄ԍࡈɐC嚢㣰ᴠĂ尤拆湢䆠獫ڎ戬Ꮦ౸⡸⬴䇠ţց嗣䭎ᨪ援⦮捲ᬿ䡀䔾䊰䶬䭂獹宒紺,⋊灶應士ಃ⣃ມչᲪ冔⦫ㅼ◀⤙၉漨ಒ⚞୆⢥ᬢ崨ഒ灷佺ᐫ३㄂污ⲻᭅㄒ䙇摊怣⑨ཁ䅐瘰拙ࠪ㄀⥍慜厧㦜䓦█側屢漻凴燡㍽ᇠ⺡߉䆄煪塦ᙙ尧Ձɳ䀠૚'⨀燱䒠獪㎐8ⶸ㕎ᅘ梖扚奖凲ᴘ⇷梂⏷᫶塗孱毂䚹ᒶ૦⽚天ፒ喕⹤栶庢⋩ᵅ㚰ཀ࠶ⷡ枆⫨y㖯䇦㝼屓※ⓤ椣à㤭愷㍶Ɛ㨠䆤焩ᆆ⠪刨ᩁ䓐⚶đഢ‫ᆄ⍫㦏͋ᷫ㖾細ߥ㷐㎂☐ഉ沈ŋ䂀₪竀⢁ȃ⴫憘Ḧ䈧ှ㨷⍲ே㮆㮶䗶ᰪ䴪岤ġ崋㜄̗Ȅ㷚⨎㷨☍㶱⸁㈿ି䅿ᄱ糟᫓細 ͋༌Дᠼዀ埫ɋሲ䎼㒨ఈ嶻䋤Ķ縔ऻ䃨䦻匴巐偆猴籸ࠧ塘津挈ᤧ揾䕴ቀ䢱㋶䙅ፖ柕⊈犰皮䩆ߴ摓ᣔ人京㺸㏐ㆱ佬庱㉼噔ຈκᴋ㖗疋嘊⁜垳ଜ米砙桽ق味狛䁷⎝却⫲䙾璒䳯䬶潲疪䧦⨤垳⮐㵻箛仾歚䐯㮲佚᷆烷ᬗ眕᪦泻䈆磾ắ櫿害䚓帳䛲℮燺㭹嗳㫠ᷰ⨹两烢ī৩ᇗ惃ᖇ⍆痒ᲄ沸䧬ᶫ壩䊹ⱕ᫳㵔㌿抚⎣纜潜厰䳙弦ᜤ樫㬁㮂̶婡ᛘ࢙䞦ⵟ๸Ⱒ壒㦷幍㌠疅䛀ਙ⫻䊕佹⁎Ի⠷♳㔰玃悶攡䡵֍咚撯ᅛℳ噗ㄖ猅皪ᢴ绺怣噫ᰮ⊧ᘡ煨畾䓫ฺ似俣米䳩ᓇ禇㡐楜皦浄拺ᱼ䙧Ԅ僘㢅䫶㎗奕䘺䜄৖⋽湰㵛么䟎䕕ᡰ༮狰壏爩⾌።㱪䪛㋎⧯ᙬ⽔兾植⪕⃴៷㖏䄙ᛟ⡠ਖ彻瓉盅㻡䎝柰䌚䖈※祇ᶩ㽶嘉ς剰ʕ挻䴊㬊䂟磴倪偔Юጫ摬捡琩䇹劐砹㩶ゥࠩʰᤢ.ġ磤 ɴ倬௪ᙝ㊘湠朧ː⌺炪ੈ縰ၢ᱂≔⇤≡⑔䓨ƌᤙࡱ䔧‡ៃō⇠㈀紭ŀ䡡僰䇡ゲ刁寖⃸ᣤ䲉䖸ဠ填ૐᬧㆹ嚲乏ၼㅁ屔゘堰汧Ჭ⃏燡ⳁĨᆢ㚀䊚䊤ຢ䕝ګ紩়❚ᐴᣣࠥፂ↌摮ⓤ噪硁簨⊈礿ᇇッ㴑┙⥣秒丁犱⤡㉶汢栻ေ橝⁔弤㑆䚉ᚦ植ǰ栳僚ᯅ湈বඏ璾刹狜ᥴ੓㶗凁㲄ᬫ٬栧ク⚋併痾吊ϙ儝῰塅䰄椠j挧䗧ݬೱ䣘䚷⭝ឃ⢪ഇ熭浫唚䢉嬿怠ᖻ懖ᅃə出㶍✂­⨵拈มǵ䮎␡⨩ȧๆ恘ࠚ䫣ガ䒡焮嶨֠ȭ́ં恡濐♷ⓝުᨩᮞ儰案ᣘ溑抗࣐廨ീീ䖧ᄐᇰ䡈࣐ギ㬜¬ᤸ做๡㰼⇸ᵐN媱獱䉮惂盫䈍␬䂠㖘倮ィഩ᪂ゴ⽬櫮✥͐㜠⏞䷰綊箖ಧᢔ䅉ಭ杵⊐ໄ㏯ᗔ䅃殕ᅞ㥥妁༢䦨ڤŹ䟔⫑෤╡ň抠㪀࿬倰䚕䄣哒⯛ᅡ卪會⧮冚㞰絏沯⃒㶧䮐ˡ嚒啕᛬扁ʢ綳䅧ᝁᢣ᫠ᆘ㑕旜ᷭ堧䲐枻愎؁潂⣞㩲纒⋄ዂ̛䤠ʩ㎫朠ᨧ䦐ϒహጰ⃍恚䛠䑰ೄƪ䌻੆ઁ䰶Ȳ焦卍䗸ټ㉊წ⬘筨㍟痆ဠ ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": []
+        },
+        {
+          "name": "history-visible",
+          "data": {
+            "cache": "ᯡࡅ䁼઀嬦㢠⸣㕦l䤡瘢㦠㦸ČȸǑ-С⻦′⧂掏ṭࠤ砠犫ุ౾犀ì惂㆔䝀ᢤ\\弱ᦒ$6⣙妨㜂䕎䉠媨ైࣄ塌〉䎣㉋3#෠ᬠⴧ䁇០ೡ瀡⧙崰渠癤+@ݯࠤ㌤Ôᜈ刻ᘠݤس囵氈㐡渴㒦䈫⟋⁂毴䬀娴犌օ㝗Ⓒ⻭暰ť䐠掌⧑ᳱ‥㎧欛†Ḱ;啂擛◠䵠ƴ擜༌вᐮœ冥အ喔䌚⑴圴ᶋ౵Ջ核喒ᛎ䇔䴶䷇碔崾俍̀䤫Ც⋭㑲 傡挢ౡ桹扜ȅ㩉≲Ң妜场ᾈ㥠a⸡朲䠳й䉡堼ഢ㕂砰Ǻ⏇ी➧树ˁѪᖪს㞩ᜐ㳾ᙦ䒲曚⼿كՔ凷旀ℂ⩯懺紈޸ဨf漠Ǭଙ熀䋩垀孈಩ᡈ㝈Ṫ斠潥ห畡ⴉʽ磰硢ҨႦ戔៫吨㒂ጉ䒠⚚仠๧⌸䚒烔㿟⃁䊴痤כ湯௠ṃ幔Ế⋢㗢⤷܃熤嘺᭰⢛ẖ䢅᥌孅䔆㡀ށ眍䜲ԝ䶃塓稩摁䠮㺸焽๸կۋ䓽լ檣ᨌᕄɒ䥧ᖻ⯄ൺ㒀̕攻欉̟㿄⑓ᝁ䇎㟭ᢺ㙀Ȯㄠ匨䞱⭄ȍࡈɐC嚢㣰ᴠĂ尤悆湢䆠⭷Ԏ戬ᆖ౸⡸⬴䇠Ż܁෣䧎ᨪ恔榮捲ᬿ䡀䔾䊰ⶬ䭂⭭宒紺Ί,⚀㕍╦夃ݥಔъ㢰ಪ冔⦫ㅼ◃⣥၊Ἠ಑⚞ۄ棅ᬠ㴨ഒ灷䓺ᐫ४烒汢洛ᛆ炪䥇摺怣⑨ཁ䂐帼拙ࠪ㄀⥍悜厧㠢擦␸桺巢䂻僔燭㉝ᇠạ慬睫㡦ᙙ尧Հ≳䀠૚'⨀⧥䒠⭺㎐8➻㕾ᵘ桎湚奮姰崘ⷷ梂⿵媮剕㬩毀✍ⱴۦⓚ妉Ị瀮泖Ჺ໷倸升㛙ᛇ搢˫㡥泪夠୍㈐ӧ櫷㚂ΉⒺ₀ᠮ⇘ଆ櫠⸮䀰ᢼ⅄ᳪT䄦䑑ᘣ勠ṃ⁨ㆊ⵨䖅Ⲱ䶇㦀㶇㋟∡福㘦汩㸯Მ⫇沣⟵CФ䶈⼫愐☼ᵠ痼屺硷᳛ᗶ媎攂婂最⇗⎇嵠戌㵯ཡ㳏㤣㴏㉀緌琎搐ࠊ⏟『堟∨Π䶏峠纩ˤ氵砰疊䏰玭ၢ匷寀愼⍟㺮⎐┾㈬犿㘴㓶捿ଢĖ㜻↘崦ℤ矽⭤琾Ꮜ曱䑮䤯ፌ㟘ᕳ摝ߔ泫吔洸㏌䦽䃬揑㌫盎猑炓↼䔈泋悃⾏⤭玜籸લ濘ᝂ瑻జ果ସ忚歪晽䫝㹻ᢪ橲⯽ᥲ㥊炻琊渤次惐㫚佱ƾ婷晇ᳶᬶ伙徆棰宐ድ᭧䈑宮仺仗抛ታ姵N䓫暦䐯㩀⏷弄ම偩ฟ䔺ᬺᮜٕ嚌㒎݀⛍䦩峻妛ᜠ恀䍳ⵗ卦㚆翦穧໭ⲥ㧆大㿚栫ⴑ倭戰ᆊ盤ํ㒲ⶐԑ佌夞㳐塥ㆄ⭄糺映᫯ൠࠑ嗟܋㻒䂜๖ࡅ䲆橀ᛧ䃍䨡傦৻ㄓ⤾⌰ដ⌎樌旽ᶲ䇻緕䈧᪶㡼䌮Ⱟ扱泜⦮ᷕŘΈ樈䆖⥵ᒖⴅ勐殽烯␴䗤碑䪹㸳➟੒㠶劕欅慑泜忘㯂⤯੶䵾癤ᣎ湺´䅠执䵋柘篸攐ᔹ皺㈎⩫挼畱喺䴚໕稠櫱罃瓞氃⥽↜憪絯劤䁀殰䰖❽嚎栈熏漂ῲ用㠘ẸŝㅶÊ͠ℂボ䋬㐾䂸Ꮈ术ʷආࡱ°⤣၀Āး䱠 ⓪â粲慖ʳ摧ゐ⬦㇎ࣁ⊯愢у䉄⍤ᱤ␴䝨ᕡ੃p䔤傔1穐ᇴᰣḿ僰ሩкനᰶ࣊Ḳٓ㤄ට౉䆸㦢«೐欳ゖᖺ楉挒צሻ䋦ޭत扪㼼૎⨴䄸ሆр㑈┈呻椈偐䢥ࣁ另ᐼᡃࠠቔ෨盬䔄䓫ቒ㎨㗈礿Ᏹᮩ੏ę७秲䜰犡⢵࠵唲㩟₢ᮝ⑔捫烆争ᚦ樍ᇳᴭ˚㯄稣暡磩噡䘋憡⪐ᕢ振嘚☲♃バ㓭କ۴ў䰈线楺R̫ٹ㹭ဠӌㄘ岐೩䴹ឪ楽げ撯瓓⨬୰㑦䊉⤿怠ᖻ慲Ṁⴵ剚㶋✂ҭ㨻拈ภ䇢૾ڣ⨩ħๆ恘ئ᫣ガ䒡然嶨֠ȭǁ㪂恡毙掾䙀ݨ紿੔ᥖǂჰީ䍑⼑॰ᱡ刡刴妒༠崩aଧࢷ⿠棠冪ρ搷䇤ᶡ㌠̋⥞㔸┌੎泘Ỵ䃨Ч㞪Ȇᑒカ♀ޣঙ狭慴烰㬦瀤㬹䌯問㔁梗ܸᎱ⣲痔✠婪㴪佨ቝ㝲Ⰰ吧ᜱ⡅ᣀ桡喴窓䜰籥䀰᪬⢇℡⋦ǎ⤢㓒⭉䟄爦㔼戬࢜澰⍄᳏⣓綻䮐ˣ噥ݭ㛬扁֢η䇧ᝁᢳ᫠ẘ㐭攮媐㴆犙౉竜ༀ嫜⣞⩲繢⍄ᩤ撁䂓䊩㐓朠ᨧ䦐ᯒహጰÍ悚䛠⑼ೄপƌㅆ᪁䰶Ĳ焥厍䗸ႆۼ㱋姫挘漳㌠ຆဠ ",
+            "adapter": true,
+            "library": true
+          },
+          "titles": [
+            "Original heron reading",
+            "Heron lesson",
+            "River lesson"
+          ]
+        }
+      ],
+      "storageLogs": [
+        "[CDN] Attempting to load UtilsPure from: ./utils_pure_module.js?v=1300a2da3",
+        "[UtilsPure] Monolith shim upgraded from CDN module.",
+        "[UtilsPureModule] 17 utilities registered; monolith shim upgraded.",
+        "[CDN] UtilsPure script executed. Registration: SUCCESS"
+      ],
+      "failure": "TimeoutError: locator.waitFor: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('alertdialog') to be visible\u001b[22m\n",
+      "text": "Skip to Content\nSkip to resource\nView loaded: simplified\nAlloFlow\nTEACHER / SIMPLIFIED\nNote: Do not input Personally Identifiable Information (PII).\nMore information\nCreate\nPreview\nHistory\nAI Guide & Assistant\nPedagogy, Navigation & Auto-Setup\nClass Groups\n\nNo class roster yet\n\nCreate one\nResource Pack History\n3\nAutosaved 06:27 PM\nMore\nAll Resources\nUncategorized\nAll types\nText Adaptation & Engagement\nOrganize\nOriginal heron reading\nText Adaptation & Engagement\nOriginal with supports · Main reading\nOpen\nActions ▾\nHeron lesson\nText Adaptation & Engagement\nAdapted text · Supporting reading\nCurrent\nActions ▾\nRiver lesson\nText Adaptation & Engagement\nAdapted text · Not designated\nOpen\nActions ▾\nStudent tools",
+      "buttons": [
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": "Create",
+          "label": null
+        },
+        {
+          "text": "Preview",
+          "label": null
+        },
+        {
+          "text": "History",
+          "label": null
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "",
+          "label": "Class Roster Key",
+          "help": "roster_manage_button"
+        },
+        {
+          "text": "Create one",
+          "label": null
+        },
+        {
+          "text": "More ",
+          "label": "More resource pack actions"
+        },
+        {
+          "text": "",
+          "label": "Create New Unit Folder",
+          "help": "history_create_unit_btn"
+        },
+        {
+          "text": "Organize",
+          "label": null
+        },
+        {
+          "text": "Original heron readingText Adaptation & EngagementOriginal with supports · Main readingOpen",
+          "label": "Open: Original heron reading"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Original heron reading"
+        },
+        {
+          "text": "Heron lessonText Adaptation & EngagementAdapted text · Supporting readingCurrent",
+          "label": "Heron lesson. Current"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Heron lesson"
+        },
+        {
+          "text": "River lessonText Adaptation & EngagementAdapted text · Not designatedOpen",
+          "label": "Open: River lesson"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: River lesson"
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        }
+      ]
+    }
+  ]
+}

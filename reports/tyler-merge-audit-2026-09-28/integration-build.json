@@ -1,0 +1,86 @@
+{
+  "at": "2026-09-29T03:40:43.951Z",
+  "root": "C:/tmp/tyler_integration_candidate",
+  "jsxParsed": true,
+  "pairs": [
+    {
+      "path": "onboarding_coach_module.js",
+      "sha256": "20167e80365294dfda822016cfebbdf0aceeb42375f6136d38e973869c69ea65"
+    },
+    {
+      "path": "teacher_module.js",
+      "sha256": "b9a8adf0f9d708fb74a1a5fb33474d2ca1b931b0af7620d9dcb4ea90654f00fb"
+    },
+    {
+      "path": "ui_modals_module.js",
+      "sha256": "7d1b86431aad1de7507a0cdc917b0dc4f011418c068ce746f1ed602aaa5c9f52"
+    },
+    {
+      "path": "view_educator_hub_modal_module.js",
+      "sha256": "14dde05adbcba3a58558a7ea4ad75ffff2e939cc2d7d70428101aa1ca234deff"
+    },
+    {
+      "path": "view_fab_stack_module.js",
+      "sha256": "d0398e81a33774799968ab2338dde53f13bf3bcfbe97b5ab82792eefe0e98833"
+    },
+    {
+      "path": "view_guided_mode_banner_module.js",
+      "sha256": "f4f0209a9a39728164381048120dd1c793cd64d20bf3214412108c65470f5aac"
+    },
+    {
+      "path": "view_header_module.js",
+      "sha256": "a81f16ed4350aa9676d64c23729b60d83841ec90dc48e834faa4bb80a49294cb"
+    },
+    {
+      "path": "view_history_panel_module.js",
+      "sha256": "875a75a84a9502c3396fc493933f35ce3f5812058dec7c0cf8ac18d20e67b487"
+    },
+    {
+      "path": "view_launch_pad_module.js",
+      "sha256": "29c496ac61412e8c03946e295a9f999e2f0003149c8120da1635546dc14e99da"
+    },
+    {
+      "path": "view_learning_hub_modal_module.js",
+      "sha256": "afaea1e9f09d2d7d03a2aa7a8985c8781d38a11a3027cf6485c64421baa38307"
+    },
+    {
+      "path": "view_sidebar_panels_module.js",
+      "sha256": "1f636d34035c536da2e4390b44089a480cbf87cbc5bf02583faf2e19fd9bd71c"
+    },
+    {
+      "path": "view_sidebar_tabs_nav_module.js",
+      "sha256": "c83eea2f35ac19157e8e2ee78ec096e7ed883845d89208f8c5505824a9c005cc"
+    },
+    {
+      "path": "view_teacher_history_tab_module.js",
+      "sha256": "3a45dbad1cfe675cc7d9db41638e6000133230f25cf1e2f28070bf917dcb0d5c"
+    },
+    {
+      "path": "ui_strings.js",
+      "sha256": "14165201e1e66356a29b18ad029cf4c338f508f66e1618821a4526b94294acac"
+    },
+    {
+      "path": "help_strings.js",
+      "sha256": "56f6d247fdf3948a2afea520b01295a0b2225a4c007c0a4f41bc5f572404197b"
+    },
+    {
+      "path": "onboarding_helpers_module.js",
+      "sha256": "d9efe9d3c7440f52ad6cc7dc0784b129a49a7efa93d45b9c0c18185d64e4693d"
+    },
+    {
+      "path": "classroom-import.html",
+      "sha256": "58d983a1e9e72eafb290c9a0a0314e18249930b9990351e2c0d658be4e11fdc0"
+    },
+    {
+      "path": "classroom_import_app.js",
+      "sha256": "44ca678336f570a44aaf35ebb0a6f6ae489e8cc82a5d940c218cc0243ae10dde"
+    },
+    {
+      "path": "classroom_import_service.js",
+      "sha256": "7e6b6270c771d18c0f5865cf65b571a4795baa8031e0982c4dc2e43e26f3ebaf"
+    }
+  ],
+  "finalVerifiedAt": "2026-09-29T04:35:02.675Z",
+  "languagePairs": 63,
+  "conflictMarkerPathsChecked": 120
+}

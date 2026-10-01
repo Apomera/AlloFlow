@@ -80,13 +80,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bakin
 
 exports[`science-sim + studio render goldens > renders + pins a digest for bridgeLab [mount] 1`] = `
 {
-  "buttons": 31,
+  "buttons": 32,
   "canvases": 0,
-  "inputs": 8,
-  "lengthBucket": 377,
+  "inputs": 9,
+  "lengthBucket": 381,
   "paths": 6,
   "selects": 1,
-  "sha": "94559ad3e686f22f",
+  "sha": "6fab0a709d4d3039",
   "svgs": 2,
 }
 `;

@@ -1,15 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { hubTile, learningToolsCard } from './helpers/learning_hub';
 
 test.describe('Learning Hub modal', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(2500);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
   });
 
   test('Learning Hub renders with title "Learning Tools"', async ({ page }) => {
-    const hub = page.locator('[role="dialog"][aria-label*="Learning"]');
+    const hub = page.locator('[role="dialog"][aria-labelledby="learning-hub-title"]');
     await expect(hub).toBeVisible();
     const heading = page.locator('h2').filter({ hasText: /Learning Tools/i }).first();
     await expect(heading).toBeVisible();
@@ -23,7 +24,7 @@ test.describe('Learning Hub modal', () => {
   test('Close button dismisses Learning Hub', async ({ page }) => {
     await page.locator('button[aria-label*="Close learning" i]').first().click({ force: true });
     await page.waitForTimeout(1000);
-    const hub = page.locator('[role="dialog"][aria-label*="Learning"]');
+    const hub = page.locator('[role="dialog"][aria-labelledby="learning-hub-title"]');
     await expect(hub).toBeHidden({ timeout: 5000 });
   });
 
@@ -31,22 +32,24 @@ test.describe('Learning Hub modal', () => {
     // Click outside the dialog box (on backdrop) — top-left corner
     await page.mouse.click(20, 20);
     await page.waitForTimeout(1000);
-    const hub = page.locator('[role="dialog"][aria-label*="Learning"]');
+    const hub = page.locator('[role="dialog"][aria-labelledby="learning-hub-title"]');
     await expect(hub).toBeHidden({ timeout: 5000 });
   });
 
   test('All 6 sub-tiles render with correct labels', async ({ page }) => {
+    // Found by data-hub-id, then the visible label checked (the STEM tile is now "STEAM Lab").
     const tiles = [
-      { text: /STEM Lab/i, icon: '🔬' },
-      { text: /StoryForge/i, icon: '📖' },
-      { text: /LitLab/i, icon: '🎭' },
-      { text: /PoetTree/i, icon: '🌳' },
-      { text: /SEL Hub/i, icon: '💖' },
-      { text: /AlloHaven/i, icon: '🌿' },
+      { hubId: 'stem-lab', text: /STEAM Lab/i },
+      { hubId: 'storyforge', text: /StoryForge/i },
+      { hubId: 'litlab', text: /LitLab/i },
+      { hubId: 'poettree', text: /PoetTree/i },
+      { hubId: 'sel-hub', text: /SEL Hub/i },
+      { hubId: 'allohaven', text: /AlloHaven/i },
     ];
     for (const t of tiles) {
-      const tile = page.locator('button').filter({ hasText: t.text }).first();
-      await expect(tile, `Tile not visible: ${t.text}`).toBeVisible();
+      const tile = hubTile(page, t.hubId);
+      await expect(tile, `Tile not visible: ${t.hubId}`).toBeVisible();
+      await expect(tile, `Tile label wrong: ${t.hubId}`).toContainText(t.text);
     }
   });
 
@@ -60,7 +63,8 @@ test.describe('Learning Hub modal', () => {
       /focusing.*reflecting/i,
     ];
     for (const re of subtitles) {
-      const sub = page.locator('text=' + re.source);
+      // getByText takes the RegExp itself; 'text=' + re.source matched "rhyme.*meter" as literal text.
+      const sub = page.getByText(re);
       await expect(sub.first(), `Subtitle not found: ${re}`).toBeVisible({ timeout: 3000 });
     }
   });

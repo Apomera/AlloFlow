@@ -1,0 +1,40 @@
+{
+  "checks": [
+    "Preparation requirements are visible; follow-up folding and coating checks stay locked until their ingredients are ready.",
+    "Carrying and holding a level jug over the pan pours nothing and creates no cooking evidence.",
+    "Only a deliberate tilt starts real ten-milliliter doses. Leveling stops flow immediately; jug volume, pan moisture and the carry receipt agree without advancing time.",
+    "Canonical doses survive reload. Follow-up buttons select physical tools without performing actions; the measured keyboard pour remains equivalent.",
+    "Sideways movement, Escape and pointer cancellation stop the flow while preserving completed doses.",
+    "An external cooking change cancels the held jug, preventing a stale gesture from adding more water.",
+    "Lifting the jug pauses playback, and controlling a splash does not advance the recipe clock.",
+    "The jug and camera follow a four-serving wide pan on the trivet; scaled water markings retain the actual volume.",
+    "Real touch carrying, tilting and leveling control the jug without accidental hovering pours; the phone layout fits and passes accessibility checks.",
+    "The final ten-milliliter dose empties the jug, stops the stream and cannot overdraw the available water.",
+    "Serving and historical replay keep pouring locked while reconstructing the recorded measured doses.",
+    "Compact, reduced-motion and forced-color controls pass. Graphics loss stops a tilted jug and leaves measured keyboard pours working."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop jug controls",
+      "violations": []
+    },
+    {
+      "name": "390px touch jug",
+      "violations": []
+    },
+    {
+      "name": "320px jug controls",
+      "violations": []
+    },
+    {
+      "name": "Forced-color jug controls",
+      "violations": []
+    },
+    {
+      "name": "Graphics-loss jug controls",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

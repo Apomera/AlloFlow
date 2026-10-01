@@ -67,7 +67,7 @@ function HomeworkQrDialogView(props) {
   }), " ", t('share_collect.take_home_assignment') || 'Take-home assignment'), /*#__PURE__*/React.createElement("h2", {
     id: "alloflow-homework-qr-title",
     className: "text-2xl font-black text-slate-900 mb-1"
-  }, qrShareModal.type === 'assignment-pack-hosted' ? 'Hosted homework assignment' : qrShareModal.type === 'assignment-pack' ? 'Self-contained homework assignment' : 'Homework assignment ready'), /*#__PURE__*/React.createElement("p", {
+  }, qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.title_hosted', 'Hosted homework assignment') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.title_self_contained', 'Self-contained homework assignment') : deliveryText('share_collect.title_ready', 'Homework assignment ready')), /*#__PURE__*/React.createElement("p", {
     id: "alloflow-homework-qr-description",
     className: "text-sm font-bold text-violet-900 mb-1"
   }, qrShareModal.title), /*#__PURE__*/React.createElement("p", {
@@ -83,7 +83,7 @@ function HomeworkQrDialogView(props) {
     }
   }) : /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-violet-700 text-center"
-  }, qrShareError ? 'QR unavailable - copy the homework link below' : 'Preparing homework QR...'))), qrShareModal.noQr && /*#__PURE__*/React.createElement("div", {
+  }, qrShareError ? deliveryText('share_collect.qr_unavailable_copy_link', 'QR unavailable - copy the homework link below') : deliveryText('share_collect.preparing_qr', 'Preparing homework QR...')))), qrShareModal.noQr && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-amber-900 text-center"
@@ -134,7 +134,10 @@ function HomeworkQrDialogView(props) {
     "data-reading-capabilities": true
   }, reading.form === 'adapted' && Number.isInteger(reading.capabilities.adaptedSupports?.activeCount) && /*#__PURE__*/React.createElement("p", null, deliveryText('share_collect.adapted_support_count', '{count} saved supports on the adapted text.').replace('{count}', String(reading.capabilities.adaptedSupports.activeCount))), reading.capabilities.adaptedSupports?.reason === 'stale-identity' && /*#__PURE__*/React.createElement("p", {
     className: "text-amber-900"
-  }, deliveryText('share_collect.adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')), reading.capabilities.adaptedSupports?.reason === 'validator-unavailable' && /*#__PURE__*/React.createElement("p", {
+  }, deliveryText('share_collect.adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')), reading.capabilities.adaptedSupports?.reason === 'not-shown' && /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-900",
+    "data-adapted-help-hidden": true
+  }, deliveryText('share_collect.adapted_supports_hidden', 'Word help on the adapted text is hidden, so students will not receive it. To include it, choose Show word help to students in the reader, then share again.')), reading.capabilities.adaptedSupports?.reason === 'validator-unavailable' && /*#__PURE__*/React.createElement("p", {
     className: "text-amber-900"
   }, deliveryText('share_collect.adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')), reading.capabilities.adaptedSupports?.inclusion === 'partial' && /*#__PURE__*/React.createElement("p", {
     className: "text-amber-900"
@@ -177,7 +180,7 @@ function HomeworkQrDialogView(props) {
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "text-[11px] text-slate-500 mb-3"
-  }, qrShareModal.noQr ? 'Homework link ready' : qrShareSvg ? t('share_collect.ready_to_scan') || 'Ready to scan' : qrShareError ? t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below' : t('share_collect.validating_qr_code') || 'Validating QR code...', " \xB7 ", (t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : t('share_collect.expires_default_window') || '14 days after creation')), /*#__PURE__*/React.createElement("div", {
+  }, qrShareModal.noQr ? deliveryText('share_collect.link_ready', 'Homework link ready') : qrShareSvg ? t('share_collect.ready_to_scan') || 'Ready to scan' : qrShareError ? t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below' : t('share_collect.validating_qr_code') || 'Validating QR code...', " \xB7 ", (t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : t('share_collect.expires_default_window') || '14 days after creation')), /*#__PURE__*/React.createElement("div", {
     className: "mb-2 grid grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: testHomeworkAsStudent,
@@ -185,7 +188,7 @@ function HomeworkQrDialogView(props) {
   }, t('share_collect.test_as_student') || 'Test as student', " ", /*#__PURE__*/React.createElement(ExternalLink, {
     size: 12
   })), /*#__PURE__*/React.createElement("button", {
-    onClick: () => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `Teacher-prepared resources · ${qrShareModal.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'} · No live session`),
+    onClick: () => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`),
     disabled: !qrShareSvg,
     className: "flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
   }, t('share_collect.print_qr') || 'Print QR', " ", /*#__PURE__*/React.createElement(Printer, {
@@ -193,7 +196,7 @@ function HomeworkQrDialogView(props) {
   }))), /*#__PURE__*/React.createElement("button", {
     onClick: () => copyToClipboard(qrShareModal.url),
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all"
-  }, qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link', " ", /*#__PURE__*/React.createElement(Copy, {
+  }, qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.copy_hosted_link', 'Copy hosted homework link') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.copy_self_contained_link', 'Copy self-contained link') : deliveryText('share_collect.copy_homework_link', 'Copy homework link'), " ", /*#__PURE__*/React.createElement(Copy, {
     size: 12
   })), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('share_collect.link_aria') || 'Selectable homework link',
@@ -229,15 +232,15 @@ function HomeworkQrDialogView(props) {
     },
     disabled: mbBusy || !canConvertSelection,
     className: "w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60"
-  }, mbBusy ? 'Uploading to your mailbox…' : 'Host on Class Mailbox (small QR, images OK)', " ", /*#__PURE__*/React.createElement(Share2, {
+  }, mbBusy ? deliveryText('share_collect.uploading_to_mailbox', 'Uploading to your mailbox…') : deliveryText('share_collect.host_on_mailbox', 'Host on Class Mailbox (small QR, images OK)'), " ", /*#__PURE__*/React.createElement(Share2, {
     size: 12
   })), qrShareModal.type === 'assignment-pack-hosted' ? /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-3"
-  }, t('share_collect.the_activity_images_included_is_stored') || 'The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and', " ", qrShareModal.aiPolicy === 'student-byok' ? 'may connect their own AI provider for that tab' : 'AI stays off', ". Delete it any time from the \"AlloFlow Class Mailbox\" Drive folder.") : qrShareModal.type === 'assignment-pack' ? /*#__PURE__*/React.createElement("p", {
+  }, t('share_collect.the_activity_images_included_is_stored') || 'The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and', " ", qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.may_connect_own_ai', 'may connect their own AI provider for that tab') : deliveryText('share_collect.ai_stays_off', 'AI stays off'), ". ", deliveryText('share_collect.delete_from_drive_folder', 'Delete it any time from the "AlloFlow Class Mailbox" Drive folder.')) : qrShareModal.type === 'assignment-pack' ? /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-3"
-  }, t('share_collect.the_whole_activity_travels_inside_the') || 'The whole activity travels inside the link — students need no account, nothing is stored online, and', " ", qrShareModal.aiPolicy === 'student-byok' ? 'they may connect their own AI provider for that tab' : 'AI stays off', ".", typeof qrShareModal.sizeChars === 'number' ? ` Link size ~${Math.max(1, Math.round(qrShareModal.sizeChars / 1024))} KB${qrShareModal.sizeChars > 8000 ? ' — very long links can be truncated by some apps; Google Classroom and email handle them well.' : '.'}` : '') : /*#__PURE__*/React.createElement("p", {
+  }, t('share_collect.the_whole_activity_travels_inside_the') || 'The whole activity travels inside the link — students need no account, nothing is stored online, and', " ", qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.they_may_connect_own_ai', 'they may connect their own AI provider for that tab') : deliveryText('share_collect.ai_stays_off', 'AI stays off'), ".", typeof qrShareModal.sizeChars === 'number' ? ' ' + deliveryText('share_collect.link_size_kb', 'Link size about {kb} KB.').replace('{kb}', String(Math.max(1, Math.round(qrShareModal.sizeChars / 1024)))) + (qrShareModal.sizeChars > 8000 ? ' ' + deliveryText('share_collect.long_link_warning', 'Very long links can be cut off by some apps. Google Classroom and email handle them well.') : '') : '') : /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-3"
-  }, qrShareModal.aiPolicy === 'student-byok' ? 'Students open teacher-prepared resources and may connect their own AI provider for that tab.' : 'Students open teacher-prepared resources with AI generation off.'));
+  }, qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.students_open_personal_ai', 'Students open teacher-prepared resources and may connect their own AI provider for that tab.') : deliveryText('share_collect.students_open_ai_off', 'Students open teacher-prepared resources with AI generation off.')));
 }
 // Extracted from AlloFlowANTI.txt (class-mailbox-setup).
 function ClassMailboxSetupView(props) {
@@ -321,7 +324,7 @@ function ClassMailboxSetupView(props) {
     restoreFocusAfterCancelRef.current = true;
     cancelPendingMailboxShare?.();
   };
-  const connectLabel = mbBusy ? pendingMailboxShare ? tx('mailbox.connecting_pending', 'Connecting…') : 'Testing…' : pendingMailboxShare ? tx('mailbox.connect_and_share', 'Connect and share') : 'Connect & self-test';
+  const connectLabel = mbBusy ? pendingMailboxShare ? tx('mailbox.connecting_pending', 'Connecting…') : tx('mailbox.testing_connection', 'Testing…') : pendingMailboxShare ? tx('mailbox.connect_and_share', 'Connect and share') : tx('mailbox.connect_self_test', 'Connect & self-test');
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto",
     onClick: e => e.stopPropagation()
@@ -446,11 +449,11 @@ function ClassMailboxSetupView(props) {
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 23 && /*#__PURE__*/React.createElement("div", {
+  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 24 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"
-  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v23 for independent image-delivery status, lesson boards, and current live tools (about 1 minute, the URL stays the same):"), /*#__PURE__*/React.createElement("ol", {
+  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v24 for delivery into your Drive (Docs, Slides, Sheets, Forms), independent image-delivery status, lesson boards, and current live tools (about 1 minute, the URL stays the same):"), /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal list-inside text-xs text-amber-900 space-y-1"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("button", {
     type: "button",

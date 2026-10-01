@@ -1,0 +1,190 @@
+{
+  "snapshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.codex-artifacts\\reader-literal-placeholders-track17",
+  "inputs": [
+    {
+      "file": "AGENT_HANDOFF.md",
+      "sha256": "c655f388cf927514cef0d2770c7d894586dbb3bda75a0794cfcff1f5cda161fe",
+      "testedSha256": "fb86562e2b126f9e2a50258c01b2ecbbe699b62aaf130b53c0d8e7001302ca86",
+      "currentSharedSha256": "aa41959daf299177fea900aad0f682eb1ff1e18c73b16172ca58f0a144262671"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "testedSha256": "cbdc75f6ace3ed3fcc18b70da537ca8debc2c011d9327fbd6b7064db41261206",
+      "currentSharedSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "testedSha256": "cbdc75f6ace3ed3fcc18b70da537ca8debc2c011d9327fbd6b7064db41261206",
+      "currentSharedSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "testedSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "currentSharedSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db"
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265",
+      "testedSha256": "45b9e849e60a33cd28063bc16a07e4e505bbd99e9df2c3bc4f084fb12dcf3f0f",
+      "currentSharedSha256": "4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265"
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "ca2364ecc2e5e6f7bd9ebba26279dff79aae49227bc1615a7ddb1a8dd45ed493",
+      "testedSha256": "ca2364ecc2e5e6f7bd9ebba26279dff79aae49227bc1615a7ddb1a8dd45ed493",
+      "currentSharedSha256": "ca2364ecc2e5e6f7bd9ebba26279dff79aae49227bc1615a7ddb1a8dd45ed493"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "testedSha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "currentSharedSha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "testedSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "currentSharedSha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "testedSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "currentSharedSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+      "testedSha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+      "currentSharedSha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    {
+      "file": "module_scope_extras_module.js",
+      "sha256": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d",
+      "testedSha256": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d",
+      "currentSharedSha256": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d"
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48",
+      "testedSha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48",
+      "currentSharedSha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48"
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce",
+      "testedSha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce",
+      "currentSharedSha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+      "testedSha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+      "currentSharedSha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "tests/setup.js",
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "testedSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "currentSharedSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    {
+      "file": "tests/helpers/reader_locale_harness.js",
+      "sha256": "3e9c56aa24f874d890e9767a1f0c4465b86210602538991c568731b2f0588ba2",
+      "testedSha256": "3e9c56aa24f874d890e9767a1f0c4465b86210602538991c568731b2f0588ba2",
+      "currentSharedSha256": "3e9c56aa24f874d890e9767a1f0c4465b86210602538991c568731b2f0588ba2"
+    },
+    {
+      "file": "tests/helpers/reader_recovery_locale_harness.js",
+      "sha256": "53868f8d890315ec840b7249e0c02ea145c12a557e740b151f9e225ffc42674e",
+      "testedSha256": "53868f8d890315ec840b7249e0c02ea145c12a557e740b151f9e225ffc42674e",
+      "currentSharedSha256": "53868f8d890315ec840b7249e0c02ea145c12a557e740b151f9e225ffc42674e"
+    },
+    {
+      "file": "tests/fixtures/reader_locales.json",
+      "sha256": "b5a5cfbe9b863d6d761d20bdbfd489cbb5b52073b0ffd9d9eb9af1b79ddd9322",
+      "testedSha256": "b5a5cfbe9b863d6d761d20bdbfd489cbb5b52073b0ffd9d9eb9af1b79ddd9322",
+      "currentSharedSha256": "b5a5cfbe9b863d6d761d20bdbfd489cbb5b52073b0ffd9d9eb9af1b79ddd9322"
+    },
+    {
+      "file": "tests/fixtures/reader_recovery_locales.json",
+      "sha256": "dd25cc95c143e90ddd8c8ad807f0509f9f3fbe6c442c5c217ef27fceed3e2f74",
+      "testedSha256": "dd25cc95c143e90ddd8c8ad807f0509f9f3fbe6c442c5c217ef27fceed3e2f74",
+      "currentSharedSha256": "dd25cc95c143e90ddd8c8ad807f0509f9f3fbe6c442c5c217ef27fceed3e2f74"
+    },
+    {
+      "file": "tests/reader_i18n.test.js",
+      "sha256": "444637420daad2348b2b5cbf0fd680721d06e2d25c486fe6cfc286e650c44bad",
+      "testedSha256": "444637420daad2348b2b5cbf0fd680721d06e2d25c486fe6cfc286e650c44bad",
+      "currentSharedSha256": "444637420daad2348b2b5cbf0fd680721d06e2d25c486fe6cfc286e650c44bad"
+    },
+    {
+      "file": "vitest.config.js",
+      "sha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "testedSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "currentSharedSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    {
+      "file": "package.json",
+      "sha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e",
+      "testedSha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e",
+      "currentSharedSha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e"
+    },
+    {
+      "file": "desktop/web-app/package.json",
+      "sha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "testedSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "currentSharedSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "testedSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "currentSharedSha256": "8f4b78011431f5c462d398ddf0aadf6ceb5ece85371c8fd5483fe2a0e4399022"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "testedSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "currentSharedSha256": "8f4b78011431f5c462d398ddf0aadf6ceb5ece85371c8fd5483fe2a0e4399022"
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "sha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+      "testedSha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+      "currentSharedSha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379"
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "sha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+      "testedSha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+      "currentSharedSha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996"
+    },
+    {
+      "file": "lang/arabic.js",
+      "sha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "testedSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "currentSharedSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436"
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "sha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "testedSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "currentSharedSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b"
+    },
+    {
+      "file": "lang/thai.js",
+      "sha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "testedSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "currentSharedSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d"
+    },
+    {
+      "file": "tests/reader_place_review_adapt.test.js",
+      "testedSha256": "1f476fcf886f65037c2c4f47eaf19a546230b12e9e9566cc8034166e5889de27",
+      "currentSharedSha256": "1f476fcf886f65037c2c4f47eaf19a546230b12e9e9566cc8034166e5889de27"
+    }
+  ]
+}

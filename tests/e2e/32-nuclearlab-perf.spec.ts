@@ -42,7 +42,7 @@ async function layout(page: any) {
 }
 
 async function mount2d(page: any, toolData: Record<string, unknown> = {}) {
-  await harness.mount(page, toolData, undefined, { expectCanvas: false });
+  await harness.mount(page, { ...toolData, _nuclearLab: { nkView: 'reference', ...(toolData?._nuclearLab || {}) } }, undefined, { expectCanvas: false });
   await layout(page);
   await page.waitForTimeout(400);
 }
@@ -94,14 +94,14 @@ test.describe('Nuclear Lab — render cost', () => {
     // harness.mount, which also covers navigation, React UMD and parsing the
     // 3,400-line tool file — none of which is the tool's render cost, and all
     // of which made the number look far worse than it was.
-    await harness.mount(page, {}, undefined, { expectCanvas: false });
+    await harness.mount(page, { _nuclearLab: { nkView: 'reference' } }, undefined, { expectCanvas: false });
     await layout(page);
     const client = await page.context().newCDPSession(page);
     await client.send('Emulation.setCPUThrottlingRate', { rate: 6 });
     const ms = await page.evaluate(async () => {
       (window as any).__destroy();
       const t = performance.now();
-      (window as any).__mount({});
+      (window as any).__mount({ _nuclearLab: { nkView: 'reference' } });
       // createRoot().render() is CONCURRENT: it schedules, it does not render.
       // Timing the call alone reported 1 ms and measured nothing but the
       // scheduling. Wait for the sections to actually exist in the document.
@@ -150,7 +150,7 @@ test.describe('Nuclear Lab — render cost', () => {
     await page.goto(harness.url + '/__harness');
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
     await instrumentCanvases(page);
-    await page.evaluate(() => (window as any).__mount({}));
+    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkView: 'reference' } }));
     await layout(page);
     await page.evaluate(() => { (window as any).__clears = {}; });
     await page.waitForTimeout(2000);
@@ -166,7 +166,7 @@ test.describe('Nuclear Lab — render cost', () => {
     await page.goto(harness.url + '/__harness');
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
     await instrumentCanvases(page);
-    await page.evaluate(() => (window as any).__mount({}));
+    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkView: 'reference' } }));
     await layout(page);
 
     await page.evaluate(() => { (window as any).__clears = {}; });
@@ -191,7 +191,7 @@ test.describe('Nuclear Lab — render cost', () => {
   test('reactor objective progress advances and blackout resets with cooling offline', async ({ page }) => {
     await page.goto(harness.url + '/__harness');
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
-    await page.evaluate(() => (window as any).__mount({}));
+    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkView: 'reference' } }));
     await layout(page);
 
     const meter = page.locator('#rx-objective-meter');
@@ -222,7 +222,7 @@ test.describe('Nuclear Lab — render cost', () => {
     await page.goto(harness.url + '/__harness');
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
     await instrumentCanvases(page);
-    await page.evaluate(() => (window as any).__mount({}));
+    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkView: 'reference' } }));
     await layout(page);
     await page.evaluate(() => { (window as any).__clears = {}; });
     await page.evaluate(async () => {
@@ -251,7 +251,7 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
   ] as const) {
     test(`phone, ${name}`, async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
-      await harness.mount(page, { _nuclearLab: state }, undefined, { expectCanvas: false });
+      await harness.mount(page, { _nuclearLab: { nkView: 'reference', ...state } }, undefined, { expectCanvas: false });
       await page.evaluate(() => {
         const w = document.getElementById('wrap')!;
         w.style.display = 'block'; w.style.height = 'auto'; w.style.width = '390px';
@@ -300,7 +300,7 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
       { width: 768, height: 1024 },
     ]) {
       await page.setViewportSize(viewport);
-      await harness.mount(page, {}, undefined, { expectCanvas: false });
+      await harness.mount(page, { _nuclearLab: { nkView: 'reference' } }, undefined, { expectCanvas: false });
       await page.evaluate((size) => {
         const wrap = document.getElementById('wrap')!;
         wrap.style.display = 'block';
@@ -350,7 +350,7 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
       wrap.style.width = '420px';
       wrap.style.maxWidth = '420px';
       wrap.style.height = 'auto';
-      (window as any).__mount({});
+      (window as any).__mount({ _nuclearLab: { nkView: 'reference' } });
     });
     await layout(page);
 
@@ -757,7 +757,7 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     await page.goto(harness.url + '/__harness');
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
     await instrumentCanvases(page);
-    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkOpen: false } }));
+    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkView: 'reference', nkOpen: false } }));
     await layout(page);
     await page.evaluate(() => { (window as any).__clears = {}; });
     const result = await page.evaluate(async () => {

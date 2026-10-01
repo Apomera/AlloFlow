@@ -1,0 +1,81 @@
+===================================================================
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6260,6 +6260,23 @@
+     "undo_link_hint": "Last roster link: "
+   },
+   "simplified": {
++    "adapt_exact_terms_hint": "Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.",
++    "adapt_validation_unavailable": "Essential-term validation is unavailable. Reload before previewing.",
++    "adapt_not_applied": "The change was not applied. Review the current text and preview again.",
++    "adapt_preview_unverified": "Current text kept. Essential terms could not be verified. Reload and preview again.",
++    "adapt_terms_missing": "Current text kept. The proposed version is missing: {terms}. Retry or edit the preserved-term list.",
++    "adapt_terms_absent": "Current text kept. These terms were not found exactly in the source: {terms}. Check spelling and case, or remove them from the list.",
++    "adapt_terms_primary": "primary reading",
++    "adapt_terms_translation": "translation",
++    "adapt_terms_many": "{count} distinct terms exceeds the limit of {limit}.",
++    "adapt_term_long": "A term exceeds {limit} characters.",
++    "adapt_terms_long": "{count} total characters exceeds the limit of {limit}.",
++    "adapt_terms_text": "Each term must be a text entry.",
++    "adapt_terms_invalid": "Current text kept. {details} No terms were dropped. Correct the list and preview again.",
++    "adapt_preview_expired": "Current text kept. This preview can no longer be verified. Preview the change again.",
++    "adapt_terms_unverified": "Current text kept. Essential terms could not be verified. Preview again using supported text formatting.",
++    "adapt_terms_separator": "Use a separator after a quoted term.",
++    "adapt_terms_quote": "Close the quotation mark around the term.",
+     "theme_follow_app": "Use app theme",
+     "theme_scope": "Changes the reading area. Your app theme stays the same.",
+     "teacher_actions": "Teacher tools",
+===================================================================
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4554,6 +4554,23 @@
+     "grammar_all_resolved": "Todo resuelto"
+   },
+   "simplified": {
++    "adapt_exact_terms_hint": "Separa los términos con comas o punto y coma; usa comillas si un término contiene alguno de estos signos. Máximo: 30 términos distintos. Deben aparecer en el texto original. Comprobamos que cada uno se conserve al menos una vez en su panel de lectura, con la misma ortografía, mayúsculas y puntuación.",
++    "adapt_validation_unavailable": "La comprobación de términos esenciales no está disponible. Recarga la página antes de crear una vista previa.",
++    "adapt_not_applied": "No se aplicó el cambio. Revisa el texto actual y crea otra vista previa.",
++    "adapt_preview_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Recarga la página y crea otra vista previa.",
++    "adapt_terms_missing": "Se conservó el texto actual. En la versión propuesta faltan: {terms}. Vuelve a intentarlo o modifica la lista de términos que deben conservarse.",
++    "adapt_terms_absent": "Se conservó el texto actual. Estos términos no aparecen exactamente así en el original: {terms}. Revisa la ortografía y las mayúsculas, o elimínalos de la lista.",
++    "adapt_terms_primary": "lectura principal",
++    "adapt_terms_translation": "traducción",
++    "adapt_terms_many": "{count} términos distintos superan el límite de {limit}.",
++    "adapt_term_long": "Un término supera los {limit} caracteres.",
++    "adapt_terms_long": "El total de {count} caracteres supera el límite de {limit}.",
++    "adapt_terms_text": "Cada término debe ser una entrada de texto.",
++    "adapt_terms_invalid": "Se conservó el texto actual. {details} No se descartó ningún término. Corrige la lista y crea otra vista previa.",
++    "adapt_preview_expired": "Se conservó el texto actual. Esta vista previa ya no se puede verificar. Crea otra vista previa del cambio.",
++    "adapt_terms_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Crea otra vista previa con un formato de texto compatible.",
++    "adapt_terms_separator": "Añade un separador después de un término entre comillas.",
++    "adapt_terms_quote": "Cierra las comillas del término.",
+     "title": "Adaptación de Texto y Participación",
+     "mode_label": "Modo",
+     "word_bank": "Banco de Palabras",
+===================================================================
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4562,6 +4562,23 @@
+     "grammar_all_resolved": "Todo resuelto"
+   },
+   "simplified": {
++    "adapt_exact_terms_hint": "Separa los términos con comas o punto y coma; usa comillas si un término contiene alguno de estos signos. Máximo: 30 términos distintos. Deben aparecer en el texto original. Comprobamos que cada uno se conserve al menos una vez en su panel de lectura, con la misma ortografía, mayúsculas y puntuación.",
++    "adapt_validation_unavailable": "La comprobación de términos esenciales no está disponible. Recarga la página antes de crear una vista previa.",
++    "adapt_not_applied": "No se aplicó el cambio. Revisa el texto actual y crea otra vista previa.",
++    "adapt_preview_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Recarga la página y crea otra vista previa.",
++    "adapt_terms_missing": "Se conservó el texto actual. En la versión propuesta faltan: {terms}. Vuelve a intentarlo o modifica la lista de términos que deben conservarse.",
++    "adapt_terms_absent": "Se conservó el texto actual. Estos términos no aparecen exactamente así en el original: {terms}. Revisa la ortografía y las mayúsculas, o elimínalos de la lista.",
++    "adapt_terms_primary": "lectura principal",
++    "adapt_terms_translation": "traducción",
++    "adapt_terms_many": "{count} términos distintos superan el límite de {limit}.",
++    "adapt_term_long": "Un término supera los {limit} caracteres.",
++    "adapt_terms_long": "El total de {count} caracteres supera el límite de {limit}.",
++    "adapt_terms_text": "Cada término debe ser una entrada de texto.",
++    "adapt_terms_invalid": "Se conservó el texto actual. {details} No se descartó ningún término. Corrige la lista y crea otra vista previa.",
++    "adapt_preview_expired": "Se conservó el texto actual. Esta vista previa ya no se puede verificar. Crea otra vista previa del cambio.",
++    "adapt_terms_unverified": "Se conservó el texto actual. No se pudieron verificar los términos esenciales. Crea otra vista previa con un formato de texto compatible.",
++    "adapt_terms_separator": "Añade un separador después de un término entre comillas.",
++    "adapt_terms_quote": "Cierra las comillas del término.",
+     "title": "Adaptación de Texto y Participación",
+     "mode_label": "Modo",
+     "word_bank": "Banco de Palabras",

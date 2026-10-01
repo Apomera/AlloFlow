@@ -167,6 +167,148 @@ afterEach(async () => {
 const WATERCOLOR_SIM_TIMEOUT_MS = Math.max(20000,Math.min(120000,Number(process.env.ALLOFLOW_ARTSTUDIO_TEST_TIMEOUT_MS)||20000));
 
 describe('Art Studio watercolor simulation engine', () => {
+  function dampWash(engine, freshWater = true, centerX = 96, centerY = 96) {
+    const state = engine.captureState();
+    for (let i = 0; i < state.water.length; i++) {
+      const x = i % state.simWidth, y = Math.floor(i / state.simWidth), radius = Math.hypot(x - centerX, y - centerY);
+      if (radius > 36) continue;
+      const mass = 0.52;
+      state.water[i] = 0.28 + (freshWater ? 0.85 * Math.max(0, 1 - radius * radius / (18 * 18)) : 0);
+      state.pigmentDensity[i] = mass;
+      state.pigmentR[i] = mass * 0.18; state.pigmentG[i] = mass * 0.43; state.pigmentB[i] = mass * 0.69;
+      state.pigmentStainingMass[i] = mass * 0.35; state.pigmentOpacityMass[i] = mass * 0.1;
+      state.pigmentMobilityMass[i] = mass * 0.65;
+      for (const channel of ['R', 'G', 'B']) state['pigmentMobility' + channel + 'Mass'][i] = state['pigment' + channel][i] * 0.65;
+    }
+    return state;
+  }
+  function massInRing(state, inner, outer) {
+    let mass = 0;
+    state.pigmentDensity.forEach((v, i) => {
+      const radius = Math.hypot(i % state.simWidth - 96, Math.floor(i / state.simWidth) - 96);
+      if (radius >= inner && radius < outer) mass += v + state.stainDensity[i];
+    });
+    return mass;
+  }
+  const bloomParams = { water: 1, flowDirection: 'none', flowStrength: 0, drying: 0, humidity: 1, airflow: 0, absorption: 0, granulation: 0, sizing: 1, separation: 0 };
+
+  it('pushes pigment out of a wetter patch into a backrun without adding or deleting paint', async () => {
+    const { engine } = await mountWatercolor();
+    const initial = dampWash(engine);
+    const run = bloomSensitivity => {
+      engine.configure(baseParams('water', { ...bloomParams, bloomSensitivity }), ''); engine.restoreState(initial); engine.advanceSimulation(45);
+      return engine.captureState();
+    };
+    const quiet = run(0), responsive = run(1);
+    expect(massInRing(responsive, 0, 15)).toBeLessThan(massInRing(quiet, 0, 15) * 0.98);
+    expect(massInRing(responsive, 17, 25)).toBeGreaterThan(massInRing(quiet, 17, 25) * 1.02);
+    for (const field of ['Density', 'R', 'G', 'B', 'StainingMass', 'OpacityMass', 'GranulationMass', 'MobilityMass', 'MobilityRMass', 'MobilityGMass', 'MobilityBMass']) {
+      const total = state => state['pigment' + field].reduce((sum, value, i) => sum + value + state['stain' + field][i], 0);
+      expect(total(responsive)).toBeCloseTo(total(initial), 3);
+    }
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('does not invent a central backrun on evenly wetted paper', async () => {
+    const { engine } = await mountWatercolor(), initial = dampWash(engine, false);
+    engine.configure(baseParams('water', { ...bloomParams, bloomSensitivity: 1 }), ''); engine.restoreState(initial); engine.advanceSimulation(30);
+    const final = engine.captureState();
+    expect(massInRing(final, 0, 15) / massInRing(initial, 0, 15)).toBeCloseTo(1, 4);
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('keeps pressure-driven pigment on its side of a masking-fluid barrier', async () => {
+    const { engine } = await mountWatercolor(), initial = dampWash(engine, true, 86, 96);
+    for (let y = 0; y < initial.simHeight; y++) {
+      initial.mask[y * initial.simWidth + 96] = 1;
+      for (let x = 96; x < initial.simWidth; x++) {
+        const i = y * initial.simWidth + x;
+        for (const key of Object.keys(initial)) if (key.startsWith('pigment') && initial[key].length) initial[key][i] = 0;
+        initial.water[i] = 0;
+      }
+    }
+    engine.configure(baseParams('water', { ...bloomParams, bloomSensitivity: 1 }), ''); engine.restoreState(initial); engine.advanceSimulation(45);
+    const final = engine.captureState();
+    expect(final.pigmentDensity.every((value, i) => i % final.simWidth < 96 || value === 0)).toBe(true);
+    expect(final.stainDensity.every((value, i) => i % final.simWidth < 96 || value === 0)).toBe(true);
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('keeps capillary transport finite, nonnegative, and conservative at a paper corner', async () => {
+    const { engine } = await mountWatercolor(), initial = dampWash(engine, true, 1, 1);
+    engine.configure(baseParams('water', { ...bloomParams, flowDirection: 'left', flowStrength: 1, separation: 1, bleed: 1, bloomSensitivity: 1 }), '');
+    engine.restoreState(initial); engine.advanceSimulation(60);
+    const final = engine.captureState();
+    for (const key of Object.keys(final).filter(key => /^(pigment|stain|water)/.test(key) && ArrayBuffer.isView(final[key]))) {
+      expect(final[key].every(value => Number.isFinite(value) && value >= -0.000001 && value <= 3.50001), key).toBe(true);
+    }
+    const mass = state => state.pigmentDensity.reduce((sum, value, i) => sum + value + state.stainDensity[i], 0);
+    expect(mass(final) / mass(initial)).toBeCloseTo(1, 5);
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  function stylus(x,y,timeStamp,extra={}) {
+    return {clientX:x,clientY:y,timeStamp,pointerId:1,pointerType:'pen',pressure:0.7,button:0,preventDefault(){},...extra};
+  }
+
+  it('turns a tilted flat brush across angle wraparound without spinning a wide blot into the stroke', async () => {
+    const {canvas,engine}=await mountWatercolor();
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:192,height:192});
+    engine.configure(baseParams('flat',{size:36,water:0,paper:0}),'');
+    canvas.onpointerdown(stylus(60,96,0,{tiltX:-60,tiltY:1,pressure:0.1}));
+    canvas.onpointermove(stylus(125,96,120,{tiltX:-60,tiltY:-1,pressure:0.1}));
+    canvas.onpointerup(stylus(125,96,121,{type:'pointerup',pressure:0}));
+    const state=engine.captureState();
+    const outside=state.pigmentDensity.reduce((n,v,i)=>n+(Math.abs(Math.floor(i/state.simWidth)-96)>5?v:0),0);
+    expect(state.pigmentDensity.some(v=>v>0)).toBe(true);
+    expect(outside).toBe(0);
+    expect(engine.undo()).toBe(true);
+    expect(engine.captureState().pigmentDensity.every(v=>v===0)).toBe(true);
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('keeps lightly pressed rigger strokes evenly covered across the narrow contact area', async () => {
+    const {canvas,engine}=await mountWatercolor();
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:192,height:192});
+    engine.configure(baseParams('rigger',{size:80,water:0,paper:0,pigment:0.5}),'');
+    canvas.onpointerdown(stylus(48,96,0,{tiltY:85,pressure:0.05}));
+    canvas.onpointerup(stylus(144,96,300,{tiltY:85,pressure:0.05,type:'pointerup'}));
+    const state=engine.captureState();
+    const line=Array.from({length:48},(_,x)=>state.pigmentDensity[96*state.simWidth+72+x]);
+    for(let i=1;i<line.length;i++) {
+      expect(line[i]).toBeGreaterThan(0);
+      expect(Math.max(line[i],line[i-1])/Math.min(line[i],line[i-1])).toBeLessThan(1.45);
+    }
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('keeps the paint load consistent between high-frequency and bundled stylus samples', async () => {
+    const {canvas,engine}=await mountWatercolor();
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:192,height:192});
+    engine.configure(baseParams('round',{size:14,water:0,paper:0,pigment:0.3}),'');
+    const draw=interval=>{
+      engine.clear();
+      canvas.onpointerdown(stylus(60,96,0));
+      for(let t=interval;t<=40;t+=interval)canvas.onpointermove(stylus(60+t*1.2,96,t));
+      canvas.onpointerup(stylus(108,96,41,{type:'pointerup',pressure:0}));
+      return engine.captureState().pigmentDensity.reduce((n,v)=>n+v,0);
+    };
+    const coarse=draw(4),fine=draw(1);
+    expect(Math.abs(fine-coarse)/coarse).toBeLessThan(0.08);
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
+  it('updates stationary pressure and timing without paint, and retains the final coalesced endpoint', async () => {
+    const {canvas,engine}=await mountWatercolor();
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:192,height:192});
+    engine.configure(baseParams('round',{size:28,water:0}),'');
+    canvas.onpointerdown(stylus(40,96,0,{pressure:0.1}));
+    const before=engine.captureState().pigmentDensity;
+    canvas.onpointermove(stylus(40,96,1000,{pressure:1}));
+    expect(engine.captureState().pigmentDensity).toEqual(before);
+    const cursor=container.querySelector('#artstudio-watercolor-cursor');
+    expect(parseFloat(cursor.style.width)).toBeGreaterThan(20);
+    const samples=[stylus(60,96,1040),stylus(80,96,1080)];
+    canvas.onpointermove(stylus(120,96,1160,{getCoalescedEvents:()=>samples}));
+    expect(engine.captureState().pigmentDensity[96*192+120]).toBeGreaterThan(0);
+    const completed=engine.captureState().pigmentDensity;
+    canvas.onpointerup(stylus(120,96,1161,{type:'pointerup',pressure:0}));
+    expect(engine.captureState().pigmentDensity).toEqual(completed);
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
+
   it('enables working Undo and Redo buttons when the engine history changes', async () => {
     const {engine}=await mountWatercolor();
     const undo=container.querySelector('#artstudio-watercolor-undo');

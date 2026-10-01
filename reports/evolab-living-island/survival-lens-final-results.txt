@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:27596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:27596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2024:5 › survival chance lens updates real 3D bars for habitat and selection while preserving genes and buffers
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2067:5 › survival chance lens on a phone distinguishes the coming climate from recorded probabilities and outcomes
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2097:5 › survival chance lens without WebGL preserves historical conditions and has no invented probabilities after extinction
+[1A[2K  3 passed (1.8m)

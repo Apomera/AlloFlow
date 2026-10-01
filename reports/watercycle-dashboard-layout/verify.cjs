@@ -1,0 +1,72 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const cp = require('node:child_process');
+const assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '../..');
+const out = path.join(root, 'reports/watercycle-dashboard-layout');
+const portableVerifier = fs.readFileSync(__filename,'utf8').replace("const root = path.resolve(__dirname, '../..');", "const root = path.resolve(__dirname, '../..');");
+fs.writeFileSync(path.join(out,'verify.cjs'),portableVerifier);
+const expected = 'd43969e8c5824b6f2b94b2b7e29b51ef33a24833495059c79cad6e9551951061';
+const baseline = '78d924001e4e1de6167aae3804405f976ade6d4809f4d9d06cd47816a6a967e8';
+const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+const read = file => JSON.parse(fs.readFileSync(path.join(out,file)));
+const source = fs.readFileSync(path.join(root,'stem_lab/stem_tool_watercycle.js'));
+assert.equal(hash(source), expected);
+assert.equal(hash(fs.readFileSync(path.join(root,'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'))), expected);
+assert.equal(hash(fs.readFileSync(path.join(out,'baseline-runtime.js'))), baseline);
+new Function(source.toString());
+const baselineSource = fs.readFileSync(path.join(out,'baseline-runtime.js'),'utf8');
+function teachingSignals(text) {
+  const start = text.indexOf('function clampWcSignal(value)'), end = text.indexOf('var wcClimateBaselineSolar',start);
+  assert(start>=0 && end>start);
+  return text.slice(start,end);
+}
+assert.equal(teachingSignals(source.toString()),teachingSignals(baselineSource));
+const unit = read('unit-results.json'), regression = read('regression-results.json'), browser = read('results.json');
+const unique = new Set();
+for (const [result,total] of [[unit,67],[regression,83]]) {
+  assert.equal(result.success,true);
+  assert.equal(result.numFailedTests,0);
+  assert.equal(result.numPassedTests,total);
+  assert.equal(result.numTotalTests,total);
+  for (const suite of result.testResults) for (const item of suite.assertionResults) {
+    assert.equal(item.status,'passed');
+    const identity = suite.name + '::' + item.fullName;
+    assert.equal(unique.has(identity),false);
+    unique.add(identity);
+  }
+}
+assert.equal(unique.size,150);
+const um = unit.waterCycleSignalVerification;
+assert.equal(um.runtimeSha256, expected);
+assert.equal(um.publicMirrorSha256, expected);
+assert.equal(um.dashboardLayoutBaselineSha256,baseline);
+assert.equal(um.testSha256,hash(fs.readFileSync(path.join(root,'tests/watercycle_signal_chart.test.js'))));
+const rm = regression.waterCycleVerification;
+assert.equal(rm.sourceHash,expected);
+assert.equal(rm.publicHash,expected);
+assert.equal(rm.baselineHash,baseline);
+for (const [file,recorded] of Object.entries(rm.testHashes)) assert.equal(recorded,hash(fs.readFileSync(path.join(root,file))));
+for (const field of ['sourceSha256','publicSha256','finalSourceSha256','finalPublicSha256']) assert.equal(browser[field],expected);
+for (const field of ['completed','successful','browserClosed','serverClosed']) assert.equal(browser[field],true);
+assert.deepEqual(browser.failures,[]);
+assert.deepEqual(browser.errors,[]);
+assert.equal(browser.failed,0);
+assert(browser.checks.length>0 && browser.checks.every(c=>c.pass));
+assert.equal(browser.audits.length,18);
+assert(browser.audits.every(a=>a.violations.length===0));
+const gitScope = ['stem_lab/stem_tool_watercycle.js','desktop/web-app/public/stem_lab/stem_tool_watercycle.js','tests/watercycle_signal_chart.test.js','dev-tools/watercycle_dashboard_layout_qa.cjs','reports/watercycle-dashboard-layout','docs/water-cycle-visual-design.md'];
+const staged = cp.spawnSync('git',['diff','--cached','--name-only','--',...gitScope],{cwd:root,encoding:'utf8'});
+assert.equal(staged.status,0);
+assert.equal(staged.stdout.trim(),'');
+const check = cp.spawnSync('git',['diff','--check','--',...gitScope],{cwd:root,encoding:'utf8'});
+assert.equal(check.status,0,check.stdout+check.stderr);
+const before = read('baseline-results.json').snapshots.find(m=>m.label==='desktop-or-phone-open-1280');
+const after = browser.layouts.find(m=>m.label==='light-1280 open table');
+assert(before && after);
+const summary = {sourceSha256:expected,publicSha256:expected,baselineSha256:baseline,uniqueTests:unique.size,browserChecks:browser.checks.length,browserCases:browser.cases.length,layoutMeasurements:browser.layouts.length,cleanScopedAudits:browser.audits.length,browserCompleted:true,ownedResourcesClosed:true,scopedIndexEmpty:true,whitespaceClean:true,teachingSignalDerivationsUnchanged:true,desktop:{beforeEmptyHeight:before.unusedHeightBelowLastBar,afterEmptyHeight:after.unusedHeightBelowLastBar,beforePanelHeight:before.dashboard.h,afterPanelHeight:after.panel.h,tableWidth:after.values.w,gridWidth:after.grid.w},reportSha256:{unit:hash(fs.readFileSync(path.join(out,'unit-results.json'))),regression:hash(fs.readFileSync(path.join(out,'regression-results.json'))),browser:hash(fs.readFileSync(path.join(out,'results.json'))),browserHarness:hash(fs.readFileSync(path.join(root,'dev-tools/watercycle_dashboard_layout_qa.cjs')))}};
+summary.desktop.valuesCardWidth = summary.desktop.tableWidth;
+delete summary.desktop.tableWidth;
+fs.writeFileSync(path.join(out,'verification-summary.json'),JSON.stringify(summary,null,2)+'\n');
+console.log(JSON.stringify(summary));

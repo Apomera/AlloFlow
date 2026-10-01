@@ -1,0 +1,976 @@
+{
+  "title": "Kitchen Lab recipe evidence",
+  "version": 1,
+  "exportedAt": "2026-09-27T14:09:07.768Z",
+  "scope": "Illustrative recipe simulation; not a validated predictor of real cooking temperatures or times. Written explanations require human review.",
+  "cooks": [
+    {
+      "title": "Golden mushroom pasta",
+      "servings": 2,
+      "mode": "demonstrate",
+      "simulatedSeconds": 630,
+      "status": "Recipe completed independently",
+      "criteria": [
+        {
+          "label": "Recipe portion measured",
+          "met": true
+        },
+        {
+          "label": "Pasta checked and slightly firm",
+          "met": true
+        },
+        {
+          "label": "Mushrooms cut to size and golden, without scorching",
+          "met": true
+        },
+        {
+          "label": "Sauce coats the pasta",
+          "met": true
+        },
+        {
+          "label": "Dish checked; both burners off",
+          "met": true
+        }
+      ],
+      "questionsCorrect": true,
+      "corrections": 0,
+      "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "target": 5,
+        "min": 5,
+        "max": 5,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 6,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "lastMixedAt": 630,
+        "lastMethod": "simplified"
+      },
+      "panSurface": {
+        "enabled": true,
+        "sizeModel": true,
+        "pieces": [
+          {
+            "index": 0,
+            "x": -0.15634969859648967,
+            "z": -0.08918952712503209,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 0,
+            "top": 1.6214841156526552,
+            "bottom": 0.8975839346037477,
+            "soft": 0,
+            "damage": 0.0002395783337114381,
+            "topColor": "dark",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.74
+          },
+          {
+            "index": 1,
+            "x": 0.31206315881874974,
+            "z": -0.07082785404107478,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 0,
+            "top": 0.2691564040038896,
+            "bottom": 2.7993842698846865,
+            "soft": 0,
+            "damage": 0.0002959497063494235,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          },
+          {
+            "index": 2,
+            "x": -0.26201571911637933,
+            "z": 0.37808433310033707,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 1,
+            "top": 2.3863476166300934,
+            "bottom": 0.8533095496929332,
+            "soft": 0,
+            "damage": 0.00022775330439369973,
+            "topColor": "dark",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.952,
+            "contact": 0.87
+          },
+          {
+            "index": 3,
+            "x": -0.024328683196856122,
+            "z": -0.1783482973675583,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 1,
+            "top": 0.2974886570569306,
+            "bottom": 2.5092438667319765,
+            "soft": 0,
+            "damage": 0.00023957833371143804,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.74
+          },
+          {
+            "index": 4,
+            "x": 0.2460578245022737,
+            "z": 0.2045862825343094,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 2,
+            "top": 1.9682931302380304,
+            "bottom": 0.9393327473366028,
+            "soft": 0,
+            "damage": 0.00025172733643514183,
+            "topColor": "dark",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          },
+          {
+            "index": 5,
+            "x": -0.4594709921591395,
+            "z": 0.022054644959644695,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 2,
+            "top": 0.2831310963881599,
+            "bottom": 2.320636181073549,
+            "soft": 0,
+            "damage": 0.00022775330439369973,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 0.87
+          },
+          {
+            "index": 6,
+            "x": 0.12674892578919725,
+            "z": -0.12780731517125524,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 3,
+            "top": 2.1490865678797957,
+            "bottom": 1.023313267528096,
+            "soft": 0,
+            "damage": 0.00027537739507061846,
+            "topColor": "dark",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 7,
+            "x": -0.012683956844939934,
+            "z": 0.31974852187110375,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 4,
+            "top": 0.3164406371397079,
+            "bottom": 2.7349386798911453,
+            "soft": 0,
+            "damage": 0.00020750496652086016,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 8,
+            "x": -0.29702384502252477,
+            "z": -0.35125038859485297,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 4,
+            "top": 1.4711485172544816,
+            "bottom": 0.8569807612138787,
+            "soft": 0,
+            "damage": 0.00022775330439369973,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 1
+          },
+          {
+            "index": 9,
+            "x": 0.17854443443567494,
+            "z": 0.022844800985015585,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 5,
+            "top": 0.19296561538827925,
+            "bottom": 2.9271726991852867,
+            "soft": 0,
+            "damage": 0.0002753773950706185,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.48
+          },
+          {
+            "index": 10,
+            "x": -0.26149042814245255,
+            "z": 0.1844525846657532,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 5,
+            "top": 2.2688582472494874,
+            "bottom": 0.621606273467421,
+            "soft": 0,
+            "damage": 0.00016328259660657848,
+            "topColor": "dark",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 11,
+            "x": 0.09808129902538393,
+            "z": -0.44942191622293326,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 6,
+            "top": 0.3254380418254707,
+            "bottom": 2.466225758690927,
+            "soft": 0,
+            "damage": 0.0002677640200304308,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 1
+          },
+          {
+            "index": 12,
+            "x": 0.09048655699352512,
+            "z": 0.1556026445901789,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 6,
+            "top": 2.1490865678797957,
+            "bottom": 1.0233132675280963,
+            "soft": 0,
+            "damage": 0.0002753773950706185,
+            "topColor": "dark",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 13,
+            "x": -0.30547213455118655,
+            "z": -0.09532457717053759,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 7,
+            "top": 0.2691564040038896,
+            "bottom": 2.4775546772568027,
+            "soft": 0,
+            "damage": 0.00020750496652086016,
+            "topColor": "pale",
+            "bottomColor": "dark",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          }
+        ],
+        "crowded": 8,
+        "scorched": 0,
+        "sizeSummary": "Prepared widths: 5 mm. Each representative piece keeps its width; smaller pieces brown or soften faster under matching conditions.",
+        "summary": "8 of 14 pieces are close together. Crowding reduces contact; the pan center runs hotter."
+      },
+      "panPosition": {
+        "site": "burner",
+        "x": 1.02,
+        "z": -0.45,
+        "heat": 0
+      },
+      "waterHandling": {
+        "capacity": 200,
+        "saved": 150,
+        "used": 50,
+        "remaining": 0,
+        "scoop": 0,
+        "drained": 0
+      },
+      "drying": {
+        "enabled": true,
+        "areas": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "remaining": 0,
+        "fraction": 0,
+        "cloth": 0,
+        "capacity": 8,
+        "surfaceWater": 0,
+        "clothWater": 0,
+        "complete": true
+      },
+      "pastaHandling": {
+        "enabled": true,
+        "groups": [
+          {
+            "index": 0,
+            "x": 0.27712812921102037,
+            "z": 0.15999999999999998,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 1,
+            "x": 1.959434878635765e-17,
+            "z": 0.32,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 2,
+            "x": -0.2771281292110203,
+            "z": 0.16000000000000011,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 3,
+            "x": -0.2771281292110204,
+            "z": -0.15999999999999992,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 4,
+            "x": -5.878304635907295e-17,
+            "z": -0.32,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 5,
+            "x": 0.2771281292110204,
+            "z": -0.1599999999999999,
+            "cling": 0,
+            "separated": true
+          }
+        ],
+        "clumped": 0,
+        "separated": 6,
+        "summary": "Pasta drained. The strands are separated."
+      },
+      "inspections": [
+        {
+          "kind": "pasta",
+          "time": 600,
+          "label": "Tender with a slight bite",
+          "coreFraction": 0.12,
+          "compression": 0.4,
+          "observation": "A tiny pale center remains. The sample yields with slight resistance.",
+          "clumped": 0,
+          "range": {
+            "min": 0.9928922094810546,
+            "max": 0.9928922094810546
+          }
+        },
+        {
+          "kind": "sauce",
+          "time": 630,
+          "type": "coating",
+          "label": "Coating the spoon",
+          "closureSeconds": 1.8,
+          "observation": "The track closes gradually. A continuous layer stays on the spoon."
+        }
+      ],
+      "plan": "",
+      "reflection": "",
+      "answers": [
+        0,
+        0
+      ],
+      "explanations": [
+        {
+          "question": "Why did adding pasta lower the water temperature?",
+          "answer": "Cooler pasta absorbed heat."
+        },
+        {
+          "question": "Why can a crowded, wet pan delay mushroom browning?",
+          "answer": "The released water keeps the cooking surface wet."
+        }
+      ],
+      "pastaTexture": "Tender with a slight bite",
+      "sauce": "Golden, glossy mushrooms",
+      "review": {
+        "findings": [
+          {
+            "label": "Recipe portion measured",
+            "met": true,
+            "observation": "160 g weighed for 2 servings; recipe target 160 g.",
+            "nextPractice": "Keep weighing against the scaled recipe before cooking."
+          },
+          {
+            "label": "Pasta checked and slightly firm",
+            "met": true,
+            "observation": "Finished pasta: Tender with a slight bite. Last sample: Tender with a slight bite. Pasta was stirred in the pot. Group textures: Tender with a slight bite to Tender with a slight bite.",
+            "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
+          },
+          {
+            "label": "Mushrooms cut to size and golden, without scorching",
+            "met": true,
+            "observation": "Golden, glossy mushrooms. Prepared widths: 5–5 mm (simplified). Standard pan with 200 g of mushrooms.",
+            "nextPractice": "Keep watching color as moisture escapes; lower the heat once golden."
+          },
+          {
+            "label": "Sauce coats the pasta",
+            "met": true,
+            "observation": "50 mL modeled sauce moisture; 50 mL reserved water added, 150 mL left in the jug.",
+            "nextPractice": "Keep adding saved water in small amounts and checking the coating."
+          },
+          {
+            "label": "Dish checked; both burners off",
+            "met": true,
+            "observation": "Final dish checked; pot burner off, pan burner off.",
+            "nextPractice": "Keep checking after your last adjustment and turning both burners off before plating."
+          }
+        ],
+        "timeline": [
+          {
+            "time": 90,
+            "event": "Produce entered the pan",
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+          },
+          {
+            "time": 120,
+            "event": "Pasta entered the pot",
+            "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+          },
+          {
+            "time": 120,
+            "event": "Pasta strands separated with a spoon",
+            "observation": "Pasta group 1 separated. 5 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences."
+          },
+          {
+            "time": 120,
+            "event": "Pasta strands separated with a spoon",
+            "observation": "Pasta group 2 separated. 4 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences."
+          },
+          {
+            "time": 120,
+            "event": "Pasta strands separated with a spoon",
+            "observation": "Pasta group 3 separated. 3 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences."
+          },
+          {
+            "time": 120,
+            "event": "Pasta strands separated with a spoon",
+            "observation": "Pasta group 4 separated. 2 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences."
+          },
+          {
+            "time": 120,
+            "event": "Pasta strands separated with a spoon",
+            "observation": "Pasta group 5 separated. 1 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences."
+          },
+          {
+            "time": 120,
+            "event": "Pasta strands separated with a spoon",
+            "observation": "Pasta group 6 separated. The strands are separated and have room for water to circulate. Separation affects cooking from now on; it cannot undo earlier cooking differences."
+          },
+          {
+            "time": 270,
+            "event": "Garlic added",
+            "observation": "Garlic added. Watch its color as the pan heats."
+          },
+          {
+            "time": 600,
+            "event": "Pasta sampled",
+            "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen."
+          },
+          {
+            "time": 600,
+            "event": "Cooking water reserved",
+            "observation": "200 mL starchy cooking water reserved."
+          },
+          {
+            "time": 600,
+            "event": "Pasta drained",
+            "observation": "Pasta drained. Reserved water is available for the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Sauce loosened with saved water",
+            "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+          },
+          {
+            "time": 630,
+            "event": "Pasta and sauce combined",
+            "observation": "Drained pasta added and tossed through the sauce."
+          },
+          {
+            "time": 630,
+            "event": "Finished dish checked",
+            "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 630,
+            "event": "Dish plated",
+            "observation": "Dish plated. Review the texture, sauce, and choices you made."
+          }
+        ]
+      },
+      "actions": [
+        {
+          "action": "wash",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Soap-and-water handwashing completed for at least 20 seconds in this model."
+        },
+        {
+          "action": "rinse",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Produce rinsed under running water."
+        },
+        {
+          "action": "cut",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Even 5 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
+        },
+        {
+          "action": "dry",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Excess surface water removed."
+        },
+        {
+          "action": "garlicPrep",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Garlic peeled and minced."
+        },
+        {
+          "action": "measure",
+          "value": 160,
+          "time": 0,
+          "accepted": true,
+          "observation": "Measured 160 g of dry pasta. The recipe calls for 160 g."
+        },
+        {
+          "action": "fill",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot filled with 1200 mL of fresh water."
+        },
+        {
+          "action": "potHeat",
+          "value": 3,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot burner high. The water temperature changes gradually."
+        },
+        {
+          "action": "oil",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "15 mL olive oil added."
+        },
+        {
+          "action": "panHeat",
+          "value": 2,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pan burner medium. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 30,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 60,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 90,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Near a simmer; Oil in the pan."
+        },
+        {
+          "action": "produce",
+          "value": null,
+          "time": 90,
+          "accepted": true,
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 120,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Boiling water; Releasing moisture."
+        },
+        {
+          "action": "pasta",
+          "value": null,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+        },
+        {
+          "action": "separatePasta",
+          "value": 0,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta group 1 separated. 5 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences.",
+          "interaction": "pot-sweep"
+        },
+        {
+          "action": "separatePasta",
+          "value": 1,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta group 2 separated. 4 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences.",
+          "interaction": "pot-sweep"
+        },
+        {
+          "action": "separatePasta",
+          "value": 2,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta group 3 separated. 3 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences.",
+          "interaction": "pot-sweep"
+        },
+        {
+          "action": "separatePasta",
+          "value": 3,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta group 4 separated. 2 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences.",
+          "interaction": "pot-sweep"
+        },
+        {
+          "action": "separatePasta",
+          "value": 4,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta group 5 separated. 1 of 6 representative groups are clumped. Sweep through them so water can reach the strands. Separation affects cooking from now on; it cannot undo earlier cooking differences.",
+          "interaction": "pot-sweep"
+        },
+        {
+          "action": "separatePasta",
+          "value": 5,
+          "time": 120,
+          "accepted": true,
+          "observation": "Pasta group 6 separated. The strands are separated and have room for water to circulate. Separation affects cooking from now on; it cannot undo earlier cooking differences.",
+          "interaction": "pot-sweep"
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 150,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Developing color."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 180,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Developing color."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 180,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 210,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Developing color."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 240,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Developing color."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 270,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "garlic",
+          "value": null,
+          "time": 270,
+          "accepted": true,
+          "observation": "Garlic added. Watch its color as the pan heats."
+        },
+        {
+          "action": "panHeat",
+          "value": 1,
+          "time": 270,
+          "accepted": true,
+          "observation": "Pan burner low. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 270,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 300,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 330,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 360,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 360,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 390,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 420,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 450,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 450,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 480,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 510,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 540,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 540,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 570,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 600,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Dry; needs a splash."
+        },
+        {
+          "action": "sample",
+          "value": null,
+          "time": 600,
+          "accepted": true,
+          "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen.",
+          "inspection": {
+            "kind": "pasta",
+            "time": 600,
+            "label": "Tender with a slight bite",
+            "coreFraction": 0.12,
+            "compression": 0.4,
+            "observation": "A tiny pale center remains. The sample yields with slight resistance.",
+            "clumped": 0,
+            "range": {
+              "min": 0.9928922094810546,
+              "max": 0.9928922094810546
+            }
+          }
+        },
+        {
+          "action": "reserve",
+          "value": null,
+          "time": 600,
+          "accepted": true,
+          "observation": "200 mL starchy cooking water reserved."
+        },
+        {
+          "action": "drain",
+          "value": null,
+          "time": 600,
+          "accepted": true,
+          "observation": "Pasta drained. Reserved water is available for the sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 600,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 630,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta drained; Dry; needs a splash."
+        },
+        {
+          "action": "water",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+        },
+        {
+          "action": "combine",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Drained pasta added and tossed through the sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 630,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "panHeat",
+          "value": 0,
+          "time": 630,
+          "accepted": true,
+          "observation": "Pan burner off. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite.",
+          "inspection": {
+            "kind": "sauce",
+            "time": 630,
+            "type": "coating",
+            "label": "Coating the spoon",
+            "closureSeconds": 1.8,
+            "observation": "The track closes gradually. A continuous layer stays on the spoon."
+          }
+        },
+        {
+          "action": "plate",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Dish plated. Review the texture, sauce, and choices you made."
+        }
+      ]
+    }
+  ]
+}

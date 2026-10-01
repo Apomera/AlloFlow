@@ -45,7 +45,9 @@ async function expectTerrainInFrame(page: any) {
 
 test('puts a detailed live meadow first and connects objectives to real commands', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
-  await mount(page);
+  // Full brood-core health: a quiet, fed cycle now repairs the core (+1), and the nest ring
+  // draws that health, so a damaged start would change the map for a reason unrelated to scouting.
+  await mount(page, { hiveHealth: 100 });
   const bay = page.locator('[data-beehive-3d-bay="queen"]');
   await page.evaluate(() => window.scrollTo(0, 0));
   expect((await bay.boundingBox())!.y).toBeLessThan(650);
@@ -271,7 +273,7 @@ test('guides a shared-patch investigation with frozen evidence and notebook expo
 });
 
 test('prevents recording hidden or mismatched routes and preserves the study across remounts', async ({ page }) => {
-  await mount(page, { day: 95 });
+  await mount(page, { day: 35 }); // winter: cycles 31-40 of the 40-cycle bee year
   const bay = page.locator('[data-beehive-3d-bay="queen"]'), study = bay.locator('[data-rts-map-investigation]');
   await study.getByRole('button', { name: 'Start investigation', exact: true }).click();
   await study.getByRole('radio', { name: 'Both colonies can reach the same patch.', exact: true }).check();

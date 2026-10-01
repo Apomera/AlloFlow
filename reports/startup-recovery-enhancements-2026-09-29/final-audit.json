@@ -1,0 +1,87 @@
+{
+  "at": "2026-09-29T23:42:44.389Z",
+  "checks": {
+    "hostsEqual": true,
+    "hostsParse": true,
+    "phaseKMirrorEqual": true,
+    "adventureMirrorEqual": true,
+    "cryptoMirrorEqual": true,
+    "surroundingPhaseKPreserved": true,
+    "surroundingAdventurePreserved": true,
+    "validationAdditive": true,
+    "testsSelected": true,
+    "fullAppUsesCurrentHost": true,
+    "proofInputsCurrent": true,
+    "proofInputsUnchanged": true,
+    "sixProofsRejected": true,
+    "phaseKBuildCurrent": true,
+    "adventureBuildCurrent": true
+  },
+  "changedDuringValidation": [],
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "sha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71"
+    },
+    {
+      "path": "phase_k_helpers_source.jsx",
+      "sha256": "966c380e347b1f191b03bb01874739cf61b3a0f7531df920a1e9daed4548bc86"
+    },
+    {
+      "path": "phase_k_helpers_module.js",
+      "sha256": "617a14f16f2773fada00bd9cc37cf1e6172b0bd23f4227a4c5887bd148e52fdc"
+    },
+    {
+      "path": "desktop/web-app/public/phase_k_helpers_module.js",
+      "sha256": "617a14f16f2773fada00bd9cc37cf1e6172b0bd23f4227a4c5887bd148e52fdc"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "5d5a7c17a95942bccd88f3d57fb536f06c821e70e24bebcbe6da8d9bad3846ec"
+    },
+    {
+      "path": "adventure_handlers_source.jsx",
+      "sha256": "c164e1b587b0cddeb84361b25a1c1314c9f87490f84e94da03bc8097a859bf0c"
+    },
+    {
+      "path": "adventure_handlers_module.js",
+      "sha256": "ae11966cd4bd90bc3c6eda9021b4c4fe5e05c585a32f03b7d073c1f6fced4e1b"
+    },
+    {
+      "path": "desktop/web-app/public/adventure_handlers_module.js",
+      "sha256": "ae11966cd4bd90bc3c6eda9021b4c4fe5e05c585a32f03b7d073c1f6fced4e1b"
+    },
+    {
+      "path": "tests/k5_save_adventure_readiness.test.js",
+      "sha256": "77ef40a3a733bb22930e91b120c6f770ca564c1093ebf7f96503ab8eee59dc04"
+    },
+    {
+      "path": "tests/project_save_cancellation_encryption.test.js",
+      "sha256": "34aef2fb49905a11195f856b2fb287c37181356761246ddaa12710176a4b24aa"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "sha256": "88d541c85f83a5efe4a2d17c47b83362b389cf7c165999be9eb25916364fa01a"
+    },
+    {
+      "path": "desktop/web-app/public/allo_crypto_module.js",
+      "sha256": "88d541c85f83a5efe4a2d17c47b83362b389cf7c165999be9eb25916364fa01a"
+    }
+  ],
+  "preview": {
+    "at": "2026-09-29T23:31:02.724Z",
+    "hostSha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+    "shellSha256": "8453cb675e8138c4d299666fb5f9d855d0f9721b8bac6bb3f7fe51018ae3688e",
+    "js": "main.4d9c9876.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  }
+}

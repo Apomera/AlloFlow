@@ -131,29 +131,112 @@ SCHEMA:
 {"version":1,"title":"...","mission":"...","debrief":"A short explanation connecting the discoveries to the learning","exitNodeId":"door","areas":[{"id":"archive","name":"...","description":"..."}],"nodes":[{"id":"notes","areaId":"archive","type":"inspect","name":"Field notes","description":"What players observe","instruction":"Record the evidence","requires":[],"hints":["...","...","..."],"reward":{"id":"evidence-a","kind":"evidence","name":"...","text":"Actual evidence used by a later device"}},{"id":"device","areaId":"archive","type":"configure","name":"...","description":"...","instruction":"...","requires":["evidence-a","evidence-b"],"controls":[{"label":"...","options":["...","..."],"correctIndex":1},{"label":"...","options":["...","..."],"correctIndex":0}],"learningObjective":"...","sourceQuote":"exact words from source","explanation":"why these settings work","hints":["...","...","..."],"reward":{"id":"part-a","kind":"tool","name":"...","text":"The device releases a component"}}]}
 The schema objects illustrate fields only; return a COMPLETE room of 7-12 objects. IDs must start with a lowercase letter and use only lowercase letters, digits, underscores or hyphens (max 40 characters). Text limits: title 120, mission/debrief 1500, object name 100, descriptions/instructions 1000, reward text 1200, each hint 450.`;
 }
+// Quotes are compared after folding the differences a model introduces when it copies
+// text: case, curly quotes, dashes, ellipses, Markdown emphasis and spacing.
+const QUOTE_FOLD = { '\u2018': "'", '\u2019': "'", '\u201A': "'", '\u201B': "'", '\u2032': "'", '\u201C': '"', '\u201D': '"', '\u201E': '"', '\u201F': '"', '\u2033': '"', '\u2013': '-', '\u2014': '-', '\u2012': '-', '\u2212': '-', '\u00A0': ' ', '\u2026': '...' };
+function foldForQuote(text) {
+  const chars = [], at = [];
+  const input = String(text || '').normalize('NFC');
+  for (let i = 0; i < input.length; i++) {
+    let ch = input[i];
+    if ('*_`#>'.includes(ch)) continue;
+    ch = QUOTE_FOLD[ch] ?? ch;
+    for (const part of ch.toLowerCase()) {
+      if (/\s/.test(part)) { if (!chars.length || chars[chars.length - 1] === ' ') continue; chars.push(' '); at.push(i); continue; }
+      chars.push(part); at.push(i);
+    }
+  }
+  while (chars[chars.length - 1] === ' ') { chars.pop(); at.pop(); }
+  return { text: chars.join(''), at };
+}
+// Replaces a sourceQuote that differs from the lesson only in copying noise with the
+// exact lesson text, so the validator can accept it. Returns the snapped quote or null.
+export function snapSourceQuote(quote, source) {
+  if (typeof quote !== 'string' || !quote.trim() || typeof source !== 'string') return null;
+  if (normalized(source).includes(normalized(quote))) return quote;
+  const lesson = foldForQuote(source), wanted = foldForQuote(quote).text.replace(/^\.\.\.\s*|\s*\.\.\.$/g, '').trim();
+  if (wanted.length < 12) return null;
+  const start = lesson.text.indexOf(wanted);
+  if (start < 0) return null;
+  const snapped = source.normalize('NFC').slice(lesson.at[start], lesson.at[start + wanted.length - 1] + 1).trim();
+  return snapped.length <= 600 && normalized(source).includes(normalized(snapped)) ? snapped : null;
+}
+const slugKey = value => { let id = String(value || '').normalize('NFKD').replace(/[\u0300-\u036F]/g, '').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^[^a-z]+/, '').slice(0, 40).replace(/-+$/, ''); return id || 'item'; };
+// Deterministic fixes for common model slips, applied before a repair call is spent:
+// quotes copied with typographic noise, IDs with capitals or spaces, and extra hints.
+// Never changes a room's structure, answers or wording beyond those fields.
+export function autoRepairRoom(raw, source) {
+  if (!plain(raw)) return { room: raw, fixes: [] };
+  const fixes = [], room = { ...raw };
+  const renames = { area: new Map(), node: new Map(), reward: new Map() }, taken = new Set(['__proto__', 'constructor', 'prototype']);
+  const rename = (kind, id) => {
+    if (typeof id !== 'string' || safeKey(id)) { if (typeof id === 'string') taken.add(id); return id; }
+    if (renames[kind].has(id)) return renames[kind].get(id);
+    let next = slugKey(id), n = 2;
+    while (taken.has(next)) next = slugKey(id).slice(0, 36) + '-' + n++;
+    taken.add(next); renames[kind].set(id, next); fixes.push('id:' + id);
+    return next;
+  };
+  if (Array.isArray(raw.areas)) room.areas = raw.areas.map(a => plain(a) ? { ...a, id: rename('area', a.id) } : a);
+  if (Array.isArray(raw.nodes)) {
+    const nodes = raw.nodes.map(n => plain(n) ? { ...n, id: rename('node', n.id), reward: plain(n.reward) ? { ...n.reward, id: rename('reward', n.reward.id) } : n.reward } : n);
+    const remap = (kind, id) => renames[kind].get(id) ?? id;
+    room.nodes = nodes.map(n => {
+      if (!plain(n)) return n;
+      const next = { ...n, areaId: remap('area', n.areaId) };
+      if (Array.isArray(n.requires)) next.requires = n.requires.map(id => remap('reward', id));
+      if (n.toolId != null) next.toolId = remap('reward', n.toolId);
+      if (Array.isArray(n.hints) && n.hints.length > 3 && n.hints.slice(0, 3).every(h => text(h, 450))) { next.hints = n.hints.slice(0, 3); fixes.push('hints:' + n.id); }
+      if (['configure', 'sequence', 'route'].includes(n.type) && typeof n.sourceQuote === 'string' && source && !normalized(source).includes(normalized(n.sourceQuote))) {
+        const snapped = snapSourceQuote(n.sourceQuote, source);
+        if (snapped) { next.sourceQuote = snapped; fixes.push('quote:' + n.id); }
+      }
+      return next;
+    });
+    if (typeof raw.exitNodeId === 'string') room.exitNodeId = remap('node', raw.exitNodeId);
+  }
+  return { room, fixes };
+}
+// Validation failures go to the in-app diagnostics log, so the rules that fail most
+// often can be found without asking teachers to reproduce them.
+function reportGenerationIssue(stage, message) {
+  try {
+    const reporter = globalThis.window && globalThis.window.AlloModules && globalThis.window.AlloModules.ErrorReporter;
+    if (reporter && typeof reporter.record === 'function') reporter.record('warn', '[Escape Room] ' + stage + ': ' + String(message).slice(0, 1500), '', 'connected_escape_room_engine.js', 0, 0);
+  } catch (_) {}
+}
+const repairPrompt = (source, options, message, response) => promptFor(source, options) + '\nRepair the previous room. Validation errors:\n' + String(message).slice(0, 3000) + '\nPrevious JSON:\n' + String(response).slice(0, 50000);
+// options.repairFrom = { response, message } resumes from a failed attempt: one repair call.
 export async function generateRoom(callAI, source, options = {}, onStage = () => {}) {
   if (typeof callAI !== 'function') throw new Error('The AI provider is not available.');
   if (!source || source.trim().length < 40) throw new Error('Add lesson source text or a quiz with enough content to generate a room.');
-  let prompt = promptFor(source, options), lastError;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    onStage(attempt === 0 ? 'generating' : 'repairing');
+  const resume = options.repairFrom && typeof options.repairFrom.response === 'string' ? options.repairFrom : null;
+  let prompt = resume ? repairPrompt(source, options, resume.message, resume.response) : promptFor(source, options), lastError, lastResponse = '';
+  const attempts = resume ? 1 : 2;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    onStage(attempt === 0 && !resume ? 'generating' : 'repairing');
     let response = '';
     try {
       response = await callAI(prompt, true);
       if (typeof response !== 'string' || response.length > 100000) throw new Error('The AI returned an empty or oversized room.');
       const raw = JSON.parse(response.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim());
-      const room = prepareRoom(raw, source);
+      const room = prepareRoom(autoRepairRoom(raw, source).room, source);
       const flowErrors = generationFlowErrors(room, options.structure);
       if (flowErrors.length) throw new Error(flowErrors.join('\n'));
       return room;
     } catch (error) {
       lastError = error;
+      if (typeof response === 'string' && response && response.length <= 100000) lastResponse = response;
+      reportGenerationIssue(attempt === 0 && !resume ? 'generation check' : 'repair check', error?.message || error);
       // One bounded repair; provider failures do not cause a hidden retry loop.
-      if (typeof response !== 'string' || !response || response.length > 100000 || attempt === 1) break;
-      prompt = promptFor(source, options) + '\nRepair the previous room. Validation errors:\n' + String(error.message).slice(0, 3000) + '\nPrevious JSON:\n' + response.slice(0, 50000);
+      if (typeof response !== 'string' || !response || response.length > 100000 || attempt === attempts - 1) break;
+      prompt = repairPrompt(source, options, error.message, response);
     }
   }
-  throw new Error('A playable room could not be validated. ' + String(lastError?.message || '').slice(0, 1800));
+  const failure = new Error('A playable room could not be validated. ' + String(lastError?.message || '').slice(0, 1800));
+  // The last model answer is kept so the teacher can ask for one more repair instead of starting over.
+  if (lastResponse) failure.candidate = { response: lastResponse, message: String(lastError?.message || '').slice(0, 3000) };
+  throw failure;
 }
 export const emptyProgress = () => ({ solved: {}, hints: {}, receipts: {}, assisted: {} });
 export function inventory(room, progress) { return room.nodes.filter(n => progress?.solved?.[n.id] === true).map(n => n.reward); }

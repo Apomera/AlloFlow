@@ -1,0 +1,39 @@
+{
+  "positions": {
+    "model": 569.96875,
+    "figure": 811.46875
+  },
+  "scans": [
+    {
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "violations": []
+    },
+    {
+      "theme": "contrast",
+      "violations": []
+    }
+  ],
+  "sizes": [
+    {
+      "width": 320,
+      "scroll": 320
+    },
+    {
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "width": 768,
+      "scroll": 768
+    },
+    {
+      "width": 1280,
+      "scroll": 1280
+    }
+  ],
+  "errors": []
+}

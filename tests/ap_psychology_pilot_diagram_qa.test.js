@@ -65,6 +65,10 @@ afterEach(() => {
   }
 });
 
+// Each case copies the generator into a sandbox and runs it as a child process; on a loaded CI
+// runner that exceeded Vitest's 5 s default, so every case carries its own budget.
+const QA_RUN_TIMEOUT_MS = 60000;
+
 describe('AP Psychology diagram QA regression boundaries', () => {
   it('passes the reviewed five-unit diagram inventory without a visual-coverage advisory', () => {
     const { result, report } = runWithLibraryMutation();
@@ -83,7 +87,7 @@ describe('AP Psychology diagram QA regression boundaries', () => {
         (advisory) => advisory.check === 'visual-learning-coverage'
       )
     ).toEqual([]);
-  });
+  }, QA_RUN_TIMEOUT_MS);
 
   it.each([
     {
@@ -142,5 +146,5 @@ describe('AP Psychology diagram QA regression boundaries', () => {
       (advisory) => advisory.check === 'visual-learning-coverage'
     );
     expect(hasVisualCoverageAdvisory).toBe(expectsVisualCoverageAdvisory);
-  });
+  }, QA_RUN_TIMEOUT_MS);
 });

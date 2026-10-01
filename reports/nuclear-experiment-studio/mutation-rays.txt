@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:226:5 › radiation paths distinguish a blocked signal from an emitting source (17.7s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:226:5 › radiation paths distinguish a blocked signal from an emitting source 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-reading]')
+    Expected: "Reaches the detector"
+    Received: "Stopped by paper"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-reading]')
+        33 × locator resolved to <p class="ns-signal" data-ns-reading="true">Stopped by paper</p>
+           - unexpected value "Stopped by paper"
+
+
+      257 |   await audit(page);
+      258 |   await gammaPaper.click();
+    > 259 |   await expect(page.locator('[data-ns-reading]')).toHaveText('Reaches the detector');
+          |                                                   ^
+      260 |   await expect(page.locator('[data-ns-notebook] tbody td')).toHaveText(['Reaches the detector', 'Stopped by paper', 'Reaches the detector']);
+      261 |   await page.getByRole('button', { name: 'Paper switches off' }).click();
+      262 |   await expect(page.locator('.ns-progress')).toContainText('0 / 6');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:259:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-rays\43-nuclearlab-experiment-s-d2224-nal-from-an-emitting-source-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-rays\43-nuclearlab-experiment-s-d2224-nal-from-an-emitting-source-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-rays\43-nuclearlab-experiment-s-d2224-nal-from-an-emitting-source-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-rays\43-nuclearlab-experiment-s-d2224-nal-from-an-emitting-source-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-rays\43-nuclearlab-experiment-s-d2224-nal-from-an-emitting-source-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:226:5 › radiation paths distinguish a blocked signal from an emitting source 
+(node:35604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-rays.js in place of stem_lab/stem_tool_nuclearlab.js

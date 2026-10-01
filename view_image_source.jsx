@@ -29,6 +29,25 @@ function restoreSingleImage(item) {
   return { ...item, data: next };
 }
 
+// A learner never edits the teacher's annotations. The learner keeps only their own
+// drawings and the labels they added; the teacher's labels, captions, replacements and
+// challenge settings always come from the resource.
+function learnerOwnedAnnotations(annotations, teacher) {
+  const a = annotations || {}, teacherLabels = (teacher && teacher.userLabels) || {}, userLabels = {};
+  Object.keys(a.userLabels || {}).forEach(panel => {
+    const taken = new Set((teacherLabels[panel] || []).map(label => label && label.id));
+    const own = (a.userLabels[panel] || []).filter(label => label && !taken.has(label.id));
+    if (own.length) userLabels[panel] = own;
+  });
+  return { drawings: a.drawings || {}, userLabels };
+}
+function learnerPanelAnnotations(teacher, learner) {
+  const base = { ...(teacher || {}) }, own = learner && typeof learner === 'object' ? learner : {};
+  const userLabels = { ...(base.userLabels || {}) };
+  Object.keys(own.userLabels || {}).forEach(panel => { userLabels[panel] = [...(userLabels[panel] || []), ...(own.userLabels[panel] || [])]; });
+  return { ...base, userLabels, drawings: own.drawings || {} };
+}
+
 function ImageView(props) {
   var t = props.t;
   var leveledTextLanguage = props.leveledTextLanguage;
@@ -151,14 +170,14 @@ function ImageView(props) {
   return (
                   <div className="space-y-3">
                     {isTeacherMode && <input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" ref={singleImageFileRef} className="hidden" aria-label={t('common.upload_replacement_image') || 'Upload replacement image'} onChange={uploadImage} />}
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-3">
+                    {isTeacherMode && <div data-image-udl-goal className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-3">
                         <p className="text-sm text-purple-800"><strong>UDL Goal:</strong> Providing options for perception. Images and diagrams clarify abstract concepts and vocabulary for visual learners.<span className="block mt-1 font-semibold">Language Target: {leveledTextLanguage} {fillInTheBlank ? "(Worksheet Mode)" : ""}</span></p>
-                    </div>
+                    </div>}
                     <div className="flex flex-col items-center">
                         <div className="w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-400 shadow-md p-2 mb-4 relative overflow-hidden">
                             {generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1 ? (
                                 <VisualPanelGrid
-                                    key={generatedContent?.id || "default"}
+                                    key={(generatedContent?.id || "default") + (isTeacherMode ? ':teacher' : ':learner')}
                                     visualPlan={generatedContent?.data.visualPlan}
                                     onRefinePanel={handleRefinePanel}
                                     onAnimatePanel={handleAnimatePanel}
@@ -168,7 +187,7 @@ function ImageView(props) {
                                     onReorderFrame={handleReorderPanelFrame}
                                     onSetPanelFps={handleSetPanelFps}
                                     onUpdateLabel={handleUpdateVisualLabel}
-                                    onUpdatePanel={handleUpdateVisualPanel}
+                                    onUpdatePanel={typeof handleUpdateVisualPanel === 'function' ? ((panelIdx, patch, expect) => handleUpdateVisualPanel(panelIdx, patch, { ...(expect || {}), resourceId: generatedContent?.id })) : undefined}
                                     language={leveledTextLanguage}
                                     onSpeak={handleSpeak}
                                     t={t}
@@ -190,9 +209,13 @@ function ImageView(props) {
                                         }]);
                                     }}
                                     callGemini={callGemini}
-                                    initialAnnotations={generatedContent?.data.annotations}
+                                    initialAnnotations={isTeacherMode ? generatedContent?.data.annotations : learnerPanelAnnotations(generatedContent?.data.annotations, props.learnerAnnotations)}
+                                    readOnlyDrawings={isTeacherMode ? undefined : generatedContent?.data?.annotations?.drawings}
+                                    onRetryFailed={isTeacherMode && typeof handleRestoreImage === 'function' ? () => handleRestoreImage() : undefined}
                                     onAnnotationsChange={(annotations) => {
-                                        updateImageResource(item => ({ ...item, data: { ...item.data, annotations } }));
+                                        // The teacher's annotations are the resource; a learner's marks go to their own work.
+                                        if (isTeacherMode) updateImageResource(item => ({ ...item, data: { ...item.data, annotations } }));
+                                        else if (typeof props.onLearnerAnnotationsChange === 'function') props.onLearnerAnnotationsChange(generatedContent?.id, learnerOwnedAnnotations(annotations, generatedContent?.data?.annotations));
                                     }}
                                 />
                             ) : generatedContent?.data.imageUrl ? (
@@ -286,7 +309,7 @@ function ImageView(props) {
                                         <p className="font-bold text-slate-600">{t('visuals.image_not_saved')}</p>
                                         <p className="text-xs">{t('visuals.image_stripped')}</p>
                                     </div>
-                                    <button
+                                    {isTeacherMode && <button
                                         onClick={handleRestoreImage}
                                         disabled={isProcessing} aria-busy={isProcessing}
                                         data-help-key="visuals_regenerate"
@@ -294,7 +317,7 @@ function ImageView(props) {
                                     >
                                         {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <RefreshCw size={14}/>}
                                         {t('visuals.regenerate_prompt')}
-                                    </button>
+                                    </button>}
                                 </div>
                             )}
                         </div>
@@ -310,10 +333,10 @@ function ImageView(props) {
                             <button type="button" onClick={closeFind} className="mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{t('common.close') || 'Close'}</button>
                           </section>
                         )}
-                        <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6" data-help-key="visuals_prompt">
+                        {isTeacherMode && <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6" data-help-key="visuals_prompt">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('visuals.prompt_label')}</h4>
                             <p className="text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm">"{generatedContent?.data.prompt}"</p>
-                        </div>
+                        </div>}
                         {isTeacherMode && (
                         <div className="w-full max-w-2xl bg-yellow-50 rounded-xl border border-yellow-100 p-4 shadow-sm mb-6" data-help-key="visuals_refiner">
                              <div className="flex items-center gap-2 mb-3">
@@ -377,3 +400,5 @@ function ImageView(props) {
 
 ImageView.replaceSingleImage = replaceSingleImage;
 ImageView.restoreSingleImage = restoreSingleImage;
+ImageView.learnerPanelAnnotations = learnerPanelAnnotations;
+ImageView.learnerOwnedAnnotations = learnerOwnedAnnotations;

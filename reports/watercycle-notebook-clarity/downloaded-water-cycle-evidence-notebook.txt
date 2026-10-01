@@ -1,0 +1,87 @@
+Water Cycle — Explore evidence notebook
+Recorded comparisons from a simplified teaching model.
+Runoff and infiltration are independent indices, not measured percentages or a forecast.
+Pathway shares are relative teaching shares, not measured water volumes. Frozen storage is not measured.
+
+1. Sunlight +50% only
+Saved: 2026-09-30T12:00:00.000Z
+Claim: Evaporation changes
+Evidence: Evaporation changes
+Comparison method: one input changed; the other seven inputs were held fixed.
+Sunlight: 100% -> 150%
+Temperature: 15 °C -> 15 °C
+Wind: 1x -> 1x
+Rainfall intensity: 55/100 -> 55/100
+Soil saturation: 45/100 -> 45/100
+Soil permeability: medium -> medium
+Slope: moderate -> moderate
+Land cover: grass -> grass
+evaporation: baseline 1; current 1.5; recorded delta 0.5
+runoff: baseline 47; current 47; recorded delta 0
+infiltration: baseline 55; current 55; recorded delta 0
+Relative pathway shares: runoff 31%; infiltration 41%; plant 28%
+My explanation: More sunlight increased the modeled evaporation index.
+Evidence I used: I used the saved baseline, current value, and signed change.
+My next test: Change one input next while keeping all other inputs fixed.
+
+2. Rainfall +5 only
+Saved: 2026-09-30T12:05:00.000Z
+Claim: More surface runoff
+Evidence: A small modeled shift
+Comparison method: one input changed; the other seven inputs were held fixed.
+Sunlight: 100% -> 100%
+Temperature: 15 °C -> 15 °C
+Wind: 1x -> 1x
+Rainfall intensity: 55/100 -> 60/100
+Soil saturation: 45/100 -> 45/100
+Soil permeability: medium -> medium
+Slope: moderate -> moderate
+Land cover: grass -> grass
+evaporation: baseline 1; current 1; recorded delta 0
+runoff: baseline 47; current 48; recorded delta 1
+infiltration: baseline 55; current 54; recorded delta -1
+Relative pathway shares: runoff 32%; infiltration 40%; plant 28%
+My explanation: A small increase in rainfall changed both land indices slightly.
+Evidence I used: I used the saved baseline, current value, and signed change.
+My next test: Change one input next while keeping all other inputs fixed.
+
+3. Heavy storm
+Saved: 2026-09-30T12:10:00.000Z
+Claim: More surface runoff
+Evidence: More surface runoff; Less underground movement
+Comparison method: multiple inputs changed; this cannot isolate the effect of one input.
+Sunlight: 100% -> 80%
+Temperature: 15 °C -> 12 °C
+Wind: 1x -> 1.8x
+Rainfall intensity: 55/100 -> 95/100
+Soil saturation: 45/100 -> 85/100
+Soil permeability: medium -> low
+Slope: moderate -> steep
+Land cover: grass -> urban
+evaporation: baseline 1; current 0.64; recorded delta -0.36
+runoff: baseline 47; current 88; recorded delta 41
+infiltration: baseline 55; current 14; recorded delta -41
+Relative pathway shares: runoff 87%; infiltration 6%; plant 7%
+My explanation: Eight inputs changed together. The stored readings support an overall runoff shift, but cannot isolate one cause.
+Evidence I used: I used the saved baseline, current value, and signed change.
+My next test: Change one input next while keeping all other inputs fixed.
+
+4. Earlier saved observation
+Saved: 2026-09-30T12:15:00.000Z
+Claim: Evaporation changes
+Evidence: Evaporation changes
+Comparison method: some input values were not recorded; one-input attribution is unavailable.
+Sunlight: 100% -> 120%
+Temperature: not recorded -> not recorded
+Wind: not recorded -> not recorded
+Rainfall intensity: not recorded -> not recorded
+Soil saturation: not recorded -> not recorded
+Soil permeability: not recorded -> not recorded
+Slope: not recorded -> not recorded
+Land cover: not recorded -> not recorded
+evaporation: baseline not recorded; current not recorded; recorded delta 0.2
+runoff: baseline not recorded; current not recorded; recorded delta 0
+infiltration: baseline not recorded; current not recorded; recorded delta 0
+My explanation: This older record contains only the sunlight input and signed change.
+Evidence I used: I used the saved baseline, current value, and signed change.
+My next test: Change one input next while keeping all other inputs fixed.

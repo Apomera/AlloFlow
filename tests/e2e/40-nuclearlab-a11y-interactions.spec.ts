@@ -27,7 +27,7 @@ test.afterAll(async () => { await harness.stop(); });
 test.afterEach(async ({ page }) => { await harness.destroy(page); });
 
 async function mount(page: any, state: Record<string, unknown> = {}) {
-  await harness.mount(page, { _nuclearLab: state }, undefined, { expectCanvas: false });
+  await harness.mount(page, { _nuclearLab: { nkView: 'reference', ...state } }, undefined, { expectCanvas: false });
   await page.evaluate(() => {
     const wrap = document.getElementById('wrap')!;
     wrap.style.display = 'block';

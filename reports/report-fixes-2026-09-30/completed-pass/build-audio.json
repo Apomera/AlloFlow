@@ -1,0 +1,31 @@
+{
+  "at": "2026-09-30T21:47:51.343Z",
+  "phase": "audio",
+  "hostIntegration": "paused pending shared writer clarification",
+  "modules": [
+    {
+      "output": "tts_module.js",
+      "sha256": "531e3a9c1982c41553ee6b0c330307184e4ae1f0345c600966f941245a359ded",
+      "inputs": {
+        "tts_source.jsx": "fb28894c66e247437026c95b4a7dd5473faee1e483a090d2d47e5c47f8d866a2"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "view_kokoro_offer_modal_module.js",
+      "sha256": "6c50e8ad76839ad76352fe0ec8dae5a84ad256c238170159d296f94ec4939fe7",
+      "inputs": {
+        "view_kokoro_offer_modal_source.jsx": "04d3dee251dcc4a00d8f819daec48d3b7a95904fc9fcd0c53fa61f05fd95fca6"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

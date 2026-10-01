@@ -237,7 +237,10 @@ const WordSoundsReviewPanel = ({
   setIsStudentLocked,
   imageVisibilityMode,
   setImageVisibilityMode,
-  isProbeMode
+  isProbeMode,
+  // Words the student player skips in Word Families (no playable board),
+  // computed by the player so this list and the skip always agree.
+  wordFamilySkips
 }) => {
   React.useEffect(() => {
   }, []);
@@ -713,6 +716,12 @@ const WordSoundsReviewPanel = ({
     if (!words.length) return null;
     const label = t("word_sounds.coverage_review", { words: words.join(", ") }) || "Check taught spellings: {words}";
     return /* @__PURE__ */ React.createElement("p", { role: "note", className: "rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900" }, label.replace(/\{\{?words\}?\}/g, words.join(", ")));
+  })(), (() => {
+    const skipped = Array.isArray(wordFamilySkips) ? wordFamilySkips.filter(Boolean) : [];
+    if (!skipped.length) return null;
+    const words = skipped.join(", ");
+    const label = t("word_sounds.word_families_skipped_for_students", { count: skipped.length, words }) || "{count} skipped for students in Word Families (needs a reviewed word family): {words}";
+    return /* @__PURE__ */ React.createElement("p", { role: "note", "data-ws-word-family-skips": "true", className: "rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900" }, label.replace(/\{\{?count\}?\}/g, String(skipped.length)).replace(/\{\{?words\}?\}/g, words));
   })(), !isLoading && preloadedWords.length > 0 && (() => {
     const norm = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
     const portableKeys = /* @__PURE__ */ new Set();

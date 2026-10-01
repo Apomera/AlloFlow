@@ -1,0 +1,71 @@
+Index: dictionary_loader.js
+===================================================================
+--- dictionary_loader.js
++++ dictionary_loader.js
+@@ -154,6 +154,33 @@
+     return senses[0]?.score > 0 && senses[0].score > (senses[1]?.score || 0) ? senses[0] : null;
+   }
+ 
++  // Detailed outcomes are optional; lookup() retains its entry-or-null API.
++  async function lookupDetailed(word, options = {}) {
++    options = options || {};
++    const result = (entry, reason = null) => ({ entry, reason });
++    if (options.signal?.aborted) return result(null, 'cancelled');
++    const w = normalizeWord(word);
++    if (!w || /\s/.test(w)) return result(null, 'unsupported_word');
++    const cached = readCache(w);
++    if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return result(cached, cached ? null : 'not_found');
++    if (typeof fetch !== 'function') return result(null, 'not_available');
++    try {
++      const response = await fetch(API + encodeURIComponent(w), { signal: options.signal });
++      if (options.signal?.aborted) return result(null, 'cancelled');
++      if (response.status === 404) { writeCache(w, null); return result(null, 'not_found'); }
++      if (!response.ok) return result(null, 'request_failed');
++      let rows;
++      try { rows = await response.json(); }
++      catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'invalid_response'); }
++      if (options.signal?.aborted) return result(null, 'cancelled');
++      let entry;
++      try { entry = normalizeEntry(rows, w); } catch (_) { return result(null, 'invalid_response'); }
++      if (!entry) return result(null, 'invalid_response');
++      writeCache(w, entry);
++      return result(entry);
++    } catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'request_failed'); }
++  }
++
+   window.AlloDictionary = {
+     /** True if we have a cached (offline) entry for this word. */
+     hasOffline: function (word) { return readCache(normalizeWord(word)) !== undefined; },
+@@ -170,30 +197,8 @@
+      * Look up an authoritative dictionary entry. Resolves to the normalized
+      * entry, or NULL when not found / offline-uncached / any failure.
+      */
+-    lookup: function (word, options) {
+-      options = options || {};
+-      if (options.signal?.aborted) return Promise.resolve(null);
+-      var w = normalizeWord(word);
+-      if (!w || /\s/.test(w)) return Promise.resolve(null); // single words only
+-      var cached = readCache(w);
+-      if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return Promise.resolve(cached);
+-      if (typeof fetch !== 'function') return Promise.resolve(null);
+-      return Promise.resolve().then(function () {
+-        if (options.signal?.aborted) return null;
+-        return fetch(API + encodeURIComponent(w), { signal: options.signal });
+-      }).then(function (r) {
+-        if (!r || options.signal?.aborted) return null;
+-        if (r.status === 404) { writeCache(w, null); return null; } // cache "not found" so we don't refetch
+-        if (!r.ok) return null;
+-        return r.json();
+-      }).then(function (rows) {
+-        if (rows == null || options.signal?.aborted) return null;
+-        var entry = normalizeEntry(rows, w);
+-        if (entry) writeCache(w, entry);
+-        // Only a real 404 is a cached miss; malformed responses remain retryable.
+-        return entry;
+-      }).catch(function () { return null; });
+-    },
++    lookupDetailed: lookupDetailed,
++    lookup: function (word, options) { return lookupDetailed(word, options || {}).then(result => result.entry); },
+     _normalizeWord: normalizeWord,
+     _normalizeEntry: normalizeEntry
+   };

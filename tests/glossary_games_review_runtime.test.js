@@ -5,6 +5,8 @@ import { act, mountGame } from './helpers/games_live_harness.js';
 const cleanups = [];
 const mount = (name, props = {}) => { const game = mountGame(name, { onClose: vi.fn(), ...props }); cleanups.push(game.unmount); return game; };
 const click = el => { expect(el).toBeTruthy(); act(() => el.click()); };
+// 548a67131 dropped aria-label "common.check" from Submit: its name is now its visible text.
+const checkButton = container => [...container.querySelectorAll('button')].find(b => b.textContent.trim() === 'games.scramble.submit' && !b.hasAttribute('aria-label'));
 const control = (container, key) => container.querySelector('[data-help-key="' + key + '"]');
 const input = (el, value) => act(() => {
   Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(el, value);
@@ -19,7 +21,7 @@ describe('Glossary game round regressions', () => {
     const onGameComplete = vi.fn(), onScoreUpdate = vi.fn();
     const { container } = mount('WordScrambleGame', { data: [{ term: 'planet', def: 'A world' }], onGameComplete, onScoreUpdate });
     input(container.querySelector('input'), 'planet');
-    const submit = container.querySelector('button[aria-label="common.check"]');
+    const submit = checkButton(container);
     click(submit); click(submit);
     expect(submit.disabled).toBe(true);
     expect(container.querySelector('button[aria-label="common.skip"]').disabled).toBe(true);
@@ -32,10 +34,10 @@ describe('Glossary game round regressions', () => {
     vi.useFakeTimers();
     const { container } = mount('WordScrambleGame', { data: [{ term: 'planet', def: 'A world' }] });
     input(container.querySelector('input'), 'wrong');
-    click(container.querySelector('button[aria-label="common.check"]'));
+    click(checkButton(container));
     advance(200);
     input(container.querySelector('input'), 'planet');
-    click(container.querySelector('button[aria-label="common.check"]'));
+    click(checkButton(container));
     advance(650);
     expect(container.querySelector('input').disabled).toBe(true);
   });
@@ -44,7 +46,7 @@ describe('Glossary game round regressions', () => {
     const onGameComplete = vi.fn();
     const game = mount('WordScrambleGame', { data: [{ term: 'planet', def: 'A world' }], onGameComplete });
     input(game.container.querySelector('input'), 'planet');
-    click(game.container.querySelector('button[aria-label="common.check"]'));
+    click(checkButton(game.container));
     game.rerender({ data: [{ term: 'orbit', def: 'A path' }], onGameComplete, onClose: vi.fn() });
     advance(1200);
     expect(onGameComplete).not.toHaveBeenCalled();

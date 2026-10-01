@@ -1,0 +1,122 @@
+{
+  "head": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "createdAt": "2026-09-27T18:25:14.848Z",
+  "prerequisite": "device-durability-track18-2026-09-27",
+  "files": [
+    {
+      "file": "resource_read_aloud_module.js",
+      "rootSha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91",
+      "basisSha256": "6a4390ff272efcebc0cf4586e6221192a62f5e9affc7d3afa50703a939c363b8"
+    },
+    {
+      "file": "applied_challenge_source.jsx",
+      "rootSha256": "95edad0b176eac8ee3f9f5c0ba7d495b1320e7800ea69106329521e11fd2375b",
+      "basisSha256": "95edad0b176eac8ee3f9f5c0ba7d495b1320e7800ea69106329521e11fd2375b"
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rootSha256": "a4ddc42b245180637c57a90e3306ba069492248187526554c7fb19b93b9cca19",
+      "basisSha256": "a4ddc42b245180637c57a90e3306ba069492248187526554c7fb19b93b9cca19"
+    },
+    {
+      "file": "_build_applied_challenge_module.js",
+      "rootSha256": "41cf48c05766ac0d6d056fcf35b2fa8d8566b0945ab7727cf1aacc6b64e94973",
+      "basisSha256": "41cf48c05766ac0d6d056fcf35b2fa8d8566b0945ab7727cf1aacc6b64e94973"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rootSha256": "4b7b9022da7e94c682b9fa5224020426c0ff424751a594625a5fee7ff1ac7cd3",
+      "basisSha256": "4b7b9022da7e94c682b9fa5224020426c0ff424751a594625a5fee7ff1ac7cd3"
+    },
+    {
+      "file": "memory_aid_source.jsx",
+      "rootSha256": "9188a699fc982196227160f670b44d93bc4f2f2fda8b81dae6307c87f98008f1",
+      "basisSha256": "9188a699fc982196227160f670b44d93bc4f2f2fda8b81dae6307c87f98008f1"
+    },
+    {
+      "file": "studio_response_module.js",
+      "rootSha256": "0c0243129c63b3cce8451509c3ff3fea496f232fec93d3043e65b15d0fd9c2c0",
+      "basisSha256": "0c0243129c63b3cce8451509c3ff3fea496f232fec93d3043e65b15d0fd9c2c0"
+    },
+    {
+      "file": "live_aac_module.js",
+      "rootSha256": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449",
+      "basisSha256": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449"
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "rootSha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "basisSha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "rootSha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "basisSha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7"
+    },
+    {
+      "file": "phase_k_helpers_module.js",
+      "rootSha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "basisSha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8"
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "rootSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "basisSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "rootSha256": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+      "basisSha256": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961"
+    },
+    {
+      "file": "package.json",
+      "rootSha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+      "basisSha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77"
+    },
+    {
+      "file": "vitest.config.js",
+      "rootSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "basisSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    {
+      "file": "ui_strings.js",
+      "rootSha256": "4afc4d2cf417644923f487a82a7448db9d20f5677e35be33bc8a9045014669cf",
+      "basisSha256": "4afc4d2cf417644923f487a82a7448db9d20f5677e35be33bc8a9045014669cf"
+    },
+    {
+      "file": "tests/setup.js",
+      "rootSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "basisSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    {
+      "file": "tests/lib/audio_fixtures.js",
+      "rootSha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994",
+      "basisSha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994"
+    },
+    {
+      "file": "tests/studio_read_aloud.test.js",
+      "rootSha256": "07fd964625713e500ca94a344613fd57bd0f06b29118934c20070d175af0344b",
+      "basisSha256": "07fd964625713e500ca94a344613fd57bd0f06b29118934c20070d175af0344b"
+    },
+    {
+      "file": "tests/read_aloud_audio_service.test.js",
+      "rootSha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983",
+      "basisSha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983"
+    },
+    {
+      "file": "tests/studio_response_boundary.test.js",
+      "rootSha256": "8b47a08dadb247941e8abb55c9b3bc65a1246333ab4111c4798890e3c3c660eb",
+      "basisSha256": "8b47a08dadb247941e8abb55c9b3bc65a1246333ab4111c4798890e3c3c660eb"
+    },
+    {
+      "file": "desktop/web-app/package.json",
+      "rootSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "basisSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef"
+    },
+    {
+      "file": "desktop/web-app/tailwind.config.js",
+      "rootSha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+      "basisSha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+    }
+  ]
+}

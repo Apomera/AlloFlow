@@ -1,0 +1,33 @@
+Index: view_simplified_source.jsx
+===================================================================
+--- view_simplified_source.jsx
++++ view_simplified_source.jsx
+@@ -4132,9 +4132,13 @@
+       }
+       var containFocus = function (event) { if (!modal.contains(event.target)) studentPreviewCloseRef.current?.focus(); };
+       document.addEventListener('focusin', containFocus, true);
+       studentPreviewCloseRef.current?.focus();
++      // Let host engagement timers exclude this local preview without copying
++      // lesson data or granting host callbacks to the preview reader.
++      window.dispatchEvent(new CustomEvent('alloflow:reading-preview', { detail: { owner: previewInstanceId, active: true } }));
+       return function () {
++        window.dispatchEvent(new CustomEvent('alloflow:reading-preview', { detail: { owner: previewInstanceId, active: false } }));
+         document.removeEventListener('focusin', containFocus, true);
+         background.forEach(function (entry) {
+           ['inert', 'aria-hidden'].forEach(function (attribute, index) {
+             if (entry[index + 1] === null) entry[0].removeAttribute(attribute);
+@@ -4185,9 +4189,13 @@
+     }
+     // A local layout snapshot; delivered-lesson fidelity belongs to packet preview.
+     function renderStudentPreview() {
+       if (!studentPreview) return null;
+-      return <div ref={studentPreviewRef} role="dialog" aria-modal="true" aria-labelledby={readerId('simplified-student-preview-title')} data-student-preview onKeyDown={event => { event.stopPropagation(); containSimplifiedModalFocus(event, studentPreviewRef.current, closeStudentPreview); }} onKeyUp={event => event.stopPropagation()} className="fixed inset-0 z-[150] overflow-y-auto bg-slate-900/60 p-2 sm:p-6">
++      return <div ref={studentPreviewRef} role="dialog" aria-modal="true" aria-labelledby={readerId('simplified-student-preview-title')} data-student-preview data-help-ignore
++        onClick={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()}
++        onPointerDown={event => event.stopPropagation()} onMouseMove={event => event.stopPropagation()}
++        onWheel={event => event.stopPropagation()} onTouchStart={event => event.stopPropagation()} onTouchMove={event => event.stopPropagation()}
++        onPaste={event => event.stopPropagation()} onKeyDown={event => { event.stopPropagation(); containSimplifiedModalFocus(event, studentPreviewRef.current, closeStudentPreview); }} onKeyUp={event => event.stopPropagation()} className="fixed inset-0 z-[150] overflow-y-auto bg-slate-900/60 p-2 sm:p-6">
+         <div className="mx-auto w-full max-w-4xl rounded-2xl bg-white shadow-2xl">
+           <div className="flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-slate-200 bg-white p-3"><div className="min-w-0"><h2 id={readerId('simplified-student-preview-title')} className="text-lg font-bold text-slate-900">{viewText('simplified.layout_preview_title', 'Reading layout preview')}</h2><p className="text-sm text-slate-700">{viewText('simplified.layout_preview_note', 'Try the appearance, navigation and prepared word help for this snapshot. Changes here are discarded when you close it. This does not preview a delivered lesson.')}</p><p id={previewInstanceId + '-limits'} className="text-sm text-slate-700">{viewText('simplified.layout_preview_limits', 'Listening, recording, AI help and scored practice are unavailable. Any current playback remains controlled by the main reader.')}</p></div><button ref={studentPreviewCloseRef} type="button" data-student-preview-close onClick={closeStudentPreview} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.preview_close', 'Close preview')}</button></div>
+           <div className="p-2 sm:p-4"><SimplifiedPreviewReader snapshot={studentPreview} limitsId={previewInstanceId + '-limits'} /></div>
+         </div>

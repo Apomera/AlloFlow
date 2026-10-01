@@ -1,0 +1,95 @@
+{
+  "passed": true,
+  "browser": "Chromium (headless)",
+  "checks": [
+    "Long unbroken filenames and exact supplied passages wrap inside the 390px viewer, with source page/version visible.",
+    "Keyboard Tab/Shift+Tab cycle through Close and passage; PageDown scrolls the exact quote (332px); Escape restores citation focus.",
+    "A real localStorage write with injected QuotaExceededError evicts an older citation, persists the latest, and reload opens its exact passage without touching unrelated storage.",
+    "220 citation saves stay within 200 records and 512 KiB; the newest passage remains readable after reload.",
+    "Total storage refusal keeps bounded session evidence, reports persistence failure, preserves exact reference text, and shows an honest missing-snapshot message after reload."
+  ],
+  "pageErrors": [],
+  "layouts": [
+    {
+      "label": "long unbroken filename and passage",
+      "width": 390,
+      "documentWidth": 390,
+      "left": 16,
+      "right": 374,
+      "panelWidth": 358,
+      "panelScrollWidth": 358,
+      "quoteWidth": 314,
+      "quoteScrollWidth": 314
+    },
+    {
+      "label": "keyboard scrollable multiline passage",
+      "width": 390,
+      "documentWidth": 390,
+      "left": 16,
+      "right": 374,
+      "panelWidth": 358,
+      "panelScrollWidth": 358,
+      "quoteWidth": 314,
+      "quoteScrollWidth": 314
+    },
+    {
+      "label": "quota recovered citation after reload",
+      "width": 390,
+      "documentWidth": 390,
+      "left": 16,
+      "right": 374,
+      "panelWidth": 358,
+      "panelScrollWidth": 358,
+      "quoteWidth": 314,
+      "quoteScrollWidth": 314
+    },
+    {
+      "label": "unavailable snapshot fallback",
+      "width": 390,
+      "documentWidth": 390,
+      "left": 16,
+      "right": 374,
+      "panelWidth": 358,
+      "panelScrollWidth": 358
+    }
+  ],
+  "cacheResults": {
+    "quotaRecovery": {
+      "failures": 1,
+      "retainedCount": 3,
+      "latestSurvivedReload": true,
+      "oldestEvicted": true,
+      "unrelatedPreserved": true
+    },
+    "persistentBound": {
+      "count": 178,
+      "estimatedUTF16Bytes": 523088,
+      "latestSurvivedReload": true
+    },
+    "unavailable": {
+      "oldestSessionEvicted": true,
+      "latestInSession": true,
+      "persisted": false,
+      "exactPassageRetainedInOutput": true,
+      "reloadFallback": true
+    }
+  },
+  "moduleHashes": {
+    "before": {
+      "own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "desktop/web-app/public/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "desktop/app-build/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "desktop/web-app/build/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a"
+    },
+    "after": {
+      "own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "desktop/web-app/public/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "desktop/app-build/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "desktop/web-app/build/own_sources_module.js": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a"
+    }
+  },
+  "limitations": [
+    "Tests load the shipped helper and app stylesheet on an isolated browser origin with real localStorage and injected quota errors.",
+    "No full-host startup, AI generation, or live provider request was tested."
+  ]
+}

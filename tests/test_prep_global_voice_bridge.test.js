@@ -1,8 +1,11 @@
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import { describe, expect, it } from 'vitest';
 
-const commands = fs.readFileSync('allo_commands_source.jsx', 'utf8');
-const host = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+const commands = readSourceFile('allo_commands_source.jsx', 'utf8');
+const host = readSourceFile('AlloFlowANTI.txt', 'utf8');
 
 describe('global voice to Test Prep hands-free bridge', () => {
   it('publishes scoped start and status commands only while Test Prep is open', () => {

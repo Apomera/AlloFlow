@@ -1,0 +1,62 @@
+[
+  {
+    "file": "AlloFlowANTI.txt",
+    "existed": true,
+    "conflicts": 2
+  },
+  {
+    "file": "_build_export_module.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "_build_view_storybook_export_modal_module.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/check_offline_storybook_recovery.cjs",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "export_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "read_aloud_artifact_audio_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "read_aloud_audio_service_source.jsx",
+    "existed": true,
+    "conflicts": 1
+  },
+  {
+    "file": "tests/adventure_storybook_read_aloud_export.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/offline_media_reader_integration.test.js",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/offline_media_recovery.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 3
+  },
+  {
+    "file": "view_storybook_export_modal_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  }
+]

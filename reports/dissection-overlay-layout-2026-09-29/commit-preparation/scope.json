@@ -1,0 +1,23 @@
+{
+  "base": "133c6176c01ce742e0d4cbd7edc6df2da9a32a3e",
+  "index": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-overlay-layout-2026-09-29\\commit-preparation\\dissection.index",
+  "changed": [
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+    "reports/dissection-overlay-layout-2026-09-29/README.md",
+    "reports/dissection-overlay-layout-2026-09-29/before-phone-320.png",
+    "reports/dissection-overlay-layout-2026-09-29/browser-run-tail.log",
+    "reports/dissection-overlay-layout-2026-09-29/fullscreen.png",
+    "reports/dissection-overlay-layout-2026-09-29/overlay-final-tests.log",
+    "reports/dissection-overlay-layout-2026-09-29/perch-edge.png",
+    "reports/dissection-overlay-layout-2026-09-29/phone-320.png",
+    "reports/dissection-overlay-layout-2026-09-29/phone-dorsal.png",
+    "reports/dissection-overlay-layout-2026-09-29/phone-ventral.png",
+    "reports/dissection-overlay-layout-2026-09-29/unit-results.json",
+    "reports/dissection-overlay-layout-2026-09-29/ventral-recheck.log",
+    "reports/dissection-overlay-layout-2026-09-29/verification.json",
+    "stem_lab/stem_tool_dissection.js",
+    "tests/dissection_workspace_bands.test.js",
+    "tests/e2e/dissection-overlay-layout.spec.ts"
+  ],
+  "sharedIndex": "100644 cf3710e4ef39e641616c97c2751cd9f62356257c 0\tdesktop/web-app/public/stem_lab/stem_tool_dissection.js\u0000100644 cf3710e4ef39e641616c97c2751cd9f62356257c 0\tstem_lab/stem_tool_dissection.js\u0000100644 99d655228c7089df329e86d59c8afbcca20be74f 0\ttests/dissection_workspace_bands.test.js\u0000"
+}

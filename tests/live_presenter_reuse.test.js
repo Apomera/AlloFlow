@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
-const sessionModal = fs.readFileSync(path.join(ROOT, 'view_session_modal_source.jsx'), 'utf8');
-const dockStart = anti.indexOf('{isTeacherMode && activeSessionCode && (() => {');
-const dockEnd = anti.indexOf('{/* Live Polling Panels', dockStart);
-const dock = anti.slice(dockStart, dockEnd > dockStart ? dockEnd : dockStart + 25000);
+const anti = readSourceFile(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const sessionModal = readSourceFile(path.join(ROOT, 'view_session_modal_source.jsx'), 'utf8');
+// The dock's JSX moved to view_live_session_dock_source.jsx (fadeda957, 08-31); the host keeps only the
+// data block that mounts <LiveSessionDockView>. Pin the presenter controls where they now live.
+const dock = readSourceFile(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
 
 describe('Live Session presenter controls reuse existing capabilities', () => {
   it('opens the existing zen display instead of implementing another fullscreen surface', () => {
+    expect(anti).toContain('<LiveSessionDockView');
     expect(dock).toContain('handleSetIsZenModeToTrue();');
     expect(dock).toContain("t('live_dock.focus_display') || 'Present to class'");
     expect(anti).toContain('const handleSetIsZenModeToTrue = React.useCallback(() => setIsZenMode(true), []);');

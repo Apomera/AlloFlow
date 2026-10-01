@@ -1,0 +1,838 @@
+{
+  "status": "candidate-baseline",
+  "baseline": "a9c8fb36285c661a9b85a1cf376f99f05f382de5",
+  "environment": {
+    "platform": "win32",
+    "arch": "arm64",
+    "node": "v24.11.1",
+    "os": "10.0.26200",
+    "cpu": "Snapdragon(R) X 10-core X1P64100 @ 3.40 GHz",
+    "logicalCPUs": 10
+  },
+  "harnessHashes": {
+    "fixtures.cjs": "449a4d0c9f3ddb890749753cd904a720f37284ae52f8b53217a307be6a49ea8f",
+    "harness.jsx": "6022c562bbf67e00ef21e1e2d5327f471881e760ac091e2151a3b3f1ee118829",
+    "instrumentation.js": "abc25b94e0b6e6238a73e7a76a3f4b5c8af3db7e3fa2129e15674fe4a67891ca",
+    "run.cjs": "7bde37be20b42b87fa2bc40c45ce554a8ee6d93bfb97f25724b00c445bf8ed7d"
+  },
+  "browser": "154.0.4258.37",
+  "sourceMode": "working-tree",
+  "instrumented": true,
+  "sourceHashes": {
+    "view_simplified_source.jsx": "817c30b553f3150b11c6f1ee41e655e5c20a43ddd3129942d2961acd6e5b09cd",
+    "immersive_reader_source.jsx": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "text_pipeline_helpers_module.js": "d254c1ff001f544d3734d5d8fc922e460751eeb023c7a395eaceb1c54695dcee",
+    "reader_place_store.js": "f3f1b718ae496003fecf365f070e4ef98c4efcceb5e6b11761cea44e047a75ae",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+  },
+  "css": {
+    "file": "main.a3936f42.css",
+    "sha256": "085322ac2a036e5a93c4e1223cd5733663030779884b11dbe80be13daf7e7719"
+  },
+  "limitations": [
+    "Not the integrated host or deployed release.",
+    "Synthetic sweep updates, local audio route, and disposable browser storage; icon components are stubbed.",
+    "Timing budgets are unset until repeated baseline runs establish noise and device constraints.",
+    "DOM counters identify retention trends; detached-node retaining paths require a heap snapshot follow-up."
+  ],
+  "results": [
+    {
+      "name": "unique-navigation",
+      "inventory": {
+        "requestedSentences": 300,
+        "supports": 30,
+        "utf16Chars": 18698,
+        "words": 3000,
+        "paragraphs": 100,
+        "acceptedSupports": 30,
+        "canonicalSentences": 300
+      },
+      "updateToPaintMs": {
+        "count": 20,
+        "p50": 25.099999994039536,
+        "p95": 28.600000023841858,
+        "p99": 28.600000023841858,
+        "samples": [
+          25.400000005960464,
+          24.69999998807907,
+          28.600000023841858,
+          12.400000005960464,
+          28.599999994039536,
+          26.19999998807907,
+          24.099999994039536,
+          19.599999994039536,
+          19,
+          17.099999994039536,
+          17.30000001192093,
+          24.19999998807907,
+          25.099999994039536,
+          26.100000023841858,
+          25.599999994039536,
+          26.400000005960464,
+          25.900000005960464,
+          25,
+          24.899999976158142,
+          27.30000001192093
+        ]
+      },
+      "sweepMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 100,
+          "validateReadingSupports": 25,
+          "textContentReads": 25,
+          "textContentChars": 465000
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 4.499999970197678,
+          "validateReadingSupports": 4.9000000059604645
+        },
+        "commits": 25,
+        "commitMs": 100.09999999403954,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "activityMetrics": {
+        "longTasks": {
+          "count": 200,
+          "totalMs": 11977,
+          "maxMs": 105
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 2500,
+          "validateReadingSupports": 625,
+          "textContentReads": 1025,
+          "textContentChars": 15886328,
+          "fingerprintSourceText": 400,
+          "validateAdaptedReadingSupports": 400,
+          "splitTextToSentences": 161600,
+          "getAdaptedSupportSnapshot": 200,
+          "treeWalkers": 200
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 135.69999966025352,
+          "validateReadingSupports": 129.70000013709068,
+          "fingerprintSourceText": 12.299999743700027,
+          "validateAdaptedReadingSupports": 289.20000022649765,
+          "splitTextToSentences": 973.6999991238117,
+          "getAdaptedSupportSnapshot": 10.49999988079071
+        },
+        "commits": 625,
+        "commitMs": 8261.399999439716,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "retained": [
+        {
+          "phase": "mounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 20880,
+            "jsEventListeners": 3591
+          },
+          "heap": {
+            "usedSize": 27801188,
+            "totalSize": 28823552,
+            "embedderHeapUsedSize": 28435304,
+            "backingStorageSize": 11089358
+          }
+        },
+        {
+          "phase": "cycle-10",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43578764,
+            "totalSize": 45359104,
+            "embedderHeapUsedSize": 29783096,
+            "backingStorageSize": 11095382
+          }
+        },
+        {
+          "phase": "cycle-20",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 43907900,
+            "totalSize": 46145536,
+            "embedderHeapUsedSize": 31606944,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-30",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44316420,
+            "totalSize": 45621248,
+            "embedderHeapUsedSize": 33571880,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-40",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 44717932,
+            "totalSize": 46931968,
+            "embedderHeapUsedSize": 34282768,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-50",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 45130844,
+            "totalSize": 46669824,
+            "embedderHeapUsedSize": 34760800,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-60",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 45528044,
+            "totalSize": 46931968,
+            "embedderHeapUsedSize": 32831928,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-70",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 45928592,
+            "totalSize": 47718400,
+            "embedderHeapUsedSize": 31959280,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-80",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 46336928,
+            "totalSize": 47980544,
+            "embedderHeapUsedSize": 31942584,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-90",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 46740344,
+            "totalSize": 48504832,
+            "embedderHeapUsedSize": 30185544,
+            "backingStorageSize": 11093860
+          }
+        },
+        {
+          "phase": "cycle-100",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 47126188,
+            "totalSize": 48766976,
+            "embedderHeapUsedSize": 30955280,
+            "backingStorageSize": 11093892
+          }
+        },
+        {
+          "phase": "cycle-110",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 47511624,
+            "totalSize": 49029120,
+            "embedderHeapUsedSize": 32096880,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-120",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 47900716,
+            "totalSize": 49553408,
+            "embedderHeapUsedSize": 34024136,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-130",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 48306448,
+            "totalSize": 49815552,
+            "embedderHeapUsedSize": 33579784,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-140",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 48693184,
+            "totalSize": 50339840,
+            "embedderHeapUsedSize": 32487424,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-150",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 49085472,
+            "totalSize": 51126272,
+            "embedderHeapUsedSize": 31535416,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-160",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 49470276,
+            "totalSize": 51126272,
+            "embedderHeapUsedSize": 32779136,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-170",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 50066588,
+            "totalSize": 51388416,
+            "embedderHeapUsedSize": 33802536,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-180",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 50456768,
+            "totalSize": 51650560,
+            "embedderHeapUsedSize": 34721184,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-190",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 50843256,
+            "totalSize": 52699136,
+            "embedderHeapUsedSize": 35955888,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "cycle-200",
+          "dom": {
+            "documents": 2,
+            "nodes": 20917,
+            "jsEventListeners": 3598
+          },
+          "heap": {
+            "usedSize": 51225620,
+            "totalSize": 52436992,
+            "embedderHeapUsedSize": 36180408,
+            "backingStorageSize": 11093893
+          }
+        },
+        {
+          "phase": "unmounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 30,
+            "jsEventListeners": 146
+          },
+          "heap": {
+            "usedSize": 28428840,
+            "totalSize": 29892608,
+            "embedderHeapUsedSize": 4651968,
+            "backingStorageSize": 10955001
+          }
+        }
+      ],
+      "afterClose": {
+        "longTasks": {
+          "count": 200,
+          "totalMs": 11977,
+          "maxMs": 105
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 2500,
+          "validateReadingSupports": 625,
+          "textContentReads": 1025,
+          "textContentChars": 15886328,
+          "fingerprintSourceText": 400,
+          "validateAdaptedReadingSupports": 400,
+          "splitTextToSentences": 161600,
+          "getAdaptedSupportSnapshot": 200,
+          "treeWalkers": 200
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 135.69999966025352,
+          "validateReadingSupports": 129.70000013709068,
+          "fingerprintSourceText": 12.299999743700027,
+          "validateAdaptedReadingSupports": 289.20000022649765,
+          "splitTextToSentences": 973.6999991238117,
+          "getAdaptedSupportSnapshot": 10.49999988079071
+        },
+        "commits": 625,
+        "commitMs": 8261.399999439716,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0,
+        "highlightRanges": 0
+      },
+      "lifecycle": {
+        "cycles": 200,
+        "uniqueResources": 200,
+        "freshnessChecks": 200
+      }
+    },
+    {
+      "name": "overlay-cycles",
+      "inventory": {
+        "requestedSentences": 300,
+        "supports": 0,
+        "utf16Chars": 18698,
+        "words": 3000,
+        "paragraphs": 100,
+        "acceptedSupports": 0,
+        "canonicalSentences": 300
+      },
+      "updateToPaintMs": {
+        "count": 20,
+        "p50": 23,
+        "p95": 27.299999982118607,
+        "p99": 27.299999982118607,
+        "samples": [
+          27.299999982118607,
+          22,
+          24.900000005960464,
+          26.599999994039536,
+          19.69999998807907,
+          18,
+          22.599999994039536,
+          18.19999998807907,
+          23,
+          21.30000001192093,
+          25.600000023841858,
+          24.900000005960464,
+          25.700000017881393,
+          25.69999998807907,
+          26.100000023841858,
+          26.599999994039536,
+          20,
+          17.30000001192093,
+          21,
+          14.400000005960464
+        ]
+      },
+      "sweepMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 100,
+          "validateReadingSupports": 25
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 7.199999958276749,
+          "validateReadingSupports": 7.60000005364418
+        },
+        "commits": 25,
+        "commitMs": 113.29999995231628,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "activityMetrics": {
+        "longTasks": {
+          "count": 87,
+          "totalMs": 5029,
+          "maxMs": 117
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 500,
+          "validateReadingSupports": 125,
+          "splitTextToSentences": 15000
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 32.49999964237213,
+          "validateReadingSupports": 33.10000005364418,
+          "splitTextToSentences": 118.40000003576279
+        },
+        "commits": 175,
+        "commitMs": 3445.3999995589256,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "retained": [
+        {
+          "phase": "mounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 20351,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 26917036,
+            "totalSize": 27512832,
+            "embedderHeapUsedSize": 24304296,
+            "backingStorageSize": 11058332
+          }
+        },
+        {
+          "phase": "cycle-10",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29744264,
+            "totalSize": 31727616,
+            "embedderHeapUsedSize": 25662600,
+            "backingStorageSize": 11059045
+          }
+        },
+        {
+          "phase": "cycle-20",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29596920,
+            "totalSize": 30941184,
+            "embedderHeapUsedSize": 25290864,
+            "backingStorageSize": 11058442
+          }
+        },
+        {
+          "phase": "cycle-30",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29638736,
+            "totalSize": 30416896,
+            "embedderHeapUsedSize": 26571376,
+            "backingStorageSize": 11058439
+          }
+        },
+        {
+          "phase": "cycle-40",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29641036,
+            "totalSize": 30679040,
+            "embedderHeapUsedSize": 25256504,
+            "backingStorageSize": 11058442
+          }
+        },
+        {
+          "phase": "cycle-50",
+          "dom": {
+            "documents": 2,
+            "nodes": 20354,
+            "jsEventListeners": 3496
+          },
+          "heap": {
+            "usedSize": 29656092,
+            "totalSize": 30416896,
+            "embedderHeapUsedSize": 26007552,
+            "backingStorageSize": 11058439
+          }
+        },
+        {
+          "phase": "unmounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 28,
+            "jsEventListeners": 146
+          },
+          "heap": {
+            "usedSize": 19988724,
+            "totalSize": 21241856,
+            "embedderHeapUsedSize": 3108872,
+            "backingStorageSize": 10943819
+          }
+        }
+      ],
+      "afterClose": {
+        "longTasks": {
+          "count": 87,
+          "totalMs": 5029,
+          "maxMs": 117
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 500,
+          "validateReadingSupports": 125,
+          "splitTextToSentences": 15000
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 32.49999964237213,
+          "validateReadingSupports": 33.10000005364418,
+          "splitTextToSentences": 118.40000003576279
+        },
+        "commits": 175,
+        "commitMs": 3445.3999995589256,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0,
+        "highlightRanges": 0
+      },
+      "lifecycle": {
+        "cycles": 50,
+        "uniqueResources": null,
+        "freshnessChecks": 0
+      }
+    },
+    {
+      "name": "live-audio",
+      "inventory": {
+        "requestedSentences": 30,
+        "supports": 0,
+        "utf16Chars": 1868,
+        "words": 300,
+        "paragraphs": 10,
+        "acceptedSupports": 0,
+        "canonicalSentences": 30
+      },
+      "updateToPaintMs": {
+        "count": 20,
+        "p50": 26.5,
+        "p95": 30.599999994039536,
+        "p99": 30.599999994039536,
+        "samples": [
+          26.5,
+          28,
+          27.900000005960464,
+          25.900000005960464,
+          29.599999994039536,
+          27.80000001192093,
+          23.30000001192093,
+          17.200000017881393,
+          19.399999976158142,
+          18.69999998807907,
+          24.30000001192093,
+          27.700000017881393,
+          18.899999976158142,
+          30.599999994039536,
+          24,
+          27.19999998807907,
+          27.700000017881393,
+          12.099999994039536,
+          23.900000005960464,
+          27.799999982118607
+        ]
+      },
+      "sweepMetrics": {
+        "longTasks": {
+          "count": 0,
+          "totalMs": 0,
+          "maxMs": 0
+        },
+        "audioStarts": 0,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 100,
+          "validateReadingSupports": 25
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 1.399999976158142,
+          "validateReadingSupports": 2.3000000417232513
+        },
+        "commits": 25,
+        "commitMs": 48.199999928474426,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "activityMetrics": {
+        "longTasks": {
+          "count": 1,
+          "totalMs": 88,
+          "maxMs": 88
+        },
+        "audioStarts": 1,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 108,
+          "validateReadingSupports": 27
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 1.5,
+          "validateReadingSupports": 2.400000035762787
+        },
+        "commits": 41,
+        "commitMs": 61.99999991059303,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0
+      },
+      "retained": [
+        {
+          "phase": "mounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 2441,
+            "jsEventListeners": 526
+          },
+          "heap": {
+            "usedSize": 19781600,
+            "totalSize": 20434944,
+            "embedderHeapUsedSize": 4017696,
+            "backingStorageSize": 10945527
+          }
+        },
+        {
+          "phase": "unmounted",
+          "dom": {
+            "documents": 2,
+            "nodes": 28,
+            "jsEventListeners": 146
+          },
+          "heap": {
+            "usedSize": 19696040,
+            "totalSize": 20717568,
+            "embedderHeapUsedSize": 1620760,
+            "backingStorageSize": 1210763
+          }
+        }
+      ],
+      "afterClose": {
+        "longTasks": {
+          "count": 1,
+          "totalMs": 88,
+          "maxMs": 88
+        },
+        "audioStarts": 1,
+        "playingAudio": 0,
+        "counts": {
+          "getSourceSnapshot": 108,
+          "validateReadingSupports": 27
+        },
+        "milliseconds": {
+          "getSourceSnapshot": 1.5,
+          "validateReadingSupports": 2.400000035762787
+        },
+        "commits": 41,
+        "commitMs": 61.99999991059303,
+        "outstandingTimers": 0,
+        "outstandingFrames": 0,
+        "highlightRanges": 0
+      },
+      "lifecycle": {
+        "cycles": 0,
+        "uniqueResources": null,
+        "freshnessChecks": 0
+      }
+    }
+  ]
+}

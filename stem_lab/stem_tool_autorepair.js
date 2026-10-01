@@ -20857,7 +20857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 var options = { distance: destination.distance, immediate: true };
                 if (destination.target) options.target = destination.target;
                 SHOP3D.focus(destination.station, options);
-                arAnnounce('Viewing ' + destination.label + '. The selected control has not been used.');
+                arAnnounce(__alloFill(__alloT('stem.autorepair.sr_viewing_the_selected_control_has_not_been_used', 'Viewing {value1}. The selected control has not been used.'), { value1: destination.label }));
               }, { 'data-ar-control-view': true, disabled: !!view.blocked || SHOP3D.status() === 'failed' }),
               info && control('Use selected control', function () {
                 var current = arShopCurrentPreview(shop, d.shopInspectPick);
@@ -20991,7 +20991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             style: { background: T.panel, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 3px 12px rgba(0,0,0,.16)' } },
             [['bay', '3D bay'], ['equipment', 'Equipment'], ['order', 'Work order'], ['notes', 'Handoff']].map(function (item) {
               return control(item[1], function () { workshopJump(item[0]); }, { key: item[0], 'data-ar-workshop-jump': item[0],
-                'aria-label': 'Go to ' + item[1].toLowerCase(), style: btnSecondary({ minHeight: 44, fontSize: 12, padding: '8px 6px', whiteSpace: 'normal' }) });
+                'aria-label': __alloFill(__alloT('stem.autorepair.a11y_go_to', 'Go to {value1}'), { value1: item[1].toLowerCase() }), style: btnSecondary({ minHeight: 44, fontSize: 12, padding: '8px 6px', whiteSpace: 'normal' }) });
             }));
         }
         function focusServiceControls() {
@@ -21016,7 +21016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (!shop.hood || instrumentKind !== 'meter' || !task || shop.tool !== task.tool) return;
           pick('engine'); stationCamera('engine'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0.76);
           SHOP3D.focus('engine', { distance: 1.80, target: { x: -0.87, y: 1.20, z: 0.53 }, immediate: true });
-          arAnnounce('Battery contact close-up. The red probe stays on the positive post. Select the negative post or positive clamp for the black probe.');
+          arAnnounce(__alloT('stem.autorepair.sr_battery_contact_close_up_the_red_probe_stays_on_t', 'Battery contact close-up. The red probe stays on the positive post. Select the negative post or positive clamp for the black probe.'));
         }
         function focusToolControls() {
           pick('tools'); stationCamera('tools'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
@@ -21561,7 +21561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('label', { htmlFor: 'ar-shop-hud-job', className: 'ar-sr-only' }, 'Service job'),
               h('select', { id: 'ar-shop-hud-job', value: job.id, onChange: function (e) { selectJob(e.target.value, false); } }, SHOP_JOBS.map(function (j) { return h('option', { key: j.id, value: j.id }, j.title); })),
               h('p', { className: 'ar-hud-concern' }, '“' + job.concern + '”'),
-              h('ol', { className: 'ar-hud-pips', 'aria-label': 'Step ' + Math.min(shop.step + 1, n) + ' of ' + n }, job.tasks.map(function (t, i) {
+              h('ol', { className: 'ar-hud-pips', 'aria-label': __alloFill(__alloT('stem.autorepair.a11y_step_of', 'Step {value1} of {value2}'), { value1: Math.min(shop.step + 1, n), value2: n })}, job.tasks.map(function (t, i) {
                 return h('li', { key: t.id + i, title: (i + 1) + '. ' + t.label, 'data-state': i < shop.step ? 'done' : i === shop.step ? 'now' : 'todo' });
               })),
               h('div', { className: 'ar-hud-status' }, task ? 'Step ' + (shop.step + 1) + ' of ' + n + ' · ' + task.label : completion.label)),

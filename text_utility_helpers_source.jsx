@@ -11,29 +11,46 @@
 // inline tooltip, and scroll containers clip whatever overflows them.
 // zIndex 300 clears the immersive reader (200) and its lifted popups (220).
 let _glossaryTipSeq = 0;
-const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode, children }) => {
+const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode, children, readerInteractions = false, readerProps = {} }) => {
   const [tip, setTip] = React.useState(null);
+  const termRef = React.useRef(null), hideTimer = React.useRef(null);
   const tipIdRef = React.useRef(null);
   if (!tipIdRef.current) tipIdRef.current = `allo-glossary-tip-${++_glossaryTipSeq}`;
   const show = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const width = 256; // matches w-64
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    const width = Math.min(256, Math.max(160, window.innerWidth - 16));
     const margin = 8;
     const centerX = rect.left + rect.width / 2;
     const left = Math.max(margin, Math.min(centerX - width / 2, window.innerWidth - width - margin));
     // Flip below the term when there isn't room for title+picture+definition above.
     const placeAbove = rect.top > 320;
-    setTip({ left, top: placeAbove ? rect.top - 10 : rect.bottom + 10, placeAbove });
+    setTip({ left, top: placeAbove ? rect.top - 10 : rect.bottom + 10, placeAbove, width });
   };
-  const hide = () => setTip(null);
+  const hide = () => { if (hideTimer.current) clearTimeout(hideTimer.current); setTip(null); };
+  const leave = () => { hideTimer.current = setTimeout(hide, 120); };
+  React.useEffect(() => () => { if (hideTimer.current) clearTimeout(hideTimer.current); }, []);
   React.useEffect(() => {
     if (!tip) return undefined;
-    const close = () => setTip(null);
+    const close = event => {
+      if (event?.type === 'scroll' && event.target?.nodeType && document.getElementById(tipIdRef.current)?.contains(event.target)) return;
+      if ((event?.type === 'scroll' || event?.type === 'resize') && termRef.current === document.activeElement) {
+        show({ currentTarget: termRef.current });
+        return;
+      }
+      setTip(null);
+    };
+    const outside = event => { if (!termRef.current?.contains(event.target) && !document.getElementById(tipIdRef.current)?.contains(event.target)) close(); };
+    const escape = event => { if (event.key === 'Escape') close(); };
     window.addEventListener('scroll', close, true);
     window.addEventListener('resize', close);
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
     return () => {
       window.removeEventListener('scroll', close, true);
       window.removeEventListener('resize', close);
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', escape);
     };
   }, [!!tip]);
   const lightStyle = isLineFocusMode
@@ -43,39 +60,41 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
   const canPortal = typeof ReactDOM !== 'undefined' && ReactDOM.createPortal && typeof document !== 'undefined';
   return (
     <span
-      // This used to be `e.stopPropagation()` — nothing else. The tooltip is
-      // driven by hover/focus, so the handler existed ONLY to swallow the
-      // click, and in Adapted Text the swallowed ancestor is the sentence's
-      // read-aloud span: tapping any glossary term did nothing at all, no
-      // request, no console error, while tapping a plain word two characters
-      // away read the sentence. That is the "sometimes it works" report
-      // (2026-08-14), and it scales with the glossary — a passage with no
-      // terms never showed it. Same span is used by FAQ, Adventure and
-      // Persona, all of which read from the sentence ancestor too.
-      // Show on click as well so a touch tap gets the definition even where
-      // focus does not follow the tap, then let the click through.
-      onClick={show}
+      ref={termRef}
+      {...readerProps}
+      // Other readers retain their sentence tap behavior. The reading view
+      // places its sentence control beside this term and reserves taps for help.
+      onClick={event => { if (readerInteractions) event.stopPropagation(); show(event); }}
       onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocus={show}
+      onMouseLeave={leave}
+      onFocus={event => { show(event); readerProps.onFocus?.(event); }}
       onBlur={hide}
-      onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
-      tabIndex={0}
+      onKeyDown={event => {
+        if (event.key === 'Escape') { event.stopPropagation(); hide(); }
+        else if (readerInteractions && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.stopPropagation(); show(event); }
+        else readerProps.onKeyDown?.(event);
+      }}
+      tabIndex={readerProps.tabIndex ?? 0}
+      role={readerInteractions ? 'button' : undefined}
+      aria-expanded={readerInteractions ? !!tip : undefined}
       aria-describedby={tip ? tipIdRef.current : undefined}
       // allo-glossary-term is a stable hook for the reading themes. isDarkBg is
       // a prop that NO call site in the simplified view ever passes, so this
       // span always rendered indigo-600 — 2.71:1 on the dark theme, 3.34:1 on
       // high contrast, 2.98:1 on dim. Rather than thread the flag through six
       // call sites, the themes restyle it via --allo-rt-link.
-      className={`allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`}
+      className={`allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isDarkBg ? darkStyle : lightStyle}`}
     >
       {children}
       {tip && canPortal && ReactDOM.createPortal(
         <span
           id={tipIdRef.current}
           role="tooltip"
-          className="fixed block w-64 p-3 bg-slate-800 text-xs rounded shadow-xl pointer-events-none text-left leading-relaxed"
+          onMouseEnter={() => { if (hideTimer.current) clearTimeout(hideTimer.current); }}
+          onMouseLeave={leave}
+          className="fixed block p-3 bg-slate-800 text-sm rounded shadow-xl text-left leading-relaxed"
           style={{
+            width: tip.width + 'px', maxHeight: '70vh', overflowY: 'auto',
             left: tip.left + 'px',
             top: tip.top + 'px',
             transform: tip.placeAbove ? 'translateY(-100%)' : 'none',
@@ -99,14 +118,14 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
           </strong>
           {item.image && (
               <img
-                  src={item.image}
-                  alt={item.term}
+                  src={typeof item.image === 'string' ? item.image : item.image.src}
+                  alt={item.image.alt || item.term}
                   className="block mb-2 w-full rounded border border-slate-600 bg-white"
                   style={{ maxHeight: '115px', objectFit: 'contain' }}
                   loading="lazy"
               />
           )}
-          <span style={{ color: '#ffffff' }}>{item.def}</span>
+          <span style={{ color: '#ffffff' }}>{item.def || item.definition || item.explanation || item.text}</span>
           {leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage] && (
               <span className="block mt-2 pt-2 border-t border-slate-600 italic" style={{ color: '#c7d2fe' }}>
                   {item.translations[leveledTextLanguage]}
@@ -122,6 +141,32 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
       )}
     </span>
   );
+};
+
+// Exact offsets let reader controls and saved annotations remain siblings.
+const glossaryTextSegments = (value, glossary, language = 'English') => {
+  const text = String(value || ''), terms = new Map();
+  (Array.isArray(glossary) ? glossary : []).forEach(item => {
+    if (!item || item.isSelected === false) return;
+    const add = term => { if (typeof term === 'string' && term.trim()) terms.set(term.trim().toLowerCase(), item); };
+    add(item.term);
+    const translation = language !== 'English' && item.translations?.[language];
+    if (typeof translation === 'string' && translation.includes(':')) add(translation.split(':')[0]);
+  });
+  if (!text || !terms.size) return [{ text, start: 0, end: text.length }];
+  const escape = term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(Array.from(terms.keys()).sort((a, b) => b.length - a.length).map(escape).join('|'), 'giu');
+  const result = [], word = /[\p{L}\p{N}]/u, unspaced = /[\u3040-\u30ff\u3400-\u9fff\u0e00-\u0e7f]/u;
+  let cursor = 0, match;
+  while ((match = pattern.exec(text))) {
+    const start = match.index, end = start + match[0].length;
+    if (!unspaced.test(match[0]) && (word.test(text.slice(0, start).match(/.$/u)?.[0] || '') || word.test(text.slice(end).match(/^./u)?.[0] || ''))) continue;
+    if (start > cursor) result.push({ text: text.slice(cursor, start), start: cursor, end: start });
+    result.push({ text: match[0], start, end, item: terms.get(match[0].toLowerCase()) });
+    cursor = end;
+  }
+  if (cursor < text.length) result.push({ text: text.slice(cursor), start: cursor, end: text.length });
+  return result.length ? result : [{ text, start: 0, end: text.length }];
 };
 
 const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps, instanceKey) => {
@@ -584,6 +629,8 @@ const generateWordSearch = (targetLang, deps, activityData) => {
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.TextUtilityHelpers = {
+  GlossaryTermSpan,
+  glossaryTextSegments,
   highlightGlossaryTerms,
   repairGeneratedText,
   generateHelpfulHint,

@@ -1,0 +1,18 @@
+
+Running 6 tests using 1 worker
+
+
+
+[1A[2K(node:45680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:45680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K[2/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:166:5 › guided investigation pauses at its result, records reviewed evidence, and resumes its field notes
+[1A[2K[3/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K[4/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:912:5 › survival detective locks a prediction, records the actual boundary round, and restores its evidence
+[1A[2K[5/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:986:5 › survival detective on a phone distinguishes neutral chance from extinction and keeps the layout accessible
+[1A[2K[6/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:1022:5 › survival detective without WebGL explains changed conditions and never accepts a late prediction
+[1A[2K  6 passed (5.3m)

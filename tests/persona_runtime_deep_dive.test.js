@@ -235,9 +235,12 @@ describe('Persona runtime deep-dive fixes', () => {
       await gradingPromise;
       const signal = stalled.deps.callGemini.mock.calls[0][5];
       expect(signal.aborted).toBe(true);
-      expect(stalled.deps.addToast).toHaveBeenCalledWith('toasts.reflection_grade_error', 'error');
+      // 2026-09-27 (I2): "Saved without grade" is now true. A timed-out grading call
+      // still saves the reflection, with no score, and says so as a warning.
+      expect(stalled.deps.addToast).toHaveBeenCalledWith('toasts.reflection_grade_error', 'warning');
       expect(stalled.deps.setIsGradingReflection).toHaveBeenLastCalledWith(false);
-      expect(stalled.getHistory()).toHaveLength(0);
+      expect(stalled.getHistory()).toHaveLength(1);
+      expect(stalled.getFeedback().score).toBeNull();
     } finally {
       vi.useRealTimers();
     }

@@ -1,0 +1,346 @@
+===================================================================
+--- a/resource_read_aloud_module.js
++++ b/resource_read_aloud_module.js
+@@ -310,16 +310,21 @@
+     const revision = store?.getRevision?.();
+     current.current = { key, payload, store, revision, activePlayback };
+     const owns = request => request && current.current.key === request.key && current.current.payload === request.payload && current.current.store === request.store && current.current.revision === request.revision;
++    // Attaching this save creates a new resource payload object. It does not
++    // replace the selected clips unless the store/revision also changes.
++    const ownsSave = request => request && current.current.key === request.key && current.current.store === request.store && current.current.revision === request.revision;
+     const value = owns(snapshot) ? snapshot.value : null;
+-    const busy = saving === key;
++    const busy = !!ownsSave(saving);
+     const retryAvailable = typeof window.__alloRetryReadAloudPersistence === 'function';
+-    const message = notice?.key === key ? notice.text : '';
+     const count = n => Number.isInteger(n) && n >= 0;
+     const valid = result => result && result.scope === 'device-audio' && String(result.resourceId) === String(resourceId) &&
+       count(result.total) && result.total === entries.length && count(result.ready) && result.ready <= result.total &&
+       count(result.durableReady) && result.durableReady <= result.ready;
+     const refresh = React.useRef(null);
+     const bounded = (operation, request) => {
++      // Settle an obsolete wait too: clearing its timer alone leaves an
++      // awaiting retry stuck forever if the host read never resolves.
++      const cancelled = new Promise(resolve => { request.cancel = () => resolve(null); });
+       const timeout = new Promise((_, reject) => {
+         request.timer = setTimeout(() => { request.controller?.abort(); reject(new Error('Device storage timed out')); }, 15000);
+       });
+@@ -327,11 +332,11 @@
+       // replace its resource-scoped API during a queued microtask.
+       let work;
+       try { work = operation(); } catch (error) { work = Promise.reject(error); }
+-      return Promise.race([work, timeout]).finally(() => clearTimeout(request.timer));
++      return Promise.race([work, timeout, cancelled]).finally(() => { clearTimeout(request.timer); request.cancel = null; });
+     };
+     refresh.current = async (explicit = false) => {
+       const request = { ...current.current, explicit };
+-      clearTimeout(readRequest.current?.timer);
++      readRequest.current?.cancel?.();
+       readRequest.current = request;
+       setSnapshot(null);
+       setReading({ key, explicit });
+@@ -349,6 +354,9 @@
+       const update = event => {
+         if (event?.detail?.resourceId != null && String(event.detail.resourceId) !== String(resourceId)) return;
+         if (event?.type === 'visibilitychange' && document.visibilityState === 'hidden') return;
++        if (event?.type === 'alloflow:offline-media-persistence' && event.detail?.status === 'failed') {
++          setNotice(previous => ownsSave(previous) ? { ...previous, kind: 'failed' } : previous);
++        }
+         // Read the revision at event time, including mutations without a parent render.
+         const live = window.AlloModules?.KaraokeAudioStore?.current;
+         current.current = { ...current.current, store: live, revision: live?.getRevision?.() };
+@@ -364,7 +372,7 @@
+         events.forEach(name => window.removeEventListener(name, update));
+         document.removeEventListener('visibilitychange', update);
+         if (typeof unsubscribe === 'function') unsubscribe();
+-        clearTimeout(readRequest.current?.timer); readRequest.current = null;
++        readRequest.current?.cancel?.(); readRequest.current = null;
+       };
+     }, [key, payload, refreshToken, store]);
+     React.useEffect(() => {
+@@ -372,26 +380,30 @@
+       return () => {
+         const request = saveRequest.current;
+         saveRequest.current = null;
+-        clearTimeout(request?.timer);
++        request?.cancel?.();
+         request?.controller.abort();
+       };
+-    }, [key]);
++    }, [key, store, revision]);
+     const retry = async () => {
+       if (saveRequest.current || !value?.ready || typeof window.__alloRetryReadAloudPersistence !== 'function') return;
+-      const request = { key, controller: new AbortController() };
++      const request = { ...current.current, controller: new AbortController() };
+       saveRequest.current = request;
+-      setSaving(key); setNotice(null);
+-      const isCurrent = () => saveRequest.current === request && current.current.key === key;
++      setSaving(request); setNotice(null);
++      const isCurrent = () => saveRequest.current === request && ownsSave(request);
+       try {
+         const result = await bounded(() => window.__alloRetryReadAloudPersistence('reference', { signal: request.controller.signal }), request);
+         if (!isCurrent()) return;
+-        if (!result || result.status === 'failed') throw new Error('Device save did not complete');
++        if (result?.status === 'failed') throw new Error('Device save did not complete');
++        // Legacy hosts return false/undefined after attaching the bytes and
++        // scheduling autosave. Neither that result nor a write receipt proves
++        // success or failure. Keep the notice tied to current readback.
++        setNotice({ ...request, kind: 'requested' });
+         // A write receipt alone must never promote attached clips to saved.
+         await refresh.current(true);
+       } catch (_) {
+         if (isCurrent()) {
+-          setNotice({ key, text: tr('retry_failed', 'Device save could not be completed. Check the saved count and try again.') });
+-          refresh.current();
++          setNotice({ ...request, kind: 'failed' });
++          await refresh.current(true);
+         }
+       } finally {
+         if (isCurrent()) { saveRequest.current = null; setSaving(null); }
+@@ -399,18 +411,27 @@
+     };
+     const verified = value && typeof value.verifiedAt === 'string' && Number.isFinite(Date.parse(value.verifiedAt));
+     const checking = reading?.key === key;
++    const message = !checking && ownsSave(notice)
++      ? verified && value.ready > 0 && value.durableReady === value.ready
++        ? tr('retry_verified', 'All currently ready clips are saved on this device.')
++        : notice.kind === 'failed'
++          ? tr('retry_failed', 'Device save could not be completed. Check the saved count and try again.')
++          : verified
++            ? tr('retry_pending', 'Device save is not confirmed yet. Check again after autosave finishes.')
++            : tr('retry_unverified', 'Device save could not be verified. Check again.')
++      : '';
+     const status = checking ? tr('checking', 'Checking device save…') : value
+       ? value.ready + '/' + value.total + ' ' + tr('ready', 'clips ready to play') + '. ' +
+         (verified ? value.durableReady + '/' + value.total + ' ' + tr('saved', 'saved on this device') + '.' : tr('unverified', 'Device save not verified.'))
+       : tr('unverified', 'Device save not verified.');
+     const actionClass = 'min-h-11 min-w-11 max-w-full rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+     // Both actions stay mounted so a background result cannot remove focus.
+-    return e('section', { 'data-device-audio-status': true, 'aria-label': tr('label', 'Read-aloud device storage'), className: 'w-full min-w-0 max-w-full rounded-xl border p-3 text-sm', style: { overflowWrap: 'anywhere' } },
++    return e('section', { 'data-device-audio-status': true, 'aria-label': tr('label', 'Read-aloud device storage'), className: 'w-full min-w-0 max-w-full rounded-xl border p-3 text-sm', style: { overflowWrap: 'anywhere', lineHeight: 1.5 } },
+       e('p', { role: 'status', 'aria-live': activePlayback && !(checking ? reading.explicit : snapshot?.explicit) ? 'off' : 'polite', 'aria-atomic': 'true', 'data-device-audio-count': true }, status),
+       e('p', { className: 'my-2' }, tr('scope', 'This check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.')),
+       e('div', { className: 'flex min-w-0 flex-wrap gap-2' },
+-        e('button', { type: 'button', className: actionClass, onClick: () => { setNotice(null); refresh.current(true); }, 'data-device-audio-check': true }, tr('check', 'Check device save')),
+-        e('button', { type: 'button', className: actionClass, onClick: retry, 'data-device-audio-retry': true, 'aria-disabled': busy || !value?.ready || !retryAvailable, 'aria-busy': busy }, tr('retry', 'Retry device save'))),
++        e('button', { type: 'button', className: actionClass, style: { lineHeight: 1.5 }, onClick: () => { setNotice(null); refresh.current(true); }, 'data-device-audio-check': true }, tr('check', 'Check device save')),
++        e('button', { type: 'button', className: actionClass, style: { lineHeight: 1.5 }, onClick: retry, 'data-device-audio-retry': true, 'aria-disabled': busy || !value?.ready || !retryAvailable, 'aria-busy': busy }, tr('retry', 'Retry device save'))),
+       e('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mt-2' }, busy ? tr('saving', 'Saving existing clips on this device…') : message),
+       !retryAvailable && e('p', { className: 'mt-2' }, tr('tools_loading', 'Device save tools are still loading. Check again shortly.')),
+       !value?.ready && e('p', { className: 'mt-2' }, tr('prepare_first', 'Prepare audio, then check again. Retrying device save uses existing clips; it does not generate speech.')));
+===================================================================
+--- a/tests/device_save_status.test.js
++++ b/tests/device_save_status.test.js
+@@ -65,7 +65,7 @@
+     await act(async()=>{retry().click();window.__alloRetryReadAloudPersistence=foreign;});
+     expect(original).toHaveBeenCalledTimes(1);expect(foreign).not.toHaveBeenCalled();
+   });
+-  it.each([false, undefined, {status:'failed'}])('reports an unsuccessful write result %j', async answer => {
++  it.each([{status:'failed'}])('reports an unsuccessful write result %j', async answer => {
+     await render(); window.__alloRetryReadAloudPersistence.mockResolvedValue(answer); await click(retry());
+     expect(host.textContent).toContain('Device save could not be completed'); expect(retry().getAttribute('aria-busy')).toBe('false');
+   });
+===================================================================
+--- /dev/null
++++ b/tests/device_save_completion.test.js
+@@ -0,0 +1,108 @@
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++let React, act, createRoot, host, root, Component;
++const entries = [{ text: 'Again.', occurrence: 0, language: 'English' }, { text: 'Again.', occurrence: 1, language: 'English' }];
++const props = overrides => ({ resourceId: 'one', contextKey: 'context', entries, profile: {voice:'Kore',speed:1,synthesisRate:1}, ...overrides });
++const result = overrides => ({ resourceId:'one', scope:'device-audio', total:2, ready:2, durableReady:0, sessionOnly:2, verifiedAt:'2026-09-27T00:00:00Z', ...overrides });
++const deferred = () => { let resolve; const promise = new Promise(r => resolve = r); return {promise,resolve}; };
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({act} = require(resolve('desktop/web-app/node_modules/react-dom/test-utils')));
++  ({createRoot} = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  global.React = window.React = React; global.IS_REACT_ACT_ENVIRONMENT = true;
++  loadAlloModule('resource_read_aloud_module.js'); Component = window.AlloModules.ResourceReadAloud.DeviceSaveStatus;
++});
++beforeEach(() => {
++  window.__alloGetReadAloudReadiness = vi.fn(async () => result());
++  window.__alloRetryReadAloudPersistence = vi.fn(async () => true);
++  window.__alloPrepareReadAloud = vi.fn(); window.__alloRegenerateSentenceAudio = vi.fn(); window.__alloCaptureKaraokeAudio = vi.fn();
++});
++afterEach(async () => {
++  if (root) await act(async () => root.unmount()); root = null; host?.remove(); host = null;
++  delete window.AlloModules.KaraokeAudioStore;
++  for (const key of ['__alloGetReadAloudReadiness','__alloRetryReadAloudPersistence','__alloPrepareReadAloud','__alloRegenerateSentenceAudio','__alloCaptureKaraokeAudio']) delete window[key];
++  vi.useRealTimers();
++});
++async function render(input = props()) {
++  if (!root) { host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host); }
++  await act(async () => root.render(React.createElement(Component,input)));
++}
++const status = () => host.querySelector('[data-device-audio-count]');
++const retry = () => host.querySelector('[data-device-audio-retry]');
++const check = () => host.querySelector('[data-device-audio-check]');
++const click = async button => act(async () => button.click());
++const dispatch = async (type,detail={}) => act(async () => window.dispatchEvent(new CustomEvent(type,{detail})));
++
++describe('device save completion follows current readback',()=>{
++ it('reports a delayed autosave failure and clears it only after verified recovery',async()=>{
++  await render();window.__alloRetryReadAloudPersistence.mockResolvedValue(false);await click(retry());
++  await dispatch('alloflow:offline-media-persistence',{status:'failed',verified:false});expect(host.textContent).toContain('could not be completed');
++  await dispatch('alloflow:offline-media-persistence',{status:'saved',verified:true});expect(host.textContent).toContain('could not be completed');
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await dispatch('alloflow:offline-media-persistence',{status:'saved',verified:true});expect(host.textContent).not.toContain('could not be completed');
++ });
++ it('keeps save ownership when attachment replaces only the resource payload object',async()=>{
++  const pending=deferred();await render(props({payload:{old:true}}));window.__alloRetryReadAloudPersistence.mockReturnValueOnce(pending.promise);await click(retry());
++  const signal=window.__alloRetryReadAloudPersistence.mock.calls[0][1].signal;await render(props({payload:{attached:true}}));expect(signal.aborted).toBe(false);
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await act(async()=>pending.resolve(false));expect(host.textContent).toContain('All currently ready');
++ });
++ it.each([false,undefined,null,{status:'attached'},{status:'saved',verified:true}])('does not label an unconfirmed legacy result as failure: %j',async receipt=>{
++  await render();window.__alloRetryReadAloudPersistence.mockResolvedValue(receipt);await click(retry());
++  expect(host.textContent).toContain('not confirmed yet');expect(host.textContent).not.toContain('could not be completed');
++  expect(status().textContent).toContain('0/2 saved');
++ });
++ it('announces delayed autosave completion without moving focus or generating speech',async()=>{
++  await render(props({activePlayback:true}));const button=retry();button.focus();window.__alloRetryReadAloudPersistence.mockResolvedValue(false);await click(button);
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await dispatch('alloflow:offline-media-persistence',{status:'saved',verified:true});
++  const notice=[...host.querySelectorAll('[role=status]')].find(el=>el.textContent.includes('All currently ready'));
++  expect(notice?.getAttribute('aria-live')).toBe('polite');expect(notice?.getAttribute('aria-atomic')).toBe('true');
++  expect(document.activeElement).toBe(button);expect(retry()).toBe(button);expect(host.textContent).not.toContain('could not be completed');
++  for(const key of ['__alloPrepareReadAloud','__alloRegenerateSentenceAudio','__alloCaptureKaraokeAudio'])expect(window[key]).not.toHaveBeenCalled();
++ });
++ it('clears an actual failure once a later read verifies the selected bytes',async()=>{
++  await render();window.__alloRetryReadAloudPersistence.mockRejectedValue(Error('denied'));await click(retry());expect(host.textContent).toContain('could not be completed');
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await dispatch('alloflow:offline-media-persistence');
++  expect(host.textContent).not.toContain('could not be completed');expect(host.textContent).toContain('All currently ready');
++ });
++ it('gives current readback precedence over a failed write when the exact clips already exist',async()=>{
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await render();window.__alloRetryReadAloudPersistence.mockResolvedValue({status:'failed'});await click(retry());
++  expect(host.textContent).not.toContain('could not be completed');expect(host.textContent).toContain('All currently ready');
++ });
++ it('keeps partial save feedback honest and notices later deletion',async()=>{
++  await render();await click(retry());window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:1}));await dispatch('pageshow');
++  expect(host.textContent).toContain('1/2 saved');expect(host.textContent).toContain('not confirmed yet');
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await dispatch('pageshow');expect(host.textContent).toContain('All currently ready');
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result());await dispatch('pageshow');expect(host.textContent).not.toContain('All currently ready');expect(host.textContent).toContain('0/2 saved');
++ });
++ it('does not imply every sentence is prepared when only the ready subset is saved',async()=>{
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({ready:1,durableReady:1}));await render();await click(retry());
++  expect(host.textContent).toContain('1/2 clips ready');expect(host.textContent).toContain('1/2 saved');expect(host.textContent).toContain('All currently ready');
++ });
++ it.each([{verifiedAt:null},{resourceId:'foreign'},{total:99}])('never announces verification for unverified or foreign results %j',async invalid=>{
++  await render();window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2,...invalid}));await click(retry());
++  expect(host.textContent).not.toContain('All currently ready');expect(host.textContent).toContain('could not be verified');
++ });
++ it('settles a superseded hung read so retry becomes available again',async()=>{
++  vi.useFakeTimers();await render();window.__alloGetReadAloudReadiness.mockReturnValueOnce(new Promise(()=>{}));await click(retry());expect(retry().getAttribute('aria-busy')).toBe('true');
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await dispatch('alloflow:offline-media-persistence');
++  expect(retry().getAttribute('aria-busy')).toBe('false');expect(host.textContent).toContain('All currently ready');
++  await act(async()=>vi.advanceTimersByTimeAsync(15001));expect(host.textContent).not.toContain('could not be completed');
++ });
++ it('drops late completion and aborts a save after a same-resource clip replacement',async()=>{
++  let revision=0,listener;window.AlloModules.KaraokeAudioStore={current:{getRevision:()=>revision,subscribe:fn=>{listener=fn;return()=>{};}}};
++  const pending=deferred();await render();window.__alloRetryReadAloudPersistence.mockReturnValueOnce(pending.promise);await click(retry());
++  const signal=window.__alloRetryReadAloudPersistence.mock.calls[0][1].signal;await act(async()=>{revision++;listener();});
++  expect(signal.aborted).toBe(true);expect(retry().getAttribute('aria-busy')).toBe('false');await act(async()=>pending.resolve(true));
++  expect(host.textContent).not.toContain('All currently ready');expect(host.textContent).not.toContain('not confirmed yet');
++ });
++ it('clears old completion feedback when a new payload or store is selected',async()=>{
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2}));await render();await click(retry());expect(host.textContent).toContain('All currently ready');
++  window.__alloGetReadAloudReadiness.mockResolvedValue(result());await render(props({payload:{changed:true}}));expect(host.textContent).not.toContain('All currently ready');
++ });
++ it('reports read errors without claiming the write failed or enabling speech generation',async()=>{
++  await render();window.__alloGetReadAloudReadiness.mockRejectedValue(Error('read denied'));await click(retry());
++  expect(host.textContent).toContain('could not be verified');expect(host.textContent).not.toContain('could not be completed');
++ });
++});
+===================================================================
+--- /dev/null
++++ b/dev-tools/device_durability_browser.cjs
+@@ -0,0 +1,88 @@
++// Native IndexedDB on a disposable stable origin/profile; no application server,
++// user profile, provider, microphone, cloud/bridge or external network traffic.
++const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{createRequire}=require('module');
++const {chromium,expect}=require('@playwright/test'),esbuild=require('esbuild');
++const root=path.resolve(__dirname,'..'),out=path.join(root,'validation');
++const feedbackOnly=process.argv.includes('--feedback-only');
++const host=fs.readFileSync(path.join(root,'AlloFlowANTI.txt'),'utf8');
++const slice=(start,end)=>{const a=host.indexOf(start),b=host.indexOf(end,a);assert.ok(a>=0&&b>a,start);return host.slice(a,b);};
++const sources={
++ queue:slice('function _alloQueueSequencedWrite(', 'function _alloBeginOwnedAsync('),
++ autosave:slice('    const owner = offlineHistoryWriteRef.current;', '  }, [history, isHistoryLoaded'),
++ attach:slice('  const _persistKaraokeAudioField =', '  // Regenerate (or first-generate) ONE sentence'),
++ enumerate:slice('  const _enumerateReadAloudResourceSegments =','  const _encodeReadAloudBridgeAudio ='),
++ readiness:slice('  window.__alloGetReadAloudReadiness = async', '  const STYLE_SEEDS =')
++};
++function wave(frequency){const n=1200,b=Buffer.alloc(44+n*2);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(8000,24);b.writeUInt32LE(16000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(n*2,40);for(let i=0;i<n;i++)b.writeInt16LE(Math.round(2000*Math.sin(i*2*Math.PI*frequency/8000)),44+i*2);return b.toString('base64');}
++const fixtures={first:wave(220),replacement:wave(440),student:wave(660)};
++const resources=[
++ {id:'faq',type:'faq',data:[{question:'Echo.',answer:'Echo.'},{question:'Echo.',answer:'Other.'}]},
++ {id:'original',type:'simplified',instructionalText:{form:'original'},data:'Original source sentence. Second original sentence.'},
++ {id:'adapted',type:'simplified',instructionalText:{form:'adapted'},data:'An adapted sentence. Another adapted sentence.'},
++ {id:'glossary',type:'glossary',language:'English',data:[{entryId:'term-one',term:'Plant',definition:'A living organism.',translations:{Spanish:'Planta: Un organismo vivo.'}}]},
++ {id:'memory',type:'memory-aid',data:{cards:[{id:'card-one',target:'Plants',aiExample:'Picture a leaf.',studentPrompt:'Explain the connection.'}]}},
++ {id:'challenge',type:'applied-challenge',data:{title:'Design a garden',instructions:'Plan a garden.',brief:{context:'Plants need light.'}}}
++];
++const fixture=String.raw`
++window.synthCalls=0;window.writeCalls=0;window.mediaEvents=[];window.receipts=[];window.storageFault=null;window.holdWrites=false;
++const KS=AlloModules.KaraokeAudioStore,utils=AlloModules.UtilsPure;
++const nativeSet=idbKeyval.set.bind(idbKeyval),nativeGet=idbKeyval.get.bind(idbKeyval);
++window.releaseWrites=()=>{window.holdWrites=false;for(const resolve of window.heldWrites||[])resolve();window.heldWrites=[];};
++idbKeyval.set=async(key,value)=>{writeCalls++;if(holdWrites)await new Promise(r=>(window.heldWrites||(window.heldWrites=[])).push(r));const hasAudio=storageFault==='audio-quota'&&JSON.parse(LZString.decompressFromUTF16(value)).items.some(item=>item.karaokeAudio||item.karaokeStudentAudio);if(storageFault==='all-writes'||hasAudio)throw new DOMException('Fixture quota full','QuotaExceededError');return nativeSet(key,value);};
++idbKeyval.get=async key=>{if(storageFault==='read')throw new DOMException('Fixture read denied','UnknownError');return nativeGet(key);};
++let historyItems=[],generatedContent=null,bridge=null,cleanup=null,root=null;
++const offlineHistoryWriteRef={current:{sequence:0,chain:Promise.resolve()}},canvasRecoveryStoreRef={current:{retentionPolicy:{},effectiveRetentionPolicy:{}}};
++const profile={voice:'Kore',language:'English',speed:1,synthesisRate:1,voiceResolverVersion:2,provider:'fixture'};
++const queue=new Function(sources.queue+';return _alloQueueSequencedWrite;')();
++const saveEffect=new Function('offlineHistoryWriteRef','isHistoryLoaded','isStorageDisabled','isCanvas','isTeacherMode','activeSessionCode','setPendingSync','ALLO_WORKSPACE_RECOVERY','canvasRecoveryStoreRef','history','storageDB','setLastSaved','warnLog','addToast','t','_alloQueueSequencedWrite',sources.autosave);
++const enumerate=new Function('getSideBySideContent','splitTextToSentences','leveledTextLanguage','currentUiLanguage','_ensureGlossaryReadAloudEntryIds',sources.enumerate+';return _enumerateReadAloudResourceSegments;')(()=>null,x=>KS.splitSentences(x),'English','English',()=>generatedContent);
++window.schedule=()=>{cleanup?.();cleanup=saveEffect(offlineHistoryWriteRef,true,false,false,true,null,()=>{},{resolvePolicy:()=>({maxOfflineItems:100})},canvasRecoveryStoreRef,historyItems,utils.storageDB,()=>{},()=>{},()=>{},x=>x,queue);};
++window.settleSave=async()=>{await new Promise(r=>setTimeout(r,1150));await offlineHistoryWriteRef.current.chain;};
++window.addEventListener('alloflow:offline-media-persistence',e=>receipts.push(e.detail));
++window.entries=()=>enumerate(generatedContent);
++window.select=async(id,hydrate=true)=>{
++ root?.unmount();root=null;KS.current?.clear();generatedContent=historyItems.find(x=>x.id===id);if(!generatedContent)throw Error('Missing fixture resource '+id);
++ KS.current=KS.createStore();KS.studentCurrent=KS.createStore();if(hydrate){KS.current.hydrate(generatedContent.karaokeAudio);KS.studentCurrent.hydrate(generatedContent.karaokeStudentAudio);}
++ const attach=new Function('generatedContent','setGeneratedContent','setHistory','_karaokePayloadSignature',sources.attach+';return _persistKaraokeAudioField;')(generatedContent,update=>{generatedContent=update(generatedContent);},update=>{historyItems=update(historyItems);schedule();},JSON.stringify);
++ bridge=AlloModules.createReadAloudLegacyBridge({getResource:()=>generatedContent,getStore:lane=>lane==='student'?KS.studentCurrent:KS.current,getProfile:()=>profile,enumerateResourceSegments:enumerate,normalize:AlloModules.PhaseKHelpers.toSpokenText,
++  synthesize:async()=>{synthCalls++;if(window.offlineMode)throw Error('Synthesis forbidden after restart');return{b64:fixtures.first,mime:'audio/wav'};},persist:({lane,payload,resourceId})=>attach(lane==='student'?'karaokeStudentAudio':'karaokeAudio',payload,resourceId)});
++ new Function('_getReadAloudBridge','generatedContent','storageDB',sources.readiness)(()=>bridge,generatedContent,utils.storageDB);
++ window.bridge=bridge;window.currentResource=generatedContent;
++};
++window.seed=async()=>{historyItems=structuredClone(resourceFixtures);for(const resource of historyItems){await select(resource.id,false);const list=entries();if(!list.length)throw Error('No canonical entries '+resource.id);const r=await bridge.prepare(list);if(!r.ok)throw Error('Preparation failed '+JSON.stringify(r));}await settleSave();};
++window.restore=async()=>{const snapshot=await utils.storageDB.get('allo_offline_history',{throwOnError:true,localOnly:true});historyItems=(snapshot?.items||[]).map(item=>({...item,data:JSON.parse(item.data)}));return historyItems.map(x=>x.id);};
++window.count=()=>__alloGetReadAloudReadiness(entries().map(e=>e.text),'reference',{entries:entries(),profile});
++window.snapshot=()=>utils.storageDB.get('allo_offline_history',{throwOnError:true,localOnly:true});
++window.mount=()=>{root=ReactDOM.createRoot(document.querySelector('#root'));root.render(React.createElement(AlloModules.ResourceReadAloud.DeviceSaveStatus,{resourceId:generatedContent.id,contextKey:generatedContent.id,entries:entries(),profile,payload:generatedContent.karaokeAudio}));};
++window.replace=()=>{const item=Object.values(KS.current.serialize().entries)[0];KS.current.put(item.identity,fixtures.replacement,'audio/wav','ai',item.synthesisProfile,{allowReplaceHuman:true});};
++window.playAll=async()=>{for(const entry of entries()){const url=await bridge.resolve(entry);await new Promise((resolve,reject)=>{const a=new Audio(url),timer=setTimeout(()=>reject(Error('Native playback timed out')),5000);a.onended=()=>{clearTimeout(timer);mediaEvents.push({id:entry.segmentId,ended:true,time:a.currentTime});resolve();};a.onerror=()=>{clearTimeout(timer);reject(Error('Native decoding failed'));};a.play().catch(reject);});}};
++window.stopAutosave=()=>{cleanup?.();cleanup=null;};
++`;
++(async()=>{
++ fs.mkdirSync(out,{recursive:true});const report={cases:[],errors:[],blockedRequests:[],feedbackOnly,fixtures:'Native IndexedDB, vendor idb-keyval/LZString, source host autosave/attachment/readback, actual service/store; synthesized fixture PCM only'};
++ const profileDir=fs.mkdtempSync(path.join(out,'browser-profile-'));report.profile=path.basename(profileDir);
++ const runtime=esbuild.buildSync({stdin:{contents:'window.React=require("react");window.ReactDOM=require("react-dom/client");',resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const web=createRequire(path.join(root,'desktop/web-app/package.json'));
++ const css=(await web('postcss')([web('tailwindcss')({...web('./tailwind.config.js'),content:[path.join(root,'resource_read_aloud_module.js')]})]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ let context,page;
++ const open=async()=>{context=await chromium.launchPersistentContext(profileDir,{headless:true,viewport:{width:320,height:640},reducedMotion:'reduce',args:['--autoplay-policy=no-user-gesture-required']});report.browser=context.browser()?.version()||'Chromium';await context.route('**/*',route=>route.request().url()==='https://device-durability.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Disposable audio storage fixture</title><main id="root"></main></html>'}):(report.blockedRequests.push(route.request().url()),route.abort()));page=await context.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>report.errors.push(e.message));await page.goto('https://device-durability.test/');await page.addScriptTag({content:runtime});await page.addScriptTag({content:'window.AlloModules={};window.warnLog=window.debugLog=()=>{};window.sources='+JSON.stringify(sources)+';window.fixtures='+JSON.stringify(fixtures)+';window.resourceFixtures='+JSON.stringify(resources)+';'});for(const file of ['desktop/web-app/public/vendor/idb-keyval-6.2.0.umd.min.js','desktop/web-app/public/vendor/lz-string-1.4.4.min.js','utils_pure_module.js','karaoke_audio_store_module.js','read_aloud_audio_service_source.jsx','phase_k_helpers_module.js','resource_read_aloud_module.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});await page.addScriptTag({content:fixture});};
++ const run=async(name,test)=>{try{await test();report.cases.push({name,passed:true});console.log('PASS '+name);}catch(error){report.cases.push({name,passed:false,error:String(error.stack)});throw error;}};
++ const counter=()=>page.locator('[data-device-audio-count]'),retry=()=>page.locator('[data-device-audio-retry]');
++ try{
++  await open();await page.addStyleTag({content:css});
++  await run('canonical shared-resource routes write compressed snapshots to real IndexedDB',async()=>{await page.evaluate(()=>seed());const saved=await page.evaluate(()=>snapshot());assert.equal(saved.items.length,resources.length);assert.ok(saved.items.every(x=>Object.keys(x.karaokeAudio.entries).length>0));const stored=await page.evaluate(()=>idbKeyval.get('allo_offline_history'));assert.equal(typeof stored,'string');report.resourceSegments=saved.items.map(x=>({id:x.id,type:x.type,segments:Object.keys(x.karaokeAudio.entries).length}));});
++  await run('replace a repeated FAQ occurrence, then close the entire browser process',async()=>{await page.evaluate(async()=>{await select('faq');const item=bridge.inspect(entries()[2]).segment.storageKey;AlloModules.KaraokeAudioStore.current.put(item,fixtures.replacement,'audio/wav','ai',profile,{allowReplaceHuman:true});await bridge.retryPersistence();await settleSave();});report.beforeRestart=await page.evaluate(()=>snapshot());await context.close();context=null;});
++  await open();await page.addStyleTag({content:css});await context.setOffline(true);await page.evaluate(()=>{window.offlineMode=true;});
++  await run(feedbackOnly?'browser restart restores saved bytes for the feedback comparison':'full browser restart restores every tested route and decodes saved audio offline without synthesis',async()=>{const ids=await page.evaluate(()=>restore());assert.deepEqual(ids,resources.map(x=>x.id));assert.deepEqual(await page.evaluate(()=>snapshot()),report.beforeRestart);for(const resource of resources){await page.evaluate(id=>select(id),resource.id);const count=await page.evaluate(()=>count());assert.equal(count.ready,count.total,resource.id);assert.equal(count.durableReady,count.total,resource.id);if(!feedbackOnly)await page.evaluate(()=>playAll());}assert.equal(await page.evaluate(()=>synthCalls),0);if(!feedbackOnly)assert.ok((await page.evaluate(()=>mediaEvents)).length>=resources.length);});
++  await run('attachment-only retry stays pending until native autosave readback completes',async()=>{await page.evaluate(async()=>{await select('faq');replace();mount();});await expect(counter()).toContainText('3/4 saved');await retry().focus();await page.keyboard.press('Enter');await expect(page.locator('#root')).toContainText('not confirmed yet');await expect(counter()).toContainText('4/4 saved');await expect(page.locator('#root')).toContainText('All currently ready');assert.equal(await retry().evaluate(el=>el===document.activeElement),true);assert.equal(await page.evaluate(()=>synthCalls),0);});
++  await run('quota fallback keeps text and reports missing audio without claiming save success',async()=>{await page.evaluate(()=>{window.storageFault='audio-quota';});await retry().click();await expect(counter()).toContainText('0/4 saved');assert.equal((await page.evaluate(()=>snapshot())).items[0].karaokeAudio,undefined);assert.ok(await page.evaluate(()=>receipts.some(r=>r.status==='text-only')));await expect(page.locator('#root')).toContainText('not confirmed yet');});
++  await run('persistence-only retry recovers quota fallback with no synthesis',async()=>{await page.evaluate(()=>{window.storageFault=null;});await retry().focus();await page.keyboard.press('Space');await expect(counter()).toContainText('4/4 saved');assert.equal(await page.evaluate(()=>synthCalls),0);});
++  await run('storage read failures show unverified and recover on explicit keyboard check',async()=>{await page.evaluate(()=>{window.storageFault='read';});await page.locator('[data-device-audio-check]').click();await expect(counter()).toContainText('not verified');await page.evaluate(()=>{window.storageFault=null;});await page.locator('[data-device-audio-check]').focus();await page.keyboard.press('Enter');await expect(counter()).toContainText('4/4 saved');});
++  await run('failed native writes preserve the previous snapshot and show actionable failure',async()=>{await page.evaluate(()=>settleSave());const before=await page.evaluate(()=>snapshot());await page.evaluate(()=>{const item=Object.values(AlloModules.KaraokeAudioStore.current.serialize().entries)[0];AlloModules.KaraokeAudioStore.current.put(item.identity,fixtures.student,'audio/wav','ai',item.synthesisProfile,{allowReplaceHuman:true});window.storageFault='all-writes';});await expect(counter()).toContainText('3/4 saved');await retry().click();await expect(page.locator('#root')).toContainText('could not be completed');assert.deepEqual(await page.evaluate(()=>snapshot()),before);await page.evaluate(()=>{window.storageFault=null;});await retry().click();await expect(counter()).toContainText('4/4 saved');await expect(page.locator('#root')).not.toContainText('could not be completed');});
++  await run('deleting the fixture snapshot invalidates prior saved status and retry restores it',async()=>{await page.evaluate(async()=>{await idbKeyval.del('allo_offline_history');window.dispatchEvent(new Event('pageshow'));});await expect(counter()).toContainText('0/4 saved');await retry().click();await expect(counter()).toContainText('4/4 saved');});
++  await run('queued history writes finish with newest clip bytes after a delayed write',async()=>{await page.evaluate(async()=>{await select('faq');window.holdWrites=true;await bridge.retryPersistence();});await page.waitForFunction(()=>window.heldWrites?.length>0);await page.evaluate(async()=>{const item=Object.values(AlloModules.KaraokeAudioStore.current.serialize().entries)[1];AlloModules.KaraokeAudioStore.current.put(item.identity,fixtures.student,'audio/wav','human-teacher',{}, {allowReplaceHuman:true});await bridge.retryPersistence();releaseWrites();await settleSave();});const check=await page.evaluate(()=>count());assert.equal(check.durableReady,check.total);const saved=await page.evaluate(()=>snapshot());assert.equal(Object.values(saved.items.find(x=>x.id==='faq').karaokeAudio.entries)[1].audio,fixtures.student);});
++  for(const mode of ['normal','spacing','200-text'])await run('320px storage controls: '+mode,async()=>{await page.evaluate(async()=>{await select('faq');mount();});await expect(counter()).toContainText('4/4 saved');if(mode==='spacing')await page.evaluate(()=>document.querySelectorAll('#root *').forEach(el=>{el.style.lineHeight='1.5';el.style.letterSpacing='.12em';el.style.wordSpacing='.16em';if(el.tagName==='P')el.style.marginBottom='2em';}));if(mode==='200-text')await page.evaluate(()=>{const sizes=[...document.querySelectorAll('#root *')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);sizes.forEach(([el,n])=>el.style.fontSize=n*2+'px');});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.equal(await page.locator('#root p,#root button').evaluateAll(nodes=>nodes.filter(el=>parseFloat(getComputedStyle(el).lineHeight)<parseFloat(getComputedStyle(el).fontSize)*1.4).length),0);await retry().focus();await page.keyboard.press('Space');await expect(page.locator('#root')).toContainText('All currently ready');assert.ok(await retry().evaluate(el=>{const b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return el===document.activeElement&&el.matches(':focus-visible')&&b.top>=0&&b.bottom<=innerHeight&&b.width>=44&&b.height>=44&&(hit===el||el.contains(hit));}));assert.equal(await page.locator('button button,button a,[role=status] button').count(),0);await page.screenshot({path:path.join(out,'device-durability-'+mode+'.png'),fullPage:true});await page.evaluate(()=>settleSave());});
++  assert.deepEqual(report.errors,[]);assert.deepEqual(report.blockedRequests,[]);delete report.beforeRestart;
++ }finally{if(page&&!page.isClosed()){report.finalUi=await page.locator('body').innerText().catch(()=>null);await page.screenshot({path:path.join(out,'device-durability-final.png'),fullPage:true}).catch(()=>{});}if(context)await context.close();fs.writeFileSync(path.join(out,'device-durability-browser.json'),JSON.stringify(report,null,2));}
++ console.log(JSON.stringify({passed:report.cases.filter(x=>x.passed).length,errors:report.errors,profile:report.profile}));
++})().catch(error=>{console.error(error);process.exitCode=1;});

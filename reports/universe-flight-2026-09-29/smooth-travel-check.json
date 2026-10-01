@@ -1,0 +1,142 @@
+{
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "free-camera-sidebar",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "landscape-fullscreen",
+      "violations": []
+    }
+  ],
+  "ramp": {
+    "smoothTravel": true,
+    "paceLyPerSecond": 0.663325677735269,
+    "targetLyPerSecond": 1.946610237380866,
+    "kind": "free"
+  },
+  "cruise": {
+    "smoothTravel": true,
+    "paceLyPerSecond": 1.6175157849274249,
+    "targetLyPerSecond": 1.946610237380866,
+    "kind": "free"
+  },
+  "slowing": {
+    "smoothTravel": true,
+    "paceLyPerSecond": 1.6438791838959943,
+    "targetLyPerSecond": 0.014953487812212207,
+    "kind": "free"
+  },
+  "restart": {
+    "smoothTravel": true,
+    "paceLyPerSecond": 0.6631845086695517,
+    "targetLyPerSecond": 1.946610237380866,
+    "kind": "free"
+  },
+  "immediate": {
+    "smoothTravel": false,
+    "paceLyPerSecond": 1.946610237380866,
+    "targetLyPerSecond": 1.946610237380866,
+    "kind": "free"
+  },
+  "approach": {
+    "smoothTravel": false,
+    "paceLyPerSecond": 1.946610237380866,
+    "targetLyPerSecond": 1.946610237380866,
+    "kind": "approach"
+  },
+  "orbit": {
+    "smoothTravel": true,
+    "paceLyPerSecond": 4974.18836818384,
+    "targetLyPerSecond": 4974.18836818384,
+    "kind": "orbit"
+  },
+  "orbitAfter": {
+    "smoothTravel": false,
+    "paceLyPerSecond": 4974.188368183838,
+    "targetLyPerSecond": 4974.188368183838,
+    "kind": "orbit"
+  },
+  "physical": {
+    "smoothTravel": false,
+    "paceLyPerSecond": 0,
+    "targetLyPerSecond": 0,
+    "kind": "relativity"
+  },
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 800
+    },
+    "bounds": {
+      "x": 12,
+      "y": 60,
+      "width": 296,
+      "height": 590
+    },
+    "bodyBounds": {
+      "x": 29,
+      "y": 181,
+      "width": 262,
+      "height": 452
+    },
+    "scrolling": {
+      "width": 262,
+      "clientWidth": 262,
+      "height": 542,
+      "clientHeight": 452
+    },
+    "lens": null
+  },
+  "landscape": {
+    "viewport": {
+      "width": 568,
+      "height": 320
+    },
+    "bounds": {
+      "x": 236,
+      "y": 12,
+      "width": 320,
+      "height": 164
+    },
+    "bodyBounds": {
+      "x": 245,
+      "y": 73,
+      "width": 302,
+      "height": 94
+    },
+    "scrolling": {
+      "width": 302,
+      "clientWidth": 302,
+      "height": 538,
+      "clientHeight": 94
+    },
+    "lens": null
+  },
+  "checks": [
+    "default smooth travel",
+    "paused settings invariants",
+    "free-flight acceleration",
+    "live pace reduction",
+    "instant pause",
+    "resume ramp",
+    "instant pace option",
+    "API zero pace",
+    "shared normal and fullscreen preference",
+    "fullscreen live pace",
+    "saved-view preference retention and motion reset",
+    "guided approach remains active",
+    "orbit pace unaffected",
+    "physical mode hides camera smoothing",
+    "physical clocks and distance",
+    "320px layout",
+    "568x320 fullscreen body scrolling",
+    "scoped accessibility",
+    "fullscreen panel hides lens controls"
+  ]
+}

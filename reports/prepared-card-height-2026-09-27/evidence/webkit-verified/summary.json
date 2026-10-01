@@ -1,0 +1,45 @@
+{
+  "started": "2026-09-27T17:15:10.371Z",
+  "sourceRoot": "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated",
+  "styleRoot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "browsers": [
+    "webkit"
+  ],
+  "inputs": {
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\view_simplified_source.jsx": "242d3a4ff4a7f30adb95551ac3573524b5b50c1075f667345f25f19b80af97b7",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\reader_place_store.js": "f3f1b718ae496003fecf365f070e4ef98c4efcceb5e6b11761cea44e047a75ae",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\content_engine_module.js": "415f6200f8c9a36ef90acfe5673b948129d29196a2f7c96150638fe3901f77e2",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\alt_text_module.js": "944109d0ab087d02f00c51af4f5905eaef0e9a916a02dd93324eaafeaca024c2",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\src\\index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9"
+  },
+  "phases": [
+    {
+      "name": "unit and prepared interactions",
+      "status": 0
+    },
+    {
+      "name": "webkit interactions",
+      "status": 0
+    },
+    {
+      "name": "webkit preview",
+      "status": 0
+    },
+    {
+      "name": "webkit list-layout",
+      "status": 0
+    },
+    {
+      "name": "webkit card-stress",
+      "status": 0
+    }
+  ],
+  "status": "passed",
+  "inputDrift": [],
+  "completed": "2026-09-27T17:16:57.485Z"
+}

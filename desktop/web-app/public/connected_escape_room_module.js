@@ -12,6 +12,7 @@
     MAX_ROOM_CHARS: () => MAX_ROOM_CHARS,
     TYPES: () => TYPES,
     VERSION: () => VERSION,
+    autoRepairRoom: () => autoRepairRoom,
     available: () => available,
     complete: () => complete,
     createSession: () => createSession,
@@ -29,6 +30,7 @@
     promptFor: () => promptFor,
     receiptKeysToPrune: () => receiptKeysToPrune,
     restoreWorkspace: () => restoreWorkspace,
+    snapSourceQuote: () => snapSourceQuote,
     solutionValue: () => solutionValue,
     sourceText: () => sourceText,
     teamActivity: () => teamActivity,
@@ -250,29 +252,125 @@ SCHEMA:
 {"version":1,"title":"...","mission":"...","debrief":"A short explanation connecting the discoveries to the learning","exitNodeId":"door","areas":[{"id":"archive","name":"...","description":"..."}],"nodes":[{"id":"notes","areaId":"archive","type":"inspect","name":"Field notes","description":"What players observe","instruction":"Record the evidence","requires":[],"hints":["...","...","..."],"reward":{"id":"evidence-a","kind":"evidence","name":"...","text":"Actual evidence used by a later device"}},{"id":"device","areaId":"archive","type":"configure","name":"...","description":"...","instruction":"...","requires":["evidence-a","evidence-b"],"controls":[{"label":"...","options":["...","..."],"correctIndex":1},{"label":"...","options":["...","..."],"correctIndex":0}],"learningObjective":"...","sourceQuote":"exact words from source","explanation":"why these settings work","hints":["...","...","..."],"reward":{"id":"part-a","kind":"tool","name":"...","text":"The device releases a component"}}]}
 The schema objects illustrate fields only; return a COMPLETE room of 7-12 objects. IDs must start with a lowercase letter and use only lowercase letters, digits, underscores or hyphens (max 40 characters). Text limits: title 120, mission/debrief 1500, object name 100, descriptions/instructions 1000, reward text 1200, each hint 450.`;
   }
+  var QUOTE_FOLD = { "\u2018": "'", "\u2019": "'", "\u201A": "'", "\u201B": "'", "\u2032": "'", "\u201C": '"', "\u201D": '"', "\u201E": '"', "\u201F": '"', "\u2033": '"', "\u2013": "-", "\u2014": "-", "\u2012": "-", "\u2212": "-", "\xA0": " ", "\u2026": "..." };
+  function foldForQuote(text2) {
+    const chars = [], at = [];
+    const input = String(text2 || "").normalize("NFC");
+    for (let i = 0; i < input.length; i++) {
+      let ch = input[i];
+      if ("*_`#>".includes(ch)) continue;
+      ch = QUOTE_FOLD[ch] ?? ch;
+      for (const part of ch.toLowerCase()) {
+        if (/\s/.test(part)) {
+          if (!chars.length || chars[chars.length - 1] === " ") continue;
+          chars.push(" ");
+          at.push(i);
+          continue;
+        }
+        chars.push(part);
+        at.push(i);
+      }
+    }
+    while (chars[chars.length - 1] === " ") {
+      chars.pop();
+      at.pop();
+    }
+    return { text: chars.join(""), at };
+  }
+  function snapSourceQuote(quote, source) {
+    if (typeof quote !== "string" || !quote.trim() || typeof source !== "string") return null;
+    if (normalized(source).includes(normalized(quote))) return quote;
+    const lesson = foldForQuote(source), wanted = foldForQuote(quote).text.replace(/^\.\.\.\s*|\s*\.\.\.$/g, "").trim();
+    if (wanted.length < 12) return null;
+    const start = lesson.text.indexOf(wanted);
+    if (start < 0) return null;
+    const snapped = source.normalize("NFC").slice(lesson.at[start], lesson.at[start + wanted.length - 1] + 1).trim();
+    return snapped.length <= 600 && normalized(source).includes(normalized(snapped)) ? snapped : null;
+  }
+  var slugKey = (value) => {
+    let id = String(value || "").normalize("NFKD").replace(/[\u0300-\u036F]/g, "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^[^a-z]+/, "").slice(0, 40).replace(/-+$/, "");
+    return id || "item";
+  };
+  function autoRepairRoom(raw, source) {
+    if (!plain(raw)) return { room: raw, fixes: [] };
+    const fixes = [], room = { ...raw };
+    const renames = { area: /* @__PURE__ */ new Map(), node: /* @__PURE__ */ new Map(), reward: /* @__PURE__ */ new Map() }, taken = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+    const rename = (kind, id) => {
+      if (typeof id !== "string" || safeKey(id)) {
+        if (typeof id === "string") taken.add(id);
+        return id;
+      }
+      if (renames[kind].has(id)) return renames[kind].get(id);
+      let next = slugKey(id), n = 2;
+      while (taken.has(next)) next = slugKey(id).slice(0, 36) + "-" + n++;
+      taken.add(next);
+      renames[kind].set(id, next);
+      fixes.push("id:" + id);
+      return next;
+    };
+    if (Array.isArray(raw.areas)) room.areas = raw.areas.map((a) => plain(a) ? { ...a, id: rename("area", a.id) } : a);
+    if (Array.isArray(raw.nodes)) {
+      const nodes = raw.nodes.map((n) => plain(n) ? { ...n, id: rename("node", n.id), reward: plain(n.reward) ? { ...n.reward, id: rename("reward", n.reward.id) } : n.reward } : n);
+      const remap = (kind, id) => renames[kind].get(id) ?? id;
+      room.nodes = nodes.map((n) => {
+        if (!plain(n)) return n;
+        const next = { ...n, areaId: remap("area", n.areaId) };
+        if (Array.isArray(n.requires)) next.requires = n.requires.map((id) => remap("reward", id));
+        if (n.toolId != null) next.toolId = remap("reward", n.toolId);
+        if (Array.isArray(n.hints) && n.hints.length > 3 && n.hints.slice(0, 3).every((h) => text(h, 450))) {
+          next.hints = n.hints.slice(0, 3);
+          fixes.push("hints:" + n.id);
+        }
+        if (["configure", "sequence", "route"].includes(n.type) && typeof n.sourceQuote === "string" && source && !normalized(source).includes(normalized(n.sourceQuote))) {
+          const snapped = snapSourceQuote(n.sourceQuote, source);
+          if (snapped) {
+            next.sourceQuote = snapped;
+            fixes.push("quote:" + n.id);
+          }
+        }
+        return next;
+      });
+      if (typeof raw.exitNodeId === "string") room.exitNodeId = remap("node", raw.exitNodeId);
+    }
+    return { room, fixes };
+  }
+  function reportGenerationIssue(stage, message) {
+    try {
+      const reporter = globalThis.window && globalThis.window.AlloModules && globalThis.window.AlloModules.ErrorReporter;
+      if (reporter && typeof reporter.record === "function") reporter.record("warn", "[Escape Room] " + stage + ": " + String(message).slice(0, 1500), "", "connected_escape_room_engine.js", 0, 0);
+    } catch (_) {
+    }
+  }
+  var repairPrompt = (source, options, message, response) => promptFor(source, options) + "\nRepair the previous room. Validation errors:\n" + String(message).slice(0, 3e3) + "\nPrevious JSON:\n" + String(response).slice(0, 5e4);
   async function generateRoom(callAI, source, options = {}, onStage = () => {
   }) {
     if (typeof callAI !== "function") throw new Error("The AI provider is not available.");
     if (!source || source.trim().length < 40) throw new Error("Add lesson source text or a quiz with enough content to generate a room.");
-    let prompt = promptFor(source, options), lastError;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      onStage(attempt === 0 ? "generating" : "repairing");
+    const resume = options.repairFrom && typeof options.repairFrom.response === "string" ? options.repairFrom : null;
+    let prompt = resume ? repairPrompt(source, options, resume.message, resume.response) : promptFor(source, options), lastError, lastResponse = "";
+    const attempts = resume ? 1 : 2;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      onStage(attempt === 0 && !resume ? "generating" : "repairing");
       let response = "";
       try {
         response = await callAI(prompt, true);
         if (typeof response !== "string" || response.length > 1e5) throw new Error("The AI returned an empty or oversized room.");
         const raw = JSON.parse(response.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim());
-        const room = prepareRoom(raw, source);
+        const room = prepareRoom(autoRepairRoom(raw, source).room, source);
         const flowErrors = generationFlowErrors(room, options.structure);
         if (flowErrors.length) throw new Error(flowErrors.join("\n"));
         return room;
       } catch (error) {
         lastError = error;
-        if (typeof response !== "string" || !response || response.length > 1e5 || attempt === 1) break;
-        prompt = promptFor(source, options) + "\nRepair the previous room. Validation errors:\n" + String(error.message).slice(0, 3e3) + "\nPrevious JSON:\n" + response.slice(0, 5e4);
+        if (typeof response === "string" && response && response.length <= 1e5) lastResponse = response;
+        reportGenerationIssue(attempt === 0 && !resume ? "generation check" : "repair check", error?.message || error);
+        if (typeof response !== "string" || !response || response.length > 1e5 || attempt === attempts - 1) break;
+        prompt = repairPrompt(source, options, error.message, response);
       }
     }
-    throw new Error("A playable room could not be validated. " + String(lastError?.message || "").slice(0, 1800));
+    const failure = new Error("A playable room could not be validated. " + String(lastError?.message || "").slice(0, 1800));
+    if (lastResponse) failure.candidate = { response: lastResponse, message: String(lastError?.message || "").slice(0, 3e3) };
+    throw failure;
   }
   var emptyProgress = () => ({ solved: {}, hints: {}, receipts: {}, assisted: {} });
   function inventory(room, progress) {
@@ -1172,7 +1270,7 @@ PLAYER MATERIAL END`;
       restartRef.current?.focus();
     } }, tr8(t, "cancel", "Cancel")))), /* @__PURE__ */ React8.createElement(RoomView, { key: workspaceKey, room, progress: state.progress, workspaceKey, onAction: action, notice, solo: true, t }));
   }
-  function ConnectedSetup({ callGemini, inputText, generatedContent, language = "English", activeSessionCode, appId, sessionData, onClose, onLaunched, user, allowLive = !!activeSessionCode, t }) {
+  function ConnectedSetup({ callGemini, inputText, generatedContent, language = "English", activeSessionCode, appId, sessionData, onClose, onLaunched, user, allowLive = !!activeSessionCode, learnerMode = false, t }) {
     const source = useMemo(() => sourceText(inputText, generatedContent), [inputText, generatedContent]);
     const [room, setRoom] = useState5(null), [stage, setStage] = useState5(""), [error, setError] = useState5("");
     const [library, setLibrary] = useState5({ entries: [] }), [libraryChoice, setLibraryChoice] = useState5(null), libraryCancelRef = useRef4(null), libraryPickerRef = useRef4(null), librarySummaryRef = useRef4(null), previousLibraryChoice = useRef4(null);
@@ -1185,7 +1283,9 @@ PLAYER MATERIAL END`;
     const libraryError = (error2) => error2?.message === "library-full" ? tr8(t, "library_full", "This lesson already has eight saved rooms in this language. Open and remove a room you no longer need before saving another. Your current room stays open.") : error2?.message === "library-invalid" ? tr8(t, "library_invalid", "The saved-room library could not be read. Existing saved data has been kept. You can generate and play a room, but saving is unavailable until the stored library is repaired.") : tr8(t, "save_failed", "This room could not be saved in this browser. Keep this page open to retain it, and try saving again.");
     const [theme, setTheme] = useState5(""), [level, setLevel] = useState5(""), [structure, setStructure] = useState5("parallel");
     const [previewVersion, setPreviewVersion] = useState5(0), [soloOpen, setSoloOpen] = useState5(false), [review, setReview] = useState5(null), [reviewStep, setReviewStep] = useState5(null);
-    const [view, setView] = useState5("review"), [preview, setPreview] = useState5(emptyProgress), [previewNotice, setPreviewNotice] = useState5(""), [saved, setSaved] = useState5(false);
+    const firstView = learnerMode ? "play" : "review";
+    const [view, setView] = useState5(firstView), [preview, setPreview] = useState5(emptyProgress), [previewNotice, setPreviewNotice] = useState5(""), [saved, setSaved] = useState5(false);
+    const [failure, setFailure] = useState5(null), [confirmLaunch, setConfirmLaunch] = useState5(false), [showSolutions, setShowSolutions] = useState5(!learnerMode);
     const requestRef = useRef4(0), dialogRef = useRef4(null), closeRef = useRef4(onClose), scopeRef = useRef4("");
     const scope = appId + ":" + activeSessionCode + ":" + language + ":" + source;
     scopeRef.current = scope;
@@ -1201,12 +1301,14 @@ PLAYER MATERIAL END`;
       requestRef.current++;
       setStage("");
       setError("");
+      setFailure(null);
+      setConfirmLaunch(false);
       setRoom(null);
       setSoloOpen(false);
       setReview(null);
       setReviewStep(null);
       setSaved(false);
-      setView("review");
+      setView(firstView);
       setPreview(emptyProgress());
       setPreviewVersion((n) => n + 1);
       setLibrary({ entries: [] });
@@ -1223,12 +1325,15 @@ PLAYER MATERIAL END`;
         setError(libraryError(error2));
       }
     }, [scope, language]);
-    const generate = async () => {
+    const generate = async (repairFrom) => {
       if (stage || libraryChoice) return;
       const id = ++requestRef.current, startedScope = scope;
+      const resume = repairFrom && typeof repairFrom.response === "string" ? repairFrom : null;
       setError("");
+      setFailure(null);
+      setConfirmLaunch(false);
       try {
-        const result = await generateRoom(callGemini, source, { language, theme, level, seed: identity("variation"), structure }, (next) => {
+        const result = await generateRoom(callGemini, source, { language, theme, level, seed: identity("variation"), structure, repairFrom: resume }, (next) => {
           if (requestRef.current === id) setStage(next);
         });
         if (requestRef.current !== id || scopeRef.current !== startedScope) return;
@@ -1238,9 +1343,13 @@ PLAYER MATERIAL END`;
         setPreview(emptyProgress());
         setPreviewVersion((n) => n + 1);
         setPreviewNotice("");
-        setView("review");
+        setView(firstView);
       } catch (e) {
-        if (requestRef.current === id) setError(e.message);
+        if (requestRef.current !== id) return;
+        if (e.candidate) {
+          setError(tr8(t, "room_needs_repair", "The AI room did not pass the playability checks, even after a repair. Ask for another repair, or generate a new room."));
+          setFailure({ candidate: e.candidate, detail: e.message });
+        } else setError(e.message);
       } finally {
         if (requestRef.current === id) setStage("");
       }
@@ -1302,8 +1411,13 @@ PLAYER MATERIAL END`;
         setError(libraryError(error2));
       }
     };
-    const launch = async () => {
+    const launch = async (force) => {
       if (stage || !room || !allowLive || !activeSessionCode || sessionData?.escapeRoomState?.isActive) return;
+      if (force !== true && !readiness.ready) {
+        setConfirmLaunch(true);
+        return;
+      }
+      setConfirmLaunch(false);
       const id = ++requestRef.current, startedScope = scope;
       setStage("launching");
       setError("");
@@ -1411,7 +1525,19 @@ PLAYER MATERIAL END`;
       setPreview(mergeProgress(preview, patch));
       setPreviewNotice(roomStatus(t, patch["receipts." + request.requestId]?.code));
     };
-    return /* @__PURE__ */ React8.createElement("div", { className: "cer-modal-backdrop" }, /* @__PURE__ */ React8.createElement(Styles, null), /* @__PURE__ */ React8.createElement("section", { className: "cer cer-modal", role: "dialog", "aria-modal": "true", tabIndex: -1, "aria-label": tr8(t, "setup_title", "Create an escape room"), ref: dialogRef }, /* @__PURE__ */ React8.createElement("header", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("h2", null, tr8(t, "setup_title", "Create an escape room")), /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: stage === "launching", onClick: onClose }, tr8(t, "close", "Close"))), error && /* @__PURE__ */ React8.createElement("p", { className: "cer-alert cer-error", role: "alert" }, error), soloOpen && room ? /* @__PURE__ */ React8.createElement(ConnectedSolo, { key: soloStorageKey(room, user?.uid), room, user, onExit: () => setSoloOpen(false), t }) : /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "setup_intro", "AI creates connected clues from your lesson. Review the room, then play solo or launch it collaboratively from a live session.")), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "room_language", "Room language: {language}", { language })), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "source_preview", "Lesson excerpt used for generation")), /* @__PURE__ */ React8.createElement("p", { style: { whiteSpace: "pre-wrap", maxHeight: 220, overflowY: "auto" }, tabIndex: 0 }, source)), /* @__PURE__ */ React8.createElement(RoomTransfer, { key: scope, room, source, language, disabled: !!stage || !!libraryChoice, unsaved: !!room && !saved, onOpen: openImported, onReading: (reading) => setStage(reading ? "importing" : ""), t }), /* @__PURE__ */ React8.createElement("details", { className: "cer-library", "data-room-library": true }, /* @__PURE__ */ React8.createElement("summary", { ref: librarySummaryRef }, tr8(t, "saved_rooms", "Saved rooms for this lesson"), " \xB7 ", library.entries.length, "/", ROOM_LIBRARY_LIMIT), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "library_help", "Keep up to eight rooms per lesson and language in this browser. Opening a saved room lets you resume its solo progress in this tab or launch it with a class.")), library.entries.length === 0 ? /* @__PURE__ */ React8.createElement("p", null, tr8(t, "library_empty", "No saved rooms yet. Generate a room, then save it or start playing.")) : /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("label", null, tr8(t, "choose_saved_room", "Open a saved room"), /* @__PURE__ */ React8.createElement("select", { "data-saved-room-picker": true, ref: libraryPickerRef, value: savedEntry?.id || "", disabled: !!stage || !!libraryChoice, onChange: (event) => {
+    const readiness = (() => {
+      const tried = room ? room.nodes.filter((n) => preview?.solved?.[n.id] === true).length : 0;
+      const check = !review ? "none" : !review.complete ? "incomplete" : review.checks.every((c) => c.status === "matched") ? "matched" : "concerns";
+      return { tried, total: room ? room.nodes.length : 0, check, ready: tried > 0 || check === "matched" };
+    })();
+    const launchConfirmRef = useRef4(null);
+    useEffect6(() => {
+      if (confirmLaunch) launchConfirmRef.current?.focus();
+    }, [confirmLaunch]);
+    useEffect6(() => {
+      if (readiness.ready) setConfirmLaunch(false);
+    }, [readiness.ready]);
+    return /* @__PURE__ */ React8.createElement("div", { className: "cer-modal-backdrop" }, /* @__PURE__ */ React8.createElement(Styles, null), /* @__PURE__ */ React8.createElement("section", { className: "cer cer-modal", role: "dialog", "aria-modal": "true", tabIndex: -1, "aria-label": tr8(t, "setup_title", "Create an escape room"), ref: dialogRef }, /* @__PURE__ */ React8.createElement("header", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("h2", null, tr8(t, "setup_title", "Create an escape room")), /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: stage === "launching", onClick: onClose }, tr8(t, "close", "Close"))), error && /* @__PURE__ */ React8.createElement("p", { className: "cer-alert cer-error", role: "alert" }, error), failure && /* @__PURE__ */ React8.createElement("div", { className: "cer-row", "data-generation-failure": true }, /* @__PURE__ */ React8.createElement("button", { type: "button", "data-repair-again": true, disabled: !!stage || !!libraryChoice, onClick: () => generate(failure.candidate) }, tr8(t, "repair_again", "Ask the AI to repair it again")), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "technical_details", "Technical details")), /* @__PURE__ */ React8.createElement("p", { style: { whiteSpace: "pre-wrap" } }, failure.detail))), soloOpen && room ? /* @__PURE__ */ React8.createElement(ConnectedSolo, { key: soloStorageKey(room, user?.uid), room, user, onExit: () => setSoloOpen(false), t }) : /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "setup_intro", "AI creates connected clues from your lesson. Review the room, then play solo or launch it collaboratively from a live session.")), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "room_language", "Room language: {language}", { language })), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "source_preview", "Lesson excerpt used for generation")), /* @__PURE__ */ React8.createElement("p", { style: { whiteSpace: "pre-wrap", maxHeight: 220, overflowY: "auto" }, tabIndex: 0 }, source)), /* @__PURE__ */ React8.createElement(RoomTransfer, { key: scope, room, source, language, disabled: !!stage || !!libraryChoice, unsaved: !!room && !saved, onOpen: openImported, onReading: (reading) => setStage(reading ? "importing" : ""), t }), /* @__PURE__ */ React8.createElement("details", { className: "cer-library", "data-room-library": true }, /* @__PURE__ */ React8.createElement("summary", { ref: librarySummaryRef }, tr8(t, "saved_rooms", "Saved rooms for this lesson"), " \xB7 ", library.entries.length, "/", ROOM_LIBRARY_LIMIT), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "library_help", "Keep up to eight rooms per lesson and language in this browser. Opening a saved room lets you resume its solo progress in this tab or launch it with a class.")), library.entries.length === 0 ? /* @__PURE__ */ React8.createElement("p", null, tr8(t, "library_empty", "No saved rooms yet. Generate a room, then save it or start playing.")) : /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("label", null, tr8(t, "choose_saved_room", "Open a saved room"), /* @__PURE__ */ React8.createElement("select", { "data-saved-room-picker": true, ref: libraryPickerRef, value: savedEntry?.id || "", disabled: !!stage || !!libraryChoice, onChange: (event) => {
       const id = event.target.value;
       if (!id) return;
       if (room && !saved) setLibraryChoice({ kind: "load", id });
@@ -1434,7 +1560,10 @@ PLAYER MATERIAL END`;
         flow.open = true;
         flow.querySelector("summary")?.focus();
       }
-    } }, tr8(t, "flow_return", "Back to room connections")), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "edit_room_story", "Edit room title, mission, and debrief")), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_room_title", "Room title"), /* @__PURE__ */ React8.createElement("input", { "data-edit-room-title": true, maxLength: 120, value: room.title, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(null, "title", event.target.value) })), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_room_mission", "Room mission"), /* @__PURE__ */ React8.createElement("textarea", { maxLength: 1500, value: room.mission, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(null, "mission", event.target.value) })), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_room_debrief", "Room debrief text"), /* @__PURE__ */ React8.createElement("textarea", { maxLength: 1500, value: room.debrief, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(null, "debrief", event.target.value) }))), /* @__PURE__ */ React8.createElement("p", null, room.mission), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "review_guidance", "Check that the clues are clear and the solutions match your lesson. You can edit the story, object descriptions, evidence, and hints. Editing clears the AI review; check playability again after making changes.")), room.nodes.map((n) => /* @__PURE__ */ React8.createElement("details", { key: n.id, "data-edit-object": n.id }, /* @__PURE__ */ React8.createElement("summary", null, n.name, " \xB7 ", n.requires.length ? tr8(t, "requires", "Needed: {items}", { items: n.requires.map((id) => room.nodes.find((x) => x.reward.id === id)?.reward.name).join(", ") }) : tr8(t, "starting_object", "Starting object")), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "player_instruction", "Player instruction"), /* @__PURE__ */ React8.createElement("textarea", { value: n.instruction, maxLength: 1e3, disabled: !!stage || !!libraryChoice, onChange: (e) => edit(n.id, "instruction", e.target.value) })), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_object_description", "What players observe"), /* @__PURE__ */ React8.createElement("textarea", { maxLength: 1e3, value: n.description, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(n.id, "description", event.target.value) })), /* @__PURE__ */ React8.createElement("p", null, /* @__PURE__ */ React8.createElement("strong", null, tr8(t, "discovery_label", "Discovery: ")), n.reward.name), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_evidence", "Collected evidence or tool description"), /* @__PURE__ */ React8.createElement("textarea", { "data-edit-evidence": n.id, maxLength: 1200, value: n.reward.text, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(n.id, "rewardText", event.target.value) })), n.explanation && /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, /* @__PURE__ */ React8.createElement("strong", null, tr8(t, "solution_label", "Solution: ")), n.explanation), /* @__PURE__ */ React8.createElement("blockquote", null, n.sourceQuote)), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "edit_hints", "Edit the three graduated hints")), n.hints.map((hint, index) => /* @__PURE__ */ React8.createElement("label", { key: index }, tr8(t, "edit_hint_number", "Hint {number}", { number: index + 1 }), /* @__PURE__ */ React8.createElement("textarea", { "data-edit-hint": n.id + "-" + index, maxLength: 450, value: hint, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(n.id, "hint" + index, event.target.value) }))))))), /* @__PURE__ */ React8.createElement("footer", { className: "cer-row", style: { marginTop: 20 } }, /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: !!stage || !!libraryChoice, onClick: save }, tr8(t, "save", "Save room in this browser")), /* @__PURE__ */ React8.createElement("button", { type: "button", "data-play-solo": true, disabled: !!stage || !!libraryChoice, onClick: startSolo }, tr8(t, "play_solo", "Play solo")), allowLive && activeSessionCode && /* @__PURE__ */ React8.createElement("button", { type: "button", className: "cer-primary", "data-launch-connected": true, disabled: !!stage || !!libraryChoice || !!sessionData?.escapeRoomState?.isActive || !!sessionData?.quizState?.isActive, onClick: launch }, tr8(t, "launch", "Launch for everyone"))), (sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive) && /* @__PURE__ */ React8.createElement("p", null, tr8(t, "end_activity", "End the current live activity before launching this room. Your preview is kept."))))));
+    } }, tr8(t, "flow_return", "Back to room connections")), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "edit_room_story", "Edit room title, mission, and debrief")), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_room_title", "Room title"), /* @__PURE__ */ React8.createElement("input", { "data-edit-room-title": true, maxLength: 120, value: room.title, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(null, "title", event.target.value) })), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_room_mission", "Room mission"), /* @__PURE__ */ React8.createElement("textarea", { maxLength: 1500, value: room.mission, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(null, "mission", event.target.value) })), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_room_debrief", "Room debrief text"), /* @__PURE__ */ React8.createElement("textarea", { maxLength: 1500, value: room.debrief, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(null, "debrief", event.target.value) }))), learnerMode && /* @__PURE__ */ React8.createElement("button", { type: "button", "data-toggle-solutions": true, "aria-pressed": showSolutions, onClick: () => setShowSolutions((value) => !value) }, showSolutions ? tr8(t, "hide_solutions", "Hide solutions") : tr8(t, "show_solutions", "Show solutions")), /* @__PURE__ */ React8.createElement("p", null, room.mission), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "review_guidance", "Check that the clues are clear and the solutions match your lesson. You can edit the story, object descriptions, evidence, and hints. Editing clears the AI review; check playability again after making changes.")), room.nodes.map((n) => /* @__PURE__ */ React8.createElement("details", { key: n.id, "data-edit-object": n.id }, /* @__PURE__ */ React8.createElement("summary", null, n.name, " \xB7 ", n.requires.length ? tr8(t, "requires", "Needed: {items}", { items: n.requires.map((id) => room.nodes.find((x) => x.reward.id === id)?.reward.name).join(", ") }) : tr8(t, "starting_object", "Starting object")), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "player_instruction", "Player instruction"), /* @__PURE__ */ React8.createElement("textarea", { value: n.instruction, maxLength: 1e3, disabled: !!stage || !!libraryChoice, onChange: (e) => edit(n.id, "instruction", e.target.value) })), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_object_description", "What players observe"), /* @__PURE__ */ React8.createElement("textarea", { maxLength: 1e3, value: n.description, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(n.id, "description", event.target.value) })), /* @__PURE__ */ React8.createElement("p", null, /* @__PURE__ */ React8.createElement("strong", null, tr8(t, "discovery_label", "Discovery: ")), n.reward.name), /* @__PURE__ */ React8.createElement("label", null, tr8(t, "edit_evidence", "Collected evidence or tool description"), /* @__PURE__ */ React8.createElement("textarea", { "data-edit-evidence": n.id, maxLength: 1200, value: n.reward.text, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(n.id, "rewardText", event.target.value) })), n.explanation && showSolutions && /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, /* @__PURE__ */ React8.createElement("strong", null, tr8(t, "solution_label", "Solution: ")), n.explanation), /* @__PURE__ */ React8.createElement("blockquote", null, n.sourceQuote)), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "edit_hints", "Edit the three graduated hints")), n.hints.map((hint, index) => /* @__PURE__ */ React8.createElement("label", { key: index }, tr8(t, "edit_hint_number", "Hint {number}", { number: index + 1 }), /* @__PURE__ */ React8.createElement("textarea", { "data-edit-hint": n.id + "-" + index, maxLength: 450, value: hint, disabled: !!stage || !!libraryChoice, onChange: (event) => edit(n.id, "hint" + index, event.target.value) }))))))), !learnerMode && /* @__PURE__ */ React8.createElement("section", { className: "cer-panel", style: { marginTop: 18 }, "data-launch-readiness": true, "aria-labelledby": "cer-readiness-title" }, /* @__PURE__ */ React8.createElement("h3", { id: "cer-readiness-title" }, tr8(t, "readiness_title", "Before students play")), /* @__PURE__ */ React8.createElement("ul", { className: "cer-facts" }, /* @__PURE__ */ React8.createElement("li", null, readiness.tried ? tr8(t, "readiness_tried", "Tried in preview: {count} of {total} objects solved.", { count: readiness.tried, total: readiness.total }) : tr8(t, "readiness_not_tried", "Not tried yet. Choose Try the room to play it as a student would.")), /* @__PURE__ */ React8.createElement("li", null, readiness.check === "matched" ? tr8(t, "readiness_check_matched", "AI check: every device solution matched.") : readiness.check === "concerns" ? tr8(t, "readiness_check_concerns", "AI check: some devices need a closer look.") : readiness.check === "incomplete" ? tr8(t, "readiness_check_incomplete", "AI check: incomplete.") : tr8(t, "readiness_check_none", "AI check: not run (optional).")))), confirmLaunch && /* @__PURE__ */ React8.createElement("div", { className: "cer-alert", role: "group", "data-launch-confirm": true, "aria-label": tr8(t, "launch_unchecked_title", "Launch an untried room?") }, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "launch_unchecked", "Nobody has tried this room and the AI check has not passed. Students may meet a clue that does not work. Launch anyway?")), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, /* @__PURE__ */ React8.createElement("button", { type: "button", ref: launchConfirmRef, onClick: () => {
+      setConfirmLaunch(false);
+      setView("play");
+    } }, tr8(t, "try_first", "Try the room first")), /* @__PURE__ */ React8.createElement("button", { type: "button", "data-launch-anyway": true, disabled: !!stage, onClick: () => launch(true) }, tr8(t, "launch_anyway", "Launch anyway")))), /* @__PURE__ */ React8.createElement("footer", { className: "cer-row", style: { marginTop: 20 } }, /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: !!stage || !!libraryChoice, onClick: save }, tr8(t, "save", "Save room in this browser")), /* @__PURE__ */ React8.createElement("button", { type: "button", "data-play-solo": true, disabled: !!stage || !!libraryChoice, onClick: startSolo }, tr8(t, "play_solo", "Play solo")), allowLive && activeSessionCode && /* @__PURE__ */ React8.createElement("button", { type: "button", className: "cer-primary", "data-launch-connected": true, disabled: !!stage || !!libraryChoice || !!sessionData?.escapeRoomState?.isActive || !!sessionData?.quizState?.isActive, onClick: launch }, tr8(t, "launch", "Launch for everyone"))), (sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive) && /* @__PURE__ */ React8.createElement("p", null, tr8(t, "end_activity", "End the current live activity before launching this room. Your preview is kept."))))));
   }
   runtime.cooldowns = /* @__PURE__ */ new Map();
   function ConnectedHost({ sessionData, activeSessionCode, appId }) {

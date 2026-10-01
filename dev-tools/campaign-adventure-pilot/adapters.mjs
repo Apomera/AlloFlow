@@ -12,7 +12,7 @@ export function createAdapters(tree) {
       const targets=tech.appliesTo==='any'?[null]:tech.appliesTo;
       return targets.map(target=>({id:'tech:'+tech.id+':'+(target||'all'),label:tech.name,
         location:target||'all',responseTerms:tech.id==='bufferPlant'?['plant','plant trees','buffer','riparian']:[],cost:tech.hours,disabled:tech.hours>model.hoursLeft,
-        hint:(target?water.components.find(c=>c.id===target).name:'Watershed-wide')+' · '+tech.hours+' hours',
+        hint:(target?(water.components.find(c=>c.id===target)||{name:target}).name:'Watershed-wide')+' · '+tech.hours+' hours',
         tradeoff:Object.entries(tech.effects).map(([key,value])=>key+' '+delta(value)).join(' · ')}));
     }).concat([{id:'end-year',label:'Observe the year',hint:'Finish fieldwork. See the annual event and downstream effects.'}]);
   };
@@ -38,7 +38,7 @@ export function createAdapters(tree) {
       const ended=model.phase==='debrief',review=model.phase==='review';
       const latest=model.yearLog.at(-1);
       const weakest=[...model.components].sort((a,b)=>a.quality-b.quality)[0];
-      const weakName=water.components.find(c=>c.id===weakest.id).name;
+      const weakName=(water.components.find(c=>c.id===weakest.id)||{name:weakest.id}).name;
       const start=latest?.pre||model.components;
       const resultText=latest?latest.eventDesc+' '+(latest.cascades.map(c=>c.msg).filter(Boolean).join(' ')||'No downstream feedback rule activated this year.'):'';
       const title=ended?model.finalOutcome.label:review?'What the river carried forward':
@@ -50,9 +50,9 @@ export function createAdapters(tree) {
         progress:ended?10:review?model.year:model.year-1,total:10,period:'Year '+model.year+' of 10',
         prompt:review?'Read the changes before beginning the next year.':ended?'What would you carry into another restoration effort?':'Where will your stewardship hours make a difference?',
         metrics:[{label:'Quality',value:avg(model,'quality'),unit:'/100'},{label:'Connectivity',value:avg(model,'connectivity'),unit:'/100'},{label:'Support',value:avg(model,'support'),unit:'/100'},{label:'Hours left',value:model.hoursLeft,unit:''}],
-        locations:water.components.map(c=>({id:c.id,name:c.name,description:c.desc,value:round(model.components.find(m=>m.id===c.id).quality),unit:'quality index',icon:c.icon})),
-        evidence:review||ended?model.components.map(c=>({label:water.components.find(x=>x.id===c.id).name,
-          before:round(start.find(x=>x.id===c.id).quality),after:round(c.quality),detail:'quality; annual change '+delta(c.quality-start.find(x=>x.id===c.id).quality)})):[],
+        locations:water.components.flatMap(c=>{const m=model.components.find(x=>x.id===c.id);return m?[{id:c.id,name:c.name,description:c.desc,value:round(m.quality),unit:'quality index',icon:c.icon}]:[];}),
+        evidence:review||ended?model.components.map(c=>{const info=water.components.find(x=>x.id===c.id),prev=start.find(x=>x.id===c.id);return {label:info?info.name:c.id,
+          before:prev?round(prev.quality):null,after:round(c.quality),detail:prev?'quality; annual change '+delta(c.quality-prev.quality):'quality'};}):[],
         receipts:model.yearLog.map(row=>({title:'Year '+row.year+' · '+row.event,
           text:(row.actions.length?row.actions.map(a=>a.tech+' ('+a.target+', '+a.hours+'h)').join('; '):'No fieldwork')+'. '+row.eventDesc,
           detail:row.cascades.map(c=>c.msg).filter(Boolean).join(' ')})),

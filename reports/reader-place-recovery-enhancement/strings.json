@@ -1,0 +1,21 @@
+{
+  "place_save_conflict": "This reading’s saved work changed in another tab. Your draft is still here. Review both versions before choosing which to use.",
+  "place_review_changed": "Your draft or the saved work changed after this review. Review both versions again before choosing.",
+  "place_recovery_bookmark": "Bookmark",
+  "place_recovery_paragraph": "Paragraph {number}",
+  "place_recovery_empty": "No bookmarks or answers yet.",
+  "place_review_versions": "Review both versions",
+  "place_review_title": "Choose which work to use",
+  "place_review_retained": "A copy of the version you replace stays available below while this page is open.",
+  "place_review_local": "This page’s draft",
+  "place_review_saved": "Saved work",
+  "place_review_removed": "No saved work remains for this reading.",
+  "place_review_keep": "Save this page’s draft instead",
+  "place_review_use": "Use the saved work",
+  "place_copy_work": "Copy your work",
+  "place_work_to_copy": "Work to copy",
+  "place_recovery_copies": "Recovery copies for this page",
+  "place_recovery_lifetime": "These copies are temporary. Copy any work you need before closing or reloading this page.",
+  "place_recovery_local": "Your earlier draft",
+  "place_recovery_saved": "Previously saved work"
+}

@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Reaching the cook action limit stops the jug while preserving the final accepted dose and its exact carry receipt."
+  ],
+  "errors": [],
+  "accessibility": [],
+  "pass": true
+}

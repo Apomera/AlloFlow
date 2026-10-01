@@ -1,0 +1,62 @@
+describe('plain reader text is reused without caching interactive state', () => {
+  function comparison(render, base, extra = {}) {
+    const api = window.AlloModules.InstructionalContext;
+    const original = api.createSupportedReading(DATA, { id: 'plain-original', sourceFamilyId: 'plain-family', config: { language: 'English' } });
+    const item = { ...base.generatedContent, sourceSnapshot: original.sourceSnapshot, sourceFamilyId: 'plain-family' };
+    const props = { generatedContent: item, history: [original, item], isCompareMode: true, readingLearnerKey: 'one', ...extra };
+    render(props); return { props, item, original, api };
+  }
+  it('does not parse unchanged comparison text again during read-along updates', () => {
+    const { render, base } = setup(); const { props } = comparison(render, base);
+    const parse = vi.spyOn(DOMParser.prototype, 'parseFromString');
+    const labels = [...host.querySelectorAll('[data-exact-sentence-stop]')].map(node => node.getAttribute('aria-label'));
+    expect(labels.length).toBeGreaterThan(0);
+    for (let i = 1; i <= 8; i++) render({ ...props, chunkReaderSweepPct: i * 10 });
+    expect(parse).not.toHaveBeenCalled();
+    expect([...host.querySelectorAll('[data-exact-sentence-stop]')].map(node => node.getAttribute('aria-label'))).toEqual(labels);
+  });
+  it('updates source text and labels after an in-place snapshot edit', () => {
+    const { render, base } = setup(); const { props, item, api } = comparison(render, base);
+    Object.assign(item.sourceSnapshot, api.createSourceSnapshot('**Seeds** grow today. Birds find food.', { sourceArtifactId: 'changed-source' }));
+    render(props); const source = host.querySelector('[data-compare-version="source"]');
+    expect(source.textContent).toContain('Seeds');
+    expect(source.textContent).not.toContain('Roots take in water');
+    expect(source.querySelector('[data-exact-sentence-stop]').getAttribute('aria-label')).toContain('Seeds');
+  });
+  it('updates an adaptation edited in place under the same resource id', () => {
+    const { render, base } = setup(); const { props, item } = comparison(render, base);
+    item.data = 'Rain fills the pond. Ducks swim.'; render(props);
+    const adapted = host.querySelector('[data-compare-version="adapted"]');
+    expect(adapted.textContent).toContain('Rain fills the pond');
+    expect(adapted.textContent).not.toContain('Roots take in water');
+    expect(adapted.querySelector('[data-exact-sentence-stop]').getAttribute('aria-label')).toContain('Rain fills the pond');
+  });
+  it('clears derived text when the learner or resource changes', () => {
+    const { render, base } = setup(); const { props, item } = comparison(render, base);
+    const parse = vi.spyOn(DOMParser.prototype, 'parseFromString');
+    render({ ...props, readingLearnerKey: 'two' }); expect(parse).toHaveBeenCalled(); parse.mockClear();
+    render({ ...props, generatedContent: { ...item, id: 'another-resource' } }); expect(parse).toHaveBeenCalled();
+  });
+  it('uses replacement parser behavior immediately', () => {
+    const { render, base } = setup(); const { props } = comparison(render, base);
+    const readingText = window.AlloModules.TextPipelineHelpers.readingText, original = readingText.plain;
+    vi.spyOn(readingText, 'plain').mockImplementation(value => original(value).replaceAll('Plants', 'Ferns'));
+    render(props);
+    expect(host.querySelector('[data-compare-version="source"] [data-exact-sentence-stop]').getAttribute('aria-label')).toContain('Ferns');
+  });
+  it('keeps support edits fresh while reusing passage text', () => {
+    const { render, base } = setup(); const { props, original, api } = comparison(render, base);
+    original.readingSupports = api.upsertReadingSupport(original, null, { id: 'plants', start: 0, end: 6, quote: 'Plants', text: 'First explanation', kind: 'definition' });
+    render(props); expect(host.querySelector('[data-reading-gloss]').textContent).toContain('First explanation');
+    original.readingSupports.annotations[0].text = 'Revised explanation'; render(props);
+    expect(host.querySelector('[data-reading-gloss]').textContent).toContain('Revised explanation');
+  });
+  it('switches from read to Explain with current text and callback', () => {
+    const { render, base } = setup(); const first = vi.fn(), latest = vi.fn();
+    const { props } = comparison(render, base, { setSelectionMenu: first });
+    render({ ...props, interactionMode: 'explain', setSelectionMenu: latest });
+    act(() => host.querySelector('[data-compare-version="source"] [data-exact-explain]').click());
+    expect(first).not.toHaveBeenCalled();
+    expect(latest.mock.calls[0][0].text).toBe('Plants need light. Roots take in water.');
+  });
+});

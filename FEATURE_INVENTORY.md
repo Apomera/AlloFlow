@@ -794,9 +794,9 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 
 ## 4. STEM Lab tools
 
-92 self-contained interactive tools, accessed via the **STEM Lab modal** (`showStemLab=true`). Each registers via `window.StemLab.registerTool(id, config)` and shows up as a tile in the modal grid grouped by subject.
+150 self-contained interactive tools, accessed via the **STEM Lab modal** (`showStemLab=true`). Each registers via `window.StemLab.registerTool(id, config)` and shows up as a tile in the modal grid grouped by subject.
 
-### 4.1 Mathematics (21 tools)
+### 4.1 Mathematics (27 tools)
 *(Includes `geometryProver`, registered as a second tool inside `stem_tool_geo.js`. Also note: `fractionViz` is an alias for `fractions` — both registered in `stem_tool_fractions.js` pointing to the same plugin object.)*
 
 | ID | Display name | Purpose | Grade band |
@@ -804,78 +804,106 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 | `algebraCAS` | Algebra CAS | Computer Algebra System with solver, equation builder, balance scale, AI tutor | 6-12, AP |
 | `inequality` | Inequality Grapher | Number-line visualizer for inequalities with notation, quizzing, value testing | 6-12 |
 | `calculus` | Calculus Lab | Riemann sums, derivatives, guided discovery missions | 9-12, AP |
-| `fractions` | Fractions Lab | 6 tabs: Practice, Compare, Operations, Equivalents, Converter, Fraction Wall | 3-8 |
+| `fractionViz` | Fractions Lab | 6 tabs: Practice, Compare, Operations, Equivalents, Converter, Fraction Wall | 3-8 |
 | `multtable` | Multiplication Table | Interactive times tables with visual + audio feedback | K-5 |
 | `numberline` | Number Line | Explore, Challenges, Skip Count tabs | K-5 |
-| `unitconvert` | Unit Converter | Visual comparison, quiz, AI word-problem generation | 6-12 |
+| `unitConvert` | Unit Converter | Visual comparison, quiz, AI word-problem generation | 6-12 |
 | `protractor` *(file: `stem_tool_angles.js`)* | Angles Explorer | Interactive protractor with classification, real-world examples, polygon angles, clock calculator, badges | 3-8 |
 | `areamodel` | Area Model | Visual multiplication with area model grids, distributive property, partial products, 12 badges | 3-5 |
 | `coordinate` *(file: `stem_tool_coordgrid.js`)* | Coordinate Grid | Plot points, draw lines, calculate slope/distance/midpoint, 10 badges | 6-9 |
-| `geometryworld` | Geometry World | 3D block-based math explorer with AI voxel geometry lessons + WebXR VR support | 6-12 |
+| `geometryWorld` | Geometry World | 3D block-based math explorer with AI voxel geometry lessons + WebXR VR support | 6-12 |
 | `volume` | Volume Explorer | 3D volume explorer for composite shapes (standalone, distinct from monolith Volume Builder) | 6-9 |
-| `geosandbox` | GeoSandbox | 3D geometry sandbox with formulas + STL export | 9-12 |
-| `funcgrapher` | Function Grapher | Function visualization + transformations | 9-12 |
-| `graphcalc` | Graph Calculator | Graphing calculator with function composition + analysis | 9-12, AP |
-| `dataplot` | Data Plotter | Scatter/bar/line/pie/histogram/box plot/ogive, confidence intervals, z-score | 9-12, AP |
-| `statslab` | Statistics Lab | AP Psych/Bio descriptive + inferential tests; jStat-backed; AI-graded interpretation | 9-12, AP |
-| `logiclab` | Logic Lab | Propositional logic, proof construction, reasoning exercises | 9-12 |
+| `geoSandbox` | GeoSandbox | 3D geometry sandbox with formulas + STL export | 9-12 |
+| `funcGrapher` | Function Grapher | Function visualization + transformations | 9-12 |
+| `graphCalc` | Graph Calculator | Graphing calculator with function composition + analysis | 9-12, AP |
+| `dataPlot` | Data Plotter | Scatter/bar/line/pie/histogram/box plot/ogive, confidence intervals, z-score | 9-12, AP |
+| `statsLab` | Statistics Lab | AP Psych/Bio descriptive + inferential tests; jStat-backed; AI-graded interpretation | 9-12, AP |
+| `logicLab` | Logic Lab | Propositional logic, proof construction, reasoning exercises | 9-12 |
 | `probability` | Probability Lab | Coin flips, dice, spinners, sports statistics simulations | 6-12 |
 | `base10` *(file: `stem_tool_manipulatives.js`)* | Math Manipulatives | Base-10 blocks, abacus, slide rule, place value quizzes | K-5 |
 | `geometryProver` | Geometry Prover | Theorem exploration, proof construction, discover geometric relationships (registered as 2nd tool inside `stem_tool_geo.js`) | 6-12 |
+| `areaPerimeter` | Area & Perimeter Lab | Tile, compare, decompose, and investigate 2-D shapes while building area and perimeter reasoning. | unreviewed |
+| `arithmeticStudio` | Arithmetic Strategy Studio | Learn addition, subtraction, multiplication, and division through models, strategies, estimation, and mistake analysis. | unreviewed |
+| `base10` | Math Manipulatives | Base-10 blocks, abacus, slide rule & place value quiz. | unreviewed |
+| `coordinate` | Coordinate Grid | Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges. | unreviewed |
+| `dataLab` | CODAP Data Science | Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers. | unreviewed |
+| `lumen` | Lumen Research Canvas | Study sources or analyze data in one evidence workspace where every claim stays connected to what supports it. | unreviewed |
+| `protractor` | Angle Explorer | Measure and construct angles. Classify acute, right, obtuse, and reflex. | unreviewed |
+| `ratioLab` | Ratios, Rates & Proportions Lab | Explore ratio tables, double number lines, unit rates, percents, and proportional relationships. | unreviewed |
+| `timeSchedule` | Time & Schedule Lab | Link analog and digital clocks, model elapsed time, reason about schedules, and convert 12/24-hour time. | unreviewed |
 
-### 4.2 Biology & Life Sciences (19 tools)
+### 4.2 Biology & Life Sciences (31 tools)
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
 | `anatomy` | Anatomy Explorer | 10 body systems, 129 anatomical structures, quiz mode | 6-12, AP |
-| `brainatlas` | Brain Atlas | Interactive brain region exploration with neural pathways | 6-12 |
+| `brainAtlas` | Brain Atlas | Interactive brain region exploration with neural pathways | 6-12 |
 | `dissection` | Dissection Lab | Virtual dissection with layered specimens + guided lessons | 6-12 |
-| `dna` | DNA / Genetics Lab | 11 sub-tools: Build, Replicate, Transcribe, Translate, Mutate, CRISPR, Protein, Forensics, Challenge, Battle, Learn | 9-12, AP |
+| `dnaLab` | DNA / Genetics Lab | 11 sub-tools: Build, Replicate, Transcribe, Translate, Mutate, CRISPR, Protein, Forensics, Challenge, Battle, Learn | 9-12, AP |
 | `punnett` | Punnett Square Lab | 8 sub-tools: Punnett Cross, Pedigree Builder, Population Genetics, Trait Explorer, DNA→Protein, Challenge, Gene Defense Battle, Learn | 9-12 |
 | `cell` | Cell Biology Simulator | 11 living micro-organisms in simulated petri dish; discovery + quiz modes | 6-12 |
 | `aquarium` | Aquarium Ecosystem Simulator | Progression + economy system with fish management | 3-8 |
 | `beehive` | Beehive Colony Simulator | Colony dynamics, nectar economics, waggle dances, seasonal cycles | 6-12 |
-| `companionplanting` | Companion Planting Lab | Three Sisters garden simulator (Sims-style management + soil science) | 6-12 |
-| `birdlab` | BirdLab — I-Spy Ornithology | Layered SVG habitats with animated bird movement signatures; pairs with Cornell Merlin | 3-12 |
+| `companionPlanting` | Companion Planting Lab | Three Sisters garden simulator (Sims-style management + soil science) | 6-12 |
+| `birdLab` | BirdLab — I-Spy Ornithology | Layered SVG habitats with animated bird movement signatures; pairs with Cornell Merlin | 3-12 |
 | `migration` | Migration Lab | V-formation aerodynamics, wind currents, migration routes | 6-12 |
-| `fireecology` | Fire Ecology | Fire ecology + Indigenous land stewardship with cultural burning simulator | 6-12 |
-| `evolab` | Evolution Lab | Natural selection: Selection Sandbox, Beak Lab, Phylogenetic Tree Builder | 9-12, AP |
-| `watercycle` | Water Cycle | Precipitation, evaporation, condensation dynamics | 3-8 |
-| `pets` | Pets Science Lab | Physiology, ethology, nutrition, genetics, domestication evolution; cross-links to BehaviorLab + EvolutionLab | 3-12 |
-| `behaviorlab` | Behavior Lab | Operant + classical conditioning simulator with animated Skinner box | 9-12, AP |
-| `firstresponse` | First Response Lab | Medical emergencies: CPR, AED, Stop the Bleed, choking, stroke, seizure, anaphylaxis; cited orgs (AHA/Red Cross/Stop the Bleed/Epilepsy Fdn/ASAN/NAMI) | 6-12 |
+| `fireEcology` | Fire Ecology | Fire ecology + Indigenous land stewardship with cultural burning simulator | 6-12 |
+| `evoLab` | Evolution Lab | Natural selection: Selection Sandbox, Beak Lab, Phylogenetic Tree Builder | 9-12, AP |
+| `waterCycle` | Water Cycle | Precipitation, evaporation, condensation dynamics | 3-8 |
+| `petsLab` | Pets Science Lab | Physiology, ethology, nutrition, genetics, domestication evolution; cross-links to BehaviorLab + EvolutionLab | 3-12 |
+| `behaviorLab` | Behavior Lab | Operant + classical conditioning simulator with animated Skinner box | 9-12, AP |
+| `firstResponse` | First Response Lab | Medical emergencies: CPR, AED, Stop the Bleed, choking, stroke, seizure, anaphylaxis; cited orgs (AHA/Red Cross/Stop the Bleed/Epilepsy Fdn/ASAN/NAMI) | 6-12 |
 | `ecosystem` | Ecosystem Simulator | Predator-prey Lotka-Volterra canvas simulation with live population dynamics + biome variants (grassland, forest, etc.) | 6-12 |
-| `epidemic` | Epidemic Simulator | Disease-spread dynamics with R₀, latent period, mortality; example pathogens (COVID-19) | 9-12, AP |
+| `epidemicSim` | Epidemic Simulator | Disease-spread dynamics with R₀, latent period, mortality; example pathogens (COVID-19) | 9-12, AP |
+| `alphaFoldExplorer` | AlphaFold Explorer | Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and guide students through classroom presets, grade-leveled lessons, biology-context investigation briefs, LMS-ready assignment packe | unreviewed |
+| `butterfly` | Butterfly Habitat Lab | Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal. | unreviewed |
+| `cellAtlasLab` | Cell Atlas Lab | Move between a version-pinned real pancreas snapshot and teaching models for pancreas, lung, and brain; reason about markers, methods, bias, and protein structure. | unreviewed |
+| `cephalopodLab` | Cephalopod Lab | The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species' adaptations. | unreviewed |
+| `dinoLab` | Dino Lab | Explore dinosaurs across deep time, compare species, dig fossils, build food webs, and connect birds to dinosaurs. | unreviewed |
+| `fieldJourneys` | Field Journeys (Pilot) | See the tool. | unreviewed |
+| `kitchenLab` | Kitchen Lab | Cooking & food safety life skills with culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice / julienne / chiffonade / brunoise), heat techniques (sauté / sear / simmer / braise / roast / fry / steam), the Maillard reaction, top-9 allergens. Includes real-time recipes and a 3D skills studio with ac | unreviewed |
+| `microbiology` | Microbiology Lab | NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM, plus a virtual-microscope slide-swap with rendered E. coli / Streptococcus / Paramecium / Plasmodium / T4 phage), antibio | unreviewed |
+| `organismId` | Taxonomy Explorer | Explore the ranked tree of life, the lookalike pairs that fool people, and why classification keeps changing. | unreviewed |
+| `raptorHunt` | Raptor Hunt: Predator Physics + Biology | Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 20-species roster from peregrine to harpy. | unreviewed |
+| `stewardshipHub` | Environmental Stewardship Campaigns | Cross-campaign launcher across multiple regions and biomes. 5 deep Maine campaigns plus 10 cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone wolves, Akagera Rwanda lions), public health (Mumbai dengue, Liberia 2014 Ebola), watershed | unreviewed |
+| `treeLab` | Tree Life Lab | Run a tree’s carbon budget across centuries: what limits photosynthesis hour to hour, what it costs to stay alive, and how a tree makes more of itself with and without seeds. | unreviewed |
 
 ### 4.3 Chemistry & Materials (8 tools)
 *(Includes `rockCycle`, registered as a 2nd tool inside `stem_tool_rocks.js`.)*
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
-| `chembalance` | Chemistry Lab | 8 sub-tools: Equation Balancer, Reaction Types, Stoichiometry, Molecular Viewer, Lab Safety, Challenge, Element Battle, Learn | 9-12, AP |
-| `titration` | Virtual Titration Lab | S-curve graphing, safety drills, incident simulator | 9-12, AP |
+| `chemBalance` | Chemistry Lab | 8 sub-tools: Equation Balancer, Reaction Types, Stoichiometry, Molecular Viewer, Lab Safety, Challenge, Element Battle, Learn | 9-12, AP |
+| `titrationLab` | Virtual Titration Lab | S-curve graphing, safety drills, incident simulator | 9-12, AP |
 | `molecule` | Molecule Lab | 118-element periodic table, 32 compound recipes, Bohr model, reaction simulator | 6-12 |
 | `semiconductor` | Semiconductor Lab | Band gaps, doping, P-N junctions, transistors, logic gates | 9-12 |
 | `rocks` | Rocks & Minerals Lab | Rock cycle tools + mineral identification | 3-12 |
 | `decomposer` | Decomposer | Material decomposer with canvas molecular visualization | 6-12 |
-| `bakingscience` | Baking Science Lab | **7 sub-tools** (was 4 in earlier docs): Leavening Lab, Emulsion Mixer, Recipe Scaler, Oven Timeline, Bake Diagnosis, Gluten Lab, Browning Lab (Maillard vs. caramelization) | 6-12 |
+| `bakingScience` | Baking Science Lab | **7 sub-tools** (was 4 in earlier docs): Leavening Lab, Emulsion Mixer, Recipe Scaler, Oven Timeline, Bake Diagnosis, Gluten Lab, Browning Lab (Maillard vs. caramelization) | 6-12 |
 | `rockCycle` | Rock Cycle | Companion to Rocks & Minerals — focused rock-cycle visualization (registered as 2nd tool inside `stem_tool_rocks.js`; description currently empty in source — under-documented) | 6-9 |
 
-### 4.4 Earth & Space (8 tools)
+### 4.4 Earth & Space (15 tools)
 *(Note: SkySchool — visual layers, lakes/rainbows/animals/farms — is a sub-feature of `stem_tool_flightsim.js`, not a standalone tool.)*
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
-| `platetectonics` | Plate Tectonics Explorer | Tectonic plates, earthquakes, volcanoes, continental drift | 6-12 |
+| `plateTectonics` | Plate Tectonics Explorer | Tectonic plates, earthquakes, volcanoes, continental drift | 6-12 |
 | `climateExplorer` | Climate Explorer | Carbon calculator, renewables sim, climate justice, solutions spotlight | 6-12 |
 | `galaxy` | Galaxy Explorer | Celestial bodies + galactic structure | 6-12 |
-| `solarsystem` | Solar System | Planetary motion, orbital mechanics | 3-12 |
+| `solarSystem` | Solar System | Planetary motion, orbital mechanics | 3-12 |
 | `universe` | Universe Explorer | Cosmic scale + astronomical phenomena | 6-12 |
-| `spacecolony` | Space Colony Simulator | Settlement design + resource management in space | 6-12 |
-| `spaceexplorer` | Space Explorer Roguelike | AI roguelike STEM tool: 6 destinations, crew system, tech tree, WCAG AA | 6-12 |
-| `moonmission` | Moon Mission Simulator | Apollo mission: Launch, Orbit, Transit, Descent, EVA, Return | 6-12 |
+| `spaceColony` | Space Colony Simulator | Settlement design + resource management in space | 6-12 |
+| `spaceExplorer` | Space Explorer Roguelike | AI roguelike STEM tool: 6 destinations, crew system, tech tree, WCAG AA | 6-12 |
+| `moonMission` | Moon Mission Simulator | Apollo mission: Launch, Orbit, Transit, Descent, EVA, Return | 6-12 |
+| `astronomy` | Night Sky & Astronomy | Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine + extendable. Printable observing checklists. | unreviewed |
+| `geologyExplorer` | Geology Explorer | Excavate a 3D crust cross-section, identify rocks, read layers, and find the pluton that cuts through them. | unreviewed |
+| `gisStudio` | GIS Studio | Build, plan, compare, compose, sequence, review, and export accessible GIS and remote-sensing investigations. | unreviewed |
+| `scaleExplorer` | Scale Explorer | Zoom smoothly across 42 powers of ten, from the observable universe down to a proton, seeing what lives at every scale. Equal steps across the screen mean equal ratios, so "ten times bigger" always looks the same distance. Compare any two things and find out how many of one fit across the other. Fully keyboard-drivable | unreviewed |
+| `spaceStation` | Space Station | Float through the International Space Station and work a crew shift: run research, troubleshoot life support, practice low-g movement, explore a clickable 3-D map, and learn the engineering behind life in orbit. NGSS MS-ETS1 in Earth’s strangest laboratory. | unreviewed |
+| `weatherSystems` | Weather Systems & Forecasting | Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting. | unreviewed |
+| `zoomGallery` | Zoom Gallery | Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the vi | unreviewed |
 
-### 4.5 Physics (11 tools)
+### 4.5 Physics (16 tools)
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
@@ -883,62 +911,92 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 | `wave` | Wave Simulator | Frequency adjustment, Doppler effect, wave comparison | 9-12 |
 | `physics` | Physics Engine | Core mechanics + motion simulation | 9-12, AP |
 | `atcTower` | ATC Tower | Air traffic control sim with spatial reasoning, rate problems, vectors | 9-12 |
-| `bikelab` | Bike Lab | 2D physics sandbox: Newton's laws, mechanical advantage, gearing | 6-12 |
+| `bikeLab` | Bike Lab | 2D physics sandbox: Newton's laws, mechanical advantage, gearing | 6-12 |
 | `skatelab` | Skate Lab | Halfpipe + gap jump physics with energy + rotation; 8 famous-trick scenarios + BMX vehicle toggle | 9-12 |
 | `echolocation` | Echolocation Lab | Bat echolocation + sound physics with sonar vision + Doppler effect | 6-12 |
-| `echotrainer` | Echo Trainer | 3D spatial audio echolocation with HRTF binaural audio + Three.js | 6-12 |
-| `optics` | Optics Lab | AP Physics 2 geometric + wave optics; 8 tabs side-by-side sims+calculators, 10 sample problems, 25-term glossary, 30-item AP quiz | 9-12, AP |
+| `echoTrainer` | Echo Trainer | 3D spatial audio echolocation with HRTF binaural audio + Three.js | 6-12 |
+| `opticsLab` | Optics Lab | AP Physics 2 geometric + wave optics; 8 tabs side-by-side sims+calculators, 10 sample problems, 25-term glossary, 30-item AP quiz | 9-12, AP |
 | `throwlab` | ThrowLab | Sports physics: full 3D drag + Magnus integrator; Pitcher's Mound MVP with 6 pitch types | 6-12 |
 | `playlab` | PlayLab | Sports strategy: football + soccer play-design, drag-to-place, animated sim, Coach Mode, drills | 6-12 |
+| `coasterLab` | Coaster Lab | Design a roller coaster in full 3-D, predict speeds, g-forces, and bank angles with an educational physics model, pass its simulation inspection, ride onboard with checkpoint questions, and read your own telemetry like an engineer. | unreviewed |
+| `heatLab` | Heat & Thermodynamics Lab | Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve with its two latent plateaus; and why no heat engine reaches 100 percent. | unreviewed |
+| `magnetism` | Magnetism Lab | See invisible magnetic fields and learn how electricity makes them. Trace field lines with a live compass, build an electromagnet, spin a DC motor, crank a generator with Faraday’s law, sort magnetic from non-magnetic materials, and explore Earth’s own magnetic shield. NGSS MS-PS2 fields and forces. | unreviewed |
+| `nuclearLab` | Nuclear & Radiation Lab | Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, an evidence challenge for testing nuclear claims, why the same accident gets two death tolls a hundredfold apa | unreviewed |
+| `particleLab3d` | Particle Lab 3D | Run fully 3D particle experiments with states of matter, gas laws, diffusion, adjustable collision cross sections, attraction, live measurements, and particle tracing. | unreviewed |
 
-### 4.6 Engineering & Technology (10 tools)
-
-| ID | Display name | Purpose | Grade band |
-|---|---|---|---|
-| `archstudio` | Architecture Studio | 3D building simulator with STL + blueprint SVG export | 9-12 |
-| `gamestudio` | Game Design Studio | Tile palette + tilemap editor for 2D game creation | 6-12 |
-| `coding` | Coding Playground | Visual canvas output + block/text-based coding | 3-12 |
-| `autorepair` | Auto Repair Shop | Vehicle diagnostic thinking + maintenance skills | 6-12 |
-| `cyberdefense` | Cyber Defense Lab | Phishing detection, password strength, cipher playground | 6-12 |
-| `renewables` | Renewables Lab | Physics + engineering of solar, wind, hydro, geothermal, wave, tidal, biomass; Mix Designer; Maine home solar calc | 6-12 |
-| `flightsim` | Flight Sim | Aircraft physics + flight dynamics | 6-12 |
-| `weldlab` | Weld Lab | 8 modules: Heat Input, Bead Lab, Defect Hunt, Process Compare, Joint Catalog, Symbols Reader, PPE & Safety, Career Pathways; Maine BIW/EMCC/AWS data | 9-12 |
-| `roadready` | RoadReady (Driver's Ed) | Raycaster driving sim + permit test + parking 2D + hypermiling lab; Maine focus | 9-12 |
-| `printingpress` | Printing Press | Gutenberg screw-press simulation with Guided Tour mode + 7 modules (mechanics, type-setting, ink/composition, pull/proof, People view with Gutenberg/Erasmus/etc., AD FONTES compose-stick challenge, Who-Said-This attribution game). Built for King Middle EL Education demo May 12 2026; ~2,023 lines. Atmospheric backdrop pass: planet-and-atmosphere layered glow. | 6-12 |
-
-### 4.7 Creativity & Arts (5 tools)
+### 4.6 Engineering & Technology (15 tools)
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
-| `artstudio` | Art Studio | Color harmony palette creation + pixel art | K-12 |
-| `worldbuilder` | World Builder | Collaborative literary RPG with multiplayer world + writing-based mechanics | 6-12 |
-| `music` | Music Synthesizer | Piano, scales, chords, harmony pad, beat pad | K-12 |
+| `archStudio` | Architecture Studio | 3D building simulator with STL + blueprint SVG export | 9-12 |
+| `gameStudio` | Game Design Studio | Tile palette + tilemap editor for 2D game creation | 6-12 |
+| `codingPlayground` | Coding Playground | Visual canvas output + block/text-based coding | 3-12 |
+| `autoRepair` | Auto Repair Shop | Vehicle diagnostic thinking + maintenance skills | 6-12 |
+| `cyberDefense` | Cyber Defense Lab | Phishing detection, password strength, cipher playground | 6-12 |
+| `renewablesLab` | Renewables Lab | Physics + engineering of solar, wind, hydro, geothermal, wave, tidal, biomass; Mix Designer; Maine home solar calc | 6-12 |
+| `flightSim` | Flight Sim | Aircraft physics + flight dynamics | 6-12 |
+| `weldLab` | Weld Lab | 8 modules: Heat Input, Bead Lab, Defect Hunt, Process Compare, Joint Catalog, Symbols Reader, PPE & Safety, Career Pathways; Maine BIW/EMCC/AWS data | 9-12 |
+| `roadReady` | RoadReady (Driver's Ed) | Raycaster driving sim + permit test + parking 2D + hypermiling lab; Maine focus | 9-12 |
+| `printingPress` | Printing Press | Gutenberg screw-press simulation with Guided Tour mode + 7 modules (mechanics, type-setting, ink/composition, pull/proof, People view with Gutenberg/Erasmus/etc., AD FONTES compose-stick challenge, Who-Said-This attribution game). Built for King Middle EL Education demo May 12 2026; ~2,023 lines. Atmospheric backdrop pass: planet-and-atmosphere layered glow. | 6-12 |
+| `bridgeLab` | Bridge Engineering Lab | NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering | unreviewed |
+| `cityLab` | City Planning Lab | Design a town under conflicting constraints. Three towns: Riverbend has stormwater and a bond, Mesa Hollow a fixed aquifer and irrigation water, Harborlight sea level rise and storm surge by 2050. Rational-method runoff, walk distance, costed roads, a 3D model. Redlining and urban renewal as documented history. | unreviewed |
+| `machineLab` | Machine Lab | Levers, pulleys, ramps, wedges and screws. See how simple machines trade distance for force, and prove it with your own predictions. | unreviewed |
+| `openBim` | OpenBIM Companion | Plan an accessible semantic building model, approve every proposed change, and prepare an open IFC project for Bonsai. | unreviewed |
+| `printLab` | 3D Print Lab | Design or import a 3D model, inspect it against a school printer profile, compare material tradeoffs, and prepare a staff-review handoff. | unreviewed |
+
+### 4.7 Creativity & Arts (8 tools)
+
+| ID | Display name | Purpose | Grade band |
+|---|---|---|---|
+| `artStudio` | Art Studio | Color harmony palette creation + pixel art | K-12 |
+| `worldBuilder` | World Builder | Collaborative literary RPG with multiplayer world + writing-based mechanics | 6-12 |
+| `musicSynth` | Music Synthesizer | Piano, scales, chords, harmony pad, beat pad | K-12 |
 | `singing` | Singing Lab | Pitch training, vocal range finder, vibrato analysis | 6-12 |
 | `oratory` | Oratory | Public speaking + presentation skills | 6-12 |
+| `freeForms` | Free Forms | Build your own World of Forms: fill an archetypal 3D structure (Venn, story mountain, fishbone…) with your OWN ideas, sculpt them, and get AI coaching on the whole composition. | unreviewed |
+| `sourcebook` | Sourcebook | Find open textures and visual assets for educational materials or artwork, with source and reuse information. | unreviewed |
+| `wheelAndFire` | Wheel & Fire: Pottery Lab | Shape volume-conserving clay by wheel or hand, measure wall and coil stability, control heatwork, test post-firing function, and study pottery technologies in specific cultural contexts. | unreviewed |
 
-### 4.8 Computer Science & AI (7 tools)
+### 4.8 Computer Science & AI (12 tools)
 *(Includes `datastudio` companion to `dataplot`.)*
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
-| `llm_literacy` | AI Literacy Lab | Tokenization, next-token prediction, temperature, hallucination, UDL-framed guidance | 6-12 |
-| `allobotsage` | AlloBot: Starbound Sage | Roguelite spell-crafter — retrieval-practice-as-combat. **19 spells** each tied to a different STEM tool's mastery (Quantum Leap, Gravity Well, Solar Flare, Nebula Cloak, Fraction Fire, Algebra Arc, Geometry Grasp, Road Ward, Signal Sigil, Hypermile Hex, Phonic Bolt, Rhyme Ring, Narrative Nova, Verb Vortex, Focus Flare, Context Cipher, Home Row Focus, Fluent Keys, Ready Words). **5+ regular enemies** (Void Imp, Data Gremlin, Star Wraith, Rune Moth, Signal Shade) + **3 named bosses** (Lichcopy, Void Leviathan, Paradox Clone). Multiple sectors with bossPool gating. Each spell-cast surfaces a quiz prompt from the linked tool's domain (e.g., reading-fluency questions to cast Phonic Bolt). | 6-12 |
-| `typingpractice` | Typing Practice | Disability-first keyboarding: dyslexia font, motor-planning windows, large-key visual keyboard, IEP-workflow | K-12 |
-| `a11yauditor` | Digital Accessibility Lab | WCAG 2.1 AA audit for websites, HTML, documents | 6-12 |
-| `applab` | App Lab | AI Mini-App Generator: hierarchical pipeline, AI builds apps from description | 6-12 |
-| `geo` | Geo Quiz | Geography quiz + knowledge testing | 3-12 |
+| `llmLiteracy` | AI Literacy Lab | Tokenization, next-token prediction, temperature, hallucination, UDL-framed guidance | 6-12 |
+| `alloBotSage` | AlloBot: Starbound Sage | Roguelite spell-crafter — retrieval-practice-as-combat. **19 spells** each tied to a different STEM tool's mastery (Quantum Leap, Gravity Well, Solar Flare, Nebula Cloak, Fraction Fire, Algebra Arc, Geometry Grasp, Road Ward, Signal Sigil, Hypermile Hex, Phonic Bolt, Rhyme Ring, Narrative Nova, Verb Vortex, Focus Flare, Context Cipher, Home Row Focus, Fluent Keys, Ready Words). **5+ regular enemies** (Void Imp, Data Gremlin, Star Wraith, Rune Moth, Signal Shade) + **3 named bosses** (Lichcopy, Void Leviathan, Paradox Clone). Multiple sectors with bossPool gating. Each spell-cast surfaces a quiz prompt from the linked tool's domain (e.g., reading-fluency questions to cast Phonic Bolt). | 6-12 |
+| `typingPractice` | Typing Practice | Disability-first keyboarding: dyslexia font, motor-planning windows, large-key visual keyboard, IEP-workflow | K-12 |
+| `a11yAuditor` | Digital Accessibility Lab | WCAG 2.1 AA audit for websites, HTML, documents | 6-12 |
+| `appLab` | App Lab | AI Mini-App Generator: hierarchical pipeline, AI builds apps from description | 6-12 |
+| `geoQuiz` | Geo Quiz | Geography quiz + knowledge testing | 3-12 |
 | `dataStudio` | Data Studio | Data visualization companion to dataPlot; lives at `stem_tool_datastudio.js`. *(Previously had a duplicate registration leftover in `stem_tool_artstudio.js` from before the extraction split — removed May 9, 2026.)* | 6-12 |
+| `accessLens` | Access Lens | Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers. | unreviewed |
+| `arccity` | Arc City | Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas. | unreviewed |
+| `cellularLab` | Cellular Automaton Lab | Explore 2-D Life-like worlds with custom B/S rules, predictive and scientific lenses, challenges, 17 classic patterns, dynamic grids, export, and population evidence - plus all 256 elementary 1-D Wolfram rules. | unreviewed |
+| `simShelf` | Sim Shelf | A shelf of PhET simulations — the most researched sims in education — wrapped in a Predict → Explore → Explain coach. Lock in a guess before you touch anything, experiment freely, then let the coach compare what you predicted with what you saw. | unreviewed |
+| `trajectoryComputing` | Trajectory Computing Lab | Recreate the human-computing workflow: calculate a flight path, debug FORTRAN-style code, sequence punch cards, run a batch job, and independently verify the result. | unreviewed |
 
-### 4.9 Life Skills & Cross-Domain (6 tools)
+### 4.9 Life Skills & Cross-Domain (18 tools)
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
-| `learning_lab` | Learning Lab | Bloom's taxonomy, UDL, metacognition, spaced repetition, growth mindset | 6-12 |
-| `assessmentliteracy` | Assessment Literacy Lab | Construct/measurement critique, validated vs. pseudoscience instruments; School Psych at 24 | 9-12 |
-| `economicslab` | Economics Lab | 5 simulators: Supply & Demand, Personal Finance, Stock Market, Business Sim, National Economy | 9-12 |
-| `money` | Money Math | Coins, bills, grocery store sim, currency exchange, tips, budget, compound interest | 3-8 |
-| `lifeskills` | Life Skills | Practical life competency development | 6-12 |
-| `nutritionlab` | NutritionLab | Macronutrient Lab + Micronutrient Atlas; physiology-first framing for adolescents; NEDA helpline; sources (USDA / NIH ODS / Harvard / AAP / NEDA) | 6-12 |
+| `learningLab` | Learning Lab | Bloom's taxonomy, UDL, metacognition, spaced repetition, growth mindset | 6-12 |
+| `assessmentLiteracy` | Assessment Literacy Lab | Construct/measurement critique, validated vs. pseudoscience instruments; School Psych at 24 | 9-12 |
+| `economicsLab` | Economics Lab | 5 simulators: Supply & Demand, Personal Finance, Stock Market, Business Sim, National Economy | 9-12 |
+| `moneyMath` | Money Math | Coins, bills, grocery store sim, currency exchange, tips, budget, compound interest | 3-8 |
+| `lifeSkills` | Life Skills | Practical life competency development | 6-12 |
+| `nutritionLab` | NutritionLab | Macronutrient Lab + Micronutrient Atlas; physiology-first framing for adolescents; NEDA helpline; sources (USDA / NIH ODS / Harvard / AAP / NEDA) | 6-12 |
+| `aquacultureLab` | AquacultureLab: Mussel Farm Sim | Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim. | unreviewed |
+| `circuitShelf` | Circuit Shelf | Build and run real electronic circuits in CircuitJS — Paul Falstad’s open-source simulator — wrapped in a Predict → Explore → Explain coach. Pick a challenge, lock in a guess before you wire anything, build it, then let the coach compare what you predicted with what the meters actually read. | unreviewed |
+| `consciousnessLab` | Consciousness Theory Lab | Compare scientific theories and philosophical views of consciousness through evidence, predictions, and thought experiments. | unreviewed |
+| `fisherLab` | FisherLab: Boating & Fishing Sim | Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, fish identification, and responsible harvest decisions in an immersive 3D sim. | unreviewed |
+| `forge` | Tool Forge | Author, validate, and preview new STEAM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool. | unreviewed |
+| `lawNavigator` | Education Law Navigator | Read what special-education law actually says, in its own words. Browse the real text of IDEA Part B and Section 504 (fetched from eCFR and date-stamped), search by topic, and see federal and state rules side by side. Nothing here is paraphrased or generated: if the official text is not loaded, the tool says so rather | unreviewed |
+| `moleculeShelf` | Molecule Shelf | Explore real 3D molecular structures in Mol* — the viewer used by the world’s Protein Data Bank — from crambin and B-DNA to hemoglobin, an antibody, and the coronavirus spike. Rotate, zoom, and switch representations, with a Notice → Wonder observation coach beside it. | unreviewed |
+| `paperTrail` | PaperTrail: Official Documents | Practice reading and completing the documents adult life runs on — job applications, W-4s, leases, medical intake, permits, and your own IEP meeting invitation. Every field is decoded in plain language, the boxes that can cost you are flagged, and all practice uses a fictional identity because you should never type rea | unreviewed |
+| `parentingLab` | Science of Parenting Lab | What the parenting literature actually says — and how to tell its strongest claims from its weakest. Warmth and structure as two dials (not four boxes), with a strength-of-evidence badge on every claim: RCT-supported, meta-analytic association, culturally moderated, or popular-but-not-supported. Strengths-based and non | unreviewed |
+| `schoolBehaviorToolkit` | School Behavior Toolkit | Applied K-12 behavior practice — what school psychs and educators actually do with operant-conditioning science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (the slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restrain | unreviewed |
+| `swimLab` | SwimLab | How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources cited | unreviewed |
+| `timelineStudio` | Timeline Studio | Turn any reading — history, a biography, a science-discovery passage — into an interactive TimelineJS timeline. Paste or drop in text and the AI pulls out the dated events; scroll, zoom, and step through them. You can also build a timeline event by event yourself. | unreviewed |
 
 **Tools using 3D graphics (Three.js):** GeoSandbox, Geometry World, Echo Trainer, Architecture Studio, Anatomy
 

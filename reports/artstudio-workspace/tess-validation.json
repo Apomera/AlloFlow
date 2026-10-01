@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-29",
+  "scope": "Tessellation geometry, visible-outline selection, direct tile painting, undo/redo, SVG export, and responsive workspace",
+  "sourcePublicParity": true,
+  "sourceSHA256": "5004709878BC5FB3DF29CBDEE33B32A2D5A63CD0F6AA888A22C83DE90EB02273",
+  "tests": {
+    "verifiedFiles": 10,
+    "uniqueVerifiedTests": 85,
+    "newRegressionCases": 8,
+    "initialRun": {"passedFiles":2,"passedTests":27,"log":"tess-initial-tests.log"},
+    "editingRun": {"passedFiles":3,"passedTests":23,"log":"tess-editing-tests.log"},
+    "accessibilityRun": {"passedFiles":6,"passedTests":39,"log":"tess-accessibility-tests.log"},
+    "overlappingTests": 4,
+    "pool": "forks",
+    "failedTests": 0,
+    "repositoryTimeoutConfigurationChanged": false,
+    "fullRepositorySuiteRun": false
+  },
+  "browser": {
+    "passed": true,
+    "report": "tess-browser-results.json",
+    "pageErrors": [],
+    "shapesChecked": ["triangle","square","hexagon"],
+    "geometryCombinations": 12,
+    "interiorSamplesPerCombination": 2116,
+    "sampledHoles": 0,
+    "sampledOverlaps": 0,
+    "uncoveredCanvasPixels": 0,
+    "svgCanvasMeanChannelDifferenceRange": [0,0.000859578450520833],
+    "warpedRotatedSelection": true,
+    "undoRedoExactImageRestoration": true,
+    "actualPngAndSvgDownloads": true,
+    "desktopFocusPreviewPx": 760,
+    "phoneViewportWidthPx": 390,
+    "phonePreviewBeforeControls": true,
+    "phoneHorizontalOverflow": false,
+    "minimumButtonHeightPx": 44,
+    "screenshotsVisuallyReviewed": true
+  },
+  "syntaxCheck": "passed",
+  "diffWhitespaceCheck": "passed",
+  "deployed": false
+}

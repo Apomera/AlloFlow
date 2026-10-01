@@ -1,0 +1,19 @@
+Microbial growth discovery
+Illustrative model v1; population is in arbitrary units (5 initially, capacity 100). Values are simulated, not measurements.
+
+Explore one variable across a range
+Variable to sweep: Temperature
+Held constant: E. coli · pH: 7 · Oxygen availability: 100/100
+Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.
+These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.
+Temperature	Population at hour 24	Modeled lag (hours)
+0 °C	5.0	8.0
+10 °C	7.6	7.6
+20 °C	52.9	5.5
+30 °C	96.4	3.4
+37 °C	99.7	2.0
+45 °C	5.0	8.0
+60 °C	5.0	8.0
+70 °C	5.0	8.0
+80 °C	5.0	8.0
+90 °C	5.0	8.0

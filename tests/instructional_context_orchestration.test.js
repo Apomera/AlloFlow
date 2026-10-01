@@ -21,10 +21,15 @@ const standardsContext = {
   },
 };
 
+// Changed 2026-09-28 (lane N2): a sourced preserve-primary standard now leaves
+// the adapted companion out by default (tests/text_access_parity.test.js).
+// These cases are about companion rows, so the teacher has included one.
 const instructionalContext = {
   schemaVersion: 1,
   instructionalGrade: '5th Grade',
   primaryTextPolicy: 'preserve-primary',
+  adaptedTextPolicy: 'include',
+  adaptedTextPolicySource: 'educator',
   standardsContext,
   standardsFingerprint: 'txt-approved-standards',
 };

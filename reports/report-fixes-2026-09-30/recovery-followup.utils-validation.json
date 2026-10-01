@@ -1,0 +1,20 @@
+{
+  "sourceBeforeSha256": "8708ca5e6bb39076f52471a04cf6f95e7453912e4d849ba66037c3ce062bba0e",
+  "sourceAfterSha256": "19b83ade09ad2ba0ef7b793a206debc397184d579dbe30f8cebe69d07d83c9da",
+  "outputBeforeSha256": "27116a3c02af5ef6f2c0a558cff3438c9a13b2d7de52f263a8af0b0e0c1c3cde",
+  "rootPublicEqual": true,
+  "canonicalBeforeEqual": true,
+  "syntaxPassed": true,
+  "outsidePrefsBlockUnchanged": true,
+  "desiredRegressionBefore": {
+    "failed": 5,
+    "passed": 9,
+    "report": "recovery-followup.race-red.json"
+  },
+  "desiredRegressionAfter": {
+    "passed": 14,
+    "failed": 0,
+    "report": "recovery-followup.race-green.json"
+  },
+  "hostMediaBugCharacterizationCases": 1
+}

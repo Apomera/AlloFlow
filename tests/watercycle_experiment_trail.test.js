@@ -36,41 +36,38 @@ describe('Water Cycle experiment trail', () => {
 
       expect(source).toContain('className: "wc-prediction-reset wc-prediction-save"');
       expect(source).toContain('disabled: wcObservationSaved');
-      expect(source).toContain('Save current observation to experiment trail');
+      expect(source).toContain('Save observation to experiment trail');
       expect(source).toContain('className: "wc-experiment-log wc-focus-secondary"');
       expect(source).toContain('pathway-mix snapshots');
-      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_experiment_trail', 'Experiment trail')`);
+      expect(source).toContain(`"aria-labelledby": "wcExperimentNotebookTitle"`);
       expect(source).toContain('"aria-describedby": "wcExperimentTrailStatus"');
       expect(source).toContain('id: "wcExperimentTrailStatus"');
       expect(source).toContain('role: "status"');
       expect(source).toContain('"aria-atomic": "true"');
       expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_saved_experiment_observations', 'Saved experiment observations')`);
       expect(source).toContain('wcExperimentLog.length + "/4 observations saved"');
-      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_clear_experiment_trail', 'Clear experiment trail')`);
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.inquiry_clear_trail_name', 'Clear trail: remove saved observations')`);
       expect(source).toContain('var clearWcExperimentLog = function()');
       expect(source).toContain('className: "wc-log-replay"');
       expect(source).toContain('className: "wc-experiment-log-replay-badge", "aria-hidden": "true"');
-      expect(source).toContain('Replay saved observation:');
-      expect(source).toContain('onClick: function() { replayWcObservation(entry); }');
-      expect(source).toContain('var evidencePrediction = WATER_CYCLE_PREDICTIONS[entry.answer];');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.inquiry_replay_settings', 'Replay settings') + ": "`);
+      expect(source).toContain('onClick: function() { replayWcObservation(entry); focusWcComparisonTarget(entry.baseline ? "wcFairTestHeading" : "wcSetScenarioBaseline"); }');
+      expect(source).toContain('var evidenceLabel = WCExploreNotebook.evidenceLabel(entry);');
       expect(source).toContain('className: "wc-log-entry-evidence"');
-      expect(source).toContain('entry.matched ? "Evidence agrees" : "Evidence differs"');
-      expect(source.includes('" · Claim: " + recordedClaimLabel')).toBe(true);
+      expect(source).toContain('entry.matched === true ?');
+      expect(source).toContain('className: "wc-notebook-recorded-claim"');
       expect(source.includes('Claim: " + recordedClaimLabel')).toBe(true);
-      expect(
-        source.includes('". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim.') ||
-        (source.includes('"The evidence agrees with the claim."') && source.includes('"The evidence differs from the claim."'))
-      ).toBe(true);
-      expect(
-        source.includes('"Evidence summary: " + evidenceLabel')
-      ).toBe(true);
+      expect(source).toContain('entry.matched === false ?');
+      expect(source).toContain('Claim check not recorded');
+      expect(source).toContain('". " + recordedStatus + ". Claim: " + recordedClaimLabel');
+      expect(source).toContain('Evidence summary: ');
       expect(source).not.toContain('Prediction matched the evidence.');
       expect(source).not.toContain('Prediction differed from the evidence.');
       expect(source).not.toContain('" · Hypothesis: " + prediction.shortLabel');
       expect(source).toContain('var routeShares = entry.routeShares || null;');
-      expect(source).toContain('var routeMixAccessibility = hasRouteShares');
+      expect(source).toContain('var hasRouteShares = routeShares');
       expect(source).toContain('className: "wc-log-entry-route-mix"');
-      expect(source).toContain('Path mix (relative): Runoff ');
+      expect(source).toContain('Saved pathway mix: Runoff ');
     });
   });
 

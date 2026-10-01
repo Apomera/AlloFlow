@@ -1,0 +1,22 @@
+--- a/stem_lab/stem_tool_anatomy.js
++++ b/stem_lab/stem_tool_anatomy.js
+@@ -3443,12 +3443,15 @@
+-              h('svg', { viewBox: '0 0 360 180', direction: 'ltr', style: { direction: 'ltr' }, role: 'img', 'aria-labelledby': 'anatomy-feedback-chart-title', 'aria-describedby': 'anatomy-feedback-chart-description' },
++              h('svg', { viewBox: '0 0 360 180', direction: 'ltr', style: { direction: 'ltr' }, role: 'img', 'aria-labelledby': 'anatomy-feedback-chart-title', 'aria-describedby': 'anatomy-feedback-chart-description anatomy-feedback-pulse-key' },
+                 h('title', { id: 'anatomy-feedback-chart-title' }, t('stem.anatomy.feedback_chart', 'Temperature over 40 model steps')),
+                 h('desc', { id: 'anatomy-feedback-chart-description' }, t('stem.anatomy.feedback_chart_desc', 'The solid line returns toward 37°C. The dashed line stays displaced. Exact comparison values are in the table below.')),
++                h('rect', { x:40, y:15, width:60, height:135, fill:'#fff7ed', 'data-anatomy-feedback-pulse':true }),
++                h('path', { d:'M100 15V150', fill:'none', stroke:'#b45309', strokeWidth:1.5, strokeDasharray:'3 4' }),
+                 h('path', { d: 'M40 15V150H340 M40 85H340', fill: 'none', stroke: '#64748b', strokeWidth: 1 }),
+-                h('text', { x: 4, y: 12, fontSize: 11, fill: 'currentColor' }, '°C'),
+-                [36.6,37,37.4].map(function(value) { return h('text', { key: value, x: 4, y: 89-(value-37)*150, fontSize: 10, fill: 'currentColor' }, String(value)); }),
+-                [0,8,20,40].map(function(value) { return h('text', { key: value, x: 40+value*7.5, y: 167, textAnchor: 'middle', fontSize: 11, fill: 'currentColor' }, String(value)); }),
++                h('text', { x: 4, y: 12, fontSize: 14, fill: 'currentColor' }, '°C'),
++                [36.6,37,37.4].map(function(value) { return h('text', { key: value, x: 4, y: 90-(value-37)*150, fontSize: 14, fill: 'currentColor' }, String(value)); }),
++                [0,8,20,40].map(function(value) { return h('text', { key: value, x: 40+value*7.5, y: 169, textAnchor: 'middle', fontSize: 14, fill: 'currentColor' }, String(value)); }),
+                 h('polyline', { points: points(disabled), fill: 'none', stroke: '#be123c', strokeWidth: 3, strokeDasharray: '6 4' }),
+                 h('polyline', { points: points(active), fill: 'none', stroke: '#0f766e', strokeWidth: 3 })),
++              h('p', { id:'anatomy-feedback-pulse-key', className:'anatomy-feedback-legend' }, t('stem.anatomy.homeo_flow_pulse_key','Shaded area: the disturbance is applied through step 8.')),
+               h('p', { className: 'anatomy-feedback-legend' }, t('stem.anatomy.feedback_legend', 'Solid: feedback active · Dashed: response disabled. Horizontal axis: model steps. The disturbance ends at step 8.')),
+               h('table', null, h('caption', null, t('stem.anatomy.feedback_values', 'Model temperatures (°C)')),
+                 h('thead', null, h('tr', null, h('th', { scope: 'col' }, t('stem.anatomy.feedback_step', 'Step')), h('th', { scope: 'col' }, activeLabel), h('th', { scope: 'col' }, disabledLabel))),

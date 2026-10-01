@@ -1,0 +1,117 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "name": "desktop-expanded",
+      "box": {
+        "x": 174,
+        "y": 79,
+        "width": 854,
+        "height": 854
+      },
+      "viewport": {
+        "w": 1440,
+        "h": 1000
+      }
+    },
+    {
+      "name": "pixel-navigation",
+      "centeredZoom": true,
+      "pointerPan": true,
+      "keyboardPan": true,
+      "keyboardCursorRevealed": true,
+      "rotateUndo": true
+    },
+    {
+      "name": "mobile",
+      "box": {
+        "x": 21,
+        "y": 628.5,
+        "width": 348,
+        "height": 348
+      }
+    },
+    {
+      "name": "native-transparent-sprite",
+      "width": 32,
+      "height": 32,
+      "painted": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "empty": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "pixel-shapes",
+      "filledRectangleCells": 48,
+      "previewNotSaved": true,
+      "keyboardEllipse": true,
+      "undo": true
+    },
+    {
+      "name": "pixel-brushes",
+      "coverageCells": 160,
+      "roundEraserCells": 12,
+      "undo": true
+    },
+    {
+      "name": "watercolor-expanded",
+      "box": {
+        "x": 159,
+        "y": 106,
+        "width": 810,
+        "height": 810
+      },
+      "sameCanvas": true
+    },
+    {
+      "name": "watercolor-history-buttons",
+      "undo": true,
+      "redo": true
+    },
+    {
+      "simulationSteps": 16,
+      "elapsedMs": 545.3000000119209,
+      "perStepMs": 34.08125000074506
+    },
+    {
+      "name": "watercolor-brush-guide",
+      "visible": true,
+      "exportUnchanged": true
+    },
+    {
+      "name": "watercolor-salt",
+      "beforeMass": 2438.931047760416,
+      "afterMass": 2438.9310479839332,
+      "palerCells": 1932,
+      "darkerCells": 1785
+    },
+    {
+      "name": "watercolor-phone-fallback",
+      "box": {
+        "x": 24,
+        "y": 163,
+        "width": 342,
+        "height": 342
+      },
+      "escape": true,
+      "paintRetained": true
+    },
+    {
+      "name": "pixel-selection",
+      "previewExcludedFromExport": true,
+      "overlapMove": true,
+      "copyPaste": true,
+      "transparentHoles": true,
+      "undo": true
+    }
+  ],
+  "errors": []
+}

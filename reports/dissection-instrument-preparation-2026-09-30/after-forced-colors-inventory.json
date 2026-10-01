@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Next required instrument. Probe, Ready. Interaction: Press · drag. Inspect ventral landmarks and confirm symmetry before using a cutting instrument.",
+    "disabled": false,
+    "checked": "true",
+    "next": "true",
+    "readiness": "ready",
+    "tabIndex": "0"
+  },
+  {
+    "name": "Forceps, Later step. Interaction: Press · drag. Current protocol step: Inspect ventral landmarks and confirm symmetry. Use Probe next.",
+    "disabled": false,
+    "checked": "false",
+    "next": "false",
+    "readiness": "waiting",
+    "tabIndex": "-1"
+  },
+  {
+    "name": "Scalpel, Later step. Interaction: Stroke. Current protocol step: Inspect ventral landmarks and confirm symmetry. Use Probe next.",
+    "disabled": false,
+    "checked": "false",
+    "next": "false",
+    "readiness": "waiting",
+    "tabIndex": "-1"
+  },
+  {
+    "name": "Scissors, Later step. Interaction: Stroke. Current protocol step: Inspect ventral landmarks and confirm symmetry. Use Probe next.",
+    "disabled": false,
+    "checked": "false",
+    "next": "false",
+    "readiness": "waiting",
+    "tabIndex": "-1"
+  },
+  {
+    "name": "Pins, Later step. Interaction: Press · drag. Current protocol step: Inspect ventral landmarks and confirm symmetry. Use Probe next.",
+    "disabled": false,
+    "checked": "false",
+    "next": "false",
+    "readiness": "waiting",
+    "tabIndex": "-1"
+  },
+  {
+    "name": "Dropper, Ready. Interaction: Press · drag. Apply a controlled saline drop to restore moisture and improve visibility.",
+    "disabled": false,
+    "checked": "false",
+    "next": "false",
+    "readiness": "ready",
+    "tabIndex": "-1"
+  },
+  {
+    "name": "Absorbent Wick, No excess fluid. Interaction: Press · drag. Use the wick only after a broad saline film or pooling event.",
+    "disabled": false,
+    "checked": "false",
+    "next": "false",
+    "readiness": "waiting",
+    "tabIndex": "-1"
+  }
+]

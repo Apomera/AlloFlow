@@ -314,7 +314,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain('function scheduleRebuild(apply) { window.clearTimeout(rebuildTimerRef.current);');
     expect(source).toContain('useEffect(function () { return function () { window.clearTimeout(rebuildTimerRef.current); }; }, []);');
     expect(source).not.toContain('boxSizeDraft');
-    expect(source.split("'aria-disabled': holdPressure ? 'true' : undefined, onChange: function (e) { if (holdPressure) { announce('The container is under pressure hold; turn the hold off to move the walls by hand.'); return; } var value = Number(e.target.value); setBoxSize(value); persistLater({ boxSize: value }); }").length - 1).toBe(2);
+    expect(source.split("'aria-disabled': holdPressure ? 'true' : undefined, onChange: function (e) { if (holdPressure) { announce(__alloT('stem.particlelab3d.sr_the_container_is_under_pressure_hold_turn_the_hol', 'The container is under pressure hold; turn the hold off to move the walls by hand.')); return; } var value = Number(e.target.value); setBoxSize(value); persistLater({ boxSize: value }); }").length - 1).toBe(2);
     // Hold pressure: the container follows the gauge (P ~ 1/V, damped), Charles's law gets a protocol, and a trial pair
     // recorded under the hold does not count the volume change as a second variable.
     expect(source).toContain('function holdPressureStep(hold, pressure, sampleWindow, boxSize)');

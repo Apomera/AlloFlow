@@ -355,14 +355,12 @@ function PersonaWorkspaceView({
                                                     </label>
                                                     <button
                                                         type="button"
-                                                        disabled={quest.isCompleted}
-                                                        title={quest.isCompleted ? (t('persona.completed') || 'Completed quests are preserved') : undefined}
                                                         onClick={() => updatePersonaTeacherEditor({
                                                             quests: personaTeacherEditor.quests.filter((_, index) => index !== questIndex)
                                                         })}
                                                         className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        {quest.isCompleted ? (t('persona.completed') || 'Completed') : (t('persona.remove_quest') || 'Remove')}
+                                                        {t('persona.remove_quest') || 'Remove'}
                                                     </button>
                                                 </div>
                                             ))}

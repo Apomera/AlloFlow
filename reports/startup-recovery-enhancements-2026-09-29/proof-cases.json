@@ -1,0 +1,44 @@
+[
+  {
+    "name": "stale-project-save",
+    "env": "ALLO_ANTI_CANDIDATE",
+    "extension": "txt",
+    "test": "tests/k5_save_adventure_readiness.test.js",
+    "pattern": "save startup readiness discards a delayed request after saveFileName changes"
+  },
+  {
+    "name": "stale-adventure-start",
+    "env": "ALLO_ANTI_CANDIDATE",
+    "extension": "txt",
+    "test": "tests/k5_save_adventure_readiness.test.js",
+    "pattern": "start startup readiness discards a delayed request after adventureState changes"
+  },
+  {
+    "name": "stale-adventure-turn",
+    "env": "ALLO_ANTI_CANDIDATE",
+    "extension": "txt",
+    "test": "tests/k5_save_adventure_readiness.test.js",
+    "pattern": "dice startup readiness discards a delayed request after pendingAdventureUpdate changes"
+  },
+  {
+    "name": "missing-encryption-plaintext",
+    "env": "ALLO_PHASE_K_CANDIDATE",
+    "extension": "js",
+    "test": "tests/project_save_cancellation_encryption.test.js",
+    "pattern": "does not download plaintext when the crypto API is unavailable"
+  },
+  {
+    "name": "download-after-cancel",
+    "env": "ALLO_PHASE_K_CANDIDATE",
+    "extension": "js",
+    "test": "tests/project_save_cancellation_encryption.test.js",
+    "pattern": "cancels after encryption completes"
+  },
+  {
+    "name": "restart-after-context-change",
+    "env": "ALLO_ADVENTURE_CANDIDATE",
+    "extension": "jsx",
+    "test": "tests/project_save_cancellation_encryption.test.js",
+    "pattern": "keeps the current story if it changes while the restart dialog is open"
+  }
+]

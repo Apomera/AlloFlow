@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-30",
+  "scope": "Art Studio Generative Art workspace and playback",
+  "savedLocally": true,
+  "deployed": false,
+  "syntaxPassed": true,
+  "scopedDiffWhitespacePassed": true,
+  "sourcePublicParity": true,
+  "sha256": "FD370CDB516844268FC28B6342834F7C5DA57D1009D821B5EAFD5F407DC408B4",
+  "tests": {
+    "passed": 105,
+    "failed": 0,
+    "filesPassed": 11,
+    "newRegressionCases": 18,
+    "durationSeconds": 297.22,
+    "log": "generative-final-tests.log",
+    "diagnostic": "Existing jsdom HTMLCanvasElement.toDataURL stub warning; all tests passed.",
+    "command": "npx vitest run tests/artstudio_generative_playback.test.js tests/artstudio_generative_reproducibility.test.js tests/artstudio_generative_pass2.test.js tests/artstudio_generative_keyboard_a11y.test.js tests/artstudio_paused_loops_idle.test.js tests/artstudio_remaining_touch_fourth_pass.test.js tests/artstudio_stage_thread_variations.test.js tests/artstudio_artwork_roundtrip.test.js tests/artstudio_study_persistence.test.js tests/artstudio_capture_ownership_pass2.test.js tests/artstudio_semantics_a11y.test.js --pool=forks --maxWorkers=1 --testTimeout=30000 --hookTimeout=30000"
+  },
+  "browser": {
+    "passed": true,
+    "pageErrors": [],
+    "results": "generative-browser-results.json",
+    "desktopViewport": [1440, 1000],
+    "desktopFocusCanvasWidth": 1013.328125,
+    "phoneViewport": [390, 844],
+    "phonePreviewFirst": true,
+    "phoneNoOverflow": true,
+    "minimumButtonHeight": 44,
+    "pngDownloadMatchesCanvas": true,
+    "screenshotsVisuallyReviewed": ["generative-aurora-focus.png", "generative-flow-focus.png", "generative-phone-focus.png"]
+  },
+  "limits": {
+    "canvasBackingStore": [640, 480],
+    "normalSimulationStepsPerSecond": 60,
+    "foregroundCatchUpMilliseconds": 100,
+    "maximumParticles": 3000,
+    "fullRepositorySuiteRun": false
+  }
+}

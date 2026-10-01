@@ -1,0 +1,40 @@
+{
+  "base": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "files": [
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "10ff8bb8173f3bb180301fd4c207e2ac72c23bb7bcb70aa85b650cfeafb42c37"
+    },
+    {
+      "file": "tests/reader_route_a11y.test.js",
+      "sha256": "9a4462e6a3a5e09d3a8333aabafdd217489408645bbfe1a4ce7626489b735d6b"
+    },
+    {
+      "file": "tests/reader_display_menu.test.js",
+      "sha256": "9b9563c4068c785bb17af9247095efcc7e890a22061edc6070880a474a5d2ef3"
+    },
+    {
+      "file": "tests/reader_layout_quick_wins.test.js",
+      "sha256": "d464bdcf59105c2841896a717fc3735b67472fa91040b731f0cc55f8a02e6143"
+    },
+    {
+      "file": "tests/adapted_reading_enhancements.test.js",
+      "sha256": "538d6d08e22f74294c1d327891d3c93901565d18e25621f99e2e6a170e4fcb50"
+    },
+    {
+      "file": "tests/view_simplified_dialog_a11y.test.js",
+      "sha256": "c33044228cf3be824554f5163e74a707f3f404e11b0f7045b30241cebe64ac00"
+    },
+    {
+      "file": "tests/adapted_reading_popup_read_aloud.test.js",
+      "sha256": "8bc91b62689d2bee5883aa239156983e7abea8cc8197e0d2ab704f597f8b8b48"
+    },
+    {
+      "file": "dev-tools/reader_route_browser.cjs",
+      "sha256": "c827fcd2f7d23d6f115e42e5275832d0e547161aa772b029ed3309e44ba25f6c"
+    }
+  ],
+  "patchVerified": true,
+  "patchNote": "git apply --check and actual application passed against an isolated baseline. Result equals candidate after CRLF/LF normalization; core.autocrlf=true.",
+  "generatedCopiesEqual": true
+}

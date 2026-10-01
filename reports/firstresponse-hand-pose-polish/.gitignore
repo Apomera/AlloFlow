@@ -1,0 +1,7 @@
+update.cjs
+commit.cjs
+commit-git/
+commit.index
+commit-message.txt
+browser-artifacts/
+*.log

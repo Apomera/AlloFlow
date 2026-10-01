@@ -1,0 +1,711 @@
+{
+  "checks": [
+    "neighborhood real boundary pauses once at finite limit",
+    "neighborhood center inspection preserves position and clocks",
+    "galaxy real boundary pauses once at finite limit",
+    "galaxy center inspection preserves position and clocks",
+    "cosmic real boundary pauses once at finite limit",
+    "cosmic center inspection preserves position and clocks",
+    "physical boundary explains fixed travel heading",
+    "physical center inspection preserves aberration and clocks",
+    "look-back resume keeps physical +Z motion",
+    "physical checkpoint reset starts fresh while retaining optical preferences",
+    "inline boundary retains native range focus and single announcement",
+    "inline Dismiss preserves state and focuses selected tab",
+    "boundary defers external checkpoint while lens retains focus",
+    "boundary defers external checkpoint while finder retains focus",
+    "removed focused finder releases deferred checkpoint without stealing focus",
+    "true arrival captures chosen wide viewing radius",
+    "arrival exposes inspect orbit save and exploration actions",
+    "manual look and lens edits retain arrival context",
+    "controls transfer one checkpoint into their scroll body",
+    "fullscreen exit and reentry retain stopped context",
+    "arrival Inspect centers destination without moving or changing clocks",
+    "arrival defers external checkpoint while marker retains focus",
+    "external Dismiss preserves exact stopped state and focuses canvas",
+    "Explore destinations opens Explore and resolves completed context",
+    "Save viewpoint opens Compose and focuses native name field",
+    "checkpoint viewpoint persists the complete paused snapshot",
+    "arrival Orbit starts an actual camera orbit and clears completed context",
+    "precision movement clears obsolete arrival context",
+    "resume clears completed arrival context",
+    "different destination selection clears obsolete context",
+    "saved-view restore clears obsolete context and returns paused",
+    "scene change clears obsolete context",
+    "Explore reset is always available and clears pose counters and context",
+    "scene reset retains pace smoothing and display preferences",
+    "unavailable faceSceneCenter opens Explore with recovery notice and preserves state",
+    "unavailable frameTarget opens Explore with recovery notice and preserves state",
+    "vertical-axis orbit rejection opens Explore with recovery notice and preserves state",
+    "clean overlay keeps checkpoint and transport reachable",
+    "keyboard Dismiss works and returns canvas focus",
+    "phone checkpoint actions scroll under fixed heading and Dismiss",
+    "phone inline checkpoint scrolls under fixed tabs and Close",
+    "phone arrival keyboard actions retain exact paused state",
+    "landscape checkpoint actions scroll under fixed heading and Dismiss",
+    "landscape inline checkpoint scrolls under fixed tabs and Close",
+    "landscape arrival keyboard actions retain exact paused state"
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "desktop-arrival",
+      "violations": []
+    },
+    {
+      "name": "clean-boundary",
+      "violations": []
+    },
+    {
+      "name": "phone-boundary",
+      "violations": []
+    },
+    {
+      "name": "phone-inline-boundary",
+      "violations": []
+    },
+    {
+      "name": "phone-arrival",
+      "violations": []
+    },
+    {
+      "name": "landscape-boundary",
+      "violations": []
+    },
+    {
+      "name": "landscape-inline-boundary",
+      "violations": []
+    },
+    {
+      "name": "landscape-arrival",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "desktop-arrival",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "shell": {
+        "x": 1108,
+        "y": 479.9375,
+        "width": 320,
+        "height": 370.0625
+      },
+      "body": {
+        "x": 1125,
+        "y": 548.9375,
+        "width": 286,
+        "height": 284.0625
+      },
+      "scroll": {
+        "client": 284,
+        "height": 284
+      }
+    },
+    {
+      "name": "phone-boundary",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "shell": {
+        "x": 12,
+        "y": 326.8125,
+        "width": 296,
+        "height": 323.1875
+      },
+      "body": {
+        "x": 29,
+        "y": 395.8125,
+        "width": 262,
+        "height": 237.1875
+      },
+      "scroll": {
+        "client": 237,
+        "height": 237
+      }
+    },
+    {
+      "name": "phone-inline-boundary",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "shell": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 590
+      },
+      "body": {
+        "x": 29,
+        "y": 181,
+        "width": 262,
+        "height": 452
+      },
+      "scroll": {
+        "client": 452,
+        "height": 1242
+      }
+    },
+    {
+      "name": "phone-arrival",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "shell": {
+        "x": 12,
+        "y": 279.9375,
+        "width": 296,
+        "height": 370.0625
+      },
+      "body": {
+        "x": 29,
+        "y": 348.9375,
+        "width": 262,
+        "height": 284.0625
+      },
+      "scroll": {
+        "client": 284,
+        "height": 284
+      }
+    },
+    {
+      "name": "landscape-boundary",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "scroll": {
+        "client": 94,
+        "height": 233
+      }
+    },
+    {
+      "name": "landscape-inline-boundary",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "scroll": {
+        "client": 94,
+        "height": 1200
+      }
+    },
+    {
+      "name": "landscape-arrival",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "scroll": {
+        "client": 94,
+        "height": 280
+      }
+    }
+  ],
+  "events": [
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000.00000000001
+        ]
+      },
+      "focusId": "",
+      "focusClass": "uf-fs-play"
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "galaxy",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          3000000
+        ]
+      },
+      "focusId": "",
+      "focusClass": "uf-fs-play"
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "cosmic",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          120000000
+        ]
+      },
+      "focusId": "",
+      "focusClass": "uf-fs-play"
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "relativity",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "relativity",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000.00000000001
+        ]
+      },
+      "focusId": "uf-inview-speed",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000.00000000001
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": "uf-target-finder"
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000.00000000001
+        ]
+      },
+      "focusId": "",
+      "focusClass": "uf-target-finder"
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          6.1
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 2.4
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": "uf-target-marker"
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "galaxy",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          3000000
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          0.4,
+          8.5
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    },
+    {
+      "message": "Reached the edge of this generated model. Reset position or look back to explore it.",
+      "detail": {
+        "kind": "boundary",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          0,
+          0,
+          100000
+        ]
+      },
+      "focusId": "",
+      "focusClass": "uf-fs-play"
+    },
+    {
+      "message": "Arrived at Amber star. Travel is paused; look around or choose another destination.",
+      "detail": {
+        "kind": "arrival",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -3.1,
+          1,
+          7.9
+        ],
+        "targetId": "amber-star",
+        "targetName": "Amber star",
+        "arrivalRadiusLy": 0.6
+      },
+      "focusId": "",
+      "focusClass": ""
+    }
+  ]
+}

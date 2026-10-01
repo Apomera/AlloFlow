@@ -1,0 +1,278 @@
+[
+  {
+    "dark": true,
+    "width": 1180,
+    "scrollWidth": 1180,
+    "errors": [],
+    "buttons": [
+      {
+        "name": "Select planet: Mercury",
+        "pressed": "false",
+        "width": 123.765625,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Venus",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Earth",
+        "pressed": "true",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Mars",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Jupiter",
+        "pressed": "false",
+        "width": 123.765625,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Saturn",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Uranus",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Neptune",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Pluto",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      }
+    ],
+    "portraits": 9,
+    "scene": {
+      "meshes": 59,
+      "renders": 438
+    },
+    "minimumPickerContrast": 13.35325281838611,
+    "forcedColorsOutline": "2px"
+  },
+  {
+    "dark": false,
+    "width": 1180,
+    "scrollWidth": 1180,
+    "errors": [],
+    "buttons": [
+      {
+        "name": "Select planet: Mercury",
+        "pressed": "false",
+        "width": 123.765625,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Venus",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Earth",
+        "pressed": "true",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Mars",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Jupiter",
+        "pressed": "false",
+        "width": 123.765625,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Saturn",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Uranus",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Neptune",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      },
+      {
+        "name": "Select planet: Pluto",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 100
+      }
+    ],
+    "portraits": 9,
+    "scene": {
+      "meshes": 59,
+      "renders": 783
+    },
+    "minimumPickerContrast": 11.872823816432428,
+    "forcedColorsOutline": "2px"
+  },
+  {
+    "dark": true,
+    "width": 390,
+    "scrollWidth": 390,
+    "errors": [],
+    "buttons": [
+      {
+        "name": "Select planet: Mercury",
+        "pressed": "false",
+        "width": 120.65625,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Venus",
+        "pressed": "false",
+        "width": 120.671875,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Earth",
+        "pressed": "true",
+        "width": 120.65625,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Mars",
+        "pressed": "false",
+        "width": 120.65625,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Jupiter",
+        "pressed": "false",
+        "width": 120.671875,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Saturn",
+        "pressed": "false",
+        "width": 120.65625,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Uranus",
+        "pressed": "false",
+        "width": 120.65625,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Neptune",
+        "pressed": "false",
+        "width": 120.671875,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Pluto",
+        "pressed": "false",
+        "width": 120.65625,
+        "height": 95.5
+      }
+    ],
+    "portraits": 9,
+    "scene": {
+      "meshes": 59,
+      "renders": 603
+    },
+    "minimumPickerContrast": 13.35325281838611,
+    "forcedColorsOutline": "2px"
+  },
+  {
+    "dark": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "buttons": [
+      {
+        "name": "Select planet: Mercury",
+        "pressed": "false",
+        "width": 97.328125,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Venus",
+        "pressed": "false",
+        "width": 97.328125,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Earth",
+        "pressed": "true",
+        "width": 97.34375,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Mars",
+        "pressed": "false",
+        "width": 97.328125,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Jupiter",
+        "pressed": "false",
+        "width": 97.328125,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Saturn",
+        "pressed": "false",
+        "width": 97.34375,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Uranus",
+        "pressed": "false",
+        "width": 97.328125,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Neptune",
+        "pressed": "false",
+        "width": 97.328125,
+        "height": 95.5
+      },
+      {
+        "name": "Select planet: Pluto",
+        "pressed": "false",
+        "width": 97.34375,
+        "height": 95.5
+      }
+    ],
+    "portraits": 9,
+    "scene": {
+      "meshes": 59,
+      "renders": 2568
+    },
+    "minimumPickerContrast": 11.872823816432428,
+    "forcedColorsOutline": "2px"
+  }
+]

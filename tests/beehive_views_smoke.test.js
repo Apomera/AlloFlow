@@ -279,7 +279,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('All action points spent');
     expect(keeper).toContain('data-management-cost="1 AP"');
     expect(keeper).toContain('data-management-cost-badge="Feed"');
-    expect(keeper).toContain('+5 food stores / +5 stability');
+    expect(keeper).toContain('+5 lb syrup / +5 morale');
     expect(keeper).toContain('data-conservation-impact="plant_wildflowers"');
     expect(keeper).toContain('data-conservation-preview="plant_wildflowers"');
     expect(keeper).toContain('Impact: Habitat +10 | Foraging +5');
@@ -480,7 +480,8 @@ describe('beehive — Field Guide renders every curriculum section (recursive re
   GUIDE_SECTIONS.forEach((sec) => {
     it('section "' + sec + '" renders without throwing on its data shape', () => {
       let html;
-      expect(() => { html = render({ showGuide: true, guideSection: sec }); }).not.toThrow();
+      // guideShowTeacher: teacher sections sit behind a toggle outside teacher mode (2026-09-28).
+      expect(() => { html = render({ showGuide: true, guideShowTeacher: true, guideSection: sec }); }).not.toThrow();
       expect(html).toContain('Field Guide');
       // at least one entry card must have rendered (the recursive walker ran)
       expect(html.length).toBeGreaterThan(2000);
@@ -513,7 +514,7 @@ describe('beehive — Field Guide renders every curriculum section (recursive re
     };
 
     it('heads a math problem with the problem, not with its grade band', () => {
-      const found = titles(render({ showGuide: true, guideSection: 'math' }));
+      const found = titles(render({ showGuide: true, guideShowTeacher: true, guideSection: 'math' }));
       expect(found.length).toBeGreaterThan(0);
       expect(found.some((t) => /worker bee visits/i.test(t))).toBe(true);
       expect(found.some((t) => /^\s*\d\s*-\s*\d\s*$/.test(t))).toBe(false);
@@ -540,7 +541,7 @@ describe('beehive — Field Guide renders every curriculum section (recursive re
     it('keeps a demoted classifier visible as a labelled chip', () => {
       // Demoting "grade" must not DELETE it — the band is useful, it is just
       // not the headline.
-      const html = render({ showGuide: true, guideSection: 'math' });
+      const html = render({ showGuide: true, guideShowTeacher: true, guideSection: 'math' });
       expect(html).toMatch(/Grade:\s*3-5/);
     });
   });

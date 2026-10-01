@@ -14,7 +14,7 @@ if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
 }
 
 // ═══ MissionReportCard (lines 8564-8670) ═══
-const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onExport, onContinue, onNewGame, isProcessing }) => {
+const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onExport, onContinue, onNewGame, isProcessing, storybookXpNeeded = 0 }) => {
   const { t } = useContext(LanguageContext);
   const reportRef = useRef(null);
   useFocusTrap(reportRef, true, onClose);
@@ -120,6 +120,13 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             )}
         </div>
         <div className="p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0">
+             {/* Same XP lock as the episode recap (it was bypassed here). */}
+             {storybookXpNeeded > 0 ? (
+             <p data-mission-storybook-locked className="flex items-start gap-2 text-sm text-slate-200">
+                 <Key size={16} className="shrink-0 mt-0.5" aria-hidden="true" />
+                 <span>{t('adventure.storybook_locked', { needed: storybookXpNeeded })}</span>
+             </p>
+             ) : (
              <button
                 onClick={onExport}
                 disabled={isProcessing}
@@ -128,20 +135,23 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                  {isProcessing ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <BookOpen size={18} aria-hidden="true"/>}
                  {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
              </button>
-             <div className="grid grid-cols-2 gap-3">
-                 <button
+             )}
+             {/* Continue and New Game are not offered to a live student (the host passes neither):
+                 the teacher runs the class story. New Game opens the same confirmed restart as Start over. */}
+             {(onContinue || onNewGame) && <div className="grid grid-cols-2 gap-3">
+                 {onContinue && <button
                     onClick={() => { onClose(); if(onContinue) onContinue(); }}
                     className="w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-800 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
                      <MapIcon size={18} aria-hidden="true" /> {t('adventure.start_sequel') || "Continue"}
-                 </button>
-                 <button aria-label={t('adventure.new_game') || "New Game"}
+                 </button>}
+                 {onNewGame && <button aria-label={t('adventure.new_game') || "New Game"}
                     onClick={() => { onClose(); if(onNewGame) onNewGame(); }}
                     className="w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
                      <RefreshCw size={18} aria-hidden="true" /> {t('adventure.new_game') || "New Game"}
-                 </button>
-             </div>
+                 </button>}
+             </div>}
              <button
                 onClick={onClose}
                 className="w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"

@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-29",
+  "result": "passed",
+  "unitTests": {
+    "passed": 183,
+    "files": 3,
+    "finalRunSeconds": 9.55,
+    "suites": {
+      "firstresponse_depth_explorer": 50,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "passed": 16,
+    "fullRunMinutes": 4.5,
+    "finalAffectedScenariosPassed": 3,
+    "finalAffectedRunMinutes": 1.5,
+    "finalAffectedScope": "All three visual scenarios rerun after contrast surface separation; normal scene behavior is unchanged by that fix",
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "newVisualScenarios": 3,
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader"
+  },
+  "coverage": [
+    "Complete adult manikin bounds fit the whole-body camera with a margin",
+    "Actual WebGL rendering and live saved comparison markers",
+    "Consistent marker colors under scene lighting",
+    "Separate visual symbols for resting height and reference depth",
+    "Measurement and saved-A key entries follow controls and manikin age",
+    "Existing contact, chest motion, limb lengths, recovery, AED picking, and coaching",
+    "320px reflow, keyboard controls, enlarged text spacing, and reduced motion",
+    "App contrast mode and forced system colors",
+    "Axe semantics and normal contrast; computed system colors in forced-color mode"
+  ],
+  "synchronization": {
+    "moduleCopies": "identical",
+    "newEnglishStrings": 8,
+    "catalogCopies": "aligned",
+    "scopedWhitespaceCheck": "passed"
+  },
+  "visualReview": {
+    "screenshotsReviewed": 7,
+    "result": "passed",
+    "screenshots": [
+      "whole-manikin.png",
+      "adult-marker-comparison.png",
+      "child-placement.png",
+      "phone-marker-key.png",
+      "phone-marker-spacing.png",
+      "phone-marker-system-colors.png",
+      "contrast-marker-shapes.png"
+    ]
+  },
+  "resolvedDuringDevelopment": [
+    "The partial Three.js pose mock lacked shape APIs. Pose checks now use the bundled renderer geometry and dispose it after each sample.",
+    "The whole-body camera was widened and centred to retain the complete figure.",
+    "Browser probes were corrected to target the active manikin and the resting line, open the comparison disclosure, and await contrast scene rebuilding.",
+    "Visual review caught white contrast surfaces merging with the floor. Black floor and mat, a dark torso, and white hands now preserve visible separation. All affected browser scenarios and unit checks passed again."
+  ]
+}

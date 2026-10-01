@@ -1,0 +1,93 @@
+{
+  "at": "2026-09-30T02:36:22.853Z",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "bb4ca565456ba9915b530c35160d9d7b9cc22c0649ba777daaa95e48b1c0bd7f"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "bb4ca565456ba9915b530c35160d9d7b9cc22c0649ba777daaa95e48b1c0bd7f"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "sha256": "bb4ca565456ba9915b530c35160d9d7b9cc22c0649ba777daaa95e48b1c0bd7f"
+    },
+    {
+      "path": "misc_handlers_source.jsx",
+      "sha256": "24adfc99058e692fa79a64fee49ca7d3530439798b14b5cf3880b9d29e129762"
+    },
+    {
+      "path": "misc_handlers_module.js",
+      "sha256": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d"
+    },
+    {
+      "path": "desktop/web-app/public/misc_handlers_module.js",
+      "sha256": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d"
+    },
+    {
+      "path": "view_history_panel_source.jsx",
+      "sha256": "93e1edbaf1e8a37baaf3797f154da845dcf0e9a0cda64b85e0ff33facf988dd8"
+    },
+    {
+      "path": "view_history_panel_module.js",
+      "sha256": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    {
+      "path": "desktop/web-app/public/view_history_panel_module.js",
+      "sha256": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "533bac03ad1f8d5a9fc271b97431ec4ac5c6b68c5f169c5f4e862ed135f32d08"
+    },
+    {
+      "path": "ui_strings.js",
+      "sha256": "80271be0222c86d064147196f334dcc8ea1a1024744575d8b05364bced23ae06"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "sha256": "675a02bef6d9802432e599bc99dd08b48080d61e51188ee63d529b839f940cad"
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "c95309cac9fb0559e9b56d192c8b89b3ecfc2b55e292c00d69868124aa3334ff"
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "sha256": "c95309cac9fb0559e9b56d192c8b89b3ecfc2b55e292c00d69868124aa3334ff"
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "84b19c14ddd59932fc6510ccc6b7f10f3aca1c5415ce34466ff361ddbd940b67"
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "sha256": "84b19c14ddd59932fc6510ccc6b7f10f3aca1c5415ce34466ff361ddbd940b67"
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "476907f778ae22761a10f7423b81970400eee1f7aa5397c80b749b0e160becfc"
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "sha256": "476907f778ae22761a10f7423b81970400eee1f7aa5397c80b749b0e160becfc"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "533bac03ad1f8d5a9fc271b97431ec4ac5c6b68c5f169c5f4e862ed135f32d08"
+    },
+    {
+      "path": "tests/history_resource_open_readiness.test.js",
+      "sha256": "4d1f63826ad4b11dbebb647b1ca781138e05fb795ad6b6251e4418247d8b18b8"
+    },
+    {
+      "path": "tests/saved_resource_restore_validation.test.js",
+      "sha256": "efb4f2671535745e173a4bd7ead8c8c0f11107d9c7ee2a080863454e0f81490c"
+    },
+    {
+      "path": "tests/history_resource_loading_ui.test.js",
+      "sha256": "e320c1113de3909a6d498cd9739c30a97b366d7fb43b4f6bc08962a44176f0ed"
+    }
+  ]
+}

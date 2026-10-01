@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-26T23:53:25.669Z",
+  "head": "a9c8fb36285c661a9b85a1cf376f99f05f382de5",
+  "changedDuringValidation": [
+    "tests/leveled_text_karaoke_persistence_e2e.test.js"
+  ],
+  "pinFailures": [],
+  "hostsMatch": true,
+  "contentSourceMatches": true,
+  "mirrorDrift": []
+}

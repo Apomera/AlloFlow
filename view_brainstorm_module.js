@@ -35,7 +35,8 @@
   function projectStudentActivityResource(resource) {
   if (!resource || resource.type !== 'brainstorm' || !Array.isArray(resource.data)) return null;
   const text = value => typeof value === 'string' ? value : '';
-  const strings = values => (Array.isArray(values) ? values : []).filter(value => typeof value === 'string').slice();
+  // Blank editor lines are not student items.
+  const strings = values => (Array.isArray(values) ? values : []).filter(value => typeof value === 'string' && value.trim());
   const data = resource.data.filter(item => item && ['discussion', 'jigsaw'].includes(item.kind)).map(item => {
     const projected = {
       kind: item.kind,
@@ -48,7 +49,7 @@
       projected.questionSets = (Array.isArray(item.questionSets) ? item.questionSets : []).map(set => ({
         depth: text(set && set.depth),
         questions: strings(set && set.questions)
-      }));
+      })).filter(set => set.questions.length);
       projected.talkStems = {};
       ['agree', 'disagree', 'clarify', 'build'].forEach(category => {
         projected.talkStems[category] = strings(item.talkStems && item.talkStems[category]);
@@ -67,7 +68,7 @@
       projected.synthesisOrganizer = text(item.synthesisOrganizer);
       projected.accountabilityCheck = (Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : []).map(check => ({
         q: text(check && check.q)
-      }));
+      })).filter(check => check.q.trim());
     }
     return projected;
   });
@@ -238,18 +239,26 @@ function ActivityStructuredEditor(props) {
 function activityDisplayText(value) {
   return String(value == null ? '' : value).replace(/&lt;br\s*\/?&gt;/gi, '\n').replace(/<br\s*\/?>/gi, '\n').replace(/(^|\n)\s*#{1,6}\s+(?=\S)/g, '$1').replace(/(^|\n)\s*#{1,6}\s*(?=\n|$)/g, '$1').trim();
 }
+function activityNonEmpty(values) {
+  return (Array.isArray(values) ? values : []).filter(function (value) {
+    return String(value == null ? '' : value).trim();
+  });
+}
 function ActivityArtifactSummary(props) {
   var item = props.item || {};
   var t = props.t;
   var definitions = [['guide', t('brainstorm.teacher_guide') || 'Teacher guide'], ['worksheet', t('brainstorm.student_worksheet') || 'Student worksheet'], ['rubric', t('brainstorm.activity_rubric') || 'Activity rubric'], ['cover', t('brainstorm.cover') || 'Cover image']];
   var statusText = {
-    'not-created': 'not created',
-    generating: 'creating',
-    ready: 'ready',
-    edited: 'edited',
-    failed: 'needs retry'
+    'not-created': t('brainstorm.status_not_created') || 'not created',
+    generating: t('brainstorm.status_generating') || 'creating',
+    ready: t('brainstorm.status_ready') || 'ready',
+    edited: t('brainstorm.status_edited') || 'edited',
+    failed: t('brainstorm.status_failed') || 'needs retry'
   };
+  var dispatcher = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.GenDispatcher : null;
   var readyCount = 0;
+  var reviewCount = 0;
+  var reviewKinds = [];
   var generationMeta = item.generationMeta && typeof item.generationMeta === 'object' ? item.generationMeta : null;
   var pills = definitions.map(function (entry) {
     var kind = entry[0];
@@ -257,22 +266,51 @@ function ActivityArtifactSummary(props) {
     var hasValue = kind === 'rubric' ? !!(value && Array.isArray(value.criteria) && value.criteria.length) : !!(typeof value === 'string' ? value.trim() : value);
     var meta = item.derivatives && item.derivatives[kind];
     var status = meta && meta.status ? meta.status : hasValue ? 'ready' : 'not-created';
+    var needsReview = hasValue && !!(dispatcher && typeof dispatcher.activityDerivativeNeedsReview === 'function' && dispatcher.activityDerivativeNeedsReview(item, kind));
     if (hasValue) readyCount++;
+    if (needsReview) {
+      reviewCount++;
+      reviewKinds.push(kind);
+    }
     return /*#__PURE__*/React.createElement("span", {
       key: kind,
-      className: "text-[10px] font-bold rounded-full border px-2 py-0.5 border-slate-200 bg-slate-50 text-slate-700"
-    }, entry[1], ": ", statusText[status] || status);
+      "data-derivative-review": needsReview ? kind : undefined,
+      className: 'text-[10px] font-bold rounded-full border px-2 py-0.5 ' + (needsReview ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-slate-200 bg-slate-50 text-slate-700')
+    }, entry[1], ": ", needsReview ? t('brainstorm.status_needs_review') || 'needs review' : statusText[status] || status);
   });
   return /*#__PURE__*/React.createElement("div", {
+    className: "mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
     role: "group",
-    className: "flex flex-wrap items-center gap-1.5 mb-3",
+    className: "flex flex-wrap items-center gap-1.5",
     "aria-label": (t('brainstorm.resource_status') || 'Activity resources') + ': ' + readyCount + '/' + definitions.length
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1"
   }, t('brainstorm.resource_status') || 'Resources'), pills, generationMeta && generationMeta.attempts > 1 ? /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] font-bold rounded-full border px-2 py-0.5 border-amber-200 bg-amber-50 text-amber-800",
-    title: "The activity response was repaired automatically after an incomplete first response."
-  }, "Recovered after ", generationMeta.attempts, " attempts") : null);
+    title: t('brainstorm.recovered_tip') || 'The activity response was repaired automatically after an incomplete first response.'
+  }, (t('brainstorm.recovered_attempts') || 'Recovered after {n} attempts').replace('{n}', String(generationMeta.attempts))) : null), reviewCount > 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 flex flex-wrap items-center gap-2",
+    "data-derivatives-need-review": "true"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "m-0 text-xs text-amber-900"
+  }, t('brainstorm.derivatives_need_review') || 'This activity was edited after the marked resources were made. Review them before students use them.'), typeof props.onChangeDerivatives === 'function' && typeof dispatcher.activitySourceFingerprint === 'function' ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "text-[11px] font-bold rounded-full border border-amber-400 bg-white px-2 py-1 text-amber-900 hover:bg-amber-50 focus-visible:ring-2 focus-visible:ring-amber-600",
+    onClick: function () {
+      var fingerprint = dispatcher.activitySourceFingerprint(item);
+      var next = {
+        ...(item.derivatives || {})
+      };
+      reviewKinds.forEach(function (kind) {
+        next[kind] = {
+          ...(next[kind] || {}),
+          sourceHash: fingerprint
+        };
+      });
+      props.onChangeDerivatives(next);
+    }
+  }, t('brainstorm.mark_reviewed') || 'Mark as reviewed') : null) : null);
 }
 function DiscussionKitBody(props) {
   var t = props.t;
@@ -297,10 +335,15 @@ function DiscussionKitBody(props) {
     inferential: t('brainstorm.depth_inferential') || 'Between the lines',
     evaluative: t('brainstorm.depth_evaluative') || 'Your judgment'
   };
-  var stems = item.talkStems && typeof item.talkStems === 'object' ? item.talkStems : {};
-  var hasStems = stemCats.some(function (c) {
-    return Array.isArray(stems[c]) && stems[c].length;
+  var rawStems = item.talkStems && typeof item.talkStems === 'object' ? item.talkStems : {};
+  var stems = {};
+  stemCats.forEach(function (c) {
+    stems[c] = activityNonEmpty(rawStems[c]);
   });
+  var hasStems = stemCats.some(function (c) {
+    return stems[c].length;
+  });
+  var lookFors = activityNonEmpty(item.lookFors);
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "brainstorm_discussion_card"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -317,7 +360,7 @@ function DiscussionKitBody(props) {
   }, activityDisplayText(item.grouping)) : null), item.openingQuestion ? /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 mb-4 whitespace-pre-line"
   }, activityDisplayText(item.openingQuestion)) : null, (Array.isArray(item.questionSets) ? item.questionSets : []).map(function (set, setIdx) {
-    var qs = set && Array.isArray(set.questions) ? set.questions : [];
+    var qs = activityNonEmpty(set && set.questions);
     if (!qs.length) return null;
     return /*#__PURE__*/React.createElement("div", {
       key: setIdx,
@@ -338,7 +381,7 @@ function DiscussionKitBody(props) {
   }, t('brainstorm.talk_stems') || 'Talk stems'), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
   }, stemCats.map(function (cat) {
-    var list = Array.isArray(stems[cat]) ? stems[cat] : [];
+    var list = stems[cat];
     if (!list.length) return null;
     return /*#__PURE__*/React.createElement("div", {
       key: cat,
@@ -360,13 +403,13 @@ function DiscussionKitBody(props) {
     size: 16
   }), " ", t('brainstorm.facilitation_notes') || 'Facilitation notes (teacher)'), /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none"
-  }, renderFormattedText(item.facilitationNotes))) : null, isTeacherMode && Array.isArray(item.lookFors) && item.lookFors.length ? /*#__PURE__*/React.createElement("div", {
+  }, renderFormattedText(item.facilitationNotes))) : null, isTeacherMode && lookFors.length ? /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 mb-3"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block uppercase tracking-wider text-[11px] mb-1"
   }, t('brainstorm.look_fors') || 'Participation look-fors'), /*#__PURE__*/React.createElement("ul", {
     className: "list-disc ml-4 space-y-0.5"
-  }, item.lookFors.map(function (l, lIdx) {
+  }, lookFors.map(function (l, lIdx) {
     return /*#__PURE__*/React.createElement("li", {
       key: lIdx
     }, activityDisplayText(l));
@@ -378,7 +421,9 @@ function JigsawBody(props) {
   var isTeacherMode = props.isTeacherMode;
   var renderFormattedText = props.renderFormattedText;
   var chunks = Array.isArray(item.chunks) ? item.chunks : [];
-  var checks = Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : [];
+  var checks = (Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : []).filter(function (c) {
+    return c && String(c.q == null ? '' : c.q).trim();
+  });
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "brainstorm_jigsaw_card"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -392,8 +437,8 @@ function JigsawBody(props) {
     className: "text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full px-2.5 py-0.5"
   }, (t('brainstorm.jigsaw_group_size') || 'Home groups of {n}').replace('{n}', String(item.groupSize || chunks.length || 4)))), chunks.map(function (chunk, cIdx) {
     var tb = chunk && chunk.teachBack && typeof chunk.teachBack === 'object' ? chunk.teachBack : {};
-    var keyPoints = Array.isArray(tb.keyPoints) ? tb.keyPoints : [];
-    var checkQs = Array.isArray(tb.checkQuestions) ? tb.checkQuestions : [];
+    var keyPoints = activityNonEmpty(tb.keyPoints);
+    var checkQs = activityNonEmpty(tb.checkQuestions);
     return /*#__PURE__*/React.createElement("details", {
       key: cIdx,
       className: "mb-2 rounded-lg border border-emerald-200 bg-white group"
@@ -484,11 +529,11 @@ function BrainstormView(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6",
     "data-help-key": "brainstorm_panel"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "bg-yellow-50 p-4 rounded-lg border border-yellow-100 mb-6 flex justify-between items-center gap-4"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-yellow-800 flex-grow"
-  }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation."), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-yellow-900 flex-grow"
+  }, /*#__PURE__*/React.createElement("strong", null, t('brainstorm.udl_goal_label') || 'UDL Goal:'), " ", t('brainstorm.udl_goal_body') || 'Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation.'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleToggleIsEditingBrainstorm,
@@ -561,7 +606,8 @@ function BrainstormView(props) {
     className: "bg-indigo-50 p-3 rounded-lg text-xs text-indigo-800 font-medium border border-indigo-100 mb-4"
   }, /*#__PURE__*/React.createElement("strong", null, t('brainstorm.label_connection'), ":"), " ", activityDisplayText(idea.connection))), isTeacherMode && /*#__PURE__*/React.createElement(ActivityArtifactSummary, {
     item: idea,
-    t: t
+    t: t,
+    onChangeDerivatives: typeof handleBrainstormChange === 'function' ? value => handleBrainstormChange(idx, 'derivatives', value) : null
   }), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-3"
   }, idea.guide ? /*#__PURE__*/React.createElement("div", {
@@ -617,11 +663,11 @@ function BrainstormView(props) {
   }, isTeacherMode && typeof handleOpenActivityInStudio === 'function' ? /*#__PURE__*/React.createElement("button", {
     onClick: () => handleOpenActivityInStudio(idx),
     className: "text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-full transition-colors border border-indigo-200 flex items-center gap-1",
-    title: "Open this worksheet as editable Page Designer objects"
+    title: t('brainstorm.page_designer_tip') || 'Open this worksheet as editable Page Designer objects'
   }, /*#__PURE__*/React.createElement(Pencil, {
     size: 11,
     "aria-hidden": "true"
-  }), " Edit in Page Designer") : null, /*#__PURE__*/React.createElement("button", {
+  }), " ", t('brainstorm.edit_in_page_designer') || 'Edit in Page Designer') : null, /*#__PURE__*/React.createElement("button", {
     onClick: () => handleGenerateWorksheetCover(idx),
     disabled: isGeneratingWorksheetCover[idx],
     "aria-busy": !!isGeneratingWorksheetCover[idx],
@@ -663,7 +709,7 @@ function BrainstormView(props) {
     className: "inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 cursor-pointer list-none transition-colors"
   }, /*#__PURE__*/React.createElement(ListChecks, {
     size: 14
-  }), activityDisplayText(idea.rubric.title) || 'Activity Rubric', /*#__PURE__*/React.createElement("span", {
+  }), activityDisplayText(idea.rubric.title) || t('brainstorm.activity_rubric_title') || 'Activity Rubric', /*#__PURE__*/React.createElement("span", {
     className: "text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform"
   }, "▾")), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 overflow-x-auto rounded-lg border border-violet-200",
@@ -672,27 +718,27 @@ function BrainstormView(props) {
     className: "min-w-[760px] w-full text-xs text-left text-slate-700"
   }, /*#__PURE__*/React.createElement("caption", {
     className: "sr-only"
-  }, activityDisplayText(idea.rubric.title) || 'Activity rubric with four performance levels'), /*#__PURE__*/React.createElement("thead", {
+  }, activityDisplayText(idea.rubric.title) || t('brainstorm.rubric_caption') || 'Activity rubric with four performance levels'), /*#__PURE__*/React.createElement("thead", {
     className: "bg-violet-50 text-violet-950"
   }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "p-2"
-  }, "Criterion"), /*#__PURE__*/React.createElement("th", {
+  }, t('brainstorm.rubric_criterion') || 'Criterion'), /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "p-2 w-16"
-  }, "Weight"), /*#__PURE__*/React.createElement("th", {
+  }, t('brainstorm.rubric_weight') || 'Weight'), /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "p-2"
-  }, "4 - Exceeds"), /*#__PURE__*/React.createElement("th", {
+  }, t('brainstorm.rubric_level_4') || '4 - Exceeds'), /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "p-2"
-  }, "3 - Meets"), /*#__PURE__*/React.createElement("th", {
+  }, t('brainstorm.rubric_level_3') || '3 - Meets'), /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "p-2"
-  }, "2 - Developing"), /*#__PURE__*/React.createElement("th", {
+  }, t('brainstorm.rubric_level_2') || '2 - Developing'), /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "p-2"
-  }, "1 - Beginning"))), /*#__PURE__*/React.createElement("tbody", {
+  }, t('brainstorm.rubric_level_1') || '1 - Beginning'))), /*#__PURE__*/React.createElement("tbody", {
     className: "divide-y divide-violet-100 bg-white"
   }, idea.rubric.criteria.map((criterion, criterionIndex) => /*#__PURE__*/React.createElement("tr", {
     key: criterionIndex,
@@ -711,7 +757,7 @@ function BrainstormView(props) {
   }, activityDisplayText(criterion.levels && criterion.levels['2'])), /*#__PURE__*/React.createElement("td", {
     className: "p-2 whitespace-pre-line"
   }, activityDisplayText(criterion.levels && criterion.levels['1'])))))))) : isTeacherMode ? /*#__PURE__*/React.createElement("button", {
-    "aria-label": "Generate activity rubric",
+    "aria-label": t('brainstorm.generate_rubric_aria') || 'Generate activity rubric',
     onClick: () => handleGenerateBrainstormRubric(idx),
     disabled: isGeneratingBrainstormRubric[idx],
     "aria-busy": !!isGeneratingBrainstormRubric[idx],
@@ -723,7 +769,7 @@ function BrainstormView(props) {
   }) : /*#__PURE__*/React.createElement(ListChecks, {
     size: 14,
     "aria-hidden": "true"
-  }), isGeneratingBrainstormRubric[idx] ? 'Creating rubric...' : 'Generate Activity Rubric') : null)))));
+  }), isGeneratingBrainstormRubric[idx] ? t('brainstorm.creating_rubric') || 'Creating rubric...' : t('brainstorm.generate_rubric') || 'Generate Activity Rubric') : null)))));
 }
 BrainstormView.projectStudentActivityResource = projectStudentActivityResource;
 

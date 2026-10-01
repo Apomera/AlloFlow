@@ -6,18 +6,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="true" aria-label="Board Builder tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
@@ -90,15 +90,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -182,8 +182,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:12px">
@@ -281,18 +281,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -365,15 +365,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -457,8 +457,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:14px">
@@ -495,18 +495,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -579,15 +579,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -671,8 +671,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
@@ -722,23 +722,23 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <span aria-hidden="true">🌰</span>
 <span>44</span>
 </button>
-<button aria-label="0 Sprout words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#15803d;cursor:pointer">
+<button aria-label="0 Sprout words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#166534;cursor:pointer">
 <span aria-hidden="true">🌱</span>
 <span>0</span>
 </button>
-<button aria-label="0 Growing words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#047857;cursor:pointer">
+<button aria-label="0 Growing words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#065f46;cursor:pointer">
 <span aria-hidden="true">🌿</span>
 <span>0</span>
 </button>
-<button aria-label="0 Blooming words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#7c3aed;cursor:pointer">
+<button aria-label="0 Blooming words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#6d28d9;cursor:pointer">
 <span aria-hidden="true">🌸</span>
 <span>0</span>
 </button>
-<button aria-label="0 Well practiced words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#b45309;cursor:pointer">
+<button aria-label="0 Well practiced words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#854d0e;cursor:pointer">
 <span aria-hidden="true">🌳</span>
 <span>0</span>
 </button>
-<div style="margin-left:auto;font-size:11px;font-weight:700;color:#6b7280;display:flex;align-items:center;gap:4px">
+<div style="margin-left:auto;font-size:11px;font-weight:700;color:#4b5563;display:flex;align-items:center;gap:4px">
 <span>📝</span>
 <span>44 words</span>
 </div>
@@ -1135,18 +1135,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1219,15 +1219,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -1311,8 +1311,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6b7280;padding:40px">
@@ -1333,18 +1333,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1417,15 +1417,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -1509,8 +1509,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
@@ -1532,7 +1532,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <span>👀</span>
 <span>Attention-Seeking</span>
 </button>
-<button aria-label="Escape/Avoidance function" aria-pressed="true" title="Behavior is maintained by avoiding or escaping demands." style="padding:6px 12px;border-radius:999px;border:2px solid #f59e0b;background:#f59e0b18;color:#f59e0b;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
+<button aria-label="Escape/Avoidance function" aria-pressed="true" title="Behavior is maintained by avoiding or escaping demands." style="padding:6px 12px;border-radius:999px;border:2px solid #f59e0b;background:#f59e0b18;color:#92400e;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
 <span>🏃</span>
 <span>Escape/Avoidance</span>
 </button>
@@ -1551,7 +1551,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div style="display:flex;gap:6px;flex-wrap:wrap">
 <button aria-label="Phase 1 · Single FCR (1 symbols)" aria-pressed="false" title="1 symbol — teach the replacement in isolation." style="padding:6px 12px;border-radius:999px;border:2px solid #d1d5db;background:#fff;color:#374151;font-weight:500;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
 <span>Phase 1 · Single FCR</span>
-<span style="font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px;border:1px solid transparent">1</span>
+<span style="font-size:10px;background:#f3f4f6;color:#4b5563;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px;border:1px solid transparent">1</span>
 </button>
 <button aria-label="Phase 2 · Carrier phrase (3 symbols)" aria-pressed="true" title="3 symbols — combine into a short sentence." style="padding:6px 12px;border-radius:999px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
 <span>Phase 2 · Carrier phrase</span>
@@ -1559,11 +1559,11 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 </button>
 <button aria-label="Phase 3 · Mixed (6 symbols)" aria-pressed="false" title="6 symbols — FCR plus common frames." style="padding:6px 12px;border-radius:999px;border:2px solid #d1d5db;background:#fff;color:#374151;font-weight:500;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
 <span>Phase 3 · Mixed</span>
-<span style="font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px;border:1px solid transparent">6</span>
+<span style="font-size:10px;background:#f3f4f6;color:#4b5563;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px;border:1px solid transparent">6</span>
 </button>
 <button aria-label="Phase 4 · Integrated (12 symbols)" aria-pressed="false" title="12 symbols — full board with core vocabulary." style="padding:6px 12px;border-radius:999px;border:2px solid #d1d5db;background:#fff;color:#374151;font-weight:500;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
 <span>Phase 4 · Integrated</span>
-<span style="font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px;border:1px solid transparent">12</span>
+<span style="font-size:10px;background:#f3f4f6;color:#4b5563;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:2px;border:1px solid transparent">12</span>
 </button>
 </div>
 <div style="font-size:10px;color:#6b7280;margin-top:5px;font-style:italic">3 symbols — combine into a short sentence.</div>
@@ -1571,11 +1571,11 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:200px">
 <span style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">Preview (3 symbols):</span>
-<span style="background:#fff;border:1px solid #f59e0b;color:#f59e0b;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">I</span>
-<span style="background:#fff;border:1px solid #f59e0b;color:#f59e0b;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">want</span>
-<span style="background:#fff;border:1px solid #f59e0b;color:#f59e0b;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">break</span>
+<span style="background:#fff;border:1px solid #f59e0b;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">I</span>
+<span style="background:#fff;border:1px solid #f59e0b;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">want</span>
+<span style="background:#fff;border:1px solid #f59e0b;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">break</span>
 </div>
-<button aria-label="Build board from FCT template" style="padding:8px 14px;background:#f59e0b;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">Build board →</button>
+<button aria-label="Build board from FCT template" style="padding:8px 14px;background:#92400e;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">Build board →</button>
 </div>
 <div style="font-size:11px;color:#4b5563;background:rgba(255,255,255,0.7);border:1px dashed #f59e0b;border-radius:8px;padding:8px 10px;line-height:1.4">
 <strong>Tip: </strong>Teach rejection and help-seeking words so the student can appropriately request breaks or assistance.</div>
@@ -1602,11 +1602,11 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <div id="ss-pq" style="flex:1;overflow-y:auto;display:flex;flex-direction:column">
 <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:24px;flex:1">
 <div style="display:flex;flex-direction:column;flex:1;max-width:210px">
-<div style="background:#f97316;border-radius:8px 8px 0 0;padding:10px;text-align:center;color:#fff;font-weight:800;font-size:18px;letter-spacing:0.06em">FIRST</div>
-<div style="border:3px solid #f97316;border-top:none;display:flex;align-items:center;justify-content:center;background:#fafafa;min-height:170px">
+<div style="background:#c2410c;border-radius:8px 8px 0 0;padding:10px;text-align:center;color:#fff;font-weight:800;font-size:18px;letter-spacing:0.06em">FIRST</div>
+<div style="border:3px solid #c2410c;border-top:none;display:flex;align-items:center;justify-content:center;background:#fafafa;min-height:170px">
 <div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#d1d5db">?</div>
 </div>
-<div style="border:3px solid #f97316;border-top:none;border-radius:0 0 8px 8px;padding:8px;background:#fff">
+<div style="border:3px solid #c2410c;border-top:none;border-radius:0 0 8px 8px;padding:8px;background:#fff">
 <div style="text-align:center;font-weight:700;font-size:16px;color:#1f2937;min-height:22px"> </div>
 <div class="ss-no-print" style="display:flex;gap:4px;margin-top:6px">
 <input type="text" placeholder="e.g. homework" aria-label="First activity" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
@@ -1617,11 +1617,11 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 </div>
 <div style="font-size:52px;color:#6b7280;flex-shrink:0;user-select:none">→</div>
 <div style="display:flex;flex-direction:column;flex:1;max-width:210px">
-<div style="background:#22c55e;border-radius:8px 8px 0 0;padding:10px;text-align:center;color:#fff;font-weight:800;font-size:18px;letter-spacing:0.06em">THEN</div>
-<div style="border:3px solid #22c55e;border-top:none;display:flex;align-items:center;justify-content:center;background:#fafafa;min-height:170px">
+<div style="background:#15803d;border-radius:8px 8px 0 0;padding:10px;text-align:center;color:#fff;font-weight:800;font-size:18px;letter-spacing:0.06em">THEN</div>
+<div style="border:3px solid #15803d;border-top:none;display:flex;align-items:center;justify-content:center;background:#fafafa;min-height:170px">
 <div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#d1d5db">?</div>
 </div>
-<div style="border:3px solid #22c55e;border-top:none;border-radius:0 0 8px 8px;padding:8px;background:#fff">
+<div style="border:3px solid #15803d;border-top:none;border-radius:0 0 8px 8px;padding:8px;background:#fff">
 <div style="text-align:center;font-weight:700;font-size:16px;color:#1f2937;min-height:22px"> </div>
 <div class="ss-no-print" style="display:flex;gap:4px;margin-top:6px">
 <input type="text" placeholder="e.g. iPad time" aria-label="Reward activity" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
@@ -1650,18 +1650,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1734,15 +1734,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -1826,8 +1826,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px;gap:12px">
@@ -1841,15 +1841,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 </div>
 <div style="flex-shrink:0;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #d1fae5;flex-wrap:wrap">
 <span style="font-size:10px;font-weight:600;color:#047857;white-space:nowrap">🌱 Could grow in a sequence:</span>
-<button aria-label="Add Take deep breaths to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take deep breaths<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Take deep breaths to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take deep breaths<span style="color:#6b7280;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Count to 10 to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Count to 10<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Count to 10 to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Count to 10<span style="color:#6b7280;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Take a walk to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take a walk<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Take a walk to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take a walk<span style="color:#6b7280;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Squeeze a stress ball to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Squeeze a stress ball<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Squeeze a stress ball to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Squeeze a stress ball<span style="color:#6b7280;margin-left:2px">+</span>
 </button>
-<button aria-label="Add Ask for help to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Ask for help<span style="color:#9ca3af;margin-left:2px">+</span>
+<button aria-label="Add Ask for help to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Ask for help<span style="color:#6b7280;margin-left:2px">+</span>
 </button>
 </div>
 <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;flex-shrink:0">
@@ -1892,18 +1892,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -1976,15 +1976,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -2068,8 +2068,8 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#6b7280;padding:40px">
@@ -2090,18 +2090,18 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Symbol Bank tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2174,15 +2174,15 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -2266,12 +2266,12 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div class="ss-stories-workspace" style="display:flex;flex:1;overflow:hidden;gap:0">
-<div class="ss-story-editor ss-no-print" style="width:240px;flex-shrink:0;border-right:1px solid #e5e7eb;padding:16px;overflow-y:auto;background:#f9fafb;display:flex;flex-direction:column;gap:10px">
+<div class="ss-story-editor ss-no-print" style="width:240px;flex-shrink:0;border-right:1px solid #e5e7eb;padding:16px;overflow-y:auto;background:#f9fafb;color:inherit;display:flex;flex-direction:column;gap:10px">
 <section class="ss-story-library" aria-label="Saved story library" style="min-width:0;display:flex;flex-direction:column;gap:8px">
 <details>
 <summary style="cursor:pointer;min-height:44px;padding:12px 0;font-size:13px;font-weight:700">Saved stories (0)</summary>
@@ -2353,18 +2353,18 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2441,15 +2441,15 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -2533,15 +2533,15 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div class="ss-symbols-workspace" style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
 <div class="ss-symbol-creator" style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
 <button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
-<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#4b5563;box-shadow:none">📋 Batch</button>
 </div>
 <div style="margin-bottom:4px">
 <div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
@@ -2633,18 +2633,18 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <div class="ss-main-modal" style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2673,8 +2673,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <div id="ss-profile-settings" class="ss-settings" data-expanded="false" style="width:250px;flex-shrink:0;border-right:1px solid #334155;overflow-y:auto;background:#1e293b;padding:14px;display:flex;flex-direction:column;gap:10px">
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
-<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #6b7280;border-radius:12px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
+<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #94a3b8;border-radius:12px;background:transparent;color:#94a3b8;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
 </div>
 <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
 <button aria-label="Profile: Student 1" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer">
@@ -2682,7 +2682,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </div>
 </div>
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Art Style</label>
 <select aria-label="Art style" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:8px">
 <option value="" selected="">Flat Vector (default)</option>
@@ -2693,57 +2693,57 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <option value="high contrast black and white, bold thick outlines, no color fill, simple silhouette">High Contrast (B&amp;W Print)</option>
 <option value="__custom__">✏️ Custom Style...</option>
 </select>
-<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#374151">
+<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#cbd5e1">
 <input type="checkbox" aria-label="Auto-clean text from images" checked=""/>
 <span>Auto-clean text from images</span>
 </label>
-<p style="font-size:10px;color:#6b7280;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
+<p style="font-size:10px;color:#94a3b8;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">Category Colors (AAC)</label>
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#fef9c3"/>Noun</label>
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dcfce7"/>Verb</label>
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#94a3b8;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
+<p style="font-size:10px;color:#94a3b8;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
 <select aria-label="Text-to-speech voice selection" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:4px">
 </select>
-<button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
-<p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
+<button aria-label="Preview selected voice" style="font-size:10px;color:#c4b5fd;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
+<p style="font-size:10px;color:#94a3b8;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
-<p style="font-size:10px;color:#6b7280;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
+<p style="font-size:10px;color:#94a3b8;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
 <div style="display:flex;flex-direction:column;gap:5px">
 <button aria-label="Export all data as backup file" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">⬇️ Export Backup</button>
 <button aria-label="Import Backup" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">📂 Import Backup</button>
 </div>
 <input type="file" accept=".json" style="display:none"/>
 <div style="margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6">
-<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#374151;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#6b7280;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
+<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#cbd5e1;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#94a3b8;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
 </button>
 </div>
 </div>
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
-<p style="font-size:10px;color:#6b7280;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
-<p style="font-size:11px;color:#6b7280;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
+<p style="font-size:10px;color:#94a3b8;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
+<p style="font-size:11px;color:#94a3b8;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
 <div style="display:flex;flex-direction:column;gap:6px">
 <div style="display:flex;gap:6px;flex-wrap:wrap">
 <select id="iep-goal-type" aria-label="IEP goal type" style="font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;background:#fff">
@@ -2757,10 +2757,10 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <input id="iep-goal-target" type="number" min="1" max="200" placeholder="# target" aria-label="IEP goal target count" style="width:60px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;text-align:center"/>
 </div>
 <details style="font-size:10px">
-<summary style="cursor:pointer;color:#6b7280;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
+<summary style="cursor:pointer;color:#94a3b8;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
 <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:6px;margin-top:6px">
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Priority</span>
+<span style="color:#cbd5e1;font-weight:700">Priority</span>
 <select id="iep-goal-priority" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
 <option value="standard">Standard</option>
 <option value="high">High</option>
@@ -2768,7 +2768,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </select>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Cue level</span>
+<span style="color:#cbd5e1;font-weight:700">Cue level</span>
 <select id="iep-goal-cue" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px" title="Support required for the student to succeed on this goal">
 <option value="independent">Independent</option>
 <option value="visual">Visual cue</option>
@@ -2778,7 +2778,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </select>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Data method</span>
+<span style="color:#cbd5e1;font-weight:700">Data method</span>
 <select id="iep-goal-datamethod" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
 <option value="frequency">Frequency count</option>
 <option value="percentage">Percentage accuracy</option>
@@ -2787,19 +2787,19 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </select>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Target date</span>
+<span style="color:#cbd5e1;font-weight:700">Target date</span>
 <input id="iep-goal-targetdate" type="date" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
-<span style="color:#374151;font-weight:700">Baseline</span>
+<span style="color:#cbd5e1;font-weight:700">Baseline</span>
 <input id="iep-goal-baseline" type="text" placeholder="e.g. 2/10 accuracy on probe trials (Sept 2026)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
-<span style="color:#374151;font-weight:700">Accommodations</span>
+<span style="color:#cbd5e1;font-weight:700">Accommodations</span>
 <input id="iep-goal-accom" type="text" placeholder="e.g. AAC device available, visual supports, extended time" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
-<span style="color:#374151;font-weight:700">Linked IEP section (optional)</span>
+<span style="color:#cbd5e1;font-weight:700">Linked IEP section (optional)</span>
 <input id="iep-goal-iepsection" type="text" placeholder="e.g. Communication — Expressive Language" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 </div>
@@ -2809,18 +2809,18 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #334155;color:#cbd5e1;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div class="ss-symbols-workspace" style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
 <div class="ss-symbol-creator" style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
 <button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
-<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#4b5563;box-shadow:none">📋 Batch</button>
 </div>
 <div style="margin-bottom:4px">
-<div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
+<div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
 <div style="display:flex;flex-wrap:wrap;gap:3px">
 <button aria-label="Quick set label: home" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">home</button>
 <button aria-label="Quick set label: snack" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">snack</button>
@@ -2864,13 +2864,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
 <button aria-label="Find a photo" title="Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety" style="padding:8px 14px;background:#f0f9ff;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷 Find photo</button>
 <button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
-<p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
+<p style="font-size:10px;color:#94a3b8;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#67e8f9">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
 <div class="ss-symbol-browser" style="flex:1;overflow-y:auto">
 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
 <div style="display:flex;align-items:center;gap:6px">
-<span role="status" aria-live="polite" style="font-weight:600;font-size:12px;color:#374151">Symbol Bank (0)</span>
+<span role="status" aria-live="polite" style="font-weight:600;font-size:12px;color:#cbd5e1">Symbol Bank (0)</span>
 <input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in the Symbol Bank" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
 <button aria-pressed="false" aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
@@ -2885,14 +2885,14 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <button aria-pressed="false" aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-<span style="font-size:9px;color:#6b7280;font-weight:700">Review:</span>
+<span style="font-size:9px;color:#94a3b8;font-weight:700">Review:</span>
 <button aria-pressed="true" aria-label="Filter Symbol Bank review status by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
 <button aria-pressed="false" aria-label="Filter Symbol Bank review status by Unreviewed" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Unreviewed</button>
 <button aria-pressed="false" aria-label="Filter Symbol Bank review status by Approved" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Approved</button>
 <button aria-pressed="false" aria-label="Filter Symbol Bank review status by Needs changes" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Needs changes</button>
 </div>
 </div>
-<div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Create your first symbol with Generate or Find validated symbol.</div>
+<div style="text-align:center;color:#94a3b8;padding:30px 0;font-size:13px">Create your first symbol with Generate or Find validated symbol.</div>
 </div>
 </div>
 </div>
@@ -2909,18 +2909,18 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <div class="ss-main-modal" style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -2993,15 +2993,15 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
 <p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:inherit">
 <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
@@ -3085,15 +3085,15 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #e5e7eb;color:#475569;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div class="ss-symbols-workspace" style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
 <div class="ss-symbol-creator" style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
 <button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
-<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#4b5563;box-shadow:none">📋 Batch</button>
 </div>
 <div style="margin-bottom:4px">
 <div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
@@ -3185,18 +3185,18 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <div class="ss-main-modal" style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
-<div class="ss-header" style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:12px 18px;flex-shrink:0">
+<div class="ss-header" style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:8px 16px;flex-shrink:0;position:relative">
 <div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Symbol Studio</h2>
-<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbol bank • boards • sequences • social stories</p>
+<p id="ss-dialog-description" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">AI-powered symbol bank • boards • sequences • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Symbol Studio">×</button>
 </div>
-<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:10px" role="tablist" aria-label="Studio sections">
+<div class="ss-tabs" style="display:flex;gap:2px;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;margin-top:8px" role="tablist" aria-label="Studio sections">
 <button role="tab" id="ss-tab-symbols" aria-controls="ss-studio-panel" aria-selected="true" aria-label="Symbol Bank tab" tabindex="0" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:#fff;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 4px rgba(0,0,0,0.15);transition:all 0.15s">
 <span style="font-size:14px;position:relative" aria-hidden="true">🎨</span>Symbol Bank</button>
 <button role="tab" id="ss-tab-board" aria-controls="ss-studio-panel" aria-selected="false" aria-label="Board Builder tab" tabindex="-1" style="flex:1;padding:6px 4px;border-radius:7px;border:none;background:transparent;color:#fff;font-weight:500;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:none;transition:all 0.15s">
@@ -3225,8 +3225,8 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <div id="ss-profile-settings" class="ss-settings" data-expanded="false" style="width:250px;flex-shrink:0;border-right:1px solid #334155;overflow-y:auto;background:#1e293b;padding:14px;display:flex;flex-direction:column;gap:10px">
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
-<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #6b7280;border-radius:12px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Student Profiles</div>
+<button aria-label="Add new student profile" style="padding:2px 8px;border:1px dashed #94a3b8;border-radius:12px;background:transparent;color:#94a3b8;font-size:11px;cursor:pointer;line-height:1.4">+ Add</button>
 </div>
 <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
 <button aria-label="Profile: Student 1" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:2px solid #7c3aed;background:#ede9fe;color:#7c3aed;font-weight:700;font-size:11px;cursor:pointer">
@@ -3234,7 +3234,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </div>
 </div>
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Global Settings</div>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Art Style</label>
 <select aria-label="Art style" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:8px">
 <option value="" selected="">Flat Vector (default)</option>
@@ -3245,57 +3245,57 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <option value="high contrast black and white, bold thick outlines, no color fill, simple silhouette">High Contrast (B&amp;W Print)</option>
 <option value="__custom__">✏️ Custom Style...</option>
 </select>
-<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#374151">
+<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:#cbd5e1">
 <input type="checkbox" aria-label="Auto-clean text from images" checked=""/>
 <span>Auto-clean text from images</span>
 </label>
-<p style="font-size:10px;color:#6b7280;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
+<p style="font-size:10px;color:#94a3b8;margin:3px 0 0">Runs a second AI pass to strip any embedded labels</p>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">Category Colors (AAC)</label>
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#fef9c3"/>Noun</label>
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dcfce7"/>Verb</label>
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#dbeafe"/>Adj</label>
-<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#374151;cursor:pointer">
+<label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#cbd5e1;cursor:pointer">
 <input type="color" style="width:18px;height:18px;padding:0;border:1px solid #d1d5db;border-radius:3px;cursor:pointer" value="#f3f4f6"/>Other</label>
-<button aria-label="Reset category colors" style="font-size:10px;color:#6b7280;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
+<button aria-label="Reset category colors" style="font-size:10px;color:#94a3b8;background:none;border:none;cursor:pointer;text-decoration:underline">Reset</button>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:0">Colors apply to boards and symbol cards</p>
+<p style="font-size:10px;color:#94a3b8;margin:0">Colors apply to boards and symbol cards</p>
 <label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:10px">🔊 Quick Voice Settings</label>
 <select aria-label="Text-to-speech voice selection" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9;margin-bottom:4px">
 </select>
-<button aria-label="Preview selected voice" style="font-size:10px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
-<p style="font-size:10px;color:#6b7280;margin:0">Synced with app-wide voice settings</p>
+<button aria-label="Preview selected voice" style="font-size:10px;color:#c4b5fd;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px">🔊 Preview voice</button>
+<p style="font-size:10px;color:#94a3b8;margin:0">Synced with app-wide voice settings</p>
 </div>
-<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
+<div style="background:linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%);border:1px solid #d1fae5;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#1f2937">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
+<div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">🌱 Word Garden</div>
 <button aria-label="Open garden tab" style="font-size:9px;color:#7c3aed;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Open →</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
 <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600;border:1px solid #fbbf24">🌰 44</span>
 </div>
-<p style="font-size:10px;color:#6b7280;margin:4px 0 0">44 words across 1 tool types</p>
+<p style="font-size:10px;color:#4b5563;margin:4px 0 0">44 words across 1 tool types</p>
 </div>
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
-<p style="font-size:10px;color:#6b7280;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Backup &amp; Restore</div>
+<p style="font-size:10px;color:#94a3b8;margin:0 0 8px">0 symbols · 0 boards · 0 schedules</p>
 <div style="display:flex;flex-direction:column;gap:5px">
 <button aria-label="Export all data as backup file" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">⬇️ Export Backup</button>
 <button aria-label="Import Backup" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;text-align:left">📂 Import Backup</button>
 </div>
 <input type="file" accept=".json" style="display:none"/>
 <div style="margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6">
-<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#374151;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#6b7280;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
+<button aria-label="Toggle AAC usage analytics" style="background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-size:11px;font-weight:700;color:#cbd5e1;margin-bottom:0">📊 AAC Usage Analytics <span style="color:#94a3b8;font-weight:400;margin-left:auto;font-size:10px">▼ show</span>
 </button>
 </div>
 </div>
 <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);color:#e2e8f0">
-<div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
-<p style="font-size:10px;color:#6b7280;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
-<p style="font-size:11px;color:#6b7280;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
+<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">IEP Communication Goals</div>
+<p style="font-size:10px;color:#94a3b8;margin:0 0 8px">Track AAC &amp; communication goals. Progress syncs with Teacher Dashboard RTI data.</p>
+<p style="font-size:11px;color:#94a3b8;font-style:italic;margin:0 0 8px">No goals set for this profile yet.</p>
 <div style="display:flex;flex-direction:column;gap:6px">
 <div style="display:flex;gap:6px;flex-wrap:wrap">
 <select id="iep-goal-type" aria-label="IEP goal type" style="font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;background:#fff">
@@ -3309,10 +3309,10 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <input id="iep-goal-target" type="number" min="1" max="200" placeholder="# target" aria-label="IEP goal target count" style="width:60px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;padding:4px 6px;text-align:center"/>
 </div>
 <details style="font-size:10px">
-<summary style="cursor:pointer;color:#6b7280;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
+<summary style="cursor:pointer;color:#94a3b8;font-weight:700;padding:2px 0">+ IEP team details (priority, baseline, target date, cue level)</summary>
 <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:6px;margin-top:6px">
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Priority</span>
+<span style="color:#cbd5e1;font-weight:700">Priority</span>
 <select id="iep-goal-priority" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
 <option value="standard">Standard</option>
 <option value="high">High</option>
@@ -3320,7 +3320,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </select>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Cue level</span>
+<span style="color:#cbd5e1;font-weight:700">Cue level</span>
 <select id="iep-goal-cue" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px" title="Support required for the student to succeed on this goal">
 <option value="independent">Independent</option>
 <option value="visual">Visual cue</option>
@@ -3330,7 +3330,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </select>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Data method</span>
+<span style="color:#cbd5e1;font-weight:700">Data method</span>
 <select id="iep-goal-datamethod" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px">
 <option value="frequency">Frequency count</option>
 <option value="percentage">Percentage accuracy</option>
@@ -3339,19 +3339,19 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </select>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px">
-<span style="color:#374151;font-weight:700">Target date</span>
+<span style="color:#cbd5e1;font-weight:700">Target date</span>
 <input id="iep-goal-targetdate" type="date" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
-<span style="color:#374151;font-weight:700">Baseline</span>
+<span style="color:#cbd5e1;font-weight:700">Baseline</span>
 <input id="iep-goal-baseline" type="text" placeholder="e.g. 2/10 accuracy on probe trials (Sept 2026)" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
-<span style="color:#374151;font-weight:700">Accommodations</span>
+<span style="color:#cbd5e1;font-weight:700">Accommodations</span>
 <input id="iep-goal-accom" type="text" placeholder="e.g. AAC device available, visual supports, extended time" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 <label style="display:flex;flex-direction:column;gap:2px;grid-column:1 / -1">
-<span style="color:#374151;font-weight:700">Linked IEP section (optional)</span>
+<span style="color:#cbd5e1;font-weight:700">Linked IEP section (optional)</span>
 <input id="iep-goal-iepsection" type="text" placeholder="e.g. Communication — Expressive Language" style="font-size:11px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px"/>
 </label>
 </div>
@@ -3361,18 +3361,18 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 </div>
 </div>
 <div class="ss-workspace" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border-radius:9px;background:#f1f5f9;color:#334155;flex-shrink:0">
-<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:12px">Loading this learner’s draft…</span>
+<div class="ss-draft-status ss-no-print" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 16px;border-bottom:1px solid #334155;color:#cbd5e1;flex-shrink:0">
+<span role="status" aria-live="polite" style="flex:1 1 180px;font-size:11px">Loading this learner’s draft…</span>
 </div>
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div class="ss-symbols-workspace" style="display:flex;gap:14px;padding:16px;flex:1;overflow:hidden">
 <div class="ss-symbol-creator" style="width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;gap:3px;background:#f3f4f6;border-radius:8px;padding:3px">
 <button aria-label="single generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:#fff;font-weight:700;font-size:11px;cursor:pointer;color:#7c3aed;box-shadow:0 1px 3px rgba(0,0,0,0.1)">✏️ Single</button>
-<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#6b7280;box-shadow:none">📋 Batch</button>
+<button aria-label="batch generation mode" style="flex:1;padding:5px;border-radius:6px;border:none;background:transparent;font-weight:400;font-size:11px;cursor:pointer;color:#4b5563;box-shadow:none">📋 Batch</button>
 </div>
 <div style="margin-bottom:4px">
-<div style="font-size:9px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
+<div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px">💡 Suggested (Evening)</div>
 <div style="display:flex;flex-wrap:wrap;gap:3px">
 <button aria-label="Quick set label: home" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">home</button>
 <button aria-label="Quick set label: snack" style="padding:2px 7px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:9px;cursor:pointer;color:#92400e;font-weight:500">snack</button>
@@ -3416,13 +3416,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <button disabled="" aria-label="Generate symbol" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Generate</button>
 <button aria-label="Find a photo" title="Search freely licensed photos (Wikimedia Commons), each checked by AI for classroom safety" style="padding:8px 14px;background:#f0f9ff;color:#075985;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap">📷 Find photo</button>
 <button disabled="" aria-label="Find a validated Mulberry symbol" title="Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">🔎 Find validated symbol</button>
-<p style="font-size:10px;color:#6b7280;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#0e7490">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
+<p style="font-size:10px;color:#94a3b8;margin:6px 0 0;line-height:1.4">AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use <b style="color:#67e8f9">Find validated symbol</b> for hand-designed Mulberry symbols.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:10px">
 <div class="ss-symbol-browser" style="flex:1;overflow-y:auto">
 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">
 <div style="display:flex;align-items:center;gap:6px">
-<span role="status" aria-live="polite" style="font-weight:600;font-size:12px;color:#374151">Symbol Bank (0)</span>
+<span role="status" aria-live="polite" style="font-weight:600;font-size:12px;color:#cbd5e1">Symbol Bank (0)</span>
 <input type="text" placeholder="🔍 Search symbols…" aria-label="Search symbols in the Symbol Bank" style="border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:11px;flex:1" value=""/>
 <button aria-pressed="false" aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
@@ -3437,14 +3437,14 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <button aria-pressed="false" aria-label="Filter by Other" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Other</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-<span style="font-size:9px;color:#6b7280;font-weight:700">Review:</span>
+<span style="font-size:9px;color:#94a3b8;font-weight:700">Review:</span>
 <button aria-pressed="true" aria-label="Filter Symbol Bank review status by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
 <button aria-pressed="false" aria-label="Filter Symbol Bank review status by Unreviewed" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Unreviewed</button>
 <button aria-pressed="false" aria-label="Filter Symbol Bank review status by Approved" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Approved</button>
 <button aria-pressed="false" aria-label="Filter Symbol Bank review status by Needs changes" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Needs changes</button>
 </div>
 </div>
-<div style="text-align:center;color:#6b7280;padding:30px 0;font-size:13px">Create your first symbol with Generate or Find validated symbol.</div>
+<div style="text-align:center;color:#94a3b8;padding:30px 0;font-size:13px">Create your first symbol with Generate or Find validated symbol.</div>
 </div>
 </div>
 </div>

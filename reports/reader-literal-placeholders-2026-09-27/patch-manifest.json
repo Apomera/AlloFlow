@@ -1,0 +1,78 @@
+{
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "group": "host",
+      "newFile": false,
+      "testedBytesSha256": "cbdc75f6ace3ed3fcc18b70da537ca8debc2c011d9327fbd6b7064db41261206",
+      "normalizedBeforeSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "normalizedAfterSha256": "cbdc75f6ace3ed3fcc18b70da537ca8debc2c011d9327fbd6b7064db41261206",
+      "currentSharedSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "group": "host",
+      "newFile": false,
+      "testedBytesSha256": "cbdc75f6ace3ed3fcc18b70da537ca8debc2c011d9327fbd6b7064db41261206",
+      "normalizedBeforeSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "normalizedAfterSha256": "cbdc75f6ace3ed3fcc18b70da537ca8debc2c011d9327fbd6b7064db41261206",
+      "currentSharedSha256": "51309aba327836126ef8b73b291d873f39828fd52f579c27d83802ea78d4a8db",
+      "appliesToShared": true
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "group": "reader",
+      "newFile": false,
+      "testedBytesSha256": "45b9e849e60a33cd28063bc16a07e4e505bbd99e9df2c3bc4f084fb12dcf3f0f",
+      "normalizedBeforeSha256": "4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265",
+      "normalizedAfterSha256": "45b9e849e60a33cd28063bc16a07e4e505bbd99e9df2c3bc4f084fb12dcf3f0f",
+      "currentSharedSha256": "4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/fixtures/reader_literal_placeholders.json",
+      "group": "tests",
+      "newFile": true,
+      "testedBytesSha256": "866d49d477a4d1e39727999ec84fd7eb3314f4acfac8dc57ef7242ea9162dbb6",
+      "normalizedBeforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalizedAfterSha256": "866d49d477a4d1e39727999ec84fd7eb3314f4acfac8dc57ef7242ea9162dbb6",
+      "currentSharedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/helpers/literal_placeholder_harness.js",
+      "group": "tests",
+      "newFile": true,
+      "testedBytesSha256": "2d8ec1e2ef58210994f02f79d36220d315d3f61cda7ea4ffd6f4ad2f6126d992",
+      "normalizedBeforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalizedAfterSha256": "884dc3f599c3111079b9c096693473cd81562484934b2f52b7f324ce4d55e84b",
+      "currentSharedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/host_literal_placeholders.test.js",
+      "group": "tests",
+      "newFile": true,
+      "testedBytesSha256": "4e32f8aae41b139a26ea7058092bbe18771b2803546ca4b4a04d4ec3f0f69e59",
+      "normalizedBeforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalizedAfterSha256": "d93560318b7a4f07edc3cad1756378f727a9adb23c57efad36978e0d8108b68a",
+      "currentSharedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/reader_literal_placeholder_labels.test.js",
+      "group": "tests",
+      "newFile": true,
+      "testedBytesSha256": "b1511c30e94ab6ae5769691041fab4b14f49f2ae508f852aa16268893b63264d",
+      "normalizedBeforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalizedAfterSha256": "b90287010129d641cb43fb608f27443124740a15321ebbfee09dbd12d7357450",
+      "currentSharedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "appliesToShared": true
+    }
+  ],
+  "patchBytes": 15769,
+  "patchSha256": "cad60c23459a98a5d8a31c4fd21870649fb796ec6d8629fdc10bb0e0075378eb",
+  "lineEndings": "Patch context normalized to LF; tests ran captured source files."
+}

@@ -4,8 +4,8 @@ exports[`Throughline render goldens > Generate-Unit button is disabled in a live
 {
   "buttons": 11,
   "inputs": 1,
-  "lengthBucket": 26,
-  "sha": "a731dd1b8e6b3d91",
+  "lengthBucket": 27,
+  "sha": "ac93de0ea55f1354",
   "svgs": 1,
   "textareas": 0,
 }
@@ -15,8 +15,8 @@ exports[`Throughline render goldens > Generate-Unit capability wired → toolbar
 {
   "buttons": 11,
   "inputs": 1,
-  "lengthBucket": 26,
-  "sha": "1b0016ed5b7e1f66",
+  "lengthBucket": 27,
+  "sha": "2057569e13d7a4c7",
   "svgs": 1,
   "textareas": 0,
 }
@@ -27,7 +27,7 @@ exports[`Throughline render goldens > host-wired empty (history + currentLesson 
   "buttons": 10,
   "inputs": 1,
   "lengthBucket": 25,
-  "sha": "c157d908b7deb72e",
+  "sha": "c9a176ad051de79d",
   "svgs": 1,
   "textareas": 0,
 }
@@ -37,8 +37,8 @@ exports[`Throughline render goldens > manual mode (5 props, empty) — empty sta
 {
   "buttons": 9,
   "inputs": 1,
-  "lengthBucket": 23,
-  "sha": "af05f2847d8903f5",
+  "lengthBucket": 24,
+  "sha": "a3213dacef1abcbb",
   "svgs": 1,
   "textareas": 0,
 }
@@ -49,7 +49,7 @@ exports[`Throughline render goldens > populated unit (seeded localStorage + matc
   "buttons": 15,
   "inputs": 1,
   "lengthBucket": 38,
-  "sha": "60836088157c6494",
+  "sha": "de5ace32a60cb23e",
   "svgs": 1,
   "textareas": 0,
 }
@@ -60,7 +60,7 @@ exports[`Throughline render goldens > populated unit tolerates a dangling lesson
   "buttons": 17,
   "inputs": 1,
   "lengthBucket": 45,
-  "sha": "ce729243d8c96a15",
+  "sha": "5334171a0c8e7c6c",
   "svgs": 1,
   "textareas": 0,
 }
@@ -71,7 +71,7 @@ exports[`Throughline render goldens > units-aware empty (history with unitId + u
   "buttons": 10,
   "inputs": 1,
   "lengthBucket": 25,
-  "sha": "c157d908b7deb72e",
+  "sha": "c9a176ad051de79d",
   "svgs": 1,
   "textareas": 0,
 }

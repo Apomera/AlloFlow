@@ -4,7 +4,8 @@ import {createRequire} from 'node:module';
 const THREE=createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function body(name){const start=source.indexOf('function '+name+'(');let end=source.indexOf('{',start),depth=1;while(depth){end++;if(source[end]==='{')depth++;if(source[end]==='}')depth--;}return source.slice(start,end+1);}
-function fixture(primaryFingers){const profile={primaryFingers,sweep:-0.18,tipWidth:0.68};return Function('THREE','silhouetteProfile',`var wingSpan=2.8,wingDepth=0.72,graphicsQuality='low',isOspreyWing=false,wingMorphMeshes=[],wingColor=0x75533b;
+// 66296cfd0: the wing sampler and mesh read the initHuntSim closure's isFalconWing and species.
+function fixture(primaryFingers){const profile={primaryFingers,sweep:-0.18,tipWidth:0.68};return Function('THREE','silhouetteProfile',`var wingSpan=2.8,wingDepth=0.72,graphicsQuality='low',isOspreyWing=false,isFalconWing=false,species={family:'Accipitridae',isOwl:false},wingMorphMeshes=[],wingColor=0x75533b;
 ${['sampleRaptorWingSurface','createTaperedWing','createTaperedPrimaryGeometry','createLayeredWingFeathers','foldedRaptorWingPoint','addRaptorWingRestPose'].map(body).join('\n')}
 return {point:foldedRaptorWingPoint,wing:createTaperedWing,primary:createTaperedPrimaryGeometry,vanes:createLayeredWingFeathers,add:addRaptorWingRestPose};`)(THREE,profile);}
 describe('Coordinated resting wing surfaces',()=>{
@@ -44,7 +45,10 @@ describe('Coordinated resting wing surfaces',()=>{
 describe('Curved layered wing feathers',()=>{
   for(const fingers of [0,4])it('keeps curved vanes mirrored with finite upward normals and tapered tips: '+fingers,()=>{
     const f=fixture(fingers);for(const count of [10,16,20]){const left=f.vanes(-1,count),right=f.vanes(1,count),a=left.attributes.position,b=right.attributes.position,n=right.attributes.normal;
-      expect(a.count).toBe(count*21);expect(right.index.count).toBe(count*72);
+      // 66296cfd0 adds two staggered rows of shorter coverts (1.2x and 1.6x as many) after the flight feathers.
+      const coverts=Math.round(count*1.2)+Math.round(count*1.6);
+      expect(right.userData.covertFeatherCount).toBe(coverts);expect(right.userData.flightFeatherIndexCount).toBe(count*72);
+      expect(a.count).toBe((count+coverts)*21);expect(right.index.count).toBe((count+coverts)*72);
       for(let i=0;i<a.count;i++){expect(a.getX(i)).toBeCloseTo(-b.getX(i),6);expect(a.getY(i)).toBe(b.getY(i));expect(a.getZ(i)).toBe(b.getZ(i));expect(n.getY(i)).toBeGreaterThan(0.7);expect(Math.hypot(n.getX(i),n.getY(i),n.getZ(i))).toBeCloseTo(1,5);}
       for(let feather=0;feather<count;feather++){const base=feather*21,width=row=>Math.abs(b.getX(base+row*3+2)-b.getX(base+row*3));expect(width(6)).toBeLessThan(width(3)*0.1);expect(width(2)).toBeGreaterThan(width(0));}
       for(const attribute of Object.values(right.attributes))expect(Array.from(attribute.array).every(Number.isFinite)).toBe(true);left.dispose();right.dispose();

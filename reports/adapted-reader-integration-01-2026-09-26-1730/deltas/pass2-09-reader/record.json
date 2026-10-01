@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:38:00.519Z",
+  "label": "pass2-09-reader",
+  "patch": "d9d6e6d2a4ef675cf1cea6f443d8a6f22da6a695b3818355da25bed2bf4f0eed",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "54c9ee31ee809dd2e81ceb9d2f086f927f19f3b82817e5410107ed024772f90e",
+      "after": "3912431cad4d46325d13afbee2bd420c9d144709ca0ec74037836e3be9a1a3ae",
+      "changed": true
+    }
+  ]
+}

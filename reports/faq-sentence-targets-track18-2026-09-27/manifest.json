@@ -1,0 +1,114 @@
+{
+  "headAtStart": "286e09850680047d44efcc836075916cf488eff6",
+  "headAtPackaging": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "packagedAt": "2026-09-27T17:34:20.943Z",
+  "prerequisite": "reader-device-save-track18-2026-09-27",
+  "normalization": "LF",
+  "files": [
+    {
+      "file": "view_faq_source.jsx",
+      "new": false,
+      "basisSha256": "aea75a94efc40e782d915d84e0492997b4ba62dbb4a7b19c7fdc451573fb5e20",
+      "candidateSha256": "0acc1c0ee12e61a2954d4ef3f1d4b7f736e05056495c7bd8b28673465ea3726b",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "tests/faq_sentence_targets.test.js",
+      "new": true,
+      "basisSha256": null,
+      "candidateSha256": "099d86573edc3bc8118df907584390bf222c4882226c790f041f541b6ee18c04",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "tests/faq_audio_parity.test.js",
+      "new": false,
+      "basisSha256": "ced3c2df292fff5bc846eb671c372671d5990387997244b0685f9043e746f252",
+      "candidateSha256": "435b120895f289e99bc2e7d55ff0f04ed18bb8e18a3d8ca7e4522f8143ab8d0f",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "tests/faq_controls_a11y.test.js",
+      "new": false,
+      "basisSha256": "864a7eab11efb37e4ad25b2541247c057fbd9216f1b37ca8ac5046a965027b5a",
+      "candidateSha256": "eaad8cd956a2be6c95983380787ef4db993da680cbee4b9dddb86bce56a06d92",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "tests/faq_overlay_device_save.test.js",
+      "new": false,
+      "basisSha256": "3cf00be0eb3bb988a83957644695953bec617d11459ce21ed14b9c8823663722",
+      "candidateSha256": "4ab7b933fb3c47d895e11928e389a9eeae4036dab061c09e75e4f9d464c3db59",
+      "patchRoundTrip": true
+    },
+    {
+      "file": "dev-tools/faq_sentence_browser.cjs",
+      "new": true,
+      "basisSha256": null,
+      "candidateSha256": "f6090efe54bda20b5978062c4881ed965264a7e8fcca657bc45c90effdf97cc3",
+      "patchRoundTrip": true
+    }
+  ],
+  "dependencies": [
+    {
+      "file": "resource_read_aloud_module.js",
+      "sha256": "a2d3d9164585086b07d6c13ddbcbbd0cdaf844cb1026a65f70a695f1905c62c7",
+      "origin": "prior device-save candidate"
+    },
+    {
+      "file": "immersive_reader_module.js",
+      "sha256": "334c3fb1c35402ff3ee0555fe3e42fcce461d2beb09bd2f7807a22083b0ad6bf",
+      "origin": "prior device-save candidate"
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "sha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "origin": "current-source snapshot"
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "origin": "current-source snapshot"
+    },
+    {
+      "file": "phase_k_helpers_module.js",
+      "sha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "origin": "current-source snapshot"
+    }
+  ],
+  "rootAtPackaging": [
+    {
+      "file": "view_faq_source.jsx",
+      "sha256": "5bfc4cf001fb4cce287ac40e5525a9ba940519a3b48212a2494aa7e473f01db5",
+      "matchesStart": true
+    },
+    {
+      "file": "resource_read_aloud_module.js",
+      "sha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91",
+      "matchesStart": true
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "sha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "matchesStart": true
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "matchesStart": true
+    },
+    {
+      "file": "phase_k_helpers_module.js",
+      "sha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "matchesStart": true
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "2ee7db230ff15684a70d8e61440de0c42b594b517388344410efa17338a5d64f",
+      "matchesStart": false
+    }
+  ],
+  "build": {
+    "moduleSha256": "ef10584889e577e1a9f69c86000137318140f0d5fe4e83d029ec0a0a94cb9ff0",
+    "mirrorsMatch": true
+  }
+}

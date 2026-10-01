@@ -1,0 +1,21 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/scale_explorer.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer.test.js (85 tests) 4832ms
+     ✓ starts state and refs from the link, and offers the copy control with a spoken name  655ms
+     ✓ the focus card offers "Compare this", which fills the first slot and moves focus to the second  718ms
+     ✓ the notation toggle reaches the card, the ladder, the selects and the stage, and persists  565ms
+     ✓ paints the caption and progress strip only while playing, and the controls carry pressed state  461ms
+     ✓ the population strip shares the scrubber axis, one column per power of ten, and is decorative to readers  697ms
+     ✓ setting the height persists, re-centres on the person, and can be undone  536ms
+     ✓ the Earth and the Sun point at their gallery images; nothing else does  473ms
+     ✓ a stop flies to its item, is announced with its line, and finishing a tour counts  512ms
+
+ Test Files  1 passed (1)
+      Tests  85 passed (85)
+   Start at  11:12:48
+   Duration  6.79s (transform 53ms, setup 34ms, import 648ms, tests 4.83s, environment 911ms)
+

@@ -1,0 +1,11 @@
+--- a/stem_lab/stem_tool_anatomy.js
++++ b/stem_lab/stem_tool_anatomy.js
+@@ -3492,7 +3492,7 @@
+               if(['tempC','pH','glucose'].some(function(key){return current[key]!==homeostasisSnapshot[key];}))return previous;
+               next.log=current.log.concat([{t:current.tempC,p:current.pH,g:current.glucose,st:homeostasisOutsideCount(current.tempC,current.pH,current.glucose)}]).slice(-8);
+               if(!homeostasisChecksVisible(current)&&homeostasisChecksVisible(next)){next.recapToken=token;next.recapContext=HOMEOSTASIS_RECAP_CONTEXT;}
+-            }else if(action==='restart'){if(!homeostasisChecksVisible(current))return previous;next.recap={};next.recapToken=token;next.recapContext=HOMEOSTASIS_RECAP_CONTEXT;next.recapFocusId=null;}
++            }else if(action==='restart'){if(!homeostasisChecksVisible(current))return previous;if(!current.lastRecap&&homeostasisQuestions().every(function(question){return !!current.recap[question.id];}))next.lastRecap={version:2,answers:Object.assign({},current.recap)};next.recap={};next.recapToken=token;next.recapContext=HOMEOSTASIS_RECAP_CONTEXT;next.recapFocusId=null;}
+             else return previous;
+             accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},state,{homeoHunt:next})});});
+           finishHomeostasisUpdate(function(){return accepted;},function(){if(action==='restart')focusHomeostasisCheck(null,false,token);if(typeof announceToSR==='function')announceToSR(action==='reset'?t('stem.anatomy.homeo_flow_measurements_reset','Measurements reset. Your writing, observations and check answers are saved.'):action==='clear'?t('stem.anatomy.homeo_flow_observations_cleared','Observations cleared. Your writing and check answers are saved.'):action==='restart'?t('stem.anatomy.homeo_flow_checks_restarted','New check attempt. Your last completed score and written work are saved.'):t('stem.anatomy.homeo_flow_observation_saved','Observation saved.'));});

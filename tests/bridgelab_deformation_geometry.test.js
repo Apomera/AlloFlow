@@ -22,16 +22,22 @@ function scene(overrides = {}, viewOverrides = {}) {
     loadMode: 'uniform', loadPerJoint: 50, lateralBraceEvery: 6, ...overrides });
   const state = { model: new THREE.Group() };
   const settings = analysis.settings;
-  sceneConfiguration.build(THREE, state, {
+  const viewData = {
     span: settings.span, height: settings.height, nBays: settings.nBays,
     joints: analysis.spec.joints, members: analysis.spec.members, forces: analysis.moj.memberForces,
     braceEvery: analysis.braceEvery, bowedId: analysis.buckles ? analysis.governingCompression.id : null,
     bowOutOfPlane: analysis.governingCompression.outOfPlane,
     braceStartM: analysis.governingCompression.braceStartM, braceEndM: analysis.governingCompression.braceEndM,
     ...viewOverrides
-  });
-  return { state, analysis, mesh: (id, plane = 0) => state.model.children.find(child =>
-    child.userData.bridgeMemberId === id && child.userData.trussPlane === plane) };
+  };
+  sceneConfiguration.build(THREE, state, viewData);
+  state.data = viewData;
+  state.THREE = THREE;
+  return { state, analysis, mesh: (id, plane = 0) => {
+    let found;
+    state.model.traverse(child => { if (child.userData.bridgeMemberId === id && child.userData.trussPlane === plane) found = child; });
+    return found;
+  } };
 }
 
 function endpoint(mesh, index) {
@@ -100,5 +106,194 @@ describe('Bridge Lab illustrative buckling geometry', () => {
     const compressionColor = mesh(compressionId).material.color;
     expect(tensionColor.r).toBeGreaterThan(tensionColor.b);
     expect(compressionColor.b).toBeGreaterThan(compressionColor.r);
+  });
+});
+
+
+describe('Bridge Lab deck viewpoint and seismic scene', () => {
+  it('places the bank observer at eye level outside the crossing for every supported span', () => {
+    for (const span of [10, 30, 80]) {
+      const { state } = scene({ span }, { cameraMode: 'bank' });
+      state.camera = new THREE.PerspectiveCamera();
+      state.tick();
+      sceneConfiguration.camera(THREE, state, state.data);
+      expect(state.camera.position.x).toBeLessThan(-span / 2 - 3);
+      expect(state.camera.position.z).toBeGreaterThan(state.extent.d / 2 + 3);
+      expect(state.camera.position.y - state.bankStandpoint.y).toBeCloseTo(1.65);
+      expect(state.camera.position.toArray().every(Number.isFinite)).toBe(true);
+      expect(state.camera.getWorldDirection(new THREE.Vector3()).x).toBeGreaterThan(0);
+      expect(state.camera.fov).toBe(60);
+      expect(sceneConfiguration.debug(state).observerAnchor).toBe('ground');
+    }
+  });
+
+  it('anchors the bank camera to the ground without following the moving deck or rebuilding the scene', () => {
+    const { state } = scene({}, { cameraMode: 'bank', bankYaw: 15, bankPitch: -8 });
+    state.camera = new THREE.PerspectiveCamera();
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    const rest = state.camera.position.clone();
+    const direction = state.camera.getWorldDirection(new THREE.Vector3());
+    const children = [...state.model.children];
+    state.data.quake = { enabled: true, groundM: 0.04, deckM: -0.11, maxOffsetM: 0.2 };
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(state.camera.position.z - rest.z).toBeCloseTo(0.4);
+    expect(state.camera.position.x).toBe(rest.x);
+    expect(state.camera.position.y).toBe(rest.y);
+    expect(state.camera.getWorldDirection(new THREE.Vector3()).distanceTo(direction)).toBeLessThan(1e-10);
+    const firstEye = state.camera.position.clone();
+    state.data.quake.deckM = 0.2;
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(state.camera.position.toArray()).toEqual(firstEye.toArray());
+    const deckRelativeToEye = state.structure.position.z - state.camera.position.z + rest.z;
+    expect(deckRelativeToEye).toBeCloseTo((0.2 - 0.04) * 10);
+    state.data.cameraMode = 'deck';
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(sceneConfiguration.debug(state).observerAnchor).toBe('deck');
+    state.data.cameraMode = 'bank';
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(state.camera.position.toArray()).toEqual(firstEye.toArray());
+    expect(state.model.children).toEqual(children);
+    expect(state.bridgeBuilds).toBe(1);
+  });
+
+  it('bounds bank look angles and keeps malformed restored angles finite', () => {
+    const { state } = scene({}, { cameraMode: 'bank' });
+    state.camera = new THREE.PerspectiveCamera();
+    state.tick();
+    for (const value of [NaN, Infinity, -Infinity, 999, -999]) {
+      sceneConfiguration.camera(THREE, state, { ...state.data, bankYaw: value, bankPitch: value });
+      const direction = state.camera.getWorldDirection(new THREE.Vector3());
+      expect(direction.toArray().every(Number.isFinite)).toBe(true);
+      expect(Math.abs(direction.y)).toBeLessThanOrEqual(Math.sin(80 * Math.PI / 180) + 1e-10);
+    }
+  });
+
+  it('keeps the added landscape finite and batched across supported span limits', () => {
+    for (const span of [10, 30, 80]) {
+      const { state } = scene({ span, nBays: 8, height: 15, lateralBraceEvery: 1 });
+      const instances = [];
+      state.model.traverse(object => {
+        if (object.isInstancedMesh) instances.push(object);
+        if (object.geometry?.attributes.position) expect(Array.from(object.geometry.attributes.position.array).every(Number.isFinite)).toBe(true);
+      });
+      expect(instances).toHaveLength(2);
+      expect(instances.every(mesh => mesh.count === 48 && mesh.frustumCulled === false)).toBe(true);
+      expect(Array.from(instances[0].instanceMatrix.array).every(Number.isFinite)).toBe(true);
+      expect(state.sky.material.fog).toBe(false);
+      state.camera = new THREE.PerspectiveCamera();
+      sceneConfiguration.camera(THREE, state, { cameraMode: 'deck', deckPosition: 0.97, deckYaw: 180 });
+      expect(state.camera.far).toBeGreaterThan(state.sky.geometry.parameters.radius + span);
+      const waterPosition = state.water.position.clone();
+      state.data.quake = { enabled: true, groundM: 0.2, deckM: -0.3, maxOffsetM: 0.3 };
+      state.tick();
+      expect(state.water.position.toArray()).toEqual(waterPosition.toArray());
+      expect(state.ground.position.z).toBe(2);
+      expect(state.structure.position.z).toBe(-3);
+    }
+  });
+
+  it('places the eye at human height and looks along the bridge with bounded walking and pitch', () => {
+    const { state } = scene({}, { cameraMode: 'deck', deckPosition: 0.12, deckYaw: 0, deckPitch: 0 });
+    state.camera = new THREE.PerspectiveCamera();
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(state.camera.position.x).toBeCloseTo((0.12 - 0.5) * 36);
+    expect(state.camera.position.y - state.deckSurfaceY).toBeCloseTo(1.65);
+    const direction = state.camera.getWorldDirection(new THREE.Vector3());
+    expect(direction.x).toBeCloseTo(1);
+    expect(direction.y).toBeCloseTo(0);
+    expect(direction.z).toBeCloseTo(0);
+    expect(state.camera.fov).toBe(72);
+    expect(state.roadway).toBeTruthy();
+    expect(state.railings).toBe(true);
+    sceneConfiguration.camera(THREE, state, { ...state.data, deckPosition: 999, deckPitch: 999 });
+    expect(state.camera.position.x).toBeCloseTo((0.97 - 0.5) * 36);
+    expect(state.camera.getWorldDirection(new THREE.Vector3()).y).toBeCloseTo(Math.sin(Math.PI / 3));
+  });
+
+  it('connects pier bases to the ground and tops to the deck while the camera follows the deck', () => {
+    const { state } = scene({}, { cameraMode: 'deck' });
+    state.camera = new THREE.PerspectiveCamera();
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    const eyeZ = state.camera.position.z;
+    const children = [...state.model.children];
+    state.data = { ...state.data, quake: { enabled: true, groundM: 0.04, deckM: 0.11, maxOffsetM: 0.2, visualScale: 10 } };
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(state.structure.position.z).toBeCloseTo(1.1);
+    expect(state.ground.position.z).toBeCloseTo(0.4);
+    expect(state.camera.position.z - eyeZ).toBeCloseTo(1.1);
+    expect(sceneConfiguration.debug(state).relativeOffsetM).toBeCloseTo(0.07);
+    state.supports.forEach(pier => {
+      expect(endpoint(pier.mesh, 0).z).toBeCloseTo(pier.base.z + 0.4);
+      expect(endpoint(pier.mesh, 1).z).toBeCloseTo(pier.top.z + 1.1);
+    });
+    expect(state.model.children).toEqual(children);
+    expect(state.bridgeBuilds).toBe(1);
+    state.data.quake.enabled = false;
+    state.tick();
+    expect(state.structure.position.z).toBe(0);
+    expect(state.ground.position.z).toBe(0);
+    state.supports.forEach(pier => expect(pier.mesh.scale.z).toBeCloseTo(1));
+  });
+
+  it('leaves the fitted orbit camera untouched and rejects nonfinite seismic offsets', () => {
+    const { state } = scene({}, { cameraMode: 'orbit', quake: { enabled: true, groundM: NaN, deckM: Infinity } });
+    state.camera = new THREE.PerspectiveCamera();
+    state.camera.position.set(20, 10, 40);
+    state.tick();
+    sceneConfiguration.camera(THREE, state, state.data);
+    expect(state.camera.position.toArray()).toEqual([20, 10, 40]);
+    expect(state.cameraMode).toBe('orbit');
+    expect(state.groundOffsetVisualM).toBe(0);
+    expect(state.deckOffsetVisualM).toBe(0);
+  });
+
+  it('keeps resting rails stationary and reuses their geometry when motion or visibility changes', () => {
+    const { state } = scene({}, { motionGuide: true, quake: { enabled: true, groundM: 0.04, deckM: -0.11, maxOffsetM: 0.2 } });
+    const reference = state.motionReference;
+    const geometry = reference.geometry;
+    const positions = Array.from(geometry.attributes.position.array);
+    state.tick();
+    expect(reference.parent).toBe(state.model);
+    expect(reference.visible).toBe(true);
+    expect(reference.position.toArray()).toEqual([0, 0, 0]);
+    expect(state.ground.position.z).toBeCloseTo(0.4);
+    expect(state.structure.position.z).toBeCloseTo(-1.1);
+    expect(reference.material.type).toBe('LineDashedMaterial');
+    expect(reference.material.depthWrite).toBe(false);
+    expect(reference.geometry.attributes.lineDistance.count).toBe(positions.length / 3);
+    expect(sceneConfiguration.debug(state).motionReferenceVisible).toBe(true);
+    for (let index = 0; index < 20; index++) {
+      state.data.quake.deckM = index / 100;
+      state.data.motionGuide = index % 2 === 0;
+      state.tick();
+      expect(reference.geometry).toBe(geometry);
+      expect(Array.from(geometry.attributes.position.array)).toEqual(positions);
+      expect(reference.visible).toBe(state.data.motionGuide);
+    }
+    state.data.motionGuide = true;
+    state.data.quake.enabled = false;
+    state.tick();
+    expect(reference.visible).toBe(false);
+    expect(state.bridgeBuilds).toBe(1);
+  });
+
+  it('starts resting rails hidden and only accepts the explicit guide preference', () => {
+    const { state } = scene({}, { quake: { enabled: true } });
+    expect(state.motionReference.visible).toBe(false);
+    for (const preference of [undefined, false, 'true', 1]) {
+      state.data.motionGuide = preference;
+      state.tick();
+      expect(state.motionReference.visible).toBe(false);
+    }
+    state.data.motionGuide = true;
+    state.tick();
+    expect(sceneConfiguration.debug(state).motionReferencePosition).toEqual([0, 0, 0]);
+    expect(state.motionReference.visible).toBe(true);
   });
 });

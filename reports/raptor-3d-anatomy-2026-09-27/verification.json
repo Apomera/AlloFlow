@@ -1,0 +1,34 @@
+{
+  "date": "2026-09-27",
+  "scope": "Live anatomy close-ups with pose-aware framing and preserved observation context",
+  "source": "stem_lab/stem_tool_raptorhunt.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+  "sha256": "7bcd6f7f168936f02302c9bf9780d9a65be032652857831cf0a9587060e68ecb",
+  "mirrorByteIdentical": true,
+  "syntaxChecks": { "canonical": "passed", "desktop": "passed" },
+  "whitespaceCheck": "passed",
+  "initialBrowserRun": {
+    "passed": 1, "failed": 1, "notRun": 1,
+    "finding": "Overhead framing made the folded owl wing too narrow; the grounded-wing starting view was changed to the side."
+  },
+  "refinedBrowserRun": { "passed": 3, "failed": 0, "retries": 0, "reportedDuration": "1.8m" },
+  "combinedBrowserRun": {
+    "command": "npx playwright test tests/e2e/raptor-study-anatomy.spec.ts tests/e2e/raptor-study-mode.spec.ts tests/e2e/raptor-study-observations.spec.ts tests/e2e/raptor-study-report.spec.ts --project=chromium --workers=1 --retries=0 --reporter=list --output=reports/raptor-3d-anatomy-2026-09-27/final-browser-results",
+    "passed": 10, "failed": 1, "notRun": 1, "retries": 0, "exitCode": 1, "reportedDuration": "10.3m",
+    "failure": "The owl/fullscreen scenario exceeded its 180-second total limit. Trace showed its assertions succeeding near the limit; the following serial test did not run."
+  },
+  "targetedBrowserRun": {
+    "command": "npx playwright test tests/e2e/raptor-study-anatomy.spec.ts --grep 'folded owl|inspection context' --project=chromium --workers=1 --retries=0 --reporter=list --output=reports/raptor-3d-anatomy-2026-09-27/targeted-browser-results",
+    "passed": 2, "failed": 0, "retries": 0, "exitCode": 0, "reportedDuration": "1.3m",
+    "testAllowanceChange": "Only the longer owl scenario uses a 300-second total limit. Action and assertion limits remain unchanged."
+  },
+  "uniqueScenariosValidated": 12,
+  "singleCleanCombinedRun": false,
+  "accessibility": { "scope": "Affected study controls, plus existing observation and report regressions", "axeViolations": 0, "tags": ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"] },
+  "visualReview": ["Peregrine head, wing, tail, and tucked feet", "Perched owl head, folded wing, and feet", "Phone head view", "Short fullscreen foot view", "Saved tail comparison"],
+  "compatibility": ["Whole-bird views without a focus field", "Unknown region identifiers preserve observations but disable matching", "Below-body camera capture and matching", "Notebook and HTML/TXT exports preserve the selected region"],
+  "translationKeysAdded": 24,
+  "languagePackIntegration": "pending",
+  "broaderUnitSuite": "Not rerun; earlier Raptor reports document the pre-existing baseline failures.",
+  "deployment": "Local workspace changes only; no commit, push, or deployment performed."
+}

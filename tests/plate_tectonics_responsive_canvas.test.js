@@ -13,7 +13,12 @@ describe('Plate Tectonics responsive canvases', () => {
 
   it('uses fluid display dimensions while preserving logical drawing ratios', () => {
     const text = source();
-    expect(text.match(/canvas\.style\.width = '100%'; canvas\.style\.height = 'auto';/g)).toHaveLength(2);
+    const epicenter = text.slice(text.indexOf('window.AlloTectonicsEpicenter = function(props)'), text.indexOf('window.AlloX.InteractiveEpicenter = window.AlloTectonicsEpicenter'));
+    const boundary = text.slice(text.indexOf('window.AlloTectonicsInteractive = function(props)'), text.indexOf('window.AlloTectonicsForces = function'));
+    expect(boundary).toContain("canvas.style.width = '100%'; canvas.style.height = 'auto';");
+    // The event-driven epicenter canvas declares CSS size on its element; its
+    // backing store now scales independently for sharper desktop rendering.
+    expect(epicenter).toMatch(/style: \{ width: '100%', height: 'auto', aspectRatio: W_CANVAS \+ ' \/ ' \+ H_CANVAS/);
     expect(text).toContain("aspectRatio: W_CANVAS + ' / ' + H_CANVAS");
     expect(text).toContain("aspectRatio: '540 / 300'");
     expect(text).not.toContain("canvas.style.width = W_CANVAS + 'px'");

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Water-cycle check-in</title>
+<style>
+body { max-width: 42rem; margin: 1rem auto; padding: 1rem; font: 18px/1.6 sans-serif; color: #172033; background: white; }
+:focus-visible { outline: 3px solid #164bc5; outline-offset: 3px; }
+label, input, select, button { display: block; margin: .5rem 0; } input[type=checkbox] { display: inline; }
+a { color: #0645ad; } fieldset { margin: 1rem 0; } button { padding: .5rem; }
+</style></head><body>
+<a href="#worksheet">Skip to worksheet</a>
+<main id="worksheet" tabindex="-1">
+<h1>Water-cycle check-in</h1>
+<p>Your response</p>
+<form action="#worksheet">
+<label for="learner">Name</label><input id="learner" tabindex="3" name="learner" type="text" autocomplete="off">
+<label for="observation">Observation</label>
+<select id="observation" name="observation"><option value="">Choose an observation</option><option value="clouds">Clouds formed</option><option value="rain">Rain fell</option></select>
+<fieldset><legend>Record keeping</legend><label><input type="checkbox" name="recorded"> I recorded my observation</label></fieldset>
+<button type="reset">Clear response</button>
+</form>
+<a href="#reference">Water-cycle reference</a>
+<h2 id="reference" tabindex="-1">Reference</h2>
+<p>Clouds form when water vapor cools.</p>
+</main></body></html>

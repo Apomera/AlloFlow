@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 
 const PANEL_SRC = 'view_sidebar_panels_source.jsx';
 const panelSrc = readFileSync(PANEL_SRC, 'utf8');
@@ -91,7 +93,10 @@ describe('universal settings panel — help-key custody', () => {
     }
     // Glossary must still SAY what it will translate into, or a teacher cannot
     // tell whether translations are coming — read-only, not editable.
-    expect(gloss).toContain('selectedLanguages.join');
+    // 0bb48eb97 (09-08): the summary lists the translation columns, which follow the universal Output Language
+    // (every selected language only for "All Selected Languages").
+    expect(gloss).toContain('(selectedLanguages || [])');
+    expect(gloss).toContain("columns.join(', ')");
     expect(gloss).toContain('glossary_language_summary');
   });
 

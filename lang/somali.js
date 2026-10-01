@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Aagagga Dareenka",
+          "desc": "Garo aaggaaga (buluug, cagaar, jaalle, casaan) oo sahami xeelado aad ku maamusho naftaada."
+        },
+        "emotions": {
+          "label": "Sahamiyaha Dareenka",
+          "desc": "Kordhi erayada dareenka — garo, magacaw, oo qiimee xoogga dareennada."
+        },
+        "strengths": {
+          "label": "Helaha Awoodaha",
+          "desc": "Ogow oo ka fikir awoodahaaga shakhsiga ah, hibooyinkaaga, iyo meelaha aad ku kori karto."
+        },
+        "viaStrengths": {
+          "label": "Awoodaha VIA",
+          "desc": "Is-kala-soocid la fududeeyay oo ku saabsan 24-ka Awood ee Dabeecadda VIA (Peterson iyo Seligman, 2004), oo leh 6 fadiilo iyo garashada awoodahaaga astaanta u ah. Sahanka rasmiga ah ee bilaashka ah, u gal viacharacter.org. Waa tababar milicsi, ma aha cabbir cilmi-nafsi."
+        },
+        "wheelOfLife": {
+          "label": "Giraangiraha Nolosha",
+          "desc": "Shax caaro oo muujinaysa 8 qaybood oo nolosha ah, mid kasta waxaa lagu qiimeeyaa 1 ilaa 10. Sawir naftaada ah oo muujinaya halka noloshu hadda ka buuxdo iyo halka ay ka yar tahay. Waxay ka timid dhaqanka tababarka (coaching) (Meyer 1960-yadii; Co-Active Coaching). Qiyaas guud; ma aha cabbir cilmi-nafsi oo la xaqiijiyay."
+        },
+        "perma": {
+          "label": "Ladnaanta PERMA",
+          "desc": "Is-hubin ku saabsan shanta qaybood ee PERMA iyo milicsi Caafimaad: Dareen wanaagsan, Ka-qaybgal, Xiriirro, Macno, Guul, iyo Caafimaad. 24 su'aalood, natiijo jaantus tiirar ah, iyo milicsi qayb kasta. Waxay ka timid Seligman; waxay la socotaa Awoodaha VIA."
+        },
+        "coping": {
+          "label": "Qalabka La-qabsiga",
+          "desc": "Sahami oo ku celceli xeeladaha la-qabsiga — neefsasho, deganaansho, dhaqdhaqaaq, iyo kuwo kale."
+        },
+        "windowOfTolerance": {
+          "label": "Daaqadda Dulqaadka",
+          "desc": "Sawir is-ogaysiin ah oo ka warqaba dhaawaca nafsiga (trauma). Saddex aag oo kacsanaan ah (kacsanaan xad-dhaaf ah, daaqadda, kacsanaan hoose). Qor calaamadahaaga gaarka ah ee aag kasta, waxyaabaha ku kiciya, iyo tababarrada ku soo celiya. Waxay ku salaysan tahay Siegel (1999); waa wax caadi ah dugsiyada ka warqaba dhaawaca nafsiga."
+        },
+        "stressBucket": {
+          "label": "Baaldiga Walbahaarka",
+          "desc": "Sawir muujinaya awoodda. Waxyaabaha walbahaarka keena way ku shubmaan; tababarrada la-qabsigu way ka daadiyaan. Eeg in waxa soo gala iyo waxa ka baxa ay isku dheelli tiran yihiin. Qalab ka yimid dhaqanka CBT (Brabban iyo Turkington 2002), laga isticmaalo NHS IAPT iyo Mind UK. Si daacad ah ayuu u qirayaa walbahaarka ka yimaada nidaamyada."
+        },
+        "tipp": {
+          "desc": "Afar xirfadood oo DBT ah oo lagaga badbaado xaaladaha adag (Heerkulka, Jimicsi xooggan, Neefsasho tartiib ah, Nasinta muruqyada oo lammaane ah) marka uu jiro cidhiidhi DEGDEG AH. Jidhka ayay dejisaa 30 ilbiriqsi ilaa 10 daqiiqo ka hor intaadan isku dayin inaad fikir kaga baxdo. Xirfad aasaasi ah oo ka mid ah Dulqaadka Cidhiidhiga ee DBT (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Qalabka Walaaca",
+          "desc": "Xirfado ku salaysan CBT oo lagula shaqeeyo walaaca: waxbarasho nafsi ah, geedka welwelka (welwel wax-ku-ool ah iyo mid aan wax-ku-ool ahayn), waqti loo qoondeeyay welwelka, ka-hortagga ka-fikirka ugu xun, xirfadaha deganaanshaha, iyo liiska qaababkaaga gaarka ah. Waxay ka timid Beck Institute, AACAP, ADAA. Waxay la socotaa Daaqadda Dulqaadka iyo Baaldiga Walbahaarka."
+        },
+        "sleep": {
+          "label": "Hurdo iyo Nasasho",
+          "desc": "Hurdada dhallinyaradu waa qalalaase caafimaadka bulshada. 8-10 saacadood ee ay AAP ku talisay dhif ayaa la gaaraa. Waxbarasho nafsi ah, is-hubin, 8 caqabadood oo caadi ah + waxa u shaqeeya mid kasta, iyo xusuus-qor hurdo. Waxay ka timid AAP, CDC, NSF, iyo cilmi-baarista Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Habaynta Dareemayaasha",
+          "desc": "Qalab qaddariya kala-duwanaanshaha maskaxda (neurodiversity) oo kaa caawiya inaad fahanto sida aad u habayso dareemayaashaada 8-da nidaam ee dareemayaasha. Samee sharraxaad shakhsi ah, qorshee cunto-dareemeed (sensory diet), oo garo fududaynta dugsiga. Luqad aqoonsiga horta dhigta; waxay ku dhisan tahay Ayres / Dunn / cilmiga ay hoggaamiyaan dad otisam leh."
+        },
+        "bigFeelings": {
+          "label": "Dareenno Waaweyn (Cadho)",
+          "desc": "Waxbarasho nafsi ah iyo dhisidda xirfadaha oo gaar u ah cadhada. Cadhadu waa macluumaad, ma aha dhibaatada; gardarrada degdegga ah ee falcelinta ayaa ah dabinka. Waxay ku dhisan tahay dhaqanka Coping Power ee Lochman + caddaynta CBT ee cadhada. Diiwaanka dhibaatooyinka yaryar, liiska waxyaabaha ku kiciya, barta doorashada, iyo xeelado dejin oo adiga kuu gaar ah."
+        },
+        "substancePsychoed": {
+          "label": "Isticmaalka Maandooriyaha",
+          "desc": "Waxbarasho nafsi ah oo yaraynta waxyeellada ah oo ku saabsan maandooriyaha (khamri, xashiish, nikotiin, opioids, kiciyeyaal, benzos, walxaha dhalanteedka keena). Khataraha maskaxda dhallinyarada. Waxbarasho Naloxone. MA AHA baaritaan, MA AHA ka-fogaansho oo keliya. Gudbin xooggan oo SAMHSA ah. Meel milicsi oo la jaan qaadaysa MI."
+        },
+        "behavioralActivation": {
+          "label": "Firfircoonaynta Hab-dhaqanka",
+          "desc": "Qorshee hawlo yaryar, samee, oo u qiimee xirfad (dareentay inaad awood leedahay) iyo raaxo (aad ku raaxaysatay). Ogow waxa ku habboon oo dooro tallaabo xigta oo la maarayn karo. Hawshan qorshayntu waxay ka qaadataa firfircoonaynta hab-dhaqanka (behavioral activation); ma bixiso mana qiimeyso koorso daaweyn ah."
+        },
+        "mindfulness": {
+          "label": "Geeska Feejignaanta",
+          "desc": "Layliyo neefsasho oo la hagayo, baaritaanka jidhka, iyo hawlo feejignaan."
+        },
+        "quietQuestions": {
+          "label": "Su'aalo Aamusan",
+          "desc": "Tababar toddobaadle ah oo baaritaan gudaha ah. La joog hal su'aal oo furan toddobaad dhan. 20 su'aalood oo isbeddela oo ku saabsan feejignaanta, hilowga, dhibka, xiriirka, iyo noqoshada. Waxaa dhiirrigeliyay dhaqanka su'aalaha Quaker; waa mid aan diin ku xidhnayn oo aan wax lagu amrin."
+        },
+        "orientations": {
+          "label": "Jihooyinka",
+          "desc": "Hababka Nolosha, la Isbarbardhigay. Siddeed dhaqan falsafadeed (Daoism, Zen, Stoicism, Existentialism, anshaxa Confucius, Ubuntu, xiriirka dadka asaliga ah, Anshaxa Daryeelka) oo lagu isbarbardhigay su'aalaha waaweyn ee nolosha. Wax lagu amro ma leh; dhaqan kastaa wuxuu leeyahay qayb daacad ah oo ah \"waxa uusan si fiican u qaban karin\"."
+        },
+        "thoughtRecord": {
+          "label": "Diiwaanka Fikirka CBT",
+          "desc": "Diiwaanka fikirka ee 7-da tiir ee Daaweynta Garashada iyo Hab-dhaqanka (Cognitive Behavioral Therapy). Ku dhex soco xilli adag: xaaladda, dareenka, fikirka iskiis u yimaada, caddaynta taageerta iyo tan ka soo horjeedda, fikir dheellitiran, iyo dib u qiimaynta dareenka. Wuxuu kaydiyaa qoraallada muddo ka dib. Waxay ka timid Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Shaxda Faa'iido-Khasaare",
+          "desc": "Shax 2x2 ah oo go'aan-qaadasho ah oo ka timid Daaweynta Hab-dhaqanka Jadaliga ah (Dialectical Behavior Therapy). Faa'iidooyinka iyo khasaaraha go'aanka ee muddada gaaban iyo muddada dheer, dhinac-dhinac. Waxtar leh marka dareenku kugu riixayo hal doorasho. Waxay ka timid Linehan."
+        },
+        "sfbt": {
+          "label": "Diiradda Xalka",
+          "desc": "Daaweynta Gaaban ee Diiradda Xalka (Solution-Focused Brief Therapy): Su'aasha Mucjisada, Cabbirka, Helitaanka Waqtiyada Ka Reeban, iyo Ammaanta. Horay ayay u eegtaa halkii ay gadaal u eegi lahayd, waxayna weydiisaa waxa hadda shaqaynaya. Farsamada ugu badan ee loo isticmaalo latalinta dugsiyada Maraykanka. Waxay ka timid de Shazer iyo Berg."
+        },
+        "careConstellations": {
+          "label": "Xiddigaha Daryeelka",
+          "desc": "Khariidad xiriir oo muujinaysa cidda ku daryeesha iyo cidda aad adigu daryeesho. Waxay diiddan tahay aragtida \"is-daryeelka\" ee shakhsinimada ama macaamiisha. Waxaa ku jira aragti falsafadeed oo qoto dheer oo ku saabsan Daryeelka Naftaada iyo Is-daryeelka (Foucault, Giriigga epimeleia heautou, Audre Lorde, eudaimonic iyo hedonic)."
+        },
+        "ecomap": {
+          "label": "Khariidadda Deegaanka",
+          "desc": "Khariidad xiriir oo muujinaysa qofka iyo deegaankiisa. Adiga ayaa dhexda ku jira; 12-ka nidaam ee waaweyn ee nolosha ayaa kugu wareegsan. Xiriir kasta waxaa lagu qiimeeyaa xoogga, walbahaarka, iyo jihada tamarta. Qalab caadi ah oo shaqada bulshada ah tan iyo Hartman (1978); waxaa loo isticmaalaa IEP-yada, qiimaynta qoyska, iyo liiska nolosha shakhsiga."
+        },
+        "circlesOfSupport": {
+          "label": "Goobooyinka Taageerada",
+          "desc": "Afar goobood oo isku dhex jira oo xiriir ah: Dhawaansho, Saaxiibtinimo, Ka-qaybgal, Is-weydaarsi (lacag lagu bixiyo). Waxay muujisaa cidda runtii kuu dhow, oo ay ku jiraan marka dad lacag loo bixiyo ay buuxiyaan goobooyinka gudaha. Waxay ka timid Forest iyo Snow ee Inclusion Press."
+        },
+        "genogram": {
+          "label": "Shaxda Qoyska",
+          "desc": "Khariidad qoys oo saddex jiil ah oo isticmaalaysa calaamadaha caadiga ah ee nidaamka qoyska. Waxay u tahay oo keliya is-fahanka shakhsiga (MA AHA qiimayn kiliinig ah). Waxay ku salaysan tahay aragtida nidaamka qoyska ee Bowen iyo calaamadaynta McGoldrick-Gerson-Petry. Waxaa ku jira hagitaan badbaado oo muuqda."
+        },
+        "griefLoss": {
+          "label": "Murugo iyo Khasaare",
+          "desc": "Weheliye is-hagid ah oo loogu talagalay murugada. Dhimashada qof ama xayawaan guri, isbeddelka qoyska, luminta saaxiib, luminta aqoonsiga, khasaare aan caddayn — dhammaan way tirsan yihiin. Ku dhex soco afarta hawlood ee baroordiiqda ee Worden, qor warqad, oo qorshee caadooyin xusuus. Hagitaan badbaado oo xooggan oo tilmaamaya Wehelka Qalalaasaha / 988 murugada daran ama adag."
+        },
+        "traumaPsychoed": {
+          "label": "Fahamka Dhaawaca Nafsiga",
+          "desc": "Waxbarasho nafsi ah oo keliya (MA AHA baaritaan). Waxa dhaawaca nafsigu yahay iyo waxa uusan ahayn, cilmiga maskaxda oo af fudud lagu sharxay, falcelinnada caadiga ah oo loo arko la-qabsi, 6-da mabda' ee SAMHSA, iyo daaweynno caddayn ku salaysan. Loogu talagalay ardayda iyo macallimiinta. Waxaa ku jira hagitaan badbaado oo muuqda oo sharxaya sababta baaritaan aan dabagal lahayn uu khatar u yahay."
+        },
+        "bodyStory": {
+          "label": "Sheekada Jidhka",
+          "desc": "Qalab aqbalaadda jidhka iyo ku noolaanshaha jidhka. MA AHA mid diiradda saara miisaanka, MA AHA mid la xiriira cunto-yaraynta, MA AHA baaritaan. Wuxuu ku dhisan yahay qaddarinta jidhka ee Tylka, mabaadi'da cunidda dareenka ku salaysan, iyo aqoonta warbaahinta. Wuxuu soo dhaweeyaa dhammaan jidhadka, dhammaan jinsiyadaha, dhammaan cabbirrada. Gudbin xooggan oo NEDA ah oo loogu talagalay xanuunnada cunidda."
+        },
+        "sourcesOfStrength": {
+          "label": "Ilaha Xoogga",
+          "desc": "Khariidee 8-da arrimood ee ku ilaaliya. Sahami taageerooyinka ilaalinta ee uu dhiirrigeliyay barnaamijka Sources of Strength. Khariidaddan is-hagidda ahi waa la-qabsi, ma aha fulinta barnaamijka dugsiga ee la qiimeeyay."
+        },
+        "crisiscompanion": {
+          "label": "Wehelka Qalalaasaha",
+          "desc": "Taageerada asxaabta iyo xirfadaha ka-hortagga is-dilka: waxa la sameeyo haddii adiga ama saaxiib aad qabtaan niyad-jab, aad ku jirtaan qalalaase, ama aad ka fikiraysaan is-dhaawicid — garashada calaamadaha, waxa la yiraahdo (iyo waxa aan la oran), u sheegidda qof weyn oo aad aaminsan tahay, iyo 988 iyo qorshe badbaado shakhsi ah. Waxaa ka horreeya digniin nuxur. Waxay la jaan qaadaysaa NEDA, AFSP, Sources of Strength, iyo 988. Waa dhiggeeda taageerada degdegga ah ee Ilaha Xoogga."
+        },
+        "identitySupport": {
+          "label": "Taageerada Aqoonsiga",
+          "desc": "Meel soo dhawaynaysa oo taageeraysa su'aalaha aqoonsiga jinsiga, jihaynta galmada, jihaynta jacaylka, iyo su'aalaha aqoonsiga ee ballaaran. Erayo, horumarka aqoonsiga, helitaanka bulsho, badbaadada dhallinyarada trans, iyo hagitaan xulafo. Waxay ku dhisan tahay Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Codadka Naafonimada",
+          "desc": "Dhaqdhaqaaqayaal dhab ah oo otisam leh iyo naafo ah oo shaqadoodu qaabaysay, oo dhaleeceysay, habka naafonimada. Xigashooyin, macluumaad asal ah, iyo liis akhris oo la xushay. Waxaa loo dhisay in dadka goobtani wax ku SAMEYSAY ay dhexda ahaadaan, oo aan loo dhigin qayb dhinac ah oo qalab cilmiga hab-dhaqanka ah. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Dejiyaha Hadafyada",
+          "desc": "Deji hadafyo SMART ah, la soco horumarka, oo u dabaaldeg guulaha."
+        },
+        "howlTracker": {
+          "label": "Dabagalka HOWL",
+          "desc": "Is-qiimaynta Caadooyinka Shaqada iyo Waxbarashada (Habits of Work and Learning) ee waqtiga Crew. Hubin toddobaadle ah, hadafyo rubuc-sannadeed, jaantus isbeddel, iyo su'aalo wada-hadal Crew. Waxay la jaan qaadaysaa qaab-dhismeedka HOWL ee EL Education."
+        },
+        "onePageProfile": {
+          "label": "Sharraxaad Hal Bog ah",
+          "desc": "Sharraxaad la qaadi karo oo la daabici karo oo ku eg hal bog. Saddex qaybood: waxa dadku iga jecel yihiin oo igu qaddariyaan, waxa ii muhiimka ah, iyo sida ugu wanaagsan ee la ii taageeri karo. Qoraal qorshayn qofka-ku-salaysan oo loogu talagalay kulamada IEP, u-gudubyada, macallimiinta beddelka ah, ama Crew. Wuxuu ku salaysan yahay qaabka Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Samaynta Qorshayaal Ficil (Making Action Plans). Siddeed su'aalood oo isku xigxiga (Sheekadayda, Riyo, Riyo Xun, Cidda aan ahay, Hibooyin, Baahiyo, Qorshe Ficil, Tallaabooyinka Koowaad). Sawir qofka-ku-salaysan oo ka yimid Pearpoint, O'Brien, iyo Forest ee Inclusion Press; si ballaaran loogu isticmaalo qorshaynta u-gudubka."
+        },
+        "path": {
+          "desc": "Qorshaynta Berrito Kale oo Rajo leh (Planning Alternative Tomorrows with Hope). Sawir qorshaynta mustaqbalka: siddeed marxaladood oo ka bilaabma Xiddigtaada Waqooyi ee fog, dib ugu socda tallaabooyinka koowaad ee laba toddobaad gudahood. Pearpoint, O'Brien, iyo Forest ee Inclusion Press; waxay la socotaa MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Qiyamka iyo Ficilka",
+          "desc": "Kala sooc waxa muhiimka ah, magacaw qiyamkaaga ugu sarreeya, oo mid kasta u beddel ficil yar oo la taaban karo toddobaadkan. Waxay ka timid Daaweynta Aqbalaadda iyo Ballanqaadka (Acceptance and Commitment Therapy) (Hayes); qaabka DNA-V ee dhallinyarada. Kala-soocidda ACT ee u dhexeysa qiyamka (jihooyin) iyo hadafyada (meelo la gaaro)."
+        },
+        "careerCompass": {
+          "label": "Jiheeyaha Xirfadda",
+          "desc": "Ku sahami xirfadaha xiisahaaga. Is-hubin RIASEC ah oo 36 su'aalood ah ayaa ku siisa saddexda xaraf ee ugu sarreeya ee koodhka Holland; baadh xirfadaha, 16-ka Koox Xirfadeed ee federaalka, iyo tallaabooyin xiga oo la taaban karo (maalmo la socod shaqo, wareysiyo macluumaad, CTE, tababar-shaqo). Wuxuu ku dhisan yahay qaab-dhismeedka Holland; wuxuu tilmaamayaa O*NET Interest Profiler ee rasmiga ah ee mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Istuudiyaha Is-u-doodista",
+          "desc": "Samee qorshe taageero dugsi oo la taaban karo oo loogu talagalay su'aalaha IEP ama 504, fududaynta, doorashooyinka sheegidda, iyo in aad caawimaad ka codsato dad waaweyn oo aad aaminsan tahay."
+        },
+        "perspective": {
+          "label": "Muraayadda Aragtida",
+          "desc": "Xaaladaha ka eeg aragtiyo kala duwan — ku celceli dareen-wadaagga iyo ka eegidda aragtida kale."
+        },
+        "community": {
+          "label": "Bulshada iyo Dhaqanka",
+          "desc": "Sahami kala-duwanaanshaha, wacyiga dhaqanka, iyo ka tirsanaanta bulshada."
+        },
+        "conflict": {
+          "label": "Xallinta Khilaafka",
+          "desc": "Ku celceli khilaaf khatar yar ama male-awaal ah adigoo adeegsanaya ka eegidda aragtida kale, weedho \"Aniga\" ah, dejin, iyo doorashooyin dib-u-hagaajin. Haddii qof uusan nabad qabin, ku dar qof weyn halkii aad keligaa ka gorgortami lahayd."
+        },
+        "social": {
+          "label": "Shaybaarka Xirfadaha Bulshada",
+          "desc": "Ku celceli xirfadaha wada-hadalka, dhageysiga firfircoon, luqadda jidhka, iyo iskaashiga."
+        },
+        "teamwork": {
+          "label": "Dhisaha Wada-shaqaynta",
+          "desc": "Caqabado wada-shaqayn ah iyo sahaminta doorarka kooxda."
+        },
+        "dearMan": {
+          "desc": "Samee qoraal hadal oo codsi adag ah toddoba tallaabo: Sharax, Muuji, Adkee, Xoojin, Feejignow, U muuqo kalsooni leh, Gorgortan. Waxay ka timid Waxtarka Xiriirka Dadka ee DBT (Linehan); qoraalka isgaarsiinta adag ee ugu badan ee loo isticmaalo latalinta dugsiyada. Waxay la socotaa Istuudiyaha Is-u-doodista."
+        },
+        "motivationalInterviewing": {
+          "label": "Wareysiga Dhiirrigelinta",
+          "desc": "Qaab wada-hadal oo lagu caawiyo qof (ama naftaada) inuu ka fikiro isbeddel. Baro xirfadaha OARS (Su'aalo furan, Xaqiijin, Milicsi, Soo-koobid), saddexda cabbir, iyo Hadalka Isbeddelka. Waxay ka timid Miller iyo Rollnick; waa aasaaska latalinta dugsiga iyo shaqada taageerada asxaabta."
+        },
+        "crewProtocols": {
+          "label": "Hababka Crew",
+          "desc": "Maktabad qaabab koox oo habaysan oo loogu talagalay waqtiga Crew, latalinta, ama fasalka guriga: dhisayaasha bulshada, furitaanno, xiritaanno, goobooyin dib-u-heshiisiin, habab milicsi, qaabab dabaaldeg, iyo hagayaal wada-hadallada adag. Iyo soo-ururin dhammaan su'aalaha Crew ee SEL Hub oo dhan. Waxay ku dhisan tahay EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Xiriirro Caafimaad Qaba",
+          "desc": "Heerarka (caafimaad qaba / aan caafimaad qabin / xadgudub leh) ee 8 dhinac oo xiriir kasta oo dhow. Ogolaanshaha oo faahfaahsan, ka-hortagga rabshadaha shukaansiga, badbaado + khadadka caawimaadda. Wuxuu ku dhisan yahay qaab-dhismeedka Loveisrespect / NDVH. Wuxuu soo dhaweeyaa dadka queer, kuwa maskaxdoodu kala duwan tahay, iyo dadka naafada ah."
+        },
+        "decisions": {
+          "label": "Shaybaarka Go'aanka",
+          "desc": "Ku shaqee xaalado nolosha dhabta ah adigoo adeegsanaya habka joogso-fikir-samee."
+        },
+        "journal": {
+          "label": "Xusuus-qorka Dareenka",
+          "desc": "Xusuus-qor hubin maalinle ah — qor niyaddaada, waxyaabaha ku kiciya, iyo milicsiyada muddo ka dib."
+        },
+        "safety": {
+          "label": "Badbaado iyo Xuduud",
+          "desc": "Wax ka baro xuduudaha shakhsiga, dadka waaweyn ee aad aaminsan tahay, iyo xaaladaha badbaado leh iyo kuwa aan badbaado lahayn."
+        },
+        "landPlace": {
+          "label": "Dhulka iyo Meesha",
+          "desc": "Istuudiyaha Ilaalinta ee xiriir joogto ah la yeelashada dhulka aad ku nooshahay. Saddex xadhig (taariikh, deegaan, xilliga hadda), milicsi naqdi ah oo ku saabsan qirashada dhulka oo ah dhaqan joogto ah ee ma aha bandhig, ururrada ay hoggaamiyaan Wabanaki oo ah codad sugan, iyo xusuus-qor milicsi oo gaar ah."
+        },
+        "somaticReset": {
+          "label": "Dib-u-dejinta Jidhka iyo Neefta",
+          "desc": "Dooro aag jidhka ah oo raac dib-u-dejin gaaban oo kursiga lagu samayn karo oo ah xasillooni, neefsasho, ama dhaqdhaqaaq khafiif ah, oo leh hubin gaar ah ka hor iyo ka dib."
+        },
+        "restorativeCircle": {
+          "label": "Goobada Dib-u-heshiisiinta",
+          "desc": "Hogaami goobooyin dib-u-heshiisiin iyo dhisid bulsho oo leh xeerar la dejiyay, hagitaan qof weyn, iyo daryeel ku saabsan asalka dhaqanka. Looguma talagalin sheegid qasab ah ama khatar badbaado oo socota."
+        },
+        "compassion": {
+          "label": "Naxariis iyo Is-la-hadal",
+          "desc": "Ku celceli is-naxariisashada, dib u qaabee dhaleeceeyaha gudaha, oo dhis cod gudaha ah oo naxariis badan."
+        },
+        "friendship": {
+          "label": "Dhisaha Saaxiibtinimada",
+          "desc": "Sahami qaababka saaxiibtinimada, xeeladaha dib-u-hagaajinta, iyo qaababka xiriir caafimaad qaba."
+        },
+        "transitions": {
+          "label": "Isbeddellada Nolosha",
+          "desc": "La tacaal isbeddellada sida guuritaanka, dugsiyo cusub, iyo korriinka."
+        },
+        "upstander": {
+          "label": "Tababarka U-istaagaha",
+          "desc": "Baro inaad si badbaado leh ugu istaagto dadka kale — xirfadaha ka daawade ilaa u-istaage."
+        },
+        "growthmindset": {
+          "label": "Maskaxda Korriinka",
+          "desc": "Cilmiga maskaxda, dib-u-qaabaynta caqabadaha, iyo dhisidda adkaysiga."
+        },
+        "execfunction": {
+          "label": "Hawlaha Fulinta Maskaxda",
+          "desc": "Xeelado loogu talagalay qaybaha adag ee wax qabashada: bilaabidda hawlaha, ilaalinta feejignaanta, qorshaynta hore, iyo la socodka waqtiga."
+        },
+        "advocacy": {
+          "label": "Tababarka U-doodista",
+          "desc": "Ku celceli qoraallo hadal oo guud oo lagu muujiyo baahiyaha, lagu codsado taageero, laguna hadlo xaaladaha maalinlaha ah."
+        },
+        "civicAction": {
+          "label": "Ficil Bulsho iyo Rajo",
+          "desc": "Wax ka qabso dareennada adag ee ku saabsan caddaalad-darrada, dhis awood bulsho, oo ku kori rajo ficil."
+        },
+        "ethicalReasoning": {
+          "label": "Shaybaarka Fikirka Anshaxa",
+          "desc": "Sahami dhibaatooyinka anshaxa ee casriga ah adigoo adeegsanaya habab badan iyo wada-hadal Socratic ah oo AI ah."
+        },
+        "cultureExplorer": {
+          "label": "Sahamiyaha Dhaqanka",
+          "desc": "Si qoto dheer u baadh dhaqamada adduunka adigoo kaashanaya AI, oo leh sawirro iyo cod."
+        },
+        "voicedetective": {
+          "label": "Baadhaha Codka",
+          "desc": "Dhageyso codad oo ka garo dareennada qaabka codka."
+        },
+        "practiceJourneys": {
+          "label": "Safarrada Tababarka (Tijaabo)",
+          "desc": "Ku celceli codsashada taageero afar kulan oo isku xiran. Ku jawaab doorashooyin, erayadaada, ama labadaba. Hay xusuus-qor oo isku day jid kale."
+        },
+        "sociallab": {
+          "label": "Jilitaanka Xirfadaha Bulshada",
+          "desc": "Ku celceli xaalado bulsho iyo jilitaan asxaab AI ah oo leh wada-hadal laamo leh."
+        },
+        "peersupport": {
+          "label": "Tababaraha Taageerada Asxaabta",
+          "desc": "Baro xirfadaha dhageysiga OARS iyo goorta la raadiyo caawimaad qof weyn."
+        },
+        "conflicttheater": {
+          "label": "Masraxa Khilaafka",
+          "desc": "Ku celceli khilaaf male-awaal ah oo leh laba jilaa AI ah muuqaal kugu dhex-qaada. Jilitaan Beta ah oo keliya; ha u isticmaalin inaad ku dhexdhexaadiso waxyeello socota."
+        },
+        "digitalWellbeing": {
+          "label": "Istuudiyaha Ladnaanta Dhijitaalka",
+          "desc": "Is-hubi xiriirkaaga warbaahinta bulshada iyo chatbot-yada AI, dhis caadooyin telefoon oo caafimaad qaba, ka soo kabo cagajuglaynta internetka, garo khiyaanada ku jirta bogga, si badbaado leh ula tacaal xiriirka chatbot-yada, oo hel caawimaad markaad u baahato."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Is-ogaansho",
+          "desc": "Garashada dareennada, awoodaha, iyo meelaha korriinka"
+        },
+        "self-regulation": {
+          "label": "Is-xakamayn",
+          "desc": "Maaraynta dareennada, kacsanaanta, feejignaanta; tababarka la-qabsiga"
+        },
+        "self-direction": {
+          "label": "Is-hagid",
+          "desc": "Dejinta hadafyada, awoodda go'aanka, hawlaha fulinta, maskaxda korriinka"
+        },
+        "inner-work": {
+          "label": "Shaqada Gudaha",
+          "desc": "Tababarro fikir-qoto-dheer iyo milicsi"
+        },
+        "care-of-self": {
+          "label": "Daryeelka Naftaada",
+          "desc": "Is-naxariisasho, is-daryeel xiriir ku salaysan"
+        },
+        "social-awareness": {
+          "label": "Wacyiga Bulshada",
+          "desc": "Dareen-wadaag, ka eegidda aragtida kale, iyo qaddarinta kala-duwanaanshaha"
+        },
+        "relationship-skills": {
+          "label": "Xirfadaha Xiriirka",
+          "desc": "Isgaarsiin, wada-shaqayn, iyo xallinta khilaafka"
+        },
+        "responsible-decision-making": {
+          "label": "Go'aan-qaadasho Mas'uul ah",
+          "desc": "Doorashooyin anshax leh, qiimaynta cawaaqibta, iyo xallinta dhibaatooyinka"
+        },
+        "stewardship": {
+          "label": "Ilaalin",
+          "desc": "Daryeelka bulshada, caddaaladda, dhulka, iyo mustaqbalka"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 daqiiqo",
+          "purpose": "Magacaw aaggaaga hadda oo dooro xeelad maaraynta ah oo ku habboon.",
+          "next": "Hubi aaggaaga, dooro hal xeelad, kadibna kaydi haddii aad rabto inaad dib ugu noqoto."
+        },
+        "coping": {
+          "time": "3-10 daqiiqo",
+          "purpose": "Dooro xeelad la-qabsi oo hal mar ku celceli, adigoo leh meel joogsi oo cad.",
+          "next": "Dooro hal xeelad jidhka ku salaysan ama deganaansho, isku day, kadibna ogow inay ku caawisay iyo in kale."
+        },
+        "journal": {
+          "time": "5-12 daqiiqo",
+          "purpose": "Qor milicsi gaar ah oo ogow qaababka aad jeclaan lahayd inaad hayso.",
+          "next": "Dooro su'aal, si daacad ah u qor, oo kaydi ama dhoofi ka hor intaadan xirin."
+        },
+        "emotions": {
+          "time": "4-8 daqiiqo",
+          "purpose": "Kordhi erayada dareenka oo si sax ah u magacaw waxa aad dareemayso.",
+          "next": "Dooro dareen, qiimee xooggiisa, kadibna dooro hal eray oo sida ugu fiican ugu habboon."
+        },
+        "mindfulness": {
+          "time": "2-10 daqiiqo",
+          "purpose": "Hakad, neefso, oo ku celceli feejignaanta adigoon u baahnayn inaad wax qorto.",
+          "next": "Dooro hal tababar oo gaaban, ilaa dhammaadka raac, kadibna ogow waxa isbeddelay."
+        },
+        "somaticReset": {
+          "time": "3-8 daqiiqo",
+          "purpose": "Isticmaal hubin gaar ah oo aagga jidhka ah si aad u doorato dib-u-dejin gaaban oo kursiga lagu samayn karo.",
+          "next": "Dooro qayb jidhka ah, isku day hal ikhtiyaar oo xasillooni, neef, ama dhaqdhaqaaq khafiif ah, kadibna ogow waxa isbeddelay."
+        },
+        "thoughtRecord": {
+          "time": "8-15 daqiiqo",
+          "purpose": "Tartiib u eeg fikir adag oo raadi aragti dheellitiran.",
+          "next": "Magacaw xaaladda, qiimee dareenka, kadibna fikirka ku tijaabi caddaynta."
+        },
+        "anxietyToolkit": {
+          "time": "5-12 daqiiqo",
+          "purpose": "Kala sooc welwelka, yaree xoogga walaaca, oo dooro tallaabo xigta oo wax ku ool ah.",
+          "next": "Dooro welwelka ugu codka dheer, isku day hal xeelad, kadibna kaydi qorshaha haddii uu caawiyo."
+        },
+        "sleep": {
+          "time": "4-10 daqiiqo",
+          "purpose": "Ogow caqabadaha hurdada oo dooro hal caado nasasho oo aad marka xigta isku dayi doonto.",
+          "next": "Hubi waxa kaa horjoogsanaya, dooro hal isbeddel yar, kadibna dib ugu noqo mar dambe."
+        },
+        "goals": {
+          "time": "5-10 daqiiqo",
+          "purpose": "U beddel ujeeddo ficil xiga oo la taaban karo oo macquul ah.",
+          "next": "Qor hal hadaf, dooro tallaabada koowaad, oo kaydi qorshaha ka hor intaadan xirin."
+        },
+        "friendship": {
+          "time": "5-10 daqiiqo",
+          "purpose": "Ka fikir baahiyaha saaxiibtinimada, ka tirsanaanta, iyo doorashooyinka asxaabta.",
+          "next": "Dooro hal xaalad saaxiibtinimo oo garo hal tallaabo xigta oo naxariis leh."
+        },
+        "conflict": {
+          "time": "6-12 daqiiqo",
+          "purpose": "Faham khilaaf oo diyaari jawaab diiradda saaraysa dib-u-hagaajinta.",
+          "next": "Magacaw waxa dhacay, ka fikir labada dhinac, kadibna dooro hal ficil dib-u-hagaajin."
+        },
+        "safety": {
+          "time": "8-15 daqiiqo",
+          "purpose": "Samee qorshe badbaado oo wax ku ool ah oo garo taageerayaal la aamini karo.",
+          "next": "Ku dar calaamadaha digniinta, tallaabooyinka la-qabsiga, iyo dadka lala xiriiro; kaydi ka hor intaadan xirin."
+        },
+        "crisiscompanion": {
+          "time": "3-10 daqiiqo",
+          "purpose": "Isticmaal jid taageero oo habaysan marka dareennadu u muuqdaan kuwo degdeg ah ama aan badbaado lahayn.",
+          "next": "Dooro ikhtiyaarka taageero ee ugu dhow oo ku dar qof weyn oo aad aaminsan tahay ama adeegga qalalaasaha marka loo baahdo."
+        },
+        "conflicttheater": {
+          "time": "8-15 daqiiqo",
+          "purpose": "Ku celceli muuqaal khilaaf male-awaal ah oo tijaabi luqad dib-u-heshiisiin adigoon qalabka u arkin dhexdhexaadin.",
+          "next": "Dooro muuqaal male-awaal ah, isku day hal jawaab, oo ka wada hadal waxa u baahan lahaa taageero qof weyn nolosha dhabta ah."
+        },
+        "restorativeCircle": {
+          "time": "15-30 daqiiqo",
+          "purpose": "Qorshee ama hogaami hawl koox oo dib-u-heshiisiin ah oo leh xeerar cad iyo hagitaan qof weyn.",
+          "next": "Marka hore deji heshiisyada goobada, kadibna dooro su'aal; weligaa ha qasbin in wax dadka hortooda lagu sheego."
+        },
+        "strengths": {
+          "time": "5-10 daqiiqo",
+          "next": "Dooro awoodaha kuu eg, kadibna hel hal xilli oo dhab ah oo saddex-biloodkan ah oo muujinaya mid kasta."
+        },
+        "viaStrengths": {
+          "time": "8-15 daqiiqo",
+          "purpose": "Isticmaal is-kala-soocid uu VIA dhiirrigeliyay oo ah hawl milicsi, ma aha qiimayn rasmi ah.",
+          "next": "Kala sooc awoodaha, ogow qaababka, oo qor hal tusaale oo natiijada xaqiijinaya."
+        },
+        "perma": {
+          "time": "8-15 daqiiqo",
+          "purpose": "Qaado sawir milicsi oo ladnaanta ah oo ku saabsan qaybaha PERMA iyo Caafimaadka.",
+          "next": "Sawirka u isticmaal inaad doorato wada-hadal ama tijaabo yar, ha u isticmaalin inaad naftaada calaamad u saarto."
+        },
+        "advocacy": {
+          "time": "5-12 daqiiqo",
+          "purpose": "Ku celceli luqad maalinle ah oo lagu muujiyo baahiyaha laguna codsado taageero.",
+          "next": "Dooro xaalad, qor codsi gaaban, oo go'aami cidda ku caawin karta."
+        },
+        "selfAdvocacy": {
+          "time": "10-20 daqiiqo",
+          "purpose": "Samee qorshe taageero dugsi oo la taaban karo oo loogu talagalay IEP, 504, fududaynta, ama doorashooyinka sheegidda.",
+          "next": "Dooro hal baahi taageero, ururi su'aalahaaga, oo garo qof weyn oo aad aaminsan tahay oo aad ku darto."
+        },
+        "crewProtocols": {
+          "time": "10-20 daqiiqo",
+          "next": "Ku baadh ujeeddo, dooro hal hab oo maanta ah, kadibna ku qor Qorshaha Crew-gayga goorta aad samayn doonto."
+        },
+        "perspective": {
+          "time": "6-12 daqiiqo",
+          "next": "Dooro xaalad, marka hore qaado aragtida kale, kadibna sheeg waxa aad si kale u samayn lahayd."
+        },
+        "windowOfTolerance": {
+          "time": "8-12 daqiiqo",
+          "next": "Ku dar hal calaamad mid kasta oo ka mid ah saddexdaada aag, kadibna isticmaal Hubin si aad maanta u meelayso."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 daqiiqo",
+          "next": "Ka bilow Waa maxay dareemiddu?, kadibna calaamadee nidaamyada adiga kuu qaylo badan ama kuu aamusan."
+        },
+        "execfunction": {
+          "time": "5-10 daqiiqo",
+          "next": "Tag Bilow oo dooro hal tallaabo bilow ah oo maanta ah, kadibna Hay si aad u doorato meesha aad fikradaha ku qabato."
+        },
+        "growthmindset": {
+          "time": "5-10 daqiiqo",
+          "next": "Fur Dib u Qaabee, qor fikirka go'an, oo u beddel mid gaar ah oo la shaqayn karo."
+        },
+        "dearMan": {
+          "time": "8-12 daqiiqo",
+          "next": "Codsigaaga ku qor hal jumlad, qor toddobada tallaabo, kadibna hal mar ku celceli."
+        },
+        "howlTracker": {
+          "time": "5-10 daqiiqo",
+          "next": "Diiwaangeli Garaac, kadibna samee Hubinta toddobaadlaha: qiimee HOWL kasta oo ku dar hal tusaale oo gaar ah."
+        },
+        "peersupport": {
+          "time": "5-10 daqiiqo",
+          "next": "Dooro laba su'aalood oo furan oo aad weydiin karto saaxiib, kadibna mid ku tijaabi xaalad male-awaal ah qaybta tababarka."
+        },
+        "upstander": {
+          "time": "8-12 daqiiqo",
+          "next": "Akhri jaranjarada geesinimada ee Tallaabooyinka oo dooro labada tallaabo ee ugu yar ee aad runtii qaadi karto toddobaadkan."
+        },
+        "digitalWellbeing": {
+          "time": "8-12 daqiiqo",
+          "next": "Si daacad ah u samee Is-hubinta, kadibna ka dooro hal caado Sanduuqa Qalabka iyo hal xad oo aad hore u dejiso."
+        },
+        "teamwork": {
+          "time": "8-12 daqiiqo",
+          "next": "Eeg Doorarka, kadibna u qor Qorshe Isgaarsiin koox dhab ah: yaa sameeya maxay, halkee, iyo goorma."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Halkan ka bilow",
+        "name_it": "Magacaw",
+        "calm_now": "Hadda deg",
+        "body_reset": "Dib-u-dejinta jidhka",
+        "make_a_plan": "Samee qorshe",
+        "understand_patterns": "Faham qaababka",
+        "practice_repair": "Ku celceli dib-u-hagaajinta",
+        "role_play": "Jilitaan",
+        "facilitated_group": "Koox la hagayo",
+        "reflect": "Milicso",
+        "practice_speaking_up": "Ku celceli inaad codkaaga kor u qaaddo",
+        "make_a_support_plan": "Samee qorshe taageero",
+        "urgent_support": "Taageero degdeg ah",
+        "get_support": "Hel taageero",
+        "move_gently": "Tartiib u soco",
+        "learn_not_diagnose": "Barasho, ma aha ogaansho cudur",
+        "learn_and_get_support": "Baro oo hel taageero",
+        "check_boundaries": "Hubi xuduudaha",
+        "explore_identity": "Sahami aqoonsiga",
+        "practice_body_respect": "Ku celceli ixtiraamka jidhka",
+        "map_carefully": "Si taxaddar leh u khariidee",
+        "understand_needs": "Faham baahiyaha"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Magacaw waxa dhacaya ka hor intaadan dooran xeelad."
+        },
+        "emotions": {
+          "note": "Dhis erayo dareen oo sax ah oo ogow xoogga."
+        },
+        "coping": {
+          "note": "Isku day hal xeelad jidh ama deganaansho, kadibna ogow waxa isbeddelay."
+        },
+        "mindfulness": {
+          "note": "Hakad qoraal yar leh oo loogu talagalay neefsasho, feejignaan, ama dareenka jidhka."
+        },
+        "somaticReset": {
+          "note": "Dooro qayb jidhka ah, kadibna isku day tababar gaaban oo xasillooni, neefsasho, ama dhaqdhaqaaq khafiif ah. Dooraha yar ee kiiboodhka lagu isticmaali karo wuxuu sawir kasta ka dhigaa mid la maarayn karo shaashadaha yaryar. Sawirrada waxaa ka mid ah Hirka Socda oo NEEF QAADO · KAC ku lammaaneeya xariiq adag iyo calaamad wareeg ah, NEEF SII DAA · DEG xariiq dhibco ah iyo calaamad dheeman ah, iyo HAKAD tiirar hakad ah; Ubaxa Furmaya oo NEEF QAADO · FUR ku lammaaneeya xuduudo caleemo adag iyo bartame wareeg ah, NEEF SII DAA · JILCI xuduudo dhibco ah iyo bartame dheeman ah, iyo HAKAD tiirar hakad bartamaha ah; Jiifka Deganaanshaha oo NEEF QAADO · KAC ku lammaaneeya xuduud qorrax adag iyo bartame goobo ah, NEEF SII DAA · DEG xuduud qorrax dhibco ah iyo bartame dheeman ah, iyo HAKAD tiirar hakad qorraxda ah; jid toosan oo la saadaalin karo oo jihadiisa la calaamadeeyay, oo leh calaamado toos ah oo NEEF QAADO iyo NEEF SII DAA, bartilmaameed wareeg ah oo NEEF QAADO iyo mid dheeman ah oo NEEF SII DAA, raad ka bilaabma meesha firfircoon, iyo meesha xigta oo xuduud leh; iyo Wareegga Neefta oo laba qaybood ah oo leh qaansooyin marxaladeed oo adag iyo dhibco ah oo xoog yeesha marka ay firfircoon yihiin, giraan bartame ah oo qaabka marxaladda la mid ah, calaamado toos ah oo NEEF QAADO iyo NEEF SII DAA, astaan bartame ah oo xaaladda hakadka, meesha u-gudbinta xigta oo xuduud leh, calaamad saacad-wareeg ah oo qaabka marxaladda leh, khariidad garaac oo qaab ku calaamadaysan, iyo tilmaamo marxaladeed oo loogu talagalay akhriyaha shaashadda. Ardaydu waxay tijaabin karaan hal neef oo dhaqdhaqaaq ah ka hor inta saacaddu bilaabmin, kadibna way weynayn karaan, xasilin karaan, ama damin karaan hagaha. Muuqaalka Aamusan, sawirka la weyneeyay wuxuu noqdaa badhan bilow/hakad oo kiiboodhka iyo taabashada lagu isticmaali karo. Tirinta hoos u dhacda waa la qarin karaa; erayada hagitaanku waxay noqon karaan buuxa, marxaladda oo keliya, ama qarsoon; tirinta neefta iyo qiimaynta tirooyinkuna waa ikhtiyaari.",
+          "boundary": "Tani ma aha daaweyn ama ogaansho cudur. Dhaqdhaqaaqa ka dhig mid yar oo aan xanuun lahayn; jooji haddii xanuun, dawakh, ama kabuubyo dhacaan oo u sheeg qof weyn oo aad aaminsan tahay ama xirfadle caafimaad."
+        },
+        "anxietyToolkit": {
+          "note": "Welwelka ka sooc ficilka oo dooro hal tallaabo xigta oo wax ku ool ah."
+        },
+        "windowOfTolerance": {
+          "note": "Khariidee calaamadaha kacsanaanta iyo taageerooyinka muddo ka dib; ma aha ogaansho cudur."
+        },
+        "stressBucket": {
+          "note": "Wada eeg cadaadisyada iyo taageerooyinka, oo ay ku jiraan cadaadisyada ka baxsan awooddaada."
+        },
+        "bigFeelings": {
+          "note": "Cadhada u isticmaal macluumaad oo qorshee hakad badbaado badan ama dib-u-hagaajin."
+        },
+        "conflict": {
+          "note": "Waxay ugu fiican tahay ku celcelinta khilaaf khatar yar ama male-awaal ah.",
+          "boundary": "Haddii ay jiraan hanjabaad, qasab, cagajuglayn, xadgudub, ama kala-duwanaansho awoodeed oo aan badbaado lahayn, hakad oo ku dar qof weyn oo aad aaminsan tahay halkii aad keligaa ka gorgortami lahayd."
+        },
+        "conflicttheater": {
+          "note": "Tababar Beta ah oo kugu dhex-qaada oo leh jilayaal male-awaal ah; ha u isticmaalin inaad ku dhexdhexaadiso waxyeello socota.",
+          "boundary": "Hanjabaadaha dhabta ah, xadgudubka, ama cagajuglaynta waxay u baahan yihiin taageero qof weyn iyo jawaab badbaado, ma aha layli jilitaan."
+        },
+        "restorativeCircle": {
+          "note": "Ku isticmaal xeerar goobo oo la dejiyay iyo qof weyn oo hagaya.",
+          "boundary": "Goobada ha u isticmaalin inaad qof ku cadaadiso inuu wax dadka hortooda ku sheego ama inaad ku maareyso khatar badbaado oo socota."
+        },
+        "strengths": {
+          "note": "Milicsi awoodeed oo furan oo aan lahayn dhibco, darajo, ama ogaansho cudur."
+        },
+        "viaStrengths": {
+          "note": "Is-kala-soocid loogu talagalay milicsi, ma aha sahanka rasmiga ah ee VIA ama natiijo cabbir cilmi-nafsi."
+        },
+        "perma": {
+          "note": "Sawir ladnaan oo lagu kiciyo wada-hadal, ma aha qiimayn caafimaadka maskaxda."
+        },
+        "advocacy": {
+          "note": "Qoraallo hadal oo guud iyo ku celcelin lagu muujiyo baahiyaha laguna codsado taageero."
+        },
+        "selfAdvocacy": {
+          "note": "U isticmaal qorshayn la taaban karo oo IEP, 504, fududayn, sheegid, ama taageero dugsi ah."
+        },
+        "crisiscompanion": {
+          "note": "Hage taageero oo adiga ama saaxiib loogu talagalay; ma aha baaritaan qalalaase mana beddelo qof weyn.",
+          "boundary": "Haddii qof uu khatar degdeg ah ku jiri karo ama uu ku dhaqmi karo fikradaha is-dhaawicidda, halkan ku joogso oo hadda la xiriir qof weyn oo aad aaminsan tahay ama taageerada degdegga/qalalaasaha."
+        },
+        "safety": {
+          "note": "Baro xuduudaha iyo tallaabooyinka qofka weyn ee aad aaminsan tahay; tani ma aha imtixaan lagu ogaado in xaaladi badbaado leedahay.",
+          "boundary": "Haddii aad khatar degdeg ah ku jirto ama qof uu ku dhaawacayo, joogso oo hadda la xiriir qof weyn oo aad aaminsan tahay ama taageerada degdegga."
+        },
+        "griefLoss": {
+          "note": "Weheliye gaar ah oo loogu talagalay murugada iyo khasaaraha; ka bood wax kasta oo kuu muuqda wax aad u badan.",
+          "boundary": "Haddii murugadu kugu adkaato ilaa aan la qaadi karin, aad dareento inaadan badbaado qabin, ama qof kale uu khatar ku jiro, ku dar qof weyn oo aad aaminsan tahay ama taageerada qalalaasaha."
+        },
+        "traumaPsychoed": {
+          "note": "Waxbarasho nafsi ah oo ku saabsan falcelinnada dhaawaca nafsiga; ma aha baaritaan ama daaweyn.",
+          "boundary": "Uma baahnid inaad halkan ku sheegto dhaawac nafsi. Hakad oo raadi qof weyn oo aad aaminsan tahay ama lataliye haddii nuxurku kuu soo kiciyo wax aan badbaado lahayn."
+        },
+        "substancePsychoed": {
+          "note": "Macluumaad iyo milicsi yaraynta waxyeellada ah; ma aha baaritaan ama ogolaansho aad maandooriye ku isticmaasho.",
+          "boundary": "Qalabkan ha u isticmaalin qaadasho xad-dhaaf ah (overdose) ama xaalad caafimaad oo degdeg ah; la xiriir caawimaad degdeg ah ama qof weyn oo aad aaminsan tahay."
+        },
+        "healthyRelationships": {
+          "note": "Sahami ogolaanshaha iyo qaababka xiriirka adigoon qof ama xiriir calaamad u saarin.",
+          "boundary": "Haddii xiriir uu ku jiro hanjabaad, qasab, ama rabshad, raadi caawimaad qof weyn; keligaa ha iska horyimaadin qofka."
+        },
+        "identitySupport": {
+          "note": "Milicsi taageeraya iyo taageero bulsho; wadaagistu waa ikhtiyaari.",
+          "boundary": "Macluumaadka shakhsiga ah ka dhig mid gaar ah oo ku dar qof weyn oo aad aaminsan tahay haddii aad dareento inaadan badbaado qabin."
+        },
+        "bodyStory": {
+          "note": "Qaddarinta jidhka iyo aqoonta warbaahinta; ma aha miisaan-dhimis ama qiimaynta xanuunnada cunidda.",
+          "boundary": "Haddii cuntada, aragtida jidhka, ama jimicsigu kuu muuqdaan kuwo aan badbaado lahayn ama ku qabsanaya, la hadal qof weyn oo aad aaminsan tahay ama xirfadle caafimaad."
+        },
+        "genogram": {
+          "note": "Milicsi qoys oo shakhsi ah; ma aha qiimayn kiliinig ah, wadaagistuna waa ikhtiyaari.",
+          "boundary": "Ka bood faahfaahinta qoyska ee kuu muuqda kuwo aan badbaado lahayn ama gaar ah; weydii qof weyn oo aad aaminsan tahay taageero."
+        },
+        "sensoryRegulation": {
+          "note": "Samee sharraxaad dareemeed iyo fududayn; ma aha ogaansho cudur.",
+          "boundary": "Dooro taageerooyin kuu muuqda kuwo badbaado leh; fududaynta la wadaag oo keliya markaad rabto."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Hubinta Subaxa",
+          "desc": "Maalinta ku bilow hubin niyadeed, neefsasho, iyo dejin hadaf"
+        },
+        "calm_down": {
+          "name": "Geeska Dejinta",
+          "desc": "Xeelado maaraynta ah marka dareennadu kacsan yihiin"
+        },
+        "conflict_unit": {
+          "name": "Cutubka Xallinta Khilaafka",
+          "desc": "Ku celceli xallinta khilaafaadka iyo dhisidda xirfadaha dib-u-hagaajinta"
+        },
+        "empathy_week": {
+          "name": "Toddobaadka Dareen-wadaagga iyo Aragtida",
+          "desc": "Dhis dareen-wadaag adigoo ka eegaya aragtida kale iyo wacyiga dhaqanka"
+        },
+        "decision_making": {
+          "name": "Si Qoto Dheer u Baadh Go'aan-qaadashada",
+          "desc": "Ku celceli fikirka anshaxa iyo doorashooyinka mas'uulka ah"
+        },
+        "self_discovery": {
+          "name": "Safarka Is-baadhista",
+          "desc": "Sahami cidda aad tahay — awoodaha, dareennada, iyo maskaxda korriinka"
+        },
+        "friendship": {
+          "name": "Saaxiibtinimo iyo Xirfadaha Bulshada",
+          "desc": "Dhis saaxiibtinimo caafimaad qabta iyo xirfadaha isgaarsiinta"
+        },
+        "transitions": {
+          "name": "La Tacaalidda Isbeddelka",
+          "desc": "Ardayda ku taageer isbeddellada nolosha iyo waayo-aragnimada cusub"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Ogow waxa aad u baahan tahay oo dooro hal tallaabo xigta oo la maarayn karo.",
+          "model": "Waxaan dareemayaa degganaansho la'aan. Waxaan isku dayi karaa kala-bixin jidh, kadibna dooran karaa qaybta koowaad ee hawshayda.",
+          "practice": "Magacaw dareen, farta ku fiiq doorasho, ama si aamusan u ogow. Isku day hal taageero oo dooro hadaf yar.",
+          "reflect": "Maxaad ogaatay? Maxaad hayn lahayd ama beddeli lahayd?",
+          "transfer": "Marka casharka xiga bilaabmo, waxaan isku dayi karaa ____. Haddii aan caawimaad u baahdo, waxaan weydiin karaa ____."
+        },
+        "calm_down": {
+          "goal": "Sahami taageero ku habboon jidhkaaga iyo xilligan.",
+          "model": "Tababarka neefsashadu maanta iima muuqdo mid caawinaya. Waxaan isku dayi karaa inaan qolka hareerihiisa eego ama weydiisto qof ila joogo.",
+          "practice": "Dooro hal xeelad oo keliya oo raaxo leh. Fadhiisiga, daawashada, ama nasasho qaadashadu waa doorashooyin sax ah.",
+          "reflect": "Ma ku caawisay, isku mid ma ahayd, mise raaxo darro ayay kuu keentay? Waad joojin kartaa ama dooran kartaa hab kale.",
+          "transfer": "Markaan ogaado ____, waxaan isku dayi karaa ____ ama waxaan taageero weydiin karaa ____."
+        },
+        "conflict_unit": {
+          "goal": "Ka fikir aragtiyada oo ku celceli jawaab ixtiraam leh oo loogu talagalay khilaaf maalinle ah.",
+          "model": "Labadeenaba waxaan rabnaa isla qalabka. Waxaan ku weydiin karaa waxa aad u baahan tahay, sharxi karaa baahidayda, oo soo jeedin karaa inaan isu kala dhiibno.",
+          "practice": "Isticmaal khilaaf male-awaal ah oo khatar yar. Ku celceli hal su'aal dhageysi iyo hal tallaabo xigta oo suurtagal ah.",
+          "reflect": "Kuwee baahiyahood ayay jawaabtu wax ka qabatay? Maxaa laga yaabaa inuu u baahdo beddel?",
+          "transfer": "Khilaaf badbaado leh, waxaan awoodaa ____. Hanjabaadda, cagajuglaynta, ama qasabka, waxaan caawimaad weydiin karaa qof weyn oo aan aaminsanahay."
+        },
+        "empathy_week": {
+          "goal": "Sahami aragti kale adigoon u qaadan inaad garanayso sida uu qof dareemayo.",
+          "model": "Way aamusan yihiin. Waxaa laga yaabaa inay daalan yihiin ama fikirayaan; waan weydiin karaa halkii aan iyaga u go'aamin lahaa.",
+          "practice": "Isticmaal tusaale male-awaal ah. Magacaw laba aragtiyood oo suurtagal ah iyo su'aal ixtiraam leh oo aad weydiin karto.",
+          "reflect": "Maxaad garanaysaa, maxaadse qiyaasaysaa? Sideed u hubin kartaa?",
+          "transfer": "Ka hor intaanan toddobaadkan wax u qaadan, waxaan weydiin karaa ____."
+        },
+        "decision_making": {
+          "goal": "Isbarbardhig doorashooyinka saameyntooda adiga iyo dadka kale.",
+          "model": "Ka hor intaanan dhejin sawir koox, waxaan weydiisan karaa ogolaansho oo ka fikiri karaa cidda arki karta.",
+          "practice": "Dooro go'aan male-awaal ah. Isbarbardhig laba ikhtiyaar, saameyn suurtagal ah, iyo qof ku caawin kara.",
+          "reflect": "Macluumaadkee ayaa maqan? Ma jiraa ikhtiyaar badbaado badan ama caddaalad badan?",
+          "transfer": "Ka hor intaanan go'aan ka gaarin ____, waan hakan karaa si aan u hubiyo ____."
+        },
+        "self_discovery": {
+          "goal": "Garo awood oo dooro hab aad ugu isticmaasho taageero.",
+          "model": "Waxaan weydiiyaa su'aalo waxtar leh. Awooddaas waan isticmaali karaa marka hawshu aysan caddayn oo waxaan weydiisan karaa tusaale.",
+          "practice": "Dooro awood kugu habboon, ama jilaa male-awaal ah. Sii hal tusaale oo ay ficil ku jirto.",
+          "reflect": "Maxaa ka caawiyay awooddaas inay soo baxdo? Taageeradee ayaa suurtagal ka dhigi lahayd tallaabada xigta?",
+          "transfer": "Waxaan isticmaali karaa ____ marka ____. Qof ama il ka caawin karta waa ____."
+        },
+        "friendship": {
+          "goal": "Ku celceli isgaarsiin ixtiraamaysa baahiyahaaga iyo xuduudaha dadka kale.",
+          "model": "Waxaan qof ku casuumi karaa inuu nagu soo biiro oo aqbali karaa doorashadiisa haddii uu yiraahdo maya.",
+          "practice": "Ku celceli casuumaad, su'aal dhageysi, ama xad ixtiraam leh. Hadalka, qoraalka, ama AAC dhammaan way tirsan yihiin.",
+          "reflect": "Qof kastaa ma haystay doorasho dhab ah? Maxaa ka dhigi kara isdhexgalka mid soo dhawayn badan?",
+          "transfer": "Isdhexgal badbaado leh toddobaadkan, waxaan isku dayi karaa ____ oo ogaan karaa ____."
+        },
+        "transitions": {
+          "goal": "Garo waxa isbeddelaya, waxa sii deggenaan kara, iyo hal il taageero.",
+          "model": "Fasal cusub wuxuu u muuqdaa mid aan la hubin. Waxaan hore u heli karaa qolka oo weydiin karaa cidda i caawin karta.",
+          "practice": "Dooro isbeddel dhab ah ama male-awaal ah. Magacaw hal shaki, hal taageero deggan, iyo hal tallaabo xigta oo yar.",
+          "reflect": "Qaybtee ayaa gacantaada ku jirta? Caawimaad ama fududayn noocee ah ayaa waxtar lahaan lahayd?",
+          "transfer": "Ka hor isbeddelka, waxaan awoodaa ____. Haddii qorshuhu u baahdo inuu isbeddelo, waxaan awoodaa ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 daqiiqo",
+          "format": "Keli ama koox",
+          "cue": "Hubin koowaad oo waxtar leh ka hor wadaagis kasta."
+        },
+        "emotions": {
+          "time": "5-8 daqiiqo",
+          "format": "Keli ama labo",
+          "cue": "Diyaar-garow erayo oo wanaagsan."
+        },
+        "coping": {
+          "time": "3-10 daqiiqo",
+          "format": "Keli ama koox",
+          "cue": "Ugu fiican dib-u-dejin maaraynta."
+        },
+        "mindfulness": {
+          "time": "2-10 daqiiqo",
+          "format": "Fasalka oo dhan",
+          "cue": "Ikhtiyaar maarayn oo qoraal yar leh."
+        },
+        "somaticReset": {
+          "time": "3-8 daqiiqo",
+          "format": "Keli ama fasalka oo dhan",
+          "cue": "Dooraha sawirka ee yar wuxuu hage kasta ka dhigaa mid la heli karo iyadoo aan loo baahnayn shax badhamo cufan. Wareegga Neefta wuxuu isku lammaaneeyaa qaansooyin adag iyo dhibco ah oo leh marxalad firfircoon oo xoog badan, giraan bartame ah oo adag-ama-dhibco ah oo la mid ah, iyo calaamado toos ah oo NEEF QAADO iyo NEEF SII DAA; bartamihiisu wuxuu dhibic uga beddelmaa tiirar hakad marka la hakiyo, dheemankiisa ama giraantiisa xuduudda leh ayaa tilmaamaya u-gudbinta marxaladda xigta, halka calaamaddiisa saacad-wareegga ah ee wareegga-ama-dheemanka ah, dheemanka u-gudbinta, giraanta soo-noqoshada, tiirarka gaagaaban ee neef-qaadashada, iyo dhibcaha godan ee neef-sii-deynta ay marxaladda iyo tirinta ikhtiyaariga ah ka dhigaan kuwo la akhriyi karo iyadoo aan midab loo baahnayn. U oggolow ardayda inay tijaabiyaan hal neef oo dhaqdhaqaaq ah ka hor saacadda, ama dooraan Xasil. Bixi erayo hagitaan oo buuxa, marxaladda oo keliya, ama qarsoon. Muuqaalka Aamusan wuxuu sawirka la weyneeyay ka dhigaa badhan toos ah oo bilow/hakad. Hirka Socda wuxuu isticmaalaa NEEF QAADO · KAC oo leh xariiq adag iyo calaamad wareeg ah, NEEF SII DAA · DEG oo leh xariiq dhibco ah iyo calaamad dheeman ah, iyo tiirar hakad fadhiga la hakiyay. Ubaxa Furmaya wuxuu isticmaalaa NEEF QAADO · FUR oo leh xuduudo caleemo adag iyo bartame wareeg ah, NEEF SII DAA · JILCI oo leh xuduudo dhibco ah iyo bartame dheeman ah, iyo tiirar hakad bartamaha ah fadhiga la hakiyay. Jiifka Deganaanshaha wuxuu isticmaalaa NEEF QAADO · KAC oo leh xuduud qorrax adag iyo bartame goobo ah, NEEF SII DAA · DEG oo leh xuduud qorrax dhibco ah iyo bartame dheeman ah, iyo tiirar hakad qorraxda ah marka la hakiyo. Jidka Neeftu wuxuu isticmaalaa bartilmaameed NEEF QAADO oo wareeg ah, bartilmaameed NEEF SII DAA oo dheeman ah, raad ka bilaabma meesha firfircoon, iyo meesha xigta oo xuduud leh si jihadu aysan midab ugu tiirsanaan. Bixi tilmaamo marxaladeed oo loogu talagalay akhriyaha shaashadda, iyo doorashooyin tirin qarsoon, hagitaan qarsoon, dhaqdhaqaaq la'aan, sawir la'aan, neefsasho dabiici ah, iyo tiro la'aan; weligaa ha qasbin qiimayn ama sharraxaad ku saabsan dareenka jidhka."
+        },
+        "journal": {
+          "time": "5-12 daqiiqo",
+          "format": "Keli",
+          "cue": "Milicsi gaar ah. Wadaagistu waa inay ahaataa ikhtiyaari."
+        },
+        "goals": {
+          "time": "5-10 daqiiqo",
+          "format": "Keli ama latalin",
+          "cue": "Tallaabo xiritaan oo wanaagsan kadib milicsiga."
+        },
+        "conflict": {
+          "time": "8-12 daqiiqo",
+          "format": "Labo ama koox yar",
+          "cue": "Xeerarka hore u sharax ka hor jilitaanka."
+        },
+        "restorativeCircle": {
+          "time": "15-30 daqiiqo",
+          "format": "Goobo",
+          "cue": "Ku isticmaal xeerar goobo oo la dejiyay."
+        },
+        "peersupport": {
+          "time": "8-15 daqiiqo",
+          "format": "Tababar labo ah",
+          "cue": "Aad ugu fiican ku celcelinta xirfadaha dhageysiga."
+        },
+        "perspective": {
+          "time": "6-12 daqiiqo",
+          "format": "Labo ama koox",
+          "cue": "Buundo dareen-wadaag oo wanaagsan ka hor doodda."
+        },
+        "digitalWellbeing": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli ama latalin",
+          "cue": "Waxtar leh ka hor xeerarka telefoonka ama AI."
+        },
+        "sleep": {
+          "time": "5-10 daqiiqo",
+          "format": "Keli",
+          "cue": "Ku fiican cutubyada latalinta caafimaadka."
+        },
+        "safety": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli",
+          "cue": "Marka hore adigu eeg; ka fogow sheegid qasab ah."
+        },
+        "crisiscompanion": {
+          "time": "3-10 daqiiqo",
+          "format": "Keli",
+          "cue": "Xirfadaha taageerada degdegga ah, ma aha hawl fasal."
+        },
+        "griefLoss": {
+          "time": "10-20 daqiiqo",
+          "format": "Keli",
+          "cue": "Marka hore adigu eeg; isticmaal beddello ka-bixid ah."
+        },
+        "identitySupport": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli",
+          "cue": "Ku isticmaal ilaalinta sirta iyo daryeelka ka-bixidda."
+        },
+        "traumaPsychoed": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli ama uu macallin hago",
+          "cue": "Waxbarasho nafsi ah oo keliya; bixi ka-bixid iyo jid loo maro qof weyn oo la aamini karo."
+        },
+        "substancePsychoed": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli ama cashar caafimaad",
+          "cue": "Marka hore adigu eeg qaabka yaraynta waxyeellada oo bixi taageero qof weyn/caafimaad."
+        },
+        "healthyRelationships": {
+          "time": "10-20 daqiiqo",
+          "format": "Keli ama cashar caafimaad",
+          "cue": "Marka hore adigu eeg luqadda ogolaanshaha iyo badbaadada; weligaa ha qasbin sheegid shakhsi ah."
+        },
+        "bodyStory": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli",
+          "cue": "Qaab ixtiraamka jidhka; bixi ka-bixid oo ka fogow dood diiradda saaraysa miisaanka."
+        },
+        "genogram": {
+          "time": "10-20 daqiiqo",
+          "format": "Keli",
+          "cue": "Milicsi qoys oo keliya; wadaagistu waa inay ahaataa ikhtiyaari."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 daqiiqo",
+          "format": "Keli ama qorshayn taageero",
+          "cue": "Isticmaal luqad aqoonsiga qaddarinaysa oo u oggolow ardayda inay doortaan waxa ay wadaagayaan."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Hubinta subaxa ee latalinta",
+          "time": "10-15 daqiiqo",
+          "format": "Fasalka oo dhan",
+          "focus": "Niyad, neef, hal tallaabo xigta",
+          "studentView": "Ardaydu si gaar ah ayay u hubiyaan aaggooda, isku dayaan ikhtiyaar maarayn, kadibna doortaan hal baahi oo maalinta ah ama ka gudbaan.",
+          "teacherMove": "Marka hore tusaale u noqo ikhtiyaarka ka-gudbidda. Casuun wadaagis hal eray ama midab ah oo keliya kadib tababarka gaarka ah.",
+          "privacyBoundary": "Qoraal xusuus-qor ah lama ururiyo; ardaydu waxay mar dambe go'aamiyaan in barta kaydinta midkood ay gasho Xirmada Wadaagga.",
+          "note": "Ku bilow hubin aag oo gaar ah, kadibna bixi neefsasho ama dejin hadaf. Ardaydu waxay wadaagi karaan hal eray, midab, ama way ka gudbi karaan."
+        },
+        "calm_reset": {
+          "name": "Dib-u-dejin shan daqiiqo ah",
+          "time": "5-8 daqiiqo",
+          "format": "Fasalka oo dhan ama geeska dejinta",
+          "focus": "Maaraynta jidhka",
+          "studentView": "Ardaydu waxay ogaadaan xaaladda jidhkooda hadda oo doortaan hal tababar jidh-dejin.",
+          "teacherMove": "Hawsha ka dhig mid hadal yar oo waqti xaddidan. Bixi dhaqdhaqaaq, neefsasho, ama beddello aamusan.",
+          "privacyBoundary": "Ardaydu waxay naftooda u kaydin karaan barta kaydinta; qofna uma baahna inuu sharxo sababta uu ugu baahday dib-u-dejin.",
+          "note": "Tan ka dhig hadal yar. Ardaydu waxay doortaan hal tababar maarayn oo ogaadaan waxa isbeddelay."
+        },
+        "repair_routine": {
+          "name": "Hawsha dib-u-hagaajinta ka dib khilaafka",
+          "time": "15-25 daqiiqo",
+          "format": "Koox yar ama latalin",
+          "focus": "Aragti, dib-u-hagaajin, ficil xiga",
+          "studentView": "Ardaydu waxay isticmaali karaan xaalad dhab ah, male-awaal ah, ama uu macallinku bixiyay si ay ugu celceliyaan luqadda dib-u-hagaajinta.",
+          "teacherMove": "Marka hore deji xeerarka dib-u-hagaajinta oo ka fogow qirasho dadweyne. Hakad haddii xaaladdu u baahan tahay dhexdhexaadin qof weyn.",
+          "privacyBoundary": "Ardaydu waxay doortaan waxa ay wadaagayaan; milicsiyada khilaafka ee gaarka ahi waa inaysan noqon caddayn fasal.",
+          "note": "Isticmaal kadib marka xeerarka la dejiyo. Diiradda saar luqadda dib-u-hagaajinta, ma aha qirasho dadweyne."
+        },
+        "digital_reset": {
+          "name": "Cashar yar oo ladnaanta dhijitaalka",
+          "time": "12-20 daqiiqo",
+          "format": "Latalin ama caafimaad",
+          "focus": "Telefoon, hurdo, AI iyo xuduud",
+          "studentView": "Ardaydu waxay dib u eegaan caadooyinka, doortaan hal xad oo ay tijaabiyaan, oo sababta ka dhigaan mid gaar ah haddii ay rabaan.",
+          "teacherMove": "U dhig naqshadaynta caadooyinka, ma aha baaritaan telefoon. Ka fogow inaad ardayda ka codsato inay muujiyaan sawir-shaashadeed ama xogta isticmaalka.",
+          "privacyBoundary": "Ardaydu waxay wadaagi karaan hadaf xad, laakiin faahfaahinta shakhsiga ah ee hurdada, telefoonka, ama AI waa ikhtiyaari.",
+          "note": "U dhig naqshadaynta caadooyinka, ma aha baaritaan telefoon. Ardaydu waxay doortaan hal xad oo ay isku dayaan."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Hab cilmi-baaris ku salaysan",
+          "title": "Cilmi-baaristu waxay la xiriirtaa habka aasaasiga ah; la-qabsigan dhijitaalka ah halkan lama qiimayn"
+        },
+        "emerging": {
+          "label": "Caddayn hab oo xaddidan",
+          "title": "Rajo leh laakiin caddayn xaddidan ama isku dhafan"
+        },
+        "contested": {
+          "label": "Qaab muran leh",
+          "title": "Caan ah laakiin cilmi ahaan lagu muransan yahay; waxaa ugu fiican in loo isticmaalo tusaale, ma aha farsamo"
+        },
+        "practice": {
+          "label": "Tababar milicsi",
+          "title": "Tababar habaysan ama qiyaas guud, ma aha sheegasho waxtar oo tijaabo ku salaysan"
+        }
+      },
+      "ui": {
+        "sel_practice": "Tababarka SEL",
+        "default_purpose": "Si daryeel leh ugu celceli hal xirfad SEL.",
+        "default_next": "Dhammee hal tallaabo oo yar, kadibna go'aanso inaad kaydinayso.",
+        "private_checkpoint": "Barta kaydinta gaarka ah",
+        "share_packet_eligible": "Waa u qalantaa Xirmada Wadaagga",
+        "saving_preparing": "Waxaa la diyaarinayaa kaydinta shaqadaada SEL...",
+        "save_requested": "Kaydinta {title} waa la codsaday",
+        "returned_to_grid": "Dib loogu noqday shaxda qalabka",
+        "back_to_sel_tools": "Ku noqo qalabka SEL",
+        "export_now_aria": "Hadda dhoofi faylka mashruuca SEL",
+        "export_now": "Hadda dhoofi",
+        "purpose": "Ujeeddo",
+        "next_step": "Tallaabada xigta",
+        "saved_work": "Shaqada la kaydiyay",
+        "checkpoints_private": "Baraha kaydinta ee qalabku halkan way ku gaar ahaanayaan ilaa aad u doorato Xirmada Wadaagga.",
+        "use_with_care_label": "Si taxaddar leh u isticmaal:",
+        "tool_open_failed_title": "Qalabkan lama furi karin",
+        "tool_open_failed_body": "Wax ka mid ah macluumaadka la kaydiyay ee hawshan ma soo shubmin. Tani ma aha wax aad adigu qalad ku samaysay.",
+        "saved_work_kept": "Shaqadaada la kaydiyay lama tirtirin.",
+        "back_to_hub": "Ku noqo SEL Hub",
+        "tell_teacher": "Haddii tani sii dhacdo, u sheeg macallinkaaga hawsha ay ahayd.",
+        "load_did_not_start": "Qalabka waa la soo dejiyay laakiin ma bilaabmin.",
+        "load_too_long": "Qalabku wuxuu qaatay waqti aad u dheer si uu u soo shubmo.",
+        "this_sel_tool": "Qalabkan SEL",
+        "tool_opening": "{name} waa furmayaa...",
+        "tool_open_retry": "{name} lama furi karin. Mar kale isku day, ama dooro qalab kale.",
+        "station_link_missing": "Xiriirkan wuxuu magacaabayaa saldhig aan ku jirin mashruucan. Soo shub baakadda uu ku jiro, ama mid ka bilow Saldhigyada SEL ee guddiga Taariikhda.",
+        "started_station": "Saldhigga {name} waa la bilaabay",
+        "tool_could_not_open": "{name} lama furi karin.",
+        "tool_not_available": "{name} laguma heli karo SEL Hub-kan.",
+        "try_again": "Mar kale isku day",
+        "dismiss": "Saar",
+        "back_to_tools": "Ku noqo qalabka",
+        "band_elementary": "Dugsiga Hoose",
+        "band_middle": "Dugsiga Dhexe",
+        "band_high": "Dugsiga Sare",
+        "unsaved_aria": "Waxaad haysataa isbeddello aan la kaydin",
+        "unsaved_title": "Isbeddello aan la kaydin",
+        "unsaved": "Lama kaydin",
+        "unsaved_hint": "Waxaad haysataa isbeddello aan la kaydin — taabo Hadda dhoofi si aad u kaydiso",
+        "educators_opened": "Hagaha Macallimiinta waa la furay",
+        "educators_aria": "Macallimiinta: sida mas'uuliyad leh loo isticmaalo Hub-kan",
+        "for_educators": "Macallimiinta",
+        "theme_aria": "Beddel muuqaalka (iftiin / mugdi / kala-duwanaansho sare)",
+        "theme_contrast": "Kala-duwanaansho Sare",
+        "theme_dark": "Habka Mugdiga",
+        "theme_light": "Habka Iftiinka",
+        "theme_contrast_short": "Kala-sare",
+        "theme_dark_short": "Mugdi",
+        "theme_light_short": "Iftiin",
+        "xp_aria": "{count} dhibcood waayo-aragnimo SEL",
+        "close_hub": "Xir SEL Hub",
+        "keep_share_title": "Dooro waxa aad haynayso iyo waxa aad wadaagayso",
+        "keep_share_body": "Hawlaha qaarkood shaqada waxay ku kaydiyaan aaladdan; shaqada kale waxay jirtaa oo keliya tab-kan. Xiritaanka tab-ka wax walba ma tirtiro. Dhoofi fayl si aad nuqul u hayso. Aalad la wadaago, dib u eeg Xogta & sirta ee qaybta Macallimiinta. Astaamaha AI iyo wadaagistu waxay isticmaalaan adeegyada laguu habeeyay.",
+        "got_it_aria": "Waan fahmay, bilow isticmaalka SEL Hub",
+        "got_it": "Waan fahmay",
+        "practice_support": "Taageerada tababarka",
+        "learning_guide": "Hagaha waxbarashada iyo hababka tababarka",
+        "what_you_can_explore": "Waxa aad sahamin karto",
+        "worked_example": "Tusaale la dhammaystiray",
+        "try_one_step": "Isku day hal tallaabo",
+        "reflect_transfer": "Milicso oo meel kale ku isticmaal",
+        "look_closer": "Si dhow u eeg",
+        "next_use": "Isticmaal xiga oo suurtagal ah",
+        "adapt_together": "Wada waafajiya tababarka",
+        "adapt_smaller": "Ka bilow wax ka yar: tusaale u samee hal jumlad ama doorasho, isticmaal sawir ama shay la taaban karo, oo sii waqti fikir.",
+        "adapt_deeper": "Qoto dheer u gal: isbarbardhig laba jawaabood, garo macluumaadka maqan, oo sharax waxa beddeli kara doorashadaada.",
+        "adapt_context": "Beddel duruufta: isticmaal xaalad male-awaal ah oo ku habboon luqadda, xiisaha, dhaqanka, iyo baahiyaha helitaanka ee bartaha.",
+        "adapt_check": "Ku hubi fahamka tusaale ama sharraxaad la doortay, ma aha sheeko shakhsi ah oo qasab ah, isbeddel dareen, ama dhibco.",
+        "optional_prompts": "Su'aalahan ikhtiyaariga ahi ma gudbiyaan jawaabo, ma bixiyaan dhammaystir, mana beddelaan tilmaamaha iyo macluumaadka badbaadada ee hawsha laftigeeda.",
+        "returned_to_activities": "Dib loogu noqday hawlaha. Ficilkan ma diiwaangelin dhammaystir tababar.",
+        "return_to_activities": "Ku noqo hawlaha",
+        "chooser_first_reset_coping": "Dooro hal ikhtiyaar deganaansho oo raaxo leh. Ogow inuu ku habboon yahay; joojintu waa la oggol yahay.",
+        "chooser_first_reset_journal": "Qor hal shay oo ka dhigi lahaa daqiiqadaha soo socda kuwo la maarayn karo. Sheeko shakhsi ah looma baahna.",
+        "chooser_first_feelings_zones": "Farta ku fiiq dareen ama si aamusan u ogow. Dooro hal taageero; ma jiro aag sax ah oo la gaaro.",
+        "chooser_first_feelings_emotions": "Sahami laba eray dareen oo loogu talagalay jilaa male-awaal ah. Jawaab ka badan ayaa ku habboonaan karta.",
+        "chooser_first_feelings_journal": "Qor eray ama milicsi gaaban oo ku saabsan xaalad male-awaal ah ama maalinle ah.",
+        "chooser_first_conversation_advocacy": "Isticmaal xaalad male-awaal ah si aad hal codsi ugu celceliso cod dheer, AAC, ama si aamusan, meel ka fog foomka.",
+        "chooser_first_conversation_journal": "Qor hal codsi oo ixtiraam leh oo loogu talagalay xaalad maalinle ah oo badbaado leh; uma baahnid inaad dirto.",
+        "chooser_first_decision_decisions": "Ka fikir laba doorasho oo ku jira xaalad male-awaal ah iyo hal saameyn oo suurtagal ah oo mid kasta.",
+        "chooser_first_decision_goals": "Qor hal tallaabo xigta oo macquul ah iyo taageero aad codsan karto.",
+        "try_a_reset": "Isku day dib-u-dejin",
+        "need_feeling": "Faham dareen",
+        "need_conversation": "U diyaargarow wada-hadal",
+        "need_decision": "Dooro tallaabo xigta",
+        "help_choose": "I caawi inaan doorto hawl",
+        "help_choose_intro": "Dooro waxa aad rabto inaad isku daydo. Soo jeedintu waxay isticmaalaan oo keliya doorashooyinkan; ma qiimeeyaan dareenkaaga. Waqtiyadu waxay sharxayaan tallaabada koowaad, ma aha hawsha oo dhan.",
+        "what_would_help": "Maxaa ku caawin lahaa?",
+        "time_first_step": "Waqtiga tallaabada koowaad",
+        "n_minutes": "{count} daqiiqo",
+        "how_respond": "Sidee ayaad jeclaan lahayd inaad u jawaabto?",
+        "respond_any": "Si kasta",
+        "respond_offline": "Ka fikir, hadal, sawir, ama AAC",
+        "respond_write": "Qor jawaab gaaban",
+        "options_one": "{count} ikhtiyaar bilow ah oo ku habboon doorashooyinkaaga.",
+        "options_many": "{count} ikhtiyaar bilow ah oo ku habboon doorashooyinkaaga.",
+        "options_none": "Weli ma jiro ikhtiyaar bilow ah oo ku habboon. Isku day waqti badan ama qaab jawaab kale; liiska oo dhammi weli waa la heli karaa.",
+        "why_option_write": "Sababta ikhtiyaarkan: {need}, oo leh tallaabo koowaad oo {minutes} daqiiqo ah oo la soo jeediyay iyo jawaab qoraal ah oo gaaban.",
+        "why_option_offline": "Sababta ikhtiyaarkan: {need}, oo leh tallaabo koowaad oo {minutes} daqiiqo ah oo la soo jeediyay iyo hab lagu tababarto adigoon wax qorin.",
+        "open_named": "Fur {name}",
+        "open_named_unavailable": "Fur {name} (lama heli karo)",
+        "pathway_guide": "Hagaha tababarka waddada",
+        "pathway_opened": "{opened} ka mid ah {total} qalab ayaa la furay. Furitaanka qalab macnaheedu maaha inaad ku tababartay xirfadda.",
+        "exit_pathway_aria": "Ka bax habka waddada",
+        "pathway_cleared": "Waddada waa la nadiifiyay",
+        "exit_pathway": "Ka bax waddada",
+        "practice_goal": "Hadafka tababarka:",
+        "pathway_intro": "Dooro hal hawl ama raac nidaamka la soo jeediyay. Waad ka gudbi kartaa, isticmaali kartaa tusaale male-awaal ah, ama ku jawaabi kartaa hadal, sawir, qoraal, ama AAC. Wadaagistu waa ikhtiyaari.",
+        "model_practice_reflect": "Tusaale, tababar, iyo milicsi",
+        "an_example": "Tusaale",
+        "notice_adjust": "Ogow oo hagaaji",
+        "take_with_you": "Kula qaado",
+        "self_check_aria": "Is-hubin tababar oo ikhtiyaari ah",
+        "self_check_intro": "Kadib markaad isku daydo tallaabo, dooro waxa ku habboon. Tani waa ikhtiyaari oo lama qiimeeyo; waxay ku jiraysaa fadhigan waddada.",
+        "i_tried": "Waxaan isku dayay tallaabo",
+        "another_way": "Waxaan u baahanahay hab kale",
+        "pass_for_now": "Hadda ka gudub",
+        "tried_feedback": "Ogow waxa caawiyay, waxa aan caawin, iyo halka aad mar kale ku tijaabin karto xirfadda.",
+        "adapt_feedback": "Isku day tallaabo ka yar, hab kale oo jawaab ah, qalab kale, ama taageero qof aad aaminsan tahay.",
+        "pass_feedback": "Ka gudbiddu waa doorasho sax ah. Waad dib ugu soo noqon kartaa mar dambe ama taageero weydiisan kartaa.",
+        "next_option": "Ikhtiyaarka xiga: {name}",
+        "open_next": "Fur midka xiga: {name}",
+        "view_pathway_tools": "Eeg qalabka waddada",
+        "revisit_any": "Dib ugu noqon kartaa hawl kasta. Dooro hal fikrad oo aad isku daydo meel ka baxsan hub-ka; looma baahna inaad dhammayso qalab kasta.",
+        "station_activities": "Hawlaha saldhigga",
+        "active_station": "Saldhigga SEL ee firfircoon: {name}",
+        "steps_recorded_passed": "{done} ka mid ah {total} tallaabo ayaa la diiwaangeliyay · {passed} hadda laga gudbay. Tani waa diiwaan tababar, ma aha darajo.",
+        "steps_recorded": "{done} ka mid ah {total} tallaabo ayaa la diiwaangeliyay. Tani waa diiwaan tababar, ma aha darajo.",
+        "active_minutes_done": "{mins} ka mid ah {goal} daqiiqo firfircoon halkan. Tallaabada waa la diiwaangeliyay.",
+        "active_minutes_counting": "{mins} ka mid ah {goal} daqiiqo firfircoon halkan. Waa la tiriyaa inta tab-kani muuqdo oo aad isticmaalayso.",
+        "exit_station_aria": "Ka bax habka saldhigga",
+        "station_cleared": "Saldhigga waa la nadiifiyay",
+        "exit_station": "Ka bax saldhigga",
+        "station_tools_steps": "Qalabka saldhigga, tallaabooyinka iyo milicsiga",
+        "station_steps": "Tallaabooyinka saldhigga iyo milicsiga",
+        "station_privacy": "Tallaabooyinka iyo qoraallada waxaa lagu kaydiyaa aaladdan waxaana laga yaabaa in lagu daro faylasha mashruuca. Isticmaal tusaalooyin male-awaal ah ama ka tag faahfaahinta shakhsiga ah. Dooro waxa aad wadaagayso.",
+        "step_passed": "Hadda waa laga gudbay. Waad soo noqon kartaa markaad diyaar tahay.",
+        "step_marked": "Waxaad calaamadeysay in tallaabadan la dhammaystiray.",
+        "step_target": "Bartilmaameedka hawsha waa la diiwaangeliyay; tani ma cabbirto xirfad ama ladnaan.",
+        "step_ready": "Waa diyaar markaad adigu diyaar tahay.",
+        "open_step_activity": "Fur hawsha tallaabadan",
+        "xp_progress": "{xp} / {target} wadarta XP-da SEL. Tan waxaa ku jira hawlo hore; ma aha dhibco xirfadeed.",
+        "time_progress": "{mins} / {target} daqiiqo firfircoon. Waqtigu ma aha caddayn waxbarasho.",
+        "default_reflect": "Maxaad ogaatay? Maxaad hayn lahayd ama beddeli lahayd?",
+        "self_check_ways": "Ka fikir, sawir, hadal, ku hadal luqadda calaamadaha, ama isticmaal AAC. Qoraal qoran waa ikhtiyaari. Adigu calaamadee in tallaabada la dhammaystiray, ama hadda ka gudub.",
+        "length_target": "Tallaabadan la kaydiyay waxay isticmaashaa bartilmaameed dherer: {count} / {target} xaraf. Dhererku ma cabbiro tayada milicsiga. Qoraalkaagu weli waa la beddeli karaa.",
+        "reflection_for": "Milicsiga {name}",
+        "optional_note": "Qoraal ikhtiyaari ah: waxa caawiyay, ama waxa aad marka xigta isku dayi karto...",
+        "write_reflection": "Qor milicsi...",
+        "mark_complete_aria": "Calaamadee in \"{name}\" la dhammaystiray",
+        "step_reopened": "Tallaabada dib ayaa loo furay: {name}",
+        "step_marked_named": "Waxaad calaamadeysay in tallaabadan la dhammaystiray: {name}",
+        "mark_complete": "Calaamadee dhammaystir",
+        "step_passed_named": "Hadda waa laga gudbay: {name}",
+        "filter_pathway": "waddo: {name}",
+        "filter_station": "saldhig: {name}",
+        "no_tools_match": "Ma jiro qalab ku habboon {filters}",
+        "results_one": "{count} qalab oo ka mid ah {total} ayaa ku habboon {filters}",
+        "results_many": "{count} qalab oo ka mid ah {total} ayaa ku habboon {filters}",
+        "showing_all": "Waxaa la muujinayaa dhammaan {total} qalab",
+        "crisis_elementary": "Haddii aadan isla markiiba heli karin qof weyn, sii weydii ilaa qof ku dhageysto. Waxaad mudan tahay caawimaad.",
+        "crisis_call_or_text": "Wac ama fariin u dir",
+        "crisis_988": "988 Suicide & Crisis Lifeline (khadka is-dilka iyo qalalaasaha; bilaash, sir ah, 24/7).",
+        "crisis_text": "Fariin u dir",
+        "crisis_text_line": "Crisis Text Line (khadka fariimaha qalalaasaha; bilaash, sir ah, 24/7).",
+        "tool_selection": "Xulashada qalabka SEL Hub",
+        "jumped_to_list": "Waxaa loo booday liiska qalabka. {summary}.",
+        "skip_to_list": "U bood liiska qalabka",
+        "start_here": "Halkan ka bilow",
+        "quick_route": "Dooro jid degdeg ah, ama hoos ka baadh.",
+        "browsing_all": "Waxaa la baadhayaa dhammaan qalabka SEL",
+        "continue": "Sii wad",
+        "continue_desc": "Ka sii wad qalabkii SEL ee ugu dambeeyay ee aad furtay.",
+        "starting_idea": "Fikrad bilow ah",
+        "starting_idea_desc": "{name}: hawl la soo jeediyay oo loogu talagalay heerka fasalkan, oo leh tusaalooyin aad waafajin karto.",
+        "starting_idea_none": "Fur bar bilow oo ku habboon fasalka.",
+        "try_a_reset_desc": "Sahami xeelad raaxo leh; dareen deganaansho looma baahna.",
+        "journal": "Xusuus-qor",
+        "journal_desc": "Qor milicsi; dib u eeg doorashooyinka kaydinta iyo wadaagista.",
+        "browse_all": "Baadh Dhammaan",
+        "browse_all_desc": "Raadi ama shaandhee liiska oo dhan.",
+        "need_chip_calm": "Dej jidhkayga",
+        "need_chip_feelings": "Magacaw dareennada",
+        "need_chip_stress": "Walbahaar ama welwel",
+        "need_chip_friend": "Khilaaf saaxiib",
+        "need_chip_write": "Qoraal ku muuji",
+        "need_chip_decision": "Go'aan gaar",
+        "need_chip_sleep": "Hurdo ama daal",
+        "need_chip_crisis": "Badbaado la'aan ama qalalaase",
+        "need_chip_relationshipsafety": "Badbaadada xiriirka",
+        "need_chip_schoolsupport": "Taageerada dugsiga",
+        "need_chip_grief": "Murugo ama khasaare",
+        "storage_notice": "Shaqada SEL qaarkeed waxaa lagu kaydiyaa aaladdan. Astaamaha AI waxay isticmaalaan adeegga laguu habeeyay. Dooro waxa aad kaydinayso ama wadaagayso, gaar ahaan aalad la wadaago.",
+        "save_now_aria": "Hadda kaydi ama dhoofi shaqada SEL",
+        "save_now": "Hadda kaydi",
+        "recent_work": "Shaqada SEL ee dhawaan",
+        "saved_here": "Halkan waa lagu kaydiyay. Dhoofi si aad u hayso kadib xiritaanka.",
+        "create_packet_aria": "Ka samee Xirmada Wadaagga SEL baraha kaydinta ee la kaydiyay",
+        "review_packets_aria": "Dib u eeg Xirmooyinka Wadaagga SEL ee la kaydiyay",
+        "create_packet": "Samee Xirmada Wadaagga",
+        "review_packets": "Dib u eeg Xirmooyinka Wadaagga",
+        "open_related": "Fur qalabka la xiriira.",
+        "related_unavailable": "Qalabka la xiriira laguma heli karo SEL Hub-kan.",
+        "streak_aria": "Taxane SEL oo {count} maalmood ah. Kan ugu dheer: {longest} maalmood.",
+        "streak": "Taxane {count} maalmood ah",
+        "streak_best": "ugu fiican {count}",
+        "find_activity": "Hel hawl",
+        "search_placeholder": "Raadi dareennada, saaxiibada, walbahaarka, hadafyada...",
+        "search_aria": "Raadi qalabka SEL",
+        "support_options": "Ikhtiyaarada taageerada",
+        "crisis_hard_moment": "Waxay u egtahay in tani noqon karto xilli adag.",
+        "crisis_tell_adult": "Uma baahnid inaad keligaa tan xalliso, uma baahnidna inaad marka hore hesho qalabka saxda ah. Fadlan hadda u sheeg qof weyn oo aad aaminsan tahay — lataliyaha dugsiga, macallin, waalid, ama qof kale oo weyn oo aad aaminsan tahay. Raadinta halkan cidna uma sheegto; qof wuxuu ogaadaa oo keliya haddii aad u sheegto.",
+        "open_crisis_companion": "Fur Wehelka Qalalaasaha",
+        "find_by_need": "Ku hel qalabka SEL baahida",
+        "i_need": "Waxaan u baahanahay...",
+        "cleared_search": "Raadinta SEL waa la nadiifiyay",
+        "clear_search_aria": "Nadiifi raadinta SEL",
+        "clear": "Nadiifi",
+        "cleared_need": "Shaandhada baahida SEL waa la nadiifiyay",
+        "showing_for": "Waxaa la muujinayaa qalabka SEL ee {name}",
+        "clear_need_aria": "Nadiifi shaandhada baahida: {name}",
+        "find_for_aria": "Hel qalab loogu talagalay: {name}",
+        "browse_by_area": "Ku baadh qaybta xirfadda",
+        "filter_by_category": "Ku shaandhee qalabka SEL qaybta",
+        "showing_all_categories": "Waxaa la muujinayaa dhammaan qaybaha",
+        "show_all_categories_aria": "Muuji dhammaan qaybaha ({count} qalab)",
+        "all": "Dhammaan",
+        "filtered_to": "Waxaa lagu shaandheeyay {name}",
+        "filter_chip_aria": "Shaandhee: {name} ({count} qalab)",
+        "pathways_heading": "Waddooyinka SEL — Hawlo Waxbarasho oo Isku Xigxiga oo La Xushay",
+        "started_pathway": "Waddada waa la bilaabay: {name}",
+        "pathway_started": "Waddada {name} waa la bilaabay!",
+        "n_activities": "{count} hawlood",
+        "grades_range": "fasallada {range}",
+        "use_with_care": "Si taxaddar leh u isticmaal",
+        "visits_many": "{count} booqasho",
+        "visits_one": "{count} booqasho",
+        "best_for": "Ugu fiican: {mode}.",
+        "teacher_cue": "Tilmaanta macallinka: {time}, {format}. {cue}",
+        "preview_first": "Marka hore adigu eeg",
+        "evidence_tradition": "Dhaqanka caddaynta: {tag}",
+        "approach_context": "Macnaha habka: {label}. {title}. Calaamaddani ma xaqiijinayso waxtarka app-kan ama barte gaar ah.",
+        "step_opened": "Tallaabada {n} · La furay",
+        "step_not_opened": "Tallaabada {n} · Lama furin",
+        "suggested_grades": "Fasallada la soo jeediyay {range}",
+        "no_tools_current_view": "Ma jiro qalab ku habboon muuqaalka hadda",
+        "empty_try": "Isku day deganaansho, dareenno, walbahaar, saaxiib, qor, go'aan, ama hurdo.",
+        "filters_cleared": "Shaandhooyinka waa la nadiifiyay. Waxaa la muujinayaa dhammaan {total} qalab.",
+        "show_all_tools": "Muuji dhammaan {total} qalab",
+        "error_loading": "Khalad ayaa ka dhacay soo shubidda {name}",
+        "unknown_error": "Khalad aan la garanayn",
+        "back_to_tools_error": "Ku noqo Qalabka",
+        "tool_load_failed": "Qalabkan lama soo shubi karin.",
+        "loading_tool": "Qalabka waa la soo shubayaa...",
+        "file_not_arrived": "Faylku ma iman.",
+        "check_connection": "Hubi isku xirka, kadibna mar kale isku day.",
+        "plugin_fetching": "Faylka plugin-ka weli waa la soo qaadayaa.",
+        "research_about": "Ku saabsan calaamadaha cilmi-baarista",
+        "research_summary": "Waxa ay calaamadaha cilmi-baaristu ka dhigan yihiin",
+        "research_context": "Macnaha habka: {label}.",
+        "research_not_app": "Cilmi-baarista ku saabsan daaweyn, manhaj, ama qaab-dhismeed ma xaqiijinayso in hawshan dhijitaalka ahi leedahay saameyn la mid ah. Calaamaduhu waxay sharxayaan habka; ma qiimeeyaan app-kan ama barte.",
+        "research_check": "Ka hor intaadan dooran hawl, hubi ilaha lagu xusay, da'da iyo goobaha la daraaseeyay, taageerada loo baahan yahay, iyo natiijooyinka la cabbiray. Ku habboonaanta dadka iyo waxtarka la-qabsigan kuma xaqiijin calaamadahan.",
+        "research_casel_link": "CASEL: doorashada iyo qiimaynta barnaamij SEL",
+        "project_save_failed": "Codsiga kaydinta mashruuca wuu fashilmay. Hub-kan furan u daa oo isku day Kaydi / Dhoofi app-ka weyn.",
+        "project_save_requested": "Kaydinta mashruuca waa la codsaday. Ku dhammaystir hawsha kaydinta app-ka weyn; fayl la kaydiyay halkan lama xaqiijin.",
+        "saving_aria": "Kaydinta iyo wadaagista SEL",
+        "saving_failed_alert": "Isbeddellada SEL qaarkood laguma kaydin karin aaladdan. Hub-kan furan u daa oo kaydi nuqul mashruuc; qabyo-qoraallada saldhigga waa in loo kaydiyaa saldhigyo si ay ugu biiraan nuqulkaas.",
+        "saving_attention": "Kaydintu waxay u baahan tahay feejignaan",
+        "saving_title": "Kaydin iyo wadaagis",
+        "saving_failed_body": "Shaqada hadda waa laga heli karaa hub-kan furan. Kaydin maxalli ah oo fashilantay waxay aaladdan uga tagi kartaa nuqul hore.",
+        "saving_ok_body": "Saldhigyada la kaydiyay, qoraallada saldhigga, iyo baraha kaydinta hub-ka waxaa lagu kaydinayaa aaladdan. Hawl kastaa waxay leedahay badhamadeeda kaydinta; xaaladdani ma xaqiijinayso in wax kasta oo la geliyay hawl kasta la kaydiyay.",
+        "saving_drafts": "Qabyo-qoraallada saldhigga waxay ku jiraan aaladdan si loo soo celiyo. Kaydinta saldhig waxay ku dartaa xogta mashruuca ee loo heli karo Kaydi / Dhoofi; codsashada kaydinta mashruuca ma xaqiijinayso in fayl la qoray.",
+        "saving_live": "Fadhi toos ah ayaa ku xiran. Wuxuu u diri karaa horumarka ama calaamadaha badbaadada martigeliyaha. AI-ga ikhtiyaariga ahi wuxuu u diraa qoraalka hawsha adeegga la habeeyay. Dib u eeg Xirmada Wadaagga ka hor intaadan dooran inaad wadaagto.",
+        "saving_ai": "AI-ga ikhtiyaariga ahi wuxuu u diraa qoraalka hawsha adeegga la habeeyay. Xirmada Wadaaggu waxay ka kooban tahay waxyaabaha iyo heerarka faahfaahinta aad doorato; dib u eeg horudhaceeda ka hor intaadan wadaagin.",
+        "saving_retry": "Mar kale isku day kaydinta maxalliga ah",
+        "saving_request": "Codso kaydinta mashruuca",
+        "removed_stations": "Saldhigyada la saaray",
+        "removed_body": "Ka noqo saarista saldhigga inta hub-kan furan yahay. Diiwaannada tababarka ee jira waa la hayaa.",
+        "station_restored": "Saldhigga waa la soo celiyay: {name}",
+        "undo_removal": "Ka noqo saarista: {name}",
+        "launch_routines_aria": "Hababka bilowga macallinka",
+        "launch_title": "Bilowga macallinka",
+        "launch_note": "Tababarka ka dhig mid aan la qiimayn, wadaagistana ikhtiyaari. Sharax kaydinta aaladda, astaamaha AI ee la habeeyay, iyo wadaagista ka hor bilowga. Isticmaal tusaalooyin male-awaal ah; ku casuun ardayda inay caawimaad weydiistaan ama ka gudbaan.",
+        "launch_guardrails_aria": "Xuduudaha ilaalinta ee bilowga macallinka",
+        "launch_step_boundary": "Deji xadka",
+        "launch_step_boundary_body": "Sheeg waxa gaarka ah, waxa ikhtiyaariga ah, iyo sida ardaydu uga gudbi karaan.",
+        "launch_step_run": "Wad hawsha",
+        "launch_step_run_body": "Qalabka u isticmaal tababar. Milicsiga ka dhig mid horumarineed oo aan la qiimayn.",
+        "launch_step_close": "Ku xir doorasho",
+        "launch_step_close_body": "Ardaydu waxay go'aamiyaan inay kaydiyaan, dhoofiyaan, ama mar dambe ku daraan barta kaydinta.",
+        "launch_student_sees": "Waxa ardaygu arko",
+        "launch_student_sees_default": "Ardaydu waxay dhammaystiraan hawl SEL oo gaar ah oo doortaan waxa ay wadaagayaan.",
+        "launch_teacher_move": "Tallaabada macallinka",
+        "launch_teacher_move_default": "U dhig tan tababar, ma aha qiimayn.",
+        "launch_sharing_boundary": "Xadka wadaagista",
+        "launch_sharing_boundary_default": "Wadaagistu waxay ku jirtaa gacanta ardayga.",
+        "launch_tools_loading": "Qalabka waa la soo shubayaa...",
+        "launch_still_loading": "Weli waa la soo shubayaa: {tools}",
+        "launch_preview_sensitive": "Marka hore adigu eeg qalabka xasaasiga ah: {tools}",
+        "launch_load_aria": "Soo shub qorshaha bilowga macallinka: {name}",
+        "launch_finish_draft": "Marka hore dhammee ama tuur qabyo-qoraalka hadda",
+        "launch_waiting": "Waxaa la sugayaa qalabka",
+        "launch_loading": "Soo shubid",
+        "launch_load": "Ku soo shub Dhisaha Saldhigga",
+        "builder_note_student": "Muuqaalka ardayga: {text}",
+        "builder_note_teacher": "Tallaabada macallinka: {text}",
+        "builder_note_sharing": "Xadka wadaagista: {text}",
+        "builder_note_note": "Qoraalka macallinka: {text}",
+        "launch_finish_existing": "Marka hore dhammee ama tuur qabyo-qoraalka saldhigga ee aad hayso.",
+        "launch_tools_still_loading": "Qalabka bilowga macallinka weli waa la soo shubayaa. Mar kale isku day wax yar kadib.",
+        "launch_tools_still_loading_sr": "Qalabka bilowga macallinka weli waa la soo shubayaa.",
+        "launch_default_name": "Hawsha fasalka SEL",
+        "launch_default_short": "Hawsha SEL",
+        "launch_loaded_sr": "Qorshaha bilowga macallinka waxaa lagu soo shubay dhisaha saldhigga: {name}",
+        "launch_loaded_toast": "Qorshaha bilowga macallinka waxaa lagu soo shubay Dhisaha Saldhigga.",
+        "stations_summary": "Saldhigyada SEL ee Gaarka ah — ururro uu macallinku sameeyay",
+        "station_delete_aria": "Tirtir saldhigga {name}",
+        "station_removed_sr": "Saldhigga waa la saaray. Ka-noqoshadu waa la heli karaa ilaa hub-kan la xiro.",
+        "station_removed": "Saldhigga waa la saaray",
+        "station_tools_count": "{count} qalab",
+        "station_quests_count": "{count} hawlgal",
+        "station_activated_sr": "Saldhigga SEL waa la hawlgeliyay: {name}",
+        "station_started": "{name} waa la bilaabay!",
+        "station_activate_aria": "Hawlgeli saldhigga {name}",
+        "station_start": "Bilow saldhigga",
+        "station_adapt_aria": "Waafaji nuqul ka mid ah saldhigga {name}",
+        "station_adapt": "Waafaji nuqul",
+        "draft_aria": "Qabyo-qoraal saldhig oo la soo celin karo",
+        "draft_untitled": "Saldhig aan magac lahayn",
+        "draft_body": "Qabyo-qoraal saldhig oo aan dhammaan ayaa lagu kaydiyay aaladdan: {name}. Sii wad ama tuur ka hor intaadan bilaabin mid kale.",
+        "draft_resume": "Sii wad qabyo-qoraalka saldhigga",
+        "draft_discard": "Tuur qabyo-qoraalka saldhigga",
+        "builder_opened": "Dhisaha saldhigga waa la furay",
+        "build_station_aria": "Dhis Saldhig SEL oo cusub oo gaar ah",
+        "build_station": "+ Dhis Saldhig Gaar ah"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Xiriirka macallinka waa la hakiyay — meeshaada waa laguu hayaa inta AlloFlow dib u xiriirayo.",
+    "host_stale": "Hubinta xaaladda macallinka waa duugowday — kalfadhiga tooska ahi weli wuu ku xirnaan karaa. Shaqadaadu waxay ku jirtaa qalabkan.",
+    "dismiss": "Iska xir",
+    "dismiss_aria": "Iska xir digniinta xaaladda macallinka",
+    "connecting": "Waxaa lagu xirayaa fasalka…",
+    "retrying": "Cusboonaysiinta fasalka waa la hakiyay. Si toos ah ayaa dib loogu xirayaa…",
+    "failed": "Cusboonaysiinta fasalka way go'day. Hubi xiriirkaaga oo isku day inaad dib ugu xirato.",
+    "access": "Gelitaanka fasalka waa la diiday. Macallinkaaga ka codso inuu hubiyo gelitaanka, kadibna dib u xiriir.",
+    "sign_in": "Mar kale soo gal si aad u soo celiso gelitaanka fasalka, kadibna dib u xiriir.",
+    "reconnect": "Dib u xiriir"
+  },
   "common": {
     "student_analytics": "Falanqaynta Ardayda",
     "add_this_term_to_glossary": "Ku dar erayga liiska erayada",
@@ -4532,7 +5753,21 @@
     "measured_on_target": "Ku habboon {grade}",
     "measured_above": "Ka sarreeya heerka {grade}",
     "measured_below": "Ka hooseeya heerka {grade}",
-    "measured_note": "Flesch-Kincaid, waxaa lagu cabbiray qoraalkan. Isticmaal Hubi Heerka si aad u eegto si buuxda."
+    "measured_note": "Flesch-Kincaid, waxaa lagu cabbiray qoraalkan. Isticmaal Hubi Heerka si aad u eegto si buuxda.",
+    "listen_along": "Dhageyso adigoo raacaya",
+    "compare_listen_here": "Halkan ka dhageyso",
+    "compare_listen_here_original": "Halkan ka dhageyso qoraalka asalka ah",
+    "compare_listen_here_adapted": "Halkan ka dhageyso qoraalka la fududeeyay",
+    "compare_stop_reading_original": "Jooji akhrinta qoraalka asalka ah",
+    "compare_stop_reading_adapted": "Jooji akhrinta qoraalka la fududeeyay",
+    "compare_scroll_together": "Isla rog",
+    "reading_width": "Ballaca akhrinta",
+    "width_narrow": "Cidhiidhi",
+    "width_medium": "Dhexdhexaad",
+    "width_wide": "Ballaaran",
+    "width_extra_wide": "Aad u ballaaran",
+    "reading_width_characters": "qiyaastii {count} xaraf sadar kasta",
+    "original_support_spoken": "Caawimaad ereyga “{word}”: {support}"
   },
   "outline": {
     "title": "Habayn Muuqaal",
@@ -4996,6 +6231,82 @@
     "edit_question_translation": "Tafatir tarjumaadda su'aasha"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Qor erayga ama weedha maqan",
+      "explain_thinking": "Sharax sida aad u fikirtay",
+      "write_response": "Qor jawaabtaada",
+      "submit_response": "Gudbi jawaabta",
+      "numeric_answer": "Jawaab tiro ah",
+      "unit_named": "Halbeeg ({unit})",
+      "unit_optional": "Halbeeg (ikhtiyaari)",
+      "submit_numeric": "Gudbi jawaabta tirada ah",
+      "select_all_apply": "Dooro dhammaan jawaabaha ku habboon",
+      "submit_selections": "Gudbi waxyaabaha aad dooratay",
+      "part1": "Qaybta 1 — Dooro jawaabta ugu fiican",
+      "part2": "Qaybta 2 — {prompt}",
+      "default_evidence_prompt": "Dooro caddaynta ugu fiican ee taageeraysa jawaabta.",
+      "submit_answer_evidence": "Gudbi jawaabta iyo caddaynta",
+      "order_check": "Kala horreyntan ma sax baa?",
+      "order_yes": "Haa, waa sax",
+      "order_no": "Maya, wax baa meel khaldan ku jira",
+      "select_misplaced": "Kor ka dooro shay meel khaldan ku jira.",
+      "arrange_instructions": "Walxaha u kala horreysii si sax ah. Haddii ay horeba u saxan yihiin, sidooda u daa.",
+      "your_order": "Kala horreyntaada",
+      "move_up": "Kor u qaad: {item}",
+      "move_down": "Hoos u dhig: {item}",
+      "done_arranging": "Waan dhammeeyay habaynta",
+      "principle_question": "Sidee loo kala horreysiiyay walxahan?",
+      "principle_chronological": "waqti ahaan",
+      "principle_cause_effect": "sabab iyo saameyn",
+      "principle_process": "tallaabooyinka hawsha",
+      "principle_size": "baaxad",
+      "principle_hierarchy": "kala sarreyn",
+      "find_mismatch": "Hel lammaanaha aan is lahayn",
+      "choose_mismatch": "Dooro lammaanaha aan halkan ku habboonayn.",
+      "pair_with_question": "Shayga la doortay maxaa lala lammaaneeyaa?",
+      "replacement_partner": "Lammaanaha cusub",
+      "submit_replacement": "Gudbi beddelka",
+      "retry_failed": "Jawaabtaada lama diri karin. Ka qaybgalkaaga weli waa diiwaangashan yahay; mar kale isku day marka aad xiriir hesho.",
+      "return_to_quiz": "Ku noqo imtixaanka tooska ah",
+      "minimize": "Yareyso",
+      "minimize_aria": "Ka bax muuqaalka imtixaanka tooska ah",
+      "battle_result": "Natiijada dagaalka",
+      "class_victory": "Guusha fasalka!",
+      "battle_complete": "Dagaalku wuu dhammaaday",
+      "regroup": "Fursad dib loogu diyaargaroobo",
+      "end_no_scored": "Su'aalahan waxay ahaayeen dood ama dib-u-eegis macallin. Dhibco dagaal lama bixin.",
+      "end_questions_complete": "Dhammaan su'aalaha waa la dhammeeyay. Natiijadu waxay isbarbar dhigtaa boqolleyda caafimaadka hadhay; haddii ay isku mid noqdaan, fasalka ayaa guuleysta.",
+      "end_victory": "Fasalkaagu si wadajir ah ayuu uga adkaaday bahalka.",
+      "end_regroup": "Isticmaal sharaxaadda hoose si aad fasalkaaga ula qorsheysid isku dayga xiga.",
+      "end_review_last": "Dib u eeg su'aasha ugu dambeysa ee hoose. Macallinkaagu dagaalka dib ayuu u bilaabi karaa.",
+      "boss_default_name": "Bahalka",
+      "boss_hp": "HP {name}",
+      "boss_health": "Caafimaadka {name}",
+      "battle_scoring_paused": "Dhibcaynta dagaalka waa la hakiyay",
+      "tick_of": "{value} ka mid ah {total}",
+      "confidence_legend": "Intee ayaad ku kalsoonayd?",
+      "confidence_knew": "Tan waan aqaannay",
+      "confidence_guessed": "Waxaan sameeyay qiyaas aqoon ku salaysan",
+      "confidence_unsure": "Ma hubin",
+      "confidence_help": "Tani waxay macallinkaaga ka caawisaa inuu arko aqoonta adag iyo fahamka khaldan. Weligeed ma beddesho saxnaanta ama dhibcaha.",
+      "retry_send": "Mar kale isku day dirista jawaabta",
+      "waiting_for_teacher": "Waxaa la sugayaa in macallinkaagu bilaabo su'aashan.",
+      "sending": "Jawaabtaada waa la dirayaa…",
+      "receipt_only": "Ka qaybgalka waa la diiwaangeliyay. Jawaabtaadu weli ma gaarin macallinka si loo qiimeeyo.",
+      "complete_and_submit": "Dhammaystir oo gudbi jawaabtaada",
+      "poll_closed": "Su'aashan ra'yiga waa la xiray.",
+      "receipt_not_scored": "Macallinkaagu wuxuu helay ka qaybgalka oo keliya. Jawaabtan lama qiimeyn.",
+      "no_answer_submitted": "Su'aashan jawaab looma gudbin. Fasalkaaga dib ula eeg.",
+      "answer_review": "Dib-u-eegista jawaabta",
+      "review_answer": "Dib u eeg jawaabta",
+      "discuss_with_teacher": "Jawaabta kala hadal macallinkaaga.",
+      "response_correct": "Jawaab sax ah.",
+      "response_partial": "Jawaab qayb ahaan sax ah.",
+      "response_incorrect": "Jawaabtan waxay u baahan tahay in mar kale la eego.",
+      "response_none": "Jawaab lama gudbin.",
+      "response_submitted": "Jawaabta waa loo gudbiyay dib-u-eegis.",
+      "explanation": "Sharaxaad"
+    },
     "title": "Qiimee",
     "mcq_count": "Tirada MCQ",
     "reflections": "Milicsiyada",

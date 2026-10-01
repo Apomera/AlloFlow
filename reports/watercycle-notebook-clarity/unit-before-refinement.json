@@ -1,0 +1,1006 @@
+{
+  "numTotalTestSuites": 11,
+  "numPassedTestSuites": 11,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 57,
+  "numPassedTests": 57,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790813464413,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle experiment trail"
+          ],
+          "fullName": "Water Cycle experiment trail keeps a bounded, identity-aware observation history",
+          "status": "passed",
+          "title": "keeps a bounded, identity-aware observation history",
+          "duration": 36.3429000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle experiment trail"
+          ],
+          "fullName": "Water Cycle experiment trail exposes accessible save and clear actions with compact trail summaries",
+          "status": "passed",
+          "title": "exposes accessible save and clear actions with compact trail summaries",
+          "duration": 90.01549999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle experiment trail"
+          ],
+          "fullName": "Water Cycle experiment trail records qualitative deltas rather than presenting them as measured water volumes",
+          "status": "passed",
+          "title": "records qualitative deltas rather than presenting them as measured water volumes",
+          "duration": 37.34339999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790813467655,
+      "endTime": 1790813467818.3435,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_experiment_trail.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity normalizes all eight inputs and excludes unrelated display and preset fields",
+          "status": "passed",
+          "title": "normalizes all eight inputs and excludes unrelated display and preset fields",
+          "duration": 2.2101999999995314,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity produces a detached snapshot",
+          "status": "passed",
+          "title": "produces a detached snapshot",
+          "duration": 0.22780000000057044,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity uses defaults for invalid numbers without clamping finite teaching inputs",
+          "status": "passed",
+          "title": "uses defaults for invalid numbers without clamping finite teaching inputs",
+          "duration": 0.2570000000005166,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity returns no comparison identity when either recorded setup is incomplete or invalid",
+          "status": "passed",
+          "title": "returns no comparison identity when either recorded setup is incomplete or invalid",
+          "duration": 0.27779999999984284,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes climSolar in both halves of the comparison",
+          "status": "passed",
+          "title": "includes climSolar in both halves of the comparison",
+          "duration": 0.3172999999997046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes climTemp in both halves of the comparison",
+          "status": "passed",
+          "title": "includes climTemp in both halves of the comparison",
+          "duration": 0.20529999999962456,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes climWind in both halves of the comparison",
+          "status": "passed",
+          "title": "includes climWind in both halves of the comparison",
+          "duration": 0.2092000000002372,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landRainIntensity in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landRainIntensity in both halves of the comparison",
+          "duration": 0.16340000000036525,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landSaturation in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landSaturation in both halves of the comparison",
+          "duration": 0.2173000000002503,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landPermeability in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landPermeability in both halves of the comparison",
+          "duration": 0.2055000000000291,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landSlope in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landSlope in both halves of the comparison",
+          "duration": 0.1500000000005457,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landCover in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landCover in both halves of the comparison",
+          "duration": 0.13990000000012515,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity is independent of property order, preset names, and visual choices",
+          "status": "passed",
+          "title": "is independent of property order, preset names, and visual choices",
+          "duration": 0.13429999999971187,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity reports every changed modeled input without counting display choices",
+          "status": "passed",
+          "title": "reports every changed modeled input without counting display choices",
+          "duration": 2.383100000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity omits unrecorded inputs when listing legacy changes",
+          "status": "passed",
+          "title": "omits unrecorded inputs when listing legacy changes",
+          "duration": 0.1550999999999476,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records appends without mutating or replacing existing entries",
+          "status": "passed",
+          "title": "appends without mutating or replacing existing entries",
+          "duration": 1.0403999999998632,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records detects duplicate comparisons from snapshots despite stale or absent keys",
+          "status": "passed",
+          "title": "detects duplicate comparisons from snapshots despite stale or absent keys",
+          "duration": 0.25720000000001164,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records allows the same current scenario compared with a different baseline",
+          "status": "passed",
+          "title": "allows the same current scenario compared with a different baseline",
+          "duration": 0.20759999999972933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records preserves legacy observations without a baseline and lets a complete comparison save",
+          "status": "passed",
+          "title": "preserves legacy observations without a baseline and lets a complete comparison save",
+          "duration": 0.19290000000000873,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records stops at four entries without deleting the oldest or changing any saved objects",
+          "status": "passed",
+          "title": "stops at four entries without deleting the oldest or changing any saved objects",
+          "duration": 0.7049999999999272,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records reports a duplicate at capacity instead of asking the learner to remove a record",
+          "status": "passed",
+          "title": "reports a duplicate at capacity instead of asking the learner to remove a record",
+          "duration": 0.15280000000075233,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records undo preserves original order and notes after removing current indices 0 then 2",
+          "status": "passed",
+          "title": "undo preserves original order and notes after removing current indices 0 then 2",
+          "duration": 2.6667999999999665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records undo preserves original order and notes after removing current indices 2 then 0",
+          "status": "passed",
+          "title": "undo preserves original order and notes after removing current indices 2 then 0",
+          "duration": 1.9167999999999665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records undo preserves original order and notes after removing current indices 1 then 0",
+          "status": "passed",
+          "title": "undo preserves original order and notes after removing current indices 1 then 0",
+          "duration": 3.4831999999996697,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly can support runoff and infiltration independently in the same comparison",
+          "status": "passed",
+          "title": "can support runoff and infiltration independently in the same comparison",
+          "duration": 0.4302000000006956,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly supports a direction-neutral evaporation change at -0.15x",
+          "status": "passed",
+          "title": "supports a direction-neutral evaporation change at -0.15x",
+          "duration": 0.07599999999911233,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly supports a direction-neutral evaporation change at 0.15x",
+          "status": "passed",
+          "title": "supports a direction-neutral evaporation change at 0.15x",
+          "duration": 0.047400000000379805,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly requires an actual crossing into colder below-freezing surface conditions",
+          "status": "passed",
+          "title": "requires an actual crossing into colder below-freezing surface conditions",
+          "duration": 0.12179999999989377,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly reserves mixed/small for changes below every threshold",
+          "status": "passed",
+          "title": "reserves mixed/small for changes below every threshold",
+          "duration": 0.1712999999999738,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly does not support unknown claims",
+          "status": "passed",
+          "title": "does not support unknown claims",
+          "duration": 0.051499999999577994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore notebook readable report"
+          ],
+          "fullName": "Explore notebook readable report exports recorded learner notes, inputs, and evidence without recomputing the result",
+          "status": "passed",
+          "title": "exports recorded learner notes, inputs, and evidence without recomputing the result",
+          "duration": 2.3572000000003754,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore notebook readable report"
+          ],
+          "fullName": "Explore notebook readable report labels missing legacy information without inventing baseline values or notes",
+          "status": "passed",
+          "title": "labels missing legacy information without inventing baseline values or notes",
+          "duration": 0.5740000000005239,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790813502515,
+      "endTime": 1790813502537.574,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_explore_notebook.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence names the notebook and saved cards with real headings and retains a folded native explanation disclosure",
+          "status": "passed",
+          "title": "names the notebook and saved cards with real headings and retains a folded native explanation disclosure",
+          "duration": 262.27649999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence shows true zero, positive and negative stored changes exactly with their independent index units",
+          "status": "passed",
+          "title": "shows true zero, positive and negative stored changes exactly with their independent index units",
+          "duration": 300.3168999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence marks missing changes as Not recorded instead of inventing zeroes",
+          "status": "passed",
+          "title": "marks missing changes as Not recorded instead of inventing zeroes",
+          "duration": 95.37120000000141,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence marks NaN and both infinite values as Not recorded instead of inventing zeroes",
+          "status": "passed",
+          "title": "marks NaN and both infinite values as Not recorded instead of inventing zeroes",
+          "duration": 91.66610000000037,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence preserves the three recorded claim states when matched is true",
+          "status": "passed",
+          "title": "preserves the three recorded claim states when matched is true",
+          "duration": 104.07099999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence preserves the three recorded claim states when matched is false",
+          "status": "passed",
+          "title": "preserves the three recorded claim states when matched is false",
+          "duration": 76.33240000000114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence preserves the three recorded claim states when matched is undefined",
+          "status": "passed",
+          "title": "preserves the three recorded claim states when matched is undefined",
+          "duration": 55.83020000000033,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence keeps exact saved table values while later current controls and comparison readings change",
+          "status": "passed",
+          "title": "keeps exact saved table values while later current controls and comparison readings change",
+          "duration": 176.7515000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence uses Not recorded for missing or nonfinite table cells and retains any finite saved reading",
+          "status": "passed",
+          "title": "uses Not recorded for missing or nonfinite table cells and retains any finite saved reading",
+          "duration": 56.92669999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence does not generate a model-value table when an older observation has no recorded metrics",
+          "status": "passed",
+          "title": "does not generate a model-value table when an older observation has no recorded metrics",
+          "duration": 108.85709999999926,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence derives the saved comparison method from recorded inputs rather than the later live comparison",
+          "status": "passed",
+          "title": "derives the saved comparison method from recorded inputs rather than the later live comparison",
+          "duration": 76.9974000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence explains incomplete legacy inputs and replay defaults without completing or recomputing the record",
+          "status": "passed",
+          "title": "explains incomplete legacy inputs and replay defaults without completing or recomputing the record",
+          "duration": 63.154600000001665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence offers native Replay settings with linked scope help for saved settings even without a baseline",
+          "status": "passed",
+          "title": "offers native Replay settings with linked scope help for saved settings even without a baseline",
+          "duration": 64.95110000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence omits Replay when no snapshot was recorded and keeps the saved record discoverable",
+          "status": "passed",
+          "title": "omits Replay when no snapshot was recorded and keeps the saved record discoverable",
+          "duration": 76.16650000000118,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence announces loaded settings with an atomic live status while keeping recorded values in the notebook",
+          "status": "passed",
+          "title": "announces loaded settings with an atomic live status while keeping recorded values in the notebook",
+          "duration": 65.40279999999984,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence preserves saved writing in labeled native fields with unique, resolving hints after reverse display order",
+          "status": "passed",
+          "title": "preserves saved writing in labeled native fields with unique, resolving hints after reverse display order",
+          "duration": 70.1322999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence places valid saved pathway shares inside the native disclosure and distinguishes them from independent readings",
+          "status": "passed",
+          "title": "places valid saved pathway shares inside the native disclosure and distinguishes them from independent readings",
+          "duration": 59.20089999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence renders frozen saved records, notes and Undo without changing missing values or later learner state",
+          "status": "passed",
+          "title": "renders frozen saved records, notes and Undo without changing missing values or later learner state",
+          "duration": 48.338300000001254,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence preserves the complete notebook/export helper, production math and original notebook state handlers",
+          "status": "passed",
+          "title": "preserves the complete notebook/export helper, production math and original notebook state handlers",
+          "duration": 17.115099999999074,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence"
+          ],
+          "fullName": "Water Cycle evidence notebook clarity: actual renderer and frozen recorded evidence ships identical source and public notebook implementations",
+          "status": "passed",
+          "title": "ships identical source and public notebook implementations",
+          "duration": 16.678200000000288,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790813477417,
+      "endTime": 1790813479336.6782,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_notebook_clarity.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle replay handoff"
+          ],
+          "fullName": "Water Cycle replay handoff stores the replayed observation label and clears it when branching",
+          "status": "passed",
+          "title": "stores the replayed observation label and clears it when branching",
+          "duration": 28.346600000000763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle replay handoff"
+          ],
+          "fullName": "Water Cycle replay handoff makes replay state visible and discoverable to assistive technology",
+          "status": "passed",
+          "title": "makes replay state visible and discoverable to assistive technology",
+          "duration": 33.376399999997375,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790813498004,
+      "endTime": 1790813498066.3765,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_replay_indicator.test.js"
+    }
+  ],
+  "waterCycleNotebookVerification": {
+    "sourcePath": "stem_lab/stem_tool_watercycle.js",
+    "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+    "sourceSha256": "be9e13e1843094083faf6a3d297029e16f0619a1c57c8adc3a1ff3503c7ff651",
+    "publicSha256": "be9e13e1843094083faf6a3d297029e16f0619a1c57c8adc3a1ff3503c7ff651",
+    "sourcePublicIdentical": true,
+    "sourceVerifiedBeforeAndAfterRun": true,
+    "baselinePath": "reports/watercycle-notebook-clarity/baseline-runtime.js",
+    "baselineSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+    "testFiles": [
+      {
+        "path": "tests/watercycle_notebook_clarity.test.js",
+        "sha256": "f112fc1b6e2b42c2766e1174c71d0dcace874fc3480f29e43a71e7c0175f4eb0"
+      },
+      {
+        "path": "tests/watercycle_explore_notebook.test.js",
+        "sha256": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e"
+      },
+      {
+        "path": "tests/watercycle_experiment_trail.test.js",
+        "sha256": "2c036e22dd3e6e469d5da6ce96c840183f37d763ca3b1cbc0ea76f60293e6656"
+      },
+      {
+        "path": "tests/watercycle_replay_indicator.test.js",
+        "sha256": "06168ae19b96369998860e5eb607d58337b3df07f7eb323393f6d4a6d15c7aa7"
+      }
+    ],
+    "baselinePreservation": [
+      {
+        "name": "WCExploreNotebook",
+        "baselineSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+        "currentSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+        "unchanged": true
+      },
+      {
+        "name": "wcLandResponse",
+        "baselineSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+        "currentSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+        "unchanged": true
+      },
+      {
+        "name": "estimateWcLandIndices",
+        "baselineSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+        "currentSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+        "unchanged": true
+      },
+      {
+        "name": "estimateWcRouteShares",
+        "baselineSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+        "currentSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+        "unchanged": true
+      },
+      {
+        "name": "evaporationIndex",
+        "baselineSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+        "currentSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+        "unchanged": true
+      },
+      {
+        "name": "wcBaselineEvaporationIndex",
+        "baselineSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+        "currentSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+        "unchanged": true
+      },
+      {
+        "name": "wcCurrentSnapshot",
+        "baselineSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+        "currentSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+        "unchanged": true
+      },
+      {
+        "name": "wcComparisonDeltas",
+        "baselineSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+        "currentSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+        "unchanged": true
+      },
+      {
+        "name": "formatWcDelta",
+        "baselineSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+        "currentSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+        "unchanged": true
+      },
+      {
+        "name": "WATER_CYCLE_PRESETS",
+        "baselineSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+        "currentSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+        "unchanged": true
+      },
+      {
+        "name": "WATER_CYCLE_PREDICTIONS",
+        "baselineSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+        "currentSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+        "unchanged": true
+      },
+      {
+        "name": "getWcInteractionBaseline",
+        "baselineSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+        "currentSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+        "unchanged": true
+      },
+      {
+        "name": "adjustClimate",
+        "baselineSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+        "currentSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+        "unchanged": true
+      },
+      {
+        "name": "adjustLand",
+        "baselineSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+        "currentSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+        "unchanged": true
+      },
+      {
+        "name": "resetClimate",
+        "baselineSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+        "currentSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+        "unchanged": true
+      },
+      {
+        "name": "resetLandScenario",
+        "baselineSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+        "currentSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+        "unchanged": true
+      },
+      {
+        "name": "captureWcScenarioBaseline",
+        "baselineSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+        "currentSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+        "unchanged": true
+      },
+      {
+        "name": "restoreWcScenarioBaseline",
+        "baselineSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+        "currentSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+        "unchanged": true
+      },
+      {
+        "name": "clearWcScenarioBaseline",
+        "baselineSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+        "currentSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+        "unchanged": true
+      },
+      {
+        "name": "isolateWcComparisonInput",
+        "baselineSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+        "currentSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+        "unchanged": true
+      },
+      {
+        "name": "saveWcObservation",
+        "baselineSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+        "currentSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+        "unchanged": true
+      },
+      {
+        "name": "replayWcObservation",
+        "baselineSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+        "currentSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+        "unchanged": true
+      },
+      {
+        "name": "recordWcPrediction",
+        "baselineSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+        "currentSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+        "unchanged": true
+      },
+      {
+        "name": "resetWcPrediction",
+        "baselineSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+        "currentSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+        "unchanged": true
+      },
+      {
+        "name": "collectWcRemovedEntries",
+        "baselineSha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e",
+        "currentSha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e",
+        "unchanged": true
+      },
+      {
+        "name": "focusWcNotebookHeading",
+        "baselineSha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215",
+        "currentSha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215",
+        "unchanged": true
+      },
+      {
+        "name": "clearWcExperimentLog",
+        "baselineSha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea",
+        "currentSha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea",
+        "unchanged": true
+      },
+      {
+        "name": "removeWcObservation",
+        "baselineSha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c",
+        "currentSha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c",
+        "unchanged": true
+      },
+      {
+        "name": "undoWcObservationRemoval",
+        "baselineSha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86",
+        "currentSha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86",
+        "unchanged": true
+      },
+      {
+        "name": "updateWcObservationNote",
+        "baselineSha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9",
+        "currentSha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9",
+        "unchanged": true
+      },
+      {
+        "name": "downloadWcExperimentLog",
+        "baselineSha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477",
+        "currentSha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477",
+        "unchanged": true
+      },
+      {
+        "name": "wcRunoffDelta:assignment",
+        "baselineSha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae",
+        "currentSha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae",
+        "unchanged": true
+      },
+      {
+        "name": "wcInfiltrationDelta:assignment",
+        "baselineSha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b",
+        "currentSha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b",
+        "unchanged": true
+      },
+      {
+        "name": "wcEvaporationDelta:assignment",
+        "baselineSha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0",
+        "currentSha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0",
+        "unchanged": true
+      }
+    ],
+    "anchorExtraction": {
+      "helperPath": "tests/watercycle_notebook_clarity.test.js",
+      "helperName": "productionNodes",
+      "parser": "acorn.parse with ecmaVersion latest",
+      "normalization": "Replace CRLF with LF before parsing and slicing; whole-file hashes use raw bytes.",
+      "declarations": "Unique FunctionDeclaration or VariableDeclarator whose id.name is in PRESERVED; slice normalized source from node.start through node.end (exclusive). VariableDeclarator excludes the declaration keyword and terminal semicolon.",
+      "assignments": "Unique AssignmentExpression with operator = and Identifier left side in DELTA_ASSIGNMENTS; name left.name + :assignment; slice that complete node from normalized source.",
+      "digest": "SHA-256 of each UTF-8 slice."
+    },
+    "diagnostics": [
+      {
+        "path": "reports/watercycle-notebook-clarity/unit-source-label-diagnostic.json",
+        "sha256": "7bc9542b2197d25fc8d3e4062693452469018a87b0e5aadc9173d21f5a1936e2"
+      },
+      {
+        "path": "reports/watercycle-notebook-clarity/unit-source-label-diagnostic-output.txt",
+        "sha256": "e91da947a95860988ce1c364a4d24df363ed2c81d6b3f1ce88cc04b88b41d486"
+      }
+    ],
+    "fullOutputPath": "reports/watercycle-notebook-clarity/unit-output.txt",
+    "verifiedAt": "2026-10-01T00:13:29.311Z"
+  }
+}

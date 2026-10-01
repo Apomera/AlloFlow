@@ -1,0 +1,584 @@
+{
+  "cases": [
+    {
+      "name": "canonical shared-resource routes write compressed snapshots to real IndexedDB",
+      "passed": true
+    },
+    {
+      "name": "replace a repeated FAQ occurrence, then close the entire browser process",
+      "passed": true
+    },
+    {
+      "name": "browser restart restores saved bytes for the feedback comparison",
+      "passed": true
+    },
+    {
+      "name": "attachment-only retry stays pending until native autosave readback completes",
+      "passed": false,
+      "error": "Error: expect(locator).toContainText(expected) failed\n\nLocator: locator('#root')\nExpected substring: \"not confirmed yet\"\nReceived string:    \"4/4 clips ready to play. 4/4 saved on this device.This check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.Check device saveRetry device saveDevice save could not be completed. Check the saved count and try again.\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for locator('#root')\n    5 × locator resolved to <main id=\"root\">…</main>\n      - unexpected value \"4/4 clips ready to play. 3/4 saved on this device.This check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.Check device saveRetry device saveDevice save could not be completed. Check the saved count and try again.\"\n    7 × locator resolved to <main id=\"root\">…</main>\n      - unexpected value \"4/4 clips ready to play. 4/4 saved on this device.This check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.Check device saveRetry device saveDevice save could not be completed. Check the saved count and try again.\"\n\n    at captureRawStack (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\coreBundle.js:3130:17)\n    at callMatcherAsStep (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12873:57)\n    at Object.toContainText (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12863:23)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.tmp\\device-durability18\\basis\\dev-tools\\device_durability_browser.cjs:77:317\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.tmp\\device-durability18\\basis\\dev-tools\\device_durability_browser.cjs:69:35)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.tmp\\device-durability18\\basis\\dev-tools\\device_durability_browser.cjs:77:3"
+    }
+  ],
+  "errors": [],
+  "blockedRequests": [],
+  "feedbackOnly": true,
+  "fixtures": "Native IndexedDB, vendor idb-keyval/LZString, source host autosave/attachment/readback, actual service/store; synthesized fixture PCM only",
+  "profile": "browser-profile-Qxj8MR",
+  "browser": "148.0.7778.96",
+  "resourceSegments": [
+    {
+      "id": "faq",
+      "type": "faq",
+      "segments": 4
+    },
+    {
+      "id": "original",
+      "type": "simplified",
+      "segments": 2
+    },
+    {
+      "id": "adapted",
+      "type": "simplified",
+      "segments": 2
+    },
+    {
+      "id": "glossary",
+      "type": "glossary",
+      "segments": 3
+    },
+    {
+      "id": "memory",
+      "type": "memory-aid",
+      "segments": 3
+    },
+    {
+      "id": "challenge",
+      "type": "applied-challenge",
+      "segments": 3
+    }
+  ],
+  "beforeRestart": {
+    "items": [
+      {
+        "id": "faq",
+        "unitId": null,
+        "type": "faq",
+        "title": "",
+        "meta": "",
+        "timestamp": "2026-09-27T18:12:22.357Z",
+        "data": "[{\"question\":\"Echo.\",\"answer\":\"Echo.\"},{\"question\":\"Echo.\",\"answer\":\"Other.\"}]",
+        "karaokeAudio": {
+          "format": "per-entry",
+          "version": 4,
+          "entries": {
+            "[\"alloflow.faq.read-aloud\",1,\"main\",\"faq/0/answer/0\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.faq.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "faq/0/answer/0",
+                "spokenFingerprint": "txt-5-dfu8n2",
+                "spokenText": "Echo."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:18.970Z"
+            },
+            "[\"alloflow.faq.read-aloud\",1,\"main\",\"faq/0/question/0\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.faq.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "faq/0/question/0",
+                "spokenFingerprint": "txt-5-dfu8n2",
+                "spokenText": "Echo."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:18.952Z"
+            },
+            "[\"alloflow.faq.read-aloud\",1,\"main\",\"faq/1/answer/0\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.faq.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "faq/1/answer/0",
+                "spokenFingerprint": "txt-6-hekwgx",
+                "spokenText": "Other."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:18.985Z"
+            },
+            "[\"alloflow.faq.read-aloud\",1,\"main\",\"faq/1/question/0\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.faq.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "faq/1/question/0",
+                "spokenFingerprint": "txt-5-dfu8n2",
+                "spokenText": "Echo."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:21.356Z"
+            }
+          },
+          "legacy": {
+            "format": "per-entry",
+            "version": 3,
+            "sentences": {},
+            "mimes": {},
+            "sources": {},
+            "metadata": {}
+          }
+        }
+      },
+      {
+        "id": "original",
+        "unitId": null,
+        "type": "simplified",
+        "title": "",
+        "meta": "",
+        "timestamp": "2026-09-27T18:12:22.357Z",
+        "data": "\"Original source sentence. Second original sentence.\"",
+        "dataEncoding": "json-text/v1",
+        "instructionalText": {
+          "form": "original"
+        },
+        "karaokeAudio": {
+          "format": "per-entry",
+          "version": 4,
+          "entries": {
+            "[\"alloflow.simplified.read-aloud\",1,\"main\",\"body/0/0\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.simplified.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "body/0/0",
+                "spokenFingerprint": "txt-p-1hj7xx6",
+                "spokenText": "Original source sentence."
+              },
+              "audio": "UklGRoQJAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YWAJAAAAAFgBpQLfA/sE8QW5Bk8HrQfQB7cHZAfZBhkGKwUVBOAClgE/AOb+lv1Y/Db7Ofpn+cj4YPgy+ED4iPgK+cH5p/q2++b8Lf6C/9sALgJwA5gEnAV2Bh8HkQfKB8cHiQcSB2QGhgV+BFQDEAK8AGP/D/7J/Jz7kPqu+fz4f/g8+DT4Z/jU+Hj5TvpP+3T8tP0F/14AtAH9AjAEQgUsBugGbge8B88HpgdEB6kG3AXiBMQDiAI5AeH/if49/Qb87fr7+Tf5pvhO+DD4Tvim+Df5+/nt+gb8Pf2J/uH/OQGIAsQD4gTcBakGRAemB88HvAduB+gGLAZCBTAE/QK0AV4ABf+0/XT8T/tO+nj51Phn+DT4PPh/+Pz4rvmQ+pz7yfwP/mP/vAAQAlQDfgSGBWQGEgeJB8cHygeRBx8HdgacBZgEcAMuAtsAgv8t/ub8tvun+sH5CvmI+ED4Mvhg+Mj4Z/k5+jb7WPyW/eb+PwCWAeACFQQrBRkG2QZkB7cH0AetB08HuQbxBfsE3wOlAlgBAACo/lv9IfwF+w/6R/mx+FP4MPhJ+Jz4J/nn+dX66/sg/Wr+wf8aAWoCqAPKBMcFmQY4B6AHzgfAB3gH9gY/BlkFSgQaA9MBfgAl/9L9kPxo+2T6ivnh+G/4Nvg5+Hf47vic+Xr6gvus/PD9RP+dAPEBNwNkBHAFUgYEB4EHxAfMB5kHLAeIBrIFsQSMA0wC+wCi/0z+A/3Q+7761PkY+ZL4RPgx+Fr4vPhX+ST6Hvs8/Hj9x/4fAHcBwwL6AxMFBQbJBloHsgfQB7IHWgfJBgUGEwX6A8MCdwEfAMf+eP08/B77JPpX+bz4Wvgx+ET4kvgY+dT5vvrQ+wP9TP6i//sATAKMA7EEsgWIBiwHmQfMB8QHgQcEB1IGcAVkBDcD8QGdAET/8P2s/IL7evqc+e74d/g5+Db4b/jh+Ir5ZPpo+5D80v0l/34A0wEaA0oEWQU/BvYGeAfAB84HoAc4B5kGxwXKBKgDagIaAcH/av4g/ev71frn+Sf5nPhJ+DD4U/ix+Ef5D/oF+yH8W/2o/gAAWAGlAt8D+wTxBbkGTwetB9AHtwdkB9kGGQYrBRUE4AKWAT8A5v6W/Vj8Nvs5+mf5yPhg+DL4QPiI+Ar5wfmn+rb75vwt/oL/2wAuAnADmAScBXYGHweRB8oHxweJBxIHZAaGBX4EVAMQArwAY/8P/sn8nPuQ+q75/Ph/+Dz4NPhn+NT4ePlO+k/7dPy0/QX/XgC0Af0CMARCBSwG6AZuB7wHzwemB0QHqQbcBeIExAOIAjkB4f+J/j39Bvzt+vv5N/mm+E74MPhO+Kb4N/n7+e36Bvw9/Yn+4f85AYgCxAPiBNwFqQZEB6YHzwe8B24H6AYsBkIFMAT9ArQBXgAF/7T9dPxP+076ePnU+Gf4NPg8+H/4/Piu+ZD6nPvJ/A/+Y/+8ABACVAN+BIYFZAYSB4kHxwfKB5EHHwd2BpwFmARwAy4C2wCC/y3+5vy2+6f6wfkK+Yj4QPgy+GD4yPhn+Tn6NvtY/Jb95v4/AJYB4AIVBCsFGQbZBmQHtwfQB60HTwe5BvEF+wTfA6UCWAEAAKj+W/0h/AX7D/pH+bH4U/gw+En4nPgn+ef51frr+yD9av7B/xoBagKoA8oExwWZBjgHoAfOB8AHeAf2Bj8GWQVKBBoD0wF+ACX/0v2Q/Gj7ZPqK+eH4b/g2+Dn4d/ju+Jz5evqC+6z88P1E/50A8QE3A2QEcAVSBgQHgQfEB8wHmQcsB4gGsgWxBIwDTAL7AKL/TP4D/dD7vvrU+Rj5kvhE+DH4Wvi8+Ff5JPoe+zz8eP3H/h8AdwHDAvoDEwUFBskGWgeyB9AHsgdaB8kGBQYTBfoDwwJ3AR8Ax/54/Tz8Hvsk+lf5vPha+DH4RPiS+Bj51Pm++tD7A/1M/qL/+wBMAowDsQSyBYgGLAeZB8wHxAeBBwQHUgZwBWQENwPxAZ0ARP/w/az8gvt6+pz57vh3+Dn4Nvhv+OH4ivlk+mj7kPzS/SX/fgDTARoDSgRZBT8G9gZ4B8AHzgegBzgHmQbHBcoEqANqAhoBwf9q/iD96/vV+uf5J/mc+En4MPhT+LH4R/kP+gX7Ifxb/aj+AABYAaUC3wP7BPEFuQZPB60H0Ae3B2QH2QYZBisFFQTgApYBPwDm/pb9WPw2+zn6Z/nI+GD4MvhA+Ij4CvnB+af6tvvm/C3+gv/bAC4CcAOYBJwFdgYfB5EHygfHB4kHEgdkBoYFfgRUAxACvABj/w/+yfyc+5D6rvn8+H/4PPg0+Gf41Ph4+U76T/t0/LT9Bf9eALQB/QIwBEIFLAboBm4HvAfPB6YHRAepBtwF4gTEA4gCOQHh/4n+Pf0G/O36+/k3+ab4Tvgw+E74pvg3+fv57foG/D39if7h/zkBiALEA+IE3AWpBkQHpgfPB7wHbgfoBiwGQgUwBP0CtAFeAAX/tP10/E/7Tvp4+dT4Z/g0+Dz4f/j8+K75kPqc+8n8D/5j/7wAEAJUA34EhgVkBhIHiQfHB8oHkQcfB3YGnAWYBHADLgLbAIL/Lf7m/Lb7p/rB+Qr5iPhA+DL4YPjI+Gf5Ofo2+1j8lv3m/j8AlgHgAhUEKwUZBtkGZAe3B9AHrQdPB7kG8QX7BN8DpQJYAQAAqP5b/SH8BfsP+kf5sfhT+DD4Sfic+Cf55/nV+uv7IP1q/sH/GgFqAqgDygTHBZkGOAegB84HwAd4B/YGPwZZBUoEGgPTAX4AJf/S/ZD8aPtk+or54fhv+Db4Ofh3+O74nPl6+oL7rPzw/UT/nQDxATcDZARwBVIGBAeBB8QHzAeZBywHiAayBbEEjANMAvsAov9M/gP90Pu++tT5GPmS+ET4Mfha+Lz4V/kk+h77PPx4/cf+HwB3AcMC+gMTBQUGyQZaB7IH0AeyB1oHyQYFBhMF+gPDAncBHwDH/nj9PPwe+yT6V/m8+Fr4MfhE+JL4GPnU+b760PsD/Uz+ov/7AEwCjAOxBLIFiAYsB5kHzAfEB4EHBAdSBnAFZAQ3A/EBnQBE//D9rPyC+3r6nPnu+Hf4Ofg2+G/44fiK+WT6aPuQ/NL9Jf9+ANMBGgNKBFkFPwb2BngHwAfOB6AHOAeZBscFygSoA2oCGgHB/2r+IP3r+9X65/kn+Zz4Sfgw+FP4sfhH+Q/6Bfsh/Fv9qP4=",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:18.999Z"
+            },
+            "[\"alloflow.simplified.read-aloud\",1,\"main\",\"body/0/1\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.simplified.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "body/0/1",
+                "spokenFingerprint": "txt-p-82hqot",
+                "spokenText": "Second original sentence."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.003Z"
+            }
+          },
+          "legacy": {
+            "format": "per-entry",
+            "version": 3,
+            "sentences": {},
+            "mimes": {},
+            "sources": {},
+            "metadata": {}
+          }
+        }
+      },
+      {
+        "id": "adapted",
+        "unitId": null,
+        "type": "simplified",
+        "title": "",
+        "meta": "",
+        "timestamp": "2026-09-27T18:12:22.357Z",
+        "data": "\"An adapted sentence. Another adapted sentence.\"",
+        "dataEncoding": "json-text/v1",
+        "instructionalText": {
+          "form": "adapted"
+        },
+        "karaokeAudio": {
+          "format": "per-entry",
+          "version": 4,
+          "entries": {
+            "[\"alloflow.simplified.read-aloud\",1,\"main\",\"body/0/0\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.simplified.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "body/0/0",
+                "spokenFingerprint": "txt-k-1bi1y3y",
+                "spokenText": "An adapted sentence."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.010Z"
+            },
+            "[\"alloflow.simplified.read-aloud\",1,\"main\",\"body/0/1\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.simplified.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "body/0/1",
+                "spokenFingerprint": "txt-p-1f74pdk",
+                "spokenText": "Another adapted sentence."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.014Z"
+            }
+          },
+          "legacy": {
+            "format": "per-entry",
+            "version": 3,
+            "sentences": {},
+            "mimes": {},
+            "sources": {},
+            "metadata": {}
+          }
+        }
+      },
+      {
+        "id": "glossary",
+        "unitId": null,
+        "type": "glossary",
+        "title": "",
+        "meta": "",
+        "timestamp": "2026-09-27T18:12:22.358Z",
+        "data": "[{\"entryId\":\"term-one\",\"term\":\"Plant\",\"definition\":\"A living organism.\",\"translations\":{\"Spanish\":\"Planta: Un organismo vivo.\"}}]",
+        "karaokeAudio": {
+          "format": "per-entry",
+          "version": 4,
+          "entries": {
+            "[\"alloflow.glossary.read-aloud\",1,\"main\",\"entry/term-one/term\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.glossary.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "entry/term-one/term",
+                "spokenFingerprint": "txt-5-13c41f6",
+                "spokenText": "Plant"
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.022Z"
+            },
+            "[\"alloflow.glossary.read-aloud\",1,\"main\",\"entry/term-one/definition\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.glossary.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "entry/term-one/definition",
+                "spokenFingerprint": "txt-p-fhx0w2",
+                "spokenText": "Plant: A living organism."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.026Z"
+            },
+            "[\"alloflow.glossary.read-aloud\",1,\"main\",\"entry/term-one/translation/spanish\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.glossary.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "main",
+                "segmentId": "entry/term-one/translation/spanish",
+                "spokenFingerprint": "txt-q-2pv22p",
+                "spokenText": "Planta: Un organismo vivo."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "Spanish",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.028Z"
+            }
+          },
+          "legacy": {
+            "format": "per-entry",
+            "version": 3,
+            "sentences": {},
+            "mimes": {},
+            "sources": {},
+            "metadata": {}
+          }
+        }
+      },
+      {
+        "id": "memory",
+        "unitId": null,
+        "type": "memory-aid",
+        "title": "",
+        "meta": "",
+        "timestamp": "2026-09-27T18:12:22.358Z",
+        "data": "{\"cards\":[{\"id\":\"card-one\",\"target\":\"Plants\",\"aiExample\":\"Picture a leaf.\",\"studentPrompt\":\"Explain the connection.\"}]}",
+        "karaokeAudio": {
+          "format": "per-entry",
+          "version": 4,
+          "entries": {
+            "[\"alloflow.memory-aid.read-aloud\",1,\"reference\",\"card/card-one/target\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.memory-aid.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "reference",
+                "segmentId": "card/card-one/target",
+                "spokenFingerprint": "txt-6-uqdetv",
+                "spokenText": "Plants"
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.038Z"
+            },
+            "[\"alloflow.memory-aid.read-aloud\",1,\"reference\",\"card/card-one/cue\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.memory-aid.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "reference",
+                "segmentId": "card/card-one/cue",
+                "spokenFingerprint": "txt-f-6sff8w",
+                "spokenText": "Picture a leaf."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.045Z"
+            },
+            "[\"alloflow.memory-aid.read-aloud\",1,\"reference\",\"card/card-one/prompt\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.memory-aid.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "reference",
+                "segmentId": "card/card-one/prompt",
+                "spokenFingerprint": "txt-n-fyv5md",
+                "spokenText": "Explain the connection."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.047Z"
+            }
+          },
+          "legacy": {
+            "format": "per-entry",
+            "version": 3,
+            "sentences": {},
+            "mimes": {},
+            "sources": {},
+            "metadata": {}
+          }
+        }
+      },
+      {
+        "id": "challenge",
+        "unitId": null,
+        "type": "applied-challenge",
+        "title": "",
+        "meta": "",
+        "timestamp": "2026-09-27T18:12:22.358Z",
+        "data": "{\"title\":\"Design a garden\",\"instructions\":\"Plan a garden.\",\"brief\":{\"context\":\"Plants need light.\"}}",
+        "karaokeAudio": {
+          "format": "per-entry",
+          "version": 4,
+          "entries": {
+            "[\"alloflow.applied-challenge.read-aloud\",1,\"reference\",\"title\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.applied-challenge.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "reference",
+                "segmentId": "title",
+                "spokenFingerprint": "txt-f-1yipnph",
+                "spokenText": "Design a garden"
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.052Z"
+            },
+            "[\"alloflow.applied-challenge.read-aloud\",1,\"reference\",\"directions\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.applied-challenge.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "reference",
+                "segmentId": "directions",
+                "spokenFingerprint": "txt-e-1ccvv9w",
+                "spokenText": "Plan a garden."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.054Z"
+            },
+            "[\"alloflow.applied-challenge.read-aloud\",1,\"reference\",\"brief/context\"]": {
+              "identity": {
+                "identityVersion": 4,
+                "adapterId": "alloflow.applied-challenge.read-aloud",
+                "adapterVersion": 1,
+                "scopeId": "reference",
+                "segmentId": "brief/context",
+                "spokenFingerprint": "txt-i-w5wbgp",
+                "spokenText": "Plants need light."
+              },
+              "audio": "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",
+              "mime": "audio/wav",
+              "source": "ai-generated",
+              "synthesisProfile": {
+                "voice": "Kore",
+                "language": "English",
+                "provider": "fixture",
+                "synthesisRate": 1,
+                "voiceResolverVersion": 2
+              },
+              "createdAt": "2026-09-27T18:12:19.056Z"
+            }
+          },
+          "legacy": {
+            "format": "per-entry",
+            "version": 3,
+            "sentences": {},
+            "mimes": {},
+            "sources": {},
+            "metadata": {}
+          }
+        }
+      }
+    ]
+  },
+  "finalUi": "4/4 clips ready to play. 4/4 saved on this device.\n\nThis check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.\n\nCheck device save\nRetry device save\n\nDevice save could not be completed. Check the saved count and try again."
+}

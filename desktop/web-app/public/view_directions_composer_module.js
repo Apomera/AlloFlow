@@ -34,6 +34,12 @@ function DirectionsComposerView({
   const fallbackGoalState = React.useRef({ resource: legacyGoalRes || "", text: legacyGoalText || "" });
   const goalState = directionsGoalEditorState || fallbackGoalState;
   const previewLabel = t("common.preview");
+  const tx = (key, fallback) => {
+    const value = t(key);
+    return value && value !== key ? value : fallback;
+  };
+  const boardTitleDefault = tx("directions.choice_board_title", "Choose an activity");
+  const boardPromptDefault = tx("directions.choice_board_prompt", "Pick one activity to work on first. You can return here and choose another later.");
   const [mbDirectionsGoalRes, updateGoalRes] = React.useState(() => goalState.current.resource);
   const [mbDirectionsGoalText, updateGoalText] = React.useState(() => goalState.current.text);
   const setMbDirectionsGoalRes = (value) => {
@@ -64,8 +70,8 @@ function DirectionsComposerView({
         }
         next.choiceBoard = {
           enabled: true,
-          title: next.choiceBoard?.title || "Choose an activity",
-          prompt: next.choiceBoard?.prompt || "Pick one activity to work on first. You can return here and choose another later.",
+          title: next.choiceBoard?.title || boardTitleDefault,
+          prompt: next.choiceBoard?.prompt || boardPromptDefault,
           choices: Array.isArray(next.choiceBoard?.choices) ? next.choiceBoard.choices : []
         };
         return next;
@@ -79,7 +85,7 @@ function DirectionsComposerView({
       value: mbDirectionsDraft.choiceBoard.title || "",
       onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, choiceBoard: { ...p?.choiceBoard || {}, enabled: true, title: e.target.value } })),
       "aria-label": "Activity choice board title",
-      placeholder: "Choose an activity",
+      placeholder: boardTitleDefault,
       className: "w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
     }
   ), /* @__PURE__ */ React.createElement(
@@ -88,7 +94,7 @@ function DirectionsComposerView({
       value: mbDirectionsDraft.choiceBoard.prompt || "",
       onChange: (e) => setMbDirectionsDraft((p) => ({ ...p || {}, choiceBoard: { ...p?.choiceBoard || {}, enabled: true, prompt: e.target.value } })),
       "aria-label": "Activity choice board instructions",
-      placeholder: "Pick one activity to work on first.",
+      placeholder: boardPromptDefault,
       rows: 2,
       className: "w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
     }
@@ -142,7 +148,7 @@ function DirectionsComposerView({
       placeholder: "Optional: what students will do here",
       className: "w-full rounded border border-slate-300 bg-white p-1.5 text-[10px] text-slate-800"
     }
-  ))), showDirectionsChoicePreview && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4", onClick: () => setShowDirectionsChoicePreview(false) }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-labelledby": "directions-choice-preview-title", className: "max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wide text-indigo-600" }, "Student preview"), /* @__PURE__ */ React.createElement("h3", { id: "directions-choice-preview-title", className: "text-base font-black text-slate-900" }, mbDirectionsDraft.choiceBoard.title || "Choose an activity"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, mbDirectionsDraft.choiceBoard.prompt || "Pick one activity to work on first.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowDirectionsChoicePreview(false), "aria-label": "Close student choice board preview", className: "min-h-10 min-w-10 rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-2" }, _mbDirectionsChoicePreviewItems.map(({ choice, resource }) => {
+  ))), showDirectionsChoicePreview && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4", onClick: () => setShowDirectionsChoicePreview(false) }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-labelledby": "directions-choice-preview-title", className: "max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wide text-indigo-600" }, "Student preview"), /* @__PURE__ */ React.createElement("h3", { id: "directions-choice-preview-title", className: "text-base font-black text-slate-900" }, mbDirectionsDraft.choiceBoard.title || boardTitleDefault), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, mbDirectionsDraft.choiceBoard.prompt || boardPromptDefault)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowDirectionsChoicePreview(false), "aria-label": "Close student choice board preview", className: "min-h-10 min-w-10 rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-3 sm:grid-cols-2" }, _mbDirectionsChoicePreviewItems.map(({ choice, resource }) => {
     const station = _alloStationStyle(resource.type);
     return /* @__PURE__ */ React.createElement("article", { key: "preview-" + choice.resourceRef, className: "flex min-h-24 items-start gap-3 rounded-xl border-2 border-indigo-100 bg-white p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm" }, choice.icon || station.icon || "\u2022"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-black text-slate-800" }, choice.label), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[10px] font-bold uppercase tracking-wide text-indigo-700" }, station.label), choice.description && /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-xs leading-5 text-slate-600" }, choice.description), /* @__PURE__ */ React.createElement("span", { className: "mt-2 block text-[11px] font-bold text-indigo-700" }, "Open activity ", /* @__PURE__ */ React.createElement(ArrowRight, { size: 12, className: "inline", "aria-hidden": "true" }))));
   })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-500" }, "This preview shows the cards students will see on the directions page."))))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, t("directions.objectives") || "Goals (auto-check where possible)"), (mbDirectionsDraft?.objectives || []).map((o, oi) => /* @__PURE__ */ React.createElement("div", { key: o.id, className: "flex items-center gap-1.5 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 " + (o.kind === "xp" ? "bg-indigo-50 text-indigo-700" : o.kind === "game" ? "bg-emerald-50 text-emerald-700" : o.kind === "manual" ? "bg-slate-100 text-slate-600" : "bg-sky-50 text-sky-700") }, o.kind === "manual" ? t("directions.kind_manual") || "self-check" : o.kind === "visited" ? t("directions.kind_visited") || "opened" : o.kind === "responded" ? t("directions.kind_responded") || "answered" : o.kind === "completed" ? t("directions.kind_completed") || "finished" : o.kind === "time" ? t("directions.kind_time") || "time" : o.kind), /* @__PURE__ */ React.createElement("input", { value: o.label, onChange: (e) => setMbDirectionsDraft((p) => {

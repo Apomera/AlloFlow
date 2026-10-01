@@ -1,0 +1,31 @@
+'use strict';
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), assert = require('node:assert/strict');
+const dir = __dirname, root = path.resolve(dir, '../..');
+const read = name => JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8').replace(/^\uFEFF/, ''));
+const runs = ['integrated-tests.json', 'targeted-recheck.json', 'environment-recheck.json'];
+const files = new Map();
+for (const name of runs) for (const result of read(name).testResults) files.set(path.basename(result.name), result);
+const expected = ['reader_plain_text_cache', 'reader_render_cost', 'reader_exact_sentence_start', 'reader_both_view_listen_scroll_width', 'original_reader_markdown', 'reader_sentence_links', 'adapted_word_help_ui', 'reader_spoken_support_language', 'reader_preview_isolation', 'reader_keyboard_a11y', 'reader_listen_along_access'].map(name => name + '.test.js');
+for (const name of expected) {
+  assert.ok(files.has(name), 'Missing suite: ' + name);
+  const result = files.get(name);
+  assert.equal(result.status, 'passed', name);
+  for (const test of result.assertionResults) assert.equal(test.status, 'passed', name + ': ' + test.fullName);
+}
+assert.equal(read('environment-recheck.json').success, true);
+const release = read('local-release-check.json'); assert.equal(release.ok, true);
+const hashes = read('integrated-hashes.json');
+for (const [file, expectedHash] of Object.entries(hashes)) assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex'), expectedHash, 'Final source changed: ' + file);
+const browser = read('browser-acceptance.json');
+for (const result of browser.results) for (const key of ['outstandingTimers', 'outstandingFrames', 'playingAudio', 'highlightRanges']) assert.equal(result.immediatelyAfterClose[key], 0, result.name + ': ' + key);
+const total = expected.reduce((sum, name) => sum + files.get(name).assertionResults.length, 0);
+const completion = { completedAt: new Date().toISOString(), status: 'integrated-locally', tests: total, files: expected.length, browserScenarios: browser.results.length, pairedCases: read('paired-results.json').results.length, moduleSha256: release.expectedModuleSha256, earlierRunIssues: ['A language-pack parity check exceeded the default five-second timeout while reading 63 large files.', 'Some fork workers failed to start; the unchanged outstanding suites passed with one thread and a 120-second execution allowance.'], deployment: false, committed: false, reasonUncommitted: 'Shared reader and hosts already contained extensive concurrent uncommitted work; source, mirrors, narrow patch and evidence are preserved without changing the shared index.' };
+fs.writeFileSync(path.join(dir, 'completion.json'), JSON.stringify(completion, null, 2));
+let doc = fs.readFileSync(path.join(dir, 'README.md'), 'utf8');
+doc = doc.replace('The broader integrated regression run and targeted recheck are recorded in `integrated-tests.json` and `targeted-recheck.json`. Final consolidated results are recorded in `completion.json` when validation finishes.', '**Final validation: ' + total + ' distinct tests passed across all 11 requested files.** The combined run hit a language-pack filesystem timeout and worker-start failures. The remaining suites passed unchanged in a single-thread rerun with a 120-second allowance; no assertions were removed or relaxed. Per-run reports and the deduplicated final result are in `integrated-tests.json`, `targeted-recheck.json`, `environment-recheck.json`, and `completion.json`.');
+doc = doc.replace('Other shared edits were preserved. No deployment or push was performed.', 'Other shared edits were preserved. The shared reader and hosts already contained extensive uncommitted work, so this fix remains uncommitted with its narrow patch and evidence rather than bundling other owners’ work into a commit. No deployment or push was performed.');
+fs.writeFileSync(path.join(dir, 'README.md'), doc);
+fs.appendFileSync(path.join(root, 'AGENT_HANDOFF.md'), '\n- 2026-09-29 | Codex reader performance resume | COMPLETE locally; runtime ownership RELEASED. Integrated bounded per-reader plain-text parsing cache and lazy Explain preparation; failed parsing remains uncached. Current text, learner/resource switches, parser replacement, support edits and callbacks verified. ' + total + ' distinct tests across 11 files passed (unchanged targeted single-thread reruns after filesystem/worker timeouts); three paired browser cases and five acceptance scenarios passed, including 50 previews and 200 resource/learner changes. Comparison median update 32.1 -> 13.6 ms; bilingual 42.3 -> 17.3 ms; 28,752 -> 0 repeated DOM-parser calls in each comparison case. Source/generated pair/three pins verified at ' + release.expectedModuleSha256.slice(0, 8) + '. Shared concurrent edits/index preserved; local uncommitted fix with narrow patch. No deployment, push or worktree archive. Report: reports/reader-performance-resumed-2026-09-28/README.md.\n');
+const oldReport = 'C:/Users/cabba/.codex/worktrees/reader-performance/UDL-Tool-Updated/reports/reader-performance-current/README.md';
+fs.appendFileSync(oldReport, '\n## Follow-up on 2026-09-29\n\nThe comparison slowdown was revisited against current shared source. A narrower bounded plain-text parsing cache was measured, tested and integrated locally; see C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-performance-resumed-2026-09-28/README.md. The earlier all-or-nothing patch remains historical and should not be applied wholesale. Its broad serialization, observer cache and changed persistence recency were not imported. Original evidence is retained.\n');
+console.log(JSON.stringify(completion, null, 2));

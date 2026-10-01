@@ -1,0 +1,97 @@
+{
+  "at": "2026-09-26T23:39:54.502Z",
+  "label": "pass2-17-terms",
+  "patch": "852d812139638115029587e1f162cfedaacebd1b8bccc15ff12215a48806709a",
+  "plans": [
+    {
+      "target": "lang/arabic.js",
+      "targets": [
+        "lang/arabic.js"
+      ],
+      "before": "dee1b5d6011df532c96fbf5c2f6c13b72246552d064ccfe38f902e01b22790dc",
+      "after": "bc14247e6889751aa0258ff2e095b1448d84d373e78f1dc2c3d6eb5eceb1923c",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/arabic.js",
+      "targets": [
+        "desktop/web-app/public/lang/arabic.js"
+      ],
+      "before": "dee1b5d6011df532c96fbf5c2f6c13b72246552d064ccfe38f902e01b22790dc",
+      "after": "bc14247e6889751aa0258ff2e095b1448d84d373e78f1dc2c3d6eb5eceb1923c",
+      "changed": true
+    },
+    {
+      "target": "lang/chinese_simplified.js",
+      "targets": [
+        "lang/chinese_simplified.js"
+      ],
+      "before": "5c00ee2c1239624aefa148eea1f9ab3950d2fbb1f5ffe4fac6dfead9e1d14841",
+      "after": "87a7c963d0c4555168e723690394b31fd558a318e53d50ff4ff24f3a59f62bb3",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/chinese_simplified.js",
+      "targets": [
+        "desktop/web-app/public/lang/chinese_simplified.js"
+      ],
+      "before": "5c00ee2c1239624aefa148eea1f9ab3950d2fbb1f5ffe4fac6dfead9e1d14841",
+      "after": "87a7c963d0c4555168e723690394b31fd558a318e53d50ff4ff24f3a59f62bb3",
+      "changed": true
+    },
+    {
+      "target": "lang/thai.js",
+      "targets": [
+        "lang/thai.js"
+      ],
+      "before": "847cbea871e54a806af6971ddeb32f3076b74ce8ac8be684f4305a1947a904f4",
+      "after": "5f17baf1bab9bffffaef5e17e2beac8018c41e00af99f2cc8197213e87b69e04",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/thai.js",
+      "targets": [
+        "desktop/web-app/public/lang/thai.js"
+      ],
+      "before": "847cbea871e54a806af6971ddeb32f3076b74ce8ac8be684f4305a1947a904f4",
+      "after": "5f17baf1bab9bffffaef5e17e2beac8018c41e00af99f2cc8197213e87b69e04",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/i18n/apply_reader_contract_locales.cjs",
+      "targets": [
+        "dev-tools/i18n/apply_reader_contract_locales.cjs"
+      ],
+      "before": "ad127e708c760997571a7a527357800a2c94a7d8cf2ec341b85d83d945a8f484",
+      "after": "933261e1ea3c6af490a7f80aa19f22d7e51d131fae42b7442bd9531b03a1da42",
+      "changed": true
+    },
+    {
+      "target": "translations/reader-terms-locales.json",
+      "targets": [
+        "translations/reader-terms-locales.json"
+      ],
+      "before": null,
+      "after": "9729c92dfc124a6ef1b91ca799c9dca00e17adef05b83e04dccc175bfe3b4e6d",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_terms_locales.test.js",
+      "targets": [
+        "tests/reader_terms_locales.test.js"
+      ],
+      "before": null,
+      "after": "501fdb2d98d94281db945f7a5948a5b7f93fe9a7caf216e07fbb35b5e314c2fe",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_recovery_locale_catalogs.test.js",
+      "targets": [
+        "tests/reader_recovery_locale_catalogs.test.js"
+      ],
+      "before": "afc4b6ddf45bbaeb331d50861a8c59a3bc6fb09dfdd1bbfd65d236ce526c17db",
+      "after": "c9223bf58ac1ad714007ab1a193734c7a467bff60ba401c617c6b61e7109ad49",
+      "changed": true
+    }
+  ]
+}

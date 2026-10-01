@@ -79,16 +79,28 @@ describe('Anchor Chart rubric request ownership',()=>{
   });
 });
 const challenge = id => ({id,type:'applied-challenge',data:{title:'Water choice',family:'decide',scope:'standard',brief:{drivingQuestion:'Which option uses less water?',criteria:['Use evidence.'],lockedLessonFacts:['Water can evaporate.']},workspace:{workingQuestion:'Which option uses less water?',response:'I recommend testing both methods and comparing the measured water loss.'}}});
+// Since b4d7ed714 the workspace is five stages and a learner starts in focus mode (only the current
+// stage renders). The stress test and strengths-first feedback live in stage 4 (Check), inside
+// "Ask AI to challenge my reasoning"; the hint stays in the focus-mode help.
+async function openCheckStage(){
+  const nav=[...host.querySelectorAll('button')].find(node=>(node.getAttribute('aria-label')||'').startsWith('4. '));
+  expect(nav,'stage 4 (Check) navigation').toBeTruthy();
+  await act(async()=>nav.click());
+  const ai=[...host.querySelectorAll('details')].find(node=>node.querySelector('summary')?.textContent.includes('Ask AI to challenge my reasoning'));
+  expect(ai,'Ask AI to challenge my reasoning').toBeTruthy();
+  await act(async()=>{ai.open=true;});
+}
 const requestKinds = [
-  ['hint','Ask for one hint','Consider how you would measure water loss.'],
-  ['stress-test','Stress-test my draft',JSON.stringify({challenge:'What if the weather changes?',whyItMatters:'Weather changes water loss.',question:'How would you compare fairly?'})],
-  ['feedback','Get strengths-first AI feedback',JSON.stringify({strength:'You propose a comparison.',lessonConnectionCheck:'You use evaporation.',evidenceOrConstraintCheck:'You plan a measurement.',nextStep:'Name a control.',status:'developing'})]
+  ['hint','Ask for one hint','Consider how you would measure water loss.',false],
+  ['stress-test','Stress-test my draft',JSON.stringify({challenge:'What if the weather changes?',whyItMatters:'Weather changes water loss.',question:'How would you compare fairly?'}),true],
+  ['feedback','Get strengths-first AI feedback',JSON.stringify({strength:'You propose a comparison.',lessonConnectionCheck:'You use evaporation.',evidenceOrConstraintCheck:'You plan a measurement.',nextStep:'Name a control.',status:'developing'}),true]
 ];
 describe('Applied Challenge request lifetime',()=>{
-  for(const [kind,label,result] of requestKinds) {
+  for(const [kind,label,result,inCheckStage] of requestKinds) {
     it.each(['unmount','permission','profile','preview','readOnly'])('drops '+kind+' after %s changes',async(change)=>{
       const deferred=pending(),write=vi.fn(),toast=vi.fn();
       const render=mount('AppliedChallengeView',{generatedContent:challenge('a'),activeProfileId:'student-a',isTeacherMode:false,callGemini:()=>deferred.promise,handleNoteUpdate:write,addToast:toast,t});
+      if(inCheckStage) await openCheckStage();
       await click(label);
       if(change==='unmount'){act(()=>root.unmount());root=null;}
       else if(change==='permission')render({allowRuntimeAi:false});
@@ -101,6 +113,7 @@ describe('Applied Challenge request lifetime',()=>{
     it('keeps the normal '+kind+' success path working',async()=>{
       const deferred=pending(),write=vi.fn();
       mount('AppliedChallengeView',{generatedContent:challenge('a'),callGemini:()=>deferred.promise,handleNoteUpdate:write,t});
+      if(inCheckStage) await openCheckStage();
       await click(label); await finish(deferred,result);
       expect(write).toHaveBeenCalledWith(kind==='hint'?'coachHint':kind==='stress-test'?'stressTest':'feedback',expect.anything());
     });

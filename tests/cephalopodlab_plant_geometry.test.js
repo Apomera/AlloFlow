@@ -46,8 +46,8 @@ describe('Cephalopod Hunter plant geometry', () => {
       const geometry = createPlant(THREE, kind, height, variant);
       try {
         const positions = geometry.attributes.position, normals = geometry.attributes.normal, colors = geometry.attributes.color, index = geometry.index;
-        expect(positions.count).toBe(kind === 'grass' ? 33 : 141);
-        expect(index.count / 3).toBe(kind === 'grass' ? 40 : 168);
+        expect(positions.count).toBe(kind === 'grass' ? 33 : 277);
+        expect(index.count / 3).toBe(kind === 'grass' ? 40 : 424);
         expect(Array.from(positions.array).every(Number.isFinite)).toBe(true);
         expect(Array.from(colors.array).every(value => Number.isFinite(value) && value >= 0 && value <= 1)).toBe(true);
         expect(geometry.boundingBox.min.y).toBe(0);

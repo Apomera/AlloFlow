@@ -433,19 +433,30 @@
       if (isPlainObject(entry)) values.push(entry.code, entry.label, entry.text);
       else values.push(entry);
     });
-    var searchable = values.filter(Boolean).join(' ');
+    var searchable = values.map(function (value) {
+      return value === undefined || value === null ? '' : String(value).replace(/\s+/g, ' ').trim().slice(0, 3600);
+    }).filter(Boolean).join(' ');
     var complexityRequired = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
       || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
     var standardRequiresPrimary = expectation === 'preserve-primary'
       || expectation === 'adaptation-prohibited' || complexityRequired;
     var prohibited = sourced && expectation === 'adaptation-prohibited';
-    var explicitAdapted = String(source.adaptedTextPolicy || opts.adaptedTextPolicy || '');
-    var adaptedTextPolicy = ['include', 'omit', 'prohibited'].indexOf(explicitAdapted) !== -1
-      ? explicitAdapted : 'include';
+    // Same rule as InstructionalContext.deriveTextAccessPlan (parity-tested):
+    // a grade-level text standard defaults to NO adapted companion (source
+    // 'standard'); an educator's include/omit is kept; a default the workflow
+    // or a standard made earlier is derived again.
+    var requestedAdapted = String(source.adaptedTextPolicy || opts.adaptedTextPolicy || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var priorSource = String(source.adaptedTextPolicySource || opts.adaptedTextPolicySource || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var derivedEarlier = (priorSource === 'workflow-default' && requestedAdapted === 'include')
+      || (priorSource === 'standard' && requestedAdapted === 'omit');
+    var explicitAdapted = derivedEarlier ? '' : requestedAdapted;
+    var validExplicit = ['include', 'omit', 'prohibited'].indexOf(explicitAdapted) !== -1;
+    var standardDefaultOmit = standardRequiresPrimary && !validExplicit;
+    var adaptedTextPolicy = validExplicit ? explicitAdapted : (standardDefaultOmit ? 'omit' : 'include');
     if (adaptedTextPolicy === 'prohibited' && !prohibited) adaptedTextPolicy = 'omit';
     if (prohibited) adaptedTextPolicy = 'prohibited';
-    var decisionSource = String(source.adaptedTextPolicySource || opts.adaptedTextPolicySource || '');
-    if (prohibited) decisionSource = 'standard';
+    var decisionSource = derivedEarlier ? '' : priorSource;
+    if (prohibited || standardDefaultOmit) decisionSource = 'standard';
     else if (explicitAdapted === 'prohibited') decisionSource = 'educator';
     else if (['educator', 'standard', 'workflow-default'].indexOf(decisionSource) === -1) {
       decisionSource = explicitAdapted ? 'educator' : 'workflow-default';
@@ -464,7 +475,8 @@
             ? 'sourced-primary-text-requirement'
             : (complexityRequired
                 ? 'standard-text-complexity-requirement'
-                : (explicitAdapted ? 'educator-choice' : 'default-access-companion'))),
+                : (explicitAdapted ? 'educator-choice'
+                    : (standardDefaultOmit ? 'standard-primary-text-requirement' : 'default-access-companion')))),
       standardRequiresPrimary: standardRequiresPrimary,
       sourcedAdaptationProhibition: prohibited
     };

@@ -1,0 +1,222 @@
+[
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_en_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_en_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_es419_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_esES_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_ar_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_ar_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_zh_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_zh_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_th_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "fixture": "reader_th_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "integratedReflowAcceptance": true,
+    "helpActionFailures": [],
+    "navigationFailures": [],
+    "cardFailures": []
+  }
+]

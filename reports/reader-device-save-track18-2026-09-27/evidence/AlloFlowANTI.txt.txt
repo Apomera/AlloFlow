@@ -1,0 +1,65 @@
+AlloFlowANTI.txt
+SHA256 14c59a16f3a88b0e304d0be30d323d8e4439fc81dfd4aaafc168ed5551531fde
+
+14752:     loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=37bdb2883');
+14753:     loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=37bdb2883');
+14754:     loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=37bdb2883');
+14755:     loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=37bdb2883');
+14756:     loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=37bdb2883');
+14757:     loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=37bdb2883');
+
+32197:   const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
+32198:     const liveResourceId = generatedContent && (generatedContent.id || generatedContent.resourceId || generatedContent.__alloUnsavedTtsToken);
+32199:     const resourceId = targetResourceId && targetResourceId !== 'unsaved'
+32200:       ? targetResourceId
+32201:       : (liveResourceId || targetResourceId || null);
+32202:     try {
+32203:       const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+32204:       if (KS) {
+32205:         const slot = field === 'karaokeStudentAudio' ? 'studentCurrent' : 'current';
+32206:         KS[slot + 'PendingPayloadSignature'] = _karaokePayloadSignature(payload);
+32207:       }
+32208:     } catch (_) {}
+32209: 
+32210:     try {
+32211:       setGeneratedContent(gc => {
+32212:         if (!gc) return gc;
+
+32679:       persist: ({ lane, payload, resourceId }) => {
+32680:         const field = lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio';
+32681:         _persistKaraokeAudioField(field, payload, resourceId);
+32682:       },
+32683:       normalize: _normalizeReadAloudBridgeText,
+32684:       notify: _notifyKaraokeAudioCapture,
+32685:       enumerateResourceSegments: _enumerateReadAloudResourceSegments,
+32686:       isCancelled: () => window.__alloPrepareReadAloudCancel === true,
+32687:     });
+32688:   };
+32689:   window.__alloGetReadAloudAudioBridge = _getReadAloudBridge;
+
+32922:   window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference', options = {}) => {
+32923:     const requestOwner = window.__alloGetReadAloudReadiness;
+32924:     const bridge = _getReadAloudBridge();
+32925:     if (!bridge?.readiness) return null;
+32926:     const resourceId = generatedContent?.id || generatedContent?.resourceId;
+32927:     const KS = window.AlloModules?.KaraokeAudioStore;
+32928:     const durableStore = KS?.createStore();
+32929:     try {
+32930:       const snapshot = await storageDB.get('allo_offline_history', { throwOnError: true, localOnly: true });
+32931:       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+32932:       const saved = snapshot?.items?.find(item => String(item.id || item.resourceId) === String(resourceId));
+32933:       if (saved && durableStore) durableStore.hydrate(saved[lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio']);
+32934:       return { resourceId, ...bridge.readiness(sentences, lane, {
+32935:         entries: options.entries, profile: options.profile, failure: options.failure,
+32936:         durableStore, receipt: { verified: true, verifiedAt: new Date().toISOString() },
+32937:         preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+32938:       }), pictureOmissions: saved?.offlineMediaOmissions || [] };
+32939:     } catch (error) {
+32940:       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+32941:       return { resourceId, ...bridge.readiness(sentences, lane, {
+32942:         entries: options.entries, profile: options.profile,
+32943:         failure: error, preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+32944:       }), code: error?.code || error?.name || 'storage-failed' };
+32945:     } finally { durableStore?.clear(); }
+32946:   };
+32947:   window.__alloRetryReadAloudPersistence = (lane = 'reference', options = {}) => _getReadAloudBridge()?.retryPersistence(lane, options);

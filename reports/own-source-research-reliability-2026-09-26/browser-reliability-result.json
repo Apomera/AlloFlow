@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "browser": "Chromium (headless)",
+  "moduleHashes": {
+    "stem_lab/stem_lumen_evidence.js": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+    "stem_lab/stem_lumen_documents.js": "beab503962293377383e7a1e7a2209d569f2174c2a11c9bf986b25a395da936e",
+    "own_sources_module.js": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+    "view_misc_panels_module.js": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+    "quickstart_module.js": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62"
+  },
+  "checks": [
+    "Documents-only generation cannot bypass a failed library read with Enter; ordinary web generation remains available.",
+    "Initial IndexedDB read failure shows Retry instead of empty-library copy; keyboard retry restores saved files and preserves selection/web settings.",
+    "A failed read during import writes nothing, keeps the previously displayed documents/selections, and recovers through Retry.",
+    "First import stays enabled and selected while its library refresh is deliberately delayed.",
+    "A two-file import with its second IndexedDB/fallback write rejected reports one saved and one failed, retaining the saved file.",
+    "Quick Start also exposes the read failure and recovers its saved document through keyboard Retry."
+  ],
+  "pageErrors": [],
+  "layouts": [
+    {
+      "label": "source recovery",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "label": "partial import",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "label": "Quick Start recovery",
+      "width": 390,
+      "scrollWidth": 390
+    }
+  ],
+  "afterModuleHashes": {
+    "stem_lab/stem_lumen_evidence.js": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+    "stem_lab/stem_lumen_documents.js": "beab503962293377383e7a1e7a2209d569f2174c2a11c9bf986b25a395da936e",
+    "own_sources_module.js": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+    "view_misc_panels_module.js": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+    "quickstart_module.js": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62"
+  },
+  "publicModuleHashes": {
+    "stem_lab/stem_lumen_evidence.js": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+    "stem_lab/stem_lumen_documents.js": "beab503962293377383e7a1e7a2209d569f2174c2a11c9bf986b25a395da936e",
+    "own_sources_module.js": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+    "view_misc_panels_module.js": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+    "quickstart_module.js": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62"
+  },
+  "changedDuringRun": [],
+  "publicMirrorDifferences": [],
+  "limitations": [
+    "The fixture mounts shipped panels with local React state and fault-injected storage adapters over real Chromium IndexedDB/localStorage.",
+    "No full-host boot, AI generation, or live web-provider request was tested."
+  ]
+}

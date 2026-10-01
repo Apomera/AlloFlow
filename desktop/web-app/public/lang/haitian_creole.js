@@ -1,4 +1,2421 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "Tanperati",
+          "headline": "Dlo frèt sou figi ou",
+          "steps": {
+            "0": "Plen yon bòl ak dlo frèt (mete glas ladan l si ou genyen).",
+            "1": "Kenbe souf ou.",
+            "2": "Bese epi plonje figi ou nan dlo a, depi anlè sousi ou rive anba zo pomèt ou, pandan 15-30 segonn. (Si ou pa ka plonje figi ou, mete yon pake glas oswa yon ti sèvyèt mouye frèt sou je ou ak anlè machwè ou pito.)",
+            "3": "Leve tèt ou epi respire nòmalman.",
+            "4": "Refè l yon lòt fwa si ou bezwen."
+          },
+          "why": "Frèt sou figi a deklanche reflèks plonje mamifè yo: kè a bat pi dousman, san an kite pwent kò a, epi sistèm parasenpatik la aktive. Li mache nan kèk segonn. Se fason fizyolojik ki pi rapid pou kanpe yon detrès ekstrèm.",
+          "caution": "EVITE sa si ou gen yon pwoblèm kè, yon twoub manje, oswa nenpòt kondisyon kote ralanti batman kè a ta ka danjere. Si ou pa sèten, mande yon doktè oswa enfimyè lekòl la anvan. Dlo a dwe frèt (~10-15°C oswa 50-60°F), men li pa dwe glase."
+        },
+        "intense": {
+          "label": "Egzèsis entans",
+          "headline": "Boule tout aktivasyon sa a",
+          "steps": {
+            "0": "Pandan 5 a 10 minit, fè yon bagay ki mande anpil fòs fizik.",
+            "1": "Opsyon: kouri vit, jumping jacks, burpees, kouri monte desann eskalye, fè ponpaj jiskaske ou pa kapab ankò, sote kòd vit, danse fò.",
+            "2": "Ou vle vrèman pèdi souf epi santi kè ou ap bat pi vit.",
+            "3": "Apre sa, ralanti jiskaske ou ap mache epi kite kò ou kalme."
+          },
+          "why": "Lè ou twò aktive (goumen oswa kouri), kò ou plen òmòn estrès ki fèt pou yo itilize. Egzèsis entans boule adrenalin nan epi li bay kò a siyal “mwen fè l”. Chita san bouje lè ou twò aktive kenbe motè a ap vwonvwonnen.",
+          "caution": "Si ou gen yon pwoblèm sante ki limite egzèsis (kè, opresyon/asma, yon blesi resan), fè mouvman ki pi dous oswa chwazi yon lòt konpetans TIPP. Pa fè egzèsis entans jiskaske ou blese."
+        },
+        "paced": {
+          "label": "Respirasyon ak ritm",
+          "headline": "Lage souf pi lontan pase ou rale l",
+          "steps": {
+            "0": "Chita oswa kouche alèz.",
+            "1": "Rale souf pa nen ou pandan ou konte jiska 4.",
+            "2": "Lage souf dousman pa bouch ou pandan ou konte jiska 6 a 8 (pi lontan pase lè ou rale a).",
+            "3": "Kenbe ritm sa a pandan 1 a 2 minit.",
+            "4": "Pa bezwen fòse; se LÈ OU LAGE SOUF PI LONTAN an ki fè efè a."
+          },
+          "why": "Lè ou lage souf pi lontan pase ou rale l, sa fè sistèm nève otonòm nan panche vè sistèm parasenpatik la (“repo ak dijesyon”). Etid sou respirasyon ak ritm jwenn bès nou ka mezire nan makè estrès varyabilite batman kè a nan 90 segonn. Objektif la se pa detant; se byoloji.",
+          "caution": "Si respire dousman fè ou vin PI ANGWASE (sa rive kèk moun ki gen twoub panik oswa twomatis), eseye yon lòt konpetans TIPP. Pa fòse l."
+        },
+        "paired": {
+          "label": "Relaksasyon misk an pè",
+          "headline": "Sere, epi lage, misk pa misk",
+          "steps": {
+            "0": "Chita oswa kouche. Rale souf dousman.",
+            "1": "Pandan ou ap rale souf, sere yon gwoup misk fò (fèmen pwen ou, leve zepòl ou, sere figi ou).",
+            "2": "Kenbe tansyon an pandan 5 segonn.",
+            "3": "Pandan ou ap lage souf, lage tansyon an nèt. Remake diferans ant sere ak lage.",
+            "4": "Pase sou tout kò ou: men, bra, zepòl, figi, kou, pwatrin, vant, janm, pye.",
+            "5": "Tout bagay la pran anviwon 5 minit."
+          },
+          "why": "Sere yon misk jiska maksimòm epi lage l bay yon detant pi fon pase lè ou jis eseye detann ou (rechèch Jacobson sou Relaksasyon Miskilè Pwogresif, ki te fòmalize nan ane 1930 yo). Lè ou mete chak lage ansanm ak yon souf ou lage, de efè yo ajoute youn sou lòt.",
+          "caution": "Si ou gen yon blesi, yon sendwòm doulè, oswa ipèmobilite, sote gwoup misk ki fè ou mal yo. Tansyon an dwe fò, men li pa janm dwe fè ou mal."
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "Kat konpetans DBT pou siviv yon kriz (Tanperati, egzèsis Entans, respirasyon ak ritm, relaksasyon misk an Pè) pou detrès egi. Yo fèt pou kalme kò a nan 30 segonn rive 10 minit ANVAN ou eseye soti ladan l ak panse. Konpetans fondamantal DBT pou Tolerans Detrès, ki soti nan Linehan.",
+        "back_to_sel_hub": "Retounen nan SEL Hub la",
+        "back": "← Retounen",
+        "four_dbt_crisis_survival_skills_for": "Kat konpetans DBT pou siviv yon kriz pou detrès egi. Aji anvan, reflechi apre.",
+        "tipp_sections": "Seksyon TIPP yo",
+        "tipp_is_for_acute_distress_not": "🆘 TIPP se pou detrès EGI, pa pou estrès chak jou. ",
+        "if_you_are_in_crisis_right": "Si ou an kriz kounye a (ou ap panse pou fè tèt ou mal, ou an danje imedya), tanpri sèvi ak Konpayon Kriz nan SEL Hub sa a oswa rele 988 (Suicide and Crisis Lifeline) oswa voye tèks HOME bay 741741 (Crisis Text Line). TIPP ka ede ou pase 5 minit k ap vini yo; yon moun ka rete avè ou pi lontan.",
+        "tipp_is_a_real_dbt_skill": "TIPP se yon vrè konpetans DBT, men se pa terapi. Si ou wè ou bezwen TIPP souvan, sa se yon enfòmasyon; pale de sa ak yon konseye oswa ak sikològ lekòl la.",
+        "tipp_quick_chooser": "Chwa rapid TIPP",
+        "body_first_chooser": "Chwa ki kòmanse ak kò a",
+        "match_the_skill_to_the_signal": "Chwazi konpetans ki mache ak siyal kò ou ap bay kounye a.",
+        "helped_logcount_helped": "{helped}/{logCount} te ede",
+        "no_sessions_logged": "Pa gen okenn sesyon anrejistre",
+        "start_label": "Kòmanse {label}",
+        "choose": "Chwazi",
+        "pick_one_do_it_notice_if": "Chwazi youn. Fè l. Remake si egwi a bouje.",
+        "you_do_not_need_to_do": "Ou pa bezwen fè tout kat yo. Chwazi sa ki mache ak kote ou ye kounye a. TIPP RAPID: 30 segonn rive 10 minit.",
+        "duration_seconds": "~{duration} segonn",
+        "logged_glad_it_helped": "Anrejistre — nou kontan sa te ede ou.",
+        "logged_try_a_different_tipp_next": "Anrejistre — eseye yon lòt TIPP pwochen fwa.",
+        "tipp_session_logged": "Sesyon TIPP anrejistre.",
+        "active_letter": "Aktif · {letter}",
+        "steps": "Etap",
+        "why_this_works": "🧠 Poukisa sa mache",
+        "caution": "⚖️ Atansyon: ",
+        "done_that_helped": "✓ Fini. Sa te ede.",
+        "done_try_a_different_one": "Fini. Eseye yon lòt.",
+        "try_a_different_one": "⤴ Eseye yon lòt",
+        "exit_without_logging": "Soti san anrejistre",
+        "exit": "Soti",
+        "no_tipp_sessions_logged_yet": "Poko gen okenn sesyon TIPP anrejistre.",
+        "after_you_do_a_tipp_skill": "Apre ou fin fè yon konpetans TIPP, anrejistre l pou ou aprann kiyès ki mache pou ou.",
+        "total_sessions": "Total sesyon",
+        "helped": "Te ede",
+        "by_skill": "Pa konpetans",
+        "recent_sessions": "Sesyon resan",
+        "unknown": "(enkoni)",
+        "helped_2": "✓ te ede",
+        "tried_another": "⤴ te eseye yon lòt",
+        "read_this_first": "🆘 Li sa a anvan",
+        "tipp_is_for_acute_distress_the": "TIPP se pou detrès EGI: moman kote ou sou pwen pou fè yon bagay ou ap regrèt, oswa ou santi ou pa ka sipòte 5 minit k ap vini yo. Li PA pou estrès chak jou, moral ki ba, oswa panse ki fè ou enkyete. TIPP rapid, li fizik, epi li la pou fè ou genyen kèk minit pou pale, reflechi, oswa mande èd vin posib ankò. Si ou an kriz, tanpri sèvi ak Konpayon Kriz oswa rele 988 / voye tèks HOME bay 741741.",
+        "what_tipp_is": "Sa TIPP ye",
+        "tipp_is_a_set_of_four": "TIPP se yon gwoup kat konpetans DBT pou siviv yon kriz ki aji dirèkteman sou kò a anvan yo aji sou lespri a. Lide a se: lè ou twò aktive (kè ou ap bat fò, lide ou ap kouri, ou pare pou aji sou yon enpilsyon), eseye “soti ladan l ak panse” raman mache, paske pati nan sèvo a ki reflechi a pa disponib. Kò a dwe retounen anvan.",
+        "each_tipp_skill_uses_a_physiological": "Chak konpetans TIPP sèvi ak yon mekanis fizyolojik ki kanpe repons estrès la: frèt sou figi a deklanche reflèks plonje a, egzèsis entans boule adrenalin, respirasyon ak ritm chanje balans sistèm nève otonòm nan, epi relaksasyon misk an pè bay yon detant apre tansyon an. Yo aji nan 30 segonn rive 10 minit, pa nan plizyè jou.",
+        "where_tipp_comes_from": "Kote TIPP soti",
+        "tipp_is_part_of_the_distress": "TIPP fè pati modil Tolerans Detrès nan Terapi Konpòtmantal Dyalektik (DBT), Marsha Linehan te devlope depi ane 1980 yo. Linehan te devlope DBT pou moun ki viv emosyon yo yon fason entans ak reyaktif, okòmansman pou pasyan ki te gen panse swisid kwonik ak twoub pèsonalite limit (borderline). Konpetans Tolerans Detrès yo fèt pou moman “siviv yon kriz”, kote objektif la se jis pa fè bagay yo vin pi mal pandan kèk minit k ap vini yo. Jodi a, yo anseye TIPP anpil nan sante mantal timoun, nan lekòl ki pran twomatis an kont, ak nan gwoup konpetans DBT pou pasyan ekstèn.",
+        "sources_and_learn_more": "📚 Sous ak pou aprann plis",
+        "authoritative_resources_for_tipp_and_dbt": "Resous ki fè otorite sou TIPP ak DBT.",
+        "the_standard_manual_tipp_is_in": "Manyèl estanda a; TIPP nan modil Tolerans Detrès la.",
+        "practical_worksheets_including_tipp_handouts": "Fèy travay pratik, ansanm ak fèy sou TIPP.",
+        "linehan_founded_organization_for_dbt_training": "Òganizasyon Linehan te fonde pou fòmasyon ak sètifikasyon DBT.",
+        "free_open_educational_resource_covers_tipp": "Resous edikatif gratis e ouvè; li kouvri TIPP ak lòt konpetans Tolerans Detrès.",
+        "honest_limits": "⚖️ Limit onèt",
+        "tipp_is_a_survival_skill_not": "TIPP se yon konpetans pou siviv, se pa yon solisyon. Li ede ou pase 5 minit k ap vini yo; li pa regle rezon ki fè ou an detrès la.",
+        "if_you_find_yourself_reaching_for": "Si ou wè ou bezwen TIPP chak jou, se yon siy gen yon bagay pi gwo k ap pase nan lavi ou ki merite yon konseye oswa yon terapis travay sou li avè ou.",
+        "tipp_works_on_hyperarousal_too_activated": "TIPP mache pou aktivasyon twò wo (twò aktive). Li PA mache pou aktivasyon twò ba (fèmen, pa santi anyen, dekonekte); pou sa, yon lòt konpetans DBT (Self-Soothe, ACCEPTS) oswa senpleman koneksyon ak yon moun pi itil.",
+        "the_cautions_on_each_skill_are": "Avètisman sou chak konpetans yo serye. Tanperati pa bon pou moun ki gen pwoblèm kè ak kèk twoub manje; egzèsis entans pa bon pou kèk pwoblèm sante; ralanti epi kanpe si yon konpetans pa santi l bon pou ou.",
+        "tipp_is_best_learned_in_a": "Pi bon fason pou APRANN TIPP se nan yon moman ki pa gen kriz, pou ou pratike konpetans yo anvan ou bezwen yo. Fè yo yon fwa pandan yon peryòd kalm se pi bon preparasyon.",
+        "notes_for_educators": "📝 Nòt pou edikatè: ",
+        "tipp_is_most_useful_when_students": "TIPP pi itil lè elèv yo te pratike l youn oswa de fwa pandan tan Crew, olye pou yo dekouvri l pou premye fwa nan mitan yon kriz. Yon pwotokòl Crew senp: fè yon konpetans TIPP ansanm (respirasyon ak ritm pi fasil nan yon sal klas), nonmen twa lòt yo, epi montre elèv yo zouti sa a. Mete l ansanm ak Konpayon Kriz pou nenpòt elèv ki montre siy detrès egi.",
+        "tipp_pocket_card": "🖨 Kat pòch TIPP. ",
+        "print_and_fold_carry_in_a": "Enprime l epi pliye l; mete l nan pòch ou, nan bous ou, oswa nan ajanda ou. Objektif la se pou ou gen kat konpetans yo sou ou ANVAN ou bezwen yo. Kat pòch la enprime sou yon sèl paj; nou kenbe avètisman yo paske yo enpòtan.",
+        "print_save_as_pdf": "🖨 Enprime / Sove an PDF",
+        "tipp_pocket_card_2": "TIPP · Kat Pòch",
+        "dbt_distress_tolerance_linehan": "Tolerans Detrès DBT · Linehan",
+        "when_to_use": "Kilè pou sèvi avè l: ",
+        "acute_distress_where_you_might_do": "detrès egi kote ou ta ka fè yon bagay ou ap regrèt. Kòmanse ak kò a; pale apre. Si ou an kriz, rele 988 oswa voye tèks HOME bay 741741.",
+        "caution_2": "Atansyon: ",
+        "practice_tipp_once_in_a_calm": "Pratike TIPP yon fwa nan yon moman kalm anvan ou bezwen l. Enprime nan SEL Hub AlloFlow. Sous: Linehan, DBT Skills Training Manual (2014).",
+        "tipp_crisis_survival_skills": "Konpetans TIPP pou siviv yon kriz"
+      },
+      "tabs": {
+        "home": {
+          "label": "Mwen bezwen sa kounye a"
+        },
+        "log": {
+          "label": "Jounal mwen"
+        },
+        "print": {
+          "label": "Kat pòch"
+        },
+        "about": {
+          "label": "Konsènan"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "Twò cho oswa enpilsif",
+          "fit": "Fason ki pi rapid pou reprann tèt ou"
+        },
+        "1": {
+          "signal": "Adrenalin wo",
+          "fit": "Sèvi ak kò ou"
+        },
+        "2": {
+          "signal": "Souf la ka mennen",
+          "fit": "Opsyon ki pi trankil"
+        },
+        "3": {
+          "signal": "Sere oswa tansyon",
+          "fit": "Lage tansyon an"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "Pou kiyès: ",
+      "label_what": "Kisa: ",
+      "crisis_resources": {
+        "988": {
+          "contact": "Rele oswa voye tèks bay 988",
+          "script": "Ou ka di: “Mwen enkyete pou zanmi mwen.” Sa ase. Y ap gide konvèsasyon an apre sa."
+        },
+        "crisistext": {
+          "contact": "Voye tèks HOME bay 741741",
+          "script": "Ou ka ekri: “Zanmi mwen ap pale sou fè tèt li mal epi mwen pa konn sa pou m fè.” Sa mache."
+        },
+        "trevor": {
+          "contact": "Rele 1-866-488-7386 · Voye tèks START bay 678-678",
+          "script": "Ou ka rele oswa ekri: “Mwen gen yon zanmi ki LGBTQ+ epi l ap pase yon moman vrèman difisil.”"
+        },
+        "911": {
+          "label": "911 Ijans",
+          "contact": "Rele 911",
+          "script": "Ou ka di: “Zanmi mwen an danje epi mwen pa konn sa pou m fè.” Y ap ede ou."
+        },
+        "211": {
+          "label": "211 — liy resous kominotè",
+          "contact": "Rele 211 · oswa ale sou 211.org",
+          "script": "Ou ka di: “Mwen ap chèche sèvis kriz sante mantal nan zòn mwen an pou yon zanmi.” Y ap voye ou bay bon ajans lokal la."
+        },
+        "namilocator": {
+          "label": "NAMI Affiliate Locator (anyè nasyonal)",
+          "contact": "Ale sou nami.org/findsupport",
+          "script": "Sou sit la: antre kòd postal ou → “Find My Local NAMI” → wè enfòmasyon kontak, pwogram, ak nimewo liy èd pou zòn ou."
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov (anyè federal)",
+          "contact": "Ale sou findtreatment.gov · oswa 1-800-662-HELP (4357)",
+          "script": "Sou sit la: antre kòd postal ou → filtre pou “Mental Health Services” → chwazi selon sa ou ka peye oswa asirans ou. Liy telefòn nan bon si sit entènèt la twò konplike pou ou."
+        },
+        "befrienders": {
+          "contact": "Ale sou befrienders.org",
+          "script": "Sou sit la: chwazi peyi ou → wè nimewo liy èd lokal yo, lè yo louvri, lang yo pale, ak fason pou kontakte yo."
+        },
+        "iasp": {
+          "label": "IASP — International Association for Suicide Prevention (Asosyasyon Entènasyonal pou Prevansyon Swisid)",
+          "contact": "Ale sou iasp.info/resources/Crisis_Centres",
+          "script": "Sou sit la: chwazi peyi ou → wè liy kriz yo, ak fason pou kontakte yo ak lè yo louvri."
+        },
+        "mainecrisis": {
+          "contact": "Rele 1-888-568-1112",
+          "script": "Di ki konte oswa ki vil ou ye si ou kapab. Y ap voye ou bay bon ekip lokal la."
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance (Konte Cumberland + tout eta a)",
+          "contact": "Prensipal: 207-553-5800 · Kriz: 1-888-568-1112",
+          "script": "Pou yon zanmi ki an kriz kounye a nan Konte Cumberland: rele 1-888-568-1112 epi mande si ekip kriz mobil la ka vini kote zanmi ou ye a. Pou sipò ki pa kriz / pou konekte yon fanmi ak sèvis kontinyèl: rele liy prensipal la pandan lè biwo."
+        },
+        "namimaine": {
+          "contact": "Rele 1-800-464-5767",
+          "script": "Bon pou kesyon ki pa ijan: “Kijan mwen ka ede zanmi mwen jwenn yon terapis?” oswa “Ki kote fanmi yo ale pou jwenn sipò?” Epitou: “Èske lekòl nou an fè Ending the Silence?”"
+        },
+        "school": {
+          "label": "Konseye lekòl ou oswa sikològ lekòl ou",
+          "contact": "Antre, voye yon ti nòt, oswa mande nenpòt pwofesè mennen ou",
+          "script": "Ou ka di: “Mwen enkyete pou zanmi mwen.” Si ou pa ka di l fò, ekri l sou yon ti papye kole epi ba yo l."
+        }
+      },
+      "res_988_who": "Nenpòt moun Ozetazini — tankou jèn ki enkyete pou yon zanmi",
+      "res_988_what": "Gratis, konfidansyèl, 24/7. Konseye ki fòme pou kriz. Yo ka konekte ou ak sèvis lokal si sa nesesè.",
+      "res_crisistext_who": "Nenpòt moun Ozetazini, Kanada, Wayòm Ini, oswa Iland (kòd yo chanje selon peyi a) — tèks sèlman bon si ou pa vle pale",
+      "res_crisistext_what": "Gratis, konfidansyèl, 24/7. Yon vrè konseye, yon moun toutbon, reponn ou pa tèks. An mwayèn, ou tann mwens pase 5 minit.",
+      "res_trevor_who": "Jèn LGBTQ+ ak zanmi ki sipòte yo (Ozetazini)",
+      "res_trevor_what": "Gratis, konfidansyèl, 24/7. Yo fòme espesyalman pou kriz jèn LGBTQ+. Jèn LGBTQ+ gen plis panse swisid; resous sa a fèt pou reyalite sa a.",
+      "res_911_who": "Lè yon moun an danje fizik imedya kounye a menm (Ozetazini)",
+      "res_911_what": "Pou ijans k ap fèt kounye a: yon moun ap fè tèt li mal, li pran yon bagay, oswa li pa an sekirite kounye a. Y ap voye polis, ponpye, ak anbilans.",
+      "res_211_who": "Nenpòt moun Ozetazini oswa Kanada — li voye ou otomatikman bay sèvis lokal ou selon kòd zòn telefòn ou",
+      "res_211_what": "Gratis, konfidansyèl, 24/7. Li konekte ou ak sèvis lokal pou kriz sante mantal, èd manje, lojman, sipò fanmi, ak dè santèn lòt pwogram kominotè. United Way + òganizasyon lokal san bi likratif jere l. Li diferan de 988 — 211 se liy ki pi laj pou sèvis kominotè.",
+      "res_namilocator_who": "Nenpòt moun Ozetazini — tape kòd postal ou pou wè branch lokal NAMI ou",
+      "res_namilocator_what": "Chak eta gen omwen yon branch NAMI; anpil genyen plizyè. Branch lokal yo ofri gwoup sipò gratis pou fanmi, pwogram rekiperasyon kanmarad dirije, kou (Family-to-Family, Ending the Silence nan lekòl), ak liy pou koute (warmlines). NAMI HelpLine: 1-800-950-6264.",
+      "res_samhsa_who": "Nenpòt moun Ozetazini k ap chèche swen kontinyèl pou sante mantal oswa itilizasyon sibstans",
+      "res_samhsa_what": "Baz done federal ak ~13,000 sant tretman — terapi, sikyatri, swen entansif san kouche lopital, swen rezidansyèl, doub dyagnostik. Filtre pa kòd postal, pa asirans ou genyen, pa lang, pa sèvis yo ofri. SAMHSA gen yon National Helpline 24/7 tou (1-800-662-4357) ki bay referans gratis.",
+      "res_befrienders_who": "Nenpòt moun andeyò Etazini k ap chèche sipò pou kriz nan peyi yo",
+      "res_befrienders_what": "Yon rezo mondyal sant volontè pou sipò emosyonèl nan plis pase 30 peyi. Tape peyi ou sou sit la epi ou ap jwenn nimewo liy èd ak opsyon chat pou zòn ou. Pifò sant yo gratis, konfidansyèl, epi 24/7.",
+      "res_iasp_who": "Nenpòt moun andeyò Etazini — anyè mondyal konplè liy kriz yo",
+      "res_iasp_what": "IASP kenbe lis entènasyonal ki pi konplè sou liy kriz pou prevansyon swisid. Ou ka chèche pa peyi, ak opsyon telefòn, tèks, ak chat sou entènèt. Souvan se pi bon kote pou kòmanse si Befrienders pa gen peyi ou nan lis li.",
+      "res_mainecrisis_who": "Nenpòt moun nan Maine — li konekte ak sèvis kriz nan tout eta a",
+      "res_mainecrisis_what": "Gratis, konfidansyèl, 24/7. Konseye ki baze nan Maine. The Opportunity Alliance jere l pou sid Maine, ak lòt founisè rejyonal nan rès eta a. Yo ka voye ekip kriz mobil lokal lè sa nesesè.",
+      "res_opportunityalliance_who": "Timoun, adolesan, fanmi, ak granmoun nan Konte Cumberland ak nan tout Maine",
+      "res_opportunityalliance_what": "Li jere ekip Cumberland County Crisis Mobile Response — moun ki vin jwenn ou toutbon lè 1-888-568-1112 voye yon ekip nan Portland ak kominote ki bò kote l yo. Li bay tou Children's Behavioral Health Services (sèvis sante konpòtmantal pou timoun), sante konpòtmantal lakay moun, sipò fanmi, ak baz 211 Maine pou sid Maine.",
+      "res_namimaine_who": "Nenpòt moun nan Maine k ap chèche enfòmasyon, sipò, oswa referans sou sante mantal",
+      "res_namimaine_what": "Se pa yon liy kriz, men se yon gwo resous lajounen pou konprann sistèm sante mantal, sipò ant kanmarad, ak pwogram lokal. Li jere tou pwogram lekòl Ending the Silence — prezantatè ki gen laj elèv ki anseye sou maladi mantal dirèkteman nan sal klas lekòl mwayen ak lekòl segondè.",
+      "res_school_who": "Chak lekòl piblik Ozetazini gen konseye ki fòme; pifò lekòl mwayen ak segondè gen yon sikològ lekòl tou",
+      "res_school_what": "Yo fòme pou sa. Yo dwe kenbe sekrè a, eksepte lè sekirite an jwèt. Yo ka konekte ou ak swen deyò lekòl la, pale ak paran yo avè ou, epi rete avè ou pandan tout pwosesis la.",
+      "resource_groups": {
+        "national": {
+          "label": "Mache nenpòt kote Ozetazini",
+          "desc": "Kat sa yo se baz inivèsèl la. Aprann 988 pa kè."
+        },
+        "lookup": {
+          "label": "Jwenn èd toupre ou (Ozetazini)",
+          "desc": "Anyè ki voye ou bay sèvis nan zòn pa ou. Itil pou swen kontinyèl apre apèl kriz la."
+        },
+        "international": {
+          "label": "Ou andeyò Etazini?",
+          "desc": "988, 211, Trevor, ak SAMHSA se Ozetazini sèlman. Anyè sa yo kouvri rès mond lan."
+        },
+        "maine": {
+          "label": "Patnè nan Maine (ajans lokal nou nonmen)",
+          "desc": "Nou nonmen yo espesyalman paske King Middle ak Portland Public Schools se kontèks pilòt zouti sa a. Si ou yon lòt kote, sèvi ak anyè ki anlè yo pou jwenn ekivalan pa ou."
+        },
+        "school": {
+          "label": "Èd nan lekòl",
+          "desc": "Souvan se granmoun ki pi fasil pou jwenn pandan jounen lekòl la. Disponib nan chak lekòl piblik Ozetazini."
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "Imè ba ki pa pase",
+          "desc": "Tristès, santi ou vid, oswa yon santiman plat / pa santi anyen ki dire pi fò nan jounen an, prèske chak jou, pandan plizyè semèn. Diferan de jou tris nòmal ki vini epi ki ale."
+        },
+        "irritability": {
+          "label": "Plis iritabilite",
+          "desc": "Sitou nan adolesan, depresyon souvan parèt kòm iritasyon oswa kòlè plis pase tristès. Fache pou ti bagay, santi ou sou nè tout tan."
+        },
+        "withdrawal": {
+          "label": "Retire kò nan aktivite",
+          "desc": "Kite pastan, espò, zanmi, ak bagay yo te konn renmen. Anile plan youn apre lòt. Pase pi plis tan pou kont yo pase anvan."
+        },
+        "sleep": {
+          "label": "Chanjman nan dòmi",
+          "desc": "Dòmi pi plis pase dabitid, oswa prèske pa dòmi. Difikilte pou dòmi, leve tou fatige, dòmi tout jounen an."
+        },
+        "appetite": {
+          "label": "Chanjman nan apeti",
+          "desc": "Manje pi plis oswa pi piti pase dabitid. Sote repa, oswa manje san rete san plezi. Chanjman pwa ki parèt klè nan kèk semèn."
+        },
+        "energy": {
+          "label": "Enèji ba / fatig",
+          "desc": "Tout bagay santi lou. Menm ti travay santi enposib. Yo ka di yo fatige tout tan, menm apre yo fin dòmi."
+        },
+        "school": {
+          "label": "Mwens angajman nan lekòl",
+          "desc": "Nòt ap desann, devwa ki pa remèt, ap tonbe dèyè nan klas ki pa t janm yon pwoblèm. Souvan sa vini ak jou lekòl yo manke."
+        },
+        "selfcare": {
+          "label": "Mwens swen pou tèt yo",
+          "desc": "Mwens atansyon sou lijyèn, aparans, oswa woutin chak jou yo te konn kenbe. Se pa yon chanjman mòd — se santiman yo sispann pran swen tèt yo."
+        },
+        "hopeless": {
+          "label": "Pawòl dezespere oswa ki kritike tèt yo",
+          "desc": "Souvan y ap di bagay tankou “a kisa sa sèvi”, “anyen pa enpòtan”, “mwen pa vo anyen”, “mwen se yon chay”. Se fason pou pale ki merite pou nou pran oserye, menm lè yo di l konsa konsa."
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "PAWÒL — sa y ap di",
+        "mood_what_you_re_seeing": "IMÈ — sa ou ap wè",
+        "behavior_what_they_re_doing": "KONPÒTMAN — sa y ap fè",
+        "a_friend_opens_up_at_lunch": "Yon zanmi louvri kè l ba ou pandan manje midi",
+        "a_direct_disclosure_over_text": "Yon zanmi di ou sa dirèkteman pa tèks",
+        "the_aftermath_your_friend_is_now": "Apre sa — zanmi ou ap resevwa swen kounye a",
+        "help_is_available_right_now": "Gen èd disponib kounye a menm",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline · rele oswa voye tèks bay 988",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line · voye tèks HOME bay 741741",
+        "tell_a_school_counselor_teacher_parent": "🏫 Di yon konseye lekòl, yon pwofesè, yon paran, oswa yon granmoun ou fè konfyans",
+        "box_breathing_started_4_seconds_in": "Respirasyon kare kòmanse. 4 segonn rale, 4 kenbe, 4 lage, 4 kenbe.",
+        "box_breathing_paused": "Respirasyon kare an poz.",
+        "box_breathing_pacer": "🌬️ Gid respirasyon kare",
+        "a_4_4_4_4_rhythm": "Yon ritm 4-4-4-4: rale souf pandan 4, kenbe pandan 4, lage souf pandan 4, kenbe pandan 4. Klinisyen ak moun ki reponn ijans sèvi avè l pou kalme sistèm nève a. Sèk la vin pi gwo lè ou rale souf, li vin pi piti lè ou lage souf.",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}, sik {cyclesDone}",
+        "breathing_pacer_ready": "Gid respirasyon an pare",
+        "ready": "Pare",
+        "cycle_cyclesdone": "Sik {cyclesDone}",
+        "start_box_breathing_pacer": "Kòmanse gid respirasyon kare a",
+        "start": "▶ Kòmanse",
+        "pause_box_breathing_pacer": "Mete gid respirasyon kare a an poz",
+        "pause": "⏸ Poz",
+        "if_breathing_exercises_feel_uncomfortable_or": "Si egzèsis respirasyon yo fè ou pa alèz oswa fè ou pi enkyete, sa rive souvan — kanpe epi eseye ankraj pito. Ak paramèt “redui mouvman”, sèk la ap rete san bouje epi se non faz la k ap gide ou.",
+        "grounding_complete_you_ve_returned_to": "Ankraj fini. Ou retounen nan moman prezan an.",
+        "grounding_reset": "Ankraj rekòmanse.",
+        "5_4_3_2_1_grounding": "👁️ Ankraj 5-4-3-2-1",
+        "a_sensory_anchor_when_your_thoughts": "Yon lank pou sans ou lè lide ou ap kouri oswa ou santi ou dekonekte. Pase nan chak sans, youn apre lòt. Ou pa bezwen ekri anyen — jis remake.",
+        "you_ve_come_back_to_the": "Ou retounen nan prezan an.",
+        "grounding_doesn_t_make_hard_feelings": "Ankraj pa fè santiman difisil yo disparèt. Li jis ba yo yon pi piti plas pou yo rete pandan yon moman, pou vag la ka pase.",
+        "do_it_again": "↻ Fè l ankò",
+        "step_stepidx_of_groundstepscount": "Etap {stepIdx} sou {GROUNDSTEPSCount}",
+        "optional_jot_what_you_notice_private": "Opsyonèl: ekri sa ou remake (prive, pa sove).",
+        "notes_for_step_stepidx": "Nòt pou etap {stepIdx}",
+        "reset_grounding_to_first_step": "Remete ankraj la nan premye etap la",
+        "reset": "↻ Rekòmanse",
+        "next_step": "Pwochen etap",
+        "finish_grounding_exercise": "Fini egzèsis ankraj la",
+        "next": "Pwochen →",
+        "finish": "Fini ✓",
+        "this_device_would_not_save_it": "Aparèy sa a pa t ka sove l. Travay ou toujou sou ekran an — sèvi ak Ekspòte oswa Enprime pou kenbe yon kopi anvan ou fèmen paj sa a.",
+        "added_to_your_toolkit": "Ajoute nan bwat zouti ou",
+        "removed_from_your_toolkit": "Retire nan bwat zouti ou",
+        "my_coping_toolkit": "🧰 Bwat zouti pou fè fas mwen",
+        "tap_any_strategy_to_add_it": "Tape sou nenpòt estrateji pou ajoute l nan bwat zouti pèsonèl ou. Li sove sou aparèy ou sèlman — anyen pa voye sou entènèt. Fè yon lis 5-7 bagay ki te vrèman mache pou ou nan tan pase, pou lè yon moman difisil rive ou pa bezwen kòmanse panse depi zewo.",
+        "my_toolkit_savedcount": "✓ Bwat zouti mwen ({savedCount})",
+        "remove_label_from_toolkit": "Retire “{label}” nan bwat zouti a",
+        "remove_from_toolkit": "Retire nan bwat zouti a: ",
+        "add_to_toolkit": "Ajoute nan bwat zouti a: ",
+        "note_this_toolkit_is_a_complement": "Nòt: bwat zouti sa a se yon konpleman, li pa ranplase sipò pwofesyonèl. Si ou an kriz, rele oswa voye tèks bay 988.",
+        "e_g_when_i_haven_t": "pa egzanp, “Lè m pa t dòmi epi m te pou kont mwen tout wikenn nan”",
+        "e_g_listen_to_a_calming": "pa egzanp, “Koute yon lis mizik ki kalme m, fè yon ti mache, voye dlo frèt sou figi m”",
+        "e_g_library_after_school_my": "pa egzanp, “Bibliyotèk apre lekòl, zanmi m Maya, kafe a”",
+        "e_g_mom_cell_aunt_liz": "pa egzanp, “Manman (selilè ____), Matant Liz (selilè ____), Konseye Mesye K (sal 204)”",
+        "e_g_988_lifeline_call_or": "pa egzanp, “988 Lifeline (rele oswa voye tèks), Crisis Text Line (voye tèks HOME bay 741741), Dr. ____ nan klinik ____, konseye lekòl”",
+        "e_g_give_my_medications_to": "pa egzanp, “Bay manman m medikaman m yo pou l fèmen yo akle. Pa desann nan sousòl la. Rete ak yon moun pandan nwit lan si sa vrèman mal.”",
+        "could_not_open_print_window_your": "Pa t ka louvri fenèt enpresyon an — navigatè ou ka bloke l.",
+        "print_preview_opened": "Apèsi enpresyon an louvri.",
+        "print_could_not_be_opened": "Enpresyon an pa t ka louvri.",
+        "my_safety_plan_stanley_brown": "📋 Plan sekirite mwen (Stanley-Brown)",
+        "best_built_with_a_counselor_or": "Pi bon lè ou bati l AVÈK yon konseye oswa yon terapis. ",
+        "a_safety_plan_is_most_effective": "Yon plan sekirite pi efikas lè yon granmoun ki konnen ou ede ou ranpli l — li panse a bagay ou ta bliye, epi se yon moun ou deja pratike ale jwenn. Ou ka kòmanse l isit la, sove l, epi fini l ansanm. Li sove sou aparèy sa a sèlman.",
+        "filledcount_stepscount_filled": "{filledCount} / {STEPSCount} ranpli",
+        "print_save_as_pdf": "🖨 Enprime / sove an PDF",
+        "clear_my_saved_safety_plan": "Efase plan sekirite mwen te sove a",
+        "clear_plan": "✕ Efase plan an",
+        "stanley_brown_safety_planning_intervention_is": "Suicide Prevention Resource Center apwouve Stanley-Brown Safety Planning Intervention, epi se youn nan plan sekirite ki baze sou prèv yo etidye plis. Vèsyon klinik konplè a fèt ak yon pwofesyonèl ki fòme.",
+        "you_are_not_the_therapist": "Ou pa terapis la",
+        "your_job_ended_when_you_connected": "Travay ou te fini lè ou te konekte zanmi ou ak yon granmoun. Apati la a, wòl ou retounen piti ankò: ou se zanmi l — e se bon gwosè a sa. Tretman, plan sekirite, swivi — se travay pou pwofesyonèl ki fòme. Travay ou se prezans, amitye, epi pa disparèt.",
+        "if_your_friend_goes_to_treatment": "Si zanmi ou al fè tretman, se yon siksè — se pa yon abandon",
+        "when_a_friend_gets_professional_help": "Lè yon zanmi resevwa èd pwofesyonèl — terapi, medikaman, pwogram entansif, pafwa lopital — ou ka santi amitye a kanpe. Se pa vre. Tretman an se sa ou te ede rann posib. Zanmi ou ap fè travay difisil la ki kenbe l la avèk nou. Voye yon tèks ba li. Kenbe yon plas pou li nan manje midi. Rete la lè l tounen.",
+        "concrete_moves_that_help": "Aksyon konkrè ki ede",
+        "tell_another_adult_you_trust": "Di yon lòt granmoun ou fè konfyans. ",
+        "even_if_the_situation_has_been": "Menm si yo “regle” sitiyasyon an, OU MENM tou ou te pase nan yon bagay. Yon paran, yon konseye, oswa yon terapis ka ede ou dijere sa.",
+        "pause_platforms_that_are_amplifying_it": "Fè yon poz ak platfòm ki fè sa vin pi gwo. ",
+        "if_social_media_is_making_your": "Si rezo sosyal ap fè enkyetid ou vin pi mal, pran yon poz. Mete an silans, sispann swiv, oswa fèmen app la pou yon jounen.",
+        "keep_your_own_routines": "Kenbe pwòp woutin ou. ",
+        "sleep_food_school_hobbies_these_are": "Dòmi, manje, lekòl, pastan. Se planche sa yo ki kenbe ou kanpe — pa kite yo glise pandan ou ap pote chay sa a.",
+        "ask_for_breaks_when_you_need": "Mande poz lè ou bezwen. ",
+        "you_are_allowed_to_not_text": "Ou gen dwa pa reponn tèks touswit. Ou gen dwa pa disponib pandan kèk èdtan. Gerizon zanmi ou pa mande pou ou toujou ap veye telefòn ou.",
+        "notice_your_own_feelings": "Remake pwòp santiman ou. ",
+        "sadness_anger_fear_exhaustion_are_normal": "Tristès, kòlè, laperèz, fatig se bagay nòmal. Pa santi anyen tou se nòmal. Si santiman yo rete lou pou plis pase de semèn konsa, se moman pou pale ak yon konseye.",
+        "keep_your_other_friendships": "Kenbe lòt amitye ou yo. ",
+        "don_t_let_supporting_one_friend": "Pa kite sipò ou bay yon zanmi izole ou de tout lòt moun. Se tout rezo relasyon ou ki kenbe ou kanpe.",
+        "when_supporting_a_friend_has_hit": "Lè sipòte yon zanmi frape OU fò",
+        "if_you_re_losing_sleep_having": "Si ou pèdi dòmi, ou gen panse ki antre nan tèt ou san ou pa vle, ou pa santi anyen, oswa ou kòmanse gen pwòp panse pa ou pou fè tèt ou mal — sa yo se siy ou bezwen sipò tou. Rele 988, voye tèks HOME bay 741741, oswa pale ak yon konseye lekòl. Moun k ap ede yo bezwen èd tou. Pa gen wont nan bezwen l.",
+        "you_showed_up_you_noticed_you": "Ou te la. Ou te remake. Ou te di yon bagay. Ou te di yon moun. Sa ase. Se tout bagay.",
+        "today": "jodi a",
+        "yesterday": "yè",
+        "value_days_ago": "{value} jou de sa",
+        "value_weeks_ago": "{value} semèn de sa",
+        "value_months_ago": "{value} mwa de sa",
+        "if_you_are_in_crisis_right": "🚨 SI OU AN KRIZ KOUNYE A:",
+        "call_or_text": "Rele oswa voye tèks bay ",
+        "us_suicide_crisis_lifeline": " (Suicide + Crisis Lifeline Ozetazini). ",
+        "maine_mobile_crisis": "Ekip Kriz Mobil Maine: ",
+        "text": "Voye tèks ",
+        "to": " bay ",
+        "reach_a_real_person_24_7": "Jwenn yon vrè moun 24/7.",
+        "my_safety_plan": "Plan Sekirite Mwen",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012 — entèvansyon ki gen plis prèv pou diminye nouvo tantativ. Bati plan PA OU lè ou kalm.",
+        "why_this_works": "🎓 Poukisa sa mache: ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry. Lè ou ekri plan sa a pandan ou kalm, li vin fasil pou jwenn pandan yon kriz. Pataje l ak yon moun ou fè konfyans — konseye, paran, zanmi.",
+        "need_a_sign": "Ekri yon siy.",
+        "my_warning_signs_log": "Jounal Siy Avètisman Mwen",
+        "track_when_warning_signs_appear_so": "Note lè siy avètisman yo parèt pou modèl la vin vizib. Konnen modèl ou = kenbe l pi bonè.",
+        "what_sign_showed_up_e_g": "Ki siy ki te parèt? (pa egzanp, “mwen pa t santi anyen tout apremidi a”, “mwen te anvi disparèt”)",
+        "context_where_what_was_happening": "Kontèks (ki kote, sa k t ap pase)",
+        "intensity": "Entansite: ",
+        "what_helped_if_anything": "Sa ki te ede (si gen yon bagay)",
+        "log_it": "💾 Anrejistre l",
+        "helped_whathelped": "✓ Te ede: {whatHelped}",
+        "add_a_few_words_first_then": "Ekri kèk mo anvan, epi peze bouton an ankò.",
+        "my_coping_arsenal": "Asenal Mwen pou Fè Fas",
+        "strategies_that_have_actually_worked_for": "Estrateji ki te vrèman mache pou MWEN. Tape “+1 itilize” lè youn ede — swiv sa ki mache.",
+        "a_strategy_that_worked_for_me": "Yon estrateji ki te mache pou mwen (pa egzanp, “dlo frèt sou figi”, “rele Manman”)",
+        "add_to_arsenal": "+ Ajoute nan asenal la",
+        "used_value": "itilize {value} fwa",
+        "a_name_is_needed_before_this": "Fòk gen yon non anvan ou ka sove sa a.",
+        "my_support_contacts": "Kontak Sipò Mwen",
+        "quick_access_list_of_people_crisis": "Lis rapid moun + liy kriz + kilè pou kontakte chak. Kat pou bous ou.",
+        "name": "Non",
+        "role_mom_therapist_friend": "Wòl (manman, terapis, zanmi)",
+        "contact_phone_text": "Kontak (telefòn / tèks)",
+        "when_to_reach_out_to_this": "Kilè pou kontakte MOUN SA A",
+        "add": "+ Ajoute",
+        "need_a_brief_description": "Ekri yon ti deskripsyon.",
+        "my_recovery_notes": "Nòt Rekiperasyon Mwen",
+        "after_a_hard_moment_log_what": "Apre yon moman difisil, note sa ki te ede + sa ki pa t ede. Aprann konnen tèt ou pi byen avèk tan.",
+        "what_happened_brief": "Kisa ki te pase? (kout)",
+        "what_helped": "✓ Sa ki te ede",
+        "what_didn_t_help_or_made": "✗ Sa ki pa t ede (oswa ki te fè l vin pi mal)",
+        "what_i_want_future_me_to": "💌 Sa mwen vle mwen menm nan lavni sonje nan sa a",
+        "save": "💾 Sove",
+        "helped": "✓ Te ede: ",
+        "didn_t": "✗ Pa t ede: ",
+        "write_something_first_then_press_add": "Ekri yon bagay anvan, epi peze Ajoute.",
+        "my_hope_list": "Lis Espwa Mwen",
+        "reasons_to_keep_going_people_plans": "Rezon pou kontinye. Moun, plan, kote, nenpòt bagay. Li lis sa a lè sa difisil.",
+        "one_of_your_reasons": "💛 Youn nan rezon ou yo",
+        "a_reason_to_keep_going_small": "Yon rezon pou kontinye (piti oswa gwo, nenpòt bagay)",
+        "my_safety_kit": "🛡 Twous Sekirite Mwen",
+        "personal_crisis_support_tools": "Zouti pèsonèl pou sipò nan kriz",
+        "6_tools_to_build_your_safety": "6 zouti pou bati plan sekirite PA OU + asenal ou pou fè fas. Nimewo liy kriz yo toujou vizib. Tout done yo rete nan navigatè ou.",
+        "open": "Louvri →",
+        "my_safety_kit_2": "← Twous Sekirite Mwen",
+        "crisis_companion": "Konpayon Kriz",
+        "peer_support_and_suicide_prevention_skills": "Sipò ant kanmarad ak konpetans pou prevansyon swisid. Sa pou fè si yon zanmi sanble deprime, an kriz, oswa ap panse pou fè tèt li mal. Rekonèt siy yo, sa pou di (ak sa pou pa di), kijan pou di yon granmoun ou fè konfyans. Aliyen ak NEDA + AFSP + Sources of Strength + 988. Gen yon avètisman sou kontni anvan ou antre.",
+        "safety_plan_cleared": "Plan sekirite a efase.",
+        "all_distress_readings_cleared": "Tout mezi detrès yo efase.",
+        "clear_your_saved_safety_plan": "Efase plan sekirite ou te sove a?",
+        "clear_all_distress_readings": "Efase tout mezi detrès yo?",
+        "this_permanently_removes_every_step_of": "Sa ap retire nèt chak etap nan plan sekirite ou te sove a sou aparèy sa a. Ou pa ka defèt sa. Enprime oswa sove yon kopi anvan si ou ka bezwen l.",
+        "this_permanently_deletes_your_entire_distress": "Sa ap efase nèt tout istwa mezi detrès ou, ansanm ak nòt yo ak done tandans yo. Ou pa ka defèt sa.",
+        "cancel": "Anile",
+        "clear_safety_plan": "Efase plan sekirite a",
+        "clear_all_readings": "Efase tout mezi yo",
+        "now_viewing_label": "Ou ap gade kounye a: {label}",
+        "content_note_before_you_continue": "Nòt sou kontni anvan ou kontinye",
+        "this_module_is_about_what_to": "Modil sa a pale sou sa pou fè si yon zanmi deprime, an kriz, oswa ap panse pou fè tèt li mal — tankou swisid. Li kouvri:",
+        "recognizing_signs_of_depression_in_a": "Rekonèt siy depresyon nan yon zanmi",
+        "crisis_warning_signs_at_a_general": "Siy avètisman kriz — nan yon nivo jeneral, pa enstriksyon detaye",
+        "how_to_ask_listen_and_respond": "Kijan pou mande, koute, epi reponn",
+        "how_and_when_to_tell_a": "Kijan ak kilè pou di yon granmoun ou fè konfyans",
+        "crisis_helplines_and_what_to_say": "Liy èd pou kriz ak sa pou di lè ou rele",
+        "how_to_take_care_of_yourself": "Kijan pou pran swen tèt ou apre ou fin sipòte yon zanmi",
+        "what_this_module_does_not_include": "Sa modil sa a PA genyen: ",
+        "specific_methods_of_self_harm_descriptions": "metòd presi pou fè tèt ou mal, deskripsyon tantativ swisid, istwa “anvan/apre”, oswa nenpòt kontni ki ta ka sèvi kòm yon gid pou fè l. Nou fè espre kenbe enfòmasyon yo jeneral — yo konsantre sou konsyantizasyon, sipò, ak konekte moun ak èd.",
+        "if_reading_about_these_topics_is": "Si li sou sijè sa yo difisil pou ou kounye a, ",
+        "please_consider_one_of_these_instead": "tanpri chwazi youn nan opsyon sa yo pito:",
+        "talk_with_a_trusted_adult_before": "Pale ak yon granmoun ou fè konfyans anvan ou kontinye — yon konseye lekòl, yon paran, oswa yon pwofesè",
+        "skip_this_module_and_explore_other": "Sote modil sa a epi eksplore lòt zouti nan SEL Hub la",
+        "the_988_suicide_crisis_lifeline_free": " — 988 Suicide & Crisis Lifeline (gratis, konfidansyèl, 24/7)",
+        "home_to_741741": "HOME bay 741741",
+        "crisis_text_line_free_confidential_24": " — Crisis Text Line (gratis, konfidansyèl, 24/7)",
+        "continuing_into_crisis_companion": "N ap antre nan Konpayon Kriz",
+        "i_understand_the_content_note_and": "Mwen konprann nòt sou kontni an epi mwen vle antre nan Konpayon Kriz",
+        "i_understand_continue": "✓ Mwen konprann — kontinye",
+        "returning_to_sel_hub_menu": "N ap retounen nan meni SEL Hub la",
+        "take_me_back_to_the_menu": "← Mennen m tounen nan meni an",
+        "visitedcount_sectionscount_sections_visited": "{visitedCount} / {SECTIONSCount} seksyon vizite",
+        "crisis_companion_sections": "Seksyon Konpayon Kriz",
+        "visited": " (vizite)",
+        "next_label": "Pwochen: {label} →",
+        "breath_pacer": "Gid respirasyon",
+        "a_visual_breathing_pacer_watch_the": "Yon gid respirasyon vizyèl. Gade sèk la vin pi gwo epi pi piti; kite souf ou swiv li. Itil pou moman estrès egi anvan yon konvèsasyon difisil, apre youn, oswa nenpòt lè kò a devan lespri a. Sa a se yon zouti pou SÈVI AVÈ L — li pa ranplase okenn nan sipò ki nan rès modil sa a.",
+        "cycle_cycles": "Sik {cycles}",
+        "keep_going_as_long_as_feels": " · kontinye toutotan sa fè ou byen",
+        "press_start_when_you_re_ready": "Peze Kòmanse lè ou pare",
+        "stop": "■ Kanpe",
+        "restart": "↺ Rekòmanse",
+        "when_to_use_which": "💡 Kilè pou sèvi ak kiyès: ",
+        "box_breathing_4_4_4_4": "Respirasyon kare (4-4-4-4) pou regilasyon jeneral — militè ak moun ki reponn ijans sèvi avè l. ",
+        "4_7_8_for_falling_asleep": "4-7-8 pou dòmi oswa pou kalme vit — lè ou lage souf la lontan, sa aktive sistèm parasenpatik la. ",
+        "equal_breath_6_6_for_sustainable": "Respirasyon egal (6-6) pou itilize chak jou san fatige — pa gen poz, fasil pou kenbe.",
+        "write_something_first_then_press_the": "Ekri yon bagay anvan, epi peze bouton an ankò.",
+        "grounding_5_4_3_2_1": "Ankraj 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "Lè lide ou ap kouri oswa anksyete ap monte, teknik 5-4-3-2-1 la mennen atansyon ou tounen sou kò a ak moman prezan an. Sèvi ak nenpòt nan 5 sans yo, menm si gen kèk ou pa ka itilize — nonmen sa ou sonje, sa ou imajine, sa ou ta renmen pran sant. Li mache kanmenm.",
+        "itemscount_of_count_added": "{itemsCount} sou {count} ajoute",
+        "remove": "Retire",
+        "finish_2": "✓ Fini",
+        "grounding_complete": "Ankraj fini",
+        "you_named_15_specific_things_in": "Ou nonmen 15 bagay presi nan moman prezan ou. Remake kijan ou santi ou kounye a konpare ak lè ou te kòmanse.",
+        "start_again": "↺ Rekòmanse",
+        "distress_reading_saved": "Mezi detrès la sove.",
+        "calm": "Kalm",
+        "mild_stress": "Ti estrès",
+        "notable_distress": "Detrès ki parèt klè",
+        "high_distress": "Detrès wo",
+        "crisis_level_distress": "Detrès nivo kriz",
+        "distress_check": "Tcheke detrès",
+        "a_quick_way_to_track_how": "Yon fason rapid pou swiv kijan ou santi ou sou tan. Bay detrès ou yon nòt 0–10. Ajoute yon nòt si ou vle. Modèl la sou yon semèn di ou yon bagay mo sèlman pa ka di. ",
+        "if_your_reading_is_8_or": "Si mezi ou 8 oswa plis pandan plis pase inèdtan, tanpri kontakte yon granmoun ou fè konfyans oswa voye tèks HOME bay 741741.",
+        "right_now_i_m_feeling": "Kounye a mwen santi m:",
+        "0_calm": "0 · kalm",
+        "10_crisis": "10 · kriz",
+        "optional_note_what_s_going_on": "Nòt opsyonèl (sa k ap pase?):",
+        "e_g_math_test_in_3rd": "pa egzanp, egzamen matematik nan 3yèm peryòd; prèske pa t dòmi",
+        "log_this_reading": "💾 Anrejistre mezi sa a",
+        "this_is_a_hard_moment": "⚠ Sa a se yon moman difisil.",
+        "you_re_in_real_distress_the": "Ou vrèman an detrès. Gid respirasyon an (yon seksyon pi wo) ak Ankraj 5-4-3-2-1 tou de la a menm. ",
+        "if_thoughts_of_self_harm_are": "Si ou gen panse pou fè tèt ou mal, voye tèks HOME bay 741741 (Crisis Text Line) oswa rele/voye tèks bay 988 kounye a menm.",
+        "above_average_distress": "Detrès pi wo pase mwayèn.",
+        "worth_pausing_for_try_the_breath": "Sa merite yon poz. Eseye Gid respirasyon an oswa zouti Ankraj la. Si nivo sa a kontinye tounen, di yon granmoun ou fè konfyans se yon bon desizyon.",
+        "your_pattern": "📊 Modèl ou",
+        "7_day_avg_avg_sevendayreadingscount_readings": "Mwayèn 7 jou: {avg} · {sevenDayReadingsCount} mezi",
+        "distress_over_time_chart": "Grafik detrès sou tan",
+        "recent_readings_readingscount": "📋 Mezi resan ({readingsCount})",
+        "why_this_matters": "Poukisa sa enpòtan",
+        "you_don_t_have_to_be": "Ou pa bezwen yon konseye. Ou pa bezwen konn sa pou di. Ou pa bezwen repare anyen.",
+        "you_have_to_be_a_person": "Ou dwe yon moun ki remake, ",
+        "and_a_person_who_tells_an": "epi yon moun ki di yon granmoun sa. Se tout. De konpetans sa yo, moun ka aprann yo, epi tou de sove lavi.",
+        "friends_are_usually_the_first_to": "Zanmi yo souvan se premye moun ki remake lè yon bagay pa bon. Granmoun yo souvan rate premye siy yo paske adolesan pataje pi fasil ak zanmi yo pase ak paran oswa pwofesè yo. Sa se pa yon pwoblèm — se fason natirèl amitye ye nan laj ou. Sa jis vle di wòl ou enpòtan.",
+        "what_this_module_teaches": "Sa modil sa a anseye",
+        "how_to_recognize_when_a_friend": "Kijan pou rekonèt lè imè oswa konpòtman yon zanmi ap ale nan direksyon depresyon",
+        "how_to_recognize_warning_signs_of": "Kijan pou rekonèt siy avètisman yon kriz — tankou panse swisid",
+        "how_to_ask_listen_and_respond_2": "Kijan pou mande, koute, epi reponn — ansanm ak mo ki ede ak mo ki pa ede",
+        "how_to_tell_a_trusted_adult": "Kijan pou di yon granmoun ou fè konfyans — kilè, kiyès, ak kijan",
+        "crisis_resources_you_can_call_or": "Resous pou kriz ou ka rele oswa voye tèks nenpòt lè — pou zanmi ou oswa pou ou menm",
+        "how_to_take_care_of_yourself_2": "Kijan pou pran swen tèt ou apre ou fin sipòte yon zanmi nan yon bagay ki lou",
+        "what_this_module_does_not_do": "Sa modil sa a PA fè",
+        "it_does_not_turn_you_into": "Li pa fè ou tounen yon terapis. Wòl ou se prezans ak konekte yo ak èd.",
+        "it_does_not_require_you_to": "Li pa mande ou kenbe sekrè. Si sekirite an jwèt, di yon granmoun sa se lwayote, se pa trayizon.",
+        "it_does_not_describe_specific_methods": "Li pa dekri metòd presi pou fè tèt ou mal. Nou fè espre rete jeneral sou konpòtman avètisman yo.",
+        "it_does_not_replace_professional_help": "Li pa ranplase èd pwofesyonèl. Li aprann ou vin yon pon pou mennen moun jwenn èd pwofesyonèl.",
+        "sources_framework": "Sous ak kad",
+        "this_module_aligns_with_safe_messaging": "Modil sa a aliyen ak gid mesaj an sekirite AFSP (afsp.org), SAMHSA, gid medya Reporting on Suicide (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), QPR Institute, NIMH, ak gid AAP sou sante adolesan. Yon sikològ lekòl te fè l pou elèv lekòl mwayen ak lekòl segondè, epi yo te revize tèks la dapre gid mesaj an sekirite yo.",
+        "recognizing_depression_in_a_friend": "Rekonèt depresyon nan yon zanmi",
+        "every_kid_has_bad_days_every": "Chak jèn gen move jou. Chak jèn gen yon semèn difisil de tanzantan. Se sa ki fè nou moun, se pa depresyon.",
+        "depression_is_a_pattern": "Depresyon se yon MODÈL. ",
+        "it_s_a_cluster_of_changes": "Se yon gwoup chanjman ki dire plizyè semèn, se pa yon sèl move jou. Siy ki anba yo merite pou nou pran yo oserye lè PLIZYÈ ladan yo ap rive ansanm EPI lè yo dire pi lontan pase yon moman difisil nòmal.",
+        "a_useful_question_to_keep_in": "Yon kesyon itil pou kenbe nan tèt ou: “Èske chanjman sa yo ap dire pi lontan, ap vin pi mal, oswa ap bare lavi chak jou li?”",
+        "patterns_to_notice_over_weeks_not": "Modèl pou remake (sou plizyè semèn, pa sou kèk jou)",
+        "important_nuance": "Nuans enpòtan",
+        "in_adolescents_especially_depression_often_shows": "Sitou nan adolesan, depresyon souvan parèt kòm IRITABILITE olye de tristès. Yon zanmi ki fache fasil depi plizyè semèn, ki sou nè pou ti bagay, oswa ki sanble ap boule dousman anndan l ka ap soufri plis pase yon moun ki parèt tris klèman.",
+        "boys_athletes_kids_of_color_larger": "Moun pa souvan remake lè gason, atlèt, jèn ki gen koulè, jèn ki gen kò pi gwo, ak elèv ki reyisi anpil ap soufri, paske yo pa sanble ak estereyotip “adolesan deprime” a. Pran gwoup chanjman yo oserye kèlkeswa jan zanmi ou sanble.",
+        "what_to_do_if_you_re": "Sa pou fè si ou wè modèl la",
+        "reach_out_send_a_text_sit": "Pwoche. Voye yon tèks. Chita bò kote l pandan manje midi. Lè ou montre ou fè atansyon, sa enpòtan.",
+        "ask_gently_and_specifically_i_ve": "Mande dousman epi presizeman: “Mwen remake ou sanble vrèman fatige epi trankil dènye tan sa yo. Kijan ou ye toutbon?”",
+        "listen_don_t_fix_most_people": "Koute. Pa eseye repare. Pifò moun pa vle yon solisyon; yo vle santi yo mwens pou kont yo.",
+        "if_they_share_something_heavy_that": "Si zanmi ou pataje yon bagay ki lou, se moman pou poze kesyon ki pi difisil la (pwochen seksyon: siy avètisman kriz).",
+        "if_you_re_worried_about_them": "Si ou enkyete pou zanmi ou, di yon granmoun ou fè konfyans. Ou pa bezwen sèten. Enkyetid la ase.",
+        "crisis_warning_signs": "Siy avètisman kriz",
+        "when_depression_deepens_into_crisis_including": "Lè depresyon vin pi fon jiskaske li tounen kriz — tankou panse swisid — anjeneral gen siy avètisman. American Foundation for Suicide Prevention (AFSP) mete yo nan twa gwoup: ",
+        "talk": "PAWÒL",
+        "mood": "IMÈ",
+        "and": " ak ",
+        "behavior": "KONPÒTMAN",
+        "a_note_about_how_this_section": "Yon nòt sou fason seksyon sa a ekri: nou fè espre nou PA bay lis konpòtman presi ki ta ka sèvi kòm yon gid pou fè l. Kategori jeneral yo ase pou yon zanmi rekonèt gen yon bagay ki pa bon. Si ou wè plizyè nan siy sa yo ansanm, se moman pou aji — se pa moman pou fè plis ankèt pou kont ou.",
+        "examples": "Egzanp",
+        "note": "Nòt: ",
+        "if_you_see_any_of_these": "Si ou wè NENPÒT nan siy sa yo, men pwochen etap yo:",
+        "stay_with_them_if_you_can": "Rete avè l si ou kapab. ",
+        "don_t_leave_them_alone_if": "Pa kite l pou kont li si li an detrès imedya.",
+        "ask_directly": "Mande dirèkteman. ",
+        "are_you_thinking_about_hurting_yourself": "“Èske ou ap panse pou fè tèt ou mal?” Mande PA mete lide a nan tèt yo (pwochen seksyon an eksplike rechèch la).",
+        "tell_a_trusted_adult_today": "Di yon granmoun ou fè konfyans — jodi a. ",
+        "not_next_week_today": "Pa semèn pwochèn. Jodi a.",
+        "call_or_text_988": "Rele oswa voye tèks bay 988 ",
+        "if_you_re_unsure_what_to": "si ou pa konn sa pou ou fè — y ap gide OU pou ede zanmi ou.",
+        "call_911": "Rele 911 ",
+        "if_your_friend_is_in_immediate": "si zanmi ou an danje fizik imedya kounye a menm.",
+        "question_persuade_refer": "Kesyone · Konvenk · Refere",
+        "question_persuade_refer_2": "Kesyone, Konvenk, Refere",
+        "is_the_most_widely_taught_suicide": ") se kad prevansyon swisid yo anseye plis bay moun ki pa pwofesyonèl. Yo sèvi avè l nan lekòl, lopital, ak pwogram kominotè toupatou nan mond lan. Kad la fèt senp espre: twa etap, epi chak etap se yon bagay yon zanmi ka fè.",
+        "you_re_not_the_therapist_you": "Ou pa terapis la. Ou se lyen ant yon moun k ap soufri ak moun ki fòme pou ede. Lyen sa a se egzakteman sa ki sove lavi.",
+        "question_ask_directly": "Kesyone — mande dirèkteman",
+        "if_you_suspect_your_friend_is": "Si ou panse zanmi ou ap panse pou touye tèt li, mande l. Dirèkteman epi dousman. Mo egzak yo pa enpòtan tankou kouraj pou mande a.",
+        "examples_2": "Egzanp: ",
+        "are_you_thinking_about_hurting_yourself_2": "“Èske ou ap panse pou fè tèt ou mal?” · “Èske ou gen panse swisid?” · “Èske ou ap panse pou fini ak lavi ou?”",
+        "the_most_cited_barrier_to_asking": "🔬 Rezon moun site plis pou yo pa mande a, se yon erè: ",
+        "asking_does_not_plant_the_idea": "Mande PA mete lide a nan tèt moun. Plizyè meta-analiz (Dazzi et al., 2014, Psychological Medicine) ak plizyè dizèn ane rechèch AFSP, NIMH, ak QPR Institute konfime sa: mande dirèkteman pwoteje moun. Souvan sa bay soulajman — moun nan t ap tann yon moun remake.",
+        "persuade_listen_and_stay": "Konvenk — koute epi rete",
+        "persuade_doesn_t_mean_talking_them": "“Konvenk” pa vle di fè yo sispann santi sa yo santi. Li vle di koute nèt, rekonèt sa difisil, epi ede yo di WI pou jwenn èd.",
+        "listen_without_judgment": "Koute san jije. ",
+        "don_t_debate_don_t_minimize": "Pa diskite. Pa minimize. Pa eseye depase l ak pwòp istwa pa ou.",
+        "reflect": "Reflete. ",
+        "it_sounds_like_you_ve_been": "“Sanble ou t ap pote anpil bagay, epi ou fatige.” Lè yo santi yo tande, se sa ki remèd la.",
+        "don_t_promise_secrecy": "Pa pwomèt kenbe sekrè. ",
+        "you_can_say_i_care_about": "Ou ka di: “Ou twò enpòtan pou mwen pou m kenbe sa pou kont mwen. Mwen vle nou pale ak yon moun ki ka vrèman ede.”",
+        "stay_with_them": "Rete avè l. ",
+        "don_t_leave_them_alone_if_2": "Pa kite l pou kont li si li an detrès imedya. Chita. Mache. Jis rete la.",
+        "skip_the_promise_me_trap": "⚠ Evite pyèj “pwomèt mwen” an: ",
+        "don_t_ask_them_to_promise": "Pa mande l “pwomèt” li p ap fè anyen. Sa mete l nan pozisyon pou l fè yon pwomès li ka pa kapab kenbe, sa ki ajoute wont. Pito sa: “Mwen vle ou an sekirite. Ann chèche èd kounye a menm, ansanm.”",
+        "refer_connect_them_to_help": "Refere — konekte l ak èd",
+        "refer_means_getting_them_to_someone": "“Refere” vle di mennen l bay yon moun ki ka fè plis pase ou. Se pati kote OU menm tou ou pa pou kont ou.",
+        "best_walk_with_them_to_a": "Pi bon: mache avè l al jwenn yon konseye lekòl, yon sikològ lekòl, oswa yon granmoun ou fè konfyans. Kounye a menm.",
+        "if_that_s_not_possible_call": "Si sa pa posib: rele 988 ansanm (oswa chita bò kote l pandan l ap rele oswa voye tèks). 988 la pou moun ki an risk la EPI pou zanmi k ap ede a.",
+        "if_they_refuse_to_tell_anyone": "Si l refize di pèsonn: ",
+        "tell_an_adult_yourself": "di yon granmoun sa ou menm. ",
+        "you_re_not_breaking_trust_you": "Ou pa trayi konfyans li — ou ap aji ak lwayote kriz li a merite. Li gen chans pou l soulaje pita.",
+        "if_immediate_physical_danger_911_not": "Si gen danje fizik imedya: 911. Pa semèn pwochèn. Kounye a.",
+        "the_whole_framework_in_one_sentence": "Tout kad la nan yon sèl fraz: ",
+        "ask_directly_listen_fully_and_bring": "Mande dirèkteman, koute nèt, epi fè yon granmoun ki ka ede antre.",
+        "what_to_say_and_what_not": "Sa pou di (ak sa pou pa di)",
+        "you_don_t_need_a_perfect": "Ou pa bezwen yon tèks pafè. Ou pa bezwen gen anpil sajès. Ou bezwen prezan, onèt, epi dispoze fè yon granmoun antre. Mo ki anba yo se egzanp — vrè konvèsasyon ou ap fèt ak pwòp mo pa ou.",
+        "a_useful_frame_would_what_i": "Yon kesyon itil: èske sa m pral di a ap fè zanmi m santi l PLIS an sekirite pou l kontinye pale, oswa MWENS?",
+        "these_help": "Sa yo ede",
+        "why": "Poukisa: ",
+        "these_don_t_help_even_when": "Sa yo pa ede (menm lè se ak bon entansyon)",
+        "if_you_said_one_of_the": "Si ou te deja di youn nan bagay “pa di” yo — ",
+        "that_s_ok_you_didn_t": "sa pa grav. Ou pa t konnen. Pèsonn pa fèt ak konesans sa a. Kounye a ou gen lòt mo. Pwochen konvèsasyon an ka diferan.",
+        "telling_a_trusted_adult": "Di yon granmoun ou fè konfyans",
+        "this_is_the_most_important_skill": "Sa a se konpetans ki pi enpòtan nan tout modil la. ",
+        "telling_an_adult_is_what_turns": "Di yon granmoun sa, se sa ki transfòme enkyetid ou an èd ki chanje rezilta a toutbon. Se aksyon ki kenbe tout bagay kanpe — moman ki pèmèt pwofesyonèl yo fè sa yo fòme pou fè.",
+        "loyalty_not_betrayal": "Lwayote, se pa trayizon",
+        "a_friend_in_crisis_may_ask": "Yon zanmi ki an kriz ka mande ou pa di pèsonn. Li ka fè ou pwomèt. Li ka pè, li ka wont, oswa li ka konvenki sa ap fè bagay yo vin pi mal.",
+        "tell_anyway": "Di l kanmenm. ",
+        "safety_overrides_secrecy_telling_an_adult": "Sekirite pi enpòtan pase sekrè. Di yon granmoun sa lè lavi oswa byennèt yon zanmi an danje, se bagay ki pi lwayal yon zanmi ka fè. Pifò moun yo pwoteje konsa REKONESAN apre — menm si yo te fache nan moman an. Amitye a ka siviv yon konvèsasyon difisil; li pa ka siviv si ou pèdi zanmi an.",
+        "when_to_tell_every_time": "Kilè pou di — chak fwa",
+        "your_friend_mentioned_wanting_to_die": "Zanmi ou pale sou anvi mouri, fè tèt li mal, oswa fini ak lavi l — menm si se konsa konsa",
+        "you_re_seeing_a_cluster_of": "Ou wè plizyè siy avètisman kriz (PAWÒL / IMÈ / KONPÒTMAN)",
+        "your_friend_has_a_plan_a": "Zanmi ou gen yon plan, yon mwayen, oswa yon dat — menm si li pa klè",
+        "your_friend_has_hurt_themselves_even": "Zanmi ou fè tèt li mal, menm yon ti kras",
+        "you_re_scared_and_you_don": "Ou pè epi ou pa konn sa pou fè — sa sèl se ase rezon pou di",
+        "who_to_tell_pick_whoever_you": "Kiyès pou di — chwazi moun ou ka jwenn pi vit la",
+        "how": "Kijan: ",
+        "how_to_tell_practical_moves": "Kijan pou di — aksyon pratik",
+        "you_don_t_need_a_script": "Ou pa bezwen yon tèks pare. “Mwen bezwen èd pou yon bagay grav konsènan yon zanmi” ase.",
+        "you_can_write_it_down_if": "Ou ka ekri l si ou pa ka di l fò. Yon nòt, yon tèks, yon imèl, tout mache.",
+        "you_can_ask_another_friend_to": "Ou ka mande yon lòt zanmi vini avè ou nan biwo konseye a.",
+        "you_can_leave_class_to_do": "Ou ka kite klas pou fè sa. Di pwofesè a: “Mwen bezwen wè konseye a — se ijan.” Pifò pwofesè ap kite ou ale san poze kesyon.",
+        "if_the_first_adult_doesn_t": "Si premye granmoun nan pa pran ou oserye — e sa rive — eseye yon lòt. Kontinye jiskaske yon moun koute ou.",
+        "if_it_s_outside_school_hours": "Si se andeyò lè lekòl, rele 988. Y ap ede ou konnen sa pou ou fè.",
+        "in_maine_schools": "🍎 Nan lekòl Maine yo",
+        "school_counselors_and_school_psychologists_are": "Konseye lekòl ak sikològ lekòl se moun lalwa oblije fè rapò — lalwa mande yo aji lè gen yon enkyetid sekirite. Yo PA p jis di paran ou yo epi ale. Y ap swiv yon pwotokòl ki gen ladan evalyasyon zanmi ou, kontakte fanmi l yon fason ki an sekirite, epi konekte l ak swen kontinyèl. Rapò obligatwa a se yon balistrad, se pa yon pinisyon.",
+        "marked_as_myth_correct": "Make kòm mit — kòrèk",
+        "marked_as_truth_but_research_says": "Make kòm verite — men rechèch di se yon mit",
+        "myths_debunked": "Mit nou demanti",
+        "six_of_the_most_cited_myths": "Sis nan mit moun site plis ki anpeche moun ede yon zanmi ki an kriz. Pou chak, deside: èske afimasyon an se yon MIT oswa yon VERITE? Apre sa, li repons ki baze sou prèv la, ak sous yo.",
+        "score_so_far_correctcount_totalanswered_answered": "Nòt jiska kounye a: {correctCount} / {totalAnswered} bon repons.",
+        "myth_value_of_mythscount": "Mit {value} sou {MYTHSCount}",
+        "this_is_a_myth": "Sa a se yon MIT",
+        "this_is_true": "Sa a VRE",
+        "correct_this_is_a_myth": "✓ Kòrèk — sa a se yon mit.",
+        "common_misconception_this_is_actually_a": "⚠ Erè moun fè souvan — sa a se yon mit toutbon.",
+        "what_the_evidence_says": "Sa prèv yo di: ",
+        "sources_cite": "Sous: {cite}",
+        "what_to_say": "Sa pou di: ",
+        "crisis_resources": "Resous pou kriz",
+        "every_resource_here_is_free_confidential": "Chak resous isit la gratis, konfidansyèl, epi moun ki la yo fòme. Ou ka rele POU zanmi ou, AVÈK zanmi ou, oswa pou tèt ou. Liy èd yo pa sèlman pou moun ki an kriz la — yo la tou pou zanmi an, paran an, oswa moun k ap sipòte a k ap eseye konnen sa pou l fè.",
+        "below": "Anba a: ",
+        "national": "Nasyonal",
+        "works_anywhere_in_the_u_s": " (mache nenpòt kote Ozetazini) → ",
+        "find_your_local_help": "Jwenn èd toupre ou",
+        "directory_lookups_by_zip": " (anyè pa kòd postal) → ",
+        "outside_the_u_s": "Ou andeyò Etazini?",
+        "maine_partners": "Patnè nan Maine",
+        "named_local_agencies": " (ajans lokal nou nonmen) → ",
+        "school_based": "Nan lekòl",
+        "you_don_t_need_to_know": "Ou pa bezwen konn sa pou di. Yo fòme pou kòmanse konvèsasyon an. Ou ka rele ankò. Ou ka rakwoche. Ou pa ka fè l mal.",
+        "a_note_about_lgbtq_youth": "Yon nòt sou jèn LGBTQ+",
+        "research_consistently_shows_lgbtq_youth_and": "Rechèch yo toujou montre jèn LGBTQ+ — sitou jèn transjan — gen anpil plis panse swisid ak tantativ swisid pase kanmarad yo ki pa LGBTQ+. Rezon yo byen dokimante: fanmi ki rejte yo, arasman nan lekòl, mank swen ki respekte idantite yo, ak estrès minorite. The Trevor Project (1-866-488-7386 / voye tèks START bay 678-678) gen moun ki fòme espesyalman pou reyalite sa yo. Si zanmi ou LGBTQ+, resous sa a fèt pou li.",
+        "self_care_sub_sections": "Ti seksyon Pran swen tèt ou",
+        "supporting_a_friend_through_a_mental": "Sipòte yon zanmi pandan yon kriz sante mantal se yon chay lou. Li chanje ou. Chèchè yo rele sa ",
+        "secondary_stress": "estrès segondè",
+        "the_way_that_being_close_to": " — fason lè ou pre doulè yon lòt moun afekte pwòp byennèt pa ou. Se yon bagay reyèl, epi li merite atansyon.",
+        "taking_care_of_yourself_is_not": "Pran swen tèt ou se pa egoyis. Se konsa ou kapab kontinye la pou lòt moun.",
+        "interactive_tools_above": "🧰 Zouti entèaktif anlè a",
+        "the_tabs_at_the_top_of": "Onglè ki anlè seksyon sa a gen zouti pratik ou ka itilize kounye a: yon ",
+        "breathing_pacer": "gid respirasyon",
+        "a_sensory": ", yon ",
+        "grounding_exercise": "egzèsis ankraj ak sans ou yo",
+        "a_personal": ", yon ",
+        "coping_toolkit": "bwat zouti pou fè fas pèsonèl",
+        "you_can_build_and_the_evidence": " ou ka bati, ak ",
+        "stanley_brown_safety_plan": "plan sekirite Stanley-Brown",
+        "they_re_for_you_and_for": " ki baze sou prèv la. Yo la pou ou AK pou pataje ak yon zanmi ki gen difikilte.",
+        "caring_for_yourself_when_you_ve": "Pran swen tèt ou apre ou fin sipòte yon zanmi",
+        "helpful_response": "Repons ki ede",
+        "this_response_could_harm_see_explanation": "Repons sa a ta ka fè mal — gade eksplikasyon an",
+        "neutral_response_see_explanation": "Repons net — gade eksplikasyon an",
+        "practice_three_scenarios": "Pratik — twa sitiyasyon",
+        "three_short_scenarios_drawn_from_typical": "Twa ti sitiyasyon ki soti nan eksperyans nòmal adolesan. Pou chak, chwazi repons ou panse ki t ap ede plis. Pa gen repons pafè — se sèlman repons ki pi itil oswa mwens itil selon kontèks la. Nou baze yo sou pwotokòl pratik Sources of Strength.",
+        "loaded_scenario_title": "Sitiyasyon ki chaje: {title}",
+        "scenario_value": "Sitiyasyon {value}",
+        "how_would_you_respond": "Kijan ou t ap reponn?",
+        "helpful": "✓ Ede — ",
+        "harmful": "× Fè mal — ",
+        "neutral": "~ Net — ",
+        "a_note_on_practice": "Yon nòt sou pratik: ",
+        "real_conversations_are_messier_than_scripted": "Vrè konvèsasyon pi dezòd pase sitiyasyon ki ekri davans. Objektif pratik la se pa pou aprann fraz pa kè — se pou devlope REFLÈKS pou mande, koute, rete, epi di yon granmoun. Avèk pratik, reflèks sa a vin pi rapid.",
+        "loading": "Chajman…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "Pawòl dirèk oswa endirèk sou anvi mouri, fini ak doulè a, se yon chay, oswa pa gen avni. Pafwa yo di l konsa konsa oswa tankou yon blag. Pran l oserye kèlkeswa fason yo di l.",
+          "examples": {
+            "0": "“Mwen anvi mouri” oswa “Mwen ta pito pa la”",
+            "1": "“Tout moun t ap pi byen san mwen”",
+            "2": "“Mwen pa kapab ankò”",
+            "3": "“Mwen jis vle sa kanpe”",
+            "4": "“Talè konsa ou p ap bezwen enkyete pou mwen ankò”",
+            "5": "Di orevwa yon fason ki santi l tankou se dènye fwa, menm si se yon ti jan"
+          },
+          "note": "Yon zanmi k ap fè blag sou anvi mouri, se toujou yon moman pou ale tande l dousman. Pifò moun ki fè yon tantativ swisid pita te di yon moun sa — pafwa konsa konsa oswa tankou se pa anyen."
+        },
+        "mood": {
+          "desc": "Gwo chanjman nan imè, sitou nan yon ti tan kout. Yon kalm oswa yon soulajman toudenkou APRE yon peryòd detrès ka yon siy grav — pafwa yon moun ki an risk deside sou yon plan epi li santi l anpè pou yon ti tan.",
+          "examples": {
+            "0": "Depresyon oswa anksyete ki la toujou epi ki pa leve",
+            "1": "Yon santiman kalm toudenkou oswa “tout bagay anfòm kounye a” apre yon long peryòd difisil",
+            "2": "Pa gen espwa pou lavni",
+            "3": "Raj oswa pawòl pou tire revanj",
+            "4": "Pa enterese ankò nan bagay yo te konn renmen"
+          },
+          "note": "Yon amelyorasyon toudenkou apre yon long peryòd difisil bon lè li vini apre tretman, sipò, ak repo. Se yon siy avètisman lè li pa vini apre anyen — lè kalm nan parèt sanzatann apre plizyè semèn difikilte."
+        },
+        "behavior": {
+          "desc": "Fason yo aji, sitou siy preparasyon. Nou fè espre nou PA bay detay presi isit la ki ta ka sèvi kòm yon gid pou fè l. Kategori jeneral yo ase pou yon zanmi rekonèt gen yon bagay ki pa bon.",
+          "examples": {
+            "0": "Kite zanmi, fanmi, oswa aktivite yo te renmen anpil",
+            "1": "Itilize plis sibstans (alkòl, zèb, grenn, vape plis pase dabitid)",
+            "2": "Bay lòt moun bagay ki gen anpil valè pou yo",
+            "3": "Di moun orevwa yon fason ki santi l tankou se dènye fwa",
+            "4": "Aji san pridans, pran risk yo pa t ap janm pran nòmalman",
+            "5": "Chèche sou entènèt fason pou fè tèt yo mal (ou ka wè tan sou ekran yo monte nan lè etranj, oswa remake yo kache sa yo chèche)"
+          },
+          "note": "Ou pa bezwen sèten. Si plizyè nan siy sa yo parèt ansanm, se moman pou ale tande zanmi ou dousman EPI di yon granmoun ou fè konfyans sa. Ou pa bezwen sèten — enkyetid la ase."
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "“Mwen remake ou sanble vrèman ba moral dènye tan sa yo. Ou konte pou mwen. Kijan ou ye toutbon?”",
+          "why": "Presi, plen swen, li ba yo yon ouvèti. “Toutbon” an montre ou vle ale pi lwen pase “m byen” abityèl la."
+        },
+        "1": {
+          "say": "“Èske ou ap panse pou fè tèt ou mal? Èske ou ap panse pou touye tèt ou?”",
+          "why": "Mande dirèkteman PA mete lide a nan tèt yo — rechèch yo klè sou sa. Souvan sa bay soulajman. Yo te petèt ap tann yon moun remake."
+        },
+        "2": {
+          "say": "“Mwen kontan ou te di m sa. Sa te mande kouraj.”",
+          "why": "Li valide sa yo pataje a. Pa kouri al chèche solisyon — premye bagay, di yo mèsi paske yo fè ou konfyans."
+        },
+        "3": {
+          "say": "“Sa a twò gwo pou m jere pou kont mwen, epi mwen vle asire m ou an sekirite. Èske nou ka di yon moun sa ansanm?”",
+          "why": "Onèt sou limit ou. Li prezante di yon granmoun sa kòm yon zak lanmou, pa kòm trayizon. “Ansanm” nan enpòtan — ou pa lage yo."
+        },
+        "4": {
+          "say": "“Mwen la. Mwen p ap ale okenn kote. Nou ka chita an silans si ou vle.”",
+          "why": "Prezans ou se remèd la. Ou pa bezwen gen repons. Ou jis bezwen rete."
+        },
+        "5": {
+          "say": "“Èske gen yon moun ou fè konfyans mwen ka ede ou pale avè l kounye a?”",
+          "why": "Li montre èd yon granmoun se pwochen etap la, men li kite yo chwazi kiyès."
+        },
+        "6": {
+          "say": "“Mwen renmen ou. Mwen pè pou ou. Tanpri kite m ede ou.”",
+          "why": "Onètete emosyonèl dirèk. “Pè” pa gen pwoblèm — se sa ou santi toutbon, epi sa montre yo sa enpòtan pou ou."
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "“Ou pa ta dwe santi ou konsa.”",
+          "why": "Li di yo santiman yo pa bon. Y ap sispann di ou anyen si yo wè ou jije santiman yo."
+        },
+        "1": {
+          "say": "“Gen moun ki nan pi move sitiyasyon pase ou.”",
+          "why": "Doulè se pa yon konpetisyon. Sa fèmen pòt la epi li ajoute wont."
+        },
+        "2": {
+          "say": "“Pa di pèsonn. Mwen menm tou, mwen p ap di anyen.”",
+          "why": "Pwomèt kenbe sekrè lè sekirite an jwèt se kontrè èd. Sekirite pi enpòtan pase sekrè. Isit la, lwayote vle di pale."
+        },
+        "3": {
+          "say": "“Pwomèt mwen ou p ap fè anyen.”",
+          "why": "Li mande yo fè yon pwomès yo ka pa gen pouvwa pou kenbe — epi li ajoute santiman yo te desevwa ou si yo pa kapab. Ranplase l ak: “Mwen vle ou an sekirite. Ann chèche èd ansanm.”"
+        },
+        "4": {
+          "say": "“Ou gen tèlman rezon pou viv.”",
+          "why": "Se ak bon entansyon, men nan yon moman kote moral yon moun ba anpil, li pa ka santi sa vrèman. Li ka sonnen tankou “ou ta dwe rekonesan” — sa ajoute wont sou doulè a."
+        },
+        "5": {
+          "say": "“Souke kò ou / fè kè ou kontan / fè plis efò.”",
+          "why": "Depresyon se pa yon chwa. Lè ou di yon moun chwazi yon lòt jan, ou montre li ou pa konprann sa l ap viv."
+        },
+        "6": {
+          "say": "“Poukisa ou ta panse sa?” (ak yon ton ki fache)",
+          "why": "Frustrasyon sonnen tankou jijman. Si ou vrèman vle konprann, mande dousman — “Èske ou ka ede m konprann sa ou santi kounye a?” — epi rete ouvè pou nenpòt sa yo di."
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "Konseye lekòl oswa sikològ lekòl",
+          "pro": "Yo fòme pou sa. Souvan se moun ki pi fasil pou jwenn pandan jounen lekòl la. Yo dwe kenbe sekrè a eksepte lè sekirite an jwèt. Yo ka ede ou di paran yo sa epi konekte ak swen deyò lekòl la.",
+          "how": "Antre. Voye yon ti nòt. Mande nenpòt pwofesè mennen ou. Ou ka ekri l si ou pa ka di l."
+        },
+        "1": {
+          "label": "Yon pwofesè ou fè konfyans",
+          "pro": "Li wè ou regilyèman, li konnen gwoup zanmi ou. Lalwa oblije l fè rapò — li konnen sa pou l fè.",
+          "how": "Apre klas, pandan lè li disponib, oswa ak yon ti nòt. “Mwen bezwen pale avè ou sou yon bagay grav konsènan yon zanmi.”"
+        },
+        "2": {
+          "label": "Enfimyè lekòl la",
+          "pro": "Resous konfidansyèl pou sante / sante mantal nan lekòl la. Souvan li pi fasil pou jwenn pase konseye a.",
+          "how": "Antre nan biwo enfimyè a. Y ap fè plas pou ou."
+        },
+        "3": {
+          "label": "Paran, gadyen, oswa gran frè / gran sè",
+          "pro": "Yo renmen ou. Yo vle ede. Menm si yo pa konn sa pou yo fè, yo ka fè pwochen etap la avè ou.",
+          "how": "Chwazi yon moman kalm. Kòmanse ak: “Mwen bezwen èd pou yon bagay grav konsènan yon zanmi.” Mande si nou ka chita ansanm."
+        },
+        "4": {
+          "label": "Doktè fanmi oswa pedyat",
+          "pro": "Pwofesyonèl medikal konfidansyèl. Li ka refere pou swen sante mantal, pale ak fanmi zanmi ou, oswa kowòdone ak lekòl la.",
+          "how": "Ou ka rele biwo a epi di ou bezwen pale ak doktè a. Anpil ofri konfidansyalite pou adolesan."
+        },
+        "5": {
+          "label": "Antrenè oswa responsab klib",
+          "pro": "Granmoun ki deja konnen ou ak zanmi ou atravè aktivite yo. Souvan yo gen koneksyon ak konseye lekòl yo.",
+          "how": "Apre antrènman oswa yon reyinyon. “Mwen bezwen pale avè ou sou yon bagay ki enkyete m.”"
+        },
+        "6": {
+          "label": "Lidè relijye (si fanmi ou fè pati yon kominote lafwa)",
+          "pro": "Pou fanmi kote sa a se yon relasyon konfyans, lidè relijye ka yon premye etap ki gen anpil valè.",
+          "how": "Pifò akeyi konvèsasyon sa yo. Anpil gen fòmasyon ki pran twomatis an kont."
+        },
+        "7": {
+          "label": "Yon terapis (pa ou oswa pa zanmi ou, si youn nan nou genyen youn)",
+          "pro": "Deja fòme pou konvèsasyon sa a menm. Si ou menm oswa zanmi ou deja wè yon terapis, se wout ki pi dirèk la.",
+          "how": "Rele biwo a. “Mwen gen yon enkyetid sou sekirite yon moun, mwen bezwen pale sou li jodi a.”"
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "Mande yon moun si l ap panse pou touye tèt li ap mete lide a nan tèt li.",
+          "truth": "Fo. Rechèch yo konsistan e klè: mande PA ogmante risk la. Souvan sa bay soulajman — moun nan t ap tann yon moun remake. Mande se youn nan bagay ki pi pwoteje yon zanmi ka fè.",
+          "cite": "Dazzi et al., Psychological Medicine (2014), meta-analiz · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "Moun ki pale sou swisid jis ap chèche atansyon. Yo pa t ap janm fè anyen vre.",
+          "truth": "Mit danjere. Pifò moun ki fè yon tantativ swisid pita te di yon moun sa anvan — pafwa konsa konsa, pafwa tankou yon blag. Chak fwa yon moun pataje sa, li merite yon vrè repons. “Chèche atansyon” souvan vle di “an detrès, san okenn lòt fason pou mande èd”."
+        },
+        "2": {
+          "claim": "Si yon moun te vrèman vle mouri, li pa t ap di pèsonn.",
+          "truth": "Fo. Se kontrè a ki vre. Anpil moun ki fè yon tantativ swisid te bay moun bò kote yo siy avètisman dirèk oswa endirèk. Lè yo di yon moun sa, se souvan yon siy anbivalans — yon pati nan yo vle viv epi l ap lonje men."
+        },
+        "3": {
+          "claim": "Yon zanmi pa ka fè anyen — se sèlman yon doktè oswa yon terapis ki ka ede.",
+          "truth": "Rechèch montre prezans kanmarad pwoteje moun. Ou pa bezwen repare anyen. Koute, pran l oserye, epi ede konekte yo ak yon granmoun ou fè konfyans, se yon vrè èd. Pwogram tankou Sources of Strength bati sou lide zanmi yo enpòtan.",
+          "cite": "Rechèch Sources of Strength · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "Pale sou swisid ap fè bagay yo vin pi mal.",
+          "truth": "Se vre sèlman ak mesaj ki PA AN SEKIRITE — fè l sanble bèl, dekri metòd, fè sansasyon ak li. Pale ak swen, sèvi ak langaj mesaj an sekirite, epi konekte moun nan ak èd, sa pwoteje. Chak gwo òganizasyon prevansyon swisid rekòmande konvèsasyon onèt.",
+          "cite": "Reporting on Suicide guidelines (reportingonsuicide.org) · AFSP · WHO (OMS)"
+        },
+        "5": {
+          "claim": "Swisid rive san avètisman.",
+          "truth": "Fo. Rechèch yo toujou montre siy avètisman prezan nan majorite ka yo — menm si pafwa yo parèt klè sèlman apre. Se poutèt sa fòmasyon sipò ant kanmarad enpòtan: li aprann ou sa pou remake nan moman an.",
+          "cite": "AFSP · CDC YRBSS · rezime rechèch NIMH"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "Ou menm ak Maya chita ansanm pandan manje midi. Li pi trankil pase dabitid dènye tan sa yo. L ap jwe ak manje l epi li di, prèske konsa konsa: “Onètman, pafwa mwen pa wè ki sans tout bagay sa yo genyen ankò.”",
+          "responses": {
+            "0": {
+              "text": "“Sa ou vle di la a? Pa pale konsa.”",
+              "why": "Sa fèmen pòt la. Lè ou di yon moun “pa pale konsa”, ou di l santiman l pa bon, EPI li pa an sekirite pou l onèt avè ou. Li gen chans pou l fèmen kò l."
+            },
+            "1": {
+              "text": "“Sa sonnen vrèman lou. Èske ou ka di m plis sou sa k ap pase? Ou konte pou mwen.”",
+              "why": "Li valide santiman an san jijman. Li envite l pale plis san fòse l. “Ou konte pou mwen” fè l santi l an sekirite pou l kontinye pale. Sa louvri pòt pou kesyon ki pi difisil la apre: “Èske ou gen panse pou fè tèt ou mal?”"
+            },
+            "2": {
+              "text": "“Wi, lekòl la twò estresan kounye a.”",
+              "why": "Li pa fè mal, men li rate sa l te di toutbon an. “Mwen pa wè ki sans tout bagay sa yo genyen” se plis pase estrès lekòl. Yon repons net ka fè l santi pèsonn pa tande l. Poze yon lòt kesyon pou ou sèten."
+            }
+          }
+        },
+        "sc2": {
+          "setting": "Li 11è diswa yon madi. Zanmi ou Jamie voye yon tèks ba ou: “M ap plede panse jan tout moun t ap byen san mwen.” Ou li l epi kè ou kanpe.",
+          "responses": {
+            "0": {
+              "text": "“Mwen la. Pa fè anyen. M ap rele manman m kounye a pou l vin ede.”",
+              "why": "Dirèk, prezan, li pran l oserye, li fè yon granmoun antre vit. “M ap rele manman m” di klèman sa ou ap fè. Si ou kapab tou kontinye ekri l oswa rele l pandan ou ap tann, fè sa. Si ou ka al jwenn li an pèsòn san danje, fè sa."
+            },
+            "1": {
+              "text": "“omg ou byen?? ou gen tèlman rezon pou viv!!”",
+              "why": "Kè ou nan bon plas, men li tonbe mal. “Ou gen tèlman rezon pou viv” ka fè l santi l koupab nan yon moman kote moral li ba anpil. Pi bon: di l ou pè, di l ou renmen l, epi fè yon granmoun antre."
+            },
+            "2": {
+              "text": "“Mwen p ap di pèsonn, men tanpri pa fè anyen aswè a, dakò?”",
+              "why": "Pwomèt kenbe sekrè lè sekirite an jwèt fè bagay yo vin pi mal. Bagay ki pi lwayal isit la se di yon granmoun sa — menm si Jamie mande ou pa fè l. Sekirite pi enpòtan pase sekrè. Aswè a, ou di yon moun sa."
+            }
+          }
+        },
+        "sc3": {
+          "setting": "Semèn pase, yo te entène zanmi ou lopital apre yon nwit ki te vrèman difisil. Se ou ki te di yon granmoun sa. Li tounen lekòl jodi a, li sanble l fatige anpil. Li pa gade ou nan koridò a. Ou pè li fache avè ou.",
+          "responses": {
+            "0": {
+              "text": "Ou pwoche: “Alo. Mwen t ap panse a ou. Mwen kontan ou la jodi a. Nenpòt lè ou vle pale — sou nenpòt nan sa, oswa sou anyen ditou — mwen la.”",
+              "why": "Li fè l konnen ou toujou la, san ou pa fè sa vin konsène ou. Li pa egzije anyen. “Sou nenpòt nan sa, oswa sou anyen ditou” ba l pèmisyon pou l chwazi ritm li. Se konsa lwayote sanble APRE ou fin pale."
+            },
+            "1": {
+              "text": "Ou evite l pou l pa santi l mal alèz lè l wè ou.",
+              "why": "Se yon reflèks ou ka konprann, men absans sanble yon rejè — egzakteman kontrè sa l bezwen kounye a. Menm yon ti “Alo, mwen kontan ou la” gen enpòtans. Ou pa bezwen konn sa pou ou di."
+            },
+            "2": {
+              "text": "Ou ekri l pita: “Mwen te di sa paske mwen renmen ou epi mwen te pè. Èske ou fache avè m?”",
+              "why": "Se onèt, men sa mete l nan pozisyon pou l konsole OU sou desizyon ou. Ou ka pale de santiman sa yo pita, ak yon granmoun ou fè konfyans oswa yon terapis. Avèk zanmi ou, kòmanse ak: “Mwen kontan ou la. Mwen la lè ou bezwen m.”"
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "Mouvman",
+        "sensory": "Sans",
+        "connection": "Koneksyon",
+        "creative": "Kreyatif",
+        "cognitive": "Kognitif",
+        "inhale": "Rale souf",
+        "exhale": "Lage souf",
+        "hold": "Kenbe"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "Fè yon ti mache 5 minit deyò"
+        },
+        "stretch": {
+          "label": "Detire kò ou dousman pandan 5 minit"
+        },
+        "pushwall": {
+          "label": "Pouse sou yon mi (pou lage tansyon)"
+        },
+        "run_stairs": {
+          "label": "Kouri monte desann eskalye a yon fwa"
+        },
+        "cold_water": {
+          "label": "Voye dlo frèt sou figi ou oswa sou ponyèt ou"
+        },
+        "ice_cube": {
+          "label": "Kenbe yon moso glas nan men ou"
+        },
+        "heavy_blanket": {
+          "label": "Vlope kò ou nan yon kouvèti lou"
+        },
+        "rain_sounds": {
+          "label": "Koute son lapli oswa son lanmè"
+        },
+        "safe_smell": {
+          "label": "Pran sant yon bagay ou renmen (krèm, manje, bouji)"
+        },
+        "text_friend": {
+          "label": "Voye yon tèks “m ap panse a ou” bay yon zanmi ou fè konfyans"
+        },
+        "hug_pet": {
+          "label": "Anbrase yon bèt kay oswa yon poupe twal"
+        },
+        "call_family": {
+          "label": "Rele yon manm fanmi ou santi ou an sekirite avè l"
+        },
+        "with_someone": {
+          "label": "Chita ak yon moun ou santi ou an sekirite avè l (pa bezwen pale)"
+        },
+        "playlist": {
+          "label": "Koute yon lis mizik ki kalme ou, youn ou konnen ki fè ou byen"
+        },
+        "doodle": {
+          "label": "Desine oswa griyonnen (san objektif, san règ)"
+        },
+        "journal": {
+          "label": "Ekri nenpòt sa ki nan tèt ou, menm yon sèl fraz"
+        },
+        "make": {
+          "label": "Fè yon bagay ak men ou (origami, fè gato, konstwi)"
+        },
+        "three_okay": {
+          "label": "Ekri 3 ti bagay ki anfòm kounye a"
+        },
+        "five_breaths": {
+          "label": "Pran 5 souf dousman (konte 4 lè ou rale, 4 lè ou lage)"
+        },
+        "will_pass": {
+          "label": "Raple tèt ou: “santiman sa a ap pase”"
+        },
+        "one_step": {
+          "label": "Chwazi yon ti bagay pou fè apre (yon sèl)"
+        }
+      },
+      "phaselabel": {
+        "0": "Rale souf",
+        "1": "Kenbe",
+        "2": "Lage souf"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "Nonmen 5 bagay ou ka WÈ bò kote ou kounye a.",
+          "helper": "Nenpòt bagay konte. Lanp lan. Kwen yon biwo. Yon nwaj."
+        },
+        "1": {
+          "prompt": "Nonmen 4 bagay ou ka SANTI sou kò ou.",
+          "helper": "Pye ou atè a. Twal chemiz ou. Van sou po ou."
+        },
+        "2": {
+          "prompt": "Nonmen 3 bagay ou ka TANDE.",
+          "helper": "Yon revèy. Machin nan lari. Pwòp souf ou."
+        },
+        "3": {
+          "prompt": "Nonmen 2 bagay ou ka PRAN SANT.",
+          "helper": "(Oswa bagay ou sonje sant yo, si pa gen anyen toupre ou.)"
+        },
+        "4": {
+          "prompt": "Nonmen 1 bagay ou ka GOUTE.",
+          "helper": "(Oswa dènye gòje dlo ou te bwè, oswa yon manje ou renmen anpil.)"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. Siy avètisman",
+          "sub": "Ki panse, santiman, oswa sitiyasyon ki fè m konnen yon vag difisil ap vini?"
+        },
+        "internal": {
+          "label": "2. Bagay mwen ka fè pou kont mwen (fason pou fè fas anndan m)",
+          "sub": "Bagay ki te ede m santi m yon ti kras pi byen, mwen ka fè san pèsonn."
+        },
+        "distract": {
+          "label": "3. Moun + kote ki chanje lide m (nan bon sans)",
+          "sub": "Zanmi pou m voye tèks, kote mwen santi m byen jis pou m la. SE PA pou sipò nan kriz — jis pou m pa panse a sa.",
+          "label_2": "3. Moun + kote ki ede m chanje lide"
+        },
+        "helpers": {
+          "label": "4. Moun mwen ka mande èd dirèkteman",
+          "sub": "Zanmi oswa fanmi ki konnen sa k ap pase, oswa mwen fè ase konfyans pou m di yo. Ekri non yo + kijan pou jwenn yo.",
+          "label_2": "4. Moun mwen ka mande èd"
+        },
+        "professionals": {
+          "label": "5. Pwofesyonèl + liy kriz",
+          "sub": "Terapis mwen (si m genyen youn), sikyat, doktè, konseye lekòl, plis liy kriz 24/7."
+        },
+        "environment": {
+          "label": "6. Fè anviwònman m pi an sekirite",
+          "sub": "Kisa mwen (oswa yon moun mwen fè konfyans) ka fè pou mete distans ant mwen ak nenpòt bagay mwen ta ka itilize pou fè tèt mwen mal? Sa a se etap ki gen plis prèv ki montre li mache."
+        },
+        "warning": {
+          "label": "1. Siy avètisman (panse, santiman, sitiyasyon)"
+        },
+        "coping": {
+          "label": "2. Fason pou fè fas mwen ka fè pou kont mwen"
+        },
+        "pros": {
+          "label": "5. Pwofesyonèl + liy kriz"
+        },
+        "safer": {
+          "label": "6. Fè anviwònman m pi an sekirite"
+        },
+        "0": {
+          "label": "5 bagay ou ka WÈ",
+          "prompt": "Gade toupatou. Nonmen 5 bagay ou wè kounye a. Presi — “kwen yon liv”, pa “yon liv”."
+        },
+        "1": {
+          "label": "4 bagay ou ka MANYEN",
+          "prompt": "Lonje men ou epi manyen 4 bagay diferan. Remake teksti a. Frèt oswa cho? Swa oswa graje?"
+        },
+        "2": {
+          "label": "3 bagay ou ka TANDE",
+          "prompt": "Koute. Nonmen 3 son diferan — yo ka pre oswa lwen, fò oswa dousman."
+        },
+        "3": {
+          "label": "2 bagay ou ka PRAN SANT",
+          "prompt": "Remake 2 sant. Si ou pa ka pran sant anyen, nonmen 2 sant ou sonje ou te renmen."
+        },
+        "4": {
+          "label": "1 bagay ou ka GOUTE",
+          "prompt": "Remake 1 gou nan bouch ou — sa dènye bwason oswa manje ou te pran kite, oswa jis gou lè a."
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 Kò"
+        },
+        "mind": {
+          "label": "🧠 Lespri"
+        },
+        "distract": {
+          "label": "🎮 Chanje lide"
+        },
+        "connect": {
+          "label": "🤝 Konekte"
+        },
+        "creative": {
+          "label": "🎨 Kreyatif"
+        },
+        "spirit": {
+          "label": "🌅 Espirityèl"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "Plan Sekirite Mwen",
+          "desc": "Plan 6 etap Stanley + Brown",
+          "stat": "{Count} etap ranpli"
+        },
+        "warning": {
+          "label": "Jounal Siy Avètisman Mwen",
+          "desc": "Swiv siy yo sou tan = modèl",
+          "stat": "{Count} anrejistre"
+        },
+        "arsenal": {
+          "label": "Asenal Mwen pou Fè Fas",
+          "desc": "Estrateji ki mache pou MWEN",
+          "stat": "{Count} sove"
+        },
+        "contacts": {
+          "label": "Kontak Sipò Mwen",
+          "desc": "Aksè rapid: kiyès pou rele ak kilè",
+          "stat": "{Count} moun"
+        },
+        "recovery": {
+          "label": "Nòt Rekiperasyon Mwen",
+          "desc": "Apre moman difisil — sa ki te mache",
+          "stat": "{Count} nòt"
+        },
+        "hope": {
+          "label": "Lis Espwa Mwen",
+          "desc": "Rezon pou kontinye. Chwa o aza.",
+          "stat": "{Count} rezon"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "Twous Sekirite Mwen"
+        },
+        "breath": {
+          "label": "Gid respirasyon"
+        },
+        "grounding": {
+          "label": "Ankraj 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "Tcheke detrès"
+        },
+        "whyMatters": {
+          "label": "Poukisa sa enpòtan"
+        },
+        "recognizeDepression": {
+          "label": "Rekonèt depresyon"
+        },
+        "crisisSigns": {
+          "label": "Siy avètisman kriz"
+        },
+        "qpr": {
+          "label": "Kesyone · Konvenk · Refere"
+        },
+        "whatToSay": {
+          "label": "Sa pou di"
+        },
+        "tellingAdult": {
+          "label": "Di yon granmoun ou fè konfyans"
+        },
+        "myths": {
+          "label": "Mit nou demanti"
+        },
+        "resources": {
+          "label": "Resous pou kriz"
+        },
+        "selfCare": {
+          "label": "Pran swen tèt ou"
+        },
+        "practice": {
+          "label": "Pratik"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "Respirasyon kare (4-4-4-4)"
+        },
+        "fourseven": {
+          "name": "Respirasyon kalm 4-7-8"
+        },
+        "equal": {
+          "name": "Respirasyon egal (6-6)"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "Li"
+        },
+        "breath": {
+          "label": "Gid respirasyon"
+        },
+        "ground": {
+          "label": "Ankraj 5-4-3-2-1"
+        },
+        "toolkit": {
+          "label": "Bwat zouti mwen"
+        },
+        "safety": {
+          "label": "Plan sekirite"
+        }
+      },
+      "print": {
+        "title": "Plan Sekirite Mwen",
+        "intro": "Bati avèk Stanley-Brown Safety Planning Intervention. Li pi itil lè ou revize l ak yon konseye oswa yon terapis.",
+        "empty": "(poko ranpli)",
+        "crisis_head": "Si ou an kriz kounye a:",
+        "crisis_body": "Rele oswa voye tèks bay {call} (24/7). Voye tèks {text}. Di yon granmoun ou fè konfyans.",
+        "created": "Kreye {date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "zones_of_regulation": "Zòn Regilasyon",
+        "positive_psychology": "Sikoloji Pozitif",
+        "coaching_tradition": "Tradisyon Coaching",
+        "trauma_informed": "Pran Twomatis an Kont",
+        "media_literacy": "Edikasyon sou Medya",
+        "contemplative": "Kontanplatif",
+        "trauma_informed_practice": "Pratik ki Pran Twomatis an Kont",
+        "philosophy_ethics": "Filozofi / Etik",
+        "social_work": "Travay Sosyal",
+        "person_centered_planning": "Planifikasyon ki Santre sou Moun nan",
+        "family_systems": "Sistèm Fanmi",
+        "self_determination_theory": "Teyori Otodetèminasyon",
+        "executive_function": "Fonksyon Egzekitif",
+        "bystander_intervention": "Entèvansyon Temwen",
+        "restorative_practices": "Pratik Restoratif",
+        "motivational_interviewing": "Entèvyou Motivasyonèl",
+        "place_based_education": "Edikasyon Baze sou Kote Ou Ye",
+        "harm_reduction": "Rediksyon Domaj",
+        "body_appreciation": "Apresyasyon Kò",
+        "occupational_therapy": "Terapi Okipasyonèl",
+        "grief_counseling": "Konsèy pou Dèy",
+        "neurodiversity_paradigm": "Paradigm Newodivèsite",
+        "suicide_prevention": "Prevansyon Swisid"
+      },
+      "tool": {
+        "zones": {
+          "label": "Zòn Emosyon",
+          "desc": "Idantifye zòn ou (ble, vèt, jòn, wouj) epi eksplore estrateji pou regle tèt ou."
+        },
+        "emotions": {
+          "label": "Eksploratè Emosyon",
+          "desc": "Bati vokabilè emosyonèl ou — idantifye santiman, ba yo non, epi evalye entansite yo."
+        },
+        "strengths": {
+          "label": "Chèchè Fòs",
+          "desc": "Dekouvri epi reflechi sou fòs pèsonèl ou, talan ou, ak kote ou ka grandi."
+        },
+        "viaStrengths": {
+          "label": "Fòs VIA",
+          "desc": "Yon triyaj pèsonèl senplifye 24 Fòs Karaktè VIA yo (Peterson ak Seligman, 2004), ak 6 vèti epi idantifikasyon fòs siyati ou yo. Pou sondaj ofisyèl gratis la, ale sou viacharacter.org. Pratik refleksyon, se pa yon zouti psikometrik."
+        },
+        "wheelOfLife": {
+          "label": "Wou Lavi",
+          "desc": "Grafik fil arenyen ak 8 domèn lavi, chak gen yon nòt soti 1 rive 10. Yon pòtre pwòp tèt ou ki montre kote lavi ou plen ak kote li mens kounye a. Soti nan tradisyon coaching (Meyer ane 1960 yo; Co-Active Coaching). Zouti euristik; se pa yon mezi psikometrik ki valide."
+        },
+        "perma": {
+          "label": "Byennèt PERMA",
+          "desc": "Tchèk pèsonèl sou senk domèn PERMA yo plis yon refleksyon sou Sante: Emosyon pozitif, Angajman, Relasyon, Sans, Reyalizasyon, ak Sante. 24 kesyon, rezilta an grafik ba, refleksyon pou chak domèn. Soti nan Seligman; mache ak Fòs VIA."
+        },
+        "coping": {
+          "label": "Bwat Zouti pou Fè Fas",
+          "desc": "Eksplore epi pratike estrateji pou fè fas — respirasyon, ankraj, mouvman, ak plis ankò."
+        },
+        "windowOfTolerance": {
+          "label": "Fenèt Tolerans",
+          "desc": "Vizyèl konsyans tèt ou ki pran twomatis an kont. Twa zòn aktivasyon (aktivasyon twò wo, fenèt, aktivasyon twò ba). Make siy pèsonèl ou pou chak zòn, sa ki deklanche ou, ak pratik ki fè ou retounen. Baze sou Siegel (1999); se estanda nan lekòl ki pran twomatis an kont."
+        },
+        "stressBucket": {
+          "label": "Bokit Estrès",
+          "desc": "Yon vizyèl kapasite. Sous estrès yo vide nan bokit la; pratik pou fè fas yo fè l koule soti. Gade si sa k ap antre ak sa k ap soti balanse. Zouti tradisyon CBT (Brabban ak Turkington 2002), yo itilize l nan NHS IAPT ak Mind UK. Li onèt sou sous estrès ki soti nan sistèm nan."
+        },
+        "tipp": {
+          "desc": "Kat konpetans DBT pou siviv yon kriz (Tanperati, egzèsis Entans, respirasyon ak ritm, relaksasyon misk an pè) pou detrès EGI. Li kalme kò a nan 30 segonn rive 10 minit anvan ou eseye soti ladan l ak panse. Konpetans fondamantal DBT pou Tolerans Detrès (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Bwat Zouti Anksyete",
+          "desc": "Konpetans ki baze sou CBT pou travay ak anksyete: psikoedikasyon, pyebwa enkyetid (enkyetid itil kont enkyetid ki pa itil), yon tan fikse pou enkyete, sispann imajine pi move bagay la, konpetans ankraj, ak yon envantè modèl pèsonèl ou. Soti nan Beck Institute, AACAP, ADAA. Mache ak Fenèt Tolerans ak Bokit Estrès."
+        },
+        "sleep": {
+          "label": "Dòmi ak Repo",
+          "desc": "Dòmi adolesan se yon kriz sante piblik. Raman adolesan jwenn 8-10 èdtan AAP rekòmande yo. Psikoedikasyon, tchèk pèsonèl, 8 obstak komen + sa ki mache pou chak, ak yon jounal dòmi. Soti nan AAP, CDC, NSF, rechèch Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Regilasyon Sansoryèl",
+          "desc": "Zouti ki afime newodivèsite pou konprann jan ou menm ou trete sansasyon atravè 8 sistèm sansoryèl yo. Bati yon pwofil pèsonèl, planifye yon rejim sansoryèl, idantifye akomodasyon lekòl. Langaj ki mete idantite an premye; bati sou Ayres / Dunn / rechèch moun otis dirije."
+        },
+        "bigFeelings": {
+          "label": "Gwo Santiman (Kòlè)",
+          "desc": "Psikoedikasyon ak devlopman konpetans espesyalman pou kòlè. Kòlè kòm enfòmasyon, se pa li ki pwoblèm nan; agresyon reyaktif se pyèj la. Bati sou tradisyon Coping Power Lochman + baz prèv CBT pou kòlè. Jounal traka, envantè deklanchè, pwen chwa a, fason pèsonalize pou kalme w."
+        },
+        "substancePsychoed": {
+          "label": "Itilizasyon Sibstans",
+          "desc": "Psikoedikasyon sou sibstans ki baze sou rediksyon domaj (alkòl, kanabis, nikotin, opyoyid, estimilan, benzo, alisinojèn). Risk pou sèvo adolesan. Edikasyon sou naloksòn. SE PA yon zouti depistaj, SE PA sèlman abstinans. Referans fò bay SAMHSA. Espas refleksyon ki aliyen ak Entèvyou Motivasyonèl."
+        },
+        "behavioralActivation": {
+          "label": "Aktivasyon Konpòtmantal",
+          "desc": "Planifye ti aktivite, fè yo, epi evalye yo pou metriz (ou te santi ou kapab) ak plezi (ou te renmen l). Remake sa ki mache pou ou epi chwazi yon pwochen etap ou ka jere. Aktivite planifikasyon sa a baze sou aktivasyon konpòtmantal; li pa bay ni evalye yon tretman terapi."
+        },
+        "mindfulness": {
+          "label": "Kwen Konsyans Plen",
+          "desc": "Egzèsis respirasyon gide, eskanè kò, ak aktivite konsyans plen."
+        },
+        "quietQuestions": {
+          "label": "Kesyon Trankil",
+          "desc": "Pratik chak semèn pou fouye anndan ou. Rete ak yon sèl kesyon ouvè pandan yon semèn antye. 20 kesyon ki chanje youn apre lòt sou atansyon, anvi, difikilte, koneksyon, ak jan ou ap devlope. Enspire pa tradisyon kesyon Quaker yo; layik epi li pa enpoze anyen."
+        },
+        "orientations": {
+          "label": "Oryantasyon",
+          "desc": "Fason pou Viv, Konpare. Uit tradisyon filozofik (Taoyis, Zen, Stoyisis, Egzistansyalis, etik Konfisyen, Ubuntu, relasyonalite Endijèn, Etik Swen) konpare sou gwo kesyon lavi. Li pa enpoze anyen; chak tradisyon gen yon panèl onèt “sa li pa ka fè byen”."
+        },
+        "thoughtRecord": {
+          "label": "Anrejistreman Panse CBT",
+          "desc": "Anrejistreman panse 7 kolòn ki soti nan Terapi Kognitif ak Konpòtmantal. Pase atravè yon moman difisil: sitiyasyon, emosyon, panse otomatik, prèv pou ak kont, panse balanse, nouvo nòt pou emosyon an. Li sove antre yo sou tan. Soti nan Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Tablo Pri-Benefis",
+          "desc": "Yon tablo 2x2 pou pran desizyon ki soti nan Terapi Konpòtmantal Dyalektik. Avantaj ak dezavantaj yon desizyon akoutèm ak alontèm, youn bò lòt. Itil lè emosyon ap pouse pou yon sèl opsyon. Soti nan Linehan."
+        },
+        "sfbt": {
+          "label": "Konsantre sou Solisyon",
+          "desc": "Terapi Kout ki Konsantre sou Solisyon: Kesyon Mirak la, Echèl, Chèche Eksepsyon, ak Konpliman. Li gade devan olye pou gade dèyè, li mande sa ki deja mache. Teknik konseye lekòl Ozetazini itilize plis. Soti nan de Shazer ak Berg."
+        },
+        "careConstellations": {
+          "label": "Konstelasyon Swen",
+          "desc": "Yon kat relasyon ki montre kiyès ki pran swen ou ak kiyès ou pran swen. Li refize ankadreman endividyalis oswa konsomatè “self-care” la. Gen ladan yon refleksyon filozofik serye sou Pran Swen Tèt Ou kont Self-Care (Foucault, epimeleia heautou grèk, Audre Lorde, eyodemonik kont edonik)."
+        },
+        "ecomap": {
+          "label": "Ekokat",
+          "desc": "Kat relasyon moun nan nan anviwònman li. Ou nan mitan; 12 gwo sistèm lavi yo ozalantou ou. Chak koneksyon gen nòt pou fòs, estrès, ak direksyon enèji. Zouti estanda travay sosyal depi Hartman (1978); yo itilize l nan IEP, evalyasyon fanmi, ak envantè lavi pèsonèl."
+        },
+        "circlesOfSupport": {
+          "label": "Sèk Sipò",
+          "desc": "Kat sèk relasyon youn anndan lòt: Entimite, Amitye, Patisipasyon, Echanj (peye). Li fè wè kiyès ki vrèman pwòch, menm lè se moun yo peye ki ranpli sèk anndan yo. Soti nan Forest ak Snow nan Inclusion Press."
+        },
+        "genogram": {
+          "label": "Jenogram",
+          "desc": "Kat fanmi sou twa jenerasyon ak senbòl estanda sistèm fanmi. Sèlman pou konprann tèt ou pèsonèlman (SE PA yon evalyasyon klinik). Baze sou teyori sistèm fanmi Bowen ak notasyon McGoldrick-Gerson-Petry. Gen ladan gid sekirite ki byen vizib."
+        },
+        "griefLoss": {
+          "label": "Dèy ak Pèt",
+          "desc": "Yon konpayon gide pou akonpaye tèt ou nan dèy. Lanmò yon moun oswa yon bèt, chanjman nan fanmi, pèdi zanmi, pèdi idantite, pèt ki pa klè — tout konte. Pase atravè kat travay dèy Worden yo, ekri yon lèt, planifye rityèl. Ankadreman sekirite fò ki voye w bay Konpayon Kriz / 988 pou dèy ki grav oswa konplike."
+        },
+        "traumaPsychoed": {
+          "label": "Konprann Twomatis",
+          "desc": "Psikoedikasyon sèlman (SE PA yon zouti depistaj). Sa twomatis ye ak sa li pa ye, newobyoloji an langaj senp, reyaksyon komen yo wè kòm adaptasyon, 6 prensip SAMHSA yo, tretman ki baze sou prèv. Pou elèv ak edikatè. Gen ladan ankadreman sekirite ki byen vizib sou poukisa depistaj san swivi pa an sekirite."
+        },
+        "bodyStory": {
+          "label": "Istwa Kò",
+          "desc": "Zouti pou aksepte kò ou epi viv nan kò ou. SE PA konsantre sou pwa, SE PA anyen ki gen rapò ak rejim, SE PA yon zouti depistaj. Bati sou apresyasyon kò Tylka, prensip manje entwitif, ak edikasyon sou medya. Enklizif pou tout kò, tout idantite jan, tout tay. Referans fò bay NEDA pou twoub manje."
+        },
+        "sourcesOfStrength": {
+          "label": "Sous Fòs",
+          "desc": "Make 8 faktè pwoteksyon ou. Eksplore sipò pwoteksyon ki enspire pa pwogram Sources of Strength. Kat gide pou tèt ou sa a se yon adaptasyon, se pa aplikasyon pwogram lekòl yo te evalye a."
+        },
+        "crisiscompanion": {
+          "label": "Konpayon Kriz",
+          "desc": "Sipò ant kanmarad ak konpetans pou prevansyon swisid: sa pou fè si ou menm oswa yon zanmi deprime, an kriz, oswa ap panse pou fè tèt li mal — rekonèt siy yo, sa pou di (ak sa pou pa di), pale ak yon granmoun ou fè konfyans, plis 988 ak yon plan sekirite pèsonèl. Gen yon avètisman sou kontni anvan ou antre. Aliyen ak NEDA, AFSP, Sources of Strength, ak 988. Se zouti sipò egi ki mache ak Sous Fòs."
+        },
+        "identitySupport": {
+          "label": "Sipò Idantite",
+          "desc": "Espas enklizif ki afime moun pou kesyon sou idantite jan, oryantasyon seksyèl, oryantasyon romantik, ak lòt kesyon idantite. Vokabilè, devlopman idantite, jwenn kominote, sekirite pou jèn trans, konsèy pou alye. Bati sou Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Vwa Andikap",
+          "desc": "Vrè defansè ki otis ak ki gen andikap ki te fòme, epi kritike, pratik sou andikap. Sitasyon, kontèks, ak yon lis lekti yo chwazi avèk swen. Bati pou moun domèn nan te aji SOU yo a vin nan mitan, olye pou yo rete sou kote nan yon zouti syans konpòtman. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Fikse Objektif",
+          "desc": "Fikse objektif SMART, swiv pwogrè ou, epi selebre etap enpòtan yo."
+        },
+        "howlTracker": {
+          "label": "Swivi HOWL",
+          "desc": "Evalyasyon pèsonèl sou Abitid Travay ak Aprantisaj (Habits of Work and Learning) pou tan Crew. Tchèk chak semèn, objektif chak trimès, grafik tandans, kesyon pou konvèsasyon Crew. Aliyen ak kad HOWL EL Education."
+        },
+        "onePageProfile": {
+          "label": "Pwofil Yon Paj",
+          "desc": "Pwofil pòtab ou ka enprime ki kenbe sou yon sèl paj. Twa seksyon: sa moun renmen epi admire nan mwen, sa ki enpòtan pou mwen, pi bon fason pou sipòte mwen. Dokiman planifikasyon ki santre sou moun nan pou reyinyon IEP, tranzisyon, ranplasan, oswa Crew. Baze sou fòma Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Fè Plan Aksyon). Uit kesyon youn apre lòt (Istwa Mwen, Rèv, Kochma, Kiyès Mwen Ye, Don, Bezwen, Plan Aksyon, Premye Pa). Vizyèl ki santre sou moun nan, pa Pearpoint, O'Brien, ak Forest nan Inclusion Press; yo itilize l anpil pou planifye tranzisyon."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Planifye Lòt Demen ak Espwa). Vizyèl pou planifye avni: uit etap soti nan Zetwal Nò alontèm ou, rekile jiska premye pa nan de semèn. Pearpoint, O'Brien, ak Forest nan Inclusion Press; mache ak MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Valè ak Aksyon",
+          "desc": "Triye sa ki konte, nonmen pi gwo valè ou yo, epi transfòme chak an yon ti aksyon konkrè semèn sa a. Soti nan Terapi Akseptasyon ak Angajman (Hayes); ankadreman DNA-V pou adolesan. Distenksyon ACT ant valè (direksyon) ak objektif (destinasyon)."
+        },
+        "careerCompass": {
+          "label": "Bousòl Karyè",
+          "desc": "Eksplore karyè atravè enterè ou. Yon tchèk pèsonèl RIASEC 36 kesyon ba ou twa premye lèt kòd Holland ou; gade karyè, 16 Gwoup Karyè federal yo, ak pwochen etap konkrè (jounen obsèvasyon, entèvyou enfòmasyon, CTE, aprantisaj metye). Bati sou kad Holland; li voye w bay O*NET Interest Profiler ofisyèl la sou mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Estidyo Defann Tèt Ou",
+          "desc": "Bati yon plan sipò lekòl konkrè pou kesyon IEP oswa 504, akomodasyon, chwa pou divilge, ak pou mande granmoun ou fè konfyans èd."
+        },
+        "perspective": {
+          "label": "Lantiy Pèspektiv",
+          "desc": "Gade sitiyasyon yo nan diferan pwen de vi — pratike anpati ak pran pèspektiv lòt moun."
+        },
+        "community": {
+          "label": "Kominote ak Kilti",
+          "desc": "Eksplore divèsite, konsyans kiltirèl, ak santiman apatenans nan kominote."
+        },
+        "conflict": {
+          "label": "Rezolisyon Konfli",
+          "desc": "Pratike yon konfli ki pa grav oswa ki imajinè ak pran pèspektiv, fraz ki kòmanse ak “mwen”, dezeskalad, ak chwa pou repare. Si yon moun pa an sekirite, fè yon granmoun antre olye pou negosye pou kont ou."
+        },
+        "social": {
+          "label": "Laboratwa Konpetans Sosyal",
+          "desc": "Pratike konpetans konvèsasyon, koute aktif, langaj kò, ak kowoperasyon."
+        },
+        "teamwork": {
+          "label": "Bati Travay an Ekip",
+          "desc": "Defi kolaborasyon ak eksplorasyon wòl nan yon ekip."
+        },
+        "dearMan": {
+          "desc": "Bati yon tèks pou yon demann difisil an sèt etap: Dekri, Eksprime, Afime, Ranfòse, Rete konsyan, Parèt konfyan, Negosye. Soti nan Efikasite Entèpèsonèl DBT (Linehan); tèks kominikasyon afimatif konseye lekòl itilize plis. Mache ak Estidyo Defann Tèt Ou."
+        },
+        "motivationalInterviewing": {
+          "label": "Entèvyou Motivasyonèl",
+          "desc": "Yon kad konvèsasyon pou ede yon moun (oswa tèt ou) reflechi sou yon chanjman. Aprann konpetans OARS (Kesyon ouvè, Afimasyon, Refleksyon, Rezime), twa echèl yo, ak Pale Chanjman. Soti nan Miller ak Rollnick; se fondasyon travay konseye lekòl ak sipò ant kanmarad."
+        },
+        "crewProtocols": {
+          "label": "Pwotokòl Crew",
+          "desc": "Yon bibliyotèk fòma gwoup estriktire pou tan Crew, peryòd konsèy, oswa sal klas prensipal: aktivite pou bati kominote, ouvèti, fèmti, sèk restoratif, pwotokòl refleksyon, fòma selebrasyon, ak gid pou konvèsasyon difisil. Plis yon rasanbleman tout kesyon Crew ki nan tout SEL Hub la. Bati sou EL Education Crew, Pratik Restoratif, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Relasyon An Sante",
+          "desc": "Espèk la (an sante / pa an sante / abizif) atravè 8 dimansyon nenpòt relasyon pwòch. Konsantman an detay, prevansyon vyolans nan relasyon amoure, sekirite + liy èd. Bati sou kad Loveisrespect / NDVH. Enklizif pou moun queer, newodivèjan, ak moun ki gen andikap."
+        },
+        "decisions": {
+          "label": "Laboratwa Desizyon",
+          "desc": "Travay sou senaryo lavi reyèl ak metòd kanpe-reflechi-aji."
+        },
+        "journal": {
+          "label": "Jounal Santiman",
+          "desc": "Jounal tchèk chak jou — note imè ou, deklanchè ou, ak refleksyon ou sou tan."
+        },
+        "safety": {
+          "label": "Sekirite ak Limit",
+          "desc": "Aprann sou limit pèsonèl, granmoun ou fè konfyans, ak sitiyasyon ki an sekirite ak sa ki pa an sekirite."
+        },
+        "landPlace": {
+          "label": "Tè ak Kote",
+          "desc": "Estidyo Jesyon Responsab pou yon relasyon kontinyèl ak tè kote ou rete a. Twa fil (istwa, ekoloji, prezan), refleksyon kritik sou rekonesans tè a kòm pratik olye de spektak, òganizasyon Wabanaki dirije kòm vwa otorite, ak yon jounal refleksyon prive."
+        },
+        "somaticReset": {
+          "label": "Rafrechi Kò ak Souf",
+          "desc": "Chwazi yon zòn nan kò ou epi swiv yon ti rafrechisman kout ou ka fè chita sou chèz, pou rete trankil, respire, oswa fè mouvman dous, ak yon tchèk prive anvan ak apre."
+        },
+        "restorativeCircle": {
+          "label": "Sèk Restoratif",
+          "desc": "Anime sèk restoratif ak sèk pou bati kominote ak nòm ki etabli, gidans yon granmoun, ak swen pou rasin kiltirèl. Se pa pou divilgasyon fòse oswa pou yon risk sekirite aktif."
+        },
+        "compassion": {
+          "label": "Konpasyon ak Pale ak Tèt Ou",
+          "desc": "Pratike konpasyon pou tèt ou, chanje jan ou gade kritik anndan ou, epi bati yon vwa anndan ki pi dous."
+        },
+        "friendship": {
+          "label": "Bati Amitye",
+          "desc": "Eksplore estil amitye, estrateji pou repare, ak modèl relasyon an sante."
+        },
+        "transitions": {
+          "label": "Tranzisyon nan Lavi",
+          "desc": "Jere chanjman tankou demenaje, nouvo lekòl, ak grandi."
+        },
+        "upstander": {
+          "label": "Fòmasyon Temwen Aktif",
+          "desc": "Aprann kanpe pou lòt moun an sekirite — soti temwen pasif pou vin temwen aktif."
+        },
+        "growthmindset": {
+          "label": "Mantalite Kwasans",
+          "desc": "Syans sèvo, chanje jan ou gade defi, ak bati rezilyans."
+        },
+        "execfunction": {
+          "label": "Fonksyon Egzekitif",
+          "desc": "Estrateji pou pati ki pi difisil yo lè w ap fè bagay yo: kòmanse travay, kenbe konsantrasyon, planifye davans, ak swiv tan."
+        },
+        "advocacy": {
+          "label": "Pratik Pale pou Tèt Ou",
+          "desc": "Repete tèks jeneral pou eksprime bezwen ou, mande sipò, ak pale fò nan sitiyasyon chak jou."
+        },
+        "civicAction": {
+          "label": "Aksyon Sivik ak Espwa",
+          "desc": "Travay sou santiman difisil ou genyen sou enjistis, bati pouvwa sivik ou, epi kiltive espwa atravè aksyon."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratwa Rezònman Etik",
+          "desc": "Eksplore dilèm etik jodi a atravè plizyè kad ak yon dyalòg sokratik ak IA."
+        },
+        "cultureExplorer": {
+          "label": "Eksploratè Kilti",
+          "desc": "Fè eksplorasyon pwofon sou kilti nan mond lan ak èd IA, ak ilistrasyon ak odyo."
+        },
+        "voicedetective": {
+          "label": "Detektif Vwa",
+          "desc": "Koute vwa epi idantifye emosyon nan ton an."
+        },
+        "practiceJourneys": {
+          "label": "Vwayaj Pratik (Pilòt)",
+          "desc": "Pratike mande sipò atravè kat rankont ki konekte. Reponn ak chwa, ak pwòp mo pa ou, oswa toulede. Kenbe yon jounal epi eseye yon lòt wout."
+        },
+        "sociallab": {
+          "label": "Jwe Wòl Konpetans Sosyal",
+          "desc": "Pratike sitiyasyon sosyal ak jwe wòl ak kanmarad IA nan dyalòg ki gen plizyè branch."
+        },
+        "peersupport": {
+          "label": "Antrenè Sipò Ant Kanmarad",
+          "desc": "Aprann konpetans koute OARS ak kilè pou jwenn èd yon granmoun."
+        },
+        "conflicttheater": {
+          "label": "Teyat Konfli",
+          "desc": "Pratike yon konfli fiktif ak de pèsonaj IA nan yon sèn imèsif. Jwe wòl beta sèlman; pa sèvi avè l pou fè medyasyon nan yon sitiyasyon kote gen mal k ap fèt kounye a."
+        },
+        "digitalWellbeing": {
+          "label": "Estidyo Byennèt Dijital",
+          "desc": "Tcheke relasyon ou ak rezo sosyal ak chatbot IA, bati pi bon abitid ak telefòn ou, refè tèt ou apre entimidasyon sou entènèt, detekte manipilasyon nan fil ou, jere relasyon ak chatbot an sekirite, epi jwenn èd lè ou bezwen l."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Konsyans Tèt Ou",
+          "desc": "Rekonèt emosyon, fòs, ak kote ou ka grandi"
+        },
+        "self-regulation": {
+          "label": "Regilasyon Tèt Ou",
+          "desc": "Regle emosyon, aktivasyon, atansyon; pratike fè fas"
+        },
+        "self-direction": {
+          "label": "Dirije Tèt Ou",
+          "desc": "Fikse objektif, pouvwa pou aji, fonksyon egzekitif, mantalite kwasans"
+        },
+        "inner-work": {
+          "label": "Travay Anndan",
+          "desc": "Pratik kontanplatif ak refleksyon"
+        },
+        "care-of-self": {
+          "label": "Pran Swen Tèt Ou",
+          "desc": "Konpasyon pou tèt ou, swen tèt ou nan relasyon ak lòt moun"
+        },
+        "social-awareness": {
+          "label": "Konsyans Sosyal",
+          "desc": "Anpati, pran pèspektiv lòt moun, ak apresye divèsite"
+        },
+        "relationship-skills": {
+          "label": "Konpetans Relasyon",
+          "desc": "Kominikasyon, travay an ekip, ak rezolisyon konfli"
+        },
+        "responsible-decision-making": {
+          "label": "Pran Desizyon Responsab",
+          "desc": "Chwa etik, evalye konsekans, ak rezoud pwoblèm"
+        },
+        "stewardship": {
+          "label": "Jesyon Responsab",
+          "desc": "Pran swen kominote, jistis, tè, ak avni"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Nonmen zòn kote ou ye kounye a epi chwazi yon estrateji regilasyon ki mache pou ou.",
+          "next": "Tcheke zòn ou, chwazi yon estrateji, epi sove si ou vle retounen sou li."
+        },
+        "coping": {
+          "purpose": "Chwazi yon estrateji pou fè fas epi pratike l yon fwa, ak yon moman klè pou kanpe.",
+          "next": "Chwazi yon estrateji ki baze sou kò a oswa sou ankraj, eseye l, epi remake si li te ede."
+        },
+        "journal": {
+          "purpose": "Ekri yon refleksyon prive epi remake modèl ou ta ka vle kenbe.",
+          "next": "Chwazi yon kesyon, ekri onètman, epi sove oswa ekspòte anvan ou fèmen."
+        },
+        "emotions": {
+          "purpose": "Bati vokabilè emosyonèl ou epi nonmen sa w ap santi ak plis presizyon.",
+          "next": "Chwazi yon santiman, evalye entansite l, epi chwazi mo ki pi byen dekri l."
+        },
+        "mindfulness": {
+          "purpose": "Fè yon poz, respire, epi pratike atansyon san ou pa bezwen ekri anyen.",
+          "next": "Chwazi yon ti pratik kout, swiv li jiska la fen, epi remake sa ki chanje."
+        },
+        "somaticReset": {
+          "purpose": "Sèvi ak yon tchèk prive sou zòn kò ou pou chwazi yon ti rafrechisman kout ou ka fè chita sou chèz.",
+          "next": "Chwazi yon zòn nan kò ou, eseye yon opsyon pou rete trankil, respire, oswa fè mouvman dous, epi remake sa ki chanje."
+        },
+        "thoughtRecord": {
+          "purpose": "Ralanti devan yon panse difisil epi chèche yon pwen de vi ki pi balanse.",
+          "next": "Nonmen sitiyasyon an, evalye santiman an, epi teste panse a ak prèv."
+        },
+        "anxietyToolkit": {
+          "purpose": "Triye enkyetid ou, diminye fòs anksyete a, epi chwazi yon pwochen etap pratik.",
+          "next": "Chwazi enkyetid ki pi fò a, eseye yon estrateji, epi sove plan an si li ede."
+        },
+        "sleep": {
+          "purpose": "Remake sa ki anpeche ou dòmi epi chwazi yon abitid repo pou eseye apre.",
+          "next": "Tcheke sa k ap bloke w, chwazi yon ti chanjman, epi retounen sou li pita."
+        },
+        "goals": {
+          "purpose": "Transfòme yon entansyon an yon pwochen aksyon konkrè ki reyalis.",
+          "next": "Ekri yon objektif, chwazi yon premye etap, epi sove plan an anvan ou fèmen."
+        },
+        "friendship": {
+          "purpose": "Reflechi sou bezwen ou nan amitye, apatenans, ak chwa ou fè ak kanmarad.",
+          "next": "Chwazi yon sitiyasyon amitye epi idantifye yon pwochen jès ki janti."
+        },
+        "conflict": {
+          "purpose": "Konprann yon konfli epi prepare yon repons ki konsantre sou reparasyon.",
+          "next": "Nonmen sa ki te pase, konsidere toude bò yo, epi chwazi yon aksyon pou repare."
+        },
+        "safety": {
+          "purpose": "Kreye yon plan sekirite pratik epi idantifye sipò ou fè konfyans.",
+          "next": "Ajoute siy avètisman, etap pou fè fas, ak moun pou kontakte; sove anvan ou fèmen."
+        },
+        "crisiscompanion": {
+          "purpose": "Sèvi ak yon demach sipò estriktire lè emosyon yo santi yo ijan oswa danjere.",
+          "next": "Chwazi opsyon sipò ki pi pre a epi fè yon granmoun ou fè konfyans oswa yon sèvis kriz antre lè sa nesesè."
+        },
+        "conflicttheater": {
+          "purpose": "Pratike yon sèn konfli fiktif epi teste langaj restoratif san ou pa trete zouti a tankou yon medyasyon.",
+          "next": "Chwazi yon sèn fiktif, eseye yon repons, epi pale sou sa ki ta bezwen sipò yon granmoun nan lavi reyèl."
+        },
+        "restorativeCircle": {
+          "purpose": "Planifye oswa anime yon pwosesis gwoup restoratif ak nòm klè ak gidans yon granmoun.",
+          "next": "Fikse akò sèk la an premye, epi chwazi yon kesyon; pa janm egzije divilgasyon an piblik."
+        },
+        "strengths": {
+          "next": "Chwazi fòs ki sanble ak ou, epi jwenn yon moman reyèl nan trimès sa a ki montre chak fòs."
+        },
+        "viaStrengths": {
+          "purpose": "Sèvi ak yon triyaj pèsonèl ki enspire pa VIA kòm aktivite refleksyon, se pa kòm yon evalyasyon fòmèl.",
+          "next": "Triye fòs yo, remake modèl, epi ekri yon egzanp ki montre rezilta a nan lavi reyèl."
+        },
+        "perma": {
+          "purpose": "Pran yon foto refleksyon sou byennèt ou atravè domèn PERMA yo plis Sante.",
+          "next": "Sèvi ak foto sa a pou chwazi yon konvèsasyon oswa yon ti eksperyans, se pa pou mete etikèt sou tèt ou."
+        },
+        "advocacy": {
+          "purpose": "Pratike langaj chak jou pou eksprime bezwen ou epi mande sipò.",
+          "next": "Chwazi yon sitiyasyon, ekri yon ti demann kout, epi deside kiyès ki ta ka ede."
+        },
+        "selfAdvocacy": {
+          "purpose": "Bati yon plan sipò lekòl konkrè pou IEP, 504, akomodasyon, oswa chwa pou divilge.",
+          "next": "Chwazi yon bezwen sipò, rasanble kesyon ou yo, epi idantifye yon granmoun ou fè konfyans pou mete ladan."
+        },
+        "crewProtocols": {
+          "next": "Gade dapre objektif, chwazi yon pwotokòl pou jodi a, epi note nan Plan Crew Mwen kilè w ap fè l."
+        },
+        "perspective": {
+          "next": "Chwazi yon sitiyasyon, pran pwen de vi lòt moun nan an premye, epi di sa ou ta fè yon lòt jan."
+        },
+        "windowOfTolerance": {
+          "next": "Ajoute yon siy nan chak twa zòn ou yo, epi sèvi ak “Tchèk” pou plase jounen jodi a."
+        },
+        "sensoryRegulation": {
+          "next": "Kòmanse ak “Kisa sansoryèl ye?”, epi make sistèm ki fò oswa ki fèb pou ou."
+        },
+        "execfunction": {
+          "next": "Ale nan “Kòmanse” epi chwazi yon jès pou demare jodi a, epi ale nan “Kenbe” pou chwazi kote w ap note bagay yo."
+        },
+        "growthmindset": {
+          "next": "Louvri “Chanje Pèspektiv”, ekri panse fèmen an, epi transfòme l an yon panse presi ou ka travay avè l."
+        },
+        "dearMan": {
+          "next": "Ekri demann ou an yon sèl fraz, ekri sèt etap yo, epi repete l yon fwa."
+        },
+        "howlTracker": {
+          "next": "Anrejistre yon “Pouls”, epi fè Tchèk chak semèn nan: evalye chak HOWL epi ajoute yon egzanp presi."
+        },
+        "peersupport": {
+          "next": "Chwazi de kesyon ouvè ou ta ka poze yon zanmi, epi eseye youn sou yon sitiyasyon fiktif nan onglè pratik la."
+        },
+        "upstander": {
+          "next": "Li echèl kouraj la nan “Jès” epi chwazi de pi piti jès ou ta ka vrèman fè semèn sa a."
+        },
+        "digitalWellbeing": {
+          "next": "Fè Tchèk Pèsonèl la onètman, epi chwazi yon abitid nan Bwat Zouti a ak yon limit ou fikse davans."
+        },
+        "teamwork": {
+          "next": "Gade “Wòl”, epi ekri yon Plan Kominikasyon pou yon vrè gwoup: kiyès ki fè kisa, ki kote, ak pou ki lè."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Kòmanse isit la",
+        "name_it": "Nonmen l",
+        "calm_now": "Kalme kounye a",
+        "body_reset": "Rafrechi kò",
+        "make_a_plan": "Fè yon plan",
+        "understand_patterns": "Konprann modèl yo",
+        "practice_repair": "Pratike repare",
+        "role_play": "Jwe wòl",
+        "facilitated_group": "Gwoup ak animatè",
+        "reflect": "Reflechi",
+        "practice_speaking_up": "Pratike pale fò",
+        "make_a_support_plan": "Fè yon plan sipò",
+        "urgent_support": "Sipò ijan",
+        "get_support": "Jwenn sipò",
+        "move_gently": "Avanse dousman",
+        "learn_not_diagnose": "Aprann, pa fè dyagnostik",
+        "learn_and_get_support": "Aprann epi jwenn sipò",
+        "check_boundaries": "Tcheke limit yo",
+        "explore_identity": "Eksplore idantite",
+        "practice_body_respect": "Pratike respè pou kò",
+        "map_carefully": "Fè kat la avèk atansyon",
+        "understand_needs": "Konprann bezwen yo"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Nonmen sa k ap pase anvan ou chwazi yon estrateji."
+        },
+        "emotions": {
+          "note": "Bati mo presi pou santiman epi remake entansite yo."
+        },
+        "coping": {
+          "note": "Eseye yon estrateji kò oswa ankraj, epi remake sa ki chanje."
+        },
+        "mindfulness": {
+          "note": "Yon poz ak ti kras ekriti pou respirasyon, atansyon, oswa konsyans kò."
+        },
+        "somaticReset": {
+          "note": "Chwazi yon zòn nan kò ou, epi eseye yon ti pratik kout pou rete trankil, respire, oswa fè mouvman dous. Yon seleksyonè kontra ou ka itilize ak klavye kenbe chak vizyèl fasil pou jere sou ti ekran. Vizyèl yo gen ladan yon Vag k ap Koule ki mete ANTRE · MONTE ak yon liy plen ak yon mak won, SOTI · DESANN ak yon liy pwentiye ak yon mak dyaman, ak AN POZ ak ba poz; yon Flè k ap Louvri ki mete ANTRE · LOUVRI ak kontou petal plen ak yon sant won, SOTI · ADOUSI ak kontou pwentiye ak yon sant dyaman, ak AN POZ ak ba poz nan sant la; yon Orizon Ankraj ki mete ANTRE · MONTE ak yon kontou solèy plen ak yon sant sèk, SOTI · DESANN ak yon kontou solèy pwentiye ak yon sant dyaman, ak AN POZ ak ba poz sou solèy la; yon wout an liy dwat previzib ki make direksyon, ak etikèt ANTRE ak SOTI dirèk, sib ANTRE won ak sib SOTI dyaman, yon tras ki soti nan pwen depa aktif la, ak yon pwochen destinasyon ki gen kontou; ak yon Òbit Souf an de pati ak ark faz plen ak pwentiye ki vin pi epè lè yo aktif, yon bag santral ki gen menm modèl ak faz la, etikèt ANTRE ak SOTI dirèk, yon senbòl santral pou eta an poz, yon pwochen pwen pasaj ki gen kontou, yon mak an fòm faz ki vire nan direksyon zegwi mont, yon kat ritm ki gen kòd fòm, ak siy faz pou lektè ekran. Elèv yo ka eseye yon souf mouvman anvan kwonomèt la kòmanse, epi agrandi, kanpe, oswa etenn gid la. Nan Vi Trankil, vizyèl agrandi a vin tounen yon bouton kòmanse/poz ou ka itilize ak klavye ak manyen. Ou ka kache dekont lan; mo gidans yo ka konplè, faz sèlman, oswa kache; epi kontaj souf ak nòt chif yo opsyonèl.",
+          "boundary": "Sa a se pa yon tretman ni yon dyagnostik. Kenbe mouvman yo piti epi san doulè; kanpe si ou gen doulè, tèt vire, oswa pèt sansasyon, epi di yon granmoun ou fè konfyans oswa yon pwofesyonèl sante sa."
+        },
+        "anxietyToolkit": {
+          "note": "Separe enkyetid ak aksyon epi chwazi yon pwochen etap pratik."
+        },
+        "windowOfTolerance": {
+          "note": "Make siy aktivasyon ak sipò sou tan; se pa yon dyagnostik."
+        },
+        "stressBucket": {
+          "note": "Gade presyon ak sipò yo ansanm, menm presyon ki pa anba kontwòl ou."
+        },
+        "bigFeelings": {
+          "note": "Sèvi ak kòlè kòm enfòmasyon epi planifye yon poz ki pi an sekirite oswa yon reparasyon."
+        },
+        "conflict": {
+          "note": "Pi bon pou pratike konfli ki pa grav oswa ki imajinè.",
+          "boundary": "Si gen menas, fòse moun, entimidasyon, abi, oswa yon diferans pouvwa ki pa an sekirite, fè yon poz epi fè yon granmoun ou fè konfyans antre olye pou negosye pou kont ou."
+        },
+        "conflicttheater": {
+          "note": "Pratik imèsif beta ak pèsonaj fiktif; pa sèvi avè l pou fè medyasyon nan yon sitiyasyon kote gen mal k ap fèt kounye a.",
+          "boundary": "Vrè menas, abi, oswa entimidasyon bezwen sipò yon granmoun ak yon repons sekirite, se pa yon egzèsis jwe wòl."
+        },
+        "restorativeCircle": {
+          "note": "Sèvi avè l ak nòm sèk ki etabli ak yon granmoun kòm animatè.",
+          "boundary": "Pa sèvi ak yon sèk pou fòse yon moun divilge bagay an piblik oswa pou jere yon risk sekirite aktif."
+        },
+        "strengths": {
+          "note": "Refleksyon ouvè sou fòs, san nòt, san klasman, san dyagnostik."
+        },
+        "viaStrengths": {
+          "note": "Yon triyaj pèsonèl pou refleksyon, se pa sondaj ofisyèl VIA a ni yon rezilta psikometrik."
+        },
+        "perma": {
+          "note": "Yon foto byennèt pou ankouraje konvèsasyon, se pa yon evalyasyon sante mantal."
+        },
+        "advocacy": {
+          "note": "Tèks jeneral ak repetisyon pou eksprime bezwen ak mande sipò."
+        },
+        "selfAdvocacy": {
+          "note": "Sèvi avè l pou planifikasyon konkrè IEP, 504, akomodasyon, divilgasyon, oswa sipò lekòl."
+        },
+        "crisiscompanion": {
+          "note": "Yon gid sipò pou ou oswa yon zanmi; se pa yon zouti depistaj kriz ni yon ranplasman pou yon granmoun.",
+          "boundary": "Si nenpòt moun ta ka an danje imedya oswa ta ka aji sou panse pou fè tèt li mal, kanpe la a epi kontakte yon granmoun ou fè konfyans oswa yon sèvis ijans/kriz kounye a."
+        },
+        "safety": {
+          "note": "Aprann limit ak etap pou jwenn yon granmoun ou fè konfyans; sa a se pa yon tès pou konnen si yon sitiyasyon an sekirite.",
+          "boundary": "Si ou an danje imedya oswa si yon moun ap fè ou mal, kanpe epi kontakte yon granmoun ou fè konfyans oswa yon sèvis ijans kounye a."
+        },
+        "griefLoss": {
+          "note": "Yon konpayon prive pou dèy ak pèt; sote nenpòt bagay ki santi l twòp.",
+          "boundary": "Si dèy la santi l twò lou pou sipòte, si ou pa santi ou an sekirite, oswa si yon lòt moun an risk, fè yon granmoun ou fè konfyans oswa yon sèvis kriz antre."
+        },
+        "traumaPsychoed": {
+          "note": "Psikoedikasyon sou reyaksyon a twomatis; se pa yon zouti depistaj ni yon tretman.",
+          "boundary": "Ou pa bezwen divilge okenn twomatis isit la. Fè yon poz epi chèche yon granmoun ou fè konfyans oswa yon konseye si kontni an fè yon bagay ki pa an sekirite remonte."
+        },
+        "substancePsychoed": {
+          "note": "Enfòmasyon ak refleksyon sou rediksyon domaj; se pa yon zouti depistaj ni yon pèmisyon pou itilize sibstans.",
+          "boundary": "Pa sèvi ak zouti sa a pou yon surdoz oswa yon sitiyasyon medikal ijan; kontakte sèvis ijans oswa yon granmoun ou fè konfyans."
+        },
+        "healthyRelationships": {
+          "note": "Eksplore konsantman ak modèl relasyon san ou pa mete etikèt sou yon moun oswa yon relasyon.",
+          "boundary": "Si yon relasyon gen menas, fòse moun, oswa vyolans, chèche èd yon granmoun; pa konfwonte yon moun pou kont ou."
+        },
+        "identitySupport": {
+          "note": "Refleksyon ki afime ou ak sipò kominote; pataje se opsyonèl.",
+          "boundary": "Kenbe enfòmasyon pèsonèl ou prive epi fè yon granmoun ou fè konfyans antre si ou pa santi ou an sekirite."
+        },
+        "bodyStory": {
+          "note": "Apresyasyon kò ak edikasyon sou medya; se pa yon evalyasyon pou pèdi pwa ni pou twoub manje.",
+          "boundary": "Si manje, imaj kò ou, oswa egzèsis santi yo pa an sekirite oswa y ap pran tout tèt ou, pale ak yon granmoun ou fè konfyans oswa yon pwofesyonèl sante."
+        },
+        "genogram": {
+          "note": "Refleksyon pèsonèl sou fanmi; se pa yon evalyasyon klinik, epi pataje se opsyonèl.",
+          "boundary": "Sote detay fanmi ki pa santi yo an sekirite oswa ki prive; mande yon granmoun ou fè konfyans sipò."
+        },
+        "sensoryRegulation": {
+          "note": "Bati yon pwofil sansoryèl ak akomodasyon; se pa yon dyagnostik.",
+          "boundary": "Chwazi sipò ki santi yo an sekirite pou ou; pataje akomodasyon sèlman lè ou vle."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Tchèk Maten",
+          "desc": "Kòmanse jounen an ak yon tchèk imè, respirasyon, ak fikse objektif"
+        },
+        "calm_down": {
+          "name": "Kwen pou Kalme",
+          "desc": "Estrateji regilasyon pou lè emosyon yo monte"
+        },
+        "conflict_unit": {
+          "name": "Inite Rezolisyon Konfli",
+          "desc": "Pratike rezoud dezakò epi bati konpetans pou repare"
+        },
+        "empathy_week": {
+          "name": "Semèn Anpati ak Pèspektiv",
+          "desc": "Bati anpati atravè pran pèspektiv lòt moun ak konsyans kiltirèl"
+        },
+        "decision_making": {
+          "name": "Plonje nan Pran Desizyon",
+          "desc": "Pratike rezònman etik ak chwa responsab"
+        },
+        "self_discovery": {
+          "name": "Vwayaj pou Dekouvri Tèt Ou",
+          "desc": "Eksplore kiyès ou ye — fòs, emosyon, ak mantalite kwasans"
+        },
+        "friendship": {
+          "name": "Amitye ak Konpetans Sosyal",
+          "desc": "Bati amitye an sante ak konpetans kominikasyon"
+        },
+        "transitions": {
+          "name": "Travèse Chanjman",
+          "desc": "Sipòte elèv yo pandan tranzisyon nan lavi ak nouvo eksperyans"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Remake sa ou bezwen epi chwazi yon pwochen etap ou ka jere.",
+          "model": "Mwen santi m ajite. Mwen ka eseye detire kò m, epi chwazi premye pati travay mwen.",
+          "practice": "Nonmen yon santiman, lonje dwèt sou yon chwa, oswa remake an silans. Eseye yon sipò epi chwazi yon ti objektif.",
+          "reflect": "Kisa ou te remake? Kisa ou ta kenbe oswa chanje?",
+          "transfer": "Lè pwochen leson an kòmanse, mwen ka eseye ____. Si m bezwen èd, mwen ka mande ____."
+        },
+        "calm_down": {
+          "goal": "Eksplore yon sipò ki mache ak kò ou ak moman sa a.",
+          "model": "Pratik respirasyon pa santi l itil jodi a. Mwen ka eseye gade ozalantou sal la oswa mande yon moun rete avè m.",
+          "practice": "Chwazi yon sèl estrateji ki konfòtab. Chita, gade, oswa pran yon poz, se opsyon ki valab.",
+          "reflect": "Èske li te ede, èske anyen pa t chanje, oswa èske li pa t konfòtab? Ou ka kanpe oswa chwazi yon lòt fason.",
+          "transfer": "Lè m remake ____, mwen ka eseye ____ oswa mande ____ sipò."
+        },
+        "conflict_unit": {
+          "goal": "Konsidere pèspektiv yo epi repete yon repons respektye pou yon dezakò chak jou.",
+          "model": "Nou toude vle menm materyèl la. Mwen ka mande w sa ou bezwen, eksplike bezwen pa m, epi pwopoze pou nou pran tou.",
+          "practice": "Sèvi ak yon dezakò envante ki pa grav. Repete yon kesyon pou koute ak yon pwochen etap ki posib.",
+          "reflect": "Bezwen kiyès repons lan te reponn? Kisa ki ta ka bezwen chanje?",
+          "transfer": "Nan yon dezakò ki an sekirite, mwen ka ____. Pou menas, entimidasyon, oswa fòse moun, mwen ka mande yon granmoun mwen fè konfyans èd."
+        },
+        "empathy_week": {
+          "goal": "Eksplore yon lòt pèspektiv san ou pa sipoze ou konnen kijan yon moun santi l.",
+          "model": "Moun nan pa pale. Li ta ka fatige oswa l ap reflechi; mwen ka mande l olye pou m deside pou li.",
+          "practice": "Sèvi ak yon egzanp fiktif. Nonmen de pèspektiv ki posib ak yon kesyon respektye ou ta ka poze.",
+          "reflect": "Kisa ou konnen, e kisa w ap devine? Kijan ou ta ka verifye?",
+          "transfer": "Anvan m fè yon sipozisyon semèn sa a, mwen ka mande ____."
+        },
+        "decision_making": {
+          "goal": "Konpare chwa yo dapre efè yo sou ou menm ak sou lòt moun.",
+          "model": "Anvan m poste yon foto gwoup, mwen ka mande pèmisyon epi reflechi sou kiyès ki ta ka wè l.",
+          "practice": "Chwazi yon desizyon envante. Konpare de opsyon, efè ki posib, ak yon moun ki ta ka ede.",
+          "reflect": "Ki enfòmasyon ki manke? Èske gen yon opsyon ki pi an sekirite oswa ki pi jis?",
+          "transfer": "Anvan m deside sou ____, mwen ka fè yon poz pou tcheke ____."
+        },
+        "self_discovery": {
+          "goal": "Rekonèt yon fòs epi chwazi yon fason pou sèvi avè l ak sipò.",
+          "model": "Mwen poze kesyon ki itil. Mwen ka sèvi ak fòs sa a lè yon travay pa klè epi mande yon egzanp.",
+          "practice": "Chwazi yon fòs ki sanble ak ou, oswa ak yon pèsonaj fiktif. Bay yon egzanp fòs sa a an aksyon.",
+          "reflect": "Kisa ki te ede fòs sa a parèt? Ki sipò ki ta fè pwochen etap la posib?",
+          "transfer": "Mwen ka sèvi ak ____ lè ____. Yon moun oswa yon resous ki ta ka ede se ____."
+        },
+        "friendship": {
+          "goal": "Pratike yon kominikasyon ki respekte bezwen ou ak limit lòt moun.",
+          "model": "Mwen ka envite yon moun vin jwenn nou epi aksepte chwa li si li di non.",
+          "practice": "Repete yon envitasyon, yon kesyon pou koute, oswa yon limit respektye. Pale, ekri, oswa AAC, tout konte.",
+          "reflect": "Èske chak moun te gen yon vrè chwa? Kisa ki ta ka fè entèraksyon an pi akeyan?",
+          "transfer": "Nan yon entèraksyon ki an sekirite semèn sa a, mwen ka eseye ____ epi remake ____."
+        },
+        "transitions": {
+          "goal": "Idantifye sa k ap chanje, sa ki ka rete estab, ak yon sous sipò.",
+          "model": "Yon nouvo klas fè m santi m pa sèten. Mwen ka jwenn sal la davans epi mande kiyès ki ka ede.",
+          "practice": "Chwazi yon chanjman reyèl oswa fiktif. Nonmen yon bagay ki pa sèten, yon sipò ki estab, ak yon ti pwochen etap.",
+          "reflect": "Ki pati ki anba kontwòl ou? Ki èd oswa ki akomodasyon ki ta itil?",
+          "transfer": "Anvan chanjman an, mwen ka ____. Si plan an bezwen chanje, mwen ka ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Endividyèl oswa an gwoup",
+          "cue": "Premye tchèk ki itil anvan nenpòt pataj."
+        },
+        "emotions": {
+          "format": "Endividyèl oswa an pè",
+          "cue": "Bon echofman pou vokabilè."
+        },
+        "coping": {
+          "format": "Endividyèl oswa an gwoup",
+          "cue": "Pi bon pou yon rafrechisman regilasyon."
+        },
+        "mindfulness": {
+          "format": "Tout klas la",
+          "cue": "Opsyon regilasyon ak ti kras ekriti."
+        },
+        "somaticReset": {
+          "format": "Endividyèl oswa tout klas la",
+          "cue": "Seleksyonè vizyèl kontra a kenbe chak gid disponib san yon kadriyaj bouton ki twò chaje. Òbit Souf la mete ark plen ak pwentiye ansanm ak yon faz aktif ki pi epè, yon bag santral ki koresponn, plen oswa pwentiye, ak etikèt ANTRE ak SOTI dirèk; sant li chanje soti nan yon pwen pou vin ba poz lè li an poz, e dyaman oswa bag li ki gen kontou a montre pwochen pasaj faz la, pandan mak won oswa dyaman li ki vire nan direksyon zegwi mont, dyaman pasaj la, bag retou a, ti ba pou rale souf yo, ak pwen vid pou lage souf yo kenbe faz la ak kontaj opsyonèl la lizib san koulè. Kite elèv yo eseye yon souf mouvman anvan kwonomèt la, oswa chwazi Imobil. Ofri mo gidans konplè, faz sèlman, oswa kache. Vi Trankil fè vizyèl agrandi a tounen yon bouton kòmanse/poz dirèk. Vag k ap Koule a sèvi ak ANTRE · MONTE ak yon liy plen ak yon mak won, SOTI · DESANN ak yon liy pwentiye ak yon mak dyaman, ak ba poz pou yon sesyon an poz. Flè k ap Louvri a sèvi ak ANTRE · LOUVRI ak kontou petal plen ak yon sant won, SOTI · ADOUSI ak kontou pwentiye ak yon sant dyaman, ak ba poz nan sant la pou yon sesyon an poz. Orizon Ankraj la sèvi ak ANTRE · MONTE ak yon kontou solèy plen ak yon sant sèk, SOTI · DESANN ak yon kontou solèy pwentiye ak yon sant dyaman, ak ba poz sou solèy la lè li an poz. Wout Souf la sèvi ak yon sib ANTRE won, yon sib SOTI dyaman, yon tras ki soti nan pwen depa aktif la, ak yon pwochen destinasyon ki gen kontou pou direksyon an pa depann de koulè. Ofri siy faz pou lektè ekran, ansanm ak chwa pou kache dekont, kache gidans, mouvman imobil, san vizyèl, respirasyon natirèl, ak san chif; pa janm egzije nòt oswa eksplikasyon sou sansasyon nan kò."
+        },
+        "journal": {
+          "format": "Endividyèl",
+          "cue": "Refleksyon prive. Pataje ta dwe opsyonèl."
+        },
+        "goals": {
+          "format": "Endividyèl oswa peryòd konsèy",
+          "cue": "Bon etap pou fèmen apre refleksyon."
+        },
+        "conflict": {
+          "format": "An pè oswa ti gwoup",
+          "cue": "Prezante nòm yo anvan jwe wòl."
+        },
+        "restorativeCircle": {
+          "format": "Sèk",
+          "cue": "Sèvi avè l ak nòm sèk ki etabli."
+        },
+        "peersupport": {
+          "format": "Pratik an pè",
+          "cue": "Fò pou repete konpetans koute."
+        },
+        "perspective": {
+          "format": "An pè oswa an gwoup",
+          "cue": "Bon pon pou anpati anvan diskisyon."
+        },
+        "digitalWellbeing": {
+          "format": "Endividyèl oswa peryòd konsèy",
+          "cue": "Itil anvan ou fikse nòm sou telefòn oswa IA."
+        },
+        "sleep": {
+          "format": "Endividyèl",
+          "cue": "Bon pou inite sante nan peryòd konsèy."
+        },
+        "safety": {
+          "format": "Endividyèl",
+          "cue": "Gade davans; evite divilgasyon fòse."
+        },
+        "crisiscompanion": {
+          "format": "Endividyèl",
+          "cue": "Pou konpetans sipò ijan, se pa yon devwa klas."
+        },
+        "griefLoss": {
+          "format": "Endividyèl",
+          "cue": "Gade davans; sèvi ak altènativ ak opsyon pou pa patisipe."
+        },
+        "identitySupport": {
+          "format": "Endividyèl",
+          "cue": "Sèvi avè l ak respè pou vi prive ak opsyon pou pa patisipe."
+        },
+        "traumaPsychoed": {
+          "format": "Endividyèl oswa gide pa yon edikatè",
+          "cue": "Psikoedikasyon sèlman; ofri opsyon pou pa patisipe ak yon fason pou jwenn yon granmoun ou fè konfyans."
+        },
+        "substancePsychoed": {
+          "format": "Endividyèl oswa leson sante",
+          "cue": "Gade davans ankadreman rediksyon domaj la epi bay sipò granmoun/medikal."
+        },
+        "healthyRelationships": {
+          "format": "Endividyèl oswa leson sante",
+          "cue": "Gade davans langaj sou konsantman ak sekirite; pa janm egzije divilgasyon pèsonèl."
+        },
+        "bodyStory": {
+          "format": "Endividyèl",
+          "cue": "Ankadreman respè pou kò; ofri opsyon pou pa patisipe epi evite diskisyon ki konsantre sou pwa."
+        },
+        "genogram": {
+          "format": "Endividyèl",
+          "cue": "Refleksyon sou fanmi sèlman; pataje ta dwe opsyonèl."
+        },
+        "sensoryRegulation": {
+          "format": "Endividyèl oswa planifikasyon sipò",
+          "cue": "Sèvi ak langaj ki afime idantite epi kite elèv yo chwazi sa pou yo pataje."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Tchèk maten nan peryòd konsèy",
+          "format": "Tout klas la",
+          "focus": "Imè, souf, yon pwochen etap",
+          "studentView": "Elèv yo tcheke zòn yo an prive, eseye yon opsyon regilasyon, epi chwazi yon bezwen pou jounen an oswa pase.",
+          "teacherMove": "Montre opsyon pou pase a an premye. Envite elèv yo pataje yon mo oswa yon koulè sèlman apre pratik prive a.",
+          "privacyBoundary": "Yo pa ranmase okenn tèks jounal; elèv yo deside pita si yon pwen sovgad antre nan yon Pakèt Pataj.",
+          "note": "Kòmanse ak yon tchèk zòn prive, epi ofri respirasyon oswa fikse objektif. Elèv yo ka pataje yon mo, yon koulè, oswa pase."
+        },
+        "calm_reset": {
+          "name": "Rafrechisman kalm senk minit",
+          "format": "Tout klas la oswa kwen kalm",
+          "focus": "Regilasyon kò",
+          "studentView": "Elèv yo remake eta kò yo kounye a epi chwazi yon pratik pou kalme kò yo.",
+          "teacherMove": "Kenbe woutin nan ak ti kras pale epi nan yon tan limite. Ofri mouvman, respirasyon, oswa altènativ trankil.",
+          "privacyBoundary": "Elèv yo ka sove yon pwen sovgad pou tèt yo; pèsonn pa oblije eksplike poukisa yo te bezwen yon rafrechisman.",
+          "note": "Kenbe moman sa a ak ti kras pale. Elèv yo chwazi yon pratik regilasyon epi remake sa ki chanje."
+        },
+        "repair_routine": {
+          "name": "Woutin reparasyon apre konfli",
+          "format": "Ti gwoup oswa peryòd konsèy",
+          "focus": "Pèspektiv, reparasyon, pwochen aksyon",
+          "studentView": "Elèv yo ka sèvi ak yon senaryo reyèl, imajinè, oswa yon senaryo pwofesè a bay pou pratike langaj reparasyon.",
+          "teacherMove": "Fikse nòm reparasyon yo an premye epi evite konfesyon an piblik. Fè yon poz si sitiyasyon an bezwen medyasyon yon granmoun.",
+          "privacyBoundary": "Elèv yo chwazi sa pou yo pataje; refleksyon prive sou konfli pa ta dwe tounen prèv pou klas la.",
+          "note": "Sèvi avè l apre nòm yo fin fikse. Konsantre sou langaj reparasyon, se pa sou konfesyon an piblik."
+        },
+        "digital_reset": {
+          "name": "Mini-leson sou byennèt dijital",
+          "format": "Peryòd konsèy oswa sante",
+          "focus": "Telefòn, dòmi, IA ak limit",
+          "studentView": "Elèv yo revize abitid yo, chwazi yon limit pou teste, epi kenbe rezon an prive si yo vle.",
+          "teacherMove": "Prezante l kòm konsepsyon abitid, se pa yon enspeksyon telefòn. Evite mande elèv yo montre kapti ekran oswa done itilizasyon.",
+          "privacyBoundary": "Elèv yo ka pataje yon objektif limit, men detay pèsonèl sou dòmi, telefòn, oswa IA rete opsyonèl.",
+          "note": "Prezante l kòm konsepsyon abitid, se pa yon enspeksyon telefòn. Elèv yo chwazi yon limit pou eseye."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Apwòch ki baze sou rechèch",
+          "title": "Rechèch la gen rapò ak apwòch debaz la; yo pa t evalye adaptasyon dijital sa a isit la"
+        },
+        "emerging": {
+          "label": "Prèv limite sou apwòch la",
+          "title": "Li bay espwa, men prèv yo limite oswa melanje"
+        },
+        "contested": {
+          "label": "Modèl ki konteste",
+          "title": "Popilè men syans konteste l; pi bon pou sèvi avè l kòm metafò, se pa kòm mekanis"
+        },
+        "practice": {
+          "label": "Pratik refleksyon",
+          "title": "Yon pratik estriktire oswa yon metòd euristik, se pa yon deklarasyon efikasite anpirik"
+        }
+      },
+      "ui": {
+        "sel_practice": "Pratik SEL",
+        "default_purpose": "Pratike yon konpetans SEL avèk swen.",
+        "default_next": "Fè yon ti etap, epi deside si ou vle sove.",
+        "private_checkpoint": "Pwen sovgad prive",
+        "share_packet_eligible": "Ka antre nan yon Pakèt Pataj",
+        "saving_preparing": "N ap prepare pou sove travay SEL ou...",
+        "save_requested": "Yo mande sovgad pou {title}",
+        "returned_to_grid": "Retounen nan kadriyaj zouti yo",
+        "back_to_sel_tools": "Retounen nan zouti SEL yo",
+        "export_now_aria": "Ekspòte fichye pwojè SEL la kounye a",
+        "export_now": "Ekspòte kounye a",
+        "purpose": "Objektif",
+        "next_step": "Pwochen etap",
+        "saved_work": "Travay ki sove",
+        "checkpoints_private": "Pwen sovgad zouti yo rete prive isit la sòf si ou chwazi yo pou yon Pakèt Pataj.",
+        "use_with_care_label": "Sèvi avè l avèk atansyon:",
+        "tool_open_failed_title": "Zouti sa a pa t ka louvri",
+        "tool_open_failed_body": "Yon bagay nan enfòmasyon ki sove pou aktivite sa a pa t chaje. Se pa yon bagay ou te fè mal.",
+        "saved_work_kept": "Travay ou te sove a pa efase.",
+        "back_to_hub": "Retounen nan SEL Hub la",
+        "tell_teacher": "Si sa kontinye rive, di pwofesè ou ki aktivite li te ye.",
+        "load_did_not_start": "Zouti a telechaje men li pa t kòmanse.",
+        "load_too_long": "Zouti a te pran twòp tan pou chaje.",
+        "this_sel_tool": "Zouti SEL sa a",
+        "tool_opening": "{name} ap louvri...",
+        "tool_open_retry": "{name} pa t ka louvri. Eseye ankò, oswa chwazi yon lòt zouti.",
+        "station_link_missing": "Lyen sa a nonmen yon estasyon ki pa nan pwojè sa a. Chaje pake kontni ki genyen l lan, oswa kòmanse youn nan Estasyon SEL nan panèl Istorik la.",
+        "started_station": "Estasyon {name} kòmanse",
+        "tool_could_not_open": "{name} pa t ka louvri.",
+        "tool_not_available": "{name} pa disponib nan SEL Hub sa a.",
+        "try_again": "Eseye ankò",
+        "dismiss": "Jete",
+        "back_to_tools": "Retounen nan zouti yo",
+        "band_elementary": "Elemantè",
+        "band_middle": "Lekòl Mwayen",
+        "band_high": "Lekòl Segondè",
+        "unsaved_aria": "Ou gen chanjman ki pa sove",
+        "unsaved_title": "Chanjman ki pa sove",
+        "unsaved": "Pa sove",
+        "unsaved_hint": "Ou gen chanjman ki pa sove — peze Ekspòte kounye a pou sove yo",
+        "educators_opened": "Gid Pou Edikatè a louvri",
+        "educators_aria": "Pou Edikatè: kijan pou sèvi ak Hub sa a avèk responsablite",
+        "for_educators": "Pou Edikatè",
+        "theme_aria": "Chanje tèm (klè / fonse / gwo kontras)",
+        "theme_contrast": "Gwo Kontras",
+        "theme_dark": "Mòd Fonse",
+        "theme_light": "Mòd Klè",
+        "theme_contrast_short": "Kontras",
+        "theme_dark_short": "Fonse",
+        "theme_light_short": "Klè",
+        "xp_aria": "{count} pwen eksperyans SEL",
+        "close_hub": "Fèmen SEL Hub la",
+        "keep_share_title": "Chwazi sa pou kenbe ak sa pou pataje",
+        "keep_share_body": "Kèk aktivite sove travay sou aparèy sa a; lòt travay dire sèlman nan onglè sa a. Fèmen onglè a pa efase tout bagay. Ekspòte yon fichye pou kenbe yon kopi. Sou yon aparèy pataje, revize Done ak vi prive nan Pou Edikatè. Fonksyon IA ak pataj yo sèvi ak sèvis ou konfigire yo.",
+        "got_it_aria": "Mwen konprann, kòmanse sèvi ak SEL Hub la",
+        "got_it": "Mwen konprann",
+        "practice_support": "Sipò pratik",
+        "learning_guide": "Gid aprantisaj ak fason pou pratike",
+        "what_you_can_explore": "Sa ou ka eksplore",
+        "worked_example": "Yon egzanp detaye",
+        "try_one_step": "Eseye yon etap",
+        "reflect_transfer": "Reflechi epi sèvi avè l yon lòt kote",
+        "look_closer": "Gade pi pre",
+        "next_use": "Yon lòt fason ou ta ka sèvi avè l",
+        "adapt_together": "Adapte pratik la ansanm",
+        "adapt_smaller": "Kòmanse pi piti: montre yon fraz oswa yon chwa, sèvi ak yon imaj oswa yon objè konkrè, epi bay tan pou reflechi.",
+        "adapt_deeper": "Ale pi fon: konpare de repons, idantifye enfòmasyon ki manke, epi eksplike sa ki ta ka chanje chwa a.",
+        "adapt_context": "Chanje kontèks la: sèvi ak yon sitiyasyon fiktif ki mache ak lang, enterè, kilti, ak bezwen aksè elèv la.",
+        "adapt_check": "Tcheke konpreyansyon atravè yon egzanp oswa yon eksplikasyon elèv la chwazi, se pa atravè yon istwa pèsonèl, yon chanjman emosyonèl, oswa yon nòt ki obligatwa.",
+        "optional_prompts": "Kesyon opsyonèl sa yo pa soumèt repons, yo pa bay kredi pou fini, epi yo pa ranplase enstriksyon ak enfòmasyon sekirite aktivite a li menm.",
+        "returned_to_activities": "Retounen nan aktivite yo. Aksyon sa a pa t anrejistre okenn pratik kòm fini.",
+        "return_to_activities": "Retounen nan aktivite yo",
+        "chooser_first_reset_coping": "Chwazi yon opsyon ankraj ki konfòtab. Remake si li mache pou ou; ou gen dwa kanpe.",
+        "chooser_first_reset_journal": "Ekri yon bagay ki ta fè kèk minit k ap vini yo pi fasil pou jere. Ou pa bezwen rakonte okenn istwa pèsonèl.",
+        "chooser_first_feelings_zones": "Lonje dwèt sou yon santiman oswa remake l an silans. Chwazi yon sipò; pa gen okenn bon zòn ou dwe rive.",
+        "chooser_first_feelings_emotions": "Eksplore de mo santiman pou yon pèsonaj fiktif. Plis pase yon repons ka bon.",
+        "chooser_first_feelings_journal": "Ekri yon mo oswa yon ti refleksyon sou yon sitiyasyon fiktif oswa yon sitiyasyon chak jou.",
+        "chooser_first_conversation_advocacy": "Sèvi ak yon sitiyasyon fiktif pou repete yon demann awotvwa, ak AAC, oswa an silans, lwen fòmilè a.",
+        "chooser_first_conversation_journal": "Ekri yon demann respektye pou yon sitiyasyon chak jou ki an sekirite; ou pa oblije voye l.",
+        "chooser_first_decision_decisions": "Reflechi sou de chwa nan yon sitiyasyon fiktif ak yon efè ki posib pou chak.",
+        "chooser_first_decision_goals": "Ekri yon pwochen etap reyalis ak yon sipò ou ta ka mande.",
+        "try_a_reset": "Eseye yon rafrechisman",
+        "need_feeling": "Konprann yon santiman",
+        "need_conversation": "Prepare yon konvèsasyon",
+        "need_decision": "Chwazi yon pwochen etap",
+        "help_choose": "Ede m chwazi yon aktivite",
+        "help_choose_intro": "Chwazi sa ou vle eseye. Sijesyon yo sèvi sèlman ak chwa sa yo; yo pa evalye santiman ou. Tan yo dekri yon premye etap, se pa tout aktivite a.",
+        "what_would_help": "Kisa ki ta ede?",
+        "time_first_step": "Tan pou yon premye etap",
+        "n_minutes": "{count} minit",
+        "how_respond": "Kijan ou ta renmen reponn?",
+        "respond_any": "Nenpòt fason",
+        "respond_offline": "Reflechi, pale, desine, oswa AAC",
+        "respond_write": "Ekri yon repons kout",
+        "options_one": "{count} opsyon pou kòmanse dapre chwa ou yo.",
+        "options_many": "{count} opsyon pou kòmanse dapre chwa ou yo.",
+        "options_none": "Pa gen okenn opsyon pou kòmanse ki koresponn pou kounye a. Eseye plis tan oswa yon lòt fòma repons; tout katalòg la toujou disponib.",
+        "why_option_write": "Poukisa opsyon sa a: {need}, ak yon premye etap {minutes} minit yo sijere ak yon ti repons ekri.",
+        "why_option_offline": "Poukisa opsyon sa a: {need}, ak yon premye etap {minutes} minit yo sijere ak yon fason pou pratike san tape.",
+        "open_named": "Louvri {name}",
+        "open_named_unavailable": "Louvri {name} (pa disponib)",
+        "pathway_guide": "Gid pratik chemen an",
+        "pathway_opened": "{opened} sou {total} zouti louvri. Louvri yon zouti pa vle di ou te pratike konpetans lan.",
+        "exit_pathway_aria": "Sòti nan mòd chemen",
+        "pathway_cleared": "Chemen an retire",
+        "exit_pathway": "Sòti nan chemen an",
+        "practice_goal": "Objektif pratik:",
+        "pathway_intro": "Chwazi yon aktivite oswa swiv lòd yo sijere a. Ou ka pase, sèvi ak yon egzanp fiktif, oswa reponn pandan w ap pale, desine, ekri, oswa ak AAC. Pataje se opsyonèl.",
+        "model_practice_reflect": "Montre, pratike, epi reflechi",
+        "an_example": "Yon egzanp",
+        "notice_adjust": "Remake epi ajiste",
+        "take_with_you": "Pote l avè w",
+        "self_check_aria": "Tchèk pèsonèl opsyonèl sou pratik la",
+        "self_check_intro": "Apre ou fin eseye yon etap, chwazi sa ki mache pou ou. Sa a opsyonèl epi san nòt; li rete nan sesyon chemen sa a.",
+        "i_tried": "Mwen te eseye yon etap",
+        "another_way": "Mwen bezwen yon lòt fason",
+        "pass_for_now": "Pase pou kounye a",
+        "tried_feedback": "Remake sa ki te ede, sa ki pa t ede, ak ki kote ou ta ka eseye konpetans lan ankò.",
+        "adapt_feedback": "Eseye yon etap ki pi piti, yon lòt fason pou reponn, yon lòt zouti, oswa sipò yon moun ou fè konfyans.",
+        "pass_feedback": "Pase se yon chwa ki valab. Ou ka retounen pita oswa mande sipò.",
+        "next_option": "Pwochen opsyon: {name}",
+        "open_next": "Louvri pwochen an: {name}",
+        "view_pathway_tools": "Gade zouti chemen an",
+        "revisit_any": "Ou ka retounen sou nenpòt aktivite. Chwazi yon lide pou eseye andeyò hub la; ou pa oblije fini chak zouti.",
+        "station_activities": "Aktivite estasyon an",
+        "active_station": "Estasyon SEL aktif: {name}",
+        "steps_recorded_passed": "{done} sou {total} etap anrejistre · {passed} pase pou kounye a. Sa a se yon dosye pratik, se pa yon nòt.",
+        "steps_recorded": "{done} sou {total} etap anrejistre. Sa a se yon dosye pratik, se pa yon nòt.",
+        "active_minutes_done": "{mins} sou {goal} minit aktif isit la. Etap la anrejistre.",
+        "active_minutes_counting": "{mins} sou {goal} minit aktif isit la. Tan an konte pandan onglè sa a vizib epi w ap sèvi avè l.",
+        "exit_station_aria": "Sòti nan mòd estasyon",
+        "station_cleared": "Estasyon an retire",
+        "exit_station": "Sòti nan estasyon an",
+        "station_tools_steps": "Zouti, etap ak refleksyon estasyon an",
+        "station_steps": "Etap ak refleksyon estasyon an",
+        "station_privacy": "Etap ak nòt yo sove sou aparèy sa a epi yo ka antre nan fichye pwojè yo. Sèvi ak egzanp fiktif oswa kite detay pèsonèl yo deyò. Chwazi sa pou pataje.",
+        "step_passed": "Pase pou kounye a. Ou ka retounen lè ou pare.",
+        "step_marked": "Ou make etap sa a kòm fini.",
+        "step_target": "Objektif aktivite a anrejistre; sa pa mezire konpetans ni byennèt.",
+        "step_ready": "Lè ou pare.",
+        "open_step_activity": "Louvri aktivite pou etap sa a",
+        "xp_progress": "{xp} / {target} XP SEL an total. Sa gen ladan aktivite ou te fè anvan; se pa yon nòt konpetans.",
+        "time_progress": "{mins} / {target} minit aktif. Tan se pa yon prèv aprantisaj.",
+        "default_reflect": "Kisa ou te remake? Kisa ou ta kenbe oswa chanje?",
+        "self_check_ways": "Reflechi, desine, pale, sèvi ak lang siy, oswa sèvi ak AAC. Yon nòt ekri se opsyonèl. Make etap la kòm fini ou menm, oswa pase pou kounye a.",
+        "length_target": "Etap ki sove sa a sèvi ak yon objektif longè: {count} / {target} karaktè. Longè pa mezire kalite refleksyon. Ou ka toujou modifye nòt ou.",
+        "reflection_for": "Refleksyon pou {name}",
+        "optional_note": "Nòt opsyonèl: sa ki te ede, oswa sa ou ta ka eseye apre...",
+        "write_reflection": "Ekri yon refleksyon...",
+        "mark_complete_aria": "Make “{name}” kòm fini",
+        "step_reopened": "Etap relouvri: {name}",
+        "step_marked_named": "Ou make etap sa a kòm fini: {name}",
+        "mark_complete": "Make kòm fini",
+        "step_passed_named": "Pase pou kounye a: {name}",
+        "filter_pathway": "chemen: {name}",
+        "filter_station": "estasyon: {name}",
+        "no_tools_match": "Pa gen zouti ki koresponn ak {filters}",
+        "results_one": "{count} zouti sou {total} koresponn ak {filters}",
+        "results_many": "{count} zouti sou {total} koresponn ak {filters}",
+        "showing_all": "N ap montre tout {total} zouti yo",
+        "crisis_elementary": "Si ou pa ka jwenn yon granmoun touswit, kontinye mande jiskaske yon moun koute w. Ou merite èd.",
+        "crisis_call_or_text": "Rele oswa voye tèks bay",
+        "crisis_988": "liy èd 988 pou swisid ak kriz (gratis, konfidansyèl, 24/7).",
+        "crisis_text": "Voye tèks bay",
+        "crisis_text_line": "Crisis Text Line (gratis, konfidansyèl, 24/7).",
+        "tool_selection": "Seleksyon zouti SEL Hub la",
+        "jumped_to_list": "Ou ale dirèk nan lis zouti yo. {summary}.",
+        "skip_to_list": "Ale dirèk nan lis zouti yo",
+        "start_here": "Kòmanse isit la",
+        "quick_route": "Chwazi yon wout rapid, oswa gade lis ki anba a.",
+        "browsing_all": "N ap gade tout zouti SEL yo",
+        "continue": "Kontinye",
+        "continue_desc": "Reprann dènye zouti SEL ou te louvri a.",
+        "starting_idea": "Lide pou kòmanse",
+        "starting_idea_desc": "{name}: yon aktivite yo sijere pou nivo klas sa a, ak egzanp ou ka adapte.",
+        "starting_idea_none": "Louvri yon pwen depa ki bon pou nivo klas ou.",
+        "try_a_reset_desc": "Eksplore yon estrateji ki konfòtab; ou pa oblije santi ou kalm.",
+        "journal": "Jounal",
+        "journal_desc": "Ekri yon refleksyon; revize chwa ou pou sove ak pataje.",
+        "browse_all": "Gade Tout",
+        "browse_all_desc": "Chèche oswa filtre tout katalòg la.",
+        "need_chip_calm": "Kalme kò m",
+        "need_chip_feelings": "Nonmen santiman",
+        "need_chip_stress": "Estrès oswa enkyetid",
+        "need_chip_friend": "Konfli ak zanmi",
+        "need_chip_write": "Ekri sa",
+        "need_chip_decision": "Pran yon desizyon",
+        "need_chip_sleep": "Dòmi oswa fatig",
+        "need_chip_crisis": "Pa an sekirite oswa an kriz",
+        "need_chip_relationshipsafety": "Sekirite nan relasyon",
+        "need_chip_schoolsupport": "Sipò lekòl",
+        "need_chip_grief": "Dèy oswa pèt",
+        "storage_notice": "Kèk travay SEL sere sou aparèy sa a. Fonksyon IA yo sèvi ak sèvis ou konfigire a. Chwazi sa pou sove oswa pataje, sitou sou yon aparèy pataje.",
+        "save_now_aria": "Sove oswa ekspòte travay SEL la kounye a",
+        "save_now": "Sove kounye a",
+        "recent_work": "Travay SEL resan",
+        "saved_here": "Sove isit la. Ekspòte l pou kenbe l apre ou fèmen.",
+        "create_packet_aria": "Kreye yon Pakèt Pataj SEL ak pwen sovgad ki sove yo",
+        "review_packets_aria": "Revize Pakèt Pataj SEL ki sove yo",
+        "create_packet": "Kreye Pakèt Pataj",
+        "review_packets": "Revize Pakèt Pataj",
+        "open_related": "Louvri zouti ki gen rapò a.",
+        "related_unavailable": "Zouti ki gen rapò a pa disponib nan SEL Hub sa a.",
+        "streak_aria": "Seri SEL {count} jou. Pi long lan: {longest} jou.",
+        "streak": "Seri {count} jou",
+        "streak_best": "pi bon {count}",
+        "find_activity": "Jwenn yon aktivite",
+        "search_placeholder": "Chèche santiman, zanmi, estrès, objektif...",
+        "search_aria": "Chèche zouti SEL",
+        "support_options": "Opsyon sipò",
+        "crisis_hard_moment": "Sanble sa ta ka yon moman difisil.",
+        "crisis_tell_adult": "Ou pa bezwen rezoud sa pou kont ou, epi ou pa bezwen jwenn bon zouti a anvan. Tanpri di yon granmoun ou fè konfyans sa kounye a — yon konseye lekòl, yon pwofesè, yon paran, oswa yon lòt granmoun ou fè konfyans. Chèche isit la pa di pèsonn anyen; yon moun konnen sèlman si ou di l.",
+        "open_crisis_companion": "Louvri Konpayon Kriz",
+        "find_by_need": "Jwenn zouti SEL dapre bezwen ou",
+        "i_need": "Mwen bezwen...",
+        "cleared_search": "Rechèch SEL la efase",
+        "clear_search_aria": "Efase rechèch SEL la",
+        "clear": "Efase",
+        "cleared_need": "Filtè bezwen SEL la efase",
+        "showing_for": "N ap montre zouti SEL pou {name}",
+        "clear_need_aria": "Efase filtè bezwen: {name}",
+        "find_for_aria": "Jwenn zouti pou: {name}",
+        "browse_by_area": "Gade dapre domèn konpetans",
+        "filter_by_category": "Filtre zouti SEL dapre kategori",
+        "showing_all_categories": "N ap montre tout kategori yo",
+        "show_all_categories_aria": "Montre tout kategori yo ({count} zouti)",
+        "all": "Tout",
+        "filtered_to": "Filtre sou {name}",
+        "filter_chip_aria": "Filtè: {name} ({count} zouti)",
+        "pathways_heading": "Chemen SEL — Sekans Aprantisaj Yo Chwazi Avèk Swen",
+        "started_pathway": "Chemen kòmanse: {name}",
+        "pathway_started": "Chemen {name} kòmanse!",
+        "n_activities": "{count} aktivite",
+        "grades_range": "klas {range}",
+        "use_with_care": "Sèvi avè l avèk atansyon",
+        "visits_many": "{count} vizit",
+        "visits_one": "{count} vizit",
+        "best_for": "Pi bon pou: {mode}.",
+        "teacher_cue": "Konsèy pou pwofesè: {time}, {format}. {cue}",
+        "preview_first": "Gade davans",
+        "evidence_tradition": "Tradisyon prèv: {tag}",
+        "approach_context": "Kontèks apwòch la: {label}. {title}. Badj sa a pa pwouve efikasite pou aplikasyon sa a oswa pou yon elèv an patikilye.",
+        "step_opened": "Etap {n} · Louvri",
+        "step_not_opened": "Etap {n} · Pa louvri",
+        "suggested_grades": "Klas yo sijere {range}",
+        "no_tools_current_view": "Pa gen zouti ki koresponn ak vi aktyèl la",
+        "empty_try": "Eseye kalm, santiman, estrès, zanmi, ekri, desizyon, oswa dòmi.",
+        "filters_cleared": "Filtè yo efase. N ap montre tout {total} zouti yo.",
+        "show_all_tools": "Montre tout {total} zouti yo",
+        "error_loading": "Erè pandan n ap chaje {name}",
+        "unknown_error": "Erè enkoni",
+        "back_to_tools_error": "Retounen nan Zouti yo",
+        "tool_load_failed": "Zouti sa a pa t ka chaje.",
+        "loading_tool": "N ap chaje zouti a...",
+        "file_not_arrived": "Fichye a pa t rive.",
+        "check_connection": "Tcheke koneksyon an, epi eseye ankò.",
+        "plugin_fetching": "N ap toujou chèche fichye plugin nan.",
+        "research_about": "Sou etikèt rechèch yo",
+        "research_summary": "Sa etikèt rechèch yo vle di",
+        "research_context": "Kontèks apwòch la: {label}.",
+        "research_not_app": "Rechèch sou yon terapi, yon kourikoulòm, oswa yon kad pa pwouve aktivite dijital sa a gen menm efè yo. Etikèt yo dekri apwòch la; yo pa bay nòt pou aplikasyon sa a ni pou yon elèv.",
+        "research_check": "Anvan ou chwazi yon aktivite, tcheke sous li site yo, laj ak anviwònman yo te etidye, sipò ki nesesè, ak rezilta yo te mezire. Etikèt sa yo pa pwouve si adaptasyon sa a bon pou popilasyon an ni si li efikas.",
+        "research_casel_link": "CASEL: chwazi epi evalye yon pwogram SEL",
+        "project_save_failed": "Demann pou sove pwojè a echwe. Kenbe hub sa a louvri epi eseye Sove / Ekspòte nan aplikasyon prensipal la.",
+        "project_save_requested": "Yo mande pou sove pwojè a. Fini pwosesis sovgad la nan aplikasyon prensipal la; yo poko konfime okenn fichye sove isit la.",
+        "saving_aria": "Sovgad ak pataj SEL",
+        "saving_failed_alert": "Kèk chanjman SEL pa t ka sove sou aparèy sa a. Kenbe hub sa a louvri epi sove yon kopi pwojè a; bouyon estasyon yo dwe sove kòm estasyon pou yo antre nan kopi sa a.",
+        "saving_attention": "Sovgad la bezwen atansyon",
+        "saving_title": "Sovgad ak pataj",
+        "saving_failed_body": "Travay aktyèl la rete disponib nan hub ki louvri sa a. Yon sovgad lokal ki echwe ka kite yon kopi ki pi ansyen sou aparèy sa a.",
+        "saving_ok_body": "Estasyon ki sove yo, nòt estasyon yo, ak pwen sovgad hub la ap sere sou aparèy sa a. Chak aktivite gen pwòp kontwòl sovgad li; estati sa a pa konfime tout sa yo te antre nan chak aktivite te sove.",
+        "saving_drafts": "Bouyon estasyon yo rete sou aparèy sa a pou ou ka rekipere yo. Lè ou sove yon estasyon, li ajoute l nan done pwojè ki disponib pou Sove / Ekspòte; mande pou sove pwojè a pa konfime yon fichye te ekri.",
+        "saving_live": "Yon sesyon an dirèk konekte. Li ka voye siyal pwogrè oswa sekirite bay moun ki òganize sesyon an. IA opsyonèl la voye tèks aktivite yo bay sèvis ki konfigire a. Revize yon Pakèt Pataj anvan ou chwazi pataje l.",
+        "saving_ai": "IA opsyonèl la voye tèks aktivite yo bay sèvis ki konfigire a. Yon Pakèt Pataj gen ladan eleman ak nivo detay ou chwazi yo; revize apèsi li anvan ou pataje l.",
+        "saving_retry": "Eseye sove lokalman ankò",
+        "saving_request": "Mande pou sove pwojè a",
+        "removed_stations": "Estasyon ki retire",
+        "removed_body": "Anile retrè yon estasyon pandan hub sa a louvri. Dosye pratik ki egziste deja yo rete.",
+        "station_restored": "Estasyon retabli: {name}",
+        "undo_removal": "Anile retrè: {name}",
+        "launch_routines_aria": "Woutin lansman pou pwofesè",
+        "launch_title": "Lansman pwofesè",
+        "launch_note": "Kenbe pratik la san nòt epi pataj la opsyonèl. Eksplike estokaj sou aparèy la, fonksyon IA ki konfigire yo, ak pataj anvan ou kòmanse. Sèvi ak egzanp fiktif; envite elèv yo mande èd oswa pase.",
+        "launch_guardrails_aria": "Limit pwoteksyon pou lansman pwofesè",
+        "launch_step_boundary": "Fikse limit la",
+        "launch_step_boundary_body": "Di sa ki prive, sa ki opsyonèl, ak kijan elèv yo ka pase.",
+        "launch_step_run": "Fè woutin nan",
+        "launch_step_run_body": "Sèvi ak zouti yo kòm pratik. Kenbe refleksyon an fòmatif epi san nòt.",
+        "launch_step_close": "Fèmen ak yon chwa",
+        "launch_step_close_body": "Elèv yo deside si yo sove, ekspòte, oswa mete yon pwen sovgad pita.",
+        "launch_student_sees": "Sa elèv la wè",
+        "launch_student_sees_default": "Elèv yo fè yon woutin SEL prive epi chwazi sa pou yo pataje.",
+        "launch_teacher_move": "Jès pwofesè a",
+        "launch_teacher_move_default": "Prezante sa kòm pratik, se pa kòm evalyasyon.",
+        "launch_sharing_boundary": "Limit pataj",
+        "launch_sharing_boundary_default": "Se elèv la ki kontwole pataj la.",
+        "launch_tools_loading": "N ap chaje zouti yo...",
+        "launch_still_loading": "Toujou ap chaje: {tools}",
+        "launch_preview_sensitive": "Gade zouti sansib yo davans: {tools}",
+        "launch_load_aria": "Chaje plan lansman pwofesè: {name}",
+        "launch_finish_draft": "Fini oswa jete bouyon aktyèl la anvan",
+        "launch_waiting": "N ap tann zouti yo",
+        "launch_loading": "N ap chaje",
+        "launch_load": "Chaje nan Konstriktè Estasyon",
+        "builder_note_student": "Vi elèv: {text}",
+        "builder_note_teacher": "Jès pwofesè: {text}",
+        "builder_note_sharing": "Limit pataj: {text}",
+        "builder_note_note": "Nòt pwofesè: {text}",
+        "launch_finish_existing": "Fini oswa jete bouyon estasyon ou genyen an anvan.",
+        "launch_tools_still_loading": "Zouti lansman pwofesè yo toujou ap chaje. Eseye ankò nan yon ti moman.",
+        "launch_tools_still_loading_sr": "Zouti lansman pwofesè yo toujou ap chaje.",
+        "launch_default_name": "Woutin SEL nan klas",
+        "launch_default_short": "Woutin SEL",
+        "launch_loaded_sr": "Plan lansman pwofesè a chaje nan konstriktè estasyon an: {name}",
+        "launch_loaded_toast": "Plan lansman pwofesè a chaje nan Konstriktè Estasyon.",
+        "stations_summary": "Estasyon SEL Pèsonalize — ansanm aktivite pwofesè kreye",
+        "station_delete_aria": "Efase estasyon {name}",
+        "station_removed_sr": "Estasyon an retire. Ou ka anile sa jiskaske hub sa a fèmen.",
+        "station_removed": "Estasyon retire",
+        "station_tools_count": "{count} zouti",
+        "station_quests_count": "{count} misyon",
+        "station_activated_sr": "Estasyon SEL aktive: {name}",
+        "station_started": "{name} kòmanse!",
+        "station_activate_aria": "Aktive estasyon {name}",
+        "station_start": "Kòmanse estasyon",
+        "station_adapt_aria": "Adapte yon kopi estasyon {name}",
+        "station_adapt": "Adapte yon kopi",
+        "draft_aria": "Bouyon estasyon ou ka rekipere",
+        "draft_untitled": "Estasyon san tit",
+        "draft_body": "Yon bouyon estasyon ki pa fini sove sou aparèy sa a: {name}. Reprann li oswa jete l anvan ou kòmanse yon lòt.",
+        "draft_resume": "Reprann bouyon estasyon an",
+        "draft_discard": "Jete bouyon estasyon an",
+        "builder_opened": "Konstriktè estasyon an louvri",
+        "build_station_aria": "Bati yon nouvo Estasyon SEL pèsonalize",
+        "build_station": "+ Bati yon Estasyon Pèsonalize"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Koneksyon pwofesè a an poz — n ap kenbe plas ou pandan AlloFlow ap rekonekte.",
+    "host_stale": "Verifikasyon estati pwofesè a pa ajou - sesyon an dirèk la ka toujou konekte. Travay ou rete sou aparèy sa a.",
+    "dismiss": "Fèmen",
+    "dismiss_aria": "Fèmen avètisman sou estati pwofesè a",
+    "connecting": "N ap konekte ak klas la…",
+    "retrying": "Mizajou klas la an poz. N ap rekonekte otomatikman…",
+    "failed": "Mizajou klas la dekonekte. Tcheke koneksyon ou epi eseye rekonekte.",
+    "access": "Yo refize ou aksè nan klas la. Mande pwofesè ou tcheke aksè a, epi rekonekte.",
+    "sign_in": "Antre nan kont ou ankò pou retabli aksè ou nan klas la, epi rekonekte.",
+    "reconnect": "Rekonekte"
+  },
   "common": {
     "student_analytics": "Analitik Elèv",
     "add_this_term_to_glossary": "Ajoute tèm sa a nan glosè a",
@@ -4687,7 +7104,21 @@
     "measured_on_target": "Nan nivo {grade}",
     "measured_above": "Pi wo pase nivo {grade}",
     "measured_below": "Pi ba pase nivo {grade}",
-    "measured_note": "Flesch-Kincaid, mezire sou tèks sa a. Sèvi ak Tcheke Nivo pou yon tchèk pi konplè."
+    "measured_note": "Flesch-Kincaid, mezire sou tèks sa a. Sèvi ak Tcheke Nivo pou yon tchèk pi konplè.",
+    "listen_along": "Koute ansanm",
+    "compare_listen_here": "Koute isit la",
+    "compare_listen_here_original": "Koute isit la tèks orijinal la",
+    "compare_listen_here_adapted": "Koute isit la tèks adapte a",
+    "compare_stop_reading_original": "Sispann li tèks orijinal la",
+    "compare_stop_reading_adapted": "Sispann li tèks adapte a",
+    "compare_scroll_together": "Defile ansanm",
+    "reading_width": "Lajè lekti",
+    "width_narrow": "Etwat",
+    "width_medium": "Mwayen",
+    "width_wide": "Laj",
+    "width_extra_wide": "Trè laj",
+    "reading_width_characters": "anviwon {count} karaktè pa liy",
+    "original_support_spoken": "Èd pou mo “{word}”: {support}"
   },
   "outline": {
     "title": "Òganizatè Vizyèl",
@@ -5175,6 +7606,82 @@
     "edit_question_translation": "Modifye tradiksyon kesyon"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Tape mo oswa fraz ki manke a",
+      "explain_thinking": "Eksplike jan ou panse",
+      "write_response": "Ekri repons ou",
+      "submit_response": "Soumèt repons",
+      "numeric_answer": "Repons an chif",
+      "unit_named": "Inite ({unit})",
+      "unit_optional": "Inite (opsyonèl)",
+      "submit_numeric": "Soumèt repons an chif",
+      "select_all_apply": "Chwazi tout repons ki aplike yo",
+      "submit_selections": "Soumèt chwa yo",
+      "part1": "Pati 1 — Chwazi pi bon repons lan",
+      "part2": "Pati 2 — {prompt}",
+      "default_evidence_prompt": "Chwazi pi bon prèv ki sipòte repons lan.",
+      "submit_answer_evidence": "Soumèt repons ak prèv",
+      "order_check": "Èske lòd sa a kòrèk?",
+      "order_yes": "Wi, li kòrèk",
+      "order_no": "Non, gen yon bagay ki pa nan plas li",
+      "select_misplaced": "Chwazi yon eleman anlè a ki pa nan plas li.",
+      "arrange_instructions": "Mete eleman yo nan bon lòd. Si yo deja kòrèk, kite yo jan yo ye a.",
+      "your_order": "Lòd ou",
+      "move_up": "Monte: {item}",
+      "move_down": "Desann: {item}",
+      "done_arranging": "Fin ranje",
+      "principle_question": "Ki prensip ki gide lòd la?",
+      "principle_chronological": "kwonolojik",
+      "principle_cause_effect": "koz-efè",
+      "principle_process": "pwosesis",
+      "principle_size": "gwosè",
+      "principle_hierarchy": "yerachi",
+      "find_mismatch": "Jwenn pè ki pa mache ansanm nan",
+      "choose_mismatch": "Chwazi pè ki pa ale ak lòt yo.",
+      "pair_with_question": "Ak kisa eleman ou chwazi a ta dwe fè pè?",
+      "replacement_partner": "Nouvo patnè",
+      "submit_replacement": "Soumèt ranplasman an",
+      "retry_failed": "Nou pa t kapab voye repons ou. Patisipasyon ou toujou anrejistre; eseye ankò lè ou konekte.",
+      "return_to_quiz": "Retounen nan kiz an dirèk la",
+      "minimize": "Redui",
+      "minimize_aria": "Kite ekran kiz an dirèk la",
+      "battle_result": "Rezilta batay la",
+      "class_victory": "Klas la genyen!",
+      "battle_complete": "Batay la fini",
+      "regroup": "Yon chans pou reòganize nou",
+      "end_no_scored": "Kesyon sa yo te pou diskisyon oswa pou pwofesè a revize. Yo pa t bay okenn nòt batay.",
+      "end_questions_complete": "Tout kesyon yo fini. Rezilta a konpare pousantaj sante ki rete a; si gen egalite, klas la genyen.",
+      "end_victory": "Klas ou a bat mons lan ansanm.",
+      "end_regroup": "Sèvi ak eksplikasyon ki anba a pou nou planifye pwochen esè nou ansanm.",
+      "end_review_last": "Revize dènye kesyon ki anba a. Pwofesè ou ka rekòmanse batay la.",
+      "boss_default_name": "Bòs",
+      "boss_hp": "HP {name}",
+      "boss_health": "Sante {name}",
+      "battle_scoring_paused": "Nòt batay la an poz",
+      "tick_of": "{value} sou {total}",
+      "confidence_legend": "Konbyen ou te sèten?",
+      "confidence_knew": "Mwen te konn sa",
+      "confidence_guessed": "Mwen te devine ak sa m te konnen",
+      "confidence_unsure": "Mwen pa t sèten",
+      "confidence_help": "Sa ede pwofesè ou wè sa ou konnen byen ak sa ou mal konprann. Li pa janm chanje si repons lan kòrèk, ni pwen yo.",
+      "retry_send": "Eseye voye repons lan ankò",
+      "waiting_for_teacher": "N ap tann pwofesè ou kòmanse kesyon sa a.",
+      "sending": "N ap voye repons ou…",
+      "receipt_only": "Patisipasyon anrejistre. Repons ou poko rive jwenn pwofesè a pou l bay nòt.",
+      "complete_and_submit": "Konplete epi soumèt repons ou",
+      "poll_closed": "Kesyon opinyon sa a fèmen.",
+      "receipt_not_scored": "Pwofesè ou resevwa patisipasyon ou sèlman. Repons sa a pa t resevwa nòt.",
+      "no_answer_submitted": "Pa gen repons ki te soumèt pou kesyon sa a. Revize l ak klas ou.",
+      "answer_review": "Revizyon repons",
+      "review_answer": "Revize repons lan",
+      "discuss_with_teacher": "Diskite repons lan ak pwofesè ou.",
+      "response_correct": "Repons kòrèk.",
+      "response_partial": "Repons an pati kòrèk.",
+      "response_incorrect": "Repons sa a bezwen yon lòt koutje.",
+      "response_none": "Pa gen repons ki te soumèt.",
+      "response_submitted": "Repons soumèt pou revizyon.",
+      "explanation": "Eksplikasyon"
+    },
     "title": "Evalye",
     "mcq_count": "Kantite Plizyè Chwa",
     "reflections": "Refleksyon",

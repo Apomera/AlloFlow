@@ -1,0 +1,658 @@
+diff --git a/AlloFlowANTI.txt b/AlloFlowANTI.txt
+index 42d4e25be..59a699ea2 100644
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -14652,7 +14652,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+           .catch(function () {});
+       } catch (_) {}
+     })();
+-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=50f47633');
++    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=850e17ed');
+     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=37bdb2883');
+     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=37bdb2883');
+     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=37bdb2883');
+@@ -14702,7 +14702,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
+     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=f8a017fc');
+     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
+-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=d308e94c');
++    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=46f32889');
+     // File selection must promote intake ahead of deferred background tools.
+     // The registry handles in-flight deduplication and failed-load retries.
+     window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=37bdb2883'); };
+diff --git a/desktop/web-app/public/generation_helpers_module.js b/desktop/web-app/public/generation_helpers_module.js
+index 28d0a2b40..30c319374 100644
+--- a/desktop/web-app/public/generation_helpers_module.js
++++ b/desktop/web-app/public/generation_helpers_module.js
+@@ -4136,9 +4136,11 @@ const _preservedVocabulary = (() => {
+ };
+         const message = (name, params = {}) => {
+             const key = 'simplified.' + name; let translated;
+-            try { translated = translate?.(key, params); } catch (_) {}
++            // Fetch the template, then insert literal values once. A term may
++            // itself contain placeholders or JavaScript replacement symbols.
++            try { translated = translate?.(key); } catch (_) {}
+             const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
+-            return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
++            return value.replace(/\{(\w+)\}/g, (match, name) => Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match);
+         };
+         if (audit.reason === 'missing-required-pane' || audit.reason === 'empty-required-pane') return message(audit.reason === 'missing-required-pane' ? 'adapt_pane_missing' : 'adapt_pane_empty', {
+             pane: message(audit.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary')
+diff --git a/desktop/web-app/public/text_pipeline_helpers_module.js b/desktop/web-app/public/text_pipeline_helpers_module.js
+index 296d75719..69589900c 100644
+--- a/desktop/web-app/public/text_pipeline_helpers_module.js
++++ b/desktop/web-app/public/text_pipeline_helpers_module.js
+@@ -150,18 +150,54 @@ const readingText = (() => {
+         }
+         return -1;
+     };
++    const codeSpan = (text, start) => {
++        let width = 1;
++        while (text.charCodeAt(start + width) === 96) width++;
++        const delimiter = String.fromCharCode(96).repeat(width);
++        let end = text.indexOf(delimiter, start + width);
++        while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
++        if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++        return { width, end };
++    };
++    // Comments and fenced payloads are not evidence, but their syntax inside a
++    // displayed code span is literal text. Scan in context before splitting lines.
++    const readingBody = raw => {
++        let result = '', lineStart = true;
++        for (let i = 0; i < raw.length;) {
++            if (raw.startsWith('<!--', i)) {
++                const end = raw.indexOf('-->', i + 4);
++                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++                i = end + 3; continue;
++            }
++            const fence = lineStart && raw.slice(i).match(/^(`{3,}|~{3,})/);
++            if (fence) {
++                const openingEnd = raw.indexOf('\n', i + fence[1].length);
++                const closer = new RegExp('^[^\\S\\r\\n]*' + fence[1][0] + '{' + fence[1].length + ',}[^\\S\\r\\n]*$', 'gm');
++                closer.lastIndex = openingEnd + 1;
++                const closing = openingEnd >= 0 ? closer.exec(raw) : null;
++                if (!closing) throw formattingError('unclosed-formatting', 'unclosed');
++                result += '\n\n'; i = closing.index + closing[0].length; lineStart = true; continue;
++            }
++            if (raw[i] === '\\' && /[\\`*_[\]{}()#+.!|>-]/.test(raw[i + 1] || '')) {
++                result += raw.slice(i, i + 2); i += 2; lineStart = false; continue;
++            }
++            if (raw.charCodeAt(i) === 96) {
++                const { width, end } = codeSpan(raw, i);
++                result += raw.slice(i, end + width); i = end + width; lineStart = false; continue;
++            }
++            const char = raw[i++]; result += char;
++            if (char === '\n') lineStart = true;
++            else if (char.trim()) lineStart = false;
++        }
++        return result;
++    };
+     const inline = text => {
+         let result = '';
+         for (let i = 0; i < text.length; i++) {
+             // Code spans display punctuation literally; do not reinterpret their
+             // HTML or Markdown as invisible formatting.
+             if (text.charCodeAt(i) === 96) {
+-                let width = 1;
+-                while (text.charCodeAt(i + width) === 96) width++;
+-                const delimiter = String.fromCharCode(96).repeat(width);
+-                let end = text.indexOf(delimiter, i + width);
+-                while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
+-                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++                const { width, end } = codeSpan(text, i);
+                 result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
+                 i = end + width - 1; continue;
+             }
+@@ -214,16 +250,9 @@ const readingText = (() => {
+     };
+     const blocks = raw => {
+         if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
+-        // Keep hidden HTML spanning lines from being split into independent
+-        // Markdown paragraphs. Unsupported cross-line HTML is unverified.
+-        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw formattingError('unclosed-formatting', 'unclosed');
+-        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+-        const chunks = []; let paragraph = [], fence = '';
++        const chunks = []; let paragraph = [];
+         const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
+-        for (const line of raw.replace(/\r\n?/g, '\n').split('\n')) {
+-            const marker = line.match(/^\s*(`{3,}|~{3,})/);
+-            if (marker) { flush(); if (!fence) fence = marker[1][0]; else if (marker[1][0] === fence) fence = ''; continue; }
+-            if (fence) continue; // Chart/code payloads are not vocabulary evidence.
++        for (const line of readingBody(raw.replace(/\r\n?/g, '\n')).split('\n')) {
+             const htmlTags = inline(line).match(/<\/?[A-Za-z][^<>]*>/g) || [];
+             const stack = [];
+             for (const tag of htmlTags) {
+@@ -238,7 +267,6 @@ const readingText = (() => {
+             const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
+             if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
+         }
+-        if (fence) throw formattingError('unclosed-formatting', 'unclosed');
+         flush();
+         const output = [];
+         const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));
+diff --git a/desktop/web-app/src/AlloFlowANTI.txt b/desktop/web-app/src/AlloFlowANTI.txt
+index 42d4e25be..59a699ea2 100644
+--- a/desktop/web-app/src/AlloFlowANTI.txt
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -14652,7 +14652,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+           .catch(function () {});
+       } catch (_) {}
+     })();
+-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=50f47633');
++    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=850e17ed');
+     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=37bdb2883');
+     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=37bdb2883');
+     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=37bdb2883');
+@@ -14702,7 +14702,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
+     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=f8a017fc');
+     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
+-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=d308e94c');
++    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=46f32889');
+     // File selection must promote intake ahead of deferred background tools.
+     // The registry handles in-flight deduplication and failed-load retries.
+     window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=37bdb2883'); };
+diff --git a/desktop/web-app/src/App.jsx b/desktop/web-app/src/App.jsx
+index 42d4e25be..59a699ea2 100644
+--- a/desktop/web-app/src/App.jsx
++++ b/desktop/web-app/src/App.jsx
+@@ -14652,7 +14652,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+           .catch(function () {});
+       } catch (_) {}
+     })();
+-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=50f47633');
++    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=850e17ed');
+     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=37bdb2883');
+     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=37bdb2883');
+     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=37bdb2883');
+@@ -14702,7 +14702,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
+     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=f8a017fc');
+     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
+-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=d308e94c');
++    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=46f32889');
+     // File selection must promote intake ahead of deferred background tools.
+     // The registry handles in-flight deduplication and failed-load retries.
+     window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=37bdb2883'); };
+diff --git a/generation_helpers_module.js b/generation_helpers_module.js
+index 28d0a2b40..30c319374 100644
+--- a/generation_helpers_module.js
++++ b/generation_helpers_module.js
+@@ -4136,9 +4136,11 @@ const _preservedVocabulary = (() => {
+ };
+         const message = (name, params = {}) => {
+             const key = 'simplified.' + name; let translated;
+-            try { translated = translate?.(key, params); } catch (_) {}
++            // Fetch the template, then insert literal values once. A term may
++            // itself contain placeholders or JavaScript replacement symbols.
++            try { translated = translate?.(key); } catch (_) {}
+             const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
+-            return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
++            return value.replace(/\{(\w+)\}/g, (match, name) => Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match);
+         };
+         if (audit.reason === 'missing-required-pane' || audit.reason === 'empty-required-pane') return message(audit.reason === 'missing-required-pane' ? 'adapt_pane_missing' : 'adapt_pane_empty', {
+             pane: message(audit.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary')
+diff --git a/generation_helpers_source.jsx b/generation_helpers_source.jsx
+index 31ad242c4..4788f4e56 100644
+--- a/generation_helpers_source.jsx
++++ b/generation_helpers_source.jsx
+@@ -4133,9 +4133,11 @@ const _preservedVocabulary = (() => {
+ };
+         const message = (name, params = {}) => {
+             const key = 'simplified.' + name; let translated;
+-            try { translated = translate?.(key, params); } catch (_) {}
++            // Fetch the template, then insert literal values once. A term may
++            // itself contain placeholders or JavaScript replacement symbols.
++            try { translated = translate?.(key); } catch (_) {}
+             const value = typeof translated === 'string' && translated && translated !== key ? translated : defaults[name];
+-            return value.replace(/\{(\w+)\}/g, (match, name) => params[name] === undefined ? match : String(params[name]));
++            return value.replace(/\{(\w+)\}/g, (match, name) => Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match);
+         };
+         if (audit.reason === 'missing-required-pane' || audit.reason === 'empty-required-pane') return message(audit.reason === 'missing-required-pane' ? 'adapt_pane_missing' : 'adapt_pane_empty', {
+             pane: message(audit.pane === 'translation' ? 'adapt_terms_translation' : 'adapt_terms_primary')
+diff --git a/reports/track07-literal-preservation-2026-09-27/README.md b/reports/track07-literal-preservation-2026-09-27/README.md
+new file mode 100644
+index 000000000..a9f20f6ba
+--- /dev/null
++++ b/reports/track07-literal-preservation-2026-09-27/README.md
+@@ -0,0 +1,17 @@
++# Track 07: literal vocabulary preservation
++
++Fixed two reproduced contract gaps and strengthened fence boundaries.
++
++- Comment-like text inside a displayed inline code span is now kept literal during validation. Previously, removing that text could invent a match for a phrase the learner never saw. The same scanner is used by source readiness, Preview, Apply and pane-completeness checks.
++- Fenced payloads stay excluded until a matching fence of sufficient length closes. Comments inside payloads cannot hide surrounding reading; shorter inner fences cannot expose payload vocabulary. Unclosed syntax remains unverified and retains the source.
++- Feedback fetches its translated template before inserting values once, using only explicit parameters. Literal terms such as {terms}, {constructor}, {__proto__} and dollar replacement symbols remain unchanged.
++
++## Evidence and scope
++
++Current-source baseline: a63e347b7d193cbc95b5fc3a9fec844322f1f455. The existing isolated worktree was reused and refreshed from shared helper source. No additional nonempty AGENTS.md applied. The initial 16-case reproduction had 10 failures and six existing protections passing. After fixes, 224 tests across 10 files passed, including 30 new literal/boundary cases. Six new and 29 existing Chromium scenarios passed with network blocked and fixture-only state. Browser checks were repeated against reader module 8f2dd725 after concurrent reader work moved the first captured baseline.
++
++The shared helpers were rebuilt and byte-compared with the validated isolated outputs. Both root/public module pairs match. Only their two loader pins were changed in each host; current reader/compiler/catalog work was preserved. Track 05 commit acknowledgement and stale-request controls remain covered. The reader owner released its current write window. No application packaging, push or deployment was performed. These results do not establish deployed behavior or real screen-reader/provider behavior.
++
++Relevant implementation: text_pipeline_helpers_source.jsx codeSpan/readingBody, generation_helpers_source.jsx preservedVocabulary.feedback. Regression entry points: tests/preserved_vocabulary_literal_text.test.js and tests/track07-literal-browser.cjs. The browser fixture uses the assembled reader and exercises rejected source, Preview and Apply, successful literal preservation, fence exclusion and Spanish feedback.
++
++Detailed local evidence: integration.json, track07-literal-before.json, track07-literal-tests.json, track07-literal-browser-results.json, track07-completeness-browser-results.json and track07-literal.patch. The portable counts and fingerprints are in validation-summary.json. Normal Git hooks are required for the scoped commit; the commit receipt is recorded locally and in the chat.
+diff --git a/reports/track07-literal-preservation-2026-09-27/validation-summary.json b/reports/track07-literal-preservation-2026-09-27/validation-summary.json
+new file mode 100644
+index 000000000..2ab2a680a
+--- /dev/null
++++ b/reports/track07-literal-preservation-2026-09-27/validation-summary.json
+@@ -0,0 +1,53 @@
++{
++  "baseline": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
++  "initialReproduction": {
++    "failed": 10,
++    "passed": 6
++  },
++  "unit": {
++    "passed": 224,
++    "files": 10
++  },
++  "browser": {
++    "newCases": 6,
++    "existingCases": 29,
++    "errors": 0
++  },
++  "pins": {
++    "generation_helpers_module.js": "46f32889",
++    "text_pipeline_helpers_module.js": "850e17ed"
++  },
++  "compiledModulesMatchTestedBytes": true,
++  "readerInputs": [
++    {
++      "file": "view_simplified_module.js",
++      "sha256": "8f2dd725870ef19789fbf158bafec389506d3c0075159ce5cd1f7293ce970dcb"
++    },
++    {
++      "file": "instructional_context_module.js",
++      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
++    },
++    {
++      "file": "phase_n_misc_helpers_module.js",
++      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
++    },
++    {
++      "file": "AlloFlowANTI.txt",
++      "sha256": "bee7bd183381e82e6c497b02b64ccf3c76f08a0198e2e86acdb5df0040340c66"
++    },
++    {
++      "file": "tests/track07-browser-fixture.js",
++      "sha256": "9a2c5acb1ed6b8e316075b5a22cf238224c890b0dee36ca8119b38d4a48dba03"
++    },
++    {
++      "file": "tests/original_reader_markdown.test.js",
++      "sha256": "c3dab554f1347ce48291fddc77500609b4b6703a55259c73aea63abe32ebeac9"
++    },
++    {
++      "file": "tests/reader_sentence_links.test.js",
++      "sha256": "4f493df8198ea9e477968d350855877a77a4c180008077cc955dd2008b1880e4"
++    }
++  ],
++  "scope": "Generation/pipeline helpers, two new regression files, module pairs and only their host pins. Reader/compiler/catalog changes remain owned separately.",
++  "validated": "2026-09-27T18:05:25.021Z"
++}
+\ No newline at end of file
+diff --git a/tests/preserved_vocabulary_literal_text.test.js b/tests/preserved_vocabulary_literal_text.test.js
+new file mode 100644
+index 000000000..c5403459e
+--- /dev/null
++++ b/tests/preserved_vocabulary_literal_text.test.js
+@@ -0,0 +1,100 @@
++import { beforeAll, describe, expect, it, vi } from 'vitest';
++import { loadAlloModule } from './setup.js';
++let vocabulary, pipeline, helpers;
++beforeAll(() => {
++  for (const file of ['pure_helpers_module.js', 'text_pipeline_helpers_module.js', 'generation_helpers_module.js']) loadAlloModule(file);
++  helpers = window.AlloModules.GenerationHelpers; vocabulary = helpers.preservedVocabulary; pipeline = window.AlloModules.TextPipelineHelpers;
++});
++const split = text => pipeline.splitReferencesFromBody(text);
++const tick = String.fromCharCode(96);
++const validate = (source, candidate, terms) => vocabulary.validate(source, candidate, terms, split);
++function deps(candidate) {
++  return { generatedContent: { id: 'literal-1', type: 'simplified', data: 'Herons are wading birds.', config: { language: 'English' }, instructionalText: { form: 'adapted' } }, complexityLevel: 3, gradeLevel: 'Grade 4', leveledTextLanguage: 'English', translationMode: 'off', currentUiLanguage: 'English', resolveTranslationPolicy: pipeline.resolveTranslationPolicy,
++    adaptationPlan: { preview: true, options: { keepTerms: ['wading birds'] } }, setIsProcessing: vi.fn(), setComplexityLevel: vi.fn(), setGeneratedContent: vi.fn(), setHistory: vi.fn(), setWordSoundsCustomTerms: vi.fn(), setWsPreloadedWords: vi.fn(), setError: vi.fn(), addToast: vi.fn(), warnLog: vi.fn(), callGemini: vi.fn(), cleanJson: x => x, t: k => k, getDefaultTitle: () => 'Reading', extractSourceTextForProcessing: pipeline.extractSourceTextForProcessing, generateBilingualText: vi.fn(async () => candidate) };
++}
++const literal = 'Herons are ' + tick + 'wading<!--example--> birds' + tick + '.';
++describe('visible literal text is vocabulary evidence', () => {
++  it('does not remove a displayed comment-like sequence to invent a phrase', () => {
++    expect(pipeline.readingText.plain(literal)).toContain('wading<!--example--> birds');
++    expect(validate('wading birds', literal, ['wading birds'])).toMatchObject({ valid: false, missingTerms: [{ term: 'wading birds', pane: 'primary' }] });
++  });
++  it.each([1, 2])('preserves literal comment syntax in a %i-backtick code span', width => {
++    const code = tick.repeat(width) + 'wading<!--example--> birds' + tick.repeat(width);
++    expect(validate(code, code, ['wading<!--example--> birds']).valid).toBe(true);
++  });
++  it('allows a displayed unclosed comment marker inside a closed code span', () => {
++    const text = 'Keep ' + tick + '<!--literal' + tick + ' here.';
++    expect(validate(text, text, ['<!--literal']).valid).toBe(true);
++  });
++  it('ignores comment syntax inside fenced payloads without hiding surrounding reading', () => {
++    const text = 'wading birds\n\n~~~html\n<!-- a literal opening marker\n~~~\n\nMore reading.';
++    expect(validate(text, text, ['wading birds']).valid).toBe(true);
++  });
++  it('does not treat fence examples inside a hidden comment as a real code fence', () => {
++    const text = 'wading birds\n<!--\n' + tick.repeat(3) + '\nexample\n-->\nMore reading.';
++    expect(validate(text, text, ['wading birds']).valid).toBe(true);
++  });
++  it('does not let a shorter fence expose payload terms', () => {
++    const candidate = 'Other reading.\n' + tick.repeat(4) + 'text\n' + tick.repeat(3) + '\nwading birds\n' + tick.repeat(3) + '\n' + tick.repeat(4);
++    expect(validate('wading birds', candidate, ['wading birds']).valid).toBe(false);
++  });
++  it('rejects source-only literal mismatches before generation', async () => {
++    const d = deps('wading birds'); d.generatedContent.data = literal;
++    expect(await helpers.handleComplexityAdjustment(d)).toMatchObject({ status: 'rejected', reason: 'terms-absent-from-source', sourceRetained: true });
++    expect(d.generateBilingualText).not.toHaveBeenCalled();
++  });
++  it('rejects the literal mismatch at both Preview and Apply without a write', async () => {
++    const d = deps(literal);
++    expect(await helpers.handleComplexityAdjustment(d)).toMatchObject({ status: 'rejected', sourceRetained: true, reason: 'essential-terms-missing' });
++    d.generateBilingualText.mockResolvedValueOnce('Herons are wading birds.');
++    const preview = await helpers.handleComplexityAdjustment(d); expect(preview.status).toBe('preview');
++    preview.data = literal; const commit = vi.fn(async () => true); d.adaptationPlan = { apply: preview, commit };
++    expect(await helpers.handleComplexityAdjustment(d)).toMatchObject({ status: 'rejected', sourceRetained: true, reason: 'essential-terms-missing' });
++    expect(commit).not.toHaveBeenCalled(); expect(d.setGeneratedContent).not.toHaveBeenCalled(); expect(d.setHistory).not.toHaveBeenCalled();
++    expect(d.addToast.mock.calls.some(([, tone]) => tone === 'success')).toBe(false);
++  });
++});
++describe('feedback preserves the literal requested term', () => {
++  const template = 'Current text kept. Missing: {terms}.';
++  const translate = vi.fn((key, params = {}) => {
++    if (key === 'simplified.adapt_terms_primary') return 'primary reading';
++    if (key === 'simplified.adapt_terms_missing') return template.replace(/\{(\w+)\}/g, (match, name) => Object.hasOwn(params, name) ? params[name] : match);
++    return key;
++  });
++  it.each(['{terms}', '{constructor}', '{__proto__}', '$& and $$', '“quotes”, a;b', 'طيور الماء'])('does not reinterpret %s inside interpolated feedback', term => {
++    const result = vocabulary.feedback({ missingTerms: [{ term, pane: 'primary' }] }, translate);
++    expect(result).toBe('Current text kept. Missing: “' + term + '” (primary reading).');
++  });
++  it('keeps fallback feedback literal when the translator is absent or fails', () => {
++    const audit = { absentFromSource: ['{terms} $&'] };
++    const expected = 'Current text kept. These terms were not found exactly in the source: “{terms} $&”. Check spelling and case, or remove them from the list.';
++    expect(vocabulary.feedback(audit)).toBe(expected);
++    expect(vocabulary.feedback(audit, () => { throw new Error('Unavailable'); })).toBe(expected);
++  });
++});
++
++describe('comment and fence boundaries remain conservative', () => {
++  it.each([tick.repeat(3), tick.repeat(4), '~~~', '~~~~'])('skips opaque payloads inside %s and keeps surrounding reading', fence => {
++    const text = 'wading birds\r\n' + fence + 'html\r\n<!-- literal\r\n' + fence + fence[0] + '\r\nAnother sentence.';
++    expect(validate(text, text, ['wading birds']).valid).toBe(true);
++    expect(vocabulary.checkPanes(fence + '\n<!-- literal\n' + fence, false, split)).toMatchObject({ valid: false, reason: 'empty-required-pane' });
++  });
++  it.each(['wading\n~~~\nexample\n~~~\nbirds', 'wading\n~~~~\n~~~\nbirds\n~~~\n~~~~', 'Other.\n~~~~\n~~~\nwading birds\n~~~\n~~~~'])('does not bridge or expose excluded payload text: %s', text => {
++    expect(validate('wading birds', text, ['wading birds']).valid).toBe(false);
++  });
++  it.each(['<!-- unclosed', '~~~\nunclosed', '~~~\nunclosed\n~~~ trailing', tick + 'unclosed'])('retains source for unclosed syntax: %s', syntax => {
++    expect(validate('wading birds', 'wading birds\n' + syntax, ['wading birds'])).toMatchObject({ valid: false, status: 'unverified' });
++  });
++  it('removes actual comments without reinterpreting their backticks or fences', () => {
++    const text = 'wading<!--' + tick + '\n~~~~\n--> birds';
++    expect(validate('wading birds', text, ['wading birds']).valid).toBe(true);
++  });
++  it('handles an escaped backtick before an actual hidden comment', () => {
++    const text = 'A \\' + tick + ' sign. <!--' + tick + '--> wading birds.';
++    expect(validate('wading birds', text, ['wading birds']).valid).toBe(true);
++  });
++  it('checks literal mismatches independently in the translation pane', () => {
++    const d = '\n\n--- ENGLISH TRANSLATION ---\n\n';
++    expect(validate('Herons.' + d + 'wading birds', 'Herons.' + d + literal, ['wading birds'])).toMatchObject({ valid: false, missingTerms: [{ term: 'wading birds', pane: 'translation' }] });
++  });
++});
+diff --git a/tests/track07-literal-browser.cjs b/tests/track07-literal-browser.cjs
+new file mode 100644
+index 000000000..a9c3802ea
+--- /dev/null
++++ b/tests/track07-literal-browser.cjs
+@@ -0,0 +1,67 @@
++const { chromium } = require('playwright');
++const { expect } = require('@playwright/test');
++const assert = require('node:assert/strict');
++const fs = require('node:fs'), path = require('node:path');
++const root = path.resolve(__dirname, '..');
++(async () => {
++  const browser = await chromium.launch({ headless: true });
++  const context = await browser.newContext(); const page = await context.newPage();
++  const results = [], errors = []; page.on('pageerror', error => errors.push(error.message));
++  await context.route('**/*', route => route.abort());
++  try {
++    await page.setContent('<!doctype html><html><head><meta charset="UTF-8"></head><body></body></html>');
++    for (const file of ['desktop/web-app/node_modules/react/umd/react.development.js', 'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js', 'instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'text_pipeline_helpers_module.js', 'generation_helpers_module.js', 'view_simplified_module.js', 'tests/track07-browser-fixture.js']) await page.addScriptTag({ path: path.join(root, file) });
++    const mount = async options => { await page.evaluate(options => mountReading(options), options); await expect(page.locator('[data-adapt-keep-terms]')).toBeVisible(); };
++    const check = async (name, fn) => { try { await fn(); results.push({ name, status: 'passed' }); console.log('PASS ' + name); } catch (error) { results.push({ name, status: 'failed', error: error.stack }); console.error('FAIL ' + name + ': ' + error.message); } };
++    const tick = String.fromCharCode(96), literal = 'Herons are ' + tick + 'wading<!--example--> birds' + tick + '.';
++    await check('a displayed literal mismatch is rejected before generation', async () => {
++      await mount({ source: literal });
++      await expect(page.locator('[data-reading-passage]')).toContainText('wading<!--example--> birds');
++      await page.locator('[data-adapt-keep-terms]').fill('wading birds');
++      await expect(page.locator('[data-apply-complexity]')).toBeDisabled();
++      await expect(page.getByText('“wading birds”: not found exactly. Check spelling and case.')).toBeVisible();
++      assert.equal(await page.evaluate(() => fixture.requests.length), 0);
++    });
++    await check('a candidate cannot hide a missing phrase in literal code', async () => {
++      await mount({ candidate: literal }); await page.locator('[data-adapt-keep-terms]').fill('wading birds');
++      await page.locator('[data-apply-complexity]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing: “wading birds”');
++      await expect(page.locator('[data-adaptation-apply]')).toHaveCount(0);
++      assert.equal(await page.evaluate(() => fixture.state.current.data), await page.evaluate(() => fixture.initial.data));
++    });
++    await check('Apply rechecks a literal mismatch and never acknowledges a save', async () => {
++      await mount({}); await page.locator('[data-adapt-keep-terms]').fill('wading birds'); await page.locator('[data-apply-complexity]').click();
++      await expect(page.locator('[data-adaptation-apply]')).toBeVisible();
++      await page.evaluate(data => { fixture.preview.data = data; }, literal); await page.locator('[data-adaptation-apply]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing: “wading birds”');
++      assert.equal(await page.evaluate(() => fixture.state.current.data), await page.evaluate(() => fixture.initial.data));
++      assert.equal(await page.evaluate(() => fixture.toasts.filter(t => t.tone === 'success').length), 0);
++    });
++    await check('the actual literal phrase survives preview and acknowledged Apply', async () => {
++      await mount({ source: literal, candidate: literal }); await page.locator('[data-adapt-keep-terms]').fill('wading<!--example--> birds');
++      await page.locator('[data-apply-complexity]').click(); await page.locator('[data-adaptation-apply]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
++      await expect(page.locator('[data-reading-passage]')).toContainText('wading<!--example--> birds');
++      assert.equal(await page.evaluate(() => fixture.state.current.data), literal);
++    });
++    await check('shorter inner fences do not expose payload terms', async () => {
++      const candidate = 'Other reading.\n' + tick.repeat(4) + '\n' + tick.repeat(3) + '\nwading birds\n' + tick.repeat(3) + '\n' + tick.repeat(4);
++      await mount({ candidate }); await page.locator('[data-adapt-keep-terms]').fill('wading birds'); await page.locator('[data-apply-complexity]').click();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing: “wading birds”');
++      assert.equal(await page.evaluate(() => fixture.state.current.data), await page.evaluate(() => fixture.initial.data));
++    });
++    await check('translated feedback keeps literal placeholders and dollar signs', async () => {
++      const catalog = JSON.parse(fs.readFileSync(path.join(root, 'lang/spanish_castilian.js'), 'utf8'));
++      const terms = ['{terms}', '{constructor}', '{__proto__}', '$& and $$'];
++      const result = await page.evaluate(({ catalog, terms }) => {
++        const t = (key, params = {}) => { const value = key.split('.').reduce((obj, part) => obj?.[part], catalog); return typeof value === 'string' ? value.replace(/\{(\w+)\}/g, (match, name) => Object.hasOwn(params, name) ? params[name] : match) : key; };
++        return AlloModules.GenerationHelpers.preservedVocabulary.feedback({ missingTerms: terms.map(term => ({ term, pane: 'primary' })) }, t);
++      }, { catalog, terms });
++      for (const term of terms) assert.ok(result.includes('“' + term + '”'), result);
++      assert.ok(!result.includes('[native code]') && !result.includes('[object Object]'));
++    });
++    assert.deepEqual(errors, []);
++  } catch (error) { results.push({ name: 'browser harness', status: 'failed', error: error.stack }); }
++  finally { fs.writeFileSync(path.join(root, 'track07-literal-browser-results.json'), JSON.stringify({ results, errors }, null, 2)); await browser.close(); }
++  if (errors.length || results.some(result => result.status !== 'passed')) process.exitCode = 1;
++})();
+diff --git a/text_pipeline_helpers_module.js b/text_pipeline_helpers_module.js
+index 296d75719..69589900c 100644
+--- a/text_pipeline_helpers_module.js
++++ b/text_pipeline_helpers_module.js
+@@ -150,18 +150,54 @@ const readingText = (() => {
+         }
+         return -1;
+     };
++    const codeSpan = (text, start) => {
++        let width = 1;
++        while (text.charCodeAt(start + width) === 96) width++;
++        const delimiter = String.fromCharCode(96).repeat(width);
++        let end = text.indexOf(delimiter, start + width);
++        while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
++        if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++        return { width, end };
++    };
++    // Comments and fenced payloads are not evidence, but their syntax inside a
++    // displayed code span is literal text. Scan in context before splitting lines.
++    const readingBody = raw => {
++        let result = '', lineStart = true;
++        for (let i = 0; i < raw.length;) {
++            if (raw.startsWith('<!--', i)) {
++                const end = raw.indexOf('-->', i + 4);
++                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++                i = end + 3; continue;
++            }
++            const fence = lineStart && raw.slice(i).match(/^(`{3,}|~{3,})/);
++            if (fence) {
++                const openingEnd = raw.indexOf('\n', i + fence[1].length);
++                const closer = new RegExp('^[^\\S\\r\\n]*' + fence[1][0] + '{' + fence[1].length + ',}[^\\S\\r\\n]*$', 'gm');
++                closer.lastIndex = openingEnd + 1;
++                const closing = openingEnd >= 0 ? closer.exec(raw) : null;
++                if (!closing) throw formattingError('unclosed-formatting', 'unclosed');
++                result += '\n\n'; i = closing.index + closing[0].length; lineStart = true; continue;
++            }
++            if (raw[i] === '\\' && /[\\`*_[\]{}()#+.!|>-]/.test(raw[i + 1] || '')) {
++                result += raw.slice(i, i + 2); i += 2; lineStart = false; continue;
++            }
++            if (raw.charCodeAt(i) === 96) {
++                const { width, end } = codeSpan(raw, i);
++                result += raw.slice(i, end + width); i = end + width; lineStart = false; continue;
++            }
++            const char = raw[i++]; result += char;
++            if (char === '\n') lineStart = true;
++            else if (char.trim()) lineStart = false;
++        }
++        return result;
++    };
+     const inline = text => {
+         let result = '';
+         for (let i = 0; i < text.length; i++) {
+             // Code spans display punctuation literally; do not reinterpret their
+             // HTML or Markdown as invisible formatting.
+             if (text.charCodeAt(i) === 96) {
+-                let width = 1;
+-                while (text.charCodeAt(i + width) === 96) width++;
+-                const delimiter = String.fromCharCode(96).repeat(width);
+-                let end = text.indexOf(delimiter, i + width);
+-                while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
+-                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++                const { width, end } = codeSpan(text, i);
+                 result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
+                 i = end + width - 1; continue;
+             }
+@@ -214,16 +250,9 @@ const readingText = (() => {
+     };
+     const blocks = raw => {
+         if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
+-        // Keep hidden HTML spanning lines from being split into independent
+-        // Markdown paragraphs. Unsupported cross-line HTML is unverified.
+-        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw formattingError('unclosed-formatting', 'unclosed');
+-        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+-        const chunks = []; let paragraph = [], fence = '';
++        const chunks = []; let paragraph = [];
+         const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
+-        for (const line of raw.replace(/\r\n?/g, '\n').split('\n')) {
+-            const marker = line.match(/^\s*(`{3,}|~{3,})/);
+-            if (marker) { flush(); if (!fence) fence = marker[1][0]; else if (marker[1][0] === fence) fence = ''; continue; }
+-            if (fence) continue; // Chart/code payloads are not vocabulary evidence.
++        for (const line of readingBody(raw.replace(/\r\n?/g, '\n')).split('\n')) {
+             const htmlTags = inline(line).match(/<\/?[A-Za-z][^<>]*>/g) || [];
+             const stack = [];
+             for (const tag of htmlTags) {
+@@ -238,7 +267,6 @@ const readingText = (() => {
+             const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
+             if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
+         }
+-        if (fence) throw formattingError('unclosed-formatting', 'unclosed');
+         flush();
+         const output = [];
+         const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));
+diff --git a/text_pipeline_helpers_source.jsx b/text_pipeline_helpers_source.jsx
+index 997fa9fc5..36aef5dd8 100644
+--- a/text_pipeline_helpers_source.jsx
++++ b/text_pipeline_helpers_source.jsx
+@@ -145,18 +145,54 @@ const readingText = (() => {
+         }
+         return -1;
+     };
++    const codeSpan = (text, start) => {
++        let width = 1;
++        while (text.charCodeAt(start + width) === 96) width++;
++        const delimiter = String.fromCharCode(96).repeat(width);
++        let end = text.indexOf(delimiter, start + width);
++        while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
++        if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++        return { width, end };
++    };
++    // Comments and fenced payloads are not evidence, but their syntax inside a
++    // displayed code span is literal text. Scan in context before splitting lines.
++    const readingBody = raw => {
++        let result = '', lineStart = true;
++        for (let i = 0; i < raw.length;) {
++            if (raw.startsWith('<!--', i)) {
++                const end = raw.indexOf('-->', i + 4);
++                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++                i = end + 3; continue;
++            }
++            const fence = lineStart && raw.slice(i).match(/^(`{3,}|~{3,})/);
++            if (fence) {
++                const openingEnd = raw.indexOf('\n', i + fence[1].length);
++                const closer = new RegExp('^[^\\S\\r\\n]*' + fence[1][0] + '{' + fence[1].length + ',}[^\\S\\r\\n]*$', 'gm');
++                closer.lastIndex = openingEnd + 1;
++                const closing = openingEnd >= 0 ? closer.exec(raw) : null;
++                if (!closing) throw formattingError('unclosed-formatting', 'unclosed');
++                result += '\n\n'; i = closing.index + closing[0].length; lineStart = true; continue;
++            }
++            if (raw[i] === '\\' && /[\\`*_[\]{}()#+.!|>-]/.test(raw[i + 1] || '')) {
++                result += raw.slice(i, i + 2); i += 2; lineStart = false; continue;
++            }
++            if (raw.charCodeAt(i) === 96) {
++                const { width, end } = codeSpan(raw, i);
++                result += raw.slice(i, end + width); i = end + width; lineStart = false; continue;
++            }
++            const char = raw[i++]; result += char;
++            if (char === '\n') lineStart = true;
++            else if (char.trim()) lineStart = false;
++        }
++        return result;
++    };
+     const inline = text => {
+         let result = '';
+         for (let i = 0; i < text.length; i++) {
+             // Code spans display punctuation literally; do not reinterpret their
+             // HTML or Markdown as invisible formatting.
+             if (text.charCodeAt(i) === 96) {
+-                let width = 1;
+-                while (text.charCodeAt(i + width) === 96) width++;
+-                const delimiter = String.fromCharCode(96).repeat(width);
+-                let end = text.indexOf(delimiter, i + width);
+-                while (end >= 0 && (text.charCodeAt(end - 1) === 96 || text.charCodeAt(end + width) === 96)) end = text.indexOf(delimiter, end + width);
+-                if (end < 0) throw formattingError('unclosed-formatting', 'unclosed');
++                const { width, end } = codeSpan(text, i);
+                 result += Array.from(text.slice(i + width, end)).map(char => '&#' + char.codePointAt(0) + ';').join('');
+                 i = end + width - 1; continue;
+             }
+@@ -209,16 +245,9 @@ const readingText = (() => {
+     };
+     const blocks = raw => {
+         if (typeof DOMParser !== 'function') throw new Error('text-parser-unavailable');
+-        // Keep hidden HTML spanning lines from being split into independent
+-        // Markdown paragraphs. Unsupported cross-line HTML is unverified.
+-        if (/<!--[\s\S]*$/.test(raw.replace(/<!--[\s\S]*?-->/g, ''))) throw formattingError('unclosed-formatting', 'unclosed');
+-        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+-        const chunks = []; let paragraph = [], fence = '';
++        const chunks = []; let paragraph = [];
+         const flush = () => { if (paragraph.length) chunks.push(paragraph.join('\n')); paragraph = []; };
+-        for (const line of raw.replace(/\r\n?/g, '\n').split('\n')) {
+-            const marker = line.match(/^\s*(`{3,}|~{3,})/);
+-            if (marker) { flush(); if (!fence) fence = marker[1][0]; else if (marker[1][0] === fence) fence = ''; continue; }
+-            if (fence) continue; // Chart/code payloads are not vocabulary evidence.
++        for (const line of readingBody(raw.replace(/\r\n?/g, '\n')).split('\n')) {
+             const htmlTags = inline(line).match(/<\/?[A-Za-z][^<>]*>/g) || [];
+             const stack = [];
+             for (const tag of htmlTags) {
+@@ -233,7 +262,6 @@ const readingText = (() => {
+             const block = line.match(/^\s*(?:#{1,6}\s+|[-+*]\s+|\d+[.)]\s+|>\s?)(.*)$/);
+             if (block) { flush(); chunks.push(block[1]); } else paragraph.push(line);
+         }
+-        if (fence) throw formattingError('unclosed-formatting', 'unclosed');
+         flush();
+         const output = [];
+         const blockTags = new Set('p div pre li td th h1 h2 h3 h4 h5 h6 blockquote dt dd figcaption hr'.split(' '));

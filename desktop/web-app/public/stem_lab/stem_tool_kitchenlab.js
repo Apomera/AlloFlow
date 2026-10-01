@@ -76,6 +76,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     if (_klUnits === 'C') msg = localizeTemps(msg);
     if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
   }
+  // Move focus to a screen's heading once it has rendered, so a keyboard or
+  // screen-reader user lands on the new screen instead of the page body.
+  function klFocus(id) {
+    setTimeout(function() { var el = typeof document !== 'undefined' && document.getElementById(id); if (el && typeof el.focus === 'function') el.focus(); }, 60);
+  }
   // The one cook clock: sim seconds → m:ss
   function klClock(sec) {
     sec = Math.max(0, Math.round(sec || 0));
@@ -124,7 +129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     if (tempF < 212) return { zone: 'hot', label: 'Safe cook + hold', color: '#16a34a', rate: -1,
       descr: 'Above 165°F (74°C). Kills bacteria on contact. Most cooking happens here.' };
     return { zone: 'boil', label: 'Boiling', color: '#15803d', ink: '#4ade80', rate: -1,
-      descr: 'Water boils at 212°F (100°C) at sea level. Boiling kills bacteria instantly but doesn\'t neutralize all toxins — sometimes the bacteria die but the poisons they made survive.' };
+      descr: 'Water boils at 212°F (100°C) at sea level. Boiling kills most bacteria within a minute or so, but not every spore, and it doesn\'t neutralize all toxins — sometimes the bacteria die but the poisons they made survive.' };
   }
 
   // Generation (doubling) time in minutes for common foodborne bacteria at a
@@ -137,13 +142,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     if (tempF <= 110) return 20;
     return 20 + (tempF - 110) * (tempF - 110) / 6;
   }
-  // Hours on the counter at a temperature → doublings, multiplier, and where
-  // the USDA consumer limit falls (2 hours; 1 hour when the room is over 90°F).
-  function dangerClock(tempF, hours) {
+  // Hours with the FOOD at a temperature → doublings, multiplier, and where
+  // the USDA consumer limit falls: 2 hours, or 1 hour when the ROOM (not the
+  // food) is over 90°F. Warm leftovers cooling in a normal kitchen get 2.
+  function dangerClock(tempF, hours, hotRoom) {
     var dm = doublingMinutes(tempF);
     var doublings = dm === Infinity ? 0 : hours * 60 / dm;
     var inZone = tempF > 40 && tempF < 140;
-    var limitHours = tempF > 90 ? 1 : 2;
+    var limitHours = hotRoom ? 1 : 2;
     return { doublingMinutes: dm, doublings: doublings, multiplier: Math.pow(2, doublings), inZone: inZone, limitHours: limitHours, overLimit: inZone && hours > limitHours };
   }
 
@@ -167,7 +173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       use: 'Garnishes, fine sauces, professional plating.',
       why: 'Tiny + uniform. Cooks in seconds. Visual elegance for plated dishes — proves knife skill.',
       bestFor: 'Beurre blanc garnish, consommé royale, fine soup garnishes' },
-    { id: 'julienne', name: 'Julienne (Allumette)', sizeIn: '1/8 × 1/8 × 2', sizeCm: '3 mm × 3 mm × 5 cm', emoji: '🌾',
+    { id: 'julienne', name: 'Julienne (fine matchstick)', sizeIn: '1/8 × 1/8 × 2', sizeCm: '3 mm × 3 mm × 5 cm', emoji: '🌾',
       use: 'Stir-fries, slaws, garnishes, salads.',
       why: 'Long matchsticks cook FAST and evenly. Surface area + length = quick cook + visible "strands" on the plate.',
       bestFor: 'Stir-fry vegetables, carrot slaw, garnish on top of mains' },
@@ -199,7 +205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { id: 'sear', name: 'Sear', emoji: '🔥', panTempF: 425, fatNeeded: true, mediumDepth: 'film',
       time: 'very short (1-3 min per side)',
       whatHappens: 'Very high heat creates a brown, crispy crust via Maillard while the interior stays mostly raw. Used as a first step before lower-heat finishing.',
-      keyScience: 'Maillard accelerates dramatically above 300°F. At 425°F surface temp the reaction completes in 30-60 seconds — that\'s the brown crust.',
+      keyScience: 'Browning speeds up fast with heat: every 40°F roughly doubles the rate. At a 425°F surface a steak takes about 3 minutes to turn golden — quick, but not instant.',
       foodExamples: ['Steaks', 'Scallops', 'Chicken breasts before braising', 'Tuna for tataki'],
       mistake: 'Preheat the pan appropriately for its material and follow the cookware instructions. Do not splash water into hot oil to test the temperature.',
       visualCue: 'Pat the food bone-dry first. Surface water turns to steam, drops surface temp, prevents the crust forming.' },
@@ -256,7 +262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { name: 'Peanuts', emoji: '🥜', prev: '~2% kids, 1% adults', notes: 'Legume, not a true nut. Often co-allergic with tree nuts. Severe reactions common.', hiddenIn: 'Asian sauces (satay, pad thai), some chili, baked goods, candy, "natural flavor"' },
     { name: 'Tree Nuts', emoji: '🌰', prev: '~1% population', notes: 'Almonds, cashews, walnuts, pecans, pistachios, etc. Each is its own allergy.', hiddenIn: 'Pesto (pine nuts), marzipan (almond), nut milks, baked goods, BBQ sauce sometimes' },
     { name: 'Fish', emoji: '🐟', prev: '~0.4% kids, 0.5% adults', notes: 'Parvalbumin protein. Salmon-allergic ≠ tuna-allergic always — species-specific possible.', hiddenIn: 'Caesar dressing (anchovies), Worcestershire sauce, some pizza toppings, fish sauce in SE Asian dishes' },
-    { name: 'Shellfish', emoji: '🦐', prev: '~2% adults', notes: 'Tropomyosin protein. Most common adult-onset food allergy. Often lifelong.', hiddenIn: 'Glucosamine supplements, some Asian sauces, some carrageenan products, fish sauce' },
+    { name: 'Shellfish', emoji: '🦐', prev: '~2% adults', notes: 'Tropomyosin protein. Most common adult-onset food allergy. Often lifelong.', hiddenIn: 'Glucosamine supplements, some Asian sauces, fish sauce, seafood flavourings and stocks' },
     { name: 'Soy', emoji: '🫘', prev: '~0.4% kids', notes: 'Most outgrow. Soy LECITHIN typically tolerated (different protein structure).', hiddenIn: 'Most processed foods, soy sauce (gluten-free versions often soy-based), bread, chocolate' },
     { name: 'Wheat', emoji: '🌾', prev: '~0.4% kids', notes: 'Wheat ALLERGY (immune) differs from celiac disease (autoimmune to gluten) — different mechanism.', hiddenIn: 'Soy sauce (most), beer, some chocolate, processed cold cuts, soup base' },
     { name: 'Sesame', emoji: '🌱', prev: '~0.2% adults (rising)', notes: 'Added to top-9 list in 2023 by FASTER Act. Very low threshold for reactions — even cross-contamination matters.', hiddenIn: 'Hummus + tahini, many burger buns, "spices" + "natural flavor", crackers, energy bars' }
@@ -265,35 +271,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // ───────────────────────────────────────────────────────────
   // MAILLARD ZONES — surface temp → browning visual + chemistry
   // ───────────────────────────────────────────────────────────
-  // The Maillard reaction kicks in around 280°F (140°C) for most
-  // amino-acid + reducing-sugar combos. Below that, food just
-  // dehydrates. Above ~400°F you start losing volatile aromatics
-  // to combustion, and above ~480°F starches form acrylamide.
+  // Browning depends on temperature AND time: the recipes' model doubles the
+  // rate every 40°F above ~280°F (minutesToBrowning). Each zone is a SPEED,
+  // with the model's own times for a chicken breast surface; how dark the
+  // food ends up is how long it stays there. Acrylamide forms in starchy
+  // food from about 250°F (120°C, FDA) and builds fastest when dark and dry.
   var MAILLARD_ZONES = [
-    { maxF: 250, label: 'No browning (just heating)', color: '#f3e9d2', textColor: '#78716c',
-      visual: 'Pale + still pink (meat) or beige (bread). Surface water is evaporating; reaction hasn\'t started.',
-      science: 'Below ~250°F (120°C), water is still abundant at the surface. The Maillard reaction needs the surface to dry out so amino acids + reducing sugars can react directly — water dilutes them and absorbs the heat.' },
-    { maxF: 285, label: 'Maillard threshold', color: '#dcc18b', textColor: '#92400e',
-      visual: 'First hint of golden color. Faint sweet aroma starts. Looks "cooked" but not "seared."',
-      science: '250-285°F (120-140°C). The reaction has begun. Amino acids in the food are starting to react with reducing sugars (glucose, fructose, lactose), producing the first wave of brown pigment compounds (melanoidins) + dozens of volatile flavor molecules.' },
-    { maxF: 325, label: 'Active Maillard — golden brown', color: '#c08a3c', ink: '#c08a3c', textColor: '#451a03',
-      visual: 'Clear golden-brown surface. Aromas are rich + nutty. This is the "perfect cook" zone for most things.',
-      science: '285-325°F (140-163°C). Reaction at full speed. The brown color comes from melanoidins; the smell from hundreds of volatile compounds (pyrazines, furans, thiophenes) — these don\'t exist in raw food at all.' },
-    { maxF: 375, label: 'Deep Maillard — mahogany', color: '#7c4a1f', ink: '#cd8f55', textColor: '#fef3c7',
-      visual: 'Deep brown crust, intense aromas — almost roasted-coffee territory. The reaction has produced thousands of compounds.',
-      science: '325-375°F (163-190°C). Heavy reaction. Color compounds darken to brown-black. Some compounds start to bitter (pyrazines + carbonyls in higher concentration). Most "seared" outcomes happen here.' },
-    { maxF: 425, label: 'Bitter + charred', color: '#3f2419', ink: '#d2a679', textColor: '#fbbf24',
-      visual: 'Charred, bitter, often acrid smell. Volatile aromatics are burning off; bitter degradation products dominate.',
-      science: '375-425°F (190-218°C). Past the flavor peak. You\'re burning off the good volatiles + concentrating bitter degradation products. Smoke = vaporized oil + burned proteins.' },
-    { maxF: 600, label: '☠️ Acrylamide + acrolein zone', color: '#1c1410', ink: '#fca5a5', textColor: '#fca5a5',
-      visual: 'Black, smoking, often on fire. Inedible. Carcinogenic compounds (acrylamide) form from starch + amino acid asparagine.',
-      science: 'Above 425°F (220°C). Starchy foods form acrylamide (probable human carcinogen per IARC). Oils break down to acrolein (toxic + bitter). This is why french fries should be deep golden, not dark brown — the FDA recommends "go for gold."' }
+    { maxF: 250, label: 'No browning yet (drying the surface)', color: '#f3e9d2', textColor: '#78716c',
+      visual: 'Pale — still pink (meat) or beige (bread). Surface water is evaporating; the food heats but does not colour.',
+      science: 'Below ~250°F (120°C), water is still at the surface, and a wet surface stays near 212°F. The Maillard reaction needs the surface to dry so amino acids + reducing sugars can react directly — water dilutes them and absorbs the heat.' },
+    { maxF: 290, label: 'Barely starting — very slow', color: '#dcc18b', textColor: '#92400e',
+      visual: 'A faint tan, and only after a long time. Fine for gentle cooking; far too slow for a crust.',
+      science: '250-290°F (120-143°C). The reaction is running, but slowly: the recipes\' model starts counting at about 280°F, and at 290°F a chicken breast takes over half an hour to turn golden.' },
+    { maxF: 340, label: 'Slow and steady', color: '#c08a3c', ink: '#c08a3c', textColor: '#451a03',
+      visual: 'Golden arrives in minutes for thin, sugary foods (pancakes) and in 15-20 minutes for a chicken breast. Hard to burn by accident.',
+      science: '290-340°F (143-171°C). Melanoidins (the brown pigments) and hundreds of aroma compounds — pyrazines, furans, thiophenes — build steadily. None of them exist in raw food.' },
+    { maxF: 400, label: 'Fast browning — the sauté and roast range', color: '#7c4a1f', ink: '#cd8f55', textColor: '#fef3c7',
+      visual: 'Golden in about 5-10 minutes for a chicken breast, and deep brown not long after. Watch the food, not the clock.',
+      science: '340-400°F (171-204°C). Each 40°F halves the time to golden. This is where most sautéing and oven roasting happen: fast enough for colour, slow enough to cook the inside too.' },
+    { maxF: 450, label: 'Sear speed — a race', color: '#3f2419', ink: '#d2a679', textColor: '#fbbf24',
+      visual: 'A crust in 2-4 minutes, burnt within about 15. Many cooking oils are near or past their smoke point here.',
+      science: '400-450°F (204-232°C). The steak and stir-fry range: a crust forms before the inside overcooks, which is the point of a sear. Use an oil with a high smoke point and keep the food moving or turning on time.' },
+    { maxF: 600, label: '☠️ Very fast — seconds count', color: '#1c1410', ink: '#fca5a5', textColor: '#fca5a5',
+      visual: 'Golden in about a minute, burnt in a few. Bitter, acrid compounds build, and most fats smoke.',
+      science: 'Above 450°F (232°C). Burning outpaces flavour; oils break down to acrolein (bitter + irritating). Starchy foods form acrylamide (a probable human carcinogen, IARC) from about 250°F, fastest when dark and dry — the FDA advice for fries and toast is "go for gold."' }
   ];
 
   // Browning examples — common foods + their Maillard story
   var BROWNING_EXAMPLES = [
     { food: 'Seared steak', emoji: '🥩', surfaceF: '350-450°F',
-      story: 'The crust is pure Maillard — beef\'s amino acids + the bit of glucose in the meat. Below 300°F you get gray boiled-beef; above 400°F you get crust within 60 seconds.' },
+      story: 'The crust is pure Maillard — beef\'s amino acids + the bit of glucose in the meat. Below 300°F you get gray boiled-beef; at 450°F a crust forms in about two minutes.' },
     { food: 'Toasted bread', emoji: '🍞', surfaceF: '300-375°F',
       story: 'The toaster\'s coils heat bread\'s surface above 300°F. Starches hydrolyze into reducing sugars, which then Maillard with bread\'s proteins. That\'s the brown crust + the warm toasty smell.' },
     { food: 'Roasted coffee', emoji: '☕', surfaceF: '385-475°F',
@@ -313,12 +320,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { aspect: 'Foods', caram: 'Crème brûlée crust, hard candy, caramel sauce', mai: 'Almost everything else: steak, bread crust, roasted coffee, "caramelized" onions' },
     { aspect: 'Color', caram: 'Amber → red-brown', mai: 'Light gold → mahogany → black' },
     { aspect: 'Flavor', caram: 'Sweet, buttery, slightly bitter when dark', mai: 'Savory, meaty, nutty, complex (1000+ compounds)' },
-    { aspect: 'pH effect', caram: 'Acid slows it; alkaline pushes toward Maillard pathways', mai: 'Alkaline (baking soda) dramatically accelerates it' }
+    { aspect: 'pH effect', caram: 'Slowest near neutral; both acid and alkali speed it up', mai: 'Alkaline (baking soda) dramatically accelerates it' }
   ];
 
   // pH effects on browning
   var PH_EFFECTS = [
-    { ph: 'Acidic (vinegar, lemon, wine)', effect: 'SLOWS Maillard. That\'s why brining + acid marinades produce paler crusts.', use: 'When you want browning, dry the surface + skip the acid until plating.' },
+    { ph: 'Acidic (vinegar, lemon, wine)', effect: 'SLOWS Maillard. That\'s why acid marinades (and a wet surface straight out of a brine) give paler crusts.', use: 'When you want browning, dry the surface + skip the acid until plating.' },
     { ph: 'Neutral (plain water)', effect: 'Maillard runs at its baseline rate. Pure water means slow start (water has to evaporate first).', use: 'Standard cooking — most recipes assume neutral.' },
     { ph: 'Alkaline (baking soda)', effect: 'DRAMATICALLY accelerates Maillard. A pinch of baking soda on diced onions makes them brown in 5 minutes instead of 30.', use: 'Hack: ¼ tsp baking soda per pound of onions before browning. Same trick on chicken skin for darker crust.' },
     { ph: 'Very alkaline (lye / baked baking soda)', effect: 'Maximum Maillard. Pretzel dipping, ramen alkaline water, century-egg curing.', use: 'Industrial / traditional applications. Baked baking soda (350°F for 1 hour) becomes safer-to-handle but still very alkaline.' }
@@ -342,7 +349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { term: 'Sear', defn: 'Briefly cook food at very high heat to brown the surface. Goal is crust + Maillard flavor, not internal doneness. Usually followed by another technique (oven, braise).', tag: 'technique' },
     { term: 'Braise', defn: 'Sear, then partially submerge in liquid + cover + cook low + slow. Tough cuts become fork-tender as collagen converts to gelatin over hours.', tag: 'technique' },
     { term: 'Confit', pron: 'kohn-fee', defn: 'Slow-cook in fat at low temp (180-200°F) for hours. Originally a preservation method — fat seals the meat against air. Duck confit is the classic; garlic confit is the easy entry point.', tag: 'technique' },
-    { term: 'Sous vide', pron: 'soo veed', defn: 'Cook food in a vacuum-sealed bag in a precisely temperature-controlled water bath. Lets you cook a steak to exactly 130°F internally with no overcooked margin. Then sear for crust.', tag: 'technique' },
+    { term: 'Sous vide', pron: 'soo veed', defn: 'Cook food in a vacuum-sealed bag in a precisely temperature-controlled water bath. Lets you cook a steak to an exact internal temperature with no overcooked margin (the USDA minimum for steak is still 145°F). Then sear for crust.', tag: 'technique' },
     { term: 'Mirepoix', pron: 'meer-pwah', defn: 'French aromatic base: 2 parts onion + 1 part carrot + 1 part celery, all diced. The starting flavor foundation for stocks, soups, stews, sauces.', tag: 'prep' },
     { term: 'Sofrito', defn: 'Spanish + Latin American aromatic base, varies regionally. Usually includes onion + garlic + bell pepper + tomato cooked slowly in oil. Equivalent role to mirepoix.', tag: 'prep' },
     { term: 'Roux', pron: 'roo', defn: 'Flour + fat cooked together to thicken sauces. White roux (briefly cooked) thickens béchamel; blond + brown rouxes have more cooking → less thickening power but more flavor (gumbo uses very dark roux).', tag: 'technique' },
@@ -358,11 +365,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { term: 'Beurre monté', pron: 'burr mon-tay', defn: 'A stable emulsion of butter + a little water. Lets butter stay melted without breaking. Used for finishing sauces + poaching delicate foods.', tag: 'technique' },
     { term: 'Pan sauce', defn: 'Sauce built directly in the pan after searing — deglaze the fond + reduce + finish with butter. The classic 5-minute restaurant move.', tag: 'technique' },
     { term: 'Resting (meat)', defn: 'Letting cooked meat sit 5-20 min before cutting. Lets the muscle fibers relax + juices redistribute. Cutting hot = juice runs out = dry meat.', tag: 'science' },
-    { term: 'Carryover cooking', defn: 'Internal temp continues rising after meat leaves heat — usually 5-10°F. Pull a steak at 125°F if you want it medium-rare (130-135°F final).', tag: 'science' },
+    { term: 'Carryover cooking', defn: 'Internal temp keeps rising for a while after food leaves the heat — a few degrees for a steak or chicken breast, more for a large roast. It is one reason to rest meat. For safety, the thermometer should already read the USDA minimum (145°F for steak, 165°F for poultry) when you take it off.', tag: 'science' },
     { term: 'Bloom', defn: 'Sprinkle gelatin on cold liquid + let it absorb for 5 min before heating. Prevents lumps. Also applies to spices in hot oil (releasing essential oils).', tag: 'technique' },
     { term: 'Acid bright', defn: 'A squeeze of lemon, splash of vinegar, or drop of wine at the end of cooking. Acid sharpens flavor perception; without it, rich dishes taste muddy. The "missing ingredient" most cooks discover late.', tag: 'principle' },
     { term: 'Layer salt', defn: 'Salt at multiple stages of cooking, not just at the end. Aromatics, then vegetables, then protein, then final taste. Each layer seasons that ingredient specifically + builds depth.', tag: 'principle' },
-    { term: 'Steakhouse rule', defn: 'Take meat out of the fridge 30-60 min before cooking. Cold meat\'s outside overcooks before the inside warms. Room-temp meat cooks evenly.', tag: 'principle' }
+    { term: 'Steakhouse rule', defn: 'Some cooks let a steak sit out for a short time before cooking so it is less cold. It barely warms the centre, and every minute counts toward the 2-hour danger-zone limit — never do it with poultry or ground meat. A thermometer does more for an even cook.', tag: 'principle' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -400,7 +407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { from: '350°F oven', to: '175°C / Gas mark 4', notes: 'The "default" baking temp for most things. UK gas marks: 1=275°F, 2=300°F, 3=325°F, 4=350°F, 5=375°F, 6=400°F, 7=425°F, 8=450°F, 9=475°F.' },
     { from: '1 cup flour (AP)', to: '125 g (BY WEIGHT) / ~130 g packed', notes: 'Volume measurements vary 20% based on how you scoop. Baking recipes that work use weight.' },
     { from: '1 cup sugar (granulated)', to: '200 g', notes: 'Brown sugar packed: 220g. Powdered: 120g. By weight is the only consistent way.' },
-    { from: '1 large egg', to: '~50 g / 3 tbsp liquid (~30g white + ~20g yolk)', notes: 'Recipe scaling: 1 large egg ≈ 4 tbsp liquid equivalent. Useful when scaling up/down.' },
+    { from: '1 large egg', to: '~50 g / 3 tbsp liquid (~30g white + ~20g yolk)', notes: 'Recipe scaling: 1 large egg ≈ 3 tbsp (a little over) of beaten egg. Useful when scaling up/down.' },
     { from: '1 clove garlic', to: '~1 tsp minced / ~5 g', notes: 'Varies wildly with garlic size. Recipes assuming "medium" cloves mean roughly 5g.' }
   ];
 
@@ -506,6 +513,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // Difficulty progression: scrambledEggs (easy) → omelet / stirFry (med)
   // → pasta + saucePan (med) → roastChicken (hard). v0.3 ships only
   // scrambledEggs. v0.4 adds 3-4 more.
+  // The carton decides the egg recipes' safe minimum (safetyFloorF): regular
+  // eggs need 160°F, pasteurised eggs may stay soft.
+  // D and F verdicts: plain words that point at the results' "one fix" card
+  // (the old jokes read as mockery to literal readers and English learners).
+  var VERDICT_D = '🙂 Getting there. Start with your one fix below, then cook it again.';
+  var VERDICT_F = '🔁 Not this time. Your one fix below is the place to start.';
+  var EGG_CARTON_OPTION = { id: 'eggs', label: 'The eggs', default: 'regular', choices: [
+    { id: 'regular', label: 'Regular eggs', note: 'The USDA asks for egg dishes cooked to 160°F unless the eggs are pasteurised — Salmonella can be inside an intact shell.' },
+    { id: 'pasteurised', label: 'Pasteurised eggs', note: 'Heat-treated in the shell. Soft, just-set eggs are a fair choice.' } ] };
   var RECIPES = {
     scrambledEggs: {
       id: 'scrambledEggs',
@@ -514,9 +530,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       difficulty: 'easy',
       targetTimeMin: 5,
       description: 'The foundation. Master eggs and you can make breakfast for life.',
-      teaches: ['Protein denaturation', 'Low + slow technique', 'Carryover cooking', 'Salt timing'],
+      teaches: ['Protein denaturation', 'Low + slow technique', 'Carryover cooking', 'Salt timing', 'Egg safety: 160°F or pasteurised'],
       // Thin + constantly stirred: heats fast, cannot pass boiling, sets ~145°F, dries above ~175°F.
-      doneness: { foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, browningFrom: 'eggs', browningScale: [0.12, 0.3, 0.5, 0.8], stir: { label: 'Stir + fold', icon: '🥄', grace: 15 } },
+      doneness: { foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, safeF: 160, browningFrom: 'eggs', browningScale: [0.12, 0.3, 0.5, 0.8], stir: { label: 'Stir + fold', icon: '🥄', grace: 15 } },
+      options: [EGG_CARTON_OPTION],
       ingredients: [
         { id: 'butter',     name: 'Butter (1 tbsp)',     icon: '🧈', addAtStep: 1 },
         { id: 'eggs',       name: 'Whisked eggs (3)',    icon: '🥚', addAtStep: 2 },
@@ -547,7 +564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           instruction: 'Turn the burner to 0 (or pull the pan off). The eggs should still look slightly underdone + glossy.',
           target: { burnerLevel: 0 },
           completeWhen: 'heatRemoved',
-          teach: 'Carryover cooking continues for 30-60 seconds off heat. If you wait until they look "done," they\'ll be overcooked by the time you plate. Pull early.' },
+          teach: 'Carryover cooking continues for 30-60 seconds off heat. If you wait until they look "done," they\'ll be overcooked by the time you plate. Pull early, but not raw: with regular eggs the curds still have to reach 160°F (the USDA egg-dish minimum), so pull when they are soft and no longer liquid.' },
         { id: 's5', title: 'Season + serve',
           instruction: 'Sprinkle salt + pepper. Stir once. Plate immediately.',
           target: { itemAdded: 'saltPepper' },
@@ -566,6 +583,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var isSet = !!dn.set;
         var addT = state.itemAddTimes || {};
         var setAfterSec = dn.setAt && addT.eggs ? Math.max(0, Math.round((dn.setAt - addT.eggs) / 1000)) : Math.round(t);
+        // Regular eggs must reach 160°F; pasteurised eggs may stay soft (safetyFloorF)
+        var floorF = safetyFloorF(RECIPES.scrambledEggs, state.options);
+        var unsafe = floorF != null && peakF < floorF;
         // 1) Surface: browning integrates pan heat over the time food was in the pan
         if (browning >= 0.5) { score -= 35; notes.push({ neg: true, label: '🔥 Way too hot', detail: 'Pan peaked at ' + Math.round(maxT) + '°F with eggs in it long enough to brown the surface. Browned scrambled eggs = hard, rubbery curds.' }); }
         else if (browning >= 0.3) { score -= 20; notes.push({ neg: true, label: '🌡️ A bit hot', detail: 'Pan reached ' + Math.round(maxT) + '°F; the curds picked up colour and turned firm + slightly dry. Keep it under ~320°F next time.' }); }
@@ -576,7 +596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // 2) Interior: curds set from ~145°F; they dry out with time spent above ~175°F
         if (!isSet && browning >= 0.3) { score -= 25; notes.push({ neg: true, label: '⏱️ Pulled early', detail: 'Only ' + Math.round(t) + 's in the pan: the surface browned before the inside (' + Math.round(peakF) + '°F) could set. Lower heat, more time.' }); }
         else if (!isSet && peakF < 130) { score -= 30; notes.push({ neg: true, label: '⏱️ Way too fast', detail: 'Pulled after ' + Math.round(t) + 's with the eggs at ' + Math.round(peakF) + '°F inside. Curds set from about 145°F — these are still runny, and runny scrambled eggs are not safe to serve.' }); }
-        else if (!isSet) { score -= 10; notes.push({ neg: true, label: '⏱️ A bit fast', detail: Math.round(t) + 's in the pan, ' + Math.round(peakF) + '°F inside — barely set, slightly wet. Give them another 15-20 seconds of stirring.' }); }
+        else if (!isSet || unsafe) { score -= 10; notes.push({ neg: true, label: '⏱️ A bit fast', detail: Math.round(t) + 's in the pan, ' + Math.round(peakF) + '°F inside — barely set, slightly wet. Give them another 15-20 seconds of stirring.' }); }
         else if (overSec >= 90) { score -= 15; notes.push({ neg: true, label: '⏱️ Overcooked', detail: 'The eggs spent ' + Math.round(overSec) + 's above 175°F after setting. Dry + crumbly.' }); }
         else if (overSec >= 45) { score -= 5; notes.push({ neg: true, label: '⏱️ Slightly dry', detail: 'Set well, then stayed on ' + Math.round(overSec) + 's past the point of drying. Pull a little earlier.' }); }
         else { notes.push({ neg: false, label: '✓ Timing', detail: 'Set after about ' + setAfterSec + 's and pulled while still soft — well-paced.' }); }
@@ -592,21 +612,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         if (unattendedSec > 12) { score -= 10; notes.push({ neg: true, label: '⚠️ Left alone', detail: 'The eggs sat unstirred in a hot pan for ' + Math.round(unattendedSec) + 's in total. Patches on the bottom overcooked while the top stayed wet — keep them moving every 5-10 seconds.' }); }
         else if ((dn.stirCount || 0) >= 3) { notes.push({ neg: false, label: '✓ Kept moving', detail: 'Stirred ' + dn.stirCount + ' times — no patch got the chance to overcook.' }); }
         // 5) Carryover only counts if the eggs finished setting off the heat and never browned
-        if (state.heatRemovedAt && isSet && browning < 0.3 && dn.setAt && dn.setAt >= state.heatRemovedAt - 5000) {
+        if (state.heatRemovedAt && isSet && !unsafe && browning < 0.3 && dn.setAt && dn.setAt >= state.heatRemovedAt - 5000) {
           notes.push({ neg: false, label: '✓ Carryover', detail: 'Pulled off heat with the eggs still glossy — carryover finished setting them.' });
         }
         // Runny eggs (never near setting) are not a passing dish, whatever else
         // went right (same shape as the poultry recipes' under-temperature cap).
         var isRaw = !isSet && peakF < 130;
         if (isRaw) score = Math.min(score, 55);
+        if (unsafe) {
+          score = Math.min(score, 49);
+          if (!isRaw) notes.push({ neg: true, label: '☣️ FOOD SAFETY: regular eggs under 160°F', detail: 'The eggs peaked at ' + Math.round(peakF) + '°F. The USDA asks for egg dishes cooked to 160°F unless the eggs are pasteurised — Salmonella can be inside an intact shell. Stir a little longer on low heat, or choose pasteurised eggs for soft curds.' });
+        }
         score = Math.max(0, Math.min(100, score));
         var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
         var verdict = isRaw ? '🥚 Still raw in the middle. Give them more time on low heat.' :
+                      unsafe ? '☣️ Not safe to serve yet. Regular eggs need 160°F: a little longer on low heat, or use pasteurised eggs for soft curds.' :
                       score >= 90 ? '🌟 Restaurant-quality! These eggs would impress a chef.' :
                       score >= 80 ? '👨‍🍳 Solid scrambled eggs. Family approved.' :
                       score >= 70 ? '🍳 Edible. Not bad for a learning run.' :
-                      score >= 60 ? '😬 Technically scrambled eggs. Technically.' :
-                      '🚨 Kitchen fire risk. Try again.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       }
     },
@@ -622,7 +647,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       targetTimeMin: 3,
       description: 'Same eggs, faster + hotter. The classic French test: no browning, rolled finish, baby-soft interior.',
       teaches: ['Heat control under pressure', 'Speed = different chemistry', 'Roll technique', 'Pan as a tool'],
-      doneness: { foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, browningFrom: 'eggs', browningScale: [0.4, 0.9, 1.4, 2.5], stir: { label: 'Shake + scrape', icon: '🍳', grace: 10 } },
+      doneness: { foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, safeF: 160, browningFrom: 'eggs', browningScale: [0.4, 0.9, 1.4, 2.5], stir: { label: 'Shake + scrape', icon: '🍳', grace: 10 } },
+      options: [EGG_CARTON_OPTION],
       ingredients: [
         { id: 'butter',     name: 'Butter (1 tbsp)',     icon: '🧈', addAtStep: 1 },
         { id: 'eggs',       name: 'Whisked eggs (2-3)',  icon: '🥚', addAtStep: 2 },
@@ -644,7 +670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         { id: 's3', title: 'Stop stirring — let bottom set',
           instruction: 'When the curds are mostly set but the top still looks WET + glossy, stop stirring. Let the bottom set for 10-15 seconds.',
           target: { activeTimeSec: { min: 20, max: 70 }, panTempF: { max: 410 } }, completeWhen: 'userClick',
-          teach: 'The bottom needs to set into a thin "skin" that can hold the roll. Top stays glossy + barely set = the silky interior the French call "baveuse" (drooly).' },
+          teach: 'The bottom needs to set into a thin "skin" that can hold the roll. Top stays glossy + barely set = the silky interior the French call "baveuse" (drooly). Baveuse is a choice for pasteurised eggs; with regular eggs the centre still has to reach 160°F.' },
         { id: 's4', title: 'Roll + plate',
           instruction: 'Tilt pan toward you. Use spatula to fold the far third over the middle. Slide onto plate, using the pan edge to fold the near third under as it lands. Done.',
           target: { itemAdded: 'roll' }, completeWhen: 'itemAdded',
@@ -656,6 +682,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var t = state.activeTimeSec || 0;
         var dn = state.doneness || {};
         var browning = dn.browning || 0, peakF = dn.foodPeakF || 40, overSec = dn.secAboveOverF || 0, isSet = !!dn.set;
+        var floorF = safetyFloorF(RECIPES.omelet, state.options);
+        var unsafe = floorF != null && peakF < floorF;
         // Omelet wants HIGH heat but NOT browning: judged on integrated surface
         // browning (heat × time in the pan), so a hot pan used briefly stays pale.
         if (browning >= 1.4) { score -= 35; notes.push({ neg: true, label: '🔥 Browned + tough', detail: 'Pan peaked at ' + Math.round(maxT) + '°F and the sheet browned. Real French omelets are PALE yellow — this one has brown spots + a tough skin.' }); }
@@ -663,7 +691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         else if (maxT >= 320) { notes.push({ neg: false, label: '✓ Pan temp', detail: 'Peak ' + Math.round(maxT) + '°F, no browning — proper omelet zone.' }); }
         else { score -= 25; notes.push({ neg: true, label: '🥶 Not hot enough', detail: 'Pan never got to omelet temp (' + Math.round(maxT) + '°F). Slow cook = scrambled eggs, not omelet.' }); }
         // Interior: set from ~145°F; rubbery after ~50 s above 175°F
-        if (!isSet) { score -= 15; notes.push({ neg: true, label: '⏱️ Too fast', detail: 'Off the heat after ' + Math.round(t) + 's at ' + Math.round(peakF) + '°F inside — the interior would still be liquid.' }); }
+        if (!isSet || unsafe) { score -= 15; notes.push({ neg: true, label: '⏱️ Too fast', detail: 'Off the heat after ' + Math.round(t) + 's at ' + Math.round(peakF) + '°F inside — ' + (isSet ? 'the centre was still soft.' : 'the interior would still be liquid.') }); }
         else if (overSec >= 50) { score -= 20; notes.push({ neg: true, label: '⏱️ Too slow', detail: Math.round(t) + 's in the pan, ' + Math.round(overSec) + 's of it past the drying point. The omelet should be DONE in 60-75s — this one is overcooked + rubbery.' }); }
         else { notes.push({ neg: false, label: '✓ Speed', detail: Math.round(t) + 's — properly fast, set through, still soft inside. The French omelet rewards speed.' }); }
         // Kept moving? (stir: 'Shake + scrape', grace 10 s)
@@ -679,14 +707,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // A liquid centre (never near setting) is a raw omelet, not baveuse: cap below passing
         var isRaw = !isSet && peakF < 130;
         if (isRaw) score = Math.min(score, 55);
+        if (unsafe) {
+          score = Math.min(score, 49);
+          if (!isRaw) notes.push({ neg: true, label: '☣️ FOOD SAFETY: regular eggs under 160°F', detail: 'The centre peaked at ' + Math.round(peakF) + '°F. The USDA asks for egg dishes cooked to 160°F unless the eggs are pasteurised — Salmonella can be inside an intact shell. A few more seconds before the roll, or pasteurised eggs for a baveuse centre.' });
+        }
         score = Math.max(0, Math.min(100, score));
         var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
         var verdict = isRaw ? '🥚 Liquid centre — that is a raw omelet, not baveuse. A few more seconds on the heat.' :
+                      unsafe ? '☣️ Not safe to serve yet. Regular eggs need 160°F: a few more seconds before the roll, or pasteurised eggs for a soft centre.' :
                       score >= 90 ? '🇫🇷 Worthy of Le Bernardin\'s line. Bravo.' :
                       score >= 80 ? '👨‍🍳 Solid omelet. The neighbors would be impressed.' :
                       score >= 70 ? '🥚 Recognizable as an omelet. Mostly.' :
-                      score >= 60 ? '😬 Closer to scrambled eggs that got hugged.' :
-                      '🚨 Julia Child would have notes.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -748,7 +781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         { id: 's0', title: 'CRANK heat to MAX + add oil',
           instruction: 'Turn burner to 9-10. Get the pan/wok to ~430-475°F before adding oil. Drop oil in — should shimmer + ripple instantly.',
           target: { panTempF: { min: 410, max: 500 }, itemAdded: 'oil' }, completeWhen: 'itemAdded',
-          teach: 'Wok hei means "breath of the wok" — that smoky depth Chinese stir-fries have. It needs VERY hot oil. Use avocado, peanut, or grapeseed — any oil with smoke point above 450°F. NOT olive oil.' },
+          teach: 'Wok hei means "breath of the wok" — that smoky depth Chinese stir-fries have. It needs VERY hot oil. Use an oil with a high smoke point, such as refined avocado or refined peanut. NOT extra virgin olive oil.' },
         { id: 's1', title: 'Add aromatics — 30 seconds MAX',
           instruction: 'Drop garlic + ginger into the screaming-hot oil. Stir constantly. They should hiss + go fragrant in 10 seconds. Pull out or move on FAST.',
           target: { itemAdded: 'aromatics' }, completeWhen: 'itemAdded',
@@ -822,8 +855,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var verdict = score >= 90 ? '🥢 Wok hei achieved. The kind of stir-fry that smells like a great Chinese restaurant.' :
                       score >= 80 ? '🍳 Good stir-fry. Crunchy, flavorful, balanced.' :
                       score >= 70 ? '🥦 Stir-fried adjacent. Bit pale.' :
-                      score >= 60 ? '😬 Vegetable medley with extra steps.' :
-                      '🚨 Sad veggies. Maybe order takeout.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -904,7 +937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       description: 'The classic. Build a Maillard crust on high heat, finish through, rest before cutting. Tracks INTERNAL temp — verify at least 165°F before removing from heat, then rest.',
       teaches: ['Maillard at scale', 'Internal vs surface temp', 'Carryover cooking', 'Thermometer use', 'Rest discipline'],
       // A 1-inch breast: 40 → 165°F takes ~11 min across a 420°F sear + medium finish
-      doneness: { foodK: 0.0007, foodMaxF: 212, setF: 165, overF: 175, browningFrom: 'chicken', browningScale: [1, 4, 9, 24], fat: { item: 'oil', default: 'Refined avocado oil' }, stir: { label: 'Poke / move the chicken', icon: '👆', disturbs: true }, moisture: { initial: 6, evap: 1.2 } },
+      doneness: { foodK: 0.0007, foodMaxF: 212, setF: 165, overF: 175, safeF: 165, browningFrom: 'chicken', browningScale: [1, 4, 9, 24], fat: { item: 'oil', default: 'Refined avocado oil' }, stir: { label: 'Poke / move the chicken', icon: '👆', disturbs: true }, moisture: { initial: 6, evap: 1.2 } },
       options: [{ id: 'dry', label: 'Before it goes in', default: 'patted', choices: [
         { id: 'patted', label: 'Patted dry', note: 'Paper towel, both sides. The surface can start browning almost at once.' },
         { id: 'wet', label: 'Straight from the pack', moisture: 45, note: 'Surface water has to boil off first — the pan hisses and spits, the chicken steams grey, and the crust starts late.' } ] }],
@@ -970,8 +1003,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var verdict = score >= 90 ? '🍗 Restaurant-quality pan-seared chicken. Crust like glass, juicy inside.' :
                       score >= 80 ? '👨‍🍳 Solid chicken. Dinner is served.' :
                       score >= 70 ? '🍗 Edible, mostly. Some dry spots.' :
-                      score >= 60 ? '😬 Either tough or food-safety borderline.' :
-                      '🚨 Don\'t serve this. Order pizza.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -1107,8 +1140,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var verdict = score >= 90 ? '🌟 Restaurant-roasted veg. Caramelized edges, tender inside.' :
                       score >= 80 ? '👨‍🍳 Good roast. Healthy + tasty.' :
                       score >= 70 ? '🥕 Mostly cooked. Some pieces better than others.' :
-                      score >= 60 ? '😬 Edible but flat. Pale roasted veg is sad.' :
-                      '🚨 Steam-veg meets oven. Not it.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -1190,7 +1223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       description: 'The classic family dinner. Two-stage temperature (sear → finish), internal-temp tracking, mandatory rest. Tests everything.',
       teaches: ['Two-stage temp strategy', 'Internal temp ≠ oven temp', 'Patience + thermometer', 'Carryover discipline'],
       // A ~4 lb bird: thigh reaches 165°F after ~75 sim-min of a 425 → 350°F roast
-      doneness: { foodK: 0.00012, foodMaxF: 212, setF: 165, overF: 185, browningFrom: 'chicken', browningScale: [5, 14, 30, 110] },
+      doneness: { foodK: 0.00012, foodMaxF: 212, setF: 165, overF: 185, safeF: 165, browningFrom: 'chicken', browningScale: [5, 14, 30, 110] },
       ingredients: [
         { id: 'seasoning', name: 'Seasoning + truss', icon: '🧂', addAtStep: 1 },
         { id: 'chicken',   name: 'Place chicken in oven', icon: '🍗', addAtStep: 2 }
@@ -1217,7 +1250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           target: { foodInternalF: { min: 165, max: 185 } }, completeWhen: 'internalTempReached',
           teach: 'Chicken is SAFE at 165°F internal (USDA). Going much higher = dry meat. The thermometer is non-negotiable — visual doneness checks are notoriously wrong on whole birds.' },
         { id: 's5', title: 'Pull out + REST 15 sim-min',
-          instruction: 'Take chicken out of oven (turn off). Tent loosely with foil. Resting is MANDATORY — internal temp keeps climbing 5-10°F via carryover.',
+          instruction: 'Take chicken out of oven (turn off). Tent loosely with foil. Resting is MANDATORY — the juices settle and the internal temp keeps climbing a little via carryover.',
           target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
           teach: 'Cutting a hot chicken = juice runs onto cutting board, chicken is dry. Rest = juice redistributes through the meat. The 10-15 minutes is not optional. Use it to make a pan sauce from the drippings.' }
       ],
@@ -1237,7 +1270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // 2) Interior: the food-safety + doneness check, read from the simulated thigh temp
         if (foodT < 165) { score = Math.min(score, 49); notes.push({ neg: true, label: '☣️ FOOD SAFETY: undercooked', detail: 'Internal ' + Math.round(foodT) + '°F. USDA requires 165°F for poultry. This bird is salmonella risk — do not serve.' }); }
         else if (foodT < 178) { notes.push({ neg: false, label: '✓ Internal temp', detail: 'Internal peak ' + Math.round(foodT) + '°F — safely cooked, with the carryover of the rest included.' }); }
-        else if (foodT < 190) { score -= 10; notes.push({ neg: true, label: '🍂 Slightly overdone', detail: 'Internal peak ' + Math.round(foodT) + '°F — past the sweet spot. Pull at 165°F next time, the carryover does the rest.' }); }
+        else if (foodT < 190) { score -= 10; notes.push({ neg: true, label: '🍂 Slightly overdone', detail: 'Internal peak ' + Math.round(foodT) + '°F — past the sweet spot. Pull when the thermometer first reads 165°F next time.' }); }
         else { score -= 20; notes.push({ neg: true, label: '🪵 Dry bird', detail: 'Internal ' + Math.round(foodT) + '°F, ' + Math.round((dn.secAboveOverF || 0) / 60) + ' min of it above 185°F. Very overcooked — dry + stringy.' }); }
         // 3) Rest discipline
         if (state.heatRemovedAt) {
@@ -1252,8 +1285,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var verdict = score >= 90 ? '🍗 Picture-perfect roast chicken. Crispy skin, juicy meat, family-dinner gold.' :
                       score >= 80 ? '👨‍🍳 Solid roast bird. Sunday-dinner ready.' :
                       score >= 70 ? '🍗 Edible chicken. Some dry spots.' :
-                      score >= 60 ? '😬 Either dry, undercooked, or both.' :
-                      '🚨 Don\'t serve this to people you love.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -1464,8 +1497,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var verdict = score >= 90 ? '🍝 Restaurant pasta. Silky sauce, perfectly clinging.' :
                       score >= 80 ? '👨‍🍳 Solid pasta. Family-dinner approved.' :
                       score >= 70 ? '🍝 Recognizable pasta. Some shortcomings.' :
-                      score >= 60 ? '😬 Sauce on noodles, technically.' :
-                      '🚨 Order from the Italian place.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -1594,8 +1627,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       score >= 90 ? '🥞 Diner-perfect. Golden both sides, springy centre.' :
                       score >= 80 ? '👨‍🍳 Good pancake. The stack starts here.' :
                       score >= 70 ? '🥞 Edible pancake. One side has a story.' :
-                      score >= 60 ? '😬 Pancake-shaped. Read the bubbles next time.' :
-                      '🚨 The dog would eat it. Nobody else.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -1647,7 +1680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       targetTimeMin: 9,
       description: 'A 1-inch steak: screaming-hot pan, a real crust, and a thermometer decision. You choose the doneness target; the judge holds you to it, and to the USDA floor.',
       teaches: ['Doneness bands by temperature', 'USDA 145°F + rest for whole cuts', 'Sear = contact + heat + patience', 'Carryover on a thick cut'],
-      doneness: { foodK: 0.0007, carryoverSec: 60, foodMaxF: 212, setF: 145, overF: 160, browningFrom: 'steak', browningScale: [1, 4, 9, 24], fat: { item: 'oil', default: 'Refined avocado oil' }, stir: { label: 'Poke / move the steak', icon: '👆', disturbs: true }, moisture: { initial: 6, evap: 1.2 } },
+      doneness: { foodK: 0.0007, carryoverSec: 60, foodMaxF: 212, setF: 145, overF: 160, safeF: 145, browningFrom: 'steak', browningScale: [1, 4, 9, 24], fat: { item: 'oil', default: 'Refined avocado oil' }, stir: { label: 'Poke / move the steak', icon: '👆', disturbs: true }, moisture: { initial: 6, evap: 1.2 } },
       // Choices made before the steak goes in; the judge reads them from state.options.
       options: [
         { id: 'dry', label: 'Before it goes in', default: 'patted', choices: [
@@ -1678,8 +1711,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           instruction: 'Lift a corner — if it sticks, wait 20 seconds. When it releases with a deep brown crust, flip. Then 3-4 minutes on side 2.',
           target: { activeTimeSec: { min: 150, max: 330 } }, completeWhen: 'userClick', actionLabel: '🔄 Flip the steak',
           teach: 'The steak lets go of the pan when the crust has formed. Fight it and you leave the crust behind.' },
-        { id: 's3', title: 'Read the thermometer — pull 5°F before your target, burner OFF',
-          instruction: 'Probe the thickest part from the side. Pull the steak about 5°F before your target; carryover during the rest finishes it. Turn the burner off as you pull it.',
+        { id: 's3', title: 'Read the thermometer — pull at your target (never under 145°F), burner OFF',
+          instruction: 'Probe the thickest part from the side. Pull the steak when it reads your target — at least 145°F, the USDA minimum, measured before it leaves the heat. Carryover adds a few degrees during the rest. Turn the burner off as you pull it.',
           target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
           teach: 'Doneness is a temperature, not a colour or a clock. The USDA minimum for a whole cut is 145°F plus a 3-minute rest.' },
         { id: 's4', title: 'Rest 3 minutes, then slice',
@@ -1709,9 +1742,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // 2) Doneness against the target you chose, with the USDA floor underneath
         if (peakF < 145) { score = Math.min(score, 49); notes.push({ neg: true, label: '☣️ FOOD SAFETY: under 145°F', detail: 'Peak internal ' + peakF + '°F. The USDA consumer minimum for a whole cut is 145°F plus a 3-minute rest. Below that is a restaurant choice, not guidance for a home kitchen — and not this recipe.' }); }
         else if (peakF < target - 3) { score -= 10; notes.push({ neg: true, label: '🌡️ Under your target', detail: 'You chose ' + opt.label + '; the steak peaked at ' + peakF + '°F. Safe, but shy of the band you wanted — another 30-60 seconds.' }); }
-        else if (peakF <= target + 7) { notes.push({ neg: false, label: '✓ On target: ' + opt.label.split(' · ')[0], detail: 'Peak internal ' + peakF + '°F for a ' + target + '°F target, carryover included. That is the thermometer doing its job.' }); }
-        else if (peakF <= target + 15) { score -= 10; notes.push({ neg: true, label: '🍂 Past your target', detail: 'Peak ' + peakF + '°F against a ' + target + '°F target. Pull 5°F earlier next time; the rest finishes it.' }); }
-        else { score -= 20; notes.push({ neg: true, label: '🪵 Well past your target', detail: 'Peak ' + peakF + '°F, ' + (peakF - target) + '°F over. Dry and grey through — the thermometer was there to prevent exactly this.' }); }
+        // Pulled on the number, carryover lands 5-9°F higher (heavier pans at the top)
+        else if (peakF <= target + 9) { notes.push({ neg: false, label: '✓ On target: ' + opt.label.split(' · ')[0], detail: 'Peak internal ' + peakF + '°F for a ' + target + '°F target, carryover included. That is the thermometer doing its job.' }); }
+        else if (peakF <= target + 15) { score -= 10; notes.push({ neg: true, label: '🍂 Past your target', detail: 'Peak ' + peakF + '°F against a ' + target + '°F target. Next time pull as soon as the thermometer first reads your target; the rest adds a few degrees.' }); }
+        else { score -= 20; notes.push({ neg: true, label: '🪵 Well past your target', detail: 'Peak ' + peakF + '°F, ' + fmtDeltaT(peakF - target) + ' over. Dry and grey through — the thermometer was there to prevent exactly this.' }); }
         // 3) Rest: the recipe asks for three minutes; the carryover that finishes the centre happens in that time
         var restSec = state.heatRemovedSimSec != null ? Math.max(0, (dn.simElapsedSec || 0) - state.heatRemovedSimSec) : 0;
         if (state.heatRemovedAt && restSec >= 120) { notes.push({ neg: false, label: '✓ Rested ' + Math.round(restSec / 60) + ' min', detail: 'Off the heat before slicing — the carryover finished the centre and the juices stayed in the meat.' }); }
@@ -1723,8 +1757,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       score >= 90 ? '🥩 Steakhouse. Crust like bark, exactly the centre you asked for.' :
                       score >= 80 ? '👨‍🍳 Very good steak. One thing to tune.' :
                       score >= 70 ? '🥩 Decent steak. The thermometer has notes.' :
-                      score >= 60 ? '😬 Steak-adjacent.' :
-                      '🚨 A waste of a good cut.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -1775,7 +1809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         { id: 's4', title: 'Deglaze with a splash of water',
           instruction: 'A tablespoon or two of water into the pan. Scrape the brown film (the fond) back into the onions.',
           target: { itemAdded: 'water' }, completeWhen: 'itemAdded',
-          teach: 'The fond is caramelised sugar stuck to the pan — flavour you would otherwise leave behind. Water lifts it, and cools the pan a little.' },
+          teach: 'The fond is browned onion stuck to the pan (mostly Maillard products, some caramelised sugar) — flavour you would otherwise leave behind. Water lifts it, and cools the pan a little.' },
         { id: 's5', title: 'Off the heat',
           instruction: 'Turn the burner off. Taste: sweet, soft, no sharpness.',
           target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
@@ -1811,8 +1845,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var verdict = score >= 90 ? '🧅 Onion jam. Sweet, soft, deep — the patience shows.' :
                       score >= 80 ? '👨‍🍳 Good caramelised onions. Nearly there.' :
                       score >= 70 ? '🧅 Cooked onions with ambitions.' :
-                      score >= 60 ? '😬 Fried onions, technically.' :
-                      '🚨 Either raw or burnt. Possibly both.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       }
     },
@@ -1829,7 +1863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       description: 'Sunny-side up, medium-low, no flipping. You choose the yolk; the egg carton decides whether that yolk is safe. A lid is the trick for setting the top.',
       teaches: ['Whites set before yolks', 'Runny yolk = pasteurised egg (USDA)', 'Medium-low patience', 'A lid cooks the top with steam'],
       // Yolk as the internal temperature: white sets ~145°F, yolk runny below ~150, jammy ~160, firm ~170.
-      doneness: { foodK: 0.0035, foodMaxF: 212, setF: 145, overF: 175, browningFrom: 'egg', browningScale: [0.15, 0.4, 0.8, 1.5], fat: { item: 'butter', default: 'Butter (unclarified)' } },
+      doneness: { foodK: 0.0035, foodMaxF: 212, setF: 145, overF: 175, safeF: 160, browningFrom: 'egg', browningScale: [0.15, 0.4, 0.8, 1.5], fat: { item: 'butter', default: 'Butter (unclarified)' } },
       options: [
         { id: 'eggs', label: 'The eggs', default: 'regular', choices: [
           { id: 'regular', label: 'Regular eggs', note: 'The USDA asks for whites and yolks cooked firm (160°F) unless the eggs are pasteurised — Salmonella can be inside an intact shell.' },
@@ -1896,8 +1930,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       score >= 90 ? '🍳 Diner-window egg. Exactly the yolk you asked for.' :
                       score >= 80 ? '👨‍🍳 Good egg. One thing to tune.' :
                       score >= 70 ? '🍳 An egg. Edible, a story attached.' :
-                      score >= 60 ? '😬 Egg-shaped.' :
-                      '🚨 The pan won that round.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       renderVisual: function(h, state) {
@@ -2040,8 +2074,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       score >= 90 ? '🍚 Fluffy, separate, every grain tender. Ratio, lid, low flame, rest.' :
                       score >= 80 ? '👨‍🍳 Good rice. One thing to tune.' :
                       score >= 70 ? '🍚 Rice, served with a small apology.' :
-                      score >= 60 ? '😬 Something rice-adjacent.' :
-                      '🚨 Start again. The water measures itself if you let it.';
+                      score >= 60 ? VERDICT_D :
+                      VERDICT_F;
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       },
       // A pot in cross-section: water level, the rice layer swelling as it
@@ -2172,9 +2206,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // Foods the Free Cook sandbox offers. Each carries the doneness config a
   // graded recipe would, plus the reference line the readout quotes.
   var SANDBOX_FOODS = [
-    { id: 'eggs', name: 'Whisked eggs', icon: '🥚', fatItem: 'butter', fatName: 'Butter (1 tbsp)', fatIcon: '🧈', visual: 'eggs',
+    { id: 'eggs', name: 'Whisked eggs', icon: '🥚', fatItem: 'butter', fatName: 'Butter (1 tbsp)', fatIcon: '🧈', visual: 'eggs', safeF: 160,
       doneness: { foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, browningFrom: 'eggs', browningScale: [0.12, 0.3, 0.5, 0.8], stir: { label: 'Stir + fold', icon: '🥄', grace: 15 } },
-      guide: 'set from about 145°F, dry past 175°F; any colour is too much for a soft scramble.' },
+      guide: 'set from about 145°F, safe at 160°F (USDA, regular eggs), dry past 175°F; any colour is too much for a soft scramble.' },
     { id: 'chicken', name: 'Chicken breast', icon: '🍗', fatItem: 'oil', fatName: 'Oil', fatIcon: '🛢️', visual: 'sear', safeF: 165,
       doneness: { foodK: 0.0007, foodMaxF: 212, setF: 165, overF: 175, browningFrom: 'chicken', browningScale: [1, 4, 9, 24], fat: { item: 'oil', default: 'Refined avocado oil' }, stir: { label: 'Poke / move the chicken', icon: '👆', disturbs: true }, moisture: { initial: 6, evap: 1.2 } },
       guide: 'safe at a measured 165°F, dry past 175°F; a deep crust needs a 400°F+ pan and patience.' },
@@ -2215,30 +2249,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // at panF, stirred every 10 s, in the food's default fat. Same physics as the
   // recipe tick (advanceDoneness), run in one go so the slider gives an answer.
   var HEAT_MICRO_SEC = { saute: 300, sear: 180, simmer: 300, boil: 300, braise: 600, roast: 600, steam: 300, fry: 180 };
-  var HEAT_DEFAULT_FOOD = { saute: 'mushrooms', sear: 'steak', simmer: 'onion', boil: 'onion', braise: 'chicken', roast: 'chicken', steam: 'mushrooms', fry: 'chicken' };
-  function microCook(food, panF, seconds) {
+  // Deep fry's three minutes suit onion rings, not a whole chicken breast
+  var HEAT_DEFAULT_FOOD = { saute: 'mushrooms', sear: 'steak', simmer: 'onion', boil: 'onion', braise: 'chicken', roast: 'chicken', steam: 'mushrooms', fry: 'onion' };
+  // Simmer, boil and steam cook in water, which cannot pass its boiling point:
+  // the slider stops there, the food is always wet (so it cannot brown), and
+  // there is no oil to smoke.
+  var WATER_METHODS = { simmer: true, boil: true, steam: true };
+  function waterCue(tempF, bp) {
+    bp = bp || 212;
+    if (tempF >= bp - 2) return 'rolling boil: big bubbles across the whole surface';
+    if (tempF >= 180) return 'simmer: small bubbles at the edge, an occasional ripple';
+    if (tempF >= 150) return 'steaming, tiny bubbles on the bottom, no simmer yet';
+    return 'hot water, still: no bubbles';
+  }
+  function microCook(food, panF, seconds, opts) {
+    var water = !!(opts && opts.water);
+    var bp = (opts && opts.bp) || 212;
+    if (water) panF = Math.min(panF, bp);
     var rec = { doneness: food.doneness };
     var fatItem = (food.doneness.fat && food.doneness.fat.item) || food.fatItem;
-    var s = { recipeItemsInPan: [fatItem, food.id], recipeBurnerLevel: 5, recipeFoodInternalF: 40, recipeFoodPeakF: 40, recipeBrowning: 0,
+    var s = { recipeItemsInPan: water ? [food.id] : [fatItem, food.id], recipeBurnerLevel: 5, recipeFoodInternalF: 40, recipeFoodPeakF: 40, recipeBrowning: 0,
       recipeSecAboveOverF: 0, recipeFoodSetAt: null, recipeUnattendedSec: 0, recipeSmokeSec: 0, recipeSimElapsedSec: 0, recipeLastStirSimSec: 0, recipeSteamSec: 0 };
-    s.recipeMoisture = initialMoisture(rec, s);   // the food brings its surface water
+    s.recipeMoisture = water ? 300 : initialMoisture(rec, s);   // the food brings its surface water (or sits in it)
     var dt = 0.5, t = 0, now = 0;
     while (t < seconds - 1e-9) {
       Object.assign(s, advanceDoneness(s, rec, panF, dt, now));
       t += dt; now += 500; s.recipeSimElapsedSec = t;
       if (Math.round(t * 2) % 20 === 0) s.recipeLastStirSimSec = t;
     }
-    var oil = oilFor(rec, s);
-    return { panF: panF, seconds: seconds, browning: s.recipeBrowning, label: browningLabel(s.recipeBrowning, food.doneness.browningScale),
-      foodEndF: s.recipeFoodInternalF, set: !!s.recipeFoodSetAt, smokeSec: s.recipeSmokeSec, oil: oil, steamSec: s.recipeSteamSec,
-      sizzle: klSizzleLevel(panF, true, s.recipeFoodInternalF, s.recipeMoisture) };
+    var oil = water ? null : oilFor(rec, s);
+    return { panF: panF, seconds: seconds, water: water, browning: s.recipeBrowning, label: browningLabel(s.recipeBrowning, food.doneness.browningScale),
+      foodEndF: s.recipeFoodInternalF, set: !!s.recipeFoodSetAt, smokeSec: s.recipeSmokeSec, oil: oil, steamSec: water ? 0 : s.recipeSteamSec,
+      sizzle: water ? { caption: waterCue(panF, bp) } : klSizzleLevel(panF, true, s.recipeFoodInternalF, s.recipeMoisture) };
   }
   // Per-recipe progress, kept across cooks: attempts, best and last grade, and
   // the first thing the judge flagged last time. The picker shows it so the
   // student picks the next cook with a reason.
   function foldRecipeHistory(history, recipeId, judgement, isCompetition) {
     var prev = (history || {})[recipeId] || { attempts: 0, bestScore: null, bestGrade: null, lastScore: null, lastGrade: null, lastIssue: null, competitionRuns: 0, independentRuns: 0, supportedRuns: 0, independentBest: null };
-    var firstIssue = (judgement.notes || []).filter(function(n) { return n.neg; })[0];
+    var firstIssue = oneFix(judgement);
     var next = {
       attempts: prev.attempts + 1,
       competitionRuns: prev.competitionRuns + (isCompetition ? 1 : 0),
@@ -2452,7 +2501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     roastChicken: [{ level: 8, untilPanF: 415 }, { level: 8, add: ['seasoning'], 'for': 5 }, { level: 8, add: ['chicken'], 'for': 900 }, { level: 5, untilFoodF: 165, max: 9000 }, { off: true, 'for': 600 }],
     pancakes: [{ level: 5, untilPanF: 340 }, { level: 5, add: ['oil'], 'for': 2 }, { level: 5, add: ['batter'], 'for': 60 }, { level: 5, mark: 'flip', 'for': 70 }, { off: true, 'for': 5 }],
     steak: (function() {
-      var pull = function(rec, st) { return optionValue(rec, st.recipeOptions, 'target').value - 4; };   // the recipe's own "pull about 5°F early"
+      var pull = function(rec, st) { return optionValue(rec, st.recipeOptions, 'target').value; };   // the recipe's own "pull at your target", never under 145°F
       return [{ level: 9, untilPanF: 430 }, { level: 9, add: ['oil'], 'for': 5 }, { level: 9, add: ['steak'], 'for': 180, untilFoodF: pull }, { level: 9, 'for': 180, untilFoodF: pull, mark: 'flip' },
         { level: 9, untilFoodF: pull }, { off: true, 'for': 180 }];
     })(),
@@ -2482,7 +2531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       vars.push({ id: 'stir', label: 'Attention', textbook: 'told', choices: [{ id: 'told', label: dn.stir.label + ' as the recipe says' }, { id: 'never', label: 'Walk away: never ' + dn.stir.label.toLowerCase() }] });
     }
     if (tb.some(function(g) { return g.untilFoodF != null; })) {
-      vars.push({ id: 'pull', label: 'When you pull it', textbook: '0', choices: [{ id: '-10', label: '10°F early' }, { id: '0', label: 'On the number' }, { id: '+15', label: '15°F late' }] });
+      vars.push({ id: 'pull', label: 'When you pull it', textbook: '0', choices: [{ id: '-10', label: '10°F (6°C) early' }, { id: '0', label: 'On the number' }, { id: '+15', label: '15°F (8°C) late' }] });
     }
     if ((dn.moisture && dn.moisture.boils) || rec.multiPot) {
       vars.push({ id: 'alt', label: 'Kitchen altitude', textbook: '0', choices: [0, 5280, 10000].map(function(ft) { return { id: String(ft), label: (ALTITUDES.find(function(a) { return a.ft === ft; }) || { label: ft + ' ft' }).label + ' (boils at ' + Math.round(boilingPointF({ klAltitudeFt: ft })) + '°F)' }; }) });
@@ -2690,8 +2739,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     // leaning on the instrument past that which counts as support.
     if (probes > 1) parts.push(probes + ' thermometer ' + (probes === 1 ? 'probe' : 'probes'));
     if (flicks) parts.push(flicks + ' water ' + (flicks === 1 ? 'flick' : 'flicks'));
-    if (state && state.aiCritique) parts.push('the AI critique');
-    return { count: (probes > 1 ? probes - 1 : 0) + flicks + (state && state.aiCritique ? 1 : 0), parts: parts };
+    // The AI critique is not counted: it is written after the judge scores
+    // the cook, so it cannot have helped this one (a leftover one from the
+    // last cook used to mark every later cook "supported").
+    return { count: (probes > 1 ? probes - 1 : 0) + flicks, parts: parts };
   }
   function evidenceStatus(state, judgement) {
     if (!judgement || judgement.score == null) return null;      // the sandbox has no grade to stand behind
@@ -2712,6 +2763,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { re: /stir|toss|left alone|caught on the bottom|stuck|unattended|moved|poke/i, section: 'heat', label: 'Technique: keep it moving, or leave it alone' },
     { re: /boil|simmer|thin sauce|gummy|crunchy|pasta|water|lid|door|preheat|too cool|too hot|hot for|cool side|screaming|shrunken|hard inside|raw|flip|door/i, section: 'heat', label: 'Heat and technique' }
   ];
+  // The one thing to change next time: a food-safety flag first, otherwise the
+  // judge's first negative note (each judge lists the note that matters most first).
+  function oneFix(judgement) {
+    var neg = ((judgement && judgement.notes) || []).filter(function(n) { return n && n.neg; });
+    return neg.find(function(n) { return /FOOD SAFETY/.test(n.label || ''); }) || neg[0] || null;
+  }
   function lessonFor(note) {
     if (!note) return null;
     // the label is the judge's own naming of the fault, so it decides first; the detail only breaks a tie
@@ -3068,13 +3125,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     {
       id: 'thermometerTruth',
       label: '🌡️ Thermometer Truth',
-      description: 'Pull the food within 8°F above its set point (recipes with an internal target).',
+      description: 'Pull the food on its target: peak within 10°F (6°C) of it, carryover included, never under the safe minimum (thick foods you probe).',
       bonus: 20, penalty: -10,
       check: function(state, rec) {
-        var dn = state.doneness || {}; var setF = rec && rec.doneness && rec.doneness.setF;
-        if (!setF || !(rec.doneness.foodK < 0.005)) return { passed: true, value: 0, resultText: 'No thermometer target in this recipe — automatic pass.' };
-        var peak = Math.round(dn.foodPeakF || 40); var passed = peak >= setF && peak <= setF + 8;
-        return { passed: passed, value: peak, resultText: passed ? 'Peak ' + peak + '°F against a ' + setF + '°F set point — pulled on the number. +20 bonus.' : 'Peak ' + peak + '°F against a ' + setF + '°F set point. -10 penalty.' };
+        // The aim is the student's own target (steak doneness, yolk) or the
+        // safe minimum, whichever is higher; thin fast foods are not probed.
+        var dn = state.doneness || {};
+        var probed = rec && rec.doneness && rec.doneness.foodK < 0.005;
+        var target = probed ? recipeTargetF(rec, { recipeOptions: state.options }) : null;
+        var floor = probed ? safetyFloorF(rec, state.options) : null;
+        var aim = Math.max(target || 0, floor || 0);
+        if (!aim) return { passed: true, value: 0, resultText: 'No thermometer target in this recipe — automatic pass.' };
+        var peak = Math.round(dn.foodPeakF || 40); var passed = peak >= aim && peak <= aim + 10;
+        return { passed: passed, value: peak, resultText: passed ? 'Peak ' + peak + '°F against a ' + aim + '°F target — pulled on the number. +20 bonus.' : 'Peak ' + peak + '°F against a ' + aim + '°F target' + (floor && peak < floor ? ', under the ' + floor + '°F safe minimum' : '') + '. -10 penalty.' };
       }
     }
   );
@@ -3446,11 +3509,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     } catch (e) { _klAudio = null; }
     return _klAudio;
   }
+  var _klAudioOn = false, _klAudioSuspendT = null;
   function klAudioSet(level, tier, enabled) {
     if (!enabled) {
-      if (_klAudio) _klAudio.gain.gain.setTargetAtTime(0, _klAudio.ctx.currentTime, 0.1);
+      _klAudioOn = false;
+      if (_klAudio) {
+        _klAudio.gain.gain.setTargetAtTime(0, _klAudio.ctx.currentTime, 0.1);
+        // Once faded, suspend the context rather than loop silent noise forever
+        if (!_klAudioSuspendT) _klAudioSuspendT = setTimeout(function() {
+          _klAudioSuspendT = null;
+          if (!_klAudioOn && _klAudio && _klAudio.ctx.state === 'running') { try { _klAudio.ctx.suspend().catch(function() {}); } catch (e) { /* already closed */ } }
+        }, 600);
+      }
       return;
     }
+    _klAudioOn = true;
     var a = klAudioEnsure(); if (!a) return;
     if (a.ctx.state === 'suspended') { try { a.ctx.resume().catch(function() {}); } catch (e) { /* no gesture yet */ } }
     var t = a.ctx.currentTime;
@@ -3554,6 +3627,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // pure pieces as the tick, in coarse steps, so it costs a millisecond or two
   // per render. It is coaching, so the cockpit hides it in competition and in
   // demonstrate mode.
+  // The lowest centre temperature that is safe to serve (doneness.safeF, or
+  // the Free Cook food's), or null. Pasteurised eggs lift the egg floor.
+  function safetyFloorF(rec, options, state) {
+    if (rec && rec.sandbox) return sandboxFood(state && state.sandboxFood).safeF || null;
+    var floor = rec && rec.doneness && rec.doneness.safeF;
+    if (!floor) return null;
+    var eggs = optionValue(rec, options, 'eggs');
+    return eggs && eggs.id === 'pasteurised' ? null : floor;
+  }
+  // A cook the judge failed on food safety (its FOOD SAFETY note, or a centre
+  // under the floor). Competition bonuses cannot lift it.
+  function isUnsafeCook(rec, snapshot, judgement, state) {
+    if (!judgement || judgement.score == null) return false;
+    if ((judgement.notes || []).some(function(n) { return n && n.neg && /FOOD SAFETY/.test(n.label || ''); })) return true;
+    var floor = safetyFloorF(rec, snapshot && snapshot.options, state);
+    return floor != null && ((snapshot && snapshot.doneness && snapshot.doneness.foodPeakF) || 40) < floor;
+  }
   function recipeTargetF(rec, state) {
     var t = null;
     (rec.options || []).forEach(function(opt) { var c = optionValue(rec, state && state.recipeOptions, opt.id); if (c && typeof c.value === 'number' && c.value > 100) t = c.value; });
@@ -3577,6 +3667,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       var seen = {};
       var want = function(f, kind) { if (f && f > food0 && !seen[f]) { seen[f] = true; pending.push({ id: kind, label: 'centre ' + f + '°F (' + kind + ')', f: f }); } };
       if (target) want(target, 'your target');
+      var floorF = safetyFloorF(rec, s.recipeOptions, s);
+      if (floorF) want(floorF, 'safe');
       if (dn.setF) want(dn.setF, dn.setF === 165 ? 'safe' : 'set');
       if (dn.overF && dn.overF !== dn.setF) want(dn.overF, 'overdone');
     }
@@ -3731,6 +3823,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // Module-scope interval handle for the live cooking tick. Only one
   // active recipe simulation at a time, so a single handle is fine.
   var _recipeTickHandle = null;
+  // When the cockpit last drew a live cook. The tick interval outlives the
+  // cockpit (another tab, another tool, the lab closed); the tick pauses a
+  // cook nobody is watching instead of cooking it unseen.
+  var _klCockpitSeenAt = null;
+  // Cooks already credited with XP (keyed by recipeStartedAt): results renders repeat
+  var _klXpAwarded = {};
+  // XP for a finished, graded cook: the grade, plus a bonus for an independent
+  // cook (no coaching, no support) — the evidence a teacher wants most.
+  function xpForCook(j) {
+    if (!j || j.score == null) return 0;
+    return (j.grade === 'A' ? 10 : j.grade === 'B' ? 7 : j.grade === 'C' ? 5 : 3) + (j.evidenceStatus === 'independent' ? 5 : 0);
+  }
   var _handwashTickHandle = null;
   var _handwashCompleteHandle = null;
   var _klConfirmReturnEl = null;
@@ -3853,6 +3957,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       lastUpdated: null
     };
   }
+  // Everything one cook owns, reset for the next: doneness, trace, pot,
+  // constraint trackers, per-cook helpers and the AI critique (it belongs to
+  // the cook it was written for). Shared by all three cook starts.
+  function freshCookState(recipeId, now) {
+    now = now || Date.now();
+    return {
+      recipeActiveId: recipeId, recipePhase: 'cooking', recipePausedAt: null, recipeAutoPaused: false,
+      recipeStartedAt: now, recipeLastTickAt: now, recipeStepStartedAt: now, recipeCurrentStep: 0,
+      recipePanTempF: 70, recipeBurnerLevel: 0, recipeMaxPanTempF: 70, recipeFoodInternalF: 40,
+      recipeItemsInPan: [], recipeIngredientOrder: [],
+      recipeItemAddTimes: {}, recipeItemAddPanF: {}, recipeItemAddSimSec: {}, recipeHeatRemovedSimSec: null, recipeLastStirSimSec: null, recipeStirCount: 0, recipeUnattendedSec: 0, recipeTraceStepSec: 1, recipeOil: null, recipeSmokeSec: 0, recipeOptions: {}, recipeMarks: {}, recipeMoisture: 0, recipeSteamSec: 0, recipeAbsorbed: 0, recipeHardBoilSec: 0, recipeLog: [], recipePeeks: 0, klReportCopied: null,
+      recipeActiveTimeSec: 0, recipeHeatRemovedAt: null, recipeTempHistory: [],
+      recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
+      recipeJudgement: null,
+      potState: 'cold', potTempF: 70, potBurnerLevel: 0, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
+      twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
+      competitionBurnerChanges: 0, competitionBurnerLevelSum: 0, competitionBurnerLevelTicks: 0,
+      aiCritique: null, aiCritiqueLoading: false, aiCritiqueRequestedFor: null,
+      klNewAchievements: [], klBenchLiveHint: null, klReplayVar: null, klReplayChoice: null, klProbeUntil: null, klFlickUntil: null, klFlickReading: null, klScrubResults: null
+    };
+  }
+  // State as the tool reads it. The STEM autosave brings back progress only,
+  // and a stored copy is input (old, hand-edited, another version): fill in
+  // the defaults and drop any value whose type does not match, so one bad
+  // field cannot blank a screen.
+  function klKindOk(def, v) {
+    if (Array.isArray(def)) return Array.isArray(v);
+    if (typeof def === 'object') return !!v && typeof v === 'object' && !Array.isArray(v);
+    if (typeof def === 'number') return typeof v === 'number' && isFinite(v);
+    return typeof v === typeof def;
+  }
+  function klCleanState(raw) {
+    var def = defaultState();
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return def;
+    var out = Object.assign({}, def, raw);
+    Object.keys(def).forEach(function(k) { if (def[k] !== null && !klKindOk(def[k], out[k])) out[k] = def[k]; });
+    var isObj = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+    var count = function(v) { return typeof v === 'number' && isFinite(v) && v >= 0; };
+    ['recipeCompletedIds', 'aGradedRecipeIds', 'klUnlockedAchievements'].forEach(function(k) { out[k] = out[k].filter(function(id) { return typeof id === 'string'; }); });
+    var bests = {}; Object.keys(out.competitionBests).forEach(function(id) { if (count(out.competitionBests[id])) bests[id] = out.competitionBests[id]; }); out.competitionBests = bests;
+    if ('recipeHistory' in out) {
+      var hist = {}; if (isObj(out.recipeHistory)) Object.keys(out.recipeHistory).forEach(function(id) { if (isObj(out.recipeHistory[id])) hist[id] = out.recipeHistory[id]; });
+      out.recipeHistory = hist;
+    }
+    if ('klUnits' in out && out.klUnits !== 'C' && out.klUnits !== 'F') delete out.klUnits;
+    if ('klAltitudeFt' in out && !(count(out.klAltitudeFt) && out.klAltitudeFt <= 15000)) delete out.klAltitudeFt;
+    ['klDetectiveSolved', 'klDetectiveCases', 'klBenchRuns'].forEach(function(k) { if (k in out && !count(out[k])) delete out[k]; });
+    ['klPanMaterial', 'sandboxFood'].forEach(function(k) { if (k in out && out[k] != null && typeof out[k] !== 'string') delete out[k]; });
+    Object.keys(out).forEach(function(k) { if ((/^klViewed[A-Z]/.test(k) || k === 'klIndependent' || k === 'klRealKitchen' || k === 'klHandwashCompleted') && typeof out[k] !== 'boolean') delete out[k]; });
+    if ('maillardHunt' in out) {
+      var mh = out.maillardHunt;
+      if (!isObj(mh)) delete out.maillardHunt;
+      else out.maillardHunt = {
+        tempF: typeof mh.tempF === 'number' && isFinite(mh.tempF) ? mh.tempF : 350,
+        aminoPct: typeof mh.aminoPct === 'number' && isFinite(mh.aminoPct) ? mh.aminoPct : 50,
+        sugarPct: typeof mh.sugarPct === 'number' && isFinite(mh.sugarPct) ? mh.sugarPct : 50,
+        hypothesis: typeof mh.hypothesis === 'string' ? mh.hypothesis : '',
+        stuckRevealed: mh.stuckRevealed === true, understood: mh.understood === true,
+        explanation: typeof mh.explanation === 'string' ? mh.explanation : '',
+        log: Array.isArray(mh.log) ? mh.log.filter(isObj).slice(-8) : []
+      };
+    }
+    return out;
+  }
 
   function todayISO() {
     var d = new Date();
@@ -3868,7 +4036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     color: 'orange',
     category: 'applied',
     // Pure engine pieces for tests/kitchenlab_recipe_engine.test.js; the host never reads this.
-    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, cookSupports: cookSupports, evidenceStatus: evidenceStatus, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
+    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, safetyFloorF: safetyFloorF, isUnsafeCook: isUnsafeCook, oneFix: oneFix, xpForCook: xpForCook, WATER_METHODS: WATER_METHODS, waterCue: waterCue, MAILLARD_ZONES: MAILLARD_ZONES, freshCookState: freshCookState, klCleanState: klCleanState, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, cookSupports: cookSupports, evidenceStatus: evidenceStatus, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
     questHooks: [
       { id: 'open_safety', label: 'Open Kitchen Safety School', icon: '🛡️',
         check: function(d) { return !!(d && d.klViewedSafety); },
@@ -3896,9 +4064,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
-      var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('kitchenLab', n); };
+      // XP is for evidence (a finished cook, a badge, a solved case), never a plain click; the host shows the reason
+      var awardXP = function(n, reason) { if (ctx.awardXP) ctx.awardXP('kitchenLab', n, reason); };
 
-      var d = labToolData.kitchenLab || defaultState();
+      var d = klCleanState(labToolData.kitchenLab);
       // °C mode: one element factory converts every temperature the student
       // reads — string children plus aria-label/title — so judge notes, step
       // text, captions and visuals all agree without touching each site.
@@ -3925,7 +4094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
       function setKL(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.kitchenLab) || defaultState();
+          var prior = klCleanState(prev && prev.kitchenLab);
           // Allow patch to be a function (prior → patch) for live-tick updates
           // that need access to the latest state without race conditions.
           var nextPatch = typeof patch === 'function' ? patch(prior) : patch;
@@ -3969,7 +4138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             handwashTickAt: Date.now(), klHandwashCompleted: true };
         });
         klAnnounce(__alloT('stem.kitchenlab.sr_handwash_complete_20_seconds_reached', 'Handwash complete — 20 seconds reached.'));
-        awardXP(5);
+        awardXP(5, 'Completed the 20-second handwash');
       }
       function scheduleHandwashTimers(remainingSec) {
         stopHandwashTimers();
@@ -4036,9 +4205,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       };
 
       // ─── Reusable shells ───
-      function panelHeader(title, subtitle) {
+      // Each panel's title is its h2 (card titles are h3), so a screen reader
+      // can move by heading; `id` lets focus land on it when the screen changes.
+      function panelHeader(title, subtitle, id) {
         return h('div', { style: { marginBottom: 18 } },
-          h('div', { style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, title),
+          h('h2', { id: id || undefined, tabIndex: id ? -1 : undefined, style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em', margin: '0 0 4px', outline: 'none' } }, title),
           subtitle ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
       }
 
@@ -4139,7 +4310,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var zone = tempZone(curTemp);
         // Danger-zone clock: hours on the counter at this temperature
         var hoursOut = (typeof d.safetyHours === 'number' && isFinite(d.safetyHours)) ? d.safetyHours : 2;
-        var clock = dangerClock(curTemp, hoursOut);
+        var hotRoom = d.safetyHotRoom === true;   // the 1-hour rule is about the room, not the food
+        var clock = dangerClock(curTemp, hoursOut, hotRoom);
         var fmtMult = function(m) { return m >= 1000 ? Math.round(m).toLocaleString() + '×' : m >= 10 ? Math.round(m) + '×' : m.toFixed(1) + '×'; };
         return h('div', null,
           panelHeader('🛡️ Kitchen Safety School',
@@ -4147,7 +4319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Danger Zone Visualizer ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_danger_zone_fda_food_code', '🌡️ The Danger Zone (FDA Food Code)')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_danger_zone_fda_food_code', '🌡️ The Danger Zone (USDA)')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.bacteria_grow_fastest_between_40_f_and', 'Bacteria grow fastest between 40°F and 140°F (4°C–60°C). This is "the danger zone." Food shouldn\'t sit here for more than 2 hours total (1 hour if it\'s over 90°F outside). Drag the slider to see what happens at different temps.')),
             // Temp slider
@@ -4177,6 +4349,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 onChange: function(e) { setKL({ safetyHours: parseFloat(e.target.value) }); },
                 'aria-label': __alloT('stem.kitchenlab.hours_on_the_counter_a11y', 'Hours the food sits at this temperature'),
                 style: { width: '100%', accentColor: clock.overLimit ? '#dc2626' : '#fbbf24', marginBottom: 10 } }),
+              h('button', { type: 'button', 'aria-pressed': hotRoom ? 'true' : 'false', 'data-kl-hot-room': hotRoom ? 'on' : 'off',
+                  onClick: function() { setKL({ safetyHotRoom: !hotRoom }); },
+                  style: { marginBottom: 10, padding: '8px 12px', minHeight: 44, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    background: hotRoom ? 'rgba(220,38,38,0.18)' : 'rgba(15,23,42,0.5)', color: hotRoom ? '#fca5a5' : 'var(--allo-stem-text, #cbd5e1)',
+                    border: '1px solid ' + (hotRoom ? 'rgba(220,38,38,0.5)' : 'rgba(100,116,139,0.35)') } },
+                (hotRoom ? '☑ ' : '☐ ') + __alloT('stem.kitchenlab.room_over_90', 'The room is over 90°F (a hot day, a picnic, a car)')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
                 h('div', null,
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.kitchenlab.doubling_time_here', 'Doubling time here')),
@@ -4187,13 +4365,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('div', { 'data-kl-danger-mult': Math.round(clock.multiplier), style: { fontSize: 22, fontWeight: 900, color: clock.overLimit ? '#fca5a5' : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, fmtMult(clock.multiplier)),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, clock.doublings > 0 ? Math.round(clock.doublings * 10) / 10 + ' doublings · 1,000 bacteria → ' + Math.round(1000 * clock.multiplier).toLocaleString() : 'start = finish')),
                 h('div', null,
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.kitchenlab.usda_limit', 'USDA limit at this room temperature')),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.kitchenlab.usda_limit_for_this_room', 'USDA limit for this room')),
                   h('div', { style: { fontSize: 22, fontWeight: 900, color: clock.inZone ? (clock.overLimit ? '#fca5a5' : '#86efac') : '#7dd3fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, clock.inZone ? clock.limitHours + ' h' : 'n/a'),
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, clock.inZone ? (clock.limitHours === 1 ? 'over 90°F: one hour, then refrigerate or discard' : 'two hours total in the zone, then refrigerate or discard') : 'outside the danger zone'))),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, clock.inZone ? (clock.limitHours === 1 ? 'room over 90°F: one hour, then refrigerate or discard' : 'two hours total in the zone, then refrigerate or discard') : 'outside the danger zone'))),
               // Hour-by-hour bars on a log scale, with the limit marked
               h('div', { 'aria-hidden': 'true', style: { display: 'flex', alignItems: 'flex-end', gap: 4, height: 54, padding: '0 2px', borderBottom: '1px solid rgba(100,116,139,0.35)' } },
                 [1, 2, 3, 4, 5, 6, 7, 8].map(function(hr) {
-                  var c = dangerClock(curTemp, hr); var hgt = Math.min(50, 4 + c.doublings * 2.1);
+                  var c = dangerClock(curTemp, hr, hotRoom); var hgt = Math.min(50, 4 + c.doublings * 2.1);
                   var past = c.inZone && hr > c.limitHours; var reached = hr <= hoursOut;
                   return h('div', { key: hr, title: hr + ' h: ' + fmtMult(c.multiplier), style: { flex: 1, height: hgt, background: past ? (reached ? '#dc2626' : 'rgba(220,38,38,0.35)') : (reached ? '#fbbf24' : 'rgba(251,191,36,0.3)'), borderRadius: '3px 3px 0 0' } });
                 })),
@@ -4202,12 +4380,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginTop: 10 } },
                 !clock.inZone ? (curTemp <= 40 ? 'At or below 40°F growth is on hold: the fridge does not kill bacteria, it stops the clock.' : 'At 140°F and above bacteria die rather than multiply — but toxins some have already made can survive reheating.')
                 : clock.overLimit ? 'Past the limit. Reheating kills bacteria, not the toxins some of them leave behind — this food should be discarded, not rescued.'
-                : 'Inside the limit. Refrigerate before it runs out; the clock is cumulative across every trip out of the fridge.'))
+                : 'Inside the limit. Refrigerate before it runs out; the clock is cumulative across every trip out of the fridge.'),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, marginTop: 6, fontStyle: 'italic' } },
+                __alloT('stem.kitchenlab.danger_clock_curve_note', 'Doubling times are an illustrative curve shaped to food-safety guidance, not a lab count. The limits are the USDA rules.')))
           ),
 
           // ─── USDA Safe Temps ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.usda_safe_cooking_temperatures', '🔥 USDA Safe Cooking Temperatures')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.usda_safe_cooking_temperatures', '🔥 USDA Safe Cooking Temperatures')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.these_are_the_minimum_internal_tempera', 'These are the minimum internal temperatures. A meat thermometer is the only way to know for sure. Color is unreliable — pink chicken at 165°F is safe; brown chicken at 140°F is not.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 12 } },
@@ -4231,13 +4411,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Cross-contamination quick rules ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.cross_contamination_rules', '🚫 Cross-Contamination Rules')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.cross_contamination_rules', '🚫 Cross-Contamination Rules')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
               __alloT('stem.kitchenlab.pathogens_move_from_raw_meat_hands_cut', 'Pathogens move from raw meat → hands → cutting board → ready-to-eat food. The fixes are simple but easy to forget mid-cook.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
               [
                 { icon: '🪧', rule: 'Separate cutting boards (or wash thoroughly)', detail: __alloT('stem.kitchenlab.red_board_for_raw_meat_green_for_produ', 'Red board for raw meat, green for produce. Many home kitchens skip this — it\'s the #1 home-kitchen cross-contamination source.') },
-                { icon: '🧼', rule: 'Wash hands AFTER touching raw meat', detail: __alloT('stem.kitchenlab.20_seconds_with_soap_hot_water_the_20_', '20 seconds with soap + hot water. The 20 seconds is what dislodges the bacteria — soap alone doesn\'t.') },
+                { icon: '🧼', rule: 'Wash hands AFTER touching raw meat', detail: __alloT('stem.kitchenlab.20_seconds_with_soap_hot_water_the_20_', '20 seconds with soap and running water, warm or cold. The 20 seconds is what dislodges the bacteria — soap alone doesn\'t.') },
                 { icon: '🧊', rule: 'Thaw meat in fridge, never on counter', detail: __alloT('stem.kitchenlab.surface_thaws_fast_bacteria_multiply_o', 'Surface thaws fast → bacteria multiply on the outside while inside is still frozen. Fridge keeps the whole thing under 40°F.') },
                 { icon: '📥', rule: 'Marinade-as-sauce: cook it first', detail: __alloT('stem.kitchenlab.marinade_that_touched_raw_meat_contain', 'Marinade that touched raw meat contains those pathogens. Boil it 1 min before using as a finishing sauce, or make extra separately.') },
                 { icon: '🧽', rule: 'Replace sponges weekly + microwave wet daily', detail: __alloT('stem.kitchenlab.damp_kitchen_sponges_harbor_more_bacte', 'Damp kitchen sponges harbor more bacteria per square cm than the toilet seat. Microwaving wet for 90 seconds sanitizes most of it.') },
@@ -4252,7 +4432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Top 9 Allergens ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_top_9_allergens_fda_faster_act', '⚠️ The Top 9 Allergens (FDA + FASTER Act)')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_top_9_allergens_fda_faster_act', '⚠️ The Top 9 Allergens (FDA + FASTER Act)')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.these_9_cause_90_of_all_severe_food_al', 'These 9 cause ~90% of all severe food allergic reactions in the US. Sesame was added in 2023. By law, packaged food must declare these. The "hidden in" column matters most — that\'s where surprises happen.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
@@ -4284,7 +4464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           }, 0);
         }
         return h('div', { style: cardStyle() },
-          h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.20_second_handwash_cdc_who', '🧼 20-Second Handwash (CDC + WHO)')),
+          h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.20_second_handwash_cdc_who', '🧼 20-Second Handwash (CDC)')),
           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
             __alloT('stem.kitchenlab.soap_20_seconds_friction_the_minimum_f', 'Soap + 20 seconds + friction = the minimum for hand sanitation in a kitchen. The mechanical action (friction) is what dislodges bacteria — soap loosens them, water rinses them away.')),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
@@ -4333,12 +4513,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Cut picker ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.pick_a_cut_to_learn', 'Pick a cut to learn')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.pick_a_cut_to_learn', 'Pick a cut to learn')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               KNIFE_CUTS.map(function(c) {
                 var active = c.id === selectedId;
                 return h('button', { key: c.id,
-                  onClick: function() { setKL({ knifeSelectedCut: c.id }); awardXP(1); klAnnounce('Selected ' + c.name); },
+                  onClick: function() { setKL({ knifeSelectedCut: c.id }); klAnnounce('Selected ' + c.name); },
                   'aria-pressed': active ? 'true' : 'false',
                   style: { padding: '8px 12px',
                     background: active ? 'rgba(251,146,60,0.25)' : 'rgba(15,23,42,0.5)',
@@ -4360,7 +4540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var fastest = rows[0].sec, slowest = rows[rows.length - 1].sec;
             var bigWhenSmallDone = 40 + (panF - 40) * (1 - Math.exp(-0.012 * Math.pow(0.25 / 0.75, 2) * fastest));
             return h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.try_it_size', '🧪 Try it: the same carrot, cut four ways, in one pan')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.try_it_size', '🧪 Try it: the same carrot, cut four ways, in one pan')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
                 __alloT('stem.kitchenlab.try_it_size_blurb', 'Heat reaches the centre by conduction, and that time grows with the square of the thickness: double the size, four times the wait. The food model from the recipes, run for each cut.')),
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
@@ -4409,7 +4589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Why uniformity matters ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.why_uniformity_matters', '🎯 Why Uniformity Matters')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.why_uniformity_matters', '🎯 Why Uniformity Matters')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
               __alloT('stem.kitchenlab.when_pieces_are_different_sizes_they_f', 'When pieces are different sizes, they finish cooking at different times. Small pieces burn while large pieces are still raw. Uniform cuts = uniform cook = no kitchen guessing.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
@@ -4422,7 +4602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Knife grip + safety ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_claw_grip_finger_safety', '✋ The Claw Grip (Finger Safety)')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.the_claw_grip_finger_safety', '✋ The Claw Grip (Finger Safety)')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
               __alloT('stem.kitchenlab.curl_your_guiding_fingers_inward_so_yo', 'Curl your guiding fingers INWARD so your knuckles face the blade, not your fingertips. The flat of the blade slides along your knuckles as a guide. If the knife slips, it slides up your knuckle wall — not into your fingertip.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
@@ -4498,10 +4678,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function renderHeat() {
         var selId = d.heatTechnique || 'saute';
         var tech = TECHNIQUES.find(function(t) { return t.id === selId; }) || TECHNIQUES[0];
-        var panTemp = d.heatPanTempF || tech.panTempF;
+        // Water methods top out at the boiling point (altitude included)
+        var water = !!WATER_METHODS[tech.id];
+        var bp = boilingPointF(d);
+        var maxF = water ? Math.floor(bp) : 500;
+        var targetF = Math.min(tech.panTempF, maxF);
+        var panTemp = Math.min(d.heatPanTempF || targetF, maxF);
         // Visual signal: too cold, just right, too hot
-        var diff = panTemp - tech.panTempF;
-        var heatVerdict = (function() {
+        var diff = panTemp - targetF;
+        var heatVerdict = water ? (function() {
+          var boiling = panTemp >= maxF - 2;
+          if (tech.id === 'simmer') {
+            if (boiling) return { label: __alloT('stem.kitchenlab.water_boiling_not_simmering', '🌊 Boiling, not simmering'), color: '#fb923c', note: __alloT('stem.kitchenlab.water_boiling_not_simmering_note', 'Too hard for a simmer: proteins tighten and dry out, and a stock turns cloudy. Turn it down until only small bubbles rise at the edge.') };
+            if (panTemp >= 180) return { label: '✅ Perfect for ' + tech.name, color: '#22c55e', note: __alloT('stem.kitchenlab.water_simmer_right', 'Small bubbles at the edge. Gentle enough for stews and stocks, hot enough to turn collagen into gelatin.') };
+            return { label: __alloT('stem.kitchenlab.water_too_cool', '🥶 Below a simmer'), color: '#38bdf8', note: __alloT('stem.kitchenlab.water_too_cool_note', 'Hot water, but the food cooks very slowly this far under a simmer — poaching at best.') };
+          }
+          if (boiling) return { label: '✅ Perfect for ' + tech.name, color: '#22c55e', note: __alloT('stem.kitchenlab.water_at_boil_right', 'A full boil. Water cannot get hotter than this: turning the burner up only boils it harder, and boils it away faster.') };
+          return { label: __alloT('stem.kitchenlab.water_not_boiling_yet', '🥶 Not boiling yet'), color: '#38bdf8', note: __alloT('stem.kitchenlab.water_not_boiling_yet_note', 'Hot water, not a boil: food cooks slower than the recipe expects, and pasta turns gummy. Wait for bubbles across the whole surface.') };
+        })() : (function() {
           if (Math.abs(diff) <= 25) return { label: '✅ Perfect for ' + tech.name, color: '#22c55e', note: __alloT('stem.kitchenlab.pan_is_at_the_right_temp_for_this_tech', 'Pan is at the right temp for this technique. Food browns + cooks evenly.') };
           if (diff < -25) return { label: __alloT('stem.kitchenlab.too_cold', '🥶 Too cold'), color: '#38bdf8', note: __alloT('stem.kitchenlab.below_threshold_food_will_steam_in_its', 'Below threshold — food will steam in its own juices instead of browning. No Maillard. Gray + soggy.') };
           if (diff > 25 && diff <= 75) return { label: __alloT('stem.kitchenlab.hot_but_tolerable', '🔥 Hot but tolerable'), color: '#fb923c', note: __alloT('stem.kitchenlab.workable_for_fast_cooks_but_easy_to_bu', 'Workable for fast cooks but easy to burn. Watch carefully.') };
@@ -4513,12 +4707,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Technique picker ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.pick_a_technique', 'Pick a technique')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.pick_a_technique', 'Pick a technique')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
               TECHNIQUES.map(function(t) {
                 var active = t.id === selId;
                 return h('button', { key: t.id,
-                  onClick: function() { setKL({ heatTechnique: t.id, heatPanTempF: t.panTempF }); awardXP(1); klAnnounce('Selected ' + t.name); },
+                  onClick: function() { setKL({ heatTechnique: t.id, heatPanTempF: t.panTempF }); klAnnounce('Selected ' + t.name); },
                   'aria-pressed': active ? 'true' : 'false',
                   style: { padding: '10px 14px',
                     background: active ? 'rgba(251,146,60,0.25)' : 'rgba(15,23,42,0.5)',
@@ -4534,16 +4728,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
               h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fde68a' } }, tech.emoji + ' ' + tech.name),
               h('div', { style: { fontSize: 11, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,146,60,0.1)', padding: '3px 8px', borderRadius: 6 } },
-                'Target: ' + tech.panTempF + '°F')),
+                'Target: ' + targetF + '°F')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } }, tech.whatHappens),
             // Slider
             h('div', { style: { marginBottom: 14 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
-                h('span', null, __alloT('stem.kitchenlab.your_pan_temperature', 'Your pan temperature')),
+                h('span', null, water ? __alloT('stem.kitchenlab.your_water_temperature', 'Your water temperature') : __alloT('stem.kitchenlab.your_pan_temperature', 'Your pan temperature')),
                 h('span', { style: { color: heatVerdict.ink || heatVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F')),
-              h('input', { type: 'range', min: 100, max: 500, step: 5, value: panTemp,
+              h('input', { type: 'range', min: 100, max: maxF, step: water ? 1 : 5, value: panTemp, 'data-kl-heat-max': maxF,
                 onChange: function(e) { setKL({ heatPanTempF: parseInt(e.target.value, 10) }); },
-                'aria-label': units === 'C' ? __alloT('stem.kitchenlab.pan_temperature_in_celsius', 'Pan temperature in Celsius') : __alloT('stem.kitchenlab.pan_temperature_in_fahrenheit', 'Pan temperature in Fahrenheit'),
+                'aria-label': water ? (units === 'C' ? __alloT('stem.kitchenlab.water_temperature_in_celsius', 'Water temperature in Celsius') : __alloT('stem.kitchenlab.water_temperature_in_fahrenheit', 'Water temperature in Fahrenheit'))
+                  : units === 'C' ? __alloT('stem.kitchenlab.pan_temperature_in_celsius', 'Pan temperature in Celsius') : __alloT('stem.kitchenlab.pan_temperature_in_fahrenheit', 'Pan temperature in Fahrenheit'),
                 style: { width: '100%', accentColor: heatVerdict.color } })),
             h('div', { style: { background: heatVerdict.color + '18', border: '1px solid ' + heatVerdict.color + '55', borderLeft: '4px solid ' + heatVerdict.color, padding: '10px 12px', borderRadius: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: heatVerdict.ink || heatVerdict.color, marginBottom: 4 } }, heatVerdict.label),
@@ -4554,14 +4749,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var foodId = d.heatFood || HEAT_DEFAULT_FOOD[selId] || 'mushrooms';
             var food = sandboxFood(foodId);
             var secs = HEAT_MICRO_SEC[selId] || 300;
-            var live = microCook(food, panTemp, secs);
+            var live = microCook(food, panTemp, secs, { water: water, bp: bp });
             var runs = d.heatRuns || [];
             var fd = food.doneness;
             var interior = live.foodEndF < fd.setF ? 'not set (' + Math.round(live.foodEndF) + '°F; sets from ' + fd.setF + '°F)'
               : food.wet ? 'cooked through (' + Math.round(live.foodEndF) + '°F)'
               : live.foodEndF >= fd.overF ? 'set, then dried (' + Math.round(live.foodEndF) + '°F, past ' + fd.overF + '°F)'
               : 'set (' + Math.round(live.foodEndF) + '°F)';
-            var oilLine = live.oil ? (live.smokeSec > 8 ? '🌫️ ' + live.oil.oil + ' smoked (' + live.oil.smokeF + '°F) for ' + Math.round(live.smokeSec) + 's' : live.oil.oil + ' stayed clear (smokes at ' + live.oil.smokeF + '°F)') : (foodId === 'eggs' ? 'butter' : '—');
+            var oilLine = water ? 'no oil: the water does the cooking' : live.oil ? (live.smokeSec > 8 ? '🌫️ ' + live.oil.oil + ' smoked (' + live.oil.smokeF + '°F) for ' + Math.round(live.smokeSec) + 's' : live.oil.oil + ' stayed clear (smokes at ' + live.oil.smokeF + '°F)') : (foodId === 'eggs' ? 'butter' : '—');
             var steamLine = live.steamSec > 5 ? '💧 ' + Math.round(live.steamSec) + 's steaming while the surface water left, then browning' : (fd.moisture ? '💧 surface water gone almost at once' : '');
             function logRun() {
               var entry = { tempF: panTemp, foodId: foodId, secs: secs, browning: live.browning, label: live.label.label, color: live.label.color, foodEndF: Math.round(live.foodEndF), interior: interior, sizzle: live.sizzle.caption, smoking: live.smokeSec > 8, tech: tech.name };
@@ -4570,7 +4765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             }
             var cell = function(txt, extra) { return h('td', { style: Object.assign({ padding: '6px 8px', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', borderBottom: '1px solid rgba(100,116,139,0.2)', verticalAlign: 'top' }, extra || {}) }, txt); };
             return h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.try_it_title', '🧪 Try it: ') + klClock(secs) + __alloT('stem.kitchenlab.try_it_in_the_pan_at_this_temperature', ' in the pan at this temperature')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.try_it_title', '🧪 Try it: ') + klClock(secs) + __alloT('stem.kitchenlab.try_it_in_the_pan_at_this_temperature', ' in the pan at this temperature')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
                 __alloT('stem.kitchenlab.try_it_blurb', 'Same physics as the recipes, run in one go. Pick a food, move the slider above, and read what this technique\'s usual time does to it. Log a run, move the slider, log another — then compare.')),
               h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.kitchenlab.food_for_the_test', 'Food for the test'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
@@ -4589,7 +4784,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { 'aria-hidden': 'true', style: { width: 22, height: 22, borderRadius: '50%', background: live.label.color, border: '2px solid rgba(255,255,255,0.35)', flexShrink: 0 } }),
                     h('span', { style: { fontSize: 18, fontWeight: 900, color: live.label.idx >= 4 ? '#fca5a5' : '#fde68a' } }, live.label.label)),
-                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'browning ' + live.browning.toFixed(2) + ' · golden at ' + fd.browningScale[1] + ' · burnt at ' + fd.browningScale[3]),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: water ? 'inherit' : 'ui-monospace, Menlo, monospace' } },
+                    water ? 'no browning in water: it cannot pass ' + maxF + '°F' : 'browning ' + live.browning.toFixed(2) + ' · golden at ' + fd.browningScale[1] + ' · burnt at ' + fd.browningScale[3]),
                   steamLine ? h('div', { style: { fontSize: 11, color: '#7dd3fc', marginTop: 4 } }, steamLine) : null),
                 h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 10, padding: '10px 12px' } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, __alloT('stem.kitchenlab.interior', 'Interior')),
@@ -4629,7 +4825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Technique deep dive ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🔬 Deep Dive: ' + tech.name),
+            h('h3', { style: subheaderStyle() }, '🔬 Deep Dive: ' + tech.name),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
               [
                 { lbl: '⚗️ Key science', val: tech.keyScience, color: '#7dd3fc' },
@@ -4644,7 +4840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Food examples for this technique ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🍽️ Foods that ' + tech.name.toLowerCase() + ' well'),
+            h('h3', { style: subheaderStyle() }, '🍽️ Foods that ' + tech.name.toLowerCase() + ' well'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               tech.foodExamples.map(function(f, i) {
                 return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', fontWeight: 600 } }, f);
@@ -4677,7 +4873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── What it is ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.what_s_actually_happening', '🔬 What\'s actually happening')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.what_s_actually_happening', '🔬 What\'s actually happening')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
               __alloT('stem.kitchenlab.maillard_is_a_cascade_of_chemical_reac', 'Maillard is a cascade of chemical reactions between '),
               h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, __alloT('stem.kitchenlab.amino_acids', 'amino acids')),
@@ -4691,7 +4887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Temperature explorer ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.temperature_explorer', '🌡️ Temperature Explorer')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.temperature_explorer', '🌡️ Temperature Explorer')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.drag_the_slider_to_see_what_s_happenin', 'Drag the slider to see what\'s happening at different surface temperatures. Note: '),
               h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, __alloT('stem.kitchenlab.surface_temp_internal_temp', 'surface temp ≠ internal temp')),
@@ -4729,9 +4925,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var ladder = [280, 320, 360, 400, 440, 480].map(function(T) { return { T: T, min: minutesToBrowning(T, scale[1]), burnt: minutesToBrowning(T, scale[3]) }; });
             var fmtMin = function(m) { return m === Infinity ? '—' : m >= 100 ? Math.round(m) + ' min' : m >= 10 ? Math.round(m) + ' min' : m >= 1 ? m.toFixed(1) + ' min' : Math.round(m * 60) + ' s'; };
             return h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.try_it_golden', '🧪 Try it: how long until golden at this surface temperature?')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.try_it_golden', '🧪 Try it: how long until golden at this surface temperature?')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
-                __alloT('stem.kitchenlab.try_it_golden_blurb', 'The browning rate the recipes run on doubles every 40°F above the ~280°F threshold. Pick a food, and the slider above sets the surface temperature.')),
+                __alloT('stem.kitchenlab.try_it_golden_blurb', 'The browning rate the recipes run on doubles every 40°F (22°C) above the ~280°F threshold. Pick a food, and the slider above sets the surface temperature.')),
               h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.kitchenlab.food_for_the_test', 'Food for the test'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
                 SANDBOX_FOODS.map(function(f) {
                   var on = f.id === foodId;
@@ -4758,7 +4954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── All 6 zones reference ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.all_six_zones_at_a_glance', '📊 All six zones at a glance')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.all_six_zones_at_a_glance', '📊 All six zones at a glance')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               MAILLARD_ZONES.map(function(z, i) {
                 var prevMax = i === 0 ? 100 : MAILLARD_ZONES[i - 1].maxF;
@@ -4774,7 +4970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Caramelization vs Maillard ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.caramelization_vs_maillard', '🆚 Caramelization vs Maillard')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.caramelization_vs_maillard', '🆚 Caramelization vs Maillard')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.often_confused_they_re_different_react', 'Often confused — they\'re different reactions. Caramelization is sugar alone breaking down. Maillard needs amino acids + reducing sugars together. Most "browning" you see is Maillard, even when called "caramelizing."')),
             h('div', { style: { overflowX: 'auto' } },
@@ -4794,7 +4990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Browning examples ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.browning_in_the_wild', '🍽️ Browning in the wild')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.browning_in_the_wild', '🍽️ Browning in the wild')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.same_chemistry_different_foods_each_ca', 'Same chemistry, different foods. Each carries its own characteristic flavor profile because amino acid + reducing sugar mixes differ.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
@@ -4812,7 +5008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── pH effects ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.ph_effects_on_maillard', '⚗️ pH effects on Maillard')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.ph_effects_on_maillard', '⚗️ pH effects on Maillard')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.the_acidity_of_your_food_dramatically_', 'The acidity of your food dramatically changes how fast Maillard runs. This is one of the most underused kitchen "cheat codes."')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
@@ -4829,7 +5025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Acrylamide warning ───
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
-            h('div', { style: Object.assign({}, subheaderStyle(), { color: '#fca5a5' }) }, __alloT('stem.kitchenlab.the_dark_side_acrylamide', '☠️ The dark side: acrylamide')),
+            h('h3', { style: Object.assign({}, subheaderStyle(), { color: '#fca5a5' }) }, __alloT('stem.kitchenlab.the_dark_side_acrylamide', '☠️ The dark side: acrylamide')),
             h('div', { style: { color: '#fecaca', fontSize: 12, lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 10px 0' } },
                 __alloT('stem.kitchenlab.above_250_f_120_c_starchy_foods_the_am', 'Above ~250°F (120°C), starchy foods + the amino acid '),
@@ -4871,6 +5067,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             setTimeout(stopRecipeTick, 0);
             setTimeout(function() { klAnnounce(__alloT('stem.kitchenlab.sr_paused_while_away', 'Your cook was paused while you were away. Resume when you are ready.')); }, 0);
             return { recipePhase: 'paused', recipePausedAt: prior.recipeLastTickAt, recipeAutoPaused: true };
+          }
+          // The cockpit has not drawn for 2 s: the student left the Recipe Sim.
+          // Pause (quietly: they are elsewhere); otherwise this tick would keep
+          // refreshing recipeLastTickAt and the guard above would never fire.
+          if (_klCockpitSeenAt && now - _klCockpitSeenAt > 2000) {
+            setTimeout(stopRecipeTick, 0);
+            return { recipePhase: 'paused', recipePausedAt: now, recipeAutoPaused: true };
           }
           // Clamp the real-time step. Browsers throttle or suspend background
           // timers, so an unclamped dt applied a whole tab-switch (or laptop
@@ -4950,6 +5153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
       function stopRecipeTick() {
         if (_recipeTickHandle) { clearInterval(_recipeTickHandle); _recipeTickHandle = null; }
+        _klCockpitSeenAt = null;
         klAudioSet(0, 'quiet', false);
       }
       function pauseRecipe() {
@@ -4995,34 +5199,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function startRecipe(recipeId) {
         var recipe = RECIPES[recipeId];
         if (!recipe) return;
-        setKL({
-          recipeActiveId: recipeId,
-          recipePhase: 'cooking',
-          recipePausedAt: null,
-          recipeStartedAt: Date.now(),
-          recipeLastTickAt: Date.now(),
-          recipeStepStartedAt: Date.now(),
-          recipeCurrentStep: 0,
-          recipePanTempF: 70,
-          recipeBurnerLevel: 0,
-          recipeMaxPanTempF: 70,
-          recipeFoodInternalF: 40,
-          recipeItemsInPan: [],
-          recipeIngredientOrder: [],
-          recipeItemAddTimes: {}, recipeItemAddPanF: {}, recipeItemAddSimSec: {}, recipeHeatRemovedSimSec: null, recipeLastStirSimSec: null, recipeStirCount: 0, recipeUnattendedSec: 0, recipeTraceStepSec: 1, recipeOil: null, recipeSmokeSec: 0, recipeOptions: {}, recipeMarks: {}, recipeMoisture: 0, recipeSteamSec: 0, recipeAbsorbed: 0, recipeHardBoilSec: 0, recipeLog: [], recipePeeks: 0, klReportCopied: null,
-          recipeActiveTimeSec: 0,
-          recipeHeatRemovedAt: null,
-          recipeTempHistory: [],
-          recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
-          recipeJudgement: null,
-          // Reset pot state for multi-pot recipes
-          potState: 'cold', potTempF: 70, potBurnerLevel: 0, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
-          // Reset constraint trackers
-          twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
-          klNewAchievements: [], klBenchLiveHint: null, klReplayVar: null, klReplayChoice: null, klProbeUntil: null, klFlickUntil: null, klFlickReading: null, klScrubResults: null
-        });
+        // A practice cook is never a competition, whatever the last run was
+        setKL(Object.assign(freshCookState(recipeId), { competitionActive: false, competitionConstraints: [], competitionDeadline: null }));
         klAnnounce('Started cooking ' + recipe.name + '. Step 1: ' + recipe.steps[0].title);
-        awardXP(5);
+        klFocus('kl-cockpit-title');
       }
       function abortRecipe() {
         setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null, recipePausedAt: null,
@@ -5123,7 +5303,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           competitionLastResult: null
         });
         klAnnounce(__alloT('stem.kitchenlab.sr_tournament_started_3_rounds_escalating_difficulty', 'Tournament started. 3 rounds, escalating difficulty.'));
-        awardXP(15);
         // Start Round 1
         setTimeout(function() { startTournamentRound(0); }, 50);
       }
@@ -5138,41 +5317,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           var timeFrac = roundIdx === 0 ? 1.0 : roundIdx === 1 ? 0.8 : 0.6;
           var simSpeed = rec.simSpeedMultiplier || 1;
           var deadline = Date.now() + (rec.targetTimeMin * 60 * 1000 * timeFrac / simSpeed);
-          return {
-            recipeActiveId: rid,
-            recipePhase: 'cooking',
-            recipePausedAt: null,
-            recipeStartedAt: Date.now(),
-            recipeLastTickAt: Date.now(),
-            recipeStepStartedAt: Date.now(),
-            recipeCurrentStep: 0,
-            recipePanTempF: 70,
-            recipeBurnerLevel: 0,
-            recipeMaxPanTempF: 70,
-            recipeFoodInternalF: 40,
-            recipeItemsInPan: [],
-            recipeIngredientOrder: [],
-            recipeItemAddTimes: {}, recipeItemAddPanF: {}, recipeItemAddSimSec: {}, recipeHeatRemovedSimSec: null, recipeLastStirSimSec: null, recipeStirCount: 0, recipeUnattendedSec: 0, recipeTraceStepSec: 1, recipeOil: null, recipeSmokeSec: 0, recipeOptions: {}, recipeMarks: {}, recipeMoisture: 0, recipeSteamSec: 0, recipeAbsorbed: 0, recipeHardBoilSec: 0, recipeLog: [], recipePeeks: 0, klReportCopied: null,
-            recipeActiveTimeSec: 0,
-            recipeHeatRemovedAt: null,
-            recipeTempHistory: [],
-            recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
-            recipeJudgement: null,
-            potState: 'cold', potTempF: 70, potBurnerLevel: 0, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
+          return Object.assign(freshCookState(rid), {
             competitionActive: true,
             competitionConstraints: constraints,
             competitionDeadline: deadline,
             competitionStartedAt: Date.now(),
-            competitionBurnerChanges: 0,
-            competitionBurnerLevelSum: 0,
-            competitionBurnerLevelTicks: 0,
-            tournamentRound: roundIdx,
-            aiCritique: null, aiCritiqueLoading: false, aiCritiqueRequestedFor: null,
-            twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
-            klNewAchievements: []
-          };
+            tournamentRound: roundIdx
+          });
         });
         klAnnounce('Round ' + (roundIdx + 1) + ' of 3 begins.');
+        klFocus('kl-cockpit-title');
       }
 
       function advanceTournament() {
@@ -5202,11 +5356,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               klNewAchievements: newAchievements.map(function(a) { return a.id; })
             };
           });
-          awardXP(20);
+          awardXP(20, 'Finished a Kitchen Lab tournament');
           klAnnounce('Tournament complete. Total score: ' + total);
         } else {
           startTournamentRound(next);
-          awardXP(5);
         }
       }
 
@@ -5246,14 +5399,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           var text = typeof result === 'string' ? result : (result && result.text ? result.text : '');
           text = String(text || '').trim().replace(/^["']|["']$/g, '');
           if (!text) text = 'Couldn\'t generate notes this time. Score breakdown above tells the story.';
-          setKL({ aiCritique: text, aiCritiqueLoading: false });
+          // A reply for a cook the student has already left belongs to nobody
+          setKL(function(prior) { return prior.recipeStartedAt === runId ? { aiCritique: text, aiCritiqueLoading: false } : {}; });
         }).catch(function() {
-          setKL({ aiCritique: null, aiCritiqueLoading: false });
+          setKL(function(prior) { return prior.recipeStartedAt === runId ? { aiCritique: null, aiCritiqueLoading: false } : {}; });
         });
       }
 
       // ─── AI Recipe Suggester (Gemini-powered) ───
-      // Asks Gemini to pick ONE of the 7 unlocked recipes based on the
+      // Asks Gemini to pick ONE of the unlocked recipes based on the
       // student's free-text constraints (pantry, time, mood, audience).
       // Returns recipeId + a paragraph of reasoning.
       function openSuggester() {
@@ -5291,7 +5445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         });
         var userPrompt = (input || '').trim() || 'Just suggest something good for tonight.';
         var prompt = [
-          'You are a friendly cooking coach helping a student pick a recipe to cook in the simulator. Here are the 7 recipes available:',
+          'You are a friendly cooking coach helping a student pick a recipe to cook in the simulator. Here are the ' + unlocked.length + ' recipes available:',
           '',
           JSON.stringify(catalogJson, null, 2),
           '',
@@ -5343,36 +5497,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // simulated at 12× so the deadline is 1/12 of the sim time).
         var deadline = timeFrac ? Date.now() + (recipe.targetTimeMin * 60 * 1000 * (timeFrac + 0.4) / simSpeed) : null;
         // Reset everything + flag competition
-        setKL({
-          recipeActiveId: recipe.id,
-          recipePhase: 'cooking',
-          recipePausedAt: null,
-          recipeStartedAt: Date.now(),
-          recipeLastTickAt: Date.now(),
-          recipeStepStartedAt: Date.now(),
-          recipeCurrentStep: 0,
-          recipePanTempF: 70,
-          recipeBurnerLevel: 0,
-          recipeMaxPanTempF: 70,
-          recipeFoodInternalF: 40,
-          recipeItemsInPan: [],
-          recipeIngredientOrder: [],
-          recipeItemAddTimes: {}, recipeItemAddPanF: {}, recipeItemAddSimSec: {}, recipeHeatRemovedSimSec: null, recipeLastStirSimSec: null, recipeStirCount: 0, recipeUnattendedSec: 0, recipeTraceStepSec: 1, recipeOil: null, recipeSmokeSec: 0, recipeOptions: {}, recipeMarks: {}, recipeMoisture: 0, recipeSteamSec: 0, recipeAbsorbed: 0, recipeHardBoilSec: 0, recipeLog: [], recipePeeks: 0, klReportCopied: null,
-          recipeActiveTimeSec: 0,
-          recipeHeatRemovedAt: null,
-          recipeTempHistory: [],
-          recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
-          recipeJudgement: null,
+        setKL(Object.assign(freshCookState(recipe.id), {
           competitionActive: true,
           competitionConstraints: constraints.map(function(c) { return c.id; }),
           competitionDeadline: deadline,
-          competitionStartedAt: Date.now(),
-          competitionBurnerChanges: 0,
-          competitionBurnerLevelSum: 0,
-          competitionBurnerLevelTicks: 0
-        });
+          competitionStartedAt: Date.now()
+        }));
         klAnnounce('Competition started: ' + recipe.name + '. Constraints: ' + constraints.map(function(c) { return c.label; }).join(', '));
-        awardXP(8);
+        klFocus('kl-cockpit-title');
       }
       // The cockpit logs what the student does (recipeLog: dial, adds, stirs,
       // marks, pot buttons) in sim-seconds, so the finished cook can be run again
@@ -5469,7 +5601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // renders in quick succession (arrow keys stepping the dial 1, 2, 3) each
       // schedule a check; without this guard the second one, still holding the
       // old step, advanced the recipe twice and skipped a step outright.
-      function nextStep(fromStep) {
+      function nextStep(fromStep, doneMsg) {
         setKL(function(prior) {
           var rec = RECIPES[prior.recipeActiveId];
           if (!rec) return {};
@@ -5535,6 +5667,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 judgement = Object.assign({}, judgement, { realKitchen: true, notes: (judgement.notes || []).concat([thermo]), score: sc, grade: sc >= 90 ? 'A' : sc >= 80 ? 'B' : sc >= 70 ? 'C' : sc >= 60 ? 'D' : 'F' });
               } else judgement = Object.assign({}, judgement, { realKitchen: true });
             }
+            var unsafe = isUnsafeCook(rec, snapshot, judgement, prior);
+            if (unsafe) judgement = Object.assign({}, judgement, { unsafe: true });
             var compResult = null;
             // If competition: apply constraint modifiers
             if (prior.competitionActive) {
@@ -5545,10 +5679,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 var c = COMPETITION_CONSTRAINTS.find(function(x) { return x.id === cid; });
                 if (!c) return;
                 var r = c.check(snapshot, rec);
-                if (r.passed) bonusTotal += c.bonus;
+                // Food the judge would not serve earns no bonus; penalties still count
+                if (r.passed) { if (!unsafe) bonusTotal += c.bonus; }
                 else penaltyTotal += c.penalty;
                 constraintResults.push({ id: cid, label: c.label, description: c.description,
-                  passed: r.passed, points: r.passed ? c.bonus : c.penalty, resultText: r.resultText });
+                  passed: r.passed, points: r.passed ? (unsafe ? 0 : c.bonus) : c.penalty,
+                  resultText: r.resultText + (r.passed && unsafe ? ' Bonus withheld: the dish is not safe to serve.' : '') });
               });
               var compScore = Math.max(0, Math.min(150, judgement.score + bonusTotal + penaltyTotal));
               var prevBest = (prior.competitionBests || {})[rec.id] || 0;
@@ -5560,6 +5696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 baseGrade: judgement.grade,
                 bonusTotal: bonusTotal,
                 penaltyTotal: penaltyTotal,
+                bonusWithheld: unsafe,
                 finalScore: compScore,
                 isNewBest: isNewBest,
                 previousBest: prevBest,
@@ -5641,7 +5778,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           }
           return advance;
         });
-        awardXP(3);
+        // Say where the cook is now: why the step finished (when the caller
+        // knows) and what comes next; after the last step, focus the results.
+        var recNow = RECIPES[d.recipeActiveId], cur = d.recipeCurrentStep || 0;
+        if (recNow && (fromStep == null || fromStep === cur)) {
+          var upcoming = recNow.steps[cur + 1];
+          if (upcoming) klAnnounce((doneMsg ? doneMsg + ' ' : '') + 'Step ' + (cur + 2) + ' of ' + recNow.steps.length + ': ' + upcoming.title + '.');
+          else { if (doneMsg) klAnnounce(doneMsg); klFocus('kl-results-title'); }
+        }
       }
 
       function detectNewAchievements(state, ctxObj) {
@@ -5666,8 +5810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         if (auto === 'panInRange' && step.target.panTempF) {
           var t = d.recipePanTempF || 0;
           if (t >= step.target.panTempF.min && t <= step.target.panTempF.max) {
-            nextStep(stepNow);
-            klAnnounce(__alloT('stem.kitchenlab.sr_pan_in_range_step_complete', 'Pan in range — step complete.'));
+            nextStep(stepNow, __alloT('stem.kitchenlab.sr_pan_in_range_step_complete', 'Pan in range — step complete.'));
           }
         } else if (auto === 'itemAdded' && step.target.itemAdded) {
           if ((d.recipeItemsInPan || []).indexOf(step.target.itemAdded) !== -1) {
@@ -5675,33 +5818,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           }
         } else if (auto === 'heatRemoved') {
           if ((d.recipeBurnerLevel || 0) === 0) {
-            nextStep(stepNow);
-            klAnnounce(__alloT('stem.kitchenlab.sr_heat_removed_carryover_cooking_begins', 'Heat removed — carryover cooking begins.'));
+            nextStep(stepNow, __alloT('stem.kitchenlab.sr_heat_removed_carryover_cooking_begins', 'Heat removed — carryover cooking begins.'));
           }
         } else if (auto === 'boiling') {
           // the pot is at its boil, wherever that is at this altitude
           if (vesselHasWater(rec, d) && (d.recipePanTempF || 0) >= boilingPointF(d) - 7) {
-            nextStep(stepNow);
-            klAnnounce('Boiling at ' + fmtT(d.recipePanTempF || 0) + ' — step complete.');
+            nextStep(stepNow, 'Boiling at ' + fmtT(d.recipePanTempF || 0) + ' — step complete.');
           }
         } else if (auto === 'burnerInRange' && step.target.burnerLevel) {
           // The dial is the target: a pot pinned at 212°F says nothing about
           // how hard it is boiling, the dial does.
           var lv = d.recipeBurnerLevel || 0;
           if (lv >= step.target.burnerLevel.min && lv <= step.target.burnerLevel.max) {
-            nextStep(stepNow);
-            klAnnounce('Dial at ' + lv + ' — step complete.');
+            nextStep(stepNow, 'Dial at ' + lv + ' — step complete.');
           }
         } else if (auto === 'internalTempReached' && step.target.foodInternalF) {
           var ft = d.recipeFoodInternalF || 40;
           if (ft >= step.target.foodInternalF.min) {
-            nextStep(stepNow);
-            klAnnounce('Internal temp ' + Math.round(ft) + '°F — step complete.');
+            nextStep(stepNow, 'Internal temp ' + Math.round(ft) + '°F — step complete.');
           }
         } else if (auto === 'potStateReached' && step.target.potState) {
           if ((d.potState || 'cold') === step.target.potState) {
-            nextStep(stepNow);
-            klAnnounce('Pot reached ' + step.target.potState + '.');
+            nextStep(stepNow, 'Pot reached ' + step.target.potState + '.');
           }
         }
       }
@@ -5723,6 +5861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             klAnnounce(__alloT('stem.kitchenlab.sr_paused_while_away', 'Your cook was paused while you were away. Resume when you are ready.'));
           }, 0);
         }
+        if (d.recipePhase === 'cooking' && !stale) _klCockpitSeenAt = Date.now();
         // Manage tick lifecycle based on current phase
         ensureTickMatches(stale ? 'paused' : d.recipePhase);
         // Auto-advance check on every render
@@ -5760,7 +5899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               __alloT('stem.kitchenlab.new_personal_best', '🌟 New personal best!')) : null),
           // Per-round breakdown
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.round_by_round', '📋 Round-by-round')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.round_by_round', '📋 Round-by-round')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               scores.map(function(score, i) {
                 var rid = (d.tournamentRecipes || [])[i];
@@ -5785,7 +5924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               }))),
           // Action buttons
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { startTournament(); awardXP(3); },
+            h('button', { onClick: function() { startTournament(); },
               style: { padding: '12px 26px', background: '#fbbf24', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.new_tournament', '🏅 New tournament')),
@@ -5806,7 +5945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // AI Suggester modal (only when open)
           d.suggesterOpen ? renderSuggesterModal() : null,
           panelHeader('🍽️ Real-Time Recipe Simulator',
-            'Run an actual recipe in real time. Manage heat, time your additions, fix mistakes mid-cook. Mistakes have visible consequences. Success unlocks the next recipe.'),
+            'Run an actual recipe in real time. Manage heat, time your additions, fix mistakes mid-cook. Mistakes have visible consequences. An A grade marks a recipe as mastered.'),
           // The student's record so far, and a portfolio to copy for a teacher
           (function() {
             var histP = d.recipeHistory || {}, recsP = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
@@ -5857,7 +5996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               d.klIndependent ? 'No forecast, no temperature ranges, no notes while you cook. The judge is the same; the cook is recorded as done without coaching.' : 'The cockpit forecasts where the cook is heading, shows each step\'s temperature range and explains what is happening.')),
 
           // ─── AI SUGGESTER CARD ───
-          ctx.callGemini ? h('div', { style: { background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(56,189,248,0.12))',
+          ctx.callGemini && ctx.aiHintsEnabled !== false ? h('div', { style: { background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(56,189,248,0.12))',
               border: '2px solid rgba(167,139,250,0.55)', borderRadius: 14, padding: '18px 22px', marginBottom: 16 } },
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
               h('div', { 'aria-hidden': 'true', style: { fontSize: 38, lineHeight: 1, flexShrink: 0 } }, '🤔'),
@@ -5865,7 +6004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', letterSpacing: '-0.01em', marginBottom: 4 } }, __alloT('stem.kitchenlab.what_should_i_cook_tonight', 'What should I cook tonight?')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
                   __alloT('stem.kitchenlab.tell_the_ai_what_you_have_how_much_tim', 'Tell the AI what you have, how much time, or who you\'re feeding — it picks the right recipe from your unlocked list + explains why.')),
-                h('button', { onClick: function() { openSuggester(); awardXP(2); },
+                h('button', { onClick: function() { openSuggester(); },
                   style: { padding: '10px 18px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.ask_the_ai_chef', '💡 Ask the AI chef'))))) : null,
@@ -5879,7 +6018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, __alloT('stem.kitchenlab.competition_mode', 'Competition Mode')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 12 } },
                   __alloT('stem.kitchenlab.chopped_style_challenge_random_recipe_', 'Chopped-style challenge. Random recipe + 2 mystery constraints (time pressure, heat caps, ingredient discipline, restaurant-grade standard, and more). Combine recipe skill + constraint mastery for a score up to 150. Beat your personal best.')),
-                h('button', { onClick: function() { startCompetition(); awardXP(3); },
+                h('button', { onClick: function() { startCompetition(); },
                   style: { padding: '12px 22px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
                     boxShadow: '0 2px 6px rgba(251,146,60,0.4)' } },
@@ -5892,7 +6031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, __alloT('stem.kitchenlab.tournament_mode_3_rounds', 'Tournament Mode (3 rounds)')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   __alloT('stem.kitchenlab.round_1_1_constraint_full_time_round_2', 'Round 1: 1 constraint, full time. Round 2: 2 constraints, 80% time. Round 3: 3 constraints (Restaurant Standard + Speed Demon forced), 60% time. Compete for cumulative score across 450 points.'))),
-              h('button', { onClick: function() { startTournament(); awardXP(3); },
+              h('button', { onClick: function() { startTournament(); },
                 style: { padding: '10px 18px', background: 'transparent', color: '#fde68a',
                   border: '2px solid rgba(251,146,60,0.6)', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.start_tournament', '🏅 Start tournament')),
@@ -5919,7 +6058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             });
             return h('div', { style: cardStyle() },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10, marginBottom: 12 } },
-                h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.achievements', '🏆 Achievements')),
+                h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.achievements', '🏆 Achievements')),
                 h('div', { style: { fontSize: 12, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700 } },
                   unlocked.length + ' / ' + ACHIEVEMENTS.length + ' unlocked')),
               ['gold', 'silver', 'bronze'].map(function(tier) {
@@ -5942,13 +6081,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Tutorial progress ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.tutorial_mode_recipes_mastered', '📖 Tutorial mode — recipes mastered')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.tutorial_mode_recipes_mastered', '📖 Tutorial mode — recipes mastered')),
             h('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap' } },
               h('div', null,
-                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, completed.length + ' / ' + unlockedCount + ' unlocked'),
+                // Mastered = an A (the recipe cards' badge); every recipe is already open
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  (Array.isArray(d.aGradedRecipeIds) ? RECIPE_CATALOG.filter(function(r) { return r.unlocked && d.aGradedRecipeIds.indexOf(r.id) !== -1; }).length : 0) + ' / ' + unlockedCount),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.kitchenlab.recipes_mastered', 'recipes mastered'))),
               h('div', { style: { flex: 1, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, minWidth: 240 } },
-                __alloT('stem.kitchenlab.tutorial_mode_is_the_unhurried_run_no_', 'Tutorial mode is the unhurried run — no time pressure, no constraints. Use it to learn each recipe before taking it into competition. v0.5 adds Competition Mode + personal bests. v0.6 will unlock multi-pot recipes (Pasta + Pan Sauce, Sheet-Pan, Roast Chicken).')))),
+                __alloT('stem.kitchenlab.tutorial_mode_intro', 'Tutorial mode has no competition constraints and no countdown, and you can pause at any time. Use it to learn each recipe before taking it into competition.')))),
 
           // ─── The 3D Recipe Kitchen ───
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #86efac' }) },
@@ -6016,7 +6157,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 })(),
                 isPlayable ? h('button', {
                   onClick: function() { startRecipe(r.id); },
-                  style: { width: '100%', padding: '10px 14px', background: '#fb923c', color: '#1c1410',
+                  // twelve identical "Start cooking" buttons need the recipe in their names
+                  'aria-label': (isCompleted ? 'Cook again: ' : 'Start cooking: ') + r.name,
+                  style: { width: '100%', padding: '10px 14px', minHeight: 44, background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                   isCompleted ? '🍳 Cook again' : '▶ Start cooking') :
                 h('div', { style: { padding: '10px 14px', background: 'rgba(100,116,139,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)',
@@ -6059,7 +6202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klBenchLiveHint: 'Replay: ' + v.label.toLowerCase() + ' set to ' + labelOf(choice).charAt(0).toLowerCase() + labelOf(choice).slice(1) + '. Cook the way you did and see if the replay was right.' });
         };
         return h('div', { 'data-kl-replay': same ? 'same' : (changed.judgement.score + ',' + asWas.judgement.score), style: cardStyle() },
-          h('div', { style: subheaderStyle() }, '🔁 Your cook, one thing changed'),
+          h('h3', { style: subheaderStyle() }, '🔁 Your cook, one thing changed'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 12px' } },
             'The engine logged every move you made (' + log.length + ' of them, in ' + klClock(endSec) + '). Here it runs that exact cook again with one thing different: same timing, same hands, one change.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12, alignItems: 'end' } },
@@ -6088,7 +6231,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   num('Browning', (d.recipeBrowning || 0).toFixed(2), changed.snapshot.doneness.browning.toFixed(2)),
                   num('Score', j.score + ' ' + j.grade, changed.judgement.score + ' ' + changed.judgement.grade)))),
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 } },
-              h('button', { type: 'button', 'data-kl-replay-live': '1', onClick: cookThatWay,
+              // Not mid-tournament: a practice cook would leave the bracket stranded
+              d.tournamentActive ? null : h('button', { type: 'button', 'data-kl-replay-live': '1', onClick: cookThatWay,
                 style: { padding: '8px 14px', background: 'rgba(15,23,42,0.7)', color: '#fde68a', border: '1px solid rgba(251,146,60,0.45)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                 '▶ Cook it that way'),
               h('span', { 'data-kl-replay-drift': drift, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
@@ -6155,7 +6299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               border: '1px solid ' + (on ? 'rgba(251,146,60,0.6)' : 'rgba(100,116,139,0.35)'), borderRadius: 8, fontSize: 12, fontWeight: on ? 800 : 600, cursor: ran ? 'default' : 'pointer' } }, label);
         };
         return h('div', { 'data-kl-bench': ran ? ra.result.judgement.score + ',' + rb.result.judgement.score : 'idle', style: Object.assign({}, cardStyle(), { marginTop: 18 }) },
-          h('div', { style: subheaderStyle() }, '🧪 Experiment bench: change one thing, cook twice'),
+          h('h3', { style: subheaderStyle() }, '🧪 Experiment bench: change one thing, cook twice'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 12px' } },
             'The recipe is cooked by the book, twice, instantly, with exactly one thing different between the two pans. Say which you think scores higher, then run both. Same physics and same judge as a real cook.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, alignItems: 'end' } },
@@ -6172,7 +6316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 var a = runBench(rec, v.id, choiceA), b = runBench(rec, v.id, choiceB);
                 setKL(function(prior) { return { klBenchRan: true, klBenchRecipe: recId, klBenchVar: v.id, klBenchA: choiceA, klBenchB: choiceB, klBenchRuns: (prior.klBenchRuns || 0) + 1 }; });
                 klAnnounce('Both cooks run. A scored ' + a.result.judgement.score + ', B scored ' + b.result.judgement.score + '.');
-                awardXP(2);
+                awardXP(2, 'Ran a Kitchen Lab experiment');
               },
               style: { padding: '9px 18px', background: choiceA === choiceB ? 'rgba(100,116,139,0.3)' : '#fb923c', color: choiceA === choiceB ? 'var(--allo-stem-text-soft, #94a3b8)' : '#1c1410', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: choiceA === choiceB ? 'default' : 'pointer' } },
               ran ? '🔁 Run again' : '▶ Run both cooks'),
@@ -6245,7 +6389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             style: { width: '100%', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 8, padding: 8 } })) : null;
         if (!kase) {
           return h('div', { 'data-kl-detective': 'none', style: Object.assign({}, cardStyle(), { marginTop: 18 }) },
-            h('div', { style: subheaderStyle() }, '🕵️ Kitchen detective: what went wrong?'), header,
+            h('h3', { style: subheaderStyle() }, '🕵️ Kitchen detective: what went wrong?'), header,
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 10 } }, 'This recipe cannot make a fair case: every way of getting it wrong leaves the same evidence. Try another.'));
         }
         var rec = kase.rec, res = kase.result, j = res.judgement;
@@ -6267,12 +6411,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             return patch;
           });
           klAnnounce((isRight ? 'Right. ' : 'Not quite. ') + 'The one thing: ' + kase.truth.varLabel + ', ' + kase.truth.choiceLabel + '. ' + (chosen && !isRight ? 'You said ' + chosen.varLabel + ', ' + chosen.choiceLabel + '.' : ''));
-          awardXP(isRight ? 4 : 1);
+          if (isRight) awardXP(4, 'Solved a Kitchen Detective case');
         };
         var another = function() { setKL({ klDetectiveSeed: kase.seed + 1, klDetectivePick: null, klDetectiveAnswer: null, klDetectiveUnlocked: null, klScrubDetective: null }); };
         var rows = benchNumbers(rec, res);
         return h('div', { 'data-kl-detective': answer ? (right ? 'right' : 'wrong') : 'open', 'data-kl-detective-case': rec.id + '|' + truthKey + '|' + kase.seed, style: Object.assign({}, cardStyle(), { marginTop: 18 }) },
-          h('div', { style: subheaderStyle() }, '🕵️ Kitchen detective: what went wrong?'),
+          h('h3', { style: subheaderStyle() }, '🕵️ Kitchen detective: what went wrong?'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 12px' } },
             'Someone cooked this by the book with exactly one thing different, and it shows in the result. Read the trace and the numbers, then name the one thing.'),
           header, worksheetFallback,
@@ -6418,7 +6562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('div', null,
           panelHeader(rec.icon + ' Cooking: ' + rec.name + (inCompetition ? ' 🏆 (Competition)' : ''),
             'Step ' + (stepIdx + 1) + ' of ' + rec.steps.length + ' — cook time: ' +
-            klClock(d.recipeSimElapsedSec || 0) + ((rec.simSpeedMultiplier || 1) > 1 ? ' (' + rec.simSpeedMultiplier + '× sim)' : '')),
+            klClock(d.recipeSimElapsedSec || 0) + ((rec.simSpeedMultiplier || 1) > 1 ? ' (' + rec.simSpeedMultiplier + '× sim)' : ''), 'kl-cockpit-title'),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
             h('button', { type: 'button', onClick: isPaused ? resumeRecipe : pauseRecipe, 'aria-pressed': isPaused ? 'true' : 'false',
               style: { padding: '10px 16px', background: isPaused ? '#15803d' : '#b45309', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
@@ -6693,7 +6837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Ingredient tray
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.ingredients_tray', '🧺 Ingredients tray')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.ingredients_tray', '🧺 Ingredients tray')),
             availableItems.length === 0 ?
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, __alloT('stem.kitchenlab.all_ingredients_are_in_the_pan', 'All ingredients are in the pan.')) :
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
@@ -6720,7 +6864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               })),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               step.completeWhen === 'userClick' ? h('button', { disabled: isPaused,
-                onClick: function() { nextStep(); klAnnounce(__alloT('stem.kitchenlab.sr_step_complete', 'Step complete.')); },
+                onClick: function() { nextStep(null, __alloT('stem.kitchenlab.sr_step_complete', 'Step complete.')); },
                 style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                 rec.sandbox ? __alloT('stem.kitchenlab.finish_free_cook', '✓ Finish + read what you made') : step.actionLabel ? step.actionLabel + (step.target && step.target.restSec && d.recipeHeatRemovedSimSec != null ? ' · rested ' + klClock(Math.max(0, (d.recipeSimElapsedSec || 0) - d.recipeHeatRemovedSimSec)) : '') : __alloT('stem.kitchenlab.continue_to_next_step', '✓ Continue to next step')) : h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
@@ -6922,19 +7066,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               // Action buttons (vary by phase)
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 phase === 'cold' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'start',
-                  onClick: function() { startPot(); awardXP(1); },
+                  onClick: function() { startPot(); },
                   style: { padding: '8px 14px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.start_pasta_water', '🔥 Start pasta water')) : null,
                 // Pasta can go in before the boil; the button says what that means
                 phase === 'heating' || phase === 'boiling' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drop',
-                  onClick: function() { dropPasta(); awardXP(2); },
+                  onClick: function() { dropPasta(); },
                   style: { padding: '8px 14px', background: phase === 'boiling' ? '#22c55e' : 'rgba(15,23,42,0.7)', color: phase === 'boiling' ? '#052e16' : '#fde68a',
                     border: phase === 'boiling' ? 'none' : '1px solid rgba(251,146,60,0.45)', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   phase === 'boiling' ? __alloT('stem.kitchenlab.drop_pasta', '🍝 Drop pasta') : '🍝 Drop pasta now (' + Math.round(potTempF) + '°F, not boiling yet)') : null,
                 // Drain any time after the drop: early is chalky, late is gummy, the judge reads the clock
                 (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drainKeep',
-                  onClick: function() { drainPasta(true); awardXP(2); },
+                  onClick: function() { drainPasta(true); },
                   style: { padding: '8px 14px', background: phase === 'pasta-done' ? '#22c55e' : 'rgba(251,146,60,0.18)', color: phase === 'pasta-done' ? '#052e16' : '#fde68a',
                     border: phase === 'pasta-done' ? 'none' : '1px solid rgba(251,146,60,0.45)', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   phase === 'pasta-done' ? __alloT('stem.kitchenlab.drain_save_water', '✓ Drain (save water)') : '⏱️ Drain early (save water)') : null,
@@ -7174,14 +7318,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var tRound = d.tournamentRound || 0;
         var isSandbox = !!rec.sandbox;
         var sbFood = isSandbox ? sandboxFood(d.sandboxFood) : null;
-        // Fire AI critique request (idempotent — gated by aiCritiqueRequestedFor); not for the sandbox
-        if (!isSandbox && ctx.callGemini && !d.aiCritique && !d.aiCritiqueLoading && d.aiCritiqueRequestedFor !== d.recipeStartedAt) {
-          setTimeout(function() { requestAiCritique(rec, j); }, 100);
+        // The AI critique is the student's to ask for, and only where the teacher
+        // has AI on; it reads the judge's notes, it does not grade.
+        var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false;
+        var fix = isSandbox ? null : oneFix(j);
+        var fixLesson = fix ? lessonFor(fix) : null;
+        // Credit the finished cook and any new badges once, with the reason shown
+        var runId = d.recipeStartedAt;
+        if (!isSandbox && runId && !_klXpAwarded[runId]) {
+          _klXpAwarded[runId] = true;
+          var xpCook = xpForCook(j);
+          var newBadges = (Array.isArray(d.klNewAchievements) ? d.klNewAchievements : []).map(function(id) { return ACHIEVEMENTS.find(function(a) { return a.id === id; }); }).filter(Boolean);
+          setTimeout(function() {
+            if (xpCook) awardXP(xpCook, 'Cooked ' + rec.name + ': grade ' + j.grade + (j.evidenceStatus === 'independent' ? ', independently' : ''));
+            newBadges.forEach(function(a) { awardXP(5, 'Kitchen Lab badge: ' + a.name); });
+          }, 0);
         }
         return h('div', null,
           panelHeader(rec.icon + ' ' + rec.name + (compResult ? ' 🏆 — Competition Results' : isSandbox ? ' — What you made' : ' — Results'),
             isSandbox ? 'No grade here. The readout below describes the ' + sbFood.name.toLowerCase() + ' in the same terms the graded recipes use.' :
-            'Your dish has been judged. Score breakdown below — read the notes to see what to do differently next time.'),
+            'Your dish has been judged. Score breakdown below — read the notes to see what to do differently next time.', 'kl-results-title'),
 
           // ─── Personal-best banner (competition only) ───
           compResult && compResult.isNewBest ? h('div', { style: {
@@ -7204,14 +7360,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, textShadow: '0 0 28px ' + gradeColor + '66' } }, displayScore),
             compResult ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontFamily: 'ui-monospace, Menlo, monospace' } },
               'base ' + compResult.baseScore + (compResult.bonusTotal > 0 ? ' + ' + compResult.bonusTotal + ' bonus' : '') +
-              (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '')) : null,
+              (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '') +
+              (compResult.bonusWithheld ? ' · bonuses withheld: not safe to serve' : '')) : null,
             h('div', { style: { fontSize: 48, fontWeight: 900, color: gradeColor, marginTop: 4 } }, 'Grade: ' + j.grade),
             h('div', { style: { fontSize: 17, color: '#fde68a', marginTop: 18, fontWeight: 700, lineHeight: 1.4 } }, j.verdict)),
+
+          // ─── The one thing to change next time, before the charts ───
+          isSandbox ? null : h('div', { 'data-kl-one-fix': fix ? fix.label : 'none', style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + (fix ? '#fb923c' : '#86efac') }) },
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.one_fix_title', '🎯 Your one fix for next time')),
+            fix ? h('div', { style: { fontSize: 15, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, fix.label) : null,
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+              fix ? fix.detail : __alloT('stem.kitchenlab.one_fix_none', 'Nothing to fix. Next step: cook it again with coaching off, or try a harder recipe.')),
+            fixLesson ? h('button', { type: 'button', 'data-kl-fix-lesson': fixLesson.section, onClick: function() { setSection(fixLesson.section); klAnnounce('Opened ' + fixLesson.label + '.'); },
+              style: { marginTop: 8, padding: '6px 12px', minHeight: 36, background: 'transparent', color: '#7dd3fc', border: '1px solid rgba(125,211,252,0.4)', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+              '📖 Learn why: ' + fixLesson.label + ' →') : null),
 
           // Temperature trace — pan + food internal temp over the cook (the "when did I overheat?" view).
           (d.recipeTempHistory && d.recipeTempHistory.length > 1) && (function() {
             return h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.temperature_trace', '🌡️ Temperature trace')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.temperature_trace', '🌡️ Temperature trace')),
               renderTempTrace(d.recipeTempHistory, { marks: traceMarks(rec), cursorT: (function() { var i = scrubIndex(d.recipeTempHistory, 'klScrubResults'); return i == null ? null : (d.recipeTempHistory[i].t != null ? d.recipeTempHistory[i].t : i); })() }),
               renderTraceScrubber(d.recipeTempHistory, traceMarks(rec), 'klScrubResults'),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, lineHeight: 1.5 } }, __alloT('stem.kitchenlab.see_where_the_pan_crossed_key_threshol', 'See where the pan crossed key thresholds — and how the food\'s internal temp lagged behind the pan.'))
@@ -7232,7 +7399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // ─── Competition constraint results ───
           compResult ? h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.competition_constraints', '🏆 Competition constraints')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.competition_constraints', '🏆 Competition constraints')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               compResult.constraints.map(function(c, i) {
                 return h('div', { key: i,
@@ -7251,7 +7418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Detailed notes
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, isSandbox ? __alloT('stem.kitchenlab.readout', '📋 Readout') : __alloT('stem.kitchenlab.judge_s_notes', '📋 Judge\'s notes')),
+            h('h3', { style: subheaderStyle() }, isSandbox ? __alloT('stem.kitchenlab.readout', '📋 Readout') : __alloT('stem.kitchenlab.judge_s_notes', '📋 Judge\'s notes')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               j.notes.map(function(n, i) {
                 // neutral notes (the sandbox readout) are amber: information, not a verdict
@@ -7274,7 +7441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Copy fallback: the report as selectable text (Ctrl+C counts as success)
           d.klReportCopied === 'fail' ? h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.report_text', '📋 Your cook report (select and copy)')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.report_text', '📋 Your cook report (select and copy)')),
             h('textarea', { readOnly: true, 'aria-label': __alloT('stem.kitchenlab.report_text_a11y', 'Cook report text'), value: cookReport(rec, d, units), rows: 12,
               onFocus: function(e) { try { e.target.select(); } catch (err) { /* ignore */ } },
               onCopy: function() { setKL({ klReportCopied: 'ok' }); },
@@ -7282,7 +7449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Lessons recap
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.what_this_recipe_teaches', '📖 What this recipe teaches')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.what_this_recipe_teaches', '📖 What this recipe teaches')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               rec.teaches.map(function(t, i) {
                 return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)',
@@ -7312,21 +7479,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               }))) : null,
 
           // ─── AI Chef's Notes (Gemini-powered critique) ───
-          (ctx.callGemini) ? h('div', { style: Object.assign({}, cardStyle(), {
+          aiOn ? h('div', { style: Object.assign({}, cardStyle(), {
             borderLeft: '4px solid #a78bfa',
             background: 'linear-gradient(135deg, rgba(167,139,250,0.08), rgba(15,23,42,0.6))'
           }) },
-            h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.chef_s_notes_ai_generated_critique', '👨‍🍳 Chef\'s Notes (AI-generated critique)')),
+            h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.chef_s_notes_ai_generated_critique', '👨‍🍳 Chef\'s Notes (AI-generated critique)')),
             d.aiCritique ? h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
               '"', d.aiCritique, '"') :
             d.aiCritiqueLoading ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', padding: '8px 0' } },
               __alloT('stem.kitchenlab.chef_is_reviewing_your_work', '🤔 Chef is reviewing your work...')) :
-            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-              __alloT('stem.kitchenlab.critique_will_appear_here', 'Critique will appear here.'))) : null,
+            h('div', null,
+              h('button', { type: 'button', 'data-kl-ai-ask': '1', onClick: function() { requestAiCritique(rec, j); },
+                style: { padding: '10px 16px', minHeight: 44, background: 'rgba(167,139,250,0.18)', color: '#e9d5ff', border: '1px solid rgba(167,139,250,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                __alloT('stem.kitchenlab.ask_the_ai_coach', '💬 Ask the AI coach about this cook')),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, lineHeight: 1.5 } },
+                __alloT('stem.kitchenlab.ai_coach_note', 'It reads the judge\'s notes and suggests what to try. Your grade stays the judge\'s.')))) : null,
 
           // ─── Tournament standing (if in tournament) ───
           inTournament ? h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
-            h('div', { style: subheaderStyle() }, '🏅 Tournament Round ' + (tRound + 1) + ' of 3'),
+            h('h3', { style: subheaderStyle() }, '🏅 Tournament Round ' + (tRound + 1) + ' of 3'),
             h('div', { style: { display: 'flex', gap: 14, marginBottom: 10, flexWrap: 'wrap' } },
               [0, 1, 2].map(function(i) {
                 var isPast = i < tRound;
@@ -7360,11 +7531,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               style: { padding: '12px 28px', background: '#22c55e', color: '#052e16',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.see_final_standings', '🏆 See final standings')) :
-            compResult ? h('button', { onClick: function() { startCompetition(); awardXP(2); },
+            compResult ? h('button', { onClick: function() { startCompetition(); },
               style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.next_challenge', '🎲 Next challenge')) :
-              h('button', { onClick: function() { startRecipe(rec.id); awardXP(2); },
+              h('button', { onClick: function() { startRecipe(rec.id); },
                 style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.cook_again', '🔁 Cook again')),
@@ -7438,7 +7609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 'aria-controls': 'stem-kitchen-resources-panel-' + s.id,
                 tabIndex: active ? 0 : -1,
                 onKeyDown: function(e) { resourceTabKeyDown(e, subIndex); },
-                onClick: function() { setKL({ resourcesSub: s.id }); awardXP(1); },
+                onClick: function() { setKL({ resourcesSub: s.id }); },
                 style: { padding: '8px 12px',
                   background: active ? 'rgba(251,146,60,0.25)' : 'rgba(15,23,42,0.5)',
                   color: active ? '#fde68a' : '#cbd5e1',
@@ -7453,7 +7624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── GLOSSARY ───
           sub === 'glossary' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.culinary_glossary', '📖 Culinary Glossary')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.culinary_glossary', '📖 Culinary Glossary')),
               h('div', { style: { marginBottom: 14 } },
                 h('input', { type: 'search', value: d.glossaryFilter || '',
                   onChange: function(e) { setKL({ glossaryFilter: e.target.value }); },
@@ -7489,11 +7660,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── SMOKE POINTS ───
           sub === 'smoke' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.cooking_oil_smoke_points', '🛢️ Cooking Oil Smoke Points')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.cooking_oil_smoke_points', '🛢️ Cooking Oil Smoke Points')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 __alloT('stem.kitchenlab.the_smoke_point_is_the_temp_at_which_a', 'The smoke point is the temp at which an oil starts breaking down into acrolein (bitter, irritating) and free fatty acids. Cooking above smoke point = bitter taste + unhealthful compounds + real fire risk. Ranked highest to lowest.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                SMOKE_POINTS.map(function(o, i) {
+                // Shown highest to lowest, as the heading says (the data keeps its order for the bench)
+                SMOKE_POINTS.slice().sort(function(a, b) { return b.smokeF - a.smokeF; }).map(function(o, i) {
                   // Color-code: green high, amber medium, red low
                   var heatColor = o.smokeF >= 450 ? '#22c55e' : o.smokeF >= 375 ? '#fb923c' : '#dc2626';
                   var heatLabel = o.smokeF >= 450 ? 'High-heat OK' : o.smokeF >= 375 ? 'Medium-heat' : 'Low-heat only';
@@ -7515,7 +7687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── CONVERSIONS ───
           sub === 'conversions' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.kitchen_conversions', '📏 Kitchen Conversions')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.kitchen_conversions', '📏 Kitchen Conversions')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 __alloT('stem.kitchenlab.the_most_useful_kitchen_conversions_pl', 'The most useful kitchen conversions, plus the notes that prevent the common "why didn\'t this work" moments. Pro tip for baking: '),
                 h('b', { style: { color: '#fde68a' } }, __alloT('stem.kitchenlab.measure_by_weight_when_possible', 'measure by weight when possible')),
@@ -7534,7 +7706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── SUBSTITUTIONS ───
           sub === 'subs' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.emergency_substitutions', '🔄 Emergency Substitutions')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.emergency_substitutions', '🔄 Emergency Substitutions')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 __alloT('stem.kitchenlab.when_you_start_cooking_realize_you_don', 'When you start cooking + realize you don\'t have an ingredient, these are the swaps that actually work. Each entry includes '),
                 h('b', { style: { color: '#fde68a' } }, 'why'),
@@ -7555,7 +7727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── TROUBLESHOOTER ───
           sub === 'troubleshoot' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.why_did_my_x_fail_troubleshooter', '🩺 "Why did my X fail?" Troubleshooter')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.why_did_my_x_fail_troubleshooter', '🩺 "Why did my X fail?" Troubleshooter')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
                 __alloT('stem.kitchenlab.the_most_common_cooking_failures_their', 'The most common cooking failures + their likely causes. Most cooking problems are some combination of these — work through the list, fix the ones that apply, try again.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -7574,7 +7746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // ─── SOURCES ───
           sub === 'sources' ? h('div', null,
             h('div', { style: cardStyle() },
-              h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.sources_further_reading', '📜 Sources + Further Reading')),
+              h('h3', { style: subheaderStyle() }, __alloT('stem.kitchenlab.sources_further_reading', '📜 Sources + Further Reading')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
                 h('p', { style: { margin: '0 0 12px 0' } },
                   __alloT('stem.kitchenlab.kitchen_lab_content_is_anchored_in_pub', 'Kitchen Lab content is anchored in publicly available food-safety guidance + culinary science references. Where temperatures or rules appear, the cited source is the authoritative one for the US:')),
@@ -7612,7 +7784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
       function subheaderStyle() {
         return {
-          fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 10,
+          fontSize: 14, fontWeight: 800, color: '#fde68a', margin: '0 0 10px',
           display: 'flex', alignItems: 'center', gap: 8
         };
       }
@@ -7699,7 +7871,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         else if (reactivity < 0.6) state = 'active';
         else if (reactivity < 0.9) state = 'deep';
         else state = 'burnt';
+        // Sugar with little protein still browns once hot enough: that is
+        // caramelisation, a different reaction (Maillard tab, ~320°F for sucrose)
+        if ((state === 'noReact' || state === 'beginning') && iq.tempF >= 320 && iq.sugarPct >= 50 && iq.aminoPct <= 20) state = 'caramel';
         var sm = {
+          caramel:   { label: __alloT('stem.kitchenlab.caramelisation_not_maillard', '🟠 Caramelisation (sugar alone)'), color: '#b45309', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.kitchenlab.caramelisation_not_maillard_desc', 'Not Maillard: with little protein, the sugar itself breaks down above about 320°F. Amber colour, sweet then bitter.') },
           noReact:   { label: __alloT('stem.kitchenlab.no_reaction', '⚪ No reaction'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: __alloT('stem.kitchenlab.below_threshold_no_maillard_activity', 'Below threshold — no Maillard activity.') },
           beginning: { label: __alloT('stem.kitchenlab.browning_begins', '🟡 Browning begins'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.kitchenlab.light_tan_color_mild_aroma', 'Light tan color, mild aroma.') },
           active:    { label: __alloT('stem.kitchenlab.active_maillard', '🟠 Active Maillard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.kitchenlab.golden_brown_rich_aroma_compounds_form', 'Golden-brown, rich aroma compounds forming.') },
@@ -7707,8 +7883,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           burnt:     { label: __alloT('stem.kitchenlab.burnt_acrylamide_risk', '⚫ Burnt / acrylamide risk'), color: '#1e293b', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.kitchenlab.pyrolysis_bitter_potential_acrylamide_', 'Pyrolysis. Bitter, potential acrylamide formation.') }
         }[state];
         return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 space-y-3' },
-          h('h3', { className: 'text-sm font-black text-orange-700' }, __alloT('stem.kitchenlab.maillard_browning_discovery', '🔬 Maillard browning discovery')),
-          h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.sliders_for_surface_temp_amino_acid_su', 'Sliders for surface temp, amino-acid %, sugar %. Discrete 5-state browning stage. No score, no reveal.')),
+          h('h2', { className: 'text-sm font-black text-orange-700', style: { margin: 0 } }, __alloT('stem.kitchenlab.maillard_browning_discovery', '🔬 Maillard browning discovery')),
+          h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.kitchenlab.browning_lab_intro', 'Move the three sliders (surface temperature, amino acids and sugar) and watch which of five browning stages the food reaches.')),
           h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
             h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
@@ -7728,6 +7904,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
             h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
+          // The student's own trials: evidence to reason from, not an answer
+          (iq.log || []).length ? h('table', { 'data-kl-mh-log': iq.log.length, className: 'w-full text-[0.6875rem] text-slate-700 border-collapse' },
+            h('thead', null, h('tr', null, ['Surface °F', 'Amino %', 'Sugar %', 'Stage'].map(function(hd) {
+              return h('th', { key: hd, scope: 'col', className: 'text-left font-bold border-b border-slate-300 py-1 pr-2' }, hd); }))),
+            h('tbody', null, iq.log.map(function(r, i) {
+              var st = { noReact: 'no reaction', beginning: 'browning begins', active: 'active Maillard', deep: 'deep brown', burnt: 'burnt', caramel: 'caramelisation' }[r.st] || String(r.st);
+              var num = function(v) { return typeof v === 'number' && isFinite(v) ? String(v) : '—'; };
+              return h('tr', { key: i }, h('td', { className: 'py-1 pr-2 font-mono' }, num(r.t)), h('td', { className: 'py-1 pr-2 font-mono' }, num(r.a)), h('td', { className: 'py-1 pr-2 font-mono' }, num(r.s)), h('td', { className: 'py-1 pr-2' }, st));
+            }))) : null,
           h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': __alloT('stem.kitchenlab.a11y_maillard_reaction_hypothesis', 'Maillard reaction hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
             className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
@@ -7739,8 +7924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.kitchenlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
           iq.understood && h('textarea', { id: 'kitchen-maillard-explanation', 'aria-label': __alloT('stem.kitchenlab.a11y_explain_the_chemistry_of_maillard_browning', 'Explain the chemistry of Maillard browning'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.explain_the_chemistry_of_maillard_brow', 'Explain the chemistry of Maillard browning.'),
-            className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-          h('div', { className: 'text-[0.625rem] italic text-slate-500' }, __alloT('stem.kitchenlab.design_note_discrete_5_state_browning_', 'Design note: discrete 5-state browning marker; no flavor score; no reveal — by design.'))
+            className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })
         );
       })();
       else content = renderSafety();

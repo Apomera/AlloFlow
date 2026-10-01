@@ -1,0 +1,288 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\tyler-merge-audit-2026-09-28\\browser\\playwright-local.config.cjs",
+    "rootDir": "C:/tmp/tyler_integration_candidate/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 1200000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/tyler-merge-audit-2026-09-28/browser/e2e-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/tmp/tyler_integration_candidate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\tyler-merge-audit-2026-09-28\\browser\\launch-pad-e2e.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "02-launch-pad.spec.ts",
+      "file": "02-launch-pad.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Launch Pad role picker",
+          "file": "02-launch-pad.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "offers the four current roles and the full Teacher workspace alternative",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12393,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:28:40.678Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "role-storage.json",
+                          "contentType": "application/json",
+                          "body": "ewogICJzZXNzaW9uIjogbnVsbCwKICAibGFzdFJvbGUiOiBudWxsLAogICJ0ZWFjaGVyV29ya3NwYWNlIjogbnVsbAp9"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-c46a29b4539a36cb8f29",
+              "file": "02-launch-pad.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Enter on Specialist opens the educator dialog and moves focus inside it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10322,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:28:53.773Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "role-storage.json",
+                          "contentType": "application/json",
+                          "body": "ewogICJzZXNzaW9uIjogIntcInJvbGVcIjpcInNwZWNpYWxpc3RcIixcIndvcmtzcGFjZVwiOm51bGwsXCJhdFwiOjE3OTA2NTYxNDMyMzN9IiwKICAibGFzdFJvbGUiOiAic3BlY2lhbGlzdCIsCiAgInRlYWNoZXJXb3Jrc3BhY2UiOiBudWxsCn0="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-c5919b4becea920ea8ae",
+              "file": "02-launch-pad.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "full Teacher workspace remains selected after reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 26913,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:29:04.119Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "role-storage.json",
+                          "contentType": "application/json",
+                          "body": "ewogICJzZXNzaW9uIjogIntcInJvbGVcIjpcInRlYWNoZXJcIixcIndvcmtzcGFjZVwiOlwiZnVsbFwiLFwiYXRcIjoxNzkwNjU2MTY4MjE2fSIsCiAgImxhc3RSb2xlIjogInRlYWNoZXIiLAogICJ0ZWFjaGVyV29ya3NwYWNlIjogImZ1bGwiCn0="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-9defa082d4094128a990",
+              "file": "02-launch-pad.spec.ts",
+              "line": 66,
+              "column": 7
+            },
+            {
+              "title": "family can switch to Specialist and keep it after reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 29860,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:29:31.049Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "role-storage.json",
+                          "contentType": "application/json",
+                          "body": "ewogICJzZXNzaW9uIjogIntcInJvbGVcIjpcInNwZWNpYWxpc3RcIixcIndvcmtzcGFjZVwiOm51bGwsXCJhdFwiOjE3OTA2NTYxODIxNjl9IiwKICAibGFzdFJvbGUiOiAic3BlY2lhbGlzdCIsCiAgInRlYWNoZXJXb3Jrc3BhY2UiOiBudWxsCn0="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-737540bbb5ffca3de795",
+              "file": "02-launch-pad.spec.ts",
+              "line": 79,
+              "column": 9
+            },
+            {
+              "title": "teacher can switch to Specialist and keep it after reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 87748,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-29T04:30:00.933Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "role-storage.json",
+                          "contentType": "application/json",
+                          "body": "ewogICJzZXNzaW9uIjogIntcInJvbGVcIjpcInNwZWNpYWxpc3RcIixcIndvcmtzcGFjZVwiOm51bGwsXCJhdFwiOjE3OTA2NTYyNzM3NDF9IiwKICAibGFzdFJvbGUiOiAic3BlY2lhbGlzdCIsCiAgInRlYWNoZXJXb3Jrc3BhY2UiOiAiZ3VpZGVkIgp9"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2b7341fb3bf7287fa2-5b2b0f937df848c89402",
+              "file": "02-launch-pad.spec.ts",
+              "line": 79,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-29T04:28:36.221Z",
+    "duration": 189185.80599999998,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

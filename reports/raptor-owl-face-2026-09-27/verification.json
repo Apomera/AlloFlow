@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-27",
+  "scope": "Owl facial feather detail, smoother quality-scaled contours, species plumage, and guided head inspection",
+  "runs": [
+    { "runner": "vitest", "suites": ["stem_raptor_body_contours.test.js"], "passed": 8, "failed": 0, "skipped": 0, "duration": "2.66 seconds" },
+    { "runner": "playwright", "suites": ["raptor-owl-face.spec.ts"], "output": "initial-browser-results", "passed": 4, "failed": 0, "skipped": 0, "retries": 0, "duration": "1.6 minutes" },
+    { "runner": "playwright", "suites": ["raptor-owl-face.spec.ts", "raptor-study-lighting.spec.ts", "raptor-study-anatomy.spec.ts", "raptor-gaze-rendering.spec.ts"], "output": "final-browser-results", "passed": 13, "failed": 0, "skipped": 0, "retries": 0, "duration": "8.8 minutes" }
+  ],
+  "uniqueScenariosValidated": { "browser": 13, "geometry": 8 },
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "visualInspectionLowAndHighQuality": "pass",
+    "finiteGeometryAndUnitNormals": "pass",
+    "nondegenerateOutwardTriangles": "pass",
+    "wholeTriangleHeadClearance": "pass",
+    "snowyFacialWhitePigment": "pass",
+    "visibleFacialSurfaceAtFrontAndSideAngles": "pass",
+    "eyeAnchorClearance": "pass",
+    "attachedAnimatedGaze": "pass",
+    "frozenPoseAndNoIdleRedraws": "pass",
+    "stableBuffersAndTexture": "pass",
+    "cameraRestoration": "pass",
+    "keptImagesAndMatchedViews": "pass",
+    "notebookExportAndSessionRestoration": "pass",
+    "lightingModesAndHabitatIsolation": "pass",
+    "phoneFullscreenReducedMotionAndForcedColors": "pass",
+    "restartDisposal": "pass",
+    "scopedAxeViolations": 0
+  },
+  "resources": {
+    "previousFacialMesh": { "vertices": 242, "triangles": 432, "bytes": 13240, "minimumHeadClearance": 0.0015917043200114056 },
+    "lowFacialMesh": { "vertices": 962, "triangles": 1824, "bytes": 53272, "minimumHeadClearance": 0.003267194119271094 },
+    "balancedAndHighFacialMesh": { "vertices": 1794, "triangles": 3456, "bytes": 99672, "minimumHeadClearance": 0.0035887584917118354 },
+    "owlHead": { "previousLowVertices": 165, "previousHighVertices": 425, "lowVertices": 425, "balancedAndHighVertices": 825 },
+    "extraMeshes": 0, "extraMaterials": 0, "extraTextures": 0, "extraLights": 0, "extraDrawCalls": 0, "extraAnimationLoops": 0,
+    "runtime": "Static geometry and texture authoring at scene creation; existing gaze transform and frozen-scene rendering are reused."
+  },
+  "sourceFiles": [
+    { "path": "stem_lab/stem_tool_raptorhunt.js", "sha256": "76505c580ef5d6588bb3fc45b945d2d82438b173ff9cce80b1f8e0665eecd4b8" },
+    { "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js", "sha256": "76505c580ef5d6588bb3fc45b945d2d82438b173ff9cce80b1f8e0665eecd4b8" }
+  ],
+  "newTranslationKeys": 2,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "diagnosisCorrection": "Measurement ruled out the initial hypothesis of old facial triangles intersecting the head sphere. The refined mesh improves curvature and surface clearance; it does not fix an intersection defect.",
+  "limitations": "Stylized, representative plumage; not a model of all age, sex, or regional variations. Additional static vertices and triangles have a rendering cost. Local Chromium/WebGL checks are not physical-device performance measurements.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

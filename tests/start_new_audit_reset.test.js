@@ -6,7 +6,9 @@
 // (no reset-while-running race) and reverts to Start New Audit once the loop ends.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
@@ -48,7 +50,9 @@ describe('#1 view — the Start-New button is an actionable Stop while the loop 
     // idle branch is only disabled by the initial-fix flag now, not the loop flag
     // 2026-07-26: now _remediationBusy (host flag OR pipeline live-run lock) — the destructive
     // reset must stay blocked even when the one-shot flag write is lost.
-    expect(branch).toContain('disabled={_remediationBusy}');
+    // b4d7ed714 (09-13) widened it to _modalWorkBusy, which still includes _remediationBusy.
+    expect(branch).toContain('disabled={_modalWorkBusy}');
+    expect(view).toMatch(/const _modalWorkBusy = [^;\n]*\b_remediationBusy\b[^;\n]*;/);
     expect(branch).not.toContain('disabled={pdfFixLoading || pdfAutoContinueRunning}');
   });
 });

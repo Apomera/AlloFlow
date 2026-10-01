@@ -1,0 +1,16 @@
+const fs = require('fs'), path = require('path');
+const read = name => JSON.parse(fs.readFileSync(path.join(__dirname, name), 'utf8'));
+const combined = read('final-tests.json'), browser = read('browser-recheck.json');
+const remaining = combined.testResults.filter(file => !file.name.replaceAll('\\', '/').endsWith('/tests/learner_progress_scope_browser.test.js'));
+const files = [...remaining, ...browser.testResults];
+const assertions = files.flatMap(file => file.assertionResults.map(test => ({ file: file.name, ...test })));
+const unique = new Set(assertions.map(test => test.file + ':' + test.fullName));
+if (unique.size !== assertions.length || assertions.some(test => test.status !== 'passed')) throw Error('Incomplete final assertion coverage');
+const app = read('full-app-results.json'), proofs = read('proof-results.json'), compact = read('compact-header-proof.json'), audit = read('final-audit.json');
+if (app.results.length !== 3 || app.results.some(result => !result.passed || result.errors.length)) throw Error('Full-app flow failed');
+if (!proofs.unchanged || proofs.results.some(proof => !proof.proved) || !compact.proved) throw Error('Mutation proof incomplete');
+if (Object.values(audit.checks).some(passed => !passed) || audit.changedDuringValidation?.length) throw Error('Audit or validation input drift');
+for (const proof of [proofs, compact]) for (const [file, hash] of Object.entries(proof.after)) if (audit.identity[file] !== hash) throw Error('Mutation evidence does not match current inputs: ' + file);
+const result = { at: new Date().toISOString(), status: 'complete', targetedFiles: files.length, targetedAssertions: assertions.length, layoutAndAxeCases: 6, fullAppFlows: app.results.map(item => ({ role: item.role, width: item.width, passed: item.passed, headingY: item.headingBox.y })), mutationProofs: proofs.results.length + 1, changedDuringValidation: audit.changedDuringValidation, checks: audit.checks, localizedLabels: 10, languages: ['English', 'French', 'Latin American Spanish', 'Arabic'], gitWritesPerformed: false, deployed: false };
+fs.writeFileSync(path.join(__dirname, 'completion.json'), JSON.stringify(result, null, 2));
+console.log(JSON.stringify(result));

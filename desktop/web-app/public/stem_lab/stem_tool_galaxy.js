@@ -137,6 +137,73 @@ window.StemLab = window.StemLab || {
     return {phase:captured?'captured':'outside',radius:captured?1:p.radius,radialVelocity:p.radialVelocity,
       motion:p.radialVelocity<-.001?'inward':p.radialVelocity>.001?'outward':'turning',energy:plan.trajectory.energySquared>=1?'unbound':'bound'};
   }
+  function blackHoleFragmentCaptureTime(debris,index){
+    if(!debris||!Number.isInteger(index)||index<0||index>=debris.paths.length)return null;
+    var plan=debris.paths[index];
+    return plan.captured?debris.time:plan.trajectory.outcome==='captured'?debris.time+plan.trajectory.duration:null;
+  }
+  function blackHoleTurningPoints(run,offset,limit){
+    if(!run||!run.samples||!isFinite(offset)||!isFinite(limit)||limit<offset)return [];
+    var events=[],previous=null,zeroTime=null;
+    for(var i=0;i<run.samples.length;i++){
+      var p=run.samples[i],sign=p.radialVelocity< -1e-8?-1:p.radialVelocity>1e-8?1:0;
+      if(sign){
+        if(previous&&sign!==previous.sign){
+          var time=zeroTime===null?previous.p.time+(p.time-previous.p.time)*(-previous.p.radialVelocity)/(p.radialVelocity-previous.p.radialVelocity):zeroTime;
+          if(time+offset<=limit)events.push({key:previous.sign<0?'closest':'farthest',time:time+offset,radius:blackHoleSample(run,time).radius});
+        }
+        previous={p:p,sign:sign};zeroTime=null;
+      }else if(previous&&p.radialVelocity===0&&zeroTime===null)zeroTime=p.time;
+      if(p.time+offset>limit)break;
+    }
+    return events;
+  }
+  function blackHoleFragmentMoments(debris,index,duration){
+    if(!debris||!Number.isInteger(index)||index<0||index>=debris.paths.length||!isFinite(duration)||duration<debris.time)return [];
+    var plan=debris.paths[index];if(plan.captured)return [{key:'capture',time:debris.time,radius:1}];
+    var events=[{key:'breakup',time:debris.time,radius:plan.trajectory.releaseRadius}].concat(blackHoleTurningPoints(plan.trajectory,debris.time,duration));
+    var capture=blackHoleFragmentCaptureTime(debris,index);
+    if(capture!==null&&capture<=duration)events.push({key:'capture',time:capture,radius:1});
+    else events.push({key:'end',time:duration,radius:blackHoleSample(plan.trajectory,duration-debris.time).radius});
+    return events.filter(function(event,i){return !i||event.time>events[i-1].time+1e-8;});
+  }
+  function blackHoleAdjacentMoment(events,time,direction){
+    if(!isFinite(time))return -1;
+    if(direction<0){for(var i=events.length-1;i>=0;i--)if(events[i].time<time-1e-7)return i;}
+    else {for(var j=0;j<events.length;j++)if(events[j].time>time+1e-7)return j;}
+    return -1;
+  }
+  function blackHoleLocalReferences(radius,massMode){
+    if(typeof radius!=='number'||!isFinite(radius)||radius<=1)return null;
+    var solarMass=massMode==='supermassive'?4000000:10;
+    return {distanceKm:radius*2953.34*solarMass/1000,gradient:blackHoleTides(radius,massMode,'probe').gradient,clockFactor:Math.sqrt(1-1/radius)};
+  }
+  function blackHoleLocalMotion(run,time){
+    if(!run||!run.samples||!isFinite(run.energySquared)||run.energySquared<=0)return null;
+    var p=blackHoleSample(run,time);if(!isFinite(p.radius)||p.radius<=1)return null;
+    // Static orthonormal observer: v_r = (dr/dtau)/E,
+    // v_phi = sqrt(1-1/r) L/(r E); d tau/dt = (1-1/r)/E.
+    var metric=1-1/p.radius,energy=Math.sqrt(run.energySquared);
+    return {speed:Math.sqrt(Math.max(0,Math.min(1,1-metric/run.energySquared))),radial:p.radialVelocity/energy,
+      transverse:Math.sqrt(metric)*run.angularMomentum/(p.radius*energy),clockRate:metric/energy};
+  }
+  function blackHoleFragmentMotion(debris,index,time,launchAngle){
+    var state=blackHoleFragmentState(debris,index,time);if(!state||state.phase!=='outside')return null;
+    var plan=debris.paths[index],p=blackHoleSample(plan.trajectory,time-debris.time),local=blackHoleLocalMotion(plan.trajectory,time-debris.time);
+    if(!local)return null;
+    var angle=launchAngle+plan.angle+p.angle,c=Math.cos(angle),sn=Math.sin(angle),vt=plan.trajectory.angularMomentum/p.radius;
+    // Tangent of the drawn path, including its illustrative vertical offset.
+    // This is a coordinate direction, separate from locally measured speed.
+    var direction=[.43*(p.radialVelocity*c-vt*sn),plan.vertical*p.radialVelocity/plan.initialRadius,.43*(p.radialVelocity*sn+vt*c)],length=Math.hypot.apply(Math,direction);
+    return Object.assign(local,{direction:length?direction.map(function(v){return v/length;}):[0,0,0]});
+  }
+  function blackHoleClearSight(observer,point,horizonRadius){
+    if(!observer.concat(point).every(function(v){return typeof v==='number'&&isFinite(v);}))return false;
+    var dx=point[0]-observer[0],dy=point[1]-observer[1],dz=point[2]-observer[2],lengthSquared=dx*dx+dy*dy+dz*dz;
+    var fraction=lengthSquared?Math.max(0,Math.min(1,-(observer[0]*dx+observer[1]*dy+observer[2]*dz)/lengthSquared)):0;
+    var x=observer[0]+fraction*dx,y=observer[1]+fraction*dy,z=observer[2]+fraction*dz;
+    return x*x+y*y+z*z>=horizonRadius*horizonRadius;
+  }
   function blackHoleEvents(run, debris, duration) {
     var events=[{key:'release',time:0}];
     if(debris&&debris.time<=duration)events.push({key:'breakup',time:debris.time});
@@ -377,6 +444,18 @@ window.StemLab = window.StemLab || {
       [data-bh-events] button { display: flex; flex-direction: column; align-items: flex-start; border-color: #526889; }
       [data-bh-events] button[aria-pressed="true"] { color: #cffafe; border-color: #67e8f9; background: #164e63; }
       [data-bh-events] button span:last-child { font-weight: 400; color: #cbd5e1; font-size: 11px; }
+      [data-galaxy-hr-stage] { cursor: pointer; outline: none; }
+      [data-galaxy-hr-stage] [data-galaxy-hr-focus] { opacity: 0; }
+      [data-galaxy-hr-stage]:focus-visible [data-galaxy-hr-focus] { opacity: 1; }
+      [data-galaxy-hr-diagram] svg text { font-family: system-ui, sans-serif; }
+      @media (max-width: 639px) { [data-galaxy-hr-diagram] svg text { font-size: 18px; } [data-galaxy-hr-temp-tick="5000"] { display: none; } }
+      [data-galaxy-metallicity-chart] svg text { font-family: system-ui, sans-serif; }
+      [data-galaxy-metallicity-compare][aria-pressed="true"], [data-galaxy-metallicity-compare-mobile][aria-pressed="true"] { background: #164e63; box-shadow: inset 0 0 0 1px #67e8f9; }
+      @media (max-width: 639px) { [data-galaxy-metallicity-chart] svg text { font-size: 18px; } [data-galaxy-metallicity-z-tick="2"] text { display: none; } }
+      [data-galaxy-metallicity-log-cards] { display: none; list-style: none; margin: 0; padding: 0; }
+      @media (max-width: 639px) { [data-galaxy-metallicity-log-table] { display: none; } [data-galaxy-metallicity-log-cards] { display: grid; gap: 8px; } }
+      [data-bh-moments] [data-bh-moment-button][aria-pressed="true"] { color: #f5f3ff; border-color: #c4b5fd; background: #4c386a; box-shadow: inset 0 0 0 1px #c4b5fd; }
+      @media (forced-colors: active) { [data-bh-moments] [data-bh-moment-button][aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -3px; } }
       [data-bh-transport] input { width: 100%; min-height: 28px; accent-color: #67e8f9; }
       [data-bh-distance] { margin-top: 12px; padding: 12px; border: 1px solid #526889; border-radius: 10px; background: #081222; }
       [data-bh-distance][hidden] { display: none; }
@@ -392,6 +471,11 @@ window.StemLab = window.StemLab || {
       [data-bh-inspector][hidden], [data-bh-selected-key][hidden] { display: none; }
       [data-bh-inspector] select { width: 100%; min-height: 44px; margin: 6px 0; padding: 8px; border: 1px solid #a69bc5; border-radius: 8px; background: #243550; color: #f5f3ff; font-size: 13px; }
       [data-bh-inspector] p { margin-top: 8px; font-size: 12px; line-height: 1.5; }
+      [data-bh-inspector] input[type="checkbox"] { width: 20px; height: 20px; min-height: 20px; flex-shrink: 0; margin: 0; accent-color: #c4b5fd; }
+      [data-bh-local-metrics] { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #8b7aba66; font-size: 12px; }
+      [data-bh-local-metrics][hidden] { display: none; }
+      [data-bh-local-metrics] dt { color: #cbd5e1; }
+      [data-bh-local-metrics] dd { margin: 0; overflow-wrap: anywhere; color: #ede9fe; font-weight: 700; }
       [data-bh-workspace] > aside { display: flex; flex-direction: column; gap: 12px; }
       [data-bh-workspace] > aside > * { margin: 0; }
       [data-bh-experiment] { order: -1; }
@@ -945,6 +1029,12 @@ window.StemLab = window.StemLab || {
       var _xrSup = React.useState(false); var xrSupported = _xrSup[0]; var setXrSupported = _xrSup[1];
       // A saved-note draft is deliberately component-local: unfinished edits should
       // not leak into snapshots or overwrite notebook evidence on a later visit.
+      var galaxyQuizRequest = React.useRef({ token: 0, active: false, timer: null });
+      var galaxyQuizLoadingState = React.useState(false), galaxyQuizLoading = galaxyQuizLoadingState[0], setGalaxyQuizLoading = galaxyQuizLoadingState[1];
+      var galaxyQuizMessageState = React.useState(''), galaxyQuizMessage = galaxyQuizMessageState[0], setGalaxyQuizMessage = galaxyQuizMessageState[1];
+      React.useEffect(function () {
+        return function () { var request = galaxyQuizRequest.current; request.token++; request.active = false; clearTimeout(request.timer); };
+      }, []);
       var _realSkyObservationEditor = React.useState({ id: '', note: '', originalNote: '' });
       var realSkyObservationEditor = _realSkyObservationEditor[0];
       var setRealSkyObservationEditor = _realSkyObservationEditor[1];
@@ -1050,6 +1140,49 @@ if (!window._galaxyHasLoadedOnce) {
 
           var patchGalaxy = function (patch) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, patch) }); }); };
           var upd = function (key, val) { patchGalaxy((function () { var o = {}; o[key] = val; return o; })()); };
+          function cancelGalaxyQuizGeneration() {
+            var request = galaxyQuizRequest.current; if (!request.active) return;
+            request.token++; request.active = false; clearTimeout(request.timer); request.timer = null;
+            setGalaxyQuizLoading(false); patchGalaxy({ isGeneratingQuiz: false });
+          }
+          React.useEffect(function () { if (!d.quizMode) cancelGalaxyQuizGeneration(); }, [!!d.quizMode]);
+          function restartGalaxyQuiz() {
+            cancelGalaxyQuizGeneration(); setGalaxyQuizMessage('');
+            patchGalaxy({ quizIdx: 0, quizScore: 0, quizStreak: 0, quizFeedback: null, quizDone: false, isGeneratingQuiz: false });
+          }
+          function beginGalaxyQuizGeneration() {
+            if (typeof callGemini !== 'function' || galaxyQuizRequest.current.active) return;
+            var request = galaxyQuizRequest.current, token = ++request.token; request.active = true;
+            setGalaxyQuizLoading(true); setGalaxyQuizMessage(''); patchGalaxy({ isGeneratingQuiz: true });
+            function finish(response, timedOut) {
+              if (!request.active || request.token !== token) return;
+              request.active = false; clearTimeout(request.timer); request.timer = null;
+              var questions = [];
+              try { if (response && typeof response.text === 'string') questions = sanitizeGeneratedQuiz(JSON.parse(response.text.replace(/```json/gi, '').replace(/```/g, '').trim())); } catch (error) {}
+              setGalaxyQuizLoading(false);
+              if (questions.length) {
+                patchGalaxy({ dynamicQuiz: questions, quizIdx: 0, quizScore: 0, quizStreak: 0, quizFeedback: null, quizDone: false, isGeneratingQuiz: false });
+                setGalaxyQuizMessage(__alloT('stem.galaxy.quiz_new_ready', 'New questions are ready.'));
+              } else {
+                patchGalaxy({ isGeneratingQuiz: false });
+                setGalaxyQuizMessage(timedOut ? __alloT('stem.galaxy.quiz_timeout', 'New questions took too long to load. Your current quiz is ready.') : __alloT('stem.galaxy.quiz_load_failed', 'New questions could not be loaded. Your current quiz is ready.'));
+              }
+            }
+            request.timer = setTimeout(function () { finish(null, true); }, 25000);
+            try {
+              var result = callGemini('Generate 5 challenging multiple-choice questions about stars, galaxies, and astrophysics. Return only a JSON array of objects with q (question), a (correct answer), and options (2 to 4 distinct answers, including a).', function (response) { finish(response, false); });
+              if (result && typeof result.catch === 'function') result.catch(function () { finish(null, false); });
+            } catch (error) { finish(null, false); }
+          }
+          function representativeMainSequenceMass(classId) { return ({ O: 30, B: 8, A: 1.8, F: 1.2, G: 1, K: 0.7, M: 0.3 })[classId] || 1; }
+          function boundedMetallicityValue(value, fallback, min, max) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
+          function metallicityGroup(z) { return z === 0 ? 'popIII' : z < 0.05 ? 'extremelyPoor' : z < 0.3 ? 'poor' : z < 1.3 ? 'solar' : 'rich'; }
+          function validMetallicityCombination(entry) {
+            return !!entry && typeof entry.z === 'number' && isFinite(entry.z) && entry.z >= 0 && entry.z <= 2 && typeof entry.m === 'number' && isFinite(entry.m) && entry.m >= 0.1 && entry.m <= 50 && typeof entry.a === 'number' && isFinite(entry.a) && entry.a >= 0 && entry.a <= 13.8;
+          }
+          function sameMetallicityCombination(a, b) { return !!a && !!b && a.z === b.z && a.m === b.m && a.a === b.a; }
+          function openStarLifeAtMass(mass) { patchGalaxy({ quizMode: false, simMode: 'star', showLifecycle: true, lifecycleMass: mass, activeStage: 'main_sequence' }); }
+          function openMetallicityAtMass(mass) { patchGalaxy({ quizMode: false, simMode: 'metalHunt', metalHunt: Object.assign({}, d.metalHunt || {}, { mass: mass }) }); }
 
           // Range inputs fire on every pointer move. Rebuilding up to 100,000 star
           // vertices (or recolouring them) per event stalls the drag, so the expensive
@@ -1124,6 +1257,7 @@ if (!window._galaxyHasLoadedOnce) {
           var blackHoleLaunchAngle = typeof d.blackHoleLaunchAngle === 'number' && isFinite(d.blackHoleLaunchAngle) ? Math.max(-180,Math.min(180,d.blackHoleLaunchAngle)) : 41;
           var blackHoleOptical = !!d.blackHoleOptical;
           var blackHoleFollow = !!d.blackHoleFollow;
+          var blackHoleShowMotion = d.blackHoleShowMotion!==false;
           var blackHoleInteraction = ['place','aim'].indexOf(d.blackHoleInteraction)>=0 ? d.blackHoleInteraction : 'camera';
           var blackHolePlayback = [.25,.5,1,2,4].indexOf(d.blackHolePlayback) >= 0 ? d.blackHolePlayback : .5;
 
@@ -1385,6 +1519,11 @@ if (!window._galaxyHasLoadedOnce) {
           function mainSequenceTemp(mass) { return zamsInterp(mass, 'lt'); }
           function mainSequenceLuminosity(mass) { return zamsInterp(mass, 'll'); }
           function mainSequenceRadius(mass) { return zamsInterp(mass, 'lr'); }
+          function nearestStellarStagePoint(points, x, y, limit) {
+            var nearest = null, distance = limit * limit;
+            points.forEach(function (point) { var dx = point.x - x, dy = point.y - y, d2 = dx * dx + dy * dy; if (d2 <= distance && (!nearest || d2 < distance)) { nearest = point; distance = d2; } });
+            return nearest;
+          }
 
 
           // Spectral class is DEFINED by temperature, so its mass boundaries have to be
@@ -2750,7 +2889,7 @@ if (!window._galaxyHasLoadedOnce) {
           blackHoleLaunchCommit.current = function(values){patchGalaxy(values);};
           var blackHoleReadyState = React.useState(false), blackHoleReady = blackHoleReadyState[0], setBlackHoleReady = blackHoleReadyState[1];
           var blackHoleRunState = React.useState(false), blackHoleHasRun = blackHoleRunState[0], setBlackHoleHasRun = blackHoleRunState[1];
-          var blackHoleDebrisUiState=React.useState({available:false,outside:false,selected:false}),blackHoleDebrisUi=blackHoleDebrisUiState[0],setBlackHoleDebrisUi=blackHoleDebrisUiState[1];
+          var blackHoleDebrisUiState=React.useState({available:false,outside:false,selected:false,capture:false,moments:[],previous:-1,next:-1,active:-1}),blackHoleDebrisUi=blackHoleDebrisUiState[0],setBlackHoleDebrisUi=blackHoleDebrisUiState[1];
           // Holds the Real Sky container across renders so its Aladin Lite instance
           // can be disposed when the node genuinely unmounts. Declared here, with the
           // other refs, to keep the hook budget fixed and unconditional.
@@ -2771,7 +2910,7 @@ if (!window._galaxyHasLoadedOnce) {
             if (canvas._blackHoleInit) return;
             blackHoleCanvasActive.current = canvas;
             canvas._blackHoleInit = true;
-            var stopped = false, frame = 0, renderer, scene, camera, disk, stars, photonRing, lensRing, corona, lensArcA, lensArcB, coreGlow, jetGroup, fallingObjects = [], lastFrameTime = 0, sceneTime = 0, contextLost = false, updateFalling = function(){}, disposeFalling = function(){}, updateMarker = function(){}, handleLaunchPointer = function(){return false;}, cancelLaunchPointer = function(){}, updateLaunchGuide = function(){};
+            var stopped = false, frame = 0, renderer, scene, camera, disk, stars, photonRing, lensRing, corona, lensArcA, lensArcB, coreGlow, jetGroup, fallingObjects = [], lastFrameTime = 0, sceneTime = 0, contextLost = false, updateFalling = function(){}, disposeFalling = function(){}, updateMarker = function(){}, handleLaunchPointer = function(){return false;}, cancelLaunchPointer = function(){}, updateLaunchGuide = function(){}, updateFragmentIndicators = function(){}, refreshFragmentMomentLayout = function(){};
             var spin = parseFloat(canvas.getAttribute('data-spin')); if (isNaN(spin)) spin = 0.72;
             var diskPower = parseFloat(canvas.getAttribute('data-disk')); if (isNaN(diskPower)) diskPower = 0.78;
             var optics=null,opticalEnabled=false,opticalViewSaved=null,opticalSignature='',opticalFrames=0;
@@ -2906,12 +3045,30 @@ if (!window._galaxyHasLoadedOnce) {
               }
               function setText(id, text) { var el=document.getElementById(id); if(el && el.textContent!==text)el.textContent=text; }
               function announce(text) { setText('black-hole-status',text); }
-              var configuration = '', experiment = null, experimentTime = 0, released = false, lastPhase = '', previewPath = null, playbackDuration = 0, experimentEvents = [], experimentPrediction = null, comparison = null, distanceProfile = null, inspectedFragment = -1;
+              var configuration = '', experiment = null, experimentTime = 0, released = false, lastPhase = '', previewPath = null, playbackDuration = 0, experimentEvents = [], experimentPrediction = null, comparison = null, distanceProfile = null, inspectedFragment = -1, fragmentMoments=[], fragmentMomentUi=[], fragmentMomentsRevision=0, fragmentMomentRx=5, fragmentMomentRy=5;
               var launchAngle = .72, scratch = new THREE.Vector3(), redshiftColor = new THREE.Color(0xef583f), debrisUiSignature='';
               var ringCanvas=document.createElement('canvas');ringCanvas.width=ringCanvas.height=64;
-              var ringContext=ringCanvas.getContext('2d');ringContext.strokeStyle='#c4b5fd';ringContext.lineWidth=5;ringContext.beginPath();ringContext.arc(32,32,25,0,Math.PI*2);ringContext.stroke();
-              var fragmentHighlight=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(ringCanvas),transparent:true,depthWrite:false,toneMapped:false}));
+              var ringContext=ringCanvas.getContext('2d');ringContext.lineWidth=8;ringContext.strokeStyle='#111827';ringContext.beginPath();ringContext.arc(32,32,25,0,Math.PI*2);ringContext.stroke();ringContext.lineWidth=4;ringContext.strokeStyle='#a78bfa';ringContext.stroke();
+              var fragmentHighlightTexture=new THREE.CanvasTexture(ringCanvas);fragmentHighlightTexture.encoding=THREE.sRGBEncoding;
+              var fragmentHighlight=new THREE.Sprite(new THREE.SpriteMaterial({map:fragmentHighlightTexture,transparent:true,depthWrite:false,toneMapped:false}));
               fragmentHighlight.scale.set(.3,.3,1);fragmentHighlight.visible=false;scene.add(fragmentHighlight);
+              var fragmentMotionArrow=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(),.2,0xa78bfa);
+              [fragmentMotionArrow.line.material,fragmentMotionArrow.cone.material].forEach(function(material){material.toneMapped=false;material.depthWrite=false;material.color.convertSRGBToLinear();});
+              fragmentMotionArrow.visible=false;scene.add(fragmentMotionArrow);
+              var currentFragmentMotion=null,motionReady=false,motionEnabled=canvas.getAttribute('data-motion')!=='false',motionArrowLength=0,motionDirection=new THREE.Vector3(),cameraForward=new THREE.Vector3(),indicatorOffset=new THREE.Vector3();
+              updateFragmentIndicators=function(){
+                fragmentMotionArrow.visible=false;if(!fragmentHighlight.visible||opticalEnabled)return;
+                cameraForward.set(0,0,-1).applyQuaternion(camera.quaternion);
+                var depth=indicatorOffset.copy(fragmentHighlight.position).sub(camera.position).dot(cameraForward);
+                if(depth<=camera.near)return;
+                var unitsPerPixel=2*depth*Math.tan(camera.fov*Math.PI/360)/Math.max(1,canvas.clientHeight);
+                fragmentHighlight.scale.set(44*unitsPerPixel,44*unitsPerPixel,1);
+                if(!currentFragmentMotion||!motionReady||!motionEnabled||!blackHoleClearSight(camera.position.toArray(),fragmentHighlight.position.toArray(),.43))return;
+                motionDirection.fromArray(currentFragmentMotion.direction);if(motionDirection.lengthSq()<1e-12)return;
+                fragmentMotionArrow.position.copy(fragmentHighlight.position).addScaledVector(motionDirection,24*unitsPerPixel);
+                fragmentMotionArrow.setDirection(motionDirection);motionArrowLength=52*unitsPerPixel;
+                fragmentMotionArrow.setLength(motionArrowLength,12*unitsPerPixel,8*unitsPerPixel);fragmentMotionArrow.visible=true;
+              };
               function place(position, sample) { position.set(Math.cos(launchAngle+sample.angle)*sample.radius*.43,0,Math.sin(launchAngle+sample.angle)*sample.radius*.43); }
               disposeFalling=function(item) {
                 scene.remove(item.group); scene.remove(item.trail); scene.remove(item.debris);
@@ -3026,22 +3183,34 @@ if (!window._galaxyHasLoadedOnce) {
               function fragmentLabel(index){return __alloT('stem.galaxy.bh_fragment_number','Fragment {number}').replace('{number}',String(index+1));}
               function paintFragmentInspectionProfile(){
                 var item=fallingObjects[0],line=document.getElementById('black-hole-distance-selected'),points=[];
+                fragmentMoments=blackHoleFragmentMoments(item&&item.fragmentData,inspectedFragment,playbackDuration);fragmentMomentsRevision++;
+                fragmentMomentUi=fragmentMoments.map(function(event){return Object.assign({},event,{percent:playbackDuration?event.time/playbackDuration*100:0,x:playbackDuration?event.time/playbackDuration*600:0,y:distanceY(event.radius),rx:fragmentMomentRx,ry:fragmentMomentRy});});
                 if(line&&distanceProfile&&item&&item.fragmentData&&inspectedFragment>=0){
                   var data=item.fragmentData,plan=data.paths[inspectedFragment];
-                  if(plan.trajectory)distanceProfile.points.forEach(function(row){
-                    var elapsed=row.time-data.time;
-                    if(elapsed<0||(plan.trajectory.outcome==='captured'&&row.time>data.time+plan.trajectory.duration))return;
-                    points.push((row.time/playbackDuration*600).toFixed(2)+','+distanceY(blackHoleSample(plan.trajectory,elapsed).radius).toFixed(2));
+                  var times=distanceProfile.points.map(function(row){return row.time;}).concat(fragmentMoments.map(function(event){return event.time;})).sort(function(a,b){return a-b;});
+                  if(plan.trajectory)times.forEach(function(time,i){
+                    var elapsed=time-data.time;if(i&&time===times[i-1])return;
+                    if(elapsed<0||(plan.trajectory.outcome==='captured'&&time>data.time+plan.trajectory.duration))return;
+                    points.push((time/playbackDuration*600).toFixed(2)+','+distanceY(blackHoleSample(plan.trajectory,elapsed).radius).toFixed(2));
                   });
                 }
                 if(line)line.setAttribute('d',points.length?'M'+points.join(' L'):'');
               }
+              refreshFragmentMomentLayout=function(){
+                var svg=document.getElementById('black-hole-distance-chart'),box=svg&&svg.getBoundingClientRect();if(!box||!box.width||!box.height)return;
+                var rx=5*600/box.width,ry=5*160/box.height;if(Math.abs(rx-fragmentMomentRx)<1e-5&&Math.abs(ry-fragmentMomentRy)<1e-5)return;
+                fragmentMomentRx=rx;fragmentMomentRy=ry;fragmentMomentsRevision++;
+                fragmentMomentUi=fragmentMomentUi.map(function(event){return Object.assign({},event,{rx:rx,ry:ry});});
+                ['black-hole-distance-dot','black-hole-distance-selected-dot'].forEach(function(id){var dot=document.getElementById(id),ratio=id==='black-hole-distance-dot'?.8:1;if(dot){dot.setAttribute('rx',String(rx*ratio));dot.setAttribute('ry',String(ry*ratio));}});
+                if(fallingObjects.length)paintFragmentInspection(fallingObjects[0]);
+              };
               function paintFragmentInspection(item){
                 var data=item.fragmentData;
                 var state=blackHoleFragmentState(data,inspectedFragment,experimentTime),selected=state&&item.fragments[inspectedFragment];
                 // React owns disabled controls so its event handlers agree with
                 // their visible state. Update only when availability changes.
-                var ui={available:!!(released&&data),outside:!!(item.debris.visible&&item.visibleFragments),selected:!!state},signature=[ui.available,ui.outside,ui.selected].join(':');
+                var captureTime=blackHoleFragmentCaptureTime(data,inspectedFragment);
+                var ui={available:!!(released&&data),outside:!!(item.debris.visible&&item.visibleFragments),selected:!!state,capture:captureTime!==null&&captureTime<=playbackDuration,moments:fragmentMomentUi,previous:blackHoleAdjacentMoment(fragmentMoments,experimentTime,-1),next:blackHoleAdjacentMoment(fragmentMoments,experimentTime,1),active:fragmentMoments.findIndex(function(event){return Math.abs(event.time-experimentTime)<1e-7;})},signature=[ui.available,ui.outside,ui.selected,ui.capture,fragmentMomentsRevision,ui.previous,ui.next,ui.active].join(':');
                 if(signature!==debrisUiSignature){debrisUiSignature=signature;setBlackHoleDebrisUi(ui);}
                 var selector=document.getElementById('black-hole-fragment-select');if(selector)selector.value=String(inspectedFragment);
                 var key=document.getElementById('black-hole-distance-selected-key');if(key)key.hidden=!state;
@@ -3057,8 +3226,14 @@ if (!window._galaxyHasLoadedOnce) {
                   }
                 }
                 setText('black-hole-fragment-inspection-readout',readout);
+                var references=state&&state.phase==='outside'?blackHoleLocalReferences(state.radius,item.massMode):null,metrics=document.getElementById('black-hole-fragment-metrics');if(metrics)metrics.hidden=!references;
+                currentFragmentMotion=blackHoleFragmentMotion(data,inspectedFragment,experimentTime,launchAngle);
+                if(currentFragmentMotion){setText('black-hole-fragment-speed',currentFragmentMotion.speed>.9995?'~1 c':currentFragmentMotion.speed.toFixed(3)+' c');setText('black-hole-fragment-moving-clock',currentFragmentMotion.clockRate.toFixed(3));}
+                if(references){setText('black-hole-fragment-distance-km',references.distanceKm.toLocaleString(undefined,{maximumSignificantDigits:4})+' km');setText('black-hole-fragment-gradient',references.gradient.toExponential(2)+' s⁻²');setText('black-hole-fragment-clock',references.clockFactor.toFixed(3));}
+                motionReady=!!(selected&&state.phase==='outside'&&selected.mesh.visible&&item.fragmentBlend>=.25);
                 fragmentHighlight.visible=!!(selected&&state.phase==='outside'&&selected.mesh.visible);
                 if(fragmentHighlight.visible)fragmentHighlight.position.copy(selected.mesh.position);
+                updateFragmentIndicators();
                 var dot=document.getElementById('black-hole-distance-selected-dot');
                 if(dot){dot.style.display=state&&state.phase==='outside'?'':'none';if(state&&state.phase==='outside'){dot.setAttribute('cx',String(experimentTime/playbackDuration*600));dot.setAttribute('cy',String(distanceY(state.radius)));}}
               }
@@ -3189,7 +3364,7 @@ if (!window._galaxyHasLoadedOnce) {
                 // A drag changes trajectory coordinates, not the model's meshes.
                 // Reuse the intact object and preview buffer throughout an edit.
                 var reuse=!force&&!released&&fallingObjects.length&&fallingObjects[0].type===type&&fallingObjects[0].massMode===massMode;
-                configuration=key;if(!reuse)clearExperiment();experiment=blackHoleTrajectory({radius:radius,sideways:sideways,radialVelocity:radial});experimentPrediction=blackHolePrediction(experiment);playbackDuration=experiment.duration;experimentTime=0;released=false;lastPhase='';experimentEvents=[];distanceProfile=null;inspectedFragment=-1;fragmentHighlight.visible=false;setBlackHoleHasRun(false);
+                configuration=key;if(!reuse)clearExperiment();experiment=blackHoleTrajectory({radius:radius,sideways:sideways,radialVelocity:radial});experimentPrediction=blackHolePrediction(experiment);playbackDuration=experiment.duration;experimentTime=0;released=false;lastPhase='';experimentEvents=[];distanceProfile=null;inspectedFragment=-1;fragmentMoments=[];fragmentMomentUi=[];fragmentMomentsRevision++;fragmentHighlight.visible=false;fragmentMotionArrow.visible=false;currentFragmentMotion=null;setBlackHoleHasRun(false);
                 if(!reuse)fallingObjects.push(buildObject(type,massMode));
                 var pathArray=previewPath?previewPath.geometry.attributes.position.array:new Float32Array(240*3);
                 for(var pi=0;pi<240;pi++){place(scratch,blackHoleSample(experiment,experiment.duration*pi/239));pathArray[pi*3]=scratch.x;pathArray[pi*3+1]=scratch.y;pathArray[pi*3+2]=scratch.z;}
@@ -3243,9 +3418,60 @@ if (!window._galaxyHasLoadedOnce) {
                 inspectedFragment=index;paintFragmentInspectionProfile();paintExperiment();
                 var readout=document.getElementById('black-hole-fragment-inspection-readout');if(readout)setText('black-hole-fragment-announcement',readout.textContent);
               };
+              function inspectFromScene(index){
+                canvas._setBlackHolePaused(true);canvas._inspectBlackHoleFragment(index);
+                if(blackHoleLaunchCommit.current)blackHoleLaunchCommit.current({blackHolePaused:true,blackHoleMotionAllowed:true});
+              }
+              canvas._seekBlackHoleFragmentMoment=function(index){
+                if(opticalEnabled||!released||inspectedFragment<0)return false;
+                if(index==='previous'||index==='next')index=blackHoleAdjacentMoment(fragmentMoments,experimentTime,index==='previous'?-1:1);
+                if(!Number.isInteger(index)||index<0||index>=fragmentMoments.length)return false;
+                canvas._setBlackHolePaused(true);experimentTime=fragmentMoments[index].time;paintExperiment();
+                if(blackHoleLaunchCommit.current)blackHoleLaunchCommit.current({blackHolePaused:true,blackHoleMotionAllowed:true});
+                var readout=document.getElementById('black-hole-fragment-inspection-readout');if(readout)setText('black-hole-fragment-announcement',readout.textContent);return true;
+              };
+              canvas._seekBlackHoleFragmentCapture=function(){
+                var item=fallingObjects[0],time=item&&blackHoleFragmentCaptureTime(item.fragmentData,inspectedFragment);
+                if(!released||time===null||time===undefined||time>playbackDuration)return;
+                experimentTime=time;paintExperiment();
+                var readout=document.getElementById('black-hole-fragment-inspection-readout');if(readout)setText('black-hole-fragment-announcement',readout.textContent);
+              };
+              var fragmentPickRay=new THREE.Raycaster(),fragmentPickNdc=new THREE.Vector2(),fragmentProjection=new THREE.Vector3();
+              canvas._pickBlackHoleFragment=function(clientX,clientY){
+                var item=fallingObjects[0],box=canvas.getBoundingClientRect();
+                if(opticalEnabled||interaction!=='camera'||!released||!item||!item.debris.visible||item.fragmentBlend<.25||!isFinite(clientX)||!isFinite(clientY)||clientX<box.left||clientX>box.right||clientY<box.top||clientY>box.bottom)return false;
+                updateCamera();scene.updateMatrixWorld(true);
+                fragmentPickNdc.set((clientX-box.left)/box.width*2-1,1-(clientY-box.top)/box.height*2);fragmentPickRay.setFromCamera(fragmentPickNdc,camera);
+                var blocker=fragmentPickRay.intersectObject(horizon,false)[0],hitDistance=Infinity,chosen=-1;
+                item.fragments.forEach(function(fragment,i){
+                  if(!fragment.mesh.visible)return;
+                  var hit=fragmentPickRay.intersectObject(fragment.mesh,true)[0];
+                  if(hit&&(!blocker||hit.distance<blocker.distance)&&hit.distance<hitDistance){hitDistance=hit.distance;chosen=i;}
+                });
+                // A small screen-space target makes soft parcels usable on phones.
+                // The horizon still blocks hidden centers, including near misses.
+                if(chosen<0&&blocker)return false;
+                if(chosen<0){
+                  var nearest=24*24;
+                  item.fragments.forEach(function(fragment,i){
+                    if(!fragment.mesh.visible||!blackHoleClearSight(camera.position.toArray(),fragment.mesh.position.toArray(),.43))return;
+                    fragmentProjection.copy(fragment.mesh.position).project(camera);if(fragmentProjection.z< -1||fragmentProjection.z>1||Math.abs(fragmentProjection.x)>1||Math.abs(fragmentProjection.y)>1)return;
+                    var dx=box.left+(fragmentProjection.x+1)*box.width/2-clientX,dy=box.top+(1-fragmentProjection.y)*box.height/2-clientY,distance=dx*dx+dy*dy;
+                    if(distance<nearest){nearest=distance;chosen=i;}
+                  });
+                }
+                if(chosen<0)return false;inspectFromScene(chosen);return true;
+              };
+              canvas._cycleBlackHoleFragment=function(direction){
+                var item=fallingObjects[0];if(opticalEnabled||interaction!=='camera'||!released||!item||!item.debris.visible||item.fragmentBlend<.25)return false;
+                var available=[];item.fragments.forEach(function(fragment,i){if(fragment.mesh.visible)available.push(i);});if(!available.length)return false;
+                var at=available.indexOf(inspectedFragment),next=at<0?(direction<0?available.length-1:0):(at+(direction<0?-1:1)+available.length)%available.length;
+                inspectFromScene(available[next]);return true;
+              };
               canvas._blackHoleExperimentState=function(){
                 if(!experiment)return null;var item=fallingObjects[0],visible=item&&item.debris.visible?item.fragments.filter(function(f){return f.mesh.visible;}):[];
-                return Object.assign(blackHoleSample(experiment,experimentTime),{releaseRadius:experiment.releaseRadius,duration:playbackDuration,centerDuration:experiment.duration,launchAngle:launchAngle,sideways:experiment.sideways,radialVelocityAtRelease:experiment.initialRadialVelocity,cameraYaw:yaw,time:experimentTime,visibleFragments:item?item.visibleFragments:0,fragmentPositions:visible.map(function(f){return f.mesh.position.toArray();}),fragmentIndices:visible.map(function(f){return item.fragments.indexOf(f);}),inspectedFragment:inspectedFragment,inspection:item?blackHoleFragmentState(item.fragmentData,inspectedFragment,experimentTime):null,highlightVisible:fragmentHighlight.visible,fragmentOpacities:visible.map(function(f){return f.mesh.children[0].material.opacity;}),fragmentColors:visible.map(function(f){return f.mesh.children[0].material.color.toArray();}),fragmentBlend:item?item.fragmentBlend:0,intactOpacity:item?item.parts[0].children[0].material.opacity:0,events:experimentEvents.map(function(event){return {key:event.key,time:event.time};}),outcome:experiment.outcome,released:released,paused:paused,complete:released&&experimentTime>=playbackDuration});
+                var inspection=item?blackHoleFragmentState(item.fragmentData,inspectedFragment,experimentTime):null;
+                return Object.assign(blackHoleSample(experiment,experimentTime),{releaseRadius:experiment.releaseRadius,duration:playbackDuration,centerDuration:experiment.duration,launchAngle:launchAngle,sideways:experiment.sideways,radialVelocityAtRelease:experiment.initialRadialVelocity,cameraYaw:yaw,time:experimentTime,visibleFragments:item?item.visibleFragments:0,fragmentPositions:visible.map(function(f){return f.mesh.position.toArray();}),fragmentIndices:visible.map(function(f){return item.fragments.indexOf(f);}),inspectedFragment:inspectedFragment,inspection:inspection,localReferences:inspection&&inspection.phase==='outside'?blackHoleLocalReferences(inspection.radius,item.massMode):null,fragmentCaptureTime:item?blackHoleFragmentCaptureTime(item.fragmentData,inspectedFragment):null,fragmentMoments:fragmentMoments.map(function(event){return Object.assign({},event);}),highlightVisible:fragmentHighlight.visible,fragmentMotion:currentFragmentMotion,motionIndicator:{visible:fragmentMotionArrow.visible,origin:fragmentMotionArrow.position.toArray(),tip:fragmentMotionArrow.position.clone().add(new THREE.Vector3(0,1,0).applyQuaternion(fragmentMotionArrow.quaternion).multiplyScalar(motionArrowLength)).toArray()},fragmentOpacities:visible.map(function(f){return f.mesh.children[0].material.opacity;}),fragmentColors:visible.map(function(f){return f.mesh.children[0].material.color.toArray();}),fragmentBlend:item?item.fragmentBlend:0,intactOpacity:item?item.parts[0].children[0].material.opacity:0,events:experimentEvents.map(function(event){return {key:event.key,time:event.time};}),outcome:experiment.outcome,released:released,paused:paused,complete:released&&experimentTime>=playbackDuration});
               };
               updateFalling=function(dt){if(!released||!experiment||experimentTime>=playbackDuration)return;var rate=Number(canvas.getAttribute('data-playback'))||.5;experimentTime=Math.min(playbackDuration,experimentTime+dt*rate);paintExperiment();};
               var followBounds=new THREE.Box3(),partBounds=new THREE.Box3(),boundsCenter=new THREE.Vector3(),followRevision=-1,followAspect=0;
@@ -3280,6 +3506,7 @@ if (!window._galaxyHasLoadedOnce) {
               canvas._blackHoleCameraState=function(){
                 var item=fallingObjects[0];
                 return {following:followEnabled,active:followActive,target:followTarget.toArray(),position:camera.position.toArray(),yaw:yaw,pitch:pitch,zoom:followZoom,distance:distance,frames:objectFrames,marker:markerState,
+                  selectionEdges:fragmentHighlight.visible?[fragmentHighlight.position.clone().add(new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion).multiplyScalar(fragmentHighlight.scale.x/2)).project(camera).toArray(),fragmentHighlight.position.clone().add(new THREE.Vector3(-1,0,0).applyQuaternion(camera.quaternion).multiplyScalar(fragmentHighlight.scale.x/2)).project(camera).toArray()]:[],
                   projections:item?(item.debris.visible?item.fragments.filter(function(f){return f.mesh.visible;}).map(function(f){return f.mesh.position.clone().project(camera).toArray();}):item.group.visible?[item.group.position.clone().project(camera).toArray()]:[]):[]};
               };
               updateMarker=function(){
@@ -3289,9 +3516,7 @@ if (!window._galaxyHasLoadedOnce) {
                 function isVisible(position){
                   scratch.copy(position).project(camera);
                   if(scratch.z<=-1||scratch.z>=1||Math.abs(scratch.x)>=.86||Math.abs(scratch.y)>=.8)return false;
-                  var toObject=position.clone().sub(camera.position),along=-camera.position.dot(toObject)/toObject.lengthSq();
-                  var nearest=camera.position.clone().addScaledVector(toObject,Math.max(0,Math.min(1,along)));
-                  return !(along>0&&along<1&&nearest.length()<.45);
+                  return blackHoleClearSight(camera.position.toArray(),position.toArray(),.45);
                 }
                 var visible=(selected?selected.mesh.visible:debris?item.visibleFragments>0:item.group.visible)&&isVisible(target);
                 if(debris&&!selected&&!visible){
@@ -3381,6 +3606,7 @@ if (!window._galaxyHasLoadedOnce) {
                 velocityArrow.visible=!released&&length>.015;
                 if(velocityArrow.visible){place(velocityArrow.position,blackHoleSample(experiment,0));velocityArrow.position.y=.04;velocityArrow.setDirection(vector.normalize());velocityArrow.setLength(length,Math.min(.16,length*.28),Math.min(.085,length*.15));}
               };
+              canvas._setBlackHoleMotion=function(enabled){motionEnabled=!!enabled;updateFragmentIndicators();objectSignature='';};
               canvas._setBlackHoleSpin = function(v) { spin = v; diskMat.uniforms.uSpin.value = v; };
               canvas._setBlackHoleDisk = function(v) { diskPower = v; diskMat.uniforms.uPower.value = v; };
               canvas._setBlackHolePaused = function(v) { paused = v; lastFrameTime=0; };
@@ -3399,7 +3625,7 @@ if (!window._galaxyHasLoadedOnce) {
               setBlackHoleReady(true);
               resize(); animate();
             }
-            function resize() { if (!renderer) return; var w = canvas.clientWidth || 800, h = canvas.clientHeight || 540;
+            function resize() { if (stopped||!renderer) return; var w = canvas.clientWidth || 800, h = canvas.clientHeight || 540;
               // A tall sticky stage can trap its lower controls underneath the
               // following evidence section. Only pin a stage that fits on screen.
               var stage=canvas.closest('[data-bh-stage]');if(stage)stage.setAttribute('data-bh-sticky',String(window.innerWidth>=1024&&stage.offsetHeight<=window.innerHeight-24));
@@ -3407,7 +3633,7 @@ if (!window._galaxyHasLoadedOnce) {
               // draw into, so ignore it and wait for the next observation.
               if (w < 2 || h < 2) return;
               renderer.setPixelRatio(opticalEnabled?Math.min(window.devicePixelRatio||1,1.25,1000/w,720/h):Math.min(window.devicePixelRatio||1,2));
-              renderer.setSize(w, h, false);opticalSignature='';objectSignature=''; camera.aspect = w / h; camera.updateProjectionMatrix(); }
+              renderer.setSize(w, h, false);opticalSignature='';objectSignature=''; camera.aspect = w / h; camera.updateProjectionMatrix();refreshFragmentMomentLayout(); }
             function updateCamera() {
               pitch=Math.max(-1.5,Math.min(1.5,pitch));
               updateFollowFrame();
@@ -3429,7 +3655,7 @@ if (!window._galaxyHasLoadedOnce) {
               [lensArcA,lensArcB].forEach(function(arc,index){if(!arc)return;arc.quaternion.copy(camera.quaternion);arc.material.uniforms.uTime.value=sceneTime;arc.material.uniforms.uInclination.value=Math.abs(Math.cos(pitch));arc.material.uniforms.uSpin.value=spin;arc.material.uniforms.uObserverAngle.value=disk.material.uniforms.uObserverAngle.value;arc.material.uniforms.uPower.value=diskPower*(index?.24:.48)*Math.cos(pitch);});
               if(coreGlow)coreGlow.position.copy(camera.position).normalize().multiplyScalar(-.16);
               if(jetGroup)jetGroup.visible=canvas.getAttribute('data-jets')==='true';
-              updateMarker();updateLaunchGuide();
+              updateMarker();updateLaunchGuide();updateFragmentIndicators();
             }
             function animate(t) {
               if(stopped)return;frame=requestAnimationFrame(animate);
@@ -3448,23 +3674,24 @@ if (!window._galaxyHasLoadedOnce) {
                   renderer.render(optics.scene,optics.camera);opticalSignature=signature;opticalFrames++;
                 }
               }else{
-                var objectView=[yaw,pitch,distance,followActive,followZoom,camera.aspect,sceneTime,spin,diskPower,canvas.getAttribute('data-jets'),sceneRevision].join('|');
+                var objectView=[yaw,pitch,distance,followActive,followZoom,camera.aspect,sceneTime,spin,diskPower,canvas.getAttribute('data-jets'),canvas.getAttribute('data-motion'),sceneRevision].join('|');
                 if(objectView!==objectSignature){renderer.render(scene,camera);objectSignature=objectView;objectFrames++;}
               }
             }
             // Named so cleanup can detach them (anonymous listeners could never be removed).
-            var activeBhPointer=null;
+            var activeBhPointer=null,bhPointerOrigin=null;
             function onBhDown(e){
               if(contextLost||!renderer||activeBhPointer!==null||e.isPrimary===false||e.button!==0)return;
               canvas.focus({preventScroll:true});activeBhPointer=e.pointerId;drag=!handleLaunchPointer('down',e);lastX=e.clientX;lastY=e.clientY;
+              bhPointerOrigin={x:e.clientX,y:e.clientY,moved:false};
               try{canvas.setPointerCapture(e.pointerId);}catch(captureError){}e.preventDefault();
             }
-            function onBhMove(e){if(e.pointerId!==activeBhPointer)return;if(handleLaunchPointer('move',e))return;if(!drag)return;yaw-=(e.clientX-lastX)*.006;pitch+=(e.clientY-lastY)*.006;lastX=e.clientX;lastY=e.clientY;}
-            function onBhUp(e){if(e.pointerId!==activeBhPointer)return;handleLaunchPointer('up',e);activeBhPointer=null;drag=false;try{canvas.releasePointerCapture(e.pointerId);}catch(captureError){}}
-            function onBhCancel(e){if(e&&activeBhPointer!==e.pointerId)return;cancelLaunchPointer();var id=activeBhPointer;activeBhPointer=null;drag=false;if(id!==null)try{canvas.releasePointerCapture(id);}catch(captureError){}}
+            function onBhMove(e){if(e.pointerId!==activeBhPointer)return;if(bhPointerOrigin&&Math.hypot(e.clientX-bhPointerOrigin.x,e.clientY-bhPointerOrigin.y)>6)bhPointerOrigin.moved=true;if(handleLaunchPointer('move',e))return;if(!drag||!bhPointerOrigin||!bhPointerOrigin.moved)return;yaw-=(e.clientX-lastX)*.006;pitch+=(e.clientY-lastY)*.006;lastX=e.clientX;lastY=e.clientY;}
+            function onBhUp(e){if(e.pointerId!==activeBhPointer)return;var pick=drag&&bhPointerOrigin&&!bhPointerOrigin.moved&&Math.hypot(e.clientX-bhPointerOrigin.x,e.clientY-bhPointerOrigin.y)<=6;handleLaunchPointer('up',e);activeBhPointer=null;bhPointerOrigin=null;drag=false;try{canvas.releasePointerCapture(e.pointerId);}catch(captureError){}if(pick&&canvas._pickBlackHoleFragment)canvas._pickBlackHoleFragment(e.clientX,e.clientY);}
+            function onBhCancel(e){if(e&&activeBhPointer!==e.pointerId)return;cancelLaunchPointer();var id=activeBhPointer;activeBhPointer=null;bhPointerOrigin=null;drag=false;if(id!==null)try{canvas.releasePointerCapture(id);}catch(captureError){}}
             function zoomCamera(amount){if(followActive)followZoom=Math.max(.65,Math.min(3,followZoom*Math.exp(amount)));else distance=Math.max(2.8,Math.min(12,distance+amount*4));}
             function onBhWheel(e){ e.preventDefault();zoomCamera(e.deltaY*.001); }
-            function onBhKey(e){ var handled=true; if(e.key==='Escape'&&activeBhPointer!==null){onBhCancel();} else if(canvas._nudgeBlackHoleLaunch&&canvas._nudgeBlackHoleLaunch(e.key)){} else if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')zoomCamera(-.075); else if(e.key==='-')zoomCamera(.075); else if(e.key==='Home'){canvas._setBlackHoleCamera('angled'); var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_camera_reset', 'Camera reset to the starting view.');} else handled=false; if(handled)e.preventDefault(); }
+            function onBhKey(e){ var handled=true; if(e.key==='Escape'&&activeBhPointer!==null){onBhCancel();} else if(e.key==='Escape'&&!opticalEnabled&&canvas._blackHoleExperimentState&&canvas._blackHoleExperimentState().inspectedFragment>=0){canvas._setBlackHolePaused(true);canvas._inspectBlackHoleFragment(-1);if(blackHoleLaunchCommit.current)blackHoleLaunchCommit.current({blackHolePaused:true,blackHoleMotionAllowed:true});} else if((e.key==='PageUp'||e.key==='PageDown')&&!opticalEnabled&&canvas._seekBlackHoleFragmentMoment&&canvas._blackHoleExperimentState().inspectedFragment>=0){canvas._seekBlackHoleFragmentMoment(e.key==='PageUp'?'previous':'next');} else if((e.key==='['||e.key===']')&&canvas._cycleBlackHoleFragment&&canvas._cycleBlackHoleFragment(e.key==='['?-1:1)){} else if(canvas._nudgeBlackHoleLaunch&&canvas._nudgeBlackHoleLaunch(e.key)){} else if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')zoomCamera(-.075); else if(e.key==='-')zoomCamera(.075); else if(e.key==='Home'){canvas._setBlackHoleCamera('angled'); var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_camera_reset', 'Camera reset to the starting view.');} else handled=false; if(handled){e.preventDefault();e.stopPropagation();} }
             canvas.addEventListener('pointerdown', onBhDown);
             canvas.addEventListener('pointermove', onBhMove);
             canvas.addEventListener('pointerup', onBhUp);
@@ -3488,7 +3715,7 @@ if (!window._galaxyHasLoadedOnce) {
             // wide and the accretion disk ran off all four edges. The galaxy scene
             // already watches its own canvas; this one has to as well.
             var blackHoleResizeObserver = null;
-            if (window.ResizeObserver) { blackHoleResizeObserver = new ResizeObserver(function () { resize(); }); blackHoleResizeObserver.observe(canvas);var blackHoleStage=canvas.closest('[data-bh-stage]');if(blackHoleStage)blackHoleResizeObserver.observe(blackHoleStage); }
+            if (window.ResizeObserver) { blackHoleResizeObserver = new ResizeObserver(function () { resize(); }); blackHoleResizeObserver.observe(canvas);var blackHoleStage=canvas.closest('[data-bh-stage]');if(blackHoleStage)blackHoleResizeObserver.observe(blackHoleStage);var blackHoleChart=document.getElementById('black-hole-distance-chart');if(blackHoleChart)blackHoleResizeObserver.observe(blackHoleChart); }
             var blackHoleCleanedUp = false;
             canvas._blackHoleCleanup = function(){
               if(blackHoleCleanedUp)return;
@@ -3531,7 +3758,7 @@ if (!window._galaxyHasLoadedOnce) {
                 // immediately instead of waiting for browser garbage collection.
                 if(renderer.forceContextLoss)renderer.forceContextLoss();
               }
-              ['_dropIntoBlackHole','_configureBlackHoleExperiment','_resetBlackHoleExperiment','_seekBlackHoleExperiment','_seekBlackHoleEvent','_stepBlackHoleExperiment','_blackHoleExperimentState','_inspectBlackHoleFragment','_keepBlackHoleComparison','_clearBlackHoleComparison','_restoreBlackHoleComparison','_blackHolePredictionState','_setBlackHoleFollow','_blackHoleCameraState','_setBlackHoleSpin','_setBlackHoleDisk','_setBlackHolePaused','_setBlackHoleCamera','_setBlackHoleInteraction','_nudgeBlackHoleLaunch','_setBlackHoleOptics','_blackHoleOpticalState'].forEach(function(key){delete canvas[key];});
+              ['_dropIntoBlackHole','_configureBlackHoleExperiment','_resetBlackHoleExperiment','_seekBlackHoleExperiment','_seekBlackHoleEvent','_stepBlackHoleExperiment','_blackHoleExperimentState','_inspectBlackHoleFragment','_seekBlackHoleFragmentCapture','_seekBlackHoleFragmentMoment','_pickBlackHoleFragment','_cycleBlackHoleFragment','_keepBlackHoleComparison','_clearBlackHoleComparison','_restoreBlackHoleComparison','_blackHolePredictionState','_setBlackHoleFollow','_blackHoleCameraState','_setBlackHoleMotion','_setBlackHoleSpin','_setBlackHoleDisk','_setBlackHolePaused','_setBlackHoleCamera','_setBlackHoleInteraction','_nudgeBlackHoleLaunch','_setBlackHoleOptics','_blackHoleOpticalState'].forEach(function(key){delete canvas[key];});
               canvas._blackHoleInit=false;
             };
             if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(!stopped&&fallback)fallback.textContent=__alloT('stem.galaxy.bh_three_failed', 'The 3-D library could not load. The labeled black-hole explanation remains available.'); }); }
@@ -3546,9 +3773,13 @@ if (!window._galaxyHasLoadedOnce) {
             if(cv._setBlackHoleInteraction)cv._setBlackHoleInteraction(blackHoleInteraction);
             if(cv._setBlackHoleOptics)cv._setBlackHoleOptics(blackHoleOptical);
             if(cv._setBlackHoleFollow)cv._setBlackHoleFollow(blackHoleFollow);
+            if(cv._setBlackHoleMotion)cv._setBlackHoleMotion(blackHoleShowMotion);
             if(cv._setBlackHoleSpin)cv._setBlackHoleSpin(blackHoleSpin);
             if(cv._setBlackHoleDisk)cv._setBlackHoleDisk(blackHoleDisk);
-          }, [blackHoleReady,blackHoleDropObject,blackHoleMassMode,blackHoleReleaseRadius,blackHoleSideways,blackHoleRadialVelocity,blackHoleLaunchAngle,blackHoleInteraction,blackHoleOptical,blackHoleFollow,blackHoleSpin,blackHoleDisk]);
+          }, [blackHoleReady,blackHoleDropObject,blackHoleMassMode,blackHoleReleaseRadius,blackHoleSideways,blackHoleRadialVelocity,blackHoleLaunchAngle,blackHoleInteraction,blackHoleOptical,blackHoleFollow,blackHoleShowMotion,blackHoleSpin,blackHoleDisk]);
+          function blackHoleMomentLabel(key){
+            return key==='breakup'?__alloT('stem.galaxy.bh_moment_breakup','Fragment breakup'):key==='closest'?__alloT('stem.galaxy.bh_moment_closest','Fragment closest approach'):key==='farthest'?__alloT('stem.galaxy.bh_moment_farthest','Fragment farthest point'):key==='capture'?__alloT('stem.galaxy.bh_moment_capture','Fragment horizon crossing'):__alloT('stem.galaxy.bh_moment_end','Fragment observation end');
+          }
           function pauseBlackHoleForInspection() {
             upd('blackHolePaused',true);
             var cv=blackHoleCanvasActive.current;if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(true);
@@ -10187,35 +10418,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                     key: m.key, onClick: function () {
 
-                      if (m.key === 'quiz') { 
-                        patchGalaxy({ quizMode: true, quizIdx: 0, quizScore: 0, quizStreak: 0, quizFeedback: null, quizDone: false, isGeneratingQuiz: true, dynamicQuiz: null });
-                        var prompt = "Generate 5 challenging multiple-choice questions about stars, galaxies, and astrophysics. Return ONLY valid JSON format exactly like this: [{\"q\": \"Question...\", \"a\": \"Correct Answer\", \"options\": [\"Correct Answer\", \"Opt2\", \"Opt3\", \"Opt4\"]}]. Ensure no markdown backticks wrap the output.";
-                        if (typeof callGemini === 'function') {
-                            callGemini(prompt, function(res) {
-                                upd("isGeneratingQuiz", false);
-                                if (res && res.text) {
-                                    try {
-                                        var cleaned = res.text.replace(/```json/gi, "").replace(/```/g, "").trim();
-                                        var qList = JSON.parse(cleaned);
-                                        var safeList = sanitizeGeneratedQuiz(qList);
-                                        // A model reply missing `options` used to crash the render
-                                        // (quizQ.options.map); one missing its own answer produced an
-                                        // unanswerable item. Drop bad items, keep the static bank if
-                                        // nothing usable survives.
-                                        if (safeList.length > 0) {
-                                            upd("dynamicQuiz", safeList);
-                                        } else {
-                                            console.warn("Galaxy quiz: generated questions were unusable; keeping the built-in bank.");
-                                        }
-                                    } catch(e) {
-                                        console.warn("Gemini JSON Parse Error:", e, res.text);
-                                    }
-                                }
-                            });
-                        } else {
-                            upd("isGeneratingQuiz", false);
-                        }
-                      }
+                      if (isActive) return;
+                      if (m.key === 'quiz') { patchGalaxy({ quizMode: true, isGeneratingQuiz: false }); }
 
                       else {
                         upd("quizMode", false); upd("simMode", m.key);
@@ -11308,7 +11512,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("button", { "aria-label": __alloT('stem.galaxy.aria_toggle_timelapse', 'Toggle cosmic time-lapse playback'),
 
-                    onMouseDown: function (e) {
+                    type: 'button', onClick: function (e) {
 
                       e.preventDefault(); e.stopPropagation();
 
@@ -11788,6 +11992,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
+                selStar && React.createElement("div", { 'data-galaxy-star-bridges': 'true', className: 'mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3' },
+                  React.createElement("p", { className: 'text-xs leading-relaxed text-indigo-900' }, __alloT('stem.galaxy.star_bridge_example', 'Explore this spectral class with an illustrative mass of {mass} M☉.').replace('{mass}', representativeMainSequenceMass(selStar.id))),
+                  React.createElement("div", { className: 'mt-2 flex flex-wrap gap-2' },
+                    React.createElement("button", { type: 'button', 'data-galaxy-star-life-link': 'true', onClick: function () { openStarLifeAtMass(representativeMainSequenceMass(selStar.id)); }, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white' }, __alloT('stem.galaxy.star_bridge_life', 'Explore this star type’s life')),
+                    React.createElement("button", { type: 'button', 'data-galaxy-metallicity-link': 'true', onClick: function () { openMetallicityAtMass(representativeMainSequenceMass(selStar.id)); }, className: 'min-h-[44px] rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-800' }, __alloT('stem.galaxy.star_bridge_chemistry', 'Explore chemistry at this mass'))
+                  )
+                ),
                 selStar && selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
 
                   React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 " + __alloT('stem.galaxy.why_it_matters_label', 'Why It Matters')),
@@ -12346,8 +12557,13 @@ if (!window._galaxyHasLoadedOnce) {
 
 // ── Quiz mode ──
 
-              d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 motion-safe:animate-pulse motion-reduce:animate-none", role: "status", "aria-live": "polite", "aria-atomic": "true"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ " + __alloT('stem.galaxy.quiz_generating_title', 'Gemini is Generating Astrophysic Questions...')), React.createElement("p", {className: "text-sm text-indigo-400"}, __alloT('stem.galaxy.quiz_generating_sub', 'Parsing deep space databases...'))),
-              d.quizMode && !d.isGeneratingQuiz && !d.quizDone && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-500 p-8 animate-in fade-in slide-in-from-bottom-4" },
+              d.quizMode && React.createElement("div", { 'data-galaxy-quiz-controls': 'true', className: 'mt-4 mx-auto flex max-w-2xl flex-wrap items-center gap-2' },
+                galaxyQuizLoading ? React.createElement("button", { type: 'button', onClick: function () { cancelGalaxyQuizGeneration(); setGalaxyQuizMessage(__alloT('stem.galaxy.quiz_kept', 'Kept your current quiz.')); }, className: 'min-h-[44px] rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-800' }, __alloT('stem.galaxy.quiz_keep_current', 'Keep current quiz')) : React.createElement("button", { type: 'button', onClick: restartGalaxyQuiz, className: 'min-h-[44px] rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-800' }, __alloT('stem.galaxy.quiz_restart', 'Restart this quiz')),
+                !galaxyQuizLoading && typeof callGemini === 'function' && React.createElement("button", { type: 'button', onClick: beginGalaxyQuizGeneration, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white' }, __alloT('stem.galaxy.quiz_new_questions', 'Load new questions')),
+                galaxyQuizMessage && React.createElement("p", { role: 'status', className: 'w-full text-xs leading-relaxed text-slate-700' }, galaxyQuizMessage)
+              ),
+              d.quizMode && galaxyQuizLoading && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 motion-safe:animate-pulse motion-reduce:animate-none", role: "status", "aria-live": "polite", "aria-atomic": "true"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ " + __alloT('stem.galaxy.quiz_generating_title', 'Loading new astronomy questions…')), React.createElement("p", {className: "text-sm text-indigo-400"}, __alloT('stem.galaxy.quiz_generating_sub', 'Your current quiz is kept while new questions load.'))),
+              d.quizMode && !galaxyQuizLoading && !d.quizDone && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-500 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -12449,7 +12665,7 @@ if (!window._galaxyHasLoadedOnce) {
               ),
 
               // \u2500\u2500 Quiz results \u2500\u2500
-              d.quizMode && !d.isGeneratingQuiz && d.quizDone && (function () {
+              d.quizMode && !galaxyQuizLoading && d.quizDone && (function () {
                 var total = ACTIVE_BANK.length;
                 var score = d.quizScore || 0;
                 var pct = total ? Math.round((score / total) * 100) : 0;
@@ -12462,8 +12678,8 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("p", { className: "mt-1 text-sm font-bold text-indigo-700" }, score + " / " + total + " (" + pct + "%)"),
                   React.createElement("p", { className: "mx-auto mt-2 max-w-sm text-xs leading-relaxed text-slate-600" }, verdict),
                   React.createElement("div", { className: "mt-4 flex flex-wrap justify-center gap-2" },
-                    React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ quizIdx: 0, quizScore: 0, quizStreak: 0, quizFeedback: null, quizDone: false }); }, className: "min-h-[44px] rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700" }, "\u21ba " + __alloT('stem.galaxy.quiz_try_again', 'Try again')),
-                    React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ quizMode: false, quizDone: false, quizFeedback: null, simMode: 'galaxy' }); }, className: "min-h-[44px] rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100" }, "\ud83c\udf0c " + __alloT('stem.galaxy.quiz_back_to_galaxy', 'Back to the galaxy'))
+                    React.createElement("button", { type: "button", onClick: restartGalaxyQuiz, className: "min-h-[44px] rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700" }, "\u21ba " + __alloT('stem.galaxy.quiz_try_again', 'Try again')),
+                    React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ quizMode: false, simMode: 'galaxy' }); }, className: "min-h-[44px] rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100" }, "\ud83c\udf0c " + __alloT('stem.galaxy.quiz_back_to_galaxy', 'Back to the galaxy'))
                   )
                 );
               })(),
@@ -12486,8 +12702,9 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("div", {"data-bh-tools":"true",hidden:blackHoleOptical,role:"group","aria-label":__alloT('stem.galaxy.bh_canvas_tools','Scene interaction')},
                     [{id:'camera',label:__alloT('stem.galaxy.bh_tool_camera','Move camera')},{id:'place',label:__alloT('stem.galaxy.bh_tool_place','Place object')},{id:'aim',label:__alloT('stem.galaxy.bh_tool_aim','Aim throw')}].map(function(tool){return React.createElement("button",{type:'button',key:tool.id,disabled:!blackHoleReady,'aria-pressed':blackHoleInteraction===tool.id,onClick:function(){upd('blackHoleInteraction',tool.id);}},tool.label);}),React.createElement("button",{type:'button',disabled:!blackHoleReady,'aria-pressed':blackHoleFollow,onClick:function(){patchGalaxy({blackHoleFollow:!blackHoleFollow,blackHoleInteraction:'camera'});}},__alloT('stem.galaxy.bh_follow_object','Follow object'))),
                   React.createElement("p",{id:'black-hole-gesture-hint'},blackHoleOptical?__alloT('stem.galaxy.bh_optical_gesture','Drag or use arrow keys to change viewing angle. Scroll or use + and − to zoom. Your object experiment stays paused.'):blackHoleInteraction==='place'?__alloT('stem.galaxy.bh_place_help','Click or drag between the guide rings to place the object. Arrow keys change its angle and distance. Escape cancels a drag.'):blackHoleInteraction==='aim'?__alloT('stem.galaxy.bh_aim_adjust_help','Drag on the scene to adjust the yellow arrow. A click keeps the current throw. Arrow keys adjust sideways and radial motion; Escape cancels a drag.'):blackHoleFollow?__alloT('stem.galaxy.bh_follow_help','The camera follows the object and its debris. Drag to look around them; + and − zoom. Turn Follow object off to return to the overview. Placing or aiming pauses following.'):__alloT('stem.galaxy.bh_camera_help','Drag to orbit the camera. Choose Place object or Aim throw to edit a release; editing resets the current run.'))),
+                React.createElement("p",{id:'black-hole-picking-help',hidden:blackHoleOptical||!blackHoleDebrisUi.outside,style:{padding:'8px 16px',margin:0,color:'#ddd6fe',fontSize:'12px',lineHeight:1.5}},__alloT('stem.galaxy.bh_pick_help','Click or tap a visible fragment to inspect it. With the scene focused, [ and ] move between outside fragments; Escape returns to All debris.')),
                 React.createElement("div", { "data-bh-viewport": "true" },
-                  React.createElement("canvas", { "data-black-hole-canvas": "true", "data-follow":blackHoleFollow?"true":"false", "data-optical":blackHoleOptical?"true":"false", "data-optical-grid":d.blackHoleOpticalGrid?"true":"false", "data-optical-disk":d.blackHoleOpticalDisk===false?"false":"true", "data-optical-map":d.blackHoleOpticalMap?"true":"false", "data-spin": blackHoleSpin, "data-disk": blackHoleDisk, "data-paused": blackHoleEffectivePaused ? "true" : "false", "data-object": blackHoleDropObject, "data-mass": blackHoleMassMode, "data-release-radius": blackHoleReleaseRadius, "data-sideways": blackHoleSideways, "data-radial": blackHoleRadialVelocity, "data-launch-angle": blackHoleLaunchAngle, "data-playback": blackHolePlayback, "data-jets": d.blackHoleShowJets ? "true" : "false", ref: blackHoleRefCb, tabIndex: 0, role: "application", "aria-label": blackHoleOptical?__alloT('stem.galaxy.bh_optical_canvas','Interactive Schwarzschild light-bending view of a thin accretion disk and background sky'):__alloT('stem.galaxy.bh_experiment_canvas', 'Interactive nonrotating black hole model with object placement, throwing, trajectories, and tidal disruption.'), "aria-describedby": blackHoleOptical?"black-hole-gesture-hint black-hole-optical-description":"black-hole-instructions black-hole-gesture-hint black-hole-description black-hole-status", "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home", className: 'focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-indigo-300', style: { width: '100%', height: 'clamp(300px, 48vw, 500px)', display: 'block', cursor: 'grab', touchAction: 'none' } }),
+                  React.createElement("canvas", { "data-black-hole-canvas": "true", "data-follow":blackHoleFollow?"true":"false", "data-motion":blackHoleShowMotion?"true":"false", "data-optical":blackHoleOptical?"true":"false", "data-optical-grid":d.blackHoleOpticalGrid?"true":"false", "data-optical-disk":d.blackHoleOpticalDisk===false?"false":"true", "data-optical-map":d.blackHoleOpticalMap?"true":"false", "data-spin": blackHoleSpin, "data-disk": blackHoleDisk, "data-paused": blackHoleEffectivePaused ? "true" : "false", "data-object": blackHoleDropObject, "data-mass": blackHoleMassMode, "data-release-radius": blackHoleReleaseRadius, "data-sideways": blackHoleSideways, "data-radial": blackHoleRadialVelocity, "data-launch-angle": blackHoleLaunchAngle, "data-playback": blackHolePlayback, "data-jets": d.blackHoleShowJets ? "true" : "false", ref: blackHoleRefCb, tabIndex: 0, role: "application", "aria-label": blackHoleOptical?__alloT('stem.galaxy.bh_optical_canvas','Interactive Schwarzschild light-bending view of a thin accretion disk and background sky'):__alloT('stem.galaxy.bh_experiment_canvas', 'Interactive nonrotating black hole model with object placement, throwing, trajectories, and tidal disruption.'), "aria-describedby": blackHoleOptical?"black-hole-gesture-hint black-hole-optical-description":"black-hole-instructions black-hole-gesture-hint black-hole-description black-hole-status black-hole-picking-help black-hole-fragment-moment-help", "aria-keyshortcuts": blackHoleOptical ? "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home" : "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home [ ] Escape PageUp PageDown", className: 'focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-indigo-300', style: { width: '100%', height: 'clamp(300px, 48vw, 500px)', display: 'block', cursor: 'grab', touchAction: 'none' } }),
                   React.createElement("div", { id: "black-hole-object-marker", "data-bh-marker": "true", hidden: true, "aria-hidden": true }, React.createElement("span", null)),
                   React.createElement("div", { id: "black-hole-prediction-badge", "data-bh-prediction-badge": "true", hidden:blackHoleOptical||blackHoleHasRun, "aria-hidden": true }),
                   React.createElement("div", { id: "black-hole-drop-readout", hidden:blackHoleOptical,"aria-hidden": true, className: "absolute bottom-3 left-3 right-3 rounded-lg border border-cyan-200/20 bg-slate-950/90 px-3 py-2 text-xs font-semibold text-cyan-100 pointer-events-none" }, __alloT('stem.galaxy.blackhole_drop_begin', 'Drop an object to begin'))),
@@ -12527,7 +12744,7 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("span",{id:'black-hole-distance-max',style:{position:'absolute',left:0,top:'8px',fontSize:'12px'},'aria-hidden':true},'—'),
                       React.createElement("span",{style:{position:'absolute',left:0,top:'134px',fontSize:'12px',color:'#fbbf24'},'aria-hidden':true},'1'),
                       React.createElement("svg",{id:'black-hole-distance-chart',viewBox:'0 0 600 160',preserveAspectRatio:'none',role:'slider',tabIndex:0,'aria-label':__alloT('stem.galaxy.bh_distance_inspect','Inspect distance over playback'),'aria-describedby':'black-hole-distance-help black-hole-distance-readout','aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':0,'aria-orientation':'horizontal',
-                        onClick:function(e){var box=e.currentTarget.getBoundingClientRect();pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment((e.clientX-box.left)/box.width);},
+                        onClick:function(e){var box=e.currentTarget.getBoundingClientRect(),cv=blackHoleCanvasActive.current,nearest=22*22,index=-1;blackHoleDebrisUi.moments.forEach(function(event,i){var dx=e.clientX-box.left-event.x/600*box.width,dy=e.clientY-box.top-event.y/160*box.height,distance=dx*dx+dy*dy;if(distance<nearest){nearest=distance;index=i;}});if(index>=0&&cv&&cv._seekBlackHoleFragmentMoment){cv._seekBlackHoleFragmentMoment(index);return;}pauseBlackHoleForInspection();if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment((e.clientX-box.left)/box.width);},
                         onKeyDown:function(e){var value=Number(e.currentTarget.getAttribute('aria-valuenow'))/100,step=e.shiftKey?.1:.01;if(e.key==='ArrowLeft'||e.key==='ArrowDown')value-=step;else if(e.key==='ArrowRight'||e.key==='ArrowUp')value+=step;else if(e.key==='Home')value=0;else if(e.key==='End')value=1;else return;e.preventDefault();e.stopPropagation();pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment(value);}},
                         React.createElement("line",{x1:0,x2:600,y1:18,y2:18,stroke:'#526889','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("line",{x1:0,x2:600,y1:81,y2:81,stroke:'#334155',strokeDasharray:'3 5','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
@@ -12537,8 +12754,9 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("path",{id:'black-hole-distance-selected',d:'',fill:'none',stroke:'#c4b5fd',strokeWidth:2.5,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("line",{id:'black-hole-distance-cursor',x1:0,x2:0,y1:8,y2:152,stroke:'#e2e8f0',strokeWidth:1,strokeDasharray:'3 3','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("line",{id:'black-hole-distance-range',x1:0,x2:0,y1:0,y2:0,stroke:'#fbbf24',strokeWidth:4,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
-                        React.createElement("circle",{id:'black-hole-distance-dot',cx:0,cy:0,r:4,fill:'#67e8f9',stroke:'#67e8f9',strokeWidth:2,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
-                        React.createElement("circle",{id:'black-hole-distance-selected-dot',cx:0,cy:0,r:5,fill:'#c4b5fd',stroke:'#f5f3ff',strokeWidth:1,'vectorEffect':'non-scaling-stroke','aria-hidden':true,style:{display:'none'}})),
+                        React.createElement("ellipse",{id:'black-hole-distance-dot',cx:0,cy:0,rx:4,ry:4,fill:'#67e8f9',stroke:'#67e8f9',strokeWidth:2,'vectorEffect':'non-scaling-stroke','aria-hidden':true}),
+                        React.createElement("g",{id:'black-hole-distance-fragment-moments','aria-hidden':true},blackHoleDebrisUi.moments.map(function(event,i){return React.createElement("g",{key:event.key+':'+i,'data-bh-fragment-moment':i,style:{cursor:'pointer'},onClick:function(e){e.stopPropagation();var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleFragmentMoment)cv._seekBlackHoleFragmentMoment(i);}},React.createElement("ellipse",{'data-bh-moment-hit':true,cx:event.x,cy:event.y,rx:event.rx*2.2,ry:event.ry*2.2,fill:'transparent',style:{pointerEvents:'all'}}),React.createElement("ellipse",{'data-bh-moment-dot':true,cx:event.x,cy:event.y,rx:event.rx,ry:event.ry,fill:event.key==='capture'?'#fbbf24':'#c4b5fd',stroke:'#172033',strokeWidth:2,'vectorEffect':'non-scaling-stroke'}));})),
+                        React.createElement("ellipse",{id:'black-hole-distance-selected-dot',cx:0,cy:0,rx:5,ry:5,fill:'#c4b5fd',stroke:'#f5f3ff',strokeWidth:1,'vectorEffect':'non-scaling-stroke','aria-hidden':true,style:{display:'none'}})),
                       React.createElement("div",{className:'flex justify-between text-xs text-slate-300','aria-hidden':true},React.createElement("span",null,'0%'),React.createElement("span",null,'100%'))),
                     React.createElement("p",{"data-bh-distance-key":"true"},React.createElement("span",null,React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_distance_center','Modeled center')),React.createElement("span",null,React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_distance_debris','Debris range')),React.createElement("span",{id:'black-hole-distance-selected-key','data-bh-selected-key':'true',hidden:true},React.createElement("i",{'aria-hidden':true}),__alloT('stem.galaxy.bh_fragment_selected','Selected fragment'))),
                     React.createElement("p",{id:'black-hole-distance-readout',className:'mt-2 font-semibold text-slate-100'},''),
@@ -12548,6 +12766,21 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("select",{id:'black-hole-fragment-select',defaultValue:-1,'aria-describedby':'black-hole-fragment-inspection-readout black-hole-fragment-inspection-help',onChange:function(e){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._inspectBlackHoleFragment)cv._inspectBlackHoleFragment(Number(e.target.value));}},React.createElement("option",{value:-1},__alloT('stem.galaxy.bh_fragment_all_option','All debris'))),
                     React.createElement("div",{className:'flex flex-wrap gap-2'},['nearest','farthest'].map(function(which){return React.createElement("button",{key:which,id:'black-hole-fragment-'+which,type:'button',disabled:!blackHoleReady||!blackHoleDebrisUi.outside,onClick:function(){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._inspectBlackHoleFragment)cv._inspectBlackHoleFragment(which);}},which==='nearest'?__alloT('stem.galaxy.bh_fragment_nearest','Nearest outside'):__alloT('stem.galaxy.bh_fragment_farthest','Farthest outside'));}),React.createElement("button",{id:'black-hole-fragment-follow',type:'button',disabled:!blackHoleReady||!blackHoleDebrisUi.selected,onClick:function(){patchGalaxy({blackHoleFollow:true,blackHoleInteraction:'camera'});}},__alloT('stem.galaxy.bh_fragment_follow','Follow selected fragment'))),
                     React.createElement("p",{id:'black-hole-fragment-inspection-readout',className:'font-semibold text-violet-100'}),
+                    React.createElement("details",{id:'black-hole-fragment-moments','data-bh-moments':'true',hidden:!blackHoleDebrisUi.selected||!blackHoleDebrisUi.moments.length,style:{margin:'10px 0',padding:'8px',border:'1px solid #8b7aba66',borderRadius:'8px'}},
+                      React.createElement("summary",{style:{minHeight:'44px',cursor:'pointer',fontSize:'12px',fontWeight:700}},__alloT('stem.galaxy.bh_moment_title','Fragment moments')),
+                      React.createElement("p",{id:'black-hole-fragment-moment-help'},__alloT('stem.galaxy.bh_moment_help','Dots on the violet distance line mark this fragment’s moments. Jump with these buttons, or use PageUp and PageDown with the scene focused. Percentages refer to the full playback.')),
+                      React.createElement("div",{className:'flex flex-wrap gap-2',role:'group','aria-label':__alloT('stem.galaxy.bh_moment_navigation','Navigate fragment moments')},['previous','next'].map(function(direction){return React.createElement("button",{key:direction,id:'black-hole-fragment-moment-'+direction,type:'button',disabled:!blackHoleReady||blackHoleDebrisUi[direction]<0,onClick:function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleFragmentMoment)cv._seekBlackHoleFragmentMoment(direction);}},direction==='previous'?__alloT('stem.galaxy.bh_moment_previous','Previous fragment moment'):__alloT('stem.galaxy.bh_moment_next','Next fragment moment'));})),
+                      React.createElement("div",{className:'mt-2 flex flex-wrap gap-2',role:'group','aria-label':__alloT('stem.galaxy.bh_moment_list','Jump to a fragment moment')},blackHoleDebrisUi.moments.map(function(event,i){var label=blackHoleMomentLabel(event.key),percent=event.percent.toFixed(1)+'%';return React.createElement("button",{key:event.key+':'+i,'data-bh-moment-button':i,type:'button','aria-pressed':blackHoleDebrisUi.active===i,'aria-label':label+' · '+percent,disabled:!blackHoleReady,onClick:function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleFragmentMoment)cv._seekBlackHoleFragmentMoment(i);}},label,React.createElement("span",{dir:'ltr',style:{display:'block',fontSize:'11px',opacity:.8}},percent));}))),
+                    React.createElement("button",{type:'button',id:'black-hole-fragment-capture',disabled:!blackHoleReady||!blackHoleDebrisUi.capture,onClick:function(){pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleFragmentCapture)cv._seekBlackHoleFragmentCapture();}},__alloT('stem.galaxy.bh_pick_capture','Jump to this horizon crossing')),
+                    React.createElement("label",{htmlFor:'black-hole-fragment-show-motion',style:{display:'flex',alignItems:'center',gap:'8px',minHeight:'44px',fontSize:'12px'}},React.createElement("input",{type:'checkbox',id:'black-hole-fragment-show-motion',checked:blackHoleShowMotion,disabled:!blackHoleReady,onChange:function(e){upd('blackHoleShowMotion',e.target.checked);var cv=blackHoleCanvasActive.current;if(cv&&cv._setBlackHoleMotion)cv._setBlackHoleMotion(e.target.checked);}}),__alloT('stem.galaxy.bh_motion_show','Show motion direction')),
+                    React.createElement("dl",{id:'black-hole-fragment-metrics','data-bh-local-metrics':'true',hidden:true},
+                      React.createElement("dt",null,__alloT('stem.galaxy.bh_pick_distance','Modeled radius')),React.createElement("dd",{id:'black-hole-fragment-distance-km',dir:'ltr'}),
+                      React.createElement("dt",null,__alloT('stem.galaxy.bh_pick_gradient','Local tidal gradient')),React.createElement("dd",{id:'black-hole-fragment-gradient',dir:'ltr'}),
+                      React.createElement("dt",null,__alloT('stem.galaxy.bh_pick_clock','Static-clock reference')),React.createElement("dd",{id:'black-hole-fragment-clock',dir:'ltr'}),
+                      React.createElement("dt",null,__alloT('stem.galaxy.bh_motion_speed','Local speed')),React.createElement("dd",{id:'black-hole-fragment-speed',dir:'ltr'}),
+                      React.createElement("dt",null,__alloT('stem.galaxy.bh_motion_clock','Fragment-clock reference')),React.createElement("dd",{id:'black-hole-fragment-moving-clock',dir:'ltr'})),
+                    React.createElement("p",{className:'text-slate-300'},__alloT('stem.galaxy.bh_pick_reference_scope','Measurements describe this fragment’s modeled location while it is outside. The static-clock factor excludes its motion and light travel time.')),
+                    React.createElement("p",{className:'text-slate-300'},__alloT('stem.galaxy.bh_motion_help','Local speed is measured by a stationary observer at the fragment; c is the speed of light. The fragment-clock factor includes motion and excludes light travel time. The arrow shows the modeled path direction, with illustrative length.')),
                     React.createElement("span",{id:'black-hole-fragment-announcement',className:'sr-only',role:'status','aria-live':'polite','aria-atomic':true}),
                     React.createElement("p",{id:'black-hole-fragment-inspection-help',className:'text-slate-300'},__alloT('stem.galaxy.bh_fragment_inspection_help','Selection pauses playback. The violet ring, line, and readout identify the same fragment. Follow selected fragment tracks it; choose All debris to frame the whole stream. Bound energy can still lead to capture.'))),
                   React.createElement("p", { id: "black-hole-timeline-help", className: "text-xs text-slate-300" }, __alloT('stem.galaxy.bh_timeline_help','Scrub to inspect any moment. Step forward works while paused, including with reduced motion.')),
@@ -12594,6 +12827,7 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("p", { id: "black-hole-run-readout", className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.galaxy.blackhole_drop_begin','Drop an object to begin')),
                   React.createElement("p",{id:"black-hole-fragment-readout",className:"mt-2 text-xs leading-relaxed text-slate-700"}),
                   React.createElement("p", { id: "black-hole-tidal-value", className: "mt-1 text-xs text-slate-700" }),
+                  React.createElement("p",{className:'mt-1 text-xs text-slate-600'},__alloT('stem.galaxy.bh_pick_center_reference','The tidal and clock references in the main controls describe the modeled center. Inspect debris for a fragment’s local values.')),
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.bh_run_scope','Changing release settings resets the experiment. Sizes, stretching, debris, and playback time are illustrative.'))),
                 React.createElement("details", { className: "rounded-2xl border border-slate-200 bg-white p-4" },
                   React.createElement("summary", { className: "min-h-[44px] cursor-pointer py-3 text-sm font-black text-slate-800" },__alloT('stem.galaxy.relativistic_controls_title','Relativistic controls')),
@@ -12675,6 +12909,13 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
+              (function () {
+                var stages = getStagesForMass(lifecycleMass), index = stages.findIndex(function (stage) { return stage.id === activeStage; });
+                return React.createElement("div", { 'data-galaxy-stage-controls': 'true', className: 'flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-white p-3' },
+                  React.createElement("p", { role: 'status', className: 'w-full text-xs font-bold text-indigo-900' }, __alloT('stem.galaxy.stage_position', 'Stage {number} of {total}: {stage}').replace('{number}', index + 1).replace('{total}', stages.length).replace('{stage}', stages[index].name)),
+                  [-1, 1].map(function (direction) { return React.createElement("button", { key: direction, type: 'button', disabled: index + direction < 0 || index + direction >= stages.length, onClick: function () { upd('activeStage', stages[index + direction].id); }, className: 'min-h-[44px] rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 disabled:opacity-40' }, direction < 0 ? __alloT('stem.galaxy.stage_previous', 'Previous stage') : __alloT('stem.galaxy.stage_next', 'Next stage')); })
+                );
+              })(),
               // ── Animated Star Canvas ──
 
               React.createElement("div", { className: "w-full flex-1 relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210] shadow-2xl shadow-indigo-500/10", style: { flex: '1 1 auto', minHeight: 'clamp(380px, 62vw, 560px)', position: 'relative' } },
@@ -13673,6 +13914,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                 var msL = mainSequenceLuminosity(mass);
                 var massNoun = mass < HYDROGEN_FUSION_LIMIT ? "object" : "star";
+                var referenceMass = Number.isFinite(d.stellarMassReference) && d.stellarMassReference >= HYDROGEN_FUSION_LIMIT && d.stellarMassReference <= 50 ? d.stellarMassReference : null;
+                var referenceT = referenceMass === null ? null : mainSequenceTemp(referenceMass);
+                var referenceL = referenceMass === null ? null : mainSequenceLuminosity(referenceMass);
 
                 var STAGE_HR = {
 
@@ -13698,11 +13942,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                   nebula: __alloT('stem.galaxy.offchart_nebula', "A nebula isn't a star yet — pick a later stage to see your star appear on the map."),
 
-                  supernova: "💥 " + __alloT('stem.galaxy.offchart_supernova', 'A supernova briefly outshines this entire chart — off the top by a factor of 10,000!'),
+                  supernova: "💥 " + __alloT('stem.galaxy.offchart_supernova', 'A supernova is a changing transient. This schematic track does not assign it a single temperature and luminosity.'),
 
-                  neutron_star: __alloT('stem.galaxy.offchart_neutron_star', 'A neutron star no longer fuses anything — it has left the H-R diagram forever.'),
+                  neutron_star: __alloT('stem.galaxy.offchart_neutron_star', 'Neutron stars radiate as they cool. This model does not assign the temperature and luminosity needed to plot one.'),
 
-                  black_hole: __alloT('stem.galaxy.offchart_black_hole', 'A black hole emits no light at all — nothing to plot. The diagram only maps shining stars.'),
+                  black_hole: __alloT('stem.galaxy.offchart_black_hole', 'Light from a black hole’s surroundings can be observed. This diagram does not assign a stellar surface temperature and luminosity to the black hole itself.'),
 
                   black_dwarf: mass < HYDROGEN_FUSION_LIMIT ? __alloT('stem.galaxy.offchart_black_dwarf_bd', 'A cooling brown dwarf is faint and substellar — it fades below the main-sequence map.') : __alloT('stem.galaxy.offchart_black_dwarf', 'A black dwarf is a theoretical cooled white dwarf; the universe is not old enough for true black dwarfs yet.')
 
@@ -13723,6 +13967,27 @@ if (!window._galaxyHasLoadedOnce) {
                 });
 
                 var cur = STAGE_HR[activeStage];
+                var plottedStages = stages.filter(function (stage) { return !!STAGE_HR[stage.id]; });
+                var activePlotIndex = plottedStages.findIndex(function (stage) { return stage.id === activeStage; });
+                function chooseHRStage(id) { upd('activeStage', id); }
+                function hrPointerUp(event) {
+                  var svg=event.currentTarget, down=svg._galaxyHRPointer; svg._galaxyHRPointer=null;
+                  if(!down || down.id!==event.pointerId || Math.hypot(event.clientX-down.x,event.clientY-down.y)>6)return;
+                  var matrix=svg.getScreenCTM();if(!matrix)return;
+                  var points=plottedStages.map(function(stage){var value=STAGE_HR[stage.id],p=svg.createSVGPoint();p.x=xOf(value.T);p.y=yOf(value.L);p=p.matrixTransform(matrix);return {id:stage.id,x:p.x,y:p.y};});
+                  var picked=nearestStellarStagePoint(points,event.clientX,event.clientY,22);if(picked)chooseHRStage(picked.id);
+                }
+                function hrStageKey(event,index) {
+                  var key=event.key, next=index;
+                  if(key==='Enter'||key===' '){event.preventDefault();chooseHRStage(plottedStages[index].id);return;}
+                  if(key==='ArrowRight'||key==='ArrowDown')next=Math.min(plottedStages.length-1,index+1);
+                  else if(key==='ArrowLeft'||key==='ArrowUp')next=Math.max(0,index-1);
+                  else if(key==='Home')next=0;else if(key==='End')next=plottedStages.length-1;else return;
+                  event.preventDefault();var svg=event.currentTarget.ownerSVGElement,id=plottedStages[next].id;chooseHRStage(id);
+                  requestAnimationFrame(function(){if(svg.isConnected){var target=svg.querySelector('[data-galaxy-hr-stage="'+id+'"]');if(target)target.focus();}});
+                }
+                var hrMainLabel = __alloT('stem.galaxy.hr_main_sequence_label', 'Main sequence');
+                var atPlotEdge = cur && (cur.T < Math.pow(10,3.38) || cur.T > Math.pow(10,4.66) || cur.L < Math.pow(10,-4.2) || cur.L > Math.pow(10,6.2));
 
                 // Main-sequence band: along the MS, L ≈ (T/5778)^6; band spans ×/÷ 6 in L
 
@@ -13738,13 +14003,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                 });
 
-                return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-indigo-400/30 p-5 shadow-lg" },
+                return React.createElement("div", { "data-galaxy-hr-diagram": "true", className: "bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-indigo-400/30 p-5 shadow-lg" },
 
                   React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "📈"), __alloT('stem.galaxy.hr_diagram_title', "H-R Diagram — the astronomer's map")),
 
-                  React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.hr_diagram_intro', "Every star is one dot: temperature across (hot on the LEFT — astronomers' quirk), luminosity up. Stars aren't scattered randomly. Drag the mass slider and click lifecycle stages — the dashed line traces YOUR star's whole journey.")),
+                  React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.hr_diagram_intro', "Temperature decreases from left to right; luminosity increases upward. Select a plotted stage to explore its position. The dashed path joins schematic stage estimates; its spacing does not show elapsed time.")),
 
-                  React.createElement("svg", { viewBox: "0 0 " + HW + " " + HH, dir: "ltr", className: "w-full", style: { direction: 'ltr' }, role: "img", "aria-label": __alloT('stem.galaxy.aria_hr_diagram', "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted.") },
+                  React.createElement("svg", { "data-galaxy-hr-svg": "true", viewBox: "0 0 " + HW + " " + HH, dir: "ltr", className: "w-full", style: { direction: 'ltr', touchAction: 'pan-y' }, role: "group", onPointerDown: function(event){if(event.button===0)event.currentTarget._galaxyHRPointer={id:event.pointerId,x:event.clientX,y:event.clientY};}, onPointerUp: hrPointerUp, onPointerCancel: function(event){event.currentTarget._galaxyHRPointer=null;}, onPointerLeave: function(event){event.currentTarget._galaxyHRPointer=null;}, "aria-label": __alloT('stem.galaxy.aria_hr_diagram', "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted.") },
 
                     // temperature color strip along the bottom
 
@@ -13770,21 +14035,21 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("line", { x1: hp.l, y1: HH - hp.b, x2: HW - hp.r, y2: HH - hp.b, stroke: "#475569", strokeWidth: 1 }),
 
-                    [40000, 10000, 5000, 3000].map(function (T) { return React.createElement("text", { key: T, x: xOf(T), y: HH - hp.b + 18, fill: "#94a3b8", fontSize: 8, textAnchor: "middle" }, (T >= 10000 ? (T / 1000) + ',000' : T.toLocaleString()) + " K"); }),
+                    [40000, 10000, 3000].map(function (T) { return React.createElement("text", { key: T, "data-galaxy-hr-temp-tick": T, x: xOf(T), y: HH - hp.b + 18, fill: "#cbd5e1", fontSize: 10, textAnchor: T === 3000 ? "end" : "middle" }, (T >= 10000 ? (T / 1000) + ',000' : T.toLocaleString()) + " K"); }),
 
-                    [[1000000, "10⁶"], [10000, "10⁴"], [100, "10²"], [1, "1 ☉"], [0.01, "10⁻²"], [0.0001, "10⁻⁴"]].map(function (tk) { return React.createElement("text", { key: tk[1], x: hp.l - 5, y: yOf(tk[0]) + 3, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, tk[1]); }),
+                    [[1000000, "10⁶"], [10000, "10⁴"], [100, "10²"], [1, "1 ☉"], [0.01, "10⁻²"], [0.0001, "10⁻⁴"]].map(function (tk) { return React.createElement("text", { key: tk[1], x: hp.l - 5, y: yOf(tk[0]) + 3, fill: "#cbd5e1", fontSize: 10, textAnchor: "end" }, tk[1]); }),
 
                     // main sequence band + region labels
 
                     React.createElement("path", { d: msBandTop + msBandBot + 'Z', fill: "rgba(99,102,241,0.16)", stroke: "rgba(129,140,248,0.35)", strokeWidth: 0.7 }),
 
-                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 9, fontWeight: 700, textAnchor: "middle", textLength: 150, lengthAdjust: "spacingAndGlyphs", transform: "rotate(24 " + xOf(9500) + " " + yOf(6) + ")" }, __alloT('stem.galaxy.hr_main_sequence_label', 'MAIN SEQUENCE (90% of stars)')),
+                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 10, fontWeight: 700, textAnchor: "middle", textLength: hrMainLabel.length > 15 ? 150 : undefined, lengthAdjust: "spacingAndGlyphs", pointerEvents: "none" }, hrMainLabel),
 
-                    React.createElement("text", { x: xOf(4200), y: yOf(600), fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_giants_label', 'Giants')),
+                    React.createElement("text", { x: xOf(3000), y: yOf(600), fill: "#fca5a5", fontSize: 9, fontWeight: 700, textAnchor: "end" }, __alloT('stem.galaxy.hr_giants_label', 'Giants')),
 
-                    React.createElement("text", { x: xOf(11000), y: yOf(250000), fill: "#fdba74", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_supergiants_label', 'Supergiants')),
+                    React.createElement("text", { x: xOf(11000), y: yOf(250000), fill: "#fdba74", fontSize: 9, fontWeight: 700, textAnchor: "middle" }, __alloT('stem.galaxy.hr_supergiants_label', 'Supergiants')),
 
-                    React.createElement("text", { x: xOf(19000), y: yOf(0.008), fill: "#cbd5e1", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.hr_white_dwarfs_label', 'White Dwarfs')),
+                    React.createElement("text", { x: xOf(19000), y: yOf(0.008), fill: "#cbd5e1", fontSize: 9, fontWeight: 700, textAnchor: "middle" }, __alloT('stem.galaxy.hr_white_dwarfs_label', 'White Dwarfs')),
 
                     // the Sun for reference
 
@@ -13796,21 +14061,21 @@ if (!window._galaxyHasLoadedOnce) {
 
                     trackPath && React.createElement("path", { d: trackPath, fill: "none", stroke: "#f472b6", strokeWidth: 1.4, strokeDasharray: "4 3", opacity: 0.75 }),
 
-                    stages.map(function (s) {
-
-                      var p = STAGE_HR[s.id];
-
-                      if (!p) return null;
-
-                      return React.createElement("circle", { key: s.id, cx: xOf(p.T), cy: yOf(p.L), r: 2.2, fill: s.color === 'var(--allo-stem-text, #e2e8f0)' ? '#e2e8f0' : s.color, opacity: 0.85 });
-
+                    plottedStages.map(function (stage,index) {
+                      var p=STAGE_HR[stage.id],x=xOf(p.T),y=yOf(p.L),selected=activeStage===stage.id;
+                      return React.createElement("g", { key:stage.id,"data-galaxy-hr-stage":stage.id,role:"button",tabIndex:index===(activePlotIndex<0?0:activePlotIndex)?0:-1,"aria-pressed":selected,"aria-label":__alloT('stem.galaxy.hr_stage_aria','Select {stage}: {temperature} K, {luminosity} solar luminosities').replace('{stage}',stage.name).replace('{temperature}',Math.round(p.T)).replace('{luminosity}',formatSolarLuminosity(p.L)),onKeyDown:function(event){hrStageKey(event,index);},onClick:function(event){if(event.detail===0)chooseHRStage(stage.id);}},
+                        React.createElement("title",null,stage.name),
+                        React.createElement("circle",{cx:x,cy:y,r:3,fill:"transparent",stroke:"transparent",strokeWidth:44,vectorEffect:"non-scaling-stroke",pointerEvents:"all"}),
+                        React.createElement("circle",{"data-galaxy-hr-focus":"true",cx:x,cy:y,r:11,fill:"none",stroke:"#ffffff",strokeWidth:2,vectorEffect:"non-scaling-stroke"}),
+                        React.createElement("circle",{"data-galaxy-hr-dot":"true",cx:x,cy:y,r:3.2,fill:stage.color==='var(--allo-stem-text, #e2e8f0)'?'#e2e8f0':stage.color,stroke:'#e2e8f0',strokeWidth:0.7}));
                     }),
+                    referenceMass!==null && React.createElement("path",{"data-galaxy-hr-reference":"true","data-mass":referenceMass,"data-temperature":referenceT,"data-luminosity":referenceL,d:'M'+xOf(referenceT)+' '+(yOf(referenceL)-8)+'l8 8 -8 8 -8 -8Z',fill:'#081222',stroke:'#67e8f9',strokeWidth:2,pointerEvents:'none'}),
 
                     // current stage marker
 
-                    cur && React.createElement("circle", { cx: xOf(cur.T), cy: yOf(cur.L), r: 8, fill: "none", stroke: "#f472b6", strokeWidth: 1.2, opacity: 0.65 }),
+                    cur && React.createElement("circle", { pointerEvents: "none", cx: xOf(cur.T), cy: yOf(cur.L), r: 8, fill: "none", stroke: "#f472b6", strokeWidth: 1.2, opacity: 0.65 }),
 
-                    cur && React.createElement("circle", { cx: xOf(cur.T), cy: yOf(cur.L), r: 4.5, fill: "#f472b6", stroke: "#ffffff", strokeWidth: 1.2 })
+                    cur && React.createElement("circle", { pointerEvents: "none", cx: xOf(cur.T), cy: yOf(cur.L), r: 4.5, fill: "#f472b6", stroke: "#ffffff", strokeWidth: 1.2 })
 
                   ),
 
@@ -13818,7 +14083,37 @@ if (!window._galaxyHasLoadedOnce) {
 
                     cur ? "⭐ Your " + mass + " M☉ " + massNoun + " is " + cur.note + "." : (OFF_CHART[activeStage] || __alloT('stem.galaxy.hr_select_stage_prompt', 'Select a lifecycle stage to plot your star.'))
 
-                  )
+                  ),
+                  atPlotEdge && React.createElement('p',{'data-galaxy-hr-clipped':'true',className:'mt-2 text-xs text-amber-200'},__alloT('stem.galaxy.hr_edge_note','This stage is drawn at the plot edge; its estimate lies outside the displayed range.')),
+                  React.createElement('p',{className:'mt-2 text-[11px] leading-relaxed text-slate-200'},__alloT('stem.galaxy.hr_interaction_hint','Tap a stage point, or focus one and use arrow keys, Home, or End. Enter and Space select it. Pink marks the active stage; a cyan diamond marks the kept main-sequence reference.')),
+                  React.createElement('p',{dir:'ltr',className:'mt-1 text-[11px] leading-relaxed text-slate-300'},__alloT('stem.galaxy.hr_axis_note','Surface temperature (K): hotter ← cooler → · Luminosity (L☉): brighter ↑')),
+                  (function(){
+                    var h=React.createElement,canKeep=mass>=HYDROGEN_FUSION_LIMIT;
+                    function modelCard(value,kind){
+                      var trueStar=value>=HYDROGEN_FUSION_LIMIT;
+                      var rows=[[__alloT('stem.galaxy.hr_metric_mass','Mass'),value+' M☉']];
+                      if(trueStar)rows=rows.concat([
+                        [__alloT('stem.galaxy.hr_metric_temperature','Surface temperature'),Math.round(mainSequenceTemp(value)).toLocaleString()+' K'],
+                        [__alloT('stem.galaxy.hr_metric_luminosity','Luminosity'),formatSolarLuminosity(mainSequenceLuminosity(value))+' L☉'],
+                        [__alloT('stem.galaxy.hr_metric_radius','Radius'),Number(mainSequenceRadius(value).toPrecision(3))+' R☉'],
+                        [__alloT('stem.galaxy.hr_metric_lifetime','Hydrogen-burning estimate'),formatLifetimeShort(mainSequenceLifetimeGyr(value))]
+                      ]);
+                      return h('div',{'data-galaxy-star-model':kind,className:'rounded-lg border border-slate-600 bg-slate-950 p-3',style:{minWidth:0}},
+                        h('h5',{className:'text-xs font-black '+(kind==='reference'?'text-cyan-200':'text-pink-200')},kind==='reference'?__alloT('stem.galaxy.hr_reference_title','Kept mass'):__alloT('stem.galaxy.hr_current_title','Current mass')),
+                        h('dl',{className:'mt-2 space-y-2'},rows.map(function(row){return h('div',{key:row[0]},h('dt',{className:'text-[11px] text-slate-300'},row[0]),h('dd',{dir:'ltr',className:'mt-0.5 text-xs font-mono text-slate-100'},row[1]));})),
+                        !trueStar&&h('p',{className:'mt-2 text-xs leading-relaxed text-amber-200'},__alloT('stem.galaxy.hr_substellar_note','Below the sustained hydrogen-fusion limit. The main-sequence comparison relations do not apply.')));
+                    }
+                    return h('div',{'data-galaxy-star-comparison':'true',className:'mt-3 rounded-lg border border-cyan-700 bg-slate-950/60 p-3'},
+                      h('h4',{className:'text-sm font-black text-cyan-200'},__alloT('stem.galaxy.hr_comparison_title','Compare stars on the main sequence')),
+                      h('p',{className:'mt-1 text-xs leading-relaxed text-slate-300'},__alloT('stem.galaxy.hr_comparison_note','These values compare hydrogen-burning stars at their chosen birth masses. The kept reference stays fixed when you change mass, stage, or mode.')),
+                      h('div',{className:'mt-2 flex flex-wrap gap-2'},
+                        h('button',{type:'button','data-galaxy-star-keep':'true',disabled:!canKeep,onClick:function(){upd('stellarMassReference',mass);},className:'min-h-[44px] rounded border border-cyan-500 bg-cyan-950 px-3 py-2 text-xs font-bold text-cyan-100 disabled:opacity-40'},__alloT('stem.galaxy.hr_keep_mass','Keep current mass')),
+                        h('button',{type:'button','data-galaxy-star-use-sun':'true',onClick:function(){upd('stellarMassReference',1);},className:'min-h-[44px] rounded border border-slate-500 px-3 py-2 text-xs font-bold text-slate-100'},__alloT('stem.galaxy.hr_use_sun','Use Sun as reference')),
+                        referenceMass!==null&&h('button',{type:'button','data-galaxy-star-clear-reference':'true',onClick:function(){upd('stellarMassReference',null);},className:'min-h-[44px] rounded border border-slate-500 px-3 py-2 text-xs font-bold text-slate-100'},__alloT('stem.galaxy.hr_clear_reference','Clear reference'))),
+                      referenceMass!==null&&h('div',{className:'mt-3',style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:'8px'}},modelCard(mass,'current'),modelCard(referenceMass,'reference')),
+                      referenceMass!==null&&canKeep&&h('p',{'data-galaxy-star-comparison-ratios':'true',className:'mt-2 text-xs leading-relaxed text-cyan-100'},__alloT('stem.galaxy.hr_ratio_summary','Current / kept: {luminosity}× luminosity · {radius}× radius · {lifetime}× hydrogen-burning time').replace('{luminosity}',Number((msL/referenceL).toPrecision(3))).replace('{radius}',Number((mainSequenceRadius(mass)/mainSequenceRadius(referenceMass)).toPrecision(3))).replace('{lifetime}',Number((mainSequenceLifetimeGyr(mass)/mainSequenceLifetimeGyr(referenceMass)).toPrecision(3)))),
+                      h('p',{className:'mt-2 text-[11px] leading-relaxed text-slate-300'},__alloT('stem.galaxy.hr_model_limits','Teaching estimates use the same mass relations as the star scene. Composition, rotation, and mass loss can change real stars; extreme masses need detailed models.')));
+                  })()
 
                 );
 
@@ -13857,7 +14152,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       style: isMatch ? { background: st.color + '20' } : {},
 
-                      onClick: function () { var massMap = { O: 30, B: 8, A: 1.8, F: 1.2, G: 1, K: 0.7, M: 0.3 }; upd("lifecycleMass", massMap[st.id] || 1); }
+                      onClick: function () { upd("lifecycleMass", representativeMainSequenceMass(st.id)); }
 
                     },
 
@@ -14180,69 +14475,60 @@ if (!window._galaxyHasLoadedOnce) {
             !d.quizMode && simMode === 'metalHunt' && (function() {
               var h = React.createElement;
               var iq = d.metalHunt || {};
-              var metallicity = iq.metallicity !== undefined ? iq.metallicity : 1;
-              var starMass = iq.mass !== undefined ? iq.mass : 1;
-              var starAge = iq.age !== undefined ? iq.age : 5;
-              function setIQ(patch) { upd('metalHunt', Object.assign({ metallicity: metallicity, mass: starMass, age: starAge }, iq, patch)); }
-              var state;
-              if (metallicity < 0.05) state = 'popIII';
-              else if (metallicity < 0.3) state = 'poor';
-              else if (metallicity < 1.3) state = 'solar';
-              else state = 'rich';
-              var sm = {
-                popIII: { label: '🌌 ' + __alloT('stem.galaxy.mh_pop3_label', 'Population III (zero-metal)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.galaxy.mh_pop3_desc', 'The hypothetical first stars: hydrogen and helium only, and thought to be very massive. None has ever been observed.') },
-                poor:   { label: '🔵 ' + __alloT('stem.galaxy.mh_pop2_label', 'Metal-poor (Population II)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.galaxy.mh_pop2_desc', 'Old halo and globular-cluster stars, formed before much enrichment. Long-lived and low in heavy elements.') },
-                // yellow-700, not yellow-400: this colour is used as TEXT on the
-                // yellow-50 card, where #facc15 measured 1.48:1. The other three
-                // states already use 600-level inks; this one was the odd one out.
-                solar:  { label: '🟡 ' + __alloT('stem.galaxy.mh_pop1_label', 'Solar-metallicity (Population I)'), color: '#a16207', bg: '#fefce8', border: '#fde047', desc: __alloT('stem.galaxy.mh_pop1_desc', 'Sun-like disk stars. Enough heavy elements for rocky planets to form.') },
-                rich:   { label: '🟠 ' + __alloT('stem.galaxy.mh_rich_label', 'Metal-rich (super-solar)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.galaxy.mh_rich_desc', 'Young inner-disk stars born from gas that generations of earlier stars already enriched.') }
-              }[state];
-
-              // Mass and age used to be inert decoration. Two textbook relations make
-              // them do real work, without turning the widget into a scored quiz:
-              //   • main-sequence lifetime ≈ 10 / M^2.5 Gyr (mainSequenceLifetimeGyr,
-              //     shared with Star Life so the two modes cannot disagree)
-              //   • the interstellar medium was enriched over cosmic time, so a star's
-              //     age constrains the metallicity it could have been born with.
+              var metallicity = boundedMetallicityValue(iq.metallicity, 1, 0, 2);
+              var starMass = boundedMetallicityValue(iq.mass, 1, 0.1, 50);
+              var starAge = boundedMetallicityValue(iq.age, 5, 0, 13.8);
+              function setIQ(patch) { upd('metalHunt', Object.assign({}, iq, { metallicity: metallicity, mass: starMass, age: starAge }, patch)); }
+              var state = metallicityGroup(metallicity);
+              var compositions = {
+                popIII: { label: '🌌 ' + __alloT('stem.galaxy.mh_pop3_label', 'Metal-free reference (Population III)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.galaxy.mh_pop3_desc', 'Idealized birth gas before stellar enrichment. The first generation of stars formed largely from hydrogen and helium. Their evolution needs detailed models.') },
+                extremelyPoor: { label: '🔹 ' + __alloT('stem.galaxy.mh_extremely_poor_label', 'Very metal-poor composition'), color: '#0369a1', bg: '#f0f9ff', border: '#7dd3fc', desc: __alloT('stem.galaxy.mh_extremely_poor_desc', 'A small but nonzero heavy-element abundance records some enrichment by earlier stars. It is distinct from the zero-metal reference.') },
+                poor: { label: '🔵 ' + __alloT('stem.galaxy.mh_pop2_label', 'Metal-poor composition'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.galaxy.mh_pop2_desc', 'Common among halo and globular-cluster stars. Metal-poor gas can also form new stars, so composition alone does not give a unique age.') },
+                solar: { label: '🟡 ' + __alloT('stem.galaxy.mh_pop1_label', 'Near-solar composition'), color: '#a16207', bg: '#fefce8', border: '#fde047', desc: __alloT('stem.galaxy.mh_pop1_desc', 'A heavy-element abundance near the Sun’s. Stars inherit this material from their birth clouds, enriched by earlier generations.') },
+                rich: { label: '🟠 ' + __alloT('stem.galaxy.mh_rich_label', 'Metal-rich composition'), color: '#c2410c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.galaxy.mh_rich_desc', 'More heavy elements than the Sun. Both old and young stars can be metal-rich; enrichment depends on where the birth gas came from.') }
+              };
+              var sm = compositions[state];
+              // Composition groups describe the chosen abundance, not a measured
+              // population or age. Saved labels from older versions may be wrong.
               var msLifetime = mainSequenceLifetimeGyr(Math.max(0.08, starMass));
-              var formationTime = Math.max(0.2, 13.8 - starAge);
-              var expectedZ = Math.min(1.6, Math.pow(formationTime / 9, 1.6));
+              var formationTime = 13.8 - starAge;
               var stillBurning = starAge <= msLifetime;
-              var zRatio = metallicity / Math.max(0.001, expectedZ);
-              var chemistryFits = zRatio > 0.33 && zRatio < 3;
-              var checks = [
-                {
-                  key: 'lifetime',
-                  ok: stillBurning,
-                  label: __alloT('stem.galaxy.mh_check_lifetime', 'Still on the main sequence?'),
-                  detail: stillBurning
-                    ? __alloT('stem.galaxy.mh_check_lifetime_yes', 'Yes — its hydrogen-burning lifetime is about ') + (msLifetime >= 1000 ? '>1,000' : msLifetime.toFixed(msLifetime < 10 ? 2 : 0)) + __alloT('stem.galaxy.mh_check_lifetime_yes_tail', ' Gyr, longer than the age you set.')
-                    : __alloT('stem.galaxy.mh_check_lifetime_no', 'No — a star this massive burns out in about ') + (msLifetime < 0.01 ? '<0.01' : msLifetime.toFixed(2)) + __alloT('stem.galaxy.mh_check_lifetime_no_tail', ' Gyr, so at this age it would already be a remnant.')
-                },
-                {
-                  key: 'chemistry',
-                  ok: chemistryFits,
-                  label: __alloT('stem.galaxy.mh_check_chemistry', 'Does the chemistry match the era?'),
-                  detail: chemistryFits
-                    ? __alloT('stem.galaxy.mh_check_chemistry_yes', 'Yes — gas forming stars this long ago carried roughly this much heavy-element content (about ') + expectedZ.toFixed(2) + __alloT('stem.galaxy.mh_check_chemistry_yes_tail', ' Z☉).')
-                    : (zRatio >= 3
-                      ? __alloT('stem.galaxy.mh_check_chemistry_high', 'Unusual — that is far more enrichment than the young universe had produced by then (roughly ') + expectedZ.toFixed(2) + __alloT('stem.galaxy.mh_check_chemistry_tail', ' Z☉ expected).')
-                      : __alloT('stem.galaxy.mh_check_chemistry_low', 'Unusual — a star born this recently would normally inherit far more heavy elements (roughly ') + expectedZ.toFixed(2) + __alloT('stem.galaxy.mh_check_chemistry_tail', ' Z☉ expected).'))
-                }
-              ];
-              var logEntries = Array.isArray(iq.log) ? iq.log : [];
+              var comparison = validMetallicityCombination(iq.comparison) ? iq.comparison : null;
+              var logEntries = Array.isArray(iq.log) ? iq.log.filter(validMetallicityCombination).slice(-8) : [];
+              var currentCombination = { z: metallicity, m: starMass, a: starAge };
+              var checks = [{
+                key: 'lifetime', ok: stillBurning,
+                label: __alloT('stem.galaxy.mh_lifetime_question', 'Within the estimated hydrogen-burning time?'),
+                detail: (stillBurning
+                  ? __alloT('stem.galaxy.mh_lifetime_within', 'Within this estimate ({lifetime}). The exact stage also depends on composition and formation history.')
+                  : __alloT('stem.galaxy.mh_lifetime_beyond', 'Beyond this estimate ({lifetime}). The star could have evolved into a giant or a remnant.'))
+                    .replace('{lifetime}', formatLifetimeShort(msLifetime))
+              }];
+              if (formationTime === 0) checks.push({ key: 'formation', ok: false,
+                label: __alloT('stem.galaxy.mh_formation_question', 'Could stars form at that time?'),
+                detail: __alloT('stem.galaxy.mh_formation_bigbang', 'This age places formation at the Big Bang, before stars existed. Choose a later formation time.')
+              });
+              function metallicityLogLabel(entry) { return compositions[metallicityGroup(entry.z)].label; }
+              function restoreMetallicityEntryButton(entry, index, mobile) {
+                return h('button', { type: 'button', 'data-galaxy-metallicity-restore': mobile ? undefined : index, 'data-galaxy-metallicity-restore-mobile': mobile ? index : undefined, 'aria-label': __alloT('stem.galaxy.mh_log_restore_aria', 'Restore combination {number}').replace('{number}', index + 1), onClick: function () { setIQ({ metallicity: entry.z, mass: entry.m, age: entry.a }); }, className: 'min-h-[44px] w-full rounded border border-purple-400 px-2 py-1 text-xs font-bold text-purple-100' }, __alloT('stem.galaxy.mh_log_restore', 'Restore'));
+              }
+              function compareMetallicityEntryButton(entry, index, mobile) {
+                return h('button', { type: 'button', 'data-galaxy-metallicity-compare': mobile ? undefined : index, 'data-galaxy-metallicity-compare-mobile': mobile ? index : undefined, 'aria-pressed': sameMetallicityCombination(entry, comparison), 'aria-label': __alloT('stem.galaxy.mh_log_compare_aria', 'Compare with combination {number}').replace('{number}', index + 1), onClick: function () { setIQ({ comparison: { z: entry.z, m: entry.m, a: entry.a } }); }, className: 'min-h-[44px] w-full rounded border border-cyan-400 px-2 py-1 text-xs font-bold text-cyan-100' }, __alloT('stem.galaxy.mh_log_compare', 'Compare'));
+              }
+              function logEntryActions(entry, index, mobile) { return h('div', { style: { display: 'flex', gap: '6px' } }, restoreMetallicityEntryButton(entry, index, mobile), compareMetallicityEntryButton(entry, index, mobile)); }
+              function signedDifference(value) { return (value > 0 ? '+' : '') + Number(value.toPrecision(3)).toString(); }
               var sliders = [
-                { k: 'metallicity', v: metallicity, l: __alloT('stem.galaxy.mh_slider_metallicity', 'Metallicity (Z☉)'), mn: 0.001, mx: 2, st: 0.01, unit: ' Z☉' },
+                { k: 'metallicity', v: metallicity, l: __alloT('stem.galaxy.mh_slider_metallicity', 'Metallicity (Z☉)'), mn: 0, mx: 2, st: 0.001, unit: ' Z☉' },
                 { k: 'mass', v: starMass, l: __alloT('stem.galaxy.mh_slider_mass', 'Mass (M☉)'), mn: 0.1, mx: 50, st: 0.1, unit: ' M☉' },
                 { k: 'age', v: starAge, l: __alloT('stem.galaxy.mh_slider_age', 'Age (Gyr)'), mn: 0, mx: 13.8, st: 0.1, unit: __alloT('stem.galaxy.mh_unit_gyr', ' billion years') }
               ];
               return h('div', { className: 'p-4 rounded-xl bg-slate-900 text-slate-100 border border-purple-400 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-purple-300' }, '🌟 ' + __alloT('stem.galaxy.mh_title', 'Stellar metallicity discovery')),
-                h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, __alloT('stem.galaxy.mh_intro', 'A star’s heavy-element content ("metallicity") records the universe it was born into. Set a metallicity, a mass, and an age, then read what kind of star that describes — and whether such a star could exist.')),
+                h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, __alloT('stem.galaxy.mh_intro', 'A star’s heavy-element content (metallicity) records its birth gas. Log combinations, keep one as a comparison, and change one slider at a time to investigate composition and stellar lifetime.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-xs text-slate-700 mt-1' }, sm.desc)
+                  h('div', { className: 'text-xs text-slate-700 mt-1' }, sm.desc),
+                  h('p', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' }, __alloT('stem.galaxy.mh_composition_note', 'These abundance groups are guides for this activity. Identifying a stellar population also needs other chemical and orbital evidence.'))
                 ),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                   sliders.map(function(s) {
@@ -14254,145 +14540,147 @@ if (!window._galaxyHasLoadedOnce) {
                         className: 'w-full h-6 accent-purple-400' }));
                   })
                 ),
-                // -- Where this star sits -----------------------------------------
-                // Metallicity was the one mode in this tool with NO picture: three
-                // sliders and a paragraph, so moving a slider only changed some words.
-                // These two panels draw the SAME two checks the text below states, from
-                // the SAME msLifetime / expectedZ / zRatio values - no second
-                // derivation, so the picture and the sentence cannot disagree.
+                // Plot the actual investigation, with a separate zero lane because
+                // zero has no logarithm. No universal age-enrichment curve is assumed.
                 (function () {
-                  var CW = 320, CH = 156, padL = 34, padR = 8, padT = 12, padB = 26;
-                  var plotW = CW - padL - padR, plotH = CH - padT - padB;
-                  var COSMIC_AGE_GYR = 13.8, Z_MAX = 2;
-                  var tx = function (t) { return padL + (t / COSMIC_AGE_GYR) * plotW; };
-                  var ty = function (z) { return padT + plotH - (Math.min(Z_MAX, Math.max(0, z)) / Z_MAX) * plotH; };
-                  var curveZ = function (t) { return Math.min(1.6, Math.pow(Math.max(0.2, t) / 9, 1.6)); };
-                  var samples = [], si;
-                  for (si = 0; si <= 60; si++) samples.push(si / 60 * COSMIC_AGE_GYR);
-                  var linePoints = samples.map(function (t) { return tx(t).toFixed(1) + ',' + ty(curveZ(t)).toFixed(1); }).join(' ');
-                  // The band the chemistry check actually accepts: 0.33x to 3x the curve.
-                  var bandUpper = samples.map(function (t) { return tx(t).toFixed(1) + ',' + ty(curveZ(t) * 3).toFixed(1); });
-                  var bandLower = samples.map(function (t) { return tx(t).toFixed(1) + ',' + ty(curveZ(t) * 0.33).toFixed(1); }).reverse();
-                  var bandPoints = bandUpper.concat(bandLower).join(' ');
-                  var starX = tx(formationTime), starY = ty(metallicity);
-                  var zTicks = [0, 0.5, 1, 1.5, 2], tTicks = [0, 3, 6, 9, 13.8];
-
-                  // Main-sequence lifetimes span 10/50^2.5 Gyr to 10/0.1^2.5 Gyr - five
-                  // orders of magnitude - so this axis has to be logarithmic or the Sun
-                  // and a 50 solar-mass star land on the same pixel.
-                  var LO = 0.001, HI = 10000;
-                  var lx = function (gyr) {
-                    var clamped = Math.min(HI, Math.max(LO, gyr));
-                    return padL + (Math.log(clamped / LO) / Math.log(HI / LO)) * plotW;
+                  var CW = 360, CH = 212, left = 48, right = 18, top = 16, bottom = 154;
+                  var tx = function (age) { return left + (13.8 - age) / 13.8 * (CW - left - right); };
+                  var zy = function (z) { return z === 0 ? 178 : bottom - Math.log10(Math.max(0.001, z) / 0.001) / Math.log10(2000) * (bottom - top); };
+                  var point = function (entry, kind, number) {
+                    var x = tx(entry.a), y = zy(entry.z), color = kind === 'current' ? '#c4b5fd' : kind === 'comparison' ? '#67e8f9' : '#cbd5e1';
+                    return h('g', { key: kind + number, 'data-galaxy-metallicity-point': kind, 'data-z': entry.z, 'data-formation-time': 13.8 - entry.a },
+                      h('title', null, (kind === 'current' ? __alloT('stem.galaxy.mh_current', 'Current star') : kind === 'comparison' ? __alloT('stem.galaxy.mh_comparison', 'Saved comparison') : '#' + number) + ': ' + entry.z + ' Z☉ · ' + entry.m + ' M☉ · ' + entry.a + ' Gyr'),
+                      kind === 'comparison'
+                        ? h('path', { d: 'M' + x + ' ' + (y - 8) + 'l8 8 -8 8 -8 -8Z', fill: '#081222', stroke: color, strokeWidth: 2 })
+                        : h('circle', { cx: x, cy: y, r: kind === 'current' ? 7 : 4, fill: kind === 'current' ? '#081222' : color, stroke: color, strokeWidth: 2 }),
+                      kind === 'log' ? h('text', { x: Math.max(left + 6, Math.min(CW - right - 6, x)), y: y < 35 ? y + 24 : y - 12, textAnchor: 'middle', fontSize: 9, fill: color }, number) : null);
                   };
-                  var lifeTicks = [{ v: 0.001, t: '1 Myr' }, { v: 0.1, t: '100 Myr' }, { v: 10, t: '10 Gyr' }, { v: 1000, t: '1 Tyr' }];
-                  var ageX = lx(Math.max(LO, starAge)), lifeX = lx(msLifetime);
-                  var axisY = padT + plotH * 0.55;
+                  var panel = function (key, title, body, label, note) { return h('div', { 'data-galaxy-metallicity-chart': key, className: 'rounded-lg border border-slate-600 bg-slate-950 p-3', style: { flex: '1 1 300px', minWidth: 0 } },
+                    h('p', { className: 'mb-2 text-xs font-black text-slate-200' }, title),
+                    key === 'enrichment' && h('p', { dir: 'ltr', className: 'mb-1 text-[11px] text-slate-300' }, 'Z / Z☉'),
+                    h('svg', { viewBox: '0 0 ' + CW + ' ' + CH, dir: 'ltr', style: { display: 'block', width: '100%', direction: 'ltr' }, role: 'img', 'aria-label': label }, body),
+                    h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, key === 'enrichment' ? __alloT('stem.galaxy.mh_chart_x_axis', 'Gyr after the Big Bang (when the star formed)') : __alloT('stem.galaxy.mh_cosmic_age', 'Dashed line: universe age, 13.8 Gyr')),
+                    h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, note)); };
+                  var enrichmentBody = [
+                    [0.001, 0.01, 0.1, 1, 2].map(function (z) { return h('g', { key: 'z' + z, 'data-galaxy-metallicity-z-tick': z },
+                      h('line', { x1: left, y1: zy(z), x2: CW - right, y2: zy(z), stroke: z === 1 ? '#a16207' : '#475569', strokeWidth: 0.7, strokeDasharray: z === 1 ? '4 3' : undefined }),
+                      h('text', { x: left - 6, y: zy(z) + 3, fontSize: 9, textAnchor: 'end', fill: '#cbd5e1' }, String(z))); }),
+                    h('line', { key: 'zeroLine', x1: left, y1: 178, x2: CW - right, y2: 178, stroke: '#64748b', strokeDasharray: '3 3' }),
+                    h('text', { key: 'zeroText', x: left - 6, y: 181, fontSize: 9, textAnchor: 'end', fill: '#cbd5e1' }, '0'),
+                    [0, 3, 6, 9, 13.8].map(function (time) { var x = tx(13.8 - time); return h('g', { key: 't' + time },
+                      h('line', { x1: x, y1: top, x2: x, y2: 188, stroke: '#475569', strokeWidth: 0.5 }),
+                      h('text', { x: x, y: 202, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1' }, time)); }),
 
-                  var panel = function (key, title, body, label) {
-                    return h('div', { key: key, 'data-galaxy-metallicity-chart': key, className: 'flex-1 min-w-[240px] rounded-lg border border-slate-600 bg-slate-950/60 p-2', style: { background: 'linear-gradient(145deg, #121f36, #080f20)', borderColor: '#3a4d6c', padding: '14px', borderRadius: '14px' } },
-                      h('p', { className: 'mb-1 text-[11px] font-black uppercase tracking-wider text-slate-300' }, title),
-                      h('svg', { viewBox: '0 0 ' + CW + ' ' + CH, className: 'w-full', role: 'img', 'aria-label': label }, body));
-                  };
 
-                  return h('div', { className: 'flex flex-wrap gap-2' },
-                    panel('enrichment',
-                      __alloT('stem.galaxy.mh_chart_enrichment_title', 'Heavy elements across cosmic time'),
-                      [
-                        h('polygon', { key: 'band', points: bandPoints, fill: '#34d39926', stroke: 'none' }),
-                        h('polyline', { key: 'curve', points: linePoints, fill: 'none', stroke: '#a78bfa', strokeWidth: 2 }),
-                        zTicks.map(function (z) {
-                          return h('g', { key: 'z' + z },
-                            h('line', { x1: padL, y1: ty(z), x2: CW - padR, y2: ty(z), stroke: '#475569', strokeWidth: 0.6 }),
-                            h('text', { x: padL - 4, y: ty(z) + 3, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, String(z)));
-                        }),
-                        tTicks.map(function (t) {
-                          return h('text', { key: 't' + t, x: tx(t), y: CH - 14, textAnchor: 'middle', fontSize: 8, fill: '#cbd5e1' }, String(t));
-                        }),
-                        h('text', { key: 'xl', x: padL + plotW / 2, y: CH - 3, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' },
-                          __alloT('stem.galaxy.mh_chart_x_axis', 'Gyr after the Big Bang (when the star formed)')),
-                        // x was 8: once rotated -90 the glyph ascent becomes horizontal extent,
-                        // which pushed this label 1.2px off the left edge of its own
-                        // canvas. 12 clears it, and the rotation origin moves with it.
-                        h('text', { key: 'yl', x: 12, y: axisY, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8',
-                          transform: 'rotate(-90 12 ' + axisY + ')' }, 'Z / Z\u2609'),
-                        h('line', { key: 'drop', x1: starX, y1: starY, x2: starX, y2: padT + plotH, stroke: chemistryFits ? '#34d399' : '#fbbf24', strokeWidth: 1, strokeDasharray: '2 2' }),
-                        h('circle', { key: 'star-halo', cx: starX, cy: starY, r: 9, fill: 'none', stroke: chemistryFits ? '#34d399' : '#fbbf24', strokeWidth: 1, opacity: 0.45 }),
-                        h('circle', { key: 'star', cx: starX, cy: starY, r: 5, fill: chemistryFits ? '#34d399' : '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 })
-                      ],
-                      __alloT('stem.galaxy.mh_chart_enrichment_aria', 'Chart of heavy-element content against cosmic time. Your star: ') +
-                        metallicity.toFixed(2) + ' Z\u2609 ' + __alloT('stem.galaxy.mh_chart_enrichment_aria_at', 'at ') + formationTime.toFixed(1) +
-                        __alloT('stem.galaxy.mh_chart_enrichment_aria_tail', ' Gyr after the Big Bang, where the model expects about ') + expectedZ.toFixed(2) + ' Z\u2609.'),
-                    panel('lifetime',
-                      __alloT('stem.galaxy.mh_chart_lifetime_title', 'Age against hydrogen-burning lifetime'),
-                      [
-                        h('line', { key: 'axis', x1: padL, y1: axisY, x2: CW - padR, y2: axisY, stroke: '#475569', strokeWidth: 1 }),
-                        h('rect', { key: 'span', x: Math.min(ageX, lifeX), y: axisY - 5, width: Math.max(1, Math.abs(lifeX - ageX)), height: 10,
-                          fill: stillBurning ? '#34d39933' : '#fbbf2433' }),
-                        lifeTicks.map(function (tick) {
-                          return h('g', { key: 'lt' + tick.v },
-                            h('line', { x1: lx(tick.v), y1: axisY - 4, x2: lx(tick.v), y2: axisY + 4, stroke: '#64748b', strokeWidth: 0.8 }),
-                            h('text', { x: lx(tick.v), y: axisY + 16, textAnchor: 'middle', fontSize: 8, fill: '#cbd5e1' }, tick.t));
-                        }),
-                        h('line', { key: 'lifeMark', x1: lifeX, y1: padT + plotH * 0.2, x2: lifeX, y2: axisY, stroke: '#a78bfa', strokeWidth: 2 }),
-                        h('text', { key: 'lifeTxt', x: Math.min(CW - padR - 20, Math.max(padL + 20, lifeX)), y: padT + plotH * 0.14, textAnchor: 'middle', fontSize: 8, fill: '#c4b5fd', fontWeight: 700 },
-                          __alloT('stem.galaxy.mh_chart_lifetime_marker', 'burns out')),
-                        h('line', { key: 'ageMark', x1: ageX, y1: axisY, x2: ageX, y2: padT + plotH * 0.92, stroke: stillBurning ? '#34d399' : '#fbbf24', strokeWidth: 2 }),
-                        h('text', { key: 'ageTxt', x: Math.min(CW - padR - 24, Math.max(padL + 24, ageX)), y: CH - 2, textAnchor: 'middle', fontSize: 8, fill: stillBurning ? '#6ee7b7' : '#fcd34d', fontWeight: 700 },
-                          __alloT('stem.galaxy.mh_chart_age_marker', 'age you set'))
-                      ],
-                      __alloT('stem.galaxy.mh_chart_lifetime_aria', 'Logarithmic scale comparing the age you set, ') + starAge.toFixed(1) +
-                        __alloT('stem.galaxy.mh_chart_lifetime_aria_mid', ' Gyr, with this mass\u2019s main-sequence lifetime of about ') +
-                        (msLifetime >= 1000 ? '>1,000' : msLifetime.toFixed(msLifetime < 10 ? 2 : 0)) + ' Gyr.')
-                  );
+                    logEntries.map(function (entry, index) { return point(entry, 'log', index + 1); }),
+                    comparison ? point(comparison, 'comparison', 0) : null,
+                    point(currentCombination, 'current', 0)
+                  ];
+                  // A separate origin distinguishes age zero from the first log tick.
+                  var lx = function (gyr) { return gyr === 0 ? left : 84 + Math.log10(Math.max(0.001, Math.min(10000, gyr)) / 0.001) / 7 * (CW - right - 84); };
+                  var ageX = lx(starAge), lifeX = lx(msLifetime), lifeY = 100;
+                  var lifeBody = [
+                    h('line', { key: 'axis', x1: left, y1: lifeY, x2: CW - right, y2: lifeY, stroke: '#64748b' }),
+                    h('rect', { key: 'span', x: Math.min(ageX, lifeX), y: lifeY - 5, width: Math.max(1, Math.abs(ageX - lifeX)), height: 10, fill: stillBurning ? '#34d39933' : '#fbbf2433' }),
+                    [{v:0,t:'0'}, {v:0.001,t:'1 Myr'}, {v:0.1,t:'100 Myr'}, {v:10,t:'10 Gyr'}, {v:1000,t:'1,000 Gyr'}].map(function(tick) { return h('g', { key: 'tick' + tick.v },
+                      h('line', { x1: lx(tick.v), y1: lifeY - 4, x2: lx(tick.v), y2: lifeY + 4, stroke: '#94a3b8' }),
+                      h('text', { x: lx(tick.v), y: lifeY + 21, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1' }, tick.t)); }),
+                    h('line', { key: 'universe', 'data-galaxy-cosmic-age-marker': 'true', x1: lx(13.8), y1: 38, x2: lx(13.8), y2: 154, stroke: '#94a3b8', strokeDasharray: '3 3' }),
+                    h('line', { key: 'life', 'data-galaxy-lifetime-marker': 'current', 'data-lifetime-gyr': msLifetime, x1: lifeX, y1: 57, x2: lifeX, y2: lifeY, stroke: '#c4b5fd', strokeWidth: 2 }),
+                    h('circle', { key: 'lifeDot', cx: lifeX, cy: 57, r: 5, fill: '#081222', stroke: '#c4b5fd', strokeWidth: 2 }),
+                    h('line', { key: 'age', 'data-galaxy-age-marker': 'current', 'data-age-gyr': starAge, x1: ageX, y1: lifeY, x2: ageX, y2: 151, stroke: stillBurning ? '#6ee7b7' : '#fcd34d', strokeWidth: 2 }),
+                    h('circle', { key: 'ageDot', cx: ageX, cy: 151, r: 5, fill: stillBurning ? '#6ee7b7' : '#fcd34d' }),
+                    h('text', { key: 'lifeLabel', x: left, y: 25, fontSize: 11, fill: '#c4b5fd' }, __alloT('stem.galaxy.mh_estimated_lifetime', 'Estimated lifetime') + ': ' + formatLifetimeShort(msLifetime)),
+                    h('text', { key: 'ageLabel', x: left, y: 178, fontSize: 11, fill: stillBurning ? '#6ee7b7' : '#fcd34d' }, __alloT('stem.galaxy.mh_chart_age_marker', 'Age you set') + ': ' + starAge + ' Gyr'),
+
+                  ];
+                  if (comparison) {
+                    var cx = lx(mainSequenceLifetimeGyr(comparison.m)), ca = lx(comparison.a);
+                    lifeBody.push(h('path', { key: 'compareLife', 'data-galaxy-lifetime-marker': 'comparison', d: 'M' + cx + ' 67l6 6 -6 6 -6 -6Z', fill: '#081222', stroke: '#67e8f9', strokeWidth: 2 }),
+                      h('path', { key: 'compareAge', 'data-galaxy-age-marker': 'comparison', d: 'M' + ca + ' 130l6 6 -6 6 -6 -6Z', fill: '#081222', stroke: '#67e8f9', strokeWidth: 2 }));
+                  }
+                  return h('div', { 'data-galaxy-metallicity-visuals': 'true' },
+                    h('p', { className: 'mb-2 text-[11px] leading-relaxed text-slate-200' }, __alloT('stem.galaxy.mh_chart_legend', 'Violet ring: current star. Cyan diamonds: saved comparison. Numbered dots: logged combinations.')),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '12px' } },
+                      panel('enrichment', __alloT('stem.galaxy.mh_chart_composition_title', 'Compare composition and formation time'), enrichmentBody,
+                        __alloT('stem.galaxy.mh_chart_composition_aria', 'Logarithmic metallicity plot with a separate zero lane. Current star: {z} solar metallicity, formed {time} Gyr after the Big Bang. {count} logged combinations.').replace('{z}', metallicity).replace('{time}', Number(formationTime.toFixed(3))).replace('{count}', logEntries.length) + (comparison ? ' ' + __alloT('stem.galaxy.mh_chart_comparison_aria', 'Saved comparison: {z} solar metallicity, age {age} Gyr.').replace('{z}', comparison.z).replace('{age}', comparison.a) : ''),
+                        __alloT('stem.galaxy.mh_chart_composition_note', 'Each labeled decade in abundance is a factor of ten. Zero has its own lane; the gold dashed line marks solar abundance. These are your trial combinations, not measured stars.')),
+                      panel('lifetime', __alloT('stem.galaxy.mh_chart_lifetime_title', 'Age against hydrogen-burning lifetime'), lifeBody,
+                        __alloT('stem.galaxy.mh_chart_lifetime_accessible', 'Logarithmic time scale. Current age {age} Gyr; estimated main-sequence lifetime {lifetime}. Dashed reference: universe age 13.8 Gyr.').replace('{age}', starAge).replace('{lifetime}', formatLifetimeShort(msLifetime)) + (comparison ? ' ' + __alloT('stem.galaxy.mh_chart_lifetime_comparison_aria', 'Comparison age {age} Gyr; estimated lifetime {lifetime}.').replace('{age}', comparison.a).replace('{lifetime}', formatLifetimeShort(mainSequenceLifetimeGyr(comparison.m))) : ''),
+                        __alloT('stem.galaxy.mh_lifetime_model_note', 'A mass-only estimate shared with Star Life. Very low or high masses, and metal-free stars, need detailed models. The end of hydrogen burning can lead to a giant phase before a remnant.'))));
                 })(),
+                comparison && h('div', { 'data-galaxy-metallicity-comparison': 'true', className: 'rounded-lg border border-cyan-500 bg-slate-950 p-3' },
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', justifyContent: 'space-between' } },
+                    h('h4', { className: 'text-xs font-black text-cyan-200' }, __alloT('stem.galaxy.mh_comparison', 'Saved comparison')),
+                    h('button', { type: 'button', 'data-galaxy-metallicity-clear-comparison': 'true', onClick: function () { setIQ({ comparison: null }); }, className: 'min-h-[44px] rounded border border-slate-500 px-3 py-2 text-xs font-bold text-slate-200' }, __alloT('stem.galaxy.mh_clear_comparison', 'Clear comparison'))),
+                  h('p', { className: 'mt-1 text-xs text-cyan-100' }, comparison.z + ' Z☉ · ' + comparison.m + ' M☉ · ' + comparison.a + ' Gyr'),
+                  h('p', { className: 'mt-2 text-[11px] text-slate-300' }, __alloT('stem.galaxy.mh_comparison_delta', 'Change from saved comparison to current star:')),
+                  h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '10px', marginTop: '8px' } }, [
+                    [__alloT('stem.galaxy.mh_slider_metallicity', 'Metallicity (Z☉)'), signedDifference(metallicity - comparison.z) + ' Z☉'],
+                    [__alloT('stem.galaxy.mh_slider_mass', 'Mass (M☉)'), signedDifference(starMass - comparison.m) + ' M☉'],
+                    [__alloT('stem.galaxy.mh_log_age_col', 'Age (Gyr)'), signedDifference(starAge - comparison.a) + ' Gyr'],
+                    [__alloT('stem.galaxy.mh_estimated_lifetime', 'Estimated lifetime'), signedDifference(msLifetime - mainSequenceLifetimeGyr(comparison.m)) + ' Gyr']
+                  ].map(function (row) { return h('div', { key: row[0], style: { minWidth: 0 } }, h('dt', { className: 'text-[11px] text-slate-300' }, row[0]), h('dd', { className: 'mt-1 text-xs font-mono text-cyan-100' }, row[1])); })),
+                  h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, __alloT('stem.galaxy.mh_comparison_hint', 'Keep this reference while changing one input. Restoring a combination preserves the reference and your notes.'))),
                 h('div', { className: 'rounded-lg border border-slate-600 bg-slate-950/60 p-3 space-y-2', role: 'status', 'aria-live': 'polite' },
-                  h('p', { className: 'text-xs font-black uppercase tracking-wider text-slate-300' }, __alloT('stem.galaxy.mh_plausibility_title', 'Could this star exist?')),
+                  h('p', { className: 'text-xs font-black uppercase tracking-wider text-slate-300' }, __alloT('stem.galaxy.mh_plausibility_title', 'What can these inputs tell us?')),
                   checks.map(function(check) {
                     return h('div', { key: check.key, className: 'flex items-start gap-2' },
                       h('span', { className: 'text-sm leading-none mt-0.5', 'aria-hidden': true }, check.ok ? '✅' : '⚠️'),
                       h('p', { className: 'text-[12px] leading-relaxed ' + (check.ok ? 'text-slate-200' : 'text-amber-200') },
                         h('span', { className: 'font-bold' }, check.label + ' '), check.detail));
                   }),
-                  h('p', { className: 'text-[11px] italic leading-relaxed text-slate-400' }, __alloT('stem.galaxy.mh_plausibility_note', 'A warning is not a wrong answer — real stars that break these patterns exist, and each one is a research question. Ask what could explain it.'))
+                  h('p', { className: 'text-[11px] italic leading-relaxed text-slate-400' }, __alloT('stem.galaxy.mh_plausibility_note', 'Metallicity alone does not determine age. Gas enrichment varies by galaxy and location; old metal-rich and young metal-poor stars can occur.'))
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { type: 'button', 'data-galaxy-metallicity-life-link': 'true', onClick: function () { openStarLifeAtMass(starMass); }, className: 'min-h-[44px] rounded-lg border border-purple-400 bg-purple-900 px-3 py-2 text-xs font-bold text-white' }, __alloT('stem.galaxy.mh_life_link', 'Explore this mass in Star Life')),
                   h('button', { type: 'button', onClick: function() { setIQ({ log: logEntries.concat([{ z: metallicity, m: starMass, a: starAge, st: state }]).slice(-8) }); }, className: 'min-h-[44px] px-3 py-2 rounded bg-slate-800 text-xs font-bold text-slate-100 border border-slate-500' }, '📋 ' + __alloT('stem.galaxy.mh_log_btn', 'Log this combination')),
-                  h('button', { type: 'button', onClick: function() { setIQ({ metallicity: 1, mass: 1, age: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'min-h-[44px] px-3 py-2 rounded bg-transparent text-xs font-semibold text-slate-300 border border-slate-500' }, '↺ ' + __alloT('stem.galaxy.mh_reset_btn', 'Reset'))
+                  h('button', { type: 'button', onClick: function() { setIQ({ metallicity: 1, mass: 1, age: 5, log: [], comparison: null, hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'min-h-[44px] px-3 py-2 rounded bg-transparent text-xs font-semibold text-slate-300 border border-slate-500' }, '↺ ' + __alloT('stem.galaxy.mh_reset_btn', 'Reset'))
                 ),
                 // The Log button previously recorded entries that were never displayed.
-                logEntries.length > 0 && h('div', { className: 'overflow-x-auto rounded-lg border border-slate-600' },
-                  h('table', { className: 'w-full text-left text-[11px]' },
-                    h('caption', { className: 'sr-only' }, __alloT('stem.galaxy.mh_log_caption', 'Logged star combinations, most recent last')),
-                    h('thead', null, h('tr', { className: 'bg-slate-800 text-slate-300' },
-                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, '#'),
-                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, 'Z☉'),
-                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, 'M☉'),
-                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_age_col', 'Age (Gyr)')),
-                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_population_col', 'Population')))),
-                    h('tbody', null, logEntries.map(function(entry, entryIndex) {
-                      return h('tr', { key: entryIndex, className: entryIndex % 2 ? 'bg-slate-900' : 'bg-slate-900/40' },
-                        h('td', { className: 'px-2 py-1 text-slate-400' }, entryIndex + 1),
-                        h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.z),
-                        h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.m),
-                        h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.a),
-                        h('td', { className: 'px-2 py-1 text-slate-200' }, entry.st));
-                    })))),
+                logEntries.length > 0 && h('div', { 'data-galaxy-metallicity-log': 'true' },
+                  h('div', { 'data-galaxy-metallicity-log-table': 'true', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.galaxy.mh_log_caption', 'Logged star combinations, most recent last'), className: 'overflow-x-auto rounded-lg border border-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-300' },
+                    h('table', { className: 'w-full text-left text-[11px]' },
+                      h('caption', { className: 'sr-only' }, __alloT('stem.galaxy.mh_log_caption', 'Logged star combinations, most recent last')),
+                      h('thead', null, h('tr', { className: 'bg-slate-800 text-slate-300' },
+                        h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, '#'),
+                        h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, 'Z☉'),
+                        h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, 'M☉'),
+                        h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_age_col', 'Age (Gyr)')),
+                        h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_population_col', 'Composition')),
+                        h('th', { scope: 'col', className: 'sticky right-0 border-l border-slate-600 bg-slate-800 px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_action_col', 'Actions')))),
+                      h('tbody', null, logEntries.map(function (entry, index) {
+                        return h('tr', { key: index, className: index % 2 ? 'bg-slate-900' : 'bg-slate-900/40' },
+                          h('td', { className: 'px-2 py-1 text-slate-400' }, index + 1),
+                          h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.z),
+                          h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.m),
+                          h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.a),
+                          h('td', { className: 'px-2 py-1 text-slate-200' }, metallicityLogLabel(entry)),
+                          h('td', { className: 'sticky right-0 border-l border-slate-600 bg-slate-900 px-2 py-1' }, logEntryActions(entry, index, false)));
+                      })))),
+                  h('ol', { 'data-galaxy-metallicity-log-cards': 'true', 'aria-label': __alloT('stem.galaxy.mh_log_caption', 'Logged star combinations, most recent last') }, logEntries.map(function (entry, index) {
+                    return h('li', { key: index, className: 'rounded-lg border border-slate-600 bg-slate-950 p-3' },
+                      h('p', { className: 'mb-2 text-xs font-bold leading-relaxed text-purple-200' }, '#' + (index + 1) + ' · ' + metallicityLogLabel(entry)),
+                      h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: '8px', marginBottom: '8px' } }, [
+                        ['Z☉', entry.z], ['M☉', entry.m], [__alloT('stem.galaxy.mh_log_age_col', 'Age (Gyr)'), entry.a]
+                      ].map(function (value) { return h('div', { key: value[0], className: 'text-[11px]' }, h('dt', { className: 'text-slate-400' }, value[0]), h('dd', { className: 'mt-1 font-mono text-purple-100' }, value[1])); })),
+                      logEntryActions(entry, index, true));
+                  }))),
                 h('label', { htmlFor: 'mh-hypothesis', className: 'block text-xs font-bold text-slate-300' }, __alloT('stem.galaxy.mh_hypothesis_label', 'Your hypothesis')),
                 h('textarea', { id: 'mh-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.galaxy.mh_hypothesis_placeholder', 'What does metallicity tell us about a star’s history?'),
                   className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'min-h-[44px] px-3 py-2 rounded bg-amber-700/30 text-xs font-bold text-amber-200 border border-amber-600' }, '🤔 ' + __alloT('stem.galaxy.mh_stuck_btn', 'Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-xs text-slate-200 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, __alloT('stem.galaxy.mh_prompt1', 'Old globular clusters have very low metallicity. What does that say about when they formed?')),
-                    h('li', null, __alloT('stem.galaxy.mh_prompt2', 'Rocky planets need heavy elements. Which population is the most planet-friendly, and why?')),
+                    h('li', null, __alloT('stem.galaxy.mh_prompt1', 'Many globular clusters contain metal-poor stars. What other measurements would help determine their ages?')),
+                    h('li', null, __alloT('stem.galaxy.mh_prompt2', 'Compare two stars with the same mass and age but different metallicities. What changes here, and what would need a more detailed model?')),
                     h('li', null, __alloT('stem.galaxy.mh_prompt3', 'Where did the metals in a Population I star come from, if the Big Bang made almost none?')))),
                 h('label', { className: 'flex min-h-[24px] items-center gap-2 py-1 text-[12px] font-bold text-emerald-300 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.galaxy.mh_understood_label', 'I understand — let me explain in my own words')),
                 iq.understood && h('textarea', { 'aria-label': __alloT('stem.galaxy.mh_explanation_label', 'Your explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.galaxy.mh_explanation_placeholder', 'Explain how metallicity differed in the early universe compared with today.'),
                   className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 leading-snug mt-2', rows: 4 }),
-                h('p', { className: 'text-[11px] italic leading-relaxed text-slate-400' }, __alloT('stem.galaxy.mh_model_note', 'This is a simplified teaching model: real enrichment histories vary by galaxy and by location within it. There is deliberately no score here — the point is the reasoning, not a right answer.'))
+                h('p', { className: 'text-[11px] italic leading-relaxed text-slate-400' }, __alloT('stem.galaxy.mh_model_note', 'Metallicity here is total heavy-element abundance relative to the Sun, not the iron-only [Fe/H] scale. Logged points are hypothetical inputs. Real ages and populations require observations and stellar models.'))
               );
             })()
 

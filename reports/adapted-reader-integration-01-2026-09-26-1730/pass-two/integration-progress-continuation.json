@@ -1,0 +1,14 @@
+[
+  {
+    "id": "10-help",
+    "exit": 0,
+    "plans": [
+      "view_simplified_source.jsx"
+    ]
+  },
+  {
+    "id": "18-narration",
+    "exit": 1,
+    "error": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\integrate-delta.cjs:24\r\n  if (typeof applied !== 'string') throw new Error('Strict patch conflict: ' + target);\r\n                                   ^\r\n\r\nError: Strict patch conflict: view_simplified_source.jsx\r\n    at Object.<anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\integrate-delta.cjs:24:42)\r\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\r\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\r\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.11.1\r\n"
+  }
+]

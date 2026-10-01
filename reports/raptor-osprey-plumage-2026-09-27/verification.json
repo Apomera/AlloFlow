@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-27",
+  "scope": "Osprey dorsal color, pale underwings with wrist patches and barred flight feathers, guided upper/lower Study views",
+  "runs": [
+    { "suites": ["raptor-osprey-plumage.spec.ts"], "output": "initial-browser-results", "passed": 2, "failed": 0, "skipped": 0, "retries": 0, "duration": "47.5 seconds", "note": "Tests subsequently expanded to verify takeoff, camera restoration, and disposal. Application source unchanged." },
+    { "suites": ["raptor-osprey-plumage.spec.ts", "raptor-face-marks.spec.ts", "raptor-feather-depth.spec.ts", "raptor-breast-study.spec.ts"], "output": "final-browser-results", "passed": 15, "failed": 0, "skipped": 0, "retries": 0, "duration": "9.7 minutes" }
+  ],
+  "uniqueScenariosValidated": 15,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "visualInspection": "pass",
+    "bothWingSidesPixelComparison": "pass",
+    "finiteGeometryAndMorphs": "pass",
+    "phoneLayoutAndReducedMotion": "pass",
+    "scopedAxeViolations": 0,
+    "savedViewMatchingAndCameraRestoration": "pass",
+    "frozenReadingsAndNoIdleRedraws": "pass",
+    "landingFoldAndTakeoff": "pass",
+    "stableGeometryAndTextureBuffers": "pass",
+    "geometryDisposal": "pass",
+    "notebookExportAndSessionRestorationRegression": "pass"
+  },
+  "resources": { "extraMeshes": 0, "extraVertices": 0, "extraMaterials": 0, "extraTextures": 0, "extraDrawCalls": 0, "extraAnimationLoops": 0, "newAttribute": "Two static Float32 coordinates per osprey wing vertex, disposed with its existing geometry." },
+  "sourceFiles": [
+    { "path": "stem_lab/stem_tool_raptorhunt.js", "sha256": "70020fabd2755eb0b8459a9178934260437299f49b96ed5d4807585cb1e652cb" },
+    { "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js", "sha256": "70020fabd2755eb0b8459a9178934260437299f49b96ed5d4807585cb1e652cb" }
+  ],
+  "newTranslationKeys": 2,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "environment": "Local Chromium/WebGL at low and high quality, with phone viewport, reduced motion, Studio and Habitat lighting. No physical-device frame-rate benchmark.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

@@ -8,14 +8,17 @@
 // session UI (roster, polls, quiz, pictionary signaling) run over the mailbox.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
-const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
-const publicMailboxSource = fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'public', 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
-const shareSessionSource = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
+const anti = readSourceFile(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const gsSource = readSourceFile(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const publicMailboxSource = readSourceFile(path.join(ROOT, 'desktop/web-app', 'public', 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const shareSessionSource = readSourceFile(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
     const start = source.indexOf(startMarker);
@@ -736,8 +739,8 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
 describe('three-copy sync pins (Phase C sections)', () => {
     const copies = [
         anti,
-        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
-        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'), 'utf8'),
+        readSourceFile(path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
+        readSourceFile(path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'), 'utf8'),
     ].map(source => source.replace(/\r\n/g, '\n'));
     it('the bridge block and the unified wiring are identical in all three copies', () => {
         const sections = source => [
@@ -875,8 +878,8 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
 
     const NEW_COPIES = [
         anti,
-        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
-        fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'), 'utf8'),
+        readSourceFile(path.join(ROOT, 'desktop/web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
+        readSourceFile(path.join(ROOT, 'desktop/web-app', 'src', 'App.jsx'), 'utf8'),
     ];
 
     it('every copy hosts the whole pack + advertises packRef, and students getpack-heal', () => {
@@ -948,16 +951,20 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
         NEW_COPIES.forEach(source => {
             const fn = sliceBetween(source, 'const createSelfContainedHomeworkLink = useCallback', 'const hostPackOnMailbox = useCallback');
             expect(fn).toContain('shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS');
-            expect(fn).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;');
+            // f5b045fc9 (09-20) also hands the host the already-built pack: (selectedResourceIds, { includeSharedActivity: false, preparedPack: built }).
+            expect(fn).toMatch(/return hostPackOnMailboxRef\.current \? hostPackOnMailboxRef\.current\(selectedResourceIds(?:, \{[^}]*\})?\) : null;/);
             // The old dead-end error toast is gone.
             expect(fn).not.toContain('too large for a self-contained link. Host it on your Class Mailbox (images OK) or use the HTML export');
             // The redirect toast only fires when the mailbox is ready (no double toast).
             expect(fn).toContain('if (mbConfig?.url && mbConfig?.admin) {');
             // Not-connected queues the host for after the connect self-test lands.
             const host = sliceBetween(source, 'const hostPackOnMailbox = useCallback', 'const toggleMbHand = useCallback');
-            expect(host).toContain('mbPendingHostRef.current = true;');
-            expect(host).toContain('mbPendingHostResourceIdsRef.current = selectedResourceIds;');
-            expect(source).toContain('if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {');
+            // f5b045fc9 (09-20) replaced the pending flag + id ref with ONE request object (ids, generation, built pack)
+            // that connectMailboxForSetup replays once the connect lands, only if it is still the current request.
+            expect(host).toContain('mbPendingHostRequestRef.current = {');
+            expect(host).toContain('resourceIds: selectedResourceIds, generation,');
+            expect(source).toContain('&& mbPendingHostRequestRef.current === request && hostPackOnMailboxRef.current) {');
+            expect(source).toContain('await hostPackOnMailboxRef.current(request.resourceIds, {');
             expect(source).toContain('hostPackOnMailboxRef.current = hostPackOnMailbox;');
         });
     });

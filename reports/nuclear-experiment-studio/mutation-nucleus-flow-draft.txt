@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:737:5 › nucleus comparison shortcuts move keyboard learners through the mobile flow without changing their work (17.5s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:737:5 › nucleus comparison shortcuts move keyboard learners through the mobile flow without changing their work 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-nucleus-name]')
+    Expected: "Carbon-13"
+    Received: "Nitrogen-15"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-nucleus-name]')
+        32 × locator resolved to <div class="ns-nucleus-name" data-ns-nucleus-name="true">Nitrogen-15</div>
+           - unexpected value "Nitrogen-15"
+
+
+      759 |   await expect(build).toBeFocused();
+      760 |   await expect(page.locator('.ns-case-tests')).toHaveAttribute('open');
+    > 761 |   await expect(page.locator('[data-ns-nucleus-name]')).toHaveText('Carbon-13');
+          |                                                        ^
+      762 |   await expect(page.locator('[data-ns-nucleus-evidence]')).toHaveText('2 of 3 comparison nuclei saved');
+      763 |   await expect(page.getByRole('button', { name: 'Prepare Nitrogen-15' })).toBeInViewport();
+      764 |   expect(await page.evaluate(() => (window as any).__toolData._nuclearLab)).toEqual(state);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:761:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-flow-draft\43-nuclearlab-experiment-s-ee4f7-without-changing-their-work-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-flow-draft\43-nuclearlab-experiment-s-ee4f7-without-changing-their-work-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-flow-draft\43-nuclearlab-experiment-s-ee4f7-without-changing-their-work-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-flow-draft\43-nuclearlab-experiment-s-ee4f7-without-changing-their-work-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-nucleus-flow-draft\43-nuclearlab-experiment-s-ee4f7-without-changing-their-work-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:737:5 › nucleus comparison shortcuts move keyboard learners through the mobile flow without changing their work 
+(node:44632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-nucleus-flow-draft.js in place of stem_lab/stem_tool_nuclearlab.js

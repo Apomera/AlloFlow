@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-01T00:08:57.701Z",
+  "phase": "interview",
+  "hostIntegration": "paused pending shared writer clarification",
+  "modules": [
+    {
+      "output": "personas_module.js",
+      "sha256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+      "inputs": {
+        "personas_source.jsx": "c8ef90bbccda1e8cee09f641dca8f3e8e3b9bfcff2ce0ab50e15d7336b98ace3"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Full fork presses record actual pasta texture; taps and partial presses do not. Keyboard checks, dated comparisons, changed-food notices, and reload preserve the same evidence.",
+    "Escape, lost focus, changing workspaces, and a fresh cook cancel unfinished checks without adding observations.",
+    "Spoon trails respond to the dish: dry tracks stay open, unmixed water is identified, and a coating sauce gradually fills the track after folding.",
+    "A rescue completes through hands-on sauce checks. Downloads and replay retain earlier readings without exposing later outcomes or permitting changes.",
+    "Real touch presses and cancellation work without WebGL. Narrow screens, reduced motion, forced colors, and automated accessibility checks pass."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop sauce inspection",
+      "issues": []
+    },
+    {
+      "label": "320px inspection",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

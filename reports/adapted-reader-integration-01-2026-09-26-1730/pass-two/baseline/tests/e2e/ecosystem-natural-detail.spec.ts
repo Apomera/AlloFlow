@@ -1,0 +1,41 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_ecosystem.js',toolId:'ecosystem',width:1100,height:900,appStyles:true});
+test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
+test('natural wildlife layout, optional markers and following inspection preserve shared evidence',async({page})=>{
+  await page.setViewportSize({width:1140,height:1050});
+  await harness.mount(page,{ecosystem:{tab:'foodweb',tutorialDismissed:true}},undefined,{expectCanvas:false});
+  await page.evaluate(()=>{document.body.className='theme-default';document.getElementById('wrap')!.style.cssText='width:100%;height:auto;display:block;padding:16px;background:white';});
+  await page.getByRole('button',{name:'Habitat restoration',exact:true}).click();
+  const scene=page.locator('[data-efw-meadow]'),canvas=scene.locator('canvas'),stage=scene.locator('.efw-meadow-stage');
+  await expect(canvas).toHaveAttribute('data-understory','ferns,grass,fallen-wood,fungi');
+  await expect(canvas).toHaveAttribute('data-selection-markers','false');
+  await stage.screenshot({path:'reports/ecosystem-wildlife-detail/clearing.jpg',type:'jpeg',quality:90});
+  const setup=await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb));
+  await scene.getByRole('button',{name:'Selection markers',exact:true}).click();
+  await expect(canvas).toHaveAttribute('data-selection-markers','true');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.ecosystem.foodWeb))).toBe(setup);
+  await scene.getByRole('button',{name:'Selection markers',exact:true}).click();
+  await scene.getByRole('button',{name:'Inspect selected group',exact:true}).click();
+  for(const [id,name] of [['rabbits','Rabbits'],['voles','Meadow voles'],['foxes','Red foxes'],['owls','Barn owls']]){
+    await scene.getByRole('button',{name:new RegExp(name+'\\s')}).click();
+    await expect(canvas).toHaveAttribute('data-selected-species',id);
+    const expected=await page.evaluate(id=>{const p=(window as any).StemLab.ecosystemFoodWeb.meadowPose(id,0,0,false);return p.x.toFixed(4)+','+p.z.toFixed(4);},id);
+    await expect(canvas).toHaveAttribute('data-representative-position',expected);
+    await stage.screenshot({path:'reports/ecosystem-wildlife-detail/'+id+'.jpg',type:'jpeg',quality:90});
+  }
+  await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  const time=scene.getByRole('slider',{name:'Meadow timeline',exact:true});
+  await time.focus();await time.press('Home');const start=await canvas.getAttribute('data-representative-position');
+  await time.press('End');expect(await canvas.getAttribute('data-representative-position')).not.toBe(start);
+  await time.press('Home');await expect(canvas).toHaveAttribute('data-representative-position',start!);
+  await page.emulateMedia({reducedMotion:'reduce'});await expect(scene).toContainText('Reduced motion is on');
+  await time.press('End');await expect(canvas).toHaveAttribute('data-representative-position',start!);
+  await page.setViewportSize({width:390,height:844});await stage.screenshot({path:'reports/ecosystem-wildlife-detail/mobile-inspection.jpg',type:'jpeg',quality:90});
+  await scene.getByRole('button',{name:'Reset camera',exact:true}).click();await stage.screenshot({path:'reports/ecosystem-wildlife-detail/mobile-clearing.jpg',type:'jpeg',quality:90});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByLabel('Disturbance',{exact:true}).selectOption('remove');await page.getByLabel('Affected group',{exact:true}).selectOption('owls');
+  await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
+  await expect(canvas).toHaveAttribute('data-glyphs-owls','0');await expect(scene.locator('[data-efw-selection-label]')).toContainText('none present');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

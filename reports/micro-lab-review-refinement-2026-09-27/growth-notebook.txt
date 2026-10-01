@@ -1,0 +1,39 @@
+Microbial growth discovery
+Illustrative model v1; population is in arbitrary units (5 initially, capacity 100). Values are simulated, not measurements.
+
+Trial 9
+Control: E. coli · 37 °C · pH 7 · Oxygen availability 0/100
+Trial conditions: E. coli · 37 °C · pH 7 · Oxygen availability 100/100
+Prediction: Higher population
+My reasoning before the run: 
+Changed variables: Oxygen availability
+At 24 model hours: Control 90.3; Trial 99.7
+My evidence and explanation: Evidence for trial nine
+
+Simulated population at each model hour
+Model hour	Control	Trial
+0	5.0	5.0
+1	5.0	5.0
+2	5.0	5.0
+3	5.0	7.3
+4	5.0	10.5
+5	6.2	14.9
+6	7.9	20.7
+7	10.1	28.0
+8	12.7	36.7
+9	15.8	46.4
+10	19.6	56.4
+11	24.0	65.8
+12	29.1	74.2
+13	34.7	81.1
+14	40.8	86.5
+15	47.2	90.5
+16	53.7	93.4
+17	60.1	95.5
+18	66.1	96.9
+19	71.7	97.9
+20	76.7	98.6
+21	81.0	99.1
+22	84.7	99.4
+23	87.8	99.6
+24	90.3	99.7

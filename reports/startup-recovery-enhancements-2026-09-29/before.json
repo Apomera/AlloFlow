@@ -1,0 +1,55 @@
+{
+  "at": "2026-09-29T23:01:28.472Z",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\AlloFlowANTI.txt"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "sha256": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx"
+    },
+    {
+      "path": "phase_k_helpers_source.jsx",
+      "sha256": "111b0a112335887c738d3b591bdfaccbd9f5d85ead0f0534614d5d04152741e1",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\phase_k_helpers_source.jsx"
+    },
+    {
+      "path": "phase_k_helpers_module.js",
+      "sha256": "f62ec641d3f0bb663f627227cf25f449a5316bf72514aa7059ecd3bf681ad866",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\phase_k_helpers_module.js"
+    },
+    {
+      "path": "desktop/web-app/public/phase_k_helpers_module.js",
+      "sha256": "f62ec641d3f0bb663f627227cf25f449a5316bf72514aa7059ecd3bf681ad866",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\phase_k_helpers_module.js"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "1c8ba539814cb934e132dcd177d3a2df22f5842eb8e888856932b5a388e93b3c",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json"
+    },
+    {
+      "path": "adventure_handlers_source.jsx",
+      "sha256": "b9de5a325f7f30159938f2befb44392244385ddf9116f74dd7b0127ddf2bcffb",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\adventure_handlers_source.jsx"
+    },
+    {
+      "path": "adventure_handlers_module.js",
+      "sha256": "174dbf3508040acc38cfce528f143c83e08f525c0029bb38f9217ae6a46d5a82",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\adventure_handlers_module.js"
+    },
+    {
+      "path": "desktop/web-app/public/adventure_handlers_module.js",
+      "sha256": "174dbf3508040acc38cfce528f143c83e08f525c0029bb38f9217ae6a46d5a82",
+      "saved": "reports\\startup-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\adventure_handlers_module.js"
+    }
+  ]
+}

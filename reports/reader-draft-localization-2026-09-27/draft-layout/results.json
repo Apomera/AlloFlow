@@ -1,0 +1,218 @@
+[
+  {
+    "fixture": "draft_en_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 294,
+      "warningScroll": 294,
+      "buttonWidth": 290,
+      "buttonScroll": 290,
+      "left": 13,
+      "right": 302.75,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_en_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 270,
+      "warningScroll": 270,
+      "buttonWidth": 270,
+      "buttonScroll": 270,
+      "left": 25,
+      "right": 295,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_es419_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 294,
+      "warningScroll": 294,
+      "buttonWidth": 245,
+      "buttonScroll": 245,
+      "left": 13,
+      "right": 257.65625,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_es419_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 270,
+      "warningScroll": 270,
+      "buttonWidth": 270,
+      "buttonScroll": 270,
+      "left": 25,
+      "right": 295,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_esES_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 294,
+      "warningScroll": 294,
+      "buttonWidth": 245,
+      "buttonScroll": 245,
+      "left": 13,
+      "right": 257.65625,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_esES_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 270,
+      "warningScroll": 270,
+      "buttonWidth": 270,
+      "buttonScroll": 270,
+      "left": 25,
+      "right": 295,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_ar_rtl_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 294,
+      "warningScroll": 294,
+      "buttonWidth": 229,
+      "buttonScroll": 229,
+      "left": 78,
+      "right": 307,
+      "direction": "rtl"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_ar_rtl_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 270,
+      "warningScroll": 270,
+      "buttonWidth": 270,
+      "buttonScroll": 270,
+      "left": 25,
+      "right": 295,
+      "direction": "rtl"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_zh_unspaced_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 294,
+      "warningScroll": 294,
+      "buttonWidth": 240,
+      "buttonScroll": 240,
+      "left": 13,
+      "right": 253,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_zh_unspaced_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 270,
+      "warningScroll": 270,
+      "buttonWidth": 270,
+      "buttonScroll": 270,
+      "left": 25,
+      "right": 295,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_th_unspaced_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 294,
+      "warningScroll": 294,
+      "buttonWidth": 253,
+      "buttonScroll": 253,
+      "left": 13,
+      "right": 266.359375,
+      "direction": "ltr"
+    },
+    "errors": []
+  },
+  {
+    "fixture": "draft_th_unspaced_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "warning in its fieldset; not full reader",
+    "geometry": {
+      "documentWidth": 320,
+      "warningWidth": 270,
+      "warningScroll": 270,
+      "buttonWidth": 270,
+      "buttonScroll": 270,
+      "left": 25,
+      "right": 295,
+      "direction": "ltr"
+    },
+    "errors": []
+  }
+]

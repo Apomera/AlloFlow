@@ -269,7 +269,7 @@ describe('Semiconductor Lab runtime UI regressions', () => {
     const finishButton = finalWafer.match(/<button\b[^>]*>Finish walkthrough ✓<\/button>/);
     expect(finishButton).toBeTruthy();
     expect(finishButton[0]).not.toContain('disabled=\"\"');
-    expect(source).toContain("announceToSR('Wafer fabrication walkthrough complete')");
+    expect(source).toContain("announceToSR(__alloT('stem.semiconductor.sr_wafer_fabrication_walkthrough_complete', 'Wafer fabrication walkthrough complete'))");
     expect(source).toContain("cx.strokeStyle = '#64748B'; cx.lineWidth = 1");
   });
 });

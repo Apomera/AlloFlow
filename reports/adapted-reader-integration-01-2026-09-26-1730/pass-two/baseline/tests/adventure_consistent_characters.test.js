@@ -1,0 +1,105 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+
+const handlersSource = readFileSync('adventure_handlers_source.jsx', 'utf8');
+const handlersModule = readFileSync('adventure_handlers_module.js', 'utf8');
+const sessionSource = readFileSync('adventure_session_handlers_source.jsx', 'utf8');
+const sessionModule = readFileSync('adventure_session_handlers_module.js', 'utf8');
+const viewSource = readFileSync('view_adventure_source.jsx', 'utf8');
+const viewModule = readFileSync('view_adventure_module.js', 'utf8');
+const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
+
+describe('Adventure cast-review image ownership', () => {
+  it('leaves the opening image to cast confirmation instead of generating a temporary setting', () => {
+    const opening = handlersSource.slice(handlersSource.indexOf('const executeStartAdventure'), handlersSource.indexOf('let adventureRestartPromptPending'));
+    expect(opening).not.toContain('scheduleAdventureEstablishingShot({');
+    expect(opening).toContain('Cast confirmation owns the opening illustration');
+    expect(opening).toContain('isImageLoading: sceneCharacters.length === 0');
+    expect(opening).toContain('if (!adventureConsistentCharacters || sceneCharacters.length === 0)');
+  });
+
+  it('keeps the generated handler module and deployed copy synchronized', () => {
+    expect(handlersModule).toContain('Adventure establishing shot failed');
+    expect(readFileSync('desktop/web-app/public/adventure_handlers_module.js', 'utf8')).toBe(handlersModule);
+  });
+});
+
+describe('Adventure structured character extraction retry', () => {
+  it('tries a JSON extraction before the regex and preserves the final fallback', () => {
+    const retryIndex = handlersSource.indexOf('From this opening scene, extract 2–4 characters as JSON.');
+    const regexIndex = handlersSource.indexOf('const nameMatches = sceneText.match');
+    expect(retryIndex).toBeGreaterThan(-1);
+    expect(regexIndex).toBeGreaterThan(retryIndex);
+    expect(handlersSource).toContain('const cleanedExtraction = cleanJson(extractionResult)');
+    expect(handlersSource).toContain('await resilientJsonParse(cleanedExtraction)');
+    expect(handlersSource).toContain("name: 'Your Character', role: 'Protagonist'");
+  });
+});
+
+describe('Gemini-gated cast reference sheet', () => {
+  it('prioritizes portraits named in the current scene before the protagonist and remaining cast', () => {
+    expect(sessionSource).toContain('const selectAdventureReferenceCharacters =');
+    expect(sessionSource).toContain('normalizedSceneNames.has');
+    expect(sessionSource).toContain('pendingAdventureUpdate?.charactersInScene');
+    expect(sessionSource).toContain('adventureState.currentScene?.charactersInScene');
+    expect(sessionSource).toContain('selectAdventureReferenceCharacters(adventureState.characters, sceneCharacterNames)');
+  });
+  it('composites up to four portraits only for the Gemini image backend', () => {
+    expect(sessionSource).toContain('const createAdventureReferenceSheet = async (characters) =>');
+    expect(sessionSource).toContain('.filter(character => character?.portrait)');
+    expect(sessionSource).toContain('.slice(0, 4)');
+    expect(sessionSource).toContain("document.createElement('canvas')");
+    expect(sessionSource).toContain('isGeminiImageBackend && portraitCharacters.length >= 2');
+    expect(anti).toContain("isGeminiImageBackend: _isCanvasEnv || String(_aiConfig?.backend || 'gemini').trim().toLowerCase() === 'gemini'");
+  });
+
+  it('uses the cast prompt and falls back to the protagonist portrait on composite failure', () => {
+    expect(sessionSource).toContain("The attached reference sheet shows this story's cast.");
+    expect(sessionSource).toContain('falling back to the protagonist portrait');
+    expect(sessionSource).toContain("let referenceBase64 = protagonist?.portrait?.split(',')[1] || null");
+    expect(sessionSource).toContain('buildAdventureConsistencyReference({');
+    expect(sessionSource).toContain('callGeminiImageEdit(consistencyPrompt, currentBase64, targetWidth, targetQual, referenceBase64)');
+  });
+
+  it('keeps the generated session module and deployed copy synchronized', () => {
+    expect(sessionModule).toContain('createAdventureReferenceSheet');
+    expect(readFileSync('desktop/web-app/public/adventure_session_handlers_module.js', 'utf8')).toBe(sessionModule);
+  });
+});
+
+describe('Adventure perceived-latency polish', () => {
+  it('reveals a preview before cleanup and consistency passes finish', () => {
+    const providerIndex = sessionSource.indexOf('let imageUrl = await callImagen');
+    const previewIndex = sessionSource.indexOf('sceneImagePreview: imageUrl');
+    const cleanupIndex = sessionSource.indexOf('const refinedUrl = await callGeminiImageEdit');
+    const finalIndex = sessionSource.indexOf('sceneImage: imageUrl');
+    expect(providerIndex).toBeGreaterThan(-1);
+    expect(previewIndex).toBeGreaterThan(providerIndex);
+    expect(previewIndex).toBeLessThan(cleanupIndex);
+    expect(finalIndex).toBeGreaterThan(cleanupIndex);
+    expect(sessionSource).toContain("imagePolishStage: 'matching'");
+    expect(sessionSource).toContain("'Polishing scene details…'");
+  });
+
+  it('shows real stages and reserves the final scene height in both views', () => {
+    expect(viewSource).toContain("const stage = typeof state.loadingStage === 'string' ? state.loadingStage.trim() : '';");
+    expect(viewSource).toContain("{stage || adventureSettingsText(t, 'turn_waiting'");
+    expect(viewSource).toContain("style={{ minHeight: adventureImageSize + 'px' }}");
+    expect(viewSource).toContain('adventureState.sceneImage || adventureState.sceneImagePreview');
+    expect(viewSource).toContain("adventureState.imagePolishStage === 'matching' ? 'Matching your cast…' : 'Polishing scene details…'");
+    expect(handlersSource).toContain("loadingStage: 'Building your opening scene…'");
+    expect(handlersSource).toContain("loadingStage: 'Considering your choice…'");
+    expect(handlersSource).toContain("loadingStage: 'Interpreting your response…'");
+  });
+
+  it('keeps the generated Adventure view and deployed copy synchronized', () => {
+    expect(viewModule).toContain('Polishing scene details');
+    expect(readFileSync('desktop/web-app/public/view_adventure_module.js', 'utf8')).toBe(viewModule);
+  });
+});
+
+describe('consistent character rollout default', () => {
+  it('remains opt-in', () => {
+    expect(anti).toContain('adventureConsistentCharacters: false');
+  });
+});

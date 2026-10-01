@@ -13197,6 +13197,105 @@ const d = labToolData.rocks || {};
     return out;
   };
 
+  // ══ A rock's journey ══
+  // What each product becomes if it goes back into the machine: one of the
+  // machine's own specimens, or null when the product is not one of them.
+  // Greenschist, quartzite, phyllite and migmatite are real rocks the machine
+  // has no specimen for, so a journey stops there honestly rather than
+  // pretending they are slate or gneiss.
+  var RC_NEXT = {
+    granite: { melting_cooling: 'granite', heat_pressure: 'gneiss', weathering_erosion: 'sandstone' },
+    basalt: { melting_cooling: 'basalt', heat_pressure: null, weathering_erosion: 'shale' },
+    sandstone: { melting_cooling: 'granite', heat_pressure: null, weathering_erosion: 'sandstone' },
+    limestone: { melting_cooling: null, heat_pressure: 'marble', weathering_erosion: 'limestone' },
+    shale: { melting_cooling: 'granite', heat_pressure: 'slate', weathering_erosion: 'shale' },
+    slate: { melting_cooling: 'granite', heat_pressure: null, weathering_erosion: 'shale' },
+    marble: { melting_cooling: null, heat_pressure: 'marble', weathering_erosion: 'limestone' },
+    gneiss: { melting_cooling: 'granite', heat_pressure: null, weathering_erosion: 'sandstone' }
+  };
+  // The one-way loop the classroom diagram draws, and its three shortcuts.
+  var RC_LOOP = { igneous: 'sedimentary', sedimentary: 'metamorphic', metamorphic: 'igneous' };
+
+  // ══ Path detective ══
+  // What happened to one named rock; the student names the arrow it took.
+  // `ans` indexes RC_PROCESSES. `clues` ('|'-separated) are the phrases that
+  // give it away, marked in the story once the case is solved. `trap` is the
+  // most tempting wrong arrow for that story, answered by `trapMsg`.
+  var RC_PATH_CASES = [
+    { id: 'granite_peak', rock: 'granite', ans: 0,
+      story: 'High on a mountain, frost splits granite into pieces. Rivers carry the sand down to the sea, where it settles in layers and slowly hardens.',
+      clues: 'frost splits|Rivers carry|settles in layers',
+      why: 'Weathering and erosion: the granite was broken up, carried away and laid down as sediment, which hardened into sandstone, a sedimentary rock.' },
+    { id: 'shale_collide', rock: 'shale', ans: 1,
+      story: 'Two continents collide and fold layers of shale 10 km down. The shale is squeezed and heated to about 300 °C, but it never melts.',
+      clues: 'squeezed and heated|never melts',
+      why: 'Heat and pressure changed the shale while it stayed solid. Its clay grew into tiny mica flakes lined up by the squeeze: slate, a metamorphic rock.' },
+    { id: 'gneiss_melt', rock: 'gneiss', ans: 2,
+      story: 'Deep under a mountain range, gneiss is heated past 750 °C and melts. The magma rises and cools slowly underground into large crystals.',
+      clues: 'melts|cools slowly',
+      why: 'Melting and cooling: once the gneiss melted, its old texture was gone. The magma cooled slowly into coarse granite, an igneous rock.' },
+    { id: 'basalt_subduct', rock: 'basalt', ans: 3,
+      story: 'Basalt from the ocean floor sinks down a subduction zone. Huge pressure turns its minerals into new ones, but it stays solid the whole way.',
+      clues: 'Huge pressure|stays solid',
+      why: 'A shortcut: the basalt never became sediment. Pressure changed it while solid, into blueschist and then eclogite, metamorphic rocks.' },
+    { id: 'shale_sink', rock: 'shale', ans: 4,
+      story: 'Shale on a sinking ocean plate is carried so deep that it melts. The magma rises through a volcano and cools into new rock.',
+      clues: 'so deep that it melts|cools into new rock',
+      why: 'A shortcut: the shale melted, so it did not matter what kind of rock it had been. The magma cooled into igneous rock.' },
+    { id: 'marble_rain', rock: 'marble', ans: 5,
+      story: 'A marble statue stands in the rain for 300 years. Rain slowly dissolves and crumbles it, and the loose grains wash into a lake and settle on the bottom.',
+      clues: 'dissolves and crumbles|settle on the bottom',
+      why: 'A shortcut: weathering broke the marble down at the surface. Buried and cemented, the grains can become limestone, a sedimentary rock.' },
+    { id: 'limestone_baked', rock: 'limestone', ans: 1, trap: 4,
+      story: 'Magma pushes up next to a bed of limestone. The limestone bakes and its crystals grow into a new pattern, but it does not melt.',
+      clues: 'bakes|does not melt',
+      trapMsg: 'The magma is hot, but the limestone next to it only baked. It changed while solid, so it did not become igneous rock.',
+      why: 'Heat changed the limestone while it stayed solid (contact metamorphism). Its calcite grew into interlocking crystals: marble.' },
+    { id: 'slate_roof', rock: 'slate', ans: 5,
+      story: 'Old slate roof tiles crack and crumble in frost and rain. The mud washes into a river delta and piles up in new layers.',
+      clues: 'crack and crumble|piles up in new layers',
+      why: 'Weathering and erosion work on any rock at the surface, metamorphic rock too. The mud becomes new sedimentary rock, such as shale.' }
+  ];
+  // What each arrow's destination means, for a pick that starts right but ends wrong.
+  var RC_PATH_TO_HINT = {
+    igneous: 'That arrow means the rock MELTED and then cooled into new rock. Does the story say it melted?',
+    metamorphic: 'That arrow means the rock changed while still SOLID, from heat and pressure. Is that what the story says?',
+    sedimentary: 'That arrow means the rock was broken into bits that were carried, settled in layers and hardened. Does the story say that?'
+  };
+  // A saved case is input: keep only what the panel can use.
+  var rcPathClean = function (p) {
+    if (!p || typeof p !== 'object' || Array.isArray(p) || p.on !== true) return null;
+    var i = typeof p.i === 'number' && p.i >= 0 && p.i < RC_PATH_CASES.length ? Math.floor(p.i) : 0;
+    var picks = Array.isArray(p.picks) ? p.picks.filter(function (k, at, all) { return typeof k === 'number' && k >= 0 && k < RC_PROCESSES.length && Math.floor(k) === k && all.indexOf(k) === at; }) : [];
+    var log = {};
+    if (p.log && typeof p.log === 'object' && !Array.isArray(p.log)) {
+      Object.keys(p.log).forEach(function (k) { if (RC_PATH_CASES[k] && (p.log[k] === 1 || p.log[k] === 0)) log[k] = p.log[k]; });
+    }
+    return { on: true, i: i, picks: picks, solved: picks.indexOf(RC_PATH_CASES[i].ans) >= 0, shown: p.shown === true, log: log, done: p.done === true };
+  };
+  // One pick (an RC_PROCESSES index). The same object comes back when the pick
+  // changes nothing: a solved or shown case, a repeat, or no case open.
+  var rcPathAnswer = function (p, k) {
+    if (!p || p.done || p.solved || p.shown) return p;
+    if (typeof k !== 'number' || !(k >= 0 && k < RC_PROCESSES.length) || p.picks.indexOf(k) >= 0) return p;
+    var picks = p.picks.concat([k]);
+    var ok = k === RC_PATH_CASES[p.i].ans;
+    var log = Object.assign({}, p.log);
+    if (ok && log[p.i] == null) log[p.i] = picks.length === 1 ? 1 : 0;
+    return Object.assign({}, p, { picks: picks, solved: ok, log: log });
+  };
+  // "Show me", earned after two wrong picks: counts as not first-try.
+  var rcPathReveal = function (p) {
+    if (!p || p.done || p.solved || p.shown || p.picks.length < 2) return p;
+    var log = Object.assign({}, p.log);
+    if (log[p.i] == null) log[p.i] = 0;
+    return Object.assign({}, p, { shown: true, log: log });
+  };
+  var rcPathNext = function (p) {
+    if (!p || !(p.solved || p.shown)) return p;
+    if (p.i + 1 >= RC_PATH_CASES.length) return Object.assign({}, p, { done: true });
+    return Object.assign({}, p, { i: p.i + 1, picks: [], solved: false, shown: false });
+  };
   var rcSwatch = function (h, key, texture, family, x, y, w, hgt, opacity) {
     var c = RC_FAMILY_COLORS[family] || RC_FAMILY_COLORS.igneous;
     var kids = [];
@@ -13340,7 +13439,8 @@ const d = labToolData.rocks || {};
     questHooks: [
       { id: 'view_3_rocks', label: 'Explore all 3 rock families', icon: '🪨', check: function(d) { return Object.keys(d.rcViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.rcViewed || {}).length + '/3 families'; } },
       { id: 'try_process', label: 'Inspect a transformation process', icon: '↔️', check: function(d) { return !!d.selectedProcess; }, progress: function(d) { return d.selectedProcess ? 'Done' : 'Pick a process'; } },
-      { id: 'run_3_transforms', label: 'Run the Transformation Machine 3 times', icon: '🔄', check: function(d) { return (d.transformsRun || 0) >= 3; }, progress: function(d) { return (d.transformsRun || 0) + '/3 runs'; } }
+      { id: 'run_3_transforms', label: 'Run the Transformation Machine 3 times', icon: '🔄', check: function(d) { return (d.transformsRun || 0) >= 3; }, progress: function(d) { return (d.transformsRun || 0) + '/3 runs'; } },
+      { id: 'path_detective_4', label: 'Work through 4 Path detective cases', icon: '🔍', check: function(d) { var p = rcPathClean(d && d.rcPath); return !!p && Object.keys(p.log).length >= 4; }, progress: function(d) { var p = rcPathClean(d && d.rcPath); return (p ? Object.keys(p.log).length : 0) + '/4 cases'; } }
     ],
     render: function(ctx) {
       // rockCycle paints no ground of its own, so its chrome sits on the HOST
@@ -13474,6 +13574,97 @@ const d = labToolData.rockCycle || {};
             return out;
           };
 
+          // The journey a student has built in the machine: saved steps, kept
+          // only while they still make a chain. The diagram and the machine
+          // both read this one list.
+          const rcJourneySteps = (function () {
+            var out = [];
+            (Array.isArray(d.rcJourney) ? d.rcJourney : []).some(function (st) {
+              var ok = st && typeof st === 'object' && RC_NEXT[st.from] && typeof st.agent === 'string' && Object.prototype.hasOwnProperty.call(RC_NEXT[st.from], st.agent) && RC_NEXT[st.from][st.agent] === st.to && st.to &&
+                (out.length === 0 || out[out.length - 1].to === st.from);
+              if (!ok) return true;
+              out.push({ from: st.from, agent: st.agent, to: st.to });
+              return false;
+            });
+            return out;
+          })();
+
+          // Path detective: the open case, if any.
+          const rcPath = rcPathClean(d.rcPath);
+          const rcPathCase = rcPath && !rcPath.done ? RC_PATH_CASES[rcPath.i] : null;
+          // While a case is open the diagram lights the student's own pick (or
+          // the answer once shown), never an arrow picked before the case.
+          const rcPathLit = rcPathCase ? (rcPath.shown ? rcPathCase.ans : rcPath.picks.length ? rcPath.picks[rcPath.picks.length - 1] : -1) : null;
+          const rcFamilyLabel = function (id) { var f = ROCKS.find(function (r) { return r.id === id; }); return f ? f.label : id; };
+          // Case text, each string under its own literal key so the i18n gate
+          // and the translation tools can see it. The English is RC_PATH_CASES.
+          const rcPathTx = (function () {
+            var C = {};
+            RC_PATH_CASES.forEach(function (c) { C[c.id] = c; });
+            return {
+              granite_peak: { story: __alloT('stem.rock_cycle.pd_granite_peak_story', C.granite_peak.story), clues: __alloT('stem.rock_cycle.pd_granite_peak_clues', C.granite_peak.clues), why: __alloT('stem.rock_cycle.pd_granite_peak_why', C.granite_peak.why) },
+              shale_collide: { story: __alloT('stem.rock_cycle.pd_shale_collide_story', C.shale_collide.story), clues: __alloT('stem.rock_cycle.pd_shale_collide_clues', C.shale_collide.clues), why: __alloT('stem.rock_cycle.pd_shale_collide_why', C.shale_collide.why) },
+              gneiss_melt: { story: __alloT('stem.rock_cycle.pd_gneiss_melt_story', C.gneiss_melt.story), clues: __alloT('stem.rock_cycle.pd_gneiss_melt_clues', C.gneiss_melt.clues), why: __alloT('stem.rock_cycle.pd_gneiss_melt_why', C.gneiss_melt.why) },
+              basalt_subduct: { story: __alloT('stem.rock_cycle.pd_basalt_subduct_story', C.basalt_subduct.story), clues: __alloT('stem.rock_cycle.pd_basalt_subduct_clues', C.basalt_subduct.clues), why: __alloT('stem.rock_cycle.pd_basalt_subduct_why', C.basalt_subduct.why) },
+              shale_sink: { story: __alloT('stem.rock_cycle.pd_shale_sink_story', C.shale_sink.story), clues: __alloT('stem.rock_cycle.pd_shale_sink_clues', C.shale_sink.clues), why: __alloT('stem.rock_cycle.pd_shale_sink_why', C.shale_sink.why) },
+              marble_rain: { story: __alloT('stem.rock_cycle.pd_marble_rain_story', C.marble_rain.story), clues: __alloT('stem.rock_cycle.pd_marble_rain_clues', C.marble_rain.clues), why: __alloT('stem.rock_cycle.pd_marble_rain_why', C.marble_rain.why) },
+              limestone_baked: { story: __alloT('stem.rock_cycle.pd_limestone_baked_story', C.limestone_baked.story), clues: __alloT('stem.rock_cycle.pd_limestone_baked_clues', C.limestone_baked.clues), why: __alloT('stem.rock_cycle.pd_limestone_baked_why', C.limestone_baked.why), trap: __alloT('stem.rock_cycle.pd_limestone_baked_trap', C.limestone_baked.trapMsg) },
+              slate_roof: { story: __alloT('stem.rock_cycle.pd_slate_roof_story', C.slate_roof.story), clues: __alloT('stem.rock_cycle.pd_slate_roof_clues', C.slate_roof.clues), why: __alloT('stem.rock_cycle.pd_slate_roof_why', C.slate_roof.why) }
+            };
+          })();
+          const rcPathHintTo = {
+            igneous: __alloT('stem.rock_cycle.pd_hint_to_igneous', RC_PATH_TO_HINT.igneous),
+            metamorphic: __alloT('stem.rock_cycle.pd_hint_to_metamorphic', RC_PATH_TO_HINT.metamorphic),
+            sedimentary: __alloT('stem.rock_cycle.pd_hint_to_sedimentary', RC_PATH_TO_HINT.sedimentary)
+          };
+          const rcPathHint = function (c, k, wrongSoFar) {
+            var pr = RC_PROCESSES[k], start = rcSpecimen(c.rock);
+            if (!pr) return '';
+            if (c.trap === k) return rcPathTx[c.id].trap || c.trapMsg;
+            if (pr.from !== start.family) {
+              // Ask first; name the family only on a second miss.
+              return wrongSoFar < 2
+                ? __alloT('stem.rock_cycle.pd_hint_from_ask', 'Check where that arrow starts. Which family does {rock} belong to?').replace('{rock}', start.label)
+                : __alloT('stem.rock_cycle.pd_hint_from_tell', '{rock} belongs to the {family} family, so its arrow starts at {family}.').replace('{rock}', start.label).split('{family}').join(rcFamilyLabel(start.family));
+            }
+            return rcPathHintTo[pr.to];
+          };
+          const rcPathWhy = function (c) { return rcPathTx[c.id].why; };
+          // The story, with its clue phrases marked once the case is over.
+          const rcPathStory = function (c, mark) {
+            var text = rcPathTx[c.id].story;
+            if (!mark) return text;
+            var clues = String(rcPathTx[c.id].clues).split('|').filter(function (x) { return x.trim(); });
+            var parts = [], rest = text, n = 0;
+            while (rest) {
+              var at = -1, len = 0;
+              clues.forEach(function (cl) { var j = rest.toLowerCase().indexOf(cl.toLowerCase()); if (j >= 0 && (at < 0 || j < at)) { at = j; len = cl.length; } });
+              if (at < 0) { parts.push(rest); break; }
+              if (at > 0) parts.push(rest.slice(0, at));
+              parts.push(h('mark', { key: 'clue' + (n++), 'data-rc-path-clue': true, className: 'rounded px-0.5 bg-amber-200 text-slate-900 font-bold' }, rest.slice(at, at + len)));
+              rest = rest.slice(at + len);
+            }
+            return parts;
+          };
+          // One pick, from the buttons or from an arrow on the diagram.
+          const rcPathPick = function (k) {
+            if (!rcPath || !PROCESSES[k]) return;
+            var np = rcPathAnswer(rcPath, k);
+            var patch = { selectedProcess: PROCESSES[k] };
+            if (np !== rcPath) {
+              patch.rcPath = np;
+              var c = RC_PATH_CASES[np.i];
+              if (np.solved) {
+                sfxRockCorrect();
+                if (np.picks.length === 1 && typeof awardStemXP === 'function') awardStemXP(5, 'Path detective');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rock_cycle.pd_right', 'Right!') + ' ' + rcPathWhy(c));
+              } else {
+                sfxRockClick();
+                if (typeof announceToSR === 'function') announceToSR(rcPathHint(c, k, np.picks.length));
+              }
+            }
+            updMulti(patch);
+          };
           // Family palette. Literal hex only — SVG presentation attributes do not
           // accept CSS var(), so a token here would silently render black.
           // base/mid/detail only — an `ink` was defined here and never read, which
@@ -13588,6 +13779,7 @@ const d = labToolData.rockCycle || {};
               rcStopTransformTimer();
               canvasEl.removeEventListener('click', onRockCycleClick);
               canvasEl.removeEventListener('keydown', onRockCycleKey);
+              if (canvasEl._rcObs) { canvasEl._rcObs.disconnect(); canvasEl._rcObs = null; }
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);
               canvasEl._rcCleanup = null;
               canvasEl._rcInit = false;
@@ -13654,6 +13846,112 @@ const d = labToolData.rockCycle || {};
 
 
 
+            // ── Scene set-up ──
+            // Drawn from fixed seeds, so the landscape is the same on every
+            // visit; only the particles move.
+            var rcSeed = 1234567;
+            function rcRand() { rcSeed = (rcSeed * 16807) % 2147483647; return (rcSeed - 1) / 2147483646; }
+            var rcStars = [];
+            for (var rsi = 0; rsi < 70; rsi++) rcStars.push({ x: rcRand(), y: rcRand() * 0.5, r: 0.4 + rcRand() * 1.1, ph: rcRand() * 6.28 });
+            // Rain on the mountains, grains in the river, grains settling in the sea.
+            var rcRain = [];
+            for (var rri = 0; rri < 34; rri++) rcRain.push({ x: rcRand(), y: rcRand(), v: 0.006 + rcRand() * 0.006 });
+            var rcSettle = [];
+            for (var rsd = 0; rsd < 26; rsd++) rcSettle.push({ x: 0.67 + rcRand() * 0.32, y: rcRand(), v: 0.0012 + rcRand() * 0.0015, s: 0.6 + rcRand() * 1.1 });
+            var rcRiverPs = [];
+            for (var rvp = 0; rvp < 14; rvp++) rcRiverPs.push({ t: rcRand(), v: 0.0015 + rcRand() * 0.002 });
+            // Each process in the colour of the family it makes (as the Rocks
+            // tool's network card draws them).
+            var RC_PROC_COL = { sedimentary: '251,191,36', metamorphic: '167,139,250', igneous: '249,115,22' };
+            function rcPill(x, y, w, h, r) {
+              ctx.beginPath();
+              ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+              ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+              ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+              ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+              ctx.closePath();
+            }
+            // Each family as a specimen you can SEE: interlocking crystals, beds
+            // of sand and mud with a shell, bands squeezed into folds with garnets.
+            // Drawn once into an offscreen canvas and reused every frame.
+            var RC_TEX_R = 34;
+            function rcFamTexture(id) {
+              if (typeof document === 'undefined' || !document.createElement) return null;
+              var S = RC_TEX_R * 2 * dpr, oc = document.createElement('canvas');
+              oc.width = S; oc.height = S;
+              var o = oc.getContext ? oc.getContext('2d') : null;
+              if (!o) return null;
+              var c = S / 2;
+              o.save(); o.beginPath(); o.arc(c, c, c, 0, Math.PI * 2); o.clip();
+              rcSeed = id === 'igneous' ? 11 : id === 'sedimentary' ? 22 : 33;
+              if (id === 'igneous') {
+                // Granite: grains on a jittered lattice that share corners, so
+                // they interlock; family reds, dark mica, glassy grey quartz.
+                var N = 11, cell = S / N, pts = [];
+                for (var gy = 0; gy <= N; gy++) {
+                  pts.push([]);
+                  for (var gx = 0; gx <= N; gx++) {
+                    var edge = gx === 0 || gy === 0 || gx === N || gy === N;
+                    pts[gy].push([gx * cell + (edge ? 0 : (rcRand() - 0.5) * cell * 0.9), gy * cell + (edge ? 0 : (rcRand() - 0.5) * cell * 0.9)]);
+                  }
+                }
+                var IGN = ['#f87171', '#ef4444', '#dc2626', '#fca5a5', '#b91c1c', '#e87a7a'];
+                for (var qy = 0; qy < N; qy++) for (var qx = 0; qx < N; qx++) {
+                  var k = rcRand();
+                  o.beginPath();
+                  o.moveTo(pts[qy][qx][0], pts[qy][qx][1]); o.lineTo(pts[qy][qx + 1][0], pts[qy][qx + 1][1]);
+                  o.lineTo(pts[qy + 1][qx + 1][0], pts[qy + 1][qx + 1][1]); o.lineTo(pts[qy + 1][qx][0], pts[qy + 1][qx][1]);
+                  o.closePath();
+                  o.fillStyle = k < 0.13 ? '#1f1720' : k < 0.27 ? '#8f98a6' : IGN[Math.floor(rcRand() * IGN.length)];
+                  o.fill();
+                  o.strokeStyle = 'rgba(69,10,10,0.5)'; o.lineWidth = 1; o.stroke();
+                }
+              } else if (id === 'sedimentary') {
+                // Sandstone and shale: beds of different grain and a shell.
+                var SED = ['#fde68a', '#eab308', '#ca8a04', '#fef3c7', '#a16207', '#facc15'];
+                var yb = 0, bi = 0;
+                while (yb < S) {
+                  var bh = S * (0.08 + rcRand() * 0.1);
+                  o.fillStyle = SED[bi % SED.length];
+                  o.beginPath(); o.moveTo(0, yb);
+                  for (var bx2 = 0; bx2 <= S; bx2 += S / 16) o.lineTo(bx2, yb + Math.sin(bx2 / S * 6.28 + bi) * S * 0.012);
+                  o.lineTo(S, yb + bh + 2); o.lineTo(0, yb + bh + 2); o.closePath(); o.fill();
+                  yb += bh; bi++;
+                }
+                o.fillStyle = 'rgba(120,53,15,0.35)';
+                for (var gi2 = 0; gi2 < 140; gi2++) { o.beginPath(); o.arc(rcRand() * S, rcRand() * S, 0.8 + rcRand() * 1.4, 0, Math.PI * 2); o.fill(); }
+                o.strokeStyle = 'rgba(120,53,15,0.85)'; o.lineWidth = 2;
+                o.beginPath();
+                for (var sa = 0; sa < Math.PI * 3.2; sa += 0.25) { var sr2 = 1.5 + sa * 2.3; o.lineTo(S * 0.64 + Math.cos(sa) * sr2, S * 0.38 + Math.sin(sa) * sr2); }
+                o.stroke();
+              } else {
+                // Gneiss: light and dark bands squeezed into folds, with garnets.
+                var MET = ['#ede9fe', '#8b5cf6', '#c4b5fd', '#5b21b6', '#a78bfa', '#2e1065'];
+                for (var mb = -2; mb < 14; mb++) {
+                  var y0 = mb * S / 10;
+                  o.fillStyle = MET[(mb + 12) % MET.length];
+                  o.beginPath(); o.moveTo(0, y0);
+                  for (var mx2 = 0; mx2 <= S; mx2 += S / 24) o.lineTo(mx2, y0 + Math.sin(mx2 / S * 9 + mb * 0.4) * S * 0.07);
+                  for (var mx3 = S; mx3 >= 0; mx3 -= S / 24) o.lineTo(mx3, y0 + S / 10 + 1 + Math.sin(mx3 / S * 9 + (mb + 1) * 0.4) * S * 0.07);
+                  o.closePath(); o.fill();
+                }
+                o.fillStyle = '#be123c';
+                for (var gt = 0; gt < 6; gt++) {
+                  var gxp = S * (0.2 + rcRand() * 0.6), gyp = S * (0.2 + rcRand() * 0.6);
+                  o.beginPath();
+                  for (var gk = 0; gk < 6; gk++) { var ga = gk * Math.PI / 3; o.lineTo(gxp + Math.cos(ga) * S * 0.035, gyp + Math.sin(ga) * S * 0.035); }
+                  o.closePath(); o.fill();
+                }
+              }
+              // Lit from the top left, so it reads as a specimen, not a sticker.
+              var sh = o.createRadialGradient(c * 0.65, c * 0.6, c * 0.1, c, c, c);
+              sh.addColorStop(0, 'rgba(255,255,255,0.35)'); sh.addColorStop(0.55, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.45)');
+              o.fillStyle = sh; o.fillRect(0, 0, S, S);
+              o.restore();
+              return oc;
+            }
+            var rcTex = { igneous: rcFamTexture('igneous'), sedimentary: rcFamTexture('sedimentary'), metamorphic: rcFamTexture('metamorphic') };
+
             function draw() {
               if (!rcAlive) return;
               canvasEl._rcAnim = null;
@@ -13666,384 +13964,289 @@ const d = labToolData.rockCycle || {};
 
 
 
-              // ── Background: earth cross-section gradient ──
+              // ── The scene: where each process happens ──
+              // Rain wears mountains down, a river carries the grains to the sea,
+              // they settle into beds; deep under the mountains rock is squeezed
+              // into folds; a magma chamber feeds the volcano.
+              var W = cW, H = cH, SURF = H * 0.65, SHORE = W * 0.64;
 
-              var bg = ctx.createLinearGradient(0, 0, 0, cH);
+              // Sky at dusk, with stars.
+              var sky = ctx.createLinearGradient(0, 0, 0, SURF);
+              sky.addColorStop(0, '#0b1026'); sky.addColorStop(0.55, '#26204a'); sky.addColorStop(0.85, '#5b3350'); sky.addColorStop(1, '#8a4a3c');
+              ctx.fillStyle = sky;
+              ctx.fillRect(0, 0, W, SURF + 2 * dpr);
+              for (var sti = 0; sti < rcStars.length; sti++) {
+                var st = rcStars[sti];
+                var tw = rcMotionReduced ? 0.6 : 0.45 + 0.35 * Math.sin(tick * 0.03 + st.ph);
+                ctx.fillStyle = 'rgba(255,255,255,' + tw.toFixed(3) + ')';
+                ctx.beginPath(); ctx.arc(st.x * W, st.y * H, st.r * dpr, 0, Math.PI * 2); ctx.fill();
+              }
 
-              bg.addColorStop(0, '#1e293b');
+              // The crust.
+              var crust = ctx.createLinearGradient(0, SURF, 0, H);
+              crust.addColorStop(0, '#3b2a20'); crust.addColorStop(0.6, '#2a1c16'); crust.addColorStop(1, '#1f130f');
+              ctx.fillStyle = crust;
+              ctx.fillRect(0, SURF, W, H - SURF);
 
-              bg.addColorStop(0.5, '#44403c');
+              // Beds on the sea floor: sand, mud and shell layers, gently dipping.
+              var BEDS = ['#7c5f3c', '#4b5160', '#8b7d5e', '#5d4a33', '#6b6f7a', '#7a5c3a'];
+              ctx.save();
+              ctx.beginPath(); ctx.rect(W * 0.56, SURF, W * 0.44, H * 0.27); ctx.clip();
+              for (var bdi = 0; bdi < BEDS.length; bdi++) {
+                var bTop = SURF + H * (0.03 + bdi * 0.038), bBot = bTop + H * 0.04;
+                ctx.fillStyle = BEDS[bdi];
+                ctx.beginPath(); ctx.moveTo(W * 0.56, bTop + H * 0.02);
+                for (var bx = W * 0.56; bx <= W; bx += 8 * dpr) ctx.lineTo(bx, bTop + (1 - (bx - W * 0.56) / (W * 0.44)) * H * 0.02 + Math.sin(bx * 0.01 + bdi) * dpr);
+                ctx.lineTo(W, bBot); ctx.lineTo(W * 0.56, bBot + H * 0.02); ctx.closePath(); ctx.fill();
+              }
+              var bedFade = ctx.createLinearGradient(W * 0.56, 0, W * 0.67, 0);
+              bedFade.addColorStop(0, 'rgba(42,28,22,1)'); bedFade.addColorStop(1, 'rgba(42,28,22,0)');
+              ctx.fillStyle = bedFade; ctx.fillRect(W * 0.56, SURF, W * 0.11, H * 0.27);
+              ctx.restore();
 
-              bg.addColorStop(0.75, '#78350f');
-
-              bg.addColorStop(0.88, '#92400e');
-
-              bg.addColorStop(1, '#dc2626');
-
-              ctx.fillStyle = bg;
-
-              ctx.fillRect(0, 0, cW, cH);
-
-
+              // Deep under the mountains: rock squeezed into folded bands.
+              var FOLD = ['#3b1d6e', '#5b2a9e', '#2e1a52', '#6d3fc4', '#35205e', '#4c2a86'];
+              ctx.save();
+              ctx.beginPath(); ctx.rect(0, SURF + H * 0.02, W * 0.42, H * 0.3); ctx.clip();
+              for (var fdi = 0; fdi < 9; fdi++) {
+                var fy0 = SURF + H * (0.02 + fdi * 0.034);
+                ctx.fillStyle = FOLD[fdi % FOLD.length];
+                ctx.beginPath(); ctx.moveTo(0, fy0);
+                for (var fx0 = 0; fx0 <= W * 0.42; fx0 += 6 * dpr) ctx.lineTo(fx0, fy0 + Math.sin(fx0 / (W * 0.42) * Math.PI * 3) * H * (0.008 + fdi * 0.003));
+                for (var fx1 = W * 0.42; fx1 >= 0; fx1 -= 6 * dpr) ctx.lineTo(fx1, fy0 + H * 0.036 + Math.sin(fx1 / (W * 0.42) * Math.PI * 3) * H * (0.008 + (fdi + 1) * 0.003));
+                ctx.closePath(); ctx.fill();
+              }
+              ctx.fillStyle = 'rgba(190,18,60,0.75)';
+              for (var gni = 0; gni < 10; gni++) {
+                var gnx = W * (0.03 + ((gni * 37) % 36) / 100), gny = SURF + H * (0.06 + ((gni * 23) % 22) / 100);
+                ctx.beginPath(); ctx.arc(gnx, gny, 1.8 * dpr, 0, Math.PI * 2); ctx.fill();
+              }
+              var foldFade = ctx.createLinearGradient(W * 0.31, 0, W * 0.42, 0);
+              foldFade.addColorStop(0, 'rgba(42,28,22,0)'); foldFade.addColorStop(1, 'rgba(42,28,22,1)');
+              ctx.fillStyle = foldFade; ctx.fillRect(W * 0.31, SURF, W * 0.11, H * 0.35);
+              ctx.restore();
 
               // ── Magma chamber (bottom) ──
-
               var magmaY = cH * 0.88;
-
               var magmaGrad = ctx.createRadialGradient(cW / 2, cH, cW * 0.1, cW / 2, cH, cW * 0.5);
-
               magmaGrad.addColorStop(0, 'rgba(255,100,0,0.8)');
-
               magmaGrad.addColorStop(0.5, 'rgba(220,38,38,0.5)');
-
               magmaGrad.addColorStop(1, 'rgba(180,20,0,0)');
-
               ctx.fillStyle = magmaGrad;
-
               ctx.fillRect(0, magmaY, cW, cH - magmaY);
-
+              var chX = W * 0.5, chY = H * 0.95, flick = rcMotionReduced ? 0 : Math.sin(tick * 0.05) * 0.06;
+              var chG = ctx.createRadialGradient(chX, chY, 4 * dpr, chX, chY, W * 0.17);
+              chG.addColorStop(0, 'rgba(255,237,160,0.95)'); chG.addColorStop(0.35, 'rgba(251,146,60,0.9)');
+              chG.addColorStop(0.75, 'rgba(220,38,38,' + (0.55 + flick).toFixed(3) + ')'); chG.addColorStop(1, 'rgba(127,29,29,0)');
+              ctx.fillStyle = chG;
+              ctx.beginPath(); ctx.ellipse(chX, chY, W * 0.17, H * 0.09, 0, 0, Math.PI * 2); ctx.fill();
               // Magma convection currents (animated flow lines)
-
-              ctx.strokeStyle = 'rgba(255,160,0,0.15)'; ctx.lineWidth = 2 * dpr;
-
+              ctx.strokeStyle = 'rgba(255,200,80,0.22)'; ctx.lineWidth = 2 * dpr;
               for (var mci = 0; mci < 4; mci++) {
-
                 var mcOff = ((tick * 0.3 + mci * 60) % 240) - 40;
-
                 var mcXCenter = cW * (0.15 + mci * 0.22);
-
                 ctx.beginPath();
-
                 ctx.moveTo(mcXCenter - 20 * dpr, cH - 5 * dpr);
-
                 ctx.quadraticCurveTo(mcXCenter - 15 * dpr, cH - (20 + mcOff * 0.2) * dpr, mcXCenter, cH - (30 + mcOff * 0.3) * dpr);
-
                 ctx.quadraticCurveTo(mcXCenter + 15 * dpr, cH - (20 + mcOff * 0.2) * dpr, mcXCenter + 20 * dpr, cH - 5 * dpr);
-
                 ctx.stroke();
-
               }
-
-              // Heat shimmer effect near magma zone
-
-              for (var hsi = 0; hsi < 12; hsi++) {
-
-                var hsX = (hsi / 12) * cW;
-
-                var hsY = magmaY - 5 * dpr + Math.sin(tick * 0.04 + hsi * 1.3) * 4 * dpr;
-
-                var hsAlpha = 0.04 + 0.03 * Math.sin(tick * 0.03 + hsi);
-
-                ctx.fillStyle = 'rgba(255,150,50,' + hsAlpha + ')';
-
-                ctx.beginPath(); ctx.ellipse(hsX, hsY, 10 * dpr, 3 * dpr, 0, 0, Math.PI * 2); ctx.fill();
-
-              }
-
-
-
               // Lava bubbles
-
               for (var lbi = 0; lbi < lavaPs.length; lbi++) {
-
                 var lp = lavaPs[lbi];
-
-                lp.x += lp.vx;
-
-                lp.y += lp.vy * 0.3;
-
-                lp.life -= 0.005;
-
+                if (!rcMotionReduced) { lp.x += lp.vx; lp.y += lp.vy * 0.3; lp.life -= 0.005; }
                 if (lp.life <= 0 || lp.y < magmaY / dpr) {
-
                   lp.x = Math.random() * cW / dpr;
-
                   lp.y = cH * 0.92 / dpr + Math.random() * cH * 0.08 / dpr;
-
                   lp.life = 0.8 + Math.random() * 0.2;
-
                 }
-
                 ctx.beginPath();
-
                 ctx.arc(lp.x * dpr, lp.y * dpr, lp.size * dpr, 0, Math.PI * 2);
-
-                var lpHue = Math.round(lp.life * 60);
-
-                ctx.fillStyle = 'hsla(' + lpHue + ',100%,55%,' + (lp.life * 0.8) + ')';
-
+                ctx.fillStyle = 'hsla(' + Math.round(lp.life * 60) + ',100%,55%,' + (lp.life * 0.8) + ')';
                 ctx.fill();
-
               }
-
-
-
-              // ── Sediment layer bands ──
-
-              var sedLayers = [
-
-                { y: 0.68, h: 0.04, color: 'rgba(194,159,120,0.2)' },  // sandstone
-
-                { y: 0.72, h: 0.03, color: 'rgba(120,100,80,0.15)' },  // clay
-
-                { y: 0.75, h: 0.04, color: 'rgba(180,170,130,0.12)' }, // limestone
-
-                { y: 0.79, h: 0.03, color: 'rgba(100,80,60,0.18)' },   // shale
-
-                { y: 0.82, h: 0.03, color: 'rgba(140,110,90,0.1)' }    // deep sediment
-
-              ];
-
-              for (var sli = 0; sli < sedLayers.length; sli++) {
-
-                var sl = sedLayers[sli];
-
-                ctx.fillStyle = sl.color;
-
-                ctx.beginPath(); ctx.moveTo(0, cH * sl.y);
-
-                for (var slx = 0; slx < cW; slx += 6) {
-
-                  ctx.lineTo(slx, cH * sl.y + Math.sin(slx * 0.012 + sli * 1.5) * 2 * dpr);
-
-                }
-
-                ctx.lineTo(cW, cH * (sl.y + sl.h)); ctx.lineTo(0, cH * (sl.y + sl.h)); ctx.closePath(); ctx.fill();
-
-                // Tiny fossil/grain marks in sedimentary layers
-
-                if (sli < 3) {
-
-                  ctx.fillStyle = 'rgba(200,180,150,0.1)';
-
-                  for (var fmi = 0; fmi < 4; fmi++) {
-
-                    var fmx = cW * (0.15 + fmi * 0.22 + sli * 0.05);
-
-                    var fmy = cH * (sl.y + sl.h * 0.5);
-
-                    ctx.beginPath(); ctx.ellipse(fmx, fmy, 3 * dpr, 1.5 * dpr, fmi * 0.5, 0, Math.PI * 2); ctx.fill();
-
-                  }
-
-                }
-
-              }
-
-
-
-              // ── Surface line ──
-
-              ctx.strokeStyle = '#a8a29e';
-
-              ctx.lineWidth = 2 * dpr;
-
-              ctx.beginPath();
-
-              ctx.moveTo(0, cH * 0.65);
-
-              for (var sx = 0; sx < cW; sx += 3) {
-
-                ctx.lineTo(sx, cH * 0.65 + Math.sin(sx * 0.02 + tick * 0.01) * 3 * dpr);
-
-              }
-
-              ctx.stroke();
-
-              // Surface terrain: grass tufts
-
-              for (var gti = 0; gti < 30; gti++) {
-
-                var gtx = gti * cW / 30;
-
-                var gtBase = cH * 0.65 + Math.sin(gtx * 0.02 + tick * 0.01) * 3 * dpr;
-
-                var gtSway = Math.sin(tick * 0.012 + gti * 0.9) * 2 * dpr;
-
-                ctx.strokeStyle = 'rgba(74,222,128,' + (0.25 + gti % 3 * 0.05) + ')'; ctx.lineWidth = 1 * dpr;
-
-                ctx.beginPath(); ctx.moveTo(gtx, gtBase);
-
-                ctx.lineTo(gtx + gtSway, gtBase - (3 + gti % 3) * dpr); ctx.stroke();
-
-                // Second blade
-
-                ctx.beginPath(); ctx.moveTo(gtx + 2 * dpr, gtBase);
-
-                ctx.lineTo(gtx + 2 * dpr - gtSway * 0.8, gtBase - (2.5 + gti % 2) * dpr); ctx.stroke();
-
-              }
-
-              // Surface terrain: small mountain silhouettes
-
-              ctx.fillStyle = 'rgba(100,80,70,0.15)';
-
-              ctx.beginPath(); ctx.moveTo(cW * 0.02, cH * 0.65); ctx.lineTo(cW * 0.08, cH * 0.59); ctx.lineTo(cW * 0.14, cH * 0.65); ctx.fill();
-
-              ctx.beginPath(); ctx.moveTo(cW * 0.88, cH * 0.65); ctx.lineTo(cW * 0.94, cH * 0.60); ctx.lineTo(cW * 0.99, cH * 0.65); ctx.fill();
-
-              // Scattered rock fragments on surface
-
-              ctx.fillStyle = 'rgba(168,162,158,0.25)';
-
-              for (var rfi = 0; rfi < 8; rfi++) {
-
-                var rfx = cW * (0.05 + rfi * 0.12);
-
-                var rfy = cH * 0.65 + 2 * dpr;
-
-                ctx.beginPath(); ctx.ellipse(rfx, rfy, (1.5 + rfi % 3) * dpr, 1 * dpr, rfi * 0.4, 0, Math.PI * 2); ctx.fill();
-
-              }
-
-
-
-              // ── Volcano silhouette near igneous node ──
-
+              // The dike: magma rising from the chamber to the volcano.
               var volX = cW * 0.5, volBaseY = cH * 0.65, volTopY = cH * 0.28;
+              ctx.save(); ctx.lineCap = 'round';
+              ctx.beginPath(); ctx.moveTo(chX, chY - H * 0.07);
+              ctx.bezierCurveTo(chX - 8 * dpr, H * 0.8, chX + 6 * dpr, H * 0.72, volX, volBaseY);
+              ctx.strokeStyle = 'rgba(251,146,60,0.35)'; ctx.lineWidth = 10 * dpr; ctx.stroke();
+              ctx.strokeStyle = 'rgba(253,224,71,' + (0.75 + flick).toFixed(3) + ')'; ctx.lineWidth = 3 * dpr; ctx.stroke();
+              ctx.restore();
 
-              // Volcano body
+              // Mountains: uplifted and snow-capped, where rain wears rock down.
+              var MTN = [[0, 0.65], [0.04, 0.47], [0.09, 0.53], [0.15, 0.36], [0.21, 0.5], [0.27, 0.43], [0.35, 0.65]];
+              var mtnG = ctx.createLinearGradient(0, H * 0.36, 0, SURF);
+              mtnG.addColorStop(0, '#6b7280'); mtnG.addColorStop(1, '#3f3a45');
+              ctx.fillStyle = mtnG;
+              ctx.beginPath(); ctx.moveTo(0, SURF);
+              MTN.forEach(function (p) { ctx.lineTo(p[0] * W, p[1] * H); });
+              ctx.closePath(); ctx.fill();
+              ctx.fillStyle = 'rgba(241,245,249,0.92)';
+              [[0.15, 0.36], [0.27, 0.43], [0.04, 0.47]].forEach(function (pk) {
+                var kx = pk[0] * W, ky = pk[1] * H;
+                ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx - 12 * dpr, ky + 13 * dpr); ctx.lineTo(kx - 4 * dpr, ky + 9 * dpr);
+                ctx.lineTo(kx + 2 * dpr, ky + 13 * dpr); ctx.lineTo(kx + 11 * dpr, ky + 11 * dpr); ctx.closePath(); ctx.fill();
+              });
+              // A rain cloud over the peaks.
+              ctx.fillStyle = 'rgba(148,163,184,0.88)';
+              [[0.1, 0.2, 22], [0.14, 0.175, 28], [0.19, 0.2, 22], [0.145, 0.225, 30]].forEach(function (cl) {
+                ctx.beginPath(); ctx.ellipse(cl[0] * W, cl[1] * H, cl[2] * dpr, cl[2] * 0.55 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+              });
+              ctx.strokeStyle = 'rgba(147,197,253,0.7)'; ctx.lineWidth = 1.2 * dpr;
+              for (var rni = 0; rni < rcRain.length; rni++) {
+                var rd = rcRain[rni];
+                if (!rcMotionReduced) { rd.y += rd.v; if (rd.y > 1) rd.y -= 1; }
+                var rx = W * (0.08 + rd.x * 0.14), ry = H * (0.25 + rd.y * 0.2);
+                ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 2 * dpr, ry + 7 * dpr); ctx.stroke();
+              }
 
-              ctx.fillStyle = 'rgba(55,48,42,0.5)';
+              // The land surface, with grass, up to the shore.
+              ctx.fillStyle = '#4a3a2a';
+              ctx.fillRect(W * 0.3, SURF - 1 * dpr, SHORE - W * 0.3, 5 * dpr);
+              ctx.strokeStyle = 'rgba(134,239,172,0.85)'; ctx.lineWidth = 2 * dpr;
+              ctx.beginPath(); ctx.moveTo(0, SURF); ctx.lineTo(SHORE, SURF); ctx.stroke();
+              for (var gti = 0; gti < 22; gti++) {
+                var gtx = W * 0.34 + gti * (SHORE - W * 0.34) / 22;
+                var gtSway = rcMotionReduced ? 0 : Math.sin(tick * 0.012 + gti * 0.9) * 2 * dpr;
+                ctx.strokeStyle = 'rgba(74,222,128,' + (0.45 + gti % 3 * 0.1) + ')'; ctx.lineWidth = 1 * dpr;
+                ctx.beginPath(); ctx.moveTo(gtx, SURF); ctx.lineTo(gtx + gtSway, SURF - (3 + gti % 3) * dpr); ctx.stroke();
+              }
 
-              ctx.beginPath(); ctx.moveTo(volX - 50 * dpr, volBaseY); ctx.lineTo(volX - 10 * dpr, volTopY);
+              // A river carries the worn-down grains from the mountains to the sea.
+              var rvPt = function (tt) { return [W * (0.3 + tt * (0.64 - 0.3)), SURF + (2.5 + Math.sin(tt * 11) * 1.5) * dpr]; };
+              ctx.save(); ctx.lineCap = 'round';
+              ctx.strokeStyle = 'rgba(56,189,248,0.95)'; ctx.lineWidth = 3 * dpr;
+              ctx.beginPath();
+              for (var rvi = 0; rvi <= 50; rvi++) { var rp = rvPt(rvi / 50); if (rvi === 0) ctx.moveTo(rp[0], rp[1]); else ctx.lineTo(rp[0], rp[1]); }
+              ctx.stroke();
+              ctx.restore();
+              ctx.fillStyle = 'rgba(253,230,138,0.95)';
+              for (var rpi = 0; rpi < rcRiverPs.length; rpi++) {
+                var rv = rcRiverPs[rpi];
+                if (!rcMotionReduced) { rv.t += rv.v; if (rv.t > 1) rv.t -= 1; }
+                var rq = rvPt(rv.t);
+                ctx.beginPath(); ctx.arc(rq[0], rq[1] - 0.5 * dpr, 1.1 * dpr, 0, Math.PI * 2); ctx.fill();
+              }
 
-              ctx.lineTo(volX + 10 * dpr, volTopY); ctx.lineTo(volX + 50 * dpr, volBaseY); ctx.closePath(); ctx.fill();
+              // The sea, and grains settling to its floor.
+              var seaTop = SURF - 3 * dpr;
+              var seaG = ctx.createLinearGradient(0, seaTop, 0, SURF + H * 0.035);
+              seaG.addColorStop(0, 'rgba(56,189,248,0.9)'); seaG.addColorStop(1, 'rgba(12,74,110,0.95)');
+              ctx.fillStyle = seaG;
+              ctx.beginPath(); ctx.moveTo(SHORE - 14 * dpr, SURF + 1 * dpr);
+              for (var swx = SHORE; swx <= W; swx += 6 * dpr) ctx.lineTo(swx, seaTop + (rcMotionReduced ? 0 : Math.sin(swx * 0.02 + tick * 0.05)) * 1.5 * dpr);
+              ctx.lineTo(W, SURF + H * 0.035); ctx.lineTo(SHORE + 30 * dpr, SURF + H * 0.035); ctx.closePath(); ctx.fill();
+              ctx.fillStyle = 'rgba(253,230,138,0.8)';
+              for (var sdi = 0; sdi < rcSettle.length; sdi++) {
+                var sd = rcSettle[sdi];
+                if (!rcMotionReduced) { sd.y += sd.v; if (sd.y > 1) sd.y -= 1; }
+                ctx.beginPath(); ctx.arc(sd.x * W, seaTop + 2 * dpr + sd.y * H * 0.03, sd.s * dpr, 0, Math.PI * 2); ctx.fill();
+              }
 
-              // Crater rim
-
-              ctx.fillStyle = 'rgba(80,60,50,0.6)';
-
-              ctx.beginPath(); ctx.ellipse(volX, volTopY, 12 * dpr, 4 * dpr, 0, 0, Math.PI * 2); ctx.fill();
-
-              // Inner crater glow
-
-              var craterGlow = ctx.createRadialGradient(volX, volTopY + 2 * dpr, 2 * dpr, volX, volTopY + 2 * dpr, 10 * dpr);
-
-              craterGlow.addColorStop(0, 'rgba(255,100,0,' + (0.5 + Math.sin(tick * 0.04) * 0.15).toFixed(3) + ')'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
-
+              // ── Volcano: where magma reaches the surface ──
+              var volG = ctx.createLinearGradient(volX - 60 * dpr, 0, volX + 60 * dpr, 0);
+              volG.addColorStop(0, '#2b2522'); volG.addColorStop(0.5, '#4a3f38'); volG.addColorStop(1, '#231d1a');
+              ctx.fillStyle = volG;
+              ctx.beginPath(); ctx.moveTo(volX - 62 * dpr, volBaseY);
+              ctx.quadraticCurveTo(volX - 30 * dpr, volBaseY - 30 * dpr, volX - 11 * dpr, volTopY);
+              ctx.lineTo(volX + 11 * dpr, volTopY);
+              ctx.quadraticCurveTo(volX + 30 * dpr, volBaseY - 30 * dpr, volX + 62 * dpr, volBaseY);
+              ctx.closePath(); ctx.fill();
+              var lf = rcMotionReduced ? 0.8 : 0.7 + 0.25 * Math.sin(tick * 0.06);
+              ctx.save(); ctx.lineCap = 'round';
+              ctx.beginPath(); ctx.moveTo(volX + 4 * dpr, volTopY + 2 * dpr);
+              ctx.quadraticCurveTo(volX + 16 * dpr, volTopY + (volBaseY - volTopY) * 0.35, volX + 30 * dpr, volTopY + (volBaseY - volTopY) * 0.75);
+              ctx.strokeStyle = 'rgba(251,146,60,' + (0.35 * lf).toFixed(3) + ')'; ctx.lineWidth = 7 * dpr; ctx.stroke();
+              ctx.strokeStyle = 'rgba(253,224,71,' + (0.85 * lf).toFixed(3) + ')'; ctx.lineWidth = 2.2 * dpr; ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(volX - 5 * dpr, volTopY + 2 * dpr);
+              ctx.quadraticCurveTo(volX - 14 * dpr, volTopY + (volBaseY - volTopY) * 0.3, volX - 22 * dpr, volTopY + (volBaseY - volTopY) * 0.55);
+              ctx.strokeStyle = 'rgba(251,146,60,' + (0.7 * lf).toFixed(3) + ')'; ctx.lineWidth = 1.8 * dpr; ctx.stroke();
+              ctx.restore();
+              // Crater glow
+              var craterGlow = ctx.createRadialGradient(volX, volTopY + 2 * dpr, 2 * dpr, volX, volTopY + 2 * dpr, 12 * dpr);
+              craterGlow.addColorStop(0, 'rgba(255,190,60,' + (0.8 + (rcMotionReduced ? 0 : Math.sin(tick * 0.04) * 0.15)).toFixed(3) + ')'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
               ctx.fillStyle = craterGlow;
-
-              ctx.beginPath(); ctx.ellipse(volX, volTopY + 2 * dpr, 8 * dpr, 3 * dpr, 0, 0, Math.PI * 2); ctx.fill();
-
-              // Smoke/ash particles from crater
-
-              for (var vsi = 0; vsi < 6; vsi++) {
-
-                var vsPhase = tick * 0.01 + vsi * 1.1;
-
-                var vsAge = ((tick * 0.5 + vsi * 40) % 120) / 120;
-
-                var vsx = volX + Math.sin(vsPhase) * (5 + vsAge * 15) * dpr;
-
+              ctx.beginPath(); ctx.ellipse(volX, volTopY + 2 * dpr, 12 * dpr, 4 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+              // Ash rising from the crater
+              for (var vsi = 0; vsi < 7; vsi++) {
+                var vsAge = ((tick * 0.5 + vsi * 34) % 120) / 120;
+                var vsx = volX + Math.sin(tick * 0.01 + vsi * 1.1) * (5 + vsAge * 15) * dpr;
                 var vsy = volTopY - vsAge * 40 * dpr;
-
-                var vsAlpha = (1 - vsAge) * 0.25;
-
-                var vsSize = (2 + vsAge * 4) * dpr;
-
-                ctx.fillStyle = 'rgba(120,110,100,' + vsAlpha + ')';
-
-                ctx.beginPath(); ctx.arc(vsx, vsy, vsSize, 0, Math.PI * 2); ctx.fill();
-
+                ctx.fillStyle = 'rgba(148,138,128,' + ((1 - vsAge) * 0.35).toFixed(3) + ')';
+                ctx.beginPath(); ctx.arc(vsx, vsy, (2 + vsAge * 5) * dpr, 0, Math.PI * 2); ctx.fill();
               }
 
-              // Lava flow streak down one side
+              // Where each process happens, in words.
+              // Too narrow for captions on a phone: the panels below say the same.
+              var rcCap = function (text, x, y) {
+                if (W / dpr < 520) return;
+                ctx.font = 'italic 600 ' + (8.5 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
+                var cw2 = ctx.measureText(text).width;
+                x = Math.max(cw2 / 2 + 8 * dpr, Math.min(W - cw2 / 2 - 8 * dpr, x));
+                rcPill(x - cw2 / 2 - 5 * dpr, y - 9 * dpr, cw2 + 10 * dpr, 12.5 * dpr, 3 * dpr);
+                ctx.fillStyle = 'rgba(2,6,23,0.62)'; ctx.fill();
+                ctx.fillStyle = 'rgba(241,245,249,0.95)'; ctx.fillText(text, x, y);
+              };
+              rcCap(__alloT('stem.rock_cycle.cap_rain', 'Rain and rivers wear rock down'), W * 0.155, H * 0.11);
+              rcCap(__alloT('stem.rock_cycle.cap_sea', 'Grains settle on the sea floor'), W * 0.905, H * 0.585);
+              rcCap(__alloT('stem.rock_cycle.cap_deep', 'Squeezed and heated deep down'), W * 0.2, H * 0.94);
+              rcCap(__alloT('stem.rock_cycle.cap_magma', 'Magma melts rock here'), W * 0.69, H * 0.955);
 
-              ctx.strokeStyle = 'rgba(255,100,0,0.3)'; ctx.lineWidth = 2.5 * dpr;
-
-              ctx.beginPath(); ctx.moveTo(volX + 5 * dpr, volTopY + 3 * dpr);
-
-              ctx.quadraticCurveTo(volX + 20 * dpr, volTopY + (volBaseY - volTopY) * 0.3, volX + 35 * dpr, volTopY + (volBaseY - volTopY) * 0.6);
-
-              ctx.stroke();
-
-              // Lava glow on flow
-
-              ctx.strokeStyle = 'rgba(255,200,50,0.15)'; ctx.lineWidth = 4 * dpr;
-
-              ctx.stroke();
-
-
-
-              // ── Erosion particles ──
-
-              for (var epi = 0; epi < erosionPs.length; epi++) {
-
-                var ep2 = erosionPs[epi];
-
-                ep2.y += ep2.vy;
-
-                ep2.x += Math.sin(ep2.phase + tick * 0.02) * 0.3;
-
-                if (ep2.y > cH * 0.65 / dpr) { ep2.y = cH * 0.05 / dpr; ep2.x = Math.random() * cW / dpr; }
-
-                ctx.beginPath();
-
-                ctx.arc(ep2.x * dpr, ep2.y * dpr, ep2.size * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(168,162,158,0.3)';
-
-                ctx.fill();
-
-              }
-
-
-
-              // ── Process flow particles along arrows ──
-
+              // ── Process particles: each process moves its own material ──
+              // Grains tumble along weathering, violet heat sparks along heat and
+              // pressure, glowing droplets along melting. Each follows ITS arrow:
+              // the three branch arrows bow the other way, and their particles
+              // used to follow the forward curve instead.
               var selRockId = canvasEl.dataset.selectedRock || '';
-
               for (var fpi = 0; fpi < flowPs.length; fpi++) {
-
                 var fp = flowPs[fpi];
-
-                fp.t += fp.speed;
-
-                if (fp.t > 1) fp.t -= 1;
-
+                if (!rcMotionReduced) { fp.t += fp.speed; if (fp.t > 1) fp.t -= 1; }
                 var proc = PROCESSES[fp.proc];
-
                 if (!proc) continue;
-
                 var fromN = nodes[proc.from];
-
                 var toN = nodes[proc.to];
-
                 if (!fromN || !toN) continue;
-
-                var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * 0.2;
-
-                var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * 0.2;
-
+                var fpBow = fp.proc >= 3 ? -0.34 : 0.2;
+                var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * fpBow;
+                var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * fpBow;
                 var t2 = fp.t;
-
-                var px = (1 - t2) * (1 - t2) * fromN.x + 2 * (1 - t2) * t2 * midX + t2 * t2 * toN.x;
-
-                var py = (1 - t2) * (1 - t2) * fromN.y + 2 * (1 - t2) * t2 * midY + t2 * t2 * toN.y;
-
-                var fpColor = proc.label.includes('Weather') ? '168,162,158' : proc.label.includes('Heat') ? '139,92,246' : '239,68,68';
-
-                var fpAlpha = 0.3 + 0.3 * Math.sin(t2 * Math.PI);
-
-                ctx.beginPath();
-
-                ctx.arc(px * dpr, py * dpr, fp.size * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(' + fpColor + ',' + fpAlpha + ')';
-
-                ctx.fill();
-
+                var px = ((1 - t2) * (1 - t2) * fromN.x + 2 * (1 - t2) * t2 * midX + t2 * t2 * toN.x) * dpr;
+                var py = ((1 - t2) * (1 - t2) * fromN.y + 2 * (1 - t2) * t2 * midY + t2 * t2 * toN.y) * dpr;
+                var fade = Math.sin(t2 * Math.PI);
+                var sz = fp.size * dpr * (fp.proc >= 3 ? 1.0 : 1.35);
+                if (proc.to === 'sedimentary') {
+                  ctx.save(); ctx.translate(px, py); ctx.rotate(t2 * 12 + fpi);
+                  ctx.fillStyle = 'rgba(253,230,138,' + (0.5 + 0.45 * fade).toFixed(3) + ')';
+                  ctx.fillRect(-sz * 1.2, -sz * 0.9, sz * 2.4, sz * 1.8);
+                  ctx.restore();
+                } else if (proc.to === 'metamorphic') {
+                  ctx.fillStyle = 'rgba(167,139,250,' + (0.2 * fade).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(px, py, sz * 3.2, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'rgba(237,233,254,' + (0.55 + 0.4 * fade).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(px, py, sz * 0.9, 0, Math.PI * 2); ctx.fill();
+                } else {
+                  ctx.fillStyle = 'rgba(251,146,60,' + (0.24 * fade).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(px, py, sz * 3.4, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'rgba(254,240,138,' + (0.6 + 0.4 * fade).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(px, py, sz * 1.1, 0, Math.PI * 2); ctx.fill();
+                }
               }
 
 
 
+              // Which arrow the student picked (a process card or a click here).
+              var selProcRaw = canvasEl.dataset.selectedProc;
+              var selProcIdx = /^\d+$/.test(selProcRaw || '') && Number(selProcRaw) < PROCESSES.length ? Number(selProcRaw) : -1;
+              // Label boxes this frame (CSS px), so journey badges avoid them.
+              var rcLblBoxes = [], rcLabelDraws = [];
               // ── Process arrow curves ──
-
               // Render ALL 6 process edges — the 3 forward (canonical) cycle steps PLUS the 3
               // "shortcut" reverse edges — so the diagram shows the rock cycle as the BRANCHING
               // network it really is (any rock → any rock), not a one-way circle. Shortcuts arc the
               // opposite way and are de-emphasized; every edge gets a direction arrowhead.
+              // Each is a ribbon in the colour of the family the process makes,
+              // glowing around a bright core whose dashes march toward that family.
               PROCESSES.forEach(function (proc, i) {
                 var fromN = nodes[proc.from];
                 var toN = nodes[proc.to];
@@ -14051,9 +14254,20 @@ const d = labToolData.rockCycle || {};
                 var bow = shortcut ? -0.34 : 0.2;
                 var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * bow;
                 var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * bow;
-                ctx.beginPath();
-                ctx.moveTo(fromN.x * dpr, fromN.y * dpr);
-                ctx.quadraticCurveTo(midX * dpr, midY * dpr, toN.x * dpr, toN.y * dpr);
+                var pc = RC_PROC_COL[proc.to] || '226,232,240';
+                var picked = selProcIdx === i, dimmed = selProcIdx >= 0 && !picked;
+                var trace = function () {
+                  ctx.beginPath();
+                  ctx.moveTo(fromN.x * dpr, fromN.y * dpr);
+                  ctx.quadraticCurveTo(midX * dpr, midY * dpr, toN.x * dpr, toN.y * dpr);
+                };
+                ctx.save();
+                if (dimmed) ctx.globalAlpha = 0.4;
+                ctx.lineCap = 'round';
+                trace(); ctx.strokeStyle = 'rgba(' + pc + ',' + (picked ? 0.5 : shortcut ? 0.16 : 0.26) + ')'; ctx.lineWidth = (picked ? 18 : shortcut ? 7 : 12) * dpr; ctx.stroke();
+                trace(); ctx.strokeStyle = 'rgba(' + pc + ',' + (shortcut ? 0.55 : 0.8) + ')'; ctx.lineWidth = (shortcut ? 2.5 : 4) * dpr; ctx.stroke();
+                ctx.lineCap = 'butt';
+                trace();
                 // The panel two sections down says "the diagram's 6 arrows show
                 // every path", and the three branch arrows were drawn at 0.22
                 // alpha in mid-slate — composited over this backdrop that is
@@ -14063,254 +14277,336 @@ const d = labToolData.rockCycle || {};
                 // canonical loop readable at a glance.
                 ctx.strokeStyle = shortcut ? 'rgba(226,232,240,0.52)' : 'rgba(226,232,240,0.78)';
                 ctx.lineWidth = (shortcut ? 1 : 1.5) * dpr;
-                ctx.setLineDash([6, 4]);
+                ctx.setLineDash([6 * dpr, 6 * dpr]);
+                ctx.lineDashOffset = rcMotionReduced ? 0 : -tick * 0.5 * dpr;
                 ctx.stroke();
                 ctx.setLineDash([]);
+                ctx.restore();
                 // Direction arrowhead at ~80% along the curve (just outside the destination node).
                 var tt = 0.8;
                 var bx = (1 - tt) * (1 - tt) * fromN.x + 2 * (1 - tt) * tt * midX + tt * tt * toN.x;
                 var by = (1 - tt) * (1 - tt) * fromN.y + 2 * (1 - tt) * tt * midY + tt * tt * toN.y;
                 var ang = Math.atan2(2 * (1 - tt) * (midY - fromN.y) + 2 * tt * (toN.y - midY), 2 * (1 - tt) * (midX - fromN.x) + 2 * tt * (toN.x - midX));
-                var ah = (shortcut ? 5 : 7) * dpr;
-                ctx.fillStyle = shortcut ? 'rgba(226,232,240,0.74)' : 'rgba(226,232,240,0.95)';
+                var ah = (shortcut && !picked ? 7 : 10) * dpr;
+                ctx.save();
+                if (dimmed) ctx.globalAlpha = 0.4;
                 ctx.beginPath();
                 ctx.moveTo(bx * dpr, by * dpr);
-                ctx.lineTo(bx * dpr - ah * Math.cos(ang - 0.42), by * dpr - ah * Math.sin(ang - 0.42));
-                ctx.lineTo(bx * dpr - ah * Math.cos(ang + 0.42), by * dpr - ah * Math.sin(ang + 0.42));
+                ctx.lineTo(bx * dpr - ah * Math.cos(ang - 0.45), by * dpr - ah * Math.sin(ang - 0.45));
+                ctx.lineTo(bx * dpr - ah * Math.cos(ang + 0.45), by * dpr - ah * Math.sin(ang + 0.45));
                 ctx.closePath();
+                ctx.fillStyle = 'rgb(' + pc + ')';
                 ctx.fill();
+                ctx.strokeStyle = shortcut ? 'rgba(241,245,249,0.6)' : 'rgba(241,245,249,0.9)';
+                ctx.lineWidth = 1 * dpr;
+                ctx.stroke();
                 // Label only the 3 forward edges (the 3 shortcuts repeat the same process names and
-                // would clutter the small canvas).
-                if (!shortcut) {
+                // would clutter the small canvas). A dot in the process colour
+                // ties each label to its ribbon.
+                // A picked shortcut's label lands on its reverse forward arrow's.
+                var selP = selProcIdx >= 3 ? PROCESSES[selProcIdx] : null;
+                var underPicked = !!selP && selP.from === proc.to && selP.to === proc.from;
+                ctx.restore();
+                if ((!shortcut && !underPicked) || picked) {
                   var labelX = (fromN.x + midX + toN.x) / 3;
                   var labelY = (fromN.y + midY + toN.y) / 3;
-                  // 6px at 78% opacity over a busy animated background was barely
-                  // readable — the same defect the landscape captions had. Set on
-                  // a dark pill at a legible size instead.
-                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
-                  ctx.textAlign = 'center';
+                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
                   var plw = ctx.measureText(proc.label).width;
                   var plx = labelX * dpr, ply = labelY * dpr;
-                  var ppadX = 5 * dpr, pboxH = 13 * dpr, prr = 3.5 * dpr;
-                  var pbx = plx - plw / 2 - ppadX, pby = ply - 9.5 * dpr, pbw = plw + ppadX * 2;
-                  ctx.beginPath();
-                  ctx.moveTo(pbx + prr, pby);
-                  ctx.lineTo(pbx + pbw - prr, pby); ctx.quadraticCurveTo(pbx + pbw, pby, pbx + pbw, pby + prr);
-                  ctx.lineTo(pbx + pbw, pby + pboxH - prr); ctx.quadraticCurveTo(pbx + pbw, pby + pboxH, pbx + pbw - prr, pby + pboxH);
-                  ctx.lineTo(pbx + prr, pby + pboxH); ctx.quadraticCurveTo(pbx, pby + pboxH, pbx, pby + pboxH - prr);
-                  ctx.lineTo(pbx, pby + prr); ctx.quadraticCurveTo(pbx, pby, pbx + prr, pby);
-                  ctx.closePath();
-                  ctx.fillStyle = 'rgba(2,6,23,0.80)';
-                  ctx.fill();
-                  ctx.fillStyle = '#f1f5f9';
-                  ctx.fillText(proc.label, plx, ply);
+                  var pbw = plw + 21 * dpr, pbx = plx - pbw / 2, pby = ply - 10.5 * dpr;
+                  rcLblBoxes.push([pbx / dpr, pby / dpr, pbw / dpr, 15]);
+                  // Drawn after the travelling chip, so it passes under them.
+                  rcLabelDraws.push(function () {
+                    ctx.save();
+                    if (dimmed) ctx.globalAlpha = 0.4;
+                    ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    rcPill(pbx, pby, pbw, 15 * dpr, 4 * dpr);
+                    ctx.fillStyle = 'rgba(2,6,23,0.84)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(' + pc + ',0.9)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(pbx + 7 * dpr, pby + 7.5 * dpr, 3 * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgb(' + pc + ')'; ctx.fill();
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.fillText(proc.label, plx + 4.5 * dpr, ply);
+                    ctx.restore();
+                  });
                 }
               });
 
+              // ── A chip of rock rides the picked arrow and changes on the way ──
+              // Weathering breaks it into grains that settle and are cemented
+              // into beds; melting turns it into glowing magma that cools into
+              // crystals; heat and pressure squash and band it while it stays
+              // SOLID (metamorphism is not melting). The change happens where no
+              // label covers it; with reduced motion the chip rests there.
+              if (selProcIdx >= 0) {
+                var cpr = PROCESSES[selProcIdx], cF = nodes[cpr.from], cT = nodes[cpr.to];
+                var cBow = selProcIdx >= 3 ? -0.34 : 0.2;
+                var cMx = (cF.x + cT.x) / 2 + (cT.y - cF.y) * cBow, cMy = (cF.y + cT.y) / 2 - (cT.x - cF.x) * cBow;
+                var cAt = function (q) { return [(1 - q) * (1 - q) * cF.x + 2 * (1 - q) * q * cMx + q * q * cT.x, (1 - q) * (1 - q) * cF.y + 2 * (1 - q) * q * cMy + q * q * cT.y]; };
+                var cGap = function (pt) {
+                  return rcLblBoxes.reduce(function (m, lb) { return Math.min(m, Math.hypot(Math.max(lb[0] - pt[0], 0, pt[0] - lb[0] - lb[2]), Math.max(lb[1] - pt[1], 0, pt[1] - lb[1] - lb[3]))); }, Infinity);
+                };
+                var cClear = function (pt, gap) { return cGap(pt) > gap; };
+                // The first spot well clear of labels, else the clearest one.
+                var cMid = 0.3, cBest = -1;
+                [0.3, 0.7, 0.25, 0.75, 0.35, 0.65, 0.2, 0.8, 0.4, 0.6, 0.15, 0.85].some(function (q) {
+                  var g = cGap(cAt(q));
+                  if (g > cBest) { cBest = g; cMid = q; }
+                  return g > 16;
+                });
+                var cU = rcMotionReduced ? cMid : 0.1 + 0.8 * ((tick % 300) / 300);
+                var cSm = function (a, b, v) { var k = Math.max(0, Math.min(1, (v - a) / (b - a))); return k * k * (3 - 2 * k); };
+                var cInto = cSm(cMid - 0.1, cMid - 0.02, cU), cOut = cSm(cMid + 0.02, cMid + 0.1, cU);
+                var cHalf = Math.min(cInto, 1 - cOut);
+                var cP = cAt(cU), cN = cAt(Math.min(1, cU + 0.01)), cAng = Math.atan2(cN[1] - cP[1], cN[0] - cP[0]);
+                var CR = 13;
+                // One chip of a family's specimen, squashed across its path by sq.
+                var cChip = function (fam, alpha, grow, sq) {
+                  if (alpha < 0.02) return;
+                  ctx.save();
+                  ctx.globalAlpha = alpha;
+                  ctx.translate(cP[0] * dpr, cP[1] * dpr);
+                  ctx.rotate(cAng); ctx.scale(grow * (1 + 0.25 * sq), grow * (1 - 0.35 * sq)); ctx.rotate(-cAng);
+                  ctx.beginPath(); ctx.arc(0, 0, CR * dpr, 0, Math.PI * 2);
+                  ctx.save(); ctx.clip();
+                  if (rcTex[fam]) ctx.drawImage(rcTex[fam], -CR * dpr, -CR * dpr, CR * 2 * dpr, CR * 2 * dpr);
+                  else { ctx.fillStyle = 'rgb(' + RC_PROC_COL[fam] + ')'; ctx.fillRect(-CR * dpr, -CR * dpr, CR * 2 * dpr, CR * 2 * dpr); }
+                  ctx.restore();
+                  ctx.strokeStyle = 'rgba(2,6,23,0.85)'; ctx.lineWidth = 4 * dpr; ctx.stroke();
+                  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.8 * dpr; ctx.stroke();
+                  ctx.restore();
+                };
+                var cCap = '';
+                if (cpr.to === 'sedimentary') {
+                  cChip(cpr.from, 1 - cInto, 1 - 0.4 * cInto, 0);
+                  // Grains: broken off, carried, then packed back together.
+                  var GR = ['#fde68a', '#d6a35c', '#e7e5e4'];
+                  for (var gk = 0; gk < 9; gk++) {
+                    var ga = gk * 2.4 + 0.3, gd = (4 + 12 * cHalf) * (0.55 + 0.45 * ((gk * 53) % 10) / 10);
+                    ctx.beginPath(); ctx.arc((cP[0] + Math.cos(ga) * gd) * dpr, (cP[1] + Math.sin(ga) * gd) * dpr, (2.4 + (gk % 3) * 0.7) * dpr, 0, Math.PI * 2);
+                    ctx.save(); ctx.globalAlpha = cHalf;
+                    ctx.fillStyle = GR[gk % 3]; ctx.fill();
+                    ctx.strokeStyle = 'rgba(15,23,42,0.6)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
+                    ctx.restore();
+                  }
+                  cChip(cpr.to, cOut, 0.6 + 0.4 * cOut, 0);
+                  cCap = __alloT('stem.rock_cycle.chip_grains', 'broken into grains');
+                } else if (cpr.to === 'igneous') {
+                  cChip(cpr.from, 1 - cInto, 1, 0);
+                  if (cHalf > 0.02) {
+                    var wob = rcMotionReduced ? 0 : 0.08 * Math.sin(tick * 0.15);
+                    ctx.save();
+                    ctx.globalAlpha = cHalf;
+                    ctx.translate(cP[0] * dpr, cP[1] * dpr); ctx.scale(1 + wob, 1 - wob);
+                    var mh = ctx.createRadialGradient(0, 0, CR * 0.8 * dpr, 0, 0, CR * 2.8 * dpr);
+                    mh.addColorStop(0, 'rgba(251,146,60,0.45)'); mh.addColorStop(1, 'rgba(251,146,60,0)');
+                    ctx.beginPath(); ctx.arc(0, 0, CR * 2.8 * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = mh; ctx.fill();
+                    var mg = ctx.createRadialGradient(0, 0, 0, 0, 0, CR * 1.6 * dpr);
+                    mg.addColorStop(0, '#fef9c3'); mg.addColorStop(0.5, 'rgba(251,146,60,0.95)'); mg.addColorStop(1, 'rgba(220,38,38,0)');
+                    ctx.beginPath(); ctx.arc(0, 0, CR * 1.6 * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = mg; ctx.fill();
+                    ctx.restore();
+                  }
+                  cChip(cpr.to, cOut, 1, 0);
+                  cCap = __alloT('stem.rock_cycle.chip_melt', 'melted into magma');
+                } else {
+                  var cX = cSm(cMid - 0.08, cMid + 0.02, cU);
+                  cChip(cpr.from, 1 - cX, 1, cHalf);
+                  cChip(cpr.to, cX, 1, cHalf);
+                  // Pressure from both sides, pressing it flat.
+                  if (cHalf > 0.02) {
+                    ctx.save();
+                    ctx.globalAlpha = cHalf;
+                    ctx.translate(cP[0] * dpr, cP[1] * dpr); ctx.rotate(cAng);
+                    [-1, 1].forEach(function (sd) {
+                      var e = (CR * (1 - 0.35 * cHalf) + 3) * sd * dpr;
+                      ctx.beginPath(); ctx.moveTo(0, e); ctx.lineTo(-5.5 * dpr, e + 8 * sd * dpr); ctx.lineTo(5.5 * dpr, e + 8 * sd * dpr); ctx.closePath();
+                      ctx.fillStyle = '#e2e8f0'; ctx.fill();
+                    });
+                    ctx.restore();
+                  }
+                  cCap = __alloT('stem.rock_cycle.chip_squeezed', 'squeezed, not melted');
+                }
+                // What is happening, while it happens: below the chip, or above
+                // if that is where the room is.
+                if (cHalf > 0.02 && cCap) {
+                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
+                  var ccw = ctx.measureText(cCap).width / dpr + 10;
+                  // Past the pressure arrows when there are some.
+                  var cOff = cpr.to === 'metamorphic' ? 32 : 24;
+                  var ccy = Math.min(H / dpr - 6, cP[1] + cOff);
+                  if (!cClear([cP[0], ccy], ccw / 2) && cClear([cP[0], cP[1] - cOff], ccw / 2)) ccy = Math.max(10, cP[1] - cOff);
+                  ctx.save();
+                  ctx.globalAlpha = cHalf;
+                  rcPill((cP[0] - ccw / 2) * dpr, (ccy - 8) * dpr, ccw * dpr, 12 * dpr, 3 * dpr);
+                  ctx.fillStyle = 'rgba(2,6,23,0.88)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(' + (RC_PROC_COL[cpr.to] || '226,232,240') + ',0.9)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                  ctx.fillStyle = '#ffffff'; ctx.fillText(cCap, cP[0] * dpr, (ccy + 1) * dpr);
+                  ctx.restore();
+                }
+              }
+              rcLabelDraws.forEach(function (f) { f(); });
 
 
-              // ── Rock nodes (with unique textures per type) ──
 
+              // ── Rock families: each drawn as a specimen you can see ──
               ROCKS.forEach(function (rock) {
-
                 var n = nodes[rock.id];
-
                 var isSel = selRockId === rock.id;
-
                 var radius = isSel ? 34 : 28;
-
-                var pulse = 1 + 0.05 * Math.sin(tick * 0.04);
-
+                var pulse = 1 + (rcMotionReduced ? 0 : 0.05 * Math.sin(tick * 0.04));
                 var glowGrad = ctx.createRadialGradient(n.x * dpr, n.y * dpr, radius * 0.5 * dpr, n.x * dpr, n.y * dpr, radius * 2 * dpr * pulse);
-
-                glowGrad.addColorStop(0, rock.color + '60');
-
-                glowGrad.addColorStop(0.5, rock.color + '20');
-
+                glowGrad.addColorStop(0, rock.color + '70');
+                glowGrad.addColorStop(0.5, rock.color + '26');
                 glowGrad.addColorStop(1, rock.color + '00');
-
                 ctx.beginPath();
-
                 ctx.arc(n.x * dpr, n.y * dpr, radius * 2 * dpr * pulse, 0, Math.PI * 2);
-
                 ctx.fillStyle = glowGrad;
-
                 ctx.fill();
-
-                ctx.beginPath();
-
-                ctx.arc(n.x * dpr, n.y * dpr, radius * dpr, 0, Math.PI * 2);
-
-                var innerGrad = ctx.createRadialGradient(n.x * dpr - 5 * dpr, n.y * dpr - 5 * dpr, 2 * dpr, n.x * dpr, n.y * dpr, radius * dpr);
-
-                innerGrad.addColorStop(0, rock.glow);
-
-                innerGrad.addColorStop(1, rock.color);
-
-                ctx.fillStyle = innerGrad;
-
-                ctx.fill();
-
-                ctx.strokeStyle = isSel ? '#ffffff' : rock.glow;
-
-                ctx.lineWidth = (isSel ? 3 : 1.5) * dpr;
-
+                // The specimen itself.
+                ctx.save();
+                ctx.beginPath(); ctx.arc(n.x * dpr, n.y * dpr, radius * dpr, 0, Math.PI * 2); ctx.clip();
+                var tex = rcTex[rock.id];
+                if (tex) {
+                  ctx.drawImage(tex, (n.x - radius) * dpr, (n.y - radius) * dpr, radius * 2 * dpr, radius * 2 * dpr);
+                } else {
+                  var innerGrad = ctx.createRadialGradient(n.x * dpr - 5 * dpr, n.y * dpr - 5 * dpr, 2 * dpr, n.x * dpr, n.y * dpr, radius * dpr);
+                  innerGrad.addColorStop(0, rock.glow);
+                  innerGrad.addColorStop(1, rock.color);
+                  ctx.fillStyle = innerGrad;
+                  ctx.fillRect((n.x - radius) * dpr, (n.y - radius) * dpr, radius * 2 * dpr, radius * 2 * dpr);
+                }
+                ctx.restore();
+                // Rim in the family colour; white when it is the chosen one.
+                ctx.beginPath(); ctx.arc(n.x * dpr, n.y * dpr, radius * dpr, 0, Math.PI * 2);
+                ctx.strokeStyle = isSel ? '#ffffff' : rock.color;
+                ctx.lineWidth = (isSel ? 3.5 : 3) * dpr;
                 ctx.stroke();
-
+                ctx.beginPath(); ctx.arc(n.x * dpr, n.y * dpr, (radius - 2.5) * dpr, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
                 // Orbiting dashed ring on the selected node — a clear "you are here"
                 if (isSel) {
                   ctx.save();
                   ctx.setLineDash([6 * dpr, 5 * dpr]);
                   ctx.lineDashOffset = -tick * 0.6 * dpr;
-                  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+                  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
                   ctx.lineWidth = 1.5 * dpr;
                   ctx.beginPath();
                   ctx.arc(n.x * dpr, n.y * dpr, (radius + 8) * dpr, 0, Math.PI * 2);
                   ctx.stroke();
                   ctx.restore();
                 }
-
-                // Rock-type-specific internal textures
-
-                ctx.save();
-
-                ctx.beginPath(); ctx.arc(n.x * dpr, n.y * dpr, radius * dpr, 0, Math.PI * 2); ctx.clip();
-
-                if (rock.id === 'igneous') {
-
-                  // Crystal facets / angular shards
-
-                  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 0.8 * dpr;
-
-                  for (var ci = 0; ci < 8; ci++) {
-
-                    var ca = ci * Math.PI * 2 / 8 + tick * 0.001;
-
-                    var cr1 = (6 + ci * 2) * dpr;
-
-                    var cr2 = (12 + ci * 1.5) * dpr;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(n.x * dpr + Math.cos(ca) * cr1, n.y * dpr + Math.sin(ca) * cr1);
-
-                    ctx.lineTo(n.x * dpr + Math.cos(ca + 0.3) * cr2, n.y * dpr + Math.sin(ca + 0.3) * cr2);
-
-                    ctx.lineTo(n.x * dpr + Math.cos(ca + 0.6) * cr1 * 1.3, n.y * dpr + Math.sin(ca + 0.6) * cr1 * 1.3);
-
-                    ctx.stroke();
-
-                  }
-
-                  // Sparkle dots on crystals
-
-                  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 5;
-                  ctx.fillStyle = 'rgba(255,255,255,' + (0.15 + 0.1 * Math.sin(tick * 0.05)) + ')';
-
-                  for (var spi2 = 0; spi2 < 5; spi2++) {
-
-                    var spa = spi2 * 1.3 + tick * 0.003;
-
-                    ctx.beginPath(); ctx.arc(n.x * dpr + Math.cos(spa) * 10 * dpr, n.y * dpr + Math.sin(spa) * 8 * dpr, 1.2 * dpr, 0, Math.PI * 2); ctx.fill();
-
-                  }
-                  ctx.restore();
-
-                } else if (rock.id === 'sedimentary') {
-
-                  // Horizontal strata / layers
-
-                  ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1 * dpr;
-
-                  for (var li = -3; li <= 3; li++) {
-
-                    var ly = n.y * dpr + li * 6 * dpr;
-
-                    ctx.beginPath(); ctx.moveTo((n.x - radius) * dpr, ly + Math.sin(li + 1) * 2 * dpr);
-
-                    ctx.lineTo((n.x + radius) * dpr, ly + Math.sin(li + 2) * 2 * dpr); ctx.stroke();
-
-                  }
-
-                  // Tiny fossil shapes
-
-                  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.7 * dpr;
-
-                  // Shell spiral
-
-                  ctx.beginPath();
-
-                  for (var fsa = 0; fsa < Math.PI * 3; fsa += 0.3) {
-
-                    var fsr = 2 + fsa * 1.2;
-
-                    ctx.lineTo(n.x * dpr + 8 * dpr + Math.cos(fsa) * fsr, n.y * dpr - 5 * dpr + Math.sin(fsa) * fsr);
-
-                  }
-
-                  ctx.stroke();
-
-                  // Leaf imprint
-
-                  ctx.beginPath(); ctx.ellipse(n.x * dpr - 8 * dpr, n.y * dpr + 5 * dpr, 5 * dpr, 2.5 * dpr, 0.3, 0, Math.PI * 2); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo((n.x - 11) * dpr, (n.y + 5) * dpr); ctx.lineTo((n.x - 5) * dpr, (n.y + 5) * dpr); ctx.stroke();
-
-                } else if (rock.id === 'metamorphic') {
-
-                  // Wavy foliation bands
-
-                  ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1.2 * dpr;
-
-                  for (var fi = -2; fi <= 2; fi++) {
-
-                    ctx.beginPath();
-
-                    for (var fx = -radius; fx <= radius; fx += 3) {
-
-                      var fy = fi * 7 + Math.sin(fx * 0.15 + fi * 0.8) * 4;
-
-                      ctx.lineTo((n.x + fx) * dpr, (n.y + fy) * dpr);
-
-                    }
-
-                    ctx.stroke();
-
-                  }
-
-                  // Garnet/mineral dots
-
-                  ctx.fillStyle = 'rgba(200,130,255,0.2)';
-
-                  for (var gdi = 0; gdi < 4; gdi++) {
-
-                    var gda = gdi * Math.PI / 2 + 0.5;
-
-                    ctx.beginPath(); ctx.arc(n.x * dpr + Math.cos(gda) * 12 * dpr, n.y * dpr + Math.sin(gda) * 9 * dpr, 2 * dpr, 0, Math.PI * 2); ctx.fill();
-
-                  }
-
-                }
-
-                ctx.restore();
-
-                // Emoji + label
-
-                ctx.font = (18 * dpr) + 'px sans-serif';
-
+                // The family's icon on a badge at the rim.
+                var bdx = (n.x + radius * 0.74) * dpr, bdy = (n.y - radius * 0.74) * dpr;
+                ctx.beginPath(); ctx.arc(bdx, bdy, 10 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(15,23,42,0.92)'; ctx.fill();
+                ctx.strokeStyle = rock.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                ctx.font = (11 * dpr) + 'px sans-serif';
                 ctx.textAlign = 'center';
-
-                ctx.fillText(rock.emoji, n.x * dpr, n.y * dpr + 7 * dpr);
-
-                ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
-
                 ctx.fillStyle = '#ffffff';
-
-                ctx.fillText(rock.label, n.x * dpr, (n.y + radius + 14) * dpr);
-
+                ctx.fillText(rock.emoji, bdx, bdy + 4 * dpr);
+                // Its name on a pill below.
+                ctx.font = 'bold ' + (9.5 * dpr) + 'px sans-serif';
+                var nw = ctx.measureText(rock.label).width;
+                var npx = n.x * dpr - nw / 2 - 7 * dpr, npy = (n.y + radius + 6) * dpr;
+                rcPill(npx, npy, nw + 14 * dpr, 15.5 * dpr, 4 * dpr);
+                rcLblBoxes.push([npx / dpr, npy / dpr, (nw + 14 * dpr) / dpr, 15.5]);
+                ctx.fillStyle = 'rgba(2,6,23,0.86)'; ctx.fill();
+                ctx.strokeStyle = rock.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(rock.label, n.x * dpr, npy + 11.2 * dpr);
               });
 
 
+
+              // ── The student's journey: numbered steps on the arrows it took ──
+              var jRaw = canvasEl.dataset.journey || '';
+              if (jRaw) {
+                var jSteps = jRaw.split(',').map(function (x) { return x.split('>'); }).filter(function (p) { return p.length === 2 && nodes[p[0]] && nodes[p[1]]; });
+                var jLast = jSteps.length ? jSteps[jSteps.length - 1][1] : null;
+                var jTag = __alloT('stem.rock_cycle.canvas_your_rock', 'Your rock is here');
+                var ln, lr, jtw, jtx, jty;
+                if (jLast) {
+                  ln = nodes[jLast]; lr = (selRockId === jLast ? 34 : 28) + 13;
+                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                  // Above the top family; under the name of the two low ones,
+                  // clear of the scene captions beside them.
+                  var jLow = ln.y * dpr > H / 2;
+                  jtw = ctx.measureText(jTag).width; jtx = ln.x * dpr;
+                  jty = jLow ? Math.min(H - 5 * dpr, (ln.y + lr - 13 + 35) * dpr) : Math.max(14 * dpr, (ln.y - lr - 6) * dpr);
+                  rcLblBoxes.push([(jtx - jtw / 2) / dpr - 6, jty / dpr - 10, jtw / dpr + 12, 14]);
+                }
+                // Each badge takes the first spot along its arrow that is clear
+                // of every label, specimen and earlier badge, so repeats spread
+                // out and nothing covers a process name.
+                var jPlaced = [];
+                // How far a spot is from crowding anything (negative = overlaps).
+                var jSlack = function (x, y) {
+                  var s = Math.min(x - 11, y - 11, W / dpr - 11 - x, H / dpr - 11 - y);
+                  for (var q = 0; q < jPlaced.length; q++) s = Math.min(s, Math.hypot(x - jPlaced[q][0], y - jPlaced[q][1]) - 26);
+                  for (var q2 = 0; q2 < rcLblBoxes.length; q2++) {
+                    var lb = rcLblBoxes[q2];
+                    s = Math.min(s, Math.hypot(Math.max(lb[0] - x, 0, x - lb[0] - lb[2]), Math.max(lb[1] - y, 0, y - lb[1] - lb[3])) - 12);
+                  }
+                  ROCKS.forEach(function (r) { s = Math.min(s, Math.hypot(x - nodes[r.id].x, y - nodes[r.id].y) - (selRockId === r.id ? 34 : 28) - 12); });
+                  return s;
+                };
+                // The first clear spot in order of preference; on a crowded
+                // canvas, the least crowded one.
+                var jPick = function (cands) {
+                  var best = cands[0], bestS = -Infinity;
+                  for (var c = 0; c < cands.length; c++) {
+                    var sl = jSlack(cands[c][0], cands[c][1]);
+                    if (sl >= 0) return cands[c];
+                    if (sl > bestS) { bestS = sl; best = cands[c]; }
+                  }
+                  return best;
+                };
+                jSteps.forEach(function (p, k) {
+                  var jFrom = p[0], jTo = p[1], bxy = null;
+                  if (jFrom === jTo) {
+                    // Stayed in its family (melted and cooled again, recycled
+                    // sand, higher grade): a badge beside that family.
+                    var nn = nodes[jFrom];
+                    bxy = jPick([[-40, -24], [-47, 4], [-62, -10], [-66, 16], [-84, -24], [-86, 4]].map(function (o) { return [nn.x + o[0], nn.y + o[1]]; }));
+                  } else {
+                    var jpi = -1;
+                    PROCESSES.forEach(function (pr, ii) { if (pr.from === jFrom && pr.to === jTo) jpi = ii; });
+                    if (jpi < 0) return;
+                    var fN = nodes[jFrom], tN = nodes[jTo], jbw = jpi >= 3 ? -0.34 : 0.2;
+                    var jmX = (fN.x + tN.x) / 2 + (tN.y - fN.y) * jbw, jmY = (fN.y + tN.y) / 2 - (tN.x - fN.x) * jbw;
+                    var jAt = function (tq, off) {
+                      var gx = 2 * (1 - tq) * (jmX - fN.x) + 2 * tq * (tN.x - jmX), gy = 2 * (1 - tq) * (jmY - fN.y) + 2 * tq * (tN.y - jmY), gl = Math.hypot(gx, gy) || 1;
+                      return [(1 - tq) * (1 - tq) * fN.x + 2 * (1 - tq) * tq * jmX + tq * tq * tN.x - gy / gl * off, (1 - tq) * (1 - tq) * fN.y + 2 * (1 - tq) * tq * jmY + tq * tq * tN.y + gx / gl * off];
+                    };
+                    var jTs = [0.3, 0.7, 0.4, 0.6, 0.2, 0.8, 0.5, 0.25, 0.75, 0.35, 0.65, 0.15, 0.85, 0.45, 0.55];
+                    // On the arrow if there is room, else just beside it.
+                    bxy = jPick([0, 17, -17, 32, -32].reduce(function (all, off) { return all.concat(jTs.map(function (tq) { return jAt(tq, off); })); }, []));
+                  }
+                  jPlaced.push(bxy);
+                  ctx.beginPath(); ctx.arc(bxy[0] * dpr, bxy[1] * dpr, 9.5 * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = '#c2410c'; ctx.fill();
+                  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2 * dpr; ctx.stroke();
+                  ctx.font = 'bold ' + (10 * dpr) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff';
+                  ctx.fillText(String(k + 1), bxy[0] * dpr, (bxy[1] + 3.6) * dpr);
+                });
+                if (jLast) {
+                  ctx.save();
+                  ctx.setLineDash([4 * dpr, 4 * dpr]);
+                  ctx.lineDashOffset = rcMotionReduced ? 0 : tick * 0.4 * dpr;
+                  ctx.strokeStyle = 'rgba(251,146,60,0.95)'; ctx.lineWidth = 2.5 * dpr;
+                  // Open at the bottom so it does not cross the family's name.
+                  ctx.beginPath(); ctx.arc(ln.x * dpr, ln.y * dpr, lr * dpr, Math.PI / 2 + 0.85, Math.PI * 2.5 - 0.85); ctx.stroke();
+                  ctx.restore();
+                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
+                  rcPill(jtx - jtw / 2 - 6 * dpr, jty - 10 * dpr, jtw + 12 * dpr, 14 * dpr, 4 * dpr);
+                  ctx.fillStyle = '#c2410c'; ctx.fill();
+                  ctx.fillStyle = '#ffffff'; ctx.fillText(jTag, jtx, jty + 1 * dpr);
+                }
+              }
 
               // ── HUD ──
 
@@ -14366,24 +14662,54 @@ const d = labToolData.rockCycle || {};
               } catch (e) {}
             }
 
+            // Picking a process from the diagram: the mission panel asks for
+            // "an arrow", and until now the arrows could not be clicked.
+            function rcSelectProcess(i) {
+              var proc = PROCESSES[i];
+              if (!proc) return;
+              canvasEl.dataset.selectedProc = String(i);
+              upd('selectedProcess', proc);
+              if (_rcInitBox.onPick) _rcInitBox.onPick(i);
+              if (rcMotionReduced) draw();
+              try {
+                if (typeof announceToSR === 'function') {
+                  var fr = ROCKS.find(function (r) { return r.id === proc.from; }), to = ROCKS.find(function (r) { return r.id === proc.to; });
+                  announceToSR(proc.label + ', ' + (fr ? fr.label : proc.from) + ' \u2192 ' + (to ? to.label : proc.to) + ' ' + __alloT('stem.rocks.selected_word', 'selected') + '. ' + proc.desc);
+                }
+              } catch (e) {}
+            }
             function onRockCycleClick(e) {
-
               var rect = canvasEl.getBoundingClientRect();
-
               var mx = (e.clientX - rect.left) / rect.width * (cW / dpr);
-
               var my = (e.clientY - rect.top) / rect.height * (cH / dpr);
-
+              var hitNode = false;
               ROCKS.forEach(function (rock) {
-
                 var n = nodes[rock.id];
-
                 var dist = Math.sqrt((mx - n.x) * (mx - n.x) + (my - n.y) * (my - n.y));
-
-                if (dist < 40) rcSelectFamily(rock);
-
+                if (dist < 40) { rcSelectFamily(rock); hitNode = true; }
               });
-
+              if (hitNode) return;
+              var best = -1, bestD = 12;
+              PROCESSES.forEach(function (proc, i) {
+                var fN = nodes[proc.from], tN = nodes[proc.to];
+                if (!fN || !tN) return;
+                var bw = i >= 3 ? -0.34 : 0.2;
+                var cmX = (fN.x + tN.x) / 2 + (tN.y - fN.y) * bw, cmY = (fN.y + tN.y) / 2 - (tN.x - fN.x) * bw;
+                for (var si = 0; si <= 60; si++) {
+                  var tq = si / 60;
+                  var qx = (1 - tq) * (1 - tq) * fN.x + 2 * (1 - tq) * tq * cmX + tq * tq * tN.x;
+                  var qy = (1 - tq) * (1 - tq) * fN.y + 2 * (1 - tq) * tq * cmY + tq * tq * tN.y;
+                  var dd = Math.sqrt((qx - mx) * (qx - mx) + (qy - my) * (qy - my));
+                  if (dd < bestD) { bestD = dd; best = i; }
+                }
+              });
+              if (best >= 0) rcSelectProcess(best);
+            }
+            // React changes the selected process and the journey through data
+            // attributes; with reduced motion there is no frame loop to notice.
+            if (typeof MutationObserver === 'function') {
+              canvasEl._rcObs = new MutationObserver(function () { if (rcMotionReduced && rcAlive) draw(); });
+              canvasEl._rcObs.observe(canvasEl, { attributes: true, attributeFilter: ['data-selected-proc', 'data-journey', 'data-selected-rock'] });
             }
             canvasEl.addEventListener('click', onRockCycleClick);
 
@@ -14416,6 +14742,9 @@ const d = labToolData.rockCycle || {};
           // property does NOT change rockCycleCanvasRef's identity, so React keeps
           // the canvas mounted across re-renders.
           _rcInitBox.fn = initRockCycleCanvas;
+          // An arrow clicked on the diagram answers the open case with this
+          // render's state (the canvas listeners are bound once, at init).
+          _rcInitBox.onPick = rcPathPick;
 
 
           var viewedFamilies = Object.keys(d.rcViewed || {}).length;
@@ -14473,9 +14802,128 @@ const d = labToolData.rockCycle || {};
                 "aria-label": __alloT('stem.rocks.rc_canvas_aria',
                   "Rock cycle diagram: an Earth cross-section with a magma chamber below. Three rock family nodes — igneous at the top, metamorphic at lower left, sedimentary at lower right — are joined by six curved arrows, one per transformation pathway.")
                   + " " + __alloT('stem.rocks.rc_canvas_keys', "Press 1 for igneous, 2 for sedimentary, 3 for metamorphic.")
-                  + (sel ? " " + __alloT('stem.rocks.rc_canvas_selected', "Currently selected:") + " " + sel.label + "." : ""),
-                "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
+                  + (sel ? " " + __alloT('stem.rocks.rc_canvas_selected', "Currently selected:") + " " + sel.label + "." : "")
+                  + " " + __alloT('stem.rock_cycle.canvas_arrow_hint', 'Click an arrow to see its process.')
+                  + (d.selectedProcess && typeof d.selectedProcess.label === 'string' ? " " + __alloT('stem.rock_cycle.canvas_proc_selected', 'Selected process:') + " " + d.selectedProcess.label + "." : "")
+                  + (rcJourneySteps.length ? " " + __alloT('stem.rock_cycle.canvas_journey', 'Your rock\'s journey is marked with numbered steps.') : ""),
+                "data-selected-rock": d.selectedRock || '',
+                "data-selected-proc": (function () {
+                  if (rcPathLit !== null) return rcPathLit >= 0 ? String(rcPathLit) : '';
+                  var sp = d.selectedProcess;
+                  if (!sp || typeof sp !== 'object') return '';
+                  for (var pi = 0; pi < PROCESSES.length; pi++) { if (PROCESSES[pi].from === sp.from && PROCESSES[pi].to === sp.to) return String(pi); }
+                  return '';
+                })(),
+                "data-journey": rcJourneySteps.map(function (st) { return rcSpecimen(st.from).family + '>' + rcSpecimen(st.to).family; }).join(','),
+                style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
 
+            ),
+
+            // ══ Path detective ══
+            // A rock's story; the student names the arrow it took, on the diagram
+            // or with the buttons here (the keyboard and screen-reader route). A
+            // wrong pick gets a hint aimed at THAT pick; the answer shows only
+            // once earned (right, or "Show me" after two misses). Then the arrow
+            // lights on the diagram, the chip plays the change and the clue words
+            // in the story are marked. The rock is drawn as it looks, not in its
+            // family colour, so naming its family is still the student's job.
+            React.createElement("section", {
+              "data-rc-path": !rcPath ? 'intro' : rcPath.done ? 'done' : rcPath.i + ':' + (rcPath.solved ? 'solved' : rcPath.shown ? 'shown' : 'open'),
+              "aria-labelledby": "rc-path-title",
+              className: "rounded-xl border-2 border-sky-300 bg-sky-50 p-3 sm:p-4 mb-3"
+            },
+              React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" },
+                React.createElement("h4", { id: "rc-path-title", className: "text-sm font-black text-sky-900" }, "🔍 " + __alloT('stem.rock_cycle.pd_title', 'Path detective')),
+                rcPath && (function () {
+                  var firstTry = Object.keys(rcPath.log).filter(function (k) { return rcPath.log[k] === 1; }).length;
+                  var solvedN = Object.keys(rcPath.log).length;
+                  return React.createElement("div", { className: "ml-auto flex items-center gap-1", role: "img", "data-rc-path-score": firstTry + '/' + solvedN,
+                    "aria-label": __alloT('stem.rock_cycle.pd_score_aria', '{n} of {total} cases solved, {k} on the first try.').replace('{n}', solvedN).replace('{total}', RC_PATH_CASES.length).replace('{k}', firstTry) },
+                    RC_PATH_CASES.map(function (c, ci) {
+                      var r = rcPath.log[ci], here = !rcPath.done && ci === rcPath.i;
+                      return React.createElement("span", { key: c.id, "data-rc-path-dot": r === 1 ? 'first' : r === 0 ? 'later' : 'open',
+                        className: "inline-block w-2.5 h-2.5 rounded-full border " + (r === 1 ? 'bg-emerald-600 border-emerald-800' : r === 0 ? 'bg-amber-400 border-amber-700' : 'bg-white border-slate-400') + (here ? ' ring-2 ring-sky-600 ring-offset-1' : '') });
+                    }));
+                })()
+              ),
+
+              !rcPath && React.createElement("div", null,
+                React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                  __alloT('stem.rock_cycle.pd_intro', 'Read what happened to a real rock, then click the arrow it took on the diagram. The story holds the clues.')),
+                React.createElement("button", { type: "button", "data-rc-path-start": true,
+                  onClick: function () { updMulti({ rcPath: { on: true, i: 0, picks: [], shown: false, log: {}, done: false } }); sfxRockClick(); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
+                  "🔍 " + __alloT('stem.rock_cycle.pd_start', 'Start a case'))
+              ),
+
+              rcPath && rcPath.done && (function () {
+                var firstTry = Object.keys(rcPath.log).filter(function (k) { return rcPath.log[k] === 1; }).length;
+                return React.createElement("div", { "data-rc-path-summary": firstTry },
+                  React.createElement("p", { className: "text-sm font-bold text-slate-900 mb-1" },
+                    __alloT('stem.rock_cycle.pd_done', 'You traced all {total} paths, {k} on the first try.').replace('{total}', RC_PATH_CASES.length).replace('{k}', firstTry)),
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" },
+                    __alloT('stem.rock_cycle.pd_done_note', 'Every arrow was used, the shortcuts too. What decides the path is what happens to the rock, not a fixed order.')),
+                  React.createElement("button", { type: "button", "data-rc-path-again": true,
+                    onClick: function () { updMulti({ rcPath: { on: true, i: 0, picks: [], shown: false, log: {}, done: false } }); sfxRockClick(); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
+                    "🔄 " + __alloT('stem.rock_cycle.pd_again', 'Play again')));
+              })(),
+
+              rcPathCase && (function () {
+                var c = rcPathCase, sp = rcSpecimen(c.rock);
+                var look = RK_ROCKS.find(function (r) { return r.id === c.rock; });
+                var over = rcPath.solved || rcPath.shown;
+                var wrong = rcPath.picks.filter(function (k) { return k !== c.ans; });
+                var last = rcPath.picks.length ? rcPath.picks[rcPath.picks.length - 1] : -1;
+                var ansP = PROCESSES[c.ans];
+                var fb = rcPath.solved ? 'right' : rcPath.shown ? 'shown' : last >= 0 ? 'hint' : 'none';
+                return React.createElement("div", null,
+                  React.createElement("div", { className: "flex items-start gap-3 mb-2" },
+                    React.createElement("div", { className: "shrink-0 rounded-lg border border-slate-300 bg-white p-1", "aria-hidden": true }, look ? rkRockSwatch(h, look, 48) : null),
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-slate-700" },
+                        __alloT('stem.rock_cycle.pd_case', 'Case {n}').replace('{n}', rcPath.i + 1) + ' · ' + sp.label),
+                      React.createElement("p", { className: "text-sm text-slate-900 leading-relaxed", "data-rc-path-story": c.id }, rcPathStory(c, over)))),
+                  !over && React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-900 mb-1.5" },
+                    __alloT('stem.rock_cycle.pd_ask', 'Which arrow did it take? Click it on the diagram, or choose here:')),
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-2", role: "group", "aria-label": __alloT('stem.rock_cycle.pd_choices', 'The six arrows') },
+                    PROCESSES.map(function (pr, k) {
+                      var isAns = over && k === c.ans, isWrong = wrong.indexOf(k) >= 0;
+                      return React.createElement("button", { key: k, type: "button", "data-rc-path-pick": k + (isAns ? ':answer' : isWrong ? ':wrong' : ''),
+                        "aria-pressed": k === last,
+                        "aria-label": rcFamilyLabel(pr.from) + ' → ' + rcFamilyLabel(pr.to) + ', ' + pr.label
+                          + (isWrong ? '. ' + __alloT('stem.rock_cycle.pd_not_this', 'Not this one.') : isAns ? '. ' + __alloT('stem.rock_cycle.pd_this_one', 'This one.') : ''),
+                        onClick: function () { rcPathPick(k); },
+                        className: "min-w-0 flex items-center gap-1.5 p-1.5 rounded-lg border-2 text-left transition-colors "
+                          + (isAns ? 'bg-emerald-50 border-emerald-600' : isWrong ? 'bg-red-50 border-red-600' : 'bg-white border-slate-300 hover:border-sky-600') },
+                        rcFamilyChip(h, 'pd' + k + 'f', pr.from, 20),
+                        React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-700", "aria-hidden": true }, "→"),
+                        rcFamilyChip(h, 'pd' + k + 't', pr.to, 20),
+                        React.createElement("span", { className: "min-w-0 text-[0.6875rem] font-bold text-slate-800 leading-tight break-words" }, pr.label),
+                        (isWrong || isAns) && React.createElement("span", { className: "ml-auto text-xs font-black " + (isAns ? 'text-emerald-800' : 'text-red-800'), "aria-hidden": true }, isAns ? '✓' : '✗'));
+                    })),
+                  React.createElement("div", { "aria-live": "polite", "data-rc-path-feedback": fb },
+                    fb === 'right' && React.createElement("div", { className: "rounded-lg border border-emerald-300 bg-emerald-50 p-2.5" },
+                      React.createElement("p", { className: "text-xs font-black text-emerald-900 mb-0.5" }, "✓ " + __alloT('stem.rock_cycle.pd_right', 'Right!') + (rcPath.picks.length === 1 ? ' ' + __alloT('stem.rock_cycle.pd_first_try', 'First try.') : '')),
+                      React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, rcPathWhy(c)),
+                      React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-1" }, __alloT('stem.rock_cycle.pd_clues_marked', 'The clues are marked in the story. Watch the arrow on the diagram.'))),
+                    fb === 'shown' && React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 p-2.5" },
+                      React.createElement("p", { className: "text-xs font-black text-amber-900 mb-0.5" },
+                        __alloT('stem.rock_cycle.pd_it_took', 'It took {from} → {to}, by {process}.').replace('{from}', rcFamilyLabel(ansP.from)).replace('{to}', rcFamilyLabel(ansP.to)).replace('{process}', ansP.label)),
+                      React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, rcPathWhy(c))),
+                    fb === 'hint' && React.createElement("div", { className: "rounded-lg border border-red-300 bg-red-50 p-2.5" },
+                      React.createElement("p", { className: "text-xs font-black text-red-800 mb-0.5" }, "✗ " + __alloT('stem.rock_cycle.pd_not_yet', 'Not that one.')),
+                      React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, rcPathHint(c, last, wrong.length)))),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" },
+                    !over && wrong.length >= 2 && React.createElement("button", { type: "button", "data-rc-path-show": true,
+                      onClick: function () { var np = rcPathReveal(rcPath); if (np !== rcPath) updMulti({ rcPath: np, selectedProcess: ansP }); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-amber-600 bg-white text-amber-900 hover:bg-amber-50 transition-colors" },
+                      __alloT('stem.rock_cycle.pd_show', 'Show me')),
+                    over && React.createElement("button", { type: "button", "data-rc-path-next": true,
+                      onClick: function () { updMulti({ rcPath: rcPathNext(rcPath) }); sfxRockClick(); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors" },
+                      rcPath.i + 1 >= RC_PATH_CASES.length ? __alloT('stem.rock_cycle.pd_finish', 'See how you did') : __alloT('stem.rock_cycle.pd_next', 'Next case') + ' →')));
+              })()
             ),
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
@@ -14685,6 +15133,23 @@ const d = labToolData.rockCycle || {};
               // must not rewrite the animation under the student.
               var liveRec = running ? (d.transformationRun || mPreview) : (result || mPreview);
               var liveSpec = rcSpecimen((running && d.transformationRun ? d.transformationRun.fromId : null) || (result ? result.fromId : null) || mSpecId);
+              // ── The journey: each step a specimen, an agent and what it became ──
+              var journey = rcJourneySteps;
+              var famOf = function (id) { return rcSpecimen(id).family; };
+              var stepKind = function (st) {
+                var a = famOf(st.from), b = famOf(st.to);
+                return a === b ? 'stay' : RC_LOOP[a] === b ? 'loop' : 'branch';
+              };
+              var nextOf = function (rec) { return rec && RC_NEXT[rec.fromId] ? RC_NEXT[rec.fromId][rec.agentId] || null : null; };
+              var rcKeepGoing = function () {
+                var nx = nextOf(result);
+                if (!nx) return;
+                // A run from somewhere else starts a new journey.
+                var base = journey.length && journey[journey.length - 1].to === result.fromId ? journey : [];
+                updMulti({ rcJourney: base.concat([{ from: result.fromId, agent: result.agentId, to: nx }]), startingRock: nx, geologicalAgent: null,
+                  transformationAnimActive: false, transformationProgress: 0, transformationResult: null, transformationRun: null });
+                sfxRockClick();
+              };
 
               // ── Stage caption ──
               var stageIdx = Math.min(3, Math.floor(prog / 25));
@@ -14980,6 +15445,52 @@ const d = labToolData.rockCycle || {};
                   React.createElement("span", { className: "font-bold text-orange-800" + onHostInk }, mPreview.product)
                 ),
 
+                // ── The journey so far ──
+                journey.length > 0 && (function () {
+                  var ids = [journey[0].from].concat(journey.map(function (st) { return st.to; }));
+                  var fams = {};
+                  ids.forEach(function (id) { fams[famOf(id)] = true; });
+                  var full = fams.igneous && fams.sedimentary && fams.metamorphic;
+                  var shortcuts = journey.filter(function (st) { return stepKind(st) === 'branch'; }).length;
+                  var chip = function (id, key, now) {
+                    var sp = rcSpecimen(id);
+                    return React.createElement("span", { key: key, className: "inline-flex flex-col items-center gap-0.5", "data-rc-journey-rock": id + (now ? ':now' : '') },
+                      React.createElement("svg", { width: 44, height: 34, viewBox: '0 0 44 34', "aria-hidden": true, className: "rounded-md", style: { outline: now ? '2px solid #c2410c' : 'none', outlineOffset: 2 } },
+                        rcSwatch(h, 'jr' + key, sp.texture, sp.family, 1, 1, 42, 32, 1)),
+                      React.createElement("span", { className: "text-[0.6875rem] font-black text-slate-900 leading-none" }, sp.label));
+                  };
+                  var parts = [chip(ids[0], 'c0', ids.length === 1)];
+                  journey.forEach(function (st, i) {
+                    var ag = rcAgent(st.agent), rec = rcLookup(st.from, st.agent);
+                    var kind = stepKind(st);
+                    parts.push(React.createElement("span", { key: 'a' + i, className: "inline-flex flex-col items-center px-1", "data-rc-journey-step": st.from + '>' + st.agent + '>' + st.to + ':' + kind,
+                      title: (rec ? rec.product + ' · ' + rec.time : '') },
+                      React.createElement("span", { className: "text-base leading-none", "aria-hidden": true }, ag ? ag.icon : ''),
+                      React.createElement("span", { "aria-hidden": true, className: "text-lg font-black leading-none", style: { color: kind === 'branch' ? '#7c3aed' : '#c2410c' } }, '\u2192'),
+                      React.createElement("span", { className: "text-[0.625rem] font-bold leading-none " + (kind === 'branch' ? "text-violet-800" : kind === 'stay' ? "text-slate-600" : "text-orange-800") },
+                        kind === 'branch' ? __alloT('stem.rock_cycle.jr_shortcut', 'shortcut') : kind === 'stay' ? __alloT('stem.rock_cycle.jr_stay', 'same family') : __alloT('stem.rock_cycle.jr_loop', 'next in the loop'))));
+                    parts.push(chip(st.to, 'c' + (i + 1), i === journey.length - 1));
+                  });
+                  return React.createElement("div", { className: "mb-2 rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 via-amber-50 to-violet-50 p-2.5", "data-rc-journey": journey.length + ':' + (full ? 'full' : 'part'),
+                    role: "group", "aria-label": __alloT('stem.rock_cycle.jr_title', 'Your rock\'s journey') + ': ' + ids.map(function (id) { return rcSpecimen(id).label; }).join(', ') },
+                    React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1.5" },
+                      React.createElement("span", { className: "text-xs font-black text-orange-900" }, "\u{1F9ED} " + __alloT('stem.rock_cycle.jr_title', 'Your rock\'s journey')),
+                      React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, journey.length + ' ' + (journey.length === 1 ? __alloT('stem.rock_cycle.jr_step', 'step') : __alloT('stem.rock_cycle.jr_steps', 'steps')) + ', ' + __alloT('stem.rock_cycle.jr_each_time', 'each taking thousands to millions of years')),
+                      React.createElement("button", { type: "button", "data-rc-journey-reset": true, onClick: function () { upd('rcJourney', []); sfxRockClick(); },
+                        className: "ml-auto text-[0.6875rem] font-bold text-slate-800 underline hover:text-slate-950" }, __alloT('stem.rock_cycle.jr_new', 'Start a new journey'))),
+                    React.createElement("div", { className: "flex flex-wrap items-end gap-1" }, parts),
+                    React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2 text-[0.6875rem]" },
+                      ['igneous', 'sedimentary', 'metamorphic'].map(function (f) {
+                        var been = !!fams[f];
+                        var rt = ROCKS.find(function (r) { return r.id === f; });
+                        return React.createElement("span", { key: f, "data-rc-journey-fam": f + ':' + (been ? 'yes' : 'no'), className: "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-bold " + (been ? "bg-white border-slate-400 text-slate-900" : "bg-white/50 border-dashed border-slate-300 text-slate-600") },
+                          (been ? '\u2714 ' : '') + (rt ? rt.label : f));
+                      })),
+                    full ? React.createElement("p", { className: "mt-1.5 text-xs font-black text-emerald-800", "data-rc-journey-full": true }, "\u{1F504} " + __alloT('stem.rock_cycle.jr_full', 'A full trip: your rock has been igneous, sedimentary and metamorphic.')) : null,
+                    shortcuts > 0 ? React.createElement("p", { className: "mt-1 text-[0.6875rem] text-violet-900 leading-snug", "data-rc-journey-shortcuts": shortcuts },
+                      __alloT('stem.rock_cycle.jr_shortcuts', 'Shortcuts the one-way loop leaves out:') + ' ' + shortcuts + '. ' + __alloT('stem.rock_cycle.jr_shortcuts_why', 'Rock can skip a family: it does not have to go round in order.')) : null);
+                })(),
+
                 // ── Visual scene ──
                 React.createElement("div", { className: "rounded-xl border border-slate-300 bg-slate-50 p-2 mb-2" }, rcScene()),
 
@@ -15017,7 +15528,16 @@ const d = labToolData.rockCycle || {};
                   React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" },
                     React.createElement("span", { className: "font-black text-orange-900" }, __alloT('stem.rocks.machine_how_you_know', "How you'd know: ")), result.evidence),
                   result.caveat && React.createElement("p", { className: "mt-2 text-[0.6875rem] text-slate-800 leading-relaxed bg-white border border-slate-300 rounded-lg p-2" },
-                    React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.machine_model_limit', "Model limit: ")), result.caveat)
+                    React.createElement("span", { className: "font-black text-slate-900" }, __alloT('stem.rocks.machine_model_limit', "Model limit: ")), result.caveat),
+                  nextOf(result)
+                    ? React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2", "data-rc-keep-going": nextOf(result) },
+                        React.createElement("button", { type: "button", onClick: rcKeepGoing,
+                          className: "px-3 py-1.5 min-h-[36px] rounded-lg bg-orange-700 hover:bg-orange-800 text-white text-xs font-black" },
+                          "\u21AA " + __alloT('stem.rock_cycle.jr_keep_going', 'Keep going with') + ' ' + rcSpecimen(nextOf(result)).label),
+                        React.createElement("span", { className: "text-[0.6875rem] text-slate-700" }, __alloT('stem.rock_cycle.jr_keep_hint', 'Put what it became back in the machine and follow one rock round the cycle.')))
+                    : React.createElement("p", { className: "mt-2 text-[0.6875rem] text-slate-800 leading-snug", "data-rc-journey-end": result.fromId + '>' + result.agentId },
+                        React.createElement("span", { className: "font-black" }, result.product + ': '),
+                        __alloT('stem.rock_cycle.jr_end', 'the machine has no specimen for this rock, so a journey stops here. Try another agent.'))
                 ),
 
                 // Specimen note keeps the dropdown meaningful even before a run.

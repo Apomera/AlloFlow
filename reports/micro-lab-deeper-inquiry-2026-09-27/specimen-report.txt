@@ -1,0 +1,20 @@
+Mystery specimens
+Fictional teaching specimens. The observations support broad classifications, not species identification or safety decisions.
+
+F · An honest unknown
+Revision status: Working notes contain revisions that have not replaced the recorded report.
+Recorded claim: Not enough evidence to distinguish bacteria from archaea
+Recorded reasoning: The cells lack nuclei and divide independently. Both domains fit; membrane chemistry or DNA evidence could distinguish them.
+• The supplied cell map shows no membrane-bound nucleus. Cell-wall chemistry, membrane lipids, and DNA-sequence evidence are unavailable.
+• The cells divide and carry out metabolism independently. Both bacteria and archaea can do this.
+The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Current working notes
+My classification: Not enough evidence to distinguish bacteria from archaea
+My next question is which membrane lipids this cell contains.
+Current cited observations: Cell structure and chemistry; Behavior and reproduction
+Current conclusion about limits: The evidence supports a broad group or an unresolved classification; species and safety remain unknown.
+Revealed observations:
+Sample context: This fictional sample was collected from wet soil. Bacteria and archaea can both live there.
+Size and shape: The prepared image shows cells about 1 µm across. Their shape is not distinctive.
+Cell structure and chemistry: The supplied cell map shows no membrane-bound nucleus. Cell-wall chemistry, membrane lipids, and DNA-sequence evidence are unavailable.
+Behavior and reproduction: The cells divide and carry out metabolism independently. Both bacteria and archaea can do this.

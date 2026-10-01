@@ -21,7 +21,7 @@
 
 import fs from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, renderTool, resetStemLab } from './helpers/nuclear_lab_reference_harness.js';
 
 const SRC = fs.readFileSync('stem_lab/stem_tool_nuclearlab.js', 'utf8');
 

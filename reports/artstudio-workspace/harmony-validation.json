@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-30",
+  "scope": "Harmony Lab hue relationships, experiments, history, palette transfers, exports and workspace",
+  "sourceSHA256": "A0CF9B69206C153E115642A4AF64A078AFCD2A07DB1596961026D9ED641FF340",
+  "sourcePublicIdentical": true,
+  "tests": [
+    {
+      "report": "harmony-initial-results.json",
+      "files": 4,
+      "passed": 18,
+      "failed": 0
+    },
+    {
+      "report": "harmony-focused-results.json",
+      "files": 2,
+      "passed": 27,
+      "failed": 0,
+      "newCases": 27
+    },
+    {
+      "report": "harmony-regression-results.json",
+      "files": 20,
+      "passed": 184,
+      "failed": 2,
+      "resolution": "Obsolete translation-key and source-format expectations updated; both passed in final targeted run."
+    },
+    {
+      "report": "harmony-final-results.json",
+      "files": 4,
+      "passed": 35,
+      "failed": 0
+    }
+  ],
+  "latestScopedResults": {
+    "files": 20,
+    "passed": 186,
+    "unresolvedFailures": 0,
+    "method": "Latest result per file from broader regression and final targeted run"
+  },
+  "browser": {
+    "report": "harmony-browser-results.json",
+    "passed": true,
+    "pageErrors": 0,
+    "desktopViewport": [
+      1440,
+      1000
+    ],
+    "desktopWheelWidth": 760,
+    "phoneViewport": [
+      390,
+      844
+    ],
+    "phoneOverflow": false,
+    "phonePreviewFirst": true,
+    "touchTargetsMinPx": 44,
+    "nativeSliderGestureUndo": true,
+    "experimentRestoreUndo": true,
+    "svgDownloadDecodedDimensions": [
+      900,
+      1185
+    ],
+    "allTwelveColorsExported": true,
+    "cssDownloadMatchesEverySwatch": true,
+    "pixelPaintedRgbVerified": true,
+    "existingPixelPreserved": true,
+    "watercolorPigmentExact": true
+  },
+  "previews": [
+    "harmony-focus-desktop.png",
+    "harmony-phone-preview.png",
+    "harmony-phone-controls.png",
+    "harmony-export-preview.png"
+  ],
+  "registryKeysMatched": 59,
+  "newEnglishStrings": 57,
+  "syntaxCheck": true,
+  "spectralVendorCheck": true,
+  "scopedWhitespaceCheck": true,
+  "prePassPreservationDiffReviewed": true,
+  "committed": false,
+  "deployed": false
+}

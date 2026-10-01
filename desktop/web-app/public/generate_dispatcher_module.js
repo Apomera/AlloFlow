@@ -5,6 +5,70 @@ if (window.AlloModules && window.AlloModules.GenDispatcherModule) { console.log(
 // handleGenerate and curriculum-audit helpers — the resource-generation dispatcher.
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
+// Module-missing fallback. Mirrors InstructionalContext.deriveTextAccessPlan:
+// a grade-level text standard defaults to NO adapted companion (source
+// 'standard'); an educator's include/omit is kept; a default the workflow or a
+// standard made earlier is derived again. Parity: tests/text_access_parity.test.js.
+const _dispatcherTextAccessFallback = (raw, standardsContext, standardsInput = '') => {
+    const isObj = value => !!value && typeof value === 'object' && !Array.isArray(value);
+    const source = isObj(raw) ? raw : {};
+    const clean = (value, limit) => value === undefined || value === null ? '' : String(value).replace(/\s+/g, ' ').trim().slice(0, limit);
+    const context = isObj(standardsContext) ? standardsContext : {};
+    const entries = Array.isArray(context.standards) ? context.standards : [];
+    const named = value => isObj(value) && clean(value.textAccessExpectation, 80) !== 'unspecified';
+    const entry = entries.find(item => item && named(item.instructionalConstraints));
+    const constraints = (named(context.instructionalConstraints) && context.instructionalConstraints)
+        || (entry && entry.instructionalConstraints)
+        || (isObj(context.instructionalConstraints) ? context.instructionalConstraints : {});
+    const expectation = clean(constraints.textAccessExpectation, 80) || 'unspecified';
+    const sourced = constraints.sourced === true
+        || !!clean(constraints.basis || constraints.authority || constraints.sourceUrl || constraints.url, 600);
+    const searchable = [standardsInput, context.inputText, context.promptText]
+        .concat(...entries.map(item => isObj(item)
+            ? [item.code, item.label, item.text, item.statement, item.description] : [item]))
+        .map(value => clean(value, 3600)).filter(Boolean).join(' ');
+    const complexity = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+        || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+    const requiresPrimary = expectation === 'preserve-primary' || expectation === 'adaptation-prohibited' || complexity;
+    const prohibition = sourced && expectation === 'adaptation-prohibited';
+    const requested = clean(source.adaptedTextPolicy, 40);
+    const priorSource = clean(source.adaptedTextPolicySource, 40);
+    const derivedEarlier = (priorSource === 'workflow-default' && requested === 'include')
+        || (priorSource === 'standard' && requested === 'omit');
+    const explicit = derivedEarlier ? '' : requested;
+    const valid = ['include', 'omit', 'prohibited'].includes(explicit);
+    const standardOmit = requiresPrimary && !valid;
+    let policy = valid ? explicit : (standardOmit ? 'omit' : 'include');
+    if (policy === 'prohibited' && !prohibition) policy = 'omit';
+    if (prohibition) policy = 'prohibited';
+    let decision = derivedEarlier ? '' : priorSource;
+    if (prohibition || standardOmit) decision = 'standard';
+    else if (explicit === 'prohibited') decision = 'educator';
+    else if (!['educator', 'standard', 'workflow-default'].includes(decision)) decision = explicit ? 'educator' : 'workflow-default';
+    const explicitAccess = clean(source.primaryTextAccess, 40);
+    return {
+        primaryTextAccess: requiresPrimary ? 'required' : (['required', 'available'].includes(explicitAccess) ? explicitAccess : 'available'),
+        adaptedTextPolicy: policy,
+        adaptedTextPolicySource: decision,
+        textAccessReason: prohibition ? 'sourced-adaptation-prohibition'
+            : (expectation === 'preserve-primary' && sourced ? 'sourced-primary-text-requirement'
+                : (complexity ? 'standard-text-complexity-requirement'
+                    : (explicit ? 'educator-choice' : (standardOmit ? 'standard-primary-text-requirement' : 'default-access-companion')))),
+        standardRequiresPrimary: requiresPrimary,
+        sourcedAdaptationProhibition: prohibition,
+    };
+};
+const _dispatcherFallbackInstructionalContext = (provided, defaults, standardsInput) => {
+    const raw = provided && typeof provided === 'object' ? provided : null;
+    const access = _dispatcherTextAccessFallback(raw, (raw && raw.standardsContext) || defaults.standardsContext, standardsInput);
+    return Object.assign({}, defaults, raw || {}, {
+        primaryTextAccess: access.primaryTextAccess,
+        adaptedTextPolicy: access.adaptedTextPolicy,
+        adaptedTextPolicySource: access.adaptedTextPolicySource,
+        textAccessReason: access.textAccessReason,
+    });
+};
+
 // Reuse text-free glossary illustrations across language/grade passes in this
 // session. Exact definitions deduplicate automatically; paraphrases may reuse
 // only a same-term, same-sense reference explicitly selected by the text model.
@@ -2427,6 +2491,30 @@ const activityDerivativeFingerprint = (activity, kind) => {
     }
     return (hash >>> 0).toString(36);
 };
+// What a guide, worksheet, rubric or cover was made from: the activity without its
+// own derivatives. Recorded when a derivative is created or edited, so an activity
+// edited afterwards shows its derivatives as needing review (never regenerated).
+const ACTIVITY_NON_SOURCE_KEYS = ['guide', 'worksheet', 'rubric', 'coverImage', 'derivatives', 'generationMeta'];
+const _activityStableJson = (value) => {
+    if (Array.isArray(value)) return '[' + value.map(_activityStableJson).join(',') + ']';
+    if (value && typeof value === 'object') return '{' + Object.keys(value).sort().filter(key => value[key] !== undefined).map(key => JSON.stringify(key) + ':' + _activityStableJson(value[key])).join(',') + '}';
+    return value === undefined || typeof value === 'function' ? 'null' : JSON.stringify(value);
+};
+const activitySourceFingerprint = (activity) => {
+    if (!activity || typeof activity !== 'object') return null;
+    const source = {};
+    Object.keys(activity).forEach(key => { if (!ACTIVITY_NON_SOURCE_KEYS.includes(key)) source[key] = activity[key]; });
+    const serialized = _activityStableJson(source);
+    let hash = 2166136261;
+    for (let i = 0; i < serialized.length; i += 1) hash = Math.imul(hash ^ serialized.charCodeAt(i), 16777619);
+    return (hash >>> 0).toString(36);
+};
+const activityDerivativeNeedsReview = (activity, kind) => {
+    if (!activity || typeof activity !== 'object' || !activityDerivativeHasValue(activity, kind)) return false;
+    const meta = activity.derivatives && activity.derivatives[kind];
+    const recorded = meta && typeof meta.sourceHash === 'string' ? meta.sourceHash : '';
+    return !!recorded && recorded !== activitySourceFingerprint(activity);
+};
 const activityArtifactId = (parentId, index, kind) => {
     const parent = String(parentId || 'activity').replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 80) || 'activity';
     const safeIndex = Number.isFinite(Number(index)) ? Math.max(0, Math.round(Number(index))) : 0;
@@ -2454,6 +2542,7 @@ const normalizeActivityDerivatives = (activity, parentId, index) => {
             lastError: prior.lastError ? String(prior.lastError).slice(0, 240) : null,
             sourceRevision: prior.sourceRevision == null ? null : String(prior.sourceRevision),
             contentHash: activityDerivativeFingerprint(source, kind),
+            sourceHash: typeof prior.sourceHash === 'string' ? prior.sourceHash : (hasValue && !Object.keys(prior).length ? activitySourceFingerprint(source) : null),
             pageDesignerDocumentId: prior.pageDesignerDocumentId ? String(prior.pageDesignerDocumentId) : null,
         };
     });
@@ -2476,6 +2565,7 @@ const stampActivityDerivative = (activity, parentId, index, kind, patch = {}) =>
         updatedAt: patch.updatedAt == null ? prior.updatedAt : String(patch.updatedAt),
         lastError: patch.lastError == null ? prior.lastError : String(patch.lastError).slice(0, 240),
         sourceRevision: patch.sourceRevision == null ? prior.sourceRevision : String(patch.sourceRevision),
+        sourceHash: hasValue && (patch.status === 'ready' || patch.status === 'edited') ? activitySourceFingerprint(source) : prior.sourceHash,
         pageDesignerDocumentId: patch.pageDesignerDocumentId == null ? prior.pageDesignerDocumentId : String(patch.pageDesignerDocumentId),
     };
     return { ...source, derivatives };
@@ -2485,6 +2575,144 @@ const attachActivityDerivativeMetadata = (content, parentId) => Array.isArray(co
         ? { ...item, derivatives: normalizeActivityDerivatives(item, parentId, index) }
         : item)
     : content;
+
+// Model JSON drifts (objects for strings, strings for arrays). The Analysis view
+// reads these fields directly, so give it one shape and count what was unreadable.
+const _analysisFieldText = (value, keys) => {
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'number') return String(value);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+    const named = (keys || []).map(key => _analysisFieldText(value[key], [])).filter(Boolean);
+    if (named.length) return named.join(' - ');
+    return Object.keys(value).map(key => typeof value[key] === 'string' ? value[key].trim() : '').filter(Boolean).join(' - ');
+};
+const _analysisGrammarText = (value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return _analysisFieldText(value, []);
+    const pick = keys => _analysisFieldText(keys.map(key => value[key]).find(v => _analysisFieldText(v, [])), []);
+    const original = pick(['error', 'original', 'issue', 'incorrect', 'mistake', 'problem', 'text', 'sentence', 'note']);
+    const correction = pick(['correction', 'suggestion', 'corrected', 'fix', 'replacement']);
+    const why = pick(['explanation', 'reason', 'rule', 'type', 'description']);
+    const text = [original && correction ? original + ' -> ' + correction : (original || correction), why].filter(Boolean).join(': ');
+    return text || _analysisFieldText(value, []);
+};
+const normalizeAnalysisResult = (raw) => {
+    const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    const toList = (value, mapItem) => {
+        const items = Array.isArray(value) ? value : (value == null || value === '' ? [] : [value]);
+        let unreadable = 0;
+        const list = [];
+        items.forEach(item => { const text = mapItem(item); if (text) list.push(text); else if (item && typeof item === 'object') unreadable++; });
+        return { list, unreadable };
+    };
+    const noteKeys = ['text', 'claim', 'fact', 'finding', 'issue', 'error', 'description', 'detail', 'correction', 'explanation'];
+    let readingLevel = source.readingLevel;
+    if (typeof readingLevel === 'string' || typeof readingLevel === 'number') readingLevel = { range: String(readingLevel), explanation: 'AI did not provide detailed explanation.' };
+    else if (readingLevel && typeof readingLevel === 'object' && !Array.isArray(readingLevel)) readingLevel = { ...readingLevel, range: _analysisFieldText(readingLevel.range, ['range', 'level', 'grade']) || 'N/A', explanation: _analysisFieldText(readingLevel.explanation, []) };
+    else readingLevel = { range: 'N/A', explanation: 'Could not determine level.' };
+    const concepts = toList(source.concepts, item => _analysisFieldText(item, ['concept', 'term', 'name', 'title', 'label', 'text'])).list;
+    let accuracy = source.accuracy;
+    if (typeof accuracy === 'string') accuracy = { rating: 'Unknown', reason: accuracy };
+    if (!accuracy || typeof accuracy !== 'object' || Array.isArray(accuracy)) accuracy = { rating: 'Unknown', reason: 'Could not verify accuracy.' };
+    const discrepancies = toList(accuracy.discrepancies, item => _analysisFieldText(item, noteKeys));
+    const verifiedFacts = toList(accuracy.verifiedFacts, item => _analysisFieldText(item, noteKeys));
+    accuracy = { ...accuracy, rating: _analysisFieldText(accuracy.rating, ['rating', 'level']) || 'Unknown', reason: _analysisFieldText(accuracy.reason, []), discrepancies: discrepancies.list, verifiedFacts: verifiedFacts.list };
+    ['verificationDetails', 'citations'].forEach(key => { if (accuracy[key] != null && typeof accuracy[key] !== 'string') delete accuracy[key]; });
+    let grammarSource = source.grammar;
+    if (typeof grammarSource === 'string') grammarSource = grammarSource.split(/\n+/).map(line => line.replace(/^\s*(?:[-*]|\d+[.)])\s+/, '').trim()).filter(Boolean);
+    const grammar = toList(grammarSource, _analysisGrammarText);
+    const result = { readingLevel, concepts, accuracy, grammar: grammar.list,
+        translatedText: typeof source.translatedText === 'string' && source.translatedText.trim() ? source.translatedText : undefined };
+    if (grammar.unreadable) result.grammarUnreadable = grammar.unreadable;
+    if (discrepancies.unreadable) result.accuracy.discrepanciesUnreadable = discrepancies.unreadable;
+    return result;
+};
+// Cloud and local scaffold JSON share one list/paragraph shape; an empty result is an error, not a blank resource.
+const normalizeScaffoldContent = (raw, frameType) => {
+    let content = Array.isArray(raw) ? { items: raw } : (raw && typeof raw === 'object' ? { ...raw } : {});
+    if (content.mode !== 'list' && content.mode !== 'paragraph') content.mode = frameType === 'Paragraph Frame' ? 'paragraph' : 'list';
+    if (content.mode === 'list') {
+        const items = Array.isArray(content.items) ? content.items : (content.starters || content.prompts || content.questions || []);
+        content.items = (Array.isArray(items) ? items : [items]).map(item => {
+            if (typeof item === 'string' || typeof item === 'number') return { text: String(item).trim() };
+            if (!item || typeof item !== 'object') return null;
+            const text = _analysisFieldText(item.text, []) || _analysisFieldText(item, ['prompt', 'starter', 'question', 'frame']);
+            return text ? { ...item, text } : null;
+        }).filter(item => item && item.text);
+        if (!content.items.length) throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
+    } else {
+        content.text = typeof content.text === 'string' && content.text.trim() ? content.text : (typeof content.paragraph === 'string' ? content.paragraph : '');
+        if (!content.text.trim()) throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
+    }
+    if (frameType) content.frameType = frameType;
+    return content;
+};
+// Concept Sort answer key: a card's categoryId must name a category. Model ids
+// and labels are matched ignoring case/spacing; duplicates are merged; cards
+// that still match nothing are kept for the teacher to assign and left out of
+// play. Too few categories or placed cards is an error, not a blank board.
+const normalizeConceptSortContent = (raw) => {
+    const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    const key = v => String(v == null ? '' : v).trim().toLowerCase().replace(/\s+/g, ' ');
+    const byId = new Map(), byLabel = new Map(), categories = [];
+    (Array.isArray(src.categories) ? src.categories : []).forEach((c, i) => {
+        if (!c || typeof c !== 'object') return;
+        const label = String(c.label || c.name || '').trim();
+        if (!label) return;
+        let id = String(c.id == null ? '' : c.id).trim() || ('c' + (i + 1));
+        const known = byLabel.get(key(label)) || byId.get(key(id));
+        if (known) { byId.set(key(id), known); return; }
+        while (categories.some(x => x.id === id)) id += '_';
+        const cat = { ...c, id, label };
+        categories.push(cat);
+        byId.set(key(id), cat); byLabel.set(key(label), cat);
+    });
+    const seen = new Set(), usedIds = new Set(), items = [];
+    let orphanCount = 0;
+    (Array.isArray(src.items) ? src.items : []).forEach((it, i) => {
+        if (!it || typeof it !== 'object') return;
+        const content = String(it.content || it.text || it.label || '').trim();
+        if (!content || seen.has(key(content))) return;
+        seen.add(key(content));
+        const home = byId.get(key(it.categoryId)) || byLabel.get(key(it.categoryId));
+        let id = String(it.id == null ? '' : it.id).trim() || ('i' + (i + 1));
+        while (usedIds.has(id)) id += '_';
+        usedIds.add(id);
+        if (!home) orphanCount++;
+        items.push({ ...it, id, content, categoryId: home ? home.id : String(it.categoryId == null ? '' : it.categoryId) });
+    });
+    if (categories.length < 2 || items.length - orphanCount < 2) {
+        const error = new Error('The Concept Sort came back without enough categories and cards to sort. Please try again.');
+        error.conceptSortInvalid = true;
+        throw error;
+    }
+    return { ...src, categories, items };
+};
+// Cloud and local glossary/FAQ JSON share these; callers treat [] as a retryable failure.
+const _unwrapGeneratedList = (raw, keys) => {
+    if (Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== 'object') return [];
+    const lower = {};
+    Object.keys(raw).forEach(key => { lower[key.toLowerCase()] = raw[key]; });
+    for (const key of keys) if (Array.isArray(lower[key])) return lower[key];
+    const arrays = Object.values(raw).filter(Array.isArray);
+    return arrays.length === 1 ? arrays[0] : [];
+};
+const _generatedText = value => typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+const normalizeGlossaryTerms = (raw) => _unwrapGeneratedList(raw, ['terms', 'items', 'glossary', 'vocabulary', 'words', 'entries']).map(item => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+    const { definition, ...rest } = item;
+    const tierRaw = _generatedText(item.tier).toLowerCase();
+    const entry = { ...rest, term: _generatedText(item.term) || _generatedText(item.word), def: _generatedText(item.def) || _generatedText(definition),
+        tier: /domain|subject|tier\s*3|^3$/.test(tierRaw) ? 'Domain-Specific' : 'Academic' };
+    if (!entry.translations || typeof entry.translations !== 'object' || Array.isArray(entry.translations)) delete entry.translations;
+    return entry.term && entry.def ? entry : null;
+}).filter(Boolean);
+const normalizeFaqItems = (raw) => _unwrapGeneratedList(raw, ['faqs', 'faq', 'questions', 'items']).map(item => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+    const entry = { question: _generatedText(item.question) || _generatedText(item.q), answer: _generatedText(item.answer) || _generatedText(item.a) };
+    ['question_en', 'answer_en'].forEach(key => { const text = _generatedText(item[key]); if (text) entry[key] = text; });
+    return entry.question && entry.answer ? entry : null;
+}).filter(Boolean);
 
 // Enrich only the originating resource and unchanged cue. This function is
 // pure because React may evaluate a state updater more than once.
@@ -2531,16 +2759,34 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     // existing call sites stable while ensuring text requests can be cancelled
     // between resources instead of waiting for the full retry budget.
     const generationSignal = deps && deps.generationSignal;
+    const isGenerationCurrent = () => typeof deps?.isGenerationCurrent !== 'function' || deps.isGenerationCurrent() !== false;
     const throwIfGenerationAborted = () => {
-        if (generationSignal && generationSignal.aborted) {
+        if ((generationSignal && generationSignal.aborted) || !isGenerationCurrent()) {
             const abortError = new Error('Generation aborted');
             abortError.name = 'AbortError';
             throw abortError;
         }
     };
-    const callGemini = (...args) => {
+    const awaitGenerationResult = pending => {
+        if (!generationSignal || typeof generationSignal.addEventListener !== 'function') return Promise.resolve(pending);
+        return new Promise((resolve, reject) => {
+            const finish = (settle, value) => { generationSignal.removeEventListener('abort', onAbort); settle(value); };
+            const onAbort = () => {
+                const error = new Error('Generation aborted');
+                error.name = 'AbortError';
+                finish(reject, error);
+            };
+            generationSignal.addEventListener('abort', onAbort, { once: true });
+            Promise.resolve(pending).then(value => finish(resolve, value), error => finish(reject, error));
+            if (generationSignal.aborted) onAbort();
+        });
+    };
+    const callGemini = async (...args) => {
+        throwIfGenerationAborted();
         if (generationSignal && args[5] == null) args[5] = generationSignal;
-        return callGeminiBase(...args);
+        const result = await awaitGenerationResult(callGeminiBase(...args));
+        throwIfGenerationAborted();
+        return result;
     };
     // Shared alt-text drafting for generated images (window.AlloModules.AltText):
     // one batched vision call per resource, descriptions of the DRAWN pixels in
@@ -2565,29 +2811,41 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             entry.apply({ alt: result.alt, altSource: result.source, decorative: result.decorative === true, altHash: svc.hashImage(entry.dataUrl), matchesBrief: result.matchesBrief });
         });
     };
-    const callImagenWithSignal = (...args) => {
-        if (!generationSignal) return callImagen(...args);
-        const options = args[3];
-        args[3] = options && typeof options === 'object'
-            ? Object.assign({}, options, { signal: options.signal || generationSignal })
-            : { signal: generationSignal };
-        return callImagen(...args);
+    const callImagenWithSignal = async (...args) => {
+        throwIfGenerationAborted();
+        if (generationSignal) {
+            const options = args[3];
+            args[3] = options && typeof options === 'object'
+                ? Object.assign({}, options, { signal: options.signal || generationSignal })
+                : { signal: generationSignal };
+        }
+        const result = await awaitGenerationResult(callImagen(...args));
+        throwIfGenerationAborted();
+        return result;
     };
-    const callGeminiVisionWithSignal = (...args) => {
-        if (!generationSignal) return callGeminiVision(...args);
-        const options = args[3];
-        args[3] = options && typeof options === 'object'
-            ? Object.assign({}, options, { signal: options.signal || generationSignal })
-            : { signal: generationSignal };
-        return callGeminiVision(...args);
+    const callGeminiVisionWithSignal = async (...args) => {
+        throwIfGenerationAborted();
+        if (generationSignal) {
+            const options = args[3];
+            args[3] = options && typeof options === 'object'
+                ? Object.assign({}, options, { signal: options.signal || generationSignal })
+                : { signal: generationSignal };
+        }
+        const result = await awaitGenerationResult(callGeminiVision(...args));
+        throwIfGenerationAborted();
+        return result;
     };
-    const callGeminiImageEditWithSignal = (...args) => {
-        if (!generationSignal) return callGeminiImageEdit(...args);
-        const options = args[5];
-        args[5] = options && typeof options === 'object'
-            ? Object.assign({}, options, { signal: options.signal || generationSignal })
-            : { signal: generationSignal };
-        return callGeminiImageEdit(...args);
+    const callGeminiImageEditWithSignal = async (...args) => {
+        throwIfGenerationAborted();
+        if (generationSignal) {
+            const options = args[5];
+            args[5] = options && typeof options === 'object'
+                ? Object.assign({}, options, { signal: options.signal || generationSignal })
+                : { signal: generationSignal };
+        }
+        const result = await awaitGenerationResult(callGeminiImageEdit(...args));
+        throwIfGenerationAborted();
+        return result;
     };
     // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
     // Dynamic Assessment supports (visual organizers, sentence frames) route
@@ -2857,16 +3115,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             standardsInput: standardsInput || targetStandards,
             primaryTextPolicy: configOverride.primaryTextPolicy || 'preserve-primary'
         })
-        : (configOverride.instructionalContext || {
+        : _dispatcherFallbackInstructionalContext(configOverride.instructionalContext, {
             schemaVersion: 1,
             instructionalGrade: effectiveGrade,
             primaryTextPolicy: 'preserve-primary',
-            primaryTextAccess: 'available',
-            adaptedTextPolicy: 'include',
-            adaptedTextPolicySource: 'workflow-default',
-            textAccessReason: 'default-access-companion',
             standardsContext: _activeStandardsContext || null
-        });
+        }, standardsInput || targetStandards);
     const effectiveOutlineType = configOverride.outlineType || outlineType;
     // visualStyle === 'custom' means "use the user-typed phrase in visualCustomStyle"
     // (revealed by the dropdown when 'Custom' is selected). Empty custom field
@@ -3533,10 +3787,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         setIsPlaying(false);
     }
     generateHelpfulHint(type, textToProcess, false);
-    if (switchView) {
-        setGeneratedContent(null);
-        setActiveView('input');
-    }
+    // Keep the selected saved resource until a usable replacement is ready.
     let memoryProgress = null;
     let memoryBaseline = null;
     try {
@@ -3637,21 +3888,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('glossary'));
             setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
             const parsed = parseJsonLenient(result, {});
-            const parsedContent = unwrapArray(parsed, ['terms', 'items', 'glossary']).slice(0, localTermLimit)
-                .map(item => {
-                    const tierRaw = String((item && item.tier) || '').toLowerCase();
-                    const tier = tierRaw.includes('domain') || tierRaw.includes('tier 3') ? 'Domain-Specific' : 'Academic';
-                    const normalized = {
-                        term: String((item && item.term) || '').trim(),
-                        def: String((item && (item.def || item.definition)) || '').trim(),
-                        tier
-                    };
-                    if (item && item.translations && typeof item.translations === 'object') {
-                        normalized.translations = item.translations;
-                    }
-                    return normalized;
-                })
-                .filter(item => item.term && item.def);
+            const parsedContent = normalizeGlossaryTerms(parsed).slice(0, localTermLimit)
+                .map(({ term, def, tier, translations, emoji }) => ({ term, def, tier, ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
             if (!parsedContent.length) {
                 throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
             }
@@ -3750,13 +3988,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         setGenerationStatus(t('status_steps.extracting_vocab'), 'analyze');
         const result = await callGemini(prompt, true);
         try {
-            let parsedContent = JSON.parse(cleanJson(result));
-            if (!Array.isArray(parsedContent)) {
-                if (parsedContent.terms) parsedContent = parsedContent.terms;
-                else if (parsedContent.items) parsedContent = parsedContent.items;
-                else if (parsedContent.glossary) parsedContent = parsedContent.glossary;
-                else parsedContent = [];
-            }
+            const parsedContent = normalizeGlossaryTerms(JSON.parse(cleanJson(result)));
+            if (!parsedContent.length) throw new Error('The glossary response had no usable terms.');
             // Offline pre-warm: cache the authoritative dictionary entry for every term so
             // the whole glossary's vocabulary works OFFLINE before class — the Define popup,
             // both Pronounce popups, and Word Sounds all read this same localStorage cache.
@@ -4163,16 +4396,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           sourceSnapshot: _sourceSnapshot,
           ..._sourceUse
       };
-      // A re-level pass REPLACES the draft it is correcting instead of appending a
-      // second adapted text; the draft it replaces travels on the new item
-      // (relevelFrom) so the view can offer Undo.
-      setHistory(prev => configOverride.relevelReplaceId
-          ? prev.map(item => item.id === configOverride.relevelReplaceId ? tempItem : item)
-          : [...prev, tempItem]);
-      if (switchView || !generatedContent) {
-          setGeneratedContent(tempItem);
-          setActiveView('simplified');
-      }
+      // Drafts stay private until all required sections have usable text.
+      const replacementBaseline = configOverride.relevelReplaceId
+          ? generationHistory.find(item => item?.id === configOverride.relevelReplaceId)
+          : null;
+      const replacementBaselineKey = replacementBaseline ? JSON.stringify(replacementBaseline) : '';
       let fullTargetText = "";
       let fullEnglishText = "";
       let finalAdaptedItem = tempItem;
@@ -4198,8 +4426,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           const maxAttempts = keepCitations ? 2 : 1;
           let finalCheck = null;
           for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+              throwIfGenerationAborted();
               const raw = await transform(envelope.text, attempt > 1);
+              throwIfGenerationAborted();
               const cleaned = cleanModelText(raw);
+              if (!cleaned) throw new Error('The adaptation returned no usable text. Previously saved resources were kept.');
               if (!keepCitations) {
                   return { text: stripAuditCitationMarkup(cleaned), valid: true, attempts: attempt };
               }
@@ -4333,10 +4564,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               config: { ..._itemConfig, citationAudit: citationAuditSnapshot() }
           };
           finalAdaptedItem = updatedItem;
-          if (switchView || (generatedContent && generatedContent.id === newId)) {
-              setGeneratedContent(updatedItem);
-          }
-          setHistory(prev => prev.map(item => item.id === newId ? updatedItem : item));
           if (!isLast) await new Promise(r => setTimeout(r, 800));
       }
       if (!isMultiChunk) {
@@ -4420,10 +4647,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   config: { ..._itemConfig, citationAudit: citationAuditSnapshot() }
               };
               finalAdaptedItem = refinedItem;
-              if (switchView || (generatedContent && generatedContent.id === newId)) {
-                  setGeneratedContent(refinedItem);
-              }
-              setHistory(prev => prev.map(item => item.id === newId ? refinedItem : item));
           }
       }
       // ── Measured level, reported rather than discarded (C1, 2026-08-16) ──
@@ -4462,10 +4685,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               finalAdaptedItem.localStats = _measured;
               finalAdaptedItem.targetGradeLevel = effectiveGrade;
           }
-          if (switchView || (generatedContent && generatedContent.id === newId)) {
-              setGeneratedContent(finalAdaptedItem);
-          }
-          setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
       } else if (effectiveLanguage === 'English') {
           const _measured = calculateReadability(fullTargetText);
           if (_measured) {
@@ -4474,10 +4693,6 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   localStats: _measured,
                   targetGradeLevel: effectiveGrade
               };
-              if (switchView || (generatedContent && generatedContent.id === newId)) {
-                  setGeneratedContent(finalAdaptedItem);
-              }
-              setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
           }
       }
       // --- Automatic level check (judge once, re-level only on agreement) ------
@@ -4533,7 +4748,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   const _judgeRaw = await callGemini(_judgePrompt, true);
                   _judge = safeJsonParse(_judgeRaw);
                   if (!_judge) { try { _judge = JSON.parse(cleanJson(_judgeRaw)); } catch (_) { _judge = null; } }
-              } catch (_) { _judge = null; }
+              } catch (_judgeErr) { throwIfGenerationAborted(); _judge = null; }
               if (_judge && typeof _judge === 'object') {
                   const _rubric = _judge.rubric && typeof _judge.rubric === 'object' ? _judge.rubric : {};
                   const _dimKeys = ['vocabulary', 'sentenceStructure', 'conceptDensity'];
@@ -4586,8 +4801,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                       const _relevelled = await handleGenerate('simplified', langOverride, keepLoading, textOverride, {
                           ...configOverride,
                           relevelPass: 1,
+                          optionalRelevel: true,
+                          rethrowErrors: false,
                           relevelDirective: _directive,
-                          relevelReplaceId: newId,
+                          relevelReplaceId: configOverride.relevelReplaceId || null,
                           relevelFrom: {
                               fromText: fullTargetText,
                               fromLocalStats: _fkStats,
@@ -4599,13 +4816,35 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                           }
                       }, switchView, deps);
                       if (_relevelled) return _relevelled;
+                      throwIfGenerationAborted();
+                      finalAdaptedItem = { ...finalAdaptedItem, generationRecovery: {
+                          stage: 'automatic-relevel', status: 'failed', preserved: 'completed-adaptation',
+                          guidance: 'Review the reading level before delivery, or retry the level adjustment.'
+                      } };
+                      addToast('Automatic re-level did not finish. The completed adaptation was kept; review its reading level before delivery.', 'warning');
                   }
-                  if (switchView || (generatedContent && generatedContent.id === newId)) setGeneratedContent(finalAdaptedItem);
-                  setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
               }
           }
       } catch (_autoErr) {
+          throwIfGenerationAborted();
           try { console.warn('[AutoLevelCheck] skipped:', _autoErr && _autoErr.message); } catch (_) {}
+      }
+      throwIfGenerationAborted();
+      if (!fullTargetText.trim() || !String(finalAdaptedItem.data || '').trim()) throw new Error('The adaptation returned no usable text. Previously saved resources were kept.');
+      const canReplace = item => item?.id === configOverride.relevelReplaceId
+          && replacementBaselineKey && JSON.stringify(item) === replacementBaselineKey;
+      setHistory(prev => {
+          if (!isGenerationCurrent() || generationSignal?.aborted) return prev;
+          if (!configOverride.relevelReplaceId) return [...prev, finalAdaptedItem];
+          return prev.some(canReplace) ? prev.map(item => canReplace(item) ? finalAdaptedItem : item) : prev;
+      });
+      if (switchView || !generatedContent) {
+          setGeneratedContent(previous => {
+              if (!isGenerationCurrent() || generationSignal?.aborted) return previous;
+              if (configOverride.relevelReplaceId && !canReplace(previous)) return previous;
+              return finalAdaptedItem;
+          });
+          if (!configOverride.relevelReplaceId) setActiveView('simplified');
       }
       addToast(`${getDefaultTitle(type)} generated!`, "success");
       if (switchView) flyToElement('ui-tool-simplified');
@@ -4791,6 +5030,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
                 console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
             }
+            // A panel with no picture failed; mark it so the view offers a retry instead of a spinner.
+            (executedPlan?.panels || []).forEach(p => { if (p && !p.imageUrl) p.failed = true; });
             content = {
                 prompt: finalPrompt,
                 style: styleDescription,
@@ -4820,6 +5061,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         try {
             imageBase64 = await callImagenWithSignal(finalPrompt, targetWidth, targetQual);
         } catch(e) {
+            throwIfGenerationAborted();
             console.error('[VisualDebug] callImagen threw:', e);
             warnLog('Image generation failed:', e);
             if (typeof setError === 'function') setError(`Image generation failed: ${e?.message || e}`);
@@ -5091,6 +5333,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 ? [_xlate.enabled ? { text: 'Reflection prompt', text_en: glossLang + ' reflection prompt' } : 'Reflection prompt']
                 : [],
         }, null, 2);
+        // Answer-cue rules; option order is also re-balanced after generation.
+        const _answerCueRules = (_mcqCount + _multiSelectCount + _answerEvidenceCount) > 0
+            ? 'ANSWER-CUE RULES for choice items: write every option in parallel grammatical form with similar length and detail, so the correct option is not the longest, the shortest, or the most specific. Never use "all of the above", "none of the above", or options that combine or name other options. Do not put absolute words (always, never, only, every) only in the wrong options. Vary which position holds the correct answer.'
+            : '';
         let result = '';
         if (usesLocalTextBackend) {
         const prompt = `
@@ -5111,6 +5357,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_scoringInstruction}
           Follow the requested JSON example for each item type exactly. MCQs must have exactly 4 options and correctAnswer must exactly match one option. Every assessed item must include a short lowercase conceptLabel.
           ${_useMisconceptionDistractors ? 'Build MCQ distractors from common student misconceptions or predictable errors, not random wrong answers.' : ''}
+          ${_answerCueRules}
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery.' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each prompt must depict that option concretely.' : ''}
           ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
@@ -5145,6 +5392,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_reflectionInstruction}
           ${_scoringInstruction}
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
+          ${_answerCueRules}
           IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
@@ -5262,11 +5510,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     const checkPrompt = `
                         Verify the factual accuracy of this multiple choice question designed for a ${effectiveGrade} student.
                         Question: "${q.question}"
-                        Options: ${q.options.join(', ')}
+                        Options:
+                        ${q.options.map((option, optionIdx) => (optionIdx + 1) + '. ' + option).join('\n                        ')}
                         Indicated Correct Answer: "${q.correctAnswer}",
                         Task:
                         Determine if the indicated correct answer is the single, factually correct option. Then explain the correct answer and debunk the distractors.
                         Output Requirements:
+                        0. The FIRST line must be exactly [[KEY:CONFIRMED]] when the indicated answer is the single correct option. Otherwise it must be [[KEY:DISPUTED:n]], where n is the number of the single correct option, or 0 when no option or more than one option is correct.
                         1. If the Indicated Answer is CORRECT and UNIQUE:
                            Start immediately with: "**Verified Correct Answer:** [Full text of the correct option]".
                            Then follow with a concise explanation of why it is correct.
@@ -5285,7 +5535,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     `;
                     try {
                         const factCheckResult = await callGemini(checkPrompt);
-                        return { ...q, factCheck: factCheckResult };
+                        const _keyQuality = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.keyQuality;
+                        let _keyCheck = null;
+                        try { _keyCheck = _keyQuality && typeof _keyQuality.readFactCheck === 'function' ? _keyQuality.readFactCheck(factCheckResult, q) : null; } catch (_) {}
+                        return _keyCheck ? { ...q, factCheck: factCheckResult, keyCheck: _keyCheck } : { ...q, factCheck: factCheckResult };
                     } catch (err) {
                         warnLog(`Auto fact check failed for question ${idx}`, err);
                         return q;
@@ -5456,6 +5709,12 @@ ${_itemsBlock}`;
         }
         if (content && Array.isArray(content.reflections)) {
             content.reflections = content.reflections.slice(0, _reflectionCount);
+        }
+        // Balance which position holds each key; options, translations, and
+        // option images move together and keys stay stored as text.
+        const _keyQualityApi = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.keyQuality;
+        if (content && Array.isArray(content.questions) && _keyQualityApi && typeof _keyQualityApi.balanceChoiceKeys === 'function') {
+            try { content.questions = _keyQualityApi.balanceChoiceKeys(content.questions); } catch (balanceErr) { warnLog('[Quiz] Answer position balance skipped:', balanceErr); }
         }
         const _actualQuestions = content && Array.isArray(content.questions) ? content.questions : [];
         const _actualReflections = content && Array.isArray(content.reflections) ? content.reflections : [];
@@ -5649,13 +5908,7 @@ ${_itemsBlock}`;
                  };
              }
         }
-        analysisData = {
-             readingLevel: analysisData.readingLevel || { range: "N/A", explanation: "Could not determine level." },
-             concepts: Array.isArray(analysisData.concepts) ? analysisData.concepts : (analysisData.concepts ? [String(analysisData.concepts)] : []),
-             accuracy: analysisData.accuracy || { rating: "Unknown", reason: "Could not verify accuracy." },
-             grammar: Array.isArray(analysisData.grammar) ? analysisData.grammar : [],
-             translatedText: analysisData.translatedText
-        };
+        analysisData = normalizeAnalysisResult(analysisData);
         if (checkAccuracyWithSearch && !isSearchActive) {
             analysisData.accuracy = {
                 ...analysisData.accuracy,
@@ -5803,12 +6056,8 @@ ${_itemsBlock}`;
             assertLocalTaskSupported('strict-json', 'The FAQ');
             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('faq'));
             const parsed = parseJsonLenient(result, {});
-            content = unwrapArray(parsed, ['faqs', 'questions', 'items']).slice(0, localFaqCount)
-                .map(item => ({
-                    question: String((item && item.question) || '').trim(),
-                    answer: String((item && item.answer) || '').trim()
-                }))
-                .filter(item => item.question && item.answer);
+            content = normalizeFaqItems(parsed).slice(0, localFaqCount)
+                .map(({ question, answer }) => ({ question, answer }));
             if (!content.length) {
                 throw new Error("Failed to parse FAQ JSON. The AI response was not valid.");
             }
@@ -5834,14 +6083,9 @@ ${_itemsBlock}`;
         setGenerationStatus(t('status_steps.identifying_misconceptions'), 'analyze');
         const result = await callGemini(prompt, true);
         try {
-            let parsed = JSON.parse(cleanJson(result));
-            if (!Array.isArray(parsed)) {
-                 if (parsed.faqs) parsed = parsed.faqs;
-                 else if (parsed.questions) parsed = parsed.questions;
-                 else parsed = [];
-            }
-            content = parsed;
-            metaInfo = `${faqCount} Questions - ${effectiveGrade} - ${effectiveLanguage}`;
+            content = normalizeFaqItems(JSON.parse(cleanJson(result)));
+            if (!content.length) throw new Error('The FAQ response had no usable questions.');
+            metaInfo = `${content.length} Questions - ${effectiveGrade} - ${effectiveLanguage}`;
         } catch (parseErr) {
              warnLog("FAQ Parse Error:", parseErr);
              throw new Error("Failed to parse FAQ JSON. The AI response was not valid.");
@@ -6088,6 +6332,7 @@ ${_itemsBlock}`;
                  throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
              }
              content.rubric = content.rubric || "| Criteria | 1 | 3 | 5 |\n|---|---|---|---|\n| Content | Needs support | Clear | Strong and specific |\n| Use of Scaffold | Incomplete | Mostly complete | Complete and thoughtful |\n| Mechanics | Many errors | Some errors | Clear and polished |";
+             content.frameType = frameType;
              metaInfo = `${frameType} - ${effectiveLanguage} - Local`;
              setGenerationTaskProgress(1, 1, t('status_steps.constructing_scaffolds'));
          } else {
@@ -6123,14 +6368,7 @@ ${_itemsBlock}`;
          setGenerationStep(t('status_steps.constructing_scaffolds'));
          const result = await callGemini(prompt, true);
          try {
-             content = JSON.parse(cleanJson(result));
-             if (!content.mode) content.mode = frameType === 'Paragraph Frame' ? 'paragraph' : 'list';
-             if (content.mode === 'list' && (!content.items || !Array.isArray(content.items))) {
-                 content.items = content.starters || content.prompts || [];
-             }
-             if (content.mode === 'paragraph' && !content.text) {
-                 content.text = content.paragraph || "";
-             }
+             content = normalizeScaffoldContent(JSON.parse(cleanJson(result)), frameType);
              metaInfo = `${frameType} - ${effectiveLanguage}`;
          } catch (parseErr) {
              warnLog("Scaffolds Parse Error:", parseErr);
@@ -7263,6 +7501,12 @@ ${modeListForAuto}
              if (usesLocalTextBackend && (!content.categories.length || !content.items.length)) {
                  throw new Error("Local concept sort response did not include categories and items.");
              }
+             content = normalizeConceptSortContent(content);
+             const orphanCount = content.items.filter(it => !content.categories.some(c => c.id === it.categoryId)).length;
+             if (orphanCount) {
+                 const orphanMsg = t('concept_sort.orphans_generated', { count: orphanCount });
+                 addToast((orphanMsg && orphanMsg !== 'concept_sort.orphans_generated') ? orphanMsg : `${orphanCount} card(s) did not match a category. Assign them in the review panel before students play.`, 'warning');
+             }
              const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
              const itemsAreShort = content.items.length > 0 && content.items.every(it => wordCount(it.content) <= 6);
              const shouldGenerateImages =
@@ -7340,6 +7584,7 @@ ${modeListForAuto}
              if (usesLocalTextBackend) metaInfo += ' - Local';
          } catch (parseErr) {
              warnLog("Concept Sort Parse Error:", parseErr);
+             if (parseErr && parseErr.conceptSortInvalid) throw parseErr;
              throw new Error("Failed to parse Concept Sort JSON. The AI response was not valid.");
          }
       } else if (type === 'dbq') {
@@ -7347,11 +7592,14 @@ ${modeListForAuto}
          setGenerationStep('Creating Document-Based Questions...');
          const isElementary = /k|1st|2nd|3rd|4th|5th/i.test(effectiveGrade);
          const isMiddle = /6th|7th|8th/i.test(effectiveGrade);
-         const _dbqMode = window._dbqMode || 'standard';
-         const _dbqFocusTopic = document.getElementById('dbq-focus-topic')?.value || '';
-         const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
-         const _dbqCustomEssayFocus = document.getElementById('dbq-custom-essay-focus')?.value || '';
-         const _dbqTeacherLinks = document.getElementById('dbq-teacher-links')?.value || '';
+         // The generation record (Full Pack, Blueprint, regenerate) wins over whatever the sidebar last held.
+         const _dbqOverride = configOverride && typeof configOverride === 'object' ? configOverride : {};
+         const _dbqMode = _dbqOverride.dbqMode || window._dbqMode || 'standard';
+         const _dbqField = (key, id) => typeof _dbqOverride[key] === 'string' ? _dbqOverride[key] : (document.getElementById(id)?.value || '');
+         const _dbqFocusTopic = _dbqField('dbqFocusTopic', 'dbq-focus-topic');
+         const _dbqCustomDocs = _dbqField('dbqCustomDocs', 'dbq-custom-docs');
+         const _dbqCustomEssayFocus = _dbqField('dbqCustomEssayFocus', 'dbq-custom-essay-focus');
+         const _dbqTeacherLinks = _dbqField('dbqTeacherLinks', 'dbq-teacher-links');
          console.log('[DBQ] Mode=' + _dbqMode + ', focusTopic=' + _dbqFocusTopic.substring(0, 60) + ', hasCustomDocs=' + !!_dbqCustomDocs + ', hasTeacherLinks=' + !!_dbqTeacherLinks);
          let _dbqSearchResults = '';
          if (!usesLocalTextBackend && (_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
@@ -7382,16 +7630,16 @@ ${modeListForAuto}
              if (allResults.length > 0) {
                _dbqSearchResults = '\n\nREAL WEB SOURCES FOUND (use these URLs and information to build document excerpts):\n' +
                  allResults.slice(0, 8).map((r, i) => `${i + 1}. "${r.title}" — ${r.url}\n   Preview: ${r.snippet || 'No preview available'}`).join('\n') +
-                 '\n\nINSTRUCTIONS FOR WEB SOURCES:\n- Use the actual URLs above in the "sourceUrl" field for each document\n- Use the title and snippet as the basis for the document excerpt, then EXPAND it to a substantial passage\n- Set documentType to "linked" for documents from web sources\n- Students will be able to click through to read the full original source\n';
+                 '\n\nINSTRUCTIONS FOR WEB SOURCES:\n- Use the actual URLs above in the "sourceUrl" field for each document\n- You only have each source\'s title and a short preview, NOT its text. Never present words you write as a quotation from that source.\n- Only the exact preview words may be marked "excerptKind": "verbatim". Any longer passage you write to represent the source MUST be marked "excerptKind": "reconstructed"\n- Set documentType to "linked" for documents from web sources\n- Students will be able to click through to read the full original source\n';
              }
            } catch(searchErr) { console.warn('[DBQ] Web search failed:', searchErr?.message); }
          }
          const _dbqModeInstructions = _dbqMode === 'perspectives'
            ? `\n\nSPECIAL MODE — COMPETING PERSPECTIVES:\nYou MUST structure this DBQ around two or more clearly opposing viewpoints or interpretations.${_dbqFocusTopic ? ' Focus on: ' + _dbqFocusTopic + '.' : ''}\n- At least 2 documents should represent each major perspective\n- Label each document's perspective in a "perspective" field (e.g., "Federalist", "Anti-Federalist", "Pro-expansion", "Indigenous resistance")\n- The corroborationClaims MUST include at least one claim where documents directly contradict each other\n- The synthesis essay prompt MUST require students to evaluate BOTH perspectives and take a position\n- Include a "perspectives" array in the JSON root: [{"label": "Perspective A Name", "description": "Brief description", "docIds": ["A","C"]}, {"label": "Perspective B Name", "description": "Brief description", "docIds": ["B","D"]}]\n`
            : (_dbqMode === 'search' || _dbqMode === 'links')
-           ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES WITH REAL LINKS:\n${_dbqFocusTopic ? 'Topic focus: ' + _dbqFocusTopic + '.\n' : ''}Use the real web sources provided below to build document excerpts. Each document MUST include a "sourceUrl" field linking to the original source.\n- For each web source, create a substantial excerpt based on the title and snippet, expanded with historically accurate content\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Set "documentType" to "linked" for documents sourced from web search\n- Also include 1-2 documents extracted from the provided source text (documentType: "primary" or "secondary")\n- Aim for ${isElementary ? '3-4' : '5-6'} total documents\n- Each document's "sourceUrl" field MUST contain the actual URL from the web search results${_dbqSearchResults}\n`
+           ? `\n\nSPECIAL MODE — WEB-ENHANCED SOURCES WITH REAL LINKS:\n${_dbqFocusTopic ? 'Topic focus: ' + _dbqFocusTopic + '.\n' : ''}Use the real web sources provided below to build document excerpts. Each document MUST include a "sourceUrl" field linking to the original source.\n- For each web source, write a substantial passage representing what the source is known to contain, marked "excerptKind": "reconstructed" (it is NOT a quotation); only the exact preview words may be "verbatim"\n- Include a mix of document types: speeches, letters, newspaper editorials, government records, testimony, data/statistics\n- Set "documentType" to "linked" for documents sourced from web search\n- Also include 1-2 documents extracted from the provided source text (documentType: "primary" or "secondary")\n- Aim for ${isElementary ? '3-4' : '5-6'} total documents\n- Each document's "sourceUrl" field MUST contain the actual URL from the web search results${_dbqSearchResults}\n`
            : _dbqMode === 'custom' && _dbqCustomDocs.trim()
-           ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- If a line starts with http, use it as the "sourceUrl" for that document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony, linked)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
+           ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt" and set "excerptKind": "verbatim"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- If a line starts with http, use it as the "sourceUrl" for that document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony, linked)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
            : '';
          let dbqPrompt = '';
          if (usesLocalTextBackend) {
@@ -7420,6 +7668,7 @@ Return ONLY valid JSON:
       "documentType": "primary",
       "source": "Source/context note",
       "sourceUrl": "",
+      "excerptKind": "verbatim (exact words from the source) | adapted (simplified or shortened) | reconstructed (written to represent the source, not a quotation)",
       "excerpt": "Short excerpt or paraphrased passage, 60-120 words",
       "happPrompts": {
         "historical": "What was happening when this was created?",
@@ -7469,11 +7718,12 @@ Create a complete DBQ activity packet with these components:
 
 1. HISTORICAL CONTEXT: A brief (2-3 sentence) introduction that sets the stage for students.${isElementary ? ' Use simple, engaging language.' : ''}
 
-2. DOCUMENTS: Extract or create ${isElementary ? '3' : isMiddle ? '4' : '5-6'} document excerpts from the source material. Each document MUST be:
+2. DOCUMENTS: Extract ${isElementary ? '3' : isMiddle ? '4' : '5-6'} document excerpts from the source material. Never invent a quotation or attribute words to a real author, speaker or publication that did not write them. Each document MUST be:
    - A SUBSTANTIAL passage — ${isElementary ? 'at least 50-100 words each. Students need enough text to practice reading and finding evidence.' : isMiddle ? 'at least 100-200 words each. Include enough detail for students to analyze author perspective and identify key evidence.' : 'at least 200-400 words each. AP/high school documents must be long enough for deep textual analysis, sourcing, and corroboration.'}
    - A distinct passage, quote, data point, or perspective from the text
    - Labeled (Document A, Document B, etc.)
-   - Accompanied by a source citation (author, date, context)
+   - Accompanied by a source note (author, date, context) using only details stated in the material; write "Unknown" instead of guessing
+   - Marked with "excerptKind": "verbatim" (exact words copied from the material), "adapted" (the material's words simplified or shortened) or "reconstructed" (a passage you wrote to represent a source; it must never read as a quotation)
    - Adapted to ${effectiveGrade} reading level — ${isElementary ? 'use simple vocabulary and short sentences' : isMiddle ? 'use grade-appropriate vocabulary with context clues for harder terms' : 'maintain original complexity and academic vocabulary'}
    - Include a "documentType" field: one of "primary", "secondary", "data", "visual", "testimony"
    - IMPORTANT: Do NOT truncate or over-summarize. Real DBQ documents are meaty — give students something substantial to work with.
@@ -7509,6 +7759,7 @@ Return ONLY JSON:
       "documentType": "primary",
       "source": "Author, Date, Context",
       "sourceUrl": "https://... (REQUIRED for linked documents, optional for others)",
+      "excerptKind": "verbatim | adapted | reconstructed",
       "excerpt": "The document text...",
       "happPrompts": {
         "historical": "What was happening when this was created?",
@@ -7548,6 +7799,26 @@ Return ONLY JSON:
              content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
              if (!content.documents) content.documents = [];
              if (!content.rubric) content.rubric = [];
+             // Unique ids, honest excerpt kinds (a "verbatim" excerpt must appear in the supplied text), live references only.
+             {
+               const _dbqFlat = value => String(value || '').toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
+               const _dbqSuppliedText = _dbqFlat([textToProcess, _dbqCustomDocs, _dbqSearchResults].join(' '));
+               const _usedDbqIds = new Set();
+               const _nextDbqId = () => { for (let n = 0; ; n++) { const id = String.fromCharCode(65 + (n % 26)) + (n >= 26 ? Math.floor(n / 26) + 1 : ''); if (!_usedDbqIds.has(id)) return id; } };
+               content.documents = (Array.isArray(content.documents) ? content.documents : []).filter(d => d && typeof d === 'object' && !Array.isArray(d)).map(d => {
+                 let id = d.id == null ? '' : String(d.id).trim();
+                 if (!id || _usedDbqIds.has(id)) id = _nextDbqId();
+                 _usedDbqIds.add(id);
+                 const fallbackKind = d.documentType === 'linked' ? 'reconstructed' : 'adapted';
+                 let excerptKind = String(d.excerptKind || '').trim().toLowerCase();
+                 if (!['verbatim', 'adapted', 'reconstructed'].includes(excerptKind)) excerptKind = fallbackKind;
+                 if (excerptKind === 'verbatim' && (!_dbqFlat(d.excerpt) || !_dbqSuppliedText.includes(_dbqFlat(d.excerpt)))) excerptKind = fallbackKind;
+                 return { ...d, id, excerptKind };
+               });
+               const _knownDbqIds = ids => (Array.isArray(ids) ? ids : []).map(v => String(v).trim().replace(/^(?:document|doc)\.?\s+/i, '')).filter(v => _usedDbqIds.has(v));
+               content.corroborationClaims = (Array.isArray(content.corroborationClaims) ? content.corroborationClaims : []).filter(c => c && typeof c === 'object').map(c => ({ ...c, supportingDocs: _knownDbqIds(c.supportingDocs), challengingDocs: _knownDbqIds(c.challengingDocs) }));
+               if (Array.isArray(content.perspectives)) content.perspectives = content.perspectives.filter(p => p && typeof p === 'object').map(p => ({ ...p, docIds: _knownDbqIds(p.docIds) }));
+             }
              metaInfo = `${content.documents?.length || 0} documents · ${content.rubric?.length || 0} rubric criteria${usesLocalTextBackend ? ' - Local' : ''}`;
              console.log('[DBQ] Parsed successfully. ' + metaInfo);
          } catch (parseErr) {
@@ -7753,7 +8024,18 @@ Return ONLY JSON:
                         "year": "Relevant Year or Era",
                         "context": "Why they are relevant",
                         "visualDescription": "A highly detailed physical description for an image generator (e.g., 'Oil painting of [Name], [details], neutral background').",
+                        "artStyle": "An era-appropriate portrait style",
+                        "nationality": "Country/region of origin",
                         "greeting": "A short, engaging starting message from this character to the student.",
+                        "voice": "One of: Fenrir, Kore, Leda, Orus, Charon, Zephyr, Aoede",
+                        "voiceProfile": "Subtle, consistent accent, pace, tone and mannerisms",
+                        "initialRapport": 10,
+                        "quests": [
+                            { "id": "q1", "text": "Hidden objective the student can uncover", "difficulty": 20, "isCompleted": false },
+                            { "id": "q2", "text": "Hidden objective the student can uncover", "difficulty": 50, "isCompleted": false },
+                            { "id": "q3", "text": "Hidden objective the student can uncover", "difficulty": 75, "isCompleted": false }
+                        ],
+                        "suggestedQuestions": ["Question 1", "Question 2", "Question 3"]
                     }
                 ]
               `;
@@ -7781,8 +8063,9 @@ Return ONLY JSON:
                   warnLog("Standard parse failed. Attempting robust parse...");
                   parsedOptions = safeJsonParse(textToParse);
           }
+          const sharedPersonaNormalizer = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.normalizePersonaCandidates;
           if (Array.isArray(parsedOptions) && parsedOptions.length > 0) {
-               parsedOptions = parsedOptions.map(p => ({
+               parsedOptions = typeof sharedPersonaNormalizer === 'function' ? sharedPersonaNormalizer(parsedOptions) : parsedOptions.map(p => ({
                    name: p.name || "Unknown Figure",
                    role: p.role || "Historical Figure",
                    year: p.year || "Unknown Era",
@@ -7792,6 +8075,8 @@ Return ONLY JSON:
                    quests: Array.isArray(p.quests) ? p.quests : [],
                    suggestedQuestions: Array.isArray(p.suggestedQuestions) ? p.suggestedQuestions : []
                }));
+          }
+          if (Array.isArray(parsedOptions) && parsedOptions.length > 0) {
                setPersonaState(prev => ({ ...prev, options: parsedOptions }));
                content = parsedOptions;
                metaInfo = `${t('meta.interview_candidates')}${usesLocalTextBackend ? ' - Local' : ''}`;
@@ -8140,9 +8425,10 @@ Return ONLY JSON:
               ? scaffolded.brief : {};
           const rawSupports = scaffolded && scaffolded.supports && typeof scaffolded.supports === 'object'
               ? scaffolded.supports : {};
+          // Strings, or { text } items; any other object would become "[object Object]".
           const boundedList = (value, max, itemMax) => (Array.isArray(value) ? value : [])
               .slice(0, max)
-              .map((item) => String(item || '').slice(0, itemMax).trim())
+              .map((item) => String(typeof item === 'string' || typeof item === 'number' ? item : (item && typeof item.text === 'string' ? item.text : '')).slice(0, itemMax).trim())
               .filter(Boolean);
           const lockedLessonFacts = boundedList(rawBrief.lockedLessonFacts, 12, 800);
           const seedDirection = String(rawBrief.seedDirection || rawBrief.startingPoint || '').slice(0, 2000);
@@ -8733,7 +9019,8 @@ Return ONLY JSON:
               sourceInstructionalText: newItem.sourceInstructionalText, sourceFamilyId: newItem.sourceFamilyId };
       }
       if (type === 'lesson-plan' && planningGenerationInputs) newItem.config = { ...newItem.config, generationInputs: planningGenerationInputs };
-      if (!memoryProgress) setHistory(prev => [...prev, newItem]);
+      throwIfGenerationAborted();
+      if (!memoryProgress) setHistory(prev => isGenerationCurrent() && !generationSignal?.aborted ? [...prev, newItem] : prev);
       if (!memoryProgress && (switchView || !generatedContent)) {
           setGeneratedContent(newItem);
           setActiveView(type);
@@ -8759,13 +9046,30 @@ Return ONLY JSON:
       }
       return newItem;
     } catch (err) {
-      if (!err.message?.includes("401")) {
-          warnLog("Unhandled error:", err);
+      if (!isGenerationCurrent()) {
+          if (configOverride && configOverride.rethrowErrors) throw err;
+          return;
       }
+      if (err?.name === 'AbortError' || generationSignal?.aborted) {
+          if (configOverride && configOverride.rethrowErrors) throw err;
+          if (configOverride?.optionalRelevel) return;
+          const cancelledMessage = 'Generation cancelled. Previously saved resources were kept.';
+          setGenerationStatus(cancelledMessage);
+          addToast(cancelledMessage, 'info');
+          return;
+      }
+      warnLog("Unhandled error:", err);
+      if (configOverride?.optionalRelevel) return;
+      const failureStatus = Number(err?.status || err?.statusCode || err?.httpStatus);
+      const failureDetails = String(err?.category || '') + ' ' + String(err?.code || '') + ' ' + String(err?.message || '');
+      const authorizationFailure = [401, 403].includes(failureStatus) || /\b(?:401|403)\b|unauthorized|forbidden|authentication|invalid.*(?:api.?key|credential)/i.test(failureDetails);
+      const quotaFailure = /quota|resource[_ -]exhausted|usage limit|daily limit|billing/i.test(failureDetails);
       const errMsg = err.message?.includes("Blocked") ? "Content blocked by safety filters." :
                      err.message?.includes("Stopped") ? "Generation stopped by AI model." :
-                     err.message?.includes("401") ? "Daily Usage Limit Reached. Please try again later." :
-                     "Error generating content. Please try again.";
+                     authorizationFailure ? "Authorization failed. Check the selected provider and its credentials, then retry. Previously saved resources were kept." :
+                     quotaFailure ? "The selected provider's usage limit was reached. Retry when it resets or choose an available provider. Previously saved resources were kept." :
+                     failureStatus === 429 || /\b429\b|rate.?limit|too many requests/i.test(failureDetails) ? "The provider is receiving too many requests. Wait briefly, then retry. Previously saved resources were kept." :
+                     "Error generating content. Please retry. Previously saved resources were kept.";
       setError(errMsg);
       addToast(errMsg, "error");
       if (isBotVisible && alloBotRef.current) {
@@ -8787,8 +9091,10 @@ Return ONLY JSON:
           setHistory(previous => previous.map(settle));
           setGeneratedContent(previous => settle(previous));
       }
-      if (!keepLoading) setIsProcessing(false);
-      setProcessingProgress({ current: 0, total: 0 });
+      if (isGenerationCurrent()) {
+          if (!keepLoading) setIsProcessing(false);
+          setProcessingProgress({ current: 0, total: 0 });
+      }
     }
 };
 
@@ -8821,10 +9127,17 @@ window.AlloModules.GenDispatcher = {
   ACTIVITY_DERIVATIVE_KINDS,
   activityDerivativeValue,
   activityDerivativeFingerprint,
+  activitySourceFingerprint,
+  activityDerivativeNeedsReview,
   activityArtifactId,
   normalizeActivityDerivatives,
   stampActivityDerivative,
-  attachActivityDerivativeMetadata
+  attachActivityDerivativeMetadata,
+  normalizeAnalysisResult,
+  normalizeScaffoldContent,
+  normalizeConceptSortContent,
+  normalizeGlossaryTerms,
+  normalizeFaqItems
 };
 
 window.AlloModules.GenDispatcherModule = true;

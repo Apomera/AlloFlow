@@ -1,0 +1,87 @@
+{
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "relativity",
+      "violations": []
+    },
+    {
+      "name": "phone",
+      "violations": []
+    },
+    {
+      "name": "landscape",
+      "violations": []
+    },
+    {
+      "name": "orbit",
+      "violations": []
+    }
+  ],
+  "desktop": {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "panel": {
+      "x": 1108,
+      "y": 169.8125,
+      "width": 320,
+      "height": 680.1875
+    },
+    "scroll": {
+      "height": 542,
+      "client": 542
+    }
+  },
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 800
+    },
+    "panel": {
+      "x": 12,
+      "y": 120.578125,
+      "width": 296,
+      "height": 529.421875
+    },
+    "scroll": {
+      "height": 391,
+      "client": 391
+    }
+  },
+  "landscape": {
+    "viewport": {
+      "width": 700,
+      "height": 360
+    },
+    "panel": {
+      "x": 368,
+      "y": 12,
+      "width": 320,
+      "height": 204
+    },
+    "scroll": {
+      "height": 387,
+      "client": 134
+    }
+  },
+  "checks": [
+    "fullscreen-only controls",
+    "selected tab focus on open",
+    "focus return on close and fullscreen exit",
+    "pace presets",
+    "paused position and clock invariants",
+    "keyboard and pointer speed adjustment",
+    "running speed adjustment",
+    "clean overlay access",
+    "exit and reentry cleanup",
+    "relativity speed and time synchronization",
+    "sky comparison synchronization",
+    "320px layout",
+    "short landscape body scrolling and bottom transport reachability",
+    "orbit pace and direction",
+    "paused orbit invariants",
+    "local, galaxy, and cosmic pace synchronization"
+  ]
+}

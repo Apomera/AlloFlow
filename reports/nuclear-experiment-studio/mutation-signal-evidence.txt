@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:396:5 › signal detective requires separate effects and preserves the investigation when reviewing an idea (22.8s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:396:5 › signal detective requires separate effects and preserves the investigation when reviewing an idea 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-case-evidence] > p')
+    Expected: "0 of 2 separate effects checked"
+    Received: "1 of 2 separate effects checked"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-case-evidence] > p')
+        31 × locator resolved to <p>1 of 2 separate effects checked</p>
+           - unexpected value "1 of 2 separate effects checked"
+
+
+      415 |   await page.keyboard.press('Enter');
+      416 |   await expect(page.locator('[data-ns-case-reading]')).toHaveText('100.0%');
+    > 417 |   await expect(page.locator('[data-ns-case-evidence] > p')).toHaveText('0 of 2 separate effects checked');
+          |                                                             ^
+      418 |   await expect(page.locator('.ns-feedback')).toContainText('two things changed together');
+      419 |   await expect(page.locator('[data-ns-explain]')).toHaveCount(0);
+      420 |   await page.keyboard.press('Enter');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:417:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-signal-evidence\43-nuclearlab-experiment-s-403fc-tion-when-reviewing-an-idea-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-signal-evidence\43-nuclearlab-experiment-s-403fc-tion-when-reviewing-an-idea-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-signal-evidence\43-nuclearlab-experiment-s-403fc-tion-when-reviewing-an-idea-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-signal-evidence\43-nuclearlab-experiment-s-403fc-tion-when-reviewing-an-idea-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-signal-evidence\43-nuclearlab-experiment-s-403fc-tion-when-reviewing-an-idea-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:396:5 › signal detective requires separate effects and preserves the investigation when reviewing an idea 
+(node:32132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-signal-evidence.js in place of stem_lab/stem_tool_nuclearlab.js

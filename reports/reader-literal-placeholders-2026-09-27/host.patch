@@ -1,0 +1,34 @@
+diff --git a/AlloFlowANTI.txt b/AlloFlowANTI.txt
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -6560,9 +6560,12 @@
+           return undefined;
+       }
+       if (params) {
++          // Replace template tokens once; inserted learner text is always literal.
++          const replacements = Object.create(null);
+           Object.keys(params).forEach(key => {
+-              result = result.replace(`{${key}}`, params[key]);
++              replacements[`{${key}}`] = String(params[key]);
+           });
++          result = result.replace(/\{[^{}]+\}/g, token => Object.prototype.hasOwnProperty.call(replacements, token) ? replacements[token] : token);
+       }
+       return result;
+   }, [languagePack]);
+diff --git a/desktop/web-app/src/AlloFlowANTI.txt b/desktop/web-app/src/AlloFlowANTI.txt
+--- a/desktop/web-app/src/AlloFlowANTI.txt
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -6560,9 +6560,12 @@
+           return undefined;
+       }
+       if (params) {
++          // Replace template tokens once; inserted learner text is always literal.
++          const replacements = Object.create(null);
+           Object.keys(params).forEach(key => {
+-              result = result.replace(`{${key}}`, params[key]);
++              replacements[`{${key}}`] = String(params[key]);
+           });
++          result = result.replace(/\{[^{}]+\}/g, token => Object.prototype.hasOwnProperty.call(replacements, token) ? replacements[token] : token);
+       }
+       return result;
+   }, [languagePack]);

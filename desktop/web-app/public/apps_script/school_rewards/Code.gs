@@ -53,7 +53,7 @@ var SR_SHEETS = {
   MailOutbox: ['Id', 'RunId', 'DeliveryKey', 'Kind', 'StudentId', 'GuardianId', 'RecipientHash', 'ConsentConfirmedAt', 'PeriodKey', 'PayloadJson', 'PayloadHash', 'Status', 'CreatedAt', 'AttemptedAt', 'SettledAt', 'ErrorCode', 'Error', 'RetryOfId', 'ResolvedAt', 'ResolvedByHash', 'ResolutionNote'],
   SisImports: ['Id', 'SnapshotId', 'FormatVersion', 'ContentHash', 'CreatedCount', 'UpdatedCount', 'UnchangedCount', 'Status', 'AppliedAt', 'ActorHash', 'CreatedAt'],
   PointHolds: ['Id', 'StudentId', 'PurposeType', 'PurposeId', 'Amount', 'Status', 'ExpiresAt', 'IdempotencyKey', 'CaptureLedgerId', 'CreatedAt', 'UpdatedAt', 'CapturedAt', 'ReleasedAt', 'ReleaseReason'],
-  ClaimTokens: ['Id', 'Points', 'CategoryId', 'Reason', 'BatchId', 'Status', 'ClaimedByStudentId', 'ClaimedAt', 'ExpiresAt', 'LedgerId', 'CreatedByEmail', 'CreatedAt'],
+  ClaimTokens: ['Id', 'Points', 'CategoryId', 'Reason', 'BatchId', 'Status', 'ClaimedByStudentId', 'ClaimedAt', 'ExpiresAt', 'LedgerId', 'CreatedByEmail', 'CreatedAt', 'PerStudentLimit', 'ShortCode'],
   Audit: ['Id', 'Event', 'EntityType', 'EntityId', 'Summary', 'ActorEmail', 'ActorRole', 'At', 'PreviousHash', 'Hash'],
   Idempotency: ['Key', 'Operation', 'ResultJson', 'At']
 };
@@ -74,7 +74,7 @@ function doGet(e) {
     template.claimToken = /^[A-Za-z0-9_-]{8,80}$/.test(claimParam) ? claimParam : '';
     return template.evaluate().setTitle('AlloFlow School Rewards');
   } catch (err) {
-    return HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>School Rewards could not verify an authorized managed Google Education account.</p><p>Ask the school administrator to check the domain-only deployment and your membership.</p></main>');
+    return HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>School Rewards could not verify an authorized managed Google Education account.</p><p>Ask the school administrator to check the domain-only deployment and your membership.</p>' + claimDenialNote_(e) + '</main>');
   }
 }
 // The AlloFlow setup checklist opens this page as its deployment check: a
@@ -178,18 +178,64 @@ function requireClaimTokensReady_(book) {
   if (number_(configMap_(book).schemaVersion) < 7 || !book.getSheetByName('ClaimTokens')) throw srError_('claim_migration_required', 'Run the School Rewards schema v7 claim token migration before printing or redeeming claim codes.');
 }
 function claimIdemKey_(tokenId) { return 'claim:' + tokenId; }
+function claimCodesReady_(book, config) { return number_(config.schemaVersion) >= 7 && !!book.getSheetByName('ClaimTokens'); }
 function claimUrlBase_() { try { return String(ScriptApp.getService().getUrl() || ''); } catch (_) { return ''; } }
 function claimTokens_(book) {
-  return rows_(sheet_(book, 'ClaimTokens'), 12).map(function(row) {
-    return { id: String(row[0] || ''), points: number_(row[1]), categoryId: String(row[2] || ''), reason: String(row[3] || ''), batchId: String(row[4] || ''), status: String(row[5] || ''), claimedByStudentId: String(row[6] || ''), claimedAt: cell_(row[7]), expiresAt: cell_(row[8]), ledgerId: String(row[9] || ''), createdByEmail: String(row[10] || ''), createdAt: cell_(row[11]) };
+  return rows_(sheet_(book, 'ClaimTokens'), 14).map(function(row) {
+    return { id: String(row[0] || ''), points: number_(row[1]), categoryId: String(row[2] || ''), reason: String(row[3] || ''), batchId: String(row[4] || ''), status: String(row[5] || ''), claimedByStudentId: String(row[6] || ''), claimedAt: cell_(row[7]), expiresAt: cell_(row[8]), ledgerId: String(row[9] || ''), createdByEmail: String(row[10] || ''), createdAt: cell_(row[11]), perStudentLimit: number_(row[12]), shortCode: String(row[13] || '') };
   });
 }
 function claimTokenById_(book, tokenId) { var list = claimTokens_(book); for (var i = 0; i < list.length; i++) if (list[i].id === tokenId) return list[i]; return null; }
 function upsertClaimTokenRow_(book, token) {
-  upsert_(sheet_(book, 'ClaimTokens'), 12, token.id, safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, token.claimedByStudentId, token.claimedAt, token.expiresAt, token.ledgerId, token.createdByEmail, token.createdAt]));
+  upsert_(sheet_(book, 'ClaimTokens'), 14, token.id, safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, token.claimedByStudentId, token.claimedAt, token.expiresAt, token.ledgerId, token.createdByEmail, token.createdAt, token.perStudentLimit || '', token.shortCode || '']));
 }
 function claimTokenExpired_(token, at) { return !!token.expiresAt && new Date(token.expiresAt).getTime() < new Date(at).getTime(); }
-function publicClaimToken_(token) { return { id: token.id, points: token.points, categoryId: token.categoryId, reason: token.reason, batchId: token.batchId, status: token.status, expiresAt: token.expiresAt, createdAt: token.createdAt }; }
+function publicClaimToken_(token) { return { id: token.id, points: token.points, categoryId: token.categoryId, reason: token.reason, batchId: token.batchId, status: token.status, expiresAt: token.expiresAt, createdAt: token.createdAt, perStudentLimit: token.perStudentLimit || 0, shortCode: token.shortCode || '' }; }
+
+// Short codes a student can type: 8 characters from an alphabet without 0/O, 1/I/L, so a coupon read aloud or
+// copied by hand cannot be mistyped into another valid code. 31^8 is about 8.5e11 codes; wrong guesses are
+// also limited per student (claimMissesExceeded_).
+var SR_CLAIM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', SR_CLAIM_CODE_LENGTH = 8;
+var SR_CLAIM_MISS_LIMIT = 10, SR_CLAIM_MISS_WINDOW_SECONDS = 3600;
+function newClaimShortCode_(taken) {
+  for (var attempt = 0; attempt < 20; attempt++) {
+    var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, uuid_() + ':' + attempt, Utilities.Charset.UTF_8), code = '';
+    for (var i = 0; i < bytes.length && code.length < SR_CLAIM_CODE_LENGTH; i++) {
+      var value = (Number(bytes[i]) + 256) % 256;
+      if (value < 248) code += SR_CLAIM_CODE_ALPHABET.charAt(value % 31);
+    }
+    if (code.length === SR_CLAIM_CODE_LENGTH && !taken[code]) { taken[code] = true; return code; }
+  }
+  throw srError_('claim_code_space', 'Could not create unique claim codes. Try again.');
+}
+function normalizeClaimCode_(value) {
+  var code = String(value == null ? '' : value).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/.test(code) ? code : '';
+}
+function claimMissKey_(actor) { return 'claim_miss_' + hash_(actor.email).slice(0, 24); }
+function claimMissesExceeded_(actor) {
+  if (typeof CacheService === 'undefined') return false;
+  return number_(CacheService.getScriptCache().get(claimMissKey_(actor))) >= SR_CLAIM_MISS_LIMIT;
+}
+function recordClaimMiss_(actor) {
+  if (typeof CacheService === 'undefined') return;
+  var cache = CacheService.getScriptCache(), key = claimMissKey_(actor);
+  cache.put(key, String(number_(cache.get(key)) + 1), SR_CLAIM_MISS_WINDOW_SECONDS);
+}
+function claimDenialNote_(e) {
+  try {
+    var claim = e && e.parameter && e.parameter.claim;
+    if (typeof claim !== 'string' || !/^[A-Za-z0-9_-]{8,80}$/.test(claim)) return '';
+  } catch (_) { return ''; }
+  return '<p><strong>Your reward code has not been used.</strong> Open this link again while signed in to your school Google account, or sign in and type the code printed on the coupon.</p>';
+}
+function voidUnusedClaimTokensAtYearClose_(book) {
+  if (number_(configMap_(book).schemaVersion) < 7 || !book.getSheetByName('ClaimTokens')) return 0;
+  var all = claimTokens_(book), first = -1, last = -1, voided = 0;
+  all.forEach(function(token, index) { if (token.status === 'unused') { token.status = 'void'; voided++; if (first < 0) first = index; last = index; } });
+  if (voided) sheet_(book, 'ClaimTokens').getRange(first + 2, 6, last - first + 1, 1).setValues(all.slice(first, last + 1).map(function(token) { return [token.status]; }));
+  return voided;
+}
 
 /** Staff print a batch of single-use claim codes. The code alone carries no identity; the signed-in student supplies it at redemption. */
 function mintSchoolRewardsClaimTokens(request) {
@@ -197,6 +243,7 @@ function mintSchoolRewardsClaimTokens(request) {
   var count = integer_(request.count, 1, SR_MAX_CLAIM_BATCH, 'Code count'), points = integer_(request.points, 1, SR_MAX_POINTS, 'Points');
   var reason = text_(request.reason, 180, ''), categoryId = id_(request.categoryId, 'category'), expiresAt = iso_(request.expiresAt);
   var key = request.idempotencyKey == null || request.idempotencyKey === '' ? '' : idemKey_(request.idempotencyKey);
+  var perStudentLimit = request.onePerStudent === true ? 1 : 0;
   if (!reason) throw srError_('bad_award', 'Describe what a student does to earn this code.');
   return locked_(function() {
     var book = book_(); requireClaimTokensReady_(book);
@@ -205,20 +252,22 @@ function mintSchoolRewardsClaimTokens(request) {
       var existing = claimTokens_(book).filter(function(token) { return token.batchId === batchId; });
       if (existing.length) {
         var first = existing[0];
-        if (existing.length !== count || first.points !== points || first.categoryId !== categoryId || first.reason !== reason || first.expiresAt !== expiresAt || first.createdByEmail !== actor.email) throw srError_('idempotency_conflict', 'This request was already used for a different code sheet. Refresh and create the codes again.');
+        if (existing.length !== count || first.points !== points || first.categoryId !== categoryId || first.reason !== reason || first.expiresAt !== expiresAt || first.perStudentLimit !== perStudentLimit || first.createdByEmail !== actor.email) throw srError_('idempotency_conflict', 'This request was already used for a different code sheet. Refresh and create the codes again.');
         return { ok: true, batchId: batchId, claimUrlBase: claimUrlBase_(), tokens: existing.map(publicClaimToken_), replayed: true };
       }
     }
     requireCategory_(book, categoryId);
-    var at = now_(), tokens = [], rows = [];
+    var at = now_(), tokens = [], rows = [], taken = {};
     if (expiresAt && new Date(expiresAt).getTime() <= new Date(at).getTime()) throw srError_('bad_date', 'The expiry must be in the future.');
+    claimTokens_(book).forEach(function(existingToken) { if (existingToken.shortCode) taken[existingToken.shortCode] = true; });
     for (var i = 0; i < count; i++) {
-      var token = { id: uuid_(), points: points, categoryId: categoryId, reason: reason, batchId: batchId, status: 'unused', claimedByStudentId: '', claimedAt: '', expiresAt: expiresAt, ledgerId: '', createdByEmail: actor.email, createdAt: at };
-      rows.push(safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, '', '', token.expiresAt, '', token.createdByEmail, token.createdAt]));
+      var token = { id: uuid_(), points: points, categoryId: categoryId, reason: reason, batchId: batchId, status: 'unused', claimedByStudentId: '', claimedAt: '', expiresAt: expiresAt, ledgerId: '', createdByEmail: actor.email, createdAt: at, perStudentLimit: perStudentLimit, shortCode: newClaimShortCode_(taken) };
+      rows.push(safeRow_([token.id, token.points, token.categoryId, token.reason, token.batchId, token.status, '', '', token.expiresAt, '', token.createdByEmail, token.createdAt, token.perStudentLimit || '', token.shortCode]));
       tokens.push(publicClaimToken_(token));
     }
-    var tokenSheet = sheet_(book, 'ClaimTokens');
-    tokenSheet.getRange(tokenSheet.getLastRow() + 1, 1, rows.length, 12).setValues(rows);
+    var tokenSheet = sheet_(book, 'ClaimTokens'), block = tokenSheet.getRange(tokenSheet.getLastRow() + 1, 1, rows.length, 14);
+    if (typeof block.setNumberFormat === 'function') block.setNumberFormat('@');
+    block.setValues(rows);
     appendAudit_({ event: 'CLAIM_TOKENS_MINTED', type: 'claim_batch', id: batchId, summary: count + ' claim code(s) minted for ' + points + ' points each' }, actor);
     return { ok: true, batchId: batchId, claimUrlBase: claimUrlBase_(), tokens: tokens };
   });
@@ -230,10 +279,10 @@ function claimBatchSummaries_(book, actor) {
   claimTokens_(book).forEach(function(token) {
     if (!token.batchId || (actor.role !== 'admin' && token.createdByEmail !== actor.email)) return;
     var batch = batches[token.batchId];
-    if (!batch) { batch = batches[token.batchId] = { batchId: token.batchId, points: token.points, categoryId: token.categoryId, reason: token.reason, expiresAt: token.expiresAt, createdAt: token.createdAt, mine: token.createdByEmail === actor.email, counts: { unused: 0, used: 0, void: 0, expired: 0 }, unusedTokenIds: [] }; order.push(batch); }
+    if (!batch) { batch = batches[token.batchId] = { batchId: token.batchId, points: token.points, categoryId: token.categoryId, reason: token.reason, expiresAt: token.expiresAt, createdAt: token.createdAt, mine: token.createdByEmail === actor.email, perStudentLimit: token.perStudentLimit || 0, counts: { unused: 0, used: 0, void: 0, expired: 0 }, unusedTokenIds: [], unusedShortCodes: [] }; order.push(batch); }
     var status = token.status === 'unused' && claimTokenExpired_(token, at) ? 'expired' : token.status;
     if (batch.counts.hasOwnProperty(status)) batch.counts[status]++;
-    if (status === 'unused') batch.unusedTokenIds.push(token.id);
+    if (status === 'unused') { batch.unusedTokenIds.push(token.id); batch.unusedShortCodes.push(token.shortCode || ''); }
   });
   order.sort(function(a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); });
   return order.slice(0, SR_CLAIM_BATCH_LIST_LIMIT);
@@ -265,7 +314,17 @@ function voidSchoolRewardsClaimBatch(request) {
 /** A signed-in student redeems one code. Idempotent per token: the same student may retry; any second identity sees already_redeemed. Never throws for an unknown or spent code. */
 function claimSchoolRewardsToken(request) {
   var actor = requireRole_(['student']); request = object_(request);
-  var tokenId = id_(request.tokenId, 'claim token'), key = claimIdemKey_(tokenId);
+  var typed = request.tokenId == null || request.tokenId === '', tokenId = typed ? '' : id_(request.tokenId, 'claim token');
+  if (typed) {
+    var code = normalizeClaimCode_(request.code);
+    if (!code) throw srError_('bad_claim_code', 'Type the 8-character code printed on the coupon, for example K7Q2-M9XD.');
+    if (claimMissesExceeded_(actor)) return { ok: false, state: 'too_many_attempts' };
+    var lookupBook = book_(); requireClaimTokensReady_(lookupBook);
+    var match = claimTokens_(lookupBook).filter(function(candidate) { return candidate.shortCode === code; })[0];
+    if (!match) { recordClaimMiss_(actor); return { ok: false, state: 'not_found' }; }
+    tokenId = id_(match.id, 'claim token');
+  }
+  var key = claimIdemKey_(tokenId);
   var operation = printIdemOperation_('claim', actor, { tokenId: tokenId });
   return locked_(function() {
     var book = book_(); requireClaimTokensReady_(book);
@@ -284,6 +343,10 @@ function claimSchoolRewardsToken(request) {
         return { ok: false, state: 'expired' };
       }
       if (token.status !== 'unused') return { ok: false, state: 'void' };
+      if (token.perStudentLimit > 0) {
+        var alreadyFromSheet = claimTokens_(book).filter(function(other) { return other.batchId === token.batchId && other.status === 'used' && other.claimedByStudentId === actor.studentId; }).length;
+        if (alreadyFromSheet >= token.perStudentLimit) return { ok: false, state: 'limit_reached' };
+      }
       requireStudent_(book, actor.studentId);
       if (!historicalCategoryById_(book, token.categoryId)) throw srError_('not_found', 'That code points at a recognition category that no longer exists.');
       state = startCoreOperation_(book, key, operation, 'claim', {
@@ -382,7 +445,7 @@ function getSchoolRewardsBootstrap() {
       config: { schoolName: config.schoolName || 'School', academicYear: config.academicYear || '', levelThresholds: normalizeLevelThresholds_(config.levelThresholds), printLabEnabled: printLabEnabled_(config) },
       students: [ownStudent], categories: categories, progress: categoryProgress_(book, actor.studentId, categories, config),
       catalog: visible ? catalog_(book).filter(function(item) { return item.active; }) : [], windows: visible ? [visible] : [],
-      recentLedger: ownLedger, recentOrders: ownOrders, recentReceipts: receiptDtosForOrders_(book, ownOrderRows) };
+      recentLedger: ownLedger, recentOrders: ownOrders, recentReceipts: receiptDtosForOrders_(book, ownOrderRows), claimCodesReady: claimCodesReady_(book, config) };
   }
   if (actor.role !== 'admin') students = students.map(function(student) { return { id: student.id, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, active: student.active, balance: student.balance, reservedPoints: student.reservedPoints, availableBalance: student.availableBalance }; });
   var catalogItems = catalog_(book), recentOrderRows = actor.role === 'staff' ? [] : orders_(book).slice(-50).reverse();
@@ -395,6 +458,7 @@ function getSchoolRewardsBootstrap() {
     recentLedger: recentLedgerItems, recentOrders: recentOrderRows.map(function(order) { return orderDto_(book, order); }), recentReceipts: actor.role === 'staff' ? [] : receiptDtosForOrders_(book, recentOrderRows),
     emailSchedule: emailSchedule_(), mailQuota: mailQuota_() };
   if (actor.role === 'admin' || actor.role === 'staff') result.classLinksSupported = true;
+  result.claimCodesReady = claimCodesReady_(book, config);
   if (actor.role === 'admin') {
     result.members = members_(book);
     result.recentMailRuns = mailRuns_(book).slice(-25).reverse().map(function(run) { return mailRunDto_(book, run); });
@@ -1192,6 +1256,8 @@ function getSchoolRewardsYearPreview() {
     var holds = rows_(sheet_(book, 'PointHolds'), SR_SHEETS.PointHolds.length)
       .filter(function(row) { return String(cell_(row[5])) === 'ACTIVE'; }).length;
     var open = windows_(book).filter(function(item) { return item.status === 'OPEN'; }).length;
+    var previewAt = now_(), unusedClaimCodes = number_(config.schemaVersion) >= 7 && book.getSheetByName('ClaimTokens')
+      ? claimTokens_(book).filter(function(token) { return token.status === 'unused' && !claimTokenExpired_(token, previewAt); }).length : 0;
     var total = 0, withPoints = 0;
     students.forEach(function(student) {
       var value = balances[student.id];
@@ -1207,6 +1273,7 @@ function getSchoolRewardsYearPreview() {
       pointsInCirculation: total,
       activeHolds: holds,
       openWindows: open,
+      unusedClaimCodes: unusedClaimCodes,
       closedYears: schoolRewardsYearSummaries_(book).length ? true : false,
       ready: holds === 0 && open === 0
     };
@@ -1260,7 +1327,10 @@ function startSchoolRewardsAcademicYear(request) {
     appendRows_(summarySheet, summaryRows);
     appendRows_(sheet_(book, 'Ledger'), ledgerRows);
     if (cleared) writeBalanceRows_(book, balanceUpdates, at);
+    // Unused coupons would otherwise carry last year's points past a reset.
+    var claimCodesCancelled = carryOver === 'all' ? 0 : voidUnusedClaimTokensAtYearClose_(book);
     putConfig_(book, { academicYear: nextYear, academicYearStartedAt: at });
+    if (claimCodesCancelled) appendAudit_({ event: 'CLAIM_TOKENS_VOIDED', type: 'repository', id: nextYear, summary: claimCodesCancelled + ' unused claim code(s) cancelled at year close' }, actor);
     appendAudit_({
       event: 'ACADEMIC_YEAR_STARTED', type: 'repository', id: nextYear,
       summary: 'Closed ' + (closing || 'the previous year') + ' and opened ' + nextYear + '. ' + (carryOver === 'all'
@@ -1270,7 +1340,7 @@ function startSchoolRewardsAcademicYear(request) {
     return {
       ok: true, closed: closing, opened: nextYear, carryOver: carryOver,
       studentsSummarised: students.length, balancesCleared: cleared,
-      pointsClosed: closedPoints, pointsCarried: carriedPoints
+      pointsClosed: closedPoints, pointsCarried: carriedPoints, claimCodesCancelled: claimCodesCancelled
     };
   });
 }
@@ -2230,6 +2300,11 @@ function initializeSheets_(book) {
         var legacyPrintHeaders = sheet.getRange(1, 1, 1, 31).getValues()[0], compatible = true;
         for (var legacyIndex = 0; legacyIndex < 31; legacyIndex++) if (String(legacyPrintHeaders[legacyIndex] || '') !== headers[legacyIndex]) compatible = false;
         if (compatible) sheet.getRange(1, 32).setValues([['PreviousRequestId']]);
+      }
+      if (name === 'ClaimTokens' && String(sheet.getRange(1, 13).getValues()[0][0] || '') === '') {
+        var legacyClaimHeaders = sheet.getRange(1, 1, 1, 12).getValues()[0], claimCompatible = true;
+        for (var claimHeaderIndex = 0; claimHeaderIndex < 12; claimHeaderIndex++) if (String(legacyClaimHeaders[claimHeaderIndex] || '') !== headers[claimHeaderIndex]) claimCompatible = false;
+        if (claimCompatible) sheet.getRange(1, 13, 1, 2).setValues([['PerStudentLimit', 'ShortCode']]);
       }
       var actual = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
       headers.forEach(function(header, i) { if (String(actual[i] || '') !== header) throw srError_('schema', name + ' headers do not match schema version ' + SR_VERSION + '.'); });
@@ -4180,6 +4255,7 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   if (claimTokensReady) {
     var claimTokenRows = claimTokens_(book), claimTokenById = indexBy(claimTokenRows, 'id'), claimLedgerByToken = groupBy(ledger.filter(function(entry) { return entry.referenceType === 'claim_token'; }), function(entry) { return entry.referenceId; });
     flagDuplicateValues(claimTokenRows, function(token) { return token.id; }, 'DUPLICATE_PRIMARY_KEY', 'claim_token', 'Claim token id appears more than once');
+    flagDuplicateValues(claimTokenRows.filter(function(token) { return token.shortCode; }), function(token) { return token.shortCode; }, 'DUPLICATE_CLAIM_SHORT_CODE', 'claim_token', 'Claim short code appears more than once');
     claimTokenRows.forEach(function(token) {
       var claims = claimLedgerByToken[token.id] || [];
       if (['unused', 'used', 'void', 'expired'].indexOf(token.status) < 0) issue('ERROR', 'CLAIM_TOKEN_STATUS_INVALID', 'claim_token', token.id, 'Claim token status is not recognized.');

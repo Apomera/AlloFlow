@@ -1,0 +1,15 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -43267,7 +43267,10 @@
+                        setActiveView('output');
+                    }, 0);
+                }}
+-              onClose={handleCloseDashboard}
++              onClose={() => {
++                  setWsGeneratorMinimized(false);
++                  setActiveView(current => current === 'word-sounds-generator' ? 'input' : current);
++              }}
+               callGemini={callGemini}
+               callImagen={callImagen}
+               callTTS={callTTS}

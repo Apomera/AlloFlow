@@ -322,8 +322,14 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
     const originalOwner = paired || item;
     const supports = hasSource && originalOwner.readingSupports ? api.validateReadingSupports(originalOwner, originalOwner.readingSupports) : null;
     const adaptedValidationUnavailable = adapted && item.adaptedReadingSupports && typeof api.validateAdaptedReadingSupports !== 'function';
-    const adaptedSupports = adapted && typeof api.validateAdaptedReadingSupports === 'function' && item.adaptedReadingSupports
+    const adaptedEnvelope = adapted && typeof api.validateAdaptedReadingSupports === 'function' && item.adaptedReadingSupports
         ? api.validateAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+    // Only shown help counts as delivered, even in a pack made before hidden help
+    // was held back. The sender records why none was sent, never the help itself.
+    const adaptedSupports = adaptedEnvelope && adaptedEnvelope.shown === true ? adaptedEnvelope : null;
+    const withheldAdapted = adaptedEnvelope && adaptedEnvelope.status === 'stale' ? 'stale'
+        : adaptedEnvelope && adaptedEnvelope.shown !== true && adaptedEnvelope.annotations?.length ? 'hidden'
+            : !adaptedEnvelope && item.readingDelivery?.version === 1 && ['hidden', 'stale'].includes(item.readingDelivery.adaptedWordHelp) ? item.readingDelivery.adaptedWordHelp : null;
     const activeAnnotations = envelope => envelope && !['stale', 'unavailable'].includes(envelope.status)
         && Array.isArray(envelope.annotations) ? envelope.annotations : [];
     const describeSupports = (envelope, applicable = true) => {
@@ -338,7 +344,7 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
         });
     };
     const pictures = [supports, adaptedSupports].flatMap(activeAnnotations).filter(entry => entry.image?.src);
-    const unavailablePictureSupports = [supports, adaptedSupports].some(envelope => envelope
+    const unavailablePictureSupports = withheldAdapted === 'stale' || [supports, adaptedSupports].some(envelope => envelope
         && ['stale', 'unavailable'].includes(envelope.status));
     const pictureOwners = paired && paired !== item ? [item, paired] : [item];
     const omittedPictures = pictureOwners.reduce((sum, owner) => sum + (owner.readingDelivery?.version === 1
@@ -359,7 +365,9 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
         originalText: hasSource ? state('included', 'ready', null, { resourceId: paired ? String(paired.id) : null, fingerprint: snapshot.fingerprint }) : state('omitted', 'unavailable', 'source-unavailable'),
         adaptedText: !adapted ? state('not-applicable', 'unavailable') : hasBody ? state('included', 'ready', null, { fingerprint: api.fingerprintSourceText?.(item.data) || null }) : state('omitted', 'unavailable', options.bodyIssue || 'body-unavailable'),
         originalSupports: describeSupports(supports),
-        adaptedSupports: adaptedValidationUnavailable ? state('unknown', 'unverified', 'validator-unavailable') : describeSupports(adaptedSupports, adapted),
+        adaptedSupports: adaptedValidationUnavailable ? state('unknown', 'unverified', 'validator-unavailable')
+            : adapted && withheldAdapted ? state('omitted', 'unavailable', withheldAdapted === 'stale' ? 'stale-identity' : 'not-shown', { activeCount: 0, suppressedCount: 0 })
+                : describeSupports(adaptedSupports, adapted),
         pictures: state(adaptedValidationUnavailable ? (pictures.length ? 'partial' : 'unknown') : pictures.length ? (omittedPictures || unavailablePictureSupports ? 'partial' : 'included') : 'omitted',
             pictures.length || adaptedValidationUnavailable ? 'unverified' : 'unavailable',
             adaptedValidationUnavailable ? 'validator-unavailable' : omittedPictures ? 'invalid-or-over-budget' : unavailablePictureSupports ? 'supports-unavailable' : pictures.length ? 'decode-not-checked' : 'not-provided',
@@ -1761,8 +1769,7 @@ function ReceivedReadingDelivery({ resources, currentResourceId, enabled, assetS
             {reading.form === 'adapted' && <p>{capabilities.adaptedText.inclusion === 'included' ? text('received_adapted', 'Adapted text received.') : text('received_adapted_unavailable', 'The adapted text is unavailable.')}</p>}
             {(capabilities.originalSupports.reason === 'stale-identity' || capabilities.originalSupports.inclusion === 'partial') && <p>{text('reading_supports_unavailable', 'Some saved supports are unavailable for this version of the reading.')}</p>}
             {Number.isInteger(capabilities.originalSupports.activeCount) && <p>{text('saved_word_support_count', '{count} saved word supports.').replace('{count}', String(capabilities.originalSupports.activeCount))}</p>}
-            {reading.form === 'adapted' && <p>{capabilities.adaptedSupports.reason === 'stale-identity' ? text('adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')
-                : capabilities.adaptedSupports.availability === 'unverified' ? text('adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')
+            {reading.form === 'adapted' && <p>{capabilities.adaptedSupports.availability === 'unverified' ? text('adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')
                 : text('adapted_support_count', '{count} saved supports on the adapted text.').replace('{count}', String(capabilities.adaptedSupports.activeCount || 0))}</p>}
             <p data-received-audio>{capabilities.referenceAudio.inclusion === 'included' ? text('reading_audio_included_unchecked', 'Saved reading audio is included. Playback on the student device has not been checked.')
                 : capabilities.referenceAudio.inclusion === 'omitted' ? text('received_audio_omitted', 'Saved reading audio was not delivered with this reading.') : text('reading_audio_unverified', 'Saved reading audio could not be checked.')}</p>

@@ -1,0 +1,61 @@
+{
+  "browser": "148.0.7778.96",
+  "checks": [
+    {
+      "name": "visual-viewport-keyboard-and-pan",
+      "passed": false,
+      "error": "Popup outside synthetic visual viewport: {\"bounds\":{\"x\":8,\"y\":312,\"width\":304,\"height\":156.5},\"viewport\":{\"width\":320,\"height\":220,\"offsetTop\":0,\"offsetLeft\":0}}"
+    },
+    {
+      "name": "focus-keyboard-loop",
+      "passed": true
+    },
+    {
+      "name": "focus-short",
+      "passed": true
+    },
+    {
+      "name": "focus-double-text",
+      "passed": true
+    },
+    {
+      "name": "focus-forced-colors",
+      "passed": true
+    },
+    {
+      "name": "crawl-keyboard-loop",
+      "passed": true
+    },
+    {
+      "name": "crawl-short",
+      "passed": true
+    },
+    {
+      "name": "crawl-double-text",
+      "passed": true
+    },
+    {
+      "name": "crawl-forced-colors",
+      "passed": true
+    },
+    {
+      "name": "karaoke-keyboard-loop",
+      "passed": true
+    },
+    {
+      "name": "karaoke-short",
+      "passed": false,
+      "error": "Focus is obscured: <span aria-current=\"true\" role=\"button\" tabindex=\"0\" style=\"font-weight: 700; cursor: pointer; border-radius: 2px;\"><span style=\"color: rgb(91, 100, 114);\">Plants</span></span>"
+    },
+    {
+      "name": "karaoke-double-text",
+      "passed": false,
+      "error": "Horizontal overflow: {\"client\":320,\"scroll\":361}"
+    },
+    {
+      "name": "karaoke-forced-colors",
+      "passed": true
+    }
+  ],
+  "limits": "Synthetic viewport events, simulated doubled text and Chromium only; no real mobile keyboard or screen-reader verification."
+}

@@ -44,6 +44,10 @@ describe('Escape Room generation and answer behavior', () => {
     h.state.leveledTextLanguage = 'Arabic';
     await h.engine.launchCollaborativeEscapeRoom();
     expect(h.callGemini.mock.calls[1][0]).toContain('Write ALL student-facing text in Arabic');
+    // The live room opens in the teacher preview; nothing reaches students until it is published.
+    expect(h.updateDoc).not.toHaveBeenCalled();
+    expect(h.state.escapeRoomState).toMatchObject({ isPreview: true, isActive: false, previewTarget: 'live' });
+    await h.engine.publishEscapeRoomLive();
     const live = h.updateDoc.mock.calls[0][1].escapeRoomState;
     expect(live.puzzles.find(p => p.type === 'sequence').correctOrder).toEqual([1, 0]);
     expect(live.puzzles.find(p => p.type === 'scramble').displayLetters.slice().sort()).toEqual(['कि', '🧠', 'é'].sort());

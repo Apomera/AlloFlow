@@ -66,7 +66,8 @@ describe('Memory aid focused study flow',()=>{
     const api=window.AlloModules.StudioResponse;
     const resource={id:'r',type:'memory-aid',data:data([c])};
     const response=api.responseFromData('memory-aid',resource.data);
-    expect(response.cards[0].visualAltSource).toBe('author');expect(response.cards[0].visualNeedsReview).toBe(true);
+    const shown=api.project(resource,response).data.cards[0];
+    expect(shown.visualAltSource).toBe('author');expect(shown.visualNeedsReview).toBe(true);expect(shown.visualImage).toBe(PNG);
   });
   it('shows a retry when a saved resource contains interrupted pending pictures',async()=>{
     const generate=vi.fn(async()=>PNG);await mount({...data([card('one',{visualStatus:'generating'})]),visualsPending:true},{isTeacherMode:true,callImagen:generate});

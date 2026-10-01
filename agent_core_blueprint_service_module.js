@@ -302,6 +302,15 @@
         }
       } else {
         plan = plan.filter(function (row) { return !row || row.tool !== 'simplified'; });
+        // A required grade-level text keeps its Analysis (primary text) row even
+        // with no companion, as in Full Pack. A sourced prohibition does not add one.
+        if (opts.ensureAnalysis === true && adaptedPolicy === 'omit' && context.primaryTextAccess === 'required'
+            && !plan.some(function (row) { return row && row.tool === 'analysis'; })) {
+          plan.unshift({
+            tool: 'analysis', uiId: 'analysis-access',
+            directive: 'Analyze and retain the source as the primary reference text.'
+          });
+        }
       }
       blueprint.plan = plan;
       return applyDraftInstructionalTextDefaults(blueprint);

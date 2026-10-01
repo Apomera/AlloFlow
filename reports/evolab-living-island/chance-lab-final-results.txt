@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:20476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:20476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2184:5 › chance lab compares isolated survival trials with a recorded climate round and saves separate evidence
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2219:5 › chance lab on a phone supports keyboard trial browsing and preserves the next real outcome
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:2239:5 › chance lab without WebGL retains zero and one survivor trials after the real island goes extinct
+[1A[2K  3 passed (1.3m)

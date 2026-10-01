@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "An external cooking adjustment cancels a held fold without adding a mixing action.",
+    "The scaled four-serving pan folds on the trivet and reports both saved water and finite tomato juice with readable precision."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Wide pan tomato fold on trivet",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

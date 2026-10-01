@@ -1,0 +1,66 @@
+[
+  {
+    "fixture": "reader_es419_long_labels_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_es419_long_labels_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  }
+]

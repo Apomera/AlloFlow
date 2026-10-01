@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:650:5 › nucleus comparisons show saved pairs and preserve the current draft when switching (17.7s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:650:5 › nucleus comparisons show saved pairs and preserve the current draft when switching 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-ns-nucleus-comparison]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 15000ms
+      - waiting for locator('[data-ns-nucleus-comparison]')
+        31 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      655 |   await page.getByRole('button', { name: 'It stays carbon', exact: true }).click();
+      656 |   await page.getByRole('button', { name: 'Save this nucleus' }).click();
+    > 657 |   await expect(page.locator('[data-ns-nucleus-comparison]')).toHaveCount(0);
+          |                                                              ^
+      658 |   await page.getByRole('button', { name: 'Prepare Carbon-14', exact: true }).click();
+      659 |   await expect(page.locator('[data-ns-nucleus-comparison]')).toHaveCount(0);
+      660 |   await page.getByRole('button', { name: 'Save this nucleus' }).click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:657:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-pair-evidence\43-nuclearlab-experiment-s-b34bf-urrent-draft-when-switching-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-pair-evidence\43-nuclearlab-experiment-s-b34bf-urrent-draft-when-switching-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-pair-evidence\43-nuclearlab-experiment-s-b34bf-urrent-draft-when-switching-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-pair-evidence\43-nuclearlab-experiment-s-b34bf-urrent-draft-when-switching-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-nucleus-pair-evidence\43-nuclearlab-experiment-s-b34bf-urrent-draft-when-switching-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:650:5 › nucleus comparisons show saved pairs and preserve the current draft when switching 
+(node:41496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-nucleus-pair-evidence.js in place of stem_lab/stem_tool_nuclearlab.js

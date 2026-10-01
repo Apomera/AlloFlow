@@ -1,0 +1,69 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending.",
+  "added": [
+    {
+      "key": "stem.raptorhunt.study_flight_unknown",
+      "fallback": "Flight identity was not recorded for both moments. Compare the visible features; the readings are not a controlled trial."
+    },
+    {
+      "key": "stem.raptorhunt.study_views_unknown",
+      "fallback": "Camera settings were not recorded for both moments. Compare the viewing angles before interpreting the pose."
+    },
+    {
+      "key": "stem.raptorhunt.study_views_match",
+      "fallback": "Camera settings match. Look for changes in the wings and tail."
+    },
+    {
+      "key": "stem.raptorhunt.study_views_differ",
+      "fallback": "Camera settings differ. Use Match saved view in study mode before keeping a new moment to make the poses easier to compare."
+    },
+    {
+      "key": "stem.raptorhunt.study_report_title",
+      "fallback": "Raptor Lab · Flight observations"
+    },
+    {
+      "key": "stem.raptorhunt.study_report_kicker",
+      "fallback": "Raptor Lab / Field record"
+    },
+    {
+      "key": "stem.raptorhunt.study_report_intro",
+      "fallback": "Frozen views from the 3D simulation, with the readings and observations you kept."
+    },
+    {
+      "key": "stem.raptorhunt.study_report_observation",
+      "fallback": "My observation · {letter}"
+    },
+    {
+      "key": "stem.raptorhunt.study_report_no_note",
+      "fallback": "No written observation yet."
+    },
+    {
+      "key": "stem.raptorhunt.study_report_scope",
+      "fallback": "Simulation observations, not measurements of live birds. Images use study lighting and are framed individually; their sizes are not a scale comparison. This file contains the kept moments and their current notes."
+    },
+    {
+      "key": "stem.raptorhunt.study_report_downloaded",
+      "fallback": "Visual report downloaded with your kept images, readings, and notes."
+    },
+    {
+      "key": "stem.raptorhunt.study_report_download",
+      "fallback": "Download visual report"
+    },
+    {
+      "key": "stem.raptorhunt.study_compare_report_help",
+      "fallback": "Kept moments stay with this lab session. Download a visual report to keep their images, readings, and current notes together."
+    },
+    {
+      "key": "stem.raptorhunt.study_match_view",
+      "fallback": "Match saved view"
+    },
+    {
+      "key": "stem.raptorhunt.study_matched_announced",
+      "fallback": "Camera settings matched to moment A. Flight remains frozen."
+    },
+    {
+      "key": "stem.raptorhunt.study_matched_view",
+      "fallback": "View matched to A"
+    }
+  ]
+}

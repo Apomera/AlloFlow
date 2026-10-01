@@ -1,0 +1,44 @@
+{
+  "at": "2026-09-26T22:16:52.119Z",
+  "label": "track09",
+  "patch": "89ab6a6568ff797dc57d362bde3d480dede10fce50978a9728e802e8ea9dd3d7",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "68569266435f5204bde22938ddf5f0358f61e7dd08df8163451984fa91d4e1f9",
+      "after": "c95969cf514c239c14b7046570a588958a2759eec2f488d724bfb0777c14d46e",
+      "changed": true
+    },
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "9fe6410d09468a17dd7a984c06b66ae045606f89ea00264f4d313e081497679f",
+      "after": "d669ed5e7a37d56cb3fdff3f11c5993831b93078296f46bf892ad75ecff729ee",
+      "changed": true
+    },
+    {
+      "target": "tests/view_simplified_dialog_a11y.test.js",
+      "targets": [
+        "tests/view_simplified_dialog_a11y.test.js"
+      ],
+      "before": "2db3c8058f020b051ef37a82d7165fa8febfb99037ebbbce85b061eb79334c2d",
+      "after": "51e7cdf6a61b854bde704ea1aa2bf0e74849914b7439158ac4c5846da0bb5b97",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_preview_isolation.test.js",
+      "targets": [
+        "tests/reader_preview_isolation.test.js"
+      ],
+      "before": null,
+      "after": "df76bc68bce3e50703f012cff3ba7ccfbe136151e94726ca9f8b9b8231d40a8f",
+      "changed": true
+    }
+  ]
+}

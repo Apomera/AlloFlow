@@ -1,0 +1,83 @@
+{
+  "captured": "2026-09-26T22:24:31.232Z",
+  "head": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "kind": "working-tree snapshot; includes concurrent uncommitted integration",
+  "files": [
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "687866a6202a20700ba8dd40bcf59a7b8a5edc0552ffed4091f8c764a01ba9f1"
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "4bf8b03e21cb7988090b0d23d8b8d0da292b0844d6d6bdbf69c4a6d338498373"
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "sha256": "aa68bfd5b4d8a0e3cd702e8339552f486e780910a30948bf94f2675e2872b82c"
+    },
+    {
+      "file": "read_aloud_audio_service_module.js",
+      "sha256": "f6079dfeabf5bf6e5f47b685cf29dd9c696ddfda5d2d71c643dd50a98a0e3754"
+    },
+    {
+      "file": "read_aloud_artifact_audio_source.jsx",
+      "sha256": "4b94e5408f50a4be0f1a02d570bfc607d574e02f25fc9e45f771da15ba98b815"
+    },
+    {
+      "file": "read_aloud_artifact_audio_module.js",
+      "sha256": "3a0466591a687566dfa057d7cf68a5900eb46b52af95f518d4420817dd8951c8"
+    },
+    {
+      "file": "read_aloud_artifact_contract_source.jsx",
+      "sha256": "25767c4a78bf4dc949e25c673059376fcf39c37f762ae75ca1e4b65e36696e5d"
+    },
+    {
+      "file": "read_aloud_artifact_contract_module.js",
+      "sha256": "9a93476647d646a7c559372b54fa3206354600374170732a38112aa062a02ae6"
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "5b9220b89c0b8ba659d40970d4dc1bc9785f73268e3b2b7d637b7fc16e211835"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "immersive_reader_source.jsx",
+      "sha256": "25b256eaa5b76ceee60323d82440456bde5fb40a8f4ec22f2777ea63328c10a4"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "cc8d29ae667c99bb2b57952879bbe1cad6b251064e1a6771185015e912a48b51"
+    },
+    {
+      "file": "tests/reader_audio_readiness.test.js",
+      "sha256": "9b1bd0cbe9a324f2ed156679a931c7a94a6753913e7c4e93ee2634a010689873"
+    },
+    {
+      "file": "tests/edit_audio_ui.test.js",
+      "sha256": "53ea411dfe48dadaee5a43a8120f9684125602867278cd23ab2be2e6680dd53b"
+    },
+    {
+      "file": "tests/karaoke_audio_store_resilience.test.js",
+      "sha256": "f1e3fa8d6ed3d8de9b2694f1eef625074a0247d39e57a6d03c364ac719efb443"
+    },
+    {
+      "file": "tests/read_aloud_audio_service.test.js",
+      "sha256": "8ef5852c566bd7ed785f4a559d6a34f806d84ce0df6ec932ca1510cd49c93988"
+    },
+    {
+      "file": "tests/read_aloud_artifact_host_integration.test.js",
+      "sha256": "d9a8bfd097d24a3b2045992642326a667921ba6769d5a41d47c8a449a0a34af4"
+    },
+    {
+      "file": "tests/read_aloud_artifact_contract.test.js",
+      "sha256": "9e306813b74cd40745698396f52236a20687542c494c562ed87bf43e0568eb62"
+    },
+    {
+      "file": "tests/read_aloud_artifact_audio.test.js",
+      "sha256": "f485f4a6034e4a51aab502a7c3b9504513a1bf9ab7f18b0d440e2c911bc2b3cb"
+    }
+  ]
+}

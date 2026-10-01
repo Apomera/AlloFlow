@@ -1,0 +1,904 @@
+diff --git "a/reports\\automatic-open-enhancements-2026-09-29\\before\\AlloFlowANTI.txt" b/AlloFlowANTI.txt
+index c2d9bdf90..786750337 100644
+--- "a/reports\\automatic-open-enhancements-2026-09-29\\before\\AlloFlowANTI.txt"
++++ b/AlloFlowANTI.txt
+@@ -21618,6 +21618,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+       : '';
+   const canvasRecoveryCurrentIdRef = useRef(_alloStoredLearningWebWorkspaceId || ALLO_WORKSPACE_RECOVERY.newId());
+   const canvasRecoveryBootCheckedRef = useRef(false);
++  const studentEntryRecoveryProtectedRef = useRef(false);
+   useEffect(() => {
+       if (!isCanvas) safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+   }, [isCanvas]);
+@@ -23248,8 +23249,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+     return () => { unsubscribe(); if (authRetryTimer) clearTimeout(authRetryTimer); };
+   }, []);
++  const bootHistoryHydrationRef = useRef(null);
+   useEffect(() => {
+-    const onFirestoreSyncUpgraded = () => setHistory(prev => _alloRehydrateShimHistory(prev));
++    const onFirestoreSyncUpgraded = () => _setHistory(prev => {
++        const hydrated = normalizeArtifactInstanceIds(_alloRehydrateShimHistory(prev));
++        if (hydrated !== prev) bootHistoryHydrationRef.current = { previous: prev, current: hydrated };
++        return hydrated;
++    });
+     window.addEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+     return () => window.removeEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+   }, []);
+@@ -23259,6 +23265,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     const isCanvasStudentEntry = () => _alloHasAnyStudentEntry()
+         || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
+     const protectCanvasStudentEntry = () => {
++        if (studentEntryRecoveryProtectedRef.current) { setIsHistoryLoaded(true); return; }
++        studentEntryRecoveryProtectedRef.current = true;
+         canvasRecoveryBootCheckedRef.current = true;
+         isStudentWorkLoaded.current = false;
+         setGlobalPoints(0);
+@@ -23268,7 +23276,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+         canvasRecoveryPendingSaveCountRef.current = 0;
+         canvasRecoveryStoreRef.current = ALLO_WORKSPACE_RECOVERY.emptyStore();
+         canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+-        clearCanvasWorkspaceState();
++        if (!Array.isArray(receivedDeliveryResources) || !receivedDeliveryResources.length) clearCanvasWorkspaceState();
+         setCanvasRecoveryStore(ALLO_WORKSPACE_RECOVERY.emptyStore());
+         setCanvasRecoveryStoreAuthoritative(false);
+         setCanvasRecoveryDecisionMade(true);
+@@ -36443,6 +36451,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);
+   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
+   const pendingQrAssignmentOpenGenerationRef = useRef(0);
++  const savedResourceOpenModules = [['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']];
+   const handleRestoreView = (item, options = {}) => {
+       if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleRestoreView(item, options));
+       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
+@@ -36463,7 +36472,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
+   };
+   // BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE
+-  learningWebRestoreViewRef.current = handleRestoreView;
++  learningWebRestoreViewRef.current = (...args) => handleOpenHistoryResource(...args);
+   learningWebOpenContextRef.current = {
+       current: generatedContent || null,
+       history: (Array.isArray(history) ? history : []).slice(-160),
+@@ -36501,10 +36510,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
+       setPendingHistoryResource(item);
+       try {
+-          await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++          await _alloAwaitModules(savedResourceOpenModules, 'saved resource');
+           if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
+           return context.restore(item, options);
+       } catch (error) {
++          if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
+           warnLog('Saved resource could not open:', error);
+           if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(context.failedLabel(), 'error');
+           return false;
+@@ -36515,17 +36525,47 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   useEffect(() => {
+       if (!pendingQrAssignmentResource || isTeacherMode) return;
+       const resource = pendingQrAssignmentResource;
++      const openContext = historyOpenContextRef.current;
+       let cancelled = false;
+       const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
+       const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
++      const isContextCurrent = () => {
++          if (!isCurrent()) return false;
++          const current = historyOpenContextRef.current;
++          if (openContext === current) return true;
++          const hydration = bootHistoryHydrationRef.current;
++          return !!hydration && openContext?.values?.[1] === hydration.previous
++              && current?.values?.[1] === hydration.current
++              && openContext.values.every((value, index) => index === 1 || value === current.values[index]);
++      };
+       let opened = false;
+       let restoreFailed = false;
+-      const openWhenReady = () => {
+-          if (!isCurrent() || opened || restoreFailed) return false;
++      let transitionPending = false;
++      const openWhenReady = (afterDraftConfirmation = false) => {
++          if (!isCurrent() || opened || restoreFailed || transitionPending) return false;
++          if (!afterDraftConfirmation && !isContextCurrent()) return false;
++          if (savedResourceOpenModules.some(([, key]) => !window.AlloModules?.[key])) return false;
+           const api = window.AlloModules?.MiscHandlers;
+           if (typeof api?.handleRestoreView !== 'function') return false;
++          if (supportDraftSessionRef.current?.blocked()) {
++              transitionPending = true;
++              requestReadingSupportTransition(() => {
++                  transitionPending = false;
++                  return openWhenReady(true);
++              });
++              return false;
++          }
+           try {
+-              const result = handleRestoreView(resource, { suppressLiveFollow: true, preservePendingAssignment: true });
++              const hydration = bootHistoryHydrationRef.current;
++              const deliveryIndex = receivedDeliveryResources.indexOf(resource);
++              const previousIndex = hydration?.previous.indexOf(resource) ?? -1;
++              const sourceIndex = previousIndex >= 0 ? previousIndex
++                  : deliveryIndex >= 0 && hydration?.previous[deliveryIndex]?.id === resource.id
++                      && hydration?.previous[deliveryIndex]?.type === resource.type ? deliveryIndex : -1;
++              const hydratedIndex = hydration && hydration.previous === openContext?.values?.[1]
++                  && hydration.current === historyOpenContextRef.current?.values?.[1] ? sourceIndex : -1;
++              const target = hydratedIndex >= 0 ? hydration.current[hydratedIndex] : resource;
++              const result = handleRestoreView(target, { suppressLiveFollow: true, preservePendingAssignment: true });
+               if (result === false) throw new Error('Homework resource was rejected by the opener');
+               opened = true;
+               setPendingQrAssignmentResource(current => current === resource ? null : current);
+@@ -36537,25 +36577,31 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+               return false;
+           }
+       };
+-      if (openWhenReady() || restoreFailed) return;
+-      // Fragment packs can decode before the deferred resource opener loads.
+-      // Promote that one dependency and keep the packet intact through retries.
++      if (openWhenReady() || restoreFailed || transitionPending) return () => { cancelled = true; };
+       addToast('Opening homework tools…', 'info');
+-      const onModuleChange = () => { openWhenReady(); };
++      const onModuleChange = () => {
++          if (!isContextCurrent()) {
++              window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
++              return;
++          }
++          openWhenReady();
++      };
+       window.addEventListener('alloflow:module-registry-changed', onModuleChange);
+       Promise.resolve().then(() => {
+-          if (!isCurrent() || opened) return;
++          if (!isContextCurrent() || opened) return;
+           if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('Homework loader is not ready');
+-          return window.__alloEnsureLazyModule('MiscHandlersModule', '__alloLazyFileIntake', 'MiscHandlers');
++          return Promise.all(savedResourceOpenModules.map(([name, key]) => {
++              if (window.AlloModules?.[key]) return undefined;
++              const promote = name === 'MiscHandlersModule' ? '__alloLazyFileIntake' : () => window.__alloPromoteModule?.(name);
++              return window.__alloEnsureLazyModule(name, promote, key);
++          }));
+       }).then(() => {
+-          if (isCurrent() && !opened && !restoreFailed && !openWhenReady()) throw new Error('Homework opener is not ready');
++          if (isContextCurrent() && !opened && !restoreFailed && !transitionPending && !openWhenReady()) throw new Error('Homework opener is not ready');
+       }).catch(error => {
+-          if (!isCurrent() || opened || restoreFailed) return;
++          if (!isContextCurrent() || opened || restoreFailed || transitionPending) return;
+           warnLog('Homework tools are not ready:', error);
+           addToast('Homework is still available in History. Use Retry in the loading notice when available, or reload this homework link.', 'warning');
+       });
+-      // The bounded loader stops waiting on failure/timeout. Keep this listener
+-      // so the existing Retry control can finish the same pending open later.
+       return () => {
+           cancelled = true;
+           window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+diff --git "a/reports\\automatic-open-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt" b/desktop/web-app/src/AlloFlowANTI.txt
+index c2d9bdf90..786750337 100644
+--- "a/reports\\automatic-open-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt"
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -21618,6 +21618,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+       : '';
+   const canvasRecoveryCurrentIdRef = useRef(_alloStoredLearningWebWorkspaceId || ALLO_WORKSPACE_RECOVERY.newId());
+   const canvasRecoveryBootCheckedRef = useRef(false);
++  const studentEntryRecoveryProtectedRef = useRef(false);
+   useEffect(() => {
+       if (!isCanvas) safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+   }, [isCanvas]);
+@@ -23248,8 +23249,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+     return () => { unsubscribe(); if (authRetryTimer) clearTimeout(authRetryTimer); };
+   }, []);
++  const bootHistoryHydrationRef = useRef(null);
+   useEffect(() => {
+-    const onFirestoreSyncUpgraded = () => setHistory(prev => _alloRehydrateShimHistory(prev));
++    const onFirestoreSyncUpgraded = () => _setHistory(prev => {
++        const hydrated = normalizeArtifactInstanceIds(_alloRehydrateShimHistory(prev));
++        if (hydrated !== prev) bootHistoryHydrationRef.current = { previous: prev, current: hydrated };
++        return hydrated;
++    });
+     window.addEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+     return () => window.removeEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+   }, []);
+@@ -23259,6 +23265,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     const isCanvasStudentEntry = () => _alloHasAnyStudentEntry()
+         || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
+     const protectCanvasStudentEntry = () => {
++        if (studentEntryRecoveryProtectedRef.current) { setIsHistoryLoaded(true); return; }
++        studentEntryRecoveryProtectedRef.current = true;
+         canvasRecoveryBootCheckedRef.current = true;
+         isStudentWorkLoaded.current = false;
+         setGlobalPoints(0);
+@@ -23268,7 +23276,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+         canvasRecoveryPendingSaveCountRef.current = 0;
+         canvasRecoveryStoreRef.current = ALLO_WORKSPACE_RECOVERY.emptyStore();
+         canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+-        clearCanvasWorkspaceState();
++        if (!Array.isArray(receivedDeliveryResources) || !receivedDeliveryResources.length) clearCanvasWorkspaceState();
+         setCanvasRecoveryStore(ALLO_WORKSPACE_RECOVERY.emptyStore());
+         setCanvasRecoveryStoreAuthoritative(false);
+         setCanvasRecoveryDecisionMade(true);
+@@ -36443,6 +36451,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);
+   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
+   const pendingQrAssignmentOpenGenerationRef = useRef(0);
++  const savedResourceOpenModules = [['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']];
+   const handleRestoreView = (item, options = {}) => {
+       if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleRestoreView(item, options));
+       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
+@@ -36463,7 +36472,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
+   };
+   // BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE
+-  learningWebRestoreViewRef.current = handleRestoreView;
++  learningWebRestoreViewRef.current = (...args) => handleOpenHistoryResource(...args);
+   learningWebOpenContextRef.current = {
+       current: generatedContent || null,
+       history: (Array.isArray(history) ? history : []).slice(-160),
+@@ -36501,10 +36510,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
+       setPendingHistoryResource(item);
+       try {
+-          await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++          await _alloAwaitModules(savedResourceOpenModules, 'saved resource');
+           if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
+           return context.restore(item, options);
+       } catch (error) {
++          if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
+           warnLog('Saved resource could not open:', error);
+           if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(context.failedLabel(), 'error');
+           return false;
+@@ -36515,17 +36525,47 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   useEffect(() => {
+       if (!pendingQrAssignmentResource || isTeacherMode) return;
+       const resource = pendingQrAssignmentResource;
++      const openContext = historyOpenContextRef.current;
+       let cancelled = false;
+       const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
+       const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
++      const isContextCurrent = () => {
++          if (!isCurrent()) return false;
++          const current = historyOpenContextRef.current;
++          if (openContext === current) return true;
++          const hydration = bootHistoryHydrationRef.current;
++          return !!hydration && openContext?.values?.[1] === hydration.previous
++              && current?.values?.[1] === hydration.current
++              && openContext.values.every((value, index) => index === 1 || value === current.values[index]);
++      };
+       let opened = false;
+       let restoreFailed = false;
+-      const openWhenReady = () => {
+-          if (!isCurrent() || opened || restoreFailed) return false;
++      let transitionPending = false;
++      const openWhenReady = (afterDraftConfirmation = false) => {
++          if (!isCurrent() || opened || restoreFailed || transitionPending) return false;
++          if (!afterDraftConfirmation && !isContextCurrent()) return false;
++          if (savedResourceOpenModules.some(([, key]) => !window.AlloModules?.[key])) return false;
+           const api = window.AlloModules?.MiscHandlers;
+           if (typeof api?.handleRestoreView !== 'function') return false;
++          if (supportDraftSessionRef.current?.blocked()) {
++              transitionPending = true;
++              requestReadingSupportTransition(() => {
++                  transitionPending = false;
++                  return openWhenReady(true);
++              });
++              return false;
++          }
+           try {
+-              const result = handleRestoreView(resource, { suppressLiveFollow: true, preservePendingAssignment: true });
++              const hydration = bootHistoryHydrationRef.current;
++              const deliveryIndex = receivedDeliveryResources.indexOf(resource);
++              const previousIndex = hydration?.previous.indexOf(resource) ?? -1;
++              const sourceIndex = previousIndex >= 0 ? previousIndex
++                  : deliveryIndex >= 0 && hydration?.previous[deliveryIndex]?.id === resource.id
++                      && hydration?.previous[deliveryIndex]?.type === resource.type ? deliveryIndex : -1;
++              const hydratedIndex = hydration && hydration.previous === openContext?.values?.[1]
++                  && hydration.current === historyOpenContextRef.current?.values?.[1] ? sourceIndex : -1;
++              const target = hydratedIndex >= 0 ? hydration.current[hydratedIndex] : resource;
++              const result = handleRestoreView(target, { suppressLiveFollow: true, preservePendingAssignment: true });
+               if (result === false) throw new Error('Homework resource was rejected by the opener');
+               opened = true;
+               setPendingQrAssignmentResource(current => current === resource ? null : current);
+@@ -36537,25 +36577,31 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+               return false;
+           }
+       };
+-      if (openWhenReady() || restoreFailed) return;
+-      // Fragment packs can decode before the deferred resource opener loads.
+-      // Promote that one dependency and keep the packet intact through retries.
++      if (openWhenReady() || restoreFailed || transitionPending) return () => { cancelled = true; };
+       addToast('Opening homework tools…', 'info');
+-      const onModuleChange = () => { openWhenReady(); };
++      const onModuleChange = () => {
++          if (!isContextCurrent()) {
++              window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
++              return;
++          }
++          openWhenReady();
++      };
+       window.addEventListener('alloflow:module-registry-changed', onModuleChange);
+       Promise.resolve().then(() => {
+-          if (!isCurrent() || opened) return;
++          if (!isContextCurrent() || opened) return;
+           if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('Homework loader is not ready');
+-          return window.__alloEnsureLazyModule('MiscHandlersModule', '__alloLazyFileIntake', 'MiscHandlers');
++          return Promise.all(savedResourceOpenModules.map(([name, key]) => {
++              if (window.AlloModules?.[key]) return undefined;
++              const promote = name === 'MiscHandlersModule' ? '__alloLazyFileIntake' : () => window.__alloPromoteModule?.(name);
++              return window.__alloEnsureLazyModule(name, promote, key);
++          }));
+       }).then(() => {
+-          if (isCurrent() && !opened && !restoreFailed && !openWhenReady()) throw new Error('Homework opener is not ready');
++          if (isContextCurrent() && !opened && !restoreFailed && !transitionPending && !openWhenReady()) throw new Error('Homework opener is not ready');
+       }).catch(error => {
+-          if (!isCurrent() || opened || restoreFailed) return;
++          if (!isContextCurrent() || opened || restoreFailed || transitionPending) return;
+           warnLog('Homework tools are not ready:', error);
+           addToast('Homework is still available in History. Use Retry in the loading notice when available, or reload this homework link.', 'warning');
+       });
+-      // The bounded loader stops waiting on failure/timeout. Keep this listener
+-      // so the existing Retry control can finish the same pending open later.
+       return () => {
+           cancelled = true;
+           window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+diff --git "a/reports\\automatic-open-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx" b/desktop/web-app/src/App.jsx
+index c2d9bdf90..786750337 100644
+--- "a/reports\\automatic-open-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx"
++++ b/desktop/web-app/src/App.jsx
+@@ -21618,6 +21618,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+       : '';
+   const canvasRecoveryCurrentIdRef = useRef(_alloStoredLearningWebWorkspaceId || ALLO_WORKSPACE_RECOVERY.newId());
+   const canvasRecoveryBootCheckedRef = useRef(false);
++  const studentEntryRecoveryProtectedRef = useRef(false);
+   useEffect(() => {
+       if (!isCanvas) safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
+   }, [isCanvas]);
+@@ -23248,8 +23249,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+     return () => { unsubscribe(); if (authRetryTimer) clearTimeout(authRetryTimer); };
+   }, []);
++  const bootHistoryHydrationRef = useRef(null);
+   useEffect(() => {
+-    const onFirestoreSyncUpgraded = () => setHistory(prev => _alloRehydrateShimHistory(prev));
++    const onFirestoreSyncUpgraded = () => _setHistory(prev => {
++        const hydrated = normalizeArtifactInstanceIds(_alloRehydrateShimHistory(prev));
++        if (hydrated !== prev) bootHistoryHydrationRef.current = { previous: prev, current: hydrated };
++        return hydrated;
++    });
+     window.addEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+     return () => window.removeEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
+   }, []);
+@@ -23259,6 +23265,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+     const isCanvasStudentEntry = () => _alloHasAnyStudentEntry()
+         || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
+     const protectCanvasStudentEntry = () => {
++        if (studentEntryRecoveryProtectedRef.current) { setIsHistoryLoaded(true); return; }
++        studentEntryRecoveryProtectedRef.current = true;
+         canvasRecoveryBootCheckedRef.current = true;
+         isStudentWorkLoaded.current = false;
+         setGlobalPoints(0);
+@@ -23268,7 +23276,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
+         canvasRecoveryPendingSaveCountRef.current = 0;
+         canvasRecoveryStoreRef.current = ALLO_WORKSPACE_RECOVERY.emptyStore();
+         canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+-        clearCanvasWorkspaceState();
++        if (!Array.isArray(receivedDeliveryResources) || !receivedDeliveryResources.length) clearCanvasWorkspaceState();
+         setCanvasRecoveryStore(ALLO_WORKSPACE_RECOVERY.emptyStore());
+         setCanvasRecoveryStoreAuthoritative(false);
+         setCanvasRecoveryDecisionMade(true);
+@@ -36443,6 +36451,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);
+   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
+   const pendingQrAssignmentOpenGenerationRef = useRef(0);
++  const savedResourceOpenModules = [['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']];
+   const handleRestoreView = (item, options = {}) => {
+       if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleRestoreView(item, options));
+       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
+@@ -36463,7 +36472,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
+   };
+   // BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE
+-  learningWebRestoreViewRef.current = handleRestoreView;
++  learningWebRestoreViewRef.current = (...args) => handleOpenHistoryResource(...args);
+   learningWebOpenContextRef.current = {
+       current: generatedContent || null,
+       history: (Array.isArray(history) ? history : []).slice(-160),
+@@ -36501,10 +36510,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
+       setPendingHistoryResource(item);
+       try {
+-          await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++          await _alloAwaitModules(savedResourceOpenModules, 'saved resource');
+           if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
+           return context.restore(item, options);
+       } catch (error) {
++          if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
+           warnLog('Saved resource could not open:', error);
+           if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(context.failedLabel(), 'error');
+           return false;
+@@ -36515,17 +36525,47 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+   useEffect(() => {
+       if (!pendingQrAssignmentResource || isTeacherMode) return;
+       const resource = pendingQrAssignmentResource;
++      const openContext = historyOpenContextRef.current;
+       let cancelled = false;
+       const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
+       const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
++      const isContextCurrent = () => {
++          if (!isCurrent()) return false;
++          const current = historyOpenContextRef.current;
++          if (openContext === current) return true;
++          const hydration = bootHistoryHydrationRef.current;
++          return !!hydration && openContext?.values?.[1] === hydration.previous
++              && current?.values?.[1] === hydration.current
++              && openContext.values.every((value, index) => index === 1 || value === current.values[index]);
++      };
+       let opened = false;
+       let restoreFailed = false;
+-      const openWhenReady = () => {
+-          if (!isCurrent() || opened || restoreFailed) return false;
++      let transitionPending = false;
++      const openWhenReady = (afterDraftConfirmation = false) => {
++          if (!isCurrent() || opened || restoreFailed || transitionPending) return false;
++          if (!afterDraftConfirmation && !isContextCurrent()) return false;
++          if (savedResourceOpenModules.some(([, key]) => !window.AlloModules?.[key])) return false;
+           const api = window.AlloModules?.MiscHandlers;
+           if (typeof api?.handleRestoreView !== 'function') return false;
++          if (supportDraftSessionRef.current?.blocked()) {
++              transitionPending = true;
++              requestReadingSupportTransition(() => {
++                  transitionPending = false;
++                  return openWhenReady(true);
++              });
++              return false;
++          }
+           try {
+-              const result = handleRestoreView(resource, { suppressLiveFollow: true, preservePendingAssignment: true });
++              const hydration = bootHistoryHydrationRef.current;
++              const deliveryIndex = receivedDeliveryResources.indexOf(resource);
++              const previousIndex = hydration?.previous.indexOf(resource) ?? -1;
++              const sourceIndex = previousIndex >= 0 ? previousIndex
++                  : deliveryIndex >= 0 && hydration?.previous[deliveryIndex]?.id === resource.id
++                      && hydration?.previous[deliveryIndex]?.type === resource.type ? deliveryIndex : -1;
++              const hydratedIndex = hydration && hydration.previous === openContext?.values?.[1]
++                  && hydration.current === historyOpenContextRef.current?.values?.[1] ? sourceIndex : -1;
++              const target = hydratedIndex >= 0 ? hydration.current[hydratedIndex] : resource;
++              const result = handleRestoreView(target, { suppressLiveFollow: true, preservePendingAssignment: true });
+               if (result === false) throw new Error('Homework resource was rejected by the opener');
+               opened = true;
+               setPendingQrAssignmentResource(current => current === resource ? null : current);
+@@ -36537,25 +36577,31 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+               return false;
+           }
+       };
+-      if (openWhenReady() || restoreFailed) return;
+-      // Fragment packs can decode before the deferred resource opener loads.
+-      // Promote that one dependency and keep the packet intact through retries.
++      if (openWhenReady() || restoreFailed || transitionPending) return () => { cancelled = true; };
+       addToast('Opening homework tools…', 'info');
+-      const onModuleChange = () => { openWhenReady(); };
++      const onModuleChange = () => {
++          if (!isContextCurrent()) {
++              window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
++              return;
++          }
++          openWhenReady();
++      };
+       window.addEventListener('alloflow:module-registry-changed', onModuleChange);
+       Promise.resolve().then(() => {
+-          if (!isCurrent() || opened) return;
++          if (!isContextCurrent() || opened) return;
+           if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('Homework loader is not ready');
+-          return window.__alloEnsureLazyModule('MiscHandlersModule', '__alloLazyFileIntake', 'MiscHandlers');
++          return Promise.all(savedResourceOpenModules.map(([name, key]) => {
++              if (window.AlloModules?.[key]) return undefined;
++              const promote = name === 'MiscHandlersModule' ? '__alloLazyFileIntake' : () => window.__alloPromoteModule?.(name);
++              return window.__alloEnsureLazyModule(name, promote, key);
++          }));
+       }).then(() => {
+-          if (isCurrent() && !opened && !restoreFailed && !openWhenReady()) throw new Error('Homework opener is not ready');
++          if (isContextCurrent() && !opened && !restoreFailed && !transitionPending && !openWhenReady()) throw new Error('Homework opener is not ready');
+       }).catch(error => {
+-          if (!isCurrent() || opened || restoreFailed) return;
++          if (!isContextCurrent() || opened || restoreFailed || transitionPending) return;
+           warnLog('Homework tools are not ready:', error);
+           addToast('Homework is still available in History. Use Retry in the loading notice when available, or reload this homework link.', 'warning');
+       });
+-      // The bounded loader stops waiting on failure/timeout. Keep this listener
+-      // so the existing Retry control can finish the same pending open later.
+       return () => {
+           cancelled = true;
+           window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+diff --git "a/reports\\automatic-open-enhancements-2026-09-29\\before\\tests\\student_assignment_restore_readiness.test.js" b/tests/student_assignment_restore_readiness.test.js
+index 9971fe74f..87714ee23 100644
+--- "a/reports\\automatic-open-enhancements-2026-09-29\\before\\tests\\student_assignment_restore_readiness.test.js"
++++ b/tests/student_assignment_restore_readiness.test.js
+@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
+ 
+ const { createSession } = createRequire(import.meta.url)('../reader_support_drafts.js');
+ 
+-const source = readFileSync('AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
++const source = readFileSync(process.env.ALLO_ANTI_CANDIDATE || 'AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
+ function section(start, end) {
+   const from = source.indexOf(start), to = source.indexOf(end, from + start.length);
+   if (from < 0 || to < 0) throw new Error('Missing student restore source boundary: ' + start);
+@@ -20,7 +20,45 @@ const resource = id => ({
+   readingSupports: { annotations: [{ quote: 'Fair', text: 'Teacher-selected meaning', origin: 'educator', pinned: true }] }
+ });
+ 
+-function harness({ ready = false, throwing = false, rejecting = false, withoutEnsure = false, draftSession = null } = {}) {
++describe('automatic homework during unsaved reading-support edits', () => {
++  function draftHarness() {
++    const session = createSession(); let dirty = true, transition;
++    session.register({ hasChanges: () => dirty, defer: next => { transition = next; } });
++    return { h: harness({ ready: true, draftSession: session }), get transition() { return transition; }, save() { dirty = false; } };
++  }
++  it('asks once without a false failure and opens after Save and continue updates the workspace', async () => {
++    const f = draftHarness(), item = resource('save-and-open'); f.h.run(item); await flush(); f.h.notify();
++    expect(f.h.requestReadingSupportTransition).toHaveBeenCalledOnce(); expect(f.h.api.handleRestoreView).not.toHaveBeenCalled();
++    expect(f.h.pending).toBe(item); expect(f.h.addToast.mock.calls.filter(([, level]) => level === 'warning')).toHaveLength(0);
++    f.save(); f.h.changeContext(); f.transition.run(); await flush();
++    expect(f.h.api.handleRestoreView).toHaveBeenCalledExactlyOnceWith(item, { suppressLiveFollow: true }, expect.any(Object));
++    expect(f.h.pending).toBeNull(); f.h.cleanup(); expect(f.h.listeners.size).toBe(0);
++  });
++  it('keeps homework recoverable when the learner chooses Keep editing', async () => {
++    const f = draftHarness(), item = resource('keep-editing'); f.h.run(item); await flush(); f.transition.cancel(); f.h.notify();
++    expect(f.h.pending).toBe(item); expect(f.h.api.handleRestoreView).not.toHaveBeenCalled();
++    expect(f.h.requestReadingSupportTransition).toHaveBeenCalledOnce();
++    expect(f.h.addToast.mock.calls.filter(([, level]) => level === 'warning')).toHaveLength(0); f.h.cleanup();
++  });
++  it('does not open a replaced packet when an old confirmation is accepted', async () => {
++    const f = draftHarness(), old = resource('old-prompt'), next = resource('new-packet');
++    f.h.run(old); await flush(); const oldTransition = f.transition; f.h.run(next); await flush();
++    f.save(); oldTransition.run(); await flush();
++    expect(f.h.api.handleRestoreView).not.toHaveBeenCalled(); expect(f.h.pending).toBe(next); f.h.cleanup();
++  });
++  it('does not run a deferred automatic open after unmount', async () => {
++    const f = draftHarness(), item = resource('unmounted-prompt'); f.h.run(item); await flush(); f.h.cleanup();
++    f.save(); f.transition.run(); await flush(); expect(f.h.api.handleRestoreView).not.toHaveBeenCalled(); expect(f.h.pending).toBe(item);
++  });
++  it('lets a successful manual open supersede the queued automatic transition', async () => {
++    const f = draftHarness(), item = resource('pending-prompt'), chosen = resource('manual-choice');
++    f.h.run(item); await flush(); f.save(); f.h.manualOpen(chosen); f.transition.run(); await flush();
++    expect(f.h.api.handleRestoreView).toHaveBeenCalledExactlyOnceWith(chosen, {}, expect.any(Object));
++    expect(f.h.pending).toBeNull(); f.h.cleanup();
++  });
++});
++
++function harness({ ready = false, missingHelpers = [], throwing = false, rejecting = false, withoutEnsure = false, draftSession = null } = {}) {
+   vi.useFakeTimers();
+   const listeners = new Set();
+   const events = new EventTarget();
+@@ -29,8 +67,9 @@ function harness({ ready = false, throwing = false, rejecting = false, withoutEn
+     if (rejecting) return false;
+   }) };
+   const window = {
+-    AlloModules: ready ? { MiscHandlers: api } : {}, __alloModuleRegistry: {},
++    AlloModules: { ...(ready ? { MiscHandlers: api } : {}), ...Object.fromEntries(['PureHelpers', 'PhaseNHelpers', 'TextUtilityHelpers'].filter(key => !missingHelpers.includes(key)).map(key => [key, {}])) }, __alloModuleRegistry: {},
+     __alloRetryFailedModules: vi.fn(),
++    __alloPromoteModule: vi.fn(name => { window.__alloModuleRegistry[name] = { status: 'pending' }; }),
+     addEventListener: (name, fn) => { listeners.add(fn); events.addEventListener(name, fn); },
+     removeEventListener: (name, fn) => { listeners.delete(fn); events.removeEventListener(name, fn); }
+   };
+@@ -40,6 +79,8 @@ function harness({ ready = false, throwing = false, rejecting = false, withoutEn
+   let pending, cleanup, restore;
+   const generationRef = { current: 0 };
+   const supportDraftSessionRef = { current: draftSession };
++  const historyOpenContextRef = { current: {} };
++  const bootHistoryHydrationRef = { current: null };
+   const requestReadingSupportTransition = vi.fn(run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run) : run());
+   const setPending = vi.fn(value => { pending = typeof value === 'function' ? value(pending) : value; });
+   const notify = () => events.dispatchEvent(new Event('alloflow:module-registry-changed'));
+@@ -48,23 +89,82 @@ function harness({ ready = false, throwing = false, rejecting = false, withoutEn
+     run(item, teacher = false) {
+       cleanup?.(); pending = item; let callback;
+       restore = new Function('window', '_alloMiscHandlersDeps', 'useRef', 'useEffect', 'pendingQrAssignmentResource', 'isTeacherMode', 'setPendingQrAssignmentResource', 'addToast', 'warnLog',
+-        'supportDraftSessionRef', 'requestReadingSupportTransition',
++        'supportDraftSessionRef', 'requestReadingSupportTransition', 'historyOpenContextRef', 'bootHistoryHydrationRef', 'receivedDeliveryResources',
+         wrapper + '\n' + effect + '\nreturn handleRestoreView;')(
+         window, () => deps, () => generationRef, fn => { callback = fn; }, item, teacher, setPending, addToast, warnLog,
+-        supportDraftSessionRef, requestReadingSupportTransition,
++        supportDraftSessionRef, requestReadingSupportTransition, historyOpenContextRef, bootHistoryHydrationRef, item ? [item] : [],
+       );
+       cleanup = callback();
+     },
+     manualOpen(item) { return restore(item); },
+     cleanup() { cleanup?.(); cleanup = null; },
+-    ready() { window.AlloModules.MiscHandlers = api; window.__alloModuleRegistry.MiscHandlersModule = { status: 'loaded' }; notify(); },
+-    fail() { window.__alloModuleRegistry.MiscHandlersModule = { status: 'failed' }; notify(); },
++    ready(key = 'MiscHandlers') { window.AlloModules[key] = key === 'MiscHandlers' ? api : {}; window.__alloModuleRegistry[key + 'Module'] = { status: 'loaded' }; notify(); },
++    fail(key = 'MiscHandlers') { window.__alloModuleRegistry[key + 'Module'] = { status: 'failed' }; notify(); },
++    changeContext() { historyOpenContextRef.current = {}; },
++    hydrate(item, next, navigated = false) {
++      const previous = [{ ...item, artifactInstanceId: 'canonical-instance' }], current = [next], values = ['source', previous, null, 'input'];
++      Object.assign(historyOpenContextRef.current, { values });
++      bootHistoryHydrationRef.current = { previous, current };
++      historyOpenContextRef.current = { values: ['source', current, null, navigated ? 'dashboard' : 'input'] };
++    },
+     notify
+   };
+ }
+ afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+ 
+ describe('cold student assignment restore', () => {
++  it('opens the normalized legacy packet after the actual startup history upgrade', async () => {
++    const h = harness(), item = resource('legacy-packet'), normalized = { ...item, data: 'Hydrated reading', dataEncoding: 'text/v1' };
++    h.run(item); await flush(); h.hydrate(item, normalized); h.ready(); await flush();
++    expect(h.api.handleRestoreView).toHaveBeenCalledExactlyOnceWith(normalized, { suppressLiveFollow: true }, expect.any(Object));
++    expect(h.api.handleRestoreView.mock.calls[0][0].sourceSnapshot).toBe(item.sourceSnapshot);
++    expect(h.api.handleRestoreView.mock.calls[0][0].readingSupports).toBe(item.readingSupports);
++    expect(h.pending).toBeNull(); h.cleanup();
++  });
++  it('still cancels a workspace change that accompanies startup history normalization', async () => {
++    const h = harness(), item = resource('navigated-legacy'), normalized = { ...item, dataEncoding: 'text/v1' };
++    h.run(item); await flush(); h.hydrate(item, normalized, true); h.ready(); await flush();
++    expect(h.api.handleRestoreView).not.toHaveBeenCalled(); expect(h.pending).toBe(item);
++    expect(h.addToast.mock.calls.filter(([, level]) => level === 'warning')).toHaveLength(0); h.cleanup();
++  });
++  it.each(['PureHelpers', 'PhaseNHelpers', 'TextUtilityHelpers'])('waits for %s even when the resource handler is ready', async key => {
++    const h = harness({ ready: true, missingHelpers: [key] }), item = resource('waiting-for-' + key);
++    h.run(item); await flush();
++    expect(h.api.handleRestoreView).not.toHaveBeenCalled(); expect(h.pending).toBe(item);
++    expect(h.window.__alloPromoteModule).toHaveBeenCalledWith(key + 'Module');
++    h.ready(key); await flush(); h.notify();
++    expect(h.api.handleRestoreView).toHaveBeenCalledExactlyOnceWith(item, { suppressLiveFollow: true }, expect.any(Object));
++    expect(h.pending).toBeNull(); h.cleanup(); expect(h.listeners.size).toBe(0);
++  });
++  it('waits for the complete rendering chain rather than whichever helper registers first', async () => {
++    const h = harness({ ready: true, missingHelpers: ['PureHelpers', 'PhaseNHelpers', 'TextUtilityHelpers'] }), item = resource('complete-chain');
++    h.run(item); await flush(); h.ready('PureHelpers'); await flush(); h.ready('PhaseNHelpers'); await flush();
++    expect(h.api.handleRestoreView).not.toHaveBeenCalled(); expect(h.pending).toBe(item);
++    h.ready('TextUtilityHelpers'); await flush(); expect(h.api.handleRestoreView).toHaveBeenCalledOnce();
++    h.cleanup(); expect(h.listeners.size).toBe(0);
++  });
++  it('retains the packet after a rendering-helper failure and recovers after retry', async () => {
++    const h = harness({ ready: true, missingHelpers: ['PureHelpers'] }), item = resource('reader-retry');
++    h.run(item); await flush(); h.fail('PureHelpers'); await flush();
++    expect(h.api.handleRestoreView).not.toHaveBeenCalled(); expect(h.pending).toBe(item);
++    expect(h.addToast).toHaveBeenCalledWith(expect.stringContaining('Retry'), 'warning');
++    h.ready('PureHelpers'); await flush(); expect(h.api.handleRestoreView).toHaveBeenCalledOnce();
++    expect(h.pending).toBeNull(); h.cleanup(); expect(h.listeners.size).toBe(0);
++  });
++  it('stops a late automatic open when the workspace changes and leaves homework recoverable', async () => {
++    const h = harness(), item = resource('navigation-cancelled'); h.run(item); await flush();
++    h.changeContext(); h.ready(); await flush(); h.notify();
++    expect(h.api.handleRestoreView).not.toHaveBeenCalled(); expect(h.pending).toBe(item);
++    expect(h.addToast.mock.calls.filter(([, level]) => level === 'warning')).toHaveLength(0);
++    h.cleanup(); expect(h.listeners.size).toBe(0);
++  });
++  it('cancels obsolete helper failures quietly after a workspace change', async () => {
++    const h = harness({ ready: true, missingHelpers: ['PureHelpers'] }), item = resource('quiet-cancel');
++    h.run(item); await flush(); h.changeContext(); h.fail('PureHelpers'); await flush();
++    expect(h.pending).toBe(item); expect(h.api.handleRestoreView).not.toHaveBeenCalled();
++    expect(h.addToast.mock.calls.filter(([, level]) => level === 'warning')).toHaveLength(0);
++    h.cleanup(); expect(h.listeners.size).toBe(0);
++  });
+   it('promotes the opener and retains exact source/support payload until ready, opening once', async () => {
+     const h = harness(), item = resource('selected-companion');
+     expect(() => h.run(item)).not.toThrow();
+diff --git "a/reports\\automatic-open-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json" b/dev-tools/remediation_validation.json
+index 02a67a4e8..453fc0777 100644
+--- "a/reports\\automatic-open-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json"
++++ b/dev-tools/remediation_validation.json
+@@ -51,7 +51,10 @@
+     "tests/project_save_cancellation_encryption.test.js",
+     "tests/history_resource_open_readiness.test.js",
+     "tests/saved_resource_restore_validation.test.js",
+-    "tests/history_resource_loading_ui.test.js"
++    "tests/history_resource_loading_ui.test.js",
++    "tests/student_assignment_restore_readiness.test.js",
++    "tests/learning_web_resource_readiness.test.js",
++    "tests/student_entry_recovery_race.test.js"
+   ],
+   "browser": [
+     "tests/e2e/document_dependency_parity.spec.ts",
+@@ -182,6 +185,14 @@
+     "text_utility_helpers_source.jsx",
+     "text_utility_helpers_module.js",
+     "desktop/web-app/public/text_utility_helpers_module.js",
+-    "_build_text_utility_helpers_module.js"
++    "_build_text_utility_helpers_module.js",
++    "tests/student_assignment_restore_readiness.test.js",
++    "tests/learning_web_resource_readiness.test.js",
++    "reader_support_drafts.js",
++    "host_handlers_source.jsx",
++    "host_handlers_module.js",
++    "desktop/web-app/public/host_handlers_module.js",
++    "tests/helpers/host_source.js",
++    "tests/student_entry_recovery_race.test.js"
+   ]
+ }
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-enhancing/verification/empty-before b/tests/learning_web_resource_readiness.test.js
+index e69de29bb..5da9212a7 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-enhancing/verification/empty-before
++++ b/tests/learning_web_resource_readiness.test.js
+@@ -0,0 +1,95 @@
++import { afterEach, describe, expect, it, vi } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { loadHostHandlersFactory, hostDeps } from './helpers/host_source.js';
++
++const host = readFileSync(process.env.ALLO_ANTI_CANDIDATE || 'AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
++function section(start, end) {
++  const a = host.indexOf(start), b = host.indexOf(end, a + start.length);
++  if (a < 0 || b < a) throw Error('Missing Learning Web host boundary: ' + start);
++  return host.slice(a, b);
++}
++// Evaluate the actual render order: the callback is assigned before its async
++// opener is declared, and called later by the real HostHandlers timer.
++const body = section('  const pendingQrAssignmentOpenGenerationRef = useRef(0);', '  useEffect(() => {\n      if (!pendingQrAssignmentResource || isTeacherMode) return;');
++const factory = loadHostHandlersFactory();
++const resource = id => ({ id, type: 'simplified', data: id + ' reading', sourceSnapshot: { text: id + ' source' }, readingSupports: { annotations: [{ text: id + ' support' }] } });
++const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
++
++function make({ throwing = false, handlerReady = false } = {}) {
++  vi.useFakeTimers();
++  const hooks = [], cleanups = []; let index = 0, resolve, reject;
++  const load = new Promise((yes, no) => { resolve = yes; reject = no; });
++  const dispatch = vi.fn(() => { if (throwing) throw Error('Reader failed'); });
++  const env = {
++    window: { AlloModules: handlerReady ? { MiscHandlers: { handleRestoreView: dispatch } } : {} }, inputText: '', history: [resource('A'), resource('B')], generatedContent: null,
++    activeView: 'input', activeSidebarTab: 'history', workspacePane: 'history', isTeacherMode: true,
++    isParentMode: false, isIndependentMode: false, activeSessionCode: '', activeSessionAppId: 'project-A',
++    learningWebRestoreViewRef: { current: null }, learningWebOpenContextRef: { current: null }, learningWebOpenTimerRef: { current: null },
++    _alloLearningWebScopeId: () => env.activeSessionAppId, setShowLearningWebExplorer: vi.fn(),
++    _alloMiscHandlersDeps: () => ({ marker: 'live deps' }), _alloAwaitModules: vi.fn(() => load),
++    supportDraftSessionRef: { current: null }, requestReadingSupportTransition: vi.fn(run => run()),
++    setPendingQrAssignmentResource: vi.fn(), addToast: vi.fn(), warnLog: vi.fn(), t: key => key,
++    useRef: value => hooks[index++] ||= { current: value },
++    useState: value => { const slot = index++; hooks[slot] ||= { value }; return [hooks[slot].value, next => { hooks[slot].value = next; }]; },
++    useEffect: fn => { const slot = index++; if (!hooks[slot]) { hooks[slot] = true; cleanups.push(fn()); } },
++  };
++  env._alloHostHandlers = () => factory(hostDeps(env));
++  const scope = new Proxy(env, { has: () => true, get: (target, key) => key === Symbol.unscopables ? undefined : key in target ? target[key] : globalThis[key] });
++  const render = () => { index = 0; return new Function('scope', 'with(scope) {' + body + '\nreturn handleOpenLearningWebResource; }')(scope); };
++  const open = render();
++  return { env, dispatch, open, render, generation: hooks[0],
++    ready() { env.window.AlloModules = { MiscHandlers: { handleRestoreView: dispatch }, PureHelpers: {}, PhaseNHelpers: {}, TextUtilityHelpers: {} }; resolve(); },
++    fail: () => reject(Error('Reader dependency failed')), unmount: () => cleanups.forEach(fn => fn?.()),
++  };
++}
++afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
++
++describe('Learning Web saved-resource readiness', () => {
++  it('accepts a selection synchronously and waits for the complete reader chain through the production bridge', async () => {
++    const f = make({ handlerReady: true }), item = f.env.history[0];
++    expect(f.open({ resourceId: 'A' })).toBe(true); expect(f.env.setShowLearningWebExplorer).toHaveBeenCalledWith(false);
++    await vi.advanceTimersByTimeAsync(50);
++    expect(f.env._alloAwaitModules).toHaveBeenCalledWith([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++    expect(f.dispatch).not.toHaveBeenCalled(); expect(f.generation.current).toBe(1);
++    f.ready(); await flush();
++    expect(f.dispatch).toHaveBeenCalledExactlyOnceWith(item, {}, { marker: 'live deps' });
++    expect(f.dispatch.mock.calls[0][0].sourceSnapshot).toBe(item.sourceSnapshot);
++    expect(f.dispatch.mock.calls[0][0].readingSupports).toBe(item.readingSupports);
++    expect(f.env.setPendingQrAssignmentResource).toHaveBeenCalledWith(null);
++  });
++  it('opens the latest resource after a replacement before the timer runs', async () => {
++    const f = make(); f.open({ resourceId: 'A' });
++    const replacement = resource('A'); replacement.data = 'Updated reading'; f.env.history = [replacement]; f.render();
++    await vi.advanceTimersByTimeAsync(50); f.ready(); await flush();
++    expect(f.dispatch).toHaveBeenCalledExactlyOnceWith(replacement, {}, expect.any(Object));
++  });
++  it('coalesces selections before and during module loading', async () => {
++    const f = make(); f.open({ resourceId: 'A' }); await vi.advanceTimersByTimeAsync(50);
++    f.open({ resourceId: 'B' }); await vi.advanceTimersByTimeAsync(50); f.ready(); await flush();
++    expect(f.dispatch).toHaveBeenCalledOnce(); expect(f.dispatch.mock.calls[0][0]).toBe(f.env.history[1]);
++  });
++  it('cancels after a workspace edit during module loading', async () => {
++    const f = make(); f.open({ resourceId: 'A' }); await vi.advanceTimersByTimeAsync(50);
++    f.env.inputText = 'New source'; f.render(); f.ready(); await flush();
++    expect(f.dispatch).not.toHaveBeenCalled(); expect(f.env.setPendingQrAssignmentResource).not.toHaveBeenCalled();
++  });
++  it('keeps an obsolete loading failure quiet after navigation', async () => {
++    const f = make(); f.open({ resourceId: 'A' }); await vi.advanceTimersByTimeAsync(50);
++    f.env.activeView = 'create'; f.render(); f.fail(); await flush();
++    expect(f.dispatch).not.toHaveBeenCalled(); expect(f.env.addToast).not.toHaveBeenCalled();
++  });
++  it('contains an unexpected opener exception without an uncaught timer rejection', async () => {
++    const f = make({ throwing: true }); f.open({ resourceId: 'A' }); await vi.advanceTimersByTimeAsync(50); f.ready(); await flush();
++    expect(f.dispatch).toHaveBeenCalledOnce(); expect(f.env.addToast).toHaveBeenCalledWith(expect.stringContaining('Could not open'), 'error');
++    expect(f.env.setPendingQrAssignmentResource).not.toHaveBeenCalled();
++  });
++  it('does not open after a project switch before the timer fires', async () => {
++    const f = make(); f.open({ resourceId: 'A' }); f.env.activeSessionAppId = 'project-B'; f.render();
++    await vi.advanceTimersByTimeAsync(50); f.ready(); await flush();
++    expect(f.env._alloAwaitModules).not.toHaveBeenCalled(); expect(f.dispatch).not.toHaveBeenCalled();
++  });
++  it('does not open after unmount during loading', async () => {
++    const f = make(); f.open({ resourceId: 'A' }); await vi.advanceTimersByTimeAsync(50); f.unmount(); f.ready(); await flush();
++    expect(f.dispatch).not.toHaveBeenCalled(); expect(f.env.setPendingQrAssignmentResource).not.toHaveBeenCalled();
++  });
++});
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-enhancing/verification/empty-before b/tests/student_entry_recovery_race.test.js
+index e69de29bb..738e0d5fa 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-enhancing/verification/empty-before
++++ b/tests/student_entry_recovery_race.test.js
+@@ -0,0 +1,96 @@
++import { describe, expect, it, vi } from 'vitest';
++import { readFileSync } from 'node:fs';
++
++const host = readFileSync(process.env.ALLO_ANTI_CANDIDATE || 'AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
++const start = host.indexOf('  useEffect(() => {\n    if (!lzLoaded) return;');
++const end = host.indexOf('  const offlineHistoryWriteRef =', start);
++if (start < 0 || end < start) throw Error('Missing local recovery effect');
++const effect = host.slice(start, end);
++const packet = [{ id: 'homework-A', type: 'simplified', data: 'Delivered reading' }];
++const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
++
++function make({ entry = true, delivered = true, canvas = false, saved = null } = {}) {
++  let callback, cleanup;
++  const env = {
++    lzLoaded: true, isCanvas: canvas, isTeacherMode: true, isStorageDisabled: false, activeSessionCode: '', isHistoryLoaded: false,
++    entry, receivedDeliveryResources: delivered ? packet : [], history: delivered ? packet : [], generatedContent: delivered ? packet[0] : null,
++    _alloHasAnyStudentEntry: () => env.entry, _alloMbBridgeActive: () => false, _alloReadMailboxEntryParam: () => '',
++    canvasRecoveryBootCheckedRef: { current: false }, studentEntryRecoveryProtectedRef: { current: false }, isStudentWorkLoaded: { current: true },
++    canvasRecoverySaveTokenRef: { current: 0 }, canvasRecoveryPendingSaveCountRef: { current: 0 },
++    canvasRecoveryStoreRef: { current: {} }, canvasRecoveryCurrentIdRef: { current: '' }, localDataHydrationGenerationRef: { current: 0 },
++    ALLO_WORKSPACE_RECOVERY: { emptyStore: () => ({ snapshots: [] }), newId: () => 'fresh-id' },
++    setIsHistoryLoaded: vi.fn(value => { env.isHistoryLoaded = value; }),
++    clearCanvasWorkspaceState: vi.fn(() => { env.history = []; env.generatedContent = null; }),
++    setHistory: vi.fn(value => { env.history = value; }), hydrateHistory: vi.fn(items => items),
++    storageDB: { get: vi.fn(key => Promise.resolve(key === 'allo_offline_history' ? saved : null)) },
++    warnLog: vi.fn(), addToastRef: { current: vi.fn() }, t: key => key,
++    useEffect: fn => { callback = fn; },
++  };
++  const setters = ['setGlobalPoints', 'setPointHistory', 'setHasSavedAdventure', 'setCanvasRecoveryStore', 'setCanvasRecoveryStoreAuthoritative', 'setCanvasRecoveryDecisionMade', 'setCanvasRecoveryDialogMode', 'setCanvasRecoverySaveStatus', 'setCanvasRecoveryError', 'setLastSaved', 'setPendingSync', 'setProfiles', 'setUnits'];
++  setters.forEach(key => { env[key] = vi.fn(); });
++  const scope = new Proxy(env, { has: () => true, get: (target, key) => key === Symbol.unscopables ? undefined : key in target ? target[key] : globalThis[key] });
++  return { env, run() { cleanup?.(); new Function('scope', 'with(scope) {' + effect + '}')(scope); cleanup = callback(); }, deliver() { env.history = packet; env.generatedContent = packet[0]; env.receivedDeliveryResources = packet; } };
++}
++
++describe('student-entry recovery and homework startup', () => {
++  it.each([false, true])('keeps an already delivered packet when recovery starts late (Canvas=%s)', async canvas => {
++    const f = make({ canvas, saved: { items: [{ id: 'old-teacher-work' }] } }); f.run(); await flush();
++    expect(f.env.clearCanvasWorkspaceState).not.toHaveBeenCalled(); expect(f.env.storageDB.get).not.toHaveBeenCalled();
++    expect(f.env.history).toBe(packet); expect(f.env.generatedContent).toBe(packet[0]); expect(f.env.isHistoryLoaded).toBe(true);
++    expect(f.env.setCanvasRecoverySaveStatus).toHaveBeenCalledWith('inactive');
++  });
++  it('clears prior workspace state once when student entry precedes delivery', async () => {
++    const f = make({ delivered: false }); f.run(); expect(f.env.clearCanvasWorkspaceState).toHaveBeenCalledOnce();
++    f.deliver(); f.env.isTeacherMode = false; f.run(); await flush();
++    expect(f.env.clearCanvasWorkspaceState).toHaveBeenCalledOnce(); expect(f.env.history).toBe(packet); expect(f.env.generatedContent).toBe(packet[0]);
++    expect(f.env.setGlobalPoints).toHaveBeenCalledOnce(); expect(f.env.storageDB.get).not.toHaveBeenCalled();
++  });
++  it('does not clear again while the learner is waiting for delivery', () => {
++    const f = make({ delivered: false }); f.run(); f.env.isTeacherMode = false; f.run();
++    expect(f.env.clearCanvasWorkspaceState).toHaveBeenCalledOnce(); expect(f.env.setGlobalPoints).toHaveBeenCalledOnce();
++  });
++  it('preserves ordinary local-history recovery outside student entry', async () => {
++    const cached = [{ id: 'cached-reading' }], f = make({ entry: false, delivered: false, saved: { items: cached } });
++    f.run(); await flush(); expect(f.env.setHistory).toHaveBeenCalledWith(cached); expect(f.env.history).toBe(cached);
++    expect(f.env.clearCanvasWorkspaceState).not.toHaveBeenCalled(); expect(f.env.isHistoryLoaded).toBe(true);
++  });
++  it('ignores a cached read that resolves after student delivery replaces its effect', async () => {
++    let resolve; const f = make({ entry: false, delivered: false });
++    f.env.storageDB.get.mockImplementationOnce(() => new Promise(done => { resolve = done; })); f.run();
++    f.env.entry = true; f.deliver(); f.env.isTeacherMode = false; f.run(); resolve({ items: [{ id: 'obsolete-cache' }] }); await flush();
++    expect(f.env.setHistory).not.toHaveBeenCalled(); expect(f.env.history).toBe(packet); expect(f.env.clearCanvasWorkspaceState).not.toHaveBeenCalled();
++  });
++});
++
++describe('production startup history upgrade tracking', () => {
++  function bridge(items) {
++    const a = host.indexOf('  const bootHistoryHydrationRef = useRef(null);');
++    const b = host.indexOf('  useEffect(() => {\n    if (!lzLoaded) return;', a);
++    const h = host.indexOf('function _alloRehydrateShimHistory(items) {');
++    const e = host.indexOf('\n}', h) + 2;
++    if (a < 0 || b < a || h < 0 || e < h) throw Error('Missing startup upgrade bridge');
++    let current = items, cleanup; const window = new EventTarget();
++    const hydrateHistory = vi.fn(rows => rows.map(item => ({ ...item, data: 'Normalized reading', dataEncoding: 'text/v1' })));
++    const normalize = new Function('hydrateHistory', host.slice(h, e) + '; return _alloRehydrateShimHistory;')(hydrateHistory);
++    const setHistory = vi.fn(update => { current = update(current); });
++    const canonicalize = vi.fn(rows => rows.map(item => ({ ...item, artifactInstanceId: 'canonical-instance' })));
++    const ref = new Function('window', 'useRef', 'useEffect', '_setHistory', '_alloRehydrateShimHistory', 'normalizeArtifactInstanceIds', host.slice(a, b) + '\nreturn bootHistoryHydrationRef;')(
++      window, value => ({ current: value }), fn => { cleanup = fn(); }, setHistory, normalize, canonicalize,
++    );
++    return { ref, setHistory, get current() { return current; }, upgrade: () => window.dispatchEvent(new Event('allo-firestore-sync-upgraded')), cleanup: () => cleanup() };
++  }
++  it('records the exact previous and normalized arrays from the real module upgrade event', () => {
++    const items = [{ id: 'legacy', data: 'Legacy encoded reading' }], f = bridge(items); f.upgrade();
++    expect(f.ref.current).toMatchObject({ previous: items, current: f.current });
++    expect(f.ref.current.previous).toBe(items); expect(f.ref.current.current).toBe(f.current);
++    expect(f.current[0].data).toBe('Normalized reading'); expect(f.current[0].dataEncoding).toBe('text/v1'); f.cleanup();
++  });
++  it('tracks the canonical artifact array when the reading already has current encoding', () => {
++    const items = [{ id: 'current', data: 'Current reading', dataEncoding: 'text/v1' }], f = bridge(items); f.upgrade();
++    expect(f.current[0].data).toBe(items[0].data); expect(f.ref.current.previous).toBe(items); expect(f.ref.current.current).toBe(f.current); f.cleanup();
++  });
++  it('removes the startup listener when the host unmounts', () => {
++    const f = bridge([{ id: 'late', data: 'Late reading' }]); f.cleanup(); f.upgrade();
++    expect(f.setHistory).not.toHaveBeenCalled(); expect(f.ref.current).toBeNull();
++  });
++});

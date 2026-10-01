@@ -1,0 +1,40 @@
+{
+  "records": {
+    "spotter": {
+      "canvasTop": 674.09375,
+      "questionTop": 1324.53125,
+      "questionFont": "13px",
+      "focusedHook": "true",
+      "answerFocus": {
+        "tag": "BODY",
+        "disabled": false,
+        "feedback": false
+      }
+    },
+    "imaging": {
+      "canvasTop": 923.9375,
+      "questionTop": 3283.34375,
+      "challenge": {
+        "active": true,
+        "target": "Lateral ventricles",
+        "result": null,
+        "clickX": null,
+        "clickY": null,
+        "score": 0,
+        "total": 0,
+        "labelsWere": true
+      },
+      "changedScan": {
+        "active": true,
+        "target": "Lateral ventricles",
+        "result": null,
+        "clickX": null,
+        "clickY": null,
+        "score": 0,
+        "total": 0,
+        "labelsWere": true
+      }
+    }
+  },
+  "errors": []
+}

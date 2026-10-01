@@ -1,0 +1,48 @@
+{
+  "head": "286e09850680047d44efcc836075916cf488eff6",
+  "baselineHead": "13ebcc73f5784436643adc7c12ff8d83d5b29028",
+  "inspectedAt": "2026-09-27T16:15:02.476Z",
+  "files": {
+    "content_engine_source.jsx": {
+      "sourceUnchanged": true,
+      "candidateUnchanged": true,
+      "fullPatchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true,
+      "incrementReproducesCandidate": true
+    },
+    "view_simplified_source.jsx": {
+      "sourceUnchanged": true,
+      "candidateUnchanged": true,
+      "fullPatchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true
+    },
+    "host_handlers_source.jsx": {
+      "sourceUnchanged": true,
+      "candidateUnchanged": true,
+      "fullPatchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true
+    },
+    "dictionary_loader.js": {
+      "sourceUnchanged": true,
+      "candidateUnchanged": true,
+      "fullPatchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true
+    }
+  },
+  "checks": {
+    "dependenciesUnchanged": true,
+    "artifactsUnchanged": true,
+    "testsPassed": true
+  },
+  "tests": {
+    "passed": 394,
+    "failed": 0,
+    "skipped": 0,
+    "files": 14
+  },
+  "verified": true
+}

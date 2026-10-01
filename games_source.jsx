@@ -1572,6 +1572,11 @@ const TIMELINE_PASTEL_COLORS = [
   'bg-green-50 border-green-200 hover:border-green-300 text-green-900',
   'bg-red-50 border-red-200 hover:border-red-300 text-red-900'
 ];
+// "N pts" label; the default games context echoes a missing key, so fall back on that too.
+const gamePointsLabel = (t, n) => {
+  const s = t('games.points_value', { score: n });
+  return s && s !== 'games.points_value' ? s : `${n} pts`;
+};
 const createTimelineDerangement = (arr) => {
   const n = arr.length;
   if (n <= 1) return arr;
@@ -1632,6 +1637,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [explanations, setExplanations] = useState({}); // originalIndex -> text | 'loading'
   const [hintHidden, setHintHidden] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
+  // Sticky for this data: a later scored round still reports the earlier reveal.
+  const revealedThisSessionRef = useRef(false);
   const itemRefs = useRef([]);
   const itemButtonRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
@@ -1655,6 +1662,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     setExplanations({});
     setHintHidden(false);
     setAnswerRevealed(false);
+    revealedThisSessionRef.current = false;
     setAnnouncement(t('timeline.game.start_announcement'));
     setKeyboardLiftedIdx(null);
   }, [data]);
@@ -1790,6 +1798,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             totalEvents: items.length,
             attempts: attempts + 1,
             hintsUsed,
+            answerRevealed: revealedThisSessionRef.current,
             bestScore: Math.max(bestScore, totalPoints)
           });
         }
@@ -1804,8 +1813,10 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
         if (playSound) playSound('incorrect');
     }
   };
+  // The host sets this while student AI is off (project setting or a QR link without AI).
+  const studentAiOff = typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
   const handleExplainClick = async (item) => {
-      if (!onExplainIncorrect) return;
+      if (!onExplainIncorrect || studentAiOff) return;
       const key = item.originalIndex;
       if (explanations[key] && explanations[key] !== 'loading') {
           setExplanations(prev => { const next = { ...prev }; delete next[key]; return next; });
@@ -1842,6 +1853,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       const sorted = [...items].sort((a, b) => a.originalIndex - b.originalIndex);
       setItems(sorted);
       setAnswerRevealed(true);
+      revealedThisSessionRef.current = true;
       setIsWon(true);
       setScore(0);
       setAnnouncement(t('timeline.game.answer_revealed_announce') || 'Answer revealed. No points awarded.');
@@ -1851,6 +1863,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
      const itemsArray = normalizedItemsRef.current || [];
      setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
      setIsWon(false);
+     // A new round can score again, as the reveal banner promises; the reveal
+     // itself is still reported with the completion (revealedThisSessionRef).
+     setAnswerRevealed(false);
      setAttempts(prev => prev + 1);
      setScore(0);
      setHintsUsed(0);
@@ -1873,7 +1888,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            <div className="flex flex-wrap items-center gap-3">
                <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
                    <Trophy size={14} className="text-yellow-300" aria-hidden="true"/>
-                   <span className="font-bold text-sm">{score} pts</span>
+                   <span className="font-bold text-sm">{gamePointsLabel(t, score)}</span>
                </div>
                <label className="min-h-11 flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
                    <span className="font-bold uppercase tracking-wider text-[9px]">{t('timeline.game.image_size_label') || 'Image'}</span>
@@ -1921,7 +1936,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                            )}
                            {bestScore > 0 && (
                                <div className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
-                                   {t('timeline.game.best') || 'Best'}: {bestScore} pts
+                                   {t('timeline.game.best') || 'Best'}: {gamePointsLabel(t, bestScore)}
                                </div>
                            )}
                            {hintsUsed > 0 && (
@@ -1989,7 +2004,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                <img
                                                    loading="lazy"
                                                    src={item.image}
-                                                   alt={`${item.date || ''}: ${item.event || ''}`}
+                                                   alt={item.decorative ? '' : (isWon && item.date ? `${item.date}: ${item.alt || item.event || ''}` : (item.alt || item.event || ''))}
                                                    className={`mx-auto mb-2 object-contain rounded-lg bg-white border ${isWon ? 'border-green-200' : 'border-slate-200'}`}
                                                    style={{ width: imageSize, height: imageSize }}
                                                />
@@ -2019,7 +2034,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                    {item.event_en}
                                                </div>
                                            )}
-                                           {onExplainIncorrect && !isWon && lastCorrectCount !== null && item.originalIndex !== idx && (
+                                           {onExplainIncorrect && !studentAiOff && !isWon && lastCorrectCount !== null && item.originalIndex !== idx && (
                                                <>
                                                    <button
                                                        type="button"
@@ -2067,7 +2082,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  title={t('timeline.game.header')}
                  items={items.map((item, idx) => ({
                    label: `${idx + 1}. ${item.event}`,
-                   detail: item.originalIndex === idx ? null : `Correct position: ${item.originalIndex + 1}`,
+                   detail: item.originalIndex === idx ? null : (t('timeline.game.correct_position', { pos: item.originalIndex + 1 }) || `Correct position: ${item.originalIndex + 1}`),
                    status: item.originalIndex === idx ? 'correct' : 'incorrect'
                  }))}
                  onPlayAgain={reset}
@@ -2156,6 +2171,16 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const [explanations, setExplanations] = useState({}); // itemId -> text | 'loading'
   const [imageFailCount, setImageFailCount] = useState(0);
   const [announcement, setAnnouncement] = useState('');
+  // Cards whose categoryId names no category are left out (they made every
+  // check unwinnable); a board with no categories or no cards is not shown.
+  const [orphanCount, setOrphanCount] = useState(0);
+  const [unplayable, setUnplayable] = useState(false);
+  // Shared anti-farming economics; kept across Reset like the other sort games.
+  const scoreTrackerRef = useRef(null);
+  // First-try record for this data: any check with a mistake makes the
+  // eventual completion not perfect, and its misplacements are what we report.
+  const sessionMissRef = useRef(false);
+  const firstMissesRef = useRef(null);
   const deckScrollRef = useRef(null);
   // The unsorted deck is position:fixed, so it sits OUTSIDE the document
   // flow: the scrolling board above reserves no space for it and the last
@@ -2216,8 +2241,17 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   };
   useEffect(() => {
     if (!data) return;
-    setBuckets(data.categories || []);
-    const rawItems = data.items || [];
+    const seenCats = new Set();
+    const cats = (Array.isArray(data.categories) ? data.categories : []).filter(c => c && c.id != null && c.id !== '' && !seenCats.has(String(c.id)) && seenCats.add(String(c.id)));
+    const idByKey = new Map(cats.map(c => [String(c.id), c.id]));
+    const allItems = (Array.isArray(data.items) ? data.items : []).filter(Boolean);
+    const rawItems = allItems.filter(it => idByKey.has(String(it.categoryId))).map(it => ({ ...it, categoryId: idByKey.get(String(it.categoryId)) }));
+    setBuckets(cats);
+    setOrphanCount(allItems.length - rawItems.length);
+    setUnplayable(cats.length === 0 || rawItems.length === 0);
+    scoreTrackerRef.current = makeSortScoreTracker();
+    sessionMissRef.current = false;
+    firstMissesRef.current = null;
     const initItems = rawItems.map((item, i) => ({
         ...item,
         currentContainer: 'deck',
@@ -2306,9 +2340,15 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       setIsAdding(true);
       try {
           const newItem = await onGenerateItem(newItemText, buckets);
-          if (newItem) {
+          const home = newItem ? buckets.find(b => String(b.id) === String(newItem.categoryId)) : null;
+          if (newItem && !home) {
+              const message = t('concept_sort.add_item_no_category') || 'That card could not be matched to one of these categories. Try different words.';
+              setAnnouncement(message);
+              if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'warning');
+          } else if (newItem) {
               setItems(prev => [...prev, {
                   ...newItem,
+                  categoryId: home.id,
                   currentContainer: 'deck',
                   colorIdx: prev.length + Math.floor(Math.random() * 10)
               }]);
@@ -2322,18 +2362,25 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       }
   };
   const checkAnswers = () => {
+    if (unplayable) return;
     let correctCount = 0;
     let incorrectCount = 0;
+    let delta = 0;
+    if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
+    const tracker = scoreTrackerRef.current;
     items.forEach(item => {
       if (item.currentContainer !== 'deck') {
           if (item.currentContainer === item.categoryId) {
             correctCount++;
+            delta += tracker.correct(item.id);
           } else {
             incorrectCount++;
+            delta += tracker.incorrect(item.id);
           }
       }
     });
-    const earnedPoints = Math.max(0, (correctCount * 20) - (incorrectCount * 5));
+    // Locked cards were already awarded, so a retry earns only the fixes.
+    const earnedPoints = Math.max(0, score + delta);
     const total = items.length;
     setScore(earnedPoints);
     setBestScore(prev => Math.max(prev, earnedPoints));
@@ -2368,6 +2415,10 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
               correctCategoryLabel: (correctCat && correctCat.label) || it.categoryId,
           };
       });
+    if (incorrectCount > 0 && !sessionMissRef.current) {
+        sessionMissRef.current = true;
+        firstMissesRef.current = incorrectPlacements;
+    }
     if (correctCount === total) {
         if(playSound) playSound('correct');
         if (onGameComplete) {
@@ -2375,10 +2426,12 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             score: earnedPoints,
             correctPlacements: correctCount,
             totalItems: total,
-            isPerfect: incorrectCount === 0,
+            // Perfect means right on the first check; a board finished after
+            // "Fix the N incorrect" or a Reset reports its first misplacements.
+            isPerfect: !sessionMissRef.current,
             attempts: attempts + 1,
             bestScore: Math.max(bestScore, earnedPoints),
-            incorrectPlacements: [], // empty on perfect runs
+            incorrectPlacements: firstMissesRef.current || [],
           });
         }
     } else {
@@ -2399,8 +2452,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         }
     }
   };
+  const studentAiOff = typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
   const handleExplainClick = async (item) => {
-      if (!onExplainIncorrect) return;
+      if (!onExplainIncorrect || studentAiOff) return;
       if (explanations[item.id] && explanations[item.id] !== 'loading') {
           setExplanations(prev => { const next = { ...prev }; delete next[item.id]; return next; });
           return;
@@ -2516,7 +2570,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                <div className="mt-1 text-[11px] font-bold text-red-600 text-center leading-tight">
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
-               {onExplainIncorrect && (
+               {onExplainIncorrect && !studentAiOff && (
                  <button type="button"
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
                    className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
@@ -2586,7 +2640,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         <div className="flex items-center gap-4">
             <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
                 <Trophy size={14} className="text-yellow-300"/>
-                <span className="font-bold text-sm">{score} pts</span>
+                <span className="font-bold text-sm">{gamePointsLabel(t, score)}</span>
             </div>
             <GameThemeToggle />
             <button ref={conceptSortCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24} aria-hidden="true"/></button>
@@ -2596,8 +2650,14 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           className="flex-grow overflow-y-auto p-6 relative"
           style={{ paddingBottom: (deckBarHeight ? deckBarHeight + 24 : 200) + "px" }}
       >
+           {unplayable && (
+               <div role="alert" data-concept-sort-unplayable="true" className="max-w-xl mx-auto mt-8 p-6 bg-amber-50 border-2 border-amber-300 rounded-xl text-center text-amber-900">
+                   <p className="font-bold">{t('concept_sort.not_playable_title') || 'This sort is not ready to play yet.'}</p>
+                   <p className="text-sm mt-2">{t('concept_sort.not_playable_body') || 'It needs at least one category and one card that belongs to it. A teacher can fix it in the review panel.'}</p>
+               </div>
+           )}
            <div ref={menuRef} className="flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]">
-               {buckets.map((bucket) => {
+               {!unplayable && buckets.map((bucket) => {
                    const styles = resolveBucketStyles(bucket.color);
                    return (
                        <div
@@ -2646,6 +2706,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
            )}
            <div
                 ref={deckBarRef}
+                hidden={unplayable}
                 data-help-key="concept_sort_deck"
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, 'deck')}
@@ -2674,22 +2735,27 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </button>
                            {keyboardSelectedItemId && !hasUsedKeyboardCard && (
                                <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                                   Now pick a category to drop this card into.
+                                   {t('concept_sort.pick_category_hint') || 'Now pick a category to drop this card into.'}
                                </span>
                            )}
                            {!keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && (
                                <span className="text-[11px] text-slate-600 italic">
-                                   Tip: press Enter on a card to sort with the keyboard.
+                                   {t('concept_sort.keyboard_tip') || 'Tip: press Enter on a card to sort with the keyboard.'}
                                </span>
                            )}
                            {attempts > 0 && (
                                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                                   Try {attempts + 1}{bestScore > 0 ? ` · Best: ${bestScore} pts` : ''}
+                                   {t('concept_sort.try_number', { n: attempts + 1 }) || `Try ${attempts + 1}`}{bestScore > 0 ? ` · ${t('timeline.game.best') || 'Best'}: ${gamePointsLabel(t, bestScore)}` : ''}
                                </span>
                            )}
                            {imageFailCount > 0 && (
                                <span className="text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
-                                   {imageFailCount} card visual{imageFailCount === 1 ? '' : 's'} couldn't load — text only.
+                                   {t('concept_sort.visuals_missing', { count: imageFailCount }) || `${imageFailCount} card visual(s) couldn't load. Showing text only.`}
+                               </span>
+                           )}
+                           {orphanCount > 0 && !unplayable && (
+                               <span data-concept-sort-orphans="true" className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-full">
+                                   {t('concept_sort.orphans_left_out', { count: orphanCount }) || `${orphanCount} card(s) left out: no matching category.`}
                                </span>
                            )}
                        </div>
@@ -2701,7 +2767,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                AND the deck actually has any images to scale. */}
                            {typeof onImageScaleChange === 'function' && items.some(i => i.image) && (
                                <div className="flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full">
-                                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Size</span>
+                                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">{t('concept_sort.image_size_word') || 'Size'}</span>
                                    <input
                                        type="range"
                                        min="0.5"
@@ -2709,7 +2775,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                        step="0.05"
                                        value={_imgScale}
                                        onChange={(e) => onImageScaleChange(parseFloat(e.target.value) || 1.0)}
-                                       aria-label={`Card image size, ${_imgScale.toFixed(2)} times`}
+                                       aria-label={`${t('concept_sort.image_scale_label') || 'Card image size'}, ${_imgScale.toFixed(2)} times`}
                                        className="w-20 sm:w-28 accent-indigo-600"
                                    />
                                    <span className="text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-end">{_imgScale.toFixed(2)}×</span>
@@ -2727,7 +2793,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                aria-label={t('common.check_answers')}
                                 data-help-key="concept_sort_check_answers"
                                 onClick={checkAnswers}
-                                disabled={isChecked || items.some(i => i.currentContainer === 'deck')}
+                                disabled={unplayable || isChecked || items.some(i => i.currentContainer === 'deck')}
                                 className="px-6 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                            >
                                {t('concept_sort.check_answers')}
@@ -5002,7 +5068,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   <div role="img"
                     onMouseDown={(e) => handleGripDown(e, step.id)}
                     onTouchStart={(e) => handleGripDown(e, step.id)}
-                    className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-indigo-400 hover:bg-indigo-50 transition-colors"
+                    className="absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition-colors"
                     aria-label={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
                     title={t('games.pipeline.drag_reposition_aria') || 'Drag to reposition'}
                   >

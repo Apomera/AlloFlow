@@ -1,0 +1,15 @@
+{
+  "unitTestsPassed": 151,
+  "unitSuitesPassed": 11,
+  "browserScenariosPassed": 4,
+  "scopedAccessibilityViolations": 0,
+  "testedWidths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "sourceMirrorIdentical": true,
+  "sha256": "707d6abae8e3d1e0e83d9304b233c5a95272f2f27281724c4aa3acb93664f017"
+}

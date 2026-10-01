@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-09-30T22:25:42.568Z",
+  "format": "unified-diff",
+  "hostFile": "AlloFlowANTI.txt",
+  "oldFileName": "a/AlloFlowANTI.txt",
+  "newFileName": "b/AlloFlowANTI.txt",
+  "hunks": 4,
+  "uniquelyScopedAnchors": true,
+  "candidateBabelSyntax": "passed",
+  "inMemoryApplicability": "passed",
+  "hostHashBefore": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+  "hostHashAfter": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+  "candidateHash": "9ba98636f5ec186ebebd21dc0b8f1c95b8901a01bd99c056afd21136f622a54f",
+  "hostUnchanged": true,
+  "appliedToWorkingHost": false,
+  "pending": [
+    "Shared host ownership clarification",
+    "Host lifecycle and keyboard/reflow/focus tests",
+    "Ordinary Cancel UI integration"
+  ]
+}

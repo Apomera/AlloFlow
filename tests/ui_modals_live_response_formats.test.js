@@ -12,7 +12,16 @@ let components;
 let root;
 let host;
 
-const t = (key) => key;
+// Resolve from the real registry, filling {placeholders} as the host does, so
+// the English labels these tests click (and templates such as "Move up: {item}")
+// are the ones students actually see — and an unregistered key shows up here.
+const uiStrings = JSON.parse(require('node:fs').readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8'));
+const t = (key, params = {}) => {
+  let value = String(key).split('.').reduce((node, part) => node && node[part], uiStrings);
+  if (typeof value !== 'string') return undefined;
+  Object.keys(params || {}).forEach((name) => { value = value.replace('{' + name + '}', params[name]); });
+  return value;
+};
 
 beforeAll(() => {
   React = require(resolve(modulesDir, 'react'));
@@ -134,9 +143,9 @@ describe('StudentQuizOverlay generalized live response formats', () => {
       responses: { 'student-1': 1 },
     }));
     const dialog = host.querySelector('[role="dialog"]');
-    expect(dialog.textContent).toContain('quiz.poll_completed');
-    expect(dialog.textContent).not.toContain('quiz.status.result_correct');
-    expect(dialog.textContent).not.toContain('quiz.status.result_incorrect');
+    expect(dialog.textContent).toContain(uiStrings.quiz.poll_completed);
+    expect(dialog.textContent).not.toContain(uiStrings.quiz.status.result_correct);
+    expect(dialog.textContent).not.toContain(uiStrings.quiz.status.result_incorrect);
     expect(dialog.querySelector('.bg-red-500')).toBeNull();
     expect(dialog.querySelector('.bg-green-700')).toBeNull();
   });

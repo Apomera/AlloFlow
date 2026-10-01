@@ -1,0 +1,12 @@
+{
+  "browser": "chromium",
+  "results": [
+    {
+      "width": 390,
+      "destination": "same",
+      "priorScroll": 155,
+      "nextScroll": 190
+    }
+  ],
+  "errors": []
+}

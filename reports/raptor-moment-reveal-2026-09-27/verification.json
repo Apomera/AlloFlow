@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-27",
+  "scope": "Interactive A/B reveal of saved 3D flight images with mouse, touch, keyboard, and viewing-condition guidance",
+  "runs": [
+    { "suites": ["raptor-moment-reveal.spec.ts"], "output": "initial-browser-results", "passed": 3, "failed": 0, "skipped": 0, "retries": 0, "duration": "2.7 minutes", "note": "Slider and buttons before direct image dragging was added." },
+    { "suites": ["raptor-moment-reveal.spec.ts"], "output": "refined-browser-results", "passed": 0, "failed": 1, "notRun": 2, "retries": 0, "note": "Mouse dragging changed the reveal correctly but default mouse-down handling blurred the range. The mouse pointer-down handler now prevents that default, preserving keyboard continuation after dragging." },
+    { "suites": ["raptor-moment-reveal.spec.ts"], "output": "pointer-browser-results", "passed": 3, "failed": 0, "skipped": 0, "retries": 0, "duration": "2.6 minutes" },
+    { "suites": ["raptor-moment-reveal.spec.ts", "raptor-study-observations.spec.ts", "raptor-study-report.spec.ts"], "output": "final-browser-results", "passed": 9, "failed": 0, "skipped": 0, "retries": 0, "duration": "2.7 minutes" }
+  ],
+  "uniqueScenariosValidated": 9,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "desktopAndPhoneVisualInspection": "pass",
+    "actualFlightCaptureImageEndpoints": "pass",
+    "renderedLeftAndRightPixelCorrespondence": "pass",
+    "mouseDragAndRelease": "pass",
+    "keyboardFocusAfterMouseDrag": "pass",
+    "keyboardEndpointsAndIncrements": "pass",
+    "touchDragAndCancellation": "pass",
+    "verticalScrollAndPinchZoomPermittedByTouchAction": "pass",
+    "frozenSimulationAndNoViewerTriggeredRedraws": "pass",
+    "unchangedSavedEvidence": "pass",
+    "viewingConditionAndFlightIdentityCaveats": "pass",
+    "replacementPairReset": "pass",
+    "missingUnsafeAndUnreadableImageFallbacks": "pass",
+    "phoneTargetSizeAndNoHorizontalOverflow": "pass",
+    "reducedMotionAndForcedColors": "pass",
+    "immutableNotebookTransfer": "pass",
+    "offlineReportContainsTwoOriginalImages": "pass",
+    "savedViewMatchingAndCameraRestoration": "pass",
+    "restartRemountAndLegacyReports": "pass",
+    "scopedAxeViolations": 0
+  },
+  "resources": {
+    "extraThreeMeshes": 0,
+    "extraThreeMaterials": 0,
+    "extraThreeTextures": 0,
+    "extraThreeLights": 0,
+    "extraSimulationRenderPasses": 0,
+    "extraAnimationLoops": 0,
+    "windowOrDocumentDragListeners": 0,
+    "runtime": "Existing saved JPEGs are composited by DOM image elements and a clip path. Local React state controls the reveal; no new evidence image is generated."
+  },
+  "sourceFiles": [
+    { "path": "stem_lab/stem_tool_raptorhunt.js", "sha256": "9449889c345072066bc0b48a2ca8f45d704e0498149dd83c082bd2eb4116f87f" },
+    { "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js", "sha256": "9449889c345072066bc0b48a2ca8f45d704e0498149dd83c082bd2eb4116f87f" }
+  ],
+  "newTranslationKeys": 11,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "limitations": "Saved captures remain 480 by 320 pixels. Matching view settings does not guarantee pixel alignment or identical scale across poses or species. Touch checks use Chromium CDP input, not a physical device. Pinch zoom permission is verified through touch-action rather than a physical pinch gesture.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

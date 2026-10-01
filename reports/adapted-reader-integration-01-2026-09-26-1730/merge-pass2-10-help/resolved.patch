@@ -1,0 +1,134 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1930,8 +1930,14 @@
+     // highlight marks them, so the passage's own markup is never touched).
+     const listRef = React.useRef(null), spotTimer = React.useRef(null), spotRangesRef = React.useRef([]);
+     const helpInstanceId = React.useId();
+     const [spotNotice, setSpotNotice] = React.useState('');
++    const clearSpot = () => {
++      if (spotTimer.current) clearTimeout(spotTimer.current);
++      spotTimer.current = null;
++      if (typeof CSS !== 'undefined' && CSS.highlights) shareWordHelpMarks(CSS.highlights, spotRangesRef.current, [], 'allo-word-help-focus');
++      spotRangesRef.current = [];
++    };
+     // No marks where the passage on screen is not this word help's text (the
+     // English side of a bilingual text in Both) - markWords is false there.
+     const passageOnScreen = () => {
+       const section = listRef.current;
+@@ -1952,9 +1958,9 @@
+     // Re-read the passage only when the text, the word help or where it is shown
+     // changed, or the passage was redrawn (a mark's text node left the page); the
+     // reader re-renders on every read-aloud word, and the marks stay valid then.
+     const marksRef = React.useRef(null);
+-    React.useEffect(() => {
++    React.useLayoutEffect(() => {
+       const registry = typeof CSS !== 'undefined' && CSS.highlights;
+       if (!registry || typeof Highlight !== 'function') return;
+       // The text on screen can change in place (Fill in the blanks back to Read)
+       // while old text nodes stay on the page, so compare the text itself too.
+@@ -1962,19 +1968,21 @@
+       const shownText = container ? container.textContent : '';
+       const last = marksRef.current;
+       if (last && last.data === item.data && last.supports === item.adaptedReadingSupports && last.version === supportView.version && last.shownText === shownText && last.where === passageSelector + '|' + language
+         && last.ranges.every(range => range.startContainer.isConnected && range.endContainer.isConnected)) return;
++      clearSpot();
+       const ranges = container ? wordHelpOnScreen().map(hit => hit.range) : [];
+       marksRef.current = { data: item.data, supports: item.adaptedReadingSupports, version: supportView.version, shownText, where: passageSelector + '|' + language, ranges };
+       // One highlight shared by every reader on the page (a student preview is a
+       // second reader): each adds and removes only its own ranges.
+       shareWordHelpMarks(registry, last ? last.ranges : [], ranges);
+     });
+     React.useEffect(() => () => {
+-      if (spotTimer.current) clearTimeout(spotTimer.current);
+-      if (typeof CSS !== 'undefined' && CSS.highlights) { shareWordHelpMarks(CSS.highlights, marksRef.current ? marksRef.current.ranges : [], []); shareWordHelpMarks(CSS.highlights, spotRangesRef.current, [], 'allo-word-help-focus'); }
++      clearSpot();
++      if (typeof CSS !== 'undefined' && CSS.highlights) shareWordHelpMarks(CSS.highlights, marksRef.current ? marksRef.current.ranges : [], []);
+     }, []);
+     const showInText = entry => {
++      clearSpot();
+       const hit = wordHelpOnScreen(entry.id)[0];
+       if (!hit) { setSpotNotice(simplifiedText('simplified.word_help_not_found_in_text', 'Could not find "{word}" in the passage on screen.', { word: entry.quote })); return; }
+       const target = hit.range.startContainer.parentElement;
+       const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+@@ -1983,10 +1991,9 @@
+       if (registry && typeof Highlight === 'function') {
+         ensureWordHelpHighlightStyle();
+         shareWordHelpMarks(registry, spotRangesRef.current, [hit.range], 'allo-word-help-focus');
+         spotRangesRef.current = [hit.range];
+-        if (spotTimer.current) clearTimeout(spotTimer.current);
+-        spotTimer.current = setTimeout(() => { shareWordHelpMarks(registry, spotRangesRef.current, [], 'allo-word-help-focus'); spotRangesRef.current = []; }, 4000);
++        spotTimer.current = setTimeout(clearSpot, 4000);
+       }
+       setSpotNotice(hasPreparedWordHighlights()
+         ? simplifiedText('simplified.word_help_highlighted_in_text', '"{word}" is highlighted in the passage.', { word: entry.quote })
+         : simplifiedText('simplified.word_help_located_in_text', 'Located "{word}" in the passage. Read its explanation in Word help.', { word: entry.quote }));
+@@ -4034,9 +4041,9 @@
+       stopPreparedCardAudio(wordHelpOwnerRef.current);
+       if (typeof props.closeDefinition === 'function') props.closeDefinition();
+       var word = event.currentTarget, rect = word.getBoundingClientRect ? word.getBoundingClientRect() : null;
+       var prefix = 'reading-' + generatedContent.id + '-word-help-' + wordHelpInstanceId + '-' + (++wordHelpSequenceRef.current);
+-      var owner = { entry, language, context: preparedHelpContext, container,
++      var owner = { entry, language, context: preparedHelpContext, supports: generatedContent.adaptedReadingSupports, container,
+         audioIds: { word: prefix + '-word', help: prefix + '-card' },
+         x: event.clientX || rect?.left || 0, y: event.clientY || rect?.bottom || 0 };
+       wordHelpCardOpener.current = word;
+       wordHelpOwnerRef.current = owner;
+@@ -4826,14 +4833,27 @@
+     }
+     var [showComparisonChanges, setShowComparisonChanges] = React.useState(function () { if (props.isStudentPreview) return !!props.previewAppearance?.showComparisonChanges; try { return localStorage.getItem('alloflow_reading_show_changes') === 'on'; } catch (_) { return false; } });
+     var [showReadingGlosses, setShowReadingGlosses] = React.useState(true);
+     var preparedHelpContext = JSON.stringify([generatedContent?.id, generatedContent?.data, readingLanguage, interactionMode, isCompareMode, comparisonLanguage, showComparisonChanges, showReadingGlosses, isEditingLeveledText, isImmersiveReaderActive, isSideBySide]);
++    var currentWordHelpCard = wordHelpCard && wordHelpCard.context === preparedHelpContext && wordHelpCard.supports === generatedContent?.adaptedReadingSupports ? wordHelpCard : null;
+     React.useEffect(function () { closeWordHelpCard(false); }, [preparedHelpContext, generatedContent?.adaptedReadingSupports]);
+     // Resolve prepared availability before paint, using the same exact ranges
+     // as activation. Restore only attributes this reader effect still owns.
+     React.useLayoutEffect(function () {
+-      if (interactionMode !== 'define' || !readerSurfaceRef.current) return;
+-      var restore = [], panes = readerSurfaceRef.current.querySelectorAll('[data-reading-passage], [data-word-help-language]');
++      if (!readerSurfaceRef.current) return;
++      var restore = [], surface = readerSurfaceRef.current;
++      var decorate = (word, attributes) => {
++        var expanded = !!currentWordHelpCard && wordHelpCardOpener.current === word;
++        Object.entries({ ...attributes, 'aria-haspopup': 'dialog', 'aria-controls': expanded ? wordHelpDialogId : null, 'aria-expanded': String(expanded) }).forEach(([name, value]) => {
++          var previous = word.getAttribute(name);
++          if (value == null) word.removeAttribute(name); else word.setAttribute(name, value);
++          restore.push(() => { if (word.getAttribute(name) === value) { if (previous == null) word.removeAttribute(name); else word.setAttribute(name, previous); } });
++        });
++      };
++      surface.querySelectorAll('[data-prepared-help-open]').forEach(button => {
++        if (button.closest('[data-adapted-reader]') === surface) decorate(button, {});
++      });
++      var panes = interactionMode === 'define' ? surface.querySelectorAll('[data-reading-passage], [data-word-help-language]') : [];
+       panes.forEach(container => {
+         if (container.hasAttribute('data-original-source') || container.closest('[data-adapted-reader]') !== readerSurfaceRef.current) return;
+         var language = container.getAttribute('data-word-help-language') || readingLanguage;
+         var help = readingContract?.validateAdaptedReadingSupports?.(generatedContent, generatedContent.adaptedReadingSupports);
+@@ -4849,15 +4869,9 @@
+           var segment = wordSegments.get(word);
+           var hit = segment && hits.find(value => segment.start >= value.start && segment.start < value.end);
+           if (!hit) return;
+           var label = viewText('simplified.word_help_prepared_for', 'Prepared word help: {word}', { word: hit.entry.quote });
+-          var attributes = { 'aria-label': label, title: label, 'aria-haspopup': 'dialog', 'aria-controls': wordHelpDialogId,
+-            'aria-expanded': String(wordHelpCard?.context === preparedHelpContext && wordHelpCardOpener.current === word), 'data-prepared-word-help': hit.entry.id };
+-          Object.entries(attributes).forEach(([name, value]) => {
+-            var previous = word.getAttribute(name);
+-            word.setAttribute(name, value);
+-            restore.push(() => { if (word.getAttribute(name) === value) { if (previous == null) word.removeAttribute(name); else word.setAttribute(name, previous); } });
+-          });
++          decorate(word, { 'aria-label': label, title: label, 'data-prepared-word-help': hit.entry.id });
+         });
+       });
+       return () => restore.forEach(reset => reset());
+     }, [preparedHelpContext, generatedContent?.adaptedReadingSupports, wordHelpCard, props.t]);
+@@ -5369,9 +5383,9 @@
+                 ...generatedContent
+               };
+               delete updated.alignmentCheck;
+               setGeneratedContent(updated);
+-            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId('simplified-focus-view-hint')} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{renderAudioPreparationIssues()}{wordHelpCard && wordHelpCard.context === preparedHelpContext && (() => {
++            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId('simplified-focus-view-hint')} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{renderAudioPreparationIssues()}{currentWordHelpCard && (() => {
+           var entry = wordHelpCard.entry, cardLanguage = wordHelpCard.language || readingLanguage, explanation = entry.definition || entry.explanation || entry.text || '';
+           var cardDirection = typeof getContentDirection === 'function' ? getContentDirection(cardLanguage) : undefined;
+           var cardButton = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+           var cardLink = 'min-h-11 rounded px-1 text-sm text-indigo-800 underline underline-offset-2 hover:text-indigo-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';

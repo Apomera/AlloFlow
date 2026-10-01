@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-27T18:55:57.888Z",
+  "label": "collective-autosave-20260927",
+  "patch": "f27edb905bc54ddd04c6868079a161c98bf930b5853526aa97dcb28762569a02",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+      "after": "59d730d3a05c2afd20af23464b62ccd2f5bf326853c412c763e8ae76056f620f",
+      "changed": true
+    }
+  ]
+}

@@ -1072,7 +1072,7 @@
   window.StemLab.registerTool('organismId', {
     label: 'Taxonomy Explorer',
     title: 'Taxonomy Explorer',
-    icon: '\uD83E\uDD8B',
+    icon: '\uD83D\uDC1E',
     desc: 'Explore the ranked tree of life, the lookalike pairs that fool people, and why classification keeps changing.',
     description: 'Explore the ranked tree of life, the lookalike pairs that fool people, and why classification keeps changing.',
     category: 'science',

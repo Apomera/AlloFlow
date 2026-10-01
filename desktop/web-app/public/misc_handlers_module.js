@@ -1240,6 +1240,25 @@ function handleRestoreView(item, options = {}, deps = {}) {
     visualSupportsDismissedIdsRef,
     visualSupportsLastTimestampRef,
   } = deps || {};
+    const rejectIncompleteResource = () => {
+        const key = 'history.resource_incomplete';
+        const value = typeof t === 'function' ? t(key) : null;
+        if (typeof addToast === 'function') addToast(typeof value === 'string' && value.trim() && value !== key ? value : 'This saved resource is incomplete and could not be opened. Your current work is still available.', 'error');
+        return false;
+    };
+    let restoredTranscript = '';
+    let restoredTranscriptTitle = 'Video transcript';
+    try {
+        if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.type !== 'string' || !item.type.trim()) return rejectIncompleteResource();
+        if (item.type === 'readingBook' && (typeof item.data?.slug !== 'string' || !item.data.slug.trim())) return rejectIncompleteResource();
+        if (item.type === 'readingSet' && (!Array.isArray(item.data?.books) || !item.data.books.length)) return rejectIncompleteResource();
+        if (item.type === 'manipulative-resource' && (typeof item.toolId !== 'string' || !item.toolId.trim())) return rejectIncompleteResource();
+        if (item.type === 'video-transcript') {
+            restoredTranscript = ([item.text, item.content, item.data?.transcript].find(value => typeof value === 'string' && value.trim()) || '').trim();
+            if (!restoredTranscript) return rejectIncompleteResource();
+            restoredTranscriptTitle = ([item.data?.title, item.title].find(value => typeof value === 'string' && value.trim()) || 'Video transcript').trim();
+        }
+    } catch (_) { return rejectIncompleteResource(); }
     // True route prewarm: request the presentation module before the state
     // swap renders its recoverable in-place shell. Directions is deliberately
     // not part of CORE_BOOT_MODULES, so unrelated cold starts stay lean.
@@ -1302,9 +1321,8 @@ function handleRestoreView(item, options = {}, deps = {}) {
         return;
     }
     if (item && item.type === 'video-transcript') {
-        const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
-        if (transcript) setInputText(transcript);
-        setSourceTopic(String(item.data?.title || item.title || 'Video transcript').replace(/\s+transcript$/i, '').slice(0, 120));
+        setInputText(restoredTranscript);
+        setSourceTopic(restoredTranscriptTitle.replace(/\s+transcript$/i, '').slice(0, 120));
         setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
         setActiveSidebarTab('create');
         if (!isWide) setWorkspacePane('create');

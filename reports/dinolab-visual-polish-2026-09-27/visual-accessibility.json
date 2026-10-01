@@ -1,0 +1,32 @@
+[
+  {
+    "theme": "theme-default",
+    "tab": "anatomy",
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "anatomy",
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "tab": "explore",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "anatomy",
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "tab": "explore",
+    "violations": []
+  }
+]

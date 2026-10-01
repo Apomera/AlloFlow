@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-27T19:06:47.793Z",
+  "label": "collective-immersive-source-20260927",
+  "patch": "ad6379564020b8d32fe6633539e75be7f1e56d866cd76b4d0078ef45f4ea81fb",
+  "plans": [
+    {
+      "target": "immersive_reader_source.jsx",
+      "targets": [
+        "immersive_reader_source.jsx"
+      ],
+      "before": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c",
+      "after": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca",
+      "changed": true
+    }
+  ]
+}

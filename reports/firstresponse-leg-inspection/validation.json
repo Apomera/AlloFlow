@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-30",
+  "result": "passed",
+  "parent": "c44bc4635bf6324990d5bc5cad0c1e849f13c929",
+  "unitTests": {
+    "passed": 210,
+    "files": 3,
+    "finalRunSeconds": 346.51,
+    "suites": {
+      "firstresponse_depth_explorer": 77,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "fullRunPassed": 21,
+    "distinctScenariosPassed": 21,
+    "fullRunMinutes": 10.7,
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "legInspectionScenarios": 2,
+    "manikinRealismScenarios": 3,
+    "markerVisualScenarios": 3,
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader"
+  },
+  "coverage": [
+    "Fixed thigh and shin lengths through raised-knee, rolled and stable poses at every age",
+    "Lower leg settles near the mat without changing its segment lengths",
+    "Actual shoe vertices remain near and above the mat in resting, raised-knee and support poses",
+    "Feet stay perpendicular to the shins through body roll; shoe normals face out and remain finite",
+    "Rounded footwear, sole bands and overlapping ankle cuffs remain visible",
+    "Leg camera frames hip, knee, ankle and toe landmarks at a useful size for all three ages",
+    "Projected knee bend remains clear before and after the recovery roll",
+    "Phone keyboard activation and rotation, reflow, enlarged text spacing and reduced motion",
+    "System forced colors and app contrast, with accessibility audits and no overflow",
+    "Existing chest mechanics, contact heel, saved comparison and child hand arrangements",
+    "Real WebGL, AED picking, recovery order, 30:2 coaching, full arrest workflow and context cleanup",
+    "Existing face, cheek contact, arms and visual marker checks"
+  ],
+  "screenshots": {
+    "reviewed": 15,
+    "ages": [
+      "adult",
+      "child",
+      "infant"
+    ],
+    "poses": [
+      "resting legs",
+      "raised knee",
+      "support leg",
+      "whole recovery"
+    ],
+    "additional": [
+      "phone",
+      "forced colors",
+      "app contrast"
+    ]
+  },
+  "synchronization": {
+    "moduleCopies": "identical",
+    "firstResponseCatalogs": "identical",
+    "newEnglishStrings": 1
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "26ca6c8d6a83cbcc384ef684d8b6c9d556c11b8c3bf918dabc54d3f63c0d87b2",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "26ca6c8d6a83cbcc384ef684d8b6c9d556c11b8c3bf918dabc54d3f63c0d87b2",
+    "tests/firstresponse_depth_explorer.test.js": "1a59b9b0e2ac74c978f3a580953d8246b30c5fd3bd701a49d68badf96bf6072d",
+    "tests/e2e/firstresponse-leg-inspection.spec.ts": "4fb67aaa028528ff918d167901fe9ad3775019b10d5a5fde906bd578a7bbf995"
+  }
+}

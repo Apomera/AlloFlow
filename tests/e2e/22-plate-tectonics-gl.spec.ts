@@ -321,14 +321,15 @@ test.describe('Plate Boundary Simulator — real WebGL', () => {
     await mount(page);
     await show3d(page);
 
-    // 4 ticks (surface / 70 / 300 / 700) = 4 lines + 4 labels, plus the two
-    // band planes at the 70 and 300 km class boundaries, plus trench and arc.
+    // Read the four depth values without depending on how many leader lines
+    // or band planes the renderer needs to make them legible.
     const on = await page.evaluate(() => (window as any).__gl());
-    expect(on.scaleCount).toBe(12);
+    expect(on.depthLabelCount).toBe(4);
+    expect(on.featureLabelCount).toBe(2);
 
     await page.evaluate(() => (window as any).__click('[data-tect-scale-toggle]'));
-    await page.waitForTimeout(500);
-    expect((await page.evaluate(() => (window as any).__gl())).scaleCount).toBe(0);
+    await page.waitForFunction(() => (window as any).__gl().depthLabelCount === 0);
+    expect((await page.evaluate(() => (window as any).__gl())).featureLabelCount).toBe(2);
 
     // Toggling it away must not disturb the geology.
     const off = await page.evaluate(() => (window as any).__gl());
@@ -337,18 +338,21 @@ test.describe('Plate Boundary Simulator — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
-  test('the depth scale drops its labels when the mode changes', async ({ page }) => {
+  test('boundary feature captions change with the mode while retaining four depth values', async ({ page }) => {
     // Label sprites own a CanvasTexture each and the scale is rebuilt on every
     // mode change, so a leak here compounds over a lesson.
     await mount(page);
     await show3d(page);
-    expect((await page.evaluate(() => (window as any).__gl())).scaleCount).toBe(12);
+    expect((await page.evaluate(() => (window as any).__gl())).depthLabelCount).toBe(4);
+    expect((await page.evaluate(() => (window as any).__gl())).featureLabelCount).toBe(2);
 
-    // Divergent and transform have no trench or arc, so only the 4 ticks and
-    // 2 band planes remain.
+    // The ridge axis replaces the trench and arc labels.
     await page.evaluate(() => (window as any).__setMode('Divergent'));
-    await page.waitForTimeout(600);
-    expect((await page.evaluate(() => (window as any).__gl())).scaleCount).toBe(10);
+    await page.waitForFunction(() => (window as any).__gl().mode === 'divergent');
+    const divergent = await page.evaluate(() => (window as any).__gl());
+    expect(divergent.depthLabelCount).toBe(4);
+    expect(divergent.featureLabelCount).toBe(1);
+    expect(divergent.labelRects.map((label: { text: string }) => label.text)).toContain('ridge axis');
   });
 
   test('tears the renderer down on unmount', async ({ page }) => {

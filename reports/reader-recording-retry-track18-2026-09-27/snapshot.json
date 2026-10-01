@@ -1,0 +1,100 @@
+{
+  "captured": "2026-09-27T13:48:11.947Z",
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "kind": "current working-tree files, then isolated lifecycle prerequisite",
+  "files": [
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "71fa9ef2a23b71101dfb57a8e50eb9dda9ee8b9ccd707472dcf910e307fe561d"
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "sha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7"
+    },
+    {
+      "file": "read_aloud_audio_service_module.js",
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047"
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    {
+      "file": "app_styles_module.js",
+      "sha256": "a185abea0d5891217bcdf669f428651bafac990e2dfcd12581fe68d2168a4b53"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "_build_view_simplified_module.js",
+      "sha256": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+    },
+    {
+      "file": "package.json",
+      "sha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e"
+    },
+    {
+      "file": "vitest.config.js",
+      "sha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "tests/setup.js",
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    {
+      "file": "tests/lib/audio_fixtures.js",
+      "sha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994"
+    },
+    {
+      "file": "tests/reader_audio_readiness.test.js",
+      "sha256": "80030c68a40d78608132f87f21907289b2f44c642fc735f09ac76f0f404990d7"
+    },
+    {
+      "file": "tests/reader_narration_access.test.js",
+      "sha256": "6a5b917b7d2507dfee7afd9f9b57f482ac969fd26bab59b4ad0a2e03f0125fe4"
+    },
+    {
+      "file": "tests/reader_narration_recovery.test.js",
+      "sha256": "f73dd47127915cf13ed2c2b1c4ef7ac6bdcad61632a3b627d59b94f50816ffa8"
+    },
+    {
+      "file": "tests/edit_audio_ui.test.js",
+      "sha256": "2c76556d49d37412a705925ecb12f5ea3f41e6fde5aa0acf28f6f3917a6c72e8"
+    },
+    {
+      "file": "desktop/web-app/package.json",
+      "sha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef"
+    },
+    {
+      "file": "desktop/web-app/tailwind.config.js",
+      "sha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+    }
+  ],
+  "prerequisite": "reader-recording-lifecycle-track18-2026-09-27/reader-recording-lifecycle.patch"
+}

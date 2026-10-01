@@ -1,0 +1,24 @@
+{
+  "head": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "files": {
+    "dictionary_loader.js": {
+      "sourceSha256": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9",
+      "normalizedSourceSha256": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9",
+      "candidateSourceSha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91"
+    },
+    "content_engine_source.jsx": {
+      "sourceSha256": "ca17992bf053f75c327dae4889c693bfae29f3e246cb045a3a019fb53c43b219",
+      "normalizedSourceSha256": "a80f7f5d421a94c9905cd1889606450259cb2b584e7f5733ee7a72d084dee778",
+      "candidateSourceSha256": "266c1c33f253ee8859139b903a58da5d03ccfa9da6f175670c4dbc975e48fc7b"
+    },
+    "view_simplified_source.jsx": {
+      "sourceSha256": "afe7ba74c50f3ce9663855883c43289dd8f4e9e7b05d331be80284687dae4995",
+      "normalizedSourceSha256": "afe7ba74c50f3ce9663855883c43289dd8f4e9e7b05d331be80284687dae4995",
+      "candidateSourceSha256": "84fb40614036007b195612810721ed8617ef4a3df176a62fd53994c2fdd73b8a"
+    }
+  },
+  "dependencies": {
+    "host_handlers_source.jsx": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848",
+    "reader_place_store.js": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "at": "2026-09-30T02:03:41.704Z",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\AlloFlowANTI.txt"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "sha256": "fb8aae9d5fa9566f7f55a2015515b0fee89c1139bae740ad8b0ba5a07bf9de71",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx"
+    },
+    {
+      "path": "misc_handlers_source.jsx",
+      "sha256": "72bb55fb6e5ecaf76da5b0c0b17db329f5c3990ccdd50ba3ff89412c9ad418b2",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\misc_handlers_source.jsx"
+    },
+    {
+      "path": "misc_handlers_module.js",
+      "sha256": "cbae982fcc8669941e81c6de0046ad272989ff22ee4533f1c5fc59dbe926d440",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\misc_handlers_module.js"
+    },
+    {
+      "path": "desktop/web-app/public/misc_handlers_module.js",
+      "sha256": "cbae982fcc8669941e81c6de0046ad272989ff22ee4533f1c5fc59dbe926d440",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\misc_handlers_module.js"
+    },
+    {
+      "path": "view_history_panel_source.jsx",
+      "sha256": "c5f21eeee0cb0f5652227faaf40b06e7444e3c2df466db15f97714e86f800fc4",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\view_history_panel_source.jsx"
+    },
+    {
+      "path": "view_history_panel_module.js",
+      "sha256": "6737ed83eb791cd4b511bbd90b52d285d4d42c0ab19a851f340de6952a59d4b5",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\view_history_panel_module.js"
+    },
+    {
+      "path": "desktop/web-app/public/view_history_panel_module.js",
+      "sha256": "6737ed83eb791cd4b511bbd90b52d285d4d42c0ab19a851f340de6952a59d4b5",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\view_history_panel_module.js"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "5d5a7c17a95942bccd88f3d57fb536f06c821e70e24bebcbe6da8d9bad3846ec",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json"
+    },
+    {
+      "path": "ui_strings.js",
+      "sha256": "89455fce73ee56bc0de08738b97efb914003adba5a3474c648b65b98746cf636",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\ui_strings.js"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "sha256": "2a84449e57e7a54170e331e4cbccb0123ae68e8989b4af7d2386d59b27a29428",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\ui_strings.js"
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "910c849b0f8f7ebc81515de8b94e8ee844438a6a7eef7d5d484dff8fcd681047",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\french.js"
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "sha256": "910c849b0f8f7ebc81515de8b94e8ee844438a6a7eef7d5d484dff8fcd681047",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\french.js"
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "5a91b5ac72af28ae9050b1ad096218df5eb6eff67af2dd4cb6b2e04b511c805c",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\spanish_latin_america.js"
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "sha256": "5a91b5ac72af28ae9050b1ad096218df5eb6eff67af2dd4cb6b2e04b511c805c",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\spanish_latin_america.js"
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "54605053e053dfdf3486eb418fcf59e89387f7496c68422c38ca95f1293fc4bd",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\arabic.js"
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "sha256": "54605053e053dfdf3486eb418fcf59e89387f7496c68422c38ca95f1293fc4bd",
+      "saved": "reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\arabic.js"
+    }
+  ]
+}

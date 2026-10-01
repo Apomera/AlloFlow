@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-30T20:59:31.884Z",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "saved": "reports/manual-open-enhancements-2026-09-30/before/0-AlloFlowANTI.txt",
+      "sha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "saved": "reports/manual-open-enhancements-2026-09-30/before/1-AlloFlowANTI.txt",
+      "sha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "saved": "reports/manual-open-enhancements-2026-09-30/before/2-App.jsx",
+      "sha256": "65eeaab123a77fd3c23a69f0a580722450a2fc82b84e9d8f8c656beb2667611f"
+    },
+    {
+      "path": "tests/history_resource_open_readiness.test.js",
+      "saved": "reports/manual-open-enhancements-2026-09-30/before/3-history_resource_open_readiness.test.js",
+      "sha256": "9871ac3eae7dcf91b7675e25179158b556e3093c1785e6cd958c3eb04c71a4fd"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "saved": "reports/manual-open-enhancements-2026-09-30/before/4-remediation_validation.json",
+      "sha256": "3dba3833bf1c3e7ba7e76bb0205586a10d43219c8c0d5b86ca383fa9673a5dc2"
+    }
+  ]
+}

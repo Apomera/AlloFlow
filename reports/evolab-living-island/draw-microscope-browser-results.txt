@@ -1,0 +1,63 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:43404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:43404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2256:5 › individual chance follows real parent identities across trials and saves separate evidence
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes 
+
+    [31mTearing down "context" exceeded the test timeout of 120000ms.[39m
+
+    Error: browserContext.close: Test ended.
+    Browser logs:
+
+    <launching> C:\Users\cabba\AppData\Local\ms-playwright\chromium_headless_shell-1223\chrome-headless-shell-win64\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\Users\cabba\AppData\Local\Temp\playwright_chromiumdev_profile-xHKFOU --remote-debugging-pipe --no-startup-window
+    <launched> pid=48816
+    [pid=48816][err] [0930/195558.292:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x765c00187200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=48816][err] [0930/195601.173:INFO:CONSOLE:0] "[.WebGL-0x765c00187200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: http://127.0.0.1:52458/__harness (0)
+    [pid=48816][err] [0930/195604.188:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x765c0018ae00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=48816][err] [0930/195607.075:INFO:CONSOLE:0] "[.WebGL-0x765c0018ae00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: http://127.0.0.1:52458/__harness (0)
+    [pid=48816][err] [0930/195608.794:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x765c0018ae00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+    [pid=48816][err] [0930/195610.211:INFO:CONSOLE:0] "[.WebGL-0x765c0018ae00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels", source: http://127.0.0.1:52458/__harness (0)
+    [pid=48816][err] [0930/195610.419:ERROR:gpu\command_buffer\service\gl_utils.cc:430] [.WebGL-0x765c0018ae00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+    [pid=48816][err] [0930/195611.022:INFO:CONSOLE:0] "[.WebGL-0x765c0018ae00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)", source: http://127.0.0.1:52458/__harness (0)
+    [pid=48816] <gracefully close start>
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\draw-microscope-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\draw-microscope-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\draw-microscope-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\draw-microscope-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\draw-microscope-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K(node:54640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+[1A[2K(node:54640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2380:5 › chance microscope reveals actual trial draws and lets students test the survival threshold without changing history
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2401:5 › chance microscope on a phone supports keyboard practice draws and keeps its controls inside the screen
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2414:5 › chance microscope without WebGL explains trial outcomes after actual extinction without inventing recorded draws
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes 
+  4 passed (9.2m)

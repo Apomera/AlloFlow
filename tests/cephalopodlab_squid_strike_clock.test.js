@@ -6,9 +6,10 @@ const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
 const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
 const phaseStart = source.indexOf('// Render reach after prey movement/contact');
-const phaseEnd = source.indexOf('// ─── Ink defense', phaseStart);
+const phaseEnd = source.indexOf('// ─── Moray eel AI', phaseStart);
 if (phaseStart < 0 || phaseEnd <= phaseStart) throw new Error('Could not locate the live strike render step');
 const phaseSource = source.slice(phaseStart, phaseEnd);
+if (!phaseSource.includes('animal.update(')) throw new Error('Strike clock fixture must execute the production animal update');
 
 // Execute the production render step with Three's real transform math. The
 // clocks are supplied independently so a meal can occur during strike recovery.

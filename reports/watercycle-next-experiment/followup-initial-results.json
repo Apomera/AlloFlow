@@ -1,0 +1,966 @@
+{
+  "capturedAt": "2026-09-30T02:15:15.577Z",
+  "sourceSha256": "35eff63fc4c5ecc4d2755a92c2b0a688e80801daea5520d797b46af21a7fbdaa",
+  "mirrorSha256": "35eff63fc4c5ecc4d2755a92c2b0a688e80801daea5520d797b46af21a7fbdaa",
+  "provenance": "Source bytes captured before the isolated localhost server starts. Only an owned headless Playwright browser is used; the learner preview and tabs are untouched.",
+  "checks": [
+    {
+      "label": "source and desktop public runtime match at capture",
+      "pass": true
+    },
+    {
+      "label": "next investigation is visible in Data",
+      "pass": true
+    },
+    {
+      "label": "native select offers exactly seven supported inputs",
+      "pass": true
+    },
+    {
+      "label": "wind is not offered as a measured investigation input",
+      "pass": true
+    },
+    {
+      "label": "Sunlight selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Sunlight opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-climate-solar",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Sunlight navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Sunlight navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Sunlight names the supported readings",
+      "pass": true,
+      "detail": "Evaporation index"
+    },
+    {
+      "label": "Sunlight respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-climate-solar",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Temperature selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Temperature opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-climate-temperature",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Temperature navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Temperature navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Temperature names the supported readings",
+      "pass": true,
+      "detail": "Evaporation index"
+    },
+    {
+      "label": "Temperature respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-climate-temperature",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Rainfall intensity selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Rainfall intensity opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-land-rain",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Rainfall intensity navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Rainfall intensity navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Rainfall intensity names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Rainfall intensity respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-land-rain",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Soil saturation selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Soil saturation opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "wc-land-saturation",
+        "focusText": "",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Soil saturation navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Soil saturation navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Soil saturation names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Soil saturation respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "wc-land-saturation",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Soil permeability selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "",
+        "focusText": "✓ Medium",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Soil permeability focuses the selected categorical option",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Soil permeability respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Slope selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Slope opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "",
+        "focusText": "✓ Moderate",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Slope focuses the selected categorical option",
+      "pass": true
+    },
+    {
+      "label": "Slope navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Slope navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Slope names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Slope respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "Land cover selection changes only the intended input choice",
+      "pass": true
+    },
+    {
+      "label": "Land cover opens and focuses its actual native control",
+      "pass": true,
+      "detail": {
+        "focusId": "",
+        "focusText": "✓ Grass",
+        "labOpen": true
+      }
+    },
+    {
+      "label": "Land cover focuses the selected categorical option",
+      "pass": true
+    },
+    {
+      "label": "Land cover navigation preserves inputs, baseline, writing, and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Land cover navigates to Conditions outside Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "Land cover names the supported readings",
+      "pass": true,
+      "detail": "Runoff tendency and infiltration opportunity"
+    },
+    {
+      "label": "Land cover respects reduced motion when scrolling",
+      "pass": true,
+      "detail": {
+        "id": "",
+        "lab": "other",
+        "options": {
+          "behavior": "auto",
+          "block": "center"
+        }
+      }
+    },
+    {
+      "label": "source and desktop public runtime match at capture",
+      "pass": true
+    },
+    {
+      "label": "journey weather shortcut opens the mounted Climate Lab",
+      "pass": true
+    },
+    {
+      "label": "journey weather shortcut preserves learner/model state",
+      "pass": true
+    },
+    {
+      "label": "data weather shortcut opens the mounted Climate Lab",
+      "pass": true
+    },
+    {
+      "label": "data weather shortcut preserves learner/model state",
+      "pass": true
+    },
+    {
+      "label": "check weather shortcut opens the mounted Climate Lab",
+      "pass": true
+    },
+    {
+      "label": "check weather shortcut preserves learner/model state",
+      "pass": true
+    },
+    {
+      "label": "weather shortcut remains a visible caller in Focus Canvas",
+      "pass": true
+    },
+    {
+      "label": "keyboard weather shortcut exits Focus Canvas and focuses sunlight",
+      "pass": true
+    },
+    {
+      "label": "missing baseline is captured from current inputs",
+      "pass": true
+    },
+    {
+      "label": "missing baseline action preserves notebook and comparison writing",
+      "pass": true
+    },
+    {
+      "label": "missing baseline action does not adjust any scenario input",
+      "pass": true
+    },
+    {
+      "label": "missing baseline status describes the baseline action",
+      "pass": true,
+      "detail": "Your current inputs will be saved as the baseline before the control opens."
+    },
+    {
+      "label": "complete baseline is preserved exactly",
+      "pass": true
+    },
+    {
+      "label": "complete baseline action preserves notebook and comparison writing",
+      "pass": true
+    },
+    {
+      "label": "complete baseline action does not adjust any scenario input",
+      "pass": true
+    },
+    {
+      "label": "partial baseline is preserved exactly",
+      "pass": true
+    },
+    {
+      "label": "partial baseline action preserves notebook and comparison writing",
+      "pass": true
+    },
+    {
+      "label": "partial baseline action does not adjust any scenario input",
+      "pass": true
+    },
+    {
+      "label": "partial baseline status identifies incomplete evidence",
+      "pass": true,
+      "detail": "Your saved baseline is incomplete. Save a complete baseline in the comparison workspace before interpreting a difference."
+    },
+    {
+      "label": "several changed inputs are described without claiming a one-input test",
+      "pass": true,
+      "detail": "2 inputs already differ. Use “Keep only this change” in the comparison workspace to isolate a cause."
+    },
+    {
+      "label": "explicit input choice survives section switching",
+      "pass": true
+    },
+    {
+      "label": "native keyboard select tabs directly to its action",
+      "pass": true
+    },
+    {
+      "label": "keyboard action focuses Temperature with a visible outline and unchanged value",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "outline": "3px",
+        "value": "15"
+      }
+    },
+    {
+      "label": "light-1280 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 65
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-1280 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 65
+        }
+      ]
+    },
+    {
+      "label": "light-1280 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "light-1280 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "light-320 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 48
+          }
+        ]
+      }
+    },
+    {
+      "label": "light-320 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 48
+        }
+      ]
+    },
+    {
+      "label": "light-320 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "light-320 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "dark-1280 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 65
+          }
+        ]
+      }
+    },
+    {
+      "label": "dark-1280 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 65
+        }
+      ]
+    },
+    {
+      "label": "dark-1280 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "dark-1280 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "dark-320 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 48
+          }
+        ]
+      }
+    },
+    {
+      "label": "dark-320 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 48
+        }
+      ]
+    },
+    {
+      "label": "dark-320 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "dark-320 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "contrast-1280 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 65
+          }
+        ]
+      }
+    },
+    {
+      "label": "contrast-1280 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 65
+        }
+      ]
+    },
+    {
+      "label": "contrast-1280 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "contrast-1280 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "contrast-320 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 48
+          }
+        ]
+      }
+    },
+    {
+      "label": "contrast-320 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 48
+        }
+      ]
+    },
+    {
+      "label": "contrast-320 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "contrast-320 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "forced-colors-320 bridge and page fit the viewport",
+      "pass": true,
+      "detail": {
+        "fits": true,
+        "targets": [
+          {
+            "tag": "SELECT",
+            "height": 44
+          },
+          {
+            "tag": "BUTTON",
+            "height": 48
+          }
+        ]
+      }
+    },
+    {
+      "label": "forced-colors-320 bridge controls have at least 44px targets",
+      "pass": true,
+      "detail": [
+        {
+          "tag": "SELECT",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 48
+        }
+      ]
+    },
+    {
+      "label": "forced-colors-320 action has visible keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px",
+        "style": "solid"
+      }
+    },
+    {
+      "label": "forced-colors-320 selected land controls open and fit",
+      "pass": true
+    },
+    {
+      "label": "navigation awards no XP or mastery",
+      "pass": true
+    },
+    {
+      "label": "Sunlight learning loop changes exactly its chosen input",
+      "pass": true,
+      "detail": [
+        "climSolar"
+      ]
+    },
+    {
+      "label": "Sunlight learning loop preserves the saved baseline",
+      "pass": true
+    },
+    {
+      "label": "Sunlight learning loop preserves saved writing",
+      "pass": true
+    },
+    {
+      "label": "Sunlight return to Data describes a one-input comparison",
+      "pass": true,
+      "detail": "One input already differs from the baseline. Opening another control preserves that difference."
+    },
+    {
+      "label": "Sunlight return to Data updates the supported comparison reading",
+      "pass": false,
+      "detail": {
+        "before": "Evaporation index",
+        "after": "Evaporation index"
+      }
+    },
+    {
+      "label": "Sunlight completes the loop with retained choice and paused journey",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability learning loop changes exactly its chosen input",
+      "pass": true,
+      "detail": [
+        "landPermeability"
+      ]
+    },
+    {
+      "label": "Soil permeability learning loop preserves the saved baseline",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability learning loop preserves saved writing",
+      "pass": true
+    },
+    {
+      "label": "Soil permeability return to Data describes a one-input comparison",
+      "pass": true,
+      "detail": "One input already differs from the baseline. Opening another control preserves that difference."
+    },
+    {
+      "label": "Soil permeability return to Data updates the supported comparison reading",
+      "pass": false,
+      "detail": {
+        "before": "Runoff tendency and infiltration opportunity",
+        "after": "Runoff tendency and infiltration opportunity"
+      }
+    },
+    {
+      "label": "Soil permeability completes the loop with retained choice and paused journey",
+      "pass": true
+    },
+    {
+      "label": "forced-colors follow-up retains native action keyboard focus",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "visible": true,
+        "width": "3px"
+      }
+    },
+    {
+      "label": "forced-colors follow-up bridge fits 320px",
+      "pass": true
+    },
+    {
+      "label": "forced-colors follow-up opened land controls fit 320px",
+      "pass": true
+    },
+    {
+      "label": "navigation awards no XP or mastery",
+      "pass": true
+    }
+  ],
+  "audits": [
+    {
+      "label": "light-1280-bridge",
+      "violations": []
+    },
+    {
+      "label": "light-1280-opened-land",
+      "violations": []
+    },
+    {
+      "label": "light-320-bridge",
+      "violations": []
+    },
+    {
+      "label": "light-320-opened-land",
+      "violations": []
+    },
+    {
+      "label": "dark-1280-bridge",
+      "violations": []
+    },
+    {
+      "label": "dark-1280-opened-land",
+      "violations": []
+    },
+    {
+      "label": "dark-320-bridge",
+      "violations": []
+    },
+    {
+      "label": "dark-320-opened-land",
+      "violations": []
+    },
+    {
+      "label": "contrast-1280-bridge",
+      "violations": []
+    },
+    {
+      "label": "contrast-1280-opened-land",
+      "violations": []
+    },
+    {
+      "label": "contrast-320-bridge",
+      "violations": []
+    },
+    {
+      "label": "contrast-320-opened-land",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-bridge",
+      "violations": []
+    },
+    {
+      "label": "learning-loop-climSolar",
+      "violations": []
+    },
+    {
+      "label": "learning-loop-landPermeability",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-bridge-follow-up",
+      "violations": []
+    },
+    {
+      "label": "forced-colors-320-opened-land-follow-up",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [
+    "Sunlight return to Data updates the supported comparison reading",
+    "Soil permeability return to Data updates the supported comparison reading"
+  ],
+  "timings": [
+    {
+      "key": "climSolar",
+      "milliseconds": 674.1999999992549
+    },
+    {
+      "key": "climTemp",
+      "milliseconds": 721.8999999985099
+    },
+    {
+      "key": "landRainIntensity",
+      "milliseconds": 820.5
+    },
+    {
+      "key": "landSaturation",
+      "milliseconds": 848.1000000014901
+    },
+    {
+      "key": "landPermeability",
+      "milliseconds": 632.6999999992549
+    },
+    {
+      "key": "landSlope",
+      "milliseconds": 643.1000000014901
+    },
+    {
+      "key": "landCover",
+      "milliseconds": 641.9000000022352
+    }
+  ],
+  "verificationRuns": [
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:03:21.566Z",
+      "completedAt": "2026-09-30T02:04:00.416Z",
+      "checks": 49,
+      "stoppedAt": "Weather shortcut accessible-name selector",
+      "correction": "Use the existing accessible name: Open climate controls and run a one-variable experiment."
+    },
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:05:58.028Z",
+      "completedAt": "2026-09-30T02:06:21.238Z",
+      "stoppedAt": "Existing weather button is inside the closed learning-guide disclosure.",
+      "correction": "Open the native learning-guide disclosure before invoking its weather button."
+    },
+    {
+      "sourceSha256": "5022d843e629bff62ad3eec609c5191254d2d9cb465ae851d37f06e58322d335",
+      "capturedAt": "2026-09-30T02:08:02.621Z",
+      "completedAt": "2026-09-30T02:10:45.381Z",
+      "checks": 102,
+      "audits": 14,
+      "passingAudits": 13,
+      "coverage": "All destinations, shortcuts, baseline semantics, keyboard focus, and responsive themes.",
+      "failedAudit": "Forced-colors land text author colors; the raw audit is retained in pre-forced-colors-results.json.",
+      "correction": "Explicit CanvasText declarations for Land Lab text in forced colors."
+    }
+  ],
+  "resolvedFailures": [
+    {
+      "initialReport": "initial-results.json",
+      "initialFailure": "Locator expected visible text as accessible name for the weather shortcut.",
+      "correctiveValidation": "All three original non-Conditions sections activate the existing named native button and focus sunlight."
+    },
+    {
+      "initialReport": "shortcut-results.json",
+      "initialFailure": "Weather button parent learning-guide disclosure was closed.",
+      "correctiveValidation": "Open the native parent disclosure and then activate its weather button in all three sections."
+    },
+    {
+      "initialReport": "pre-forced-colors-results.json",
+      "initialFailure": "Forced-colors Land Lab author colors triggered a color-contrast audit.",
+      "correctiveValidation": "Explicit system text colors pass the same scoped axe audit and preserve the readable forced-colors screenshot."
+    }
+  ],
+  "lastStep": "axe forced-colors-320-opened-land-follow-up",
+  "completedAt": "2026-09-30T02:16:09.966Z",
+  "sourceUnchangedAtCompletion": true,
+  "mirrorUnchangedAtCompletion": true,
+  "ownedBrowserClosed": true,
+  "ownedServerClosed": true
+}

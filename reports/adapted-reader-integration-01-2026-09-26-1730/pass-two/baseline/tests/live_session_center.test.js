@@ -1,0 +1,154 @@
+// Live Session Center + help signals (2026-07-01) — source pins on
+// AlloFlowANTI.txt and live_polling_module.js, in the style of
+// canvas_shell_live_controls.test.js.
+//
+// Pins: (1) the consolidated teacher dock exists and launches poll /
+// quick-check / pictionary; (2) the help-signal channel stays enum-only and
+// Tier-1 (signal/signalAt allowlisted, options fixed, writes gated through
+// writeToSession); (3) the polling HostPanel supports initialPoll composer
+// presets the dock's Quick Check relies on.
+
+import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
+const polling = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
+// The dock's command wiring and the per-student resource handler were both
+// extracted out of the host monolith; assert against where they live now.
+const commandContext = readFileSync(resolve(process.cwd(), 'allo_command_context_source.js'), 'utf8');
+const hostHandlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
+const uiStrings = readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8');
+
+describe('Live Dashboard dock (teacher)', () => {
+  it('mounts one dock that launches poll, quick check and pictionary', () => {
+    expect(liveDock).toContain("t('live_dock.title') || 'Live Dashboard'");
+    expect(liveDock).toContain("t('live_dock.call_vote') || 'Vote on outcomes'");
+    expect(liveDock).toContain("t('live_dock.poll') || 'Poll'");
+    expect(liveDock).toContain("t('live_dock.quick_check') || 'Check understanding'");
+    expect(uiStrings).toContain('"teacher_paced": "Teacher-led"');
+    expect(uiStrings).toContain('"start_tooltip": "Teach live or open the Live Dashboard"');
+    // Same opener, now reachable from the dock button and the command palette.
+    expect(liveDock).toContain('setLivePollPreset(null); setShowLiveP');
+    expect(commandContext).toContain('setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false);');
+    expect(liveDock).toContain("t('live_dock.quick_check')");
+    expect(commandContext).toContain('setShowPictionaryHost(true); setShowLiveDock(false);');
+  });
+
+  it('passes the composer preset into the polling HostPanel and clears it on close', () => {
+    expect(anti).toContain('initialPoll: livePollPreset');
+    expect(anti).toContain('setShowLivePollingPanel(false); setLivePollPreset(null);');
+  });
+
+  it('quick check seeds a 1-3 confused→ready rating poll', () => {
+    expect(commandContext).toContain('1 = Confused\\n2 = Okay\\n3 = Ready');
+    expect(liveDock).toContain('ratingMin: 1, ratingMax: 3');
+  });
+
+  it('shows a privacy note describing the peer-only transport', () => {
+    expect(liveDock).toContain("t('live_dock.privacy_note')");
+  });
+});
+
+describe('Help signals (Tier-1 enum-only channel)', () => {
+  it('allowlists signal + signalAt for writeToSession', () => {
+    expect(anti).toContain("'signal', 'signalAt',");
+  });
+
+  it('keeps the vocabulary a fixed enum set (no free text)', () => {
+    expect(anti).toContain('const LIVE_SIGNAL_OPTIONS = [');
+    for (const id of ['stuck', 'slow', 'repeat', 'ready']) {
+      expect(anti).toContain(`{ id: '${id}',`);
+    }
+  });
+
+  it('student sender writes through the Tier-1 gate, not raw updateDoc', () => {
+    // `const sendSignal = (id) =>` became a `send:` method on the signals API.
+    // The gate got STRICTER in the move - it now rejects any id that is not one
+    // of LIVE_SIGNAL_OPTIONS before writing - so pin the allowlist too.
+    const senderIdx = anti.indexOf('send: (id) => {');
+    expect(senderIdx).toBeGreaterThan(-1);
+    const senderBlock = anti.slice(senderIdx, senderIdx + 400);
+    expect(senderBlock).toContain('LIVE_SIGNAL_OPTIONS.some((opt) => opt.id === id)');
+    expect(senderBlock).toContain('writeToSession(signalRef,');
+    expect(senderBlock).toContain('roster.${user.uid}.signal');
+    expect(senderBlock).toContain('roster.${user.uid}.signalAt');
+  });
+
+  it('teacher dock lists fresh signals and can clear them', () => {
+    expect(anti).toContain('LIVE_SIGNAL_FRESH_MS');
+    expect(anti).toContain('const clearSignal = (uid) =>');
+    expect(liveDock).toContain("t('live_dock.clear_all_signals')");
+  });
+});
+
+describe('HostPanel initialPoll presets (live_polling_module.js)', () => {
+  it('seeds the composer from props.initialPoll when the panel opens', () => {
+    expect(polling).toContain('props.initialPoll');
+    expect(polling).toContain('if (!isOpen || !initialPoll) return;');
+    expect(polling).toContain('setPollPrompt(initialPoll.prompt)');
+    expect(polling).toContain('setRatingLabels(initialPoll.ratingLabels)');
+  });
+});
+
+describe('per-student resource send (#9)', () => {
+  it('allowlists resourceId + viewing leaves as Tier-1', () => {
+    expect(anti).toContain("'resourceId',");
+    expect(anti).toContain("'viewingResourceId', 'viewingResourceAt', 'viewingResourceStatus', 'viewingAt',");
+  });
+
+  it('teacher handler writes id + consume-once nonce, and clears with null', () => {
+    // The handler body moved to host_handlers when that surface was extracted;
+    // ANTI keeps only a thin delegate.
+    const idx = hostHandlers.indexOf('const handleSetStudentResource');
+    expect(idx).toBeGreaterThan(-1);
+    // Keep enough context for optional pre-send safety checks that may be
+    // added before the bounded session-document write.
+    const block = hostHandlers.slice(idx, idx + 1600);
+    expect(block).toContain('roster.${uid}.resourceId');
+    expect(block).toContain('roster.${uid}.resourceAt');
+    expect(block).toContain('Number.isFinite(requestedResourceAt) && requestedResourceAt > 0 ? requestedResourceAt : Date.now()');
+    expect(block).toContain('updates[`roster.${uid}.wsProgress`] = options.wsProgress');
+  });
+
+  it('individual override outranks group (sync) and is consume-once (student-paced)', () => {
+    expect(anti).toContain('Overriding to individual resource');
+    expect(anti).toContain('const individualPushKey =');
+    expect(anti).toContain('lastIndividualPushKeyRef.current !== individualPushKey');
+    // The individual consume-once branch must be evaluated before the group branch.
+    const ind = anti.indexOf('const individualPushKey =');
+    const grp = anti.indexOf('const groupPushKey =');
+    expect(ind).toBeGreaterThan(-1);
+    expect(ind).toBeLessThan(grp);
+  });
+});
+
+describe('delivery acknowledgment (#10)', () => {
+  it('students write viewingResourceId through the Tier-1 gate, ref-guarded', () => {
+    expect(anti).toContain('const lastViewingSyncRef');
+    expect(anti).toContain('roster.${user.uid}.viewingResourceId');
+    expect(anti).toContain('roster.${user.uid}.viewingAt');
+    expect(anti).toContain('if (lastViewingSyncRef.current === viewingKey) return;');
+  });
+
+  it('dock Students section shows delivery status with per-student push/clear', () => {
+    expect(liveDock).toContain("t('live_dock.group_students')");
+    expect(liveDock).toContain('const targetFor = (entry) => resolveLiveStudentResourceTarget({');
+    expect(liveDock).toContain("t('live_dock.status_on')");
+    expect(liveDock).toContain('handleSetStudentResource(uid, null)');
+    expect(liveDock).toContain('handleSetStudentResource(uid, generatedContent.id)');
+  });
+});
+
+describe('roster gate + TURN override wiring', () => {
+  it('shell passes roster uids into the polling host panel', () => {
+    expect(anti).toContain('allowedUids: sessionData && sessionData.roster ? Object.keys(sessionData.roster) : []');
+  });
+
+  it('polling module has the roster gate and the __alloRtcConfig hook', () => {
+    expect(polling).toContain('setAllowedUids(uids)');
+    expect(polling).toContain('window.__alloRtcConfig');
+  });
+});

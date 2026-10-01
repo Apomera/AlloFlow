@@ -8,7 +8,8 @@ function block(from, to) {
   return source.slice(start, end);
 }
 const selectCode = block('  const selectBuilderResources =', '  const getBuilderHistory =');
-const signatureCode = block('  const _getBuilderHistorySignature =', '  const getBuilderGuidedDeliveryContext =');
+// Render-time draft-owner code (0bb48eb97) now sits between the signature helper and the context getter.
+const signatureCode = block('  const _getBuilderHistorySignature =', '  const _builderDraftOwnerRef =');
 const contextCode = block('  const getBuilderGuidedDeliveryContext =', '  const builderGuidedDeliveryContext =');
 const confirmCode = block('  const confirmBuilderGuidedDelivery =', '  const BUILDER_PROJECT_DRAFT_MAX_BYTES =');
 const reading = { id: 'reading', type: 'simplified', data: 'The selected lesson reading.' };

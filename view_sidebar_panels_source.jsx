@@ -1403,7 +1403,7 @@ function SimplifiedPanel(props) {
                     disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
-                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
+                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('sidebar.create_adapted_companion') || 'Create adapted companion'} <Sparkles size={14} className="text-yellow-600"/></span>
                     <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                 </button>
               </div>
@@ -1999,7 +1999,7 @@ function SourceInputPanel(props) {
                                                     setUrlToFetch('');
                                                     addToast(t('common.link_opened_copy_paste'), "info");
                                                 }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
                                                 title={t('common.open_link_paste_mode')}
                                             >
                                                 <ExternalLink size={14} />
@@ -4278,7 +4278,9 @@ function GeneratorActionsView(props) {
         isParentMode, isProcessing, isTeacherMode, leveledTextLanguage, openExportPreview, openStudentQrPreview, qrShareModal, recentQrShares,
         resourceCount, rosterKey, selectToolFromCatalog, selectedLanguages, setFullPackAddType, setFullPackTargetGroup, setIsAutoConfigEnabled, setResourceCount,
         setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat,
-        translationMode, universalImageStyle, useEmojis
+        translationMode, universalImageStyle, useEmojis,
+        // Grade-level standard: the pack's main reading is the original with supports.
+        handleReadOriginal: props.handleReadOriginal
         }}
       />
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all motion-reduce:transition-none group">

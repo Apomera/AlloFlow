@@ -102,13 +102,16 @@ function AnalysisView(props) {
     role: 'unspecified',
     form: 'original'
   };
-  const readingRoleLabel = readingProfile.role === 'primary' ? 'Main reading' : readingProfile.role === 'supplemental' ? 'Supporting reading' : 'Not designated';
-  const readingFormLabel = readingProfile.form === 'adapted' ? 'Adapted text' : readingProfile.form === 'same-text-supported' ? 'Original with supports' : 'Original text';
+  const roleMainLabel = analysisLabel('simplified.role_main_reading', 'Main reading');
+  const roleSupportingLabel = analysisLabel('simplified.role_supporting_reading', 'Supporting reading');
+  const roleNoneLabel = analysisLabel('simplified.role_not_designated', 'Not designated');
+  const readingRoleLabel = readingProfile.role === 'primary' ? roleMainLabel : readingProfile.role === 'supplemental' ? roleSupportingLabel : roleNoneLabel;
+  const readingFormLabel = readingProfile.form === 'adapted' ? analysisLabel('common.adapted_text', 'Adapted text') : readingProfile.form === 'same-text-supported' ? analysisLabel('analysis.form_supported', 'Original with supports') : analysisLabel('analysis.form_original', 'Original text');
   const mainNeedsReview = readingProfile.form === 'adapted' && readingProfile.role === 'primary' && !(readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator');
   const changeReadingRole = nextRole => {
     const adaptedPrimary = readingProfile.form === 'adapted' && nextRole === 'primary';
     if (adaptedPrimary && !(readingProfile.role === 'primary' && readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator')) {
-      if (!window.confirm('Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.')) return;
+      if (!window.confirm(analysisLabel('analysis.confirm_adapted_main', 'Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.'))) return;
     }
     props.onInstructionalRoleChange?.(generatedContent, nextRole, {
       authorizeReplacement: adaptedPrimary
@@ -121,40 +124,52 @@ function AnalysisView(props) {
     className: "flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("strong", null, readingFormLabel), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "·"), /*#__PURE__*/React.createElement("span", null, readingRoleLabel, mainNeedsReview ? ' — needs review' : '')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }, "·"), /*#__PURE__*/React.createElement("span", null, readingRoleLabel, mainNeedsReview ? ' (' + analysisLabel('analysis.needs_review', 'needs review') + ')' : '')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex flex-wrap items-center gap-3"
   }, /*#__PURE__*/React.createElement("label", {
     className: "inline-flex flex-wrap items-center gap-2"
-  }, "Use in this lesson", /*#__PURE__*/React.createElement("select", {
-    "aria-label": "Use in this lesson",
+  }, analysisLabel('simplified.role_use_in_this_lesson', 'Use in this lesson'), /*#__PURE__*/React.createElement("select", {
+    "aria-label": analysisLabel('simplified.role_use_in_this_lesson', 'Use in this lesson'),
     value: readingProfile.role,
     disabled: isProcessing || !props.onInstructionalRoleChange,
     onChange: event => changeReadingRole(event.target.value),
     className: "min-h-11 rounded-lg border border-slate-300 bg-white px-2"
   }, /*#__PURE__*/React.createElement("option", {
     value: "primary"
-  }, "Main reading"), /*#__PURE__*/React.createElement("option", {
+  }, roleMainLabel), /*#__PURE__*/React.createElement("option", {
     value: "supplemental"
-  }, "Supporting reading"), /*#__PURE__*/React.createElement("option", {
+  }, roleSupportingLabel), /*#__PURE__*/React.createElement("option", {
     value: "unspecified"
-  }, "Not designated"))), mainNeedsReview && /*#__PURE__*/React.createElement("button", {
+  }, roleNoneLabel))), mainNeedsReview && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => changeReadingRole('primary'),
     className: "min-h-11 rounded-lg border border-amber-400 px-3"
-  }, "Review main-reading choice"), props.onSelectReadingSource && /*#__PURE__*/React.createElement("button", {
+  }, analysisLabel('simplified.role_review_main_reading_choice', 'Review main-reading choice')), props.onSelectReadingSource && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isProcessing,
     onClick: () => props.onSelectReadingSource(generatedContent),
     className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
-  }, "Use for activities")));
+  }, analysisLabel('simplified.role_use_for_activities', 'Use for activities'))));
+  // Model output can be malformed or from an older save: never dereference it blindly.
+  const analysisData = generatedContent && generatedContent.data && typeof generatedContent.data === 'object' ? generatedContent.data : {};
+  const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
+  const isUnreadableNote = value => !!value && typeof value === 'object';
+  const accuracy = analysisData.accuracy && typeof analysisData.accuracy === 'object' && !Array.isArray(analysisData.accuracy) ? analysisData.accuracy : {};
+  const accuracyRating = asText(accuracy.rating).trim() || analysisLabel('analysis.rating_unknown', 'Not rated');
+  const conceptList = (Array.isArray(analysisData.concepts) ? analysisData.concepts : [analysisData.concepts]).map(asText).filter(concept => concept.trim());
+  const readingLevel = analysisData.readingLevel && typeof analysisData.readingLevel === 'object' ? analysisData.readingLevel : null;
+  const verifiedFactList = (Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : []).filter(fact => typeof fact === 'string' && fact.trim());
+  const isTranslatedDisplay = typeof analysisData.translatedText === 'string' && !!analysisData.translatedText.trim();
+  const includeTitle = analysisLabel('analysis.include_in_correction', 'Include in correction');
+  const ignoreTitle = analysisLabel('analysis.ignore_this_error', 'Ignore this error');
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, readingRoleControl, props.onReadOriginal && /*#__PURE__*/React.createElement("button", {
+  }, isTeacherMode && readingRoleControl, props.onReadOriginal && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-read-original": true,
     onClick: () => props.onReadOriginal(generatedContent),
     className: "min-h-11 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-  }, analysisLabel('analysis.read_with_supports', 'Read with supports')), /*#__PURE__*/React.createElement("div", {
+  }, analysisLabel('analysis.read_with_supports', 'Read with supports')), isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800",
@@ -167,13 +182,13 @@ function AnalysisView(props) {
     className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3"
-  }, t('output.analysis_complexity')), typeof generatedContent?.data.readingLevel === 'object' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, t('output.analysis_complexity')), readingLevel ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-indigo-600 mb-2"
-  }, generatedContent?.data.readingLevel.range), /*#__PURE__*/React.createElement("div", {
+  }, asText(readingLevel.range) || 'N/A'), /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-600 leading-relaxed"
-  }, formatInlineText(generatedContent?.data.readingLevel.explanation, false))) : /*#__PURE__*/React.createElement("div", {
+  }, formatInlineText(asText(readingLevel.explanation), false))) : /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-indigo-600"
-  }, generatedContent?.data.readingLevel), generatedContent?.data.localStats && /*#__PURE__*/React.createElement("div", {
+  }, asText(analysisData.readingLevel)), generatedContent?.data.localStats && /*#__PURE__*/React.createElement("div", {
     className: "mt-auto pt-4 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-2"
@@ -202,7 +217,7 @@ function AnalysisView(props) {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3"
   }, t('output.analysis_concepts')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 content-start"
-  }, generatedContent?.data.concepts.map((concept, idx) => /*#__PURE__*/React.createElement("span", {
+  }, conceptList.map((concept, idx) => /*#__PURE__*/React.createElement("span", {
     key: idx,
     className: "bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100"
   }, formatInlineText(concept, false)))))), /*#__PURE__*/React.createElement("div", {
@@ -212,10 +227,10 @@ function AnalysisView(props) {
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
   }, t('output.analysis_verification')), /*#__PURE__*/React.createElement("span", {
-    className: `px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${generatedContent?.data.accuracy.rating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
-  }, generatedContent?.data.accuracy.rating)), /*#__PURE__*/React.createElement("p", {
+    className: `px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
+  }, accuracyRating)), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 leading-relaxed"
-  }, formatInlineText(generatedContent?.data.accuracy.reason, false)), generatedContent?.data.accuracy.verificationDetails && /*#__PURE__*/React.createElement("div", {
+  }, formatInlineText(asText(accuracy.reason), false)), asText(accuracy.verificationDetails) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("h5", {
     className: "text-[11px] font-bold text-blue-500 uppercase tracking-wider mb-2 flex items-center gap-1"
@@ -223,8 +238,9 @@ function AnalysisView(props) {
     size: 10
   }), " ", t('analysis.verification_details')), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 leading-relaxed"
-  }, renderFormattedText(generatedContent?.data.accuracy.verificationDetails, false))), (() => {
-    const rawDiscrepancies = generatedContent?.data.accuracy.discrepancies || [];
+  }, renderFormattedText(asText(accuracy.verificationDetails), false))), (() => {
+    const rawDiscrepancies = Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [];
+    const unreadableDiscrepancies = rawDiscrepancies.filter(isUnreadableNote).length + (Number(accuracy.discrepanciesUnreadable) > 0 ? Number(accuracy.discrepanciesUnreadable) : 0);
     const isInvalidDiscrepancy = d => {
       if (!d || typeof d !== 'string') return true;
       const clean = d.trim().toLowerCase().replace(/[.,;!]+$/, '');
@@ -235,9 +251,13 @@ function AnalysisView(props) {
     };
     const realDiscrepancies = rawDiscrepancies.filter(d => !isInvalidDiscrepancy(d));
     const hasDiscrepancies = realDiscrepancies.length > 0;
-    const hasVerifiedFacts = generatedContent?.data.accuracy.verifiedFacts?.length > 0;
-    if (!hasDiscrepancies && !hasVerifiedFacts) return null;
-    return /*#__PURE__*/React.createElement("div", {
+    const hasVerifiedFacts = verifiedFactList.length > 0;
+    const unreadableNotice = unreadableDiscrepancies > 0 && /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      className: "mt-4 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded p-2"
+    }, analysisLabel('analysis.accuracy_unreadable', 'Some accuracy notes could not be read. Run the analysis again to review them.'));
+    if (!hasDiscrepancies && !hasVerifiedFacts) return unreadableNotice || null;
+    return /*#__PURE__*/React.createElement(React.Fragment, null, unreadableNotice, /*#__PURE__*/React.createElement("div", {
       className: `mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 ${hasDiscrepancies ? 'md:grid-cols-2' : ''} gap-4`
     }, hasVerifiedFacts && /*#__PURE__*/React.createElement("div", {
       className: "bg-green-50 p-3 rounded border border-green-100"
@@ -247,7 +267,7 @@ function AnalysisView(props) {
       size: 10
     }), " ", t('analysis.verified_facts')), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-700 leading-relaxed space-y-1"
-    }, generatedContent?.data.accuracy.verifiedFacts.map((f, i) => /*#__PURE__*/React.createElement("div", {
+    }, verifiedFactList.map((f, i) => /*#__PURE__*/React.createElement("div", {
       key: i,
       className: "flex items-start gap-2"
     }, /*#__PURE__*/React.createElement("span", {
@@ -276,7 +296,7 @@ function AnalysisView(props) {
         checked: isSelected,
         onChange: () => toggleDiscrepancySelection(i),
         className: "mt-1 w-4 h-4 text-red-600 border-red-300 rounded focus:ring-red-500 cursor-pointer shrink-0",
-        title: isSelected ? "Include in correction" : "Ignore this error"
+        title: isSelected ? includeTitle : ignoreTitle
       }), /*#__PURE__*/React.createElement("div", {
         className: `text-xs text-slate-700 leading-relaxed ${!isSelected ? 'line-through text-slate-600' : ''} w-full`
       }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
@@ -292,13 +312,14 @@ function AnalysisView(props) {
       className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wrench, {
       size: 12
-    }), t('analysis.fix_button'), " (", selectedDiscrepancies.size, ")")));
-  })(), generatedContent?.data.accuracy.citations && /*#__PURE__*/React.createElement("div", {
+    }), t('analysis.fix_button'), " (", selectedDiscrepancies.size, ")"))));
+  })(), asText(accuracy.citations) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 leading-relaxed"
-  }, renderFormattedText(generatedContent?.data.accuracy.citations, false)))), (() => {
-    const rawGrammarNotes = generatedContent?.data.grammar || [];
+  }, renderFormattedText(asText(accuracy.citations), false)))), (() => {
+    const rawGrammarNotes = Array.isArray(analysisData.grammar) ? analysisData.grammar : [];
+    const unreadableGrammarNotes = rawGrammarNotes.filter(isUnreadableNote).length + (Number(analysisData.grammarUnreadable) > 0 ? Number(analysisData.grammarUnreadable) : 0);
     const isInvalidGrammarNote = g => {
       if (!g || typeof g !== 'string') return true;
       const clean = g.trim().toLowerCase().replace(/[.,;!]+$/, '');
@@ -349,8 +370,10 @@ function AnalysisView(props) {
       if (!isDismissedNote(note)) return;
       setGrammarNoteAt(idx, note.slice(GRAMMAR_DISMISSED_PREFIX.length));
     };
+    // Notes describe the source; the displayed text is a translation, so an AI fix would edit the wrong text.
+    const canFixGrammar = isTeacherMode && !isTranslatedDisplay;
     const handleFixGrammarErrors = async () => {
-      if (!generatedContent?.data?.originalText || selectedGrammarErrors.size === 0) return;
+      if (!canFixGrammar || !generatedContent?.data?.originalText || selectedGrammarErrors.size === 0) return;
       setIsProcessing(true);
       setGenerationStep(t('process.fixing_grammar') || 'Fixing grammar errors...');
       try {
@@ -438,7 +461,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
     }, t('output.analysis_grammar')), hasGrammarErrors && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("span", {
       className: "px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200"
-    }, openGrammarErrors.length, " ", openGrammarErrors.length === 1 ? 'Issue' : 'Issues'), hasGrammarErrors && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("span", {
+    }, openGrammarErrors.length, " ", openGrammarErrors.length === 1 ? analysisLabel('analysis.issue_singular', 'Issue') : analysisLabel('analysis.issue_plural', 'Issues')), hasGrammarErrors && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("span", {
       className: "px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-green-100 text-green-700 border-green-200"
     }, t('analysis.grammar_all_resolved') || 'All resolved')), hasGrammarErrors ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 mb-3"
@@ -451,13 +474,13 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       return /*#__PURE__*/React.createElement("div", {
         key: idx,
         className: `flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`
-      }, isTeacherMode && !isFixed && !isDismissed && /*#__PURE__*/React.createElement("input", {
+      }, canFixGrammar && !isFixed && !isDismissed && /*#__PURE__*/React.createElement("input", {
         "aria-label": analysisLabel('analysis.select_grammar_note', 'Include grammar note in correction') + ' ' + (idx + 1) + ': ' + bareNote,
         type: "checkbox",
         checked: isSelected,
         onChange: () => toggleGrammarErrorSelection(idx),
         className: "mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0",
-        title: isSelected ? "Include in correction" : "Ignore this error"
+        title: isSelected ? includeTitle : ignoreTitle
       }), isFixed && /*#__PURE__*/React.createElement(CheckCircle2, {
         size: 16,
         className: "text-green-600 mt-0.5 shrink-0",
@@ -485,7 +508,9 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         "aria-label": `${t('analysis.grammar_restore_one') || 'Restore notice'}: ${bareNote.slice(0, 80)}`,
         className: "shrink-0 ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
       }, t('analysis.grammar_restore_one') || 'Restore'));
-    })), isTeacherMode && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("button", {
+    })), isTeacherMode && isTranslatedDisplay && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("p", {
+      className: "mb-3 text-xs text-slate-700"
+    }, analysisLabel('analysis.grammar_translated_note', 'These notes describe the source text, not the translation shown here, so Fix Grammar is off. Dismiss each note once you have handled it.')), canFixGrammar && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("button", {
       onClick: handleFixGrammarErrors,
       disabled: isProcessing || selectedGrammarErrors.size === 0,
       "aria-busy": isProcessing,
@@ -509,12 +534,15 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       className: "w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 12
-    }), t('analysis.dismiss_fixed') || 'Dismiss Fixed Notices')) : /*#__PURE__*/React.createElement("div", {
+    }), t('analysis.dismiss_fixed') || 'Dismiss Fixed Notices')) : unreadableGrammarNotes > 0 ? null : /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 text-sm text-green-600"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 16
-    }), /*#__PURE__*/React.createElement("span", null, t('analysis.no_grammar_errors') || 'No grammar or spelling issues detected.')));
-  })(), /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement("span", null, t('analysis.no_grammar_errors') || 'No grammar or spelling issues detected.')), unreadableGrammarNotes > 0 && /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      className: "mt-3 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded p-2"
+    }, analysisLabel('analysis.grammar_unreadable', 'Some grammar notes could not be read. Run the analysis again to review them.')));
+  })()), /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-6 rounded-xl border border-slate-400 relative group"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3 flex-wrap gap-2"
@@ -569,7 +597,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 14
-  }))), isEditingAnalysis ? /*#__PURE__*/React.createElement("div", {
+  }))), isTeacherMode && isEditingAnalysis ? /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-white border border-indigo-200 rounded-lg overflow-hidden shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"

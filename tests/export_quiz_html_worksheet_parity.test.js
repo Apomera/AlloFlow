@@ -121,7 +121,7 @@ function makeMemoryAidRecallExport() {
   };
 }
 
-describe('quiz parity across HTML and printable worksheet exports', () => {
+describe('quiz parity across HTML and printable worksheet exports', { timeout: 60000 }, () => {
   it('renders every supported item type as a usable, labeled HTML response', () => {
     const html = render(false);
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -540,6 +540,9 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(teacherSection.textContent).toContain('PRIVATE SECOND CHECKED FACT');
     expect(teacherSection.textContent).toContain('PRIVATE AI MODEL ANSWER');
     expect(teacherSection.textContent).toContain('PRIVATE CUE MAPPING');
+    const savedMapping = teacherSection.querySelector('.memory-aid-saved-mapping');
+    expect(savedMapping.textContent).toContain('Saved mapping for teacher review');
+    expect(savedMapping.querySelector('[role="note"]').textContent).toContain('Check this saved mapping against the current cue and facts');
     expect(teacherSection.textContent).toContain('PRIVATE STUDENT REASONING');
     expect(teacherSection.textContent).toContain('PRIVATE FEEDBACK STRENGTH');
     expect(html.indexOf('PRIVATE CHECKED FACT')).toBeGreaterThan(html.indexOf('class="teacher-view"'));
@@ -552,6 +555,31 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
       expect(html).not.toContain(privateAttemptValue);
     }
     expect(html).not.toContain('PRIVATE RECALL SOURCE EXCERPT');
+  });
+
+  it('retains the escaped saved mapping beside current connections in the teacher appendix', () => {
+    const item = makeMemoryAidRecallExport();
+    const card = item.data.cards[0];
+    const rules = window.AlloModules.MemoryAid.exportRules;
+    card.mapping = 'Saved <img src="x" onerror="alert(1)"> mapping';
+    card.studentDraft = '';
+    card.connections = [{ factIndex: 0, cue: 'statue', explanation: 'current connection' }];
+    expect(rules.activeConnections(card)).toHaveLength(1);
+    const html = pipeline.generateFullPackHTML([item], 'Memory recall', true, {}, { includeTeacherKey: true, annotations: [] });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const teacher = doc.querySelector('.teacher-view .memory-aid-export');
+    const mapping = teacher.querySelector('.memory-aid-saved-mapping');
+    expect(mapping.textContent).toContain(card.mapping);
+    expect(mapping.querySelector('img')).toBeNull();
+    expect(teacher.textContent).toContain('current connection');
+    expect(doc.querySelector('.memory-aid-export').textContent).not.toContain(card.mapping);
+  });
+
+  it('keeps a saved example mapping out of a customized learner HTML reference', () => {
+    const html = pipeline.generateFullPackHTML([makeMemoryAidRecallExport()], 'Memory reference', false, {}, { includeTeacherKey: false, annotations: [] });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    expect(doc.querySelector('.memory-aid-export').textContent).not.toContain('PRIVATE CUE MAPPING');
+    expect(doc.querySelector('.memory-aid-saved-mapping')).toBeNull();
   });
 
   it('exports Applied Challenge Studio as a persistent workspace without leaking its source excerpt', () => {

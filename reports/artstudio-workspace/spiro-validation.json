@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-29",
+  "scope": "Spirograph geometry, playback, checkpoints, complete PNG/SVG exports, and responsive focus layout",
+  "sourcePublicParity": true,
+  "sourceSHA256": "071EE07E5FC675198D7BAAA27DF984CEA160A8DE567CA071B5AE6C321F5E476D",
+  "tests": {
+    "verifiedFiles": 8,
+    "verifiedTests": 73,
+    "newRegressionCases": 7,
+    "stageAndPaletteSuite": {"passedTests":23,"log":"spiro-initial-tests.log"},
+    "contextGuards": {"passedTests":9,"log":"spiro-recovery-tests.log"},
+    "finalRun": {"passedFiles":6,"passedTests":41,"log":"spiro-final-tests.log"},
+    "initialWorkerStartupFailuresRecovered": true,
+    "recoveryPool": "forks",
+    "repositoryTimeoutConfigurationChanged": false,
+    "fullRepositorySuiteRun": false
+  },
+  "browser": {
+    "passed": true,
+    "report": "spiro-browser-results.json",
+    "pageErrors": [],
+    "svgPngMeanChannelDifference": {"inside":0.017085754793453863,"outside":0.01522230759165647},
+    "fittedInkBoundsPx": [16,16,495,495],
+    "pngSizePx": [512,512],
+    "actualPngAndSvgDownloads": true,
+    "exportDoesNotAdvancePausedPreview": true,
+    "desktopFocusPreviewPx": 760,
+    "phonePreviewPx": 374,
+    "phoneViewportWidthPx": 390,
+    "phonePreviewBeforeControls": true,
+    "phoneHorizontalOverflow": false,
+    "minimumButtonHeightPx": 44,
+    "pauseResumeFinish": true,
+    "speedPreservesCanvas": true,
+    "screenshotsVisuallyReviewed": true
+  },
+  "syntaxCheck": "passed",
+  "diffWhitespaceCheck": "passed",
+  "deployed": false
+}

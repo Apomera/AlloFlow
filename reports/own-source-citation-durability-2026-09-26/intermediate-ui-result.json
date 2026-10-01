@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "scope": "UI-only intermediate verification",
+  "checks": [
+    "Long unbroken filenames and exact supplied passages wrap inside the 390px viewer, with source page/version visible.",
+    "Keyboard Tab/Shift+Tab cycle through Close and passage; PageDown scrolls the exact quote (20px); Escape restores citation focus."
+  ],
+  "layouts": [
+    {
+      "label": "long unbroken filename and passage",
+      "width": 390,
+      "documentWidth": 390,
+      "left": 16,
+      "right": 374,
+      "panelWidth": 358,
+      "panelScrollWidth": 358,
+      "quoteWidth": 314,
+      "quoteScrollWidth": 314
+    },
+    {
+      "label": "keyboard scrollable multiline passage",
+      "width": 390,
+      "documentWidth": 390,
+      "left": 16,
+      "right": 374,
+      "panelWidth": 358,
+      "panelScrollWidth": 358,
+      "quoteWidth": 314,
+      "quoteScrollWidth": 314
+    }
+  ],
+  "pageErrors": [],
+  "testedHelperHash": "6d0b6873fb06e04d550c4ff585ee9b9b67d411349fb44cc23df241d8112eca0b"
+}

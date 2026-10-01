@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-26T23:38:00.127Z",
+  "label": "pass2-04-drafts",
+  "patch": "58c94cf3fad726ef957b50f16951ae4cd59d2362c8434f56cde707a772d944a9",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "73fa33bebdb6ad7e23533c08c6b4019a2a8bf5514e47d5e31085c59bd99c96f7",
+      "after": "617f66b42745d3d64de3b67040fd96ae26018effb960d840ea0f5a3b27e9f0a6",
+      "changed": true
+    },
+    {
+      "target": "tests/reading_support_draft_transitions.test.js",
+      "targets": [
+        "tests/reading_support_draft_transitions.test.js"
+      ],
+      "before": "280efc96d566dfe9aef8bb195184d62dc6d17176432209cede0d00978b4ff960",
+      "after": "142bb76fe1c22c9c6bf884fd586ae63ee4eec75e0c7b2b5214a71227cf2fe79a",
+      "changed": true
+    }
+  ]
+}

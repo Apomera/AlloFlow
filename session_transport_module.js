@@ -20,6 +20,55 @@
     return;
   }
 
+  // Study Guides and Family Guides are written for learners and families, so
+  // they may travel. A teacher lesson plan, or a plan with no recorded
+  // audience, stays teacher-only on every route. This is the one eligibility
+  // rule; every channel reaches it through studentSafeResources.
+  function isStudentDeliverableGuide(item) {
+    var config = item && item.type === 'lesson-plan' && item.config && typeof item.config === 'object' ? item.config : null;
+    var inputs = config && config.generationInputs && typeof config.generationInputs === 'object' ? config.generationInputs : null;
+    return !!(inputs && (inputs.mode === 'study' || inputs.mode === 'family'));
+  }
+  var GUIDE_CONTENT_FIELDS = ['essentialQuestion', 'objectives', 'materialsNeeded', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
+  // Learner copy of a guide: an allowlist of the guide's own sections. Teaching
+  // scripts, extension teacher guides, criterion links and live rollup ids,
+  // STEAM station picks, unit-path metadata and the recorded generation inputs
+  // (summaries, inventory, custom instructions) stay on the teacher's copy.
+  function projectStudentGuide(item) {
+    if (!item || !item.id || !isStudentDeliverableGuide(item)) return null;
+    var data = item.data && typeof item.data === 'object' && !Array.isArray(item.data) ? item.data : {};
+    var out = {};
+    GUIDE_CONTENT_FIELDS.forEach(function (key) { if (data[key] != null) out[key] = data[key]; });
+    if (data.successCriteria != null) {
+      out.successCriteria = (Array.isArray(data.successCriteria) ? data.successCriteria : [data.successCriteria]).map(function (entry) {
+        if (entry && typeof entry === 'object' && !Array.isArray(entry)) return entry.statement != null ? { statement: entry.statement } : null;
+        return entry;
+      }).filter(function (entry) { return entry != null; });
+    }
+    if (data.extensions != null) {
+      out.extensions = (Array.isArray(data.extensions) ? data.extensions : [data.extensions]).map(function (ext) {
+        if (ext && typeof ext === 'object' && !Array.isArray(ext)) {
+          var kept = {};
+          if (ext.title != null) kept.title = ext.title;
+          if (ext.description != null) kept.description = ext.description;
+          return Object.keys(kept).length ? kept : null;
+        }
+        return ext;
+      }).filter(function (ext) { return ext != null; });
+    }
+    var source = item.config;
+    var config = { generationInputs: { version: source.generationInputs.version, mode: source.generationInputs.mode } };
+    ['grade', 'gradeLevel', 'language', 'sourceTopic', 'topic', 'translationTarget'].forEach(function (key) {
+      if (typeof source[key] === 'string' || typeof source[key] === 'number') config[key] = source[key];
+    });
+    var projected = { id: item.id, type: 'lesson-plan', data: out, config: config, studentProjection: true };
+    ['title', 'meta', 'timestamp', 'sourceTopic', 'gradeLevel'].forEach(function (key) {
+      if (item[key] != null && typeof item[key] !== 'object') projected[key] = item[key];
+    });
+    if (item.timestamp instanceof Date) projected.timestamp = item.timestamp;
+    return projected;
+  }
+
   // The single student-safe candidate rule for EVERY content channel:
   // a resource must have an id and must not be a teacher-only type.
   function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
@@ -33,6 +82,7 @@
         var projected = typeof projectActivity === 'function' ? projectActivity(item) : null;
         return projected && projected.id === item.id && projected.type === 'brainstorm' && projected.studentProjection === true ? projected : null;
       }
+      if (item.type === 'lesson-plan') return projectStudentGuide(item);
       return blocked.indexOf(item.type) === -1 ? item : null;
     }).filter(Boolean);
   }
@@ -240,6 +290,8 @@
   window.AlloModules.SessionTransport = {
     followResource: followResource,
     studentSafeResources: studentSafeResources,
+    isStudentDeliverableGuide: isStudentDeliverableGuide,
+    projectStudentGuide: projectStudentGuide,
     selectTransportKind: selectTransportKind,
     createFirebaseTransport: createFirebaseTransport,
     createMailboxTransport: createMailboxTransport,

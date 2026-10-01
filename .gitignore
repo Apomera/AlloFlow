@@ -301,3 +301,6 @@ __pycache__/
 # vacuous_pin_discovery / find_vacuous_pins_tool tests write these per run
 /tests/discovery_fixture_*/
 /tests/vacuous_fixture_*/
+
+# Local integration recovery archive (367 MiB); source and verification manifests stay tracked.
+/reports/tyler-merge-audit-2026-09-28/integration-final-files.tar.gz

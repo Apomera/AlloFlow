@@ -348,25 +348,61 @@ const LABEL_POSITIONS = {
   "bottom-center": { position: "absolute", top: "85%", left: "50%", transform: "translateX(-50%)", zIndex: 4 },
   "bottom-right": { position: "absolute", top: "85%", right: "6%", zIndex: 4 }
 };
-const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onDuplicateFrame, onReorderFrame, onSetPanelFps, onUpdateLabel, onUpdatePanel, language, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini }) => {
+const panelDescribedImage = (panel, overrideUrl) => overrideUrl || (panel && Array.isArray(panel.frames) && panel.frames.length > 1 ? panel.frames[0] : panel && panel.imageUrl);
+const panelDescriptionStale = (panel, overrideUrl, A) => {
+  if (!panel) return false;
+  if (overrideUrl) return !(A && panel.altHash && A.hashImage(overrideUrl) === panel.altHash);
+  return !!(A && panel.altHash && A.hashImage(panelDescribedImage(panel)) !== panel.altHash);
+};
+const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onDuplicateFrame, onReorderFrame, onSetPanelFps, onUpdateLabel, onUpdatePanel, language, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini, readOnlyDrawings, onRetryFailed }) => {
   const [labelsHidden, setLabelsHidden] = React.useState(false);
   const [editingLabel, setEditingLabel] = React.useState(null);
   const [altBusyIdx, setAltBusyIdx] = React.useState(null);
+  const [altErrors, setAltErrors] = React.useState({});
+  const altRequestsRef = React.useRef({});
+  React.useEffect(() => () => {
+    altRequestsRef.current = {};
+  }, []);
   const renderAltField = (panel, panelIdx) => {
     const Field = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ImageAltField;
     const A = typeof window !== "undefined" && window.AlloModules && window.AlloModules.AltText;
     if (!isTeacherMode || !Field || typeof onUpdatePanel !== "function" || !panel || !panel.imageUrl) return null;
-    const poster = Array.isArray(panel.frames) && panel.frames.length > 1 ? panel.frames[0] : panel.imageUrl;
-    const stale = !!(A && panel.altHash && A.hashImage(poster) !== panel.altHash);
+    const poster = panelDescribedImage(panel, imageOverrides[panelIdx]);
+    const stale = panelDescriptionStale(panel, imageOverrides[panelIdx], A);
     const regenerate = async () => {
       const vision = typeof window.callGeminiVision === "function" ? window.callGeminiVision : null;
-      if (!A || !vision) return;
+      if (!A || !vision || altRequestsRef.current[panelIdx]) return;
+      const before = { alt: panel.alt, altSource: panel.altSource, altHash: panel.altHash, decorative: panel.decorative, imageUrl: panel.imageUrl };
+      const request = {};
+      altRequestsRef.current = { ...altRequestsRef.current, [panelIdx]: request };
       setAltBusyIdx(panelIdx);
+      setAltErrors((prev) => {
+        if (!prev[panelIdx]) return prev;
+        const next = { ...prev };
+        delete next[panelIdx];
+        return next;
+      });
       try {
         const [r] = await A.draftAlts([{ id: panelIdx, dataUrl: poster, context: panel.caption || panel.imagenPrompt || panel.motionPrompt }], { language, callGeminiVision: vision });
-        if (r) onUpdatePanel(panelIdx, { alt: r.decorative ? "" : r.alt, altSource: r.source, decorative: r.decorative === true, altHash: A.hashImage(poster) });
+        if (r && altRequestsRef.current[panelIdx] === request) {
+          onUpdatePanel(
+            panelIdx,
+            { alt: r.decorative ? "" : r.alt, altSource: r.source, decorative: r.decorative === true, altHash: A.hashImage(poster) },
+            { accept: (current) => !!current && Object.keys(before).every((key) => current[key] === before[key]) }
+          );
+        }
+      } catch (_) {
+        if (altRequestsRef.current[panelIdx] === request) {
+          const key = "a11y.alt.regenerate_failed", translated = typeof t === "function" ? t(key) : "";
+          setAltErrors((prev) => ({ ...prev, [panelIdx]: translated && translated !== key ? translated : "The image description could not be generated. Try again or write a description." }));
+        }
       } finally {
-        setAltBusyIdx(null);
+        if (altRequestsRef.current[panelIdx] === request) {
+          const next = { ...altRequestsRef.current };
+          delete next[panelIdx];
+          altRequestsRef.current = next;
+          setAltBusyIdx(null);
+        }
       }
     };
     return React.createElement(
@@ -382,7 +418,8 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
         onChange: (value) => onUpdatePanel(panelIdx, { alt: value, altSource: "author", altHash: A ? A.hashImage(poster) : panel.altHash }),
         onDecorativeChange: (flag) => onUpdatePanel(panelIdx, { decorative: flag }),
         onRegenerate: regenerate
-      })
+      }),
+      altErrors[panelIdx] ? React.createElement("p", { role: "alert", style: { marginTop: 4, fontSize: 12, color: "#b91c1c" } }, altErrors[panelIdx]) : null
     );
   };
   const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
@@ -475,9 +512,18 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
   const isFillBlank = challengeType === "fill-blank";
   const ts = (key) => t?.(key) || "";
   const hasVisualPanels = Array.isArray(visualPlan?.panels) && visualPlan.panels.length > 0;
+  const emittedAnnotationsRef = React.useRef(null);
   React.useEffect(() => {
     if (hasVisualPanels && onAnnotationsChange) {
-      onAnnotationsChange({ userLabels, drawings, captionOverrides, aiLabelPositions, aiLabelAnchors, panelOrder, challengeActive: challengeMode, challengeType, imageOverrides });
+      const next = { userLabels, drawings, captionOverrides, aiLabelPositions, aiLabelAnchors, panelOrder, challengeActive: challengeMode, challengeType, imageOverrides };
+      const key = JSON.stringify(next);
+      const first = emittedAnnotationsRef.current === null;
+      if (first || emittedAnnotationsRef.current === key) {
+        emittedAnnotationsRef.current = key;
+        return;
+      }
+      emittedAnnotationsRef.current = key;
+      onAnnotationsChange(next);
     }
   }, [hasVisualPanels, userLabels, drawings, captionOverrides, aiLabelPositions, aiLabelAnchors, panelOrder, challengeMode, challengeType, imageOverrides]);
   const handleAddStudentLabel = (panelIdx, e) => {
@@ -1019,8 +1065,9 @@ Return ONLY valid JSON:
   const clearDrawings = (panelIdx) => {
     setDrawings((prev) => ({ ...prev, [panelIdx]: [] }));
   };
+  const drawingsFor = (panelIdx) => [...readOnlyDrawings && readOnlyDrawings[panelIdx] || [], ...drawings[panelIdx] || []];
   const renderDrawingSVG = (panelIdx) => {
-    const panelDrawings = drawings[panelIdx] || [];
+    const panelDrawings = drawingsFor(panelIdx);
     if (panelDrawings.length === 0 && !currentPath && !drawingStart && !drawingMode) return null;
     return /* @__PURE__ */ React.createElement(
       "svg",
@@ -1141,7 +1188,7 @@ Return ONLY valid JSON:
         drawLine(l.x, l.y, tx, ty, "#8b5cf6", 1, [4, 3]);
         drawDot(tx, ty, 3, "#8b5cf6");
       });
-      (drawings[panelIdx] || []).forEach((d) => {
+      drawingsFor(panelIdx).forEach((d) => {
         if (d.type === "freehand" && d.points?.length > 1) {
           ctx.beginPath();
           ctx.strokeStyle = d.color;
@@ -1529,8 +1576,11 @@ Return ONLY valid JSON:
         togglePlayPause(panelIdx, panel);
       }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", minHeight: 24, padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")), renderAltField(panel, panelIdx));
     }
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { src: overrideUrl || panel.imageUrl, alt: panel.decorative ? "" : panel.alt || panel.caption || `Panel ${panelIdx + 1}`, role: panel.decorative ? "presentation" : void 0, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } }), renderAltField(panel, panelIdx));
-  })() : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { src: overrideUrl || panel.imageUrl, alt: panel.decorative ? "" : (!overrideUrl || !panelDescriptionStale(panel, overrideUrl, window.AlloModules && window.AlloModules.AltText)) && panel.alt || panel.caption || `Panel ${panelIdx + 1}`, role: panel.decorative ? "presentation" : void 0, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } }), renderAltField(panel, panelIdx));
+  })() : panel.failed ? /* @__PURE__ */ React.createElement("div", { "data-panel-failed": "true", style: { minHeight: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, background: "#fef2f2", color: "#7f1d1d", textAlign: "center" } }, /* @__PURE__ */ React.createElement("p", { role: "status", style: { margin: 0, fontSize: 13, fontWeight: 600 } }, ts("visuals.panel_failed") || "This picture could not be made."), isTeacherMode && typeof onRetryFailed === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => {
+    e.stopPropagation();
+    onRetryFailed();
+  }, style: { minHeight: 44, padding: "6px 12px", borderRadius: 8, border: "1px solid #b91c1c", background: "white", color: "#7f1d1d", fontSize: 13, fontWeight: 700, cursor: "pointer" } }, ts("visuals.panel_failed_retry") || "Make the pictures again")) : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
     const defaultPos = LABEL_POSITIONS[label.position] || LABEL_POSITIONS["bottom-center"];
     const overridePos = aiLabelPositions[panelIdx + "-" + labelIdx];
     const pos = overridePos ? { position: "absolute", left: overridePos.left, top: overridePos.top } : defaultPos;

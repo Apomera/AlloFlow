@@ -1,0 +1,29 @@
+{
+  "testsPassed": 38,
+  "testsFailed": 0,
+  "objectBrowserErrors": [],
+  "opticalBrowserErrors": [],
+  "activeLayouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "paused": true,
+      "visibleFragments": 48
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "paused": true,
+      "visibleFragments": 48
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "paused": true,
+      "visibleFragments": 48
+    }
+  ],
+  "sourceCopiesMatch": true,
+  "preview": "http://127.0.0.1:50227",
+  "commitCreated": false
+}

@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-01T00:18:50.998Z",
+  "sha256": "a4934a1757716141c754a260bcdf5620798eed89da11b298a634b9f7833aeb54",
+  "results": [
+    {
+      "term": "constructor",
+      "error": "curated.distractors is not iterable"
+    },
+    {
+      "term": "__proto__",
+      "error": "curated.distractors is not iterable"
+    },
+    {
+      "term": "tostring",
+      "task": {
+        "type": "review",
+        "contentStatus": "teacher_review_required",
+        "targetWord": "tostring",
+        "instruction": "Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.",
+        "answer": "",
+        "distractors": []
+      }
+    }
+  ]
+}

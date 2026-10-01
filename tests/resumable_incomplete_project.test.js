@@ -5,7 +5,9 @@
 // This pins: the failure classifier, the success-only→incomplete-aware save/load round
 // trip, the "worth resuming" gate, and (anti-drift) that all three modules ship the wiring.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');

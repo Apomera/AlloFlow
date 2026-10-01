@@ -1,0 +1,399 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1207,17 +1207,50 @@
+ 
+   function simplifiedPopupStyle(point, widthRem) {
+     var fontSize = 16;
+     try { fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16; } catch (_) {}
+-    var width = Math.min(widthRem * fontSize, Math.max(0, window.innerWidth - 16));
++    var viewport = window.visualViewport;
++    var viewportWidth = viewport && viewport.width > 0 ? viewport.width : window.innerWidth;
++    var viewportHeight = viewport && viewport.height > 0 ? viewport.height : window.innerHeight;
++    var offsetLeft = viewport && Number.isFinite(viewport.offsetLeft) ? viewport.offsetLeft : 0;
++    var offsetTop = viewport && Number.isFinite(viewport.offsetTop) ? viewport.offsetTop : 0;
++    var width = Math.min(widthRem * fontSize, Math.max(0, viewportWidth - 16));
++    var top = Math.max(offsetTop + 8, Math.min(offsetTop + Math.max(8, (viewportHeight - 16) / 2), (Number(point.y) || 0) + 10));
+     return {
+-      width: width + 'px', maxWidth: 'calc(100vw - 16px)',
+-      left: Math.max(8, Math.min(window.innerWidth - width - 8, (Number(point.x) || 0) - 20)) + 'px',
+-      top: Math.max(8, Math.min((window.innerHeight - 16) / 2, (Number(point.y) || 0) + 10)) + 'px',
+-      maxHeight: 'calc(50dvh - 8px)', overflowY: 'auto', overflowWrap: 'anywhere'
++      width: width + 'px', maxWidth: Math.max(0, viewportWidth - 16) + 'px',
++      left: Math.max(offsetLeft + 8, Math.min(offsetLeft + viewportWidth - width - 8, (Number(point.x) || 0) - 20)) + 'px',
++      top: top + 'px',
++      maxHeight: Math.max(0, Math.min(viewportHeight / 2 - 8, offsetTop + viewportHeight - top - 8)) + 'px', overflowY: 'auto', overflowWrap: 'anywhere'
+     };
+   }
+ 
++  function useSimplifiedPopupViewport(ref, point, widthRem) {
++    React.useLayoutEffect(function () {
++      if (!point) return undefined;
++      var frame = null;
++      var viewport = window.visualViewport;
++      function position() {
++        frame = null;
++        if (ref.current) Object.assign(ref.current.style, simplifiedPopupStyle(point, widthRem));
++      }
++      function schedule() {
++        if (frame == null) frame = window.requestAnimationFrame(position);
++      }
++      // Update only the popup DOM when the keyboard/zoom viewport moves; do not
++      // rerender the reading passage on every viewport scroll event.
++      position();
++      window.addEventListener('resize', schedule);
++      viewport?.addEventListener('resize', schedule);
++      viewport?.addEventListener('scroll', schedule);
++      return function () {
++        if (frame != null) window.cancelAnimationFrame(frame);
++        window.removeEventListener('resize', schedule);
++        viewport?.removeEventListener('resize', schedule);
++        viewport?.removeEventListener('scroll', schedule);
++      };
++    }, [ref, !!point, point?.x, point?.y, widthRem]);
++  }
++
+   // Sections for the reading outline and section prompts, addressed by the
+   // paragraph numbers the adapted reader renders (data-reading-paragraph). With
+   // headings, a section runs from one heading to the next; without, each
+   // paragraph is one. Charts and tables are never their own section.
+@@ -3747,8 +3780,13 @@
+     var wordHelpDialogId = 'prepared-word-help-' + wordHelpInstanceId;
+     var wordHelpOwnerRef = React.useRef(null), wordHelpSequenceRef = React.useRef(0);
+     var wordHelpStopRef = React.useRef(stopPlayback); wordHelpStopRef.current = stopPlayback;
+     var wordHelpCardRef = React.useRef(null), wordHelpCardOpener = React.useRef(null);
++    useSimplifiedPopupViewport(wordHelpCardRef, wordHelpCard, 20);
++    useSimplifiedPopupViewport(definitionDialogRef, definitionData, 16);
++    useSimplifiedPopupViewport(phonicsDialogRef, phonicsData, 18);
++    useSimplifiedPopupViewport(selectionDialogRef, selectionMenu, 20);
++    useSimplifiedPopupViewport(revisionDialogRef, revisionData, 18);
+     React.useEffect(() => () => { stopPreparedCardAudio(wordHelpOwnerRef.current); }, []);
+     React.useEffect(function () { if (wordHelpCard && wordHelpCardRef.current) wordHelpCardRef.current.focus(); }, [wordHelpCard && wordHelpCard.entry.id, wordHelpCard && wordHelpCard.x, wordHelpCard && wordHelpCard.y]);
+     function stopPreparedCardAudio(owner) {
+       if (!owner || owner.closed) return;
+===================================================================
+--- a/immersive_reader_source.jsx
++++ b/immersive_reader_source.jsx
+@@ -446,9 +446,9 @@
+     toggleSetting('showSyllables');
+   }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
+   return (
+     <div data-immersive-toolbar className="sticky top-0 z-[220] p-3 bg-white border-b border-slate-200 shadow-sm shrink-0">
+-      <div className="flex items-center justify-between gap-2">
++      <div className="flex flex-wrap items-center justify-between gap-2">
+         <h2 className="font-bold text-slate-800 text-sm">{safeT(t, 'immersive.title', 'Immersive Reader')}</h2>
+         <div className="flex items-center gap-2">
+           <button type="button" onClick={() => setSettingsExpanded(value => !value)} aria-expanded={settingsExpanded} aria-controls="immersive-reader-settings" className="min-h-11 px-3 rounded-full bg-indigo-50 text-indigo-800 text-xs font-bold"><Settings2 size={14} className="inline me-1"/>{safeT(t, 'common.settings', 'Settings')}</button>
+       <button type="button" aria-label={safeT(t, 'immersive.close', 'Close Immersive Reader')}
+@@ -2247,15 +2247,15 @@
+ 
+ 
+     const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
+     return (
+-        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="karaoke-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg, color: c.ink }}>
+-            <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
+-                <div className="flex items-center gap-3">
++        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="karaoke-reader-dialog-title" tabIndex={-1} className="fixed inset-0 z-[300] overflow-y-auto flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none" style={{ backgroundColor: c.bg, color: c.ink, overflowWrap: 'anywhere' }}>
++            <div className="shrink-0 p-4 flex justify-between items-center gap-3 flex-wrap">
++                <div className="flex min-w-0 items-center gap-3">
+                     <button type="button" onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                         <ArrowLeft size={22} />
+                     </button>
+-                    <div className="flex flex-col">
++                    <div className="flex min-w-0 flex-col">
+                         <h2 id="karaoke-reader-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</h2>
+                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
+                         {playbackFallbackNotice ? (
+                             <span className="text-xs font-semibold max-w-xl" role="status" aria-live="polite" style={{ color: c.sweep }}>
+@@ -2265,9 +2265,9 @@
+                     </div>
+                 </div>
+                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
+                     {isTeacher && !playbackOnly && (
+-                        <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
++                        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
+                             <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.save_readaloud_tip', 'Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.')}>
+                                 <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
+                                 <span>{'💾'} {safeT(t, 'immersive.save_readaloud', 'Save read-aloud')}</span>
+                             </label>
+@@ -2328,9 +2328,9 @@
+                             </button>
+                         </div>
+                     )}
+                     {!isTeacher && !playbackOnly && (
+-                        <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
++                        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
+                             <button type="button"
+                                 onClick={recordCurrent}
+                                 title={safeT(t, 'immersive.record_reading_tip', 'Record yourself reading this sentence, then hear it back. The teacher\u2019s read-along stays your reference.')}
+                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
+@@ -2356,9 +2356,9 @@
+                     {/* Playback speed. Applies live to Gemini audio (the speed
+                         flips on the currently-playing sentence); browser TTS
+                         picks it up on the next sentence since speechSynthesis
+                         rate is locked once speak() fires. */}
+-                    <div className="flex items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
++                    <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1" role="group" aria-label={t('immersive.playback_speed_aria') || 'Playback speed'}>
+                         <span style={{ color: c.dim }}>SPEED</span>
+                         {[0.75, 1, 1.25, 1.5].map(rate => (
+                             <button type="button"
+                                 key={rate}
+@@ -2408,9 +2408,9 @@
+                         {diagnosticsCopied ? '✓ Copied' : '🩺 Diagnostics'}
+                     </button>
+                 </div>
+             </div>
+-            <div className="flex-1 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: reducedMotion ? 'auto' : 'smooth' }}>
++            <div className="flex-1 min-h-48 min-w-0 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: reducedMotion ? 'auto' : 'smooth' }}>
+                 <div className="max-w-3xl mx-auto" style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2.25rem)', lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
+                     {!sentences.length && <p role="status">{safeT(t, "immersive.no_text", "No text to read. Close the reader and choose a passage.")}</p>}
+                     {sentences.map((s, i) => (
+                         <React.Fragment key={i}>{renderSentence(s, i)}{' '}</React.Fragment>
+===================================================================
+--- a/tests/reader_route_a11y.test.js
++++ b/tests/reader_route_a11y.test.js
+@@ -7,8 +7,9 @@
+ const require = createRequire(import.meta.url);
+ const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
+ const t = key => key.split('.').reduce((value, part) => value?.[part], strings) || key;
+ let React, createRoot, act, View, contract, pure, phase, root, host;
++const viewportDescriptor = Object.getOwnPropertyDescriptor(window, 'visualViewport');
+ beforeAll(() => {
+   React = require(resolve('desktop/web-app/node_modules/react'));
+   ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
+   act = React.act;
+@@ -21,9 +22,13 @@
+   pure = window.AlloModules.PureHelpers;
+   phase = window.AlloModules.PhaseNHelpers;
+ });
+ beforeEach(() => localStorage.clear());
+-afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; vi.restoreAllMocks(); });
++afterEach(() => {
++  if (root) act(() => root.unmount()); host?.remove(); root = null; vi.restoreAllMocks();
++  if (viewportDescriptor) Object.defineProperty(window, 'visualViewport', viewportDescriptor);
++  else delete window.visualViewport;
++});
+ const adapted = text => ({ id: 'adapted', type: 'simplified', data: text, config: { language: 'English', grade: '5' }, instructionalText: { form: 'adapted', role: 'supplemental' } });
+ function mount(extra = {}) {
+   const noop = () => {};
+   let props = {
+@@ -50,8 +55,45 @@
+ const click = async node => act(async () => { node.focus(); node.click(); });
+ const key = (node, value, shiftKey = false) => act(() => node.dispatchEvent(new KeyboardEvent('keydown', { key: value, shiftKey, bubbles: true, cancelable: true })));
+ const tick = () => act(async () => { await new Promise(done => setTimeout(done, 5)); });
+ 
++describe('popup visual viewport changes', () => {
++  it.each(['definition', 'phonics', 'revision', 'selection'])('%s stays in the visible viewport without moving focus or keeping listeners after close', kind => {
++    const viewport = Object.assign(new EventTarget(), { width: 320, height: 640, offsetTop: 0, offsetLeft: 0 });
++    Object.defineProperty(window, 'visualViewport', { configurable: true, value: viewport });
++    const frames = new Map(); let nextFrame = 0;
++    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { frames.set(++nextFrame, callback); return nextFrame; });
++    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(id => frames.delete(id));
++    const property = kind === 'selection' ? 'selectionMenu' : kind + 'Data';
++    const data = { x: 315, y: 620, word: 'plant', text: 'Plants grow.', result: 'Plants grow.', type: 'explain', isLoading: true };
++    const view = mount({ [property]: data, interactionMode: 'explain' });
++    const dialog = $('[role=dialog][aria-modal=true]');
++    const control = dialog.querySelector('button'); act(() => control.focus());
++    Object.assign(viewport, { width: 280, height: 200, offsetLeft: 20, offsetTop: 70 });
++    viewport.dispatchEvent(new Event('resize')); viewport.dispatchEvent(new Event('scroll'));
++    expect(frames.size).toBe(1);
++    for (const callback of frames.values()) callback(0); frames.clear();
++    const left = parseFloat(dialog.style.left), top = parseFloat(dialog.style.top);
++    expect(left).toBeGreaterThanOrEqual(28);
++    expect(left + parseFloat(dialog.style.width)).toBeLessThanOrEqual(292);
++    expect(top).toBeGreaterThanOrEqual(78);
++    expect(top + parseFloat(dialog.style.maxHeight)).toBeLessThanOrEqual(262);
++    expect(document.activeElement).toBe(control);
++    viewport.dispatchEvent(new Event('resize')); expect(frames.size).toBe(1);
++    view.update({ [property]: null });
++    expect(frames.size).toBe(0);
++    viewport.dispatchEvent(new Event('resize')); viewport.dispatchEvent(new Event('scroll'));
++    expect(frames.size).toBe(0);
++  });
++  it('uses window dimensions when VisualViewport is unavailable', () => {
++    Object.defineProperty(window, 'visualViewport', { configurable: true, value: undefined });
++    mount({ definitionData: { word: 'plant', text: 'Plants grow.', x: 100000, y: 100000 } });
++    const dialog = $('[role=dialog][aria-modal=true]');
++    expect(parseFloat(dialog.style.left) + parseFloat(dialog.style.width)).toBeLessThanOrEqual(window.innerWidth - 8);
++    expect(parseFloat(dialog.style.top) + parseFloat(dialog.style.maxHeight)).toBeLessThanOrEqual(window.innerHeight - 8);
++  });
++});
++
+ describe('Original and Both Explain routes', () => {
+   it.each(['original', 'both'])('%s keeps headings, links and gloss edits outside Explain buttons', async route => {
+     const text = '# Plants\n\nSee [the guide](https://example.org/guide) for details.';
+     const original = contract.createSupportedReading(text, { id: 'original' });
+===================================================================
+--- a/dev-tools/reader_route_browser.cjs
++++ b/dev-tools/reader_route_browser.cjs
+@@ -15,8 +15,9 @@
+ function Harness({options}) {
+  const [selection,setSelection]=React.useState(options.selectionMenu||null),[custom,setCustom]=React.useState(!!options.isCustomReviseOpen),[instruction,setInstruction]=React.useState('');
+  const [definition,setDefinition]=React.useState(options.definitionData||null),[phonics,setPhonics]=React.useState(options.phonicsData||null),[revision,setRevision]=React.useState(options.revisionData||null);
+  const [immersive,setImmersive]=React.useState(!!options.immersive),[focus,setFocus]=React.useState(false),[crawl,setCrawl]=React.useState(false),[karaoke,setKaraoke]=React.useState(false);
++ const [chunk,setChunk]=React.useState(false),[chunkIdx,setChunkIdx]=React.useState(0),[chunkAuto,setChunkAuto]=React.useState(false),[chunkSpeed,setChunkSpeed]=React.useState(3500),[chunkMood,setChunkMood]=React.useState('calm');
+  const [settings,setSettings]=React.useState({textSize:24,lineFocus:false,bgColor:'#fff',fontColor:'#1e293b'}),[ruler,setRuler]=React.useState(0);
+  const item=options.original?original:adapted;
+  const props={t,generatedContent:{...item,immersiveData:AlloModules.TextPipelineHelpers.parseTaggedContent(item.data)},inputText:'',gradeLevel:'5',leveledTextLanguage:'English',studentInterests:[],history:[original,adapted],
+  isTeacherMode:!!options.teacher,isZenMode:!options.teacher,isEditingLeveledText:false,isProcessing:false,isPlaying:false,isCompareMode:!!options.compare,interactionMode:options.mode||'read',textEditorRef:React.useRef(null),
+@@ -27,9 +28,9 @@
+  selectionMenu:selection,setSelectionMenu:setSelection,isCustomReviseOpen:custom,setIsCustomReviseOpen:setCustom,customReviseInstruction:instruction,setCustomReviseInstruction:setInstruction,handleSetIsCustomReviseOpenToFalse:()=>setCustom(false),handleReviseSelection:()=>{setSelection(null);setRevision({type:'explain',result:'A useful explanation.',x:160,y:100});},
+  definitionData:definition,closeDefinition:()=>setDefinition(null),phonicsData:phonics,closePhonics:()=>setPhonics(null),revisionData:revision,closeRevision:()=>setRevision(null),applyTextRevision:noop,
+  immersiveSettings:settings,setImmersiveSettings:setSettings,immersiveRulerY:ruler,setImmersiveRulerY:setRuler,isImmersiveReaderActive:immersive,handleCloseImmersiveReader:()=>setImmersive(false),
+  isFocusReaderActive:focus,setIsFocusReaderActive:setFocus,handleCloseSpeedReader:()=>setFocus(false),isCrawlReaderActive:crawl,setIsCrawlReaderActive:setCrawl,isKaraokeOverlayActive:karaoke,setIsKaraokeOverlayActive:setKaraoke,
+- setIsChunkReaderActive:noop,setChunkReaderIdx:noop,setChunkReaderAutoPlay:noop,setChunkReaderSpeed:noop,setChunkReaderMood:noop,chunkReaderIdx:0,chunkReaderSpeed:3500,chunkReaderMood:'calm',playbackRate:1,setPlaybackRate:noop,lineHeight:1.5,setLineHeight:noop,letterSpacing:0,setLetterSpacing:noop,handleGeneratePOSData:noop,
++ isChunkReaderActive:chunk,setIsChunkReaderActive:setChunk,setChunkReaderIdx:setChunkIdx,setChunkReaderAutoPlay:setChunkAuto,setChunkReaderSpeed:setChunkSpeed,setChunkReaderMood:setChunkMood,chunkReaderIdx:chunkIdx,chunkReaderAutoPlay:chunkAuto,chunkReaderSpeed:chunkSpeed,chunkReaderMood:chunkMood,playbackRate:1,setPlaybackRate:noop,lineHeight:1.5,setLineHeight:noop,letterSpacing:0,setLetterSpacing:noop,handleGeneratePOSData:noop,
+  ImmersiveToolbar:AlloModules.ImmersiveToolbar,ImmersiveWord:AlloModules.ImmersiveWord,FocusReaderOverlay:AlloModules.FocusReaderOverlay,PerspectiveCrawlOverlay:AlloModules.PerspectiveCrawlOverlay,KaraokeReaderOverlay:AlloModules.KaraokeReaderOverlay,ErrorBoundary:({children})=>children};
+  return h('div',{className:'theme-'+(options.shell||'light')+' allo-docsuite'},h(AlloModules.AppStyles.AppStyles),h('div',{'data-reading-theme':options.theme||'default','data-allo-anno-host':'true'},h(AlloModules.SimplifiedView,props)));
+ }
+ let serial=0;
+@@ -41,9 +42,9 @@
+  const css=(await web('postcss')([web('tailwindcss')(config)]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
+  const runtime=esbuild.buildSync({stdin:{contents:"import React from 'react';import {createRoot} from 'react-dom/client';import * as icons from 'lucide-react';window.React=React;window.createRoot=createRoot;window.AlloIcons=icons;",resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,format:'iife',define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
+  const strings=JSON.parse(fs.readFileSync(path.join(root,'ui_strings.js'),'utf8'));
+  const browser=await chromium.launch({headless:true});
+- const page=await browser.newPage({viewport:{width:320,height:640},reducedMotion:'reduce'}), errors=[], results=[];
++ const page=await browser.newPage({viewport:{width:320,height:640},hasTouch:true,reducedMotion:'reduce'}), errors=[], results=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',route=>route.request().url()==='http://reader-fixture.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html id="reader-fixture" lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main id="mount"></main></body></html>'}):route.abort());
+  try {
+   await page.goto('http://reader-fixture.test/');
+@@ -117,8 +118,9 @@
+     });
+     if(!state.visible){await page.screenshot({path:path.join(out,'obscured-focus.png')});throw Error('Preview focus obscured ('+doubled+'): '+JSON.stringify(state));}
+    }
+   }
++  if (process.env.READER_EXTENDED_CHECKS) results.push(...await require('./reader_overlay_browser.cjs')(page, render, out));
+   if(errors.length)throw Error(errors.join('\n'));
+   fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({baseline:'fd4044c862ed9b345b340d69cb1411a19c09dafb',browser:browser.version(),results,errors,limits:'Automated Chromium fixtures; not real assistive technology, mobile hardware, or browser zoom acceptance.'},null,2));
+   console.log('Passed '+results.length+' reader route checks in Chromium '+browser.version());
+  } finally {await browser.close();}
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader_overlay_browser.cjs
+@@ -0,0 +1,125 @@
++// Additional synthetic viewport and overlay checks. No real mobile keyboard or AT.
++const fs = require('fs'), path = require('path');
++module.exports = async function checkReaderOverlays(page, render, out) {
++  page.setDefaultTimeout(5000);
++  const checks = [];
++  async function check(name, task) {
++    try { await task(); checks.push({ name, passed: true }); }
++    catch (error) {
++      checks.push({ name, passed: false, error: error.message });
++      await page.screenshot({ path: path.join(out, name + '.png') });
++    }
++  }
++  async function focusedVisible() {
++    return page.evaluate(() => {
++      const el = document.activeElement;
++      return [...el.getClientRects()].some(r => {
++        if (r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth) return false;
++        const hit = document.elementFromPoint((Math.max(0, r.left) + Math.min(innerWidth - 1, r.right)) / 2, (Math.max(0, r.top) + Math.min(innerHeight - 1, r.bottom)) / 2);
++        return el === hit || el.contains(hit);
++      });
++    });
++  }
++  await page.setViewportSize({ width: 320, height: 640 });
++  await check('touch-selection-close', async () => {
++    await render({ teacher: true, mode: 'revise', selectionMenu: { text: 'Plants grow.', x: 315, y: 620 }, isCustomReviseOpen: true });
++    await page.locator('[data-selection-close]').tap();
++    await page.locator('[data-selection-close]').waitFor({ state: 'detached' });
++  });
++  await check('visual-viewport-keyboard-and-pan', async () => {
++    await page.evaluate(() => {
++      window.nativeViewportDescriptor = Object.getOwnPropertyDescriptor(window, 'visualViewport');
++      const viewport = new EventTarget();
++      Object.assign(viewport, { width: 320, height: 640, offsetTop: 0, offsetLeft: 0 });
++      Object.defineProperty(window, 'visualViewport', { configurable: true, value: viewport });
++    });
++    try {
++      await render({ teacher: true, mode: 'revise', selectionMenu: { text: 'Plants grow.', x: 315, y: 620 }, isCustomReviseOpen: true });
++      const input = page.locator('[role=dialog] input[type=text]');
++      await input.fill('Use shorter sentences');
++      for (const viewport of [{ width: 320, height: 220, offsetTop: 0, offsetLeft: 0 }, { width: 280, height: 260, offsetTop: 90, offsetLeft: 20 }]) {
++        await page.evaluate(v => { Object.assign(visualViewport, v); visualViewport.dispatchEvent(new Event('resize')); visualViewport.dispatchEvent(new Event('scroll')); }, viewport);
++        await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
++        const bounds = await page.locator('[data-selection-close]').locator('..').boundingBox();
++        if (!bounds || bounds.x < viewport.offsetLeft || bounds.y < viewport.offsetTop || bounds.x + bounds.width > viewport.offsetLeft + viewport.width + 1 || bounds.y + bounds.height > viewport.offsetTop + viewport.height + 1) throw Error('Popup outside synthetic visual viewport: ' + JSON.stringify({ bounds, viewport }));
++        if (await input.inputValue() !== 'Use shorter sentences') throw Error('Viewport change lost the instruction');
++      }
++    } finally {
++      await page.evaluate(() => { Object.defineProperty(window, 'visualViewport', window.nativeViewportDescriptor); delete window.nativeViewportDescriptor; });
++    }
++  });
++  const routes = [
++    ['focus', 'immersive_focus_mode', 'focus-reader-dialog-title'],
++    ['crawl', 'immersive_perspective_crawl', 'perspective-crawl-dialog-title'],
++    ['karaoke', 'immersive_karaoke_overlay', 'karaoke-reader-dialog-title'],
++  ];
++  for (const [name, help, title] of routes) {
++    await check(name + '-keyboard-loop', async () => {
++      await page.setViewportSize({ width: 320, height: 640 });
++      await render({ immersive: true });
++      const trigger = page.locator('[data-help-key="' + help + '"]');
++      await trigger.click();
++      const dialog = page.locator('[role=dialog][aria-labelledby="' + title + '"]');
++      await dialog.waitFor();
++      for (let i = 0; i < 30; i++) {
++        await page.keyboard.press('Tab');
++        if (!await dialog.evaluate(el => el.contains(document.activeElement))) throw Error('Tab escaped the active dialog');
++        if (!await focusedVisible()) throw Error('Tab focus is obscured: ' + await page.evaluate(() => document.activeElement.outerHTML.slice(0, 250)));
++      }
++      await page.keyboard.press('Escape'); await dialog.waitFor({ state: 'detached' });
++      if (!await trigger.evaluate(el => el === document.activeElement)) throw Error('Escape did not restore the opener');
++      if (await page.locator('[data-immersive-toolbar]').count() !== 1) throw Error('Escape also closed the parent');
++    });
++    for (const appearance of ['short', 'double-text', 'forced-colors', ...(name === 'crawl' ? [] : ['dark', 'sepia'])]) {
++      await check(name + '-' + appearance, async () => {
++        await page.setViewportSize({ width: 320, height: appearance === 'short' ? 256 : 640 });
++        await page.emulateMedia({ forcedColors: appearance === 'forced-colors' ? 'active' : 'none', reducedMotion: 'reduce' });
++        await render({ immersive: true });
++        await page.locator('[data-help-key="' + help + '"]').click();
++        const dialog = page.locator('[role=dialog][aria-labelledby="' + title + '"]');
++        await dialog.waitFor();
++        if (appearance === 'dark' || appearance === 'sepia') await dialog.locator('select[aria-label="Theme"]').selectOption(appearance);
++        if (appearance === 'double-text') await dialog.evaluate(el => {
++          const sizes = [...el.querySelectorAll('*')].map(n => [n, parseFloat(getComputedStyle(n).fontSize)]);
++          for (const [node, size] of sizes) node.style.setProperty('font-size', size * 2 + 'px', 'important');
++        });
++        const size = await dialog.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth }));
++        if (size.scroll > size.client + 2) throw Error('Horizontal overflow: ' + JSON.stringify(size));
++        if (name === 'crawl' && await dialog.locator('[data-help-key="perspective_crawl_play_pause_btn"]').getAttribute('aria-label') !== 'Play') throw Error('Crawl started playing under reduced motion');
++        for (let i = 0; i < 30; i++) {
++          await page.keyboard.press('Tab');
++          if (!await focusedVisible()) throw Error('Focus is obscured: ' + await page.evaluate(() => document.activeElement.outerHTML.slice(0, 250)));
++        }
++        await page.keyboard.press('Escape'); await dialog.waitFor({ state: 'detached' });
++      });
++    }
++  }
++  for (const chunk of [false, true]) for (const doubled of [false, true]) {
++    await check((chunk ? 'chunk' : 'immersive') + (doubled ? '-double-text' : '-short'), async () => {
++      await page.setViewportSize({ width: 320, height: doubled ? 640 : 256 });
++      await render({ immersive: true });
++      if (chunk) await page.locator('[data-help-key="immersive_chunk_reader"]').click();
++      const dialog = page.locator('[data-immersive-toolbar]').locator('..');
++      if (doubled) await dialog.evaluate(el => {
++        const sizes = [...el.querySelectorAll('*')].map(n => [n, parseFloat(getComputedStyle(n).fontSize)]);
++        for (const [node, size] of sizes) node.style.setProperty('font-size', size * 2 + 'px', 'important');
++      });
++      const size = await dialog.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth }));
++      if (size.scroll > size.client + 2) throw Error('Horizontal overflow: ' + JSON.stringify(size));
++      const close = page.locator('[data-immersive-toolbar] button[aria-label]').first();
++      await close.focus();
++      const closeBox = await close.boundingBox();
++      if (!closeBox || closeBox.x < 0 || closeBox.x + closeBox.width > 320 || !await focusedVisible()) throw Error('Immersive Close is obscured');
++      for (let i = 0; i < 50; i++) {
++        await page.keyboard.press('Tab');
++        if (!await dialog.evaluate(el => el.contains(document.activeElement))) throw Error('Tab escaped Immersive Reader');
++        if (!await focusedVisible()) throw Error('Focus is obscured: ' + await page.evaluate(() => document.activeElement.outerHTML.slice(0, 250)));
++      }
++    });
++  }
++  await page.emulateMedia({ forcedColors: 'none', reducedMotion: 'reduce' });
++  fs.writeFileSync(path.join(out, 'overlay-results.json'), JSON.stringify({ browser: page.context().browser().version(), checks, limits: 'Synthetic viewport events, simulated doubled text and Chromium only; no real mobile keyboard or screen-reader verification.' }, null, 2));
++  const failures = checks.filter(x => !x.passed);
++  if (failures.length) throw Error(failures.map(x => x.name + ': ' + x.error).join('\n'));
++  return checks;
++};

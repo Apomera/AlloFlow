@@ -152,16 +152,17 @@
     size: 14
   }) : /*#__PURE__*/React.createElement(Share2, {
     size: 14
-  }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'View diagram' : 'Edit diagram layout'), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && generatedContent?.data?.structureType !== 'Memory Palace' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.view_diagram') || 'View diagram' : t('outline.edit_diagram_layout') || 'Edit diagram layout'), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && generatedContent?.data?.structureType !== 'Memory Palace' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       var vr = window.AlloModules && window.AlloModules.ViewRenderers;
       if (vr && typeof vr.openConceptMap3D === 'function') {
         vr.openConceptMap3D({
           generated: generatedContent?.data,
-          arrangement: generatedContent?.data?.conceptSpace,
+          arrangement: !isTeacherMode && props.organizerLearnerWork && props.organizerLearnerWork.conceptSpace !== undefined ? props.organizerLearnerWork.conceptSpace : generatedContent?.data?.conceptSpace,
           onArrangementChange: typeof handleConceptSpacePersist === 'function' ? function (arr) {
-            handleConceptSpacePersist(arr, 'conceptSpace');
+            handleConceptSpacePersist(arr, 'conceptSpace', generatedContent?.id);
           } : undefined,
+          canReset: !!isTeacherMode,
           title: generatedContent?.data?.main || generatedContent?.title || '',
           t: t,
           addToast: addToast
@@ -226,7 +227,7 @@
       animationDelay: `${idx * 50}ms`
     }
   }, branch.title, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.close'),
+    "aria-label": (t('outline.remove_concept_named') || 'Remove concept {name}').replace('{name}', String(branch.title || '')),
     onClick: () => handleRemoveFromMapList(idx),
     className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-indigo-600 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5",
     title: t('common.remove_concept')

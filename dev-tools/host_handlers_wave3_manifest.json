@@ -437,6 +437,7 @@
     "_alloRandomToken",
     "_alloReadVisualSupportCollection",
     "_alloRefreshWorkStory",
+    "_alloRequestStemPlugin",
     "_alloResolveHostedShareMailbox",
     "_alloRunActivityGeneration",
     "_alloSafeArtifactField",

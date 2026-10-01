@@ -1,0 +1,103 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:48424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:48424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:801:5 › repeat trials preserve both original worlds, chart actual outcomes, save evidence and resume
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:801:5 › repeat trials preserve both original worlds, chart actual outcomes, save evidence and resume 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected substring: [32m"[39m
+    [32mRepeated trials:"[39m
+    Received string:    [31m"Two futures · seed 2026 · shared start G0 · 5/5 rounds.[39m
+    [31mChanged condition: habitat. Both climates fixed. Mutation probability: 0.06.[39m
+    [31mA: Sunlit meadow, trait selection true, G5, population 60. shade mean 46.2/100; fur mean 56.6/100; legs mean 46.3/100.[39m
+    [31mB: Long winter, trait selection true, G5, population 60. shade mean 52.8/100; fur mean 59.4/100; legs mean 51.0/100.[39m
+    [31mIdentical starting genes and random stream; later random events may diverge. The main expedition was unchanged.\\nRepeated trials: original pair + 5 repeats of the same starting population and fixed conditions, with fresh chance streams. Chance seeds: 266155874, 2920591643, 1280060116, 3934495885, 2293964358, 653432831.\\nshade: B higher 2, A higher 3, within 0.1 point 1, undefined 0. Mean B-A 1.9 points among 6 living pairs.\\nfur: B higher 6, A higher 0, within 0.1 point 0, undefined 0. Mean B-A 20.4 points among 6 living pairs.\\nlegs: B higher 4, A higher 1, within 0.1 point 1, undefined 0. Mean B-A 5.3 points among 6 living pairs.\\nExtinctions: A 0/6, B 0/6. Repeats test chance with one starting population; they are not a significance test or a general conclusion."[39m
+
+      839 |   expect(notes.livingIslandComparison.text).toContain('Extinctions: A');
+      840 |   expect(notes.livingIslandComparison.text.length).toBeLessThan(2000);
+    > 841 |   expect(notes.livingIslandComparison.text).toContain('\nRepeated trials:');
+          |                                             ^
+      842 |   await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+      843 |   expect(await page.evaluate(async () => (window as any).axe.run('.ei-comparison', { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }).then((r: any) => r.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => n.target) }))))).toEqual([]);
+      844 |   await page.getByRole('button', { name: 'Return to my island', exact: false }).click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:841:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-544bd-es-save-evidence-and-resume-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-544bd-es-save-evidence-and-resume-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-544bd-es-save-evidence-and-resume-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-544bd-es-save-evidence-and-resume-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-544bd-es-save-evidence-and-resume-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-544bd-es-save-evidence-and-resume-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:34880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:34880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:856:5 › repeat evidence handles early extinction on a phone and survives changing experimental conditions
+[1A[2K  2) [chromium] › tests\e2e\evolab-living-island.spec.ts:856:5 › repeat evidence handles early extinction on a phone and survives changing experimental conditions 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      877 |   await expect(page.locator('.ei-repeat-outcome')).toContainText('extinction');
+      878 |   await page.getByText('Read every trial and random seed', { exact: true }).click();
+    > 879 |   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+          |                                                                                                    ^
+      880 |   await page.locator('.ei-repeat-evidence').screenshot({ path: report + '/repeated-trials-phone-extinction.png' });
+      881 |   await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+      882 |   expect(await page.evaluate(async () => (window as any).axe.run('.ei-repeat-evidence', { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }).then((r: any) => r.violations.map((v: any) => v.id)))).toEqual([]);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:879:100
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\repeats-browser-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  2 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:801:5 › repeat trials preserve both original worlds, chart actual outcomes, save evidence and resume 
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:856:5 › repeat evidence handles early extinction on a phone and survives changing experimental conditions 

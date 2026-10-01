@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-26T23:46:05.932Z",
+  "label": "pass2-pins",
+  "patch": "e887729bdb6949b7ed7f2ec4d47183b2ca7c7bd39fdf2833f3913514871c3b7d",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "68dc3d035fa27dba8988a3b39509bc812e7695667baef03cfb2f51435c7096b6",
+      "after": "fad66c37438116adbd586ce615f099f42b3b81b48a9fae566c7bcb7995fa7b42",
+      "changed": true
+    }
+  ]
+}

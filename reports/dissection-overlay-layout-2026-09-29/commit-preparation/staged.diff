@@ -1,0 +1,900 @@
+diff --git a/desktop/web-app/public/stem_lab/stem_tool_dissection.js b/desktop/web-app/public/stem_lab/stem_tool_dissection.js
+index cf3710e4e..ce501a333 100644
+--- a/desktop/web-app/public/stem_lab/stem_tool_dissection.js
++++ b/desktop/web-app/public/stem_lab/stem_tool_dissection.js
+@@ -7369,9 +7369,12 @@ var d = labToolData.dissection || {};
+               canvas._canvasHudScale = canvasHudScale;
+               canvas._canvasUiScale = canvasUiScale;
+               canvas._guidanceBoxes = [];
++              canvas._canvasHudBoxes = [];
++              canvas._scaleHudBox = null;
++              canvas._orientationHudBox = null;
+               canvas._contactFeedbackBox = null;
+-              // Keep the screen bounds of semantic cards so tool feedback can avoid them.
+-              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
++              // One screen-space measurement serves anatomy captions and fixed panels.
++              function canvasScreenBox(x, y, width, height) {
+                 if (!ctx.getTransform) return;
+                 var matrix = ctx.getTransform();
+                 if (!matrix || !isFinite(matrix.a)) return;
+@@ -7382,9 +7385,46 @@ var d = labToolData.dissection || {};
+                 });
+                 var left = Math.min.apply(null, corners.map(function (point) { return point.x; }));
+                 var top = Math.min.apply(null, corners.map(function (point) { return point.y; }));
+-                canvas._guidanceBoxes.push({ x: left, y: top,
++                return { x: left, y: top,
+                   width: Math.max.apply(null, corners.map(function (point) { return point.x; })) - left,
+-                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top, priority: priority || 1 });
++                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top };
++              }
++              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
++                var box = canvasScreenBox(x, y, width, height);
++                if (box) { box.priority = priority || 1; canvas._guidanceBoxes.push(box); }
++              }
++              function rememberCanvasHudBox(id, x, y, width, height) {
++                var box = { id: id, x: x, y: y, width: width, height: height, priority: 9 };
++                canvas._canvasHudBoxes.push(box);
++                if (id === 'scale') canvas._scaleHudBox = box;
++                if (id === 'orientation') canvas._orientationHudBox = box;
++              }
++              function placeCanvasHudPanel(x, y, width, height, additionalBoxes) {
++                var obstacles = canvas._guidanceBoxes.concat(canvas._canvasHudBoxes, additionalBoxes || []);
++                var candidates = [[x, y], [14, 14], [W - width - 14, 14],
++                  [14, H - height - 14], [W - width - 14, H - height - 14]];
++                obstacles.forEach(function (box) {
++                  candidates.push([x, box.y - height - 8], [x, box.y + box.height + 8],
++                    [box.x - width - 8, y], [box.x + box.width + 8, y],
++                    [box.x - width - 8, box.y], [box.x + box.width + 8, box.y],
++                    [14, box.y - height - 8], [W - width - 14, box.y + box.height + 8]);
++                });
++                var placement = null;
++                candidates.forEach(function (candidate) {
++                  var left = Math.max(14, Math.min(W - width - 14, candidate[0]));
++                  var top = Math.max(14, Math.min(H - height - 14, candidate[1]));
++                  var score = Math.hypot(left - x, top - y) * 0.15;
++                  obstacles.forEach(function (box) {
++                    var overlapW = Math.min(left + width + 6, box.x + box.width) - Math.max(left - 6, box.x);
++                    var overlapH = Math.min(top + height + 6, box.y + box.height) - Math.max(top - 6, box.y);
++                    if (overlapW > 0 && overlapH > 0) {
++                      score += overlapW * overlapH * (box.priority || 1);
++                      if (box.priority >= 8) score += W * H * 100;
++                    }
++                  });
++                  if (!placement || score < placement.score) placement = { x: left, y: top, score: score };
++                });
++                return placement;
+               }
+ 
+               // Read ALL drawing state from canvas element (updated by canvasRef on each React render)
+@@ -7475,14 +7515,14 @@ var d = labToolData.dissection || {};
+               var hudCompassTitleWidth = 0;
+               try {
+                 ctx.save();
+-                ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';
++                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
+                 hudCompassTitleWidth = ctx.measureText('ANATOMICAL AXIS').width;
+                 ctx.restore();
+               } catch (e) { hudCompassTitleWidth = 0; }
+               var hudCompassW = hudCompassAxis === 'horizontal'
+-                ? Math.max(188, hudCompassTitleWidth + 30 * canvasHudScale)
+-                : Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);
+-              var hudCompassH = (hudCompassAxis === 'horizontal' ? 55 : 91) * canvasHudScale;
++                ? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)
++                : Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);
++              var hudCompassH = (hudCompassAxis === 'horizontal' ? 80 : 116) * canvasUiScale;
+               var hudCompassBox = (sceneDetail && detailedCanvasHud && !d.quizMode) ? { x: 14, y: 14, w: hudCompassW, h: 82 + hudCompassH - 14 } : null;
+               // The instrument bay is bench scenery painted early, and the scale card below it
+               // lifts by 76 * canvasHudScale when the inspection lens is parked in that corner.
+@@ -10728,11 +10768,13 @@ var d = labToolData.dissection || {};
+                 cosine = Math.cos(profile.rotation); sine = Math.sin(profile.rotation);
+                 return { x: centerX + localX * cosine - localY * sine, y: centerY + localX * sine + localY * cosine };
+               }
+-              function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility) {
++              function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility, callout) {
+                 if (!selected && !hovered) return;
+                 var profile = structureInspectionFootprint(org);
+                 var footprintAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
+                 var footprintAccent = footprintAccessible ? '#ffffff' : (selected ? '#fbbf24' : '#60a5fa');
++                var plannedCallout = callout && callout.fullLabel ? canvasScreenBox(callout.x, callout.y, callout.width, callout.height) : null;
++                if (plannedCallout) plannedCallout.priority = 8;
+                 var footprintScale = selected ? 0.72 + focusEntryProgress * 0.28 : 1;
+                 var backDash = visibility === 'visible' ? [] : (visibility === 'emerging' ? [5, 3] : (visibility === 'obscured' ? [2, 3] : [1, 4]));
+                 ctx.save(); ctx.translate(x, y); ctx.scale(footprintScale, footprintScale); ctx.rotate(profile.rotation);
+@@ -10768,8 +10810,30 @@ var d = labToolData.dissection || {};
+                 ctx.scale(1 / (specimenScale.x * zoom * footprintScale), 1 / (specimenScale.y * zoom * footprintScale));
+                 ctx.font = 'bold ' + (9 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                 var footprintDepthLabel = profile.depth === 'surface' ? 'SURFACE' : (profile.depth === 'deep' ? 'DEEP' : 'MID');
+-                var footprintCaption = footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel;
++                var footprintCaption = fitTextToWidth(footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel, W - 28 - 12 * canvasUiScale);
+                 var footprintCaptionW = ctx.measureText(footprintCaption).width + 12 * canvasUiScale;
++                var captionBox = canvasScreenBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale);
++                if (captionBox && ctx.getTransform) {
++                  var captionLeft = Math.max(14, Math.min(W - captionBox.width - 14, captionBox.x));
++                  var captionTop = Math.max(82, Math.min(labelScreenBottom - captionBox.height, captionBox.y));
++                  var captionReservations = [
++                    { x: 0, y: 0, width: W, height: 74, priority: 9 },
++                    { x: 0, y: labelScreenBottom, width: W, height: H - labelScreenBottom, priority: 9 }
++                  ];
++                  if (plannedCallout) captionReservations.push(plannedCallout);
++                  var captionPlacement = placeCanvasHudPanel(captionLeft, captionTop, captionBox.width, captionBox.height, captionReservations);
++                  captionLeft = captionPlacement.x; captionTop = captionPlacement.y;
++                  var captionDX = captionLeft - captionBox.x, captionDY = captionTop - captionBox.y;
++                  var captionMatrix = ctx.getTransform(), captionDet = captionMatrix.a * captionMatrix.d - captionMatrix.b * captionMatrix.c;
++                  if (Math.abs(captionDet) > 0.0001 && (Math.abs(captionDX) > 0.01 || Math.abs(captionDY) > 0.01)) {
++                    var captionDensity = canvas._dpr || 1;
++                    var captionLocalX = captionDensity * (captionMatrix.d * captionDX - captionMatrix.c * captionDY) / captionDet;
++                    var captionLocalY = captionDensity * (-captionMatrix.b * captionDX + captionMatrix.a * captionDY) / captionDet;
++                    ctx.strokeStyle = footprintAccent; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
++                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(captionLocalX, captionLocalY + 8.5 * canvasUiScale); ctx.stroke(); ctx.setLineDash([]);
++                    ctx.translate(captionLocalX, captionLocalY);
++                  }
++                }
+                 rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8);
+                 ctx.fillStyle = footprintAccessible ? '#000000' : 'rgba(15,23,42,0.94)';
+                 ctx.beginPath();
+@@ -11052,7 +11116,7 @@ var d = labToolData.dissection || {};
+                 var exposureMuted = layout.visibility !== 'visible';
+                 ctx.save(); ctx.globalAlpha = focusMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.46 : 0.24) : (exposureMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.86 : 0.68) : 1);
+                 var px = layout.pointX, py = layout.pointY;
+-                drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility);
++                drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility, layout);
+                 if (!isSel && (!exposureMuted || isHov)) drawDepthAtlasMarker(px, py, layout.depth, false, isHov, focusMuted);
+                 var pulse = 1;
+                 if (isSel) {
+@@ -13802,6 +13866,7 @@ var d = labToolData.dissection || {};
+               // The next-step card is 58 * canvasHudScale tall from y 10. At desktop scale that
+               // ends at 68 and this panel cleared it by 6 at 74; once the card scaled, it did not.
+               var legendPanelX = W - legendPanelW - 14, legendPanelY = Math.max(74, 10 + 58 * canvasHudScale + 6);
++              rememberCanvasHudBox('system-key', legendPanelX, legendPanelY, legendPanelW, legendPanelH);
+ 
+               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)'; ctx.lineWidth = 1;
+ 
+@@ -14180,6 +14245,7 @@ var d = labToolData.dissection || {};
+                 var ecgY = H - 55;
+                 var ecgW = Math.min(W * 0.46, W - 172);
+                 var ecgX = 20;
++                rememberCanvasHudBox('heart-trace', ecgX - 5, ecgY - 20, ecgW + 10, 40);
+                 var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 20);
+                 ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
+                 ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 40);
+@@ -14213,6 +14279,7 @@ var d = labToolData.dissection || {};
+                 var guidedScreenHeight = guidedMode && currentGuided ? Math.min(64, 34 * screenGuideScale) : 0;
+                 var guidedScreenY = guidedScreenHeight ? H - guidedScreenHeight - 14 - screenPhysiologyHudReserve : H - 14 - screenPhysiologyHudReserve;
+                 if (guidedScreenHeight) {
++                  rememberCanvasHudBox('guided-prompt', 14, guidedScreenY, W - 28, guidedScreenHeight);
+                   ctx.save(); ctx.fillStyle = 'rgba(88,28,135,0.96)'; ctx.strokeStyle = 'rgba(216,180,254,0.76)'; ctx.lineWidth = 1;
+                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, guidedScreenY, W - 28, guidedScreenHeight, 8); ctx.fill(); ctx.stroke(); }
+                   else { ctx.fillRect(14, guidedScreenY, W - 28, guidedScreenHeight); ctx.strokeRect(14, guidedScreenY, W - 28, guidedScreenHeight); }
+@@ -14232,6 +14299,7 @@ var d = labToolData.dissection || {};
+                   if (ctx.measureText(screenLayerLabel).width > layerPillLimit - 22 * screenGuideScale) screenLayerLabel = screenLayerDef.name;
+                   screenLayerLabel = fitTextToWidth(screenLayerLabel, Math.max(30, layerPillLimit - 22 * screenGuideScale));
+                   var layerPillWidth = Math.min(layerPillLimit, ctx.measureText(screenLayerLabel).width + 22 * screenGuideScale);
++                  rememberCanvasHudBox('layer', 14, layerPillY, layerPillWidth, layerPillHeight);
+                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(148,163,184,0.52)';
+                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, layerPillY, layerPillWidth, layerPillHeight, 7); ctx.fill(); ctx.stroke(); }
+                   else { ctx.fillRect(14, layerPillY, layerPillWidth, layerPillHeight); ctx.strokeRect(14, layerPillY, layerPillWidth, layerPillHeight); }
+@@ -14254,6 +14322,7 @@ var d = labToolData.dissection || {};
+                   var screenDeclutterText = fitTextToWidth(screenDeclutter, screenDeclutterSpan - 18 * screenGuideScale);
+                   var screenDeclutterWidth = Math.min(screenDeclutterSpan, ctx.measureText(screenDeclutterText).width + 18 * screenGuideScale);
+                   var screenDeclutterX = Math.max(14, Math.min((W - screenDeclutterWidth) / 2, screenDeclutterRightLimit - screenDeclutterWidth));
++                  rememberCanvasHudBox('compact-labels', screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight);
+                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(45,212,191,0.64)';
+                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight, 7); ctx.fill(); ctx.stroke(); }
+                   else { ctx.fillRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); ctx.strokeRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); }
+@@ -14302,6 +14371,7 @@ var d = labToolData.dissection || {};
+               var specimenHudWidth = Math.min(W - 236, Math.max(154 * specimenHudTypeScale, ctx.measureText(specimenHudLabel).width + 22 * specimenHudTypeScale));
+               var macroLikelyOnLeft = inspectionLens && macroInset && Number(canvas._lensDisplayX) > W * 0.58;
+               var specimenHudX = macroLikelyOnLeft ? W - specimenHudWidth - 14 : 14;
++              rememberCanvasHudBox('specimen', specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale);
+               ctx.fillStyle = 'rgba(15,23,42,0.86)'; ctx.strokeStyle = 'rgba(148,163,184,0.34)'; ctx.lineWidth = 1;
+               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale, 8 * specimenHudTypeScale); ctx.fill(); ctx.stroke(); }
+               else { ctx.fillRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); ctx.strokeRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); }
+@@ -14313,6 +14383,13 @@ var d = labToolData.dissection || {};
+               // at the bay's own Y and covers it. I could not get the lift to fire in a harness
+               // hover, so this removes the possibility rather than fixing an observed collision.
+               if (lensNearCompass) compassY = Math.max(82, Math.max(hudInstrumentBayY + hudInstrumentBayH + 8, compassY - 76 * canvasHudScale));
++              var sharedHudReservations = [];
++              if (sceneDetail) sharedHudReservations.push({ x: W - 142, y: hudInstrumentBayY, width: 122, height: hudInstrumentBayH, priority: 9 });
++              if (labelPhysiologyReserve) sharedHudReservations.push({ x: 14, y: H - 84, width: W - 28, height: 70, priority: 9 });
++              if (detailedCanvasHud) sharedHudReservations.push({ x: W - 232, y: 10, width: 218, height: 58 * canvasHudScale, priority: 9 });
++              var scalePlacement = placeCanvasHudPanel(compassX, compassY, compassWidth, compassHeight, sharedHudReservations);
++              compassX = scalePlacement.x; compassY = scalePlacement.y;
++              rememberCanvasHudBox('scale', compassX, compassY, compassWidth, compassHeight);
+               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)';
+               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(compassX, compassY, compassWidth, compassHeight, 8 * canvasHudScale); ctx.fill(); ctx.stroke(); }
+               else { ctx.fillRect(compassX, compassY, compassWidth, compassHeight); ctx.strokeRect(compassX, compassY, compassWidth, compassHeight); }
+@@ -14517,6 +14594,9 @@ var d = labToolData.dissection || {};
+                 // Sized above, before the corridor label runs, so both agree on one box.
+                 var compassW = hudCompassW;
+                 var compassH = hudCompassH;
++                var orientationPlacement = placeCanvasHudPanel(compassX, compassY, compassW, compassH, sharedHudReservations);
++                compassX = orientationPlacement.x; compassY = orientationPlacement.y;
++                rememberCanvasHudBox('orientation', compassX, compassY, compassW, compassH);
+                 var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase());
+                 ctx.save();
+                 ctx.fillStyle = compassAccessible ? '#000000' : 'rgba(15,23,42,0.88)';
+@@ -14524,22 +14604,22 @@ var d = labToolData.dissection || {};
+                 ctx.beginPath();
+                 if (ctx.roundRect) ctx.roundRect(compassX, compassY, compassW, compassH, 8); else ctx.rect(compassX, compassY, compassW, compassH);
+                 ctx.fill(); ctx.stroke();
+-                ctx.font = 'bold ' + (compassAccessible ? 9 : 8) * canvasHudScale + 'px Inter, system-ui';
++                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
+                 ctx.fillStyle = compassAccessible ? '#ffffff' : '#e2e8f0';
+-                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 13 * canvasHudScale);
+-                ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
+-                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 24 * canvasHudScale);
++                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 16 * canvasUiScale);
++                ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
++                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 31 * canvasUiScale);
+                 ctx.strokeStyle = compassAccent; ctx.fillStyle = compassAccent;
+                 ctx.lineWidth = compassAccessible ? 2.2 : 1.5;
+                 if (compass.axis === 'horizontal') {
+-                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 35 * canvasHudScale;
++                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 45 * canvasUiScale;
+                   var axisStartX = compass.mirrored ? axisRightX : axisLeftX;
+                   var axisEndX = compass.mirrored ? axisLeftX : axisRightX;
+                   ctx.beginPath(); ctx.moveTo(axisLeftX, axisY); ctx.lineTo(axisRightX, axisY); ctx.stroke();
+                   ctx.beginPath(); ctx.arc(axisStartX, axisY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
+                   var axisDiamond = 5 * canvasHudScale;
+                   ctx.beginPath(); ctx.moveTo(axisEndX, axisY - axisDiamond); ctx.lineTo(axisEndX + axisDiamond, axisY); ctx.lineTo(axisEndX, axisY + axisDiamond); ctx.lineTo(axisEndX - axisDiamond, axisY); ctx.closePath(); ctx.fill();
+-                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
++                  ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
+                   // Centred on the endpoint markers, ANTERIOR and POSTERIOR both ran off the
+                   // panel: on the perch the first and last letters were cut by its own border.
+                   // Keep the centre where it belongs unless doing so would cross the edge.
+@@ -14550,15 +14630,15 @@ var d = labToolData.dissection || {};
+                   };
+                   var compassStartLabel = fitTextToWidth(compass.start, compassW - compassEndInset * 2);
+                   var compassEndLabel = fitTextToWidth(compass.end, compassW - compassEndInset * 2);
+-                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 50 * canvasHudScale);
+-                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 50 * canvasHudScale);
++                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 64 * canvasUiScale);
++                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 64 * canvasUiScale);
+                 } else {
+-                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 31 * canvasHudScale, axisBottomY = compassY + compassH - 13 * canvasHudScale;
++                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 45 * canvasUiScale, axisBottomY = compassY + compassH - 16 * canvasUiScale;
+                   ctx.beginPath(); ctx.moveTo(axisX, axisTopY); ctx.lineTo(axisX, axisBottomY); ctx.stroke();
+                   ctx.beginPath(); ctx.arc(axisX, axisTopY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
+                   var axisVerticalDiamond = 5 * canvasHudScale;
+                   ctx.beginPath(); ctx.moveTo(axisX, axisBottomY - axisVerticalDiamond); ctx.lineTo(axisX + axisVerticalDiamond, axisBottomY); ctx.lineTo(axisX, axisBottomY + axisVerticalDiamond); ctx.lineTo(axisX - axisVerticalDiamond, axisBottomY); ctx.closePath(); ctx.fill();
+-                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
++                  ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
+                   var compassVerticalWidth = compassX + compassW - 8 * canvasHudScale - (axisX + 10 * canvasHudScale);
+                   ctx.fillText(fitTextToWidth(compass.start, compassVerticalWidth), axisX + 10 * canvasHudScale, axisTopY + 3 * canvasHudScale);
+                   ctx.fillText(fitTextToWidth(compass.end, compassVerticalWidth), axisX + 10 * canvasHudScale, axisBottomY + 3 * canvasHudScale);
+@@ -14995,12 +15075,9 @@ var d = labToolData.dissection || {};
+                     var responseContextLines = wrapTextToWidth(contactContextLabel, responseTextWidth, 3);
+                     var responseLineHeight = 13 * responseTypeScale;
+                     var responsePanelH = (responseTitleLines.length + responseDetailLines.length + responseContextLines.length) * responseLineHeight + 14 * responseTypeScale;
+-                    var feedbackObstacles = (canvas._guidanceBoxes || []).slice();
++                    var feedbackObstacles = (canvas._guidanceBoxes || []).concat(canvas._canvasHudBoxes || []);
+                     feedbackObstacles.push({ x: pointerScreenX - 26 * responseTypeScale, y: pointerScreenY - 26 * responseTypeScale,
+                       width: 52 * responseTypeScale, height: 52 * responseTypeScale, priority: 6 });
+-                    feedbackObstacles.push({ x: specimenHudX, y: 13, width: specimenHudWidth, height: 30 * specimenHudTypeScale, priority: 4 });
+-                    feedbackObstacles.push({ x: compassX, y: compassY, width: compassWidth, height: compassHeight, priority: 4 });
+-                    if (hudCompassBox) feedbackObstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y, width: hudCompassBox.w, height: hudCompassBox.h, priority: 4 });
+                     if (d.macroInset !== false && liveWorkspaceMode === 'advanced') {
+                       var responseMacroW = liveVisualMode === 'accessible' ? 176 : 158;
+                       feedbackObstacles.push({ x: pointerScreenX > W * 0.58 ? 12 : W - responseMacroW - 12, y: 12,
+@@ -15033,7 +15110,7 @@ var d = labToolData.dissection || {};
+                         var overlapH = Math.min(candidateY + responsePanelH + 6, box.y + box.height) - Math.max(candidateY - 6, box.y);
+                         if (overlapW > 0 && overlapH > 0) {
+                           score += overlapW * overlapH * box.priority;
+-                          if (box.priority === 8) score += W * H * 100;
++                          if (box.priority >= 8) score += W * H * 100;
+                         }
+                       });
+                       score += Math.hypot(candidateX + responsePanelW / 2 - pointerScreenX, candidateY + responsePanelH / 2 - pointerScreenY) * 0.1;
+diff --git a/reports/dissection-overlay-layout-2026-09-29/README.md b/reports/dissection-overlay-layout-2026-09-29/README.md
+new file mode 100644
+index 000000000..83a78e1b6
+--- /dev/null
++++ b/reports/dissection-overlay-layout-2026-09-29/README.md
+@@ -0,0 +1,34 @@
++# Dissection Lab overlay clarity
++
++September 29, 2026
++
++Selected anatomy now gets space to remain readable when the specimen is zoomed, panned, or mirrored. Inspection captions stay inside the canvas and consider the selected name's measured bounds. A dashed leader connects captions that move from their anatomical anchor.
++
++The scale and anatomical-axis panels choose positions around painted anatomy text and the other fixed panels. Placement considers the layer footer, guided prompt, physiology slot, instrument bay, and fullscreen system key. Instrument contact feedback uses the same actual panel bounds and gives selected text and fixed panels priority.
++
++The anatomical-axis heading and endpoint labels use larger reading-size text. Its width follows the measured heading, and its height and line spacing accommodate that text.
++
++## Visual review
++
++| Previous 320-pixel layout | Updated 320-pixel layout |
++| --- | --- |
++| [Scale panel covering the depth caption](before-phone-320.png) | [Caption beside the name, with clear feedback and scale](phone-320.png) |
++
++- [Dorsal view after pan](phone-dorsal.png)
++- [Ventral view after pan](phone-ventral.png)
++- [Lateral perch at the canvas edge](perch-edge.png)
++- [Fullscreen view](fullscreen.png)
++
++## Verification
++
++Browser checks compare published layout bounds with actual painted rectangles, verify selected name/caption clearance, check the scale and axis panels against other panels, measure the painted axis heading, and preserve saved observations. Existing cases cover label clicks, mirrored views, zoom, and marker alignment.
++
++All 109 focused regression checks passed on the completed renderers. The two renderer copies match byte for byte and pass JavaScript syntax and scoped whitespace checks.
++
++All 24 distinct Chromium scenarios passed across the main run and a targeted retry. The main run passed 23 cases and timed out while closing the remaining case's browser context; that case passed separately. All nine affected overlay/contact cases then passed on the final placement, including the measured heading size and 320-pixel title clearance.
++
++- [Final overlay and contact checks](overlay-final-tests.log)
++- [Browser run tail](browser-run-tail.log)
++- [Ventral context teardown recheck](ventral-recheck.log)
++- [Focused regression results](unit-results.json)
++- [Verification summary](verification.json)
+diff --git a/reports/dissection-overlay-layout-2026-09-29/before-phone-320.png b/reports/dissection-overlay-layout-2026-09-29/before-phone-320.png
+new file mode 100644
+index 000000000..9d66f370b
+Binary files /dev/null and b/reports/dissection-overlay-layout-2026-09-29/before-phone-320.png differ
+diff --git a/reports/dissection-overlay-layout-2026-09-29/browser-run-tail.log b/reports/dissection-overlay-layout-2026-09-29/browser-run-tail.log
+new file mode 100644
+index 000000000..b1f9fdf23
+--- /dev/null
++++ b/reports/dissection-overlay-layout-2026-09-29/browser-run-tail.log
+@@ -0,0 +1,40 @@
++  ok 10 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:69:5 › covered structure symbols stay compact and shape-coded through fullscreen zoom (1.2m)
++  ok 11 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:85:7 › exposed markers and selection stay aligned in dorsal view (43.2s)
++  ok 12 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:85:7 › exposed markers and selection stay aligned in ventral view (3.9s)
++  ok 13 [chromium] › tests\e2e\dissection-marker-clarity.spec.ts:118:7 › phone markers › large-text high-contrast symbols and the guided ring remain legible (3.3s)
++  ok 14 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:81:7 › phone overlays › 320px selected captions and scale stay clear with large text and contact feedback (6.0s)
++  ok 15 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:92:9 › phone overlays › 390px dorsal panels avoid selected captions during pan (5.2s)
++  ok 16 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:92:9 › phone overlays › 390px ventral panels avoid selected captions during pan (8.7s)
++  ok 17 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:104:7 › phone overlays › lateral perch keeps its inspection caption inside the canvas at an edge (1.2m)
++  ok 18 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:113:5 › fullscreen scale, orientation, and system key leave selected anatomy text clear (34.7s)
++  ok 19 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:76:5 › fullscreen callouts fit at 2x and 3x zoom in both orientations (24.3s)
++  ok 20 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:100:9 › touchscreen selection › long selected name remains legible when panned in dorsal view (3.2s)
++  ok 21 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:100:9 › touchscreen selection › long selected name remains legible when panned in ventral view (4.5s)
++  ok 22 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:119:7 › panned frog cards select the correct structure in dorsal view (3.2s)
++  ok 23 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:119:7 › panned frog cards select the correct structure in ventral view (2.9s)
++  ok 24 [chromium] › tests\e2e\dissection-zoom-labels.spec.ts:131:5 › zoomed label cards still select the matching structure (3.2s)
++
++
++  1) [chromium] › tests\e2e\dissection-label-layout.spec.ts:69:7 › touchscreen labels › long selected labels fit their cards on a phone in ventral view
++
++    Tearing down "context" exceeded the test timeout of 120000ms.
++
++    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
++    test-results\dissection-label-layout-to-09f57--on-a-phone-in-ventral-view-chromium\test-failed-1.png
++    ────────────────────────────────────────────────────────────────────────────────────────────────
++
++    Error Context: test-results\dissection-label-layout-to-09f57--on-a-phone-in-ventral-view-chromium\error-context.md
++
++    Error Context: test-results\dissection-label-layout-to-09f57--on-a-phone-in-ventral-view-chromium\error-context.md
++
++    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
++    test-results\dissection-label-layout-to-09f57--on-a-phone-in-ventral-view-chromium\trace.zip
++    Usage:
++
++        npx playwright show-trace test-results\dissection-label-layout-to-09f57--on-a-phone-in-ventral-view-chromium\trace.zip
++
++    ────────────────────────────────────────────────────────────────────────────────────────────────
++
++  1 failed
++    [chromium] › tests\e2e\dissection-label-layout.spec.ts:69:7 › touchscreen labels › long selected labels fit their cards on a phone in ventral view
++  23 passed (14.3m)
+diff --git a/reports/dissection-overlay-layout-2026-09-29/fullscreen.png b/reports/dissection-overlay-layout-2026-09-29/fullscreen.png
+new file mode 100644
+index 000000000..bcb28dc09
+Binary files /dev/null and b/reports/dissection-overlay-layout-2026-09-29/fullscreen.png differ
+diff --git a/reports/dissection-overlay-layout-2026-09-29/overlay-final-tests.log b/reports/dissection-overlay-layout-2026-09-29/overlay-final-tests.log
+new file mode 100644
+index 000000000..188fa1f1b
+--- /dev/null
++++ b/reports/dissection-overlay-layout-2026-09-29/overlay-final-tests.log
+@@ -0,0 +1,18 @@
++
++Running 9 tests using 1 worker
++
++(node:41424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
++(Use `node --trace-warnings ...` to show where the warning was created)
++(node:41424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
++(Use `node --trace-warnings ...` to show where the warning was created)
++  ok 1 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:68:7 › feedback is readable and leaves selected captions clear in dorsal view (9.3s)
++  ok 2 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:68:7 › feedback is readable and leaves selected captions clear in ventral view (15.2s)
++  ok 3 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:86:9 › phone feedback › 390px feedback wraps readable text and preserves saved observations (5.0s)
++  ok 4 [chromium] › tests\e2e\dissection-contact-feedback.spec.ts:86:9 › phone feedback › 320px feedback wraps readable text and preserves saved observations (8.6s)
++  ok 5 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:87:7 › phone overlays › 320px selected captions and scale stay clear with large text and contact feedback (17.0s)
++  ok 6 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:99:9 › phone overlays › 390px dorsal panels avoid selected captions during pan (6.8s)
++  ok 7 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:99:9 › phone overlays › 390px ventral panels avoid selected captions during pan (7.3s)
++  ok 8 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:111:7 › phone overlays › lateral perch keeps its inspection caption inside the canvas at an edge (4.6s)
++  ok 9 [chromium] › tests\e2e\dissection-overlay-layout.spec.ts:120:5 › fullscreen scale, orientation, and system key leave selected anatomy text clear (11.8s)
++
++  9 passed (1.8m)
+diff --git a/reports/dissection-overlay-layout-2026-09-29/perch-edge.png b/reports/dissection-overlay-layout-2026-09-29/perch-edge.png
+new file mode 100644
+index 000000000..924fd008a
+Binary files /dev/null and b/reports/dissection-overlay-layout-2026-09-29/perch-edge.png differ
+diff --git a/reports/dissection-overlay-layout-2026-09-29/phone-320.png b/reports/dissection-overlay-layout-2026-09-29/phone-320.png
+new file mode 100644
+index 000000000..bef014b31
+Binary files /dev/null and b/reports/dissection-overlay-layout-2026-09-29/phone-320.png differ
+diff --git a/reports/dissection-overlay-layout-2026-09-29/phone-dorsal.png b/reports/dissection-overlay-layout-2026-09-29/phone-dorsal.png
+new file mode 100644
+index 000000000..4cc27bac6
+Binary files /dev/null and b/reports/dissection-overlay-layout-2026-09-29/phone-dorsal.png differ
+diff --git a/reports/dissection-overlay-layout-2026-09-29/phone-ventral.png b/reports/dissection-overlay-layout-2026-09-29/phone-ventral.png
+new file mode 100644
+index 000000000..56e1d95be
+Binary files /dev/null and b/reports/dissection-overlay-layout-2026-09-29/phone-ventral.png differ
+diff --git a/reports/dissection-overlay-layout-2026-09-29/unit-results.json b/reports/dissection-overlay-layout-2026-09-29/unit-results.json
+new file mode 100644
+index 000000000..700f8fccb
+--- /dev/null
++++ b/reports/dissection-overlay-layout-2026-09-29/unit-results.json
+@@ -0,0 +1 @@
++{"numTotalTestSuites":4,"numPassedTestSuites":4,"numFailedTestSuites":0,"numPendingTestSuites":0,"numTotalTests":109,"numPassedTests":109,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"snapshot":{"added":0,"failure":false,"filesAdded":0,"filesRemoved":0,"filesRemovedList":[],"filesUnmatched":0,"filesUpdated":0,"matched":0,"total":0,"unchecked":0,"uncheckedKeysByFile":[],"unmatched":0,"updated":0,"didUpdate":false},"startTime":1790719616795,"success":true,"testResults":[{"assertionResults":[{"ancestorTitles":["dissection canvas animation loop"],"fullName":"dissection canvas animation loop preserves canvas state updates while cleaning up the heavyweight redraw loop","status":"passed","title":"preserves canvas state updates while cleaning up the heavyweight redraw loop","duration":405.4308000000001,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection canvas animation loop"],"fullName":"dissection canvas animation loop keeps one paused canvas lifecycle across rerenders and clears owned globals on detach","status":"passed","title":"keeps one paused canvas lifecycle across rerenders and clears owned globals on detach","duration":1239.3558000000003,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection canvas animation loop"],"fullName":"dissection canvas animation loop cancels only the owning pointer context on lost capture or pointer cancellation","status":"passed","title":"cancels only the owning pointer context on lost capture or pointer cancellation","duration":183.47339999999986,"failureMessages":[],"meta":{},"tags":[]}],"startTime":1790719619590,"endTime":1790719621418.4734,"status":"passed","message":"","name":"C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_canvas_loop.test.js"},{"assertionResults":[{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands states the workflow position once in the hero in stem_lab/stem_tool_dissection.js","status":"passed","title":"states the workflow position once in the hero in stem_lab/stem_tool_dissection.js","duration":1042.5012000000006,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands states the workflow position once in the hero in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"states the workflow position once in the hero in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":127.84929999999986,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps one visibility rule for the checkpoint and its signpost in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps one visibility rule for the checkpoint and its signpost in stem_lab/stem_tool_dissection.js","duration":8.997000000001208,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps one visibility rule for the checkpoint and its signpost in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps one visibility rule for the checkpoint and its signpost in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":8.487800000000789,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands labels the telemetry phase with the phase, not the question, in stem_lab/stem_tool_dissection.js","status":"passed","title":"labels the telemetry phase with the phase, not the question, in stem_lab/stem_tool_dissection.js","duration":7.556599999999889,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands labels the telemetry phase with the phase, not the question, in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"labels the telemetry phase with the phase, not the question, in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.690199999999095,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands puts the reasoning checkpoints beside the specimen in stem_lab/stem_tool_dissection.js","status":"passed","title":"puts the reasoning checkpoints beside the specimen in stem_lab/stem_tool_dissection.js","duration":61.02900000000045,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands puts the reasoning checkpoints beside the specimen in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"puts the reasoning checkpoints beside the specimen in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":58.23199999999997,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the flashcard hint and counter above 4.5:1 in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the flashcard hint and counter above 4.5:1 in stem_lab/stem_tool_dissection.js","duration":61.53279999999904,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the flashcard hint and counter above 4.5:1 in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the flashcard hint and counter above 4.5:1 in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":46.98229999999967,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands does not let option length give the checkpoint answer away in stem_lab/stem_tool_dissection.js","status":"passed","title":"does not let option length give the checkpoint answer away in stem_lab/stem_tool_dissection.js","duration":299.1831000000002,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands does not let option length give the checkpoint answer away in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"does not let option length give the checkpoint answer away in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":278.0464000000011,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the explain-phase options the same length in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the explain-phase options the same length in stem_lab/stem_tool_dissection.js","duration":7.291699999999764,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the explain-phase options the same length in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the explain-phase options the same length in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.438200000000506,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands never prints the same words twice in the stage handoff in stem_lab/stem_tool_dissection.js","status":"passed","title":"never prints the same words twice in the stage handoff in stem_lab/stem_tool_dissection.js","duration":113.5064999999995,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands never prints the same words twice in the stage handoff in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"never prints the same words twice in the stage handoff in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":86.84369999999944,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands carries the detail toggle inside the route rail in stem_lab/stem_tool_dissection.js","status":"passed","title":"carries the detail toggle inside the route rail in stem_lab/stem_tool_dissection.js","duration":82.19360000000052,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands carries the detail toggle inside the route rail in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"carries the detail toggle inside the route rail in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":76.5663999999997,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands does not restate the checkpoint question in the canvas status in stem_lab/stem_tool_dissection.js","status":"passed","title":"does not restate the checkpoint question in the canvas status in stem_lab/stem_tool_dissection.js","duration":33.97010000000046,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands does not restate the checkpoint question in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"does not restate the checkpoint question in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":33.29069999999956,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the full next-action title in the status when no checkpoint is shown in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the full next-action title in the status when no checkpoint is shown in stem_lab/stem_tool_dissection.js","duration":42.96110000000044,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the full next-action title in the status when no checkpoint is shown in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the full next-action title in the status when no checkpoint is shown in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":34.08630000000085,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands lets phone layer chips size to their own name in stem_lab/stem_tool_dissection.js","status":"passed","title":"lets phone layer chips size to their own name in stem_lab/stem_tool_dissection.js","duration":6.721399999998539,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands lets phone layer chips size to their own name in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"lets phone layer chips size to their own name in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":5.10280000000057,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands takes the hidden skip links out of the hit test in stem_lab/stem_tool_dissection.js","status":"passed","title":"takes the hidden skip links out of the hit test in stem_lab/stem_tool_dissection.js","duration":4.92660000000069,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands takes the hidden skip links out of the hit test in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"takes the hidden skip links out of the hit test in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":4.634799999999814,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands gives the system colour legend its own readable ground in stem_lab/stem_tool_dissection.js","status":"passed","title":"gives the system colour legend its own readable ground in stem_lab/stem_tool_dissection.js","duration":5.469699999999648,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands gives the system colour legend its own readable ground in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"gives the system colour legend its own readable ground in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":4.809100000000399,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the orientation compass clear of the specimen chip in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the orientation compass clear of the specimen chip in stem_lab/stem_tool_dissection.js","duration":5.295000000000073,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the orientation compass clear of the specimen chip in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the orientation compass clear of the specimen chip in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":5.494300000000294,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands says what the secondary control band holds in stem_lab/stem_tool_dissection.js","status":"passed","title":"says what the secondary control band holds in stem_lab/stem_tool_dissection.js","duration":39.15530000000035,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands says what the secondary control band holds in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"says what the secondary control band holds in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":68.24989999999889,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands prints the state of every toggle in the view panel in stem_lab/stem_tool_dissection.js","status":"passed","title":"prints the state of every toggle in the view panel in stem_lab/stem_tool_dissection.js","duration":46.025000000001455,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands prints the state of every toggle in the view panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"prints the state of every toggle in the view panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":38.4982,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands points at the assessment panel, not below the specimen, in stem_lab/stem_tool_dissection.js","status":"passed","title":"points at the assessment panel, not below the specimen, in stem_lab/stem_tool_dissection.js","duration":6.513999999999214,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands points at the assessment panel, not below the specimen, in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"points at the assessment panel, not below the specimen, in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":5.41780000000108,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands gives assessment answers a visible boundary in stem_lab/stem_tool_dissection.js","status":"passed","title":"gives assessment answers a visible boundary in stem_lab/stem_tool_dissection.js","duration":5.529399999999441,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands gives assessment answers a visible boundary in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"gives assessment answers a visible boundary in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.356400000000576,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands draws each frog limb as one smooth chain in stem_lab/stem_tool_dissection.js","status":"passed","title":"draws each frog limb as one smooth chain in stem_lab/stem_tool_dissection.js","duration":6.377800000000207,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands draws each frog limb as one smooth chain in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"draws each frog limb as one smooth chain in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":8.711899999998423,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps screen-fixed canvas overlays unmirrored in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps screen-fixed canvas overlays unmirrored in stem_lab/stem_tool_dissection.js","duration":8.366400000000795,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps screen-fixed canvas overlays unmirrored in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps screen-fixed canvas overlays unmirrored in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":8.826699999999619,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands grows the pig near-side limbs out of the torso silhouette in stem_lab/stem_tool_dissection.js","status":"passed","title":"grows the pig near-side limbs out of the torso silhouette in stem_lab/stem_tool_dissection.js","duration":5.728399999999965,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands grows the pig near-side limbs out of the torso silhouette in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"grows the pig near-side limbs out of the torso silhouette in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":4.631999999999607,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands scales the crayfish cheliped arm with the canvas in stem_lab/stem_tool_dissection.js","status":"passed","title":"scales the crayfish cheliped arm with the canvas in stem_lab/stem_tool_dissection.js","duration":5.916999999999462,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands scales the crayfish cheliped arm with the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"scales the crayfish cheliped arm with the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":4.910599999999249,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands draws specimen anatomy labels through the un-mirroring helper in stem_lab/stem_tool_dissection.js","status":"passed","title":"draws specimen anatomy labels through the un-mirroring helper in stem_lab/stem_tool_dissection.js","duration":16.917500000001382,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands draws specimen anatomy labels through the un-mirroring helper in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"draws specimen anatomy labels through the un-mirroring helper in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":17.250200000000405,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands anchors instrument HUD panel text from the mirrored edge in stem_lab/stem_tool_dissection.js","status":"passed","title":"anchors instrument HUD panel text from the mirrored edge in stem_lab/stem_tool_dissection.js","duration":15.697599999999511,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands anchors instrument HUD panel text from the mirrored edge in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"anchors instrument HUD panel text from the mirrored edge in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":25.473700000000463,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the instrument bay clear of the scale compass in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the instrument bay clear of the scale compass in stem_lab/stem_tool_dissection.js","duration":14.704499999999825,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the instrument bay clear of the scale compass in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the instrument bay clear of the scale compass in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.743800000000192,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands stacks the three top-left canvas panels without covering one in stem_lab/stem_tool_dissection.js","status":"passed","title":"stacks the three top-left canvas panels without covering one in stem_lab/stem_tool_dissection.js","duration":5.9539999999997235,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands stacks the three top-left canvas panels without covering one in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"stacks the three top-left canvas panels without covering one in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.010599999999613,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands fits canvas card text by measuring it in stem_lab/stem_tool_dissection.js","status":"passed","title":"fits canvas card text by measuring it in stem_lab/stem_tool_dissection.js","duration":11.355800000001182,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands fits canvas card text by measuring it in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"fits canvas card text by measuring it in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":9.047099999999773,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the compass endpoint labels inside the panel in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the compass endpoint labels inside the panel in stem_lab/stem_tool_dissection.js","duration":6.134299999999712,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the compass endpoint labels inside the panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the compass endpoint labels inside the panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":5.943600000000515,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands rasterises the canvas at its displayed density in stem_lab/stem_tool_dissection.js","status":"passed","title":"rasterises the canvas at its displayed density in stem_lab/stem_tool_dissection.js","duration":6.379399999999805,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands rasterises the canvas at its displayed density in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"rasterises the canvas at its displayed density in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.053100000000995,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands holds the instrument bay corner and caption under the ventral mirror in stem_lab/stem_tool_dissection.js","status":"passed","title":"holds the instrument bay corner and caption under the ventral mirror in stem_lab/stem_tool_dissection.js","duration":6.5702000000001135,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands holds the instrument bay corner and caption under the ventral mirror in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"holds the instrument bay corner and caption under the ventral mirror in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":5.721999999999753,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands eases the earthworm clitellum into the body wall in stem_lab/stem_tool_dissection.js","status":"passed","title":"eases the earthworm clitellum into the body wall in stem_lab/stem_tool_dissection.js","duration":5.568499999999403,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands eases the earthworm clitellum into the body wall in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"eases the earthworm clitellum into the body wall in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.434699999999793,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands resolves CSS custom properties before they reach the canvas in stem_lab/stem_tool_dissection.js","status":"passed","title":"resolves CSS custom properties before they reach the canvas in stem_lab/stem_tool_dissection.js","duration":6.948199999998906,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands resolves CSS custom properties before they reach the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"resolves CSS custom properties before they reach the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.739600000000792,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the adaptive-label chip clear of the scale HUD in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the adaptive-label chip clear of the scale HUD in stem_lab/stem_tool_dissection.js","duration":8.514299999998912,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the adaptive-label chip clear of the scale HUD in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the adaptive-label chip clear of the scale HUD in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.828499999999622,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands clamps the eye ray label inside the tray frame in stem_lab/stem_tool_dissection.js","status":"passed","title":"clamps the eye ray label inside the tray frame in stem_lab/stem_tool_dissection.js","duration":6.252999999998792,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands clamps the eye ray label inside the tray frame in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"clamps the eye ray label inside the tray frame in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":12.993399999999383,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the ECG strip and its readout clear of the bottom HUD in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the ECG strip and its readout clear of the bottom HUD in stem_lab/stem_tool_dissection.js","duration":7.049399999999878,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the ECG strip and its readout clear of the bottom HUD in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the ECG strip and its readout clear of the bottom HUD in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.794799999999668,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands moves the corridor safety label off the hotspot pills in stem_lab/stem_tool_dissection.js","status":"passed","title":"moves the corridor safety label off the hotspot pills in stem_lab/stem_tool_dissection.js","duration":10.082700000000841,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands moves the corridor safety label off the hotspot pills in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"moves the corridor safety label off the hotspot pills in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.768000000000029,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keys body systems from one colour table in stem_lab/stem_tool_dissection.js","status":"passed","title":"keys body systems from one colour table in stem_lab/stem_tool_dissection.js","duration":9.857500000000073,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keys body systems from one colour table in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keys body systems from one colour table in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":10.467199999999139,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands scales the remaining canvas HUD panels with the display in stem_lab/stem_tool_dissection.js","status":"passed","title":"scales the remaining canvas HUD panels with the display in stem_lab/stem_tool_dissection.js","duration":9.09020000000055,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands scales the remaining canvas HUD panels with the display in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"scales the remaining canvas HUD panels with the display in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.82510000000002,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the scaled top-row canvas panels apart in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the scaled top-row canvas panels apart in stem_lab/stem_tool_dissection.js","duration":7.021500000000742,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the scaled top-row canvas panels apart in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the scaled top-row canvas panels apart in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.695999999999913,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands explains why keyboard browsing has nothing to walk in stem_lab/stem_tool_dissection.js","status":"passed","title":"explains why keyboard browsing has nothing to walk in stem_lab/stem_tool_dissection.js","duration":9.504000000000815,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands explains why keyboard browsing has nothing to walk in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"explains why keyboard browsing has nothing to walk in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.0996999999988475,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands resumes keyboard browsing from the current selection in stem_lab/stem_tool_dissection.js","status":"passed","title":"resumes keyboard browsing from the current selection in stem_lab/stem_tool_dissection.js","duration":6.173899999999776,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands resumes keyboard browsing from the current selection in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"resumes keyboard browsing from the current selection in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":5.394000000000233,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands names the specimen canvas once, briefly, in stem_lab/stem_tool_dissection.js","status":"passed","title":"names the specimen canvas once, briefly, in stem_lab/stem_tool_dissection.js","duration":9.420000000000073,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands names the specimen canvas once, briefly, in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"names the specimen canvas once, briefly, in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.895200000000841,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands announces only what changed in the canvas status in stem_lab/stem_tool_dissection.js","status":"passed","title":"announces only what changed in the canvas status in stem_lab/stem_tool_dissection.js","duration":6.7476000000006024,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands announces only what changed in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"announces only what changed in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.35950000000048,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the canvas status readable as one line in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the canvas status readable as one line in stem_lab/stem_tool_dissection.js","duration":42.33039999999892,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the canvas status readable as one line in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the canvas status readable as one line in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":52.01599999999962,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the on-focus canvas description short in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the on-focus canvas description short in stem_lab/stem_tool_dissection.js","duration":55.03639999999905,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps the on-focus canvas description short in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps the on-focus canvas description short in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":45.638199999999415,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands rides the secondary controls along the layer heading in stem_lab/stem_tool_dissection.js","status":"passed","title":"rides the secondary controls along the layer heading in stem_lab/stem_tool_dissection.js","duration":41.79410000000098,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands rides the secondary controls along the layer heading in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"rides the secondary controls along the layer heading in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":51.0559000000012,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands clamps the lens lift above the instrument bay in stem_lab/stem_tool_dissection.js","status":"passed","title":"clamps the lens lift above the instrument bay in stem_lab/stem_tool_dissection.js","duration":8.260400000001027,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands clamps the lens lift above the instrument bay in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"clamps the lens lift above the instrument bay in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.447500000000218,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps a refused gesture reason instead of tap coaching in stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps a refused gesture reason instead of tap coaching in stem_lab/stem_tool_dissection.js","duration":9.263600000000224,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keeps a refused gesture reason instead of tap coaching in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keeps a refused gesture reason instead of tap coaching in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.943699999999808,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands puts the canvas status before the evidence notebook in stem_lab/stem_tool_dissection.js","status":"passed","title":"puts the canvas status before the evidence notebook in stem_lab/stem_tool_dissection.js","duration":36.376100000001315,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands puts the canvas status before the evidence notebook in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"puts the canvas status before the evidence notebook in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":39.90600000000086,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands shows gesture feedback under the canvas in stem_lab/stem_tool_dissection.js","status":"passed","title":"shows gesture feedback under the canvas in stem_lab/stem_tool_dissection.js","duration":81.1956999999984,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands shows gesture feedback under the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"shows gesture feedback under the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":73.39170000000013,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keys hover live-region writes on the rendered text in stem_lab/stem_tool_dissection.js","status":"passed","title":"keys hover live-region writes on the rendered text in stem_lab/stem_tool_dissection.js","duration":6.738199999999779,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands keys hover live-region writes on the rendered text in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"keys hover live-region writes on the rendered text in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":7.141700000000128,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands tells a dragging probe user the gesture that works in stem_lab/stem_tool_dissection.js","status":"passed","title":"tells a dragging probe user the gesture that works in stem_lab/stem_tool_dissection.js","duration":6.033499999999549,"failureMessages":[],"meta":{},"tags":[]},{"ancestorTitles":["dissection workspace bands"],"fullName":"dissection workspace bands tells a dragging probe user the gesture that works in desktop/web-app/public/stem_lab/stem_tool_dissection.js","status":"passed","title":"tells a dragging probe user the gesture that works in desktop/web-app/public/stem_lab/stem_tool_dissection.js","duration":6.649699999999939,"failureMessages":[],"meta":{},"tags":[]}],"startTime":1790719623060,"endTime":1790719626845.6497,"status":"passed","message":"","name":"C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js"}]}
+\ No newline at end of file
+diff --git a/reports/dissection-overlay-layout-2026-09-29/ventral-recheck.log b/reports/dissection-overlay-layout-2026-09-29/ventral-recheck.log
+new file mode 100644
+index 000000000..a73ec9c32
+--- /dev/null
++++ b/reports/dissection-overlay-layout-2026-09-29/ventral-recheck.log
+@@ -0,0 +1,10 @@
++
++Running 1 test using 1 worker
++
++(node:34416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
++(Use `node --trace-warnings ...` to show where the warning was created)
++(node:34416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
++(Use `node --trace-warnings ...` to show where the warning was created)
++  ok 1 [chromium] › tests\e2e\dissection-label-layout.spec.ts:69:7 › touchscreen labels › long selected labels fit their cards on a phone in ventral view (3.4s)
++
++  1 passed (6.2s)
+diff --git a/reports/dissection-overlay-layout-2026-09-29/verification.json b/reports/dissection-overlay-layout-2026-09-29/verification.json
+new file mode 100644
+index 000000000..a3fe786e6
+--- /dev/null
++++ b/reports/dissection-overlay-layout-2026-09-29/verification.json
+@@ -0,0 +1,9 @@
++{
++  "browserScenarios": 24,
++  "finalAffectedBrowserScenarios": 9,
++  "focusedRegressionChecks": 109,
++  "rendererCopiesMatch": true,
++  "javascriptSyntaxValid": true,
++  "scopedWhitespaceClean": true,
++  "rendererSha256": "c0eb0f733901def5a57d842efe39c3ad11badc8bbbaf0582816c0396e98e72b8"
++}
+diff --git a/stem_lab/stem_tool_dissection.js b/stem_lab/stem_tool_dissection.js
+index cf3710e4e..ce501a333 100644
+--- a/stem_lab/stem_tool_dissection.js
++++ b/stem_lab/stem_tool_dissection.js
+@@ -7369,9 +7369,12 @@ var d = labToolData.dissection || {};
+               canvas._canvasHudScale = canvasHudScale;
+               canvas._canvasUiScale = canvasUiScale;
+               canvas._guidanceBoxes = [];
++              canvas._canvasHudBoxes = [];
++              canvas._scaleHudBox = null;
++              canvas._orientationHudBox = null;
+               canvas._contactFeedbackBox = null;
+-              // Keep the screen bounds of semantic cards so tool feedback can avoid them.
+-              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
++              // One screen-space measurement serves anatomy captions and fixed panels.
++              function canvasScreenBox(x, y, width, height) {
+                 if (!ctx.getTransform) return;
+                 var matrix = ctx.getTransform();
+                 if (!matrix || !isFinite(matrix.a)) return;
+@@ -7382,9 +7385,46 @@ var d = labToolData.dissection || {};
+                 });
+                 var left = Math.min.apply(null, corners.map(function (point) { return point.x; }));
+                 var top = Math.min.apply(null, corners.map(function (point) { return point.y; }));
+-                canvas._guidanceBoxes.push({ x: left, y: top,
++                return { x: left, y: top,
+                   width: Math.max.apply(null, corners.map(function (point) { return point.x; })) - left,
+-                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top, priority: priority || 1 });
++                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top };
++              }
++              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
++                var box = canvasScreenBox(x, y, width, height);
++                if (box) { box.priority = priority || 1; canvas._guidanceBoxes.push(box); }
++              }
++              function rememberCanvasHudBox(id, x, y, width, height) {
++                var box = { id: id, x: x, y: y, width: width, height: height, priority: 9 };
++                canvas._canvasHudBoxes.push(box);
++                if (id === 'scale') canvas._scaleHudBox = box;
++                if (id === 'orientation') canvas._orientationHudBox = box;
++              }
++              function placeCanvasHudPanel(x, y, width, height, additionalBoxes) {
++                var obstacles = canvas._guidanceBoxes.concat(canvas._canvasHudBoxes, additionalBoxes || []);
++                var candidates = [[x, y], [14, 14], [W - width - 14, 14],
++                  [14, H - height - 14], [W - width - 14, H - height - 14]];
++                obstacles.forEach(function (box) {
++                  candidates.push([x, box.y - height - 8], [x, box.y + box.height + 8],
++                    [box.x - width - 8, y], [box.x + box.width + 8, y],
++                    [box.x - width - 8, box.y], [box.x + box.width + 8, box.y],
++                    [14, box.y - height - 8], [W - width - 14, box.y + box.height + 8]);
++                });
++                var placement = null;
++                candidates.forEach(function (candidate) {
++                  var left = Math.max(14, Math.min(W - width - 14, candidate[0]));
++                  var top = Math.max(14, Math.min(H - height - 14, candidate[1]));
++                  var score = Math.hypot(left - x, top - y) * 0.15;
++                  obstacles.forEach(function (box) {
++                    var overlapW = Math.min(left + width + 6, box.x + box.width) - Math.max(left - 6, box.x);
++                    var overlapH = Math.min(top + height + 6, box.y + box.height) - Math.max(top - 6, box.y);
++                    if (overlapW > 0 && overlapH > 0) {
++                      score += overlapW * overlapH * (box.priority || 1);
++                      if (box.priority >= 8) score += W * H * 100;
++                    }
++                  });
++                  if (!placement || score < placement.score) placement = { x: left, y: top, score: score };
++                });
++                return placement;
+               }
+ 
+               // Read ALL drawing state from canvas element (updated by canvasRef on each React render)
+@@ -7475,14 +7515,14 @@ var d = labToolData.dissection || {};
+               var hudCompassTitleWidth = 0;
+               try {
+                 ctx.save();
+-                ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';
++                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
+                 hudCompassTitleWidth = ctx.measureText('ANATOMICAL AXIS').width;
+                 ctx.restore();
+               } catch (e) { hudCompassTitleWidth = 0; }
+               var hudCompassW = hudCompassAxis === 'horizontal'
+-                ? Math.max(188, hudCompassTitleWidth + 30 * canvasHudScale)
+-                : Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);
+-              var hudCompassH = (hudCompassAxis === 'horizontal' ? 55 : 91) * canvasHudScale;
++                ? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)
++                : Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);
++              var hudCompassH = (hudCompassAxis === 'horizontal' ? 80 : 116) * canvasUiScale;
+               var hudCompassBox = (sceneDetail && detailedCanvasHud && !d.quizMode) ? { x: 14, y: 14, w: hudCompassW, h: 82 + hudCompassH - 14 } : null;
+               // The instrument bay is bench scenery painted early, and the scale card below it
+               // lifts by 76 * canvasHudScale when the inspection lens is parked in that corner.
+@@ -10728,11 +10768,13 @@ var d = labToolData.dissection || {};
+                 cosine = Math.cos(profile.rotation); sine = Math.sin(profile.rotation);
+                 return { x: centerX + localX * cosine - localY * sine, y: centerY + localX * sine + localY * cosine };
+               }
+-              function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility) {
++              function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility, callout) {
+                 if (!selected && !hovered) return;
+                 var profile = structureInspectionFootprint(org);
+                 var footprintAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
+                 var footprintAccent = footprintAccessible ? '#ffffff' : (selected ? '#fbbf24' : '#60a5fa');
++                var plannedCallout = callout && callout.fullLabel ? canvasScreenBox(callout.x, callout.y, callout.width, callout.height) : null;
++                if (plannedCallout) plannedCallout.priority = 8;
+                 var footprintScale = selected ? 0.72 + focusEntryProgress * 0.28 : 1;
+                 var backDash = visibility === 'visible' ? [] : (visibility === 'emerging' ? [5, 3] : (visibility === 'obscured' ? [2, 3] : [1, 4]));
+                 ctx.save(); ctx.translate(x, y); ctx.scale(footprintScale, footprintScale); ctx.rotate(profile.rotation);
+@@ -10768,8 +10810,30 @@ var d = labToolData.dissection || {};
+                 ctx.scale(1 / (specimenScale.x * zoom * footprintScale), 1 / (specimenScale.y * zoom * footprintScale));
+                 ctx.font = 'bold ' + (9 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                 var footprintDepthLabel = profile.depth === 'surface' ? 'SURFACE' : (profile.depth === 'deep' ? 'DEEP' : 'MID');
+-                var footprintCaption = footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel;
++                var footprintCaption = fitTextToWidth(footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel, W - 28 - 12 * canvasUiScale);
+                 var footprintCaptionW = ctx.measureText(footprintCaption).width + 12 * canvasUiScale;
++                var captionBox = canvasScreenBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale);
++                if (captionBox && ctx.getTransform) {
++                  var captionLeft = Math.max(14, Math.min(W - captionBox.width - 14, captionBox.x));
++                  var captionTop = Math.max(82, Math.min(labelScreenBottom - captionBox.height, captionBox.y));
++                  var captionReservations = [
++                    { x: 0, y: 0, width: W, height: 74, priority: 9 },
++                    { x: 0, y: labelScreenBottom, width: W, height: H - labelScreenBottom, priority: 9 }
++                  ];
++                  if (plannedCallout) captionReservations.push(plannedCallout);
++                  var captionPlacement = placeCanvasHudPanel(captionLeft, captionTop, captionBox.width, captionBox.height, captionReservations);
++                  captionLeft = captionPlacement.x; captionTop = captionPlacement.y;
++                  var captionDX = captionLeft - captionBox.x, captionDY = captionTop - captionBox.y;
++                  var captionMatrix = ctx.getTransform(), captionDet = captionMatrix.a * captionMatrix.d - captionMatrix.b * captionMatrix.c;
++                  if (Math.abs(captionDet) > 0.0001 && (Math.abs(captionDX) > 0.01 || Math.abs(captionDY) > 0.01)) {
++                    var captionDensity = canvas._dpr || 1;
++                    var captionLocalX = captionDensity * (captionMatrix.d * captionDX - captionMatrix.c * captionDY) / captionDet;
++                    var captionLocalY = captionDensity * (-captionMatrix.b * captionDX + captionMatrix.a * captionDY) / captionDet;
++                    ctx.strokeStyle = footprintAccent; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
++                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(captionLocalX, captionLocalY + 8.5 * canvasUiScale); ctx.stroke(); ctx.setLineDash([]);
++                    ctx.translate(captionLocalX, captionLocalY);
++                  }
++                }
+                 rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8);
+                 ctx.fillStyle = footprintAccessible ? '#000000' : 'rgba(15,23,42,0.94)';
+                 ctx.beginPath();
+@@ -11052,7 +11116,7 @@ var d = labToolData.dissection || {};
+                 var exposureMuted = layout.visibility !== 'visible';
+                 ctx.save(); ctx.globalAlpha = focusMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.46 : 0.24) : (exposureMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.86 : 0.68) : 1);
+                 var px = layout.pointX, py = layout.pointY;
+-                drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility);
++                drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility, layout);
+                 if (!isSel && (!exposureMuted || isHov)) drawDepthAtlasMarker(px, py, layout.depth, false, isHov, focusMuted);
+                 var pulse = 1;
+                 if (isSel) {
+@@ -13802,6 +13866,7 @@ var d = labToolData.dissection || {};
+               // The next-step card is 58 * canvasHudScale tall from y 10. At desktop scale that
+               // ends at 68 and this panel cleared it by 6 at 74; once the card scaled, it did not.
+               var legendPanelX = W - legendPanelW - 14, legendPanelY = Math.max(74, 10 + 58 * canvasHudScale + 6);
++              rememberCanvasHudBox('system-key', legendPanelX, legendPanelY, legendPanelW, legendPanelH);
+ 
+               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)'; ctx.lineWidth = 1;
+ 
+@@ -14180,6 +14245,7 @@ var d = labToolData.dissection || {};
+                 var ecgY = H - 55;
+                 var ecgW = Math.min(W * 0.46, W - 172);
+                 var ecgX = 20;
++                rememberCanvasHudBox('heart-trace', ecgX - 5, ecgY - 20, ecgW + 10, 40);
+                 var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 20);
+                 ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
+                 ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 40);
+@@ -14213,6 +14279,7 @@ var d = labToolData.dissection || {};
+                 var guidedScreenHeight = guidedMode && currentGuided ? Math.min(64, 34 * screenGuideScale) : 0;
+                 var guidedScreenY = guidedScreenHeight ? H - guidedScreenHeight - 14 - screenPhysiologyHudReserve : H - 14 - screenPhysiologyHudReserve;
+                 if (guidedScreenHeight) {
++                  rememberCanvasHudBox('guided-prompt', 14, guidedScreenY, W - 28, guidedScreenHeight);
+                   ctx.save(); ctx.fillStyle = 'rgba(88,28,135,0.96)'; ctx.strokeStyle = 'rgba(216,180,254,0.76)'; ctx.lineWidth = 1;
+                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, guidedScreenY, W - 28, guidedScreenHeight, 8); ctx.fill(); ctx.stroke(); }
+                   else { ctx.fillRect(14, guidedScreenY, W - 28, guidedScreenHeight); ctx.strokeRect(14, guidedScreenY, W - 28, guidedScreenHeight); }
+@@ -14232,6 +14299,7 @@ var d = labToolData.dissection || {};
+                   if (ctx.measureText(screenLayerLabel).width > layerPillLimit - 22 * screenGuideScale) screenLayerLabel = screenLayerDef.name;
+                   screenLayerLabel = fitTextToWidth(screenLayerLabel, Math.max(30, layerPillLimit - 22 * screenGuideScale));
+                   var layerPillWidth = Math.min(layerPillLimit, ctx.measureText(screenLayerLabel).width + 22 * screenGuideScale);
++                  rememberCanvasHudBox('layer', 14, layerPillY, layerPillWidth, layerPillHeight);
+                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(148,163,184,0.52)';
+                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, layerPillY, layerPillWidth, layerPillHeight, 7); ctx.fill(); ctx.stroke(); }
+                   else { ctx.fillRect(14, layerPillY, layerPillWidth, layerPillHeight); ctx.strokeRect(14, layerPillY, layerPillWidth, layerPillHeight); }
+@@ -14254,6 +14322,7 @@ var d = labToolData.dissection || {};
+                   var screenDeclutterText = fitTextToWidth(screenDeclutter, screenDeclutterSpan - 18 * screenGuideScale);
+                   var screenDeclutterWidth = Math.min(screenDeclutterSpan, ctx.measureText(screenDeclutterText).width + 18 * screenGuideScale);
+                   var screenDeclutterX = Math.max(14, Math.min((W - screenDeclutterWidth) / 2, screenDeclutterRightLimit - screenDeclutterWidth));
++                  rememberCanvasHudBox('compact-labels', screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight);
+                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(45,212,191,0.64)';
+                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight, 7); ctx.fill(); ctx.stroke(); }
+                   else { ctx.fillRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); ctx.strokeRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); }
+@@ -14302,6 +14371,7 @@ var d = labToolData.dissection || {};
+               var specimenHudWidth = Math.min(W - 236, Math.max(154 * specimenHudTypeScale, ctx.measureText(specimenHudLabel).width + 22 * specimenHudTypeScale));
+               var macroLikelyOnLeft = inspectionLens && macroInset && Number(canvas._lensDisplayX) > W * 0.58;
+               var specimenHudX = macroLikelyOnLeft ? W - specimenHudWidth - 14 : 14;
++              rememberCanvasHudBox('specimen', specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale);
+               ctx.fillStyle = 'rgba(15,23,42,0.86)'; ctx.strokeStyle = 'rgba(148,163,184,0.34)'; ctx.lineWidth = 1;
+               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale, 8 * specimenHudTypeScale); ctx.fill(); ctx.stroke(); }
+               else { ctx.fillRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); ctx.strokeRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); }
+@@ -14313,6 +14383,13 @@ var d = labToolData.dissection || {};
+               // at the bay's own Y and covers it. I could not get the lift to fire in a harness
+               // hover, so this removes the possibility rather than fixing an observed collision.
+               if (lensNearCompass) compassY = Math.max(82, Math.max(hudInstrumentBayY + hudInstrumentBayH + 8, compassY - 76 * canvasHudScale));
++              var sharedHudReservations = [];
++              if (sceneDetail) sharedHudReservations.push({ x: W - 142, y: hudInstrumentBayY, width: 122, height: hudInstrumentBayH, priority: 9 });
++              if (labelPhysiologyReserve) sharedHudReservations.push({ x: 14, y: H - 84, width: W - 28, height: 70, priority: 9 });
++              if (detailedCanvasHud) sharedHudReservations.push({ x: W - 232, y: 10, width: 218, height: 58 * canvasHudScale, priority: 9 });
++              var scalePlacement = placeCanvasHudPanel(compassX, compassY, compassWidth, compassHeight, sharedHudReservations);
++              compassX = scalePlacement.x; compassY = scalePlacement.y;
++              rememberCanvasHudBox('scale', compassX, compassY, compassWidth, compassHeight);
+               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)';
+               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(compassX, compassY, compassWidth, compassHeight, 8 * canvasHudScale); ctx.fill(); ctx.stroke(); }
+               else { ctx.fillRect(compassX, compassY, compassWidth, compassHeight); ctx.strokeRect(compassX, compassY, compassWidth, compassHeight); }
+@@ -14517,6 +14594,9 @@ var d = labToolData.dissection || {};
+                 // Sized above, before the corridor label runs, so both agree on one box.
+                 var compassW = hudCompassW;
+                 var compassH = hudCompassH;
++                var orientationPlacement = placeCanvasHudPanel(compassX, compassY, compassW, compassH, sharedHudReservations);
++                compassX = orientationPlacement.x; compassY = orientationPlacement.y;
++                rememberCanvasHudBox('orientation', compassX, compassY, compassW, compassH);
+                 var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase());
+                 ctx.save();
+                 ctx.fillStyle = compassAccessible ? '#000000' : 'rgba(15,23,42,0.88)';
+@@ -14524,22 +14604,22 @@ var d = labToolData.dissection || {};
+                 ctx.beginPath();
+                 if (ctx.roundRect) ctx.roundRect(compassX, compassY, compassW, compassH, 8); else ctx.rect(compassX, compassY, compassW, compassH);
+                 ctx.fill(); ctx.stroke();
+-                ctx.font = 'bold ' + (compassAccessible ? 9 : 8) * canvasHudScale + 'px Inter, system-ui';
++                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
+                 ctx.fillStyle = compassAccessible ? '#ffffff' : '#e2e8f0';
+-                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 13 * canvasHudScale);
+-                ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
+-                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 24 * canvasHudScale);
++                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 16 * canvasUiScale);
++                ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
++                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 31 * canvasUiScale);
+                 ctx.strokeStyle = compassAccent; ctx.fillStyle = compassAccent;
+                 ctx.lineWidth = compassAccessible ? 2.2 : 1.5;
+                 if (compass.axis === 'horizontal') {
+-                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 35 * canvasHudScale;
++                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 45 * canvasUiScale;
+                   var axisStartX = compass.mirrored ? axisRightX : axisLeftX;
+                   var axisEndX = compass.mirrored ? axisLeftX : axisRightX;
+                   ctx.beginPath(); ctx.moveTo(axisLeftX, axisY); ctx.lineTo(axisRightX, axisY); ctx.stroke();
+                   ctx.beginPath(); ctx.arc(axisStartX, axisY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
+                   var axisDiamond = 5 * canvasHudScale;
+                   ctx.beginPath(); ctx.moveTo(axisEndX, axisY - axisDiamond); ctx.lineTo(axisEndX + axisDiamond, axisY); ctx.lineTo(axisEndX, axisY + axisDiamond); ctx.lineTo(axisEndX - axisDiamond, axisY); ctx.closePath(); ctx.fill();
+-                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
++                  ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
+                   // Centred on the endpoint markers, ANTERIOR and POSTERIOR both ran off the
+                   // panel: on the perch the first and last letters were cut by its own border.
+                   // Keep the centre where it belongs unless doing so would cross the edge.
+@@ -14550,15 +14630,15 @@ var d = labToolData.dissection || {};
+                   };
+                   var compassStartLabel = fitTextToWidth(compass.start, compassW - compassEndInset * 2);
+                   var compassEndLabel = fitTextToWidth(compass.end, compassW - compassEndInset * 2);
+-                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 50 * canvasHudScale);
+-                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 50 * canvasHudScale);
++                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 64 * canvasUiScale);
++                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 64 * canvasUiScale);
+                 } else {
+-                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 31 * canvasHudScale, axisBottomY = compassY + compassH - 13 * canvasHudScale;
++                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 45 * canvasUiScale, axisBottomY = compassY + compassH - 16 * canvasUiScale;
+                   ctx.beginPath(); ctx.moveTo(axisX, axisTopY); ctx.lineTo(axisX, axisBottomY); ctx.stroke();
+                   ctx.beginPath(); ctx.arc(axisX, axisTopY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
+                   var axisVerticalDiamond = 5 * canvasHudScale;
+                   ctx.beginPath(); ctx.moveTo(axisX, axisBottomY - axisVerticalDiamond); ctx.lineTo(axisX + axisVerticalDiamond, axisBottomY); ctx.lineTo(axisX, axisBottomY + axisVerticalDiamond); ctx.lineTo(axisX - axisVerticalDiamond, axisBottomY); ctx.closePath(); ctx.fill();
+-                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
++                  ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
+                   var compassVerticalWidth = compassX + compassW - 8 * canvasHudScale - (axisX + 10 * canvasHudScale);
+                   ctx.fillText(fitTextToWidth(compass.start, compassVerticalWidth), axisX + 10 * canvasHudScale, axisTopY + 3 * canvasHudScale);
+                   ctx.fillText(fitTextToWidth(compass.end, compassVerticalWidth), axisX + 10 * canvasHudScale, axisBottomY + 3 * canvasHudScale);
+@@ -14995,12 +15075,9 @@ var d = labToolData.dissection || {};
+                     var responseContextLines = wrapTextToWidth(contactContextLabel, responseTextWidth, 3);
+                     var responseLineHeight = 13 * responseTypeScale;
+                     var responsePanelH = (responseTitleLines.length + responseDetailLines.length + responseContextLines.length) * responseLineHeight + 14 * responseTypeScale;
+-                    var feedbackObstacles = (canvas._guidanceBoxes || []).slice();
++                    var feedbackObstacles = (canvas._guidanceBoxes || []).concat(canvas._canvasHudBoxes || []);
+                     feedbackObstacles.push({ x: pointerScreenX - 26 * responseTypeScale, y: pointerScreenY - 26 * responseTypeScale,
+                       width: 52 * responseTypeScale, height: 52 * responseTypeScale, priority: 6 });
+-                    feedbackObstacles.push({ x: specimenHudX, y: 13, width: specimenHudWidth, height: 30 * specimenHudTypeScale, priority: 4 });
+-                    feedbackObstacles.push({ x: compassX, y: compassY, width: compassWidth, height: compassHeight, priority: 4 });
+-                    if (hudCompassBox) feedbackObstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y, width: hudCompassBox.w, height: hudCompassBox.h, priority: 4 });
+                     if (d.macroInset !== false && liveWorkspaceMode === 'advanced') {
+                       var responseMacroW = liveVisualMode === 'accessible' ? 176 : 158;
+                       feedbackObstacles.push({ x: pointerScreenX > W * 0.58 ? 12 : W - responseMacroW - 12, y: 12,
+@@ -15033,7 +15110,7 @@ var d = labToolData.dissection || {};
+                         var overlapH = Math.min(candidateY + responsePanelH + 6, box.y + box.height) - Math.max(candidateY - 6, box.y);
+                         if (overlapW > 0 && overlapH > 0) {
+                           score += overlapW * overlapH * box.priority;
+-                          if (box.priority === 8) score += W * H * 100;
++                          if (box.priority >= 8) score += W * H * 100;
+                         }
+                       });
+                       score += Math.hypot(candidateX + responsePanelW / 2 - pointerScreenX, candidateY + responsePanelH / 2 - pointerScreenY) * 0.1;
+diff --git a/tests/dissection_workspace_bands.test.js b/tests/dissection_workspace_bands.test.js
+index 99d655228..5837cbc43 100644
+--- a/tests/dissection_workspace_bands.test.js
++++ b/tests/dissection_workspace_bands.test.js
+@@ -763,11 +763,10 @@ describe('dissection workspace bands', () => {
+     expect(source).toContain("ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';");
+     expect(source).toContain('var legendRowHeight = 13 * canvasHudScale;');
+     expect(source).toContain('ctx.beginPath(); ctx.arc(lx, ly, 3.2 * canvasHudScale, 0, Math.PI * 2);');
+-    // Compass: type scales, width follows the text so the panel does not swell into the
+-    // corridor safety label, and the authored widths stay the floor.
++    // Compass: width follows its reading-size text and retains the authored width floor.
+     expect(source).toContain('var hudCompassTitleWidth = 0;');
+-    expect(source).toContain('? Math.max(188, hudCompassTitleWidth + 30 * canvasHudScale)');
+-    expect(source).toContain(': Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);');
++    expect(source).toContain('? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)');
++    expect(source).toContain(': Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);');
+     expect(source).not.toContain("var compassW = compass.axis === 'horizontal' ? 188 : 126;");
+     // One derivation: the compass reads the box published before the corridor label runs.
+     expect(source).toContain('var compassW = hudCompassW;');
+diff --git a/tests/e2e/dissection-overlay-layout.spec.ts b/tests/e2e/dissection-overlay-layout.spec.ts
+new file mode 100644
+index 000000000..0d73f0292
+--- /dev/null
++++ b/tests/e2e/dissection-overlay-layout.spec.ts
+@@ -0,0 +1,128 @@
++import { test, expect, type Page } from '@playwright/test';
++import { mkdir } from 'node:fs/promises';
++import { GlHarness } from './helpers/stem_gl_harness';
++
++const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dissection.js', toolId: 'dissection', width: 1180, height: 900, appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'] });
++const out = 'reports/dissection-overlay-layout-2026-09-29';
++test.describe.configure({ retries: 0 });
++test.beforeAll(async () => { await harness.start(); await mkdir(out, { recursive: true }); });
++test.afterAll(async () => { await harness.stop(); });
++test.afterEach(async ({ page }) => { await harness.unmount(page); });
++
++async function mount(page: Page, state: Record<string, unknown> = {}) {
++  await harness.mount(page, { dissection: { specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'skin', revealedLayers: { skin: true }, workspaceMode: 'advanced', selectedOrgan: 'ventral_skin', anatomicalView: 'ventral', canvasZoom: 2.5, canvasPanX: -30, canvasPanY: 10, parallaxDepth: false, sceneDetail: false, reducedMotion: true, soundEnabled: false, ...state } }, undefined, { expectCanvas: false });
++  await page.evaluate(() => {
++    const viewport = document.querySelector('meta[name="viewport"]') || document.head.appendChild(document.createElement('meta'));
++    viewport.setAttribute('name', 'viewport'); viewport.setAttribute('content', 'width=device-width, initial-scale=1');
++  });
++  await page.addStyleTag({ content: '#wrap { width:100% !important; max-width:1180px; }' });
++  const canvas = page.locator('[data-diss-canvas]'); await canvas.scrollIntoViewIfNeeded();
++  await expect.poll(() => canvas.evaluate((el: any) => el._dissInViewport)).toBe(true);
++}
++
++async function paint(page: Page, feedback = false) {
++  return page.locator('[data-diss-canvas]').evaluate((el: any, contact: boolean) => {
++    if (contact) {
++      const selected = el._drawOrgans.find((item: any) => item.id === el._drawD.selectedOrgan);
++      el._toolPointer = { x: selected.x, y: selected.y };
++    }
++    const ctx = el.getContext('2d'), original = { rect: ctx.roundRect, text: ctx.fillText };
++    const rectangles: any[] = [], captions: any[] = [], texts: string[] = [], textSizes: any[] = [];
++    ctx.roundRect = function (x: number, y: number, w: number, h: number, ...rest: any[]) {
++      const m = this.getTransform(), density = el._dpr || 1;
++      const points = [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].map(([a,b]) => new DOMPoint(a,b).matrixTransform(m));
++      const left = Math.min(...points.map(p => p.x)) / density, top = Math.min(...points.map(p => p.y)) / density;
++      rectangles.push({ x:left, y:top, width:Math.max(...points.map(p => p.x)) / density - left, height:Math.max(...points.map(p => p.y)) / density - top });
++      return original.rect.call(this,x,y,w,h,...rest);
++    };
++    ctx.fillText = function (value: string, x: number, y: number, ...rest: any[]) {
++      texts.push(String(value));
++      const transform = this.getTransform();
++      textSizes.push({text:String(value), size:parseFloat(this.font.replace(/^bold /,'')) * Math.hypot(transform.a,transform.b) / el.width * el.getBoundingClientRect().width});
++      if (/^(SURFACE|MID|DEEP) · /.test(String(value))) {
++        const m = this.getTransform(), p = new DOMPoint(x,y).matrixTransform(m);
++        captions.push({ text:String(value), x:p.x / el._dpr, y:p.y / el._dpr, direction:Math.sign(m.a) });
++      }
++      return original.text.call(this,value,x,y,...rest);
++    };
++    try { el._drawDissectionNow(); } finally { ctx.roundRect = original.rect; ctx.fillText = original.text; }
++    return { hud:el._canvasHudBoxes, guides:el._guidanceBoxes, feedback:el._contactFeedbackBox, rectangles, captions, texts, textSizes, W:el._logicalW, H:el._logicalH };
++  }, feedback);
++}
++
++function overlaps(a: any, b: any) {
++  return Math.min(a.x+a.width,b.x+b.width) - Math.max(a.x,b.x) > 0.1 && Math.min(a.y+a.height,b.y+b.height) - Math.max(a.y,b.y) > 0.1;
++}
++
++function expectClear(result: Awaited<ReturnType<typeof paint>>, orientation = false) {
++  const primary = result.guides.filter((box: any) => box.priority === 8);
++  expect(primary.length).toBeGreaterThanOrEqual(2);
++  const panels = result.hud.filter((box: any) => ['scale','orientation'].includes(box.id));
++  expect(panels.map((box: any) => box.id)).toContain('scale');
++  if (orientation) expect(panels.map((box: any) => box.id)).toContain('orientation');
++  if (orientation) {
++    const heading = result.textSizes.find(item => item.text === 'ANATOMICAL AXIS');
++    expect(heading).toBeTruthy(); expect(heading.size).toBeGreaterThanOrEqual(11.9);
++  }
++  for (const box of [...primary,...panels]) {
++    expect(box.x).toBeGreaterThanOrEqual(13.9); expect(box.y).toBeGreaterThanOrEqual(13.9);
++    expect(box.x+box.width).toBeLessThanOrEqual(result.W-13.9);
++    expect(box.y+box.height).toBeLessThanOrEqual(result.H-13.9);
++    // Confirm the published bounds correspond to an actual painted rectangle.
++    expect(result.rectangles.some(rect => ['x','y','width','height'].every(key => Math.abs(rect[key]-box[key]) < 0.01))).toBe(true);
++  }
++  for (const panel of panels) {
++    for (const caption of primary) expect(overlaps(panel,caption), `${panel.id} covers anatomy text`).toBe(false);
++    for (const other of result.hud.filter((box: any) => box.id !== panel.id)) expect(overlaps(panel,other), `${panel.id} covers ${other.id}`).toBe(false);
++  }
++  for (let i = 0; i < primary.length; i++) for (let j = i+1; j < primary.length; j++) {
++    expect(overlaps(primary[i],primary[j]), 'selected depth caption covers the selected name').toBe(false);
++  }
++  expect(result.captions.length).toBeGreaterThan(0);
++  for (const caption of result.captions) expect(caption.direction).toBe(1);
++}
++
++test.describe('phone overlays', () => {
++  test.use({ hasTouch:true, isMobile:true });
++  test('320px selected captions and scale stay clear with large text and contact feedback', async ({ page }) => {
++    await page.setViewportSize({width:320,height:844});
++    const notes = {'frog|ventral_skin':'Retain this observation.'};
++    await mount(page,{largeText:true,highContrast:true,macroInset:false,organNotes:notes});
++    const result = await paint(page,true); expectClear(result);
++    for (const caption of result.guides.filter((box: any) => box.priority === 8)) expect(overlaps(result.feedback,caption)).toBe(false);
++    for (const panel of result.hud) expect(overlaps(result.feedback,panel), `contact feedback covers ${panel.id}`).toBe(false);
++    expect(result.texts).toContain('1 cm  /  2.5x');
++    expect(await page.evaluate(() => (window as any).__ctx.toolData.dissection.organNotes)).toEqual(notes);
++    await page.locator('[data-diss-canvas]').screenshot({path:out+'/phone-320.png'});
++  });
++  for (const anatomicalView of ['dorsal','ventral']) {
++    test(`390px ${anatomicalView} panels avoid selected captions during pan`, async ({ page }) => {
++      await page.setViewportSize({width:390,height:844});
++      await mount(page,{sceneDetail:true,anatomicalView,selectedOrgan:anatomicalView==='dorsal'?'dorsal_skin':'ventral_skin'});
++      expectClear(await paint(page),true);
++      for (const canvasPanY of [-220,220]) {
++        await page.evaluate(state => (window as any).__ctx.updateMulti('dissection',state),{canvasPanY});
++        await expect.poll(() => page.locator('[data-diss-canvas]').evaluate((el: any) => el._drawD.canvasPanY)).toBe(canvasPanY);
++        expectClear(await paint(page),true);
++      }
++      await page.locator('[data-diss-canvas]').screenshot({path:out+`/phone-${anatomicalView}.png`});
++    });
++  }
++  test('lateral perch keeps its inspection caption inside the canvas at an edge', async ({ page }) => {
++    await page.setViewportSize({width:390,height:844});
++    await mount(page,{specimen:'perch',_dissLoadedSpec:'perch',anatomicalView:'lateral',selectedOrgan:'scales',canvasPanX:-190,canvasPanY:190,sceneDetail:true,largeText:true});
++    const result = await paint(page); expectClear(result,true);
++    expect(result.captions.some(caption => caption.text.includes('SURFACE'))).toBe(true);
++    await page.locator('[data-diss-canvas]').screenshot({path:out+'/perch-edge.png'});
++  });
++});
++
++test('fullscreen scale, orientation, and system key leave selected anatomy text clear', async ({ page }) => {
++  await page.setViewportSize({width:1440,height:1100});
++  await mount(page,{sceneDetail:true});
++  const canvas = page.locator('[data-diss-canvas]');
++  await canvas.evaluate(async el => { await el.parentElement!.requestFullscreen(); });
++  expectClear(await paint(page),true);
++  await canvas.screenshot({path:out+'/fullscreen.png'});
++  await page.evaluate(() => document.exitFullscreen());
++});

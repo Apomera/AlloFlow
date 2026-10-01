@@ -4369,7 +4369,30 @@
 
     wcFiveStyle.textContent += "/* Keep the mobile 3D scene clear while retaining controls inside its fullscreen target. */\n@media(max-width:560px){\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"]{height:auto!important;display:flex;flex-direction:column}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-canvas-title>span{display:none}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-journey-3d{position:relative;inset:auto;flex:0 0 380px!important;width:100%;height:380px!important;min-height:380px!important}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-viewport-dock{position:relative;inset:auto;flex:0 0 auto;margin:8px;box-shadow:none}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"] .wc-viewport-choice{position:relative;inset:auto;transform:none;flex:0 0 auto;min-width:0;width:auto;margin:8px;box-shadow:none}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active]){overflow-y:auto!important}\n.wc-explorer-root .wc-canvas-shell[data-watercycle-view=\"3d\"]:is(:fullscreen,:-webkit-full-screen,[data-allo-fullscreen-active]) .wc-journey-3d{flex:1 0 380px!important;height:auto!important}\n}\n@media(forced-colors:active){.wc-explorer-root .wc-viewport-dock{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-explorer-root .wc-viewport-state span,.wc-explorer-root .wc-viewport-state strong,.wc-explorer-root .wc-viewport-state-detail,.wc-explorer-root .wc-viewport-actions::before{color:CanvasText}}\n";
 
+    wcFiveStyle.textContent += "/* Process figures: read the moment, its visual cue, then the physical state. */\n.wc-explorer-root .wc-process-state{align-content:start;gap:8px;min-height:166px;padding:11px 7px}\n.wc-explorer-root .wc-process-state svg{width:64px;height:64px;max-width:100%;flex-shrink:0}\n.wc-explorer-root .wc-process-state small{font-size:12px;font-weight:750;letter-spacing:.035em}\n.wc-explorer-root .wc-process-state-flow{align-items:stretch}\n.wc-explorer-root .wc-process-state-arrow{align-self:center}\n";
+
+    wcFiveStyle.textContent += "/* Signal inspection: line styles and shapes remain distinct without color. */\n.wc-explorer-root .wc-signal-chart{padding:14px;background:var(--wc-viz-paper);border-color:var(--wc-viz-line);border-radius:13px}\n.wc-explorer-root .wc-signal-chart-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:5px;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-signal-chart-heading strong{font-size:15px}.wc-explorer-root .wc-signal-chart-heading>span{font-size:12px;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-signal-chart .wc-signal-plot{overflow:visible}.wc-explorer-root .wc-signal-chart .wc-signal-series{opacity:.85;filter:none}\n.wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series=energy],.wc-explorer-root .wc-signal-key-line[data-signal-series=energy]{stroke:#a75a08}\n.wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series=flow],.wc-explorer-root .wc-signal-key-line[data-signal-series=flow]{stroke:#08769b}\n.wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series=storage],.wc-explorer-root .wc-signal-key-line[data-signal-series=storage]{stroke:#147459}\n.wc-explorer-root .wc-signal-point[data-signal-marker=energy]{fill:#a75a08}.wc-explorer-root .wc-signal-point[data-signal-marker=flow]{fill:#08769b}.wc-explorer-root .wc-signal-point[data-signal-marker=storage]{fill:#147459}\n.wc-explorer-root .wc-signal-inspect-band{fill:var(--wc-viz-accent);opacity:.09}\n.wc-explorer-root .wc-signal-legend{justify-content:flex-start;gap:8px 14px;margin:9px 0 14px;color:var(--wc-viz-ink);font-size:12px}\n.wc-explorer-root .wc-signal-legend>span{gap:6px;flex-wrap:wrap}.wc-explorer-root .wc-signal-legend svg{width:38px;height:18px;flex:0 0 38px}.wc-explorer-root .wc-signal-legend small{font-size:11px;color:var(--wc-viz-muted);font-weight:500}\n.wc-explorer-root .wc-signal-inspect-control{display:grid;gap:6px;font-size:13px;font-weight:750;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-signal-inspect-control select{display:block;width:100%;min-height:44px;min-width:0;max-width:100%;padding:9px 10px;border:1px solid var(--wc-viz-line);border-radius:9px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font:inherit}\n.wc-explorer-root .wc-signal-inspect-hint,.wc-explorer-root .wc-signal-chart-note{font-size:12px;line-height:1.5;color:var(--wc-viz-muted);margin:7px 0}\n.wc-explorer-root .wc-signal-reading{margin:13px 0;padding:12px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-card);color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-signal-reading-head{display:grid;gap:3px}.wc-explorer-root .wc-signal-reading-head strong{font-size:14px}.wc-explorer-root .wc-signal-reading-head>span{font-size:12px;line-height:1.4;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-signal-reading dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 0}.wc-explorer-root .wc-signal-reading dl>div{min-width:0}.wc-explorer-root .wc-signal-reading dt{font-size:12px;line-height:1.4;min-height:34px}.wc-explorer-root .wc-signal-reading dd{margin:3px 0 0;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}.wc-explorer-root .wc-signal-reading dd small{font-size:11px;font-weight:500;margin-left:2px;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-signal-values{border-top:1px solid var(--wc-viz-line);margin-top:12px;padding-top:5px;color:var(--wc-viz-ink)}.wc-explorer-root .wc-signal-values summary{min-height:44px;display:list-item;align-content:center;padding:10px 2px;cursor:pointer;font-size:13px;font-weight:750}\n.wc-explorer-root .wc-signal-values table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}.wc-explorer-root .wc-signal-values caption{text-align:left;font-size:12px;line-height:1.5;color:var(--wc-viz-muted);padding:2px 0 9px}.wc-explorer-root .wc-signal-values th,.wc-explorer-root .wc-signal-values td{padding:9px 4px;border-bottom:1px solid var(--wc-viz-line);overflow-wrap:anywhere;vertical-align:middle;text-align:center}.wc-explorer-root .wc-signal-values th:first-child{text-align:left}.wc-explorer-root .wc-signal-values tr[data-inspected=true]{background:var(--wc-viz-tint)}\n.dark .wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series=energy],.dark .wc-explorer-root .wc-signal-key-line[data-signal-series=energy]{stroke:#fbbf24}.dark .wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series=flow],.dark .wc-explorer-root .wc-signal-key-line[data-signal-series=flow]{stroke:#7dd3fc}.dark .wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series=storage],.dark .wc-explorer-root .wc-signal-key-line[data-signal-series=storage]{stroke:#6ee7b7}\n.dark .wc-explorer-root .wc-signal-point[data-signal-marker=energy]{fill:#fbbf24}.dark .wc-explorer-root .wc-signal-point[data-signal-marker=flow]{fill:#7dd3fc}.dark .wc-explorer-root .wc-signal-point[data-signal-marker=storage]{fill:#6ee7b7}.dark .wc-explorer-root .wc-signal-point{stroke:var(--wc-viz-card)}\n@media(max-width:560px){.wc-explorer-root .wc-signal-chart{padding:10px}.wc-explorer-root .wc-signal-chart text,.wc-explorer-root .wc-signal-chart .wc-signal-axis-label{font-size:24px}.wc-explorer-root .wc-signal-stage-marker-label{font-size:22px!important}.wc-explorer-root .wc-signal-reading{padding:9px}.wc-explorer-root .wc-signal-reading dl{gap:6px}.wc-explorer-root .wc-signal-reading dd{font-size:21px}}\n@media(forced-colors:active){.wc-explorer-root .wc-signal-chart,.wc-explorer-root .wc-signal-reading,.wc-explorer-root .wc-signal-inspect-control select{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-explorer-root :is(.wc-signal-chart-heading,.wc-signal-chart-heading>span,.wc-signal-legend,.wc-signal-legend small,.wc-signal-inspect-control,.wc-signal-inspect-hint,.wc-signal-chart-note,.wc-signal-reading-head>span,.wc-signal-reading dd small,.wc-signal-values,.wc-signal-values caption){color:CanvasText}.wc-explorer-root .wc-signal-chart .wc-signal-series[data-signal-series],.wc-explorer-root .wc-signal-key-line[data-signal-series]{stroke:CanvasText;opacity:1;filter:none}.wc-explorer-root .wc-signal-point[data-signal-marker]{fill:CanvasText;stroke:Canvas}.wc-explorer-root .wc-signal-inspect-band{fill:Highlight;opacity:.15}.wc-explorer-root .wc-signal-values,.wc-explorer-root .wc-signal-values th,.wc-explorer-root .wc-signal-values td{border-color:CanvasText}.wc-explorer-root .wc-signal-values tr[data-inspected=true]{background:Canvas;outline:2px solid Highlight;outline-offset:-2px}}\n";
+
+    wcFiveStyle.textContent += "/* Final phone label spacing and system-color text for the signal chart. */\n@media(forced-colors:active){\n.wc-explorer-root .wc-signal-chart[data-watercycle-chart] :is(text,.wc-signal-axis-label,.wc-signal-stage-marker-label){fill:CanvasText!important}\n.wc-explorer-root .wc-signal-dashboard[data-watercycle-dashboard] :is(p,strong,span,dt,dd,small,th,td,caption,summary,label){color:CanvasText!important}\n.wc-explorer-root .wc-signal-chart[data-signal-active] .wc-signal-series[data-signal-series],.wc-explorer-root .wc-signal-legend .wc-signal-key-line[data-signal-series]{stroke:CanvasText;opacity:1;filter:none}\n.wc-explorer-root .wc-signal-chart .wc-signal-point[data-signal-marker]{fill:CanvasText;stroke:Canvas}\n.wc-explorer-root .wc-signal-focus-chip{background:Canvas;border-color:CanvasText}\n}\n";
+
+    wcFiveStyle.textContent += "/* Dashboard groups follow the reading order and respond to the available panel width. */\n.wc-explorer-root .wc-signal-dashboard{container:wc-signal-dashboard / inline-size}\n.wc-explorer-root .wc-signal-dashboard-title{flex-wrap:wrap;gap:5px 9px;min-width:0}\n.wc-explorer-root .wc-signal-dashboard-title strong{font-size:15px;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-signal-dashboard-title>span:last-child{font-size:11px;line-height:1.4;letter-spacing:.02em;text-transform:none;padding:3px 7px;border:1px solid var(--wc-viz-line);border-radius:999px;background:var(--wc-viz-paper);color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-signal-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:\"chart\" \"inspect\" \"stores\" \"values\";gap:12px;align-items:start}\n.wc-explorer-root .wc-signal-grid>*{min-width:0;order:0}\n.wc-explorer-root .wc-signal-chart{grid-area:chart;padding:12px}\n.wc-explorer-root .wc-signal-chart text,.wc-explorer-root .wc-signal-chart .wc-signal-axis-label{font-size:24px}\n.wc-explorer-root .wc-signal-chart .wc-signal-stage-marker-label{font-size:24px!important}\n.wc-explorer-root .wc-signal-legend{margin-bottom:0}\n.wc-explorer-root .wc-signal-inspection{grid-area:inspect;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:12px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-signal-inspection-controls{min-width:0}\n.wc-explorer-root .wc-signal-inspect-hint{margin-bottom:0}\n.wc-explorer-root .wc-signal-reading{margin:0;padding:10px}\n.wc-explorer-root .wc-signal-stores{grid-area:stores;padding:14px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-signal-stores h4{margin:0;font-size:15px;font-weight:750;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-signal-stores-copy{margin:5px 0 14px;font-size:12px;line-height:1.5;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-signal-bars{gap:13px}\n.wc-explorer-root .wc-signal-bar-head{font-size:13px;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-signal-track{height:9px;margin-top:6px}\n.wc-explorer-root .wc-signal-values{grid-area:values;margin:0;padding:0 12px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-signal-values summary{padding:12px 2px}\n.wc-explorer-root .wc-signal-values[open]{padding-bottom:12px}\n.wc-explorer-root .wc-signal-inspect-control select:focus-visible,.wc-explorer-root .wc-signal-values summary:focus-visible{outline:3px solid var(--wc-viz-focus);outline-offset:3px}\n@container wc-signal-dashboard (min-width:480px){\n.wc-explorer-root .wc-signal-chart text,.wc-explorer-root .wc-signal-chart .wc-signal-axis-label{font-size:18px}\n.wc-explorer-root .wc-signal-chart .wc-signal-stage-marker-label{font-size:18px!important}\n.wc-explorer-root .wc-signal-reading dt{min-height:0}\n}\n@container wc-signal-dashboard (min-width:740px){\n.wc-explorer-root .wc-signal-grid{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);grid-template-areas:\"stores chart\" \"inspect inspect\" \"values values\"}\n.wc-explorer-root .wc-signal-inspection{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:18px;align-items:center}\n.wc-explorer-root .wc-signal-chart text,.wc-explorer-root .wc-signal-chart .wc-signal-axis-label{font-size:14px}\n.wc-explorer-root .wc-signal-chart .wc-signal-stage-marker-label{font-size:14px!important}\n.wc-explorer-root .wc-signal-reading{padding:12px}\n}\n@media(forced-colors:active){\n.wc-explorer-root :is(.wc-signal-inspection,.wc-signal-stores,.wc-signal-values){background:Canvas;color:CanvasText;border-color:CanvasText}\n.wc-explorer-root .wc-signal-stores h4,.wc-explorer-root .wc-signal-dashboard-title>span:last-child{color:CanvasText;border-color:CanvasText;background:Canvas}\n.wc-explorer-root .wc-signal-inspect-control select:focus-visible,.wc-explorer-root .wc-signal-values summary:focus-visible{outline-color:Highlight}\n}\n";
+
+    wcFiveStyle.textContent += "/* System colors keep chart guides legible when dark theme and forced colors coincide. */\n@media(forced-colors:active){\n.wc-explorer-root .wc-signal-chart[data-watercycle-chart] :is(.wc-signal-axis,.wc-signal-gridline,.wc-signal-stage-marker){stroke:CanvasText!important;opacity:1}\n.wc-explorer-root .wc-signal-chart[data-watercycle-chart] .wc-signal-stage-marker-dot{fill:CanvasText!important;stroke:Canvas!important}\n}\n";
+
+    wcFiveStyle.textContent += "/* Conditions: named scales, precise native sliders, and separate pathway cues. */\n.wc-explorer-root .wc-climate-lab{container:wc-climate-controls / inline-size}\n.wc-explorer-root .wc-land-lab{container:wc-land-controls / inline-size}\n.wc-explorer-root .wc-climate-control-grid,.wc-explorer-root .wc-land-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}\n.wc-explorer-root .wc-climate-control,.wc-explorer-root .wc-land-control{min-width:0}\n.wc-explorer-root .wc-land-control{padding:12px;margin:0;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);min-inline-size:0}\n.wc-explorer-root .wc-land-control label{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;font-weight:750;line-height:1.45}\n.wc-explorer-root .wc-land-control legend{padding:0 4px;font-weight:750}\n.wc-explorer-root .wc-climate-value small{font-size:11px;font-weight:500;margin-left:2px}\n.wc-explorer-root .wc-condition-hint{margin:8px 0 0;color:var(--wc-viz-muted);font-size:12px;line-height:1.55}\n.wc-explorer-root fieldset .wc-condition-hint{margin:0 0 10px}\n.wc-explorer-root .wc-condition-scale{display:flex;justify-content:space-between;gap:10px;margin:0;color:var(--wc-viz-muted);font-size:12px;line-height:1.4}\n.wc-explorer-root .wc-condition-scale>span{min-width:0;max-width:49%}\n.wc-explorer-root .wc-condition-scale>span:last-child{text-align:right}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]{appearance:none;display:block;width:100%;height:44px;min-height:44px;max-width:100%;padding:0;margin:2px 0;background:transparent!important;border:0;cursor:pointer}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-webkit-slider-runnable-track{height:8px;border:1px solid var(--wc-viz-line);border-radius:99px;background:linear-gradient(90deg,var(--wc-viz-tint),var(--wc-viz-accent))}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-moz-range-track{height:8px;border:1px solid var(--wc-viz-line);border-radius:99px;background:linear-gradient(90deg,var(--wc-viz-tint),var(--wc-viz-accent))}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-webkit-slider-thumb{appearance:none;width:24px;height:24px;margin-top:-9px;border:2px solid var(--wc-viz-paper);border-radius:50%;background:var(--wc-viz-accent);box-shadow:0 0 0 1px var(--wc-viz-line)}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-moz-range-thumb{width:24px;height:24px;border:2px solid var(--wc-viz-paper);border-radius:50%;background:var(--wc-viz-accent);box-shadow:0 0 0 1px var(--wc-viz-line)}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]:focus-visible{outline:3px solid var(--wc-viz-focus)!important;outline-offset:3px;box-shadow:none}\n.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab) .wc-reset-control{min-height:44px;padding:9px 12px;font-size:13px;line-height:1.4}\n.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab) .wc-reset-control:focus-visible{outline:3px solid var(--wc-viz-focus);outline-offset:3px}\n.wc-explorer-root .wc-land-segments{display:flex;flex-wrap:wrap;gap:6px}\n.wc-explorer-root .wc-land-segments button{flex:1 1 90px;min-width:0;padding:9px 8px;white-space:nowrap;line-height:1.4}\n.wc-explorer-root .wc-land-head h4{font-size:16px;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-land-head p{font-size:13px;line-height:1.55;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-preset-scope{display:block;margin-top:9px;padding-top:8px;border-top:1px solid var(--wc-viz-line);color:var(--wc-viz-muted);font-size:12px;line-height:1.55}\n.wc-explorer-root .wc-evap-meter-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;font-size:13px;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-evap-meter-value{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}\n.wc-explorer-root .wc-evap-index-scope{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-land-response-head{margin:18px 0 10px}\n.wc-explorer-root .wc-land-response-head h5{margin:0;font-size:15px;font-weight:750;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-land-result-scope{margin:6px 0 0;font-size:12px;line-height:1.55;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-land-results{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}\n.wc-explorer-root .wc-land-result{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:10px 12px;min-width:0;padding:14px;border:1px solid var(--wc-viz-line);border-left:3px solid var(--wc-viz-accent);background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-land-result-copy{min-width:0}\n.wc-explorer-root .wc-land-result .wc-land-result-title{display:block;color:var(--wc-viz-ink);font-size:14px;font-weight:750;line-height:1.4;text-transform:none;letter-spacing:0}\n.wc-explorer-root .wc-land-result .wc-land-score{display:block;margin:5px 0 3px;color:var(--wc-viz-ink);font-size:28px;line-height:1.2;font-weight:800;font-variant-numeric:tabular-nums}\n.wc-explorer-root .wc-land-score small{margin-left:2px;font-size:12px;font-weight:500;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-land-result .wc-land-band{display:block;color:var(--wc-viz-muted);font-size:12px;line-height:1.5;font-weight:500;text-transform:none;letter-spacing:0}\n.wc-explorer-root .wc-land-path-copy{grid-column:1/-1;margin:0;padding-top:9px;border-top:1px solid var(--wc-viz-line);color:var(--wc-viz-ink);font-size:13px;line-height:1.4;font-weight:750}\n.wc-explorer-root .wc-land-path-icon{display:block;width:64px;height:auto;max-width:100%;overflow:visible}\n.wc-explorer-root .wc-land-soil{fill:var(--wc-viz-tint)}\n.wc-explorer-root .wc-land-ground{stroke:var(--wc-viz-ink);stroke-width:2}\n.wc-explorer-root .wc-land-pore{fill:var(--wc-viz-paper);stroke:var(--wc-viz-muted);stroke-width:1.5}\n.wc-explorer-root .wc-land-water-path{stroke:var(--wc-viz-accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}\n.wc-explorer-root .wc-land-water-start{fill:var(--wc-viz-accent)}\n.wc-explorer-root .wc-land-driver{grid-column:1/-1}\n@container wc-climate-controls (min-width:520px){.wc-explorer-root .wc-climate-control-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-explorer-root .wc-climate-control.is-wind{grid-column:1/-1}}\n@container wc-climate-controls (min-width:760px){.wc-explorer-root .wc-climate-control-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-explorer-root .wc-climate-control.is-wind{grid-column:auto}}\n@container wc-land-controls (min-width:580px){.wc-explorer-root .wc-land-results{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-land-controls (min-width:640px){.wc-explorer-root .wc-land-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-explorer-root .wc-land-control[data-wc-input=landCover]{grid-column:1/-1}}\n@media(forced-colors:active){\n.wc-explorer-root :is(.wc-land-control,.wc-land-result){border-color:CanvasText!important;background:Canvas!important}\n.wc-explorer-root :is(.wc-condition-scale,.wc-condition-scale span,.wc-condition-hint,.wc-land-control label,.wc-land-control legend,.wc-climate-value,.wc-climate-value small,.wc-land-score,.wc-land-score small,.wc-land-result-title,.wc-land-band,.wc-land-path-copy,.wc-land-result-scope,.wc-preset-scope,.wc-evap-meter-head,.wc-evap-meter-value,.wc-evap-index-scope,.wc-land-head h4,.wc-land-head p,.wc-land-response-head h5){color:CanvasText!important;border-color:CanvasText}\n.wc-explorer-root [data-watercycle-land] .wc-land-path-icon :is(.wc-land-ground,.wc-land-water-path,.wc-land-pore){stroke:CanvasText!important}\n.wc-explorer-root [data-watercycle-land] .wc-land-path-icon :is(.wc-land-soil,.wc-land-pore){fill:Canvas!important}\n.wc-explorer-root [data-watercycle-land] .wc-land-path-icon .wc-land-water-start{fill:CanvasText!important}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-webkit-slider-runnable-track{forced-color-adjust:none;background:Canvas;border-color:CanvasText}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-moz-range-track{forced-color-adjust:none;background:Canvas;border-color:CanvasText}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-webkit-slider-thumb{forced-color-adjust:none;background:Highlight;border-color:Canvas;box-shadow:0 0 0 1px CanvasText}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]::-moz-range-thumb{forced-color-adjust:none;background:Highlight;border-color:Canvas;box-shadow:0 0 0 1px CanvasText}\n.wc-explorer-root :is(.wc-climate-control,.wc-land-control) input[type=range]:focus-visible,.wc-explorer-root :is(.wc-climate-lab,.wc-land-lab) .wc-reset-control:focus-visible{outline-color:Highlight!important}\n}\n";
+
+    wcFiveStyle.textContent += "/* Available width takes precedence over older viewport-only climate layouts. */\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control-grid{grid-template-columns:minmax(0,1fr)!important}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control.is-wind{grid-column:auto}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-response{grid-template-columns:minmax(0,1fr)!important}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control :is(.wc-condition-scale,.wc-condition-scale>span){font-size:12px;line-height:1.4;color:var(--wc-viz-muted)}\n@container wc-climate-controls (min-width:520px){\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control.is-wind{grid-column:1/-1}\n}\n@container wc-climate-controls (min-width:760px){\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-control.is-wind{grid-column:auto}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] .wc-climate-response{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)!important}\n}\n@media(forced-colors:active){\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] :is(h4,p,span,label,output,small,button){color:CanvasText!important}\n.wc-explorer-root .wc-climate-lab[data-watercycle-climate] :is(.wc-climate-control,.wc-climate-response,.wc-climate-value,.wc-preset-lesson,.wc-weather-readout>span,.wc-climate-head>span,.wc-reset-control){background:Canvas!important;border-color:CanvasText!important;box-shadow:none}\n}\n";
+
+    wcFiveStyle.textContent += "/* Disclosure cues remain visible in system colors. */\n@media(forced-colors:active){.wc-explorer-root :is(.wc-climate-lab[data-watercycle-climate],.wc-land-lab[data-watercycle-land])>.wc-lab-summary::after{forced-color-adjust:none;background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important;box-shadow:none}}\n";
+
+    wcFiveStyle.textContent += "\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] {\n  container: wc-comparison / inline-size;\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  gap: 16px;\n  padding: 18px;\n}\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] > * { min-width: 0; grid-column: 1 / -1; }\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-kicker { margin: 0 0 6px; font-size: 13px!important; line-height: 1.5; }\n.wc-explorer-root .wc-compare-copy > strong { display: block; font-size: 18px; line-height: 1.45; }\n.wc-explorer-root .wc-compare-copy > span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-actions { display: grid; grid-template-columns: minmax(0,1fr); gap: 8px; align-items: stretch; }\n.wc-explorer-root .wc-compare-actions .wc-compare-btn { min-height: 44px; max-width: 100%; padding: 10px 12px; font-size: 13px; line-height: 1.45; white-space: normal; }\n.wc-explorer-root .wc-compare-actions .wc-compare-btn:not(.is-restore):not(.is-clear) { background: var(--wc-viz-accent); color: #fff; border-color: var(--wc-viz-accent); }\n.wc-explorer-root .wc-compare-action-help { grid-column: 1 / -1; display: block; margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-method { margin: 0; padding: 12px 14px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); font-size: 13px; }\n.wc-explorer-root .wc-fair-test-status { display: inline-block; margin: 0 0 10px; padding: 5px 9px; border: 1px solid var(--wc-viz-line); border-radius: 999px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 12px; font-weight: 800; }\n.wc-explorer-root .wc-compare-reading-guide { padding: 0 2px; color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-compare-reading-guide h4 { margin: 0 0 6px; font-size: 16px; line-height: 1.5; font-weight: 800; }\n.wc-explorer-root .wc-compare-reading-guide p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root .wc-compare-reading-guide .wc-compare-baseline-warning { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--wc-viz-line); border-left: 4px solid var(--wc-viz-accent); border-radius: 8px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-bars { grid-template-columns: minmax(0,1fr); gap: 12px; margin: 0; }\n.wc-explorer-root .wc-compare-bar-card { display: flex; flex-direction: column; gap: 0; }\n.wc-explorer-root .wc-compare-bar-label { align-items: flex-start; font-size: 14px; gap: 8px; }\n.wc-explorer-root .wc-compare-bar-label > strong { font-size: 15px; line-height: 1.5; }\n.wc-explorer-root .wc-compare-bar-scale { font-size: 12px; line-height: 1.5; padding: 2px 5px; border: 1px solid var(--wc-viz-line); border-radius: 5px; }\n.wc-explorer-root .wc-compare-bar-track { height: 29px; flex: 0 0 29px; margin: 12px 0 9px; border-radius: 5px; }\n.wc-explorer-root .wc-compare-bar-base { top: 3px; height: 8px; border-radius: 2px; }\n.wc-explorer-root .wc-compare-bar-current { top: 17px; height: 8px; border-radius: 2px; box-sizing: border-box; border: 1px solid var(--wc-viz-accent); background: repeating-linear-gradient(90deg, var(--wc-viz-accent) 0 8px, transparent 8px 12px); }\n.wc-explorer-root .wc-compare-bar-values { display: grid; grid-template-columns: minmax(0,1fr); gap: 6px; font-size: 13px; line-height: 1.5; }\n.wc-explorer-root .wc-compare-bar-key { gap: 7px; white-space: nowrap; }\n.wc-explorer-root .wc-compare-bar-dot { width: 9px; height: 9px; flex: 0 0 9px; border: 1px solid currentColor; }\n.wc-explorer-root .wc-compare-bar-dot.is-current { border-radius: 1px; }\n.wc-explorer-root .wc-compare-bar-delta { align-self: flex-start; margin: 12px 0 6px; padding: 6px 9px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 14px; line-height: 1.5; font-weight: 800; }\n.wc-explorer-root .wc-compare-reading-note { display: block; margin-top: auto; padding-top: 4px; font-size: 12px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root .wc-route-mix[data-compare-pathway-mix] { padding: 12px 14px; border: 1px solid var(--wc-viz-line); border-radius: 12px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-route-mix-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; min-height: 44px; cursor: pointer; list-style: none; }\n.wc-explorer-root .wc-route-mix-summary::-webkit-details-marker { display: none; }\n.wc-explorer-root .wc-route-mix-summary .wc-route-mix-title { font-size: 15px; line-height: 1.5; }\n.wc-explorer-root .wc-route-mix-summary .wc-route-mix-note { flex: 1 1 180px; font-size: 12px; line-height: 1.5; }\n.wc-explorer-root .wc-route-mix-summary::after { content: '+'; display: grid; place-items: center; width: 24px; height: 24px; margin-left: auto; border: 1px solid var(--wc-viz-line); border-radius: 6px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 18px; font-weight: 800; }\n.wc-explorer-root .wc-route-mix[open] > .wc-route-mix-summary::after { content: '−'; }\n.wc-explorer-root .wc-route-mix-purpose { margin: 10px 0 12px; font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root .wc-prediction-strip { container: wc-claim / inline-size; display: block; }\n.wc-explorer-root .wc-claim-layout { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }\n.wc-explorer-root .wc-prediction-heading { margin: 6px 0; font-size: 17px; line-height: 1.45; font-weight: 800; color: var(--wc-viz-ink); }\n.wc-explorer-root .wc-prediction-options { grid-template-columns: minmax(0,1fr); }\n.wc-explorer-root .wc-prediction-result { max-width: none; justify-content: flex-start; gap: 10px; }\n.wc-explorer-root :is(.wc-prediction-heading,.wc-compare-btn,.wc-route-mix-summary):focus-visible { outline: 3px solid var(--wc-viz-accent); outline-offset: 3px; }\n@container wc-comparison (min-width: 560px) {\n  .wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-actions { grid-template-columns: repeat(3,minmax(0,1fr)); }\n  .wc-explorer-root .wc-compare-bar-values { grid-template-columns: repeat(2,minmax(0,1fr)); }\n}\n@container wc-comparison (min-width: 760px) {\n  .wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-bars { grid-template-columns: repeat(3,minmax(0,1fr)); }\n  .wc-explorer-root .wc-compare-bar-values { grid-template-columns: minmax(0,1fr); }\n}\n@container wc-claim (min-width: 640px) {\n  .wc-explorer-root .wc-claim-layout { grid-template-columns: minmax(0,1fr) minmax(260px,.8fr); }\n  .wc-explorer-root .wc-prediction-copy { grid-column: 1; }\n  .wc-explorer-root :is(.wc-prediction-options,.wc-prediction-result) { grid-column: 2; grid-row: 1; }\n  .wc-explorer-root .wc-prediction-options { grid-template-columns: repeat(2,minmax(0,1fr)); }\n  .wc-explorer-root .wc-prediction-strip > .wc-prediction-copy { max-width: 100%; }\n}\n@media (forced-colors: active) {\n  .wc-explorer-root .wc-compare-strip[data-watercycle-comparison],\n  .wc-explorer-root :is(.wc-compare-bar-card,.wc-compare-method,.wc-fair-test-status,.wc-compare-baseline-warning,.wc-route-mix[data-compare-pathway-mix]) { background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; box-shadow: none!important; }\n  .wc-explorer-root :is(.wc-compare-copy,.wc-compare-copy strong,.wc-compare-kicker,.wc-compare-action-help,.wc-compare-method strong,.wc-compare-reading-guide,.wc-compare-reading-guide p,.wc-compare-bar-label,.wc-compare-bar-label strong,.wc-compare-bar-scale,.wc-compare-bar-values,.wc-compare-reading-note,.wc-route-mix-purpose,.wc-route-mix-title,.wc-route-mix-note,.wc-prediction-heading) { color: CanvasText!important; }\n  .wc-explorer-root :is(.wc-prediction-strip,.wc-prediction-option,.wc-prediction-reset,.wc-prediction-result-badge) { background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; }\n  .wc-explorer-root :is(.wc-prediction-copy,.wc-prediction-copy > span,.wc-prediction-evidence,.wc-prediction-result) { color: CanvasText!important; }\n  .wc-explorer-root .wc-compare-bar-track { background: Canvas!important; border: 1px solid CanvasText!important; }\n  .wc-explorer-root .wc-compare-bar-base { background: CanvasText!important; opacity: 1; }\n  .wc-explorer-root .wc-compare-bar-current { forced-color-adjust: none; border-color: CanvasText!important; background: repeating-linear-gradient(90deg,CanvasText 0 8px,Canvas 8px 12px)!important; }\n  .wc-explorer-root :is(.wc-compare-bar-dot,.wc-compare-bar-dot.is-current) { background: CanvasText!important; border-color: CanvasText!important; }\n  .wc-explorer-root .wc-compare-bar-delta { background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; }\n  .wc-explorer-root .wc-route-mix-summary::after { forced-color-adjust: none; background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; }\n  .wc-explorer-root .wc-compare-actions .wc-compare-btn { background: ButtonFace!important; color: ButtonText!important; border-color: ButtonText!important; }\n  .wc-explorer-root :is(.wc-prediction-heading,.wc-compare-btn,.wc-route-mix-summary):focus-visible { outline-color: Highlight; }\n}\n";
+
+    wcFiveStyle.textContent += "\n.wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-bar-delta { color: var(--wc-viz-ink); }\n@media (forced-colors: active) {\n  .wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-copy > span,\n  .wc-explorer-root .wc-compare-strip[data-watercycle-comparison] .wc-compare-bar-delta { color: CanvasText!important; }\n}\n";
+
     wcFiveStyle.textContent += '.wc-explorer-root .wc-log-entry:only-child{grid-column:1/-1}@media(max-width:400px){.wc-notebook-values th:first-child{width:44%}.wc-notebook-values th,.wc-notebook-values td{font-size:11px;padding:6px 3px}.wc-notebook-values thead th:not(:first-child){white-space:nowrap}}';
+
+    wcFiveStyle.textContent += "\n/* Read saved evidence at the notebook's available width. */\n.wc-explorer-root [data-wc-notebook] { container: wc-evidence-notebook / inline-size; padding: 18px; gap: 16px; }\n.wc-explorer-root [data-wc-notebook] .wc-log-list { grid-template-columns: minmax(0,1fr)!important; align-items: start; gap: 14px; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry { container: wc-saved-observation / inline-size; padding: 16px; gap: 12px; border: 1px solid var(--wc-viz-line); border-top: 3px solid var(--wc-viz-accent); border-radius: 14px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); align-self: start; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-kicker { font-size: 15px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-copy > strong { font-size: 17px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-copy > span { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-guide { grid-column: 1/-1; margin: 0; padding: 12px 14px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-muted); font-size: 13px; line-height: 1.6; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-index { display: grid; place-items: center; width: 24px; height: 28px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 12px; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-copy { min-width: 0; display: grid; gap: 8px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-title { margin: 0; font-size: 17px; line-height: 1.45; font-weight: 800; color: var(--wc-viz-ink); overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-method { justify-self: start; margin: 0; padding: 4px 8px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); font-size: 12px; line-height: 1.5; color: var(--wc-viz-ink); font-weight: 750; }\n.wc-explorer-root [data-wc-notebook] :is(.wc-notebook-record-claim,.wc-log-entry-evidence) { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); font-weight: 450; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes { grid-column: 1/-1; min-width: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes h6 { margin: 0; font-size: 14px; line-height: 1.5; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes p { margin: 4px 0 9px; font-size: 12px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl { display: grid; grid-template-columns: minmax(0,1fr); gap: 6px; margin: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; min-width: 0; padding: 8px 10px; border: 1px solid var(--wc-viz-line); border-radius: 8px; background: var(--wc-viz-card); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dt { flex: 1 1 100px; font-size: 13px; line-height: 1.5; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dd { margin: 0; font-size: 15px; line-height: 1.5; font-weight: 800; color: var(--wc-viz-ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { display: grid; grid-template-columns: minmax(0,1fr); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection { margin-top: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary { display: flex; align-items: center; gap: 12px; padding: 11px 0; list-style: none; font-size: 14px; line-height: 1.5; color: var(--wc-viz-ink); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::-webkit-details-marker { display: none; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::after { content: '+'; display: grid; place-items: center; flex: 0 0 26px; height: 26px; margin-left: auto; border: 1px solid var(--wc-viz-line); border-radius: 6px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 18px; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection[open] > summary::after { content: '−'; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(p,li) { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values { overflow-x: visible; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values table { table-layout: fixed; font-size: 12px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values :is(th,td) { font-size: 12px!important; line-height: 1.5; padding: 9px 4px; width: 31%; white-space: normal!important; word-break: normal; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values th:first-child { width: 38%; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values caption { font-size: 14px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values thead { background: var(--wc-viz-tint); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-saved-scope { padding: 10px 12px; border-left: 3px solid var(--wc-viz-accent); background: var(--wc-viz-tint); border-radius: 0 8px 8px 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note { margin-top: 16px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note label { font-size: 14px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note textarea { font-size: 14px; line-height: 1.6; }\n@container wc-saved-observation (min-width: 300px) { .wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }\n@container wc-saved-observation (min-width: 480px) { .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl { grid-template-columns: repeat(3,minmax(0,1fr)); } .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl > div { display: block; } .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dd { margin-top: 4px; } }\n@container wc-evidence-notebook (min-width: 900px) { .wc-explorer-root [data-wc-notebook] .wc-log-list { grid-template-columns: repeat(2,minmax(0,1fr))!important; } }\n@media (forced-colors: active) {\n .wc-explorer-root [data-wc-notebook], .wc-explorer-root [data-wc-notebook] :is(.wc-log-entry,.wc-notebook-guide,.wc-log-entry-index,.wc-notebook-record-method,.wc-notebook-changes dl > div,.wc-notebook-values thead,.wc-notebook-saved-scope,.wc-notebook-note textarea,.wc-notebook-capacity,.wc-notebook-undo,.wc-experiment-log-replay-badge) { background: Canvas!important; border-color: CanvasText!important; box-shadow: none!important; }\n .wc-explorer-root [data-wc-notebook] :is(h4,h5,h6,p,span,dt,dd,th,td,caption,label,summary,textarea,strong) { color: CanvasText!important; border-color: CanvasText!important; }\n .wc-explorer-root [data-wc-notebook] button { background: ButtonFace!important; color: ButtonText!important; border-color: ButtonText!important; }\n .wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::after { forced-color-adjust: none; background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; }\n .wc-explorer-root [data-wc-notebook] :is(button,summary,textarea):focus-visible { outline-color: Highlight!important; }\n}\n";
+    wcFiveStyle.textContent += "\n/* Keep card actions consistent and the folded evidence concise. */\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-actions button { width: 100%; min-width: 0; margin: 0; justify-self: stretch; white-space: normal; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-claim { font-weight: 750; color: var(--wc-viz-ink); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(.wc-notebook-recorded-claim,.wc-log-entry-evidence) { margin: 10px 0; font-size: 13px; line-height: 1.6; font-weight: 450; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(.wc-notebook-recorded-claim,.wc-log-entry-evidence) strong { color: var(--wc-viz-ink); }\n@container wc-saved-observation (min-width: 200px) { .wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }\n@media (forced-colors: active) { .wc-explorer-root [data-wc-notebook] :is(.wc-notebook-record-claim,.wc-notebook-recorded-claim,.wc-log-entry-evidence,.wc-notebook-recorded-claim strong,.wc-log-entry-evidence strong) { color: CanvasText!important; } }\n";
   }
   var wcWorldsLoading = null;
   function loadWaterWorlds() {
@@ -4748,6 +4771,9 @@ const d = labToolData.waterCycle || {};
               positions.forEach(function(position) { if (position <= originalIndex) originalIndex++; });
               return { entry: wcExperimentLog[index], index: originalIndex };
             }));
+          };
+          var focusWcComparisonTarget = function(id) {
+            requestAnimationFrame(function() { var target = document.getElementById(id); if (target) target.focus(); });
           };
           var focusWcNotebookHeading = function() {
             requestAnimationFrame(function() { var heading = document.getElementById('wcExperimentNotebookTitle'); if (heading) heading.focus(); });
@@ -30508,23 +30534,30 @@ const d = labToolData.waterCycle || {};
             : currentSubsurfacePhase === 'selected-deep-recharge'
               ? 'This tracked parcel follows one modeled path downward to the water table, then moves with groundwater; not all infiltrated water takes this route.'
               : 'The selected process is outside the modeled subsurface pathway.';
-          var wcSceneLensLabel = currentSubsurfacePhase === 'groundwater-transfer' || d.journeyState === 'aquifer_flow'
+          // The preview camera follows the selected process. A remembered
+          // inactive parcel state must not label another scene or highlight its zone.
+          var wcScenePreviewStateMap = { evaporation: 'evaporating', condensation: 'condensing',
+            precipitation: 'precipitating', collection: 'ocean', transpiration: 'transpiring', infiltration: 'infiltrating' };
+          var wcSceneLensState = d.journeyActive
+            ? (d.journeyState || 'ocean')
+            : (wcScenePreviewStateMap[resolvedStageId] || 'ocean');
+          var wcSceneLensLabel = currentSubsurfacePhase === 'groundwater-transfer' || wcSceneLensState === 'aquifer_flow'
             ? 'Subsurface discharge'
             : currentSubsurfacePhase === 'selected-deep-recharge'
               ? 'Deep recharge path'
               : currentSubsurfacePhase === 'soil-storage'
                 ? 'Soil pore space'
-                : d.journeyState === 'river_runoff' || d.journeyState === 'ground_choice'
+                : wcSceneLensState === 'river_runoff' || wcSceneLensState === 'ground_choice'
                   ? 'Surface routing'
-                  : d.journeyState === 'evaporating' || d.journeyState === 'condensing' || d.journeyState === 'precipitating'
+                  : wcSceneLensState === 'evaporating' || wcSceneLensState === 'condensing' || wcSceneLensState === 'precipitating'
                     ? 'Atmosphere'
                     : 'Landscape overview';
           var wcSceneLensMode = d.wc3dCameraMode === 'orbit' ? 'Free orbit' : 'Follow camera';
           var wcSceneLensZone = currentSubsurfacePhase !== 'hidden'
             ? 'subsurface'
-            : d.journeyState === 'river_runoff' || d.journeyState === 'ground_choice'
+            : wcSceneLensState === 'river_runoff' || wcSceneLensState === 'ground_choice'
               ? 'surface'
-              : d.journeyState === 'evaporating' || d.journeyState === 'condensing' || d.journeyState === 'precipitating'
+              : wcSceneLensState === 'evaporating' || wcSceneLensState === 'condensing' || wcSceneLensState === 'precipitating'
                 ? 'sky'
                 : 'overview';
           var currentStageFlow = activeJourneyMatterEnergy
@@ -30555,7 +30588,9 @@ const d = labToolData.waterCycle || {};
             var kind = id === 'condensation' ? (after ? 'liquid' : 'vapor') :
               id === 'evaporation' ? (after ? 'vapor' : 'liquid') :
               id === 'transpiration' ? (after ? 'vapor' : 'leaf') :
-              id === 'infiltration' ? (after ? 'soil' : 'liquid') : after && id === 'collection' ? 'store' : 'mixed';
+              id === 'infiltration' ? (after ? 'soil' : 'liquid') :
+              id === 'precipitation' ? (after ? 'falling' : 'cloud') :
+              id === 'collection' ? (after ? 'store' : 'incoming') : 'mixed';
             var lines = [];
             var lineProps = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
             function path(drawing, key, extra) { return React.createElement('path', Object.assign({ key: key, d: drawing }, lineProps, extra || {})); }
@@ -30565,14 +30600,33 @@ const d = labToolData.waterCycle || {};
               lines = [path('M12 34C6 15 23 10 36 11c1 14-7 27-24 23Z', 'leaf'), path('M12 34l18-17M21 25l-2-7M21 25l8 1', 'vein')];
             } else if (kind === 'soil') {
               lines = [path('M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4', 'soil'), React.createElement('circle', { key: 'pore1', cx: 17, cy: 27, r: 2, fill: 'currentColor' }), React.createElement('circle', { key: 'pore2', cx: 30, cy: 35, r: 2, fill: 'currentColor' })];
+            } else if (kind === 'cloud') {
+              // The same liquid/solid possibilities are shown before and during the fall.
+              lines = [
+                path('M11 34h26a7 7 0 0 0 .8-14a11 11 0 0 0-20-3A8.5 8.5 0 0 0 11 34Z', 'cloud', { 'data-diagram-cue': 'cloud' }),
+                path('M18 20s-3.5 4-3.5 6.5a3.5 3.5 0 0 0 7 0c0-2.5-3.5-6.5-3.5-6.5Z', 'drop', { 'data-water-symbol': 'liquid' }),
+                path('M30 20v10M25.5 22.5l9 5M25.5 27.5l9-5', 'ice', { 'data-water-symbol': 'solid' })
+              ];
+            } else if (kind === 'falling') {
+              lines = [
+                path('M15 8s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11Z', 'drop', { 'data-water-symbol': 'liquid' }),
+                path('M33 10v12M28 13l10 6M28 19l10-6', 'ice', { 'data-water-symbol': 'solid' }),
+                path('M15 30v11m-4-4 4 4 4-4M33 30v11m-4-4 4 4 4-4', 'fall', { 'data-diagram-cue': 'gravity' })
+              ];
             } else if (kind === 'store') {
-              lines = [path('M7 25c5-5 10 5 16 0s11 5 18 0M7 33c5-5 10 5 16 0s11 5 18 0M10 13v7M38 13v7', 'store')];
-            } else if (kind === 'mixed') {
-              lines = [path('M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z', 'drop'), path('M34 23v15M27 27l14 7M27 34l14-7', 'ice')];
+              // Storage preserves the stated liquid/solid options; it does not imply freezing.
+              lines = [
+                path('M7 24v13a4 4 0 0 0 4 4h26a4 4 0 0 0 4-4V24', 'store', { 'data-diagram-cue': 'storage' }),
+                path('M8 30c5-4 10 4 16 0M8 36c5-4 10 4 16 0s11 4 16 0', 'water', { 'data-water-symbol': 'liquid' }),
+                path('M32 10l8 5v10l-8 5-8-5V15Z M24 15l8 5 8-5M32 20v10', 'ice', { 'data-water-symbol': 'solid' })
+              ];
+            } else if (kind === 'incoming' || kind === 'mixed') {
+              lines = [path('M16 8s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11Z', 'drop', { 'data-water-symbol': 'liquid' }), path('M34 17v12M29 20l10 6M29 26l10-6', 'ice', { 'data-water-symbol': 'solid' })];
+              if (kind === 'incoming') lines.push(path('M9 37h28m-5-4 5 4-5 4', 'arrival', { 'data-diagram-cue': 'arrival' }));
             } else {
               lines = [path('M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z', 'drop'), path('M18 29c0 5 3 7 6 7', 'shine')];
             }
-            return React.createElement('svg', { viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false' }, React.createElement('circle', { cx: 24, cy: 24, r: 23, fill: 'currentColor', opacity: 0.07 }), lines);
+            return React.createElement('svg', { viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false', 'data-process-diagram': kind }, React.createElement('circle', { cx: 24, cy: 24, r: 23, fill: 'currentColor', opacity: 0.07 }), lines);
           }
           function wcProcessCaveat(id) {
             var notes = {
@@ -30592,10 +30646,10 @@ const d = labToolData.waterCycle || {};
             return React.createElement('article', { className: 'wc-process-card', 'data-slot': slot, 'data-process': id },
               React.createElement('header', null, React.createElement('span', { className: 'wc-process-letter', 'aria-hidden': 'true' }, letter), React.createElement('h4', null, wcComparedProcessLabel(id))),
               React.createElement('div', { className: 'wc-process-state-flow' },
-                React.createElement('div', { className: 'wc-process-state' }, wcProcessDiagram(id, false), React.createElement('strong', null, process.phaseFrom), React.createElement('small', null, __alloT('stem.watercycle.process_compare_before', 'Before'))),
+                React.createElement('div', { className: 'wc-process-state' }, React.createElement('small', null, __alloT('stem.watercycle.process_compare_before', 'Before')), wcProcessDiagram(id, false), React.createElement('strong', null, process.phaseFrom)),
                 React.createElement('span', { className: 'wc-process-state-arrow', 'aria-hidden': 'true' }, '\u2192'),
                 React.createElement('span', { className: 'sr-only' }, __alloT('stem.watercycle.process_compare_to', 'to')),
-                React.createElement('div', { className: 'wc-process-state' }, wcProcessDiagram(id, true), React.createElement('strong', null, process.phaseTo), React.createElement('small', null, __alloT('stem.watercycle.process_compare_after', 'After')))
+                React.createElement('div', { className: 'wc-process-state' }, React.createElement('small', null, __alloT('stem.watercycle.process_compare_after', 'After')), wcProcessDiagram(id, true), React.createElement('strong', null, process.phaseTo))
               ),
               React.createElement('dl', { className: 'wc-process-facts' },
                 React.createElement('div', null, React.createElement('dt', null, __alloT('stem.watercycle.process_compare_source', 'From')), React.createElement('dd', null, process.source)),
@@ -30675,10 +30729,6 @@ const d = labToolData.waterCycle || {};
           var wcWalkthroughIndex = typeof d.wcWalkthroughIndex === 'number' ? Math.max(0, Math.min(STAGES.length - 1, d.wcWalkthroughIndex)) : Math.max(0, resolvedStageIndex - 1);
           var completedChallengeCount = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length;
           var viewedStageCount = countWaterCycleStagesViewed(d);
-          var journeyLabel = d.journeyActive
-            ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
-            : 'Ready to start';
-          var immersiveStageLabel = d.journeyActive ? journeyLabel : currentStageLabel + ' preview';
           var journeyPaused = !!d.journeyPaused;
           var wc2dPaused = !!d.wc2dPaused;
           var wcFocusMode = !!d.wcFocusMode;
@@ -30704,6 +30754,10 @@ const d = labToolData.waterCycle || {};
             complete: 'Cycle complete'
           };
           var journeyStateLabel = journeyStateLabels[d.journeyState || (d.journeyActive ? 'ocean' : 'idle')] || 'Water droplet in motion';
+          // The dock, scene description, and view status use the same process names
+          // as the existing journey guide. Saved state identifiers stay unchanged.
+          var journeyLabel = d.journeyActive ? journeyStateLabel : 'Ready to start';
+          var immersiveStageLabel = d.journeyActive ? journeyLabel : currentStageLabel + ' preview';
           var wcCanvasGuideProcessLabel = d.journeyActive ? journeyStateLabel : currentStageLabel;
           var journeyTransitionStatus = !d.journeyActive
             ? 'Journey inactive. Start Journey to follow one droplet.'
@@ -31457,9 +31511,11 @@ const d = labToolData.waterCycle || {};
               isLeader && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest modeled pathway.")
             );
           }
-          function renderLandSegments(label, stateKey, options, selected) {
-            return React.createElement("fieldset", { className: "wc-land-control", "data-wc-input": stateKey },
+          function renderLandSegments(label, stateKey, options, selected, help) {
+            var hintId = "wc-land-" + stateKey + "-hint";
+            return React.createElement("fieldset", { className: "wc-land-control", "data-wc-input": stateKey, "aria-describedby": help ? hintId : undefined },
               React.createElement("legend", null, label),
+              help && React.createElement("p", { id: hintId, className: "wc-condition-hint" }, help),
               React.createElement("div", { className: "wc-land-segments" },
                 options.map(function(option) {
                   var active = selected === option.id;
@@ -31472,6 +31528,24 @@ const d = labToolData.waterCycle || {};
                   }, active ? "\u2713 " + option.label : option.label);
                 })
               )
+            );
+          }
+          function renderWcLandResult(label, value, pathway) {
+            var isRunoff = pathway === 'runoff';
+            return React.createElement("div", { className: "wc-land-result is-" + pathway, "data-land-reading": pathway },
+              React.createElement("svg", { className: "wc-land-path-icon", viewBox: "0 0 80 68", "aria-hidden": "true", focusable: "false" },
+                React.createElement("rect", { className: "wc-land-soil", x: 6, y: 38, width: 68, height: 24, rx: 5 }),
+                React.createElement("path", { className: "wc-land-ground", d: "M6 38 H74", fill: "none" }),
+                [18, 40, 62].map(function(x) { return React.createElement("circle", { key: x, className: "wc-land-pore", cx: x, cy: 51, r: 3.5 }); }),
+                React.createElement("path", { className: "wc-land-water-path", d: isRunoff ? "M12 26 H66 M58 19 L66 26 L58 33" : "M40 12 V56 M33 48 L40 56 L47 48", fill: "none" }),
+                React.createElement("circle", { className: "wc-land-water-start", cx: isRunoff ? 12 : 40, cy: isRunoff ? 26 : 12, r: 4 })
+              ),
+              React.createElement("div", { className: "wc-land-result-copy" },
+                React.createElement("span", { className: "wc-land-result-title" }, label),
+                React.createElement("strong", { className: "wc-land-score", "data-land-score": pathway }, value, React.createElement("small", null, "/100")),
+                React.createElement("span", { className: "wc-land-band" }, landIndexBand(value) + " teaching index")
+              ),
+              React.createElement("p", { className: "wc-land-path-copy" }, isRunoff ? "Over the surface" : "Into soil pores")
             );
           }
           function startWcQuickGuide() {
@@ -31538,8 +31612,8 @@ const d = labToolData.waterCycle || {};
             { key: 'plant', label: 'Plant storage', value: clampWcSignal(12 + wcRouteShares.plant * 1.30 + evaporationIndex * 4) }
           ];
           var wcSignalChartWidth = 420;
-          var wcSignalChartHeight = 170;
-          var wcSignalChartPad = { left: 34, right: 12, top: 14, bottom: 30 };
+          var wcSignalChartHeight = 208;
+          var wcSignalChartPad = { left: 48, right: 44, top: 26, bottom: 50 };
           var wcSignalChartLabels = ['Surface', 'Air', 'Cloud', 'Land', 'Return'];
           var wcSignalEnergySeries = [
             clampWcSignal(currentSolar * 52),
@@ -31583,12 +31657,35 @@ const d = labToolData.waterCycle || {};
             evaporating: 1, evaporation: 1,
             condensing: 2, condensation: 2,
             precipitating: 3, precipitation: 3, ground_choice: 3,
-            infiltrating: 3, aquifer_flow: 3,
+            infiltrating: 3, infiltration: 3, aquifer_flow: 3,
             plant_absorb: 4, transpiring: 4, transpiration: 4,
             complete: 4
           };
-          var wcSignalChartStageIndex = wcSignalChartStageIndexByState[wcSignalFocusState] != null
+          var wcSignalChartStageIndex = typeof wcSignalChartStageIndexByState[wcSignalFocusState] === 'number'
             ? wcSignalChartStageIndexByState[wcSignalFocusState] : 0;
+          // Chart inspection is a view preference, independent of the live parcel.
+          var wcSignalChartPlaceKeys = ['surface', 'air', 'cloud', 'land', 'return'];
+          var wcSignalInspectPlace = wcSignalChartPlaceKeys.indexOf(d.wcSignalInspectPlace) >= 0 ? d.wcSignalInspectPlace : 'follow';
+          var wcSignalInspectIndex = wcSignalInspectPlace === 'follow'
+            ? wcSignalChartStageIndex : wcSignalChartPlaceKeys.indexOf(wcSignalInspectPlace);
+          var wcSignalChartFocusKind = journeyReplayIsScrubbed ? 'Replay focus' : 'Stage focus';
+          var wcSignalSeries = [
+            { key: 'energy', label: 'Energy cue', pattern: 'Solid', shape: 'circle', color: '#a75a08', dash: 'none', values: wcSignalEnergySeries },
+            { key: 'flow', label: 'Surface flow cue', pattern: 'Dashed', shape: 'square', color: '#08769b', dash: '9 6', values: wcSignalFlowSeries },
+            { key: 'storage', label: 'Storage cue', pattern: 'Dotted', shape: 'diamond', color: '#147459', dash: '1 6', values: wcSignalStorageSeries }
+          ];
+          function wcSignalPointMark(series, x, y) {
+            var props = { key: series.key, className: 'wc-signal-point', 'data-signal-marker': series.key,
+              fill: series.color, stroke: '#fff', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' };
+            if (series.shape === 'square') return React.createElement('rect', Object.assign(props, { x: x - 4.5, y: y - 4.5, width: 9, height: 9 }));
+            if (series.shape === 'diamond') return React.createElement('path', Object.assign(props, { d: 'M ' + x + ' ' + (y - 6) + ' l 6 6 -6 6 -6 -6 Z' }));
+            return React.createElement('circle', Object.assign(props, { cx: x, cy: y, r: 4.5 }));
+          }
+          function wcSignalLegendMark(series) {
+            return React.createElement('svg', { viewBox: '0 0 38 18', 'aria-hidden': 'true', focusable: 'false' },
+              React.createElement('path', { className: 'wc-signal-key-line', 'data-signal-series': series.key, d: 'M 2 9 H 36', fill: 'none', stroke: series.color, strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: series.dash }),
+              wcSignalPointMark(series, 19, 9));
+          }
           var wcSignalDriverByState = {
             ocean: { key: 'surface', label: 'Surface storage + gravity', value: wcSignalReservoirs[0].value, detail: 'Surface stores hold water while gravity routes it toward the next transfer.' },
             collection: { key: 'surface', label: 'Surface storage + gravity', value: wcSignalReservoirs[0].value, detail: 'Surface stores hold water while gravity routes it toward the next transfer.' },
@@ -31608,7 +31705,8 @@ const d = labToolData.waterCycle || {};
             transpiration: { key: 'plant', label: 'Leaf energy + stomata', value: clampWcSignal(evaporationIndex / 2 * 100), detail: 'Daytime energy and open stomata help liquid plant water leave the leaves as vapor.' },
             complete: { key: 'surface', label: 'Cycle continues', value: wcSignalReservoirs[0].value, detail: 'The droplet returned to storage; water changes form and keeps cycling rather than ending.' }
           };
-          var wcSignalDriver = wcSignalDriverByState[wcSignalFocusState] || wcSignalDriverByState.ocean;
+          var wcSignalDriver = Object.prototype.hasOwnProperty.call(wcSignalDriverByState, wcSignalFocusState)
+            ? wcSignalDriverByState[wcSignalFocusState] : wcSignalDriverByState.ocean;
           var wcSignalActiveSeries = wcSignalDriver.key === 'atmosphere' ? 'energy' : wcSignalDriver.key === 'surface' ? 'flow' : 'storage';
           var wcClimateBaselineSolar = wcScenarioBaseline ? (wcScenarioBaseline.climSolar != null ? wcScenarioBaseline.climSolar : 1) : null;
           var wcClimateBaselineTemp = wcScenarioBaseline ? (wcScenarioBaseline.climTemp != null ? wcScenarioBaseline.climTemp : 15) : null;
@@ -31713,6 +31811,7 @@ const d = labToolData.waterCycle || {};
                 React.createElement("button", {
                   type: "button",
                   className: "wc-compare-trigger",
+                  id: "wcSetScenarioBaseline",
                   "data-tooltip": wcScenarioBaseline ? t('stem.watercycle.update_scenario_baseline', "Update scenario baseline") : t('stem.watercycle.save_current_scenario_as_baseline', "Save current scenario as baseline"),
                   "aria-label": wcScenarioBaseline ? t('stem.watercycle.update_scenario_comparison_baseline', "Update scenario comparison baseline") : t('stem.watercycle.save_current_scenario_as_comparison', "Save current scenario as comparison baseline"),
                   onClick: captureWcScenarioBaseline
@@ -32862,7 +32961,8 @@ React.createElement("div", {
                 "aria-atomic": "true"
               },
                 React.createElement("span", { className: "wc-preset-lesson-kicker" }, "Experiment focus"),
-                React.createElement("span", { className: "wc-preset-lesson-copy" }, wcScenarioPresetLesson)
+                React.createElement("span", { className: "wc-preset-lesson-copy" }, wcScenarioPresetLesson),
+                Object.prototype.hasOwnProperty.call(WATER_CYCLE_PRESETS, wcScenarioPreset) && React.createElement("span", { className: "wc-preset-scope" }, "Presets set weather and land inputs together. Open Land-surface pathways to inspect the ground settings.")
               ),
               React.createElement("div", { className: "grid grid-cols-3 gap-3 wc-climate-control-grid" },
                 // Solar Intensity
@@ -32873,6 +32973,7 @@ React.createElement("div", {
                   ),
                   React.createElement("input", {
                     id: "wc-climate-solar",
+                    "aria-describedby": "wcClimateSolarHint wcClimateSolarEffect",
                     type: "range", min: "0", max: "2", step: "0.05",
                     "aria-label": t('stem.watercycle.solar_intensity_slider', 'Solar intensity'),
                     "aria-valuetext": (((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0) * 100).toFixed(0) + "% solar intensity",
@@ -32881,11 +32982,12 @@ React.createElement("div", {
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#f59e0b' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? "text-amber-500/80" : "text-amber-500") },
-                    React.createElement("span", null, t('stem.watercycle.night_2', "\uD83C\uDF19 Night")),
-                    React.createElement("span", null, t('stem.watercycle.bright', "\u2600\uFE0F Bright"))
+                  React.createElement("div", { className: "wc-condition-scale" },
+                    React.createElement("span", null, "0% · No sunlight"),
+                    React.createElement("span", null, "200% · Stronger")
                   ),
-                  React.createElement("p", { className: "wc-control-effect" }, wcSolarEffect),
+                  React.createElement("p", { id: "wcClimateSolarHint", className: "wc-condition-hint" }, "100% is the model’s reference sunlight; a saved comparison baseline can differ."),
+                  React.createElement("p", { id: "wcClimateSolarEffect", className: "wc-control-effect" }, wcSolarEffect),
                   wcScenarioBaseline && React.createElement("span", { className: "wc-climate-delta", role: "note" }, "Baseline " + (wcClimateBaselineSolar * 100).toFixed(0) + "% → now " + (currentSolar * 100).toFixed(0) + "%")
                 ),
                 // Temperature
@@ -32896,6 +32998,7 @@ React.createElement("div", {
                   ),
                   React.createElement("input", {
                     id: "wc-climate-temperature",
+                    "aria-describedby": "wcClimateTemperatureHint wcClimateTemperatureEffect",
                     type: "range", min: "-20", max: "45", step: "1",
                     "aria-label": t('stem.watercycle.temperature_slider_celsius', 'Temperature in degrees Celsius'),
                     "aria-valuetext": ((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15) + " degrees Celsius",
@@ -32904,34 +33007,37 @@ React.createElement("div", {
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#0ea5e9' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? "text-sky-500/80" : "text-sky-500") },
-                    React.createElement("span", null, t('stem.watercycle.20', "\u2744\uFE0F -20\u00B0")),
-                    React.createElement("span", null, t('stem.watercycle.45', "\uD83D\uDD25 45\u00B0"))
+                  React.createElement("div", { className: "wc-condition-scale" },
+                    React.createElement("span", null, "−20°C"),
+                    React.createElement("span", null, "45°C")
                   ),
-                  React.createElement("p", { className: "wc-control-effect" }, wcTemperatureEffect),
+                  React.createElement("p", { id: "wcClimateTemperatureHint", className: "wc-condition-hint" }, "Surface temperature in degrees Celsius."),
+                  React.createElement("p", { id: "wcClimateTemperatureEffect", className: "wc-control-effect" }, wcTemperatureEffect),
                   wcScenarioBaseline && React.createElement("span", { className: "wc-climate-delta", role: "note" }, "Baseline " + wcClimateBaselineTemp.toFixed(0) + "°C → now " + currentTemp.toFixed(0) + "°C")
                 ),
                 // Wind Speed
                 React.createElement("div", { className: "wc-climate-control is-wind", "data-wc-delta": wcClimateWindChanged ? "true" : undefined },
                   React.createElement("label", { htmlFor: "wc-climate-wind", className: isDark ? "text-emerald-300" : "text-emerald-800" },
                     React.createElement("span", { className: "wc-climate-control-label" }, "\uD83C\uDF2C\uFE0F Wind"),
-                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-wind" }, (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0)).toFixed(1) + "x")
+                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-wind" }, (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0)).toFixed(1) + "×")
                   ),
                   React.createElement("input", {
                     id: "wc-climate-wind",
+                    "aria-describedby": "wcClimateWindHint wcClimateWindEffect",
                     type: "range", min: "0", max: "3", step: "0.1",
                     "aria-label": t('stem.watercycle.wind_speed_slider', 'Wind speed multiplier'),
-                    "aria-valuetext": (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0)).toFixed(1) + " times baseline wind",
+                    "aria-valuetext": (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0)).toFixed(1) + " times reference wind",
                     value: (typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0,
                     onChange: function(e) { adjustClimate('climWind', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#22c55e' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[0.6875rem] " + (isDark ? "text-emerald-500/80" : "text-emerald-500") },
-                    React.createElement("span", null, t('stem.watercycle.calm', "Calm")),
-                    React.createElement("span", null, t('stem.watercycle.gale', "\uD83C\uDF2A Gale"))
+                  React.createElement("div", { className: "wc-condition-scale" },
+                    React.createElement("span", null, "0× · Calm"),
+                    React.createElement("span", null, "3× · Faster")
                   ),
-                  React.createElement("p", { className: "wc-control-effect" }, wcWindEffect),
+                  React.createElement("p", { id: "wcClimateWindHint", className: "wc-condition-hint" }, "1× is the model’s reference wind; a saved comparison baseline can differ."),
+                  React.createElement("p", { id: "wcClimateWindEffect", className: "wc-control-effect" }, wcWindEffect),
                   wcScenarioBaseline && React.createElement("span", { className: "wc-climate-delta", role: "note" }, "Baseline " + wcClimateBaselineWind.toFixed(1) + "x → now " + currentWind.toFixed(1) + "x")
                 )
               ),
@@ -32946,14 +33052,15 @@ React.createElement("div", {
                   React.createElement("strong", null, evaporationBand + " evaporation under a " + weatherLabel.toLowerCase()),
                   React.createElement("p", { className: "wc-climate-interpretation" }, wcClimateInterpretation)
                 ),
-                React.createElement("div", { className: "wc-evap-meter", "aria-hidden": "true" },
+                React.createElement("div", { className: "wc-evap-meter" },
                   React.createElement("div", { className: "wc-evap-meter-head" },
-                    React.createElement("span", null, "Evaporation response"),
-                    React.createElement("span", null, evaporationIndex.toFixed(2) + "x")
+                    React.createElement("span", null, "Evaporation teaching index"),
+                    React.createElement("span", { className: "wc-evap-meter-value", "data-evaporation-index": evaporationIndex.toFixed(2) }, evaporationIndex.toFixed(2) + "×")
                   ),
-                  React.createElement("div", { className: "wc-evap-meter-track" },
+                  React.createElement("div", { className: "wc-evap-meter-track", "aria-hidden": "true" },
                     React.createElement("span", { style: { width: Math.max(0, Math.min(100, evaporationIndex / 2 * 100)) + "%" } })
-                  )
+                  ),
+                  React.createElement("p", { className: "wc-evap-index-scope" }, "Teaching index, not a measured evaporation rate.")
                 )
               ),
               React.createElement("p", { className: "wc-climate-model-note", role: "note" },
@@ -32972,7 +33079,7 @@ React.createElement("div", {
                   onClick: resetClimate,
                   "data-tooltip": t('stem.watercycle.reset_climate_settings', "Reset climate settings"),
                   "aria-label": t('stem.watercycle.reset_climate_settings', "Reset climate settings")
-                }, "↺ Reset")
+                }, "↺ Reset climate")
               )
             ),
 
@@ -33001,13 +33108,17 @@ React.createElement("div", {
                   "aria-label": __alloT('stem.watercycle.a11y_reset_land_surface_scenario', 'Reset land-surface scenario'),
                   onClick: resetLandScenario,
                   className: "wc-reset-control wc-land-reset"
-                }, "\u21BA Reset")
+                }, "\u21BA Reset land")
               ),
               React.createElement("div", { className: "wc-land-grid" },
                 React.createElement("div", { className: "wc-land-control" },
-                  React.createElement("label", { htmlFor: "wc-land-rain" }, "Rainfall intensity: " + landRainIntensity),
+                  React.createElement("label", { htmlFor: "wc-land-rain" },
+                    React.createElement("span", null, "Rainfall intensity"),
+                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-land-rain" }, landRainIntensity, React.createElement("small", null, "/100"))
+                  ),
                   React.createElement("input", {
                     id: "wc-land-rain",
+                    "aria-describedby": "wcLandRainHint",
                     type: "range",
                     min: "0",
                     max: "100",
@@ -33018,12 +33129,18 @@ React.createElement("div", {
                     onChange: function(e) { adjustLand('landRainIntensity', parseFloat(e.target.value)); },
                     className: "w-full",
                     style: { accentColor: '#0284c7' }
-                  })
+                  }),
+                  React.createElement("div", { className: "wc-condition-scale" }, React.createElement("span", null, "0 · No rain"), React.createElement("span", null, "100 · Heavy rain")),
+                  React.createElement("p", { id: "wcLandRainHint", className: "wc-condition-hint" }, "Relative rainfall intensity; this is a teaching input, not mm per hour.")
                 ),
                 React.createElement("div", { className: "wc-land-control" },
-                  React.createElement("label", { htmlFor: "wc-land-saturation" }, "Soil saturation: " + landSaturation),
+                  React.createElement("label", { htmlFor: "wc-land-saturation" },
+                    React.createElement("span", null, "Soil saturation"),
+                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-land-saturation" }, landSaturation, React.createElement("small", null, "/100"))
+                  ),
                   React.createElement("input", {
                     id: "wc-land-saturation",
+                    "aria-describedby": "wcLandSaturationHint",
                     type: "range",
                     min: "0",
                     max: "100",
@@ -33034,23 +33151,29 @@ React.createElement("div", {
                     onChange: function(e) { adjustLand('landSaturation', parseFloat(e.target.value)); },
                     className: "w-full",
                     style: { accentColor: '#0891b2' }
-                  })
+                  }),
+                  React.createElement("div", { className: "wc-condition-scale" }, React.createElement("span", null, "0 · Drier"), React.createElement("span", null, "100 · Saturated")),
+                  React.createElement("p", { id: "wcLandSaturationHint", className: "wc-condition-hint" }, "How wet the soil is before this rain; this is a teaching index.")
                 ),
                 renderLandSegments("Soil permeability", "landPermeability", [
                   { id: "low", label: "Low" },
                   { id: "medium", label: "Medium" },
                   { id: "high", label: "High" }
-                ], landPermeability),
+                ], landPermeability, "How easily water can pass through soil pores."),
                 renderLandSegments("Slope", "landSlope", [
                   { id: "gentle", label: "Gentle" },
                   { id: "moderate", label: "Moderate" },
                   { id: "steep", label: "Steep" }
-                ], landSlope),
+                ], landSlope, "How steep the ground is; gravity moves surface water downhill."),
                 renderLandSegments("Land cover", "landCover", [
                   { id: "forest", label: "Forest" },
                   { id: "grass", label: "Grass" },
                   { id: "urban", label: "Urban" }
-                ], landCover)
+                ], landCover, "What covers the ground; vegetation and built surfaces affect both pathways.")
+              ),
+              React.createElement("div", { className: "wc-land-response-head" },
+                React.createElement("h5", null, "Read both pathways"),
+                React.createElement("p", { className: "wc-land-result-scope" }, "Separate 0–100 teaching indices; arrows show direction, not water amounts.")
               ),
               React.createElement("div", {
                 className: "wc-land-results",
@@ -33058,14 +33181,8 @@ React.createElement("div", {
                 "aria-live": "polite",
                 "aria-atomic": "true"
               },
-                React.createElement("div", { className: "wc-land-result" },
-                  React.createElement("span", null, "Runoff tendency"),
-                  React.createElement("strong", null, landIndexBand(runoffTendency) + " | " + runoffTendency + "/100")
-                ),
-                React.createElement("div", { className: "wc-land-result", style: { borderLeftColor: "#10b981" } },
-                  React.createElement("span", null, "Infiltration opportunity"),
-                  React.createElement("strong", null, landIndexBand(infiltrationOpportunity) + " | " + infiltrationOpportunity + "/100")
-                ),
+                renderWcLandResult("Runoff tendency", runoffTendency, "runoff"),
+                renderWcLandResult("Infiltration opportunity", infiltrationOpportunity, "infiltration"),
                 React.createElement("p", { className: "wc-land-driver", role: "note" }, wcLandDriverReadout)
               ),
               React.createElement("p", { className: "wc-land-interpretation", role: "note" }, wcLandInterpretation),
@@ -33076,14 +33193,44 @@ React.createElement("div", {
             ),
             wcScenarioBaseline && React.createElement("div", {
               className: "wc-compare-strip",
+              "data-watercycle-comparison": "true",
+              "data-comparison-complete": String(wcComparisonComplete),
               role: "region",
               "aria-label": __alloT('stem.watercycle.a11y_scenario_comparison', 'Scenario comparison'),
               "aria-describedby": "wcScenarioWorkflowStatus"
             },
               React.createElement("div", { className: "wc-compare-copy" },
-                React.createElement("span", { className: "wc-compare-kicker" }, "Scenario Compare"),
+                React.createElement("h3", { className: "wc-compare-kicker", id: "wcScenarioCompareTitle" }, "Scenario Compare"),
                 React.createElement("strong", null, wcScenarioHeadline),
                 React.createElement("span", null, wcScenarioDetail)
+              ),
+              React.createElement("div", { className: "wc-compare-actions", role: "group", "aria-label": "Manage comparison baseline", "aria-describedby": "wcBaselineActionsHelp" },
+                React.createElement("button", {
+                  type: "button",
+                  className: "wc-compare-btn is-restore",
+                  disabled: !wcScenarioChanges.length,
+                  "data-tooltip": "Restore the saved baseline settings",
+                  "aria-label": wcScenarioChanges.length ? "Restore baseline settings" : "Restore baseline; saved inputs are already active",
+                  "aria-describedby": "wcBaselineActionsHelp",
+                  onClick: function() { restoreWcScenarioBaseline(); focusWcComparisonTarget("wcFairTestHeading"); }
+                }, "↶ Restore baseline"),
+                React.createElement("button", {
+                  type: "button",
+                  className: "wc-compare-btn",
+                  "data-tooltip": "Save the current settings as the new baseline",
+                  "aria-label": "Save current as baseline",
+                  "aria-describedby": "wcBaselineActionsHelp",
+                  onClick: captureWcScenarioBaseline
+                }, "Save current as baseline"),
+                React.createElement("button", {
+                  type: "button",
+                  className: "wc-compare-btn is-clear",
+                  "data-tooltip": "Clear the saved baseline",
+                  "aria-label": "Clear baseline",
+                  "aria-describedby": "wcBaselineActionsHelp",
+                  onClick: function() { clearWcScenarioBaseline(); focusWcComparisonTarget("wcSetScenarioBaseline"); }
+                }, "Clear baseline")
+                ,React.createElement("small", { id: "wcBaselineActionsHelp", className: "wc-compare-action-help" }, "Restore returns to the saved inputs. Save current replaces the baseline. Clear removes the comparison baseline. Saved observations stay in your notebook.")
               ),
               React.createElement("p", {
                 id: "wcScenarioWorkflowStatus",
@@ -33095,13 +33242,14 @@ React.createElement("div", {
                 React.createElement("strong", null, "Experiment steps"),
                 wcScenarioWorkflowStatus
               ),
-              React.createElement("section", { className: "wc-fair-test", "data-wc-fair-test": "true", "aria-labelledby": "wcFairTestHeading" },
+              React.createElement("section", { className: "wc-fair-test", "data-wc-fair-test": "true", "aria-labelledby": "wcFairTestHeading", "data-comparison-kind": !wcComparisonComplete ? "incomplete" : wcChangedInputs.length === 1 ? "one-input" : wcChangedInputs.length > 1 ? "several-inputs" : "unchanged" },
                 React.createElement("h4", { id: "wcFairTestHeading", tabIndex: -1 }, __alloT('stem.watercycle.inquiry_method', 'How fair is this comparison?')),
                 React.createElement("p", null, !wcComparisonComplete ? __alloT('stem.watercycle.inquiry_incomplete_method', 'Some baseline inputs were not recorded. This comparison cannot isolate one input; update the baseline to start a complete test.') : wcChangedInputs.length === 1
                   ? __alloT('stem.watercycle.inquiry_one_input', 'One input changed. The other seven inputs are held fixed, so you can investigate this input in the model.')
                   : wcChangedInputs.length > 1
                     ? __alloT('stem.watercycle.inquiry_many_inputs', 'Several inputs changed. Compare the overall result, but this test cannot isolate the effect of one input.')
                     : __alloT('stem.watercycle.inquiry_no_input', 'The inputs match the baseline. Change one input to investigate its effect.')),
+                React.createElement("span", { className: "wc-fair-test-status" }, !wcComparisonComplete ? "Baseline incomplete" : wcChangedInputs.length === 1 ? "1 input changed" : wcChangedInputs.length > 1 ? wcChangedInputs.length + " inputs changed" : "Inputs match"),
                 wcChangedInputs.length > 0 && React.createElement("ul", { className: "wc-fair-inputs" }, wcChangedInputs.map(function(input) {
                   return React.createElement("li", { key: input.key },
                     React.createElement("strong", null, __alloT('stem.watercycle.inquiry_input_' + input.key, input.label)),
@@ -33109,65 +33257,34 @@ React.createElement("div", {
                 })),
                 wcComparisonComplete && wcChangedInputs.length > 1 && React.createElement("div", { className: "wc-fair-isolate" },
                   React.createElement("label", { htmlFor: "wcIsolateInput" }, __alloT('stem.watercycle.inquiry_keep_label', 'Choose one change to test')),
-                  React.createElement("select", { id: "wcIsolateInput", value: wcChangedInputs.some(function(input) { return input.key === d.wcIsolateInput; }) ? d.wcIsolateInput : wcChangedInputs[0].key,
+                  React.createElement("select", { id: "wcIsolateInput", "aria-describedby": "wcIsolateInputHelp", value: wcChangedInputs.some(function(input) { return input.key === d.wcIsolateInput; }) ? d.wcIsolateInput : wcChangedInputs[0].key,
                     onChange: function(event) { upd('wcIsolateInput', event.target.value); } }, wcChangedInputs.map(function(input) {
                       return React.createElement("option", { key: input.key, value: input.key }, __alloT('stem.watercycle.inquiry_input_' + input.key, input.label));
                     })),
-                  React.createElement("button", { type: "button", onClick: function() {
+                  React.createElement("button", { type: "button", "aria-describedby": "wcIsolateInputHelp", onClick: function() {
                     isolateWcComparisonInput(wcChangedInputs.some(function(input) { return input.key === d.wcIsolateInput; }) ? d.wcIsolateInput : wcChangedInputs[0].key);
                   } }, __alloT('stem.watercycle.inquiry_keep_only', 'Keep only this change')),
-                  React.createElement("small", null, __alloT('stem.watercycle.inquiry_keep_hint', 'This restores the other inputs to the baseline. Saved observations and writing stay in your notebook.')))
+                  React.createElement("small", { id: "wcIsolateInputHelp" }, __alloT('stem.watercycle.inquiry_keep_hint', 'This restores the other inputs to the baseline. Saved observations and writing stay in your notebook.')))
               ),
-              React.createElement("div", { className: "wc-compare-actions" },
-                React.createElement("button", {
-                  type: "button",
-                  className: "wc-compare-btn is-restore",
-                  disabled: !wcScenarioChanges.length,
-                  "data-tooltip": "Restore the saved baseline settings",
-                  "aria-label": wcScenarioChanges.length ? "Restore saved scenario baseline settings" : "Saved scenario baseline is already active",
-                  onClick: restoreWcScenarioBaseline
-                }, "↶ Restore"),
-                React.createElement("button", {
-                  type: "button",
-                  className: "wc-compare-btn",
-                  "data-tooltip": "Save the current settings as the new baseline",
-                  "aria-label": __alloT('stem.watercycle.a11y_update_scenario_comparison_baseline', 'Update scenario comparison baseline'),
-                  onClick: captureWcScenarioBaseline
-                }, "\u21BB Update"),
-                React.createElement("button", {
-                  type: "button",
-                  className: "wc-compare-btn is-clear",
-                  "data-tooltip": "Clear the saved baseline",
-                  "aria-label": __alloT('stem.watercycle.a11y_clear_scenario_comparison_baseline', 'Clear scenario comparison baseline'),
-                  onClick: clearWcScenarioBaseline
-                }, "Clear")
-              ),
-              React.createElement("div", { className: "wc-compare-metrics", role: "list", "aria-label": __alloT('stem.watercycle.a11y_current_values_compared_with_baseline', 'Current values compared with baseline') },
-                React.createElement("span", { className: "wc-compare-metric", role: "listitem" },
-                  React.createElement("strong", null, "Evaporation"),
-                  wcBaselineEvaporationIndex.toFixed(2) + "x \u2192 " + evaporationIndex.toFixed(2) + "x"
-                ),
-                React.createElement("span", { className: "wc-compare-metric", role: "listitem" },
-                  React.createElement("strong", null, "Runoff"),
-                  wcBaselineLandIndices.runoff + " \u2192 " + runoffTendency + "/100"
-                ),
-                React.createElement("span", { className: "wc-compare-metric", role: "listitem" },
-                  React.createElement("strong", null, "Infiltration"),
-                  wcBaselineLandIndices.infiltration + " \u2192 " + infiltrationOpportunity + "/100"
-                )
+              React.createElement("section", { className: "wc-compare-reading-guide", "aria-labelledby": "wcCompareReadingTitle" },
+                React.createElement("h4", { id: "wcCompareReadingTitle" }, "Read each teaching index"),
+                React.createElement("p", { id: "wcCompareReadingScope" }, "Compare each reading with its own baseline. Positive change means higher; negative means lower. These independent indices do not add up to a water budget."),
+                !wcComparisonComplete && React.createElement("p", { className: "wc-compare-baseline-warning", "data-baseline-defaults-note": "true" }, "Baseline inputs are missing. These baseline readings use model defaults for missing values; save current as baseline to start a complete comparison.")
               ),
               React.createElement("div", {
                 className: "wc-compare-bars",
+                role: "group",
                 "aria-label": __alloT('stem.watercycle.a11y_visual_comparison_of_baseline_and_current_value', 'Visual comparison of baseline and current values'),
-                "aria-describedby": "wcScenarioWorkflowStatus"
+                "aria-describedby": "wcScenarioWorkflowStatus wcCompareReadingScope"
               },
                 React.createElement("div", {
+                  "data-compare-reading": "evaporation",
                   className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
                   "aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x, current " + evaporationIndex.toFixed(2) + "x" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? ". Evidence for the claim check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
-                    React.createElement("span", null, "Evaporation"),
+                    React.createElement("strong", null, "Evaporation index"),
                     React.createElement("span", { className: "wc-compare-bar-scale" }, "0-2x")
                   ),
                   React.createElement("div", { className: "wc-compare-bar-track", "aria-hidden": "true" },
@@ -33183,24 +33300,26 @@ React.createElement("div", {
                   React.createElement("div", { className: "wc-compare-bar-values" },
                     React.createElement("span", { className: "wc-compare-bar-key" },
                       React.createElement("span", { className: "wc-compare-bar-dot", "aria-hidden": "true" }),
-                      "Base " + wcBaselineEvaporationIndex.toFixed(2) + "x"
+                      "Baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x"
                     ),
                     React.createElement("span", { className: "wc-compare-bar-key" },
                       React.createElement("span", { className: "wc-compare-bar-dot is-current", "aria-hidden": "true" }),
-                      "Now " + evaporationIndex.toFixed(2) + "x"
+                      "Current " + evaporationIndex.toFixed(2) + "x"
                     )
                   ),
                   React.createElement("span", {
                     className: "wc-compare-bar-delta " + (wcEvaporationDelta > 0.005 ? "is-up" : wcEvaporationDelta < -0.005 ? "is-down" : "is-flat")
-                  }, "\u0394 " + formatWcDelta(wcEvaporationDelta, "x", 2))
+                  }, "Change " + formatWcDelta(wcEvaporationDelta, "x", 2)),
+                  React.createElement("small", { className: "wc-compare-reading-note" }, "Current minus baseline. Teaching index, not a measured evaporation rate.")
                 ),
                 React.createElement("div", {
+                  "data-compare-reading": "runoff",
                   className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
                   "aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff + " of 100, current " + runoffTendency + " of 100" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? ". Evidence for the claim check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
-                    React.createElement("span", null, "Runoff"),
+                    React.createElement("strong", null, "Runoff tendency"),
                     React.createElement("span", { className: "wc-compare-bar-scale" }, "0-100")
                   ),
                   React.createElement("div", { className: "wc-compare-bar-track", "aria-hidden": "true" },
@@ -33216,24 +33335,26 @@ React.createElement("div", {
                   React.createElement("div", { className: "wc-compare-bar-values" },
                     React.createElement("span", { className: "wc-compare-bar-key" },
                       React.createElement("span", { className: "wc-compare-bar-dot", "aria-hidden": "true" }),
-                      "Base " + wcBaselineLandIndices.runoff + "/100"
+                      "Baseline " + wcBaselineLandIndices.runoff + "/100"
                     ),
                     React.createElement("span", { className: "wc-compare-bar-key" },
                       React.createElement("span", { className: "wc-compare-bar-dot is-current", "aria-hidden": "true" }),
-                      "Now " + runoffTendency + "/100"
+                      "Current " + runoffTendency + "/100"
                     )
                   ),
                   React.createElement("span", {
                     className: "wc-compare-bar-delta " + (wcRunoffDelta > 0 ? "is-up" : wcRunoffDelta < 0 ? "is-down" : "is-flat")
-                  }, "\u0394 " + formatWcDelta(wcRunoffDelta, " pts", 0))
+                  }, "Change " + formatWcDelta(wcRunoffDelta, " pts", 0)),
+                  React.createElement("small", { className: "wc-compare-reading-note" }, "Current minus baseline, in index points.")
                 ),
                 React.createElement("div", {
+                  "data-compare-reading": "infiltration",
                   className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
                   "aria-label": "Infiltration baseline " + wcBaselineLandIndices.infiltration + " of 100, current " + infiltrationOpportunity + " of 100" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? ". Evidence for the claim check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
-                    React.createElement("span", null, "Infiltration"),
+                    React.createElement("strong", null, "Infiltration opportunity"),
                     React.createElement("span", { className: "wc-compare-bar-scale" }, "0-100")
                   ),
                   React.createElement("div", { className: "wc-compare-bar-track", "aria-hidden": "true" },
@@ -33249,26 +33370,29 @@ React.createElement("div", {
                   React.createElement("div", { className: "wc-compare-bar-values" },
                     React.createElement("span", { className: "wc-compare-bar-key" },
                       React.createElement("span", { className: "wc-compare-bar-dot", "aria-hidden": "true" }),
-                      "Base " + wcBaselineLandIndices.infiltration + "/100"
+                      "Baseline " + wcBaselineLandIndices.infiltration + "/100"
                     ),
                     React.createElement("span", { className: "wc-compare-bar-key" },
                       React.createElement("span", { className: "wc-compare-bar-dot is-current", "aria-hidden": "true" }),
-                      "Now " + infiltrationOpportunity + "/100"
+                      "Current " + infiltrationOpportunity + "/100"
                     )
                   ),
                   React.createElement("span", {
                     className: "wc-compare-bar-delta " + (wcInfiltrationDelta > 0 ? "is-up" : wcInfiltrationDelta < 0 ? "is-down" : "is-flat")
-                  }, "\u0394 " + formatWcDelta(wcInfiltrationDelta, " pts", 0))
+                  }, "Change " + formatWcDelta(wcInfiltrationDelta, " pts", 0)),
+                  React.createElement("small", { className: "wc-compare-reading-note" }, "Current minus baseline, in index points.")
                 ),
-                React.createElement("div", {
+                React.createElement("details", {
                   className: "wc-route-mix",
+                  "data-compare-pathway-mix": "true",
                   role: "group",
                   "aria-label": __alloT('stem.watercycle.a11y_baseline_and_current_pathway_mix', 'Baseline and current pathway mix')
                 },
-                  React.createElement("div", { className: "wc-route-mix-head" },
+                  React.createElement("summary", { className: "wc-route-mix-head wc-route-mix-summary" },
                     React.createElement("strong", { className: "wc-route-mix-title" }, "Pathway mix"),
                     React.createElement("span", { className: "wc-route-mix-note" }, "Relative teaching shares, not water volumes")
                   ),
+                  React.createElement("p", { className: "wc-route-mix-purpose" }, "This relative mix compares the model's three journey branches. Its percentages are separate from the independent indices above."),
                   React.createElement("div", { className: "wc-route-mix-bars" },
                     renderWcRouteMixBar("Base", wcBaselineRouteShares),
                     renderWcRouteMixBar("Now", wcRouteShares)
@@ -33307,9 +33431,10 @@ React.createElement("div", {
               "aria-label": __alloT('stem.watercycle.a11y_scenario_evidence_interpretation', 'Scenario evidence interpretation'),
               "aria-live": wcPrediction ? "polite" : undefined
             },
+              React.createElement("div", { className: "wc-claim-layout" },
               React.createElement("div", { className: "wc-prediction-copy" },
                 React.createElement("span", { className: "wc-prediction-kicker" }, wcPrediction ? "Read the evidence" : __alloT('stem.watercycle.inquiry_choose_heading', 'Choose a claim')),
-                React.createElement("strong", null, wcPrediction
+                React.createElement("h4", { id: "wcPredictionFeedback", className: "wc-prediction-heading", tabIndex: -1 }, wcPrediction
                   ? (wcPredictionMatched ? "The evidence agrees with your claim." : "The evidence differs from your claim.")
                   : __alloT('stem.watercycle.inquiry_claim_question', 'Which effect will you investigate?')),
                 React.createElement("span", null, wcPrediction
@@ -33328,11 +33453,12 @@ React.createElement("div", {
                     key: predictionId,
                     type: "button",
                     className: "wc-prediction-option",
+                    id: "wcEvidenceClaim-" + predictionId,
                     "aria-label": "Choose " + prediction.label + " as an evidence claim",
-                    onClick: function() { recordWcPrediction(predictionId); }
+                    onClick: function() { recordWcPrediction(predictionId); focusWcComparisonTarget("wcPredictionFeedback"); }
                   },
                     React.createElement("span", { "aria-hidden": "true" }, prediction.emoji),
-                    React.createElement("span", null, prediction.shortLabel)
+                    React.createElement("span", null, prediction.label)
                   );
                 })
               ),
@@ -33345,22 +33471,23 @@ React.createElement("div", {
                   type: "button",
                   className: "wc-prediction-reset wc-prediction-save",
                   disabled: wcObservationSaved || wcNotebookFull,
-                  "aria-label": wcObservationSaved ? "Observation already saved" : wcNotebookFull ? __alloT('stem.watercycle.inquiry_full_name', 'Notebook full; remove an observation before saving') : "Save current observation to experiment trail",
-                  onClick: saveWcObservation
+                  "aria-label": wcObservationSaved ? "Observation already saved" : wcNotebookFull ? __alloT('stem.watercycle.inquiry_full_name', 'Notebook full; remove an observation before saving') : "Save observation to experiment trail",
+                  onClick: function() { saveWcObservation(); focusWcComparisonTarget("wcPredictionFeedback"); }
                 }, wcObservationSaved ? "Saved" : wcNotebookFull ? __alloT('stem.watercycle.inquiry_full_short', 'Notebook full') : "Save observation"),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-prediction-reset",
-                  "aria-label": __alloT('stem.watercycle.a11y_choose_a_different_evidence_claim', 'Choose a different evidence claim'),
-                  onClick: resetWcPrediction
+                  "aria-label": __alloT('stem.watercycle.inquiry_choose_again_name', 'Choose again: select a different evidence claim'),
+                  onClick: function() { resetWcPrediction(); focusWcComparisonTarget("wcEvidenceClaim-" + wcPrediction); }
                 }, "Choose again")
+              )
               )
             ),
             (wcExperimentLog.length > 0 || (d.wcExperimentUndo || []).length > 0) && React.createElement("div", {
               className: "wc-experiment-log wc-focus-secondary" + (wcReplayedObservation ? " is-replaying" : ""),
               "data-wc-notebook": "true",
               role: "region",
-              "aria-label": __alloT('stem.watercycle.a11y_experiment_trail', 'Experiment trail'),
+              "aria-labelledby": "wcExperimentNotebookTitle",
               "aria-describedby": "wcExperimentTrailStatus"
             },
               React.createElement("div", { className: "wc-experiment-log-head" },
@@ -33373,19 +33500,20 @@ React.createElement("div", {
                     "aria-live": "polite",
                     "aria-atomic": "true"
                   }, wcReplayedObservation
-                    ? "Replaying: " + wcReplayedObservation + ". Adjust a control to branch from this observation."
-                    : __alloT('stem.watercycle.inquiry_notebook_hint', 'Revisit the exact comparison, explain your evidence, and plan the next test.'))
+                    ? "Settings replayed: " + wcReplayedObservation + ". Adjust a condition to start a new comparison."
+                    : __alloT('stem.watercycle.inquiry_notebook_saved_hint', 'Read the saved changes, explain your evidence, and plan the next test.'))
                 ),
-                wcReplayedObservation && React.createElement("span", { className: "wc-experiment-log-replay-badge", "aria-hidden": "true" }, "Replay active"),
+                wcReplayedObservation && React.createElement("span", { className: "wc-experiment-log-replay-badge", "aria-hidden": "true" }, "Settings replayed"),
                 React.createElement("button", { type: "button", className: "wc-experiment-log-clear", disabled: !wcExperimentLog.length, onClick: downloadWcExperimentLog }, __alloT('stem.watercycle.inquiry_download', 'Download trail')),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-experiment-log-clear",
-                  "aria-label": __alloT('stem.watercycle.a11y_clear_experiment_trail', 'Clear experiment trail'),
+                  "aria-label": __alloT('stem.watercycle.inquiry_clear_trail_name', 'Clear trail: remove saved observations'),
                   disabled: !wcExperimentLog.length,
                   onClick: clearWcExperimentLog
                 }, "Clear trail")
               ),
+              React.createElement("p", { className: "wc-notebook-guide", id: "wcNotebookReplayHelp" }, __alloT('stem.watercycle.inquiry_saved_scope', 'Each card keeps its recorded inputs, readings and writing. Replay loads saved condition settings into the current workspace; the recorded evidence stays unchanged.')),
               wcNotebookFull && React.createElement("p", { className: "wc-notebook-capacity", role: "status" }, __alloT('stem.watercycle.inquiry_full_hint', 'Four observations are stored. Download your notebook, then remove an observation to make room. Saving never replaces older evidence.')),
               (d.wcExperimentUndo || []).length > 0 && React.createElement("div", { className: "wc-notebook-undo" },
                 React.createElement("p", { role: "status" }, __alloT('stem.watercycle.inquiry_undo_hint', 'Removed evidence can be restored until the next observation is saved.')),
@@ -33396,62 +33524,80 @@ React.createElement("div", {
                 "aria-label": __alloT('stem.watercycle.a11y_saved_experiment_observations', 'Saved experiment observations')
               },
                 wcExperimentLog.slice().reverse().map(function(entry, entryIndex) {
-                  var prediction = WATER_CYCLE_PREDICTIONS[entry.prediction] || WATER_CYCLE_PREDICTIONS.mixed;
-                  var evidencePrediction = WATER_CYCLE_PREDICTIONS[entry.answer];
                   var evidenceLabel = WCExploreNotebook.evidenceLabel(entry);
                   var recordedClaimLabel = WCExploreNotebook.claimLabel(entry);
                   var originalIndex = wcExperimentLog.length - 1 - entryIndex;
                   var recordedChanges = WCExploreNotebook.changedInputs(entry.baseline, entry.snapshot);
+                  var completeRecord = WCExploreNotebook.complete(entry.baseline) && WCExploreNotebook.complete(entry.snapshot);
+                  var recordedMethod = !completeRecord ? __alloT('stem.watercycle.inquiry_record_method_partial', 'Partial input record')
+                    : recordedChanges.length === 1 ? __alloT('stem.watercycle.inquiry_record_method_one', '{input} changed').replace('{input}', __alloT('stem.watercycle.inquiry_input_' + recordedChanges[0].key, recordedChanges[0].label))
+                    : recordedChanges.length > 1 ? __alloT('stem.watercycle.inquiry_record_method_many', '{count} inputs changed').replace('{count}', recordedChanges.length) : __alloT('stem.watercycle.inquiry_record_method_same', 'Inputs match');
+                  var recordedStatus = entry.matched === true ? __alloT('stem.watercycle.inquiry_record_status_agrees', 'Evidence agrees')
+                    : entry.matched === false ? __alloT('stem.watercycle.inquiry_record_status_differs', 'Evidence differs') : __alloT('stem.watercycle.inquiry_record_status_unknown', 'Claim check not recorded');
                   var deltas = entry.deltas || {};
-                  var evaporationDelta = typeof deltas.evaporation === 'number' ? deltas.evaporation : 0;
-                  var runoffDelta = typeof deltas.runoff === 'number' ? deltas.runoff : 0;
-                  var infiltrationDelta = typeof deltas.infiltration === 'number' ? deltas.infiltration : 0;
+                  var savedChanges = [
+                    { key: 'evaporation', label: 'Evaporation', value: deltas.evaporation, unit: 'x' },
+                    { key: 'runoff', label: 'Runoff', value: deltas.runoff, unit: 'pts' },
+                    { key: 'infiltration', label: 'Infiltration', value: deltas.infiltration, unit: 'pts' }
+                  ];
                   var routeShares = entry.routeShares || null;
-                  var hasRouteShares = routeShares && typeof routeShares.runoff === 'number' && typeof routeShares.infiltration === 'number' && typeof routeShares.plant === 'number';
-                  var routeMixAccessibility = hasRouteShares
-                    ? ' Path mix: runoff ' + routeShares.runoff + ' percent; underground infiltration ' + routeShares.infiltration + ' percent; plant uptake ' + routeShares.plant + ' percent.'
-                    : '';
+                  var hasRouteShares = routeShares && ['runoff', 'infiltration', 'plant'].every(function(key) { return typeof routeShares[key] === 'number' && isFinite(routeShares[key]); });
                   return React.createElement("div", {
                     key: entry.key || entry.savedAt || entryIndex,
                     className: "wc-log-entry",
                     role: "listitem",
-                    "aria-label": (entry.label || "Custom controls") + ". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim. Claim: " + recordedClaimLabel + ". Evidence summary: " + evidenceLabel + "." + routeMixAccessibility
+                    "data-recorded-status": entry.matched === true ? "agrees" : entry.matched === false ? "differs" : "unknown",
+                    "aria-label": (entry.label || "Custom controls") + ". " + recordedStatus + ". Claim: " + recordedClaimLabel + ". Evidence summary: " + evidenceLabel + "."
                   },
                     React.createElement("span", { className: "wc-log-entry-index", "aria-hidden": "true" }, String(wcExperimentLog.length - entryIndex)),
                     React.createElement("div", { className: "wc-log-entry-copy" },
-                      React.createElement("strong", null, entry.label || "Custom controls"),
-                      React.createElement("span", null, (entry.matched ? "Evidence agrees" : "Evidence differs") + " · Claim: " + recordedClaimLabel),
-                      React.createElement("span", { className: "wc-log-entry-evidence" }, "Evidence summary: " + evidenceLabel),
-                      hasRouteShares && React.createElement("span", { className: "wc-log-entry-route-mix" }, "Path mix (relative): Runoff " + routeShares.runoff + "% · Underground " + routeShares.infiltration + "% · Plant " + routeShares.plant + "%"),
-                      React.createElement("small", null, "Evap " + formatWcDelta(evaporationDelta, "x", 2) + " · Runoff " + formatWcDelta(runoffDelta, "", 0) + " · Infiltration " + formatWcDelta(infiltrationDelta, "", 0))
+                      React.createElement("h5", { className: "wc-notebook-record-title" }, entry.label || "Custom controls"),
+                      React.createElement("span", { className: "wc-notebook-record-method" }, recordedMethod),
+                      React.createElement("span", { className: "wc-notebook-record-claim" }, recordedStatus)
+                    ),
+                    React.createElement("div", { className: "wc-notebook-changes" },
+                      React.createElement("h6", null, __alloT('stem.watercycle.inquiry_saved_changes', 'Saved changes')),
+                      React.createElement("p", null, __alloT('stem.watercycle.inquiry_saved_change_scope', 'Saved scenario minus saved baseline. Land changes use index points (pts).')),
+                      React.createElement("dl", null, savedChanges.map(function(change) {
+                        var recorded = typeof change.value === 'number' && isFinite(change.value);
+                        return React.createElement("div", { key: change.key, "data-recorded-change": change.key, "data-recorded-value": recorded ? String(change.value) : "missing" },
+                          React.createElement("dt", null, __alloT('stem.watercycle.inquiry_saved_' + change.key, change.label)),
+                          React.createElement("dd", null, recorded ? (change.value > 0 ? '+' : '') + String(change.value) + ' ' + change.unit : __alloT('stem.watercycle.inquiry_not_recorded', 'Not recorded')));
+                      }))
                     ),
                     React.createElement("div", { className: "wc-log-entry-actions" }, entry.snapshot && React.createElement("button", {
                       type: "button",
                       className: "wc-log-replay",
-                      "aria-label": "Replay saved observation: " + (entry.label || "Custom controls"),
-                      onClick: function() { replayWcObservation(entry); }
-                    }, "Replay"),
+                      "aria-label": __alloT('stem.watercycle.inquiry_replay_settings', 'Replay settings') + ": " + (entry.label || "Custom controls"),
+                      "aria-describedby": "wcNotebookReplayHelp",
+                      onClick: function() { replayWcObservation(entry); focusWcComparisonTarget(entry.baseline ? "wcFairTestHeading" : "wcSetScenarioBaseline"); }
+                    }, __alloT('stem.watercycle.inquiry_replay_settings', 'Replay settings')),
                     React.createElement("button", { type: "button", "aria-label": __alloT('stem.watercycle.inquiry_remove_name', 'Remove observation: {label}').replace('{label}', entry.label || 'Custom controls'), onClick: function() { removeWcObservation(originalIndex); } }, __alloT('stem.watercycle.inquiry_remove', 'Remove'))),
                     React.createElement("details", { className: "wc-notebook-reflection" },
                       React.createElement("summary", null, __alloT('stem.watercycle.inquiry_explain', 'Explain this observation')),
+                      React.createElement("p", { className: "wc-notebook-recorded-claim" }, React.createElement("strong", null, __alloT('stem.watercycle.inquiry_saved_claim', 'Saved claim: ')), recordedClaimLabel),
+                      React.createElement("p", { className: "wc-log-entry-evidence" }, React.createElement("strong", null, __alloT('stem.watercycle.inquiry_saved_summary', 'Evidence summary: ')), evidenceLabel),
                       React.createElement("p", { className: "wc-notebook-method" }, !WCExploreNotebook.complete(entry.baseline) || !WCExploreNotebook.complete(entry.snapshot)
-                        ? __alloT('stem.watercycle.inquiry_legacy', 'Some inputs were not recorded in this earlier observation. Its original claim and signed deltas are preserved.')
+                        ? __alloT('stem.watercycle.inquiry_saved_legacy', 'Some inputs were not recorded in this earlier observation. Missing readings or changes say Not recorded. Replay uses model defaults for missing condition settings; this record stays incomplete.')
                         : recordedChanges.length === 1 ? __alloT('stem.watercycle.inquiry_record_one', 'One input changed; the other seven were held fixed.')
                         : recordedChanges.length > 1 ? __alloT('stem.watercycle.inquiry_record_many', 'Multiple inputs changed. This comparison cannot isolate one cause.')
                         : __alloT('stem.watercycle.inquiry_record_same', 'The recorded inputs are identical.')),
+                      !entry.baseline && React.createElement("p", { className: "wc-notebook-baseline-missing" }, __alloT('stem.watercycle.inquiry_record_no_baseline', 'This observation has no saved baseline. Replay loads its settings; use Set baseline to start a new comparison.')),
                       recordedChanges.length > 0 && React.createElement("ul", null, recordedChanges.map(function(input) { return React.createElement("li", { key: input.key }, __alloT('stem.watercycle.inquiry_input_' + input.key, input.label) + ': ' + WCExploreNotebook.formatInput(input.key, input.before) + ' → ' + WCExploreNotebook.formatInput(input.key, input.after)); })),
                       entry.metrics && React.createElement("div", { className: "wc-notebook-values" }, React.createElement("table", null,
                         React.createElement("caption", null, __alloT('stem.watercycle.inquiry_recorded_values', 'Recorded model values')),
-                        React.createElement("thead", null, React.createElement("tr", null, ['Reading', 'Baseline', 'Current'].map(function(label) { return React.createElement("th", { key: label, scope: 'col' }, __alloT('stem.watercycle.inquiry_table_' + label.toLowerCase(), label)); }))),
+                        React.createElement("thead", null, React.createElement("tr", null, ['Reading', 'Saved baseline', 'Saved scenario'].map(function(label) { return React.createElement("th", { key: label, scope: 'col' }, __alloT('stem.watercycle.inquiry_table_' + label.toLowerCase().replace(/ /g, '_'), label)); }))),
                         React.createElement("tbody", null, ['evaporation', 'runoff', 'infiltration'].map(function(metric) {
                           var before = entry.metrics.baseline && entry.metrics.baseline[metric], after = entry.metrics.current && entry.metrics.current[metric];
                           return React.createElement("tr", { key: metric }, React.createElement("th", { scope: 'row' }, metric === 'evaporation' ? __alloT('stem.watercycle.inquiry_metric_evap', 'Evaporation (x)') : metric === 'runoff' ? __alloT('stem.watercycle.inquiry_metric_runoff', 'Runoff (/100)') : __alloT('stem.watercycle.inquiry_metric_infiltration', 'Infiltration (/100)')),
-                            React.createElement("td", null, before == null ? '—' : before), React.createElement("td", null, after == null ? '—' : after));
+                            React.createElement("td", null, typeof before === 'number' && isFinite(before) ? before : __alloT('stem.watercycle.inquiry_not_recorded', 'Not recorded')), React.createElement("td", null, typeof after === 'number' && isFinite(after) ? after : __alloT('stem.watercycle.inquiry_not_recorded', 'Not recorded')));
                         })))),
+                      hasRouteShares && React.createElement("p", { className: "wc-log-entry-route-mix" }, "Saved pathway mix: Runoff " + routeShares.runoff + "% · Underground " + routeShares.infiltration + "% · Plant " + routeShares.plant + "%. These relative branch shares are separate from the independent readings above; they are not measured water volumes."),
+                      React.createElement("p", { className: "wc-notebook-saved-scope" }, __alloT('stem.watercycle.inquiry_frozen_values', 'Only recorded values are shown. Changing current controls does not change them or fill in missing evidence.')),
                       React.createElement("p", null, __alloT('stem.watercycle.inquiry_boundary', 'Independent teaching indices are not a measured water budget. Use the saved values to explain a change, then name a limitation.')),
                       [
                         { key: 'explanation', label: __alloT('stem.watercycle.inquiry_explanation', 'My explanation'), hint: __alloT('stem.watercycle.inquiry_explanation_hint', 'What changed, and which modeled relationship could explain it?') },
-                        { key: 'evidence', label: __alloT('stem.watercycle.inquiry_evidence', 'Evidence I used'), hint: __alloT('stem.watercycle.inquiry_evidence_hint', 'Refer to the baseline, current reading, and signed change. What can this comparison not establish?') },
+                        { key: 'evidence', label: __alloT('stem.watercycle.inquiry_evidence', 'Evidence I used'), hint: __alloT('stem.watercycle.inquiry_saved_evidence_hint', 'Refer to the saved baseline, saved scenario and signed change. What can this comparison not establish?') },
                         { key: 'nextTest', label: __alloT('stem.watercycle.inquiry_next', 'My next test'), hint: __alloT('stem.watercycle.inquiry_next_hint', 'Which one input would you change next, and what would you hold fixed?') }
                       ].map(function(field) {
                         var id = 'wcNotebookNote-' + originalIndex + '-' + field.key;
@@ -33893,11 +34039,11 @@ React.createElement("div", {
                 React.createElement("div", { className: "wc-signal-dashboard-title" },
                   React.createElement("span", { "aria-hidden": "true" }, "◒"),
                   React.createElement("strong", { id: "wcSignalDashboardTitle" }, "What the model is showing"),
-                  React.createElement("span", null, "LIVE COMPARISON")
+                  React.createElement("span", null, "Current condition cues")
                 ),
-                React.createElement("span", { className: "wc-signal-focus-chip", "aria-label": "Focused stage: " + currentStageLabel }, "Focus · " + currentStageLabel)
+                React.createElement("span", { className: "wc-signal-focus-chip", "aria-label": journeyReplayIsScrubbed ? "Replay focus: " + wcSignalChartLabels[wcSignalChartStageIndex] : "Focused stage: " + currentStageLabel }, journeyReplayIsScrubbed ? "Replay focus · " + wcSignalChartLabels[wcSignalChartStageIndex] : "Focus · " + currentStageLabel)
               ),
-              React.createElement("p", { className: "wc-signal-dashboard-copy" }, "These bars are a simple 0-100 comparison of where water is stored and what is moving it. They are teaching cues, not measured water amounts or a forecast."),
+              React.createElement("p", { className: "wc-signal-dashboard-copy" }, "Bars and lines are independent 0–100 teaching cues. Read how a cue changes when you adjust conditions; they are not measured water amounts or a forecast."),
               React.createElement("div", { className: "wc-signal-driver", role: "note", "data-wc-signal-driver": wcSignalDriver.key, "aria-label": "Current modeled driver: " + wcSignalDriver.label + ". Teaching comparison " + wcSignalDriver.value + " out of 100. " + wcSignalDriver.detail },
                 React.createElement("span", { className: "wc-signal-driver-kicker" }, "What matters most now"),
                 React.createElement("strong", null, wcSignalDriver.label),
@@ -33905,85 +34051,104 @@ React.createElement("div", {
                 React.createElement("span", { className: "wc-signal-driver-copy" }, wcSignalDriver.detail)
               ),
               React.createElement("div", { className: "wc-signal-grid" },
-                React.createElement("div", { className: "wc-signal-bars", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_storage_comparisons', 'Water storage comparisons') },
-                  wcSignalReservoirs.map(function(reservoir) {
-                    return React.createElement("div", {
-                      key: reservoir.key,
-                      className: "wc-signal-bar",
-                      "data-signal-focus": reservoir.key === wcSignalDriver.key ? "true" : undefined,
-                      role: "listitem",
-                      "aria-label": reservoir.label + ": teaching comparison " + reservoir.value + " out of 100; not a measured volume"
-                    },
-                      React.createElement("div", { className: "wc-signal-bar-head" },
-                        React.createElement("span", null, reservoir.label),
-                        React.createElement("span", null, reservoir.value + "/100")
-                      ),
-                      React.createElement("div", {
-                        className: "wc-signal-track",
-                        role: "progressbar",
-                        "aria-label": reservoir.label + " teaching comparison",
-                        "aria-valuemin": 0,
-                        "aria-valuemax": 100,
-                        "aria-valuenow": reservoir.value,
-                        "aria-valuetext": reservoir.value + " out of 100 teaching comparison; not a measured volume"
-                      }, React.createElement("span", { style: { width: reservoir.value + "%" } }))
-                    );
-                  })
-                ),
-                React.createElement("div", { className: "wc-signal-chart", "data-watercycle-chart": "true", "data-signal-active": wcSignalActiveSeries, "data-signal-stage-index": String(wcSignalChartStageIndex) },
+                React.createElement("div", { className: "wc-signal-chart", "data-watercycle-chart": "true", "data-signal-active": wcSignalActiveSeries, "data-signal-stage-index": String(wcSignalChartStageIndex), "data-signal-inspect-index": String(wcSignalInspectIndex), "data-signal-inspect-place": wcSignalInspectPlace },
+                  React.createElement("div", { className: "wc-signal-chart-heading" },
+                    React.createElement("strong", null, "Teaching signals by place"),
+                    React.createElement("span", null, "Separate scores · 0–100")
+                  ),
                   React.createElement("svg", {
+                    className: "wc-signal-plot",
                     viewBox: "0 0 " + wcSignalChartWidth + " " + wcSignalChartHeight,
                     role: "img",
                     "aria-labelledby": "wcSignalChartTitle wcSignalChartDesc",
                     preserveAspectRatio: "xMidYMid meet"
                   },
-                    React.createElement("title", { id: "wcSignalChartTitle" }, "Water-cycle teaching comparisons"),
-                    React.createElement("desc", { id: "wcSignalChartDesc" }, "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: " + wcSignalChartLabels[wcSignalChartStageIndex] + "."),
+                    React.createElement("title", { id: "wcSignalChartTitle" }, "Water-cycle teaching signals by place"),
+                    React.createElement("desc", { id: "wcSignalChartDesc" }, "Independent scores from 0 to 100, not measurements. Places are not elapsed time or a required droplet route. Energy is solid with circle markers, surface flow is dashed with square markers, and storage is dotted with diamond markers. " + wcSignalChartFocusKind + " is " + wcSignalChartLabels[wcSignalChartStageIndex] + "; inspected values are at " + wcSignalChartLabels[wcSignalInspectIndex] + ". Exact scores are available below."),
                     [25, 50, 75].map(function(gridValue) {
-                      return React.createElement("line", {
-                        key: "grid-" + gridValue,
-                        className: "wc-signal-gridline",
-                        x1: wcSignalChartPad.left,
-                        x2: wcSignalChartWidth - wcSignalChartPad.right,
-                        y1: wcSignalChartY(gridValue),
-                        y2: wcSignalChartY(gridValue)
-                      });
+                      return React.createElement("line", { key: "grid-" + gridValue, className: "wc-signal-gridline", x1: wcSignalChartPad.left, x2: wcSignalChartWidth - wcSignalChartPad.right, y1: wcSignalChartY(gridValue), y2: wcSignalChartY(gridValue) });
                     }),
+                    React.createElement("rect", { className: "wc-signal-inspect-band", "aria-hidden": "true", x: wcSignalChartX(wcSignalInspectIndex) - 12, y: wcSignalChartPad.top, width: 24, height: wcSignalChartHeight - wcSignalChartPad.bottom - wcSignalChartPad.top, rx: 8 }),
                     React.createElement("line", { className: "wc-signal-axis", x1: wcSignalChartPad.left, x2: wcSignalChartPad.left, y1: wcSignalChartPad.top, y2: wcSignalChartHeight - wcSignalChartPad.bottom }),
                     React.createElement("line", { className: "wc-signal-axis", x1: wcSignalChartPad.left, x2: wcSignalChartWidth - wcSignalChartPad.right, y1: wcSignalChartHeight - wcSignalChartPad.bottom, y2: wcSignalChartHeight - wcSignalChartPad.bottom }),
                     [0, 50, 100].map(function(axisValue) {
-                      return React.createElement("text", {
-                        key: "axis-" + axisValue,
-                        className: "wc-signal-axis-label",
-                        x: wcSignalChartPad.left - 6,
-                        y: wcSignalChartY(axisValue) + 3,
-                        textAnchor: "end"
-                      }, String(axisValue));
+                      return React.createElement("text", { key: "axis-" + axisValue, className: "wc-signal-axis-label", x: wcSignalChartPad.left - 8, y: wcSignalChartY(axisValue) + 4, textAnchor: "end" }, String(axisValue));
                     }),
-                    React.createElement("text", { className: "wc-signal-axis-label", x: 10, y: 86, transform: "rotate(-90 10 86)", textAnchor: "middle" }, "Teaching comparison"),
                     React.createElement("line", { className: "wc-signal-stage-marker", "aria-hidden": "true", x1: wcSignalChartX(wcSignalChartStageIndex), x2: wcSignalChartX(wcSignalChartStageIndex), y1: wcSignalChartPad.top, y2: wcSignalChartHeight - wcSignalChartPad.bottom }),
                     React.createElement("circle", { className: "wc-signal-stage-marker-dot", "aria-hidden": "true", cx: wcSignalChartX(wcSignalChartStageIndex), cy: wcSignalChartPad.top + 1, r: 4 }),
-                    React.createElement("text", { className: "wc-signal-stage-marker-label", "aria-hidden": "true", x: wcSignalChartX(wcSignalChartStageIndex), y: 11, textAnchor: "middle" }, wcSignalChartLabels[wcSignalChartStageIndex]),
-                    React.createElement("path", { className: "wc-signal-series", "data-signal-series": "energy", d: wcSignalChartPath(wcSignalEnergySeries), fill: "none", stroke: "#f59e0b", strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke" }),
-                    React.createElement("path", { className: "wc-signal-series", "data-signal-series": "flow", d: wcSignalChartPath(wcSignalFlowSeries), fill: "none", stroke: "#0ea5e9", strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke" }),
-                    React.createElement("path", { className: "wc-signal-series", "data-signal-series": "storage", d: wcSignalChartPath(wcSignalStorageSeries), fill: "none", stroke: "#10b981", strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke" }),
+                    React.createElement("text", { className: "wc-signal-stage-marker-label", "aria-hidden": "true", x: wcSignalChartX(wcSignalChartStageIndex), y: 15, textAnchor: wcSignalChartStageIndex === 0 ? "start" : wcSignalChartStageIndex === 4 ? "end" : "middle" }, wcSignalChartLabels[wcSignalChartStageIndex]),
+                    wcSignalSeries.map(function(series) {
+                      return React.createElement("path", { key: series.key, className: "wc-signal-series", "data-signal-series": series.key, d: wcSignalChartPath(series.values), fill: "none", stroke: series.color, strokeWidth: 3, strokeDasharray: series.dash, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke" });
+                    }),
+                    wcSignalSeries.map(function(series) { return wcSignalPointMark(series, wcSignalChartX(wcSignalInspectIndex), wcSignalChartY(series.values[wcSignalInspectIndex])); }),
                     wcSignalChartLabels.map(function(label, labelIndex) {
-                      return React.createElement("text", {
-                        key: label,
-                        x: wcSignalChartX(labelIndex),
-                        y: wcSignalChartHeight - 10,
-                        textAnchor: "middle"
-                      }, label);
+                      return React.createElement("text", { key: label, className: "wc-signal-place-label", x: wcSignalChartX(labelIndex), y: wcSignalChartHeight - 10, textAnchor: "middle" }, label);
                     })
                   ),
-                  React.createElement("div", { className: "wc-signal-legend", role: "list", "aria-label": __alloT('stem.watercycle.a11y_transfer_driver_legend', 'Transfer driver legend') },
-                    React.createElement("span", { role: "listitem" }, React.createElement("i", { "aria-hidden": "true" }), "Energy"),
-                    React.createElement("span", { role: "listitem" }, React.createElement("i", { className: "is-flow", "aria-hidden": "true" }), "Surface flow"),
-                    React.createElement("span", { role: "listitem" }, React.createElement("i", { className: "is-storage", "aria-hidden": "true" }), "Storage")
+                  React.createElement("div", { className: "wc-signal-legend", role: "list", "aria-label": "Teaching signal line and marker key" },
+                    wcSignalSeries.map(function(series) {
+                      return React.createElement("span", { key: series.key, role: "listitem" }, wcSignalLegendMark(series), React.createElement("span", null, series.label), React.createElement("small", null, series.pattern));
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "wc-signal-inspection" },
+                  React.createElement("div", { className: "wc-signal-inspection-controls" },
+                    React.createElement("label", { className: "wc-signal-inspect-control", htmlFor: "wcSignalInspectPlace" },
+                      React.createElement("span", null, "Inspect a place"),
+                      React.createElement("select", { id: "wcSignalInspectPlace", value: wcSignalInspectPlace, "aria-describedby": "wcSignalInspectHint", onChange: function(event) { upd('wcSignalInspectPlace', event.target.value); } },
+                        React.createElement("option", { value: "follow" }, "Follow " + wcSignalChartFocusKind.toLowerCase() + " · " + wcSignalChartLabels[wcSignalChartStageIndex]),
+                        wcSignalChartPlaceKeys.map(function(key, index) { return React.createElement("option", { key: key, value: key }, wcSignalChartLabels[index]); })
+                      )
+                    ),
+                    React.createElement("p", { id: "wcSignalInspectHint", className: "wc-signal-inspect-hint" }, "Select a place to read its cues, or follow the stage focus.")
+                  ),
+                  React.createElement("div", { className: "wc-signal-reading", role: "status", "aria-live": "polite", "aria-atomic": "true", "data-signal-reading-place": wcSignalChartPlaceKeys[wcSignalInspectIndex] },
+                    React.createElement("div", { className: "wc-signal-reading-head" },
+                      React.createElement("strong", null, wcSignalChartLabels[wcSignalInspectIndex] + " · Teaching scores"),
+                      React.createElement("span", null, wcSignalInspectPlace === 'follow' ? "Following " + wcSignalChartFocusKind.toLowerCase() : "Inspecting this place · " + wcSignalChartFocusKind.toLowerCase() + " " + wcSignalChartLabels[wcSignalChartStageIndex])
+                    ),
+                    React.createElement("dl", null, wcSignalSeries.map(function(series) { return React.createElement("div", { key: series.key, "data-signal-reading-series": series.key }, React.createElement("dt", null, series.label), React.createElement("dd", null, series.values[wcSignalInspectIndex], React.createElement("small", null, "/100"))); }))
+                  )
+                ),
+                React.createElement("section", { className: "wc-signal-stores", "aria-labelledby": "wcSignalStoresTitle" },
+                  React.createElement("h4", { id: "wcSignalStoresTitle" }, "Storage cues by store"),
+                  React.createElement("p", { className: "wc-signal-stores-copy" }, "Compare each store with itself as conditions change."),
+                  React.createElement("div", { className: "wc-signal-bars", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_storage_comparisons', 'Water storage comparisons') },
+                    wcSignalReservoirs.map(function(reservoir) {
+                      return React.createElement("div", {
+                        key: reservoir.key,
+                        className: "wc-signal-bar",
+                        "data-signal-focus": reservoir.key === wcSignalDriver.key ? "true" : undefined,
+                        role: "listitem",
+                        "aria-label": reservoir.label + ": teaching comparison " + reservoir.value + " out of 100; not a measured volume"
+                      },
+                        React.createElement("div", { className: "wc-signal-bar-head" },
+                          React.createElement("span", null, reservoir.label),
+                          React.createElement("span", null, reservoir.value + "/100")
+                        ),
+                        React.createElement("div", {
+                          className: "wc-signal-track",
+                          role: "progressbar",
+                          "aria-label": reservoir.label + " teaching comparison",
+                          "aria-valuemin": 0,
+                          "aria-valuemax": 100,
+                          "aria-valuenow": reservoir.value,
+                          "aria-valuetext": reservoir.value + " out of 100 teaching comparison; not a measured volume"
+                        }, React.createElement("span", { style: { width: reservoir.value + "%" } }))
+                      );
+                    })
+                  )
+                ),
+                React.createElement("details", { className: "wc-signal-values" },
+                  React.createElement("summary", null, "Read all chart values"),
+                  React.createElement("table", null,
+                    React.createElement("caption", null, "Independent teaching scores (0–100) for each place"),
+                    React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", { scope: "col" }, "Place"), wcSignalSeries.map(function(series) { return React.createElement("th", { key: series.key, scope: "col" }, series.label); }))),
+                    React.createElement("tbody", null, wcSignalChartLabels.map(function(label, index) { return React.createElement("tr", { key: label, "data-signal-values-place": wcSignalChartPlaceKeys[index], "data-inspected": index === wcSignalInspectIndex ? "true" : undefined }, React.createElement("th", { scope: "row" }, label), wcSignalSeries.map(function(series) { return React.createElement("td", { key: series.key, "data-signal-value": series.key }, series.values[index]); })); }))
                   )
                 )
               ),
-              React.createElement("p", { role: "note", className: "text-[0.625rem] mt-2 " + (isDark ? "text-cyan-200" : "text-slate-600") }, "Read the chart as a comparison: changing solar energy mostly lifts the energy signal, while rain, saturation, slope, cover, and permeability redistribute surface flow and storage.")
+              React.createElement("p", { role: "note", className: "wc-signal-chart-note" }, "Scores use current conditions; replay changes the focus. The horizontal labels are places, not elapsed time or a route every droplet follows. Compare each cue with itself; these scores do not form a water or energy balance.")
             ),
 
             React.createElement('section', { className: 'wc-next-test wc-focus-secondary', role: 'region', 'aria-labelledby': 'wcNextTestTitle', 'data-watercycle-next-test': 'true', 'data-wc-focus-key': wcSignalDriver.key, 'data-wc-focus-state': wcSignalFocusState },

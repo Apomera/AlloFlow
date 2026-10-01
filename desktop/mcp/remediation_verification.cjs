@@ -1,16 +1,45 @@
 'use strict';
 const PDF_UA_UNAVAILABLE_REASONS = ['validator_not_available', 'validator_timeout', 'validator_error', 'attempt_finalization_reserve', 'validator_evidence_unbound'];
 const PDF_UA_NOT_RUN_REASONS = ['disabled_for_institution_pilot', 'independent_validator_not_packaged'];
-function invalidPdfEvidence() { throw new Error('Incomplete or contradictory PDF/UA validation evidence.'); }
-function pdfCount(value) {
-  if (!Number.isSafeInteger(value) || value < 0 || value > 1000000) invalidPdfEvidence();
+// The reason travels on the error (detail) so the driver can report it instead of swallowing it.
+function invalidPdfEvidence(detail) {
+  const error = new Error('Incomplete or contradictory PDF/UA validation evidence' + (detail ? ': ' + detail : '') + '.');
+  error.detail = detail || null;
+  throw error;
+}
+// veraPDF counts every check it runs, and long documents legitimately pass a million (the IRS 1040
+// instructions: 2,164,395 passed checks). A former 1,000,000 ceiling here threw those complete
+// reports away. Any non-negative safe integer is a real count.
+function pdfCount(value, key) {
+  if (!Number.isSafeInteger(value) || value < 0) invalidPdfEvidence((key || 'a count') + ' is missing or is not a whole number');
   return value;
 }
+// veraPDF ends a job early on a timeout or a cancel (for example a failure limit). Its counts then
+// cover only part of the PDF: say so, with the count, and never let it read as a pass.
+function partialPdfEvidence(validation) {
+  const details = validation.details || {};
+  const n = key => (Number.isSafeInteger(details[key]) && details[key] >= 0 ? details[key] : null);
+  const passed = n('passedChecks'), failed = n('failedChecks');
+  const status = String(validation.jobEndStatus).slice(0, 40);
+  const counted = passed !== null && failed !== null;
+  const fmt = v => v.toLocaleString('en-US');
+  const error = new Error('veraPDF stopped before it finished checking this PDF (job end status: ' + status + '). '
+    + (counted
+      ? 'The PDF was only partly checked: ' + fmt(passed + failed) + ' checks ran (' + fmt(passed) + ' passed, ' + fmt(failed) + ' failed) before veraPDF stopped'
+      : 'The PDF was only partly checked, and veraPDF did not report how many checks ran')
+    + ', so no PDF/UA-1 result is given for it.');
+  error.code = 'ALLOFLOW_VERAPDF_PARTIAL';
+  error.jobEndStatus = status;
+  error.checkedChecks = counted ? passed + failed : null;
+  error.passedChecks = passed;
+  error.failedChecks = failed;
+  throw error;
+}
 function pdfCounts(value, compliant) {
-  const counts = Object.fromEntries(['failedRules', 'failedChecks', 'passedRules', 'passedChecks'].map(key => [key, pdfCount(value[key])]));
+  const counts = Object.fromEntries(['failedRules', 'failedChecks', 'passedRules', 'passedChecks'].map(key => [key, pdfCount(value[key], key)]));
   if (counts.failedRules + counts.passedRules === 0 || counts.failedChecks + counts.passedChecks === 0
     || (counts.failedRules === 0) !== (counts.failedChecks === 0)
-    || compliant !== (counts.failedRules === 0 && counts.failedChecks === 0)) invalidPdfEvidence();
+    || compliant !== (counts.failedRules === 0 && counts.failedChecks === 0)) invalidPdfEvidence('the rule and check counts contradict each other or the compliance flag');
   return counts;
 }
 // The CLI is invoked on exactly one immutable PDF with --flavour ua1. Missing
@@ -21,14 +50,17 @@ function parsePdfUaCliReport(parsed, exitCode) {
   const jobs = report && report.jobs;
   const validations = Array.isArray(jobs) && jobs.length === 1 && jobs[0].validationResult;
   const validation = Array.isArray(validations) && validations.length === 1 && validations[0];
-  if (!validation || typeof validation.compliant !== 'boolean' || !validation.details
-    || (exitCode !== 0 && !(exitCode === 1 && validation.compliant === false))
-    || (validation.jobEndStatus !== undefined && validation.jobEndStatus !== 'normal')
-    || (validation.profileName !== undefined && validation.profileName !== 'PDF/UA-1 validation profile')) invalidPdfEvidence();
+  if (validation && typeof validation === 'object' && validation.jobEndStatus !== undefined && validation.jobEndStatus !== 'normal') partialPdfEvidence(validation);
+  if (!validation || typeof validation.compliant !== 'boolean' || !validation.details)
+    invalidPdfEvidence('the report does not hold exactly one validation result with a compliance flag and details');
+  if (exitCode !== 0 && !(exitCode === 1 && validation.compliant === false))
+    invalidPdfEvidence('veraPDF exited with code ' + exitCode + ', which does not match its report');
+  if (validation.profileName !== undefined && validation.profileName !== 'PDF/UA-1 validation profile')
+    invalidPdfEvidence('the report used a profile other than PDF/UA-1');
   const counts = pdfCounts(validation.details, validation.compliant);
   const summaries = validation.details.ruleSummaries;
-  if (summaries !== undefined && !Array.isArray(summaries)) invalidPdfEvidence();
-  if (validation.compliant && (summaries || []).some(rule => rule && rule.ruleStatus === 'FAILED')) invalidPdfEvidence();
+  if (summaries !== undefined && !Array.isArray(summaries)) invalidPdfEvidence('the rule summaries are malformed');
+  if (validation.compliant && (summaries || []).some(rule => rule && rule.ruleStatus === 'FAILED')) invalidPdfEvidence('a passing report lists a failed rule');
   return { report, validation, counts };
 }
 // Shared by the remote producer and public sanitizer. Every executed result is

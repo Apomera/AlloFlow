@@ -10135,7 +10135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (!saveState(candidate, current)) {
         setEcosystemNotice('Could not save this evidence on the device. Your explanation and existing records are kept. Retry device save, then save this evidence again.');
         setLearningNotice({ kind: 'error', message: 'Evidence was not saved. Your current draft is still available.' });
-        aqAnnounce('Evidence was not saved. Your explanation and existing records are kept.');
+        aqAnnounce(__alloAQT('stem.aquaculture.sr_evidence_was_not_saved_your_explanation_and_exist', 'Evidence was not saved. Your explanation and existing records are kept.'));
         return false;
       }
       setEcosystemWorkspace(next); setEcosystemNotice(notice);
@@ -10181,7 +10181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         prediction: record.prediction, baselineScenario: record.baselineScenario, investigationId: record.investigationId
       })), { parkedDraft: ecosystemWorkspace.parkedDraft || aqEcosystemDraft(ecosystemWorkspace) });
       persistEcosystemWorkspace(next, 'Saved settings loaded for replay. The original evidence is unchanged; your previous work is kept under Return to my draft.');
-      aqAnnounce('Experiment replay loaded. Return to my draft restores your previous work.');
+      aqAnnounce(__alloAQT('stem.aquaculture.sr_experiment_replay_loaded_return_to_my_draft_resto', 'Experiment replay loaded. Return to my draft restores your previous work.'));
       focusEcosystemControl('aq-investigation-heading');
     }
 
@@ -10189,11 +10189,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (!ecosystemWorkspace.parkedDraft) return;
       var next = Object.assign({}, ecosystemWorkspace, ecosystemWorkspace.parkedDraft, { parkedDraft: null });
       persistEcosystemWorkspace(next, 'Your previous design, prediction and explanation draft are restored.');
-      aqAnnounce('Your previous draft is restored.');
+      aqAnnounce(__alloAQT('stem.aquaculture.sr_your_previous_draft_is_restored', 'Your previous draft is restored.'));
     }
 
     function saveEcosystemExperiment() {
-      if ((ecosystemWorkspace.experiments || []).length >= 12) { setEcosystemNotice('Experiment log is full at 12 records. Export your portfolio from Home, then remove a record to make space. Your draft and saved evidence were kept.'); aqAnnounce('Experiment log is full. Your draft and saved evidence were kept.'); return; }
+      if ((ecosystemWorkspace.experiments || []).length >= 12) { setEcosystemNotice('Experiment log is full at 12 records. Export your portfolio from Home, then remove a record to make space. Your draft and saved evidence were kept.'); aqAnnounce(__alloAQT('stem.aquaculture.sr_experiment_log_is_full_your_draft_and_saved_evide', 'Experiment log is full. Your draft and saved evidence were kept.')); return; }
       var observation = String(ecosystemWorkspace.observation || '').trim();
       if (observation.length < 20) { setEcosystemNotice('Add an observation of at least 20 characters before saving evidence.'); aqAnnounce(__alloT('stem.aquaculture.sr_more_observation_evidence_is_needed', 'More observation evidence is needed.')); return; }
       var model = aqCalculateEcosystem(ecosystemWorkspace), now = Date.now();
@@ -10214,7 +10214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function saveEcosystemComparison() {
-      if ((ecosystemWorkspace.experiments || []).length >= 12) { setEcosystemNotice('Experiment log is full at 12 records. Export your portfolio from Home, then remove a record to make space. Your draft and saved evidence were kept.'); aqAnnounce('Experiment log is full. Your draft and saved evidence were kept.'); return; }
+      if ((ecosystemWorkspace.experiments || []).length >= 12) { setEcosystemNotice('Experiment log is full at 12 records. Export your portfolio from Home, then remove a record to make space. Your draft and saved evidence were kept.'); aqAnnounce(__alloAQT('stem.aquaculture.sr_experiment_log_is_full_your_draft_and_saved_evide', 'Experiment log is full. Your draft and saved evidence were kept.')); return; }
       var observation = String(ecosystemWorkspace.observation || '').trim();
       if (!ecosystemWorkspace.baselineScenario) { setEcosystemNotice('Save scenario A before creating a comparison report.'); aqAnnounce(__alloT('stem.aquaculture.sr_a_baseline_scenario_is_needed', 'A baseline scenario is needed.')); return; }
       if (observation.length < 20) { setEcosystemNotice('Add an evidence reflection of at least 20 characters before saving the comparison.'); aqAnnounce(__alloT('stem.aquaculture.sr_more_comparison_evidence_is_needed', 'More comparison evidence is needed.')); return; }
@@ -10229,7 +10229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setEcosystemDeleted({ record: ecosystemWorkspace.experiments[index], index: index });
       var experiments = ecosystemWorkspace.experiments.filter(function(item) { return item.id !== experimentId; });
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments }), 'Experiment removed. Undo remove is available in this session.');
-      aqAnnounce('Experiment removed. Undo remove is available.');
+      aqAnnounce(__alloAQT('stem.aquaculture.sr_experiment_removed_undo_remove_is_available', 'Experiment removed. Undo remove is available.'));
     }
 
     function undoEcosystemRemoval() {
@@ -10239,7 +10239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (experiments.length >= 12) { setEcosystemNotice('Make space in the experiment log before restoring the removed record.'); return; }
       experiments.splice(Math.min(ecosystemDeleted.index, experiments.length), 0, ecosystemDeleted.record);
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments }), 'Removed experiment restored.');
-      setEcosystemDeleted(null); aqAnnounce('Removed experiment restored.');
+      setEcosystemDeleted(null); aqAnnounce(__alloAQT('stem.aquaculture.sr_removed_experiment_restored', 'Removed experiment restored.'));
     }
 
     function resetEcosystemWorkspace() {

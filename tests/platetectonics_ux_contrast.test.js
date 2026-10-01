@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { parse } from 'acorn';
 
 /**
  * Plate Tectonics — approachability, and the contrast that carries it.
@@ -24,11 +25,36 @@ import { resolve } from 'node:path';
  * real browser, a real screenshot and a real compositor.
  */
 
-const SOURCE = resolve(process.cwd(), 'stem_lab/stem_tool_platetectonics.js');
+// PT_TEST_SOURCE: see platetectonics_boundary_model.test.js.
+const SOURCE = resolve(process.cwd(), process.env.PT_TEST_SOURCE || 'stem_lab/stem_tool_platetectonics.js');
 let cache = null;
 function src() {
   if (cache == null) cache = readFileSync(SOURCE, 'utf8');
   return cache;
+}
+
+let syntaxCache;
+function syntax() {
+  if (syntaxCache) return syntaxCache;
+  const parents = new WeakMap(), calls = [];
+  function visit(node, parent) {
+    if (!node || typeof node !== 'object' || !node.type) return;
+    if (parent) parents.set(node, parent);
+    if (node.type === 'CallExpression') calls.push(node);
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(child => visit(child, node));
+      else visit(value, node);
+    }
+  }
+  visit(parse(src(), { ecmaVersion: 'latest' }));
+  return syntaxCache = { parents, calls };
+}
+
+function glossaryRenderer(text) {
+  const start = text.indexOf('// TAB: GLOSSARY');
+  const end = text.indexOf('// TAB: LESSONS', start);
+  if (start < 0 || end < start) throw new Error('glossary renderer not found');
+  return text.slice(start, end);
 }
 
 describe('Landing screen — a way in', () => {
@@ -36,33 +62,41 @@ describe('Landing screen — a way in', () => {
     const text = src();
     expect(text).toMatch(/'data-pt-start-here': 'true'/);
     expect(text).toMatch(/var START_STEPS = \[/);
-    const strip = text.slice(text.indexOf('var START_STEPS'), text.indexOf('var START_STEPS') + 1800);
-    // Three steps, numbered, each with a verb first.
-    expect((strip.match(/n: '[123]'/g) || []).length).toBe(3);
+    const strip = text.slice(text.indexOf('var START_STEPS'), text.indexOf('];', text.indexOf('var START_STEPS')));
+    // Four steps since 2026-09-27, numbered, each with a verb first: see it,
+    // take it apart, find the mechanism, explain it (and then the quiz).
+    expect((strip.match(/n: '[1234]'/g) || []).length).toBe(4);
     expect(strip).toMatch(/Watch the plates move/);
     expect(strip).toMatch(/Take the three types apart/);
-    expect(strip).toMatch(/Check what stuck/);
+    expect(strip).toMatch(/Find out what moves them/);
+    expect(strip).toMatch(/Explain it, then check what stuck/);
+    expect(strip).toMatch(/tab: 'forces'/);
+    expect(strip).toMatch(/tab: 'explain'/);
   });
 
   it('points step two at what actually keeps its promise', () => {
     const text = src();
     // "Boundaries in Detail" is a catalogue of twenty named real-world
     // boundaries — a good reference, and not an explanation of the three types.
-    // The widget that does take them one at a time is always on the page.
+    // Step two mounts the activity and opens its additional models before focus
+    // moves to the widget that takes the boundary types one at a time.
     expect(text).toMatch(/scrollTo: 'pt-boundary-simulator'/);
     expect(text).toMatch(/id: 'pt-boundary-simulator'/);
   });
 
   it('moves focus with the scroll, not just the viewport', () => {
     const text = src();
-    // The window is meant to be "this handler", not a byte budget for it. At 900
-    // it failed on a two-line comment being added inside the body, which is a
-    // property of the slice and not of the behaviour under test.
-    const step = text.slice(text.indexOf("var target = document.getElementById(st.scrollTo)"),
-                            text.indexOf("var target = document.getElementById(st.scrollTo)") + 1500);
-    expect(step).toMatch(/scrollIntoView/);
-    expect(step).toMatch(/\[data-tect-section\]/);
-    expect(step).toMatch(/focus\(/);
+    // Focus runs after the destination has mounted. This also works from the
+    // Hub, where no simulation is rendered yet.
+    const effect = text.slice(text.indexOf('var ptPendingTopicFocus ='), text.indexOf('function onPtKey(e)'));
+    expect(effect).toMatch(/requestAnimationFrame/);
+    expect(effect).toMatch(/document\.getElementById\(targetId\)/);
+    expect(effect).toMatch(/scrollIntoView/);
+    expect(effect).toMatch(/canvas\[tabindex=/);
+    expect(effect).toMatch(/focus\(/);
+    expect(effect).toMatch(/prefers-reduced-motion/);
+    const step = text.slice(text.indexOf("setTab('sim', st.scrollTo)"), text.indexOf("setTab('sim', st.scrollTo)") + 700);
+    expect(step).toMatch(/ptSetShelf\(true, 'sim'\)/);
     expect(step).toMatch(/announceToSR/);
   });
 });
@@ -259,27 +293,43 @@ describe('Motion — the canvases honour prefers-reduced-motion', () => {
 
   it('stops the globe drifting but leaves the user-driven time-lapse alone', () => {
     const text = src();
-    expect(text).toMatch(/if \(!ptReducedMotion\(\)\) tick \+= 0\.5;/);
+    const start = text.indexOf('function drawEarth(now)');
+    const frame = text.slice(start, text.indexOf('drawEarth();', start));
+    // Viewing longitude belongs to the learner. Ambient cloud/star animation
+    // may run, but it must not rotate the globe during an era comparison.
+    expect(frame).toContain('lon0: canvas._geoLongitude');
+    expect(frame).not.toMatch(/canvas\._geoLongitude\s*=/);
+    expect(frame).toMatch(/if \(!ptReducedMotion\(\)\) tick \+= elapsed \* 30;/);
+    // Deliberate playback uses elapsed time independently of ambient motion.
+    expect(frame).toMatch(/if \(tls\.playing\) \{[\s\S]*?tls\.progress = Math\.min\(lastEra, tls\.progress \+ elapsed \* 0\.48 \* tls\.speed\)/);
   });
 
   it('starts the boundary simulator paused, and the drift off, rather than removing them', () => {
     const text = src();
-    // Both are clocks that run unprompted. Neither control is taken away.
-    expect(text).toMatch(/running: !ptReducedMotion\(\),/);
-    expect(text).toMatch(/var ptDrift = d\.ptDrift != null \? !!d\.ptDrift : !ptReducedMotion\(\);/);
+    // Restored checked evidence always opens paused. Fresh sessions still
+    // respect reduced motion; neither clock control is taken away.
+    expect(text).toMatch(/running: restoredSlab \? false : !ptReducedMotion\(\),/);
+    // Drift is now off for everyone until chosen (see the force lab), which
+    // satisfies reduced motion a fortiori.
+    expect(text).toMatch(/var ptDrift = !!d\.ptDrift;/);
   });
 });
 
 describe('Keyboard — the 3D views can be driven without a mouse', () => {
-  it('makes both 3D canvases a focus stop', () => {
+  it('makes the live 3D canvases focus stops while keeping the hidden alternate section out of tab order', () => {
     const text = src();
     // Both labels call their model "rotatable", and until now the only way to
     // rotate either was to drag it: a keyboard user tabbed from the view toggle
     // straight past the model to the buttons beside it.
     const vent = text.slice(text.indexOf("'data-pt-vent-gl': 'true'"), text.indexOf("'data-pt-vent-gl': 'true'") + 2200);
     const block = text.slice(text.indexOf("'data-tect-gl': 'true'"), text.indexOf("'data-tect-gl': 'true'") + 2200);
-    expect(vent).toMatch(/tabIndex: 0/);
-    expect(block).toMatch(/tabIndex: 0/);
+    expect(vent).toMatch(/tabIndex: ptVent3D \? 0 : -1/);
+    expect(vent).toContain("'aria-hidden': !ptVent3D");
+    expect(block).toMatch(/tabIndex: tectGlLive \? 0 : -1/);
+    expect(text).toContain("'aria-hidden': !tectGlLive");
+    const section = text.slice(text.indexOf('ref: canvasRef,', text.indexOf('var tectGlLive')), text.indexOf("'data-tect-section': 'true'"));
+    expect(section).toContain('tabIndex: tectGlLive ? -1 : 0');
+    expect(section).toContain("'aria-hidden': tectGlLive");
     expect(vent).toMatch(/onKeyDown: function \(ev\)/);
     expect(block).toMatch(/onKeyDown: function \(ev\)/);
   });
@@ -289,7 +339,8 @@ describe('Keyboard — the 3D views can be driven without a mouse', () => {
     const vent = text.slice(text.indexOf("'data-pt-vent-gl': 'true'"), text.indexOf("'data-pt-vent-gl': 'true'") + 2200);
     expect(vent).toMatch(/VentGL\.nudge\(-step, 0\)/);
     expect(vent).toMatch(/VentGL\.zoom\(0\.15\)/);
-    expect(vent).toMatch(/VentGL\.setCam\(-7, -17\)/);
+    // Home restores orientation, zoom and the camera target together.
+    expect(vent).toMatch(/(?:k|key) === 'Home'\)\s*\{\s*VentGL\.resetView\(\);/);
     const block = text.slice(text.indexOf("'data-tect-gl': 'true'"), text.indexOf("'data-tect-gl': 'true'") + 2200);
     expect(block).toMatch(/rotY: view3d\.rotY - step/);
     expect(block).toMatch(/scale: Math\.min\(2\.6, view3d\.scale \+ 0\.15\)/);
@@ -338,12 +389,13 @@ describe('Performance — loops stop working when nobody is looking', () => {
     expect(text).toMatch(/if \(ptOnScreen\(canvas\)\) \(drawRef\.current \|\| draw\)\(ctx, W, H, cur\);/);
   });
 
-  it('stays armed while skipped, so it resumes on scroll rather than staying dead', () => {
+  it('rearms offscreen animation while allowing reduced-motion diagrams to paint', () => {
     const text = src();
-    // Every skip re-arms its own loop. A `return` without one is a panel that
-    // never comes back.
-    expect(text).toMatch(/if \(!ptOnScreen\(cvEl\)\) \{\s*\n\s*if \(!ptReducedMotion\(\)\) cvEl\._tbAnim = requestAnimationFrame\(drawTb\);/);
-    expect(text).toMatch(/if \(!ptOnScreen\(cvEl\)\) \{\s*\n\s*if \(!ptReducedMotion\(\)\) cvEl\._eqAnim = requestAnimationFrame\(drawEq\);/);
+    // Animated panels stay armed while offscreen. A reduced-motion panel must
+    // bypass that return and draw its one still frame even if it starts below
+    // the viewport; it has no animation loop to retry on a later scroll.
+    expect(text).toMatch(/if \(!ptOnScreen\(cvEl\) && !ptReducedMotion\(\)\) \{\s*cvEl\._tbAnim = requestAnimationFrame\(drawTb\);\s*return;/);
+    expect(text).toMatch(/if \(!ptOnScreen\(cvEl\) && !ptReducedMotion\(\)\) \{\s*cvEl\._eqAnim = requestAnimationFrame\(drawEq\);\s*return;/);
   });
 
   it('lets an in-flight eruption finish even off screen', () => {
@@ -382,7 +434,7 @@ describe('Nonvisual — the description says what is on screen, not what could b
     expect(text).toMatch(/'aria-describedby': 'pt-scene-desc'/);
     expect(text).toMatch(/id: 'pt-scene-desc', className: 'sr-only'/);
     // It reports the live state, not a fixed sentence.
-    const scene = text.slice(text.indexOf('var ptSceneText'), text.indexOf('var ptSceneText') + 2400);
+    const scene = text.slice(text.indexOf('var ptSceneText'), text.indexOf('var ptLiveLine', text.indexOf('var ptSceneText')));
     expect(scene).toMatch(/ptFocusBoundary\.a/);
     expect(scene).toMatch(/ptDrift\s*\n?\s*\?/);
     expect(scene).toMatch(/d\.quakeCount/);
@@ -407,21 +459,21 @@ describe('Nonvisual — the description says what is on screen, not what could b
     // which is right on a chip and clumsy read aloud.
     expect(text).toMatch(/var spoken = ptFocusBoundary\.kind === 'divergent'/);
     expect(text).toMatch(/a convergent boundary where two continents collide/);
-    // And it counts in English.
-    expect(text).toMatch(/\(qn === 1 \? ' earthquake' : ' earthquakes'\)/);
-    expect(text).toMatch(/\(en === 1 \? ' eruption\.' : ' eruptions\.'\)/);
+    // And it counts properly: singular and plural as separate translated keys.
+    expect(text).toMatch(/qn === 1 \? __alloT\('stem\.platetectonics\.scene_one_quake', '\{n\} earthquake'\)\.replace\('\{n\}', qn\) : __alloT\('stem\.platetectonics\.scene_n_quakes'/);
+    expect(text).toMatch(/en === 1 \? __alloT\('stem\.platetectonics\.scene_one_eruption', '\{n\} eruption'\)\.replace\('\{n\}', en\) : __alloT\('stem\.platetectonics\.scene_n_eruptions'/);
   });
 
   it('gives every boundary type a plain-language mechanism', () => {
     const text = src();
-    const gist = text.slice(text.indexOf('var PT_BOUNDARY_GIST'), text.indexOf('var PT_BOUNDARY_GIST') + 1200);
+    const gist = text.slice(text.indexOf('var PT_BOUNDARY_GIST'), text.indexOf('};', text.indexOf('var PT_BOUNDARY_GIST')));
     ['subduction', 'collision', 'divergent'].forEach((k) => {
       expect(gist).toMatch(new RegExp(k + ':'));
     });
     // No jargon that the sentence does not itself unpack.
     expect(gist).toMatch(/denser ocean plate is bending down and sinking/);
-    expect(gist).toMatch(/neither plate is dense enough to sink/);
-    expect(gist).toMatch(/new rock is rising into the gap/);
+    expect(gist).toMatch(/buoyant continental crust resists sinking deep into the mantle/);
+    expect(gist).toMatch(/rising mantle partly melts as pressure falls/);
   });
 });
 
@@ -457,7 +509,10 @@ describe('Seismogram — the trace shows what the panels around it claim', () =>
     // top and bottom from about M7 upward — so the largest earthquakes were the
     // ones you could not read. Scaled to the room actually left between the
     // label rows and the bracket, and to the LARGEST phase.
-    expect(text).toMatch(/var halfRoom = Math\.max\(24, Math\.min\(mid - 46, sH - 36 - mid\)\)/);
+    const header = text.match(/var arrivalLabelTop = (\d+), plotTop = (\d+);/);
+    expect(header, 'phase labels need their own row above the trace').not.toBeNull();
+    expect(+header[2]).toBeGreaterThan(+header[1] + 12);
+    expect(text).toMatch(/var halfRoom = Math\.max\(24, Math\.min\(mid - plotTop, sH - 36 - mid\)\)/);
     expect(text).toMatch(/var A = gain \* halfRoom \/ 1\.2;/);
     expect(text).not.toMatch(/var A = gain \* sH \* 0\.40;/);
   });
@@ -640,7 +695,7 @@ describe('Contrast — colour coding and legibility split apart', () => {
     // colours elsewhere in the file, and an unscoped indexOf lands on the first
     // of those instead — a test that then reports on code it was never about.
     const magAt = text.indexOf("{ range: '1-3'");
-    const waveAt = text.indexOf("{ name: 'P-wave', desc:");
+    const waveAt = text.indexOf("{ name: __alloT('stem.platetectonics.eq_wave_p'");
     expect(magAt, 'magnitude table not found').toBeGreaterThan(-1);
     expect(waveAt, 'wave table not found').toBeGreaterThan(-1);
     const tables = text.slice(magAt, magAt + 1200) + text.slice(waveAt, waveAt + 1200);
@@ -825,8 +880,7 @@ describe('Contrast — colour coding and legibility split apart', () => {
 });
 
 describe('The reference shelf is not an answer key', () => {
-  // Everything below the tab content is deliberately a shelf that stays on the
-  // page whatever tab you are on — right everywhere except the quiz. Counted
+  // The optional models shelf starts closed during the quiz. Counted
   // against the bank: FOUR of the eight questions are answered by the panels
   // sitting under them. "What type of boundary creates the Himalayas?" has "the
   // Andes, Japan, the Himalaya" printed under CONVERGENT about four hundred
@@ -836,10 +890,10 @@ describe('The reference shelf is not an answer key', () => {
   // is question five. Scrolling is not retrieval.
   it('puts the shelf away while the quiz is being answered', () => {
     const text = src();
-    expect(text).toMatch(/var ptShelfOpen = simTab !== 'quiz'/);
+    expect(text).toMatch(/var ptShelfDefault = simTab === 'sim' \|\| simTab === 'earthquake' \|\| \(simTab === 'quiz' && ptQuizPassDone\)/);
     // Reopens on its own once a full pass is done — then the shelf is for review.
     expect(text).toMatch(/var ptQuizPassDone = quizIdx >= QUIZZES\.length/);
-    expect(text).toMatch(/ptQuizPassDone \|\| !!d\.ptShelfOpen/);
+    expect(text).toMatch(/var ptShelfOpen = typeof ptShelfChoices\[simTab\] === 'boolean' \? ptShelfChoices\[simTab\] : ptShelfDefault/);
   });
 
   it('gates every panel of the shelf, not just the one that gives away question one', () => {
@@ -859,27 +913,32 @@ describe('The reference shelf is not an answer key', () => {
     expect(text).toMatch(/'data-pt-shelf-closed': 'true'/);
     expect(text).toMatch(/'data-pt-shelf-open': 'true'/);
     expect(text).toMatch(/shelf_open_btn/);
-    expect(text).toMatch(/upd\(\{ ptShelfOpen: true \}\)/);
+    expect(text).toMatch(/onClick: function\(\) \{ ptSetShelf\(true\); \}/);
+    expect(text).toMatch(/choices\[topicId\] = open/);
   });
 
   it('keeps the Start here step working when the shelf it points at is closed', () => {
     const text = src();
-    // Step 2 scrolls to the boundary simulator, which is now conditional. A
-    // missing target must open the shelf, not leave the button inert.
-    expect(text).toMatch(/if \(!target\) \{ upd\(\{ ptShelfOpen: true \}\); return; \}/);
+    // Step two opens the Simulation shelf explicitly, even if a different topic
+    // was active, then the shared effect moves focus after the model mounts.
+    expect(text).toMatch(/setTab\('sim', st\.scrollTo\);\s*ptSetShelf\(true, 'sim'\)/);
+    expect(text).toMatch(/var topicId = topic \|\| simTab/);
   });
 });
 
 describe('The magnitude panel can name the earthquakes the tool makes', () => {
-  it('carries a tier above Strong', () => {
+  it('covers the full magnitude range without treating size as a damage forecast', () => {
     const text = src();
-    // The slider runs to M9 and settleBoundary produces 7.4-9.1 for subduction,
-    // but the tiers stopped at "Strong (6-7)" and lit that card for everything
-    // from M6 up. A student who built a megathrust, watched it trace on the
-    // seismograph and came here was told they had made a "Strong (6-7)".
-    expect(text).toMatch(/range: '8-9'/);
-    expect(text).toMatch(/stem\.platetectonics\.great'/);
-    expect(text).toMatch(/Megathrust/);
+    const begin = text.indexOf("{ range: '1-3'");
+    const bands = text.slice(begin, text.indexOf('].map(function(d2)', begin));
+    expect(bands).toMatch(/range: '1-3', lo: 0, hi: 4, label: 'M1\.0–3\.9'/);
+    expect(bands).toMatch(/range: '4-5', lo: 4, hi: 6, label: 'M4\.0–5\.9'/);
+    expect(bands).toMatch(/range: '6-7', lo: 6, hi: 8, label: 'M6\.0–7\.9'/);
+    // Saved simulator events can exceed the manual slider's M9 maximum.
+    expect(bands).toMatch(/range: '8-9', lo: 8, hi: 99, label: 'M8\.0\+'/);
+    expect(bands).not.toMatch(/damage|Megathrust/);
+    expect(text).toMatch(/__alloT\('stem\.platetectonics\.eq_intensity_separate', 'Magnitude is one value/);
+    expect(text).toMatch(/These magnitude bands do not predict damage at your station/);
   });
 
   it('derives the highlight from the tier bands instead of restating them', () => {
@@ -909,8 +968,9 @@ describe('The seismogram is readable at its own default', () => {
     const text = src();
     // Same choice the Magnitude vs Intensity panel makes further down the page:
     // an abbreviation you declare beats a distortion you hide.
-    expect(text).toMatch(/the height of the trace is compressed/);
-    expect(text).toMatch(/use this one for the ORDER and the TIMING/);
+    expect(text).toMatch(/__alloT\('stem\.platetectonics\.eq_trace_window', 'The time axis resizes/);
+    expect(text).toMatch(/Trace height is compressed so small and large events remain readable/);
+    expect(text).toMatch(/read arrival times rather than true shaking strength/);
   });
 });
 
@@ -930,7 +990,11 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
     const text = src();
     const start = text.indexOf('var buildStress = function (narrow)');
     expect(start).toBeGreaterThan(0);
-    const body = text.slice(start, start + 9000);
+    // To the end of the builder, not a byte budget: the earned-reveal branch
+    // made the function longer without changing any of this.
+    const end = text.indexOf('buildStress(true))', start);
+    expect(end).toBeGreaterThan(start);
+    const body = text.slice(start, end + 20);
     expect(body).toMatch(/var W = narrow \? 380 : 760/);
     expect(body).toMatch(/var blockKids = kids\.splice\(blockStart\);\s*kids\.push\(h\('g', \{ key: 'blk', transform: 'scale\(1\.4\)' \}, blockKids\)\)/);
     expect(body).toMatch(/var meterX = narrow \? 16 : 330, meterW = narrow \? 348 : 400/);
@@ -963,7 +1027,9 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
   it('scales the epicenter map text and readings box by the canvas shrink, and redraws when that changes', () => {
     const text = src();
     const start = text.indexOf('function draw(ctx, cur) {');
-    const body = text.slice(start, start + 7000);
+    // To the end of draw(), not a byte budget: the mystery-quake branch made
+    // the function longer without changing any of this.
+    const body = text.slice(start, text.indexOf('function pointAt(e)', start));
     expect(body).toMatch(/var ui = Math\.max\(1, Math\.min\(1\.7, W_CANVAS \/ \(\(cvNode && cvNode\.clientWidth\) \|\| W_CANVAS\)\)\)/);
     // the HUD grows with its text: width, height, row step and x all follow ui
     expect(body).toMatch(/var rowH = 14 \* ui, hudW = 170 \* ui, hudX = W_CANVAS - 8 - hudW/);
@@ -972,9 +1038,15 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
     const fonts = body.match(/ctx\.font = [^;]+;/g) || [];
     expect(fonts.length).toBeGreaterThanOrEqual(7);
     fonts.forEach((f) => expect(f).toMatch(/\* ui\)/));
-    // a resize alone must trigger a repaint: the width is part of the signature
-    const sig = text.slice(text.indexOf('var sig = JSON.stringify(sRef.current)'), text.indexOf('var sig = JSON.stringify(sRef.current)') + 260);
-    expect(sig).toMatch(/\+ '\|' \+ canvas\.clientWidth;/);
+    // Input commits and resize events repaint without a polling loop. The
+    // behavior suite also checks reduced-motion inputs and detached cleanup.
+    const widget = text.slice(text.indexOf('window.AlloTectonicsEpicenter = function(props)'), text.indexOf('window.AlloX.InteractiveEpicenter = window.AlloTectonicsEpicenter'));
+    expect(widget).toContain('drawRef.current(ctx, sRef.current);');
+    expect(widget).toContain('new ResizeObserver(repaint)');
+    expect(widget).toContain("window.addEventListener('resize', repaint)");
+    expect(widget).toContain('if (repaintRef.current) repaintRef.current();');
+    expect(widget).toContain('if (observer) observer.disconnect();');
+    expect(widget).not.toContain('requestAnimationFrame(');
   });
 
   it('moves the deep-time era names out of the bar and into a legend on phones', () => {
@@ -1038,7 +1110,9 @@ describe('Catalogue searches say when nothing matches', () => {
     expect(text).toMatch(/'data-pt-no-matches': 'true', role: 'status'/);
     expect(text).toMatch(/ptEmptyOr\(d\._plateSearch, PLATE_DB\.filter\(/);
     expect(text).toMatch(/ptEmptyOr\(d\._volcanoSearch, VOLCANO_DB\.filter\(/);
-    expect(text).toMatch(/ptEmptyOr\(d\._glossarySearch, G\.filter\(/);
+    // Paging must still route an empty filtered result through the shared
+    // status message, instead of leaving an empty page of cards.
+    expect(glossaryRenderer(text)).toMatch(/ptEmptyOr\(term, matches\.slice\(first, first \+ pageSize\)\.map\(/);
   });
 });
 
@@ -1132,8 +1206,10 @@ describe('Every key the sim writes is read by something', () => {
   // `liveUpd({...})` channel the canvas writes through.
   it('reads lastQuakeMag back out in the mission card', () => {
     const text = src();
-    expect(text).toMatch(/lastQuakeMag: qMag/);
-    const i = text.indexOf("['Strongest quake'");
+    expect(text).toMatch(/lastMag = qMag/);
+    expect(text).toMatch(/patch\.lastQuakeMag = lastMag/);
+    // The tile's label is translated now, so anchor on its key.
+    const i = text.indexOf("[__alloT('stem.platetectonics.metric_strongest', 'Strongest quake')");
     expect(i).toBeGreaterThan(-1);
     const tile = text.slice(i, i + 700);
     // Now typeof-guarded (a saved string is truthy and has no .toFixed); the
@@ -1224,7 +1300,9 @@ describe('A field label is printed once', () => {
   // value carries the same label the bold span already shows. The review cards
   // had the identical defect on 180 fields.
   const doubled = (text) => {
-    const re = /React\.createElement\('span',\s*\{[^}]*\},\s*"([A-Z][A-Za-z ]{2,20}):\s*"\),\s*\n\s*(?:__alloT\('[^']+',\s*)?"((?:[^"\\]|\\.){0,60})/g;
+    // The label may be a bare literal or (since 2026-09-28) a translated
+    // __alloT('...', "Label: ") call; the scan must see both, or it goes blind.
+    const re = /React\.createElement\('span',\s*\{[^}]*\},\s*(?:__alloT\('[^']+',\s*)?"([A-Z][A-Za-z ]{2,20}):\s*"\)?\),\s*\n\s*(?:__alloT\('[^']+',\s*)?"((?:[^"\\]|\\.){0,60})/g;
     const out = [];
     let m;
     while ((m = re.exec(text))) {
@@ -1235,6 +1313,20 @@ describe('A field label is printed once', () => {
   it('has no render site whose value repeats the label beside it', () => {
     const hits = doubled(src());
     expect(hits, 'labels printed twice: ' + hits.slice(0, 5).join(' | ')).toHaveLength(0);
+  });
+  it('still scans the label spans it is meant to (no vacuous pass)', () => {
+    // Calibration built in: the scan must actually find a few thousand label
+    // spans, whichever form they take.
+    const text = src();
+    const spans = (text.match(/React\.createElement\('span',\s*\{[^}]*\},\s*(?:__alloT\('[^']+',\s*)?"[A-Z][A-Za-z ]{2,20}:\s*"\)?\)/g) || []).length;
+    expect(spans).toBeGreaterThan(2000);
+  });
+  it('translates the catalogue field labels', () => {
+    const text = src();
+    expect((text.match(/__alloT\('stem\.platetectonics\.fieldlbl_[a-z0-9_]+', "[A-Z][^"]*: "\)/g) || []).length).toBeGreaterThan(2000);
+    // Not one bare label span left: a count alone would let a single revert through.
+    const bare = text.match(/React\.createElement\('span', \{ className: '[^']*' \}, "[A-Z][A-Za-z0-9 ()\/&'\-]{0,40}: "\)/g) || [];
+    expect(bare, 'untranslated labels: ' + bare.slice(0, 3).join(' | ')).toHaveLength(0);
   });
   it('routes the ones that did through the shared stripper', () => {
     const text = src();
@@ -1457,9 +1549,9 @@ describe('The plate encyclopedia cards do something', () => {
     const head = text.slice(i, text.indexOf('var useState = React.useState;', i));
     expect(head).toContain('var f = props && props.t;');
     // The host has to actually pass it, or the fallback silently wins forever.
-    expect(text).toMatch(/window\.AlloTectonicsEpicenter, \{[^}]*t: __alloT \}/);
+    expect(text).toMatch(/window\.AlloTectonicsEpicenter, \{[^}]*t: __alloT[,\s}]/);
     // A sample of the panel's own strings now goes through the helper.
-    ['epi_show_circles', 'epi_show_fit', 'epi_heading', 'epi_tip_draggable'].forEach((k) =>
+    ['epi_show_circles', 'epi_show_fit', 'epi_heading', 'epi_tip_selected_point'].forEach((k) =>
       expect(text, 'unwrapped: ' + k).toContain("stem.platetectonics." + k));
   });
 
@@ -1473,7 +1565,13 @@ describe('The plate encyclopedia cards do something', () => {
     expect(i).toBeGreaterThan(-1);
     const head = text.slice(i, text.indexOf('var st = useState(', i));
     expect(head).toContain('var f = props && props.t;');
-    expect(text).toMatch(/window\.AlloTectonicsInteractive, \{[^}]*t: __alloT \}/);
+    const instance = syntax().calls.find(call => {
+      const component = call.arguments[0];
+      return component?.type === 'MemberExpression' && component.object.name === 'window'
+        && component.property.name === 'AlloTectonicsInteractive';
+    });
+    expect(instance, 'the rendered simulator must receive its translator').toBeTruthy();
+    expect(instance.arguments[1].properties.some(property => property.key?.name === 't' && property.value.name === '__alloT')).toBe(true);
   });
 
   it('leaves the simulator with no untranslated student-facing prose', () => {
@@ -1490,6 +1588,14 @@ describe('The plate encyclopedia cards do something', () => {
     // KeyboardEvent.key - translating those would break the keyboard handler.
     const KEEP = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home']);
     const bare = [...body.matchAll(/'([A-Z][^']{8,})'/g)]
+      // aria-keyshortcuts uses standardized key tokens, not translated prose.
+      .filter((m) => !(/'aria-keyshortcuts':\s*$/.test(body.slice(Math.max(0, m.index - 45), m.index))
+        && /^(?:Arrow(?:Left|Right|Up|Down)|Home|\[|\])(?:\s+(?:Arrow(?:Left|Right|Up|Down)|Home|\[|\]))*$/.test(m[1])))
+      // An SVG path's d attribute contains drawing commands, not a label.
+      // Require both that property and a numeric path grammar: visible prose
+      // beginning with M still needs translation everywhere else.
+      .filter((m) => !(/(?:\{|,)\s*d:\s*$/.test(body.slice(Math.max(0, m.index - 40), m.index))
+        && /^[Mm][MmLlHhVvCcSsQqTtAaZz\d+.,eE\s-]+$/.test(m[1]) && /\d/.test(m[1])))
       .map((m) => m[1])
       .filter((t) => !wrapped.has(t) && !KEEP.has(t));
     expect(bare, 'untranslated: ' + bare.slice(0, 4).join(' | ')).toHaveLength(0);
@@ -1500,32 +1606,74 @@ describe('The plate encyclopedia cards do something', () => {
     // stripped .replace() from an announcement in the MAIN render closure left
     // this green. The whole file is the right scope - templates live wherever
     // a string meets a value.
-    const body = src();
-    const bad = [];
-    for (const m of body.matchAll(/__alloT\('stem\.platetectonics\.([a-z0-9_]+)', '([^']*\{[a-z]+\}[^']*)'\)/g)) {
-      const tokens = [...new Set([...m[2].matchAll(/\{([a-z]+)\}/g)].map((x) => x[1]))];
-      // Read the .replace() chain attached to THIS call, by walking balanced
-      // parens from the end of it. A fixed character window was the first
-      // version and it was blind: {n} is used by half a dozen templates, so a
-      // neighbour's substitution satisfied the check for a call that had lost
-      // its own. Calibration caught it - the sabotage stayed green.
-      let k = m.index + m[0].length;
-      const done = new Set();
-      const skipWs = () => { while (k < body.length && /\s/.test(body[k])) k++; };
-      skipWs();
-      while (body.startsWith(".replace('{", k)) {
-        const tok = body.slice(k + 11, body.indexOf('}', k + 11));
-        done.add(tok);
-        let depth = 0;
-        k = body.indexOf('(', k);
-        for (; k < body.length; k++) {
-          if (body[k] === '(') depth++;
-          else if (body[k] === ')') { depth--; if (depth === 0) { k++; break; } }
-        }
-        skipWs();
+    const { calls, parents } = syntax();
+    const modelProperty = node => {
+      for (let parent = parents.get(node); parent; parent = parents.get(parent)) {
+        if (parent.type !== 'Property') continue;
+        const object = parents.get(parent), declaration = parents.get(object);
+        if (object?.type === 'ObjectExpression' && declaration?.type === 'VariableDeclarator' && declaration.id.name === 'tectGlModel') return parent.key.name;
       }
-      // A template whose placeholder is never replaced prints "{n}" to a student.
-      tokens.filter((t) => !done.has(t)).forEach((t) => bad.push(m[1] + '.' + t));
+      return null;
+    };
+    const functionScope = node => {
+      for (let parent = parents.get(node); parent; parent = parents.get(parent)) {
+        if (['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'].includes(parent.type)) return parent;
+      }
+      return null;
+    };
+    const memberPath = node => node?.type === 'Identifier' ? node.name
+      : node?.type === 'MemberExpression' && !node.computed ? memberPath(node.object) + '.' + node.property.name : null;
+    // This one template crosses the plain-data model boundary before the
+    // helper knows which retained earthquake to label. Follow its actual
+    // consumer; do not exempt the translation key wherever it might appear.
+    const focusConsumer = calls.find(call => {
+      const expression = call.callee?.object;
+      return functionScope(call)?.id?.name === 'updateFocusGuide'
+        && call.callee.type === 'MemberExpression' && ['replace', 'replaceAll'].includes(call.callee.property.name)
+        && expression?.type === 'LogicalExpression' && expression.operator === '||'
+        && memberPath(expression.left?.right) === 'm.words.focus';
+    });
+    const bad = [];
+    for (const call of calls) {
+      const [key, fallback] = call.arguments;
+      if (call.callee.name !== '__alloT' || typeof key?.value !== 'string' || !key.value.startsWith('stem.platetectonics.') || typeof fallback?.value !== 'string') continue;
+      const tokens = [...fallback.value.matchAll(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g)].map(match => match[1]);
+      if (!tokens.length) continue;
+      // Follow substitutions on this template, including a shared chain after
+      // a conditional choice. Regex/global replacement must cover repeats.
+      let current = call;
+      if (key.value === 'stem.platetectonics.block_focus_depth') {
+        const property = modelProperty(call), parent = parents.get(call);
+        const carriedToHelper = property === 'words' && parent?.type === 'Property' && parent.key.name === 'focus' && parent.value === call;
+        const cacheSignature = property === 'sig';
+        if (carriedToHelper || cacheSignature) {
+          const declaration = focusConsumer && parents.get(focusConsumer);
+          expect(declaration?.type, 'the deferred focus template must be substituted in the helper').toBe('VariableDeclarator');
+          expect(calls.some(label => label.callee.name === 'makeLabel'
+            && label.arguments[0]?.type === 'Identifier' && label.arguments[0].name === declaration?.id.name
+            && functionScope(label) === functionScope(focusConsumer)), 'the substituted focus text must reach its visible label').toBe(true);
+          current = focusConsumer.callee.object;
+        }
+      }
+      const done = new Map();
+      while (true) {
+        const parent = parents.get(current);
+        if (parent?.type === 'ConditionalExpression' && (parent.consequent === current || parent.alternate === current)) { current = parent; continue; }
+        if (parent?.type !== 'MemberExpression' || parent.object !== current || !['replace', 'replaceAll'].includes(parent.property.name)) break;
+        const replacement = parents.get(parent);
+        if (replacement?.type !== 'CallExpression' || replacement.callee !== parent) break;
+        const argument = replacement.arguments[0];
+        const pattern = argument?.regex ? argument.regex.pattern.replace(/\\/g, '') : argument?.value;
+        const token = typeof pattern === 'string' && pattern.match(/^\{([a-zA-Z][a-zA-Z0-9_]*)\}$/);
+        if (token) {
+          const all = parent.property.name === 'replaceAll' || argument.regex?.flags.includes('g');
+          done.set(token[1], all ? Infinity : (done.get(token[1]) || 0) + 1);
+        }
+        current = replacement;
+      }
+      const required = new Map();
+      tokens.forEach(token => required.set(token, (required.get(token) || 0) + 1));
+      for (const [token, count] of required) if ((done.get(token) || 0) < count) bad.push(key.value + '.' + token);
     }
     expect(bad, 'unsubstituted: ' + bad.join(', ')).toHaveLength(0);
   });
@@ -1607,7 +1755,8 @@ describe('The plate encyclopedia cards do something', () => {
     // and the block must still be reachable by keyboard at all
     const i = text.indexOf("'data-tect-gl': 'true'");
     const el = text.slice(text.lastIndexOf("h('canvas'", i), text.indexOf('onKeyDown', i));
-    expect(el).toContain('tabIndex: 0');
+    expect(el).toContain('tabIndex: tectGlLive ? 0 : -1');
+    expect(el).toContain("'aria-hidden': !tectGlLive");
   });
 
 
@@ -1619,7 +1768,14 @@ describe('The plate encyclopedia cards do something', () => {
     const calls = [...text.matchAll(/announceToSR\(([\s\S]{0,400}?)\)\s*;/g)].map((m) => m[1]);
     expect(calls.length, 'no announceToSR calls found - the scan is broken').toBeGreaterThan(20);
     // A call may pass a variable that was translated where it was built.
-    const bare = calls.filter((c) => !c.includes('__alloT') && !/^\s*[a-zA-Z_$][\w$]*\s*$/.test(c));
+    // The mystery helper has two localized return paths; verify them before
+    // permitting this exact helper call, rather than exempting arbitrary calls.
+    const guessHelper = text.match(/function guessDescription\(guess\) \{([\s\S]*?)\n    \}/)?.[1];
+    expect(guessHelper, 'mystery guess description helper missing').toBeTruthy();
+    expect(guessHelper).toContain("if (!guess) return __alloT('stem.platetectonics.epi_guess_unplaced'");
+    expect(guessHelper).toContain("return __alloT('stem.platetectonics.epi_guess_position'");
+    const bare = calls.filter((c) => !c.includes('__alloT') && !/^\s*[a-zA-Z_$][\w$]*\s*$/.test(c)
+      && !/^\s*guessDescription\(\s*nextGuess\s*\)\s*$/.test(c));
     expect(bare, 'untranslated announcement: ' + bare.slice(0, 2).map((c) => c.slice(0, 60)).join(' | '))
       .toHaveLength(0);
   });
@@ -1889,7 +2045,9 @@ describe('The plate encyclopedia cards do something', () => {
     // by its own definition. The tab rendered a DIFFERENT inline list of 106,
     // overlapping by only 40 terms, so 66 terms a teacher had written could not
     // be reached by any student, and a later edit could land in either one.
-    expect(text).toContain('var G = GEO_GLOSSARY.map(function (e) { return [e.term, e.definition]; })');
+    const block = glossaryRenderer(text);
+    expect(block).toContain('var matches = GEO_GLOSSARY.filter(function (entry)');
+    expect(block).toContain('matches.slice(first, first + pageSize).map(function (entry)');
     // No second inline pair-array may reappear beside it.
     expect(text).not.toMatch(/var G = \[\[/);
     // Referenced by the table AND the renderer: an orphan again would be one.
@@ -1906,17 +2064,26 @@ describe('The plate encyclopedia cards do something', () => {
       else if (text[k] === ']') { depth--; if (depth === 0) { end = k; break; } }
     }
     const table = text.slice(at, end);
-    const terms = [...table.matchAll(/term:\s*"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
-    // 106 + 106 with 40 shared.
-    expect(terms.length, 'merged glossary lost entries').toBe(172);
-    expect(new Set(terms).size, 'duplicate terms in the glossary').toBe(terms.length);
+    // Read the term whether it is bare or wrapped. Keyed on the bare form alone
+    // this went blind the moment the glossary was translated - the same
+    // one-of-two-shapes gap that undercounted the earthquake names.
+    const terms = [...table.matchAll(/term:\s*(?:__alloT\('[^']*',\s*"((?:[^"\\]|\\.)*)"\)|"((?:[^"\\]|\\.)*)")/g)]
+      .map((m) => (m[1] !== undefined ? m[1] : m[2]));
+    // 106 + 106 with 40 shared, less the duplicate Wilson entry merged later.
+    expect(terms.length, 'merged glossary lost entries').toBe(171);
+    // Case-insensitively: this compared raw strings, so it sat green over
+    // "Wilson cycle" and "Wilson Cycle" - two entries, two definitions, both on
+    // screen. A slug collision found them, not this gate.
+    expect(new Set(terms.map((t) => t.toLowerCase().trim())).size,
+      'duplicate terms in the glossary').toBe(terms.length);
     // Terms that existed ONLY in the previously-unreachable table...
     ['Bolide', 'Anthropocene', 'Continental drift'].forEach((t) =>
       expect(terms, 'lost a term that was already unreachable: ' + t).toContain(t));
     // ...and one that was already on screen, so the merge did not drop the live side.
     expect(terms).toContain('Asthenosphere');
     // Every entry carries a definition.
-    const defs = [...table.matchAll(/definition:\s*"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+    const defs = [...table.matchAll(/definition:\s*(?:__alloT\('[^']*',\s*"((?:[^"\\]|\\.)*)"\)|"((?:[^"\\]|\\.)*)")/g)]
+      .map((m) => (m[1] !== undefined ? m[1] : m[2]));
     expect(defs.length).toBe(terms.length);
     expect(defs.filter((d) => d.trim().length < 8), 'empty definitions').toHaveLength(0);
   });
@@ -1925,7 +2092,9 @@ describe('The plate encyclopedia cards do something', () => {
     const text = src();
     // A student who remembers "the layer plates float on" but not
     // "asthenosphere" is exactly who a glossary search is for.
-    expect(text).toMatch(/g\[0\]\.toLowerCase\(\)\.indexOf\(s\) !== -1 \|\| g\[1\]\.toLowerCase\(\)\.indexOf\(s\) !== -1/);
+    const block = glossaryRenderer(text);
+    expect(block).toContain("String(d._glossarySearch || '').trim().toLowerCase()");
+    expect(block).toMatch(/entry\.term\.toLowerCase\(\)\.indexOf\(term\) !== -1 \|\| entry\.definition\.toLowerCase\(\)\.indexOf\(term\) !== -1/);
   });
 
 
@@ -1945,7 +2114,8 @@ describe('The plate encyclopedia cards do something', () => {
     expect(bare, 'a myth string is still a bare literal').toHaveLength(0);
     // The truth flag is data, not text - translating it would break grading.
     expect(bank).toMatch(/t: (?:true|false),/);
-    expect(bank).not.toMatch(/t: __alloT/);
+    // The true/false field is named exactly `t`; `tryIt: __alloT(...)` is fine.
+    expect(bank).not.toMatch(/[{,]\s*t: __alloT/);
   });
 
   it('translates magma wording in the render closure, not in the module-scope table', () => {
@@ -2213,6 +2383,113 @@ describe('The plate encyclopedia cards do something', () => {
     // can a translator.
     expect(wrapped, 'an earthquake name is not translated').toBe(rows);
     expect(table).not.toMatch(/name:\s*"/);
+  });
+
+  it('translates the displayed name in EVERY catalogue, not just the one that was caught', () => {
+    const text = src();
+    // The earthquake fix above was pinned to EARTHQUAKE_DB alone, so the same
+    // defect simply reappeared elsewhere: PLATE_DB shipped 96 wrapped names
+    // beside 6 bare ones and HOTSPOT_DB 37 beside 2. Seven of those eight were
+    // hyphenated - a pattern gave out, nobody decided these should stay English
+    // - and a scan keyed on the wrapped form cannot see a bare string, so no
+    // gate reported it for either table.
+    //
+    // Pin the invariant across every name-bearing catalogue instead of naming
+    // the tables that happen to have been fixed.
+    const tableNames = [...new Set([...text.matchAll(/\bvar ([A-Z][A-Z_0-9]{3,})\s*=\s*\[/g)].map((m) => m[1]))];
+    const offenders = [];
+    for (const n of tableNames) {
+      const at = text.indexOf('var ' + n + ' = [');
+      if (at < 0) continue;
+      const k = text.indexOf('[', at);
+      let d = 0, end = -1;
+      for (let j = k; j < text.length; j++) {
+        if (text[j] === '[') d++;
+        else if (text[j] === ']') { d--; if (!d) { end = j + 1; break; } }
+      }
+      if (end < 0) continue;
+      const body = text.slice(k, end);
+      const wrapped = (body.match(/\bname:\s*__alloT\(/g) || []).length;
+      const bare = (body.match(/\bname:\s*"/g) || []).length;
+      // Only catalogues that already translate SOME name are in scope: a table
+      // whose names are all bare may be an internal id list, not display copy.
+      if (wrapped > 0 && bare > 0) offenders.push(n + ' (' + wrapped + ' wrapped, ' + bare + ' bare)');
+    }
+    expect(offenders, 'a catalogue translates some of its names and not others: ' + offenders.join('; '))
+      .toHaveLength(0);
+  });
+
+  it('translates the glossary a student actually reads', () => {
+    const text = src();
+    // 171 terms and 171 definitions shipped as bare strings - the largest block
+    // of student-facing prose in the tool, and unreadable in every language but
+    // English, while the catalogues around it were wrapped years of passes ago.
+    const at = text.indexOf('var GEO_GLOSSARY = [');
+    expect(at, 'the glossary is gone').toBeGreaterThan(-1);
+    const k = text.indexOf('[', at);
+    let d = 0, end = -1;
+    for (let j = k; j < text.length; j++) {
+      if (text[j] === '[') d++;
+      else if (text[j] === ']') { d--; if (!d) { end = j + 1; break; } }
+    }
+    const table = text.slice(k, end);
+    const rows = (table.match(/\{\s*id:\s*\d+/g) || []).length;
+    expect(rows, 'glossary lost rows').toBe(171);
+    expect((table.match(/term:\s*__alloT\(/g) || []).length, 'a term is untranslated').toBe(rows);
+    expect((table.match(/definition:\s*__alloT\(/g) || []).length, 'a definition is untranslated').toBe(rows);
+    expect(table, 'a bare term is back').not.toMatch(/term:\s*"/);
+    expect(table, 'a bare definition is back').not.toMatch(/definition:\s*"/);
+
+    // Definitions are keyed off the TERM, not off their own first 38 characters:
+    // "Magnitude" and "Seismic moment" both open "A measure of earthquake size
+    // based on", so a text-derived key handed one entry the other's translation.
+    expect(table).toContain('gl_d_magnitude');
+    expect(table).toContain('gl_d_seismic_moment');
+
+    // And every key the table names must be registered, or it never translates
+    // for anyone however well the call site is wrapped.
+    const st = strings()['stem']['platetectonics'];
+    const missing = [...table.matchAll(/stem\.platetectonics\.(gl_[td]_[a-z0-9_]+)/g)]
+      .map((m) => m[1]).filter((key) => st[key] === undefined);
+    expect(missing, 'unregistered glossary keys: ' + missing.slice(0, 5).join(', ')).toHaveLength(0);
+  });
+
+  it('keeps the deleted twin fact when two glossary entries merge', () => {
+    const text = src();
+    // "Wilson cycle" and "Wilson Cycle" were two entries with two different
+    // definitions, both rendered in the same list. A slug collision surfaced it;
+    // nothing in the product would have. Merged, keeping both facts.
+    const at = text.indexOf('var GEO_GLOSSARY = [');
+    const k = text.indexOf('[', at);
+    let d = 0, end = -1;
+    for (let j = k; j < text.length; j++) {
+      if (text[j] === '[') d++;
+      else if (text[j] === ']') { d--; if (!d) { end = j + 1; break; } }
+    }
+    const table = text.slice(k, end);
+    // The case-insensitive duplicate check lives in 'keeps both origins of the
+    // merged glossary' above, which counts rows as well. What is pinned HERE is
+    // the thing that check cannot see: the merge kept the deleted twin's fact
+    // rather than simply dropping a row.
+    expect(table, 'the merged Wilson definition lost the cycle length')
+      .toMatch(/Repeated opening \+ closing of ocean basins[^"]*500 million years/);
+  });
+
+  it('paints the glossary cards in the theme the reader chose', () => {
+    const text = src();
+    // The search box above them switched on isDark; the result cards did
+    // not, so they stayed pure white on the near-black page. Their own ink was
+    // fine - 8:1 and 10:1 - which is exactly why a contrast sweep passed them.
+    const block = glossaryRenderer(text);
+    expect(block, 'the surface around the paged cards ignores the theme')
+      .toMatch(/isDark \? 'border-rose-900 bg-slate-950' : 'border-rose-200 bg-rose-50'/);
+    expect(block, 'the card background ignores the theme again')
+      .not.toMatch(/className: 'p-3 rounded-lg bg-white/);
+    expect(block, 'the card does not switch its background on isDark')
+      .toMatch(/isDark \? 'bg-slate-900 border-slate-700' : 'bg-white border-rose-200'/);
+    // Both ink colours must switch too, or the card flips and the text does not.
+    expect(block).toMatch(/isDark \? 'text-rose-300' : 'text-rose-800'/);
+    expect(block).toMatch(/isDark \? 'text-slate-300' : 'text-slate-700'/);
   });
 
 });

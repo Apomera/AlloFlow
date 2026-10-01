@@ -1,0 +1,47 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -1491,15 +1491,12 @@
+     };
+ };
+ const ALLO_MB_POLL_MS = 2500;
+-function _alloRandomToken(byteCount = 16) {
+-    try {
+-        const cryptoObj = (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto : window.crypto;
+-        const bytes = new Uint8Array(byteCount);
+-        cryptoObj.getRandomValues(bytes);
+-        return _alloBytesToBase64Url(bytes);
+-    } catch (_) {
+-        return (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).slice(0, byteCount * 2);
+-    }
++function _alloRandomToken(bytes = 16) {
++  if (!Number.isInteger(bytes) || bytes < 1 || bytes > 256) throw new Error('Invalid capability token size.');
++  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') throw new Error('Secure randomness is unavailable. Open the app in a supported secure browser before creating a share.');
++  const values = new Uint8Array(bytes);
++  crypto.getRandomValues(values);
++  return Array.from(values, value => value.toString(16).padStart(2, '0')).join('');
+ }
+ function _alloCleanMailboxUrl(value) {
+     const raw = String(value || '').trim();
+@@ -9285,12 +9282,16 @@
+ // SessionModal CDN module. The host resolves them only at end-session boundaries.
+ const generateSessionCode = () => {
+   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+-  // 5 chars over the 31-symbol confusable-stripped alphabet ≈ 28.6M codes
+-  // (was 4 ≈ 923k) — raises the enumeration bar for drive-by join attempts
+-  // while staying easy to read aloud. See LIVE_SESSION_HARDENING_PROPOSAL §5.
++  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') throw new Error('Secure randomness is unavailable. Open the app in a supported secure browser before creating a session.');
++  const limit = Math.floor(256 / chars.length) * chars.length;
+   let result = '';
+-  for (let i = 0; i < 5; i++) {
+-    result += chars.charAt(Math.floor(Math.random() * chars.length));
++  while (result.length < 5) {
++    const values = new Uint8Array(16);
++    crypto.getRandomValues(values);
++    for (const value of values) {
++      if (value < limit) result += chars[value % chars.length];
++      if (result.length === 5) break;
++    }
+   }
+   return result;
+ };

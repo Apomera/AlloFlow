@@ -1,0 +1,386 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-harmony-pass.js b/stem_lab/stem_tool_artstudio.js
+index 6818d60e2..013beafb8 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-harmony-pass.js
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -951,6 +951,29 @@ window.StemLab = window.StemLab || {
+     return options[0]||null;
+   }
+   // END ART STUDIO CONTRAST HELPERS
++  // BEGIN ART STUDIO HARMONY HELPERS
++  function artStudioHarmonyRecipe(raw) {
++    var d=raw&&typeof raw==='object'?raw:{},h=artStudioMixerNumber(d.baseHue,200,-1e9,1e9);
++    return {baseHue:((h%360)+360)%360,rotation:artStudioMixerNumber(d.rotation,0,-180,180),
++      saturation:artStudioMixerNumber(d.saturation,50+artStudioMixerNumber(d.satBlend,70,0,100)*0.4,0,100),
++      lightness:artStudioMixerNumber(d.lightness,40+artStudioMixerNumber(d.litVar,50,0,100)*0.3,0,100),
++      paletteSize:Math.round(artStudioMixerNumber(d.paletteSize,6,2,12)),spread:artStudioMixerNumber(d.spread,30,10,60),
++      scheme:['even','analogous','complementary','split','triadic','tetradic'].indexOf(d.scheme)>=0?d.scheme:'even'};
++  }
++  function artStudioHarmonyState(raw) {
++    var d=raw&&typeof raw==='object'?raw:{};
++    return Object.assign(artStudioHarmonyRecipe(d),{hypothesis:typeof d.hypothesis==='string'?d.hypothesis.slice(0,2000):'',explanation:typeof d.explanation==='string'?d.explanation.slice(0,4000):'',stuckRevealed:!!d.stuckRevealed,understood:!!d.understood,
++      log:(Array.isArray(d.log)?d.log:[]).filter(function(entry){return entry&&typeof entry==='object';}).slice(-8).map(function(entry){return {recipe:artStudioHarmonyRecipe(entry.recipe||{baseHue:entry.h,satBlend:entry.s,litVar:entry.l,rotation:entry.r,paletteSize:entry.n})};})});
++  }
++  function artStudioHarmonyPalette(raw) {
++    var d=artStudioHarmonyRecipe(raw),offsets={analogous:[0,-d.spread,d.spread],complementary:[0,180],split:[0,180-d.spread,180+d.spread],triadic:[0,120,240],tetradic:[0,d.spread,180,180+d.spread]}[d.scheme];
++    if(!offsets)offsets=Array.from({length:d.paletteSize},function(_,index){return index*360/d.paletteSize;});
++    return offsets.map(function(offset){var h=((d.baseHue+d.rotation+offset)%360+360)%360,color={h:h,s:d.saturation,l:d.lightness},light=artStudioContrastLuminance(color);return Object.assign(color,{hex:artStudioMixerHSLHex(h,d.saturation,d.lightness),css:artStudioContrastCSS(color),foreground:(light+0.05)/0.05>=1.05/(light+0.05)?'#000000':'#ffffff'});});
++  }
++  function artStudioHarmonyType(raw) {
++    var d=artStudioHarmonyRecipe(raw);return d.scheme==='even'?({2:'complementary',3:'triadic',4:'square'}[d.paletteSize]||'even'):d.scheme;
++  }
++  // END ART STUDIO HARMONY HELPERS
+   // BEGIN ART STUDIO COLOR WHEEL HELPERS
+   function artStudioWheelModel(raw) {
+     var d=raw||{},h=typeof d.hue==='number'&&Number.isFinite(d.hue)?d.hue:0;
+@@ -2999,7 +3022,7 @@ const d = labToolData.artStudio || {};
+             stereogram: { try: __alloT("stem.artstudio.learning_start_with_a_simple_depth_shape_and_a_pattern_wi_1a98fa7", "Start with a simple depth shape and a pattern with clear small-scale texture."), notice: __alloT("stem.artstudio.learning_depth_appears_when_each_eye_matches_repeated_inf_d9bb94c", "Depth appears when each eye matches repeated information at a slightly different position."), stretch: __alloT("stem.artstudio.learning_reduce_depth_until_the_hidden_form_is_discoverab_e700f4a", "Reduce depth until the hidden form is discoverable but not immediately obvious."), next: ['contrast', 'gradient'] },
+             sculpt3d: { try: __alloT("stem.artstudio.learning_combine_three_forms_and_orbit_before_adding_a_fo_7e94b4d", "Combine three forms and orbit before adding a fourth."), notice: __alloT("stem.artstudio.learning_silhouette_balance_and_negative_space_change_wit_cd72e27", "Silhouette, balance, and negative space change with every viewpoint."), stretch: __alloT("stem.artstudio.learning_make_the_sculpture_feel_stable_from_one_view_and_8e2fff9", "Make the sculpture feel stable from one view and precarious from another."), next: ['contrast', 'gradient'] },
+             contrast: { try: __alloT("stem.artstudio.learning_test_one_color_pair_then_change_only_the_foregro_f990a46", "Test one color pair, then change only the foreground lightness."), notice: __alloT("stem.artstudio.learning_readable_contrast_depends_on_relative_luminance__64b8ca8", "Readable contrast depends on relative luminance, text size, and visual context."), stretch: __alloT("stem.artstudio.learning_keep_the_relationship_expressive_while_meeting_t_c663445", "Keep the relationship expressive while meeting the intended accessibility target."), next: ['colorWheel', 'gradient'] },
+-            harmonyHunt: { try: __alloT("stem.artstudio.learning_compare_a_simple_frequency_ratio_with_a_more_com_0ca2eeb", "Compare a simple frequency ratio with a more complex one."), notice: __alloT("stem.artstudio.learning_small_whole_number_relationships_often_feel_more_e776ebe", "Small whole-number relationships often feel more stable in sound and pattern."), stretch: __alloT("stem.artstudio.learning_translate_one_interval_into_spacing_scale_or_col_5576f8a", "Translate one interval into spacing, scale, or color rather than illustrating a note."), next: ['spirograph', 'generative'] }
++            harmonyHunt: { try: __alloT('stem.artstudio.hh_coach_try','Compare neighboring and opposite hues while keeping saturation and lightness fixed.'), notice: __alloT('stem.artstudio.hh_coach_notice','Hue spacing defines the relationship. Saturation and lightness change how the same arrangement appears.'), stretch: __alloT('stem.artstudio.hh_coach_stretch','Log two palettes, explain their differences, and carry one into an artwork.'), next: ['pixel', 'watercolor'] }
+           };
+           const STUDIO_SIMPLE_COACH = {
+             artistExplorer: { try: __alloT("stem.artstudio.guide_simple_artistExplorer_try", "Choose one artist. Find a color, shape, or material they use."), notice: __alloT("stem.artstudio.guide_simple_artistExplorer_notice", "How does that choice help tell a story?"), stretch: __alloT("stem.artstudio.guide_simple_artistExplorer_stretch", "Use a related idea to make something of your own."), term: __alloT("stem.artstudio.guide_simple_artistExplorer_term", "Artistic choice"), definition: __alloT("stem.artstudio.guide_simple_artistExplorer_definition", "A decision about color, shape, material, or meaning.") },
+@@ -3019,7 +3042,7 @@ const d = labToolData.artStudio || {};
+             stereogram: { try: __alloT("stem.artstudio.guide_simple_stereogram_try", "Choose a simple depth shape and a repeating pattern."), notice: __alloT("stem.artstudio.guide_simple_stereogram_notice", "Look for the hidden shape, or explore the depth map."), stretch: __alloT("stem.artstudio.guide_simple_stereogram_stretch", "Try a smaller depth difference. Compare both versions."), term: __alloT("stem.artstudio.guide_simple_stereogram_term", "Depth"), definition: __alloT("stem.artstudio.guide_simple_stereogram_definition", "How near or far a part of a picture seems to be.") },
+             sculpt3d: { try: __alloT("stem.artstudio.guide_simple_sculpt3d_try", "Put three shapes together. Turn the view."), notice: __alloT("stem.artstudio.guide_simple_sculpt3d_notice", "How does the outside shape change as you turn?"), stretch: __alloT("stem.artstudio.guide_simple_sculpt3d_stretch", "Choose a different view. Adjust one shape."), term: __alloT("stem.artstudio.guide_simple_sculpt3d_term", "Viewpoint"), definition: __alloT("stem.artstudio.guide_simple_sculpt3d_definition", "The position from which you look at something.") },
+             contrast: { try: __alloT("stem.artstudio.guide_simple_contrast_try", "Choose a text color and a background color."), notice: __alloT("stem.artstudio.guide_simple_contrast_notice", "Check the result. Change just the text color."), stretch: __alloT("stem.artstudio.guide_simple_contrast_stretch", "Keep a pair that meets the target and suits your artwork."), term: __alloT("stem.artstudio.guide_simple_contrast_term", "Contrast ratio"), definition: __alloT("stem.artstudio.guide_simple_contrast_definition", "A number comparing how light or dark two colors are.") },
+-            harmonyHunt: { try: __alloT("stem.artstudio.guide_simple_harmonyHunt_try", "Compare two sound or color combinations."), notice: __alloT("stem.artstudio.guide_simple_harmonyHunt_notice", "Which parts seem to fit together?"), stretch: __alloT("stem.artstudio.guide_simple_harmonyHunt_stretch", "Use one combination to inspire a visual pattern."), term: __alloT("stem.artstudio.guide_simple_harmonyHunt_term", "Frequency"), definition: __alloT("stem.artstudio.guide_simple_harmonyHunt_definition", "How many times something repeats in one second.") }
++            harmonyHunt: { try: __alloT('stem.artstudio.hh_simple_try','Compare two groups of colors.'), notice: __alloT('stem.artstudio.hh_simple_notice','Are the colors near each other or across the wheel?'), stretch: __alloT('stem.artstudio.hh_simple_stretch','Save a group of colors and try it in your artwork.'), term: __alloT('stem.artstudio.hh_simple_term','Hue spacing'), definition: __alloT('stem.artstudio.hh_simple_definition','How far apart colors sit around a color wheel.') }
+           };
+           const simpleStudioGuide = resolveStudioGuideWording(d.studioGuideWording) === 'simple';
+           const simpleStudioCoach = STUDIO_SIMPLE_COACH[tab];
+@@ -3684,8 +3707,8 @@ const d = labToolData.artStudio || {};
+             if (tab === 'stereogram') return (d.stereoAnimMode || 'static') + ' stereogram using ' + (d.stereoPattern || 'black and white') + ' pattern';
+             if (tab === 'artistExplorer') return 'Artist inquiry with filters, comparison, and context preserved';
+             if (tab === 'harmonyHunt') {
+-              var harmonyStudy = d._harmonyHunt || {};
+-              return (harmonyStudy.paletteSize || 6) + '-color harmony around hue ' + (harmonyStudy.baseHue || 200) + ' degrees';
++              var harmonyStudy=artStudioHarmonyRecipe(d._harmonyHunt);
++              return artStudioHarmonyPalette(harmonyStudy).length+'-color '+artStudioHarmonyType(harmonyStudy)+' harmony around hue '+studioColorValueLabel((harmonyStudy.baseHue+harmonyStudy.rotation+360)%360)+' degrees';
+             }
+             return (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') + ' settings and visual checkpoint';
+           };
+@@ -3707,7 +3730,7 @@ const d = labToolData.artStudio || {};
+             stereogram: { prefixes: ['stereo'] },
+             sculpt3d: { prefixes: ['sculpt'] },
+             contrast: { prefixes: ['contrast'], keys: ['fgHex', 'bgHex', 'fgH', 'fgS', 'fgL', 'bgH', 'bgS', 'bgL'] },
+-            harmonyHunt: { keys: ['_harmonyHunt'] }
++            harmonyHunt: { keys: ['_harmonyHunt','harmonyRestoreToken'] }
+           };
+           const cloneArtStudioStudyValue = function (value) {
+             if (value == null || typeof value !== 'object') return value;
+@@ -3732,6 +3755,7 @@ const d = labToolData.artStudio || {};
+             Object.keys(source).forEach(function (key) {
+               if (artStudioLabOwnsStateKey(tabId, key)) payload[key] = cloneArtStudioStudyValue(source[key]);
+             });
++            if(tabId==='harmonyHunt')payload._harmonyHunt=artStudioHarmonyState(source._harmonyHunt);
+             if(tabId==='contrast')Object.assign(payload,artStudioContrastModel(source),{contrastSampleText:typeof source.contrastSampleText==='string'?source.contrastSampleText.slice(0,160):''});
+             var legacyPaletteKey = {
+               pixel: 'pixelActivePalette',
+@@ -4254,6 +4278,7 @@ const d = labToolData.artStudio || {};
+             if (savedTab === 'gradient') scopedPayload.gradRestoreToken = restoreToken;
+             if (savedTab === 'colorWheel') scopedPayload.wheelRestoreToken = restoreToken;
+             if (savedTab === 'contrast') scopedPayload.contrastRestoreToken = restoreToken;
++            if (savedTab === 'harmonyHunt') scopedPayload.harmonyRestoreToken = restoreToken;
+             if (savedTab === 'mixer') {
+               // Older untouched studies saved no mixer fields at all. Keep their
+               // original red/blue hue blend; new studies capture an explicit model.
+@@ -7047,12 +7072,6 @@ const d = labToolData.artStudio || {};
+ 
+ 
+ 
+-          // WCAG contrast helpers
+-
+-          function luminance(h, s, l) {
+-            return artStudioContrastLuminance({h:((h%360)+360)%360,s:s,l:l});
+-          }
+-
+           const mixerModel = artStudioMixerModel(d);
+           const mixerSignature = JSON.stringify(mixerModel);
+           const mixerOwner = studioPersistenceScope + '|' + (d.mixRestoreToken || '');
+@@ -7144,6 +7163,122 @@ const d = labToolData.artStudio || {};
+             var css='/* WCAG 2.2 contrast: '+contrastRatio.toFixed(4)+':1; target '+contrastGoalTarget+':1; '+(passContrastGoal?'passes':'does not pass')+' */\n.contrast-sample {\n  color: '+artStudioContrastCSS(contrastForeground)+';\n  background-color: '+artStudioContrastCSS(contrastBackground)+';\n}\n';
+             var link=document.createElement('a');link.download='contrast-pair.css';link.href='data:text/css;charset=utf-8,'+encodeURIComponent(css);link.click();
+           }
++          const harmonyState=artStudioHarmonyState(d._harmonyHunt),harmonyRecipe=artStudioHarmonyRecipe(harmonyState),harmonySignature=JSON.stringify(harmonyRecipe);
++          const harmonyOwner=studioPersistenceScope+'|'+studioThreadKitRunId+'|'+(d.harmonyRestoreToken||'');
++          const harmonyStateRef=React.useRef(harmonyState);harmonyStateRef.current=harmonyState;
++          const harmonyHistoryRef=React.useRef({undo:[],redo:[]});
++          if(harmonyHistoryRef.current.owner!==harmonyOwner||(harmonyHistoryRef.current.expected&&harmonyHistoryRef.current.expected!==harmonySignature))harmonyHistoryRef.current={owner:harmonyOwner,undo:[],redo:[]};
++          harmonyHistoryRef.current.current=harmonyRecipe;harmonyHistoryRef.current.expected=harmonySignature;
++          const harmonyPalette=React.useMemo(function(){return artStudioHarmonyPalette(harmonyRecipe);},[harmonySignature]);
++          const [harmonySelected,setHarmonySelected]=React.useState(0);
++          React.useEffect(function(){setHarmonySelected(0);},[harmonyOwner]);
++          React.useEffect(function(){setHarmonySelected(function(index){return Math.min(index,harmonyPalette.length-1);});},[harmonyPalette.length]);
++          React.useEffect(function(){harmonyHistoryRef.current.gesture=null;},[tab]);
++          const harmonyIndex=Math.min(harmonySelected,harmonyPalette.length-1),harmonyColor=harmonyPalette[harmonyIndex];
++          function publishHarmony(values){var next=artStudioHarmonyState(Object.assign({},harmonyStateRef.current,values));harmonyStateRef.current=next;upd('_harmonyHunt',next);}
++          function changeHarmony(values){
++            var history=harmonyHistoryRef.current,before=history.current,after=artStudioHarmonyRecipe(Object.assign({},before,values));
++            if(JSON.stringify(before)===JSON.stringify(after))return;
++            if(!history.gesture||!history.gesture.recorded){history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];if(history.gesture)history.gesture.recorded=true;}
++            history.current=after;history.expected=JSON.stringify(after);publishHarmony(after);
++          }
++          function harmonyBeginGesture(event){if(event.target&&event.target.type==='range'&&!harmonyHistoryRef.current.gesture)harmonyHistoryRef.current.gesture={recorded:false,target:event.target};}
++          function harmonyEndGesture(event){var gesture=harmonyHistoryRef.current.gesture;if(event&&event.type==='blur'&&gesture&&event.target!==gesture.target)return;harmonyHistoryRef.current.gesture=null;}
++          function changeHarmonyHistory(redo){
++            var history=harmonyHistoryRef.current,from=redo?history.redo:history.undo;history.gesture=null;if(!from.length)return;
++            (redo?history.undo:history.redo).push(history.current);var next=from.pop();history.current=next;history.expected=JSON.stringify(next);publishHarmony(next);
++            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.hh_redone','Harmony edit redone.'):__alloT('stem.artstudio.hh_undone','Harmony edit undone.'));
++          }
++          function harmonyLabel(type){return {even:__alloT('stem.artstudio.hh_even','Evenly spaced'),analogous:__alloT('stem.artstudio.hh_analogous','Analogous'),complementary:__alloT('stem.artstudio.hh_complementary','Complementary'),split:__alloT('stem.artstudio.hh_split','Split complementary'),triadic:__alloT('stem.artstudio.hh_triadic','Triadic'),tetradic:__alloT('stem.artstudio.hh_tetradic','Tetradic'),square:__alloT('stem.artstudio.hh_square','Square')}[type];}
++          function logHarmony(){publishHarmony({log:harmonyStateRef.current.log.concat([{recipe:harmonyHistoryRef.current.current}]).slice(-8)});if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.hh_logged','Palette experiment saved for comparison.'));}
++          function saveHarmonyPalette(){storeStudioThreadKitEntry({schemaVersion:1,accessibilityTarget:studioThreadKit.accessibilityTarget,palette:{sourceTab:'harmonyHunt',harmony:artStudioHarmonyType(harmonyRecipe),colors:harmonyPalette.slice(0,8)}},studioThreadKitRunId);if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.hh_saved','Harmony colors saved to Thread Kit.'));}
++          function useHarmonyColor(watercolor){
++            if(watercolor)updMany({watercolorColor:harmonyColor.hex});else applyStudioScopedColor('pixel',harmonyColor);
++            selectArtStudioTab(watercolor?'watercolor':'pixel',ART_STUDIO_TAB_LABELS[watercolor?'watercolor':'pixel'],{focusPanel:true});
++          }
++          function exportHarmony(format){
++            var link=document.createElement('a');link.download='harmony-palette.'+format;
++            if(format==='css'){link.href='data:text/css;charset=utf-8,'+encodeURIComponent(':root {\n'+harmonyPalette.map(function(color,index){return '  --harmony-'+(index+1)+': '+color.css+';';}).join('\n')+'\n}\n');}
++            else {
++              var source=document.getElementById('artstudio-harmony-wheel');if(!source)return;
++              var svg=source.cloneNode(true);svg.setAttribute('viewBox','0 0 600 790');svg.setAttribute('width','900');svg.setAttribute('height','1185');svg.removeAttribute('class');svg.removeAttribute('style');svg.removeAttribute('id');svg.removeAttribute('xmlns');svg.querySelector('rect').setAttribute('height','790');
++              harmonyPalette.forEach(function(color,index){var x=20+(index%4)*145,y=620+Math.floor(index/4)*54,rect=document.createElementNS('http://www.w3.org/2000/svg','rect'),text=document.createElementNS('http://www.w3.org/2000/svg','text');rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width','135');rect.setAttribute('height','28');rect.setAttribute('fill',color.css);text.setAttribute('x',x);text.setAttribute('y',y+43);text.setAttribute('font-size','12');text.setAttribute('font-family','monospace');text.setAttribute('fill','#0f172a');text.textContent=(index+1)+'. '+color.hex.toUpperCase();svg.appendChild(rect);svg.appendChild(text);});
++              link.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(svg));
++            }
++            link.click();
++          }
++          function renderHarmonyStudio(){
++            var type=artStudioHarmonyType(harmonyRecipe),label=harmonyLabel(type),angle=(harmonyRecipe.baseHue+harmonyRecipe.rotation+360)%360;
++            var descriptions={
++              even:__alloT('stem.artstudio.hh_even_help','Equal hue steps around the whole wheel. Changing saturation does not change that spacing.'),
++              analogous:__alloT('stem.artstudio.hh_analogous_help','Three neighboring hues. Spread controls how far the two neighbors sit from the base.'),
++              complementary:__alloT('stem.artstudio.hh_complementary_help','Two hues 180 degrees apart on this HSL wheel.'),
++              split:__alloT('stem.artstudio.hh_split_help','The base plus two hues on either side of its opposite. Spread controls the split.'),
++              triadic:__alloT('stem.artstudio.hh_triadic_help','Three hues separated by 120 degrees.'),
++              tetradic:__alloT('stem.artstudio.hh_tetradic_help','Two opposite pairs. Spread controls the angle between the pairs.'),
++              square:__alloT('stem.artstudio.hh_square_help','Four hues separated by 90 degrees, forming two opposite pairs.')};
++            var points=harmonyPalette.map(function(color){var a=(color.h-90)*Math.PI/180;return {x:300+180*Math.cos(a),y:300+180*Math.sin(a)};});
++            var buttonClass='rounded-lg border border-violet-300 bg-white px-3 py-2 text-xs font-bold text-violet-900 disabled:opacity-40';
++            return React.createElement('div',{'data-artstudio-harmony':'true',className:'space-y-4',
++              onPointerDown:harmonyBeginGesture,onPointerUp:harmonyEndGesture,onPointerCancel:harmonyEndGesture,onLostPointerCapture:harmonyEndGesture,onBlur:harmonyEndGesture,
++              onKeyDown:function(event){if(event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeHarmonyHistory(event.key.toLowerCase()==='y'||event.shiftKey);}}},
++              React.createElement('style',null,'[data-artstudio-harmony] button,[data-artstudio-harmony] input,[data-artstudio-harmony] select{min-height:44px}[data-artstudio-harmony] button{min-width:44px;white-space:normal}[data-artstudio-harmony] input,[data-artstudio-harmony] select,[data-artstudio-harmony] textarea{max-width:100%}[data-harmony-wheel]{width:100%;max-width:560px;height:auto;margin:auto;display:block}[data-harmony-swatches]{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}[data-artstudio-focus="true"] [data-harmony-wheel]{max-width:760px}@media(min-width:1100px){[data-harmony-layout]{grid-template-columns:minmax(0,1fr) 320px}[data-artstudio-focus="true"] [data-harmony-controls]{max-height:78dvh;overflow:auto}}'),
++              React.createElement('div',{'data-harmony-layout':'true',className:'grid gap-4 items-start'},
++                React.createElement('section',{'data-harmony-preview':'true',className:'min-w-0 rounded-2xl border border-violet-200 bg-slate-50 p-3'},
++                  React.createElement('h3',{className:'text-center text-base font-bold text-violet-900'},__alloT('stem.artstudio.hh_title','Color harmony discovery')),
++                  React.createElement('p',{'data-harmony-description':'true',className:'mx-auto mt-2 max-w-xl text-center text-xs leading-relaxed text-slate-700'},descriptions[type]),
++                  React.createElement('svg',{id:'artstudio-harmony-wheel','data-harmony-wheel':'true',xmlns:'http://www.w3.org/2000/svg',viewBox:'0 0 600 600',role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_harmony_wheel_showing_with_colors_around','Color harmony wheel showing {value1} with {value2} colors around base hue {value3} degrees.'),{value1:label,value2:harmonyPalette.length,value3:studioColorValueLabel(angle)})},
++                    React.createElement('title',null,label+' · '+studioColorValueLabel(angle)+'°'),
++                    React.createElement('rect',{width:600,height:600,rx:16,fill:'#f8fafc'}),
++                    Array.from({length:72},function(_,index){var hue=index*5,a1=(hue-92.5)*Math.PI/180,a2=(hue-87.5)*Math.PI/180,point=function(radius,a){return (300+radius*Math.cos(a))+' '+(300+radius*Math.sin(a));};return React.createElement('path',{key:index,d:'M '+point(232,a1)+' L '+point(254,a1)+' A 254 254 0 0 1 '+point(254,a2)+' L '+point(232,a2)+' A 232 232 0 0 0 '+point(232,a1)+' Z',fill:'hsl('+hue+',75%,55%)'});}),
++                    React.createElement('polygon',{points:points.map(function(p){return p.x+','+p.y;}).join(' '),fill:'none',stroke:'#64748b',strokeWidth:2}),
++                    harmonyPalette.map(function(color,index){var radius=['analogous','split','tetradic'].indexOf(harmonyRecipe.scheme)>=0&&harmonyRecipe.spread<16?12:22,p=points[index];return React.createElement('g',{key:index},
++                      React.createElement('circle',{cx:p.x,cy:p.y,r:radius+5,fill:index===harmonyIndex?'#7c3aed':'#f8fafc'}),
++                      React.createElement('circle',{cx:p.x,cy:p.y,r:radius,fill:color.css,stroke:'#334155',strokeWidth:1.5}),
++                      React.createElement('text',{x:p.x,y:p.y+5,textAnchor:'middle',fontSize:radius<16?12:16,fontFamily:'sans-serif',fontWeight:'bold',fill:color.foreground},index+1));}),
++                    React.createElement('rect',{x:160,y:262,width:280,height:72,rx:8,fill:'#f8fafc'}),
++                    React.createElement('text',{x:300,y:290,textAnchor:'middle',fontSize:20,fontFamily:'sans-serif',fontWeight:'bold',fill:'#334155'},label),
++                    React.createElement('text',{x:300,y:318,textAnchor:'middle',fontSize:18,fontFamily:'sans-serif',fill:'#475569'},studioColorValueLabel(angle)+'°'),
++                    React.createElement('text',{x:300,y:578,textAnchor:'middle',fontSize:15,fontFamily:'sans-serif',fill:'#475569'},__alloT('stem.artstudio.hh_wheel_caption','Digital HSL hue relationships'))),
++                  React.createElement('div',{'data-harmony-swatches':'true',role:'group','aria-label':__alloT('stem.artstudio.hh_select_palette','Select a harmony color')},harmonyPalette.map(function(color,index){return React.createElement('button',{key:index,type:'button','data-harmony-swatch':index,'aria-pressed':index===harmonyIndex,'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.hh_select_color','Select harmony color {index}, {hex}'),{index:index+1,hex:color.hex}),onClick:function(){setHarmonySelected(index);},className:'rounded-xl border-2 p-2 text-center text-xs font-bold '+(index===harmonyIndex?'ring-2 ring-violet-700 ring-offset-2':'border-slate-400'),style:{background:color.css,color:color.foreground}},(index+1)+'. '+color.hex.toUpperCase(),React.createElement('span',{className:'mt-1 block font-normal'},studioColorValueLabel(color.h)+'°'));})),
++                  React.createElement('p',{className:'mt-3 text-xs leading-relaxed text-slate-600'},__alloT('stem.artstudio.hh_geometry_note','Hue spacing names a relationship, not a quality score. Pigment mixtures and perceived lightness behave differently from this digital HSL wheel.'))),
++                React.createElement('section',{'data-harmony-controls':'true',className:'min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 space-y-3'},
++                  React.createElement('label',{className:'block text-xs font-bold text-violet-900'},__alloT('stem.artstudio.hh_scheme','Hue relationship'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.hh_scheme','Hue relationship'),value:harmonyRecipe.scheme,onChange:function(event){changeHarmony({scheme:event.target.value});},className:'mt-1 block w-full rounded-lg border border-violet-300 bg-white px-2 text-sm text-slate-900'},['even','analogous','complementary','split','triadic','tetradic'].map(function(scheme){return React.createElement('option',{key:scheme,value:scheme},harmonyLabel(scheme));}))),
++                  [{k:'baseHue',label:__alloT('stem.artstudio.hh_base','Base hue'),min:0,max:359,unit:'°'},
++                   {k:'saturation',label:__alloT('stem.artstudio.hh_saturation','Saturation'),min:0,max:100,unit:'%'},
++                   {k:'lightness',label:__alloT('stem.artstudio.hh_lightness','Lightness'),min:0,max:100,unit:'%'},
++                   {k:'rotation',label:__alloT('stem.artstudio.hh_rotation','Rotate the whole palette'),min:-180,max:180,unit:'°'},
++                   {k:'spread',label:__alloT('stem.artstudio.hh_spread','Neighbor / split angle'),min:10,max:60,unit:'°',disabled:['analogous','split','tetradic'].indexOf(harmonyRecipe.scheme)<0},
++                   {k:'paletteSize',label:__alloT('stem.artstudio.hh_size','Evenly spaced color count'),min:2,max:12,unit:'',disabled:harmonyRecipe.scheme!=='even'}].map(function(control){return React.createElement('label',{key:control.k,htmlFor:'hh-'+control.k,className:'block text-xs font-bold text-slate-700'},control.label+': '+studioColorValueLabel(harmonyRecipe[control.k])+control.unit,React.createElement('input',{id:'hh-'+control.k,type:'range',min:control.min,max:control.max,step:1,disabled:control.disabled,value:harmonyRecipe[control.k],'aria-valuetext':studioColorValueLabel(harmonyRecipe[control.k])+control.unit,onChange:function(event){var patch={};patch[control.k]=Number(event.target.value);changeHarmony(patch);},className:'block w-full accent-violet-700'}));}),
++                  React.createElement('div',{className:'flex flex-wrap gap-2'},
++                    React.createElement('button',{type:'button',disabled:!harmonyHistoryRef.current.undo.length,onClick:function(){changeHarmonyHistory(false);},className:buttonClass},__alloT('stem.artstudio.hh_undo','Undo harmony edit')),
++                    React.createElement('button',{type:'button',disabled:!harmonyHistoryRef.current.redo.length,onClick:function(){changeHarmonyHistory(true);},className:buttonClass},__alloT('stem.artstudio.hh_redo','Redo harmony edit')),
++                    React.createElement('button',{type:'button',onClick:function(){changeHarmony(artStudioHarmonyRecipe({}));},className:buttonClass},__alloT('stem.artstudio.hh_reset','Reset palette'))),
++                  React.createElement('button',{type:'button',onClick:logHarmony,className:buttonClass+' w-full'},__alloT('stem.artstudio.hh_log','Log palette experiment')),
++                  React.createElement('button',{type:'button',onClick:saveHarmonyPalette,className:'w-full rounded-lg bg-violet-800 px-3 text-xs font-bold text-white'},harmonyPalette.length>8?__alloT('stem.artstudio.hh_save_eight','Save first 8 colors to Thread Kit'):__alloT('stem.artstudio.hh_save','Save harmony to Thread Kit')),
++                  harmonyPalette.length>8&&React.createElement('p',{className:'text-xs text-slate-700'},__alloT('stem.artstudio.hh_limit','Thread Kit holds eight colors. Downloads include the full palette.')),
++                  React.createElement('p',{className:'text-xs font-bold text-violet-900'},formatArtStudioLearningText(__alloT('stem.artstudio.hh_selected','Selected color {index}: {hex}'),{index:harmonyIndex+1,hex:harmonyColor.hex.toUpperCase()})),
++                  React.createElement('div',{className:'grid grid-cols-2 gap-2'},
++                    React.createElement('button',{type:'button',onClick:function(){useHarmonyColor(false);},className:buttonClass},__alloT('stem.artstudio.hh_pixel','Use in Pixel Art')),
++                    React.createElement('button',{type:'button',onClick:function(){useHarmonyColor(true);},className:buttonClass},__alloT('stem.artstudio.hh_watercolor','Paint in Watercolor')),
++                    React.createElement('button',{type:'button',onClick:function(){exportHarmony('svg');},className:buttonClass},__alloT('stem.artstudio.hh_svg','Download harmony SVG')),
++                    React.createElement('button',{type:'button',onClick:function(){exportHarmony('css');},className:buttonClass},__alloT('stem.artstudio.hh_css','Download harmony CSS'))))),
++              React.createElement('section',{'data-harmony-experiments':'true',className:'rounded-2xl border border-slate-300 bg-white p-4'},
++                React.createElement('h3',{className:'text-sm font-bold text-slate-900'},__alloT('stem.artstudio.hh_experiments','Palette experiments')),
++                React.createElement('p',{className:'mt-1 text-xs text-slate-600'},__alloT('stem.artstudio.hh_experiment_help','Keep up to eight experiments. Restore one to compare its settings; your written observations stay in place.')),
++                React.createElement('div',{className:'mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'},harmonyState.log.map(function(entry,index){var colors=artStudioHarmonyPalette(entry.recipe);return React.createElement('button',{key:index,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.hh_restore','Restore experiment {index}'),{index:index+1}),onClick:function(){changeHarmony(entry.recipe);},className:'min-w-0 rounded-xl border border-slate-300 p-2 text-left text-xs text-slate-800'},React.createElement('span',{'aria-hidden':true,className:'mb-2 flex overflow-hidden rounded-lg'},colors.map(function(color,i){return React.createElement('span',{key:i,style:{flex:1,height:32,background:color.css}});})),(index+1)+'. '+harmonyLabel(artStudioHarmonyType(entry.recipe)),React.createElement('span',{className:'mt-1 block text-slate-600'},studioColorValueLabel(entry.recipe.baseHue)+'° · '+colors.length+' '+__alloT('stem.artstudio.hh_colors','colors')));}))),
++              React.createElement('section',{className:'rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-3'},
++                React.createElement('label',{className:'block text-sm font-bold text-emerald-900'},__alloT('stem.artstudio.a11y_color_harmony_hypothesis','Color harmony hypothesis'),React.createElement('textarea',{'aria-label':__alloT('stem.artstudio.a11y_color_harmony_hypothesis','Color harmony hypothesis'),maxLength:2000,value:harmonyState.hypothesis,onChange:function(event){publishHarmony({hypothesis:event.target.value});},className:'mt-2 block w-full rounded-lg border border-emerald-300 bg-white p-3 text-sm font-normal text-slate-900',rows:3})),
++                !harmonyState.stuckRevealed&&React.createElement('button',{type:'button',onClick:function(){publishHarmony({stuckRevealed:true});},className:buttonClass},__alloT('stem.artstudio.stuck_show_open_prompts_no_answers','🤔 Stuck — show open prompts (no answers)')),
++                harmonyState.stuckRevealed&&React.createElement('ul',{className:'list-disc pl-5 space-y-2 text-sm text-slate-700'},
++                  React.createElement('li',null,__alloT('stem.artstudio.find_the_smallest_palette_that_still_f','Find the smallest palette that still feels "complete" to you.')),
++                  React.createElement('li',null,__alloT('stem.artstudio.hh_prompt_neighbors','Keep saturation fixed. Compare neighboring hues with opposite hues. What changes?')),
++                  React.createElement('li',null,__alloT('stem.artstudio.hh_prompt_lightness','Keep the hue relationship fixed. How does changing lightness affect your design?')),
++                  React.createElement('li',null,__alloT('stem.artstudio.hh_prompt_context','Log two palettes. Where might each work in your own artwork?'))),
++                React.createElement('label',{className:'flex items-center gap-3 text-sm font-bold text-emerald-900'},React.createElement('input',{id:'hh-und',type:'checkbox',checked:harmonyState.understood,onChange:function(event){publishHarmony({understood:event.target.checked});},style:{width:44,height:44,flexShrink:0}}),__alloT('stem.artstudio.i_think_i_understand_color_harmony_now','I think I understand color harmony now — let me explain it in my own words')),
++                harmonyState.understood&&React.createElement('label',{className:'block text-sm font-bold text-emerald-900'},__alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony','Explain your understanding of color harmony'),React.createElement('textarea',{'aria-label':__alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony','Explain your understanding of color harmony'),maxLength:4000,value:harmonyState.explanation,onChange:function(event){publishHarmony({explanation:event.target.value});},className:'mt-2 block w-full rounded-lg border border-emerald-300 bg-white p-3 text-sm font-normal text-slate-900',rows:4})))
++            );
++          }
+           // Helper to toggle fullscreen for specific tool containers
+ 
+           const toggleFullscreen = (elementId) => {
+@@ -8713,7 +8848,7 @@ const d = labToolData.artStudio || {};
+                 sculpt3d:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)', icon: '\uD83D\uDDFF', title: __alloT("stem.artstudio.learning_3d_sculpture_form_balance_and_space_d970725", "3D Sculpture — form, balance, and space"),                    hint: 'Build with simple forms, then orbit the work to study silhouette, balance, negative space, scale, and how a sculpture changes from every viewpoint.' },
+ 
+                 contrast:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast — WCAG 2.2 color pairs'), hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'Try text and background colors, compare normal and large text, and find a pair that meets your chosen contrast goal.') },
+-                harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony - sound, ratio, and color'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Compare consonant and dissonant intervals, connect frequency ratios to pattern, and translate musical relationships into visual harmony.') }
++                harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony — hue relationships and palette experiments'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Explore hue spacing, saturation, and lightness. Compare saved experiments and carry a palette into your own artwork.') }
+               };
+               var meta = TAB_META[tab] || TAB_META.colorWheel;
+               return React.createElement('details', {
+@@ -10886,151 +11021,7 @@ const d = labToolData.artStudio || {};
+               );
+             })(),
+ 
+-            // === H7b'' RICH inquiry widget: color harmony ===
+-            tab === 'harmonyHunt' && (function() {
+-              var iq = d._harmonyHunt || { baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+-              function setIQ(patch) { upd('_harmonyHunt', Object.assign({}, iq, patch)); }
+-              // Generate harmony palette based on base hue + offset
+-              var palette = [];
+-              var harmonyType;
+-              for (var i = 0; i < iq.paletteSize; i++) {
+-                var hue = ((iq.baseHue + (360 / iq.paletteSize) * i + iq.rotation) % 360 + 360) % 360;
+-                var sat = 50 + (iq.satBlend / 100) * 40;
+-                var lit = 40 + (iq.litVar / 100) * 30;
+-                var relativeLuminance = luminance(hue, sat, lit);
+-                var blackContrast = (relativeLuminance + 0.05) / 0.05;
+-                var whiteContrast = 1.05 / (relativeLuminance + 0.05);
+-                palette.push({
+-                  hue: hue,
+-                  sat: sat,
+-                  lit: lit,
+-                  css: 'hsl(' + hue + ',' + sat + '%,' + lit + '%)',
+-                  foreground: blackContrast >= whiteContrast ? '#000000' : '#ffffff'
+-                });
+-              }
+-              // Classify harmony type by palette spread
+-              var hueSpread = 360 / iq.paletteSize;
+-              if (iq.paletteSize === 2) harmonyType = 'complementary';
+-              else if (iq.paletteSize === 3) harmonyType = 'triadic';
+-              else if (iq.paletteSize === 4) harmonyType = 'tetradic';
+-              else if (iq.paletteSize <= 6 && iq.satBlend < 30) harmonyType = 'analogous';
+-              else harmonyType = 'rainbow';
+-              var hMeta = {
+-                complementary: { label: __alloT('stem.artstudio.complementary_2_opposites', '⚫⚪ Complementary (2 opposites)'), desc: __alloT('stem.artstudio.maximum_contrast_pop_art_brand_accents', 'Maximum contrast. Pop art, brand accents.') },
+-                triadic:       { label: __alloT('stem.artstudio.triadic_3_equidistant', '🔺 Triadic (3 equidistant)'), desc: __alloT('stem.artstudio.vibrant_but_balanced_childrens_books_c', 'Vibrant but balanced. Children’s books, cartoons.') },
+-                tetradic:      { label: __alloT('stem.artstudio.tetradic_4_corners', '◇ Tetradic (4 corners)'), desc: __alloT('stem.artstudio.rich_palette_with_two_opposing_pairs', 'Rich palette with two opposing pairs.') },
+-                analogous:     { label: __alloT('stem.artstudio.analogous_low_saturation_neighbors', '🌅 Analogous (low saturation neighbors)'), desc: __alloT('stem.artstudio.calm_harmonious_landscape_painting', 'Calm, harmonious — landscape painting.') },
+-                rainbow:       { label: __alloT('stem.artstudio.rainbow_many_vivid_hues', '🌈 Rainbow (many vivid hues)'), desc: __alloT('stem.artstudio.energetic_playful_childrens_design', 'Energetic, playful — children’s design.') }
+-              }[harmonyType];
+-              function logObs() {
+-                setIQ({ log: (iq.log || []).concat([{ h: iq.baseHue, s: iq.satBlend, l: iq.litVar, r: iq.rotation, n: iq.paletteSize, t: harmonyType }]).slice(-8) });
+-              }
+-              return React.createElement('div', { className: 'space-y-3' },
+-                React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-pink-300 shadow-sm space-y-3' },
+-                  React.createElement('h3', { className: 'text-sm font-black text-pink-700' }, __alloT('stem.artstudio.color_harmony_discovery', '🎶 Color harmony discovery')),
+-                  React.createElement('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' },
+-                    __alloT('stem.artstudio.adjust_base_hue_saturation_lightness_v', 'Adjust base hue, saturation, lightness variation, rotation, and palette size. Widget renders a live harmony palette and classifies it into one of 5 discrete harmony types. No score, no reveal — sweep and notice which combinations produce which harmonies.')),
+-                  // Classification badge
+-                  React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: '#f5f3ff', border: '2px solid #c4b5fd' } },
+-                    React.createElement('div', { className: 'text-base font-black text-violet-700' }, hMeta.label),
+-                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, hMeta.desc)
+-                  ),
+-                  // SVG harmony wheel visualization
+-                  React.createElement('div', { className: 'flex justify-center p-3 bg-slate-50 rounded border border-slate-200' },
+-                    React.createElement('svg', { viewBox: '0 0 240 240', role: 'img', 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_harmony_wheel_showing_with_colors_around', 'Color harmony wheel showing {value1} with {value2} colors around base hue {value3} degrees.'), { value1: hMeta.label, value2: iq.paletteSize, value3: iq.baseHue }), className: 'w-64 h-64' },
+-                      // Background hue ring (reference)
+-                      Array.from({ length: 36 }, function(_, i) {
+-                        var hue = i * 10;
+-                        var a1 = (hue - 5 - 90) * Math.PI / 180;
+-                        var a2 = (hue + 5 - 90) * Math.PI / 180;
+-                        var rIn = 95, rOut = 110;
+-                        var x1 = 120 + rIn * Math.cos(a1), y1 = 120 + rIn * Math.sin(a1);
+-                        var x2 = 120 + rOut * Math.cos(a1), y2 = 120 + rOut * Math.sin(a1);
+-                        var x3 = 120 + rOut * Math.cos(a2), y3 = 120 + rOut * Math.sin(a2);
+-                        var x4 = 120 + rIn * Math.cos(a2), y4 = 120 + rIn * Math.sin(a2);
+-                        return React.createElement('path', { key: 'r' + i, d: 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2 + ' A ' + rOut + ' ' + rOut + ' 0 0 1 ' + x3 + ' ' + y3 + ' L ' + x4 + ' ' + y4 + ' A ' + rIn + ' ' + rIn + ' 0 0 0 ' + x1 + ' ' + y1 + ' Z',
+-                          fill: 'hsl(' + hue + ',75%,60%)', opacity: 0.35 });
+-                      }),
+-                      // Palette markers — show selected harmony positions
+-                      palette.map(function(p, i) {
+-                        var ang = (p.hue - 90) * Math.PI / 180;
+-                        var cx = 120 + 78 * Math.cos(ang);
+-                        var cy = 120 + 78 * Math.sin(ang);
+-                        return React.createElement('g', { key: 'p' + i },
+-                          React.createElement('circle', { cx: cx, cy: cy, r: 18, fill: p.css, stroke: '#1e293b', strokeWidth: 1.5 }),
+-                          React.createElement('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: p.lit > 50 ? '#1e293b' : '#fff' }, (i + 1))
+-                        );
+-                      }),
+-                      // Center label
+-                      React.createElement('text', { x: 120, y: 118, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#475569' }, 'base ' + iq.baseHue + '°'),
+-                      React.createElement('text', { x: 120, y: 132, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, harmonyType)
+-                    )
+-                  ),
+-                  // Palette swatches with HSL values
+-                  React.createElement('div', { className: 'flex flex-wrap gap-1' },
+-                    palette.map(function(p, i) {
+-                      return React.createElement('div', { key: 'sw' + i, 'data-harmony-swatch': i, className: 'flex-1 min-w-[60px] rounded text-center text-[0.625rem] font-mono', style: { background: p.css, color: p.foreground, padding: '8px 4px' } },
+-                        '#' + (i + 1), React.createElement('div', null, p.hue.toFixed(0) + '°'));
+-                    })
+-                  ),
+-                  // Sliders
+-                  React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+-                    [{ k: 'baseHue', l: 'Base hue (°)', mn: 0, mx: 359, st: 5 },
+-                     { k: 'satBlend', l: 'Saturation blend (%)', mn: 0, mx: 100, st: 5 },
+-                     { k: 'litVar', l: 'Lightness variation (%)', mn: 0, mx: 100, st: 5 },
+-                     { k: 'rotation', l: 'Rotation (°)', mn: -90, mx: 90, st: 5 },
+-                     { k: 'paletteSize', l: 'Palette size', mn: 2, mx: 12, st: 1 }].map(function(s) {
+-                      return React.createElement('div', { key: s.k },
+-                        React.createElement('label', { htmlFor: 'hh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-pink-700' }, iq[s.k])),
+-                        React.createElement('input', { id: 'hh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+-                          onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+-                          className: 'w-full', 'aria-label': s.l }));
+-                    })
+-                  ),
+-                  // Log + reset
+-                  React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
+-                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.artstudio.log', '📋 Log')),
+-                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.artstudio.reset', '↺ Reset')),
+-                    (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+-                  ),
+-                  // Log table
+-                  (iq.log || []).length > 0 && React.createElement('div', { className: 'overflow-x-auto' },
+-                    React.createElement('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
+-                      React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-100' },
+-                        ['base', 'sat', 'lit', 'rot', 'n', 'harmony'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
+-                      React.createElement('tbody', null, iq.log.map(function(o, idx) {
+-                        return React.createElement('tr', { key: 'lr' + idx },
+-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
+-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
+-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.l),
+-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.r),
+-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.n),
+-                          React.createElement('td', { className: 'px-1 border border-slate-200' }, o.t));
+-                      }))
+-                    )
+-                  ),
+-                  React.createElement('textarea', { 'aria-label': __alloT('stem.artstudio.a11y_color_harmony_hypothesis', 'Color harmony hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.artstudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?'),
+-                    className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+-                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.artstudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
+-                  iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
+-                    React.createElement('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.artstudio.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
+-                    React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
+-                      React.createElement('li', null, __alloT('stem.artstudio.find_the_smallest_palette_that_still_f', 'Find the smallest palette that still feels "complete" to you.')),
+-                      React.createElement('li', null, __alloT('stem.artstudio.real_impressionists_used_analogous_pal', 'Real impressionists used analogous palettes. Why might that be?')),
+-                      React.createElement('li', null, __alloT('stem.artstudio.some_color_schemes_have_proper_names_c', 'Some color schemes have proper names (complementary, split-complementary, triadic). Look those up and try to reproduce them.')),
+-                      React.createElement('li', null, __alloT('stem.artstudio.high_saturation_many_colors_busy_try_d', 'High saturation + many colors = busy. Try desaturating with the blend slider — what happens to "harmony"?')))),
+-                  React.createElement('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+-                    React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+-                      React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4 min-w-[24px] min-h-[24px]' }),
+-                      React.createElement('label', { htmlFor: 'hh-und', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
+-                        __alloT('stem.artstudio.i_think_i_understand_color_harmony_now', 'I think I understand color harmony now — let me explain it in my own words'))),
+-                    iq.understood && React.createElement('textarea', { 'aria-label': __alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony', 'Explain your understanding of color harmony'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
+-                      className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
+-                  React.createElement('div', { className: 'mt-3 text-[0.625rem] italic text-slate-500' },
+-                    __alloT('stem.artstudio.design_note_discrete_5_state_harmony_m', 'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.'))
+-                )
+-              );
+-            })(),
++            tab === 'harmonyHunt' && renderHarmonyStudio(),
+ 
+             // ═══ SPIROGRAPH TAB ═══
+             tab === 'spirograph' && React.createElement('div', {className:'space-y-3'},

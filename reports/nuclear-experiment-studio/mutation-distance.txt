@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:120:5 › distance readings follow the model and a completed discovery leads to shielding (20.7s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:120:5 › distance readings follow the model and a completed discovery leads to shielding 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-reading]')
+    Expected: "25%"
+    Received: "50%"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-reading]')
+        32 × locator resolved to <strong data-ns-reading="true">50%</strong>
+           - unexpected value "50%"
+
+
+      128 |   await expect(page.locator('[data-ns-reading]')).toHaveText('100%');
+      129 |   await page.getByRole('button', { name: 'Take a reading' }).click();
+    > 130 |   await expect(page.locator('[data-ns-reading]')).toHaveText('25%');
+          |                                                   ^
+      131 |   await page.getByRole('button', { name: '4 m', exact: true }).click();
+      132 |   await page.getByRole('button', { name: 'Take a reading' }).click();
+      133 |   await expect(page.locator('[data-ns-reading]')).toHaveText('6.25%');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:130:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-distance\43-nuclearlab-experiment-s-24154-iscovery-leads-to-shielding-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-distance\43-nuclearlab-experiment-s-24154-iscovery-leads-to-shielding-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-distance\43-nuclearlab-experiment-s-24154-iscovery-leads-to-shielding-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-distance\43-nuclearlab-experiment-s-24154-iscovery-leads-to-shielding-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-distance\43-nuclearlab-experiment-s-24154-iscovery-leads-to-shielding-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:120:5 › distance readings follow the model and a completed discovery leads to shielding 
+(node:5756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-distance.js in place of stem_lab/stem_tool_nuclearlab.js

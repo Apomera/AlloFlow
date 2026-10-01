@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-09-27T18:17:44.252Z",
+  "source": {
+    "path": "stem_lab/stem_tool_circuit.js",
+    "sha256": "21c7834862e6f9ae883653930dcce4c592a5adb5dad19a935fba667192f89c69",
+    "mirror": "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+    "mirrorMatches": true
+  },
+  "host": {
+    "path": "stem_lab/stem_lab_module.js",
+    "sha256": "109c99f3814d196373b0f20083a0d6eda59e2cb123a09b10110f87de0f5be3d7",
+    "mirror": "desktop/web-app/public/stem_lab/stem_lab_module.js",
+    "mirrorMatches": true
+  },
+  "regression": {
+    "tests": 972,
+    "passed": 972,
+    "failed": 0,
+    "pending": 0,
+    "files": 61
+  },
+  "browser": {
+    "workflows": 5,
+    "axeScans": 4,
+    "axeViolations": 0,
+    "layoutChecks": 12,
+    "errors": 0
+  },
+  "aiProvider": "Mocked during validation; expanded runtime context explicitly approved by user.",
+  "syntaxCheck": "passed",
+  "patchWhitespaceCheck": "passed"
+}

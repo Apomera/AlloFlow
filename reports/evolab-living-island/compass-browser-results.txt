@@ -1,0 +1,72 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:5672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:5672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeDisabled[2m([22m[2m)[22m failed
+
+    Locator: getByRole('button', { name: 'Next generation' })
+    Expected: disabled
+    Error: strict mode violation: getByRole('button', { name: 'Next generation' }) resolved to 2 elements:
+        1) <button disabled type="button">Next generation →</button> aka getByRole('button', { name: 'Next generation →' })
+        2) <button type="button" data-life-visit="offspring">View next generation</button> aka getByRole('button', { name: 'View next generation' })
+
+    Call log:
+    [2m  - Expect "toBeDisabled" with timeout 15000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'Next generation' })[22m
+
+
+      514 |   await expect(page.locator('#ei-organism')).toHaveValue('1');
+      515 |   await expect(page.locator('[data-island-generation]')).toHaveAttribute('data-island-generation', '0');
+    > 516 |   await expect(page.getByRole('button', { name: 'Next generation', exact: false })).toBeDisabled();
+          |                                                                                     ^
+      517 |   await page.getByRole('button', { name: 'Next family generation', exact: true }).click();
+      518 |   await expect(page.locator('[data-island-generation]')).toHaveAttribute('data-island-generation', '1');
+      519 |   expect(await page.evaluate(() => localStorage.getItem('evoLab.island.v1'))).toBe(expected);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:516:85
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\compass-browser-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\compass-browser-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\compass-browser-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\compass-browser-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\compass-browser-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\compass-browser-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:54468) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:54468) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2321:5 › discovery compass routes real discoveries and resumes an unfinished prediction without advancing the island
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2346:5 › discovery compass on a phone supports keyboard dismissal and present-day routing while preserving family and history
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:2364:5 › discovery compass without WebGL keeps extinct expeditions explorable and respects the comparison generation limit
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history 
+  4 passed (2.7m)

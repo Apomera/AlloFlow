@@ -120,6 +120,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-study-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:0 0 12px;padding:10px;border:1px solid #94a3b8;border-radius:12px;background:var(--allo-stem-panel,#f8fafc);color:var(--allo-stem-text,#0f172a)}.anatomy-study-controls label{display:grid;gap:4px;min-width:0;font-size:12px;font-weight:800}.anatomy-study-controls select{width:100%;min-width:0;min-height:44px;padding:6px 8px;border:1px solid #64748b;border-radius:8px;background:var(--allo-stem-panel,#fff);color:inherit;font-size:16px}.anatomy-study-controls button{grid-column:1/-1;min-height:44px;padding:6px 10px;border:1px solid #64748b;border-radius:8px;background:var(--allo-stem-panel,#fff);color:inherit;font-size:12px;font-weight:800}.anatomy-study-controls select:focus-visible,.anatomy-study-controls button:focus-visible{outline:3px solid #0f766e;outline-offset:2px}@media(max-width:720px){.anatomy-study-controls{display:grid}.anatomy-tool-shell[data-anatomy-study-compact=\"true\"][data-anatomy-study-controls-expanded=\"false\"]>.anatomy-mission,.anatomy-tool-shell[data-anatomy-study-compact=\"true\"][data-anatomy-study-controls-expanded=\"false\"]>.anatomy-mode-card,.anatomy-tool-shell[data-anatomy-study-compact=\"true\"][data-anatomy-study-controls-expanded=\"false\"]>.anatomy-system-rail,.anatomy-tool-shell[data-anatomy-study-compact=\"true\"][data-anatomy-study-controls-expanded=\"false\"]>.anatomy-display-panel,.anatomy-tool-shell[data-anatomy-study-compact=\"true\"][data-anatomy-study-controls-expanded=\"false\"]>.anatomy-controls-bar{display:none!important}}",
       ".theme-dark .anatomy-study-controls,.theme-dark .anatomy-study-controls select,.theme-dark .anatomy-study-controls button{background:#0f172a;color:#e2e8f0;border-color:#94a3b8}",
       '.anatomy-study-sheet{border-radius:12px;border:1px solid #cbd5e1;background:#fff;padding:14px 16px;box-shadow:0 8px 22px rgba(15,23,42,.06);}.anatomy-study-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}.anatomy-study-sheet-head h3{margin:1px 0 2px;font-size:18px;font-weight:950;color:#0f172a;}.anatomy-study-sheet-head p{margin:0;font-size:12px;color:#475569;}.anatomy-study-sheet-actions{display:flex;gap:6px;flex-wrap:wrap;}',
+      '.anatomy-tool-shell .anatomy-study-sheet{--sheet-ink:#0f172a;--sheet-muted:#475569;--sheet-panel:#fff;--sheet-soft:#f8fafc;--sheet-border:#94a3b8;--sheet-accent:#0f766e;--sheet-on-accent:#fff;color:var(--sheet-ink);background:var(--sheet-panel);border:1px solid var(--sheet-border);border-radius:16px;padding:18px;min-width:0}.theme-dark .anatomy-tool-shell .anatomy-study-sheet{--sheet-ink:#e2e8f0;--sheet-muted:#cbd5e1;--sheet-panel:#0f172a;--sheet-soft:#1e293b;--sheet-border:#94a3b8;--sheet-accent:#99f6e4;--sheet-on-accent:#0f172a}.theme-contrast .anatomy-tool-shell .anatomy-study-sheet{--sheet-ink:#000;--sheet-muted:#000;--sheet-panel:#fff;--sheet-soft:#fff;--sheet-border:#000;--sheet-accent:#000;--sheet-on-accent:#fff}',
+      '.anatomy-tool-shell .anatomy-study-sheet :is(p,label,summary,button,input,select){font-size:14px;line-height:1.7}.anatomy-tool-shell .anatomy-study-sheet :is(p,label,summary,h3,h4,h5){color:var(--sheet-ink)}.anatomy-tool-shell .anatomy-study-sheet-head h3{font-size:22px;line-height:1.4}.anatomy-tool-shell .anatomy-study-sheet :is(h4,h5){font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-study-sheet :is(button,input,select,summary){min-height:44px}.anatomy-tool-shell .anatomy-study-sheet button{padding:10px 12px;border:1px solid var(--sheet-border);border-radius:8px;background:var(--sheet-panel)!important;color:var(--sheet-accent)!important;white-space:normal;overflow-wrap:anywhere;text-align:start}.anatomy-tool-shell .anatomy-study-sheet-actions{gap:8px}.anatomy-tool-shell .anatomy-study-sheet :is([data-anatomy-study-export=json],[data-anatomy-study-import-merge]){background:var(--sheet-accent)!important;color:var(--sheet-on-accent)!important;border-color:var(--sheet-accent)}.anatomy-tool-shell .anatomy-study-sheet :is(select,input){width:100%;min-width:0;max-width:100%;background:var(--sheet-panel);color:var(--sheet-ink)}.anatomy-tool-shell .anatomy-study-sheet input::file-selector-button{min-height:44px;font:inherit;padding:8px 10px;border:1px solid var(--sheet-border);border-radius:8px;background:var(--sheet-panel);color:var(--sheet-accent);margin-inline-end:8px}.anatomy-tool-shell .anatomy-study-sheet :is(button,input,select,summary):focus-visible,.anatomy-tool-shell .anatomy-study-sheet :is(h3,h4,[data-anatomy-study-record-notice]):focus{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell .anatomy-study-sheet :is(h3,h4,[data-anatomy-study-record-notice]){scroll-margin-block:80px}',
+      '.anatomy-tool-shell .anatomy-study-sheet-stats{gap:10px;margin-block:16px}.anatomy-tool-shell .anatomy-study-sheet-stats>div{padding:12px;border-color:var(--sheet-border);background:var(--sheet-soft);min-width:0}.anatomy-tool-shell .anatomy-study-sheet-stats strong{font-size:24px;line-height:1.3;color:var(--sheet-ink)}.anatomy-tool-shell .anatomy-study-sheet-stats span{display:block;font-size:13px;line-height:1.6;text-transform:none;color:var(--sheet-muted);overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-study-sheet-system{border-color:var(--sheet-border);margin-block-start:18px;padding-block-start:16px}.anatomy-tool-shell .anatomy-study-sheet-system ul{gap:12px}.anatomy-tool-shell .anatomy-study-sheet-system li{border:1px solid var(--sheet-border);border-radius:10px;padding:12px;background:var(--sheet-soft);gap:8px;min-width:0;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);color:var(--sheet-ink)}.anatomy-tool-shell .anatomy-study-sheet-name{font-size:16px;text-align:start;max-inline-size:100%;color:var(--sheet-accent)}.anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-viewed,.anatomy-study-sheet-stale){font-size:13px;line-height:1.7;white-space:normal;max-inline-size:100%;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-study-sheet-viewed{color:var(--sheet-muted)}.anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-fn,.anatomy-study-sheet-note){font-size:14px;line-height:1.7;color:var(--sheet-ink);margin-block:4px}.anatomy-tool-shell .anatomy-study-saved-text{display:block;white-space:pre-wrap;overflow-wrap:anywhere;text-align:start;font-style:normal}.anatomy-tool-shell .anatomy-study-sheet .anatomy-structure-status{font-size:13px;line-height:1.7;white-space:normal;max-inline-size:100%;overflow-wrap:anywhere}.theme-dark .anatomy-tool-shell .anatomy-study-sheet-stale{background:#431407;color:#ffedd5;border-color:#fdba74}.theme-dark .anatomy-tool-shell .anatomy-study-sheet .anatomy-structure-status[data-status=practice]{background:#881337;color:#ffe4e6}.theme-dark .anatomy-tool-shell .anatomy-study-sheet .anatomy-structure-status[data-status=learning]{background:#713f12;color:#fef9c3}.theme-dark .anatomy-tool-shell .anatomy-study-sheet .anatomy-structure-status[data-status=mastered]{background:#064e3b;color:#d1fae5}.theme-contrast .anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-stale,.anatomy-structure-status){background:#fff;color:#000;border:1px solid #000}',
+      '.anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-workbench,.anatomy-study-evidence-guide,.anatomy-study-import-preview,.anatomy-motion-learning){background:var(--sheet-soft);color:var(--sheet-ink);border:1px solid var(--sheet-border);border-radius:12px;min-width:0}.anatomy-tool-shell .anatomy-study-workbench{padding:16px}.anatomy-tool-shell .anatomy-study-import-preview{padding:14px;margin-block:12px;background:var(--sheet-panel)}.anatomy-tool-shell .anatomy-study-import-preview h4{margin-block:0 10px}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-record-notice]{padding:10px 12px;border-inline-start:4px solid var(--sheet-accent);background:var(--sheet-panel)}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-record-notice]:empty{display:none}.anatomy-tool-shell .anatomy-study-import-preview button{margin:4px;margin-inline-start:0}.anatomy-tool-shell .anatomy-study-evidence-guide summary{padding-block:12px}.anatomy-tool-shell .anatomy-study-evidence-guide p{font-size:14px;line-height:1.7}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet :is(p,label,summary,button,input,select,span,bdi,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet h3{font-size:24px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet h4{font-size:20px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet h5{font-size:18px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-study-sheet-stats strong{font-size:28px!important}@media(max-width:680px){.anatomy-tool-shell .anatomy-study-sheet{padding:14px}.anatomy-tool-shell .anatomy-study-workbench{padding:12px}.anatomy-tool-shell .anatomy-study-sheet-system li{grid-template-columns:minmax(0,1fr);gap:8px}.anatomy-tool-shell .anatomy-study-sheet-name{justify-self:start}.anatomy-tool-shell .anatomy-study-sheet-actions button{flex:1 1 140px}}@media print{.anatomy-tool-shell .anatomy-study-sheet{background:#fff!important;color:#000!important;border:0;padding:0}.anatomy-tool-shell .anatomy-study-sheet-system li{break-inside:avoid;background:#fff!important;color:#000!important}.anatomy-tool-shell .anatomy-study-sheet-name{border:0;padding:0;min-height:0;color:#000!important}}',
+      '.anatomy-tool-shell .anatomy-study-sheet .anatomy-kicker{color:var(--sheet-muted);font-size:13px;line-height:1.6}',
+      '.anatomy-tool-shell :is([data-anatomy-study-round-position],[data-anatomy-study-round-rated],[data-anatomy-flashcards]) bdi[dir=ltr]{white-space:nowrap}',
+      '.anatomy-tool-shell .anatomy-study-rounds{margin-block:0 18px;padding-block-end:18px;border-block-end:1px solid var(--sheet-border)}.anatomy-tool-shell .anatomy-study-rounds h4{margin-block:0 8px;font-weight:900}.anatomy-tool-shell .anatomy-study-round-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-block-start:12px}.anatomy-tool-shell .anatomy-study-round-grid article{min-width:0;padding:14px;border:1px solid var(--sheet-border);border-radius:10px;background:var(--sheet-panel);color:var(--sheet-ink);overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-study-round-grid h5{font-weight:900;margin-block:0 8px}.anatomy-tool-shell .anatomy-study-round-actions{display:flex;flex-wrap:wrap;gap:8px;margin-block-start:12px}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-resume-round]{background:var(--sheet-accent)!important;color:var(--sheet-on-accent)!important;border-color:var(--sheet-accent)}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-copy]:disabled{cursor:wait;opacity:1;border-style:dashed}.anatomy-tool-shell .anatomy-study-sheet [data-anatomy-study-structures-title]{margin-block:20px 8px;font-weight:900}@media(max-width:560px){.anatomy-tool-shell .anatomy-study-round-actions button{flex:1 1 150px}}',
+      '@media print{.anatomy-tool-shell .anatomy-study-sheet{--sheet-ink:#000!important;--sheet-muted:#000!important;--sheet-panel:#fff!important;--sheet-soft:#fff!important;--sheet-border:#000!important;--sheet-accent:#000!important;--sheet-on-accent:#fff!important}.anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-stale,.anatomy-structure-status){background:#fff!important;color:#000!important;border-color:#000!important}}',
+      '.anatomy-tool-shell :is([data-anatomy-motion-reflection],[data-anatomy-motion-learning]) h4{font-size:18px;line-height:1.5}.anatomy-tool-shell [data-anatomy-motion-reflection] h4:focus{outline:3px solid #0284c7;outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] :is([data-anatomy-motion-reflection],[data-anatomy-motion-learning]) :is(p,label,legend,button,textarea,a,strong,span){font-size:17px;line-height:1.7}.anatomy-tool-shell[data-reading-mode=true] :is([data-anatomy-motion-reflection],[data-anatomy-motion-learning]) h4{font-size:20px}.anatomy-tool-shell[data-reading-mode=true] #anatomy-feedback-explanation{font-size:17px;line-height:1.7}',
+      '.anatomy-tool-shell .anatomy-motion-writing-limit{text-align:end;margin-block:4px 12px}.anatomy-tool-shell [data-anatomy-feedback-saved-writing]{margin-block:12px;padding:10px;border:1px solid currentColor;border-radius:10px;overflow-wrap:anywhere}.anatomy-tool-shell [data-anatomy-feedback-saved-writing] summary{min-height:44px;cursor:pointer;font-weight:800;line-height:1.7}.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-feedback-saved-writing] summary{font-size:17px;line-height:1.7}',
       '.anatomy-study-sheet-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin:12px 0;}.anatomy-study-sheet-stats>div{border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;background:#f8fafc;}.anatomy-study-sheet-stats strong{display:block;font-size:16px;font-weight:950;color:#0f172a;}.anatomy-study-sheet-stats span{font-size:11px;font-weight:800;text-transform:uppercase;color:#475569;}.anatomy-study-sheet-next{margin:0 0 10px;font-size:12px;color:#334155;}',
       '.anatomy-study-sheet-system{margin-top:10px;padding-top:8px;border-top:1px solid #e2e8f0;}.anatomy-study-sheet-system h4{margin:0 0 6px;font-size:13px;font-weight:900;color:#0f172a;}.anatomy-study-sheet-system ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;}.anatomy-study-sheet-system li{display:grid;grid-template-columns:auto auto auto;justify-content:start;align-items:center;column-gap:8px;font-size:12px;color:#0f172a;}.anatomy-study-sheet-name{font-weight:800;}.anatomy-study-sheet-system li>.anatomy-structure-status,.anatomy-study-sheet-viewed{justify-self:start;}.anatomy-study-sheet-viewed{font-size:11px;color:#64748b;}.anatomy-study-sheet-stale{font-size:11px;font-weight:700;color:#9a3412;background:#fff7ed;border:1px solid #fdba74;border-radius:999px;padding:1px 7px;justify-self:start;white-space:nowrap;}.anatomy-study-sheet-due-line{color:#9a3412;}.anatomy-study-sheet-fn,.anatomy-study-sheet-note{grid-column:1/-1;margin:0;font-size:11px;line-height:1.45;color:#334155;}.anatomy-study-sheet-note{color:#4c1d95;font-style:italic;}.anatomy-study-sheet-empty{font-size:12px;color:#475569;}',
       '@media print{.anatomy-tool-shell>*:not(.anatomy-study-sheet){display:none!important}.anatomy-study-sheet{box-shadow:none;border:0;padding:0;}.anatomy-study-sheet-actions{display:none!important}.anatomy-study-sheet-system{break-inside:avoid;}}',
@@ -2796,13 +2806,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
   }
 
   var ANATOMY_LEARNING_NOTE_IDS = ['exercise','meal','wound','fluid','homeostasis'];
+  function anatomyFeedbackNotes(state) {
+    var saved = state && state._feedbackExperiment;
+    saved = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    var direction = saved.direction === 'cool' ? 'cool' : 'warm', notes = [];
+    ['warm','cool'].forEach(function(id) {
+      var row = id === direction ? saved : saved.sessions && saved.sessions[id];
+      var explanation = row && typeof row.explanation === 'string' ? row.explanation.slice(0,2000) : '';
+      if (explanation.trim()) notes.push({direction:id,explanation:explanation});
+    });
+    if (typeof saved.unassignedExplanation === 'string' && saved.unassignedExplanation.trim()) notes.push({direction:null,explanation:saved.unassignedExplanation.slice(0,2000)});
+    return notes;
+  }
   function anatomyLearningNotes(state) {
     state = state || {};
-    return ANATOMY_LEARNING_NOTE_IDS.map(function(id) {
-      var row = id === 'homeostasis' ? state._feedbackExperiment : state._systemsMotionLearning && state._systemsMotionLearning[id];
-      var limit = id === 'homeostasis' ? 2000 : 1200;
-      return { id:id, explanation:row && typeof row.explanation === 'string' ? row.explanation.slice(0,limit) : '', transferExplanation:id !== 'homeostasis' && row && typeof row.transferExplanation === 'string' ? row.transferExplanation.slice(0,limit) : '' };
+    var notes = ANATOMY_LEARNING_NOTE_IDS.filter(function(id) { return id !== 'homeostasis'; }).map(function(id) {
+      var row = state._systemsMotionLearning && state._systemsMotionLearning[id];
+      return { id:id, explanation:row && typeof row.explanation === 'string' ? row.explanation.slice(0,1200) : '', transferExplanation:row && typeof row.transferExplanation === 'string' ? row.transferExplanation.slice(0,1200) : '' };
     }).filter(function(row) { return row.explanation.trim() || row.transferExplanation.trim(); });
+    var feedback = anatomyFeedbackNotes(state), active = state._feedbackExperiment && state._feedbackExperiment.direction === 'cool' ? 'cool' : 'warm';
+    var representative = feedback.find(function(row) { return row.direction === active; }) || feedback[0];
+    if (representative) notes.push({id:'homeostasis',explanation:representative.explanation,transferExplanation:''});
+    return notes;
   }
   // Portable evidence includes notes and cumulative recall counts. Active tests,
   // answer choices, clinical workspace settings and grade profiles stay local.
@@ -2823,35 +2848,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     var packet = { schema:'alloflow-anatomy-study', version:1, exportedAt:new Date(now).toISOString(), records:records };
     var learningNotes = anatomyLearningNotes(state);
     if (learningNotes.length) packet.learningNotes = learningNotes;
+    var feedbackNotes = anatomyFeedbackNotes(state);
+    if (feedbackNotes.length) packet.feedbackNotes = feedbackNotes;
     return packet;
   }
+  function anatomyStudyError(code, message) { var error = new Error(message); error.anatomyStudyCode = code; return error; }
   function parseAnatomyStudyPacket(raw, knownIds) {
-    if (!raw || raw.schema !== 'alloflow-anatomy-study' || raw.version !== 1 || !Array.isArray(raw.records) || raw.records.length > 1000) throw new Error('Choose a version 1 Anatomy study record.');
+    if (!raw || raw.schema !== 'alloflow-anatomy-study' || raw.version !== 1 || !Array.isArray(raw.records) || raw.records.length > 1000) throw anatomyStudyError('schema', 'Choose a version 1 Anatomy study record.');
     var seen = {}, records = [], skipped = 0;
     raw.records.forEach(function(row) {
-      if (!row || typeof row.id !== 'string' || Object.prototype.hasOwnProperty.call(seen,row.id)) throw new Error('Each study record must have a unique structure ID.');
+      if (!row || typeof row.id !== 'string' || Object.prototype.hasOwnProperty.call(seen,row.id)) throw anatomyStudyError('duplicate', 'Each study record must have a unique structure ID.');
       Object.defineProperty(seen,row.id,{value:true,enumerable:true});
       if (knownIds.indexOf(row.id) < 0) { skipped++; return; }
-      if (typeof row.viewed !== 'boolean' || (row.confidence !== null && ['practice','learning','mastered'].indexOf(row.confidence) < 0) || (row.ratedAt !== null && !(typeof row.ratedAt === 'number' && Number.isFinite(row.ratedAt) && row.ratedAt > 0)) || typeof row.note !== 'string' || row.note.length > 280) throw new Error('The study record has an invalid rating, timestamp, or note.');
+      if (typeof row.viewed !== 'boolean' || (row.confidence !== null && ['practice','learning','mastered'].indexOf(row.confidence) < 0) || (row.ratedAt !== null && !(typeof row.ratedAt === 'number' && Number.isFinite(row.ratedAt) && row.ratedAt > 0)) || typeof row.note !== 'string' || row.note.length > 280) throw anatomyStudyError('record', 'The study record has an invalid rating, timestamp, or note.');
       var clean = {id:row.id,viewed:row.viewed,confidence:row.confidence,ratedAt:row.ratedAt,note:row.note};
       if (row.recall !== undefined) {
         var recall = row.recall;
-        if (!recall || !Number.isInteger(recall.attempts) || !Number.isInteger(recall.correct) || recall.attempts < 0 || recall.attempts > 1000000 || recall.correct < 0 || recall.correct > recall.attempts) throw new Error('The study record has invalid recall counts.');
+        if (!recall || !Number.isInteger(recall.attempts) || !Number.isInteger(recall.correct) || recall.attempts < 0 || recall.attempts > 1000000 || recall.correct < 0 || recall.correct > recall.attempts) throw anatomyStudyError('recall', 'The study record has invalid recall counts.');
         clean.recall = {attempts:recall.attempts,correct:recall.correct};
       }
       records.push(clean);
     });
-    if (!records.length && raw.records.length) throw new Error('No structures in this file match the Anatomy catalog.');
+    if (!records.length && raw.records.length) throw anatomyStudyError('no_match', 'No structures in this file match the Anatomy catalog.');
     var packet = {schema:'alloflow-anatomy-study',version:1,records:records,skipped:skipped};
     if (raw.learningNotes !== undefined) {
-      if (!Array.isArray(raw.learningNotes) || raw.learningNotes.length > ANATOMY_LEARNING_NOTE_IDS.length) throw new Error('The study record has invalid learning notes.');
+      if (!Array.isArray(raw.learningNotes) || raw.learningNotes.length > ANATOMY_LEARNING_NOTE_IDS.length) throw anatomyStudyError('learning_notes', 'The study record has invalid learning notes.');
       var seenNotes = [];
       packet.learningNotes = raw.learningNotes.map(function(row) {
         var limit = row && row.id === 'homeostasis' ? 2000 : 1200;
-        if (!row || ANATOMY_LEARNING_NOTE_IDS.indexOf(row.id) < 0 || seenNotes.indexOf(row.id) >= 0 || typeof row.explanation !== 'string' || row.explanation.length > limit || typeof row.transferExplanation !== 'string' || row.transferExplanation.length > limit || row.id === 'homeostasis' && row.transferExplanation !== '') throw new Error('The study record has invalid learning notes.');
+        if (!row || ANATOMY_LEARNING_NOTE_IDS.indexOf(row.id) < 0 || seenNotes.indexOf(row.id) >= 0 || typeof row.explanation !== 'string' || row.explanation.length > limit || typeof row.transferExplanation !== 'string' || row.transferExplanation.length > limit || row.id === 'homeostasis' && row.transferExplanation !== '') throw anatomyStudyError('learning_notes', 'The study record has invalid learning notes.');
         seenNotes.push(row.id);
         return {id:row.id,explanation:row.explanation,transferExplanation:row.transferExplanation};
       });
+    }
+    if (raw.feedbackNotes !== undefined) {
+      if (!Array.isArray(raw.feedbackNotes) || !raw.feedbackNotes.length || raw.feedbackNotes.length > 3) throw anatomyStudyError('learning_notes', 'The study record has invalid learning notes.');
+      var feedbackDirections = [];
+      packet.feedbackNotes = raw.feedbackNotes.map(function(row) {
+        if (!row || ['warm','cool',null].indexOf(row.direction) < 0 || feedbackDirections.indexOf(row.direction) >= 0 || typeof row.explanation !== 'string' || !row.explanation.trim() || row.explanation.length > 2000) throw anatomyStudyError('learning_notes', 'The study record has invalid learning notes.');
+        feedbackDirections.push(row.direction); return {direction:row.direction,explanation:row.explanation};
+      });
+      var fallback = (packet.learningNotes || []).find(function(row) { return row.id === 'homeostasis'; });
+      if (fallback && !packet.feedbackNotes.some(function(row) { return row.explanation === fallback.explanation; })) throw anatomyStudyError('learning_notes', 'The study record has invalid learning notes.');
     }
     return packet;
   }
@@ -2882,6 +2920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     var keptReflections = 0;
     (incoming.learningNotes || []).forEach(function(row) {
       var homeostasis = row.id === 'homeostasis';
+      if (homeostasis) return;
       var old = homeostasis ? state._feedbackExperiment : state._systemsMotionLearning && state._systemsMotionLearning[row.id];
       var next = Object.assign({},old && typeof old === 'object' && !Array.isArray(old) ? old : {});
       ['explanation','transferExplanation'].forEach(function(key) {
@@ -2890,15 +2929,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         if (!previous.trim()) next[key] = row[key];
         else if (row[key].trim() && row[key] !== previous) keptReflections++;
       });
-      if (homeostasis) patch._feedbackExperiment = next;
-      else { if (!patch._systemsMotionLearning) patch._systemsMotionLearning = Object.assign({},state._systemsMotionLearning); patch._systemsMotionLearning[row.id] = next; }
+      if (!patch._systemsMotionLearning) patch._systemsMotionLearning = Object.assign({},state._systemsMotionLearning); patch._systemsMotionLearning[row.id] = next;
     });
+    var feedbackRows = incoming.feedbackNotes || (incoming.learningNotes || []).filter(function(row) { return row.id === 'homeostasis' && row.explanation.trim(); }).map(function(row) { return {direction:null,explanation:row.explanation}; });
+    if (feedbackRows.length) {
+      var oldFeedback = state._feedbackExperiment;
+      var nextFeedback = Object.assign({},oldFeedback && typeof oldFeedback === 'object' && !Array.isArray(oldFeedback) ? oldFeedback : {});
+      var activeDirection = nextFeedback.direction === 'cool' ? 'cool' : 'warm';
+      var sessions = Object.assign({},nextFeedback.sessions && typeof nextFeedback.sessions === 'object' && !Array.isArray(nextFeedback.sessions) ? nextFeedback.sessions : {});
+      feedbackRows.forEach(function(row) {
+        var active = row.direction === activeDirection;
+        var oldSession = row.direction === null ? nextFeedback : active ? nextFeedback : sessions[row.direction];
+        var key = row.direction === null ? 'unassignedExplanation' : 'explanation';
+        var previous = oldSession && typeof oldSession[key] === 'string' ? oldSession[key] : '';
+        var explanation = previous.trim() ? previous : row.explanation;
+        if (previous.trim() && row.explanation !== previous) keptReflections++;
+        if (row.direction === null) nextFeedback.unassignedExplanation = explanation;
+        else {
+          sessions[row.direction] = Object.assign({},sessions[row.direction],{explanation:explanation});
+          if (active) nextFeedback.explanation = explanation;
+        }
+      });
+      nextFeedback.sessions = sessions; patch._feedbackExperiment = nextFeedback;
+    }
     return {patch:patch,keptNotes:keptNotes,keptReflections:keptReflections,imported:incoming.records.length,skipped:incoming.skipped || 0};
   }
   try { window.__alloAnatomyStudyPure = { packet:anatomyStudyPacket,parse:parseAnatomyStudyPacket,merge:mergeAnatomyStudyPacket }; } catch(e) {}
 
   // Each mounted conversation reads its latest profile when a retained action runs.
   var anatomyTutorProfiles = new WeakMap();
+  // Only live clipboard requests can finish; persisted tokens never mean a copy is still running.
+  var anatomyStudyCopies = new Map();
   window.StemLab.registerTool('anatomy', {
     icon: '\uD83E\uDEC0',
     label: "Human Anatomy Explorer",
@@ -3091,7 +3152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           }
           if (tab === 'pathways') { changeTab({ _activeTab: tab, quizMode: false }, function() { if (!keepTabFocus) focusPathwayMenu(); }); return; }
           if (tab === 'flashcards') {
-            openFlashcardRound(flashcardScope, sysKey, complexity, { _showSystemsMotion: false }, false, function(nextState) { if (!keepTabFocus) focusFlashcardState(nextState); });
+            openFlashcardRound(flashcardScope, sysKey, complexity, { _showSystemsMotion: false }, false, function(nextState,patch,origin) { if (!keepTabFocus) focusFlashcardState(nextState,null,origin); });
             return;
           }
           changeTab({ _activeTab: tab, quizMode: false }, function() { if (tab === 'spotter' && !keepTabFocus) focusCurrentSpotter(); });
@@ -3575,6 +3636,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('label', { htmlFor: 'anatomy-feedback-disturbance' }, t('stem.anatomy.feedback_disturbance', 'Disturbance'),
               h('select', { id: 'anatomy-feedback-disturbance', value: direction, onChange: function(event) { updateFeedbackExperiment('direction',event.target.value); } },
                 h('option', { value: 'warm' }, t('stem.anatomy.feedback_warming', 'Brief warming')), h('option', { value: 'cool' }, t('stem.anatomy.feedback_cooling', 'Brief cooling')))),
+            !revealed && saved.explanation.trim() ? h('details',{'data-anatomy-feedback-saved-writing':true},
+              h('summary',null,t('stem.anatomy.feedback_saved_explanation_title','My saved explanation')),
+              h('p',null,t('stem.anatomy.feedback_saved_explanation_help','Your earlier writing is saved. Make a prediction and compare the model before revising it.')),
+              h('p',{dir:'auto','data-anatomy-feedback-saved-text':true},saved.explanation)) : null,
             h('fieldset', {tabIndex:-1,'data-anatomy-feedback-prediction':true}, h('legend', null, t('stem.anatomy.feedback_prediction', 'Make a prediction')),
               [{ id: 'active', label: activeLabel }, { id: 'disabled', label: disabledLabel }, { id: 'same', label: t('stem.anatomy.feedback_same', 'Both return equally close') }].map(function(option) {
                 return h('label', { key: option.id }, h('input', { type: 'radio', name: 'anatomy-feedback-prediction', value: option.id, checked: prediction === option.id, disabled: revealed,
@@ -3601,7 +3666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('tbody', null, [0,8,20,40].map(function(step) { return h('tr', { key: step }, h('th', { scope: 'row' }, step), h('td', { 'data-anatomy-feedback-active': step }, active[step].temperature.toFixed(3)), h('td', { 'data-anatomy-feedback-disabled': step }, disabled[step].temperature.toFixed(3))); }))),
               h('p', null, direction === 'warm' ? t('stem.anatomy.feedback_warm_mechanism', 'In the body, the hypothalamus coordinates responses such as sweating and increased skin blood flow to lose heat.') : t('stem.anatomy.feedback_cool_mechanism', 'In the body, the hypothalamus coordinates responses such as shivering and reduced skin blood flow to conserve or generate heat.')),
               h('label', { htmlFor: 'anatomy-feedback-explanation' }, t('stem.anatomy.feedback_explain', 'Why does the response get smaller as temperature approaches its starting value?'),
-                h('textarea', { id: 'anatomy-feedback-explanation', rows: 3, maxLength: 2000, value: typeof saved.explanation === 'string' ? saved.explanation.slice(0,2000) : '', onChange: function(event) { updateFeedbackExperiment('explanation',event.target.value); } }))
+              h('textarea', { id: 'anatomy-feedback-explanation', dir:'auto', rows: 3, maxLength: 2000, value: typeof saved.explanation === 'string' ? saved.explanation.slice(0,2000) : '', onChange: function(event) { updateFeedbackExperiment('explanation',event.target.value); } }))
             ) : null,
             h('p', { className: 'anatomy-feedback-limit' }, t('stem.anatomy.feedback_limit', 'Illustrative model: 37°C is a chosen starting value, steps are not minutes, and response rates are not calibrated to a person. Real bodies exchange heat continuously and have variable delays and limits.')),
             h('a', { href: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/1-5-homeostasis', target: '_blank', rel: 'noopener noreferrer' }, t('stem.anatomy.feedback_reference', 'Read about negative feedback — OpenStax'))
@@ -4060,7 +4125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var SYSTEMS_IN_MOTION_SCENARIOS = {
           exercise: {
             id: 'exercise-response', selectorLabel: 'Exercise', routeLabel: 'Exercise response pathway', accent: '#0e7490', soft: '#ecfeff',
-            title: 'Exercise: force to gas exchange',
+            title: t('stem.anatomy.study_flow_activity_exercise_title', 'Exercise: force to gas exchange'),
             subtitle: 'Trace how four body systems coordinate when you climb a flight of stairs.',
             perturbation: { id: 'pulmonary-edema', title: 'Pulmonary edema', affectedStepId: 'gas-exchange', clinicalStructureId: 'alveoli', change: 'Fluid increases the distance between alveolar air and capillary blood.', localEffect: 'Oxygen diffusion falls despite continued ventilation.', systemEffect: 'Working muscle receives less oxygen, so fatigue and breathlessness can increase.' },
             intervention: {
@@ -4113,7 +4178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           },
           meal: {
             id: 'after-meal', selectorLabel: 'After a meal', routeLabel: 'After a meal nutrient pathway', accent: '#c2410c', soft: '#fff7ed',
-            title: 'After a meal: absorption to delivery',
+            title: t('stem.anatomy.study_flow_activity_meal_title', 'After a meal: absorption to delivery'),
             subtitle: 'Follow water-soluble nutrients from the intestinal surface through portal blood, liver processing, and systemic circulation.',
             perturbation: { id: 'villous-atrophy', title: 'Villous atrophy', affectedStepId: 'meal-absorption', clinicalStructureId: 'sm_intestine', change: 'Shortened villi and damaged brush border reduce absorptive surface area.', localEffect: 'Fewer nutrients, electrolytes, and water cross efficiently.', systemEffect: 'Portal nutrient delivery falls and malabsorption can affect tissues throughout the body.' },
             intervention: {
@@ -4166,7 +4231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           },
           wound: {
             id: 'wound-repair', selectorLabel: 'Wound repair', routeLabel: 'Wound repair response pathway', accent: '#be123c', soft: '#fff1f2',
-            title: 'Wound repair: perfusion to rebuilding',
+            title: t('stem.anatomy.study_flow_activity_wound_title', 'Wound repair: perfusion to rebuilding'),
             subtitle: 'Trace how circulating blood supports clot formation, immune cleanup, and restoration of the skin barrier.',
             perturbation: { id: 'impaired-healing', title: 'Impaired wound healing', affectedStepId: 'wound-rebuilding', clinicalStructureId: 'epidermis', change: 'Poor perfusion and prolonged inflammation delay the rebuilding phase.', localEffect: 'Keratinocyte migration, angiogenesis, and matrix deposition slow.', systemEffect: 'The wound stays open longer and becomes more vulnerable to infection and breakdown.' },
             intervention: {
@@ -4219,7 +4284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           },
           fluid: {
             id: 'fluid-balance', selectorLabel: 'Fluid balance', routeLabel: 'Fluid balance regulation pathway', accent: '#1d4ed8', soft: '#eff6ff',
-            title: 'Fluid balance: perfusion to concentration',
+            title: t('stem.anatomy.study_flow_activity_fluid_title', 'Fluid balance: perfusion to concentration'),
             subtitle: 'Follow blood from cardiac delivery through renal filtration, tubular recovery, and final urine concentration.',
             perturbation: { id: 'glomerular-barrier-injury', title: 'Glomerular barrier injury', affectedStepId: 'renal-filtration', clinicalStructureId: 'kidneys', change: 'The filtration barrier becomes abnormally permeable to plasma proteins.', localEffect: 'Protein enters Bowman space and the tubular filtrate.', systemEffect: 'Urinary protein loss can lower plasma oncotic pressure and contribute to edema.' },
             intervention: {
@@ -4708,23 +4773,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             reference: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/25-4-microscopic-anatomy-of-the-kidney'
           }
         };
-        var systemsMotionLearning = {};
-        systemsMotionScenarioIds.forEach(function(id) {
-          var raw = d._systemsMotionLearning && d._systemsMotionLearning[id] || {};
-          systemsMotionLearning[id] = {
+        function motionLearningOf(state, id) {
+          var raw = state._systemsMotionLearning && state._systemsMotionLearning[id] || {};
+          return {
             prediction: ['less','more','same'].indexOf(raw.prediction) !== -1 ? raw.prediction : null,
             explanation: typeof raw.explanation === 'string' ? raw.explanation.slice(0,1200) : '',
             transfer: [0,1,2].indexOf(raw.transfer) !== -1 ? raw.transfer : null,
             transferExplanation: typeof raw.transferExplanation === 'string' ? raw.transferExplanation.slice(0,1200) : '',
             selfReview: raw.selfReview === true
           };
-        });
+        }
+        var systemsMotionLearning = {};
+        systemsMotionScenarioIds.forEach(function(id) { systemsMotionLearning[id] = motionLearningOf(d,id); });
         var motionLearning = systemsMotionLearning[systemsMotionScenarioId];
         var motionLesson = MOTION_LEARNING[systemsMotionScenarioId];
-        function updateMotionLearning(patch) {
-          var next = Object.assign({}, systemsMotionLearning);
-          next[systemsMotionScenarioId] = Object.assign({}, motionLearning, patch);
-          upd('_systemsMotionLearning', next);
+        function motionStepOf(state) { return Math.max(0,Math.min(Math.floor(Number(state._systemsMotionStep) || 0),systemsMotionScenario.steps.length-1)); }
+        function motionActionRevisionOf(state) { return safeNonNegativeNumber(state._systemsMotionActionRevision,0,true); }
+        function motionLearningOwnedMatches(state) {
+          return activeTab === 'explore' && tutorModeOf(state) === 'explore' && showSystemsMotion && state._showSystemsMotion === true &&
+            !showStudySheet && state._showStudySheet !== true && d._anatomyModelFocus !== true && state._anatomyModelFocus !== true &&
+            tutorStudyIdentity(state) === tutorStudyIdentity(d) && tutorBandOf(state) === gradeBand &&
+            (systemsMotionScenarioIds.indexOf(state._systemsMotionScenario) !== -1 ? state._systemsMotionScenario : 'exercise') === systemsMotionScenarioId &&
+            motionStepOf(state) === motionStepOf(d) && state._regionalAtlasOpen === d._regionalAtlasOpen &&
+            state._regionalAtlasStep === d._regionalAtlasStep && studySheetRevisionOf(state) === studySheetRevisionOf(d);
+        }
+        function updateMotionOwned(createPatch, after) {
+          var accepted = null, notified = false;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}; if (!motionLearningOwnedMatches(state)) return previous;
+            var patch = createPatch(state,motionLearningOf(state,systemsMotionScenarioId)); if (!patch) return previous;
+            accepted = Object.assign({},state,patch,{_systemsMotionActionRevision:motionActionRevisionOf(state)+1});
+            anatomyTutorProfiles.set(accepted,tutorProfileOf(state));
+            return Object.assign({},previous,{anatomy:accepted});
+          });
+          if (typeof after === 'function') {
+            function notify() { if (!accepted || notified) return; notified = true; after(accepted); }
+            notify(); setTimeout(notify,0);
+          }
+        }
+        function updateMotionLearning(createPatch, after) {
+          updateMotionOwned(function(state,learning) {
+            var patch = typeof createPatch === 'function' ? createPatch(learning,state) : createPatch;
+            if (!patch || patch.prediction && state._systemsMotionPerturbation === true) return null;
+            var saved = state._systemsMotionLearning, next = Object.assign({},saved);
+            next[systemsMotionScenarioId] = Object.assign({},saved && saved[systemsMotionScenarioId],learning,patch);
+            return {_systemsMotionLearning:next};
+          },after);
         }
         function renderMotionPrediction() {
           var predicting = d._systemsMotionPredicting === systemsMotionScenarioId;
@@ -4750,21 +4844,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function renderMotionReflection() {
           if (!systemsMotionPerturbation && !motionLearning.explanation.trim() && !motionLearning.transferExplanation.trim()) return null;
           return h('section', { className: 'anatomy-motion-learning', 'aria-labelledby': 'anatomy-motion-reflection-title', 'data-anatomy-motion-reflection': systemsMotionScenarioId },
-            h('h4', { id: 'anatomy-motion-reflection-title' }, t('stem.anatomy.motion_reflection_title','Explain the chain, then use it elsewhere')),
+            h('h4', { id: 'anatomy-motion-reflection-title', tabIndex:-1 }, t('stem.anatomy.motion_reflection_title','Explain the chain, then use it elsewhere')),
             h('label', { htmlFor: 'anatomy-motion-explanation' }, t('stem.anatomy.motion_explanation_prompt','In your own words, how does the structural change affect another part of the pathway?'),
-              h('textarea', { id: 'anatomy-motion-explanation', rows: 3, maxLength: 1200, value: motionLearning.explanation, onChange: function(event) { updateMotionLearning({ explanation: event.target.value.slice(0,1200) }); } })),
-            h('button', { type: 'button', disabled: !motionLearning.explanation.trim(), 'aria-expanded': motionLearning.selfReview, 'aria-controls': 'anatomy-motion-self-review',
-              onClick: function() { updateMotionLearning({ selfReview: !motionLearning.selfReview }); } }, t('stem.anatomy.motion_check_explanation','Check my explanation')),
+              h('textarea', { id: 'anatomy-motion-explanation', dir:'auto', 'data-anatomy-motion-explanation':systemsMotionScenarioId, 'aria-describedby':'anatomy-motion-explanation-limit', rows: 3, maxLength: 1200, value: motionLearning.explanation, onChange: function(event) { updateMotionLearning({ explanation: event.target.value.slice(0,1200) }); } })),
+            h('p',{id:'anatomy-motion-explanation-limit',className:'anatomy-motion-writing-limit','data-anatomy-motion-writing-limit':'explanation'},formatAnatomyStudyText(t('stem.anatomy.motion_writing_limit','{count} / {limit} characters'),{count:motionLearning.explanation.length,limit:1200})),
+            h('button', { type: 'button', 'data-anatomy-motion-self-review-toggle':true, disabled: !motionLearning.explanation.trim(), 'aria-expanded': motionLearning.selfReview, 'aria-controls': 'anatomy-motion-self-review',
+              onClick: function() { updateMotionLearning(function(learning) { return learning.explanation.trim() ? {selfReview:!learning.selfReview} : null; }); } }, t('stem.anatomy.motion_check_explanation','Check my explanation')),
             h('div', { id: 'anatomy-motion-self-review', hidden: !motionLearning.selfReview },
               h('p', null, t('stem.anatomy.motion_self_review','Check: Did you name the changed structure, describe the local effect, and connect it to another system? Revise your explanation using the model evidence.'))),
             h('fieldset', { 'data-anatomy-motion-transfer': systemsMotionScenarioId },
               h('legend', null, motionLesson.transfer),
               motionLesson.options.map(function(option, index) { return h('button', { key: index, type: 'button', 'data-anatomy-motion-transfer-option': String(index), 'aria-pressed': motionLearning.transfer === index,
-                onClick: function() { updateMotionLearning({ transfer: index }); if (typeof announceToSR === 'function') announceToSR((index === motionLesson.correct ? t('stem.anatomy.recap_correct_short','Correct.') : t('stem.anatomy.recap_incorrect_short','Not quite.')) + ' ' + motionLesson.explanation); } }, option); })),
+                onClick: function() { updateMotionLearning(function(learning,state) { return state._systemsMotionPerturbation === true || learning.explanation.trim() || learning.transferExplanation.trim() ? {transfer:index} : null; },function() { if (typeof announceToSR === 'function') announceToSR((index === motionLesson.correct ? t('stem.anatomy.recap_correct_short','Correct.') : t('stem.anatomy.recap_incorrect_short','Not quite.')) + ' ' + motionLesson.explanation); }); } }, option); })),
             motionLearning.transfer !== null ? h('p', { role: 'status', 'data-anatomy-motion-transfer-correct': motionLearning.transfer === motionLesson.correct ? 'true' : 'false' },
               (motionLearning.transfer === motionLesson.correct ? t('stem.anatomy.motion_transfer_match','The explanation fits. ') : t('stem.anatomy.motion_transfer_rethink','Reconsider the difference between the two situations. ')) + motionLesson.explanation) : null,
             h('label', { htmlFor: 'anatomy-motion-transfer-explanation' }, t('stem.anatomy.motion_transfer_reason','What stayed the same, and what changed in this new situation?'),
-              h('textarea', { id: 'anatomy-motion-transfer-explanation', rows: 2, maxLength: 1200, value: motionLearning.transferExplanation, onChange: function(event) { updateMotionLearning({ transferExplanation: event.target.value.slice(0,1200) }); } })),
+              h('textarea', { id: 'anatomy-motion-transfer-explanation', dir:'auto', 'aria-describedby':'anatomy-motion-transfer-limit', rows: 2, maxLength: 1200, value: motionLearning.transferExplanation, onChange: function(event) { updateMotionLearning({ transferExplanation: event.target.value.slice(0,1200) }); } })),
+            h('p',{id:'anatomy-motion-transfer-limit',className:'anatomy-motion-writing-limit','data-anatomy-motion-writing-limit':'transferExplanation'},formatAnatomyStudyText(t('stem.anatomy.motion_writing_limit','{count} / {limit} characters'),{count:motionLearning.transferExplanation.length,limit:1200})),
             h('p', null, t('stem.anatomy.motion_saved_scope','Your writing is saved for review and included in the study sheet. The choice is checked; the writing is not automatically graded.')),
             h('a', { href: motionLesson.reference, target: '_blank', rel: 'noopener noreferrer' }, t('stem.anatomy.motion_reference','Read the supporting anatomy — OpenStax'))
           );
@@ -5012,27 +5108,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           playSound('structureClick');
           if (typeof announceToSR === 'function') announceToSR(announcement || (requestedScenario.selectorLabel + ' pathway step ' + (safeIndex + 1) + ': ' + motionStep.title + '.'));
         }
-        function focusMotionLearning(selector) {
-          setTimeout(function() { var target = document.querySelector(selector); if (target) { target.focus({preventScroll:true}); target.scrollIntoView({block:'nearest'}); } }, 0);
+        function focusMotionLearning(state, selector, origin) {
+          var expectedRevision = String(motionActionRevisionOf(state)), expectedStudy = tutorStudyIdentity(state), expectedBand = tutorBandOf(state);
+          setTimeout(function() {
+            var shell = document.querySelector('[data-anatomy-tool]');
+            if (!shell || shell.getAttribute('data-anatomy-tab') !== 'explore' || shell.getAttribute('data-anatomy-tutor-sheet') !== 'false' ||
+              shell.getAttribute('data-anatomy-study-revision') !== String(studySheetRevisionOf(state)) ||
+              shell.getAttribute('data-anatomy-model-focus') === 'true' || shell.getAttribute('data-anatomy-tutor-study') !== expectedStudy ||
+              shell.getAttribute('data-anatomy-tutor-band') !== expectedBand || tutorBandOf(state) !== expectedBand) return;
+            var panel = shell.querySelector('[data-systems-motion]');
+            if (!panel || panel.getAttribute('data-anatomy-motion-scenario') !== systemsMotionScenarioId || panel.getAttribute('data-anatomy-motion-revision') !== expectedRevision ||
+              panel.getAttribute('data-anatomy-motion-step') !== String(motionStepOf(state)) ||
+              panel.getAttribute('data-anatomy-motion-atlas') !== (typeof state._regionalAtlasOpen === 'string' ? state._regionalAtlasOpen : '') ||
+              panel.getAttribute('data-anatomy-motion-atlas-step') !== String(state._regionalAtlasStep === undefined ? '' : state._regionalAtlasStep) ||
+              panel.getAttribute('data-anatomy-motion-perturbation') !== (state._systemsMotionPerturbation === true ? 'true' : 'false')) return;
+            var active = document.activeElement;
+            if (origin && active !== origin && !(active === document.body && !origin.isConnected)) return;
+            var target = panel.querySelector(selector); if (!target || !target.getClientRects().length) return;
+            target.focus({preventScroll:true}); if (target.scrollIntoView) target.scrollIntoView({block:'nearest',behavior:'auto'});
+          },0);
         }
         function toggleSystemsMotionPerturbation() {
-          if (!systemsMotionPerturbation && !motionLearning.prediction) {
-            upd('_systemsMotionPredicting', systemsMotionScenarioId);
-            focusMotionLearning('[data-anatomy-motion-prediction]');
-            if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.motion_predict_first','Record a prediction before revealing the disruption.'));
-            return;
-          }
-          var nextPerturbation = !systemsMotionPerturbation;
-          var currentIsDisruptionPoint = systemsMotionCurrent.id === systemsMotionScenario.perturbation.affectedStepId;
-          updMulti({
-            _systemsMotionPerturbation: nextPerturbation,
-            _regionalAtlasClinical: nextPerturbation && currentIsDisruptionPoint
+          var origin = document.activeElement;
+          updateMotionOwned(function(state,learning) {
+            if ((state._systemsMotionPerturbation === true) !== systemsMotionPerturbation) return null;
+            if (!systemsMotionPerturbation && !learning.prediction) return {_systemsMotionPredicting:systemsMotionScenarioId};
+            var nextPerturbation = !systemsMotionPerturbation;
+            return {_systemsMotionPerturbation:nextPerturbation,_systemsMotionPredicting:null,
+              _regionalAtlasClinical:nextPerturbation && systemsMotionScenario.steps[motionStepOf(state)].id === systemsMotionScenario.perturbation.affectedStepId};
+          },function(state) {
+            if (state._systemsMotionPredicting === systemsMotionScenarioId) {
+              focusMotionLearning(state,'[data-anatomy-motion-prediction]',origin);
+              if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.motion_predict_first','Record a prediction before revealing the disruption.'));
+              return;
+            }
+            if (state._systemsMotionPerturbation === true) focusMotionLearning(state,'[data-systems-motion-impact]',origin);
+            playSound('connectionView');
+            if (typeof announceToSR === 'function') announceToSR(state._systemsMotionPerturbation === true
+              ? ('What-if disruption applied: ' + systemsMotionScenario.perturbation.title + '.')
+              : 'Typical physiology restored.');
           });
-          if (nextPerturbation) focusMotionLearning('[data-systems-motion-impact]');
-          playSound('connectionView');
-          if (typeof announceToSR === 'function') announceToSR(nextPerturbation
-            ? ('What-if disruption applied: ' + systemsMotionScenario.perturbation.title + '.')
-            : 'Typical physiology restored.');
         }        function answerSystemsMotion(optionIndex) {
           var answerIndex = Math.max(0, Math.min(Math.floor(Number(optionIndex) || 0), systemsMotionCurrent.options.length - 1));
           var isCorrect = answerIndex === systemsMotionCurrent.correct;
@@ -5200,6 +5315,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             role: 'region',
             'aria-labelledby': 'anatomy-systems-motion-title',
             'data-systems-motion': systemsMotionScenario.id,
+            'data-anatomy-motion-revision':motionActionRevisionOf(d),
+            'data-anatomy-motion-scenario':systemsMotionScenarioId,
+            'data-anatomy-motion-step':motionStepOf(d),
+            'data-anatomy-motion-atlas':typeof d._regionalAtlasOpen === 'string' ? d._regionalAtlasOpen : '',
+            'data-anatomy-motion-atlas-step':String(d._regionalAtlasStep === undefined ? '' : d._regionalAtlasStep),
+            'data-anatomy-motion-perturbation':systemsMotionPerturbation ? 'true' : 'false',
             'data-systems-motion-scenario': systemsMotionScenarioId,
             'data-systems-motion-step': systemsMotionCurrent.id,
             'data-systems-motion-depth': systemsMotionDeepDive ? 'advanced' : 'core',
@@ -5666,29 +5787,150 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // Built from ratings, notes, misses and progress across every system; printable via the
         // print stylesheet (everything else in the tool is hidden) or copied as plain text.
         var showStudySheet = d._showStudySheet === true;
-        function buildStudySheetData() {
+        function studySheetRevisionOf(state) { return safeNonNegativeNumber(state._studySheetRevision, 0, true); }
+        function studyImportRevisionOf(state) { return safeNonNegativeNumber(state._studyImportRevision, 0, true); }
+        var studySheetRevision = studySheetRevisionOf(d), studyImportRevision = studyImportRevisionOf(d);
+        function studySheetOwnedMatches(state, allowClosed) {
+          return (allowClosed || state._showStudySheet === true) && (state._showStudySheet === true) === showStudySheet &&
+            studySheetRevisionOf(state) === studySheetRevision && tutorModeOf(state) === activeTab &&
+            tutorStudyIdentity(state) === tutorStudyIdentity(d) && tutorBandOf(state) === gradeBand &&
+            studyImportRevisionOf(state) === studyImportRevision;
+        }
+        function studySnapshotMatches(state, snapshot) {
+          return state._showStudySheet === true && studySheetRevisionOf(state) === snapshot.revision &&
+            studyImportRevisionOf(state) === snapshot.importRevision && tutorModeOf(state) === snapshot.mode &&
+            tutorStudyIdentity(state) === snapshot.study && tutorBandOf(state) === snapshot.band;
+        }
+        function studySnapshot(state) {
+          return {revision:studySheetRevisionOf(state),importRevision:studyImportRevisionOf(state),
+            mode:tutorModeOf(state),study:tutorStudyIdentity(state),band:tutorBandOf(state)};
+        }
+        function studySnapshotOnScreen(snapshot, requireShell) {
+          var shell=document.querySelector('[data-anatomy-tool]');if(!shell)return !requireShell;
+          var sheet=shell.querySelector('[data-anatomy-study-sheet]');
+          return !!sheet && shell.getAttribute('data-anatomy-tutor-sheet')==='true' &&
+            shell.getAttribute('data-anatomy-study-revision')===String(snapshot.revision) &&
+            sheet.getAttribute('data-anatomy-study-import-revision')===String(snapshot.importRevision) &&
+            shell.getAttribute('data-anatomy-tab')===snapshot.mode && shell.getAttribute('data-anatomy-tutor-study')===snapshot.study &&
+            shell.getAttribute('data-anatomy-tutor-band')===snapshot.band;
+        }
+        function liveStudyCopyRequest(state) {
+          var request=typeof state._studyCopyToken==='string'?anatomyStudyCopies.get(state._studyCopyToken):null;
+          return request && studySnapshotMatches(state,request.snapshot) ? request : null;
+        }
+        function cancelStudyCopyPatch(state) {
+          var request=anatomyStudyCopies.get(state._studyCopyToken), patch={_studyCopyToken:null};
+          if(request)anatomyStudyCopies.delete(request.token);
+          if(typeof state._studyCopyToken==='string' && !request || state._studyRecordNotice===t('stem.anatomy.study_return_copy_working','Copying study sheet…') ||
+            request && state._studyRecordNotice===request.message)patch._studyRecordNotice='';
+          return patch;
+        }
+        function readStudySheetOwned(after) {
+          var accepted=null,requireShell=!!document.querySelector('[data-anatomy-tool]');
+          setLabToolData(function(previous){var state=previous.anatomy||{};if(studySheetOwnedMatches(state))accepted=state;return previous;});
+          finishStudyUpdate(function(){return accepted;},function(state){if(studySnapshotOnScreen(studySnapshot(state),requireShell))after(state);});
+        }
+        function finishStudyUpdate(accepted, after) {
+          var notified = false;
+          function notify() { var state = accepted(); if (!state || notified) return; notified = true; if (typeof after === 'function') after(state); }
+          notify(); setTimeout(notify, 0);
+        }
+        function updateStudySheetOwned(createPatch, after, allowClosed) {
+          var accepted = null;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {}; if (!studySheetOwnedMatches(state, allowClosed)) return previous;
+            var patch = createPatch(state); if (!patch) return previous;
+            accepted = Object.assign({}, state, cancelStudyCopyPatch(state), patch, { _studySheetRevision: studySheetRevisionOf(state) + 1 });
+            anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+            return Object.assign({}, previous, { anatomy: accepted });
+          });
+          finishStudyUpdate(function() { return accepted; }, after);
+        }
+        function focusStudyState(state, destination, origin) {
+          var expectedSheetRevision = String(studySheetRevisionOf(state)), expectedImportRevision = String(studyImportRevisionOf(state));
+          var expectedStudy = tutorStudyIdentity(state), expectedMode = tutorModeOf(state), expectedBand = tutorBandOf(state);
+          setTimeout(function() {
+            var shell = document.querySelector('[data-anatomy-tool]');
+            if (!shell || shell.getAttribute('data-anatomy-study-revision') !== expectedSheetRevision ||
+              shell.getAttribute('data-anatomy-tab') !== expectedMode || shell.getAttribute('data-anatomy-tutor-study') !== expectedStudy ||
+              shell.getAttribute('data-anatomy-tutor-band') !== expectedBand || tutorBandOf(state) !== expectedBand ||
+              shell.getAttribute('data-anatomy-tutor-sheet') !== (state._showStudySheet === true ? 'true' : 'false')) return;
+            var active = document.activeElement;
+            if (origin && active !== origin && !(active === document.body && !origin.isConnected)) return;
+            var sheet = shell.querySelector('[data-anatomy-study-sheet]'), target;
+            if (destination === 'opener') { if (sheet) return; target = shell.querySelector('[data-anatomy-study-toggle]'); }
+            else if (destination === 'structure') {
+              var detail = shell.querySelector('[data-anatomy-structure-detail]');
+              if (sheet || !detail || detail.getAttribute('data-anatomy-structure-detail') !== state.selectedStructure) return;
+              target = detail.querySelector('[data-anatomy-structure-detail-heading]');
+            } else if (destination === 'motion') {
+              if (sheet || state._showSystemsMotion !== true) return;
+              var reflection = shell.querySelector('[data-anatomy-motion-reflection]');
+              if (!reflection || reflection.getAttribute('data-anatomy-motion-reflection') !== state._systemsMotionScenario) return;
+              target = reflection.querySelector('[data-anatomy-motion-explanation]');
+            } else if (destination === 'feedback') {
+              var feedback = normalizedFeedback(state._feedbackExperiment), panel = shell.querySelector('[data-anatomy-feedback-experiment]');
+              if (sheet || !panel || panel.getAttribute('data-anatomy-feedback-direction') !== feedback.direction || panel.getAttribute('data-anatomy-feedback-token') !== (feedback.token || '')) return;
+              target = panel.querySelector(feedback.revealed ? '#anatomy-feedback-explanation' : '#anatomy-feedback-title');
+            } else {
+              if (!sheet || sheet.getAttribute('data-anatomy-study-revision') !== expectedSheetRevision ||
+                sheet.getAttribute('data-anatomy-study-import-revision') !== expectedImportRevision) return;
+              target = sheet.querySelector(destination === 'preview' ? '[data-anatomy-study-import-preview-title]' :
+                destination === 'file' ? '#anatomy-study-import-file' : destination === 'notice' ? '[data-anatomy-study-record-notice]' :
+                destination === 'filter' ? '[data-anatomy-study-filter-focus]' : '#anatomy-study-sheet-title');
+            }
+            if (!target || !target.getClientRects().length) return;
+            target.focus({preventScroll:true}); if (target.scrollIntoView) target.scrollIntoView({block:'nearest',behavior:'auto'});
+          }, 0);
+        }
+        function changeStudySheetFilters(patch, recoverFocus) {
+          var origin = document.activeElement;
+          updateStudySheetOwned(function() { return patch; }, recoverFocus ? function(state) { focusStudyState(state, 'filter', origin); } : null);
+        }
+        function studyImportErrorMessage(error) {
+          if (error instanceof SyntaxError) return t('stem.anatomy.study_invalid_json','This file is not valid JSON.');
+          var errors = {
+            schema: t('stem.anatomy.study_flow_error_schema','Choose a version 1 Anatomy study record exported by this tool.'),
+            duplicate: t('stem.anatomy.study_flow_error_duplicate','Each structure must appear only once in the study record.'),
+            record: t('stem.anatomy.study_flow_error_record','A structure record has an invalid rating, date, or note.'),
+            recall: t('stem.anatomy.study_flow_error_recall','A structure record has invalid scored-practice counts.'),
+            no_match: t('stem.anatomy.study_flow_error_no_match','No structures in this file match the Anatomy catalog.'),
+            learning_notes: t('stem.anatomy.study_flow_error_learning_notes','The study record has invalid activity explanations.')
+          };
+          return errors[error && error.anatomyStudyCode] || t('stem.anatomy.study_flow_error_unknown','This file could not be imported. Choose an Anatomy study record exported by this tool.');
+        }
+        function buildStudySheetData(state) {
+          state=state||d;
+          var now=Date.now(), ratings=anatomySharedRatings(state,knownStructureIds,now), viewed=safeFlagMap(state._structuresViewed,knownStructureIds);
+          var notes={}, rawNotes=state._structureNotes;
+          if(rawNotes && typeof rawNotes==='object' && !Array.isArray(rawNotes))knownStructureIds.forEach(function(id){
+            if(typeof rawNotes[id]==='string' && rawNotes[id].trim())notes[id]=rawNotes[id].slice(0,280);
+          });
           var systemsOut = [];
           ANATOMY_SYSTEM_IDS.forEach(function(systemId) {
             var system = SYSTEMS[systemId];
             if (!system) return;
             var rows = system.structures.map(function(structure) {
-              return { structure: structure, level: structureConfidence[structure.id] || null, note: structureNotes[structure.id] || '', viewed: !!structuresViewed[structure.id], stale: isStaleRating(structure.id), days: reviewDaysSince(structure.id), recall: getRecallEvidence(structure.id) };
+              var level=ratings.confidence[structure.id]||null;
+              return { structure:structure,level:level,note:notes[structure.id]||'',viewed:!!viewed[structure.id],
+                stale:(level==='learning'||level==='mastered') && anatomyReviewDue(level,ratings.at[structure.id],now),
+                days:anatomyReviewDays(ratings.at[structure.id],now),recall:anatomyRecallRecord(state,structure.id,knownStructureIds) };
             }).filter(function(row) { return row.level || row.note || row.viewed || row.recall.attempts; });
             if (rows.length) systemsOut.push({ system: system, rows: rows });
           });
-          var counts = { practice: 0, learning: 0, mastered: 0, notes: Object.keys(structureNotes).length, viewed: 0 };
+          var counts = { practice: 0, learning: 0, mastered: 0, notes: Object.keys(notes).length, viewed: 0 };
           var ratedConcepts = {}, viewedConcepts = {}, dueConcepts = {}, dueRows = [];
           knownStructureIds.forEach(function(id) {
-            var concept = anatomyConceptId(id), level = structureConfidence[id];
+            var concept = anatomyConceptId(id), level = ratings.confidence[id];
             if (level && !ratedConcepts[concept]) { counts[level] += 1; ratedConcepts[concept] = true; }
-            if (structuresViewed[id] && !viewedConcepts[concept]) { counts.viewed += 1; viewedConcepts[concept] = true; }
+            if (viewed[id] && !viewedConcepts[concept]) { counts.viewed += 1; viewedConcepts[concept] = true; }
           });
           systemsOut.forEach(function(entry) { entry.rows.forEach(function(row) {
             var concept = anatomyConceptId(row.structure.id);
             if (row.stale && !dueConcepts[concept]) { dueRows.push(row); dueConcepts[concept] = true; }
           }); });
           counts.due = dueRows.length;
-          return { systems: systemsOut, counts: counts, due: dueRows };
+          return { systems:systemsOut,counts:counts,due:dueRows,totalCorrect:safeNonNegativeNumber(state._totalCorrect,0,true),spotterScore:safeNonNegativeNumber(state._spotterScore,0,true) };
         }
         function studySummaryMetrics(data) {
           return [
@@ -5696,13 +5938,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             [data.counts.practice,t('stem.anatomy.need_practice','Need practice'),'practice'],
             [data.counts.learning,t('stem.anatomy.learning','Learning'),'learning'],
             [data.counts.mastered,t('stem.anatomy.got_it','Got it'),'mastered'],
-            [totalCorrect,t('stem.anatomy.quiz_correct','Quiz correct'),'quiz'],
-            [spotterScore,t('stem.anatomy.spotter_ids','Spotter IDs'),'spotter'],
+            [data.totalCorrect,t('stem.anatomy.quiz_correct','Quiz correct'),'quiz'],
+            [data.spotterScore,t('stem.anatomy.spotter_ids','Spotter IDs'),'spotter'],
             [data.counts.notes,t('stem.anatomy.study_ref_notes','Entries with notes'),'notes']
           ];
         }
-        function studySheetAsText() {
-          var data = buildStudySheetData();
+        function studySheetAsText(state) {
+          state=state||d;
+          var data=buildStudySheetData(state), next=studyRecommendationForState(state), reflections=studyReflections(state);
           var levelLabel = { practice:t('stem.anatomy.need_practice','Need practice'), learning:t('stem.anatomy.learning','Learning'), mastered:t('stem.anatomy.got_it','Got it') };
           var lines = [t('stem.anatomy.study_ref_export_title','Human Anatomy Explorer — study sheet'), new Date().toLocaleDateString(), ''];
           lines.push(studySummaryMetrics(data).map(function(pair){return pair[1]+': '+pair[0];}).join(' | '));
@@ -5710,9 +5953,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           lines.push(t('stem.anatomy.study_ref_evidence_help','Viewed means opened, not learned. Ratings guide practice: you can set them yourself, and scored answers can update Need practice or Learning. Got it is a self-rating, not proof of mastery.'));
           lines.push(t('stem.anatomy.study_ref_schedule_help','This tool suggests review now for Need practice, after 2 days for Learning, and after 7 days for Got it. An undated rating is ready for a re-check. These are practice reminders, not a measurement of forgetting.'));
           lines.push(t('stem.anatomy.study_ref_shared_help','Repeated entries share ratings and scored-answer records for the same structure. Their notes stay separate. A browsing collection is not necessarily a single body system.'));
-          lines.push(t('stem.anatomy.study_sheet_next','Next step: ') + recommendedNextStep.title + ' — ' + recommendedNextStep.detail);
+          lines.push(t('stem.anatomy.study_sheet_next','Next step: ') + next.title + ' — ' + next.detail);
           if (data.due.length) lines.push(t('stem.anatomy.study_ref_export_due','Ready for a re-check: ') + data.due.map(function(row) { return row.structure.name; }).join(', '));
-          lines.push('');
+          lines.push('',t('stem.anatomy.study_return_structures_title','Recorded structures'));
           data.systems.forEach(function(entry) {
             lines.push('== ' + entry.system.name + ' ==');
             entry.rows.forEach(function(row) {
@@ -5725,8 +5968,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             });
             lines.push('');
           });
-          if (!data.systems.length) lines.push(t('stem.anatomy.study_sheet_empty','Nothing recorded yet. Open structures, rate them, and write notes to fill this sheet.'));
-          studyReflections().forEach(function(row) {
+          if (!data.systems.length) lines.push(reflections.length?t('stem.anatomy.study_return_reflections_only','No recorded structures yet. Your saved activity writing appears below.'):t('stem.anatomy.study_sheet_empty','Nothing recorded yet. Open structures, rate them, and write notes to fill this sheet.'));
+          reflections.forEach(function(row) {
             lines.push('', '== ' + row.title + ' ==', row.context);
             if (row.explanation) lines.push(t('stem.anatomy.study_reflection_explanation','My explanation: ') + row.explanation);
             if (row.transferExplanation) lines.push(row.transferPrompt, t('stem.anatomy.study_reflection_transfer','My comparison: ') + row.transferExplanation);
@@ -5737,104 +5980,263 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function recallStudyText(recall) {
           return recall.correct + '/' + recall.attempts + ' ' + t('stem.anatomy.study_recall_label','scored answers correct. Shared across entries for this organ; separate from your confidence rating.');
         }
-        function studyReflections() {
-          return anatomyLearningNotes(d).map(function(row) {
+        function studyReflections(state) {
+          state = state || d;
+          var rows = anatomyLearningNotes(state).filter(function(row) { return row.id !== 'homeostasis'; }).concat(anatomyFeedbackNotes(state).map(function(row) { return {id:'homeostasis',direction:row.direction,explanation:row.explanation,transferExplanation:''}; }));
+          return rows.map(function(row) {
             var scenario = SYSTEMS_IN_MOTION_SCENARIOS[row.id], lesson = MOTION_LEARNING[row.id];
-            return Object.assign({},row,{title:scenario ? scenario.title : t('stem.anatomy.study_homeostasis_reflection','Homeostasis: temperature feedback'),context:lesson ? lesson.prediction : t('stem.anatomy.study_homeostasis_context','Explain how feedback changes the direction of a temperature disturbance.'),transferPrompt:lesson ? lesson.transfer : ''});
+            var key = row.id === 'homeostasis' ? 'homeostasis-' + (row.direction || 'unassigned') : row.id;
+            var title = scenario ? scenario.title : row.direction === null ? t('stem.anatomy.study_reflection_unknown_title','Homeostasis: earlier reflection') : t('stem.anatomy.study_homeostasis_reflection','Homeostasis: temperature feedback') + ' · ' + (row.direction === 'cool' ? t('stem.anatomy.feedback_cooling','Brief cooling') : t('stem.anatomy.feedback_warming','Brief warming'));
+            var context = lesson ? lesson.prediction : row.direction === null ? t('stem.anatomy.study_reflection_unknown_context','This earlier record did not save whether the disturbance was warming or cooling. Choose the activity that matches your writing.') : row.direction === 'cool' ? t('stem.anatomy.feedback_cool_mechanism','In the body, the hypothalamus coordinates responses such as shivering and reduced skin blood flow to conserve or generate heat.') : t('stem.anatomy.feedback_warm_mechanism','In the body, the hypothalamus coordinates responses such as sweating and increased skin blood flow to lose heat.');
+            return Object.assign({},row,{key:key,title:title,context:context,transferPrompt:lesson ? lesson.transfer : ''});
           });
+        }
+        function resumeStudyReflection(row, chosenDirection) {
+          if (row.id === 'homeostasis' && ['warm','cool'].indexOf(chosenDirection) < 0) return;
+          var origin = document.activeElement;
+          updateStudySheetOwned(function(state) {
+            var fresh = studyReflections(state).find(function(saved) { return saved.key === row.key; });
+            if (!fresh || fresh.explanation !== row.explanation || fresh.transferExplanation !== row.transferExplanation) return null;
+            var progress = tutorModeOf(state) === 'flashcards' ? flashcardStatePatch({},state) : {};
+            if (row.id === 'homeostasis') {
+              if (row.direction !== null && chosenDirection !== row.direction) return null;
+              var feedback = normalizedFeedback(state._feedbackExperiment), sessions = Object.assign({},feedback.sessions);
+              if (row.direction === null) {
+                var destination = anatomyFeedbackNotes(state).find(function(saved) { return saved.direction === chosenDirection; });
+                if (destination && destination.explanation !== row.explanation) return {_studyRecordNotice:t('stem.anatomy.study_reflection_conflict','This activity already has writing. Your earlier reflection is still saved in the study sheet.')};
+                if (chosenDirection === feedback.direction) feedback.explanation = row.explanation;
+                else sessions[chosenDirection] = Object.assign({},validFeedbackSaved(sessions[chosenDirection]),{explanation:row.explanation});
+                delete feedback.unassignedExplanation;
+              }
+              if (feedback.direction !== chosenDirection) {
+                sessions[feedback.direction] = validFeedbackSaved(feedback);
+                feedback = Object.assign({},feedback,validFeedbackSaved(sessions[chosenDirection]),{direction:chosenDirection,context:feedbackContext(chosenDirection),token:newHomeostasisToken()});
+              }
+              feedback.sessions = sessions;
+              return Object.assign({},progress,{_feedbackExperiment:feedback,_activeTab:'homeoHunt',quizMode:false,_showSystemsMotion:false,_showStudySheet:false,_anatomyModelFocus:false});
+            }
+            var scenario = SYSTEMS_IN_MOTION_SCENARIOS[row.id]; if (!scenario) return null;
+            var sameScenario = state._systemsMotionScenario === row.id, index = sameScenario ? Math.max(0,Math.min(Math.floor(Number(state._systemsMotionStep) || 0),scenario.steps.length-1)) : 0;
+            var step = scenario.steps[index], context = findStructureContext(step.structureId,state.system), lens = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === step.structureId; });
+            var viewed = Object.assign({},state._anatomyLensViewed); if (lens) viewed[lens.id] = true;
+            var patch = Object.assign({},progress,structureFocusPatch(step.structureId,{system:state.system,complexity:Math.max(tutorLevelOf(state),context ? anatomyStructureComplexity(context.structure) : 1),_activeTab:'explore',quizMode:false,_showStudySheet:false,_anatomyModelFocus:false,_showSystemsMotion:true,_systemsMotionScenario:row.id,_systemsMotionStep:index,_systemsMotionPerturbation:sameScenario && state._systemsMotionPerturbation === true,_systemsMotionPredicting:null,_systemsMotionAnswer:sameScenario ? state._systemsMotionAnswer : null,_showSystemsSynthesis:false,_showAnatomyLens:false,_regionalAtlasOpen:step.structureId,_regionalAtlasStep:step.atlasStep,_regionalAtlasPlaying:true,_regionalAtlasClinical:sameScenario && state._systemsMotionPerturbation === true && step.id === scenario.perturbation.affectedStepId,_anatomyLensViewed:viewed}));
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts'].forEach(function(key) { delete patch[key]; });
+            return mergeComparisonHistoryPatch(state,patch);
+          },function(state) { focusStudyState(state,state._showStudySheet === true ? 'notice' : row.id === 'homeostasis' ? 'feedback' : 'motion',origin); });
         }
         function renderStudyReflections() {
           var notes = studyReflections(); if (!notes.length) return null;
           return h('div',{className:'anatomy-study-sheet-system','data-anatomy-study-reflections':true},
             h('h4',null,t('stem.anatomy.study_reflections_title','My explanations and comparisons')),
             h('p',null,t('stem.anatomy.study_reflections_scope','Saved writing for reflection, not an automatic mastery score. These notes are included in text and JSON downloads.')),
-            notes.map(function(row) { return h('article',{key:row.id,className:'anatomy-motion-learning','data-anatomy-study-reflection':row.id},
-              h('h5',null,row.title),h('p',null,row.context),
-              row.explanation && h('p',null,h('strong',null,t('stem.anatomy.study_reflection_explanation','My explanation: ')),row.explanation),
-              row.transferExplanation && h('div',null,h('p',null,row.transferPrompt),h('p',null,h('strong',null,t('stem.anatomy.study_reflection_transfer','My comparison: ')),row.transferExplanation)),
-              h('button',{type:'button','data-anatomy-resume-reflection':row.id,onClick:function(){upd('_showStudySheet',false);if(row.id==='homeostasis')activateAnatomyTab('homeoHunt');else openSystemsMotionStep(0,null,row.id);}},t('stem.anatomy.study_reflection_resume','Return to this activity'))
+            notes.map(function(row) { return h('article',{key:row.key,className:'anatomy-motion-learning','data-anatomy-study-reflection':row.key,'data-anatomy-study-reflection-direction':row.id === 'homeostasis' ? row.direction || 'unassigned' : undefined,'aria-labelledby':'anatomy-study-reflection-'+row.key+'-title'},
+              h('h5',{id:'anatomy-study-reflection-'+row.key+'-title'},row.title),h('p',null,row.context),
+              row.explanation && h('p',null,h('strong',null,t('stem.anatomy.study_reflection_explanation','My explanation: ')),h('span',{dir:'auto',className:'anatomy-study-saved-text'},row.explanation)),
+              row.transferExplanation && h('div',null,h('p',null,row.transferPrompt),h('p',null,h('strong',null,t('stem.anatomy.study_reflection_transfer','My comparison: ')),h('span',{dir:'auto',className:'anatomy-study-saved-text'},row.transferExplanation))),
+              row.id === 'homeostasis' && row.direction === null ? ['warm','cool'].map(function(direction) { return h('button',{key:direction,type:'button','data-anatomy-resume-reflection':'homeostasis-unassigned-'+direction,onClick:function() { resumeStudyReflection(row,direction); }},direction === 'warm' ? t('stem.anatomy.study_reflection_use_warm','Use for warming') : t('stem.anatomy.study_reflection_use_cool','Use for cooling')); }) : h('button',{type:'button','data-anatomy-resume-reflection':row.key,onClick:function(){resumeStudyReflection(row,row.direction);}},t('stem.anatomy.study_reflection_resume','Return to this activity'))
             ); })
           );
         }
 
-        function studyNotice(message) {
-          upd('_studyRecordNotice',message);
-          if(typeof announceToSR==='function')announceToSR(message);
+        function studyNotice(message, snapshot) {
+          var accepted=null,requireShell=!!document.querySelector('[data-anatomy-tool]');
+          setLabToolData(function(previous){
+            var state=previous.anatomy||{};if(!studySnapshotMatches(state,snapshot))return previous;
+            accepted=Object.assign({},state,typeof state._studyCopyToken==='string' && !liveStudyCopyRequest(state)?cancelStudyCopyPatch(state):{}, {_studyRecordNotice:message});anatomyTutorProfiles.set(accepted,tutorProfileOf(state));
+            return Object.assign({},previous,{anatomy:accepted});
+          });
+          finishStudyUpdate(function(){return accepted;},function(){if(studySnapshotOnScreen(snapshot,requireShell) && typeof announceToSR==='function')announceToSR(message);});
         }
         function downloadAnatomyStudy(format) {
-          var url;
-          try {
-            var content=format==='json'?JSON.stringify(anatomyStudyPacket(d,knownStructureIds,Date.now()),null,2):studySheetAsText();
-            url=URL.createObjectURL(new Blob([content],{type:format==='json'?'application/json':'text/plain;charset=utf-8'}));
-            var link=document.createElement('a');link.href=url;link.download='anatomy-study.'+format;document.body.appendChild(link);link.click();link.remove();
-            setTimeout(function(){URL.revokeObjectURL(url);},1000);
-            studyNotice(t('stem.anatomy.study_download_ready','Study download prepared. Keep the JSON record to resume your structure notes and ratings later.'));
-          } catch(error) {if(url)URL.revokeObjectURL(url);studyNotice(t('stem.anatomy.study_download_failed','Download could not start. Please try again.'));}
+          readStudySheetOwned(function(state){
+            var url,link,snapshot=studySnapshot(state);
+            try {
+              var content=format==='json'?JSON.stringify(anatomyStudyPacket(state,knownStructureIds,Date.now()),null,2):studySheetAsText(state);
+              url=URL.createObjectURL(new Blob([content],{type:format==='json'?'application/json':'text/plain;charset=utf-8'}));
+              link=document.createElement('a');link.href=url;link.download='anatomy-study.'+format;document.body.appendChild(link);link.click();link.remove();
+              setTimeout(function(){URL.revokeObjectURL(url);},1000);
+              studyNotice(t('stem.anatomy.study_download_ready','Study download prepared. Keep the JSON record to resume your structure notes and ratings later.'),snapshot);
+            } catch(error) {if(link)link.remove();if(url)URL.revokeObjectURL(url);studyNotice(t('stem.anatomy.study_download_failed','Download could not start. Please try again.'),snapshot);}
+          });
         }
         function previewAnatomyStudy(event) {
           var input=event.currentTarget,file=input.files&&input.files[0];input.value='';if(!file)return;
           var generation=(input._anatomyImportRead||0)+1;input._anatomyImportRead=generation;
-          updMulti({_studyImportPreview:null,_studyRecordNotice:''});
-          if(file.size>1000000){studyNotice(t('stem.anatomy.study_import_size','Import failed: the file is larger than 1 MB.'));return;}
-          var reader=new FileReader();
-          reader.onload=function(){
-            if(input._anatomyImportRead!==generation || !input.isConnected)return;
+          var token='anatomy-study-'+Date.now()+'-'+Math.random().toString(36).slice(2), accepted=null;
+          setLabToolData(function(previous) {
+            var state=previous.anatomy||{};
+            if(!studySheetOwnedMatches(state) || !input.isConnected || input._anatomyImportRead!==generation)return previous;
+            accepted=Object.assign({},state,cancelStudyCopyPatch(state),{_studyImportPreview:null,_studyImportName:typeof file.name==='string'?file.name.slice(0,180):'',
+              _studyImportReading:true,_studyImportToken:token,_studyImportRevision:studyImportRevisionOf(state)+1,
+              _studyRecordNotice:t('stem.anatomy.study_flow_import_reading','Reading study record…')});
+            return Object.assign({},previous,{anatomy:accepted});
+          });
+          finishStudyUpdate(function(){return accepted;},function() {
+            function finishRead(packet, notice) {
+              var completed=null, origin=input;
+              setLabToolData(function(previous) {
+                var state=previous.anatomy||{};
+                if(state._showStudySheet!==true || state._studyImportToken!==token || input._anatomyImportRead!==generation || !input.isConnected)return previous;
+                completed=Object.assign({},state,{_studyImportPreview:packet,_studyImportReading:false,_studyImportToken:null,
+                  _studyImportRevision:studyImportRevisionOf(state)+1,_studyRecordNotice:notice});
+                return Object.assign({},previous,{anatomy:completed});
+              });
+              finishStudyUpdate(function(){return completed;},function(state){focusStudyState(state,packet?'preview':'notice',origin);});
+            }
+            if(file.size>1000000){finishRead(null,t('stem.anatomy.study_import_size','Import failed: the file is larger than 1 MB.'));return;}
             try {
-              var packet=parseAnatomyStudyPacket(JSON.parse(reader.result),knownStructureIds);
-              updMulti({_studyImportPreview:packet,_studyRecordNotice:t('stem.anatomy.study_import_preview_ready','Preview ready. Review the counts, then merge to add this work.')});
-            }catch(error){studyNotice(t('stem.anatomy.study_import_failed','Import failed. ')+(error instanceof SyntaxError?t('stem.anatomy.study_invalid_json','This file is not valid JSON.'):error.message));}
-          };
-          reader.onerror=function(){if(input._anatomyImportRead===generation && input.isConnected)studyNotice(t('stem.anatomy.study_import_read_failed','Import failed: the file could not be read.'));};reader.readAsText(file);
+              var reader=new FileReader();
+              reader.onload=function(){
+                if(input._anatomyImportRead!==generation || !input.isConnected)return;
+                try {finishRead(parseAnatomyStudyPacket(JSON.parse(reader.result),knownStructureIds),t('stem.anatomy.study_import_preview_ready','Preview ready. Review the counts, then merge to add this work.'));}
+                catch(error){finishRead(null,t('stem.anatomy.study_import_failed','Import failed. ')+studyImportErrorMessage(error));}
+              };
+              reader.onerror=function(){finishRead(null,t('stem.anatomy.study_import_read_failed','Import failed: the file could not be read.'));};reader.readAsText(file);
+            } catch(error) {finishRead(null,t('stem.anatomy.study_import_read_failed','Import failed: the file could not be read.'));}
+          });
+        }
+        function cancelAnatomyStudyImport() {
+          var accepted=null, origin=document.activeElement;
+          setLabToolData(function(previous) {
+            var state=previous.anatomy||{};
+            if(state._showStudySheet!==true || studySheetRevisionOf(state)!==studySheetRevision || studyImportRevisionOf(state)!==studyImportRevision ||
+              state._studyImportPreview!==d._studyImportPreview || state._studyImportToken!==d._studyImportToken)return previous;
+            accepted=Object.assign({},state,{_studyImportPreview:null,_studyImportReading:false,_studyImportToken:null,_studyImportName:'',
+              _studyImportRevision:studyImportRevisionOf(state)+1,_studyRecordNotice:t('stem.anatomy.study_flow_import_canceled','Import canceled. Choose another study record to continue.')});
+            return Object.assign({},previous,{anatomy:accepted});
+          });
+          finishStudyUpdate(function(){return accepted;},function(state){focusStudyState(state,'file',origin);});
         }
         function mergeAnatomyStudy() {
           if(!d._studyImportPreview)return;
+          var accepted=null, origin=document.activeElement;
           setLabToolData(function(previous){
             var state=previous.anatomy||{},merged;
-            if (state._studyImportPreview !== d._studyImportPreview || !state._showStudySheet) return previous;
-            try{merged=mergeAnatomyStudyPacket(state,d._studyImportPreview,knownStructureIds,Date.now());}catch(error){return Object.assign({},previous,{anatomy:Object.assign({},state,{_studyImportPreview:null,_studyRecordNotice:t('stem.anatomy.study_import_failed','Import failed. ')+error.message})});}
-            return Object.assign({},previous,{anatomy:Object.assign({},state,merged.patch,{_studyImportPreview:null,_studyRecordNotice:t('stem.anatomy.study_merge_done','Study record merged. Structures imported: ')+merged.imported+'. '+t('stem.anatomy.study_merge_notes_kept','Existing notes preserved: ')+merged.keptNotes+'. '+t('stem.anatomy.study_merge_reflections_kept','Existing explanations preserved: ')+merged.keptReflections+'.'})});
+            if (state._studyImportPreview !== d._studyImportPreview || state._studyImportToken !== d._studyImportToken || !state._showStudySheet || studySheetRevisionOf(state)!==studySheetRevision || studyImportRevisionOf(state)!==studyImportRevision || state._studyImportReading===true) return previous;
+            var patch={_studyImportPreview:null,_studyImportReading:false,_studyImportToken:null,_studyImportRevision:studyImportRevisionOf(state)+1};
+            try{merged=mergeAnatomyStudyPacket(state,d._studyImportPreview,knownStructureIds,Date.now());Object.assign(patch,merged.patch,{_studyRecordNotice:t('stem.anatomy.study_merge_done','Study record merged. Structures imported: ')+merged.imported+'. '+t('stem.anatomy.study_merge_notes_kept','Existing notes preserved: ')+merged.keptNotes+'. '+t('stem.anatomy.study_merge_reflections_kept','Existing explanations preserved: ')+merged.keptReflections+'.'});}
+            catch(error){patch._studyRecordNotice=t('stem.anatomy.study_import_failed','Import failed. ')+studyImportErrorMessage(error);}
+            accepted=Object.assign({},state,patch);return Object.assign({},previous,{anatomy:accepted});
           });
+          finishStudyUpdate(function(){return accepted;},function(state){focusStudyState(state,'notice',origin);});
         }
         function openStudySheetStructure(structure, systemId) {
-          var level=[1,2,3].filter(function(value){return passesAnatomyLevel(structure,value);})[0]||complexity;
-          var patch=structureFocusPatch(structure.id,{system:systemId,complexity:Math.max(complexity,level),_activeTab:'explore',quizMode:false,_showStudySheet:false,_anatomyModelFocus:false});
-          updMulti(patch);announceStructure(structure.id);focusAnatomyStructureDetail();
+          var origin=document.activeElement;
+          updateStudySheetOwned(function(state) {
+            var level=anatomyStructureComplexity(structure), progress=tutorModeOf(state)==='flashcards'?flashcardStatePatch({},state):{};
+            var patch=Object.assign({},progress,structureFocusPatch(structure.id,{system:systemId,complexity:Math.max(tutorLevelOf(state),level),_activeTab:'explore',quizMode:false,_showStudySheet:false,_anatomyModelFocus:false}));
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts'].forEach(function(key){delete patch[key];});
+            return mergeComparisonHistoryPatch(state,patch);
+          },function(state){announceStructure(structure.id);focusStudyState(state,'structure',origin);});
         }
-        function startStudySheetReview(systemId) {
-          openFlashcardRound('review',systemId,complexity,{_showStudySheet:false,_anatomyModelFocus:false},true,function(nextState){focusFlashcardState(nextState);});
+        function studyReviewRoundHistory(state) {
+          var rounds=flashcardTabOf(state)==='flashcards'?flashcardStatePatch({},state)._flashcardRounds:flashcardRoundHistory(state);
+          if(state._flashcardScope==='review') {
+            var systemId=SYSTEMS[state.system]?state.system:'skeletal',level=tutorLevelOf(state),key=flashcardRoundKey(systemId,level,'review');
+            var legacy=readFlashcardRound({context:state._flashcardDeckContext,deckIds:state._flashcardDeck,index:state._flashcardIdx,rated:state._flashcardRoundContext===state._flashcardDeckContext?state._flashcardRoundRated:{}},systemId,level,'review');
+            if(legacy && !rounds[key])rounds[key]=legacy;
+          }
+          return rounds;
+        }
+        function studyRoundIdentity(round) { return JSON.stringify([round.context,round.deckIds]); }
+        function studyReviewRounds(state) {
+          var rounds=studyReviewRoundHistory(state),level=tutorLevelOf(state);
+          return ANATOMY_SYSTEM_IDS.map(function(systemId){
+            var round=rounds[flashcardRoundKey(systemId,level,'review')];
+            return round && round.deckIds.length && Object.keys(round.rated).length<round.deckIds.length ? {systemId:systemId,round:round} : null;
+          }).filter(Boolean);
+        }
+        function startStudySheetReview(systemId, restart, expectedRound) {
+          var origin=document.activeElement;
+          updateStudySheetOwned(function(state){
+            if(ANATOMY_SYSTEM_IDS.indexOf(systemId)<0)return null;
+            var rounds=studyReviewRoundHistory(state),key=flashcardRoundKey(systemId,tutorLevelOf(state),'review'),round=rounds[key];
+            if(expectedRound && (!round || studyRoundIdentity(round)!==expectedRound))return null;
+            var refresh=typeof restart==='boolean'?restart:!round || !round.deckIds.length || Object.keys(round.rated).length===round.deckIds.length;
+            var patch=flashcardRoundPatch('review',systemId,tutorLevelOf(state),{_showStudySheet:false,_anatomyModelFocus:false},refresh,Object.assign({},state,{_flashcardRounds:rounds}));
+            ['quizIdx','quizScore','quizFeedback','_quizAttempts'].forEach(function(key){delete patch[key];});
+            return mergeComparisonHistoryPatch(state,patch);
+          },function(state){announceFlashcardRound(state);focusFlashcardState(state,null,origin);});
         }
 
         function copyStudySheet() {
-          var text=studySheetAsText();
-          function finish(ok) { studyNotice(ok?t('stem.anatomy.study_sheet_copied_sr','Study sheet copied to the clipboard.'):t('stem.anatomy.study_copy_failed','Clipboard unavailable. Use Download text to keep your study sheet.')); }
-          function fallback() {
-            var area=document.createElement('textarea'),previous=document.activeElement,ok=false;
-            try {area.value=text;area.setAttribute('readonly','');area.style.cssText='position:fixed;opacity:0';document.body.appendChild(area);area.select();ok=!!document.execCommand('copy');}catch(e){}
-            finally {area.remove();if(previous&&typeof previous.focus==='function')previous.focus();}
-            finish(ok);
+          var request=null,accepted=null,requireShell=!!document.querySelector('[data-anatomy-tool]');
+          setLabToolData(function(previous){
+            var state=previous.anatomy||{};if(!studySheetOwnedMatches(state) || liveStudyCopyRequest(state))return previous;
+            var token='anatomy-copy-'+Date.now()+'-'+Math.random().toString(36).slice(2),message=t('stem.anatomy.study_return_copy_working','Copying study sheet…');
+            accepted=Object.assign({},state,cancelStudyCopyPatch(state),{_studySheetRevision:studySheetRevisionOf(state)+1,_studyCopyToken:token,_studyRecordNotice:message});
+            anatomyTutorProfiles.set(accepted,tutorProfileOf(state));
+            request={token:token,message:message,text:studySheetAsText(state),snapshot:studySnapshot(accepted),activationSnapshot:studySnapshot(state)};
+            // Bound abandoned requests, including browser clipboard promises that never settle.
+            if(anatomyStudyCopies.size>=16)anatomyStudyCopies.delete(anatomyStudyCopies.keys().next().value);
+            anatomyStudyCopies.set(token,request);
+            return Object.assign({},previous,{anatomy:accepted});
+          });
+          function withRequest(after, allowActivation, onAbandoned) {
+            if(!request)return;
+            var result=null;
+            setLabToolData(function(previous){var state=previous.anatomy||{};result={state:liveStudyCopyRequest(state)===request?state:null};return previous;});
+            finishStudyUpdate(function(){return result;},function(){
+              if(result.state && anatomyStudyCopies.get(request.token)===request &&
+                (studySnapshotOnScreen(request.snapshot,requireShell) || allowActivation===true && studySnapshotOnScreen(request.activationSnapshot,requireShell)))after(result.state);
+              else if(onAbandoned)onAbandoned();
+            });
           }
-          try {if(navigator.clipboard&&navigator.clipboard.writeText)return (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function(){finish(true);},fallback);}catch(e){}
-          fallback();
+          function finish(ok) {
+            var completed=null,settled=false,message=ok?t('stem.anatomy.study_sheet_copied_sr','Study sheet copied to the clipboard.'):t('stem.anatomy.study_copy_failed','Clipboard unavailable. Use Download text to keep your study sheet.');
+            setLabToolData(function(previous){
+              var state=previous.anatomy||{};settled=true;if(liveStudyCopyRequest(state)!==request)return previous;
+              completed=Object.assign({},state,{_studyCopyToken:null,_studyRecordNotice:message});anatomyTutorProfiles.set(completed,tutorProfileOf(state));
+              return Object.assign({},previous,{anatomy:completed});
+            });
+            finishStudyUpdate(function(){return settled?{}:null;},function(){
+              // An obsolete completion cannot cancel a later request.
+              anatomyStudyCopies.delete(request.token);if(completed && studySnapshotOnScreen(request.snapshot,requireShell) && typeof announceToSR==='function')announceToSR(message);
+            });
+          }
+          function fallback(allowActivation) {
+            withRequest(function(){
+              var area=document.createElement('textarea'),previous=document.activeElement,ok=false,selection=null;
+              if(previous && (previous.tagName==='TEXTAREA'||previous.tagName==='INPUT'))try{selection=[previous.selectionStart,previous.selectionEnd,previous.selectionDirection];}catch(e){}
+              try {area.value=request.text;area.setAttribute('readonly','');area.style.cssText='position:fixed;opacity:0;pointer-events:none';document.body.appendChild(area);area.select();ok=!!document.execCommand('copy');}catch(e){}
+              finally {
+                var restore=document.activeElement===area || document.activeElement===document.body;area.remove();
+                if(restore && previous && previous.isConnected && typeof previous.focus==='function' && previous.getClientRects().length)withRequest(function(){
+                  if(document.activeElement!==document.body && document.activeElement!==area)return;
+                  previous.focus({preventScroll:true});if(selection && typeof previous.setSelectionRange==='function')try{previous.setSelectionRange(selection[0],selection[1],selection[2]);}catch(e){}
+                });
+              }
+              finish(ok);
+            },allowActivation,function(){anatomyStudyCopies.delete(request.token);});
+          }
+          finishStudyUpdate(function(){return accepted;},function(){withRequest(function(){
+            try {if(navigator.clipboard&&navigator.clipboard.writeText){
+              Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function(value){return navigator.clipboard.writeText(value);})(request.text)).then(function(){finish(true);},function(){fallback(false);});return;
+            }}catch(e){}
+            fallback(true);
+          },true,function(){anatomyStudyCopies.delete(request.token);});});
         }
         function printStudySheet() {
-          try { window.print(); } catch (e) { if (typeof addToast === 'function') addToast(t('stem.anatomy.study_sheet_print_blocked', 'Printing is not available here. Use Copy as text instead.')); }
+          readStudySheetOwned(function(){try { window.print(); } catch (e) { if (typeof addToast === 'function') addToast(t('stem.anatomy.study_sheet_print_blocked', 'Printing is not available here. Use Copy as text instead.')); }});
         }
         function toggleStudySheet(open) {
-          upd('_showStudySheet', open);
-          setTimeout(function() {
-            var target = document.querySelector(open ? '#anatomy-study-sheet-title' : '[data-anatomy-study-toggle]');
-            if (target) target.focus();
-          }, 0);
+          var origin=document.activeElement;
+          updateStudySheetOwned(function(){return {_showStudySheet:open===true,_studyImportReading:false,_studyImportToken:null};},function(state){
+            if(open && typeof announceToSR==='function')announceToSR(t('stem.anatomy.study_sheet_opened','Study sheet opened. Print it or copy it as text.'));
+            focusStudyState(state,open?'title':'opener',origin);
+          },true);
         }
         function renderStudySheet() {
-          var data = buildStudySheetData();
+          var data=buildStudySheetData(), savedRounds=studyReviewRounds(d), reflections=studyReflections(d), copyRequest=liveStudyCopyRequest(d);
+          var copyNotice=typeof d._studyRecordNotice==='string'?d._studyRecordNotice:'';
+          if(!copyRequest && typeof d._studyCopyToken==='string')copyNotice=t('stem.anatomy.study_return_copy_interrupted','Copy stopped. Try again or download the text.');
           var sheetFilter=['all','review','notes','mastered'].indexOf(d._studySheetFilter)>=0?d._studySheetFilter:'all';
           var sheetSystem=ANATOMY_SYSTEM_IDS.indexOf(d._studySheetSystem)>=0?d._studySheetSystem:'all';
           var visibleSystems=data.systems.filter(function(entry){return sheetSystem==='all'||SYSTEMS[sheetSystem]===entry.system;}).map(function(entry){return {system:entry.system,rows:entry.rows.filter(function(row){return sheetFilter==='all'||sheetFilter==='review'&&(row.level==='practice'||row.stale)||sheetFilter==='notes'&&!!row.note||sheetFilter==='mastered'&&row.level==='mastered';})};}).filter(function(entry){return entry.rows.length;});
           var visibleCount=visibleSystems.reduce(function(count,entry){return count+entry.rows.length;},0);
           var importPreview=null;try{if(d._studyImportPreview)importPreview=parseAnatomyStudyPacket(d._studyImportPreview,knownStructureIds);}catch(e){}
           var levelLabel = { practice: t('stem.anatomy.need_practice', 'Need practice'), learning: t('stem.anatomy.learning', 'Learning'), mastered: t('stem.anatomy.got_it', 'Got it') };
-          return h('section', { id: 'anatomy-study-sheet', className: 'anatomy-study-sheet mb-3', 'aria-labelledby': 'anatomy-study-sheet-title', 'data-anatomy-study-sheet': 'true' },
+          return h('section', { id: 'anatomy-study-sheet', className: 'anatomy-study-sheet mb-3', 'aria-labelledby': 'anatomy-study-sheet-title', 'data-anatomy-study-sheet': 'true', 'data-anatomy-study-revision':studySheetRevision, 'data-anatomy-study-import-revision':studyImportRevision },
             h('div', { className: 'anatomy-study-sheet-head' },
               h('div', null,
                 h('span', { className: 'anatomy-kicker' }, t('stem.anatomy.study_sheet_kicker', 'Take it with you')),
@@ -5843,32 +6245,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               ),
               h('div', { className: 'anatomy-study-sheet-actions' },
                 h('button', { type: 'button', onClick: printStudySheet, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97]' }, t('stem.anatomy.study_sheet_print', '🖨 Print / save as PDF')),
-                h('button', { type: 'button', onClick: copyStudySheet, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.study_sheet_copy', '📋 Copy as text')),
-                h('button', { type:'button',onClick:function(){downloadAnatomyStudy('txt');},className:'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 border border-slate-300' },t('stem.anatomy.study_download_text','Download text')),
-                h('button', { type:'button',onClick:function(){downloadAnatomyStudy('json');},className:'px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-800 text-white border border-teal-800' },t('stem.anatomy.study_download_record','Download study record')),
+                h('button', { type: 'button', 'data-anatomy-study-copy':true,disabled:!!copyRequest,'aria-busy':!!copyRequest,onClick: copyStudySheet, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]' }, copyRequest?t('stem.anatomy.study_return_copy_working','Copying study sheet…'):t('stem.anatomy.study_sheet_copy', '📋 Copy as text')),
+                h('button', { type:'button','data-anatomy-study-export':'txt',onClick:function(){downloadAnatomyStudy('txt');},className:'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 border border-slate-300' },t('stem.anatomy.study_download_text','Download text')),
+                h('button', { type:'button','data-anatomy-study-export':'json',onClick:function(){downloadAnatomyStudy('json');},className:'px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-800 text-white border border-teal-800' },t('stem.anatomy.study_download_record','Download study record')),
                 h('button', { type: 'button', 'aria-label': t('stem.anatomy.study_sheet_close', 'Close study sheet'), onClick: function() { toggleStudySheet(false); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.close', 'Close'))
               )
             ),
 
             h('div',{className:'anatomy-study-workbench', 'data-anatomy-study-workbench':true},
+              savedRounds.length?h('section',{className:'anatomy-study-rounds','data-anatomy-study-rounds':true,'aria-labelledby':'anatomy-study-rounds-title'},
+                h('h4',{id:'anatomy-study-rounds-title'},t('stem.anatomy.study_return_rounds_title','Saved review rounds')),
+                h('p',null,t('stem.anatomy.study_return_help','Resume keeps your place. Refresh round starts with your latest ratings. Your notes and ratings stay saved.')),
+                h('div',{className:'anatomy-study-round-grid'},savedRounds.map(function(entry){
+                  var round=entry.round,system=SYSTEMS[entry.systemId],structure=system.structures.find(function(item){return item.id===round.deckIds[round.index];}),identity=studyRoundIdentity(round);
+                  return h('article',{key:entry.systemId,'data-anatomy-study-round':entry.systemId,'aria-labelledby':'anatomy-study-round-'+entry.systemId},
+                    h('h5',{id:'anatomy-study-round-'+entry.systemId},system.icon+' '+system.name),
+                    h('p',{'data-anatomy-study-round-position':true},t('stem.anatomy.card_flow_position','Card'),' ',h('bdi',{dir:'ltr'},(round.index+1)+' / '+round.deckIds.length),' · ',structure.name),
+                    h('p',{'data-anatomy-study-round-rated':true},t('stem.anatomy.flashcard_rated_round','Rated this round: '),h('bdi',{dir:'ltr'},Object.keys(round.rated).length+' / '+round.deckIds.length)),
+                    h('div',{className:'anatomy-study-round-actions'},
+                      h('button',{type:'button','data-anatomy-study-resume-round':entry.systemId,onClick:function(){startStudySheetReview(entry.systemId,false,identity);}},t('stem.anatomy.study_return_resume','Resume saved round')),
+                      h('button',{type:'button','data-anatomy-study-refresh-round':entry.systemId,onClick:function(){startStudySheetReview(entry.systemId,true,identity);}},t('stem.anatomy.flashcard_refresh','Refresh round')))
+                  );
+                }))
+              ):null,
+              h('p',{'data-anatomy-study-filter-scope':true},t('stem.anatomy.study_return_filter_scope','These filters apply to recorded structures. Saved activity writing appears below.')),
               h('div',{className:'anatomy-study-filters'},
-                h('label',null,t('stem.anatomy.study_ref_collection','Browsing collection'),h('select',{'aria-label':t('stem.anatomy.study_ref_collection','Browsing collection'),value:sheetSystem,onChange:function(e){upd('_studySheetSystem',e.target.value);}},h('option',{value:'all'},t('stem.anatomy.study_ref_all_collections','All collections')),ANATOMY_SYSTEM_IDS.map(function(id){return h('option',{key:id,value:id},SYSTEMS[id].name);}))),
-                h('label',null,t('stem.anatomy.study_filter_focus','Show'),h('select',{'aria-label':t('stem.anatomy.study_filter_focus','Show'),value:sheetFilter,onChange:function(e){upd('_studySheetFilter',e.target.value);}},[['all','All recorded structures'],['review','Needs review'],['notes','With notes'],['mastered','Got it']].map(function(option){return h('option',{key:option[0],value:option[0]},t('stem.anatomy.study_filter_'+option[0],option[1]));})))
+                h('label',null,t('stem.anatomy.study_ref_collection','Browsing collection'),h('select',{'aria-label':t('stem.anatomy.study_ref_collection','Browsing collection'),value:sheetSystem,onChange:function(e){changeStudySheetFilters({_studySheetSystem:e.target.value});}},h('option',{value:'all'},t('stem.anatomy.study_ref_all_collections','All collections')),ANATOMY_SYSTEM_IDS.map(function(id){return h('option',{key:id,value:id},SYSTEMS[id].name);}))),
+                h('label',null,t('stem.anatomy.study_filter_focus','Show'),h('select',{'data-anatomy-study-filter-focus':true,'aria-label':t('stem.anatomy.study_filter_focus','Show'),value:sheetFilter,onChange:function(e){changeStudySheetFilters({_studySheetFilter:e.target.value});}},[['all','All recorded structures'],['review','Needs review'],['notes','With notes'],['mastered','Got it']].map(function(option){return h('option',{key:option[0],value:option[0]},t('stem.anatomy.study_filter_'+option[0],option[1]));})))
               ),
               h('p',{role:'status','aria-live':'polite','data-anatomy-study-filter-count':visibleCount},formatAnatomyStudyText(t('stem.anatomy.study_ref_results','{count} catalog entries shown. Print uses these filters; text and JSON downloads include all saved work.'),{count:visibleCount})),
-              (sheetFilter !== 'all' || sheetSystem !== 'all') && h('button',{type:'button','data-anatomy-study-reset-filters':true,onClick:function(){updMulti({_studySheetFilter:'all',_studySheetSystem:'all'});}},t('stem.anatomy.study_ref_reset','Show all saved work')),
-              h('p',{'data-anatomy-study-record-notice':true,role:'status','aria-live':'polite','aria-atomic':'true'},typeof d._studyRecordNotice==='string'?d._studyRecordNotice:''),
-              h('details',{'data-anatomy-study-import':true},h('summary',null,t('stem.anatomy.study_import_title','Resume from a study record')),
+              (sheetFilter !== 'all' || sheetSystem !== 'all') && h('button',{type:'button','data-anatomy-study-reset-filters':true,onClick:function(){changeStudySheetFilters({_studySheetFilter:'all',_studySheetSystem:'all'},true);}},t('stem.anatomy.study_ref_reset','Show all saved work')),
+              h('p',{'data-anatomy-study-record-notice':true,tabIndex:-1,role:'status','aria-live':'polite','aria-atomic':'true'},copyNotice),
+              h('details',{'data-anatomy-study-import':true,'aria-busy':d._studyImportReading===true},h('summary',null,t('stem.anatomy.study_import_title','Resume from a study record')),
                 h('p',null,t('stem.anatomy.study_import_help','Import structure notes, ratings, and review dates from a JSON record. Existing notes are kept when both records have writing; the newer dated rating wins. Your current grade, quiz, and display settings stay in place.')),
                 h('p',null,t('stem.anatomy.study_import_learning_help','Scored practice and activity explanations are included when available. Repeated imports keep the larger practice record without adding totals. Existing explanations are preserved when both files have writing.')),
                 h('label',{htmlFor:'anatomy-study-import-file'},t('stem.anatomy.study_import_file','Choose Anatomy study record (.json)')),
                 h('input',{id:'anatomy-study-import-file',type:'file',accept:'.json,application/json',onChange:previewAnatomyStudy}),
-                importPreview&&h('div',{'data-anatomy-study-import-preview':true,className:'anatomy-study-import-preview'},
+                d._studyImportName?h('p',{'data-anatomy-study-import-filename':true},h('strong',null,t('stem.anatomy.study_flow_import_file','Selected file: ')),h('bdi',{dir:'auto'},String(d._studyImportName).slice(0,180))):null,
+                d._studyImportReading===true?h('div',{'data-anatomy-study-import-reading':true},h('button',{type:'button','data-anatomy-study-import-cancel':true,onClick:cancelAnatomyStudyImport},t('stem.anatomy.study_import_cancel','Cancel import'))):null,
+                importPreview&&h('section',{'data-anatomy-study-import-preview':true,className:'anatomy-study-import-preview','aria-labelledby':'anatomy-study-import-preview-title'},
+                  h('h4',{id:'anatomy-study-import-preview-title','data-anatomy-study-import-preview-title':true,tabIndex:-1},t('stem.anatomy.study_flow_import_title','Study record preview')),
                   h('strong',null,importPreview.records.length+' '+t('stem.anatomy.study_import_structures','recognized structures')),
                   h('p',null,importPreview.records.filter(function(row){return row.confidence;}).length+' '+t('stem.anatomy.study_import_ratings','ratings')+' · '+importPreview.records.filter(function(row){return row.note.trim();}).length+' '+t('stem.anatomy.study_import_notes','notes')+' · '+(d._studyImportPreview.skipped||0)+' '+t('stem.anatomy.study_import_skipped','unrecognized structures skipped')),
-                  h('p',null,importPreview.records.filter(function(row){return row.recall && row.recall.attempts;}).length+' '+t('stem.anatomy.study_import_recall','practice records')+' · '+(importPreview.learningNotes||[]).length+' '+t('stem.anatomy.study_import_reflections','activity reflections')),
-                  h('button',{type:'button',onClick:mergeAnatomyStudy},t('stem.anatomy.study_import_merge','Merge study record')),
-                  h('button',{type:'button',onClick:function(){upd('_studyImportPreview',null);}},t('stem.anatomy.study_import_cancel','Cancel import'))
+                  h('p',null,importPreview.records.filter(function(row){return row.recall && row.recall.attempts;}).length+' '+t('stem.anatomy.study_import_recall','practice records')+' · '+(importPreview.feedbackNotes ? importPreview.feedbackNotes.length+(importPreview.learningNotes||[]).filter(function(row){return row.id!=='homeostasis';}).length : (importPreview.learningNotes||[]).length)+' '+t('stem.anatomy.study_import_reflections','activity reflections')),
+                  h('button',{type:'button','data-anatomy-study-import-merge':true,onClick:mergeAnatomyStudy},t('stem.anatomy.study_import_merge','Merge study record')),
+                  h('button',{type:'button','data-anatomy-study-import-cancel':true,onClick:cancelAnatomyStudyImport},t('stem.anatomy.study_import_cancel','Cancel import'))
                 )
               )
             ),
@@ -5888,6 +6309,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             data.due.length ? h('p', { className: 'anatomy-study-sheet-next anatomy-study-sheet-due-line', 'data-anatomy-study-sheet-due': String(data.due.length) },
               h('strong', null, t('stem.anatomy.study_sheet_due', '⏰ Re-check today: ')),
               data.due.map(function(row) { return row.structure.name; }).join(', ') + '. ' + t('stem.anatomy.study_ref_due_help','Try recalling each function before checking it. These reminders follow the rating dates above; they do not mean an answer was wrong.')) : null,
+            h('h4',{'data-anatomy-study-structures-title':true},t('stem.anatomy.study_return_structures_title','Recorded structures')),
             visibleSystems.length ? visibleSystems.map(function(entry) {
               return h('div', { key: entry.system.id || entry.system.name, className: 'anatomy-study-sheet-system' },
                 h('div',{className:'anatomy-study-system-heading'},h('h4', null, entry.system.icon + ' ' + entry.system.name), entry.rows.some(function(row){return (row.level==='practice'||row.stale)&&passesComplexity(row.structure);})&&h('button',{type:'button','data-anatomy-study-review-system':entry.system.id||ANATOMY_SYSTEM_IDS.find(function(id){return SYSTEMS[id]===entry.system;}),onClick:function(){startStudySheetReview(ANATOMY_SYSTEM_IDS.find(function(id){return SYSTEMS[id]===entry.system;}));}},t('stem.anatomy.study_ref_review_collection','Review this collection'))),
@@ -5898,11 +6320,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     row.stale ? h('span', { className: 'anatomy-study-sheet-stale', 'data-anatomy-stale': row.structure.id }, t('stem.anatomy.study_sheet_stale_prefix', 'rated ') + (row.days === null ? t('stem.anatomy.a_while_ago', 'a while ago') : row.days + t('stem.anatomy.days_ago_suffix', ' day(s) ago')) + t('stem.anatomy.study_sheet_stale_suffix', ' · re-check')) : null,
                     (row.level === 'practice' || row.note) ? h('p', { className: 'anatomy-study-sheet-fn' }, learnerText(row.structure)) : null,
                     row.recall.attempts ? h('p', { 'data-anatomy-study-recall': row.structure.id, className: 'anatomy-study-sheet-fn' }, recallStudyText(row.recall)) : null,
-                    row.note ? h('p', { className: 'anatomy-study-sheet-note' }, h('strong', null, t('stem.anatomy.in_my_words', 'In my words: ')), row.note) : null
+                    row.note ? h('p', { className: 'anatomy-study-sheet-note' }, h('strong', null, t('stem.anatomy.in_my_words', 'In my words: ')), h('span',{dir:'auto',className:'anatomy-study-saved-text'},row.note)) : null
                   );
                 }))
               );
-            }) : h('p', { className: 'anatomy-study-sheet-empty' }, data.systems.length?t('stem.anatomy.study_ref_filter_empty','No recorded structures match these filters. Select Show all saved work to see your entries.'):t('stem.anatomy.study_sheet_empty', 'Nothing recorded yet. Open structures, rate them, and write notes to fill this sheet.')),
+            }) : h('p', { className: 'anatomy-study-sheet-empty','data-anatomy-study-structures-empty':data.systems.length?'filtered':reflections.length?'reflection':'empty' }, data.systems.length?t('stem.anatomy.study_ref_filter_empty','No recorded structures match these filters. Select Show all saved work to see your entries.'):reflections.length?t('stem.anatomy.study_return_reflections_only','No recorded structures yet. Your saved activity writing appears below.'):t('stem.anatomy.study_sheet_empty', 'Nothing recorded yet. Open structures, rate them, and write notes to fill this sheet.')),
             renderStudyReflections()
           );
         }
@@ -7260,17 +7682,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return round.context === flashcardContext && round.index === flashcardIdx && round.deckIds.join(',') === flashcardDeckIds.join(',');
         }
         function flashcardOwnedMatches(state) { return activeTab === 'flashcards' && flashcardContextMatches(state); }
-        function focusFlashcardState(state, destination) {
+        function focusFlashcardState(state, destination, origin) {
+          origin=origin||document.activeElement;
           var round = readActiveFlashcardRound(state), expectedRevision = String(flashcardRevisionOf(state));
           var expectedCard = round.deckIds[round.index] || '', expectedReveal = round.flipped ? 'true' : 'false';
+          var expectedSheetRevision=String(studySheetRevisionOf(state)),expectedStudy=tutorStudyIdentity(state),expectedBand=tutorBandOf(state);
           setTimeout(function() {
-            var panel = document.querySelector('[data-anatomy-flashcards]');
+            var shell=document.querySelector('[data-anatomy-tool]');
+            if(!shell || state._showStudySheet===true || shell.getAttribute('data-anatomy-tutor-sheet')!=='false' ||
+              shell.getAttribute('data-anatomy-tab')!=='flashcards' || shell.getAttribute('data-anatomy-study-revision')!==expectedSheetRevision ||
+              shell.getAttribute('data-anatomy-tutor-study')!==expectedStudy || shell.getAttribute('data-anatomy-tutor-band')!==expectedBand || tutorBandOf(state)!==expectedBand)return;
+            var active=document.activeElement;if(origin && active!==origin && !(active===document.body && !origin.isConnected))return;
+            var panel = shell.querySelector('[data-anatomy-flashcards]');
             if (!panel || panel.getAttribute('data-anatomy-card-context') !== round.context ||
               panel.getAttribute('data-anatomy-card-revision') !== expectedRevision ||
               panel.getAttribute('data-anatomy-current-card') !== expectedCard ||
               panel.getAttribute('data-anatomy-card-flipped') !== expectedReveal) return;
             var target = destination === 'diagram' ? document.querySelector('[data-anatomy-model-shell] canvas[tabindex]') || document.querySelector('[data-anatomy-model-shell]') : panel.querySelector('[data-anatomy-recall-card]') || panel.querySelector('#anatomy-flashcards-title');
-            if (!target) return;
+            if (!target || !target.getClientRects().length) return;
             target.focus({ preventScroll: true });
             var anchor = destination === 'diagram' ? document.querySelector('[data-anatomy-return-card]') || target : target;
             anchor.scrollIntoView({ block: 'start', behavior: 'auto' });
@@ -7285,11 +7714,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             accepted = { state: next, patch: { _anatomyModelFocus: false } };
             return Object.assign({}, previous, { anatomy: next });
           });
-          finishFlashcardUpdate(function() { return accepted; }, function(nextState) { focusFlashcardState(nextState); });
+          finishFlashcardUpdate(function() { return accepted; }, function(nextState,patch,origin) { focusFlashcardState(nextState,null,origin); });
         }
         function finishFlashcardUpdate(accepted, after) {
-          var notified = false;
-          function notify() { var result = accepted(); if (notified || !result) return; notified = true; if (after) after(result.state, result.patch); }
+          var notified = false,origin=document.activeElement;
+          function notify() { var result = accepted(); if (notified || !result) return; notified = true; if (after) after(result.state, result.patch,origin); }
           notify(); setTimeout(notify, 0);
         }
         function commitFlashcardUpdate(createPatch, after, requireCards) {
@@ -7359,17 +7788,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           updateFlashcardOwned(function(state, round) {
             var next = ((index % round.deckIds.length) + round.deckIds.length) % round.deckIds.length;
             return flashcardFocusPatch(round.deckIds[next], flashcardStatePatch({ _flashcardIdx: next, _flashcardFlipped: false }, state, round), state);
-          }, function(nextState, patch) {
-            announceFlashcardRound(nextState); playSound('guidedStep'); if (after) after(nextState, patch); else focusFlashcardState(nextState);
+          }, function(nextState, patch, origin) {
+            announceFlashcardRound(nextState); playSound('guidedStep'); if (after) after(nextState, patch); else focusFlashcardState(nextState,null,origin);
           });
         }
         function revealFlashcard(after) {
-          updateFlashcardOwned(function(state, round) { return flashcardStatePatch({ _flashcardFlipped: !round.flipped }, state, round); }, after || function(nextState) { focusFlashcardState(nextState); });
+          updateFlashcardOwned(function(state, round) { return flashcardStatePatch({ _flashcardFlipped: !round.flipped }, state, round); }, after || function(nextState,patch,origin) { focusFlashcardState(nextState,null,origin); });
         }
         function locateFlashcard(after) {
           updateFlashcardOwned(function(state, round) {
             return round.deckIds.length ? flashcardFocusPatch(round.deckIds[round.index], flashcardStatePatch({}, state, round), state) : null;
-          }, function(nextState, patch) { announceFlashcardRound(nextState); if (after) after(nextState, patch); else focusFlashcardState(nextState, 'diagram'); });
+          }, function(nextState, patch, origin) { announceFlashcardRound(nextState); if (after) after(nextState, patch); else focusFlashcardState(nextState, 'diagram',origin); });
         }
         var nextUnratedFlashcardIdx = -1;
         for (var unratedOffset = 1; unratedOffset <= flashcardPool.length; unratedOffset++) {
@@ -7430,11 +7859,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return saved.deckIds.length ? flashcardFocusPatch(saved.deckIds[saved.index], patch, state) : patch;
         }
         function openFlashcardRound(scope, systemId, level, extraPatch, restart, after) {
-          updateFlashcardEntry(function(state) { return flashcardRoundPatch(scope, systemId, level, extraPatch, restart, state); }, function(nextState, patch) {
-            announceFlashcardRound(nextState); if (after) after(nextState, patch);
+          updateFlashcardEntry(function(state) { return flashcardRoundPatch(scope, systemId, level, extraPatch, restart, state); }, function(nextState, patch, origin) {
+            announceFlashcardRound(nextState); if (after) after(nextState, patch,origin);
           });
         }
-        function startFlashcardRound(scope, restart, after) { openFlashcardRound(scope, sysKey, complexity, null, restart, after || function(nextState) { focusFlashcardState(nextState); }); }
+        function startFlashcardRound(scope, restart, after) { openFlashcardRound(scope, sysKey, complexity, null, restart, after || function(nextState,patch,origin) { focusFlashcardState(nextState,null,origin); }); }
         var flashcardReviewFirstCount = flashcardPool.filter(function(structure) { return isReviewDue(structure.id); }).length;
         var flashcardStaleCount = flashcardPool.filter(function(structure) { return isStaleRating(structure.id); }).length;
         var studyFilter = ['all', 'unseen', 'review', 'mastered', 'notes'].indexOf(d._studyFilter) !== -1 ? d._studyFilter : 'all';
@@ -12995,20 +13424,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var reviewQueue = reviewInSystem.slice(0, 3);
         var reviewQueueRemaining = Math.max(0, reviewInSystem.length - reviewQueue.length);
         var ratedInSystemCount = viewFiltered.filter(function(structure) { return !!structureConfidence[structure.id]; }).length;
-        var recommendedNextStep;
-        if (!tourCompleted && exploredInSystem < Math.min(3, viewFiltered.length)) {
-          recommendedNextStep = { id: 'tour', title: 'Take the guided tour', detail: 'Build a structure-to-function map before testing recall.', action: 'Start tour' };
-        } else if (reviewInSystem.length > 0) {
-          recommendedNextStep = { id: 'review', title: 'Review ' + reviewInSystem[0].name, detail: currentSystemReviewCount + ' structure' + (currentSystemReviewCount === 1 ? '' : 's') + ' marked for review in this view.', action: 'Review now', structure: reviewInSystem[0] };
-        } else if (unseenInSystem.length > 0) {
-          recommendedNextStep = { id: 'unseen', title: 'Discover ' + unseenInSystem[0].name, detail: unseenInSystem.length + ' structure' + (unseenInSystem.length === 1 ? '' : 's') + ' remain unexplored in this view.', action: 'Open structure', structure: unseenInSystem[0] };
-        } else if (ratedInSystemCount < Math.min(3, viewFiltered.length)) {
-          recommendedNextStep = { id: 'cards', title: 'Check your recall', detail: 'Use flashcards and rate your confidence to build a focused review list.', action: 'Open cards' };
-        } else if (totalCorrect < 5) {
-          recommendedNextStep = { id: 'quiz', title: 'Test what you know', detail: 'Mix function, system, true/false, and clinical recall questions.', action: 'Start quiz' };
-        } else {
-          recommendedNextStep = { id: 'spotter', title: 'Practice visual identification', detail: 'Use the Spotter to transfer recall to the body diagram.', action: 'Open Spotter' };
+        function studyRecommendationForState(state) {
+          var ratings=anatomySharedRatings(state,knownStructureIds,Date.now()),viewed=safeFlagMap(state._structuresViewed,knownStructureIds);
+          var explored=viewFiltered.filter(function(structure){return viewed[structure.id];}).length;
+          var review=viewFiltered.filter(function(structure){return ratings.confidence[structure.id]==='practice'||ratings.confidence[structure.id]==='learning';});
+          var unseen=viewFiltered.filter(function(structure){return !viewed[structure.id];});
+          var rated=viewFiltered.filter(function(structure){return !!ratings.confidence[structure.id];}).length;
+          if (state._tourCompleted!==true && explored<Math.min(3,viewFiltered.length))return { id:'tour',title:t('stem.anatomy.study_flow_next_tour_title','Take the guided tour'),detail:t('stem.anatomy.study_flow_next_tour_detail','Build a structure-to-function map before testing recall.'),action:'Start tour' };
+          if (review.length)return { id:'review',title:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_review_title','Review {structure}'),{structure:review[0].name}),detail:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_review_detail','Structures marked for review in this view: {count}.'),{count:review.length}),action:'Review now',structure:review[0] };
+          if (unseen.length)return { id:'unseen',title:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_unseen_title','Discover {structure}'),{structure:unseen[0].name}),detail:formatAnatomyStudyText(t('stem.anatomy.study_flow_next_unseen_detail','Unexplored structures in this view: {count}.'),{count:unseen.length}),action:'Open structure',structure:unseen[0] };
+          if (rated<Math.min(3,viewFiltered.length))return { id:'cards',title:t('stem.anatomy.study_flow_next_cards_title','Check your recall'),detail:t('stem.anatomy.study_flow_next_cards_detail','Use flashcards and rate your confidence to build a focused review list.'),action:'Open cards' };
+          if (safeNonNegativeNumber(state._totalCorrect,0,true)<5)return { id:'quiz',title:t('stem.anatomy.study_flow_next_quiz_title','Test what you know'),detail:t('stem.anatomy.study_flow_next_quiz_detail','Mix function, system, true/false, and clinical recall questions.'),action:'Start quiz' };
+          return { id:'spotter',title:t('stem.anatomy.study_flow_next_spotter_title','Practice visual identification'),detail:t('stem.anatomy.study_flow_next_spotter_detail','Use the Spotter to transfer recall to the body diagram.'),action:'Open Spotter' };
         }
+        var recommendedNextStep=studyRecommendationForState(d);
         function openReviewStructure(structure) {
           if (!structure) return;
           updMulti(structureFocusPatch(structure.id, { _activeTab: 'explore', quizMode: false }));
@@ -14224,7 +14653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             var key = flashcardRoundKey(sysKey, complexity, 'all');
             patch._flashcardRounds[key] = Object.assign({}, patch._flashcardRounds[key], { index: index });
             return patch;
-          }, function(nextState) { announceFlashcardRound(nextState); focusFlashcardState(nextState); });
+          }, function(nextState,patch,origin) { announceFlashcardRound(nextState); focusFlashcardState(nextState,null,origin); });
         }
         function renderFlashcardRoundProgress() {
           if (!flashcardPool.length) return null;
@@ -14448,6 +14877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           className: 'anatomy-tool-shell max-w-6xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1',
           'data-anatomy-tool': 'true',
           'data-anatomy-tutor-revision': aiDraftRevision,
+          'data-anatomy-study-revision': studySheetRevision,
           'data-anatomy-tutor-band': gradeBand,
           'data-anatomy-tutor-study': tutorStudyIdentity(d),
           'data-anatomy-tutor-draft-key': tutorDraftContextIdentity(d),
@@ -14502,7 +14932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             }, readingMode ? t('stem.anatomy.larger_text_on', 'Larger text on') : t('stem.anatomy.larger_text', 'Larger text')),
             h('button', {
               type: 'button', 'data-anatomy-study-toggle': true, 'aria-expanded': showStudySheet, 'aria-controls': 'anatomy-study-sheet',
-              onClick: function() { toggleStudySheet(!showStudySheet); if (!showStudySheet && typeof announceToSR === 'function') announceToSR(t('stem.anatomy.study_sheet_opened', 'Study sheet opened. Print it or copy it as text.')); },
+              onClick: function() { toggleStudySheet(!showStudySheet); },
               title: t('stem.anatomy.study_sheet_tip', 'A printable summary of what you rated, missed, and wrote'),
               className: 'anatomy-topbar-action ml-auto px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border transition-all active:scale-[0.97] ' + (showStudySheet ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-100')
             }, t('stem.anatomy.study_sheet_button', '📄 Study sheet')),

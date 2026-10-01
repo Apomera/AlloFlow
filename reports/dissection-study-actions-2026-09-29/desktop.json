@@ -1,0 +1,37 @@
+{
+  "width": 302,
+  "scrollWidth": 302,
+  "clientWidth": 302,
+  "buttons": [
+    {
+      "width": 302,
+      "height": 71.1875,
+      "scrollWidth": 300,
+      "clientWidth": 300,
+      "sizes": [
+        14,
+        14
+      ]
+    },
+    {
+      "width": 302,
+      "height": 71.1875,
+      "scrollWidth": 300,
+      "clientWidth": 300,
+      "sizes": [
+        14,
+        14
+      ]
+    },
+    {
+      "width": 302,
+      "height": 71.1875,
+      "scrollWidth": 300,
+      "clientWidth": 300,
+      "sizes": [
+        14,
+        14
+      ]
+    }
+  ]
+}

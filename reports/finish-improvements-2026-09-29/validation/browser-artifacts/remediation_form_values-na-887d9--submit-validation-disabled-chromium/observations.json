@@ -1,0 +1,44 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:3"
+  },
+  "repaired": {
+    "form": {
+      "valid": false,
+      "submissions": 0
+    },
+    "sliders": []
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 1,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 1,
+      "candidateRejections": [
+        {
+          "chunkId": "1",
+          "phase": "single",
+          "reason": "form-state-changed",
+          "sourceLocation": "control:3"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "form": {
+      "valid": false,
+      "submissions": 0
+    },
+    "sliders": []
+  },
+  "candidate": {
+    "form": {
+      "valid": false,
+      "submissions": 1
+    },
+    "sliders": []
+  }
+}

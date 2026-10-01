@@ -38,7 +38,8 @@ export const reasonKeys = { conflict: 'place_save_conflict', 'version-conflict':
 export async function openRecoveryFailure(fixture, reason) {
   if (reason === 'corrupt-store') localStorage.setItem(storageKey, '{invalid');
   if (reason === 'coordination-unavailable') delete navigator.locks;
-  if (reason === 'capacity') localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(Array.from({ length: 80 }, (_, i) => ['another-learner|reading-' + i + '|version', { responses: { 0: { mainIdea: 'Protected answer ' + i } }, at: i }]))));
+  // Full: the store holds 400 rows, and answers untouched for 180 days may make room, so these are recent.
+  if (reason === 'capacity') localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(Array.from({ length: 400 }, (_, i) => ['another-learner|reading-' + i + '|version', { responses: { 0: { mainIdea: 'Protected answer ' + i } }, at: Date.now() - i }]))));
   let view = mountReader(fixture), input = await openPrompts(view);
   if (reason === 'conflict' || reason === 'version-conflict') {
     await typeAnswer(input, 'Previously saved');

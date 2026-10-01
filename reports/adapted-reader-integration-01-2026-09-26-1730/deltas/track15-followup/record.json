@@ -1,0 +1,117 @@
+{
+  "at": "2026-09-26T22:47:03.896Z",
+  "label": "track15-followup",
+  "patch": "a10f0917fff23a1efcae05bfaf9854f7d958acbcc866254cff464c801bae9ae2",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "9213e6277ab9db6e46bc52ba24cb36018a85a498c63eecf79c67d084f5ec1207",
+      "after": "e5c956e13e93a197060c0f2964485b39a533f331b077cfd329a60c1715be3e77",
+      "changed": true
+    },
+    {
+      "target": "_build_export_module.js",
+      "targets": [
+        "_build_export_module.js"
+      ],
+      "before": "7dd4a9b2494c2d2818a83f8d30d205310f56fefbad3f032bd373aaa7bb53b9af",
+      "after": "de14267f035425a31f246043624710871bd8bbe39bba68d62d0968f0b6f9077c",
+      "changed": true
+    },
+    {
+      "target": "_build_view_storybook_export_modal_module.js",
+      "targets": [
+        "_build_view_storybook_export_modal_module.js"
+      ],
+      "before": "b259a89b9745a9e4adc3827aaa7aba68de0d7bdc7743ae352293abb94808a7ea",
+      "after": "78ac6138cac74665724d5bf28bab4129c7a9546d9e87ebd3462ddb4c43850b35",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/check_offline_storybook_recovery.cjs",
+      "targets": [
+        "dev-tools/check_offline_storybook_recovery.cjs"
+      ],
+      "before": null,
+      "after": "ff986287843150057670319d1daf52ca4390f0d3a4342c143e7b08bfe02c90dc",
+      "changed": true
+    },
+    {
+      "target": "export_source.jsx",
+      "targets": [
+        "export_source.jsx"
+      ],
+      "before": "07b779b0fdc412bec893b87f5e861eb23511d7765ddcfa30f1931db3ba7fa6ee",
+      "after": "4d74b537e59dd1d7cfa7967ff9a1dfad2c216542429291df4f2ee1439147ed52",
+      "changed": true
+    },
+    {
+      "target": "read_aloud_artifact_audio_source.jsx",
+      "targets": [
+        "read_aloud_artifact_audio_source.jsx"
+      ],
+      "before": "bf0704292a7bbefd9f9bfdf80fedb35adda22cc202370c60e2496fc935ce3fd5",
+      "after": "81c27a4f2ef7fd9ca2af80d236f239ee9a953372bac7cee424440cef49cad1bd",
+      "changed": true
+    },
+    {
+      "target": "read_aloud_audio_service_source.jsx",
+      "targets": [
+        "read_aloud_audio_service_source.jsx"
+      ],
+      "before": "da559118fdd77339116e1ed133cd8b6974523e3e52d0dfa3cf9fb0335a50cc74",
+      "after": "520d6cf0661453c288e8935ec3a0f3209ce96e4f88b7fbdeb622b7610b0b9df7",
+      "changed": true
+    },
+    {
+      "target": "tests/adventure_storybook_read_aloud_export.test.js",
+      "targets": [
+        "tests/adventure_storybook_read_aloud_export.test.js"
+      ],
+      "before": "ae0745150335fc23fd0883ca3d04e630c8904a3c5da55d6ece640322c108c2eb",
+      "after": "aab147f1ce18ab8a270f550a74c73224c65cfdecbc9b90ebbb9602abbf5c3405",
+      "changed": true
+    },
+    {
+      "target": "tests/offline_media_reader_integration.test.js",
+      "targets": [
+        "tests/offline_media_reader_integration.test.js"
+      ],
+      "before": null,
+      "after": "71683662f655da5a1e1291d48920a8257ee083ef1b248c2af9d0aab95c77299b",
+      "changed": true
+    },
+    {
+      "target": "tests/offline_media_recovery.test.js",
+      "targets": [
+        "tests/offline_media_recovery.test.js"
+      ],
+      "before": "2452400b58ac2f3dfef7f88cca5e320bfd67f2e892aa9de1b9035215e17ca15a",
+      "after": "8a337149e332ae74390e51b9741e250150d67bb24835f2f69167e7e3982a9407",
+      "changed": true
+    },
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "cf8a3a0192a8d129bb56fd58528d98887367bdae58386bfaf57be7c82bab3ea6",
+      "after": "12a8ec4aee1df8ca92c588f31d85391252404db29a7c285d278c3c677617da87",
+      "changed": true
+    },
+    {
+      "target": "view_storybook_export_modal_source.jsx",
+      "targets": [
+        "view_storybook_export_modal_source.jsx"
+      ],
+      "before": "5fd0f6b1e7b29765d698713a8c91b3ad7674e2cf12dbcd0959289c61b5ac672f",
+      "after": "26b75e0505d89d077f4610597f31167e73073d7c917effbe57e7d0241ceb4f7c",
+      "changed": true
+    }
+  ]
+}

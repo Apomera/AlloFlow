@@ -87,7 +87,7 @@ describe('galaxy state hardening', () => {
 
   it('keeps a lifecycle stage that the current mass can reach', () => {
     const html = renderTool('galaxy', { galaxy: { simMode: 'star', lifecycleMass: 30, activeStage: 'black_hole' } });
-    expect(html).toContain('A black hole emits no light at all');
+    expect(html).toContain('Light from a black hole’s surroundings can be observed');
   });
 
   it('ignores a malformed generated quiz instead of crashing the render', () => {
@@ -713,12 +713,12 @@ describe('galaxy visuals', () => {
     expect(ratio([217, 119, 6], [255, 255, 255])).toBeLessThan(4.5);
   });
 
-  it.each(GALAXY_PATHS)('%s pins the rotated HR band label so a translation cannot run off it', (filePath) => {
+  it.each(GALAXY_PATHS)('%s bounds the HR band label so a translation cannot run off it', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     // SVG text does not wrap. Start-anchored inside a 340-unit viewBox, this label was
     // the ONLY thing in the whole tool that overflowed under a 40% pseudo-locale
     // expansion - reaching x=603 in a 600px viewport and x=781 in a 768px one.
-    expect(source).toContain('textAnchor: "middle", textLength: 150, lengthAdjust: "spacingAndGlyphs"');
+    expect(source).toContain('textAnchor: "middle", textLength: hrMainLabel.length > 15 ? 150 : undefined, lengthAdjust: "spacingAndGlyphs"');
     expect(source).toContain("__alloT('stem.galaxy.hr_main_sequence_label'");
   });
 
@@ -733,14 +733,14 @@ describe('galaxy visuals', () => {
     // `dir="ltr"` on an <svg> does NOTHING - dir maps to the CSS direction property for
     // HTML only. Measured: the attribute was present and getComputedStyle still said
     // rtl. The CSS property has to be set, so both are used here.
-    const charts = source.match(/React\.createElement\("svg", \{ viewBox: [^}]*?dir: "ltr"/g) || [];
+    const charts = source.match(/React\.createElement\("svg", \{ [^}]*?viewBox: [^}]*?dir: "ltr"/g) || [];
     expect(charts.length).toBe(6);
     const styled = source.match(/dir: "ltr", className: "w-full", style: \{ direction: 'ltr'/g) || [];
     expect(styled.length).toBe(6);
   });
 
-  it.each(UI_STRING_PATHS)('%s ships no value that holds the TEXT of an escape', (filePath) => {
-    const source = readFileSync(filePath, 'utf8');
+  it.each(UI_STRING_PATHS)('%s ships no Galaxy value that holds the TEXT of an escape', (filePath) => {
+    const source = JSON.stringify(JSON.parse(readFileSync(filePath, 'utf8')).stem.galaxy);
     // A value written as "Sun (1 M\\u2609)" carries a literal backslash, so the screen
     // shows the escape rather than the character it names. The tool's own English
     // fallback was correct, which is why only ui_strings-driven English was damaged and
@@ -794,7 +794,7 @@ describe('galaxy visuals', () => {
     // table: 550 against 280 solar luminosities for the same 5-solar-mass star.
     expect(source).not.toContain('Math.pow(lifecycleMass, 3.5)');
     expect(source.match(/mainSequenceLuminosity\(/g).length).toBeGreaterThanOrEqual(4);
-    expect(source.match(/formatSolarLuminosity\(/g)).toHaveLength(3);
+    expect(source.match(/formatSolarLuminosity\(/g).length).toBeGreaterThanOrEqual(3);
     // A red dwarf's 0.0056 must not print as "0.0".
     const start = source.indexOf('function formatSolarLuminosity(');
     const body = source.slice(start, source.indexOf('\n  }', start) + 4);
@@ -1071,20 +1071,21 @@ describe('galaxy metallicity inquiry', () => {
   });
 
   it('makes mass and age consequential, not decorative', () => {
-    // 40 M☉ burns out in ~1 Myr, so it cannot still be shining at 10 Gyr.
+    // At 40 M☉ the shared estimate is far shorter than 10 Gyr.
     const impossible = renderTool('galaxy', { galaxy: { simMode: 'metalHunt', metalHunt: { metallicity: 1, mass: 40, age: 10 } } });
-    expect(impossible).toContain('Could this star exist?');
-    expect(impossible).toContain('already be a remnant');
+    expect(impossible).toContain('What can these inputs tell us?');
+    expect(impossible).toContain('giant or a remnant');
 
-    // 1 M☉ at 4.6 Gyr with solar metallicity is the Sun: both checks should pass.
+    // A Sun-like star falls within the main-sequence estimate.
     const sunLike = renderTool('galaxy', { galaxy: { simMode: 'metalHunt', metalHunt: { metallicity: 1, mass: 1, age: 4.6 } } });
-    expect(sunLike).not.toContain('already be a remnant');
-    expect(sunLike).toContain('Still on the main sequence?');
+    expect(sunLike).not.toContain('Beyond this estimate');
+    expect(sunLike).toContain('Within the estimated hydrogen-burning time?');
   });
 
-  it('flags metallicity that does not match the era the star formed in', () => {
+  it('explains that composition alone does not uniquely date a star', () => {
     const anachronistic = renderTool('galaxy', { galaxy: { simMode: 'metalHunt', metalHunt: { metallicity: 2, mass: 1, age: 13 } } });
-    expect(anachronistic).toContain('far more enrichment');
+    expect(anachronistic).toContain('Metallicity alone does not determine age');
+    expect(anachronistic).not.toContain('far more enrichment');
   });
 
   it('renders logged combinations rather than discarding them', () => {

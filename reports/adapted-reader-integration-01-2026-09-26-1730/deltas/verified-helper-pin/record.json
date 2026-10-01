@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-26T23:05:04.582Z",
+  "label": "verified-helper-pin",
+  "patch": "77f84f2160755e6762fe4d0a6dbb1ebff3b75dc196b5f977afca4acd1f40b175",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "1ffa8bea276777d9ef6e54d808ffdd2bd265e587dcfe23f1c15f6ec5431f1916",
+      "after": "b7d2f7cd47f87c15324c0a6d1374e4fc879cb4ea5e0b65fdd3c8786f09f0776d",
+      "changed": true
+    }
+  ]
+}

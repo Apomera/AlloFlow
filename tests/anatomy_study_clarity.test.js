@@ -59,8 +59,14 @@ for(const file of paths)describe('Honest, reliable anatomy study records: '+file
   const merge=s.node(n=>n.type==='button'&&n.props.children==='Merge study record').props.onClick;s.patch({_showStudySheet:false});merge();expect(s.data()._structureNotes).toBeUndefined();
  });
  it('focuses the sheet heading and restores its opening button',()=>{
-  vi.useFakeTimers();const s=session(file,{_showStudySheet:false}),heading=document.createElement('h3'),trigger=document.createElement('button');heading.id='anatomy-study-sheet-title';heading.tabIndex=-1;trigger.dataset.anatomyStudyToggle='true';document.body.append(heading,trigger);
-  try{s.node(n=>n.props?.['data-anatomy-study-toggle']).props.onClick();vi.runOnlyPendingTimers();expect(document.activeElement).toBe(heading);s.node(n=>n.props?.['aria-label']==='Close study sheet').props.onClick();vi.runOnlyPendingTimers();expect(document.activeElement).toBe(trigger);}finally{heading.remove();trigger.remove();}
+  vi.useFakeTimers();vi.spyOn(HTMLElement.prototype,'getClientRects').mockReturnValue([{width:200,height:44}]);
+  const s=session(file,{_showStudySheet:false}),host=s.html();document.body.append(host);
+  try{
+   host.querySelector('[data-anatomy-study-toggle]').focus();s.node(n=>n.props?.['data-anatomy-study-toggle']).props.onClick();
+   host.innerHTML=s.html().innerHTML;vi.runOnlyPendingTimers();expect(document.activeElement).toBe(host.querySelector('#anatomy-study-sheet-title'));
+   host.querySelector('[aria-label="Close study sheet"]').focus();s.node(n=>n.props?.['aria-label']==='Close study sheet').props.onClick();
+   host.innerHTML=s.html().innerHTML;vi.runOnlyPendingTimers();expect(document.activeElement).toBe(host.querySelector('[data-anatomy-study-toggle]'));
+  }finally{host.remove();}
  });
  it('localizes copied summaries and keeps work outside the visible filters',()=>{
   const original=document.execCommand,translate=(key,fallback)=>key.startsWith('stem.anatomy.study_ref_')?'LOCAL '+fallback:fallback;

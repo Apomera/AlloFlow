@@ -1,0 +1,52 @@
+{
+  "at": "2026-09-26T23:38:00.403Z",
+  "label": "pass2-07-vocab",
+  "patch": "719f2b4bae6636c3673176d5c21c03dca1aaed120ab519042919bc0ff6491946",
+  "plans": [
+    {
+      "target": "generation_helpers_source.jsx",
+      "targets": [
+        "generation_helpers_source.jsx"
+      ],
+      "before": "85fb09f8f8d57c2df6383f59c280b3400d10f6565411e27e2da13301cbb16d7e",
+      "after": "273032e72bba18c91707b59b62867487f56ecefe01444d9605fe8b14467e1cbc",
+      "changed": true
+    },
+    {
+      "target": "text_pipeline_helpers_source.jsx",
+      "targets": [
+        "text_pipeline_helpers_source.jsx"
+      ],
+      "before": "6bf563615db856f65a4d3218f1af2288e1ec6ab609671e1ea7ed9e520752c08f",
+      "after": "020f9342929fd432467593734fc962b1f2c59e04f66fd92890d0ee33bb05fdac",
+      "changed": true
+    },
+    {
+      "target": "tests/preserved_vocabulary_enhancements.test.js",
+      "targets": [
+        "tests/preserved_vocabulary_enhancements.test.js"
+      ],
+      "before": null,
+      "after": "a3ecd10adcf146982205abf93537e9d9c985ca37d482231432ab9333a2e8c305",
+      "changed": true
+    },
+    {
+      "target": "tests/track07-browser-fixture.js",
+      "targets": [
+        "tests/track07-browser-fixture.js"
+      ],
+      "before": "75facb4d9f8c3c82b32b25423aa270f8c61ae06b0c03767dc57d5f03b6fe0121",
+      "after": "5914e9bfb0ddb8e72debd7f94c8853f88abd0fb33e083f96ef093df44ba1f2e8",
+      "changed": true
+    },
+    {
+      "target": "tests/track07-browser-acceptance.cjs",
+      "targets": [
+        "tests/track07-browser-acceptance.cjs"
+      ],
+      "before": "4e6ffa69317b88989cfd2147541f7f76dc6f5e48cd09286348c64b61055e068d",
+      "after": "80322136599c45a00feb35661964181b594261333bf9024706950bf1abc13dcb",
+      "changed": true
+    }
+  ]
+}

@@ -32,6 +32,13 @@
 // =====================================================================
 (function () {
   'use strict';
+  // Fallback-aware translator reachable from every call site in this tool.
+  var __alloCtx_citylab = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCtx_citylab && typeof __alloCtx_citylab.t === "function") ? __alloCtx_citylab.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
 
   // ===================================================================
   // SECTION 1 - SCENARIO DATA (authored, never generated)
@@ -2228,6 +2235,7 @@
     ],
 
     render: function (ctx) {
+      try { __alloCtx_citylab = ctx; } catch (e) {}
       var React = ctx.React;
       var h = React.createElement;
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; }; // extraction anchor: the codemod requires a ctx.t-shaped init
@@ -2480,7 +2488,7 @@
       }
 
       function undo() {
-        if (!hist.past.length) { announceToSR('Nothing to undo.'); return; }
+        if (!hist.past.length) { announceToSR(__alloT('stem.citylab.sr_nothing_to_undo', 'Nothing to undo.')); return; }
         var prev = hist.past[hist.past.length - 1];
         setHist({ past: hist.past.slice(0, -1), future: [plan].concat(hist.future).slice(0, 50) });
         setPlan(prev);
@@ -2490,7 +2498,7 @@
       }
 
       function redo() {
-        if (!hist.future.length) { announceToSR('Nothing to redo.'); return; }
+        if (!hist.future.length) { announceToSR(__alloT('stem.citylab.sr_nothing_to_redo', 'Nothing to redo.')); return; }
         var next = hist.future[0];
         setHist({ past: hist.past.concat([plan]).slice(-50), future: hist.future.slice(1) });
         setPlan(next);
@@ -3587,7 +3595,7 @@
           a.href = url; a.download = filename;
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
           setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-        } catch (_) { announceToSR('Download failed in this browser.'); }
+        } catch (_) { announceToSR(__alloT('stem.citylab.sr_download_failed_in_this_browser', 'Download failed in this browser.')); }
       }
 
       function memoStanding() {
@@ -3655,7 +3663,7 @@
                   type: 'button',
                   onClick: function () {
                     download(scen.id + '-plan-memo.html', memoHtml(), 'text/html;charset=utf-8');
-                    announceToSR('Plan memo downloaded.');
+                    announceToSR(__alloT('stem.citylab.sr_plan_memo_downloaded', 'Plan memo downloaded.'));
                   },
                   className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded',
                   style: { background: '#1f5eb0', color: '#ffffff' }
@@ -3664,7 +3672,7 @@
                   type: 'button',
                   onClick: function () {
                     download(scen.id + '-plan.json', JSON.stringify(plan, null, 2), 'application/json');
-                    announceToSR('Plan JSON downloaded.');
+                    announceToSR(__alloT('stem.citylab.sr_plan_json_downloaded', 'Plan JSON downloaded.'));
                   },
                   className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }
@@ -3932,7 +3940,7 @@
                   type: 'button',
                   onClick: function () {
                     setClassSet([]); setClassNote('Class set cleared.');
-                    announceToSR('Class set cleared.');
+                    announceToSR(__alloT('stem.citylab.sr_class_set_cleared', 'Class set cleared.'));
                   },
                   className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                   style: { background: 'transparent', color: missColour, borderColor: missColour }
@@ -3943,7 +3951,7 @@
                     download(scen.id + '-class.csv',
                       classCsv(classSet, plan.scenarioId, plan.assumptionSetId),
                       'text/csv;charset=utf-8');
-                    announceToSR('Class CSV downloaded.');
+                    announceToSR(__alloT('stem.citylab.sr_class_csv_downloaded', 'Class CSV downloaded.'));
                   },
                   className: 'text-[0.6875rem] font-bold px-2 py-1.5 rounded border',
                   style: { background: panelBg, color: ink, borderColor: panelBorder }

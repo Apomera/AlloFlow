@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "feature": "Native dip, lift, carry, tip and release ladling; water allowance education; concave metal bowl, grip and water preview; adaptive pot/jug camera",
+  "unitTests": 55,
+  "unitSuites": 5,
+  "browserChecks": 14,
+  "accessibilityScans": 5,
+  "pageErrors": 0,
+  "runtimeFiles": 43,
+  "desktopMirror": "byte-identical",
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20260930-ladle",
+  "commit": "No commit, staging or push performed"
+}

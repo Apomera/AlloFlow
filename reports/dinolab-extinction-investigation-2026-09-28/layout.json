@@ -1,0 +1,47 @@
+[
+  {
+    "width": 768,
+    "step": 0,
+    "fits": true
+  },
+  {
+    "width": 768,
+    "step": 1,
+    "fits": true
+  },
+  {
+    "width": 768,
+    "step": 2,
+    "fits": true
+  },
+  {
+    "width": 390,
+    "step": 0,
+    "fits": true
+  },
+  {
+    "width": 390,
+    "step": 1,
+    "fits": true
+  },
+  {
+    "width": 390,
+    "step": 2,
+    "fits": true
+  },
+  {
+    "width": 320,
+    "step": 0,
+    "fits": true
+  },
+  {
+    "width": 320,
+    "step": 1,
+    "fits": true
+  },
+  {
+    "width": 320,
+    "step": 2,
+    "fits": true
+  }
+]

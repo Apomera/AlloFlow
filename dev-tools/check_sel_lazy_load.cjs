@@ -206,7 +206,9 @@ function check(name, cond, detail) {
     const GATES = [
       ['crisis-search Crisis Companion button', /_selToolIsOpenable\('crisiscompanion'\)/],
       ['tool grid card', /var isRegistered = _selToolIsOpenable\(tool\.id\)/],
-      ['pathway option button', /disabled: !_selToolIsOpenable\(item\.tool\)/],
+      // Since 2026-09-23 the openable result is held in _openable (it also drives the
+      // cursor, opacity and "(not available)" label), so accept either spelling.
+      ['pathway option button', /disabled: !_selToolIsOpenable\(item\.tool\)|var _openable = _selToolIsOpenable\(item\.tool\);[\s\S]{0,300}?disabled: !_openable/],
       ['pathway next-tool pick', /!pathwayProgress\[id\] && _selToolIsOpenable\(id\)/],
       ['station activity chip', /var available = _selToolIsOpenable\(id\)/],
       ['history panel open button', /_selToolIsOpenable\(item\.toolId\)/],

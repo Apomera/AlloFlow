@@ -33,6 +33,9 @@ function harness() {
   const mailObservations = [];
   const triggers = [];
   const rangeReads = {};
+  // Apps Script's script cache (get / put with a TTL / remove); expiry is not simulated.
+  const cacheStore = new Map();
+  const scriptCache = { get: key => (cacheStore.has(key) ? cacheStore.get(key) : null), put: (key, value) => { cacheStore.set(key, String(value)); }, remove: key => { cacheStore.delete(key); } };
   const uuid = prefix => `${prefix}-${String(nextId++).padStart(12, '0')}`;
   class Range {
     constructor(sheet, row, col, rowCount = 1, colCount = 1) { Object.assign(this, { sheet, row, col, rowCount, colCount }); }
@@ -97,6 +100,7 @@ function harness() {
     Date,
     Session: { getActiveUser: () => ({ getEmail: () => activeEmail }), getEffectiveUser: () => ({ getEmail: () => effectiveEmail }) },
     PropertiesService: { getScriptProperties: () => props },
+    CacheService: { getScriptCache: () => scriptCache },
     SpreadsheetApp: {
       create: () => { const id = uuid('spreadsheet'); const book = new Book(id); books.set(id, book); files.set(id, new File(id)); return book; },
       openById: id => { if (!books.has(id)) throw new Error('Missing book'); return books.get(id); },
@@ -226,6 +230,13 @@ function harness() {
     appendRaw: (name, row) => {
       const book = books.get(properties.get('SR_SPREADSHEET_ID'));
       book.getSheetByName(name).appendRow([...row]);
+    },
+    clearCache: () => { cacheStore.clear(); },
+    // A repository migrated to v7 before the PerStudentLimit / ShortCode columns existed.
+    simulateV7ClaimColumns: () => {
+      const book = books.get(properties.get('SR_SPREADSHEET_ID'));
+      const sheet = book.getSheetByName('ClaimTokens');
+      sheet.data = sheet.data.map(row => row.slice(0, 12));
     },
     simulateV6Claims: () => {
       const book = books.get(properties.get('SR_SPREADSHEET_ID'));

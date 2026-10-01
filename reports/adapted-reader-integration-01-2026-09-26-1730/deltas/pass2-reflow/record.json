@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-26T23:44:31.575Z",
+  "label": "pass2-reflow",
+  "patch": "3644bdd2a9a159d05ae66fd8af2572a881c98f84f0cad1080e08f0eb697638ac",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "0d2cf09b19d6d4e776e42bf7fc8745c01d65cbfb0be5e6cc485a7656345d7534",
+      "after": "9cacc36529da0568318c3aff2f008dfa46686b7c62d18d3507db71fcae3286ad",
+      "changed": true
+    },
+    {
+      "target": "tests/leveled_text_karaoke_persistence_e2e.test.js",
+      "targets": [
+        "tests/leveled_text_karaoke_persistence_e2e.test.js"
+      ],
+      "before": "610d27b1b30baf50fcab56e8a4926c3f3e5e55fb2b6be411a65029ba278a831a",
+      "after": "1e6c10c0d7f407254f2e7083de2f1d920f29fa0b223eeace059c93c62bb7c402",
+      "changed": true
+    }
+  ]
+}

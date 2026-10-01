@@ -1,0 +1,91 @@
+{
+  "width": 356,
+  "scrollWidth": 354,
+  "clientWidth": 354,
+  "texts": [
+    {
+      "text": "+ Observation",
+      "size": 16,
+      "width": 159.8125,
+      "scrollWidth": 158,
+      "clientWidth": 158
+    },
+    {
+      "text": "+ Location",
+      "size": 16,
+      "width": 159.8125,
+      "scrollWidth": 158,
+      "clientWidth": 158
+    },
+    {
+      "text": "+ Reasoning",
+      "size": 16,
+      "width": 159.8125,
+      "scrollWidth": 158,
+      "clientWidth": 158
+    },
+    {
+      "text": "+ Reference",
+      "size": 16,
+      "width": 159.8125,
+      "scrollWidth": 158,
+      "clientWidth": 158
+    },
+    {
+      "text": "I observed a transparent membrane at the eye. Its location supports this identification.",
+      "size": 16,
+      "width": 326.8125,
+      "scrollWidth": 325,
+      "clientWidth": 325
+    },
+    {
+      "text": "How sure are you, based on your evidence?",
+      "size": 14,
+      "width": 326.8125,
+      "scrollWidth": 327,
+      "clientWidth": 327
+    },
+    {
+      "text": "1 · Not sure yet",
+      "size": 16,
+      "width": 326.8125,
+      "scrollWidth": 325,
+      "clientWidth": 325
+    },
+    {
+      "text": "2 · Somewhat sure",
+      "size": 16,
+      "width": 326.8125,
+      "scrollWidth": 325,
+      "clientWidth": 325
+    },
+    {
+      "text": "3 · Confident",
+      "size": 16,
+      "width": 326.8125,
+      "scrollWidth": 325,
+      "clientWidth": 325
+    },
+    {
+      "text": "Calibration cue: Check one more distinguishing feature or anatomical relationship.",
+      "size": 16,
+      "width": 326.8125,
+      "scrollWidth": 327,
+      "clientWidth": 327
+    },
+    {
+      "text": "Text and confidence are recorded separately. Their presence does not verify the explanation or earn an assessment score.",
+      "size": 16,
+      "width": 326.8125,
+      "scrollWidth": 327,
+      "clientWidth": 327
+    }
+  ],
+  "choicesWidth": 326.8125,
+  "starts": [
+    159.8125,
+    159.8125,
+    159.8125,
+    159.8125
+  ]
+}

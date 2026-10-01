@@ -103,7 +103,8 @@ describe('the host publishes and retracts the probe', () => {
     expect(anti).toContain('timeoutMs: _ALLO_ENGAGEMENT_TIMEOUT_MS,');
   });
   it('the probe reports false for a hidden tab, matching the heartbeat gate', () => {
-    expect(anti).toMatch(/isEngaged: \(\) => \{\s*if \(typeof document !== 'undefined' && document\.hidden\) return false;/);
+    // 14a2d9cfa: a teacher's student preview is not student engagement either.
+    expect(anti).toMatch(/isEngaged: \(\) => \{\s*if \(typeof document !== 'undefined' && \(document\.hidden \|\| document\.querySelector\('\[data-student-preview\]'\)\)\) return false;/);
   });
   it('cleanup retracts it so a stale probe cannot outlive the app', () => {
     expect(anti).toContain('try { delete window.__alloEngagement; } catch (_) { window.__alloEngagement = null; }');

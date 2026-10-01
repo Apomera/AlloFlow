@@ -1,0 +1,166 @@
+{
+  "at": "2026-09-30T23:04:37.726Z",
+  "unitGroups": [
+    {
+      "file": "reader-parity-tests.json",
+      "passed": 22,
+      "total": 22,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "reader-adjacent-tests.json",
+      "passed": 149,
+      "total": 149,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "generation-tests.json",
+      "passed": 75,
+      "total": 75,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "audio-tests.json",
+      "passed": 65,
+      "total": 65,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "api-tests.json",
+      "passed": 34,
+      "total": 34,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "reporter-tests.json",
+      "passed": 27,
+      "total": 27,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "storage-validation.json",
+      "passed": 24,
+      "total": 24,
+      "success": true,
+      "failed": 0
+    },
+    {
+      "file": "url-key-tests.json",
+      "passed": 13,
+      "total": 13,
+      "success": true,
+      "failed": 0
+    }
+  ],
+  "recordedInputChecks": [
+    {
+      "file": "reader-browser-results.json",
+      "field": "inputHashes",
+      "mismatches": []
+    },
+    {
+      "file": "reader-adjacent-validation.json",
+      "field": "monitoredInputs",
+      "mismatches": []
+    },
+    {
+      "file": "reader-verification.json",
+      "field": "candidateHashes",
+      "mismatches": []
+    },
+    {
+      "file": "generation-validation-summary.json",
+      "field": "hashesAfter",
+      "mismatches": []
+    },
+    {
+      "file": "audio-verification.json",
+      "field": "sourceHashes",
+      "mismatches": []
+    },
+    {
+      "file": "storage-diagnosis.json",
+      "field": "inputHashes",
+      "mismatches": []
+    }
+  ],
+  "readerBrowser": {
+    "passed": 48,
+    "total": 48,
+    "status": "passed",
+    "changedInputs": [],
+    "errors": []
+  },
+  "supporting": {
+    "pythonOriginPolicy": {
+      "passed": 9,
+      "total": 9
+    },
+    "pythonVoiceLanguage": {
+      "passed": 5,
+      "total": 5
+    },
+    "guidedFlow": {
+      "passed": 20,
+      "total": 20
+    },
+    "targetedValidationPassed": true,
+    "runtimeHashesPreserved": true,
+    "concurrentTestEditsDisclosed": [
+      "tests/report_reader_glossary_parity.test.js",
+      "tests/report_storage_ack_recovery.test.js"
+    ],
+    "infrastructureErrorsPreserved": [
+      {
+        "name": "guided-flow-source-and-built-contract",
+        "error": "Installed Vitest rejected --minWorkers before discovering tests. The flow-only retry removes that unsupported option."
+      }
+    ]
+  },
+  "generatedPairs": {
+    "count": 11,
+    "errors": [],
+    "journalUnchanged": true,
+    "hostMirrorsMatch": true
+  },
+  "heldProposals": {
+    "allSyntaxAndApplicabilityPassed": true,
+    "workspaceHostsUnchanged": true,
+    "applied": false
+  },
+  "readerReleaseCheck": {
+    "passed": false,
+    "errors": [
+      {
+        "code": "reader-pin-mismatch",
+        "file": "AlloFlowANTI.txt",
+        "message": "Loader URL must be the exact reader content-hash URL: https://alloflow-cdn.pages.dev/view_simplified_module.js?v=f4aab895"
+      },
+      {
+        "code": "reader-pin-mismatch",
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "message": "Loader URL must be the exact reader content-hash URL: https://alloflow-cdn.pages.dev/view_simplified_module.js?v=f4aab895"
+      },
+      {
+        "code": "reader-pin-mismatch",
+        "file": "desktop/web-app/src/App.jsx",
+        "message": "Loader URL must be the exact reader content-hash URL: https://alloflow-cdn.pages.dev/view_simplified_module.js?v=f4aab895"
+      }
+    ],
+    "generatedMirrorsMatch": true,
+    "hostsMatch": true,
+    "changedDuringCheck": []
+  },
+  "limits": [
+    "Group counts are not a conformance score or a claim of unique coverage.",
+    "Real Canvas save/reload recovery, persistent live module loading, actual browser zoom, manual screen readers, exports, educator content review and full CI remain unverified.",
+    "Shared host proposals are unapplied; no commit, push, deployment or external settings change."
+  ],
+  "targetedChecksPassed": true
+}

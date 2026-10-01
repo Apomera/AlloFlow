@@ -1,0 +1,61 @@
+import {beforeAll,afterAll,beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
+import {readFileSync} from 'node:fs';
+const core=readFileSync('stem_lab/stem_tool_geometryworld.js','utf8');
+const fixtureSource=readFileSync('tests/geometry_world_placement_transaction.test.js','utf8');
+const originalLab=window.StemLab,originalThree=window.THREE;
+let THREE,makeShape,makeFixture,api,style,fixtures=[];
+beforeAll(()=>{
+  const exports={};new Function('exports','module',readFileSync('vendor/three-r128/three.min.js','utf8'))(exports,{exports});THREE=exports;window.THREE=THREE;
+  makeShape=new Function(core.slice(core.indexOf('  function createShapeGeometry('),core.indexOf('  // Format fractional volume for display'))+'\nreturn createShapeGeometry;')();
+  const helpers=fixtureSource.slice(fixtureSource.indexOf('function engineFunction('),fixtureSource.indexOf('\nfunction seed('));
+  const base=new Function('source','THREE','makeShape','vi',helpers+'\nreturn fixture;')(core,THREE,makeShape,vi);
+  makeFixture=()=>{
+    const f=base(),engine=f.engine;engine._worldActive=true;engine._modalState={};engine.releaseInput=vi.fn();
+    const start=core.indexOf('        // Atomic student construction:'),end=core.indexOf('        // End bounded drawing previews.',start);
+    const history=core.slice(core.indexOf('        var MAX_UNDO = 200;'),core.indexOf('        engine.undo = function()'));
+    const deps={engine,THREE,getBlockMaterial:type=>new THREE.MeshStandardMaterial({color:type==='wood'?0x886644:0x998877}),MAX_BLOCKS:1500,BLOCK_TYPES:[{id:'stone',color:0x998877},{id:'wood',color:0x886644},{id:'grass',color:0x669955}],BLOCK_SHAPES:[{id:'cube'},{id:'halfB'},{id:'halfA'},{id:'quarter'}],createShapeGeometry:makeShape,upd:(k,v)=>f.updates.push({key:k,value:v}),announceToSR:f.effects.sr};
+    new Function(...Object.keys(deps),history+core.slice(start,end))(...Object.values(deps));fixtures.push(f);return f;
+  };
+  window.StemLab={_registry:{geometryWorld:{aliases:[],render(){return null;}}}};
+  if(!document.getElementById('allo-geometryworld-builder-css')){style=document.createElement('style');style.id='allo-geometryworld-builder-css';document.head.appendChild(style);}
+  new Function(readFileSync('stem_lab/stem_tool_geometryworld_builder.js','utf8'))();api=window.StemLab.geometryWorldBuilderPure;
+});
+afterAll(()=>{window.StemLab=originalLab;window.THREE=originalThree;style?.remove();});
+beforeEach(()=>{window.THREE=THREE;});
+afterEach(()=>{fixtures.forEach(f=>{f.engine.clearBuildBatchPreview?.();Object.values(f.engine.blocks).forEach(mesh=>f.engine._disposeBlockMesh(mesh));});fixtures=[];vi.restoreAllMocks();});
+const block=(x,y=1,z=0,type='stone',shape='cube',rotation=0)=>({x,y,z,type,shape,rotation});
+const key=b=>[b.x,b.y,b.z].join(',');
+const pos=b=>({x:b.x,y:b.y,z:b.z});
+function place(f,b){return f.engine.placeBlock(b.x,b.y,b.z,b.type,b.shape,b.rotation);}
+function selected(blocks=[block(0,1,0,'stone','halfA',3),block(7,2,1,'wood','quarter',1)]){const f=makeFixture();blocks.forEach(b=>place(f,b));f.engine._builderSelection={blocks:blocks.map(pos)};f.engine._undoStack=[];f.engine._redoStack=[];f.events.length=0;return f;}
+function snapshot(f){return {recipes:Object.values(f.engine.blocks).map(mesh=>({...mesh.userData})),identities:Object.values(f.engine.blocks),scene:f.engine.scene.children.slice(),undo:structuredClone(f.engine._undoStack),redo:structuredClone(f.engine._redoStack),selection:structuredClone(f.engine._builderSelection),count:f.engine.blocksPlaced,events:structuredClone(f.events)};}
+function worldVertices(b){const geometry=makeShape(b.shape),position=new THREE.Vector3(b.x+.5,b.y+(b.shape==='cube'?.5:b.shape==='halfB'?.25:0),b.z+.5),matrix=new THREE.Matrix4().compose(position,new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),b.rotation*Math.PI/2),new THREE.Vector3(1,1,1)),a=geometry.attributes.position,result=[];for(let i=0;i<a.count;i++)result.push(new THREE.Vector3(a.getX(i),a.getY(i),a.getZ(i)).applyMatrix4(matrix));geometry.dispose();return result;}
+const pointSet=points=>[...new Set(points.map(p=>p.toArray().map(v=>Math.round(v*1e6)/1e6).join(',')))].sort();
+function memoryStorage(initial){let raw=initial;return {getItem:()=>raw??null,setItem:(_key,value)=>{raw=value;},raw:()=>raw};}
+
+
+
+const cameraSetups=[];
+beforeEach(()=>vi.useFakeTimers());
+afterEach(()=>{cameraSetups.splice(0).forEach(s=>{s.controller?.dispose(false);s.root.remove();});vi.clearAllTimers();vi.useRealTimers();});
+function setup(){
+ const f=selected([block(0,1,0,'stone','halfA',1),block(8,3,2,'wood','quarter',2)]),e=f.engine;
+ const root=document.createElement('main');root.id='geoworld-fs-workspace';const canvas=document.createElement('canvas'),card=document.createElement('section');card.className='gwe-preview-review';root.append(canvas,card);document.body.append(root);
+ const area={left:0,top:0,width:1200,height:800};canvas.getBoundingClientRect=()=>({...area,right:area.left+area.width,bottom:area.top+area.height});card.getBoundingClientRect=()=>({left:12,top:70,width:280,height:320,right:292,bottom:390});canvas.style.cursor='crosshair';canvas.style.touchAction='pan-y';const captures=new Set();canvas.setPointerCapture=id=>captures.add(id);canvas.hasPointerCapture=id=>captures.has(id);canvas.releasePointerCapture=id=>captures.delete(id);
+ e.renderer={domElement:canvas};e.camera=new THREE.PerspectiveCamera(60,1.5,.1,200);e.camera.position.set(4,8,20);e.camera.lookAt(1,2,0);e.euler=new THREE.Euler(0,0,0,'YXZ');e.velocity=new THREE.Vector3();e.scene.fog=new THREE.Fog(0xaabbcc,20,100);e._viewPreset='free';e._setViewPreset=vi.fn();
+ const plan=api.previewSelectionEdit(e,'move',{x:10,y:0,z:0}),owner={},origin=api.capturePreviewCamera(e);e.showBuildBatchPreview(plan,owner);e._viewPresetAnim={};
+ const onViewChange=vi.fn(),controller=api.installPreviewCamera(e,plan,owner,origin,onViewChange),s={f,e,root,canvas,card,area,captures,plan,owner,origin,controller,onViewChange};cameraSetups.push(s);vi.advanceTimersByTime(40);return s;
+}
+function pointer(canvas,type,id,x,y){const event=new Event(type,{bubbles:true,cancelable:true});Object.assign(event,{pointerId:id,clientX:x,clientY:y,button:0,pointerType:'touch'});canvas.dispatchEvent(event);return event;}
+function tick(){vi.advanceTimersByTime(40);}
+describe('direct preview inspection owns only its camera and gestures',()=>{
+ it('fits the full proposal to the available screen space and keeps geometry/history unchanged',()=>{const s=setup(),before=api.editableWorld(s.e);expect(s.controller).toBeTruthy();expect(s.e._viewPresetAnim).toBeNull();expect(s.e._undoStack).toHaveLength(0);const facts=api.previewChangeFacts(s.plan);for(const x of [facts.min.x,facts.max.x])for(const y of [facts.min.y,facts.max.y])for(const z of [facts.min.z,facts.max.z]){const p=new THREE.Vector3(x,y,z).project(s.e.camera);expect(Math.abs(p.x)).toBeLessThan(1);expect(Math.abs(p.y)).toBeLessThan(1);const px=(p.x+1)*600,py=(1-p.y)*400;expect(px<12||px>292||py<70||py>390).toBe(true);}expect(api.editableWorld(s.e)).toEqual(before);});
+ it('orbits with one pointer, blocks click-to-lock, and releases pointer capture',()=>{const s=setup(),before=s.e.camera.quaternion.clone(),click=vi.fn();s.canvas.addEventListener('click',click);expect(pointer(s.canvas,'pointerdown',1,800,500).defaultPrevented).toBe(true);pointer(s.canvas,'pointermove',1,875,530);tick();expect(Math.abs(before.dot(s.e.camera.quaternion))).toBeLessThan(.999);expect(s.onViewChange).toHaveBeenLastCalledWith('orbit');pointer(s.canvas,'pointerup',1,875,530);expect(s.captures.size).toBe(0);s.canvas.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));expect(click).not.toHaveBeenCalled();s.controller.dispose();s.canvas.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));expect(click).toHaveBeenCalledTimes(1);});
+ it('pinches with two fingers without introducing an orbit jump',()=>{const s=setup(),before=s.e.camera.position.clone(),quaternion=s.e.camera.quaternion.clone();pointer(s.canvas,'pointerdown',1,650,450);pointer(s.canvas,'pointerdown',2,800,450);pointer(s.canvas,'pointermove',2,875,450);tick();expect(s.e.camera.position.distanceTo(before)).toBeGreaterThan(.1);expect(Math.abs(quaternion.dot(s.e.camera.quaternion))).toBeCloseTo(1,6);window.dispatchEvent(new Event('blur'));expect(s.captures.size).toBe(0);});
+ it('offers predictable named views, bounded zoom, and a full-model fit recovery',()=>{const s=setup();expect(s.controller.view('top')).toBe(true);tick();expect(s.e.camera.getWorldDirection(new THREE.Vector3()).y).toBeLessThan(-.95);expect(s.controller.view('perspective')).toBe(true);tick();const fitted=s.e.camera.position.clone();s.controller.zoom(1.6);tick();expect(s.e.camera.position.distanceTo(fitted)).toBeGreaterThan(1);s.controller.fit();tick();expect(s.e.camera.position.distanceTo(fitted)).toBeLessThan(1e-6);expect(s.controller.view('missing')).toBe(false);expect(s.controller.zoom(NaN)).toBe(false);expect(s.controller.zoom(-1)).toBe(false);});
+ it('keeps repeated zoom/refit operations stable and anchors the model in the clear area',()=>{const s=setup(),center=s.controller.focus.clone(),project=()=>center.clone().project(s.e.camera),start=project();s.controller.zoom(2);tick();const distant=project(),far=s.e.camera.far,position=s.e.camera.position.clone();expect(distant.x).toBeCloseTo(start.x,6);expect(distant.y).toBeCloseTo(start.y,6);for(let i=0;i<80;i++){s.controller.scheduleFit();tick();}expect(s.e.camera.far).toBeCloseTo(far,6);expect(s.e.camera.position.distanceTo(position)).toBeLessThan(1e-6);expect(Number.isFinite(s.e.camera.projectionMatrix.determinant())).toBe(true);s.controller.fit();tick();expect(s.e.camera.far).toBeLessThanOrEqual(far);expect(project().x).toBeCloseTo(start.x,6);expect(project().y).toBeCloseTo(start.y,6);});
+ it('refits after a viewport change and preserves the current aspect on return',()=>{const s=setup();s.area.width=320;s.area.height=740;s.card.getBoundingClientRect=()=>({left:12,top:60,width:296,height:260,right:308,bottom:320});window.dispatchEvent(new Event('resize'));tick();expect(s.e.camera.aspect).toBeCloseTo(320/740);const facts=api.previewChangeFacts(s.plan);for(const x of [facts.min.x,facts.max.x])for(const y of [facts.min.y,facts.max.y])for(const z of [facts.min.z,facts.max.z]){const p=new THREE.Vector3(x,y,z).project(s.e.camera);expect(Math.abs(p.x)).toBeLessThan(1);expect(Math.abs(p.y)).toBeLessThan(1);expect((1-p.y)*370).toBeGreaterThan(320);}s.controller.dispose();expect(s.e.camera.aspect).toBeCloseTo(320/740);});
+ it('restores the original pose, projection, fog, input styles, and preset exactly once',()=>{const s=setup();s.controller.view('top');tick();s.controller.dispose();expect(s.e.camera.position.toArray()).toEqual(s.origin.position.toArray());expect(s.e.camera.quaternion.toArray()).toEqual(s.origin.quaternion.toArray());expect(s.e.camera.fov).toBe(s.origin.fov);expect(s.e.camera.far).toBe(s.origin.far);expect(s.e.scene.fog.near).toBe(20);expect(s.e.scene.fog.far).toBe(100);expect(s.e._viewPreset).toBe('free');expect(s.e._setViewPreset).toHaveBeenCalledWith('free');expect(s.canvas.style.cursor).toBe('crosshair');expect(s.canvas.style.touchAction).toBe('pan-y');expect(s.e._previewReviewCamera).toBeUndefined();s.e.camera.position.x=99;s.controller.dispose();expect(s.e.camera.position.x).toBe(99);});
+ it.each(['lesson','showcase','destroyed'])('does not restore an old view after %s takes over',change=>{const s=setup();if(change==='lesson')s.e._currentLesson={sandbox:true};if(change==='showcase')s.e._showcase={};if(change==='destroyed')s.e._destroyed=true;s.e.camera.position.set(42,43,44);s.controller.dispose();expect(s.e.camera.position.toArray()).toEqual([42,43,44]);expect(s.e._previewReviewCamera).toBeUndefined();});
+ it('stops owning input when another preview replaces its outline and rejects stale installers',()=>{const s=setup();s.e._buildBatchPreview.owner={};expect(s.controller.view('top')).toBe(false);s.controller.scheduleFit();tick();expect(s.e._previewReviewCamera).toBeUndefined();expect(api.installPreviewCamera(s.e,s.plan,s.owner,s.origin)).toBeNull();s.e._buildBatchPreview.owner=s.owner;expect(api.installPreviewCamera(s.e,{...s.plan,lesson:{}},s.owner,s.origin)).toBeNull();});
+});

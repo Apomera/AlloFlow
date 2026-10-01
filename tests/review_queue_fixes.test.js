@@ -84,10 +84,11 @@ describe('anti-drift: critic #3 — veraPDF verdict cannot survive a re-tag', ()
     expect(view).toMatch(/if \(String\(\(pdfFixResultRef\.current[\s\S]{0,180}!== String\(html \|\| ''\)\) \{/);
     expect(view).toMatch(/_viewAttachTaggedArtifactProof\(_restoredValidation, _restoredArtifact\)/);
   });
-  it('the report only claims green ISO-verified when there IS a current tagged PDF (hasChecks) AND the self-check agrees (no "Mostly")', () => {
+  it('the report only shows the green veraPDF headline when there IS a current tagged PDF (hasChecks) AND the self-check agrees', () => {
     // hardened 2026-06-23 (Canvas test): also require hasChecks, so a stale compliant veraPDF result can't
     // upgrade "Awaiting Tagged PDF" (0 self-check rules) to a green "Conformant (veraPDF verified)" claim.
-    expect(pipe).toMatch(/_vera\.compliant === true && hasChecks && conformanceLabel\.indexOf\('Non-Conformant'\) === -1 && conformanceLabel\.indexOf\('Mostly'\) === -1/);
+    // 2026-09-28 (G1): the guard now keys on the headline tier; 'pass' is the old "not Non-/Mostly" state.
+    expect(pipe).toMatch(/_vera\.compliant === true && hasChecks && _headlineTier === 'pass'/);
   });
 });
 

@@ -78,7 +78,7 @@ describe('choosing a picture for a word support', () => {
     stubMulberryAndCanvas('data:image/png;base64,QUJDRA==');
     const view = mountEditor([at('heron')]);
     await click(byText('Review word supports'));
-    await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help: heron"], button[aria-label^="Edit gloss for heron"]'));
     await pickHeronSymbol();
     expect(await until(() => byText('Remove picture'))).toBeTruthy();
     expect(document.activeElement.textContent).toBe('Choose a different picture');
@@ -97,7 +97,7 @@ describe('choosing a picture for a word support', () => {
     stubMulberryAndCanvas('data:image/png;base64,' + 'B'.repeat(8000));
     mountEditor([at('marsh', { origin: 'educator', image: pic(30000, 'marsh') }), at('mill', { origin: 'educator', image: pic(30000, 'mill') }), at('heron')]);
     await click(byText('Review word supports'));
-    await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help: heron"], button[aria-label^="Edit gloss for heron"]'));
     await pickHeronSymbol();
     expect(await until(() => host.querySelector('[role=alert]'))).toBeTruthy();
     expect(host.querySelector('[role=alert]').textContent).toMatch(/no room for another picture/);
@@ -107,7 +107,7 @@ describe('choosing a picture for a word support', () => {
   it('removes a picture when the teacher asks', async () => {
     const view = mountEditor([at('marsh', { origin: 'educator', image: pic(400, 'A marsh.') })]);
     await click(byText('Review word supports'));
-    await click(host.querySelector('button[aria-label^="Edit gloss for marsh"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help: marsh"], button[aria-label^="Edit gloss for marsh"]'));
     await click(byText('Remove picture'));
     // The removed button's place: focus moves to the picture button, not the page.
     expect(document.activeElement.textContent).toBe('Choose a picture');
@@ -120,10 +120,10 @@ describe('choosing a picture for a word support', () => {
     stubMulberryAndCanvas('data:image/png;base64,QUJDRA==');
     mountEditor([at('heron'), at('mill')]);
     await click(byText('Review word supports'));
-    await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help: heron"], button[aria-label^="Edit gloss for heron"]'));
     await pickHeronSymbol();
     expect(await until(() => byText('Remove picture'))).toBeTruthy();
-    await click(host.querySelector('button[aria-label^="Edit gloss for mill"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help: mill"], button[aria-label^="Edit gloss for mill"]'));
     expect(host.querySelector('[role=alertdialog]').textContent).toMatch(/Discard unsaved word support changes/);
   });
 });

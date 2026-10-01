@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "Steam and boiling follow modeled water temperature, including residual heat after the burner is turned off.",
+    "Vapor animates only while running; pause freezes motion and evidence. Reduced motion keeps the same static visual and written cues.",
+    "dry: a real circular spoon gesture folds in the visible liquid; mixing leaves moisture unchanged.",
+    "watery: a real circular spoon gesture folds in the visible liquid; mixing leaves moisture unchanged.",
+    "Compact text view and graphics-loss fallback retain the written observations and stop the visual animation."
+  ],
+  "errors": [],
+  "screenshots": [
+    "clear-cold-water.png",
+    "boiling-water-and-vapor.png",
+    "cloudy-pasta-water.png",
+    "dry-before-folding.png",
+    "dry-after-folding.png",
+    "watery-before-folding.png",
+    "watery-after-folding.png",
+    "compact-surface-notes.png"
+  ],
+  "accessibility": [
+    {
+      "name": "Sauce surface observations",
+      "violations": []
+    },
+    {
+      "name": "320px text view with surface observations",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

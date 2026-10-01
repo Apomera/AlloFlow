@@ -1,0 +1,34 @@
+{
+  "at": "2026-09-26T22:23:10.226Z",
+  "label": "track10",
+  "patch": "d24cc7cd9e5154a3a1fab9a00a4e6033a5d53eb93cbfb961dbed01352b73f30a",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "aefe0971e9f9fee57b851ffa4a071a5793d4f9bd460d8c34f0a7bf0bc3fc39c4",
+      "after": "687866a6202a20700ba8dd40bcf59a7b8a5edc0552ffed4091f8c764a01ba9f1",
+      "changed": true
+    },
+    {
+      "target": "tests/adapted_word_help_ui.test.js",
+      "targets": [
+        "tests/adapted_word_help_ui.test.js"
+      ],
+      "before": "e5c89e3d797051c061e75125684bc911b1b8fcfead296b7392f9658be3967ecb",
+      "after": "1ce91a4177b24553f2b7cc5e385284cb729e7a29db6462be8d8ec009d1b1f6e2",
+      "changed": true
+    },
+    {
+      "target": "tests/prepared_word_help_regressions.test.js",
+      "targets": [
+        "tests/prepared_word_help_regressions.test.js"
+      ],
+      "before": "bb89738d35c7bd97fa0d292b61a1a6fb706c350268d198ede2e0ff069ac6bdeb",
+      "after": "13b6fad986e3b1957a2761d386c615a6a55e85b17cf6eb1d3a0619c7dd78ea08",
+      "changed": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "scans": [
+    {
+      "theme": "light",
+      "violations": []
+    },
+    {
+      "theme": "dark",
+      "violations": []
+    },
+    {
+      "theme": "contrast",
+      "violations": []
+    }
+  ]
+}

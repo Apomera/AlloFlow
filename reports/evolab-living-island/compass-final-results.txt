@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:61156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:61156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:2364:5 › discovery compass without WebGL keeps extinct expeditions explorable and respects the comparison generation limit
+[1A[2K  2 passed (1.1m)

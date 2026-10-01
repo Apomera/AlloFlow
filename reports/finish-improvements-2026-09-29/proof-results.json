@@ -1,0 +1,50 @@
+{
+  "before": {
+    "dev-tools/fixture_subprocess.cjs": "2b423a62bd7bc99501dc53aac81da703a3bb1335b11c8f705a53872f66b46699",
+    "dev-tools/build_document_at_fixture_suite.cjs": "49fa3f4c9541d244fc67dfb7c6598e19dfac20bbd1b10bff121710883c876f87",
+    "doc_pipeline_source.jsx": "935887451e43cd5bc0f26ca9f3e12e87d515a67293a83816dc0756a3a4afb0ac",
+    "doc_pipeline_module.js": "4293b1a884f5bf239aa8b193d2082400e7aab83bfeabf74fe4bba085f15493ef",
+    "desktop/web-app/public/doc_pipeline_module.js": "4293b1a884f5bf239aa8b193d2082400e7aab83bfeabf74fe4bba085f15493ef",
+    "app_styles_source.jsx": "36d1c71c7cf623db068987ac6f3f63018260120d4dc504c31daa3296d43cb1cb",
+    "app_styles_module.js": "a7471e359a3bc4a38ad33746494c19c332c67ff6d91cc5cf4285150cf40175c3",
+    "desktop/web-app/public/app_styles_module.js": "a7471e359a3bc4a38ad33746494c19c332c67ff6d91cc5cf4285150cf40175c3",
+    "tests/fixture_subprocess.test.js": "943dbafe894738f433546120118e84d3b0462a1101693f61cd438648b324b501",
+    "tests/export_quiz_html_worksheet_parity.test.js": "665dff6f6257670ab413050340796874b4ac4c213321ea9a68037522aa21aa45",
+    "tests/docsuite_theme_contrast.test.js": "b35b069b2f46885bcdd244aa043e9fb9de6be4476ed820bae2d41364defb3c81"
+  },
+  "after": {
+    "dev-tools/fixture_subprocess.cjs": "2b423a62bd7bc99501dc53aac81da703a3bb1335b11c8f705a53872f66b46699",
+    "dev-tools/build_document_at_fixture_suite.cjs": "49fa3f4c9541d244fc67dfb7c6598e19dfac20bbd1b10bff121710883c876f87",
+    "doc_pipeline_source.jsx": "935887451e43cd5bc0f26ca9f3e12e87d515a67293a83816dc0756a3a4afb0ac",
+    "doc_pipeline_module.js": "4293b1a884f5bf239aa8b193d2082400e7aab83bfeabf74fe4bba085f15493ef",
+    "desktop/web-app/public/doc_pipeline_module.js": "4293b1a884f5bf239aa8b193d2082400e7aab83bfeabf74fe4bba085f15493ef",
+    "app_styles_source.jsx": "36d1c71c7cf623db068987ac6f3f63018260120d4dc504c31daa3296d43cb1cb",
+    "app_styles_module.js": "a7471e359a3bc4a38ad33746494c19c332c67ff6d91cc5cf4285150cf40175c3",
+    "desktop/web-app/public/app_styles_module.js": "a7471e359a3bc4a38ad33746494c19c332c67ff6d91cc5cf4285150cf40175c3",
+    "tests/fixture_subprocess.test.js": "943dbafe894738f433546120118e84d3b0462a1101693f61cd438648b324b501",
+    "tests/export_quiz_html_worksheet_parity.test.js": "665dff6f6257670ab413050340796874b4ac4c213321ea9a68037522aa21aa45",
+    "tests/docsuite_theme_contrast.test.js": "b35b069b2f46885bcdd244aa043e9fb9de6be4476ed820bae2d41364defb3c81"
+  },
+  "results": [
+    {
+      "id": "all-r2",
+      "mutations": [
+        "budget",
+        "stderr",
+        "cleanup",
+        "teacher",
+        "theme"
+      ],
+      "exit": 1,
+      "signal": null,
+      "failedTests": [
+        "generated CSS is live and scoped AppStyles carries the CURRENT generator output (no drift), exactly ONCE",
+        "quiz parity across HTML and printable worksheet exports places the full Memory Aid reference only in the optional teacher appendix",
+        "fixture subprocess reliability reports the actual exit, elapsed time, bound, stdout and stderr on failure",
+        "fixture subprocess reliability a timeout stops the owned parent and descendant before returning",
+        "fixture subprocess reliability outer time budgets cover capability discovery, rendering and both fixtures"
+      ],
+      "proved": true
+    }
+  ]
+}

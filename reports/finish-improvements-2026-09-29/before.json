@@ -1,0 +1,21 @@
+{
+  "at": "2026-09-29T20:18:01.993Z",
+  "hashes": {
+    "dev-tools/build_document_at_fixture_suite.cjs": "e5a4b7c2a5b79649050aba107fe72f72f3705e698c2fc6f60d41360fed7f021c",
+    "doc_pipeline_source.jsx": "6c54c05ea95aafc4a9ced73e651993b554ffd3e598de2405cc8772ef90449b9c",
+    "doc_pipeline_module.js": "8e8ac4736fb4a6ea20e0b1e9ebb8c116f369de16fab45c3c353fcaa4c84d3445",
+    "desktop/web-app/public/doc_pipeline_module.js": "8e8ac4736fb4a6ea20e0b1e9ebb8c116f369de16fab45c3c353fcaa4c84d3445",
+    "app_styles_source.jsx": "014d15ca2b10fd51eaad67b96e0fca413f8bd9aa3f051d41cbb76c4a9531d257",
+    "app_styles_module.js": "e22ea40fca57130a4862003734c9cd0e86bf8c079a578f75907a25871968bbff",
+    "desktop/web-app/public/app_styles_module.js": "e22ea40fca57130a4862003734c9cd0e86bf8c079a578f75907a25871968bbff",
+    "tests/export_quiz_html_worksheet_parity.test.js": "ef2fe374b2d9fe64b8e01c8f3b88a6fae5486979cf82f9257384f3eb867b27a7",
+    "tests/e2e/document_export_at_acceptance.spec.ts": "95920c6a529ebff699119a929e22f04171de75b89ef1bd59d346e353ea02023f",
+    "dev-tools/remediation_validation.json": "0e895f07abb30c7d5d7174372f07a711705058a067e33ecd14227af8e81f8637"
+  },
+  "parity": {
+    "pipelineBuiltFromSource": true,
+    "pipelinePublicMatches": true,
+    "stylesBuiltFromSource": true,
+    "stylesPublicMatches": true
+  }
+}

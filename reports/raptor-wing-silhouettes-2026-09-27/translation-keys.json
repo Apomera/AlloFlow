@@ -1,0 +1,13 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    {
+      "key": "stem.raptorhunt.study_falcon_wing_shape",
+      "fallback": "Trace the pointed wing tip. Notice how the shorter feathers overlap the long flight feathers. Keep this view, then compare it with the broader, rounded wing of an owl."
+    },
+    {
+      "key": "stem.raptorhunt.study_owl_wing_shape",
+      "fallback": "Follow the rounded outer edge. Notice how the shorter feathers overlap the long flight feathers. Keep this view, then compare it with a falcon’s pointed wing."
+    }
+  ]
+}

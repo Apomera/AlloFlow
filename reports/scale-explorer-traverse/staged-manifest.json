@@ -1,0 +1,102 @@
+{
+  "head": "e91d7c7d6969803dcbd5eff6bedd5ac572bb6ff4",
+  "blobs": [
+    {
+      "file": "stem_lab/stem_tool_scaleexplorer.js",
+      "hash": "85ad5d85a9a01b9d8f868fc3f205879f53bb2221"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+      "hash": "85ad5d85a9a01b9d8f868fc3f205879f53bb2221"
+    },
+    {
+      "file": "dev-tools/scale_explorer_preview.cjs",
+      "hash": "78d5c104f5436b0af0bf1a260516f356f8d4f447"
+    },
+    {
+      "file": "dev-tools/build_scale_everest_terrain.cjs",
+      "hash": "5fdb5ff0ed3552dfefbfa832de48bb8d8538de77"
+    },
+    {
+      "file": "stem_lab/assets/terrain/everest-elevation.json",
+      "hash": "e2905bbd0335cfedb994cb46e520fb41bcb1a53b"
+    },
+    {
+      "file": "stem_lab/assets/terrain/everest-attribution.json",
+      "hash": "27e81db9ebd862cab1057f535b3d22ba8892b538"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/assets/terrain/everest-elevation.json",
+      "hash": "e2905bbd0335cfedb994cb46e520fb41bcb1a53b"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/assets/terrain/everest-attribution.json",
+      "hash": "27e81db9ebd862cab1057f535b3d22ba8892b538"
+    },
+    {
+      "file": "tests/scale_explorer_terrain.test.js",
+      "hash": "cb537d72beb285f06505c2b611f2e51c0c27cd2f"
+    },
+    {
+      "file": "tests/e2e/scale-explorer-everest.spec.ts",
+      "hash": "ab31b2e6cbaa356bf779dc3fd27c379f8a1f63ea"
+    },
+    {
+      "file": "ui_strings.js",
+      "hash": "0b086448af76ba60878b8209dabf55a47756ee2f"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "hash": "3774b95cac2943b1a82742c0716390f60d0bdcde"
+    }
+  ],
+  "sourceSHA256": "9be3bd6837c2e551c61686f6c18590e3974b07040a5d28879a0ee815756b4858",
+  "englishKeys": [
+    "atlas_detail_everest_summit",
+    "atlas_detail_everest_summit_body",
+    "atlas_detail_everest_east",
+    "atlas_detail_everest_east_body",
+    "atlas_detail_everest_valley",
+    "atlas_detail_everest_valley_body",
+    "atlas_detail_everest_overview",
+    "atlas_detail_everest_overview_body",
+    "atlas_detail_everest_datum",
+    "atlas_detail_everest_datum_body",
+    "atlas_terrain_explore",
+    "atlas_terrain_explore_body",
+    "atlas_detail_earth_himalaya",
+    "atlas_detail_earth_himalaya_body",
+    "atlas_terrain_export",
+    "atlas_terrain_navigate",
+    "atlas_terrain_map",
+    "atlas_terrain_map_scale",
+    "atlas_terrain_at_point",
+    "atlas_terrain_altitude",
+    "atlas_terrain_datum",
+    "atlas_terrain_help",
+    "atlas_terrain_summit",
+    "atlas_terrain_steps",
+    "atlas_terrain_north",
+    "atlas_terrain_west",
+    "atlas_terrain_east",
+    "atlas_terrain_south",
+    "atlas_terrain_position",
+    "atlas_alpine_height",
+    "atlas_alpine_badge",
+    "atlas_alpine_badge_failed",
+    "atlas_alpine_loading",
+    "atlas_alpine_datum_label",
+    "atlas_alpine_stage_note",
+    "atlas_alpine_controls",
+    "atlas_alpine_light_hint",
+    "atlas_alpine_direction",
+    "atlas_alpine_direction_value",
+    "atlas_alpine_west",
+    "atlas_alpine_east",
+    "atlas_alpine_data",
+    "atlas_alpine_source",
+    "atlas_alpine_failed",
+    "atlas_alpine_retry",
+    "atlas_everest_note"
+  ]
+}

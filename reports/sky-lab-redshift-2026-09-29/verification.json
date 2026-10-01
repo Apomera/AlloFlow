@@ -1,0 +1,115 @@
+{
+  "status": "passed",
+  "completedAt": "2026-09-29T22:40:28.505Z",
+  "section": "Sky Lab: Galaxies — Cosmic redshift lab",
+  "changes": [
+    "Interactive emitted and observed wavelength comparisons on one fixed logarithmic axis",
+    "Four vacuum spectral-line references with nm and micrometer readouts",
+    "Published GN-z11 and JADES-GS-z14-0 redshift presets",
+    "Active example highlights and responsive measurement cards",
+    "Keyboard range controls with focus preservation and bounded restoration",
+    "Navigation between stellar Doppler and cosmic redshift explanations",
+    "Low-redshift limit stated for the simple distance formula"
+  ],
+  "data": {
+    "wavelengths": [
+      {
+        "source": "https://sdss.org/dr20/tutorials/conversions/",
+        "lines": [
+          "H-beta",
+          "[O III]",
+          "H-alpha"
+        ]
+      },
+      {
+        "source": "https://classic.sdss.org/dr2/algorithms/speclinefits.php",
+        "lines": [
+          "Lyman-alpha"
+        ]
+      }
+    ],
+    "galaxies": [
+      {
+        "name": "GN-z11",
+        "z": 10.603,
+        "year": 2023,
+        "source": "https://arxiv.org/abs/2302.07256"
+      },
+      {
+        "name": "JADES-GS-z14-0",
+        "z": 14.1793,
+        "uncertainty": 0.0007,
+        "year": 2025,
+        "source": "https://arxiv.org/abs/2409.20549"
+      }
+    ],
+    "explanation": "https://science.nasa.gov/asset/webb/what-is-cosmological-redshift/",
+    "relation": "Observed wavelength = emitted wavelength × (1 + z)",
+    "scope": "Reference-line positions illustrate the measured redshifts. Actual galaxy line strengths and additional spectral features are not reconstructed."
+  },
+  "unit": {
+    "passed": 149,
+    "failed": 0,
+    "files": [
+      {
+        "file": "astronomy_cosmic_redshift.test.js",
+        "passed": 25
+      },
+      {
+        "file": "astronomy_functional_regressions.test.js",
+        "passed": 20
+      },
+      {
+        "file": "astronomy_planet_comparison.test.js",
+        "passed": 24
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "passed": 80
+      }
+    ],
+    "report": "unit-tests.json"
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "viewportWidths": [
+      1280,
+      320
+    ],
+    "themes": [
+      "dark",
+      "contrast"
+    ],
+    "checks": [
+      "Wavelength ratio and marker agreement",
+      "Measured redshift precision and linked sources",
+      "Keyboard steps, clamped endpoints and preserved focus",
+      "Saved comparison through section navigation",
+      "320px phone controls and whole-page overflow",
+      "No runtime errors or unhandled promise rejections"
+    ],
+    "report": "browser-tests.json"
+  },
+  "parity": {
+    "sourceAndPublicMatch": true,
+    "sha256": "0eb0b6fc2bb650531fc998abb7fb105bfa48a8cd7c515946a09e33f97339a6cc",
+    "newEnglishLabels": 37,
+    "labelsMatchBothRegistries": true
+  },
+  "checks": {
+    "moduleSyntax": true,
+    "scopedDiffWhitespace": true
+  },
+  "visualReview": {
+    "status": "reviewed",
+    "images": [
+      "redshift-desktop.png",
+      "jades-desktop.png",
+      "redshift-phone-contrast.png"
+    ]
+  }
+}

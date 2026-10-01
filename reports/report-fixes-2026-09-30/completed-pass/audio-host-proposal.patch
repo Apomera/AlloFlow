@@ -1,0 +1,177 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt	Review-only current host: do not apply until host ownership is resolved
++++ AlloFlowANTI.txt	Proposed selected narrator voice test: pending, cancel, stale result guards
+@@ -17102,8 +17102,9 @@
+   const analysisEditorRef = useRef(null);
+   const adventureInputRef = useRef(null);
+   const alloBotRef = useRef(null);
+   const voiceTestAudioRef = useRef(null);
++  const voiceTestRunRef = useRef(null);
+   const spotlightOpenTimeRef = useRef(0);
+   const lastTurnSnapshot = useRef(null);
+   const [isEditingLeveledText, setIsEditingLeveledText] = useState(false);
+   const [isEditingFaq, setIsEditingFaq] = useState(false);
+@@ -37404,85 +37405,131 @@
+     setShowSocraticChat(false);
+     setShowVoiceSettings(true);
+   }, []);
+   const handleTestVoice = useCallback(async () => {
+-    const sample = t('header.voice_test_sample') || "This is your AlloBot voice test. If you can hear this, spoken responses are working.";
++    const voiceTestLabel = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
++    const prior = voiceTestRunRef.current;
++    if (prior) {
++      prior.controller.abort();
++      try { prior.audio?.pause(); } catch (_) {}
++      try { if (prior.utterance) window.speechSynthesis?.cancel(); } catch (_) {}
++      voiceTestRunRef.current = null;
++      voiceTestAudioRef.current = null;
++      addToast(voiceTestLabel('header.voice_test_cancelled', 'Voice test cancelled.'), 'info');
++      return false;
++    }
++    const sample = t('header.voice_test_sample') || 'This is your selected voice test.';
+     if (isGlobalMuted()) {
+-      addToast(t('header.voice_test_global_muted') || "Voice test blocked by global mute. Unmute the app and try again.", "warning");
++      addToast(t('header.voice_test_global_muted') || 'Voice test blocked by global mute. Unmute the app and try again.', 'warning');
+       return false;
+     }
+     if (!(Number(voiceVolume) > 0)) {
+-      addToast(t('header.voice_test_volume_zero') || "Voice volume is set to zero. Raise it before testing the voice.", "warning");
++      addToast(t('header.voice_test_volume_zero') || 'Voice volume is set to zero. Raise it before testing the voice.', 'warning');
+       return false;
+     }
+-    if (!botVoiceEnabled) {
+-      addToast(t('header.voice_test_bot_muted') || "AlloBot voice is muted. Enable it from AlloBot's speaker button before testing.", "warning");
+-      return false;
+-    }
+-    if (alloBotRef.current && typeof alloBotRef.current.speak === 'function') {
+-      addToast(t('header.voice_test_preparing_bot') || "Preparing the AlloBot voice test...", "info");
+-      await Promise.resolve(alloBotRef.current.speak(sample));
+-      return true;
+-    }
++    const run = { controller: new AbortController(), audio: null, utterance: null };
++    voiceTestRunRef.current = run;
++    const isCurrent = () => voiceTestRunRef.current === run && !run.controller.signal.aborted;
++    const finish = () => {
++      if (voiceTestRunRef.current !== run) return;
++      voiceTestRunRef.current = null;
++      if (voiceTestAudioRef.current === run.audio) voiceTestAudioRef.current = null;
++    };
+     const playBrowserTest = () => {
++      if (!isCurrent()) return false;
++      if (run.utterance) return true;
+       try {
+         if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== 'function') return false;
+         const utterance = new SpeechSynthesisUtterance(sample);
++        run.utterance = utterance;
+         let started = false;
+         utterance.rate = voiceSpeed;
+         utterance.volume = voiceVolume;
+         utterance.lang = document?.documentElement?.lang || navigator?.language || 'en-US';
+         utterance.onstart = () => {
++          if (!isCurrent()) return;
+           started = true;
+-          addToast(t('header.voice_test_playing_device') || "Voice test is playing through the device voice.", "success");
++          addToast(t('header.voice_test_playing_device') || 'Voice test is playing through the device voice.', 'success');
+         };
+-        utterance.onerror = () => addToast(t('header.voice_test_playback_failed') || "The voice test could not play. Check the device audio output and browser autoplay permission.", "error");
++        utterance.onend = finish;
++        utterance.onerror = () => {
++          if (!isCurrent()) return;
++          addToast(t('header.voice_test_playback_failed') || 'The voice test could not play. Check the device audio output and browser autoplay permission.', 'error');
++          finish();
++        };
+         window.speechSynthesis.speak(utterance);
+         setTimeout(() => {
+-          if (!started) addToast(t('header.voice_test_no_start') || "The device accepted the voice test but playback did not start. Check the selected audio output.", "warning");
++          if (!started && isCurrent()) {
++            addToast(t('header.voice_test_no_start') || 'The device accepted the voice test but playback did not start. Check the selected audio output.', 'warning');
++            try { window.speechSynthesis.cancel(); } catch (_) {}
++            finish();
++          }
+         }, 8000);
+         return true;
+       } catch (_) { return false; }
+     };
+-    addToast(t('header.voice_test_preparing_selected') || "Preparing the selected voice test...", "info");
++    let resolvedProfile = null;
++    addToast(voiceTestLabel('header.voice_test_preparing_cancel', 'Preparing the selected voice. Choose Test voice again to cancel.'), 'info');
+     try {
+-      const url = await callTTSDirect(sample, selectedVoice, voiceSpeed, { maxRetries: 0, priority: 'interactive', reason: 'voice-test' });
++      // Match narration: synthesize at natural rate, then apply the playback speed.
++      const url = await callTTS(sample, selectedVoice, 1, { maxRetries: 0, priority: 'interactive', reason: 'voice-test',
++        signal: run.controller.signal, onResolvedProfile: profile => { resolvedProfile = profile; } });
++      if (!isCurrent()) return false;
+       if (!url) {
+-        if (!playBrowserTest()) addToast(t('header.voice_test_unavailable') || "No speech engine is available for the voice test.", "error");
+-        return false;
++        if (playBrowserTest()) return true;
++        addToast(t('header.voice_test_unavailable') || 'No speech engine is available for the voice test.', 'error');
++        finish(); return false;
+       }
+-      if (voiceTestAudioRef.current) { try { voiceTestAudioRef.current.pause(); } catch (_) {} }
+       const audio = new Audio(url);
++      run.audio = audio;
+       voiceTestAudioRef.current = audio;
+       audio.volume = voiceVolume;
+       audio.playbackRate = voiceSpeed;
+       let started = false;
+       audio.onplaying = () => {
++        if (!isCurrent()) { try { audio.pause(); } catch (_) {} return; }
+         started = true;
+-        addToast(t('header.voice_test_playing_selected') || "Voice test is playing through the selected voice.", "success");
++        const fallback = resolvedProfile?.fallbackFrom ||
++          (resolvedProfile?.provider === 'gemini' && /^(af_|am_|bf_|bm_)/i.test(selectedVoice));
++        addToast(fallback ? 'Voice test is playing through a fallback voice: ' + (resolvedProfile?.resolvedVoice || resolvedProfile?.voice || 'device voice') + '.'
++          : (t('header.voice_test_playing_selected') || 'Voice test is playing through the selected voice.'), 'success');
+       };
+-      audio.onended = () => { if (voiceTestAudioRef.current === audio) voiceTestAudioRef.current = null; };
++      audio.onended = finish;
+       audio.onerror = () => {
+-        if (voiceTestAudioRef.current === audio) voiceTestAudioRef.current = null;
+-        if (!playBrowserTest()) addToast(t('header.voice_test_selected_failed') || "The selected voice could not play. Check the device audio output.", "error");
++        if (!isCurrent()) return;
++        if (!playBrowserTest()) {
++          addToast(t('header.voice_test_selected_failed') || 'The selected voice could not play. Check the device audio output.', 'error');
++          finish();
++        }
+       };
+       await audio.play();
++      if (!isCurrent()) { try { audio.pause(); } catch (_) {} return false; }
+       setTimeout(() => {
+-        if (started || voiceTestAudioRef.current !== audio) return;
++        if (started || !isCurrent() || run.utterance) return;
+         try { audio.pause(); } catch (_) {}
+-        voiceTestAudioRef.current = null;
+-        if (!playBrowserTest()) addToast(t('header.voice_test_selected_no_start') || "The selected voice did not start. Check the device audio output.", "warning");
++        if (!playBrowserTest()) {
++          addToast(t('header.voice_test_selected_no_start') || 'The selected voice did not start. Check the device audio output.', 'warning');
++          finish();
++        }
+       }, 8000);
+       return true;
+-    } catch (_) {
+-      if (!playBrowserTest()) addToast(t('header.voice_test_selected_failed') || "The voice test could not play. Check the device audio output.", "error");
+-      return false;
++    } catch (error) {
++      if (!isCurrent() || error?.name === 'AbortError') { finish(); return false; }
++      if (playBrowserTest()) return true;
++      addToast(t('header.voice_test_selected_failed') || 'The voice test could not play. Check the device audio output.', 'error');
++      finish(); return false;
+     }
+-  }, [addToast, botVoiceEnabled, selectedVoice, voiceSpeed, voiceVolume]);
++  }, [addToast, selectedVoice, voiceSpeed, voiceVolume]);
+   useEffect(() => {
+     window.__alloTestVoice = handleTestVoice;
+     return () => {
+       if (window.__alloTestVoice === handleTestVoice) delete window.__alloTestVoice;
++      const run = voiceTestRunRef.current;
++      if (run) {
++        run.controller.abort();
++        try { if (run.utterance) window.speechSynthesis?.cancel(); } catch (_) {}
++        voiceTestRunRef.current = null;
++      }
+       if (voiceTestAudioRef.current) {
+         try { voiceTestAudioRef.current.pause(); } catch (_) {}
+         voiceTestAudioRef.current = null;
+       }

@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:27132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:27132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:2381:5 › chance microscope reveals actual trial draws and lets students test the survival threshold without changing history
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:2402:5 › chance microscope on a phone supports keyboard practice draws and keeps its controls inside the screen
+[1A[2K  2 passed (1.7m)

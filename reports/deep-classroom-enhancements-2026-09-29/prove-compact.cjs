@@ -1,0 +1,15 @@
+const fs = require('fs'), path = require('path'), crypto = require('crypto'), { spawnSync } = require('child_process');
+const root = path.resolve(__dirname, '../..'), hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+const files = ['view_header_source.jsx', 'view_header_module.js', 'desktop/web-app/public/view_header_module.js'];
+const snapshot = () => Object.fromEntries(files.map(file => [file, hash(fs.readFileSync(path.join(root, file)))]));
+const before = snapshot();
+const command = ['C:/tmp/alloflow_dispatch/wave2/deep-classroom-2026-09-29/verify.cjs'];
+const run = spawnSync(process.execPath, command, { cwd: root, timeout: 180000, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, windowsHide: true, env: { ...process.env, COMPACT_PHONE_ONLY: '1', ALLO_APP_RESULT: 'compact-header-mutation.json', ALLO_HEADER_CANDIDATE: path.join(__dirname, 'before/view_header_module.js') } });
+fs.writeFileSync(path.join(__dirname, 'compact-header-mutation.log'), (run.stdout || '') + '\n' + (run.stderr || ''));
+const resultPath = path.join(__dirname, 'compact-header-mutation.json'), report = fs.existsSync(resultPath) ? JSON.parse(fs.readFileSync(resultPath, 'utf8')) : null;
+const after = snapshot(), unchanged = files.every(file => before[file] === after[file]);
+const result = report?.results?.[0];
+const proved = unchanged && run.status === 1 && !run.error && !run.signal && report.results.length === 1 && result.errors.length === 0 && /AssertionError/.test(result.failure || '') && /Dashboard should be available in the compact phone header/.test(result.failure || '');
+fs.writeFileSync(path.join(__dirname, 'compact-header-proof.json'), JSON.stringify({ at: new Date().toISOString(), proved, unchanged, before, after, exit: run.status, error: run.error?.message, signal: run.signal, command: [process.execPath, ...command], failure: result?.failure }, null, 2));
+console.log('Compact header regression: ' + (proved ? 'intended assertion rejected old hidden control' : 'NOT PROVED'));
+if (!proved) process.exitCode = 1;

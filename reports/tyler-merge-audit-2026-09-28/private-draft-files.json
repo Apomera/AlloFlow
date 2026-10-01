@@ -1,0 +1,30 @@
+{
+  "candidate": "C:\\tmp\\tyler_integration_candidate",
+  "recordedAt": "2026-09-29T04:19:08.794Z",
+  "files": [
+    {
+      "path": "teacher_source.jsx",
+      "sha256": "acf5faed421f3d2dee118d7bd277570e7d9b67f3ff7bb3c7ddb9f9fe5cef8075"
+    },
+    {
+      "path": "teacher_module.js",
+      "sha256": "b9a8adf0f9d708fb74a1a5fb33474d2ca1b931b0af7620d9dcb4ea90654f00fb"
+    },
+    {
+      "path": "desktop/web-app/public/teacher_module.js",
+      "sha256": "b9a8adf0f9d708fb74a1a5fb33474d2ca1b931b0af7620d9dcb4ea90654f00fb"
+    },
+    {
+      "path": "tests/teacher_private_labels_and_classroom_handoff.test.js",
+      "sha256": "2b4d59fbe0bf2758b468cb470a8e3e5e90f1fdeeacb62dc0ddf65c172668a705"
+    },
+    {
+      "path": "ui_strings.js",
+      "sha256": "14165201e1e66356a29b18ad029cf4c338f508f66e1618821a4526b94294acac"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "sha256": "14165201e1e66356a29b18ad029cf4c338f508f66e1618821a4526b94294acac"
+    }
+  ]
+}

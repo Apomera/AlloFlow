@@ -1,0 +1,24 @@
+{
+  "reviewed": "2026-09-30",
+  "plateTectonics": {
+    "source": "https://earthquake.usgs.gov/education/how_much_bigger.php",
+    "oneMagnitudeEnergyRatio": 31.622776601683793,
+    "twoMagnitudeEnergyRatio": 1000,
+    "oneMagnitudeSeismogramAmplitudeRatio": 10,
+    "review": "The five new claim strings match the approximate USGS teaching relationships. The 10-times energy option is an intentionally incorrect quiz distractor, with feedback distinguishing amplitude from energy. The tool separately explains local vs moment magnitude and cautions that shaking at a site has no fixed multiplier."
+  },
+  "beeFlight": {
+    "referenceSeconds": 1800,
+    "baseCountdownSeconds": {
+      "easy": 150,
+      "normal": 110,
+      "hard": 75
+    },
+    "compressionFactors": {
+      "easy": 12.0,
+      "normal": 16.363636363636363,
+      "hard": 24.0
+    },
+    "correction": "Replaced a single approximate acceleration factor with the full reference-time range and separated countdown compression from the movement game scale. A new localization key prevents stale translations of the earlier statement from overriding the correction."
+  }
+}

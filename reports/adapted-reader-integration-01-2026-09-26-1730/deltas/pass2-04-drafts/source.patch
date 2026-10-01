@@ -1,0 +1,303 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index 8932a9a60..cf57e54a5 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1526,12 +1526,15 @@
+     const signature = value => value ? JSON.stringify({ query: value.query, start: value.start, text: value.text, priority: value.priority, pinned: value.pinned, image: readingSupportImageSignature(value.image) }) : '';
+     const [pickingPicture, setPickingPicture] = React.useState(false);
+     const [preparingPicture, setPreparingPicture] = React.useState(false);
+-    const pictureEpoch = React.useRef(0), mountedRef = React.useRef(true), ownerRef = React.useRef(ownerKey), pendingRef = React.useRef(null), focusRef = React.useRef(null), sectionRef = React.useRef(null);
++    const pictureEpoch = React.useRef(0), mutationEpoch = React.useRef(0), mountedRef = React.useRef(true), ownerRef = React.useRef(ownerKey), pendingRef = React.useRef(null), focusRef = React.useRef(null), focusRequested = React.useRef(false), sectionRef = React.useRef(null);
++    const pictureCallbackEpoch = pictureEpoch.current;
+     pendingRef.current = pendingAction;
+     // Removing, choosing or cancelling a picture removes the focused button; land on the picture button instead.
+     const pictureButtonRef = React.useRef(null), refocusPicture = React.useRef(false);
+-    React.useEffect(() => { if (refocusPicture.current && pictureButtonRef.current) { refocusPicture.current = false; pictureButtonRef.current.focus(); } });
++    React.useEffect(() => { if (refocusPicture.current && pictureButtonRef.current) focusRequested.current = true; });
+     const dirty = !!draft && signature(draft) !== baseline;
++    const unresolvedRef = React.useRef(false);
++    unresolvedRef.current = dirty || busy || pickingPicture || preparingPicture;
+     const validGrowth = sourceText.startsWith(draftSource) && !(/[\p{L}\p{N}]$/u.test(draftSource) && /^[\p{L}\p{N}]/u.test(sourceText.slice(draftSource.length)));
+     const staleDraft = !!draft && draftSource !== sourceText && !validGrowth;
+     const cancelPicture = () => { pictureEpoch.current++; setPreparingPicture(false); };
+@@ -1552,19 +1555,19 @@
+     });
+     React.useLayoutEffect(() => {
+       if (!draftSession) return;
+-      return draftSession.register({ hasChanges: () => dirty || busy || preparingPicture,
++      return draftSession.register({ hasChanges: () => unresolvedRef.current,
+         defer: action => { if (pendingRef.current) { action.cancel?.(); return; } reveal(); pendingRef.current = action; setPendingAction(action); } });
+-    }, [draftSession, dirty, busy, preparingPicture, ownerKey]);
+-    React.useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; pictureEpoch.current++; pendingRef.current?.cancel?.(); }; }, []);
++    }, [draftSession, ownerKey]);
++    React.useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; pictureEpoch.current++; mutationEpoch.current++; pendingRef.current?.cancel?.(); }; }, []);
+     React.useEffect(() => {
+-      const protect = event => { if (dirty || busy || preparingPicture) { event.preventDefault(); event.returnValue = ''; } };
++      const protect = event => { if (unresolvedRef.current) { event.preventDefault(); event.returnValue = ''; } };
+       window.addEventListener('beforeunload', protect);
+       return () => window.removeEventListener('beforeunload', protect);
+-    }, [dirty, busy, preparingPicture]);
++    }, []);
+     const sameAnchor = (left, right) => !!left && !!right && left.start === right.start && left.end === right.end && left.quote === right.quote;
+     const contextFor = entry => readingGlossContext(sourceText, entry.start, entry.end).text;
+     const anchorFor = entry => ({ start: entry.start, end: entry.end, quote: entry.quote });
+-    const replaceDraft = value => { cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
++    const replaceDraft = value => { unresolvedRef.current = false; mutationEpoch.current++; cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
+     const clearDraft = () => replaceDraft(null);
+     const applyEdit = entry => {
+       const value = { id: entry.id, anchor: anchorFor(entry), query: entry.quote, start: String(entry.start),
+@@ -1575,17 +1578,20 @@
+     const mutate = async (action, success) => {
+       if (disabled || busy || typeof onUpdate !== 'function') return null;
+       const key = sourceKeyRef.current;
++      const epoch = ++mutationEpoch.current;
++      const current = () => mountedRef.current && sourceKeyRef.current === key && mutationEpoch.current === epoch;
++      focusRequested.current = true;
+       setBusy(true); setNotice(''); setError('');
+       try {
+         const result = await onUpdate(item, action);
+-        if (!mountedRef.current || sourceKeyRef.current !== key) return null;
++        if (!current()) return null;
+         if (!result) throw new Error(simplifiedText('simplified.gloss_the_reading_changed_reopen_its_word', 'The reading changed. Reopen its word supports and try again.'));
+         setNotice(success);
+         return result;
+       } catch (failure) {
+-        if (mountedRef.current && sourceKeyRef.current === key) setError(failure?.message || 'This word support could not be saved.');
++        if (current()) setError(failure?.message || 'This word support could not be saved.');
+         return null;
+-      } finally { if (mountedRef.current && sourceKeyRef.current === key) setBusy(false); }
++      } finally { if (current()) setBusy(false); }
+     };
+     const performAction = async action => {
+       pendingRef.current = null;
+@@ -1610,13 +1616,13 @@
+       }
+     };
+     const requestAction = action => {
+-      if (disabled || busy || preparingPicture) return;
++      if (disabled || busy) return;
+       if (action.type === 'edit' && sameAnchor(draft?.anchor, action.entry)) { setOpen(true); definitionRef.current?.focus(); return; }
+       const replacesDraft = action.type !== 'remove' || sameAnchor(draft?.anchor, action.entry);
+-      if (dirty && replacesDraft) { reveal(); pendingRef.current = action; setPendingAction(action); return; }
++      if ((dirty || pickingPicture || preparingPicture) && replacesDraft) { reveal(); pendingRef.current = action; setPendingAction(action); return; }
+       performAction(action);
+     };
+-    React.useEffect(() => { cancelPicture(); dismissPending(); setBusy(false); setPickingPicture(false); setFilterQuery(''); setFilterKind('all'); }, [sourceKey]);
++    React.useLayoutEffect(() => { mutationEpoch.current++; cancelPicture(); dismissPending(); setBusy(false); setPickingPicture(false); setFilterQuery(''); setFilterKind('all'); }, [sourceKey]);
+     const isOpen = !!embedded || open;
+     const canFilter = entries.length >= GLOSS_FILTER_MIN;
+     const needle = canFilter ? filterQuery.trim().toLocaleLowerCase() : '';
+@@ -1631,9 +1637,16 @@
+       if (entry) requestAction({ type: 'edit', entry });
+     }, [request]);
+     React.useEffect(() => {
+-      if (pendingAction) keepRef.current?.focus();
+-      else if (draft) (focusRef.current?.isConnected && !focusRef.current.disabled ? focusRef.current : draft.anchor ? definitionRef.current : termRef.current)?.focus();
++      if (pendingAction) { focusRequested.current = false; keepRef.current?.focus(); }
++      else if (draft) focusRequested.current = true;
+     }, [!!draft, draft?.anchor?.start, pendingAction]);
++    React.useEffect(() => {
++      if (!focusRequested.current || pendingAction || busy || disabled || !draft) return;
++      const previous = focusRef.current;
++      const target = refocusPicture.current ? pictureButtonRef.current : previous?.isConnected && !previous.matches(':disabled') ? previous
++        : pickingPicture ? sectionRef.current?.querySelector('[data-classroom-image-picker] input:not(:disabled)') : draft.anchor ? definitionRef.current : termRef.current;
++      if (target) { target.focus(); focusRequested.current = false; refocusPicture.current = false; }
++    });
+     const matches = React.useMemo(() => {
+       const anchor = draft?.anchor;
+       if (anchor) return sourceText.slice(anchor.start, anchor.end) === anchor.quote
+@@ -1643,7 +1656,7 @@
+     const selected = draft && (draft.start !== '' ? matches.find(value => String(value.start) === draft.start) : matches.length === 1 ? matches[0] : null);
+     const updateDraft = fields => { setDraft(previous => ({ ...previous, ...fields })); setNotice(''); setError(''); };
+     const save = async () => {
+-      if (disabled || busy || preparingPicture) return false;
++      if (disabled || busy || pickingPicture || preparingPicture) return false;
+       setNotice(''); setError('');
+       if (staleDraft || supportsStale) { setError('The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.'); return false; }
+       if (!selected || !draft?.text.trim()) { setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.')); return false; }
+@@ -1692,8 +1705,8 @@
+         <p className="text-sm leading-relaxed text-slate-600">{adapted ? simplifiedText('simplified.gloss_add_or_adjust_explanations_for_words', 'Add or adjust explanations for words in the adapted text.') : simplifiedText('simplified.gloss_add_or_adjust_explanations_beside_the', 'Add or adjust explanations beside the original words.')}{' '}{simplifiedText('simplified.gloss_teacher_edits_and_removed_supports_are', 'Teacher edits and removed supports are kept when AI suggestions are refreshed.')}</p>
+         <button ref={addRef} type="button" disabled={disabled || busy || !!pendingAction} onClick={() => requestAction({ type: 'add' })} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.gloss_add_a_word_or_phrase', 'Add a word or phrase')}</button>
+         {pendingAction && <div role="alertdialog" aria-labelledby={panelId + '-discard-title'} aria-describedby={panelId + '-discard-description'} className="space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-3" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); dismissPending(); } }}>
+-          <p id={panelId + '-discard-title'} className="font-bold">{simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')}</p><p id={panelId + '-discard-description'}>{simplifiedText('simplified.gloss_your_explanation_has_not_been_saved', 'Your explanation has not been saved. Keep editing to preserve this draft, or discard it to continue.')}</p>
+-          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : 'Save and continue'}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
++          <p id={panelId + '-discard-title'} className="font-bold">{simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')}</p><p id={panelId + '-discard-description'}>{pickingPicture || preparingPicture ? simplifiedText('simplified.gloss_picture_selection_pending', 'Your picture selection is still open. Keep editing to finish choosing or cancel the picture search, or discard it to continue.') : simplifiedText('simplified.gloss_unsaved_choices', 'Save these changes before continuing, keep editing, or discard them.')}</p>
++          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : 'Save and continue'}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
+         </div>}
+         {draft && <fieldset disabled={disabled || busy || !!pendingAction} data-gloss-draft aria-label={draft.anchor ? simplifiedText('simplified.gloss_edit_word_support', 'Edit word support') : simplifiedText('simplified.gloss_add_word_support', 'Add word support')} className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+           {(staleDraft || supportsStale) && <p role="status">The passage changed. Your draft is retained. Review the word supports, then <button type="button" disabled={supportsStale} onClick={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} className="underline">choose the occurrence in the current text</button> before saving.</p>}
+@@ -1707,14 +1720,15 @@
+           {draft.text.length > 2400 && <p className="text-amber-900">{simplifiedText('simplified.gloss_this_saved_explanation_is_longer_than', 'This saved explanation is longer than the current limit. Shorten it to 2,400 characters or fewer to save an edit.')}</p>}
+           <label className="block font-semibold">{simplifiedText('simplified.gloss_importance', 'Importance')}<select value={draft.priority} onChange={event => updateDraft({ priority: event.target.value })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"><option value="essential">{simplifiedText('simplified.gloss_essential_to_understanding_this_passage', 'Essential to understanding this passage')}</option><option value="helpful">{simplifiedText('simplified.gloss_helpful_extra_explanation', 'Helpful extra explanation')}</option></select></label>
+           {!adapted && <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={draft.pinned} onChange={event => updateDraft({ pinned: event.target.checked })} />{simplifiedText('simplified.gloss_always_show_in_lighter_view', 'Always show in lighter view')}</label>}
+-          <div data-gloss-picture className="space-y-2 rounded-lg border border-indigo-100 bg-white p-2">
++          <div data-gloss-picture aria-busy={preparingPicture} className="space-y-2 rounded-lg border border-indigo-100 bg-white p-2">
+             <p className="font-semibold">{simplifiedText('simplified.gloss_picture_optional', 'Picture (optional)')}<span className="block text-xs font-normal text-slate-600">{adapted ? simplifiedText('simplified.gloss_a_symbol_or_photo_shown_beside', 'A symbol or photo shown beside the word in the word-help list.') : simplifiedText('simplified.gloss_a_symbol_or_photo_shown_beside_2', 'A symbol or photo shown beside the word, in the reader and in student packs.')}{' '}{simplifiedText('simplified.gloss_live_sessions_carry_no_pictures_so', 'Live sessions carry no pictures, so students there see the explanation on its own.')}</span></p>
+             {draft.image && <div className="flex flex-wrap items-center gap-2"><img src={draft.image.src} alt={draft.image.alt || ''} className="h-16 w-16 rounded border border-slate-200 bg-white object-contain" /><span className="min-w-0 flex-1 break-words text-xs text-slate-700">{draft.image.alt}{draft.image.attribution && window.AlloModules?.AltText ? ' · ' + window.AlloModules.AltText.openImageCreditLine(draft.image.attribution) : ''}</span><button type="button" onClick={() => { refocusPicture.current = true; updateDraft({ image: null }); }} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('simplified.gloss_remove_picture', 'Remove picture')}</button></div>}
+-            {!pickingPicture && <button ref={pictureButtonRef} type="button" onClick={() => setPickingPicture(true)} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900">{draft.image ? simplifiedText('simplified.gloss_choose_a_different_picture', 'Choose a different picture') : simplifiedText('simplified.gloss_choose_a_picture', 'Choose a picture')}</button>}
+-            {pickingPicture && (window.AlloModules?.ClassroomImagePicker && window.AlloModules?.AltText
+-              ? <>{React.createElement(window.AlloModules.ClassroomImagePicker, {
++            {!pickingPicture && <button ref={pictureButtonRef} type="button" onClick={() => { pictureEpoch.current++; setPickingPicture(true); }} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900">{draft.image ? simplifiedText('simplified.gloss_choose_a_different_picture', 'Choose a different picture') : simplifiedText('simplified.gloss_choose_a_picture', 'Choose a picture')}</button>}
++            {pickingPicture && <>{window.AlloModules?.ClassroomImagePicker && window.AlloModules?.AltText
++              ? React.createElement(window.AlloModules.ClassroomImagePicker, {
+                   idPrefix: panelId + '-picture', initialQuery: draft.query, language: snapshot?.language, sources: ['symbols', 'photos'],
+                   onChoose: async choice => {
++                    if (!mountedRef.current || !pickingPicture || pictureCallbackEpoch !== pictureEpoch.current || ownerKey !== ownerRef.current || sourceKey !== sourceKeyRef.current) return;
+                     const epoch = ++pictureEpoch.current, owner = ownerKey, key = sourceKey;
+                     setPreparingPicture(true);
+                     const A = window.AlloModules.AltText, contract = getInstructionalContextApi();
+@@ -1733,10 +1747,13 @@
+                     } catch (_) { if (mountedRef.current && epoch === pictureEpoch.current) setError(simplifiedText('simplified.gloss_that_picture_could_not_be_added', 'That picture could not be added. Try another one.')); }
+                     finally { if (mountedRef.current && epoch === pictureEpoch.current) setPreparingPicture(false); }
+                   },
+-                })}<button type="button" onClick={() => { cancelPicture(); refocusPicture.current = true; setPickingPicture(false); }} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('common.cancel', 'Cancel')}</button></>
+-              : <p role="status" className="text-slate-700">{simplifiedText('simplified.gloss_picture_search_is_still_loading_try', 'Picture search is still loading. Try again in a moment.')}</p>)}
++                })
++              : <p role="status" className="text-slate-700">{simplifiedText('simplified.gloss_picture_search_is_still_loading_try', 'Picture search is still loading. Try again in a moment.')}</p>}
++              {preparingPicture && <p role="status">{simplifiedText('simplified.gloss_preparing_picture', 'Preparing picture…')}</p>}
++              <button type="button" onClick={() => { cancelPicture(); refocusPicture.current = true; setPickingPicture(false); }} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('common.cancel', 'Cancel')}</button>
++            </>}
+           </div>
+-          <div className="flex flex-wrap gap-2"><button type="button" disabled={disabled || busy || preparingPicture || staleDraft || supportsStale || !selected || !draft.text.trim()} onClick={save} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50">{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_word_support', 'Save word support')}</button><button type="button" disabled={busy} onClick={() => requestAction({ type: 'finish' })} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('simplified.gloss_done_editing', 'Done editing')}</button></div>
++          <div className="flex flex-wrap gap-2"><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale || !selected || !draft.text.trim()} onClick={save} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50">{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_word_support', 'Save word support')}</button><button type="button" disabled={busy} onClick={() => requestAction({ type: 'finish' })} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('simplified.gloss_done_editing', 'Done editing')}</button></div>
+         </fieldset>}
+         {error && <p role="alert" className="rounded bg-red-50 p-2 text-red-900">{error}</p>}
+         {/* Mounted empty so screen readers announce the text when it arrives. */}
+diff --git a/tests/reading_support_draft_transitions.test.js b/tests/reading_support_draft_transitions.test.js
+index d658a0d5e..c7757536f 100644
+--- a/tests/reading_support_draft_transitions.test.js
++++ b/tests/reading_support_draft_transitions.test.js
+@@ -17,7 +17,7 @@ beforeAll(() => {
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers;
+ });
+ afterEach(() => { if (root) act(() => root.unmount()); root = null; host?.remove(); host = null; vi.restoreAllMocks(); });
+-function fixture({ image, original = false } = {}) {
++function fixture({ image, original = false, asyncNavigation = false } = {}) {
+   const source = contract.createSupportedReading('The heron walked through the shallow water.', { id: 'original', sourceFamilyId: 'birds' });
+   const adapted = { id: 'adapted', _artifactInstanceId: 'adapted-instance', type: 'simplified', data: PASSAGE, sourceSnapshot: source.sourceSnapshot, sourceFamilyId: 'birds', instructionalText: { form: 'adapted', role: 'supplemental' }, config: { language: 'English', grade: '3' } };
+   const entry = { id: 'heron', start: 4, end: 9, quote: 'heron', text: 'A wading bird.', origin: 'educator', image };
+@@ -27,7 +27,10 @@ function fixture({ image, original = false } = {}) {
+   const state = { item: original ? source : adapted, history: [source, adapted], teacher: true, compare: false, editing: false, view: 'simplified', mode: 'read' };
+   const request = work => sessionRef.current.request(work);
+   const commit = work => { work(); render(); };
+-  const navigate = vi.fn((item, compare = false) => request(() => commit(() => { state.item = item; state.compare = compare; state.editing = false; state.view = 'simplified'; })));
++  const navigate = vi.fn((item, compare = false) => request(() => {
++    const open = () => commit(() => { state.item = item; state.compare = compare; state.editing = false; state.view = 'simplified'; });
++    return asyncNavigation ? Promise.resolve().then(() => request(open)) : open();
++  }));
+   const persist = vi.fn(async (owner, action) => {
+     const live = state.history.find(item => item.id === owner.id);
+     return contract.isAdaptedReading(live) ? contract.upsertAdaptedReadingSupport(live, live.adaptedReadingSupports, action.annotation) : contract.upsertReadingSupport(live, live.readingSupports, action.annotation);
+@@ -89,6 +92,15 @@ const transitions = {
+   'student role': async h => h.role(false)
+ };
+ describe('deferred reader transitions', () => {
++  it.each(['Discard changes', 'Save and continue'])('does not re-prompt when an approved asynchronous opener continues after %s', async decision => {
++    const h = fixture({ asyncNavigation: true }); await dirtyExplanation(); await transitions.Both(h); await click(byText(decision));
++    expect(h.state.compare).toBe(true); expect(prompt()).toBeNull(); expect(h.session.hasChanges()).toBe(false);
++  });
++  it.each(['Discard changes', 'Save and continue'])('releases native unload protection synchronously after %s', async decision => {
++    const h = fixture(); await dirtyExplanation(); let unload;
++    h.navigate.mockImplementation(() => { unload = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(unload); });
++    await transitions.Both(h); await click(byText(decision)); expect(unload?.defaultPrevented).toBe(false);
++  });
+   for (const [name, transition] of Object.entries(transitions)) {
+     for (const kind of ['explanation', 'picture']) {
+       it(`retains a dirty ${kind} before ${name}, restores focus, and discards only explicitly`, async () => {
+@@ -127,6 +139,32 @@ describe('deferred reader transitions', () => {
+     await act(async () => outcome === 'reject' ? pending.reject(new Error('Storage unavailable.')) : pending.resolve(outcome === 'null' ? null : contract.upsertAdaptedReadingSupport(h.adapted, h.adapted.adaptedReadingSupports, h.onUpdate.mock.calls[0][1].annotation)));
+     expect(h.state.compare).toBe(false); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
+   });
++  it('restores editing focus when a save settles after Keep editing', async () => {
++    const h = fixture(); await dirtyExplanation(); const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise);
++    const input = draft().querySelector('textarea');
++    await transitions.Both(h); await click(byText('Save and continue')); await click(byText('Keep editing'));
++    await act(async () => pending.reject(new Error('Storage unavailable.')));
++    expect(h.state.compare).toBe(false); expect(document.activeElement).toBe(input);
++  });
++  it('does not apply a stale save after the source changes away and back', async () => {
++    const h = fixture(); await dirtyExplanation(); const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise);
++    await click(byText('Save word support'));
++    const captured = h.onUpdate.mock.calls[0][1].annotation;
++    h.force({ item: { ...h.adapted, data: 'A heron stood in a pond.' } }); h.force({ item: h.adapted });
++    type(draft().querySelector('textarea'), 'Newer wording after returning.');
++    await act(async () => pending.resolve(contract.upsertAdaptedReadingSupport(h.adapted, h.adapted.adaptedReadingSupports, captured)));
++    expect(draft().querySelector('textarea').value).toBe('Newer wording after returning.'); expect(h.session.hasChanges()).toBe(true);
++  });
++  it('does not let an older failure release or overwrite a newer save', async () => {
++    const h = fixture(); await dirtyExplanation(); const old = deferred(), latest = deferred();
++    h.persist.mockReturnValueOnce(old.promise).mockReturnValueOnce(latest.promise); await click(byText('Save word support'));
++    h.force({ item: { ...h.adapted, data: 'A heron stood in a pond.' } }); h.force({ item: h.adapted });
++    type(draft().querySelector('textarea'), 'Newest wording.'); await click(byText('Save word support'));
++    await act(async () => old.reject(new Error('Obsolete failure.')));
++    expect(draft().disabled).toBe(true); expect(host.textContent).not.toContain('Obsolete failure.');
++    await act(async () => latest.resolve(contract.upsertAdaptedReadingSupport(h.adapted, h.adapted.adaptedReadingSupports, h.onUpdate.mock.calls[1][1].annotation)));
++    expect(draft().disabled).toBe(false); expect(draft().querySelector('textarea').value).toBe('Newest wording.'); expect(h.session.hasChanges()).toBe(false);
++  });
+   it('keeps a picture draft dirty when the explanation saves without its picture', async () => {
+     const h = fixture(); await dirtyExplanation(); await pictureChoice();
+     h.persist.mockImplementationOnce(async (owner, action) => contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, { ...action.annotation, image: null }));
+@@ -232,6 +270,55 @@ describe('deferred reader transitions', () => {
+   });
+ });
+ describe('picture preparation cancellation', () => {
++  it('protects a real picker download through Keep editing and saves its eventual result before leaving', async () => {
++    const h = fixture(); await edit(); const download = deferred(), Picker = window.AlloModules.ClassroomImagePicker;
++    const fetchImpl = vi.fn(url => String(url).startsWith('https://globalsymbols.com/api/v1/labels/search')
++      ? Promise.resolve({ ok: true, json: async () => [{ id: 1, text: 'heron', picto: { id: 11, image_url: 'https://globalsymbols.com/uploads/heron.svg' } }] }) : download.promise);
++    vi.spyOn(window.AlloModules, 'ClassroomImagePicker').mockImplementation(props => React.createElement(Picker, { ...props, fetchImpl }));
++    const resize = vi.spyOn(window.AlloModules.AltText, 'shrinkImageDataUrl').mockResolvedValue(IMAGE.src);
++    await click(byText('Choose a picture'));
++    await act(async () => host.querySelector('[data-classroom-image-picker] form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
++    const useSymbol = host.querySelector('button[aria-label="Use symbol: heron"]'); act(() => useSymbol.focus()); await click(useSymbol);
++    expect(resize).not.toHaveBeenCalled(); await transitions.Both(h); expect(prompt()).toBeTruthy();
++    await click(byText('Keep editing')); expect(document.activeElement === host.querySelector('[data-classroom-image-picker] input')).toBe(true);
++    await transitions.Both(h);
++    await act(async () => { download.resolve({ ok: true, blob: async () => new Blob(['<svg xmlns="http://www.w3.org/2000/svg"/>'], { type: 'image/svg+xml' }) }); await vi.waitFor(() => expect(resize).toHaveBeenCalled()); });
++    expect(byText('Save and continue').disabled).toBe(false); expect(document.activeElement === byText('Keep editing')).toBe(true);
++    await click(byText('Save and continue')); expect(h.state.compare).toBe(true);
++    expect(h.state.history.find(item => item.id === 'adapted').adaptedReadingSupports.annotations[0].image.src).toBe(IMAGE.src);
++  });
++  it('retains an open picker and its query before the picture callback starts', async () => {
++    const h = fixture(); await edit();
++    vi.spyOn(window.AlloModules, 'ClassroomImagePicker').mockImplementation(() => React.createElement('div', { 'data-classroom-image-picker': true }, React.createElement('input', { 'aria-label': 'Picture query', defaultValue: 'heron' })));
++    await click(byText('Choose a picture'));
++    const query = host.querySelector('[aria-label="Picture query"]'); type(query, 'water bird');
++    await transitions.Both(h); expect(prompt()).toBeTruthy(); expect(h.state.compare).toBe(false);
++    expect(byText('Save and continue').disabled).toBe(true); expect(prompt().textContent).toContain('finish choosing or cancel'); await click(byText('Keep editing'));
++    expect(host.querySelector('[aria-label="Picture query"]')).toBe(query); expect(query.value).toBe('water bird'); expect(document.activeElement).toBe(query);
++    await click(byText('Cancel')); expect(h.session.hasChanges()).toBe(false); await transitions.Both(h); expect(h.state.compare).toBe(true);
++  });
++  it('protects picker work on refresh and local close before a picture has been chosen', async () => {
++    const h = fixture(); await edit(); await click(byText('Choose a picture'));
++    const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); expect(event.defaultPrevented).toBe(true);
++    await click(byText('Done editing')); expect(prompt()).toBeTruthy();
++    await click(byText('Discard changes')); expect(draft()).toBeNull(); expect(h.session.hasChanges()).toBe(false);
++  });
++  it('can cancel picture selection while its module is unavailable', async () => {
++    const h = fixture(); await edit(); const picker = window.AlloModules.ClassroomImagePicker;
++    try {
++      window.AlloModules.ClassroomImagePicker = undefined;
++      await click(byText('Choose a picture')); expect(host.textContent).toContain('Picture search is still loading');
++      await click(byText('Cancel')); expect(h.session.hasChanges()).toBe(false);
++      expect(document.activeElement === byText('Choose a picture')).toBe(true);
++    } finally { window.AlloModules.ClassroomImagePicker = picker; }
++  });
++  it('rejects a callback from a cancelled picker even if its download ignores cancellation', async () => {
++    const h = fixture(); await edit(); const download = deferred();
++    vi.spyOn(window.AlloModules, 'ClassroomImagePicker').mockImplementation(({ onChoose }) => React.createElement('button', { onClick: async () => { await download.promise; await onChoose({ ...IMAGE, dataUrl: IMAGE.src }); } }, 'Download fixture picture'));
++    const resize = vi.spyOn(window.AlloModules.AltText, 'shrinkImageDataUrl').mockResolvedValue(IMAGE.src);
++    await click(byText('Choose a picture')); await click(byText('Download fixture picture')); await click(byText('Cancel'));
++    await act(async () => download.resolve()); expect(resize).not.toHaveBeenCalled(); expect(draft().querySelector('img')).toBeNull(); expect(h.session.hasChanges()).toBe(false);
++  });
+   it('ignores an unfinished picture after forced unmount without leaving a false dirty record', async () => {
+     const h = fixture(); await edit(); const resized = deferred(); await pictureChoice(IMAGE, () => resized.promise);
+     h.force({ view: 'other' }); await act(async () => resized.resolve(IMAGE.src));
+@@ -240,6 +327,7 @@ describe('picture preparation cancellation', () => {
+   });
+   it.each(['cancel picker', 'discard transition'])('ignores resize completion after %s', async action => {
+     const h = fixture(); await edit(); const resized = deferred(); await pictureChoice(IMAGE, () => resized.promise);
++    expect(host.querySelector('[data-gloss-picture]').getAttribute('aria-busy')).toBe('true'); expect(host.textContent).toContain('Preparing picture');
+     if (action === 'cancel picker') await click(byText('Cancel'));
+     else { await transitions.Both(h); expect(byText('Save and continue').disabled).toBe(true); await click(byText('Discard changes')); }
+     await act(async () => resized.resolve(IMAGE.src));

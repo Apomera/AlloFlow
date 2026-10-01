@@ -81,6 +81,8 @@ describe('subtraction walkthrough', () => {
     }
   });
 
+  // This sweep and the two below make tens of thousands of expect() calls; on a loaded CI runner
+  // that passed Vitest's 5 s default, so each carries its own budget.
   it('holds no more disks than real regrouping requires', () => {
     // A place legitimately reaches 9 + 10 = 19 while being worked on. More than
     // that means a cascade stacked exchanges into one place.
@@ -91,7 +93,7 @@ describe('subtraction walkthrough', () => {
         }
       }
     }
-  });
+  }, 60000);
 
   it('agrees with plain subtraction across a wide sweep', () => {
     for (let a = 0; a <= 2000; a += 3) {
@@ -99,7 +101,7 @@ describe('subtraction walkthrough', () => {
         expect(placeValueStages('subtract', a, b).total, `${a}-${b}`).toBe(a - b);
       }
     }
-  });
+  }, 60000);
 
   it('still carries correctly for addition', () => {
     for (let a = 0; a <= 900; a += 7) {
@@ -111,7 +113,7 @@ describe('subtraction walkthrough', () => {
         expect(last.slice(0, -1).every((n) => n < 10), `${a}+${b}`).toBe(true);
       }
     }
-  });
+  }, 60000);
 
   it('leaves a zero-subtrahend walkthrough with nothing to exchange', () => {
     const { stages, total } = placeValueStages('subtract', 405, 0);

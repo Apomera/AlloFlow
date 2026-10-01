@@ -1,0 +1,174 @@
+{
+  "baseline": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
+  "browser": "148.0.7778.96",
+  "results": [
+    {
+      "name": "definition",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 254,
+          "scrollWidth": 254,
+          "height": 310,
+          "scrollHeight": 1119
+        }
+      ]
+    },
+    {
+      "name": "revision",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 286,
+          "scrollWidth": 286,
+          "height": 310,
+          "scrollHeight": 625
+        }
+      ]
+    },
+    {
+      "name": "selection",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 304,
+          "scrollWidth": 304,
+          "height": 157,
+          "scrollHeight": 158
+        }
+      ]
+    },
+    {
+      "name": "comparison",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": []
+    },
+    {
+      "name": "definition-spacing",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 254,
+          "scrollWidth": 254,
+          "height": 310,
+          "scrollHeight": 1146
+        }
+      ]
+    },
+    {
+      "name": "revision-spacing",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 286,
+          "scrollWidth": 286,
+          "height": 310,
+          "scrollHeight": 730
+        }
+      ]
+    },
+    {
+      "name": "selection-spacing",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 304,
+          "scrollWidth": 304,
+          "height": 157,
+          "scrollHeight": 158
+        }
+      ]
+    },
+    {
+      "name": "comparison-spacing",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": []
+    },
+    {
+      "name": "student-preview",
+      "viewport": {
+        "width": 320,
+        "height": 640
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "height": 640,
+          "scrollHeight": 1240
+        }
+      ]
+    },
+    {
+      "name": "nested-escape",
+      "passed": true
+    },
+    {
+      "name": "short-preview",
+      "viewport": {
+        "width": 320,
+        "height": 256
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "height": 256,
+          "scrollHeight": 1240
+        }
+      ]
+    },
+    {
+      "name": "short-preview-200-percent-text",
+      "viewport": {
+        "width": 320,
+        "height": 256
+      },
+      "width": 320,
+      "dialogs": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "height": 256,
+          "scrollHeight": 2666
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "limits": "Automated Chromium fixtures; not real assistive technology, mobile hardware, or browser zoom acceptance."
+}

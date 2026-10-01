@@ -51,7 +51,11 @@ describe('SharedActivity extraction contract', () => {
       'buildAssignmentCenterRows', 'buildAssignmentPackEncoded', 'credentialRoster', 'credentialSlotKey',
       'credentialStoreWith', 'describeAssignmentDelivery', 'filterAssignmentCenterRows', 'nextSummaryOrder',
       'normalizeCredentialStore', 'normalizeRatingActivity',
+      // 14a2d9cfa: the received-reading delivery status the host renders for students.
+      'ReceivedReadingDelivery',
     ].sort());
+    expect(typeof api.ReceivedReadingDelivery).toBe('function');
+    expect(host).toContain('const View = _alloSharedActivityModule()?.ReceivedReadingDelivery;');
   });
 
   it('builds assignment packets through host-injected safety and encoding boundaries', async () => {

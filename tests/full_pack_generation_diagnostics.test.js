@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
-loadAlloModule('instructional_context_module.js');
+loadAlloModule(process.env.ALLO_CONTEXT_CANDIDATE || 'instructional_context_module.js');
 loadAlloModule('generation_matrix_module.js');
 loadAlloModule('generation_helpers_source.jsx');
 const GenerationMatrix = window.AlloModules.GenerationMatrix;
@@ -133,9 +133,13 @@ describe('Full Pack failure diagnostics and resilience', () => {
     expect(latestRun.status).toBe('completed');
   });
 
-  it('includes both text paths when a standard requires preserving complex primary text', async () => {
+  // Changed 2026-09-27 (lane N1, Novak iteration). This used to pin that a
+  // grade-level text standard still planned Adapted Text. Now the default
+  // leaves it out and the teacher's one click adds it back.
+  it('leaves out Adapted Text by default when a standard requires grade-level text, and includes it on one click', async () => {
     let latestRun = null;
     const deps = makeDeps({
+      resourceCount: 'Auto',
       instructionalContext: null,
       history: [{ id: 'analyzed-source', type: 'analysis', data: { originalText: 'A reliable source text for the pack.' } }],
       standardsInput: 'Read and comprehend grade-level complex texts independently and proficiently.',
@@ -151,14 +155,52 @@ describe('Full Pack failure diagnostics and resilience', () => {
 
     await GenerationHelpers.handlePlanFullPack(deps);
 
-    expect(latestRun.preflight.selected.slice(0, 2).map(item => item.type)).toEqual(['analysis', 'simplified']);
+    const types = latestRun.preflight.selected.map(item => item.type);
+    expect(types[0]).toBe('analysis');
+    expect(types).not.toContain('simplified');
     expect(latestRun.planPayload.instructionalContext).toMatchObject({
       primaryTextPolicy: 'preserve-primary',
       primaryTextAccess: 'required',
-      adaptedTextPolicy: 'include',
+      adaptedTextPolicy: 'omit',
+      adaptedTextPolicySource: 'standard',
     });
-    expect(latestRun.planPayload.instructionalContext.standardsContext.instructionalConstraints)
+
+    // The Full Pack card's "Include an adapted companion for background and preview" calls this setter.
+    const included = GenerationHelpers.setFullPackPlanAdaptedTextPolicy(latestRun, 'include', null);
+    expect(included.preflight.selected.map(item => item.type).slice(0, 2)).toEqual(['analysis', 'simplified']);
+    expect(included.planPayload.instructionalContext).toMatchObject({
+      primaryTextAccess: 'required',
+      adaptedTextPolicy: 'include',
+      adaptedTextPolicySource: 'educator',
+    });
+    expect(included.planPayload.instructionalContext.standardsContext.instructionalConstraints)
       .toMatchObject({ textAccessExpectation: 'preserve-primary' });
+  });
+
+  it('includes both text paths when no standard requires grade-level text', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      instructionalContext: null,
+      history: [{ id: 'analyzed-source', type: 'analysis', data: { originalText: 'A reliable source text for the pack.' } }],
+      standardsInput: 'Determine two or more main ideas of a text and explain how they are supported by key details.',
+      standardsContext: {
+        inputText: 'CCSS.ELA-LITERACY.RI.5.2',
+        promptText: 'Determine two or more main ideas of a text and explain how they are supported by key details.',
+        standards: [{ code: 'CCSS.ELA-LITERACY.RI.5.2', text: 'Determine two or more main ideas of a text and explain how they are supported by key details.' }],
+      },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.selected.slice(0, 2).map(item => item.type)).toEqual(['analysis', 'simplified']);
+    expect(latestRun.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary',
+      primaryTextAccess: 'available',
+      adaptedTextPolicy: 'include',
+      adaptedTextPolicySource: 'workflow-default',
+    });
   });
 
   it('suppresses Adapted Text only when a sourced standards constraint prohibits it', async () => {

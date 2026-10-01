@@ -1,0 +1,101 @@
+{
+  "date": "2026-09-30",
+  "scope": "Pulsar lighthouse explorer in Sky Lab",
+  "unitTests": {
+    "total": 132,
+    "passed": 132,
+    "failed": 0
+  },
+  "browserScenarios": [
+    {
+      "title": "four geometry examples link the observer, curves and receiver status",
+      "status": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "title": "published spin choices change time and preserve chosen angles and signal",
+      "status": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "title": "very narrow pulses and south-facing observers remain finite and visible at their peaks",
+      "status": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "title": "phone contrast layout keeps labels readable and supports touch and keyboard exploration",
+      "status": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "title": "playback pauses on controls, finishes once, and releases its clock when leaving the section",
+      "status": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "title": "malformed restored state and repeated edits preserve a coherent simulator",
+      "status": "expected",
+      "results": [
+        "passed"
+      ]
+    }
+  ],
+  "build": {
+    "sourceHash": "880c46c9e5411392fb6994336c0f7be16c0a8d56f82762d1e3566cb9b804a768",
+    "mirrorIdentical": true,
+    "syntaxValid": true,
+    "labelsAdded": 55,
+    "labelParity": {
+      "ui_strings.js": true,
+      "desktop/web-app/public/ui_strings.js": true
+    },
+    "sourceChangesLimitedToPulsarExplorer": true,
+    "whitespaceCheckPassed": true
+  },
+  "scientificValidation": [
+    "Independent rotated-vector signal calculation",
+    "Analytic visibility windows compared with 20,000 angular samples",
+    "Unit vectors, extreme angles, tangency, symmetry and bounded signal",
+    "Spin source changes time without changing geometry"
+  ],
+  "interactionValidation": [
+    "Linked scene, chart and receiver status",
+    "Keyboard and touch exploration",
+    "320px contrast layout: SVG labels at least 11px, targets at least 44px, no horizontal overflow",
+    "Playback stops once and releases its interval on section exit",
+    "Malformed saved state and repeated edits"
+  ],
+  "publishedInputs": [
+    {
+      "object": "PSR B1919+21",
+      "value": "Original 1.33730-second interval quoted by NASA in 2017",
+      "url": "https://www.nasa.gov/missions/station/nasa-continues-to-study-pulsars-50-years-after-their-chance-discovery/"
+    },
+    {
+      "object": "PSR J1748−2446ad",
+      "value": "Rounded 716-Hz spin reported by Hessels et al. (2006)",
+      "url": "https://arxiv.org/abs/astro-ph/0601337"
+    }
+  ],
+  "limits": [
+    "Chosen beam angles and smooth filled-cone brightness profile",
+    "Projected direction diagram; alignment calculated in 3D",
+    "Fixed published spin examples; not a current timing solution or measured pulse profile",
+    "Playback is illustrative and slowed to about 10 seconds per rotation"
+  ],
+  "screenshots": [
+    "two-beam-desktop.png",
+    "pulsar-phone-contrast.png"
+  ],
+  "committed": false
+}

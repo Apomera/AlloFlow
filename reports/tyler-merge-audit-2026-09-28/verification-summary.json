@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-29",
+  "candidate": "C:/tmp/tyler_integration_candidate",
+  "status": "Verified uncommitted integration candidate; final shared-main reconciliation required before merge",
+  "unitRegression": {
+    "distinctSuites": 38,
+    "passed": 613,
+    "existingSkipped": 1,
+    "finalFailures": 0,
+    "countsUse": "Each suite's final completed result; diagnostic failures and duplicate retries excluded",
+    "groups": {
+      "rosterAndOnboarding": 275,
+      "baselineWiring": 46,
+      "guidedAndOwnSources": 24,
+      "additionalRuntimeAndAccessibility": 268
+    }
+  },
+  "browser": {
+    "fullAppDistinctChecksPassed": 7,
+    "generatedTeacherComponentChecksPassed": 7,
+    "storageFailureMutationDetected": true,
+    "scopeNote": "Local candidate and synthetic data. Label checks use a minimal React host; role checks use the full generated app. No production, external-account, full mobile, or RTL release certification."
+  },
+  "artifacts": {
+    "hostJsxFilesParsed": 2,
+    "generatedPublicPairsMatched": 19,
+    "languagePublicPairsMatched": 63,
+    "reconciledPathsWithoutConflictMarkers": 120,
+    "archivedCandidateFiles": 221,
+    "archiveEntriesHashVerified": 222
+  },
+  "mainApplicationFilesOverwritten": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "handoff": "IMPLEMENTATION.md",
+  "movingMainReview": "MAIN_DRIFT.md"
+}

@@ -1,0 +1,17 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    {
+      "key": "stem.raptorhunt.study_face_marks_question",
+      "fallback": "Which markings help identify this bird?"
+    },
+    {
+      "key": "stem.raptorhunt.study_peregrine_face",
+      "fallback": "Find the dark stripe below the eye against the pale cheek. This is the malar, or moustache, stripe. Compare front and side views, then keep the view that shows it most clearly."
+    },
+    {
+      "key": "stem.raptorhunt.study_osprey_face",
+      "fallback": "Follow the dark stripe through the eye toward the back of the white head. Compare front and side views, then keep the view that shows this field mark most clearly."
+    }
+  ]
+}

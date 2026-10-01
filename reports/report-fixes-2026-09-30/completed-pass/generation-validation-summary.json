@@ -1,0 +1,54 @@
+{
+  "completedAt": "2026-09-30T22:27:13.311Z",
+  "exitCode": 0,
+  "sourceOnlyCandidate": true,
+  "pool": "threads",
+  "maxWorkers": 1,
+  "suites": [
+    "tests/report_generation_recovery.test.js",
+    "tests/document_citation_adaptation.test.js",
+    "tests/novak_generation_preservation.test.js",
+    "tests/generate_dispatcher_memory_aid_security.test.js",
+    "tests/applied_challenge_generation.test.js"
+  ],
+  "counts": {
+    "total": 75,
+    "passed": 75,
+    "failed": 0,
+    "success": true,
+    "files": 5
+  },
+  "inputStable": true,
+  "hashesBefore": {
+    "generate_dispatcher_source.jsx": "189b2d246636c394d7dde7086a3e77797525458d2f94be79e0bab5155fd9195b",
+    "generation_helpers_source.jsx": "375ef69704a9e0d2ca9956bad30703089f9180328ad2cfc09da4d5cd0434a6c5",
+    "generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "desktop/web-app/public/generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "desktop/web-app/public/generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "tests/report_generation_recovery.candidate.setup.js": "4830e22ef5480cc5583aa1a2622dc13ba4fd6b058a3f9a3d9761aeff2eccac14",
+    "tests/report_generation_recovery.vitest.config.js": "a6b5bffee1309bd0093f28e39e0b1f215556180836ff1a8fca9fc71f8977c614",
+    "tests/report_generation_recovery.test.js": "01f119ce79863d0069a9e91a2722290e1e83d9f30d19ceacff12266593731f27",
+    "tests/document_citation_adaptation.test.js": "01ee4cf1e0b4fbc639f5f1f2c2aac0382b4ffc1ab915b441ece900d74ae27459",
+    "tests/novak_generation_preservation.test.js": "a24f40fb4980802102916642b6fdeddc276db551db11b7d9f229b66689103e7d",
+    "tests/generate_dispatcher_memory_aid_security.test.js": "fbe6aa35fe883975fde49192967a4937c16c1a4ce0680067f94e880fad4adf18",
+    "tests/applied_challenge_generation.test.js": "26c4e4dcbaa12e80c338845742088bf22168deef5515cb51f892fc52235a147f"
+  },
+  "hashesAfter": {
+    "generate_dispatcher_source.jsx": "189b2d246636c394d7dde7086a3e77797525458d2f94be79e0bab5155fd9195b",
+    "generation_helpers_source.jsx": "375ef69704a9e0d2ca9956bad30703089f9180328ad2cfc09da4d5cd0434a6c5",
+    "generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "desktop/web-app/public/generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "desktop/web-app/public/generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "tests/report_generation_recovery.candidate.setup.js": "4830e22ef5480cc5583aa1a2622dc13ba4fd6b058a3f9a3d9761aeff2eccac14",
+    "tests/report_generation_recovery.vitest.config.js": "a6b5bffee1309bd0093f28e39e0b1f215556180836ff1a8fca9fc71f8977c614",
+    "tests/report_generation_recovery.test.js": "01f119ce79863d0069a9e91a2722290e1e83d9f30d19ceacff12266593731f27",
+    "tests/document_citation_adaptation.test.js": "01ee4cf1e0b4fbc639f5f1f2c2aac0382b4ffc1ab915b441ece900d74ae27459",
+    "tests/novak_generation_preservation.test.js": "a24f40fb4980802102916642b6fdeddc276db551db11b7d9f229b66689103e7d",
+    "tests/generate_dispatcher_memory_aid_security.test.js": "fbe6aa35fe883975fde49192967a4937c16c1a4ce0680067f94e880fad4adf18",
+    "tests/applied_challenge_generation.test.js": "26c4e4dcbaa12e80c338845742088bf22168deef5515cb51f892fc52235a147f"
+  },
+  "hostIntegrationApplied": false,
+  "productionDeployment": false
+}

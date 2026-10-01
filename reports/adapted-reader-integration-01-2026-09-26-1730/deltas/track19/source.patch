@@ -1,0 +1,1135 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1,5 +1,128 @@
+ 
++  // Keep one validated result per reader instance, never a process-wide cache.
++  // The envelope is serialized so an in-place support edit also invalidates it.
++  function useSimplifiedAdaptedSupportView(item, learnerScope) {
++    var api = getInstructionalContextApi();
++    var supports = item?.adaptedReadingSupports, version;
++    try { version = JSON.stringify(supports || null); } catch (_) { version = {}; }
++    var form = getSimplifiedInstructionalText(item).form;
++    var splitReferences = typeof window !== 'undefined' && window.AlloModules?.TextPipelineHelpers?.splitReferencesFromBody;
++    return React.useMemo(function () {
++      if (!api?.isAdaptedReading?.(item) || !api.validateAdaptedReadingSupports) return { help: null, snapshot: null, version };
++      var help = api.validateAdaptedReadingSupports(item, supports);
++      return { help, snapshot: help.status === 'stale' ? null : api.getAdaptedSupportSnapshot?.(item, supports), version };
++    }, [api, api?.validateAdaptedReadingSupports, api?.getAdaptedSupportSnapshot, splitReferences,
++      item?.id, item?.type, item?.data, form, item?.language, item?.config?.language, item?.sourceFamilyId, item?.unitId, item?.config?.unitId, learnerScope, version]);
++  }
++
++
++  // A sweep changes only its active sentence. Inactive sentence fragments keep
++  // their word elements and handlers, without adding layout-changing wrappers.
++  const SimplifiedImmersiveSentence = React.memo(function SimplifiedImmersiveSentence({
++    group, chunkActive, playingActive, isChunkReaderActive, chunkReaderMood,
++    chunkReaderReadAlong, chunkReaderSweepPct, chunkTypewriterCharIdx,
++    immersiveSettings, reduceMotion, ImmersiveWord, onWordClick
++  }) {
++              // Typewriter char-offset bookkeeping for the active sentence (mood='typewriter').
++              // Resets when we encounter the first token of the active sentence; each token in
++              // the active sentence contributes wordData.text.length to the rolling offset.
++              let activeChunkCharOffset = 0;
++              // Read-along uses its own whitespace-free weight clock. The host supplies
++              // chunkReaderSweepPct from the playing clip; convert that sentence-level
++              // percentage into a local fill for each word instead of lighting the whole
++              // sentence at once.
++              let activeSweepCharOffset = 0;
++              let lastWasActiveSentence = false;
++              return group.words.map(({ wordData, index: i }) => {
++                if (wordData.pos === 'newline') {
++                  return <div key={wordData.id || i} className="w-full h-4" />;
++                }
++                const tokenStr = wordData.text.replace(/\s+/g, '').toLowerCase();
++                const assignedIdx = group.sentence;
++                const isChunkHighlight = chunkActive;
++                const isChunkDimmed = isChunkReaderActive && !chunkActive;
++                // Track word's char-offset within the active sentence for typewriter mood
++                let wordStartChar = -1;
++                let wordSweepStart = -1;
++                let wordSweepWeight = 0;
++                let sentenceSweepWeight = 1;
++                if (isChunkHighlight) {
++                  if (!lastWasActiveSentence) {
++                    activeChunkCharOffset = 0;
++                    activeSweepCharOffset = 0;
++                  }
++                  wordStartChar = activeChunkCharOffset;
++                  activeChunkCharOffset += (wordData.text || '').length;
++                  wordSweepStart = activeSweepCharOffset;
++                  wordSweepWeight = Math.max(1, tokenStr.length);
++                  activeSweepCharOffset += wordSweepWeight;
++                  sentenceSweepWeight = group.sweepWeight;
++                  lastWasActiveSentence = true;
++                } else {
++                  lastWasActiveSentence = false;
++                }
++                // Mood-aware styling: highlight (default), typewriter, popin, pulse
++                let moodOpacity = isChunkDimmed ? 0.45 : 1;
++                let moodAnimation = '';
++                let showHighlight = isChunkHighlight;
++                let readAlongWordProgress = null;
++                let readAlongWordState = null;
++                if (isChunkHighlight && chunkReaderReadAlong) {
++                  const sweep = Math.max(0, Math.min(100, Number(chunkReaderSweepPct) || 0));
++                  const wordStartPct = (wordSweepStart / sentenceSweepWeight) * 100;
++                  const wordEndPct = ((wordSweepStart + wordSweepWeight) / sentenceSweepWeight) * 100;
++                  readAlongWordProgress = Math.max(0, Math.min(100,
++                    ((sweep - wordStartPct) / Math.max(0.0001, wordEndPct - wordStartPct)) * 100
++                  ));
++                  readAlongWordState = readAlongWordProgress >= 100 ? 'complete' : readAlongWordProgress > 0 ? 'current' : 'pending';
++                  showHighlight = readAlongWordProgress > 0;
++                  moodOpacity = 1;
++                } else if (isChunkReaderActive && chunkReaderMood === 'typewriter') {
++                  if (isChunkDimmed) moodOpacity = 0.2;
++                  if (isChunkHighlight) {
++                    moodOpacity = wordStartChar < chunkTypewriterCharIdx ? 1 : 0;
++                    if (wordStartChar >= chunkTypewriterCharIdx) showHighlight = false;
++                  }
++                } else if (isChunkReaderActive && chunkReaderMood === 'popin' && isChunkHighlight && !reduceMotion) {
++                  moodAnimation = 'allo-chunk-popin 0.25s ease-out';
++                } else if (isChunkReaderActive && chunkReaderMood === 'pulse' && isChunkHighlight && !reduceMotion) {
++                  moodAnimation = 'allo-chunk-pulse 2s ease-in-out infinite';
++                }
++                return <span key={wordData.id || i} data-sentence-idx={assignedIdx} data-immersive-word-index={i}
++                  data-read-along-state={readAlongWordState || undefined}
++                  data-read-along-progress={readAlongWordProgress == null ? undefined : Math.round(readAlongWordProgress)}
++                  style={{
++                  opacity: moodOpacity,
++                  transition: chunkReaderMood === 'typewriter' ? 'opacity 0.05s linear' : 'all 0.3s ease',
++                  // In chunk-read mode every word is click-to-jump (onClick below);
++                  // pointer cursor surfaces the affordance without needing instructions.
++                  ...(isChunkReaderActive ? {
++                    cursor: 'pointer'
++                  } : {}),
++                  ...(moodAnimation ? {
++                    animation: moodAnimation
++                  } : {}),
++                  ...(readAlongWordProgress != null ? {
++                    backgroundImage: `linear-gradient(to right, rgba(250, 204, 21, 0.58) 0%, rgba(250, 204, 21, 0.58) ${readAlongWordProgress}%, transparent ${readAlongWordProgress}%, transparent 100%)`,
++                    borderRadius: '4px',
++                    boxDecorationBreak: 'clone',
++                    WebkitBoxDecorationBreak: 'clone'
++                  } : showHighlight || playingActive ? {
++                    backgroundColor: 'rgba(250, 204, 21, 0.35)',
++                    borderRadius: '4px',
++                    boxDecorationBreak: 'clone',
++                    WebkitBoxDecorationBreak: 'clone'
++                  } : {})
++                }}><ImmersiveWord wordData={wordData} settings={immersiveSettings} isActive={
++                  playingActive
++                  || isChunkHighlight && (!chunkReaderReadAlong || readAlongWordProgress > 0)
++                } onClick={onWordClick} /></span>;
++              });
++
++  });
++
++
+   function SimplifiedReadingRoleControl(props) {
+     // Collapsed to its one-line summary unless it needs the teacher: no role
+     // chosen yet, or the original was not captured.
+     const [open, setOpen] = React.useState(!!props.isTeacherMode && (!props.role || props.role === 'unspecified' || !!props.missingOriginal));
+@@ -1694,15 +1817,18 @@
+ 
+   // Word help for an ADAPTED text: its own supports (item.adaptedReadingSupports),
+   // hidden from students until the teacher shows them, and listed after the
+   // passage because the adapted reader does not keep character positions.
+-  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession, onOpen }) {
++  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession, onOpen, supportView }) {
++    const ownSupportView = useSimplifiedAdaptedSupportView(supportView ? null : item, null);
++    supportView = supportView || ownSupportView;
+     const contract = getInstructionalContextApi();
+     const [busy, setBusy] = React.useState(false);
+     const [notice, setNotice] = React.useState('');
+     // The panel opens by itself when an edit leaves word help stale, and stays open
+     // after Keep or Start again so their result is seen (and focused).
+-    const staleNow = !!(contract?.isAdaptedReading?.(item) && contract.validateAdaptedReadingSupports && contract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports).status === 'stale');
++    const help = supportView.help, snapshot = supportView.snapshot;
++    const staleNow = help?.status === 'stale';
+     const [panelOpen, setPanelOpen] = React.useState(staleNow);
+     React.useEffect(() => { if (staleNow) setPanelOpen(true); }, [staleNow]);
+     const noticeRef = React.useRef(null), focusNotice = React.useRef(false);
+     React.useEffect(() => { if (focusNotice.current && noticeRef.current) { focusNotice.current = false; noticeRef.current.focus(); } });
+@@ -1721,11 +1847,11 @@
+     };
+     const wordHelpOnScreen = onlyId => {
+       const container = passageOnScreen();
+       if (!container || !contract?.validateAdaptedReadingSupports) return [];
+-      const shownHelp = contract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports);
+-      const passage = contract.getAdaptedSupportSnapshot(item, item.adaptedReadingSupports);
+-      if (!shownHelp.shown || !passage) return [];
++      const shownHelp = help;
++      const passage = snapshot;
++      if (!shownHelp?.shown || !passage) return [];
+       const { text, segments } = readingTextSegments(container, language);
+       const wanted = onlyId ? shownHelp.annotations.filter(entry => entry.id === onlyId) : shownHelp.annotations;
+       return locateWordHelp(passage.text, wanted, text).map(hit => ({ ...hit, range: rangeForOffsets(segments, hit.start, hit.end) })).filter(hit => hit.range);
+     };
+@@ -1740,12 +1866,12 @@
+       // while old text nodes stay on the page, so compare the text itself too.
+       const container = passageOnScreen();
+       const shownText = container ? container.textContent : '';
+       const last = marksRef.current;
+-      if (last && last.data === item.data && last.supports === item.adaptedReadingSupports && last.shownText === shownText && last.where === passageSelector + '|' + language
++      if (last && last.data === item.data && last.supports === item.adaptedReadingSupports && last.version === supportView.version && last.shownText === shownText && last.where === passageSelector + '|' + language
+         && last.ranges.every(range => range.startContainer.isConnected && range.endContainer.isConnected)) return;
+       const ranges = container ? wordHelpOnScreen().map(hit => hit.range) : [];
+-      marksRef.current = { data: item.data, supports: item.adaptedReadingSupports, shownText, where: passageSelector + '|' + language, ranges };
++      marksRef.current = { data: item.data, supports: item.adaptedReadingSupports, version: supportView.version, shownText, where: passageSelector + '|' + language, ranges };
+       // One highlight shared by every reader on the page (a student preview is a
+       // second reader): each adds and removes only its own ranges.
+       shareWordHelpMarks(registry, last ? last.ranges : [], ranges);
+     });
+@@ -1772,13 +1898,12 @@
+         : simplifiedText('simplified.word_help_located_in_text', 'Located "{word}" in the passage. Read its explanation in Word help.', { word: entry.quote }));
+     };
+     if (!contract?.isAdaptedReading?.(item) || !contract.validateAdaptedReadingSupports) return null;
+     const stored = item.adaptedReadingSupports;
+-    const help = contract.validateAdaptedReadingSupports(item, stored);
+     const entries = help.annotations || [];
+     const stale = help.status === 'stale';
+     const retainedDraft = draftSession?.records.get(readingSupportDraftKey(item, true))?.draft;
+-    const snapshot = stale ? retainedDraft && contract.getAdaptedSupportSnapshot(item, null) : contract.getAdaptedSupportSnapshot(item, stored);
++    const editorSnapshot = stale ? retainedDraft && contract.getAdaptedSupportSnapshot(item, null) : snapshot;
+     // After an edit, how many explanations are for words still in the passage.
+     const staleCount = stale && Array.isArray(stored?.annotations) ? stored.annotations.length : 0;
+     let keepable = 0;
+     if (staleCount && contract.rebaseAdaptedReadingSupports) { try { keepable = contract.rebaseAdaptedReadingSupports(item, stored).annotations.length; } catch (_) {} }
+@@ -1811,9 +1936,9 @@
+         {onGenerate && <button type="button" data-adapted-word-help-generate disabled={disabled || busy} onClick={() => run(() => onGenerate(item), result => result?.status === 'unavailable' ? simplifiedText('simplified.word_help_word_help_could_not_be_suggested', 'Word help could not be suggested. The adapted text is unchanged.') : result?.status === 'partial' ? simplifiedText('simplified.word_help_some_words_could_not_be_supported', 'Some words could not be supported. Review the suggestions before showing them.') : simplifiedText('simplified.word_help_suggested_word_help_is_ready_review', 'Suggested word help is ready. Review it, then show it to students.'))} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{busy ? simplifiedText('simplified.word_help_working', 'Working…') : entries.length ? simplifiedText('simplified.word_help_refresh_suggested_word_help', 'Refresh suggested word help') : simplifiedText('simplified.word_help_suggest_word_help', 'Suggest word help')}</button>}
+         {onUpdate && importable > 0 && <button type="button" data-adapted-word-help-import disabled={disabled || busy} onClick={() => run(() => onUpdate(item, { type: 'import', annotations: fromOriginal }), result => (focusNotice.current = true) && simplifiedText('simplified.word_help_added_from_original', 'Added explanations from the original ({count}). Students will not see word help until you check them and show it again.', { count: Math.max(0, (result?.annotations?.length || 0) - entries.length) }))} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.word_help_use_from_original', 'Reuse explanations from the original ({count})', { count: importable })}</button>}
+       </div>
+       <p ref={noticeRef} tabIndex={-1} role="status" data-word-help-notice className={notice ? 'rounded bg-indigo-50 p-2 text-indigo-900' : 'sr-only'}>{notice}</p>
+-      {snapshot && onUpdate && <ReadingGlossEditor key={readingSupportDraftKey(item, true)} item={item} supports={help} snapshot={snapshot} adapted embedded onUpdate={onUpdate} disabled={disabled || busy} draftSession={draftSession} supportsStale={stale} />}
++      {editorSnapshot && onUpdate && <ReadingGlossEditor key={readingSupportDraftKey(item, true)} item={item} supports={help} snapshot={editorSnapshot} adapted embedded onUpdate={onUpdate} disabled={disabled || busy} draftSession={draftSession} supportsStale={stale} />}
+     </details>;
+     if (!list && !panel) return null;
+     return <>{list}{panel}</>;
+   }
+@@ -2186,9 +2311,12 @@
+       // line written directly above one ("Look at this:") was never read or clickable.
+       normalizedBody = normalizedBody.replace(/^([ \t]*[^|\s][^\n]*)\n(?=[ \t]*\|)/gm, '$1\n\n').replace(/^([ \t]*\|[^\n]*)\n(?=[ \t]*[^|\s])/gm, '$1\n\n');
+       return { body: normalizedBody, references: String(split.references || '') };
+     };
+-    var simplifiedContentParts = protectedOriginal ? { body: typeof generatedContent?.data === 'string' ? generatedContent.data : '', references: '' } : buildSimplifiedContentParts(generatedContent && generatedContent.data);
++    var preparedContentParts = React.useMemo(function () {
++      return protectedOriginal ? { body: typeof generatedContent?.data === 'string' ? generatedContent.data : '', references: '' } : buildSimplifiedContentParts(generatedContent?.data);
++    }, [protectedOriginal, generatedContent?.data, splitReferencesFromBody]);
++    var simplifiedContentParts = { ...preparedContentParts };
+     var simplifiedDisplayBody = simplifiedContentParts.body;
+     // Immersive words are used only for the text they were built from; an edit
+     // copies the item, so the overlays kept reading the old words.
+     var immersiveFresh = Array.isArray(generatedContent?.immersiveData) && (generatedContent.immersiveSource == null || generatedContent.immersiveSource === String(generatedContent.data || ''));
+@@ -2777,8 +2905,46 @@
+     }, [isImmersiveReaderActive, simplifiedReadAloudText]);
+     var immersiveSentenceOfWord = React.useMemo(function () {
+       return isImmersiveReaderActive && Array.isArray(generatedContent?.immersiveData) ? alignImmersiveWords(generatedContent.immersiveData, immersiveSentences, cleanSentenceForAudio) : [];
+     }, [isImmersiveReaderActive, generatedContent?.immersiveData, immersiveSentences]);
++    var immersiveWordGroups = React.useMemo(function () {
++      if (!isImmersiveReaderActive || !Array.isArray(generatedContent?.immersiveData)) return [];
++      var groups = [];
++      generatedContent.immersiveData.forEach(function (wordData, index) {
++        var sentence = immersiveSentenceOfWord[index], last = groups[groups.length - 1];
++        // Newlines do not reset the active sentence's character clock.
++        if (!last || (wordData.pos !== 'newline' && last.sentence !== sentence)) {
++          last = { sentence: sentence, sweepWeight: Math.max(1, cleanSentenceForAudio(immersiveSentences[sentence] || '').replace(/\s+/g, '').length), words: [] };
++          groups.push(last);
++        }
++        last.words.push({ wordData: wordData, index: index });
++      });
++      return groups;
++    }, [isImmersiveReaderActive, generatedContent?.id, generatedContent?.data, generatedContent?.immersiveData, immersiveSentenceOfWord, immersiveSentences, props.readingLearnerKey, props.isStudentPreview]);
++    // Give memoized words a fresh settings object even if a host edits settings in place.
++    var immersiveSettingsVersion = JSON.stringify(immersiveSettings);
++    var immersiveWordSettings = React.useMemo(() => ({ ...immersiveSettings }), [immersiveSettings, immersiveSettingsVersion]);
++    var immersiveInteractionRef = React.useRef(null);
++    React.useLayoutEffect(function () {
++      immersiveInteractionRef.current = { words: generatedContent?.immersiveData, sentenceOfWord: immersiveSentenceOfWord,
++        interactionMode, isChunkReaderActive, setChunkReaderIdx, handleWordClick, handlePhonicsClick, handleSpeak };
++    });
++    var handleImmersiveWordClick = React.useCallback(function (event) {
++      event.stopPropagation();
++      var current = immersiveInteractionRef.current;
++      var index = Number(event.currentTarget.closest('[data-immersive-word-index]')?.getAttribute('data-immersive-word-index'));
++      var word = current?.words?.[index];
++      if (!word) return;
++      if (current.interactionMode === 'define') return current.handleWordClick(word.text, event);
++      if (current.interactionMode === 'phonics') return current.handlePhonicsClick(word.text, event, { audioPlayback: 'reader' });
++      if (current.isChunkReaderActive) {
++        var sentence = current.sentenceOfWord[index];
++        if (sentence >= 0) current.setChunkReaderIdx(sentence);
++      } else {
++        var spoken = String(word.text || '').replace(/\s+/g, ' ').trim();
++        if (spoken && typeof current.handleSpeak === 'function') current.handleSpeak(spoken, 'immersive-word-' + (word.id || index), 0, true);
++      }
++    }, []);
+     var getReadAloudSentencesForText = function (rawText) {
+       return getReadAloudSentenceEntriesForText(rawText).map(function (entry) { return entry.text; });
+     };
+     var karaokeReaderSentences = React.useMemo(function () {
+@@ -3425,9 +3591,10 @@
+       if (protectedOriginal || !generatedContent?.id || getSimplifiedInstructionalText(generatedContent).form !== 'adapted') return;
+       var ids = navigationRef.current.companions.filter(id => id !== generatedContent.id);
+       navigationRef.current.companions = ids.concat(generatedContent.id).slice(-30);
+     }, [generatedContent?.id, protectedOriginal]);
+-    var comparisonPreferenceKey = JSON.stringify([companion?.id || generatedContent?.id, readingScopeIdentity(companion || generatedContent), readingFingerprint(companion?.data)]);
++    var currentReadingFingerprint = React.useMemo(() => readingFingerprint(generatedContent?.data), [generatedContent?.data, readingContract?.fingerprintSourceText]);
++    var comparisonPreferenceKey = JSON.stringify([companion?.id || generatedContent?.id, readingScopeIdentity(companion || generatedContent), companion?.data === generatedContent?.data ? currentReadingFingerprint : readingFingerprint(companion?.data)]);
+     var pairPreferences = comparisonPreferences[comparisonPreferenceKey] || {};
+     var comparisonLanguage = pairPreferences.language || 'auto';
+     var requestedComparisonSource = pairPreferences.source || 'linked';
+     var selectedComparisonArtifact = isTeacherMode && (history || []).find(item => String(item.id) === requestedComparisonSource && item.id !== generatedContent?.id && ['analysis', 'simplified'].includes(item.type) && getArtifactReadingText(item));
+@@ -3442,9 +3609,9 @@
+         var entries = Object.entries(previous).filter(entry => entry[0] !== comparisonPreferenceKey).slice(-29);
+         return Object.assign(Object.fromEntries(entries), { [comparisonPreferenceKey]: Object.assign({}, pairPreferences, { [field]: value }) });
+       });
+     }
+-    var navigationViewKey = JSON.stringify([generatedContent?.id, readingFingerprint(generatedContent?.data), readingScopeIdentity(generatedContent), isCompareMode ? readingScopeIdentity(selectedComparisonArtifact) : '', isCompareMode ? 'both' : protectedOriginal ? 'original' : 'adapted', isCompareMode ? comparisonSourceId : '', isCompareMode ? readingFingerprint(getArtifactReadingText(selectedComparisonArtifact)) : '', isCompareMode ? comparisonLanguage : '', !!isTeacherMode]);
++    var navigationViewKey = JSON.stringify([generatedContent?.id, currentReadingFingerprint, readingScopeIdentity(generatedContent), isCompareMode ? readingScopeIdentity(selectedComparisonArtifact) : '', isCompareMode ? 'both' : protectedOriginal ? 'original' : 'adapted', isCompareMode ? comparisonSourceId : '', isCompareMode ? readingFingerprint(getArtifactReadingText(selectedComparisonArtifact)) : '', isCompareMode ? comparisonLanguage : '', !!isTeacherMode]);
+     function readingOuterScroller() {
+       var surface = readerSurfaceRef.current;
+       if (props.isStudentPreview) return surface?.closest('[data-student-preview]') || surface;
+       for (var parent = surface?.parentElement; parent; parent = parent.parentElement) {
+@@ -3541,15 +3708,17 @@
+       if (props.isCustomReviseOpen && typeof setIsCustomReviseOpen === 'function') setIsCustomReviseOpen(false);
+     }, [isTeacherMode, props.isCompareMode, props.isEditingLeveledText, props.interactionMode, props.revisionData?.type, props.isCustomReviseOpen]);
+     var readingLanguage = generatedContent?.config?.language || generatedContent?.instructionalText?.complexity?.language || leveledTextLanguage || 'English';
+     // Teacher-prepared word help students can see on this adapted text.
+-    var shownWordHelpCount = (function () {
+-      try {
+-        if (!readingContract?.isAdaptedReading?.(generatedContent) || !readingContract.validateAdaptedReadingSupports) return 0;
+-        var help = readingContract.validateAdaptedReadingSupports(generatedContent, generatedContent.adaptedReadingSupports);
+-        return help.shown && help.status !== 'stale' ? (help.annotations || []).length : 0;
+-      } catch (_) { return 0; }
+-    })();
++    var learnerScope = JSON.stringify([props.readingLearnerKey, isTeacherMode, !!props.isStudentPreview]);
++    var adaptedSupportView = useSimplifiedAdaptedSupportView(generatedContent, learnerScope);
++    var shownWordHelpCount = adaptedSupportView.help?.shown && adaptedSupportView.help.status !== 'stale' ? adaptedSupportView.help.annotations.length : 0;
++    var hiddenPassageIdentityRef = React.useRef(null);
++    var hiddenPassageIdentity = [generatedContent?.id, generatedContent?.data, learnerScope, adaptedSupportView, capturedSource?.text,
++      JSON.stringify([generatedContent?.sourceSnapshot, generatedContent?.sourceFamilyId, generatedContent?.unitId, generatedContent?.config?.unitId, generatedContent?.instructionalText]),
++      JSON.stringify(generatedContent?.readingSupports || null), JSON.stringify(latestGlossary || []), readingLanguage, interactionMode];
++    if (!hiddenPassageIdentityRef.current || hiddenPassageIdentity.some((value, index) => value !== hiddenPassageIdentityRef.current[index])) hiddenPassageRef.current = null;
++    hiddenPassageIdentityRef.current = hiddenPassageIdentity;
+     // The active mode, named, with what to do in it: the banner under the reading tools.
+     function readingModeStatus() {
+       if (props.isStudentPreview && interactionMode === 'define') return { mode: 'define', label: viewText('simplified.word_help_word_help', 'Word help'), hint: viewText('simplified.layout_preview_word_help', 'Select an underlined word to see prepared help. Other words have no help in this preview.') };
+       var arrows = ' ' + viewText('simplified.word_arrows_hint', 'Use Left and Right arrows to move between words.');
+@@ -3618,14 +3787,14 @@
+     // Reading place (outline, bookmark, continue, section prompts). Adapted
+     // single-language readings only: their paragraphs carry stable numbers.
+     var placeLearner = props.isStudentPreview ? '' : props.readingLearnerKey != null ? String(props.readingLearnerKey) : isTeacherMode ? 'teacher' : '';
+     var placeItemId = String(generatedContent?.id || '');
+-    var placeFingerprint = readingFingerprint(generatedContent?.data);
+-    var placeParagraphs = simplifiedReadAloudText.split(/\n{2,}/);
++    var placeFingerprint = currentReadingFingerprint;
++    var placeParagraphs = React.useMemo(() => simplifiedReadAloudText.split(/\n{2,}/), [simplifiedReadAloudText]);
+     var placePreview = !!props.isStudentPreview;
+     var placeAvailable = !protectedOriginal && !isCompareMode && !isEditingLeveledText && !!placeItemId && typeof generatedContent?.data === 'string'
+       && !(typeof getSideBySideContent === 'function' && getSideBySideContent(simplifiedReadAloudText));
+-    var outlineSections = placeAvailable ? readingOutlineSections(simplifiedReadAloudText) : [];
++    var outlineSections = React.useMemo(() => placeAvailable ? readingOutlineSections(simplifiedReadAloudText) : [], [placeAvailable, simplifiedReadAloudText]);
+     var placeScope = { learner: placeLearner, itemId: placeItemId, fingerprint: placeFingerprint, text: generatedContent?.data };
+     var placeScopeKey = JSON.stringify([placeLearner, placeItemId, placeFingerprint, generatedContent?.data, placePreview]);
+     var [readingPlaceState, setReadingPlaceState] = React.useState(null);
+     var [placePersistenceState, setPlacePersistenceState] = React.useState(null);
+@@ -3948,9 +4117,9 @@
+     }
+     function renderTeacherReviewSummary() {
+       if (!showReviewSummary) return null;
+       var contract = readingContract;
+-      var help = contract?.isAdaptedReading?.(generatedContent) && contract.validateAdaptedReadingSupports ? contract.validateAdaptedReadingSupports(generatedContent, generatedContent.adaptedReadingSupports) : null;
++      var help = adaptedSupportView.help;
+       var helpCount = help && help.annotations ? help.annotations.length : 0;
+       var textChanged = readingFirstSeen[placeItemId] !== placeFingerprint;
+       var rows = [
+         { key: 'text', tone: textChanged ? 'attention' : 'ok',
+@@ -4216,9 +4385,9 @@
+             if (typeof stopPlayback === 'function') stopPlayback();
+             var entries = getReadAloudSentenceEntriesForText(version.text, version.language || readingLanguage);
+             setComparisonKaraoke({ text: version.text, language: version.language || readingLanguage, entries, sentences: entries.map(entry => entry.text), languages: entries.map(entry => simplifiedLanguageTag(entry.language)) });
+           }}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_along', 'Listen along')}</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>{viewText('simplified.compare_open_original_reader', 'Open original reader')}</button>}</div><div data-compare-version={version.key} data-reading-language={version.language} data-word-help-language={version.key === 'adapted' && showReadingGlosses && !showDiff && !(adaptedParts && effectiveLanguage === 'english') ? targetLanguage : undefined} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && !showDiff && renderPictureCredits(comparisonGlosses)}{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(comparisonSupportOwner, false)} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
+-        {showReadingGlosses && !showDiff && <AdaptedWordHelp onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
++        {showReadingGlosses && !showDiff && <AdaptedWordHelp supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
+       </div>;
+     }
+ 
+     function playPreparedCardAudio(kind, text) {
+@@ -4509,127 +4678,19 @@
+             letterSpacing: `${immersiveSettings.wideText ? letterSpacing + 0.15 : letterSpacing}em`,
+             wordSpacing: immersiveSettings.wideText ? '0.25em' : 'normal',
+             fontFamily: immersiveSettings.fontFamily || undefined
+           }}>{(() => {
+-              const sentences = immersiveSentences;
+-              const sentenceOfWord = immersiveSentenceOfWord;
+-              // Typewriter char-offset bookkeeping for the active sentence (mood='typewriter').
+-              // Resets when we encounter the first token of the active sentence; each token in
+-              // the active sentence contributes wordData.text.length to the rolling offset.
+-              let activeChunkCharOffset = 0;
+-              // Read-along uses its own whitespace-free weight clock. The host supplies
+-              // chunkReaderSweepPct from the playing clip; convert that sentence-level
+-              // percentage into a local fill for each word instead of lighting the whole
+-              // sentence at once.
+-              let activeSweepCharOffset = 0;
+-              let lastWasActiveSentence = false;
++
+               const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+-              return generatedContent.immersiveData.map((wordData, i) => {
+-                if (wordData.pos === 'newline') {
+-                  return <div key={wordData.id || i} className="w-full h-4" />;
+-                }
+-                const tokenStr = wordData.text.replace(/\s+/g, '').toLowerCase();
+-                const assignedIdx = sentenceOfWord[i];
+-                const isChunkHighlight = isChunkReaderActive && assignedIdx === chunkReaderIdx;
+-                const isChunkDimmed = isChunkReaderActive && assignedIdx !== chunkReaderIdx;
+-                // Track word's char-offset within the active sentence for typewriter mood
+-                let wordStartChar = -1;
+-                let wordSweepStart = -1;
+-                let wordSweepWeight = 0;
+-                let sentenceSweepWeight = 1;
+-                if (isChunkHighlight) {
+-                  if (!lastWasActiveSentence) {
+-                    activeChunkCharOffset = 0;
+-                    activeSweepCharOffset = 0;
+-                  }
+-                  wordStartChar = activeChunkCharOffset;
+-                  activeChunkCharOffset += (wordData.text || '').length;
+-                  wordSweepStart = activeSweepCharOffset;
+-                  wordSweepWeight = Math.max(1, tokenStr.length);
+-                  activeSweepCharOffset += wordSweepWeight;
+-                  sentenceSweepWeight = Math.max(1, cleanSentenceForAudio(sentences[assignedIdx] || '').replace(/\s+/g, '').length);
+-                  lastWasActiveSentence = true;
+-                } else {
+-                  lastWasActiveSentence = false;
+-                }
+-                // Mood-aware styling: highlight (default), typewriter, popin, pulse
+-                let moodOpacity = isChunkDimmed ? 0.45 : 1;
+-                let moodAnimation = '';
+-                let showHighlight = isChunkHighlight;
+-                let readAlongWordProgress = null;
+-                let readAlongWordState = null;
+-                if (isChunkHighlight && chunkReaderReadAlong) {
+-                  const sweep = Math.max(0, Math.min(100, Number(chunkReaderSweepPct) || 0));
+-                  const wordStartPct = (wordSweepStart / sentenceSweepWeight) * 100;
+-                  const wordEndPct = ((wordSweepStart + wordSweepWeight) / sentenceSweepWeight) * 100;
+-                  readAlongWordProgress = Math.max(0, Math.min(100,
+-                    ((sweep - wordStartPct) / Math.max(0.0001, wordEndPct - wordStartPct)) * 100
+-                  ));
+-                  readAlongWordState = readAlongWordProgress >= 100 ? 'complete' : readAlongWordProgress > 0 ? 'current' : 'pending';
+-                  showHighlight = readAlongWordProgress > 0;
+-                  moodOpacity = 1;
+-                } else if (isChunkReaderActive && chunkReaderMood === 'typewriter') {
+-                  if (isChunkDimmed) moodOpacity = 0.2;
+-                  if (isChunkHighlight) {
+-                    moodOpacity = wordStartChar < chunkTypewriterCharIdx ? 1 : 0;
+-                    if (wordStartChar >= chunkTypewriterCharIdx) showHighlight = false;
+-                  }
+-                } else if (isChunkReaderActive && chunkReaderMood === 'popin' && isChunkHighlight && !reduceMotion) {
+-                  moodAnimation = 'allo-chunk-popin 0.25s ease-out';
+-                } else if (isChunkReaderActive && chunkReaderMood === 'pulse' && isChunkHighlight && !reduceMotion) {
+-                  moodAnimation = 'allo-chunk-pulse 2s ease-in-out infinite';
+-                }
+-                return <span key={wordData.id || i} data-sentence-idx={assignedIdx}
+-                  data-read-along-state={readAlongWordState || undefined}
+-                  data-read-along-progress={readAlongWordProgress == null ? undefined : Math.round(readAlongWordProgress)}
+-                  style={{
+-                  opacity: moodOpacity,
+-                  transition: chunkReaderMood === 'typewriter' ? 'opacity 0.05s linear' : 'all 0.3s ease',
+-                  // In chunk-read mode every word is click-to-jump (onClick below);
+-                  // pointer cursor surfaces the affordance without needing instructions.
+-                  ...(isChunkReaderActive ? {
+-                    cursor: 'pointer'
+-                  } : {}),
+-                  ...(moodAnimation ? {
+-                    animation: moodAnimation
+-                  } : {}),
+-                  ...(readAlongWordProgress != null ? {
+-                    backgroundImage: `linear-gradient(to right, rgba(250, 204, 21, 0.58) 0%, rgba(250, 204, 21, 0.58) ${readAlongWordProgress}%, transparent ${readAlongWordProgress}%, transparent 100%)`,
+-                    borderRadius: '4px',
+-                    boxDecorationBreak: 'clone',
+-                    WebkitBoxDecorationBreak: 'clone'
+-                  } : showHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
+-                    backgroundColor: 'rgba(250, 204, 21, 0.35)',
+-                    borderRadius: '4px',
+-                    boxDecorationBreak: 'clone',
+-                    WebkitBoxDecorationBreak: 'clone'
+-                  } : {})
+-                }}><ImmersiveWord wordData={wordData} settings={immersiveSettings} isActive={
+-                  isPlaying && playbackState.currentIdx === assignedIdx
+-                  || isChunkHighlight && (!chunkReaderReadAlong || readAlongWordProgress > 0)
+-                } onClick={e => {
+-                    e.stopPropagation();
+-                    if (interactionMode === 'define') {
+-                      handleWordClick(wordData.text, e);
+-                      return;
+-                    }
+-                    if (interactionMode === 'phonics') {
+-                      handlePhonicsClick(wordData.text, e, { audioPlayback: 'reader' });
+-                      return;
+-                    }
+-                    if (isChunkReaderActive) {
+-                      if (assignedIdx >= 0) setChunkReaderIdx(assignedIdx);
+-                    } else {
+-                      // ImmersiveWord is an atomic tap target: speak the word that
+-                      // was tapped through handleSpeak's direct, interactive lane.
+-                      // A unique non-sequence content id avoids rebuilding and
+-                      // synthesizing the entire resource from this sentence.
+-                      const spokenWord = String(wordData.text || '').replace(/\s+/g, ' ').trim();
+-                      if (spokenWord && typeof handleSpeak === 'function') {
+-                        handleSpeak(spokenWord, `immersive-word-${wordData.id || i}`, 0, true);
+-                      }
+-                    }
+-                  }} /></span>;
++              return immersiveWordGroups.map((group, index) => {
++                const active = isChunkReaderActive && group.sentence === chunkReaderIdx;
++                return <SimplifiedImmersiveSentence key={index} group={group}
++                  chunkActive={active} playingActive={!!isPlaying && playbackState.currentIdx === group.sentence}
++                  isChunkReaderActive={isChunkReaderActive} chunkReaderMood={chunkReaderMood}
++                  chunkReaderReadAlong={chunkReaderReadAlong} chunkReaderSweepPct={active ? chunkReaderSweepPct : 0}
++                  chunkTypewriterCharIdx={active ? chunkTypewriterCharIdx : 0}
++                  immersiveSettings={immersiveWordSettings} reduceMotion={reduceMotion}
++                  ImmersiveWord={ImmersiveWord} onWordClick={handleImmersiveWordClick} />;
+               });
+             })()}</div></div></div>}{interactionMode === 'cloze' && clozeAllSolved && <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center" data-a11y-overlay="nonmodal-status" role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion /><div className="mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in motion-reduce:animate-none zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"><Trophy size={24} className="text-yellow-500 fill-current" aria-hidden="true" /> {simplifiedActivityCompleteLabel}</div></div>}{isTeacherMode && !isZenMode && <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-6"><p className="text-sm text-green-800">{(() => {
+               // Split once at the first colon, ASCII or full-width: the Chinese and
+               // Japanese packs use "：", which left the goal bold with an empty body.
+@@ -4783,9 +4844,9 @@
+                 setSelectionMenu(null);
+               }} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Plus size={12} className="text-green-700" /> {t('text_tools.add_term')}</button>}</>}</div><div className="w-2 h-2 bg-slate-800 rotate-45" /></div>}{selectionMenu && <div className={`fixed inset-0 ${_popupBackdropZ} bg-transparent`} onMouseDown={e => {
+           setSelectionMenu(null);
+           setIsCustomReviseOpen(false);
+-        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'Working…')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
++        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'Working…')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
+   }
+   SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
+   SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;
+   SimplifiedView.ReadingGlossEditor = ReadingGlossEditor;
+===================================================================
+--- a/tests/reader_render_cost.test.js
++++ b/tests/reader_render_cost.test.js
+@@ -22,17 +22,17 @@
+   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
+   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
+ });
+-afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; });
++afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; vi.restoreAllMocks(); });
+ 
+ const DATA = 'Plants need light. Roots take in water.\n\nLeaves make food. Energy moves on.';
+ function setup() {
+-  const counts = { split: 0, format: 0 };
+-  const base = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'a', type: 'simplified', data: DATA, config: { language: 'English' }, immersiveData: DATA.split(' ').map(text => ({ text, pos: 'noun' })), immersiveSource: DATA, posEnriched: true }, leveledTextLanguage: 'English', isTeacherMode: false, isZenMode: true, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => { counts.split++; return pure.splitTextToSentences(s, {}); }, getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => { counts.format++; return phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }); }, SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [], setFocusedParagraphIndex: () => {}, ErrorBoundary: ({ children }) => children, FocusReaderOverlay: () => null, PerspectiveCrawlOverlay: () => null, KaraokeReaderOverlay: () => null, ImmersiveToolbar: () => null, ImmersiveWord: ({ wordData }) => wordData.text, immersiveSettings: {}, isChunkReaderActive: true, chunkReaderIdx: 0 };
++  const counts = { split: 0, format: 0, words: 0 };
++  const base = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'a', type: 'simplified', data: DATA, config: { language: 'English' }, immersiveData: DATA.split(' ').map(text => ({ text, pos: 'noun' })), immersiveSource: DATA, posEnriched: true }, leveledTextLanguage: 'English', isTeacherMode: false, isZenMode: true, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => { counts.split++; return pure.splitTextToSentences(s, {}); }, getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => { counts.format++; return phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }); }, SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [], setFocusedParagraphIndex: () => {}, ErrorBoundary: ({ children }) => children, FocusReaderOverlay: () => null, PerspectiveCrawlOverlay: () => null, KaraokeReaderOverlay: () => null, ImmersiveToolbar: () => null, ImmersiveWord: ({ wordData }) => { counts.words++; return wordData.text; }, immersiveSettings: {}, isChunkReaderActive: true, chunkReaderIdx: 0 };
+   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
+   const render = extra => act(() => root.render(React.createElement(View, { ...base, ...extra })));
+-  return { counts, render };
++  return { counts, render, base };
+ }
+ 
+ describe('with Immersive Reader open', () => {
+   it('a read-along frame rebuilds neither the hidden passage nor the sentence list', () => {
+@@ -75,4 +75,77 @@
+     expect(host.querySelector('[data-reading-sentence="1"]').getAttribute('aria-current')).toBe('true');
+     expect(host.querySelector('[data-reading-sentence="0"]').getAttribute('aria-current')).toBeNull();
+   });
+ });
++
++
++describe('reader performance keeps exact ownership', () => {
++  it('a sweep renders only the active sentence, not every immersive word', () => {
++    const { counts, render, base } = setup();
++    const data = Array.from({ length: 50 }, (_, i) => 'Plant ' + i + ' grows.').join(' ');
++    const content = { ...base.generatedContent, data, immersiveSource: data, immersiveData: data.split(' ').map(text => ({ text, pos: 'noun' })) };
++    render({ generatedContent: content, isImmersiveReaderActive: true, chunkReaderReadAlong: true, chunkReaderSweepPct: 10 });
++    const before = counts.words;
++    render({ generatedContent: content, isImmersiveReaderActive: true, chunkReaderReadAlong: true, chunkReaderSweepPct: 50 });
++    expect(counts.words - before).toBe(3);
++    expect(host.querySelectorAll('[data-sentence-idx="49"]')).toHaveLength(3);
++  });
++  it('invalidates the hidden tree for text, resource, learner, and support changes', () => {
++    const { counts, render, base } = setup();
++    const initial = { ...base.generatedContent };
++    let props = { generatedContent: initial, isImmersiveReaderActive: true, readingLearnerKey: 'learner-a' };
++    render(props);
++    for (const change of [
++      { generatedContent: { ...initial, id: 'another-resource' } },
++      { readingLearnerKey: 'learner-b' },
++      { generatedContent: { ...initial, adaptedReadingSupports: { shown: false, annotations: [] } } }
++    ]) {
++      const before = counts.format;
++      props = { ...props, ...change }; render(props);
++      expect(counts.format).toBeGreaterThan(before);
++    }
++    const data = 'A completely new passage.';
++    render({ ...props, generatedContent: { ...initial, data, immersiveSource: data, immersiveData: data.split(' ').map(text => ({ text, pos: 'noun' })) } });
++    expect(host.querySelector('[data-simplified-reading-body]').textContent).toContain(data);
++    expect(host.querySelector('[data-simplified-reading-body]').textContent).not.toContain('Roots take in water');
++  });
++  it('reuses validation but detects an in-place support edit', () => {
++    const api = window.AlloModules.InstructionalContext;
++    const validate = vi.spyOn(api, 'validateAdaptedReadingSupports');
++    const { render, base } = setup();
++    const content = { ...base.generatedContent, instructionalText: { form: 'adapted', role: 'supplemental' } };
++    const support = { id: 'plants', start: 0, end: 6, quote: 'Plants', text: 'First explanation', kind: 'definition' };
++    content.adaptedReadingSupports = api.setAdaptedReadingSupportsShown(content, api.upsertAdaptedReadingSupport(content, null, support), true);
++    render({ generatedContent: content, isImmersiveReaderActive: true });
++    validate.mockClear();
++    for (let pct = 10; pct < 50; pct += 10) render({ generatedContent: content, isImmersiveReaderActive: true, chunkReaderSweepPct: pct });
++    expect(validate).not.toHaveBeenCalled();
++    content.adaptedReadingSupports.annotations[0].text = 'The revised explanation';
++    render({ generatedContent: content, isImmersiveReaderActive: true });
++    expect(validate).toHaveBeenCalled();
++    expect(host.querySelector('[data-adapted-word-help]').textContent).toContain('The revised explanation');
++  });
++  it('refreshes memoized words after an in-place display-setting change', () => {
++    const { render } = setup(), settings = { showNouns: false };
++    const Word = React.memo(({ wordData, settings }) => React.createElement('span', { 'data-word-setting': String(settings.showNouns) }, wordData.text));
++    render({ isImmersiveReaderActive: true, immersiveSettings: settings, ImmersiveWord: Word });
++    expect(host.querySelector('[data-word-setting]').getAttribute('data-word-setting')).toBe('false');
++    settings.showNouns = true;
++    render({ isImmersiveReaderActive: true, immersiveSettings: settings, ImmersiveWord: Word });
++    expect(host.querySelector('[data-word-setting]').getAttribute('data-word-setting')).toBe('true');
++  });
++  it('stable word handlers use the current mode, callbacks, and sentence index', () => {
++    const { render } = setup(), first = vi.fn(), current = vi.fn(), jump = vi.fn();
++    const Word = ({ wordData, onClick }) => React.createElement('button', { onClick }, wordData.text);
++    render({ isImmersiveReaderActive: true, interactionMode: 'define', handleWordClick: first, ImmersiveWord: Word });
++    render({ isImmersiveReaderActive: true, interactionMode: 'define', handleWordClick: current, ImmersiveWord: Word });
++    act(() => host.querySelector('[data-sentence-idx="0"] button').click());
++    expect(first).not.toHaveBeenCalled(); expect(current.mock.calls[0][0]).toBe('Plants');
++    render({ isImmersiveReaderActive: true, interactionMode: 'read', isChunkReaderActive: true, setChunkReaderIdx: jump, ImmersiveWord: Word });
++    act(() => host.querySelector('[data-sentence-idx="1"] button').click());
++    expect(jump).toHaveBeenCalledWith(1);
++    const speak = vi.fn();
++    render({ isImmersiveReaderActive: true, interactionMode: 'read', isChunkReaderActive: false, handleSpeak: speak, ImmersiveWord: Word });
++    act(() => host.querySelector('[data-sentence-idx="0"] button').click());
++    expect(speak).toHaveBeenCalledWith('Plants', expect.stringMatching(/^immersive-word-/), 0, true);
++  });
++});
+===================================================================
+--- a/tests/immersive_reader_word_timing_source.test.js
++++ b/tests/immersive_reader_word_timing_source.test.js
+@@ -19,15 +19,9 @@
+     expect(simplifiedSource).toContain('readAlongWordProgress}%');
+     expect(simplifiedSource).toContain('!chunkReaderReadAlong || readAlongWordProgress > 0');
+   });
+ 
+-  it('sends an atomic word tap through the direct interactive speech path', () => {
+-    expect(simplifiedSource).not.toMatch(/handleSpeak\(simplifiedReadAloudText, 'simplified-main', assignedIdx\)/);
+-    expect(simplifiedSource).toContain('const spokenWord = String(wordData.text');
+-    expect(simplifiedSource).toContain('handleSpeak(spokenWord,');
+-    expect(simplifiedSource).toContain('immersive-word-');
+-    expect(simplifiedSource).toContain(', 0, true);');
+-  });
++  // Atomic word taps are exercised against the rendered reader in reader_render_cost.test.js.
+ 
+   it('runs foreground Read Along on an abortable interactive request in every host', () => {
+     for (const entry of hostSources) {
+       expect(entry.source, entry.file).toContain('reason: \'immersive-read-along\'');
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader-performance/README.md
+@@ -0,0 +1,35 @@
++# Reader performance fixtures
++
++This is a disposable, local browser fixture for the reader component and its overlays. It uses synthetic readings, isolated browser storage, and a loopback audio route. It never loads the full host or the deployed release. External requests fail the run.
++
++## Run
++
++Use the existing dependency tree; no installation is necessary. From the worktree root:
++
++```powershell
++node dev-tools/reader-performance/run.cjs --deps C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated --validate
++node dev-tools/reader-performance/run.cjs --deps C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated --smoke
++node dev-tools/reader-performance/run.cjs --deps C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated --baseline-ready <full-HEAD> --output reports/reader-performance.json
++```
++
++`--baseline-ready` records the exact inspected HEAD. It is an explicit baseline identifier, not a dependency gate. The run fails if HEAD or measured source changes while it runs. `--baseline-source` reads the reader and helper sources from that HEAD with `git show`; it does not change the checkout. Omit it to measure the working files. `--instrument` enables the profiling React build, public-helper counters, storage counters, and timer/rAF tracking. Compare timings from runs with the same instrumentation mode. `--case` accepts comma-separated case names. `--browser` defaults to `msedge`.
++
++The runner bundles JSX in memory, uses the checked-in CSS, starts an ephemeral loopback server, opens a new browser context per case, then closes the browser and server in `finally`. JSON reports record source/CSS hashes, hardware and browser versions, and hashes of the four harness files. There is no app build or generated-module mutation in this command.
++
++## Scenarios and measurements
++
++The 14 cases cover 30/300/3,000 sentences; 0/30/200/1,000 anchored supports; a closed outline; bilingual comparison; 320px layout with large text; 50 preview cycles; 100 alternating resource/learner/text/support changes; 50 immersive open/close cycles; native Audio playback through the karaoke overlay; and reading-place scrolling. Fixture generation is deterministic and every support anchor is checked against the exact source substring. The runtime records accepted supports and canonical sentence counts.
++
++Each case receives 25 sweep updates. Update-to-two-paints latency excludes the first five samples and includes animation-frame pacing, layout, paint scheduling, and machine contention. It is **not React CPU time**. Instrumented React Profiler totals cover all 25 updates. Public-helper counters exclude nested lexical helper calls. Long-task counters use the browser's long-task observer. Reset discards setup entries and rejects subsequently delivered entries that began before the measurement window; snapshot drains queued records. Unsupported metrics are null.
++
++GC-assisted CDP heap/DOM/listener counts are recorded mounted, every ten lifecycle cycles, and after unmount plus a 4.5-second timer drain. Timer IDs and audio WeakRefs do not retain DOM nodes. Audio tracking adds one telemetry listener per Audio instance. Preview loops focus and click controls within the page to avoid retaining locator element handles; karaoke uses in-page focus and trusted keyboard activation. These aggregate counters detect trends; a detached-node leak requires a heap snapshot and a retaining path.
++
++The smoke case checks actual preview open/close, an immersive sentence mapping, and two comparison panes. Unit tests supply stricter highlight/click/version-invalidation assertions; this fixture does not replace them.
++
++## Limits and budget setting
++
++Icons, references UI, and some host callbacks are stubs. Ordinary `handleSpeak` records calls; native karaoke Audio is exercised only with a local one-second fixture response. Full-host TTS, late cloud callbacks, audio ownership across navigation, CSP, production asset pins, and deployed-release behavior need integration verification. The large-text case changes fixture root and immersive font settings; verify the user's complete browser zoom/preferences separately. Reading-place writes occur only in disposable storage. There is no learner data in these fixtures.
++
++Use work-count invariants as immediate regression guards: no full hidden-passage formatting or adapted-support validation solely for unchanged immersive sweep updates; only active-sentence word rendering; no sweep-driven storage writes; exact invalidation when resource, learner, text, or supports change; zero active audio/highlight ranges/timers/rAF after close. Allow the existing root/browser listeners when comparing unmounted snapshots. Compare lifecycle counts after warmup and investigate a sustained slope, not a single retained snapshot.
++
++Do not turn one timing run on a busy workstation into a hard CI threshold. Repeat alternating baseline/candidate runs on a named target device after integration and correctness stabilization. Set per-fixture p50/p95 latency, React render-time, long-task, retained-heap, and listener envelopes from the measured distribution and noise; retain both the representative 300-sentence case and the 3,000-sentence stress case. There is no claim that the stress case meets a 60fps budget.
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader-performance/fixtures.cjs
+@@ -0,0 +1,58 @@
++'use strict';
++
++const marker = '--- ENGLISH TRANSLATION ---';
++// Requested sentences exclude headings; the runtime reports its actual canonical
++// sentence count separately so this generator never substitutes for the splitter.
++function makeFixture(options = {}) {
++  const spec = { sentences: 30, supports: 0, headings: false, bilingual: false, ...options };
++  if (!Number.isInteger(spec.sentences) || spec.sentences < 1 || spec.sentences > 3000) throw new Error('sentences must be 1..3000');
++  if (!Number.isInteger(spec.supports) || spec.supports < 0 || spec.supports > spec.sentences) throw new Error('supports must be 0..sentences');
++  function passage(spanish) {
++    const paragraphs = [];
++    for (let p = 0; p < spec.sentences; p += 3) {
++      if (spec.headings && p % 30 === 0) paragraphs.push('## ' + (spanish ? 'Observaciones ' : 'Observations ') + (p / 30 + 1));
++      const sentences = [];
++      for (let i = p; i < Math.min(p + 3, spec.sentences); i++) {
++        const term = 'term' + String(i + 1).padStart(5, '0');
++        sentences.push(spanish
++          ? 'Los estudiantes estudian ' + term + ' y registran los cambios del agua.'
++          : 'The students study ' + term + ' and record changes in the water.');
++      }
++      paragraphs.push(sentences.join(' '));
++    }
++    return paragraphs.join('\n\n');
++  }
++  const originalText = passage(false);
++  const supportText = passage(spec.bilingual);
++  const data = spec.bilingual ? supportText + '\n\n' + marker + '\n\n' + originalText : supportText;
++  const annotations = Array.from({ length: spec.supports }, (_, i) => {
++    const quote = 'term' + String(i + 1).padStart(5, '0'), start = supportText.indexOf(quote);
++    return { id: 'support-' + i, start, end: start + quote.length, quote,
++      text: 'A prepared explanation for ' + quote + '.', kind: 'definition',
++      origin: 'educator', priority: i % 5 === 0 ? 'essential' : 'helpful', language: spec.bilingual ? 'Spanish' : 'English' };
++  });
++  return { spec, data, originalText, supportText, annotations,
++    language: spec.bilingual ? 'Spanish' : 'English',
++    inventory: { requestedSentences: spec.sentences, supports: annotations.length,
++      utf16Chars: data.length, words: data.split(/\s+/).length, paragraphs: data.split(/\n{2,}/).length } };
++}
++
++const cases = [
++  { name: 'short-read', sentences: 30 },
++  { name: 'long-immersive', sentences: 300, immersive: true },
++  { name: 'stress-immersive', sentences: 3000, immersive: true },
++  { name: 'outline-closed', sentences: 300, headings: true, teacher: true },
++  { name: 'supports-30', sentences: 300, supports: 30, immersive: true },
++  { name: 'supports-200', sentences: 300, supports: 200, immersive: true },
++  { name: 'supports-1000', sentences: 3000, supports: 1000, immersive: true },
++  { name: 'bilingual-panes', sentences: 300, supports: 200, bilingual: true, compare: true },
++  { name: 'large-text-phone', sentences: 300, supports: 30, width: 320, fontSize: 24 },
++  { name: 'preview-cycles', sentences: 300, supports: 30, teacher: true, lifecycle: 'preview' },
++  { name: 'navigation-cycles', sentences: 300, supports: 30, lifecycle: 'navigation' },
++  { name: 'overlay-cycles', sentences: 300, immersive: true, lifecycle: 'overlay' },
++  { name: 'live-audio', sentences: 30, immersive: true, audio: true },
++  { name: 'reading-place-scroll', sentences: 300, headings: true, learner: 'fixture-learner', storage: true }
++];
++
++module.exports = { makeFixture, cases, marker };
++
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader-performance/instrumentation.js
+@@ -0,0 +1,65 @@
++// Runs before React in an isolated browser context. No user storage is touched.
++(() => {
++  const enabled = new URLSearchParams(location.search).get('instrument') === '1';
++  const counts = Object.create(null), milliseconds = Object.create(null);
++  let longTasks = 0, longTaskMs = 0, longestTaskMs = 0, longTaskSince = performance.now();
++  const supportsLongTasks = PerformanceObserver.supportedEntryTypes.includes('longtask');
++  function recordLongTasks(entries) { for (const entry of entries) { if (entry.startTime < longTaskSince) continue; longTasks++; longTaskMs += entry.duration; longestTaskMs = Math.max(longestTaskMs, entry.duration); } }
++  const longTaskObserver = supportsLongTasks ? new PerformanceObserver(list => recordLongTasks(list.getEntries())) : null;
++  longTaskObserver?.observe({ type: 'longtask', buffered: false });
++  const timers = new Set(), frames = new Set();
++  const nativeTimeout = window.setTimeout.bind(window), nativeClear = window.clearTimeout.bind(window);
++  const nativeFrame = window.requestAnimationFrame.bind(window), nativeCancel = window.cancelAnimationFrame.bind(window);
++  let commits = 0, commitMs = 0, audioStarts = 0;
++  const audioRefs = [], NativeAudio = window.Audio;
++  window.Audio = function (...args) {
++    const audio = new NativeAudio(...args); audioRefs.push(new WeakRef(audio));
++    audio.addEventListener('playing', () => audioStarts++); return audio;
++  };
++  window.Audio.prototype = NativeAudio.prototype;
++  function add(key, value = 1) { counts[key] = (counts[key] || 0) + value; }
++  if (enabled) {
++    window.setTimeout = (callback, delay, ...args) => {
++      let id = nativeTimeout(() => { timers.delete(id); callback(...args); }, delay);
++      timers.add(id); return id;
++    };
++    window.clearTimeout = id => { timers.delete(id); nativeClear(id); };
++    window.requestAnimationFrame = callback => {
++      let id = nativeFrame(time => { frames.delete(id); callback(time); });
++      frames.add(id); return id;
++    };
++    window.cancelAnimationFrame = id => { frames.delete(id); nativeCancel(id); };
++    const write = Storage.prototype.setItem;
++    Storage.prototype.setItem = function (key, value) {
++      const start = performance.now();
++      try { return write.call(this, key, value); }
++      finally {
++        add('storageWrites'); add('storageUtf16Bytes', 2 * String(value).length);
++        add('storage:' + key); milliseconds.storage = (milliseconds.storage || 0) + performance.now() - start;
++      }
++    };
++    const walk = Document.prototype.createTreeWalker;
++    Document.prototype.createTreeWalker = function (...args) { add('treeWalkers'); return walk.apply(this, args); };
++    const text = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
++    Object.defineProperty(Node.prototype, 'textContent', { ...text, get() {
++      const result = text.get.call(this); add('textContentReads'); add('textContentChars', (result || '').length); return result;
++    } });
++  }
++  window.readerMetrics = {
++    enabled,
++    wrap(object, key) {
++      if (!enabled || typeof object[key] !== 'function') return;
++      const original = object[key];
++      object[key] = function (...args) {
++        const start = performance.now(); add(key);
++        try { return original.apply(this, args); }
++        finally { milliseconds[key] = (milliseconds[key] || 0) + performance.now() - start; }
++      };
++    },
++    onRender(_id, _phase, duration) { commits++; commitMs += duration; },
++    reset() { longTaskSince = performance.now(); longTaskObserver?.takeRecords(); Object.keys(counts).forEach(key => delete counts[key]); Object.keys(milliseconds).forEach(key => delete milliseconds[key]); commits = 0; commitMs = 0; longTasks = 0; longTaskMs = 0; longestTaskMs = 0; },
++    snapshot() { if (longTaskObserver) recordLongTasks(longTaskObserver.takeRecords()); return { longTasks: supportsLongTasks ? {count:longTasks,totalMs:longTaskMs,maxMs:longestTaskMs} : null, audioStarts, playingAudio: audioRefs.filter(ref => { const audio = ref.deref(); return audio && !audio.paused && !audio.ended; }).length, counts: { ...counts }, milliseconds: { ...milliseconds },
++      commits: enabled ? commits : null, commitMs: enabled ? commitMs : null, outstandingTimers: enabled ? timers.size : null, outstandingFrames: enabled ? frames.size : null }; }
++  };
++})();
++
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader-performance/harness.jsx
+@@ -0,0 +1,105 @@
++import { makeFixture, marker } from './fixtures.cjs';
++
++const React = window.React, h = React.createElement, modules = window.AlloModules;
++const contract = modules.InstructionalContext, pure = modules.PureHelpers, phase = modules.PhaseNHelpers;
++const spec = window.fixtureSpec, fixture = makeFixture(spec), noop = () => {}, metrics = window.readerMetrics;
++for (const name of ['fingerprintSourceText', 'getSourceSnapshot', 'validateReadingSupports', 'validateAdaptedReadingSupports', 'getAdaptedSupportSnapshot']) metrics.wrap(contract, name);
++metrics.wrap(pure, 'splitTextToSentences');
++metrics.wrap(phase, 'formatInteractiveText');
++const t = key => key.split('.').reduce((value, part) => value?.[part], window.fixtureStrings) || key;
++function sideBySide(text) {
++  const parts = String(text || '').split(marker);
++  if (parts.length !== 2) return null;
++  const [sourceFull, targetFull] = parts.map(part => part.trim());
++  return { sourceFull, targetFull, source: sourceFull.split(/\n{2,}/), target: targetFull.split(/\n{2,}/) };
++}
++const split = text => pure.splitTextToSentences(text, {});
++const original = contract.createSupportedReading(
++  contract.createSourceSnapshot(fixture.originalText, { sourceArtifactId: 'fixture-source', capturedAt: '2026-09-26T00:00:00.000Z' }),
++  { id: 'fixture-original', sourceFamilyId: 'fixture-family', config: { language: 'English' } }
++);
++const base = {
++  t, inputText: '', gradeLevel: '5', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1,
++  isProcessing: false, isEditingLeveledText: false, isFluencyMode: false, isSideBySide: !!spec.bilingual,
++  textEditorRef: React.createRef(), splitTextToSentences: split, getSideBySideContent: sideBySide,
++  cursorStyles: { read: '', define: '', phonics: '', revise: '' }, getContentDirection: () => 'ltr', isRtlLang: () => false,
++  renderFormattedText: text => h('div', null, text),
++  formatInteractiveText: (text, cloze, dark, key) => phase.formatInteractiveText(text, cloze, false,
++    { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }, key),
++  highlightGlossaryTerms: x => x, latestGlossary: [], SourceReferencesPanel: () => null, ComplexityGauge: () => null,
++  ErrorBoundary: ({ children }) => children,
++  ImmersiveToolbar: modules.ImmersiveToolbar, ImmersiveWord: modules.ImmersiveWord,
++  FocusReaderOverlay: modules.FocusReaderOverlay, PerspectiveCrawlOverlay: modules.PerspectiveCrawlOverlay,
++  KaraokeReaderOverlay: modules.KaraokeReaderOverlay,
++  callTTS: async () => '/tone.wav', handleWordClick: noop, handlePhonicsClick: noop, handleQuickAddGlossary: noop,
++  handleTextMouseUp: noop, handleFormatText: noop, handleSimplifiedTextChange: noop,
++  closeDefinition: noop, closePhonics: noop, closeRevision: noop, setRevisionData: noop, setPhonicsData: noop,
++  setSelectionMenu: noop, setIsCustomReviseOpen: noop, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop,
++  handleToggleIsEditingLeveledText: noop, setIsFluencyMode: noop, setReadingTheme: noop,
++  isLineFocusMode: false, lineHeight: 1.6, letterSpacing: 0, playbackRate: 1,
++  chunkReaderSpeed: 200, chunkReaderMood: 'calm', isChunkReaderActive: true, chunkReaderReadAlong: true,
++  chunkReaderAutoPlay: false, readingTheme: 'default'
++};
++window.__alloResolveReadAloudAudio = async () => '/tone.wav';
++window.__alloCaptureKaraokeAudio = async () => false;
++function App() {
++  const [state, setState] = React.useState({
++    resource: 'fixture-a', revision: 0, supportVersion: 0, learner: spec.learner || '',
++    immersive: !!spec.immersive, compare: !!spec.compare, mode: 'read',
++    sweep: 0, sentence: 0, playing: false, playingId: null, focus: false, crawl: false, karaoke: false
++  });
++  const patch = React.useCallback(update => setState(previous => ({ ...previous, ...update })), []);
++  const stop = React.useCallback(() => patch({ playing: false, playingId: null }), [patch]);
++  const speak = React.useCallback((text, id, index, restart, language) => {
++    window.readerFixture.lastSpoken = { text, id, index, language };
++    patch({ playing: true, playingId: id, sentence: index || 0 });
++  }, [patch]);
++  const item = React.useMemo(() => {
++    const data = fixture.data + (state.revision ? '\n\nThis reading changed ' + state.revision + ' times.' : '');
++    const current = { id: state.resource, type: 'simplified', title: 'Reader performance fixture', data,
++      instructionalText: { form: 'adapted', role: 'supplemental' },
++      sourceSnapshot: original.sourceSnapshot, sourceFamilyId: 'fixture-family',
++      config: { language: fixture.language }, immersiveSource: data, posEnriched: true,
++      immersiveData: modules.TextPipelineHelpers.parseTaggedContent(data) };
++    if (fixture.annotations.length) {
++      current.adaptedReadingSupports = contract.validateAdaptedReadingSupports(current, {
++        schemaVersion: 1, passageLength: fixture.supportText.length, sourceFingerprint: contract.fingerprintSourceText(fixture.supportText),
++        shown: true, annotations: fixture.annotations.map(entry => ({ ...entry, text: entry.text + ' Version ' + state.supportVersion }))
++      });
++    }
++    return current;
++  }, [state.resource, state.revision, state.supportVersion]);
++  const [focused, setFocused] = React.useState(null), [ruler, setRuler] = React.useState(150);
++  const [settings, setSettings] = React.useState({ textSize: spec.fontSize || 24, bgColor: '#ffffff', fontColor: '#1e293b', lineFocus: false });
++  const props = { ...base, generatedContent: item, history: [original, item], leveledTextLanguage: fixture.language,
++    isTeacherMode: !!spec.teacher, isZenMode: !spec.teacher, readingLearnerKey: state.learner,
++    isImmersiveReaderActive: state.immersive, handleCloseImmersiveReader: () => patch({ immersive: false }),
++    immersiveSettings: settings, setImmersiveSettings: setSettings, immersiveRulerY: ruler, setImmersiveRulerY: setRuler,
++    isCompareMode: state.compare, setIsCompareMode: compare => patch({ compare }),
++    interactionMode: state.mode, setInteractionMode: mode => patch({ mode }),
++    isPlaying: state.playing, playingContentId: state.playingId, playbackState: { currentIdx: state.sentence },
++    handleSpeak: speak, stopPlayback: stop, focusedParagraphIndex: focused, setFocusedParagraphIndex: setFocused,
++    chunkReaderSweepPct: state.sweep, chunkReaderIdx: state.sentence, setChunkReaderIdx: sentence => patch({ sentence }),
++    setIsChunkReaderActive: noop, setChunkReaderAutoPlay: noop, setChunkReaderReadAlong: noop, setChunkReaderSpeed: noop, setChunkReaderMood: noop,
++    isFocusReaderActive: state.focus, setIsFocusReaderActive: focus => patch({ focus }), handleCloseSpeedReader: () => patch({ focus: false }),
++    isCrawlReaderActive: state.crawl, setIsCrawlReaderActive: crawl => patch({ crawl }),
++    isKaraokeOverlayActive: state.karaoke, setIsKaraokeOverlayActive: karaoke => patch({ karaoke }),
++    setPlaybackRate: noop, setLineHeight: noop, setLetterSpacing: noop,
++    handleToggleIsZenMode: noop, setGeneratedContent: noop
++  };
++  const inventory = React.useMemo(() => ({ ...fixture.inventory, acceptedSupports: item.adaptedReadingSupports?.annotations.length || 0,
++    canonicalSentences: (sideBySide(item.data) ? [...sideBySide(item.data).source, ...sideBySide(item.data).target] : item.data.split(/\n{2,}/)).flatMap(split).length }), [item]);
++  React.useLayoutEffect(() => { window.readerFixture.ready = true; });
++  Object.assign(window.readerFixture, { patch, state, item,
++    inventory });
++  return <React.Profiler id="reader" onRender={metrics.onRender}><modules.SimplifiedView {...props} /></React.Profiler>;
++}
++window.readerFixture = { ready: false, limitations: [
++  'Synthetic host: handleSpeak records calls; integrated host playback mapping is a separate required acceptance check.',
++  'Local tone audio only; no cloud synthesis or persistence. No production learner/resource data.',
++  'Public helper call counts exclude nested lexical calls; instrumented timings are not production timings.'
++] };
++const root = window.createRoot(document.getElementById('root'));
++window.readerFixture.unmount = () => { root.unmount(); delete window.readerFixture.patch; delete window.readerFixture.item; delete window.readerFixture.state; };
++root.render(<App />);
++
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader-performance/run.cjs
+@@ -0,0 +1,222 @@
++#!/usr/bin/env node
++'use strict';
++const fs = require('node:fs'), path = require('node:path'), http = require('node:http');
++const assert = require('node:assert/strict'), crypto = require('node:crypto');
++const { createRequire } = require('node:module'), { execFileSync } = require('node:child_process');
++const { cases, makeFixture } = require('./fixtures.cjs');
++const root = path.resolve(__dirname, '../..'), args = process.argv.slice(2);
++function option(name, fallback) { const index = args.indexOf(name); return index < 0 ? fallback : args[index + 1]; }
++const depsRoot = path.resolve(option('--deps', root)), req = createRequire(path.join(depsRoot, 'package.json'));
++const esbuild = req('esbuild');
++const instrument = args.includes('--instrument'), smoke = args.includes('--smoke'), validate = args.includes('--validate');
++const head = () => execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
++const environment = {platform:process.platform,arch:process.arch,node:process.version,os:require('os').release(),cpu:require('os').cpus()[0].model,logicalCPUs:require('os').cpus().length};
++const harnessHashes = Object.fromEntries(['fixtures.cjs','harness.jsx','instrumentation.js','run.cjs'].map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,file))).digest('hex')]));
++const sourceFiles = ['view_simplified_source.jsx', 'immersive_reader_source.jsx', 'instructional_context_module.js',
++  'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'text_pipeline_helpers_module.js'];
++const fromGit = args.includes('--baseline-source');
++const readSource = file => fromGit ? execFileSync('git', ['show', 'HEAD:' + file], {cwd:root, maxBuffer:16*1024*1024}) : fs.readFileSync(path.join(root,file));
++if (!fromGit && fs.existsSync(path.join(root, 'reader_place_store.js'))) sourceFiles.push('reader_place_store.js');
++const hashes = () => Object.fromEntries(sourceFiles.map(file => [file, crypto.createHash('sha256').update(readSource(file)).digest('hex')]));
++const initialHashes = hashes(), baseline = head();
++function checkFixtures() {
++  for (const spec of cases) {
++    const fixture = makeFixture(spec);
++    assert.deepEqual(makeFixture(spec), fixture, 'Fixtures must be deterministic');
++    assert.equal(fixture.annotations.length, spec.supports || 0);
++    for (const entry of fixture.annotations) assert.equal(fixture.data.slice(entry.start, entry.end), entry.quote);
++    assert.equal(new Set(fixture.annotations.map(entry => entry.start)).size, fixture.annotations.length);
++  }
++}
++checkFixtures();
++function bundle(options) {
++  return esbuild.buildSync({ bundle: true, write: false, platform: 'browser', format: 'iife',
++    absWorkingDir: path.join(depsRoot, 'desktop/web-app'), nodePaths: [path.join(depsRoot, 'desktop/web-app/node_modules'), path.join(depsRoot, 'node_modules')],
++    define: { 'process.env.NODE_ENV': '"production"' }, ...options }).outputFiles[0].text;
++}
++console.log('Preparing browser fixture runtime');
++const runtime = bundle({ stdin: { resolveDir: path.join(depsRoot, 'desktop/web-app'), contents:
++  "import React from 'react'; import {createRoot} from '" + (instrument ? 'react-dom/profiling' : 'react-dom/client') + "';  window.React=React;window.createRoot=createRoot;window.AlloIcons=new Proxy({}, {get:()=>()=>null});window.AlloModules={};window.AlloLanguageContext=React.createContext({t:k=>k});" } });
++function sourceModule(file, exports) {
++  let raw = readSource(file).toString('utf8');
++  if (file === 'view_simplified_source.jsx' && raw.includes('createReadingPlaceStore(') && !fromGit && fs.existsSync(path.join(root, 'reader_place_store.js')))
++    raw = fs.readFileSync(path.join(root, 'reader_place_store.js'), 'utf8') + '\n' + raw;
++  const transformed = esbuild.transformSync(raw, { loader: 'jsx', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment', target: 'es2020' }).code;
++  return '(function(){var React=window.React,Fragment=React.Fragment;\n' + transformed + '\nObject.assign(window.AlloModules,{' + exports.join(',') + '});})();';
++}
++console.log('Preparing reader source modules');
++const scripts = [
++  runtime,
++  'window.fixtureStrings=' + fs.readFileSync(path.join(root, 'ui_strings.js'), 'utf8') + ';',
++  ...sourceFiles.filter(file => file.endsWith('_module.js')).map(file => readSource(file).toString('utf8')),
++  sourceModule('immersive_reader_source.jsx', ['FocusReaderOverlay', 'SpeedReaderOverlay:FocusReaderOverlay', 'BionicChunkReader:FocusReaderOverlay', 'PerspectiveCrawlOverlay', 'KaraokeReaderOverlay', 'ImmersiveToolbar', 'ImmersiveWord']),
++  sourceModule('view_simplified_source.jsx', ['SimplifiedView']),
++  bundle({ entryPoints: [path.join(__dirname, 'harness.jsx')] })
++];
++console.log('Fixture modules ready');
++if (validate) {
++  console.log(JSON.stringify({ status: 'fixture-validation-only', cases: cases.length, baseline, sourceHashes: initialHashes,
++    note: 'Compiled in memory. No browser, baseline measurements, generated-module edits, or application changes.' }, null, 2));
++  process.exit(0);
++}
++if (!smoke && option('--baseline-ready') !== baseline) {
++  throw new Error('Measurements require --baseline-ready ' + baseline + ' to explicitly identify the inspected baseline. Use --validate or --smoke for fixture verification only.');
++}
++const cssDir = path.join(root, 'app/static/css');
++const cssFile = fs.readdirSync(cssDir).filter(name => name.endsWith('.css')).sort()[0];
++if (!cssFile) throw new Error('No built application CSS available; do not measure an unstyled reader.');
++const css = fs.readFileSync(path.join(cssDir, cssFile));
++const wav = Buffer.alloc(44 + 16000 * 2);
++wav.write('RIFF'); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8); wav.writeUInt32LE(16, 16);
++wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(16000, 24); wav.writeUInt32LE(32000, 28);
++wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(wav.length - 44, 40);
++const instrumentation = fs.readFileSync(path.join(__dirname, 'instrumentation.js'), 'utf8');
++const selected = option('--case') ? cases.filter(spec => option('--case').split(',').includes(spec.name)) : smoke
++  ? [{ name: 'smoke', sentences: 30, supports: 6, teacher: true }] : cases;
++assert.ok(selected.length, 'Unknown fixture case');
++const server = http.createServer((request, response) => {
++  const url = new URL(request.url, 'http://localhost');
++  if (url.pathname === '/style.css') { response.setHeader('Content-Type', 'text/css'); response.end(css); return; }
++  if (url.pathname === '/tone.wav') { response.setHeader('Content-Type', 'audio/wav'); response.end(wav); return; }
++  if (/^\/script-\d+\.js$/.test(url.pathname)) {
++    response.setHeader('Content-Type', 'text/javascript'); response.end(scripts[Number(url.pathname.match(/\d+/)[0])] || ''); return;
++  }
++  if (url.pathname !== '/') { response.statusCode = 404; response.end(); return; }
++  const spec = selected.find(item => item.name === url.searchParams.get('case'));
++  if (!spec) { response.statusCode = 400; response.end('Unknown case'); return; }
++  response.setHeader('Content-Type', 'text/html');
++  response.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css">' +
++    '<style>html,body{margin:0;font-family:Arial,sans-serif;font-size:' + (spec.fontSize || 16) + 'px}#root{max-width:1280px;margin:auto;padding:16px}button,input,textarea,select{font:inherit}</style></head>' +
++    '<body class="theme-light"><main id="root" class="allo-docsuite"></main><script>window.fixtureSpec=' + JSON.stringify(spec) + ';' + instrumentation +
++    '</script>' + scripts.map((_, i) => '<script src="/script-' + i + '.js"></script>').join('') + '</body></html>');
++});
++const nextPaint = page => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
++async function patch(page, update) { await page.evaluate(update => window.readerFixture.patch(update), update); await nextPaint(page); }
++async function memory(cdp) {
++  await cdp.send('HeapProfiler.collectGarbage');
++  return { dom: await cdp.send('Memory.getDOMCounters'), heap: await cdp.send('Runtime.getHeapUsage') };
++}
++function distribution(samples) {
++  const sorted = [...samples].sort((a, b) => a - b), quantile = q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
++  return { count: sorted.length, p50: quantile(.5), p95: quantile(.95), p99: quantile(.99), samples };
++}
++async function main() {
++  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
++  const base = 'http://127.0.0.1:' + server.address().port;
++  const { chromium } = req('playwright');
++  let browser;
++  const results = [];
++  try {
++    browser = await chromium.launch({ headless: true, channel: option('--browser', 'msedge') });
++    for (const spec of selected) {
++      const context = await browser.newContext({ viewport: { width: spec.width || 1280, height: 900 } });
++      try {
++        const page = await context.newPage(), errors = [], external = [];
++        page.on('pageerror', error => { errors.push(error.message); console.error('Fixture page error: ' + error.message); });
++        await page.route('**/*', route => {
++          const url = route.request().url();
++          if (url.startsWith(base + '/') || /^(blob:|data:)/.test(url)) return route.continue();
++          external.push(url); return route.abort();
++        });
++        await page.addInitScript(() => localStorage.setItem('allo_save_karaoke_audio', '0'));
++        await page.goto(base + '/?case=' + spec.name + '&instrument=' + (instrument ? 1 : 0));
++        await page.waitForFunction(() => window.readerFixture?.ready, { timeout: 30000 });
++        await nextPaint(page);
++        const inventory = await page.evaluate(() => window.readerFixture.inventory);
++        assert.equal(inventory.acceptedSupports, spec.supports || 0);
++        if (smoke) {
++          await page.locator('[data-student-preview-open]').click();
++          await page.locator('[data-student-preview]').waitFor();
++          await page.locator('[data-student-preview-close]').click();
++          assert.equal(await page.locator('[data-student-preview]').count(), 0);
++          await patch(page, { immersive: true, sweep: 35 });
++          assert.ok(await page.locator('[data-immersive-passage] [data-sentence-idx="0"]').count());
++          await patch(page, { immersive: false, compare: true });
++          assert.equal(await page.locator('[data-compare-version]').count(), 2);
++          await page.evaluate(() => window.readerFixture.unmount());
++          assert.deepEqual(errors, []); assert.deepEqual(external, []);
++          results.push({ name: spec.name, status: 'smoke-only', inventory });
++          continue;
++        }
++        const cdp = await context.newCDPSession(page);
++        const retained = [{ phase: 'mounted', ...await memory(cdp) }];
++        await page.evaluate(() => window.readerMetrics.reset());
++        // Samples measure update-to-two-paints, including frame pacing. They are
++        // never reported as render time. Instrumented Profiler actualDuration is separate.
++        const latencies = [];
++        for (let i = 0; i < 25; i++) {
++          const elapsed = await page.evaluate(async i => {
++            const start = performance.now();
++            window.readerFixture.patch({ sweep: (i % 10) * 10, sentence: 0 });
++            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
++            return performance.now() - start;
++          }, i);
++          if (i >= 5) latencies.push(elapsed);
++        }
++        const sweepMetrics = await page.evaluate(() => window.readerMetrics.snapshot());
++        const cycles = spec.lifecycle === 'navigation' ? 100 : spec.lifecycle ? 50 : 0;
++        for (let i = 0; i < cycles; i++) {
++          if (spec.lifecycle === 'preview') {
++            await page.evaluate(() => { const button = document.querySelector('[data-student-preview-open]'); button.focus(); button.click(); });
++            await nextPaint(page);
++            await page.evaluate(() => { const button = document.querySelector('[data-student-preview-close]'); button.focus(); button.click(); });
++            await nextPaint(page);
++          } else if (spec.lifecycle === 'overlay') {
++            await patch(page, { immersive: false }); await patch(page, { immersive: true });
++          } else {
++            await patch(page, { resource: i % 2 ? 'fixture-a' : 'fixture-b', learner: 'fixture-learner-' + (i % 2),
++              revision: i % 3, supportVersion: i % 4 });
++          }
++          if ((i + 1) % 10 === 0) retained.push({ phase: 'cycle-' + (i + 1), ...await memory(cdp) });
++        }
++        if (spec.audio) {
++          await patch(page, { karaoke: true });
++          await page.evaluate(() => document.querySelector('[role="dialog"][aria-labelledby="karaoke-reader-dialog-title"] button[aria-label="Play"]').focus());
++          await page.keyboard.press('Enter'); // trusted activation without retaining a driver element handle
++          await page.waitForFunction(() => window.readerMetrics.snapshot().audioStarts > 0);
++          await page.waitForTimeout(300);
++          await patch(page, { karaoke: false });
++          assert.equal(await page.evaluate(() => window.readerMetrics.snapshot().playingAudio), 0);
++        }
++        if (spec.storage) {
++          await page.evaluate(() => { document.querySelector('[data-reading-paragraph="1"]')?.scrollIntoView(); });
++          await page.waitForTimeout(1000);
++          await page.evaluate(() => document.dispatchEvent(new Event('scroll')));
++          await page.waitForTimeout(1000);
++        }
++        const activityMetrics = await page.evaluate(() => window.readerMetrics.snapshot());
++        await page.evaluate(() => window.readerFixture.unmount());
++        await page.mouse.click(1, 1); // leave focus and pointer on a neutral part of the disposable fixture
++        await page.waitForTimeout(4500); // current focus/advance timers must have drained
++        retained.push({ phase: 'unmounted', ...await memory(cdp) });
++        const afterClose = await page.evaluate(() => ({ ...window.readerMetrics.snapshot(),
++          highlightRanges: [...(CSS.highlights?.values() || [])].reduce((sum, mark) => sum + mark.size, 0) }));
++        assert.deepEqual(errors, []); assert.deepEqual(external, []);
++        results.push({ name: spec.name, inventory, updateToPaintMs: distribution(latencies),
++          sweepMetrics, activityMetrics, retained, afterClose });
++        console.log('Measured ' + spec.name);
++      } finally { await context.close(); }
++    }
++    assert.equal(head(), baseline, 'HEAD changed during the run');
++    assert.deepEqual(hashes(), initialHashes, 'Measured source changed during the run');
++    const report = { status: smoke ? 'fixture-smoke-only' : 'candidate-baseline', baseline,
++      environment, harnessHashes, browser: browser.version(), sourceMode: fromGit ? 'git-HEAD' : 'working-tree', instrumented: instrument, sourceHashes: initialHashes,
++      css: { file: cssFile, sha256: crypto.createHash('sha256').update(css).digest('hex') },
++      limitations: ['Not the integrated host or deployed release.', 'Synthetic sweep updates, local audio route, and disposable browser storage; icon components are stubbed.',
++        'Timing budgets are unset until repeated baseline runs establish noise and device constraints.',
++        'DOM counters identify retention trends; detached-node retaining paths require a heap snapshot follow-up.'],
++      results };
++    const output = option('--output');
++    if (output) { const destination = path.resolve(output); fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, JSON.stringify(report, null, 2) + '\n'); }
++    console.log(JSON.stringify(output ? {status:report.status, baseline, cases:results.length, output:path.resolve(output)} : report, null, 2));
++  } finally {
++    if (browser) await browser.close();
++    await new Promise(resolve => server.close(resolve));
++  }
++}
++main().catch(error => { console.error(error); process.exitCode = 1; });
++
++
++
++
++

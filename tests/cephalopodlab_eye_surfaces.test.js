@@ -25,8 +25,10 @@ function worldPoints(mesh) { mesh.updateWorldMatrix(true, false); const p = mesh
 // Pass sixteen excludes only the four approved nautilus eye subtrees; other species and anatomy remain protected.
 function insideNautilusEye(o){let eye=false;for(let p=o;p;p=p.parent){if(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight'].includes(p.name))eye=true;if(p.userData.species==='nautilus')return eye;}return false;}
 function insideNautilusShell(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
+// Pass twenty-three excludes only Humboldt's intentionally replaced siphon subtree.
+function insideSquidSiphon(o){let siphon=false;for(let p=o;p;p=p.parent){if(p.name==='cl-siphon')siphon=true;if(p.userData.species==='humboldtSquid')return siphon;}return false;}
 function geometryRecords(animal, excludeEyes = false) {
-  return meshes(animal).filter(object => (!excludeEyes || !eyeNames.has(object.name)) && !insideNautilusShell(object) && !insideNautilusEye(object)).map(object => {
+  return meshes(animal).filter(object => (!excludeEyes || !eyeNames.has(object.name)) && !insideNautilusShell(object) && !insideNautilusEye(object) && !insideSquidSiphon(object)).map(object => {
     const geometry = object.geometry;
     return [object.name, Array.from(geometry.attributes.position.array), geometry.attributes.normal ? Array.from(geometry.attributes.normal.array) : null,
       geometry.index ? Array.from(geometry.index.array) : null, object.position.toArray(), object.quaternion.toArray(), object.scale.toArray(),
@@ -217,7 +219,7 @@ describe('Cephalopod curved swimmer eyes', () => {
       bobtailSquid: 'fd05978c0148e0670fdfb7ddd42e28f06552a03730b23dc544f1f3792b198936',
       dumboOcto: 'ac1328af5fef7d39e22a860ad5c9458e91729b96f211e975906ac73388d1926b',
       vampireSquid: '28a7f2cf71c767b454e657f23840bce3032c7e52531f9f59d977d7bdb6d3d9c3',
-      humboldtSquid: 'a546090fcede9d5ecc0124c1431704a64375647fdb4bc76ca93ab26f32603adb',
+      humboldtSquid: 'f32056ab0f70f4fda57fd4ef28aae9447dd5e4873ebb16f0eba3b2ac4f08adec',
       commonOcto: '9f67f8a43befbca0672310972a170a6c0b8e374fbb73062affe72b56e3bdbbfb',
       nautilus: 'b368c9aaf0111fbe689dd64288b7dae52bd626866626e3334291ade22685b086',
     };

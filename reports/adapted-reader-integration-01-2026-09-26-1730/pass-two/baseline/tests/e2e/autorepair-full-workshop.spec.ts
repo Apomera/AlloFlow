@@ -1,0 +1,1765 @@
+import { test, expect } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_autorepair.js', toolId: 'autoRepair',
+  preScripts: ['stem_lab/stem_lab_module.js'], width: 1260, height: 900,
+  probes: `
+    (function () {
+      var Real = THREE.WebGLRenderer;
+      function Probed() {
+        var renderer = Reflect.construct(Real, Array.prototype.slice.call(arguments));
+        var render = renderer.render;
+        renderer.render = function (scene, camera) { window.__shopScene = scene; window.__shopCamera = camera; window.__shopRenderCount = (window.__shopRenderCount || 0) + 1; return render.apply(renderer, arguments); };
+        return renderer;
+      }
+      Probed.prototype = Real.prototype; THREE.WebGLRenderer = Probed;
+    })();
+    window.__shopObject = function (name) {
+      var object = window.__shopScene && window.__shopScene.getObjectByName(name);
+      if (!object) return null;
+      return { y: object.position.y, rotation: object.rotation.z, data: object.userData };
+    };
+  ` });
+test.describe.configure({ timeout: 180_000 });
+test.use({ launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } });
+test.beforeAll(async () => { await harness.start(); await mkdir('reports/automobile-workshop', { recursive: true }); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.destroy(page); });
+const equipment: Record<string, string> = { intake: 'job-card', setup: 'lift-card', 'low-lift': 'lift-controls', stability: 'lamp', raise: 'lift-controls', locks: 'lift-controls', 'wheel-off': 'socket', measure: 'gauge', service: 'brake-kit', refit: 'torque', lower: 'lift-controls', verify: 'checklist', release: 'job-card' };
+async function prepareInstrument(page: any) {
+  const panel = page.locator('[data-ar-shop-instrument]');
+  if (!await panel.count()) return;
+  const kind = await panel.getAttribute('data-ar-shop-instrument');
+  if (kind === 'meter') {
+    await page.locator('#ar-shop-instrument-mode').selectOption('dcv');
+    await page.locator('#ar-shop-instrument-contact').selectOption('joint');
+    await page.locator('#ar-shop-instrument-load').selectOption('starter');
+  }
+  if (kind === 'gauge') await page.locator('#ar-shop-instrument-surface').selectOption('lining');
+  if (kind === 'jug' && await page.locator('[data-ar-shop-jug-quantity]').getAttribute('data-ar-shop-jug-quantity') === '4100') await page.locator('[data-ar-shop-jug-change="500"]').click();
+  if (kind === 'torque') {
+    if (await page.locator('[data-ar-shop-seat-wheel]').count()) await page.locator('[data-ar-shop-seat-wheel]').click();
+    for (const lug of [0, 2, 4, 1, 3]) {
+      const button = page.locator('[data-ar-shop-lug="' + lug + '"]');
+      if (await button.getAttribute('aria-pressed') !== 'true') await button.click();
+    }
+  } else await page.locator('[data-ar-shop-instrument-read]').click();
+}
+async function perform(page: any, tool?: string, answer = '6') {
+  const id = await page.locator('[data-ar-shop-perform]').getAttribute('data-ar-shop-perform');
+  await page.locator('[data-ar-shop-go-task]').click();
+  await page.locator('#ar-shop-tool').selectOption(tool || equipment[id]);
+  await prepareInstrument(page);
+  if (await page.locator('#ar-shop-answer').count()) await page.locator('#ar-shop-answer').fill(answer);
+  await page.locator('[data-ar-shop-perform]').click();
+  return id;
+}
+test('full vehicle, staged lift, brake service, handoff and return path work on real WebGL', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1000 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels' } });
+  await expect(page.locator('[data-ar-shop-task="intake"]')).toBeVisible();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle'));
+  expect(await page.evaluate(() => (window as any).__glLive()?.lost)).toBe(false);
+  for (const name of ['workshop-vehicle', 'workshop-two-post-lift', 'workshop-tool-bench', 'service-desk', 'catalytic-converter', 'rear-muffler', 'engine-oil-sump']) {
+    expect(await page.evaluate(n => (window as any).__shopObject(n), name), name).not.toBeNull();
+  }
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/full-shop.png' });
+  await page.locator('#ar-shop-tool').selectOption('socket');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Choose Work order');
+  for (let i = 0; i < 5; i++) await perform(page);
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle')?.data.liftState === 'raised');
+  await expect(page.locator('[data-ar-shop-lift]')).toHaveText('Raised — not yet locked');
+  await perform(page);
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle')?.data.liftState === 'locked');
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-vehicle').y)).toBeCloseTo(1.58);
+  await perform(page);
+  await page.waitForFunction(() => (window as any).__shopObject('removed-front-wheel'));
+  expect(await page.evaluate(() => (window as any).__shopObject('mounted-wheel--1.3-0.79'))).toBeNull();
+  await page.locator('[data-ar-shop-camera="station"]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-inspection.png' });
+  await page.locator('[data-ar-shop-go-task]').click();
+  await page.locator('#ar-shop-tool').selectOption('gauge');
+  await page.locator('#ar-shop-answer').fill('3');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Check the measurement');
+  await perform(page); await perform(page);
+  await page.waitForFunction(() => (window as any).__shopObject('brake-pad--1.3-0.79')?.data.thicknessMm === 8);
+  await page.locator('[data-ar-shop-station="exhaust"]').click();
+  await page.locator('[data-ar-shop-camera="station"]').click();
+  await page.waitForFunction(() => {
+    const w = window as any;
+    const object = w.__shopScene.getObjectByName('workshop-underbody');
+    const center = new w.THREE.Box3().setFromObject(object).getCenter(new w.THREE.Vector3());
+    const projected = center.clone().project(w.__shopCamera);
+    return w.__shopCamera.position.y >= 0.12 && w.__shopCamera.position.y < center.y && Math.abs(projected.y) < 0.5;
+  });
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/underbody.png' });
+  await perform(page); await perform(page); await perform(page);
+  await perform(page);
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Write a handoff');
+  await page.locator('#ar-shop-notes').fill('Found 2 mm pads below the 3 mm limit. Serviced the front axle, verified fastener torque and brake operation.');
+  await perform(page);
+  await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download work order', exact: true }).click();
+  expect((await downloadEvent).suggestedFilename()).toBe('auto-workshop-brakes.txt');
+  await page.getByRole('button', { name: 'Detailed engine bay', exact: true }).click();
+  await page.getByRole('button', { name: 'Return to workshop', exact: true }).click();
+  await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle'));
+  expect(await page.locator('#wrap canvas').count()).toBe(1);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+test('mobile controls, reduced motion and independent work-order progress', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels' } });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await perform(page);
+  await page.locator('#ar-shop-job').selectOption('electrical');
+  await perform(page);
+  await perform(page, 'lamp');
+  // Offscreen viewers intentionally pause their RAF; inspect geometry after returning to it.
+  await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-hood-pivot')?.rotation < -1);
+  await page.locator('[data-ar-shop-go-task]').click();
+  await page.locator('#ar-shop-tool').selectOption('meter');
+  await prepareInstrument(page);
+  await page.locator('#ar-shop-answer').fill('1.4');
+  await page.locator('[data-ar-shop-perform]').click();
+  await perform(page, 'terminal-kit');
+  await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => !(window as any).__shopObject('workshop-terminal-corrosion'));
+  await perform(page, 'meter');
+  await page.locator('#ar-shop-notes').fill('Found excessive drop at the positive joint. Serviced the connection. Repeat loaded voltage drop was 0.08 V.');
+  await perform(page, 'job-card');
+  await page.locator('#ar-shop-job').selectOption('brakes');
+  await expect(page.locator('[data-ar-shop-task="setup"]')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/mobile.png' });
+  const viewport = page.locator('.ar-bay-viewport');
+  await viewport.scrollIntoViewIfNeeded();
+  const before = await page.locator('#wrap canvas').screenshot();
+  await page.waitForTimeout(200);
+  const after = await page.locator('#wrap canvas').screenshot();
+  expect(Buffer.compare(before, after)).toBe(0);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('oil work order updates fluid and filter geometry and preserves the recorded calculation', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1000 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil' } } });
+  const oilTools: Record<string, string> = { drain: 'drain-pan', filter: 'filter', refill: 'funnel', verify: 'checklist' };
+  while (await page.locator('[data-ar-shop-perform]').count()) {
+    const id = (await page.locator('[data-ar-shop-perform]').getAttribute('data-ar-shop-perform'))!;
+    if (id === 'release') await page.locator('#ar-shop-notes').fill('Serviced the oil and filter using the service sheet. Verified fill level, pressure indication and absence of leaks.');
+    await perform(page, oilTools[id] || equipment[id], '0.5');
+    if (id === 'drain') {
+      await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+      await page.waitForFunction(() => (window as any).__shopObject('engine-oil-sump')?.data.fluidState === 'drained');
+      expect(await page.evaluate(() => (window as any).__shopObject('captured-used-oil'))).not.toBeNull();
+    }
+    if (id === 'refill') {
+      await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+      await page.waitForFunction(() => (window as any).__shopObject('engine-oil-sump')?.data.fluidState === 'filled');
+    }
+  }
+  await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  const history = await page.evaluate(() => (window as any).__toolData.autoRepair.shop.history);
+  expect(history.find((entry: any) => entry.id === 'refill').result).toContain('Learner calculation: 0.5 L.');
+  await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-hood-pivot')?.rotation < -1);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('station labels stay attached to physical components and the final views remain usable', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1000 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels' } });
+  await page.waitForFunction(() => (window as any).__shopObject('service-desk')?.data.labelAnchor);
+  const anchor = await page.evaluate(() => {
+    const w = window as any, desk = w.__shopScene.getObjectByName('service-desk');
+    return desk.localToWorld(desk.userData.labelAnchor.clone()).toArray();
+  });
+  expect(anchor[0]).toBeCloseTo(-2.9); expect(anchor[1]).toBeCloseTo(1.15);
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-two-post-lift').data.noSelectionScale)).toBe(true);
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/full-shop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/mobile.png' });
+  await page.setViewportSize({ width: 1360, height: 1000 });
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', {
+    job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, hood: false
+  }));
+  await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => (window as any).__shopObject('removed-front-wheel'));
+  await page.locator('[data-ar-shop-camera="station"]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-inspection.png' });
+  await page.locator('[data-ar-shop-station="exhaust"]').click();
+  await page.locator('[data-ar-shop-camera="station"]').click();
+  await page.waitForFunction(() => {
+    const w = window as any, car = w.__shopScene.getObjectByName('workshop-vehicle');
+    return w.__shopCamera.position.y >= 0.12 && w.__shopCamera.position.y < car.position.y;
+  });
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/underbody.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('voltmeter setup changes the real display and fresh evidence is required after service', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
+  await page.locator('#ar-shop-answer').fill('1.4');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Operate the equipment');
+  await page.locator('#ar-shop-instrument-mode').selectOption('resistance');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('DC volts');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await prepareInstrument(page);
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-live-voltmeter')?.data.reading === 1.6);
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-meter-black-lead').data.contact)).toBe('positive-clamp');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/voltmeter-before.png' });
+  await page.locator('[data-ar-shop-perform]').click();
+  await perform(page, 'terminal-kit');
+  await page.locator('#ar-shop-tool').selectOption('meter');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Operate the equipment');
+  await prepareInstrument(page);
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('0.08 V');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-live-voltmeter')?.data.reading === 0.08);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/voltmeter-after.png' });
+  await page.locator('[data-ar-shop-perform]').click();
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.verified)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('the physical wheel fasteners and accessible diagram share the reassembly sequence', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true, measured: true } } });
+  await page.locator('[data-ar-shop-seat-wheel]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-wheel-fastener-0'));
+  const point = await page.evaluate(() => {
+    const w = window as any, lug = w.__shopScene.getObjectByName('workshop-wheel-fastener-0');
+    const position = lug.getWorldPosition(new w.THREE.Vector3()).project(w.__shopCamera);
+    const rect = document.querySelector('#wrap canvas')!.getBoundingClientRect();
+    return { x: rect.left + (position.x + 1) * rect.width / 2, y: rect.top + (1 - position.y) * rect.height / 2 };
+  });
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator('[data-ar-shop-lugs-checked]')).toHaveAttribute('data-ar-shop-lugs-checked', '1');
+  await page.locator('[data-ar-shop-lug="1"]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('cross-hub diagram');
+  await page.locator('[data-ar-shop-lug="0"]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('already checked');
+  for (const index of [2, 4, 1, 3]) await page.locator('[data-ar-shop-lug="' + index + '"]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-wheel-fastener-3')?.data.checked === true);
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/wheel-torque.png' });
+  await page.locator('[data-ar-shop-perform]').click();
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.wheelRemoved)).toBe(false);
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.torqued)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('the measured jug and lining gauge render their captured values and survive mobile layout', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', oilDrained: true, plugSecured: true, serviced: true } } });
+  await page.locator('[data-ar-shop-jug-change="500"]').click();
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl === 4600);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/measured-oil.png' });
+  await page.locator('[data-ar-shop-jug-change="100"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await page.locator('#ar-shop-answer').fill('0.5');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Operate the equipment');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true }));
+  await page.locator('#ar-shop-instrument-surface').selectOption('backing');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('5 mm');
+  await page.locator('#ar-shop-instrument-surface').selectOption('lining');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('2 mm');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-pad-thickness-gauge')?.data.reading === 2);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/lining-gauge.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/instruments-mobile.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('alignment setup, live 3D toe, target picking and verified handoff complete a fourth job', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'alignment' } } });
+  await perform(page);
+  await page.locator('[data-ar-shop-go-task]').click();
+  await page.locator('#ar-shop-tool').selectOption('aligner');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="alignment-setup"]')).toBeVisible();
+  for (const check of ['tyres', 'targets']) await page.locator('[data-ar-alignment-check="' + check + '"]').click();
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="alignment-setup"]')).toBeVisible();
+  await page.locator('[data-ar-alignment-check="centered"]').click();
+  await page.locator('[data-ar-shop-perform]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-alignment-rig')?.data.prepared);
+  for (const name of ['alignment-target-left', 'alignment-target-right', 'alignment-turnplate-left', 'alignment-rear-slip-plate-right', 'stowed-lift-arm--0.75-1.36']) expect(await page.evaluate(n => (window as any).__shopObject(n), name)).not.toBeNull();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/alignment-before.png' });
+  await page.locator('[data-ar-alignment-cutaway]').click();
+  await page.waitForFunction(() => (window as any).__shopScene.getObjectByName('vehicle-floorpan')?.visible === false);
+  expect(await page.evaluate(() => (window as any).__shopScene.getObjectByName('workshop-brake-station').visible)).toBe(true);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/alignment-chassis-before.png' });
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('#ar-shop-answer').fill('0.4');
+  await page.locator('[data-ar-shop-perform]').click();
+  await page.locator('#ar-shop-tool').selectOption('tie-rod');
+  await page.locator('[data-ar-alignment-side="right"]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('alignment-target-frame-left'));
+  const point = await page.evaluate(() => {
+    const w = window as any, object = w.__shopScene.getObjectByName('alignment-target-frame-left');
+    const position = object.getWorldPosition(new w.THREE.Vector3()).project(w.__shopCamera);
+    const rect = document.querySelector('.ar-bay-viewport canvas')!.getBoundingClientRect();
+    return { x: rect.left + (position.x + 1) / 2 * rect.width, y: rect.top + (1 - position.y) / 2 * rect.height };
+  });
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator('[data-ar-alignment-side="left"]')).toHaveAttribute('aria-pressed', 'true');
+  for (let i = 0; i < 4; i++) await page.locator('[data-ar-alignment-adjust="-5"]').click();
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.2');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('mounted-wheel--1.3-0.79')?.data.toeDegrees === 0.1);
+  const wheel = await page.evaluate(() => {
+    const o = (window as any).__shopScene.getObjectByName('mounted-wheel--1.3-0.79'); return { yaw: o.rotation.y, scale: o.userData.visualMagnification };
+  });
+  expect(wheel.yaw).toBeCloseTo(-0.1 * Math.PI / 180 * 24); expect(wheel.scale).toBe(24);
+  expect(await page.evaluate(() => (window as any).__shopScene.getObjectByName('alignment-steering-corner-left').rotation.y)).toBeCloseTo(wheel.yaw);
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/alignment-after.png' });
+  await page.locator('[data-ar-alignment-cutaway]').click();
+  await page.waitForFunction(() => (window as any).__shopScene.getObjectByName('vehicle-floorpan')?.visible === true);
+  await page.locator('[data-ar-shop-perform]').click();
+  await page.locator('#ar-shop-tool').selectOption('aligner');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Operate the equipment');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('[data-ar-shop-perform]').click();
+  await page.locator('#ar-shop-notes').fill('Measured +0.40° total toe. Adjusted left toe to +0.10°, kept right at +0.10°, secured and repeated the alignment measurement.');
+  await perform(page);
+  await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  const history = await page.locator('details').last().textContent();
+  expect(history).toContain('Left 0.30°, right 0.10°, total 0.40°');
+  expect(history).toContain('Left 0.10°, right 0.10°, total 0.20°');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('alignment rejects a misleading passing total and preserves adjustments on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 30, right: -10, tyres: true, targets: true, centered: true } } } });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await expect(page.locator('[data-ar-alignment-total]')).toContainText('Total in range');
+  await expect(page.locator('[data-ar-alignment-balance]')).toHaveAttribute('data-ar-alignment-balance', 'adjust');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'false');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  for (let i = 0; i < 4; i++) await page.locator('[data-ar-alignment-adjust="-5"]').click();
+  await page.locator('[data-ar-alignment-side="right"]').click();
+  for (let i = 0; i < 4; i++) await page.locator('[data-ar-alignment-adjust="5"]').click();
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'true');
+  await page.locator('[data-ar-alignment-adjust="1"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  await page.locator('#ar-shop-job').selectOption('oil');
+  await page.locator('#ar-shop-job').selectOption('alignment');
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.21');
+  await expect(page.locator('[data-ar-alignment-side="right"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-shop-instrument]').screenshot({ path: 'reports/automobile-workshop/alignment-mobile.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+async function shopPoint(page: any, name: string) {
+  await page.evaluate(() => { (window as any).__shopClickStable = null; });
+  await page.waitForFunction(n => {
+    const w = window as any, object = w.__shopScene?.getObjectByName(n);
+    if (!object || !w.__shopCamera) return false;
+    const point = object.getWorldPosition(new w.THREE.Vector3()).project(w.__shopCamera);
+    const previous = w.__shopClickStable;
+    if (previous && previous.frame === w.__shopRenderCount) return false;
+    const count = previous && Math.abs(previous.x - point.x) + Math.abs(previous.y - point.y) < 0.00001 ? previous.count + 1 : 0;
+    w.__shopClickStable = { frame: w.__shopRenderCount, x: point.x, y: point.y, count };
+    return count >= 3 && Math.abs(point.x) < 1 && Math.abs(point.y) < 1;
+  }, name);
+  return await page.evaluate(n => {
+    const w = window as any, object = w.__shopScene.getObjectByName(n);
+    const point = object.getWorldPosition(new w.THREE.Vector3()).project(w.__shopCamera);
+    const rect = document.querySelector('.ar-bay-viewport canvas')!.getBoundingClientRect();
+    return { x: rect.left + (point.x + 1) / 2 * rect.width, y: rect.top + (1 - point.y) / 2 * rect.height };
+  }, name);
+}
+async function clickShop(page: any, name: string) { const point = await shopPoint(page, name); await page.mouse.click(point.x, point.y); }
+async function pickPhysicalTool(page: any, id: string) {
+  await page.locator('[data-ar-scene-tools-focus]').click();
+  await clickShop(page, 'workshop-tool-kit-' + id);
+  await expect(page.locator('#ar-shop-tool')).toHaveValue(id);
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Picked up');
+  await page.locator('[data-ar-scene-focus]').click();
+}
+
+test('direct 3D hood, tool cases and meter controls capture diagnostic evidence', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 1, station: 'engine', tool: 'lamp' } } });
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-hood');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Hood opened');
+  await expect(page.locator('[data-ar-shop-task="hood"]')).toBeVisible();
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toBeVisible();
+  await page.locator('[data-ar-scene-tools-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/direct-tool-tray.png' });
+  await clickShop(page, 'workshop-tool-kit-meter');
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('meter');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'voltmeter-mode-dial');
+  await expect(page.locator('#ar-shop-instrument-mode')).toHaveValue('resistance');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'voltmeter-mode-dial');
+  await expect(page.locator('#ar-shop-instrument-mode')).toHaveValue('dcv');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-meter-contact');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-meter-load');
+  await expect(page.locator('#ar-shop-instrument-load')).toHaveValue('starter');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-display-— V');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await page.locator('[data-ar-scene-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/direct-meter-controls.png' });
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Check the measurement');
+  await page.locator('#ar-shop-scene-answer').fill('1.4');
+  await expect(page.locator('#ar-shop-answer')).toHaveValue('1.4');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  await pickPhysicalTool(page, 'terminal-kit');
+  await clickShop(page, 'workshop-terminal-corrosion');
+  await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();
+  await pickPhysicalTool(page, 'meter');
+  await clickShop(page, 'workshop-display-— V');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('0.08 V');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('direct lift controls distinguish orbit drag from a click and enforce the current task', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Choose Lift controls');
+  await pickPhysicalTool(page, 'lift-controls');
+  const point = await shopPoint(page, 'workshop-control-task');
+  await page.mouse.move(point.x, point.y); await page.mouse.down();
+  await page.mouse.move(point.x + 70, point.y + 20, { steps: 6 }); await page.mouse.up();
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toBeVisible();
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="stability"]')).toBeVisible();
+  await expect(page.locator('[data-ar-shop-lift]')).toHaveText('Low lift — check stability');
+  await page.locator('[data-ar-scene-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/direct-lift-controls.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('direct jug and alignment controls change scene state and remain keyboard-accessible on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', lift: 'ground', serviced: true, plugSecured: true } } });
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-jug-add');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4600');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'jug-clear-container');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-jug-remove');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 10, right: 10, selected: 'right', tyres: true, targets: true, centered: true } }));
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-toe-plus');
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.21');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('[data-ar-scene-action="toe-minus"]').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.2');
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'true');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-scene-controls]').screenshot({ path: 'reports/automobile-workshop/direct-controls-mobile.png' });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('physical lift stop latches, survives view changes and resets without resuming motion', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 4, station: 'lift', tool: 'lift-controls', lift: 'checked' } } });
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'lift-emergency-stop');
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'stopped');
+  await page.waitForFunction(() => (window as any).__shopObject('lift-emergency-stop')?.data.latched === true);
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-vehicle').y)).toBeCloseTo(0.18);
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Lift stop is latched');
+  await expect(page.locator('[data-ar-shop-task="raise"]')).toBeVisible();
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Lift stop is latched');
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'workshop-control-lift-reset');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Confirm the simulated bay is clear');
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'workshop-control-lift-clear');
+  await expect(page.locator('[data-ar-scene-action="lift-clear"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-ar-lift-focus]').click();
+  await shopPoint(page, 'workshop-control-lift-reset');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/lift-stop-latched.png' });
+  await clickShop(page, 'workshop-control-lift-reset');
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'ready');
+  await page.waitForFunction(() => (window as any).__shopObject('lift-emergency-stop')?.data.latched === false);
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-vehicle').y)).toBeCloseTo(0.18);
+  await expect(page.locator('[data-ar-shop-task="raise"]')).toBeVisible();
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-shop-task="locks"]')).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('[data-ar-scene-action="lift-stop"]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'stopped');
+  await page.locator('[data-ar-shop-station="tools"]').click();
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'stopped');
+  await page.locator('[data-ar-lift-stop-panel]').screenshot({ path: 'reports/automobile-workshop/lift-stop-mobile.png' });
+  await page.locator('[data-ar-scene-action="lift-clear"]').focus(); await page.keyboard.press('Enter');
+  await page.locator('[data-ar-scene-action="lift-reset"]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'ready');
+  await expect(page.locator('[data-ar-shop-task="locks"]')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('brake explorer separates real parts, supports physical picking and restores service interactions', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 8, station: 'brakes', tool: 'brake-kit', lift: 'locked', wheelRemoved: true, measured: true } } });
+  await page.locator('[data-ar-brake-focus]').click();
+  await clickShop(page, 'workshop-control-brake-spread');
+  await expect(page.locator('#ar-brake-spacing')).toHaveValue('100');
+  for (const part of ['rotor', 'caliper', 'pad']) {
+    await page.locator('[data-ar-brake-focus]').click();
+    await clickShop(page, 'brake-' + part + '--1.3-0.79');
+    await expect(page.locator('[data-ar-brake-part]')).toHaveAttribute('data-ar-brake-part', part);
+    await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  }
+  await page.locator('[data-ar-brake-focus]').click();
+  await shopPoint(page, 'brake-pad--1.3-0.79');
+  const positions = await page.evaluate(() => ['rotor', 'pad', 'caliper'].map(part => (window as any).__shopScene.getObjectByName('brake-' + part + '--1.3-0.79').position.z));
+  expect(positions[0]).toBeCloseTo(0.99); expect(positions[1]).toBeCloseTo(1.435); expect(positions[2]).toBeCloseTo(1.87);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-explorer-3d.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('#ar-brake-spacing').focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#ar-brake-spacing')).toHaveValue('5');
+  await page.keyboard.press('End'); await expect(page.locator('#ar-brake-spacing')).toHaveValue('100');
+  await page.locator('[data-ar-scene-action="brake-part-caliper"]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-brake-part]')).toHaveAttribute('data-ar-brake-part', 'caliper');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-brake-explorer]').screenshot({ path: 'reports/automobile-workshop/brake-explorer-mobile.png' });
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await page.locator('[data-ar-brake-focus]').click();
+  await clickShop(page, 'workshop-control-brake-join');
+  await expect(page.locator('#ar-brake-spacing')).toHaveValue('0');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'brake-caliper--1.3-0.79');
+  await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
+  await page.locator('[data-ar-scene-action="brake-part-pad"]').click();
+  await expect(page.locator('[data-ar-brake-part]')).toContainText('Model lining: 8 mm');
+  await page.locator('[data-ar-scene-action="brake-spread"]').click();
+  await page.locator('#ar-shop-tool').selectOption('torque');
+  await page.locator('[data-ar-scene-action="seat"]').click();
+  await expect(page.locator('[data-ar-brake-explorer]')).toHaveCount(0);
+  await page.waitForFunction(() => (window as any).__shopScene.getObjectByName('brake-pad--1.3-0.79')?.position.z < 0.82);
+  await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('detailed brake parts retain clickable components, tracked gauge and selected-part close-ups', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, brakeSpread: 100, brakePart: 'pad' } } });
+  await page.locator('[data-ar-brake-focus]').click();
+  await shopPoint(page, 'gauge-digital-head');
+  const details = await page.evaluate(() => {
+    const s = (window as any).__shopScene, rotor = s.getObjectByName('brake-rotor--1.3-0.79'), pad = s.getObjectByName('brake-pad--1.3-0.79');
+    return { vents: rotor.children.filter((c: any) => c.name.startsWith('rotor-vent-vane')).length,
+      studs: rotor.children.filter((c: any) => c.name.startsWith('rotor-hub-stud')).length,
+      lining: pad.getObjectByName('pad-friction-lining').geometry.parameters.depth,
+      backing: !!pad.getObjectByName('pad-steel-backing'), piston: !!s.getObjectByName('brake-caliper--1.3-0.79').getObjectByName('caliper-piston-face'),
+      gauge: s.getObjectByName('workshop-pad-thickness-gauge').position.toArray() };
+  });
+  expect(details).toMatchObject({ vents: 16, studs: 5, backing: true, piston: true });
+  expect(details.lining).toBeCloseTo(0.012); expect(details.gauge).toEqual([-0.7, 0.2, 0.62]);
+  await clickShop(page, 'gauge-digital-head');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('2 mm');
+  await page.locator('[data-ar-brake-closeup]').click();
+  await shopPoint(page, 'brake-pad--1.3-0.79');
+  const centered = await page.evaluate(() => (window as any).__shopScene.getObjectByName('brake-pad--1.3-0.79').getWorldPosition(new (window as any).THREE.Vector3()).project((window as any).__shopCamera).toArray());
+  expect(Math.abs(centered[0])).toBeLessThan(0.05); expect(Math.abs(centered[1])).toBeLessThan(0.05);
+  const distance = await page.evaluate(() => (window as any).__shopCamera.position.distanceTo((window as any).__shopScene.getObjectByName('brake-pad--1.3-0.79').getWorldPosition(new (window as any).THREE.Vector3())));
+  // The host preserves an authored home-target offset in its orbit math.
+  expect(distance).toBeLessThan(1.7);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-pad-closeup.png' });
+  await page.locator('[data-ar-brake-focus]').click();
+  await clickShop(page, 'workshop-control-gauge-surface');
+  await expect(page.locator('#ar-shop-instrument-surface')).toHaveValue('backing');
+  await page.locator('[data-ar-brake-focus]').click(); await clickShop(page, 'gauge-digital-head');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('5 mm');
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'false');
+  await page.locator('[data-ar-scene-action="brake-part-rotor"]').click();
+  await page.locator('[data-ar-brake-closeup]').click();
+  await shopPoint(page, 'brake-rotor--1.3-0.79');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-rotor-closeup.png' });
+  await page.locator('[data-ar-scene-action="brake-join"]').click();
+  await page.locator('[data-ar-brake-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopScene.getObjectByName('workshop-pad-thickness-gauge').position.length() === 0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('[data-ar-brake-closeup]').focus(); await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('live task guide navigates tools, evidence and calculation without performing the task', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 7, station: 'tools', tool: 'lamp', lift: 'locked', wheelRemoved: true } } });
+  const guide = page.locator('[data-ar-task-guide]'), go = page.locator('[data-ar-task-guide-go]');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'tool');
+  await go.focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-scene-tool]').first()).toBeFocused();
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('lamp');
+  await page.locator('[data-ar-scene-tool="gauge"]').click();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'station');
+  await go.click();
+  await expect(page.locator('[data-ar-scene-action="task"]')).toBeFocused();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'evidence');
+  await go.click();
+  await expect(page.locator('[data-ar-scene-action="read"]')).toBeFocused();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  // The learner, rather than navigation, captures evidence.
+  await page.keyboard.press('Enter');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'calculation');
+  await go.click(); await expect(page.locator('#ar-shop-scene-answer')).toBeFocused();
+  await page.keyboard.type('6');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await guide.locator('summary').click();
+  await expect(guide.locator('[data-ar-check-ready="false"]')).toHaveCount(0);
+  await guide.screenshot({ path: 'reports/automobile-workshop/task-guide-ready.png' });
+  await go.click();
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  await expect(page.locator('[data-ar-scene-action="task"]')).toBeFocused();
+  // Camera and explorer changes preserve readiness; a changed gauge setup does not.
+  await page.locator('[data-ar-scene-action="brake-spread"]').click();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await page.locator('[data-ar-scene-action="gauge-surface"]').click();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'evidence');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await go.focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-scene-action="gauge-surface"]')).toBeFocused();
+  await guide.screenshot({ path: 'reports/automobile-workshop/task-guide-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('live task guide supports lift recovery, alignment, wheel seating and customer handoff', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lift-controls', lift: 'prepared', liftStopped: true } } });
+  const guide = page.locator('[data-ar-task-guide]'), go = page.locator('[data-ar-task-guide-go]');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="lift-clear"]')).toBeFocused();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'lift-stop');
+  await page.keyboard.press('Enter');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="lift-reset"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toHaveCount(1);
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'alignment', step: 1, station: 'brakes', tool: 'aligner' }));
+  for (const check of ['tyres', 'targets', 'centered']) {
+    await go.click(); await expect(page.locator('[data-ar-scene-action="check-' + check + '"]')).toBeFocused();
+    await page.keyboard.press('Enter');
+  }
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true }));
+  await go.click(); await expect(page.locator('[data-ar-scene-action="seat"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await go.click(); await expect(page.locator('[data-ar-shop-lug="0"]')).toBeFocused();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'evidence');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'electrical', step: 5, station: 'intake', tool: 'job-card', verified: true }));
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'handoff');
+  await go.click(); await expect(page.locator('#ar-shop-scene-notes')).toBeFocused();
+  await page.keyboard.type('Repaired the connection and verified loaded voltage drop.');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="task"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'complete');
+  await go.click(); await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('instrument coach identifies meter setup and routes keyboard focus without changing it', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true,
+    instrument: { mode: 'resistance', contact: 'posts', load: 'off' } } } });
+  const coach = page.locator('[data-ar-instrument-coach="meter"]'), go = page.locator('[data-ar-task-guide-go]');
+  await expect(coach).toHaveAttribute('data-ar-coach-status', 'setup');
+  await expect(page.locator('[data-ar-task-guide-status]')).toContainText('Select DC volts');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="meter-mode"]')).toBeFocused();
+  await expect(page.locator('#ar-shop-instrument-mode')).toHaveValue('resistance');
+  await page.keyboard.press('Enter');
+  await expect(coach).toContainText('Move the probes');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="meter-contact"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(coach).toContainText('Apply the simulated starter load');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="meter-load"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(coach).toHaveAttribute('data-ar-coach-status', 'capture');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="read"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(coach).toHaveAttribute('data-ar-coach-status', 'captured');
+  await expect(coach.locator('[data-ar-coach-capture="valid"]')).toContainText('1.6 V');
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  await expect(page.locator('#ar-shop-scene-answer')).toHaveValue('');
+  await coach.screenshot({ path: 'reports/automobile-workshop/instrument-coach-meter.png' });
+  await page.locator('[data-ar-scene-action="meter-load"]').click();
+  await expect(coach).toContainText('No current capture');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await coach.screenshot({ path: 'reports/automobile-workshop/instrument-coach-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('physical fine-fill control changes the jug by 100 mL and coaching routes alignment adjustment', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', serviced: true, plugSecured: true,
+    instrument: { jugMl: 4500 } } } });
+  const go = page.locator('[data-ar-task-guide-go]');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="jug-fine"]')).toBeFocused();
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4500');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-jug-fine');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4600');
+  await expect(page.locator('[data-ar-instrument-coach="jug"]')).toHaveAttribute('data-ar-coach-status', 'capture');
+  await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'jug-clear-container');
+  await expect(page.locator('[data-ar-coach-capture="valid"]')).toContainText('4.6 L');
+  await page.locator('[data-ar-scene-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/jug-fine-control.png' });
+  await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'workshop-control-jug-fine');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4700');
+  await expect(page.locator('[data-ar-instrument-coach="jug"]')).toContainText('No current capture');
+  await expect(page.locator('[data-ar-shop-task="refill"]')).toHaveCount(1);
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 30, right: 10, selected: 'left', tyres: true, targets: true, centered: true } }));
+  await expect(page.locator('[data-ar-instrument-coach="alignment"]')).toHaveAttribute('data-ar-coach-status', 'adjust');
+  await go.click(); await expect(page.locator('[data-ar-alignment-panel]')).toBeFocused();
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.4');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('battery close-up places probes on physical contacts and preserves unchanged evidence', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  const closeup = page.locator('[data-ar-meter-contacts-focus]');
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
+  await closeup.click();
+  await clickShop(page, 'workshop-probe-label-posts');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('12.6 V');
+  await closeup.click();
+  await clickShop(page, 'positive-clamp-bolt');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  await closeup.click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-meter-black-lead')?.data.contact === 'positive-clamp');
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-probe-target-joint').data.selected)).toBe(true);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/battery-joint-contact.png' });
+  await page.locator('[data-ar-scene-action="meter-load"]').click();
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await closeup.click(); await clickShop(page, 'workshop-meter-black-probe');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');
+  await closeup.click(); await clickShop(page, 'negative-post');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('posts');
+  await closeup.click();
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-meter-black-lead')?.data.contact === 'negative-post');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/battery-post-contact.png' });
+  await page.locator('[data-ar-scene-action="read"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('10.4 V');
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'false');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  const joint = page.locator('[data-ar-scene-action="meter-joint"]');
+  await joint.focus(); await page.keyboard.press('Enter');
+  await expect(joint).toHaveAttribute('aria-pressed', 'true');
+  await closeup.focus(); await page.keyboard.press('Enter');
+  await shopPoint(page, 'workshop-probe-label-joint');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/battery-contacts-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('3D inspection previews controls, expires changed state and explicitly applies a current selection', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  await page.locator('[data-ar-scene-focus]').click();
+  const before = await page.evaluate(() => JSON.stringify((window as any).__ctx.toolData.autoRepair.shop));
+  await clickShop(page, 'workshop-control-meter-load');
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('Apply simulated starter load');
+  expect(await page.evaluate(() => JSON.stringify((window as any).__ctx.toolData.autoRepair.shop))).toBe(before);
+  await expect(page.locator('#ar-shop-instrument-load')).toHaveValue('off');
+  await page.locator('[data-ar-control-inspector]').screenshot({ path: 'reports/automobile-workshop/control-inspector-desktop.png' });
+  await page.locator('[data-ar-control-use]').click();
+  await expect(page.locator('#ar-shop-instrument-load')).toHaveValue('starter');
+  await expect(page.locator('#ar-shop-inspect-target')).toBeFocused();
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-read');
+  await page.locator('[data-ar-scene-action="meter-contact"]').click();
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('workshop changed');
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-read');
+  await page.locator('[data-ar-control-use]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-meter-posts');
+  await page.locator('[data-ar-control-inspector]').screenshot({ path: 'reports/automobile-workshop/control-inspector-mobile.png' });
+  await page.locator('[data-ar-control-dismiss]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-inspect-target')).toBeFocused();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('inspection keeps the physical stop immediate and retains lift gates and drag behavior', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lamp', lift: 'prepared' } } });
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'workshop-control-task');
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('Perform the current work-order step');
+  await page.locator('[data-ar-control-use]').click();
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('Choose Lift controls');
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toHaveCount(1);
+  await page.locator('[data-ar-lift-focus]').click();
+  await clickShop(page, 'lift-emergency-stop');
+  await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status', 'stopped');
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('[data-ar-lift-focus]').click();
+  const point = await shopPoint(page, 'workshop-control-task');
+  await page.mouse.move(point.x, point.y); await page.mouse.down(); await page.mouse.move(point.x + 65, point.y + 10, { steps: 6 }); await page.mouse.up();
+  await expect(page.locator('[data-ar-control-use]')).toHaveCount(0);
+  await page.locator('[data-ar-shop-interaction="operate"]').click();
+  await expect(page.locator('#ar-shop-inspect-target')).toHaveCount(0);
+  await page.locator('[data-ar-lift-focus]').click(); await clickShop(page, 'workshop-control-lift-clear');
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('bay-clear check recorded');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('moving 3D torque wrench, numbered targets and inspection share five deliberate checks', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true, measured: true } } });
+  await page.locator('[data-ar-shop-seat-wheel]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  const count = () => page.evaluate(() => (window as any).__toolData.autoRepair.shop.lugs.length);
+  const next = (index: number | null) => page.waitForFunction(i => (window as any).__shopObject('workshop-torque-wrench')?.data.nextLug === i, index);
+  await next(0);
+  await clickShop(page, 'workshop-wheel-progress');
+  expect(await count()).toBe(0);
+  await expect(page.locator('[data-ar-shop-lug="0"]')).toHaveAttribute('aria-current', 'step');
+  const first = await page.evaluate(() => { const w=window as any, p=w.__shopScene.getObjectByName('workshop-torque-wrench-socket').position; return { x:p.x, y:p.y }; });
+  await clickShop(page, 'workshop-torque-wrench-grip');
+  await next(2); expect(await count()).toBe(1);
+  const second = await page.evaluate(() => { const w=window as any, p=w.__shopScene.getObjectByName('workshop-torque-wrench-socket').position; return { x:p.x, y:p.y }; });
+  expect(second).not.toEqual(first);
+  await clickShop(page, 'workshop-wheel-number-4');
+  expect(await count()).toBe(1);
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('cross-hub diagram');
+  await clickShop(page, 'workshop-wheel-number-0');
+  expect(await count()).toBe(1);
+  await expect(page.locator('[data-ar-scene-feedback]')).toContainText('already checked');
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  await page.locator('.ar-bay-viewport').scrollIntoViewIfNeeded();
+  await clickShop(page, 'workshop-torque-wrench-grip');
+  await expect(page.locator('[data-ar-control-preview]')).toContainText('Check fastener 3');
+  expect(await count()).toBe(1);
+  await page.locator('[data-ar-control-use]').click();
+  expect(await count()).toBe(2);
+  await page.locator('[data-ar-shop-interaction="operate"]').click();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await next(4);
+  await page.locator('.ar-bay-viewport').screenshot({ path: 'reports/automobile-workshop/moving-torque-wrench-desktop.png' });
+  await clickShop(page, 'workshop-wheel-number-4');
+  await next(1); expect(await count()).toBe(3);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await clickShop(page, 'workshop-torque-wrench-grip');
+  await next(3); expect(await count()).toBe(4);
+  await page.locator('.ar-bay-viewport').screenshot({ path: 'reports/automobile-workshop/moving-torque-wrench-mobile.png' });
+  await clickShop(page, 'workshop-torque-wrench-grip');
+  await next(null); expect(await count()).toBe(5);
+  expect(await page.evaluate(() => (window as any).__shopObject('workshop-wheel-next-ring'))).toBeNull();
+  await clickShop(page, 'workshop-torque-wrench-grip');
+  expect(await count()).toBe(5);
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.step)).toBe(9);
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.wheelRemoved)).toBe(true);
+  await page.locator('[data-ar-shop-perform]').click();
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop)).toMatchObject({ step: 10, torqued: true, wheelRemoved: false });
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('voltage evidence lesson records before and after, supports reasoning retries and exports the comparison', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true } } });
+  const panel = page.locator('[data-ar-voltage-evidence]');
+  await expect(panel.locator('[data-ar-evidence-value="before"]')).toHaveText('Not recorded yet');
+  await expect(panel.locator('[data-ar-evidence-choice]')).toHaveCount(0);
+  await prepareInstrument(page);
+  await expect(panel.locator('[data-ar-evidence-value="before"]')).toHaveText('Not recorded yet');
+  await page.locator('#ar-shop-answer').fill('1.4'); await page.locator('[data-ar-shop-perform]').click();
+  await expect(panel.locator('[data-ar-evidence-value="before"]')).toContainText('1.6 V');
+  await perform(page, 'terminal-kit');
+  await expect(panel.locator('[data-ar-evidence-value="after"]')).toHaveText('Not recorded yet');
+  await page.locator('#ar-shop-tool').selectOption('meter'); await prepareInstrument(page);
+  await expect(panel.locator('[data-ar-evidence-value="after"]')).toHaveText('Not recorded yet');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(panel).toHaveAttribute('data-ar-voltage-evidence', 'compared');
+  await expect(panel.locator('[data-ar-evidence-value="after"]')).toContainText('0.08 V');
+  const history = await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop.history));
+  await page.locator('[data-ar-evidence-choice="looks-clean"]').click();
+  await expect(page.locator('[data-ar-evidence-feedback]')).toHaveAttribute('data-ar-evidence-feedback', 'rethink');
+  await page.locator('[data-ar-evidence-choice="same-test"]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-evidence-feedback]')).toHaveAttribute('data-ar-evidence-feedback', 'supported');
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop.history))).toBe(history);
+  expect(await page.evaluate(() => (window as any).__toolData.autoRepair.shop.step)).toBe(5);
+  await panel.screenshot({ path: 'reports/automobile-workshop/voltage-evidence-desktop.png' });
+  const downloadEvent = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download work order', exact: true }).click();
+  const download = await downloadEvent; const stream = await download.createReadStream(); const chunks = [];
+  for await (const chunk of stream!) chunks.push(chunk); const report = Buffer.concat(chunks).toString('utf8');
+  expect(report).toContain('Before service: 1.6 V'); expect(report).toContain('After service: 0.08 V'); expect(report).toContain('Optional reasoning check: The same loaded joint test');
+  await page.locator('#ar-shop-job').selectOption('oil'); await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('electrical'); await expect(page.locator('[data-ar-evidence-choice="same-test"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.evaluate(() => { const w=window as any; w.__ctx.isDark=true; w.__ctx.isContrast=true; w.__ctx.update('autoRepair', 'shopInteraction', 'operate'); });
+  await panel.screenshot({ path: 'reports/automobile-workshop/voltage-evidence-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('#ar-shop-notes').fill('Found a high joint voltage drop, serviced the connection and repeated the same loaded test successfully.');
+  await perform(page, 'job-card'); await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('live toe diagram explains cancellation and keeps target overlays separate from evidence', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shopLayout: 'panels', shop: { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 30, right: -10, tyres: true, targets: true, centered: true } } } });
+  const panel = page.locator('[data-ar-toe-diagram]');
+  await expect(panel.locator('[data-ar-toe-check="total"]')).toHaveAttribute('data-ar-toe-pass', 'true');
+  await expect(panel.locator('[data-ar-toe-explanation]')).toHaveAttribute('data-ar-toe-explanation','misleading-total');
+  const original = await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await panel.locator('[data-ar-toe-overlay]').focus(); await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-ar-toe-target]')).toHaveCount(2);
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(original);
+  await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-desktop.png'});
+  for (let i=0;i<4;i++) await page.locator('[data-ar-alignment-adjust="-5"]').click();
+  await page.locator('[data-ar-alignment-side="right"]').click();
+  for (let i=0;i<4;i++) await page.locator('[data-ar-alignment-adjust="5"]').click();
+  await expect(panel.locator('[data-ar-toe-explanation]')).toHaveAttribute('data-ar-toe-explanation','ready');
+  await expect(panel.locator('[data-ar-toe-check="balance"]')).toContainText('= 0.00°');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopObject('mounted-wheel--1.3-0.79')?.data.toeDegrees === 0.1);
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  const captured = await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await panel.locator('[data-ar-toe-overlay]').click();
+  expect(await page.evaluate(() => JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(captured);
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','true');
+  await page.locator('[data-ar-alignment-adjust="1"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading','');
+  await expect(panel.locator('[data-ar-toe-check="balance"]')).toContainText('= 0.01°');
+  await page.locator('#ar-shop-job').selectOption('oil');
+  await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('alignment');
+  await expect(panel.locator('[data-ar-toe-check="total"]')).toContainText('= +0.21°');
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('#wrap').evaluate((el: HTMLElement) => {el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(() => { const w=window as any; w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopToeTargets',true); });
+  await expect(panel.locator('[data-ar-toe-target]')).toHaveCount(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-mobile.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(() => { const w=window as any; w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopToeTargets',true); });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/toe-diagram-dark.png'});
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('graduated jug links unit scales, fine 3D fill and fresh measurement evidence', async ({ page }) => {
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,oilDrained:true,plugSecured:true}}});
+  const panel=page.locator('[data-ar-jug-lesson]');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  const initial=await state();
+  await panel.locator('[data-ar-jug-units="mL"]').focus();await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-ar-jug-scale]')).toContainText('Each small division = 100 mL');
+  await panel.locator('[data-ar-jug-working-toggle]').click();
+  await expect(panel.locator('[data-ar-jug-working]')).toContainText('5 changes of 100 mL');
+  expect(await state()).toBe(initial);
+  await panel.screenshot({path:'reports/automobile-workshop/jug-lesson-desktop.png'});
+  for(let i=0;i<4;i++)await page.locator('[data-ar-shop-jug-change="100"]').click();
+  await page.locator('[data-ar-scene-focus]').click();await clickShop(page,'workshop-control-jug-fine');
+  await expect(panel).toHaveAttribute('data-ar-jug-lesson','ready');
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===4600);
+  const geometry=await page.evaluate(()=>{const s=(window as any).__shopScene;return{target:s.getObjectByName('jug-target-line').position.y,fill:s.getObjectByName('jug-oil-volume').geometry.parameters.height,marks:s.getObjectByName('workshop-measuring-jug').children.filter((o:any)=>o.name.startsWith('jug-fine-graduation-')).length};});
+  expect(geometry.target).toBeCloseTo(0.92+0.42*4600/5000);expect(geometry.fill).toBeCloseTo(0.42*4600/5000);expect(geometry.marks).toBe(45);
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/jug-graduations-3d.png'});
+  await page.locator('[data-ar-shop-instrument-read]').click();const captured=await state();
+  await panel.locator('[data-ar-jug-units="L"]').click();await panel.locator('[data-ar-jug-working-toggle]').click();
+  expect(await state()).toBe(captured);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await page.locator('[data-ar-shop-jug-change="100"]').click();await expect(panel).toHaveAttribute('data-ar-jug-lesson','over');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading','');
+  await panel.locator('[data-ar-jug-working-toggle]').click();await expect(panel.locator('[data-ar-jug-working]')).toContainText('Remove 100 mL');
+  await page.locator('[data-ar-shop-jug-change="-100"]').click();
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('#ar-shop-job').selectOption('alignment');await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(panel).toHaveAttribute('data-ar-jug-lesson','ready');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopJugUnits','mL');});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/jug-lesson-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopJugUnits','L');});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/jug-lesson-dark.png'});
+  await page.locator('#ar-shop-answer').fill('0.5');await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.refilled)).toBe(true);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+test('empty 3D measuring jug has no oil mesh and full capacity stays in bounds',async({page})=>{
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',serviced:true,plugSecured:true,instrument:{jugMl:0}}}});
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===0);
+  expect(await page.evaluate(()=>(window as any).__shopObject('jug-oil-volume'))).toBeNull();
+  await expect(page.locator('[data-ar-jug-fluid]')).toHaveAttribute('height','0');
+  await page.evaluate(()=>{const w=window as any;const s=w.__toolData.autoRepair.shop;w.__ctx.update('autoRepair','shop',{...s,instrument:{...s.instrument,jugMl:5000}});});
+  await page.locator('[data-ar-shop-instrument-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('workshop-measuring-jug')?.data.quantityMl===5000);
+  expect(await page.evaluate(()=>(window as any).__shopScene.getObjectByName('jug-oil-volume').geometry.parameters.height)).toBeCloseTo(0.42);
+  await page.locator('[data-ar-shop-jug-change="100"]').click();await expect(page.locator('[data-ar-jug-fluid]')).toHaveAttribute('height','200');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','false');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('brake layer lesson connects physical pad selection to valid lining evidence',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
+  const panel=page.locator('[data-ar-brake-measurement]');
+  await expect(panel).toHaveAttribute('data-ar-brake-measurement','pending');
+  await page.locator('[data-ar-brake-closeup]').click();
+  await clickShop(page,'pad-steel-backing');
+  await expect(page.locator('#ar-shop-instrument-surface')).toHaveValue('backing');
+  await expect(panel.locator('[data-ar-gauge-layer="backing"]')).toHaveAttribute('aria-pressed','true');
+  const bindings=await page.evaluate(()=>{const s=(window as any).__shopScene;return ['pad-steel-backing','pad-friction-lining'].map(n=>s.getObjectByName(n).userData.gaugeSurface);});
+  expect(bindings).toEqual(['backing','lining']);
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(panel).toHaveAttribute('data-ar-brake-measurement','wrong-layer');
+  await expect(panel.locator('[data-ar-brake-limit-review]')).toHaveCount(0);
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-wrong.png'});
+  await panel.locator('[data-ar-gauge-layer="lining"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading','');
+  await expect(panel).toHaveAttribute('data-ar-brake-measurement','pending');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(panel).toHaveAttribute('data-ar-brake-measurement','lining');
+  const capture=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop.reading));
+  await panel.locator('[data-ar-gauge-layer="lining"]').click();
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop.reading))).toBe(capture);
+  await expect(panel).toContainText('Captured lining: 2 mm');
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-desktop.png'});
+  await page.locator('[data-ar-brake-closeup]').click();await shopPoint(page,'pad-steel-backing');
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/brake-layer-3d.png'});
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('brakes');await expect(panel).toHaveAttribute('data-ar-brake-measurement','lining');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/brake-layer-dark.png'});
+  await page.locator('#ar-shop-answer').fill('6');await page.locator('[data-ar-shop-perform]').click();
+  await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('handoff support uses completed records and preserves learner writing through prompts and export',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'My initial observation. '}}});
+  const panel=page.locator('[data-ar-handoff-guide]');
+  await expect(panel).toHaveAttribute('data-ar-handoff-guide','closed');
+  const original=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await panel.locator('[data-ar-handoff-toggle]').focus();await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-ar-handoff-group="verification"]')).toHaveAttribute('data-ar-handoff-status','pending');
+  await panel.locator('[data-ar-handoff-write="finding"]').click();
+  await expect(page.locator('#ar-shop-notes')).toBeFocused();
+  expect(await page.locator('#ar-shop-notes').evaluate((el:HTMLTextAreaElement)=>el.selectionStart)).toBe('My initial observation. '.length);
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(original);
+  await prepareInstrument(page);
+  await expect(panel.locator('[data-ar-handoff-group="finding"]')).toHaveAttribute('data-ar-handoff-status','pending');
+  await page.locator('#ar-shop-answer').fill('1.4');await page.locator('[data-ar-shop-perform]').click();
+  await expect(panel.locator('[data-ar-handoff-group="finding"]')).toHaveAttribute('data-ar-handoff-status','recorded');
+  await panel.locator('[data-ar-handoff-record="measure"] summary').click();
+  await expect(panel.locator('[data-ar-handoff-record="measure"]')).toContainText('Captured: 1.6 V');
+  await panel.screenshot({path:'reports/automobile-workshop/handoff-guide-pending.png'});
+  await perform(page,'terminal-kit');
+  await page.locator('#ar-shop-tool').selectOption('meter');await prepareInstrument(page);
+  await expect(panel.locator('[data-ar-handoff-group="verification"]')).toHaveAttribute('data-ar-handoff-status','pending');
+  await page.locator('[data-ar-shop-perform]').click();
+  await expect(panel.locator('[data-ar-handoff-group="verification"]')).toHaveAttribute('data-ar-handoff-status','recorded');
+  await panel.locator('[data-ar-handoff-record="verify"] summary').click();
+  await expect(panel.locator('[data-ar-handoff-record="verify"]')).toContainText('Captured: 0.08 V');
+  const beforeWriting=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop.history));
+  await panel.locator('[data-ar-handoff-write="verification"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-notes')).toBeFocused();await expect(page.locator('#ar-handoff-writing-prompt')).toContainText('Verification:');
+  const notes='Measured 1.6 V across the loaded positive joint, serviced that connection, and repeated the same test at 0.08 V. The original battery stayed installed.';
+  await page.locator('#ar-shop-notes').fill(notes);
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop.history))).toBe(beforeWriting);
+  await panel.screenshot({path:'reports/automobile-workshop/handoff-guide-desktop.png'});
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(panel).toContainText('service did the customer request');
+  await expect(panel.locator('[data-ar-handoff-group="service"]')).toContainText('0/3');
+  await page.locator('#ar-shop-job').selectOption('electrical');await expect(page.locator('#ar-shop-notes')).toHaveValue(notes);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopHandoffHelp',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/handoff-guide-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopHandoffHelp',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/handoff-guide-dark.png'});
+  await panel.locator('[data-ar-handoff-toggle]').click();await expect(page.locator('#ar-shop-notes')).not.toHaveAttribute('aria-describedby','ar-handoff-writing-prompt');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue(notes);
+  await perform(page,'job-card');await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download work order',exact:true}).click();
+  const stream=await(await downloadEvent).createReadStream();const chunks=[];for await(const chunk of stream!)chunks.push(chunk);
+  expect(Buffer.concat(chunks).toString('utf8')).toContain('CUSTOMER HANDOFF\n'+notes);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('practice board resumes exact saved work and updates after a completed oil handoff',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,answer:'6',notes:'My brake inspection draft'},shopRecords:{
+    oil:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4500},notes:'My oil draft'},
+    electrical:{job:'electrical',step:6,verified:true,released:true,notes:'Completed connection repair and verification.'}
+  }}});
+  const board=page.locator('[data-ar-practice-board]');
+  await expect(board).toHaveAttribute('data-ar-practice-board','closed');
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await board.locator('[data-ar-practice-toggle]').focus();await page.keyboard.press('Enter');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await expect(board.locator('[data-ar-practice-completed]')).toContainText('1/4');
+  await expect(board.locator('[data-ar-practice-job="brakes"]')).toHaveAttribute('data-ar-practice-status','in-progress');
+  await expect(board.locator('[data-ar-practice-job="alignment"]')).toHaveAttribute('data-ar-practice-status','not-started');
+  await board.screenshot({path:'reports/automobile-workshop/practice-board-desktop.png'});
+  await board.locator('[data-ar-practice-open="oil"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-job')).toBeFocused();await expect(page.locator('#ar-shop-job')).toHaveValue('oil');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity','4500');
+  await page.locator('#ar-shop-notes').fill('My edited oil draft');
+  await board.locator('[data-ar-practice-open="brakes"]').click();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('2 mm');await expect(page.locator('#ar-shop-answer')).toHaveValue('6');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue('My brake inspection draft');
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('gauge');
+  const restored=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));expect(restored).toBe(before);
+  await board.locator('[data-ar-practice-open="brakes"]').click();expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(page.locator('#ar-shop-notes')).toHaveValue('My edited oil draft');
+  await page.locator('[data-ar-shop-jug-change="100"]').click();await page.locator('[data-ar-shop-instrument-read]').click();
+  await page.locator('#ar-shop-answer').fill('0.5');await page.locator('[data-ar-shop-perform]').click();await perform(page,'checklist');
+  await page.locator('#ar-shop-notes').fill('Replaced the filter, prepared the 4.6 L service fill and verified the authored level, pressure indication and leak checks.');
+  await perform(page,'job-card');await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  await expect(board.locator('[data-ar-practice-completed]')).toContainText('2/4');
+  await expect(board.locator('[data-ar-practice-job="oil"]')).toHaveAttribute('data-ar-practice-status','complete');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopPracticeBoard',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await board.screenshot({path:'reports/automobile-workshop/practice-board-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopPracticeBoard',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await board.screenshot({path:'reports/automobile-workshop/practice-board-dark.png'});
+  await board.locator('[data-ar-practice-open="alignment"]').click();await expect(page.locator('[data-ar-shop-task="intake"]')).toBeVisible();
+  await board.locator('[data-ar-practice-open="oil"]').click();await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();
+  await board.locator('[data-ar-practice-toggle]').click();await expect(board.locator('[data-ar-practice-job]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('live cross-hub path tracks deliberate checks in the diagram and 3D wheel',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:9,station:'brakes',tool:'torque',lift:'locked',wheelRemoved:true,serviced:true}}});
+  await expect(page.locator('[data-ar-wheel-path]')).toHaveCount(0);
+  await page.locator('[data-ar-shop-seat-wheel]').click();
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('Begin at fastener 1');
+  await page.locator('[data-ar-shop-lug="0"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('1 → 3');
+  await expect(page.locator('[data-ar-wheel-path="next"]')).toHaveCount(1);
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-wheel-next-path')?.data.toLug===2);
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-wheel-next-path').data.fromLug)).toBe(0);
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/wheel-path-3d.png'});
+  await page.locator('[data-ar-shop-lug="1"]').click();
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('1 → 3');
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.lugs)).toEqual([0]);
+  await page.locator('[data-ar-shop-instrument-focus]').click();await clickShop(page,'workshop-torque-wrench-grip');
+  await expect(page.locator('[data-ar-wheel-move]')).toContainText('3 → 5');
+  await expect(page.locator('[data-ar-wheel-path="checked"]')).toHaveCount(1);
+  await page.locator('[data-ar-shop-instrument]').screenshot({path:'reports/automobile-workshop/wheel-path-desktop.png'});
+  await page.locator('#ar-shop-job').selectOption('oil');await page.locator('#ar-shop-job').selectOption('brakes');
+  await expect(page.locator('[data-ar-wheel-step="4"]')).toHaveAttribute('aria-current','step');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-shop-instrument]').screenshot({path:'reports/automobile-workshop/wheel-path-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  const bounds=await page.locator('[data-ar-wheel-diagram]').evaluate((el:HTMLElement)=>{const r=el.getBoundingClientRect();return{square:Math.abs(r.width-r.height)<1,buttons:[...el.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.left>=r.left-1&&q.right<=r.right+1&&q.top>=r.top-1&&q.bottom<=r.bottom+1;})};});
+  expect(bounds).toEqual({square:true,buttons:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('[data-ar-shop-instrument]').screenshot({path:'reports/automobile-workshop/wheel-path-dark.png'});
+  for(const index of [4,1,3]){await page.locator('[data-ar-shop-lug="'+index+'"]').focus();await page.keyboard.press('Enter');}
+  await expect(page.locator('[data-ar-wheel-path="next"]')).toHaveCount(0);await expect(page.locator('[data-ar-wheel-path="checked"]')).toHaveCount(4);
+  await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
+  await page.locator('[data-ar-shop-instrument-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-torque-wrench')?.data.nextLug===null);
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-wheel-next-path'))).toBeNull();
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-task="lower"]')).toBeVisible();
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('lift support diagram tracks physical stages while comparison and reset preserve height',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:2,station:'lift',tool:'lift-controls',lift:'prepared'}}});
+  const panel=page.locator('[data-ar-lift-support]');
+  await expect(panel).toHaveAttribute('data-ar-lift-support','prepared');
+  const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await panel.locator('[data-ar-lift-compare]').focus();await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-ar-lift-example]')).toHaveCount(2);
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await perform(page,'lift-controls');await expect(panel).toHaveAttribute('data-ar-lift-support','low');
+  await perform(page,'lamp');await expect(panel).toHaveAttribute('data-ar-lift-support','checked');
+  await page.locator('[data-ar-lift-focus]').click();
+  await page.waitForFunction(()=>(window as any).__shopObject('workshop-vehicle')?.y===0.18);
+  await perform(page,'lift-controls');await expect(panel).toHaveAttribute('data-ar-lift-support','raised');
+  await page.locator('[data-ar-lift-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('lift-support-state-display')?.data.liftState==='raised');
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-vehicle').y)).toBeCloseTo(1.68);
+  expect(await page.evaluate(()=>(window as any).__shopObject('lift-support-state-display').data.locked)).toBe(false);
+  await panel.screenshot({path:'reports/automobile-workshop/lift-support-raised.png'});
+  await page.locator('[data-ar-scene-action="lift-stop"]').click();await expect(panel.locator('[data-ar-lift-motion]')).toHaveAttribute('data-ar-lift-motion','stopped');
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-task="locks"]')).toBeVisible();
+  await page.locator('[data-ar-scene-action="lift-clear"]').click();await page.locator('[data-ar-scene-action="lift-reset"]').click();
+  await expect(panel).toHaveAttribute('data-ar-lift-support','raised');await expect(panel.locator('[data-ar-lift-motion]')).toHaveAttribute('data-ar-lift-motion','not-stopped');
+  await page.locator('[data-ar-lift-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('lift-emergency-stop')?.data.latched===false);
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-vehicle').y)).toBeCloseTo(1.68);
+  await page.locator('[data-ar-shop-perform]').click();await expect(panel).toHaveAttribute('data-ar-lift-support','locked');
+  await page.locator('[data-ar-lift-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('lift-support-state-display')?.data.locked===true);
+  expect(await page.evaluate(()=>(window as any).__shopObject('workshop-vehicle').y)).toBeCloseTo(1.58);
+  await page.locator('.ar-shop-viewport').screenshot({path:'reports/automobile-workshop/lift-support-3d.png'});
+  await panel.screenshot({path:'reports/automobile-workshop/lift-support-locked.png'});
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLiftCompare',true);});
+  await page.locator('[data-ar-scene-action="lift-stop"]').click();
+  await expect(panel.locator('[data-ar-lift-motion]')).toHaveAttribute('data-ar-lift-motion','stopped');await expect(panel).toHaveAttribute('data-ar-lift-support','locked');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/lift-support-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLiftCompare',true);});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.screenshot({path:'reports/automobile-workshop/lift-support-dark.png'});
+  await panel.locator('[data-ar-lift-compare]').click();await expect(panel.locator('[data-ar-lift-example]')).toHaveCount(0);
+  await expect(panel).toHaveAttribute('data-ar-lift-support','locked');
+  await page.locator('#ar-shop-job').selectOption('alignment');await expect(panel).toHaveCount(0);
+  await page.locator('#ar-shop-job').selectOption('brakes');await expect(panel).toHaveAttribute('data-ar-lift-support','locked');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('workshop shortcuts stay reachable and preserve evidence, drafts and camera framing',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,oilDrained:true,instrument:{jugMl:4600},answer:'0.5',notes:'My unfinished customer explanation.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  const before=await state();const nav=page.locator('[data-ar-workshop-shortcuts]');
+  const jump=async(id:string,target:string)=>{await nav.locator('[data-ar-workshop-jump="'+id+'"]').focus();await page.keyboard.press('Enter');await expect(page.locator(target)).toBeFocused();};
+  await jump('bay','#ar-shop-bay');
+  const pose=await page.evaluate(()=>{const c=(window as any).__shopCamera;return{position:c.position.toArray(),rotation:c.quaternion.toArray()};});
+  await jump('equipment','[data-ar-shop-instrument]');await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  await jump('order','#ar-shop-work-order');await jump('notes','#ar-shop-notes');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue('My unfinished customer explanation.');expect(await state()).toBe(before);
+  await page.screenshot({path:'reports/automobile-workshop/shortcuts-desktop.png'});
+  await jump('bay','#ar-shop-bay');
+  expect(await page.evaluate(()=>{const c=(window as any).__shopCamera;return{position:c.position.toArray(),rotation:c.quaternion.toArray()};})).toEqual(pose);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await jump('equipment','[data-ar-shop-instrument]');
+  const bounds=await nav.evaluate((el:HTMLElement)=>{const r=el.getBoundingClientRect();return{top:r.top,bottom:r.bottom,height:r.height,targets:[...el.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.height>=44&&q.top>=0&&q.bottom<=innerHeight;})};});
+  expect(bounds.top).toBeGreaterThanOrEqual(0);expect(bounds.top).toBeLessThan(15);expect(bounds.height).toBeLessThan(130);expect(bounds.targets).toBe(true);
+  expect((await page.locator('[data-ar-shop-instrument]').boundingBox())!.y).toBeGreaterThanOrEqual(bounds.bottom);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.screenshot({path:'reports/automobile-workshop/shortcuts-contrast.png'});
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await jump('notes','#ar-shop-notes');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.screenshot({path:'reports/automobile-workshop/shortcuts-dark.png'});
+  expect(await state()).toBe(before);await jump('bay','#ar-shop-bay');
+  await page.getByRole('button',{name:'Return to work order',exact:true}).click();await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  expect(await state()).toBe(before);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+test('equipment shortcut falls back to the tool chooser and completed work order',async({page})=>{
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes'}}});
+  await page.locator('[data-ar-workshop-jump="equipment"]').click();await expect(page.locator('#ar-shop-tool')).toBeFocused();
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBeUndefined();
+  await page.evaluate(()=>(window as any).__ctx.update('autoRepair','shop',{job:'electrical',step:6,released:true,verified:true,notes:'My completed report.'}));
+  await page.locator('[data-ar-workshop-jump="equipment"]').click();await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await page.locator('[data-ar-workshop-jump="notes"]').click();await expect(page.locator('#ar-shop-notes')).toHaveValue('My completed report.');
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(6);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('probe map follows physical contacts and preserves captures until the setup changes',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,notes:'Keep my diagnosis draft.'}}});
+  const toggle=page.locator('[data-ar-meter-trace-toggle]'),panel=page.locator('[data-ar-meter-trace]');
+  await expect(panel).toHaveCount(0);await page.locator('[data-ar-shop-instrument-read]').click();
+  const before=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await toggle.focus();await page.keyboard.press('Enter');await expect(panel).toHaveAttribute('data-ar-meter-trace','posts');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(before);
+  await expect(panel.locator('[data-ar-meter-trace-reading]')).toContainText('Captured: 12.6 V');
+  await panel.locator('[data-ar-meter-trace-contact="posts"]').click();await expect(panel.locator('[data-ar-meter-trace-reading]')).toContainText('12.6 V');
+  await panel.locator('[data-ar-meter-trace-contact="joint"]').focus();await page.keyboard.press('Enter');
+  await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('joint');await expect(panel.locator('[data-ar-meter-trace-reading]')).toHaveAttribute('data-ar-meter-trace-reading','pending');
+  await page.locator('[data-ar-meter-contacts-focus]').click();await page.waitForFunction(()=>(window as any).__shopObject('workshop-meter-black-lead')?.data.contact==='positive-clamp');
+  await page.locator('#ar-shop-instrument-load').selectOption('starter');await page.locator('[data-ar-shop-instrument-read]').click();
+  await expect(panel.locator('[data-ar-meter-trace-reading]')).toContainText('Captured: 1.6 V');
+  await panel.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));
+  await panel.screenshot({path:'reports/automobile-workshop/meter-map-desktop.png'});
+  const captured=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  await toggle.click();await expect(panel).toHaveCount(0);await toggle.click();expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop))).toBe(captured);
+  await page.locator('[data-ar-meter-contacts-focus]').click();await clickShop(page,'negative-post');
+  await expect(panel).toHaveAttribute('data-ar-meter-trace','posts');await expect(panel.locator('[data-ar-meter-lead="black"]')).toHaveAttribute('data-ar-meter-contact','posts');
+  await expect(panel.locator('[data-ar-meter-trace-reading]')).toHaveAttribute('data-ar-meter-trace-reading','pending');
+  await page.locator('#ar-shop-instrument-mode').selectOption('resistance');await expect(panel.locator('[data-ar-meter-trace-explanation]')).toContainText('Select DC volts');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(panel.locator('[data-ar-meter-trace-reading]')).toHaveAttribute('data-ar-meter-trace-reading','pending');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopMeterTrace',true);});
+  await panel.screenshot({path:'reports/automobile-workshop/meter-map-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopMeterTrace',true);});
+  await page.locator('#ar-shop-instrument-mode').selectOption('dcv');await panel.locator('[data-ar-meter-trace-contact="joint"]').click();await page.locator('#ar-shop-instrument-load').selectOption('off');
+  await expect(panel.locator('[data-ar-meter-trace-explanation]')).toContainText('zero drop without load');
+  await panel.screenshot({path:'reports/automobile-workshop/meter-map-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await panel.locator('button').evaluateAll(buttons=>buttons.every(b=>b.getBoundingClientRect().height>=44))).toBe(true);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,hood:false});});
+  await panel.locator('[data-ar-meter-trace-contact="posts"]').click();await expect(panel).toHaveAttribute('data-ar-meter-trace','joint');
+  await expect(page.locator('#ar-shop-notes')).toHaveValue('Keep my diagnosis draft.');expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(2);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('task route reviews recorded evidence without skipping tasks or losing drafts',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:0,station:'intake',tool:'job-card',notes:'My explanation of the finding, service and verification.'}}});
+  const toggle=page.locator('[data-ar-route-toggle]'),route=page.locator('[data-ar-task-route]');
+  await expect(route).toHaveCount(0);await toggle.focus();await page.keyboard.press('Enter');
+  await expect(route.locator('[data-ar-route-status="current"]')).toHaveAttribute('data-ar-route-step','intake');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await route.locator('[data-ar-route-step="verify"] summary').focus();await page.keyboard.press('Enter');
+  await expect(route.locator('[data-ar-route-step="verify"]')).toHaveAttribute('data-ar-route-status','upcoming');expect(await state()).toBe(before);
+  await route.locator('[data-ar-route-return]').click();await expect(page.locator('#ar-shop-current-task')).toBeFocused();expect(await state()).toBe(before);
+  await perform(page,'job-card');await perform(page,'lamp');await perform(page,'meter','1.4');
+  await expect(route.locator('[data-ar-route-recorded]')).toHaveAttribute('data-ar-route-recorded','3');
+  await expect(route.locator('[data-ar-route-status="current"]')).toHaveAttribute('data-ar-route-step','service');
+  await route.locator('[data-ar-route-step="measure"] summary').click();await expect(route.locator('[data-ar-route-step="measure"] [data-ar-route-evidence]')).toContainText('Captured: 1.6 V');
+  const measured=await state();await route.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await route.screenshot({path:'reports/automobile-workshop/task-route-desktop.png'});
+  await toggle.click();await expect(route).toHaveCount(0);await toggle.click();expect(await state()).toBe(measured);
+  await page.locator('#ar-shop-job').selectOption('brakes');await expect(route).toHaveAttribute('data-ar-task-route','brakes');await expect(route.locator('[data-ar-route-step]')).toHaveCount(13);
+  await page.locator('#ar-shop-job').selectOption('electrical');await expect(route.locator('[data-ar-route-recorded]')).toHaveAttribute('data-ar-route-recorded','3');
+  await perform(page,'terminal-kit');await perform(page,'meter');await perform(page,'job-card');
+  await expect(route.locator('[data-ar-route-recorded]')).toHaveAttribute('data-ar-route-recorded','6');await expect(route.locator('[aria-current="step"]')).toHaveCount(0);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopTaskRoute',true);});
+  await route.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await route.screenshot({path:'reports/automobile-workshop/task-route-contrast.png'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopTaskRoute',true);});
+  await route.locator('[data-ar-route-sequence]').focus();await page.keyboard.press('End');
+  await expect.poll(()=>route.locator('[data-ar-route-sequence]').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+  await expect.poll(()=>route.locator('[data-ar-route-sequence]').evaluate(el=>{const bounds=el.getBoundingClientRect(),last=el.querySelector('li:last-child summary')!.getBoundingClientRect();return last.bottom<=bounds.bottom+1&&last.top>=bounds.top;})).toBe(true);
+  await route.screenshot({path:'reports/automobile-workshop/task-route-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await route.locator('summary').evaluateAll(rows=>rows.every(row=>row.getBoundingClientRect().height>=44))).toBe(true);
+  await route.locator('[data-ar-route-return]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-notes')).toBeFocused();await expect(page.locator('#ar-shop-notes')).toHaveValue('My explanation of the finding, service and verification.');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('calculation coach links scene and work order while preserving captured instrument evidence',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',serviced:true,plugSecured:true,instrument:{jugMl:4600},answer:'500',notes:'Keep my explanation draft.'}}});
+  const order=page.locator('[data-ar-calculation-coach="order"]'),scene=page.locator('[data-ar-calculation-coach="scene"]');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await order.locator('[data-ar-calculation-check]').focus();await page.keyboard.press('Enter');await expect(order.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','units');await expect(scene.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','units');
+  await order.locator('[data-ar-calculation-hint-toggle]').click();expect(await state()).toBe(before);
+  await expect(page.locator('#ar-shop-answer')).toHaveAttribute('aria-invalid','true');await order.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await order.screenshot({path:'reports/automobile-workshop/calculation-coach-desktop.png'});
+  await page.locator('#ar-shop-scene-answer').fill('4.6');await expect(page.locator('#ar-shop-answer')).toHaveValue('4.6');await expect(order.locator('[data-ar-calculation-result]')).toHaveCount(0);
+  await scene.locator('[data-ar-calculation-check]').click();await expect(order.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','total');
+  await page.locator('#ar-shop-answer').fill('0.5');await order.locator('[data-ar-calculation-check]').click();await expect(scene.locator('[data-ar-calculation-result]')).toHaveAttribute('data-ar-calculation-result','correct');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');await expect(page.locator('#ar-shop-notes')).toHaveValue('Keep my explanation draft.');
+  const checked=await state();await order.locator('[data-ar-calculation-hint-toggle]').click();expect(await state()).toBe(checked);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopCalculationHint','oil');});
+  await order.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await order.screenshot({path:'reports/automobile-workshop/calculation-coach-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopCalculationHint','oil');});
+  await scene.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await scene.screenshot({path:'reports/automobile-workshop/calculation-coach-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await scene.locator('button').evaluateAll(buttons=>buttons.every(b=>b.getBoundingClientRect().height>=44))).toBe(true);
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-task="verify"]')).toBeVisible();await expect(page.locator('[data-ar-calculation-coach]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.history.at(-1).result)).toContain('Learner calculation: 0.5 L');
+  await page.locator('#ar-shop-job').selectOption('electrical');await expect(page.locator('[data-ar-calculation-result]')).toHaveCount(0);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('inspector camera locates areas without operating controls or invalidating evidence',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this diagnostic draft.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  const chooser=page.locator('#ar-shop-inspect-target'),view=page.locator('[data-ar-control-view]'),inspector=page.locator('[data-ar-control-inspector]');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await chooser.selectOption('shop-use-electrical-2-meter-posts');const preview=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopInspectPick));
+  await expect(page.locator('[data-ar-control-view-status]')).toContainText('Battery contacts');await view.focus();await page.keyboard.press('Enter');
+  await expect(page.locator('.ar-bay-viewport')).toBeFocused();await shopPoint(page,'negative-post');
+  expect(await state()).toBe(before);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopInspectPick))).toBe(preview);
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');await expect(inspector).toHaveAttribute('data-ar-control-inspector','inspect');
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/inspector-location-3d.png'});
+  await inspector.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await inspector.screenshot({path:'reports/automobile-workshop/inspector-location-desktop.png'});
+  await chooser.selectOption('shop-use-electrical-2-equip-socket');await view.click();await shopPoint(page,'workshop-tool-kit-socket');expect(await state()).toBe(before);
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('meter');
+  const pose=()=>page.evaluate(()=>{const c=(window as any).__shopCamera;return{position:c.position.toArray(),rotation:c.quaternion.toArray()};});const toolsPose=await pose();
+  await chooser.selectOption('oil');await expect(view).toBeDisabled();await expect(page.locator('[data-ar-control-view-status]')).toContainText('mechanical locks');expect(await pose()).toEqual(toolsPose);expect(await state()).toBe(before);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await inspector.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await inspector.screenshot({path:'reports/automobile-workshop/inspector-location-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await chooser.selectOption('shop-use-electrical-2-meter-posts');await view.click();await page.locator('[data-ar-control-use]').click();await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('posts');await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');await expect(view).toHaveCount(0);
+  await chooser.selectOption('engine');await page.locator('#ar-shop-answer').fill('1.4');await expect(view).toHaveCount(0);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'oil',step:6,station:'oil',tool:'drain-pan',lift:'locked',liftStopped:true,notes:'Supported and stopped.'});});
+  await chooser.selectOption('oil');await expect(view).toBeEnabled();const supported=await state();await view.click();expect(await state()).toBe(supported);await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status','stopped');
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await inspector.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await inspector.screenshot({path:'reports/automobile-workshop/inspector-location-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await view.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('viewport response follows 3D input, capture freshness and keyboard equipment navigation', async ({page}) => {
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Preserve this diagnostic draft.'}}});
+  const panel=page.locator('[data-ar-workshop-response]'),capture=panel.locator('[data-ar-response-capture]');
+  await expect(capture).toHaveAttribute('data-ar-response-capture','missing');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(capture).toContainText('1.6 V');await expect(capture).toHaveAttribute('data-ar-response-capture','current');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await panel.locator('[data-ar-response-open]').focus();await page.keyboard.press('Enter');await expect(page.locator('[data-ar-shop-instrument]')).toBeFocused();expect(await state()).toBe(before);
+  await panel.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await panel.screenshot({path:'reports/automobile-workshop/response-panel-desktop.png'});
+  await page.locator('[data-ar-meter-contacts-focus]').click();await clickShop(page,'negative-post');await expect(capture).toHaveAttribute('data-ar-response-capture','missing');
+  await expect(panel.locator('[data-ar-response-feedback]')).toHaveText(await page.locator('[data-ar-scene-feedback]').innerText());
+  await page.locator('#ar-shop-instrument-load').selectOption('off');await page.locator('[data-ar-shop-instrument-read]').click();await expect(capture).toHaveAttribute('data-ar-response-capture','check-setup');await expect(capture).toContainText('12.6 V');
+  expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.step)).toBe(2);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await panel.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await panel.screenshot({path:'reports/automobile-workshop/response-panel-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(capture).toHaveCount(0);await expect(panel.locator('[data-ar-response-open]')).toHaveText('Open work order');
+  await panel.locator('[data-ar-response-open]').click();await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await page.locator('#ar-shop-job').selectOption('electrical');await expect(capture).toContainText('12.6 V');await expect(page.locator('#ar-shop-notes')).toHaveValue('Preserve this diagnostic draft.');
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await panel.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await panel.screenshot({path:'reports/automobile-workshop/response-panel-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await panel.locator('button').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('inspection outline follows physical controls without rebuilding or operating the workshop',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});await page.emulateMedia({reducedMotion:'reduce'});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  const chooser=page.locator('#ar-shop-inspect-target'),viewport=page.locator('.ar-bay-viewport');
+  const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  const outline=()=>page.evaluate(()=>{const s=(window as any).__shopScene,o=s.getObjectByName('workshop-inspection-outline');const geometries=new Set(),textures=new Set();s.traverse((n:any)=>{if(n.geometry)geometries.add(n.geometry.uuid);const mats=Array.isArray(n.material)?n.material:[n.material];for(const m of mats)if(m)for(const v of Object.values(m))if((v as any)?.isTexture)textures.add((v as any).uuid);});return{visible:o.visible,target:o.userData.targetId,uuid:o.uuid,geometry:o.geometry.uuid,room:s.getObjectByName('full-workshop-environment').uuid,geometries:geometries.size,textures:textures.size,color:o.material.color.getHex(),depthTest:o.material.depthTest};});
+  async function choose(id:string){await chooser.selectOption(id);await page.locator('[data-ar-control-view]').click();await page.waitForFunction(expected=>{const o=(window as any).__shopScene?.getObjectByName('workshop-inspection-outline');return o?.visible&&o.userData.targetId===expected;},id);}
+  await choose('shop-use-electrical-2-meter-posts');const first=await outline();expect(first.depthTest).toBe(true);expect(first.color).toBe(0x22d3ee);
+  expect(await page.evaluate(()=>{const w=window as any,s=w.__shopScene,o=s.getObjectByName('workshop-inspection-outline'),post=s.getObjectByName('negative-post');return o.box.containsBox(new w.THREE.Box3().setFromObject(post));})).toBe(true);
+  await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-contacts.png'});
+  await clickShop(page,'positive-clamp-bolt');await expect(page.locator('[data-ar-control-preview]')).toContainText('positive');await viewport.scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>{const o=(window as any).__shopScene.getObjectByName('workshop-inspection-outline');return o.visible&&o.userData.targetId==='shop-use-electrical-2-meter-joint';});expect(await raw()).toBe(before);
+  for(const id of ['shop-use-electrical-2-equip-socket','shop-use-electrical-2-meter-posts','shop-use-electrical-2-meter-joint','shop-use-electrical-2-equip-socket']){await choose(id);const current=await outline();for(const key of ['uuid','geometry','room','geometries','textures'] as const)expect(current[key]).toBe(first[key]);}
+  await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-tools.png'});expect(await raw()).toBe(before);
+  await page.locator('[data-ar-control-dismiss]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  await choose('shop-use-electrical-2-read');await page.locator('#ar-shop-answer').fill('1.4');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  await choose('shop-use-electrical-2-meter-posts');await page.locator('[data-ar-shop-interaction="operate"]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();await chooser.selectOption('oil');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);await expect(page.locator('[data-ar-control-view]')).toBeDisabled();
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await choose('shop-use-electrical-2-meter-posts');expect((await outline()).color).toBe(0xffff00);await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-contrast.png'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('[data-ar-control-use]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'electrical',step:2,station:'engine',tool:'socket',hood:false});});
+  await chooser.selectOption('shop-use-electrical-2-read');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+async function workshopMaterial(page:any,name:string){
+  return page.evaluate((n:string)=>{const o=(window as any).__shopScene?.getObjectByName(n),m=o?.material;if(!m)return null;return {color:m.color.toArray(),hex:m.color.getHex(),shininess:m.shininess,specular:m.specular?.getHex(),opacity:m.opacity,transparent:m.transparent};},name);
+}
+function materialSeparation(a:number[],b:number[]){
+  const luminance=(rgb:number[])=>rgb.map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);
+  const first=luminance(a),second=luminance(b);return (Math.max(first,second)+0.05)/(Math.min(first,second)+0.05);
+}
+test('contrast workshop keeps battery contacts and leads distinct through theme changes',async({page})=>{
+  await page.setViewportSize({width:1360,height:1000});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this measured finding.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-meter-contacts-focus]').click();const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-meter-contacts-focus]').click();await shopPoint(page,'negative-post');
+  const battery=await workshopMaterial(page,'workshop-battery'),post=await workshopMaterial(page,'negative-post'),red=await workshopMaterial(page,'workshop-meter-red-lead'),black=await workshopMaterial(page,'workshop-meter-black-lead');
+  expect(materialSeparation(battery.color,post.color)).toBeGreaterThan(4.5);expect(materialSeparation(red.color,black.color)).toBeGreaterThan(3);
+  for(const m of [battery,post,red,black]){expect(m.shininess).toBe(0);expect(m.specular).toBe(0);expect(m.opacity).toBe(1);}
+  expect(red.color[0]).toBeGreaterThan(red.color[1]*2);expect(await raw()).toBe(before);
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-contacts.png'});
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-meter-posts');await page.locator('[data-ar-control-view]').click();
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});await shopPoint(page,'negative-post');
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-phone.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await expect(page.locator('[data-ar-control-outline-legend]')).toContainText('Yellow');expect(await raw()).toBe(before);
+  for(const isDark of [true,false]){
+    await page.evaluate(dark=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=dark;w.__ctx.update('autoRepair','shopLabels',false);},isDark);
+    await page.locator('[data-ar-control-view]').click();await expect.poll(async()=>(await workshopMaterial(page,'negative-post'))?.shininess).toBeGreaterThan(0);expect(await raw()).toBe(before);
+  }
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});await page.locator('[data-ar-control-view]').click();
+  await expect.poll(async()=>(await workshopMaterial(page,'negative-post'))?.shininess).toBe(0);
+  await page.locator('[data-ar-shop-interaction="operate"]').click();await page.locator('[data-ar-meter-contacts-focus]').click();await clickShop(page,'negative-post');await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('posts');await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('10.4 V');await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','false');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+test('contrast workshop separates brake layers, lift stop and measured oil',async({page})=>{
+  await page.setViewportSize({width:1360,height:1000});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-brake-closeup]').click();await shopPoint(page,'pad-steel-backing');
+  const lining=await workshopMaterial(page,'pad-friction-lining'),backing=await workshopMaterial(page,'pad-steel-backing');expect(materialSeparation(lining.color,backing.color)).toBeGreaterThan(4.5);
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-brakes.png'});
+  await clickShop(page,'pad-steel-backing');await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-brake-measurement]')).toHaveAttribute('data-ar-brake-measurement','wrong-layer');
+  await page.locator('[data-ar-gauge-layer="lining"]').click();await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-brake-measurement]')).toHaveAttribute('data-ar-brake-measurement','lining');
+  await page.locator('[data-ar-lift-focus]').click();await shopPoint(page,'lift-emergency-stop');const stop=await workshopMaterial(page,'lift-emergency-stop'),surround=await workshopMaterial(page,'lift-stop-surround');
+  expect(stop.color[0]).toBeGreaterThan(stop.color[1]*2);expect(stop.hex).not.toBe(surround.hex);await clickShop(page,'lift-emergency-stop');await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status','stopped');
+  await page.getByRole('button',{name:'Whole shop',exact:true}).click();await page.locator('.ar-bay-viewport').evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-shop.png'});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',oilDrained:true,plugSecured:true,serviced:true});});
+  await page.locator('[data-ar-shop-instrument-focus]').click();await shopPoint(page,'jug-clear-container');
+  const oil=await workshopMaterial(page,'jug-oil-volume'),jug=await workshopMaterial(page,'jug-clear-container');expect(oil.hex).not.toBe(0xffffff);expect(oil.opacity).toBe(1);expect(jug.transparent).toBe(true);expect(jug.opacity).toBeLessThan(0.5);
+  await page.locator('[data-ar-shop-jug-change="500"]').click();await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','true');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('reviewed restarts recover measurements, records and drafts independently for each job',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  const other={job:'oil',step:2,station:'lift',tool:'lift-controls',lift:'prepared',notes:'Keep the oil work order.'};
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Original customer explanation.',history:[{id:'intake',label:'Read work order',result:'Concern recorded.'},{id:'hood',label:'Open hood',result:'Access ready.'}]},shopRecords:{oil:other}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const original=await raw();
+  const restart=page.locator('[data-ar-attempt-open="restart"]'),review=page.locator('#ar-attempt-review');
+  await restart.click();await expect(review).toBeFocused();expect(await raw()).toBe(original);await page.keyboard.press('Escape');await expect(restart).toBeFocused();await expect(review).toHaveCount(0);expect(await raw()).toBe(original);
+  await restart.click();await page.locator('#ar-shop-notes').fill('Revised customer explanation.');await expect(page.locator('[data-ar-attempt-confirm]')).toHaveCount(0);await expect(page.locator('[data-ar-attempt-stale]')).toBeVisible();
+  const revised=await raw();await restart.click();await review.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('[data-ar-attempt-panel]').screenshot({path:'reports/automobile-workshop/attempt-review-desktop.png'});
+  await page.locator('[data-ar-attempt-confirm="restart"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-work-order')).toBeFocused();await expect(page.locator('[data-ar-shop-task="intake"]')).toBeVisible();await expect(page.locator('#ar-shop-notes')).toHaveValue('');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopPreviousAttempts.electrical))).toBe(revised);expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shopRecords.oil)).toEqual(other);
+  await page.locator('#ar-shop-notes').fill('New practice draft.');const newer=await raw();
+  await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-attempt-cancel]').click();await expect(page.locator('[data-ar-attempt-open="restore"]')).toBeFocused();expect(await raw()).toBe(newer);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(page.locator('[data-ar-attempt-open="restore"]')).toHaveCount(0);await expect(page.locator('#ar-shop-notes')).toHaveValue(other.notes);
+  await page.locator('#ar-shop-job').selectOption('electrical');await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-attempt-confirm="restore"]').click();expect(await raw()).toBe(revised);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopPreviousAttempts.electrical))).toBe(newer);
+  await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-attempt-confirm="restore"]').click();expect(await raw()).toBe(newer);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-previous-attempt] summary').click();await page.locator('[data-ar-attempt-panel]').evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('[data-ar-attempt-panel]').screenshot({path:'reports/automobile-workshop/attempt-review-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('#ar-shop-job').selectOption('oil');await page.locator('#ar-shop-job').selectOption('electrical');await expect(page.locator('[data-ar-attempt-confirm]')).toHaveCount(0);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await restart.click();await page.locator('[data-ar-attempt-panel]').evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('[data-ar-attempt-panel]').screenshot({path:'reports/automobile-workshop/attempt-review-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  for(const button of await review.locator('button').all())expect(await button.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);
+  await page.locator('[data-ar-attempt-cancel]').click();expect(await raw()).toBe(newer);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('setup guidance explains blocked work and reviews earlier steps without changing the vehicle',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'brakes',step:6,station:'brakes',tool:'socket',lift:'raised',notes:'Keep this service draft.'}}});
+  const setup=page.locator('[data-ar-setup-checks]'),raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  await page.locator('[data-ar-task-guide-go="prerequisites"]').focus();await page.keyboard.press('Enter');await expect(setup).toBeFocused();await expect(setup).toHaveAttribute('open','');expect(await raw()).toBe(before);
+  await expect(setup).toContainText('Required: Supported on mechanical locks');await expect(setup).toContainText('Current: Raised: locks not set');
+  await setup.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await setup.screenshot({path:'reports/automobile-workshop/setup-guidance-desktop.png'});
+  await page.locator('[data-ar-setup-review="lift"]').click();const row=page.locator('[data-ar-route-step="locks"]');await expect(row.locator('summary')).toBeFocused();await expect(row.locator('details')).toHaveAttribute('open','');await expect(row).toContainText('No evidence is inferred');expect(await raw()).toBe(before);
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Raised: locks not set');await expect(page.locator('[data-ar-shop-task="wheel-off"]')).toBeVisible();expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.wheelRemoved)).not.toBe(true);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'electrical',step:2,station:'engine',tool:'meter',hood:false,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Electrical draft.'});});
+  await expect(setup).toContainText('Required: Open');await expect(setup).toContainText('Current: Closed');
+  await page.locator('[data-ar-scene-action="hood"]').click();await expect(setup).toHaveAttribute('data-ar-setup-checks','ready');await expect(setup).not.toHaveAttribute('open','');await expect(page.locator('[data-ar-task-guide]')).toHaveAttribute('data-ar-task-guide','evidence');
+  await page.locator('[data-ar-shop-instrument-read]').click();const captured=await raw();await setup.locator('summary').click();await expect(setup).toContainText('Ready · Hood access');expect(await raw()).toBe(captured);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shop',{job:'oil',step:9,station:'engine',tool:'funnel',lift:'locked',plugSecured:false,notes:'Oil draft.'});});
+  await expect(setup).toContainText('Required: Secured');await expect(setup).toContainText('Current: Not secured');await expect(setup).toContainText('Required: On the floor');
+  await setup.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await setup.screenshot({path:'reports/automobile-workshop/setup-guidance-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  const oil=await raw();await page.locator('[data-ar-setup-review="plugSecured"]').click();await expect(page.locator('[data-ar-route-step="filter"] summary')).toBeFocused();expect(await raw()).toBe(oil);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shop',{job:'alignment',step:1,station:'brakes',tool:'aligner',lift:'ground',wheelRemoved:true});});
+  await expect(setup).toContainText('Required: Fitted');await expect(setup).toContainText('Current: Removed');const alignment=await raw();
+  await setup.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await setup.screenshot({path:'reports/automobile-workshop/setup-guidance-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('[data-ar-setup-review="wheelRemoved"]').click();await expect(page.locator('[data-ar-route-step="intake"] summary')).toBeFocused();expect(await raw()).toBe(alignment);
+  expect(await page.locator('[data-ar-setup-review="wheelRemoved"]').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('inspection previews setup effects and evidence retention before deliberate use',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep my diagnostic reasoning.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  const chooser=page.locator('#ar-shop-inspect-target'),effect=page.locator('[data-ar-control-effect]'),use=page.locator('[data-ar-control-use]');
+  const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  await chooser.selectOption('shop-use-electrical-2-meter-posts');await page.locator('[data-ar-control-view]').click();await clickShop(page,'negative-post');
+  await expect(effect.locator('[data-ar-effect-before]')).toHaveText('Across positive post-to-clamp joint');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('Across battery posts');
+  await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','cleared');expect(await raw()).toBe(before);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await effect.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await effect.screenshot({path:'reports/automobile-workshop/control-effect-desktop.png'});
+  await use.focus();await page.keyboard.press('Enter');await expect(effect).toHaveCount(0);await expect(chooser).toBeFocused();
+  expect(await page.evaluate(()=>{const s=(window as any).__toolData.autoRepair.shop;return{contact:s.instrument.contact,reading:s.reading,step:s.step,notes:s.notes};})).toEqual({contact:'posts',reading:null,step:2,notes:'Keep my diagnostic reasoning.'});
+  await page.locator('[data-ar-shop-instrument-read]').click();const invalid=await raw();await chooser.selectOption('shop-use-electrical-2-meter-posts');
+  await expect(effect).toHaveAttribute('data-ar-control-effect','unchanged');await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','kept');expect(await raw()).toBe(invalid);
+  await use.click();expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.reading.valid)).toBe(false);
+  await page.evaluate(()=>{const w=window as any,s=w.__toolData.autoRepair.shop;w.__ctx.update('autoRepair','shop',{...s,tool:'socket'});});
+  const wrongTool=await raw();await chooser.selectOption('shop-use-electrical-2-meter-mode');await expect(effect).toHaveAttribute('data-ar-control-effect','blocked');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('DC volts');await expect(effect.locator('[data-ar-effect-blocked]')).toContainText('Select DC voltmeter');expect(await raw()).toBe(wrongTool);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shop',{job:'oil',step:9,station:'engine',tool:'funnel',plugSecured:true,lift:'ground',instrument:{jugMl:4600}});});
+  await page.locator('[data-ar-shop-instrument-read]').click();const oil=await raw();await chooser.selectOption('shop-use-oil-9-jug-add');
+  await expect(effect).toHaveAttribute('data-ar-control-effect','blocked');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('4600 mL (4.6 L)');await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','kept');await expect(effect.locator('[data-ar-effect-blocked]')).toContainText('between 0 and 5000');expect(await raw()).toBe(oil);
+  await effect.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await effect.screenshot({path:'reports/automobile-workshop/control-effect-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await chooser.selectOption('shop-use-oil-9-jug-remove');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('4500 mL (4.5 L)');await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','cleared');expect(await raw()).toBe(oil);
+  await use.click();expect(await page.evaluate(()=>{const s=(window as any).__toolData.autoRepair.shop;return{jug:s.instrument.jugMl,refilled:s.refilled,reading:s.reading};})).toEqual({jug:4500,refilled:false,reading:null});
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shop',{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,instrument:{surface:'lining'}});});
+  await page.locator('[data-ar-shop-instrument-read]').click();const brake=await raw();await chooser.selectOption('shop-use-brakes-7-gauge-backing');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('Steel backing plate');expect(await raw()).toBe(brake);
+  await effect.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await effect.screenshot({path:'reports/automobile-workshop/control-effect-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await use.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,notes:'Updated diagnosis.'});});
+  await expect(effect).toHaveCount(0);await expect(use).toHaveCount(0);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+test('work-order previews match readable downloads and preserve incomplete saved attempts',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});await harness.mount(page,{autoRepair:{view:'workshop',shopLayout:'panels'}});
+  const preview=page.locator('[data-ar-report-preview]'),report=page.locator('[data-ar-report-text]');
+  const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  async function openPreview(){if(await preview.getAttribute('open')===null)await preview.locator('summary').click();}
+  async function checkDownload(job:string){
+    const expected=await report.textContent(),before=await raw(),event=page.waitForEvent('download');
+    await page.getByRole('button',{name:'Download work order',exact:true}).click();const download=await event;
+    expect(download.suggestedFilename()).toBe('auto-workshop-'+job+'.txt');const stream=await download.createReadStream();expect(stream).not.toBeNull();
+    const chunks:Buffer[]=[];for await(const chunk of stream!)chunks.push(Buffer.from(chunk));
+    const text=Buffer.concat(chunks).toString('utf8');expect(text).toBe(expected);expect(text.split('\n').length).toBeGreaterThan(15);expect(await raw()).toBe(before);return text;
+  }
+  for(const job of ['brakes','oil','alignment','electrical']){
+    await page.locator('#ar-shop-job').selectOption(job);await openPreview();await expect(report).toContainText('Status: In progress');expect(await checkDownload(job)).not.toContain(String.fromCharCode(92)+'n');
+  }
+  await page.locator('#ar-shop-notes').fill('The connection was tested under load, serviced, and tested again.');
+  await perform(page,'job-card','1.4');await perform(page,'lamp','1.4');await page.locator('#ar-shop-tool').selectOption('meter');await prepareInstrument(page);
+  await openPreview();await expect(report).toContainText('CURRENT TASK CAPTURE\n1.6 V');await expect(report).toContainText('Before service: Not recorded yet');
+  await perform(page,'meter','1.4');await perform(page,'terminal-kit','1.4');await perform(page,'meter','1.4');await perform(page,'job-card','1.4');
+  await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();await openPreview();await expect(report).toContainText('Status: Training job completed');await expect(report).toContainText('After service: 0.08 V');
+  const completed=await raw();await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-desktop.png'});await checkDownload('electrical');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,verified:false});});
+  await expect(page.locator('[data-ar-shop-complete]')).toHaveCount(0);await expect(page.locator('[data-ar-shop-review]')).toBeVisible();await expect(page.locator('[data-ar-task-guide]')).toHaveAttribute('data-ar-task-guide','review');
+  await page.locator('[data-ar-task-guide-go="review"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await openPreview();await expect(report).toContainText('Status: Review saved record');expect(await checkDownload('electrical')).not.toContain('Status: Training job completed');
+  await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shop',{job:'brakes',step:3,history:[null,{id:'intake',label:'Wrong saved label',result:'Customer concern recorded.'},{id:'verify',result:'Future record must stay absent.'}],notes:'<img src=x> Learner handoff remains text.'});});
+  await openPreview();await expect(report).toContainText('Saved task records: 1 / 3 earlier steps');await expect(report).toContainText('No saved record for this earlier step');await expect(report).not.toContainText('Future record must stay absent.');expect(await report.locator('img').count()).toBe(0);
+  const pending=await raw();await report.focus();await page.keyboard.press('End');await expect(report).toBeFocused();expect(await raw()).toBe(pending);
+  await report.evaluate((el:HTMLElement)=>{el.scrollTop=0;});await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await checkDownload('brakes');await page.locator('#ar-shop-notes').fill('Revised handoff, kept in my own words.');await expect(report).toContainText('Revised handoff, kept in my own words.');await checkDownload('brakes');
+  expect(await preview.locator('summary').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);expect(JSON.parse(completed).released).toBe(true);
+});
+
+test('immersive HUD walks the shop: one objective, outlined target, and a direct 3D NEXT', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 1000 });
+  await harness.mount(page, { autoRepair: { view: 'workshop' } });
+  await page.waitForFunction(() => (window as any).__shopObject('workshop-vehicle'));
+  const card = page.locator('[data-ar-hud-objective]'), clip = page.locator('details[data-ar-shop-clipboard]');
+  await expect(card).toBeVisible();
+  await expect(clip).not.toHaveAttribute('open', '');
+  await expect(page.locator('[data-ar-shop-station]').first()).toBeHidden();
+  const outline = () => page.evaluate(() => (window as any).__shopObject('workshop-inspection-outline')?.data.targetId);
+  await expect.poll(outline).toMatch(/^shop-use-brakes-0-task$/);
+  await card.locator('[data-ar-hud-cta]').click();
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'tool');
+  await expect.poll(outline).toBe('shop-use-brakes-1-equip-lift-card');
+  await card.locator('[data-ar-hud-cta="tool"]').click();
+  await expect(page.locator('[data-ar-hud-tool="lift-card"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'station');
+  await expect.poll(outline).toBe('lift');
+  await card.locator('[data-ar-hud-cta="station"]').click();
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'ready');
+  await clickShop(page, 'workshop-control-task');
+  await expect(card).toHaveAttribute('data-ar-hud-objective', 'tool');
+  await expect(page.locator('.ar-hud-status')).toContainText('Step 3 of 13');
+  await page.locator('[data-ar-workshop]').screenshot({ path: 'reports/automobile-workshop/immersive-hud.png' });
+  await page.locator('[data-ar-hud-clipboard]').click();
+  await expect(clip).toHaveAttribute('open', '');
+  await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await page.locator('[data-ar-shop-layout="panels"]').first().click();
+  await expect(card).toHaveCount(0);
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__glLive()?.lost)).toBe(false);
+});

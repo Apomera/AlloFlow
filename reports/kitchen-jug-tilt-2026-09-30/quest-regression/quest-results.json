@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "Opening quests or tools changes no evidence. Keyboard launches focus the required wash, rinse, and cutting controls.",
+    "A real spatula slide, lift, turn and lower completes the pan quest only after accepted placement and produce actions.",
+    "A circular spoon gesture, native-check routing and an equivalent keyboard sauce check complete the sauce quest, with identical progress after reloading. Supplied rescue work earns no prep or pan steps.",
+    "The quest panel travels into the expanded kitchen, restores tool focus, and fits 320px text view without overflow.",
+    "Real replay navigation shows historical quest observations with both launch methods locked and leaves the finished cook unchanged.",
+    "Graphics-loss fallback retains quest routes and observations without advancing time or cooking."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Completed quest",
+      "violations": []
+    },
+    {
+      "name": "320px text-view quest",
+      "violations": []
+    },
+    {
+      "name": "Graphics-loss fallback",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

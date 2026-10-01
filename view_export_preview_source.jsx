@@ -3499,6 +3499,8 @@ function _builderExportPreflight(doc, mode) {
   if (tablesWithoutHeaders) add('warning', 'table-headers', `${tablesWithoutHeaders} table${tablesWithoutHeaders === 1 ? ' has' : 's have'} no header cells.`, tablesWithoutHeaders);
   const unsafeLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => /^\s*(javascript|vbscript|data):/i.test(a.getAttribute('href') || '')).length;
   if (unsafeLinks) add('error', 'unsafe-links', `${unsafeLinks} unsafe link${unsafeLinks === 1 ? '' : 's'} must be removed.`, unsafeLinks);
+  const appLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => /^\s*resource:/i.test(a.getAttribute('href') || '')).length;
+  if (appLinks) add('warning', 'resource-links', `${appLinks} link${appLinks === 1 ? '' : 's'} to AlloFlow resources will not open outside the app. Include those resources in this document or remove the links.`, appLinks);
   const seenIds = new Set();
   let duplicateIds = 0;
   Array.from(doc.querySelectorAll('[id]')).forEach((node) => { const id = node.id; if (seenIds.has(id)) duplicateIds += 1; else seenIds.add(id); });
@@ -8545,18 +8547,24 @@ function ExportPreviewView(props) {
         const selected = activities.find((entry) => entry.key === selectedKey) || activities[activities.length - 1];
         if (!selected) throw new Error(`Choose an activity before exporting ${kind.toUpperCase()}.`);
         const succeeded = await handler({ generatedContent: selected.item });
-        if (succeeded === false) return;
+        if (succeeded !== true) return;
       } else {
-        const clean = getCleanBuilderDocument({ forExport: true });
-        if (!clean) throw new Error('The editable preview is not ready.');
+        const built = getCleanBuilderDocument({ forExport: true });
+        if (!built) throw new Error('The editable preview is not ready.');
+        // An LMS package is student-facing: keep only the student copy.
+        const studentRoot = built.clone || new DOMParser().parseFromString(built.html, 'text/html').documentElement;
+        const teacherOnly = Array.from(studentRoot.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner'));
+        teacherOnly.forEach((node) => { const prior = node.previousElementSibling; if (prior?.classList?.contains('page-break')) prior.remove(); node.remove(); });
+        const clean = teacherOnly.length ? { ...built, html: '<!DOCTYPE html>\n' + studentRoot.outerHTML } : built;
         const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
-        if (succeeded === false) return;
+        if (succeeded !== true) return;
+        if (teacherOnly.length) addToast && addToast((t && t('export_preview.ims_student_copy_only')) || 'The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.', 'info');
       }
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'package', format: kind }); } catch (_) {}
     }
     catch (error) { addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error'); }
     finally { finishAlternativeExport(); }
-  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess, t]);
 
   // `sink` (optional) receives the built { blob, fileName, message } instead of
   // triggering a download: "Send to my Drive" reuses the exact accessible DOCX
@@ -9545,7 +9553,7 @@ const _downloadBRF = (brf) => {
                 <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {typeof proposeRestyles === 'function' && (
-                  <details className="rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden" data-help-key="doc_builder_block_suggestions">
+                  <details ref={el => { if (el && window.__alloOpenBlockSuggestions) { window.__alloOpenBlockSuggestions = false; el.open = true; } }} className="rounded-lg border border-indigo-200 bg-indigo-50 overflow-hidden" data-help-key="doc_builder_block_suggestions">
                     <summary className="cursor-pointer list-none px-2.5 py-2 text-[11px] font-black uppercase tracking-wide text-indigo-800 hover:bg-indigo-100">
                       AI block suggestions {Array.isArray(blockSuggestions) && blockSuggestions.length > 0 ? '(' + blockSuggestions.length + ')' : ''}
                     </summary>

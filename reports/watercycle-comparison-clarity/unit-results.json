@@ -1,0 +1,568 @@
+{
+  "numTotalTestSuites": 8,
+  "numPassedTestSuites": 8,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 25,
+  "numPassedTests": 25,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790807118309,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle baseline restore"
+          ],
+          "fullName": "Water Cycle baseline restore restores every saved climate and land control while clearing stale evidence state",
+          "status": "passed",
+          "title": "restores every saved climate and land control while clearing stale evidence state",
+          "duration": 98.63360000000011,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle baseline restore"
+          ],
+          "fullName": "Water Cycle baseline restore provides a disabled-aware, visible, and forced-colors-safe Restore control",
+          "status": "passed",
+          "title": "provides a disabled-aware, visible, and forced-colors-safe Restore control",
+          "duration": 238.55140000000029,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790807198651,
+      "endTime": 1790807198987.5515,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_baseline_restore.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle visual Scenario Compare"
+          ],
+          "fullName": "Water Cycle visual Scenario Compare renders labeled baseline/current bars for all three comparison metrics",
+          "status": "passed",
+          "title": "renders labeled baseline/current bars for all three comparison metrics",
+          "duration": 381.8657999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle visual Scenario Compare"
+          ],
+          "fullName": "Water Cycle visual Scenario Compare keeps each bar on the existing metric scale and labels the endpoints in text",
+          "status": "passed",
+          "title": "keeps each bar on the existing metric scale and labels the endpoints in text",
+          "duration": 171.9423999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790807236315,
+      "endTime": 1790807236868.9424,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_compare_visual.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model keeps baseline capture available as a native control when no comparison is saved",
+          "status": "passed",
+          "title": "keeps baseline capture available as a native control when no comparison is saved",
+          "duration": 2884.4625000000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model gives a complete one-input comparison a named guide and atomic live workflow",
+          "status": "passed",
+          "title": "gives a complete one-input comparison a named guide and atomic live workflow",
+          "duration": 319.30779999999504,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model labels partial recorded baselines and their display defaults without inventing one-input attribution",
+          "status": "passed",
+          "title": "labels partial recorded baselines and their display defaults without inventing one-input attribution",
+          "duration": 835.8078999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model shows exact Baseline, Current and signed Change values for positive sunlight and runoff shifts",
+          "status": "passed",
+          "title": "shows exact Baseline, Current and signed Change values for positive sunlight and runoff shifts",
+          "duration": 1494.6050999999934,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model shows exact Baseline, Current and signed Change values for negative sunlight and runoff shifts",
+          "status": "passed",
+          "title": "shows exact Baseline, Current and signed Change values for negative sunlight and runoff shifts",
+          "duration": 752.6693999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model shows exact Baseline, Current and signed Change values for unchanged inputs",
+          "status": "passed",
+          "title": "shows exact Baseline, Current and signed Change values for unchanged inputs",
+          "duration": 596.4690000000046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model shows exact Baseline, Current and signed Change values for wind-only change",
+          "status": "passed",
+          "title": "shows exact Baseline, Current and signed Change values for wind-only change",
+          "duration": 518.8594000000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model distinguishes the independent indices from a folded native Pathway mix disclosure",
+          "status": "passed",
+          "title": "distinguishes the independent indices from a folded native Pathway mix disclosure",
+          "duration": 62.8382999999958,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model names baseline actions explicitly, links their scope help, and disables Restore when inputs match",
+          "status": "passed",
+          "title": "names baseline actions explicitly, links their scope help, and disables Restore when inputs match",
+          "duration": 771.1721000000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model links the native isolate select and button to the restoration hint and only lists changed inputs",
+          "status": "passed",
+          "title": "links the native isolate select and button to the restoration hint and only lists changed inputs",
+          "duration": 115.95850000000064,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model provides stable native claim IDs and a focusable feedback heading without hiding exact readings",
+          "status": "passed",
+          "title": "provides stable native claim IDs and a focusable feedback heading without hiding exact readings",
+          "duration": 420.8582999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model preserves the native observation-save state when the notebook is available",
+          "status": "passed",
+          "title": "preserves the native observation-save state when the notebook is available",
+          "duration": 235.32940000000235,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model preserves the native observation-save state when the notebook is duplicate",
+          "status": "passed",
+          "title": "preserves the native observation-save state when the notebook is duplicate",
+          "duration": 209.13530000000173,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model preserves the native observation-save state when the notebook is full",
+          "status": "passed",
+          "title": "preserves the native observation-save state when the notebook is full",
+          "duration": 767.0631999999969,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model renders changed comparisons without mutating frozen baselines, notes, undo records or process writing",
+          "status": "passed",
+          "title": "renders changed comparisons without mutating frozen baselines, notes, undo records or process writing",
+          "duration": 119.56139999999868,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model preserves the exact original production calculations, comparison identity and state handlers",
+          "status": "passed",
+          "title": "preserves the exact original production calculations, comparison identity and state handlers",
+          "duration": 78.49760000000242,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle comparison clarity: actual renderer and preserved production model"
+          ],
+          "fullName": "Water Cycle comparison clarity: actual renderer and preserved production model ships identical source and public comparison implementations",
+          "status": "passed",
+          "title": "ships identical source and public comparison implementations",
+          "duration": 21.792400000005728,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790807179471,
+      "endTime": 1790807189713.7925,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_comparison_clarity.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle prediction-and-evidence loop"
+          ],
+          "fullName": "Water Cycle prediction-and-evidence loop offers an evidence claim alongside a visible, independently scaled comparison",
+          "status": "passed",
+          "title": "offers an evidence claim alongside a visible, independently scaled comparison",
+          "duration": 64.92919999999958,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle prediction-and-evidence loop"
+          ],
+          "fullName": "Water Cycle prediction-and-evidence loop classifies evidence from the existing scenario deltas instead of inventing a water budget",
+          "status": "passed",
+          "title": "classifies evidence from the existing scenario deltas instead of inventing a water budget",
+          "duration": 59.38830000000053,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle prediction-and-evidence loop"
+          ],
+          "fullName": "Water Cycle prediction-and-evidence loop clears a stale claim when a learner changes or resets the scenario",
+          "status": "passed",
+          "title": "clears a stale claim when a learner changes or resets the scenario",
+          "duration": 73.92190000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle prediction-and-evidence loop"
+          ],
+          "fullName": "Water Cycle prediction-and-evidence loop records an interpretation without awarding points for agreement",
+          "status": "passed",
+          "title": "records an interpretation without awarding points for agreement",
+          "duration": 33.70299999999952,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790807195342,
+      "endTime": 1790807195573.703,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_prediction.test.js"
+    }
+  ],
+  "waterCycleComparisonVerification": {
+    "recordedAt": "2026-09-30T22:32:17.136Z",
+    "sourcePath": "stem_lab/stem_tool_watercycle.js",
+    "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+    "sourceSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+    "publicSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+    "sourcePublicIdentical": true,
+    "baselinePath": "reports/watercycle-comparison-clarity/baseline-runtime.js",
+    "baselineSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+    "testFiles": [
+      {
+        "path": "tests/watercycle_comparison_clarity.test.js",
+        "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+      },
+      {
+        "path": "tests/watercycle_compare_visual.test.js",
+        "sha256": "9e1c70a001b4ac28bb367055cebea779524d162ee685506d2539721c69ea4942"
+      },
+      {
+        "path": "tests/watercycle_prediction.test.js",
+        "sha256": "3a7d15a9e099e421b4e5cb3308326c6708577b42a5b1cc8a8489c781128e9e28"
+      },
+      {
+        "path": "tests/watercycle_baseline_restore.test.js",
+        "sha256": "562c3a88fcdef1216cc489468afa2b0d9d829811a6d41cd8ff48b809c6082fd7"
+      }
+    ],
+    "command": "node node_modules/vitest/vitest.mjs run tests/watercycle_comparison_clarity.test.js tests/watercycle_compare_visual.test.js tests/watercycle_prediction.test.js tests/watercycle_baseline_restore.test.js --maxWorkers=1 --reporter=json --outputFile=reports/watercycle-comparison-clarity/unit-results.json",
+    "productionModuleInitializationTimeoutMs": 60000,
+    "firstFullToolRenderTimeoutMs": 30000,
+    "semanticCoverage": [
+      "Complete and partial recorded baselines with explicit model-default scope",
+      "Exact Baseline/Current/Change readings from production derivations for positive, negative, unchanged and wind-only inputs",
+      "Separate independent teaching indices and folded native Pathway mix disclosure",
+      "Native baseline actions, accessible names and linked scope help",
+      "Native isolate controls with linked restoration/record-retention help",
+      "Stable claim IDs and feedback heading with full labels excluding aria-hidden decoration",
+      "Available, duplicate and full notebook save states",
+      "Frozen learner baseline/notes/undo/process-writing preservation",
+      "Exact original model, identity and state handler preservation",
+      "Source/public parity"
+    ],
+    "comparisonMethod": "Exact Acorn FunctionDeclaration or VariableDeclarator source slice, with CRLF normalized to LF. VariableDeclarator slices exclude the declaration keyword and trailing semicolon. No special range anchors.",
+    "baselinePreservation": [
+      {
+        "name": "WCExploreNotebook",
+        "baselineSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+        "currentSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+        "unchanged": true
+      },
+      {
+        "name": "wcLandResponse",
+        "baselineSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+        "currentSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+        "unchanged": true
+      },
+      {
+        "name": "estimateWcLandIndices",
+        "baselineSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+        "currentSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+        "unchanged": true
+      },
+      {
+        "name": "estimateWcRouteShares",
+        "baselineSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+        "currentSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+        "unchanged": true
+      },
+      {
+        "name": "evaporationIndex",
+        "baselineSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+        "currentSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+        "unchanged": true
+      },
+      {
+        "name": "wcBaselineEvaporationIndex",
+        "baselineSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+        "currentSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+        "unchanged": true
+      },
+      {
+        "name": "wcCurrentSnapshot",
+        "baselineSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+        "currentSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+        "unchanged": true
+      },
+      {
+        "name": "wcComparisonDeltas",
+        "baselineSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+        "currentSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+        "unchanged": true
+      },
+      {
+        "name": "formatWcDelta",
+        "baselineSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+        "currentSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+        "unchanged": true
+      },
+      {
+        "name": "WATER_CYCLE_PRESETS",
+        "baselineSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+        "currentSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+        "unchanged": true
+      },
+      {
+        "name": "WATER_CYCLE_PREDICTIONS",
+        "baselineSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+        "currentSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+        "unchanged": true
+      },
+      {
+        "name": "getWcInteractionBaseline",
+        "baselineSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+        "currentSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+        "unchanged": true
+      },
+      {
+        "name": "adjustClimate",
+        "baselineSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+        "currentSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+        "unchanged": true
+      },
+      {
+        "name": "adjustLand",
+        "baselineSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+        "currentSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+        "unchanged": true
+      },
+      {
+        "name": "resetClimate",
+        "baselineSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+        "currentSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+        "unchanged": true
+      },
+      {
+        "name": "resetLandScenario",
+        "baselineSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+        "currentSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+        "unchanged": true
+      },
+      {
+        "name": "captureWcScenarioBaseline",
+        "baselineSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+        "currentSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+        "unchanged": true
+      },
+      {
+        "name": "restoreWcScenarioBaseline",
+        "baselineSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+        "currentSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+        "unchanged": true
+      },
+      {
+        "name": "clearWcScenarioBaseline",
+        "baselineSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+        "currentSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+        "unchanged": true
+      },
+      {
+        "name": "isolateWcComparisonInput",
+        "baselineSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+        "currentSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+        "unchanged": true
+      },
+      {
+        "name": "saveWcObservation",
+        "baselineSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+        "currentSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+        "unchanged": true
+      },
+      {
+        "name": "replayWcObservation",
+        "baselineSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+        "currentSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+        "unchanged": true
+      },
+      {
+        "name": "recordWcPrediction",
+        "baselineSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+        "currentSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+        "unchanged": true
+      },
+      {
+        "name": "resetWcPrediction",
+        "baselineSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+        "currentSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+        "unchanged": true
+      }
+    ],
+    "preservedDiagnostics": [
+      {
+        "path": "reports/watercycle-comparison-clarity/unit-initial-results.json",
+        "reason": "24/25 tests passed; the first full-tool render case returned the framework STACK_TRACE_ERROR at 5.38 seconds against the default five-second test duration. Its local timeout was extended."
+      },
+      {
+        "path": "reports/watercycle-comparison-clarity/unit-b85-label-diagnostic.json",
+        "reason": "24/25 tests passed; the new full-label assertion included an aria-hidden decorative emoji. It now reads label text excluding hidden decoration."
+      }
+    ],
+    "scope": "This verification task wrote only the new comparison suite, authorized source-assertion updates in its three reused suites, and new comparison reports. Model/state source and Git were not edited."
+  }
+}

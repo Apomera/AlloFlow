@@ -1,0 +1,45 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0169133192389006,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "source": {
+    "row": {
+      "role": "row",
+      "name": "North 95",
+      "ignored": false
+    },
+    "datum": {
+      "role": "gridcell",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "candidate": {
+    "row": {
+      "role": "row",
+      "name": "North 95",
+      "ignored": false
+    },
+    "datum": {
+      "role": "gridcell",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "repaired": {
+    "row": {
+      "role": "row",
+      "name": "North 95",
+      "ignored": false
+    },
+    "datum": {
+      "role": "gridcell",
+      "name": "95",
+      "ignored": false
+    }
+  }
+}

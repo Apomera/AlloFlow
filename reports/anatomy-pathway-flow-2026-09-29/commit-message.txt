@@ -1,0 +1,5 @@
+Preserve anatomy pathway practice and clarify Spotter markers
+
+Preserve Pathway concept answers when reviewing teaching steps, support clear return and restart actions, and show Spotter diagram markers in the view that renders them.
+
+Validate focused regressions, browser interaction, responsive layouts, and accessibility.

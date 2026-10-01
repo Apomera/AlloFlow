@@ -1,0 +1,39 @@
+{
+  "description": "Exact production snapshot onClick and _openStemTool executed with stub host services.",
+  "calls": [
+    [
+      "tab",
+      "explore"
+    ],
+    [
+      "tool",
+      "circuit"
+    ],
+    [
+      "recent",
+      "circuit"
+    ],
+    [
+      "search",
+      ""
+    ],
+    [
+      "update",
+      "_categoryFilter",
+      ""
+    ],
+    [
+      "announce",
+      "Opening 1 parts 9V series"
+    ]
+  ],
+  "snapshotVoltage": 9,
+  "actualVoltage": 24,
+  "restored": false,
+  "restorationCalls": 0,
+  "sourceLines": {
+    "save": "stem_lab/stem_tool_circuit.js:6022-6032",
+    "open": "stem_lab/stem_lab_module.js:6268-6308",
+    "navigate": "stem_lab/stem_lab_module.js:3752-3767"
+  }
+}

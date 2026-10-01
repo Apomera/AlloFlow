@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-30",
+  "committed": false,
+  "sourceSha256": "6da16b9e6d5b5e1e1c8cd38c747c251e5f98ee808a1210b23ce62f95bcb95abe",
+  "prePassSourceSha256": "da85e381b809c33b378405ea1d2eabf3411482661040c4356fd000e8d0d866b8",
+  "publicMirrorMatches": true,
+  "englishEntriesVerified": 25,
+  "tests": {
+    "passed": 125,
+    "failed": 0,
+    "files": 13,
+    "report": "pixel-colors-regression-results.json"
+  },
+  "browser": {
+    "passed": true,
+    "report": "pixel-colors-browser-results.json"
+  },
+  "previews": [
+    "pixel-colors-desktop.png",
+    "pixel-colors-phone.png",
+    "pixel-colors-sprite.png"
+  ],
+  "syntaxChecks": true,
+  "pinnedSpectralCheck": true
+}

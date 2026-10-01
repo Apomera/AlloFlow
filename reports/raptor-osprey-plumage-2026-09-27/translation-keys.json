@@ -1,0 +1,7 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    { "key": "stem.raptorhunt.study_osprey_underwing", "fallback": "Find the dark wrist patch against the pale underwing, then follow the bars across the flight feathers. Choose Above to compare the brown upper wing. Which view makes each field mark easiest to see?" },
+    { "key": "stem.raptorhunt.study_osprey_breast", "fallback": "Compare the pale breast with the brown back: choose Above, then orbit toward the underside again. Which colors connect with the head and wings? Keep a view that shows the contrast." }
+  ]
+}

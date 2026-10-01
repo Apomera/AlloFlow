@@ -1,7 +1,7 @@
 // Nuclear Lab - semantic alternatives for quantitative canvas charts.
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, renderTool, resetStemLab } from './helpers/nuclear_lab_reference_harness.js';
 
 let host;
 

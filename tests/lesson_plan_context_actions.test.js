@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { hostDeps, loadHostHandlersFactory } from './helpers/host_source.js';
 
 const source = readFileSync('AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
 function callbackSource(start, end) {
@@ -8,6 +9,12 @@ function callbackSource(start, end) {
   if (first < 0 || last < 0) throw new Error('Missing lesson action boundary');
   return source.slice(first, last);
 }
+// Since wave 4 (4d407aaa7, 09-13) the host keeps shims for these handlers and their bodies run in
+// createHostHandlers(__d) (host_handlers_source.jsx). Evaluate the host slice as-is (its render-time
+// refs and effect stay in the host) and back its shims with the REAL module factory, whose __d reads the
+// slice's own bindings first and then the controlled scope, like the host's __alloHostDeps getters.
+const createHostHandlers = loadHostHandlersFactory();
+const hostHandlersFor = deps => { let handlers = null; return () => handlers || (handlers = createHostHandlers(deps)); };
 function deferred() {
   let resolve, reject;
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
@@ -32,10 +39,14 @@ function harness(saved = lesson(), active = saved) {
     useEffect: (effect, dependencies) => { const index = effectIndex++; if (JSON.stringify(effects[index]) !== JSON.stringify(dependencies)) { effects[index] = dependencies; effect(); } }
   };
   const code = callbackSource('handleGenerateProgression', 'generateHelpfulHint');
+  if (!code.includes('_alloHostHandlers().handleGenerateProgression(')) throw new Error('The host no longer routes handleGenerateProgression through HostHandlers; retarget this test');
   const render = () => {
     hookIndex = effectIndex = 0;
     const current = { ...scope, activeView: state.activeView };
-    return new Function(...Object.keys(current), code + '\nreturn { generate: handleGenerateProgression, activate: handleActivateNextLesson };')(...Object.values(current));
+    let locals = null;
+    const rendered = new Function(...Object.keys(current), '_alloHostHandlers', code + '\nreturn { generate: handleGenerateProgression, activate: handleActivateNextLesson, locals: { lessonProgressionRequestRef, lessonProgressionContextRef, getSavedLessonProgressionContext, lessonProgressionContextKey } };')(...Object.values(current), hostHandlersFor(hostDeps(() => locals, current)));
+    locals = rendered.locals;
+    return rendered;
   };
   return { state, scope, pending, callGemini, render, setters };
 }
@@ -111,7 +122,7 @@ describe('extension guide saved grade', () => {
   it.each(['4th Grade', { label: 'Adult learners' }])('uses saved config.gradeLevel %j before legacy or workspace grade', async grade => {
     const saved = { ...lesson(), config: { ...lesson().config, gradeLevel: grade } }, h = harness(saved);
     const scope = { ...h.scope, generatedContent: { ...saved, config: { grade: '12' } }, gradeLevel: '11', _extensionGuideRequests: { current: new Map() }, onUpdateResource: vi.fn(() => true), setIsGeneratingExtensionGuide: vi.fn() };
-    const run = new Function(...Object.keys(scope), callbackSource('handleGenerateExtensionGuide', 'handleGenerateProgression') + '\nreturn handleGenerateExtensionGuide;')(...Object.values(scope))(0);
+    const run = new Function(...Object.keys(scope), '_alloHostHandlers', callbackSource('handleGenerateExtensionGuide', 'handleGenerateProgression') + '\nreturn handleGenerateExtensionGuide;')(...Object.values(scope), hostHandlersFor(hostDeps(scope)))(0);
     expect(h.callGemini.mock.calls[0][0]).toContain('Target Grade: ' + (typeof grade === 'string' ? grade : grade.label));
     h.pending[0].resolve('Guide'); await run;
   });

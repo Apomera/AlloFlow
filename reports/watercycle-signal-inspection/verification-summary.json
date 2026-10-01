@@ -1,0 +1,25 @@
+{
+  "verifiedAt": "2026-09-30T15:25:48.654Z",
+  "runtimeSha256": "78d924001e4e1de6167aae3804405f976ade6d4809f4d9d06cd47816a6a967e8",
+  "sourceAndPublicMatch": true,
+  "originalScoreInitializersUnchanged": true,
+  "unitTests": {
+    "passed": 255,
+    "failed": 0,
+    "distinctSuites": 6
+  },
+  "browser": {
+    "passed": 401,
+    "failed": 0,
+    "cases": 72,
+    "cleanAudits": 16,
+    "runtimeErrors": 0,
+    "completed": true,
+    "successful": true,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "baselineSha256": "2ab8cb80d55de3063122677d50df18c4047ab1ad41fc198b86d5093ae9c83ccf",
+  "stagedFilesInScope": [],
+  "disposition": "Uncommitted; no staging, commits, or publishing performed in this pass."
+}

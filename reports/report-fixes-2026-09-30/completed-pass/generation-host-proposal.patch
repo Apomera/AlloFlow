@@ -1,0 +1,92 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -13248,10 +13248,23 @@
+           }
+       }, 1000);
+       return () => { active = false; clearTimeout(handler); };
+   }, [studentResponses, isTeacherMode, showStudentEntry, studentWorkSaveAttempt]);
+   const generationViewOwnerRef = useRef(null);
++  const generationRunRef = useRef(null);
++  const cancelContentGeneration = () => {
++    const run = generationRunRef.current;
++    if (!run?.pending) return;
++    run.controller.abort();
++    generationRunRef.current = null;
++    generationViewOwnerRef.current = null;
++    setIsProcessing(false);
++    setProcessingProgress({ current: 0, total: 0 });
++    setGenerationStep('Generation cancelled. Previously saved resources were kept.');
++    addToast('Generation cancelled. Previously saved resources were kept.', 'info');
++    requestAnimationFrame(() => { if (run.trigger?.isConnected) run.trigger.focus(); });
++  };
+   const [generatedContent, _setGeneratedContent] = useState(null);
+   const generationDisplayStateRef = useRef({ resource: null, view: 'input' });
+   generationDisplayStateRef.current.resource = generatedContent;
+   const setGeneratedContent = useCallback((nextContent, generationOwner = null) => {
+       if (generationOwner && generationOwner !== generationViewOwnerRef.current) return;
+@@ -38955,10 +38968,20 @@
+     if (switchView && supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, generationDepsOverride));
+     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
+     const viewOwner = {};
+     if (switchView) generationViewOwnerRef.current = viewOwner;
+     const ownsView = () => switchView && generationViewOwnerRef.current === viewOwner;
++    const inheritedSignal = generationDepsOverride?.generationSignal || null;
++    const inheritedCurrent = generationDepsOverride?.isGenerationCurrent;
++    const run = inheritedSignal ? null : { controller: new AbortController(), pending: true, trigger: document.activeElement };
++    if (run) {
++      generationRunRef.current?.controller.abort();
++      generationRunRef.current = run;
++    }
++    const ownsRun = () => run
++      ? generationRunRef.current === run
++      : typeof inheritedCurrent === 'function' ? inheritedCurrent() : !inheritedSignal?.aborted;
+     if (type) setAlloGenerationType(type);
+     console.log('[VisualDebug] handleGenerate shim called with type=', type, 'module loaded?', !!_m);
+     if (_m && typeof _m.handleGenerate === "function") return _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, Object.assign({
+         selectedReadingSourceId, activeUnitId,
+         gradeLevel,
+@@ -39184,11 +39207,25 @@
+         getDefaultTitle,
+         performDeepVerification,
+         repairGeneratedText,
+         resetPersonaInterviewState,
+         validateSequenceStructure,
+-      }, generationDepsOverride || {}));
++      }, generationDepsOverride || {}, {
++        generationSignal: inheritedSignal || run.controller.signal,
++        isGenerationCurrent: ownsRun,
++        ...(run ? {
++          setIsProcessing: value => { if (ownsRun()) setIsProcessing(value); },
++          setGenerationStep: value => { if (ownsRun()) setGenerationStep(value); },
++          setGenerationStage: value => { if (ownsRun()) setGenerationStage(value); },
++          setProcessingProgress: value => { if (ownsRun()) setProcessingProgress(value); },
++          setError: value => { if (ownsRun()) setError(value); },
++          addToast: (...args) => { if (ownsRun()) addToast(...args); },
++        } : {}),
++      })).finally(() => {
++        // React may apply queued publish updaters after this promise resolves.
++        if (run && generationRunRef.current === run) run.pending = false;
++      });
+     throw new Error("[handleGenerate] GenDispatcher module not loaded - reload the page");
+   };
+   // Generation reaches these helpers synchronously; only the dispatcher is required.
+   const handleGenerate = (...args) => _alloAwaitModules([['GenDispatcherModule', 'GenDispatcher']].concat(
+     ['TextPipelineHelpers', 'TextUtilityHelpers', 'PhaseKHelpers', 'PromptsLibrary', 'GenerationHelpers', 'CmapHandlers', 'MiscHandlers', 'PureHelpers'].map(k => [k + 'Module', k, true])
+@@ -41984,10 +42021,16 @@
+               accept=".json,application/json"
+               style={{ display: 'none' }}
+               onChange={handleAnnotationImportFile}
+               aria-hidden="true"
+             />
++            {isProcessing && (
++              <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-300 bg-indigo-50 p-3 text-slate-900 dark:border-indigo-700 dark:bg-slate-900 dark:text-slate-100">
++                <p role="status" aria-live="polite" aria-atomic="true" className="min-w-0 flex-1 text-sm">{generationStep}</p>
++                {generationRunRef.current?.pending && <button type="button" onClick={cancelContentGeneration} className="min-h-11 rounded-lg border border-indigo-600 bg-white px-4 text-sm font-bold text-indigo-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Cancel generation</button>}
++              </div>
++            )}
+             {(isProcessing || isGeneratingSource) && (!generatedContent || !generatedContent?.data) ? (
+                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
+                     <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
+                         <SkeletonLoader type={activeView} />
+                     </div>

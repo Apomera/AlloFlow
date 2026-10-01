@@ -1,0 +1,75 @@
+{
+  "date": "2026-09-30",
+  "enhancement": "Sculpture viewing workspace",
+  "uncommitted": true,
+  "sourceSha256": "2678045327266DFB06EF90AFC9F5253CEEE5624D57D89BD9827397E28104511B",
+  "publicMirrorMatches": true,
+  "newEnglishStringsVerified": 14,
+  "tests": {
+    "passed": 148,
+    "failed": 0,
+    "files": 16,
+    "reports": [
+      "sculpt-view-final-results.json",
+      "sculpt-view-final-i18n-results.json"
+    ],
+    "note": "The main run reported 139 passing tests from 15 files. The absent aria-label file was rerun separately; all 9 checks passed."
+  },
+  "browser": {
+    "passed": true,
+    "report": "sculpt-view-browser-results.json",
+    "screenshots": [
+      "sculpt-view-desktop.png",
+      "sculpt-view-phone.png",
+      "sculpt-view-phone-controls.png"
+    ],
+    "export": "sculpt-view-export.png",
+    "checks": [
+      {
+        "desktopPreview": {
+          "x": 72,
+          "y": 145.5,
+          "width": 960,
+          "height": 720
+        }
+      },
+      "Six camera angles fit; zoom, orbit, and saved navigation view verified",
+      "Paused preview performs no repeated WebGL draws",
+      {
+        "png": {
+          "width": 1600,
+          "height": 1200,
+          "painted": 95487
+        }
+      },
+      "Study includes camera, grid preference, and rendered thumbnail",
+      {
+        "phonePreview": {
+          "x": 8,
+          "y": 160,
+          "width": 374,
+          "height": 280.5
+        },
+        "phoneLayout": {
+          "overflow": false,
+          "short": []
+        }
+      }
+    ]
+  },
+  "checks": [
+    "JavaScript syntax",
+    "Scoped whitespace check",
+    "Pinned Spectral source and license",
+    "Source/public parity",
+    "English string parity",
+    "Pre-pass preservation diff reviewed"
+  ],
+  "limitations": [
+    "Browser validation uses a repository harness, not a packaged application launch.",
+    "AI generation was not invoked.",
+    "Existing non-English translations were not expanded.",
+    "Automatic and manual views use a perspective camera; directional presets are not orthographic drawings.",
+    "A lightweight animation-frame lifecycle check remains while the preview is mounted."
+  ]
+}

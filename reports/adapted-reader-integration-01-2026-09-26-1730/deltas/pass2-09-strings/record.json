@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-26T23:38:01.106Z",
+  "label": "pass2-09-strings",
+  "patch": "9e98705f172483558c9a2c4ca51a2431639d95b5789745c52c65085de741b94b",
+  "plans": [
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "da8dd3db7cd6d1bb7ef26b66bf4dbaf1402ac77768e8019009817127038a8d12",
+      "after": "920796891b735cf5dde27e190a87769b2cbf90b99d7047a85265bc3ee1e3af03",
+      "changed": true
+    }
+  ]
+}

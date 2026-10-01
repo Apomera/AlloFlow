@@ -1,0 +1,69 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:19600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:19600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:465:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:465:5 › first discovery brings the island forward and follows a real family without changing history 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   Object {[39m
+    [31m+     "id": "color-contrast",[39m
+    [31m+     "nodes": Array [[39m
+    [31m+       Object {[39m
+    [31m+         "summary": "Fix any of the following:[39m
+    [31m+   Element has insufficient color contrast of 4.45 (foreground color: #547264, background color: #e7eedc, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",[39m
+    [31m+         "target": Array [[39m
+    [31m+           ".ei-intro-copy > div > .ei-kicker",[39m
+    [31m+         ],[39m
+    [31m+       },[39m
+    [31m+     ],[39m
+    [31m+   },[39m
+    [31m+ ][39m
+
+      505 |   await expect(page.locator('[data-discovery-step]')).toHaveAttribute('data-discovery-step', '3');
+      506 |   await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+    > 507 |   expect(await page.evaluate(async () => (window as any).axe.run('.ei-app', { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }).then((r: any) => r.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }))))).toEqual([]);
+          |                                                                                                                                                                                                                                                                                                          ^
+      508 | });
+      509 |
+      510 | test('phone family journey stays usable across long histories and reports a lost lineage', async ({ page }) => {
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:507:298
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\discovery-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\discovery-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\discovery-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\discovery-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\discovery-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\discovery-artifacts\evolab-living-island-first-58ad5-ly-without-changing-history-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:510:5 › phone family journey stays usable across long histories and reports a lost lineage
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:465:5 › first discovery brings the island forward and follows a real family without changing history 
+  1 did not run

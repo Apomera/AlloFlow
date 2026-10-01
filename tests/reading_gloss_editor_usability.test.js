@@ -41,7 +41,7 @@ function mount(text = 'Fair is foul. Fair returns.', suppliedEntries) {
   return { item, onUpdate, get props() { return props; }, update(next) { act(() => { props = { ...props, ...next }; render(); }); } };
 }
 const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text || (text === 'Review word supports' && node.textContent.startsWith(text)));
-const editButtons = () => [...host.querySelectorAll('button')].filter(node => node.getAttribute('aria-label')?.startsWith('Edit gloss for'));
+const editButtons = () => [...host.querySelectorAll('button')].filter(node => /^(Edit gloss for|Edit word help:)/.test(node.getAttribute('aria-label') || ''));
 const click = async node => { await act(async () => { node.dispatchEvent(new MouseEvent('click', { bubbles: true })); }); };
 const change = (node, value) => act(() => {
   const proto = node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : node.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
@@ -160,7 +160,7 @@ describe('Gloss editor exact-anchor save safety', () => {
   });
   it('removes the exact occurrence after IDs change during discard confirmation', async () => {
     const h = mount(); await openEdit(); change(host.querySelector('textarea'), 'My unsaved first meaning.');
-    const removeFirst = [...host.querySelectorAll('button')].find(node => node.getAttribute('aria-label')?.startsWith('Remove gloss for'));
+    const removeFirst = [...host.querySelectorAll('button')].find(node => /^(Remove gloss for|Remove word help:)/.test(node.getAttribute('aria-label') || ''));
     await click(removeFirst);
     expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
     const original = h.props.supports.annotations;

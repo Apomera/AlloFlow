@@ -1,0 +1,52 @@
+[
+  {
+    "id": "reader_en_contract_v1",
+    "locale": "English",
+    "uiLanguage": "English",
+    "language": "English",
+    "tag": "en",
+    "dir": "ltr",
+    "passage": "## Herons\n\nThe heron waits in the water. It catches a fish.\n\n## Food\n\nFish give the heron energy.\n\n## Nests\n\nHerons build nests in trees.",
+    "snippet": "The heron waits in the water. It catches a fish."
+  },
+  {
+    "id": "reader_es419_long_labels_v1",
+    "locale": "spanish_latin_america",
+    "uiLanguage": "Spanish (Latin America)",
+    "language": "Spanish (Latin America)",
+    "tag": "es-419",
+    "dir": "ltr",
+    "passage": "## Las garzas\n\nLa garza espera en el agua. Atrapa un pez.\n\n## Alimentación\n\nLos peces le dan energía a la garza.\n\n## Nidos\n\nLas garzas construyen sus nidos en los árboles.",
+    "snippet": "La garza espera en el agua. Atrapa un pez."
+  },
+  {
+    "id": "reader_ar_rtl_mixed_v1",
+    "locale": "arabic",
+    "uiLanguage": "Arabic",
+    "language": "Arabic",
+    "tag": "ar",
+    "dir": "rtl",
+    "passage": "## الماء\n\nيشرب الطفل الماء. هل يحتاج إلى 2 L كل يوم؟\n\n## الأشجار\n\nتحتاج الأشجار إلى الماء.\n\n## المطر\n\nيسقط المطر من السحب.",
+    "snippet": "هل يحتاج إلى 2 L كل يوم؟"
+  },
+  {
+    "id": "reader_zh_hans_unspaced_v1",
+    "locale": "chinese_simplified",
+    "uiLanguage": "Chinese (Simplified)",
+    "language": "Chinese (Simplified)",
+    "tag": "zh-Hans",
+    "dir": "ltr",
+    "passage": "## 水\n\n水变成水蒸气。它升到空中。\n\n## 云\n\n水蒸气遇冷形成水滴。\n\n## 雨\n\n水滴落下来，变成雨。",
+    "snippet": "水变成水蒸气。它升到空中。"
+  },
+  {
+    "id": "reader_th_unspaced_v1",
+    "locale": "thai",
+    "uiLanguage": "Thai",
+    "language": "Thai",
+    "tag": "th",
+    "dir": "ltr",
+    "passage": "## การอ่าน\n\nฉันชอบอ่านหนังสือภาษาไทย\n\n## ต้นไม้\n\nต้นไม้ให้ร่มเงา\n\n## ฝน\n\nฝนทำให้ต้นไม้เติบโต",
+    "snippet": "ฉันชอบอ่านหนังสือภาษาไทย"
+  }
+]

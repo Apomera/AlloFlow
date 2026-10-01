@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, renderTool, resetStemLab } from './helpers/nuclear_lab_reference_harness.js';
 
 // Nuclear is a topic where students arrive with strong priors from both
 // directions, so this suite checks two things that are usually left untested:
@@ -1419,7 +1419,9 @@ describe('Every question the lab asks, it also answers', () => {
     // The helper prints its own marker, so any OTHER emitted occurrence is a
     // question that was never wired up. Matches the marker as it appears in a
     // string literal ("'🤔 ") so prose about it in comments does not count.
-    const render = SRC.slice(SRC.indexOf('render: function (ctx)'));
+    const renderStart = SRC.indexOf('function renderReference(ctx)');
+    expect(renderStart).toBeGreaterThan(0);
+    const render = SRC.slice(renderStart);
     const marks = [...render.matchAll(/'🤔 /g)];
     expect(marks.length, 'a 🤔 prompt is not going through ponder()').toBe(1);
   });

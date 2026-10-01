@@ -1,0 +1,13 @@
+{
+  "browserScenarios": 13,
+  "notebookScenarios": 5,
+  "notebookAccessibilityChecks": 5,
+  "existingEvidenceReviewScenarios": 2,
+  "workspaceScenarios": 6,
+  "focusedRegressionChecks": 109,
+  "rendererCopiesMatch": true,
+  "javascriptSyntaxValid": true,
+  "scopedWhitespaceClean": true,
+  "rendererSha256": "9960ec2b276b46221ce6977449bf202de3b2f7adb82ba463940897d3cf5a4733",
+  "committed": false
+}

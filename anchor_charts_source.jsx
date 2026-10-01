@@ -23,6 +23,35 @@ const t = function () {
   return arguments.length > 1 ? arguments[1] : arguments[0];
 };
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+// A new picture drops the old picture's reviewed description.
+const _ac_withIcon = (section, iconUrl) => {
+  if (section.iconUrl === iconUrl) return { ...section, iconUrl };
+  const next = { ...section, iconUrl };
+  delete next.iconAlt; delete next.iconAltSource;
+  return next;
+};
+// Model grading replies are untrusted: require usable strings and a real number before any XP.
+const _ac_normalizeGrading = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const text = input => typeof input === 'string' ? input.trim().slice(0, 600) : '';
+  const strength = text(value.strength), growthNudge = text(value.growthNudge);
+  if (!strength || !growthNudge) return null;
+  const xp = typeof value.suggestedXP === 'number' && Number.isFinite(value.suggestedXP) ? Math.max(0, Math.min(120, Math.round(value.suggestedXP))) : 0;
+  return { strength, growthNudge, xp };
+};
+// Feedback names the draft it was about (studio_response_module.js computes the same
+// value). It stays while the learner revises and is about an earlier draft once the
+// answers differ; older saves held the raw answers JSON, and none means unknown.
+const _ac_draftFingerprint = (answers) => {
+  const text = JSON.stringify(answers || {}); let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+  return 'anchor-v1:' + (hash >>> 0).toString(16);
+};
+const _ac_feedbackIsEarlier = (feedback, answers) => {
+  if (!feedback) return false;
+  const fp = feedback.draftFingerprint;
+  return !fp || (fp !== _ac_draftFingerprint(answers) && fp !== JSON.stringify(answers || {}));
+};
 
 // Lazy-load html2canvas from jsdelivr the first time the user requests a PNG
 // export. Resolves to window.html2canvas; rejects if the network is unavailable
@@ -98,6 +127,8 @@ const ANCHOR_CHART_TYPE_META = {
   'question-guide': { label: 'Question guide', layout: 'reference', caption: 'Use these questions to deepen thinking.', badge: '?', badgeColor: '#7e22ce' },
 };
 
+// Shared with print/export (doc pipeline) so exported charts keep the same layouts and labels.
+if (typeof window !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.AnchorChartTypeMeta = ANCHOR_CHART_TYPE_META; }
 const _chartTypeMeta = (chartType) => ANCHOR_CHART_TYPE_META[String(chartType || 'reference')] || ANCHOR_CHART_TYPE_META.reference;
 const _layoutForChartType = (chartType) => _chartTypeMeta(chartType).layout || 'reference';
 const _badgeForChartType = (chartType, idx) => {
@@ -147,6 +178,7 @@ const AnchorChartSection = React.memo((props) => {
   const label = section.label || '';
   const bullets = Array.isArray(section.bullets) ? section.bullets : [];
   const iconUrl = section.iconUrl || '';
+  const iconAlt = typeof section.iconAlt === 'string' ? section.iconAlt.trim() : '';
   const iconPrompt = section.iconPrompt || '';
   // Inline icon-prompt editor (Phase 10) — only shown while editing.
   const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
@@ -173,7 +205,7 @@ const AnchorChartSection = React.memo((props) => {
       const fullRefinePrompt = `${trimmed}. Maintain the hand-drawn classroom-anchor-chart marker sketch style in ${marker.name} ink on a white background. No text or labels.`;
       const resultB64 = await callGeminiImageEdit(fullRefinePrompt, rawB64);
       if (resultB64) {
-        if (props.onIconChange) props.onIconChange(resultB64); else onChange({ ...section, iconUrl: resultB64 });
+        if (props.onIconChange) props.onIconChange(resultB64); else onChange(_ac_withIcon(section, resultB64));
         setRefinePrompt('');
         addToast('Image refined successfully!', 'success');
       }
@@ -230,10 +262,10 @@ const AnchorChartSection = React.memo((props) => {
           position: 'relative',
         }}>
           {iconUrl ? (
-            <img src={iconUrl} alt="" role="presentation" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            <img src={iconUrl} alt={iconAlt} role={iconAlt ? undefined : 'presentation'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : isRegeneratingIcon ? (
             <span className="text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none" role="status">Drawing…</span>
-          ) : (
+          ) : viewerIsStudent ? null : (
             <span className="text-[10px] text-slate-600 italic text-center leading-tight">{iconPrompt || 'icon'}</span>
           )}
           {isEditing && onRegenIcon ? (
@@ -264,7 +296,7 @@ const AnchorChartSection = React.memo((props) => {
               aria-label="Section label"
             />
           ) : (
-            <div
+            <h2
               className="ac-section-label"
               style={{
                 fontFamily: 'inherit', fontWeight: 700,
@@ -272,8 +304,9 @@ const AnchorChartSection = React.memo((props) => {
                 color: marker.ink,
                 letterSpacing: '0.02em',
                 lineHeight: 1.1,
+                margin: 0,
               }}
-            >{label}</div>
+            >{props.stepLabel ? <span className="sr-only">{props.stepLabel} </span> : null}{label}</h2>
           )}
           <ul className="ac-bullets mt-2 space-y-1">
             {bullets.length === 0 && !isEditing && !isInteractiveStudent ? (
@@ -529,6 +562,7 @@ const AnchorChartView = React.memo((props) => {
   // Learner work is projected from the shared response document by the host boundary.
   const studentAnswers = data.studentAnswers || {};
   const gradingResult = data.feedback || null;
+  const gradingIsEarlier = _ac_feedbackIsEarlier(gradingResult, studentAnswers);
   const awardedXp = Number(data.prevFeedbackScore) || 0;
   const [gradingState, setGradingState] = React.useState('idle');
   const callGeminiProp = allowRuntimeAi ? (props.callGemini === undefined ? (typeof window !== 'undefined' && window.callGemini) : props.callGemini) : null;
@@ -547,7 +581,7 @@ const AnchorChartView = React.memo((props) => {
       const latest = normalizeSections(resource.data);
       const section = latest.find(row=>row.id===sectionId);
       if (!section || (expectedPrompt !== undefined && (section.iconPrompt || section.label || '') !== expectedPrompt)) return resource;
-      return { ...resource, data: { ...resource.data, sections: latest.map(row=>row.id===sectionId ? { ...row, iconUrl } : row) } };
+      return { ...resource, data: { ...resource.data, sections: latest.map(row=>row.id===sectionId ? _ac_withIcon(row, iconUrl) : row) } };
     };
     if (!currentChart.current.isTeacherMode || !currentChart.current.allowRuntimeAi) return;
     if (typeof props.onUpdateResource === 'function') props.onUpdateResource(resourceId, update);
@@ -723,7 +757,6 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleStudentAnswerChange = (sectionId, bulletId, text) => {
     handleNoteUpdate('studentAnswers', previous => ({ ...previous, [sectionId]: { ...(previous?.[sectionId] || {}), [bulletId]: text } }));
-    handleNoteUpdate('feedback', null);
   };
   // Build a flat student-answer summary for the grading prompt.
   const flattenedAnswers = () => {
@@ -754,7 +787,10 @@ const AnchorChartView = React.memo((props) => {
     }
     setGradingState('submitting');
     const requestId = generatedContent.id, requestDraft = JSON.stringify(studentAnswers);
-    handleNoteUpdate('feedback', null);
+    // The kept feedback stays until new feedback replaces it. Asking again about
+    // the same answers earns no XP.
+    const sameDraft = !!gradingResult && !_ac_feedbackIsEarlier(gradingResult, studentAnswers);
+    let outcome = 'idle';
     try {
       // Standards-based grading: AI sees the topic + rubric + section labels +
       // student's answers. AI does NOT see the teacher's bullets — by design,
@@ -795,26 +831,25 @@ const AnchorChartView = React.memo((props) => {
       let txt = String(raw || '').trim();
       txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
       const m = txt.match(/\{[\s\S]*\}/);
-      const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
-      const xpCandidate = Number(parsed.suggestedXP);
-      const xpRaw = Number.isFinite(xpCandidate) ? Math.max(0, Math.min(120, Math.round(xpCandidate))) : 0;
+      const parsed = _ac_normalizeGrading(m ? JSON.parse(m[0]) : JSON.parse(txt));
+      if (!parsed) throw new Error('Grading reply had no usable feedback');
+      const xpRaw = parsed.xp;
       // Anti-regrind: only award XP above this session's previous best for the chart.
-      const delta = Math.max(0, xpRaw - awardedXp);
-      const strength = String(parsed.strength || '').slice(0, 600);
-      const growthNudge = String(parsed.growthNudge || '').slice(0, 600);
-      const result = { strength: strength, growthNudge: growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
-      handleNoteUpdate('feedback', { ...result, draftFingerprint: requestDraft, createdAt: new Date().toISOString() });
-      setGradingState('done');
+      const delta = sameDraft ? 0 : Math.max(0, xpRaw - awardedXp);
+      const result = { strength: parsed.strength, growthNudge: parsed.growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
+      handleNoteUpdate('feedback', { ...result, draftFingerprint: _ac_draftFingerprint(studentAnswers), createdAt: new Date().toISOString() });
+      outcome = 'done';
       if (delta > 0 && addXpProp) {
         addXpProp(delta);
         handleNoteUpdate('prevFeedbackScore', Math.max(awardedXp,xpRaw));
         addToastProp(`✨ +${delta} XP earned!`);
       }
     } catch (err) {
+      if (!mounted.current || currentChart.current.id !== requestId) return;
       console.warn('[AnchorChart] grading failed', err && err.message);
-      setGradingState('error');
-      addToastProp('AI grading hit an error. Try again in a moment.');
-    } finally { if (mounted.current && currentChart.current.id === requestId) setGradingState('idle'); }
+      outcome = 'error';
+      addToastProp(tx('anchor_chart.grading_error_toast', 'AI grading hit an error. Try again in a moment.'));
+    } finally { if (mounted.current && currentChart.current.id === requestId) setGradingState(outcome); }
   };
 
   // Type gate AFTER all hooks (Rules of Hooks): if this isn't an anchor-chart
@@ -1069,6 +1104,7 @@ const AnchorChartView = React.memo((props) => {
                 <AnchorChartSection
                   section={s}
                   sectionIndex={idx}
+                  stepLabel={chartMeta.badge === 'number' ? tx('anchor_chart.step_label', 'Step {n}').replace('{n}', String(idx + 1)) : ''}
                   isEditing={isEditing}
                   onChange={(next) => updateSection(idx, next)}
                   onIconChange={iconUrl => writeIcon(generatedContent.id, s.id, iconUrl)}
@@ -1120,6 +1156,9 @@ const AnchorChartView = React.memo((props) => {
                 aria-busy={gradingState === 'submitting'}
               >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
             </div>
+            {gradingResult && gradingIsEarlier ? (
+              <p role="status" data-anchor-feedback-earlier-draft="true" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[12px] font-semibold text-amber-950">{tx('anchor_chart.feedback_earlier_draft', 'Feedback on an earlier draft of your chart. Keep it in view while you revise, or submit again for new feedback.')}</p>
+            ) : null}
             {gradingResult ? (
               <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2" role="status" aria-live="polite" aria-atomic="true">
                 {gradingResult.strength ? (
@@ -1144,7 +1183,7 @@ const AnchorChartView = React.memo((props) => {
               </div>
             ) : null}
             {gradingState === 'error' ? (
-              <div className="mt-2 text-[12px] text-red-700" role="alert">Couldn't reach the AI grader — try again in a moment.</div>
+              <div className="mt-2 text-[12px] text-red-700" role="alert">{tx('anchor_chart.grading_error', "Couldn't get AI feedback. Your answers are still here. Try again in a moment.")}</div>
             ) : null}
           </div>
         ) : null}

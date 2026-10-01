@@ -1,0 +1,126 @@
+{
+  "at": "2026-09-30T22:59:49.427Z",
+  "hostsUnchanged": true,
+  "pins": [
+    {
+      "file": "text_utility_helpers_module.js",
+      "pin": "d5d58f66",
+      "matchedUrls": 1
+    },
+    {
+      "file": "view_simplified_module.js",
+      "pin": "f4aab895",
+      "matchedUrls": 1
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "pin": "ee298cd9",
+      "matchedUrls": 1
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "pin": "b02271bf",
+      "matchedUrls": 1
+    },
+    {
+      "file": "gemini_api_module.js",
+      "pin": "ca2fcf3e",
+      "matchedUrls": 1
+    },
+    {
+      "file": "guided_mode_config_module.js",
+      "pin": "580a8cfa",
+      "matchedUrls": 1
+    },
+    {
+      "file": "tts_module.js",
+      "pin": "531e3a9c",
+      "matchedUrls": 1
+    },
+    {
+      "file": "view_kokoro_offer_modal_module.js",
+      "pin": "6c50e8ad",
+      "matchedUrls": 1
+    },
+    {
+      "file": "error_reporter_module.js",
+      "pin": "7ef1e908",
+      "matchedUrls": 1
+    },
+    {
+      "file": "view_canvas_recovery_dialog_module.js",
+      "pin": "caf6d483",
+      "matchedUrls": 1
+    },
+    {
+      "file": "utils_pure_module.js",
+      "pin": "27116a3c",
+      "matchedUrls": 1
+    }
+  ],
+  "results": [
+    {
+      "file": "audio-host-proposal.patch",
+      "appliedToWorkspace": false,
+      "files": [
+        {
+          "file": "AlloFlowANTI.txt",
+          "syntax": "passed"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "file": "generation-host-proposal.patch",
+      "appliedToWorkspace": false,
+      "files": [
+        {
+          "file": "AlloFlowANTI.txt",
+          "syntax": "passed"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "file": "flow-host-proposal.patch",
+      "appliedToWorkspace": false,
+      "files": [
+        {
+          "file": "ui_strings.js",
+          "syntax": "passed"
+        },
+        {
+          "file": "AlloFlowANTI.txt",
+          "syntax": "passed"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "file": "security-host-proposal.patch",
+      "appliedToWorkspace": false,
+      "files": [
+        {
+          "file": "AlloFlowANTI.txt",
+          "syntax": "passed"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "file": "module-pins-host-proposal.patch",
+      "appliedToWorkspace": false,
+      "files": [
+        {
+          "file": "AlloFlowANTI.txt",
+          "syntax": "passed"
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "limits": [
+    "Only in-memory patch applicability and syntax; no functional validation or host integration.",
+    "Shared writer clarification is still required. Longer session code and mailbox changes are not included."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "Actual 3D spoon paths separate all six visible groups; a click does nothing and handling pauses simulation time. The keyboard route opens the pot tool.",
+    "Illustrated sweeps, focusable groups, arrow navigation, selected-group controls, and the simplified stir agree. Escape cancels an unfinished stroke; partial work survives reload.",
+    "Texture remains undisclosed until a fork sample. A late-separated batch retains its unequal progress and the earlier sample is marked stale.",
+    "Losing the graphics context cancels an unfinished spoon gesture and leaves working text controls.",
+    "Replay shows historical clumps without changing the completed dish, exported evidence records separation, and older cooks retain their original model.",
+    "Real touch sweeps and touch cancellation work without WebGL. Desktop, 320px layout, and forced colors pass the accessibility scan."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop pasta handling",
+      "issues": []
+    },
+    {
+      "label": "320px pot tool",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

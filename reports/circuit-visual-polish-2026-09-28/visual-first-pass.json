@@ -1,0 +1,1825 @@
+{
+  "sourceSha256": "45293f6280b856cf761e77ae0b8ae2f94847291256157c6bc2f71cfc3e2f8d84",
+  "baseline": false,
+  "checks": [
+    {
+      "name": "Optional start guide supports keyboard, free building, and explicit guided start with focus"
+    },
+    {
+      "name": "A revised prediction counts as a tested experiment; notes and saved evidence survive next/resume/load/Undo"
+    },
+    {
+      "name": "Workbench guide supports Enter and Escape, preserves all four studies, and identifies the active workspace"
+    },
+    {
+      "name": "Target selection earns nothing; explicit checks provide feedback and award a matching circuit once"
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "name": "first-circuit",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "first-circuit",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "first-circuit",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "seeded-bench",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "seeded-bench",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "seeded-bench",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "guided-evidence",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "guided-evidence",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "guided-evidence",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "violations": []
+    },
+    {
+      "name": "target-feedback",
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "name": "target-feedback",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "name": "target-feedback",
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "first-circuit",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "first-circuit",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "first-circuit",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "seeded-bench",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "seeded-bench",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "seeded-bench",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "guided-evidence",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "guided-evidence",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "guided-evidence",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "target-feedback",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "target-feedback",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "target-feedback",
+      "width": 320,
+      "scrollWidth": 320
+    }
+  ],
+  "actions": [
+    {
+      "name": "first-circuit",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Start with a bulb",
+          "width": 124.171875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Build on my own",
+          "width": 125.34375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Load Starter Circuit",
+          "width": 139.15625,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Presets",
+          "width": 103.921875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Advanced Simulator",
+          "width": 143.890625,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "first-circuit",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Start with a bulb",
+          "width": 288,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Build on my own",
+          "width": 288,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Load Starter Circuit",
+          "width": 153,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Presets",
+          "width": 153,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Advanced Simulator",
+          "width": 196.03125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "first-circuit",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Start with a bulb",
+          "width": 218,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Build on my own",
+          "width": 218,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Load Starter Circuit",
+          "width": 118,
+          "height": 56,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Presets",
+          "width": 118,
+          "height": 56,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Advanced Simulator",
+          "width": 126.03125,
+          "height": 56,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "seeded-bench",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Schematic",
+          "width": 87.5,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "3D bench",
+          "width": 83.25,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Undo",
+          "width": 60.703125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Redo",
+          "width": 58.796875,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Resume motion",
+          "width": 118.375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Resistor",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Bulb",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Switch",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "LED",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Ammeter",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Voltmeter",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Capacitor",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Clear",
+          "width": 195.5,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "seeded-bench",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Schematic",
+          "width": 87.5,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "3D bench",
+          "width": 83.25,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Undo",
+          "width": 60.703125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Redo",
+          "width": 58.796875,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Resume motion",
+          "width": 118.375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Resistor",
+          "width": 153,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Bulb",
+          "width": 153,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Switch",
+          "width": 153,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "LED",
+          "width": 153,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Ammeter",
+          "width": 153,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Voltmeter",
+          "width": 153,
+          "height": 82,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Capacitor",
+          "width": 153,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Clear",
+          "width": 153,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "seeded-bench",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Schematic",
+          "width": 87.5,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "3D bench",
+          "width": 83.25,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Undo",
+          "width": 60.703125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Redo",
+          "width": 58.796875,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Resume motion",
+          "width": 118.375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Resistor",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Bulb",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Switch",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "LED",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Ammeter",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Voltmeter",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Capacitor",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Clear",
+          "width": 118,
+          "height": 84.796875,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "guided-evidence",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 264,
+          "height": 115.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 264,
+          "height": 115.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "03 / SwitchesComplete the loopEvidence saved",
+          "width": 264,
+          "height": 115.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 184.296875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Turn down the current",
+          "width": 190.234375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "guided-evidence",
+      "width": 390,
+      "actions": [
+        {
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 314,
+          "height": 97.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 314,
+          "height": 97.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "03 / SwitchesComplete the loopEvidence saved",
+          "width": 314,
+          "height": 97.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 184.296875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Turn down the current",
+          "width": 287,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "guided-evidence",
+      "width": 320,
+      "actions": [
+        {
+          "label": "01 / ResistanceTurn down the currentNot tried yet",
+          "width": 244,
+          "height": 122.640625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "02 / Parallel pathsGive charge another pathNot tried yet",
+          "width": 244,
+          "height": 136.140625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "03 / SwitchesComplete the loopEvidence saved",
+          "width": 244,
+          "height": 122.640625,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "It starts flowing",
+          "width": 119.65625,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "It stays at zero",
+          "width": 111.984375,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Only the switch carries current",
+          "width": 201.671875,
+          "height": 44,
+          "disabled": true,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Load this experiment result",
+          "width": 184.296875,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Next: Turn down the current",
+          "width": 217,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Try this experiment again",
+          "width": 174.078125,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Save experiment evidence",
+          "width": 177.234375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Open Simple circuits",
+          "width": 395,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Mixed circuits",
+          "width": 395,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Active electronics",
+          "width": 395,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Connected circuits",
+          "width": 395,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Open Simple circuits",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Mixed circuits",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Active electronics",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Connected circuits",
+          "width": 306,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Open Simple circuits",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Mixed circuits",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Active electronics",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Open Connected circuits",
+          "width": 236,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "1e-05s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "target-feedback",
+      "width": 1280,
+      "actions": [
+        {
+          "label": "Get 2A current · Saved",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 0.5A current",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 200Ω",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 24W",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 50Ω",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 0.1 A current",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 1W",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 500Ω",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 3A current",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 100W",
+          "width": 156,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Check target",
+          "width": 125.34375,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "target-feedback",
+      "width": 390,
+      "actions": [
+        {
+          "label": "Get 2A current · Saved",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 0.5A current",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 200Ω",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 24W",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 50Ω",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 0.1 A current",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 1W",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 500Ω",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 3A current",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 100W",
+          "width": 153,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Check target",
+          "width": 288,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    },
+    {
+      "name": "target-feedback",
+      "width": 320,
+      "actions": [
+        {
+          "label": "Get 2A current · Saved",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 0.5A current",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 200Ω",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 24W",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 50Ω",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 0.1 A current",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 1W",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Total R = 500Ω",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Get 3A current",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Power = 100W",
+          "width": 118,
+          "height": 64,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        },
+        {
+          "label": "Check target",
+          "width": 218,
+          "height": 44,
+          "disabled": false,
+          "transitionDuration": "0s",
+          "animationDuration": "1e-05s"
+        }
+      ]
+    }
+  ],
+  "focus": [
+    {
+      "name": "first-circuit",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "first-circuit",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "first-circuit",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "seeded-bench",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "seeded-bench",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "seeded-bench",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "guided-evidence",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "guided-evidence",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "guided-evidence",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(18, 59, 53)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px",
+      "outlineColor": "rgb(18, 59, 53)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "visible": true
+    },
+    {
+      "name": "target-feedback",
+      "width": 1280,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "target-feedback",
+      "width": 390,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    },
+    {
+      "name": "target-feedback",
+      "width": 320,
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(234, 179, 8)",
+      "boxShadow": "rgba(234, 179, 8, 0.4) 0px 0px 0px 4px",
+      "visible": true
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "first-circuit",
+      "width": 1280,
+      "file": "first-circuit-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 320,
+        "width": 866,
+        "height": 737
+      }
+    },
+    {
+      "name": "first-circuit",
+      "width": 390,
+      "file": "first-circuit-390.png",
+      "clip": {
+        "x": 19,
+        "y": 400,
+        "width": 352,
+        "height": 1044
+      }
+    },
+    {
+      "name": "first-circuit",
+      "width": 320,
+      "file": "first-circuit-320.png",
+      "clip": {
+        "x": 19,
+        "y": 438,
+        "width": 282,
+        "height": 1191
+      }
+    },
+    {
+      "name": "seeded-bench",
+      "width": 1280,
+      "file": "seeded-bench-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 2350,
+        "width": 866,
+        "height": 845
+      }
+    },
+    {
+      "name": "seeded-readings",
+      "width": 1280,
+      "file": "seeded-readings-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 3198,
+        "width": 866,
+        "height": 951
+      }
+    },
+    {
+      "name": "seeded-bench",
+      "width": 390,
+      "file": "seeded-bench-390.png",
+      "clip": {
+        "x": 19,
+        "y": 3189,
+        "width": 371,
+        "height": 974
+      }
+    },
+    {
+      "name": "seeded-readings",
+      "width": 390,
+      "file": "seeded-readings-390.png",
+      "clip": {
+        "x": 19,
+        "y": 4166,
+        "width": 352,
+        "height": 1125
+      }
+    },
+    {
+      "name": "seeded-bench",
+      "width": 320,
+      "file": "seeded-bench-320.png",
+      "clip": {
+        "x": 19,
+        "y": 3512,
+        "width": 301,
+        "height": 979
+      }
+    },
+    {
+      "name": "seeded-readings",
+      "width": 320,
+      "file": "seeded-readings-320.png",
+      "clip": {
+        "x": 19,
+        "y": 4494,
+        "width": 282,
+        "height": 1375
+      }
+    },
+    {
+      "name": "guided-evidence",
+      "width": 1280,
+      "file": "guided-evidence-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 833,
+        "width": 866,
+        "height": 1350
+      }
+    },
+    {
+      "name": "guided-evidence",
+      "width": 390,
+      "file": "guided-evidence-390.png",
+      "clip": {
+        "x": 19,
+        "y": 1060,
+        "width": 352,
+        "height": 1909
+      }
+    },
+    {
+      "name": "guided-evidence",
+      "width": 320,
+      "file": "guided-evidence-320.png",
+      "clip": {
+        "x": 19,
+        "y": 1146,
+        "width": 282,
+        "height": 2126
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "file": "workbench-guide-1280.png",
+      "clip": {
+        "x": 199,
+        "y": 177,
+        "width": 882,
+        "height": 462
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "file": "workbench-guide-390.png",
+      "clip": {
+        "x": 19,
+        "y": 229,
+        "width": 352,
+        "height": 857
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "file": "workbench-guide-320.png",
+      "clip": {
+        "x": 19,
+        "y": 229,
+        "width": 282,
+        "height": 901
+      }
+    },
+    {
+      "name": "target-feedback",
+      "width": 1280,
+      "file": "target-feedback-1280.png",
+      "clip": {
+        "x": 207,
+        "y": 4301,
+        "width": 866,
+        "height": 685
+      }
+    },
+    {
+      "name": "target-feedback",
+      "width": 390,
+      "file": "target-feedback-390.png",
+      "clip": {
+        "x": 19,
+        "y": 5422,
+        "width": 352,
+        "height": 977
+      }
+    },
+    {
+      "name": "target-feedback",
+      "width": 320,
+      "file": "target-feedback-320.png",
+      "clip": {
+        "x": 19,
+        "y": 5897,
+        "width": 282,
+        "height": 1041
+      }
+    }
+  ],
+  "visualIssues": [
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Simple circuits",
+        "width": 395,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Mixed circuits",
+        "width": 395,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Active electronics",
+        "width": 395,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 1280,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Connected circuits",
+        "width": 395,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Simple circuits",
+        "width": 306,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Mixed circuits",
+        "width": 306,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Active electronics",
+        "width": 306,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 390,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Connected circuits",
+        "width": 306,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Simple circuits",
+        "width": 236,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Mixed circuits",
+        "width": 236,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Active electronics",
+        "width": 236,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    },
+    {
+      "name": "workbench-guide",
+      "width": 320,
+      "type": "reduced-motion-transition",
+      "action": {
+        "label": "Open Connected circuits",
+        "width": 236,
+        "height": 44,
+        "disabled": false,
+        "transitionDuration": "1e-05s",
+        "animationDuration": "1e-05s"
+      }
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: Visual checks failed; inspect visual-results.json for details.\n+ actual - expected\n\n+ [\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Simple circuits',\n+       transitionDuration: '1e-05s',\n+       width: 395\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 1280\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Mixed circuits',\n+       transitionDuration: '1e-05s',\n+       width: 395\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 1280\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Active electronics',\n+       transitionDuration: '1e-05s',\n+       width: 395\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 1280\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Connected circuits',\n+       transitionDuration: '1e-05s',\n+       width: 395\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 1280\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Simple circuits',\n+       transitionDuration: '1e-05s',\n+       width: 306\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 390\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Mixed circuits',\n+       transitionDuration: '1e-05s',\n+       width: 306\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 390\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Active electronics',\n+       transitionDuration: '1e-05s',\n+       width: 306\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 390\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Connected circuits',\n+       transitionDuration: '1e-05s',\n+       width: 306\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 390\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Simple circuits',\n+       transitionDuration: '1e-05s',\n+       width: 236\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 320\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Mixed circuits',\n+       transitionDuration: '1e-05s',\n+       width: 236\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 320\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Active electronics',\n+       transitionDuration: '1e-05s',\n+       width: 236\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 320\n+   },\n+   {\n+     action: {\n+       animationDuration: '1e-05s',\n+       disabled: false,\n+       height: 44,\n+       label: 'Open Connected circuits',\n+       transitionDuration: '1e-05s',\n+       width: 236\n+     },\n+     name: 'workbench-guide',\n+     type: 'reduced-motion-transition',\n+     width: 320\n+   }\n+ ]\n- []\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-visual-polish-2026-09-28\\visual-check.cjs:143:25",
+  "sourceSha256AtEnd": "45293f6280b856cf761e77ae0b8ae2f94847291256157c6bc2f71cfc3e2f8d84",
+  "sourceChangedDuringRun": false
+}

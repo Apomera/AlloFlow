@@ -1,0 +1,55 @@
+{
+  "verifiedAt": "2026-09-30T16:10:32.360Z",
+  "source": "stem_lab/stem_tool_scaleexplorer.js",
+  "sha256": "3cae456a71ae3ad2efebb4127cff4b1e4b96d2c9c02b3bab5ebefb94876946e7",
+  "desktopMirrorMatches": true,
+  "preview": "http://127.0.0.1:54391/?tool=scaleExplorer&focus=grand-canyon&v=landscape",
+  "previewServesCurrentSource": true,
+  "features": [
+    "Layered canyon terrain with branching gullies and a measured winding river",
+    "Earth Arizona landmark and nested canyon journey",
+    "Rim, river and overview camera positions",
+    "Explicit adjustable vertical relief; true proportions in comparisons",
+    "Saved relief and viewpoints in notebook; mobile marker collision handling"
+  ],
+  "science": {
+    "model": "Illustrative terrain; not a surveyed elevation map",
+    "riverLengthMetres": 446000,
+    "referenceDepthMetres": 1600,
+    "defaultVerticalRelief": 8,
+    "sources": [
+      "https://www.nps.gov/grca/learn/nature/grca-geology.htm",
+      "https://www.nps.gov/grca/learn/management/statistics.htm"
+    ]
+  },
+  "checks": {
+    "syntax": "passed",
+    "whitespace": "passed",
+    "translationCatalogs": 4,
+    "unit": {
+      "passed": 121,
+      "failed": 0
+    },
+    "browser": {
+      "uniqueScenariosVerified": 43,
+      "initialRun": {
+        "passed": 42,
+        "failed": 1
+      },
+      "orbitalRecheck": {
+        "passed": 5,
+        "failed": 0
+      },
+      "note": "The orbital idle test asserted after a rounded zoom readout and a fixed delay. It now waits for bounded render quiescence and uses the uncapped render counter before checking drawing remains stopped. All five orbital tests then passed."
+    },
+    "visual": [
+      "canyon-overview.png",
+      "canyon-rim.png",
+      "river-corridor.png",
+      "actual-proportions.png",
+      "earth-canyon-portal.png",
+      "phone-canyon.png"
+    ]
+  },
+  "committed": false
+}

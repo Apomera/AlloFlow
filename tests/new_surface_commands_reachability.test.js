@@ -12,14 +12,17 @@
 //   open_discussion_builder -> ... -> window.__alloSetBrainstormActivityMode('discussion')
 //   open_jigsaw_builder     -> ... -> bridge('jigsaw') -> panel state gates the config UI
 //   jump_to_lesson_plan     -> c.jumpToLatestLessonPlan -> handleRestoreView(latestLessonPlan)
-//   open_block_suggestions  -> c.openExportPreview (the suggestions panel is open by default)
+//   open_block_suggestions  -> c.openExportPreview, and opens the (collapsed-by-default) suggestions panel
 
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 
 const root = process.cwd();
-const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
+const read = (p) => readSourceFile(path.join(root, p), 'utf8');
 
 const commands = read('allo_commands_source.jsx');
 const commandsModule = read('allo_commands_module.js');
@@ -143,10 +146,18 @@ describe('the capability chain: canvas doorway and block suggestions', () => {
     // tests/ai_capability_gating.test.js)
     expect(read('view_misc_modals_source.jsx')).toContain('guided_card_canvas_title');
   });
-  it("open_block_suggestions' destination panel exists and is open by default", () => {
+  it("open_block_suggestions opens its destination panel (collapsed by default since 0bb48eb97)", () => {
     const at = exportPreview.indexOf('data-help-key="doc_builder_block_suggestions"');
     expect(at).toBeGreaterThan(-1);
-    expect(exportPreview.slice(at - 200, at)).toContain('<details open');
+    const tag = exportPreview.slice(exportPreview.lastIndexOf('<details', at), at);
+    // The panel consumes the command's one-shot request when it mounts...
+    expect(tag).toContain('if (el && window.__alloOpenBlockSuggestions) { window.__alloOpenBlockSuggestions = false; el.open = true; }');
+    // ...and the command sets it, or opens the panel directly when the builder is already open.
+    const run = commands.slice(commands.indexOf("{ id: 'open_block_suggestions'"), commands.indexOf("{ id: 'open_history'"));
+    expect(run.indexOf('window.__alloOpenBlockSuggestions = true')).toBeGreaterThan(-1);
+    expect(run.indexOf('window.__alloOpenBlockSuggestions = true')).toBeLessThan(run.indexOf('c.openExportPreview()'));
+    expect(run).toContain('document.querySelector(\'details[data-help-key="doc_builder_block_suggestions"]\')');
+    expect(run).toContain('panel.open = true');
   });
 });
 

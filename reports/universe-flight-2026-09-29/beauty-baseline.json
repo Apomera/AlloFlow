@@ -1,0 +1,1331 @@
+{
+  "phase": "baseline",
+  "completed": true,
+  "sourceHash": "7f428322c23d15e9c6682a00113dcfa09ff8b54d7bf118f3e464cd20da482205",
+  "checks": [
+    "cloud-origin renders a visible paused world-space view",
+    "cloud-near renders a visible paused world-space view",
+    "galaxy-portrait renders a visible paused world-space view",
+    "galaxy-arrival renders a visible paused world-space view",
+    "cosmic-field renders a visible paused world-space view",
+    "cosmic-primary renders a visible paused world-space view",
+    "cosmic-companion renders a visible paused world-space view",
+    "cosmic-distant renders a visible paused world-space view",
+    "cosmic-golden renders a visible paused world-space view",
+    "cosmic-companion surface retains visible geometry in the same viewpoint",
+    "cosmic-companion population retains visible geometry in the same viewpoint",
+    "cosmic-distant surface retains visible geometry in the same viewpoint",
+    "cosmic-distant population retains visible geometry in the same viewpoint",
+    "cloud-near auto renders the high-exposure stress view",
+    "cloud-near low renders the high-exposure stress view",
+    "galaxy-arrival auto renders the high-exposure stress view",
+    "galaxy-arrival low renders the high-exposure stress view",
+    "photometric and spectrum display preserve the physical camera state",
+    "relativity and spectrum mathematics remain numerically valid",
+    "shared power-of-two emission texture uploads have transparent and feathered coverage",
+    "textures dispose and rebuild without changing paused cloud detail"
+  ],
+  "errors": [],
+  "captures": [
+    {
+      "name": "cloud-origin",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "78a37a584249fb021e4ece7dee3ea91ad674a5ed7422ed0329a8fdb17ec4dea5",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 7.719566135931901,
+        "luminanceStd": 11.971336600073004,
+        "adjacentContrast": 0.6494364615625017,
+        "luminousFraction": 0.21491796875,
+        "colorFraction": 0.1552890625,
+        "clippedWhiteFraction": 0.00005078125,
+        "meanRed": 5.54268359375,
+        "meanBlue": 12.36161328125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 14.350027929684263,
+        "luminanceStd": 15.608551864470101,
+        "adjacentContrast": 1.7900110921948849,
+        "luminousFraction": 0.50634765625,
+        "colorFraction": 0.51455078125,
+        "clippedWhiteFraction": 0.00009765625,
+        "meanRed": 11.053938802083334,
+        "meanBlue": 23.474576822916667,
+        "max": 255
+      }
+    },
+    {
+      "name": "cloud-near",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "d183c9a2450f7dbce689c920319872ecbe2a53b8be47668210c3605f6d7187b0",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            13,
+            -7,
+            24
+          ],
+          "yaw": 5.902678930067221,
+          "pitch": 0.43463124574223516,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 6.07033235937137,
+        "luminanceStd": 7.525814026813421,
+        "adjacentContrast": 0.5136244171754765,
+        "luminousFraction": 0.19316015625,
+        "colorFraction": 0.20883203125,
+        "clippedWhiteFraction": 0.00003515625,
+        "meanRed": 3.95302734375,
+        "meanBlue": 10.81760546875,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 13.913311041666164,
+        "luminanceStd": 12.702788751606473,
+        "adjacentContrast": 1.2067264994761926,
+        "luminousFraction": 0.6047200520833333,
+        "colorFraction": 0.6326822916666667,
+        "clippedWhiteFraction": 0.0001953125,
+        "meanRed": 12.77119140625,
+        "meanBlue": 22.819368489583333,
+        "max": 255
+      }
+    },
+    {
+      "name": "galaxy-portrait",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8370f98443a7922973ad69de1121924d43ac576487986158371785eaee3a3c24",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -95000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 10.4309680671785,
+        "luminanceStd": 21.405532993611413,
+        "adjacentContrast": 0.7699599510724285,
+        "luminousFraction": 0.25454296875,
+        "colorFraction": 0.21219921875,
+        "clippedWhiteFraction": 0.00026171875,
+        "meanRed": 7.7767265625,
+        "meanBlue": 15.10815625,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 47.92834803385244,
+        "luminanceStd": 43.946603745334016,
+        "adjacentContrast": 3.750598313907589,
+        "luminousFraction": 0.9573567708333334,
+        "colorFraction": 0.7497721354166667,
+        "clippedWhiteFraction": 0.0021809895833333334,
+        "meanRed": 42.949641927083334,
+        "meanBlue": 56.59189453125,
+        "max": 255
+      }
+    },
+    {
+      "name": "galaxy-arrival",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "a4feae46d8a2f627c7b12f522463ee3c52e9cb532166bb209a5b07db71861f3d",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            5442,
+            -17135
+          ],
+          "yaw": 0,
+          "pitch": -0.3075203330660749,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 77.38358754308831,
+        "luminanceStd": 59.82115235939849,
+        "adjacentContrast": 1.356123328244854,
+        "luminousFraction": 0.83685546875,
+        "colorFraction": 0.58980859375,
+        "clippedWhiteFraction": 0.006,
+        "meanRed": 75.94284765625,
+        "meanBlue": 80.79484375,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 176.35190584635478,
+        "luminanceStd": 50.80901254916198,
+        "adjacentContrast": 2.260856970272381,
+        "luminousFraction": 1,
+        "colorFraction": 0.779296875,
+        "clippedWhiteFraction": 0.049967447916666664,
+        "meanRed": 183.07994791666667,
+        "meanBlue": 164.93678385416666,
+        "max": 255
+      }
+    },
+    {
+      "name": "cosmic-field",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "69b4cf10be6d1de6f23b47ac2615e86262389689f4b1e867312df3c5e3fbb302",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -2200000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 3.473907778896477,
+        "luminanceStd": 6.931982467930403,
+        "adjacentContrast": 0.3684267883982997,
+        "luminousFraction": 0.01972265625,
+        "colorFraction": 0.01462890625,
+        "clippedWhiteFraction": 0.0000078125,
+        "meanRed": 1.67346875,
+        "meanBlue": 6.69461328125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 5.471943430987102,
+        "luminanceStd": 13.751889383288685,
+        "adjacentContrast": 1.4549057294395122,
+        "luminousFraction": 0.07591145833333333,
+        "colorFraction": 0.05791015625,
+        "clippedWhiteFraction": 0.00006510416666666667,
+        "meanRed": 3.6122721354166667,
+        "meanBlue": 8.78203125,
+        "max": 255
+      }
+    },
+    {
+      "name": "cosmic-primary",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "037a229c16c2ba0963a8548167cd7d4b61f481d3d9194d4c8c67aa8a4a0cab95",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 50,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -650000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 5.353033599990231,
+        "luminanceStd": 13.587664362514209,
+        "adjacentContrast": 0.6969100446218414,
+        "luminousFraction": 0.07156640625,
+        "colorFraction": 0.05359765625,
+        "clippedWhiteFraction": 0,
+        "meanRed": 3.4733046875,
+        "meanBlue": 8.6976796875,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 14.03742691405816,
+        "luminanceStd": 26.383739906256455,
+        "adjacentContrast": 2.167271149816633,
+        "luminousFraction": 0.3181640625,
+        "colorFraction": 0.25735677083333336,
+        "clippedWhiteFraction": 0,
+        "meanRed": 11.282356770833333,
+        "meanBlue": 18.800260416666667,
+        "max": 242
+      }
+    },
+    {
+      "name": "cosmic-companion",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "9629186284f3435b014666e0cdcf8e23f3f755c915dd73d8cf5ae563c08ebc92",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -480000,
+            190000,
+            900000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 9.121427747646981,
+        "luminanceStd": 20.96179204380532,
+        "adjacentContrast": 0.8099733165021391,
+        "luminousFraction": 0.1798828125,
+        "colorFraction": 0.1347578125,
+        "clippedWhiteFraction": 0.0001953125,
+        "meanRed": 6.90510546875,
+        "meanBlue": 12.99696875,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 32.13185130208367,
+        "luminanceStd": 36.1033147503815,
+        "adjacentContrast": 2.514137172603161,
+        "luminousFraction": 0.8471354166666667,
+        "colorFraction": 0.6663736979166667,
+        "clippedWhiteFraction": 0.00003255208333333333,
+        "meanRed": 27.768880208333332,
+        "meanBlue": 39.477473958333334,
+        "max": 255
+      }
+    },
+    {
+      "name": "cosmic-distant",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "774428c280f70b120747b0e92880bb727ab6c8637ecbf36b8780eb255fe84258",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            2100000,
+            -800000,
+            3800000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 6.3392815054600415,
+        "luminanceStd": 15.422943683862778,
+        "adjacentContrast": 0.5062726612649809,
+        "luminousFraction": 0.10702734375,
+        "colorFraction": 0.086953125,
+        "clippedWhiteFraction": 0,
+        "meanRed": 4.2241796875,
+        "meanBlue": 10.06773828125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 23.72967406249882,
+        "luminanceStd": 33.37603670184716,
+        "adjacentContrast": 2.2455883577788023,
+        "luminousFraction": 0.6164388020833333,
+        "colorFraction": 0.5033854166666667,
+        "clippedWhiteFraction": 0,
+        "meanRed": 20.035774739583335,
+        "meanBlue": 29.996451822916665,
+        "max": 242
+      }
+    },
+    {
+      "name": "cosmic-golden",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "49d320a5a83b920af855921ff909bc3285da2e3d48d5d2b62934ef3c78a21756",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            800000,
+            550000,
+            450000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 7.8149060421781025,
+        "luminanceStd": 20.625679678746756,
+        "adjacentContrast": 0.6131035184750327,
+        "luminousFraction": 0.1259765625,
+        "colorFraction": 0.0626640625,
+        "clippedWhiteFraction": 0,
+        "meanRed": 6.76841015625,
+        "meanBlue": 9.76699609375,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 33.18447977213695,
+        "luminanceStd": 45.724522273729605,
+        "adjacentContrast": 1.6089673552907515,
+        "luminousFraction": 0.7432291666666667,
+        "colorFraction": 0.31748046875,
+        "clippedWhiteFraction": 0,
+        "meanRed": 37.17333984375,
+        "meanBlue": 26.625325520833332,
+        "max": 255
+      }
+    },
+    {
+      "name": "cosmic-companion-surface",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "7b70324b06b6b437166b8eea18dbd9fc14b505d203302c3c15bf0accdb32f6de",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -480000,
+            190000,
+            900000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 9.048086210146895,
+        "luminanceStd": 20.770003620103523,
+        "adjacentContrast": 0.7808721473303735,
+        "luminousFraction": 0.178046875,
+        "colorFraction": 0.13253125,
+        "clippedWhiteFraction": 0.0001796875,
+        "meanRed": 6.837125,
+        "meanBlue": 12.91111328125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 31.807260403646083,
+        "luminanceStd": 35.74649984917483,
+        "adjacentContrast": 2.404993101754582,
+        "luminousFraction": 0.8424153645833333,
+        "colorFraction": 0.65771484375,
+        "clippedWhiteFraction": 0,
+        "meanRed": 27.490104166666665,
+        "meanBlue": 39.0587890625,
+        "max": 248
+      }
+    },
+    {
+      "name": "cosmic-companion-population",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "c1a22117cc08892f7261413163afce16b5220b5f45d69367df69f2e15c172d44",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -480000,
+            190000,
+            900000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 2.865356664052695,
+        "luminanceStd": 0.5604944583516263,
+        "adjacentContrast": 0.07127418545482918,
+        "luminousFraction": 0.0010625,
+        "colorFraction": 0.00051171875,
+        "clippedWhiteFraction": 0,
+        "meanRed": 1.06895703125,
+        "meanBlue": 6.08612109375,
+        "max": 118
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 3.116005000000696,
+        "luminanceStd": 1.0741705335904619,
+        "adjacentContrast": 0.3003621300418989,
+        "luminousFraction": 0.004557291666666667,
+        "colorFraction": 0.0030598958333333333,
+        "clippedWhiteFraction": 0,
+        "meanRed": 1.2787760416666667,
+        "meanBlue": 6.418880208333333,
+        "max": 118
+      }
+    },
+    {
+      "name": "cosmic-distant-surface",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "eb45449323ae034aa10eb1b27b4641d76740db300129de13a5e22782e7ed80cf",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            2100000,
+            -800000,
+            3800000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 6.291078190616365,
+        "luminanceStd": 15.255375683697993,
+        "adjacentContrast": 0.48333289494277204,
+        "luminousFraction": 0.10537890625,
+        "colorFraction": 0.0848125,
+        "clippedWhiteFraction": 0,
+        "meanRed": 4.18218359375,
+        "meanBlue": 10.00551171875,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 23.42013789713425,
+        "luminanceStd": 33.002199573566664,
+        "adjacentContrast": 2.133960627291682,
+        "luminousFraction": 0.6074544270833333,
+        "colorFraction": 0.49049479166666665,
+        "clippedWhiteFraction": 0,
+        "meanRed": 19.769563802083333,
+        "meanBlue": 29.5916015625,
+        "max": 234
+      }
+    },
+    {
+      "name": "cosmic-distant-population",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "78a3a5c8e4e003b638de3c77921c02e3cd4d5389021a848e6a1219777b897eef",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            2100000,
+            -800000,
+            3800000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 2.8396353281151723,
+        "luminanceStd": 0.6483361948636844,
+        "adjacentContrast": 0.05182890128385532,
+        "luminousFraction": 0.0006796875,
+        "colorFraction": 0.00043359375,
+        "clippedWhiteFraction": 0,
+        "meanRed": 1.0420546875,
+        "meanBlue": 6.0622265625,
+        "max": 214
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 3.100936165365321,
+        "luminanceStd": 0.9817106841068759,
+        "adjacentContrast": 0.2986678300157081,
+        "luminousFraction": 0.004557291666666667,
+        "colorFraction": 0.002864583333333333,
+        "clippedWhiteFraction": 0,
+        "meanRed": 1.2662109375,
+        "meanBlue": 6.404850260416667,
+        "max": 69
+      }
+    },
+    {
+      "name": "cloud-near-auto-exposure2",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "c3a3687807976afd408aca8e6b06339c289020f997f28a75ab99f3c52714bc6f",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 2,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            13,
+            -7,
+            24
+          ],
+          "yaw": 5.902678930067221,
+          "pitch": 0.43463124574223516,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 9.41973982811778,
+        "luminanceStd": 14.371625745872098,
+        "adjacentContrast": 0.8975785709249502,
+        "luminousFraction": 0.2983046875,
+        "colorFraction": 0.29803125,
+        "clippedWhiteFraction": 0.00023046875,
+        "meanRed": 7.0122734375,
+        "meanBlue": 15.6331953125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 25.35965489583261,
+        "luminanceStd": 24.49354726969455,
+        "adjacentContrast": 2.037448418674695,
+        "luminousFraction": 0.7681640625,
+        "colorFraction": 0.7687825520833333,
+        "clippedWhiteFraction": 0.0006184895833333333,
+        "meanRed": 24.846744791666666,
+        "meanBlue": 39.631640625,
+        "max": 255
+      }
+    },
+    {
+      "name": "cloud-near-low-exposure2",
+      "width": 1088,
+      "height": 680,
+      "pixelHash": "aa1728374ba393cedf2404a9baab0f5ebd2f9ea18da08e6feb9b23d94de02811",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 2,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            13,
+            -7,
+            24
+          ],
+          "yaw": 5.902678930067221,
+          "pitch": 0.43463124574223516,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 184960,
+        "mean": 9.39757506271251,
+        "luminanceStd": 14.200272396302699,
+        "adjacentContrast": 0.9346033660670149,
+        "luminousFraction": 0.2983077422145329,
+        "colorFraction": 0.2981563581314879,
+        "clippedWhiteFraction": 0.00019463667820069204,
+        "meanRed": 6.990414143598616,
+        "meanBlue": 15.613608347750866,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 22304,
+        "mean": 25.358535213414157,
+        "luminanceStd": 24.46910119047636,
+        "adjacentContrast": 2.2618529836598325,
+        "luminousFraction": 0.7684271879483501,
+        "colorFraction": 0.7699515781922525,
+        "clippedWhiteFraction": 0.0004483500717360115,
+        "meanRed": 24.841732424677186,
+        "meanBlue": 39.646206958393115,
+        "max": 255
+      }
+    },
+    {
+      "name": "galaxy-arrival-auto-exposure2",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "fc1368360bd3fd32420fbc7d11f7c0560f6c5d095852a1de464c8d8a4fb83124",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 2,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            5442,
+            -17135
+          ],
+          "yaw": 0,
+          "pitch": -0.3075203330660749,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 135.62596899076655,
+        "luminanceStd": 89.71977742707455,
+        "adjacentContrast": 1.7402059879442209,
+        "luminousFraction": 0.85141796875,
+        "colorFraction": 0.55374609375,
+        "clippedWhiteFraction": 0.1674296875,
+        "meanRed": 133.55476171875,
+        "meanBlue": 139.45668359375,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 243.01201700520807,
+        "luminanceStd": 35.42251176813655,
+        "adjacentContrast": 0.6446357549764251,
+        "luminousFraction": 1,
+        "colorFraction": 0.15830078125,
+        "clippedWhiteFraction": 0.7965169270833333,
+        "meanRed": 243.90579427083333,
+        "meanBlue": 240.85071614583333,
+        "max": 255
+      }
+    },
+    {
+      "name": "galaxy-arrival-low-exposure2",
+      "width": 1088,
+      "height": 680,
+      "pixelHash": "fc19f2310301dee39372b6ef01a613c77f5e379ed01591266c6387f3dadd8a19",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 2,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0,
+            5442,
+            -17135
+          ],
+          "yaw": 0,
+          "pitch": -0.3075203330660749,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 184960,
+        "mean": 135.64240540667925,
+        "luminanceStd": 89.7100542735238,
+        "adjacentContrast": 2.015994678025924,
+        "luminousFraction": 0.8515625,
+        "colorFraction": 0.5536656574394464,
+        "clippedWhiteFraction": 0.1675010813148789,
+        "meanRed": 133.57624351211072,
+        "meanBlue": 139.4701016435986,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 22304,
+        "mean": 243.00655130918165,
+        "luminanceStd": 35.45317312797902,
+        "adjacentContrast": 0.7488378712647805,
+        "luminousFraction": 1,
+        "colorFraction": 0.15858142037302725,
+        "clippedWhiteFraction": 0.7952833572453372,
+        "meanRed": 243.89383070301292,
+        "meanBlue": 240.84693328550932,
+        "max": 255
+      }
+    },
+    {
+      "name": "light-chase-shifted",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "abe7ba08fcbb1df04d3378acaa2e2ebcacaa3713652d1f780e6bb63b35d16576",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 6.203850845302402,
+        "luminanceStd": 19.417725995735086,
+        "adjacentContrast": 1.7836306924221572,
+        "luminousFraction": 0.096140625,
+        "colorFraction": 0.043890625,
+        "clippedWhiteFraction": 0.0021484375,
+        "meanRed": 4.1585625,
+        "meanBlue": 9.9336640625,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 21.04864639973193,
+        "luminanceStd": 51.488180356658475,
+        "adjacentContrast": 13.226325808669765,
+        "luminousFraction": 0.21393229166666666,
+        "colorFraction": 0.18323567708333333,
+        "clippedWhiteFraction": 0.017643229166666666,
+        "meanRed": 17.167317708333332,
+        "meanBlue": 27.277180989583332,
+        "max": 255
+      }
+    },
+    {
+      "name": "light-chase-unshifted",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "78a37a584249fb021e4ece7dee3ea91ad674a5ed7422ed0329a8fdb17ec4dea5",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.99,
+          "compareRest": true,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 7.719566135931901,
+        "luminanceStd": 11.971336600073004,
+        "adjacentContrast": 0.6494364615625017,
+        "luminousFraction": 0.21491796875,
+        "colorFraction": 0.1552890625,
+        "clippedWhiteFraction": 0.00005078125,
+        "meanRed": 5.54268359375,
+        "meanBlue": 12.36161328125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 14.350027929684263,
+        "luminanceStd": 15.608551864470101,
+        "adjacentContrast": 1.7900110921948849,
+        "luminousFraction": 0.50634765625,
+        "colorFraction": 0.51455078125,
+        "clippedWhiteFraction": 0.00009765625,
+        "meanRed": 11.053938802083334,
+        "meanBlue": 23.474576822916667,
+        "max": 255
+      }
+    },
+    {
+      "name": "reopened-cloud-origin",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "78a37a584249fb021e4ece7dee3ea91ad674a5ed7422ed0329a8fdb17ec4dea5",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 75,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      },
+      "full": {
+        "pixelsSampled": 256000,
+        "mean": 7.719566135931901,
+        "luminanceStd": 11.971336600073004,
+        "adjacentContrast": 0.6494364615625017,
+        "luminousFraction": 0.21491796875,
+        "colorFraction": 0.1552890625,
+        "clippedWhiteFraction": 0.00005078125,
+        "meanRed": 5.54268359375,
+        "meanBlue": 12.36161328125,
+        "max": 255
+      },
+      "center": {
+        "pixelsSampled": 30720,
+        "mean": 14.350027929684263,
+        "luminanceStd": 15.608551864470101,
+        "adjacentContrast": 1.7900110921948849,
+        "luminousFraction": 0.50634765625,
+        "colorFraction": 0.51455078125,
+        "clippedWhiteFraction": 0.00009765625,
+        "meanRed": 11.053938802083334,
+        "meanBlue": 23.474576822916667,
+        "max": 255
+      }
+    }
+  ],
+  "stability": [
+    {
+      "name": "cloud-origin",
+      "identicalPixels": true
+    },
+    {
+      "name": "cloud-near",
+      "identicalPixels": true
+    },
+    {
+      "name": "galaxy-arrival",
+      "identicalPixels": true
+    }
+  ],
+  "graphics": [
+    {
+      "name": "cloud-origin",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cloud-near",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "galaxy-portrait",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "galaxy-arrival",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-field",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-primary",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-companion",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-distant",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-golden",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-companion-surface",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-companion-population",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-distant-surface",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cosmic-distant-population",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cloud-near-auto-exposure2",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cloud-near-low-exposure2",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "galaxy-arrival-auto-exposure2",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "galaxy-arrival-low-exposure2",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "light-chase-shifted",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "light-chase-unshifted",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "reopened-cloud-origin",
+      "errors": [
+        0,
+        0
+      ]
+    }
+  ],
+  "lifecycle": [
+    {
+      "stage": "before-dispose",
+      "contexts": [
+        {
+          "created": 1,
+          "deleted": 0,
+          "live": 1,
+          "uploads": [
+            {
+              "width": 1024,
+              "height": 512,
+              "format": 6408,
+              "type": 5121,
+              "alpha": {
+                "transparentFraction": 0.5518970489501953,
+                "partialFraction": 0.44701194763183594,
+                "opaqueFraction": 0.00109100341796875,
+                "corners": [
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "disposed",
+      "contexts": [
+        {
+          "created": 1,
+          "deleted": 1,
+          "live": 0
+        }
+      ]
+    }
+  ],
+  "comparison": [],
+  "math": {
+    "gamma": 7.088812050083356,
+    "doppler": 3.326528141123146,
+    "aberrate": [
+      0.03703375788910289,
+      -0.018516878944551445,
+      0.9991424452853377
+    ],
+    "spectrum": {
+      "angleDeg": 20.561888495621638,
+      "doppler": 1.9305897064531514,
+      "observedNm": 284.88704677207215,
+      "band": "ultraviolet"
+    },
+    "clock": {
+      "shipSeconds": 2,
+      "starSeconds": 14.177624100166712,
+      "horizontalLightSeconds": 14.035847859165045,
+      "photonPathLightSeconds": 14.177624100166712
+    }
+  }
+}

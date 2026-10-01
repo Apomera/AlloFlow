@@ -1,0 +1,19 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/moonmission_dashboard_state.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/moonmission_dashboard_state.test.js (10 tests | 9 skipped) 166ms
+stdout | tests/moonmission_ascent_visuals.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/moonmission_ascent_visuals.test.js (3 tests | 2 skipped) 733ms
+     ✓ draws a finite insertion ellipse in narrow and wide orbit views without changing the flight state  732ms
+
+ Test Files  2 passed (2)
+      Tests  2 passed | 11 skipped (13)
+   Start at  18:14:44
+   Duration  4.07s (transform 57ms, setup 76ms, import 166ms, tests 900ms, environment 2.48s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass12-2026-09-30/unit-two-cases-final.json

@@ -46,7 +46,7 @@ describe('Visual Supports motion and interaction accessibility', () => {
     expect(source).toContain('role="list"');
     expect(source).toContain('role="listitem"');
     expect(source).toContain('role="tabpanel" aria-labelledby={`visual-supports-tab-${vsTab}`} tabIndex={0}');
-    expect(source).toContain("aria-label={schedule.title + ' ordered steps'}");
+    expect(source).toContain("aria-label={tr('schedule_steps', '{title} ordered steps', { title: schedule.title })}");
     expect(source).toContain("aria-current={isCurrent ? 'step' : undefined}");
     expect(source).toContain('id="visual-supports-search"');
     expect(source).toContain('motion-reduce:transition-none');

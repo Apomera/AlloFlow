@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:37136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:37136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:318:5 › trait lenses display actual values, preserve coats and reuse measurement buffers
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:371:5 › generation stories replay actual cohorts, stop reliably and keep the expedition unchanged
+[1A[2K  2 passed (44.6s)

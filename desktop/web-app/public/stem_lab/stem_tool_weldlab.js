@@ -1602,7 +1602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     value: nb.hypothesis,
                     onChange: function (e) { setNotebook({ hypothesis: e.target.value }); },
                     placeholder: __alloT('stem.weldlab.hypothesis_how_does_travel_speed_compe', 'Hypothesis: How does travel speed compensate for amperage?'),
-                    className: 'w-full rounded-lg border border-slate-300 bg-slate-50 p-2 text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 ring-orange-500/40'
+                    className: 'w-full rounded-lg border border-slate-500 bg-slate-50 p-2 text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 ring-orange-500/40'
                   })
                 ),
                 // 2. Log the settings you try
@@ -1671,7 +1671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     value: nb.explanation,
                     onChange: function (e) { setNotebook({ explanation: e.target.value }); },
                     placeholder: __alloT('stem.weldlab.explain_how_amperage_voltage_and_speed', 'Explain how amperage, voltage and travel speed together set the heat input'),
-                    className: 'mt-2 w-full rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 ring-emerald-400/50'
+                    className: 'mt-2 w-full rounded-lg border border-emerald-600 bg-emerald-50 p-2 text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 ring-emerald-400/50'
                   })
                 )
               );
@@ -8013,21 +8013,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { q: 'What is "burn-through"?', opts: ['Burning your skin from arc flash exposure', 'Burning a hole through the base metal', 'Burning out a welding machine', 'Burning consumables'], correct: 1, explain: 'Burn-through = melted hole punched through the base metal due to excessive heat input on thin material. Visible as a sag or hole in the bead. Caused by too much amperage, too slow travel, or insufficient base metal thickness for the chosen procedure.' },
           { q: 'What is "essential variable" in a WPS?', opts: ['Optional setting', 'Welder personality trait recorded during the certification interview', 'Variable that requires re-qualification if changed beyond limits', 'Inspector requirement'], correct: 2, explain: 'Essential variables per ASME IX include: base metal class, filler classification, electrical characteristics, joint design, position, technique. Changing any essential variable beyond ranges requires WPS requalification. Non-essential variables can be changed without re-qualifying.' }
         ];
-        // The authored exam put 61% of correct answers in slot 2 (measured
-        // 11/30/8/0 with slot 4 never) — passable by position. Deterministic
-        // per-question rotation: the exam re-reads examQuestions[quizIdx] on
-        // every render, so a random shuffle would deal new options
-        // mid-question. Grading is by index (oi === current.correct), so
-        // `correct` is remapped with the options; `explain` is one string.
-        examQuestions = examQuestions.map(function(q, qi) {
-          if (!q || !Array.isArray(q.opts) || q.opts.length < 2 || typeof q.correct !== 'number') return q;
-          var n = q.opts.length;
-          var shift = ((qi * 7) + 3) % n;
-          if (shift === 0) return q;
-          var moved = new Array(n);
-          for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.opts[i];
-          return Object.assign({}, q, { opts: moved, correct: (q.correct + shift) % n });
-        });
+        // The bank is authored with its keys already spread (7/9/8/7), so it is
+        // shown as written. The per-question rotation that used to run here was
+        // the exact inverse of that spread and put 26 of 31 keys in slot D.
 
         if (qpView === 'overview') {
           return h('div', { className: 'min-h-screen bg-slate-50' },
@@ -10098,17 +10086,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'Half-V shape (⌶) = bevel groove. Only ONE plate is prepared (beveled); the other stays square. Used when only one piece can be machined easily — common for plate-to-pipe.'
           }
         ];
-        // Same slot-2 pile-up as the cert exam; same deterministic rotation
-        // (symbolQuestions[mbQIdx] is re-read every render, graded by index).
-        symbolQuestions = symbolQuestions.map(function(q, qi) {
-          if (!q || !Array.isArray(q.options) || q.options.length < 2 || typeof q.correct !== 'number') return q;
-          var n = q.options.length;
-          var shift = ((qi * 7) + 3) % n;
-          if (shift === 0) return q;
-          var moved = new Array(n);
-          for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.options[i];
-          return Object.assign({}, q, { options: moved, correct: (q.correct + shift) % n });
-        });
+        // Authored with keys spread (3/2/2/3) and shown as written; a rotation
+        // here was the inverse of that spread and put all 10 keys in slot C.
 
         function renderSymbolViz(viz) {
           // Visual approximation of an AWS weld symbol: reference line

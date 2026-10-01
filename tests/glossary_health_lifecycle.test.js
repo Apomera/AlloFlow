@@ -9,6 +9,10 @@ const middle = host.indexOf('  const fetchReplacementSuggestion =', start);
 const effect = host.indexOf('  useEffect(() => {\n      const resource = glossaryLiveRef.current.resource;', middle);
 const end = host.indexOf('  const resilientJsonParse =', effect);
 const useHealth = new Function('React', 'scope', 'with (scope) { ' + host.slice(start, middle) + host.slice(effect, end) + '; return runGlossaryHealthCheck; }');
+// The scheduled check resolves its unit/source analysis with the host helper defined beside latestGlossary.
+const relatedStart = host.indexOf('  const _findRelatedHistoryItem =');
+const findRelatedHistoryItem = relatedStart < 0 ? undefined
+  : new Function(host.slice(relatedStart, host.indexOf('  const latestGlossary =', relatedStart)) + '; return _findRelatedHistoryItem;')();
 const deferred = () => { let resolve; const promise = new Promise(yes => { resolve = yes; }); return { promise, resolve }; };
 let cleanup;
 beforeEach(() => { vi.useFakeTimers(); window.React = React; loadAlloModule('glossary_helpers_module.js'); });
@@ -31,6 +35,7 @@ function mount(options = {}) {
     isTeacherMode: options.isTeacherMode !== false,
     setGlossaryHealthCheck: vi.fn(), setIsRunningHealthCheck: vi.fn(), setShowHealthCheckPanel: vi.fn(),
     alloBotRef: { current: { speak } },
+    ...(findRelatedHistoryItem ? { _findRelatedHistoryItem: findRelatedHistoryItem } : {}),
   };
   let check, activeView = 'glossary';
   function Harness() { check = useHealth(React, { ...scope, generatedContent: resource, activeView }); return null; }

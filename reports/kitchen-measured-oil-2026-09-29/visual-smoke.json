@@ -1,0 +1,8 @@
+{
+  "errors": [],
+  "checks": [
+    "Native pour animation captured during actual flow; the practice draft leaves cooking state unchanged.",
+    "Returning the cup opens the bottle, empties only the practice draft, and restores the bench pose."
+  ],
+  "pass": true
+}

@@ -1,0 +1,67 @@
+{
+  "browserName": "chromium",
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:2"
+  },
+  "source": {
+    "payload": [
+      [
+        "answer.dir",
+        "rtl"
+      ],
+      [
+        "answer",
+        "مرحبا"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "candidate": {
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "repaired": {
+    "payload": [
+      [
+        "answer.dir",
+        "rtl"
+      ],
+      [
+        "answer",
+        "مرحبا"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "at": "2026-09-29T04:33:40.485Z",
+  "kind": "actual generated teacher_module.js in a minimal React host with fictional roster",
+  "candidate": "C:\\tmp\\tyler_integration_candidate",
+  "checks": [
+    {
+      "name": "browser gate rejects in-memory mutation that ignores failed durable label writes",
+      "passed": true
+    }
+  ],
+  "served": {
+    "teacher_module.js": {
+      "sha256": "4806a8df36e94714f5da74ad42273818178e426307123364857fcc1101747bd6",
+      "size": 634074
+    }
+  },
+  "blocked": [],
+  "errors": [],
+  "hostHash": "69dbbfe8ea38fbcecc2c1039a0d08be75313f60a7639fb3b34d34fbf0b5baaad",
+  "origin": "http://127.0.0.1:62058",
+  "mutation": "In-memory teacher artifact ignores durable-write failure; on-disk sources unchanged",
+  "expectedFailure": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByText(/AlloFlow could not save changes to this browser/).first()\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for getByText(/AlloFlow could not save changes to this browser/).first()\n\n    at captureRawStack (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\coreBundle.js:3130:17)\n    at callMatcherAsStep (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12873:57)\n    at Object.toBeVisible (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12863:23)\n    at verifyLabels (C:\\tmp\\tyler_integration_candidate\\dev-tools\\tyler-merge-browser.cjs:116:25)\n    at async run (C:\\tmp\\tyler_integration_candidate\\dev-tools\\tyler-merge-browser.cjs:78:21)"
+}

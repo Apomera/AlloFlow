@@ -1,0 +1,15 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "b7f20756a3c502a62abc4dfff0d5af11a90b2ccdfb70e49502339cd235fa6d84",
+  "matchingEnglishKeys": 742,
+  "missingEnglishKeys": 0,
+  "mismatchedEnglishFallbacks": 0,
+  "unitReports": [
+    "initial-unit-results.json",
+    "final-followup-results.json"
+  ],
+  "distinctUnitChecksPassed": 98,
+  "unitFailuresAfterFollowup": 0,
+  "note": "The initial run had three mirror-parity failures while the saved-crossing fix was being copied. The focused follow-up verifies all three, affected workflows and reports, and two additional restored-data cases. Unrelated skipped tests are excluded."
+}

@@ -1,0 +1,28 @@
+{
+  "completedAt": "2026-09-29T21:21:47.403Z",
+  "unit": {
+    "files": 43,
+    "passed": 1008
+  },
+  "browser": {
+    "files": 26,
+    "passed": 539
+  },
+  "phaseProcesses": {
+    "unit": {
+      "exitCode": 0,
+      "signal": null
+    },
+    "browser": {
+      "exitCode": 0,
+      "signal": null
+    }
+  },
+  "declaredInputsChanged": [],
+  "toolsChanged": false,
+  "gitHeadChanged": true,
+  "strictValidatorStatus": "failed",
+  "strictValidatorReason": "Validation inputs, tools or revision changed during the run",
+  "mutationChecks": 5,
+  "mutationChecksProved": true
+}

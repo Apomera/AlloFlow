@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Uduce tw'Amarangamutima",
+          "desc": "Menya agace urimo (ubururu, icyatsi, umuhondo, umutuku) kandi ushakishe uburyo bwo kwigenzura."
+        },
+        "emotions": {
+          "label": "Umushakashatsi w'Amarangamutima",
+          "desc": "Ongera amagambo y'amarangamutima — menya, vuga izina, kandi upime ubukana bw'ibyiyumvo."
+        },
+        "strengths": {
+          "label": "Shakisha Imbaraga Zawe",
+          "desc": "Menya kandi utekereze ku mbaraga zawe bwite, impano, n'ibyo ukeneye gukuza."
+        },
+        "viaStrengths": {
+          "label": "Imbaraga za VIA",
+          "desc": "Uburyo bworoheje bwo gutondeka ubwawe Imbaraga 24 z'Imico za VIA (Peterson na Seligman, 2004), hamwe n'imico myiza 6 no kumenya imbaraga zawe z'ingenzi. Ku isuzuma ryemewe ry'ubuntu, jya kuri viacharacter.org. Ni imyitozo yo kwitekerezaho, si igipimo cya siyansi y'imitekerereze."
+        },
+        "wheelOfLife": {
+          "label": "Uruziga rw'Ubuzima",
+          "desc": "Igishushanyo kimeze nk'urubuga rw'igitagangurirwa cy'ibice 8 by'ubuzima, buri kimwe gipimwa kuva kuri 1 kugeza kuri 10. Ishusho yawe bwite yerekana aho ubuzima bwuzuye n'aho bubura muri iki gihe. Bikomoka mu muco w'ubutoza (Meyer mu myaka ya 1960; Co-Active Coaching). Ni uburyo bworoshye bwo gutekereza; si igipimo cyemejwe cya siyansi y'imitekerereze."
+        },
+        "perma": {
+          "label": "Imibereho Myiza ya PERMA",
+          "desc": "Kwisuzuma ku bice bitanu bya PERMA hiyongereyeho gutekereza ku Buzima: Amarangamutima meza, Kwitabira, Imibanire, Intego y'ubuzima, Ibyagezweho, n'Ubuzima. Ibibazo 24, igisubizo mu gishushanyo cy'inkingi, gutekereza kuri buri gice. Bikomoka kuri Seligman; bijyana n'Imbaraga za VIA."
+        },
+        "coping": {
+          "label": "Agasanduku k'Uburyo bwo Kwihangana",
+          "desc": "Shakisha kandi witoze uburyo bwo kwihangana — guhumeka, kugaruka hano n'ubu, kunyeganyeza umubiri, n'ibindi."
+        },
+        "windowOfTolerance": {
+          "label": "Idirishya ry'Ubwihanganire",
+          "desc": "Igishushanyo cyo kwimenya cyita ku ihungabana. Uduce dutatu two gukanguka k'umubiri (gukanguka birenze, idirishya, gucogora birenze). Garagaza ibimenyetso byawe bwite bya buri gace, ibibigutera, n'imyitozo igusubiza mu idirishya. Bishingiye kuri Siegel (1999); bisanzwe bikoreshwa mu mashuri yita ku ihungabana."
+        },
+        "stressBucket": {
+          "label": "Indobo y'Umuhangayiko",
+          "desc": "Igishushanyo cy'ubushobozi bwo kwikorera. Ibitera umuhangayiko byisuka imbere; imyitozo yo kwihangana ibivanamo. Reba niba ibyinjira n'ibisohoka biringaniye. Igikoresho cyo mu muco wa CBT (Brabban na Turkington 2002), gikoreshwa muri NHS IAPT na Mind UK. Kivugisha ukuri ku bitera umuhangayiko bikomoka ku miterere ya sosiyete."
+        },
+        "tipp": {
+          "desc": "Ubumenyi bune bwa DBT bwo kurokoka ibihe bikomeye (Ubushyuhe, Imyitozo ikomeye, Guhumeka ku muvuduko ugenwe, Kurekura imitsi ubifatanyije no guhumeka) ku mubabaro UKABIJE. Bituza umubiri mu masegonda 30 kugeza ku minota 10 mbere yo kugerageza gutekereza uko wabisohokamo. Ubumenyi shingiro bwa DBT bwo Kwihanganira Umubabaro (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Agasanduku ko Guhangana n'Impungenge",
+          "desc": "Ubumenyi bushingiye kuri CBT bwo guhangana n'impungenge: inyigisho ku buzima bwo mu mutwe, igiti cy'impungenge (impungenge zifite akamaro n'izidafite akamaro), igihe cyagenewe impungenge, kureka gutekereza ibibi bikabije, ubumenyi bwo kugaruka hano n'ubu, n'urutonde rw'imiterere yawe bwite. Bikomoka kuri Beck Institute, AACAP, ADAA. Bijyana n'Idirishya ry'Ubwihanganire n'Indobo y'Umuhangayiko."
+        },
+        "sleep": {
+          "label": "Ibitotsi n'Ikiruhuko",
+          "desc": "Ibitotsi by'ingimbi n'abangavu ni ikibazo gikomeye cy'ubuzima rusange. Amasaha 8-10 asabwa na AAP ntakunze kugerwaho. Inyigisho ku buzima bwo mu mutwe, kwisuzuma, inzitizi 8 zisanzwe + icyafasha kuri buri imwe, n'ikayi y'ibitotsi. Bikomoka kuri AAP, CDC, NSF, n'ubushakashatsi bwa Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Kugenzura Ibyumviro",
+          "desc": "Igikoresho giha agaciro itandukaniro ry'imikorere y'ubwonko kugira ngo usobanukirwe uko wakira ibyumviro mu bice 8 by'ibyumviro. Kora umwirondoro wawe bwite, tegura indyo y'ibyumviro, menya inyoroshyo ukeneye ku ishuri. Ururimi rushyira imbere uwo uri we; bishingiye kuri Ayres / Dunn / ubushakashatsi buyobowe n'abantu bafite autisme."
+        },
+        "bigFeelings": {
+          "label": "Ibyiyumvo Bikomeye (Uburakari)",
+          "desc": "Inyigisho ku buzima bwo mu mutwe no kubaka ubumenyi byihariye ku burakari. Uburakari ni amakuru, si cyo kibazo; ubushotoranyi bwihuse ni bwo mutego. Bishingiye ku muco wa Coping Power wa Lochman + ibimenyetso bya CBT ku burakari. Ikayi y'utubazo duto, urutonde rw'ibibitera, akanya ko guhitamo, n'uburyo bwawe bwite bwo gutuza."
+        },
+        "substancePsychoed": {
+          "label": "Ikoreshwa ry'Ibiyobyabwenge",
+          "desc": "Inyigisho ku buzima bwo mu mutwe zigamije kugabanya ingaruka mbi z'ibiyobyabwenge (inzoga, urumogi, nikotine, opiyoyide, ibyongera imbaraga, benzo, ibitera kubona ibitariho). Ingaruka ku bwonko bw'urubyiruko. Inyigisho kuri naloxone. SI igikoresho cyo gusuzuma, SI inyigisho zo kwifata gusa. Kohereza kuri SAMHSA bishimangiwe. Umwanya wo kwitekerezaho uhuje na MI."
+        },
+        "behavioralActivation": {
+          "label": "Gukangura Imyitwarire",
+          "desc": "Tegura ibikorwa bito, ubikore, hanyuma ubipime ukurikije ubushobozi (wumvise ushoboye) n'ibyishimo (warabyishimiye). Reba ibikubereye maze uhitemo intambwe ikurikira ushoboye. Iki gikorwa cyo gutegura gishingiye ku gukangura imyitwarire; ntigitanga kandi ntigisuzuma gahunda y'ubuvuzi."
+        },
+        "mindfulness": {
+          "label": "Inguni yo Kuzirikana",
+          "desc": "Imyitozo yo guhumeka iyobowe, gusuzuma umubiri, n'ibikorwa byo kuzirikana."
+        },
+        "quietQuestions": {
+          "label": "Ibibazo byo mu Ituze",
+          "desc": "Imyitozo ya buri cyumweru yo kwibaza imbere muri wowe. Mara icyumweru cyose uzirikana ikibazo kimwe gifunguye. Ibibazo 20 bisimburana ku bwitonzi, ibyifuzo, ingorane, imibanire, no gukura. Byakomotse ku muco w'ibibazo bya Quaker; ntibishingiye ku idini kandi ntibigutegeka icyo gukora."
+        },
+        "orientations": {
+          "label": "Imyerekezo",
+          "desc": "Uburyo bwo Kubaho, Bugereranyijwe. Imitekerereze umunani ya filozofiya (Daoism, Zen, Stoicism, Existentialism, imyitwarire ya Confucius, Ubuntu, imibanire y'abasangwabutaka, Imyitwarire yo Kwita ku Bandi) igereranywa ku bibazo bikomeye by'ubuzima. Ntibigutegeka icyo gukora; buri muco ufite igice kivugisha ukuri cya \"ibyo udashobora gukora neza\"."
+        },
+        "thoughtRecord": {
+          "label": "Inyandiko y'Ibitekerezo ya CBT",
+          "desc": "Inyandiko y'ibitekerezo y'inkingi 7 yo mu Buvuzi bw'Imitekerereze n'Imyitwarire. Nyura mu kanya gakomeye: uko byagenze, amarangamutima, igitekerezo cyizanye, ibimenyetso bigishyigikira n'ibikivuguruza, igitekerezo kiringaniye, kongera gupima amarangamutima. Ibika ibyo wanditse uko igihe kigenda. Bikomoka kuri Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Imbonerahamwe y'Ibihombo n'Inyungu",
+          "desc": "Imbonerahamwe ya 2x2 yo gufata ibyemezo yo mu Buvuzi bw'Imyitwarire bwa Dialectique. Ibyiza n'ibibi by'igihe gito n'igihe kirekire by'icyemezo, biri iruhande rumwe. Bifasha iyo amarangamutima agusunika ku ihitamo rimwe. Bikomoka kuri Linehan."
+        },
+        "sfbt": {
+          "label": "Kwibanda ku Bisubizo",
+          "desc": "Ubuvuzi Bugufi Bwibanda ku Bisubizo: Ikibazo cy'Igitangaza, Gupima ku Rugero, Gushaka Ibihe Bidasanzwe, n'Ishimwe. Bireba imbere aho kureba inyuma, bibaza ibisanzwe bikora neza. Uburyo bukoreshwa cyane mu bujyanama bwo mu mashuri muri Amerika. Bikomoka kuri de Shazer na Berg."
+        },
+        "careConstellations": {
+          "label": "Inyenyeri z'Ubwitaho",
+          "desc": "Ikarita y'imibanire y'abakwitaho n'abo witaho. Yanga imyumvire yo \"kwiyitaho\" yo kwikunda cyangwa yo kugura ibintu. Irimo igitekerezo cyimbitse cya filozofiya ku Kwita ku Mutima ugereranyije no Kwiyitaho (Foucault, epimeleia heautou y'Abagereki, Audre Lorde, ibyishimo byimbitse ugereranyije n'ibyishimo by'akanya gato)."
+        },
+        "ecomap": {
+          "label": "Ikarita y'Ibigukikije",
+          "desc": "Ikarita y'imibanire y'umuntu n'ibimukikije. Wowe hagati; inzego 12 z'ingenzi z'ubuzima zikuzengurutse. Buri sano ipimwa ukurikije imbaraga, umuhangayiko, n'icyerekezo cy'imbaraga. Igikoresho gisanzwe mu mibereho myiza y'abaturage kuva kuri Hartman (1978); gikoreshwa muri IEP, mu isuzuma ry'umuryango, no mu rutonde rw'ubuzima bwite."
+        },
+        "circlesOfSupport": {
+          "label": "Inziga z'Ubufasha",
+          "desc": "Inziga enye z'imibanire zihuriye hagati: Ubucuti bwa hafi cyane, Ubucuti, Kwitabira, Guhana serivisi (abishyurwa). Bigaragaza neza abakuri hafi koko, harimo n'igihe abantu bishyurwa buzuza inziga z'imbere. Bikomoka kuri Forest na Snow bo muri Inclusion Press."
+        },
+        "genogram": {
+          "label": "Igishushanyo cy'Umuryango",
+          "desc": "Ikarita y'umuryango y'ibisekuru bitatu ikoresha ibimenyetso bisanzwe by'imiterere y'umuryango. Ni iyo kwisobanukirwa ubwawe gusa (SI isuzuma ry'ubuvuzi). Bishingiye ku nyigisho ya Bowen ku miterere y'umuryango n'imyandikire ya McGoldrick-Gerson-Petry. Irimo amabwiriza agaragara yo kuyikoresha mu buryo butekanye."
+        },
+        "griefLoss": {
+          "label": "Agahinda no Kubura",
+          "desc": "Umugenzi wo kukuherekeza mu gahinda. Urupfu rw'umuntu cyangwa itungo ukunda, impinduka mu muryango, kubura inshuti, kubura uwo wari we, kubura kutumvikana neza — byose birabarwa. Nyura mu nshingano enye z'icyunamo za Worden, andika ibaruwa, tegura imihango. Amabwiriza akomeye y'umutekano akwerekeza ku Mufasha mu Bihe Bikomeye / 988 ku gahinda gakabije cyangwa kagoranye."
+        },
+        "traumaPsychoed": {
+          "label": "Gusobanukirwa Ihungabana",
+          "desc": "Inyigisho ku buzima bwo mu mutwe gusa (SI igikoresho cyo gusuzuma). Ihungabana icyo ari cyo n'icyo atari cyo, imikorere y'ubwonko mu magambo yoroshye, uko abantu basanzwe bitwara bisobanurwa nk'uburyo bwo kwirinda, amahame 6 ya SAMHSA, ubuvuzi bushingiye ku bimenyetso. Ku banyeshuri n'abarezi. Irimo amabwiriza agaragara y'umutekano asobanura impamvu gusuzuma nta gukurikirana bidatekanye."
+        },
+        "bodyStory": {
+          "label": "Inkuru y'Umubiri",
+          "desc": "Igikoresho cyo kwakira umubiri no kuwubamo. SI icyibanda ku biro, SI icyegereye indyo zo kunanuka, SI igikoresho cyo gusuzuma. Bishingiye ku gushima umubiri kwa Tylka, amahame yo kurya wumva umubiri, n'ubumenyi ku itangazamakuru. Cyakira imibiri yose, ibitsina byose, ingano zose. Kohereza kuri NEDA bishimangiwe ku ndwara zijyanye no kurya."
+        },
+        "sourcesOfStrength": {
+          "label": "Amasoko y'Imbaraga",
+          "desc": "Garagaza ku ikarita ibintu 8 bikurinda. Shakisha ubufasha bukurinda bwakomotse kuri gahunda ya Sources of Strength. Iyi karita wiyoboramo ni imihindurire, si ishyirwa mu bikorwa rya gahunda y'ishuri yasuzumwe."
+        },
+        "crisiscompanion": {
+          "label": "Umufasha mu Bihe Bikomeye",
+          "desc": "Ubufasha bw'urungano n'ubumenyi bwo gukumira kwiyahura: icyo wakora niba wowe cyangwa inshuti yawe afite agahinda gakabije, ari mu bihe bikomeye, cyangwa atekereza kwigirira nabi — kumenya ibimenyetso, icyo kuvuga (n'icyo kutavuga), kubwira umuntu mukuru wizera, hiyongereyeho 988 na gahunda yawe bwite y'umutekano. Gifungurwa nyuma yo kuburira ku bikirimo. Gihuje na NEDA, AFSP, Sources of Strength, na 988. Ni mugenzi w'Amasoko y'Imbaraga mu gufasha mu bihe bikomeye."
+        },
+        "identitySupport": {
+          "label": "Ubufasha ku Mwirondoro",
+          "desc": "Umwanya wakira bose kandi ugushyigikira ku bibazo by'igitsina wiyumvamo, icyerekezo cy'imibonano mpuzabitsina, icyerekezo cy'urukundo, n'ibindi bibazo bigari by'umwirondoro. Amagambo, iterambere ry'umwirondoro, kubona abo musangiye, umutekano w'urubyiruko rwahinduye igitsina, inama ku bashyigikira. Bishingiye kuri Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Amajwi y'Abafite Ubumuga",
+          "desc": "Abavugizi nyabo bafite autisme n'abafite ubumuga, bafite ibikorwa byahinduye, kandi byanenze, uburyo bwo kwita ku bafite ubumuga. Amagambo yabo, imiterere y'ibihe, n'urutonde rw'ibitabo rwatoranyijwe. Cyubatswe kugira ngo abantu uru rwego rwagiye RUKORERAHO ibintu bashyirwe hagati, aho gushyirwa ku ruhande mu gikoresho cya siyansi y'imyitwarire. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Gushyiraho Intego",
+          "desc": "Shyiraho intego SMART, kurikirana iterambere, kandi wishimire intambwe z'ingenzi."
+        },
+        "howlTracker": {
+          "label": "Ikurikirana rya HOWL",
+          "desc": "Kwisuzuma ku Ngeso z'Akazi n'Imyigire mu gihe cya Crew. Kureba uko umeze buri cyumweru, intego z'igihembwe, igishushanyo cy'uko bigenda, ibibazo byo kuganira muri Crew. Bihuje n'urwego rwa HOWL rwa EL Education."
+        },
+        "onePageProfile": {
+          "label": "Umwirondoro w'Urupapuro Rumwe",
+          "desc": "Umwirondoro woroshye gutwara no gucapa ukwirwa ku rupapuro rumwe. Ibice bitatu: ibyo abantu bankundaho kandi bashima kuri njye, ibifite akamaro kuri njye, uko wanshyigikira neza. Inyandiko yo gutegura ishingiye ku muntu ikoreshwa mu nama za IEP, mu nzibacyuho, ku barimu basimbura, cyangwa muri Crew. Bishingiye ku miterere ya Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Gukora Gahunda z'Ibikorwa. Ibibazo umunani bikurikirana (Inkuru Yanjye, Inzozi, Inzozi Mbi, Uwo Ndi We, Impano, Ibyo Nkeneye, Gahunda y'Ibikorwa, Intambwe za Mbere). Igishushanyo gishingiye ku muntu cyakozwe na Pearpoint, O'Brien, na Forest bo muri Inclusion Press; gikoreshwa cyane mu gutegura inzibacyuho."
+        },
+        "path": {
+          "desc": "Gutegura Ejo Hazaza Hatandukanye mu Cyizere. Igishushanyo cyo gutegura ahazaza: ibyiciro umunani kuva ku Nyenyeri yawe y'Amajyaruguru y'igihe kirekire usubira inyuma kugeza ku ntambwe za mbere mu byumweru bibiri. Pearpoint, O'Brien, na Forest bo muri Inclusion Press; bijyana na MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Indangagaciro n'Ibikorwa",
+          "desc": "Tondeka ibifite akamaro, vuga indangagaciro zawe z'ingenzi, kandi uhindure buri imwe igikorwa gito gifatika muri iki cyumweru. Bikomoka ku Buvuzi bwo Kwakira no Kwiyemeza (Hayes); imyumvire ya DNA-V ku rubyiruko. Itandukaniro rya ACT hagati y'indangagaciro (ibyerekezo) n'intego (aho ugana)."
+        },
+        "careerCompass": {
+          "label": "Busole y'Umwuga",
+          "desc": "Shakisha imyuga ukurikije ibigushishikaza. Kwisuzuma kwa RIASEC kw'ibibazo 36 guha kode ya Holland y'inyuguti eshatu z'ibanze; reba imyuga, Amatsinda 16 y'Imyuga ya leta nkuru, n'intambwe zifatika zikurikira (iminsi yo kwigira ku bakora akazi, ibiganiro byo gushaka amakuru, CTE, kwimenyereza umwuga). Bishingiye ku rwego rwa Holland; byerekeza kuri O*NET Interest Profiler yemewe kuri mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio yo Kwivugira",
+          "desc": "Kora gahunda ifatika y'ubufasha ku ishuri ku bibazo bya IEP cyangwa 504, inyoroshyo, amahitamo yo guhishura, no gusaba ubufasha abantu bakuru wizera."
+        },
+        "perspective": {
+          "label": "Indorerwamo yo Kureba Ukundi",
+          "desc": "Reba ibintu mu buryo butandukanye — witoze impuhwe no kwishyira mu mwanya w'abandi."
+        },
+        "community": {
+          "label": "Umuryango Mugari n'Umuco",
+          "desc": "Shakisha itandukaniro, kumenya imico, no kumva uri uw'umuryango mugari."
+        },
+        "conflict": {
+          "label": "Gukemura Amakimbirane",
+          "desc": "Itoze amakimbirane yoroheje cyangwa y'impimbano ukoresheje kwishyira mu mwanya w'abandi, interuro za \"Jye\", kugabanya ubukana, n'amahitamo yo gusana. Niba hari umuntu utari mu mutekano, bwira umuntu mukuru aho kugira ngo mwumvikane uri wenyine."
+        },
+        "social": {
+          "label": "Laboratwari y'Ubumenyi bw'Imibanire",
+          "desc": "Itoze ubumenyi bwo kuganira, gutega amatwi witonze, imvugo y'umubiri, n'ubufatanye."
+        },
+        "teamwork": {
+          "label": "Kubaka Ubufatanye",
+          "desc": "Ibibazo byo gukorera hamwe no gusobanukirwa inshingano mu itsinda."
+        },
+        "dearMan": {
+          "desc": "Tegura amagambo yo gusaba ikintu gikomeye mu ntambwe zirindwi: Sobanura, Garagaza ibyiyumvo, Shimangira, Tera imbaraga, Zirikana, Garagara wigirira icyizere, Mwumvikane. Bikomoka kuri DBT Ubushobozi mu Mibanire (Linehan); inyandiko ikoreshwa cyane mu bujyanama bwo mu mashuri yo kuvuga ushize amanga. Bijyana na Studio yo Kwivugira."
+        },
+        "motivationalInterviewing": {
+          "label": "Ikiganiro Gikangura Ubushake",
+          "desc": "Uburyo bwo kuganira bwo gufasha umuntu (cyangwa wowe ubwawe) gutekereza ku mpinduka. Iga ubumenyi bwa OARS (Ibibazo bifunguye, Gushima, Gusubiramo ibyo wumvise, Incamake), ibipimo bitatu, n'Amagambo y'Impinduka. Bikomoka kuri Miller na Rollnick; ni ishingiro ry'ubujyanama bwo mu mashuri n'ubufasha bw'urungano."
+        },
+        "crewProtocols": {
+          "label": "Porotokole za Crew",
+          "desc": "Isomero ry'imiterere y'amatsinda iteguwe ku gihe cya Crew, igihe cy'ubujyanama, cyangwa isaha yo gutangira umunsi: kubaka umuryango, gutangira, gusoza, inziga zo gusana imibanire, porotokole zo kwitekerezaho, uburyo bwo kwishimira, n'amabwiriza y'ibiganiro bikomeye. Hiyongereyeho ikusanyirizo ry'ibibazo byose bya Crew biri muri SEL Hub. Bishingiye kuri EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Imibanire Myiza",
+          "desc": "Uruhererekane (myiza / mibi / y'ihohoterwa) mu bice 8 by'imibanire yose ya hafi. Kwemera ku bushake mu buryo burambuye, gukumira ihohoterwa mu rukundo, umutekano + imirongo y'ubufasha. Bishingiye ku rwego rwa Loveisrespect / NDVH. Byakira abantu b'ibitsina n'urukundo bitandukanye, abafite imikorere y'ubwonko itandukanye, n'abafite ubumuga."
+        },
+        "decisions": {
+          "label": "Laboratwari y'Ibyemezo",
+          "desc": "Nyura mu bihe by'ubuzima busanzwe ukoresheje uburyo bwa hagarara-tekereza-kora."
+        },
+        "journal": {
+          "label": "Ikinyamakuru cy'Ibyiyumvo",
+          "desc": "Ikinyamakuru cya buri munsi cyo kureba uko umeze — andika uko umerewe, ibibitera, n'ibitekerezo uko igihe kigenda."
+        },
+        "safety": {
+          "label": "Umutekano n'Imbibi",
+          "desc": "Iga ku mbibi bwite, abantu bakuru wizera, n'ibihe bitekanye n'ibidatekanye."
+        },
+        "landPlace": {
+          "label": "Ubutaka n'Ahantu",
+          "desc": "Studio yo Kubungabunga igamije imibanire ihoraho n'ubutaka utuyeho. Imirongo itatu (amateka, ibidukikije, ubu), gutekereza byimbitse ku kwemera ba nyir'ubutaka nk'imyitozo aho kuba ibirori, imiryango iyobowe n'Abawabanaki nk'amajwi yizewe, n'ikinyamakuru cy'ibanga cyo kwitekerezaho."
+        },
+        "somaticReset": {
+          "label": "Gusubiza Umubiri n'Umwuka ku Murongo",
+          "desc": "Hitamo igice cy'umubiri maze ukurikize imyitozo migufi yo gutuza, guhumeka, cyangwa kunyeganyeza umubiri buhoro ushobora gukora wicaye, hamwe no kureba uko umeze mu ibanga mbere na nyuma."
+        },
+        "restorativeCircle": {
+          "label": "Uruziga rwo Gusana Imibanire",
+          "desc": "Yobora inziga zo gusana imibanire no kubaka umuryango zifite amahame yashyizweho, ubuyobozi bw'umuntu mukuru, no kwita ku mizi y'umuco. Si izo guhatira umuntu guhishura ibye cyangwa zo gukemura akaga k'umutekano kariho."
+        },
+        "compassion": {
+          "label": "Impuhwe no Kwibwira",
+          "desc": "Itoze kwigirira impuhwe, hindura ijwi ry'imbere rigucira urubanza, kandi wubake ijwi ry'imbere ryuje ubugwaneza."
+        },
+        "friendship": {
+          "label": "Kubaka Ubucuti",
+          "desc": "Shakisha uburyo butandukanye bw'ubucuti, uburyo bwo gusana, n'imiterere y'imibanire myiza."
+        },
+        "transitions": {
+          "label": "Impinduka mu Buzima",
+          "desc": "Nyura mu mpinduka nko kwimuka, amashuri mashya, no gukura."
+        },
+        "upstander": {
+          "label": "Amahugurwa yo Kuba Umurengezi",
+          "desc": "Iga kurengera abandi mu buryo butekanye — ubumenyi bwo kuva ku kuba indorerezi ukaba umurengezi."
+        },
+        "growthmindset": {
+          "label": "Imitekerereze yo Gukura",
+          "desc": "Siyansi y'ubwonko, kureba ingorane mu bundi buryo, no kubaka ubudacogora."
+        },
+        "execfunction": {
+          "label": "Ubushobozi bwo Gutunganya Imirimo",
+          "desc": "Uburyo bwo guhangana n'ibice bigoye byo kurangiza ibintu: gutangira imirimo, kugumana ubwitonzi, gutegura hakiri kare, no gukurikirana igihe."
+        },
+        "advocacy": {
+          "label": "Imyitozo yo Kuvuganira",
+          "desc": "Itoze amagambo rusange yo kuvuga ibyo ukeneye, gusaba ubufasha, no kuvuga ushize amanga mu bihe bya buri munsi."
+        },
+        "civicAction": {
+          "label": "Ibikorwa by'Abenegihugu n'Icyizere",
+          "desc": "Tekereza ku byiyumvo bikomeye ku karengane, wubake ubushobozi bwo kugira uruhare mu gihugu, kandi ukuze icyizere binyuze mu bikorwa."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratwari yo Gutekereza ku Byiza n'Ibibi",
+          "desc": "Shakisha ibibazo by'iki gihe bijyanye n'icyiza n'ikibi ukoresheje uburyo bwinshi n'ikiganiro cya Socrate n'ubwenge buhangano."
+        },
+        "cultureExplorer": {
+          "label": "Umushakashatsi w'Imico",
+          "desc": "Injira mu mico y'isi ku buryo bwimbitse ufashijwe n'ubwenge buhangano, hamwe n'amashusho n'amajwi."
+        },
+        "voicedetective": {
+          "label": "Umugenzuzi w'Amajwi",
+          "desc": "Umva amajwi kandi umenye amarangamutima uhereye ku buryo ijwi rivuga."
+        },
+        "practiceJourneys": {
+          "label": "Ingendo z'Imyitozo (Igeragezwa)",
+          "desc": "Itoze gusaba ubufasha unyuze mu mahura ane afitanye isano. Subiza ukoresheje amahitamo, amagambo yawe bwite, cyangwa byombi. Andika mu kinyamakuru kandi ugerageze indi nzira."
+        },
+        "sociallab": {
+          "label": "Gukina Uruhare mu Mibanire",
+          "desc": "Itoze ibihe by'imibanire no gukina uruhare n'urungano rw'ubwenge buhangano mu biganiro bifite amashami."
+        },
+        "peersupport": {
+          "label": "Umutoza w'Ubufasha bw'Urungano",
+          "desc": "Iga ubumenyi bwa OARS bwo gutega amatwi n'igihe cyo gushaka ubufasha bw'umuntu mukuru."
+        },
+        "conflicttheater": {
+          "label": "Ikinamico y'Amakimbirane",
+          "desc": "Itoze amakimbirane y'impimbano hamwe n'abakinnyi babiri b'ubwenge buhangano mu ikinamico ikwinjiza muri yo. Ni ugukina uruhare mu igeragezwa (beta) gusa; ntukayikoreshe mu gukemura ibibi biriho."
+        },
+        "digitalWellbeing": {
+          "label": "Studio y'Imibereho Myiza mu Ikoranabuhanga",
+          "desc": "Isuzume ku mibanire yawe n'imbuga nkoranyambaga na chatbot z'ubwenge buhangano, wubake ingeso nziza zo gukoresha telefoni, wisubize nyuma yo gutotezwa kuri murandasi, umenye uburiganya buri mu byo werekwa, witware neza kandi mu mutekano mu mibanire na chatbot, kandi ubone ubufasha igihe ubukeneye."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Kwimenya",
+          "desc": "Kumenya amarangamutima, imbaraga, n'ibyo ukeneye gukuza"
+        },
+        "self-regulation": {
+          "label": "Kwigenzura",
+          "desc": "Kugenzura amarangamutima, gukanguka k'umubiri, n'ubwitonzi; imyitozo yo kwihangana"
+        },
+        "self-direction": {
+          "label": "Kwiyobora",
+          "desc": "Gushyiraho intego, ubushobozi bwo kwifatira ibyemezo, gutunganya imirimo, imitekerereze yo gukura"
+        },
+        "inner-work": {
+          "label": "Umurimo w'Imbere",
+          "desc": "Imyitozo yo kuzirikana no kwitekerezaho"
+        },
+        "care-of-self": {
+          "label": "Kwita ku Mutima",
+          "desc": "Kwigirira impuhwe, kwiyitaho mu mibanire n'abandi"
+        },
+        "social-awareness": {
+          "label": "Kumenya Imibanire",
+          "desc": "Impuhwe, kwishyira mu mwanya w'abandi, no guha agaciro itandukaniro"
+        },
+        "relationship-skills": {
+          "label": "Ubumenyi mu Mibanire",
+          "desc": "Itumanaho, ubufatanye, no gukemura amakimbirane"
+        },
+        "responsible-decision-making": {
+          "label": "Gufata Ibyemezo mu Buryo Bwiza",
+          "desc": "Amahitamo aboneye, gusuzuma ingaruka, no gukemura ibibazo"
+        },
+        "stewardship": {
+          "label": "Kubungabunga",
+          "desc": "Kwita ku muryango mugari, ubutabera, ubutaka, n'ahazaza"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "iminota 5-8",
+          "purpose": "Vuga izina ry'agace urimo ubu kandi uhitemo uburyo bwo kwigenzura bukubereye.",
+          "next": "Reba agace urimo, hitamo uburyo bumwe, hanyuma ubike niba ushaka kubugarukaho."
+        },
+        "coping": {
+          "time": "iminota 3-10",
+          "purpose": "Hitamo uburyo bwo kwihangana kandi ubwitoze rimwe ufite aho uhagarara hasobanutse.",
+          "next": "Hitamo uburyo bumwe bushingiye ku mubiri cyangwa bwo kugaruka hano n'ubu, ubugerageze, hanyuma urebe niba bwagufashije."
+        },
+        "journal": {
+          "time": "iminota 5-12",
+          "purpose": "Andika igitekerezo cy'ibanga kandi urebe imiterere ushobora kwifuza kugumana.",
+          "next": "Hitamo ikibazo, wandike ukuri, kandi ubike cyangwa wohereze hanze mbere yo gufunga."
+        },
+        "emotions": {
+          "time": "iminota 4-8",
+          "purpose": "Ongera amagambo y'amarangamutima kandi uvuge ibyo wumva mu buryo busobanutse kurushaho.",
+          "next": "Hitamo icyiyumvo, upime ubukana bwacyo, hanyuma uhitemo ijambo rimwe rikwiriye kurusha ayandi."
+        },
+        "mindfulness": {
+          "time": "iminota 2-10",
+          "purpose": "Hagarara gato, uhumeke, kandi witoze kwitonda utagombye kwandika ikintu na kimwe.",
+          "next": "Hitamo imyitozo imwe migufi, uyikurikize kugeza ku iherezo, hanyuma urebe icyahindutse."
+        },
+        "somaticReset": {
+          "time": "iminota 3-8",
+          "purpose": "Koresha kureba uko umubiri wawe umeze mu ibanga kugira ngo uhitemo imyitozo migufi yo gusubiza umubiri ku murongo ushobora gukora wicaye.",
+          "next": "Hitamo igice cy'umubiri, ugerageze uburyo bumwe bwo gutuza, guhumeka, cyangwa kunyeganyeza umubiri buhoro, hanyuma urebe icyahindutse."
+        },
+        "thoughtRecord": {
+          "time": "iminota 8-15",
+          "purpose": "Gabanya umuvuduko w'igitekerezo kigoye kandi ushake uburyo bwo kubona ibintu buringaniye kurushaho.",
+          "next": "Vuga uko byagenze, upime icyiyumvo, hanyuma ugereranye igitekerezo n'ibimenyetso."
+        },
+        "anxietyToolkit": {
+          "time": "iminota 5-12",
+          "purpose": "Tandukanya impungenge, ugabanye ubukana bwazo, kandi uhitemo intambwe ikurikira ifatika.",
+          "next": "Hitamo impungenge zisakuza kurusha izindi, ugerageze uburyo bumwe, hanyuma ubike gahunda niba igufasha."
+        },
+        "sleep": {
+          "time": "iminota 4-10",
+          "purpose": "Menya inzitizi z'ibitotsi kandi uhitemo ingeso imwe yo kuruhuka wagerageza.",
+          "next": "Reba ibikubangamira, hitamo impinduka imwe nto, hanyuma uzabigarukeho nyuma."
+        },
+        "goals": {
+          "time": "iminota 5-10",
+          "purpose": "Hindura icyifuzo kibe igikorwa gikurikira gifatika kandi gishoboka.",
+          "next": "Andika intego imwe, hitamo intambwe ya mbere, kandi ubike gahunda mbere yo gufunga."
+        },
+        "friendship": {
+          "time": "iminota 5-10",
+          "purpose": "Tekereza ku byo ukeneye mu bucuti, kumva uri umwe mu bandi, n'amahitamo ku rungano.",
+          "next": "Hitamo ikibazo kimwe cy'ubucuti kandi umenye intambwe imwe y'ineza ikurikira."
+        },
+        "conflict": {
+          "time": "iminota 6-12",
+          "purpose": "Sobanukirwa amakimbirane kandi utegure igisubizo kigamije gusana.",
+          "next": "Vuga ibyabaye, utekereze ku mpande zombi, hanyuma uhitemo igikorwa kimwe cyo gusana."
+        },
+        "safety": {
+          "time": "iminota 8-15",
+          "purpose": "Kora gahunda y'umutekano ifatika kandi umenye abantu wizera bagufasha.",
+          "next": "Ongeraho ibimenyetso byo kwitondera, intambwe zo kwihangana, n'abantu bo guhamagara; bika mbere yo gufunga."
+        },
+        "crisiscompanion": {
+          "time": "iminota 3-10",
+          "purpose": "Koresha intambwe z'ubufasha ziteguwe igihe amarangamutima asa n'aho yihutirwa cyangwa adatekanye.",
+          "next": "Hitamo uburyo bw'ubufasha bukwegereye kurusha ubundi kandi ubwire umuntu mukuru wizera cyangwa serivisi y'ubutabazi igihe bikenewe."
+        },
+        "conflicttheater": {
+          "time": "iminota 8-15",
+          "purpose": "Itoze ikinamico y'amakimbirane y'impimbano kandi ugerageze amagambo yo gusana utafashe iki gikoresho nk'ubuhuza.",
+          "next": "Hitamo ikinamico y'impimbano, ugerageze igisubizo kimwe, hanyuma muganire ku byakenera ubufasha bw'umuntu mukuru mu buzima busanzwe."
+        },
+        "restorativeCircle": {
+          "time": "iminota 15-30",
+          "purpose": "Tegura cyangwa uyobore igikorwa cy'itsinda cyo gusana imibanire gifite amahame asobanutse n'ubuyobozi bw'umuntu mukuru.",
+          "next": "Banza ushyireho amasezerano y'uruziga, hanyuma uhitemo ikibazo; ntuzigere uhatira umuntu guhishura ibye imbere y'abandi."
+        },
+        "strengths": {
+          "time": "iminota 5-10",
+          "next": "Hitamo imbaraga zisa nawe, hanyuma ushake akanya kamwe nyako muri iki gihembwe kerekana buri imwe."
+        },
+        "viaStrengths": {
+          "time": "iminota 8-15",
+          "purpose": "Koresha gutondeka ubwawe byakomotse kuri VIA nk'igikorwa cyo kwitekerezaho, si isuzuma ryemewe.",
+          "next": "Tondeka imbaraga, urebe imiterere, kandi wandike urugero rumwe rushimangira igisubizo."
+        },
+        "perma": {
+          "time": "iminota 8-15",
+          "purpose": "Fata ishusho yo kwitekerezaho ku mibereho yawe myiza mu bice bya PERMA hiyongereyeho Ubuzima.",
+          "next": "Koresha iyo shusho mu guhitamo ikiganiro cyangwa igerageza rito, si ukwiyitirira izina."
+        },
+        "advocacy": {
+          "time": "iminota 5-12",
+          "purpose": "Itoze amagambo ya buri munsi yo kuvuga ibyo ukeneye no gusaba ubufasha.",
+          "next": "Hitamo ikibazo, tegura gusaba kugufi, kandi wemeze uwagufasha."
+        },
+        "selfAdvocacy": {
+          "time": "iminota 10-20",
+          "purpose": "Kora gahunda ifatika y'ubufasha ku ishuri ku bijyanye na IEP, 504, inyoroshyo, cyangwa amahitamo yo guhishura.",
+          "next": "Hitamo icyo ukeneye kimwe, kusanya ibibazo byawe, kandi umenye umuntu mukuru wizera wabigiramo uruhare."
+        },
+        "crewProtocols": {
+          "time": "iminota 10-20",
+          "next": "Shakisha ukurikije intego, hitamo porotokole imwe y'uyu munsi, hanyuma wandike muri Gahunda ya Crew Yanjye igihe uzayikoresha."
+        },
+        "perspective": {
+          "time": "iminota 6-12",
+          "next": "Hitamo ikibazo, banza urebe uko undi abibona, hanyuma uvuge icyo wakora mu bundi buryo."
+        },
+        "windowOfTolerance": {
+          "time": "iminota 8-12",
+          "next": "Ongeraho ikimenyetso kimwe kuri buri gace mu duce twawe dutatu, hanyuma ukoreshe Reba uko umeze kugira ngo werekane aho uri uyu munsi."
+        },
+        "sensoryRegulation": {
+          "time": "iminota 8-15",
+          "next": "Tangira na Ibyumviro ni iki?, hanyuma ushyire ikimenyetso ku bice bisakuza cyangwa bituje kuri wowe."
+        },
+        "execfunction": {
+          "time": "iminota 5-10",
+          "next": "Jya kuri Tangira maze uhitemo intambwe imwe yo gutangira uyu munsi, hanyuma ujye kuri Komeza kugira ngo uhitemo aho uzandika ibitekerezo."
+        },
+        "growthmindset": {
+          "time": "iminota 5-10",
+          "next": "Fungura Bireba Ukundi, wandike igitekerezo kidahinduka, kandi ugihindure igitekerezo gisobanutse kandi gishoboka."
+        },
+        "dearMan": {
+          "time": "iminota 8-12",
+          "next": "Andika icyo usaba mu nteruro imwe, tegura intambwe zirindwi, hanyuma ubyitoze rimwe."
+        },
+        "howlTracker": {
+          "time": "iminota 5-10",
+          "next": "Andika Isuzuma Ryihuse, hanyuma ukore Kureba uko umeze buri cyumweru: pima buri HOWL kandi wongereho urugero rumwe rusobanutse."
+        },
+        "peersupport": {
+          "time": "iminota 5-10",
+          "next": "Hitamo ibibazo bibiri bifunguye wabaza inshuti, hanyuma ugerageze kimwe ku kibazo cy'impimbano mu gice cy'imyitozo."
+        },
+        "upstander": {
+          "time": "iminota 8-12",
+          "next": "Soma urwego rw'ubutwari muri Intambwe, hanyuma uhitemo intambwe ebyiri nto cyane wakora koko muri iki cyumweru."
+        },
+        "digitalWellbeing": {
+          "time": "iminota 8-12",
+          "next": "Kora Kwisuzuma ubivugisha ukuri, hanyuma uhitemo ingeso imwe mu Gasanduku k'Ibikoresho n'imbibi imwe ushyiraho mbere."
+        },
+        "teamwork": {
+          "time": "iminota 8-12",
+          "next": "Reba Inshingano, hanyuma wandike Gahunda y'Itumanaho ku itsinda nyaryo: nde ukora iki, he, n'igihe ntarengwa."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Tangira hano",
+        "name_it": "Bivuge izina",
+        "calm_now": "Tuza ubu",
+        "body_reset": "Gusubiza umubiri ku murongo",
+        "make_a_plan": "Kora gahunda",
+        "understand_patterns": "Sobanukirwa imiterere",
+        "practice_repair": "Itoze gusana",
+        "role_play": "Gukina uruhare",
+        "facilitated_group": "Itsinda riyobowe",
+        "reflect": "Tekereza",
+        "practice_speaking_up": "Itoze kuvuga ushize amanga",
+        "make_a_support_plan": "Kora gahunda y'ubufasha",
+        "urgent_support": "Ubufasha bwihutirwa",
+        "get_support": "Shaka ubufasha",
+        "move_gently": "Genda buhoro",
+        "learn_not_diagnose": "Kwiga, si ugusuzuma indwara",
+        "learn_and_get_support": "Iga kandi ushake ubufasha",
+        "check_boundaries": "Reba imbibi",
+        "explore_identity": "Shakisha uwo uri we",
+        "practice_body_respect": "Itoze kubaha umubiri",
+        "map_carefully": "Kora ikarita witonze",
+        "understand_needs": "Sobanukirwa ibyo ukeneye"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Vuga ibiri kuba mbere yo guhitamo uburyo."
+        },
+        "emotions": {
+          "note": "Ongera amagambo asobanutse y'ibyiyumvo kandi urebe ubukana bwabyo."
+        },
+        "coping": {
+          "note": "Gerageza uburyo bumwe bw'umubiri cyangwa bwo kugaruka hano n'ubu, hanyuma urebe icyahindutse."
+        },
+        "mindfulness": {
+          "note": "Akaruhuko katasaba kwandika byinshi ko guhumeka, kwitonda, cyangwa kumenya umubiri."
+        },
+        "somaticReset": {
+          "note": "Hitamo igice cy'umubiri, hanyuma ugerageze imyitozo migufi yo gutuza, guhumeka, cyangwa kunyeganyeza umubiri buhoro. Uburyo bwo guhitamo buto bukoreshwa na mwandikisho butuma buri gishushanyo cyoroha gukoresha kuri ecran nto. Ibishushanyo birimo Umuraba Utemba uhuza INJIZA · ZAMUKA n'umurongo ukomeje n'akamenyetso k'uruziga, SOHORA · TUZA n'umurongo w'utudomo n'akamenyetso ka diyama, na BYAHAGAZE n'imirongo yo guhagarara; Ururabo Rurabya ruhuza INJIZA · FUNGUKA n'imirongo ikomeje y'ibibabi n'igice cyo hagati cy'uruziga, SOHORA · OROHERA n'imirongo y'utudomo n'igice cyo hagati cya diyama, na BYAHAGAZE n'imirongo yo guhagarara hagati; Umurongo w'Ikirere Utuza uhuza INJIZA · ZAMUKA n'umuzenguruko ukomeje w'izuba n'igice cyo hagati cy'uruziga, SOHORA · TUZA n'umuzenguruko w'izuba w'utudomo n'igice cyo hagati cya diyama, na BYAHAGAZE n'imirongo yo guhagarara y'izuba; inzira igororotse iteganyijwe ifite ibimenyetso by'icyerekezo, ibirango bitaziguye bya INJIZA na SOHORA, intego y'uruziga ya INJIZA n'iya diyama ya SOHORA, umurongo w'aho uturutse, n'aho ukurikira hazengurutswe n'umurongo; n'Uruziga rw'Umwuka rw'ibice bibiri rufite imiheto y'ibyiciro ikomeje n'iy'utudomo irushaho kugaragara iyo ikora, impeta yo hagati ifite imiterere ijyanye n'icyiciro, ibirango bitaziguye bya INJIZA na SOHORA, ikimenyetso cyo hagati cy'igihe byahagaze, aho guhererekanya gukurikira hazengurutswe n'umurongo, akamenyetso kagenda nk'inshinge z'isaha gafite ishusho y'icyiciro, ikarita y'injyana ifite kode z'amashusho, n'ibimenyetso by'ibyiciro bisomwa n'isoma-ecran. Abanyeshuri bashobora kugerageza umwuka umwe w'urugendo mbere y'uko isaha itangira, hanyuma bakagura, bagahagarika urugendo, cyangwa bakazimya umuyobozi. Mu Buryo bwo Kureba Butuje, igishushanyo cyagutse gihinduka buto yo gutangira/guhagarika ikoreshwa na mwandikisho no gukoraho. Kubara gusubira inyuma bishobora guhishwa; amagambo y'ubuyobozi ashobora kuba yuzuye, ay'icyiciro gusa, cyangwa ahishwe; kandi kubara imyuka n'ibipimo by'imibare ni ubushake.",
+          "boundary": "Ibi si ubuvuzi cyangwa isuzuma ry'indwara. Nyeganyeza umubiri buhoro kandi nta bubabare; hagarara niba wumva ububabare, isereri, cyangwa ikinya maze ubwire umuntu mukuru wizera cyangwa umukozi w'ubuzima."
+        },
+        "anxietyToolkit": {
+          "note": "Tandukanya impungenge n'igikorwa kandi uhitemo intambwe imwe ikurikira ifatika."
+        },
+        "windowOfTolerance": {
+          "note": "Garagaza ku ikarita ibimenyetso byo gukanguka k'umubiri n'ubufasha uko igihe kigenda; si isuzuma ry'indwara."
+        },
+        "stressBucket": {
+          "note": "Reba igitutu n'ubufasha hamwe, harimo n'igitutu kiri hanze y'ubushobozi bwawe."
+        },
+        "bigFeelings": {
+          "note": "Koresha uburakari nk'amakuru kandi utegure akaruhuko gatekanye kurushaho cyangwa gusana."
+        },
+        "conflict": {
+          "note": "Bikwiriye cyane imyitozo y'amakimbirane yoroheje cyangwa y'impimbano.",
+          "boundary": "Niba hari iterabwoba, guhatirwa, gutotezwa, ihohoterwa, cyangwa ubusumbane bw'ububasha budatekanye, hagarara kandi ubwire umuntu mukuru wizera aho kugira ngo mwumvikane uri wenyine."
+        },
+        "conflicttheater": {
+          "note": "Imyitozo y'igeragezwa (beta) ikwinjiza mu nkuru hamwe n'abakinnyi b'impimbano; ntukayikoreshe mu gukemura ibibi biriho.",
+          "boundary": "Iterabwoba nyaryo, ihohoterwa, cyangwa gutotezwa bikenera ubufasha bw'umuntu mukuru n'ingamba z'umutekano, si imyitozo yo gukina uruhare."
+        },
+        "restorativeCircle": {
+          "note": "Koresha hamwe n'amahame y'uruziga yashyizweho n'umuyobozi w'umuntu mukuru.",
+          "boundary": "Ntukoreshe uruziga mu guhatira umuntu guhishura ibye imbere y'abandi cyangwa mu gukemura akaga k'umutekano kariho."
+        },
+        "strengths": {
+          "note": "Gutekereza ku mbaraga mu buryo bufunguye nta manota, nta rutonde, nta suzuma ry'indwara."
+        },
+        "viaStrengths": {
+          "note": "Gutondeka ubwawe hagamijwe kwitekerezaho, si isuzuma ryemewe rya VIA cyangwa igisubizo cya siyansi y'imitekerereze."
+        },
+        "perma": {
+          "note": "Ishusho y'imibereho myiza yo gutangiza ikiganiro, si isuzuma ry'ubuzima bwo mu mutwe."
+        },
+        "advocacy": {
+          "note": "Amagambo rusange n'imyitozo yo kuvuga ibyo ukeneye no gusaba ubufasha."
+        },
+        "selfAdvocacy": {
+          "note": "Koresha mu gutegura ibifatika bya IEP, 504, inyoroshyo, guhishura, cyangwa ubufasha ku ishuri."
+        },
+        "crisiscompanion": {
+          "note": "Ubuyobozi bw'ubufasha kuri wowe cyangwa inshuti; si igikoresho cyo gusuzuma ibihe bikomeye kandi ntibusimbura umuntu mukuru.",
+          "boundary": "Niba hari umuntu ushobora kuba ari mu kaga kihuse cyangwa ushobora gukora ibyo atekereza byo kwigirira nabi, hagarara hano kandi uvugane n'umuntu mukuru wizera cyangwa ubutabazi bwihuse/bw'ibihe bikomeye ubu nonaha."
+        },
+        "safety": {
+          "note": "Iga imbibi n'intambwe zo kwegera umuntu mukuru wizera; iri si isuzuma ryo kumenya niba ikibazo gitekanye.",
+          "boundary": "Niba uri mu kaga kihuse cyangwa hari ukubabaza, hagarara kandi uvugane n'umuntu mukuru wizera cyangwa ubutabazi bwihuse ubu nonaha."
+        },
+        "griefLoss": {
+          "note": "Umugenzi w'ibanga mu gahinda no kubura; simbuka ikintu cyose kikuremereye cyane.",
+          "boundary": "Niba agahinda kakurenze, wumva udatekanye, cyangwa undi muntu ari mu kaga, bwira umuntu mukuru wizera cyangwa ubufasha bw'ibihe bikomeye."
+        },
+        "traumaPsychoed": {
+          "note": "Inyigisho ku buzima bwo mu mutwe ku buryo abantu bitwara nyuma y'ihungabana; si igikoresho cyo gusuzuma cyangwa ubuvuzi.",
+          "boundary": "Ntugomba guhishura ihungabana ryawe hano. Hagarara kandi ushake umuntu mukuru wizera cyangwa umujyanama niba ibikubiyemo bikuzamuriye ikintu kidatekanye."
+        },
+        "substancePsychoed": {
+          "note": "Amakuru yo kugabanya ingaruka mbi no kwitekerezaho; si igikoresho cyo gusuzuma cyangwa uruhushya rwo gukoresha ibiyobyabwenge.",
+          "boundary": "Ntukoreshe iki gikoresho igihe umuntu yafashe ibiyobyabwenge birenze urugero cyangwa ku kibazo cy'ubuvuzi cyihutirwa; hamagara ubutabazi bwihuse cyangwa umuntu mukuru wizera."
+        },
+        "healthyRelationships": {
+          "note": "Shakisha ibijyanye no kwemera ku bushake n'imiterere y'imibanire utitiriye umuntu cyangwa imibanire izina.",
+          "boundary": "Niba imibanire irimo iterabwoba, guhatirwa, cyangwa urugomo, shaka ubufasha bw'umuntu mukuru; ntuhangane n'umuntu uri wenyine."
+        },
+        "identitySupport": {
+          "note": "Kwitekerezaho kugushyigikira n'ubufasha bw'abo musangiye; gusangiza ni ubushake.",
+          "boundary": "Bika amakuru yawe bwite mu ibanga kandi ubwire umuntu mukuru wizera niba wumva udatekanye."
+        },
+        "bodyStory": {
+          "note": "Gushima umubiri n'ubumenyi ku itangazamakuru; si isuzuma ryo kunanuka cyangwa ry'indwara zijyanye no kurya.",
+          "boundary": "Niba ibiryo, uko ubona umubiri wawe, cyangwa imyitozo ngororamubiri bisa n'ibidatekanye cyangwa bikwigaruriye, vugana n'umuntu mukuru wizera cyangwa umukozi w'ubuzima."
+        },
+        "genogram": {
+          "note": "Kwitekerezaho ku muryango wawe bwite; si isuzuma ry'ubuvuzi kandi gusangiza ni ubushake.",
+          "boundary": "Simbuka amakuru y'umuryango asa n'adatekanye cyangwa ari ibanga; saba umuntu mukuru wizera ubufasha."
+        },
+        "sensoryRegulation": {
+          "note": "Kora umwirondoro w'ibyumviro n'inyoroshyo; si isuzuma ry'indwara.",
+          "boundary": "Hitamo ubufasha wumva butekanye; sangiza inyoroshyo igihe ubishaka gusa."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Kureba Uko Umeze mu Gitondo",
+          "desc": "Tangira umunsi ureba uko umerewe, uhumeka, kandi ushyiraho intego"
+        },
+        "calm_down": {
+          "name": "Inguni yo Gutuza",
+          "desc": "Uburyo bwo kwigenzura igihe amarangamutima azamutse cyane"
+        },
+        "conflict_unit": {
+          "name": "Isomo ryo Gukemura Amakimbirane",
+          "desc": "Itoze gukemura ukutumvikana no kubaka ubumenyi bwo gusana"
+        },
+        "empathy_week": {
+          "name": "Icyumweru cy'Impuhwe no Kureba Ukundi",
+          "desc": "Ubaka impuhwe binyuze mu kwishyira mu mwanya w'abandi no kumenya imico"
+        },
+        "decision_making": {
+          "name": "Kwinjira Byimbitse mu Gufata Ibyemezo",
+          "desc": "Itoze gutekereza ku cyiza n'ikibi no guhitamo mu buryo bukwiye"
+        },
+        "self_discovery": {
+          "name": "Urugendo rwo Kwivumbura",
+          "desc": "Shakisha uwo uri we — imbaraga, amarangamutima, n'imitekerereze yo gukura"
+        },
+        "friendship": {
+          "name": "Ubucuti n'Ubumenyi bw'Imibanire",
+          "desc": "Ubaka ubucuti bwiza n'ubumenyi bwo kuganira"
+        },
+        "transitions": {
+          "name": "Kunyura mu Mpinduka",
+          "desc": "Shyigikira abanyeshuri mu mpinduka z'ubuzima n'ibintu bishya"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Menya icyo ukeneye kandi uhitemo intambwe imwe ikurikira ushoboye.",
+          "model": "Ndumva ntatuje. Nshobora kugerageza kurambura umubiri, hanyuma nkahitamo igice cya mbere cy'umukoro wanjye.",
+          "practice": "Vuga izina ry'icyiyumvo, erekana ihitamo n'urutoki, cyangwa urebe mu ituze. Gerageza ubufasha bumwe kandi uhitemo intego nto.",
+          "reflect": "Wabonye iki? Ni iki wagumana cyangwa wahindura?",
+          "transfer": "Isomo rikurikira nirigera, nshobora kugerageza ____. Niba nkeneye ubufasha, nshobora kubaza ____."
+        },
+        "calm_down": {
+          "goal": "Shakisha ubufasha bukwiranye n'umubiri wawe n'aka kanya.",
+          "model": "Imyitozo yo guhumeka ntimfasha uyu munsi. Nshobora kugerageza kureba hirya no hino mu cyumba cyangwa gusaba ko umuntu ambera hafi.",
+          "practice": "Hitamo uburyo bumwe gusa bukunyuze. Kwicara, kureba, cyangwa kuruhuka ni amahitamo yemewe.",
+          "reflect": "Byafashije, byagumye uko byari biri, cyangwa byatumye wumva utisanzuye? Ushobora guhagarara cyangwa ugahitamo ubundi buryo.",
+          "transfer": "Iyo mbonye ____, nshobora kugerageza ____ cyangwa gusaba ____ ubufasha."
+        },
+        "conflict_unit": {
+          "goal": "Tekereza ku buryo abandi babibona kandi witoze igisubizo cyubaha ku kutumvikana kwa buri munsi.",
+          "model": "Twembi dushaka igikoresho kimwe. Nshobora kukubaza icyo ukeneye, gusobanura icyo nkeneye, no gusaba ko dusimburana.",
+          "practice": "Koresha ukutumvikana kw'impimbano kudakomeye. Itoze ikibazo kimwe cyo gutega amatwi n'intambwe imwe ikurikira ishoboka.",
+          "reflect": "Igisubizo cyitaye ku byo nde akeneye? Ni iki gishobora gukenera guhinduka?",
+          "transfer": "Mu kutumvikana kudateje akaga, nshobora ____. Ku iterabwoba, gutotezwa, cyangwa guhatirwa, nshobora gusaba ubufasha umuntu mukuru nizera."
+        },
+        "empathy_week": {
+          "goal": "Shakisha ukundi kubona ibintu udakeka ko uzi uko undi yiyumva.",
+          "model": "Baracecetse. Bashobora kuba bananiwe cyangwa batekereza; nshobora kubabaza aho kubafatira umwanzuro.",
+          "practice": "Koresha urugero rw'impimbano. Vuga uburyo bubiri bushoboka bwo kubona ibintu n'ikibazo cyubaha wabaza.",
+          "reflect": "Ni iki uzi, kandi ni iki ukeka? Wabigenzura ute?",
+          "transfer": "Mbere yo gukeka ikintu muri iki cyumweru, nshobora kubaza ____."
+        },
+        "decision_making": {
+          "goal": "Gereranya amahitamo ukurikije ingaruka zayo kuri wowe no ku bandi.",
+          "model": "Mbere yo gushyira ku rubuga ifoto y'itsinda, nshobora gusaba uruhushya no gutekereza ku bashobora kuyibona.",
+          "practice": "Hitamo icyemezo cy'impimbano. Gereranya amahitamo abiri, ingaruka zishoboka, n'umuntu wagufasha.",
+          "reflect": "Ni ayahe makuru abura? Hari ihitamo ritekanye kurushaho cyangwa riboneye kurushaho?",
+          "transfer": "Mbere yo gufata icyemezo kuri ____, nshobora guhagarara gato ngo ngenzure ____."
+        },
+        "self_discovery": {
+          "goal": "Menya imbaraga imwe kandi uhitemo uburyo bwo kuyikoresha ufashijwe.",
+          "model": "Mbaza ibibazo bifite akamaro. Nshobora gukoresha izo mbaraga igihe umukoro udasobanutse maze ngasaba urugero.",
+          "practice": "Hitamo imbaraga ikubereye, cyangwa iy'umukinnyi w'impimbano. Tanga urugero rumwe rwayo ikoreshwa.",
+          "reflect": "Ni iki cyafashije izo mbaraga kugaragara? Ni ubuhe bufasha bwatuma intambwe ikurikira ishoboka?",
+          "transfer": "Nshobora gukoresha ____ igihe ____. Umuntu cyangwa igikoresho cyamfasha ni ____."
+        },
+        "friendship": {
+          "goal": "Itoze itumanaho ryubaha ibyo ukeneye n'imbibi z'abandi.",
+          "model": "Nshobora gutumira umuntu ngo twifatanye kandi nkemera icyemezo cye niba avuze oya.",
+          "practice": "Itoze gutumira, ikibazo cyo gutega amatwi, cyangwa imbibi zirimo icyubahiro. Kuvuga, kwandika, cyangwa AAC byose birabarwa.",
+          "reflect": "Buri muntu yari afite amahitamo nyayo? Ni iki cyatuma imikoranire irushaho kwakira abandi?",
+          "transfer": "Mu mikoranire itekanye muri iki cyumweru, nshobora kugerageza ____ no kureba ____."
+        },
+        "transitions": {
+          "goal": "Menya ibirimo guhinduka, ibishobora kuguma bihamye, n'isoko imwe y'ubufasha.",
+          "model": "Ntabwo nzi neza uko ishuri rishya rizaba. Nshobora gushaka icyumba mbere no kubaza uwamfasha.",
+          "practice": "Hitamo impinduka nyayo cyangwa y'impimbano. Vuga ikintu kimwe ushidikanyaho, ubufasha bumwe buhamye, n'intambwe imwe nto ikurikira.",
+          "reflect": "Ni ikihe gice kiri mu bushobozi bwawe? Ni ubuhe bufasha cyangwa inyoroshyo byagira akamaro?",
+          "transfer": "Mbere y'impinduka, nshobora ____. Niba gahunda ikeneye guhinduka, nshobora ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "iminota 5-8",
+          "format": "Umuntu ku giti cye cyangwa itsinda",
+          "cue": "Isuzuma rya mbere ryiza mbere yo gusangiza ikintu icyo ari cyo cyose."
+        },
+        "emotions": {
+          "time": "iminota 5-8",
+          "format": "Umuntu ku giti cye cyangwa babiri babiri",
+          "cue": "Imyiteguro myiza y'amagambo."
+        },
+        "coping": {
+          "time": "iminota 3-10",
+          "format": "Umuntu ku giti cye cyangwa itsinda",
+          "cue": "Ni byiza cyane mu kwisubiza ku murongo."
+        },
+        "mindfulness": {
+          "time": "iminota 2-10",
+          "format": "Ishuri ryose",
+          "cue": "Uburyo bwo kwigenzura budasaba kwandika byinshi."
+        },
+        "somaticReset": {
+          "time": "iminota 3-8",
+          "format": "Umuntu ku giti cye cyangwa ishuri ryose",
+          "cue": "Uburyo buto bwo guhitamo ibishushanyo butuma buri buyobozi buboneka nta rusobe rwa buto zegeranye cyane. Uruziga rw'Umwuka ruhuza imiheto ikomeje n'iy'utudomo n'icyiciro gikora kigaragara cyane, impeta yo hagati ijyanye nayo ikomeje cyangwa y'utudomo, n'ibirango bitaziguye bya INJIZA na SOHORA; igice cyarwo cyo hagati gihinduka kiva ku kadomo kijya ku mirongo yo guhagarara iyo byahagaze, kandi diyama cyangwa impeta yarwo izengurutswe n'umurongo yerekana ihererekanya ry'icyiciro gikurikira, mu gihe akamenyetso karwo k'uruziga cyangwa diyama kagenda nk'inshinge z'isaha, diyama y'ihererekanya, impeta yo kugaruka, imirongo migufi yo kwinjiza umwuka, n'utudomo turimo ubusa two gusohora umwuka bituma icyiciro n'imibare y'ubushake bisomeka hatitawe ku mabara. Reka abanyeshuri bagerageze umwuka umwe w'urugendo mbere y'isaha, cyangwa bahitemo Bitanyeganyega. Tanga amagambo y'ubuyobozi yuzuye, ay'icyiciro gusa, cyangwa ahishwe. Uburyo bwo Kureba Butuje butuma igishushanyo cyagutse kiba buto itaziguye yo gutangira/guhagarika. Umuraba Utemba ukoresha INJIZA · ZAMUKA n'umurongo ukomeje n'akamenyetso k'uruziga, SOHORA · TUZA n'umurongo w'utudomo n'akamenyetso ka diyama, n'imirongo yo guhagarara ku gihe cyahagaritswe. Ururabo Rurabya rukoresha INJIZA · FUNGUKA n'imirongo ikomeje y'ibibabi n'igice cyo hagati cy'uruziga, SOHORA · OROHERA n'imirongo y'utudomo n'igice cyo hagati cya diyama, n'imirongo yo guhagarara hagati ku gihe cyahagaritswe. Umurongo w'Ikirere Utuza ukoresha INJIZA · ZAMUKA n'umuzenguruko ukomeje w'izuba n'igice cyo hagati cy'uruziga, SOHORA · TUZA n'umuzenguruko w'izuba w'utudomo n'igice cyo hagati cya diyama, n'imirongo yo guhagarara y'izuba iyo byahagaze. Inzira y'Umwuka ikoresha intego y'uruziga ya INJIZA, intego ya diyama ya SOHORA, umurongo w'aho uturutse, n'aho ukurikira hazengurutswe n'umurongo kugira ngo icyerekezo kidashingira ku mabara. Tanga ibimenyetso by'ibyiciro bisomwa n'isoma-ecran, hamwe n'amahitamo yo guhisha kubara gusubira inyuma, guhisha ubuyobozi, urugendo ruhagaze, nta gishushanyo, guhumeka bisanzwe, na nta mibare; ntuzigere usaba ibipimo cyangwa ibisobanuro by'ibyiyumvo by'umubiri."
+        },
+        "journal": {
+          "time": "iminota 5-12",
+          "format": "Umuntu ku giti cye",
+          "cue": "Kwitekerezaho mu ibanga. Gusangiza bikwiye kuba ubushake."
+        },
+        "goals": {
+          "time": "iminota 5-10",
+          "format": "Umuntu ku giti cye cyangwa igihe cy'ubujyanama",
+          "cue": "Intambwe nziza yo gusoza nyuma yo kwitekerezaho."
+        },
+        "conflict": {
+          "time": "iminota 8-12",
+          "format": "Babiri babiri cyangwa itsinda rito",
+          "cue": "Banza usuzume amahame mbere yo gukina uruhare."
+        },
+        "restorativeCircle": {
+          "time": "iminota 15-30",
+          "format": "Uruziga",
+          "cue": "Koresha hamwe n'amahame y'uruziga yashyizweho."
+        },
+        "peersupport": {
+          "time": "iminota 8-15",
+          "format": "Imyitozo y'abantu babiri",
+          "cue": "Ni byiza cyane mu kwitoza ubumenyi bwo gutega amatwi."
+        },
+        "perspective": {
+          "time": "iminota 6-12",
+          "format": "Babiri babiri cyangwa itsinda",
+          "cue": "Ikiraro cyiza cy'impuhwe mbere y'ikiganiro."
+        },
+        "digitalWellbeing": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye cyangwa igihe cy'ubujyanama",
+          "cue": "Bifasha mbere yo gushyiraho amahame ya telefoni cyangwa ay'ubwenge buhangano."
+        },
+        "sleep": {
+          "time": "iminota 5-10",
+          "format": "Umuntu ku giti cye",
+          "cue": "Ni byiza ku masomo y'ubuzima mu gihe cy'ubujyanama."
+        },
+        "safety": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye",
+          "cue": "Banza ubisuzume; irinde guhatira umuntu guhishura."
+        },
+        "crisiscompanion": {
+          "time": "iminota 3-10",
+          "format": "Umuntu ku giti cye",
+          "cue": "Ni iy'ubumenyi bw'ubufasha bwihutirwa, si umukoro w'ishuri."
+        },
+        "griefLoss": {
+          "time": "iminota 10-20",
+          "format": "Umuntu ku giti cye",
+          "cue": "Banza ubisuzume; koresha ibindi bikorwa ku bahisemo kwikuramo."
+        },
+        "identitySupport": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye",
+          "cue": "Koresha wubahiriza ibanga n'uburyo bwo kwikuramo."
+        },
+        "traumaPsychoed": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye cyangwa iyobowe n'umurezi",
+          "cue": "Inyigisho ku buzima bwo mu mutwe gusa; tanga uburyo bwo kwikuramo n'uburyo bwo kwegera umuntu mukuru wizewe."
+        },
+        "substancePsychoed": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye cyangwa isomo ry'ubuzima",
+          "cue": "Banza usuzume imyumvire yo kugabanya ingaruka mbi kandi utange ubufasha bw'abantu bakuru/bw'ubuvuzi."
+        },
+        "healthyRelationships": {
+          "time": "iminota 10-20",
+          "format": "Umuntu ku giti cye cyangwa isomo ry'ubuzima",
+          "cue": "Banza usuzume amagambo ajyanye no kwemera ku bushake n'umutekano; ntuzigere usaba umuntu guhishura ibye bwite."
+        },
+        "bodyStory": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye",
+          "cue": "Imyumvire yo kubaha umubiri; tanga uburyo bwo kwikuramo kandi wirinde ibiganiro byibanda ku biro."
+        },
+        "genogram": {
+          "time": "iminota 10-20",
+          "format": "Umuntu ku giti cye",
+          "cue": "Kwitekerezaho ku muryango gusa; gusangiza bikwiye kuba ubushake."
+        },
+        "sensoryRegulation": {
+          "time": "iminota 8-15",
+          "format": "Umuntu ku giti cye cyangwa gutegura ubufasha",
+          "cue": "Koresha amagambo yubaha uwo umuntu ari we kandi ureke abanyeshuri bahitemo icyo basangiza."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Kureba uko bameze mu gitondo mu gihe cy'ubujyanama",
+          "time": "iminota 10-15",
+          "format": "Ishuri ryose",
+          "focus": "Uko umerewe, umwuka, intambwe imwe ikurikira",
+          "studentView": "Abanyeshuri bareba agace barimo mu ibanga, bagerageza uburyo bwo kwigenzura, hanyuma bagahitamo icyo bakeneye kimwe cy'umunsi cyangwa bakarenga.",
+          "teacherMove": "Banza werekane uburyo bwo kurenga. Tumira abanyeshuri gusangiza ijambo rimwe cyangwa ibara nyuma y'imyitozo y'ibanga gusa.",
+          "privacyBoundary": "Nta nyandiko yo mu kinyamakuru ikusanywa; abanyeshuri bafata icyemezo nyuma niba hari inyandiko yabitswe yajya mu Ipaki yo Gusangiza.",
+          "note": "Tangira ureba agace barimo mu ibanga, hanyuma utange guhumeka cyangwa gushyiraho intego. Abanyeshuri bashobora gusangiza ijambo rimwe, ibara, cyangwa bakarenga."
+        },
+        "calm_reset": {
+          "name": "Gutuza mu minota itanu",
+          "time": "iminota 5-8",
+          "format": "Ishuri ryose cyangwa inguni yo gutuza",
+          "focus": "Kugenzura umubiri",
+          "studentView": "Abanyeshuri bareba uko umubiri wabo umeze ubu kandi bagahitamo imyitozo imwe yo gutuza umubiri.",
+          "teacherMove": "Gira iyi gahunda idasaba kuvuga byinshi kandi ifite igihe kigenwe. Tanga amahitamo yo kunyeganyeza umubiri, guhumeka, cyangwa guceceka.",
+          "privacyBoundary": "Abanyeshuri bashobora kubika inyandiko yabitswe ku bwabo; nta n'umwe ugomba gusobanura impamvu yari akeneye kwisubiza ku murongo.",
+          "note": "Ntibisaba kuvuga byinshi. Abanyeshuri bahitamo imyitozo imwe yo kwigenzura kandi bakareba icyahindutse."
+        },
+        "repair_routine": {
+          "name": "Gahunda yo gusana nyuma y'amakimbirane",
+          "time": "iminota 15-25",
+          "format": "Itsinda rito cyangwa igihe cy'ubujyanama",
+          "focus": "Kureba ukundi, gusana, igikorwa gikurikira",
+          "studentView": "Abanyeshuri bashobora gukoresha ikibazo nyacyo, icy'impimbano, cyangwa icyatanzwe na mwarimu kugira ngo bitoze amagambo yo gusana.",
+          "teacherMove": "Banza ushyireho amahame yo gusana kandi wirinde kwemera amakosa imbere y'abandi. Hagarara niba ikibazo gikeneye ubuhuza bw'umuntu mukuru.",
+          "privacyBoundary": "Abanyeshuri bahitamo icyo basangiza; ibitekerezo by'ibanga ku makimbirane ntibikwiye guhinduka ibimenyetso by'ishuri.",
+          "note": "Koresha nyuma yo gushyiraho amahame. Ibanda ku magambo yo gusana, si ukwemera amakosa imbere y'abandi."
+        },
+        "digital_reset": {
+          "name": "Isomo rigufi ku mibereho myiza mu ikoranabuhanga",
+          "time": "iminota 12-20",
+          "format": "Igihe cy'ubujyanama cyangwa isomo ry'ubuzima",
+          "focus": "Telefoni, ibitotsi, ubwenge buhangano n'imbibi",
+          "studentView": "Abanyeshuri basuzuma ingeso zabo, bahitamo imbibi imwe yo kugerageza, kandi bakagira impamvu ibanga niba babishaka.",
+          "teacherMove": "Bisobanure nko gutegura ingeso, si igenzura rya telefoni. Irinde gusaba abanyeshuri kwerekana amafoto ya ecran cyangwa amakuru y'ikoreshwa.",
+          "privacyBoundary": "Abanyeshuri bashobora gusangiza intego y'imbibi, ariko amakuru bwite ku bitotsi, telefoni, cyangwa ubwenge buhangano aguma ari ubushake.",
+          "note": "Bisobanure nko gutegura ingeso, si igenzura rya telefoni. Abanyeshuri bahitamo imbibi imwe yo kugerageza."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Uburyo bushingiye ku bushakashatsi",
+          "title": "Ubushakashatsi bureba uburyo shingiro; iyi mihindurire y'ikoranabuhanga ntiyasuzumwe hano"
+        },
+        "emerging": {
+          "label": "Ibimenyetso bike ku buryo",
+          "title": "Bitanga icyizere ariko ibimenyetso ni bike cyangwa bivanze"
+        },
+        "contested": {
+          "label": "Icyitegererezo kigibwaho impaka",
+          "title": "Kizwi cyane ariko kigibwaho impaka mu bumenyi; ni byiza kugikoresha nk'igereranya, si nk'uko ibintu bikora koko"
+        },
+        "practice": {
+          "label": "Imyitozo yo kwitekerezaho",
+          "title": "Imyitozo iteguwe cyangwa uburyo bworoshye bwo gutekereza, si icyemezo cy'uko ikora cyagaragajwe n'ubushakashatsi"
+        }
+      },
+      "ui": {
+        "sel_practice": "Imyitozo ya SEL",
+        "default_purpose": "Itoze ubumenyi bumwe bwa SEL witonze.",
+        "default_next": "Rangiza intambwe imwe nto, hanyuma ufate icyemezo niba ubika.",
+        "private_checkpoint": "Inyandiko yabitswe y'ibanga",
+        "share_packet_eligible": "Ishobora kujya mu Ipaki yo Gusangiza",
+        "saving_preparing": "Hategurwa kubika imirimo yawe ya SEL...",
+        "save_requested": "Hasabwe kubika {title}",
+        "returned_to_grid": "Wasubiye ku rutonde rw'ibikoresho",
+        "back_to_sel_tools": "Subira ku bikoresho bya SEL",
+        "export_now_aria": "Ohereza hanze dosiye y'umushinga wa SEL ubu",
+        "export_now": "Ohereza hanze ubu",
+        "purpose": "Intego",
+        "next_step": "Intambwe ikurikira",
+        "saved_work": "Imirimo yabitswe",
+        "checkpoints_private": "Inyandiko zabitswe mu bikoresho ziguma ari ibanga hano keretse uzihisemo ngo zijye mu Ipaki yo Gusangiza.",
+        "use_with_care_label": "Koresha witonze:",
+        "tool_open_failed_title": "Iki gikoresho nticyashoboye gufunguka",
+        "tool_open_failed_body": "Hari ikintu mu makuru yabitswe y'iki gikorwa kitashoboye gufunguka. Si ikosa wakoze.",
+        "saved_work_kept": "Imirimo yawe yabitswe ntiyasibwe.",
+        "back_to_hub": "Subira kuri SEL Hub",
+        "tell_teacher": "Niba ibi bikomeje kubaho, bwira mwarimu wawe igikorwa icyo ari cyo.",
+        "load_did_not_start": "Igikoresho cyamanuwe ariko nticyatangiye.",
+        "load_too_long": "Igikoresho cyatinze cyane gufunguka.",
+        "this_sel_tool": "Iki gikoresho cya SEL",
+        "tool_opening": "{name} irimo gufunguka...",
+        "tool_open_retry": "{name} ntiyashoboye gufungurwa. Ongera ugerageze, cyangwa uhitemo ikindi gikoresho.",
+        "station_link_missing": "Iyi link ivuga iposita itari muri uyu mushinga. Fungura umuzingo uyirimo, cyangwa utangire imwe uhereye ku Maposita ya SEL mu gice cy'Amateka.",
+        "started_station": "Iposita {name} yatangiye",
+        "tool_could_not_open": "{name} ntiyashoboye gufunguka.",
+        "tool_not_available": "{name} ntiboneka muri iyi SEL Hub.",
+        "try_again": "Ongera ugerageze",
+        "dismiss": "Reka",
+        "back_to_tools": "Subira ku bikoresho",
+        "band_elementary": "Amashuri Abanza",
+        "band_middle": "Icyiciro Rusange",
+        "band_high": "Amashuri Yisumbuye",
+        "unsaved_aria": "Ufite impinduka zitarabikwa",
+        "unsaved_title": "Impinduka zitarabikwa",
+        "unsaved": "Ntibirabikwa",
+        "unsaved_hint": "Ufite impinduka zitarabikwa — kanda Ohereza hanze ubu kugira ngo uzibike",
+        "educators_opened": "Ubuyobozi bwa Ku Barezi bwafunguwe",
+        "educators_aria": "Ku Barezi: uko wakoresha iyi Hub mu buryo bukwiye",
+        "for_educators": "Ku Barezi",
+        "theme_aria": "Hindura isura (umucyo / umwijima / itandukaniro rikabije)",
+        "theme_contrast": "Itandukaniro Rikabije",
+        "theme_dark": "Uburyo bw'Umwijima",
+        "theme_light": "Uburyo bw'Umucyo",
+        "theme_contrast_short": "Itand.",
+        "theme_dark_short": "Umwijima",
+        "theme_light_short": "Umucyo",
+        "xp_aria": "Ufite amanota {count} y'uburambe muri SEL",
+        "close_hub": "Funga SEL Hub",
+        "keep_share_title": "Hitamo ibyo ubika n'ibyo usangiza",
+        "keep_share_body": "Ibikorwa bimwe bibika imirimo kuri iki gikoresho cy'ikoranabuhanga; indi mirimo imara muri iyi tab gusa. Gufunga tab ntibisiba byose. Ohereza hanze dosiye kugira ngo ubike kopi. Ku gikoresho cy'ikoranabuhanga gisangiwe, suzuma Amakuru n'ibanga muri Ku Barezi. Serivisi z'ubwenge buhangano n'izo gusangiza zikoresha serivisi zawe zashyizweho.",
+        "got_it_aria": "Nabyumvise, tangira gukoresha SEL Hub",
+        "got_it": "Nabyumvise",
+        "practice_support": "Ubufasha mu myitozo",
+        "learning_guide": "Ubuyobozi bwo kwiga n'uburyo bwo kwitoza",
+        "what_you_can_explore": "Ibyo ushobora gushakisha",
+        "worked_example": "Urugero rwakozwe",
+        "try_one_step": "Gerageza intambwe imwe",
+        "reflect_transfer": "Tekereza kandi ubikoreshe ahandi",
+        "look_closer": "Reba neza kurushaho",
+        "next_use": "Ikoreshwa rishoboka rikurikira",
+        "adapt_together": "Muhuze imyitozo hamwe",
+        "adapt_smaller": "Tangira bito: erekana interuro imwe cyangwa ihitamo rimwe, koresha ishusho cyangwa ikintu gifatika, kandi utange igihe cyo gutekereza.",
+        "adapt_deeper": "Jya kure kurushaho: gereranya ibisubizo bibiri, menya amakuru abura, kandi usobanure icyahindura ihitamo ryawe.",
+        "adapt_context": "Hindura imiterere: koresha ikibazo cy'impimbano gihuye n'ururimi, ibyo akunda, umuco, n'ibyo umunyeshuri akeneye kugira ngo abigereho.",
+        "adapt_check": "Genzura ko yumvise binyuze mu rugero cyangwa ibisobanuro yahisemo, si inkuru bwite itegetswe, impinduka mu byiyumvo, cyangwa amanota.",
+        "optional_prompts": "Ibi bibazo by'ubushake ntibyohereza ibisubizo, ntibitanga icyemezo cyo kurangiza, kandi ntibisimbura amabwiriza n'amakuru y'umutekano by'igikorwa ubwacyo.",
+        "returned_to_activities": "Wasubiye ku bikorwa. Iki gikorwa nticyanditse ko imyitozo yarangiye.",
+        "return_to_activities": "Subira ku bikorwa",
+        "chooser_first_reset_coping": "Hitamo uburyo bumwe bwo kugaruka hano n'ubu bukunyuze. Reba niba bukubereye; guhagarara biremewe.",
+        "chooser_first_reset_journal": "Andika ikintu kimwe cyatuma iminota mike ikurikira yoroha kwihanganira. Nta nkuru bwite ikenewe.",
+        "chooser_first_feelings_zones": "Erekana icyiyumvo n'urutoki cyangwa urebe mu ituze. Hitamo ubufasha bumwe; nta gace gakwiye ugomba kugeraho.",
+        "chooser_first_feelings_emotions": "Shakisha amagambo abiri y'ibyiyumvo ku mukinnyi w'impimbano. Igisubizo kirenze kimwe gishobora gukwira.",
+        "chooser_first_feelings_journal": "Andika ijambo cyangwa igitekerezo kigufi ku kibazo cy'impimbano cyangwa cya buri munsi.",
+        "chooser_first_conversation_advocacy": "Koresha ikibazo cy'impimbano kugira ngo witoze gusaba kumwe mu ijwi riranguruye, ukoresheje AAC, cyangwa mu ituze, utuzuza ifishi.",
+        "chooser_first_conversation_journal": "Tegura gusaba kumwe kurimo icyubahiro ku kibazo gitekanye cya buri munsi; ntugomba kubyohereza.",
+        "chooser_first_decision_decisions": "Tekereza ku mahitamo abiri mu kibazo cy'impimbano n'ingaruka imwe ishoboka ya buri rimwe.",
+        "chooser_first_decision_goals": "Tegura intambwe imwe ikurikira ifatika n'ubufasha wasaba.",
+        "try_a_reset": "Gerageza kwisubiza ku murongo",
+        "need_feeling": "Gusobanukirwa icyiyumvo",
+        "need_conversation": "Gutegura ikiganiro",
+        "need_decision": "Guhitamo intambwe ikurikira",
+        "help_choose": "Mfasha guhitamo igikorwa",
+        "help_choose_intro": "Hitamo icyo ushaka kugerageza. Ibyifuzo bikoresha aya mahitamo gusa; ntibisuzuma ibyiyumvo byawe. Igihe cyerekanwa ni icy'intambwe ya mbere, si icy'igikorwa cyose.",
+        "what_would_help": "Ni iki cyagufasha?",
+        "time_first_step": "Igihe cy'intambwe ya mbere",
+        "n_minutes": "Iminota {count}",
+        "how_respond": "Wifuza gusubiza ute?",
+        "respond_any": "Uburyo ubwo ari bwo bwose",
+        "respond_offline": "Tekereza, vuga, shushanya, cyangwa AAC",
+        "respond_write": "Andika igisubizo kigufi",
+        "options_one": "Ihitamo {count} ryo gutangiriraho rihuye n'ibyo wahisemo.",
+        "options_many": "Amahitamo {count} yo gutangiriraho ahuye n'ibyo wahisemo.",
+        "options_none": "Nta hitamo ryo gutangiriraho rirahura. Gerageza igihe kirekire cyangwa ubundi buryo bwo gusubiza; urutonde rwose ruracyaboneka.",
+        "why_option_write": "Impamvu y'iri hitamo: {need}, hamwe n'intambwe ya mbere isabwa y'iminota {minutes} n'igisubizo kigufi cyanditse.",
+        "why_option_offline": "Impamvu y'iri hitamo: {need}, hamwe n'intambwe ya mbere isabwa y'iminota {minutes} n'uburyo bwo kwitoza utandika kuri mwandikisho.",
+        "open_named": "Fungura {name}",
+        "open_named_unavailable": "Fungura {name} (ntiboneka)",
+        "pathway_guide": "Ubuyobozi bw'imyitozo y'inzira",
+        "pathway_opened": "Ibikoresho {opened} kuri {total} byafunguwe. Gufungura igikoresho ntibisobanura ko witoje ubwo bumenyi.",
+        "exit_pathway_aria": "Sohoka mu buryo bw'inzira",
+        "pathway_cleared": "Inzira yavanyweho",
+        "exit_pathway": "Sohoka mu nzira",
+        "practice_goal": "Intego y'imyitozo:",
+        "pathway_intro": "Hitamo igikorwa kimwe cyangwa ukurikize uko byateganyijwe. Ushobora kurenga, gukoresha urugero rw'impimbano, cyangwa gusubiza uvuga, ushushanya, wandika, cyangwa ukoresheje AAC. Gusangiza ni ubushake.",
+        "model_practice_reflect": "Erekana urugero, witoze, kandi utekereze",
+        "an_example": "Urugero",
+        "notice_adjust": "Reba kandi uhindure",
+        "take_with_you": "Bijyane",
+        "self_check_aria": "Kwisuzuma ku bushake ku myitozo",
+        "self_check_intro": "Nyuma yo kugerageza intambwe, hitamo igikubereye. Ni ubushake kandi nta manota; biguma muri iki gihe cy'inzira.",
+        "i_tried": "Nagerageje intambwe",
+        "another_way": "Nkeneye ubundi buryo",
+        "pass_for_now": "Renga ubu",
+        "tried_feedback": "Reba icyagufashije, ikitagufashije, n'aho wakongera kugerageza ubu bumenyi.",
+        "adapt_feedback": "Gerageza intambwe nto kurushaho, ubundi buryo bwo gusubiza, ikindi gikoresho, cyangwa ubufasha bw'umuntu wizera.",
+        "pass_feedback": "Kurenga ni ihitamo ryemewe. Ushobora kugaruka nyuma cyangwa gusaba ubufasha.",
+        "next_option": "Ihitamo rikurikira: {name}",
+        "open_next": "Fungura igikurikira: {name}",
+        "view_pathway_tools": "Reba ibikoresho by'inzira",
+        "revisit_any": "Ushobora kugaruka ku gikorwa icyo ari cyo cyose. Hitamo igitekerezo kimwe cyo kugerageza hanze ya hub; ntibisabwa kurangiza buri gikoresho.",
+        "station_activities": "Ibikorwa by'iposita",
+        "active_station": "Iposita ya SEL ikora: {name}",
+        "steps_recorded_passed": "Intambwe {done} kuri {total} zanditswe · {passed} zarenzwe ubu. Iyi ni inyandiko y'imyitozo, si amanota.",
+        "steps_recorded": "Intambwe {done} kuri {total} zanditswe. Iyi ni inyandiko y'imyitozo, si amanota.",
+        "active_minutes_done": "Iminota {mins} kuri {goal} yo gukora hano. Intambwe yanditswe.",
+        "active_minutes_counting": "Iminota {mins} kuri {goal} yo gukora hano. Ibarwa igihe iyi tab igaragara kandi uyikoresha.",
+        "exit_station_aria": "Sohoka mu buryo bw'iposita",
+        "station_cleared": "Iposita yavanyweho",
+        "exit_station": "Sohoka mu iposita",
+        "station_tools_steps": "Ibikoresho by'iposita, intambwe no kwitekerezaho",
+        "station_steps": "Intambwe z'iposita no kwitekerezaho",
+        "station_privacy": "Intambwe n'ibyo wanditse bibikwa kuri iki gikoresho cy'ikoranabuhanga kandi bishobora gushyirwa mu madosiye y'umushinga. Koresha ingero z'impimbano cyangwa ureke amakuru bwite. Hitamo icyo usangiza.",
+        "step_passed": "Warenze ubu. Ushobora kugaruka igihe witeguye.",
+        "step_marked": "Washyize ikimenyetso ko iyi ntambwe yarangiye.",
+        "step_target": "Intego y'igikorwa yanditswe; ibi ntibipima ubumenyi cyangwa imibereho myiza.",
+        "step_ready": "Biteguye igihe witeguye.",
+        "open_step_activity": "Fungura igikorwa cy'iyi ntambwe",
+        "xp_progress": "{xp} / {target} XP ya SEL yose hamwe. Birimo ibikorwa byabanje; si amanota y'ubumenyi.",
+        "time_progress": "Iminota {mins} / {target} yo gukora. Igihe si ikimenyetso cyo kwiga.",
+        "default_reflect": "Wabonye iki? Ni iki wagumana cyangwa wahindura?",
+        "self_check_ways": "Tekereza, shushanya, vuga, koresha amarenga, cyangwa ukoreshe AAC. Kwandika ni ubushake. Shyira ikimenyetso ko intambwe yarangiye wowe ubwawe, cyangwa urenge ubu.",
+        "length_target": "Iyi ntambwe yabitswe ikoresha intego y'uburebure: inyuguti {count} / {target}. Uburebure ntibupima ireme ryo kwitekerezaho. Ibyo wanditse biracyashobora guhindurwa.",
+        "reflection_for": "Kwitekerezaho kuri {name}",
+        "optional_note": "Icyo wandika ku bushake: icyagufashije, cyangwa icyo wagerageza ubutaha...",
+        "write_reflection": "Andika igitekerezo...",
+        "mark_complete_aria": "Shyira ikimenyetso ko \"{name}\" yarangiye",
+        "step_reopened": "Intambwe yongeye gufungurwa: {name}",
+        "step_marked_named": "Washyize ikimenyetso ko iyi ntambwe yarangiye: {name}",
+        "mark_complete": "Shyira ikimenyetso ko byarangiye",
+        "step_passed_named": "Warenze ubu: {name}",
+        "filter_pathway": "inzira: {name}",
+        "filter_station": "iposita: {name}",
+        "no_tools_match": "Nta bikoresho bihuye na {filters}",
+        "results_one": "Igikoresho {count} kuri {total} gihuye na {filters}",
+        "results_many": "Ibikoresho {count} kuri {total} bihuye na {filters}",
+        "showing_all": "Herekanwa ibikoresho byose {total}",
+        "crisis_elementary": "Niba udashobora kubona umuntu mukuru ako kanya, komeza ubaze kugeza hari ugutega amatwi. Ukwiye gufashwa.",
+        "crisis_call_or_text": "Hamagara cyangwa wandikire",
+        "crisis_988": "umurongo wa 988 wo gukumira kwiyahura no gufasha mu bihe bikomeye (ni ubuntu, ni ibanga, 24/7).",
+        "crisis_text": "Andikira",
+        "crisis_text_line": "Crisis Text Line (ni ubuntu, ni ibanga, 24/7).",
+        "tool_selection": "Guhitamo ibikoresho bya SEL Hub",
+        "jumped_to_list": "Wagiye ku rutonde rw'ibikoresho. {summary}.",
+        "skip_to_list": "Simbukira ku rutonde rw'ibikoresho",
+        "start_here": "Tangira hano",
+        "quick_route": "Hitamo uburyo bwihuse, cyangwa urebe ibiri hepfo.",
+        "browsing_all": "Urareba ibikoresho byose bya SEL",
+        "continue": "Komeza",
+        "continue_desc": "Subira ku gikoresho cya SEL wafunguye nyuma y'ibindi.",
+        "starting_idea": "Igitekerezo cyo gutangiriraho",
+        "starting_idea_desc": "{name}: igikorwa gisabwa kuri iki cyiciro cy'amashuri, gifite ingero ushobora guhindura.",
+        "starting_idea_none": "Fungura aho gutangirira hakwiranye n'ishuri ryawe.",
+        "try_a_reset_desc": "Shakisha uburyo bukunyuze; ntibisabwa kumva utuje.",
+        "journal": "Ikinyamakuru",
+        "journal_desc": "Andika igitekerezo; suzuma amahitamo yo kubika no gusangiza.",
+        "browse_all": "Reba Byose",
+        "browse_all_desc": "Shakisha cyangwa uyungurure urutonde rwose.",
+        "need_chip_calm": "Tuza umubiri wanjye",
+        "need_chip_feelings": "Vuga ibyiyumvo",
+        "need_chip_stress": "Umuhangayiko cyangwa impungenge",
+        "need_chip_friend": "Amakimbirane n'inshuti",
+        "need_chip_write": "Bishyire mu nyandiko",
+        "need_chip_decision": "Gufata icyemezo",
+        "need_chip_sleep": "Ibitotsi cyangwa umunaniro",
+        "need_chip_crisis": "Nta mutekano cyangwa ibihe bikomeye",
+        "need_chip_relationshipsafety": "Umutekano mu mibanire",
+        "need_chip_schoolsupport": "Ubufasha ku ishuri",
+        "need_chip_grief": "Agahinda cyangwa kubura",
+        "storage_notice": "Imirimo imwe ya SEL ibikwa kuri iki gikoresho cy'ikoranabuhanga. Serivisi z'ubwenge buhangano zikoresha serivisi yawe yashyizweho. Hitamo ibyo ubika cyangwa usangiza, cyane cyane ku gikoresho cy'ikoranabuhanga gisangiwe.",
+        "save_now_aria": "Bika cyangwa wohereze hanze imirimo ya SEL ubu",
+        "save_now": "Bika ubu",
+        "recent_work": "Imirimo ya SEL ya vuba",
+        "saved_here": "Byabitswe hano. Ohereza hanze kugira ngo ubigumane nyuma yo gufunga.",
+        "create_packet_aria": "Kora Ipaki yo Gusangiza ya SEL uhereye ku nyandiko zabitswe",
+        "review_packets_aria": "Suzuma Amapaki yo Gusangiza ya SEL yabitswe",
+        "create_packet": "Kora Ipaki yo Gusangiza",
+        "review_packets": "Suzuma Amapaki yo Gusangiza",
+        "open_related": "Fungura igikoresho gifitanye isano.",
+        "related_unavailable": "Igikoresho gifitanye isano ntikiboneka muri iyi SEL Hub.",
+        "streak_aria": "Urukurikirane rwa SEL rw'iminsi {count}. Urwagutse kurusha izindi: iminsi {longest}.",
+        "streak": "Urukurikirane rw'iminsi {count}",
+        "streak_best": "agahigo {count}",
+        "find_activity": "Shaka igikorwa",
+        "search_placeholder": "Shakisha ibyiyumvo, inshuti, umuhangayiko, intego...",
+        "search_aria": "Shakisha ibikoresho bya SEL",
+        "support_options": "Uburyo bw'ubufasha",
+        "crisis_hard_moment": "Birasa n'aho iki gishobora kuba ari igihe kigoye.",
+        "crisis_tell_adult": "Ntugomba gukemura ibi wenyine, kandi ntugomba kubanza gushaka igikoresho gikwiye. Nyamuneka bwira umuntu mukuru wizera ubu — umujyanama w'ishuri, mwarimu, umubyeyi, cyangwa undi muntu mukuru wizera. Gushakisha hano ntibibwira umuntu uwo ari we wese; umuntu amenya gusa iyo ubimubwiye.",
+        "open_crisis_companion": "Fungura Umufasha mu Bihe Bikomeye",
+        "find_by_need": "Shaka ibikoresho bya SEL ukurikije icyo ukeneye",
+        "i_need": "Nkeneye...",
+        "cleared_search": "Ishakisha rya SEL ryasibwe",
+        "clear_search_aria": "Siba ishakisha rya SEL",
+        "clear": "Siba",
+        "cleared_need": "Muyunguruzi y'ibyo ukeneye ya SEL yavanyweho",
+        "showing_for": "Herekanwa ibikoresho bya SEL bya {name}",
+        "clear_need_aria": "Vanaho muyunguruzi y'ibyo ukeneye: {name}",
+        "find_for_aria": "Shaka ibikoresho bya: {name}",
+        "browse_by_area": "Reba ukurikije ubwoko bw'ubumenyi",
+        "filter_by_category": "Yungurura ibikoresho bya SEL ukurikije icyiciro",
+        "showing_all_categories": "Herekanwa ibyiciro byose",
+        "show_all_categories_aria": "Erekana ibyiciro byose (ibikoresho {count})",
+        "all": "Byose",
+        "filtered_to": "Byayunguruwe kuri {name}",
+        "filter_chip_aria": "Muyunguruzi: {name} (ibikoresho {count})",
+        "pathways_heading": "Inzira za SEL — Uruhererekane rw'Imyigire Rwatoranyijwe",
+        "started_pathway": "Inzira yatangiye: {name}",
+        "pathway_started": "Inzira ya {name} yatangiye!",
+        "n_activities": "Ibikorwa {count}",
+        "grades_range": "imyaka y'amashuri {range}",
+        "use_with_care": "Koresha witonze",
+        "visits_many": "Gusurwa inshuro {count}",
+        "visits_one": "Gusurwa inshuro {count}",
+        "best_for": "Bikwiriye cyane: {mode}.",
+        "teacher_cue": "Inama kuri mwarimu: {time}, {format}. {cue}",
+        "preview_first": "Banza ubisuzume",
+        "evidence_tradition": "Umuco w'ibimenyetso: {tag}",
+        "approach_context": "Imiterere y'uburyo: {label}. {title}. Iki kirango ntikigaragaza ko bikora kuri iyi porogaramu cyangwa ku munyeshuri runaka.",
+        "step_opened": "Intambwe {n} · Yafunguwe",
+        "step_not_opened": "Intambwe {n} · Ntirafungurwa",
+        "suggested_grades": "Imyaka y'amashuri isabwa {range}",
+        "no_tools_current_view": "Nta bikoresho bihuye n'ibyerekanwa ubu",
+        "empty_try": "Gerageza gutuza, ibyiyumvo, umuhangayiko, inshuti, kwandika, icyemezo, cyangwa ibitotsi.",
+        "filters_cleared": "Muyunguruzi zavanyweho. Herekanwa ibikoresho byose {total}.",
+        "show_all_tools": "Erekana ibikoresho byose {total}",
+        "error_loading": "Ikosa mu gufungura {name}",
+        "unknown_error": "Ikosa ritazwi",
+        "back_to_tools_error": "Subira ku Bikoresho",
+        "tool_load_failed": "Iki gikoresho nticyashoboye gufunguka.",
+        "loading_tool": "Igikoresho kirimo gufunguka...",
+        "file_not_arrived": "Dosiye ntiyageze.",
+        "check_connection": "Genzura murandasi, hanyuma wongere ugerageze.",
+        "plugin_fetching": "Dosiye y'inyongera iracyazanwa.",
+        "research_about": "Ku birango by'ubushakashatsi",
+        "research_summary": "Icyo ibirango by'ubushakashatsi bisobanura",
+        "research_context": "Imiterere y'uburyo: {label}.",
+        "research_not_app": "Ubushakashatsi ku buvuzi, integanyanyigisho, cyangwa urwego runaka ntibwerekana ko iki gikorwa cy'ikoranabuhanga gifite ingaruka zimwe. Ibirango bisobanura uburyo; ntibipima iyi porogaramu cyangwa umunyeshuri.",
+        "research_check": "Mbere yo guhitamo igikorwa, genzura inkomoko zacyo zavuzwe, imyaka n'aho ubushakashatsi bwakorewe, ubufasha bukenewe, n'ibyapimwe. Ibi birango ntibigaragaza ko bihuye n'abantu runaka cyangwa ko iyi mihindurire ikora.",
+        "research_casel_link": "CASEL: guhitamo no gusuzuma porogaramu ya SEL",
+        "project_save_failed": "Gusaba kubika umushinga byanze. Reka iyi hub ifunguye kandi ugerageze Bika / Ohereza hanze muri porogaramu nkuru.",
+        "project_save_requested": "Hasabwe kubika umushinga. Rangiza intambwe zo kubika muri porogaramu nkuru; dosiye yabitswe ntiremezwa hano.",
+        "saving_aria": "Kubika no gusangiza muri SEL",
+        "saving_failed_alert": "Impinduka zimwe za SEL ntizashoboye kubikwa kuri iki gikoresho cy'ikoranabuhanga. Reka iyi hub ifunguye kandi ubike kopi y'umushinga; imbanzirizamushinga z'amaposita zigomba kubikwa nk'amaposita kugira ngo zijye muri iyo kopi.",
+        "saving_attention": "Kubika bikeneye kwitabwaho",
+        "saving_title": "Kubika no gusangiza",
+        "saving_failed_body": "Imirimo y'ubu iracyaboneka muri iyi hub ifunguye. Kubika ku gikoresho cy'ikoranabuhanga byanze bishobora gusigaho kopi ishaje kuri iki gikoresho.",
+        "saving_ok_body": "Amaposita yabitswe, ibyanditswe ku maposita, n'inyandiko zabitswe za hub birimo kubikwa kuri iki gikoresho cy'ikoranabuhanga. Buri gikorwa gifite uburyo bwacyo bwo kubika; iyi miterere ntiyemeza ko buri kintu cyinjijwe mu gikorwa cyabitswe.",
+        "saving_drafts": "Imbanzirizamushinga z'amaposita ziguma kuri iki gikoresho cy'ikoranabuhanga kugira ngo zizagarurwe. Kubika iposita biyongera ku makuru y'umushinga aboneka muri Bika / Ohereza hanze; gusaba kubika umushinga ntibyemeza ko dosiye yanditswe.",
+        "saving_live": "Hari isomo ry'imbonankubone rihujwe. Rishobora kohereza iterambere cyangwa ibimenyetso by'umutekano ku uriyobora. Ubwenge buhangano bw'ubushake bwohereza inyandiko z'igikorwa kuri serivisi yashyizweho. Suzuma Ipaki yo Gusangiza mbere yo guhitamo kuyisangiza.",
+        "saving_ai": "Ubwenge buhangano bw'ubushake bwohereza inyandiko z'igikorwa kuri serivisi yashyizweho. Ipaki yo Gusangiza irimo ibintu n'urwego rw'amakuru uhisemo; suzuma uko igaragara mbere yo gusangiza.",
+        "saving_retry": "Ongera ugerageze kubika kuri iki gikoresho",
+        "saving_request": "Saba kubika umushinga",
+        "removed_stations": "Amaposita yavanyweho",
+        "removed_body": "Garura iposita yavanyweho igihe iyi hub ifunguye. Inyandiko z'imyitozo zisanzweho ziragumaho.",
+        "station_restored": "Iposita yagaruwe: {name}",
+        "undo_removal": "Garura ibyavanyweho: {name}",
+        "launch_routines_aria": "Gahunda za mwarimu zo gutangiza",
+        "launch_title": "Gutangiza kwa mwarimu",
+        "launch_note": "Imyitozo ntigire amanota kandi gusangiza bibe ubushake. Sobanura ububiko bw'igikoresho cy'ikoranabuhanga, serivisi z'ubwenge buhangano zashyizweho, no gusangiza mbere yo gutangira. Koresha ingero z'impimbano; tumira abanyeshuri gusaba ubufasha cyangwa kurenga.",
+        "launch_guardrails_aria": "Imbibi z'umutekano za mwarimu zo gutangiza",
+        "launch_step_boundary": "Shyiraho imbibi",
+        "launch_step_boundary_body": "Vuga ibiri ibanga, ibiri ubushake, n'uko abanyeshuri bashobora kurenga.",
+        "launch_step_run": "Kora gahunda",
+        "launch_step_run_body": "Koresha ibikoresho nk'imyitozo. Kwitekerezaho kugamije gufasha kwiga kandi nta manota.",
+        "launch_step_close": "Soza utanga amahitamo",
+        "launch_step_close_body": "Abanyeshuri bafata icyemezo niba babika, bohereza hanze, cyangwa bongeramo inyandiko yabitswe nyuma.",
+        "launch_student_sees": "Icyo umunyeshuri abona",
+        "launch_student_sees_default": "Abanyeshuri barangiza gahunda ya SEL y'ibanga kandi bagahitamo icyo basangiza.",
+        "launch_teacher_move": "Icyo mwarimu akora",
+        "launch_teacher_move_default": "Bisobanure nk'imyitozo, si isuzuma.",
+        "launch_sharing_boundary": "Imbibi zo gusangiza",
+        "launch_sharing_boundary_default": "Gusangiza bikomeza kugenwa n'umunyeshuri.",
+        "launch_tools_loading": "Ibikoresho birimo gufunguka...",
+        "launch_still_loading": "Biracyafunguka: {tools}",
+        "launch_preview_sensitive": "Banza usuzume ibikoresho bisaba kwitonderwa: {tools}",
+        "launch_load_aria": "Fungura gahunda ya mwarimu yo gutangiza: {name}",
+        "launch_finish_draft": "Banza urangize cyangwa ujugunye imbanzirizamushinga iriho",
+        "launch_waiting": "Hategerejwe ibikoresho",
+        "launch_loading": "Birimo gufunguka",
+        "launch_load": "Shyira mu Mwubatsi w'Amaposita",
+        "builder_note_student": "Icyo umunyeshuri abona: {text}",
+        "builder_note_teacher": "Icyo mwarimu akora: {text}",
+        "builder_note_sharing": "Imbibi zo gusangiza: {text}",
+        "builder_note_note": "Icyitonderwa cya mwarimu: {text}",
+        "launch_finish_existing": "Banza urangize cyangwa ujugunye imbanzirizamushinga yawe y'iposita iriho.",
+        "launch_tools_still_loading": "Ibikoresho bya mwarimu byo gutangiza biracyafunguka. Ongera ugerageze mu kanya.",
+        "launch_tools_still_loading_sr": "Ibikoresho bya mwarimu byo gutangiza biracyafunguka.",
+        "launch_default_name": "Gahunda ya SEL yo mu ishuri",
+        "launch_default_short": "Gahunda ya SEL",
+        "launch_loaded_sr": "Gahunda ya mwarimu yo gutangiza yashyizwe mu mwubatsi w'amaposita: {name}",
+        "launch_loaded_toast": "Gahunda ya mwarimu yo gutangiza yashyizwe mu Mwubatsi w'Amaposita.",
+        "stations_summary": "Amaposita ya SEL Yihariye — ibikusanyo byateguwe n'abarimu",
+        "station_delete_aria": "Siba iposita {name}",
+        "station_removed_sr": "Iposita yavanyweho. Kuyigarura birashoboka kugeza iyi hub ifunzwe.",
+        "station_removed": "Iposita yavanyweho",
+        "station_tools_count": "Ibikoresho {count}",
+        "station_quests_count": "Imihigo {count}",
+        "station_activated_sr": "Iposita ya SEL yatangijwe: {name}",
+        "station_started": "{name} yatangiye!",
+        "station_activate_aria": "Tangiza iposita {name}",
+        "station_start": "Tangiza iposita",
+        "station_adapt_aria": "Hindura kopi y'iposita {name}",
+        "station_adapt": "Hindura kopi",
+        "draft_aria": "Imbanzirizamushinga y'iposita ishobora kugarurwa",
+        "draft_untitled": "Iposita itagira izina",
+        "draft_body": "Imbanzirizamushinga y'iposita itarangiye yabitswe kuri iki gikoresho cy'ikoranabuhanga: {name}. Yikomeze cyangwa uyijugunye mbere yo gutangira indi.",
+        "draft_resume": "Komeza imbanzirizamushinga y'iposita",
+        "draft_discard": "Jugunya imbanzirizamushinga y'iposita",
+        "builder_opened": "Umwubatsi w'amaposita yafunguwe",
+        "build_station_aria": "Kora Iposita ya SEL nshya yihariye",
+        "build_station": "+ Kora Iposita Yihariye"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Ihuza rya mwarimu ryahagaze by'agateganyo — aho wari ugeze harabitswe mu gihe AlloFlow yongera kwihuza.",
+    "host_stale": "Amakuru ku miterere ya mwarimu ntabwo ari mashya - isomo ririmo kuba rishobora kuba rikiri ku murongo. Ibyo wakoze biguma kuri iki gikoresho.",
+    "dismiss": "Funga",
+    "dismiss_aria": "Funga umuburo ku miterere ya mwarimu",
+    "connecting": "Kwihuza n'ishuri…",
+    "retrying": "Amakuru mashya y'ishuri yahagaze. Birimo kongera kwihuza byikora…",
+    "failed": "Ihuza n'ishuri ryacitse. Reba interineti yawe hanyuma ugerageze kongera kwihuza.",
+    "access": "Ntiwemerewe kwinjira mu ishuri. Saba mwarimu wawe kugenzura uburenganzira bwo kwinjira, hanyuma wongere kwihuza.",
+    "sign_in": "Ongera winjire muri konti kugira ngo usubizwe uburenganzira bwo kwinjira mu ishuri, hanyuma wongere kwihuza.",
+    "reconnect": "Ongera wihuze"
+  },
   "_version": "20260526T1779819427661",
   "tour": {
     "input_panel_title": "Paneli yo Kwinjiza",
@@ -5283,9 +6504,99 @@
     "measured_on_target": "Ruhuye na {grade}",
     "measured_above": "Hejuru y’urwego rwa {grade}",
     "measured_below": "Hasi y’urwego rwa {grade}",
-    "measured_note": "Flesch-Kincaid, byapimwe kuri iyi nyandiko. Koresha Genzura Urwego kugira ngo usuzume neza."
+    "measured_note": "Flesch-Kincaid, byapimwe kuri iyi nyandiko. Koresha Genzura Urwego kugira ngo usuzume neza.",
+    "listen_along": "Umva ukurikira",
+    "compare_listen_here": "Umva hano",
+    "compare_listen_here_original": "Umva hano umwandiko w'umwimerere",
+    "compare_listen_here_adapted": "Umva hano umwandiko woroheje",
+    "compare_stop_reading_original": "Hagarika gusoma umwandiko w'umwimerere",
+    "compare_stop_reading_adapted": "Hagarika gusoma umwandiko woroheje",
+    "compare_scroll_together": "Kuzamura hamwe",
+    "reading_width": "Ubugari bwo gusoma",
+    "width_narrow": "Gito",
+    "width_medium": "Hagati",
+    "width_wide": "Kinini",
+    "width_extra_wide": "Kinini cyane",
+    "reading_width_characters": "inyuguti zigera kuri {count} ku murongo",
+    "original_support_spoken": "Ubufasha ku ijambo “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Andika ijambo cyangwa amagambo abura",
+      "explain_thinking": "Sobanura uko watekereje",
+      "write_response": "Andika igisubizo cyawe",
+      "submit_response": "Ohereza igisubizo",
+      "numeric_answer": "Igisubizo mu mibare",
+      "unit_named": "Igipimo ({unit})",
+      "unit_optional": "Igipimo (si ngombwa)",
+      "submit_numeric": "Ohereza igisubizo mu mibare",
+      "select_all_apply": "Hitamo ibisubizo byose bikwiye",
+      "submit_selections": "Ohereza ibyo wahisemo",
+      "part1": "Igice cya 1 — Hitamo igisubizo cyiza kurusha ibindi",
+      "part2": "Igice cya 2 — {prompt}",
+      "default_evidence_prompt": "Hitamo ikimenyetso gishyigikira igisubizo kurusha ibindi.",
+      "submit_answer_evidence": "Ohereza igisubizo n'ikimenyetso",
+      "order_check": "Ese ibi bikurikiranye neza?",
+      "order_yes": "Yego, ni byo",
+      "order_no": "Oya, hari ikitari mu mwanya wacyo",
+      "select_misplaced": "Hitamo hejuru ikintu kitari mu mwanya wacyo.",
+      "arrange_instructions": "Shyira ibintu ku murongo ukwiye. Niba bisanzwe biri neza, bireke uko biri.",
+      "your_order": "Uko wabikurikiranyije",
+      "move_up": "Zamura: {item}",
+      "move_down": "Manura: {item}",
+      "done_arranging": "Narangije gutondeka",
+      "principle_question": "Bikurikiranye hashingiwe ku ki?",
+      "principle_chronological": "igihe",
+      "principle_cause_effect": "impamvu n'ingaruka",
+      "principle_process": "intambwe z'igikorwa",
+      "principle_size": "ingano",
+      "principle_hierarchy": "urwego",
+      "find_mismatch": "Shaka ibintu bibiri byahujwe nabi",
+      "choose_mismatch": "Hitamo ibintu bibiri bidakwiye kuba hamwe.",
+      "pair_with_question": "Ikintu wahisemo gikwiye guhuzwa n'iki?",
+      "replacement_partner": "Icyo kugihuza na cyo",
+      "submit_replacement": "Ohereza ibyo wahinduye",
+      "retry_failed": "Igisubizo cyawe nticyashoboye koherezwa. Uruhare rwawe rwo rwanditswe; ongera ugerageze umaze kubona interineti.",
+      "return_to_quiz": "Subira mu isuzuma ririmo kuba",
+      "minimize": "Gabanya",
+      "minimize_aria": "Va mu isura y'isuzuma ririmo kuba",
+      "battle_result": "Ibyavuye mu rugamba",
+      "class_victory": "Ishuri ryatsinze!",
+      "battle_complete": "Urugamba rurangiye",
+      "regroup": "Amahirwe yo kwisuganya",
+      "end_no_scored": "Ibi bibazo byari ibyo kuganiraho cyangwa ngo mwarimu abisuzume. Nta manota y'urugamba yatanzwe.",
+      "end_questions_complete": "Ibibazo byose byarangiye. Ibyavuyemo bigereranya ijanisha ry'ubuzima busigaye; iyo banganyije, ishuri ni ryo ritsinda.",
+      "end_victory": "Ishuri ryawe ryafatanyije gutsinda igisimba.",
+      "end_regroup": "Koresha ibisobanuro biri hepfo kugira ngo mutegure hamwe igerageza rikurikiraho.",
+      "end_review_last": "Subiramo ikibazo cya nyuma kiri hepfo. Mwarimu wawe ashobora kongera gutangiza urugamba.",
+      "boss_default_name": "Igisimba gikuru",
+      "boss_hp": "HP ya {name}",
+      "boss_health": "Ubuzima bwa {name}",
+      "battle_scoring_paused": "Gutanga amanota y'urugamba byahagaritswe by'agateganyo",
+      "tick_of": "{value} kuri {total}",
+      "confidence_legend": "Wari wizeye ku rugero rungana iki?",
+      "confidence_knew": "Nari mbizi",
+      "confidence_guessed": "Nakekeranyije nshingiye ku byo nzi",
+      "confidence_unsure": "Sinari nizeye",
+      "confidence_help": "Ibi bifasha mwarimu wawe kumenya ibyo uzi neza n'ibyo wumva nabi. Ntibihindura na rimwe ukuri kw'igisubizo cyangwa amanota.",
+      "retry_send": "Ongera wohereze igisubizo",
+      "waiting_for_teacher": "Hategerejwe ko mwarimu wawe atangiza iki kibazo.",
+      "sending": "Igisubizo cyawe kiroherezwa…",
+      "receipt_only": "Uruhare rwawe rwanditswe. Igisubizo cyawe ntikiragera kuri mwarimu ngo agihe amanota.",
+      "complete_and_submit": "Rangiza igisubizo cyawe hanyuma ucyohereze",
+      "poll_closed": "Iki kibazo cy'ibitekerezo cyafunzwe.",
+      "receipt_not_scored": "Mwarimu wawe yakiriye gusa ko witabiriye. Iki gisubizo nticyahawe amanota.",
+      "no_answer_submitted": "Nta gisubizo cyoherejwe kuri iki kibazo. Gisubiremo hamwe n'ishuri ryawe.",
+      "answer_review": "Gusubiramo igisubizo",
+      "review_answer": "Subiramo igisubizo",
+      "discuss_with_teacher": "Ganira na mwarimu wawe kuri iki gisubizo.",
+      "response_correct": "Igisubizo ni cyo.",
+      "response_partial": "Igisubizo kiri ukuri ku gice.",
+      "response_incorrect": "Iki gisubizo gikeneye kongera kurebwa.",
+      "response_none": "Nta gisubizo cyoherejwe.",
+      "response_submitted": "Igisubizo cyoherejwe kugira ngo gisuzumwe.",
+      "explanation": "Ibisobanuro"
+    },
     "title": "Suzuma",
     "mcq_count": "Umubare wa MCQ",
     "reflections": "Itekereza",

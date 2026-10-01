@@ -33,8 +33,10 @@
   var ArrowUpRight = _lazyIcon('ArrowUpRight');
 
   // Preserve split-index keys used by existing student projects and voice inputs.
+// Numeric citations ([1], [2, 3]) and Markdown links ([text](url)) are not blanks.
+const SCAFFOLD_BLANK_PATTERN = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
 function scaffoldParagraphParts(text) {
-  return String(text || '').split(/(\[.*?\])/).map((part, index) => ({
+  return String(text || '').split(SCAFFOLD_BLANK_PATTERN).map((part, index) => ({
     text: part,
     responseKey: index % 2 === 1 ? 'paragraph-' + index : null
   }));
@@ -102,15 +104,21 @@ function SentenceFramesView(props) {
       className: "rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700"
     }, label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.'));
   }
+  // A Mastery Check draft belongs to the scaffold it was started on.
+  const sessionResourceId = gradingSession.resourceId;
+  const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
+  const isSessionOpen = !!gradingSession.isOpen && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
+  const canGenerateRubric = !!isTeacherMode && !isParentMode;
+  const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-start gap-4",
     "data-help-key": "scaffolds_goal_panel"
-  }, /*#__PURE__*/React.createElement("p", {
+  }, isTeacherMode && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-800 flex-grow"
   }, /*#__PURE__*/React.createElement("strong", null, t('about.action_title')), " ", t('about.action_desc')), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center gap-3"
+    className: "flex flex-wrap items-center gap-3 ml-auto"
   }, ['saving', 'saved', 'error'].includes(studentWorkStatus) && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -151,23 +159,25 @@ function SentenceFramesView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), gradingSession.isOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
+  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Draft feedback encountered an error. Please try again."
   }, /*#__PURE__*/React.createElement(DraftFeedbackInterface, {
     status: gradingSession.status,
     draftText: gradingSession.draftText,
-    setDraftText: val => setGradingSession(prev => ({
+    setDraftText: val => setGradingSession(prev => ownsSession(prev) ? {
       ...prev,
       draftText: val
-    })),
+    } : prev),
     previousDraft: gradingSession.previousDraft,
     gradingDetails: gradingSession.feedback,
     draftCount: gradingSession.draftCount,
+    finalScore: gradingSession.finalScore,
+    xpEarned: gradingSession.xpAwarded,
     onSubmit: submitGradingSession,
-    onCancel: () => setGradingSession(prev => ({
+    onCancel: () => setGradingSession(prev => ownsSession(prev) ? {
       ...prev,
       isOpen: false
-    }))
+    } : prev)
   })) : generatedContent?.data.mode === 'list' ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-4"
   }, usableItems.map((item, idx) => isUsableItem(item) ? /*#__PURE__*/React.createElement("div", {
@@ -207,7 +217,7 @@ function SentenceFramesView(props) {
     "data-help-key": "scaffolds_student_input",
     className: "w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans",
     rows: 3,
-    placeholder: t('scaffolds.sentence_placeholder')
+    placeholder: isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')
   })), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 border-b border-slate-100 border-dashed w-full"
   }), /*#__PURE__*/React.createElement("div", {
@@ -261,18 +271,20 @@ function SentenceFramesView(props) {
   }, /*#__PURE__*/React.createElement(ClipboardList, {
     size: 18,
     className: "text-rose-500"
-  }), " ", isIndependentMode ? "Self-Checklist" : "Grading Rubric"), /*#__PURE__*/React.createElement("div", {
+  }), " ", isIndependentMode ? label('scaffolds.self_checklist', 'Self-Checklist') : label('scaffolds.rubric', 'Grading Rubric')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
-  }, !isParentMode && /*#__PURE__*/React.createElement("button", {
+  }, canGenerateRubric && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleGenerateRubric,
     disabled: isGeneratingRubric,
+    "aria-busy": !!isGeneratingRubric,
     className: "text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
   }, isGeneratingRubric ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
-  }), generatedContent?.data.rubric ? "Regenerate Rubric" : isIndependentMode ? "Generate Self-Checklist" : "Generate Rubric"), generatedContent?.data.rubric && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+  }), generatedContent?.data.rubric ? isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric') : isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric')), generatedContent?.data.rubric && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     onClick: handleToggleRubricZoom,
     className: `text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-600 hover:text-indigo-600 border-slate-200'}`,
     title: t('scaffolds.rubric_toggle_tooltip')

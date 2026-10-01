@@ -81,7 +81,7 @@ const DOCSUITE_FILES = ['view_pdf_audit_source.jsx', 'view_export_preview_source
 // whose text was remapped light over an unmapped light surface.
 // tests/docsuite_theme_contrast.test.js re-runs that resolution, so a newly
 // rendered module fails the gate instead of joining this list by luck.
-const APPSUITE_EXTRA = ['misc_components_source.jsx', 'games_source.jsx',
+const APPSUITE_EXTRA = ['teacher_source.jsx', 'misc_components_source.jsx', 'games_source.jsx',
   'adventure_source.jsx', 'allo_provenance_module.js', 'anchor_charts_source.jsx', 'annotation_suite_source.jsx',
   'applied_challenge_source.jsx', 'math_fluency_module.js', 'memory_aid_source.jsx', 'module_scope_extras_source.jsx',
   'note_taking_templates_source.jsx', 'studio_response_module.js', 'word_sounds_module.js', 'word_sounds_setup_source.jsx'];

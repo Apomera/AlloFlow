@@ -1,0 +1,1395 @@
+{
+  "title": "Kitchen Lab recipe evidence",
+  "version": 1,
+  "exportedAt": "2026-09-30T21:27:27.503Z",
+  "scope": "Illustrative recipe simulation; not a validated predictor of real cooking temperatures or times. Written explanations require human review.",
+  "cooks": [
+    {
+      "title": "Tomato & garlic pasta",
+      "servings": 4,
+      "mode": "demonstrate",
+      "simulatedSeconds": 720,
+      "status": "Recipe completed independently",
+      "criteria": [
+        {
+          "label": "Recipe portion measured and shared evenly",
+          "met": true
+        },
+        {
+          "label": "Pasta checked and slightly firm",
+          "met": true
+        },
+        {
+          "label": "Tomatoes cut to size and softened, without scorching",
+          "met": true
+        },
+        {
+          "label": "Sauce coats the pasta",
+          "met": true
+        },
+        {
+          "label": "Dish checked; both burners off",
+          "met": true
+        }
+      ],
+      "questionsCorrect": true,
+      "corrections": 0,
+      "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          10,
+          10,
+          10,
+          10
+        ],
+        "target": 10,
+        "min": 10,
+        "max": 10,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 7,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "juiceSinceMix": 0,
+        "liquidSinceMix": 0,
+        "lastMixedAt": 720,
+        "lastMethod": "simplified"
+      },
+      "panSurface": {
+        "enabled": true,
+        "sizeModel": true,
+        "pieces": [
+          {
+            "index": 0,
+            "x": -0.13699189808652604,
+            "z": -0.2891940868320977,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.3285187692307576,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          },
+          {
+            "index": 1,
+            "x": 0.4260130759748191,
+            "z": 0.17353057107747044,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.394756000000004,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.9520000000000002,
+            "contact": 1
+          },
+          {
+            "index": 2,
+            "x": -0.16879025599241967,
+            "z": 0.06252878922555136,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.397489230769238,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.1760000000000002,
+            "contact": 0.87
+          },
+          {
+            "index": 3,
+            "x": 0.1461848518526305,
+            "z": -0.2846576699982357,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 0,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.3572467692307537,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 4,
+            "x": 0.12143997711763123,
+            "z": 0.44368043900725357,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 1,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.363003999999992,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.952,
+            "contact": 1
+          },
+          {
+            "index": 5,
+            "x": -0.15231086468694163,
+            "z": -0.09592393079058088,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 1,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.365737230769225,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.74
+          },
+          {
+            "index": 6,
+            "x": 0.3148553916650275,
+            "z": -0.05714964863813354,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 1,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.385974769230748,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 1
+          },
+          {
+            "index": 7,
+            "x": -0.2782567365422639,
+            "z": 0.3662965855271506,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.4060959999999785,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.952,
+            "contact": 1
+          },
+          {
+            "index": 8,
+            "x": -0.016526773507271122,
+            "z": -0.17923968800865325,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.3627132307692253,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 9,
+            "x": 0.23690053096134467,
+            "z": 0.21512354225010566,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.338346769230754,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 1
+          },
+          {
+            "index": 10,
+            "x": -0.4599956800235137,
+            "z": 0.001993579620983741,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 2,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.3743439999999847,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 1
+          },
+          {
+            "index": 11,
+            "x": 0.13220269591069117,
+            "z": -0.12215746884225015,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 3,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.3944652307692214,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.74
+          },
+          {
+            "index": 12,
+            "x": -0.026617892817579886,
+            "z": 0.31889102806750746,
+            "crushed": 0,
+            "down": 1,
+            "width": 10,
+            "cutIndex": 3,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.385974769230748,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 1
+          },
+          {
+            "index": 13,
+            "x": -0.2814212167006626,
+            "z": -0.3638709919610503,
+            "crushed": 0,
+            "down": 0,
+            "width": 10,
+            "cutIndex": 3,
+            "top": 0,
+            "bottom": 0,
+            "soft": 2.3372999999999826,
+            "damage": 0,
+            "topColor": "softened",
+            "bottomColor": "softened",
+            "crowded": false,
+            "heat": 0.952,
+            "contact": 0.87
+          }
+        ],
+        "crowded": 4,
+        "scorched": 0,
+        "sizeSummary": "Prepared widths: 10 mm. Each representative piece keeps its width; smaller pieces brown or soften faster under matching conditions.",
+        "summary": "4 of 14 pieces are close together. Crowding reduces contact; the pan center runs hotter."
+      },
+      "panPosition": {
+        "site": "burner",
+        "x": 1.02,
+        "z": -0.45,
+        "heat": 0
+      },
+      "waterHandling": {
+        "capacity": 400,
+        "saved": 350,
+        "used": 50,
+        "remaining": 0,
+        "scoop": 0,
+        "drained": 0
+      },
+      "drying": {
+        "enabled": true,
+        "areas": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "remaining": 0,
+        "fraction": 0,
+        "cloth": 0,
+        "capacity": 8,
+        "surfaceWater": 0,
+        "clothWater": 0,
+        "complete": true
+      },
+      "pastaHandling": {
+        "enabled": true,
+        "groups": [
+          {
+            "index": 0,
+            "x": 0.27712812921102037,
+            "z": 0.15999999999999998,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 1,
+            "x": 1.959434878635765e-17,
+            "z": 0.32,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 2,
+            "x": -0.2771281292110203,
+            "z": 0.16000000000000011,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 3,
+            "x": -0.2771281292110204,
+            "z": -0.15999999999999992,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 4,
+            "x": -5.878304635907295e-17,
+            "z": -0.32,
+            "cling": 0,
+            "separated": true
+          },
+          {
+            "index": 5,
+            "x": 0.2771281292110204,
+            "z": -0.1599999999999999,
+            "cling": 0,
+            "separated": true
+          }
+        ],
+        "clumped": 0,
+        "separated": 6,
+        "summary": "Pasta drained. The strands are separated."
+      },
+      "tomatoHandling": {
+        "enabled": true,
+        "pieces": [
+          {
+            "index": 0,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 1,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 2,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 3,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 4,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 5,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 6,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 7,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 8,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 9,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 10,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 11,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 12,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          },
+          {
+            "index": 13,
+            "stage": 0,
+            "juice": 8.571428571428571,
+            "texture": "softened chunk",
+            "ready": true
+          }
+        ],
+        "crushed": 0,
+        "split": 0,
+        "juiceRemaining": 119.99999999999999,
+        "juiceReleased": 1.4210854715202004e-14,
+        "fraction": 0,
+        "summary": "0 crushed · 0 split · 14 chunks. Keep some chunks or press softened pieces for a finer sauce."
+      },
+      "garlicPreparation": {
+        "cloves": [
+          {
+            "index": 0,
+            "stage": 3,
+            "texture": "minced"
+          },
+          {
+            "index": 1,
+            "stage": 3,
+            "texture": "minced"
+          },
+          {
+            "index": 2,
+            "stage": 3,
+            "texture": "minced"
+          },
+          {
+            "index": 3,
+            "stage": 3,
+            "texture": "minced"
+          }
+        ],
+        "minced": 4,
+        "passes": 12,
+        "complete": true,
+        "summary": "Prepared garlic is in the sauce pan."
+      },
+      "serving": {
+        "total": 16,
+        "plates": [
+          4,
+          4,
+          4,
+          4
+        ],
+        "remaining": 0,
+        "served": 16,
+        "manual": true,
+        "started": false,
+        "balanced": true,
+        "ready": true,
+        "summary": "Plate 1: 4 of 4 spoonfuls · Plate 2: 4 of 4 spoonfuls · Plate 3: 4 of 4 spoonfuls · Plate 4: 4 of 4 spoonfuls. 0 left in the pan."
+      },
+      "inspections": [
+        {
+          "kind": "pasta",
+          "time": 690,
+          "label": "Tender with a slight bite",
+          "coreFraction": 0.12,
+          "compression": 0.4,
+          "observation": "A tiny pale center remains. The sample yields with slight resistance.",
+          "clumped": 0,
+          "range": {
+            "min": 0.946605320041777,
+            "max": 0.946605320041777
+          }
+        },
+        {
+          "kind": "sauce",
+          "time": 720,
+          "type": "coating",
+          "label": "Coating the spoon",
+          "closureSeconds": 1.8,
+          "observation": "The track closes gradually. A continuous layer stays on the spoon. 0 crushed · 0 split · 14 chunks. Keep some chunks or press softened pieces for a finer sauce.",
+          "tomatoTexture": "0 crushed · 0 split · 14 chunks. Keep some chunks or press softened pieces for a finer sauce."
+        }
+      ],
+      "plan": "",
+      "reflection": "",
+      "answers": [
+        0,
+        1
+      ],
+      "explanations": [
+        {
+          "question": "Why did adding pasta lower the water temperature?",
+          "answer": "Cooler pasta absorbed heat."
+        },
+        {
+          "question": "Why lower the pan heat once the tomatoes release their juices?",
+          "answer": "A controlled simmer reduces the sauce with less risk of scorching."
+        }
+      ],
+      "pastaTexture": "Tender with a slight bite",
+      "sauce": "Soft, coating tomato sauce",
+      "review": {
+        "findings": [
+          {
+            "label": "Recipe portion measured and shared evenly",
+            "met": true,
+            "observation": "320 g weighed for 4 servings; recipe target 320 g. Plate 1: 4 of 4 spoonfuls · Plate 2: 4 of 4 spoonfuls · Plate 3: 4 of 4 spoonfuls · Plate 4: 4 of 4 spoonfuls. 0 left in the pan.",
+            "nextPractice": "Keep weighing against the scaled recipe before cooking."
+          },
+          {
+            "label": "Pasta checked and slightly firm",
+            "met": true,
+            "observation": "Finished pasta: Tender with a slight bite. Last sample: Tender with a slight bite. Pasta was stirred in the pot. Group textures: Tender with a slight bite to Tender with a slight bite.",
+            "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
+          },
+          {
+            "label": "Tomatoes cut to size and softened, without scorching",
+            "met": true,
+            "observation": "Soft, coating tomato sauce. Prepared widths: 10–10 mm (simplified). Wide pan with 600 g of tomatoes.",
+            "nextPractice": "Keep the softened tomatoes at a controlled simmer while coordinating the pot."
+          },
+          {
+            "label": "Sauce coats the pasta",
+            "met": true,
+            "observation": "245 mL modeled sauce moisture; 50 mL reserved water added, 350 mL left in the jug. 0 crushed · 0 split · 14 chunks. Keep some chunks or press softened pieces for a finer sauce. 0 mL juice released by pressing.",
+            "nextPractice": "Keep adding saved water in small amounts and checking the coating."
+          },
+          {
+            "label": "Dish checked; both burners off",
+            "met": true,
+            "observation": "Final dish checked; pot burner off, pan burner off.",
+            "nextPractice": "Keep checking after your last adjustment and turning both burners off before plating."
+          }
+        ],
+        "timeline": [
+          {
+            "time": 90,
+            "event": "Produce entered the pan",
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+          },
+          {
+            "time": 210,
+            "event": "Pasta entered the pot",
+            "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+          },
+          {
+            "time": 330,
+            "event": "Garlic added",
+            "observation": "Garlic added. Watch its color as the pan heats."
+          },
+          {
+            "time": 690,
+            "event": "Pasta sampled",
+            "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen."
+          },
+          {
+            "time": 690,
+            "event": "Cooking water reserved",
+            "observation": "400 mL starchy cooking water reserved."
+          },
+          {
+            "time": 690,
+            "event": "Pasta drained",
+            "observation": "Pasta drained. Reserved water is available for the sauce."
+          },
+          {
+            "time": 720,
+            "event": "Sauce loosened with saved water",
+            "observation": "50 mL cooking water poured; 350 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+          },
+          {
+            "time": 720,
+            "event": "Pasta and sauce combined",
+            "observation": "Drained pasta added and tossed through the sauce."
+          },
+          {
+            "time": 720,
+            "event": "Finished dish checked",
+            "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 1. 1 of 4 on this plate; 15 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 1. 2 of 4 on this plate; 14 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 1. 3 of 4 on this plate; 13 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 1. 4 of 4 on this plate; 12 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 2. 1 of 4 on this plate; 11 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 2. 2 of 4 on this plate; 10 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 2. 3 of 4 on this plate; 9 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 2. 4 of 4 on this plate; 8 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 3. 1 of 4 on this plate; 7 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 3. 2 of 4 on this plate; 6 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 3. 3 of 4 on this plate; 5 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 3. 4 of 4 on this plate; 4 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 4. 1 of 4 on this plate; 3 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 4. 2 of 4 on this plate; 2 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 4. 3 of 4 on this plate; 1 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Spoonful carried to a serving plate",
+            "observation": "One spoonful carried to plate 4. 4 of 4 on this plate; 0 left in the pan."
+          },
+          {
+            "time": 720,
+            "event": "Dish plated",
+            "observation": "Dish plated. Review the texture, sauce, and choices you made."
+          }
+        ]
+      },
+      "actions": [
+        {
+          "action": "wash",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Soap-and-water handwashing completed for at least 20 seconds in this model."
+        },
+        {
+          "action": "rinse",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Produce rinsed under running water."
+        },
+        {
+          "action": "cut",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Even 10 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
+        },
+        {
+          "action": "dry",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Excess surface water removed."
+        },
+        {
+          "action": "garlicPrep",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Garlic peeled and minced."
+        },
+        {
+          "action": "measure",
+          "value": 320,
+          "time": 0,
+          "accepted": true,
+          "observation": "Measured 320 g of dry pasta. The recipe calls for 320 g."
+        },
+        {
+          "action": "panSize",
+          "value": "wide",
+          "time": 0,
+          "accepted": true,
+          "observation": "Wide pan selected for more space."
+        },
+        {
+          "action": "fill",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot filled with 2400 mL of fresh water."
+        },
+        {
+          "action": "potHeat",
+          "value": 3,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot burner high. The water temperature changes gradually."
+        },
+        {
+          "action": "oil",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "30 mL olive oil added."
+        },
+        {
+          "action": "panHeat",
+          "value": 2,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pan burner medium. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 30,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 60,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 90,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Oil in the pan."
+        },
+        {
+          "action": "produce",
+          "value": null,
+          "time": 90,
+          "accepted": true,
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. Each piece keeps its prepared width. Smaller pieces cook faster under matching conditions."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 120,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Water heating; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 150,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Near a simmer; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 180,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Near a simmer; Tomatoes still firm."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 180,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 210,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Boiling water; Tomatoes still firm."
+        },
+        {
+          "action": "pasta",
+          "value": null,
+          "time": 210,
+          "accepted": true,
+          "observation": "Pasta added. The cooler pasta briefly lowers the water temperature."
+        },
+        {
+          "action": "stirPot",
+          "value": null,
+          "time": 210,
+          "accepted": true,
+          "observation": "Pasta stirred to separate the pieces."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 240,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 270,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 270,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 300,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Tomatoes still firm."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 330,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "garlic",
+          "value": null,
+          "time": 330,
+          "accepted": true,
+          "observation": "Garlic added. Watch its color as the pan heats."
+        },
+        {
+          "action": "panHeat",
+          "value": 1,
+          "time": 330,
+          "accepted": true,
+          "observation": "Pan burner low. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 360,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 360,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 390,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 420,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 450,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 450,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 480,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 510,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 540,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 540,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 570,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 600,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 630,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "stirPan",
+          "value": null,
+          "time": 630,
+          "accepted": true,
+          "observation": "Pan stirred to redistribute the pieces and sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 660,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 690,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta continues cooking; Soft, coating tomato sauce."
+        },
+        {
+          "action": "sample",
+          "value": null,
+          "time": 690,
+          "accepted": true,
+          "observation": "Sample texture: Tender with a slight bite. Use the packet and a fresh sample in a real kitchen.",
+          "inspection": {
+            "kind": "pasta",
+            "time": 690,
+            "label": "Tender with a slight bite",
+            "coreFraction": 0.12,
+            "compression": 0.4,
+            "observation": "A tiny pale center remains. The sample yields with slight resistance.",
+            "clumped": 0,
+            "range": {
+              "min": 0.946605320041777,
+              "max": 0.946605320041777
+            }
+          }
+        },
+        {
+          "action": "reserve",
+          "value": null,
+          "time": 690,
+          "accepted": true,
+          "observation": "400 mL starchy cooking water reserved."
+        },
+        {
+          "action": "drain",
+          "value": null,
+          "time": 690,
+          "accepted": true,
+          "observation": "Pasta drained. Reserved water is available for the sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 690,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "advance",
+          "value": 30,
+          "time": 720,
+          "accepted": true,
+          "observation": "Both vessels advanced 30 simulated seconds. Pasta drained; Soft, coating tomato sauce."
+        },
+        {
+          "action": "water",
+          "value": null,
+          "time": 720,
+          "accepted": true,
+          "observation": "50 mL cooking water poured; 350 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+        },
+        {
+          "action": "combine",
+          "value": null,
+          "time": 720,
+          "accepted": true,
+          "observation": "Drained pasta added and tossed through the sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 720,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "panHeat",
+          "value": 0,
+          "time": 720,
+          "accepted": true,
+          "observation": "Pan burner off. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 720,
+          "accepted": true,
+          "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite.",
+          "inspection": {
+            "kind": "sauce",
+            "time": 720,
+            "type": "coating",
+            "label": "Coating the spoon",
+            "closureSeconds": 1.8,
+            "observation": "The track closes gradually. A continuous layer stays on the spoon. 0 crushed · 0 split · 14 chunks. Keep some chunks or press softened pieces for a finer sauce.",
+            "tomatoTexture": "0 crushed · 0 split · 14 chunks. Keep some chunks or press softened pieces for a finer sauce."
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 0,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 1. 1 of 4 on this plate; 15 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 1",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 0,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 1. 2 of 4 on this plate; 14 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 1",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 0,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 1. 3 of 4 on this plate; 13 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 1",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 0,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 1. 4 of 4 on this plate; 12 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 1",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 1,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 2. 1 of 4 on this plate; 11 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 2",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 1,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 2. 2 of 4 on this plate; 10 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 2",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 1,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 2. 3 of 4 on this plate; 9 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 2",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 1,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 2. 4 of 4 on this plate; 8 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 2",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 2,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 3. 1 of 4 on this plate; 7 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 3",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 2,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 3. 2 of 4 on this plate; 6 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 3",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 2,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 3. 3 of 4 on this plate; 5 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 3",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 2,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 3. 4 of 4 on this plate; 4 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 3",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 3,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 4. 1 of 4 on this plate; 3 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 4",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 3,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 4. 2 of 4 on this plate; 2 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 4",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 3,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 4. 3 of 4 on this plate; 1 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 4",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "servePortion",
+          "value": 3,
+          "time": 720,
+          "accepted": true,
+          "observation": "One spoonful carried to plate 4. 4 of 4 on this plate; 0 left in the pan.",
+          "interaction": "scene-serve",
+          "transfer": {
+            "from": "pan",
+            "to": "plate 4",
+            "spoonfuls": 1
+          }
+        },
+        {
+          "action": "plate",
+          "value": null,
+          "time": 720,
+          "accepted": true,
+          "observation": "Dish plated. Review the texture, sauce, and choices you made."
+        }
+      ]
+    }
+  ]
+}

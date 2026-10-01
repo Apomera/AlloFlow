@@ -1,0 +1,349 @@
+[
+  {
+    "id": "11-dictionary",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\lookup-recovery\\resilience\\dictionary.patch",
+    "patchHash": "489e44942ec1131ea7c13fe46700d5bf9d37112fb7173af4af9602eee74c5615",
+    "targets": [
+      {
+        "file": "dictionary_loader.js",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "11-engine",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\lookup-recovery\\resilience\\engine.patch",
+    "patchHash": "fd942135973328041cb7f5e245d20d3e25f6953d008198c88cabf5bc5e76e125",
+    "targets": [
+      {
+        "file": "content_engine_source.jsx",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "11-reader",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\lookup-recovery\\resilience\\reader.patch",
+    "patchHash": "43e1d513807d0bbcf928a5c1b097261607ab369e1ea86c0015dc75eef835b8ec",
+    "targets": [
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "02-audio",
+    "original": "C:\\Users\\cabba\\.codex\\visualizations\\2026\\09\\26\\01a0df8b-f468-70b1-8060-10153fa303f4\\audio-readiness\\recovery-enhancements\\source-changes.patch",
+    "patchHash": "b69ac58192d138884d14a0e445929cf3d0a68248c0c5723b51cebad39deddeeb",
+    "targets": [
+      {
+        "file": "karaoke_audio_store_module.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "read_aloud_audio_service_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "ui_strings.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/read_aloud_recovery.test.js",
+        "exists": false,
+        "applies": true
+      },
+      {
+        "file": "tests/reader_audio_readiness.test.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/browser/audio_readiness.cjs",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "15-offline",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\adapted-reader-integration-01-2026-09-26-1730\\pass-two\\15-offline.patch",
+    "patchHash": "dac68edf8ea4735b4f2cbf94e8e3994e2eae272d4f13ee002504c5238ae80490",
+    "targets": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "exists": true,
+        "applies": false
+      },
+      {
+        "file": "dev-tools/check_offline_storybook_recovery.cjs",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "export_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "read_aloud_artifact_audio_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/adventure_storybook_read_aloud_export.test.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/offline_media_recovery.test.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "view_storybook_export_modal_source.jsx",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "03-recovery",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-place-copy-controls\\increment.patch",
+    "patchHash": "8b63d9ddd2894ab53f5e7b8882a1ca99fd1f7dbea9278bc0629068ec5253c81f",
+    "targets": [
+      {
+        "file": "reader_place_store.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "ui_strings.js",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "04-drafts",
+    "original": "C:\\Users\\cabba\\AppData\\Local\\Temp\\alloflow-reader-drafts-04\\reports\\reader-drafts-04\\enhancement-only.patch",
+    "patchHash": "58c94cf3fad726ef957b50f16951ae4cd59d2362c8434f56cde707a772d944a9",
+    "targets": [
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/reading_support_draft_transitions.test.js",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "06-listen",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-listen-along-enhancement-2026-09-26\\listen-along-source.patch",
+    "patchHash": "3e43c9f6a5eff0eb3d0212820681c6d58ef6c23a3028a2e4b3e04c488a8b699d",
+    "targets": [
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/reader_listen_along_access.test.js",
+        "exists": false,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "07-vocab",
+    "original": "C:\\Users\\cabba\\.codex\\worktrees\\preserved-vocabulary-sparse\\UDL-Tool-Updated\\track07-enhancements.patch",
+    "patchHash": "1e975dc865e739c6b1f81f08fcada453975275589185a3a2611a180e9c56343b",
+    "targets": [
+      {
+        "file": "generation_helpers_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "text_pipeline_helpers_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/preserved_vocabulary_enhancements.test.js",
+        "exists": false,
+        "applies": true
+      },
+      {
+        "file": "tests/track07-browser-fixture.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/track07-browser-acceptance.cjs",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "09-reader",
+    "original": "C:\\Users\\cabba\\.codex\\worktrees\\reader-preview-isolation\\UDL-Tool-Updated\\reports\\reader-preview-refresh\\reader-refresh.patch",
+    "patchHash": "d9d6e6d2a4ef675cf1cea6f443d8a6f22da6a695b3818355da25bed2bf4f0eed",
+    "targets": [
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "09-strings",
+    "original": "C:\\Users\\cabba\\.codex\\worktrees\\reader-preview-isolation\\UDL-Tool-Updated\\reports\\reader-preview-refresh\\strings-refresh.patch",
+    "patchHash": "9e98705f172483558c9a2c4ca51a2431639d95b5789745c52c65085de741b94b",
+    "targets": [
+      {
+        "file": "ui_strings.js",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "09-tests",
+    "original": "C:\\Users\\cabba\\.codex\\worktrees\\reader-preview-isolation\\UDL-Tool-Updated\\reports\\reader-preview-refresh\\validation-refresh.patch",
+    "patchHash": "04b343167cf460e8f8997bbce3c1ae14bef8558750572cb93103f6b2475f8718",
+    "targets": [
+      {
+        "file": "tests/reader_preview_isolation.test.js",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "10-help",
+    "original": "C:\\Users\\cabba\\.codex\\worktrees\\prepared-word-help-sparse\\UDL-Tool-Updated\\reports\\prepared-word-help\\integration-followup.patch",
+    "patchHash": "901c21b1afc1daac1b385a2c5c15b7260f6748e823b16317092f572b8f572bef",
+    "targets": [
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "18-narration",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-narration-recovery-track18-2026-09-26\\narration-recovery.patch",
+    "patchHash": "f739bb2ce3010a2c769bc9cce8988912806fac447049e767046e92bd43445f90",
+    "targets": [
+      {
+        "file": "view_simplified_source.jsx",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "tests/reader_narration_recovery.test.js",
+        "exists": false,
+        "applies": true
+      },
+      {
+        "file": "dev-tools/reader_narration_recovery_browser.cjs",
+        "exists": false,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "19-preferences",
+    "original": "C:\\Users\\cabba\\.codex\\worktrees\\reader-performance\\UDL-Tool-Updated\\reports\\reader-performance-2026-09-26\\followup\\overlay-preferences.patch",
+    "patchHash": "641a2afc055757ebf9fc8ccf2cf0408ca9c293fb8e90f70b1029d257c8f74c7c",
+    "targets": [
+      {
+        "file": "immersive_reader_source.jsx",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  },
+  {
+    "id": "17-terms",
+    "original": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\reader-localization-preview-2026-09-26\\terms-only.patch",
+    "patchHash": "852d812139638115029587e1f162cfedaacebd1b8bccc15ff12215a48806709a",
+    "targets": [
+      {
+        "file": "lang/arabic.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "desktop/web-app/public/lang/arabic.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "lang/chinese_simplified.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "desktop/web-app/public/lang/chinese_simplified.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "lang/thai.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "desktop/web-app/public/lang/thai.js",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "dev-tools/i18n/apply_reader_contract_locales.cjs",
+        "exists": true,
+        "applies": true
+      },
+      {
+        "file": "translations/reader-terms-locales.json",
+        "exists": false,
+        "applies": true
+      },
+      {
+        "file": "tests/reader_terms_locales.test.js",
+        "exists": false,
+        "applies": true
+      },
+      {
+        "file": "tests/reader_recovery_locale_catalogs.test.js",
+        "exists": true,
+        "applies": true
+      }
+    ]
+  }
+]

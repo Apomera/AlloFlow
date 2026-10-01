@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-microbiology.spec.ts:35:5 › distinct cell anatomy, cutaways and all landmarks preserve measured body lengths (24.7s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-microbiology.spec.ts:69:5 › cilia, vacuoles and flagella move, pause, and honor reduced motion (25.3s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-microbiology.spec.ts:83:5 › phone keyboard exploration and saved notes restore the correct interior (24.0s)
+
+  3 passed (1.6m)

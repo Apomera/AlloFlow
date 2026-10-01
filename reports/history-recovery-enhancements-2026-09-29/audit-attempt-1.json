@@ -1,0 +1,153 @@
+{
+  "at": "2026-09-30T02:50:29.748Z",
+  "checks": [
+    {
+      "name": "Host syntax and three-copy parity",
+      "passed": true,
+      "detail": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "name": "Host edits preserve all code outside the History bridge and its two props",
+      "passed": true
+    },
+    {
+      "name": "Misc source syntax and preservation outside handleRestoreView",
+      "passed": true
+    },
+    {
+      "name": "History source syntax and preservation outside six targeted edits",
+      "passed": true
+    },
+    {
+      "name": "misc_handlers_module.js syntax and public mirror",
+      "passed": true,
+      "detail": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d"
+    },
+    {
+      "name": "view_history_panel_module.js syntax and public mirror",
+      "passed": true,
+      "detail": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    {
+      "name": "pure_helpers_module.js syntax and public mirror",
+      "passed": true,
+      "detail": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "name": "phase_n_misc_helpers_module.js syntax and public mirror",
+      "passed": true,
+      "detail": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019"
+    },
+    {
+      "name": "text_utility_helpers_module.js syntax and public mirror",
+      "passed": true,
+      "detail": "e685d686af7ddda9b67043a351bc254f9fb62de32c116d4dc3d5727eaf6badc5"
+    },
+    {
+      "name": "Misc built artifacts match the actual scoped builder recipe",
+      "passed": false,
+      "error": "SyntaxError: Invalid or unexpected token"
+    },
+    {
+      "name": "History built artifact matches the actual scoped builder recipe",
+      "passed": false,
+      "error": "SyntaxError: Invalid or unexpected token"
+    },
+    {
+      "name": "Localized messages and preservation: ui_strings.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Item or relationship\",\\n' +\n  '    \"generic_item_prompt\": \"Identify something in this diagram you want to explain.\",\\n' +\n  '    \"generic_placement_label\": \"My placement or interpretation\",\\n' +\n  '    \"generic_placement_prompt\": \"Use the diagram or propose another valid arrangement.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidence and explanation\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explain your reasoning and cite the rele... == '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Item or relationship\",\\n' +\n  '    \"generic_item_prompt\": \"Identify something in this diagram you want to explain.\",\\n' +\n  '    \"generic_placement_label\": \"My placement or interpretation\",\\n' +\n  '    \"generic_placement_prompt\": \"Use the diagram or propose another valid arrangement.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidence and explanation\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explain your reasoning and cite the rele..."
+    },
+    {
+      "name": "Localized messages and preservation: desktop/web-app/public/ui_strings.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Item or relationship\",\\n' +\n  '    \"generic_item_prompt\": \"Identify something in this diagram you want to explain.\",\\n' +\n  '    \"generic_placement_label\": \"My placement or interpretation\",\\n' +\n  '    \"generic_placement_prompt\": \"Use the diagram or propose another valid arrangement.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidence and explanation\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explain your reasoning and cite the rele... == '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Item or relationship\",\\n' +\n  '    \"generic_item_prompt\": \"Identify something in this diagram you want to explain.\",\\n' +\n  '    \"generic_placement_label\": \"My placement or interpretation\",\\n' +\n  '    \"generic_placement_prompt\": \"Use the diagram or propose another valid arrangement.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidence and explanation\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explain your reasoning and cite the rele..."
+    },
+    {
+      "name": "Localized messages and preservation: lang/french.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"tipp\": {\\n' +\n  '      \"skills\": {\\n' +\n  '        \"temperature\": {\\n' +\n  '          \"label\": \"Température\",\\n' +\n  `          \"headline\": \"De l'eau froide sur le visage\",\\n` +\n  '          \"steps\": {\\n' +\n  `            \"0\": \"Remplis un bol d'eau froide (avec des glaçons si tu en as).\",\\n` +\n  '            \"1\": \"Retiens ta respiration.\",\\n' +\n  `            \"2\": \"Penche-toi et plonge ton visage dans l'eau, du dessus des sourcils jusqu'en dessous des pommettes, pendant... == '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"tipp\": {\\n' +\n  '      \"skills\": {\\n' +\n  '        \"temperature\": {\\n' +\n  '          \"label\": \"Température\",\\n' +\n  `          \"headline\": \"De l'eau froide sur le visage\",\\n` +\n  '          \"steps\": {\\n' +\n  `            \"0\": \"Remplis un bol d'eau froide (avec des glaçons si tu en as).\",\\n` +\n  '            \"1\": \"Retiens ta respiration.\",\\n' +\n  `            \"2\": \"Penche-toi et plonge ton visage dans l'eau, du dessus des sourcils jusqu'en dessous des pommettes, pendant..."
+    },
+    {
+      "name": "Localized messages and preservation: desktop/web-app/public/lang/french.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"tipp\": {\\n' +\n  '      \"skills\": {\\n' +\n  '        \"temperature\": {\\n' +\n  '          \"label\": \"Température\",\\n' +\n  `          \"headline\": \"De l'eau froide sur le visage\",\\n` +\n  '          \"steps\": {\\n' +\n  `            \"0\": \"Remplis un bol d'eau froide (avec des glaçons si tu en as).\",\\n` +\n  '            \"1\": \"Retiens ta respiration.\",\\n' +\n  `            \"2\": \"Penche-toi et plonge ton visage dans l'eau, du dessus des sourcils jusqu'en dessous des pommettes, pendant... == '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"tipp\": {\\n' +\n  '      \"skills\": {\\n' +\n  '        \"temperature\": {\\n' +\n  '          \"label\": \"Température\",\\n' +\n  `          \"headline\": \"De l'eau froide sur le visage\",\\n` +\n  '          \"steps\": {\\n' +\n  `            \"0\": \"Remplis un bol d'eau froide (avec des glaçons si tu en as).\",\\n` +\n  '            \"1\": \"Retiens ta respiration.\",\\n' +\n  `            \"2\": \"Penche-toi et plonge ton visage dans l'eau, du dessus des sourcils jusqu'en dessous des pommettes, pendant..."
+    },
+    {
+      "name": "Localized messages and preservation: lang/spanish_latin_america.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Elemento o relación\",\\n' +\n  '    \"generic_item_prompt\": \"Identifica algo de este diagrama que quieras explicar.\",\\n' +\n  '    \"generic_placement_label\": \"Mi ubicación o interpretación\",\\n' +\n  '    \"generic_placement_prompt\": \"Usa el diagrama o propón otra organización válida.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidencia y explicación\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explica tu razonamiento y cita la fuente u obse... == '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Elemento o relación\",\\n' +\n  '    \"generic_item_prompt\": \"Identifica algo de este diagrama que quieras explicar.\",\\n' +\n  '    \"generic_placement_label\": \"Mi ubicación o interpretación\",\\n' +\n  '    \"generic_placement_prompt\": \"Usa el diagrama o propón otra organización válida.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidencia y explicación\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explica tu razonamiento y cita la fuente u obse..."
+    },
+    {
+      "name": "Localized messages and preservation: desktop/web-app/public/lang/spanish_latin_america.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Elemento o relación\",\\n' +\n  '    \"generic_item_prompt\": \"Identifica algo de este diagrama que quieras explicar.\",\\n' +\n  '    \"generic_placement_label\": \"Mi ubicación o interpretación\",\\n' +\n  '    \"generic_placement_prompt\": \"Usa el diagrama o propón otra organización válida.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidencia y explicación\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explica tu razonamiento y cita la fuente u obse... == '{\\n' +\n  '  \"organizer_reflection\": {\\n' +\n  '    \"generic_item_label\": \"Elemento o relación\",\\n' +\n  '    \"generic_item_prompt\": \"Identifica algo de este diagrama que quieras explicar.\",\\n' +\n  '    \"generic_placement_label\": \"Mi ubicación o interpretación\",\\n' +\n  '    \"generic_placement_prompt\": \"Usa el diagrama o propón otra organización válida.\",\\n' +\n  '    \"generic_reasoning_label\": \"Evidencia y explicación\",\\n' +\n  '    \"generic_reasoning_prompt\": \"Explica tu razonamiento y cita la fuente u obse..."
+    },
+    {
+      "name": "Localized messages and preservation: lang/arabic.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"hub\": {\\n' +\n  '      \"tool\": {\\n' +\n  '        \"zones\": {\\n' +\n  '          \"label\": \"مناطق المشاعر\",\\n' +\n  '          \"desc\": \"حدّد منطقتك (الأزرق، الأخضر، الأصفر، الأحمر) واستكشف استراتيجيات لتنظيم ذاتك.\"\\n' +\n  '        },\\n' +\n  '        \"emotions\": {\\n' +\n  '          \"label\": \"مستكشف المشاعر\",\\n' +\n  '          \"desc\": \"ابنِ مفرداتك العاطفية — تعرّف على المشاعر وسمِّها وقيّم شدّتها.\"\\n' +\n  '        },\\n' +\n  '        \"strengths\": {\\n' +\n  '          \"label\": \"م... == '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"hub\": {\\n' +\n  '      \"tool\": {\\n' +\n  '        \"zones\": {\\n' +\n  '          \"label\": \"مناطق المشاعر\",\\n' +\n  '          \"desc\": \"حدّد منطقتك (الأزرق، الأخضر، الأصفر، الأحمر) واستكشف استراتيجيات لتنظيم ذاتك.\"\\n' +\n  '        },\\n' +\n  '        \"emotions\": {\\n' +\n  '          \"label\": \"مستكشف المشاعر\",\\n' +\n  '          \"desc\": \"ابنِ مفرداتك العاطفية — تعرّف على المشاعر وسمِّها وقيّم شدّتها.\"\\n' +\n  '        },\\n' +\n  '        \"strengths\": {\\n' +\n  '          \"label\": \"م..."
+    },
+    {
+      "name": "Localized messages and preservation: desktop/web-app/public/lang/arabic.js",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"hub\": {\\n' +\n  '      \"tool\": {\\n' +\n  '        \"zones\": {\\n' +\n  '          \"label\": \"مناطق المشاعر\",\\n' +\n  '          \"desc\": \"حدّد منطقتك (الأزرق، الأخضر، الأصفر، الأحمر) واستكشف استراتيجيات لتنظيم ذاتك.\"\\n' +\n  '        },\\n' +\n  '        \"emotions\": {\\n' +\n  '          \"label\": \"مستكشف المشاعر\",\\n' +\n  '          \"desc\": \"ابنِ مفرداتك العاطفية — تعرّف على المشاعر وسمِّها وقيّم شدّتها.\"\\n' +\n  '        },\\n' +\n  '        \"strengths\": {\\n' +\n  '          \"label\": \"م... == '{\\n' +\n  '  \"sel\": {\\n' +\n  '    \"hub\": {\\n' +\n  '      \"tool\": {\\n' +\n  '        \"zones\": {\\n' +\n  '          \"label\": \"مناطق المشاعر\",\\n' +\n  '          \"desc\": \"حدّد منطقتك (الأزرق، الأخضر، الأصفر، الأحمر) واستكشف استراتيجيات لتنظيم ذاتك.\"\\n' +\n  '        },\\n' +\n  '        \"emotions\": {\\n' +\n  '          \"label\": \"مستكشف المشاعر\",\\n' +\n  '          \"desc\": \"ابنِ مفرداتك العاطفية — تعرّف على المشاعر وسمِّها وقيّم شدّتها.\"\\n' +\n  '        },\\n' +\n  '        \"strengths\": {\\n' +\n  '          \"label\": \"م..."
+    },
+    {
+      "name": "Validation selection was extended additively",
+      "passed": true,
+      "detail": {
+        "unitFiles": 52,
+        "addedUnitFiles": 3,
+        "addedInputs": 23
+      }
+    },
+    {
+      "name": "Full local preview was built from the final host",
+      "passed": true,
+      "detail": [
+        "latest",
+        "navigation",
+        "failed-retry",
+        "incomplete",
+        "narrow",
+        "reader-dependencies"
+      ]
+    },
+    {
+      "name": "Targeted unit checks passed",
+      "passed": true,
+      "detail": {
+        "tests": 180,
+        "files": 11
+      }
+    },
+    {
+      "name": "All ten isolated regression proofs passed for final inputs",
+      "passed": true,
+      "detail": 10
+    },
+    {
+      "name": "Declared verification inputs did not change during final checks",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be loosely deep-equal:\n\n[\n  {\n    path: 'ui_strings.js',\n    sha256: '66d5510fc09583113436c9195bc7e8162cdd462a96d040f8518136fb230eff72'\n  },\n  {\n    path: 'desktop/web-app/public/ui_strings.js',\n    sha256: '5ccb74a163a42efdce3e698afd1248433dce9f294fba0f67feb134174e3d981a'\n  }\n]\n\nshould loosely deep-equal\n\n[]"
+    }
+  ],
+  "notes": [
+    {
+      "name": "Pre-existing English locale mirror drift retained",
+      "keys": [
+        "stem.platetectonics.bn_collision_rock",
+        "stem.platetectonics.bn_divergent_look",
+        "stem.platetectonics.bn_divergent_rock",
+        "stem.platetectonics.bn_subduction_look",
+        "stem.platetectonics.bn_subduction_rock",
+        "stem.platetectonics.gist_collision",
+        "stem.platetectonics.gist_divergent",
+        "stem.platetectonics.mytry_4",
+        "lesson_board.symbol_results"
+      ]
+    }
+  ],
+  "passed": false
+}

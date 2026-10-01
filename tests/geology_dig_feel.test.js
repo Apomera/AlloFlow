@@ -972,7 +972,7 @@ describe('the compass ribbon', () => {
     const src = fs.readFileSync(sourcePath, 'utf8');
     expect(src).toContain("root.querySelectorAll('[data-geology-view-buttons], [data-geology-tool-selector], [data-geology-fullscreen-toggle]')");
     expect(src).toContain("compassEls3d.ribbon.style.visibility = clear ? '' : 'hidden';");
-    expect(src).toContain("h('div', { 'data-geology-view-buttons': 'true', className: 'absolute top-2 left-2 z-10 flex gap-1' },");
+    expect(src).toContain("h('div', { 'data-geology-view-buttons': 'true', className: 'absolute top-2 left-2 z-10 flex flex-col gap-1 sm:flex-row' },");
   });
 });
 
@@ -1031,7 +1031,7 @@ describe('what the app actually says (registered strings win over the code)', ()
     expect(spoken).toMatch(/walk/); expect(spoken).not.toMatch(/Q and E|\bfly\b/);
   });
 
-  it('no registered stem.geology string hides a changed fallback (two known, harmless exceptions)', () => {
+  it('no registered stem.geology string hides a changed fallback (one known, harmless exception)', () => {
     const drift = [];
     const re = /\bt\(\s*'(stem\.geology\.[A-Za-z0-9_.]+)'\s*,\s*'((?:[^'\\]|\\.)*)'/g;
     let m, checked = 0;
@@ -1041,7 +1041,9 @@ describe('what the app actually says (registered strings win over the code)', ()
       if (v !== m[2].replace(/\\'/g, "'")) drift.push(m[1]);
     }
     expect(checked).toBeGreaterThan(60);                                          // the scan really saw the registered calls
-    expect(drift.sort()).toEqual(['stem.geology.fp_keys', 'stem.geology.schematic_note']);   // flight legend (brief but right); a dash vs hyphen
+    // a dash vs a hyphen. (The flight legend fp_keys was the other: its registered text lacked the
+    // pick, drill, dig and undo keys, so it moved to a new key, fp_keys_fly, with the full legend.)
+    expect(drift.sort()).toEqual(['stem.geology.schematic_note']);
   });
 
   it('a registered key never takes a fallback that varies (one key cannot say two things)', () => {

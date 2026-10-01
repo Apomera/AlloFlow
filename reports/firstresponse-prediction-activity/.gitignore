@@ -1,0 +1,8 @@
+browser-artifacts/
+commit.index*
+catalog-stage/
+update.cjs
+commit.cjs
+commit-message.txt
+index-state.json
+forced-colors-probe.cjs

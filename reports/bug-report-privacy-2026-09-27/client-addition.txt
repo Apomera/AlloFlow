@@ -1,0 +1,136 @@
+  // Host-controlled path to an authenticated district gateway, never a public
+  // collector or a browser-held service credential. Missing config is local-only.
+  var reportDraft = null;
+  function reportingBase() {
+    var base = window.__alloBugReportBasePath;
+    if (location.protocol !== 'https:' || typeof base !== 'string' ||
+        !/^\/[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(base)) return null;
+    return base;
+  }
+  function reportPolicy(value) {
+    var id = function (v) { return typeof v === 'string' && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(v); };
+    try {
+      var notice = new URL(value.noticeUrl);
+      if (value.ok !== true || !id(value.districtId) || !id(value.policyId) ||
+          typeof value.destinationName !== 'string' || !value.destinationName.trim() || value.destinationName.length > 120 ||
+          typeof value.approvedUntil !== 'string' || !Number.isFinite(Date.parse(value.approvedUntil)) || Date.parse(value.approvedUntil) <= Date.now() ||
+          !Number.isInteger(value.retentionSeconds) || value.retentionSeconds < 60 || value.retentionSeconds > 2592000 ||
+          notice.protocol !== 'https:' || notice.username || notice.password || notice.hash) return null;
+      return { districtId: value.districtId, policyId: value.policyId, destinationName: value.destinationName,
+        noticeUrl: notice.href, approvedUntil: value.approvedUntil, retentionSeconds: value.retentionSeconds };
+    } catch (_) { return null; }
+  }
+  function reportFetch(draft, suffix, options) {
+    if (reportingBase() !== draft.base || !draft.base) return Promise.reject(new Error('reporting-unavailable'));
+    return fetch(draft.base + suffix, Object.assign({
+      credentials: 'same-origin', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
+      signal: draft.controller.signal
+    }, options));
+  }
+  function renderReportDraft() {
+    if (!panel || !reportDraft) return;
+    panel.innerHTML = reportDraftHtml();
+    wirePanelHandlers();
+  }
+  function startReportDraft() {
+    var base = reportingBase();
+    reportDraft = { base: base, summary: '', steps: '', category: 'other', policy: null,
+      preview: null, status: base ? 'Checking reporting availability…' : 'External reporting is disabled. Contact your district support team.',
+      loading: !!base, sending: false, sent: false, controller: new AbortController() };
+    var draft = reportDraft;
+    renderReportDraft();
+    if (!base) return;
+    reportFetch(draft, '/policy', { method: 'GET', headers: { Accept: 'application/json' } })
+      .then(function (r) { if (!r.ok) throw new Error('policy-unavailable'); return r.json(); })
+      .then(function (data) {
+        if (reportDraft !== draft || !panel) return;
+        draft.policy = reportPolicy(data);
+        draft.loading = false;
+        draft.status = draft.policy ? '' : 'External reporting is unavailable. Contact your district support team.';
+        renderReportDraft();
+        var summary = document.getElementById('aer-report-summary');
+        if (summary) summary.focus();
+      }).catch(function () {
+        if (reportDraft !== draft || !panel) return;
+        draft.loading = false;
+        draft.status = 'External reporting is unavailable. Contact your district support team.';
+        renderReportDraft();
+      });
+  }
+  function reportDraftHtml() {
+    var d = reportDraft, p = d.policy;
+    var style = 'display:block;width:100%;box-sizing:border-box;margin:6px 0 14px;padding:10px;border:1px solid #64748b;border-radius:6px;font:14px/1.5 system-ui,sans-serif;';
+    var button = 'padding:10px 14px;min-height:44px;border:1px solid #475569;border-radius:6px;background:#fff;color:#0f172a;font:600 14px system-ui,sans-serif;';
+    var body = '<p>Captured logs, URLs, student records, and diagnostic traces are not attached. Describe the software problem without student names or records.</p>';
+    if (p) body += '<p><strong>Destination:</strong> ' + escapeHtml(p.destinationName) +
+      '<br><strong>Report retention:</strong> ' + escapeHtml(String(p.retentionSeconds / 86400)) +
+      ' days. <a href="' + escapeHtml(p.noticeUrl) + '" target="_blank" rel="noopener noreferrer">District reporting notice</a></p>';
+    if (p && !d.preview && !d.sent) {
+      body += '<label for="aer-report-category">Problem area</label><select id="aer-report-category" style="' + style + '">' +
+        ['reading', 'audio', 'navigation', 'export', 'other'].map(function (v) { return '<option value="' + v + '"' + (d.category === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') +
+        '</select><label for="aer-report-summary">What went wrong?</label><textarea id="aer-report-summary" maxlength="2000" rows="3" style="' + style + '">' + escapeHtml(d.summary) +
+        '</textarea><label for="aer-report-steps">Steps to reproduce (optional)</label><textarea id="aer-report-steps" maxlength="4000" rows="4" style="' + style + '">' + escapeHtml(d.steps) +
+        '</textarea><button id="aer-report-review" type="button" style="' + button + '">Review report</button>';
+    } else if (d.preview && !d.sent) {
+      body += '<h3>Review exactly what will be sent</h3><pre tabindex="0" style="white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;padding:12px;">' +
+        escapeHtml(JSON.stringify(d.preview, null, 2)) + '</pre>' +
+        '<label style="display:block;margin:14px 0;"><input id="aer-report-reviewed" type="checkbox"' + (d.sending ? ' disabled' : '') + '> I reviewed this report and removed student information.</label>' +
+        '<p>This review does not replace district authorization.</p>' +
+        '<button id="aer-report-edit" type="button"' + (d.sending ? ' disabled' : '') + ' style="' + button + '">Edit</button> ' +
+        '<button id="aer-report-submit" type="button" disabled style="' + button + '">' + (d.sending ? 'Sending…' : 'Send report') + '</button>';
+    }
+    return '<section style="background:#fff;color:#0f172a;border-radius:12px;width:min(680px,100%);max-height:88vh;overflow:auto;padding:24px;box-sizing:border-box;font:14px/1.5 system-ui,sans-serif;">' +
+      '<h2>Report a software problem</h2>' + body + '<p id="aer-report-status" role="status" aria-live="polite">' + escapeHtml(d.status) +
+      '</p><button id="aer-report-close" type="button" style="' + button + '">Close</button></section>';
+  }
+  function wireReportDraft() {
+    var d = reportDraft;
+    var get = function (id) { return document.getElementById(id); };
+    get('aer-report-close').onclick = closePanel;
+    if (get('aer-report-summary')) get('aer-report-summary').oninput = function (event) { d.summary = event.target.value; };
+    if (get('aer-report-steps')) get('aer-report-steps').oninput = function (event) { d.steps = event.target.value; };
+    if (get('aer-report-category')) get('aer-report-category').onchange = function (event) { d.category = event.target.value; };
+    if (get('aer-report-review')) get('aer-report-review').onclick = function () {
+      if (!d.summary.trim()) { d.status = 'Describe the software problem before reviewing.'; renderReportDraft(); get('aer-report-summary').focus(); return; }
+      d.preview = { schema_version: '2.0', district_id: d.policy.districtId, policy_id: d.policy.policyId,
+        retention_seconds: d.policy.retentionSeconds, reviewed: true, category: d.category, summary: d.summary.trim(), steps: d.steps.trim() };
+      d.status = '';
+      renderReportDraft();
+      get('aer-report-reviewed').focus();
+    };
+    if (get('aer-report-edit')) get('aer-report-edit').onclick = function () { d.preview = null; d.status = ''; renderReportDraft(); get('aer-report-summary').focus(); };
+    if (get('aer-report-reviewed')) get('aer-report-reviewed').onchange = function (event) { get('aer-report-submit').disabled = !event.target.checked || d.sending; };
+    if (get('aer-report-submit')) get('aer-report-submit').onclick = function () {
+      if (d.sending || !get('aer-report-reviewed').checked || !d.preview) return;
+      // Recheck live host configuration and expiry; the server independently checks
+      // the current district, policy, role, and retention for every submission.
+      if (!reportPolicy(Object.assign({ ok: true }, d.policy)) || reportingBase() !== d.base) {
+        d.status = 'Reporting authorization changed. Close this form and reopen it before sending.';
+        renderReportDraft(); return;
+      }
+      d.sending = true;
+      d.status = 'Sending to ' + d.policy.destinationName + '…';
+      renderReportDraft();
+      reportFetch(d, '/reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AlloFlow-Report': '2' }, body: JSON.stringify(d.preview) })
+        .then(function (r) { return r.json().then(function (value) { return { status: r.status, value: value }; }); })
+        .then(function (result) {
+          if (reportDraft !== d || !panel) return;
+          d.sending = false;
+          if (result.status === 201 && result.value && result.value.ok === true) {
+            d.sent = true; d.preview = null; d.summary = ''; d.steps = '';
+            d.status = 'Report sent. Your district support team can arrange deletion.';
+          } else if (result.status === 422) {
+            d.preview = null; d.status = 'Remove personal information, links, and credentials, then review again.';
+          } else {
+            d.status = 'Sending was not confirmed. Your draft remains here. Check with district support before retrying.';
+          }
+          renderReportDraft();
+        }).catch(function () {
+          if (reportDraft !== d || !panel) return;
+          d.sending = false;
+          d.status = 'Sending was not confirmed. Your draft remains here. Check with district support before retrying.';
+          renderReportDraft();
+        });
+    };
+  }
+

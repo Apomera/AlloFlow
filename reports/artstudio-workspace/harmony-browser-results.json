@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "legacyLowSaturationCorrected": true,
+      "legacyColorsPreserved": true,
+      "desktopWheelWidth": 760
+    },
+    {
+      "analogousAnglesCorrect": true,
+      "nativeSliderWholeGestureUndo": true
+    },
+    {
+      "experimentRestoreUndo": true,
+      "writtenObservationPreserved": true
+    },
+    {
+      "fullTwelveColorSvg": true,
+      "svgDecodedDimensions": [
+        900,
+        1185
+      ],
+      "cssMatchesEverySwatch": true,
+      "explicitEightColorTransfer": true
+    },
+    {
+      "pixelTransferPaintedCorrectRgb": true,
+      "existingPixelPreserved": true,
+      "watercolorTransferExact": true
+    },
+    {
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets44": true
+    }
+  ],
+  "errors": []
+}

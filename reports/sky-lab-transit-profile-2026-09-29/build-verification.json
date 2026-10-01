@@ -1,0 +1,10 @@
+{
+  "source": "stem_lab/stem_tool_astronomy.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_astronomy.js",
+  "sha256": "e9a2713af78d2ffb1b75600e8f55978313efa3bc5111968e2e382f97c2858855",
+  "sourceMirrorIdentical": true,
+  "englishKeysChecked": 27,
+  "englishKeyParity": true,
+  "syntaxChecksPassed": true,
+  "scopedWhitespaceCheckPassed": true
+}

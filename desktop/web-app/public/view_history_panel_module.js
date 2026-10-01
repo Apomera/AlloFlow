@@ -334,6 +334,7 @@ function HistoryPanel(props) {
     getDefaultTitle,
     getFilteredHistory,
     getIconForType,
+    pendingHistoryResource = null,
     handleCancelEdit,
     handleClearHistory,
     handleCreateUnit,
@@ -1311,6 +1312,7 @@ function HistoryPanel(props) {
         500
       );
       const isCurrent = !!generatedContent && (generatedContent === item || generatedArtifactInstanceId && persistedItemInstanceId && generatedArtifactInstanceId === persistedItemInstanceId || !generatedArtifactInstanceId && !persistedItemInstanceId && generatedArtifactData && generatedArtifactData === itemData || !generatedArtifactInstanceId && !persistedItemInstanceId && itemPublicId && publicHistoryIdCounts.get(itemPublicId) === 1 && getSafePublicArtifactId(generatedContent) === itemPublicId);
+      const isOpening = item === pendingHistoryResource;
       const openLabel = t("common.open") || "Open";
       const currentLabel = t("launch_pad.current_language") || "Current";
       return /* @__PURE__ */ React.createElement(
@@ -1370,7 +1372,7 @@ function HistoryPanel(props) {
             type: "button",
             onClick: (e) => {
               e.stopPropagation();
-              if (isCurrent) return;
+              if (isCurrent || isOpening) return;
               if (isSyncMode) {
                 addToast(t("session.teacher_control_warning"), "info");
                 return;
@@ -1381,9 +1383,10 @@ function HistoryPanel(props) {
             className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
             "aria-label": isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`,
             "aria-current": isCurrent ? "page" : void 0,
+            "aria-busy": isOpening || void 0,
             "aria-disabled": isSyncMode || isCurrent
           },
-          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
+          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, isOpening && /* @__PURE__ */ React.createElement("span", { role: "status", className: "inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), t("common.loading")), /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
             "span",
             {
               className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-01T00:22:37.868Z",
+  "coreSha256": "66b258db4f52a6af544fe1ce2b5a1c8b913001c1ef21afe6a914655e08424dee",
+  "parity": {
+    "word_sounds_module.js": true,
+    "word_sounds_setup_source.jsx": true
+  }
+}

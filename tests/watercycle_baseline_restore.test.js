@@ -33,9 +33,9 @@ describe('Water Cycle baseline restore', () => {
 
       expect(source).toContain('className: "wc-compare-btn is-restore"');
       expect(source).toContain('disabled: !wcScenarioChanges.length');
-      expect(source).toContain('Restore saved scenario baseline settings');
-      expect(source).toContain('onClick: restoreWcScenarioBaseline');
-      expect(source).toContain('}, "↶ Restore")');
+      expect(source).toContain('Restore baseline settings');
+      expect(source).toMatch(/onClick: (?:restoreWcScenarioBaseline|function\(\) \{ restoreWcScenarioBaseline\(\);(?: focusWcComparisonTarget\("wcFairTestHeading"\);)? \})/);
+      expect(source).toContain('}, "↶ Restore baseline")');
       expect(source).toContain('.wc-compare-btn.is-restore');
       expect(source).toContain('@media(forced-colors:active){.wc-compare-btn.is-restore');
     });

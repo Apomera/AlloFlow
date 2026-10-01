@@ -1,0 +1,94 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt
++++ AlloFlowANTI.txt
+@@ -17328,10 +17328,32 @@
+   const focusStartRef = useRef(Date.now());
+   const [focusData, setFocusData] = useState({ focusedMs: 0, unfocusedMs: 0, currentStreak: 0, longestStreak: 0, lastVisibleTime: Date.now(), engagedMinutes: 0, idleMinutes: 0 });
+   const [pasteEvents, setPasteEvents] = useState([]);
+   const lastInteractionTimeRef = useRef(Date.now());
++  const readingPreviewTimeRef = useRef({ owners: new Set(), startedAt: null, excludedMs: 0 });
+   useEffect(() => {
+-    const trackInteraction = () => { lastInteractionTimeRef.current = Date.now(); };
++    const onReadingPreview = event => {
++      const detail = event.detail;
++      if (!detail || typeof detail.owner !== 'string' || typeof detail.active !== 'boolean') return;
++      const clock = readingPreviewTimeRef.current;
++      if (detail.active) {
++        if (!clock.owners.size) clock.startedAt = Date.now();
++        clock.owners.add(detail.owner);
++      } else if (clock.owners.delete(detail.owner) && !clock.owners.size) {
++        clock.excludedMs += Math.max(0, Date.now() - clock.startedAt);
++        clock.startedAt = null;
++        // Resuming the host requires a host interaction before crediting work.
++        lastInteractionTimeRef.current = 0;
++      }
++    };
++    window.addEventListener('alloflow:reading-preview', onReadingPreview);
++    return () => window.removeEventListener('alloflow:reading-preview', onReadingPreview);
++  }, []);
++  useEffect(() => {
++    const trackInteraction = () => {
++      if (document.querySelector('[data-student-preview]')) return;
++      lastInteractionTimeRef.current = Date.now();
++    };
+     window.addEventListener('click', trackInteraction);
+     window.addEventListener('keydown', trackInteraction);
+     window.addEventListener('scroll', trackInteraction);
+     window.addEventListener('mousemove', trackInteraction);
+@@ -17344,9 +17366,9 @@
+     // loads standalone (no host) must degrade, never throw.
+     window.__alloEngagement = {
+       timeoutMs: _ALLO_ENGAGEMENT_TIMEOUT_MS,
+       isEngaged: () => {
+-        if (typeof document !== 'undefined' && document.hidden) return false;
++        if (typeof document !== 'undefined' && (document.hidden || document.querySelector('[data-student-preview]'))) return false;
+         return (Date.now() - lastInteractionTimeRef.current) < _ALLO_ENGAGEMENT_TIMEOUT_MS;
+       }
+     };
+     return () => {
+@@ -17399,8 +17421,9 @@
+   useEffect(() => {
+     const STREAK_MILESTONES = [5, 10, 15, 20, 30];
+     const ENGAGEMENT_TIMEOUT_MS = _ALLO_ENGAGEMENT_TIMEOUT_MS;
+     focusStreakTimerRef.current = setInterval(() => {
++      if (document.querySelector('[data-student-preview]')) return;
+       if (!document.hidden) {
+         const isEngaged = (Date.now() - lastInteractionTimeRef.current) < ENGAGEMENT_TIMEOUT_MS;
+         const isStreakEligible = !isParentMode;
+         // Per-resource time-on-task. This ledger was declared in 2026 and NEVER
+@@ -17441,18 +17464,21 @@
+         });
+       }
+     }, 60000);
+     const handleVisibilityChange = () => {
++      if (document.querySelector('[data-student-preview]')) return;
+       const now = Date.now();
++      const excludedMs = readingPreviewTimeRef.current.excludedMs;
++      readingPreviewTimeRef.current.excludedMs = 0;
+       if (document.hidden) {
+         setFocusData(prev => ({
+           ...prev,
+-          focusedMs: prev.focusedMs + (now - prev.lastVisibleTime),
++          focusedMs: prev.focusedMs + Math.max(0, now - prev.lastVisibleTime - excludedMs),
+           lastVisibleTime: now
+         }));
+       } else {
+         setFocusData(prev => {
+-          const awayMs = now - prev.lastVisibleTime;
++          const awayMs = Math.max(0, now - prev.lastVisibleTime - excludedMs);
+           const awayMinutes = Math.round(awayMs / 60000);
+           const resetStreak = awayMs > 30000;
+           if (resetStreak && prev.currentStreak >= 3 && typeof addToast === "function") {
+             addToast(t('toasts.streak_saved', { minutes: prev.currentStreak }) || `Welcome back! Your ${prev.currentStreak}-min streak was saved.`, "info");
+@@ -19447,8 +19473,10 @@
+   // open help popup, or exits help mode if none is open. (Buttons/links already trigger help
+   // via the native Enter/Space click, which the capture handler above intercepts.)
+   useEffect(() => {
+     const onHelpKeyDown = (e) => {
++      // Capture listeners run before the preview's own keyboard boundary.
++      if (e.target?.closest?.('[data-student-preview]')) return;
+       const inField = e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]');
+       if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) {
+         e.preventDefault();
+         handleToggleIsHelpMode();

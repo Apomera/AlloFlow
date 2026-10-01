@@ -1,0 +1,24 @@
+{
+  "source": "view_canvas_recovery_dialog_source.jsx",
+  "output": "view_canvas_recovery_dialog_module.js",
+  "before": {
+    "sourceSha256": "32362d4009d2ec4502f7508fe5528feb546bcef9fe23f1369454231c561c4e5e",
+    "outputSha256": "5f13b3340a5ae2c50e660fe2b22619697de56e0daceb0a83e00d3f54537e7919",
+    "rootPublicEqual": true,
+    "canonicalCompileExactlyEqual": true,
+    "diagnosisSourceHashMatched": true
+  },
+  "after": {
+    "sourceSha256": "655cfba01f30e2e71e64bddcb0beeac7411c00da71012b73e3e8f47c092f0790",
+    "compiledCandidateSha256": "caf6d4837158e087c42732475116b837abad86d1f3a2a398c90809af739a94ec",
+    "canonicalCompileAndSyntaxPassed": true,
+    "onlySentenceChanged": true,
+    "generatedFilesUntouchedByWorker": true
+  },
+  "change": {
+    "line": 432,
+    "before": "No saved work remains on this device.",
+    "after": "No recovery workspaces are listed. Other saved work may still be available in Device storage."
+  },
+  "remainingBlocker": "Real Canvas save acknowledgement, storage partition and reload recovery remain unverified; pilot blocker remains open."
+}

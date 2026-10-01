@@ -18,11 +18,35 @@ const DIRS = ['stem_lab', 'desktop/web-app/public/stem_lab'];
 const HELPER_CALL = 'window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(';
 const RAW = /(window\.)?navigator\.clipboard\.writeText\(/g;
 const RAW_ONE = /(window\.)?navigator\.clipboard\.writeText\(/; // .test() on a /g regex is stateful
-const OWN_ROUTE = /typeof window\.alloCopyText === 'function'/;
+const OWN_ROUTE = /typeof window\.alloCopyText\s*===\s*'function'/; // Butterfly writes it without spaces
 // App Lab teaches the Clipboard API; its one hit is sample code inside a template literal.
 const SAMPLE = { 'stem_tool_applab.js': "await navigator.clipboard.writeText('Hello!');" };
+// Helper first: these call the API directly only when window.StemLab.writeClipboard is absent. Each guard
+// covers ONE direct call starting within GUARD_REACH characters after it, so a second call cannot hide behind it.
+const HELPER_FIRST = {
+  'stem_tool_lifeskills.js': "if (window.StemLab && typeof window.StemLab.writeClipboard === 'function') {",
+  'stem_tool_nuclearlab.js': 'var write = (window.StemLab && window.StemLab.writeClipboard)',
+};
+const GUARD_REACH = 700;
+const HELPER_AT = HELPER_CALL.indexOf('navigator.clipboard.writeText(');
 
 function count(source, needle) { return source.split(needle).length - 1; }
+
+// Direct calls that are neither the HELPER_CALL fallback nor covered by this file's HELPER_FIRST guard.
+function unguardedDirect(source, name) {
+  const guard = HELPER_FIRST[name];
+  const guards = [];
+  for (let at = guard ? source.indexOf(guard) : -1; at !== -1; at = source.indexOf(guard, at + 1)) guards.push(at);
+  const used = new Set();
+  let direct = 0;
+  for (const m of source.matchAll(RAW)) {
+    const at = m.index + (m[1] ? m[1].length : 0);
+    if (source.startsWith(HELPER_CALL, at - HELPER_AT)) continue;
+    const cover = guards.filter((g) => g < at && at - g <= GUARD_REACH && !used.has(g)).pop();
+    if (cover === undefined) direct += 1; else used.add(cover);
+  }
+  return direct;
+}
 
 describe('STEM Lab clipboard route (sweep)', () => {
   const tools = readdirSync(resolve(ROOT, 'stem_lab')).filter((name) => /^stem_tool_.*\.js$/.test(name));
@@ -40,8 +64,8 @@ describe('STEM Lab clipboard route (sweep)', () => {
           continue;
         }
         if (OWN_ROUTE.test(source)) continue;
-        const viaHelper = count(source, HELPER_CALL);
-        if (viaHelper !== raw) leaking.push(dir + '/' + name + ' (' + (raw - viaHelper) + ' direct)');
+        const direct = unguardedDirect(source, name);
+        if (direct) leaking.push(dir + '/' + name + ' (' + direct + ' direct)');
         else if (dir === 'stem_lab') routed += 1;
       }
     }
@@ -54,7 +78,7 @@ describe('STEM Lab clipboard route (sweep)', () => {
     expect(own.length).toBeGreaterThanOrEqual(8);
     for (const name of own) {
       const source = readFileSync(resolve(ROOT, 'stem_lab', name), 'utf8');
-      expect(source.indexOf("typeof window.alloCopyText === 'function'"), name).toBeLessThan(source.search(RAW_ONE));
+      expect(source.search(OWN_ROUTE), name).toBeLessThan(source.search(RAW_ONE));
     }
   });
 

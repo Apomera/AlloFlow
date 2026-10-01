@@ -1,0 +1,47 @@
+[
+  {
+    "theme": "theme-default",
+    "step": 0,
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "step": 1,
+    "violations": []
+  },
+  {
+    "theme": "theme-default",
+    "step": 2,
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "step": 0,
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "step": 1,
+    "violations": []
+  },
+  {
+    "theme": "theme-dark",
+    "step": 2,
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "step": 0,
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "step": 1,
+    "violations": []
+  },
+  {
+    "theme": "theme-contrast",
+    "step": 2,
+    "violations": []
+  }
+]

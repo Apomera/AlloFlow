@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "The actual 3D pan moves to its trivet. An active empty burner does not heat it, and ingredient drops follow the new pan location.",
+    "Pouring only flows over the relocated pan; stirring and turning pieces also use its current position. Release stops pouring and conserves saved water.",
+    "Invalid drops and Escape preserve position. Keyboard alternatives move the same pan; its surface cools gradually off the burner.",
+    "Graphics-context loss cancels an uncommitted lift and leaves usable text controls.",
+    "Pan transfers survive reload, appear in exported evidence and replay, and remain locked for completed work.",
+    "Real touch transfer and cancellation work without WebGL. Narrow layouts and automated accessibility checks pass."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop heat controls",
+      "issues": []
+    },
+    {
+      "label": "320px heat controls",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

@@ -1,0 +1,119 @@
+// Reliability fixes from the 2-day review workflow (2026-06-21):
+//  - acl-1 (HIGH): the dead-man watchdog fire() must set the auto-continue STOP ref (not just abort the
+//    controller), and runAutoFixLoop must carry the run-generation guard fixAndVerifyPdf has — otherwise
+//    a fired watchdog couldn't stop the loop and the Make-Accessible wrapper fired 3 fresh re-runs.
+//  - CB-1: the Gemini circuit breaker (a session singleton) must be reset at the START of each run, so a
+//    storm in document A doesn't start document B already throttled.
+//  - CB-2: on recovery the breaker must clear _geminiCooldownUntil, so "restoring concurrency" isn't a
+//    lie for up to ~90s while the stale cooldown blocks the queue.
+import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
+const pipe = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+
+describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
+  it('fire() sets the stop ref BEFORE aborting the controller (mirrors the reset path)', () => {
+    // The fire() body must contain the stop-ref set; the controller abort alone is insufficient.
+    const fireStart = host.indexOf('const fire = () => {');
+    expect(fireStart).toBeGreaterThan(0);
+    // Widened from 3200: fire() grew a set of ownership guards (it now bails
+    // when another run owns the host or the abort controller has been replaced)
+    // which pushed the stop-ref set past the old window. Both the set and the
+    // ordering below are intact -- the slice was simply cutting before them.
+    // Widened again (2026-08): the hidden-tab deferral + wake-grace comments
+    // pushed the stop-ref set to ~7.6k into fire(); set + ordering unchanged.
+    const fireBody = host.slice(fireStart, fireStart + 9000);
+    expect(fireBody).toMatch(/pdfAutoContinueAbortRef\.current = true;/);
+    // ordering: the ref-set appears before the controller.abort() inside fire()
+    expect(fireBody.indexOf('pdfAutoContinueAbortRef.current = true'))
+      .toBeLessThan(fireBody.indexOf('pdfAutoContinueAbortCtrlRef.current.abort()'));
+  });
+  it('runAutoFixLoop captures the run-gen at entry and bails per-round when it goes stale', () => {
+    expect(host).toMatch(/const _myRunGen = \(typeof window !== 'undefined'\) \? \(window\.__alloPdfRunGen \|\| 0\) : 0;/);
+    expect(host).toMatch(/const _genStale = \(\) => \(typeof window !== 'undefined'\) && \(\(window\.__alloPdfRunGen \|\| 0\) !== _myRunGen\)/);
+    expect(host).toMatch(/const _ownsRunSlot = \(\) => pdfAutoContinueAbortCtrlRef\.current === _abortCtrl;/);
+    expect(host).toMatch(/const _canPublish = \(\) => _ownsRunSlot\(\) && !_genStale\(\);/);
+    expect(host).toMatch(/const _canContinue = \(\) => _canPublish\(\)[\s\S]{0,180}!pdfAutoContinueAbortRef\.current/);
+    expect(host).toMatch(/if \(!_canContinue\(\)\) break;/);
+    // The per-round write is guarded against both a stale run and an intervening
+    // direct HTML edit; it reloads the authoritative ref before stopping.
+    expect(host).toMatch(/if \(!_canContinue\(\) \|\| pdfHtmlRevisionRef\.current !== _roundHtmlRevision\) \{\s*cur = pdfFixResultRef\.current;\s*break;\s*\}/);
+    expect(host).toContain('setPdfFixResult(snapshot);');
+  });
+});
+
+describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
+  it('defines _resetGeminiBreaker clearing cap/streaks/cooldown/announced', () => {
+    const s = pipe.indexOf('var _resetGeminiBreaker = function(');
+    expect(s).toBeGreaterThan(0);
+    const end = pipe.indexOf(String.fromCharCode(10) + '  };', s);
+    expect(end).toBeGreaterThan(s);
+    const body = pipe.slice(s, end);
+    expect(body).toMatch(/_geminiCap = _GEMINI_MAX_CONCURRENT;/);
+    expect(body).toMatch(/_geminiAuthStreak = 0;/);
+    expect(body).toMatch(/_geminiTransientStreak = 0;/);
+    expect(body).toMatch(/_geminiCooldownUntil = 0;/);
+    expect(body).toMatch(/_geminiStormAnnounced = false;/);
+  });
+  it('fixAndVerifyPdf calls it in the per-run reset block (next to the telemetry reset)', () => {
+    // M3 (2026-07-09): the reset is now gated on an IDLE gate — an overlapping run's live storm
+    // state must not be zeroed under it — so the window widened past the old 400 chars.
+    const telemetry = pipe.indexOf('const _runStats = _pipelineStats = {');
+    const pacing = pipe.indexOf('// Heavy-doc PROACTIVE pacing', telemetry);
+    expect(telemetry).toBeGreaterThan(0);
+    expect(pacing).toBeGreaterThan(telemetry);
+    expect(pipe.slice(telemetry, pacing)).toMatch(/_resetGeminiBreaker\([^;]+\);/);
+    expect(pipe).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
+  });
+  it('the OPENING-AUDIT reset honors the same busy-gate skip (M3 parity, 2026-07-16)', () => {
+    // The opening audit's proactive reset+pacing (added 2026-07-15) initially reset the breaker
+    // UNCONDITIONALLY — in a batch, file B's opening audit zeroed file A's live storm state and
+    // fanned both runs into the active throttle. It must skip the reset while the gate is busy.
+    // Pin the invariant, not the spelling: the label became a ternary when image inputs got
+    // their own wording (`label: _imageInputMime ? 'the opening image audit' : 'the opening
+    // PDF audit'`), which broke the old exact-string pin.
+    const auditIdx = pipe.indexOf("'the opening PDF audit'");
+    expect(auditIdx).toBeGreaterThan(0);
+    const before = pipe.slice(Math.max(0, auditIdx - 900), auditIdx);
+    expect(before).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
+    expect(before).toContain('_resetGeminiBreaker(_extraRequestPacing);');
+    expect(before).toContain('Opening-audit breaker reset SKIPPED');
+  });
+});
+
+describe('CB-2: recovery clears the stale cooldown', () => {
+  it('_geminiNoteSuccess clears adaptive cooldown while retaining the provider deadline before pumping', () => {
+    const s = pipe.indexOf('var _geminiNoteSuccess = function(');
+    expect(s).toBeGreaterThan(0);
+    const end = pipe.indexOf(String.fromCharCode(10) + '  };', s);
+    expect(end).toBeGreaterThan(s);
+    const body = pipe.slice(s, end);
+    const recovery = '_geminiCooldownUntil = _geminiRetryAfterUntil > Date.now() ? _geminiRetryAfterUntil : 0;';
+    expect(body).toContain(recovery);
+    expect(body.indexOf(recovery)).toBeLessThan(body.indexOf('_geminiPump()'));
+  });
+});
+
+// ── Behaviour mirror: a per-run reset must restore the cap a prior storm dropped ──
+describe('breaker reset behaviour (mirror)', () => {
+  const makeBreaker = () => {
+    const st = { cap: 3, auth: 0, transient: 0, ok: 0, cooldownUntil: 0, announced: false };
+    const MAX = 3, MIN = 1;
+    return {
+      st,
+      storm() { st.cap = MIN; st.cooldownUntil = 90000; st.announced = true; st.auth = 2; },
+      reset() { st.cap = MAX; st.auth = 0; st.transient = 0; st.ok = 0; st.cooldownUntil = 0; st.announced = false; },
+    };
+  };
+  it('a run that ends mid-storm leaves the breaker tripped; the next run resets it', () => {
+    const b = makeBreaker();
+    b.storm();
+    expect(b.st.cap).toBe(1);          // doc A stormed and ended here
+    b.reset();                         // doc B starts → CB-1 reset
+    expect(b.st.cap).toBe(3);          // doc B is NOT inheriting A's throttle
+    expect(b.st.cooldownUntil).toBe(0);
+    expect(b.st.announced).toBe(false);
+  });
+});

@@ -1,17 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const teacherSource = fs.readFileSync(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
-const teacherModule = fs.readFileSync(path.join(ROOT, 'teacher_module.js'), 'utf8');
-const teacherPublic = fs.readFileSync(path.join(ROOT, 'desktop/web-app/public/teacher_module.js'), 'utf8');
-const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
+const teacherSource = readSourceFile(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
+const teacherModule = readSourceFile(path.join(ROOT, 'teacher_module.js'), 'utf8');
+const teacherPublic = readSourceFile(path.join(ROOT, 'desktop/web-app/public/teacher_module.js'), 'utf8');
+const sharedActivitySource = readSourceFile(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const shells = [
-  fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8'),
-  fs.readFileSync(path.join(ROOT, 'desktop/web-app/src/App.jsx'), 'utf8'),
-  fs.readFileSync(path.join(ROOT, 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8'),
+  readSourceFile(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8'),
+  readSourceFile(path.join(ROOT, 'desktop/web-app/src/App.jsx'), 'utf8'),
+  readSourceFile(path.join(ROOT, 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8'),
 ];
 
 function makeSavedFollowUpSender({ followResult = true, sessionStillCurrent = true } = {}) {
@@ -183,8 +186,11 @@ describe('post-session follow-up planner', () => {
       expect(source).toContain('createHomeworkAssignmentLink([resource.id])');
       expect(source).toContain('handleRestoreView(resource, { suppressLiveFollow: true })');
       expect(source).toContain('const resolveAssignmentResources = useCallback((resourceIds = null) =>');
-      expect(source).toContain('return resourceCandidates.filter(item => requestedIds.has(String(item.id || \'\')));');
-      expect(source).toContain('hostPackOnMailboxRef.current(selectedResourceIds)');
+      // f5b045fc9 (09-20): selected IDs resolve in selection order from the student-safe candidates, and a stale
+      // selection resolves to nothing rather than a surviving subset; the mailbox host also gets the built pack.
+      expect(source).toContain("const resourcesById = new Map(resourceCandidates.map(item => [String(item.id || ''), item]));");
+      expect(source).toContain('if (requestedIds.some(id => !resourcesById.has(id))) return [];');
+      expect(source).toContain('hostPackOnMailboxRef.current(selectedResourceIds, { includeSharedActivity: false, preparedPack: built })');
       expect(source).toContain('onSendFollowUpToLiveSession={sendSavedFollowUpPlanToLiveSession}');
       expect(source).toContain('savedFollowUpLiveSendLockRef.current');
       expect(source).toContain('resolveSavedFollowUpLiveDeliverySnapshot(cleanSessionId)');

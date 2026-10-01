@@ -1,0 +1,296 @@
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
+const moduleDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
+let React;
+let ReactDOMClient;
+let act;
+let axe;
+let LivePolling;
+let root;
+let host;
+let opener;
+let outside;
+
+beforeAll(() => {
+  React = require(resolve(moduleDir, 'react'));
+  ReactDOMClient = require(resolve(moduleDir, 'react-dom/client'));
+  ({ act } = require(resolve(moduleDir, 'react-dom/test-utils')));
+  axe = require(resolve(moduleDir, 'axe-core'));
+  global.React = window.React = React;
+  global.IS_REACT_ACT_ENVIRONMENT = true;
+  loadAlloModule('live_polling_module.js');
+  LivePolling = window.AlloModules.LivePolling;
+});
+
+afterEach(() => {
+  if (root) {
+    act(() => root.unmount());
+    root = null;
+  }
+  for (const node of [host, opener, outside]) node?.remove();
+  host = opener = outside = null;
+  window.__alloFocusTrapStack = [];
+  vi.restoreAllMocks();
+});
+
+function click(element) {
+  act(() => element.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+}
+
+function setInputValue(input, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  act(() => {
+    setter.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
+function setSelectValue(select, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+  act(() => {
+    setter.call(select, value);
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
+describe('Live Polling host dialog accessibility', () => {
+  it('provides keyboard-friendly section jumping and collapsible teacher work areas', async () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+
+    await act(async () => {
+      root.render(React.createElement(LivePolling.HostPanel, {
+        sessionCode: 'NAV1',
+        isOpen: true,
+        onClose: () => {},
+        roster: { u1: { name: 'Ari', resourceId: 'r1', resourceAt: 100 } },
+        resources: [{ id: 'r1', title: 'Evidence Sort' }],
+        sessionGroups: {},
+      }));
+      await Promise.resolve();
+    });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const jump = dialog.querySelector('select[aria-label="Jump to live session section"]');
+    const studentSection = dialog.querySelector('[data-live-workspace-section="students"]');
+    const createSection = dialog.querySelector('[data-live-workspace-section="create"]');
+    const studentToggle = dialog.querySelector('button[aria-controls="live-student-activity-details"]');
+    const composerToggle = dialog.querySelector('button[aria-controls="live-poll-composer-details"]');
+
+    expect(jump).not.toBeNull();
+    expect(Array.from(jump.options).map((option) => option.textContent)).toContain('Students and progress');
+    expect(studentSection.getAttribute('tabindex')).toBe('-1');
+    expect(studentToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(composerToggle.getAttribute('aria-expanded')).toBe('true');
+
+    click(studentToggle);
+    expect(studentToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(dialog.querySelector('#live-student-activity-details').hidden).toBe(true);
+
+    click(composerToggle);
+    expect(composerToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(dialog.querySelector('#live-poll-composer-details')).toBeNull();
+
+    setSelectValue(jump, 'create');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(composerToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(dialog.querySelector('#live-poll-composer-details')).not.toBeNull();
+    expect(document.activeElement).toBe(createSection);
+  });
+
+  it('contains focus, replaces window.confirm with a nested safe-default alert, and restores focus', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    opener = document.createElement('button');
+    opener.textContent = 'Open live polling';
+    document.body.appendChild(opener);
+    opener.focus();
+    outside = document.createElement('button');
+    outside.textContent = 'Outside';
+    document.body.appendChild(outside);
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+
+    function Harness() {
+      const [open, setOpen] = React.useState(true);
+      return open ? React.createElement(LivePolling.HostPanel, {
+        sessionCode: 'A11Y',
+        isOpen: true,
+        onClose: () => setOpen(false),
+        roster: {},
+        sessionGroups: {},
+      }) : null;
+    }
+
+    await act(async () => {
+      root.render(React.createElement(Harness));
+      await Promise.resolve();
+    });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const close = Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent === 'Close');
+    expect(dialog.getAttribute('aria-labelledby')).toBe('live-polling-host-title');
+    expect(dialog.getAttribute('aria-describedby')).toBe('live-polling-host-description');
+    expect(document.activeElement).toBe(close);
+    expect(window.__alloFocusTrapStack.at(-1)?.root).toBe(dialog);
+
+    const axeResult = await axe.run(dialog, {
+      rules: {
+        'color-contrast': { enabled: false },
+        region: { enabled: false },
+      },
+    });
+    expect(axeResult.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);
+
+    outside.focus();
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })));
+    expect(document.activeElement).toBe(dialog.querySelector('select[aria-label="Jump to live session section"]'));
+
+    const routing = Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent.includes('Routing rules'));
+    click(routing);
+    const nameInput = dialog.querySelector('input[aria-label="New group name"]');
+    setInputValue(nameInput, 'Advanced');
+    const addGroup = Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent.includes('Add group'));
+    addGroup.focus();
+    click(addGroup);
+
+    const alertDialog = host.querySelector('[role="alertdialog"]');
+    const alertButtons = Array.from(alertDialog.querySelectorAll('button'));
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(alertDialog.getAttribute('aria-labelledby')).toBe('live-polling-group-warning-title');
+    expect(alertDialog.getAttribute('aria-describedby')).toBe('live-polling-group-warning-message live-polling-group-warning-guidance');
+    expect(alertDialog.textContent).toContain('"Advanced" looks like an ability-tiered group name.');
+    expect(document.activeElement).toBe(alertButtons[0]);
+    expect(alertButtons[0].textContent).toBe('Choose a neutral name');
+    expect(dialog.getAttribute('aria-hidden')).toBe('true');
+    expect(dialog.hasAttribute('inert')).toBe(true);
+    expect(window.__alloFocusTrapStack.at(-1)?.root).toBe(alertDialog);
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })));
+    expect(document.activeElement).toBe(alertButtons.at(-1));
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })));
+    expect(document.activeElement).toBe(alertButtons[0]);
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(document.activeElement).toBe(addGroup);
+    expect(nameInput.value).toBe('Advanced');
+
+    click(addGroup);
+    const useAnyway = Array.from(host.querySelectorAll('[role="alertdialog"] button'))
+      .find((button) => button.textContent === 'Use anyway');
+    click(useAnyway);
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(nameInput.value).toBe('');
+    const addRule = Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent.includes('Add rule'));
+    expect(addRule.disabled).toBe(false);
+    click(addRule);
+    const targetGroups = Array.from(dialog.querySelectorAll('select[aria-label="Target group"] option'))
+      .map((option) => option.textContent);
+    expect(targetGroups).toContain('Advanced');
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    await act(async () => { await Promise.resolve(); });
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    expect(warnSpy).toHaveBeenCalled();
+  });
+
+  it('uses a near-fullscreen command center and opens a privacy-safe student activity view', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const sendToStudents = vi.fn(async () => ({ sent: 1, failed: 0 }));
+    const now = Date.now();
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+
+    await act(async () => {
+      root.render(React.createElement(LivePolling.HostPanel, {
+        sessionCode: 'EYE1',
+        isOpen: true,
+        onClose: () => {},
+        transportKind: 'mailbox',
+        roster: {
+          u1: {
+            name: 'Ari Rivera', groupId: 'g1', lastSeen: now - 15000,
+            wsProgress: { correct: 7, total: 8, done: false, at: now - 10000 },
+          },
+        },
+        resources: [{ id: 'r-follow', title: 'Follow-up Sort' }],
+        onSendToStudents: sendToStudents,
+        sessionGroups: { g1: { name: 'Indigo Crew' } },
+        activitySnapshots: [{
+          activityId: 'poll:eye-1', family: 'polling', kind: 'free_text', phase: 'collecting', startedAt: now - 15000, updatedAt: now - 12000,
+          audienceUids: ['u1'], participantStatus: { u1: 'working' },
+          prompt: 'PRIVATE SENTINEL MUST NOT RENDER', response: 'PRIVATE ANSWER MUST NOT RENDER',
+        }],
+      }));
+      await Promise.resolve();
+    });
+
+    const commandCenter = host.querySelector('[aria-labelledby="live-polling-host-title"]');
+    expect(commandCenter.style.maxWidth).toBe('1480px');
+    expect(commandCenter.style.width).toBe('calc(100vw - 1rem)');
+    expect(commandCenter.style.height).toBe('calc(100dvh - 1rem)');
+    expect(commandCenter.hasAttribute('data-live-command-center')).toBe(true);
+    expect(commandCenter.querySelector('.live-command-center-body')).not.toBeNull();
+    expect(commandCenter.querySelector('.live-command-center-students')).not.toBeNull();
+    expect(commandCenter.querySelector('.live-command-center-workspace')).not.toBeNull();
+    expect(commandCenter.textContent).toContain('Progress and engagement signals');
+    expect(commandCenter.textContent).toContain('7/8 completed');
+    expect(commandCenter.textContent).toContain('Active signal');
+    const activeSignalFilter = commandCenter.querySelector('button[aria-label^="Active signal:"]');
+    expect(activeSignalFilter).not.toBeNull();
+    expect(activeSignalFilter.getAttribute('aria-pressed')).toBe('false');
+
+    const selection = commandCenter.querySelector('input[aria-label^="Select Ari Rivera for bulk support actions"]');
+    expect(selection).not.toBeNull();
+    click(selection);
+    expect(commandCenter.textContent).toContain('1 selected');
+    const resourceSelect = commandCenter.querySelector('select[aria-label="Choose a resource for selected students"]');
+    setSelectValue(resourceSelect, 'r-follow');
+    const assignResource = Array.from(commandCenter.querySelectorAll('button')).find((button) => button.textContent === 'Assign resource');
+    await act(async () => { click(assignResource); await Promise.resolve(); });
+    expect(sendToStudents).toHaveBeenCalledWith(['u1'], 'r-follow');
+
+    const eyeButton = commandCenter.querySelector('button[aria-label^="Open activity view for Ari Rivera"]');
+    expect(eyeButton).not.toBeNull();
+    expect(eyeButton.textContent).toContain('Activity view');
+    eyeButton.focus();
+    click(eyeButton);
+
+    const studentDialog = host.querySelector('[aria-labelledby="live-student-detail-title"]');
+    expect(studentDialog).not.toBeNull();
+    expect(studentDialog.textContent).toContain('Ari Rivera');
+    expect(studentDialog.textContent).toContain('Indigo Crew');
+    expect(studentDialog.textContent).toContain('This is an activity view, not a live screen.');
+    expect(studentDialog.textContent).toContain('7/8 completed');
+    expect(studentDialog.textContent).not.toContain('PRIVATE SENTINEL MUST NOT RENDER');
+    expect(studentDialog.textContent).not.toContain('PRIVATE ANSWER MUST NOT RENDER');
+    expect(commandCenter.getAttribute('aria-hidden')).toBe('true');
+    expect(commandCenter.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(studentDialog.querySelector('button[aria-label="Close student activity view"]'));
+    expect(window.__alloFocusTrapStack.at(-1)?.root).toBe(studentDialog);
+
+    const axeResult = await axe.run(studentDialog, {
+      rules: {
+        'color-contrast': { enabled: false },
+        region: { enabled: false },
+      },
+    });
+    expect(axeResult.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(host.querySelector('[aria-labelledby="live-student-detail-title"]')).toBeNull();
+    expect(commandCenter.hasAttribute('aria-hidden')).toBe(false);
+    expect(commandCenter.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(eyeButton);
+  });
+});

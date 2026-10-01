@@ -62,7 +62,7 @@ describe('Beehive Queen mode - decision window feedback', () => {
 
     await act(async () => { recommended.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
-    expect(host.querySelector('[data-rts-decision-window="observe"], [data-rts-decision-window="raid"], [data-rts-decision-window="economy"]')).toBeTruthy();
+    expect(host.querySelector('[data-rts-decision-window="observe"], [data-rts-decision-window="raid"], [data-rts-decision-window="economy"], [data-rts-decision-window="grow"]')).toBeTruthy();
   });
 
   it('turns an imminent raid into an alarm response with an urgent threshold rail', async () => {

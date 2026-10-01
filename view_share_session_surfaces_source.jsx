@@ -15,7 +15,7 @@ function HomeworkQrDialogView(props) {
             <button onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <div className="mx-auto mb-3 w-14 h-14 rounded-2xl bg-violet-700 text-white flex items-center justify-center shadow-lg shadow-violet-200"><ClipboardList size={28}/></div>
             <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-900 mb-2"><BookOpen size={13}/> {t('share_collect.take_home_assignment') || 'Take-home assignment'}</div>
-            <h2 id="alloflow-homework-qr-title" className="text-2xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack-hosted' ? 'Hosted homework assignment' : qrShareModal.type === 'assignment-pack' ? 'Self-contained homework assignment' : 'Homework assignment ready'}</h2>
+            <h2 id="alloflow-homework-qr-title" className="text-2xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.title_hosted', 'Hosted homework assignment') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.title_self_contained', 'Self-contained homework assignment') : deliveryText('share_collect.title_ready', 'Homework assignment ready')}</h2>
             <p id="alloflow-homework-qr-description" className="text-sm font-bold text-violet-900 mb-1">{qrShareModal.title}</p>
             <p className="text-xs text-slate-600 mb-4">{(count === 1 ? (t('share_collect.teacher_prepared_resource_one') || '{count} teacher-prepared resource') : (t('share_collect.teacher_prepared_resource_many') || '{count} teacher-prepared resources')).replace('{count}', String(count))} &middot; {qrShareModal.aiPolicy === 'student-byok' ? (t('share_collect.personal_ai_optional') || 'Personal AI optional') : (t('share_collect.student_ai_off') || 'Student AI off')} &middot; {t('share_collect.no_live_session') || 'No live session'}</p>
             {!qrShareModal.noQr && (
@@ -23,7 +23,7 @@ function HomeworkQrDialogView(props) {
               <div className="bg-white border-2 border-violet-300 rounded-2xl p-3 w-52 h-52 flex items-center justify-center shadow-sm">
                 {qrShareSvg
                   ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: qrShareSvg }} />
-                  : <span className="text-xs font-bold text-violet-700 text-center">{qrShareError ? 'QR unavailable - copy the homework link below' : 'Preparing homework QR...'}</span>}
+                  : <span className="text-xs font-bold text-violet-700 text-center">{qrShareError ? deliveryText('share_collect.qr_unavailable_copy_link', 'QR unavailable - copy the homework link below') : deliveryText('share_collect.preparing_qr', 'Preparing homework QR...')}</span>}
               </div>
             </div>
             )}
@@ -64,6 +64,7 @@ function HomeworkQrDialogView(props) {
                       {reading.capabilities && <div className="mt-1 space-y-1" data-reading-capabilities>
                         {reading.form === 'adapted' && Number.isInteger(reading.capabilities.adaptedSupports?.activeCount) && <p>{deliveryText('share_collect.adapted_support_count', '{count} saved supports on the adapted text.').replace('{count}', String(reading.capabilities.adaptedSupports.activeCount))}</p>}
                         {reading.capabilities.adaptedSupports?.reason === 'stale-identity' && <p className="text-amber-900">{deliveryText('share_collect.adapted_supports_stale', 'The adapted text changed. Its saved supports need review.')}</p>}
+                        {reading.capabilities.adaptedSupports?.reason === 'not-shown' && <p className="text-amber-900" data-adapted-help-hidden>{deliveryText('share_collect.adapted_supports_hidden', 'Word help on the adapted text is hidden, so students will not receive it. To include it, choose Show word help to students in the reader, then share again.')}</p>}
                         {reading.capabilities.adaptedSupports?.reason === 'validator-unavailable' && <p className="text-amber-900">{deliveryText('share_collect.adapted_supports_unverified', 'Saved supports on the adapted text could not be checked.')}</p>}
                         {reading.capabilities.adaptedSupports?.inclusion === 'partial' && <p className="text-amber-900">{deliveryText('share_collect.adapted_supports_partial', 'Some saved supports on the adapted text are unavailable.')}</p>}
                         {reading.capabilities.pictures?.reason === 'validator-unavailable' && <p className="text-amber-900">{deliveryText('share_collect.reading_pictures_unverified', 'Some support pictures could not be checked.')}</p>}
@@ -102,17 +103,17 @@ function HomeworkQrDialogView(props) {
                 </div>
               </details>
             )}
-            <p role="status" aria-live="polite" aria-atomic="true" className="text-[11px] text-slate-500 mb-3">{qrShareModal.noQr ? 'Homework link ready' : qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="text-[11px] text-slate-500 mb-3">{qrShareModal.noQr ? deliveryText('share_collect.link_ready', 'Homework link ready') : qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
             <div className="mb-2 grid grid-cols-2 gap-2">
               <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
                 {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12}/>
               </button>
-              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `Teacher-prepared resources · ${qrShareModal.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'} · No live session`)} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`)} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
                 {t('share_collect.print_qr') || 'Print QR'} <Printer size={12}/>
               </button>
             </div>
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
-              {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
+              {qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.copy_hosted_link', 'Copy hosted homework link') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.copy_self_contained_link', 'Copy self-contained link') : deliveryText('share_collect.copy_homework_link', 'Copy homework link')} <Copy size={12}/>
             </button>
             <input aria-label={t('share_collect.link_aria') || 'Selectable homework link'} readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
             {qrShareModal.type !== 'assignment-pack' && (
@@ -131,15 +132,15 @@ function HomeworkQrDialogView(props) {
             )}
             {(qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && (
               <button onClick={() => { if (canConvertSelection) hostPackOnMailbox(conversionIds.slice(), { includeSharedActivity: false, aiPolicy: qrShareModal.aiPolicy === 'student-byok' ? 'student-byok' : 'off' }); }} disabled={mbBusy || !canConvertSelection} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
-                {mbBusy ? 'Uploading to your mailbox…' : 'Host on Class Mailbox (small QR, images OK)'} <Share2 size={12}/>
+                {mbBusy ? deliveryText('share_collect.uploading_to_mailbox', 'Uploading to your mailbox…') : deliveryText('share_collect.host_on_mailbox', 'Host on Class Mailbox (small QR, images OK)')} <Share2 size={12}/>
               </button>
             )}
             {qrShareModal.type === 'assignment-pack-hosted' ? (
-              <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_activity_images_included_is_stored') || 'The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and'} {qrShareModal.aiPolicy === 'student-byok' ? 'may connect their own AI provider for that tab' : 'AI stays off'}. Delete it any time from the "AlloFlow Class Mailbox" Drive folder.</p>
+              <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_activity_images_included_is_stored') || 'The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and'} {qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.may_connect_own_ai', 'may connect their own AI provider for that tab') : deliveryText('share_collect.ai_stays_off', 'AI stays off')}. {deliveryText('share_collect.delete_from_drive_folder', 'Delete it any time from the "AlloFlow Class Mailbox" Drive folder.')}</p>
             ) : qrShareModal.type === 'assignment-pack' ? (
-              <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_whole_activity_travels_inside_the') || 'The whole activity travels inside the link — students need no account, nothing is stored online, and'} {qrShareModal.aiPolicy === 'student-byok' ? 'they may connect their own AI provider for that tab' : 'AI stays off'}.{typeof qrShareModal.sizeChars === 'number' ? ` Link size ~${Math.max(1, Math.round(qrShareModal.sizeChars / 1024))} KB${qrShareModal.sizeChars > 8000 ? ' — very long links can be truncated by some apps; Google Classroom and email handle them well.' : '.'}` : ''}</p>
+              <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_whole_activity_travels_inside_the') || 'The whole activity travels inside the link — students need no account, nothing is stored online, and'} {qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.they_may_connect_own_ai', 'they may connect their own AI provider for that tab') : deliveryText('share_collect.ai_stays_off', 'AI stays off')}.{typeof qrShareModal.sizeChars === 'number' ? ' ' + deliveryText('share_collect.link_size_kb', 'Link size about {kb} KB.').replace('{kb}', String(Math.max(1, Math.round(qrShareModal.sizeChars / 1024)))) + (qrShareModal.sizeChars > 8000 ? ' ' + deliveryText('share_collect.long_link_warning', 'Very long links can be cut off by some apps. Google Classroom and email handle them well.') : '') : ''}</p>
             ) : (
-              <p className="text-[11px] text-slate-500 mt-3">{qrShareModal.aiPolicy === 'student-byok' ? 'Students open teacher-prepared resources and may connect their own AI provider for that tab.' : 'Students open teacher-prepared resources with AI generation off.'}</p>
+              <p className="text-[11px] text-slate-500 mt-3">{qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.students_open_personal_ai', 'Students open teacher-prepared resources and may connect their own AI provider for that tab.') : deliveryText('share_collect.students_open_ai_off', 'Students open teacher-prepared resources with AI generation off.')}</p>
             )}
           </div>
   );
@@ -163,8 +164,8 @@ function ClassMailboxSetupView(props) {
     restoreFocusAfterCancelRef.current = true;
     cancelPendingMailboxShare?.();
   };
-  const connectLabel = mbBusy ? (pendingMailboxShare ? tx('mailbox.connecting_pending', 'Connecting…') : 'Testing…')
-    : pendingMailboxShare ? tx('mailbox.connect_and_share', 'Connect and share') : 'Connect & self-test';
+  const connectLabel = mbBusy ? (pendingMailboxShare ? tx('mailbox.connecting_pending', 'Connecting…') : tx('mailbox.testing_connection', 'Testing…'))
+    : pendingMailboxShare ? tx('mailbox.connect_and_share', 'Connect and share') : tx('mailbox.connect_self_test', 'Connect & self-test');
   return (
 <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <button ref={closeButtonRef} onClick={closeSetup} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
@@ -246,9 +247,9 @@ function ClassMailboxSetupView(props) {
                 hand-raise) but lack the session-doc store that powers polls,
                 quiz, groups and Pictionary — tell the teacher how to update
                 (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 23 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 24 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. Update it to v23 for independent image-delivery status, lesson boards, and current live tools (about 1 minute, the URL stays the same):</p>
+                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. Update it to v24 for delivery into your Drive (Docs, Slides, Sheets, Forms), independent image-delivery status, lesson boards, and current live tools (about 1 minute, the URL stays the same):</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
                   <li>{t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:'} <b>{t('mailbox.new_version') || 'New version'}</b> {t('mailbox.deploy') || '→ Deploy.'}</li>

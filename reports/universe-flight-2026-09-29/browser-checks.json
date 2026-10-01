@@ -19,9 +19,9 @@
     }
   ],
   "clocks": [
-    "0.56 ly",
-    "0.57 yr",
-    "0.08 yr",
+    "0.61 ly",
+    "0.62 yr",
+    "0.09 yr",
     "7.09",
     "14.11×"
   ],
@@ -51,6 +51,19 @@
     "orbit": {
       "active": false,
       "targetId": null
+    },
+    "motion": {
+      "smoothTravel": false,
+      "paceLyPerSecond": 0,
+      "targetLyPerSecond": 10000000000,
+      "kind": "free"
+    },
+    "framing": {
+      "canLeft": false,
+      "canCenter": false,
+      "canRight": false,
+      "canUndo": false,
+      "placement": null
     },
     "trail": [
       [

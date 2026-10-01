@@ -168,21 +168,26 @@ describe('Bird Lab animated views', () => {
     expect(source).toMatch(/prefers-reduced-motion: reduce\) \{ \.birdlab-hero-flyer, \.birdlab-hero-flap, \.birdlab-track-flap, \.birdlab-hero-skein[^}]*animation: none !important/);
   });
 
-  it('draws a wing planform whose shape follows the sliders', () => {
+  it('draws a wing planform, to scale, whose shape follows the sliders', () => {
+    // Real units since the Wing Loading Lab rebuild (2026-09-27): the old
+    // pins (a 60 g "soarer" with a 12.6 m span) held the widget's wrong model.
     const planform = (wingHunt) => {
       const host = document.createElement('div');
       host.innerHTML = renderTool('birdLab', { birdLab: { view: 'wingHunt', wingHunt } });
       return host.querySelector('[data-birdlab-wing-planform]');
     };
-    const soarer = planform({ wingArea: 10, mass: 60, ar: 16 });
-    expect(soarer.getAttribute('data-birdlab-wing-planform')).toBe('soarer');
-    expect(soarer.querySelector('.birdlab-wh-glide')).toBeTruthy();
-    expect(soarer.querySelector('svg').getAttribute('aria-label')).toContain('pointed tips');
-    const broad = planform({ wingArea: 6, mass: 400, ar: 3.5 });
-    expect(broad.querySelector('svg').getAttribute('aria-label')).toContain('slotted tips');
-    // span = sqrt(AR x area): 12.6 for the soarer, 4.6 for the broad wing.
-    expect(soarer.textContent).toContain('span 12.6');
-    expect(broad.textContent).toContain('span 4.6');
+    // A Wandering Albatross: 0.60 m² at aspect ratio 16.0 spans 3.10 m.
+    const alb = planform({ v: 2, pick: 'albatross', massG: 8500, areaCm2: 6000, ar: 3.1 * 3.1 / 0.6 });
+    expect(alb.getAttribute('data-birdlab-wing-planform')).toBe('wind');
+    expect(alb.querySelector('.birdlab-wh-glide')).toBeTruthy();
+    expect(alb.getAttribute('aria-label')).toContain('pointed tips');
+    expect(alb.getAttribute('aria-label')).toContain('span 3.10 m');
+    expect(Number(alb.getAttribute('data-span-px')) / Number(alb.getAttribute('data-px-per-m'))).toBeCloseTo(3.1, 2);
+    // A made-up broad wing: 0.60 m² at aspect ratio 3.5 spans sqrt(2.1) = 1.45 m.
+    const broad = planform({ v: 2, pick: null, massG: 400, areaCm2: 6000, ar: 3.5 });
+    expect(broad.getAttribute('data-birdlab-wing-planform')).toBe('custom');
+    expect(broad.getAttribute('aria-label')).toContain('slotted tips');
+    expect(broad.getAttribute('aria-label')).toContain('span 1.45 m');
     expect(source).toMatch(/prefers-reduced-motion: reduce\) \{ \.birdlab-wh-body, \.birdlab-wh-wings, \.birdlab-wh-thermal, \.birdlab-wh-streaks/);
   });
 

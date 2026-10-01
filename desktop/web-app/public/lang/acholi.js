@@ -5289,7 +5289,21 @@
     "measured_on_target": "Rwom mupore pi {grade}",
     "measured_above": "Malo loyo rwom pa {grade}",
     "measured_below": "Piny loyo rwom pa {grade}",
-    "measured_note": "Flesch-Kincaid, kipimo i coc man. Tii ki Check Level me neno maber."
+    "measured_note": "Flesch-Kincaid, kipimo i coc man. Tii ki Check Level me neno maber.",
+    "listen_along": "Winy kacel",
+    "compare_listen_here": "Winy kany",
+    "compare_listen_here_original": "Winy kany: coc macon",
+    "compare_listen_here_adapted": "Winy kany: coc ma kiyubo",
+    "compare_stop_reading_original": "Juk: kwano coc macon",
+    "compare_stop_reading_adapted": "Juk: kwano coc ma kiyubo",
+    "compare_scroll_together": "Scroll kacel",
+    "reading_width": "Lac me kwan",
+    "width_narrow": "Tidi",
+    "width_medium": "Dyere",
+    "width_wide": "Lac",
+    "width_extra_wide": "Lac twatwal",
+    "reading_width_characters": "cok nyuguti {count} i rek acel",
+    "original_support_spoken": "Kony me lok “{word}”: {support}"
   },
   "quiz": {
     "title": "Ngi",

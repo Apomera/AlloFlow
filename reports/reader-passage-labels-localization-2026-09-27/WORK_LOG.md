@@ -1,0 +1,13 @@
+# Track 17 passage-label ownership
+
+Preparing an isolated seven-key batch: four whole-sentence passage labels/errors, two pin-state notices, and the existing pin accessible-label translation. Six new English registrations, seven values per selected locale. Shared source, host, catalogs, generated files and Git remain untouched. Track 01 retains reader/build integration. This scope changes wording lookup only, not segmentation, pin persistence, or draft/save decisions.
+
+Scope refinement before tests: the visible pin checkbox label is also untranslated. Include it alongside its accessible label: eight owned keys, six new English registrations, forty locale values. Source extraction first rejected an outdated CRLF assumption without changing the reader; exact replacements were applied after normalizing only the isolated source to LF.
+
+Added a reproduced helper repair: whitespace-only and padded raw-key translations fall back to readable English; meaningful translated/learner whitespace stays intact. This overlaps the pending literal helper fix, so provide a reviewed consolidated runtime patch rather than asking the integrator to stack conflicting helper hunks.
+
+Completed the isolated eight-key increment: six new English registrations, forty locale values, exact locale mirrors, bounded updater, named fixtures, source candidate, and consolidated runtime integration routes. Final evidence has 291 distinct passing checks, including 24 narrow-layout cases, with 130 affected checks passing again after English catalog refresh. Both refreshed English files match the packaged output hashes. The one-line prior draft-fixture follow-up expects the now-localized validation message.
+
+Final read-only strict patch checks passed for passage-labels.patch, runtime-combined.patch, and integration.patch at HEAD a63e347b7d193cbc95b5fc3a9fec844322f1f455 on 2026-09-27T17:56:42Z. Recommended integration.patch SHA-256: 0998530d5d06fe1e42b76af99ebd0aee8668862bc85b3e395b84e626466ce7b0. Use one route only; integration.patch already includes the runtime and catalog changes. Earlier nonruntime locale/test batches retain their stated dependencies. Exact evidence and ownership sequence are in README.md and final-verification.json.
+
+Shared application files, Git, deployments and live app state remain untouched by this increment. Existing Importance native-select clipping at doubled text size is documented as a separate follow-up. Some surrounding controls and embedded occurrence descriptors still use English. Full-app, native-language, assistive-technology and deployed-release validation remain with integration owners.

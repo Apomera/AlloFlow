@@ -6655,7 +6655,7 @@ var d = (labToolData.companionPlanting) || {};
             var crops = grid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
             if (!crops.length) return;
             cgUpd({ experimentBench: { version: 1, baseline: baseline, variant: cgBenchCopy(grid), focusCrop: crops[0].plantId, duration: 14, water: 'daily', prediction: '', conclusion: '', selected: null, result: null, source: useExample ? 'Example garden' : 'My garden' }, showExperimentBench: true });
-            if (typeof announceToSR === 'function') announceToSR('Garden copied to the experiment bench. Choose two plots in layout B to swap them.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.companionplanting.sr_garden_copied_to_the_experiment_bench_choose_two', 'Garden copied to the experiment bench. Choose two plots in layout B to swap them.'));
           }
           function cgBenchEdit(patch, keepResult) {
             setLabToolData(function(prev) {
@@ -6715,7 +6715,7 @@ var d = (labToolData.companionPlanting) || {};
             var history = Array.isArray(cg.experimentHistory) ? cg.experimentHistory : [];
             cgUpd({ experimentHistory: history.filter(function(item) { return item.id !== record.id; }).concat([record]).slice(-6), experimentStatus: 'Trial saved. Your six most recent trials are kept with garden progress.' });
             if (typeof saveSnapshot === 'function') saveSnapshot('companionPlanting', 'Controlled trial · ' + CG_PLANTS[record.cropId].label, { controlledExperiment: record });
-            if (typeof announceToSR === 'function') announceToSR('Controlled trial and conclusion saved to garden progress.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.companionplanting.sr_controlled_trial_and_conclusion_saved_to_garden_p', 'Controlled trial and conclusion saved to garden progress.'));
           }
           function cgBenchExport() {
             var bench = cg.experimentBench;
@@ -8932,7 +8932,7 @@ var d = (labToolData.companionPlanting) || {};
               var specimenAdvice = !focusPlant?'':focusPlant.isStructure?focusPlant.desc:focusCell.health<=20?'Health must be above 20 to harvest. Check moisture, pests, and conflicting neighbors.':focusReady?'This crop is mature and healthy enough to harvest. Collect it with the other ready crops.':focusCell.pests>30?'Pests above 30 slow this plot’s growth. Weeding lowers pressure before the next day.':cgMoisture<30?'The soil is dry. Water before advancing a day to protect this crop’s growth and health.':cgMoisture>90?'The soil is very wet. Let it drain before watering again; extra water can damage crop health.':cgNitrogen<15&&focusPlant.nEffect<0?'Low nitrogen is slowing this heavy feeder. Compost adds nitrogen before the next day.':focusCell.health<=40?'Health is low. Review moisture, pests, and conflicting neighbors before advancing a day.':cgSeason===3?'Growth pauses in winter. Annual crops clear at the year change; perennials carry over.':'Watch this crop develop and explore how its neighbors affect growth.';
               var focusPanel = focusPlant && h('section',{key:'play-focus-panel',className:'cp-play cp-specimen',tabIndex:-1,hidden:!play,style:!play?{display:'none'}:undefined,'data-play-focus':focusIndex,'data-play-focus-panel':true,'aria-labelledby':'cp-specimen-title'},
                 h('div',{className:'cp-specimen-head'},h('div',null,h('div',{className:'cp-play-kicker'},'In your garden · Plot '+(focusIndex+1)),h('h3',{id:'cp-specimen-title'},focusPlant.label)),
-                  h('div',{className:'cp-specimen-nav','aria-label':__alloT('stem.companionplanting.browse_planted_plots','Browse planted plots')},button('←',function(){stepFocus(-1);},{disabled:plantedIndices.length<2,'aria-label':'Previous planted plot','data-play-focus-step':-1}),button('→',function(){stepFocus(1);},{disabled:plantedIndices.length<2,'aria-label':'Next planted plot','data-play-focus-step':1}),button('×',closeFocus,{'aria-label':'Close crop panel','data-play-focus-close':true}))),
+                  h('div',{className:'cp-specimen-nav','aria-label':__alloT('stem.companionplanting.browse_planted_plots','Browse planted plots')},button('←',function(){stepFocus(-1);},{disabled:plantedIndices.length<2,'aria-label':__alloT('stem.companionplanting.a11y_previous_planted_plot', 'Previous planted plot'),'data-play-focus-step':-1}),button('→',function(){stepFocus(1);},{disabled:plantedIndices.length<2,'aria-label':__alloT('stem.companionplanting.a11y_next_planted_plot', 'Next planted plot'),'data-play-focus-step':1}),button('×',closeFocus,{'aria-label':__alloT('stem.companionplanting.a11y_close_crop_panel', 'Close crop panel'),'data-play-focus-close':true}))),
                 h('div',{key:'specimen-'+focusIndex,className:'cp-specimen-main'},
                   h('div',{className:'cp-specimen-portrait'},companionBotanicalArt(React,focusCell.plantId,focusPlant,focusPlant.isStructure?1:focusCell.growthDay/focusPlant.days,{ground:true,roots:false,health:focusCell.health})),
                   h('div',null,h('span',{className:'cp-specimen-status','data-tone':focusReady?'ready':!focusPlant.isStructure&&(focusCell.health<=40||focusCell.pests>30||cgMoisture<30||cgMoisture>90||cgNitrogen<15&&focusPlant.nEffect<0)?'care':'normal','data-play-crop-status':true},specimenStatus),h('p',{'data-play-crop-advice':true},specimenAdvice),
@@ -9013,7 +9013,7 @@ var d = (labToolData.companionPlanting) || {};
                 h('div',{className:'cp-harvest-sparks','aria-hidden':true},Array.from({length:9},function(_,index){return h('span',{key:index,style:{'--spark-x':(8+index*10)+'%','--spark-delay':(index%3*.08)+'s'}});})),
                 h('div',{className:'cp-harvest-head'},h('div',null,h('div',{className:'cp-play-kicker'},'From garden to basket'),h('h3',null,receiptBatch.cropCount+' crop'+(receiptBatch.cropCount===1?'':'s')+' harvested'),h('div',{className:'cp-harvest-sub'},typeof receiptBatch.points==='number'&&isFinite(receiptBatch.points)?receiptBatch.points+' points earned':'Points not recorded')),
                   h('div',null,h('div',{className:'cp-harvest-gain'},(typeof receiptBatch.revenue==='number'&&isFinite(receiptBatch.revenue)?'+':'')+receiptAmount(receiptBatch.revenue)),h('div',{className:'cp-harvest-sub'},'Garden funds')),
-                  button('×',dismissReceipt,{'aria-label':'Dismiss harvest summary','data-play-harvest-dismiss':true})),
+                  button('×',dismissReceipt,{'aria-label':__alloT('stem.companionplanting.a11y_dismiss_harvest_summary', 'Dismiss harvest summary'),'data-play-harvest-dismiss':true})),
                 h('div',{className:'cp-harvest-items',role:'list','aria-label':__alloT('stem.companionplanting.harvested_crops','Harvested crops')},receiptItems.slice(0,4).map(receiptCrop)),
                 receiptItems.length>4&&h('details',{className:'cp-harvest-more','data-harvest-receipt-more':true},
                   h('summary',null,'Show '+(receiptItems.length-4)+' more crop type'+(receiptItems.length===5?'':'s')),

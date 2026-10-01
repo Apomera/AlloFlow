@@ -1,0 +1,236 @@
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6907,7 +6907,13 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_word_from_original": "Word or phrase from the original",
++    "gloss_word_from_adapted": "Word or phrase from the adapted text",
++    "gloss_no_exact_match_original": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.",
++    "gloss_no_exact_match_adapted": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.",
++    "gloss_pinned_notice": "This support will stay visible in lighter view.",
++    "gloss_unpinned_notice": "This support now follows the lighter-view selection."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/desktop/web-app/public/ui_strings.js b/desktop/web-app/public/ui_strings.js
+--- a/desktop/web-app/public/ui_strings.js
++++ b/desktop/web-app/public/ui_strings.js
+@@ -6907,7 +6907,13 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_word_from_original": "Word or phrase from the original",
++    "gloss_word_from_adapted": "Word or phrase from the adapted text",
++    "gloss_no_exact_match_original": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.",
++    "gloss_no_exact_match_adapted": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.",
++    "gloss_pinned_notice": "This support will stay visible in lighter view.",
++    "gloss_unpinned_notice": "This support now follows the lighter-view selection."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4892,7 +4892,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_latin_america.js b/desktop/web-app/public/lang/spanish_latin_america.js
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -4892,7 +4892,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4884,7 +4884,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_castilian.js b/desktop/web-app/public/lang/spanish_castilian.js
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -4884,7 +4884,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/arabic.js b/lang/arabic.js
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -4727,7 +4727,15 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_word_from_original": "كلمة أو عبارة من النص الأصلي",
++    "gloss_word_from_adapted": "كلمة أو عبارة من النص المعدّل",
++    "gloss_no_exact_match_original": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص الأصلي.",
++    "gloss_no_exact_match_adapted": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص المعدّل.",
++    "gloss_pinned_notice": "سيبقى هذا الشرح ظاهرًا في العرض المخفف.",
++    "gloss_unpinned_notice": "أصبح ظهور هذا الشرح تابعًا لاختيار الشروح في العرض المخفف.",
++    "gloss_pin_for": "إظهار دائمًا في العرض المخفف: {item}",
++    "gloss_always_show_in_lighter_view": "إظهار دائمًا في العرض المخفف"
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/desktop/web-app/public/lang/arabic.js b/desktop/web-app/public/lang/arabic.js
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -4727,7 +4727,15 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_word_from_original": "كلمة أو عبارة من النص الأصلي",
++    "gloss_word_from_adapted": "كلمة أو عبارة من النص المعدّل",
++    "gloss_no_exact_match_original": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص الأصلي.",
++    "gloss_no_exact_match_adapted": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص المعدّل.",
++    "gloss_pinned_notice": "سيبقى هذا الشرح ظاهرًا في العرض المخفف.",
++    "gloss_unpinned_notice": "أصبح ظهور هذا الشرح تابعًا لاختيار الشروح في العرض المخفف.",
++    "gloss_pin_for": "إظهار دائمًا في العرض المخفف: {item}",
++    "gloss_always_show_in_lighter_view": "إظهار دائمًا في العرض المخفف"
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/lang/chinese_simplified.js b/lang/chinese_simplified.js
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -4894,7 +4894,15 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_word_from_original": "原文中的词或短语",
++    "gloss_word_from_adapted": "改写文本中的词或短语",
++    "gloss_no_exact_match_original": "没有找到完全匹配的完整词语或短语。请按原文中的写法复制该词或短语。",
++    "gloss_no_exact_match_adapted": "没有找到完全匹配的完整词语或短语。请按改写文本中的写法复制该词或短语。",
++    "gloss_pinned_notice": "此解释将始终在精简视图中显示。",
++    "gloss_unpinned_notice": "此解释现在将根据精简视图的筛选结果显示。",
++    "gloss_pin_for": "始终在精简视图中显示：{item}",
++    "gloss_always_show_in_lighter_view": "始终在精简视图中显示"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/desktop/web-app/public/lang/chinese_simplified.js b/desktop/web-app/public/lang/chinese_simplified.js
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -4894,7 +4894,15 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_word_from_original": "原文中的词或短语",
++    "gloss_word_from_adapted": "改写文本中的词或短语",
++    "gloss_no_exact_match_original": "没有找到完全匹配的完整词语或短语。请按原文中的写法复制该词或短语。",
++    "gloss_no_exact_match_adapted": "没有找到完全匹配的完整词语或短语。请按改写文本中的写法复制该词或短语。",
++    "gloss_pinned_notice": "此解释将始终在精简视图中显示。",
++    "gloss_unpinned_notice": "此解释现在将根据精简视图的筛选结果显示。",
++    "gloss_pin_for": "始终在精简视图中显示：{item}",
++    "gloss_always_show_in_lighter_view": "始终在精简视图中显示"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/lang/thai.js b/lang/thai.js
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -5578,7 +5578,15 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_word_from_original": "คำหรือวลีจากต้นฉบับ",
++    "gloss_word_from_adapted": "คำหรือวลีจากข้อความที่ปรับแล้ว",
++    "gloss_no_exact_match_original": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในต้นฉบับ",
++    "gloss_no_exact_match_adapted": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในข้อความที่ปรับแล้ว",
++    "gloss_pinned_notice": "คำอธิบายนี้จะแสดงอยู่เสมอในมุมมองแบบเรียบง่าย",
++    "gloss_unpinned_notice": "ตอนนี้คำอธิบายนี้จะแสดงตามการคัดเลือกของมุมมองแบบเรียบง่าย",
++    "gloss_pin_for": "แสดงเสมอในมุมมองแบบเรียบง่าย: {item}",
++    "gloss_always_show_in_lighter_view": "แสดงเสมอในมุมมองแบบเรียบง่าย"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/desktop/web-app/public/lang/thai.js b/desktop/web-app/public/lang/thai.js
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -5578,7 +5578,15 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_word_from_original": "คำหรือวลีจากต้นฉบับ",
++    "gloss_word_from_adapted": "คำหรือวลีจากข้อความที่ปรับแล้ว",
++    "gloss_no_exact_match_original": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในต้นฉบับ",
++    "gloss_no_exact_match_adapted": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในข้อความที่ปรับแล้ว",
++    "gloss_pinned_notice": "คำอธิบายนี้จะแสดงอยู่เสมอในมุมมองแบบเรียบง่าย",
++    "gloss_unpinned_notice": "ตอนนี้คำอธิบายนี้จะแสดงตามการคัดเลือกของมุมมองแบบเรียบง่าย",
++    "gloss_pin_for": "แสดงเสมอในมุมมองแบบเรียบง่าย: {item}",
++    "gloss_always_show_in_lighter_view": "แสดงเสมอในมุมมองแบบเรียบง่าย"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",

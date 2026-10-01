@@ -1,0 +1,62 @@
+[
+  {
+    "name": "recipe_lab.html",
+    "match": true,
+    "sha256": "bed73c87698a8a2830aae3bb051fcd53c498895c2d348b9512d8759824afa8c3"
+  },
+  {
+    "name": "recipe_lab.js",
+    "match": true,
+    "sha256": "0d9a8131238f48ff828746b5c97db524457dac6d022e8b87517ee72414c87be1"
+  },
+  {
+    "name": "recipe_lab_engine.js",
+    "match": true,
+    "sha256": "e1224f582361a12cb216c36dfcb83402d460088a769244c60f89dcac0edef1ca"
+  },
+  {
+    "name": "recipe_lab_hands.js",
+    "match": true,
+    "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+  },
+  {
+    "name": "recipe_lab_hands_ui.js",
+    "match": true,
+    "sha256": "2ef8d3b15f3aa11c5995401e75b1c3aa1f7ebf16adf8fed69bc89650ae6cfb32"
+  },
+  {
+    "name": "recipe_lab_hands.css",
+    "match": true,
+    "sha256": "d25fe1a0942c6210282ba903d8c34b4b5a6e0e6e7e9af5ad0fe4a8d49d55a775"
+  },
+  {
+    "name": "recipe_lab_scene.js",
+    "match": true,
+    "sha256": "b1823a82d72d35326f931e4cf3464e8e53262b36da40f4ae8178ff1d884a6013"
+  },
+  {
+    "name": "recipe_lab_inspection.js",
+    "match": true,
+    "sha256": "557215abd8b00470d3a505fa7a3f5fb50a5345b9ed063c17754ceaf31ef1ae00"
+  },
+  {
+    "name": "recipe_lab_inspection.css",
+    "match": true,
+    "sha256": "2a9194923e65353c885d66a3b0802f07cf451b160306ee83cb6ac92bdfdc17c6"
+  },
+  {
+    "name": "recipe_lab_heat.js",
+    "match": true,
+    "sha256": "d9e25766b4c2005c7dfb99f12b8cf8512ae3bfd117decbd064a9b5646cbcff88"
+  },
+  {
+    "name": "recipe_lab_water.js",
+    "match": true,
+    "sha256": "490039d235e9bc41bf3af58a6900113e7e96bb3fa8f2de46a564e07deed4f7f4"
+  },
+  {
+    "name": "recipe_lab_drying.js",
+    "match": true,
+    "sha256": "69618c1a37706e230118826bb13b0dece8e5de894cd28ff531e388a470d289f1"
+  }
+]

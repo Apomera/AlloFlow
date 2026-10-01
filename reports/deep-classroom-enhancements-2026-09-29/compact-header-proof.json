@@ -1,0 +1,22 @@
+{
+  "at": "2026-09-29T22:26:35.423Z",
+  "proved": true,
+  "unchanged": true,
+  "before": {
+    "view_header_source.jsx": "9606bc6d3c9f69bac2e79b3b289e35782641da0fa7dd7b7cb9020d4383127982",
+    "view_header_module.js": "21577ff017415808b10713718807742c035f1e91a3ee6393a47cb0d3f0dca55f",
+    "desktop/web-app/public/view_header_module.js": "21577ff017415808b10713718807742c035f1e91a3ee6393a47cb0d3f0dca55f"
+  },
+  "after": {
+    "view_header_source.jsx": "9606bc6d3c9f69bac2e79b3b289e35782641da0fa7dd7b7cb9020d4383127982",
+    "view_header_module.js": "21577ff017415808b10713718807742c035f1e91a3ee6393a47cb0d3f0dca55f",
+    "desktop/web-app/public/view_header_module.js": "21577ff017415808b10713718807742c035f1e91a3ee6393a47cb0d3f0dca55f"
+  },
+  "exit": 1,
+  "signal": null,
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:/tmp/alloflow_dispatch/wave2/deep-classroom-2026-09-29/verify.cjs"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: Dashboard should be available in the compact phone header"
+}

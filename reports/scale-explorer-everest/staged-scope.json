@@ -1,0 +1,69 @@
+{
+  "baseline": "ea35209b29700c899e55d2db1b6fabc88bca6a95",
+  "paths": [
+    "desktop/web-app/public/stem_lab/assets/terrain/everest-attribution.json",
+    "desktop/web-app/public/stem_lab/assets/terrain/everest-elevation.json",
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/ui_strings.js",
+    "dev-tools/build_scale_everest_terrain.cjs",
+    "dev-tools/scale_explorer_preview.cjs",
+    "stem_lab/assets/terrain/everest-attribution.json",
+    "stem_lab/assets/terrain/everest-elevation.json",
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "tests/e2e/scale-explorer-everest.spec.ts",
+    "tests/scale_explorer_terrain.test.js",
+    "ui_strings.js"
+  ],
+  "blobs": [
+    {
+      "file": "stem_lab/stem_tool_scaleexplorer.js",
+      "hash": "531bb022178762e89524b30529e01fd99635168e"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+      "hash": "531bb022178762e89524b30529e01fd99635168e"
+    },
+    {
+      "file": "dev-tools/scale_explorer_preview.cjs",
+      "hash": "78d5c104f5436b0af0bf1a260516f356f8d4f447"
+    },
+    {
+      "file": "dev-tools/build_scale_everest_terrain.cjs",
+      "hash": "5fdb5ff0ed3552dfefbfa832de48bb8d8538de77"
+    },
+    {
+      "file": "stem_lab/assets/terrain/everest-elevation.json",
+      "hash": "e2905bbd0335cfedb994cb46e520fb41bcb1a53b"
+    },
+    {
+      "file": "stem_lab/assets/terrain/everest-attribution.json",
+      "hash": "27e81db9ebd862cab1057f535b3d22ba8892b538"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/assets/terrain/everest-elevation.json",
+      "hash": "e2905bbd0335cfedb994cb46e520fb41bcb1a53b"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/assets/terrain/everest-attribution.json",
+      "hash": "27e81db9ebd862cab1057f535b3d22ba8892b538"
+    },
+    {
+      "file": "tests/scale_explorer_terrain.test.js",
+      "hash": "f4500712f42bad177b18258bbc1f84ae75695937"
+    },
+    {
+      "file": "tests/e2e/scale-explorer-everest.spec.ts",
+      "hash": "9f473078818bea37d17caf2e96cdd861e02d9017"
+    },
+    {
+      "file": "ui_strings.js",
+      "hash": "4c66ef18f2041f32690ec76757142a8487e3a0ee"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "hash": "87e4faaec0b7abac4566d88a2ea802dc469289d9"
+    }
+  ],
+  "sourceSha256": "191f6e8414940f9a168d3f909af0f0f1c1352ff1e59d75b489ebed9cddf18c4b",
+  "concurrentWork": "Unstaged scale-drawing edits are preserved in the working tree."
+}

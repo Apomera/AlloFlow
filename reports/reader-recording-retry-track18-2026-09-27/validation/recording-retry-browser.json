@@ -1,0 +1,164 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "nativeMediaRecorder": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "adapted",
+      "bytes": 2093,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "adapted",
+      "bytes": 4991,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "adapted",
+      "bytes": 4025,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "original",
+      "bytes": 5973,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "original",
+      "bytes": 26323,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "original",
+      "bytes": 82527,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "adapted",
+      "bytes": 4991,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "adapted",
+      "bytes": 4991,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "streams": 1,
+      "stopped": true,
+      "sameBlob": true,
+      "resourceId": "adapted",
+      "bytes": 4991,
+      "mime": "audio/webm;codecs=opus",
+      "recoveryVisible": true,
+      "focusReturned": true
+    },
+    {
+      "route": "stop-in-panel-failure",
+      "retryFocused": true
+    },
+    {
+      "route": "repeat-failure-discard-record-again",
+      "focusReturned": true
+    },
+    {
+      "route": "retry-busy-and-moved-focus",
+      "focusPreserved": true,
+      "discardGuarded": true
+    },
+    {
+      "route": "navigate-during-retry",
+      "oldSignalAborted": true,
+      "newTakeIndependent": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Native MediaRecorder with synthetic audio; no actual microphone or permission dialog",
+    "Mock host save callback; no persistent writes, reopen, quota or eviction verification",
+    "DOM semantics and focus checks are not actual screen-reader announcement verification",
+    "200% computed-font simulation is not actual text-only zoom or 400% browser zoom",
+    "No mobile hardware, Firefox or WebKit verification"
+  ]
+}

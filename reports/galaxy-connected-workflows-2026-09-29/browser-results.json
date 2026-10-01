@@ -1,0 +1,64 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "overflow": false
+    }
+  ],
+  "stageBranches": [
+    {
+      "mass": 0.05,
+      "stages": 4,
+      "last": "black_dwarf"
+    },
+    {
+      "mass": 0.3,
+      "stages": 6,
+      "last": "black_dwarf"
+    },
+    {
+      "mass": 1,
+      "stages": 7,
+      "last": "black_dwarf"
+    },
+    {
+      "mass": 12,
+      "stages": 6,
+      "last": "neutron_star"
+    },
+    {
+      "mass": 30,
+      "stages": 6,
+      "last": "black_hole"
+    }
+  ],
+  "starToLife": true,
+  "starToChemistry": true,
+  "chemistryToLife": true,
+  "chemistryRestore": true,
+  "notesPreserved": true,
+  "keyboardTimeLapse": true,
+  "modeCleanup": true,
+  "quizResume": true,
+  "quizActiveTabPreserved": true,
+  "quizResultsPreserved": true,
+  "quizRestart": true,
+  "quizCancel": true,
+  "quizModeCancellation": true,
+  "quizInvalidResponse": true,
+  "quizStaleReply": true,
+  "quizTimeout": true,
+  "quizServiceFailure": true,
+  "quizUnmount": true,
+  "quizRestoredLoading": true,
+  "rtl": true
+}

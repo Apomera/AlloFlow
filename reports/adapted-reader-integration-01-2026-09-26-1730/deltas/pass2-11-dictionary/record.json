@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:37:58.364Z",
+  "label": "pass2-11-dictionary",
+  "patch": "489e44942ec1131ea7c13fe46700d5bf9d37112fb7173af4af9602eee74c5615",
+  "plans": [
+    {
+      "target": "dictionary_loader.js",
+      "targets": [
+        "dictionary_loader.js"
+      ],
+      "before": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9",
+      "after": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+      "changed": true
+    }
+  ]
+}

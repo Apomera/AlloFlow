@@ -1,0 +1,8 @@
+{
+  "name": "synthetic-multicol-reading-order",
+  "kind": "reading-order",
+  "source": "synthetic",
+  "note": "Two-column page: human order is the whole left column, then the whole right column. The geometry interleave (Adobe's failure mode) would be L1,R1,L2,... and score badly. 'captured' here is the correct column order. Replace with a real captured block order vs OmniDocBench reading-order annotation.",
+  "groundTruth": ["L-h1", "L-p1", "L-p2", "L-p3", "R-h1", "R-p1", "R-p2", "R-p3"],
+  "captured": ["L-h1", "L-p1", "L-p2", "L-p3", "R-h1", "R-p1", "R-p2", "R-p3"]
+}

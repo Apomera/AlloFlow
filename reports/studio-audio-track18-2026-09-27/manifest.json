@@ -1,0 +1,265 @@
+{
+  "createdAt": "2026-09-27T18:44:16.220Z",
+  "snapshotHead": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "packagingHead": "758bdb5e7d0974f8afc9a5f9ef7443bbaba12322",
+  "prerequisite": "device-durability-track18-2026-09-27",
+  "sharedFilesWritten": [],
+  "patchFiles": [
+    {
+      "file": "resource_read_aloud_module.js",
+      "basisSha256": "6a4390ff272efcebc0cf4586e6221192a62f5e9affc7d3afa50703a939c363b8",
+      "candidateSha256": "3c5a1fcc1d5b6c9b441cf4a2e8a3aaae5fe347e02f162fd3d91eb06e487182de",
+      "roundTrip": true
+    },
+    {
+      "file": "applied_challenge_source.jsx",
+      "basisSha256": "95edad0b176eac8ee3f9f5c0ba7d495b1320e7800ea69106329521e11fd2375b",
+      "candidateSha256": "1275ff888bc610394504c8b29a6fc1bb16dbcd5a5f78341fb723c745d083d543",
+      "roundTrip": true
+    },
+    {
+      "file": "tests/studio_read_aloud.test.js",
+      "basisSha256": "07fd964625713e500ca94a344613fd57bd0f06b29118934c20070d175af0344b",
+      "candidateSha256": "5ce21fdb760c7b6045070e5999f1b4774dabe0964b4c2451747a2636d054b675",
+      "roundTrip": true
+    },
+    {
+      "file": "tests/studio_audio_lifecycle.test.js",
+      "basisSha256": "f71103d467c6d9549a5e99cae202959e7655a42200b7f907bb01c1528bc6f5c7",
+      "candidateSha256": "b6b4149d8a7afca99a03d42a792d95b9e003ef93151c88a9abb0fc3c4d5ed214",
+      "roundTrip": true
+    },
+    {
+      "file": "dev-tools/studio_audio_browser.cjs",
+      "basisSha256": null,
+      "candidateSha256": "dbd3295381acfb68e8cc150d1304c949718eadc1cf33f783ffaee91009b07b54",
+      "roundTrip": true
+    }
+  ],
+  "dependencies": [
+    {
+      "file": "resource_read_aloud_module.js",
+      "rootSha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91",
+      "basisSha256": "6a4390ff272efcebc0cf4586e6221192a62f5e9affc7d3afa50703a939c363b8",
+      "currentSha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "applied_challenge_source.jsx",
+      "rootSha256": "95edad0b176eac8ee3f9f5c0ba7d495b1320e7800ea69106329521e11fd2375b",
+      "basisSha256": "95edad0b176eac8ee3f9f5c0ba7d495b1320e7800ea69106329521e11fd2375b",
+      "currentSha256": "95edad0b176eac8ee3f9f5c0ba7d495b1320e7800ea69106329521e11fd2375b",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rootSha256": "a4ddc42b245180637c57a90e3306ba069492248187526554c7fb19b93b9cca19",
+      "basisSha256": "a4ddc42b245180637c57a90e3306ba069492248187526554c7fb19b93b9cca19",
+      "currentSha256": "a4ddc42b245180637c57a90e3306ba069492248187526554c7fb19b93b9cca19",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "_build_applied_challenge_module.js",
+      "rootSha256": "41cf48c05766ac0d6d056fcf35b2fa8d8566b0945ab7727cf1aacc6b64e94973",
+      "basisSha256": "41cf48c05766ac0d6d056fcf35b2fa8d8566b0945ab7727cf1aacc6b64e94973",
+      "currentSha256": "41cf48c05766ac0d6d056fcf35b2fa8d8566b0945ab7727cf1aacc6b64e94973",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rootSha256": "4b7b9022da7e94c682b9fa5224020426c0ff424751a594625a5fee7ff1ac7cd3",
+      "basisSha256": "4b7b9022da7e94c682b9fa5224020426c0ff424751a594625a5fee7ff1ac7cd3",
+      "currentSha256": "4b7b9022da7e94c682b9fa5224020426c0ff424751a594625a5fee7ff1ac7cd3",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "memory_aid_source.jsx",
+      "rootSha256": "9188a699fc982196227160f670b44d93bc4f2f2fda8b81dae6307c87f98008f1",
+      "basisSha256": "9188a699fc982196227160f670b44d93bc4f2f2fda8b81dae6307c87f98008f1",
+      "currentSha256": "9188a699fc982196227160f670b44d93bc4f2f2fda8b81dae6307c87f98008f1",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "studio_response_module.js",
+      "rootSha256": "0c0243129c63b3cce8451509c3ff3fea496f232fec93d3043e65b15d0fd9c2c0",
+      "basisSha256": "0c0243129c63b3cce8451509c3ff3fea496f232fec93d3043e65b15d0fd9c2c0",
+      "currentSha256": "0c0243129c63b3cce8451509c3ff3fea496f232fec93d3043e65b15d0fd9c2c0",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "live_aac_module.js",
+      "rootSha256": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449",
+      "basisSha256": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449",
+      "currentSha256": "1ef3de4c33d1c88c34905ba56e9fdab0af41a83b857c55d5fff541c9c6603449",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "rootSha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "basisSha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "currentSha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "rootSha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "basisSha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "currentSha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "phase_k_helpers_module.js",
+      "rootSha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "basisSha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "currentSha256": "78fd1c76a6e407312e5e0b24b2f159edd39385a87649a9dbe4a2cb581f627ad8",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "rootSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "basisSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "currentSha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "rootSha256": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+      "basisSha256": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+      "currentSha256": "d986745a8a153f1dfb6029f1d87d6f87ab96500bf619a1db1a92fb7d5cf22961",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "package.json",
+      "rootSha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+      "basisSha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+      "currentSha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "vitest.config.js",
+      "rootSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "basisSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "currentSha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "ui_strings.js",
+      "rootSha256": "4afc4d2cf417644923f487a82a7448db9d20f5677e35be33bc8a9045014669cf",
+      "basisSha256": "4afc4d2cf417644923f487a82a7448db9d20f5677e35be33bc8a9045014669cf",
+      "currentSha256": "cfa2847311ec415e595d3f235b12eeabb97b7934ab4062cac576c34e1b93fa6e",
+      "changedSinceSnapshot": true
+    },
+    {
+      "file": "tests/setup.js",
+      "rootSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "basisSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "currentSha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "tests/lib/audio_fixtures.js",
+      "rootSha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994",
+      "basisSha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994",
+      "currentSha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "tests/studio_read_aloud.test.js",
+      "rootSha256": "07fd964625713e500ca94a344613fd57bd0f06b29118934c20070d175af0344b",
+      "basisSha256": "07fd964625713e500ca94a344613fd57bd0f06b29118934c20070d175af0344b",
+      "currentSha256": "07fd964625713e500ca94a344613fd57bd0f06b29118934c20070d175af0344b",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "tests/read_aloud_audio_service.test.js",
+      "rootSha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983",
+      "basisSha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983",
+      "currentSha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "tests/studio_response_boundary.test.js",
+      "rootSha256": "8b47a08dadb247941e8abb55c9b3bc65a1246333ab4111c4798890e3c3c660eb",
+      "basisSha256": "8b47a08dadb247941e8abb55c9b3bc65a1246333ab4111c4798890e3c3c660eb",
+      "currentSha256": "8b47a08dadb247941e8abb55c9b3bc65a1246333ab4111c4798890e3c3c660eb",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "desktop/web-app/package.json",
+      "rootSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "basisSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "currentSha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "desktop/web-app/tailwind.config.js",
+      "rootSha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+      "basisSha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+      "currentSha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+      "changedSinceSnapshot": false
+    },
+    {
+      "file": "host_handlers_module.js",
+      "basisSha256": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+      "candidateSha256": "50d534862ec23a3bbd94f0716e337818d61d28ede842c58629e0953c1c526f88",
+      "origin": "shared checkout, copied for boundary tests"
+    },
+    {
+      "file": "tests/device_save_status.test.js",
+      "basisSha256": "c2c6691d40dc38493c8e5298a3ec04eb11597bac15dd21521a4e4105e1a8fbfa",
+      "candidateSha256": "c2c6691d40dc38493c8e5298a3ec04eb11597bac15dd21521a4e4105e1a8fbfa",
+      "origin": "device-durability prerequisite"
+    },
+    {
+      "file": "tests/device_save_completion.test.js",
+      "basisSha256": "265d9be9904a4f9bb5ab9091c8b8ba6ae39bc287b46ab3909a7f200f84768f41",
+      "candidateSha256": "265d9be9904a4f9bb5ab9091c8b8ba6ae39bc287b46ab3909a7f200f84768f41",
+      "origin": "device-durability prerequisite"
+    }
+  ],
+  "mirrors": [
+    {
+      "file": "resource_read_aloud_module.js",
+      "sha256": "3c5a1fcc1d5b6c9b441cf4a2e8a3aaae5fe347e02f162fd3d91eb06e487182de",
+      "identical": true
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "sha256": "745e9c8ec235b271e18f92947c90f53d83def3058faa8808c66d5b0822acd65a",
+      "identical": true
+    }
+  ],
+  "validation": {
+    "unitPassed": 130,
+    "unitFailed": 0,
+    "files": [
+      {
+        "file": "device_save_completion.test.js",
+        "passed": 19
+      },
+      {
+        "file": "device_save_status.test.js",
+        "passed": 21
+      },
+      {
+        "file": "read_aloud_audio_service.test.js",
+        "passed": 35
+      },
+      {
+        "file": "studio_audio_lifecycle.test.js",
+        "passed": 25
+      },
+      {
+        "file": "studio_read_aloud.test.js",
+        "passed": 17
+      },
+      {
+        "file": "studio_response_boundary.test.js",
+        "passed": 13
+      }
+    ],
+    "browserPassed": 10,
+    "browserErrors": [],
+    "unexpectedRequests": []
+  }
+}

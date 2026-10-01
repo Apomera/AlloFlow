@@ -1,0 +1,942 @@
+// Wave-1 regressions for the 2026-07-17 TTS/karaoke/formatting handoff
+// (docs/AGENT_HANDOFF_TTS_KARAOKE_FORMATTING_2026-07-17.md).
+//
+// Pins five confirmed defects with BEHAVIORAL assertions (spies on actual
+// callTTS/store calls, never source-string checks):
+//  1. Markdown heading glued mid-paragraph ("...(url)## Why the Brain Dreams")
+//     is repaired deterministically by normalizeMarkdownBlockBoundaries.
+//  2. Adventure prewarm sends the SAME sanitized text + resolved voice that
+//     playback will request (identical urlCache key), starting from the same
+//     speaker state.
+//  3. KaraokeAudioStore.getCompatible refuses a stored Puck AI clip when Kore
+//     is selected; human recordings stay voice-independent.
+//  4. callTTS's urlCache owns its blob URLs: bounded LRU eviction revokes,
+//     window.__alloTtsCacheOwnsUrl reports ownership, and the 150ms settle
+//     gap no longer blocks the caller's await.
+//  5. The karaoke overlay re-warms look-ahead sentences under a NEW resolver
+//     identity (voice/speed/language change) instead of trusting index-only
+//     warm state.
+
+import { validAudioBase64 } from './lib/audio_fixtures.js';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
+const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
+
+let React;
+let ReactDOMClient;
+let act;
+let KaraokeReaderOverlay;
+let createTTS;
+let TPH; // TextPipelineHelpers registry
+let PK;  // PhaseKHelpers registry
+let PKSource; // source-under-test; generated modules are intentionally not rebuilt here
+let KS;  // KaraokeAudioStore namespace
+let root;
+let host;
+let audioInstances = [];
+
+class FakeAudio {
+  constructor(src) {
+    this.src = src;
+    this.currentTime = 0;
+    this.duration = 1;
+    this.playbackRate = 1;
+    this.listeners = new Map();
+    this.play = vi.fn(() => Promise.resolve());
+    this.pause = vi.fn();
+    audioInstances.push(this);
+  }
+  addEventListener(type, listener) { this.listeners.set(type, listener); }
+}
+
+class SequenceAudio extends FakeAudio {
+  constructor(src) {
+    super(src);
+    this.muted = false;
+    this.preload = '';
+    this.load = vi.fn();
+  }
+}
+
+function makePlaySequenceDeps(overrides = {}) {
+  return {
+    isPlaying: true,
+    isPaused: false,
+    isMuted: false,
+    selectedVoice: 'Kore',
+    voiceSpeed: 1,
+    voiceVolume: 1,
+    currentUiLanguage: 'English',
+    leveledTextLanguage: 'English',
+    playbackSessionRef: { current: 17 },
+    audioRef: { current: null },
+    playbackRateRef: { current: 1 },
+    audioBufferRef: { current: {} },
+    setPlaybackState: vi.fn(),
+    setIsGeneratingAudio: vi.fn(),
+    setIsPlaying: vi.fn(),
+    stopPlayback: vi.fn(),
+    callTTS: vi.fn(async (text) => `blob:${text}`),
+    addBlobUrl: vi.fn(),
+    releaseBlob: vi.fn(),
+    warnLog: vi.fn(),
+    debugLog: vi.fn(),
+    playSequence: vi.fn(),
+    personaState: {},
+    _ttsState: {},
+    _isCanvasEnv: false,
+    ...overrides,
+  };
+}
+
+beforeAll(async () => {
+  React = require(resolve(MODULES_DIR, 'react'));
+  ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
+  ({ act } = require(resolve(MODULES_DIR, 'react-dom/test-utils')));
+  global.React = window.React = React;
+  global.IS_REACT_ACT_ENVIRONMENT = true;
+  window.AlloLanguageContext = React.createContext({ t: (key) => key });
+  window.matchMedia = window.matchMedia || (() => ({ matches: false }));
+  global.requestAnimationFrame = window.requestAnimationFrame = () => 0;
+  global.cancelAnimationFrame = window.cancelAnimationFrame = () => {};
+
+  loadAlloModule('text_pipeline_helpers_module.js');
+  loadAlloModule('phase_k_helpers_module.js');
+  loadAlloModule('karaoke_audio_store_module.js');
+  loadAlloModule('tts_module.js');
+  loadAlloModule('immersive_reader_module.js');
+
+  TPH = window.AlloModules.createTextPipelineHelpers();
+  window.AlloModules.TextPipelineHelpers = TPH;
+  PK = window.AlloModules.PhaseKHelpers;
+  const generatedPK = PK;
+  const babel = require(resolve(MODULES_DIR, '@babel/core'));
+  const presetReact = require(resolve(MODULES_DIR, '@babel/preset-react'));
+  const sourceCode = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
+  const transformedSource = babel.transformSync(sourceCode, {
+    babelrc: false,
+    configFile: false,
+    sourceType: 'script',
+    presets: [[presetReact, { runtime: 'classic' }]],
+  }).code;
+  // eslint-disable-next-line no-new-func
+  new Function(transformedSource)();
+  PKSource = window.AlloModules.PhaseKHelpers;
+  window.AlloModules.PhaseKHelpers = generatedPK;
+  KS = window.AlloModules.KaraokeAudioStore;
+  createTTS = window.AlloModules.createTTS;
+  KaraokeReaderOverlay = window.AlloModules.KaraokeReaderOverlay;
+  if (!TPH || !PK || !PKSource || !KS || !createTTS || !KaraokeReaderOverlay) {
+    throw new Error('A target module did not register');
+  }
+});
+
+afterEach(() => {
+  if (root) { try { act(() => root.unmount()); } catch (_) {} root = null; }
+  if (host) { host.remove(); host = null; }
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  audioInstances = [];
+  if (window.AlloModules && window.AlloModules.KaraokeAudioStore) {
+    window.AlloModules.KaraokeAudioStore.current = null;
+  }
+  delete window.__alloTtsCacheOwnsUrl;
+});
+
+// The exact malformed boundary from the reported Dreams leveled text.
+const DREAMS_GLUED =
+  'Dreams are stories the mind tells throughout the night. [⁽⁴⁾](https://www.sleepfoundation.org/dreams) [⁽²⁾](https://www.merriam-webster.com/dictionary/dream)## Why the Brain Dreams\n\nScientists study why the brain dreams.';
+
+describe('normalizeMarkdownBlockBoundaries (Dreams heading repair)', () => {
+  it('repairs the exact reported Dreams boundary into a real heading', () => {
+    const out = TPH.normalizeMarkdownBlockBoundaries(DREAMS_GLUED);
+    expect(out).toContain('\n\n## Why the Brain Dreams');
+    expect(out).not.toContain(')## Why');
+    // Citations stay intact and in place.
+    expect(out).toContain('[⁽⁴⁾](https://www.sleepfoundation.org/dreams)');
+    expect(out).toContain('[⁽²⁾](https://www.merriam-webster.com/dictionary/dream)');
+  });
+
+  it('repairs sentence-punctuation gluing (".## Heading")', () => {
+    const out = TPH.normalizeMarkdownBlockBoundaries('The night ended.## What Comes Next\nMore text.');
+    expect(out).toContain('.\n\n## What Comes Next');
+  });
+
+  it('leaves valid inline hash uses untouched', () => {
+    const samples = [
+      'C# is a language many programmers enjoy.',
+      'See issue # 5 for details.',
+      'Use the #hashtag convention online.',
+      'Already\n\n## A Real Heading\n\nis untouched.',
+    ];
+    for (const s of samples) {
+      expect(TPH.normalizeMarkdownBlockBoundaries(s)).toBe(s);
+    }
+  });
+
+  it('never rewrites fenced code blocks', () => {
+    const code = 'Intro line.\n\n```js\nconst x = f(a).## not a heading\n```\n\nOutro.';
+    expect(TPH.normalizeMarkdownBlockBoundaries(code)).toBe(code);
+  });
+
+  it('produces units the splitter and sanitizer both handle (no mid-unit "##")', () => {
+    const repaired = TPH.normalizeMarkdownBlockBoundaries(DREAMS_GLUED);
+    const PH = window.AlloModules.PureHelpers;
+    const units = repaired.split(/\n{2,}/).flatMap((p) => PH.splitTextToSentences(p, {}));
+    for (const unit of units) {
+      // A unit either IS the heading (leading hashes, stripped for speech)
+      // or carries no heading marker at all.
+      if (unit.includes('##')) expect(unit.trimStart().startsWith('#')).toBe(true);
+      expect(PK.toSpokenText(unit)).not.toContain('#');
+    }
+  });
+});
+
+describe('toSpokenText (canonical spoken-text sanitizer)', () => {
+  it('removes every citation form and never leaks URLs', () => {
+    const raw = 'Dreams matter. [⁽⁴⁾](https://www.sleepfoundation.org/dreams) [1] [Source 2] ⁽³⁾ **bold** [link text](https://example.com)';
+    const spoken = PK.toSpokenText(raw);
+    expect(spoken).toContain('Dreams matter.');
+    expect(spoken).toContain('link text');
+    expect(spoken).not.toMatch(/https?:/);
+    expect(spoken).not.toMatch(/⁽|⁾/);
+    expect(spoken).not.toContain('[1]');
+    expect(spoken).not.toContain('[Source 2]');
+    expect(spoken).not.toContain('**');
+  });
+
+  it('is the same function the store fallback rules mirror (heading + list markers)', () => {
+    expect(PK.toSpokenText('## A Heading')).toBe('A Heading');
+    expect(PK.toSpokenText('- item one')).toBe('item one');
+    expect(PK.toSpokenText('1. first')).toBe('first');
+  });
+});
+
+describe('sequenceBufferKey (cross-resource buffer identity)', () => {
+  it('differs for the same index/voice when the spoken text differs', () => {
+    const a = PK.sequenceBufferKey(0, 'Kore', 'Old resource sentence.');
+    const b = PK.sequenceBufferKey(0, 'Kore', 'New resource sentence.');
+    expect(a).not.toBe(b);
+    expect(PK.sequenceBufferKey(0, 'Kore', 'Old resource sentence.')).toBe(a);
+  });
+});
+
+describe('playSequence silent-unit and look-ahead resilience', () => {
+  it('advances past a citation-only current unit without highlighting or requesting TTS', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const stalePreload = { pause: vi.fn() };
+    const deps = makePlaySequenceDeps();
+    const sentences = ['[6]', 'Next sentence.'];
+
+    await PK.playSequence(
+      0, sentences, 17, 'standard', {}, null, stalePreload, 0, null, deps, 'alignment-test'
+    );
+
+    expect(stalePreload.pause).toHaveBeenCalledTimes(1);
+    expect(deps.callTTS).not.toHaveBeenCalled();
+    expect(deps.setPlaybackState).not.toHaveBeenCalled();
+    expect(deps.setIsGeneratingAudio).not.toHaveBeenCalled();
+    expect(audioInstances).toHaveLength(0);
+    expect(deps.playSequence).toHaveBeenCalledTimes(1);
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(1);
+    expect(handoff[1]).toBe(sentences);
+    expect(handoff[2]).toBe(17);
+    expect(handoff[6]).toBeNull();
+  });
+
+  it('does not synthesize or preload an Audio element for an empty look-ahead unit', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const deps = makePlaySequenceDeps();
+    const sentences = ['First sentence.', '[6]'];
+
+    await PK.playSequence(
+      0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'alignment-test'
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(deps.callTTS.mock.calls.map((call) => call[0])).toEqual(['First sentence.']);
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:First sentence.']);
+
+    await audioInstances[0].onended();
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(1);
+    expect(handoff[6]).toBeNull();
+  });
+
+  it('never constructs Audio with a null look-ahead URL and hands off without a preload', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const callTTS = vi.fn()
+      .mockResolvedValueOnce('blob:first')
+      .mockResolvedValueOnce(null);
+    const deps = makePlaySequenceDeps({ callTTS });
+    const sentences = ['First sentence.', 'Second sentence.'];
+
+    await PK.playSequence(
+      0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'alignment-test'
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(callTTS.mock.calls.map((call) => call[0])).toEqual(sentences);
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:first']);
+    expect(audioInstances.some((audio) => audio.src == null)).toBe(false);
+
+    await audioInstances[0].onended();
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(1);
+    expect(handoff[6]).toBeNull();
+  });
+});
+
+describe('general Leveled Text stalled-preload promotion (2026-08-03)', () => {
+  // Field trace 2026-08-03 (non-English leveled text): a speculative preload
+  // whose provider fetch wedged made the ACTIVE sentence wait the full audio
+  // timeout, then playback advanced — which read as "speaks the first
+  // sentence, skips the rest". The sequencer must promote a stalled preload
+  // to a fresh interactive request for the SAME sentence, and a terminal
+  // no-audio failure must stop playback visibly instead of advancing.
+  function makeSpanishDeps(overrides = {}) {
+    return makePlaySequenceDeps({
+      leveledTextLanguage: 'Spanish',
+      setIsPaused: vi.fn(),
+      setPlayingContentId: vi.fn(),
+      isPlayingRef: { current: true },
+      isSystemAudioActiveRef: { current: true },
+      ...overrides,
+    });
+  }
+
+  it('promotes a stalled speculative preload to a fresh request for the SAME sentence', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const deps = makeSpanishDeps();
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+    const stalledPreload = new Promise(() => {});
+
+    const run = PK.playSequence(0, sentences, 17, 'standard', {}, null, stalledPreload, 0, null, deps, 'leveled-es');
+    await vi.advanceTimersByTimeAsync(2100); // just past READ_ALOUD_PRELOAD_PROMOTION_MS
+    await run;
+
+    expect(deps.playSequence).toHaveBeenCalledTimes(1);
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(0); // same sentence — promotion, not a skip
+    expect(handoff[1]).toBe(sentences);
+    expect(handoff[2]).toBe(17); // same session id
+    expect(handoff[6]).toBeNull(); // stalled preload dropped
+    expect(handoff[7]).toBe(1); // single promotion — cannot loop
+    expect(handoff[10]).toBe('leveled-es'); // same content id
+    expect(deps.callTTS).not.toHaveBeenCalled();
+    expect(audioInstances).toHaveLength(0);
+  });
+
+  it('promotes a stalled sequence-buffer promise and clears the wedged buffer entry', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const deps = makeSpanishDeps();
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+    // Language is part of the buffer identity: 1x speed + Spanish lane.
+    const bufferKey = PK.sequenceBufferKey(0, 'Kore', 'Primera frase.', '1\u241fSpanish');
+    deps.audioBufferRef.current[bufferKey] = new Promise(() => {});
+
+    const run = PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'leveled-es');
+    await vi.advanceTimersByTimeAsync(2100);
+    await run;
+
+    expect(deps.audioBufferRef.current[bufferKey]).toBeUndefined(); // wedged buffer deleted
+    expect(deps.playSequence).toHaveBeenCalledTimes(1);
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(0);
+    expect(handoff[6]).toBeNull();
+    expect(handoff[7]).toBe(1);
+    expect(deps.callTTS).not.toHaveBeenCalled(); // promotion hands off; it does not double-request
+  });
+
+  it('re-requests the promoted sentence on the interactive lane preserving the non-English language', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const callTTS = vi.fn(async (text) => 'blob:' + text);
+    const deps = makeSpanishDeps({ callTTS });
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+
+    // retryCount 1 is exactly the promoted re-entry the previous tests hand off to.
+    await PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 1, null, deps, 'leveled-es');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const active = callTTS.mock.calls[0];
+    expect(active[0]).toBe('Primera frase.');
+    expect(active[3]).toMatchObject({
+      language: 'Spanish',
+      priority: 'interactive',
+      reason: 'read-aloud-active',
+      maxRetries: 1,
+    });
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:Primera frase.']);
+
+    // The look-ahead for the NEXT sentence stays speculative: background lane,
+    // zero retry budget, same language.
+    const preload = callTTS.mock.calls.find((call) => call[0] === 'Segunda frase.');
+    expect(preload).toBeTruthy();
+    expect(preload[3]).toMatchObject({
+      language: 'Spanish',
+      priority: 'normal',
+      reason: 'read-aloud-preload',
+      maxRetries: 0,
+    });
+  });
+
+  it('waits out the full interactive synthesis ladder even when host config still says 15s', async () => {
+    // Field log 2026-08-03 (French): AlloFlowConfig.timeouts.audioLoadMs was
+    // still 15000, so the sequencer aborted the ACTIVE fresh request at 15s —
+    // mid-way through callTTS's second 12s attempt — and terminated playback.
+    // The fresh-path wait must be floored at the ladder length (30s).
+    vi.useFakeTimers();
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    window.AlloFlowConfig = { timeouts: { audioLoadMs: 15000 } };
+    try {
+      // Resolves at 24s: inside the 12s + 800ms + 12s interactive retry
+      // ladder, but PAST the legacy 15s audio wait.
+      const callTTS = vi.fn(() => new Promise((resolve) => {
+        setTimeout(() => resolve('blob:frase-lenta'), 24000);
+      }));
+      const deps = makeSpanishDeps({ callTTS });
+      const sentences = ['Primera frase.'];
+
+      const run = PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'leveled-es');
+      await vi.advanceTimersByTimeAsync(16000);
+      expect(deps.stopPlayback).not.toHaveBeenCalled(); // did NOT give up at 15s
+      await vi.advanceTimersByTimeAsync(9000);
+      await run;
+
+      expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:frase-lenta']);
+      expect(deps.stopPlayback).not.toHaveBeenCalled();
+      expect(deps.playSequence).not.toHaveBeenCalled(); // no skip; this sentence is the one playing
+    } finally {
+      delete window.AlloFlowConfig;
+    }
+  });
+
+  it('stops playback instead of skipping when synthesis yields no audio and browser fallback is off', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    localStorage.removeItem('alloflow_ai_config'); // provider default, browser fallback OFF
+    const callTTS = vi.fn(async () => null);
+    const deps = makeSpanishDeps({ callTTS });
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+
+    await PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 1, null, deps, 'leveled-es');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(deps.playSequence).not.toHaveBeenCalled(); // never advanced to the next sentence
+    expect(deps.stopPlayback).toHaveBeenCalledWith('browser-tts-unavailable', 'leveled-es', 17);
+    expect(deps.setIsPlaying).toHaveBeenCalledWith(false);
+    expect(deps.setIsGeneratingAudio).toHaveBeenCalledWith(false);
+    expect(deps.isPlayingRef.current).toBe(false);
+    expect(audioInstances).toHaveLength(0); // no Audio(null) ghost element
+  });
+});
+
+describe('adventure prewarm/live request parity', () => {
+  it('does not expose an Adventure sentence as active until its audio starts', () => {
+    const source = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
+    const sequenceStart = source.indexOf('const playSequence = async');
+    const handleSpeakStart = source.indexOf('const handleSpeak = async');
+    const sequence = source.slice(sequenceStart, handleSpeakStart);
+    const handleSpeak = source.slice(handleSpeakStart);
+
+    expect(sequence).toContain('loadingIdx: index');
+    expect(sequence).toMatch(/audio\.play\(\)[\s\S]{0,800}currentIdx: index,[\s\S]{0,120}loadingIdx: -1/);
+    expect(handleSpeak).toContain('currentIdx: -1');
+    expect(handleSpeak).toContain('loadingIdx: effectiveStartIndex');
+  });
+
+  it('warms with the sanitized text and the exact voice playback will resolve', () => {
+    const PH = window.AlloModules.PureHelpers;
+    const split = (t) => PH.splitTextToSentences(t, {});
+    const voiceMap = { Mira: 'Kore' };
+    const sceneText =
+      'The dragon roared over the valley. [⁽¹⁾](https://example.com/dragons) "Halt, travelers!" cried Mira.';
+    const calls = [];
+    const callTTS = vi.fn((text, voice) => { calls.push([text, voice]); return Promise.resolve('blob:warm'); });
+
+    const warmed = PK.prewarmSequenceAudio(sceneText, {
+      count: 2,
+      voiceMap,
+      deps: { callTTS, splitTextToSentences: split, selectedVoice: 'Puck' },
+    });
+    expect(warmed).toBe(2);
+
+    // Recreate playback's derivation: handleSpeak starts the adventure chain
+    // with activeSpeaker = selectedVoice, resolves per-sentence voices via
+    // resolveAdventureSentenceVoice, and sanitizes with the shared sanitizer.
+    const sentences = split(sceneText).filter((s) => s && s.trim());
+    let active = 'Puck';
+    const expected = [];
+    for (let i = 0; i < 2 && i < sentences.length; i++) {
+      const r = PK.resolveAdventureSentenceVoice(sentences, i, active, voiceMap, 'Puck');
+      active = r.nextSpeaker;
+      expected.push([PK.toSpokenText(sentences[i]), r.currentVoice]);
+    }
+    expect(calls).toEqual(expected);
+
+    // And the warmed text is genuinely clean: no citation, URL, or markdown.
+    for (const [text] of calls) {
+      expect(text).not.toMatch(/https?:|⁽|\[|\]/);
+    }
+  });
+});
+
+describe('Adventure-owned TTS language and local Kokoro handoff', () => {
+  it('resolves monolingual modes directly and lets bilingual descriptors override the safe English fallback', () => {
+    expect(PKSource.resolveAdventureTtsLanguage('English', null, ['Spanish'])).toBe('English');
+    expect(PKSource.resolveAdventureTtsLanguage('Spanish', null, ['Spanish'])).toBe('Spanish');
+    expect(PKSource.resolveAdventureTtsLanguage('Spanish + English', null, ['Spanish'])).toBe('English');
+    expect(PKSource.resolveAdventureTtsLanguage(
+      'Spanish + English',
+      { text: 'La puerta se abre.', language: 'Spanish' },
+      ['Spanish']
+    )).toBe('Spanish');
+  });
+
+  it('keeps an English Adventure on English when the global Leveled Text language is Spanish', async () => {
+    localStorage.removeItem('alloflow_ai_config');
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const callTTS = vi.fn(async () => 'blob:english-adventure');
+    const deps = makePlaySequenceDeps({
+      callTTS,
+      selectedVoice: 'af_heart',
+      leveledTextLanguage: 'Spanish',
+      adventureLanguageMode: 'English',
+      selectedLanguages: ['Spanish'],
+    });
+
+    await PKSource.playSequence(
+      0, ['The hidden door opens.'], 17, 'adventure', {}, 'af_heart', null, 0, null, deps, 'adventure-active'
+    );
+
+    expect(callTTS).toHaveBeenCalledTimes(1);
+    expect(callTTS.mock.calls[0][1]).toBe('af_heart');
+    expect(callTTS.mock.calls[0][3]).toMatchObject({
+      language: 'English',
+      priority: 'interactive',
+      reason: 'read-aloud-active',
+    });
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:english-adventure']);
+  });
+
+  it('prewarms English af_heart exactly once with the canonical Adventure language', () => {
+    const splitTextToSentences = (text) => [text];
+    const callTTS = vi.fn(async () => 'blob:warm');
+
+    const warmed = PKSource.prewarmSequenceAudio('The bridge is safe.', {
+      count: 1,
+      voiceMap: {},
+      adventureLanguageMode: 'English',
+      selectedLanguages: ['Spanish'],
+      deps: { callTTS, splitTextToSentences, selectedVoice: 'af_heart' },
+    });
+
+    expect(warmed).toBe(1);
+    expect(callTTS).toHaveBeenCalledTimes(1);
+    expect(callTTS.mock.calls[0][1]).toBe('af_heart');
+    expect(callTTS.mock.calls[0][3]).toEqual({
+      language: 'English',
+      priority: 'normal',
+      reason: 'adventure-prewarm',
+    });
+  });
+
+  it('joins a pending English Kokoro buffer past two seconds without launching a duplicate request', async () => {
+    vi.useFakeTimers();
+    localStorage.removeItem('alloflow_ai_config');
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+
+    let resolvePending;
+    const pending = new Promise((resolve) => { resolvePending = resolve; });
+    const deps = makePlaySequenceDeps({
+      selectedVoice: 'af_heart',
+      leveledTextLanguage: 'Spanish',
+      adventureLanguageMode: 'English',
+      selectedLanguages: ['Spanish'],
+    });
+    const sentence = 'The lantern glows.';
+    const key = PKSource.sequenceBufferKey(0, 'af_heart', sentence, `1\u241fEnglish`);
+    deps.audioBufferRef.current[key] = pending;
+
+    let completed = false;
+    const run = PKSource.playSequence(
+      0, [sentence], 17, 'adventure', {}, 'af_heart', null, 0, null, deps, 'adventure-active'
+    ).then(() => { completed = true; });
+
+    await vi.advanceTimersByTimeAsync(2100);
+    expect(completed).toBe(false);
+    expect(deps.playSequence).not.toHaveBeenCalled();
+    expect(deps.callTTS).not.toHaveBeenCalled();
+
+    resolvePending('blob:joined-kokoro');
+    await run;
+
+    expect(deps.playSequence).not.toHaveBeenCalled();
+    expect(deps.callTTS).not.toHaveBeenCalled();
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:joined-kokoro']);
+  });
+});
+
+describe('KaraokeAudioStore.getCompatible (stale stored-voice guard)', () => {
+  const AUDIO_B64 = validAudioBase64();
+
+  function storeWith(source, metadata) {
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true, writable: true, value: vi.fn(() => 'blob:stored-clip'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true, writable: true, value: vi.fn(),
+    });
+    const st = KS.createStore();
+    const url = st.put('The sun is hot.', AUDIO_B64, 'audio/mpeg', source, metadata);
+    expect(url).toBeTruthy();
+    return st;
+  }
+
+  it('refuses a stored Puck AI clip when Kore is selected', () => {
+    const st = storeWith('ai', { voice: 'Puck', speed: 1, language: 'English', voiceResolverVersion: 2 });
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'English' })).toBeNull();
+    expect(st.getCompatible('The sun is hot.', { voice: 'Puck', speed: 1, language: 'English' })).toBe('blob:stored-clip');
+  });
+
+  it('treats legacy AI clips without voice metadata as a mismatch (self-heal)', () => {
+    const st = storeWith('ai', null);
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore' })).toBeNull();
+  });
+
+  it('rejects pre-resolver AI metadata even when the recorded label says Kore', () => {
+    const st = storeWith('ai', { voice: 'Kore', speed: 1, language: 'English' });
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'English' })).toBeNull();
+  });
+
+  it('always serves human recordings regardless of the selected voice', () => {
+    const st = storeWith('human-teacher', { voice: 'Puck' });
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1.5, language: 'Spanish' })).toBe('blob:stored-clip');
+  });
+
+  it('rejects speed and language mismatches for AI clips', () => {
+    const st = storeWith('ai', { voice: 'Kore', speed: 1, language: 'English', voiceResolverVersion: 2 });
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1.5, language: 'English' })).toBeNull();
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'Spanish' })).toBeNull();
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'English' })).toBe('blob:stored-clip');
+  });
+
+  it('is case-insensitive on voice names', () => {
+    const st = storeWith('ai', { voice: 'kore', voiceResolverVersion: 2 });
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore' })).toBe('blob:stored-clip');
+  });
+});
+
+describe('callTTS urlCache ownership + bounded eviction', () => {
+  function makeTTS(state, isCanvas = true) {
+    return createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts' },
+      AVAILABLE_VOICES: ['Puck', 'Kore'],
+      _isCanvasEnv: isCanvas,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: null,
+    });
+  }
+
+  function stubSynthesis() {
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true, writable: true, value: vi.fn(() => 'blob:new-clip'),
+    });
+    const revoke = vi.fn();
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true, writable: true, value: revoke,
+    });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
+      }),
+    })));
+    return revoke;
+  }
+
+  it('reports cache ownership, evicts oldest beyond the cap, and revokes ONLY on eviction', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const revoke = stubSynthesis();
+    const { callTTS } = makeTTS(state);
+
+    // Pre-fill the cache to its cap so one synthesis triggers one eviction.
+    for (let i = 0; i < 150; i++) state.urlCache.set(`key-${i}`, `blob:fake-${i}`);
+    expect(window.__alloTtsCacheOwnsUrl('blob:fake-0')).toBe(true);
+
+    const url = await callTTS('hello there friend', 'Puck');
+    expect(url).toBe('blob:new-clip');
+    expect(state.urlCache.size).toBe(150);
+
+    // Oldest entry evicted AND revoked; the rest untouched.
+    expect(state.urlCache.has('key-0')).toBe(false);
+    expect(revoke).toHaveBeenCalledTimes(1);
+    expect(revoke).toHaveBeenCalledWith('blob:fake-0');
+
+    // Ownership predicate tracks the transition.
+    expect(window.__alloTtsCacheOwnsUrl('blob:fake-0')).toBe(false);
+    expect(window.__alloTtsCacheOwnsUrl('blob:new-clip')).toBe(true);
+    expect(window.__alloTtsCacheOwnsUrl('blob:unrelated')).toBe(false);
+  });
+
+  it('replay after playback is a cache hit with the SAME (unrevoked) URL', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const revoke = stubSynthesis();
+    const { callTTS } = makeTTS(state);
+
+    const first = await callTTS('replay me please', 'Kore');
+    // Host cleanup consults ownership before revoking (releaseBlob guard):
+    // a cache-owned URL must NOT be revoked between plays.
+    expect(window.__alloTtsCacheOwnsUrl(first)).toBe(true);
+    const second = await callTTS('replay me please', 'Kore');
+    expect(second).toBe(first);
+    expect(revoke).not.toHaveBeenCalled();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('force-refreshes only the exact callTTS cache key and replaces it once', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const urls = ['blob:first-clip', 'blob:refreshed-clip'];
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => urls.shift()),
+    });
+    const revoke = vi.fn();
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: revoke,
+    });
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
+      }),
+    })));
+    const { callTTS } = makeTTS(state);
+    const text = 'Refresh this exact sentence.';
+    const opts = { language: 'English', maxRetries: 0, priority: 'interactive' };
+
+    const first = await callTTS(text, 'Kore', 1, opts);
+    const cached = await callTTS(text, 'Kore', 1, { ...opts, force: 'true' });
+    const refreshed = await callTTS(text, 'Kore', 1, { ...opts, force: true });
+    const replay = await callTTS(text, 'Kore', 1, opts);
+
+    const key = JSON.stringify([text, 'Kore', 'English', 'natural-rate-v1', 'test-tts']);
+    expect(first).toBe('blob:first-clip');
+    expect(cached).toBe(first);
+    expect(refreshed).toBe('blob:refreshed-clip');
+    expect(replay).toBe(refreshed);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(state.urlCache.size).toBe(1);
+    expect(state.urlCache.get(key)).toBe(refreshed);
+    expect(revoke).toHaveBeenCalledTimes(1);
+    expect(revoke).toHaveBeenCalledWith(first);
+    expect(window.__alloTtsCacheOwnsUrl(first)).toBe(false);
+    expect(window.__alloTtsCacheOwnsUrl(refreshed)).toBe(true);
+  });
+
+  it('keys non-Canvas cloud audio by the resolved Gemini voice', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    stubSynthesis();
+    const { callTTS } = makeTTS(state, false);
+
+    const first = await callTTS('Cache this resolved voice.', 'not-a-gemini-voice', 1, 0, 'English');
+    const second = await callTTS('Cache this resolved voice.', 'Kore', 1, 0, 'English');
+
+    expect(second).toBe(first);
+    expect(Array.from(state.urlCache.keys())).toEqual([
+      JSON.stringify(['Cache this resolved voice.', 'Kore', 'English', 'natural-rate-v1', 'test-tts']),
+    ]);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('resolves the caller without waiting for the 150ms inter-request settle gap', async () => {
+    vi.useFakeTimers();
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    stubSynthesis();
+    const { callTTS } = makeTTS(state);
+    // With fake timers, a caller-side 150ms await would hang this promise.
+    let settled = false;
+    const p = callTTS('prompt latency check', 'Puck').then((u) => { settled = true; return u; });
+    // Drain microtasks only — no timer advancement at all.
+    for (let i = 0; i < 20 && !settled; i++) await Promise.resolve();
+    await p;
+    expect(settled).toBe(true);
+  });
+
+  it('starts interactive karaoke audio while the background TTS lane is occupied', async () => {
+    const neverFinishes = new Promise(() => {});
+    const state = {
+      queue: neverFinishes,
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    stubSynthesis();
+    const { callTTS } = makeTTS(state);
+
+    const url = await callTTS('Foreground karaoke sentence.', 'Kore', 1, {
+      language: 'English',
+      maxRetries: 0,
+      priority: 'interactive',
+    });
+
+    expect(url).toBe('blob:new-clip');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(state.interactiveQueue).toBeTruthy();
+  });
+
+  it('honors Karaoke zero-retry requests in the Canvas Gemini path', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 503,
+      text: async () => '',
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { callTTS } = makeTTS(state);
+
+    const url = await callTTS('Do not delay this look-ahead.', 'Kore', 1, {
+      language: 'English',
+      maxRetries: 0,
+      priority: 'background',
+    });
+
+    expect(url).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the live selected Gemini voice when VoiceConfig loads after the TTS factory', async () => {
+    let liveVoices = [];
+    let selectedVoice = 'Aoede';
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true, writable: true, value: vi.fn(() => 'blob:live-voice'),
+    });
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    // This mirrors production boot: TTS can initialize while AVAILABLE_VOICES
+    // is still the original empty array, then VoiceConfig arrives later.
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts' },
+      AVAILABLE_VOICES: [],
+      getAvailableVoices: () => liveVoices,
+      getSelectedVoice: () => selectedVoice,
+      _isCanvasEnv: true,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: null,
+    });
+    liveVoices = ['Kore', 'Puck', 'Aoede'];
+
+    await callTTS('Use the selected voice when omitted.', undefined, 1, 0, 'English');
+    selectedVoice = 'Kore';
+    await callTTS('Use the selected voice for an invalid request.', 'not-a-real-voice', 1, 0, 'English');
+
+    const requestedVoices = fetchMock.mock.calls.map(([, options]) => {
+      const payload = JSON.parse(options.body);
+      return payload.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName;
+    });
+    expect(requestedVoices).toEqual(['Aoede', 'Kore']);
+  });
+});
+
+describe('karaoke overlay warm-state reset on resolver signature change', () => {
+  function renderKaraoke(props) {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    const render = (nextProps) => {
+      act(() => { root.render(React.createElement(KaraokeReaderOverlay, nextProps)); });
+    };
+    render(props);
+    return { render };
+  }
+
+  it('re-warms look-ahead sentences through a NEW resolver after a signature change', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const sentences = ['First sentence.', 'Second sentence.', 'Third sentence.', 'Fourth sentence.'];
+
+    const resolverA = vi.fn((s) => Promise.resolve('blob:A-' + s));
+    const resolverB = vi.fn((s) => Promise.resolve('blob:B-' + s));
+    const baseProps = {
+      text: sentences.join(' '),
+      sentenceList: sentences,
+      onClose: () => {},
+      isOpen: true,
+      isTeacher: false,
+      captureOn: false,
+      getAudioUrl: resolverA,
+    };
+    const view = renderKaraoke(baseProps);
+
+    const play = host.querySelector('button[aria-label="Play"]');
+    expect(play).toBeTruthy();
+    await act(async () => { play.click(); await Promise.resolve(); await Promise.resolve(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); await Promise.resolve(); });
+
+    // Resolver A served the current sentence and warmed the look-ahead.
+    const aWarmed = resolverA.mock.calls.map((c) => c[0]);
+    expect(aWarmed).toContain('Second sentence.');
+
+    // Voice change → parent memoizes a NEW resolver identity.
+    resolverA.mockClear();
+    view.render({ ...baseProps, getAudioUrl: resolverB });
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); await Promise.resolve(); });
+
+    // Index-only warm state would skip these; the signature reset re-warms
+    // through the NEW resolver so the audio matches the new voice.
+    const bCalls = resolverB.mock.calls.map((c) => c[0]);
+    expect(bCalls).toContain('Second sentence.');
+    expect(resolverA).not.toHaveBeenCalled();
+  });
+});

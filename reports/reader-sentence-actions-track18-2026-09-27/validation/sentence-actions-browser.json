@@ -1,0 +1,123 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "busyFocusPreserved": true,
+      "removalFocusReturned": true,
+      "noDuplicateActions": true
+    },
+    {
+      "route": "navigate-during-generate",
+      "oldSignalAborted": true,
+      "newActionIndependent": true
+    },
+    {
+      "route": "navigate-during-remove",
+      "oldSignalAborted": true,
+      "newActionIndependent": true
+    },
+    {
+      "route": "generate-failure-after-close",
+      "statusVisible": true,
+      "focusPreserved": true
+    },
+    {
+      "route": "unconfirmed-removal",
+      "truthfulStatus": true,
+      "focusPreserved": true
+    },
+    {
+      "route": "moved-focus",
+      "focusPreserved": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Mock generation/removal/store APIs; no real synthesis, microphone or persistent writes",
+    "DOM semantics are not real screen-reader announcement verification",
+    "200% computed-font simulation is not actual text-only zoom or 400% browser zoom",
+    "No mobile hardware, Firefox or WebKit verification"
+  ]
+}

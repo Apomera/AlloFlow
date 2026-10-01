@@ -108,7 +108,7 @@ function OutlineView(props) {
                                     title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.tooltip_static') : t('outline.tooltip_interactive')}
                                 >
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14}/> : <Share2 size={14}/>}
-                                    {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? 'View diagram' : 'Edit diagram layout'}
+                                    {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? (t('outline.view_diagram') || 'View diagram') : (t('outline.edit_diagram_layout') || 'Edit diagram layout')}
                                 </button>
                             )}
                             {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying
@@ -121,8 +121,9 @@ function OutlineView(props) {
                                         if (vr && typeof vr.openConceptMap3D === 'function') {
                                             vr.openConceptMap3D({
                                                 generated: generatedContent?.data,
-                                                arrangement: generatedContent?.data?.conceptSpace,
-                                                onArrangementChange: typeof handleConceptSpacePersist === 'function' ? (function (arr) { handleConceptSpacePersist(arr, 'conceptSpace'); }) : undefined,
+                                                arrangement: (!isTeacherMode && props.organizerLearnerWork && props.organizerLearnerWork.conceptSpace !== undefined) ? props.organizerLearnerWork.conceptSpace : generatedContent?.data?.conceptSpace,
+                                                onArrangementChange: typeof handleConceptSpacePersist === 'function' ? (function (arr) { handleConceptSpacePersist(arr, 'conceptSpace', generatedContent?.id); }) : undefined,
+                                                canReset: !!isTeacherMode,
                                                 title: generatedContent?.data?.main || generatedContent?.title || '',
                                                 t: t,
                                                 addToast: addToast
@@ -195,7 +196,7 @@ function OutlineView(props) {
                                         <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in motion-reduce:animate-none zoom-in duration-300 flex items-center gap-2 group" style={{ animationDelay: `${idx * 50}ms` }}>
                                             {branch.title}
                                             <button
-                                                aria-label={t('common.close')}
+                                                aria-label={(t('outline.remove_concept_named') || 'Remove concept {name}').replace('{name}', String(branch.title || ''))}
                                                 onClick={() => handleRemoveFromMapList(idx)}
                                                 className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity text-indigo-600 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5"
                                                 title={t('common.remove_concept')}

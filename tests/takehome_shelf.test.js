@@ -5,7 +5,9 @@
 // homework-QR assignment loader uses. These pins hold the contracts; the markdown-bodied
 // 'directions' type deliberately reuses the default text renderer + read-aloud.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
@@ -34,14 +36,18 @@ describe('take-home: teacher side', () => {
     expect(anti).toContain("(due ? '**Due:** ' + due + '\\n\\n' : '') + body");
   });
   it('v2: the composer is ALWAYS available — palette card after Lesson Plan opens the modal', () => {
+    // The palette cards live in view_sidebar_panels_source.jsx (appended by the helper); the full-pack card
+    // moved into FullPackRunView (view_full_pack_run_source.jsx, fadeda957), which the sidebar mounts after
+    // Directions. So: card sits AFTER the lesson-plan card and BEFORE the full-pack card's mount.
+    const fullPackRun = readFileSync(resolve(process.cwd(), 'view_full_pack_run_source.jsx'), 'utf8');
     expect(anti).toContain('id="tour-tool-directions"');
-    // card sits AFTER the lesson-plan card and BEFORE the full-pack card
     const lp = anti.indexOf('id="tour-tool-lesson-plan"');
     const dir = anti.indexOf('id="tour-tool-directions"');
-    const fp = anti.indexOf('id="tour-tool-fullpack"');
+    const fp = anti.indexOf('<FullPackRunView', dir);
     expect(lp).toBeGreaterThan(0);
     expect(dir).toBeGreaterThan(lp);
     expect(fp).toBeGreaterThan(dir);
+    expect(fullPackRun).toContain('id="tour-tool-fullpack"');
     expect(anti).toContain('setShowDirectionsComposer(true)');
   });
   it('v2: derivation context = lesson plan (intent) + STUDENT-SAFE pack manifest (tasks), with the privacy rule pinned', () => {
@@ -79,7 +85,8 @@ describe('take-home: student side', () => {
     const idx = anti.indexOf("if (v.kind === 'takehome') {");
     expect(idx).toBeGreaterThan(0);
     const branch = anti.slice(idx, idx + 2200);
-    expect(branch).toContain('!TEACHER_ONLY_TYPES.includes(it.type)');
+    // f238731dd (09-05) replaced the inline TEACHER_ONLY filter with the shared student-safe rule.
+    expect(branch).toContain('const items = _alloStudentSafeResources(hydratedHistoryRef.current || []);');
     expect(branch).toContain("storageDB.set('allo_homework_shelf_v1', shelf)");
     expect(branch).toContain("if (ok === false) throw new Error('storage unavailable')"); // CS2-B: set() returns boolean
     // honest fallback: storage refused → in-memory shelf + download guidance, never silence

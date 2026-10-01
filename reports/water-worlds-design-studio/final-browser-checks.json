@@ -1,0 +1,43 @@
+{
+  "checks": [
+    "Cover descriptions exposed to assistive technology",
+    "Memory guide requires matching recorded rain and cover",
+    "Dark graph lines exceed 3:1 contrast"
+  ],
+  "descriptions": [
+    {
+      "label": "Choose Meadow",
+      "description": "Rain soaks in; little surface storage."
+    },
+    {
+      "label": "Choose Woodland",
+      "description": "Fastest modeled infiltration; plants return water to air."
+    },
+    {
+      "label": "Choose Paving",
+      "description": "Very little infiltration; water can run downhill."
+    },
+    {
+      "label": "Choose Retention garden",
+      "description": "Stores surface water and lets it soak in; can overflow."
+    }
+  ],
+  "stages": {
+    "same": "Explain with evidence",
+    "rain": "Observe & test",
+    "cover": "Observe & test"
+  },
+  "contrast": [
+    {
+      "stroke": "rgb(209, 177, 251)",
+      "background": "rgb(28, 55, 51)",
+      "ratio": 6.931462395066826
+    },
+    {
+      "stroke": "rgb(171, 224, 188)",
+      "background": "rgb(28, 55, 51)",
+      "ratio": 8.590625681715046
+    }
+  ],
+  "errors": []
+}

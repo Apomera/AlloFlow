@@ -290,7 +290,8 @@ describe('Symbol Studio standalone AAC HTML', () => {
     expect(liveActionEnd).toBeGreaterThan(liveActionStart);
 
     const liveAction = source.slice(liveActionStart, liveActionEnd);
-    expect(liveAction).toContain('liveSession.push(buildPortableAACPackage(b))');
+    // With each picture's credit (2026-09-28).
+    expect(liveAction).toContain('liveSession.push(buildPortableAACPackage(b, { creditFor: bankCreditFor }))');
     expect(liveAction).not.toContain('includeCustomAudio');
     expect(liveAction).not.toContain('includePreparedAudio');
     expect(liveAction).not.toContain('livePages');

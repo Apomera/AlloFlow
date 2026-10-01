@@ -73,13 +73,19 @@ beforeAll(() => {
 describe('GIS Studio ui_strings parity', () => {
   it('finds the translator keys and every ui_strings copy', () => {
     expect(sourceKeys.keys.size).toBeGreaterThan(100);
-    // The three COMMITTED copies must always be here; desktop/app-build/ is a
-    // build artifact and only joins the parity check once it has been built.
-    // Asserting a flat 4 made this suite depend on a local build step.
-    expect(copies.length).toBeGreaterThanOrEqual(3);
-    for (const required of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js']) {
+    // The two COMMITTED copies must always be here. desktop/web-app/build/ and
+    // desktop/app-build/ are gitignored build outputs (absent in CI) and only
+    // join the parity check once they have been built.
+    expect(copies.length).toBeGreaterThanOrEqual(2);
+    for (const required of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
       expect(copies.map((c) => c.path), required + ' must be checked').toContain(required);
     }
+  });
+
+  const WEB_BUILD_COPY = 'desktop/web-app/build/ui_strings.js';
+  const webBuildMissing = !existsSync(WEB_BUILD_COPY);
+  it.skipIf(webBuildMissing)('includes the local web-app build copy' + (webBuildMissing ? ' (skipped: gitignored build output not present)' : ''), () => {
+    expect(copies.map((c) => c.path)).toContain(WEB_BUILD_COPY);
   });
 
   it('never uses one key with two different English strings', () => {

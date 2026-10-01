@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-29",
+  "result": "passed",
+  "unitTests": {
+    "passed": 181,
+    "files": 3,
+    "finalRunSeconds": 41.11,
+    "suites": {
+      "firstresponse_depth_explorer": 48,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "uniqueScenariosPassed": 13,
+    "bodyRegressionScenarios": 8,
+    "inspectionScenarios": 5,
+    "initialFullRun": "13 passed in 4.3 minutes",
+    "finalAffectedRun": "5 passed in 2.3 minutes after heel centering and placement landmark changes",
+    "renderer": "Chromium WebGL with ANGLE SwiftShader"
+  },
+  "coverage": [
+    "Heel contact and alignment at every manikin age",
+    "Live child hand selection without rebuilding the chest or hands",
+    "Placement demonstration revealed only for the correct chest region",
+    "Unchanged depth, recoil, measurements, predictions, and saved comparison settings",
+    "Real WebGL picking, age variants, AED targeting, recovery, and 30:2 coaching",
+    "Keyboard radio selection and focus below the pinned phone viewer",
+    "320px reflow, enlarged text spacing, reduced motion, and forced colors",
+    "Axe semantics and normal contrast; computed system colors in forced-color mode"
+  ],
+  "synchronization": {
+    "moduleCopies": "identical",
+    "newEnglishStrings": 11,
+    "catalogCopies": "aligned",
+    "resolvedIssue": "A transient OneDrive write lock interrupted synchronization and caused one parity check to fail. Bounded write retries completed synchronization, and the final full unit suite passed."
+  },
+  "visualReview": {
+    "screenshotsReviewed": 6,
+    "result": "passed",
+    "checks": [
+      "Centered stacked and single-hand contact",
+      "Breastbone and ribs visible without organ illustrations obscuring placement",
+      "Phone close-up, keyboard focus, text spacing, and system colors"
+    ]
+  },
+  "guidanceSource": {
+    "publisher": "American Heart Association",
+    "title": "Pediatric Basic Life Support",
+    "url": "https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/pediatric-basic-life-support",
+    "checked": "2026-09-29",
+    "scope": "Child one-hand and two-hand illustrations; no prediction of force or clinical performance"
+  }
+}

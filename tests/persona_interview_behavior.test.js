@@ -177,9 +177,15 @@ describe('Persona interview state integrity', () => {
     // the durable persona metadata that a late edit must not erase.
     expect(harness.state.chatHistory).toHaveLength(3);
     expect(harness.generated.data[0].chatHistory).toBeUndefined();
-    expect(harness.generated.data[0].rapport).toBe(15);
-    expect(harness.generated.data[0].quests[0].isCompleted).toBe(true);
-    expect(harness.generated.data[0].accumulatedXP).toBe(60);
+    // 2026-09-27 (I1): rapport, quests and XP are this learner's progress. They live
+    // in the interview state (and the learner-scoped device snapshot), never on the
+    // shared resource the next learner opens.
+    expect(harness.state.selectedCharacter.rapport).toBe(15);
+    expect(harness.state.selectedCharacter.quests[0].isCompleted).toBe(true);
+    expect(harness.state.selectedCharacter.accumulatedXP).toBe(60);
+    expect(harness.generated.data[0].rapport).toBeUndefined();
+    expect(harness.generated.data[0].quests[0].isCompleted).toBe(false);
+    expect(harness.generated.data[0].accumulatedXP).toBeUndefined();
 
     resolveImage('data:image/png;base64,BBBB');
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -190,9 +196,10 @@ describe('Persona interview state integrity', () => {
     // resource still has no transcript to be clobbered, and the metadata stands
     expect(harness.state.chatHistory).toHaveLength(3);
     expect(saved.chatHistory).toBeUndefined();
-    expect(saved.rapport).toBe(15);
-    expect(saved.quests[0].isCompleted).toBe(true);
-    expect(saved.accumulatedXP).toBe(60);
+    expect(harness.state.selectedCharacter.rapport).toBe(15);
+    expect(saved.rapport).toBeUndefined();
+    expect(saved.quests[0].isCompleted).toBe(false);
+    expect(saved.accumulatedXP).toBeUndefined();
     expect(saved.avatarUrl).toBe('data:image/png;base64,BBBB');
     expect(harness.generated.title).toBe(resource.title);
     expect(harness.generated.meta).toBe(resource.meta);
@@ -205,7 +212,9 @@ describe('Persona interview state integrity', () => {
     let resolveReply;
     const pendingReply = new Promise((resolve) => { resolveReply = resolve; });
     const ada = { name: 'Ada', role: 'Mathematician', greeting: 'Hello', avatarUrl: 'data:image/png;base64,AAAA', rapport: 10, quests: [] };
-    const grace = { name: 'Grace', role: 'Computer scientist', greeting: 'Welcome', avatarUrl: 'data:image/png;base64,BBBB', rapport: 20, quests: [] };
+    // 2026-09-27 (I1): a fresh interview starts from the teacher's initialRapport; a
+    // stored `rapport` is an earlier learner's progress and is ignored on open.
+    const grace = { name: 'Grace', role: 'Computer scientist', greeting: 'Welcome', avatarUrl: 'data:image/png;base64,BBBB', initialRapport: 20, quests: [] };
     const resource = { id: 'persona-race', type: 'persona', data: [ada, grace] };
     const harness = createHarness({
       personaState: { mode: 'single', options: [ada, grace], selectedCharacter: ada, selectedCharacters: [], chatHistory: [{ role: 'model', text: 'Hello' }], avatarUrl: ada.avatarUrl, suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
@@ -376,13 +385,15 @@ describe('Persona interview state integrity', () => {
     harness.api.handleClosePersonaChat();
     const savedA = harness.generated.data.find((item) => item.name === 'A');
     const savedB = harness.generated.data.find((item) => item.name === 'B');
-    expect(savedA.rapport).toBe(50);
-    expect(savedB.rapport).toBe(10);
-    expect(savedA.accumulatedXP).toBe(90);
-    expect(savedB.accumulatedXP).toBe(50);
-    expect(savedA.panelHarmonyScore).toBe(30);
-    expect(savedA.panelPartner).toBe('B');
-    expect(savedB.panelPartner).toBe('A');
+    // 2026-09-27 (I1): panel progress stays with the learner; closing writes none of
+    // it onto the shared resource and clears any an older build left there.
+    expect(savedA.rapport).toBeUndefined();
+    expect(savedB.rapport).toBeUndefined();
+    expect(savedA.accumulatedXP).toBeUndefined();
+    expect(savedB.accumulatedXP).toBeUndefined();
+    expect(savedA.panelHarmonyScore).toBeUndefined();
+    expect(savedA.panelPartner).toBeUndefined();
+    expect(savedB.panelPartner).toBeUndefined();
     // Panel close persists both panelists' durable attributes; the transcript
     // stays in live state and is never written onto either persona (see the
     // deliberate strip in updateStoredPersona).

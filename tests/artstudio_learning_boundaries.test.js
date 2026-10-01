@@ -43,7 +43,7 @@ describe('Art Studio learning translation boundaries', () => {
     const html = renderTool('artStudio', { artStudio: { tab: 'watercolor', studioHome: false } }, { t });
     const host = document.createElement('div');
     host.innerHTML = html;
-    const css = host.querySelector('style').textContent;
+    const css = Array.from(host.querySelectorAll('style'), style => style.textContent).join('\n');
     expect(css).toContain('dialog[data-artstudio-inspector-shell]::backdrop{background:rgba(15,23,42,.58)}');
     expect(css).toContain('@media(max-width:639px)');
     expect(css).not.toContain('Translated learning text');

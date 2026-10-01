@@ -626,7 +626,7 @@ describe('Beehive reproducibility surfaces', () => {
     expect(html).toContain('data-beehive-copy-experiment="true"');
     expect(html).toContain('aria-valuemax="10"');
     expect(html).toContain('aria-valuenow="8"');
-    expect(html).toContain('Plan, observe, explain, and export the evidence chain.');
+    expect(html).toContain('Plan one change for Run B, compare it with Run A, then explain and export the evidence.');
     expect(SOURCE.match(/lines\.push\(bhBuildExperimentEvidenceRecord/g)).toHaveLength(2);
   });
   it('includes model, seed, cursor, migration day, scope, and replay requirements in exports', () => {

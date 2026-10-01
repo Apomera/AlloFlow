@@ -27,6 +27,8 @@ async function set(label, value) {
   const el = field(label), proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : el.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
   await act(async () => { Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value); el.dispatchEvent(new Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); }); await settle();
 }
+// Saves are wrapped for crash recovery: { __lumenProjectStore: 1, writeId, project }.
+function savedProject() { const stored = [...values.values()][0]; expect(stored.__lumenProjectStore).toBe(1); expect(typeof stored.writeId).toBe('string'); return stored.project; }
 beforeEach(() => { localStorage.clear(); values = new Map(); window.AlloSpeechPlayer = { speak: vi.fn(() => Promise.resolve()), stop: vi.fn() }; });
 afterEach(async () => { if (root) await act(async () => root.unmount()); root = null; if (host) host.remove(); });
 
@@ -91,12 +93,12 @@ describe('reading workspace interactions', () => {
     await mount(); await click('Listen–try–reread'); await click('Listen to model'); expect(window.AlloSpeechPlayer.speak).toHaveBeenCalledWith(passage,{ language: 'English' });
     await click('2. try'); expect(window.AlloSpeechPlayer.stop).toHaveBeenCalled(); expect(host.textContent).toContain('on your own or with a partner');
     await set('My practice reflection', 'I paused at the full stop.'); await click('Save practice');
-    expect([...values.values()][0].artifacts.find(a => a.type === 'practice').practiceStage).toBe('try');
+    expect(savedProject().artifacts.find(a => a.type === 'practice').practiceStage).toBe('try');
     await click('Listen to model'); const stop = window.AlloSpeechPlayer.stop; await act(async () => root.unmount()); root = null; expect(stop).toHaveBeenCalledTimes(2);
   });
   it('saves words and bookmarks locally and filters passages to revisit', async () => {
     await mount(); await click('Bookmark passage'); await click('My words'); await set('Word or phrase','shade'); await set('Meaning in this passage','Away from direct sun.'); await set('How is my understanding?', 'reread'); await click('Save word');
-    await set('Show saved entries','revisit'); expect(host.textContent).toContain('shade · Forest reading'); expect([...values.values()][0].artifacts).toHaveLength(2);
+    await set('Show saved entries','revisit'); expect(host.textContent).toContain('shade · Forest reading'); expect(savedProject().artifacts).toHaveLength(2);
   });
   it('keeps reading profiles separate and persists the last edit on immediate close', async () => {
     await mount(); await set('Gist','Only reader A'); await click('Save reflection'); await act(async () => root.unmount()); root = null; host.remove();

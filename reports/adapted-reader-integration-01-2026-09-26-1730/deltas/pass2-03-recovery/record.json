@@ -1,0 +1,35 @@
+{
+  "at": "2026-09-26T23:37:59.966Z",
+  "label": "pass2-03-recovery",
+  "patch": "8b63d9ddd2894ab53f5e7b8882a1ca99fd1f7dbea9278bc0629068ec5253c81f",
+  "plans": [
+    {
+      "target": "reader_place_store.js",
+      "targets": [
+        "reader_place_store.js"
+      ],
+      "before": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc",
+      "after": "f3f1b718ae496003fecf365f070e4ef98c4efcceb5e6b11761cea44e047a75ae",
+      "changed": true
+    },
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "653d66d3278c0c4680b658611558411263e80e7d2a52c6c6a3420e6af02b3f50",
+      "after": "73fa33bebdb6ad7e23533c08c6b4019a2a8bf5514e47d5e31085c59bd99c96f7",
+      "changed": true
+    },
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "f8f611a6894a9cf58e0ce976d871686521c3608a737751dfa7311112f52e381b",
+      "after": "da8dd3db7cd6d1bb7ef26b66bf4dbaf1402ac77768e8019009817127038a8d12",
+      "changed": true
+    }
+  ]
+}

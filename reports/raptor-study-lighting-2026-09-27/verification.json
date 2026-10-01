@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-27",
+  "scope": "Interactive soft, side, and rim Studio lighting, saved lighting comparisons, and compact inspection layouts",
+  "runs": [
+    { "suites": ["raptor-study-lighting.spec.ts"], "output": "initial-browser-results", "passed": 3, "failed": 1, "skipped": 0, "retries": 0, "duration": "2.0 minutes", "note": "The last scenario incorrectly used a visible-role query while Study mode was closed after restart. It now checks the DOM control count before reopening. Visual review also prompted aligned fields and a two-column wide-fullscreen correction." },
+    { "suites": ["raptor-study-lighting.spec.ts", "raptor-study-studio.spec.ts", "raptor-study-anatomy.spec.ts", "raptor-study-report.spec.ts"], "output": "final-browser-results", "passed": 13, "failed": 0, "skipped": 0, "retries": 0, "duration": "5.0 minutes" }
+  ],
+  "uniqueScenariosValidated": 13,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "visualInspection": "pass",
+    "lightingPixelDifferences": "pass",
+    "unchangedBirdGeometryMaterialsColorsAndPose": "pass",
+    "stableRendererResourcesAndDrawCalls": "pass",
+    "lightsFollowInspectionCamera": "pass",
+    "noIdleStudyRedraws": "pass",
+    "noHabitatLightingContamination": "pass",
+    "cameraAndSceneRestorationIncludingRenderFailure": "pass",
+    "lightingAwareMatchingAndComparisonContext": "pass",
+    "notebookExportAndSessionRestoration": "pass",
+    "legacyAndInvalidLightingSettings": "pass",
+    "keyboardSelection": "pass",
+    "shortPhoneScrollingAndBirdVisibility": "pass",
+    "wideFullscreenTwoColumnLayout": "pass",
+    "reducedMotionAndForcedColors": "pass",
+    "restartCleanup": "pass",
+    "scopedAxeViolations": 0
+  },
+  "resources": {
+    "extraLights": 0,
+    "extraMeshes": 0,
+    "extraMaterials": 0,
+    "extraTextures": 0,
+    "extraDrawCalls": 0,
+    "extraAnimationLoops": 0,
+    "peregrineHigh": { "drawCalls": 17, "geometries": 55, "textures": 13, "studioLights": 3, "sideChangedPixels": 53156, "rimChangedPixels": 55288 },
+    "greatHornedLow": { "drawCalls": 19, "geometries": 78, "textures": 13, "studioLights": 3, "sideChangedPixels": 79096, "rimChangedPixels": 83732 },
+    "runtime": "Updates the existing three Studio lights and repaints the frozen scene once per selection. Soft retains the original light profile."
+  },
+  "sourceFiles": [
+    { "path": "stem_lab/stem_tool_raptorhunt.js", "sha256": "434d8e57f62686c9928354a387072b387642cb654b245fd5d31ec9a41596dbeb" },
+    { "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js", "sha256": "434d8e57f62686c9928354a387072b387642cb654b245fd5d31ec9a41596dbeb" }
+  ],
+  "newTranslationKeys": 9,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "limitations": "Local Chromium/WebGL verification, not a physical-device performance benchmark. Existing one-capture-per-frozen-instant and two-moment limits remain in place.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-26",
+  "scope": "Matched 3D camera settings and self-contained visual observation reports",
+  "source": "stem_lab/stem_tool_raptorhunt.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+  "sha256": "81ec26f74020e63d9b4068705f2de2e1f3ba983fb0c519410b2a8402c85dfd03",
+  "mirrorByteIdentical": true,
+  "syntaxChecks": { "canonical": "passed", "desktop": "passed" },
+  "whitespaceCheck": "passed",
+  "initialBrowserRun": { "passed": 3, "failed": 0, "retries": 0, "reportedDuration": "1.1m" },
+  "finalBrowserRun": {
+    "command": "npx playwright test tests/e2e/raptor-study-report.spec.ts tests/e2e/raptor-study-mode.spec.ts tests/e2e/raptor-study-observations.spec.ts --project=chromium --workers=1 --retries=0 --reporter=list --output=reports/raptor-3d-view-report-2026-09-26/final-browser-results",
+    "passed": 9,
+    "failed": 0,
+    "retries": 0,
+    "exitCode": 0,
+    "reportedDuration": "7.8m"
+  },
+  "accessibility": { "scope": "Study controls, kept observations, standalone report", "axeViolations": 0, "tags": ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"] },
+  "offlineReport": { "file": "flight-observations.html", "bytes": 24107, "embeddedImages": 2, "decodedDimensions": [480, 320], "testedOffline": true, "desktopPhoneAndPrintCssReviewed": true },
+  "translationKeysAdded": 16,
+  "languagePackIntegration": "pending",
+  "broaderUnitSuite": "Not rerun; pre-existing baseline failures are documented in the earlier Raptor engagement report.",
+  "deployment": "Local workspace changes only; no commit, push, or deployment performed."
+}

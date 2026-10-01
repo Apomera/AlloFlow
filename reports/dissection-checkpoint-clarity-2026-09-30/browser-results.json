@@ -1,0 +1,546 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-checkpoint-clarity-2026-09-30/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-checkpoint-clarity.spec.ts",
+      "file": "dissection-checkpoint-clarity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "checkpoint phone keeps readable answers and original names",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:30:38.246Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-b2b33f434cab072114ac",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 67,
+          "column": 7
+        },
+        {
+          "title": "checkpoint tablet keeps readable answers and original names",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12885,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:31:05.680Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-7d6d331b605a1b69acf9",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 67,
+          "column": 7
+        },
+        {
+          "title": "checkpoint embedded-large keeps readable answers and original names",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13903,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:31:18.581Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-1cfa57bf978faf4e6482",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 67,
+          "column": 7
+        },
+        {
+          "title": "checkpoint desktop keeps readable answers and original names",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31271,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:31:32.522Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-67785cd3aeabfa70a32e",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 67,
+          "column": 7
+        },
+        {
+          "title": "checkpoint forced-colors keeps readable answers and original names",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30439,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:32:03.811Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-300993f9b5957d2bcce9",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 67,
+          "column": 7
+        },
+        {
+          "title": "reflection is readable and verifies only the explicit explanation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16317,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 15\u001b[39m\n\n\u001b[33m@@ -19,11 +19,25 @@\u001b[39m\n\u001b[2m      \"incisionStarted\": false,\u001b[22m\n\u001b[2m      \"inspected\": true,\u001b[22m\n\u001b[2m      \"pins\": Array [],\u001b[22m\n\u001b[2m      \"probed\": false,\u001b[22m\n\u001b[2m      \"retracted\": false,\u001b[22m\n\u001b[32m-     \"tissue\": undefined,\u001b[39m\n\u001b[31m+     \"tissue\": Object {\u001b[39m\n\u001b[31m+       \"clarity\": 80,\u001b[39m\n\u001b[31m+       \"consequences\": Array [],\u001b[39m\n\u001b[31m+       \"exposure\": 8,\u001b[39m\n\u001b[31m+       \"lastAction\": \"prepared\",\u001b[39m\n\u001b[31m+       \"lastUpdatedAt\": 1790811159083,\u001b[39m\n\u001b[31m+       \"moisture\": 68,\u001b[39m\n\u001b[31m+       \"risk\": 12,\u001b[39m\n\u001b[31m+       \"salineDrops\": 0,\u001b[39m\n\u001b[31m+       \"stability\": 18,\u001b[39m\n\u001b[31m+       \"tension\": 54,\u001b[39m\n\u001b[31m+       \"trauma\": 0,\u001b[39m\n\u001b[31m+       \"variantId\": \"firm\",\u001b[39m\n\u001b[31m+       \"variantLabel\": \"Firm preservation\",\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"score\": 1,\u001b[22m\n\u001b[2m    \"total\": 2,\u001b[22m\n\u001b[2m    \"verified\": Object {\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 15\u001b[39m\n\n\u001b[33m@@ -19,11 +19,25 @@\u001b[39m\n\u001b[2m      \"incisionStarted\": false,\u001b[22m\n\u001b[2m      \"inspected\": true,\u001b[22m\n\u001b[2m      \"pins\": Array [],\u001b[22m\n\u001b[2m      \"probed\": false,\u001b[22m\n\u001b[2m      \"retracted\": false,\u001b[22m\n\u001b[32m-     \"tissue\": undefined,\u001b[39m\n\u001b[31m+     \"tissue\": Object {\u001b[39m\n\u001b[31m+       \"clarity\": 80,\u001b[39m\n\u001b[31m+       \"consequences\": Array [],\u001b[39m\n\u001b[31m+       \"exposure\": 8,\u001b[39m\n\u001b[31m+       \"lastAction\": \"prepared\",\u001b[39m\n\u001b[31m+       \"lastUpdatedAt\": 1790811159083,\u001b[39m\n\u001b[31m+       \"moisture\": 68,\u001b[39m\n\u001b[31m+       \"risk\": 12,\u001b[39m\n\u001b[31m+       \"salineDrops\": 0,\u001b[39m\n\u001b[31m+       \"stability\": 18,\u001b[39m\n\u001b[31m+       \"tension\": 54,\u001b[39m\n\u001b[31m+       \"trauma\": 0,\u001b[39m\n\u001b[31m+       \"variantId\": \"firm\",\u001b[39m\n\u001b[31m+       \"variantLabel\": \"Firm preservation\",\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"score\": 1,\u001b[22m\n\u001b[2m    \"total\": 2,\u001b[22m\n\u001b[2m    \"verified\": Object {\u001b[22m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts:106:47",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts",
+                      "column": 47,
+                      "line": 106
+                    },
+                    "snippet": "  104 |   expect(after.checks.inspect.reflectionCorrect).toBe(true);\n  105 |   expect(after.checks.inspect.reflectionAttempts).toBe(1);\n> 106 |   expect({ ...after, checks: before.checks }).toEqual(before);\n      |                                               ^\n  107 | });\n  108 |\n  109 | test('keyboard browsing, coaching and explicit confirmation preserve specimen progress', async ({ page }) => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts",
+                        "column": 47,
+                        "line": 106
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 15\u001b[39m\n\n\u001b[33m@@ -19,11 +19,25 @@\u001b[39m\n\u001b[2m      \"incisionStarted\": false,\u001b[22m\n\u001b[2m      \"inspected\": true,\u001b[22m\n\u001b[2m      \"pins\": Array [],\u001b[22m\n\u001b[2m      \"probed\": false,\u001b[22m\n\u001b[2m      \"retracted\": false,\u001b[22m\n\u001b[32m-     \"tissue\": undefined,\u001b[39m\n\u001b[31m+     \"tissue\": Object {\u001b[39m\n\u001b[31m+       \"clarity\": 80,\u001b[39m\n\u001b[31m+       \"consequences\": Array [],\u001b[39m\n\u001b[31m+       \"exposure\": 8,\u001b[39m\n\u001b[31m+       \"lastAction\": \"prepared\",\u001b[39m\n\u001b[31m+       \"lastUpdatedAt\": 1790811159083,\u001b[39m\n\u001b[31m+       \"moisture\": 68,\u001b[39m\n\u001b[31m+       \"risk\": 12,\u001b[39m\n\u001b[31m+       \"salineDrops\": 0,\u001b[39m\n\u001b[31m+       \"stability\": 18,\u001b[39m\n\u001b[31m+       \"tension\": 54,\u001b[39m\n\u001b[31m+       \"trauma\": 0,\u001b[39m\n\u001b[31m+       \"variantId\": \"firm\",\u001b[39m\n\u001b[31m+       \"variantLabel\": \"Firm preservation\",\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"score\": 1,\u001b[22m\n\u001b[2m    \"total\": 2,\u001b[22m\n\u001b[2m    \"verified\": Object {\u001b[22m\n\n  104 |   expect(after.checks.inspect.reflectionCorrect).toBe(true);\n  105 |   expect(after.checks.inspect.reflectionAttempts).toBe(1);\n> 106 |   expect({ ...after, checks: before.checks }).toEqual(before);\n      |                                               ^\n  107 | });\n  108 |\n  109 | test('keyboard browsing, coaching and explicit confirmation preserve specimen progress', async ({ page }) => {\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts:106:47"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:32:34.268Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-e09db-ly-the-explicit-explanation-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-e09db-ly-the-explicit-explanation-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-e09db-ly-the-explicit-explanation-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-e09db-ly-the-explicit-explanation-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-e09db-ly-the-explicit-explanation-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts",
+                    "column": 47,
+                    "line": 106
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-70f816196e5ee1e440aa",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 90,
+          "column": 5
+        },
+        {
+          "title": "keyboard browsing, coaching and explicit confirmation preserve specimen progress",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 26952,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 15\u001b[39m\n\n\u001b[33m@@ -14,11 +14,25 @@\u001b[39m\n\u001b[2m      \"incisionStarted\": false,\u001b[22m\n\u001b[2m      \"inspected\": false,\u001b[22m\n\u001b[2m      \"pins\": Array [],\u001b[22m\n\u001b[2m      \"probed\": false,\u001b[22m\n\u001b[2m      \"retracted\": false,\u001b[22m\n\u001b[32m-     \"tissue\": undefined,\u001b[39m\n\u001b[31m+     \"tissue\": Object {\u001b[39m\n\u001b[31m+       \"clarity\": 80,\u001b[39m\n\u001b[31m+       \"consequences\": Array [],\u001b[39m\n\u001b[31m+       \"exposure\": 8,\u001b[39m\n\u001b[31m+       \"lastAction\": \"prepared\",\u001b[39m\n\u001b[31m+       \"lastUpdatedAt\": 1790811208120,\u001b[39m\n\u001b[31m+       \"moisture\": 68,\u001b[39m\n\u001b[31m+       \"risk\": 12,\u001b[39m\n\u001b[31m+       \"salineDrops\": 0,\u001b[39m\n\u001b[31m+       \"stability\": 18,\u001b[39m\n\u001b[31m+       \"tension\": 54,\u001b[39m\n\u001b[31m+       \"trauma\": 0,\u001b[39m\n\u001b[31m+       \"variantId\": \"firm\",\u001b[39m\n\u001b[31m+       \"variantLabel\": \"Firm preservation\",\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"score\": 1,\u001b[22m\n\u001b[2m    \"total\": 2,\u001b[22m\n\u001b[2m    \"verified\": Object {\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 15\u001b[39m\n\n\u001b[33m@@ -14,11 +14,25 @@\u001b[39m\n\u001b[2m      \"incisionStarted\": false,\u001b[22m\n\u001b[2m      \"inspected\": false,\u001b[22m\n\u001b[2m      \"pins\": Array [],\u001b[22m\n\u001b[2m      \"probed\": false,\u001b[22m\n\u001b[2m      \"retracted\": false,\u001b[22m\n\u001b[32m-     \"tissue\": undefined,\u001b[39m\n\u001b[31m+     \"tissue\": Object {\u001b[39m\n\u001b[31m+       \"clarity\": 80,\u001b[39m\n\u001b[31m+       \"consequences\": Array [],\u001b[39m\n\u001b[31m+       \"exposure\": 8,\u001b[39m\n\u001b[31m+       \"lastAction\": \"prepared\",\u001b[39m\n\u001b[31m+       \"lastUpdatedAt\": 1790811208120,\u001b[39m\n\u001b[31m+       \"moisture\": 68,\u001b[39m\n\u001b[31m+       \"risk\": 12,\u001b[39m\n\u001b[31m+       \"salineDrops\": 0,\u001b[39m\n\u001b[31m+       \"stability\": 18,\u001b[39m\n\u001b[31m+       \"tension\": 54,\u001b[39m\n\u001b[31m+       \"trauma\": 0,\u001b[39m\n\u001b[31m+       \"variantId\": \"firm\",\u001b[39m\n\u001b[31m+       \"variantLabel\": \"Firm preservation\",\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"score\": 1,\u001b[22m\n\u001b[2m    \"total\": 2,\u001b[22m\n\u001b[2m    \"verified\": Object {\u001b[22m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts:134:49",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts",
+                      "column": 49,
+                      "line": 134
+                    },
+                    "snippet": "  132 |   expect(coached.checks.inspect.predictionCorrect).toBe(false);\n  133 |   expect(coached.checks.inspect.predictionAttempts).toBe(1);\n> 134 |   expect({ ...coached, checks: before.checks }).toEqual(before);\n      |                                                 ^\n  135 |   await choices.first().focus(); await page.keyboard.press('Enter');\n  136 |   await expect(panel).toHaveAttribute('data-phase', 'perform');\n  137 |   await expect(page.locator('#diss-canvas')).toBeFocused();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts",
+                        "column": 49,
+                        "line": 134
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 15\u001b[39m\n\n\u001b[33m@@ -14,11 +14,25 @@\u001b[39m\n\u001b[2m      \"incisionStarted\": false,\u001b[22m\n\u001b[2m      \"inspected\": false,\u001b[22m\n\u001b[2m      \"pins\": Array [],\u001b[22m\n\u001b[2m      \"probed\": false,\u001b[22m\n\u001b[2m      \"retracted\": false,\u001b[22m\n\u001b[32m-     \"tissue\": undefined,\u001b[39m\n\u001b[31m+     \"tissue\": Object {\u001b[39m\n\u001b[31m+       \"clarity\": 80,\u001b[39m\n\u001b[31m+       \"consequences\": Array [],\u001b[39m\n\u001b[31m+       \"exposure\": 8,\u001b[39m\n\u001b[31m+       \"lastAction\": \"prepared\",\u001b[39m\n\u001b[31m+       \"lastUpdatedAt\": 1790811208120,\u001b[39m\n\u001b[31m+       \"moisture\": 68,\u001b[39m\n\u001b[31m+       \"risk\": 12,\u001b[39m\n\u001b[31m+       \"salineDrops\": 0,\u001b[39m\n\u001b[31m+       \"stability\": 18,\u001b[39m\n\u001b[31m+       \"tension\": 54,\u001b[39m\n\u001b[31m+       \"trauma\": 0,\u001b[39m\n\u001b[31m+       \"variantId\": \"firm\",\u001b[39m\n\u001b[31m+       \"variantLabel\": \"Firm preservation\",\u001b[39m\n\u001b[31m+     },\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"score\": 1,\u001b[22m\n\u001b[2m    \"total\": 2,\u001b[22m\n\u001b[2m    \"verified\": Object {\u001b[22m\n\n  132 |   expect(coached.checks.inspect.predictionCorrect).toBe(false);\n  133 |   expect(coached.checks.inspect.predictionAttempts).toBe(1);\n> 134 |   expect({ ...coached, checks: before.checks }).toEqual(before);\n      |                                                 ^\n  135 |   await choices.first().focus(); await page.keyboard.press('Enter');\n  136 |   await expect(panel).toHaveAttribute('data-phase', 'perform');\n  137 |   await expect(page.locator('#diss-canvas')).toBeFocused();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts:134:49"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:33:25.362Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-24537--preserve-specimen-progress-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-24537--preserve-specimen-progress-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-24537--preserve-specimen-progress-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-24537--preserve-specimen-progress-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-clarity-2026-09-30\\browser-artifacts\\dissection-checkpoint-clar-24537--preserve-specimen-progress-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-checkpoint-clarity.spec.ts",
+                    "column": 49,
+                    "line": 134
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-7b7c480f26f404bfeeca",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 109,
+          "column": 5
+        },
+        {
+          "title": "confirmed plan shortcuts focus the required instrument and specimen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11647,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:34:29.359Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-389875ef8b5ccd79bfa1",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 144,
+          "column": 5
+        },
+        {
+          "title": "guided observation browsing and coaching require explicit evidence confirmation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4862,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:34:42.236Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-43f8b7ea70f2d6b53f9e",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 160,
+          "column": 5
+        },
+        {
+          "title": "quiz keeps planning checkpoints hidden",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2764,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:34:47.113Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-b40b521fd50f4cd97b1d",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 183,
+          "column": 7
+        },
+        {
+          "title": "practical keeps planning checkpoints hidden",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2668,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T23:34:49.890Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9353bdda61e73d4a41c3-a5b8f654a66ad2a1a5c0",
+          "file": "dissection-checkpoint-clarity.spec.ts",
+          "line": 183,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T23:30:33.932Z",
+    "duration": 293006.385,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

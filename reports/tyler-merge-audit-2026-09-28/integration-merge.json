@@ -1,0 +1,859 @@
+{
+  "recordedAt": "2026-09-29T02:50:21.304Z",
+  "base": "efed3b8d6fee9d7d72a4fbe8919bb0835d2ead16",
+  "target": "C:/tmp/tyler_integration_candidate",
+  "review": "C:/tmp/tyler_onboarding_review",
+  "results": [
+    {
+      "path": ".impeccable/critique/2026-09-25T14-17-40Z__alloflowanti-txt.md",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "81489a036cdb8ccf31674b1e6241d5f112bd7c7f10051b0ca5fdbd18db67fd99",
+      "conflicts": []
+    },
+    {
+      "path": ".impeccable/critique/2026-09-25T22-27-52Z__alloflowanti-txt.md",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "ad25205f0d4672fa7d996bdb0eeda1ff9e5b5d3cd4714c0a15fa4c73992f835e",
+      "conflicts": []
+    },
+    {
+      "path": ".impeccable/critique/2026-09-26T02-46-33Z__alloflowanti-txt.md",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "4b7164dddf8f7c765815adddf55e251ddace5805adf8f24906aa14ea09786b5d",
+      "conflicts": []
+    },
+    {
+      "path": ".impeccable/shape/launch-pad-role-first-2026-09-25.md",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "9c0953160f153cf58aff34a920b6f413b92cea9c05fd5f601b14a0f0da92ab4a",
+      "conflicts": []
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "mode": "three-way",
+      "before": "82f0f2d70e59b2434260ad835cde7541058135b56aecc224bde984dc01450e79",
+      "after": "70c6683301c2de4d17d9d80a903313bdeb813d7254415d8711daa7d16b51baae",
+      "conflicts": [
+        {
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "_build_classroom_import.js",
+      "mode": "patch",
+      "before": "b893efd6c02e4fec80b0680ad60bb180ab9f4a6b51452b0ca0c1da3484466f6d",
+      "after": "b3b11a1fb9c288b3c85c5173a4504908818e49dbb4af0af122dffba3f18c4c25",
+      "conflicts": []
+    },
+    {
+      "path": "classroom-import.html",
+      "mode": "patch",
+      "before": "644fe279ba9aaf49565f17516a7b152f9079ac69b94273e67f41031cb627746d",
+      "after": "58d983a1e9e72eafb290c9a0a0314e18249930b9990351e2c0d658be4e11fdc0",
+      "conflicts": []
+    },
+    {
+      "path": "classroom_import_app.js",
+      "mode": "patch",
+      "before": "2efe94f5258dd73ff9a0f0c9f3099b54a86c332ea734f7a6c8e5716d8d8786fa",
+      "after": "44ca678336f570a44aaf35ebb0a6f6ae489e8cc82a5d940c218cc0243ae10dde",
+      "conflicts": []
+    },
+    {
+      "path": "classroom_import_service.js",
+      "mode": "patch",
+      "before": "c8ecef20fd939db8bac57751ac9df8390e645dd55dcd1883c082acf0e2548e1d",
+      "after": "7e6b6270c771d18c0f5865cf65b571a4795baa8031e0982c4dc2e43e26f3ebaf",
+      "conflicts": []
+    },
+    {
+      "path": "dev-tools/i18n_stale_after_onboarding_clarify_2026-09-25.md",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "ed8f37eadc34ccc77c715cec59cdc25ae8ad1e49a1286849bfab659356bc667c",
+      "conflicts": []
+    },
+    {
+      "path": "docs/CREW_LAUNCH_TEACHER_GUIDE.md",
+      "mode": "patch",
+      "before": "5c6e006fd3cdc44f9e0dccbcf0c72a1313e82fad1be9761059aed2a6ba17f927",
+      "after": "ad6442088ed1362746b375db99ac02a8875760d17af884263d97e9d456cd83a1",
+      "conflicts": []
+    },
+    {
+      "path": "docs/google_classroom_import.md",
+      "mode": "patch",
+      "before": "6aa053471f2c8a26b1150b82bc23b084c8330aedf3851d9024356c00782fd1e2",
+      "after": "8a49343e24f398f2f60f191011bb1230a8a6b8a504b3bd8c4d29a43415cc12ea",
+      "conflicts": []
+    },
+    {
+      "path": "docs/google_classroom_oauth_verification.md",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "e7441f4fbecbb45fd8318fed3442e076efeb73a7827f30de6c81dd5f4ff70c2b",
+      "conflicts": []
+    },
+    {
+      "path": "docs/google_workspace_connections.md",
+      "mode": "patch",
+      "before": "40639c53787f1ab048a7a6e142c2ebb650cb4f24b3d9d3c87f668839f1961a02",
+      "after": "ba7f52cac17b7af0cb36ff7419541428f1613dd4be08ff76f3503380e537600a",
+      "conflicts": []
+    },
+    {
+      "path": "help_strings.js",
+      "mode": "patch",
+      "before": "42c57a3c95de72740a4f1fe3b87860b16fdf269c13530ced944f4ef2a51ec9eb",
+      "after": "56f6d247fdf3948a2afea520b01295a0b2225a4c007c0a4f41bc5f572404197b",
+      "conflicts": []
+    },
+    {
+      "path": "lang/acholi.js",
+      "mode": "patch",
+      "before": "942ef8df7c37c5a7a588477a06c808acb22f9d4292ee3ca2a9151ebc4b196c7d",
+      "after": "6d03ae8a19fbbdd6a66beab000a3b25015ed2912e35a453d35a57314eac391ab",
+      "conflicts": []
+    },
+    {
+      "path": "lang/amharic.js",
+      "mode": "patch",
+      "before": "c789a103b10bfe44f7ac930cafa26dae3afc06f926b6459257eca43d342626e7",
+      "after": "4d5f45f14f84e3cba2194ce9faa39110a47376bbf80a10a7a45c05b98b6e5208",
+      "conflicts": []
+    },
+    {
+      "path": "lang/arabic.js",
+      "mode": "patch",
+      "before": "3ed86aaa2d7b289419f172032693b540656891e9ea120eb2198193fb61e57224",
+      "after": "1283ff5ac20ae6ac0d97a6e870767232ffbe56035bf116c4a048e089dcb9b1c8",
+      "conflicts": []
+    },
+    {
+      "path": "lang/bengali.js",
+      "mode": "patch",
+      "before": "8e5599f9a7cbb9e15c225708a58625aa1a3e02a09666cb576a2c6c90670c49a6",
+      "after": "58d0293b782a89785a7d408e6ebeec4ee32886d42f2ffa7d8cabb345c1728117",
+      "conflicts": []
+    },
+    {
+      "path": "lang/burmese.js",
+      "mode": "patch",
+      "before": "460f18c09cb7d8228a9b8883c5535bcc0e53b180a90d7dd70bae5fb42ab59547",
+      "after": "706e7923b23bcb9560eccf15c77b96c0e19d7f44bd4ac6f50ff6b6a799f7c1dc",
+      "conflicts": []
+    },
+    {
+      "path": "lang/chin_falam.js",
+      "mode": "patch",
+      "before": "f9d87d7b07431d0f991fe546b1041ea2b663172f1a0e64d1fb1f6d78f3db292b",
+      "after": "c52623bb806a3ef3f87a5db5e6088629dff6ad207460a51d88f105b31ba2c7cf",
+      "conflicts": []
+    },
+    {
+      "path": "lang/chin_hakha.js",
+      "mode": "patch",
+      "before": "1f62daf3ea6c40b5a6b5f7d811f127d49923283f6726cd95aa77c276a650e6cd",
+      "after": "5643c4fade62e8d7ec46840e029b282562aebc1009523b36c2a19b09e4c9a2cf",
+      "conflicts": []
+    },
+    {
+      "path": "lang/chinese_simplified.js",
+      "mode": "patch",
+      "before": "bad9cd88b565df3036a73ea6e773abdbc5ac101e45e52742ac6503e2848a0063",
+      "after": "726d477c16a0fe96973d46d3900b355df4d169a9b87769af8f8dd6890578abae",
+      "conflicts": []
+    },
+    {
+      "path": "lang/chinese_traditional.js",
+      "mode": "patch",
+      "before": "1c1965da185be843a4d49c0e80185779e541e71976a4a5c523699f306f4ed41c",
+      "after": "3fc92d1e8d5eeb41c9b605e8b10426e2a152953910c42fe4668d04464820e7bb",
+      "conflicts": []
+    },
+    {
+      "path": "lang/dari.js",
+      "mode": "patch",
+      "before": "68c27f87b49c9e37190467ab918f015cced198146c4cbae4f0db4b62adca6a60",
+      "after": "7d6d7d885a542bb761b61d2d6e51aa51001daf17cbba9e00d29dc7002e8e47f6",
+      "conflicts": []
+    },
+    {
+      "path": "lang/dutch.js",
+      "mode": "patch",
+      "before": "fc8f805e829724c23fc1416614a0f18b7c48155890501f61530e8f476538b10e",
+      "after": "86eb8d64eeb9439a58cc226c550f3d8731b59280e241f826a4e26203e0bf9fe4",
+      "conflicts": []
+    },
+    {
+      "path": "lang/esperanto.js",
+      "mode": "patch",
+      "before": "64c1e52fdb75a13610e2daba6a1e42cd5eb7849de09e6352789acf4676ee9bcc",
+      "after": "57648c1ee3f77b26d9e50625ce1691b4a3e76a7f94b6bec4ab259739b1b6243e",
+      "conflicts": []
+    },
+    {
+      "path": "lang/farsi.js",
+      "mode": "patch",
+      "before": "8ae07bfa1d7b275ca5e077d0987d044507912a98be21ad34957391e36ff68c72",
+      "after": "acb78187727feaaf20a361c52dafee3d16569e1eac0c2aa390e72655453ca761",
+      "conflicts": []
+    },
+    {
+      "path": "lang/french.js",
+      "mode": "patch",
+      "before": "dd43027deb883091b99efbc86cbd0b0eae49ae80519920608e6c7d4affb4c588",
+      "after": "b0c3bf659f2fd8e1d23914b12f09bfd4648d5b48fff22bbd4622d5e34fb064c2",
+      "conflicts": []
+    },
+    {
+      "path": "lang/french_canadian.js",
+      "mode": "patch",
+      "before": "141a3cb4f3dfc85bf6da4f2e42bafab8a516db67506b224fe7bd6b2af655a9a3",
+      "after": "5735b6b158d9908c1e7491ce6c97301e64a758d562f11651af0ddee2c1094ff0",
+      "conflicts": []
+    },
+    {
+      "path": "lang/german.js",
+      "mode": "patch",
+      "before": "d9578913d0242c70e1011f44fee2a963b0be61c092713d976c2cbf194171a9d1",
+      "after": "b246638a40163f84689870261ff42b9e610096de448ea8d444a961b561cc18fb",
+      "conflicts": []
+    },
+    {
+      "path": "lang/greek.js",
+      "mode": "patch",
+      "before": "b01c47faadc5774214bb7a26c5c3946c18b61b79cb9b360a48a176c1f6988586",
+      "after": "903d749e36793e669e1932fbe87b32b447a587bae0024bf835ca611df3466a61",
+      "conflicts": []
+    },
+    {
+      "path": "lang/gujarati.js",
+      "mode": "patch",
+      "before": "8f20bcd2fbad74755492dc2860a8865396396f152911101a0cb38e5658e5345d",
+      "after": "2f32545a764231d943773f7c94134a35bd2c30a4cc56be83438d7fbc1cf47ca4",
+      "conflicts": []
+    },
+    {
+      "path": "lang/haitian_creole.js",
+      "mode": "patch",
+      "before": "d3d770be00d7d103340f18add1fb51b9e95da6542e82f10178bd93391bac67e8",
+      "after": "9b767d3908a70e7b7d3c06956d161c3f2514583f7ed546994badc5feae9d9a26",
+      "conflicts": []
+    },
+    {
+      "path": "lang/hausa.js",
+      "mode": "patch",
+      "before": "2ebc45153f8f1ea9eef1238e1baa1aba8955d3602a20156eafdc14976b776361",
+      "after": "63dfef56ff56068c29a9795173407a6c98a9d40783657f135cd00c38f2a2a610",
+      "conflicts": []
+    },
+    {
+      "path": "lang/hebrew.js",
+      "mode": "patch",
+      "before": "66a1af3b33b237768c97db1e3d7b71cfd6a3e8aa42709f52a4d24ecd86aaaf2a",
+      "after": "d7e0db9a64ef3055617c20342bbfb354c10f1568cfda29122ea93faefafd28fa",
+      "conflicts": []
+    },
+    {
+      "path": "lang/hindi.js",
+      "mode": "patch",
+      "before": "f5ddf265f83f9f12bb422808253af21b51e9c9ad7b0212b94e83bcc8f6783dec",
+      "after": "88607b1eee7a4c8050c36843adfc346a38605503693c9b1713b069da4b141bce",
+      "conflicts": []
+    },
+    {
+      "path": "lang/hmong.js",
+      "mode": "patch",
+      "before": "005f3845189aa40b3f0f58eed17046f37196edfb106304bc599210e26a031f7b",
+      "after": "4724bec9fb2d86cae4e41e12aae1fa43e776efbd44d6e87ef441f2c6dc6bea19",
+      "conflicts": []
+    },
+    {
+      "path": "lang/igbo.js",
+      "mode": "patch",
+      "before": "0830fcc14b672e34f699af91b9551c9a838bafe376225b0d1886ca8f31204088",
+      "after": "04c64034a057263240fd5938bdbcae4012a02cfb77da7b243732aece1594523b",
+      "conflicts": []
+    },
+    {
+      "path": "lang/indonesian.js",
+      "mode": "patch",
+      "before": "f453f875735d1d7e03a2e3e0b0d416e990c4d4864c6277f929a34135a1072d0d",
+      "after": "9ddd0e8f60675bbc85d02f9794156a33de6e4827c129ce492399644f2a00fa6f",
+      "conflicts": []
+    },
+    {
+      "path": "lang/italian.js",
+      "mode": "patch",
+      "before": "28fa044c0872d9a4fe147fa667cf954b34fc81c37ef0f83d0323ac2f1538eb31",
+      "after": "f52e704d9b5684e4ed17a76d370c9915329cef39f93870bbba58d8c97e8698cd",
+      "conflicts": []
+    },
+    {
+      "path": "lang/japanese.js",
+      "mode": "patch",
+      "before": "a12723039b07459bdc307f8f928a014800f664d8cd6d4c6df793315edca8d23d",
+      "after": "a01c9051cf9a13fe9de510339d36f4283eec5837970cc894b69ebc31576e6da3",
+      "conflicts": []
+    },
+    {
+      "path": "lang/kannada.js",
+      "mode": "patch",
+      "before": "1ac985c4c6657d578729873f82e13e9bde9269a4c27c9f372cbbae975cb52fd1",
+      "after": "ae8d126e49bad866eb1c1844e474e4c95731680f31765ee5a3f222331bc4ae1b",
+      "conflicts": []
+    },
+    {
+      "path": "lang/karen.js",
+      "mode": "patch",
+      "before": "df783a6293573d8eed641acc73084bb07f722bc1dfc025ab36ffd66c5b8967cc",
+      "after": "2b4ba70be9ca9d0925fd2a1c49ecafa9dde768599476c371a6be760c183c777e",
+      "conflicts": []
+    },
+    {
+      "path": "lang/khmer.js",
+      "mode": "patch",
+      "before": "8ccf1eec678e5601c18024eda213068e93d9288a55ba0878d625d2439e8a82e4",
+      "after": "d9a071f92d8232e50f76cb19142f9882a107e4a97931135978530a4dee12e3d6",
+      "conflicts": []
+    },
+    {
+      "path": "lang/kinyarwanda.js",
+      "mode": "patch",
+      "before": "d47612258248ffd46770f6d200e33d82d2d12579afc3290674604e4800416a2e",
+      "after": "e193725055690b7a4b4fde4f89af187cbf97e5f046d42ab5dd1e9d88afcce4d2",
+      "conflicts": []
+    },
+    {
+      "path": "lang/kirundi.js",
+      "mode": "patch",
+      "before": "26737a17e77780e8c10f3f573dc82a5257950a8f12d2fc3422f4d6d8752dac9a",
+      "after": "9dd40127b920ad90bc549cc4aaff4227ed83fce9a5960d6bba1eebad9d20d6d2",
+      "conflicts": []
+    },
+    {
+      "path": "lang/korean.js",
+      "mode": "patch",
+      "before": "f3419d59bd99e550698e60ac12b2b73abd84a7af7b648a2bc27550f03c695cc3",
+      "after": "8931e8c1fc99ba5514f694c0c7af2575912e8541d13f21b300b7387a99023cca",
+      "conflicts": []
+    },
+    {
+      "path": "lang/lao.js",
+      "mode": "patch",
+      "before": "ba8ab9017ba7e6bf83be2be784573b807515b6650223fd8c80ef837e44d856ae",
+      "after": "1a4e256cb6a3f2dd81155daeac0dc93c13e9d2543a7ebeec34c7beb636c0ca50",
+      "conflicts": []
+    },
+    {
+      "path": "lang/latin.js",
+      "mode": "patch",
+      "before": "42237c4a3f91dd25f7f28d3146e73d2d78595487b95de96c8204c8add8a4b924",
+      "after": "f28ef929c53be81ca7da652f8c6f1395b79f548183bee46a6d013bfda0dee86b",
+      "conflicts": []
+    },
+    {
+      "path": "lang/lingala.js",
+      "mode": "patch",
+      "before": "904fcdae3727db57dd4d0ceb928c478251144a9ca6f23d0e626093d5cd54bee3",
+      "after": "465e6d2ca8dbacc003a0e9daf3a8a9c758063cbc84b544509ba95ad91ba6448d",
+      "conflicts": []
+    },
+    {
+      "path": "lang/maay_maay.js",
+      "mode": "patch",
+      "before": "78dec55c2fa28c77d669a5184ca0814e40b2d3bac2dfa53cadf15f917a016c80",
+      "after": "d1f3b0f93ca2e37ebea6b3b61d549e3873f556e27b07a6ba0b0f7629d045a23c",
+      "conflicts": []
+    },
+    {
+      "path": "lang/malayalam.js",
+      "mode": "patch",
+      "before": "000f1567e8808a1a3d819e2f0e92e58c8bec6af26813d81e299eb00cc1912e90",
+      "after": "b6465ee7c9aee7b5cf6e731370a07b46be11a2724d7ce43ff370f45bd7c8d56e",
+      "conflicts": []
+    },
+    {
+      "path": "lang/marathi.js",
+      "mode": "patch",
+      "before": "03131ec1fbf0fcf20c65b7d1ad3d2b0ddcea5ffdb9f445e22f96645859747a9d",
+      "after": "c4cbb841e4b2b5c2bf0b2ec879ec5d5089c425154be955319ffa0cbfb428e76f",
+      "conflicts": []
+    },
+    {
+      "path": "lang/marshallese.js",
+      "mode": "patch",
+      "before": "0e9bd94b638b2581edbedc31f8e1c795aaffa4e23d0ca9274be00d496fb14141",
+      "after": "165a0162a85abb81915810bf2b361bd32954b7fc8cb00848d298776c64d4febc",
+      "conflicts": []
+    },
+    {
+      "path": "lang/nepali.js",
+      "mode": "patch",
+      "before": "6b458e14047b0cd5d1e510c48ad370a37bed43d5838a1685915445024124c483",
+      "after": "7c18e9873afe162fc7070b17131064d8d7b01f62c404a4ff33d4ebdb38c56fcd",
+      "conflicts": []
+    },
+    {
+      "path": "lang/pashto.js",
+      "mode": "patch",
+      "before": "f9fa409e3ab0819740bf5770c35e1f338cdd529562588e306081761d4daea384",
+      "after": "56cad4b3f216300889fb856039bca18e4eee157825c95bc25032912b8f850b9e",
+      "conflicts": []
+    },
+    {
+      "path": "lang/polish.js",
+      "mode": "patch",
+      "before": "815c7e1012bb8bc9745167284f883945193931c6a5eb234e2158a79a0391f2de",
+      "after": "e43fc434171c77638f6cf6f9bf58d3899dff80006aa2deb780b7ae92c251f6f0",
+      "conflicts": []
+    },
+    {
+      "path": "lang/portuguese_angola.js",
+      "mode": "patch",
+      "before": "b3f7bb02e623ead811c54fd623cf7ac11e7346440c49a5f098ee3d6947a3d084",
+      "after": "4323107825109983cc557d92e1ee5ba1fa3c65743ea01b6165cf663a9f4af996",
+      "conflicts": []
+    },
+    {
+      "path": "lang/portuguese_brazil.js",
+      "mode": "patch",
+      "before": "b7048b55fa51ec742e4854b0073b64ee504585b6e5c17798abc4aa53f79cc440",
+      "after": "3912f26c7e2f8ea65d6c1af7c21bc607350e56af6e768c8b95d8b3e81196cffb",
+      "conflicts": []
+    },
+    {
+      "path": "lang/portuguese_portugal.js",
+      "mode": "patch",
+      "before": "3462e49829f3815768e4d5c9b8a9926db36ec8588f679b5e698e4baf6ec94ea2",
+      "after": "e30925c59d9e90a63f08c2f51cdc06c00db0504a18d94fa393204c438752a580",
+      "conflicts": []
+    },
+    {
+      "path": "lang/punjabi.js",
+      "mode": "patch",
+      "before": "4be1ec6be7d0ce98ab69a5ef5bd922b6defb146c49bd691665fe9cee648b00b3",
+      "after": "3a001e8451bd71aeaf5676e7112e88071b1fd8bccf08c97351260ca5f9730edf",
+      "conflicts": []
+    },
+    {
+      "path": "lang/romanian.js",
+      "mode": "patch",
+      "before": "1941922ceeacc59da067221448b3ec189a800df3a4b32d7a13cd1439acb5a0bb",
+      "after": "d9b889dcfdeb26478600d139a13dd224f907d7ae65de257ea0c2f5f33f081058",
+      "conflicts": []
+    },
+    {
+      "path": "lang/russian.js",
+      "mode": "patch",
+      "before": "c99daedc440bd9e922e828b7dc4993a9c88a75ed248707d421ee474d2d342eec",
+      "after": "cb84d6d280b536b5c129f6d5b1a07189db1051eead6b1a9cb083d01aa5f86d6c",
+      "conflicts": []
+    },
+    {
+      "path": "lang/somali.js",
+      "mode": "patch",
+      "before": "360b593e58635759c5703a44b62e9514dd47e751aff9cc4ccfc63859a47e5a37",
+      "after": "a593bf1e4f67c3e4f70633b0ea8e6730988a6fd5aad15e3004db289af322f82a",
+      "conflicts": []
+    },
+    {
+      "path": "lang/spanish_castilian.js",
+      "mode": "patch",
+      "before": "ffd5eb161e553515a321beed099ad27b0f71e1e0531841b5bfa59ad3c7cebea5",
+      "after": "2b271f845712799c1b85a37d2b6c6605eec207a6d40ee79bf0d124fca10c3fd1",
+      "conflicts": []
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "mode": "patch",
+      "before": "5baf68e3b249e98fe15ddb1f74444164aaee969f5ca5c6263618f5b55a4eb3b8",
+      "after": "b8e9ae58491ad75b6569853da3b759429a49a38b8c118a74d7ac2a6dd05123e8",
+      "conflicts": []
+    },
+    {
+      "path": "lang/swahili.js",
+      "mode": "patch",
+      "before": "8d4647322d767f4d6e06c4e38037c489d53ecb3c35ddfec4ffe231e580a43f60",
+      "after": "bb7c8f40a19f7ca66f714a72a730e8c322b50af293075efc39d7c4f6f53795bd",
+      "conflicts": []
+    },
+    {
+      "path": "lang/tagalog.js",
+      "mode": "patch",
+      "before": "ccfa8655f4d94d6220dae1548ca2e794c3ee7ebc3b18dfa5c83437722c6e83b1",
+      "after": "13b749b182920335abe7362a8b2d1a0a60fda2ad973a36a8bfe50ee226584f63",
+      "conflicts": []
+    },
+    {
+      "path": "lang/tamil.js",
+      "mode": "patch",
+      "before": "6074937cff77e584e2d73bce6e1065f1529263bfc4575008f9e976e3798eaf95",
+      "after": "11296d5c591a7dc4aa6cd09c4d80fdf712a6d583d529b0f2c02362c439188052",
+      "conflicts": []
+    },
+    {
+      "path": "lang/telugu.js",
+      "mode": "patch",
+      "before": "cb960ae803bcc70f42547296462470bd01219f35e8a55af114ae5193f56648c2",
+      "after": "aa9aff469661101ec63ed4af6d69dbc65e0c0574d5f06d9f45073d205715843c",
+      "conflicts": []
+    },
+    {
+      "path": "lang/thai.js",
+      "mode": "patch",
+      "before": "934de748b53feb7446d7651133fc6cda1e8b5a0b5de79db809d5eafdf9f86101",
+      "after": "b6fd04b7df17a11b0a4a64a8e5de7f637b1b5d27fb50205f823845675d15aace",
+      "conflicts": []
+    },
+    {
+      "path": "lang/tigrinya.js",
+      "mode": "patch",
+      "before": "f794f210722f2ca352cdefd19caa3b93dc0b8817bccf0b5473138a749840eda0",
+      "after": "a65b6c89a3623e746718eda4529bda8f0b9db1220477c5ae11435d6ccaade1dd",
+      "conflicts": []
+    },
+    {
+      "path": "lang/turkish.js",
+      "mode": "patch",
+      "before": "565a1f806458c0df70288ef913cfbd9706f0d69a47e3c81cd961147c5f4ab8b5",
+      "after": "7da0cc1bc099996ecc93ace94a640aee9c7877eba3ce1912688e665e618f6845",
+      "conflicts": []
+    },
+    {
+      "path": "lang/ukrainian.js",
+      "mode": "patch",
+      "before": "67a4cb82b238851e45746600ed6cc852308b453dd784a13bd88f971995059eed",
+      "after": "a04f5e1aad930a8c9e564c9f606c2b32435bbab85898ae4e4a40add12ae556e9",
+      "conflicts": []
+    },
+    {
+      "path": "lang/urdu.js",
+      "mode": "patch",
+      "before": "792e76f5871fe36482d4750e49a1f8a12d19dff47daf9607501b4d11249fc9d2",
+      "after": "07f70bfb0f855ee97262a5f6d19b13be36db9456257b707fc6c5d9348f5c3c26",
+      "conflicts": []
+    },
+    {
+      "path": "lang/vietnamese.js",
+      "mode": "patch",
+      "before": "3d05a0b82b4c041c7e73aba645767c34476e02d0abfc76d5545e1ae896521208",
+      "after": "a245fdcb9a96923b5e10de512a528ce6916cc1f26bedc202a856e63548b99e69",
+      "conflicts": []
+    },
+    {
+      "path": "lang/yoruba.js",
+      "mode": "patch",
+      "before": "8a6c3a541c222a329bc47563b233a8b7801ee3271dc1f883558c0e4582f5d201",
+      "after": "d6b34d8bb7fbf4441084fe87d43d756cb14b2cbce46ee467b5ce2972bcca11e8",
+      "conflicts": []
+    },
+    {
+      "path": "onboarding_coach_source.jsx",
+      "mode": "patch",
+      "before": "bf0a66d6d7fed197ec814c4397f6fa37d229b050e4e9bf084773bcf1f71bf801",
+      "after": "5e38b51c189afb638d5492f1b3230522221b126e86528060482fb4ecca0b440c",
+      "conflicts": []
+    },
+    {
+      "path": "onboarding_helpers_module.js",
+      "mode": "patch",
+      "before": "1b7ac20550f30a45a4e8e2a370f19bc04a3e3f1e66e909f6423520452f1b47fb",
+      "after": "d9efe9d3c7440f52ad6cc7dc0784b129a49a7efa93d45b9c0c18185d64e4693d",
+      "conflicts": []
+    },
+    {
+      "path": "teacher_source.jsx",
+      "mode": "patch",
+      "before": "506d36e79a6a92519e15d4fe07bf2608a99386b6c712f3f63fe7b04e3665a24d",
+      "after": "f992f44d0078353a172b617c7a872295d2efdbeadb495f5606b9cefb9ec178ca",
+      "conflicts": []
+    },
+    {
+      "path": "tests/ai_capability_gating.test.js",
+      "mode": "patch",
+      "before": "167135b48c84b4c27b39b59f539a8955d5d3a860dc6f740cedc7d06022bfd717",
+      "after": "c006edf55fd163342e44643c19f6ccdfc2867a179ba73cdff0a7274013df6381",
+      "conflicts": []
+    },
+    {
+      "path": "tests/app_shell_cognitive_load.test.js",
+      "mode": "patch",
+      "before": "132f06dec3fb807a5da9e68197e5b8b7395fbf3ec91e5882d496623d662d028a",
+      "after": "04a186c406a2a76083c6e21338bc0a0cb765a58aeb37bfbaa008b3265d604981",
+      "conflicts": []
+    },
+    {
+      "path": "tests/canvas_workspace_recovery.test.js",
+      "mode": "patch",
+      "before": "d0903b542772b0aad29e698ed89c2b8208ffb2e7eeda52b886fc7fe197093c04",
+      "after": "832c87d25127e5eaa40161d9331ef2bf63e12ffcf5bdf0cae557cff92b1130c2",
+      "conflicts": []
+    },
+    {
+      "path": "tests/class_materials_first_run.test.js",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "c0224428cbfc30caaf183fa44c50573fd90a9630df2d108a46c712a0ff3f0bd6",
+      "conflicts": []
+    },
+    {
+      "path": "tests/classroom_import_app.test.js",
+      "mode": "patch",
+      "before": "6b615b4b63186b7fa42005bdd4a6d0f81d8accfaa68af17883b38d0b3e36516f",
+      "after": "857f24a88bea8c52f765c0f374c34d9ac6fc93660d6e4bf5e4fe1c37d8aa6ee7",
+      "conflicts": []
+    },
+    {
+      "path": "tests/classroom_linked_sync.test.js",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "58aadbbba06817f0f0783ddf5267e2d574a45f168cf2237ec423ef02fb813661",
+      "conflicts": []
+    },
+    {
+      "path": "tests/deferred_module_pump.test.js",
+      "mode": "patch",
+      "before": "6f247a8bd4000564a3bb864e3180d310797c453296882e974dfc93020cf4f6c7",
+      "after": "ccfbbe7c757ca186d061891807771951bd34127b2bdc82abd9cd5b8299dd7baa",
+      "conflicts": []
+    },
+    {
+      "path": "tests/educator_hub_modal_runtime_a11y.test.js",
+      "mode": "patch",
+      "before": "58acf21a497c8c43f7d1c86c55a24d10eb84616b363b9eb8bf5e14b54de3419b",
+      "after": "e3b35e551b9c1ab566905baf0dccc7ea17b111b62e9ba17c8f5710dbd327c12a",
+      "conflicts": []
+    },
+    {
+      "path": "tests/guided_default_path.test.js",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "1c212da26076c3a7b0410e1bf711d5911e29563770e8bd4708bf6b8a79cbfec2",
+      "conflicts": []
+    },
+    {
+      "path": "tests/guided_host_wiring.test.js",
+      "mode": "patch",
+      "before": "cbaf6ae5b049929445fb9bc288e67c023d7d0a90ee08596401c5b6bbaf1b1fb5",
+      "after": "84c42121dd49d61940043bf3049ca385873fe233838d5640a1a14c90c1c0e3eb",
+      "conflicts": []
+    },
+    {
+      "path": "tests/guided_mode_banner_completion.test.js",
+      "mode": "patch",
+      "before": "86b31380afb76f8cb301eb664eb1aa46f96a19f3cd2d89cadc7351f8870e714e",
+      "after": "f4220d17799c18f917be190c482e7ffd3722bd15b2bf164e3ee9877f8c3b3b13",
+      "conflicts": []
+    },
+    {
+      "path": "tests/header_nav_i18n.test.js",
+      "mode": "patch",
+      "before": "349b34c18c50733c63756a82dbe3a6fe2ec6f080be30f41c510e16c52776719a",
+      "after": "1352bcbda2665a5743b85ce9c62e8374537b05ac10e6067de2d28957650300fb",
+      "conflicts": []
+    },
+    {
+      "path": "tests/history_navigation_lane_visual.test.js",
+      "mode": "patch",
+      "before": "92b0f454fa48eee9b0e4fff1a0678e4de6748ac63928f6d2e6943ebb49c016e6",
+      "after": "26ac4a6813c70b7a1acdaba9a7b70ba0028bc05d2a81b25b7ebe4d71c67e0904",
+      "conflicts": []
+    },
+    {
+      "path": "tests/hub_personalization.test.js",
+      "mode": "patch",
+      "before": "ce5b9806357587a5b10db3f9ac5cea5485524151e5da8bee0320f77de424ce14",
+      "after": "6596b6b81d00eb2c45a3324ce8754c0d8fcd439678e7e56bfb6585800147807e",
+      "conflicts": []
+    },
+    {
+      "path": "tests/independent_mode_surfaces.test.js",
+      "mode": "patch",
+      "before": "fa4196f50df9dd4bdb073a505e1b687a24a68859845fc552a39f88798eb006f7",
+      "after": "6e7f1841a4c0ed2a9d18c0bdc881a2cf64510b5345d8c3f093d6f9fc9de7b4fb",
+      "conflicts": []
+    },
+    {
+      "path": "tests/launch_pad_cards_a11y.test.js",
+      "mode": "patch",
+      "before": "6e2b97674c8747789de6b71790e38e775bead151d8ecd56837839a34761b1c6d",
+      "after": "464a935fdf86713d5140c6c888f5aa276279476e565c7255f5b6aef2f10f2e02",
+      "conflicts": []
+    },
+    {
+      "path": "tests/learning_hub_ai_only_cards.test.js",
+      "mode": "patch",
+      "before": "7a793304cf63da30e0296d34b48f2b4e1fcb8ebf39b898033c04caa46778222d",
+      "after": "2c3855646501583e25383bb1cfdb35a5a1aa9a35de48856a7f5e35c5175c4223",
+      "conflicts": []
+    },
+    {
+      "path": "tests/learning_hub_modal_runtime_a11y.test.js",
+      "mode": "patch",
+      "before": "21da90a3d2e07743165255de2b55c382e36977a20a736d1a5b4f9ecf046484ef",
+      "after": "eb30eb1d6bd9f07d6c8d7e463442cef62d9458c499917f3458c4acb3934e2e3d",
+      "conflicts": []
+    },
+    {
+      "path": "tests/localization_landing_and_catalog.test.js",
+      "mode": "patch",
+      "before": "71648e613c9f8ddce81ff156418698371db3bd40cb45e6f6497d8a33410844dd",
+      "after": "34d2fe1b9832dd94067731828a06dd4aabbd45e8e964d503ed4002e40a0ec38d",
+      "conflicts": []
+    },
+    {
+      "path": "tests/qr_student_shell.test.js",
+      "mode": "patch",
+      "before": "3266ab7c60cf0ebfeca03fd560930b777922c6a3acf3211a783b991677e928e2",
+      "after": "722901cf92d23bdb5c64d8b8758d2eb8f3626bc9617498d023f787ddc799f555",
+      "conflicts": []
+    },
+    {
+      "path": "tests/roster_panel_compact_toolbar.test.js",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "9184d5d99864ab10c778fa435b7800d62893510ff6b1ee8ec9d2c1a0902068b0",
+      "conflicts": []
+    },
+    {
+      "path": "tests/roster_safe_updates.test.js",
+      "mode": "patch",
+      "before": "d8a6308e0ceb36e28ed0d578c886bc3026c171d1878b56d6e5d9d35adf8fc897",
+      "after": "d0f179ca39c5b7b4892cc25150efe837c69201f168b4b977b3c3568e8aae0166",
+      "conflicts": []
+    },
+    {
+      "path": "tests/sidebar_tabs_navigation_a11y.test.js",
+      "mode": "patch",
+      "before": "0e0a5ca7601b8fa4aa74fe8b9971b7b35bc4ee4fb590ec977ccb0ea7282db9a7",
+      "after": "7f876c751d6064d885561da64ae5a8f1b1e7c8445681d112a3746b0fb84c8b2f",
+      "conflicts": []
+    },
+    {
+      "path": "tests/teacher_private_labels_and_classroom_handoff.test.js",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "90139f6440c52b0167da2a2b6f10f7d694ac7f186d859e0ee9ac0d706fe0b7e3",
+      "conflicts": []
+    },
+    {
+      "path": "tests/tool_labels_by_role.test.js",
+      "mode": "patch",
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "29a0ac6c5db666a625dd26f455a3360265eacec94ab2f97145ef49603c27b6a3",
+      "conflicts": []
+    },
+    {
+      "path": "ui_modals_source.jsx",
+      "mode": "patch",
+      "before": "0320c27470600aa171943d262b75451b093efea89f2d0c341f1ae7b049c5ebbb",
+      "after": "bc4c36557c06ffb8bb91e8d90caf105db65ab2f09d81fa17e4351531a76cbb44",
+      "conflicts": []
+    },
+    {
+      "path": "ui_strings.js",
+      "mode": "patch",
+      "before": "799f795c0507130e229ef9778cc7f5178c76050c50309f0c849d767485921cea",
+      "after": "e54f84d9fe1b7a729db72621176082f82ba99d5cebebfe062138b8f2b280a3a6",
+      "conflicts": []
+    },
+    {
+      "path": "view_educator_hub_modal_source.jsx",
+      "mode": "patch",
+      "before": "f45c027e7b79ced07cfe4f638de816d63966e5075d6296d4ee582c1b7886bdfe",
+      "after": "96de371cb771944a402051bfb6ced72a423438ab19d897dede0b5386a918ac5d",
+      "conflicts": []
+    },
+    {
+      "path": "view_fab_stack_source.jsx",
+      "mode": "patch",
+      "before": "629d9c3260de254d752be4ee0d7f436aaddfdcf22e96a9665a06d81229778911",
+      "after": "9af0938ae0b47b80eb2ed65825109cbc41ea33e91c2a337587aa9e5984d6f49c",
+      "conflicts": []
+    },
+    {
+      "path": "view_guided_mode_banner_source.jsx",
+      "mode": "patch",
+      "before": "97bc4abbd35b62163165b9b09be271807d39e0d3e6041ad44f09bd6d1da85f38",
+      "after": "6e6dcbd85f4c61b39445b1268d0e424832e64cb092345c6cbd317ccc64d54797",
+      "conflicts": []
+    },
+    {
+      "path": "view_header_source.jsx",
+      "mode": "patch",
+      "before": "2b694b4cbcbf084893378df02cf403faa0cab96bcbdf92fcdac33d598a0fbbbe",
+      "after": "92bc7191964d7d8683b2138ce6d91d11e46609d0f05f850e7fd993717e8a3a13",
+      "conflicts": []
+    },
+    {
+      "path": "view_history_panel_source.jsx",
+      "mode": "patch",
+      "before": "c5f21eeee0cb0f5652227faaf40b06e7444e3c2df466db15f97714e86f800fc4",
+      "after": "f60a5036653c3e045a05f53ad2b29d4ade98ef09cc9720a8a8aeb11735cb6669",
+      "conflicts": []
+    },
+    {
+      "path": "view_launch_pad_source.jsx",
+      "mode": "patch",
+      "before": "5c7acdf0913cfe89f59cf23881629e650881208fe8d45506cb62c6e67b326402",
+      "after": "ff32400a93772b3dbce43f8445932926306af6bd7262fa90e9eab7507891c8d6",
+      "conflicts": []
+    },
+    {
+      "path": "view_learning_hub_modal_source.jsx",
+      "mode": "patch",
+      "before": "48ab3d80087152903bd71875483c4c0949c4372e88611d0df280ea140a44b1ae",
+      "after": "355e78433e1a284336e20d7458236bc405c19421b47c85e901ccaaa5dc510944",
+      "conflicts": []
+    },
+    {
+      "path": "view_sidebar_panels_source.jsx",
+      "mode": "three-way",
+      "before": "c6f99bb581da4b1f4ae769147f65d78087aaf1088b0b16e6894a4ad750c0997a",
+      "after": "0fe51cded23c279eeb026c052fe7d9832015b71d90ae7aedd9dcdf071eadbc3f",
+      "conflicts": [
+        {
+          "count": 16
+        }
+      ]
+    },
+    {
+      "path": "view_sidebar_tabs_nav_source.jsx",
+      "mode": "patch",
+      "before": "69a08765b7d410866e178a1b5a22ea1dc5412307d0d35992e8d88ab63bcd0c0c",
+      "after": "b193a81fbaff6723b919d3475686d7fce7f408918e951e7db1e9037b3dc73237",
+      "conflicts": []
+    },
+    {
+      "path": "view_teacher_history_tab_source.jsx",
+      "mode": "patch",
+      "before": "c6259816330520e6f7ada44f75f20c579ac890b569c3e9140ab01233a22b05df",
+      "after": "43c51c6a3936ed8cf9437370d5b8ffdbe2250250f58f34594be7164abb606858",
+      "conflicts": []
+    },
+    {
+      "path": "tests/onboarding_review_fixes.test.js",
+      "mode": "new-review-test",
+      "after": "143cda50c97a08132d374f3ab182e4bcbd9b789ae56af2058fb6a947b4eb2911",
+      "conflicts": []
+    },
+    {
+      "path": "tests/role_workspace_transitions.test.js",
+      "mode": "new-review-test",
+      "after": "c8d0d81274944e42dd7d3da05d5a9bf7c55734f552c8940d430928f17a5965c2",
+      "conflicts": []
+    }
+  ],
+  "baselineCompletion": {
+    "at": "2026-09-29T03:28:51.729Z",
+    "materialized": 0,
+    "repaired": 33
+  }
+}

@@ -1,0 +1,334 @@
+Index: view_simplified_source.jsx
+===================================================================
+--- view_simplified_source.jsx	current shared source
++++ view_simplified_source.jsx	rebased draft mutation increment
+@@ -1526,14 +1526,17 @@
+     const editRefs = React.useRef({});
+     const panelId = 'reading-gloss-editor-' + String(item?.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
+     const entries = supports?.annotations || [];
++    const entriesRef = React.useRef(entries); entriesRef.current = entries;
++    const seenEntryRef = React.useRef();
+     const signature = value => value ? JSON.stringify({ query: value.query, start: value.start, text: value.text, priority: value.priority, pinned: value.pinned, image: readingSupportImageSignature(value.image) }) : '';
+     const [pickingPicture, setPickingPicture] = React.useState(false);
+     const [preparingPicture, setPreparingPicture] = React.useState(false);
+     const pictureEpoch = React.useRef(0), mutationEpoch = React.useRef(0), mountedRef = React.useRef(true), ownerRef = React.useRef(ownerKey), pendingRef = React.useRef(null), focusRef = React.useRef(null), focusRequested = React.useRef(false), sectionRef = React.useRef(null);
+     const pictureCallbackEpoch = pictureEpoch.current;
++    const ownerChanged = ownerRef.current !== ownerKey;
+     pendingRef.current = pendingAction;
+     // Removing, choosing or cancelling a picture removes the focused button; land on the picture button instead.
+-    const pictureButtonRef = React.useRef(null), refocusPicture = React.useRef(false);
++    const pictureButtonRef = React.useRef(null), refocusPicture = React.useRef(false), refocusAdd = React.useRef(false);
+     React.useEffect(() => { if (refocusPicture.current && pictureButtonRef.current) focusRequested.current = true; });
+     const dirty = !!draft && signature(draft) !== baseline;
+     const unresolvedRef = React.useRef(false);
+@@ -1546,7 +1549,7 @@
+     React.useLayoutEffect(() => {
+       if (ownerRef.current !== ownerKey) {
+         const saved = draftSession?.records.get(ownerKey);
+-        ownerRef.current = ownerKey; cancelPicture(); dismissPending();
++        ownerRef.current = ownerKey; mutationEpoch.current++; seenEntryRef.current = undefined; cancelPicture(); dismissPending();
+         setDraft(saved?.draft || null); setBaseline(saved?.baseline || ''); setDraftSource(saved?.sourceText || sourceText);
+         setOpen(!!saved?.draft); setPickingPicture(false); setNotice(''); setError(''); setBusy(false);
+         return;
+@@ -1570,14 +1573,33 @@
+     const sameAnchor = (left, right) => !!left && !!right && left.start === right.start && left.end === right.end && left.quote === right.quote;
+     const contextFor = entry => readingGlossContext(sourceText, entry.start, entry.end).text;
+     const anchorFor = entry => ({ start: entry.start, end: entry.end, quote: entry.quote });
+-    const replaceDraft = value => { unresolvedRef.current = false; mutationEpoch.current++; cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
+-    const clearDraft = () => replaceDraft(null);
+-    const applyEdit = entry => {
++    const draftFor = entry => {
+       const value = { id: entry.id, anchor: anchorFor(entry), query: entry.quote, start: String(entry.start),
+         text: entry.definition || entry.explanation || entry.text || '', priority: entry.priority || 'helpful', pinned: entry.pinned === true, image: entry.image || null };
+       value.originalTextLength = value.text.length;
+-      setOpen(true); replaceDraft(value);
++      return value;
+     };
++    const entryVersion = entry => entry ? JSON.stringify([entry.id, signature(draftFor(entry))]) : null;
++    const replaceDraft = value => { unresolvedRef.current = false; mutationEpoch.current++; cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); seenEntryRef.current = entryVersion(entriesRef.current.find(entry => sameAnchor(entry, value?.anchor))); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
++    const clearDraft = () => replaceDraft(null);
++    const applyEdit = entry => { setOpen(true); replaceDraft(draftFor(entry)); };
++    const unavailable = () => { reveal(); setNotice(''); setError(simplifiedText('simplified.gloss_support_no_longer_available', 'This word support is no longer available. Review the current supports.')); addRef.current?.focus(); };
++    const mutationSupports = result => {
++      const value = Array.isArray(result?.annotations) ? result : adapted ? result?.adaptedReadingSupports : result?.readingSupports;
++      return Array.isArray(value?.annotations) && value.sourceFingerprint === snapshot?.fingerprint ? value : null;
++    };
++    React.useLayoutEffect(() => {
++      if (ownerChanged || !draft?.anchor || dirty || busy || pickingPicture || preparingPicture || pendingAction || staleDraft || supportsStale) return;
++      const current = entries.find(entry => sameAnchor(entry, draft.anchor));
++      const version = entryVersion(current);
++      if (seenEntryRef.current === version) return;
++      seenEntryRef.current = version;
++      if (!current) { clearDraft(); refocusAdd.current = true; unavailable(); return; }
++      const value = draftFor(current);
++      if (draft.id !== value.id || signature(draft) !== signature(value)) {
++        setDraft(value); setBaseline(signature(value)); setDraftSource(sourceText); setNotice(''); setError('');
++      }
++    });
+     const mutate = async (action, success) => {
+       if (disabled || busy || typeof onUpdate !== 'function') return null;
+       const key = sourceKeyRef.current;
+@@ -1600,7 +1622,11 @@
+       pendingRef.current = null;
+       setPendingAction(null);
+       if (action.type === 'transition') { clearDraft(); action.run(); return; }
+-      if (action.type === 'edit') { applyEdit(action.entry); return; }
++      if (action.type === 'edit') {
++        const current = entriesRef.current.find(entry => sameAnchor(entry, action.entry));
++        if (current) applyEdit(current); else unavailable();
++        return;
++      }
+       if (action.type === 'add') { setOpen(true); replaceDraft({ id: null, query: '', start: '', text: '', priority: 'essential', pinned: false }); return; }
+       if (action.type === 'close' || action.type === 'finish') {
+         const id = draft?.id; clearDraft();
+@@ -1609,10 +1635,14 @@
+         return;
+       }
+       if (action.type === 'remove') {
+-        const current = entries.find(entry => sameAnchor(entry, action.entry));
++        const current = entriesRef.current.find(entry => sameAnchor(entry, action.entry));
+         if (!current) { setNotice(''); setError(simplifiedText('simplified.gloss_this_word_support_is_no_longer', 'This word support is no longer available. Review the current supports before removing it.')); return; }
+         const saved = await mutate({ type: 'remove', id: current.id }, 'Word support removed. It will stay removed when suggestions are refreshed.');
+         if (saved) {
++          const confirmed = mutationSupports(saved);
++          if (!confirmed || confirmed.annotations.some(entry => sameAnchor(entry, current)) || !Array.isArray(confirmed.suppressedAnnotations) || !confirmed.suppressedAnnotations.some(entry => sameAnchor(entry, current))) {
++            setNotice(''); setError(simplifiedText('simplified.gloss_remove_unconfirmed', 'The save did not confirm this removal. Review the support and try again.')); return;
++          }
+           if (sameAnchor(draft?.anchor, action.entry)) { setDraft(null); setBaseline(''); }
+           addRef.current?.focus();
+         }
+@@ -1644,6 +1674,7 @@
+       else if (draft) focusRequested.current = true;
+     }, [!!draft, draft?.anchor?.start, pendingAction]);
+     React.useEffect(() => {
++      if (refocusAdd.current && !draft && !busy && !disabled && !pendingAction) { addRef.current?.focus(); refocusAdd.current = false; }
+       if (!focusRequested.current || pendingAction || busy || disabled || !draft) return;
+       const previous = focusRef.current;
+       const target = refocusPicture.current ? pictureButtonRef.current : previous?.isConnected && !previous.matches(':disabled') ? previous
+@@ -1675,12 +1706,14 @@
+       const saved = await mutate({ type: 'upsert', annotation }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
+       // A matching anchor alone does not confirm the submitted values. Keep
+       // unaccepted edits dirty against the actual save result so retry is safe.
+-      const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : adapted ? saved.adaptedReadingSupports : saved.readingSupports);
+-      const accepted = savedSupports?.annotations?.find(entry => entry.id === id && sameAnchor(entry, selected));
++      const savedSupports = mutationSupports(saved);
++      const accepted = savedSupports?.annotations.find(entry => entry?.id === id && sameAnchor(entry, selected));
+       if (!accepted) { if (saved) { setNotice(''); setError('The save did not confirm this word support. Your draft is retained.'); } return false; }
+       const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: annotation.text };
+       const confirmed = { ...next, text: accepted.definition || accepted.explanation || accepted.text || '',
+         priority: accepted.priority === 'essential' ? 'essential' : 'helpful', pinned: accepted.pinned === true, image: accepted.image || null };
++      // Parent props may acknowledge this save on a later render.
++      seenEntryRef.current = entryVersion(entriesRef.current.find(entry => sameAnchor(entry, selected)));
+       setBaseline(signature(confirmed)); setDraftSource(sourceText); setDraft(next);
+       if (signature(next) !== signature(confirmed)) {
+         const pictureOmitted = next.image && !confirmed.image && next.text === confirmed.text && next.priority === confirmed.priority && next.pinned === confirmed.pinned;
+@@ -1694,6 +1727,9 @@
+     const saveAndContinue = async () => { const action = pendingRef.current; if (await save()) { if (mountedRef.current && action && pendingRef.current === action) performAction(action); } };
+     const pin = async (entry, pinned) => {
+       const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? 'This support will stay visible in lighter view.' : 'This support now follows the lighter-view selection.');
++      if (saved && !mutationSupports(saved)?.annotations.some(value => value?.id === entry.id && sameAnchor(value, entry) && value.pinned === pinned)) {
++        setNotice(''); setError(simplifiedText('simplified.gloss_pin_unconfirmed', 'The save did not confirm the pin change. Review the support and try again.')); return;
++      }
+       if (saved && sameAnchor(draft?.anchor, entry)) {
+         setDraft(previous => previous && ({ ...previous, pinned }));
+         setBaseline(previous => previous ? JSON.stringify({ ...JSON.parse(previous), pinned }) : previous);
+
+Index: tests/reading_support_draft_transitions.test.js
+===================================================================
+--- tests/reading_support_draft_transitions.test.js	current shared source
++++ tests/reading_support_draft_transitions.test.js	rebased draft mutation increment
+@@ -91,6 +91,71 @@
+   'outside navigation': async h => h.outside(),
+   'student role': async h => h.role(false)
+ };
++function replaceHelp(h, help) {
++  const item = { ...h.state.item, adaptedReadingSupports: help };
++  h.force({ item, history: h.state.history.map(value => value.id === item.id ? item : value) });
++}
++
++describe('current support data across editor transitions', () => {
++  it('keeps a confirmed save while parent props acknowledge it later', async () => {
++    const h = fixture(); await dirtyExplanation(); let accepted;
++    h.onUpdate.mockImplementationOnce(async (owner, action) => { accepted = contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, action.annotation); return accepted; });
++    await click(byText('Save word support')); h.rerender();
++    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(h.session.hasChanges()).toBe(false);
++    replaceHelp(h, accepted); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(h.session.hasChanges()).toBe(false);
++  });
++  it.each(['mounted', 'recovered'])('updates an unchanged %s draft from its current exact occurrence', async lifecycle => {
++    const h = fixture({ image: IMAGE }); await edit();
++    if (lifecycle === 'recovered') h.force({ view: 'other' });
++    replaceHelp(h, { ...h.state.item.adaptedReadingSupports, annotations: h.state.item.adaptedReadingSupports.annotations.map(entry => ({ ...entry, id: 'refreshed-heron', text: 'Current saved meaning.', priority: 'essential', image: { ...IMAGE, src: 'data:image/png;base64,REVG' } })) });
++    if (lifecycle === 'recovered') h.force({ view: 'simplified' });
++    expect(draft().querySelector('textarea').value).toBe('Current saved meaning.');
++    expect(draft().querySelector('select').value).toBe('essential'); expect(draft().querySelector('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
++    expect(h.session.hasChanges()).toBe(false); await transitions.Both(h); expect(h.state.compare).toBe(true); expect(prompt()).toBeNull();
++  });
++  it.each(['mounted', 'recovered'])('closes an unchanged %s draft when its support was removed', async lifecycle => {
++    const h = fixture(); await edit();
++    if (lifecycle === 'recovered') h.force({ view: 'other' });
++    replaceHelp(h, contract.removeAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, 'heron'));
++    if (lifecycle === 'recovered') h.force({ view: 'simplified' });
++    expect(draft()).toBeNull(); expect(h.session.hasChanges()).toBe(false); expect(host.textContent).toContain('no longer available');
++    expect(h.onUpdate).not.toHaveBeenCalled(); expect(document.activeElement).toBe(byText('Add a word or phrase'));
++  });
++  it.each(['dirty', 'picker'])('retains %s work when the saved exact occurrence changes', async work => {
++    const h = fixture({ image: IMAGE }); await edit();
++    if (work === 'dirty') type(draft().querySelector('textarea'), 'Keep my unsaved meaning.');
++    else await click(byText('Choose a different picture'));
++    replaceHelp(h, { ...h.state.item.adaptedReadingSupports, annotations: h.state.item.adaptedReadingSupports.annotations.map(entry => ({ ...entry, text: 'New saved meaning.', image: null })) });
++    expect(draft().querySelector('textarea').value).toBe(work === 'dirty' ? 'Keep my unsaved meaning.' : 'A wading bird.');
++    expect(draft().querySelector('img').getAttribute('src')).toBe(IMAGE.src); expect(h.session.hasChanges()).toBe(true);
++    if (work === 'picker') expect(byText('Cancel')).toBeTruthy();
++    await transitions.Both(h); expect(prompt()).toBeTruthy(); await click(byText('Keep editing')); expect(h.state.compare).toBe(false);
++  });
++  for (const decision of ['Discard changes', 'Save and continue']) {
++    it.each(['refreshed', 'removed'])(`resolves a %s deferred edit target after ${decision}`, async change => {
++      const h = fixture(); const start = PASSAGE.indexOf('water');
++      replaceHelp(h, contract.upsertAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, { id: 'water', start, end: start + 5, quote: 'water', text: 'Older water meaning.' }));
++      await dirtyExplanation(); await click(host.querySelector('button[aria-label^="Edit gloss for water"]'));
++      const saveResult = deferred();
++      if (decision === 'Save and continue') { h.persist.mockReturnValueOnce(saveResult.promise); await click(byText(decision)); }
++      const help = h.state.item.adaptedReadingSupports;
++      replaceHelp(h, change === 'removed' ? contract.removeAdaptedReadingSupport(h.state.item, help, 'water')
++        : { ...help, annotations: help.annotations.map(entry => entry.quote === 'water' ? { ...entry, id: 'refreshed-water', text: 'Current water meaning.' } : entry) });
++      if (decision === 'Save and continue') await act(async () => saveResult.resolve(contract.upsertAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, h.onUpdate.mock.calls[0][1].annotation)));
++      else await click(byText(decision));
++      expect(prompt()).toBeNull(); expect(h.state.compare).toBe(false);
++      if (change === 'refreshed') {
++        expect(draft().querySelector('textarea').value).toBe('Current water meaning.');
++        type(draft().querySelector('textarea'), 'My water meaning.'); await click(byText('Save word support'));
++        expect(h.onUpdate.mock.lastCall[1].annotation.id).toBe('refreshed-water');
++      } else {
++        expect(host.textContent).toContain('no longer available'); expect(draft()?.querySelector('input[type="text"]').value).not.toBe('water');
++        expect(h.state.item.adaptedReadingSupports.annotations.some(entry => entry.quote === 'water')).toBe(false);
++      }
++    });
++  }
++});
++
+ describe('deferred reader transitions', () => {
+   it.each(['Discard changes', 'Save and continue'])('does not re-prompt when an approved asynchronous opener continues after %s', async decision => {
+     const h = fixture({ asyncNavigation: true }); await dirtyExplanation(); await transitions.Both(h); await click(byText(decision));
+
+===================================================================
+--- /dev/null	current shared source
++++ tests/reading_support_mutation_confirmation.test.js	rebased draft mutation increment
+@@ -0,0 +1,118 @@
++import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { readFileSync } from 'node:fs';
++import { resolve } from 'node:path';
++const require = createRequire(import.meta.url);
++let React, act, createRoot, Editor, contract, root, host;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'))); act = React.act;
++  global.IS_REACT_ACT_ENVIRONMENT = true;
++  contract = require('../instructional_context_module.js');
++  const source = readFileSync('view_simplified_source.jsx', 'utf8');
++  const compiled = require('@babel/core').transformSync(source.slice(source.indexOf('  function findReadingGlossOccurrences('), source.indexOf('  function SimplifiedView(props)')), {
++    plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]], babelrc: false, configFile: false
++  }).code;
++  Editor = new Function('React', 'getInstructionalContextApi', compiled + '\nreturn ReadingGlossEditor;')(React, () => contract);
++});
++afterEach(() => { if (root) act(() => root.unmount()); root = null; host?.remove(); vi.restoreAllMocks(); });
++function fixture(adapted = false) {
++  const original = contract.createSupportedReading('The heron stood in water.', { id: 'original' });
++  let item = adapted ? { id: 'adapted', type: 'simplified', data: original.data, sourceSnapshot: original.sourceSnapshot, instructionalText: { form: 'adapted' } } : original;
++  const entry = { id: 'heron', start: 4, end: 9, quote: 'heron', text: 'A wading bird.' };
++  let supports = adapted ? contract.upsertAdaptedReadingSupport(item, null, entry) : contract.upsertReadingSupport(item, null, entry);
++  const initial = supports, session = require('../reader_support_drafts.js').createSession();
++  const persist = vi.fn(async (owner, action) => {
++    const suffix = adapted ? 'AdaptedReadingSupport' : 'ReadingSupport';
++    const saved = action.type === 'remove' ? contract['remove' + suffix](item, supports, action.id)
++      : action.type === 'pin' ? contract['set' + suffix + 'Pinned'](item, supports, action.id, action.pinned)
++      : contract['upsert' + suffix](item, supports, action.annotation);
++    supports = saved; render();
++    return { ...item, [adapted ? 'adaptedReadingSupports' : 'readingSupports']: saved };
++  });
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  function render() { root.render(React.createElement(Editor, { item, supports, adapted, snapshot: adapted ? contract.getAdaptedSupportSnapshot(item, supports) : undefined, draftSession: session, onUpdate: persist })); }
++  act(render);
++  return { initial, item, session, persist, get supports() { return supports; }, changeOwner: next => act(() => { item = next; render(); }) };
++}
++const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text || (text === 'Review word supports' && node.textContent.startsWith(text)));
++const click = async node => act(async () => { expect(node).toBeTruthy(); node.click(); });
++const draft = () => host.querySelector('[data-gloss-draft]');
++const entryPin = () => host.querySelector('input[aria-label^="Always show in lighter view:"]');
++const remove = () => host.querySelector('button[aria-label^="Remove gloss for"]');
++async function edit() { await click(button('Review word supports')); await click(host.querySelector('button[aria-label^="Edit gloss for"]')); }
++function type(value) { act(() => { const node = draft().querySelector('textarea'); node.focus(); Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); }); }
++const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
++
++describe('save confirmation source and owner', () => {
++  for (const adapted of [false, true]) {
++    it.each(['wrong source', 'missing source', 'malformed annotations', 'null annotation'])(`retains the ${adapted ? 'adapted' : 'original'} draft and blocks navigation for %s`, async result => {
++      const h = fixture(adapted); await edit(); type('Retain my explanation.');
++      const accepted = { ...h.initial, annotations: h.initial.annotations.map(entry => ({ ...entry, text: 'Retain my explanation.' })) };
++      if (result === 'wrong source') accepted.sourceFingerprint = 'another-source';
++      if (result === 'missing source') delete accepted.sourceFingerprint;
++      if (result === 'malformed annotations') accepted.annotations = { saved: true };
++      if (result === 'null annotation') accepted.annotations = [null];
++      h.persist.mockResolvedValueOnce({ [adapted ? 'adaptedReadingSupports' : 'readingSupports']: accepted });
++      const leave = vi.fn(); act(() => h.session.request(leave)); await click(button('Save and continue'));
++      expect(leave).not.toHaveBeenCalled(); expect(host.textContent).toContain('did not confirm this word support');
++      expect(draft().querySelector('textarea').value).toBe('Retain my explanation.'); expect(h.session.hasChanges()).toBe(true);
++      await click(button('Keep editing')); expect(document.activeElement).toBe(draft().querySelector('textarea'));
++      act(() => h.session.request(leave)); await click(button('Save and continue'));
++      expect(leave).toHaveBeenCalledOnce(); expect(h.session.hasChanges()).toBe(false);
++    });
++  }
++  for (const field of ['_artifactInstanceId', 'sourceFamilyId', 'unitId']) {
++    it.each(['success', 'failure'])(`ignores a late save %s after ${field} changes with identical ID and text`, async outcome => {
++      const h = fixture(); await edit(); type('Belongs to the previous owner.');
++      const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise); await click(button('Save word support'));
++      const accepted = contract.upsertReadingSupport(h.item, h.initial, h.persist.mock.calls[0][1].annotation);
++      h.changeOwner({ ...h.item, [field]: 'new-owner' }); expect(draft()).toBeNull();
++      await act(async () => outcome === 'success' ? pending.resolve(accepted) : pending.reject(new Error('Previous owner save failed.')));
++      expect(draft()).toBeNull(); expect(host.textContent).not.toContain('Word support saved.'); expect(host.textContent).not.toContain('Previous owner save failed.');
++      h.changeOwner(h.item); expect(draft().querySelector('textarea').value).toBe('Belongs to the previous owner.'); expect(h.session.hasChanges()).toBe(true);
++    });
++  }
++  it.each(['success', 'failure'])('ignores an obsolete %s after owner A → B → A', async outcome => {
++    const h = fixture(); await edit(); type('Earlier unsaved wording.'); const pending = deferred();
++    h.persist.mockReturnValueOnce(pending.promise); await click(button('Save word support'));
++    const accepted = contract.upsertReadingSupport(h.item, h.initial, h.persist.mock.calls[0][1].annotation);
++    h.changeOwner({ ...h.item, _artifactInstanceId: 'temporary-owner' }); h.changeOwner(h.item); type('Newer wording after returning.');
++    await act(async () => outcome === 'success' ? pending.resolve(accepted) : pending.reject(new Error('Obsolete failure.')));
++    expect(draft().querySelector('textarea').value).toBe('Newer wording after returning.'); expect(host.textContent).not.toContain('Obsolete failure.'); expect(h.session.hasChanges()).toBe(true);
++  });
++});
++
++describe('confirmed support mutations', () => {
++  it.each(['unchanged', 'malformed', 'wrong source', 'wrong occurrence'])('does not claim an unconfirmed pin succeeded: %s', async result => {
++    const h = fixture(); await edit(); type('Keep my draft.');
++    let returned = h.initial;
++    if (result === 'malformed') returned = { ok: true };
++    if (result === 'wrong source') returned = { ...h.initial, sourceFingerprint: 'other-source', annotations: h.initial.annotations.map(entry => ({ ...entry, pinned: true })) };
++    if (result === 'wrong occurrence') returned = { ...h.initial, annotations: [{ ...h.initial.annotations[0], start: 19, end: 24, quote: 'water', pinned: true }] };
++    h.persist.mockResolvedValueOnce(returned); await click(entryPin());
++    expect(host.textContent).toContain('did not confirm the pin change'); expect(host.textContent).not.toContain('This support will stay visible');
++    expect(draft().querySelector('input[type="checkbox"]').checked).toBe(false); expect(draft().querySelector('textarea').value).toBe('Keep my draft.'); expect(h.session.hasChanges()).toBe(true);
++    await click(entryPin()); expect(h.supports.annotations[0].pinned).toBe(true); expect(draft().querySelector('input[type="checkbox"]').checked).toBe(true);
++    expect(draft().querySelector('textarea').value).toBe('Keep my draft.'); expect(h.session.hasChanges()).toBe(true);
++  });
++  it('confirms unpinning without dirtying a clean editor', async () => {
++    const h = fixture(); await edit(); await click(entryPin()); await click(entryPin());
++    expect(h.supports.annotations[0].pinned).toBe(false); expect(draft().querySelector('input[type="checkbox"]').checked).toBe(false); expect(h.session.hasChanges()).toBe(false);
++  });
++  for (const adapted of [false, true]) {
++    it.each(['unchanged', 'malformed', 'missing suppression', 'malformed suppression', 'wrong source'])(`retains the ${adapted ? 'adapted' : 'original'} editor after an unconfirmed removal: %s`, async result => {
++      const h = fixture(adapted); await edit();
++      let returned = h.initial;
++      if (result === 'malformed') returned = { ok: true };
++      if (result === 'missing suppression') returned = { ...h.initial, annotations: [] };
++      if (result === 'malformed suppression') returned = { ...h.initial, annotations: [], suppressedAnnotations: {} };
++      if (result === 'wrong source') returned = { ...h.initial, sourceFingerprint: 'other-source', annotations: [], suppressedAnnotations: [h.initial.annotations[0]] };
++      h.persist.mockResolvedValueOnce(returned); await click(remove());
++      expect(host.textContent).toContain('did not confirm this removal'); expect(host.textContent).not.toContain('Word support removed.');
++      expect(draft().querySelector('textarea').value).toBe('A wading bird.'); expect(h.supports.annotations).toHaveLength(1);
++      await click(remove()); expect(draft()).toBeNull(); expect(h.supports.annotations).toHaveLength(0);
++      expect(h.supports.suppressedAnnotations).toContainEqual({ start: 4, end: 9, quote: 'heron' }); expect(h.session.hasChanges()).toBe(false);
++    });
++  }
++});

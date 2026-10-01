@@ -13,7 +13,8 @@ describe('Adventure active-turn accessibility', () => {
   });
 
   it('prevents duplicate choice and text submissions while a turn is loading', () => {
-    expect(source.match(/onClick=\{\(\) => handleAdventureChoice\(opt\)\} disabled=\{adventureState\.isLoading\}/g)).toHaveLength(2);
+    // (Also disabled for a live student while class voting is off; see adventure_batch1_fixes.)
+    expect(source.match(/onClick=\{\(\) => handleAdventureChoice\(opt\)\} disabled=\{adventureState\.isLoading \|\| liveStudentWaiting\}/g)).toHaveLength(2);
     expect(source.match(/disabled=\{!adventureTextInput\.trim\(\) \|\| adventureState\.isLoading\}/g)).toHaveLength(1);
     expect(source.match(/if \(e\.key === 'Enter' && !e\.shiftKey && adventureTextInput\.trim\(\) && !adventureState\.isLoading\)/g)).toHaveLength(1);
     expect(source.match(/type="button" data-help-key="adventure_input_send"/g)).toHaveLength(1);

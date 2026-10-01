@@ -1,0 +1,76 @@
+{
+  "distinctPassed": 291,
+  "failed": 0,
+  "suites": [
+    {
+      "file": "reader_passage_label_catalogs.test.js",
+      "passed": 16,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "reader_passage_label_locales.test.js",
+      "passed": 55,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "reader_passage_literal_labels.test.js",
+      "passed": 24,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "reading_support_curation.test.js",
+      "passed": 19,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "reading_support_draft_transitions.test.js",
+      "passed": 58,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "host_literal_placeholders.test.js",
+      "passed": 35,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "reader_i18n.test.js",
+      "passed": 10,
+      "failed": 0,
+      "unselected": 2
+    },
+    {
+      "file": "reader_passage_label_layout.test.js",
+      "passed": 24,
+      "failed": 0,
+      "unselected": 0
+    },
+    {
+      "file": "reader_draft_locales.test.js",
+      "passed": 50,
+      "failed": 0,
+      "unselected": 0
+    }
+  ],
+  "refreshedCatalogRerun": {
+    "passed": 130,
+    "failed": 0,
+    "notAddedToDistinctTotal": true
+  },
+  "visualReview": [
+    "passage_labels_ar_rtl_v1-original-2x.png",
+    "passage_labels_es419_v1-adapted-2x.png",
+    "passage_labels_zh_unspaced_v1-original-2x.png",
+    "passage_labels_th_unspaced_v1-adapted-2x.png"
+  ],
+  "limits": [
+    "The Importance native select visibly clips its long English choice at doubled text size.",
+    "Inner occurrence descriptions and other editor controls still use English fallback.",
+    "No native-browser zoom, actual assistive-technology, deployed or full-app verification."
+  ]
+}

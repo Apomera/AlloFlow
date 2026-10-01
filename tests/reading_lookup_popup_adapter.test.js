@@ -364,7 +364,9 @@ describe('lookup recovery messages and picture retry', () => {
     await act(async () => vi.advanceTimersByTimeAsync(1));
     const messages = [...host.querySelectorAll('[role="status"]')].map(node => node.textContent).join(' ');
     expect(messages).toContain('Dictionary entry ready'); expect(messages).toContain('AI word help could not load.');
-    expect(messages).not.toMatch(/Finding a definition|Unable to load word sounds|Preparing word help/);
+    // The popup statuses use the registered wording ("Finding definition...",
+    // "Analyzing...", "Could not analyze word.") as well as the older one.
+    expect(messages).not.toMatch(/Finding a definition|Finding definition|Analyzing|Could not analyze word|Unable to load word sounds|Preparing word help/);
   });
   it.each([
     ['not_found', 'The dictionary has no entry for this word.'],

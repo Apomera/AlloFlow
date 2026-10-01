@@ -36,7 +36,7 @@ fs.writeFileSync(path.join(report,'preview.html'),fixture);
  assert.equal(await readout(),before,'Looking around while paused must not move the camera.');
  await page.getByRole('button',{name:'Forward',exact:true}).click();
  await page.getByRole('button',{name:'Start travel',exact:true}).click();
- await page.waitForTimeout(600);
+ await page.waitForFunction(previous=>document.querySelector('.uf-readouts').innerText!==previous,before,{timeout:15000});
  await page.getByRole('button',{name:'Pause travel',exact:true}).click();
  assert.notEqual(await readout(),before,'Free exploration must advance position.');
  const paused=await readout();await page.waitForTimeout(350);assert.equal(await readout(),paused);

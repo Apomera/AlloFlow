@@ -10993,7 +10993,7 @@
           }
           engine.cancelDrawing=function(silent) {
             engine._drawStart=null;engine._drawEnd=null;engine._drawPinned=false;engine._drawPointerId=null;engine._drawCache=null;
-            engine.clearBuildBatchPreview('drawing');publish(null);if(!silent)announceToSR('Drawing cancelled. No blocks changed.');
+            engine.clearBuildBatchPreview('drawing');publish(null);if(!silent)announceToSR(__alloT('stem.geometryworld.sr_drawing_cancelled_no_blocks_changed', 'Drawing cancelled. No blocks changed.'));
           };
           engine.setDrawMode=function(mode) {
             if(modes.indexOf(mode)<0 || !engine.isDrawingAllowed())return false;
@@ -11052,7 +11052,7 @@
             if(!engine.isDrawingAllowed())return false;
             if(engine._drawPinned)return engine.commitDrawing();
             var hit=engine.drawingHitAt(),cell=engine.placementCellForHit(hit);
-            if(!cell){announceToSR('Aim at nearby ground or a block face to choose a drawing point.');return false;}
+            if(!cell){announceToSR(__alloT('stem.geometryworld.sr_aim_at_nearby_ground_or_a_block_face_to_choose_a', 'Aim at nearby ground or a block face to choose a drawing point.'));return false;}
             if(!engine._drawStart)return engine.beginDrawing(cell);
             engine.previewDrawing(cell);return engine.commitDrawing();
           };
@@ -12407,7 +12407,7 @@
           if(canvas.hasPointerCapture && canvas.hasPointerCapture(ev.pointerId))canvas.releasePointerCapture(ev.pointerId);
           if(engine._drawEnd)engine.previewDrawing(engine._drawEnd);
           if(canvas.parentElement && canvas.parentElement.focus)canvas.parentElement.focus({preventScroll:true});
-          announceToSR('Preview ready. Press B or choose Place to build, or Escape to cancel.');
+          announceToSR(__alloT('stem.geometryworld.sr_preview_ready_press_b_or_choose_place_to_build_or', 'Preview ready. Press B or choose Place to build, or Escape to cancel.'));
         });
         canvas.addEventListener('pointercancel',_cvH.pointercancel=function(ev){if(engine._drawPointerId===ev.pointerId)engine.cancelDrawing(true);});
 
@@ -15200,7 +15200,7 @@
         ),
 
         el('style', { 'data-gw-room': 'true' }, GW_ROOM_CSS),
-        hudHidden && el('button', { type: 'button', className: 'gw-hud-restore gw-focusable', 'aria-keyshortcuts': 'U', 'aria-label': 'Show controls. Shortcut U', onClick: function() { setHudHidden(false); } },
+        hudHidden && el('button', { type: 'button', className: 'gw-hud-restore gw-focusable', 'aria-keyshortcuts': 'U', 'aria-label': __alloT('stem.geometryworld.a11y_show_controls_shortcut_u', 'Show controls. Shortcut U'), onClick: function() { setHudHidden(false); } },
           renderWorkspaceIcon(el, 'eye'), 'Show controls'),
         toolbarCollapsed && !isWorkspaceFullscreen && el('button', {
           type: 'button', className: 'gw-toolbar-reveal gw-focusable',
@@ -16777,7 +16777,7 @@
           })
         ),
         // Blocks drawer: shape selector above the block toolbar.
-        buildToolsOpen && el('div', { id: 'gw-build-tools', className: 'gw-build-tools', role: 'group', 'aria-label': 'Blocks and shapes' },
+        buildToolsOpen && el('div', { id: 'gw-build-tools', className: 'gw-build-tools', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_blocks_and_shapes', 'Blocks and shapes') },
         el('div', { className: 'gw-shape-tray', style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           // The heading is the visible home of the Q shortcut: click it or press Q
           // to cycle shapes. Every shape stays directly clickable below.
@@ -16996,7 +16996,7 @@
             },
             title: __alloT('stem.geometryworld.clear_only_your_placed_blocks_lesson_s', 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.')
           }, renderWorkspaceAction(el,'clear','Clear')),
-          el('button', { type: 'button', className: 'gw-focusable', 'data-gw-utility': 'hide', 'aria-keyshortcuts': 'U', 'aria-label': 'Hide controls. Shortcut U', title: 'Hide controls to see the whole world (U)', onClick: function() { setHudHidden(true); } }, renderWorkspaceAction(el, 'hide', 'Hide'))
+          el('button', { type: 'button', className: 'gw-focusable', 'data-gw-utility': 'hide', 'aria-keyshortcuts': 'U', 'aria-label': __alloT('stem.geometryworld.a11y_hide_controls_shortcut_u', 'Hide controls. Shortcut U'), title: 'Hide controls to see the whole world (U)', onClick: function() { setHudHidden(true); } }, renderWorkspaceAction(el, 'hide', 'Hide'))
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
         isMobile && touchMode && worldActive && engine && el('div', { className: 'gw-touch-controls', style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
@@ -17036,7 +17036,7 @@
             (engine.npcs && engine.npcs.length > 0 ? touchActionButton('talk', 'talk', 'Talk', __alloT('stem.geometryworld.a11y_talk_to_nearby_character', 'Talk to nearby character'), talkToNearbyNpc) : null),
             touchActionButton('more', 'more', 'More', 'More actions', function() { upd('touchMoreOpen', !d.touchMoreOpen); }, { 'aria-expanded': d.touchMoreOpen ? 'true' : 'false', 'aria-controls': 'gw-touch-more' })
           ),
-          d.touchMoreOpen && el('div', { id: 'gw-touch-more', className: 'gw-touch-more', role: 'group', 'aria-label': 'More actions', onTouchEnd: finishMobileButtonTouch, onTouchCancel: finishMobileButtonTouch },
+          d.touchMoreOpen && el('div', { id: 'gw-touch-more', className: 'gw-touch-more', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_more_actions', 'More actions'), onTouchEnd: finishMobileButtonTouch, onTouchCancel: finishMobileButtonTouch },
             buildToolsOpen ? touchActionButton('measure', 'measure', 'Measure', __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), fromMore(measureMobileStructure)) : touchActionButton('place', 'place', 'Place', __alloT('stem.geometryworld.a11y_place_block', 'Place block'), fromMore(placeMobileBlock)),
             buildToolsOpen ? null : touchActionButton('break', 'break', 'Break', __alloT('stem.geometryworld.a11y_break_block', 'Break block'), fromMore(breakMobileBlock)),
             touchActionButton('blocks', 'blocks', buildToolsOpen ? 'Hide blocks' : 'Blocks', buildToolsOpen ? 'Hide blocks and shapes' : 'Show blocks and shapes', function() { setBuildToolsOpen(!buildToolsOpen); }, { 'aria-expanded': buildToolsOpen ? 'true' : 'false' }),
@@ -17385,7 +17385,7 @@
             // Each station is a skill: right first time, or it needed another try.
             var focus = geometryPracticeSummary(geometryStorage()).focus;
             return el('div', { className: 'gw-completion-skills' },
-              el('ul', { 'aria-label': 'Skills this round', style: { listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' } },
+              el('ul', { 'aria-label': __alloT('stem.geometryworld.a11y_skills_this_round', 'Skills this round'), style: { listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' } },
                 GW_PRACTICE_STATIONS.map(function(station) {
                   var missed = geometryPracticeStationMissed(engine && engine.sessionLog, station);
                   return el('li', { key: station, 'data-station': station, 'data-first-try': missed ? 'false' : 'true', style: { padding: '4px 9px', borderRadius: '999px', fontSize: '10px', fontWeight: 750, border: '1px solid ' + (missed ? 'rgba(251,191,36,.45)' : 'rgba(74,222,128,.45)'), color: missed ? '#fde68a' : '#bbf7d0', background: missed ? 'rgba(120,53,15,.25)' : 'rgba(20,83,45,.3)' } },
@@ -17401,7 +17401,7 @@
           (function() {
             var open = currentLesson.objectives ? lessonObjectiveStatuses().filter(function(o) { return !o.status.done; }) : [];
             if (!open.length) return null;
-            return el('div', { className: 'gw-completion-still', role: 'note', 'aria-label': 'Still to try' },
+            return el('div', { className: 'gw-completion-still', role: 'note', 'aria-label': __alloT('stem.geometryworld.a11y_still_to_try', 'Still to try') },
               el('p', { className: 'gw-completion-still-title' }, 'Still to try'),
               el('ul', null, open.slice(0, 3).map(function(o) { return el('li', { key: 'still-' + o.index }, el('span', null, o.text), o.status.evidence && el('small', null, o.status.evidence)); })),
               open.length > 3 && el('p', { className: 'gw-completion-still-more' }, '+ ' + (open.length - 3) + ' more in Objectives'));
@@ -17415,7 +17415,7 @@
             var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
             var offerPractice = !!currentLesson.practice || journey.allComplete;
             return el('div', { className: 'gw-completion-actions' },
-              offerPractice && el('button', { type: 'button', className: 'gw-completion-practice gw-focusable', 'aria-label': 'Start a new practice round with new numbers',
+              offerPractice && el('button', { type: 'button', className: 'gw-completion-practice gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_start_a_new_practice_round_with_new_numbers', 'Start a new practice round with new numbers'),
                 onClick: function() {
                   upd({ measureHistory: [], reflectionText: '', npcWrongCount: {}, npcLastWrong: {}, consecutiveWrong: 0 });
                   var eng = window[engineKey]; if (eng && eng.startPracticeRound) eng.startPracticeRound(undefined, currentLesson.practice ? currentLesson.practice.level : 'core');
@@ -17479,7 +17479,7 @@
           return el('div', { className: 'gw-npc-peek', role: 'region', 'aria-label': peekData.name + '\u2019s question, folded away' },
             el('span', { className: 'gw-npc-peek-name' }, peekData.name),
             el('span', { className: 'gw-npc-peek-text' }, peekStep ? peekStep.text : (peekData.dialogue || '')),
-            el('button', { type: 'button', className: 'gw-npc-peek-back gw-focusable', onClick: function() { upd('npcDialogPeek', false); announceToSR('Question reopened.'); setTimeout(function() { var dlg = document.querySelector('.gw-dialog--npc'); if (dlg) dlg.focus(); }, 0); } }, 'Back to question'),
+            el('button', { type: 'button', className: 'gw-npc-peek-back gw-focusable', onClick: function() { upd('npcDialogPeek', false); announceToSR(__alloT('stem.geometryworld.sr_question_reopened', 'Question reopened.')); setTimeout(function() { var dlg = document.querySelector('.gw-dialog--npc'); if (dlg) dlg.focus(); }, 0); } }, 'Back to question'),
             el('button', { type: 'button', className: 'gw-npc-peek-close gw-focusable', 'aria-label': 'Close ' + peekData.name + '\u2019s question', onClick: function() { upd({ showNpcDialog: false, npcDialogPeek: false }); focusWorldSurface(); } }, '\u00D7'));
         })(),
         showNpcDialog && !npcPeek && engine && engine.npcs[dialogNpcIdx] && (function() {
@@ -17562,8 +17562,8 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { display: 'inline-flex', marginTop: '2px', padding: '2px 6px', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '999px', background: 'rgba(15,23,42,0.92)', color: '#fde68a', fontSize: '10px', fontWeight: 800, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { type: 'button', className: 'gw-npc-look gw-focusable', 'aria-label': 'Look around: fold this question away. Back to question brings it back.', title: 'Look at the world, then come back to the question',
-                onClick: function() { upd('npcDialogPeek', true); announceToSR('Question folded away. Look around, then choose Back to question.'); focusWorldSurface(); } }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDC41'), 'Look'),
+              el('button', { type: 'button', className: 'gw-npc-look gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_look_around_fold_this_question_away_back_to_que', 'Look around: fold this question away. Back to question brings it back.'), title: 'Look at the world, then come back to the question',
+                onClick: function() { upd('npcDialogPeek', true); announceToSR(__alloT('stem.geometryworld.sr_question_folded_away_look_around_then_choose_back', 'Question folded away. Look around, then choose Back to question.')); focusWorldSurface(); } }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDC41'), 'Look'),
               el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content

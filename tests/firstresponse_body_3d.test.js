@@ -754,8 +754,11 @@ describe('body 3D — uses the shared viewer shell', () => {
     expect(bodySrc).not.toMatch(/\bctx\./);
   });
 
-  it('drives the recovery roll from the step count', () => {
-    expect(SRC).toContain("phase: tab === 'recovery' ? recDone.length : 0");
+  it('shows the final positioning message only while the final completed pose is displayed', () => {
+    const completed = RECOVERY.map(step => step.id);
+    expect(body({ b3dTab: 'recovery', b3dRec: completed })).toContain('Positioned — now keep watching');
+    expect(body({ b3dTab: 'recovery', b3dRec: completed, b3dRecView: 4 })).not.toContain('Positioned — now keep watching');
+    expect(body({ b3dTab: 'recovery', b3dRec: completed, b3dRecView: 8 })).toContain('Positioned — now keep watching');
   });
 });
 

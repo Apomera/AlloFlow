@@ -128,10 +128,15 @@ describe('terminated session listener recovery', () => {
   });
 });
 
-const host = readFileSync('AlloFlowANTI.txt', 'utf8');
-const bannerStart = host.indexOf("      {!isTeacherMode && activeSessionCode && ['connecting'");
-const bannerEnd = host.indexOf("      {!isTeacherMode && activeSessionCode && liveSessionConnectionState.status === 'connected'", bannerStart);
-const jsx = 'function Banner({isTeacherMode=false,activeSessionCode="class",liveSessionConnectionState,retryLiveSessionConnection,t}) {return <>' + host.slice(bannerStart, bannerEnd) + '</>; }';
+const host = readFileSync('AlloFlowANTI.txt', 'utf8').replace(/\r\n/g, '\n');
+// The banner used to run up to the next learner banner; a mailbox-stall banner now sits between them and
+// the start line gained overlay guards, so slice exactly this banner: its opening line through its own `)}`.
+const bannerLine = /^ {6}\{!isTeacherMode && activeSessionCode && (?:[^\n]*? && )?\['connecting', 'retrying', 'failed', 'access-required'\]\.includes\(liveSessionConnectionState\.status\) && \($/m.exec(host);
+if (!bannerLine) throw new Error('learner connection banner not found in AlloFlowANTI.txt');
+const bannerStart = bannerLine.index;
+const bannerEnd = host.indexOf('\n      )}\n', bannerStart) + '\n      )}'.length;
+if (bannerEnd <= bannerStart) throw new Error('learner connection banner end not found');
+const jsx = 'function Banner({isTeacherMode=false,activeSessionCode="class",studentQuizCovering=false,liveSessionConnectionState,retryLiveSessionConnection,t}) {return <>' + host.slice(bannerStart, bannerEnd) + '</>; }';
 const Banner = new Function('React', transformSync(jsx, { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code + ';return Banner;')(React);
 const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8')).live_connection;
 const t = key => strings[key.split('.')[1]];

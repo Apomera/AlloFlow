@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-30",
+  "enhancement": "Deliberate spoonful plating and individual place settings",
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20260930-plating",
+  "unitTests": {
+    "passed": 62,
+    "suites": 5,
+    "newPlatingTests": 11,
+    "durationSeconds": 68.78,
+    "command": "npx vitest run kitchen_recipe_plating kitchen_recipe_serving kitchen_recipe_gesture_guide kitchen_recipe_workspace kitchen_recipe_quests --pool=forks --maxWorkers=1 --testTimeout=30000"
+  },
+  "browserChecks": {
+    "passed": 11,
+    "runs": [
+      {
+        "file": "serving-regression/browser-results.json",
+        "checks": 4,
+        "accessibilityScans": 3
+      },
+      {
+        "file": "plating-ux/plating-results.json",
+        "checks": 7,
+        "accessibilityScans": 2
+      }
+    ],
+    "pageErrors": 0
+  },
+  "accessibility": {
+    "scans": 5,
+    "violations": 0
+  },
+  "runtime": {
+    "files": 42,
+    "syntax": "pass",
+    "desktopMirrors": "byte-for-byte match",
+    "whitespace": "pass"
+  },
+  "behavior": [
+    "Scoop down and lift before carrying a spoonful",
+    "Carry level, tip and release to transfer one canonical quarter-serving",
+    "Reverse the gesture from a populated plate into the pan",
+    "Live canonical portion cards distinguish a loaded preview from committed food",
+    "Finite servings, partial reloads, uneven portions, finishing and exported evidence",
+    "Visible linen place settings, forks, napkins, glazed rims and overfilled food piles",
+    "Camera and coach fit for two or four servings, trivet placement and phones",
+    "Keyboard, SVG, real touch, cancellation, replay and graphics-loss fallback",
+    "320px, forced colors, reduced motion and external-state cancellation"
+  ],
+  "commit": "none",
+  "staging": "none"
+}

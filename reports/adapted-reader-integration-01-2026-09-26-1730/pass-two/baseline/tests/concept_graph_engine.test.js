@@ -1,0 +1,743 @@
+// Golden/contract tests for concept_graph_engine_module.js (acg/v1).
+//
+// STEP 0 of the reusable-engine extraction (docs/concept_graph_engine_design.md).
+// The non-negotiable property is LOSSLESS round-trip: existing saved data (Throughline
+// units in project JSON, Visual-Organizer concept maps in csState) must convert to acg
+// and back BYTE-FOR-MEANING identical, or flipping any surface onto the engine corrupts
+// saved work. Also pins the a11y spine (deriveOutline = Kahn topo-sort) and the
+// semantic-axis projector so the "3D meaning" stays reproducible/testable.
+
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+let E;
+beforeAll(() => {
+  const src = readFileSync(resolve(process.cwd(), 'concept_graph_engine_module.js'), 'utf8');
+  window.AlloModules = window.AlloModules || {};
+  delete window.AlloModules.ConceptGraphEngine;
+  // eslint-disable-next-line no-new-func
+  new Function(src)();
+  E = window.AlloModules.ConceptGraphEngine;
+  if (!E) throw new Error('ConceptGraphEngine did not register (anchor changed?)');
+});
+
+function sampleUnit() {
+  return {
+    schemaVersion: 1, generator: 'throughline@1', minAppSchema: 1,
+    unitId: 'tl_x', sourceUnitId: 'u_fix', title: 'The Water Cycle', essentialQuestion: 'How does water recycle?',
+    author: '', license: null, parentUnitId: null, forkedFrom: null,
+    createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+    nodes: [
+      { nodeId: 'n1', lessonId: 'h1', x: 80, y: 120, description: 'Hook.', role: '', status: 'draft', category: 'Acquire' },
+      { nodeId: 'n2', lessonId: 'h2', x: 350, y: 120, description: 'Terms.', role: '', status: 'draft', category: 'Make-Meaning' },
+      { nodeId: 'n3', lessonId: null, x: 620, y: 120, description: '', role: '', status: 'planned', category: null, bundledLessonIds: ['h3', 'h4'] },
+    ],
+    edges: [{ from: 'n1', to: 'n2', type: 'sequence' }, { from: 'n2', to: 'n3', type: 'prerequisite' }],
+  };
+}
+
+function sampleConceptMap() {
+  return {
+    nodes: [
+      { id: 'm', x: 350, y: 50, text: 'Photosynthesis', type: 'main', colorVariant: 0 },
+      { id: 'a', x: 100, y: 200, text: 'Light reactions', type: 'branch', colorVariant: 1 },
+      { id: 'b', x: 600, y: 200, text: 'Calvin cycle', type: 'branch', colorVariant: 2 },
+    ],
+    edges: [
+      { id: 'e1', fromId: 'm', toId: 'a', style: 'dashed', color: '#334155', status: null },
+      { id: 'e2', fromId: 'm', toId: 'b' },
+    ],
+    structureType: 'Mind Map',
+  };
+}
+
+describe('ConceptGraphEngine — lossless round-trip (the load-bearing guarantee)', () => {
+  it('Throughline unit → acg → Throughline unit is identical', () => {
+    const u = sampleUnit();
+    const back = E.toThroughlineUnit(E.fromThroughlineUnit(u));
+    expect(back).toEqual(u);
+  });
+
+  it('Visual-Organizer concept map → acg → concept map is identical', () => {
+    const cm = sampleConceptMap();
+    const back = E.toConceptMap(E.fromConceptMap(cm.nodes, cm.edges, cm.structureType));
+    expect(back).toEqual(cm);
+  });
+
+  it('fromThroughlineUnit produces canonical acg fields (id/fromId/toId/layers)', () => {
+    const g = E.fromThroughlineUnit(sampleUnit());
+    expect(g.version).toBe('acg/v1');
+    expect(g.nodes.map((n) => n.id)).toEqual(['n1', 'n2', 'n3']);
+    expect(g.edges).toEqual([
+      { fromId: 'n1', toId: 'n2', type: 'sequence' },
+      { fromId: 'n2', toId: 'n3', type: 'prerequisite' },
+    ]);
+    expect(g.layers.map((l) => l.key)).toEqual(['Acquire', 'Make-Meaning', null]); // n3 is uncategorized
+  });
+});
+
+describe('ConceptGraphEngine — deriveOutline (the a11y reading spine)', () => {
+  it('linear chain reads in teaching order', () => {
+    const g = E.fromThroughlineUnit(sampleUnit());
+    const o = E.deriveOutline(g);
+    expect(o.hasCycle).toBe(false);
+    expect(o.order).toEqual(['n1', 'n2', 'n3']);
+  });
+
+  it('detects a cycle and falls back to x-order', () => {
+    const g = E.normalizeGraph({
+      version: 'acg/v1', nodes: [{ id: 'a', x: 0, y: 0 }, { id: 'b', x: 100, y: 0 }],
+      edges: [{ fromId: 'a', toId: 'b', type: 'sequence' }, { fromId: 'b', toId: 'a', type: 'sequence' }],
+    });
+    const o = E.deriveOutline(g);
+    expect(o.hasCycle).toBe(true);
+    expect(o.order).toEqual(['a', 'b']);   // x-order fallback
+  });
+
+  it('ties broken by x then y (matches Throughline tiebreak)', () => {
+    const g = { version: 'acg/v1', nodes: [
+      { id: 'late', x: 300, y: 0 }, { id: 'early', x: 50, y: 0 }, { id: 'mid', x: 50, y: 200 },
+    ], edges: [] };
+    expect(E.deriveOutline(g).order).toEqual(['early', 'mid', 'late']);
+  });
+});
+
+describe('ConceptGraphEngine — adaptGenerated (Gemini Stage-1 graph → acg)', () => {
+  it('builds root + branch + item nodes and elaborates/sequence edges', () => {
+    const g = E.adaptGenerated({
+      main: 'Ecosystems',
+      structureType: 'Mind Map',
+      branches: [
+        { title: 'Producers', items: ['Plants', 'Algae'], connectsTo: [1] },
+        { title: 'Consumers', items: ['Herbivores'] },
+      ],
+    });
+    expect(g.title).toBe('Ecosystems');
+    // root + 2 branches + 3 items
+    expect(g.nodes.length).toBe(6);
+    expect(g.nodes[0]).toMatchObject({ id: 'root', type: 'main', label: 'Ecosystems' });
+    // root→branch + branch→item elaborates (2 + 3 = 5) plus 1 connectsTo sequence edge
+    const seq = g.edges.filter((e) => e.type === 'sequence');
+    expect(seq).toEqual([{ id: 'e_ct0_1', fromId: 'b0', toId: 'b1', type: 'sequence' }]);
+    expect(g.edges.filter((e) => e.type === 'elaborates').length).toBe(5);
+  });
+
+  it('handles {text} object items (seeded/template organizers) without stringifying the object', () => {
+    const g = E.adaptGenerated({ main: 'T', branches: [{ title: 'S', items: [{ text: 'From a template' }, 'Plain'] }] });
+    const labels = g.nodes.filter((n) => n.type === 'item').map((n) => n.label);
+    expect(labels).toEqual(['From a template', 'Plain']);
+  });
+});
+
+describe('ConceptGraphEngine — normalizeGraph routing + idempotence', () => {
+  it('is idempotent on an acg graph', () => {
+    const g = E.fromThroughlineUnit(sampleUnit());
+    expect(E.normalizeGraph(g)).toBe(g);   // returns the same object
+  });
+  it('routes a throughline unit, a concept map, and a generated graph', () => {
+    expect(E.normalizeGraph(sampleUnit()).nodes.map((n) => n.id)).toEqual(['n1', 'n2', 'n3']);
+    const cm = sampleConceptMap();
+    expect(E.normalizeGraph(cm).nodes.map((n) => n.id)).toEqual(['m', 'a', 'b']);
+    expect(E.normalizeGraph({ main: 'X', branches: [{ title: 'Y', items: [] }] }).title).toBe('X');
+  });
+});
+
+describe('ConceptGraphEngine — semantic-axis Gemini prompt', () => {
+  it('buildSemanticGraphPrompt lists node ids, asks for 0..1 axes, and offers existing strands', () => {
+    const g = E.fromThroughlineUnit(sampleUnit());
+    g.nodes[0].label = 'Hook lesson'; g.nodes[1].label = 'Terms lesson';
+    const p = E.buildSemanticGraphPrompt(g, { topic: 'Water Cycle' });
+    expect(p).toMatch(/Water Cycle/);
+    expect(p).toMatch(/id "n1": Hook lesson/);
+    expect(p).toMatch(/0\.0 to 1\.0/);
+    expect(p).toMatch(/Acquire/);           // existing strand offered as a z option
+    expect(p).toMatch(/Return ONLY JSON/);
+  });
+
+  it('parseSemanticGraph tolerates code fences, clamps x/y to 0..1, keeps z label', () => {
+    const text = '```json\n{ "axes": { "x": {"label":"seq"} }, "nodes": [ { "id":"n1", "axisValues": { "x": 1.7, "y": -0.3, "z": "Acquire" } } ] }\n```';
+    const out = E.parseSemanticGraph(text);
+    expect(out.axes).toEqual({ x: { label: 'seq' } });
+    expect(out.nodes).toEqual([{ id: 'n1', axisValues: { x: 1, y: 0, z: 'Acquire' } }]);
+  });
+
+  it('parseSemanticGraph returns empty on junk (no throw)', () => {
+    expect(E.parseSemanticGraph('not json at all')).toEqual({ axes: null, nodes: [] });
+  });
+
+  it('layoutWithGemini merges AI axisValues onto matching nodes and sets axes', async () => {
+    const g = E.fromThroughlineUnit(sampleUnit());
+    const fakeGemini = async () => JSON.stringify({
+      axes: { x: { label: 'seq' }, z: { label: 'strand', categories: ['Acquire', 'Make-Meaning'] } },
+      nodes: [
+        { id: 'n1', axisValues: { x: 0, y: 0.2, z: 'Acquire' } },
+        { id: 'n2', axisValues: { x: 1, y: 0.8, z: 'Make-Meaning' } },
+      ],
+    });
+    const merged = await E.layoutWithGemini(g, fakeGemini, { topic: 'Water Cycle' });
+    expect(merged.axes.z.categories).toEqual(['Acquire', 'Make-Meaning']);
+    expect(merged.nodes[0].axisValues).toEqual({ x: 0, y: 0.2, z: 'Acquire' });
+    expect(merged.nodes[1].axisValues).toEqual({ x: 1, y: 0.8, z: 'Make-Meaning' });
+    // and the renderer can now project those into real depth
+    const projected = E.project(merged, { width: 1000, height: 800, planeGap: 300 });
+    expect(projected.nodes[0].z).not.toBe(projected.nodes[1].z);
+  });
+
+  it('layoutWithGemini rejects when callGemini is missing', async () => {
+    await expect(E.layoutWithGemini(E.emptyGraph(), null)).rejects.toThrow();
+  });
+});
+
+describe('ConceptGraphEngine — project (semantic axes → coordinates)', () => {
+  it('maps normalized ordinal axes to pixels and categorical z to discrete planes', () => {
+    const g = {
+      version: 'acg/v1',
+      axes: { z: { kind: 'categorical', categories: ['Bio', 'Chem'] } },
+      nodes: [
+        { id: 'p', x: 0, y: 0, z: 0, category: 'Bio', axisValues: { x: 0.5, y: 0.25, z: 'Bio' } },
+        { id: 'q', x: 0, y: 0, z: 0, category: 'Chem', axisValues: { x: 1.0, y: 1.0, z: 'Chem' } },
+      ],
+      edges: [], layers: [],
+    };
+    const out = E.project(g, { width: 1000, height: 800, planeGap: 300 });
+    expect(out.nodes[0]).toMatchObject({ x: 500, y: 200, z: 0 });    // Bio plane index 0
+    expect(out.nodes[1]).toMatchObject({ x: 1000, y: 800, z: 300 }); // Chem plane index 1 * 300
+  });
+  it('leaves nodes without axisValues untouched (manual-drag/legacy coords preserved)', () => {
+    const g = { version: 'acg/v1', nodes: [{ id: 'd', x: 42, y: 99, z: 0 }], edges: [], layers: [] };
+    expect(E.project(g).nodes[0]).toMatchObject({ x: 42, y: 99 });
+  });
+});
+
+describe('ConceptGraphEngine — arrangements (persistable 3D placement + constrained editing)', () => {
+  it('extractArrangement ↔ applyArrangement round-trips axisValues + categories + axes', () => {
+    const g = {
+      version: 'acg/v1',
+      axes: { z: { kind: 'categorical', categories: ['Bio'] } },
+      nodes: [
+        { id: 'a', x: 0, y: 0, z: 0, category: 'Bio', axisValues: { x: 0.2, y: 0.4, z: 'Bio' } },
+        { id: 'b', x: 5, y: 5, z: 0, category: null },
+      ],
+      edges: [], layers: [],
+    };
+    const arr = E.extractArrangement(g);
+    expect(arr.axisValues.a).toEqual({ x: 0.2, y: 0.4, z: 'Bio' });
+    expect(arr.categories).toEqual({ a: 'Bio' });
+    expect(arr.axes).toEqual(g.axes);
+    // apply onto a fresh copy that has no placement — the persisted meaning returns
+    const bare = { version: 'acg/v1', nodes: [{ id: 'a', x: 0, y: 0, z: 0, category: null }, { id: 'b', x: 5, y: 5, z: 0, category: null }], edges: [], layers: [] };
+    const applied = E.applyArrangement(bare, arr);
+    expect(applied.nodes[0].axisValues).toEqual({ x: 0.2, y: 0.4, z: 'Bio' });
+    expect(applied.nodes[0].category).toBe('Bio');
+    expect(applied.nodes[1].axisValues).toBeUndefined();
+    expect(applied.axes).toEqual(g.axes);
+    expect(applied.layers.map((l) => l.key)).toEqual(['Bio', null]);
+  });
+
+  it('applyArrangement ignores unknown ids and a null arrangement', () => {
+    const g = E.adaptGenerated({ main: 'X', branches: [{ title: 'S', items: ['i'] }] });
+    expect(E.applyArrangement(g, null)).toBe(g);
+    const applied = E.applyArrangement(g, { axisValues: { ghost: { x: 1 } }, categories: { ghost: 'Z' } });
+    expect(applied.nodes.some((n) => n.id === 'ghost')).toBe(false);
+    expect(applied.nodes.map((n) => n.axisValues)).toEqual(g.nodes.map((n) => n.axisValues));
+  });
+
+  it('ensureDefaultAxisValues: geometry-less generated graphs get reading-order × tier × strand defaults', () => {
+    const g = E.adaptGenerated({ main: 'T', branches: [{ title: 'S1', items: ['a1'] }, { title: 'S2', items: [] }] });
+    const withDefaults = E.ensureDefaultAxisValues(g);
+    const byId = {}; withDefaults.nodes.forEach((n) => { byId[n.id] = n; });
+    expect(byId.root.axisValues.x).toBe(0);            // first in reading order
+    expect(byId.b0.axisValues.x).toBeCloseTo(1 / 3);   // second of four
+    expect(byId.root.axisValues.y).toBe(0.12);         // main tier
+    expect(byId.b0.axisValues.y).toBe(0.45);           // branch tier
+    expect(byId.b0_i0.axisValues.y).toBe(0.78);        // item tier
+    expect(byId.b0.axisValues.z).toBe('S1');           // strand from category
+    // projected result is no longer a degenerate single column
+    const proj = E.project(withDefaults, { width: 1000, height: 800, planeGap: 300 });
+    expect(new Set(proj.nodes.map((n) => n.x)).size).toBeGreaterThan(1);
+  });
+
+  it('ensureDefaultAxisValues leaves real coordinates and existing axisValues alone', () => {
+    const manual = { version: 'acg/v1', nodes: [{ id: 'm', x: 42, y: 99, z: 0 }], edges: [], layers: [] };
+    expect(E.ensureDefaultAxisValues(manual)).toBe(manual);   // unchanged ⇒ same object
+    const scored = { version: 'acg/v1', nodes: [{ id: 's', x: 0, y: 0, z: 0, axisValues: { x: 0.7, y: 0.3 } }], edges: [], layers: [] };
+    expect(E.ensureDefaultAxisValues(scored).nodes[0].axisValues).toEqual({ x: 0.7, y: 0.3 });
+  });
+
+  it('setNodeStrand moves category + axisValues.z together and refreshes lanes', () => {
+    const g = E.ensureDefaultAxisValues(E.adaptGenerated({ main: 'T', branches: [{ title: 'S1', items: [] }, { title: 'S2', items: [] }] }));
+    const moved = E.setNodeStrand(g, 'b0', 'S2');
+    const n = moved.nodes.find((x) => x.id === 'b0');
+    expect(n.category).toBe('S2');
+    expect(n.axisValues.z).toBe('S2');
+    expect(moved.layers.map((l) => l.key)).toEqual(['S2', null]);   // S1 has no members left; root is uncategorized
+    expect(E.setNodeStrand(g, 'ghost', 'S2')).toBe(g);              // unknown id ⇒ unchanged
+  });
+
+  it('buildStrandChallenge strips item strands + answer-leaking edges but keeps the strand planes', () => {
+    const g = E.ensureDefaultAxisValues(E.adaptGenerated({
+      main: 'T',
+      branches: [{ title: 'S1', items: ['a', 'b'] }, { title: 'S2', items: ['c'] }],
+    }));
+    const ch = E.buildStrandChallenge(g);
+    expect(ch.targets.slice().sort()).toEqual(['b0_i0', 'b0_i1', 'b1_i0']);
+    expect(ch.answerKey).toEqual({ b0_i0: 'S1', b0_i1: 'S1', b1_i0: 'S2' });
+    expect(ch.strands).toEqual(['S1', 'S2']);
+    const items = ch.graph.nodes.filter((n) => n.type === 'item');
+    expect(items.every((n) => n.category === null)).toBe(true);                    // items fall off their strands
+    expect(items.every((n) => !n.axisValues || n.axisValues.z === undefined)).toBe(true);
+    expect(ch.graph.nodes.find((n) => n.id === 'b0').category).toBe('S1');         // strand planes remain as targets
+    expect(ch.graph.edges.some((e) => /_i\d/.test(e.fromId) || /_i\d/.test(e.toId))).toBe(false);   // no giveaway edges
+    expect(ch.graph.layers.map((l) => l.key)).toEqual(['S1', 'S2', null]);         // trailing Ungrouped plane holds the items
+  });
+
+  it('buildStrandHintPrompt nudges without ever revealing the correct strand', () => {
+    const p = E.buildStrandHintPrompt({ itemLabel: 'Mitochondria', placedStrand: 'Ethics', strands: ['Biology', 'Chemistry', 'Ethics'], topic: 'Cells' });
+    expect(p).toMatch(/Mitochondria/);
+    expect(p).toMatch(/Ethics/);                                  // what the student DID is stated
+    expect(p).toMatch(/WITHOUT naming or revealing the correct strand/);
+    expect(p).toMatch(/Topic: Cells/);
+    // unplaced variant
+    const p2 = E.buildStrandHintPrompt({ itemLabel: 'Ribosome', placedStrand: null, strands: ['A'] });
+    expect(p2).toMatch(/not yet placed/);
+  });
+
+  it('scoreStrandChallenge classifies correct / incorrect / unplaced and detects completion', () => {
+    const key = { i1: 'A', i2: 'B', i3: 'B' };
+    const partial = E.scoreStrandChallenge(key, { i1: 'A', i2: 'A' });
+    expect(partial).toMatchObject({ total: 3, correct: 1, incorrect: 1, unplaced: 1, complete: false });
+    expect(partial.results).toEqual({ i1: 'correct', i2: 'incorrect', i3: 'unplaced' });
+    expect(E.scoreStrandChallenge(key, { i1: 'A', i2: 'B', i3: 'B' }).complete).toBe(true);
+    expect(E.scoreStrandChallenge({}, {}).complete).toBe(false);   // empty key can never be "won"
+  });
+
+  it('nudgeNodeAxis clamps to 0..1 and derives a start from current coords when axisValues are absent', () => {
+    const g = { version: 'acg/v1', nodes: [{ id: 'd', x: 1000, y: 600, z: 0 }], edges: [], layers: [] };
+    const once = E.nudgeNodeAxis(g, 'd', 'x', 0.06, { width: 2000, height: 1200 });
+    expect(once.nodes[0].axisValues.x).toBeCloseTo(0.56);           // 1000/2000 + 0.06 — moves FROM where it is
+    const capped = E.nudgeNodeAxis(once, 'd', 'x', 9, {});
+    expect(capped.nodes[0].axisValues.x).toBe(1);
+    const floored = E.nudgeNodeAxis(once, 'd', 'y', -9, {});
+    expect(floored.nodes[0].axisValues.y).toBe(0);
+    expect(E.nudgeNodeAxis(g, 'd', 'q', 1)).toBe(g);                // invalid axis ⇒ unchanged
+  });
+});
+
+describe('ConceptGraphEngine — alignment audit projection', () => {
+  it('builds a provenance-aware graph without inventing artifact links', () => {
+    const graph = E.fromAlignmentAudit({
+      comprehensive: {
+        auditMetadata: { generatedAt: '2026-07-31T12:00:00.000Z' },
+        standards: {
+          status: 'Partially Aligned',
+          passCount: 1,
+          reviseCount: 1,
+          perStandard: [{
+            standard: 'NGSS 3-LS4-2',
+            standardBreakdown: { contentFocus: 'Inherited traits' },
+            analysis: {
+              textAlignment: { status: 'Aligned', evidence: 'The objective names inherited traits.', notes: 'Text evidence.' },
+              activityAlignment: { status: 'Partially Aligned', evidence: 'The sort addresses examples but needs extension.' }
+            },
+            overallDetermination: 'Pass',
+            gaps: ['Assessment evidence is missing.'],
+            adminRecommendation: 'Add an exit ticket.'
+          }]
+        }
+      }
+    }, {
+      provider: 'Pinned standards snapshot',
+      datasetVersion: 'fixture-v1',
+      provenance: { datasetVersion: 'fixture-v1', sourceUrl: 'https://example.test/standards' }
+    });
+
+    expect(graph.version).toBe('acg/v1');
+    expect(graph.meta.alignmentAudit).toMatchObject({
+      provider: 'Pinned standards snapshot',
+      datasetVersion: 'fixture-v1',
+      status: 'Partially aligned',
+      standardsCount: 1
+    });
+
+    const standard = graph.nodes.find((node) => node.type === 'standard');
+    expect(standard).toMatchObject({
+      label: 'NGSS 3-LS4-2',
+      status: 'Aligned',
+      standardBreakdown: { contentFocus: 'Inherited traits' }
+    });
+    expect(graph.nodes.find((node) => node.dimension === 'textAlignment')).toMatchObject({
+      type: 'auditEvidence',
+      status: 'Aligned',
+      evidence: 'The objective names inherited traits.'
+    });
+    expect(graph.nodes.find((node) => node.dimension === 'assessmentAlignment')).toMatchObject({
+      type: 'auditEvidence',
+      status: 'Not evaluated'
+    });
+    expect(graph.nodes.find((node) => node.type === 'auditFinding')).toMatchObject({
+      status: 'Not aligned',
+      finding: 'Assessment evidence is missing.'
+    });
+    expect(graph.nodes.find((node) => node.type === 'auditRecommendation')).toMatchObject({
+      recommendation: 'Add an exit ticket.'
+    });
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fromId: standard.id, type: 'evidencedBy', status: 'Aligned', provenance: 'alloflow-audit' }),
+      expect.objectContaining({ fromId: standard.id, type: 'assessedBy', status: 'Not evaluated', provenance: 'alloflow-audit' }),
+      expect.objectContaining({ fromId: standard.id, type: 'contains', status: 'Not aligned', provenance: 'alloflow-audit' })
+    ]));
+    expect(graph.nodes.some((node) => node.type === 'artifact')).toBe(false);
+    expect(graph.layers.map((lane) => lane.key)).toEqual(['Audit', 'Standards', 'Alignment evidence', 'Audit findings']);
+  });
+
+  it('adds exact local standards context without exposing structural nodes as targets', () => {
+    const target = { id: 'std:target', code: '5-ESS2-1', label: 'Earth systems', text: 'Develop a model of Earth systems.', kind: 'standard', resolvable: true, framework: 'Massachusetts Science', sourceUrl: 'https://example.test/ma-science' };
+    const group = { id: 'group:earth', code: null, label: 'Earth and Space Science', text: 'Earth and space science grouping.', kind: 'group', resolvable: false, framework: 'Massachusetts Science' };
+    const child = { id: 'std:child', code: '5-ESS2-2', label: 'Water distribution', text: 'Describe water distribution.', kind: 'standard', resolvable: true, framework: 'Massachusetts Science' };
+    const calls = [];
+    const provider = {
+      resolveStandard(query) {
+        return query === '5-ESS2-1' ? { status: 'resolved', match: target } : { status: 'not-found', match: null };
+      },
+      getNeighborhood(id, options) {
+        calls.push({ id, options });
+        return {
+          rootId: id,
+          depth: options.depth,
+          nodes: [target, group, child],
+          relationships: [
+            { fromId: group.id, toId: target.id, type: 'hasChild', source: 'https://example.test/ma-science' },
+            { fromId: target.id, toId: child.id, type: 'hasChild', source: 'https://example.test/ma-science' },
+          ],
+          truncated: false,
+        };
+      },
+    };
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{ standard: '5-ESS2-1', overallDetermination: 'Pass' }],
+      },
+    }, { standardsProvider: provider, standardsContextDepth: 2, standardsContextMaxNodes: 7, standardsContextMaxEdges: 8 });
+
+    const auditTarget = graph.nodes.find((node) => node.type === 'standard');
+    expect(auditTarget.standardsContext).toMatchObject({ contextId: target.id, code: target.code, framework: target.framework });
+    expect(graph.nodes.filter((node) => node.type === 'standardsContext')).toEqual(expect.arrayContaining([
+      expect.objectContaining({ contextId: group.id, kind: 'group', resolvable: false }),
+      expect.objectContaining({ contextId: child.id, kind: 'standard', resolvable: true }),
+    ]));
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fromId: expect.stringContaining('standards-context-group-earth'), toId: auditTarget.id, relationType: 'hasChild', type: 'contains' }),
+      expect.objectContaining({ fromId: auditTarget.id, toId: expect.stringContaining('standards-context-std-child'), relationType: 'hasChild', type: 'contains' }),
+    ]));
+    expect(graph.meta.alignmentAudit.standardsGraph).toMatchObject({ enabled: true, matchedTargets: 1, contextNodes: 2, contextRelationships: 2, truncatedTargets: 0 });
+    expect(calls[0]).toMatchObject({ id: target.id, options: { depth: 2, maxNodes: 7, maxEdges: 8 } });
+  });
+  it('projects bounded audit-scope provenance into Alignment Map graph nodes', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{ standard: '5-ESS2-1', overallDetermination: 'Pass' }],
+      },
+    }, {
+      auditScope: {
+        selectionMode: 'explicit artifact IDs',
+        includedArtifactIds: ['lesson-1', 'quiz-1'],
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan', timestamp: '2026-07-31T12:00:00.000Z' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz', timestamp: '2026-07-31T12:05:00.000Z' },
+        ],
+      },
+    });
+
+    expect(graph.meta.alignmentMap).toMatchObject({
+      version: 'alloflow-alignment-map/v2',
+      targetNodeType: 'standard',
+      scopeNodeType: 'auditArtifact',
+      provenancePolicy: 'explicit-attribution-only',
+      attributionSources: ['audit-model', 'teacher', 'deterministic-check', 'unknown'],
+    });
+    expect(graph.meta.alignmentAudit.auditScopeGraph).toMatchObject({
+      nodeCount: 2,
+      truncated: false,
+      selectionMode: 'explicit artifact IDs',
+    });
+    expect(graph.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'auditArtifact', artifactId: 'lesson-1', artifactType: 'lesson-plan', label: 'Lesson Plan' }),
+      expect.objectContaining({ type: 'auditArtifact', artifactId: 'quiz-1', artifactType: 'quiz', label: 'Exit Quiz' }),
+    ]));
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'contains', relationType: 'auditScope', provenance: 'alloflow-audit', attributionSource: 'deterministic-check' }),
+    ]));
+  });
+  it('keeps evidence attribution explicit, bounded, and inside the audited scope', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{
+          standard: '5-ESS2-1',
+          overallDetermination: 'Pass',
+          analysis: {
+            textAlignment: { status: 'Aligned', evidence: 'The lesson explains Earth systems.', artifactIds: ['lesson-1', 'not-audited'] },
+          },
+          gaps: [{ text: 'Assessment evidence is missing.', artifactIds: ['quiz-1', 'not-audited'] }],
+        }],
+      },
+    }, {
+      auditScope: {
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz' },
+        ],
+      },
+    });
+
+    const evidence = graph.nodes.find((node) => node.type === 'auditEvidence' && node.dimension === 'textAlignment');
+    const lessonArtifact = graph.nodes.find((node) => node.type === 'auditArtifact' && node.artifactId === 'lesson-1');
+    expect(evidence).toMatchObject({ artifactIds: ['lesson-1'], attribution: 'explicit', attributionSource: 'audit-model' });
+    expect(graph.meta.alignmentAudit.evidenceAttribution).toMatchObject({ mode: 'explicit-only', evidenceLinks: 1, findingLinks: 1, evidenceBySource: { 'audit-model': 1 }, findingBySource: { 'audit-model': 1 } });
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        fromId: evidence.id,
+        toId: lessonArtifact.id,
+        type: 'supportedBy',
+        relationType: 'evidenceFrom',
+        artifactId: 'lesson-1',
+        attribution: 'explicit',
+        attributionSource: 'audit-model',
+      }),
+    ]));
+    expect(graph.edges.some((edge) => edge.artifactId === 'not-audited')).toBe(false);
+    const finding = graph.nodes.find((node) => node.type === 'auditFinding');
+    const quizArtifact = graph.nodes.find((node) => node.type === 'auditArtifact' && node.artifactId === 'quiz-1');
+    expect(finding).toMatchObject({ finding: 'Assessment evidence is missing.', artifactIds: ['quiz-1'], attribution: 'explicit', attributionSource: 'audit-model' });
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fromId: finding.id, toId: quizArtifact.id, type: 'supportedBy', relationType: 'findingFrom', artifactId: 'quiz-1', attribution: 'explicit', attributionSource: 'audit-model' }),
+    ]));
+  });
+  it('creates a non-mutating teacher confirmation projection for explicit artifact links', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{
+          standard: '5-ESS2-1',
+          overallDetermination: 'Pass',
+          analysis: { textAlignment: { status: 'Aligned', evidence: 'The lesson explains Earth systems.', artifactIds: ['lesson-1'] } },
+          gaps: [{ text: 'Assessment evidence is missing.', artifactIds: ['quiz-1'] }],
+        }],
+      },
+    }, {
+      auditScope: {
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz' },
+        ],
+      },
+    });
+    const evidenceEdge = graph.edges.find((edge) => edge.relationType === 'evidenceFrom');
+    const structuralEdge = graph.edges.find((edge) => edge.relationType === 'auditScope');
+    const confirmed = E.confirmExplicitAttributions(graph, [{
+      edgeId: evidenceEdge.id,
+      confirmedAt: '2026-08-01T12:00:00.000Z',
+      confirmedBy: 'teacher-1',
+      note: 'Reviewed against the lesson plan.',
+    }]);
+
+    expect(confirmed).not.toBe(graph);
+    expect(graph.edges.find((edge) => edge.id === evidenceEdge.id)).toMatchObject({ attributionSource: 'audit-model' });
+    expect(confirmed.edges.find((edge) => edge.id === evidenceEdge.id)).toMatchObject({
+      attribution: 'explicit',
+      relationType: 'evidenceFrom',
+      attributionSource: 'teacher',
+      attributionHistory: [
+        { source: 'audit-model', role: 'producer', method: 'declared' },
+        { source: 'teacher', role: 'confirmation', method: 'teacher-confirmed', confirmedBy: 'teacher-1' },
+      ],
+    });
+    expect(confirmed.edges.find((edge) => edge.id === structuralEdge.id)).toMatchObject({ attributionSource: 'deterministic-check' });
+    expect(confirmed.meta.alignmentMap.attributionConfirmationPolicy).toBe('derived-copy-only');
+    expect(confirmed.meta.alignmentAudit.attributionConfirmations).toMatchObject({ mode: 'derived-copy-only', count: 1, edgeIds: [evidenceEdge.id] });
+  });
+
+  it('keeps teacher-confirmation summary cumulative across sequential reviews', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: { status: 'Aligned', perStandard: [{
+        standard: 'STD-1', overallDetermination: 'Pass',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'Text evidence', artifactIds: ['lesson-1'] },
+          activityAlignment: { status: 'Aligned', evidence: 'Activity evidence', artifactIds: ['quiz-1'] },
+        },
+      }] },
+    }, { auditScope: { includedArtifacts: [{ id: 'lesson-1', type: 'lesson' }, { id: 'quiz-1', type: 'quiz' }] } });
+    const ids = graph.edges.filter((edge) => edge.relationType === 'evidenceFrom').map((edge) => edge.id);
+    const first = E.confirmExplicitAttributions(graph, [{ edgeId: ids[0] }]);
+    const second = E.confirmExplicitAttributions(first, [{ edgeId: ids[1] }]);
+    expect(second.meta.alignmentAudit.attributionConfirmations).toMatchObject({ count: 2 });
+    expect(new Set(second.meta.alignmentAudit.attributionConfirmations.edgeIds)).toEqual(new Set(ids));
+  });
+
+  it('bounds imported graph strings, depth, keys, and top-level fields', () => {
+    const graph = E.fromAlignmentAudit({ standards: { status: 'Aligned', perStandard: [{ standard: 'STD-1', overallDetermination: 'Pass' }] } });
+    graph.nodes[0].label = 'x'.repeat(E.ALIGNMENT_IMPORT_LIMITS.maxString + 50);
+    graph.nodes[0].nested = { one: { two: { three: { four: { five: { six: { seven: { eight: { secret: 'no' } } } } } } } } };
+    graph.untrustedTopLevel = { should: 'drop' };
+    const normalized = E.normalizeAlignmentGraphExport({ schema: E.ALIGNMENT_EXPORT_SCHEMA, graph });
+    expect(normalized.ok).toBe(true);
+    expect(normalized.graph.nodes[0].label).toHaveLength(E.ALIGNMENT_IMPORT_LIMITS.maxString);
+    expect(normalized.graph.untrustedTopLevel).toBeUndefined();
+    expect(normalized.graph.nodes[0].nested.one.two.three.four.five.six.seven).toBeNull();
+  });
+
+  it('ignores confirmation requests that do not target explicit evidence or finding edges', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: { status: 'Aligned', perStandard: [{ standard: 'STD-1', overallDetermination: 'Pass' }] },
+      auditScope: { includedArtifactIds: ['lesson-1'] },
+    });
+    const projected = E.confirmExplicitAttributions(graph, [{ edgeId: 'missing-edge' }]);
+    expect(projected.meta.alignmentAudit.attributionConfirmations).toMatchObject({ count: 0, edgeIds: [] });
+    expect(projected.edges).toEqual(graph.edges);
+  });
+
+  it('validates and filters the exported alignment graph without inventing relationships', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Partially aligned',
+        perStandard: [{
+          standard: 'NGSS 5-LS1-1',
+          overallDetermination: 'Revise',
+          analysis: { textAlignment: { status: 'Aligned', evidence: 'Plants use structures to move materials.', artifactIds: ['lesson-1'] } },
+          gaps: [{ text: 'The exit ticket needs a stronger check.', artifactIds: ['quiz-1'] }],
+          adminRecommendation: 'Add one evidence-based exit question.',
+        }],
+      },
+    }, {
+      auditScope: {
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz' },
+        ],
+      },
+    });
+    const evidenceEdge = graph.edges.find((edge) => edge.relationType === 'evidenceFrom');
+    const derived = E.confirmExplicitAttributions(graph, [{ edgeId: evidenceEdge.id, confirmedAt: '2026-08-01T12:00:00.000Z' }]);
+    const payload = {
+      schema: 'alloflow-alignment-graph-export/v1',
+      graph: derived,
+      originalGraph: graph,
+      audit: { status: 'Partially aligned' },
+    };
+
+    const normalized = E.normalizeAlignmentGraphExport(payload);
+    expect(normalized.ok).toBe(true);
+    expect(normalized.graph.version).toBe('acg/v1');
+    expect(normalized.originalGraph.version).toBe('acg/v1');
+    expect(E.normalizeAlignmentGraphExport({ schema: 'wrong/v1', graph: derived }).ok).toBe(false);
+
+    const teacherView = E.filterAlignmentGraph(payload, { attributionSources: ['teacher'] });
+    expect(teacherView.ok).toBe(true);
+    expect(teacherView.graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ relationType: 'evidenceFrom', attributionSource: 'teacher' }),
+    ]));
+    expect(teacherView.graph.nodes.some((node) => node.type === 'auditEvidence')).toBe(true);
+    expect(teacherView.graph.nodes.some((node) => node.type === 'auditArtifact')).toBe(true);
+    expect(teacherView.graph.meta.alignmentView.filters.attributionSources).toEqual(['teacher']);
+
+    const findingView = E.filterAlignmentGraph(payload, { nodeTypes: ['auditFinding'] });
+    expect(findingView.graph.nodes.some((node) => node.type === 'auditFinding')).toBe(true);
+    expect(findingView.graph.nodes.some((node) => node.type === 'auditRecommendation')).toBe(false);
+    expect(findingView.graph.edges.every((edge) => {
+      const ids = new Set(findingView.graph.nodes.map((node) => node.id));
+      return ids.has(edge.fromId) && ids.has(edge.toId);
+    })).toBe(true);
+
+    const searchView = E.filterAlignmentGraph(payload, { query: 'exit ticket' });
+    expect(searchView.graph.nodes.some((node) => node.type === 'auditFinding')).toBe(true);
+    expect(searchView.graph.nodes.some((node) => node.type === 'auditRecommendation')).toBe(false);
+    expect(graph.edges.find((edge) => edge.id === evidenceEdge.id).attributionSource).toBe('audit-model');
+  });
+  it('fails closed to a root audit node when no standards are available', () => {
+    const graph = E.fromAlignmentAudit({ standards: { status: 'Not applicable', perStandard: [] } });
+    expect(graph.nodes).toEqual([
+      { id: 'alignment-audit', label: 'Curriculum alignment audit', type: 'audit', category: 'Audit', status: 'Not evaluated' }
+    ]);
+    expect(graph.edges).toEqual([]);
+  });
+});
+
+describe('standards-context semantics (2026-08-17)', () => {
+  function stubProvider() {
+    const root = { id: 's-root', code: 'X.1', label: 'Root standard', kind: 'standard', resolvable: true };
+    return {
+      resolveStandard(query) {
+        return String(query).indexOf('X.1') !== -1
+          ? { status: 'resolved', match: root, context: { id: root.id, code: root.code } }
+          : { status: 'not-found', match: null };
+      },
+      getStandardContext() { return { id: 's-root', code: 'X.1', label: 'Root standard', kind: 'standard' }; },
+      getNeighborhood() {
+        return {
+          rootId: 's-root',
+          depth: 2,
+          truncated: false,
+          nodes: [
+            { id: 's-root', code: 'X.1', label: 'Root standard', kind: 'standard' },
+            { id: 's-next', code: 'X.3', label: 'Next standard', kind: 'standard' },
+            { id: 's-child', code: 'X.1.a', label: 'Child part', kind: 'standard' },
+            { id: 'c-0', code: 'c-0', label: 'Do the thing', kind: 'component' },
+          ],
+          relationships: [
+            { fromId: 's-root', toId: 's-next', type: 'buildsTowards', source: 'test' },
+            { fromId: 's-root', toId: 's-child', type: 'hasChild', source: 'test' },
+            { fromId: 'c-0', toId: 's-root', type: 'supports', source: 'test' },
+          ],
+        };
+      },
+      getManifest() { return { provider: 'stub', datasetVersion: 'v0', snapshotId: 'stub' }; },
+    };
+  }
+
+  it('maps source relationship types onto acg styling families and keeps the raw type', () => {
+    const graph = E.fromAlignmentAudit(
+      { standards: { perStandard: [{ standard: 'X.1', analysis: { textAlignment: { status: 'aligned', evidence: 'covered' } } }] } },
+      { standardsProvider: stubProvider() }
+    );
+    const contextEdges = graph.edges.filter((edge) => edge.provenance === 'standards-provider');
+    const byType = {};
+    contextEdges.forEach((edge) => { byType[edge.type] = edge.relationType; });
+    expect(byType.prerequisite).toBe('buildsTowards');
+    expect(byType.contains).toBe('hasChild');
+    expect(byType.supports).toBe('supports');
+    // LearningComponent context nodes arrive with kind + readable label, never a UUID label.
+    const componentNode = graph.nodes.find((node) => node.type === 'standardsContext' && node.kind === 'component');
+    expect(componentNode).toBeTruthy();
+    expect(componentNode.label).toBe('Do the thing');
+  });
+
+  it('emits labelKey alongside canonical English on evidence dimensions', () => {
+    const graph = E.fromAlignmentAudit(
+      { standards: { perStandard: [{ standard: 'X.1', analysis: { textAlignment: { status: 'aligned', evidence: 'covered' } } }] } },
+      { standardsProvider: stubProvider() }
+    );
+    const evidence = graph.nodes.find((node) => node.labelKey === 'concept_graph.dim_text');
+    expect(evidence).toBeTruthy();
+    expect(evidence.label).toContain('Text alignment');
+  });
+
+  it("filters components with the virtual 'learningComponent' type while 'standardsContext' stays a superset", () => {
+    const graph = E.fromAlignmentAudit(
+      { standards: { perStandard: [{ standard: 'X.1', analysis: { textAlignment: { status: 'aligned', evidence: 'covered' } } }] } },
+      { standardsProvider: stubProvider() }
+    );
+    const payload = { schema: 'alloflow-alignment-graph-export/v1', graph };
+    const componentsOnly = E.filterAlignmentGraph(payload, { nodeTypes: ['learningComponent'], keepStructure: true });
+    expect(componentsOnly.ok).toBe(true);
+    const nonStructural = componentsOnly.graph.nodes.filter((node) => node.type !== 'audit' && node.type !== 'standard');
+    expect(nonStructural.length).toBeGreaterThan(0);
+    expect(nonStructural.every((node) => node.kind === 'component')).toBe(true);
+    const contextView = E.filterAlignmentGraph(payload, { nodeTypes: ['standardsContext'], keepStructure: true });
+    expect(contextView.graph.nodes.some((node) => node.kind === 'component')).toBe(true);
+    expect(contextView.graph.nodes.some((node) => node.type === 'standardsContext' && node.kind !== 'component')).toBe(true);
+  });
+});
+

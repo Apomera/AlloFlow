@@ -1,0 +1,96 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "results": [
+    {
+      "route": "faq",
+      "mode": "normal",
+      "width": 320,
+      "documentWidth": 320,
+      "focusPreserved": true,
+      "keyboardSave": true,
+      "noGeneration": true
+    },
+    {
+      "route": "faq",
+      "mode": "spacing",
+      "width": 320,
+      "documentWidth": 320,
+      "focusPreserved": true,
+      "keyboardSave": true,
+      "noGeneration": true
+    },
+    {
+      "route": "faq",
+      "mode": "200-text",
+      "width": 320,
+      "documentWidth": 320,
+      "focusPreserved": true,
+      "keyboardSave": true,
+      "noGeneration": true
+    },
+    {
+      "route": "overlay",
+      "mode": "normal",
+      "width": 320,
+      "documentWidth": 320,
+      "dialogWidth": 320,
+      "dialogClientWidth": 320,
+      "focusPreserved": true,
+      "keyboardSave": true,
+      "noGeneration": true
+    },
+    {
+      "route": "overlay",
+      "mode": "spacing",
+      "width": 320,
+      "documentWidth": 320,
+      "dialogWidth": 320,
+      "dialogClientWidth": 320,
+      "focusPreserved": true,
+      "keyboardSave": true,
+      "noGeneration": true
+    },
+    {
+      "route": "overlay",
+      "mode": "200-text",
+      "width": 320,
+      "documentWidth": 320,
+      "dialogWidth": 320,
+      "dialogClientWidth": 320,
+      "focusPreserved": true,
+      "keyboardSave": true,
+      "noGeneration": true
+    },
+    {
+      "route": "overlay",
+      "theme": "warm",
+      "contrast": 17.164005329959178,
+      "touchCheck": true
+    },
+    {
+      "route": "overlay",
+      "theme": "dark",
+      "contrast": 16.295987899750777,
+      "touchCheck": true
+    },
+    {
+      "route": "overlay",
+      "theme": "sepia",
+      "contrast": 11.642060276230827,
+      "touchCheck": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Storage/TTS mocked; no real saved-state or device durability proof",
+    "DOM live regions are not actual screen-reader announcements",
+    "Doubled computed fonts are not real 200% text-only resize or 400% browser zoom",
+    "No hardware touch, Firefox/WebKit or deployed-shell integration tested"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "buttons": [
+    {
+      "label": "Organ name labels hidden during assessment",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle high contrast mode",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle larger interface text",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle simplified step instructions",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle dissection sound effects",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle tactile instrument feedback",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Visual presentation: cycle guided, realistic, and accessible",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Animation speed: cycle normal, slow, and fast",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Enter fullscreen specimen mode with view and tool controls",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Print clean dissection report",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    }
+  ]
+}

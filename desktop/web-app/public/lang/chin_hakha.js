@@ -5289,7 +5289,21 @@
     "measured_on_target": "{grade} caah a tlak",
     "measured_above": "{grade} nakin a sang deuh",
     "measured_below": "{grade} nakin a niam deuh",
-    "measured_note": "Flesch-Kincaid, hi ca ah teh mi a si. Fiang deuh in hngalh awkah Check Level hmang."
+    "measured_note": "Flesch-Kincaid, hi ca ah teh mi a si. Fiang deuh in hngalh awkah Check Level hmang.",
+    "listen_along": "Ṭhen in ngai",
+    "compare_listen_here": "Hika ah ngai",
+    "compare_listen_here_original": "Hika ah ngai: a hramthawk ca",
+    "compare_listen_here_adapted": "Hika ah ngai: thlen mi ca",
+    "compare_stop_reading_original": "Dinh: a hramthawk ca rel",
+    "compare_stop_reading_adapted": "Dinh: thlen mi ca rel",
+    "compare_scroll_together": "Ṭhen in scroll",
+    "reading_width": "Relnak kauh",
+    "width_narrow": "Kau lo",
+    "width_medium": "Laifang",
+    "width_wide": "Kau",
+    "width_extra_wide": "Kau ngaingai",
+    "reading_width_characters": "tlar khat ah ca-mal {count} hrawng",
+    "original_support_spoken": "“{word}” ca bawmnak: {support}"
   },
   "quiz": {
     "title": "Cinah",

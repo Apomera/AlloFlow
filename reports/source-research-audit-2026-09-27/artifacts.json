@@ -1,0 +1,8 @@
+{
+  "hashes": {
+    "content_engine_module.js": "75e23e376148a78e8314f2f9dd81965bc9e85f39f5b226ffedabfc7b1215a043",
+    "view_misc_panels_module.js": "88bc30fc3c286f5c9a208c201b97ce00664277cacd585544751e485929bf24f6"
+  },
+  "mirrors": "four runtime copies and existing source mirrors match",
+  "pins": "all three source hosts match"
+}

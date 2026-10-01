@@ -1,0 +1,1328 @@
+{
+  "guidance": {
+    "errors": [],
+    "orientation": [
+      {
+        "region": "head",
+        "slice": 0,
+        "position": "Superior slice band",
+        "expectedLandmark": "Right hemisphere",
+        "paintedText": [
+          "Skull",
+          "Brain (cortex)",
+          "Right hemisphere",
+          "Left hemisphere",
+          "CT · HEAD · AXIAL · slice 0",
+          "W 400 / L 40",
+          "R",
+          "L",
+          "A",
+          "P",
+          "50 mm"
+        ],
+        "top": 18,
+        "height": 42,
+        "markerCenter": 18,
+        "expectedCenter": 18
+      },
+      {
+        "region": "head",
+        "slice": 100,
+        "position": "Inferior slice band",
+        "expectedLandmark": "Cerebellum",
+        "paintedText": [
+          "Skull",
+          "Brain (cortex)",
+          "Ethmoid air cells",
+          "Orbits",
+          "Brainstem",
+          "Petrous bone",
+          "Cerebellum",
+          "CT · HEAD · AXIAL · slice 100",
+          "W 400 / L 40",
+          "R",
+          "L",
+          "A",
+          "P",
+          "50 mm"
+        ],
+        "top": 18,
+        "height": 42,
+        "markerCenter": 60,
+        "expectedCenter": 60
+      },
+      {
+        "region": "chest",
+        "slice": 0,
+        "position": "Superior slice band",
+        "expectedLandmark": "Trachea",
+        "paintedText": [
+          "Ribs",
+          "Trachea",
+          "SVC",
+          "Aortic arch",
+          "Right lung",
+          "Left lung",
+          "Chest wall",
+          "Descending aorta",
+          "Scapula",
+          "Esophagus",
+          "Vertebra",
+          "Spinal canal",
+          "CT · CHEST · AXIAL · slice 0",
+          "W 400 / L 40",
+          "R",
+          "L",
+          "A",
+          "P",
+          "50 mm"
+        ],
+        "top": 58,
+        "height": 58,
+        "markerCenter": 58,
+        "expectedCenter": 58
+      },
+      {
+        "region": "chest",
+        "slice": 100,
+        "position": "Inferior slice band",
+        "expectedLandmark": "Liver dome",
+        "paintedText": [
+          "Ribs",
+          "Right lung",
+          "Left lung",
+          "Liver dome",
+          "Heart",
+          "Chest wall",
+          "Spleen",
+          "Descending aorta",
+          "Esophagus",
+          "Vertebra",
+          "Spinal canal",
+          "CT · CHEST · AXIAL · slice 100",
+          "W 400 / L 40",
+          "R",
+          "L",
+          "A",
+          "P",
+          "50 mm"
+        ],
+        "top": 58,
+        "height": 58,
+        "markerCenter": 116,
+        "expectedCenter": 116
+      },
+      {
+        "region": "abdomen",
+        "slice": 0,
+        "position": "Superior slice band",
+        "expectedLandmark": "Liver",
+        "paintedText": [
+          "Stomach",
+          "Liver",
+          "Abdominal wall",
+          "Spleen",
+          "Aorta",
+          "IVC",
+          "Vertebra",
+          "Spinal canal",
+          "CT · ABDOMEN · AXIAL · slice 0",
+          "W 400 / L 40",
+          "R",
+          "L",
+          "A",
+          "P",
+          "50 mm"
+        ],
+        "top": 112,
+        "height": 57,
+        "markerCenter": 112,
+        "expectedCenter": 112
+      },
+      {
+        "region": "abdomen",
+        "slice": 100,
+        "position": "Inferior slice band",
+        "expectedLandmark": "Bladder",
+        "paintedText": [
+          "Bowel",
+          "Bladder",
+          "Abdominal wall",
+          "Aorta",
+          "IVC",
+          "Psoas",
+          "Iliac wing",
+          "Vertebra",
+          "Spinal canal",
+          "CT · ABDOMEN · AXIAL · slice 100",
+          "W 400 / L 40",
+          "R",
+          "L",
+          "A",
+          "P",
+          "50 mm"
+        ],
+        "top": 112,
+        "height": 57,
+        "markerCenter": 169,
+        "expectedCenter": 169
+      }
+    ],
+    "measurements": [
+      {
+        "width": 320,
+        "modality": "CT",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 264,
+          "displayHeight": 198,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 58.18181818181819,
+            "sourceY": 416.8181818181818
+          },
+          {
+            "sourceX": 121.21212121212122,
+            "sourceY": 416.8181818181818
+          }
+        ],
+        "pointerToleranceMm": 2.0393939393939395,
+        "annotation": {
+          "id": "img-1790736420562",
+          "type": "ruler",
+          "x": 0.025691699604743077,
+          "y": 0.9529857397504456,
+          "x2": 0.13987703118137898,
+          "y2": 0.9529857397504456,
+          "distanceMm": 50.4,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 320,
+        "modality": "MRI",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 264,
+          "displayHeight": 198,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 58.18181818181819,
+            "sourceY": 416.8181818181818
+          },
+          {
+            "sourceX": 121.21212121212122,
+            "sourceY": 416.8181818181818
+          }
+        ],
+        "pointerToleranceMm": 2.0393939393939395,
+        "annotation": {
+          "id": "img-1790736420813",
+          "type": "ruler",
+          "x": 0.025691699604743077,
+          "y": 0.9529857397504456,
+          "x2": 0.13987703118137898,
+          "y2": 0.9529857397504456,
+          "distanceMm": 50.4,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 320,
+        "modality": "CT",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 264,
+          "displayHeight": 198,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 58.18181818181819,
+            "sourceY": 416.8181818181818
+          },
+          {
+            "sourceX": 121.21212121212122,
+            "sourceY": 416.8181818181818
+          }
+        ],
+        "pointerToleranceMm": 2.0393939393939395,
+        "annotation": {
+          "id": "img-1790736421012",
+          "type": "ruler",
+          "x": 0.025691699604743077,
+          "y": 0.9529857397504456,
+          "x2": 0.13987703118137898,
+          "y2": 0.9529857397504456,
+          "distanceMm": 50.4,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 320,
+        "modality": "MRI",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 264,
+          "displayHeight": 198,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 58.18181818181819,
+            "sourceY": 416.8181818181818
+          },
+          {
+            "sourceX": 121.21212121212122,
+            "sourceY": 416.8181818181818
+          }
+        ],
+        "pointerToleranceMm": 2.0393939393939395,
+        "annotation": {
+          "id": "img-1790736421213",
+          "type": "ruler",
+          "x": 0.025691699604743077,
+          "y": 0.9529857397504456,
+          "x2": 0.13987703118137898,
+          "y2": 0.9529857397504456,
+          "distanceMm": 50.4,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 320,
+        "modality": "CT",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 264,
+          "displayHeight": 198,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 58.18181818181819,
+            "sourceY": 416.8181818181818
+          },
+          {
+            "sourceX": 121.21212121212122,
+            "sourceY": 416.8181818181818
+          }
+        ],
+        "pointerToleranceMm": 2.0393939393939395,
+        "annotation": {
+          "id": "img-1790736421396",
+          "type": "ruler",
+          "x": 0.025691699604743077,
+          "y": 0.9529857397504456,
+          "x2": 0.13987703118137898,
+          "y2": 0.9529857397504456,
+          "distanceMm": 50.4,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 320,
+        "modality": "MRI",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 264,
+          "displayHeight": 198,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 58.18181818181819,
+            "sourceY": 416.8181818181818
+          },
+          {
+            "sourceX": 121.21212121212122,
+            "sourceY": 416.8181818181818
+          }
+        ],
+        "pointerToleranceMm": 2.0393939393939395,
+        "annotation": {
+          "id": "img-1790736421580",
+          "type": "ruler",
+          "x": 0.025691699604743077,
+          "y": 0.9529857397504456,
+          "x2": 0.13987703118137898,
+          "y2": 0.9529857397504456,
+          "distanceMm": 50.4,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 390,
+        "modality": "CT",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 334,
+          "displayHeight": 250.5,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.40119760479042,
+            "sourceY": 417.8443113772455
+          },
+          {
+            "sourceX": 120.71856287425149,
+            "sourceY": 417.8443113772455
+          }
+        ],
+        "pointerToleranceMm": 1.6329341317365271,
+        "annotation": {
+          "id": "img-1790736421796",
+          "type": "ruler",
+          "x": 0.027900720298533355,
+          "y": 0.9555007631795234,
+          "x2": 0.13898290375770195,
+          "y2": 0.9555007631795234,
+          "distanceMm": 49.1,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 390,
+        "modality": "MRI",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 334,
+          "displayHeight": 250.5,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.40119760479042,
+            "sourceY": 417.8443113772455
+          },
+          {
+            "sourceX": 120.71856287425149,
+            "sourceY": 417.8443113772455
+          }
+        ],
+        "pointerToleranceMm": 1.6329341317365271,
+        "annotation": {
+          "id": "img-1790736421996",
+          "type": "ruler",
+          "x": 0.027900720298533355,
+          "y": 0.9555007631795234,
+          "x2": 0.13898290375770195,
+          "y2": 0.9555007631795234,
+          "distanceMm": 49.1,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 390,
+        "modality": "CT",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 334,
+          "displayHeight": 250.5,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.40119760479042,
+            "sourceY": 417.8443113772455
+          },
+          {
+            "sourceX": 120.71856287425149,
+            "sourceY": 417.8443113772455
+          }
+        ],
+        "pointerToleranceMm": 1.6329341317365271,
+        "annotation": {
+          "id": "img-1790736422181",
+          "type": "ruler",
+          "x": 0.027900720298533355,
+          "y": 0.9555007631795234,
+          "x2": 0.13898290375770195,
+          "y2": 0.9555007631795234,
+          "distanceMm": 49.1,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 390,
+        "modality": "MRI",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 334,
+          "displayHeight": 250.5,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.40119760479042,
+            "sourceY": 417.8443113772455
+          },
+          {
+            "sourceX": 120.71856287425149,
+            "sourceY": 417.8443113772455
+          }
+        ],
+        "pointerToleranceMm": 1.6329341317365271,
+        "annotation": {
+          "id": "img-1790736422378",
+          "type": "ruler",
+          "x": 0.027900720298533355,
+          "y": 0.9555007631795234,
+          "x2": 0.13898290375770195,
+          "y2": 0.9555007631795234,
+          "distanceMm": 49.1,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 390,
+        "modality": "CT",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 334,
+          "displayHeight": 250.5,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.40119760479042,
+            "sourceY": 417.8443113772455
+          },
+          {
+            "sourceX": 120.71856287425149,
+            "sourceY": 417.8443113772455
+          }
+        ],
+        "pointerToleranceMm": 1.6329341317365271,
+        "annotation": {
+          "id": "img-1790736422579",
+          "type": "ruler",
+          "x": 0.027900720298533355,
+          "y": 0.9555007631795234,
+          "x2": 0.13898290375770195,
+          "y2": 0.9555007631795234,
+          "distanceMm": 49.1,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 390,
+        "modality": "MRI",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 334,
+          "displayHeight": 250.5,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.40119760479042,
+            "sourceY": 417.8443113772455
+          },
+          {
+            "sourceX": 120.71856287425149,
+            "sourceY": 417.8443113772455
+          }
+        ],
+        "pointerToleranceMm": 1.6329341317365271,
+        "annotation": {
+          "id": "img-1790736422846",
+          "type": "ruler",
+          "x": 0.027900720298533355,
+          "y": 0.9555007631795234,
+          "x2": 0.13898290375770195,
+          "y2": 0.9555007631795234,
+          "distanceMm": 49.1,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 768,
+        "modality": "CT",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 704,
+          "displayHeight": 528,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 60,
+            "sourceY": 417.42897727272725
+          },
+          {
+            "sourceX": 121.81818181818181,
+            "sourceY": 417.42897727272725
+          }
+        ],
+        "pointerToleranceMm": 0.8272727272727273,
+        "annotation": {
+          "id": "img-1790736423062",
+          "type": "ruler",
+          "x": 0.028985507246376805,
+          "y": 0.9544827874331551,
+          "x2": 0.14097496706192356,
+          "y2": 0.9544827874331551,
+          "distanceMm": 49.5,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 768,
+        "modality": "MRI",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 704,
+          "displayHeight": 528,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 60,
+            "sourceY": 417.42897727272725
+          },
+          {
+            "sourceX": 121.81818181818181,
+            "sourceY": 417.42897727272725
+          }
+        ],
+        "pointerToleranceMm": 0.8272727272727273,
+        "annotation": {
+          "id": "img-1790736423246",
+          "type": "ruler",
+          "x": 0.028985507246376805,
+          "y": 0.9544827874331551,
+          "x2": 0.14097496706192356,
+          "y2": 0.9544827874331551,
+          "distanceMm": 49.5,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 768,
+        "modality": "CT",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 704,
+          "displayHeight": 528,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 60,
+            "sourceY": 417.42897727272725
+          },
+          {
+            "sourceX": 121.81818181818181,
+            "sourceY": 417.42897727272725
+          }
+        ],
+        "pointerToleranceMm": 0.8272727272727273,
+        "annotation": {
+          "id": "img-1790736423430",
+          "type": "ruler",
+          "x": 0.028985507246376805,
+          "y": 0.9544827874331551,
+          "x2": 0.14097496706192356,
+          "y2": 0.9544827874331551,
+          "distanceMm": 49.5,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 768,
+        "modality": "MRI",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 704,
+          "displayHeight": 528,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 60,
+            "sourceY": 417.42897727272725
+          },
+          {
+            "sourceX": 121.81818181818181,
+            "sourceY": 417.42897727272725
+          }
+        ],
+        "pointerToleranceMm": 0.8272727272727273,
+        "annotation": {
+          "id": "img-1790736423613",
+          "type": "ruler",
+          "x": 0.028985507246376805,
+          "y": 0.9544827874331551,
+          "x2": 0.14097496706192356,
+          "y2": 0.9544827874331551,
+          "distanceMm": 49.5,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 768,
+        "modality": "CT",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 704,
+          "displayHeight": 528,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 60,
+            "sourceY": 417.42897727272725
+          },
+          {
+            "sourceX": 121.81818181818181,
+            "sourceY": 417.42897727272725
+          }
+        ],
+        "pointerToleranceMm": 0.8272727272727273,
+        "annotation": {
+          "id": "img-1790736423812",
+          "type": "ruler",
+          "x": 0.028985507246376805,
+          "y": 0.9544827874331551,
+          "x2": 0.14097496706192356,
+          "y2": 0.9544827874331551,
+          "distanceMm": 49.5,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 768,
+        "modality": "MRI",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 704,
+          "displayHeight": 528,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 60,
+            "sourceY": 417.42897727272725
+          },
+          {
+            "sourceX": 121.81818181818181,
+            "sourceY": 417.42897727272725
+          }
+        ],
+        "pointerToleranceMm": 0.8272727272727273,
+        "annotation": {
+          "id": "img-1790736424098",
+          "type": "ruler",
+          "x": 0.028985507246376805,
+          "y": 0.9544827874331551,
+          "x2": 0.14097496706192356,
+          "y2": 0.9544827874331551,
+          "distanceMm": 49.5,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 1440,
+        "modality": "CT",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 705.6875,
+          "displayHeight": 529.265625,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.85652289434063,
+            "sourceY": 417.2810202816402
+          },
+          {
+            "sourceX": 122.43379682933309,
+            "sourceY": 417.2810202816402
+          }
+        ],
+        "pointerToleranceMm": 0.8255336108404924,
+        "annotation": {
+          "id": "img-1790736424310",
+          "type": "ruler",
+          "x": 0.028725584953515616,
+          "y": 0.9541201477491182,
+          "x2": 0.14209021164734253,
+          "y2": 0.9541201477491182,
+          "distanceMm": 50.1,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 1440,
+        "modality": "MRI",
+        "region": "head",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 705.6875,
+          "displayHeight": 529.265625,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.85652289434063,
+            "sourceY": 417.2810202816402
+          },
+          {
+            "sourceX": 122.43379682933309,
+            "sourceY": 417.2810202816402
+          }
+        ],
+        "pointerToleranceMm": 0.8255336108404924,
+        "annotation": {
+          "id": "img-1790736424495",
+          "type": "ruler",
+          "x": 0.028725584953515616,
+          "y": 0.9541201477491182,
+          "x2": 0.14209021164734253,
+          "y2": 0.9541201477491182,
+          "distanceMm": 50.1,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 1440,
+        "modality": "CT",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 705.6875,
+          "displayHeight": 529.265625,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.85652289434063,
+            "sourceY": 417.2810202816402
+          },
+          {
+            "sourceX": 122.43379682933309,
+            "sourceY": 417.2810202816402
+          }
+        ],
+        "pointerToleranceMm": 0.8255336108404924,
+        "annotation": {
+          "id": "img-1790736424698",
+          "type": "ruler",
+          "x": 0.028725584953515616,
+          "y": 0.9541201477491182,
+          "x2": 0.14209021164734253,
+          "y2": 0.9541201477491182,
+          "distanceMm": 50.1,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 1440,
+        "modality": "MRI",
+        "region": "chest",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 705.6875,
+          "displayHeight": 529.265625,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.85652289434063,
+            "sourceY": 417.2810202816402
+          },
+          {
+            "sourceX": 122.43379682933309,
+            "sourceY": 417.2810202816402
+          }
+        ],
+        "pointerToleranceMm": 0.8255336108404924,
+        "annotation": {
+          "id": "img-1790736424896",
+          "type": "ruler",
+          "x": 0.028725584953515616,
+          "y": 0.9541201477491182,
+          "x2": 0.14209021164734253,
+          "y2": 0.9541201477491182,
+          "distanceMm": 50.1,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "chest",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 1440,
+        "modality": "CT",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 705.6875,
+          "displayHeight": 529.265625,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.85652289434063,
+            "sourceY": 417.2810202816402
+          },
+          {
+            "sourceX": 122.43379682933309,
+            "sourceY": 417.2810202816402
+          }
+        ],
+        "pointerToleranceMm": 0.8255336108404924,
+        "annotation": {
+          "id": "img-1790736425096",
+          "type": "ruler",
+          "x": 0.028725584953515616,
+          "y": 0.9541201477491182,
+          "x2": 0.14209021164734253,
+          "y2": 0.9541201477491182,
+          "distanceMm": 50.1,
+          "note": "Scale check",
+          "modality": "CT",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      },
+      {
+        "width": 1440,
+        "modality": "MRI",
+        "region": "abdomen",
+        "geometry": {
+          "sourceWidth": 640,
+          "sourceHeight": 480,
+          "displayWidth": 705.6875,
+          "displayHeight": 529.265625,
+          "points": [
+            {
+              "x": 60,
+              "y": 418
+            },
+            {
+              "x": 122.5,
+              "y": 418
+            }
+          ]
+        },
+        "pointerEvents": [
+          {
+            "sourceX": 59.85652289434063,
+            "sourceY": 417.2810202816402
+          },
+          {
+            "sourceX": 122.43379682933309,
+            "sourceY": 417.2810202816402
+          }
+        ],
+        "pointerToleranceMm": 0.8255336108404924,
+        "annotation": {
+          "id": "img-1790736425313",
+          "type": "ruler",
+          "x": 0.028725584953515616,
+          "y": 0.9541201477491182,
+          "x2": 0.14209021164734253,
+          "y2": 0.9541201477491182,
+          "distanceMm": 50.1,
+          "note": "Scale check",
+          "modality": "MRI",
+          "region": "abdomen",
+          "plane": "axial",
+          "slice": 50
+        }
+      }
+    ],
+    "visuals": [
+      {
+        "width": 390,
+        "theme": "light",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        }
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        }
+      },
+      {
+        "width": 390,
+        "theme": "contrast",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        }
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        }
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        }
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-30T03:24:26.982Z",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "saved": "reports\\automatic-open-enhancements-2026-09-29\\before\\AlloFlowANTI.txt",
+      "sha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "saved": "reports\\automatic-open-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt",
+      "sha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "saved": "reports\\automatic-open-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx",
+      "sha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "path": "tests/student_assignment_restore_readiness.test.js",
+      "saved": "reports\\automatic-open-enhancements-2026-09-29\\before\\tests\\student_assignment_restore_readiness.test.js",
+      "sha256": "33fb1a24feadafc9fa5920f93ea17060f26ec3ad8c71c96e9d13a01041bf37f0"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "saved": "reports\\automatic-open-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json",
+      "sha256": "3fda3bd7fbb6e1b7ae88ac5dee69f816cb6017f1aef3067d8d7c4c49b99f5b39"
+    }
+  ]
+}

@@ -1,4 +1,2416 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "Temperatura",
+          "headline": "Zimna woda na twarz",
+          "steps": {
+            "0": "Napełnij miskę zimną wodą (z lodem, jeśli masz).",
+            "1": "Wstrzymaj oddech.",
+            "2": "Pochyl się i zanurz twarz, od miejsca nad brwiami do miejsca pod kośćmi policzkowymi, na 15-30 sekund. (Jeśli nie możesz zanurzyć twarzy, przyłóż zamiast tego zimny okład lub mokrą myjkę do oczu i górnej części policzków.)",
+            "3": "Wynurz się i oddychaj normalnie.",
+            "4": "W razie potrzeby powtórz raz."
+          },
+          "why": "Zimno na twarzy uruchamia odruch nurkowania ssaków: tętno zwalnia, krew odpływa z rąk i nóg, a układ przywspółczulny się aktywuje. Działa w kilka sekund. To najszybszy fizjologiczny sposób, by przerwać skrajny stres.",
+          "caution": "UNIKAJ tego, jeśli masz chorobę serca, zaburzenia odżywiania lub inną chorobę, przy której zwolnienie tętna mogłoby być niebezpieczne. Jeśli nie masz pewności, najpierw zapytaj lekarza lub pielęgniarkę szkolną. Woda powinna być zimna (~10-15°C, czyli 50-60°F), a nie lodowata."
+        },
+        "intense": {
+          "label": "Intensywny wysiłek",
+          "headline": "Spal pobudzenie",
+          "steps": {
+            "0": "Przez 5 do 10 minut rób coś bardzo intensywnego fizycznie.",
+            "1": "Możliwości: sprint, pajacyki, burpees, bieganie po schodach, pompki do upadłego, szybkie skakanie na skakance, energiczny taniec.",
+            "2": "Chodzi o to, żeby naprawdę się zadyszeć i poczuć, jak rośnie tętno.",
+            "3": "Potem zwolnij do marszu i pozwól ciału się uspokoić."
+          },
+          "why": "Gdy twoje ciało jest w stanie nadmiernego pobudzenia (walcz albo uciekaj), zalewają je hormony stresu, które mają zostać zużyte. Intensywny wysiłek spala adrenalinę i daje ciału sygnał „zrobione”. Siedzenie bez ruchu w stanie nadmiernego pobudzenia sprawia, że silnik dalej pracuje na wysokich obrotach.",
+          "caution": "Jeśli masz chorobę, która ogranicza wysiłek fizyczny (serce, astma, świeży uraz), wybierz łagodniejszy ruch albo inną umiejętność TIPP. Nie ćwicz intensywnie aż do kontuzji."
+        },
+        "paced": {
+          "label": "Spokojny oddech",
+          "headline": "Wydech dłuższy niż wdech",
+          "steps": {
+            "0": "Usiądź lub połóż się wygodnie.",
+            "1": "Wdychaj powietrze nosem, licząc do 4.",
+            "2": "Powoli wydychaj powietrze ustami, licząc do 6–8 (dłużej niż przy wdechu).",
+            "3": "Utrzymuj ten rytm przez 1 do 2 minut.",
+            "4": "Nie musisz się zmuszać ani napinać; kluczowym składnikiem jest WYDŁUŻONY WYDECH."
+          },
+          "why": "Wydech dłuższy niż wdech przesuwa autonomiczny układ nerwowy w stronę przewagi układu przywspółczulnego („odpoczynek i trawienie”). Badania nad spokojnym oddechem wykazują w ciągu 90 sekund mierzalny spadek wskaźników stresu w zmienności rytmu serca. Nie chodzi o relaks; chodzi o biologię.",
+          "caution": "Jeśli powolne oddychanie sprawia, że czujesz WIĘKSZY niepokój (zdarza się to niektórym osobom z zaburzeniem panicznym lub po traumie), spróbuj innej umiejętności TIPP. Nie zmuszaj się."
+        },
+        "paired": {
+          "label": "Rozluźnianie mięśni w parze z oddechem",
+          "headline": "Napnij, potem puść, mięsień po mięśniu",
+          "steps": {
+            "0": "Usiądź lub połóż się. Powoli weź wdech.",
+            "1": "Przy wdechu mocno napnij jedną grupę mięśni (zaciśnij pięści, unieś barki, napnij twarz).",
+            "2": "Utrzymaj napięcie przez 5 sekund.",
+            "3": "Przy wydechu całkowicie puść napięcie. Zauważ różnicę między napięciem a rozluźnieniem.",
+            "4": "Przejdź tak przez całe ciało: dłonie, ręce, barki, twarz, szyja, klatka piersiowa, brzuch, nogi, stopy.",
+            "5": "Całość zajmuje około 5 minut."
+          },
+          "why": "Napięcie mięśnia do maksimum, a potem jego rozluźnienie daje głębszy relaks niż samo próbowanie, by się rozluźnić (badania Jacobsona nad progresywną relaksacją mięśni, sformalizowaną w dekadzie od 1930 roku). Połączenie każdego rozluźnienia z wydechem sumuje oba efekty.",
+          "caution": "Jeśli masz uraz, zespół bólowy lub nadmierną ruchomość stawów (hipermobilność), pomiń grupy mięśni, które bolą. Napięcie ma być mocne, ale nigdy bolesne."
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "Cztery umiejętności DBT do przetrwania kryzysu (Temperatura, Intensywny wysiłek, Spokojny oddech, Rozluźnianie mięśni w parze z oddechem) na ostry stres. Mają wyciszyć ciało w ciągu od 30 sekund do 10 minut, ZANIM spróbujesz wydostać się z tego myśleniem. Podstawowa umiejętność DBT z zakresu tolerancji dyskomfortu, opracowana przez Linehan.",
+        "back_to_sel_hub": "Powrót do SEL Hub",
+        "back": "← Wstecz",
+        "four_dbt_crisis_survival_skills_for": "Cztery umiejętności DBT do przetrwania kryzysu na ostry stres. Najpierw działaj, potem myśl.",
+        "tipp_sections": "Sekcje TIPP",
+        "tipp_is_for_acute_distress_not": "🆘 TIPP jest na OSTRY stres, a nie na zwykły, codzienny stres. ",
+        "if_you_are_in_crisis_right": "Jeśli jesteś teraz w kryzysie (myślisz o zrobieniu sobie krzywdy, grozi ci bezpośrednie niebezpieczeństwo), skorzystaj z Towarzysza w kryzysie w tym SEL Hub, zadzwoń pod 988 (Suicide and Crisis Lifeline) albo wyślij SMS o treści HOME pod numer 741741 (Crisis Text Line). TIPP może dać ci kolejne 5 minut; człowiek może być z tobą dłużej.",
+        "tipp_is_a_real_dbt_skill": "TIPP to prawdziwa umiejętność DBT, ale to nie jest terapia. Jeśli zauważasz, że często sięgasz po TIPP, to ważna informacja; porozmawiaj o tym z pedagogiem lub psychologiem szkolnym.",
+        "tipp_quick_chooser": "Szybki wybór TIPP",
+        "body_first_chooser": "Wybór: najpierw ciało",
+        "match_the_skill_to_the_signal": "Dopasuj umiejętność do sygnału, który twoje ciało daje w tej chwili.",
+        "helped_logcount_helped": "{helped}/{logCount} pomogło",
+        "no_sessions_logged": "Brak zapisanych sesji",
+        "start_label": "Rozpocznij: {label}",
+        "choose": "Wybierz",
+        "pick_one_do_it_notice_if": "Wybierz jedną. Zrób ją. Zauważ, czy wskaźnik się przesuwa.",
+        "you_do_not_need_to_do": "Nie musisz robić wszystkich czterech. Wybierz tę, która pasuje do tego, gdzie teraz jesteś. TIPP jest SZYBKI: od 30 sekund do 10 minut.",
+        "duration_seconds": "~{duration} sekund",
+        "logged_glad_it_helped": "Zapisano — dobrze, że pomogło.",
+        "logged_try_a_different_tipp_next": "Zapisano — następnym razem spróbuj innej umiejętności TIPP.",
+        "tipp_session_logged": "Sesja TIPP zapisana.",
+        "active_letter": "Aktywne · {letter}",
+        "steps": "Kroki",
+        "why_this_works": "🧠 Dlaczego to działa",
+        "caution": "⚖️ Uwaga: ",
+        "done_that_helped": "✓ Gotowe. To pomogło.",
+        "done_try_a_different_one": "Gotowe. Spróbuj innej.",
+        "try_a_different_one": "⤴ Spróbuj innej",
+        "exit_without_logging": "Wyjdź bez zapisywania",
+        "exit": "Wyjdź",
+        "no_tipp_sessions_logged_yet": "Nie zapisano jeszcze żadnych sesji TIPP.",
+        "after_you_do_a_tipp_skill": "Gdy wykonasz umiejętność TIPP, zapisz to, żeby się dowiedzieć, które działają u ciebie.",
+        "total_sessions": "Wszystkie sesje",
+        "helped": "Pomogło",
+        "by_skill": "Według umiejętności",
+        "recent_sessions": "Ostatnie sesje",
+        "unknown": "(nieznane)",
+        "helped_2": "✓ pomogło",
+        "tried_another": "⤴ wypróbowano inną",
+        "read_this_first": "🆘 Przeczytaj najpierw",
+        "tipp_is_for_acute_distress_the": "TIPP jest na OSTRY stres: na moment, w którym za chwilę możesz zrobić coś, czego będziesz żałować, albo czujesz, że nie wytrzymasz kolejnych 5 minut. NIE jest na codzienny stres, przygnębienie ani lękowe myśli. TIPP jest szybki, fizyczny i ma dać ci kolejne minuty, żeby rozmowa, zastanowienie się czy poproszenie o pomoc znów stały się możliwe. Jeśli jesteś w kryzysie, skorzystaj z Towarzysza w kryzysie albo zadzwoń pod 988 / wyślij SMS o treści HOME pod numer 741741.",
+        "what_tipp_is": "Czym jest TIPP",
+        "tipp_is_a_set_of_four": "TIPP to zestaw czterech umiejętności DBT do przetrwania kryzysu, które działają bezpośrednio na ciało, zanim zadziałają na umysł. Chodzi o to, że w stanie nadmiernego pobudzenia (serce wali, myśli pędzą, gotowość do działania pod wpływem impulsu) próby „wymyślenia sobie wyjścia” rzadko działają, bo myślący mózg jest wyłączony. Najpierw musi wrócić ciało.",
+        "each_tipp_skill_uses_a_physiological": "Każda umiejętność TIPP wykorzystuje fizjologiczny mechanizm, który przerywa reakcję stresową: zimno na twarzy uruchamia odruch nurkowania, intensywny wysiłek spala adrenalinę, spokojny oddech przesuwa równowagę autonomicznego układu nerwowego, a rozluźnianie mięśni w parze z oddechem daje odprężenie po napięciu. Działają w ciągu od 30 sekund do 10 minut, a nie po kilku dniach.",
+        "where_tipp_comes_from": "Skąd pochodzi TIPP",
+        "tipp_is_part_of_the_distress": "TIPP jest częścią modułu Tolerancja dyskomfortu w Dialektycznej Terapii Behawioralnej (DBT), rozwijanej przez Marshę Linehan od lat 1980. Linehan stworzyła DBT dla osób, które przeżywają emocje intensywnie i reaktywnie, początkowo dla pacjentów z przewlekłymi myślami samobójczymi i zaburzeniem osobowości typu borderline. Umiejętności tolerancji dyskomfortu są przeznaczone na chwile „przetrwania kryzysu”, gdy celem jest tylko to, by w ciągu najbliższych minut nie pogorszyć sytuacji. TIPP jest dziś szeroko nauczane w opiece nad zdrowiem psychicznym dzieci i młodzieży, w szkołach wrażliwych na traumę i w ambulatoryjnych grupach umiejętności DBT.",
+        "sources_and_learn_more": "📚 Źródła i więcej informacji",
+        "authoritative_resources_for_tipp_and_dbt": "Wiarygodne źródła na temat TIPP i DBT.",
+        "the_standard_manual_tipp_is_in": "Standardowy podręcznik; TIPP znajduje się w module Tolerancja dyskomfortu (Distress Tolerance).",
+        "practical_worksheets_including_tipp_handouts": "Praktyczne karty pracy, w tym materiały o TIPP.",
+        "linehan_founded_organization_for_dbt_training": "Założona przez Linehan organizacja zajmująca się szkoleniami i certyfikacją w DBT.",
+        "free_open_educational_resource_covers_tipp": "Bezpłatny, otwarty zasób edukacyjny; omawia TIPP i inne umiejętności tolerancji dyskomfortu.",
+        "honest_limits": "⚖️ Uczciwe ograniczenia",
+        "tipp_is_a_survival_skill_not": "TIPP to umiejętność przetrwania, a nie rozwiązanie. Pomaga przetrwać kolejne 5 minut; nie zajmuje się tym, dlaczego tak bardzo cierpisz.",
+        "if_you_find_yourself_reaching_for": "Jeśli zauważasz, że sięgasz po TIPP codziennie, to znak, że w twoim życiu dzieje się coś większego, czym warto zająć się razem z pedagogiem, psychologiem lub terapeutą.",
+        "tipp_works_on_hyperarousal_too_activated": "TIPP działa przy nadmiernym pobudzeniu (za dużo aktywacji). NIE działa przy niedostatecznym pobudzeniu (wyłączenie, odrętwienie, dysocjacja); wtedy bardziej przydaje się inna umiejętność DBT (Kojenie siebie – Self-Soothe, ACCEPTS) albo po prostu kontakt z drugim człowiekiem.",
+        "the_cautions_on_each_skill_are": "Ostrzeżenia przy każdej umiejętności są poważne. Temperatura jest przeciwwskazana przy chorobach serca i niektórych zaburzeniach odżywiania; intensywny wysiłek jest przeciwwskazany przy niektórych chorobach; jeśli jakaś umiejętność wydaje się nie w porządku, stopniowo z niej zrezygnuj.",
+        "tipp_is_best_learned_in_a": "TIPP najlepiej NAUCZYĆ SIĘ w chwili bez kryzysu, żeby umiejętności były przećwiczone, zanim będą potrzebne. Wykonanie ich raz w spokojnym czasie to najlepsze przygotowanie.",
+        "notes_for_educators": "📝 Uwagi dla nauczycieli: ",
+        "tipp_is_most_useful_when_students": "TIPP jest najbardziej przydatne, gdy uczniowie przećwiczyli je raz lub dwa razy podczas zajęć Crew, a nie zetknęli się z nim pierwszy raz w kryzysie. Prosty protokół na Crew: przejdźcie razem przez jedną umiejętność TIPP (spokojny oddech jest najłatwiejszy w klasie), wymieńcie pozostałe trzy, a potem wskażcie uczniom to narzędzie. Łącz je z Towarzyszem w kryzysie w przypadku każdego ucznia, który wykazuje oznaki ostrego stresu.",
+        "tipp_pocket_card": "🖨 Karta kieszonkowa TIPP. ",
+        "print_and_fold_carry_in_a": "Wydrukuj i złóż; noś w kieszeni, portfelu lub kalendarzu. Chodzi o to, by mieć przy sobie cztery umiejętności, ZANIM będą potrzebne. Karta kieszonkowa mieści się na jednej stronie; ostrzeżenia zostają, bo są ważne.",
+        "print_save_as_pdf": "🖨 Drukuj / Zapisz jako PDF",
+        "tipp_pocket_card_2": "TIPP · Karta kieszonkowa",
+        "dbt_distress_tolerance_linehan": "DBT Tolerancja dyskomfortu · Linehan",
+        "when_to_use": "Kiedy używać: ",
+        "acute_distress_where_you_might_do": "przy ostrym stresie, gdy możesz zrobić coś, czego będziesz żałować. Najpierw ciało; rozmowa później. Jeśli jesteś w kryzysie, zadzwoń pod 988 albo wyślij SMS o treści HOME pod numer 741741.",
+        "caution_2": "Uwaga: ",
+        "practice_tipp_once_in_a_calm": "Przećwicz TIPP raz w spokojnej chwili, zanim będzie ci potrzebne. Wydrukowano z AlloFlow SEL Hub. Źródło: Linehan, DBT Skills Training Manual (2014).",
+        "tipp_crisis_survival_skills": "Umiejętności TIPP do przetrwania kryzysu"
+      },
+      "tabs": {
+        "home": {
+          "label": "Potrzebuję tego teraz"
+        },
+        "log": {
+          "label": "Mój dziennik"
+        },
+        "print": {
+          "label": "Karta kieszonkowa"
+        },
+        "about": {
+          "label": "O narzędziu"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "Za gorąco albo impulsywnie",
+          "fit": "Najszybszy reset"
+        },
+        "1": {
+          "signal": "Wysoka adrenalina",
+          "fit": "Użyj ciała"
+        },
+        "2": {
+          "signal": "Oddech może prowadzić",
+          "fit": "Najcichsza opcja"
+        },
+        "3": {
+          "signal": "Zaciśnięte lub napięte",
+          "fit": "Puść napięcie"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "Dla kogo: ",
+      "label_what": "Co: ",
+      "crisis_resources": {
+        "988": {
+          "label": "988 Suicide & Crisis Lifeline (linia wsparcia w kryzysie i zapobiegania samobójstwom)",
+          "contact": "Zadzwoń lub napisz SMS pod 988",
+          "script": "Możesz powiedzieć: „Martwię się o kogoś z moich przyjaciół”. To wystarczy. Dalej oni poprowadzą rozmowę."
+        },
+        "crisistext": {
+          "contact": "Wyślij SMS o treści HOME pod numer 741741",
+          "script": "Możesz napisać: „Ktoś z moich przyjaciół mówi o tym, żeby zrobić sobie krzywdę, i nie wiem, co robić”. To działa."
+        },
+        "trevor": {
+          "contact": "Zadzwoń pod 1-866-488-7386 · Wyślij SMS o treści START pod numer 678-678",
+          "script": "Możesz zadzwonić albo napisać: „Mam kogoś bliskiego, kto jest LGBTQ+ i przechodzi teraz naprawdę trudny czas”."
+        },
+        "911": {
+          "label": "911 — numer alarmowy",
+          "contact": "Zadzwoń pod 911",
+          "script": "Możesz powiedzieć: „Ktoś z moich przyjaciół jest w niebezpieczeństwie i nie wiem, co robić”. Pomogą."
+        },
+        "211": {
+          "label": "211 — linia pomocy społecznej",
+          "contact": "Zadzwoń pod 211 · lub wejdź na 211.org",
+          "script": "Możesz powiedzieć: „Szukam kryzysowej pomocy psychologicznej w mojej okolicy dla kogoś z przyjaciół”. Skierują cię do właściwej lokalnej instytucji."
+        },
+        "namilocator": {
+          "label": "NAMI Affiliate Locator (ogólnokrajowy katalog)",
+          "contact": "Wejdź na nami.org/findsupport",
+          "script": "Na stronie: wpisz kod pocztowy → „Find My Local NAMI” → zobacz dane kontaktowe, programy i numer infolinii w twojej okolicy."
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov (federalny katalog)",
+          "contact": "Wejdź na findtreatment.gov · lub 1-800-662-HELP (4357)",
+          "script": "Na stronie: wpisz kod pocztowy → wybierz filtr „Mental Health Services” → zawęź według tego, na co cię stać, lub według ubezpieczenia. Infolinia telefoniczna to dobra opcja, jeśli strona cię przytłacza."
+        },
+        "befrienders": {
+          "contact": "Wejdź na befrienders.org",
+          "script": "Na stronie: wybierz swój kraj → zobacz lokalne numery telefonów zaufania, godziny działania, obsługiwane języki i sposoby kontaktu."
+        },
+        "iasp": {
+          "label": "IASP — International Association for Suicide Prevention (Międzynarodowe Stowarzyszenie Zapobiegania Samobójstwom)",
+          "contact": "Wejdź na iasp.info/resources/Crisis_Centres",
+          "script": "Na stronie: wybierz swój kraj → zobacz telefony kryzysowe ze sposobami kontaktu i godzinami działania."
+        },
+        "mainecrisis": {
+          "contact": "Zadzwoń pod 1-888-568-1112",
+          "script": "Jeśli możesz, podaj swoje hrabstwo lub miejscowość. Skierują cię do właściwego lokalnego zespołu."
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance (hrabstwo Cumberland + cały stan)",
+          "contact": "Główny numer: 207-553-5800 · Kryzys: 1-888-568-1112",
+          "script": "Gdy ktoś z twoich przyjaciół jest w ostrym kryzysie w hrabstwie Cumberland: zadzwoń pod 1-888-568-1112 i zapytaj, czy mobilny zespół kryzysowy może przyjechać tam, gdzie ta osoba jest. Po wsparcie poza kryzysem / żeby połączyć rodzinę ze stałą pomocą: zadzwoń na główny numer w godzinach pracy."
+        },
+        "namimaine": {
+          "contact": "Zadzwoń pod 1-800-464-5767",
+          "script": "Dobre na pytania, które nie są pilne: „Jak pomóc komuś z przyjaciół znaleźć terapeutę?” albo „Gdzie rodziny mogą szukać wsparcia?”. Także: „Czy w naszej szkole jest program Ending the Silence?”"
+        },
+        "school": {
+          "label": "Twój pedagog lub psycholog szkolny",
+          "contact": "Przyjdź osobiście, zostaw kartkę albo poproś dowolnego nauczyciela, żeby cię zaprowadził",
+          "script": "Możesz powiedzieć: „Martwię się o kogoś z moich przyjaciół”. Jeśli nie potrafisz powiedzieć tego na głos, napisz to na karteczce samoprzylepnej i daj im ją."
+        }
+      },
+      "res_988_who": "Każdy w USA — także młodzi ludzie, którzy martwią się o kogoś z przyjaciół",
+      "res_988_what": "Bezpłatnie, poufnie, 24/7. Przeszkoleni konsultanci kryzysowi. W razie potrzeby łączą z pomocą na miejscu.",
+      "res_crisistext_who": "Każdy w USA, Kanadzie, Wielkiej Brytanii lub Irlandii (numery różnią się w zależności od kraju) — same SMS-y to dobra opcja, jeśli nie chcesz rozmawiać",
+      "res_crisistext_what": "Bezpłatnie, poufnie, 24/7. Odpisuje prawdziwy człowiek, konsultant. Średni czas oczekiwania to poniżej 5 minut.",
+      "res_trevor_who": "Młodzież LGBTQ+ i przyjaciele, którzy ją wspierają (USA)",
+      "res_trevor_what": "Bezpłatnie, poufnie, 24/7. Konsultanci specjalnie przeszkoleni w pomocy młodzieży LGBTQ+ w kryzysie. Młodzi ludzie LGBTQ+ częściej mają myśli samobójcze; to wsparcie powstało właśnie z myślą o tej rzeczywistości.",
+      "res_911_who": "Gdy komuś w tej chwili grozi bezpośrednie niebezpieczeństwo fizyczne (USA)",
+      "res_911_what": "Na nagłe sytuacje: ktoś robi sobie krzywdę, coś zażył albo nie jest teraz bezpieczny. Wysyła policję, straż pożarną i pogotowie.",
+      "res_211_who": "Każdy w USA lub Kanadzie — na podstawie numeru kierunkowego automatycznie łączy z pomocą w twojej okolicy",
+      "res_211_what": "Bezpłatnie, poufnie, 24/7. Łączy z lokalnymi służbami kryzysowymi w zakresie zdrowia psychicznego, pomocą żywnościową, mieszkaniową, wsparciem dla rodzin i setkami innych programów w twojej społeczności. Prowadzona przez United Way + lokalne organizacje non-profit. To nie to samo co 988 — 211 to szersza linia usług społecznych.",
+      "res_namilocator_who": "Każdy w USA — wpisz kod pocztowy i zobacz swój lokalny oddział NAMI",
+      "res_namilocator_what": "Każdy stan ma co najmniej jeden oddział NAMI, wiele ma kilka. Lokalne oddziały oferują bezpłatne grupy wsparcia dla rodzin, programy zdrowienia prowadzone przez osoby z własnym doświadczeniem, zajęcia edukacyjne (Family-to-Family, Ending the Silence w szkołach) oraz warmlines (telefony wsparcia na chwile bez kryzysu). NAMI HelpLine: 1-800-950-6264.",
+      "res_samhsa_who": "Każdy w USA, kto szuka stałej opieki w zakresie zdrowia psychicznego lub używania substancji",
+      "res_samhsa_what": "Federalna baza ~13,000 placówek leczniczych — terapia, psychiatria, intensywne leczenie ambulatoryjne, leczenie stacjonarne, podwójna diagnoza. Filtruj według kodu pocztowego, ubezpieczenia, języka i oferowanych usług. SAMHSA ma też National Helpline czynną 24/7 (1-800-662-4357), która bezpłatnie kieruje do pomocy.",
+      "res_befrienders_who": "Każdy spoza USA, kto szuka wsparcia w kryzysie w swoim kraju",
+      "res_befrienders_what": "Globalna sieć ośrodków, w których wolontariusze udzielają wsparcia emocjonalnego, w ponad 30 krajach. Wpisz na stronie swój kraj, a zobaczysz numery telefonów zaufania i opcje czatu w twojej okolicy. Większość ośrodków działa bezpłatnie, poufnie i 24/7.",
+      "res_iasp_who": "Każdy spoza USA — obszerny światowy katalog telefonów kryzysowych",
+      "res_iasp_what": "IASP prowadzi najpełniejszą międzynarodową listę telefonów kryzysowych zapobiegających samobójstwom. Można ją przeszukiwać według kraju; zawiera opcje telefonu, SMS-a i czatu online. Często to najlepszy punkt startowy, jeśli twojego kraju nie ma na liście Befrienders.",
+      "res_mainecrisis_who": "Każdy w stanie Maine — łączy ze służbami kryzysowymi w całym stanie",
+      "res_mainecrisis_what": "Bezpłatnie, poufnie, 24/7. Konsultanci z Maine. Prowadzona przez The Opportunity Alliance dla południowego Maine oraz przez innych regionalnych usługodawców w całym stanie. W razie potrzeby może wysłać lokalny mobilny zespół kryzysowy.",
+      "res_opportunityalliance_who": "Dzieci, nastolatki, rodziny i dorośli w hrabstwie Cumberland i w całym Maine",
+      "res_opportunityalliance_what": "Prowadzi zespół Cumberland County Crisis Mobile Response — ludzi, którzy naprawdę przyjeżdżają do ciebie, gdy 1-888-568-1112 wysyła pomoc w Portland i okolicznych miejscowościach. Zapewnia też Children's Behavioral Health Services, pomoc w zakresie zdrowia psychicznego w domu, wsparcie dla rodzin oraz podstawy 211 Maine dla południowego Maine.",
+      "res_namimaine_who": "Każdy w Maine, kto szuka informacji, wsparcia lub skierowania w sprawach zdrowia psychicznego",
+      "res_namimaine_what": "To nie jest telefon kryzysowy, ale świetne miejsce w ciągu dnia, żeby odnaleźć się w systemie opieki psychologicznej i psychiatrycznej, znaleźć wsparcie rówieśnicze i lokalne programy. Prowadzi też szkolny program Ending the Silence — młodzi prelegenci w wieku zbliżonym do uczniów, którzy mówią o chorobach psychicznych bezpośrednio w klasach starszych szkoły podstawowej i w szkołach średnich.",
+      "res_school_who": "Każda szkoła publiczna w USA ma przeszkolonych doradców; większość szkół dla starszych uczniów ma też psychologa szkolnego",
+      "res_school_what": "Są do tego przygotowani. Obowiązuje ich poufność, chyba że chodzi o bezpieczeństwo. Mogą połączyć cię z pomocą z zewnątrz, porozmawiać razem z tobą z rodzicami i być z tobą przez cały ten czas.",
+      "resource_groups": {
+        "national": {
+          "label": "Działa wszędzie w USA",
+          "desc": "Te cztery to podstawa, wszędzie. Zapamiętaj 988."
+        },
+        "lookup": {
+          "label": "Znajdź pomoc w swojej okolicy (USA)",
+          "desc": "Katalogi, które kierują cię do usług w twojej okolicy. Przydatne, gdy potrzebna jest dalsza opieka po rozmowie kryzysowej."
+        },
+        "international": {
+          "label": "Jesteś poza USA?",
+          "desc": "988, 211, Trevor i SAMHSA działają tylko w USA. Te katalogi obejmują resztę świata."
+        },
+        "maine": {
+          "label": "Partnerzy w Maine (konkretne lokalne instytucje)",
+          "desc": "Wymienione z nazwy, bo King Middle i Portland Public Schools to miejsca pilotażu tego narzędzia. Jeśli jesteś gdzie indziej, skorzystaj z katalogów powyżej, żeby znaleźć odpowiedniki u siebie."
+        },
+        "school": {
+          "label": "Pomoc w szkole",
+          "desc": "Często to najłatwiej dostępna osoba dorosła w ciągu dnia szkolnego. Dostępna w każdej szkole publicznej w USA."
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "Utrzymujący się obniżony nastrój",
+          "desc": "Smutek, pustka albo płaskie / odrętwiałe uczucie, które trwa przez większość dnia, prawie codziennie, przez tygodnie. To coś innego niż zwykłe smutne dni, które przychodzą i odchodzą."
+        },
+        "irritability": {
+          "label": "Większa drażliwość",
+          "desc": "Zwłaszcza u nastolatków depresja często objawia się bardziej drażliwością lub złością niż smutkiem. Wybuchanie z powodu drobiazgów, ciągłe poczucie, że wszystko rani."
+        },
+        "withdrawal": {
+          "label": "Wycofanie się z aktywności",
+          "desc": "Odsuwanie się od hobby, sportu, przyjaciół i rzeczy, które kiedyś sprawiały radość. Ciągłe odwoływanie planów. Spędzanie dużo więcej czasu w samotności niż kiedyś."
+        },
+        "sleep": {
+          "label": "Zmiany w spaniu",
+          "desc": "Spanie dużo dłużej niż zwykle albo prawie wcale. Trudności z zaśnięciem, budzenie się w stanie wyczerpania, przesypianie całego dnia."
+        },
+        "appetite": {
+          "label": "Zmiany apetytu",
+          "desc": "Jedzenie dużo więcej lub dużo mniej niż zwykle. Pomijanie posiłków albo ciągłe jedzenie bez przyjemności. Wyraźne zmiany wagi w ciągu kilku tygodni."
+        },
+        "energy": {
+          "label": "Mało energii / zmęczenie",
+          "desc": "Wszystko wydaje się ciężkie. Nawet małe zadania wydają się niemożliwe. Ktoś może mówić, że cały czas czuje zmęczenie, nawet po przespanej nocy."
+        },
+        "school": {
+          "label": "Spadek zaangażowania w szkole",
+          "desc": "Pogarszające się oceny, brakujące zadania, zaległości w przedmiotach, które wcześniej nie sprawiały problemu. Często do tego opuszczone dni w szkole."
+        },
+        "selfcare": {
+          "label": "Mniej dbania o siebie",
+          "desc": "Mniej uwagi poświęcanej higienie, wyglądowi czy codziennym nawykom, o które ktoś wcześniej dbał. To nie zmiana stylu — raczej wrażenie, że tej osobie przestało zależeć."
+        },
+        "hopeless": {
+          "label": "Wypowiedzi pełne beznadziei lub samokrytyki",
+          "desc": "Częste teksty w stylu „po co to wszystko”, „nic nie ma znaczenia”, „jestem do niczego”, „jestem dla wszystkich ciężarem”. To wzorce językowe, które warto traktować poważnie, nawet gdy padają mimochodem."
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "MOWA — co ta osoba mówi",
+        "mood_what_you_re_seeing": "NASTRÓJ — co widzisz",
+        "behavior_what_they_re_doing": "ZACHOWANIE — co ta osoba robi",
+        "a_friend_opens_up_at_lunch": "Przyjaciółka zwierza się w stołówce",
+        "a_direct_disclosure_over_text": "Bezpośrednie zwierzenie w wiadomości",
+        "the_aftermath_your_friend_is_now": "Co dalej — ktoś z twoich przyjaciół jest teraz pod opieką specjalistów",
+        "help_is_available_right_now": "Pomoc jest dostępna od razu",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline · zadzwoń lub napisz SMS pod 988",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line · wyślij SMS o treści HOME pod numer 741741",
+        "tell_a_school_counselor_teacher_parent": "🏫 Powiedz pedagogowi, nauczycielowi, rodzicowi lub innej zaufanej osobie dorosłej",
+        "box_breathing_started_4_seconds_in": "Oddychanie kwadratowe rozpoczęte. 4 sekundy wdech, 4 wstrzymanie, 4 wydech, 4 wstrzymanie.",
+        "box_breathing_paused": "Oddychanie kwadratowe: pauza.",
+        "box_breathing_pacer": "🌬️ Metronom oddychania kwadratowego",
+        "a_4_4_4_4_rhythm": "Rytm 4-4-4-4: wdech przez 4, wstrzymanie przez 4, wydech przez 4, wstrzymanie przez 4. Stosują go klinicyści i ratownicy, żeby uspokoić układ nerwowy. Koło rośnie przy wdechu i kurczy się przy wydechu.",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}, cykl {cyclesDone}",
+        "breathing_pacer_ready": "Metronom oddechu gotowy",
+        "ready": "Gotowe",
+        "cycle_cyclesdone": "Cykl {cyclesDone}",
+        "start_box_breathing_pacer": "Uruchom metronom oddychania kwadratowego",
+        "pause_box_breathing_pacer": "Wstrzymaj metronom oddychania kwadratowego",
+        "pause": "⏸ Pauza",
+        "if_breathing_exercises_feel_uncomfortable_or": "Jeśli ćwiczenia oddechowe są nieprzyjemne albo nasilają niepokój, to naprawdę częste — przerwij i spróbuj zamiast tego uziemienia. Przy ustawieniu ograniczonego ruchu koło pozostanie nieruchome, a pomocą będzie nazwa fazy.",
+        "grounding_complete_you_ve_returned_to": "Uziemienie zakończone. Jesteś z powrotem w chwili obecnej.",
+        "grounding_reset": "Uziemienie zresetowane.",
+        "5_4_3_2_1_grounding": "👁️ Uziemienie 5-4-3-2-1",
+        "a_sensory_anchor_when_your_thoughts": "Kotwica dla zmysłów, gdy myśli pędzą albo masz poczucie odcięcia. Przechodź przez zmysły po kolei. Nie musisz niczego zapisywać — po prostu zauważaj.",
+        "you_ve_come_back_to_the": "Jesteś z powrotem w teraźniejszości.",
+        "grounding_doesn_t_make_hard_feelings": "Uziemienie nie sprawia, że trudne uczucia znikają. Daje im tylko na chwilę mniej miejsca, żeby fala mogła przejść.",
+        "do_it_again": "↻ Jeszcze raz",
+        "step_stepidx_of_groundstepscount": "Krok {stepIdx} z {GROUNDSTEPSCount}",
+        "optional_jot_what_you_notice_private": "Opcjonalnie: zanotuj, co zauważasz (prywatne, nie jest zapisywane).",
+        "notes_for_step_stepidx": "Notatki do kroku {stepIdx}",
+        "reset_grounding_to_first_step": "Zresetuj uziemienie do pierwszego kroku",
+        "reset": "↻ Od nowa",
+        "next_step": "Następny krok",
+        "finish_grounding_exercise": "Zakończ ćwiczenie uziemienia",
+        "next": "Dalej →",
+        "finish": "Zakończ ✓",
+        "this_device_would_not_save_it": "To urządzenie nie mogło tego zapisać. Twoja praca jest nadal na ekranie — użyj Eksportu lub Drukowania, żeby zachować kopię, zanim zamkniesz tę stronę.",
+        "added_to_your_toolkit": "Dodano do twojego przybornika",
+        "removed_from_your_toolkit": "Usunięto z twojego przybornika",
+        "my_coping_toolkit": "🧰 Mój przybornik radzenia sobie",
+        "tap_any_strategy_to_add_it": "Dotknij dowolnej strategii, żeby dodać ją do swojego osobistego przybornika. Zapisywane tylko na twoim urządzeniu — nic nie jest wysyłane. Zbuduj listę 5-7 rzeczy, które naprawdę ci kiedyś pomogły, żeby w trudnej chwili nie musieć wymyślać wszystkiego od zera.",
+        "my_toolkit_savedcount": "✓ Mój przybornik ({savedCount})",
+        "remove_label_from_toolkit": "Usuń „{label}” z przybornika",
+        "remove_from_toolkit": "Usuń z przybornika: ",
+        "add_to_toolkit": "Dodaj do przybornika: ",
+        "note_this_toolkit_is_a_complement": "Uwaga: ten przybornik uzupełnia profesjonalne wsparcie, ale go nie zastępuje. Jeśli jesteś w kryzysie, zadzwoń lub napisz SMS pod 988.",
+        "e_g_when_i_haven_t": "np. „Kiedy brakuje mi snu i cały weekend spędzam w samotności”",
+        "e_g_listen_to_a_calming": "np. „Posłuchać uspokajającej playlisty, pójść na spacer, ochlapać twarz zimną wodą”",
+        "e_g_library_after_school_my": "np. „Biblioteka po szkole, moja przyjaciółka Maya, kawiarnia”",
+        "e_g_mom_cell_aunt_liz": "np. „Mama (kom. ____), ciocia Liz (kom. ____), pedagog pan K. (sala 204)”",
+        "e_g_988_lifeline_call_or": "np. „988 Lifeline (zadzwoń lub napisz SMS), Crisis Text Line (SMS o treści HOME pod numer 741741), dr ____ w przychodni ____, pedagog szkolny”",
+        "e_g_give_my_medications_to": "np. „Oddać leki mamie, żeby je zamknęła. Nie schodzić do piwnicy. Zostać na noc z kimś, jeśli jest naprawdę źle.”",
+        "could_not_open_print_window_your": "Nie udało się otworzyć okna drukowania — przeglądarka mogła je zablokować.",
+        "print_preview_opened": "Otwarto podgląd wydruku.",
+        "print_could_not_be_opened": "Nie udało się otworzyć drukowania.",
+        "my_safety_plan_stanley_brown": "📋 Mój plan bezpieczeństwa (Stanley-Brown)",
+        "best_built_with_a_counselor_or": "Najlepiej tworzyć go RAZEM z pedagogiem, psychologiem lub terapeutą. ",
+        "a_safety_plan_is_most_effective": "Plan bezpieczeństwa działa najlepiej, gdy pomaga ci go wypełnić dorosły, który cię zna — pomyśli o rzeczach, które mogłyby ci umknąć, i będzie osobą, do której zwracanie się o pomoc masz już przećwiczone. Możesz zacząć tutaj, zapisać plan i dokończyć go razem. Zapisywane tylko na tym urządzeniu.",
+        "filledcount_stepscount_filled": "Wypełniono {filledCount} / {STEPSCount}",
+        "print_save_as_pdf": "🖨 Drukuj / zapisz jako PDF",
+        "clear_my_saved_safety_plan": "Wyczyść mój zapisany plan bezpieczeństwa",
+        "clear_plan": "✕ Wyczyść plan",
+        "stanley_brown_safety_planning_intervention_is": "Stanley-Brown Safety Planning Intervention jest rekomendowana przez Suicide Prevention Resource Center i należy do najlepiej zbadanych planów bezpieczeństwa opartych na dowodach. Pełną wersję kliniczną przechodzi się razem z przeszkolonym specjalistą.",
+        "you_are_not_the_therapist": "To nie ty prowadzisz terapię",
+        "your_job_ended_when_you_connected": "Twoje zadanie skończyło się w chwili, gdy ta osoba trafiła pod opiekę dorosłego. Od teraz twoja rola znów się zmniejsza — do bycia przyjacielem lub przyjaciółką — i to jest właściwy rozmiar. Leczenie, planowanie bezpieczeństwa, dalsza opieka — to zadania dla przeszkolonych specjalistów. Twoje zadanie to obecność, przyjaźń i to, żeby nie zniknąć.",
+        "if_your_friend_goes_to_treatment": "Jeśli ktoś z twoich przyjaciół trafia na leczenie, to sukces — a nie porzucenie",
+        "when_a_friend_gets_professional_help": "Gdy ktoś z przyjaciół dostaje profesjonalną pomoc — terapię, leki, intensywne programy, czasem pobyt w szpitalu — może się wydawać, że przyjaźń została zawieszona. Nie została. Leczenie to coś, co było możliwe także dzięki tobie. Ta osoba wykonuje teraz ciężką pracę, dzięki której zostaje z nami. Napisz wiadomość. Zajmij jej miejsce przy stoliku w stołówce. Bądź obok, kiedy wróci.",
+        "concrete_moves_that_help": "Konkretne kroki, które pomagają",
+        "tell_another_adult_you_trust": "Powiedz innej dorosłej osobie, której ufasz. ",
+        "even_if_the_situation_has_been": "Nawet jeśli sytuacja jest „załatwiona”, TY też masz za sobą trudne przeżycie. Rodzic, pedagog lub terapeuta może pomóc ci to przepracować.",
+        "pause_platforms_that_are_amplifying_it": "Zrób przerwę od platform, które to nakręcają. ",
+        "if_social_media_is_making_your": "Jeśli media społecznościowe nasilają twój niepokój, zrób sobie przerwę. Wycisz, przestań obserwować albo zamknij aplikację na jeden dzień.",
+        "keep_your_own_routines": "Trzymaj się swoich nawyków. ",
+        "sleep_food_school_hobbies_these_are": "Sen, jedzenie, szkoła, hobby. To deski podłogi, które dają ci stabilność — nie pozwól im się rozjechać, gdy to dźwigasz.",
+        "ask_for_breaks_when_you_need": "Proś o przerwy, kiedy ich potrzebujesz. ",
+        "you_are_allowed_to_not_text": "Możesz nie odpisywać od razu. Możesz przez kilka godzin nie być pod telefonem. Powrót do zdrowia tej osoby nie wymaga od ciebie ciągłej gotowości.",
+        "notice_your_own_feelings": "Zauważaj własne uczucia. ",
+        "sadness_anger_fear_exhaustion_are_normal": "Smutek, złość, strach, wyczerpanie są normalne. Odrętwienie też jest normalne. Jeśli uczucia pozostają ciężkie dłużej niż kilka tygodni, to moment, żeby porozmawiać z pedagogiem lub psychologiem.",
+        "keep_your_other_friendships": "Dbaj o inne przyjaźnie. ",
+        "don_t_let_supporting_one_friend": "Nie pozwól, żeby wspieranie jednej osoby odcięło cię od wszystkich innych. To cała twoja sieć relacji cię podtrzymuje.",
+        "when_supporting_a_friend_has_hit": "Gdy wspieranie kogoś mocno uderzyło w CIEBIE",
+        "if_you_re_losing_sleep_having": "Jeśli źle śpisz, nachodzą cię natrętne myśli, czujesz odrętwienie albo pojawiają się u ciebie myśli o samookaleczeniu — to znaki, że ty też potrzebujesz wsparcia. Zadzwoń pod 988, wyślij SMS o treści HOME pod numer 741741 albo porozmawiaj z pedagogiem szkolnym. Pomagający też potrzebują pomocy. Nie ma nic wstydliwego w tym, że jej potrzebujesz.",
+        "you_showed_up_you_noticed_you": "Pojawiasz się. Zauważasz. Odzywasz się. Mówisz o tym komuś. To wystarczy. To jest wszystko.",
+        "today": "dzisiaj",
+        "yesterday": "wczoraj",
+        "value_days_ago": "{value} dni temu",
+        "value_weeks_ago": "{value} tyg. temu",
+        "value_months_ago": "{value} mies. temu",
+        "if_you_are_in_crisis_right": "🚨 JEŚLI JESTEŚ TERAZ W KRYZYSIE:",
+        "call_or_text": "Zadzwoń lub napisz SMS pod ",
+        "us_suicide_crisis_lifeline": " (US Suicide + Crisis Lifeline, linia w USA). ",
+        "text": "Wyślij SMS o treści ",
+        "to": " pod numer ",
+        "reach_a_real_person_24_7": "Porozmawiaj z prawdziwym człowiekiem 24/7.",
+        "my_safety_plan": "Mój plan bezpieczeństwa",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012 — interwencja z najsilniejszymi dowodami na zmniejszenie liczby kolejnych prób. Zbuduj SWÓJ plan w spokojnej chwili.",
+        "why_this_works": "🎓 Dlaczego to działa: ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry. Spisanie tego planu w spokojnej chwili sprawia, że w kryzysie łatwiej po niego sięgnąć. Podziel się nim z kimś, komu ufasz — pedagogiem, rodzicem, przyjacielem lub przyjaciółką.",
+        "need_a_sign": "Wpisz sygnał.",
+        "my_warning_signs_log": "Mój dziennik sygnałów ostrzegawczych",
+        "track_when_warning_signs_appear_so": "Zapisuj, kiedy pojawiają się sygnały ostrzegawcze, żeby wzorzec stał się widoczny. Znać swój wzorzec = wychwycić go wcześniej.",
+        "what_sign_showed_up_e_g": "Jaki sygnał się pojawił? (np. „odrętwienie przez całe popołudnie”, „chęć, żeby zniknąć”)",
+        "context_where_what_was_happening": "Kontekst (gdzie, co się działo)",
+        "intensity": "Nasilenie: ",
+        "what_helped_if_anything": "Co pomogło (jeśli coś pomogło)",
+        "log_it": "💾 Zapisz",
+        "helped_whathelped": "✓ Pomogło: {whatHelped}",
+        "add_a_few_words_first_then": "Najpierw wpisz kilka słów, a potem znowu naciśnij przycisk.",
+        "my_coping_arsenal": "Mój arsenał radzenia sobie",
+        "strategies_that_have_actually_worked_for": "Strategie, które naprawdę działają u MNIE. Dotknij „+1 użyte”, gdy któraś pomoże — sprawdzaj, co działa.",
+        "a_strategy_that_worked_for_me": "Strategia, która mi pomogła (np. „zimna woda na twarz”, „telefon do mamy”)",
+        "add_to_arsenal": "+ Dodaj do arsenału",
+        "used_value": "użyto: {value}",
+        "a_name_is_needed_before_this": "Przed zapisaniem trzeba podać imię lub nazwę.",
+        "my_support_contacts": "Moje kontakty wsparcia",
+        "quick_access_list_of_people_crisis": "Szybko dostępna lista osób + telefonów kryzysowych + kiedy do kogo się zwrócić. Karta do portfela.",
+        "name": "Imię",
+        "role_mom_therapist_friend": "Rola (mama, terapeuta, przyjaciel)",
+        "contact_phone_text": "Kontakt (telefon / SMS)",
+        "when_to_reach_out_to_this": "Kiedy zwrócić się do TEJ osoby",
+        "add": "+ Dodaj",
+        "need_a_brief_description": "Potrzebny jest krótki opis.",
+        "my_recovery_notes": "Moje notatki o powrocie do równowagi",
+        "after_a_hard_moment_log_what": "Po trudnej chwili zapisz, co pomogło + co nie. Z czasem lepiej poznasz siebie.",
+        "what_happened_brief": "Co się stało? (krótko)",
+        "what_helped": "✓ Co pomogło",
+        "what_didn_t_help_or_made": "✗ Co nie pomogło (albo pogorszyło sprawę)",
+        "what_i_want_future_me_to": "💌 Co chcę, żeby przyszłe ja z tego zapamiętało",
+        "save": "💾 Zapisz",
+        "helped": "✓ Pomogło: ",
+        "didn_t": "✗ Nie pomogło: ",
+        "write_something_first_then_press_add": "Najpierw coś napisz, a potem naciśnij Dodaj.",
+        "my_hope_list": "Moja lista nadziei",
+        "reasons_to_keep_going_people_plans": "Powody, żeby iść dalej. Ludzie, plany, miejsca, cokolwiek. Czytaj to, gdy jest ciężko.",
+        "one_of_your_reasons": "💛 Jeden z twoich powodów",
+        "a_reason_to_keep_going_small": "Powód, żeby iść dalej (mały lub duży, cokolwiek)",
+        "my_safety_kit": "🛡 Mój zestaw bezpieczeństwa",
+        "personal_crisis_support_tools": "Osobiste narzędzia wsparcia w kryzysie",
+        "6_tools_to_build_your_safety": "6 narzędzi, żeby zbudować SWÓJ plan bezpieczeństwa + arsenał radzenia sobie. Numery telefonów kryzysowych są zawsze widoczne. Wszystkie dane zostają w twojej przeglądarce.",
+        "open": "Otwórz →",
+        "my_safety_kit_2": "← Mój zestaw bezpieczeństwa",
+        "crisis_companion": "Towarzysz w kryzysie",
+        "peer_support_and_suicide_prevention_skills": "Wsparcie rówieśnicze i umiejętności zapobiegania samobójstwom. Co robić, gdy ktoś z przyjaciół wydaje się mieć depresję, jest w kryzysie albo myśli o zrobieniu sobie krzywdy. Rozpoznawanie sygnałów, co mówić (a czego nie mówić), jak powiedzieć zaufanej osobie dorosłej. Zgodne z NEDA + AFSP + Sources of Strength + 988. Poprzedzone ostrzeżeniem o treści.",
+        "safety_plan_cleared": "Plan bezpieczeństwa wyczyszczony.",
+        "all_distress_readings_cleared": "Wszystkie pomiary napięcia wyczyszczone.",
+        "clear_your_saved_safety_plan": "Wyczyścić zapisany plan bezpieczeństwa?",
+        "clear_all_distress_readings": "Wyczyścić wszystkie pomiary napięcia?",
+        "this_permanently_removes_every_step_of": "To trwale usunie z tego urządzenia każdy krok twojego zapisanego planu bezpieczeństwa. Tego nie da się cofnąć. Jeśli możesz go potrzebować, najpierw wydrukuj lub zapisz kopię.",
+        "this_permanently_deletes_your_entire_distress": "To trwale usunie całą historię twoich pomiarów napięcia, łącznie z notatkami i danymi o trendach. Tego nie da się cofnąć.",
+        "cancel": "Anuluj",
+        "clear_safety_plan": "Wyczyść plan bezpieczeństwa",
+        "clear_all_readings": "Wyczyść wszystkie pomiary",
+        "now_viewing_label": "Teraz oglądasz: {label}",
+        "content_note_before_you_continue": "Ostrzeżenie o treści, zanim przejdziesz dalej",
+        "this_module_is_about_what_to": "Ten moduł mówi o tym, co robić, gdy ktoś z przyjaciół ma depresję, jest w kryzysie albo myśli o zrobieniu sobie krzywdy — także o samobójstwie. Obejmuje:",
+        "recognizing_signs_of_depression_in_a": "Rozpoznawanie oznak depresji u przyjaciela lub przyjaciółki",
+        "crisis_warning_signs_at_a_general": "Sygnały ostrzegawcze kryzysu — na ogólnym poziomie, bez szczegółowych instrukcji",
+        "how_to_ask_listen_and_respond": "Jak pytać, słuchać i reagować",
+        "how_and_when_to_tell_a": "Jak i kiedy powiedzieć zaufanej osobie dorosłej",
+        "crisis_helplines_and_what_to_say": "Telefony kryzysowe i co powiedzieć, gdy dzwonisz",
+        "how_to_take_care_of_yourself": "Jak zadbać o siebie po wspieraniu kogoś z przyjaciół",
+        "what_this_module_does_not_include": "Czego ten moduł NIE zawiera: ",
+        "specific_methods_of_self_harm_descriptions": "konkretnych metod samookaleczenia, opisów prób samobójczych, historii „przed/po” ani żadnych treści, które mogłyby posłużyć jako instrukcja. Informacje są celowo ogólne — skupiają się na świadomości, wsparciu i łączeniu ludzi z pomocą.",
+        "if_reading_about_these_topics_is": "Jeśli czytanie o tych tematach jest dla ciebie teraz trudne, ",
+        "please_consider_one_of_these_instead": "rozważ zamiast tego jedną z tych opcji:",
+        "talk_with_a_trusted_adult_before": "Porozmawiaj z zaufaną osobą dorosłą, zanim przejdziesz dalej — z pedagogiem, rodzicem lub nauczycielem",
+        "skip_this_module_and_explore_other": "Pomiń ten moduł i poznaj inne narzędzia w SEL Hub",
+        "the_988_suicide_crisis_lifeline_free": " — 988 Suicide & Crisis Lifeline (bezpłatnie, poufnie, 24/7)",
+        "home_to_741741": "HOME pod numer 741741",
+        "crisis_text_line_free_confidential_24": " — Crisis Text Line (bezpłatnie, poufnie, 24/7)",
+        "continuing_into_crisis_companion": "Przechodzisz do Towarzysza w kryzysie",
+        "i_understand_the_content_note_and": "Rozumiem ostrzeżenie o treści i chcę przejść do Towarzysza w kryzysie",
+        "i_understand_continue": "✓ Rozumiem — dalej",
+        "returning_to_sel_hub_menu": "Powrót do menu SEL Hub",
+        "take_me_back_to_the_menu": "← Wróć do menu",
+        "visitedcount_sectionscount_sections_visited": "Odwiedzone sekcje: {visitedCount} / {SECTIONSCount}",
+        "crisis_companion_sections": "Sekcje Towarzysza w kryzysie",
+        "visited": " (odwiedzone)",
+        "next_label": "Dalej: {label} →",
+        "breath_pacer": "Metronom oddechu",
+        "a_visual_breathing_pacer_watch_the": "Wizualny metronom oddechu. Patrz, jak koło rośnie i się kurczy, i pozwól, żeby oddech za nim podążał. Przydatny w chwilach ostrego stresu przed trudną rozmową, po niej albo zawsze wtedy, gdy ciało wyprzedza umysł. To narzędzie do UŻYWANIA — nie zastępuje żadnej formy wsparcia z pozostałej części tego modułu.",
+        "cycle_cycles": "Cykl {cycles}",
+        "keep_going_as_long_as_feels": " · kontynuuj, dopóki jest ci z tym dobrze",
+        "press_start_when_you_re_ready": "Naciśnij Start, kiedy zechcesz",
+        "restart": "↺ Od nowa",
+        "when_to_use_which": "💡 Kiedy czego używać: ",
+        "box_breathing_4_4_4_4": "Oddychanie kwadratowe (4-4-4-4) do ogólnej regulacji — stosują je wojskowi i ratownicy. ",
+        "4_7_8_for_falling_asleep": "4-7-8 do zasypiania lub szybkiego uspokojenia w ostrym stresie — długi wydech aktywuje układ przywspółczulny. ",
+        "equal_breath_6_6_for_sustainable": "Równy oddech (6-6) do codziennego, długotrwałego stosowania — bez wstrzymywania, łatwo go utrzymać.",
+        "write_something_first_then_press_the": "Najpierw coś napisz, a potem znowu naciśnij przycisk.",
+        "grounding_5_4_3_2_1": "Uziemienie 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "Gdy myśli pędzą albo narasta niepokój, technika 5-4-3-2-1 przywraca uwagę do ciała i chwili obecnej. Użyj dowolnego z 5 zmysłów, nawet jeśli niektóre są niedostępne — nazwij to, co pamiętasz, co sobie wyobrażasz, jaki zapach byłoby miło poczuć. To nadal działa.",
+        "itemscount_of_count_added": "Dodano {itemsCount} z {count}",
+        "remove": "Usuń",
+        "finish_2": "✓ Zakończ",
+        "grounding_complete": "Uziemienie zakończone",
+        "you_named_15_specific_things_in": "Masz już 15 konkretnych rzeczy z twojej chwili obecnej. Zauważ, jak czujesz się teraz w porównaniu z początkiem.",
+        "start_again": "↺ Zacznij od nowa",
+        "distress_reading_saved": "Pomiar napięcia zapisany.",
+        "calm": "Spokój",
+        "mild_stress": "Lekki stres",
+        "notable_distress": "Wyraźne napięcie",
+        "high_distress": "Silne napięcie",
+        "crisis_level_distress": "Napięcie na poziomie kryzysu",
+        "distress_check": "Pomiar napięcia",
+        "a_quick_way_to_track_how": "Szybki sposób, żeby śledzić, jak się czujesz w dłuższym czasie. Oceń swoje napięcie w skali 0–10. Dodaj notatkę, jeśli chcesz. Wzorzec z całego tygodnia powie ci coś, czego same słowa nie powiedzą. ",
+        "if_your_reading_is_8_or": "Jeśli twój wynik wynosi 8 lub więcej przez ponad godzinę, zwróć się do zaufanej osoby dorosłej albo wyślij SMS o treści HOME pod numer 741741.",
+        "right_now_i_m_feeling": "W tej chwili czuję:",
+        "0_calm": "0 · spokój",
+        "10_crisis": "10 · kryzys",
+        "optional_note_what_s_going_on": "Opcjonalna notatka (co się dzieje?):",
+        "e_g_math_test_in_3rd": "np. sprawdzian z matmy na 3. lekcji; prawie bez snu",
+        "log_this_reading": "💾 Zapisz ten pomiar",
+        "this_is_a_hard_moment": "⚠ To trudna chwila.",
+        "you_re_in_real_distress_the": "Naprawdę cierpisz. Metronom oddechu (jedną sekcję wyżej) i Uziemienie 5-4-3-2-1 są tuż obok. ",
+        "if_thoughts_of_self_harm_are": "Jeśli pojawiają się myśli o samookaleczeniu, wyślij teraz SMS o treści HOME pod numer 741741 (Crisis Text Line) albo od razu zadzwoń lub napisz SMS pod 988.",
+        "above_average_distress": "Napięcie powyżej przeciętnej.",
+        "worth_pausing_for_try_the_breath": "Warto się przy tym zatrzymać. Wypróbuj metronom oddechu albo uziemienie. Jeśli ten poziom wciąż wraca, dobrym krokiem jest powiedzenie o tym zaufanej osobie dorosłej.",
+        "your_pattern": "📊 Twój wzorzec",
+        "7_day_avg_avg_sevendayreadingscount_readings": "Średnia z 7 dni: {avg} · pomiary: {sevenDayReadingsCount}",
+        "distress_over_time_chart": "Wykres napięcia w czasie",
+        "recent_readings_readingscount": "📋 Ostatnie pomiary ({readingsCount})",
+        "why_this_matters": "Dlaczego to ważne",
+        "you_don_t_have_to_be": "Nie musisz być pedagogiem. Nie musisz wiedzieć, co powiedzieć. Nie musisz niczego naprawiać.",
+        "you_have_to_be_a_person": "Musisz być kimś, kto zauważa, ",
+        "and_a_person_who_tells_an": "i kimś, kto mówi dorosłemu. To wszystko. Obu tych umiejętności można się nauczyć i obie ratują życie.",
+        "friends_are_usually_the_first_to": "Zwykle to przyjaciele pierwsi zauważają, że coś jest nie tak. Dorośli często przegapiają wczesne sygnały, bo nastolatki dzielą się bardziej otwarcie z przyjaciółmi niż z rodzicami czy nauczycielami. To nie problem — tak po prostu wygląda przyjaźń w twoim wieku. To tylko znaczy, że twoja rola ma znaczenie.",
+        "what_this_module_teaches": "Czego uczy ten moduł",
+        "how_to_recognize_when_a_friend": "Jak rozpoznać, że nastrój lub zachowanie kogoś z przyjaciół zmierza w stronę depresji",
+        "how_to_recognize_warning_signs_of": "Jak rozpoznać sygnały ostrzegawcze kryzysu — także myśli samobójcze",
+        "how_to_ask_listen_and_respond_2": "Jak pytać, słuchać i reagować — w tym słowa, które pomagają, i te, które nie pomagają",
+        "how_to_tell_a_trusted_adult": "Jak powiedzieć zaufanej osobie dorosłej — kiedy, komu i jak",
+        "crisis_resources_you_can_call_or": "Pomoc w kryzysie, do której możesz zadzwonić lub napisać w każdej chwili — dla kogoś z przyjaciół albo dla siebie",
+        "how_to_take_care_of_yourself_2": "Jak zadbać o siebie, gdy wspierasz kogoś z przyjaciół w czymś ciężkim",
+        "what_this_module_does_not_do": "Czego ten moduł NIE robi",
+        "it_does_not_turn_you_into": "Nie każe ci prowadzić terapii. Twoja rola to obecność i połączenie tej osoby z pomocą.",
+        "it_does_not_require_you_to": "Nie wymaga od ciebie dochowywania tajemnic. Jeśli chodzi o bezpieczeństwo, powiedzenie dorosłemu to lojalność, a nie zdrada.",
+        "it_does_not_describe_specific_methods": "Nie opisuje konkretnych metod samookaleczenia. Celowo mówimy ogólnie o niepokojących zachowaniach.",
+        "it_does_not_replace_professional_help": "Nie zastępuje profesjonalnej pomocy. Uczy cię, jak być mostem do profesjonalnej pomocy.",
+        "sources_framework": "Źródła i podstawy",
+        "this_module_aligns_with_safe_messaging": "Ten moduł jest zgodny z wytycznymi bezpiecznego komunikowania (safe messaging) AFSP (afsp.org), SAMHSA, wytycznymi medialnymi Reporting on Suicide (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), QPR Institute, NIMH oraz zaleceniami AAP dotyczącymi zdrowia nastolatków. Został opracowany przez psychologa szkolnego z myślą o uczniach starszych klas szkoły podstawowej i szkół średnich, a treść przeszła redakcyjną weryfikację pod kątem wytycznych bezpiecznego komunikowania.",
+        "recognizing_depression_in_a_friend": "Rozpoznawanie depresji u przyjaciela lub przyjaciółki",
+        "every_kid_has_bad_days_every": "Każdy ma czasem złe dni. Każdy od czasu do czasu ma trudny tydzień. To część bycia człowiekiem, a nie depresja.",
+        "depression_is_a_pattern": "Depresja to WZORZEC. ",
+        "it_s_a_cluster_of_changes": "To zestaw zmian, który trwa tygodniami, a nie pojedynczy zły dzień. Sygnały poniżej warto traktować poważnie, gdy KILKA z nich występuje jednocześnie I gdy utrzymują się dłużej niż zwykły gorszy okres.",
+        "a_useful_question_to_keep_in": "Przydatne pytanie, o którym warto pamiętać: „Czy ten wzorzec zmian trwa coraz dłużej, nasila się albo przeszkadza tej osobie w codziennym życiu?”",
+        "patterns_to_notice_over_weeks_not": "Wzorce, na które warto zwracać uwagę (przez tygodnie, nie dni)",
+        "important_nuance": "Ważny niuans",
+        "in_adolescents_especially_depression_often_shows": "Zwłaszcza u nastolatków depresja często objawia się DRAŻLIWOŚCIĄ, a nie smutkiem. Ktoś, kto od tygodni jest opryskliwy, przewrażliwiony na drobiazgi albo wygląda, jakby tlił się na małym ogniu, może zmagać się z większymi trudnościami niż ktoś, kto jest widocznie smutny.",
+        "boys_athletes_kids_of_color_larger": "Chłopcy, sportowcy, młodzież z mniejszości rasowych, osoby z większym ciałem i osoby osiągające wysokie wyniki są często pomijane, bo nie pasują do stereotypu „nastolatka z depresją”. Traktuj zestaw zmian poważnie bez względu na to, jak ta osoba wygląda.",
+        "what_to_do_if_you_re": "Co robić, gdy widzisz ten wzorzec",
+        "reach_out_send_a_text_sit": "Odezwij się. Napisz wiadomość. Usiądź obok tej osoby w stołówce. Sygnał, że zwracasz uwagę, ma znaczenie.",
+        "ask_gently_and_specifically_i_ve": "Zapytaj łagodnie i konkretnie: „Widzę, że ostatnio masz mało energii i mało mówisz. Jak się naprawdę czujesz?”",
+        "listen_don_t_fix_most_people": "Słuchaj. Nie naprawiaj. Większość ludzi nie chce rozwiązania; chcą czuć się mniej samotnie.",
+        "if_they_share_something_heavy_that": "Jeśli ta osoba powie ci coś ciężkiego, to moment na trudniejsze pytanie (następna sekcja: sygnały ostrzegawcze kryzysu).",
+        "if_you_re_worried_about_them": "Jeśli martwisz się o tę osobę, powiedz zaufanej osobie dorosłej. Nie potrzebujesz pewności. Wystarczy niepokój.",
+        "crisis_warning_signs": "Sygnały ostrzegawcze kryzysu",
+        "when_depression_deepens_into_crisis_including": "Gdy depresja pogłębia się w kryzys — także z myślami samobójczymi — zwykle pojawiają się sygnały ostrzegawcze. American Foundation for Suicide Prevention (AFSP) dzieli je na trzy grupy: ",
+        "talk": "MOWA",
+        "mood": "NASTRÓJ",
+        "and": " i ",
+        "behavior": "ZACHOWANIE",
+        "a_note_about_how_this_section": "Uwaga o tym, jak napisana jest ta sekcja: celowo NIE wymieniamy konkretnych zachowań, które mogłyby posłużyć jako instrukcja czy lista kontrolna. Ogólne kategorie wystarczą, żeby przyjaciel lub przyjaciółka rozpoznali, że coś jest nie tak. Jeśli widzisz kilka takich sygnałów naraz, to moment, żeby działać — a nie żeby dalej badać sprawę na własną rękę.",
+        "examples": "Przykłady",
+        "note": "Uwaga: ",
+        "if_you_see_any_of_these": "Jeśli widzisz KTÓRYKOLWIEK z tych sygnałów, kolejne kroki to:",
+        "stay_with_them_if_you_can": "Zostań z tą osobą, jeśli możesz. ",
+        "don_t_leave_them_alone_if": "Nie zostawiaj jej samej, jeśli jest w ostrym kryzysie.",
+        "ask_directly": "Zapytaj wprost. ",
+        "are_you_thinking_about_hurting_yourself": "„Myślisz o tym, żeby zrobić sobie krzywdę?” Pytanie NIE podsuwa tego pomysłu (następna sekcja wyjaśnia badania).",
+        "tell_a_trusted_adult_today": "Powiedz zaufanej osobie dorosłej — dziś. ",
+        "not_next_week_today": "Nie w przyszłym tygodniu. Dziś.",
+        "call_or_text_988": "Zadzwoń lub napisz SMS pod 988, ",
+        "if_you_re_unsure_what_to": "jeśli nie wiesz, co robić — poprowadzą CIĘ krok po kroku, jak pomóc tej osobie.",
+        "call_911": "Zadzwoń pod 911, ",
+        "if_your_friend_is_in_immediate": "jeśli tej osobie grozi teraz bezpośrednie niebezpieczeństwo fizyczne.",
+        "question_persuade_refer": "Zapytaj · Przekonaj · Skieruj",
+        "question_persuade_refer_2": "Question, Persuade, Refer – Zapytaj, Przekonaj, Skieruj",
+        "is_the_most_widely_taught_suicide": ") to najczęściej nauczany model zapobiegania samobójstwom dla osób bez przygotowania zawodowego. Stosuje się go w szkołach, szpitalach i programach społecznych na całym świecie. Model jest celowo prosty: trzy kroki, a każdy z nich może zrobić przyjaciel lub przyjaciółka.",
+        "you_re_not_the_therapist_you": "To nie ty prowadzisz terapię. Jesteś ogniwem między kimś, kto przechodzi trudny czas, a ludźmi przygotowanymi do pomocy. Właśnie to ogniwo ratuje życie.",
+        "question_ask_directly": "Zapytaj — pytaj wprost",
+        "if_you_suspect_your_friend_is": "Jeśli podejrzewasz, że ktoś z przyjaciół myśli o samobójstwie, zapytaj. Wprost i łagodnie. Dokładne słowa są mniej ważne niż gotowość, żeby zapytać.",
+        "examples_2": "Przykłady: ",
+        "are_you_thinking_about_hurting_yourself_2": "„Myślisz o tym, żeby zrobić sobie krzywdę?” · „Masz myśli samobójcze?” · „Myślisz o tym, żeby odebrać sobie życie?”",
+        "the_most_cited_barrier_to_asking": "🔬 Najczęściej podawany powód, żeby nie pytać, jest błędny: ",
+        "asking_does_not_plant_the_idea": "Pytanie NIE podsuwa tego pomysłu. Liczne metaanalizy (Dazzi et al., 2014, Psychological Medicine) i dziesięciolecia badań AFSP, NIMH i QPR Institute potwierdzają: bezpośrednie pytanie chroni. Często przynosi ulgę — ta osoba czekała, aż ktoś zauważy.",
+        "persuade_listen_and_stay": "Przekonaj — słuchaj i zostań",
+        "persuade_doesn_t_mean_talking_them": "„Przekonać” nie znaczy wyperswadować komuś jego uczuć. Znaczy uważnie wysłuchać, uznać, że to jest trudne, i pomóc tej osobie powiedzieć TAK pomocy.",
+        "listen_without_judgment": "Słuchaj bez oceniania. ",
+        "don_t_debate_don_t_minimize": "Nie dyskutuj. Nie umniejszaj. Nie przebijaj tego własną historią.",
+        "reflect": "Odzwierciedlaj. ",
+        "it_sounds_like_you_ve_been": "„Brzmi to tak, jakby było tego na tobie strasznie dużo i jakby brakowało ci już sił.” Poczucie, że ktoś naprawdę słucha, jest lekarstwem.",
+        "don_t_promise_secrecy": "Nie obiecuj tajemnicy. ",
+        "you_can_say_i_care_about": "Możesz powiedzieć: „Za bardzo mi na tobie zależy, żeby zatrzymać to dla siebie. Chcę, żebyśmy porozmawiali z kimś, kto naprawdę może pomóc.”",
+        "stay_with_them": "Zostań z tą osobą. ",
+        "don_t_leave_them_alone_if_2": "Nie zostawiaj jej samej, jeśli jest w ostrym kryzysie. Usiądź. Przejdź się. Po prostu bądź obok.",
+        "skip_the_promise_me_trap": "⚠ Unikaj pułapki „obiecaj mi”: ",
+        "don_t_ask_them_to_promise": "Nie proś, żeby ta osoba „obiecała”, że nic sobie nie zrobi. To stawia ją w sytuacji, w której składa obietnicę, której może nie dotrzymać, a to dokłada wstydu. Zamiast tego: „Chcę, żeby nic ci się nie stało. Poszukajmy pomocy teraz, razem.”",
+        "refer_connect_them_to_help": "Skieruj — połącz tę osobę z pomocą",
+        "refer_means_getting_them_to_someone": "„Skierować” znaczy zaprowadzić tę osobę do kogoś, kto może zrobić więcej niż ty. To ta część, w której TY też nie musisz radzić sobie w pojedynkę.",
+        "best_walk_with_them_to_a": "Najlepiej: pójdź z tą osobą do pedagoga, psychologa szkolnego lub zaufanej osoby dorosłej. Teraz.",
+        "if_that_s_not_possible_call": "Jeśli to niemożliwe: zadzwońcie razem pod 988 (albo bądź obok, gdy ta osoba dzwoni lub pisze). 988 jest dla osoby zagrożonej I dla przyjaciół, którzy pomagają.",
+        "if_they_refuse_to_tell_anyone": "Jeśli ta osoba nie chce nikomu powiedzieć: ",
+        "tell_an_adult_yourself": "powiedz o tym dorosłemu samodzielnie. ",
+        "you_re_not_breaking_trust_you": "Nie łamiesz zaufania — działasz z lojalności, na jaką zasługuje jej kryzys. Ta osoba prawdopodobnie odczuje później ulgę.",
+        "if_immediate_physical_danger_911_not": "Przy bezpośrednim zagrożeniu fizycznym: 911. Nie w przyszłym tygodniu. Teraz.",
+        "the_whole_framework_in_one_sentence": "Cały model w jednym zdaniu: ",
+        "ask_directly_listen_fully_and_bring": "Zapytaj wprost, wysłuchaj w pełni i zaangażuj dorosłego, który może pomóc.",
+        "what_to_say_and_what_not": "Co mówić (a czego nie mówić)",
+        "you_don_t_need_a_perfect": "Nie potrzebujesz idealnego scenariusza. Nie musisz mieć mądrych odpowiedzi. Wystarczy być obok, mówić szczerze i chcieć zaangażować dorosłego. Poniższe sformułowania to tylko przykłady — w prawdziwej rozmowie użyjesz własnych słów.",
+        "a_useful_frame_would_what_i": "Przydatne pytanie do siebie: czy to, co zaraz powiem, sprawi, że ta osoba poczuje się BARDZIEJ bezpiecznie, żeby mówić dalej, czy MNIEJ?",
+        "these_help": "To pomaga",
+        "why": "Dlaczego: ",
+        "these_don_t_help_even_when": "To nie pomaga (nawet w dobrej wierze)",
+        "if_you_said_one_of_the": "Jeśli kiedyś zdarzyło ci się powiedzieć coś z listy „nie mów” — ",
+        "that_s_ok_you_didn_t": "to w porządku. Nikt ci tego wcześniej nie powiedział. Nikt z nas nie urodził się z tą wiedzą. Teraz masz inne słowa. Następna rozmowa może wyglądać inaczej.",
+        "telling_a_trusted_adult": "Powiedzenie zaufanej osobie dorosłej",
+        "this_is_the_most_important_skill": "To najważniejsza umiejętność w całym module. ",
+        "telling_an_adult_is_what_turns": "Powiedzenie dorosłemu zamienia twój niepokój w pomoc, która naprawdę zmienia bieg wydarzeń. To krok, na którym wszystko się opiera — moment, który pozwala specjalistom robić to, do czego są przygotowani.",
+        "loyalty_not_betrayal": "Lojalność, a nie zdrada",
+        "a_friend_in_crisis_may_ask": "Ktoś z przyjaciół w kryzysie może cię prosić, żeby nikomu nie mówić. Może wymagać od ciebie obietnicy. Może się bać, wstydzić albo mieć pewność, że to wszystko pogorszy.",
+        "tell_anyway": "Mimo to powiedz. ",
+        "safety_overrides_secrecy_telling_an_adult": "Bezpieczeństwo jest ważniejsze niż tajemnica. Powiedzenie dorosłemu, gdy życie lub dobro kogoś z przyjaciół jest zagrożone, to najbardziej lojalna rzecz, jaką można zrobić. Większość osób chronionych w ten sposób jest potem WDZIĘCZNA — nawet jeśli w danej chwili była zdenerwowana. Przyjaźń przetrwa trudną rozmowę; nie przetrwa utraty tej osoby.",
+        "when_to_tell_every_time": "Kiedy powiedzieć — za każdym razem",
+        "your_friend_mentioned_wanting_to_die": "Ktoś z przyjaciół wspomniał, że chce umrzeć, zrobić sobie krzywdę albo odebrać sobie życie — nawet mimochodem",
+        "you_re_seeing_a_cluster_of": "Widzisz kilka sygnałów ostrzegawczych kryzysu naraz (MOWA / NASTRÓJ / ZACHOWANIE)",
+        "your_friend_has_a_plan_a": "Ta osoba ma plan, środki lub termin — nawet jeśli mglisty",
+        "your_friend_has_hurt_themselves_even": "Ta osoba zrobiła sobie krzywdę, nawet niewielką",
+        "you_re_scared_and_you_don": "Boisz się i nie wiesz, co robić — to samo w sobie jest wystarczającym powodem, żeby powiedzieć",
+        "who_to_tell_pick_whoever_you": "Komu powiedzieć — wybierz kogokolwiek, do kogo najszybciej dotrzesz",
+        "how": "Jak: ",
+        "how_to_tell_practical_moves": "Jak powiedzieć — praktyczne kroki",
+        "you_don_t_need_a_script": "Nie potrzebujesz scenariusza. „Potrzebuję pomocy w poważnej sprawie, która dotyczy kogoś z moich przyjaciół” wystarczy.",
+        "you_can_write_it_down_if": "Jeśli nie możesz powiedzieć tego na głos, możesz to napisać. Kartka, SMS, e-mail — wszystko się sprawdzi.",
+        "you_can_ask_another_friend_to": "Możesz poprosić kogoś innego z przyjaciół o towarzystwo w drodze do pedagoga.",
+        "you_can_leave_class_to_do": "Możesz w tym celu wyjść z lekcji. Powiedz nauczycielowi: „Muszę iść do pedagoga — to pilne”. Większość nauczycieli puści cię bez pytań.",
+        "if_the_first_adult_doesn_t": "Jeśli pierwszy dorosły nie potraktuje cię poważnie — a to się zdarza — spróbuj u kogoś innego. Próbuj, aż ktoś cię wysłucha.",
+        "if_it_s_outside_school_hours": "Jeśli to poza godzinami szkolnymi, zadzwoń pod 988. Pomogą ci ustalić, co robić.",
+        "in_maine_schools": "🍎 W szkołach w Maine",
+        "school_counselors_and_school_psychologists_are": "Pedagodzy i psycholodzy szkolni mają obowiązek zgłaszania — prawo wymaga od nich, żeby reagowali na zagrożenie bezpieczeństwa. NIE powiedzą po prostu twoim rodzicom i nie odejdą. Postępują według procedury, która obejmuje ocenę sytuacji tej osoby, bezpieczny kontakt z jej rodziną i połączenie jej z dalszą opieką. Obowiązek zgłaszania to barierka ochronna, a nie kara.",
+        "marked_as_myth_correct": "Oznaczono jako mit — dobrze",
+        "marked_as_truth_but_research_says": "Oznaczono jako prawdę — ale według badań to mit",
+        "myths_debunked": "Obalamy mity",
+        "six_of_the_most_cited_myths": "Sześć najczęściej powtarzanych mitów, które powstrzymują ludzi przed pomocą przyjaciołom w kryzysie. Przy każdym zdecyduj: czy to twierdzenie to MIT, czy PRAWDA? Potem przeczytaj opartą na dowodach odpowiedź ze źródłami.",
+        "score_so_far_correctcount_totalanswered_answered": "Dotychczasowy wynik: {correctCount} / {totalAnswered} poprawnych odpowiedzi.",
+        "myth_value_of_mythscount": "Mit {value} z {MYTHSCount}",
+        "this_is_a_myth": "To MIT",
+        "this_is_true": "To PRAWDA",
+        "correct_this_is_a_myth": "✓ Dobrze — to mit.",
+        "common_misconception_this_is_actually_a": "⚠ Częste nieporozumienie — to w rzeczywistości mit.",
+        "what_the_evidence_says": "Co mówią badania: ",
+        "sources_cite": "Źródła: {cite}",
+        "what_to_say": "Co powiedzieć: ",
+        "crisis_resources": "Pomoc w kryzysie",
+        "every_resource_here_is_free_confidential": "Każda pomoc tutaj jest bezpłatna, poufna i prowadzona przez przeszkolone osoby. Możesz zadzwonić W IMIENIU kogoś z przyjaciół, RAZEM z tą osobą albo w swojej sprawie. Telefony zaufania nie są tylko dla osoby w kryzysie — są też dla przyjaciół, rodziców i innych osób wspierających, które próbują ustalić, co robić.",
+        "below": "Poniżej: ",
+        "national": "Ogólnokrajowe",
+        "works_anywhere_in_the_u_s": " (działają wszędzie w USA) → ",
+        "find_your_local_help": "Znajdź pomoc w swojej okolicy",
+        "directory_lookups_by_zip": " (wyszukiwanie w katalogach według kodu pocztowego) → ",
+        "outside_the_u_s": "Poza USA?",
+        "maine_partners": "Partnerzy w Maine",
+        "named_local_agencies": " (konkretne lokalne instytucje) → ",
+        "school_based": "W szkole",
+        "you_don_t_need_to_know": "Nie musisz wiedzieć, co powiedzieć. Konsultanci są przeszkoleni, żeby zacząć rozmowę. Możesz zadzwonić jeszcze raz. Możesz się rozłączyć. Nie da się tego zrobić źle.",
+        "a_note_about_lgbtq_youth": "Uwaga o młodzieży LGBTQ+",
+        "research_consistently_shows_lgbtq_youth_and": "Badania konsekwentnie pokazują, że młodzież LGBTQ+ — a zwłaszcza młodzież transpłciowa — znacznie częściej ma myśli samobójcze i podejmuje próby samobójcze niż rówieśnicy spoza LGBTQ+. Przyczyny są dobrze udokumentowane: odrzucenie przez rodzinę, nękanie w szkole, brak wspierającej opieki i stres mniejszościowy. W The Trevor Project (1-866-488-7386 / SMS o treści START pod numer 678-678) pracują osoby specjalnie przeszkolone w tych realiach. Jeśli ktoś z twoich przyjaciół jest LGBTQ+, to wsparcie powstało właśnie dla takich osób.",
+        "self_care_sub_sections": "Podsekcje o trosce o siebie",
+        "supporting_a_friend_through_a_mental": "Wspieranie kogoś z przyjaciół w kryzysie psychicznym jest ciężkie. Zmienia cię. Badacze nazywają to ",
+        "secondary_stress": "stresem wtórnym",
+        "the_way_that_being_close_to": " — to, jak bliskość cudzego bólu wpływa na twoje własne samopoczucie. To realne zjawisko i zasługuje na uwagę.",
+        "taking_care_of_yourself_is_not": "Dbanie o siebie to nie egoizm. Dzięki temu możesz dalej być obok.",
+        "interactive_tools_above": "🧰 Narzędzia interaktywne powyżej",
+        "the_tabs_at_the_top_of": "Zakładki na górze tej sekcji zawierają praktyczne narzędzia, z których możesz skorzystać od razu: prowadzony ",
+        "breathing_pacer": "metronom oddechu",
+        "a_sensory": ", zmysłowe ",
+        "grounding_exercise": "ćwiczenie uziemienia",
+        "a_personal": ", osobisty ",
+        "coping_toolkit": "przybornik radzenia sobie",
+        "you_can_build_and_the_evidence": ", który możesz zbudować, oraz oparty na dowodach ",
+        "stanley_brown_safety_plan": "plan bezpieczeństwa Stanleya-Brown",
+        "they_re_for_you_and_for": ". Są dla ciebie I do podzielenia się z kimś z przyjaciół, kto przechodzi trudny czas.",
+        "caring_for_yourself_when_you_ve": "Troska o siebie po wspieraniu kogoś z przyjaciół",
+        "helpful_response": "Pomocna odpowiedź",
+        "this_response_could_harm_see_explanation": "Ta odpowiedź może zaszkodzić — zobacz wyjaśnienie",
+        "neutral_response_see_explanation": "Neutralna odpowiedź — zobacz wyjaśnienie",
+        "practice_three_scenarios": "Ćwiczenia — trzy sytuacje",
+        "three_short_scenarios_drawn_from_typical": "Trzy krótkie sytuacje wzięte z typowych doświadczeń nastolatków. W każdej wybierz odpowiedź, która twoim zdaniem pomogłaby najbardziej. Nie ma idealnej odpowiedzi — są tylko odpowiedzi mniej lub bardziej pomocne w danym kontekście. Wzorowane na protokołach ćwiczeń Sources of Strength.",
+        "loaded_scenario_title": "Wczytano sytuację: {title}",
+        "scenario_value": "Sytuacja {value}",
+        "how_would_you_respond": "Jaka byłaby twoja reakcja?",
+        "helpful": "✓ Pomocne — ",
+        "harmful": "× Szkodliwe — ",
+        "neutral": "~ Neutralne — ",
+        "a_note_on_practice": "Uwaga o ćwiczeniach: ",
+        "real_conversations_are_messier_than_scripted": "Prawdziwe rozmowy są bardziej chaotyczne niż przećwiczone scenariusze. Celem ćwiczeń nie jest nauka kwestii na pamięć — tylko wyrobienie INSTYNKTU, żeby zapytać, wysłuchać, zostać i powiedzieć. Z praktyką ten instynkt działa coraz szybciej.",
+        "loading": "Ładowanie…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "Bezpośrednie lub pośrednie wypowiedzi o chęci śmierci, zakończeniu bólu, byciu ciężarem albo braku przyszłości. Czasem mówione mimochodem lub w żartach. Traktuj to poważnie, bez względu na to, jak zostało powiedziane.",
+          "examples": {
+            "0": "„Chcę umrzeć” albo „Najlepiej, żeby mnie tu nie było”",
+            "1": "„Wszystkim byłoby lepiej beze mnie”",
+            "2": "„Nie dam już rady”",
+            "3": "„Chcę tylko, żeby to się skończyło”",
+            "4": "„Już niedługo nie trzeba będzie się o mnie martwić”",
+            "5": "Żegnanie się w sposób, który wydaje się ostateczny, nawet jeśli jest subtelny"
+          },
+          "note": "Jeśli ktoś z przyjaciół żartuje, że chce umrzeć, to wciąż moment, żeby delikatnie zapytać, jak się czuje. Większość osób, które później podejmują próbę samobójczą, wcześniej komuś o tym powiedziała — czasem mimochodem albo jakby bez znaczenia."
+        },
+        "mood": {
+          "desc": "Wyraźne zmiany nastroju, zwłaszcza w krótkim czasie. Nagły spokój lub ulga PO okresie cierpienia mogą być poważnym sygnałem — czasem osoba zagrożona decyduje się na plan i przez to czuje chwilowy spokój.",
+          "examples": {
+            "0": "Utrzymująca się depresja lub lęk, które nie mijają",
+            "1": "Nagłe poczucie spokoju albo „teraz już wszystko w porządku” po długim, trudnym okresie",
+            "2": "Beznadzieja w myśleniu o przyszłości",
+            "3": "Wściekłość lub mówienie o zemście",
+            "4": "Utrata zainteresowania rzeczami, na których wcześniej zależało"
+          },
+          "note": "Nagła poprawa po długim, trudnym czasie jest dobra, gdy następuje po leczeniu, wsparciu i odpoczynku. Jest sygnałem ostrzegawczym, gdy nie następuje po niczym — gdy spokój pojawia się znikąd po tygodniach zmagań."
+        },
+        "behavior": {
+          "desc": "Wzorce działań, zwłaszcza przygotowań. Celowo NIE wymieniamy tu szczegółów, które mogłyby posłużyć jako instrukcja. Ogólne kategorie wystarczą, żeby przyjaciel lub przyjaciółka rozpoznali, że coś jest nie tak.",
+          "examples": {
+            "0": "Wycofywanie się z kontaktów z przyjaciółmi, rodziną lub z zajęć, które ta osoba kiedyś kochała",
+            "1": "Częstsze sięganie po substancje (alkohol, trawka, tabletki, więcej wapowania niż zwykle)",
+            "2": "Rozdawanie rzeczy, które mają dla tej osoby duże znaczenie",
+            "3": "Żegnanie się z ludźmi w sposób, który wydaje się ostateczny",
+            "4": "Brawurowe zachowanie, podejmowanie ryzyka, jakiego ta osoba zwykle unika",
+            "5": "Szukanie w internecie sposobów na zrobienie sobie krzywdy (możesz zauważyć skoki czasu przed ekranem w dziwnych godzinach albo to, że ta osoba ukrywa swoje wyszukiwania)"
+          },
+          "note": "Nie musisz mieć pewności. Jeśli pojawia się kilka takich sygnałów naraz, to moment, żeby delikatnie zapytać, jak ta osoba się czuje, I powiedzieć o tym zaufanej osobie dorosłej. Nie potrzebujesz pewności — wystarczy niepokój."
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "„Widzę, że ostatnio jest ci naprawdę ciężko. Zależy mi na tobie. Jak się naprawdę czujesz?”",
+          "why": "Konkretne, troskliwe, daje tej osobie szansę, żeby się otworzyć. „Naprawdę” pokazuje, że chcesz usłyszeć więcej niż zwykłe „wszystko w porządku”."
+        },
+        "1": {
+          "say": "„Myślisz o tym, żeby zrobić sobie krzywdę? Myślisz o samobójstwie?”",
+          "why": "Bezpośrednie pytanie NIE podsuwa tego pomysłu — badania są tu jednoznaczne. Często przynosi ulgę. Ta osoba prawdopodobnie czekała, aż ktoś zauważy."
+        },
+        "2": {
+          "say": "„Dobrze, że mi o tym mówisz. To wymagało odwagi.”",
+          "why": "Docenia to, że ktoś się zwierzył. Nie przeskakuj od razu do naprawiania — najpierw podziękuj za zaufanie."
+        },
+        "3": {
+          "say": "„To więcej, niż dam radę udźwignąć w pojedynkę, a chcę mieć pewność, że nic ci nie grozi. Możemy razem komuś o tym powiedzieć?”",
+          "why": "Szczerość co do twoich granic. Pokazuje, że powiedzenie dorosłemu to akt miłości, a nie zdrada. „Razem” ma znaczenie — nie uciekasz."
+        },
+        "4": {
+          "say": "„Jestem tu. Nigdzie się nie wybieram. Jeśli chcesz, możemy po prostu posiedzieć w ciszy.”",
+          "why": "Obecność jest lekarstwem. Nie musisz mieć odpowiedzi. Wystarczy, że zostaniesz."
+        },
+        "5": {
+          "say": "„Jest ktoś, komu ufasz? Mogę ci pomóc porozmawiać z tą osobą od razu.”",
+          "why": "Pokazuje, że kolejnym krokiem jest pomoc dorosłego, ale zostawia tej osobie wybór, kto to będzie."
+        },
+        "6": {
+          "say": "„Kocham cię. Boję się o ciebie. Proszę, pozwól mi pomóc.”",
+          "why": "Bezpośrednia emocjonalna szczerość. „Boję się” jest w porządku — tak naprawdę się czujesz, a to pokazuje, że ta sprawa jest dla ciebie ważna."
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "„Nie ma powodu, żeby się tak czuć.”",
+          "why": "Mówi tej osobie, że jej uczucia są złe. Przestanie ci cokolwiek mówić, jeśli jej uczucia będą oceniane."
+        },
+        "1": {
+          "say": "„Inni mają gorzej niż ty.”",
+          "why": "Ból to nie zawody. Takie słowa zamykają rozmowę i dokładają wstydu."
+        },
+        "2": {
+          "say": "„Nikomu nie mów. Ja też nie powiem.”",
+          "why": "Obiecywanie tajemnicy, gdy chodzi o bezpieczeństwo, to przeciwieństwo pomocy. Bezpieczeństwo jest ważniejsze niż tajemnica. Lojalność oznacza tutaj powiedzenie komuś."
+        },
+        "3": {
+          "say": "„Obiecaj mi, że nic sobie nie zrobisz.”",
+          "why": "Prosi o obietnicę, której ta osoba może nie być w stanie dotrzymać — i dokłada jej poczucie, że cię zawiodła, jeśli się nie uda. Zamiast tego powiedz: „Chcę, żeby nic ci się nie stało. Poszukajmy razem pomocy”."
+        },
+        "4": {
+          "say": "„Masz przecież tyle, dla czego warto żyć.”",
+          "why": "W dobrej wierze, ale w chwili głębokiego dołka człowiek naprawdę nie jest w stanie tego poczuć. Może to zabrzmieć jak „ciesz się tym, co masz” — a to do bólu dokłada wstyd."
+        },
+        "5": {
+          "say": "„Weź się w garść / rozchmurz się / bardziej się postaraj.”",
+          "why": "Depresja to nie wybór. Mówienie komuś, że wystarczy zdecydować inaczej, pokazuje, że nie rozumiesz, przez co ta osoba przechodzi."
+        },
+        "6": {
+          "say": "„Czemu w ogóle tak myślisz?” (zirytowanym tonem)",
+          "why": "Irytacja brzmi jak ocena. Jeśli naprawdę chcesz zrozumieć, zapytaj łagodnie — „Pomożesz mi zrozumieć, co teraz czujesz?” — i przyjmij otwarcie wszystko, co usłyszysz."
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "Pedagog lub psycholog szkolny",
+          "pro": "Są do tego przygotowani. Często najłatwiej do nich trafić w ciągu dnia szkolnego. Obowiązuje ich poufność, chyba że chodzi o bezpieczeństwo. Mogą pomóc ci powiedzieć rodzicom i połączyć cię z pomocą z zewnątrz.",
+          "how": "Przyjdź osobiście. Zostaw kartkę. Poproś dowolnego nauczyciela, żeby cię zaprowadził. Jeśli nie możesz tego powiedzieć, możesz to napisać."
+        },
+        "1": {
+          "label": "Nauczyciel, któremu ufasz",
+          "pro": "Widzi cię regularnie, zna twoich przyjaciół. Ma obowiązek zgłaszania takich sytuacji — i wie, co robić.",
+          "how": "Po lekcji, w czasie konsultacji albo w liściku. „Muszę porozmawiać o czymś poważnym, co dotyczy kogoś z moich przyjaciół”."
+        },
+        "2": {
+          "label": "Pielęgniarka szkolna",
+          "pro": "Poufne wsparcie w szkole w sprawach zdrowia fizycznego i psychicznego. Często łatwiej do niej trafić niż do pedagoga.",
+          "how": "Wejdź do gabinetu pielęgniarki. Znajdzie dla ciebie czas."
+        },
+        "3": {
+          "label": "Rodzic, opiekun prawny lub starsze rodzeństwo",
+          "pro": "Kochają cię. Chcą pomóc. Nawet jeśli nie wiedzą, co robić, mogą zrobić z tobą kolejny krok.",
+          "how": "Wybierz spokojną chwilę. Zacznij od: „Potrzebuję pomocy w poważnej sprawie, która dotyczy kogoś z moich przyjaciół”. Zapytaj, czy możecie razem usiąść."
+        },
+        "4": {
+          "label": "Lekarz rodzinny lub pediatra",
+          "pro": "Lekarz, którego obowiązuje tajemnica. Może skierować do opieki psychologicznej lub psychiatrycznej, porozmawiać z rodziną osoby, o którą się martwisz, albo współpracować ze szkołą.",
+          "how": "Możesz zadzwonić do przychodni i powiedzieć, że musisz porozmawiać z lekarzem. Wielu lekarzy zapewnia nastolatkom poufność."
+        },
+        "5": {
+          "label": "Trener lub opiekun koła zainteresowań",
+          "pro": "Dorośli, którzy już znają z zajęć ciebie i osobę, o którą się martwisz. Często mają kontakt z pedagogiem szkolnym.",
+          "how": "Po treningu albo spotkaniu. „Muszę porozmawiać o czymś, co mnie martwi”."
+        },
+        "6": {
+          "label": "Osoba duchowna (jeśli twoja rodzina należy do wspólnoty religijnej)",
+          "pro": "W rodzinach, w których to relacja oparta na zaufaniu, osoby duchowne mogą być ważnym pierwszym przystankiem.",
+          "how": "Większość chętnie podejmuje takie rozmowy. Wiele z nich ma przeszkolenie z podejścia wrażliwego na traumę."
+        },
+        "7": {
+          "label": "Terapeuta (twój lub tej osoby, jeśli któreś z was go ma)",
+          "pro": "Już przygotowany do dokładnie takiej rozmowy. Jeśli ty lub osoba, o którą się martwisz, chodzicie już na terapię, to najbardziej bezpośrednia droga.",
+          "how": "Zadzwoń do gabinetu. „Martwię się o czyjeś bezpieczeństwo i muszę o tym porozmawiać jeszcze dziś”."
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "Zapytanie kogoś, czy myśli o samobójstwie, podsunie mu ten pomysł.",
+          "truth": "Fałsz. Badania są spójne i jasne: pytanie NIE zwiększa ryzyka. Często przynosi ulgę — ta osoba czekała, aż ktoś zauważy. Zapytanie to jedna z najbardziej ochronnych rzeczy, jakie może zrobić przyjaciel lub przyjaciółka.",
+          "cite": "Dazzi et al., Psychological Medicine (2014), metaanaliza · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "Ludzie, którzy mówią o samobójstwie, chcą tylko zwrócić na siebie uwagę. Tak naprawdę nic by nie zrobili.",
+          "truth": "Niebezpieczny mit. Większość osób, które później podejmują próbę, wcześniej komuś o tym powiedziała — czasem mimochodem, czasem w żartach. Każde zwierzenie zasługuje na prawdziwą reakcję. „Szuka uwagi” często tak naprawdę znaczy „cierpi i nie ma innego sposobu, żeby poprosić o pomoc”."
+        },
+        "2": {
+          "claim": "Gdyby ktoś naprawdę chciał umrzeć, nikomu by nie powiedział.",
+          "truth": "Fałsz. Jest odwrotnie. Wiele osób, które podejmują próbę, dawało ludziom wokół siebie bezpośrednie lub pośrednie sygnały ostrzegawcze. Powiedzenie komuś to często oznaka ambiwalencji — jakaś część tej osoby chce żyć i szuka kontaktu."
+        },
+        "3": {
+          "claim": "Przyjaciel nic nie może zrobić — pomóc może tylko lekarz albo terapeuta.",
+          "truth": "Udokumentowano, że obecność rówieśników działa ochronnie. Nie musisz niczego naprawiać. Słuchanie, traktowanie sprawy poważnie i pomoc w nawiązaniu kontaktu z zaufaną osobą dorosłą to prawdziwa pomoc. Programy takie jak Sources of Strength opierają się na tym, że przyjaciele mają znaczenie.",
+          "cite": "Badania nad Sources of Strength · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "Rozmowa o samobójstwie tylko pogorszy sprawę.",
+          "truth": "To prawda tylko przy NIEBEZPIECZNYM sposobie mówienia — gloryfikowaniu, opisywaniu metod, robieniu z tego sensacji. Rozmowa z troską, bezpieczny język i łączenie z pomocą chronią. Każda duża organizacja zajmująca się zapobieganiem samobójstwom zaleca szczerą rozmowę."
+        },
+        "5": {
+          "claim": "Samobójstwo zdarza się bez ostrzeżenia.",
+          "truth": "Fałsz. Badania konsekwentnie pokazują, że w większości przypadków występują sygnały ostrzegawcze — choć czasem są oczywiste dopiero z perspektywy czasu. Dlatego szkolenie ze wsparcia rówieśniczego ma znaczenie: uczy, na co zwracać uwagę na bieżąco.",
+          "cite": "AFSP · CDC YRBSS · podsumowania badań NIMH"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "Siedzisz z Mayą w stołówce. Ostatnio jest cichsza niż zwykle. Grzebie widelcem w jedzeniu i mówi, prawie mimochodem: „Szczerze, czasem po prostu nie widzę już w tym wszystkim sensu”.",
+          "responses": {
+            "0": {
+              "text": "„Co masz na myśli? Nie gadaj tak.”",
+              "why": "To zamyka rozmowę. Mówiąc „nie gadaj tak”, dajesz tej osobie znać, że jej uczucia są złe I że nie może być z tobą szczera. Prawdopodobnie się wycofa."
+            },
+            "1": {
+              "text": "„To brzmi naprawdę ciężko. Opowiesz mi więcej o tym, co się dzieje? Zależy mi na tobie.”",
+              "why": "Uznaje uczucie bez oceniania. Zaprasza do rozmowy bez naciskania. „Zależy mi na tobie” sprawia, że bezpiecznie jest mówić dalej. To otwiera drogę do trudniejszego pytania, które przychodzi potem: „Czy masz myśli o zrobieniu sobie krzywdy?”"
+            },
+            "2": {
+              "text": "„No, szkoła jest teraz strasznie stresująca.”",
+              "why": "Nie szkodzi, ale mija się z tym, co naprawdę powiedziała. „Nie widzę w tym wszystkim sensu” to coś więcej niż szkolny stres. Neutralna odpowiedź może sprawić, że poczuje się niewysłuchana. Zadaj jedno pytanie uzupełniające, żeby mieć pewność."
+            }
+          }
+        },
+        "sc2": {
+          "setting": "Jest wtorek, 11 wieczorem. Jamie, ktoś z twoich przyjaciół, pisze: „Ciągle myślę o tym, że wszystkim byłoby dobrze beze mnie”. Czytasz to i serce ci staje.",
+          "responses": {
+            "0": {
+              "text": "„Jestem tu. Nic nie rób. Dzwonię teraz do mamy, żeby przyszła pomóc.”",
+              "why": "Bezpośrednio, z obecnością, poważnie i z szybkim zaangażowaniem dorosłego. „Dzwonię do mamy” nazywa konkretny krok. Jeśli w czasie czekania możesz też dalej pisać albo zadzwonić do tej osoby, zrób to. Jeśli możesz bezpiecznie dotrzeć do niej osobiście, zrób to."
+            },
+            "1": {
+              "text": "„omg nic ci nie jest?? masz tyle, dla czego warto żyć!!”",
+              "why": "Serce na właściwym miejscu, ale to źle wybrzmiewa. „Masz tyle, dla czego warto żyć” w chwili głębokiego dołka może brzmieć jak wzbudzanie poczucia winy. Lepiej: nazwij swój strach, powiedz, że kochasz tę osobę, i zaangażuj dorosłego."
+            },
+            "2": {
+              "text": "„Nikomu nie powiem, ale proszę, nie rób nic dziś w nocy, dobrze?”",
+              "why": "Obiecywanie tajemnicy, gdy chodzi o bezpieczeństwo, pogarsza sprawę. Najbardziej lojalne jest tu powiedzenie dorosłemu — nawet jeśli Jamie poprosi, żeby tego nie robić. Bezpieczeństwo jest ważniejsze niż tajemnica. Dziś w nocy komuś mówisz."
+            }
+          }
+        },
+        "sc3": {
+          "setting": "W zeszłym tygodniu ktoś z twoich przyjaciół trafił do szpitala po naprawdę ciężkiej nocy. To od ciebie dorosły się o tym dowiedział. Dziś ta osoba wróciła do szkoły i wygląda na wyczerpaną. Na korytarzu na ciebie nie patrzy. Boisz się, że się na ciebie gniewa.",
+          "responses": {
+            "0": {
+              "text": "Podchodzisz: „Hej. Dużo o tobie myślę. Cieszę się, że dziś jesteś. Kiedy tylko zechcesz pogadać — o czymkolwiek z tego albo o niczym — jestem obok.”",
+              "why": "Daje znać, że nadal jesteś obok, ale nie stawiasz siebie w centrum. Niczego nie wymaga. „O czymkolwiek z tego albo o niczym” pozwala tej osobie wybrać tempo. Tak wygląda lojalność PO powiedzeniu dorosłemu."
+            },
+            "1": {
+              "text": "Unikasz tej osoby, żeby nie czuła się dziwnie, widząc cię.",
+              "why": "Zrozumiały odruch, ale nieobecność wygląda jak odrzucenie — dokładnie odwrotnie niż to, czego ta osoba teraz potrzebuje. Nawet krótkie „Hej, dobrze, że jesteś” ma znaczenie. Nie musisz wiedzieć, co powiedzieć."
+            },
+            "2": {
+              "text": "Później piszesz do tej osoby: „Dorośli dowiedzieli się ode mnie, bo cię kocham i strasznie się o ciebie boję. Gniewasz się na mnie?”",
+              "why": "Szczere, ale stawia tę osobę w roli kogoś, kto musi pocieszać CIEBIE w sprawie twojej decyzji. O tych uczuciach możesz porozmawiać później z zaufaną osobą dorosłą albo terapeutą. Wobec tej osoby zacznij od: „Cieszę się, że jesteś. Jestem obok, kiedy tylko mnie potrzebujesz”."
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "Ruch",
+        "sensory": "Zmysły",
+        "connection": "Kontakt",
+        "creative": "Twórczość",
+        "cognitive": "Myśli",
+        "inhale": "Wdech",
+        "exhale": "Wydech",
+        "hold": "Wstrzymaj"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "Wyjdź na 5-minutowy spacer"
+        },
+        "stretch": {
+          "label": "Powoli rozciągaj się przez 5 minut"
+        },
+        "pushwall": {
+          "label": "Napieraj na ścianę (żeby uwolnić napięcie)"
+        },
+        "run_stairs": {
+          "label": "Raz wbiegnij po schodach na górę i zbiegnij na dół"
+        },
+        "cold_water": {
+          "label": "Ochlap twarz lub nadgarstki zimną wodą"
+        },
+        "ice_cube": {
+          "label": "Potrzymaj kostkę lodu w dłoni"
+        },
+        "heavy_blanket": {
+          "label": "Owiń się ciężkim kocem"
+        },
+        "rain_sounds": {
+          "label": "Posłuchaj odgłosów deszczu lub oceanu"
+        },
+        "safe_smell": {
+          "label": "Powąchaj coś, co lubisz (balsam, jedzenie, świeczkę)"
+        },
+        "text_friend": {
+          "label": "Napisz do zaufanej osoby z przyjaciół: „myślę o tobie”"
+        },
+        "hug_pet": {
+          "label": "Przytul zwierzaka albo pluszaka"
+        },
+        "call_family": {
+          "label": "Zadzwoń do kogoś z rodziny, przy kim czujesz się bezpiecznie"
+        },
+        "with_someone": {
+          "label": "Posiedź z kimś, przy kim czujesz się bezpiecznie (nie trzeba rozmawiać)"
+        },
+        "playlist": {
+          "label": "Posłuchaj sprawdzonej, uspokajającej playlisty"
+        },
+        "doodle": {
+          "label": "Rysuj lub bazgraj (bez celu, bez zasad)"
+        },
+        "journal": {
+          "label": "Zapisz, co masz w głowie, nawet jedno zdanie"
+        },
+        "make": {
+          "label": "Zrób coś rękami (origami, pieczenie, budowanie)"
+        },
+        "three_okay": {
+          "label": "Zapisz 3 małe rzeczy, które są teraz OK"
+        },
+        "five_breaths": {
+          "label": "Weź 5 powolnych oddechów (licz do 4 przy wdechu, do 4 przy wydechu)"
+        },
+        "will_pass": {
+          "label": "Przypomnij sobie: „to uczucie minie”"
+        },
+        "one_step": {
+          "label": "Wybierz jedną małą rzecz, którą zrobisz teraz (tylko jedną)"
+        }
+      },
+      "phaselabel": {
+        "0": "Wdech",
+        "1": "Wstrzymaj",
+        "2": "Wydech"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "Wymień 5 rzeczy, które WIDZISZ teraz wokół siebie.",
+          "helper": "Wszystko się liczy. Lampa. Róg biurka. Chmura."
+        },
+        "1": {
+          "prompt": "Wymień 4 rzeczy, które CZUJESZ na ciele.",
+          "helper": "Stopy na podłodze. Materiał koszulki. Powietrze na skórze."
+        },
+        "2": {
+          "prompt": "Wymień 3 rzeczy, które SŁYSZYSZ.",
+          "helper": "Zegar. Ruch uliczny. Własny oddech."
+        },
+        "3": {
+          "prompt": "Wymień 2 rzeczy, których ZAPACH czujesz.",
+          "helper": "(Albo rzeczy, których zapach pamiętasz, jeśli w pobliżu nic nie ma.)"
+        },
+        "4": {
+          "prompt": "Wymień 1 rzecz, której SMAK czujesz.",
+          "helper": "(Albo ostatni łyk wody lub ulubione jedzenie.)"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. Sygnały ostrzegawcze",
+          "sub": "Jakie myśli, uczucia lub sytuacje mówią mi, że nadchodzi trudna fala?"
+        },
+        "internal": {
+          "label": "2. Co mogę zrobić w pojedynkę (wewnętrzne radzenie sobie)",
+          "sub": "Rzeczy, dzięki którym czuję się choć trochę lepiej i które mogę robić bez nikogo innego."
+        },
+        "distract": {
+          "label": "3. Ludzie + miejsca, które pomagają mi oderwać myśli (w dobry sposób)",
+          "sub": "Znajomi, do których mogę napisać, miejsca, w których po prostu czuję się okej. NIE do wsparcia w kryzysie — tylko żeby oderwać myśli.",
+          "label_2": "3. Ludzie + miejsca, które pomagają mi oderwać myśli"
+        },
+        "helpers": {
+          "label": "4. Osoby, które mogę bezpośrednio poprosić o pomoc",
+          "sub": "Przyjaciele lub rodzina, którzy wiedzą, co się dzieje, albo którym ufam na tyle, żeby im powiedzieć. Zapisz imiona + jak się z nimi skontaktować.",
+          "label_2": "4. Osoby, które mogę poprosić o pomoc"
+        },
+        "professionals": {
+          "label": "5. Specjaliści + telefony kryzysowe",
+          "sub": "Mój terapeuta (jeśli go mam), psychiatra, lekarz, pedagog szkolny, a do tego telefony kryzysowe czynne 24/7."
+        },
+        "environment": {
+          "label": "6. Jak uczynić moje otoczenie bezpieczniejszym",
+          "sub": "Co mogę zrobić (ja albo ktoś, komu ufam), żeby oddzielić się od wszystkiego, co mogłoby posłużyć mi do zrobienia sobie krzywdy? To krok najlepiej poparty badaniami."
+        },
+        "warning": {
+          "label": "1. Sygnały ostrzegawcze (myśli, uczucia, sytuacje)"
+        },
+        "coping": {
+          "label": "2. Wewnętrzne sposoby radzenia sobie, które mogę stosować w pojedynkę"
+        },
+        "pros": {
+          "label": "5. Specjaliści + telefony kryzysowe"
+        },
+        "safer": {
+          "label": "6. Jak uczynić moje otoczenie bezpieczniejszym"
+        },
+        "0": {
+          "label": "5 rzeczy, które WIDZISZ",
+          "prompt": "Rozejrzyj się. Wymień 5 rzeczy, które teraz widzisz. Mów konkretnie — „róg książki”, a nie „książka”."
+        },
+        "1": {
+          "label": "4 rzeczy, których możesz DOTKNĄĆ",
+          "prompt": "Wyciągnij rękę i dotknij 4 różnych rzeczy. Zwróć uwagę na fakturę. Zimne czy ciepłe? Gładkie czy szorstkie?"
+        },
+        "2": {
+          "label": "3 rzeczy, które SŁYSZYSZ",
+          "prompt": "Posłuchaj. Wymień 3 różne dźwięki — mogą być bliskie lub dalekie, głośne lub ciche."
+        },
+        "3": {
+          "label": "2 rzeczy, które możesz POWĄCHAĆ",
+          "prompt": "Zwróć uwagę na 2 zapachy. Jeśli nic nie czujesz, wymień 2 zapachy, które miło wspominasz."
+        },
+        "4": {
+          "label": "1 rzecz, którą możesz POSMAKOWAĆ",
+          "prompt": "Zwróć uwagę na 1 smak w ustach — co zostawił ostatni napój lub posiłek, albo po prostu smak powietrza."
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 Ciało"
+        },
+        "mind": {
+          "label": "🧠 Umysł"
+        },
+        "distract": {
+          "label": "🎮 Odwrócenie uwagi"
+        },
+        "connect": {
+          "label": "🤝 Kontakt"
+        },
+        "creative": {
+          "label": "🎨 Twórczość"
+        },
+        "spirit": {
+          "label": "🌅 Duchowość"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "Mój plan bezpieczeństwa",
+          "desc": "Plan w 6 krokach wg Stanleya + Brown",
+          "stat": "Wypełnione kroki: {Count}"
+        },
+        "warning": {
+          "label": "Mój dziennik sygnałów ostrzegawczych",
+          "desc": "Zapisuj sygnały w czasie = wzorzec",
+          "stat": "Zapisane: {Count}"
+        },
+        "arsenal": {
+          "label": "Mój arsenał radzenia sobie",
+          "desc": "Strategie, które działają u MNIE",
+          "stat": "Zapisane: {Count}"
+        },
+        "contacts": {
+          "label": "Moje kontakty wsparcia",
+          "desc": "Szybko: do kogo dzwonić i kiedy",
+          "stat": "Osoby: {Count}"
+        },
+        "recovery": {
+          "label": "Moje notatki o powrocie do równowagi",
+          "desc": "Po trudnych chwilach — co zadziałało",
+          "stat": "Notatki: {Count}"
+        },
+        "hope": {
+          "label": "Moja lista nadziei",
+          "desc": "Powody, żeby iść dalej. Losowy wybór.",
+          "stat": "Powody: {Count}"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "Mój zestaw bezpieczeństwa"
+        },
+        "breath": {
+          "label": "Metronom oddechu"
+        },
+        "grounding": {
+          "label": "Uziemienie 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "Pomiar napięcia"
+        },
+        "whyMatters": {
+          "label": "Dlaczego to ważne"
+        },
+        "recognizeDepression": {
+          "label": "Rozpoznawanie depresji"
+        },
+        "crisisSigns": {
+          "label": "Sygnały ostrzegawcze kryzysu"
+        },
+        "qpr": {
+          "label": "Zapytaj · Przekonaj · Skieruj"
+        },
+        "whatToSay": {
+          "label": "Co mówić"
+        },
+        "tellingAdult": {
+          "label": "Powiedzenie zaufanej osobie dorosłej"
+        },
+        "myths": {
+          "label": "Obalamy mity"
+        },
+        "resources": {
+          "label": "Pomoc w kryzysie"
+        },
+        "selfCare": {
+          "label": "Troska o siebie"
+        },
+        "practice": {
+          "label": "Ćwiczenia"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "Oddychanie kwadratowe (4-4-4-4)"
+        },
+        "fourseven": {
+          "name": "Uspokajający oddech 4-7-8"
+        },
+        "equal": {
+          "name": "Równy oddech (6-6)"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "Czytaj"
+        },
+        "breath": {
+          "label": "Metronom oddechu"
+        },
+        "ground": {
+          "label": "Uziemienie 5-4-3-2-1"
+        },
+        "toolkit": {
+          "label": "Mój przybornik"
+        },
+        "safety": {
+          "label": "Plan bezpieczeństwa"
+        }
+      },
+      "print": {
+        "title": "Mój plan bezpieczeństwa",
+        "intro": "Opracowany z użyciem Stanley-Brown Safety Planning Intervention. Najbardziej przydatny, gdy przejrzysz go z pedagogiem, psychologiem lub terapeutą.",
+        "empty": "(jeszcze niewypełnione)",
+        "crisis_head": "Jeśli jesteś teraz w kryzysie:",
+        "crisis_body": "Zadzwoń lub napisz SMS pod {call} (24/7). Wyślij SMS o treści {text}. Powiedz zaufanej osobie dorosłej.",
+        "created": "Utworzono {date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "positive_psychology": "Psychologia pozytywna",
+        "coaching_tradition": "Tradycja coachingowa",
+        "trauma_informed": "Wrażliwość na traumę",
+        "media_literacy": "Edukacja medialna",
+        "contemplative": "Podejście kontemplacyjne",
+        "trauma_informed_practice": "Praktyka wrażliwa na traumę",
+        "philosophy_ethics": "Filozofia / Etyka",
+        "social_work": "Praca socjalna",
+        "person_centered_planning": "Planowanie skoncentrowane na osobie",
+        "family_systems": "Systemy rodzinne",
+        "self_determination_theory": "Teoria autodeterminacji",
+        "executive_function": "Funkcje wykonawcze",
+        "bystander_intervention": "Reagowanie świadków",
+        "restorative_practices": "Praktyki naprawcze",
+        "motivational_interviewing": "Dialog motywujący",
+        "place_based_education": "Edukacja osadzona w miejscu",
+        "harm_reduction": "Redukcja szkód",
+        "body_appreciation": "Docenianie ciała",
+        "occupational_therapy": "Terapia zajęciowa",
+        "grief_counseling": "Wsparcie w żałobie",
+        "neurodiversity_paradigm": "Paradygmat neuroróżnorodności",
+        "suicide_prevention": "Zapobieganie samobójstwom"
+      },
+      "tool": {
+        "zones": {
+          "label": "Strefy emocji",
+          "desc": "Rozpoznaj swoją strefę (niebieską, zieloną, żółtą, czerwoną) i poznaj strategie samoregulacji."
+        },
+        "emotions": {
+          "label": "Odkrywca emocji",
+          "desc": "Rozwijaj słownictwo emocji — rozpoznawaj i nazywaj uczucia oraz oceniaj ich natężenie."
+        },
+        "strengths": {
+          "label": "Poszukiwacz mocnych stron",
+          "desc": "Odkrywaj swoje mocne strony, talenty i obszary do rozwoju i zastanów się nad nimi."
+        },
+        "viaStrengths": {
+          "label": "Mocne strony VIA",
+          "desc": "Uproszczone samodzielne sortowanie 24 mocnych stron charakteru VIA (Peterson i Seligman, 2004) z 6 cnotami i wskazaniem twoich kluczowych mocnych stron. Oficjalny bezpłatny kwestionariusz znajdziesz na viacharacter.org. Ćwiczenie refleksyjne, nie test psychometryczny."
+        },
+        "wheelOfLife": {
+          "label": "Koło życia",
+          "desc": "Wykres pajęczynowy 8 obszarów życia, każdy oceniany od 1 do 10. Autoportret tego, gdzie twoje życie jest teraz pełne, a gdzie ubogie. Z tradycji coachingu (Meyer, lata 60.; Co-Active Coaching). Heurystyka; nie jest to zwalidowane narzędzie psychometryczne."
+        },
+        "perma": {
+          "label": "Dobrostan PERMA",
+          "desc": "Samoocena w pięciu obszarach PERMA plus refleksja o zdrowiu: pozytywne emocje, zaangażowanie, relacje, sens, osiągnięcia i zdrowie. 24 pozycje, wynik w formie wykresu słupkowego, refleksja dla każdego obszaru. Według Seligmana; łączy się z Mocnymi stronami VIA."
+        },
+        "coping": {
+          "label": "Przybornik radzenia sobie",
+          "desc": "Poznawaj i ćwicz strategie radzenia sobie — oddychanie, uziemianie, ruch i nie tylko."
+        },
+        "windowOfTolerance": {
+          "label": "Okno tolerancji",
+          "desc": "Wizualizacja samoświadomości uwzględniająca traumę. Trzy strefy pobudzenia (nadmierne pobudzenie, okno tolerancji, obniżone pobudzenie). Zaznacz swoje osobiste sygnały każdej strefy, swoje wyzwalacze i praktyki, które pomagają ci wrócić. Na podstawie Siegela (1999); standard w szkołach uwzględniających traumę."
+        },
+        "stressBucket": {
+          "label": "Wiadro stresu",
+          "desc": "Wizualizacja twojej pojemności. Stresory wlewają się do środka; praktyki radzenia sobie pozwalają im wypłynąć. Sprawdź, czy dopływ i odpływ są w równowadze. Narzędzie z tradycji CBT (Brabban i Turkington 2002), używane w NHS IAPT i Mind UK. Uczciwie mówi o stresorach strukturalnych."
+        },
+        "tipp": {
+          "desc": "Cztery umiejętności DBT do przetrwania kryzysu (Temperatura, Intensywny wysiłek, spokojny oddech – Paced breathing, rozluźnianie mięśni w parze z oddechem – Paired muscle relaxation) na OSTRY stres. Wycisza ciało w ciągu od 30 sekund do 10 minut, zanim spróbujesz wydostać się z tego myśleniem. Podstawowa umiejętność DBT z zakresu tolerancji dyskomfortu (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Przybornik na lęk",
+          "desc": "Oparte na CBT umiejętności radzenia sobie z lękiem: psychoedukacja, drzewo zamartwiania się (zamartwianie się produktywne i nieproduktywne), zaplanowany czas na zamartwianie się, dekatastrofizacja, umiejętności uziemiania i spis twoich osobistych wzorców. Według Beck Institute, AACAP, ADAA. Łączy się z Oknem tolerancji i Wiadrem stresu."
+        },
+        "sleep": {
+          "label": "Sen i odpoczynek",
+          "desc": "Sen nastolatków to kryzys zdrowia publicznego. Zalecane przez AAP 8-10 godzin rzadko jest osiągane. Psychoedukacja, samoocena, 8 częstych przeszkód + co pomaga na każdą z nich oraz dziennik snu. Według AAP, CDC, NSF i badań Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Regulacja sensoryczna",
+          "desc": "Narzędzie afirmujące neuroróżnorodność, które pomaga zrozumieć twoje przetwarzanie sensoryczne w 8 systemach zmysłowych. Zbuduj osobisty profil, zaplanuj dietę sensoryczną, wskaż dostosowania w szkole. Język „najpierw tożsamość” (identity-first); oparte na pracach Ayres / Dunn / badaniach prowadzonych przez osoby autystyczne."
+        },
+        "bigFeelings": {
+          "label": "Wielkie uczucia (złość)",
+          "desc": "Psychoedukacja i trening umiejętności skupione na złości. Złość jako informacja, a nie problem; agresja reaktywna jako pułapka. Oparte na tradycji Coping Power Lochmana + dowodach naukowych dotyczących CBT w pracy ze złością. Dziennik irytacji, spis wyzwalaczy, punkt wyboru, spersonalizowane sposoby na ochłonięcie."
+        },
+        "substancePsychoed": {
+          "label": "Używanie substancji",
+          "desc": "Psychoedukacja o substancjach nastawiona na redukcję szkód (alkohol, konopie, nikotyna, opioidy, stymulanty, benzodiazepiny, halucynogeny). Zagrożenia dla mózgu nastolatka. Edukacja o naloksonie. NIE jest narzędziem przesiewowym, NIE opiera się wyłącznie na abstynencji. Wyraźne skierowanie do SAMHSA. Przestrzeń do refleksji zgodna z dialogiem motywującym (MI)."
+        },
+        "behavioralActivation": {
+          "label": "Aktywacja behawioralna",
+          "desc": "Planuj małe aktywności, wykonuj je i oceniaj pod kątem poczucia kompetencji (czy czujesz, że sobie radzisz) i przyjemności (czy sprawiły ci radość). Zauważ, co pasuje, i wybierz wykonalny następny krok. Ta aktywność planistyczna czerpie z aktywacji behawioralnej; nie prowadzi ani nie ocenia terapii."
+        },
+        "mindfulness": {
+          "label": "Kącik uważności",
+          "desc": "Prowadzone ćwiczenia oddechowe, skanowanie ciała i ćwiczenia uważności."
+        },
+        "quietQuestions": {
+          "label": "Ciche pytania",
+          "desc": "Cotygodniowa praktyka wewnętrznego zadawania pytań. Pobądź z jednym otwartym pytaniem przez cały tydzień. 20 zmieniających się pytań o uwagę, tęsknotę, trudności, więź i stawanie się. Inspirowane kwakierską tradycją pytań; świeckie i niczego nie narzuca."
+        },
+        "orientations": {
+          "label": "Orientacje",
+          "desc": "Sposoby życia w porównaniu. Osiem tradycji filozoficznych (taoizm, zen, stoicyzm, egzystencjalizm, etyka konfucjańska, ubuntu, relacyjność ludów rdzennych, etyka troski) porównanych w odniesieniu do wielkich pytań o życie. Bez narzucania; każda tradycja ma uczciwy panel „Czego nie potrafi dobrze”."
+        },
+        "thoughtRecord": {
+          "label": "Zapis myśli CBT",
+          "desc": "7-kolumnowy zapis myśli z terapii poznawczo-behawioralnej. Przejdź przez trudny moment: sytuacja, emocja, myśl automatyczna, dowody za i przeciw, zrównoważona myśl, ponowna ocena emocji. Zapisuje wpisy w czasie. Według Becka, Burnsa, Padesky."
+        },
+        "costBenefit": {
+          "label": "Tabela zysków i kosztów",
+          "desc": "Siatka decyzyjna 2x2 z dialektycznej terapii behawioralnej. Krótko- i długoterminowe zalety i wady decyzji obok siebie. Przydatna, gdy emocje popychają cię w stronę jednej opcji. Według Linehan."
+        },
+        "sfbt": {
+          "label": "Skupienie na rozwiązaniach",
+          "desc": "Terapia krótkoterminowa skoncentrowana na rozwiązaniach: pytanie o cud, skalowanie, szukanie wyjątków i komplementy. Patrzy w przód zamiast wstecz, pyta, co już działa. Najczęściej stosowana technika w poradnictwie szkolnym w USA. Według de Shazera i Berg."
+        },
+        "careConstellations": {
+          "label": "Konstelacje troski",
+          "desc": "Mapa relacji: kto troszczy się o ciebie i o kogo ty się troszczysz. Odrzuca indywidualistyczne lub konsumpcyjne ujęcie „samoopieki”. Zawiera rzetelne filozoficzne spojrzenie na troskę o siebie a samoopiekę (Foucault, greckie epimeleia heautou, Audre Lorde, eudajmonistyczne vs hedonistyczne)."
+        },
+        "ecomap": {
+          "label": "Ekomapa",
+          "desc": "Mapa relacji osoby z otoczeniem. Ty w centrum; 12 głównych systemów życia wokół ciebie. Każde połączenie oceniane pod kątem siły, stresu i kierunku przepływu energii. Standardowe narzędzie pracy socjalnej od czasów Hartman (1978); używane przy IEP, ocenie rodziny i osobistym przeglądzie życia."
+        },
+        "circlesOfSupport": {
+          "label": "Kręgi wsparcia",
+          "desc": "Cztery koncentryczne kręgi relacji: bliskość, przyjaźń, uczestnictwo, wymiana (płatna). Pokazuje, kto naprawdę jest blisko, także gdy wewnętrzne kręgi wypełniają osoby opłacane. Według Forest i Snow z Inclusion Press."
+        },
+        "genogram": {
+          "desc": "Mapa rodziny obejmująca trzy pokolenia, ze standardowymi symbolami teorii systemów rodzinnych. Tylko do osobistego samopoznania (NIE jest to ocena kliniczna). Oparte na teorii systemów rodzinnych Bowena i notacji McGoldrick, Gerson i Petry. Zawiera wyraźne wskazówki dotyczące bezpiecznego podejścia."
+        },
+        "griefLoss": {
+          "label": "Żałoba i strata",
+          "desc": "Przewodnik, który towarzyszy ci w żałobie. Śmierć osoby lub zwierzęcia, zmiany w rodzinie, utrata przyjaciół, utrata tożsamości, niejednoznaczna strata — wszystko się liczy. Przejdź przez cztery zadania żałoby według Wordena, napisz list, zaplanuj rytuały. Wyraźne wskazówki bezpieczeństwa kierujące do Towarzysza w kryzysie / 988 przy ciężkiej lub powikłanej żałobie."
+        },
+        "traumaPsychoed": {
+          "label": "Zrozumieć traumę",
+          "desc": "Wyłącznie psychoedukacja (NIE jest to narzędzie przesiewowe). Czym jest trauma, a czym nie jest, neurobiologia prostym językiem, częste reakcje ujęte na nowo jako przystosowania, 6 zasad SAMHSA, terapie oparte na dowodach. Dla uczniów i nauczycieli. Zawiera wyraźne wskazówki bezpieczeństwa o tym, dlaczego badania przesiewowe bez dalszej opieki są niebezpieczne."
+        },
+        "bodyStory": {
+          "label": "Historia ciała",
+          "desc": "Narzędzie akceptacji ciała i ucieleśnienia. NIE skupia się na wadze, NIE jest związane z dietami, NIE jest narzędziem przesiewowym. Oparte na docenianiu ciała według Tylki, zasadach intuicyjnego jedzenia i edukacji medialnej. Dla wszystkich ciał, wszystkich płci, wszystkich rozmiarów. Wyraźne skierowanie do NEDA w przypadku zaburzeń odżywiania."
+        },
+        "sourcesOfStrength": {
+          "label": "Źródła siły",
+          "desc": "Zaznacz na mapie swoich 8 czynników ochronnych. Poznaj wsparcie chroniące, inspirowane programem Sources of Strength. Ta samodzielna mapa jest adaptacją, a nie realizacją ewaluowanego programu szkolnego."
+        },
+        "crisiscompanion": {
+          "label": "Towarzysz w kryzysie",
+          "desc": "Wsparcie rówieśnicze i umiejętności zapobiegania samobójstwom: co robić, gdy ty lub ktoś z twoich przyjaciół ma depresję, jest w kryzysie lub myśli o samookaleczeniu — rozpoznawanie sygnałów, co mówić (a czego nie mówić), powiedzenie o tym zaufanej osobie dorosłej, a do tego 988 i osobisty plan bezpieczeństwa. Poprzedzone ostrzeżeniem o treści. Zgodne z NEDA, AFSP, Sources of Strength i 988. Odpowiednik Źródeł siły na czas ostrego kryzysu."
+        },
+        "identitySupport": {
+          "label": "Wsparcie tożsamości",
+          "desc": "Włączająca, afirmująca przestrzeń na pytania o tożsamość płciową, orientację seksualną, orientację romantyczną i szerzej o tożsamość. Słownictwo, rozwój tożsamości, szukanie społeczności, bezpieczeństwo młodzieży trans, wskazówki dla sojuszników. Oparte na Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Głosy osób z niepełnosprawnościami",
+          "desc": "Prawdziwi autystyczni i niepełnosprawni rzecznicy, których praca kształtowała i krytykowała praktykę wobec niepełnosprawności. Cytaty, kontekst i starannie dobrana lista lektur. Stworzone tak, by w centrum były osoby, NA KTÓRYCH ta dziedzina stosowała swoje metody, a nie zepchnięte na margines narzędzia z nauk behawioralnych. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Wyznaczanie celów",
+          "desc": "Wyznaczaj cele SMART, śledź postępy i świętuj kamienie milowe."
+        },
+        "howlTracker": {
+          "label": "Tracker HOWL",
+          "desc": "Samoocena Habits of Work and Learning (nawyków pracy i uczenia się) na czas Crew. Cotygodniowe podsumowania, cele kwartalne, wykres trendu, pytania do rozmowy w Crew. Zgodne z modelem HOWL EL Education."
+        },
+        "onePageProfile": {
+          "label": "Profil na jednej stronie",
+          "desc": "Poręczny profil do wydruku, który mieści się na jednej stronie. Trzy części: co ludzie we mnie lubią i podziwiają, co jest dla mnie ważne, jak najlepiej mnie wspierać. Dokument planowania skoncentrowanego na osobie na spotkania IEP, przy zmianach, dla nauczycieli na zastępstwie lub dla Crew. Na podstawie formatu Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (tworzenie planów działania). Osiem pytań w kolejności (Moja historia, Marzenie, Koszmar, Kim jestem, Dary, Potrzeby, Plan działania, Pierwsze kroki). Wizualizacja skoncentrowana na osobie autorstwa Pearpoint, O'Brien i Forest z Inclusion Press; szeroko stosowana w planowaniu zmian etapu życia."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (planowanie alternatywnych jutr z nadzieją). Wizualizacja planowania przyszłości: osiem etapów od twojej dalekiej Gwiazdy Północnej wstecz do pierwszych kroków w ciągu dwóch tygodni. Pearpoint, O'Brien i Forest z Inclusion Press; łączy się z MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Wartości i działanie",
+          "desc": "Posortuj to, co ważne, nazwij swoje najważniejsze wartości i zamień każdą z nich w małe, konkretne działanie na ten tydzień. Z terapii akceptacji i zaangażowania (Hayes); ujęcie DNA-V dla młodzieży. Rozróżnienie ACT między wartościami (kierunkami) a celami (punktami docelowymi)."
+        },
+        "careerCompass": {
+          "label": "Kompas kariery",
+          "desc": "Poznawaj zawody przez swoje zainteresowania. 36-pytaniowa samoocena RIASEC daje kod Hollanda z trzema wiodącymi typami; przeglądaj zawody, 16 federalnych Career Clusters (USA) i konkretne następne kroki (dni obserwacji w pracy, rozmowy informacyjne, CTE, praktyki zawodowe). Oparte na modelu Hollanda; odsyła do oficjalnego O*NET Interest Profiler na mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio samorzecznictwa",
+          "desc": "Zbuduj konkretny plan wsparcia w szkole: pytania o IEP lub 504, dostosowania, decyzje o ujawnianiu informacji i proszenie zaufanych osób dorosłych o pomoc."
+        },
+        "perspective": {
+          "label": "Soczewka perspektywy",
+          "desc": "Patrz na sytuacje z różnych punktów widzenia — ćwicz empatię i przyjmowanie perspektywy."
+        },
+        "community": {
+          "label": "Społeczność i kultura",
+          "desc": "Poznawaj różnorodność, świadomość kulturową i poczucie przynależności do społeczności."
+        },
+        "conflict": {
+          "label": "Rozwiązywanie konfliktów",
+          "desc": "Przećwicz konflikt o niskiej stawce lub wymyślony, stosując przyjmowanie perspektywy, komunikaty „ja”, deeskalację i sposoby naprawy. Jeśli ktoś jest w niebezpieczeństwie, zaangażuj osobę dorosłą zamiast negocjować w pojedynkę."
+        },
+        "social": {
+          "label": "Laboratorium umiejętności społecznych",
+          "desc": "Ćwicz prowadzenie rozmowy, aktywne słuchanie, mowę ciała i współpracę."
+        },
+        "teamwork": {
+          "label": "Budowanie pracy zespołowej",
+          "desc": "Wspólne wyzwania i poznawanie ról w zespole."
+        },
+        "dearMan": {
+          "desc": "Zbuduj w siedmiu krokach scenariusz trudnej prośby: Opisz (Describe), Wyraź (Express), Stanowczo poproś (Assert), Wzmocnij (Reinforce), Zachowaj uważność (Mindful), Okazuj pewność siebie (Appear confident), Negocjuj (Negotiate). Z modułu DBT dotyczącego skuteczności interpersonalnej (Linehan); najczęściej stosowany scenariusz komunikacji asertywnej w poradnictwie szkolnym. Łączy się ze Studiem samorzecznictwa."
+        },
+        "motivationalInterviewing": {
+          "label": "Dialog motywujący",
+          "desc": "Model rozmowy, który pomaga komuś (lub tobie) przemyśleć zmianę. Poznaj umiejętności OARS (pytania otwarte, dowartościowanie, odzwierciedlanie, podsumowania), trzy linijki i mowę zmiany (Change Talk). Według Millera i Rollnicka; podstawa poradnictwa szkolnego i wsparcia rówieśniczego."
+        },
+        "crewProtocols": {
+          "label": "Protokoły Crew",
+          "desc": "Biblioteka ustrukturyzowanych form pracy grupowej na czas Crew, godzinę wychowawczą lub spotkania z wychowawcą: budowanie wspólnoty, otwarcia, zamknięcia, kręgi naprawcze, protokoły refleksji, formy świętowania i przewodniki po trudnych rozmowach. Do tego zestawienie wszystkich pytań Crew z całego SEL Hub. Oparte na EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Zdrowe relacje",
+          "desc": "Spektrum (zdrowe / niezdrowe / przemocowe) w 8 wymiarach każdej bliskiej relacji. Szczegółowo o zgodzie, zapobieganie przemocy w związkach, bezpieczeństwo + telefony zaufania. Oparte na modelu Loveisrespect / NDVH. Włączające osoby queer, neuroatypowe i z niepełnosprawnościami."
+        },
+        "decisions": {
+          "label": "Laboratorium decyzji",
+          "desc": "Przepracuj prawdziwe sytuacje z życia, korzystając z modeli „stop – pomyśl – działaj”."
+        },
+        "journal": {
+          "label": "Dziennik uczuć",
+          "desc": "Codzienny dziennik — zapisuj nastroje, wyzwalacze i refleksje w czasie."
+        },
+        "safety": {
+          "label": "Bezpieczeństwo i granice",
+          "desc": "Dowiedz się więcej o granicach osobistych, zaufanych osobach dorosłych oraz sytuacjach bezpiecznych i niebezpiecznych."
+        },
+        "landPlace": {
+          "label": "Ziemia i miejsce",
+          "desc": "Studio troski o trwałą relację z ziemią, na której żyjesz. Trzy wątki (historia, ekologia, teraźniejszość), krytyczna refleksja nad uznaniem ziemi (land acknowledgment) jako praktyką, a nie występem, organizacje prowadzone przez Wabanaków jako miarodajne głosy oraz prywatny dziennik refleksji."
+        },
+        "somaticReset": {
+          "label": "Reset ciała i oddechu",
+          "desc": "Wybierz strefę ciała i wykonaj krótki reset, który możesz zrobić na krześle: bezruch, oddech lub delikatny ruch, z prywatnym sprawdzeniem samopoczucia przed i po."
+        },
+        "restorativeCircle": {
+          "label": "Krąg naprawczy",
+          "desc": "Prowadź kręgi naprawcze i budujące wspólnotę, z ustalonymi zasadami, wsparciem dorosłych i szacunkiem dla korzeni kulturowych. Nie służy do wymuszania zwierzeń ani do sytuacji aktualnego zagrożenia bezpieczeństwa."
+        },
+        "compassion": {
+          "label": "Współczucie i mowa wewnętrzna",
+          "desc": "Ćwicz współczucie dla siebie, przeformułuj głos wewnętrznego krytyka i buduj życzliwszy głos wewnętrzny."
+        },
+        "friendship": {
+          "label": "Budowanie przyjaźni",
+          "desc": "Poznawaj style przyjaźni, sposoby naprawiania relacji i zdrowe wzorce w relacjach."
+        },
+        "transitions": {
+          "label": "Zmiany życiowe",
+          "desc": "Radź sobie ze zmianami, takimi jak przeprowadzka, nowa szkoła i dorastanie."
+        },
+        "upstander": {
+          "label": "Trening reagowania",
+          "desc": "Naucz się bezpiecznie stawać w obronie innych — od biernego świadka do osoby, która reaguje."
+        },
+        "growthmindset": {
+          "label": "Nastawienie na rozwój",
+          "desc": "Wiedza o mózgu, przeformułowywanie wyzwań i budowanie odporności psychicznej."
+        },
+        "execfunction": {
+          "label": "Funkcje wykonawcze",
+          "desc": "Strategie na trudniejsze części doprowadzania spraw do końca: zaczynanie zadań, utrzymywanie koncentracji, planowanie z wyprzedzeniem i pilnowanie czasu."
+        },
+        "advocacy": {
+          "label": "Trening zabierania głosu",
+          "desc": "Przećwicz ogólne sformułowania, by wyrażać potrzeby, prosić o wsparcie i zabierać głos w codziennych sytuacjach."
+        },
+        "civicAction": {
+          "label": "Działanie obywatelskie i nadzieja",
+          "desc": "Przepracuj trudne uczucia związane z niesprawiedliwością, buduj poczucie sprawczości obywatelskiej i pielęgnuj nadzieję przez działanie."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratorium etyki",
+          "desc": "Zgłębiaj współczesne dylematy etyczne za pomocą różnych podejść i sokratejskiego dialogu z AI."
+        },
+        "cultureExplorer": {
+          "label": "Odkrywca kultur",
+          "desc": "Zanurz się z pomocą AI w kultury świata, z ilustracjami i dźwiękiem."
+        },
+        "voicedetective": {
+          "label": "Detektyw głosu",
+          "desc": "Słuchaj głosów i rozpoznawaj emocje po tonie."
+        },
+        "practiceJourneys": {
+          "label": "Podróże ćwiczeniowe (pilotaż)",
+          "desc": "Ćwicz proszenie o wsparcie w czterech powiązanych spotkaniach. Odpowiadaj, wybierając opcje, własnymi słowami lub na oba sposoby. Prowadź dziennik i spróbuj innej drogi."
+        },
+        "sociallab": {
+          "label": "Odgrywanie ról: umiejętności społeczne",
+          "desc": "Ćwicz sytuacje społeczne i odgrywanie ról z rówieśnikiem AI w rozgałęzionych dialogach."
+        },
+        "peersupport": {
+          "label": "Trener wsparcia rówieśniczego",
+          "desc": "Poznaj umiejętności słuchania OARS i dowiedz się, kiedy poprosić o pomoc dorosłego."
+        },
+        "conflicttheater": {
+          "label": "Teatr konfliktu",
+          "desc": "Przećwicz wymyślony konflikt z dwiema postaciami AI w immersyjnej scenie. Tylko odgrywanie ról w wersji beta; nie używaj go do mediacji, gdy ktoś właśnie doznaje krzywdy."
+        },
+        "digitalWellbeing": {
+          "label": "Studio cyfrowego dobrostanu",
+          "desc": "Sprawdź swoją relację z mediami społecznościowymi i chatbotami AI, buduj zdrowsze nawyki związane z telefonem, dochodź do siebie po cyberprzemocy, rozpoznawaj manipulację w feedzie, bezpiecznie radź sobie z relacjami z chatbotami i znajdź pomoc, gdy jej potrzebujesz."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Samoświadomość",
+          "desc": "Rozpoznawanie emocji, mocnych stron i obszarów do rozwoju"
+        },
+        "self-regulation": {
+          "label": "Samoregulacja",
+          "desc": "Regulowanie emocji, pobudzenia i uwagi; ćwiczenie radzenia sobie"
+        },
+        "self-direction": {
+          "label": "Samokierowanie",
+          "desc": "Wyznaczanie celów, sprawczość, funkcje wykonawcze, nastawienie na rozwój"
+        },
+        "inner-work": {
+          "label": "Praca wewnętrzna",
+          "desc": "Praktyki kontemplacyjne i refleksyjne"
+        },
+        "care-of-self": {
+          "label": "Troska o siebie",
+          "desc": "Współczucie dla siebie, samoopieka w relacjach"
+        },
+        "social-awareness": {
+          "label": "Świadomość społeczna",
+          "desc": "Empatia, przyjmowanie perspektywy i docenianie różnorodności"
+        },
+        "relationship-skills": {
+          "label": "Umiejętności budowania relacji",
+          "desc": "Komunikacja, praca zespołowa i rozwiązywanie konfliktów"
+        },
+        "responsible-decision-making": {
+          "label": "Odpowiedzialne podejmowanie decyzji",
+          "desc": "Etyczne wybory, ocena konsekwencji i rozwiązywanie problemów"
+        },
+        "stewardship": {
+          "label": "Troska o świat",
+          "desc": "Troska o społeczność, sprawiedliwość, ziemię i przyszłość"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Nazwij swoją obecną strefę i wybierz pasującą strategię regulacji.",
+          "next": "Sprawdź swoją strefę, wybierz jedną strategię i zapisz, jeśli chcesz do niej wrócić."
+        },
+        "coping": {
+          "purpose": "Wybierz strategię radzenia sobie i przećwicz ją raz, z jasno określonym końcem.",
+          "next": "Wybierz jedną strategię opartą na ciele lub uziemieniu, wypróbuj ją i zauważ, czy pomogła."
+        },
+        "journal": {
+          "purpose": "Napisz prywatną refleksję i zauważ wzorce, które warto zachować.",
+          "next": "Wybierz pytanie, pisz szczerze i zapisz lub wyeksportuj przed zamknięciem."
+        },
+        "emotions": {
+          "purpose": "Rozwijaj słownictwo emocji i precyzyjniej nazywaj to, co czujesz.",
+          "next": "Wybierz uczucie, oceń jego natężenie i wybierz jedno słowo, które pasuje najlepiej."
+        },
+        "mindfulness": {
+          "purpose": "Zatrzymaj się, oddychaj i ćwicz uwagę bez potrzeby pisania czegokolwiek.",
+          "next": "Wybierz jedną krótką praktykę, wykonaj ją do końca i zauważ, co się zmieniło."
+        },
+        "somaticReset": {
+          "purpose": "Skorzystaj z prywatnego sprawdzenia stref ciała, aby wybrać krótki reset, który możesz zrobić na krześle.",
+          "next": "Wybierz część ciała, wypróbuj jedną opcję: bezruch, oddech lub delikatny ruch, i zauważ, co się zmieniło."
+        },
+        "thoughtRecord": {
+          "purpose": "Spowolnij trudną myśl i poszukaj bardziej zrównoważonego spojrzenia.",
+          "next": "Nazwij sytuację, oceń uczucie, a potem sprawdź myśl w zestawieniu z dowodami."
+        },
+        "anxietyToolkit": {
+          "purpose": "Uporządkuj zmartwienia, zmniejsz natężenie lęku i wybierz praktyczny następny krok.",
+          "next": "Wybierz najgłośniejsze zmartwienie, wypróbuj jedną strategię i zapisz plan, jeśli pomaga."
+        },
+        "sleep": {
+          "purpose": "Zauważ, co przeszkadza ci w spaniu, i wybierz jeden nawyk odpoczynku do wypróbowania.",
+          "next": "Sprawdź, co stoi na przeszkodzie, wybierz jedną małą zmianę i wróć do tego później."
+        },
+        "goals": {
+          "purpose": "Zamień zamiar w konkretne, realistyczne następne działanie.",
+          "next": "Zapisz jeden cel, wybierz pierwszy krok i zapisz plan przed zamknięciem."
+        },
+        "friendship": {
+          "purpose": "Przemyśl potrzeby w przyjaźni, przynależność i wybory wśród rówieśników.",
+          "next": "Wybierz jedną sytuację z przyjaźni i wskaż jeden życzliwy następny krok."
+        },
+        "conflict": {
+          "purpose": "Zrozum konflikt i przygotuj odpowiedź nastawioną na naprawę.",
+          "next": "Nazwij, co się stało, rozważ obie strony, a potem wybierz jedno działanie naprawcze."
+        },
+        "safety": {
+          "purpose": "Stwórz praktyczny plan bezpieczeństwa i wskaż zaufane źródła wsparcia.",
+          "next": "Dodaj sygnały ostrzegawcze, kroki radzenia sobie i osoby do kontaktu; zapisz przed zamknięciem."
+        },
+        "crisiscompanion": {
+          "purpose": "Skorzystaj z uporządkowanej drogi wsparcia, gdy emocje wydają się pilne lub niebezpieczne.",
+          "next": "Wybierz najbliższą opcję wsparcia i w razie potrzeby zaangażuj zaufaną osobę dorosłą lub służby kryzysowe."
+        },
+        "conflicttheater": {
+          "purpose": "Przećwicz wymyśloną scenę konfliktu i wypróbuj język naprawczy, nie traktując narzędzia jak mediacji.",
+          "next": "Wybierz wymyśloną scenę, spróbuj jednej odpowiedzi i omów potem, co w prawdziwym życiu wymagałoby wsparcia dorosłych."
+        },
+        "restorativeCircle": {
+          "purpose": "Zaplanuj lub poprowadź naprawczy proces grupowy z jasnymi zasadami i wsparciem dorosłych.",
+          "next": "Najpierw ustal zasady kręgu, potem wybierz pytanie; nigdy nie wymagaj publicznych zwierzeń."
+        },
+        "strengths": {
+          "next": "Wybierz mocne strony, które do ciebie pasują, a potem znajdź dla każdej prawdziwy moment z tego trymestru, który ją pokazuje."
+        },
+        "viaStrengths": {
+          "purpose": "Użyj samodzielnego sortowania inspirowanego VIA jako ćwiczenia refleksyjnego, a nie formalnej oceny.",
+          "next": "Posortuj mocne strony, zauważ wzorce i zapisz jeden przykład, który ugruntowuje wynik."
+        },
+        "perma": {
+          "purpose": "Zrób refleksyjną migawkę swojego dobrostanu w obszarach PERMA plus zdrowie.",
+          "next": "Wykorzystaj migawkę, aby wybrać rozmowę lub mały eksperyment, a nie po to, by się szufladkować."
+        },
+        "advocacy": {
+          "purpose": "Ćwicz codzienne sformułowania do wyrażania potrzeb i proszenia o wsparcie.",
+          "next": "Wybierz sytuację, naszkicuj krótką prośbę i zdecyduj, kto mógłby pomóc."
+        },
+        "selfAdvocacy": {
+          "purpose": "Zbuduj konkretny plan wsparcia w szkole dotyczący IEP, 504, dostosowań lub decyzji o ujawnianiu informacji.",
+          "next": "Wybierz jedną potrzebę wsparcia, zbierz swoje pytania i wskaż zaufaną osobę dorosłą, którą chcesz zaangażować."
+        },
+        "crewProtocols": {
+          "next": "Przeglądaj według celu, wybierz jeden protokół na dziś, a potem zanotuj w „Moim planie Crew”, kiedy go przeprowadzisz."
+        },
+        "perspective": {
+          "next": "Wybierz sytuację, najpierw przyjmij punkt widzenia drugiej strony, a potem powiedz, co zrobisz inaczej."
+        },
+        "windowOfTolerance": {
+          "next": "Dodaj po jednym sygnale do każdej z trzech stref, a potem użyj „Sprawdź się”, aby określić, gdzie jesteś dzisiaj."
+        },
+        "sensoryRegulation": {
+          "next": "Zacznij od „Co to jest sensoryka?”, a potem zaznacz systemy, które są u ciebie głośne lub ciche."
+        },
+        "execfunction": {
+          "next": "Przejdź do „Start” i wybierz jeden ruch na rozpoczęcie dnia, a potem do „Utrzymaj”, aby wybrać miejsce na zapisywanie myśli."
+        },
+        "growthmindset": {
+          "next": "Otwórz „Przeformułuj”, zapisz sztywną myśl i zamień ją w konkretną, wykonalną."
+        },
+        "dearMan": {
+          "next": "Zapisz swoją prośbę w jednym zdaniu, naszkicuj siedem kroków i przećwicz ją raz."
+        },
+        "howlTracker": {
+          "next": "Zapisz „Puls”, a potem zrób cotygodniowe sprawdzenie: oceń każdy nawyk HOWL i dodaj jeden konkretny przykład."
+        },
+        "peersupport": {
+          "next": "Wybierz dwa otwarte pytania, które możesz zadać komuś z przyjaciół, a potem wypróbuj jedno na wymyślonej sytuacji w zakładce ćwiczeń."
+        },
+        "upstander": {
+          "next": "Przeczytaj drabinę odwagi w „Ruchach” i wybierz dwa najmniejsze ruchy, które naprawdę możesz wykonać w tym tygodniu."
+        },
+        "digitalWellbeing": {
+          "next": "Szczerze wykonaj samoocenę, a potem wybierz jeden nawyk z przybornika i jedną granicę, którą ustalisz z wyprzedzeniem."
+        },
+        "teamwork": {
+          "next": "Obejrzyj role, a potem napisz plan komunikacji dla prawdziwej grupy: kto co robi, gdzie i do kiedy."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Zacznij tutaj",
+        "name_it": "Nazwij to",
+        "calm_now": "Uspokój się teraz",
+        "body_reset": "Reset ciała",
+        "make_a_plan": "Zrób plan",
+        "understand_patterns": "Zrozum wzorce",
+        "practice_repair": "Ćwicz naprawę",
+        "role_play": "Odgrywanie ról",
+        "facilitated_group": "Grupa z prowadzącym",
+        "reflect": "Refleksja",
+        "practice_speaking_up": "Ćwicz zabieranie głosu",
+        "make_a_support_plan": "Zrób plan wsparcia",
+        "urgent_support": "Pilne wsparcie",
+        "get_support": "Uzyskaj wsparcie",
+        "move_gently": "Działaj delikatnie",
+        "learn_not_diagnose": "Uczyć się, nie diagnozować",
+        "learn_and_get_support": "Ucz się i uzyskaj wsparcie",
+        "check_boundaries": "Sprawdź granice",
+        "explore_identity": "Poznaj tożsamość",
+        "practice_body_respect": "Ćwicz szacunek do ciała",
+        "map_carefully": "Twórz mapę ostrożnie",
+        "understand_needs": "Zrozum potrzeby"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Nazwij, co się dzieje, zanim wybierzesz strategię."
+        },
+        "emotions": {
+          "note": "Szukaj precyzyjnych słów na uczucia i zauważaj ich natężenie."
+        },
+        "coping": {
+          "note": "Wypróbuj jedną strategię opartą na ciele lub uziemieniu, a potem zauważ, co się zmieniło."
+        },
+        "mindfulness": {
+          "note": "Pauza z niewielką ilością pisania — na oddech, uwagę lub świadomość ciała."
+        },
+        "somaticReset": {
+          "note": "Wybierz część ciała, a potem wypróbuj krótką praktykę bezruchu, oddechu lub delikatnego ruchu. Kompaktowy wybierak obsługiwany z klawiatury sprawia, że każda wizualizacja pozostaje czytelna na małych ekranach. Wizualizacje obejmują „Płynącą falę”, która łączy WDECH · WZNOSZENIE z ciągłą linią i okrągłym znacznikiem, WYDECH · OPADANIE z linią kropkowaną i znacznikiem w kształcie rombu, a stan PAUZA z paskami pauzy; „Rozkwit płatków”, który łączy WDECH · OTWIERANIE z ciągłymi konturami płatków i okrągłym środkiem, WYDECH · ROZLUŹNIANIE z kropkowanymi konturami i środkiem w kształcie rombu, a stan PAUZA z paskami pauzy w środku; „Uziemiający horyzont”, który łączy WDECH · WZNOSZENIE z ciągłym konturem słońca i okrągłym środkiem, WYDECH · OPADANIE z kropkowanym konturem słońca i środkiem w kształcie rombu, a stan PAUZA z paskami pauzy na słońcu; przewidywalny liniowy tor ze znacznikami kierunku, bezpośrednimi etykietami WDECH i WYDECH, okrągłymi celami WDECH i rombowymi celami WYDECH, śladem od aktywnego punktu początkowego i obrysowanym następnym celem; oraz dwuczęściową „Orbitę oddechu” z ciągłymi i kropkowanymi łukami faz, które pogrubiają się, gdy są aktywne, pasującym pierścieniem środkowym we wzór fazy, bezpośrednimi etykietami WDECH i WYDECH, symbolem pauzy w środku, obrysowanym punktem następnego przejścia, znacznikiem w kształcie fazy poruszającym się zgodnie z ruchem wskazówek zegara, mapą rytmu zakodowaną kształtami i wskazówkami faz dla czytników ekranu. Uczniowie mogą wypróbować jeden oddech animacji przed uruchomieniem minutnika, a potem powiększyć, zatrzymać lub wyłączyć przewodnik. W „Widoku wyciszonym” powiększona wizualizacja staje się przyciskiem start/pauza obsługiwanym z klawiatury i dotykiem. Odliczanie można ukryć; słowa prowadzące mogą być pełne, ograniczone do nazwy fazy lub ukryte; liczenie oddechów i oceny liczbowe są opcjonalne.",
+          "boundary": "To nie jest leczenie ani diagnoza. Wykonuj małe ruchy bez bólu; przerwij, jeśli pojawi się ból, zawroty głowy lub drętwienie, i powiedz o tym zaufanej osobie dorosłej lub pracownikowi ochrony zdrowia."
+        },
+        "anxietyToolkit": {
+          "note": "Oddziel zamartwianie się od działania i wybierz jeden praktyczny następny krok."
+        },
+        "windowOfTolerance": {
+          "note": "Zaznaczaj w czasie sygnały pobudzenia i źródła wsparcia; to nie jest diagnoza."
+        },
+        "stressBucket": {
+          "note": "Spójrz jednocześnie na obciążenia i wsparcie, także na obciążenia, na które nie masz wpływu."
+        },
+        "bigFeelings": {
+          "note": "Potraktuj złość jako informację i zaplanuj bezpieczniejszą przerwę lub naprawę."
+        },
+        "conflict": {
+          "note": "Najlepsze do ćwiczenia konfliktów o niskiej stawce lub wymyślonych.",
+          "boundary": "Jeśli pojawiają się groźby, przymus, nękanie, przemoc lub niebezpieczna nierównowaga sił, zatrzymaj się i zaangażuj zaufaną osobę dorosłą zamiast negocjować w pojedynkę."
+        },
+        "conflicttheater": {
+          "note": "Immersyjne ćwiczenie w wersji beta z wymyślonymi postaciami; nie używaj go do mediacji, gdy ktoś właśnie doznaje krzywdy.",
+          "boundary": "Prawdziwe groźby, przemoc lub nękanie wymagają wsparcia dorosłych i reakcji zapewniającej bezpieczeństwo, a nie ćwiczenia w odgrywaniu ról."
+        },
+        "restorativeCircle": {
+          "note": "Używaj przy ustalonych zasadach kręgu i z dorosłą osobą prowadzącą.",
+          "boundary": "Nie używaj kręgu, by naciskać na kogoś, żeby publicznie ujawniał osobiste sprawy, ani do radzenia sobie z aktualnym zagrożeniem bezpieczeństwa."
+        },
+        "strengths": {
+          "note": "Otwarta refleksja o mocnych stronach bez punktów, rankingu i diagnozy."
+        },
+        "viaStrengths": {
+          "note": "Samodzielne sortowanie do refleksji, a nie oficjalny kwestionariusz VIA ani wynik psychometryczny."
+        },
+        "perma": {
+          "note": "Migawka dobrostanu jako punkt wyjścia do rozmowy, a nie ocena zdrowia psychicznego."
+        },
+        "advocacy": {
+          "note": "Ogólne sformułowania i próby do wyrażania potrzeb i proszenia o wsparcie."
+        },
+        "selfAdvocacy": {
+          "note": "Do konkretnego planowania IEP, 504, dostosowań, ujawniania informacji lub wsparcia w szkole."
+        },
+        "crisiscompanion": {
+          "note": "Przewodnik wsparcia dla ciebie lub kogoś z przyjaciół; nie jest narzędziem przesiewowym do oceny kryzysu ani zastępstwem dla osoby dorosłej.",
+          "boundary": "Jeśli komuś może grozić bezpośrednie niebezpieczeństwo lub ktoś może zrealizować myśli o samookaleczeniu, przerwij tutaj i skontaktuj się teraz z zaufaną osobą dorosłą lub z pomocą ratunkową albo kryzysową."
+        },
+        "safety": {
+          "note": "Poznaj granice i kroki z udziałem zaufanych osób dorosłych; to nie jest test tego, czy sytuacja jest bezpieczna.",
+          "boundary": "Jeśli grozi ci bezpośrednie niebezpieczeństwo lub ktoś cię krzywdzi, przerwij i skontaktuj się teraz z zaufaną osobą dorosłą lub z pomocą ratunkową."
+        },
+        "griefLoss": {
+          "note": "Prywatny towarzysz w żałobie i stracie; pomiń wszystko, co wydaje się zbyt trudne.",
+          "boundary": "Jeśli żałoba wydaje się nie do zniesienia, nie czujesz się bezpiecznie lub ktoś inny jest zagrożony, zaangażuj zaufaną osobę dorosłą lub wsparcie kryzysowe."
+        },
+        "traumaPsychoed": {
+          "note": "Psychoedukacja o reakcjach na traumę; nie jest to narzędzie przesiewowe ani leczenie.",
+          "boundary": "Nie musisz tu ujawniać traumy. Zatrzymaj się i poszukaj zaufanej osoby dorosłej lub pedagoga albo psychologa szkolnego, jeśli treści poruszają w tobie coś, co nie jest bezpieczne."
+        },
+        "substancePsychoed": {
+          "note": "Informacje i refleksja nastawione na redukcję szkód; nie jest to narzędzie przesiewowe ani przyzwolenie na używanie substancji.",
+          "boundary": "Nie używaj tego narzędzia w przypadku przedawkowania ani pilnej sytuacji medycznej; wezwij pomoc ratunkową lub skontaktuj się z zaufaną osobą dorosłą."
+        },
+        "healthyRelationships": {
+          "note": "Poznawaj zgodę i wzorce w relacjach bez etykietowania osoby czy relacji.",
+          "boundary": "Jeśli w relacji pojawiają się groźby, przymus lub przemoc, poszukaj pomocy dorosłych; nie konfrontuj się z nikim w pojedynkę."
+        },
+        "identitySupport": {
+          "note": "Afirmująca refleksja i wsparcie społeczności; dzielenie się jest dobrowolne.",
+          "boundary": "Zachowaj prywatne informacje dla siebie i zaangażuj zaufaną osobę dorosłą, jeśli nie czujesz się bezpiecznie."
+        },
+        "bodyStory": {
+          "note": "Docenianie ciała i edukacja medialna; nie służy do odchudzania ani do oceny zaburzeń odżywiania.",
+          "boundary": "Jeśli jedzenie, obraz ciała lub ćwiczenia fizyczne wydają się niebezpieczne albo całkowicie cię pochłaniają, porozmawiaj z zaufaną osobą dorosłą lub pracownikiem ochrony zdrowia."
+        },
+        "genogram": {
+          "note": "Osobista refleksja o rodzinie; nie jest to ocena kliniczna, a dzielenie się jest dobrowolne.",
+          "boundary": "Pomiń szczegóły rodzinne, które wydają się niebezpieczne lub prywatne; poproś zaufaną osobę dorosłą o wsparcie."
+        },
+        "sensoryRegulation": {
+          "note": "Zbuduj profil sensoryczny i dostosowania; to nie jest diagnoza.",
+          "boundary": "Wybieraj wsparcie, które daje poczucie bezpieczeństwa; mów o dostosowaniach tylko wtedy, gdy chcesz."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Poranne sprawdzenie samopoczucia",
+          "desc": "Zacznij dzień od sprawdzenia nastroju, oddechu i wyznaczenia celu"
+        },
+        "calm_down": {
+          "name": "Kącik wyciszenia",
+          "desc": "Strategie regulacji na chwile, gdy emocje sięgają zenitu"
+        },
+        "conflict_unit": {
+          "name": "Blok: rozwiązywanie konfliktów",
+          "desc": "Ćwicz rozwiązywanie nieporozumień i buduj umiejętności naprawy"
+        },
+        "empathy_week": {
+          "name": "Tydzień empatii i perspektywy",
+          "desc": "Buduj empatię przez przyjmowanie perspektywy i świadomość kulturową"
+        },
+        "decision_making": {
+          "name": "Pogłębienie: podejmowanie decyzji",
+          "desc": "Ćwicz rozumowanie etyczne i odpowiedzialne wybory"
+        },
+        "self_discovery": {
+          "name": "Podróż w głąb siebie",
+          "desc": "Odkryj, kim jesteś — mocne strony, emocje i nastawienie na rozwój"
+        },
+        "friendship": {
+          "name": "Przyjaźń i umiejętności społeczne",
+          "desc": "Buduj zdrowe przyjaźnie i umiejętności komunikacji"
+        },
+        "transitions": {
+          "name": "Radzenie sobie ze zmianą",
+          "desc": "Wspieraj uczniów w życiowych zmianach i nowych doświadczeniach"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Zauważ, czego potrzebujesz, i wybierz jeden wykonalny następny krok.",
+          "model": "Czuję niepokój. Mogę się przeciągnąć, a potem wybrać pierwszą część mojego zadania.",
+          "practice": "Nazwij uczucie, wskaż wybór lub po cichu to zauważ. Wypróbuj jedną formę wsparcia i wybierz mały cel.",
+          "reflect": "Co udało ci się zauważyć? Co chcesz zachować, a co zmienić?",
+          "transfer": "Kiedy zacznie się następna lekcja, mogę spróbować ____. Jeśli będę potrzebować pomocy, mogę poprosić ____."
+        },
+        "calm_down": {
+          "goal": "Poznaj formę wsparcia, która pasuje do twojego ciała i tej chwili.",
+          "model": "Ćwiczenia oddechowe dziś mi nie pomagają. Mogę rozejrzeć się po sali albo poprosić, żeby ktoś ze mną był.",
+          "practice": "Wybierz tylko jedną wygodną strategię. Siedzenie, obserwowanie lub zrobienie przerwy to też dobre opcje.",
+          "reflect": "Czy to pomogło, było bez zmian, czy było niekomfortowe? Możesz przestać albo wybrać inny sposób.",
+          "transfer": "Kiedy zauważę ____, mogę spróbować ____ albo poprosić ____ o wsparcie."
+        },
+        "conflict_unit": {
+          "goal": "Rozważ różne perspektywy i przećwicz pełną szacunku odpowiedź na codzienne nieporozumienie.",
+          "model": "Chcemy tego samego materiału. Mogę zapytać, czego potrzebujesz, wyjaśnić, czego ja potrzebuję, i zaproponować korzystanie na zmianę.",
+          "practice": "Wykorzystaj wymyślone nieporozumienie o niskiej stawce. Przećwicz jedno pytanie, które pokazuje, że słuchasz, i jeden możliwy następny krok.",
+          "reflect": "Czyje potrzeby uwzględniła ta odpowiedź? Co warto by zmienić?",
+          "transfer": "W bezpiecznym nieporozumieniu mogę ____. W przypadku gróźb, nękania lub przymusu mogę poprosić o pomoc zaufaną osobę dorosłą."
+        },
+        "empathy_week": {
+          "goal": "Poznaj inną perspektywę, nie zakładając, że wiesz, co ktoś czuje.",
+          "model": "Ta osoba jest cicha. Może jest zmęczona albo się zastanawia; mogę zapytać, zamiast decydować za nią.",
+          "practice": "Użyj wymyślonego przykładu. Nazwij dwie możliwe perspektywy i pełne szacunku pytanie, które możesz zadać.",
+          "reflect": "Co wiesz, a co zgadujesz? Jak możesz to sprawdzić?",
+          "transfer": "Zanim w tym tygodniu coś założę, mogę zapytać ____."
+        },
+        "decision_making": {
+          "goal": "Porównuj wybory pod kątem ich skutków dla ciebie i innych.",
+          "model": "Zanim opublikuję zdjęcie grupowe, mogę poprosić o zgodę i zastanowić się, kto może je zobaczyć.",
+          "practice": "Wybierz wymyśloną decyzję. Porównaj dwie opcje, możliwe skutki i osobę, która mogłaby pomóc.",
+          "reflect": "Jakich informacji brakuje? Czy jest bezpieczniejsza lub bardziej sprawiedliwa opcja?",
+          "transfer": "Zanim zdecyduję o ____, mogę się zatrzymać i sprawdzić ____."
+        },
+        "self_discovery": {
+          "goal": "Rozpoznaj mocną stronę i wybierz sposób, by z niej korzystać przy wsparciu.",
+          "model": "Zadaję przydatne pytania. Mogę użyć tej mocnej strony, gdy zadanie jest niejasne, i poprosić o przykład.",
+          "practice": "Wybierz mocną stronę, która pasuje do ciebie albo do wymyślonej postaci. Podaj jeden przykład jej działania.",
+          "reflect": "Co pomogło tej mocnej stronie się ujawnić? Jakie wsparcie umożliwiłoby następny krok?",
+          "transfer": "Mogę użyć ____, gdy ____. Osoba lub źródło, które może pomóc, to ____."
+        },
+        "friendship": {
+          "goal": "Ćwicz komunikację, która szanuje twoje potrzeby i granice innych osób.",
+          "model": "Mogę zaprosić kogoś do wspólnej zabawy i uszanować wybór tej osoby, jeśli odmówi.",
+          "practice": "Przećwicz zaproszenie, pytanie pokazujące, że słuchasz, lub wyrażenie granicy z szacunkiem. Liczy się mówienie, pisanie i AAC.",
+          "reflect": "Czy każda osoba miała prawdziwy wybór? Co mogłoby sprawić, że kontakt będzie bardziej przyjazny?",
+          "transfer": "W bezpiecznej sytuacji w tym tygodniu mogę spróbować ____ i zwrócić uwagę na ____."
+        },
+        "transitions": {
+          "goal": "Wskaż, co się zmienia, co może pozostać stałe, i jedno źródło wsparcia.",
+          "model": "Nowe zajęcia budzą niepewność. Mogę wcześniej znaleźć salę i zapytać, kto może pomóc.",
+          "practice": "Wybierz prawdziwą lub wymyśloną zmianę. Nazwij jedną niepewność, jedno stałe wsparcie i jeden mały następny krok.",
+          "reflect": "Która część zależy od ciebie? Jaka pomoc lub jakie dostosowanie byłyby przydatne?",
+          "transfer": "Przed zmianą mogę ____. Jeśli plan będzie musiał się zmienić, mogę ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Indywidualnie lub w grupie",
+          "cue": "Przydatne pierwsze sprawdzenie przed jakimkolwiek dzieleniem się."
+        },
+        "emotions": {
+          "format": "Indywidualnie lub w parach",
+          "cue": "Dobra rozgrzewka słownikowa."
+        },
+        "coping": {
+          "format": "Indywidualnie lub w grupie",
+          "cue": "Najlepsze na reset regulacyjny."
+        },
+        "mindfulness": {
+          "format": "Cała klasa",
+          "cue": "Opcja regulacji z niewielką ilością pisania."
+        },
+        "somaticReset": {
+          "format": "Indywidualnie lub cała klasa",
+          "cue": "Kompaktowy wybierak wizualizacji udostępnia każdy przewodnik bez gęstej siatki przycisków. „Orbita oddechu” łączy ciągłe i kropkowane łuki z pogrubioną aktywną fazą, pasującym ciągłym lub kropkowanym pierścieniem środkowym oraz bezpośrednimi etykietami WDECH i WYDECH; jej środek zmienia się z kropki w paski pauzy po wstrzymaniu, a obrysowany romb lub pierścień wskazuje następne przejście fazy, podczas gdy okrągły lub rombowy znacznik poruszający się zgodnie z ruchem wskazówek zegara, romb przejścia, pierścień powrotu, krótkie paski wdechu i puste kropki wydechu sprawiają, że faza i opcjonalne liczenie są czytelne bez kolorów. Pozwól uczniom wypróbować jeden oddech animacji przed uruchomieniem minutnika albo wybrać „Bezruch”. Zaproponuj pełne, ograniczone do fazy lub ukryte słowa prowadzące. „Widok wyciszony” zamienia powiększoną wizualizację w bezpośredni przycisk start/pauza. „Płynąca fala” używa WDECH · WZNOSZENIE z ciągłą linią i okrągłym znacznikiem, WYDECH · OPADANIE z linią kropkowaną i znacznikiem w kształcie rombu oraz pasków pauzy dla wstrzymanej sesji. „Rozkwit płatków” używa WDECH · OTWIERANIE z ciągłymi konturami płatków i okrągłym środkiem, WYDECH · ROZLUŹNIANIE z kropkowanymi konturami i środkiem w kształcie rombu oraz pasków pauzy w środku dla wstrzymanej sesji. „Uziemiający horyzont” używa WDECH · WZNOSZENIE z ciągłym konturem słońca i okrągłym środkiem, WYDECH · OPADANIE z kropkowanym konturem słońca i środkiem w kształcie rombu oraz pasków pauzy na słońcu po wstrzymaniu. „Tor oddechu” używa okrągłego celu WDECH, rombowego celu WYDECH, śladu od aktywnego punktu początkowego i obrysowanego następnego celu, aby kierunek nie zależał od koloru. Zaproponuj wskazówki faz dla czytników ekranu, a także opcje: ukryte odliczanie, ukryte prowadzenie, zatrzymany ruch, brak wizualizacji, naturalny oddech i brak liczb; nigdy nie wymagaj ocen ani wyjaśniania doznań z ciała."
+        },
+        "journal": {
+          "format": "Indywidualnie",
+          "cue": "Prywatna refleksja. Dzielenie się powinno być dobrowolne."
+        },
+        "goals": {
+          "format": "Indywidualnie lub na godzinie wychowawczej",
+          "cue": "Dobry krok zamykający po refleksji."
+        },
+        "conflict": {
+          "format": "W parach lub małej grupie",
+          "cue": "Przed odgrywaniem ról omów zasady."
+        },
+        "restorativeCircle": {
+          "format": "Krąg",
+          "cue": "Używaj przy ustalonych zasadach kręgu."
+        },
+        "peersupport": {
+          "format": "Ćwiczenie w parach",
+          "cue": "Świetne do ćwiczenia umiejętności słuchania."
+        },
+        "perspective": {
+          "format": "W parach lub w grupie",
+          "cue": "Dobry pomost do empatii przed dyskusją."
+        },
+        "digitalWellbeing": {
+          "format": "Indywidualnie lub na godzinie wychowawczej",
+          "cue": "Przydatne przed ustaleniem zasad dotyczących telefonów lub AI."
+        },
+        "sleep": {
+          "format": "Indywidualnie",
+          "cue": "Dobre na bloki o zdrowiu na godzinie wychowawczej."
+        },
+        "safety": {
+          "format": "Indywidualnie",
+          "cue": "Najpierw przejrzyj; unikaj wymuszania zwierzeń."
+        },
+        "crisiscompanion": {
+          "format": "Indywidualnie",
+          "cue": "Do umiejętności pilnego wsparcia, nie jako zadanie klasowe."
+        },
+        "griefLoss": {
+          "format": "Indywidualnie",
+          "cue": "Najpierw przejrzyj; zapewnij możliwość rezygnacji i zadania alternatywne."
+        },
+        "identitySupport": {
+          "format": "Indywidualnie",
+          "cue": "Używaj z dbałością o prywatność i możliwość rezygnacji."
+        },
+        "traumaPsychoed": {
+          "format": "Indywidualnie lub z nauczycielem",
+          "cue": "Wyłącznie psychoedukacja; zapewnij możliwość rezygnacji i drogę do zaufanej osoby dorosłej."
+        },
+        "substancePsychoed": {
+          "format": "Indywidualnie lub na lekcji o zdrowiu",
+          "cue": "Przejrzyj wcześniej ujęcie nastawione na redukcję szkód i zapewnij wsparcie dorosłych oraz pomoc medyczną."
+        },
+        "healthyRelationships": {
+          "format": "Indywidualnie lub na lekcji o zdrowiu",
+          "cue": "Przejrzyj wcześniej język dotyczący zgody i bezpieczeństwa; nigdy nie wymagaj ujawniania osobistych informacji."
+        },
+        "bodyStory": {
+          "format": "Indywidualnie",
+          "cue": "Ujęcie oparte na szacunku do ciała; zapewnij możliwość rezygnacji i unikaj rozmów skupionych na wadze."
+        },
+        "genogram": {
+          "format": "Indywidualnie",
+          "cue": "Wyłącznie refleksja o rodzinie; dzielenie się powinno być dobrowolne."
+        },
+        "sensoryRegulation": {
+          "format": "Indywidualnie lub przy planowaniu wsparcia",
+          "cue": "Używaj języka afirmującego tożsamość i pozwól uczniom wybrać, czym się podzielą."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Poranne sprawdzenie samopoczucia na godzinie wychowawczej",
+          "format": "Cała klasa",
+          "focus": "Nastrój, oddech, jeden następny krok",
+          "studentView": "Uczniowie prywatnie sprawdzają swoją strefę, wypróbowują opcję regulacji, a potem wybierają jedną potrzebę na dziś albo pomijają ten krok.",
+          "teacherMove": "Najpierw pokaż, że można pominąć. Zapraszaj do podzielenia się jednym słowem lub kolorem dopiero po prywatnym ćwiczeniu.",
+          "privacyBoundary": "Nie zbiera się tekstu z dziennika; uczniowie później decydują, czy jakiś punkt kontrolny trafi do pakietu do udostępnienia.",
+          "note": "Zacznij od prywatnego sprawdzenia strefy, a potem zaproponuj oddychanie lub wyznaczanie celu. Uczniowie mogą podzielić się jednym słowem, kolorem albo pominąć."
+        },
+        "calm_reset": {
+          "name": "Pięciominutowy reset wyciszający",
+          "format": "Cała klasa lub kącik wyciszenia",
+          "focus": "Regulacja ciała",
+          "studentView": "Uczniowie zauważają obecny stan swojego ciała i wybierają jedną praktykę uspokajającą ciało.",
+          "teacherMove": "Niech rutyna będzie cicha i ograniczona czasowo. Zaproponuj ruch, oddychanie lub ciche alternatywy.",
+          "privacyBoundary": "Uczniowie mogą zapisać punkt kontrolny dla siebie; nikt nie musi tłumaczyć, dlaczego reset był potrzebny.",
+          "note": "Niech będzie cicho. Uczniowie wybierają jedną praktykę regulacji i zauważają, co się zmieniło."
+        },
+        "repair_routine": {
+          "name": "Rutyna naprawcza po konflikcie",
+          "format": "Mała grupa lub godzina wychowawcza",
+          "focus": "Perspektywa, naprawa, następne działanie",
+          "studentView": "Uczniowie mogą użyć prawdziwego, hipotetycznego lub przygotowanego przez nauczyciela scenariusza, by ćwiczyć język naprawy.",
+          "teacherMove": "Najpierw ustal zasady naprawy i unikaj publicznych wyznań. Przerwij, jeśli sytuacja wymaga mediacji dorosłego.",
+          "privacyBoundary": "Uczniowie wybierają, czym się dzielą; prywatne refleksje o konfliktach nie powinny stawać się materiałem dowodowym w klasie.",
+          "note": "Stosuj po ustaleniu zasad. Skup się na języku naprawy, a nie na publicznych wyznaniach."
+        },
+        "digital_reset": {
+          "name": "Minilekcja o cyfrowym dobrostanie",
+          "format": "Godzina wychowawcza lub lekcja o zdrowiu",
+          "focus": "Telefon, sen, AI i granice",
+          "studentView": "Uczniowie przeglądają swoje nawyki, wybierają jedną granicę do wypróbowania i mogą zachować powód dla siebie.",
+          "teacherMove": "Przedstaw to jako projektowanie nawyków, a nie kontrolę telefonu. Nie proś uczniów o ujawnianie zrzutów ekranu ani danych o korzystaniu.",
+          "privacyBoundary": "Uczniowie mogą podzielić się celem dotyczącym granicy, ale osobiste szczegóły o śnie, telefonie czy AI pozostają dobrowolne.",
+          "note": "Przedstaw to jako projektowanie nawyków, a nie kontrolę telefonu. Uczniowie wybierają jedną granicę do wypróbowania."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Podejście uwzględniające badania",
+          "title": "Badania dotyczą podejścia bazowego; ta cyfrowa adaptacja nie została tu oceniona"
+        },
+        "emerging": {
+          "label": "Ograniczone dowody dla podejścia",
+          "title": "Obiecujące, ale ograniczone lub niejednoznaczne dowody"
+        },
+        "contested": {
+          "label": "Model sporny",
+          "title": "Popularny, ale naukowo kwestionowany; najlepiej traktować go jako metaforę, a nie mechanizm"
+        },
+        "practice": {
+          "label": "Praktyka refleksyjna",
+          "title": "Ustrukturyzowana praktyka lub heurystyka, a nie empiryczne twierdzenie o skuteczności"
+        }
+      },
+      "ui": {
+        "sel_practice": "Ćwiczenie SEL",
+        "default_purpose": "Ćwicz jedną umiejętność SEL z uważnością.",
+        "default_next": "Wykonaj jeden mały krok, a potem zdecyduj, czy zapisać.",
+        "private_checkpoint": "Prywatny punkt kontrolny",
+        "share_packet_eligible": "Można dodać do pakietu do udostępnienia",
+        "saving_preparing": "Przygotowywanie zapisu twojej pracy SEL...",
+        "save_requested": "Zażądano zapisania: {title}",
+        "returned_to_grid": "Powrót do siatki narzędzi",
+        "back_to_sel_tools": "Wróć do narzędzi SEL",
+        "export_now_aria": "Wyeksportuj teraz plik projektu SEL",
+        "export_now": "Eksportuj teraz",
+        "purpose": "Cel",
+        "next_step": "Następny krok",
+        "saved_work": "Zapisana praca",
+        "checkpoints_private": "Punkty kontrolne narzędzi pozostają tu prywatne, chyba że wybierzesz je do pakietu do udostępnienia.",
+        "use_with_care_label": "Używaj ostrożnie:",
+        "tool_open_failed_title": "Nie udało się otworzyć tego narzędzia",
+        "tool_open_failed_body": "Coś w zapisanych informacjach tej aktywności się nie wczytało. To nie jest twoja wina.",
+        "saved_work_kept": "Twoja zapisana praca nie została usunięta.",
+        "back_to_hub": "Wróć do SEL Hub",
+        "tell_teacher": "Jeśli to się powtarza, powiedz nauczycielowi, której aktywności to dotyczyło.",
+        "load_did_not_start": "Narzędzie zostało pobrane, ale się nie uruchomiło.",
+        "load_too_long": "Wczytywanie narzędzia trwało zbyt długo.",
+        "this_sel_tool": "To narzędzie SEL",
+        "tool_opening": "Otwieranie narzędzia {name}...",
+        "tool_open_retry": "Nie udało się otworzyć narzędzia {name}. Spróbuj ponownie lub wybierz inne narzędzie.",
+        "station_link_missing": "Ten link wskazuje stację, której nie ma w tym projekcie. Wczytaj pakiet, który ją zawiera, albo uruchom stację z sekcji „Stacje SEL” w panelu historii.",
+        "started_station": "Uruchomiono stację {name}",
+        "tool_could_not_open": "Nie udało się otworzyć narzędzia {name}.",
+        "tool_not_available": "Narzędzie {name} nie jest dostępne w tym SEL Hub.",
+        "try_again": "Spróbuj ponownie",
+        "dismiss": "Odrzuć",
+        "back_to_tools": "Wróć do narzędzi",
+        "band_elementary": "Szkoła podstawowa",
+        "band_middle": "Klasy starsze",
+        "band_high": "Szkoła średnia",
+        "unsaved_aria": "Masz niezapisane zmiany",
+        "unsaved_title": "Niezapisane zmiany",
+        "unsaved": "Niezapisane",
+        "unsaved_hint": "Masz niezapisane zmiany — dotknij „Eksportuj teraz”, aby je zapisać",
+        "educators_opened": "Otwarto przewodnik „Dla nauczycieli”",
+        "educators_aria": "Dla nauczycieli: jak odpowiedzialnie korzystać z tego Hubu",
+        "for_educators": "Dla nauczycieli",
+        "theme_aria": "Przełącz motyw (jasny / ciemny / wysoki kontrast)",
+        "theme_contrast": "Wysoki kontrast",
+        "theme_dark": "Tryb ciemny",
+        "theme_light": "Tryb jasny",
+        "theme_contrast_short": "Kontrast",
+        "theme_dark_short": "Ciemny",
+        "theme_light_short": "Jasny",
+        "xp_aria": "Punkty doświadczenia SEL: {count}",
+        "close_hub": "Zamknij SEL Hub",
+        "keep_share_title": "Wybierz, co zachować i czym się dzielić",
+        "keep_share_body": "Niektóre aktywności zapisują pracę na tym urządzeniu; inna praca istnieje tylko w tej karcie. Zamknięcie karty nie usuwa wszystkiego. Wyeksportuj plik, aby zachować kopię. Na współdzielonym urządzeniu przejrzyj sekcję „Dane i prywatność” w części „Dla nauczycieli”. Funkcje AI i udostępniania korzystają ze skonfigurowanych usług.",
+        "got_it_aria": "Rozumiem, zacznij korzystać z SEL Hub",
+        "got_it": "Rozumiem",
+        "practice_support": "Wsparcie w ćwiczeniu",
+        "learning_guide": "Przewodnik do nauki i sposoby ćwiczenia",
+        "what_you_can_explore": "Co możesz odkryć",
+        "worked_example": "Omówiony przykład",
+        "try_one_step": "Spróbuj jednego kroku",
+        "reflect_transfer": "Przemyśl i zastosuj gdzie indziej",
+        "look_closer": "Przyjrzyj się bliżej",
+        "next_use": "Możliwe kolejne zastosowanie",
+        "adapt_together": "Dostosujcie ćwiczenie razem",
+        "adapt_smaller": "Zacznij od mniejszego kroku: pokaż jedno zdanie lub jeden wybór, użyj obrazka lub konkretnego przedmiotu i daj czas do namysłu.",
+        "adapt_deeper": "Pogłęb: porównaj dwie odpowiedzi, wskaż brakujące informacje i wyjaśnij, co mogłoby zmienić twój wybór.",
+        "adapt_context": "Zmień kontekst: użyj wymyślonej sytuacji dopasowanej do języka, zainteresowań, kultury i potrzeb dostępności osoby uczącej się.",
+        "adapt_check": "Sprawdzaj zrozumienie przez wybrany przykład lub wyjaśnienie, a nie przez obowiązkową osobistą historię, zmianę emocji czy wynik punktowy.",
+        "optional_prompts": "Te opcjonalne pytania nie przesyłają odpowiedzi, nie zaliczają ukończenia i nie zastępują własnych instrukcji ani informacji o bezpieczeństwie danej aktywności.",
+        "returned_to_activities": "Powrót do aktywności. Ta czynność nie zapisała ukończenia ćwiczenia.",
+        "return_to_activities": "Wróć do aktywności",
+        "chooser_first_reset_coping": "Wybierz jeden wygodny sposób uziemienia. Zauważ, czy pasuje; możesz przerwać.",
+        "chooser_first_reset_journal": "Napisz jedną rzecz, która ułatwiłaby kilka następnych minut. Osobista historia nie jest potrzebna.",
+        "chooser_first_feelings_zones": "Wskaż uczucie lub po cichu je zauważ. Wybierz jedną formę wsparcia; nie ma właściwej strefy, do której trzeba dojść.",
+        "chooser_first_feelings_emotions": "Poznaj dwa słowa opisujące uczucia wymyślonej postaci. Może pasować więcej niż jedna odpowiedź.",
+        "chooser_first_feelings_journal": "Napisz słowo lub krótką refleksję o wymyślonej lub codziennej sytuacji.",
+        "chooser_first_conversation_advocacy": "Użyj wymyślonej sytuacji, by przećwiczyć jedną prośbę na głos, z AAC lub w myślach, bez wypełniania formularza.",
+        "chooser_first_conversation_journal": "Naszkicuj jedną pełną szacunku prośbę w bezpiecznej, codziennej sytuacji; nie musisz jej wysyłać.",
+        "chooser_first_decision_decisions": "Przemyśl dwa wybory w wymyślonej sytuacji i jeden możliwy skutek każdego z nich.",
+        "chooser_first_decision_goals": "Naszkicuj jeden realistyczny następny krok i wsparcie, o które możesz poprosić.",
+        "try_a_reset": "Spróbuj resetu",
+        "need_feeling": "Zrozum uczucie",
+        "need_conversation": "Przygotuj rozmowę",
+        "need_decision": "Wybierz następny krok",
+        "help_choose": "Pomóż mi wybrać aktywność",
+        "help_choose_intro": "Wybierz, czego chcesz spróbować. Sugestie opierają się tylko na tych wyborach; nie oceniają twoich uczuć. Czas dotyczy pierwszego kroku, a nie całej aktywności.",
+        "what_would_help": "Co by pomogło?",
+        "time_first_step": "Czas na pierwszy krok",
+        "n_minutes": "{count} min",
+        "how_respond": "Jak chcesz odpowiedzieć?",
+        "respond_any": "Dowolnie",
+        "respond_offline": "Pomyśl, powiedz, narysuj lub użyj AAC",
+        "respond_write": "Napisz krótką odpowiedź",
+        "options_one": "{count} opcja na start pasuje do twoich wyborów.",
+        "options_many": "Opcje na start pasujące do twoich wyborów: {count}.",
+        "options_none": "Żadna opcja na start jeszcze nie pasuje. Spróbuj dłuższego czasu lub innej formy odpowiedzi; pełny katalog jest nadal dostępny.",
+        "why_option_write": "Dlaczego ta opcja: {need}, z proponowanym pierwszym krokiem trwającym {minutes} min i krótką odpowiedzią pisemną.",
+        "why_option_offline": "Dlaczego ta opcja: {need}, z proponowanym pierwszym krokiem trwającym {minutes} min i sposobem ćwiczenia bez pisania na klawiaturze.",
+        "open_named": "Otwórz: {name}",
+        "open_named_unavailable": "Otwórz: {name} (niedostępne)",
+        "pathway_guide": "Przewodnik po ćwiczeniach na ścieżce",
+        "pathway_opened": "Otwarte narzędzia: {opened} z {total}. Otwarcie narzędzia nie oznacza przećwiczenia umiejętności.",
+        "exit_pathway_aria": "Wyjdź z trybu ścieżki",
+        "pathway_cleared": "Ścieżka zakończona",
+        "exit_pathway": "Wyjdź ze ścieżki",
+        "practice_goal": "Cel ćwiczenia:",
+        "pathway_intro": "Wybierz jedną aktywność lub podążaj za proponowaną kolejnością. Możesz pominąć, użyć wymyślonego przykładu albo odpowiedzieć, mówiąc, rysując, pisząc lub korzystając z AAC. Dzielenie się jest dobrowolne.",
+        "model_practice_reflect": "Pokaz, ćwiczenie i refleksja",
+        "an_example": "Przykład",
+        "notice_adjust": "Zauważ i dostosuj",
+        "take_with_you": "Zabierz to ze sobą",
+        "self_check_aria": "Opcjonalna samoocena ćwiczenia",
+        "self_check_intro": "Po wypróbowaniu kroku wybierz, co pasuje. To opcjonalne i nieoceniane; zostaje w tej sesji ścieżki.",
+        "i_tried": "Mam za sobą jeden krok",
+        "another_way": "Potrzebuję innego sposobu",
+        "pass_for_now": "Na razie pomiń",
+        "tried_feedback": "Zauważ, co pomogło, co nie, i gdzie możesz jeszcze spróbować tej umiejętności.",
+        "adapt_feedback": "Spróbuj mniejszego kroku, innego sposobu odpowiedzi, innego narzędzia lub wsparcia od kogoś, komu ufasz.",
+        "pass_feedback": "Pominięcie to pełnoprawny wybór. Możesz wrócić później lub poprosić o wsparcie.",
+        "next_option": "Następna opcja: {name}",
+        "open_next": "Otwórz jako następne: {name}",
+        "view_pathway_tools": "Zobacz narzędzia ścieżki",
+        "revisit_any": "Możesz wrócić do każdej aktywności. Wybierz jeden pomysł do wypróbowania poza hubem; nie trzeba kończyć każdego narzędzia.",
+        "station_activities": "Aktywności stacji",
+        "active_station": "Aktywna Stacja SEL: {name}",
+        "steps_recorded_passed": "Zapisane kroki: {done} z {total} · na razie pominięte: {passed}. To zapis ćwiczeń, a nie ocena.",
+        "steps_recorded": "Zapisane kroki: {done} z {total}. To zapis ćwiczeń, a nie ocena.",
+        "active_minutes_done": "Aktywne minuty tutaj: {mins} z {goal}. Krok zapisany.",
+        "active_minutes_counting": "Aktywne minuty tutaj: {mins} z {goal}. Liczą się, gdy ta karta jest widoczna i z niej korzystasz.",
+        "exit_station_aria": "Wyjdź z trybu stacji",
+        "station_cleared": "Stacja zakończona",
+        "exit_station": "Wyjdź ze stacji",
+        "station_tools_steps": "Narzędzia, kroki i refleksja stacji",
+        "station_steps": "Kroki i refleksja stacji",
+        "station_privacy": "Kroki i notatki są zapisywane na tym urządzeniu i mogą trafić do plików projektu. Używaj wymyślonych przykładów lub pomijaj szczegóły osobiste. Wybierz, czym się dzielisz.",
+        "step_passed": "Na razie pominięto. Możesz wrócić, kiedy zechcesz.",
+        "step_marked": "Oznaczono ten krok jako ukończony.",
+        "step_target": "Zapisano cel aktywności; nie mierzy on umiejętności ani dobrostanu.",
+        "step_ready": "Zaczynamy, kiedy zechcesz.",
+        "open_step_activity": "Otwórz aktywność dla tego kroku",
+        "xp_progress": "Łącznie SEL XP: {xp} / {target}. Obejmuje to wcześniejszą aktywność; to nie jest wynik umiejętności.",
+        "time_progress": "Aktywne minuty: {mins} / {target}. Czas nie jest dowodem uczenia się.",
+        "default_reflect": "Co udało ci się zauważyć? Co chcesz zachować, a co zmienić?",
+        "self_check_ways": "Pomyśl, narysuj, powiedz, pokaż w języku migowym lub użyj AAC. Pisemna notatka jest opcjonalna. Oznacz krok jako ukończony samodzielnie albo na razie go pomiń.",
+        "length_target": "Ten zapisany krok ma cel długości: {count} / {target} znaków. Długość nie mierzy jakości refleksji. Twoją notatkę nadal można edytować.",
+        "reflection_for": "Refleksja: {name}",
+        "optional_note": "Opcjonalna notatka: co pomogło lub czego możesz spróbować następnym razem...",
+        "write_reflection": "Napisz refleksję...",
+        "mark_complete_aria": "Oznacz „{name}” jako ukończone",
+        "step_reopened": "Ponownie otwarto krok: {name}",
+        "step_marked_named": "Oznaczono ten krok jako ukończony: {name}",
+        "mark_complete": "Oznacz jako ukończone",
+        "step_passed_named": "Na razie pominięto: {name}",
+        "filter_pathway": "ścieżka: {name}",
+        "filter_station": "stacja: {name}",
+        "no_tools_match": "Żadne narzędzia nie pasują do filtrów: {filters}",
+        "results_one": "Narzędzia pasujące do filtrów {filters}: {count} z {total}",
+        "results_many": "Narzędzia pasujące do filtrów {filters}: {count} z {total}",
+        "showing_all": "Wyświetlane są wszystkie narzędzia ({total})",
+        "crisis_elementary": "Jeśli nie możesz od razu znaleźć dorosłego, pytaj dalej, aż ktoś cię wysłucha. Zasługujesz na pomoc.",
+        "crisis_call_or_text": "Zadzwoń lub napisz SMS pod numer",
+        "crisis_988": "988 — linia wsparcia w kryzysie i zapobiegania samobójstwom (bezpłatna, poufna, całą dobę).",
+        "crisis_text": "Napisz SMS do",
+        "crisis_text_line": "Crisis Text Line (bezpłatnie, poufnie, całą dobę).",
+        "tool_selection": "Wybór narzędzi SEL Hub",
+        "jumped_to_list": "Przeskoczono do listy narzędzi. {summary}.",
+        "skip_to_list": "Przejdź do listy narzędzi",
+        "start_here": "Zacznij tutaj",
+        "quick_route": "Wybierz szybką drogę lub przeglądaj poniżej.",
+        "browsing_all": "Przeglądasz wszystkie narzędzia SEL",
+        "continue": "Kontynuuj",
+        "continue_desc": "Wróć do ostatnio otwartego narzędzia SEL.",
+        "starting_idea": "Pomysł na start",
+        "starting_idea_desc": "{name}: proponowana aktywność dla tego poziomu klas, z przykładami, które możesz dostosować.",
+        "starting_idea_none": "Otwórz punkt startowy dopasowany do poziomu klas.",
+        "try_a_reset_desc": "Poznaj wygodną strategię; nie musisz czuć spokoju.",
+        "journal": "Dziennik",
+        "journal_desc": "Napisz refleksję; przejrzyj opcje zapisywania i udostępniania.",
+        "browse_all": "Przeglądaj wszystko",
+        "browse_all_desc": "Przeszukaj lub przefiltruj cały katalog.",
+        "need_chip_calm": "Uspokoić ciało",
+        "need_chip_feelings": "Nazwać uczucia",
+        "need_chip_stress": "Stres lub zmartwienie",
+        "need_chip_friend": "Konflikt z przyjacielem",
+        "need_chip_write": "Wypisać to z siebie",
+        "need_chip_decision": "Podjąć decyzję",
+        "need_chip_sleep": "Sen lub zmęczenie",
+        "need_chip_crisis": "Brak bezpieczeństwa lub kryzys",
+        "need_chip_relationshipsafety": "Bezpieczeństwo w relacji",
+        "need_chip_schoolsupport": "Wsparcie w szkole",
+        "need_chip_grief": "Żałoba lub strata",
+        "storage_notice": "Część pracy SEL jest przechowywana na tym urządzeniu. Funkcje AI korzystają ze skonfigurowanej usługi. Wybierz, co zapisać lub udostępnić, zwłaszcza na współdzielonym urządzeniu.",
+        "save_now_aria": "Zapisz lub wyeksportuj teraz pracę SEL",
+        "save_now": "Zapisz teraz",
+        "recent_work": "Ostatnia praca SEL",
+        "saved_here": "Zapisano tutaj. Wyeksportuj, aby zachować po zamknięciu.",
+        "create_packet_aria": "Utwórz pakiet SEL do udostępnienia z zapisanych punktów kontrolnych",
+        "review_packets_aria": "Przejrzyj zapisane pakiety SEL do udostępnienia",
+        "create_packet": "Utwórz pakiet do udostępnienia",
+        "review_packets": "Przejrzyj pakiety do udostępnienia",
+        "open_related": "Otwórz powiązane narzędzie.",
+        "related_unavailable": "Powiązane narzędzie nie jest dostępne w tym SEL Hub.",
+        "streak_aria": "Seria SEL — dni z rzędu: {count}. Najdłuższa seria (dni): {longest}.",
+        "streak": "Dni z rzędu: {count}",
+        "streak_best": "rekord: {count}",
+        "find_activity": "Znajdź aktywność",
+        "search_placeholder": "Szukaj: uczucia, przyjaciele, stres, cele...",
+        "search_aria": "Szukaj narzędzi SEL",
+        "support_options": "Opcje wsparcia",
+        "crisis_hard_moment": "Wygląda na to, że to może być trudna chwila.",
+        "crisis_tell_adult": "Nie musisz radzić sobie z tym w pojedynkę i nie musisz najpierw znaleźć właściwego narzędzia. Proszę, powiedz o tym teraz zaufanej osobie dorosłej — pedagogowi lub psychologowi szkolnemu, nauczycielowi, rodzicowi albo innej dorosłej osobie, której ufasz. Wyszukiwanie tutaj nikogo nie powiadamia; ktoś się dowie tylko wtedy, gdy mu powiesz.",
+        "open_crisis_companion": "Otwórz Towarzysza w kryzysie",
+        "find_by_need": "Znajdź narzędzia SEL według potrzeby",
+        "i_need": "Potrzebuję...",
+        "cleared_search": "Wyczyszczono wyszukiwanie SEL",
+        "clear_search_aria": "Wyczyść wyszukiwanie SEL",
+        "clear": "Wyczyść",
+        "cleared_need": "Wyczyszczono filtr potrzeb SEL",
+        "showing_for": "Wyświetlane narzędzia SEL dla: {name}",
+        "clear_need_aria": "Wyczyść filtr potrzeby: {name}",
+        "find_for_aria": "Znajdź narzędzia dla: {name}",
+        "browse_by_area": "Przeglądaj według obszaru umiejętności",
+        "filter_by_category": "Filtruj narzędzia SEL według kategorii",
+        "showing_all_categories": "Wyświetlane są wszystkie kategorie",
+        "show_all_categories_aria": "Pokaż wszystkie kategorie (narzędzia: {count})",
+        "all": "Wszystkie",
+        "filtered_to": "Przefiltrowano: {name}",
+        "filter_chip_aria": "Filtr: {name} (narzędzia: {count})",
+        "pathways_heading": "Ścieżki SEL — starannie dobrane sekwencje nauki",
+        "started_pathway": "Rozpoczęto ścieżkę: {name}",
+        "pathway_started": "Ścieżka {name} rozpoczęta!",
+        "n_activities": "Aktywności: {count}",
+        "grades_range": "klasy {range}",
+        "use_with_care": "Używaj ostrożnie",
+        "visits_many": "Wizyty: {count}",
+        "visits_one": "{count} wizyta",
+        "best_for": "Najlepsze do: {mode}.",
+        "teacher_cue": "Wskazówka dla nauczyciela: {time}, {format}. {cue}",
+        "preview_first": "Najpierw przejrzyj",
+        "evidence_tradition": "Tradycja badawcza: {tag}",
+        "approach_context": "Kontekst podejścia: {label}. {title}. Ta odznaka nie potwierdza skuteczności dla tej aplikacji ani dla konkretnego ucznia.",
+        "step_opened": "Krok {n} · Otwarty",
+        "step_not_opened": "Krok {n} · Nieotwarty",
+        "suggested_grades": "Sugerowane klasy {range}",
+        "no_tools_current_view": "Żadne narzędzia nie pasują do bieżącego widoku",
+        "empty_try": "Spróbuj: spokój, uczucia, stres, przyjaciel, pisanie, decyzja lub sen.",
+        "filters_cleared": "Filtry wyczyszczone. Wyświetlane są wszystkie narzędzia ({total}).",
+        "show_all_tools": "Pokaż wszystkie narzędzia ({total})",
+        "error_loading": "Błąd wczytywania: {name}",
+        "unknown_error": "Nieznany błąd",
+        "back_to_tools_error": "Wróć do narzędzi",
+        "tool_load_failed": "Nie udało się wczytać tego narzędzia.",
+        "loading_tool": "Wczytywanie narzędzia...",
+        "file_not_arrived": "Plik nie dotarł.",
+        "check_connection": "Sprawdź połączenie i spróbuj ponownie.",
+        "plugin_fetching": "Plik wtyczki jest jeszcze pobierany.",
+        "research_about": "O etykietach badawczych",
+        "research_summary": "Co oznaczają etykiety badawcze",
+        "research_context": "Kontekst podejścia: {label}.",
+        "research_not_app": "Badania nad terapią, programem nauczania lub modelem nie dowodzą, że ta cyfrowa aktywność ma takie same efekty. Etykiety opisują podejście; nie oceniają tej aplikacji ani ucznia.",
+        "research_check": "Zanim wybierzesz aktywność, sprawdź cytowane źródła, badane grupy wiekowe i środowiska, potrzebne wsparcie oraz mierzone rezultaty. Te etykiety nie potwierdzają, że ta adaptacja pasuje do danej grupy ani że jest skuteczna.",
+        "research_casel_link": "CASEL: wybór i ocena programu SEL",
+        "project_save_failed": "Żądanie zapisania projektu nie powiodło się. Nie zamykaj tego hubu i spróbuj opcji „Zapisz / Eksportuj” w głównej aplikacji.",
+        "project_save_requested": "Zażądano zapisania projektu. Dokończ zapisywanie w głównej aplikacji; zapisany plik nie został tu potwierdzony.",
+        "saving_aria": "Zapisywanie i udostępnianie SEL",
+        "saving_failed_alert": "Niektórych zmian SEL nie udało się zapisać na tym urządzeniu. Nie zamykaj tego hubu i zapisz kopię projektu; szkice stacji trzeba zapisać jako stacje, aby trafiły do tej kopii.",
+        "saving_attention": "Zapisywanie wymaga uwagi",
+        "saving_title": "Zapisywanie i udostępnianie",
+        "saving_failed_body": "Bieżąca praca jest nadal dostępna w tym otwartym hubie. Nieudany zapis lokalny może pozostawić na tym urządzeniu starszą kopię.",
+        "saving_ok_body": "Zapisane stacje, notatki stacji i punkty kontrolne hubu są przechowywane na tym urządzeniu. Poszczególne aktywności mają własne opcje zapisu; ten status nie potwierdza, że zapisano wszystkie dane wprowadzone w aktywnościach.",
+        "saving_drafts": "Szkice stacji pozostają na tym urządzeniu, aby można je było odzyskać. Zapisanie stacji dodaje ją do danych projektu dostępnych w „Zapisz / Eksportuj”; zażądanie zapisu projektu nie potwierdza, że plik został zapisany.",
+        "saving_live": "Połączono sesję na żywo. Może ona wysyłać postępy lub sygnały bezpieczeństwa do osoby prowadzącej. Opcjonalna AI wysyła tekst aktywności do skonfigurowanej usługi. Przejrzyj pakiet do udostępnienia, zanim zdecydujesz się nim podzielić.",
+        "saving_ai": "Opcjonalna AI wysyła tekst aktywności do skonfigurowanej usługi. Pakiet do udostępnienia zawiera wybrane przez ciebie elementy i poziomy szczegółowości; przed udostępnieniem przejrzyj jego podgląd.",
+        "saving_retry": "Ponów zapis lokalny",
+        "saving_request": "Zażądaj zapisu projektu",
+        "removed_stations": "Usunięte stacje",
+        "removed_body": "Cofnij usunięcie stacji, dopóki ten hub jest otwarty. Istniejące zapisy ćwiczeń zostają zachowane.",
+        "station_restored": "Przywrócono stację: {name}",
+        "undo_removal": "Cofnij usunięcie: {name}",
+        "launch_routines_aria": "Procedury startowe dla nauczyciela",
+        "launch_title": "Start dla nauczyciela",
+        "launch_note": "Nie wystawiaj ocen za ćwiczenia, a dzielenie się niech będzie dobrowolne. Przed rozpoczęciem wyjaśnij zapisywanie na urządzeniu, skonfigurowane funkcje AI i udostępnianie. Używaj wymyślonych przykładów; zachęcaj uczniów, by prosili o pomoc lub pomijali.",
+        "launch_guardrails_aria": "Zasady bezpieczeństwa startu dla nauczyciela",
+        "launch_step_boundary": "Ustal granice",
+        "launch_step_boundary_body": "Powiedz, co jest prywatne, co jest opcjonalne i jak uczniowie mogą pominąć.",
+        "launch_step_run": "Przeprowadź rutynę",
+        "launch_step_run_body": "Traktuj narzędzia jako ćwiczenie. Niech refleksja będzie kształtująca i bez ocen.",
+        "launch_step_close": "Zakończ wyborem",
+        "launch_step_close_body": "Uczniowie decydują, czy później zapisać, wyeksportować lub dołączyć punkt kontrolny.",
+        "launch_student_sees": "Co widzi uczeń",
+        "launch_student_sees_default": "Uczniowie wykonują prywatną rutynę SEL i wybierają, czym się podzielić.",
+        "launch_teacher_move": "Działanie nauczyciela",
+        "launch_teacher_move_default": "Przedstaw to jako ćwiczenie, a nie ocenę.",
+        "launch_sharing_boundary": "Granice dzielenia się",
+        "launch_sharing_boundary_default": "O dzieleniu się decydują uczniowie.",
+        "launch_tools_loading": "Wczytywanie narzędzi...",
+        "launch_still_loading": "Nadal wczytywane: {tools}",
+        "launch_preview_sensitive": "Najpierw przejrzyj wrażliwe narzędzia: {tools}",
+        "launch_load_aria": "Wczytaj plan startowy nauczyciela: {name}",
+        "launch_finish_draft": "Najpierw dokończ lub odrzuć bieżący szkic",
+        "launch_waiting": "Oczekiwanie na narzędzia",
+        "launch_loading": "Wczytywanie",
+        "launch_load": "Wczytaj do Kreatora stacji",
+        "builder_note_student": "Widok ucznia: {text}",
+        "builder_note_teacher": "Działanie nauczyciela: {text}",
+        "builder_note_sharing": "Granice dzielenia się: {text}",
+        "builder_note_note": "Notatka nauczyciela: {text}",
+        "launch_finish_existing": "Najpierw dokończ lub odrzuć istniejący szkic stacji.",
+        "launch_tools_still_loading": "Narzędzia startowe dla nauczyciela nadal się wczytują. Spróbuj ponownie za chwilę.",
+        "launch_tools_still_loading_sr": "Narzędzia startowe dla nauczyciela nadal się wczytują.",
+        "launch_default_name": "Klasowa rutyna SEL",
+        "launch_default_short": "Rutyna SEL",
+        "launch_loaded_sr": "Plan startowy nauczyciela wczytany do kreatora stacji: {name}",
+        "launch_loaded_toast": "Plan startowy nauczyciela wczytany do Kreatora stacji.",
+        "stations_summary": "Własne Stacje SEL — zestawy przygotowane przez nauczycieli",
+        "station_delete_aria": "Usuń stację {name}",
+        "station_removed_sr": "Stacja usunięta. Cofnięcie jest możliwe do zamknięcia tego hubu.",
+        "station_removed": "Stacja usunięta",
+        "station_tools_count": "Narzędzia: {count}",
+        "station_quests_count": "Misje: {count}",
+        "station_activated_sr": "Aktywowano Stację SEL: {name}",
+        "station_started": "Rozpoczęto: {name}!",
+        "station_activate_aria": "Aktywuj stację {name}",
+        "station_start": "Uruchom stację",
+        "station_adapt_aria": "Dostosuj kopię stacji {name}",
+        "station_adapt": "Dostosuj kopię",
+        "draft_aria": "Szkic stacji do odzyskania",
+        "draft_untitled": "Stacja bez nazwy",
+        "draft_body": "Na tym urządzeniu zapisano niedokończony szkic stacji: {name}. Wznów go lub odrzuć, zanim zaczniesz kolejny.",
+        "draft_resume": "Wznów szkic stacji",
+        "draft_discard": "Odrzuć szkic stacji",
+        "builder_opened": "Otwarto kreator stacji",
+        "build_station_aria": "Utwórz nową własną Stację SEL",
+        "build_station": "+ Utwórz własną stację"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Połączenie nauczyciela wstrzymane – zachowujemy Twoje miejsce, dopóki AlloFlow nie połączy się ponownie.",
+    "host_stale": "Status nauczyciela jest nieaktualny – sesja na żywo może być nadal połączona. Twoja praca zostaje na tym urządzeniu.",
+    "dismiss": "Zamknij",
+    "dismiss_aria": "Zamknij ostrzeżenie o statusie nauczyciela",
+    "connecting": "Łączenie z klasą…",
+    "retrying": "Aktualizacje klasy wstrzymane. Trwa automatyczne ponowne łączenie…",
+    "failed": "Brak połączenia z klasą. Sprawdź połączenie i spróbuj połączyć się ponownie.",
+    "access": "Odmówiono dostępu do klasy. Poproś nauczyciela o sprawdzenie dostępu, a potem połącz się ponownie.",
+    "sign_in": "Zaloguj się ponownie, aby odzyskać dostęp do klasy, a potem połącz się ponownie.",
+    "reconnect": "Połącz ponownie"
+  },
   "tour": {
     "input_panel_title": "Panel wprowadzania",
     "input_panel_text": "Zacznij od fragmentu lub tematu, którego chcesz uczyć. Większość narzędzi zasobów korzysta z tego materiału źródłowego.\n### Dodaj źródło\n• Wklej lub wpisz tekst, prześlij obsługiwany plik, zaimportuj adres URL albo użyj narzędzi do generowania źródła.\n• Sprawdź kompletność i poprawność zaimportowanego lub wygenerowanego tekstu przed przejściem dalej. Niektóre witryny ograniczają ekstrakcję.\n### Ustaw kontekst\n• Otwórz Ustawienia uniwersalne, aby przejrzeć poziom klasy, język i preferencje dydaktyczne.\n• Wybierz ukierunkowaną ścieżkę w Trybie prowadzonym, jeśli chcesz pracować krok po kroku. Porównuj każdy wynik ze źródłem i swoim celem nauczania.",
@@ -5282,9 +7694,98 @@
     "measured_on_target": "Zgodny z poziomem {grade}",
     "measured_above": "Powyżej poziomu {grade}",
     "measured_below": "Poniżej poziomu {grade}",
-    "measured_note": "Flesch-Kincaid, zmierzony na tym tekście. Użyj Sprawdź poziom, aby sprawdzić dokładniej."
+    "measured_note": "Flesch-Kincaid, zmierzony na tym tekście. Użyj Sprawdź poziom, aby sprawdzić dokładniej.",
+    "listen_along": "Słuchaj i śledź",
+    "compare_listen_here": "Słuchaj tutaj",
+    "compare_listen_here_original": "Słuchaj tutaj tekstu oryginalnego",
+    "compare_listen_here_adapted": "Słuchaj tutaj tekstu dostosowanego",
+    "compare_stop_reading_original": "Zatrzymaj czytanie tekstu oryginalnego",
+    "compare_stop_reading_adapted": "Zatrzymaj czytanie tekstu dostosowanego",
+    "compare_scroll_together": "Przewijaj razem",
+    "reading_width": "Szerokość czytania",
+    "width_narrow": "Wąska",
+    "width_medium": "Średnia",
+    "width_wide": "Szeroka",
+    "width_extra_wide": "Bardzo szeroka",
+    "reading_width_characters": "około {count} znaków w wierszu",
+    "original_support_spoken": "Pomoc do słowa „{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Wpisz brakujące słowo lub wyrażenie",
+      "explain_thinking": "Wyjaśnij swoje rozumowanie",
+      "write_response": "Napisz swoją odpowiedź",
+      "submit_response": "Wyślij odpowiedź",
+      "numeric_answer": "Odpowiedź liczbowa",
+      "unit_named": "Jednostka ({unit})",
+      "unit_optional": "Jednostka (opcjonalnie)",
+      "submit_numeric": "Wyślij odpowiedź liczbową",
+      "select_all_apply": "Zaznacz wszystkie pasujące odpowiedzi",
+      "submit_selections": "Wyślij zaznaczone odpowiedzi",
+      "part1": "Część 1 – Wybierz najlepszą odpowiedź",
+      "part2": "Część 2 – {prompt}",
+      "default_evidence_prompt": "Wybierz dowód, który najlepiej popiera odpowiedź.",
+      "submit_answer_evidence": "Wyślij odpowiedź i dowód",
+      "order_check": "Czy ta kolejność jest poprawna?",
+      "order_yes": "Tak, jest poprawna",
+      "order_no": "Nie, coś jest nie na miejscu",
+      "select_misplaced": "Zaznacz powyżej element, który jest nie na miejscu.",
+      "arrange_instructions": "Ułóż elementy we właściwej kolejności. Jeśli są już dobrze ułożone, zostaw je.",
+      "your_order": "Twoja kolejność",
+      "move_up": "Przesuń w górę: {item}",
+      "move_down": "Przesuń w dół: {item}",
+      "done_arranging": "Zakończ układanie",
+      "principle_question": "Według jakiej zasady ułożono kolejność?",
+      "principle_chronological": "chronologia",
+      "principle_cause_effect": "przyczyna i skutek",
+      "principle_process": "etapy procesu",
+      "principle_size": "wielkość",
+      "principle_hierarchy": "hierarchia",
+      "find_mismatch": "Znajdź niepasującą parę",
+      "choose_mismatch": "Wybierz parę, która tu nie pasuje.",
+      "pair_with_question": "Z czym należy połączyć wybrany element?",
+      "replacement_partner": "Nowy element do pary",
+      "submit_replacement": "Wyślij zamianę",
+      "retry_failed": "Nie udało się wysłać odpowiedzi. Twój udział i tak został zapisany; spróbuj ponownie, gdy połączenie wróci.",
+      "return_to_quiz": "Wróć do quizu na żywo",
+      "minimize": "Minimalizuj",
+      "minimize_aria": "Opuść widok quizu na żywo",
+      "battle_result": "Wynik bitwy",
+      "class_victory": "Zwycięstwo klasy!",
+      "battle_complete": "Bitwa zakończona",
+      "regroup": "Szansa, by się przegrupować",
+      "end_no_scored": "Te pytania służyły do dyskusji lub do sprawdzenia przez nauczyciela. Nie przyznano wyniku bitwy.",
+      "end_questions_complete": "Wszystkie pytania zostały ukończone. Wynik porównuje procent pozostałego zdrowia; przy remisie wygrywa klasa.",
+      "end_victory": "Twoja klasa wspólnie pokonała potwora.",
+      "end_regroup": "Wykorzystajcie wyjaśnienie poniżej, aby wspólnie zaplanować następną próbę.",
+      "end_review_last": "Przejrzyj ostatnie pytanie poniżej. Nauczyciel może rozpocząć bitwę od nowa.",
+      "boss_hp": "HP: {name}",
+      "boss_health": "Zdrowie: {name}",
+      "battle_scoring_paused": "Punktacja bitwy wstrzymana",
+      "tick_of": "{value} z {total}",
+      "confidence_legend": "Jak pewna była Twoja odpowiedź?",
+      "confidence_knew": "Wiem to",
+      "confidence_guessed": "To był przemyślany strzał",
+      "confidence_unsure": "Nie mam pewności",
+      "confidence_help": "To pomaga nauczycielowi dostrzec solidną wiedzę i błędne wyobrażenia. Nigdy nie zmienia poprawności odpowiedzi ani punktów.",
+      "retry_send": "Wyślij odpowiedź ponownie",
+      "waiting_for_teacher": "Czekamy, aż nauczyciel rozpocznie to pytanie.",
+      "sending": "Wysyłanie odpowiedzi…",
+      "receipt_only": "Udział zapisany. Twoja odpowiedź nie dotarła do nauczyciela do oceny.",
+      "complete_and_submit": "Uzupełnij i wyślij odpowiedź",
+      "poll_closed": "To pytanie o opinię jest już zamknięte.",
+      "receipt_not_scored": "Nauczyciel otrzymał tylko informację o Twoim udziale. Ta odpowiedź nie została oceniona.",
+      "no_answer_submitted": "Nie wysłano odpowiedzi na to pytanie. Przejrzyj je razem z klasą.",
+      "answer_review": "Przegląd odpowiedzi",
+      "review_answer": "Przejrzyj odpowiedź",
+      "discuss_with_teacher": "Omów odpowiedź z nauczycielem.",
+      "response_correct": "Poprawna odpowiedź.",
+      "response_partial": "Częściowo poprawna odpowiedź.",
+      "response_incorrect": "Ta odpowiedź wymaga ponownego przemyślenia.",
+      "response_none": "Nie wysłano odpowiedzi.",
+      "response_submitted": "Odpowiedź wysłana do sprawdzenia.",
+      "explanation": "Wyjaśnienie"
+    },
     "title": "Oceń",
     "mcq_count": "Liczba MCQ",
     "reflections": "Refleksje",

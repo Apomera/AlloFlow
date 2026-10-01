@@ -40,8 +40,11 @@ describe('Cephalopod Hunter attached kelp fronds', () => {
       const geometry = build(THREE, 'kelp', height, variant);
       try {
         const p = geometry.attributes.position, normal = geometry.attributes.normal;
-        assert.equal(p.count, 141);assert.equal(geometry.index.count / 3, 168);assert.deepEqual(Object.keys(geometry.attributes).sort(), ['color', 'normal', 'position', 'uv']);
-        assert.deepEqual(geometry.userData, { clPlantKind: 'kelp', clPlantHeight: height, clPlantVariant: variant, clPlantSections: 18, clPlantColumns: 3 });
+        assert.equal(p.count, 277);assert.equal(geometry.index.count / 3, 424);assert.deepEqual(Object.keys(geometry.attributes).sort(), ['color', 'normal', 'position', 'uv']);
+        const { clKelpBladders, ...originalMetadata } = geometry.userData;
+        assert.deepEqual(originalMetadata, { clPlantKind: 'kelp', clPlantHeight: height, clPlantVariant: variant, clPlantSections: 18, clPlantColumns: 3 });
+        assert.deepEqual({ version: clKelpBladders.version, sides: clKelpBladders.sides, latitudeIntervals: clKelpBladders.latitudeIntervals }, { version: 1, sides: 8, latitudeIntervals: 5 });
+        assert.equal(clKelpBladders.parts.length, 4);
         for (const attr of Object.values(geometry.attributes)) assert.ok(Array.from(attr.array).every(Number.isFinite));
         for (const value of geometry.attributes.color.array) assert.ok(value >= 0 && value <= 1);
         const point = new THREE.Vector3();

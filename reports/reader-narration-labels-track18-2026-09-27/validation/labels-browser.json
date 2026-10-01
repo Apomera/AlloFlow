@@ -1,0 +1,122 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "width": 320,
+      "scrollWidth": 320,
+      "accurateCounts": true,
+      "focusVisible": true,
+      "captureNameAndHelp": true,
+      "deviceSaveSeparate": true
+    },
+    {
+      "route": "background-update",
+      "focusPreserved": true,
+      "noDurabilityClaim": true
+    },
+    {
+      "route": "unavailable",
+      "explicitUnverified": true,
+      "focusPreserved": true
+    },
+    {
+      "route": "touch-label",
+      "labelActivatesCheckbox": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Mocked readiness/persistence; no real storage writes or provider calls",
+    "DOM semantics are not screen-reader announcement proof",
+    "Doubled computed fonts are not actual text-only zoom or 400% browser zoom",
+    "No hardware mobile, Firefox or WebKit verification"
+  ]
+}

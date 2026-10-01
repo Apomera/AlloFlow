@@ -1,0 +1,128 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/evolab_journal_round_trip.test.js
+[PureHelpers] 7 helpers registered
+
+stderr | tests/evolab_journal_round_trip.test.js > journal → class snapshot round trip  > carries every field, including unicode and CER notes, into the snapshot
+Warning: The current testing environment is not configured to support act(...)
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `StableView`. See https://reactjs.org/link/warning-keys for more information.
+    at ul
+    at StableView (eval at loadTool (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:131:3), <anonymous>:3114:64)
+    at Host (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/evolab_journal_round_trip.test.js:24:81)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal → class snapshot round trip  > survives a journal whose payload is truncated, padded or re-encoded
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > duplicate journals > counts a repeated journal once and says so
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > duplicate journals > pluralises, and stays silent when there are no duplicates
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > duplicate journals > two students with the same name are still two journals
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > offers a sample before anything is pasted, and the empty state says so
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > loading the sample fills every section a real class would
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > the sample can be cleared, and the button returns
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > every sample journal is well formed and distinct
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > shortens long answers in the readable half and says so
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > leaves short answers untouched and says nothing
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > the teacher still receives the note through the payload
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > a full journal copies to well under half of what it used to
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ tests/evolab_journal_round_trip.test.js (13 tests) 8717ms
+     ✓ carries every field, including unicode and CER notes, into the snapshot  5027ms
+     ✓ survives a journal whose payload is truncated, padded or re-encoded  1046ms
+     ✓ counts a repeated journal once and says so  327ms
+     ✓ the sample can be cleared, and the button returns  500ms
+     ✓ every sample journal is well formed and distinct  485ms
+stdout | tests/evolab_living_island.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/evolab_living_island.test.js (100 tests) 23620ms
+     ✓ recreates the coastline and elevation from a seed without changing biological replay  2825ms
+     ✓ keeps every creature and its decorative movement on dry ground across seeds and population sizes  441ms
+     ✓ inherits one allele from each distinct surviving parent when mutation is off  981ms
+     ✓ keeps every allele bounded and never exceeds carrying capacity  14376ms
+     ✓ shows the expected insulation response to cold across independent seeds  555ms
+     ✓ continues an identical RNG sequence after a save round trip  524ms
+     ✓ records both exact parental choices and mutation draws and restores them independently  360ms
+     ✓ previews the same seeded climate choice that stepping uses without sampling survival  399ms
+
+ Test Files  2 passed (2)
+      Tests  113 passed (113)
+   Start at  17:40:58
+   Duration  61.90s (transform 2.44s, setup 875ms, import 4.37s, tests 32.34s, environment 39.08s)
+

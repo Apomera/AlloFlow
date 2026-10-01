@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "Releasing, losing focus, and starting a new cook stop pouring without undoing doses or leaking into another attempt.",
+    "Touch dragging works without WebGL; narrow layouts, reduced motion, and forced colors retain accessible tools."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop workbench",
+      "issues": []
+    },
+    {
+      "label": "320px text view",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

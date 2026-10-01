@@ -1,0 +1,229 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-pixel-colors.js" b/stem_lab/stem_tool_artstudio.js
+index 846c12b07..5b6165af0 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-pixel-colors.js"
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -918,6 +918,88 @@ window.StemLab = window.StemLab || {
+     palette.forEach(function(color,index){var x=32+index*128;ctx.fillStyle=color.hex;ctx.fillRect(x,368,124,100);ctx.fillStyle='#0f172a';ctx.font='14px monospace';ctx.fillText(color.hex.toUpperCase(),x,490);});
+   }
+   // END ART STUDIO MIXER HELPERS
++
++  // BEGIN ART STUDIO PIXEL COLOR HELPERS
++  var artStudioPixelColorCache = new Map(), artStudioPixelColorContext;
++  function artStudioPixelColorKey(raw) {
++    if (typeof raw !== 'string' || raw.length > 160) return null;
++    var value = raw.trim().toLowerCase(), cached = artStudioPixelColorCache.get(value);
++    if (cached !== undefined) return cached;
++    function parse(color) {
++      if (/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(color)) {
++        var hex = color.length <= 5 ? '#' + color.slice(1).split('').map(function(c){return c+c;}).join('') : color;
++        return hex.length === 9 && hex.slice(7) === 'ff' ? hex.slice(0,7) : hex;
++      }
++      var match = /^(rgb|hsl)a?\(\s*([-\d.]+)(%?)\s*,\s*([-\d.]+)(%?)\s*,\s*([-\d.]+)(%?)(?:\s*,\s*([\d.]+)(%?))?\s*\)$/.exec(color);
++      if (!match) return null;
++      var a = Number(match[2]), b = Number(match[4]), c = Number(match[6]), alpha = match[8] === undefined ? 1 : Number(match[8]) / (match[9] ? 100 : 1);
++      if (![a,b,c,alpha].every(Number.isFinite)) return null;
++      var result;
++      if (match[1] === 'hsl') {
++        if (match[3] || !match[5] || !match[7]) return null;
++        result = artStudioMixerHSLHex(a,Math.max(0,Math.min(100,b)),Math.max(0,Math.min(100,c)));
++      } else result = artStudioMixerRGBHex([a/(match[3]?100:255)*255,b/(match[5]?100:255)*255,c/(match[7]?100:255)*255]);
++      var opacity = Math.round(Math.max(0,Math.min(1,alpha))*255);
++      return result + (opacity === 255 ? '' : opacity.toString(16).padStart(2,'0'));
++    }
++    var result = parse(value);
++    // Canvas resolves legacy named colors and additional browser CSS syntax.
++    // Two sentinels distinguish an invalid assignment from a valid black color.
++    if (!result && value && value !== 'currentcolor' && typeof document !== 'undefined') {
++      try {
++        if (artStudioPixelColorContext === undefined) artStudioPixelColorContext = document.createElement('canvas').getContext('2d');
++        var ctx = artStudioPixelColorContext;
++        if (ctx) {
++          ctx.fillStyle = '#010203'; ctx.fillStyle = value; var first = ctx.fillStyle;
++          ctx.fillStyle = '#040506'; ctx.fillStyle = value;
++          if (first === ctx.fillStyle && first !== value) result = parse(first);
++        }
++      } catch (_) {}
++    }
++    if (artStudioPixelColorCache.size >= 512) artStudioPixelColorCache.clear();
++    artStudioPixelColorCache.set(value,result);
++    return result;
++  }
++  function artStudioPixelCell(key,size) {
++    if (!/^(0|[1-9]\d*),(0|[1-9]\d*)$/.test(key)) return null;
++    var point = key.split(',').map(Number);
++    return point[0]<size && point[1]<size ? point : null;
++  }
++  function artStudioPixelInventory(raw,size) {
++    var data = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}, counts = new Map();
++    Object.keys(data).forEach(function(key){
++      if (!artStudioPixelCell(key,size)) return;
++      var color = artStudioPixelColorKey(data[key]);
++      if (!color || color.slice(7) === '00') return;
++      counts.set(color,(counts.get(color)||0)+1);
++    });
++    return Array.from(counts,function(pair){return {hex:pair[0],count:pair[1]};}).sort(function(a,b){return b.count-a.count || a.hex.localeCompare(b.hex);});
++  }
++  function artStudioPixelRecolor(raw,size,from,to) {
++    var next = Object.assign({},raw || {}), source = artStudioPixelColorKey(from), target = artStudioMixerHex(to), changed = 0;
++    if (!source || !target || source.slice(7) === '00') return {data:next,changed:0};
++    target += source.slice(7); // Recolor hue/RGB without flattening saved cell opacity.
++    if (target === source) return {data:next,changed:0};
++    Object.keys(next).forEach(function(key){
++      if (artStudioPixelCell(key,size) && artStudioPixelColorKey(next[key]) === source) { next[key]=target; changed++; }
++    });
++    return {data:next,changed:changed};
++  }
++  function artStudioPixelPreview(canvas,data,size,mode) {
++    if (!canvas) return;
++    var repeats = mode === 'tile' ? 3 : 1;
++    canvas.width = canvas.height = size*repeats;
++    var ctx = canvas.getContext('2d'); if (!ctx) return;
++    ctx.clearRect(0,0,canvas.width,canvas.height);
++    Object.keys(data || {}).forEach(function(key){
++      var point = artStudioPixelCell(key,size), color = artStudioPixelColorKey(data[key]);
++      if (!point || !color) return;
++      ctx.fillStyle = color;
++      for (var y=0;y<repeats;y++) for(var x=0;x<repeats;x++) ctx.fillRect(point[0]+x*size,point[1]+y*size,1,1);
++    });
++  }
++  // END ART STUDIO PIXEL COLOR HELPERS
++
+   // BEGIN ART STUDIO CONTRAST HELPERS
+   function artStudioContrastModel(raw) {
+     var d=raw||{},model={contrastAccessibilityTarget:Number(d.contrastAccessibilityTarget)===7?7:4.5};
+@@ -2169,6 +2251,9 @@ const d = labToolData.artStudio || {};
+           const pixelZoomAnchorRef = React.useRef(null);
+           const [pixelZoom, setPixelZoom] = React.useState(1);
+           const [pixelFit, setPixelFit] = React.useState(512);
++          const [pixelEditColor, setPixelEditColor] = React.useState(null);
++          const [pixelHexDraft, setPixelHexDraft] = React.useState(null);
++          const [pixelColorPage, setPixelColorPage] = React.useState(0);
+           const watercolorPaperRef = React.useRef(null);
+           const [watercolorFit, setWatercolorFit] = React.useState(512);
+           const pixelGridSize = [8, 16, 24, 32, 48, 64].indexOf(Number(d.pixelGrid)) >= 0 ? Number(d.pixelGrid) : 16;
+@@ -3182,6 +3267,31 @@ const d = labToolData.artStudio || {};
+             updMany(patch);
+           };
+           const pixelColor = readStudioScopedColor('pixel');
++          const pixelArtworkColors = tab === 'pixel' ? artStudioPixelInventory(d.pixelData,pixelGridSize) : [];
++          const pixelSelectedColor = pixelArtworkColors.find(function(color){return color.hex===pixelEditColor;}) || pixelArtworkColors[0] || null;
++          const pixelSelectedHex = pixelSelectedColor ? pixelSelectedColor.hex : '';
++          const pixelReplacementDraft = pixelHexDraft === null ? pixelSelectedHex.slice(0,7) : pixelHexDraft;
++          const pixelReplacementHex = artStudioMixerHex(pixelReplacementDraft);
++          const pixelPreviewMode = ['native','tile'].indexOf(d.pixelPreviewMode)>=0 ? d.pixelPreviewMode : 'sprite';
++          const pixelPreviewPaper = ['light','dark'].indexOf(d.pixelPreviewPaper)>=0 ? d.pixelPreviewPaper : 'checker';
++          const pixelColorPages = Math.max(1,Math.ceil(pixelArtworkColors.length/24));
++          const pixelVisibleColorPage = Math.min(pixelColorPages-1,pixelColorPage);
++          React.useEffect(function(){setPixelEditColor(null);setPixelHexDraft(null);setPixelColorPage(0);},[pixelArtworkOwner]);
++          React.useEffect(function(){setPixelHexDraft(null);},[pixelSelectedHex]);
++          function usePixelArtworkColor() {
++            if (!pixelReplacementHex) return;
++            var color = artStudioMixerHSL(pixelReplacementHex);
++            updMany({pixelHue:color.h,pixelSat:color.s,pixelLit:color.l,pixelTool:'brush'});
++            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.pixel_color_picked','Color picked. Brush selected.'));
++          }
++          function replacePixelArtworkColor() {
++            var canvas = document.getElementById('pixelCanvas');
++            if (!canvas || !canvas._pixelReplaceColor || !pixelSelectedColor || !pixelReplacementHex) return;
++            var count = canvas._pixelReplaceColor(pixelSelectedHex,pixelReplacementHex);
++            if (!count) return;
++            setPixelEditColor(pixelReplacementHex+pixelSelectedHex.slice(7)); setPixelHexDraft(null);
++            if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.pixel_recolor_done','Recolored {count} cells. Undo restores the original colors.'),{count:count}));
++          }
+           const symmetryColor = readStudioScopedColor('sym');
+           const spiroColor = readStudioScopedColor('spiro');
+           const spiroModel = artStudioSpiroModel(d, spiroColor);
+@@ -6368,13 +6478,14 @@ const d = labToolData.artStudio || {};
+             }
+             function floodFill(startX, startY, fillColor) {
+               var targetColor = grid[startX + ',' + startY] || null;
+-              if (targetColor === fillColor) return;
++              var targetKey = artStudioPixelColorKey(targetColor) || targetColor;
++              if (targetKey === (artStudioPixelColorKey(fillColor) || fillColor)) return;
+               var queue = [[startX, startY]], visited = {};
+               for (var index = 0; index < queue.length; index++) {
+                 var x = queue[index][0], y = queue[index][1], key = x + ',' + y;
+                 if (x < 0 || x >= gridSize || y < 0 || y >= gridSize || visited[key]) continue;
+                 visited[key] = true;
+-                if ((grid[key] || null) !== targetColor) continue;
++                if ((artStudioPixelColorKey(grid[key]) || grid[key] || null) !== targetKey) continue;
+                 grid[key] = fillColor;
+                 queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+               }
+@@ -6598,6 +6709,15 @@ const d = labToolData.artStudio || {};
+                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_pixel_row_column', 'Pixel row {value1}, column {value2}.'), { value1: keyboardCursor.y + 1, value2: keyboardCursor.x + 1 }));
+               }
+             };
++            canvas._pixelReplaceColor = function(from,to) {
++              var result = artStudioPixelRecolor(grid,gridSize,from,to);
++              if (!result.changed) return 0;
++              canvas._pixelCancelGesture();
++              rememberPixelArtwork(pixelCheckpoint(grid,gridSize));
++              grid=result.data; canvas._pixelWorkingGrid=grid;
++              commit(); drawPixelGrid();
++              return result.changed;
++            };
+             canvas._captureArtStudioState = function () { return pixelCheckpoint(grid, gridSize); };
+             canvas._pixelExport = function () {
+               drawPixelGrid(true);
+@@ -9802,7 +9922,18 @@ const d = labToolData.artStudio || {};
+               { id: 'pixelFullscreenWorkspace', className: 'artstudio-pixel-workspace', role: 'region', 'aria-label': __alloT('stem.artstudio.pixel_workspace', 'Pixel drawing workspace') },
+               React.createElement('style', null, `
+                 .artstudio-pixel-workspace{display:flex;flex-direction:column;gap:12px;min-width:0}
+-                .artstudio-pixel-workspace button,.artstudio-pixel-workspace select{min-height:44px}
++                .artstudio-pixel-workspace button,.artstudio-pixel-workspace select,.artstudio-pixel-workspace input[type=text],.artstudio-pixel-workspace input[type=color]{min-height:44px}
++                .artstudio-pixel-review{color:#0f172a;background:#fff;min-width:0}
++                .artstudio-pixel-preview-stage{display:flex;align-items:center;justify-content:center;width:100%;max-width:192px;height:192px;margin:8px auto;border:1px solid #94a3b8;overflow:hidden;background:#f8fafc}
++                .artstudio-pixel-preview-stage[data-paper=checker]{background-color:#e2e8f0;background-image:conic-gradient(#f8fafc 25%,transparent 0 50%,#f8fafc 0 75%,transparent 0);background-size:16px 16px}
++                .artstudio-pixel-preview-stage[data-paper=dark]{background:#1e1e2e}
++                #pixelArtworkPreview{image-rendering:pixelated;max-width:100%;flex:none}
++                .artstudio-pixel-color-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;margin:8px 0}
++                .artstudio-pixel-color-list button{display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #94a3b8;border-radius:6px;padding:5px}
++                .artstudio-pixel-color-list button[aria-pressed=true]{outline:3px solid #be185d;outline-offset:-3px}
++                .artstudio-pixel-color-list span{width:26px;height:26px;border:1px solid #64748b;border-radius:3px}
++                .artstudio-pixel-review select,.artstudio-pixel-review input{max-width:100%;min-width:0;background:#fff;color:#0f172a;border:1px solid #94a3b8;border-radius:6px}
++                .artstudio-pixel-review button:focus-visible,.artstudio-pixel-review input:focus-visible,.artstudio-pixel-review select:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+                 .artstudio-pixel-exit-label{display:none}
+                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-expand-label{display:none}
+                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-exit-label{display:inline}
+@@ -9890,6 +10021,40 @@ const d = labToolData.artStudio || {};
+                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_help','Drag inside to move. Arrow keys nudge; Shift moves 4 cells. Escape deselects. Ctrl/Cmd+C, X, V copy, cut, paste within this canvas. Delete clears selected pixels.')),
+                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_transform_help','Rotate turns the selection 90° clockwise. Flips affect selected pixels. A rotated region shifts inward if needed to stay on the grid.'))
+                 ),
++
++                React.createElement('details',{id:'artstudio-pixel-review',open:true,className:'artstudio-pixel-review my-2 rounded-lg border border-slate-300 p-2'},
++                  React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_artwork_review','Artwork colors and preview')),
++                  React.createElement('label',{className:'block text-xs font-bold',htmlFor:'artstudio-pixel-preview-mode'},__alloT('stem.artstudio.pixel_preview_mode','Preview')),
++                  React.createElement('select',{id:'artstudio-pixel-preview-mode',value:pixelPreviewMode,onChange:function(e){upd('pixelPreviewMode',e.target.value);},className:'w-full px-2 text-xs'},
++                    [['sprite',__alloT('stem.artstudio.pixel_preview_sprite','Enlarged sprite')],['native',__alloT('stem.artstudio.pixel_preview_native','Actual size (1×)')],['tile',__alloT('stem.artstudio.pixel_preview_tile','Repeating tile (3 × 3)')]].map(function(option){return React.createElement('option',{key:option[0],value:option[0]},option[1]);})),
++                  React.createElement('div',{className:'artstudio-pixel-preview-stage','data-paper':pixelPreviewPaper},
++                    React.createElement('canvas',{id:'pixelArtworkPreview',role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.pixel_preview_label','Clean artwork preview: {size} by {size} cells. {mode}.'),{size:pixelGridSize,mode:pixelPreviewMode==='tile'?__alloT('stem.artstudio.pixel_preview_tile','Repeating tile (3 × 3)'):pixelPreviewMode==='native'?__alloT('stem.artstudio.pixel_preview_native','Actual size (1×)'):__alloT('stem.artstudio.pixel_preview_sprite','Enlarged sprite')}),ref:function(canvas){artStudioPixelPreview(canvas,d.pixelData,pixelGridSize,pixelPreviewMode);},style:{width:pixelPreviewMode==='native'?pixelGridSize:192,height:pixelPreviewMode==='native'?pixelGridSize:192}})),
++                  React.createElement('label',{className:'block text-xs font-bold',htmlFor:'artstudio-pixel-preview-paper'},__alloT('stem.artstudio.pixel_preview_paper','Preview background')),
++                  React.createElement('select',{id:'artstudio-pixel-preview-paper',value:pixelPreviewPaper,onChange:function(e){upd('pixelPreviewPaper',e.target.value);},className:'w-full px-2 text-xs'},
++                    [['checker',__alloT('stem.artstudio.pixel_preview_checker','Transparency checker')],['light',__alloT('stem.artstudio.pixel_preview_light','Light')],['dark',__alloT('stem.artstudio.pixel_preview_dark','Dark')]].map(function(option){return React.createElement('option',{key:option[0],value:option[0]},option[1]);})),
++                  React.createElement('p',{className:'mt-2 text-xs'},__alloT('stem.artstudio.pixel_preview_help','Preview backgrounds are for viewing only. Transparent sprite exports keep empty cells clear.')),
++                  React.createElement('p',{id:'artstudio-pixel-color-count',className:'mt-3 text-xs font-bold'},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_inventory_count','{colors} colors · {cells} painted cells'),{colors:pixelArtworkColors.length,cells:pixelArtworkColors.reduce(function(sum,color){return sum+color.count;},0)})),
++                  !pixelArtworkColors.length && React.createElement('p',{className:'my-2 text-xs'},__alloT('stem.artstudio.pixel_inventory_empty','Draw a few pixels to build your artwork palette.')),
++                  React.createElement('div',{className:'artstudio-pixel-color-list'},pixelArtworkColors.slice(pixelVisibleColorPage*24,pixelVisibleColorPage*24+24).map(function(color){
++                    var label=formatArtStudioLearningText(__alloT('stem.artstudio.pixel_inventory_swatch','Select {hex}, used in {count} cells'),{hex:color.hex.toUpperCase(),count:color.count});
++                    return React.createElement('button',{key:color.hex,type:'button','data-pixel-artwork-color':color.hex,'aria-label':label,title:label,'aria-pressed':color.hex===pixelSelectedHex,onClick:function(){setPixelEditColor(color.hex);setPixelHexDraft(null);}},React.createElement('span',{'aria-hidden':true,style:{background:color.hex}}));
++                  })),
++                  pixelColorPages>1 && React.createElement('div',{className:'flex items-center justify-between gap-1 text-xs'},
++                    React.createElement('button',{type:'button',disabled:pixelVisibleColorPage===0,onClick:function(){setPixelColorPage(pixelVisibleColorPage-1);},'aria-label':__alloT('stem.artstudio.pixel_colors_previous','Previous artwork colors'),className:'rounded border border-slate-400 px-3 disabled:opacity-40'},'←'),
++                    React.createElement('span',null,formatArtStudioLearningText(__alloT('stem.artstudio.pixel_colors_page','{page} / {pages}'),{page:pixelVisibleColorPage+1,pages:pixelColorPages})),
++                    React.createElement('button',{type:'button',disabled:pixelVisibleColorPage===pixelColorPages-1,onClick:function(){setPixelColorPage(pixelVisibleColorPage+1);},'aria-label':__alloT('stem.artstudio.pixel_colors_next','Next artwork colors'),className:'rounded border border-slate-400 px-3 disabled:opacity-40'},'→')),
++                  pixelSelectedColor && React.createElement('div',null,
++                    React.createElement('p',{className:'my-2 text-xs'},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_color_selected','{hex} · {count} cells'),{hex:pixelSelectedHex.toUpperCase(),count:pixelSelectedColor.count})),
++                    React.createElement('label',{htmlFor:'artstudio-pixel-replacement-hex',className:'block text-xs font-bold'},__alloT('stem.artstudio.pixel_replacement_hex','New color (hex)')),
++                    React.createElement('div',{className:'flex items-center gap-1'},
++                      React.createElement('input',{type:'color',value:pixelReplacementHex||pixelSelectedHex.slice(0,7),'aria-label':__alloT('stem.artstudio.pixel_replacement_picker','Choose replacement color'),onChange:function(e){setPixelHexDraft(e.target.value);},style:{width:44,flexShrink:0}}),
++                      React.createElement('input',{id:'artstudio-pixel-replacement-hex',type:'text',value:pixelReplacementDraft,spellCheck:false,autoComplete:'off',maxLength:7,'aria-invalid':!pixelReplacementHex,'aria-describedby':'artstudio-pixel-recolor-help',onChange:function(e){setPixelHexDraft(e.target.value);},className:'w-full px-2 font-mono text-xs'})),
++                    !pixelReplacementHex && React.createElement('p',{role:'status',className:'my-1 text-xs text-red-800'},__alloT('stem.artstudio.pixel_hex_invalid','Enter a hex color such as #3A8 or #33AA88.')),
++                    React.createElement('div',{className:'my-2 flex flex-wrap gap-1'},
++                      React.createElement('button',{id:'artstudio-pixel-use-color',type:'button',disabled:!pixelReplacementHex,onClick:usePixelArtworkColor,className:'rounded-lg border border-slate-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},__alloT('stem.artstudio.pixel_use_artwork_color','Use for brush')),
++                      React.createElement('button',{id:'artstudio-pixel-replace-color',type:'button',disabled:!pixelReplacementHex || pixelReplacementHex===pixelSelectedHex.slice(0,7),onClick:replacePixelArtworkColor,className:'rounded-lg bg-pink-700 px-2 text-xs font-bold text-white disabled:opacity-40'},__alloT('stem.artstudio.pixel_replace_color','Replace this color'))),
++                    React.createElement('p',{id:'artstudio-pixel-recolor-help',className:'text-xs'},__alloT('stem.artstudio.pixel_recolor_help','Replace every matching cell across the artwork in one undoable edit. Cell opacity is preserved.')))
++                ),
+                 React.createElement('details', {className:'my-2 rounded-lg border border-slate-300 p-2'},
+                   React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_brush_settings','Brush settings')+' · '+pixelBrushSize+' px'),
+                   React.createElement('label',{className:'my-1 flex items-center justify-between gap-2 text-xs font-bold'},__alloT('stem.artstudio.pixel_brush_size','Brush size in cells'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.pixel_brush_size','Brush size in cells'),value:pixelBrushSize,onChange:function(e){upd('pixelBrushSize',Number(e.target.value));},className:'min-h-[44px] rounded-lg border border-slate-400 px-2'},[1,2,3,4,6,8].map(function(size){return React.createElement('option',{key:size,value:size},size+' px');}))),

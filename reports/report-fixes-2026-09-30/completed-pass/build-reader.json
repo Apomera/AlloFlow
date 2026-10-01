@@ -1,0 +1,33 @@
+{
+  "at": "2026-09-30T22:33:40.347Z",
+  "phase": "reader",
+  "hostIntegration": "paused pending shared writer clarification",
+  "modules": [
+    {
+      "output": "text_utility_helpers_module.js",
+      "sha256": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+      "inputs": {
+        "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    },
+    {
+      "output": "view_simplified_module.js",
+      "sha256": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+      "inputs": {
+        "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+        "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+        "view_simplified_source.jsx": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

@@ -46,12 +46,12 @@ beforeEach(() => {
 });
 
 describe('auth message is Canvas-aware + jargon-light', () => {
-  it('Canvas: frames a 401 as a transient hiccup, NOT "regenerate your key"', () => {
+  it('Canvas: gives connection recovery guidance without unproven throttling claims', () => {
     const api = makeApi(true, { fn: okResp });
     const cls = api._classifyGeminiError(new Error('401 Unauthorized'));
     expect(cls.kind).toBe('auth');
-    expect(cls.userMessage).toMatch(/manages the AI key|clears on its own|brief rate-limit/i);
-    expect(cls.userMessage).not.toMatch(/regenerat/i); // wrong advice in Canvas
+    expect(cls.userMessage).toMatch(/Canvas manages the AI key|connection|permission/i);
+    expect(cls.userMessage).not.toMatch(/regenerat|brief rate-limit|not a real key problem/i);
   });
   it('non-Canvas: still mentions the key (a 401 there usually IS a key problem)', () => {
     const api = makeApi(false, { fn: okResp });
@@ -70,7 +70,7 @@ describe('auth banner debounce + recovery', () => {
     expect(banner(), 'no banner after 2').toBeNull();
     await failOnce(api);
     expect(banner(), 'banner appears once auth failures are sustained (>=3)').toBeTruthy();
-    expect(banner().textContent || '').toMatch(/temporarily throttled|Canvas HTTP 401/i);
+    expect(banner().textContent || '').toMatch(/Canvas AI connection or permission error/i);
     expect(banner().textContent || '').not.toMatch(/key\/sign-in problem/i);
     expect(window.__alloflowQuotaState && window.__alloflowQuotaState.active).toBe(true);
   });

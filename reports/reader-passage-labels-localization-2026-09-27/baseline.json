@@ -1,0 +1,138 @@
+{
+  "head": "286e09850680047d44efcc836075916cf488eff6",
+  "capturedAt": "2026-09-27T17:14:39.842Z",
+  "inputs": [
+    {
+      "file": "AGENT_HANDOFF.md",
+      "sha256": "5348275b15235806dccbb567e742fb961c113e0549c68eff19ef24f5f5018d80"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "14c59a16f3a88b0e304d0be30d323d8e4439fc81dfd4aaafc168ed5551531fde"
+    },
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "b8f7f57e57260f7c3b292b5b6e4d6686e4b1999a4a3cbda10fd3465f59c344f0"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "alt_text_module.js",
+      "sha256": "944109d0ab087d02f00c51af4f5905eaef0e9a916a02dd93324eaafeaca024c2"
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "50f47633a8c535cfd277b6bf5f7fede4355791637191826c49103d7a9518ef93"
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "d308e94c32a52b04871353f618ea4d220ba80a04b34112049893fe31779a7198"
+    },
+    {
+      "file": "module_scope_extras_module.js",
+      "sha256": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "da68c641b21b41a6736a4e39649386b0377ade485cc40818b14218d7313b0727"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "da68c641b21b41a6736a4e39649386b0377ade485cc40818b14218d7313b0727"
+    },
+    {
+      "file": "tests/setup.js",
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    {
+      "file": "tests/reader_i18n.test.js",
+      "sha256": "444637420daad2348b2b5cbf0fd680721d06e2d25c486fe6cfc286e650c44bad"
+    },
+    {
+      "file": "tests/reading_support_draft_transitions.test.js",
+      "sha256": "cf22f253d3b7d6fca598c45ab6c9e6d8e267d8dd10e257236e5140273acdd5b3"
+    },
+    {
+      "file": "tests/reading_support_curation.test.js",
+      "sha256": "573e4047728dad2012a494e56052fe4f8e0a16cceb43f24f8ed595c7878a6923"
+    },
+    {
+      "file": "vitest.config.js",
+      "sha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    {
+      "file": "package.json",
+      "sha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e"
+    },
+    {
+      "file": "desktop/web-app/tailwind.config.js",
+      "sha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "sha256": "3c7de838ff102daab8a5cdc1c34f5813bee8debbfd8e0bb8b4c8e931143a5018"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "sha256": "3c7de838ff102daab8a5cdc1c34f5813bee8debbfd8e0bb8b4c8e931143a5018"
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "sha256": "aa70abaa31b49f19c103da5f4ad71836f543cfb51fe6f526d13a641c16078299"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "sha256": "aa70abaa31b49f19c103da5f4ad71836f543cfb51fe6f526d13a641c16078299"
+    },
+    {
+      "file": "lang/arabic.js",
+      "sha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436"
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "sha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436"
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "sha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b"
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "sha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b"
+    },
+    {
+      "file": "lang/thai.js",
+      "sha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d"
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "sha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d"
+    },
+    {
+      "file": "firestore_sync_module.js",
+      "sha256": "316cfb0d2c14661e94698289a2af21c32df98f841255b42e5396a9d8a5797027"
+    }
+  ]
+}

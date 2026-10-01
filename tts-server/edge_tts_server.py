@@ -2,6 +2,8 @@
 Edge TTS Server — OpenAI-compatible /v1/audio/speech endpoint
 Uses Microsoft Edge's free TTS service (300+ voices, 100+ languages).
 Runs on port 5500. No API key needed. No Docker needed.
+Loopback only by default. EDGE_TTS_HOST can explicitly enable another bind.
+ALLOFLOW_TTS_ALLOWED_ORIGINS adds comma-separated exact browser origins.
 """
 
 import asyncio
@@ -9,6 +11,31 @@ import http.server
 import json
 import io
 import threading
+import os
+from urllib.parse import urlsplit
+
+
+def is_allowed_origin(origin):
+    """Allow native clients, loopback apps and explicitly trusted web origins."""
+    if origin is None:
+        return True
+    if not isinstance(origin, str) or not origin or origin != origin.strip():
+        return False
+    try:
+        parsed = urlsplit(origin)
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username or parsed.password or parsed.path
+                or parsed.query or parsed.fragment
+                or (parsed.port is not None and not 0 < parsed.port <= 65535)):
+            return False
+    except ValueError:
+        return False
+    if parsed.hostname in ("localhost", "127.0.0.1", "::1"):
+        return True
+    trusted = {"https://alloflow-cdn.pages.dev"}
+    trusted.update(value.strip() for value in
+                   os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","))
+    return origin in trusted
 
 # Voice mappings: OpenAI voice name → Edge TTS voice
 VOICE_MAP = {
@@ -44,6 +71,7 @@ VOICE_MAP = {
 }
 
 PORT = 5500
+HOST = os.environ.get("EDGE_TTS_HOST") or "127.0.0.1"
 
 LANGUAGE_ALIASES = {
     "english": "en", "spanish": "es", "french": "fr", "german": "de",
@@ -91,7 +119,25 @@ def generate_speech_sync(text, voice, speed, language=None):
 
 
 class TTSHandler(http.server.BaseHTTPRequestHandler):
+    def _add_cors_headers(self):
+        self.send_header("Vary", "Origin")
+        origin = self.headers.get("Origin")
+        if origin and is_allowed_origin(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+
+    def _reject_untrusted_origin(self):
+        if is_allowed_origin(self.headers.get("Origin")):
+            return False
+        self.send_response(403)
+        self.send_header("Content-Type", "application/json")
+        self._add_cors_headers()
+        self.end_headers()
+        self.wfile.write(b'{"error":"Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."}')
+        return True
+
     def do_POST(self):
+        if self._reject_untrusted_origin():
+            return
         if self.path != "/v1/audio/speech":
             self.send_response(404)
             self.end_headers()
@@ -107,7 +153,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             
             if not text:
                 self.send_response(400)
-                self.send_header("Access-Control-Allow-Origin", "*")
+                self._add_cors_headers()
                 self.end_headers()
                 self.wfile.write(b'{"error": "No input text"}')
                 return
@@ -116,7 +162,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             
             if not audio_data:
                 self.send_response(500)
-                self.send_header("Access-Control-Allow-Origin", "*")
+                self._add_cors_headers()
                 self.end_headers()
                 self.wfile.write(b'{"error": "TTS generation failed"}')
                 return
@@ -124,30 +170,34 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "audio/mpeg")
             self.send_header("Content-Length", str(len(audio_data)))
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._add_cors_headers()
             self.end_headers()
             self.wfile.write(audio_data)
             
         except Exception as e:
             print(f"[EdgeTTS] Error: {e}")
             self.send_response(500)
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._add_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
     
     def do_OPTIONS(self):
         """Handle CORS preflight."""
+        if self._reject_untrusted_origin():
+            return
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._add_cors_headers()
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
     
     def do_GET(self):
+        if self._reject_untrusted_origin():
+            return
         if self.path == "/health" or self.path == "/":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._add_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps({
                 "status": "ok",
@@ -170,7 +220,7 @@ if __name__ == "__main__":
     print(f"[EdgeTTS] {len(VOICE_MAP)} voices across {len(set(v.split('-')[0]+'-'+v.split('-')[1] for v in VOICE_MAP.values()))}+ languages")
     print(f"[EdgeTTS] Powered by Microsoft Edge Neural TTS (free, no API key)")
     
-    server = http.server.HTTPServer(("0.0.0.0", PORT), TTSHandler)
+    server = http.server.HTTPServer((HOST, PORT), TTSHandler)
     print(f"[EdgeTTS] ✅ Ready at http://localhost:{PORT}")
     
     try:

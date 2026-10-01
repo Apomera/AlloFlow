@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "Pathway explorer starts with one selected process and explains the 15-second no-rain probe",
+    "Completely dry ground shows zero transfers and no invented water routes",
+    "Every pathway and storage forecast matches the solver at paused minute 20 without advancing time",
+    "Keyboard route controls follow real sources and destinations while preserving process, focus, and evidence",
+    "Stream cells show pooled delayed-water receipts and the outlet stays a non-selectable boundary",
+    "Soaked soil shows capacity-limited infiltration and positive drainage into delayed storage",
+    "Completed runs use a no-rain forecast and leave their saved evidence intact",
+    "Recorded-minute forecasts and route following use past stores and rain while preserving the completed run",
+    "Expandable water accounting matches inputs, outputs, and storage with explicit depth units",
+    "Pathways fit desktop, 390px, and 320px with accessible light, dark, and high-contrast treatments",
+    "Pathway workflows complete without browser exceptions"
+  ],
+  "errors": []
+}

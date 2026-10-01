@@ -1,0 +1,31 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "selected": 0
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "selected": 0
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "selected": 0
+    }
+  ],
+  "mousePicking": true,
+  "touchPicking": true,
+  "horizonOcclusion": true,
+  "dragPreserved": true,
+  "cancelPreserved": true,
+  "keyboardCycling": true,
+  "runningPickPauses": true,
+  "localMetrics": true,
+  "exactCaptureShortcut": true,
+  "viewPreserved": true,
+  "cleanup": true
+}

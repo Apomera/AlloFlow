@@ -165,7 +165,23 @@ describe('pack compiler gates English pools (source pins — packed boards outra
     // word pools
     expect(src).toMatch(/const commonWords = packIsEnglish/);
     expect(src).toMatch(/const manipulationFill = packIsEnglish \? \['sit','map','bed','pin','mud','fan'\] : otherWords;/);
-    expect(src).toMatch(/\(packIsEnglish \? \['at', 'on', 'in', 'up', 'it', 'an', 'sit', 'map'\] : \[\]\)/);
+    // Sound Swap no longer fills unsupported tasks with a generic English answer pool.
+    // Check actual compiled boards while retaining the surrounding pool-language pins.
+    const { core, compileWords } = await import('./helpers/word_sounds_core.js');
+    const { makePackItem } = await import('./helpers/word_sounds_pack_fixture.js');
+    const cat = { ...makePackItem(), manipulationTask: core.resolveManipulationTask('cat', null, 'en') };
+    const ready = compileWords([cat], {}, 'en')[0].activityItems.manipulation;
+    expect(core.manipulationReady(ready.task)).toBe(true);
+    expect(ready.options).toContain('at');
+    for (const language of ['es', 'fr']) {
+      const unavailable = compileWords([cat], {}, language)[0].activityItems.manipulation;
+      expect(unavailable.task.contentStatus).toBe('teacher_review_required');
+      expect(unavailable.options).toEqual([]);
+    }
+    const unsupported = { ...cat, word: 'migrate', targetWord: 'migrate', term: 'migrate', manipulationTask: null };
+    const review = compileWords([unsupported], {}, 'en')[0].activityItems.manipulation;
+    expect(review.task.contentStatus).toBe('teacher_review_required');
+    expect(review.options).toEqual([]);
     // grapheme/letter pools
     expect(src).toMatch(/const isolationPool = packIsEnglish/);
     expect(src).toMatch(/const chipDistractorPool = packIsEnglish/);

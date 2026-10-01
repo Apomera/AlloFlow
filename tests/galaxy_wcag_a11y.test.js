@@ -30,7 +30,7 @@ describe('galaxy WCAG interaction contracts', () => {
     expect(source).toContain('"data-galaxy-toggle": lt.key');
     expect(source).toContain('"aria-pressed": isOn ? "true" : "false"');
     expect(source).toContain('role: "application"');
-    expect(source).toContain('"aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - Home"');
+    expect(source).toMatch(/"aria-keyshortcuts": [^\n]*"ArrowLeft ArrowRight ArrowUp ArrowDown \+ - Home(?: \[ \] Escape PageUp PageDown)?"/);
   });
 
   it.each(GALAXY_PATHS)('%s reacts to motion and forced-color preferences', (filePath) => {

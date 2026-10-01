@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "passingSuggestionChecked": true,
+      "suggestionUndoRedo": true
+    },
+    {
+      "exactHexPreview": true,
+      "swapPreservesRatio": true,
+      "invalidDraftPreservesPreview": true
+    },
+    {
+      "wholeNativeSliderDragUndo": true
+    },
+    {
+      "cssDownloadMatchesPreview": true
+    },
+    {
+      "paletteRolesAndGoalSaved": true,
+      "tabRoundTrip": true
+    },
+    {
+      "desktopPreviewWidth": 1036
+    },
+    {
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets44": true
+    },
+    {
+      "unreachableGoalExplained": true
+    }
+  ],
+  "errors": []
+}

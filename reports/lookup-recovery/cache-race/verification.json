@@ -1,0 +1,32 @@
+{
+  "inspectedAt": "2026-09-27T14:48:00.772Z",
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "baselineHead": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "checks": {
+    "sharedSourceUnchanged": true,
+    "candidateUnchanged": true,
+    "fullPatchReproducesCandidate": true,
+    "incrementReproducesCandidate": true,
+    "transformReproducesCandidate": true,
+    "transformIsIdempotent": true,
+    "dependenciesUnchanged": true,
+    "testsPassed": true
+  },
+  "tests": {
+    "passed": 50,
+    "failed": 0,
+    "files": 2
+  },
+  "sourceReproduction": {
+    "sourceSha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+    "failedCases": [
+      "concurrent dictionary cache ownership reuses successful offline help after a late miss through lookup",
+      "concurrent dictionary cache ownership reuses successful offline help after a late miss through lookupDetailed"
+    ]
+  },
+  "artifacts": {
+    "tests.json": "7c1a17e3c9af7cf3ec1b24ac17808b6aacddfe4819c5474b3516f25ad4d2ae44",
+    "source-reproduction.json": "1a55440c101d45c22b148353007be5598d067de97dc7a1341ba33a710972d14c"
+  },
+  "verified": true
+}

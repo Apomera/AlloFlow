@@ -1,0 +1,14 @@
+{
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "sourceSha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+  "normalizedSourceSha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+  "priorCacheCandidateSha256": "41c289b5780e99506a7bfb9f9eb3297ee917dcc72f52af4741dc75ed79573107",
+  "candidateSha256": "dfc9c12a13c655d719f3fe19619998d73b8a8e320388b4ae33d5c7ecea7e39c0",
+  "dependencies": {
+    "dev-tools/prepare_dictionary_cache_recovery.cjs": "509b68fb2610599dc4b48f43ef0e64bc917c482d5fa2ec6919bd898b79ab58d9",
+    "dev-tools/prepare_reading_lookup_resilience.cjs": "7265c5fd6b3a56cf184f8e73f0cbfda74a3453b34bcda2fc13c510ecde3cd67d",
+    "dev-tools/prepare_dictionary_cache_race.cjs": "65f5fc83a3a4c56d064451694a9bbff4db02b73c75a23bebc29a49bcc57b6860",
+    "tests/dictionary_lookup_race.test.js": "313c8c21a5adb9a056b2b0e899f5f92aad33685a3bc180baea89b39b0dc9540c",
+    "tests/dictionary_lookup_cancellation.test.js": "2ff462702e28f2de7de715ab8999649c66b68985d57aecbb30e98713ac45c7da"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "name": "canonical shared-resource routes write compressed snapshots to real IndexedDB",
+      "passed": true
+    },
+    {
+      "name": "replace a repeated FAQ occurrence, then close the entire browser process",
+      "passed": true
+    },
+    {
+      "name": "full browser restart restores every tested route and decodes saved audio offline without synthesis",
+      "passed": true
+    },
+    {
+      "name": "attachment-only retry stays pending until native autosave readback completes",
+      "passed": true
+    },
+    {
+      "name": "quota fallback keeps text and reports missing audio without claiming save success",
+      "passed": true
+    },
+    {
+      "name": "persistence-only retry recovers quota fallback with no synthesis",
+      "passed": true
+    },
+    {
+      "name": "storage read failures show unverified and recover on explicit keyboard check",
+      "passed": true
+    },
+    {
+      "name": "failed native writes preserve the previous snapshot and show actionable failure",
+      "passed": true
+    },
+    {
+      "name": "deleting the fixture snapshot invalidates prior saved status and retry restores it",
+      "passed": true
+    },
+    {
+      "name": "queued history writes finish with newest clip bytes after a delayed write",
+      "passed": true
+    },
+    {
+      "name": "320px storage controls: normal",
+      "passed": true
+    },
+    {
+      "name": "320px storage controls: spacing",
+      "passed": true
+    },
+    {
+      "name": "320px storage controls: 200-text",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "blockedRequests": [],
+  "fixtures": "Native IndexedDB, vendor idb-keyval/LZString, source host autosave/attachment/readback, actual service/store; synthesized fixture PCM only",
+  "profile": "browser-profile-DUiwi0",
+  "browser": "148.0.7778.96",
+  "resourceSegments": [
+    {
+      "id": "faq",
+      "type": "faq",
+      "segments": 4
+    },
+    {
+      "id": "original",
+      "type": "simplified",
+      "segments": 2
+    },
+    {
+      "id": "adapted",
+      "type": "simplified",
+      "segments": 2
+    },
+    {
+      "id": "glossary",
+      "type": "glossary",
+      "segments": 3
+    },
+    {
+      "id": "memory",
+      "type": "memory-aid",
+      "segments": 3
+    },
+    {
+      "id": "challenge",
+      "type": "applied-challenge",
+      "segments": 3
+    }
+  ],
+  "finalUi": "4/4 clips ready to play. 4/4 saved on this device.\n\nThis check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.\n\nCheck device save\nRetry device save\n\nAll currently ready clips are saved on this device."
+}

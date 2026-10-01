@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const { act } = React;
@@ -851,7 +851,13 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
       expect(localHost.textContent).not.toContain(heavy.shows);
       const run = Array.from(localHost.querySelectorAll('button')).find((b) => b.textContent === '▶ Run');
       expect(run, 'run button').toBeDefined();
-      await act(async () => { run.click(); await new Promise((resolve) => setTimeout(resolve, 900)); });
+      await act(async () => { run.click(); await settle(); });
+      // The chamber publishes its evidence from its own animation loop, which takes longer on a loaded CI
+      // runner than the fixed 900 ms this used to sleep. Advance in short act()-wrapped ticks until it lands.
+      await vi.waitFor(async () => {
+        await act(async () => { await new Promise((resolve) => setTimeout(resolve, 50)); });
+        expect(localHost.querySelector('[id="particle-idea-verdict"]').textContent).toContain('What the model shows: ' + heavy.shows);
+      }, { timeout: 20000, interval: 0 });
       const verdict = localHost.querySelector('[id="particle-idea-verdict"]');
       expect(verdict.getAttribute('role')).toBe('note');
       expect(verdict.textContent).toContain('What the model shows: ' + heavy.shows);
@@ -865,6 +871,6 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
       localHost.remove();
       resetStemLab();
     }
-  });
+  }, 30000);
 
 });

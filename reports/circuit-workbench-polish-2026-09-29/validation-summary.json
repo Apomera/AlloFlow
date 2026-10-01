@@ -1,0 +1,661 @@
+{
+  "verifiedAt": "2026-09-29T11:53:37.235Z",
+  "passed": true,
+  "checks": [
+    {
+      "name": "Source, deployed mirror, and browser start/end hashes match",
+      "passed": true
+    },
+    {
+      "name": "Regression completed successfully with every test passed",
+      "passed": true
+    },
+    {
+      "name": "Browser workflows, axe, layout, focus, and motion all passed",
+      "passed": true
+    },
+    {
+      "name": "All expected focused screenshots exist and are valid nonempty PNG files",
+      "passed": true
+    },
+    {
+      "name": "JavaScript syntax is valid for source, mirror, audit, and validator",
+      "passed": true,
+      "details": [
+        {
+          "command": "node.exe",
+          "args": [
+            "--check",
+            "stem_lab/stem_tool_circuit.js"
+          ],
+          "status": 0,
+          "output": ""
+        },
+        {
+          "command": "node.exe",
+          "args": [
+            "--check",
+            "desktop/web-app/public/stem_lab/stem_tool_circuit.js"
+          ],
+          "status": 0,
+          "output": ""
+        },
+        {
+          "command": "node.exe",
+          "args": [
+            "--check",
+            "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs"
+          ],
+          "status": 0,
+          "output": ""
+        },
+        {
+          "command": "node.exe",
+          "args": [
+            "--check",
+            "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+          ],
+          "status": 0,
+          "output": ""
+        }
+      ]
+    },
+    {
+      "name": "Scoped working-tree and staged git diffs pass whitespace checks",
+      "passed": true,
+      "details": {
+        "scope": [
+          "stem_lab/stem_tool_circuit.js",
+          "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+          "tests/circuit_a11y.test.js",
+          "tests/circuit_form_labels_a11y.test.js",
+          "tests/circuit_guided_journey.test.js",
+          "tests/circuit_image_export.test.js",
+          "tests/circuit_investigation.test.js",
+          "tests/circuit_learning.test.js",
+          "tests/circuit_localization.test.js",
+          "tests/circuit_model.test.js",
+          "tests/circuit_onboarding.test.js",
+          "tests/circuit_panels_smoke.test.js",
+          "tests/circuit_reduced_motion_a11y.test.js",
+          "tests/circuit_reorder_parts.test.js",
+          "tests/circuit_schematic_topology.test.js",
+          "tests/circuit_svg_alternatives_a11y.test.js",
+          "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs",
+          "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+        ],
+        "commands": [
+          {
+            "command": "git",
+            "args": [
+              "diff",
+              "--check",
+              "--",
+              "stem_lab/stem_tool_circuit.js",
+              "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+              "tests/circuit_a11y.test.js",
+              "tests/circuit_form_labels_a11y.test.js",
+              "tests/circuit_guided_journey.test.js",
+              "tests/circuit_image_export.test.js",
+              "tests/circuit_investigation.test.js",
+              "tests/circuit_learning.test.js",
+              "tests/circuit_localization.test.js",
+              "tests/circuit_model.test.js",
+              "tests/circuit_onboarding.test.js",
+              "tests/circuit_panels_smoke.test.js",
+              "tests/circuit_reduced_motion_a11y.test.js",
+              "tests/circuit_reorder_parts.test.js",
+              "tests/circuit_schematic_topology.test.js",
+              "tests/circuit_svg_alternatives_a11y.test.js",
+              "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs",
+              "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+            ],
+            "status": 0,
+            "output": ""
+          },
+          {
+            "command": "git",
+            "args": [
+              "diff",
+              "--cached",
+              "--check",
+              "--",
+              "stem_lab/stem_tool_circuit.js",
+              "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+              "tests/circuit_a11y.test.js",
+              "tests/circuit_form_labels_a11y.test.js",
+              "tests/circuit_guided_journey.test.js",
+              "tests/circuit_image_export.test.js",
+              "tests/circuit_investigation.test.js",
+              "tests/circuit_learning.test.js",
+              "tests/circuit_localization.test.js",
+              "tests/circuit_model.test.js",
+              "tests/circuit_onboarding.test.js",
+              "tests/circuit_panels_smoke.test.js",
+              "tests/circuit_reduced_motion_a11y.test.js",
+              "tests/circuit_reorder_parts.test.js",
+              "tests/circuit_schematic_topology.test.js",
+              "tests/circuit_svg_alternatives_a11y.test.js",
+              "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs",
+              "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+            ],
+            "status": 0,
+            "output": ""
+          }
+        ],
+        "note": "Git diff checks tracked changes; untracked files are not included by Git."
+      }
+    },
+    {
+      "name": "Source and result inputs remained unchanged during final validation",
+      "passed": true
+    }
+  ],
+  "inputs": {
+    "regression": {
+      "file": "regression.json",
+      "sha256": "8b288f3c3255e8f533a0f8258b105a40c3b5ea2735d885c30703211f7092f77c"
+    },
+    "browser": {
+      "file": "workbench-results.json",
+      "sha256": "ea47057c9ffb3afe12534f66e346d4b6cf82858cac2bb07132e0fd0338517c6d"
+    }
+  },
+  "source": {
+    "path": "stem_lab/stem_tool_circuit.js",
+    "sha256": "de05ec334cd1b1578e43e4a24ff56157d1f6b029fd77885180d4da89bb477b24",
+    "modifiedAt": "2026-09-29T11:51:57.278Z",
+    "mirror": "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+    "mirrorSha256": "de05ec334cd1b1578e43e4a24ff56157d1f6b029fd77885180d4da89bb477b24",
+    "mirrorMatches": true
+  },
+  "regression": {
+    "files": 14,
+    "suites": 33,
+    "passed": 143,
+    "failed": 0,
+    "pending": 0,
+    "todo": 0,
+    "startedAt": "2026-09-29T11:52:30.391Z",
+    "startedAfterSourceEdit": true
+  },
+  "browser": {
+    "workflows": 6,
+    "axeScans": 15,
+    "violations": 0,
+    "layoutChecks": 15,
+    "keyboardFocusChecks": 30,
+    "motionChecks": 3,
+    "primaryActionChecks": 99,
+    "measuredActions": 267,
+    "visualIssues": 0,
+    "pageErrors": 0,
+    "viewportWidths": [
+      1280,
+      390,
+      320
+    ],
+    "sourceSha256": "de05ec334cd1b1578e43e4a24ff56157d1f6b029fd77885180d4da89bb477b24",
+    "sourceSha256AtEnd": "de05ec334cd1b1578e43e4a24ff56157d1f6b029fd77885180d4da89bb477b24",
+    "sourceChangedDuringRun": false,
+    "screenshots": 42
+  },
+  "screenshots": [
+    {
+      "file": "open-loop-schematic-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 1194,
+      "bytes": 154896,
+      "sha256": "d485f70b31ffa9976e055f4820890e61691af804cd450a75a152218a8250f676"
+    },
+    {
+      "file": "open-loop-components-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 357,
+      "bytes": 20986,
+      "sha256": "6cd981f8ab16d28e6067019eb5f6d6bc504df1adbaa4a49a34f22be065f68b66"
+    },
+    {
+      "file": "open-loop-insight-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 531,
+      "bytes": 34059,
+      "sha256": "7126b752f908c8850e651a0ba59423c09520daeeb08bc1e02491e01b96ca6112"
+    },
+    {
+      "file": "open-loop-schematic-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 1318,
+      "bytes": 92440,
+      "sha256": "8a6e9aed35ee5ee9dad29e055363ce2e629122f5d87e3fdcc43d9028770f68a8"
+    },
+    {
+      "file": "open-loop-components-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 599,
+      "bytes": 23758,
+      "sha256": "a8bd49bf289820d247443a6e2b487a0d1fa5c3b0e8bf194d7e955715a636ef7b"
+    },
+    {
+      "file": "open-loop-insight-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 714,
+      "bytes": 33273,
+      "sha256": "73b4a3247876f5471709406ddf7125c6623307c8e122d1d68fc7eca4ed7b1aca"
+    },
+    {
+      "file": "open-loop-schematic-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 1446,
+      "bytes": 86434,
+      "sha256": "368db36e63d11ffa0450eb21b23957cf0294a185b52a07c27c29d5d6bf556e52"
+    },
+    {
+      "file": "open-loop-components-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 619,
+      "bytes": 23080,
+      "sha256": "6c68577642f09e40fc2a8f41782033ee8e9e51e890d8986cc3e24dbb572a3fe9"
+    },
+    {
+      "file": "open-loop-insight-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 825,
+      "bytes": 34016,
+      "sha256": "a55b3ddaba398951481570d7475d10c325e81fe10b0c08e2253ab6f8a482c872"
+    },
+    {
+      "file": "closed-loop-schematic-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 1194,
+      "bytes": 215742,
+      "sha256": "d6d730c2525d4fb72a085ab397b590c331a2fff4c0f23ee81672c9e21e408dda"
+    },
+    {
+      "file": "closed-loop-components-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 357,
+      "bytes": 21231,
+      "sha256": "d49859a3e1584528e2cee7c7b959a5ad63f80b091225a296a684311940f6bf27"
+    },
+    {
+      "file": "closed-loop-insight-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 473,
+      "bytes": 33748,
+      "sha256": "9916bc31f900011e869ef7ca32be56a027b7f827e3dd096add0b00fc1fecc487"
+    },
+    {
+      "file": "closed-loop-readouts-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 106,
+      "bytes": 9653,
+      "sha256": "050e3118c7f069b75d76b9715099e8ea90b84fcac20f832025fb6a8cd5e08505"
+    },
+    {
+      "file": "closed-loop-schematic-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 1318,
+      "bytes": 115241,
+      "sha256": "14d6f6291088709be54a3e980c2db9efc6bb4185bd13e419ab10624c897a2a98"
+    },
+    {
+      "file": "closed-loop-components-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 599,
+      "bytes": 23878,
+      "sha256": "d199c80e2053291c53283bfb987667d450f2a6431d246403eeb65f3299cada1f"
+    },
+    {
+      "file": "closed-loop-insight-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 656,
+      "bytes": 32945,
+      "sha256": "09c43e66bc9fe71752a73ffb7498785a31a909768ce1de35276970848fb0a333"
+    },
+    {
+      "file": "closed-loop-readouts-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 178,
+      "bytes": 8817,
+      "sha256": "bb66309b0c41cd56db7bc3b7b13087a59708849c193a1c6d6e91e4dc5bde25b7"
+    },
+    {
+      "file": "closed-loop-schematic-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 1446,
+      "bytes": 106552,
+      "sha256": "76bc530fb7f840b72d621462b40f85f93f0d1260f712d75ba39e64460f481ea8"
+    },
+    {
+      "file": "closed-loop-components-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 619,
+      "bytes": 23344,
+      "sha256": "67e0f5f5eeb86f553e25771db3e5c9e424c9ef2fac67a29c9d112dab3e33de88"
+    },
+    {
+      "file": "closed-loop-insight-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 795,
+      "bytes": 34200,
+      "sha256": "40696c64b88ad302e143e44c913c4b03c7cb5b340a3f7b4a5f6a79695f1134f3"
+    },
+    {
+      "file": "closed-loop-readouts-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 178,
+      "bytes": 8695,
+      "sha256": "aef1b396ca9e7f1e270c91e3f00a64f64ac23d7e393a58a082fc1ad9d5fd94ea"
+    },
+    {
+      "file": "3d-loop-scene-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 864,
+      "imageHeight": 810,
+      "bytes": 333766,
+      "sha256": "4f0743ec7d1328c78c8545a05f28cde36498a0d6876bfe41ad8ab17e927c828a"
+    },
+    {
+      "file": "3d-loop-controls-inspector-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 1342,
+      "bytes": 169993,
+      "sha256": "2caa907df2ec7e9c1ad6a756faf286df9f6686f4f44a5a291928396805fe236b"
+    },
+    {
+      "file": "3d-loop-scene-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 350,
+      "imageHeight": 504,
+      "bytes": 98124,
+      "sha256": "78f6e5c3bc31f35af66a7c1c05f45e88ad54b8f126cd04018db55a3f75b8077d"
+    },
+    {
+      "file": "3d-loop-controls-inspector-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 1535,
+      "bytes": 120031,
+      "sha256": "d3a6b50badcbdeb810b930636657006d191ee869f09dfbeab4cba2431766fe59"
+    },
+    {
+      "file": "3d-loop-scene-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 280,
+      "imageHeight": 575,
+      "bytes": 85755,
+      "sha256": "92d3637d32e6412fdf7f5f3e7eb824f9eab6d50a72e33df0d3adb3456bbfdda0"
+    },
+    {
+      "file": "3d-loop-controls-inspector-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 1790,
+      "bytes": 121391,
+      "sha256": "49ce74354bb34c2d71d909435eabed040bf6f9a018f2930d6b16017beec08880"
+    },
+    {
+      "file": "parallel-schematic-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 1194,
+      "bytes": 225991,
+      "sha256": "6552c8ce24a0d936d63ba3af839a682889bf9c074fb7a82985240c1625ea16b3"
+    },
+    {
+      "file": "parallel-components-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 599,
+      "bytes": 27615,
+      "sha256": "be8665d260335d9c62ffaf3ec629e2e2f491425de3407c78866a839cf37c24ae"
+    },
+    {
+      "file": "parallel-insight-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 559,
+      "bytes": 38281,
+      "sha256": "6f554adf9e113d25968d8a591f94cb3add46408e4c4a7ce00e8316d92f873964"
+    },
+    {
+      "file": "parallel-readouts-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 105,
+      "bytes": 8741,
+      "sha256": "eac0558f708658eddb568aab771326e1cbe85ce90e56b1fd8fa4fedb1f917423"
+    },
+    {
+      "file": "parallel-schematic-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 1318,
+      "bytes": 116506,
+      "sha256": "bf099e0adfbf6705defef60eeb0a63a3ca54ea3159601247445487584f2c9e72"
+    },
+    {
+      "file": "parallel-components-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 837,
+      "bytes": 30428,
+      "sha256": "59e0cfb3dcac9f9b733d3528932e2628e88d5ad47a0889ed087d4943520aebcb"
+    },
+    {
+      "file": "parallel-insight-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 766,
+      "bytes": 37289,
+      "sha256": "fb52d99242d362606ace61dca86638400241598fa92990e5d51d3c9c600ca0fc"
+    },
+    {
+      "file": "parallel-readouts-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 178,
+      "bytes": 8366,
+      "sha256": "0a4e1799f3666deb93dc2b985108e26baff823653caf69147c118fd12a374a3f"
+    },
+    {
+      "file": "parallel-schematic-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 1468,
+      "bytes": 102881,
+      "sha256": "e39fd519ef01d820436a3288557024b6c9b48aafbb419576ce6a7871e2b958b0"
+    },
+    {
+      "file": "parallel-components-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 857,
+      "bytes": 29611,
+      "sha256": "e1b8bca2da79b9f846e5f3f3618558abc55b3db3a43cf7a1be3622ce798b1ca9"
+    },
+    {
+      "file": "parallel-insight-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 883,
+      "bytes": 38191,
+      "sha256": "3249ff91ab491f1b3cd9eed3f4f1c76bafc8218e353f92411f84bb4142f3ce06"
+    },
+    {
+      "file": "parallel-readouts-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 178,
+      "bytes": 8205,
+      "sha256": "97c43e719cf511e895ee3cb990748df270a16a74dcf0ba1199ad9a204db68924"
+    },
+    {
+      "file": "parallel-eight-schematic-1280.png",
+      "viewportWidth": 1280,
+      "imageWidth": 866,
+      "imageHeight": 956,
+      "bytes": 337832,
+      "sha256": "287e42f415aeb9109309fff4729f428370ac34aec927eac6aa7dad3a7aa4ba14"
+    },
+    {
+      "file": "parallel-eight-schematic-390.png",
+      "viewportWidth": 390,
+      "imageWidth": 352,
+      "imageHeight": 788,
+      "bytes": 129294,
+      "sha256": "2ac6b6d2953c74c8b5d0b66a43217cf3fe5425796428e7d3078c94f8f7c0958f"
+    },
+    {
+      "file": "parallel-eight-schematic-320.png",
+      "viewportWidth": 320,
+      "imageWidth": 282,
+      "imageHeight": 877,
+      "bytes": 100917,
+      "sha256": "de48d3bd28c001fdc905b153525af444c9e6b4aab1993203207fd4ef776a329e"
+    }
+  ],
+  "syntaxCheck": [
+    {
+      "command": "node.exe",
+      "args": [
+        "--check",
+        "stem_lab/stem_tool_circuit.js"
+      ],
+      "status": 0,
+      "output": ""
+    },
+    {
+      "command": "node.exe",
+      "args": [
+        "--check",
+        "desktop/web-app/public/stem_lab/stem_tool_circuit.js"
+      ],
+      "status": 0,
+      "output": ""
+    },
+    {
+      "command": "node.exe",
+      "args": [
+        "--check",
+        "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs"
+      ],
+      "status": 0,
+      "output": ""
+    },
+    {
+      "command": "node.exe",
+      "args": [
+        "--check",
+        "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+      ],
+      "status": 0,
+      "output": ""
+    }
+  ],
+  "patchWhitespaceCheck": {
+    "scope": [
+      "stem_lab/stem_tool_circuit.js",
+      "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+      "tests/circuit_a11y.test.js",
+      "tests/circuit_form_labels_a11y.test.js",
+      "tests/circuit_guided_journey.test.js",
+      "tests/circuit_image_export.test.js",
+      "tests/circuit_investigation.test.js",
+      "tests/circuit_learning.test.js",
+      "tests/circuit_localization.test.js",
+      "tests/circuit_model.test.js",
+      "tests/circuit_onboarding.test.js",
+      "tests/circuit_panels_smoke.test.js",
+      "tests/circuit_reduced_motion_a11y.test.js",
+      "tests/circuit_reorder_parts.test.js",
+      "tests/circuit_schematic_topology.test.js",
+      "tests/circuit_svg_alternatives_a11y.test.js",
+      "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs",
+      "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+    ],
+    "commands": [
+      {
+        "command": "git",
+        "args": [
+          "diff",
+          "--check",
+          "--",
+          "stem_lab/stem_tool_circuit.js",
+          "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+          "tests/circuit_a11y.test.js",
+          "tests/circuit_form_labels_a11y.test.js",
+          "tests/circuit_guided_journey.test.js",
+          "tests/circuit_image_export.test.js",
+          "tests/circuit_investigation.test.js",
+          "tests/circuit_learning.test.js",
+          "tests/circuit_localization.test.js",
+          "tests/circuit_model.test.js",
+          "tests/circuit_onboarding.test.js",
+          "tests/circuit_panels_smoke.test.js",
+          "tests/circuit_reduced_motion_a11y.test.js",
+          "tests/circuit_reorder_parts.test.js",
+          "tests/circuit_schematic_topology.test.js",
+          "tests/circuit_svg_alternatives_a11y.test.js",
+          "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs",
+          "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+        ],
+        "status": 0,
+        "output": ""
+      },
+      {
+        "command": "git",
+        "args": [
+          "diff",
+          "--cached",
+          "--check",
+          "--",
+          "stem_lab/stem_tool_circuit.js",
+          "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+          "tests/circuit_a11y.test.js",
+          "tests/circuit_form_labels_a11y.test.js",
+          "tests/circuit_guided_journey.test.js",
+          "tests/circuit_image_export.test.js",
+          "tests/circuit_investigation.test.js",
+          "tests/circuit_learning.test.js",
+          "tests/circuit_localization.test.js",
+          "tests/circuit_model.test.js",
+          "tests/circuit_onboarding.test.js",
+          "tests/circuit_panels_smoke.test.js",
+          "tests/circuit_reduced_motion_a11y.test.js",
+          "tests/circuit_reorder_parts.test.js",
+          "tests/circuit_schematic_topology.test.js",
+          "tests/circuit_svg_alternatives_a11y.test.js",
+          "reports/circuit-workbench-polish-2026-09-29/workbench-check.cjs",
+          "reports/circuit-workbench-polish-2026-09-29/validate-final.cjs"
+        ],
+        "status": 0,
+        "output": ""
+      }
+    ],
+    "note": "Git diff checks tracked changes; untracked files are not included by Git."
+  }
+}

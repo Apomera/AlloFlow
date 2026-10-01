@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:280:5 › guided setups preserve the last reading until the learner runs the experiment (16.6s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:280:5 › guided setups preserve the last reading until the learner runs the experiment 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-reading]')
+    Expected: "6.25%"
+    Received: "100%"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-reading]')
+        33 × locator resolved to <strong data-ns-reading="true">100%</strong>
+           - unexpected value "100%"
+
+
+      285 |   await page.keyboard.press('Enter');
+      286 |   await expect(page.getByRole('button', { name: 'Take a reading' })).toBeFocused();
+    > 287 |   await expect(page.locator('[data-ns-reading]')).toHaveText('6.25%');
+          |                                                   ^
+      288 |   await expect(page.locator('[data-ns-notebook] tbody tr')).toHaveCount(1);
+      289 |   await page.keyboard.press('Enter');
+      290 |   await expect(page.locator('[data-ns-guide]')).toContainText('1 of 2 comparison readings');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:287:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-guided-setup\43-nuclearlab-experiment-s-98d7a-learner-runs-the-experiment-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-guided-setup\43-nuclearlab-experiment-s-98d7a-learner-runs-the-experiment-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-guided-setup\43-nuclearlab-experiment-s-98d7a-learner-runs-the-experiment-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-guided-setup\43-nuclearlab-experiment-s-98d7a-learner-runs-the-experiment-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-guided-setup\43-nuclearlab-experiment-s-98d7a-learner-runs-the-experiment-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:280:5 › guided setups preserve the last reading until the learner runs the experiment 
+(node:37948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-guided-setup.js in place of stem_lab/stem_tool_nuclearlab.js

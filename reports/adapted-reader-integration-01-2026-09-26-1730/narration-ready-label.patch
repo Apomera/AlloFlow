@@ -1,0 +1,5 @@
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2102,1 +2102,1 @@
+-    var simplifiedAudioSavedLabel = t('common.success') || '';
++    var simplifiedAudioSavedLabel = viewText('simplified.audio_ready_short', 'ready for playback');

@@ -1,0 +1,32 @@
+{
+  "checks": [
+    "Real circular turns independently set pot and pan heat only on release; preview changes no time, temperature, or evidence.",
+    "Escape and pointer cancellation restore the recorded dial positions without applying preview heat.",
+    "Recorded settings and scene-dial provenance survive reload. Keyboard equivalents focus the real burner controls and apply the same engine values.",
+    "Switching the pot off preserves its measured residual temperature and simulated time.",
+    "Heat quests open the physical dials. Grabbing a dial pauses a running kitchen throughout the preview.",
+    "Finished cooks and replay lock cooking tools and show recorded heat without changing evidence.",
+    "Real touch rotates a dial at 390px, records only on release, and cancels without applying a setting.",
+    "The close-up fits 320px. Graphics loss cancels the active preview and retains working text controls; accessibility scans include forced colors."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Physical dial preview",
+      "violations": []
+    },
+    {
+      "name": "320px burner controls",
+      "violations": []
+    },
+    {
+      "name": "Forced-color burner equivalents",
+      "violations": []
+    },
+    {
+      "name": "Graphics-loss text controls",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

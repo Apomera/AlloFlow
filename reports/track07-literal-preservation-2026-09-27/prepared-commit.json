@@ -1,0 +1,35 @@
+{
+  "base": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "index": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\track07-literal-preservation-2026-09-27\\commit.index",
+  "paths": [
+    "generation_helpers_source.jsx",
+    "text_pipeline_helpers_source.jsx",
+    "tests/preserved_vocabulary_literal_text.test.js",
+    "tests/track07-literal-browser.cjs",
+    "generation_helpers_module.js",
+    "text_pipeline_helpers_module.js",
+    "desktop/web-app/public/generation_helpers_module.js",
+    "desktop/web-app/public/text_pipeline_helpers_module.js",
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx",
+    "reports/track07-literal-preservation-2026-09-27/README.md",
+    "reports/track07-literal-preservation-2026-09-27/validation-summary.json"
+  ],
+  "staged": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/public/generation_helpers_module.js",
+    "desktop/web-app/public/text_pipeline_helpers_module.js",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx",
+    "generation_helpers_module.js",
+    "generation_helpers_source.jsx",
+    "reports/track07-literal-preservation-2026-09-27/README.md",
+    "reports/track07-literal-preservation-2026-09-27/validation-summary.json",
+    "tests/preserved_vocabulary_literal_text.test.js",
+    "tests/track07-literal-browser.cjs",
+    "text_pipeline_helpers_module.js",
+    "text_pipeline_helpers_source.jsx"
+  ],
+  "tree": "047a8c9d60af84779059982e21db01f8bde9e378"
+}

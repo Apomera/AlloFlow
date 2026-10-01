@@ -429,7 +429,7 @@ function CanvasRecoveryDialogView(props) {
                 })()}
                 <div className="space-y-3">
                   {canvasRecoveryStore.snapshots.length === 0 && (
-                    <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No saved work remains on this device.</p>
+                    <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No recovery workspaces are listed. Other saved work may still be available in Device storage.</p>
                   )}
                   {canvasRecoveryStore.snapshots.map((snapshot, index) => (
                     <div key={snapshot.id} className="rounded-2xl border border-slate-200 p-4">

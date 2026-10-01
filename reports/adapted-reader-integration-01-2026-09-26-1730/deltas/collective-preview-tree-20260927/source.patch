@@ -1,0 +1,587 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -27992,6 +27992,25 @@
+   useEffect(() => {
+       if (!focusNarrationEnabled) return;
+       let debounceTimer = null;
++      let focusRequest = 0, disposed = false, previewFocusTransition = false, previewTransitionVersion = 0;
++      let pendingFocusSpeech = null;
++      const cancelPendingFocusSpeech = () => {
++          const pending = pendingFocusSpeech;
++          pendingFocusSpeech = null;
++          pending?.abort();
++      };
++      const isFocusRequestCurrent = request => !disposed && request === focusRequest && !previewFocusTransition && !document.querySelector('[data-student-preview]') && !isGlobalMuted();
++      const handleReadingPreview = event => {
++          if (!event.detail || typeof event.detail.owner !== 'string' || typeof event.detail.active !== 'boolean') return;
++          ++focusRequest;
++          cancelPendingFocusSpeech();
++          clearTimeout(debounceTimer);
++          // Suppress automatic opener focus in the same close/cleanup turn.
++          // Only this unfinished focus request is aborted; playing host audio is untouched.
++          previewFocusTransition = true;
++          const transition = ++previewTransitionVersion;
++          Promise.resolve().then(() => { if (transition === previewTransitionVersion) previewFocusTransition = false; });
++      };
+       const cancelCurrentAudio = () => {
+           if (focusNarrationAudioRef.current) {
+               try { focusNarrationAudioRef.current.pause(); focusNarrationAudioRef.current.currentTime = 0; } catch(e) {}
+@@ -27999,11 +28018,15 @@
+           }
+           if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+       };
+-      const speakFocusAnnouncement = async (text) => {
++      const speakFocusAnnouncement = async (text, request) => {
++          if (!isFocusRequestCurrent(request)) return;
+           cancelCurrentAudio();
+           if (window._kokoroTTS?.ready) {
++              const controller = new AbortController();
++              pendingFocusSpeech = controller;
+               try {
+-                  const url = await window._kokoroTTS.speakStreaming(text, selectedVoice || 'af_heart', voiceSpeed || 1);
++                  const url = await window._kokoroTTS.speakStreaming(text, selectedVoice || 'af_heart', voiceSpeed || 1, { signal: controller.signal });
++                  if (!isFocusRequestCurrent(request)) { controller.abort(); return; }
+                   if (url) {
+                       const audio = new Audio(url);
+                       audio.playbackRate = voiceSpeed || 1;
+@@ -28013,7 +28036,9 @@
+                       return;
+                   }
+               } catch(e) {}
++              finally { if (pendingFocusSpeech === controller) pendingFocusSpeech = null; }
+           }
++          if (!isFocusRequestCurrent(request)) return;
+           if ('speechSynthesis' in window) {
+               const utter = new SpeechSynthesisUtterance(text);
+               utter.rate = 1.1;
+@@ -28023,12 +28048,13 @@
+           }
+       };
+       const handleFocusIn = (e) => {
+-          if (!focusNarrationEnabled) return;
+-          if (isGlobalMuted()) return;
++          const request = ++focusRequest;
++          cancelPendingFocusSpeech();
+           clearTimeout(debounceTimer);
++          if (!focusNarrationEnabled || !isFocusRequestCurrent(request)) return;
+           debounceTimer = setTimeout(() => {
+               const el = e.target;
+-              if (!el) return;
++              if (!el?.isConnected || !isFocusRequestCurrent(request)) return;
+               if (el.closest?.('[data-rtp-idx]') || el.closest?.('#rtp-read-all-btn')) return;
+               const tag = el.tagName?.toLowerCase();
+               const role = el.getAttribute('role') || '';
+@@ -28051,11 +28077,17 @@
+               if (helpText && helpText !== label && helpText.length < 200) {
+                   announcement += '. ' + helpText;
+               }
+-              speakFocusAnnouncement(announcement);
++              speakFocusAnnouncement(announcement, request);
+           }, 180); // 180ms debounce for rapid tabbing
+       };
++      window.addEventListener('alloflow:reading-preview', handleReadingPreview);
+       document.addEventListener('focusin', handleFocusIn);
+       return () => {
++          disposed = true;
++          ++focusRequest;
++          cancelPendingFocusSpeech();
++          ++previewTransitionVersion;
++          window.removeEventListener('alloflow:reading-preview', handleReadingPreview);
+           document.removeEventListener('focusin', handleFocusIn);
+           clearTimeout(debounceTimer);
+           cancelCurrentAudio();
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -4734,6 +4734,7 @@
+     function renderStudentPreview() {
+       if (!studentPreview) return null;
+       return <div ref={studentPreviewRef} role="dialog" aria-modal="true" aria-labelledby={readerId('simplified-student-preview-title')} data-student-preview data-help-ignore
++        style={{ overscrollBehavior: 'contain' }}
+         onClick={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()}
+         onPointerDown={event => event.stopPropagation()} onMouseMove={event => event.stopPropagation()}
+         onWheel={event => event.stopPropagation()} onTouchStart={event => event.stopPropagation()} onTouchMove={event => event.stopPropagation()}
+===================================================================
+--- a/stem_lab/stem_tool_treelab.js
++++ b/stem_lab/stem_tool_treelab.js
+@@ -5660,7 +5660,7 @@
+         srSay(__alloT('stem.treelab.drought_over', 'The rains return.'));
+       }
+ 
+-      function resetTree(newSpeciesId) {
++      function resetTree(newSpeciesId, preparedTree) {
+         var sid = newSpeciesId || sp.id;
+         // Committed carbon and the last result belong to the OLD species. Left in
+         // place, a student who set up an aspen root-sucker run and then switched to
+@@ -5668,7 +5668,7 @@
+         // have — the Spread list would offer three routes while the results reported
+         // a fourth. Reproduction carbon is reset with the tree anyway.
+         updMulti({
+-          tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
++          tree: preparedTree || newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
+           selectedPart: null,
+           historyFocusYear: null,
+           historyReplay: null,
+@@ -5688,9 +5688,11 @@
+           }
+         });
+         CLOCK.stop();
+-        srSay(__alloT('stem.treelab.say_reset_pre', 'Reset to a new ')
+-          + __alloT('stem.treelab.species_' + sid, speciesById(sid).name)
+-          + __alloT('stem.treelab.say_reset_post', ' seedling.'));
++        srSay(preparedTree
++          ? __alloT('stem.treelab.field_specimen_ready', 'Model-grown starting tree ready. Age: ') + preparedTree.age
++          : __alloT('stem.treelab.say_reset_pre', 'Reset to a new ')
++            + __alloT('stem.treelab.species_' + sid, speciesById(sid).name)
++            + __alloT('stem.treelab.say_reset_post', ' seedling.'));
+       }
+ 
+       // ── 3D panel. TREE3D.attach is a stable module-scope function, so React mounts
+@@ -6500,6 +6502,58 @@
+           ]);
+         }));
+       }
++      // Season selection changes the illustration, never the annual model.
++      function fieldSeasonPicker() {
++        return h('div', { key: 'field-seasons', className: 'allo-tree-field-seasons' }, [
++          h('div', { key: 'choices', role: 'group', 'aria-label': __alloT('stem.treelab.field_seasons', 'Explore the seasons') },
++            SEASONS.map(function (choice) {
++              return btn('field-season-' + choice.id, choice.emoji + ' ' + __alloT('stem.treelab.season_' + choice.id, choice.label), function () {
++                upd('season', choice.id);
++                srSay(__alloT('stem.treelab.season_' + choice.id, choice.label) + '. ' + seasonNote(choice.id));
++              }, { small: true, pressed: season === choice.id, disabled: playing && speed.seasonal });
++            })),
++          h('p', { key: 'note' }, playing && speed.seasonal
++            ? __alloT('stem.treelab.season_driven_short', 'Playback is choosing')
++            : __alloT('stem.treelab.field_season_note', 'Season selection does not advance the clock.'))
++        ]);
++      }
++
++      // Reveal a real destination, including through closed field-tool disclosures.
++      function revealFieldSection(id) {
++        setTimeout(function () {
++          var node = document.getElementById(id);
++          if (!node) return;
++          var parent = node.parentElement;
++          while (parent && !parent.classList.contains('allo-tree-lab')) {
++            if (parent.tagName === 'DETAILS') parent.open = true;
++            parent = parent.parentElement;
++          }
++          node.focus({ preventScroll: true });
++          node.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
++        }, 0);
++      }
++
++      function fieldWorkbench() {
++        if (d.discoveryMode !== 'free' || experimentActive) return null;
++        return h('section', { key: 'field-play', className: 'allo-tree-field-play', 'aria-labelledby': 'treelab-field-play-title' }, [
++          h('h3', { key: 'title', id: 'treelab-field-play-title', tabIndex: -1 }, __alloT('stem.treelab.field_play', 'What will you change next?')),
++          h('p', { key: 'note' }, __alloT('stem.treelab.field_play_note', 'Change one condition. Watch the response, then grow another ring.')),
++          h('div', { key: 'sliders', className: 'allo-tree-field-inputs' }, [
++            slider('field-light', __alloT('stem.treelab.light', 'Light'), envCfg.light, 0, 1, 0.05,
++              function (v) { changeCondition('light', v, 'light'); }, function (v) { return Math.round(v * 100) + '%'; }, !tree.alive, tone(FACTOR_HUE('light'))),
++            slider('field-water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
++              function (v) { changeCondition('soilWater', v, 'water'); }, function (v) { return Math.round(v * 100) + '%'; }, !tree.alive || inDrought, tone(FACTOR_HUE('water')))
++          ]),
++          inDrought ? h('p', { key: 'drought' }, __alloT('stem.treelab.field_scheduled_drought', 'A scheduled drought is overriding soil water. End it in Field tools to use your water setting.')) : null,
++          h('div', { key: 'run', className: 'allo-tree-field-actions' }, [
++            btn('field-year', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { primary: true, disabled: !tree.alive }),
++            btn('field-decade', __alloT('stem.treelab.plus_10', '+10 years'), function () { stepYears(10); }, { disabled: !tree.alive }),
++            btn('field-evidence', __alloT('stem.treelab.field_read_rings', 'Read the rings'), function () { revealFieldSection('grow-sec-memory'); }, { tone: 'ghost' })
++          ]),
++          !tree.alive ? h('p', { key: 'dead' }, __alloT('stem.treelab.discovery_dead', 'Start a new seedling to try this discovery.')) : null
++        ]);
++      }
++
+       function viewerPanel() {
+         var status = d.viewerStatus || 'idle';
+         var full = !!d.viewerFull;
+@@ -6553,7 +6607,6 @@
+                 ? __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit
+                 : __alloT('stem.treelab.dead_chip', 'This tree has died'))
+           ]),
+-          full ? null : habitatRibbon(),
+           h('div', {
+             id: 'treelab-full-stage',
+             'data-tree-fullstage': full ? 'true' : undefined,
+@@ -6576,7 +6629,7 @@
+               key: 'full-description', id: 'treelab-full-description', className: 'allo-tree-sr-only'
+             }, __alloT('stem.treelab.full_description', 'Explore the tree with the controls below. Press Escape to leave full screen.')) : null,
+             h('div', {
+-              key: 'canvas', ref: TREE3D.attach,
++              key: 'canvas', className: 'allo-tree-field-canvas', ref: TREE3D.attach,
+               role: 'img',
+               'aria-label': sceneAlt,
+               style: full
+@@ -6635,7 +6688,7 @@
+             ]) : null,
+             full ? fullConditionsPanel() : null,
+             h('div', {
+-              key: 'ctl',
++              key: 'ctl', className: 'allo-tree-camera-controls',
+               // The page's own playback controls stay mounted behind the stage, so
+               // "the Play button" is ambiguous without this. Named so a test can say
+               // which one it means rather than relying on document order.
+@@ -6693,6 +6746,9 @@
+                 key: 'viewsep', 'aria-hidden': 'true',
+                 style: { display: 'inline-block', width: 1, height: 22, background: T.border, margin: '0 8px 6px' }
+               }) : null,
++              h(full ? 'div' : 'details', { key: 'camera-details', className: 'allo-tree-view-controls' }, [
++                full ? null : h('summary', { key: 'summary' }, __alloT('stem.treelab.field_view_controls', 'View & anatomy controls')),
++                h('div', { key: 'body', className: 'allo-tree-view-control-body' }, [
+               btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_left', 'Rotate view left') }),
+               btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_right', 'Rotate view right') }),
+               btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_up', 'Tilt view up') }),
+@@ -6749,10 +6805,15 @@
+                   paddingLeft: 12, whiteSpace: 'nowrap'
+                 }
+               }, __alloT('stem.treelab.full_hint', 'Drag to orbit · Escape to leave')) : null
++                ])
++              ])
+             ])
+           ]),
+           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
+             __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
++          full ? null : fieldSeasonPicker(),
++          full ? null : habitatRibbon(),
++          full ? null : fieldWorkbench(),
+           full ? null : causeEffectPanel(),
+           full ? null : foldPanel('seasons', __alloT('stem.treelab.explore_seasons', 'Explore seasons and leaves'), seasonRow())
+         ], undefined, 'allo-tree-viewer-card');
+@@ -7694,6 +7755,20 @@
+         }, 0);
+       }
+ 
++      function startFieldSpecimen() {
++        // This is a simulated history, not a size multiplier or a growth reward.
++        // It is offered only on a new seedling before a prediction or trial.
++        if (tree.age !== 1 || tree.rings.length || experimentActive || advancedHasEvidence || (Array.isArray(d.fieldNotes) && d.fieldNotes.length) ||
++          (d.discovery && (d.discovery.prediction || d.discovery.record))) return;
++        var usual = { tempC: 22, light: 0.8, soilWater: 0.7, co2ppm: 420 };
++        var shares = normaliseAlloc();
++        var specimen = newTree(sp.id);
++        while (specimen.age < 40 && specimen.alive) specimen = simulateYear(specimen, sp, usual, shares);
++        updMulti(Object.assign({}, usual, { alloc: shares, experimentTrials: {} }));
++        resetTree(sp.id, specimen);
++        focusDiscovery();
++      }
++
+       function discoveryPanel() {
+         var raw = d.discovery && typeof d.discovery === 'object' ? d.discovery : {};
+         var prediction = ['less', 'same', 'more'].indexOf(raw.prediction) >= 0 ? raw.prediction : null;
+@@ -7739,6 +7814,12 @@
+         if (!record) {
+           content.push(h('p', { key: 'prompt' }, __alloT('stem.treelab.discovery_prompt',
+             'Predict how three dry years will change the food left for growth. We will compare two copies of this tree. Only water changes.')));
++          if (tree.age === 1 && !tree.rings.length && !prediction && !advancedHasEvidence && !(Array.isArray(d.fieldNotes) && d.fieldNotes.length)) content.push(
++            h('details', { key: 'starting-tree', className: 'allo-tree-starting-tree' }, [
++              h('summary', { key: 'summary' }, __alloT('stem.treelab.field_specimen_choice', 'Want a bigger tree to investigate?')),
++              h('p', { key: 'note' }, __alloT('stem.treelab.field_specimen_note', 'Start with a 40-year tree grown by this model in usual conditions. This starts a fresh investigation; its earlier rings are a simulated history.')),
++              btn('specimen', __alloT('stem.treelab.field_specimen_start', 'Use a 40-year starting tree'), startFieldSpecimen, { small: true })
++            ]));
+           content.push(choices('predict', prediction, function (value) {
+             CLOCK.stop();
+             updMulti({ playing: false, discovery: { prediction: value } });
+@@ -7803,7 +7884,15 @@
+             updMulti({ discoveryMode: 'free', missionReflection: answer, discoveries: Object.assign({}, d.discoveries, { recovery: true }) });
+           }, { disabled: !tree.alive, primary: true }));
+         }
+-        content.push(btn('free', __alloT('stem.treelab.discovery_free', 'Explore freely'), function () { upd('discoveryMode', 'free'); }, { tone: 'ghost' }));
++        content.push(btn('free', __alloT('stem.treelab.discovery_free', 'Explore freely'), function () {
++          upd('discoveryMode', 'free');
++          revealFieldSection('treelab-field-play-title');
++        }, { tone: 'ghost' }));
++        if (finished) content.push(h('div', { key: 'next', className: 'allo-tree-discovery-next' }, [
++          h('strong', { key: 'title' }, __alloT('stem.treelab.field_next', 'Follow your curiosity')),
++          btn('rings', __alloT('stem.treelab.field_read_rings', 'Read the rings'), function () { revealFieldSection('grow-sec-memory'); }, { tone: 'ghost' }),
++          btn('grove', __alloT('stem.treelab.field_grove', 'Care for a whole grove'), function () { activateChapter('grove', 'heading'); }, { tone: 'ghost' })
++        ]));
+         content.push(discoveryNotebook());
+         return h('section', { className: 'allo-tree-discovery', 'data-discovery-phase': record ? (finished ? 'complete' : 'explain') : 'predict' }, card(content));
+       }
+@@ -9641,11 +9730,25 @@
+           id: 'treelab-advanced-work', className: 'allo-tree-advanced-work', hidden: !advancedOpen,
+           'aria-label': __alloT('stem.treelab.advanced_workspace', 'Advanced evidence workspace')
+         }, advancedKids), 'grow-advanced-work');
+-        return h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
+-          h('div', { key: 'mission', className: 'allo-tree-workbench-mission' }, mission),
+-          h('div', { key: 'scene', className: 'allo-tree-workbench-scene' },
+-            h('div', { key: 'sticky', className: 'allo-tree-workbench-sticky' }, scene)),
+-          h('div', { key: 'controls', className: 'allo-tree-workbench-controls' }, kids)
++        return h('div', { key: 'field', className: 'allo-tree-field' }, [
++          h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
++            h('div', { key: 'scene', className: 'allo-tree-workbench-scene' }, [
++              d.discoveryMode !== 'free' && !experimentActive ? h('a', {
++                key: 'jump', className: 'allo-tree-field-invitation', href: '#treelab-discovery-heading',
++                onClick: function (e) { e.preventDefault(); revealFieldSection('treelab-discovery-heading'); }
++              }, __alloT('stem.treelab.field_invitation', 'Your investigation: what happens when rain stops?') + ' →') : null,
++              scene
++            ]),
++            h('div', { key: 'mission', className: 'allo-tree-workbench-mission' }, mission)
++          ]),
++          h('details', { key: 'tools', className: 'allo-tree-field-tools',
++            open: d.discoveryMode === 'free' || experimentActive || advancedOpen }, [
++            h('summary', { key: 'summary' }, [
++              h('span', { key: 'title' }, __alloT('stem.treelab.field_tools', 'Field tools')),
++              h('span', { key: 'hint' }, __alloT('stem.treelab.field_tools_hint', 'Clock, conditions, carbon budget and tree memory'))
++            ]),
++            h('div', { key: 'controls', className: 'allo-tree-workbench-controls' }, kids)
++          ])
+         ]);
+       }
+ 
+@@ -13555,8 +13658,79 @@
+       ].join('\n');
+ 
+ 
++      var fieldGuideCss = [
++        ".allo-tree-lab.is-field-guide{--field-paper:#f7f6ef;--field-surface:#fffef8;--field-line:#cfdbcc;--field-ink:#173d2e;--field-muted:#4d6255;--field-soft:#edf1e6;padding:20px!important;border-radius:16px!important;background:var(--field-paper)!important;box-shadow:none!important}",
++        ".is-field-guide[data-tree-theme=dark]{--field-paper:#101d19;--field-surface:#182b24;--field-line:#436452;--field-ink:#e7f1e8;--field-muted:#b5caba;--field-soft:#23382d}",
++        ".is-field-guide[data-tree-theme=contrast]{--field-paper:#000;--field-surface:#000;--field-line:#fff;--field-ink:#fff;--field-muted:#fff;--field-soft:#000}",
++        ".is-field-guide:before,.is-field-guide .allo-tree-hero:before,.is-field-guide .allo-tree-hero:after{display:none}",
++        ".is-field-guide .allo-tree-hero{border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:0 0 18px!important;margin:0!important;gap:12px!important}",
++        ".is-field-guide .allo-tree-hero-title{font:700 clamp(28px,3vw,38px)/1.1 Georgia,serif!important;letter-spacing:-.04em!important;color:var(--field-ink)!important}",
++        ".is-field-guide .allo-tree-hero-stats{display:none}",
++        ".is-field-guide .allo-tree-hero-controls{padding:8px 12px!important;background:var(--field-surface)!important;border-color:var(--field-line)!important}",
++        ".is-field-guide .allo-tree-tabs{border:0!important;border-bottom:1px solid var(--field-line)!important;border-radius:0!important;background:none!important;padding:0 0 10px!important;margin:0!important;box-shadow:none!important;gap:4px!important}",
++        ".is-field-guide .allo-tree-tab{min-height:46px!important;border-radius:8px!important;padding:7px 10px!important;box-shadow:none!important;flex:1 1 0!important}",
++        ".is-field-guide .allo-tree-tab:not([aria-selected=true]){border-color:transparent!important;background:transparent!important}",
++        ".is-field-guide .allo-tree-tab-icon{width:24px;height:24px;flex-basis:24px;background:none;border-radius:0;font-size:18px}",
++        ".is-field-guide .allo-tree-tab-hint{font-size:10px}",
++        ".is-field-guide .allo-tree-chapter{padding:12px 0!important;margin-bottom:10px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:none!important;min-height:0!important}",
++        ".is-field-guide .allo-tree-chapter-number{width:auto;min-width:38px;height:28px;font-size:11px;border-radius:5px;box-shadow:none}",
++        ".is-field-guide .allo-tree-chapter-title{color:var(--field-ink)}",
++        ".is-field-guide .allo-tree-workbench{grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);grid-template-areas:\"scene mission\";grid-template-rows:auto;gap:24px}",
++        ".is-field-guide .allo-tree-workbench-mission{padding-top:32px}",
++        ".is-field-guide .allo-tree-workbench-scene>.allo-tree-card{padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}",
++        ".allo-tree-field-invitation{display:block;font-size:12px;line-height:1.5;font-weight:700;color:var(--field-ink);text-decoration:underline;text-underline-offset:3px;margin-bottom:12px}",
++        ".is-field-guide .allo-tree-viewer-head{padding:0 0 10px;border:0;background:none}",
++        ".is-field-guide .allo-tree-viewer-name{font-size:16px;color:var(--field-ink)}",
++        ".is-field-guide .allo-tree-viewer-limit{font-size:10px}",
++        ".is-field-guide:not(.is-full) .allo-tree-field-canvas{height:clamp(350px,49vh,550px)!important;border-radius:18px!important;border:1px solid var(--field-line)!important}",
++        ".is-field-guide .allo-tree-discovery>.allo-tree-card{padding:24px!important;border-radius:16px!important;border:1px solid var(--field-line)!important;background:var(--field-surface)!important;box-shadow:0 8px 26px rgba(16,44,27,.045)!important}",
++        ".is-field-guide .allo-tree-discovery h3{font:700 clamp(26px,2.6vw,36px)/1.12 Georgia,serif;letter-spacing:-.035em;color:var(--field-ink);margin:12px 0 18px}",
++        ".is-field-guide .allo-tree-discovery p{color:var(--field-muted);line-height:1.65}",
++        ".is-field-guide .allo-tree-discovery-steps{gap:6px;margin-bottom:20px}",
++        ".is-field-guide .allo-tree-discovery-steps li{border-radius:5px;font-size:11px}",
++        ".is-field-guide .allo-tree-discovery-choices{display:grid;grid-template-columns:1fr;gap:8px}",
++        ".is-field-guide .allo-tree-discovery-choices button{margin:0!important;min-height:44px!important;text-align:left;padding:10px 14px!important;border-radius:8px!important}",
++        ".is-field-guide .allo-tree-discovery-choices button[aria-pressed=true]{box-shadow:inset 4px 0 currentColor}",
++        ".is-field-guide .allo-tree-discovery>.allo-tree-card>.is-primary{width:100%;margin:6px 0 12px!important;min-height:46px}",
++        ".is-field-guide .allo-tree-discovery-next{border-top:1px solid var(--field-line);padding-top:14px;margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}",
++        ".allo-tree-discovery-next>strong{display:block;flex-basis:100%;font-size:13px;margin-bottom:4px;color:var(--field-ink)}",
++        ".allo-tree-field-seasons{margin:12px 0}",
++        ".allo-tree-field-seasons>div{display:flex;flex-wrap:wrap;gap:4px}",
++        ".allo-tree-field-seasons button{flex:1 1 90px;min-height:40px!important;margin:0!important}",
++        ".allo-tree-field-seasons p{font-size:11px;color:var(--field-muted);margin:6px 0}",
++        ".is-field-guide .allo-tree-camera-controls{gap:2px}",
++        ".is-field-guide .allo-tree-camera-controls button{min-height:36px!important;font-size:11px!important;margin-right:2px!important}",
++        ".is-field-guide .allo-tree-habitat-ribbon{box-shadow:none;border-radius:10px;margin-top:12px}",
++        ".allo-tree-field-tools{border-top:1px solid var(--field-line);margin:24px 0 18px}",
++        ".allo-tree-field-tools>summary{cursor:pointer;padding:20px 0;font-size:18px;font-weight:750;color:var(--field-ink);min-height:44px}",
++        ".allo-tree-field-tools>summary>span+span{display:inline-block;font-size:12px;font-weight:400;color:var(--field-muted);margin-left:16px}",
++        ".allo-tree-field-tools .allo-tree-workbench-controls{max-width:1020px;margin:auto}",
++        ".allo-tree-field-play{margin-top:16px;padding:16px;border-radius:12px;background:var(--field-surface);border:1px solid var(--field-line)}",
++        ".allo-tree-field-play h3{font-size:17px;font-weight:750;color:var(--field-ink);margin:0 0 5px}",
++        ".allo-tree-field-play p{font-size:12px;line-height:1.6;color:var(--field-muted);margin:5px 0 12px}",
++        ".allo-tree-field-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}",
++        ".allo-tree-field-actions{display:flex;flex-wrap:wrap;gap:4px}",
++        ".allo-tree-field-invitation:focus-visible,.allo-tree-field-tools>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:4px;border-radius:4px}",
++        ".is-field-guide [tabindex=\"-1\"]:focus-visible{outline:3px solid var(--tree-focus);outline-offset:4px}",
++        "@media(max-width:960px){.is-field-guide .allo-tree-workbench{grid-template-columns:minmax(0,1fr);grid-template-areas:\"scene\" \"mission\";gap:10px}.is-field-guide .allo-tree-workbench-mission{padding-top:0}.is-field-guide .allo-tree-discovery-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.is-field-guide .allo-tree-discovery-choices button{text-align:center}.is-field-guide .allo-tree-tab{flex:0 0 auto!important;min-width:100px!important}}",
++        "@media(max-width:600px){.allo-tree-lab.is-field-guide{padding:12px!important}.is-field-guide .allo-tree-hero{padding-bottom:12px!important;gap:8px!important}.is-field-guide .allo-tree-hero-controls{padding:6px 8px!important}.is-field-guide .allo-tree-hero-copy>div:not(.allo-tree-hero-stats){font-size:12px!important;margin-top:4px!important}.is-field-guide .allo-tree-tab-hint{display:none}.is-field-guide .allo-tree-tab{min-height:44px!important;min-width:auto!important}.is-field-guide .allo-tree-tab-icon{width:20px;flex-basis:20px}.is-field-guide .allo-tree-chapter{padding:10px 0!important;margin:0!important}.is-field-guide:not(.is-full) .allo-tree-field-canvas{height:330px!important}.is-field-guide .allo-tree-discovery>.allo-tree-card{padding:18px!important}.is-field-guide .allo-tree-discovery-choices{grid-template-columns:1fr}.allo-tree-field-tools>summary>span+span{display:block;margin:6px 0 0}.allo-tree-field-inputs{grid-template-columns:1fr}}",
++        "@media print{.allo-tree-field-invitation,.allo-tree-field-seasons,.allo-tree-field-play,.allo-tree-camera-controls{display:none!important}.allo-tree-field-tools{border:0}.is-field-guide .allo-tree-workbench{display:block}}",
++        "",
++        ".allo-tree-view-controls>summary{cursor:pointer;min-height:36px;box-sizing:border-box;padding:8px 12px;font-size:12px;font-weight:700;color:var(--field-ink)}",
++        ".allo-tree-view-controls>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px}",
++        ".allo-tree-view-control-body{display:flex;flex-wrap:wrap;padding:8px 0;gap:2px}",
++        ".is-full .allo-tree-view-controls,.is-full .allo-tree-view-control-body{display:contents}",
++        ".is-field-guide .allo-tree-viewer-card:before{display:none}",
++        "",
++        ".allo-tree-starting-tree{margin:12px 0;border-bottom:1px solid var(--field-line);padding-bottom:8px}",
++        ".allo-tree-starting-tree>summary{font-size:12px;line-height:1.5;min-height:32px;cursor:pointer;font-weight:700;color:var(--field-ink)}",
++        ".allo-tree-starting-tree>summary:focus-visible{outline:3px solid var(--tree-focus);outline-offset:3px}"
++      ].join('');
++
+       return h('div', {
+-        className: 'allo-tree-lab is-discovery-layout' + (band === 'k2' ? ' is-young' : '') + (d.viewerFull ? ' is-full' : '') + (reduceMotion ? ' is-reduced-motion' : ''),
++        'data-tree-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
++        'data-tree-view': view,
++        className: 'allo-tree-lab is-discovery-layout is-field-guide' + (band === 'k2' ? ' is-young' : '') + (d.viewerFull ? ' is-full' : '') + (reduceMotion ? ' is-reduced-motion' : ''),
+         style: {
+           '--tree-glow': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.11)' : 'rgba(16,185,129,.14)'),
+           '--sun-glow': isContrast ? 'transparent' : (isDark ? 'rgba(251,191,36,.07)' : 'rgba(250,204,21,.13)'),
+@@ -13598,7 +13772,7 @@
+           background: isContrast ? T.bg : (isDark ? 'linear-gradient(180deg,#0b1f1c 0,#0f172a 390px,#0f172a 100%)' : 'linear-gradient(180deg,#eefaf4 0,#f8fafc 390px,#f8fafc 100%)'), color: T.text, padding: 16, borderRadius: 20, minHeight: 400, boxShadow: isContrast ? 'none' : (isDark ? '0 26px 70px rgba(2,6,23,.28)' : '0 26px 70px rgba(15,23,42,.08)')
+         }
+       }, [
+-        h('style', { key: 'visual-css' }, visualCss + discoveryCss),
++        h('style', { key: 'visual-css' }, visualCss + discoveryCss + fieldGuideCss),
+         h('div', {
+           key: 'top', className: 'allo-tree-hero',
+           style: {
+===================================================================
+--- /dev/null
++++ b/tests/tree_lab_field_guide.test.js
+@@ -0,0 +1,54 @@
++import { beforeEach, describe, it, expect } from 'vitest';
++import { loadTool, resetStemLab, makeCtx, newStore, renderTool } from './helpers/stem_widgets_smoke_harness.js';
++let E;
++beforeEach(()=>{resetStemLab();loadTool('stem_lab/stem_tool_treelab.js','treeLab');E=window.__alloTreeLabEngine;});
++function nodes(node,out=[]){if(!node)return out;if(Array.isArray(node)){node.forEach(n=>nodes(n,out));return out;}if(typeof node==='object'){out.push(node);nodes(node.props?.children,out);}return out;}
++function renderState(data={}){const store=newStore({treeLab:data});const tree=window.StemLab._registry.treeLab.render(makeCtx({},store));return {store,tree,button:nodes(tree).find(n=>n.type==='button'&&n.key==='specimen')};}
++describe('Tree Lab field-guide starting point',()=>{
++ it('keeps the initial seedling and progress unchanged until the learner chooses a specimen',()=>{
++  const original={speciesId:'oak',light:.3};
++  const {store,button}=renderState(original);
++  expect(button).toBeTruthy();expect(store.toolData.treeLab).toEqual(original);
++  expect(renderTool('treeLab',{treeLab:{}})).toContain('its earlier rings are a simulated history');
++ });
++ it('produces a living 40-year specimen with authentic history for every species',()=>{
++  for(const sp of E.SPECIES){
++   const {store,button}=renderState({speciesId:sp.id,light:.1,soilWater:.2,experimentTrials:{stale:true}});
++   button.props.onClick();
++   const d=store.toolData.treeLab,env={tempC:22,light:.8,soilWater:.7,co2ppm:420};
++   let expected=E.newTree(sp.id);
++   for(let i=1;i<40;i++)expected=E.simulateYear(expected,sp,env,E.normaliseAlloc());
++   expect(d.tree,sp.id).toEqual(expected);
++   expect(d.tree.alive,sp.id).toBe(true);expect(d.tree.age,sp.id).toBe(40);
++   expect(d.tree.rings.length,sp.id).toBe(39);expect(d.tree.history.length,sp.id).toBe(39);
++   expect(d.discovery,sp.id).toBeNull();expect(d.experimentTrials,sp.id).toEqual({});
++   expect(d.light).toBe(.8);expect(d.soilWater).toBe(.7);expect(d.playing).toBe(false);
++   expect(d.discoveries).toEqual({});expect(d.fieldNotes).toEqual([]);
++  }
++ });
++ it('does not offer the shortcut once the learner has made a prediction',()=>{
++  const {button}=renderState({discovery:{prediction:'less'}});
++  expect(button).toBeUndefined();
++ });
++ it('does not replace a growing tree or a saved comparison',()=>{
++  let tree=E.simulateYear(E.newTree('oak'),E.speciesById('oak'),{tempC:22,light:.8,soilWater:.7,co2ppm:420},E.normaliseAlloc());
++  expect(renderState({tree}).button).toBeUndefined();
++  expect(renderState({fieldNotes:[{explanation:'My earlier finding'}]}).button).toBeUndefined();
++  const record=E.runDroughtDiscovery(tree,'oak',{tempC:22,light:.8,soilWater:.7,co2ppm:420},E.normaliseAlloc());
++  expect(renderState({discovery:{prediction:'less',record}}).button).toBeUndefined();
++ });
++ it('hides quick-growth shortcuts while an experiment owns the conditions',()=>{
++  const tree=E.newTree('oak');
++  const html=renderTool('treeLab',{treeLab:{discoveryMode:'free',experiment:{phase:'predict',baseline:{tree,speciesId:'oak',env:{},alloc:{}}}}});
++  const host=document.createElement('div');host.innerHTML=html;
++  expect(host.querySelector('.allo-tree-field-play')).toBeNull();
++  expect(host.querySelector('.allo-tree-field-tools').open).toBe(true);
++ });
++ it('gives quick controls separate labels and disables water during a scheduled drought',()=>{
++  const html=renderTool('treeLab',{treeLab:{discoveryMode:'free',droughtYears:[1]}});
++  const host=document.createElement('div');host.innerHTML=html;
++  expect(host.querySelector('#treelab-field-water').disabled).toBe(true);
++  expect(host.querySelectorAll('#treelab-field-water')).toHaveLength(1);
++  expect(host.querySelector('label[for="treelab-field-water"]')).not.toBeNull();
++ });
++});
+===================================================================
+--- /dev/null
++++ b/tests/reader_preview_focus_narration.test.js
+@@ -0,0 +1,62 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++const require=createRequire(import.meta.url);
++const {extractFocusEffect}=require('./helpers/reader_focus_effect.cjs');
++const source=readFileSync('AlloFlowANTI.txt','utf8');
++let cleanup,audioRef,speech,created,muted;
++function install(){
++ const effect=extractFocusEffect(source);
++ new Function('useEffect','focusNarrationEnabled','focusNarrationAudioRef','isGlobalMuted','t','_helpLookup','selectedVoice','voiceSpeed','voiceVolume',effect)(fn=>{cleanup=fn();},true,audioRef,()=>muted,k=>k,()=>'', 'af_heart',1,0.8);
++}
++function button(text,parent=document.body){const node=document.createElement('button');node.textContent=text;parent.append(node);return node;}
++function preview(owner='preview-a'){const modal=document.createElement('div');modal.dataset.studentPreview='';document.body.append(modal);window.dispatchEvent(new CustomEvent('alloflow:reading-preview',{detail:{owner,active:true}}));return modal;}
++function close(modal,opener,owner='preview-a'){modal.remove();window.dispatchEvent(new CustomEvent('alloflow:reading-preview',{detail:{owner,active:false}}));opener?.focus();}
++const tick=()=>vi.advanceTimersByTimeAsync(220);
++function pendingTTS(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});const speakStreaming=vi.fn(()=>promise);window._kokoroTTS={ready:true,speakStreaming,stop:vi.fn()};return {resolve,reject,speakStreaming};}
++beforeEach(()=>{vi.useFakeTimers();audioRef={current:null};created=[];muted=false;speech={cancel:vi.fn(),speak:vi.fn()};vi.stubGlobal('speechSynthesis',speech);vi.stubGlobal('SpeechSynthesisUtterance',class{constructor(text){this.text=text;}});vi.stubGlobal('Audio',class{constructor(url){this.src=url;this.play=vi.fn(()=>Promise.resolve());this.pause=vi.fn();created.push(this);}});install();});
++afterEach(()=>{cleanup?.();cleanup=null;delete window._kokoroTTS;document.body.innerHTML='';vi.unstubAllGlobals();vi.restoreAllMocks();vi.useRealTimers();});
++describe('preview focus narration boundary',()=>{
++ it('does not cancel or start speech when preview controls receive focus',async()=>{
++  const pending=pendingTTS(),playing={pause:vi.fn(),currentTime:14};audioRef.current=playing;
++  const modal=preview();button('Refresh preview',modal).focus();await tick();
++  expect(pending.speakStreaming).not.toHaveBeenCalled();expect(speech.cancel).not.toHaveBeenCalled();expect(speech.speak).not.toHaveBeenCalled();expect(created).toHaveLength(0);expect(playing.pause).not.toHaveBeenCalled();expect(playing.currentTime).toBe(14);expect(audioRef.current).toBe(playing);
++ });
++ it('discards an announcement queued before preview opens',async()=>{
++  button('Main reader').focus();await vi.advanceTimersByTimeAsync(80);preview();await tick();expect(speech.speak).not.toHaveBeenCalled();expect(speech.cancel).not.toHaveBeenCalled();
++ });
++ it('discards in-flight TTS after opening preview without pausing current host audio',async()=>{
++  const pending=pendingTTS();button('Main reader').focus();await tick();expect(pending.speakStreaming).toHaveBeenCalledTimes(1);
++  const playing={pause:vi.fn(),currentTime:9};audioRef.current=playing;speech.cancel.mockClear();preview();expect(pending.speakStreaming.mock.calls[0][3].signal.aborted).toBe(true);expect(window._kokoroTTS.stop).not.toHaveBeenCalled();pending.resolve('blob:stale-announcement');await tick();
++  expect(created).toHaveLength(0);expect(speech.speak).not.toHaveBeenCalled();expect(speech.cancel).not.toHaveBeenCalled();expect(playing.pause).not.toHaveBeenCalled();expect(audioRef.current).toBe(playing);
++ });
++ it('does not revive rejected TTS as browser speech after preview has closed',async()=>{
++  const pending=pendingTTS(),opener=button('Open preview');opener.focus();await tick();const modal=preview();close(modal,opener);await Promise.resolve();speech.cancel.mockClear();pending.reject(Error('TTS unavailable'));await tick();
++  expect(created).toHaveLength(0);expect(speech.speak).not.toHaveBeenCalled();expect(speech.cancel).not.toHaveBeenCalled();
++ });
++ it('suppresses automatic focus return but resumes narration for subsequent focus',async()=>{
++  const opener=button('Open preview'),next=button('Next control'),modal=preview();button('Close preview',modal).focus();close(modal,opener);await tick();expect(speech.speak).not.toHaveBeenCalled();expect(speech.cancel).not.toHaveBeenCalled();
++  next.focus();await tick();expect(speech.speak).toHaveBeenCalledTimes(1);expect(speech.speak.mock.calls[0][0].text).toBe('Button: Next control');
++ });
++ it('remains silent while another preview is still mounted',async()=>{
++  const opener=button('Open preview'),first=preview(),second=preview('preview-b'),target=button('Second preview',second);close(first,opener);await Promise.resolve();target.focus();await tick();expect(speech.speak).not.toHaveBeenCalled();close(second,opener,'preview-b');await tick();expect(speech.speak).not.toHaveBeenCalled();
++ });
++ it('does not play a pending result after the narration effect is disposed',async()=>{
++  const pending=pendingTTS();button('Main reader').focus();await tick();cleanup();cleanup=null;expect(pending.speakStreaming.mock.calls[0][3].signal.aborted).toBe(true);pending.resolve('blob:disposed');await tick();expect(created).toHaveLength(0);expect(speech.speak).not.toHaveBeenCalled();
++ });
++ it('still narrates ordinary host focus using the configured TTS',async()=>{
++  const pending=pendingTTS();button('Main reader').focus();await tick();pending.resolve('blob:current');await tick();expect(created).toHaveLength(1);expect(created[0].src).toBe('blob:current');expect(created[0].play).toHaveBeenCalledTimes(1);expect(audioRef.current).toBe(created[0]);expect(speech.speak).not.toHaveBeenCalled();
++ });
++ it('does not abort a completed request or pause its audio when preview opens',async()=>{
++  const pending=pendingTTS();button('Main reader').focus();await tick();pending.resolve('blob:already-playing');await tick();
++  const signal=pending.speakStreaming.mock.calls[0][3].signal,audio=created[0];preview();button('Close preview',document.querySelector('[data-student-preview]')).focus();await tick();
++  expect(signal.aborted).toBe(false);expect(audio.pause).not.toHaveBeenCalled();expect(window._kokoroTTS.stop).not.toHaveBeenCalled();expect(audioRef.current).toBe(audio);
++ });
++ it('keeps the latest focus announcement when older TTS completes later',async()=>{
++  let resolveFirst,resolveSecond;window._kokoroTTS={ready:true,speakStreaming:vi.fn().mockImplementationOnce(()=>new Promise(resolve=>{resolveFirst=resolve;})).mockImplementationOnce(()=>new Promise(resolve=>{resolveSecond=resolve;}))};
++  button('First').focus();await tick();button('Second').focus();await tick();resolveSecond('blob:second');await tick();resolveFirst('blob:first');await tick();expect(created.map(audio=>audio.src)).toEqual(['blob:second']);
++ });
++ it('does not use a late TTS result while globally muted',async()=>{
++  const pending=pendingTTS();button('Main reader').focus();await tick();muted=true;pending.resolve('blob:muted');await tick();expect(created).toHaveLength(0);expect(speech.speak).not.toHaveBeenCalled();
++ });
++});
+===================================================================
+--- /dev/null
++++ b/tests/helpers/reader_focus_effect.cjs
+@@ -0,0 +1,10 @@
++'use strict';
++// Extract the production focus effect without executing the full application.
++function extractFocusEffect(source) {
++  const start = source.indexOf('  const focusNarrationAudioRef = useRef(null);');
++  const marker = '  }, [focusNarrationEnabled, t, selectedVoice, voiceSpeed, voiceVolume]);';
++  const end = source.indexOf(marker, start);
++  if (start < 0 || end < start) throw new Error('Focus narration effect not found');
++  return source.slice(source.indexOf('  useEffect(() => {', start), end + marker.length);
++}
++module.exports = { extractFocusEffect };
+===================================================================
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -101780,6 +101780,22 @@
+       "work_title": "Work rights & disclosure"
+     },
+     "treelab": {
++      "field_specimen_ready": "Model-grown starting tree ready. Age: ",
++      "field_seasons": "Explore the seasons",
++      "field_season_note": "Season selection does not advance the clock.",
++      "field_play": "What will you change next?",
++      "field_play_note": "Change one condition. Watch the response, then grow another ring.",
++      "field_scheduled_drought": "A scheduled drought is overriding soil water. End it in Field tools to use your water setting.",
++      "field_read_rings": "Read the rings",
++      "field_view_controls": "View & anatomy controls",
++      "field_specimen_choice": "Want a bigger tree to investigate?",
++      "field_specimen_note": "Start with a 40-year tree grown by this model in usual conditions. This starts a fresh investigation; its earlier rings are a simulated history.",
++      "field_specimen_start": "Use a 40-year starting tree",
++      "field_next": "Follow your curiosity",
++      "field_grove": "Care for a whole grove",
++      "field_invitation": "Your investigation: what happens when rain stops?",
++      "field_tools": "Field tools",
++      "field_tools_hint": "Clock, conditions, carbon budget and tree memory",
+       "a11y_campaign_tree_in_3d": "Campaign tree in 3D",
+       "a11y_campaign_camera_controls": "Campaign camera controls",
+       "a11y_inspect_campaign_tree_parts": "Inspect campaign tree parts",

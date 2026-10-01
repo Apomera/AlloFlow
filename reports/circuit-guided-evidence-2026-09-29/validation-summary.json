@@ -1,0 +1,87 @@
+{
+  "verifiedAt": "2026-09-29T12:08:06.450Z",
+  "passed": true,
+  "screenshots": [
+    {
+      "file": "resistance-result-1280.png",
+      "sha256": "18bc176ddccbbb7642da0fe18a556429e4f255d0b1642d6799ef0019fa0e2b16",
+      "bytes": 80326
+    },
+    {
+      "file": "resistance-result-390.png",
+      "sha256": "ff95275ee5dce1abb6ff59634d58da3453a9cb3fe979ca0e39f63966d44b9f6c",
+      "bytes": 74811
+    },
+    {
+      "file": "resistance-result-320.png",
+      "sha256": "df19346a100e0d1d4673b3c14bf8633f2f1cb4618b243cc1cbca22ac94c7a8f6",
+      "bytes": 75493
+    },
+    {
+      "file": "paths-result-1280.png",
+      "sha256": "0651cde5e1d97b729cad5a4eaf1cc3d5fef2d1708a0a0f2bf47910ae1710af7a",
+      "bytes": 83621
+    },
+    {
+      "file": "paths-result-390.png",
+      "sha256": "82289953607a8f56ce18aec4d56f46ac18d10143b55ec206887d9b020888bb54",
+      "bytes": 78790
+    },
+    {
+      "file": "paths-result-320.png",
+      "sha256": "e5a9902c02872e42a488ebe6483f14c92a83c6f31f52f9f10048ce820cfa9a7f",
+      "bytes": 79299
+    },
+    {
+      "file": "loop-result-1280.png",
+      "sha256": "b69fc3b082538b9d98048f5df55e9d91279f4a4fea786cf015d635e867461a29",
+      "bytes": 81610
+    },
+    {
+      "file": "loop-result-390.png",
+      "sha256": "2cd125f3656cd42a5decb4640bf7473d85891833edde3fb12f4a862b25a3270e",
+      "bytes": 76831
+    },
+    {
+      "file": "loop-result-320.png",
+      "sha256": "0f3ba1d75f2dde6ef2847017d2a500e30f9bcf46801be88fa0c2fe0dc7ccd60b",
+      "bytes": 77722
+    },
+    {
+      "file": "changed-bench-1280.png",
+      "sha256": "b2186864787efb847e6d6fc4a475d57ec9b4508aa0e7a9219f31ab69a9ef0f9a",
+      "bytes": 80901
+    },
+    {
+      "file": "changed-bench-390.png",
+      "sha256": "747f54ed0885751472115e877803cc0f6c7d0be84c74279a53d5eabfa603c05f",
+      "bytes": 77251
+    },
+    {
+      "file": "changed-bench-320.png",
+      "sha256": "90b74f7cf5ad9d90739413925d0fadb8e613cf6e7a065cea5e38ed6d911bbf32",
+      "bytes": 78027
+    }
+  ],
+  "sourceSha256": "3b677c9ee7980cf412d36ee003b6f4860ee0fd405131923d2ac66d85ebe07b23",
+  "mirrorMatches": true,
+  "regression": {
+    "passed": 162,
+    "files": 16,
+    "sha256": "ab55287a04ba3c49d3510cdc9879f9ed298acd98253c52e22f40dc769ab9ab27"
+  },
+  "browser": {
+    "workflows": 4,
+    "axeScans": 12,
+    "layoutChecks": 12,
+    "chartChecks": 12,
+    "focusChecks": 24,
+    "motionChecks": 4,
+    "screenshots": 12,
+    "errors": 0,
+    "issues": 0,
+    "sha256": "b14bbb06e2b33027a2a954a02e3a11a9bdf45606b1a5aa8773b589dc099df3eb"
+  },
+  "syntaxPassed": true,
+  "scopedWhitespacePassed": true
+}

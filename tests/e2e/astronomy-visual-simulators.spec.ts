@@ -72,7 +72,7 @@ test('HR diagram responds to pointer input and stays usable on a 320px contrast 
   const chart = page.locator('#astronomy-hr-plot');
   await chart.scrollIntoViewIfNeeded();
   const box = (await chart.boundingBox())!;
-  await page.mouse.click(box.x + box.width * (240 / 430), box.y + box.height * (186 / 408));
+  await page.mouse.click(box.x + box.width * (240 / 430), box.y + box.height * (186 / 440));
   const state = await hrState(page);
   expect(state.tempK).toBeGreaterThan(9000);
   expect(state.tempK).toBeLessThan(11000);

@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-26T21:53:42.189Z",
+  "plans": [
+    {
+      "label": "track11-reader",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "7775056fe10a3083b772e217afe8cd16fbdae072583110e3da336c007cc86fec",
+      "after": "295fc8048279ed76c991e70ddcf99ea5385e975ac98fb32661cad552318ce9b5",
+      "patch": "88d2f549d2142e26a496466377707467a2c21e314081416e25afb0d92de8fd51"
+    },
+    {
+      "label": "track13-host",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "9eed9816ff69db02fa4f6e342ceea9cc4d5bae6be2717d5c2f7ba9213e514172",
+      "after": "153b6249e6d4bb958eceabdd8cf8417a4f622a7cdee1347c2b51c60da747ec03",
+      "patch": "379731626084f97efbf720c025e2d1db0a49ec64d606cf8f9ed9ce02791af5ce"
+    }
+  ]
+}

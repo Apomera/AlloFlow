@@ -1,0 +1,45 @@
+{
+  "schema": "org.alloflow.openbim-project",
+  "version": 1,
+  "status": "approved-concept",
+  "approvedAt": "2026-01-01T00:00:00.000Z",
+  "name": "Imported Library Study",
+  "brief": "An accessible two-storey library with daylight and flexible learning space.",
+  "siteName": "Community Learning Site",
+  "storeys": [
+    {
+      "name": "Ground Floor",
+      "elevationMetres": 0,
+      "spaces": ["Entry and Circulation", "Reading Room"]
+    },
+    {
+      "name": "Level 2",
+      "elevationMetres": 3.4,
+      "spaces": ["Flexible Learning Space"]
+    }
+  ],
+  "elements": [
+    {
+      "ifcClass": "IfcWall",
+      "name": "Concept walls",
+      "count": 8,
+      "storey": "All storeys",
+      "reason": "Define a reviewable concept envelope."
+    },
+    {
+      "ifcClass": "IfcPerson",
+      "name": "Unsupported import row",
+      "count": 1,
+      "storey": "Ground Floor",
+      "reason": "This row must be removed by the allowlist."
+    }
+  ],
+  "goals": ["Inclusive circulation", "Daylight"],
+  "assumptions": ["Concept only; qualified review is required."],
+  "architectureStudio": {
+    "blocks": [
+      { "x": 0, "y": 0, "z": 0, "shape": "slab", "material": "stone" }
+    ]
+  },
+  "unknownExecutableField": "discard me"
+}

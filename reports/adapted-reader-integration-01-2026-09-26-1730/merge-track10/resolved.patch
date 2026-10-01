@@ -1,0 +1,539 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1552,36 +1552,59 @@
+       </div>}
+     </section>;
+   }
+ 
+-  // Where each word-help word sits in the passage ON SCREEN. The reader renders
+-  // the adapted text sentence by sentence (markup stripped), so offsets into the
+-  // stored passage do not carry over; the n-th whole-word occurrence does. Returns
+-  // [{ entry, start, end }] as offsets into shownText; words not found are left out.
+-  function locateWordHelp(passageText, entries, shownText) {
+-    const wordChar = /[\p{L}\p{M}\p{N}]/u;
+-    const wholeWordStarts = (text, quote) => {
+-      const starts = [];
+-      if (!quote) return starts;
+-      const edge = getInstructionalContextApi()?.isWordEdge;
+-      for (let at = text.indexOf(quote); at !== -1; at = text.indexOf(quote, at + 1)) {
+-        const end = at + quote.length;
+-        if (edge) { if (edge(text, at) && edge(text, end)) starts.push(at); continue; }
+-        if ((at > 0 && wordChar.test(text.charAt(at - 1))) || (end < text.length && wordChar.test(text.charAt(end)))) continue;
+-        starts.push(at);
++  // Keep a source position for every visible UTF-16 unit. Formatting can turn
++  // two different raw phrases into identical visible phrases, so occurrence
++  // ordinals in Markdown must never stand in for an exact annotation anchor.
++  function preparedTextProjection(value, markdown, literalTables) {
++    var text = '', offsets = [];
++    var append = (part, start) => {
++      for (var i = 0; i < part.length; i++) {
++        var char = part[i];
++        if (/\s/u.test(char)) { if (!text || text.endsWith(' ')) continue; char = ' '; }
++        text += char; offsets.push(start + i);
+       }
+-      return starts;
++      return null;
+     };
++    value = String(value || '');
++    if (!markdown) append(value, 0);
++    else {
++      // Chart payloads are not passage text. Blanking preserves source offsets.
++      var raw = value.replace(/\[\[CHART:[\s\S]*?\]\]/g, match => ' '.repeat(match.length));
++      simplifiedExactBlocks(raw, true).forEach(block => {
++        if (block.type === 'hidden' || block.type === 'rule') return;
++        if (!literalTables && /^\s*\|/.test(block.raw)) {
++          if (!/^\s*\|[\s:|\-]+\|?\s*$/.test(block.raw)) {
++            var cursor = block.start;
++            block.raw.split('|').forEach(cell => { simplifiedInline(cell, append, cursor); append(' ', cursor + cell.length); cursor += cell.length + 1; });
++          }
++        } else simplifiedInline(block.text, append, block.textStart);
++        append(' ', block.end);
++      });
++    }
++    if (text.endsWith(' ')) { text = text.slice(0, -1); offsets.pop(); }
++    return { text, offsets };
++  }
++  // The complete visible projection must agree before any range is attached.
++  // Unknown rendering transformations fail closed; the prepared list remains
++  // available. No approximate or nth-occurrence fallback can move a meaning.
++  function locateWordHelp(passageText, entries, shownText) {
++    const shown = preparedTextProjection(shownText, false);
++    let source = preparedTextProjection(passageText, true, false);
++    if (source.text !== shown.text) source = preparedTextProjection(passageText, true, true);
++    if (!source.text || source.text !== shown.text) return [];
+     const found = [];
+-    // Link and image addresses and chart data never show on screen: blank them
+-    // (keeping every offset) so they are not counted as occurrences.
+-    const stored = String(passageText || '').replace(/\]\([^)\s]*\)/g, match => ' '.repeat(match.length)).replace(/\[\[CHART:[\s\S]*?\]\]/g, match => ' '.repeat(match.length));
++    const edge = getInstructionalContextApi()?.isWordEdge;
+     (entries || []).forEach(entry => {
+-      const nth = wholeWordStarts(stored, entry.quote).indexOf(entry.start);
+-      const shown = wholeWordStarts(String(shownText || ''), entry.quote);
+-      const start = shown[Math.max(0, nth)];
+-      if (nth === -1 || start === undefined) return;
+-      found.push({ entry, start, end: start + entry.quote.length });
++      const end = entry.end == null ? entry.start + String(entry.quote || '').length : entry.end;
++      if (!Number.isInteger(entry.start) || !entry.quote || String(passageText || '').slice(entry.start, end) !== entry.quote) return;
++      const first = source.offsets.findIndex(offset => offset >= entry.start && offset < end);
++      if (first < 0 || source.offsets[first] !== entry.start) return;
++      let last = first;
++      while (last + 1 < source.offsets.length && source.offsets[last + 1] < end) last++;
++      if (edge && (!edge(source.text, first) || !edge(source.text, last + 1))) return;
++      found.push({ entry, start: shown.offsets[first], end: shown.offsets[last] + 1 });
+     });
+     return found;
+   }
+   // The passage's visible text, as [text node, offset] segments, skipping any part
+@@ -1589,20 +1612,20 @@
+   function readingTextSegments(container, language) {
+     const segments = [];
+     let text = '';
+     if (!container || typeof document === 'undefined') return { text, segments };
+-    const tagged = !!container.querySelector('[data-reading-language]');
++    const tagged = container.matches('[data-reading-language]') || !!container.querySelector('[data-reading-language]');
+     const wanted = String(language || '').trim().toLowerCase();
+     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+     // Text in different blocks or table cells never runs together on screen.
+     const blockOf = element => element.closest('p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, dt, dd, pre, figcaption, div');
+     let lastBlock = null;
+     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+       const owner = node.parentElement;
+-      if (!owner || owner.closest('button, [aria-hidden="true"], [data-adapted-word-help], [data-reading-chart], [role="status"], [role="alert"], script, style')) continue;
++      if (!owner || owner.closest('button, [hidden], [inert], [aria-hidden="true"], [data-reading-ui], [data-adapted-word-help], [data-reading-chart], [role="status"], [role="alert"], script, style')) continue;
+       if (tagged && wanted) {
+         const own = owner.closest('[data-reading-language]');
+-        if (own && String(own.getAttribute('data-reading-language') || '').trim().toLowerCase() !== wanted) continue;
++        if (!own || String(own.getAttribute('data-reading-language') || '').trim().toLowerCase() !== wanted) continue;
+       }
+       const block = blockOf(owner);
+       if (segments.length && block !== lastBlock) text += '\n';
+       lastBlock = block;
+@@ -1626,8 +1649,11 @@
+     // currentColor keeps the underline visible in every reading theme.
+     style.textContent = '::highlight(allo-word-help){text-decoration:underline dotted 2px currentColor}::highlight(allo-word-help-focus){background-color:#fde047;color:#111827}';
+     document.head.appendChild(style);
+   }
++  function hasPreparedWordHighlights() {
++    return typeof CSS !== 'undefined' && !!CSS.highlights && typeof Highlight === 'function';
++  }
+   function shareWordHelpMarks(registry, removed, added, name = 'allo-word-help') {
+     let shared = registry.get(name);
+     (removed || []).forEach(range => { if (shared) shared.delete(range); });
+     if (added.length) {
+@@ -1653,9 +1679,9 @@
+   // on screen, or null. Same lookup as the passage marks, so a selected word opens
+   // exactly the help its underline stands for.
+   function adaptedWordHelpAt(item, container, language, wordNode) {
+     const contract = getInstructionalContextApi();
+-    if (!item || !container || !wordNode || !contract?.isAdaptedReading?.(item) || !contract.validateAdaptedReadingSupports) return null;
++    if (!item || !container || !wordNode || !container.contains(wordNode) || !contract?.isAdaptedReading?.(item) || !contract.validateAdaptedReadingSupports) return null;
+     const help = contract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports);
+     if (!help.shown || help.status === 'stale' || !(help.annotations || []).length) return null;
+     const passage = contract.getAdaptedSupportSnapshot(item, item.adaptedReadingSupports);
+     if (!passage) return null;
+@@ -1668,9 +1694,9 @@
+ 
+   // Word help for an ADAPTED text: its own supports (item.adaptedReadingSupports),
+   // hidden from students until the teacher shows them, and listed after the
+   // passage because the adapted reader does not keep character positions.
+-  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession }) {
++  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession, onOpen }) {
+     const contract = getInstructionalContextApi();
+     const [busy, setBusy] = React.useState(false);
+     const [notice, setNotice] = React.useState('');
+     // The panel opens by itself when an edit leaves word help stale, and stays open
+@@ -1740,9 +1766,11 @@
+         spotRangesRef.current = [hit.range];
+         if (spotTimer.current) clearTimeout(spotTimer.current);
+         spotTimer.current = setTimeout(() => { shareWordHelpMarks(registry, spotRangesRef.current, [], 'allo-word-help-focus'); spotRangesRef.current = []; }, 4000);
+       }
+-      setSpotNotice(simplifiedText('simplified.word_help_highlighted_in_text', '"{word}" is highlighted in the passage.', { word: entry.quote }));
++      setSpotNotice(hasPreparedWordHighlights()
++        ? simplifiedText('simplified.word_help_highlighted_in_text', '"{word}" is highlighted in the passage.', { word: entry.quote })
++        : simplifiedText('simplified.word_help_located_in_text', 'Located "{word}" in the passage. Read its explanation in Word help.', { word: entry.quote }));
+     };
+     if (!contract?.isAdaptedReading?.(item) || !contract.validateAdaptedReadingSupports) return null;
+     const stored = item.adaptedReadingSupports;
+     const help = contract.validateAdaptedReadingSupports(item, stored);
+@@ -1768,9 +1796,9 @@
+       finally { setBusy(false); }
+     };
+     const list = !quiet && help.shown && entries.length > 0 && <section ref={listRef} data-adapted-word-help aria-labelledby={idBase + '-title'} className="mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-slate-900">
+       <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={idBase + '-title'} className="text-lg font-bold text-indigo-950">{simplifiedText('simplified.word_help_word_help', 'Word help')}</h3>{onListen && <button type="button" onClick={() => onListen(entries.map(entry => entry.quote + '. ' + explanation(entry)).join('. '))} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900">{listening ? simplifiedText('simplified.word_help_stop_word_help', 'Stop word help') : simplifiedText('simplified.word_help_listen_to_word_help', 'Listen to word help')}</button>}</div>
+-      {markWords !== false && <p data-adapted-word-help-tip className="mt-1 text-sm text-indigo-900">{simplifiedText('simplified.word_help_tip_select', 'Tip: choose Word meaning, then select an underlined word to open its help.')}</p>}<ul className="mt-2 space-y-2" lang={languageTag} dir={direction}>{entries.map(entry => <li key={entry.id} data-adapted-word-help-entry className="flex items-start gap-3 break-words text-base leading-relaxed">{entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} className="h-14 w-14 shrink-0 rounded bg-white object-contain" />}<span data-adapted-word-help-text className="min-w-0 flex-1"><strong>{entry.quote}</strong>: {explanation(entry)}</span>{markWords !== false && <button type="button" data-adapted-word-help-spot onClick={() => showInText(entry)} aria-label={simplifiedText('simplified.word_help_show_word_in_text', 'Show in text: {word}', { word: entry.quote })} className="min-h-11 shrink-0 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{simplifiedText('simplified.word_help_show_in_text', 'Show in text')}</button>}</li>)}</ul>
++      {markWords !== false && <p data-adapted-word-help-tip className="mt-1 text-sm text-indigo-900">{(hasPreparedWordHighlights() ? simplifiedText('simplified.word_help_tip_select', 'Tip: choose Word meaning, then select an underlined word to open its help.') : simplifiedText('simplified.word_help_tip_no_marks', 'Prepared explanations are listed below. Choose Word meaning to open help from the passage.'))}</p>}<ul className="mt-2 space-y-2" lang={languageTag} dir={direction}>{entries.map(entry => <li key={entry.id} data-adapted-word-help-entry className="flex items-start gap-3 break-words text-base leading-relaxed">{entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} className="h-14 w-14 shrink-0 rounded bg-white object-contain" />}<span data-adapted-word-help-text className="min-w-0 flex-1"><strong>{entry.quote}</strong>: {explanation(entry)}</span>{onOpen && <button type="button" data-prepared-help-open onClick={event => onOpen(event, entry)} aria-label={simplifiedText('simplified.word_help_prepared_for', 'Prepared word help: {word}', { word: entry.quote })} className="min-h-11 shrink-0 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{simplifiedText('simplified.word_help_open_help', 'Open help')}</button>}{markWords !== false && <button type="button" data-adapted-word-help-spot onClick={() => showInText(entry)} aria-label={simplifiedText('simplified.word_help_show_word_in_text', 'Show in text: {word}', { word: entry.quote })} className="min-h-11 shrink-0 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{simplifiedText('simplified.word_help_show_in_text', 'Show in text')}</button>}</li>)}</ul>
+       <p role="status" data-adapted-word-help-spot-notice className={spotNotice ? 'mt-2 text-sm text-indigo-900' : 'sr-only'}>{spotNotice}</p>
+       {renderCredits ? renderCredits(entries) : null}
+     </section>;
+     // Collapsed unless stale, so an optional tool does not crowd every adapted text.
+@@ -3518,9 +3546,9 @@
+       var arrows = ' ' + viewText('simplified.word_arrows_hint', 'Use Left and Right arrows to move between words.');
+       if (isCompareMode) return { mode: 'compare', hint: isTeacherMode ? readerText('simplified.compare_hint', 'Review the source and adapted versions below.') : readerText('simplified.compare_hint_student', 'Read the original and the easier version side by side.') };
+       if (isEditingLeveledText) return { mode: 'edit', label: viewText('simplified.mode_editing', 'Editing'), hint: readerText('simplified.edit_hint', 'Edit the passage below. Choose Read to return to reading.') };
+       if (isFluencyMode) return { mode: 'fluency', label: readerText('simplified.record_my_reading', 'Record my reading'), hint: readerText('simplified.fluency_hint', 'Use the read-along panel to practice at your own pace.') };
+-      if (interactionMode === 'define') return { mode: 'define', label: readerText('simplified.word_meaning', 'Word meaning'), hint: viewText('simplified.define_hint', 'Select a word to see what it means.') + (shownWordHelpCount && !protectedOriginal ? ' ' + viewText('simplified.define_hint_prepared', 'Underlined words open the word help your teacher prepared.') : '') + arrows };
++      if (interactionMode === 'define') return { mode: 'define', label: readerText('simplified.word_meaning', 'Word meaning'), hint: viewText('simplified.define_hint', 'Select a word to see what it means.') + (shownWordHelpCount && !protectedOriginal ? ' ' + (hasPreparedWordHighlights() ? viewText('simplified.define_hint_prepared', 'Underlined words open the word help your teacher prepared.') : viewText('simplified.define_hint_prepared_no_marks', 'Prepared explanations are available in Word help after the passage.')) : '') + arrows };
+       if (interactionMode === 'phonics') return { mode: 'phonics', label: readerText('simplified.word_sounds', 'Word sounds'), hint: viewText('simplified.phonics_hint', 'Select a word to hear its sounds.') + arrows };
+       if (interactionMode === 'add-glossary') return { mode: 'add-glossary', label: readerText('simplified.add_term', 'Add term'), hint: viewText('simplified.add_term_hint', 'Select a word to add it to the glossary.') + arrows };
+       if (interactionMode === 'explain') return { mode: 'explain', label: readerText('simplified.explain_mode', 'Explain'), hint: readerText('simplified.explain_hint', 'Choose a sentence for an explanation, or select a longer passage.') };
+       if (interactionMode === 'revise') return { mode: 'revise', label: readerText('simplified.revise_mode', 'Revise'), hint: readerText('simplified.revise_hint', 'Select the words you want to revise.') };
+@@ -3536,27 +3564,49 @@
+     }
+     // Selecting an underlined word in Word meaning opens the word help the teacher
+     // prepared for it beside the passage, before any AI definition.
+     var [wordHelpCard, setWordHelpCard] = React.useState(null);
++    var wordHelpInstanceId = React.useId().replace(/[^a-z0-9_-]/gi, '');
++    var wordHelpDialogId = 'prepared-word-help-' + wordHelpInstanceId;
++    var wordHelpOwnerRef = React.useRef(null), wordHelpSequenceRef = React.useRef(0);
++    var wordHelpStopRef = React.useRef(stopPlayback); wordHelpStopRef.current = stopPlayback;
+     var wordHelpCardRef = React.useRef(null), wordHelpCardOpener = React.useRef(null);
+-    React.useEffect(function () { setWordHelpCard(null); }, [generatedContent?.id, generatedContent?.data, generatedContent?.adaptedReadingSupports, interactionMode, isCompareMode]);
++    React.useEffect(() => () => { stopPreparedCardAudio(wordHelpOwnerRef.current); }, []);
+     React.useEffect(function () { if (wordHelpCard && wordHelpCardRef.current) wordHelpCardRef.current.focus(); }, [wordHelpCard && wordHelpCard.entry.id, wordHelpCard && wordHelpCard.x, wordHelpCard && wordHelpCard.y]);
++    function stopPreparedCardAudio(owner) {
++      if (!owner || owner.closed) return;
++      owner.closed = true;
++      if (Object.values(owner.audioIds).includes(simplifiedPlayingContentIdRef.current) && typeof wordHelpStopRef.current === 'function') wordHelpStopRef.current();
++    }
+     function closeWordHelpCard(restoreFocus) {
++      stopPreparedCardAudio(wordHelpOwnerRef.current);
++      wordHelpOwnerRef.current = null;
+       var opener = wordHelpCardOpener.current;
+       wordHelpCardOpener.current = null;
+       setWordHelpCard(null);
+-      if (restoreFocus !== false && opener && opener.isConnected) opener.focus();
++      if (restoreFocus !== false && opener && opener.isConnected && !opener.closest('[hidden], [inert], [aria-hidden="true"]')) opener.focus();
+     }
+-    function openWordHelpCard(event, container, language) {
+-      var word = event.currentTarget;
+-      var entry = container ? adaptedWordHelpAt(generatedContent, container, language, word) : null;
+-      if (!entry) { if (wordHelpCard) closeWordHelpCard(false); return false; }
++    function showPreparedWordHelp(event, entry, language, container) {
++      var current = readingContract?.validateAdaptedReadingSupports?.(generatedContent, generatedContent.adaptedReadingSupports);
++      entry = current?.shown && current.status !== 'stale' && current.annotations.find(value => value.id === entry?.id);
++      if (!entry || interactionMode === 'cloze') return false;
++      stopPreparedCardAudio(wordHelpOwnerRef.current);
+       if (typeof props.closeDefinition === 'function') props.closeDefinition();
+-      var rect = word.getBoundingClientRect ? word.getBoundingClientRect() : null;
++      var word = event.currentTarget, rect = word.getBoundingClientRect ? word.getBoundingClientRect() : null;
++      var prefix = 'reading-' + generatedContent.id + '-word-help-' + wordHelpInstanceId + '-' + (++wordHelpSequenceRef.current);
++      var owner = { entry, language, context: preparedHelpContext, container,
++        audioIds: { word: prefix + '-word', help: prefix + '-card' },
++        x: event.clientX || rect?.left || 0, y: event.clientY || rect?.bottom || 0 };
+       wordHelpCardOpener.current = word;
+-      setWordHelpCard({ entry: entry, language: language, x: event.clientX || rect?.left || 0, y: event.clientY || rect?.bottom || 0 });
++      wordHelpOwnerRef.current = owner;
++      setWordHelpCard(owner);
+       return true;
+     }
++    function openWordHelpCard(event, container, language) {
++      var entry = container ? adaptedWordHelpAt(generatedContent, container, language, event.currentTarget) : null;
++      if (!entry) { if (wordHelpCard) closeWordHelpCard(false); return false; }
++      return showPreparedWordHelp(event, entry, language, container);
++    }
+     // Reading place (outline, bookmark, continue, section prompts). Adapted
+     // single-language readings only: their paragraphs carry stable numbers.
+     var placeLearner = props.isStudentPreview ? '' : props.readingLearnerKey != null ? String(props.readingLearnerKey) : isTeacherMode ? 'teacher' : '';
+     var placeItemId = String(generatedContent?.id || '');
+@@ -4007,8 +4057,43 @@
+       </div>;
+     }
+     var [showComparisonChanges, setShowComparisonChanges] = React.useState(function () { try { return localStorage.getItem('alloflow_reading_show_changes') === 'on'; } catch (_) { return false; } });
+     var [showReadingGlosses, setShowReadingGlosses] = React.useState(true);
++    var preparedHelpContext = JSON.stringify([generatedContent?.id, generatedContent?.data, readingLanguage, interactionMode, isCompareMode, comparisonLanguage, showComparisonChanges, showReadingGlosses, isEditingLeveledText, isImmersiveReaderActive, isSideBySide]);
++    React.useEffect(function () { closeWordHelpCard(false); }, [preparedHelpContext, generatedContent?.adaptedReadingSupports]);
++    // Resolve prepared availability before paint, using the same exact ranges
++    // as activation. Restore only attributes this reader effect still owns.
++    React.useLayoutEffect(function () {
++      if (interactionMode !== 'define' || !readerSurfaceRef.current) return;
++      var restore = [], panes = readerSurfaceRef.current.querySelectorAll('[data-reading-passage], [data-word-help-language]');
++      panes.forEach(container => {
++        if (container.hasAttribute('data-original-source') || container.closest('[data-adapted-reader]') !== readerSurfaceRef.current) return;
++        var language = container.getAttribute('data-word-help-language') || readingLanguage;
++        var help = readingContract?.validateAdaptedReadingSupports?.(generatedContent, generatedContent.adaptedReadingSupports);
++        var snapshot = readingContract?.getAdaptedSupportSnapshot?.(generatedContent, generatedContent.adaptedReadingSupports);
++        if (!help?.shown || help.status === 'stale' || !snapshot) return;
++        var visible = readingTextSegments(container, language), hits = locateWordHelp(snapshot.text, help.annotations, visible.text);
++        var wordSegments = new Map();
++        visible.segments.forEach(segment => {
++          var word = segment.node.parentElement.closest('[data-reading-word], [data-exact-word]');
++          if (word && !wordSegments.has(word)) wordSegments.set(word, segment);
++        });
++        container.querySelectorAll('[data-reading-word], [data-exact-word]').forEach(word => {
++          var segment = wordSegments.get(word);
++          var hit = segment && hits.find(value => segment.start >= value.start && segment.start < value.end);
++          if (!hit) return;
++          var label = viewText('simplified.word_help_prepared_for', 'Prepared word help: {word}', { word: hit.entry.quote });
++          var attributes = { 'aria-label': label, title: label, 'aria-haspopup': 'dialog', 'aria-controls': wordHelpDialogId,
++            'aria-expanded': String(wordHelpCard?.context === preparedHelpContext && wordHelpCardOpener.current === word), 'data-prepared-word-help': hit.entry.id };
++          Object.entries(attributes).forEach(([name, value]) => {
++            var previous = word.getAttribute(name);
++            word.setAttribute(name, value);
++            restore.push(() => { if (word.getAttribute(name) === value) { if (previous == null) word.removeAttribute(name); else word.setAttribute(name, previous); } });
++          });
++        });
++      });
++      return () => restore.forEach(reset => reset());
++    }, [preparedHelpContext, generatedContent?.adaptedReadingSupports, wordHelpCard, props.t]);
+     var [glossDensity, setGlossDensity] = React.useState('all');
+     var [glossBusy, setGlossBusy] = React.useState(false);
+     var [glossNotice, setGlossNotice] = React.useState('');
+     var [glossEditorRequest, setGlossEditorRequest] = React.useState(null);
+@@ -4089,13 +4174,20 @@
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ key: 'source', title: t('simplified.diff_original'), text: sourceText, language: originalLanguage }, { key: 'adapted', title: t('simplified.diff_adapted'), text: targetText, language: targetLanguage }].map(version => <section key={version.key} className="min-w-0 rounded-xl border border-slate-300 bg-white p-4"><h3 className="mb-3 font-bold">{version.title}{version.language ? ' · ' + version.language : ''}</h3><div className="mb-3 flex flex-wrap gap-2"><button type="button" data-comparison-karaoke={version.key} aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!version.text || !KaraokeReaderOverlay} className="min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={version.key === 'source' ? readerText('simplified.listen_along_original', 'Listen along to the original') : readerText('simplified.listen_along_adapted', 'Listen along to the adapted text')} onClick={() => {
+             if (typeof stopPlayback === 'function') stopPlayback();
+             var entries = getReadAloudSentenceEntriesForText(version.text, version.language || readingLanguage);
+             setComparisonKaraoke({ text: version.text, language: version.language || readingLanguage, entries, sentences: entries.map(entry => entry.text), languages: entries.map(entry => simplifiedLanguageTag(entry.language)) });
+-          }}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_along', 'Listen along')}</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>{viewText('simplified.compare_open_original_reader', 'Open original reader')}</button>}</div><div data-compare-version={version.key} data-word-help-language={version.key === 'adapted' && showReadingGlosses && !showDiff && !(adaptedParts && effectiveLanguage === 'english') ? targetLanguage : undefined} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && !showDiff && renderPictureCredits(comparisonGlosses)}{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(comparisonSupportOwner, false)} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
+-        {showReadingGlosses && !showDiff && <AdaptedWordHelp draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
++          }}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_along', 'Listen along')}</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>{viewText('simplified.compare_open_original_reader', 'Open original reader')}</button>}</div><div data-compare-version={version.key} data-reading-language={version.language} data-word-help-language={version.key === 'adapted' && showReadingGlosses && !showDiff && !(adaptedParts && effectiveLanguage === 'english') ? targetLanguage : undefined} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && !showDiff && renderPictureCredits(comparisonGlosses)}{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(comparisonSupportOwner, false)} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
++        {showReadingGlosses && !showDiff && <AdaptedWordHelp onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
+       </div>;
+     }
+ 
++    function playPreparedCardAudio(kind, text) {
++      var owner = wordHelpOwnerRef.current;
++      if (!owner || owner.context !== preparedHelpContext) return;
++      var id = owner.audioIds[kind], wasPlaying = !!isPlaying && playingContentId === id;
++      if (typeof stopPlayback === 'function') stopPlayback();
++      if (!wasPlaying && typeof handleSpeak === 'function') handleSpeak(text, id, 0, true, owner.language || readingLanguage);
++    }
+     function isExactPassagePlaying(pane) { return !!isPlaying && playingContentId === 'reading-' + generatedContent.id + '-' + pane; }
+     function speakExactPassage(text, pane, language) {
+       if (props.isStudentPreview) return;
+       var wasPlaying = isExactPassagePlaying(pane);
+@@ -4313,13 +4405,13 @@
+           {renderReadingPlaceControls()}
+         </div>
+         {renderReadingPlacePanels()}
+ 
+-        <div ref={readingStartRef} data-reading-passage="true" data-paragraph-focus={!!isLineFocusMode} tabIndex={-1} role="region" aria-label={readerText('simplified.passage', 'Reading passage')} className={(isLineFocusMode ? 'bg-slate-950 rounded-xl p-4 ' : '') + 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'}>
++        <div ref={readingStartRef} data-reading-passage="true" data-reading-language={readingLanguage} data-paragraph-focus={!!isLineFocusMode} tabIndex={-1} role="region" aria-label={readerText('simplified.passage', 'Reading passage')} className={(isLineFocusMode ? 'bg-slate-950 rounded-xl p-4 ' : '') + 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'}>
+           {parts && isSideBySide ? <>
+             {parts.source.length !== parts.target.length && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{readerText('simplified.unmatched_paragraphs', 'The versions have different paragraph counts. They are shown in order; a row may not be an exact translation match.')}</p>}
+-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{Array.from({ length: Math.max(rendered[0].length, rendered[1].length) }, (_, i) => <React.Fragment key={i}>{languages.map((section, j) => <section key={section.key} lang={simplifiedLanguageTag(section.label)} dir={j === 1 ? 'ltr' : sourceDirection} className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-4" style={{ backgroundColor: isLineFocusMode ? 'transparent' : undefined }}><div className="mb-3 text-sm font-bold" style={{ color: isLineFocusMode ? '#e2e8f0' : '#334155' }}>{section.label}</div><div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}>{rendered[j][i] || <p className="text-sm italic text-slate-600">{readerText('simplified.no_paired_paragraph', 'No corresponding paragraph in this version.')}</p>}</div></section>)}</React.Fragment>)}</div>
+-          </> : languages.map((section, i) => <section key={section.key} lang={simplifiedLanguageTag(section.label)} dir={i === 1 ? 'ltr' : sourceDirection}>{i === 1 && <h2 className="my-6 border-t border-indigo-200 pt-4 text-lg font-bold">{simplifiedEnglishTranslationLabel}</h2>}{rendered[i]}</section>)}
++            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{Array.from({ length: Math.max(rendered[0].length, rendered[1].length) }, (_, i) => <React.Fragment key={i}>{languages.map((section, j) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={j === 1 ? 'ltr' : sourceDirection} className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-4" style={{ backgroundColor: isLineFocusMode ? 'transparent' : undefined }}><div data-reading-ui="true" className="mb-3 text-sm font-bold" style={{ color: isLineFocusMode ? '#e2e8f0' : '#334155' }}>{section.label}</div><div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}>{rendered[j][i] || <p data-reading-ui="true" className="text-sm italic text-slate-600">{readerText('simplified.no_paired_paragraph', 'No corresponding paragraph in this version.')}</p>}</div></section>)}</React.Fragment>)}</div>
++          </> : languages.map((section, i) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={i === 1 ? 'ltr' : sourceDirection}>{i === 1 && <h2 data-reading-ui="true" className="my-6 border-t border-indigo-200 pt-4 text-lg font-bold">{simplifiedEnglishTranslationLabel}</h2>}{rendered[i]}</section>)}
+         </div>
+         {renderSectionPromptsArea()}
+         {/* Novak's ramp: an adaptation prepares students for the original, so its end leads there. */}
+         {props.onReadOriginal && capturedSource && !protectedOriginal && instructionalRole !== 'primary' && interactionMode !== 'cloze' && <div data-read-original-next className="mt-6 flex justify-center"><button type="button" onClick={() => openOriginalReading(generatedContent, capturedSource.text, true)} className="min-h-11 rounded-lg border-2 border-indigo-700 bg-white px-4 py-2 font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{viewText('simplified.read_original_next', 'Now read the original')} <span aria-hidden="true">&rarr;</span></button></div>}
+@@ -4610,22 +4702,22 @@
+                 ...generatedContent
+               };
+               delete updated.alignmentCheck;
+               setGeneratedContent(updated);
+-            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId('simplified-focus-view-hint')} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{wordHelpCard && (() => {
++            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId('simplified-focus-view-hint')} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{wordHelpCard && wordHelpCard.context === preparedHelpContext && (() => {
+           var entry = wordHelpCard.entry, cardLanguage = wordHelpCard.language || readingLanguage, explanation = entry.definition || entry.explanation || entry.text || '';
+           var cardDirection = typeof getContentDirection === 'function' ? getContentDirection(cardLanguage) : undefined;
+           var cardButton = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+           var cardLink = 'min-h-11 rounded px-1 text-sm text-indigo-800 underline underline-offset-2 hover:text-indigo-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+           var moreHelp = () => { var card = wordHelpCard, opener = wordHelpCardOpener.current; closeWordHelpCard(false); if (typeof handleWordClick === 'function') handleWordClick(card.entry.quote, { stopPropagation: () => {}, currentTarget: opener, clientX: card.x, clientY: card.y }, { language: card.language, preparedText: card.entry.definition || card.entry.explanation || card.entry.text || '' }); };
+           var showAll = () => { var list = (readerSurfaceRef.current || document).querySelector('[data-adapted-word-help]'); closeWordHelpCard(!list); if (!list) return; if (!list.hasAttribute('tabindex')) list.setAttribute('tabindex', '-1'); scrollReadingTarget(list, { block: 'start' }); list.focus(); };
+-          return <div ref={wordHelpCardRef} role="dialog" aria-labelledby={readerId('simplified-word-help-card-title')} tabIndex={-1} data-word-help-card onKeyDown={e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); closeWordHelpCard(); }} className={`fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`} style={simplifiedPopupStyle(wordHelpCard, 20)}>
+-            <div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><h5 id={readerId('simplified-word-help-card-title')} lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-lg font-bold text-indigo-900">{entry.quote}</h5><p className="text-xs font-semibold text-indigo-700">{viewText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p></div><button type="button" onClick={() => closeWordHelpCard()} aria-label={viewText('common.close', 'Close')} className="min-h-11 min-w-11 shrink-0 rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><X size={14} /></button></div>
++          return <div ref={wordHelpCardRef} id={wordHelpDialogId} role="dialog" aria-labelledby={wordHelpDialogId + '-title'} tabIndex={-1} data-word-help-card onKeyDown={e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); closeWordHelpCard(); }} className={`fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`} style={simplifiedPopupStyle(wordHelpCard, 20)}>
++            <div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><h5 id={wordHelpDialogId + '-title'} lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-lg font-bold text-indigo-900">{entry.quote}</h5><p className="text-xs font-semibold text-indigo-700">{viewText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p></div><button type="button" onClick={() => closeWordHelpCard()} aria-label={viewText('common.close', 'Close')} className="min-h-11 min-w-11 shrink-0 rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><X size={14} /></button></div>
+             {entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} data-word-help-card-picture className="mb-2 h-24 w-full rounded-lg bg-white object-contain" />}
+             <p data-word-help-card-text lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-base leading-relaxed">{explanation}</p>
+             <div className="mt-3 flex flex-wrap gap-2">
+-              <button type="button" data-word-help-card-hear aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview} onClick={() => speakExactPassage(entry.quote, 'word-help-word', cardLanguage)} className={cardButton}>{isExactPassagePlaying('word-help-word') ? viewText('common.stop', 'Stop') : viewText('simplified.word_help_card_hear_word', 'Hear the word')}</button>
+-              <button type="button" data-word-help-card-listen aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview} onClick={() => speakExactPassage(entry.quote + '. ' + explanation, 'word-help-card', cardLanguage)} className={cardButton}>{isExactPassagePlaying('word-help-card') ? viewText('common.stop', 'Stop') : viewText('simplified.word_help_card_listen', 'Listen to the help')}</button>
++              <button type="button" data-word-help-card-hear aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview} onClick={() => playPreparedCardAudio('word', entry.quote)} className={cardButton}>{isPlaying && playingContentId === wordHelpCard.audioIds.word ? viewText('common.stop', 'Stop') : viewText('simplified.word_help_card_hear_word', 'Hear the word')}</button>
++              <button type="button" data-word-help-card-listen aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview} onClick={() => playPreparedCardAudio('help', entry.quote + '. ' + explanation)} className={cardButton}>{isPlaying && playingContentId === wordHelpCard.audioIds.help ? viewText('common.stop', 'Stop') : viewText('simplified.word_help_card_listen', 'Listen to the help')}</button>
+             </div>
+             <div className="mt-2 flex flex-wrap gap-x-3">
+               {typeof handleWordClick === 'function' && <button type="button" data-word-help-card-more onClick={moreHelp} className={cardLink}>{viewText('simplified.word_help_card_more', 'More about this word')}</button>}
+               <button type="button" data-word-help-card-all onClick={showAll} className={cardLink}>{viewText('simplified.word_help_card_all', 'All word help')}</button>
+@@ -4640,9 +4732,9 @@
+                 setSelectionMenu(null);
+               }} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Plus size={12} className="text-green-700" /> {t('text_tools.add_term')}</button>}</>}</div><div className="w-2 h-2 bg-slate-800 rotate-45" /></div>}{selectionMenu && <div className={`fixed inset-0 ${_popupBackdropZ} bg-transparent`} onMouseDown={e => {
+           setSelectionMenu(null);
+           setIsCustomReviseOpen(false);
+-        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId('simplified-revision-title')} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100"><h5 id={readerId('simplified-revision-title')} className="font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
++        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId('simplified-revision-title')} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100"><h5 id={readerId('simplified-revision-title')} className="font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
+   }
+   SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
+   SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;
+   SimplifiedView.ReadingGlossEditor = ReadingGlossEditor;
+===================================================================
+--- a/tests/adapted_word_help_ui.test.js
++++ b/tests/adapted_word_help_ui.test.js
+@@ -183,9 +183,11 @@
+       const passage = host.querySelector('[data-reading-passage]');
+       const tw = document.createTreeWalker(passage, NodeFilter.SHOW_TEXT);
+       for (let node = tw.nextNode(); node; node = tw.nextNode()) node.data = node.data.replace('heron', 'egret');
+       view.rerender();
+-      expect(registry.get('allo-word-help').ranges.map(range => range.toString())).toEqual(['shallow']);
++      // A changed display no longer proves the source anchors. Keep the list,
++      // but remove all marks rather than guessing a surviving occurrence.
++      expect(registry.has('allo-word-help')).toBe(false);
+     } finally {
+       window.CSS = savedCSS; globalThis.Highlight = savedHighlight; Element.prototype.scrollIntoView = savedScroll;
+     }
+   });
+@@ -399,8 +401,11 @@
+     expect(handleWordClick).toHaveBeenCalledTimes(1);
+   });
+ 
+   it('says in the Word meaning banner that underlined words open prepared help', () => {
++    vi.stubGlobal('CSS', { highlights: new Map() });
++    vi.stubGlobal('Highlight', class extends Set {});
+     mountReader(adaptedItem([at('heron')], true), { mode: 'define' });
+     expect(host.querySelector('[data-reading-mode-status]').textContent).toBe('Word meaning · Select a word to see what it means. Underlined words open the word help your teacher prepared. Use Left and Right arrows to move between words.');
++    vi.unstubAllGlobals();
+   });
+ });
+===================================================================
+--- a/tests/prepared_word_help_regressions.test.js
++++ b/tests/prepared_word_help_regressions.test.js
+@@ -1,10 +1,8 @@
+ // Track 10: exercise the current JSX without rebuilding shared deployment files.
+-// Pending the 04/09 integration dependency: these acceptance cases expose known
+-// baseline defects and intentionally remain red until the corresponding fixes land.
+ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+ import { createRequire } from 'node:module';
+-import { readFileSync } from 'node:fs';
++import { existsSync, readFileSync } from 'node:fs';
+ import { resolve } from 'node:path';
+ import { loadAlloModule } from './setup.js';
+ 
+ const require = createRequire(import.meta.url);
+@@ -17,9 +15,10 @@
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
+   for (const file of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js']) loadAlloModule(file);
+   ({ InstructionalContext: contract, PureHelpers: pure, PhaseNHelpers: phase } = window.AlloModules);
+-  const source = readFileSync('reader_place_store.js', 'utf8') + '\n' + readFileSync('view_simplified_source.jsx', 'utf8');
++  // Track 04 embeds this helper on newer integration baselines.
++  const source = (existsSync('reader_place_store.js') ? readFileSync('reader_place_store.js', 'utf8') + '\n' : '') + readFileSync('view_simplified_source.jsx', 'utf8');
+   const compiled = require('@babel/core').transformSync(source, {
+     plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
+     babelrc: false, configFile: false, parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+   }).code;
+@@ -98,9 +97,9 @@
+       isSideBySide: true,
+       renderFormattedText: () => React.createElement('table', null, React.createElement('tbody', null,
+         React.createElement('tr', null, React.createElement('td', null, 'radio')))),
+     });
+-    const sourceWords = words('radio', '[data-reading-language="Spanish"]');
++    const sourceWords = words('radio').filter(word => word.closest('[data-reading-language]').getAttribute('data-reading-language') === 'Spanish');
+     click(sourceWords[1]);
+     expect(card()?.querySelector('h5').textContent).toBe('radio');
+     expect(props.handleWordClick).not.toHaveBeenCalled();
+   });
+@@ -117,8 +116,60 @@
+   it('identifies prepared help before activation', () => {
+     mount(itemWithHelp('The heron rests.', 'heron'));
+     expect(words('heron')[0].getAttribute('aria-label')).toMatch(/prepared|teacher/i);
+   });
++
++  it.each([
++    ['## Birds\n\nA **heron** rests. A heron flies.', 'heron', 'English'],
++    ['Le café ferme. Le café ouvre.', 'café', 'French'],
++    ['Le cafe\u0301 ferme. Le cafe\u0301 ouvre.', 'cafe\u0301', 'French'],
++    ['猫在这里。猫在家里。', '猫', 'Chinese'],
++    ['الطائر هنا. الطائر هناك.', 'الطائر', 'Arabic'],
++    ['A 𐐀 rests. A 𐐀 flies.', '𐐀', 'English'],
++  ])('keeps the exact repeated occurrence and unchanged passage: %s', (data, quote, language) => {
++    const item = itemWithHelp(data, quote, data.lastIndexOf(quote), language), saved = JSON.stringify(item);
++    const { props } = mount(item);
++    const before = host.querySelector('[data-reading-passage]').textContent;
++    const supported = [...host.querySelectorAll('[data-prepared-word-help]')];
++    expect(supported.length).toBeGreaterThan(0);
++    click(supported.at(-1));
++    expect(card()?.querySelector('h5').textContent).toBe(quote);
++    expect(props.handleWordClick).not.toHaveBeenCalled(); expect(props.handleSpeak).not.toHaveBeenCalled();
++    expect(JSON.stringify(item)).toBe(saved);
++    expect(host.querySelector('[data-reading-passage]').textContent).toBe(before);
++  });
++
++  it('keeps a phrase across a line break anchored to its own range', () => {
++    const data = 'A river\nbank. A river bank.';
++    const { props } = mount(itemWithHelp(data, 'river bank', data.lastIndexOf('river bank')));
++    click(words('bank')[0]); expect(card()).toBeNull();
++    props.handleWordClick.mockClear();
++    click(words('bank')[1]); expect(card()?.querySelector('h5').textContent).toBe('river bank');
++    expect(props.handleWordClick).not.toHaveBeenCalled();
++  });
++
++  it('offers prepared help for a link without replacing the link or nesting controls', () => {
++    const item = itemWithHelp('Read [heron](https://example.org/source) today.', 'heron');
++    const { props } = mount(item);
++    const link = host.querySelector('[data-reading-passage] a');
++    expect(link.textContent).toBe('heron'); expect(link.href).toBe('https://example.org/source');
++    expect(link.querySelector('[role="button"], button')).toBeNull();
++    const opener = host.querySelector('[data-prepared-help-open]');
++    key(opener, 'Enter'); // Native buttons activate through their click event.
++    click(opener);
++    expect(card()?.querySelector('h5').textContent).toBe('heron');
++    expect(props.handleSpeak).not.toHaveBeenCalled(); expect(props.handleWordClick).not.toHaveBeenCalled();
++    key(card(), 'Escape'); expect(document.activeElement).toBe(opener);
++  });
++
++  it('leaves exact support accessible through the list when displayed text cannot be matched', () => {
++    const data = '| Bird |\n| --- |\n| heron |';
++    const { props } = mount(itemWithHelp(data, 'heron'), { renderFormattedText: () => React.createElement('table', null,
++      React.createElement('tbody', null, React.createElement('tr', null, React.createElement('td', null, 'heron')))) });
++    click(host.querySelector('[data-prepared-help-open]'));
++    expect(card()?.querySelector('h5').textContent).toBe('heron');
++    expect(props.handleWordClick).not.toHaveBeenCalled();
++  });
+ });
+ 
+ describe('Prepared help lifecycle regressions', () => {
+   it('dismisses an open card when comparison switches to Show changes', () => {
+@@ -131,9 +182,11 @@
+ 
+   it.each(['word-help-word', 'word-help-card', 'simplified-main'])('closing stops only prepared-card audio: %s', pane => {
+     const view = mount(itemWithHelp('The heron rests.', 'heron'));
+     click(words('heron')[0]);
+-    view.update({ isPlaying: true, playingContentId: pane === 'simplified-main' ? pane : 'reading-prepared-regression-' + pane });
++    click(card().querySelector(pane === 'word-help-word' ? '[data-word-help-card-hear]' : '[data-word-help-card-listen]'));
++    const ownId = view.props.handleSpeak.mock.calls.at(-1)[1];
++    view.update({ isPlaying: true, playingContentId: pane === 'simplified-main' ? pane : ownId });
+     view.props.stopPlayback.mockClear(); key(card(), 'Escape');
+     expect(view.props.stopPlayback).toHaveBeenCalledTimes(pane === 'simplified-main' ? 0 : 1);
+   });
+ 
+@@ -144,5 +197,37 @@
+     const notice = host.querySelector('[data-adapted-word-help-spot-notice]').textContent;
+     expect(notice).toContain('heron'); expect(notice).not.toMatch(/highlighted/i);
+     expect(host.querySelector('[data-adapted-word-help-tip]').textContent).not.toMatch(/underlined/i);
+   });
++
++  it.each(['hidden', 'edited', 'cloze', 'editing'])('dismisses a card and removes prepared actions after %s', transition => {
++    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
++    click(words('heron')[0]); expect(card()).not.toBeNull();
++    if (transition === 'hidden') view.update({ generatedContent: { ...item, adaptedReadingSupports: { ...item.adaptedReadingSupports, shown: false } } });
++    if (transition === 'edited') view.update({ generatedContent: { ...item, data: 'The heron flies.' } });
++    if (transition === 'cloze') view.update({ interactionMode: 'cloze' });
++    if (transition === 'editing') view.update({ isTeacherMode: true, isEditingLeveledText: true });
++    expect(card()).toBeNull();
++    expect(host.querySelector('[data-prepared-word-help], [data-prepared-help-open]')).toBeNull();
++  });
++
++  it('stops owned audio on unmount', () => {
++    const view = mount(itemWithHelp('The heron rests.', 'heron'));
++    click(words('heron')[0]); click(card().querySelector('[data-word-help-card-listen]'));
++    const call = view.props.handleSpeak.mock.calls.at(-1);
++    expect(call[0]).toBe('heron. Meaning for the selected occurrence.'); expect(call[4]).toBe('English');
++    view.update({ isPlaying: true, playingContentId: call[1] }); view.props.stopPlayback.mockClear();
++    act(() => root.unmount()); root = null;
++    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
++  });
++
++  it('uses different audio ownership for a replacement card', () => {
++    const view = mount(itemWithHelp('The heron rests.', 'heron'));
++    click(words('heron')[0]); click(card().querySelector('[data-word-help-card-hear]'));
++    const firstId = view.props.handleSpeak.mock.calls.at(-1)[1];
++    view.update({ isPlaying: true, playingContentId: firstId }); view.props.stopPlayback.mockClear();
++    click(host.querySelector('[data-prepared-help-open]'));
++    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
++    click(card().querySelector('[data-word-help-card-hear]'));
++    expect(view.props.handleSpeak.mock.calls.at(-1)[1]).not.toBe(firstId);
++  });
+ });

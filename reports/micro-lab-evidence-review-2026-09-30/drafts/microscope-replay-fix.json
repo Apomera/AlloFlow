@@ -1,0 +1,70 @@
+[
+  {
+    "old": "    function draftReview(id, value) {",
+    "new": "    function normalizeEvidenceView(value) {\n      if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1) return null;\n      var context = value.context, id = context && context.specimen;\n      if (Object.keys(sizes).indexOf(id) < 0 || !validResultContext(context, id)) return null;\n      return { version: 1, context: copyContext(context) };\n    }\n    function draftReview(id, value) {"
+  },
+  {
+    "old": "sameResult: sameResult, draftReview: draftReview, exportRows: exportRows",
+    "new": "sameResult: sameResult, draftReview: draftReview, normalizeEvidenceView: normalizeEvidenceView, exportRows: exportRows"
+  },
+  {
+    "old": "    var measurements = MicroMeasurements.normalize(d.microscopeMeasurements);\n    function previousViewMatches(request) {",
+    "new": "    var measurements = MicroMeasurements.normalize(d.microscopeMeasurements);\n    var evidenceView = MicroMeasurements.normalizeEvidenceView(d.microscopeEvidenceView);\n    var evidenceViewActive = !!(evidenceView && evidenceView.context.specimen === organism &&\n      evidenceView.context.method === (electronMode ? 'em' : 'lightbright') && evidenceView.context.mag === mag && evidenceView.context.zoom === displayZoom);\n    function updateObservationView(patch) {\n      previousViewRequestRef.current = null;\n      setPreviousViewNotice(null);\n      upd(d.microscopeEvidenceView == null ? patch : Object.assign({ microscopeEvidenceView: null }, patch));\n    }\n    function previousViewMatches(request) {"
+  },
+  {
+    "old": "      return !!(entry && MicroMeasurements.sameResult(entry.previousResult, request.result) && organism === request.id &&",
+    "new": "      return !!(evidenceViewActive && entry && MicroMeasurements.sameResult(entry.previousResult, request.result) && organism === request.id &&"
+  },
+  {
+    "old": "      upd({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });\n      setNotebookNotice(specimen.name + ': ' + __alloMBT('stem.microbiology.measure_reviewed',",
+    "new": "      updateObservationView({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });\n      setNotebookNotice(specimen.name + ': ' + __alloMBT('stem.microbiology.measure_reviewed',"
+  },
+  {
+    "old": "      // Replaying saved evidence does not create a new observation or award.\n      observedRef.current = specimen.id + ':' + seen.join(',');\n      var request = { id: specimen.id, result: saved, focus: specimen.focus, owner: microscopeOwnerRef.current, input: estimateInputRef.current };\n      upd({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });",
+    "new": "      // Persist this viewing mode so reopening saved evidence never creates an observation.\n      var mode = MicroMeasurements.normalizeEvidenceView({ version: 1, context: saved.context });\n      var request = { id: specimen.id, result: saved, focus: specimen.focus, owner: microscopeOwnerRef.current, input: estimateInputRef.current };\n      upd({ scopeOrganism: specimen.id, selectedScope: saved.context.method, magnification: saved.context.mag, microscopeZoom: saved.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus, microscopeEvidenceView: mode });"
+  },
+  {
+    "old": "      upd({ scopeOrganism: specimen.id, selectedScope: working.context.method, magnification: working.context.mag, microscopeZoom: working.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });",
+    "new": "      updateObservationView({ scopeOrganism: specimen.id, selectedScope: working.context.method, magnification: working.context.mag, microscopeZoom: working.context.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: specimen.focus });"
+  },
+  {
+    "old": "      upd({ scopeOrganism: specimen.id, selectedScope: specimen.id === 'phage' ? 'em' : 'lightbright', magnification: specimen.bestMag, microscopeZoom: specimen.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: 10 });",
+    "new": "      updateObservationView({ scopeOrganism: specimen.id, selectedScope: specimen.id === 'phage' ? 'em' : 'lightbright', magnification: specimen.bestMag, microscopeZoom: specimen.zoom, microscopeTargetFocus: specimen.focus, microscopeFocus: 10 });"
+  },
+  {
+    "old": "      if (canSee && isFocused && !cropped && seen.indexOf(organism) < 0 && observedRef.current !== observationKey) {",
+    "new": "      if (!evidenceViewActive && canSee && isFocused && !cropped && seen.indexOf(organism) < 0 && observedRef.current !== observationKey) {"
+  },
+  {
+    "old": "    }, [organism, canSee, isFocused, cropped, seen.join(',')]);\n    function setupSlide() {\n      upd({ selectedScope: organism === 'phage' ? 'em' : 'lightbright', magnification: sel.bestMag, microscopeZoom: sel.zoom });",
+    "new": "    }, [organism, canSee, isFocused, cropped, seen.join(','), evidenceViewActive]);\n    function setupSlide() {\n      updateObservationView({ selectedScope: organism === 'phage' ? 'em' : 'lightbright', magnification: sel.bestMag, microscopeZoom: sel.zoom });"
+  },
+  {
+    "old": "      hh('div', { role: 'group', 'aria-label': __alloMBT('stem.microbiology.a11y_organism_slides', 'Organism slides'),",
+    "new": "      evidenceViewActive ? hh('div', { 'data-measurement-evidence-view': organism, style: { marginBottom: 12, padding: 10, borderLeft: '3px solid #7dd3fc' } },\n        hh('p', { id: 'micro-measurement-evidence-view', style: { margin: '0 0 8px', fontSize: 11, lineHeight: 1.6 } }, __alloMBT('stem.microbiology.measure_evidence_view_note', 'Reviewing saved evidence with focus assist. Observation progress and XP stay unchanged while this view is reopened. Return to observation, or adjust the viewing controls, to observe this slide normally. Your checked estimates and working draft will be kept.')),\n        hh('button', { id: 'micro-measurement-resume-observation', type: 'button', 'aria-describedby': 'micro-measurement-evidence-view', onClick: function() { updateObservationView({}); focusEstimate(); }, style: buttonStyle }, __alloMBT('stem.microbiology.measure_resume_observation', 'Return to observation'))\n      ) : null,\n      hh('div', { role: 'group', 'aria-label': __alloMBT('stem.microbiology.a11y_organism_slides', 'Organism slides'),"
+  },
+  {
+    "old": "if (!active) upd({ scopeOrganism: o.id, microscopeTargetFocus: o.focus, microscopeFocus: 10, microscopeZoom: o.zoom });",
+    "new": "if (!active) updateObservationView({ scopeOrganism: o.id, microscopeTargetFocus: o.focus, microscopeFocus: 10, microscopeZoom: o.zoom }); else if (evidenceViewActive) updateObservationView({});"
+  },
+  {
+    "old": "if (!mode.active) upd({ selectedScope: mode.id, magnification: mode.mag, microscopeZoom: electronMode ? sel.zoom : 1 });",
+    "new": "if (!mode.active) updateObservationView({ selectedScope: mode.id, magnification: mode.mag, microscopeZoom: electronMode ? sel.zoom : 1 }); else if (evidenceViewActive) updateObservationView({});"
+  },
+  {
+    "old": "onClick: function() { upd({ magnification: level }); }",
+    "new": "onClick: function() { updateObservationView({ magnification: level }); }"
+  },
+  {
+    "old": "onChange: function(e) { upd({ microscopeFocus: Number(e.target.value) }); }",
+    "new": "onChange: function(e) { updateObservationView({ microscopeFocus: Number(e.target.value) }); }"
+  },
+  {
+    "old": "onClick: function() { upd({ microscopeFocus: targetFocus }); }",
+    "new": "onClick: function() { updateObservationView({ microscopeFocus: targetFocus }); }"
+  },
+  {
+    "old": "onChange: function(e) { upd({ microscopeZoom: Number(e.target.value) }); }",
+    "new": "onChange: function(e) { updateObservationView({ microscopeZoom: Number(e.target.value) }); }"
+  }
+]

@@ -1,0 +1,61 @@
+
+Running 5 tests using 1 worker
+
+[1A[2K(node:47344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[1A[2K(node:47344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:141:5 › 3D failure retains the complete simulation in a habitat map
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:253:5 › named residents and two futures preserve the expedition, save evidence, and release both renderers
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:309:5 › two futures and resident browsing remain usable on a phone with motion reduced
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:801:5 › repeat trials preserve both original worlds, chart actual outcomes, save evidence and resume
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:856:5 › repeat evidence handles early extinction on a phone and survives changing experimental conditions
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:856:5 › repeat evidence handles early extinction on a phone and survives changing experimental conditions 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 3[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "scrollable-region-focusable",[39m
+    [31m+ ][39m
+
+      880 |   await page.locator('.ei-repeat-evidence').screenshot({ path: report + '/repeated-trials-phone-extinction.png' });
+      881 |   await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+    > 882 |   expect(await page.evaluate(async () => (window as any).axe.run('.ei-repeat-evidence', { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }).then((r: any) => r.violations.map((v: any) => v.id)))).toEqual([]);
+          |                                                                                                                                                                                                                         ^
+      883 |   await page.getByRole('button', { name: 'Return to my island', exact: false }).click();
+      884 |   await page.getByRole('button', { name: 'All EvoLab activities', exact: false }).click();
+      885 |   await page.getByRole('button', { name: 'Explore Living Island', exact: false }).click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:882:217
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-final-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-final-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\repeats-final-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\repeats-final-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\repeats-final-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\repeats-final-artifacts\evolab-living-island-repea-455c6-ing-experimental-conditions-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:856:5 › repeat evidence handles early extinction on a phone and survives changing experimental conditions 
+  4 passed (2.7m)

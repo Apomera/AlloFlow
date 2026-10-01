@@ -114,7 +114,10 @@ describe('the word bank', () => {
     const setClozeInstanceSet = vi.fn(), setClozeCompletedSet = vi.fn();
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
     act(() => root.render(React.createElement(Panel, { activeView: 'simplified', interactionMode: 'cloze', latestGlossary: GLOSSARY, leveledTextLanguage: 'English', playSound: () => {}, setClozeCompletedSet, setClozeInstanceSet, t: k => k, handleBankMouseDown: () => {}, handleSetInteractionModeToRead: () => {}, wordBankPosition: null, wordBankRef: React.createRef() })));
-    act(() => host.querySelector('button[aria-label="common.refresh"]').click());
+    // 548a67131 dropped aria-label "common.refresh": the name is the visible "Reset".
+    const reset = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reset');
+    expect(reset && reset.hasAttribute('aria-label')).toBe(false);
+    act(() => reset.click());
     expect(setClozeInstanceSet).toHaveBeenCalledTimes(1);
     expect(setClozeInstanceSet.mock.calls[0][0].size).toBe(0);
   });

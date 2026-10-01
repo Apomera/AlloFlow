@@ -62,7 +62,8 @@ describe('direct Listen along', () => {
     openDirect();
     expect(find('[data-karaoke-test]')).not.toBeNull();
     expect(latestKaraoke.text).toBe(reading.data);
-    expect(latestKaraoke.sentenceList.join(' ')).toBe(reading.data);
+    // A shown support on the original is read after its sentence, labelled.
+    expect(latestKaraoke.sentenceList).toEqual(form === 'original' ? [reading.data, 'Word support for "heron": A wading bird.'] : [reading.data]);
     expect(latestKaraoke.playbackOnly).toBe(true);
     for (const action of ['handleAnalyzePOS', 'setIsImmersiveReaderActive', 'setGeneratedContent', 'setHistory', 'handleSimplifiedTextChange', 'callTTS']) expect(props[action]).not.toHaveBeenCalled();
     expect(props.stopPlayback).toHaveBeenCalledOnce();

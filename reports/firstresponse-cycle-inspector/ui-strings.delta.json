@@ -1,0 +1,23 @@
+{
+  "depth_cycle_start": "Before the push",
+  "depth_cycle_down": "Pressing down",
+  "depth_cycle_peak": "Deepest point",
+  "depth_cycle_up": "Releasing",
+  "depth_cycle_end": "Between pushes",
+  "depth_cycle_start_hint": "Notice the starting height. With leaning, the next push begins before the chest has returned to the resting line.",
+  "depth_cycle_down_hint": "The chest is moving toward its deepest point. Follow the downward arrow and the marker on the graph.",
+  "depth_cycle_peak_hint": "This is the peak depth. You still need to inspect the release to see whether the chest fully recoils.",
+  "depth_cycle_up_hint": "The chest is returning upward. Compare 25% and 75%: the same height can occur during pressing and releasing.",
+  "depth_cycle_full_hint": "The chest meets the resting line. Add leaning and return to this point to see what changes.",
+  "depth_cycle_lean_hint": "The chest remains below the resting line. Reaching the same peak depth did not guarantee full recoil.",
+  "depth_cycle_title": "Step through one push",
+  "depth_cycle_intro": "Choose a moment to freeze the manikin and its graph. The blue arrow shows the direction of chest movement.",
+  "depth_cycle_position": "Cycle position",
+  "depth_cycle_help": "Drag or use arrow keys. Home returns to the start; End goes to the release.",
+  "depth_cycle_stages": "Compression cycle stages",
+  "depth_cycle_animated": "Animation selected",
+  "depth_cycle_depression": "Chest depression at this position: {depth} cm.",
+  "depth_cycle_pause_hint": "Choose a stage or move the slider to inspect a still position. Reduced-motion mode holds the released position.",
+  "depth_cycle_graph_cursor": "Outlined marker: {phase}% of the cycle · {depth} cm depressed.",
+  "depth_cycle_graph_whole": "The curve shows one whole cycle. Select a still position to place a marker."
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\artifacts\\remediation-e2e.source.pdf",
+    "sizeBytes": 1264,
+    "sha256": "f70ad412b9ad122a4b74211290bc0e1a6d930508029afd67249988369a9b6b58"
+  },
+  "compatibility": {
+    "optionsSha256": "cc3336895c87b150085357801f3af1feea2810f455146c186e644d4147015a15",
+    "engineSha256": "f16145d5661a0d167edffb22e73a551d1d2a5cb7736df9978dd8a428324f692b"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-04T04:42:39.350Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "remediation-e2e.source-accessible.html",
+      "sizeBytes": 4270,
+      "sha256": "5617028de506805e6fc82b959091a6e067641b901c2e39f4cdd684ddb7da601e"
+    },
+    {
+      "role": "report",
+      "relativePath": "remediation-e2e.source-remediation-report.json",
+      "sizeBytes": 1768,
+      "sha256": "40d707777f62b849751c4dfefc421224a375bfe633825aeb96216b46ea8850f9"
+    }
+  ]
+}

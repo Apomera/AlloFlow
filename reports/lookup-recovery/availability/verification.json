@@ -1,0 +1,80 @@
+{
+  "inspectedAt": "2026-09-27T15:44:52.959Z",
+  "head": "13ebcc73f5784436643adc7c12ff8d83d5b29028",
+  "baselineHead": "13ebcc73f5784436643adc7c12ff8d83d5b29028",
+  "files": {
+    "content_engine_source.jsx": {
+      "sharedSourceUnchanged": true,
+      "candidateUnchanged": true,
+      "patchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true,
+      "incrementReproducesCandidate": true
+    },
+    "view_simplified_source.jsx": {
+      "sharedSourceUnchanged": true,
+      "candidateUnchanged": true,
+      "patchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true,
+      "incrementReproducesCandidate": true
+    },
+    "host_handlers_source.jsx": {
+      "sharedSourceUnchanged": true,
+      "candidateUnchanged": true,
+      "patchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true
+    },
+    "dictionary_loader.js": {
+      "sharedSourceUnchanged": true,
+      "candidateUnchanged": true,
+      "patchReproducesCandidate": true,
+      "transformReproducesCandidate": true,
+      "transformIsIdempotent": true
+    }
+  },
+  "dependencies": {
+    "reader_place_store.js": true,
+    "instructional_context_module.js": true,
+    "pure_helpers_module.js": true,
+    "phase_n_misc_helpers_module.js": true,
+    "dev-tools/prepare_reading_lookup_availability.cjs": true,
+    "dev-tools/prepare_reading_lookup_media.cjs": true,
+    "dev-tools/prepare_reading_lookup_resilience.cjs": true,
+    "dev-tools/prepare_reading_lookup_enhancements.cjs": true,
+    "dev-tools/prepare_dictionary_cache_recovery.cjs": true,
+    "dev-tools/prepare_dictionary_cache_race.cjs": true,
+    "tests/reading_lookup_candidate.js": true,
+    "tests/reading_lookup_recovery.test.js": true,
+    "tests/reading_lookup_popup_adapter.test.js": true
+  },
+  "artifacts": {
+    "engine.patch": true,
+    "engine.baseline.source.js": true,
+    "engine.candidate.source.js": true,
+    "engine-availability.patch": true,
+    "content_engine_module.candidate.js": true,
+    "content_engine_module.baseline.js": true,
+    "reader.patch": true,
+    "reader.baseline.source.js": true,
+    "reader.candidate.source.js": true,
+    "reader-availability.patch": true,
+    "view_simplified_module.candidate.js": true,
+    "view_simplified_module.baseline.js": true,
+    "host.patch": true,
+    "host.baseline.source.js": true,
+    "host.candidate.source.js": true,
+    "dictionary.patch": true,
+    "dictionary.baseline.source.js": true,
+    "dictionary.candidate.source.js": true
+  },
+  "tests": {
+    "passed": 368,
+    "failed": 0,
+    "skipped": 0,
+    "files": 13,
+    "success": true
+  },
+  "verified": true
+}

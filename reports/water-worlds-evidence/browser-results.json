@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Observation capture is placed beside the landscape and requires a run",
+    "Section shortcuts move keyboard focus and scroll to each destination",
+    "Live capture pauses and saves exact local, valley, and run readings with conditions",
+    "Storm progress follows rain, drainage, completion, and highest sampled-flow inspection",
+    "Recorded-time capture preserves completed evidence and compares exact B minus A readings",
+    "Revisit restores the recorded location and minute, focuses the valley, and retains evidence",
+    "Comparison distinguishes observations taken at different places",
+    "Six-observation limit prevents overflow; removal frees a slot and IDs stay unique",
+    "Observation notes and detached readings persist and export to JSON and readable reports",
+    "New storms retain earlier observations, prevent mismatched revisits, and explain comparison context",
+    "Observation cards and comparisons fit 320px/390px and pass light, dark, and high-contrast accessibility",
+    "Observation workflows complete without browser exceptions"
+  ],
+  "errors": []
+}

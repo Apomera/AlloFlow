@@ -1,0 +1,33 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const { spawnSync } = require('child_process');
+const candidate = 'C:/tmp/tyler_integration_candidate';
+const scratch = fs.mkdtempSync('C:/tmp/tyler-history-panel-mutant-');
+const files = ['tests/history_navigation_lane_visual.test.js', 'AlloFlowANTI.txt', 'view_history_panel_source.jsx', 'view_history_panel_module.js', 'desktop/web-app/public/view_history_panel_module.js', 'view_sidebar_tabs_nav_source.jsx', 'view_sidebar_tabs_nav_module.js', 'desktop/web-app/public/view_sidebar_tabs_nav_module.js'];
+const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+const before = {};
+for (const rel of files) {
+  const bytes = fs.readFileSync(path.join(candidate, rel));
+  before[rel] = sha(bytes);
+  const target = path.join(scratch, rel);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, bytes);
+}
+fs.symlinkSync(path.join(candidate, 'node_modules'), path.join(scratch, 'node_modules'), 'junction');
+fs.writeFileSync(path.join(scratch, 'vitest.config.mjs'), "export default { test: { environment: 'node', include: ['tests/**/*.test.js'] } };\n");
+const mutantPath = path.join(scratch, 'AlloFlowANTI.txt');
+const source = fs.readFileSync(mutantPath, 'utf8');
+const anchor = "hidden={activeSidebarTab !== 'create'}";
+if (source.split(anchor).length !== 2) throw new Error('Expected one Create panel visibility anchor');
+fs.writeFileSync(mutantPath, source.replace(anchor, 'hidden={false}'));
+const reportPath = path.join(__dirname, 'history-panel-mutation.json');
+const args = ['node_modules/vitest/vitest.mjs', 'run', 'tests/history_navigation_lane_visual.test.js', '-t', 'connects both tabs to host panels and hides the inactive panel', '--maxWorkers=1', '--pool=threads', '--no-cache', '--configLoader=runner', '--hookTimeout=60000', '--testTimeout=30000', '--reporter=default', '--reporter=json', '--outputFile.json=' + reportPath, '--silent'];
+const result = spawnSync(process.execPath, args, { cwd: scratch, encoding: 'utf8', timeout: 240000, maxBuffer: 4 * 1024 * 1024 });
+fs.writeFileSync(path.join(__dirname, 'history-panel-mutation.log'), (result.stdout || '') + (result.stderr || ''));
+if (result.error) throw result.error;
+const evidence = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+if (result.status !== 1 || evidence.numFailedTests !== 1 || evidence.numPassedTests !== 0) throw new Error('Mutation did not fail at the expected assertion');
+for (const rel of files) if (sha(fs.readFileSync(path.join(candidate, rel))) !== before[rel]) throw new Error('Candidate changed during mutation verification: ' + rel);
+fs.writeFileSync(path.join(__dirname, 'history-panel-mutation-receipt.json'), JSON.stringify({ recordedAt: new Date().toISOString(), scratch, mutation: 'Create panel hidden property forced to false', exitCode: result.status, failed: evidence.numFailedTests, skipped: evidence.numPendingTests, candidateUnchanged: true, candidateHashes: before }, null, 2) + '\n');
+console.log('Mutation detected; all candidate files unchanged.');

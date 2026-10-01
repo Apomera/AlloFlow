@@ -1,4 +1,1165 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Zonae Affectuum",
+          "desc": "Zonam tuam agnosce (caeruleam, viridem, flavam, rubram) et rationes explora quibus te ipsum moderaris."
+        },
+        "emotions": {
+          "label": "Explorator Affectuum",
+          "desc": "Verba affectuum tibi para — affectus agnosce, nomina, et quanta sit eorum vis aestima."
+        },
+        "strengths": {
+          "label": "Inventor Virium",
+          "desc": "Vires tuas, dotes, et partes in quibus crescere potes inveni et de eis meditare."
+        },
+        "viaStrengths": {
+          "label": "Vires VIA",
+          "desc": "Digestio simplificata, a te ipso facta, 24 Virium Indolis VIA (Peterson et Seligman, 2004), cum 6 virtutibus et agnitione virium tuarum praecipuarum. Ad quaestionarium publicum et gratuitum, adi viacharacter.org. Exercitatio meditativa, non mensura psychometrica."
+        },
+        "wheelOfLife": {
+          "label": "Rota Vitae",
+          "desc": "Diagramma araneae 8 regionum vitae, quarum quaeque ab 1 ad 10 aestimatur. Imago tui ipsius: ubi vita nunc plena sit et ubi tenuis. E traditione coaching (Meyer, annis 1960; Co-Active Coaching). Instrumentum heuristicum; non mensura psychometrica probata."
+        },
+        "perma": {
+          "label": "Bene Esse PERMA",
+          "desc": "Examen sui de quinque regionibus PERMA cum meditatione de valetudine: affectus positivi, studium, necessitudines, significatio, res perfectae, et valetudo. 24 quaestiones, eventus in diagrammate columnarum, meditatio pro singulis regionibus. A Seligman; congruit cum Viribus VIA."
+        },
+        "coping": {
+          "label": "Instrumentarium Tolerandi",
+          "desc": "Rationes tolerandi explora et exerce — respirationem, stabilitionem, motum, et plura."
+        },
+        "windowOfTolerance": {
+          "label": "Fenestra Tolerantiae",
+          "desc": "Imago ad sui conscientiam, traumatis conscia. Tres zonae excitationis (hyperexcitatio, fenestra, hypoexcitatio). Signa tua propria cuiusque zonae describe, incitamenta tua, et exercitationes quae te reducunt. Ex Siegel (1999); usitata in scholis traumatis consciis."
+        },
+        "stressBucket": {
+          "label": "Situla Contentionis",
+          "desc": "Imago capacitatis. Causae contentionis infunduntur; rationes tolerandi eas effundunt. Vide num quod influit et quod effluit aequilibria sint. Instrumentum e traditione CBT (Brabban et Turkington, 2002), adhibitum in NHS IAPT et a Mind UK. Sincerum de causis contentionis structuralibus."
+        },
+        "tipp": {
+          "desc": "Quattuor artes DBT ad discrimen superandum (temperatura, exercitatio vehemens, respiratio numerosa, relaxatio musculorum cum respiratione coniuncta) pro angore ACUTO. Corpus intra 30 secunda usque ad 10 minutas sedat, antequam cogitando exitum quaeras. Ars fundamentalis DBT ad angorem tolerandum (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Instrumentarium Anxietatis",
+          "desc": "Artes in CBT fundatae ad anxietatem tractandam: psychoeducatio, arbor sollicitudinis (sollicitudo utilis contra inutilem), tempus sollicitudini statutum, decatastrophizatio, artes stabiliendi, et index formarum propriarum. Ex Beck Institute, AACAP, ADAA. Congruit cum Fenestra Tolerantiae et Situla Contentionis."
+        },
+        "sleep": {
+          "label": "Somnus et Quies",
+          "desc": "Somnus adulescentium est discrimen salutis publicae. Horae 8-10 ab AAP commendatae raro attinguntur. Psychoeducatio, examen sui, 8 impedimenta frequentia + quid cuique prosit, et diarium somni. Ex AAP, CDC, NSF, et investigationibus Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Moderatio Sensuum",
+          "desc": "Instrumentum quod neurodiversitatem affirmat, ad tuam ipsius sensuum tractationem per 8 systemata sensoria intellegendam. Descriptionem propriam compone, victum sensorium dispone, accommodationes scholasticas agnosce. Sermo qui identitatem praeponit; fundatum in Ayres / Dunn et in doctrina ab autisticis ducta."
+        },
+        "bigFeelings": {
+          "label": "Magni Affectus (Ira)",
+          "desc": "Psychoeducatio et artium exercitatio de ira propria. Ira ut nuntius, non ut quaestio ipsa; laqueus est aggressio reactiva. Fundatum in traditione Coping Power a Lochman et in testimoniis CBT de ira. Commentarius molestiarum, index incitamentorum, punctum electionis, modi sedandi tibi accommodati."
+        },
+        "substancePsychoed": {
+          "label": "Usus Substantiarum",
+          "desc": "Psychoeducatio de substantiis ad damnum minuendum (alcohol, cannabis, nicotina, opioida, stimulantia, benzodiazepina, hallucinogena). Pericula cerebri adulescentis. Doctrina de naloxono. NON instrumentum explorationis, NON sola abstinentia. Firma relatio ad SAMHSA. Spatium meditationis cum Colloquio Motivationali (MI) congruens."
+        },
+        "behavioralActivation": {
+          "label": "Activatio Behavioralis",
+          "desc": "Parva opera dispone, fac, et aestima ad peritiam (te valere sensisti) et voluptatem (te delectavit). Animadverte quid tibi conveniat et proximum gradum tractabilem elige. Haec dispositionis actio ex activatione behaviorali hauritur; cursum therapiae nec praebet nec aestimat."
+        },
+        "mindfulness": {
+          "label": "Angulus Mentis Attentae",
+          "desc": "Exercitia respirationis ducta, perlustrationes corporis, et exercitia mentis attentae."
+        },
+        "quietQuestions": {
+          "label": "Quaestiones Quietae",
+          "desc": "Exercitatio hebdomadalis inquisitionis interioris. Cum una quaestione aperta per totam hebdomadem mane. 20 quaestiones vicissim redeuntes de attentione, desiderio, difficultate, coniunctione, et de eo quod fieri est. Traditione quaestionum Quakerorum inspiratum; saeculare et nihil praescribens."
+        },
+        "orientations": {
+          "label": "Orientationes",
+          "desc": "Modi Vivendi Comparati. Octo traditiones philosophicae (Daoismus, Zen, Stoicismus, Existentialismus, ethica Confuciana, Ubuntu, relationalitas indigenarum, ethica curae) de magnis vitae quaestionibus comparatae. Nihil praescribens; quaeque traditio tabulam sinceram habet «quid bene facere non possit»."
+        },
+        "thoughtRecord": {
+          "label": "Tabula Cogitationum CBT",
+          "desc": "Tabula cogitationum 7 columnarum e Therapia Cognitivo-Behaviorali. Momentum difficile percurre: condicio, affectus, cogitatio automatica, testimonia pro et contra, cogitatio aequa, affectus iterum aestimatus. Inscriptiones per tempus servat. Ex Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Tabula Sumptuum et Fructuum",
+          "desc": "Tabula 2x2 ad decernendum e Therapia Dialectico-Behaviorali. Commoda et incommoda consilii, brevi et longo tempore, iuxta posita. Utilis cum affectus te ad unam optionem impellit. Ex Linehan."
+        },
+        "sfbt": {
+          "label": "Solutioni Intenta",
+          "desc": "Therapia Brevis Solutioni Intenta: Quaestio Miraculi, Gradatio, Exceptionum Inquisitio, et Laudes. Prorsus spectat, non retrorsum, et quaerit quid iam prosit. Ars in consiliis scholasticis Civitatum Foederatarum frequentissime adhibita. Ex de Shazer et Berg."
+        },
+        "careConstellations": {
+          "label": "Sidera Curae",
+          "desc": "Tabula necessitudinum: quis tui curam gerat et cuius tu curam geras. Formam «sui curationis» individualisticam vel consumpticiam respuit. Continet sententiam philosophicam gravem de Cura Sui contra sui curationem (Foucault, Graecorum epimeleia heautou, Audre Lorde, eudaemonicum contra hedonicum)."
+        },
+        "ecomap": {
+          "label": "Oecomappa",
+          "desc": "Tabula necessitudinum hominis in ambitu suo. Tu in medio; 12 maiora vitae systemata circa te. Quaeque coniunctio aestimatur ad firmitatem, contentionem, et directionem virium. Instrumentum usitatum operis socialis ab Hartman (1978); adhibitum in IEP, in aestimatione familiae, et in indice vitae proprio."
+        },
+        "circlesOfSupport": {
+          "label": "Circuli Auxilii",
+          "desc": "Quattuor circuli concentrici necessitudinum: Intimitas, Amicitia, Participatio, Commutatio (mercede). Manifestum facit quis revera propinquus sit, etiam cum homines mercede conducti circulos interiores implent. Ex Forest et Snow apud Inclusion Press."
+        },
+        "genogram": {
+          "label": "Genogramma",
+          "desc": "Tabula familiae trium generationum signis systematum familiarium usitatis. Ad sui cognitionem tantum (NON aestimatio clinica). Fundata in theoria systematum familiarium Bowen et in notatione McGoldrick-Gerson-Petry. Continet praecepta conspicua ad tutam tractationem."
+        },
+        "griefLoss": {
+          "label": "Luctus et Iactura",
+          "desc": "Comes ductus in luctu. Mors hominis vel animalis domestici, mutationes familiae, amici amissi, identitatis iacturae, iactura ambigua — omnia numerantur. Quattuor munera lugendi secundum Worden percurre, epistulam scribe, ritus dispone. Firma tutelae forma quae ad Comitem in Discrimine / 988 dirigit in luctu gravi vel implicato."
+        },
+        "traumaPsychoed": {
+          "label": "Trauma Intellegere",
+          "desc": "Psychoeducatio tantum (NON instrumentum explorationis). Quid sit trauma et quid non sit, neurobiologia verbis simplicibus, responsiones frequentes ut accommodationes intellectae, 6 principia SAMHSA, curationes testimoniis fundatae. Pro discipulis et educatoribus. Continet tutelae formam conspicuam: cur exploratio sine cura subsequente tuta non sit."
+        },
+        "bodyStory": {
+          "label": "Historia Corporis",
+          "desc": "Instrumentum ad corpus accipiendum et incolendum. NON de pondere, NON ad diaetam spectans, NON instrumentum explorationis. Fundatum in aestimatione corporis (Tylka), principiis cibi intuitivi, et peritia mediorum communicationis. Omnia corpora, omnia genera, omnes magnitudines complectitur. Firma relatio ad NEDA de perturbationibus cibi."
+        },
+        "sourcesOfStrength": {
+          "label": "Fontes Virium",
+          "desc": "8 praesidia tua describe. Auxilia tutantia explora a programmate Sources of Strength inspirata. Haec tabula a te ipso ducta est accommodatio, non ipsum programma scholasticum probatum."
+        },
+        "crisiscompanion": {
+          "label": "Comes in Discrimine",
+          "desc": "Auxilium inter aequales et artes ad suicidium praecavendum: quid facias si tu vel amicus tristitia oppressi, in discrimine, aut de vobis ipsis laedendis cogitantes estis — signa agnoscere, quid dicas (et quid non dicas), adulto cui confidis narrare, praeterea 988 et consilium tutelae proprium. Post monitum de argumento aperitur. Congruit cum NEDA, AFSP, Sources of Strength, et 988. Pars auxilii acuti quae Fontibus Virium respondet."
+        },
+        "identitySupport": {
+          "label": "Auxilium Identitatis",
+          "desc": "Spatium omnes complectens et confirmans de identitate generis, inclinatione sexuali, inclinatione amatoria, et latioribus identitatis quaestionibus. Vocabula, identitatis progressio, communitatem invenire, tutela iuvenum trans, praecepta sociis. Fundatum in Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Voces Debilitatis",
+          "desc": "Veri patroni autistici et debiles quorum opera usum circa debilitatem formaverunt, et reprehenderunt. Dicta, contextus, et index lectionum diligenter selectus. Ita factum ut homines quibus disciplina «adhibita» est in medio sint, non in margine instrumenti scientiae morum relegati. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Proposita Statuere",
+          "desc": "Proposita SMART statue, progressum observa, et gradus attentos celebra."
+        },
+        "howlTracker": {
+          "label": "Monitor HOWL",
+          "desc": "Habitus Operis et Discendi (HOWL): aestimatio sui ad tempus Crew. Recognitiones hebdomadales, proposita trimestria, diagramma inclinationis, quaestiones ad colloquia Crew. Congruit cum forma HOWL EL Education."
+        },
+        "onePageProfile": {
+          "label": "Descriptio Unius Paginae",
+          "desc": "Descriptio portabilis et imprimibilis quae una pagina continetur. Tres partes: quid homines in me ament et admirentur, quid mihi magni sit, quomodo optime adiuvari possim. Instrumentum consilii in persona positi ad conventus IEP, transitus, magistros vicarios, vel Crew. Ex forma Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Consilia Agendi Facere). Octo quaestiones ordine (Historia Mea, Somnium, Somnium Malum, Quis Sim, Dona, Necessitates, Consilium Agendi, Primi Gradus). Imago in persona posita a Pearpoint, O'Brien, et Forest apud Inclusion Press; late adhibita ad transitus disponendos."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Alia Crastina cum Spe Disponere). Imago ad futura disponenda: octo gradus a Stella Polari tua longinqua retrorsum ad primos gradus duarum hebdomadum. Pearpoint, O'Brien, et Forest apud Inclusion Press; congruit cum MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Valores et Actio",
+          "desc": "Quae magni sunt digere, praecipuos valores tuos nomina, et unumquemque in parvam et certam actionem hac hebdomade converte. Ex Therapia Acceptationis et Obligationis (Hayes); forma DNA-V ad adulescentes. Distinctio ACT inter valores (directiones) et proposita (metas)."
+        },
+        "careerCompass": {
+          "label": "Pyxis Vocationis",
+          "desc": "Vocationes per studia tua explora. Examen sui RIASEC 36 quaestionum signum Holland trium litterarum praebet; vocationes percurre, 16 Classes Vocationum foederales (Career Clusters), et certos gradus proximos (dies observandi, colloquia informativa, CTE, tirocinia). Fundatum in forma Holland; ad O*NET Interest Profiler publicum in mynextmove.org dirigit."
+        },
+        "selfAdvocacy": {
+          "label": "Officina Sui Defendendi",
+          "desc": "Certum consilium auxilii scholastici compone de quaestionibus IEP vel 504, accommodationibus, electionibus revelationis, et auxilio ab adultis quibus confidis petendo."
+        },
+        "perspective": {
+          "label": "Lens Aspectuum",
+          "desc": "Res ex variis aspectibus vide — empathiam et susceptionem aspectus alieni exerce."
+        },
+        "community": {
+          "label": "Communitas et Cultura",
+          "desc": "Diversitatem, culturarum conscientiam, et sensum ad communitatem pertinendi explora."
+        },
+        "conflict": {
+          "label": "Resolutio Controversiarum",
+          "desc": "Controversiam levem vel fictam exerce cum susceptione aspectus alieni, sententiis in prima persona, sedatione, et electionibus reparationis. Si quis in periculo est, adultum adhibe potius quam sine auxilio pacisci."
+        },
+        "social": {
+          "label": "Laboratorium Artium Socialium",
+          "desc": "Artes colloquii, auscultationem activam, sermonem corporis, et cooperationem exerce."
+        },
+        "teamwork": {
+          "label": "Aedificator Operae Communis",
+          "desc": "Certamina cooperativa et partium in grege exploratio."
+        },
+        "dearMan": {
+          "desc": "Scriptum ad difficilem petitionem septem gradibus compone: Describe (Describe), Exprime (Express), Assere (Assert), Confirma (Reinforce), Attende (Mindful), Fiduciam ostende (Appear confident), Paciscere (Negotiate). Ex efficacia interpersonali DBT (Linehan); scriptum communicationis assertivae in consiliis scholasticis frequentissimum. Congruit cum Officina Sui Defendendi."
+        },
+        "motivationalInterviewing": {
+          "label": "Colloquium Motivationale",
+          "desc": "Forma colloquii ad aliquem (vel te ipsum) adiuvandum ut de mutatione cogitet. Artes OARS disce (quaestiones apertae, affirmationes, reflexiones, summae), tres regulas, et Sermonem Mutationis. Ex Miller et Rollnick; fundamentum consiliorum scholasticorum et auxilii inter aequales."
+        },
+        "crewProtocols": {
+          "label": "Protocolla Crew",
+          "desc": "Bibliotheca formarum gregalium ordinatarum ad tempus Crew, horam consiliariam, vel horam classis: exercitia communitatis aedificandae, initia, conclusiones, circuli restaurativi, protocolla meditationis, formae celebrandi, et duces ad colloquia difficilia. Praeterea collectio omnium quaestionum Crew ex toto SEL Hub. Fundatum in EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Necessitudines Sanae",
+          "desc": "Spectrum (sana / insana / iniuriosa) per 8 dimensiones cuiusvis necessitudinis propinquae. Consensus accurate tractatus, violentiae in amoribus praecautio, tutela + lineae auxilii. Fundatum in forma Loveisrespect / NDVH. Complectitur homines queer, neurodivergentes, et debiles."
+        },
+        "decisions": {
+          "label": "Laboratorium Deliberandi",
+          "desc": "Casus vitae verae per formas «siste-cogita-age» tracta."
+        },
+        "journal": {
+          "label": "Diarium Affectuum",
+          "desc": "Diarium cotidianae recognitionis — animos, incitamenta, et meditationes per tempus inscribe."
+        },
+        "safety": {
+          "label": "Securitas et Termini",
+          "desc": "Disce de terminis personalibus, de adultis quibus confidis, et de rebus tutis contra periculosas."
+        },
+        "landPlace": {
+          "label": "Terra et Locus",
+          "desc": "Officina Custodiae ad perpetuam necessitudinem cum terra in qua habitas. Tria fila (historia, oecologia, praesens), meditatio critica de agnitione terrae ut exercitatione potius quam spectaculo, societates a Wabanaki ductae ut voces auctoritatem habentes, et diarium meditationis privatum."
+        },
+        "somaticReset": {
+          "label": "Restitutio Corporis et Respirationis",
+          "desc": "Zonam corporis elige et brevem restitutionem in sella faciendam sequere — quietem, respirationem, vel motum lenem — cum recognitione privata ante et post."
+        },
+        "restorativeCircle": {
+          "label": "Circulus Restaurativus",
+          "desc": "Circulos restaurativos et communitatem aedificantes modera cum normis constitutis, ductu adulti, et cura radicum culturalium. Non ad revelationem coactam vel periculum praesens."
+        },
+        "compassion": {
+          "label": "Compassio et Sermo Interior",
+          "desc": "Compassionem in te ipsum exerce, criticum interiorem aliter intellege, et vocem interiorem benigniorem aedifica."
+        },
+        "friendship": {
+          "label": "Aedificator Amicitiae",
+          "desc": "Modos amicitiae, rationes reparandi, et formas necessitudinum sanarum explora."
+        },
+        "transitions": {
+          "label": "Transitus Vitae",
+          "desc": "Mutationes tracta ut migrationem, novas scholas, et adolescere."
+        },
+        "upstander": {
+          "label": "Exercitatio Defensoris",
+          "desc": "Disce alios tuto defendere — artes quibus e spectatore defensor fias."
+        },
+        "growthmindset": {
+          "label": "Mens Crescendi",
+          "desc": "Scientia cerebri, difficultates aliter intellectae, et firmitas animi aedificata."
+        },
+        "execfunction": {
+          "label": "Functiones Exsecutivae",
+          "desc": "Rationes ad partes difficiliores rerum perficiendarum: opera incipere, attentionem tenere, in antecessum disponere, et tempus observare."
+        },
+        "advocacy": {
+          "label": "Exercitatio Necessitatum Exprimendarum",
+          "desc": "Scripta generalia meditare ad necessitates exprimendas, auxilium petendum, et pro te loquendum in rebus cotidianis."
+        },
+        "civicAction": {
+          "label": "Actio Civilis et Spes",
+          "desc": "Affectus graves de iniuria tracta, facultatem civilem agendi aedifica, et spem per actionem cole."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratorium Ratiocinationis Ethicae",
+          "desc": "Dilemmata ethica hodierna per plures formas et dialogum Socraticum cum IA explora."
+        },
+        "cultureExplorer": {
+          "label": "Explorator Culturarum",
+          "desc": "Culturas mundi ope IA penitus explora, cum picturis et sonis."
+        },
+        "voicedetective": {
+          "label": "Indagator Vocum",
+          "desc": "Voces audi et affectus ex sono agnosce."
+        },
+        "practiceJourneys": {
+          "label": "Peregrinationes Exercitationis (Experimentum)",
+          "desc": "Auxilium petere exerce per quattuor congressus inter se coniunctos. Responde electionibus, verbis tuis, vel utrisque. Diarium tene et aliam viam tempta."
+        },
+        "sociallab": {
+          "label": "Lusus Partium: Artes Sociales",
+          "desc": "Casus sociales et lusum partium cum aequalibus IA exerce, dialogo ramoso."
+        },
+        "peersupport": {
+          "label": "Magister Auxilii inter Aequales",
+          "desc": "Artes auscultandi OARS disce et quando auxilium adulti petendum sit."
+        },
+        "conflicttheater": {
+          "label": "Theatrum Controversiarum",
+          "desc": "Controversiam fictam cum duabus personis IA in scaena immersiva exerce. Lusus partium in forma beta tantum; noli eo uti ad noxam praesentem componendam."
+        },
+        "digitalWellbeing": {
+          "label": "Officina Salutis Digitalis",
+          "desc": "Necessitudinem tuam cum retibus socialibus et cum colloquentibus IA (chatbots) examina, habitus telephonii saniores aedifica, a vexatione interretiali convalesce, fraudes in fluxu nuntiorum agnosce, necessitudines cum colloquentibus artificialibus tuto tracta, et auxilium inveni cum eo eges."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Sui Conscientia",
+          "desc": "Affectus, vires, et partes crescendi agnoscere"
+        },
+        "self-regulation": {
+          "label": "Sui Moderatio",
+          "desc": "Affectus, excitationem, attentionem moderari; tolerandi exercitatio"
+        },
+        "self-direction": {
+          "label": "Sui Directio",
+          "desc": "Proposita statuere, facultas agendi, functiones exsecutivae, mens crescendi"
+        },
+        "inner-work": {
+          "label": "Opus Interius",
+          "desc": "Exercitationes contemplativae et meditativae"
+        },
+        "care-of-self": {
+          "label": "Cura Sui",
+          "desc": "Compassio in se ipsum, sui curatio in necessitudinibus posita"
+        },
+        "social-awareness": {
+          "label": "Conscientia Socialis",
+          "desc": "Empathia, susceptio aspectus alieni, et diversitatis aestimatio"
+        },
+        "relationship-skills": {
+          "label": "Artes Necessitudinum",
+          "desc": "Communicatio, opera communis, et controversiarum resolutio"
+        },
+        "responsible-decision-making": {
+          "label": "Consilia Prudenter Capere",
+          "desc": "Electiones ethicae, consequentiarum aestimatio, et quaestionum solutio"
+        },
+        "stewardship": {
+          "label": "Custodia",
+          "desc": "Cura communitatis, iustitiae, terrae, et futuri"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Zonam tuam praesentem nomina et rationem moderandi aptam elige.",
+          "next": "Zonam tuam inspice, unam rationem elige, deinde serva si ad eam redire vis."
+        },
+        "coping": {
+          "purpose": "Rationem tolerandi elige et semel exerce, cum certo fine.",
+          "next": "Unam rationem corporis vel stabiliendi elige, tempta, deinde animadverte num profuerit."
+        },
+        "journal": {
+          "purpose": "Meditationem privatam scribe et formas animadverte quas fortasse servare velis.",
+          "next": "Quaestionem elige, sincere scribe, et serva vel exporta antequam claudas."
+        },
+        "emotions": {
+          "purpose": "Verba affectuum para et quid sentias accuratius nomina.",
+          "next": "Affectum elige, vim eius aestima, deinde verbum quod optime convenit elige."
+        },
+        "mindfulness": {
+          "purpose": "Consiste, respira, et attentionem exerce, nihil scribere necesse est.",
+          "next": "Unam brevem exercitationem elige, ad finem sequere, deinde animadverte quid mutatum sit."
+        },
+        "somaticReset": {
+          "purpose": "Recognitione privata zonarum corporis utere ad brevem restitutionem in sella faciendam eligendam.",
+          "next": "Partem corporis elige, unam optionem quietis, respirationis, vel motus lenis tempta, deinde animadverte quid mutatum sit."
+        },
+        "thoughtRecord": {
+          "purpose": "Cogitationem difficilem retarda et aspectum aequiorem quaere.",
+          "next": "Condicionem nomina, affectum aestima, deinde cogitationem testimoniis proba."
+        },
+        "anxietyToolkit": {
+          "purpose": "Sollicitudines digere, vim anxietatis minue, et proximum gradum utilem elige.",
+          "next": "Sollicitudinem clarissimam elige, unam rationem tempta, deinde consilium serva si prodest."
+        },
+        "sleep": {
+          "purpose": "Impedimenta somni animadverte et unum quietis habitum temptandum elige.",
+          "next": "Inspice quid obstet, unam parvam mutationem elige, deinde postea redi."
+        },
+        "goals": {
+          "purpose": "Consilium animi in actionem proximam certam et veri similem converte.",
+          "next": "Unum propositum scribe, primum gradum elige, et consilium serva antequam claudas."
+        },
+        "friendship": {
+          "purpose": "De necessitatibus amicitiae, de societate, et de electionibus inter aequales cogita.",
+          "next": "Unam amicitiae condicionem elige et unum proximum gradum benignum inveni."
+        },
+        "conflict": {
+          "purpose": "Controversiam intellege et responsum ad reparationem intentum para.",
+          "next": "Nomina quid acciderit, utramque partem considera, deinde unam reparationis actionem elige."
+        },
+        "safety": {
+          "purpose": "Consilium tutelae utile compone et auxilia quibus confidis agnosce.",
+          "next": "Signa monentia, gradus tolerandi, et homines adeundos adde; serva antequam claudas."
+        },
+        "crisiscompanion": {
+          "purpose": "Via auxilii ordinata utere cum affectus urgentes vel periculosi videntur.",
+          "next": "Optionem auxilii proximam elige et adultum cui confidis vel ministerium discriminis adhibe cum opus est."
+        },
+        "conflicttheater": {
+          "purpose": "Scaenam controversiae fictam exerce et sermonem restaurativum proba, nec instrumento ut mediatione utere.",
+          "next": "Scaenam fictam elige, unum responsum tempta, et postea dissere quid in vita vera auxilio adulti egeat."
+        },
+        "restorativeCircle": {
+          "purpose": "Processum gregalem restaurativum dispone vel modera cum normis claris et ductu adulti.",
+          "next": "Primum pacta circuli constitue, deinde quaestionem elige; numquam revelationem publicam exige."
+        },
+        "strengths": {
+          "next": "Vires elige quae te referunt, deinde pro unaquaque verum momentum ex hoc trimestri inveni quod eam ostendat."
+        },
+        "viaStrengths": {
+          "purpose": "Digestione sui a VIA inspirata utere ut exercitio meditationis, non ut aestimatione formali.",
+          "next": "Vires digere, formas animadverte, et unum exemplum scribe quod eventum in re ponat."
+        },
+        "perma": {
+          "purpose": "Imaginem meditativam boni esse tui per regiones PERMA et valetudinem cape.",
+          "next": "Imagine utere ad colloquium vel parvum experimentum eligendum, non ad te ipsum titulo notandum."
+        },
+        "advocacy": {
+          "purpose": "Sermonem cotidianum exerce ad necessitates exprimendas et auxilium petendum.",
+          "next": "Condicionem elige, brevem petitionem adumbra, et statue quis adiuvare possit."
+        },
+        "selfAdvocacy": {
+          "purpose": "Certum consilium auxilii scholastici compone de IEP, 504, accommodationibus, vel electionibus revelationis.",
+          "next": "Unam necessitatem auxilii elige, quaestiones tuas collige, et adultum cui confidis adhibendum agnosce."
+        },
+        "crewProtocols": {
+          "next": "Secundum finem percurre, unum protocollum hodie elige, deinde in «Consilio meo Crew» nota quando id acturus sis."
+        },
+        "perspective": {
+          "next": "Condicionem elige, primum alterius aspectum sume, deinde dic quid aliter facias."
+        },
+        "windowOfTolerance": {
+          "next": "Unum signum singulis tribus zonis tuis adde, deinde «Recognitione» utere ut hodiernum diem colloces."
+        },
+        "sensoryRegulation": {
+          "next": "Incipe a «Quid est sensorium?», deinde nota systemata quae tibi vehementia vel remissa sint."
+        },
+        "execfunction": {
+          "next": "Ad «Incipe» i et unum motum incipiendi hodie elige, deinde ad «Tene» ut locum excipiendi eligas."
+        },
+        "growthmindset": {
+          "next": "«Aliter Intellege» aperi, cogitationem fixam scribe, et in certam atque efficacem converte."
+        },
+        "dearMan": {
+          "next": "Petitionem tuam una sententia scribe, septem gradus adumbra, deinde semel meditare."
+        },
+        "howlTracker": {
+          "next": "Pulsum inscribe, deinde Recognitionem Hebdomadalem fac: quemque HOWL aestima et unum certum exemplum adde."
+        },
+        "peersupport": {
+          "next": "Duas quaestiones apertas elige quas amico ponere possis, deinde unam in condicione ficta in tabella exercitationis tempta."
+        },
+        "upstander": {
+          "next": "Scalam fortitudinis in «Motibus» lege et duos minimos motus elige quos hac hebdomade revera facere possis."
+        },
+        "digitalWellbeing": {
+          "next": "Examen Sui sincere fac, deinde unum habitum ex Instrumentario et unum terminum in antecessum statutum elige."
+        },
+        "teamwork": {
+          "next": "Partes inspice, deinde Consilium Communicationis pro vero grege scribe: quis quid faciat, ubi, et ad quem diem."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Hic incipe",
+        "name_it": "Nomina",
+        "calm_now": "Nunc sedare",
+        "body_reset": "Restitutio corporis",
+        "make_a_plan": "Consilium compone",
+        "understand_patterns": "Formas intellege",
+        "practice_repair": "Reparationem exerce",
+        "role_play": "Lusus partium",
+        "facilitated_group": "Grex moderatus",
+        "reflect": "Meditare",
+        "practice_speaking_up": "Loqui pro te exerce",
+        "make_a_support_plan": "Consilium auxilii compone",
+        "urgent_support": "Auxilium urgens",
+        "get_support": "Auxilium pete",
+        "move_gently": "Leniter procede",
+        "learn_not_diagnose": "Disce, noli diagnosim facere",
+        "learn_and_get_support": "Disce et auxilium pete",
+        "check_boundaries": "Terminos inspice",
+        "explore_identity": "Identitatem explora",
+        "practice_body_respect": "Reverentiam corporis exerce",
+        "map_carefully": "Caute describe",
+        "understand_needs": "Necessitates intellege"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Nomina quid fiat antequam rationem eligas."
+        },
+        "emotions": {
+          "note": "Verba affectuum accurata para et vim animadverte."
+        },
+        "coping": {
+          "note": "Unam rationem corporis vel stabiliendi tempta, deinde animadverte quid mutatum sit."
+        },
+        "mindfulness": {
+          "note": "Pausa cum paucis scribendis, ad respirationem, attentionem, vel corporis conscientiam."
+        },
+        "somaticReset": {
+          "note": "Partem corporis elige, deinde brevem exercitationem quietis, respirationis, vel motus lenis tempta. Selector compactus, claviatura adiri potens, omnem imaginem in parvis quadris tractabilem servat. Imagines includunt Undam Fluentem, quae INSPIRA · SURGE cum linea continua et nota rotunda, EXSPIRA · QUIESCE cum linea punctata et nota rhombi forma, et PAUSA cum lineolis pausae coniungit; Florem Petalorum, qui INSPIRA · APERI cum petalorum ambitibus continuis et medio rotundo, EXSPIRA · MOLLESCE cum ambitibus punctatis et medio rhombi forma, et PAUSA cum lineolis pausae in medio coniungit; Horizontem Stabilientem, qui INSPIRA · SURGE cum ambitu solis continuo et medio circulari, EXSPIRA · QUIESCE cum ambitu solis punctato et medio rhombi forma, et PAUSA cum lineolis pausae in sole coniungit; semitam linearem praevidendam directione notatam, cum titulis directis INSPIRA et EXSPIRA, metis rotundis INSPIRA et rhombi forma EXSPIRA, vestigio ab origine activa, et proxima meta ambitu notata; et Orbitam Respirationis bipartitam cum arcubus phasis continuis et punctatis qui, dum activi sunt, crassiores fiunt, anulo medio eiusdem formae phasis, titulis directis INSPIRA et EXSPIRA, signo medio status pausae, proximo loco traditionis ambitu notato, nota formam phasis referente quae dextrorsum movetur, tabula numeri formis signata, et indiciis phasis pro lectoribus quadri. Discipuli unam respirationem motus gustare possunt antequam horologium incipit, deinde ducem amplificare, sistere, vel exstinguere. In Aspectu Quieto imago amplificata fit puga incipiendi/pausandi claviatura et tactu tractabilis. Numeratio retrorsum celari potest; verba ducentia plena, phasis tantum, vel celata esse possunt; et numeratio respirationum et aestimationes numerorum ad arbitrium sunt.",
+          "boundary": "Haec non est curatio neque diagnosis. Motus parvos et sine dolore serva; si dolor, vertigo, vel torpor adest, desine et adulto cui confidis vel medico aliive valetudinis perito dic."
+        },
+        "anxietyToolkit": {
+          "note": "Sollicitudinem ab actione secerne et proximum gradum utilem elige."
+        },
+        "windowOfTolerance": {
+          "note": "Signa excitationis et auxilia per tempus describe; non est diagnosis."
+        },
+        "stressBucket": {
+          "note": "Pressuras et auxilia simul inspice, etiam pressuras quae in potestate tua non sunt."
+        },
+        "bigFeelings": {
+          "note": "Ira ut nuntio utere et pausam tutiorem vel reparationem dispone."
+        },
+        "conflict": {
+          "note": "Aptissimum ad controversias leves vel fictas exercendas.",
+          "boundary": "Si minae, coactio, vexatio, iniuria, aut periculosa potentiae inaequalitas adsunt, consiste et adultum cui confidis adhibe potius quam sine auxilio pacisci."
+        },
+        "conflicttheater": {
+          "note": "Exercitatio immersiva in forma beta cum personis fictis; noli ea uti ad noxam praesentem componendam.",
+          "boundary": "Verae minae, iniuria, aut vexatio auxilio adulti et responso tutelae egent, non exercitatione lusus partium."
+        },
+        "restorativeCircle": {
+          "note": "Utere cum normis circuli constitutis et adulto moderatore.",
+          "boundary": "Noli circulo uti ad aliquem ad revelationem publicam cogendum vel ad periculum praesens tractandum."
+        },
+        "strengths": {
+          "note": "Meditatio aperta de viribus, sine numero, ordine, aut diagnosi."
+        },
+        "viaStrengths": {
+          "note": "Digestio sui ad meditandum, non quaestionarium publicum VIA nec eventus psychometricus."
+        },
+        "perma": {
+          "note": "Imago boni esse ad colloquium excitandum, non aestimatio valetudinis mentis."
+        },
+        "advocacy": {
+          "note": "Scripta generalia et meditationes ad necessitates exprimendas et auxilium petendum."
+        },
+        "selfAdvocacy": {
+          "note": "Utere ad certa consilia de IEP, 504, accommodatione, revelatione, vel auxilio scholastico."
+        },
+        "crisiscompanion": {
+          "note": "Dux auxilii pro te vel amico; non est instrumentum explorationis discriminis neque adulti vicarius.",
+          "boundary": "Si quis in periculo praesenti esse potest vel cogitationes sui laedendi exsequi potest, hic desine et statim adultum cui confidis vel auxilium subitum/discriminis adi."
+        },
+        "safety": {
+          "note": "Terminos et gradus ad adultum cui confidis adeundum disce; hoc non est probatio num res tuta sit.",
+          "boundary": "Si in periculo praesenti es aut aliquis te laedit, desine et statim adultum cui confidis vel auxilium subitum adi."
+        },
+        "griefLoss": {
+          "note": "Comes privatus in luctu et iactura; praetermitte quidquid nimium videtur.",
+          "boundary": "Si luctus intolerabilis videtur, tutum te non sentis, aut alius in periculo est, adultum cui confidis vel auxilium discriminis adhibe."
+        },
+        "traumaPsychoed": {
+          "note": "Psychoeducatio de responsionibus ad trauma; non instrumentum explorationis neque curatio.",
+          "boundary": "Hic trauma revelare non debes. Consiste et adultum cui confidis vel consiliarium quaere si argumentum aliquid periculosum excitat."
+        },
+        "substancePsychoed": {
+          "note": "Notitiae et meditatio ad damnum minuendum; non instrumentum explorationis neque licentia substantiis utendi.",
+          "boundary": "Noli hoc instrumento uti in nimia dosi vel re medica urgenti; auxilium subitum vel adultum cui confidis adi."
+        },
+        "healthyRelationships": {
+          "note": "Consensum et formas necessitudinum explora sine homine vel necessitudine titulo notanda.",
+          "boundary": "Si necessitudo minas, coactionem, aut violentiam continet, auxilium adulti quaere; noli aliquem sine auxilio coram arguere."
+        },
+        "identitySupport": {
+          "note": "Meditatio confirmans et auxilium communitatis; communicare ad arbitrium est.",
+          "boundary": "Notitias personales privatas serva et adultum cui confidis adhibe si tutum te non sentis."
+        },
+        "bodyStory": {
+          "note": "Aestimatio corporis et peritia mediorum communicationis; non aestimatio de pondere minuendo vel de perturbationibus cibi.",
+          "boundary": "Si cibus, imago corporis, aut exercitatio corporis periculosa videtur vel te consumit, cum adulto cui confidis vel medico aliove valetudinis perito loquere."
+        },
+        "genogram": {
+          "note": "Meditatio personalis de familia; non aestimatio clinica, et communicare ad arbitrium est.",
+          "boundary": "Singula familiae quae periculosa vel privata videntur praetermitte; adultum cui confidis auxilium roga."
+        },
+        "sensoryRegulation": {
+          "note": "Descriptionem sensoriam et accommodationes compone; non est diagnosis.",
+          "boundary": "Auxilia elige quae tuta videntur; accommodationes tantum communica cum vis."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Recognitio Matutina",
+          "desc": "Diem incipe cum recognitione animi, respiratione, et propositis statuendis"
+        },
+        "calm_down": {
+          "name": "Angulus Tranquillitatis",
+          "desc": "Rationes moderandi cum affectus exaestuant"
+        },
+        "conflict_unit": {
+          "name": "Cursus de Controversiis Resolvendis",
+          "desc": "Dissensiones resolvere et artes reparandi aedificare exerce"
+        },
+        "empathy_week": {
+          "name": "Hebdomas Empathiae et Aspectus",
+          "desc": "Empathiam aedifica per susceptionem aspectus alieni et culturarum conscientiam"
+        },
+        "decision_making": {
+          "name": "Deliberatio Penitus Explorata",
+          "desc": "Ratiocinationem ethicam et electiones prudentes exerce"
+        },
+        "self_discovery": {
+          "name": "Peregrinatio Sui Inveniendi",
+          "desc": "Explora quis sis — vires, affectus, et mentem crescendi"
+        },
+        "friendship": {
+          "name": "Amicitia et Artes Sociales",
+          "desc": "Amicitias sanas et artes communicandi aedifica"
+        },
+        "transitions": {
+          "name": "Mutationes Navigare",
+          "desc": "Discipulos per vitae transitus et nova experimenta sustine"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Animadverte quo egeas et unum proximum gradum tractabilem elige.",
+          "model": "Inquietudinem sentio. Corpus extendere possum, deinde primam partem operis mei eligere.",
+          "practice": "Affectum nomina, ad electionem monstra, vel tacite animadverte. Unum auxilium tempta et parvum propositum elige.",
+          "reflect": "Quid animadvertisti? Quid servares aut mutares?",
+          "transfer": "Cum proxima lectio incipit, ____ temptare possum. Si auxilio egeo, ____ rogare possum."
+        },
+        "calm_down": {
+          "goal": "Auxilium explora quod corpori tuo et huic momento conveniat.",
+          "model": "Exercitatio respirationis hodie non prodest. Circum conclave spectare possum vel comitem rogare.",
+          "practice": "Unam tantum rationem commodam elige. Sedere, spectare, vel intermissionem capere sunt optiones validae.",
+          "reflect": "Profuitne, idemne mansit, an incommodum fuit? Desinere vel aliam viam eligere potes.",
+          "transfer": "Cum ____ animadverto, ____ temptare vel ____ auxilium rogare possum."
+        },
+        "conflict_unit": {
+          "goal": "Aspectus considera et responsum reverens ad dissensionem cotidianam meditare.",
+          "model": "Ambo eandem materiam volumus. Rogare possum quo egeas, explicare quo egeam, et vices proponere.",
+          "practice": "Dissensione ficta et levi utere. Unam quaestionem auscultandi et unum gradum proximum possibilem meditare.",
+          "reflect": "Quorum necessitatibus responsum consuluit? Quid mutandum esse possit?",
+          "transfer": "In dissensione tuta, ____ possum. Ob minas, vexationem, aut coactionem, adultum cui confido auxilium rogare possum."
+        },
+        "empathy_week": {
+          "goal": "Alium aspectum explora nec putes te scire quid alius sentiat.",
+          "model": "Tacet. Fortasse fessus est vel cogitat; rogare possum potius quam pro eo decernere.",
+          "practice": "Exemplo ficto utere. Duos aspectus possibiles et unam quaestionem reverentem quam ponere possis nomina.",
+          "reflect": "Quid scis, et quid coniicis? Quomodo inspicere possis?",
+          "transfer": "Antequam hac hebdomade aliquid praesumo, ____ rogare possum."
+        },
+        "decision_making": {
+          "goal": "Electiones compara secundum effectus in te et in alios.",
+          "model": "Antequam imaginem gregis publico, veniam petere et considerare possum quis eam videre possit.",
+          "practice": "Consilium fictum elige. Duas optiones, effectus possibiles, et aliquem qui adiuvare possit compara.",
+          "reflect": "Quae notitiae desunt? Estne optio tutior aut aequior?",
+          "transfer": "Antequam de ____ decerno, consistere possum ut ____ inspiciam."
+        },
+        "self_discovery": {
+          "goal": "Vim agnosce et modum elige quo ea cum auxilio utaris.",
+          "model": "Quaestiones utiles pono. Hac vi uti possum cum opus obscurum est, et exemplum rogare.",
+          "practice": "Vim elige quae tibi convenit, vel personae fictae. Unum exemplum eius in actione da.",
+          "reflect": "Quid adiuvit ut haec vis appareret? Quod auxilium proximum gradum possibilem faceret?",
+          "transfer": "____ uti possum cum ____. Homo vel subsidium quod adiuvare possit est ____."
+        },
+        "friendship": {
+          "goal": "Communicationem exerce quae necessitates tuas et terminos aliorum reveretur.",
+          "model": "Aliquem invitare possum ut nobiscum se iungat, et electionem eius accipere si recusat.",
+          "practice": "Invitationem, quaestionem auscultandi, vel terminum reverentem meditare. Loqui, scribere, vel AAC omnia valent.",
+          "reflect": "Habuitne quisque veram electionem? Quid congressum hospitaliorem facere possit?",
+          "transfer": "In congressu tuto hac hebdomade, ____ temptare et ____ animadvertere possum."
+        },
+        "transitions": {
+          "goal": "Agnosce quid mutetur, quid stabile manere possit, et unum fontem auxilii.",
+          "model": "Nova classis incerta videtur. Conclave in antecessum invenire et rogare possum quis adiuvare possit.",
+          "practice": "Mutationem veram vel fictam elige. Unam incertitudinem, unum auxilium stabile, et unum parvum gradum proximum nomina.",
+          "reflect": "Quae pars in potestate tua est? Quod auxilium vel quae accommodatio utilis esset?",
+          "transfer": "Ante mutationem, ____ possum. Si consilium mutandum est, ____ possum."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Singillatim vel gregatim",
+          "cue": "Prima recognitio utilis ante quamlibet communicationem."
+        },
+        "emotions": {
+          "format": "Singillatim vel bini",
+          "cue": "Bona verborum praeexercitatio."
+        },
+        "coping": {
+          "format": "Singillatim vel gregatim",
+          "cue": "Aptissimum ad restitutionem moderationis."
+        },
+        "mindfulness": {
+          "format": "Tota classis",
+          "cue": "Optio moderandi cum paucis scribendis."
+        },
+        "somaticReset": {
+          "format": "Singillatim vel tota classis",
+          "cue": "Selector imaginum compactus omnem ducem praesto servat sine densa pugarum tabula. Orbita Respirationis arcus continuos et punctatos cum phase activa crassiore coniungit, anulum medium congruentem continuum vel punctatum, et titulos directos INSPIRA et EXSPIRA; medium eius a puncto ad lineolas pausae mutatur cum pausa est, et rhombus vel anulus ambitu notatus proximam phasis traditionem indicat, dum nota rotunda vel rhombi forma dextrorsum mota, rhombus traditionis, anulus reditus, breves lineolae inspirationis, et puncta cava exspirationis phasim et numerationem ad arbitrium sine colore legibiles servant. Sine discipulos unam respirationem motus gustare ante horologium, vel Quietem eligere. Praebe verba ducentia plena, phasis tantum, vel celata. Aspectus Quietus imaginem amplificatam in pugam directam incipiendi/pausandi convertit. Unda Fluens adhibet INSPIRA · SURGE cum linea continua et nota rotunda, EXSPIRA · QUIESCE cum linea punctata et nota rhombi forma, et lineolas pausae in sessione intermissa. Flos Petalorum adhibet INSPIRA · APERI cum petalorum ambitibus continuis et medio rotundo, EXSPIRA · MOLLESCE cum ambitibus punctatis et medio rhombi forma, et lineolas pausae in medio in sessione intermissa. Horizon Stabiliens adhibet INSPIRA · SURGE cum ambitu solis continuo et medio circulari, EXSPIRA · QUIESCE cum ambitu solis punctato et medio rhombi forma, et lineolas pausae in sole cum pausa est. Semita Respirationis adhibet metam rotundam INSPIRA, metam rhombi forma EXSPIRA, vestigium ab origine activa, et proximam metam ambitu notatam, ut directio a colore non pendeat. Praebe indicia phasis pro lectoribus quadri, praeterea optiones numerationis retrorsum celatae, ductus celati, motus sistendi, sine imagine, respirationis naturalis, et sine numeris; numquam aestimationes aut explicationes sensuum corporis exige."
+        },
+        "journal": {
+          "format": "Singillatim",
+          "cue": "Meditatio privata. Communicare ad arbitrium esse debet."
+        },
+        "goals": {
+          "format": "Singillatim vel hora consiliaria",
+          "cue": "Bonus gradus concludendi post meditationem."
+        },
+        "conflict": {
+          "format": "Bini vel parvus grex",
+          "cue": "Normas ante lusum partium praemonstra."
+        },
+        "restorativeCircle": {
+          "format": "Circulus",
+          "cue": "Utere cum normis circuli constitutis."
+        },
+        "peersupport": {
+          "format": "Exercitatio binorum",
+          "cue": "Valde apta ad artes auscultandi meditandas."
+        },
+        "perspective": {
+          "format": "Bini vel grex",
+          "cue": "Bonus pons empathiae ante disputationem."
+        },
+        "digitalWellbeing": {
+          "format": "Singillatim vel hora consiliaria",
+          "cue": "Utile ante normas de telephoniis vel IA."
+        },
+        "sleep": {
+          "format": "Singillatim",
+          "cue": "Bonum ad partes de valetudine in hora consiliaria."
+        },
+        "safety": {
+          "format": "Singillatim",
+          "cue": "Prius inspice; revelationem coactam vita."
+        },
+        "crisiscompanion": {
+          "format": "Singillatim",
+          "cue": "Ad artes auxilii urgentis, non ut pensum classis."
+        },
+        "griefLoss": {
+          "format": "Singillatim",
+          "cue": "Prius inspice; alia exercitia adhibe pro iis qui abstinere volunt."
+        },
+        "identitySupport": {
+          "format": "Singillatim",
+          "cue": "Utere cum cura secreti et facultate abstinendi."
+        },
+        "traumaPsychoed": {
+          "format": "Singillatim vel ab educatore ductum",
+          "cue": "Psychoeducatio tantum; facultatem abstinendi et viam ad adultum cui confidunt praebe."
+        },
+        "substancePsychoed": {
+          "format": "Singillatim vel lectio de valetudine",
+          "cue": "Formam damni minuendi prius inspice et auxilia adultorum/medica praebe."
+        },
+        "healthyRelationships": {
+          "format": "Singillatim vel lectio de valetudine",
+          "cue": "Sermonem de consensu et tutela prius inspice; numquam revelationem personalem exige."
+        },
+        "bodyStory": {
+          "format": "Singillatim",
+          "cue": "Forma reverentiae corporis; facultatem abstinendi praebe et disputationem de pondere vita."
+        },
+        "genogram": {
+          "format": "Singillatim",
+          "cue": "Meditatio de familia tantum; communicare ad arbitrium esse debet."
+        },
+        "sensoryRegulation": {
+          "format": "Singillatim vel consilium auxilii",
+          "cue": "Sermone identitatem confirmante utere et sine discipulos eligere quid communicent."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Recognitio matutina in hora consiliaria",
+          "format": "Tota classis",
+          "focus": "Animus, respiratio, unus gradus proximus",
+          "studentView": "Discipuli zonam suam privatim inspiciunt, optionem moderandi temptant, deinde unam necessitatem diei eligunt vel praetermittunt.",
+          "teacherMove": "Optionem praetermittendi primum exemplo monstra. Communicationem unius verbi vel coloris tantum post exercitationem privatam invita.",
+          "privacyBoundary": "Nullus textus diarii colligitur; discipuli postea statuunt num punctum servatum in Fasciculum Communicandum intret.",
+          "note": "Incipe a recognitione zonae privata, deinde respirationem vel proposita statuenda praebe. Discipuli unum verbum aut colorem dicere vel praetermittere possunt."
+        },
+        "calm_reset": {
+          "name": "Restitutio tranquillitatis quinque minutarum",
+          "format": "Tota classis vel angulus tranquillitatis",
+          "focus": "Moderatio corporis",
+          "studentView": "Discipuli statum corporis praesentem animadvertunt et unam exercitationem ad corpus sedandum eligunt.",
+          "teacherMove": "Consuetudinem paucis verbis et certo tempore serva. Optiones motus, respirationis, vel silentii praebe.",
+          "privacyBoundary": "Discipuli punctum servatum sibi ipsis facere possunt; nemo explicare debet cur restitutione eguerit.",
+          "note": "Paucis verbis hoc serva. Discipuli unam exercitationem moderandi eligunt et animadvertunt quid mutatum sit."
+        },
+        "repair_routine": {
+          "name": "Consuetudo reparationis post controversiam",
+          "format": "Parvus grex vel hora consiliaria",
+          "focus": "Aspectus, reparatio, actio proxima",
+          "studentView": "Discipuli casu vero, ficto, vel a magistro dato uti possunt ad sermonem reparationis exercendum.",
+          "teacherMove": "Normas reparationis primum constitue et confessionem publicam vita. Consiste si res mediatione adulti eget.",
+          "privacyBoundary": "Discipuli eligunt quid communicent; meditationes privatae de controversiis testimonia classis fieri non debent.",
+          "note": "Utere postquam normae constitutae sunt. Animum in sermonem reparationis intende, non in confessionem publicam."
+        },
+        "digital_reset": {
+          "name": "Brevis lectio de salute digitali",
+          "format": "Hora consiliaria vel valetudo",
+          "focus": "Telephonium, somnus, IA, et termini",
+          "studentView": "Discipuli habitus recensent, unum terminum probandum eligunt, et causam privatam servant si volunt.",
+          "teacherMove": "Ut habituum designationem propone, non ut telephonii inspectionem. Noli discipulos rogare ut imagines quadri vel data usus revelent.",
+          "privacyBoundary": "Discipuli propositum termini communicare possunt, sed singula personalia de somno, telephonio, vel IA ad arbitrium manent.",
+          "note": "Ut habituum designationem propone, non ut telephonii inspectionem. Discipuli unum terminum temptandum eligunt."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Ratio investigatione instructa",
+          "title": "Investigatio ad rationem subiacentem pertinet; haec accommodatio digitalis hic probata non est"
+        },
+        "emerging": {
+          "label": "Pauca rationis testimonia",
+          "title": "Promittens, sed testimoniis paucis vel mixtis"
+        },
+        "contested": {
+          "label": "Exemplar controversum",
+          "title": "Populare sed scientifice controversum; optime ut translatio adhibetur, non ut mechanismus"
+        },
+        "practice": {
+          "label": "Exercitatio meditativa",
+          "title": "Exercitatio ordinata vel heuristica, non affirmatio empirica efficaciae"
+        }
+      },
+      "ui": {
+        "sel_practice": "Exercitatio SEL",
+        "default_purpose": "Unam artem SEL cum cura exerce.",
+        "default_next": "Unum parvum gradum perfice, deinde statue num serves.",
+        "private_checkpoint": "Punctum servatum privatum",
+        "share_packet_eligible": "Idoneum Fasciculo Communicando",
+        "saving_preparing": "Opus tuum SEL servandum paratur...",
+        "save_requested": "Servatio petita pro {title}",
+        "returned_to_grid": "Ad tabulam instrumentorum reditum est",
+        "back_to_sel_tools": "Ad instrumenta SEL redi",
+        "export_now_aria": "Plicam incepti SEL nunc exporta",
+        "export_now": "Nunc exporta",
+        "purpose": "Finis",
+        "next_step": "Gradus proximus",
+        "saved_work": "Opus servatum",
+        "checkpoints_private": "Puncta servata instrumentorum hic privata manent, nisi ea Fasciculo Communicando eligis.",
+        "use_with_care_label": "Caute utere:",
+        "tool_open_failed_title": "Hoc instrumentum aperiri non potuit",
+        "tool_open_failed_body": "Aliquid in notitiis servatis huius exercitii non oneratum est. Hoc non est aliquid quod tu perperam fecisti.",
+        "saved_work_kept": "Opus tuum servatum deletum non est.",
+        "back_to_hub": "Ad SEL Hub redi",
+        "tell_teacher": "Si hoc iterum fit, magistro tuo dic quod exercitium fuerit.",
+        "load_did_not_start": "Instrumentum demissum est sed non incepit.",
+        "load_too_long": "Instrumentum nimis diu onerabatur.",
+        "this_sel_tool": "Hoc instrumentum SEL",
+        "tool_opening": "{name} aperitur...",
+        "tool_open_retry": "{name} aperiri non potuit. Iterum conare, vel aliud instrumentum elige.",
+        "station_link_missing": "Hic nexus stationem nominat quae in hoc incepto non est. Sarcinam quae eam continet onera, vel unam ex Stationibus SEL in tabula Historiae incipe.",
+        "started_station": "Statio {name} incepta",
+        "tool_could_not_open": "{name} aperiri non potuit.",
+        "tool_not_available": "{name} in hoc SEL Hub praesto non est.",
+        "try_again": "Iterum conare",
+        "dismiss": "Dimitte",
+        "back_to_tools": "Ad instrumenta redi",
+        "band_elementary": "Schola Primaria",
+        "band_middle": "Schola Media",
+        "band_high": "Schola Superior",
+        "unsaved_aria": "Mutationes non servatas habes",
+        "unsaved_title": "Mutationes non servatae",
+        "unsaved": "Non servatum",
+        "unsaved_hint": "Mutationes non servatas habes — tange «Nunc exporta» ut eas serves",
+        "educators_opened": "Dux «Pro Educatoribus» apertus",
+        "educators_aria": "Pro Educatoribus: quomodo hoc Hub prudenter adhibeas",
+        "for_educators": "Pro Educatoribus",
+        "theme_aria": "Thema muta (lucidum / obscurum / colores valde contrarii)",
+        "theme_contrast": "Colores Contrarii",
+        "theme_dark": "Modus Obscurus",
+        "theme_light": "Modus Lucidus",
+        "theme_contrast_short": "Contr.",
+        "theme_dark_short": "Obscurus",
+        "theme_light_short": "Lucidus",
+        "xp_aria": "{count} puncta experientiae SEL",
+        "close_hub": "SEL Hub claude",
+        "keep_share_title": "Elige quid serves et quid communices",
+        "keep_share_body": "Quaedam exercitia opus in hac machina servant; aliud opus in hac tabella tantum manet. Tabellam claudere non omnia delet. Plicam exporta ut exemplar serves. In machina communi, «Data et secretum» in «Pro Educatoribus» recense. Facultates IA et communicandi ministeriis a te constitutis utuntur.",
+        "got_it_aria": "Intellexi, incipe SEL Hub adhibere",
+        "got_it": "Intellexi",
+        "practice_support": "Auxilium exercitationis",
+        "learning_guide": "Dux discendi et modi exercendi",
+        "what_you_can_explore": "Quid explorare possis",
+        "worked_example": "Exemplum solutum",
+        "try_one_step": "Unum gradum tempta",
+        "reflect_transfer": "Meditare et alibi adhibe",
+        "look_closer": "Propius inspice",
+        "next_use": "Usus proximus possibilis",
+        "adapt_together": "Exercitationem una accommodate",
+        "adapt_smaller": "Minus incipe: unam sententiam vel electionem exemplo monstra, pictura vel re concreta utere, et tempus cogitandi da.",
+        "adapt_deeper": "Altius procede: duo responsa compara, notitias deficientes agnosce, et explica quid electionem tuam mutare possit.",
+        "adapt_context": "Contextum muta: condicione ficta utere quae linguae, studiis, culturae, et necessitatibus accessus discentis conveniat.",
+        "adapt_check": "Intellectum proba per exemplum vel explicationem a discente electam, non per historiam personalem imperatam, mutationem affectuum, vel numerum.",
+        "optional_prompts": "Hae quaestiones ad arbitrium responsa non mittunt, perfectionem non tribuunt, nec praecepta et notitias tutelae ipsius exercitii substituunt.",
+        "returned_to_activities": "Ad exercitia reditum est. Haec actio nullam exercitationem perfectam inscripsit.",
+        "return_to_activities": "Ad exercitia redi",
+        "chooser_first_reset_coping": "Unam optionem stabiliendi commodam elige. Animadverte num conveniat; desinere licet.",
+        "chooser_first_reset_journal": "Unam rem scribe quae proximas paucas minutas tractabiliores faciat. Nulla historia personalis necessaria est.",
+        "chooser_first_feelings_zones": "Ad affectum monstra vel tacite animadverte. Unum auxilium elige; nulla zona recta est ad quam pervenire debeas.",
+        "chooser_first_feelings_emotions": "Duo verba affectuum pro persona ficta explora. Plura responsa convenire possunt.",
+        "chooser_first_feelings_journal": "Verbum vel brevem meditationem de condicione ficta vel cotidiana scribe.",
+        "chooser_first_conversation_advocacy": "Condicione ficta utere ut unam petitionem meditaris voce, per AAC, vel tacite, procul a formulario.",
+        "chooser_first_conversation_journal": "Unam petitionem reverentem pro condicione tuta et cotidiana adumbra; eam mittere non debes.",
+        "chooser_first_decision_decisions": "De duabus electionibus in condicione ficta cogita et de uno effectu possibili utriusque.",
+        "chooser_first_decision_goals": "Unum gradum proximum veri similem et auxilium quod petere possis adumbra.",
+        "try_a_reset": "Restitutionem tempta",
+        "need_feeling": "Affectum intellege",
+        "need_conversation": "Colloquium para",
+        "need_decision": "Gradum proximum elige",
+        "help_choose": "Adiuva me exercitium eligere",
+        "help_choose_intro": "Elige quid temptare velis. Suggestiones his electionibus tantum utuntur; affectus tuos non aestimant. Tempora primum gradum describunt, non totum exercitium.",
+        "what_would_help": "Quid adiuvet?",
+        "time_first_step": "Tempus primo gradui",
+        "n_minutes": "{count} minutae",
+        "how_respond": "Quomodo respondere velis?",
+        "respond_any": "Quolibet modo",
+        "respond_offline": "Cogita, loquere, pinge, vel AAC",
+        "respond_write": "Breve responsum scribe",
+        "options_one": "{count} optio initialis pro electionibus tuis.",
+        "options_many": "{count} optiones initiales pro electionibus tuis.",
+        "options_none": "Nulla optio initialis adhuc congruit. Plus temporis vel aliam respondendi formam tempta; totus catalogus adhuc praesto est.",
+        "why_option_write": "Cur haec optio: {need}, cum primo gradu suaso {minutes} minutarum et brevi responso scripto.",
+        "why_option_offline": "Cur haec optio: {need}, cum primo gradu suaso {minutes} minutarum et modo exercendi sine scribendo.",
+        "open_named": "Aperi {name}",
+        "open_named_unavailable": "Aperi {name} (non praesto)",
+        "pathway_guide": "Dux exercitationis itineris",
+        "pathway_opened": "{opened} ex {total} instrumentis aperta. Instrumentum aperire non significat te artem exercuisse.",
+        "exit_pathway_aria": "Ex modo itineris exi",
+        "pathway_cleared": "Iter sublatum",
+        "exit_pathway": "Ex itinere exi",
+        "practice_goal": "Propositum exercitationis:",
+        "pathway_intro": "Unum exercitium elige vel ordinem suasum sequere. Praetermittere, exemplo ficto uti, vel loquendo, pingendo, scribendo, aut per AAC respondere potes. Communicare ad arbitrium est.",
+        "model_practice_reflect": "Exemplum, exercitatio, et meditatio",
+        "an_example": "Exemplum",
+        "notice_adjust": "Animadverte et accommoda",
+        "take_with_you": "Tecum aufer",
+        "self_check_aria": "Examen sui exercitationis ad arbitrium",
+        "self_check_intro": "Postquam gradum temptavisti, elige quod convenit. Hoc ad arbitrium est et sine nota; in hac sessione itineris manet.",
+        "i_tried": "Gradum temptavi",
+        "another_way": "Alia via mihi opus est",
+        "pass_for_now": "Nunc praetermitto",
+        "tried_feedback": "Animadverte quid profuerit, quid non, et ubi artem iterum temptare possis.",
+        "adapt_feedback": "Minorem gradum, alium respondendi modum, aliud instrumentum, vel auxilium ab aliquo cui confidis tempta.",
+        "pass_feedback": "Praetermittere electio valida est. Postea redire vel auxilium petere potes.",
+        "next_option": "Optio proxima: {name}",
+        "open_next": "Proximum aperi: {name}",
+        "view_pathway_tools": "Instrumenta itineris vide",
+        "revisit_any": "Ad quodlibet exercitium redire potes. Unam ideam extra centrum temptandam elige; non necesse est omnia instrumenta perficere.",
+        "station_activities": "Exercitia stationis",
+        "active_station": "Statio SEL activa: {name}",
+        "steps_recorded_passed": "{done} ex {total} gradibus inscripti · {passed} nunc praetermissi. Hoc est exercitationis commentarium, non nota.",
+        "steps_recorded": "{done} ex {total} gradibus inscripti. Hoc est exercitationis commentarium, non nota.",
+        "active_minutes_done": "{mins} ex {goal} minutis activis hic. Gradus inscriptus.",
+        "active_minutes_counting": "{mins} ex {goal} minutis activis hic. Numerantur dum haec tabella conspicua est et ea uteris.",
+        "exit_station_aria": "Ex modo stationis exi",
+        "station_cleared": "Statio sublata",
+        "exit_station": "Ex statione exi",
+        "station_tools_steps": "Instrumenta, gradus, et meditatio stationis",
+        "station_steps": "Gradus et meditatio stationis",
+        "station_privacy": "Gradus et notae in hac machina servantur et in plicis incepti includi possunt. Exemplis fictis utere vel singula personalia omitte. Elige quid communices.",
+        "step_passed": "Nunc praetermissum. Redire potes cum voles.",
+        "step_marked": "Hunc gradum perfectum notavisti.",
+        "step_target": "Meta exercitii inscripta; hoc nec artem nec bene esse metitur.",
+        "step_ready": "Cum voles, incipe.",
+        "open_step_activity": "Exercitium huius gradus aperi",
+        "xp_progress": "{xp} / {target} XP SEL in summa. Hoc exercitia priora includit; non est numerus artis.",
+        "time_progress": "{mins} / {target} minutae activae. Tempus non est testimonium discendi.",
+        "default_reflect": "Quid animadvertisti? Quid servares aut mutares?",
+        "self_check_ways": "Cogita, pinge, loquere, signis manuum utere, vel AAC. Nota scripta ad arbitrium est. Gradum ipse perfectum nota, vel nunc praetermitte.",
+        "length_target": "Hic gradus servatus metam longitudinis adhibet: {count} / {target} litterae. Longitudo qualitatem meditationis non metitur. Nota tua mutari potest.",
+        "reflection_for": "Meditatio de {name}",
+        "optional_note": "Nota ad arbitrium: quid profuerit, vel quid deinde temptare possis...",
+        "write_reflection": "Meditationem scribe...",
+        "mark_complete_aria": "Nota «{name}» ut perfectum",
+        "step_reopened": "Gradus iterum apertus: {name}",
+        "step_marked_named": "Hunc gradum perfectum notavisti: {name}",
+        "mark_complete": "Nota ut perfectum",
+        "step_passed_named": "Nunc praetermissum: {name}",
+        "filter_pathway": "iter: {name}",
+        "filter_station": "statio: {name}",
+        "no_tools_match": "Nulla instrumenta congruunt cum {filters}",
+        "results_one": "{count} instrumentum ex {total} congruit cum {filters}",
+        "results_many": "{count} instrumenta ex {total} congruunt cum {filters}",
+        "showing_all": "Omnia {total} instrumenta monstrantur",
+        "crisis_elementary": "Si adultum statim invenire non potes, rogare perge donec aliquis audiat. Auxilium mereris.",
+        "crisis_call_or_text": "Telephona vel nuntium mitte ad",
+        "crisis_988": "lineam 988 Suicide & Crisis Lifeline (gratuitam, secretam, 24/7).",
+        "crisis_text": "Nuntium mitte ad",
+        "crisis_text_line": "lineam Crisis Text Line (gratuitam, secretam, 24/7).",
+        "tool_selection": "Electio instrumentorum SEL Hub",
+        "jumped_to_list": "Ad indicem instrumentorum saltum est. {summary}.",
+        "skip_to_list": "Ad indicem instrumentorum sali",
+        "start_here": "Hic incipe",
+        "quick_route": "Viam celerem elige, vel infra percurre.",
+        "browsing_all": "Omnia instrumenta SEL percurruntur",
+        "continue": "Perge",
+        "continue_desc": "Ultimum instrumentum SEL quod aperuisti resume.",
+        "starting_idea": "Idea incipiendi",
+        "starting_idea_desc": "{name}: exercitium suasum huic gradui classium, cum exemplis quae accommodare potes.",
+        "starting_idea_none": "Initium classi tuae aptum aperi.",
+        "try_a_reset_desc": "Rationem commodam explora; tranquillitatem sentire non necesse est.",
+        "journal": "Diarium",
+        "journal_desc": "Meditationem scribe; electiones servandi et communicandi recense.",
+        "browse_all": "Omnia percurre",
+        "browse_all_desc": "Totum catalogum quaere vel cola.",
+        "need_chip_calm": "Corpus sedare",
+        "need_chip_feelings": "Affectus nominare",
+        "need_chip_stress": "Contentio vel sollicitudo",
+        "need_chip_friend": "Controversia cum amico",
+        "need_chip_write": "Scribendo exprimere",
+        "need_chip_decision": "Consilium capere",
+        "need_chip_sleep": "Somnus vel lassitudo",
+        "need_chip_crisis": "Periculum vel discrimen",
+        "need_chip_relationshipsafety": "Tutela in necessitudinibus",
+        "need_chip_schoolsupport": "Auxilium scholasticum",
+        "need_chip_grief": "Luctus vel iactura",
+        "storage_notice": "Quoddam opus SEL in hac machina servatur. Facultates IA ministerio a te constituto utuntur. Elige quid serves vel communices, praesertim in machina communi.",
+        "save_now_aria": "Opus SEL nunc serva vel exporta",
+        "save_now": "Nunc serva",
+        "recent_work": "Opus SEL recens",
+        "saved_here": "Hic servatum. Exporta ut post clausionem serves.",
+        "create_packet_aria": "Fasciculum Communicandum SEL ex punctis servatis crea",
+        "review_packets_aria": "Fasciculos Communicandos SEL servatos recense",
+        "create_packet": "Fasciculum Communicandum crea",
+        "review_packets": "Fasciculos Communicandos recense",
+        "open_related": "Instrumentum cognatum aperi.",
+        "related_unavailable": "Instrumentum cognatum in hoc SEL Hub praesto non est.",
+        "streak_aria": "Series SEL {count} dierum. Longissima: {longest} dies.",
+        "streak": "Series {count} dierum",
+        "streak_best": "optima {count}",
+        "find_activity": "Exercitium inveni",
+        "search_placeholder": "Quaere affectus, amicos, contentionem, proposita...",
+        "search_aria": "Instrumenta SEL quaere",
+        "support_options": "Optiones auxilii",
+        "crisis_hard_moment": "Videtur hoc momentum difficile esse posse.",
+        "crisis_tell_adult": "Hoc sine auxilio expedire non debes, nec primum instrumentum rectum invenire debes. Quaeso, nunc adulto cui confidis dic — consiliario scholae, magistro, parenti, vel alii adulto cui confidis. Quaerere hic nemini nuntiat; aliquis tantum scit si tu ei dicis.",
+        "open_crisis_companion": "Comitem in Discrimine aperi",
+        "find_by_need": "Instrumenta SEL secundum necessitatem inveni",
+        "i_need": "Mihi opus est...",
+        "cleared_search": "Quaestio SEL deleta",
+        "clear_search_aria": "Quaestionem SEL dele",
+        "clear": "Dele",
+        "cleared_need": "Colum necessitatis SEL deletum",
+        "showing_for": "Instrumenta SEL monstrantur pro {name}",
+        "clear_need_aria": "Colum necessitatis dele: {name}",
+        "find_for_aria": "Instrumenta inveni pro: {name}",
+        "browse_by_area": "Secundum regionem artium percurre",
+        "filter_by_category": "Instrumenta SEL secundum genus cola",
+        "showing_all_categories": "Omnia genera monstrantur",
+        "show_all_categories_aria": "Omnia genera monstra ({count} instrumenta)",
+        "all": "Omnia",
+        "filtered_to": "Colatum ad {name}",
+        "filter_chip_aria": "Colum: {name} ({count} instrumenta)",
+        "pathways_heading": "Itinera SEL — Series Discendi Selectae",
+        "started_pathway": "Iter inceptum: {name}",
+        "pathway_started": "Iter {name} inceptum!",
+        "n_activities": "{count} exercitia",
+        "grades_range": "classes {range}",
+        "use_with_care": "Caute utere",
+        "visits_many": "{count} visitationes",
+        "visits_one": "{count} visitatio",
+        "best_for": "Aptissimum ad: {mode}.",
+        "teacher_cue": "Monitum magistro: {time}, {format}. {cue}",
+        "preview_first": "Prius inspice",
+        "evidence_tradition": "Traditio testimoniorum: {tag}",
+        "approach_context": "Contextus rationis: {label}. {title}. Hoc insigne efficaciam nec huic applicationi nec certo discenti confirmat.",
+        "step_opened": "Gradus {n} · Apertus",
+        "step_not_opened": "Gradus {n} · Non apertus",
+        "suggested_grades": "Classes suasae {range}",
+        "no_tools_current_view": "Nulla instrumenta aspectui praesenti congruunt",
+        "empty_try": "Tempta: tranquillitas, affectus, contentio, amicus, scribere, consilium, vel somnus.",
+        "filters_cleared": "Cola deleta. Omnia {total} instrumenta monstrantur.",
+        "show_all_tools": "Omnia {total} instrumenta monstra",
+        "error_loading": "Error in onerando {name}",
+        "unknown_error": "Error ignotus",
+        "back_to_tools_error": "Ad Instrumenta Redi",
+        "tool_load_failed": "Hoc instrumentum onerari non potuit.",
+        "loading_tool": "Instrumentum oneratur...",
+        "file_not_arrived": "Plica non advenit.",
+        "check_connection": "Conexionem inspice, deinde iterum conare.",
+        "plugin_fetching": "Plica additamenti adhuc arcessitur.",
+        "research_about": "De titulis investigationis",
+        "research_summary": "Quid tituli investigationis significent",
+        "research_context": "Contextus rationis: {label}.",
+        "research_not_app": "Investigatio de therapia, curriculo, vel forma non confirmat hoc exercitium digitale eosdem effectus habere. Tituli rationem describunt; nec hanc applicationem nec discentem aestimant.",
+        "research_check": "Antequam exercitium eligis, fontes citatos, aetates et condiciones investigatas, auxilium necessarium, et eventus mensos inspice. Congruentia cum populo et efficacia huius accommodationis his titulis non confirmantur.",
+        "research_casel_link": "CASEL: programma SEL eligere et aestimare",
+        "project_save_failed": "Petitio servandi incepti defecit. Hoc centrum apertum tene et «Serva / Exporta» in applicatione principali tempta.",
+        "project_save_requested": "Servatio incepti petita. Servationem in applicatione principali perfice; plica servata hic confirmata non est.",
+        "saving_aria": "Servatio et communicatio SEL",
+        "saving_failed_alert": "Quaedam mutationes SEL in hac machina servari non potuerunt. Hoc centrum apertum tene et exemplar incepti serva; stationum adumbrationes ut stationes servandae sunt ut in illud exemplar intrent.",
+        "saving_attention": "Servatio attentione eget",
+        "saving_title": "Servatio et communicatio",
+        "saving_failed_body": "Opus praesens in hoc centro aperto praesto manet. Servatio localis irrita exemplar vetustius in hac machina relinquere potest.",
+        "saving_ok_body": "Stationes servatae, notae stationum, et puncta servata centri in hac machina reponuntur. Singula exercitia suas servandi pugas habent; hic status non confirmat omnia exercitiorum inscripta servata esse.",
+        "saving_drafts": "Stationum adumbrationes in hac machina ad recuperandum manent. Stationem servare eam datis incepti addit quae «Serva / Exporta» praesto sunt; petitio servandi incepti non confirmat plicam scriptam esse.",
+        "saving_live": "Sessio viva coniuncta est. Signa progressus vel tutelae hospiti mittere potest. IA ad arbitrium textum exercitii ad ministerium constitutum mittit. Fasciculum Communicandum recense antequam eum communicare eligis.",
+        "saving_ai": "IA ad arbitrium textum exercitii ad ministerium constitutum mittit. Fasciculus Communicandus res et gradus subtilitatis quos eligis continet; praevisionem eius recense antequam communicas.",
+        "saving_retry": "Servationem localem iterum tempta",
+        "saving_request": "Servationem incepti pete",
+        "removed_stations": "Stationes remotae",
+        "removed_body": "Remotionem stationis rescinde dum hoc centrum apertum est. Commentaria exercitationis exstantia servantur.",
+        "station_restored": "Statio restituta: {name}",
+        "undo_removal": "Remotionem rescinde: {name}",
+        "launch_routines_aria": "Consuetudines magistri ad incipiendum",
+        "launch_title": "Initium magistri",
+        "launch_note": "Exercitationem sine notis et communicationem ad arbitrium serva. Ante initium explica repositionem in machina, facultates IA constitutas, et communicationem. Exemplis fictis utere; discipulos invita ut auxilium petant vel praetermittant.",
+        "launch_guardrails_aria": "Cautiones magistri ad incipiendum",
+        "launch_step_boundary": "Terminum constitue",
+        "launch_step_boundary_body": "Dic quid privatum sit, quid ad arbitrium, et quomodo discipuli praetermittere possint.",
+        "launch_step_run": "Consuetudinem age",
+        "launch_step_run_body": "Instrumentis ut exercitatione utere. Meditationem formativam et sine notis serva.",
+        "launch_step_close": "Cum electione conclude",
+        "launch_step_close_body": "Discipuli postea statuunt num servent, exportent, vel punctum servatum includant.",
+        "launch_student_sees": "Quod discipulus videt",
+        "launch_student_sees_default": "Discipuli consuetudinem SEL privatam perficiunt et eligunt quid communicent.",
+        "launch_teacher_move": "Actio magistri",
+        "launch_teacher_move_default": "Hoc ut exercitationem propone, non ut aestimationem.",
+        "launch_sharing_boundary": "Terminus communicandi",
+        "launch_sharing_boundary_default": "Communicatio in potestate discipuli manet.",
+        "launch_tools_loading": "Instrumenta onerantur...",
+        "launch_still_loading": "Adhuc onerantur: {tools}",
+        "launch_preview_sensitive": "Instrumenta delicata prius inspice: {tools}",
+        "launch_load_aria": "Consilium initii magistri onera: {name}",
+        "launch_finish_draft": "Adumbrationem praesentem prius perfice vel abice",
+        "launch_waiting": "Instrumenta exspectantur",
+        "launch_loading": "Oneratur",
+        "launch_load": "In Aedificatorem Stationum onera",
+        "builder_note_student": "Quod discipulus videt: {text}",
+        "builder_note_teacher": "Actio magistri: {text}",
+        "builder_note_sharing": "Terminus communicandi: {text}",
+        "builder_note_note": "Nota magistri: {text}",
+        "launch_finish_existing": "Adumbrationem stationis exstantem prius perfice vel abice.",
+        "launch_tools_still_loading": "Instrumenta initii magistri adhuc onerantur. Mox iterum conare.",
+        "launch_tools_still_loading_sr": "Instrumenta initii magistri adhuc onerantur.",
+        "launch_default_name": "Consuetudo SEL classis",
+        "launch_default_short": "Consuetudo SEL",
+        "launch_loaded_sr": "Consilium initii magistri in aedificatorem stationum oneratum est: {name}",
+        "launch_loaded_toast": "Consilium initii magistri in Aedificatorem Stationum oneratum est.",
+        "stations_summary": "Stationes SEL Propriae — collectiones a magistris compositae",
+        "station_delete_aria": "Stationem {name} dele",
+        "station_removed_sr": "Statio remota. Rescindere licet donec hoc centrum clauditur.",
+        "station_removed": "Statio remota",
+        "station_tools_count": "{count} instrumenta",
+        "station_quests_count": "{count} expeditiones",
+        "station_activated_sr": "Statio SEL activata: {name}",
+        "station_started": "{name} incipit!",
+        "station_activate_aria": "Stationem {name} activa",
+        "station_start": "Stationem incipe",
+        "station_adapt_aria": "Exemplar stationis {name} accommoda",
+        "station_adapt": "Exemplar accommoda",
+        "draft_aria": "Adumbratio stationis recuperabilis",
+        "draft_untitled": "Statio sine titulo",
+        "draft_body": "Adumbratio stationis imperfecta in hac machina servata est: {name}. Eam resume vel abice antequam aliam incipis.",
+        "draft_resume": "Adumbrationem stationis resume",
+        "draft_discard": "Adumbrationem stationis abice",
+        "builder_opened": "Aedificator stationum apertus",
+        "build_station_aria": "Novam Stationem SEL propriam aedifica",
+        "build_station": "+ Stationem Propriam Aedifica"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Conexio magistri suspensa est — locus tuus servatur dum AlloFlow iterum conectitur.",
+    "host_stale": "Status magistri diu non recognitus est - sessio viva fortasse adhuc conexa est. Opus tuum in hoc instrumento manet.",
+    "dismiss": "Dimitte",
+    "dismiss_aria": "Dimitte monitum de statu magistri",
+    "connecting": "Ad classem conectitur…",
+    "retrying": "Nuntii classis suspensi sunt. Sponte iterum conectitur…",
+    "failed": "Nuntii classis disiuncti sunt. Conexionem tuam inspice et iterum conectere tempta.",
+    "access": "Aditus ad classem negatus est. Roga magistrum tuum ut aditum inspiciat, deinde iterum conecte.",
+    "sign_in": "Iterum te inscribe ut aditum ad classem recuperes, deinde iterum conecte.",
+    "reconnect": "Iterum conecte"
+  },
   "_version": "20260526T1779819428771",
   "tour": {
     "input_panel_title": "aditus pannus",
@@ -5283,9 +6444,99 @@
     "measured_on_target": "Gradui {grade} aptus",
     "measured_above": "Supra gradum {grade}",
     "measured_below": "Infra gradum {grade}",
-    "measured_note": "Flesch-Kincaid, in hoc textu mensuratus. Ad pleniorem inspectionem Check gradus adhibe."
+    "measured_note": "Flesch-Kincaid, in hoc textu mensuratus. Ad pleniorem inspectionem Check gradus adhibe.",
+    "listen_along": "Ausculta et sequere",
+    "compare_listen_here": "Hīc ausculta",
+    "compare_listen_here_original": "Hīc ausculta textum orīginālem",
+    "compare_listen_here_adapted": "Hīc ausculta textum aptatum",
+    "compare_stop_reading_original": "Dēsiste textum orīginālem legere",
+    "compare_stop_reading_adapted": "Dēsiste textum aptatum legere",
+    "compare_scroll_together": "Simul volve",
+    "reading_width": "Lātitūdō lectiōnis",
+    "width_narrow": "Angusta",
+    "width_medium": "Media",
+    "width_wide": "Lāta",
+    "width_extra_wide": "Lātissima",
+    "reading_width_characters": "circiter {count} litterae in versū",
+    "original_support_spoken": "Auxilium verbī “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Scribe verbum aut locutionem quae deest",
+      "explain_thinking": "Explica quid cogites",
+      "write_response": "Scribe responsum tuum",
+      "submit_response": "Mitte responsum",
+      "numeric_answer": "Responsum numericum",
+      "unit_named": "Mensura ({unit})",
+      "unit_optional": "Mensura (ad libitum)",
+      "submit_numeric": "Mitte responsum numericum",
+      "select_all_apply": "Elige omnia responsa quae conveniunt",
+      "submit_selections": "Mitte electa",
+      "part1": "Pars I — Elige optimum responsum",
+      "part2": "Pars II — {prompt}",
+      "default_evidence_prompt": "Elige testimonium quod responsum optime confirmat.",
+      "submit_answer_evidence": "Mitte responsum et testimonium",
+      "order_check": "Estne hic ordo rectus?",
+      "order_yes": "Ita, rectus est",
+      "order_no": "Minime, aliquid alieno loco est",
+      "select_misplaced": "Supra elige rem alieno loco positam.",
+      "arrange_instructions": "Res in rectum ordinem dispone. Si iam recte se habent, eas relinque.",
+      "your_order": "Ordo tuus",
+      "move_up": "Sursum move: {item}",
+      "move_down": "Deorsum move: {item}",
+      "done_arranging": "Disposui",
+      "principle_question": "Quae est ratio ordinis?",
+      "principle_chronological": "tempus",
+      "principle_cause_effect": "causa et effectus",
+      "principle_process": "gradus processus",
+      "principle_size": "magnitudo",
+      "principle_hierarchy": "dignitas",
+      "find_mismatch": "Inveni par quod non congruit",
+      "choose_mismatch": "Elige par quod non convenit.",
+      "pair_with_question": "Cum qua re res electa coniungenda est?",
+      "replacement_partner": "Socius novus",
+      "submit_replacement": "Mitte socium novum",
+      "retry_failed": "Responsum tuum mitti non potuit. Participatio tua tamen notata est; iterum tempta cum conexio redierit.",
+      "return_to_quiz": "Redi ad probationem vivam",
+      "minimize": "Minue",
+      "minimize_aria": "Relinque aspectum probationis vivae",
+      "battle_result": "Exitus pugnae",
+      "class_victory": "Victoria classis!",
+      "battle_complete": "Pugna confecta",
+      "regroup": "Occasio vires colligendi",
+      "end_no_scored": "Hae quaestiones ad disputationem aut ad recognitionem magistri erant. Nulla puncta pugnae data sunt.",
+      "end_questions_complete": "Omnes quaestiones confectae sunt. Exitus centesimas vitae reliquae comparat; si par est, classis vincit.",
+      "end_victory": "Classis tua monstrum una vicit.",
+      "end_regroup": "Explicatione infra utere ad proximum conatum una parandum.",
+      "end_review_last": "Ultimam quaestionem infra recognosce. Magister tuus pugnam iterum incipere potest.",
+      "boss_default_name": "Tyrannus",
+      "boss_hp": "{name}: HP",
+      "boss_health": "{name}: vita",
+      "battle_scoring_paused": "Puncta pugnae suspensa",
+      "tick_of": "{value} ex {total}",
+      "confidence_legend": "Quantum confidebas?",
+      "confidence_knew": "Hoc sciebam",
+      "confidence_guessed": "Coniecturam prudentem feci",
+      "confidence_unsure": "Non certe sciebam",
+      "confidence_help": "Hoc magistrum tuum adiuvat ut scientiam firmam et errores cognoscat. Numquam rectitudinem aut puncta mutat.",
+      "retry_send": "Responsum iterum mitte",
+      "waiting_for_teacher": "Exspecta dum magister tuus hanc quaestionem incipiat.",
+      "sending": "Responsum tuum mittitur…",
+      "receipt_only": "Participatio notata est. Responsum tuum nondum ad magistrum pervenit ut aestimetur.",
+      "complete_and_submit": "Responsum tuum perfice et mitte",
+      "poll_closed": "Haec rogatio sententiae clausa est.",
+      "receipt_not_scored": "Magister tuus participationem solam accepit. Hoc responsum non aestimatum est.",
+      "no_answer_submitted": "Nullum responsum ad hanc quaestionem missum est. Eam cum classe tua recognosce.",
+      "answer_review": "Recognitio responsi",
+      "review_answer": "Responsum recognosce",
+      "discuss_with_teacher": "Cum magistro tuo de responso dissere.",
+      "response_correct": "Responsum rectum.",
+      "response_partial": "Responsum ex parte rectum.",
+      "response_incorrect": "Hoc responsum iterum inspiciendum est.",
+      "response_none": "Nullum responsum missum est.",
+      "response_submitted": "Responsum ad recognitionem missum est.",
+      "explanation": "Explicatio"
+    },
     "title": "Aestimare",
     "mcq_count": "MCQ Numerā",
     "reflections": "Cogitationes",

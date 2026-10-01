@@ -1,0 +1,65 @@
+[
+  {
+    "dark": true,
+    "width": 1180,
+    "scrollWidth": 1180,
+    "errors": [],
+    "buttons": [
+      {
+        "name": "Select planet: Mercury",
+        "pressed": "false",
+        "width": 123.765625,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Venus",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Earth",
+        "pressed": "true",
+        "width": 123.78125,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Mars",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Jupiter",
+        "pressed": "false",
+        "width": 123.765625,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Saturn",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Uranus",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Neptune",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 38
+      },
+      {
+        "name": "Select planet: Pluto",
+        "pressed": "false",
+        "width": 123.78125,
+        "height": 38
+      }
+    ],
+    "portraits": 0
+  }
+]

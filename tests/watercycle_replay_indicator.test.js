@@ -14,7 +14,11 @@ describe('Water Cycle replay handoff', () => {
       expect(source).toContain("var wcReplayedObservation = d.wcReplayedObservation || '';" );
       expect(source).toContain("wcReplayedObservation: entry.label || 'Custom controls'");
       expect(source).toContain("wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: ''");
-      expect(source).toContain("updMulti({ wcExperimentLog: [], wcReplayedObservation: '' });");
+      const clearTrailStart = source.indexOf('var clearWcExperimentLog = function()');
+      const clearTrailEnd = source.indexOf('var removeWcObservation = function(', clearTrailStart);
+      const clearTrailSource = source.slice(clearTrailStart, clearTrailEnd);
+      expect(clearTrailSource).toMatch(/\bwcExperimentLog\s*:\s*\[\s*\]/);
+      expect(clearTrailSource).toMatch(/\bwcReplayedObservation\s*:\s*(['"])\1/);
     });
   });
 
@@ -25,9 +29,9 @@ describe('Water Cycle replay handoff', () => {
       expect(source).toContain('is-replaying');
       expect(source).toContain('wc-experiment-log-replay-badge');
       expect(source).toContain('className: "wc-experiment-log-replay-badge", "aria-hidden": "true"');
-      expect(source).toContain('Replaying: " + wcReplayedObservation');
-      expect(source).toContain('Replay active');
-      expect(source).toContain('Adjust a control to branch from this observation.');
+      expect(source).toContain('Settings replayed: " + wcReplayedObservation');
+      expect(source).toContain('Settings replayed');
+      expect(source).toContain('Adjust a condition to start a new comparison.');
     });
   });
 });

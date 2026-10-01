@@ -1,0 +1,155 @@
+{
+  "at": "2026-10-01T00:32:47.857Z",
+  "scope": "Owned runtime pairs only; shared host held and entire checkout is not a release candidate.",
+  "modules": [
+    {
+      "file": "text_utility_helpers_module.js",
+      "sha256": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "sha256": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "gemini_api_module.js",
+      "sha256": "ca2fcf3e44e2d6ae575be4d22ec208d4ade8001fa17b687701029b0bb0ba3213",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "guided_mode_config_module.js",
+      "sha256": "580a8cfa661a80ce2f81fd7a7f61886265dcd13403d682f546d8df28c2baefb8",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "error_reporter_module.js",
+      "sha256": "7ef1e9083e16a0e761aab9046911e8768cfe0d2fa2ecfe37c9e10c471f96570d",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "tts_module.js",
+      "sha256": "531e3a9c1982c41553ee6b0c330307184e4ae1f0345c600966f941245a359ded",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "view_kokoro_offer_modal_module.js",
+      "sha256": "6c50e8ad76839ad76352fe0ec8dae5a84ad256c238170159d296f94ec4939fe7",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "view_canvas_recovery_dialog_module.js",
+      "sha256": "caf6d4837158e087c42732475116b837abad86d1f3a2a398c90809af739a94ec",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "utils_pure_module.js",
+      "sha256": "4a9dfc53ce019866ea1db5370f7c099075ecd260fb4f9710fdfc7460d75a97f3",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "personas_module.js",
+      "sha256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "word_sounds_module.js",
+      "sha256": "032fb0760c307f25ff7b1701ff48e6fabc99d3ab2160bdaabe7e4f6c3c06e0a4",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    },
+    {
+      "file": "word_sounds_setup_module.js",
+      "sha256": "156f5ddcf8c03e2c3bea909c874cc50e5d78a93015a8230f077526b11ee31c2b",
+      "mirrorEqual": true,
+      "inputsMatchBuild": true,
+      "outputMatchesBuild": true
+    }
+  ],
+  "held": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "differsFromInitialSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "differsFromInitialSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "differsFromInitialSnapshot": true
+    }
+  ],
+  "hostMirrorsMatch": true,
+  "journalUnchanged": true,
+  "preserved": [
+    {
+      "file": "audio_helpers_source.jsx",
+      "unchangedSinceInitialSnapshot": true
+    },
+    {
+      "file": "read_aloud_audio_service_source.jsx",
+      "unchangedSinceInitialSnapshot": true
+    },
+    {
+      "file": "read_aloud_artifact_audio_source.jsx",
+      "unchangedSinceInitialSnapshot": true
+    }
+  ],
+  "queryPatternMatches": [
+    {
+      "file": "utils_pure_source.jsx",
+      "matches": [
+        {
+          "line": 717,
+          "diagnosticComment": true
+        }
+      ]
+    }
+  ],
+  "requestQueryPatternsNeedingReview": [],
+  "errors": [],
+  "limits": [
+    "Held host differs from the initial snapshot because other workspace work continued; our team made no host edits.",
+    "URL-pattern review records code locations only and does not establish a credential leak.",
+    "Passes do not replace real device bridge/reload, screenreader, educator content or deployment checks."
+  ]
+}

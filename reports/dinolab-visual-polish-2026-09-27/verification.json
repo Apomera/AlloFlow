@@ -1,0 +1,16 @@
+{
+  "source_sha256": "d96b84e11be14a66373526dacd6b336c3732d55e5cf3eb7ab7d1e5ef392cd371",
+  "mirror_identical": true,
+  "unit_tests_passed": 109,
+  "unit_tests_failed": 0,
+  "browser_stats": {
+    "startTime": "2026-09-27T18:04:54.952Z",
+    "duration": 90980.97,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "accessibility_scans": 15,
+  "accessibility_violations": 0
+}

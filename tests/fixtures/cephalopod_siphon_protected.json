@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "baselineSourceSha256": "b34c982127743a9d1f47ed392d0d48d09fa6adba588560bb178ab5e180e5d369",
+  "exclusion": "Humboldt-only cl-siphon ancestor",
+  "fingerprints": {
+    "commonOcto": "aaed84ae74b629a9541a7135e5a3472df51831f58a2f2ef0133b68f272ba28d2",
+    "blueRinged": "0d71905bfb9a74d92240e4cb9e1b11fb964d45656b99575182180329045f6e63",
+    "mimicOcto": "6fe6ee733cd2322a7beae4ec677cdc0bed95b84ae2bc11b554cd0da09e9a7757",
+    "giantPacific": "4223558513301c7f4f72e3a438afcc8060a3f181f738f28971f1c74b4a4f9a3a",
+    "caribReef": "f6263b03ea07c38db36f8a658001634fc7ba859f7a116dc25f7e652871126d09",
+    "coconutOcto": "62e63b91e0affa6dcf91ab0efe80e7f3db0fe67849fef0a5d959cb7cdae68168",
+    "humboldtSquid": "b41f14b3356d18b09a32101b045680e2947f85070675dfa76b9d78d2681123d6",
+    "cuttlefish": "2a2e5d51af4ccf26aa92b47009b9594217c0b0b45db1cc3ffd9c43859077aef4",
+    "bobtailSquid": "b6730fbcfcc611d40e07a30fb20f57051f3b59b8ef3786b7cf147a058e4228bd",
+    "dumboOcto": "939a77e0f3fd98c6fb7e5cf4f55e486b1b82226807da64e31bd3abcdd8711399",
+    "vampireSquid": "aa011d04b8357d64d5c5a9082fc3bcf74cb290f32f0377d452fc14f8a674543b",
+    "nautilus": "6f10af13dcd2443240ea8fadcab494cb7218a1c3193c32caaa0d676fe22fb0b4"
+  }
+}

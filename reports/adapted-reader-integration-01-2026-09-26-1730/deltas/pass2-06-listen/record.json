@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-26T23:38:00.262Z",
+  "label": "pass2-06-listen",
+  "patch": "3e43c9f6a5eff0eb3d0212820681c6d58ef6c23a3028a2e4b3e04c488a8b699d",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "617f66b42745d3d64de3b67040fd96ae26018effb960d840ea0f5a3b27e9f0a6",
+      "after": "54c9ee31ee809dd2e81ceb9d2f086f927f19f3b82817e5410107ed024772f90e",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_listen_along_access.test.js",
+      "targets": [
+        "tests/reader_listen_along_access.test.js"
+      ],
+      "before": null,
+      "after": "4e0b4e6798267ac875433486c0d3405116e2fabbafe87e1282fb7dc487c59158",
+      "changed": true
+    }
+  ]
+}

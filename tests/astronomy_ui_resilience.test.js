@@ -66,7 +66,7 @@ describe('Astronomy UI state resilience', () => {
 describe('Astronomy keyboard navigation contract', () => {
   it('implements Arrow, Home, and End navigation through one validated activation path', () => {
     const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
-    expect(source).toContain('function activateAstronomyTab(tabId)');
+    expect(source).toContain('function activateAstronomyTab(tabId, targetId)');
     expect(source).toContain('function handleAstronomyTabKey(event)');
     expect(source).toContain("['ArrowLeft', 'ArrowRight', 'Home', 'End']");
     expect(source).toContain("event.currentTarget.querySelectorAll('[role=\"tab\"]')");
@@ -483,74 +483,35 @@ describe('Astronomy star catalog resilience', () => {
   });
 });
 describe('Astronomy gravitational lens resilience', () => {
+  const lensDocument = state => new window.DOMParser().parseFromString(renderAstronomy({tab:'galaxies',observingList:[],...state}),'text/html');
   it('recovers malformed restored state without invalid SVG geometry', () => {
-    expect(() => renderAstronomy({
-      tab: 'galaxies', observingList: [], lensMass: { forged: true },
-      lensOffset: Number.POSITIVE_INFINITY
-    })).not.toThrow();
-    const html = renderAstronomy({
-      tab: 'galaxies', observingList: [], lensMass: { forged: true },
-      lensOffset: Number.POSITIVE_INFINITY
-    });
-    expect(html).toContain('id="astronomy-lens-status" role="status" aria-live="polite" aria-atomic="true"');
-    expect(html).toContain('Lens mass 50 times 10 to the 14th solar masses; source offset 0. Perfect alignment produces a complete Einstein ring.');
-    expect(html).toContain('aria-valuetext="50 times 10^14 solar masses"');
-    expect(html).toContain('aria-valuetext="0, perfect alignment"');
-    expect(html).not.toContain('NaN');
-    expect(html).not.toContain('[object Object]');
-    expect(html).not.toMatch(/<circle[^>]+r="-/);
+    const doc=lensDocument({lensMass:{forged:true},lensOffset:Infinity}),lab=doc.querySelector('#astronomy-lens-lab');
+    expect(doc.querySelector('#astronomy-lens-mass').value).toBe('1');expect(doc.querySelector('#astronomy-lens-offset').value).toBe('0');
+    expect(doc.querySelector('#astronomy-lens-status').textContent).toContain('Einstein ring');
+    expect(lab.outerHTML).not.toMatch(/NaN|Infinity|\[object Object\]/);
   });
-
-  it('clamps and snaps mass and alignment controls to supported values', () => {
-    const extremes = renderAstronomy({
-      tab: 'galaxies', observingList: [], lensMass: 999, lensOffset: -999
-    });
-    const snapped = renderAstronomy({
-      tab: 'galaxies', observingList: [], lensMass: 52, lensOffset: 11
-    });
-    expect(extremes).toContain('aria-valuetext="200 times 10^14 solar masses"');
-    expect(extremes).toContain('aria-valuetext="80, source left of lens"');
-    expect(snapped).toContain('aria-valuetext="50 times 10^14 solar masses"');
-    expect(snapped).toContain('aria-valuetext="12, source right of lens"');
+  it('clamps and snaps legacy mass and alignment controls to supported values', () => {
+    const extreme=lensDocument({lensMass:999,lensOffset:-999}),snapped=lensDocument({lensMass:52,lensOffset:11});
+    expect(extreme.querySelector('#astronomy-lens-mass').value).toBe('4');expect(extreme.querySelector('#astronomy-lens-offset').value).toBe('-10');
+    expect(snapped.querySelector('#astronomy-lens-mass').value).toBe('1');expect(snapped.querySelector('#astronomy-lens-offset').value).toBe('1.5');
   });
-
-  it('narrates ring, arc, and separated-image alignment states', () => {
-    const ring = renderAstronomy({ tab: 'galaxies', observingList: [], lensOffset: 0 });
-    const arcs = renderAstronomy({ tab: 'galaxies', observingList: [], lensOffset: 10 });
-    const images = renderAstronomy({ tab: 'galaxies', observingList: [], lensOffset: 40 });
-    expect(ring).toContain('Perfect alignment produces a complete Einstein ring.');
-    expect(ring).toContain('Einstein ring');
-    expect(arcs).toContain('Near alignment produces two distorted arcs.');
-    expect(arcs).toContain('Lensed arcs');
-    expect(images).toContain('Wide misalignment produces two separated images.');
-    expect(images).toContain('Image 1');
-    expect(images).toContain('Image 2');
+  it('narrates the connected finite-source ring and separated-image states', () => {
+    for(const [offset,pattern]of [[0,'Einstein ring'],[.5,'Distorted ring'],[5,'Two stretched images']])expect(lensDocument({lensSourceArcsec:offset}).querySelector('#astronomy-lens-status').textContent).toContain(pattern);
   });
-
-  it('keeps the maximum-mass schematic bounded inside the viewBox', () => {
-    const html = renderAstronomy({
-      tab: 'galaxies', observingList: [], lensMass: 200, lensOffset: 0
-    });
-    expect(html).toContain('viewBox="0 0 600 220"');
-    expect(html).toContain('cx="300" cy="110" r="75"');
-    expect(html).toContain('cx="300" cy="110" r="92"');
-    expect(html).not.toMatch(/<circle[^>]+r="-/);
+  it('keeps the maximum-mass images on the fixed angular scale', () => {
+    const doc=lensDocument({lensMassRatio:4,lensSourceArcsec:10});
+    const svg=doc.querySelector('#astronomy-lens-diagram');expect(svg.getAttribute('viewBox')).toBe('0 0 360 378');
+    expect(Number(svg.querySelector('[data-lens-critical-radius]').getAttribute('r'))).toBe(80);
+    const path=svg.querySelector('[data-lens-images]').getAttribute('d');for(const token of path.match(/-?\d+(?:\.\d+)?/g)){expect(Number(token)).toBeGreaterThanOrEqual(20);expect(Number(token)).toBeLessThanOrEqual(340);}
   });
-
-  it('provides semantic controls, diagram relationships, and recovery actions', () => {
-    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
-    expect(html).toContain('role="group" aria-label="Gravitational lens controls"');
-    expect(html).toContain('id="astronomy-lens-diagram"');
-    expect(html).toContain('aria-describedby="astronomy-lens-status astronomy-lens-help"');
-    expect(html).toContain('aria-label="Show perfect gravitational lens alignment"');
-    expect(html).toContain('aria-label="Reset gravitational lens simulation"');
-    expect(html).toContain('Schematic, not to scale.');
-    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
-    expect(source).toContain('function normalizedLensValue(value, min, max, step, fallback)');
-    expect(source).toContain('var ringR = 30 + massRatio * 45;');
-    expect(source).toContain('[1, 2, 3].map(function(level)');
+  it('provides semantic controls, diagram relationships and recovery actions', () => {
+    const doc=lensDocument({});expect(doc.querySelector('[role="group"][aria-label="Gravitational lens controls"]')).toBeTruthy();
+    expect(doc.querySelector('#astronomy-lens-diagram').getAttribute('aria-describedby')).toBe('astronomy-lens-status astronomy-lens-help');
+    expect(doc.querySelector('[aria-label="Show perfect gravitational lens alignment"]')).toBeTruthy();expect(doc.querySelector('[aria-label="Reset gravitational lens simulation"]')).toBeTruthy();
+    expect(doc.querySelector('#astronomy-lens-help').textContent).toContain('same fixed angular scale');
   });
 });
+
 describe('Astronomy dark-matter explorer resilience', () => {
   it('recovers malformed restored topics to a visibly selected rotation-curves tab', () => {
     expect(() => renderAstronomy({
@@ -671,11 +632,11 @@ describe('Astronomy black-hole information explorer resilience', () => {
 
   it('renders a responsive and narrated Page-curve comparison', () => {
     const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
-    expect(html).toContain('id="astronomy-page-curve-diagram" viewBox="0 0 600 230" role="img"');
+    expect(html).toContain('id="astronomy-page-curve-diagram" viewBox="0 0 360 260" role="img"');
     expect(html).toContain('aria-labelledby="astronomy-page-curve-title astronomy-page-curve-desc"');
-    expect(html).toContain('Hawking: keeps rising');
+    expect(html).toContain('Thermal calculation: entropy rises');
     expect(html).toContain('Unitary Page curve');
-    expect(html).toContain('information recovered');
+    expect(html).toContain('entropy returns to zero');
     expect(html).toContain('axes are not numerical or to scale');
   });
 
@@ -718,11 +679,11 @@ describe('Astronomy gravitational-wave explorer resilience', () => {
 
   it('renders a responsive and narrated interferometer schematic', () => {
     const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
-    expect(html).toContain('id="astronomy-interferometer-diagram" viewBox="0 0 600 270" role="img"');
+    expect(html).toContain('id="astronomy-interferometer-diagram" viewBox="0 0 360 300" role="img"');
     expect(html).toContain('aria-labelledby="astronomy-interferometer-title astronomy-interferometer-desc"');
     expect(html).toContain('A laser reaches a beam splitter and travels along two perpendicular arms');
-    expect(html).toContain('relative arm-length change');
-    expect(html).toContain('arm lengths and strain are not to scale');
+    expect(html).toContain('physical length difference');
+    expect(html).toContain('Solid arms show magnified motion');
   });
 
   it('supports roving focus and complete keyboard topic navigation', () => {
@@ -764,12 +725,12 @@ describe('Astronomy pulsar explorer resilience', () => {
 
   it('renders a responsive and narrated pulsar lighthouse schematic', () => {
     const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
-    expect(html).toContain('id="astronomy-pulsar-diagram" viewBox="0 0 600 270" role="img"');
+    expect(html).toContain('id="astronomy-pulsar-diagram" viewBox="0 0 360 280" role="img"');
     expect(html).toContain('aria-labelledby="astronomy-pulsar-title astronomy-pulsar-desc"');
-    expect(html).toContain('Its magnetic axis is tilted, producing two radiation beams');
-    expect(html).toContain('rotation axis');
-    expect(html).toContain('magnetic / beam axis');
-    expect(html).toContain('angles, beam width, and sizes are not to scale');
+    expect(html).toContain('Two opposite beam cones rotate with its magnetic axis');
+    expect(html).toContain('spin axis');
+    expect(html).toContain('Magnetic tilt');
+    expect(html).toContain('Star size and observer distance are illustrative');
   });
 
   it('supports roving focus and complete keyboard topic navigation', () => {
@@ -952,7 +913,7 @@ describe('Astronomy telescope simulator resilience', () => {
     expect(reflector).toContain('role="tablist" aria-label="Telescope optical design"');
     expect(reflector).toContain('id="astronomy-scope-tab-reflector" type="button" role="tab" aria-selected="true"');
     expect(reflector).toContain('id="astronomy-scope-diagram-panel" role="tabpanel" aria-labelledby="astronomy-scope-tab-reflector"');
-    expect(reflector).toContain('id="astronomy-scope-reflector-diagram" viewBox="0 0 600 220" role="img"');
+    expect(reflector).toContain('id="astronomy-scope-reflector-diagram" viewBox="0 0 360 280" role="img"');
     expect(reflector).toContain('Reflector: 100 millimeter aperture');
   });
 
@@ -966,7 +927,7 @@ describe('Astronomy telescope simulator resilience', () => {
     expect(html).toContain('dimensions are not drawn to scale');
     const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
     expect(source).toContain('function normalizedScopeValue(value, min, max, step, fallback)');
-    expect(source).toContain("var type = d.scopeType === 'reflector' ? 'reflector' : 'refractor';");
+    expect(source).toContain("var type = state.scopeType === 'reflector' ? 'reflector' : 'refractor';");
     expect(source).toContain("document.getElementById('astronomy-scope-tab-' + nextType)");
   });
 });

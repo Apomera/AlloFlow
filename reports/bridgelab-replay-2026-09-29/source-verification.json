@@ -1,0 +1,12 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "5e2b871ab8e06500a566c11295c051cbb8e12c2cc98fa844ce3aec984cab316d",
+  "matchingEnglishKeys": 879,
+  "coveredTestFiles": 22,
+  "unitAndSnapshotChecksPassed": 150,
+  "browserChecksPassed": 12,
+  "totalDistinctChecksPassed": 162,
+  "unitReport": "regression-unit-results.json",
+  "browserReport": "browser-final-results.json"
+}

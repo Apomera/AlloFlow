@@ -4,11 +4,13 @@ import { createRequire } from 'node:module';
 const THREE=createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function extract(name,end,scope={}){const a=source.indexOf('function '+name+'('),b=source.indexOf(end,a);return Function(...Object.keys(scope),'return ('+source.slice(a,b).trim()+')')(...Object.values(scope));}
-function surface(primaryFingers=5,isOspreyWing=false){return extract('sampleRaptorWingSurface','        function createTaperedWing',{wingSpan:3,wingDepth:0.64,silhouetteProfile:{primaryFingers,sweep:-0.26,tipWidth:0.58},isOspreyWing});}
+// 66296cfd0: the sampler reads the initHuntSim closure's isFalconWing and species; falcons taper
+// the outer wing to a point and owls round it off, so both are exercised alongside a hawk.
+function surface(primaryFingers=5,isOspreyWing=false,kind='hawk'){return extract('sampleRaptorWingSurface','        function createTaperedWing',{wingSpan:3,wingDepth:0.64,silhouetteProfile:{primaryFingers,sweep:-0.26,tipWidth:0.58},isOspreyWing,isFalconWing:kind==='falcon',species:{isOwl:kind==='owl'}});}
 describe('Raptor sculpted wing surfaces',()=>{
   it('keeps both wings mirrored with a raised chord and continuous elbow',()=>{
-    for(const fingers of [0,5])for(const osprey of [false,true]){
-      const sample=surface(fingers,osprey);
+    for(const fingers of [0,5])for(const osprey of [false,true])for(const kind of ['hawk','falcon','owl']){
+      const sample=surface(fingers,osprey,kind);
       for(let i=0;i<=20;i++)for(let j=0;j<=6;j++){
         const a=sample(i/20,j/6,-1),b=sample(i/20,j/6,1);
         expect(a.x).toBe(-b.x);expect(a.y).toBe(b.y);expect(a.z).toBe(b.z);expect(Object.values(a).every(Number.isFinite)).toBe(true);
@@ -17,10 +19,16 @@ describe('Raptor sculpted wing surfaces',()=>{
       for(const elbow of [0.5,0.52])for(const v of [0,1])expect(Math.abs(sample(elbow-1e-6,v,1).z-sample(elbow+1e-6,v,1).z)).toBeLessThan(0.00001);
     }
   });
+  it('tapers the falcon wing to a point and rounds the owl wing tip',()=>{
+    const chord=(kind,u)=>{const s=surface(0,false,kind);return s(u,1,1).z-s(u,0,1).z;};
+    for(const kind of ['falcon','owl'])expect(chord(kind,0.5)).toBeCloseTo(chord('hawk',0.5),10);
+    for(const kind of ['falcon','owl'])expect(chord(kind,1)).toBeLessThan(chord('hawk',1)*0.05);
+    expect(chord('owl',0.85)).toBeGreaterThan(chord('falcon',0.85)*1.5);
+  });
   it('scales detail with consistently upward normals and nondegenerate triangles',()=>{
     const counts=[];
     for(const quality of ['low','balanced','high'])for(const side of [-1,1]){
-      const make=extract('createTaperedWing','        var leftWingSurface',{THREE,graphicsQuality:quality,sampleRaptorWingSurface:surface()});
+      const make=extract('createTaperedWing','        var leftWingSurface',{THREE,graphicsQuality:quality,species:{isOwl:false},sampleRaptorWingSurface:surface()});
       const g=make(side),p=g.attributes.position,n=g.attributes.normal;counts.push(p.count);
       for(let i=0;i<n.count;i++){expect(n.getY(i)).toBeGreaterThan(0.8);expect(Math.hypot(n.getX(i),n.getY(i),n.getZ(i))).toBeCloseTo(1,5);}
       const ids=g.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();

@@ -1,4 +1,1224 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Zona Emosi",
+          "desc": "Kenali zonamu (biru, hijau, kuning, merah) dan jelajahi strategi untuk mengatur diri."
+        },
+        "emotions": {
+          "label": "Penjelajah Emosi",
+          "desc": "Bangun kosakata emosi — kenali, namai, dan nilai seberapa kuat perasaanmu."
+        },
+        "strengths": {
+          "label": "Penemu Kekuatan",
+          "desc": "Temukan dan renungkan kekuatan, bakat, dan area pertumbuhan pribadimu."
+        },
+        "viaStrengths": {
+          "label": "Kekuatan VIA",
+          "desc": "Pemilahan mandiri yang disederhanakan dari 24 Kekuatan Karakter VIA (Peterson dan Seligman, 2004), dengan 6 kebajikan dan pengenalan kekuatan khasmu. Untuk survei resmi yang gratis, kunjungi viacharacter.org. Latihan reflektif, bukan alat psikometri."
+        },
+        "wheelOfLife": {
+          "label": "Roda Kehidupan",
+          "desc": "Diagram laba-laba dari 8 ranah kehidupan, masing-masing dinilai 1 sampai 10. Potret diri tentang bagian hidup yang terasa penuh dan yang terasa tipis saat ini. Dari tradisi coaching (Meyer 1960-an; Co-Active Coaching). Heuristik; bukan alat psikometri yang tervalidasi."
+        },
+        "perma": {
+          "label": "Kesejahteraan PERMA",
+          "desc": "Cek diri pada lima ranah PERMA ditambah refleksi Kesehatan: Emosi positif, Keterlibatan, Hubungan, Makna, Pencapaian, dan Kesehatan. 24 butir, hasil berupa diagram batang, refleksi per ranah. Dari Seligman; berpasangan dengan Kekuatan VIA."
+        },
+        "coping": {
+          "label": "Perangkat Koping",
+          "desc": "Jelajahi dan latih strategi koping — pernapasan, membumikan diri, gerakan, dan lainnya."
+        },
+        "windowOfTolerance": {
+          "label": "Jendela Toleransi",
+          "desc": "Visual kesadaran diri yang peka trauma. Tiga zona keterangsangan (hiperarousal, jendela, hipoarousal). Petakan tanda-tanda pribadimu di tiap zona, pemicumu, dan latihan yang membawamu kembali. Berdasarkan Siegel (1999); standar di sekolah yang peka trauma."
+        },
+        "stressBucket": {
+          "label": "Ember Stres",
+          "desc": "Visual kapasitas. Pemicu stres mengalir masuk; latihan koping mengalirkannya keluar. Lihat apakah aliran masuk dan keluarmu seimbang. Alat dari tradisi CBT (Brabban dan Turkington 2002), dipakai di NHS IAPT dan Mind UK. Jujur tentang pemicu stres struktural."
+        },
+        "tipp": {
+          "desc": "Empat keterampilan DBT untuk bertahan dalam krisis (Temperature/suhu, Intense exercise/olahraga intens, Paced breathing/napas berirama, Paired muscle relaxation/relaksasi otot berpasangan) untuk tekanan AKUT. Menenangkan tubuh dalam 30 detik sampai 10 menit sebelum kamu mencoba berpikir untuk keluar dari situasi. Keterampilan dasar Toleransi Tekanan dalam DBT (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Perangkat Kecemasan",
+          "desc": "Keterampilan berbasis CBT untuk menghadapi kecemasan: psikoedukasi, pohon kekhawatiran (kekhawatiran produktif vs tidak produktif), waktu khawatir terjadwal, dekatastrofisasi, keterampilan membumikan diri, dan inventaris pola pribadi. Dari Beck Institute, AACAP, ADAA. Berpasangan dengan Jendela Toleransi dan Ember Stres."
+        },
+        "sleep": {
+          "label": "Tidur & Istirahat",
+          "desc": "Kurang tidur pada remaja adalah krisis kesehatan masyarakat. Anjuran AAP 8-10 jam jarang terpenuhi. Psikoedukasi, cek diri, 8 hambatan umum + apa yang berhasil untuk masing-masing, dan buku harian tidur. Dari AAP, CDC, NSF, dan penelitian Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Regulasi Sensorik",
+          "desc": "Alat yang menghargai neurodiversitas untuk memahami pemrosesan sensorikmu sendiri di 8 sistem sensorik. Buat profil pribadi, rencanakan diet sensorik, kenali akomodasi di sekolah. Bahasa yang mengutamakan identitas; dibangun di atas karya Ayres / Dunn / kajian yang dipimpin orang autistik."
+        },
+        "bigFeelings": {
+          "label": "Perasaan Besar (Marah)",
+          "desc": "Psikoedukasi dan latihan keterampilan khusus tentang marah. Marah sebagai informasi, bukan masalahnya; agresi reaktif sebagai jebakannya. Dibangun di atas tradisi Coping Power dari Lochman + basis bukti CBT untuk kemarahan. Catatan kekesalan, inventaris pemicu, titik pilihan, cara menenangkan diri yang dipersonalisasi."
+        },
+        "substancePsychoed": {
+          "label": "Penggunaan Zat",
+          "desc": "Psikoedukasi pengurangan dampak buruk tentang zat (alkohol, ganja, nikotin, opioid, stimulan, benzo, halusinogen). Risiko bagi otak remaja. Edukasi nalokson. BUKAN alat skrining, BUKAN pendekatan pantang total saja. Rujukan kuat ke SAMHSA. Ruang refleksi yang selaras dengan MI."
+        },
+        "behavioralActivation": {
+          "label": "Aktivasi Perilaku",
+          "desc": "Rencanakan kegiatan kecil, lakukan, lalu beri nilai untuk penguasaan (merasa mampu) dan kesenangan (menikmati). Perhatikan apa yang cocok dan pilih langkah berikutnya yang terjangkau. Kegiatan perencanaan ini mengambil dari aktivasi perilaku; kegiatan ini tidak memberikan atau menilai suatu rangkaian terapi."
+        },
+        "mindfulness": {
+          "label": "Pojok Kesadaran Penuh",
+          "desc": "Latihan pernapasan terpandu, pemindaian tubuh, dan kegiatan kesadaran penuh."
+        },
+        "quietQuestions": {
+          "label": "Pertanyaan Hening",
+          "desc": "Latihan perenungan batin mingguan. Renungkan satu pertanyaan terbuka selama seminggu penuh. 20 pertanyaan bergilir tentang perhatian, kerinduan, kesulitan, keterhubungan, dan proses menjadi. Terinspirasi tradisi pertanyaan renungan Quaker; sekuler dan tidak menggurui."
+        },
+        "orientations": {
+          "label": "Orientasi",
+          "desc": "Cara-Cara Hidup, Dibandingkan. Delapan tradisi filsafat (Taoisme, Zen, Stoisisme, Eksistensialisme, etika Konfusianisme, Ubuntu, relasionalitas Pribumi, Etika Kepedulian) dibandingkan pada pertanyaan-pertanyaan besar kehidupan. Tidak menggurui; setiap tradisi memiliki panel jujur \"apa yang tidak bisa dilakukannya dengan baik\"."
+        },
+        "thoughtRecord": {
+          "label": "Catatan Pikiran CBT",
+          "desc": "Catatan pikiran 7 kolom dari Terapi Perilaku Kognitif. Telusuri satu momen sulit: situasi, emosi, pikiran otomatis, bukti yang mendukung dan menentang, pikiran yang seimbang, penilaian ulang emosi. Menyimpan catatan dari waktu ke waktu. Dari Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Kisi Untung-Rugi",
+          "desc": "Kisi pengambilan keputusan 2x2 dari Terapi Perilaku Dialektis. Untung dan rugi jangka pendek dan jangka panjang dari sebuah keputusan, berdampingan. Berguna saat emosi mendorongmu ke satu pilihan. Dari Linehan."
+        },
+        "sfbt": {
+          "label": "Berfokus Solusi",
+          "desc": "Terapi Singkat Berfokus Solusi: Pertanyaan Keajaiban, Penskalaan, Mencari Pengecualian, dan Pujian. Melihat ke depan alih-alih ke belakang, menanyakan apa yang sudah berhasil. Teknik yang paling banyak dipakai dalam konseling sekolah di AS. Dari de Shazer dan Berg."
+        },
+        "careConstellations": {
+          "label": "Konstelasi Kepedulian",
+          "desc": "Peta relasi tentang siapa yang peduli padamu dan siapa yang kamu pedulikan. Menolak bingkai \"perawatan diri\" yang individualis atau konsumtif. Termasuk pandangan filosofis yang mendalam tentang Merawat Diri vs Perawatan Diri (Foucault, epimeleia heautou dari Yunani, Audre Lorde, eudaimonik vs hedonik)."
+        },
+        "ecomap": {
+          "label": "Ekomap",
+          "desc": "Peta hubungan orang-dalam-lingkungan. Kamu di tengah; 12 sistem kehidupan utama di sekitarmu. Setiap hubungan dinilai dari kekuatan, stres, dan arah energinya. Alat standar pekerjaan sosial sejak Hartman (1978); dipakai dalam IEP, asesmen keluarga, dan inventaris kehidupan pribadi."
+        },
+        "circlesOfSupport": {
+          "label": "Lingkaran Dukungan",
+          "desc": "Empat lingkaran relasi yang berlapis: Keintiman, Persahabatan, Partisipasi, Pertukaran (dibayar). Memperlihatkan siapa yang benar-benar dekat, termasuk ketika orang yang dibayar mengisi lingkaran dalam. Dari Forest dan Snow di Inclusion Press."
+        },
+        "genogram": {
+          "desc": "Peta keluarga tiga generasi dengan simbol standar sistem keluarga. Hanya untuk pemahaman diri pribadi (BUKAN penilaian klinis). Berdasarkan teori sistem keluarga Bowen dan notasi McGoldrick-Gerson-Petry. Termasuk panduan penyajian yang aman dan ditampilkan dengan jelas."
+        },
+        "griefLoss": {
+          "label": "Duka & Kehilangan",
+          "desc": "Pendamping mandiri terpandu untuk duka. Kematian orang atau hewan peliharaan, perubahan keluarga, kehilangan teman, kehilangan identitas, kehilangan yang tidak jelas — semuanya dihitung. Telusuri empat tugas berduka dari Worden, tulis surat, rencanakan ritual. Pesan keselamatan yang kuat yang mengarah ke Pendamping Krisis / 988 untuk duka yang berat atau rumit."
+        },
+        "traumaPsychoed": {
+          "label": "Memahami Trauma",
+          "desc": "Hanya psikoedukasi (BUKAN alat skrining). Apa itu trauma dan apa yang bukan, neurobiologi dengan bahasa sederhana, respons umum yang dipahami ulang sebagai bentuk adaptasi, 6 prinsip SAMHSA, penanganan berbasis bukti. Untuk siswa dan pendidik. Termasuk pesan keselamatan yang ditampilkan dengan jelas tentang mengapa skrining tanpa tindak lanjut tidak aman."
+        },
+        "bodyStory": {
+          "label": "Kisah Tubuh",
+          "desc": "Alat penerimaan tubuh dan kebertubuhan. BUKAN berfokus pada berat badan, BUKAN terkait diet, BUKAN alat skrining. Dibangun di atas apresiasi tubuh menurut Tylka, prinsip makan intuitif, dan literasi media. Inklusif bagi semua tubuh, semua gender, semua ukuran. Rujukan kuat ke NEDA untuk gangguan makan."
+        },
+        "sourcesOfStrength": {
+          "label": "Sumber Kekuatan",
+          "desc": "Petakan 8 faktor pelindungmu. Jelajahi dukungan pelindung yang terinspirasi program Sources of Strength. Peta mandiri ini adalah adaptasi, bukan pelaksanaan program sekolah yang telah dievaluasi."
+        },
+        "crisiscompanion": {
+          "label": "Pendamping Krisis",
+          "desc": "Keterampilan dukungan sebaya dan pencegahan bunuh diri: apa yang harus dilakukan jika kamu atau temanmu mengalami depresi, dalam krisis, atau berpikir untuk menyakiti diri — mengenali tanda-tandanya, apa yang perlu dikatakan (dan tidak dikatakan), memberi tahu orang dewasa tepercaya, ditambah 988 dan rencana keselamatan pribadi. Dilindungi peringatan konten. Selaras dengan NEDA, AFSP, Sources of Strength, dan 988. Pasangan dukungan akut untuk Sumber Kekuatan."
+        },
+        "identitySupport": {
+          "label": "Dukungan Identitas",
+          "desc": "Ruang inklusif dan meneguhkan untuk pertanyaan tentang identitas gender, orientasi seksual, orientasi romantis, dan identitas secara lebih luas. Kosakata, perkembangan identitas, menemukan komunitas, keamanan bagi remaja trans, panduan untuk sekutu. Dibangun di atas Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Suara Disabilitas",
+          "desc": "Para advokat autistik dan penyandang disabilitas nyata yang karyanya membentuk, dan mengkritik, praktik disabilitas. Kutipan, konteks, dan daftar bacaan pilihan. Dibuat agar orang-orang yang selama ini hanya DIJADIKAN SASARAN oleh bidang ini ditempatkan di pusat, bukan disingkirkan ke kolom samping dalam alat ilmu perilaku. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Penyusun Tujuan",
+          "desc": "Tetapkan tujuan SMART, pantau kemajuan, dan rayakan pencapaian."
+        },
+        "howlTracker": {
+          "label": "Pelacak HOWL",
+          "desc": "Penilaian diri Habits of Work and Learning (Kebiasaan Kerja dan Belajar) untuk waktu Crew. Cek mingguan, tujuan per kuartal, grafik tren, pertanyaan pemantik percakapan Crew. Selaras dengan kerangka HOWL dari EL Education."
+        },
+        "onePageProfile": {
+          "label": "Profil Satu Halaman",
+          "desc": "Profil ringkas yang mudah dibawa dan dicetak dalam satu halaman. Tiga bagian: apa yang disukai dan dikagumi orang dariku, apa yang penting bagiku, cara terbaik mendukungku. Artefak perencanaan yang berpusat pada orang untuk rapat IEP, masa transisi, guru pengganti, atau Crew. Berdasarkan format Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Membuat Rencana Aksi). Delapan pertanyaan berurutan (Kisahku, Impian, Mimpi Buruk, Siapa Aku, Bakat, Kebutuhan, Rencana Aksi, Langkah Pertama). Visual yang berpusat pada orang dari Pearpoint, O'Brien, dan Forest di Inclusion Press; banyak dipakai untuk perencanaan transisi."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Merencanakan Hari Esok Alternatif dengan Harapan). Visual perencanaan masa depan: delapan tahap dari Bintang Utara jangka panjangmu mundur ke langkah pertama dalam dua minggu. Pearpoint, O'Brien, dan Forest di Inclusion Press; berpasangan dengan MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Nilai & Tindakan",
+          "desc": "Pilah apa yang penting, sebutkan nilai-nilai utamamu, dan ubah masing-masing menjadi satu tindakan kecil yang nyata minggu ini. Dari Terapi Penerimaan dan Komitmen (Hayes); pembingkaian DNA-V untuk remaja. Pembedaan ACT antara nilai (arah) dan tujuan (tempat yang dituju)."
+        },
+        "careerCompass": {
+          "label": "Kompas Karier",
+          "desc": "Jelajahi karier melalui minatmu. Cek diri RIASEC 36 butir memberikan tiga kode Holland teratas; telusuri karier, 16 Klaster Karier federal, dan langkah nyata berikutnya (hari mengamati kerja, wawancara informasi, CTE, magang). Dibangun di atas kerangka Holland; mengarah ke O*NET Interest Profiler resmi di mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio Advokasi Diri",
+          "desc": "Susun rencana dukungan sekolah yang nyata untuk pertanyaan IEP atau 504, akomodasi, pilihan untuk mengungkapkan diri, dan meminta bantuan orang dewasa tepercaya."
+        },
+        "perspective": {
+          "label": "Lensa Perspektif",
+          "desc": "Lihat situasi dari berbagai sudut pandang — latih empati dan kemampuan memahami sudut pandang orang lain."
+        },
+        "community": {
+          "label": "Komunitas & Budaya",
+          "desc": "Jelajahi keberagaman, kesadaran budaya, dan rasa memiliki dalam komunitas."
+        },
+        "conflict": {
+          "label": "Resolusi Konflik",
+          "desc": "Latih konflik berisiko rendah atau hipotetis dengan memahami sudut pandang, pernyataan \"aku\", meredakan ketegangan, dan pilihan untuk memperbaiki. Jika seseorang tidak aman, libatkan orang dewasa alih-alih bernegosiasi sendirian."
+        },
+        "social": {
+          "label": "Lab Keterampilan Sosial",
+          "desc": "Latih keterampilan bercakap, mendengarkan secara aktif, bahasa tubuh, dan kerja sama."
+        },
+        "teamwork": {
+          "label": "Pembangun Kerja Sama Tim",
+          "desc": "Tantangan kolaboratif dan penjelajahan peran dalam tim."
+        },
+        "dearMan": {
+          "desc": "Susun naskah untuk permintaan yang sulit dalam tujuh langkah: Describe (Gambarkan), Express (Ungkapkan), Assert (Tegaskan), Reinforce (Kuatkan), Mindful (Tetap fokus), Appear confident (Tampil percaya diri), Negotiate (Bernegosiasi). Dari Efektivitas Interpersonal DBT (Linehan); naskah komunikasi asertif yang paling banyak dipakai dalam konseling sekolah. Berpasangan dengan Advokasi Diri."
+        },
+        "motivationalInterviewing": {
+          "label": "Wawancara Motivasional",
+          "desc": "Kerangka percakapan untuk membantu seseorang (atau dirimu sendiri) memikirkan sebuah perubahan. Pelajari keterampilan OARS (Open questions/pertanyaan terbuka, Affirmations/afirmasi, Reflections/refleksi, Summaries/ringkasan), tiga penggaris, dan Pembicaraan Perubahan. Dari Miller dan Rollnick; fondasi konseling sekolah dan kerja dukungan sebaya."
+        },
+        "crewProtocols": {
+          "label": "Protokol Crew",
+          "desc": "Pustaka format kelompok terstruktur untuk waktu Crew, perwalian, atau kelas wali: pembangun komunitas, pembukaan, penutupan, lingkaran restoratif, protokol refleksi, format perayaan, dan panduan percakapan sulit. Ditambah rangkuman semua pertanyaan pemantik Crew dari seluruh SEL Hub. Dibangun di atas EL Education Crew, Praktik Restoratif, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Hubungan Sehat",
+          "desc": "Spektrum (sehat / tidak sehat / penuh kekerasan) di 8 dimensi hubungan dekat apa pun. Persetujuan secara rinci, pencegahan kekerasan dalam pacaran, keamanan + saluran bantuan. Dibangun di atas kerangka Loveisrespect / NDVH. Inklusif bagi orang queer, neurodivergen, dan penyandang disabilitas."
+        },
+        "decisions": {
+          "label": "Lab Keputusan",
+          "desc": "Selesaikan skenario kehidupan nyata dengan kerangka berhenti-pikir-bertindak."
+        },
+        "journal": {
+          "label": "Jurnal Perasaan",
+          "desc": "Jurnal cek harian — catat suasana hati, pemicu, dan refleksi dari waktu ke waktu."
+        },
+        "safety": {
+          "label": "Keamanan & Batasan",
+          "desc": "Pelajari tentang batasan pribadi, orang dewasa tepercaya, dan situasi aman vs. tidak aman."
+        },
+        "landPlace": {
+          "label": "Tanah & Tempat",
+          "desc": "Studio Pelestarian untuk hubungan yang berkelanjutan dengan tanah tempatmu tinggal. Tiga benang (sejarah, ekologi, masa kini), refleksi kritis tentang pengakuan tanah sebagai praktik, bukan pertunjukan, organisasi yang dipimpin Wabanaki sebagai suara yang berwenang, dan jurnal refleksi pribadi."
+        },
+        "somaticReset": {
+          "label": "Reset Tubuh & Napas",
+          "desc": "Pilih satu zona tubuh dan ikuti reset singkat yang bisa dilakukan sambil duduk, berupa diam tenang, pernapasan, atau gerakan lembut, dengan cek pribadi sebelum dan sesudahnya."
+        },
+        "restorativeCircle": {
+          "label": "Lingkaran Restoratif",
+          "desc": "Fasilitasi lingkaran restoratif dan lingkaran pembangun komunitas dengan norma yang sudah disepakati, bimbingan orang dewasa, dan kepedulian terhadap akar budaya. Bukan untuk pengungkapan paksa atau risiko keamanan yang sedang berlangsung."
+        },
+        "compassion": {
+          "label": "Welas Asih & Bicara pada Diri",
+          "desc": "Latih welas asih pada diri sendiri, bingkai ulang kritikus batin, dan bangun suara batin yang lebih ramah."
+        },
+        "friendship": {
+          "label": "Pembangun Persahabatan",
+          "desc": "Jelajahi gaya persahabatan, strategi memperbaiki hubungan, dan pola hubungan yang sehat."
+        },
+        "transitions": {
+          "label": "Transisi Hidup",
+          "desc": "Hadapi perubahan seperti pindah rumah, sekolah baru, dan tumbuh dewasa."
+        },
+        "upstander": {
+          "label": "Pelatihan Pembela",
+          "desc": "Belajar membela orang lain dengan aman — keterampilan dari penonton menjadi pembela."
+        },
+        "growthmindset": {
+          "label": "Pola Pikir Bertumbuh",
+          "desc": "Ilmu otak, membingkai ulang tantangan, dan membangun ketangguhan."
+        },
+        "execfunction": {
+          "label": "Fungsi Eksekutif",
+          "desc": "Strategi untuk bagian tersulit dalam menyelesaikan sesuatu: memulai tugas, menjaga fokus, merencanakan ke depan, dan mengatur waktu."
+        },
+        "advocacy": {
+          "label": "Latihan Advokasi",
+          "desc": "Latih naskah umum untuk mengungkapkan kebutuhan, meminta dukungan, dan bersuara dalam situasi sehari-hari."
+        },
+        "civicAction": {
+          "label": "Aksi Warga & Harapan",
+          "desc": "Olah perasaan berat tentang ketidakadilan, bangun daya kewargaan, dan tumbuhkan harapan melalui tindakan."
+        },
+        "ethicalReasoning": {
+          "label": "Lab Penalaran Etis",
+          "desc": "Jelajahi dilema etis masa kini melalui berbagai kerangka dan dialog Sokratik dengan AI."
+        },
+        "cultureExplorer": {
+          "label": "Penjelajah Budaya",
+          "desc": "Selami budaya-budaya dunia secara mendalam dengan bantuan AI, lengkap dengan ilustrasi dan audio."
+        },
+        "voicedetective": {
+          "label": "Detektif Suara",
+          "desc": "Dengarkan suara dan kenali emosi dari nada bicaranya."
+        },
+        "practiceJourneys": {
+          "label": "Perjalanan Latihan (Uji Coba)",
+          "desc": "Latih cara meminta dukungan melalui empat pertemuan yang saling terhubung. Tanggapi dengan pilihan, kata-katamu sendiri, atau keduanya. Tulis jurnal dan coba alur yang lain."
+        },
+        "sociallab": {
+          "label": "Bermain Peran Keterampilan Sosial",
+          "desc": "Latih skenario sosial dan bermain peran dengan teman sebaya AI melalui dialog bercabang."
+        },
+        "peersupport": {
+          "label": "Pelatih Dukungan Sebaya",
+          "desc": "Pelajari keterampilan mendengarkan OARS dan kapan harus meminta bantuan orang dewasa."
+        },
+        "conflicttheater": {
+          "label": "Teater Konflik",
+          "desc": "Latih konflik fiktif dengan dua karakter AI dalam adegan yang imersif. Hanya untuk bermain peran versi beta; jangan gunakan untuk menengahi bahaya yang sedang terjadi."
+        },
+        "digitalWellbeing": {
+          "label": "Studio Kesejahteraan Digital",
+          "desc": "Cek hubunganmu dengan media sosial dan chatbot AI, bangun kebiasaan ponsel yang lebih sehat, pulih dari perundungan siber, kenali manipulasi di linimasa, jalani hubungan dengan chatbot secara aman, dan temukan bantuan saat kamu membutuhkannya."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Kesadaran Diri",
+          "desc": "Mengenali emosi, kekuatan, dan area untuk bertumbuh"
+        },
+        "self-regulation": {
+          "label": "Regulasi Diri",
+          "desc": "Mengatur emosi, keterangsangan, perhatian; latihan koping"
+        },
+        "self-direction": {
+          "label": "Pengarahan Diri",
+          "desc": "Menetapkan tujuan, daya diri, fungsi eksekutif, pola pikir bertumbuh"
+        },
+        "inner-work": {
+          "label": "Kerja Batin",
+          "desc": "Latihan kontemplatif dan reflektif"
+        },
+        "care-of-self": {
+          "label": "Merawat Diri",
+          "desc": "Welas asih pada diri, perawatan diri yang relasional"
+        },
+        "social-awareness": {
+          "label": "Kesadaran Sosial",
+          "desc": "Empati, memahami sudut pandang, dan menghargai keberagaman"
+        },
+        "relationship-skills": {
+          "label": "Keterampilan Relasi",
+          "desc": "Komunikasi, kerja sama tim, dan resolusi konflik"
+        },
+        "responsible-decision-making": {
+          "label": "Pengambilan Keputusan yang Bertanggung Jawab",
+          "desc": "Pilihan etis, menimbang konsekuensi, dan pemecahan masalah"
+        },
+        "stewardship": {
+          "label": "Pelestarian",
+          "desc": "Merawat komunitas, keadilan, tanah, dan masa depan"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 menit",
+          "purpose": "Namai zonamu saat ini dan pilih strategi pengaturan diri yang cocok.",
+          "next": "Cek zonamu, pilih satu strategi, lalu simpan jika kamu ingin melihatnya lagi."
+        },
+        "coping": {
+          "time": "3-10 menit",
+          "purpose": "Pilih satu strategi koping dan latih sekali dengan titik berhenti yang jelas.",
+          "next": "Pilih satu strategi berbasis tubuh atau membumikan diri, cobalah, lalu perhatikan apakah itu membantu."
+        },
+        "journal": {
+          "time": "5-12 menit",
+          "purpose": "Tulis refleksi pribadi dan perhatikan pola yang mungkin ingin kamu simpan.",
+          "next": "Pilih satu pertanyaan pemantik, tulis dengan jujur, lalu simpan atau ekspor sebelum menutup."
+        },
+        "emotions": {
+          "time": "4-8 menit",
+          "purpose": "Bangun kosakata emosi dan namai apa yang kamu rasakan dengan lebih tepat.",
+          "next": "Pilih satu perasaan, nilai seberapa kuat perasaan itu, lalu pilih satu kata yang paling cocok."
+        },
+        "mindfulness": {
+          "time": "2-10 menit",
+          "purpose": "Berhenti sejenak, bernapas, dan latih perhatian tanpa perlu menulis apa pun.",
+          "next": "Pilih satu latihan singkat, ikuti sampai selesai, lalu perhatikan apa yang berubah."
+        },
+        "somaticReset": {
+          "time": "3-8 menit",
+          "purpose": "Gunakan cek zona tubuh secara pribadi untuk memilih reset singkat yang bisa dilakukan sambil duduk.",
+          "next": "Pilih satu area tubuh, coba satu pilihan diam tenang, napas, atau gerakan lembut, lalu perhatikan apa yang berubah."
+        },
+        "thoughtRecord": {
+          "time": "8-15 menit",
+          "purpose": "Perlambat pikiran yang sulit dan cari sudut pandang yang lebih seimbang.",
+          "next": "Sebutkan situasinya, nilai perasaannya, lalu uji pikiran itu dengan bukti."
+        },
+        "anxietyToolkit": {
+          "time": "5-12 menit",
+          "purpose": "Pilah kekhawatiran, kurangi intensitas kecemasan, dan pilih langkah berikutnya yang praktis.",
+          "next": "Pilih kekhawatiran yang paling keras, coba satu strategi, lalu simpan rencananya jika membantu."
+        },
+        "sleep": {
+          "time": "4-10 menit",
+          "purpose": "Perhatikan hambatan tidur dan pilih satu kebiasaan istirahat untuk dicoba berikutnya.",
+          "next": "Cek apa yang menghalangi, pilih satu perubahan kecil, lalu tinjau lagi nanti."
+        },
+        "goals": {
+          "time": "5-10 menit",
+          "purpose": "Ubah niat menjadi tindakan berikutnya yang nyata dan realistis.",
+          "next": "Tulis satu tujuan, pilih langkah pertama, dan simpan rencananya sebelum menutup."
+        },
+        "friendship": {
+          "time": "5-10 menit",
+          "purpose": "Pikirkan kebutuhan dalam persahabatan, rasa memiliki, dan pilihan terkait teman sebaya.",
+          "next": "Pilih satu situasi persahabatan dan temukan satu langkah baik berikutnya."
+        },
+        "conflict": {
+          "time": "6-12 menit",
+          "purpose": "Pahami sebuah konflik dan siapkan tanggapan yang berfokus pada perbaikan.",
+          "next": "Sebutkan apa yang terjadi, pertimbangkan kedua pihak, lalu pilih satu tindakan perbaikan."
+        },
+        "safety": {
+          "time": "8-15 menit",
+          "purpose": "Buat rencana keselamatan yang praktis dan kenali dukungan yang tepercaya.",
+          "next": "Tambahkan tanda peringatan, langkah koping, dan orang yang bisa dihubungi; simpan sebelum menutup."
+        },
+        "crisiscompanion": {
+          "time": "3-10 menit",
+          "purpose": "Gunakan alur dukungan yang terstruktur saat emosi terasa mendesak atau tidak aman.",
+          "next": "Pilih pilihan dukungan yang paling dekat dan libatkan orang dewasa tepercaya atau layanan krisis bila perlu."
+        },
+        "conflicttheater": {
+          "time": "8-15 menit",
+          "purpose": "Latih adegan konflik fiktif dan uji bahasa restoratif tanpa menganggap alat ini sebagai mediasi.",
+          "next": "Pilih adegan fiktif, coba satu tanggapan, lalu diskusikan apa yang akan membutuhkan dukungan orang dewasa di kehidupan nyata."
+        },
+        "restorativeCircle": {
+          "time": "15-30 menit",
+          "purpose": "Rencanakan atau fasilitasi proses kelompok restoratif dengan norma yang jelas dan bimbingan orang dewasa.",
+          "next": "Tetapkan kesepakatan lingkaran terlebih dahulu, lalu pilih pertanyaan pemantik; jangan pernah mewajibkan pengungkapan di depan umum."
+        },
+        "strengths": {
+          "time": "5-10 menit",
+          "next": "Pilih kekuatan yang terasa seperti dirimu, lalu temukan satu momen nyata dari trimester ini yang menunjukkan masing-masing kekuatan itu."
+        },
+        "viaStrengths": {
+          "time": "8-15 menit",
+          "purpose": "Gunakan pemilahan mandiri yang terinspirasi VIA sebagai kegiatan refleksi, bukan penilaian formal.",
+          "next": "Pilah kekuatan-kekuatannya, perhatikan polanya, dan tulis satu contoh yang menguatkan hasilnya."
+        },
+        "perma": {
+          "time": "8-15 menit",
+          "purpose": "Ambil potret kesejahteraan yang reflektif di seluruh ranah PERMA ditambah Kesehatan.",
+          "next": "Gunakan potret ini untuk memilih percakapan atau percobaan kecil, bukan untuk memberi label pada dirimu."
+        },
+        "advocacy": {
+          "time": "5-12 menit",
+          "purpose": "Latih bahasa sehari-hari untuk mengungkapkan kebutuhan dan meminta dukungan.",
+          "next": "Pilih satu situasi, buat draf permintaan singkat, dan putuskan siapa yang bisa membantu."
+        },
+        "selfAdvocacy": {
+          "time": "10-20 menit",
+          "purpose": "Susun rencana dukungan sekolah yang nyata untuk IEP, 504, akomodasi, atau pilihan untuk mengungkapkan diri.",
+          "next": "Pilih satu kebutuhan dukungan, kumpulkan pertanyaanmu, dan tentukan orang dewasa tepercaya yang akan dilibatkan."
+        },
+        "crewProtocols": {
+          "time": "10-20 menit",
+          "next": "Telusuri berdasarkan tujuan, pilih satu protokol untuk hari ini, lalu catat di Rencana Crew Saya kapan kamu akan menjalankannya."
+        },
+        "perspective": {
+          "time": "6-12 menit",
+          "next": "Pilih satu situasi, ambil sudut pandang orang lain dulu, lalu katakan apa yang akan kamu lakukan secara berbeda."
+        },
+        "windowOfTolerance": {
+          "time": "8-12 menit",
+          "next": "Tambahkan satu tanda ke masing-masing dari tiga zonamu, lalu gunakan Cek untuk menentukan posisimu hari ini."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 menit",
+          "next": "Mulai dengan Apa itu sensorik?, lalu tandai sistem yang terasa keras atau tenang bagimu."
+        },
+        "execfunction": {
+          "time": "5-10 menit",
+          "next": "Buka Mulai dan pilih satu langkah pembuka untuk hari ini, lalu buka Tahan untuk memilih tempat mencatatmu."
+        },
+        "growthmindset": {
+          "time": "5-10 menit",
+          "next": "Buka Bingkai Ulang, tulis pikiran yang kaku, lalu ubah menjadi pikiran yang spesifik dan bisa dijalankan."
+        },
+        "dearMan": {
+          "time": "8-12 menit",
+          "next": "Tulis permintaanmu dalam satu kalimat, buat draf tujuh langkahnya, lalu latih sekali."
+        },
+        "howlTracker": {
+          "time": "5-10 menit",
+          "next": "Catat Denyut, lalu lakukan Cek Mingguan: nilai setiap HOWL dan tambahkan satu contoh yang spesifik."
+        },
+        "peersupport": {
+          "time": "5-10 menit",
+          "next": "Pilih dua pertanyaan terbuka yang bisa kamu ajukan kepada teman, lalu coba satu pada situasi fiktif di tab latihan."
+        },
+        "upstander": {
+          "time": "8-12 menit",
+          "next": "Baca tangga keberanian di Langkah, lalu pilih dua langkah terkecil yang benar-benar bisa kamu lakukan minggu ini."
+        },
+        "digitalWellbeing": {
+          "time": "8-12 menit",
+          "next": "Lakukan Cek Diri dengan jujur, lalu pilih satu kebiasaan dari Perangkat dan satu batasan yang kamu tetapkan sejak awal."
+        },
+        "teamwork": {
+          "time": "8-12 menit",
+          "next": "Lihat Peran, lalu tulis Rencana Komunikasi untuk kelompok nyata: siapa melakukan apa, di mana, dan paling lambat kapan."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Mulai di sini",
+        "name_it": "Namai",
+        "calm_now": "Tenang sekarang",
+        "body_reset": "Reset tubuh",
+        "make_a_plan": "Buat rencana",
+        "understand_patterns": "Pahami pola",
+        "practice_repair": "Latih perbaikan",
+        "role_play": "Bermain peran",
+        "facilitated_group": "Kelompok terfasilitasi",
+        "reflect": "Refleksi",
+        "practice_speaking_up": "Latih bersuara",
+        "make_a_support_plan": "Buat rencana dukungan",
+        "urgent_support": "Dukungan mendesak",
+        "get_support": "Dapatkan dukungan",
+        "move_gently": "Bergerak perlahan",
+        "learn_not_diagnose": "Belajar, bukan mendiagnosis",
+        "learn_and_get_support": "Belajar dan dapatkan dukungan",
+        "check_boundaries": "Cek batasan",
+        "explore_identity": "Jelajahi identitas",
+        "practice_body_respect": "Latih menghargai tubuh",
+        "map_carefully": "Petakan dengan hati-hati",
+        "understand_needs": "Pahami kebutuhan"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Namai apa yang sedang terjadi sebelum memilih strategi."
+        },
+        "emotions": {
+          "note": "Bangun kata-kata perasaan yang tepat dan perhatikan intensitasnya."
+        },
+        "coping": {
+          "note": "Coba satu strategi tubuh atau membumikan diri, lalu perhatikan apa yang berubah."
+        },
+        "mindfulness": {
+          "note": "Jeda dengan sedikit menulis untuk bernapas, memusatkan perhatian, atau menyadari tubuh."
+        },
+        "somaticReset": {
+          "note": "Pilih satu area tubuh, lalu coba latihan singkat berupa diam tenang, pernapasan, atau gerakan lembut. Pemilih yang ringkas dan dapat diakses dengan keyboard membuat setiap visual tetap mudah dikelola di layar kecil. Visualnya meliputi Gelombang Mengalir yang memasangkan TARIK · NAIK dengan garis utuh dan penanda bulat, HEMBUS · TENANG dengan garis titik-titik dan penanda wajik, serta DIJEDA dengan batang jeda; Kelopak Mekar yang memasangkan TARIK · MEKAR dengan garis tepi kelopak utuh dan pusat bulat, HEMBUS · MELEMBUT dengan garis tepi titik-titik dan pusat wajik, serta DIJEDA dengan batang jeda di tengah; Cakrawala Membumi yang memasangkan TARIK · NAIK dengan garis tepi matahari utuh dan pusat lingkaran, HEMBUS · TENANG dengan garis tepi matahari titik-titik dan pusat wajik, serta DIJEDA dengan batang jeda matahari; lintasan linear yang mudah ditebak dengan penanda arah, label TARIK dan HEMBUS yang langsung, target TARIK bulat dan target HEMBUS wajik, jejak dari titik asal yang aktif, dan tujuan berikutnya yang bergaris tepi; serta Orbit Napas dua bagian dengan busur fase utuh dan titik-titik yang menjadi lebih tebal saat aktif, cincin tengah dengan pola fase yang sepadan, label TARIK dan HEMBUS yang langsung, simbol tengah saat dijeda, titik serah-terima berikutnya yang bergaris tepi, penanda searah jarum jam yang berbentuk sesuai fase, peta irama berkode bentuk, dan isyarat fase untuk pembaca layar. Siswa dapat mencoba satu napas dengan gerakan sebelum pengatur waktu dimulai, lalu memperbesar, menghentikan gerak, atau mematikan panduan. Dalam Tampilan Tenang, visual yang diperbesar menjadi kontrol mulai/jeda yang bisa dioperasikan dengan keyboard dan sentuhan. Hitung mundur dapat disembunyikan; kata-kata panduan dapat ditampilkan lengkap, hanya fase, atau disembunyikan; dan hitungan napas serta penilaian angka bersifat opsional.",
+          "boundary": "Ini bukan pengobatan atau diagnosis. Jaga gerakan tetap kecil dan tanpa rasa sakit; berhentilah jika terasa sakit, pusing, atau mati rasa, dan beri tahu orang dewasa tepercaya atau tenaga kesehatan."
+        },
+        "anxietyToolkit": {
+          "note": "Pisahkan kekhawatiran dari tindakan dan pilih satu langkah berikutnya yang praktis."
+        },
+        "windowOfTolerance": {
+          "note": "Petakan tanda keterangsangan dan dukungan dari waktu ke waktu; ini bukan diagnosis."
+        },
+        "stressBucket": {
+          "note": "Lihat tekanan dan dukungan secara bersamaan, termasuk tekanan di luar kendalimu."
+        },
+        "bigFeelings": {
+          "note": "Gunakan marah sebagai informasi dan rencanakan jeda atau perbaikan yang lebih aman."
+        },
+        "conflict": {
+          "note": "Paling cocok untuk latihan konflik berisiko rendah atau hipotetis.",
+          "boundary": "Jika ada ancaman, paksaan, perundungan, kekerasan, atau perbedaan kekuasaan yang tidak aman, berhentilah dan libatkan orang dewasa tepercaya alih-alih bernegosiasi sendirian."
+        },
+        "conflicttheater": {
+          "note": "Latihan imersif versi beta dengan karakter fiktif; jangan gunakan untuk menengahi bahaya yang sedang terjadi.",
+          "boundary": "Ancaman nyata, kekerasan, atau perundungan membutuhkan dukungan orang dewasa dan tanggapan keselamatan, bukan latihan bermain peran."
+        },
+        "restorativeCircle": {
+          "note": "Gunakan dengan norma lingkaran yang sudah disepakati dan fasilitator orang dewasa.",
+          "boundary": "Jangan gunakan lingkaran untuk menekan seseorang agar mengungkapkan sesuatu di depan umum atau untuk menangani risiko keamanan yang sedang berlangsung."
+        },
+        "strengths": {
+          "note": "Refleksi kekuatan yang terbuka tanpa skor, peringkat, atau diagnosis."
+        },
+        "viaStrengths": {
+          "note": "Pemilahan mandiri untuk refleksi, bukan survei VIA resmi atau hasil psikometri."
+        },
+        "perma": {
+          "note": "Potret kesejahteraan untuk memantik percakapan, bukan penilaian kesehatan mental."
+        },
+        "advocacy": {
+          "note": "Naskah umum dan latihan untuk mengungkapkan kebutuhan dan meminta dukungan."
+        },
+        "selfAdvocacy": {
+          "note": "Gunakan untuk perencanaan IEP, 504, akomodasi, pengungkapan diri, atau dukungan sekolah yang nyata."
+        },
+        "crisiscompanion": {
+          "note": "Panduan dukungan untukmu atau temanmu; ini bukan alat skrining krisis atau pengganti orang dewasa.",
+          "boundary": "Jika ada orang yang mungkin dalam bahaya langsung atau mungkin bertindak berdasarkan pikiran untuk menyakiti diri, berhenti di sini dan hubungi orang dewasa tepercaya atau layanan darurat/krisis sekarang."
+        },
+        "safety": {
+          "note": "Pelajari batasan dan langkah-langkah bersama orang dewasa tepercaya; ini bukan tes apakah suatu situasi aman.",
+          "boundary": "Jika kamu dalam bahaya langsung atau ada yang menyakitimu, berhenti dan hubungi orang dewasa tepercaya atau layanan darurat sekarang."
+        },
+        "griefLoss": {
+          "note": "Pendamping pribadi untuk duka dan kehilangan; lewati apa pun yang terasa terlalu berat.",
+          "boundary": "Jika duka terasa tak tertahankan, kamu merasa tidak aman, atau orang lain dalam risiko, libatkan orang dewasa tepercaya atau layanan krisis."
+        },
+        "traumaPsychoed": {
+          "note": "Psikoedukasi tentang respons trauma; bukan alat skrining atau pengobatan.",
+          "boundary": "Kamu tidak perlu mengungkapkan trauma di sini. Berhentilah sejenak dan cari orang dewasa tepercaya atau konselor jika isinya memunculkan sesuatu yang tidak aman."
+        },
+        "substancePsychoed": {
+          "note": "Informasi dan refleksi pengurangan dampak buruk; bukan alat skrining atau izin untuk menggunakan zat.",
+          "boundary": "Jangan gunakan alat ini untuk overdosis atau situasi medis yang mendesak; hubungi layanan darurat atau orang dewasa tepercaya."
+        },
+        "healthyRelationships": {
+          "note": "Jelajahi persetujuan dan pola hubungan tanpa memberi label pada seseorang atau suatu hubungan.",
+          "boundary": "Jika sebuah hubungan melibatkan ancaman, paksaan, atau kekerasan, cari bantuan orang dewasa; jangan menghadapi seseorang sendirian."
+        },
+        "identitySupport": {
+          "note": "Refleksi yang meneguhkan dan dukungan komunitas; berbagi bersifat opsional.",
+          "boundary": "Jaga kerahasiaan informasi pribadimu dan libatkan orang dewasa tepercaya jika kamu merasa tidak aman."
+        },
+        "bodyStory": {
+          "note": "Apresiasi tubuh dan literasi media; bukan penurunan berat badan atau penilaian gangguan makan.",
+          "boundary": "Jika makanan, citra tubuh, atau olahraga terasa tidak aman atau menguasai pikiranmu, bicarakan dengan orang dewasa tepercaya atau tenaga kesehatan."
+        },
+        "genogram": {
+          "note": "Refleksi keluarga pribadi; bukan penilaian klinis dan berbagi bersifat opsional.",
+          "boundary": "Lewati detail keluarga yang terasa tidak aman atau pribadi; minta dukungan orang dewasa tepercaya."
+        },
+        "sensoryRegulation": {
+          "note": "Bangun profil sensorik dan akomodasi; bukan diagnosis.",
+          "boundary": "Pilih dukungan yang terasa aman; bagikan akomodasi hanya jika kamu mau."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Cek Pagi",
+          "desc": "Mulai hari dengan cek suasana hati, pernapasan, dan penetapan tujuan"
+        },
+        "calm_down": {
+          "name": "Pojok Menenangkan Diri",
+          "desc": "Strategi pengaturan diri saat emosi sedang memuncak"
+        },
+        "conflict_unit": {
+          "name": "Unit Resolusi Konflik",
+          "desc": "Latih cara menyelesaikan perbedaan pendapat dan membangun keterampilan memperbaiki hubungan"
+        },
+        "empathy_week": {
+          "name": "Pekan Empati & Sudut Pandang",
+          "desc": "Bangun empati melalui memahami sudut pandang dan kesadaran budaya"
+        },
+        "decision_making": {
+          "name": "Mendalami Pengambilan Keputusan",
+          "desc": "Latih penalaran etis dan pilihan yang bertanggung jawab"
+        },
+        "self_discovery": {
+          "name": "Perjalanan Mengenal Diri",
+          "desc": "Jelajahi siapa dirimu — kekuatan, emosi, dan pola pikir bertumbuh"
+        },
+        "friendship": {
+          "name": "Persahabatan & Keterampilan Sosial",
+          "desc": "Bangun persahabatan yang sehat dan keterampilan berkomunikasi"
+        },
+        "transitions": {
+          "name": "Menghadapi Perubahan",
+          "desc": "Dukung siswa melalui transisi hidup dan pengalaman baru"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Perhatikan apa yang kamu butuhkan dan pilih satu langkah berikutnya yang terjangkau.",
+          "model": "Aku merasa gelisah. Aku bisa mencoba peregangan, lalu memilih bagian pertama dari tugasku.",
+          "practice": "Sebutkan satu perasaan, tunjuk satu pilihan, atau cukup perhatikan dalam hati. Coba satu dukungan dan pilih satu tujuan kecil.",
+          "reflect": "Apa yang kamu perhatikan? Apa yang ingin kamu pertahankan atau ubah?",
+          "transfer": "Saat pelajaran berikutnya dimulai, aku bisa mencoba ____. Jika butuh bantuan, aku bisa bertanya kepada ____."
+        },
+        "calm_down": {
+          "goal": "Jelajahi dukungan yang cocok untuk tubuhmu dan untuk saat ini.",
+          "model": "Latihan pernapasan tidak terasa membantu hari ini. Aku bisa mencoba melihat sekeliling ruangan atau meminta ditemani.",
+          "practice": "Pilih satu strategi yang nyaman saja. Duduk, mengamati, atau beristirahat adalah pilihan yang sah.",
+          "reflect": "Apakah itu membantu, terasa sama saja, atau terasa tidak nyaman? Kamu boleh berhenti atau memilih cara lain.",
+          "transfer": "Saat aku menyadari ____, aku bisa mencoba ____ atau meminta dukungan dari ____."
+        },
+        "conflict_unit": {
+          "goal": "Pertimbangkan berbagai sudut pandang dan latih tanggapan yang sopan untuk perbedaan pendapat sehari-hari.",
+          "model": "Kita berdua menginginkan bahan yang sama. Aku bisa bertanya apa yang kamu butuhkan, menjelaskan kebutuhanku, dan menyarankan untuk bergantian.",
+          "practice": "Gunakan perbedaan pendapat rekaan yang berisiko rendah. Latih satu pertanyaan untuk mendengarkan dan satu kemungkinan langkah berikutnya.",
+          "reflect": "Kebutuhan siapa yang dijawab oleh tanggapan itu? Apa yang mungkin perlu diubah?",
+          "transfer": "Dalam perbedaan pendapat yang aman, aku bisa ____. Untuk ancaman, perundungan, atau paksaan, aku bisa meminta bantuan orang dewasa tepercaya."
+        },
+        "empathy_week": {
+          "goal": "Jelajahi sudut pandang lain tanpa menganggap kamu sudah tahu apa yang dirasakan seseorang.",
+          "model": "Dia diam saja. Mungkin dia lelah atau sedang berpikir; aku bisa bertanya alih-alih memutuskan untuknya.",
+          "practice": "Gunakan contoh fiktif. Sebutkan dua kemungkinan sudut pandang dan satu pertanyaan sopan yang bisa kamu ajukan.",
+          "reflect": "Apa yang kamu ketahui, dan apa yang kamu tebak? Bagaimana kamu bisa memastikannya?",
+          "transfer": "Sebelum berasumsi minggu ini, aku bisa bertanya ____."
+        },
+        "decision_making": {
+          "goal": "Bandingkan pilihan berdasarkan dampaknya pada dirimu dan orang lain.",
+          "model": "Sebelum mengunggah foto kelompok, aku bisa meminta izin dan memikirkan siapa saja yang mungkin melihatnya.",
+          "practice": "Pilih keputusan rekaan. Bandingkan dua pilihan, kemungkinan dampaknya, dan seseorang yang bisa membantu.",
+          "reflect": "Informasi apa yang belum ada? Adakah pilihan yang lebih aman atau lebih adil?",
+          "transfer": "Sebelum aku memutuskan tentang ____, aku bisa berhenti sejenak untuk mengecek ____."
+        },
+        "self_discovery": {
+          "goal": "Kenali satu kekuatan dan pilih cara menggunakannya dengan dukungan.",
+          "model": "Aku suka mengajukan pertanyaan yang berguna. Aku bisa memakai kekuatan itu saat tugas kurang jelas dan meminta contoh.",
+          "practice": "Pilih kekuatan yang cocok untukmu, atau untuk tokoh fiktif. Berikan satu contoh kekuatan itu saat dipraktikkan.",
+          "reflect": "Apa yang membantu kekuatan itu muncul? Dukungan apa yang akan membuat langkah berikutnya bisa dilakukan?",
+          "transfer": "Aku bisa memakai ____ saat ____. Orang atau sumber yang bisa membantu adalah ____."
+        },
+        "friendship": {
+          "goal": "Latih komunikasi yang menghargai kebutuhanmu dan batasan orang lain.",
+          "model": "Aku bisa mengajak seseorang bergabung dengan kami dan menerima pilihannya jika dia menolak.",
+          "practice": "Latih ajakan, pertanyaan untuk mendengarkan, atau batasan yang sopan. Berbicara, menulis, atau AAC semuanya dihitung.",
+          "reflect": "Apakah setiap orang punya pilihan yang sungguh-sungguh? Apa yang bisa membuat interaksinya lebih ramah?",
+          "transfer": "Dalam interaksi yang aman minggu ini, aku bisa mencoba ____ dan memperhatikan ____."
+        },
+        "transitions": {
+          "goal": "Kenali apa yang berubah, apa yang bisa tetap stabil, dan satu sumber dukungan.",
+          "model": "Kelas baru terasa tidak pasti. Aku bisa mencari ruangannya lebih dulu dan bertanya siapa yang bisa membantu.",
+          "practice": "Pilih perubahan yang nyata atau fiktif. Sebutkan satu ketidakpastian, satu dukungan yang stabil, dan satu langkah kecil berikutnya.",
+          "reflect": "Bagian mana yang ada dalam kendalimu? Bantuan atau akomodasi apa yang akan berguna?",
+          "transfer": "Sebelum perubahan itu, aku bisa ____. Jika rencananya perlu berubah, aku bisa ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 menit",
+          "format": "Sendiri atau kelompok",
+          "cue": "Cek awal yang berguna sebelum ada kegiatan berbagi."
+        },
+        "emotions": {
+          "time": "5-8 menit",
+          "format": "Sendiri atau berpasangan",
+          "cue": "Pemanasan kosakata yang baik."
+        },
+        "coping": {
+          "time": "3-10 menit",
+          "format": "Sendiri atau kelompok",
+          "cue": "Paling cocok untuk reset pengaturan diri."
+        },
+        "mindfulness": {
+          "time": "2-10 menit",
+          "format": "Seluruh kelas",
+          "cue": "Pilihan pengaturan diri dengan sedikit menulis."
+        },
+        "somaticReset": {
+          "time": "3-8 menit",
+          "format": "Sendiri atau seluruh kelas",
+          "cue": "Pemilih visual yang ringkas membuat setiap panduan tetap tersedia tanpa kisi tombol yang padat. Orbit Napas memasangkan busur utuh dan titik-titik dengan fase aktif yang lebih tebal, cincin tengah utuh-atau-titik-titik yang sepadan, serta label TARIK dan HEMBUS yang langsung; pusatnya berganti dari titik menjadi batang jeda saat dijeda, dan wajik atau cincin bergaris tepinya menandai serah-terima fase berikutnya, sementara penanda searah jarum jam yang bulat-atau-wajik, wajik serah-terima, cincin kembali, batang tarik napas yang pendek, dan titik hembus napas yang berongga menjaga fase dan hitungan opsional tetap terbaca tanpa warna. Biarkan siswa mencoba satu napas dengan gerakan sebelum pengatur waktu, atau memilih Diam. Tawarkan kata-kata panduan lengkap, hanya fase, atau tersembunyi. Tampilan Tenang menjadikan visual yang diperbesar sebagai kontrol mulai/jeda langsung. Gelombang Mengalir memakai TARIK · NAIK dengan garis utuh dan penanda bulat, HEMBUS · TENANG dengan garis titik-titik dan penanda wajik, serta batang jeda untuk sesi yang dijeda. Kelopak Mekar memakai TARIK · MEKAR dengan garis tepi kelopak utuh dan pusat bulat, HEMBUS · MELEMBUT dengan garis tepi titik-titik dan pusat wajik, serta batang jeda di tengah untuk sesi yang dijeda. Cakrawala Membumi memakai TARIK · NAIK dengan garis tepi matahari utuh dan pusat lingkaran, HEMBUS · TENANG dengan garis tepi matahari titik-titik dan pusat wajik, serta batang jeda matahari saat dijeda. Lintasan Napas memakai target TARIK bulat, target HEMBUS wajik, jejak dari titik asal yang aktif, dan tujuan berikutnya yang bergaris tepi sehingga arah tidak bergantung pada warna. Tawarkan isyarat fase untuk pembaca layar, ditambah pilihan hitung mundur tersembunyi, panduan tersembunyi, gerakan diam, tanpa visual, napas alami, dan tanpa angka; jangan pernah mewajibkan penilaian atau penjelasan tentang sensasi tubuh."
+        },
+        "journal": {
+          "time": "5-12 menit",
+          "format": "Sendiri",
+          "cue": "Refleksi pribadi. Berbagi sebaiknya bersifat opsional."
+        },
+        "goals": {
+          "time": "5-10 menit",
+          "format": "Sendiri atau perwalian",
+          "cue": "Langkah penutup yang baik setelah refleksi."
+        },
+        "conflict": {
+          "time": "8-12 menit",
+          "format": "Berpasangan atau kelompok kecil",
+          "cue": "Pratinjau norma sebelum bermain peran."
+        },
+        "restorativeCircle": {
+          "time": "15-30 menit",
+          "format": "Lingkaran",
+          "cue": "Gunakan dengan norma lingkaran yang sudah disepakati."
+        },
+        "peersupport": {
+          "time": "8-15 menit",
+          "format": "Latihan berpasangan",
+          "cue": "Sangat cocok untuk berlatih keterampilan mendengarkan."
+        },
+        "perspective": {
+          "time": "6-12 menit",
+          "format": "Berpasangan atau kelompok",
+          "cue": "Jembatan empati yang baik sebelum diskusi."
+        },
+        "digitalWellbeing": {
+          "time": "8-15 menit",
+          "format": "Sendiri atau perwalian",
+          "cue": "Berguna sebelum membahas aturan ponsel atau AI."
+        },
+        "sleep": {
+          "time": "5-10 menit",
+          "format": "Sendiri",
+          "cue": "Cocok untuk unit kesehatan di kelas perwalian."
+        },
+        "safety": {
+          "time": "8-15 menit",
+          "format": "Sendiri",
+          "cue": "Pratinjau dulu; hindari pengungkapan paksa."
+        },
+        "crisiscompanion": {
+          "time": "3-10 menit",
+          "format": "Sendiri",
+          "cue": "Untuk keterampilan dukungan mendesak, bukan tugas kelas."
+        },
+        "griefLoss": {
+          "time": "10-20 menit",
+          "format": "Sendiri",
+          "cue": "Pratinjau dulu; sediakan alternatif bagi yang memilih tidak ikut."
+        },
+        "identitySupport": {
+          "time": "8-15 menit",
+          "format": "Sendiri",
+          "cue": "Gunakan dengan menjaga privasi dan menyediakan pilihan tidak ikut."
+        },
+        "traumaPsychoed": {
+          "time": "8-15 menit",
+          "format": "Sendiri atau dipandu pendidik",
+          "cue": "Hanya psikoedukasi; tawarkan pilihan tidak ikut dan akses ke orang dewasa tepercaya."
+        },
+        "substancePsychoed": {
+          "time": "8-15 menit",
+          "format": "Sendiri atau pelajaran kesehatan",
+          "cue": "Pratinjau pembingkaian pengurangan dampak buruk dan sediakan dukungan orang dewasa/medis."
+        },
+        "healthyRelationships": {
+          "time": "10-20 menit",
+          "format": "Sendiri atau pelajaran kesehatan",
+          "cue": "Pratinjau bahasa tentang persetujuan dan keselamatan; jangan pernah mewajibkan pengungkapan pribadi."
+        },
+        "bodyStory": {
+          "time": "8-15 menit",
+          "format": "Sendiri",
+          "cue": "Pembingkaian menghargai tubuh; tawarkan pilihan tidak ikut dan hindari diskusi yang berfokus pada berat badan."
+        },
+        "genogram": {
+          "time": "10-20 menit",
+          "format": "Sendiri",
+          "cue": "Hanya refleksi keluarga; berbagi sebaiknya bersifat opsional."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 menit",
+          "format": "Sendiri atau perencanaan dukungan",
+          "cue": "Gunakan bahasa yang meneguhkan identitas dan biarkan siswa memilih apa yang ingin dibagikan."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Cek pagi di kelas perwalian",
+          "time": "10-15 menit",
+          "format": "Seluruh kelas",
+          "focus": "Suasana hati, napas, satu langkah berikutnya",
+          "studentView": "Siswa mengecek zona mereka secara pribadi, mencoba satu pilihan pengaturan diri, lalu memilih satu kebutuhan untuk hari itu atau melewatinya.",
+          "teacherMove": "Contohkan pilihan melewati terlebih dahulu. Ajak berbagi satu kata atau satu warna hanya setelah latihan pribadi.",
+          "privacyBoundary": "Tidak ada teks jurnal yang dikumpulkan; siswa memutuskan nanti apakah ada titik simpan yang masuk ke Paket Berbagi.",
+          "note": "Mulai dengan cek zona secara pribadi, lalu tawarkan pernapasan atau penetapan tujuan. Siswa boleh berbagi satu kata, satu warna, atau melewatinya."
+        },
+        "calm_reset": {
+          "name": "Reset tenang lima menit",
+          "time": "5-8 menit",
+          "format": "Seluruh kelas atau pojok tenang",
+          "focus": "Pengaturan tubuh",
+          "studentView": "Siswa memperhatikan keadaan tubuh mereka saat ini dan memilih satu latihan untuk menenangkan tubuh.",
+          "teacherMove": "Jaga rutinitas ini minim bicara dan dibatasi waktunya. Tawarkan gerakan, pernapasan, atau alternatif yang tenang.",
+          "privacyBoundary": "Siswa dapat menyimpan titik simpan untuk diri mereka sendiri; tidak ada yang harus menjelaskan mengapa mereka membutuhkan reset.",
+          "note": "Jaga agar tetap minim bicara. Siswa memilih satu latihan pengaturan diri dan memperhatikan apa yang berubah."
+        },
+        "repair_routine": {
+          "name": "Rutinitas perbaikan setelah konflik",
+          "time": "15-25 menit",
+          "format": "Kelompok kecil atau perwalian",
+          "focus": "Sudut pandang, perbaikan, tindakan berikutnya",
+          "studentView": "Siswa dapat menggunakan skenario nyata, hipotetis, atau yang disediakan guru untuk melatih bahasa perbaikan.",
+          "teacherMove": "Tetapkan norma perbaikan terlebih dahulu dan hindari pengakuan di depan umum. Berhentilah jika situasinya membutuhkan mediasi orang dewasa.",
+          "privacyBoundary": "Siswa memilih apa yang dibagikan; refleksi konflik pribadi tidak boleh menjadi bukti di kelas.",
+          "note": "Gunakan setelah norma ditetapkan. Tetap fokus pada bahasa perbaikan, bukan pengakuan di depan umum."
+        },
+        "digital_reset": {
+          "name": "Pelajaran singkat kesejahteraan digital",
+          "time": "12-20 menit",
+          "format": "Perwalian atau kesehatan",
+          "focus": "Ponsel, tidur, AI, dan batasan",
+          "studentView": "Siswa meninjau kebiasaan, memilih satu batasan untuk diuji, dan boleh merahasiakan alasannya jika mau.",
+          "teacherMove": "Bingkai sebagai perancangan kebiasaan, bukan pemeriksaan ponsel. Hindari meminta siswa menunjukkan tangkapan layar atau data penggunaan.",
+          "privacyBoundary": "Siswa dapat berbagi tujuan batasan, tetapi detail pribadi tentang tidur, ponsel, atau AI tetap opsional.",
+          "note": "Bingkai sebagai perancangan kebiasaan, bukan pemeriksaan ponsel. Siswa memilih satu batasan untuk dicoba."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Pendekatan berbasis riset",
+          "title": "Riset berkaitan dengan pendekatan dasarnya; adaptasi digital ini belum dievaluasi di sini"
+        },
+        "emerging": {
+          "label": "Bukti pendekatan terbatas",
+          "title": "Menjanjikan tetapi buktinya terbatas atau beragam"
+        },
+        "contested": {
+          "label": "Model yang diperdebatkan",
+          "title": "Populer tetapi diperdebatkan secara ilmiah; paling baik dipakai sebagai metafora, bukan mekanisme"
+        },
+        "practice": {
+          "label": "Latihan reflektif",
+          "title": "Latihan terstruktur atau heuristik, bukan klaim efektivitas empiris"
+        }
+      },
+      "ui": {
+        "sel_practice": "Latihan SEL",
+        "default_purpose": "Latih satu keterampilan SEL dengan penuh perhatian.",
+        "default_next": "Selesaikan satu langkah kecil, lalu putuskan apakah akan menyimpan.",
+        "private_checkpoint": "Titik simpan pribadi",
+        "share_packet_eligible": "Bisa masuk Paket Berbagi",
+        "saving_preparing": "Bersiap menyimpan pekerjaan SEL-mu...",
+        "save_requested": "Penyimpanan diminta untuk {title}",
+        "returned_to_grid": "Kembali ke kisi alat",
+        "back_to_sel_tools": "Kembali ke alat SEL",
+        "export_now_aria": "Ekspor file proyek SEL sekarang",
+        "export_now": "Ekspor sekarang",
+        "purpose": "Tujuan",
+        "next_step": "Langkah berikutnya",
+        "saved_work": "Pekerjaan tersimpan",
+        "checkpoints_private": "Titik simpan alat tetap pribadi di sini kecuali kamu memilihnya untuk Paket Berbagi.",
+        "use_with_care_label": "Gunakan dengan hati-hati:",
+        "tool_open_failed_title": "Alat ini tidak bisa dibuka",
+        "tool_open_failed_body": "Ada bagian dari informasi tersimpan untuk kegiatan ini yang tidak termuat. Ini bukan kesalahanmu.",
+        "saved_work_kept": "Pekerjaanmu yang tersimpan tidak dihapus.",
+        "back_to_hub": "Kembali ke SEL Hub",
+        "tell_teacher": "Jika ini terus terjadi, beri tahu gurumu kegiatan mana yang bermasalah.",
+        "load_did_not_start": "Alat sudah diunduh tetapi tidak berjalan.",
+        "load_too_long": "Alat terlalu lama dimuat.",
+        "this_sel_tool": "Alat SEL ini",
+        "tool_opening": "{name} sedang dibuka...",
+        "tool_open_retry": "{name} tidak bisa dibuka. Coba lagi, atau pilih alat lain.",
+        "station_link_missing": "Tautan ini menyebut stasiun yang tidak ada di proyek ini. Muat paket yang memuatnya, atau mulai satu dari Stasiun SEL di panel Riwayat.",
+        "started_station": "Stasiun {name} dimulai",
+        "tool_could_not_open": "{name} tidak bisa dibuka.",
+        "tool_not_available": "{name} tidak tersedia di SEL Hub ini.",
+        "try_again": "Coba lagi",
+        "dismiss": "Tutup",
+        "back_to_tools": "Kembali ke alat",
+        "band_elementary": "Sekolah Dasar",
+        "band_middle": "Sekolah Menengah Pertama",
+        "band_high": "Sekolah Menengah Atas",
+        "unsaved_aria": "Kamu punya perubahan yang belum disimpan",
+        "unsaved_title": "Perubahan belum disimpan",
+        "unsaved": "Belum disimpan",
+        "unsaved_hint": "Kamu punya perubahan yang belum disimpan — ketuk Ekspor sekarang untuk menyimpannya",
+        "educators_opened": "Panduan Untuk Pendidik dibuka",
+        "educators_aria": "Untuk Pendidik: cara menggunakan Hub ini secara bertanggung jawab",
+        "for_educators": "Untuk Pendidik",
+        "theme_aria": "Ganti tema (terang / gelap / kontras tinggi)",
+        "theme_contrast": "Kontras Tinggi",
+        "theme_dark": "Mode Gelap",
+        "theme_light": "Mode Terang",
+        "theme_contrast_short": "Kontras",
+        "theme_dark_short": "Gelap",
+        "theme_light_short": "Terang",
+        "xp_aria": "{count} poin pengalaman SEL",
+        "close_hub": "Tutup SEL Hub",
+        "keep_share_title": "Pilih apa yang disimpan dan dibagikan",
+        "keep_share_body": "Beberapa kegiatan menyimpan pekerjaan di perangkat ini; pekerjaan lain hanya bertahan di tab ini. Menutup tab tidak menghapus semuanya. Ekspor file untuk menyimpan salinan. Di perangkat bersama, tinjau Data & privasi di Untuk Pendidik. Fitur AI dan berbagi menggunakan layanan yang sudah kamu atur.",
+        "got_it_aria": "Mengerti, mulai gunakan SEL Hub",
+        "got_it": "Mengerti",
+        "practice_support": "Dukungan latihan",
+        "learning_guide": "Panduan belajar dan cara berlatih",
+        "what_you_can_explore": "Yang bisa kamu jelajahi",
+        "worked_example": "Contoh yang dikerjakan",
+        "try_one_step": "Coba satu langkah",
+        "reflect_transfer": "Renungkan dan gunakan di tempat lain",
+        "look_closer": "Lihat lebih dekat",
+        "next_use": "Kemungkinan penggunaan berikutnya",
+        "adapt_together": "Sesuaikan latihan bersama-sama",
+        "adapt_smaller": "Mulai lebih kecil: contohkan satu kalimat atau pilihan, gunakan gambar atau benda nyata, dan beri waktu untuk berpikir.",
+        "adapt_deeper": "Lebih mendalam: bandingkan dua tanggapan, kenali informasi yang belum ada, dan jelaskan apa yang mungkin mengubah pilihanmu.",
+        "adapt_context": "Ubah konteksnya: gunakan situasi fiktif yang sesuai dengan bahasa, minat, budaya, dan kebutuhan akses pelajar.",
+        "adapt_check": "Cek pemahaman melalui contoh atau penjelasan yang dipilih, bukan cerita pribadi, perubahan emosi, atau skor yang diwajibkan.",
+        "optional_prompts": "Pertanyaan pemantik opsional ini tidak mengirim jawaban, tidak mencatat penyelesaian, dan tidak menggantikan petunjuk serta informasi keselamatan dari kegiatan itu sendiri.",
+        "returned_to_activities": "Kembali ke kegiatan. Tindakan ini tidak mencatat penyelesaian latihan apa pun.",
+        "return_to_activities": "Kembali ke kegiatan",
+        "chooser_first_reset_coping": "Pilih satu cara membumikan diri yang nyaman. Perhatikan apakah cocok; kamu boleh berhenti.",
+        "chooser_first_reset_journal": "Tulis satu hal yang akan membuat beberapa menit ke depan lebih mudah dijalani. Tidak perlu cerita pribadi.",
+        "chooser_first_feelings_zones": "Tunjuk satu perasaan atau cukup perhatikan dalam hati. Pilih satu dukungan; tidak ada zona benar yang harus dicapai.",
+        "chooser_first_feelings_emotions": "Jelajahi dua kata perasaan untuk tokoh fiktif. Lebih dari satu jawaban bisa cocok.",
+        "chooser_first_feelings_journal": "Tulis satu kata atau refleksi singkat tentang situasi fiktif atau sehari-hari.",
+        "chooser_first_conversation_advocacy": "Gunakan situasi fiktif untuk melatih satu permintaan dengan suara keras, dengan AAC, atau dalam hati, di luar formulir.",
+        "chooser_first_conversation_journal": "Buat draf satu permintaan yang sopan untuk situasi sehari-hari yang aman; kamu tidak harus mengirimnya.",
+        "chooser_first_decision_decisions": "Pikirkan dua pilihan dalam situasi fiktif dan satu kemungkinan dampak dari masing-masing.",
+        "chooser_first_decision_goals": "Buat draf satu langkah berikutnya yang realistis dan satu dukungan yang bisa kamu minta.",
+        "try_a_reset": "Coba reset",
+        "need_feeling": "Pahami perasaan",
+        "need_conversation": "Siapkan percakapan",
+        "need_decision": "Pilih langkah berikutnya",
+        "help_choose": "Bantu aku memilih kegiatan",
+        "help_choose_intro": "Pilih apa yang ingin kamu coba. Saran hanya memakai pilihan-pilihan ini; saran tidak menilai perasaanmu. Waktu yang tertera untuk langkah pertama, bukan seluruh kegiatan.",
+        "what_would_help": "Apa yang akan membantu?",
+        "time_first_step": "Waktu untuk langkah pertama",
+        "n_minutes": "{count} menit",
+        "how_respond": "Bagaimana kamu ingin menanggapi?",
+        "respond_any": "Cara apa saja",
+        "respond_offline": "Berpikir, berbicara, menggambar, atau AAC",
+        "respond_write": "Tulis tanggapan singkat",
+        "options_one": "{count} opsi awal sesuai pilihanmu.",
+        "options_many": "{count} opsi awal sesuai pilihanmu.",
+        "options_none": "Belum ada opsi awal yang cocok. Coba waktu lebih lama atau format tanggapan lain; katalog lengkap tetap tersedia.",
+        "why_option_write": "Mengapa opsi ini: {need}, dengan saran langkah pertama {minutes} menit dan tanggapan tertulis singkat.",
+        "why_option_offline": "Mengapa opsi ini: {need}, dengan saran langkah pertama {minutes} menit dan cara berlatih tanpa mengetik.",
+        "open_named": "Buka {name}",
+        "open_named_unavailable": "Buka {name} (tidak tersedia)",
+        "pathway_guide": "Panduan latihan jalur",
+        "pathway_opened": "{opened} dari {total} alat sudah dibuka. Membuka alat tidak berarti kamu sudah melatih keterampilannya.",
+        "exit_pathway_aria": "Keluar dari mode jalur",
+        "pathway_cleared": "Jalur diakhiri",
+        "exit_pathway": "Keluar dari jalur",
+        "practice_goal": "Tujuan latihan:",
+        "pathway_intro": "Pilih satu kegiatan atau ikuti urutan yang disarankan. Kamu boleh melewati, memakai contoh fiktif, atau menanggapi dengan berbicara, menggambar, menulis, atau AAC. Berbagi bersifat opsional.",
+        "model_practice_reflect": "Contohkan, latih, dan renungkan",
+        "an_example": "Sebuah contoh",
+        "notice_adjust": "Perhatikan dan sesuaikan",
+        "take_with_you": "Bawa bersamamu",
+        "self_check_aria": "Cek diri latihan yang opsional",
+        "self_check_intro": "Setelah mencoba satu langkah, pilih yang sesuai. Ini opsional dan tidak dinilai; ini tetap berada di sesi jalur ini.",
+        "i_tried": "Aku sudah mencoba satu langkah",
+        "another_way": "Aku butuh cara lain",
+        "pass_for_now": "Lewati dulu",
+        "tried_feedback": "Perhatikan apa yang membantu, apa yang tidak, dan di mana kamu mungkin mencoba keterampilan itu lagi.",
+        "adapt_feedback": "Coba langkah yang lebih kecil, cara menanggapi yang lain, alat yang berbeda, atau dukungan dari seseorang yang kamu percayai.",
+        "pass_feedback": "Melewati adalah pilihan yang sah. Kamu bisa kembali nanti atau meminta dukungan.",
+        "next_option": "Opsi berikutnya: {name}",
+        "open_next": "Buka berikutnya: {name}",
+        "view_pathway_tools": "Lihat alat jalur",
+        "revisit_any": "Kamu bisa membuka lagi kegiatan mana pun. Pilih satu ide untuk dicoba di luar hub; tidak ada kewajiban menyelesaikan setiap alat.",
+        "station_activities": "Kegiatan stasiun",
+        "active_station": "Stasiun SEL aktif: {name}",
+        "steps_recorded_passed": "{done} dari {total} langkah tercatat · {passed} dilewati dulu. Ini catatan latihan, bukan nilai.",
+        "steps_recorded": "{done} dari {total} langkah tercatat. Ini catatan latihan, bukan nilai.",
+        "active_minutes_done": "{mins} dari {goal} menit aktif di sini. Langkah tercatat.",
+        "active_minutes_counting": "{mins} dari {goal} menit aktif di sini. Dihitung selama tab ini terlihat dan kamu sedang menggunakannya.",
+        "exit_station_aria": "Keluar dari mode stasiun",
+        "station_cleared": "Stasiun diakhiri",
+        "exit_station": "Keluar dari stasiun",
+        "station_tools_steps": "Alat, langkah, dan refleksi stasiun",
+        "station_steps": "Langkah dan refleksi stasiun",
+        "station_privacy": "Langkah dan catatan disimpan di perangkat ini dan mungkin disertakan dalam file proyek. Gunakan contoh fiktif atau jangan cantumkan detail pribadi. Pilih apa yang ingin dibagikan.",
+        "step_passed": "Dilewati dulu. Kamu bisa kembali saat siap.",
+        "step_marked": "Kamu menandai langkah ini selesai.",
+        "step_target": "Target kegiatan tercatat; ini tidak mengukur keterampilan atau kesejahteraan.",
+        "step_ready": "Silakan mulai kapan pun kamu siap.",
+        "open_step_activity": "Buka kegiatan untuk langkah ini",
+        "xp_progress": "{xp} / {target} total XP SEL. Ini termasuk kegiatan sebelumnya; ini bukan skor keterampilan.",
+        "time_progress": "{mins} / {target} menit aktif. Waktu bukan bukti pembelajaran.",
+        "default_reflect": "Apa yang kamu perhatikan? Apa yang ingin kamu pertahankan atau ubah?",
+        "self_check_ways": "Berpikir, menggambar, berbicara, berbahasa isyarat, atau gunakan AAC. Catatan tertulis bersifat opsional. Tandai sendiri langkah ini selesai, atau lewati dulu.",
+        "length_target": "Langkah tersimpan ini memakai target panjang: {count} / {target} karakter. Panjang tidak mengukur kualitas refleksi. Catatanmu tetap bisa diedit.",
+        "reflection_for": "Refleksi untuk {name}",
+        "optional_note": "Catatan opsional: apa yang membantu, atau apa yang mungkin kamu coba berikutnya...",
+        "write_reflection": "Tulis refleksi...",
+        "mark_complete_aria": "Tandai \"{name}\" sebagai selesai",
+        "step_reopened": "Langkah dibuka kembali: {name}",
+        "step_marked_named": "Kamu menandai langkah ini selesai: {name}",
+        "mark_complete": "Tandai selesai",
+        "step_passed_named": "Dilewati dulu: {name}",
+        "filter_pathway": "jalur: {name}",
+        "filter_station": "stasiun: {name}",
+        "no_tools_match": "Tidak ada alat yang cocok dengan {filters}",
+        "results_one": "{count} dari {total} alat cocok dengan {filters}",
+        "results_many": "{count} dari {total} alat cocok dengan {filters}",
+        "showing_all": "Menampilkan semua {total} alat",
+        "crisis_elementary": "Jika kamu tidak bisa segera menemukan orang dewasa, terus minta tolong sampai ada yang mendengarkan. Kamu layak mendapat bantuan.",
+        "crisis_call_or_text": "Telepon atau kirim SMS ke",
+        "crisis_988": "988 Suicide & Crisis Lifeline, layanan krisis dan pencegahan bunuh diri (gratis, rahasia, 24/7).",
+        "crisis_text": "Kirim SMS ke",
+        "crisis_text_line": "Crisis Text Line, layanan krisis lewat SMS (gratis, rahasia, 24/7).",
+        "tool_selection": "Pilihan alat SEL Hub",
+        "jumped_to_list": "Melompat ke daftar alat. {summary}.",
+        "skip_to_list": "Lewati ke daftar alat",
+        "start_here": "Mulai di sini",
+        "quick_route": "Pilih rute cepat, atau jelajahi di bawah.",
+        "browsing_all": "Menjelajahi semua alat SEL",
+        "continue": "Lanjutkan",
+        "continue_desc": "Lanjutkan alat SEL terakhir yang kamu buka.",
+        "starting_idea": "Ide awal",
+        "starting_idea_desc": "{name}: kegiatan yang disarankan untuk jenjang kelas ini, dengan contoh yang bisa kamu sesuaikan.",
+        "starting_idea_none": "Buka titik awal yang sesuai jenjang kelas.",
+        "try_a_reset_desc": "Jelajahi strategi yang nyaman; kamu tidak harus merasa tenang.",
+        "journal": "Jurnal",
+        "journal_desc": "Tulis refleksi; tinjau pilihan menyimpan dan berbagi.",
+        "browse_all": "Jelajahi Semua",
+        "browse_all_desc": "Cari atau saring seluruh katalog.",
+        "need_chip_calm": "Tenangkan tubuhku",
+        "need_chip_feelings": "Namai perasaan",
+        "need_chip_stress": "Stres atau khawatir",
+        "need_chip_friend": "Konflik dengan teman",
+        "need_chip_write": "Tuliskan saja",
+        "need_chip_decision": "Buat keputusan",
+        "need_chip_sleep": "Tidur atau lelah",
+        "need_chip_crisis": "Tidak aman atau dalam krisis",
+        "need_chip_relationshipsafety": "Keamanan dalam hubungan",
+        "need_chip_schoolsupport": "Dukungan sekolah",
+        "need_chip_grief": "Duka atau kehilangan",
+        "storage_notice": "Sebagian pekerjaan SEL disimpan di perangkat ini. Fitur AI menggunakan layanan yang sudah kamu atur. Pilih apa yang disimpan atau dibagikan, terutama di perangkat bersama.",
+        "save_now_aria": "Simpan atau ekspor pekerjaan SEL sekarang",
+        "save_now": "Simpan sekarang",
+        "recent_work": "Pekerjaan SEL terbaru",
+        "saved_here": "Tersimpan di sini. Ekspor agar tetap ada setelah ditutup.",
+        "create_packet_aria": "Buat Paket Berbagi SEL dari titik simpan yang tersimpan",
+        "review_packets_aria": "Tinjau Paket Berbagi SEL yang tersimpan",
+        "create_packet": "Buat Paket Berbagi",
+        "review_packets": "Tinjau Paket Berbagi",
+        "open_related": "Buka alat terkait.",
+        "related_unavailable": "Alat terkait tidak tersedia di SEL Hub ini.",
+        "streak_aria": "Rentetan SEL {count} hari. Terpanjang: {longest} hari.",
+        "streak": "Rentetan {count} hari",
+        "streak_best": "terbaik {count}",
+        "find_activity": "Cari kegiatan",
+        "search_placeholder": "Cari perasaan, teman, stres, tujuan...",
+        "search_aria": "Cari alat SEL",
+        "support_options": "Pilihan dukungan",
+        "crisis_hard_moment": "Sepertinya ini mungkin saat yang berat.",
+        "crisis_tell_adult": "Kamu tidak harus menyelesaikan ini sendirian, dan kamu tidak harus menemukan alat yang tepat dulu. Tolong beri tahu orang dewasa tepercaya sekarang — konselor sekolah, guru, orang tua, atau orang dewasa lain yang kamu percayai. Mencari di sini tidak memberi tahu siapa pun; seseorang hanya akan tahu jika kamu memberi tahunya.",
+        "open_crisis_companion": "Buka Pendamping Krisis",
+        "find_by_need": "Cari alat SEL berdasarkan kebutuhan",
+        "i_need": "Aku butuh...",
+        "cleared_search": "Pencarian SEL dihapus",
+        "clear_search_aria": "Hapus pencarian SEL",
+        "clear": "Hapus",
+        "cleared_need": "Filter kebutuhan SEL dihapus",
+        "showing_for": "Menampilkan alat SEL untuk {name}",
+        "clear_need_aria": "Hapus filter kebutuhan: {name}",
+        "find_for_aria": "Cari alat untuk: {name}",
+        "browse_by_area": "Jelajahi berdasarkan area keterampilan",
+        "filter_by_category": "Saring alat SEL berdasarkan kategori",
+        "showing_all_categories": "Menampilkan semua kategori",
+        "show_all_categories_aria": "Tampilkan semua kategori ({count} alat)",
+        "all": "Semua",
+        "filtered_to": "Disaring ke {name}",
+        "filter_chip_aria": "Filter: {name} ({count} alat)",
+        "pathways_heading": "Jalur SEL — Rangkaian Belajar Pilihan",
+        "started_pathway": "Jalur dimulai: {name}",
+        "pathway_started": "Jalur {name} dimulai!",
+        "n_activities": "{count} kegiatan",
+        "grades_range": "kelas {range}",
+        "use_with_care": "Gunakan dengan hati-hati",
+        "visits_many": "{count} kunjungan",
+        "visits_one": "{count} kunjungan",
+        "best_for": "Paling cocok untuk: {mode}.",
+        "teacher_cue": "Petunjuk guru: {time}, {format}. {cue}",
+        "preview_first": "Pratinjau dulu",
+        "evidence_tradition": "Tradisi bukti: {tag}",
+        "approach_context": "Konteks pendekatan: {label}. {title}. Lencana ini tidak membuktikan efektivitas untuk aplikasi ini atau untuk pelajar tertentu.",
+        "step_opened": "Langkah {n} · Dibuka",
+        "step_not_opened": "Langkah {n} · Belum dibuka",
+        "suggested_grades": "Kelas yang disarankan {range}",
+        "no_tools_current_view": "Tidak ada alat yang cocok dengan tampilan saat ini",
+        "empty_try": "Coba tenang, perasaan, stres, teman, tulis, keputusan, atau tidur.",
+        "filters_cleared": "Filter dihapus. Menampilkan semua {total} alat.",
+        "show_all_tools": "Tampilkan semua {total} alat",
+        "error_loading": "Gagal memuat {name}",
+        "unknown_error": "Kesalahan tidak diketahui",
+        "back_to_tools_error": "Kembali ke Alat",
+        "tool_load_failed": "Alat ini tidak bisa dimuat.",
+        "loading_tool": "Memuat alat...",
+        "file_not_arrived": "File tidak sampai.",
+        "check_connection": "Periksa koneksi, lalu coba lagi.",
+        "plugin_fetching": "File plugin masih sedang diambil.",
+        "research_about": "Tentang label riset",
+        "research_summary": "Arti label riset",
+        "research_context": "Konteks pendekatan: {label}.",
+        "research_not_app": "Riset tentang suatu terapi, kurikulum, atau kerangka tidak membuktikan bahwa kegiatan digital ini memiliki efek yang sama. Label menggambarkan pendekatannya; label tidak menilai aplikasi ini atau seorang pelajar.",
+        "research_check": "Sebelum memilih kegiatan, periksa sumber yang dikutip, usia dan latar yang diteliti, dukungan yang dibutuhkan, dan hasil yang diukur. Kesesuaian populasi dan efektivitas adaptasi ini belum dibuktikan oleh label-label ini.",
+        "research_casel_link": "CASEL: memilih dan mengevaluasi program SEL",
+        "project_save_failed": "Permintaan menyimpan proyek gagal. Biarkan hub ini tetap terbuka dan coba Simpan / Ekspor di aplikasi utama.",
+        "project_save_requested": "Penyimpanan proyek diminta. Selesaikan alur penyimpanan di aplikasi utama; file yang tersimpan belum dikonfirmasi di sini.",
+        "saving_aria": "Penyimpanan dan berbagi SEL",
+        "saving_failed_alert": "Beberapa perubahan SEL tidak bisa disimpan di perangkat ini. Biarkan hub ini tetap terbuka dan simpan salinan proyek; draf stasiun harus disimpan sebagai stasiun agar ikut masuk ke salinan itu.",
+        "saving_attention": "Penyimpanan perlu diperhatikan",
+        "saving_title": "Penyimpanan dan berbagi",
+        "saving_failed_body": "Pekerjaan saat ini tetap tersedia di hub yang terbuka ini. Penyimpanan lokal yang gagal mungkin meninggalkan salinan lama di perangkat ini.",
+        "saving_ok_body": "Stasiun tersimpan, catatan stasiun, dan titik simpan hub sedang disimpan di perangkat ini. Setiap kegiatan punya kontrol penyimpanannya sendiri; status ini tidak memastikan setiap isian kegiatan sudah tersimpan.",
+        "saving_drafts": "Draf stasiun tetap ada di perangkat ini untuk pemulihan. Menyimpan stasiun akan menambahkannya ke data proyek yang tersedia untuk Simpan / Ekspor; meminta penyimpanan proyek tidak memastikan bahwa file sudah ditulis.",
+        "saving_live": "Sesi langsung sedang terhubung. Sesi ini mungkin mengirim sinyal kemajuan atau keselamatan ke penyelenggara. AI opsional mengirim teks kegiatan ke layanan yang sudah diatur. Tinjau Paket Berbagi sebelum memutuskan untuk membagikannya.",
+        "saving_ai": "AI opsional mengirim teks kegiatan ke layanan yang sudah diatur. Paket Berbagi berisi item dan tingkat detail yang kamu pilih; tinjau pratinjaunya sebelum berbagi.",
+        "saving_retry": "Coba lagi penyimpanan lokal",
+        "saving_request": "Minta penyimpanan proyek",
+        "removed_stations": "Stasiun yang dihapus",
+        "removed_body": "Batalkan penghapusan stasiun selama hub ini terbuka. Catatan latihan yang sudah ada tetap disimpan.",
+        "station_restored": "Stasiun dipulihkan: {name}",
+        "undo_removal": "Batalkan penghapusan: {name}",
+        "launch_routines_aria": "Rutinitas peluncuran guru",
+        "launch_title": "Peluncuran guru",
+        "launch_note": "Jaga latihan tetap tanpa nilai dan berbagi tetap opsional. Jelaskan penyimpanan di perangkat, fitur AI yang diatur, dan berbagi sebelum mulai. Gunakan contoh fiktif; ajak siswa untuk meminta bantuan atau melewati.",
+        "launch_guardrails_aria": "Batasan pengaman peluncuran guru",
+        "launch_step_boundary": "Tetapkan batasan",
+        "launch_step_boundary_body": "Sampaikan apa yang pribadi, apa yang opsional, dan bagaimana siswa bisa melewati.",
+        "launch_step_run": "Jalankan rutinitas",
+        "launch_step_run_body": "Gunakan alat sebagai latihan. Jaga refleksi tetap formatif dan tanpa nilai.",
+        "launch_step_close": "Tutup dengan pilihan",
+        "launch_step_close_body": "Siswa memutuskan apakah akan menyimpan, mengekspor, atau menyertakan titik simpan nanti.",
+        "launch_student_sees": "Yang dilihat siswa",
+        "launch_student_sees_default": "Siswa menyelesaikan rutinitas SEL pribadi dan memilih apa yang ingin dibagikan.",
+        "launch_teacher_move": "Langkah guru",
+        "launch_teacher_move_default": "Bingkai ini sebagai latihan, bukan penilaian.",
+        "launch_sharing_boundary": "Batasan berbagi",
+        "launch_sharing_boundary_default": "Berbagi tetap dikendalikan oleh siswa.",
+        "launch_tools_loading": "Alat sedang dimuat...",
+        "launch_still_loading": "Masih dimuat: {tools}",
+        "launch_preview_sensitive": "Pratinjau dulu alat yang sensitif: {tools}",
+        "launch_load_aria": "Muat rencana peluncuran guru: {name}",
+        "launch_finish_draft": "Selesaikan atau buang draf saat ini terlebih dahulu",
+        "launch_waiting": "Menunggu alat",
+        "launch_loading": "Memuat",
+        "launch_load": "Muat ke Pembuat Stasiun",
+        "builder_note_student": "Tampilan siswa: {text}",
+        "builder_note_teacher": "Langkah guru: {text}",
+        "builder_note_sharing": "Batasan berbagi: {text}",
+        "builder_note_note": "Catatan guru: {text}",
+        "launch_finish_existing": "Selesaikan atau buang draf stasiunmu yang ada terlebih dahulu.",
+        "launch_tools_still_loading": "Alat peluncuran guru masih dimuat. Coba lagi sebentar lagi.",
+        "launch_tools_still_loading_sr": "Alat peluncuran guru masih dimuat.",
+        "launch_default_name": "Rutinitas kelas SEL",
+        "launch_default_short": "Rutinitas SEL",
+        "launch_loaded_sr": "Rencana peluncuran guru dimuat ke pembuat stasiun: {name}",
+        "launch_loaded_toast": "Rencana peluncuran guru dimuat ke Pembuat Stasiun.",
+        "stations_summary": "Stasiun SEL Kustom — kumpulan yang disusun guru",
+        "station_delete_aria": "Hapus stasiun {name}",
+        "station_removed_sr": "Stasiun dihapus. Pembatalan tersedia sampai hub ini ditutup.",
+        "station_removed": "Stasiun dihapus",
+        "station_tools_count": "{count} alat",
+        "station_quests_count": "{count} misi",
+        "station_activated_sr": "Stasiun SEL diaktifkan: {name}",
+        "station_started": "{name} dimulai!",
+        "station_activate_aria": "Aktifkan stasiun {name}",
+        "station_start": "Mulai stasiun",
+        "station_adapt_aria": "Sesuaikan salinan stasiun {name}",
+        "station_adapt": "Sesuaikan salinan",
+        "draft_aria": "Draf stasiun yang bisa dipulihkan",
+        "draft_untitled": "Stasiun tanpa judul",
+        "draft_body": "Draf stasiun yang belum selesai tersimpan di perangkat ini: {name}. Lanjutkan atau buang draf itu sebelum memulai yang lain.",
+        "draft_resume": "Lanjutkan draf stasiun",
+        "draft_discard": "Buang draf stasiun",
+        "builder_opened": "Pembuat stasiun dibuka",
+        "build_station_aria": "Buat Stasiun SEL kustom yang baru",
+        "build_station": "+ Buat Stasiun Kustom"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Koneksi guru terjeda — posisi Anda tetap disimpan selagi AlloFlow menyambung ulang.",
+    "host_stale": "Status guru belum diperbarui - sesi langsung mungkin masih terhubung. Pekerjaan Anda tetap ada di perangkat ini.",
+    "dismiss": "Tutup",
+    "dismiss_aria": "Tutup peringatan status guru",
+    "connecting": "Menghubungkan ke kelas…",
+    "retrying": "Pembaruan kelas dijeda. Menyambung ulang secara otomatis…",
+    "failed": "Pembaruan kelas terputus. Periksa koneksi Anda dan coba sambungkan ulang.",
+    "access": "Akses kelas ditolak. Minta guru Anda memeriksa akses, lalu sambungkan ulang.",
+    "sign_in": "Masuk lagi untuk memulihkan akses kelas, lalu sambungkan ulang.",
+    "reconnect": "Sambungkan ulang"
+  },
   "_version": "20260526222648T1779834408017",
   "tour": {
     "input_panel_title": "masukan panel",
@@ -5283,9 +6503,99 @@
     "measured_on_target": "Sesuai untuk {grade}",
     "measured_above": "Di atas tingkat {grade}",
     "measured_below": "Di bawah tingkat {grade}",
-    "measured_note": "Flesch-Kincaid, diukur pada teks ini. Gunakan Periksa tingkat untuk pemeriksaan lebih lengkap."
+    "measured_note": "Flesch-Kincaid, diukur pada teks ini. Gunakan Periksa tingkat untuk pemeriksaan lebih lengkap.",
+    "listen_along": "Dengarkan sambil membaca",
+    "compare_listen_here": "Dengarkan di sini",
+    "compare_listen_here_original": "Dengarkan di sini teks asli",
+    "compare_listen_here_adapted": "Dengarkan di sini teks yang disesuaikan",
+    "compare_stop_reading_original": "Berhenti membacakan teks asli",
+    "compare_stop_reading_adapted": "Berhenti membacakan teks yang disesuaikan",
+    "compare_scroll_together": "Gulir bersama",
+    "reading_width": "Lebar bacaan",
+    "width_narrow": "Sempit",
+    "width_medium": "Sedang",
+    "width_wide": "Lebar",
+    "width_extra_wide": "Sangat lebar",
+    "reading_width_characters": "sekitar {count} karakter per baris",
+    "original_support_spoken": "Bantuan kata “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Ketik kata atau frasa yang hilang",
+      "explain_thinking": "Jelaskan cara berpikir Anda",
+      "write_response": "Tulis jawaban Anda",
+      "submit_response": "Kirim jawaban",
+      "numeric_answer": "Jawaban angka",
+      "unit_named": "Satuan ({unit})",
+      "unit_optional": "Satuan (opsional)",
+      "submit_numeric": "Kirim jawaban angka",
+      "select_all_apply": "Pilih semua jawaban yang sesuai",
+      "submit_selections": "Kirim pilihan",
+      "part1": "Bagian 1 — Pilih jawaban terbaik",
+      "part2": "Bagian 2 — {prompt}",
+      "default_evidence_prompt": "Pilih bukti pendukung terbaik.",
+      "submit_answer_evidence": "Kirim jawaban dan bukti",
+      "order_check": "Apakah urutan ini benar?",
+      "order_yes": "Ya, sudah benar",
+      "order_no": "Tidak, ada yang salah tempat",
+      "select_misplaced": "Pilih item yang salah tempat di atas.",
+      "arrange_instructions": "Susun item dalam urutan yang benar. Jika sudah benar, biarkan saja.",
+      "your_order": "Urutan Anda",
+      "move_up": "Pindah ke atas: {item}",
+      "move_down": "Pindah ke bawah: {item}",
+      "done_arranging": "Selesai menyusun",
+      "principle_question": "Apa dasar urutannya?",
+      "principle_chronological": "kronologis",
+      "principle_cause_effect": "sebab-akibat",
+      "principle_process": "proses",
+      "principle_size": "ukuran",
+      "principle_hierarchy": "hierarki",
+      "find_mismatch": "Temukan pasangan yang tidak cocok",
+      "choose_mismatch": "Pilih pasangan yang tidak sesuai.",
+      "pair_with_question": "Item yang dipilih harus dipasangkan dengan apa?",
+      "replacement_partner": "Pasangan pengganti",
+      "submit_replacement": "Kirim pengganti",
+      "retry_failed": "Jawaban Anda tidak dapat dikirim. Partisipasi Anda tetap tercatat; coba lagi saat sudah terhubung.",
+      "return_to_quiz": "Kembali ke kuis langsung",
+      "minimize": "Perkecil",
+      "minimize_aria": "Tinggalkan tampilan kuis langsung",
+      "battle_result": "Hasil pertarungan",
+      "class_victory": "Kelas menang!",
+      "battle_complete": "Pertarungan selesai",
+      "regroup": "Kesempatan untuk menyusun strategi lagi",
+      "end_no_scored": "Pertanyaan-pertanyaan ini untuk diskusi atau ditinjau oleh guru. Tidak ada skor pertarungan yang diberikan.",
+      "end_questions_complete": "Semua pertanyaan sudah selesai. Hasilnya membandingkan persentase nyawa yang tersisa; jika seri, kelas yang menang.",
+      "end_victory": "Kelas Anda mengalahkan monster bersama-sama.",
+      "end_regroup": "Gunakan penjelasan di bawah untuk merencanakan percobaan berikutnya bersama-sama.",
+      "end_review_last": "Tinjau pertanyaan terakhir di bawah. Guru Anda dapat memulai ulang pertarungan.",
+      "boss_default_name": "Bos",
+      "boss_hp": "HP {name}",
+      "boss_health": "Nyawa {name}",
+      "battle_scoring_paused": "Penilaian pertarungan dijeda",
+      "tick_of": "{value} dari {total}",
+      "confidence_legend": "Seberapa yakin Anda?",
+      "confidence_knew": "Saya tahu jawabannya",
+      "confidence_guessed": "Saya menebak dengan alasan",
+      "confidence_unsure": "Saya tidak yakin",
+      "confidence_help": "Ini membantu guru Anda melihat pemahaman yang kuat dan miskonsepsi. Ini tidak pernah mengubah benar-salahnya jawaban atau poin.",
+      "retry_send": "Coba kirim jawaban lagi",
+      "waiting_for_teacher": "Menunggu guru Anda memulai pertanyaan ini.",
+      "sending": "Mengirim jawaban Anda…",
+      "receipt_only": "Partisipasi tercatat. Jawaban Anda belum sampai ke guru untuk dinilai.",
+      "complete_and_submit": "Lengkapi dan kirim jawaban Anda",
+      "poll_closed": "Pertanyaan pendapat ini sudah ditutup.",
+      "receipt_not_scored": "Guru Anda hanya menerima partisipasi. Jawaban ini tidak dinilai.",
+      "no_answer_submitted": "Tidak ada jawaban yang dikirim untuk pertanyaan ini. Tinjau bersama kelas Anda.",
+      "answer_review": "Tinjauan jawaban",
+      "review_answer": "Tinjau jawabannya",
+      "discuss_with_teacher": "Diskusikan jawaban ini dengan guru Anda.",
+      "response_correct": "Jawaban benar.",
+      "response_partial": "Jawaban sebagian benar.",
+      "response_incorrect": "Jawaban ini perlu dilihat lagi.",
+      "response_none": "Tidak ada jawaban yang dikirim.",
+      "response_submitted": "Jawaban dikirim untuk ditinjau.",
+      "explanation": "Penjelasan"
+    },
     "title": "Menilai",
     "mcq_count": "MCQ Hitung",
     "reflections": "Refleksi",

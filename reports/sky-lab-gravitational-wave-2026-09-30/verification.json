@@ -1,0 +1,174 @@
+{
+  "date": "2026-09-30",
+  "scope": "Sky Lab binary orbit and gravitational-wave detector explorer; playback handoff with pulsar explorer",
+  "unitTests": {
+    "total": 164,
+    "passed": 164,
+    "failed": 0
+  },
+  "browserScenarios": [
+    {
+      "title": "one orbit links two signal cycles, the moving black holes and opposite arm changes",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-final-readout-tests.json"
+    },
+    {
+      "title": "alignment changes detector sensitivity without removing the arriving plus component",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "physical clocks, distance scaling and source provenance follow native controls",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "phone contrast layout keeps moving labels in view and supports touch and precise progress",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "playback pauses on edits, stops once and hands off cleanly between simulators",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "malformed restored settings, extreme sources and repeated edits stay coherent",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "a restored pair of playing flags starts only the wave clock and does not resume a second animation",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "four geometry examples link the observer, curves and receiver status",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "published spin choices change time and preserve chosen angles and signal",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "very narrow pulses and south-facing observers remain finite and visible at their peaks",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "phone contrast layout keeps labels readable and supports touch and keyboard exploration",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "playback pauses on controls, finishes once, and releases its clock when leaving the section",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    },
+    {
+      "title": "malformed restored state and repeated edits preserve a coherent simulator",
+      "status": "expected",
+      "results": [
+        "passed"
+      ],
+      "report": "browser-tests.json"
+    }
+  ],
+  "build": {
+    "sourceHash": "256962e61648910055ebd153104b91bc924328baeddf5d403db7083da8d6c873",
+    "mirrorIdentical": true,
+    "syntaxValid": true,
+    "labelsAdded": 73,
+    "labelParity": {
+      "ui_strings.js": true,
+      "desktop/web-app/public/ui_strings.js": true
+    },
+    "sourceChangesLimitedToWaveExplorerAndPlaybackHandoff": true,
+    "whitespaceCheckPassed": true
+  },
+  "scientificValidation": [
+    "Independent SI quadrupole construction agrees with chirp-mass amplitude",
+    "Two wave cycles per circular orbit",
+    "Kepler relation and center-of-mass positions",
+    "Inverse luminosity distance and consistent source/detector redshift frames",
+    "Each arm changes by half the differential strain; exact balanced phases and plus-component null",
+    "Orbital velocity <= 0.3c, separated horizons, finite extreme controls"
+  ],
+  "interactionValidation": [
+    "Three views and physical readouts share one model",
+    "Native keyboard controls and touch chart exploration",
+    "320px contrast layout: readable SVG text, no clipped labels, interaction targets >= 44px, no horizontal overflow",
+    "Pause on edits, replay once, cleanup on section exit",
+    "One active clock across simulators, including conflicting saved playback flags",
+    "Malformed and restored settings remain coherent",
+    "Fractional progress and very faint strain retained in accessible readouts"
+  ],
+  "publishedInputs": {
+    "event": "GW150914",
+    "sourceMassesSolar": [
+      36,
+      29
+    ],
+    "luminosityDistanceMpc": 410,
+    "redshift": 0.09,
+    "reference": "Initial 2016 discovery estimates",
+    "source": "https://arxiv.org/abs/1602.03837",
+    "detectorArmsMeters": 4000,
+    "detectorSource": "https://ligo.org/science-summaries/GW150914Detector/"
+  },
+  "limits": [
+    "One circular orbit at fixed frequency, using Newtonian gravity and leading quadrupole amplitude",
+    "Chosen face-on source and a plus component perpendicular to an ideal detector",
+    "Arm motion and chart scale adjust for visibility; physical readouts retain actual units",
+    "Omitted cross-component detector response, spins, full inspiral, merger, ringdown, optical cavities, propagation delays and noise",
+    "Published inputs are fixed initial estimates; simulated curve does not reproduce recorded GW150914 strain"
+  ],
+  "verificationRecovery": {
+    "unitSetup": "Initial 30-second setup hook timed out. Rerun with 120-second hook timeout passed all 164 tests.",
+    "phoneLayout": "Moved orbit caption into a taller SVG after boundary check found a 0.26-unit overflow."
+  },
+  "screenshots": [
+    "binary-detector-desktop.png",
+    "plus-component-null-desktop.png",
+    "binary-detector-phone-contrast.png"
+  ],
+  "committed": false
+}

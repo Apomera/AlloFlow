@@ -1,0 +1,19 @@
+memory_aid_source.jsx:3825:                         {Object.entries(MEMORY_AID_MODES).map(([id]) => <option key={id} value={id}>{trMeta('mode', id, 'label', MEMORY_AID_MODES)}</option>)}
+memory_aid_source.jsx:3826:                       </select>
+memory_aid_source.jsx:3827:                     </label>
+memory_aid_source.jsx:3828:                     <div role="group" className="flex flex-wrap items-end gap-2 sm:col-span-2" aria-label={tr('card_reorder_aria', 'Reorder {target}', { target: card.target || tr('memory_target_lower', 'memory target') })}>
+memory_aid_source.jsx:3829:                       <button type="button" onClick={() => moveCard(card.id, 'up')} disabled={index === 0} aria-label={tr('card_move_up_aria', 'Move {target} up', { target: card.target || tr('memory_target_lower', 'memory target') })} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('card_move_up', 'Move up')}</button>
+memory_aid_source.jsx:3830:                       <button type="button" onClick={() => moveCard(card.id, 'down')} disabled={index === cards.length - 1} aria-label={tr('card_move_down_aria', 'Move {target} down', { target: card.target || tr('memory_target_lower', 'memory target') })} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('card_move_down', 'Move down')}</button>
+memory_aid_source.jsx:3831:                     </div>
+memory_aid_source.jsx:3832:                   </div>
+memory_aid_source.jsx:3833:                 )}
+memory_aid_source.jsx:3834:               </div>
+memory_aid_source.jsx:3835: 
+memory_aid_source.jsx:3836:               <div className="space-y-4 p-4 sm:p-5">
+memory_aid_source.jsx:3837:                 {!practiceIsolationActive && ReadAloud && <ReadAloud resource={props.referenceResource || generatedContent} cardId={card.id} canPrepare={isTeacherMode && isEditing} allowRuntimeAi={allowRuntimeAi} t={tProp} stopPlayback={props.stopPlayback} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} />}
+memory_aid_source.jsx:3838:                 <div hidden={!practiceIsolationActive && (isEditing || activity !== 'recall')}>
+memory_aid_source.jsx:3839:                 <MemoryAidPracticePanel
+memory_aid_source.jsx:3840:                   t={tProp}
+memory_aid_source.jsx:3841:                   card={card}
+memory_aid_source.jsx:3842:                   domIdBase={domIdBase}
+memory_aid_source.jsx:3843:                   session={practiceSession}

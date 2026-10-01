@@ -26,11 +26,11 @@ afterEach(() => {
   if (savedVision) window.callGeminiVision = savedVision; else delete window.callGeminiVision;
   savedVision = undefined;
 });
-async function mount() {
+async function mount(props = {}) {
   localStorage.setItem('alloStudentProfiles', JSON.stringify([{ id: 'ph', name: 'Demo' }]));
   localStorage.setItem('alloActiveProfileId', JSON.stringify('ph'));
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
-  await act(async () => root.render(React.createElement(Studio, baseProps({}))));
+  await act(async () => root.render(React.createElement(Studio, baseProps(props))));
   const label = host.querySelector('[aria-label="Symbol label"]');
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(label, 'dog');
@@ -91,5 +91,48 @@ describe('Symbol Studio photos', () => {
     expect(drawn).toContain('CC BY 2.0, via Wikimedia Commons');
     expect(saved.attribution).toMatchObject({ set: 'Wikimedia Commons', author: 'Kim', license: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:Dog_on_grass.jpg' });
     expect(host.querySelector('[role="dialog"][aria-label="Find a photo"]')).toBe(null);
+  });
+
+  // "Remove Text" asks the model for STRICTLY NO TEXT, which erased the drawn
+  // credit, and the stored credit never said the picture was changed.
+  it('keeps a photo credited when its text is removed: the band comes off first and an edited credit is drawn after', async () => {
+    vi.stubGlobal('Image', class { naturalWidth = 1200; naturalHeight = 800; set src(value) {
+      const size = /base64,(\d+)x(\d+)$/.exec(String(value));
+      if (size) { this.naturalWidth = Number(size[1]); this.naturalHeight = Number(size[2]); }
+      if (value) queueMicrotask(() => this.onload());
+    } });
+    const ctx = { fillRect: vi.fn(), drawImage: vi.fn(), fillText: vi.fn(), measureText: t => ({ width: String(t).length * 7 }) };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function (type) { return 'data:' + type + ';base64,' + this.width + 'x' + this.height; });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => String(url).startsWith('https://commons.wikimedia.org/w/api.php')
+      ? { ok: true, json: async () => commons } : { ok: true, blob: async () => pngBlob() });
+    savedVision = window.callGeminiVision;
+    window.callGeminiVision = vi.fn(async () => JSON.stringify([{ index: 1, safe: true, relevant: true, alt: 'A brown dog sitting on grass.' }]));
+    const edit = vi.fn(async () => 'data:image/png;base64,400x250');
+    await mount({ onCallGeminiImageEdit: edit });
+    await act(async () => host.querySelector('[aria-label="Find a photo"]').click());
+    const dialog = host.querySelector('[role="dialog"][aria-label="Find a photo"]');
+    await act(async () => dialog.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    const use = '[aria-label="Use photo: A brown dog sitting on grass."]';
+    expect(await until(() => host.querySelector(use))).toBeTruthy();
+    await act(async () => host.querySelector(use).click());
+    const find = () => (JSON.parse(localStorage.getItem('alloSymbolGallery__ph') || '[]')).find(entry => entry.source === 'wikimedia');
+    expect(await until(find)).toBeTruthy();
+    const before = find(), height = Number(before.image.split('x')[1]);
+    expect(before.imageCreditBand).toBeGreaterThan(0);
+    ctx.fillText.mockClear();
+    const remove = () => host.querySelector('[aria-label="Remove text from dog symbol"]');
+    expect(await until(remove)).toBeTruthy();
+    await act(async () => remove().click());
+    const after = () => { const entry = find(); return entry && entry.attribution && entry.attribution.modified ? entry : null; };
+    expect(await until(after)).toBeTruthy();
+    // The model saw the photo without its credit band.
+    expect(edit).toHaveBeenCalledTimes(1);
+    expect(edit.mock.calls[0][1]).toBe('400x' + (height - before.imageCreditBand));
+    const saved = after();
+    expect(saved).toMatchObject({ validated: false, attribution: { author: 'Kim', license: 'CC BY 2.0', modified: true } });
+    expect(saved.imageCreditBand).toBeGreaterThan(0);
+    expect(saved.image).toBe('data:image/jpeg;base64,400x' + (250 + saved.imageCreditBand));
+    expect(ctx.fillText.mock.calls.map(c => c[0]).join(' ')).toContain('edited');
   });
 });

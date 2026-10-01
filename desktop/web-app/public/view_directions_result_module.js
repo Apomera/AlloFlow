@@ -142,10 +142,12 @@ function DirectionsResultView({
     mapAllVisited: 'directions.map_all_visited',
     mapJumpAny: 'directions.map_jump_any',
     mapVisitedSr: 'directions.map_visited_sr',
-    yourGoals: 'directions.your_goals',
+    // Own keys: directions.your_goals / signals_note belong to the command palette.
+    yourGoals: 'directions.goals_heading',
     goalDone: 'directions.goal_done',
     goalOpen: 'directions.goal_open',
-    signalsNote: 'directions.signals_note',
+    goalMissing: 'directions.goal_not_in_pack',
+    signalsNote: 'directions.goals_device_note',
     missingChoices: 'directions.missing_choices',
     choices: 'directions.choices',
     selectedPrefix: 'directions.selected_prefix',
@@ -174,7 +176,8 @@ function DirectionsResultView({
     kind: directionsResultText(goal.kind, '', 24),
     done: goal.done === true,
     progressText: directionsResultText(goal.progressText, '', 80),
-    resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 200) : ''
+    resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 200) : '',
+    missing: goal.missing === true && goal.done !== true
   }));
   const recommendation = recommendationView && typeof recommendationView === 'object' ? recommendationView : {};
   const nextId = typeof recommendation.nextId === 'string' ? recommendation.nextId.slice(0, 200) : '';
@@ -195,12 +198,14 @@ function DirectionsResultView({
   const selectedChoice = choiceItems.find(item => item.resourceId === selectedRef) || null;
   const missingChoiceCount = choiceValue ? Math.max(0, Math.min(6, Number(choiceValue.missingCount) || 0)) : 0;
   const choiceBoard = choiceValue && choiceItems.length >= 1 ? {
-    title: directionsResultText(choiceValue.title, 'Choose an activity', 120),
-    prompt: directionsResultText(choiceValue.prompt, 'Pick one activity to work on first.', 240),
+    title: directionsResultText(choiceValue.title, text('directions.choice_board_title', 'Choose an activity', 120), 120),
+    prompt: directionsResultText(choiceValue.prompt, text('directions.choice_board_prompt', 'Pick one activity to work on first. You can return here and choose another later.', 240), 240),
     items: choiceItems
   } : null;
   const visitedCount = stations.filter(station => station.visited).length;
   const doneCount = goals.filter(goal => goal.done).length;
+  // A goal whose resource is not in this pack can never tick, so it is not counted.
+  const goalTotal = goals.filter(goal => !goal.missing).length;
   const showMap = showQuestMap === true;
   const mapWidth = Math.max(340, 100 + stations.length * 88, goals.length ? 120 + (goals.length - 1) * 92 : 0);
   const nodeX = index => 100 + index * 88;
@@ -210,7 +215,7 @@ function DirectionsResultView({
   const travelTo = station => {
     if (station && station.id) onTravel(station.id);
   };
-  const mapAriaLabel = text('mapSummary', 'Quest map') + ': ' + visitedCount + '/' + stations.length + ' ' + text('stationsVisited', 'stations visited') + (goals.length ? ', ' + doneCount + '/' + goals.length + ' ' + text('goals', 'goals') : '');
+  const mapAriaLabel = text('mapSummary', 'Quest map') + ': ' + visitedCount + '/' + stations.length + ' ' + text('stationsVisited', 'stations visited') + (goalTotal ? ', ' + doneCount + '/' + goalTotal + ' ' + text('goals', 'goals') : '');
   const trustedBodyHtml = typeof bodyHtml === 'string' ? bodyHtml : '';
   return /*#__PURE__*/React.createElement("div", {
     className: "max-w-2xl mx-auto p-4"
@@ -470,9 +475,22 @@ function DirectionsResultView({
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-700 mb-2",
     "aria-live": "polite"
-  }, text('yourGoals', 'Your goals'), " \xB7 ", doneCount, "/", goals.length), /*#__PURE__*/React.createElement("ul", {
+  }, text('yourGoals', 'Your goals'), goalTotal > 0 ? ' · ' + doneCount + '/' + goalTotal : ''), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2 list-none p-0 m-0"
-  }, goals.map(goal => /*#__PURE__*/React.createElement("li", {
+  }, goals.map(goal => goal.missing ? /*#__PURE__*/React.createElement("li", {
+    key: goal.id,
+    className: "flex items-center gap-2",
+    "data-goal-missing": "true"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-4 h-4 rounded-full border-2 border-dashed border-slate-300 inline-block flex-shrink-0",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm text-slate-600"
+  }, goal.label, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, ', ')), /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] text-slate-600 font-semibold ml-auto flex-shrink-0"
+  }, text('goalMissing', 'Not in this pack'))) : /*#__PURE__*/React.createElement("li", {
     key: goal.id,
     className: "flex items-center gap-2"
   }, goal.kind === 'manual' ? /*#__PURE__*/React.createElement("input", {
@@ -499,7 +517,7 @@ function DirectionsResultView({
     "aria-hidden": "true"
   }, "\u2713")))), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-3"
-  }, text('signalsNote', 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.', 500)))));
+  }, text('signalsNote', 'Goals check themselves on this device as you play and earn XP, and your own checkmarks count too.', 500)))));
 }
 
   window.AlloModules = window.AlloModules || {};

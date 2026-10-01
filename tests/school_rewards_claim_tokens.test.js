@@ -297,6 +297,152 @@ describe('integrity report', () => {
   });
 });
 
+describe('typeable short codes', () => {
+  it('gives every minted code a unique 8-character code from an alphabet without 0, O, 1, I or L', () => {
+    const h = harness(); setup(h);
+    const batch = mint(h, { count: 200 });
+    const codes = batch.tokens.map(t => t.shortCode);
+    expect(new Set(codes).size).toBe(200);
+    for (const code of codes) expect(code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/);
+    expect(h.rows('ClaimTokens').slice(1).map(r => r[13])).toEqual(codes);
+    const more = mint(h, { count: 50 }).tokens.map(t => t.shortCode);
+    expect(more.filter(code => codes.includes(code))).toEqual([]);
+  });
+
+  it('redeems a typed code however it is spaced or cased, through the same once-only path as the QR', () => {
+    const h = harness(); setup(h);
+    const token = mint(h).tokens[0];
+    const typed = token.shortCode.toLowerCase().slice(0, 4) + ' - ' + token.shortCode.toLowerCase().slice(4);
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { code: typed })).toMatchObject({ ok: true, state: 'claimed', points: 20 });
+    expect(claimLedger(h)).toHaveLength(1);
+    expect(claimLedger(h)[0][6]).toBe(token.id);
+    // Scanning the same coupon afterwards, or typing it again, is a replay rather than a second credit.
+    expect(h.call('claimSchoolRewardsToken', { tokenId: token.id })).toMatchObject({ ok: true, replayed: true });
+    expect(h.call('claimSchoolRewardsToken', { code: token.shortCode })).toMatchObject({ ok: true, replayed: true });
+    expect(claimLedger(h)).toHaveLength(1);
+    expect(balanceOf(h, STUDENT)).toBe(20);
+  });
+
+  it('refuses malformed codes, and stops a student after 10 wrong guesses without touching real codes', () => {
+    const h = harness(); setup(h);
+    const token = mint(h).tokens[0];
+    h.setActive(STUDENT);
+    for (const bad of ['', 'ABC', 'ABCDEFGHJ', 'ABCD-0000', 'OOOO-IIII', '<script>']) expect(() => h.call('claimSchoolRewardsToken', { code: bad })).toThrow(/8-character code/);
+    const wrong = token.shortCode === 'ZZZZZZZZ' ? 'YYYYYYYY' : 'ZZZZZZZZ';
+    for (let i = 0; i < 10; i++) expect(h.call('claimSchoolRewardsToken', { code: wrong })).toEqual({ ok: false, state: 'not_found' });
+    expect(h.call('claimSchoolRewardsToken', { code: token.shortCode })).toEqual({ ok: false, state: 'too_many_attempts' });
+    expect(claimRows(h)[0].status).toBe('unused');
+    // The limit is per student, and it guards guessing only: the scanned coupon still works.
+    const other = addStudent(h, 7);
+    h.setActive(other.email);
+    expect(h.call('claimSchoolRewardsToken', { code: wrong })).toEqual({ ok: false, state: 'not_found' });
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: token.id })).toMatchObject({ ok: true, state: 'claimed' });
+  });
+
+  it('keeps older 12-column sheets working, and the v7 migration adds the new column headers', () => {
+    const h = harness(); setup(h);
+    const token = mint(h).tokens[0];
+    h.simulateV7ClaimColumns();
+    expect(h.rows('ClaimTokens')[0]).toHaveLength(12);
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: token.id })).toMatchObject({ ok: true, state: 'claimed' });
+    h.setActive(ADMIN);
+    h.call('migrateSchoolRewardsRepositoryV7');
+    expect(h.rows('ClaimTokens')[0].slice(12)).toEqual(['PerStudentLimit', 'ShortCode']);
+    expect(mint(h).tokens[0].shortCode).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/);
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsIntegrityReport', {})).toMatchObject({ ok: true, summary: { errors: 0 } });
+  });
+
+  it('reports a short code that identifies two tokens', () => {
+    const h = harness(); setup(h);
+    const tokens = mint(h).tokens;
+    h.setDataCell('ClaimTokens', 1, 13, tokens[0].shortCode);
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsIntegrityReport', {}).issues.map(i => i.code)).toContain('DUPLICATE_CLAIM_SHORT_CODE');
+  });
+});
+
+describe('one code per student', () => {
+  it('lets each student redeem one code from a one-per-student sheet; the rest stay for classmates', () => {
+    const h = harness(); setup(h);
+    const other = addStudent(h, 8);
+    const sheet = mint(h, { onePerStudent: true });
+    expect(sheet.tokens.every(t => t.perStudentLimit === 1)).toBe(true);
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[0].id })).toMatchObject({ ok: true, state: 'claimed' });
+    expect(h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[1].id })).toEqual({ ok: false, state: 'limit_reached' });
+    expect(h.call('claimSchoolRewardsToken', { code: sheet.tokens[2].shortCode })).toEqual({ ok: false, state: 'limit_reached' });
+    expect(h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[0].id })).toMatchObject({ ok: true, replayed: true });
+    expect(claimRows(h).map(r => r.status)).toEqual(['used', 'unused', 'unused']);
+    h.setActive(other.email);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[1].id })).toMatchObject({ ok: true, state: 'claimed' });
+    // The limit is per sheet: a second one-per-student sheet gives the same student one more.
+    const second = mint(h, { onePerStudent: true });
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: second.tokens[0].id })).toMatchObject({ ok: true, state: 'claimed' });
+    expect(h.call('claimSchoolRewardsToken', { tokenId: second.tokens[1].id })).toEqual({ ok: false, state: 'limit_reached' });
+    // A sheet without the rule is unaffected.
+    const open = mint(h);
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: open.tokens[0].id })).toMatchObject({ ok: true });
+    expect(h.call('claimSchoolRewardsToken', { tokenId: open.tokens[1].id })).toMatchObject({ ok: true });
+    expect(balanceOf(h, STUDENT)).toBe(80);
+    h.setActive(STAFF);
+    const listed = h.call('listSchoolRewardsClaimBatches').batches.find(b => b.batchId === sheet.batchId);
+    expect(listed).toMatchObject({ perStudentLimit: 1, counts: { unused: 1, used: 2 } });
+    expect(listed.unusedShortCodes).toEqual([sheet.tokens[2].shortCode]);
+  });
+
+  it('treats the rule as part of an idempotent mint', () => {
+    const h = harness(); setup(h);
+    mint(h, { idempotencyKey: 'claimmint_aaaaaaaaaaaa', onePerStudent: true });
+    expect(() => mint(h, { idempotencyKey: 'claimmint_aaaaaaaaaaaa' })).toThrow(/already used for a different code sheet/);
+    expect(mint(h, { idempotencyKey: 'claimmint_aaaaaaaaaaaa', onePerStudent: true }).replayed).toBe(true);
+  });
+});
+
+describe('closing the academic year', () => {
+  const closeYear = (h, carryOver) => { h.setActive(ADMIN); return h.call('startSchoolRewardsAcademicYear', { academicYear: '2099-00', carryOver, confirm: true }); };
+
+  it('previews unused codes and cancels them when balances reset; redeemed codes keep their history', () => {
+    const h = harness(); setup(h);
+    const sheet = mint(h);
+    h.appendRaw('ClaimTokens', ['expired-token-000003', 5, seededCategory(h).id, 'Old', 'batch-old-000003', 'unused', '', '', '2000-01-01T00:00:00.000Z', '', STAFF, '2000-01-01T00:00:00.000Z', '', '']);
+    h.setActive(STUDENT); h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[0].id });
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsYearPreview')).toMatchObject({ unusedClaimCodes: 2 });
+    expect(closeYear(h, 'none')).toMatchObject({ ok: true, claimCodesCancelled: 3, balancesCleared: 1 });
+    expect(claimRows(h).map(r => r.status)).toEqual(['used', 'void', 'void', 'void']);
+    expect(h.rows('Audit').filter(r => r[1] === 'CLAIM_TOKENS_VOIDED')).toHaveLength(1);
+    expect(claimLedger(h)).toHaveLength(1);
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[1].id })).toEqual({ ok: false, state: 'void' });
+    expect(balanceOf(h, STUDENT)).toBe(0);
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsYearPreview').unusedClaimCodes).toBe(0);
+  });
+
+  it('keeps unused codes valid when balances carry over', () => {
+    const h = harness(); setup(h);
+    const sheet = mint(h);
+    expect(closeYear(h, 'all')).toMatchObject({ ok: true, claimCodesCancelled: 0 });
+    expect(claimRows(h).map(r => r.status)).toEqual(['unused', 'unused', 'unused']);
+    expect(h.rows('Audit').filter(r => r[1] === 'CLAIM_TOKENS_VOIDED')).toHaveLength(0);
+    h.setActive(STUDENT);
+    expect(h.call('claimSchoolRewardsToken', { tokenId: sheet.tokens[0].id })).toMatchObject({ ok: true, state: 'claimed' });
+  });
+
+  it('still closes a year on a v6 repository that has no claim codes', () => {
+    const h = harness(); setup(h); h.simulateV6Claims();
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsYearPreview').unusedClaimCodes).toBe(0);
+    expect(closeYear(h, 'none')).toMatchObject({ ok: true, claimCodesCancelled: 0 });
+  });
+});
+
 describe('schema v7 migration', () => {
   it('claims are blocked on a v6 repository until an administrator runs the additive migration', () => {
     const h = harness(); setup(h); h.simulateV6Claims();
@@ -341,5 +487,20 @@ describe('claim entry link', () => {
     for (const role of ['admin', 'staff', 'cashier']) expect(entry(role)({ parameter: { claim: 'abcdef12-3456-7890-abcd-ef1234567890' } })).toBe('{"claimToken":"abcdef12-3456-7890-abcd-ef1234567890"}');
     expect(index).toContain('data-school-rewards-claim="<?= claimToken ?>"');
     expect(index).not.toContain('<?!= claimToken');
+  });
+});
+
+describe('sign-in failure on a claim link', () => {
+  const code = readFileSync(resolve(process.cwd(), 'apps_script/school_rewards/Code.gs'), 'utf8');
+  it('tells a student on the wrong account the coupon is unused, without echoing the code', () => {
+    const output = content => ({ content, setTitle() { return this; } });
+    const context = { HtmlService: { createTemplateFromFile() { throw new Error('no template before authorization'); }, createHtmlOutput: output } };
+    runInNewContext(code, context);
+    context.currentActor_ = () => { throw new Error('Sign in with your school Google account, not a personal one.'); };
+    const page = context.doGet({ parameter: { claim: 'abcdef12-3456-7890-abcd-ef1234567890' } }).content;
+    expect(page).toContain('Access unavailable');
+    expect(page).toContain('Your reward code has not been used.');
+    expect(page).not.toContain('abcdef12');
+    for (const event of [{ parameter: {} }, { parameter: { claim: '<script>x</script>' } }, undefined]) expect(context.doGet(event).content).not.toContain('reward code');
   });
 });

@@ -32,6 +32,1108 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // BEGIN ART STUDIO SPECTRAL VENDOR
+  // Spectral.js 3.0.0, commit bb2b05c9d1e65ae824d47e3b1cc17ea32c8ee68f
+  // https://github.com/rvanwijnen/spectral.js — original source SHA-256: 8a26013ec1885b659206130ae99b63d326cefd0b3a9cf0a96bfc13457822126a
+  var artStudioSpectral = (function () {
+    var exports = {}, module = {exports: exports}, define;
+//  MIT License
+//
+//  Copyright (c) 2025 Ronald van Wijnen
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a
+//  copy of this software and associated documentation files (the "Software"),
+//  to deal in the Software without restriction, including without limitation
+//  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+//  and/or sell copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+//  DEALINGS IN THE SOFTWARE.
+
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined'
+    ? factory(exports)
+    : typeof define === 'function' && define.amd
+    ? define(['exports'], factory)
+    : ((global = global || self), factory((global.spectral = {})));
+})(this, function (exports) {
+  ('use strict');
+
+  const SIZE = 38;
+  const GAMMA = 2.4;
+
+  /**
+   * Class representing a color and its conversions between various color spaces.
+   *
+   * @class
+   */
+  class Color {
+    /**
+     * Create a Color instance.
+     *
+     * The constructor accepts either:
+     * - A single string value (interpreted as a CSS color: hex or rgb).
+     * - A single array:
+     *   - If its length equals SIZE, it is assumed to be the R values.
+     *   - Otherwise, it is assumed to be an sRGB array.
+     *
+     * @constructor
+     * @param {...(string|number[])} args - A single color string or an array of numbers.
+     */
+    constructor(...args) {
+      if (args.length === 1) {
+        if (typeof args[0] === 'string') {
+          this.sRGB = parse(args[0]).slice(0, 3);
+          this.lRGB = sRGB_to_lRGB(this.sRGB);
+          this.R = lRGB_to_R(this.lRGB);
+          this.XYZ = R_to_XYZ(this.R);
+        }
+
+        if (Array.isArray(args[0])) {
+          if (args[0].length === SIZE) {
+            this.R = args[0];
+            this.XYZ = R_to_XYZ(this.R);
+            this.lRGB = XYZ_to_lRGB(this.XYZ);
+            this.sRGB = lRGB_to_sRGB(this.lRGB);
+          } else {
+            this.sRGB = args[0];
+            this.lRGB = sRGB_to_lRGB(this.sRGB);
+            this.R = lRGB_to_R(this.lRGB);
+            this.XYZ = R_to_XYZ(this.R);
+          }
+        }
+      }
+    }
+
+    /**
+     * Gets the OKLab color space representation.
+     *
+     * @type {number[]}
+     * @readonly
+     */
+    get OKLab() {
+      return (this._OKLab ??= XYZ_to_OKLab(this.XYZ));
+    }
+
+    /**
+     * Gets the OKLCh color space representation.
+     *
+     * @type {number[]}
+     * @readonly
+     */
+    get OKLCh() {
+      return (this._OKLCh ??= OKLab_to_OKLCh(this.OKLab));
+    }
+
+    /**
+     * Gets the array of KS values computed from R.
+     *
+     * @type {number[]}
+     * @readonly
+     */
+    get KS() {
+      return (this._KS ??= this.R.map((r) => KS(r)));
+    }
+
+    /**
+     * Gets the luminance value.
+     *
+     * The value is at least Number.EPSILON.
+     *
+     * @type {number}
+     * @readonly
+     */
+    get luminance() {
+      return (this._luminance ??= Math.max(Number.EPSILON, this.XYZ[1]));
+    }
+
+    /**
+     * Gets the tinting strength.
+     *
+     * Default value is 1.
+     *
+     * @type {number}
+     */
+    get tintingStrength() {
+      return (this._tintingStrength ??= 1);
+    }
+
+    /**
+     * Sets the tinting strength.
+     *
+     * @param {number} ts - The new tinting strength.
+     */
+    set tintingStrength(ts) {
+      this._tintingStrength = ts;
+    }
+
+    /**
+     * Determines whether the color is in gamut based on its linear RGB values.
+     *
+     * @param {Object} [options={}] - Options for gamut checking.
+     * @param {number} [options.epsilon=0] - The tolerance for checking.
+     * @return {boolean} True if in gamut; otherwise, false.
+     */
+    inGamut = ({ epsilon = 0 } = {}) => {
+      return inGamut(this.lRGB, epsilon);
+    };
+
+    /**
+     * Maps the color to a valid gamut using a specified method.
+     *
+     * @param {Object} [options={}] - Options for gamut mapping.
+     * @param {string} [options.method='map'] - Method to use ('clip' or 'map').
+     * @return {Color} A new Color instance that is in gamut.
+     * @throws {TypeError} If the specified method is unknown.
+     */
+    toGamut = ({ method = 'map' } = {}) => {
+      switch (method.toLowerCase()) {
+        case 'clip':
+          return new Color(this.sRGB.map((x) => utils.clamp(x, 0, 255)));
+
+        case 'map':
+          return gamutMap(this);
+
+        default:
+          throw new TypeError(`Unknown method: '${method}'`);
+      }
+    };
+
+    /**
+     * Converts the color to a string representation.
+     *
+     * The color is first mapped into the gamut before converting.
+     *
+     * @param {Object} [options={}] - Options for conversion.
+     * @param {string} [options.format='hex'] - Output format. Currently supports 'hex'.
+     * @param {string} [options.method='map'] - Gamut mapping method ('clip' or 'map').
+     * @return {string} The color as a string.
+     * @throws {TypeError} If the specified method is unknown.
+     * @throws {TypeError} If the specified format is unknown.
+     */
+    toString = ({ format = 'hex', method = 'map' } = {}) => {
+      let sRGB;
+
+      if (!this.inGamut()) {
+        switch (method.toLowerCase()) {
+          case 'clip':
+            sRGB = this.sRGB.map((x) => utils.clamp(x, 0, 255));
+            break;
+
+          case 'map':
+            sRGB = gamutMap(this).sRGB;
+            break;
+
+          default:
+            throw new TypeError(`Unknown method: '${method}'`);
+        }
+      } else {
+        sRGB = this.sRGB;
+      }
+
+      switch (format.toLowerCase()) {
+        case 'hex':
+          return `#${sRGB
+            .map((x) => x.toString(16).padStart(2, '0'))
+            .join('')
+            .toUpperCase()}`;
+
+        case 'rgb':
+          return `rgb(${sRGB.join(', ')})`;
+
+        default:
+          throw new TypeError(`Unknown format: '${format}'`);
+      }
+    };
+  }
+
+  /**
+   * Checks if all values in the provided linear RGB array are within gamut.
+   *
+   * @param {number[]} lRGB - Array of linear RGB values.
+   * @param {Object} [options={}] - Options for the check.
+   * @param {number} [options.epsilon=0] - Tolerance value.
+   * @return {boolean} True if all values are within the range [-epsilon, 1+epsilon].
+   */
+  const inGamut = (lRGB, { epsilon = 0 } = {}) => {
+    return lRGB.every((x) => x >= -epsilon && x <= 1 + epsilon);
+  };
+
+  /**
+   * Computes the Delta E (Euclidean distance) between two OKLab colors.
+   *
+   * @param {number[]} OKLab1 - First OKLab color representation.
+   * @param {number[]} OKLab2 - Second OKLab color representation.
+   * @return {number} The distance between the two colors.
+   */
+  const deltaEOK = (OKLab1, OKLab2) => {
+    let [L1, a1, b1] = OKLab1;
+    let [L2, a2, b2] = OKLab2;
+
+    return ((L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2) ** 0.5;
+  };
+
+  /**
+   * Maps a color into a valid gamut using a binary search over chroma values.
+   *
+   * @param {Color} color - The Color instance to be gamut-mapped.
+   * @param {Object} [options={}] - Options for gamut mapping.
+   * @param {number} [options.jnd=0.03] - Just-noticeable difference threshold.
+   * @param {number} [options.e=0.0001] - Epsilon for binary search termination.
+   * @return {Color} A new Color instance within gamut.
+   */
+  const gamutMap = (color, { jnd = 0.03, e = 0.0001 } = {}) => {
+    let L = color.OKLCh[0];
+
+    if (L >= 1) {
+      return new Color([255, 255, 255]);
+    }
+
+    if (L <= 0) {
+      return new Color([0, 0, 0]);
+    }
+
+    if (inGamut(color.lRGB)) return color;
+
+    let h = color.OKLCh[2];
+
+    let min = 0;
+    let max = color.OKLCh[1];
+    let min_inGamut = true;
+
+    let current = color.lRGB;
+    let clipped = lRGB_to_OKLab(current.map((x) => utils.clamp(x)));
+
+    let E = deltaEOK(clipped, lRGB_to_OKLab(current));
+    if (E < jnd) {
+      return new Color(lRGB_to_sRGB(XYZ_to_lRGB(OKLab_to_XYZ(clipped))));
+    }
+
+    while (max - min > e) {
+      const chroma = (min + max) / 2;
+
+      let OKLab = OKLCh_to_OKLab([L, chroma, h]);
+      let XYZ = OKLab_to_XYZ(OKLab);
+
+      current = XYZ_to_lRGB(XYZ);
+
+      if (min_inGamut && inGamut(current)) {
+        min = chroma;
+      } else {
+        clipped = lRGB_to_OKLab(current.map((x) => utils.clamp(x)));
+        E = deltaEOK(clipped, OKLab);
+
+        if (E < jnd) {
+          if (jnd - E < e) {
+            break;
+          } else {
+            min_inGamut = false;
+            min = chroma;
+          }
+        } else {
+          max = chroma;
+        }
+      }
+    }
+
+    return new Color(lRGB_to_sRGB(XYZ_to_lRGB(OKLab_to_XYZ(clipped))));
+  };
+
+  /**
+   * Computes the Kubelka–Munk absorption/scattering parameter KS for a given spectral reflectance R.
+   *
+   * In Kubelka–Munk theory, the KS function reflects the ratio that controls the conversion from spectral
+   * reflectance to an equivalent absorption/scattering coefficient. The formulation
+   * <code>(1 - R)² / (2 * R)</code> is a common approximation that assumes a diffusely scattering medium.
+   *
+   * @param {number} R - The spectral reflectance value.
+   * @return {number} The computed KS value.
+   */
+  const KS = (R) => {
+    return (1 - R) ** 2 / (2 * R);
+  };
+
+  /**
+   * Computes the Kubelka–Munk mixing coefficient KM from a given KS value.
+   *
+   * The KM function transforms the KS parameter into a measure that can be linearly mixed.
+   * This conversion is essential because the Kubelka–Munk model assumes that when pigments are
+   * mixed, the resulting reflectance is a function of the weighted combination of the pigment
+   * absorption and scattering properties. The formula used here:
+   *
+   * <pre>
+   * KM(KS) = 1 + KS - √(KS² + 2KS)
+   * </pre>
+   *
+   * provides the appropriate transformation for blending multiple pigment spectra.
+   *
+   * @param {number} KS - The KS value (absorption/scattering parameter).
+   * @return {number} The computed KM mixing coefficient.
+   */
+  const KM = (KS) => {
+    return 1 + KS - (KS ** 2 + 2 * KS) ** 0.5;
+  };
+
+  /**
+   * Mixes multiple colors using a model based on the Kubelka–Munk theory.
+   *
+   * This function implements a mixing algorithm that is inspired by the Kubelka–Munk theory,
+   * which models how light interacts with diffusely scattering and absorbing layers (such as pigments or paints).
+   * The approach is as follows:
+   *
+   * - For each wavelength band (with SIZE samples), compute a weighted average of the KS values.
+   * - Weights are determined by the square of a factor that considers both the square-root of the color's
+   *   luminance and its tinting strength multiplied by a user-specified factor.
+   * - The resulting weighted KS average is then converted back using the KM function to obtain the
+   *   mixed spectral reflectance.
+   *
+   * In effect, this method blends pigments based on their optical absorption and scattering properties,
+   * providing a physically motivated approximation for pigment mixing as described by Kubelka–Munk.
+   *
+   * Each argument should be provided as an array of two elements: [Color, factor]. The factor determines
+   * the influence of that particular color in the overall mix.
+   *
+   * @param {...[Color, number]} colors - Colors and their associated mixing factors.
+   * @return {Color} The resulting mixed Color.
+   *
+   * @example
+   * // Mix two Color instances, with a heavier weight given to the first color:
+   * const mixedColor = mix([color1, 2], [color2, 1]);
+   */
+  const mix = (...colors) => {
+    let R = new Array(SIZE);
+
+    for (let i = 0; i < SIZE; i++) {
+      let ksMix = 0,
+        totalConcentration = 0;
+
+      for (let [color, factor] of colors) {
+        let concentration = factor ** 2 * color.tintingStrength ** 2 * color.luminance;
+
+        totalConcentration += concentration;
+
+        ksMix += color.KS[i] * concentration;
+      }
+
+      R[i] = KM(ksMix / totalConcentration);
+    }
+
+    return new Color(R);
+  };
+
+  /**
+   * Generates a palette of colors transitioning between two colors.
+   *
+   * @param {Color} a - The starting Color.
+   * @param {Color} b - The ending Color.
+   * @param {number} size - The number of colors in the palette.
+   * @return {Color[]} An array of Color objects forming the palette.
+   */
+  const palette = (a, b, size) => {
+    let p = new Array(size);
+
+    for (let i = 0; i < size; i++) {
+      p[i] = mix([a, size - 1 - i], [b, i]);
+    }
+
+    return p;
+  };
+
+  /**
+   * Interpolates between multiple colors based on a parameter t.
+   *
+   * Each additional argument should be an array with two elements: [Color, position].
+   *
+   * @param {number} t - Interpolation parameter between 0 and 1.
+   * @param {...[Color, number]} colors - Colors with their positions in the gradient.
+   * @return {Color} The interpolated Color.
+   */
+  const gradient = (t, ...colors) => {
+    let a = null,
+      b = null;
+
+    for (const [color, pos] of colors) {
+      if (pos <= t && (!a || pos > a[1])) a = [color, pos];
+      if (pos >= t && (!b || pos < b[1])) b = [color, pos];
+    }
+
+    if (!a) return b[0];
+    if (!b) return a[0];
+
+    if (a[1] === b[1]) return a[0];
+
+    const factor = (t - a[1]) / (b[1] - a[1]);
+
+    return mix([a[0], 1 - factor], [b[0], factor]);
+  };
+
+  /**
+   * Applies the inverse companding (linearization) to a value.
+   *
+   * @param {number} x - The sRGB value in the range [0, 1].
+   * @return {number} The uncompanded (linear) value.
+   */
+  const uncompand = (x) => {
+    return x > 0.04045 ? ((x + 0.055) / 1.055) ** GAMMA : x / 12.92;
+  };
+
+  /**
+   * Applies the companding function to a value.
+   *
+   * @param {number} x - The linear value.
+   * @return {number} The companded sRGB value in the range [0, 1].
+   */
+  const compand = (x) => {
+    return x > 0.0031308 ? 1.055 * x ** (1.0 / GAMMA) - 0.055 : x * 12.92;
+  };
+
+  /**
+   * Converts sRGB values (in [0,255]) to linear RGB values.
+   *
+   * @param {number[]} sRGB - Array of sRGB component values.
+   * @return {number[]} The corresponding linear RGB values.
+   */
+  const sRGB_to_lRGB = (sRGB) => {
+    return sRGB.map((x) => uncompand(x / 255));
+  };
+
+  /**
+   * Converts linear RGB values to sRGB values (in [0,255]).
+   *
+   * @param {number[]} lRGB - Array of linear RGB values.
+   * @return {number[]} The corresponding sRGB values rounded to the nearest integer.
+   */
+  const lRGB_to_sRGB = (lRGB) => {
+    return lRGB.map((x) => Math.round(compand(x) * 255));
+  };
+
+  /**
+   * Converts XYZ color space values to linear RGB.
+   *
+   * @param {number[]} XYZ - XYZ representation.
+   * @return {number[]} The corresponding linear RGB values.
+   */
+  const XYZ_to_lRGB = (XYZ) => {
+    return utils.mulMatVec(CONVERSION.XYZ_RGB, XYZ);
+  };
+
+  /**
+   * Converts linear RGB values to XYZ color space.
+   *
+   * @param {number[]} lRGB - Linear RGB values.
+   * @return {number[]} The corresponding XYZ values.
+   */
+  const lRGB_to_XYZ = (lRGB) => {
+    return utils.mulMatVec(CONVERSION.RGB_XYZ, lRGB);
+  };
+
+  /**
+   * Converts linear RGB values directly to OKLab by first converting to XYZ.
+   *
+   * @param {number[]} lRGB - Linear RGB values.
+   * @return {number[]} The corresponding OKLab values.
+   */
+  const lRGB_to_OKLab = (lRGB) => {
+    return XYZ_to_OKLab(lRGB_to_XYZ(lRGB));
+  };
+
+  /**
+   * Converts XYZ values to OKLab color space.
+   *
+   * @param {number[]} XYZ - XYZ representation.
+   * @return {number[]} The resulting OKLab values.
+   */
+  const XYZ_to_OKLab = (XYZ) => {
+    let lms = utils.mulMatVec(CONVERSION.XYZ_LMS, XYZ).map((x) => Math.cbrt(x));
+
+    return utils.mulMatVec(CONVERSION.LMS_LAB, lms);
+  };
+
+  /**
+   * Converts OKLab values to XYZ color space.
+   *
+   * @param {number[]} OKLab - OKLab representation.
+   * @return {number[]} The resulting XYZ values.
+   */
+  const OKLab_to_XYZ = (OKLab) => {
+    let lms = utils.mulMatVec(CONVERSION.LAB_LMS, OKLab).map((x) => x ** 3);
+
+    return utils.mulMatVec(CONVERSION.LMS_XYZ, lms);
+  };
+
+  /**
+   * Converts OKLab values to OKLCh color space.
+   *
+   * @param {number[]} OKLab - OKLab representation.
+   * @return {number[]} An array [L, C, H] representing the OKLCh color.
+   */
+  const OKLab_to_OKLCh = (OKLab) => {
+    let [L, a, b] = OKLab;
+
+    const C = (a * a + b * b) ** 0.5;
+    const h = (Math.atan2(b, a) * 180) / Math.PI;
+
+    return [L, C, h >= 0 ? h : h + 360];
+  };
+
+  /**
+   * Converts OKLCh values to OKLab color space.
+   *
+   * @param {number[]} OKLCh - An array [L, C, H] representing the OKLCh color.
+   * @return {number[]} The resulting OKLab values.
+   */
+  const OKLCh_to_OKLab = (OKLCh) => {
+    let [L, C, h] = OKLCh;
+
+    let a = C * Math.cos((h * Math.PI) / 180);
+    let b = C * Math.sin((h * Math.PI) / 180);
+
+    return [L, a, b];
+  };
+
+  /**
+   * Converts spectral reflectance values to XYZ using the CIE color matching functions.
+   *
+   * @param {number[]} R - Array of spectral reflectance values.
+   * @return {number[]} The resulting XYZ values.
+   */
+  const R_to_XYZ = (R) => {
+    return utils.mulMatVec(CIE.CMF, R);
+  };
+
+  /**
+   * Converts linear RGB values to spectral reflectance values.
+   *
+   * This function uses pre-calculated reflectances.
+   *
+   * @param {number[]} lRGB - Linear RGB values.
+   * @return {number[]} The resulting spectral reflectance values.
+   */
+  const lRGB_to_R = (lRGB) => {
+    let w = Math.min(...lRGB);
+
+    lRGB = [lRGB[0] - w, lRGB[1] - w, lRGB[2] - w];
+
+    let c = Math.min(lRGB[1], lRGB[2]);
+    let m = Math.min(lRGB[0], lRGB[2]);
+    let y = Math.min(lRGB[0], lRGB[1]);
+    let r = Math.max(0, Math.min(lRGB[0] - lRGB[2], lRGB[0] - lRGB[1]));
+    let g = Math.max(0, Math.min(lRGB[1] - lRGB[2], lRGB[1] - lRGB[0]));
+    let b = Math.max(0, Math.min(lRGB[2] - lRGB[1], lRGB[2] - lRGB[0]));
+
+    const R = new Array(SIZE);
+
+    for (let i = 0; i < SIZE; i++) {
+      R[i] = Math.max(
+        Number.EPSILON,
+        w * BASE_SPECTRA.W[i] + c * BASE_SPECTRA.C[i] + m * BASE_SPECTRA.M[i] + y * BASE_SPECTRA.Y[i] + r * BASE_SPECTRA.R[i] + g * BASE_SPECTRA.G[i] + b * BASE_SPECTRA.B[i]
+      );
+    }
+
+    return R;
+  };
+
+  /**
+   * A collection of utility functions for mathematical operations.
+   *
+   * @namespace
+   */
+  const utils = {
+    /**
+     * Linear interpolation between two values.
+     *
+     * @param {number} a - Start value.
+     * @param {number} b - End value.
+     * @param {number} t - Interpolation factor in [0,1].
+     * @return {number} The interpolated value.
+     */
+    lerp: (a, b, t) => a + (b - a) * t,
+
+    /**
+     * Clamps a value between a minimum and maximum.
+     *
+     * @param {number} x - The value to clamp.
+     * @param {number} [min=0] - Minimum allowed value.
+     * @param {number} [max=1] - Maximum allowed value.
+     * @return {number} The clamped value.
+     */
+    clamp: (x, min = 0, max = 1) => Math.min(Math.max(x, min), max),
+
+    /**
+     * Calculates the dot product between two arrays of numbers.
+     *
+     * @param {number[]} a - First vector.
+     * @param {number[]} b - Second vector.
+     * @return {number} The dot product.
+     */
+    dot: (a, b) => a.reduce((acc, val, i) => acc + val * b[i], 0),
+
+    /**
+     * Multiplies a matrix with a vector.
+     *
+     * @param {number[][]} m - The matrix.
+     * @param {number[]} v - The vector.
+     * @return {number[]} The resulting vector.
+     */
+    mulMatVec: (m, v) => m.map((row) => utils.dot(row, v)),
+  };
+
+  /**
+   * Parses a CSS color string (hex or rgb) and returns an array of components.
+   *
+   * For hex strings, returns an array in the format: [R, G, B, A] (with A defaulting to 1 if omitted).
+   * For rgb strings, converts percentages to values in [0, 255] if necessary.
+   *
+   * @param {string} str - The CSS color string to parse.
+   * @return {(number[]|number)} An array of color components or NaN if unrecognized.
+   */
+  const parse = (str) => {
+    if (str[0] === '#') {
+      str = str.length === 4 ? str.replace(/./g, (m) => m + m).slice(1) : str.slice(1);
+      return [
+        parseInt(str.substring(0, 2), 16),
+        parseInt(str.substring(2, 4), 16),
+        parseInt(str.substring(4, 6), 16),
+        str.length === 8 ? parseInt(str.substring(6, 8), 16) / 255 : 1,
+      ];
+    } else if (str.startsWith('rgb')) {
+      return str
+        .slice(str.indexOf('(') + 1, -1)
+        .split(',')
+        .map((v, i) => (i < 3 && v.includes('%') ? Math.round(parseFloat(v) * 2.55) : parseFloat(v)));
+    }
+
+    return NaN;
+  };
+
+  /**
+   * Spectra data.
+   *
+   * Contains arrays for various spectra (White, Cyan, Magenta, Yellow, Red, Green, Blue).
+   *
+   * @constant {object}
+   * @readonly
+   */
+  const BASE_SPECTRA = Object.freeze({
+    W: [
+      1.00116072718764, 1.00116065159728, 1.00116031922747, 1.00115867270789, 1.00115259844552, 1.00113252528998, 1.00108500663327, 1.00099687889453, 1.00086525152274,
+      1.0006962900094, 1.00050496114888, 1.00030808187992, 1.00011966602013, 0.999952765968407, 0.999821836899297, 0.999738609557593, 0.999709551639612, 0.999731930210627,
+      0.999799436346195, 0.999900330316671, 1.00002040652611, 1.00014478793658, 1.00025997903412, 1.00035579697089, 1.00042753780269, 1.00047623344888, 1.00050720967508,
+      1.00052519156373, 1.00053509606896, 1.00054022097482, 1.00054272816784, 1.00054389569087, 1.00054448212151, 1.00054476959992, 1.00054489887762, 1.00054496254689,
+      1.00054498927058, 1.000544996993,
+    ],
+    C: [
+      0.970585001322962, 0.970592498143425, 0.970625348729891, 0.970786806119017, 0.971368673228248, 0.973163230621252, 0.976740223158765, 0.981587605491377, 0.986280265652949,
+      0.989949147689134, 0.99249270153842, 0.994145680405256, 0.995183975033212, 0.995756750110818, 0.99591281828671, 0.995606157834528, 0.994597600961854, 0.99221571549237,
+      0.986236452783249, 0.967943337264541, 0.891285004244943, 0.536202477862053, 0.154108119001878, 0.0574575093228929, 0.0315349873107007, 0.0222633920086335, 0.0182022841492439,
+      0.016299055973264, 0.0153656239334613, 0.0149111568733976, 0.0146954339898235, 0.0145964146717719, 0.0145470156699655, 0.0145228771899495, 0.0145120341118965,
+      0.0145066940939832, 0.0145044507314479, 0.0145038009464639,
+    ],
+    M: [
+      0.990673557319988, 0.990671524961979, 0.990662582353421, 0.990618107644795, 0.99045148087871, 0.989871081400204, 0.98828660875964, 0.984290692797504, 0.973934905625306,
+      0.941817838460145, 0.817390326195156, 0.432472805065729, 0.13845397825887, 0.0537347216940033, 0.0292174996673231, 0.021313651750859, 0.0201349530181136, 0.0241323096280662,
+      0.0372236145223627, 0.0760506552706601, 0.205375471942399, 0.541268903460439, 0.815841685086486, 0.912817704123976, 0.946339830166962, 0.959927696331991, 0.966260595230312,
+      0.969325970058424, 0.970854536721399, 0.971605066528128, 0.971962769757392, 0.972127272274509, 0.972209417745812, 0.972249577678424, 0.972267621998742, 0.97227650946215,
+      0.972280243306874, 0.97228132482656,
+    ],
+    Y: [
+      0.0210523371789306, 0.0210564627517414, 0.0210746178695038, 0.0211649058448753, 0.0215027957272504, 0.0226738799041561, 0.0258235649693629, 0.0334879385639851,
+      0.0519069663740307, 0.100749014833473, 0.239129899706847, 0.534804312272748, 0.79780757864303, 0.911449894067384, 0.953797963004507, 0.971241615465429, 0.979303123807588,
+      0.983380119507575, 0.985461246567755, 0.986435046976605, 0.986738250670141, 0.986617882445032, 0.986277776758643, 0.985860592444056, 0.98547492767621, 0.985176934765558,
+      0.984971574014181, 0.984846303415712, 0.984775351811199, 0.984738066625265, 0.984719648311765, 0.984711023391939, 0.984706683300676, 0.984704554393091, 0.98470359630937,
+      0.984703124077552, 0.98470292561509, 0.984702868122795,
+    ],
+    R: [
+      0.0315605737777207, 0.0315520718330149, 0.0315148215513658, 0.0313318044982702, 0.0306729857725527, 0.0286480476989607, 0.0246450407045709, 0.0192960753663651,
+      0.0142066612220556, 0.0102942608878609, 0.0076191460521811, 0.005898041083542, 0.0048233247781713, 0.0042298748350633, 0.0040599171299341, 0.0043533695594676,
+      0.0053434425970201, 0.0076917201010463, 0.0135969795736536, 0.0316975442661115, 0.107861196355249, 0.463812603168704, 0.847055405272011, 0.943185409393918, 0.968862150696558,
+      0.978030667473603, 0.982043643854306, 0.983923623718707, 0.984845484154382, 0.985294275814596, 0.985507295219825, 0.985605071539837, 0.985653849933578, 0.985677685033883,
+      0.985688391806122, 0.985693664690031, 0.985695879848205, 0.985696521463762,
+    ],
+    G: [
+      0.0095560747554212, 0.0095581580120851, 0.0095673245444588, 0.0096129126297349, 0.0097837090401843, 0.010378622705871, 0.0120026452378567, 0.0160977721473922,
+      0.026706190223168, 0.0595555440185881, 0.186039826532826, 0.570579820116159, 0.861467768400292, 0.945879089767658, 0.970465486474305, 0.97841363028445, 0.979589031411224,
+      0.975533536908632, 0.962288755397813, 0.92312157451312, 0.793434018943111, 0.459270135902429, 0.185574103666303, 0.0881774959955372, 0.05436302287667, 0.0406288447060719,
+      0.034221520431697, 0.0311185790956966, 0.0295708898336134, 0.0288108739348928, 0.0284486271324597, 0.0282820301724731, 0.0281988376490237, 0.0281581655342037,
+      0.0281398910216386, 0.0281308901665811, 0.0281271086805816, 0.0281260133612096,
+    ],
+    B: [
+      0.979404752502014, 0.97940070684313, 0.979382903470261, 0.979294364945594, 0.97896301460857, 0.977814466694043, 0.974724321133836, 0.967198482343973, 0.949079657530575,
+      0.900850128940977, 0.76315044546224, 0.465922171649319, 0.201263280451005, 0.0877524413419623, 0.0457176793291679, 0.0284706050521843, 0.020527176756985, 0.0165302792310211,
+      0.0145135107212858, 0.0136003508637687, 0.0133604258769571, 0.013548894314568, 0.0139594356366992, 0.014443425575357, 0.0148854440621406, 0.0152254296999746,
+      0.0154592848180209, 0.0156018026485961, 0.0156824871281936, 0.0157248764360615, 0.0157458108784121, 0.0157556123350225, 0.0157605443964911, 0.0157629637515278,
+      0.0157640525629106, 0.015764589232951, 0.0157648147772649, 0.0157648801149616,
+    ],
+  });
+
+  /**
+   * CIE Color Matching Functions weighted by D65 Standard Illuminant
+   *
+   * @constant {object}
+   * @readonly
+   */
+  const CIE = Object.freeze({
+    CMF: [
+      [
+        0.0000646919989576, 0.0002194098998132, 0.0011205743509343, 0.0037666134117111, 0.011880553603799, 0.0232864424191771, 0.0345594181969747, 0.0372237901162006,
+        0.0324183761091486, 0.021233205609381, 0.0104909907685421, 0.0032958375797931, 0.0005070351633801, 0.0009486742057141, 0.0062737180998318, 0.0168646241897775,
+        0.028689649025981, 0.0426748124691731, 0.0562547481311377, 0.0694703972677158, 0.0830531516998291, 0.0861260963002257, 0.0904661376847769, 0.0850038650591277,
+        0.0709066691074488, 0.0506288916373645, 0.035473961885264, 0.0214682102597065, 0.0125164567619117, 0.0068045816390165, 0.0034645657946526, 0.0014976097506959,
+        0.000769700480928, 0.0004073680581315, 0.0001690104031614, 0.0000952245150365, 0.0000490309872958, 0.0000199961492222,
+      ],
+      [
+        0.000001844289444, 0.0000062053235865, 0.0000310096046799, 0.0001047483849269, 0.0003536405299538, 0.0009514714056444, 0.0022822631748318, 0.004207329043473,
+        0.0066887983719014, 0.0098883960193565, 0.0152494514496311, 0.0214183109449723, 0.0334229301575068, 0.0513100134918512, 0.070402083939949, 0.0878387072603517,
+        0.0942490536184085, 0.0979566702718931, 0.0941521856862608, 0.0867810237486753, 0.0788565338632013, 0.0635267026203555, 0.05374141675682, 0.042646064357412,
+        0.0316173492792708, 0.020885205921391, 0.0138601101360152, 0.0081026402038399, 0.004630102258803, 0.0024913800051319, 0.0012593033677378, 0.000541646522168,
+        0.0002779528920067, 0.0001471080673854, 0.0000610327472927, 0.0000343873229523, 0.0000177059860053, 0.000007220974913,
+      ],
+      [
+        0.000305017147638, 0.0010368066663574, 0.0053131363323992, 0.0179543925899536, 0.0570775815345485, 0.113651618936287, 0.17335872618355, 0.196206575558657,
+        0.186082370706296, 0.139950475383207, 0.0891745294268649, 0.0478962113517075, 0.0281456253957952, 0.0161376622950514, 0.0077591019215214, 0.0042961483736618,
+        0.0020055092122156, 0.0008614711098802, 0.0003690387177652, 0.0001914287288574, 0.0001495555858975, 0.0000923109285104, 0.0000681349182337, 0.0000288263655696,
+        0.0000157671820553, 0.0000039406041027, 0.000001584012587, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      ],
+    ],
+  });
+
+  /**
+   * Conversion matrices and constants for various color space transformations.
+   *
+   * @constant {object}
+   * @readonly
+   * @see {@link https://github.com/w3c/csswg-drafts/issues/5922}
+   * @see {@link https://github.com/color-js/color.js/blob/main/src/spaces/srgb-linear.js}
+   * @see {@link https://github.com/color-js/color.js/blob/main/src/spaces/oklab.js}
+   */
+  const CONVERSION = Object.freeze({
+    //sRGB <-> XYZ conversion matrices
+    RGB_XYZ: [
+      [0.41239079926595934, 0.357584339383878, 0.1804807884018343],
+      [0.21263900587151027, 0.715168678767756, 0.07219231536073371],
+      [0.01933081871559182, 0.11919477979462598, 0.9505321522496607],
+    ],
+    XYZ_RGB: [
+      [3.2409699419045226, -1.537383177570094, -0.4986107602930034],
+      [-0.9692436362808796, 1.8759675015077202, 0.04155505740717559],
+      [0.05563007969699366, -0.20397695888897652, 1.0569715142428786],
+    ],
+
+    // OKLab conversion matrices
+    XYZ_LMS: [
+      [0.819022437996703, 0.3619062600528904, -0.1288737815209879],
+      [0.0329836539323885, 0.9292868615863434, 0.0361446663506424],
+      [0.0481771893596242, 0.2642395317527308, 0.6335478284694309],
+    ],
+    LMS_XYZ: [
+      [1.2268798758459243, -0.5578149944602171, 0.2813910456659647],
+      [-0.0405757452148008, 1.112286803280317, -0.0717110580655164],
+      [-0.0763729366746601, -0.4214933324022432, 1.5869240198367816],
+    ],
+    LMS_LAB: [
+      [0.210454268309314, 0.7936177747023054, -0.0040720430116193],
+      [1.9779985324311684, -2.4285922420485799, 0.450593709617411],
+      [0.0259040424655478, 0.7827717124575296, -0.8086757549230774],
+    ],
+    LAB_LMS: [
+      [1.0, 0.3963377773761749, 0.2158037573099136],
+      [1.0, -0.1055613458156586, -0.0638541728258133],
+      [1.0, -0.0894841775298119, -1.2914855480194092],
+    ],
+  });
+
+  exports.Color = Color;
+
+  exports.mix = mix;
+  exports.palette = palette;
+  exports.gradient = gradient;
+});
+    return exports;
+  })();
+  // END ART STUDIO SPECTRAL VENDOR
+  // BEGIN ART STUDIO MIXER HELPERS
+  function artStudioMixerNumber(value, fallback, min, max) {
+    return typeof value === 'number' && Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+  }
+  function artStudioMixerHex(value) {
+    if (typeof value !== 'string' || !/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())) return null;
+    var hex = value.trim().toLowerCase();
+    return hex.length === 4 ? '#' + hex.slice(1).split('').map(function(c){return c+c;}).join('') : hex;
+  }
+  function artStudioMixerRGB(hex) {return [1,3,5].map(function(index){return parseInt(hex.slice(index,index+2),16);});}
+  function artStudioMixerRGBHex(rgb) {return '#'+rgb.map(function(value){return Math.max(0,Math.min(255,Math.round(value))).toString(16).padStart(2,'0');}).join('');}
+  function artStudioMixerHSL(hex) {
+    var rgb=artStudioMixerRGB(hex).map(function(v){return v/255;}),max=Math.max.apply(null,rgb),min=Math.min.apply(null,rgb),delta=max-min,l=(max+min)/2,h=0,s=0;
+    if(delta){s=delta/(1-Math.abs(2*l-1));h=60*(max===rgb[0]?((rgb[1]-rgb[2])/delta+6)%6:max===rgb[1]?(rgb[2]-rgb[0])/delta+2:(rgb[0]-rgb[1])/delta+4);}
+    return {h:h,s:s*100,l:l*100};
+  }
+  function artStudioMixerHSLHex(h,s,l) {
+    h=((h%360)+360)%360;s/=100;l/=100;
+    var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+    var rgb=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+    return artStudioMixerRGBHex(rgb.map(function(v){return (v+m)*255;}));
+  }
+  function artStudioMixerModel(raw) {
+    var d=raw||{},legacy=Object.keys(d).some(function(key){return /^mix(?:[12][HSL]|Ratio|Mode)$/.test(key);});
+    var a=legacy?{h:0,s:100,l:50}:artStudioMixerHSL('#fcd200'),b=legacy?{h:200,s:100,l:50}:artStudioMixerHSL('#002185');
+    var model={mixMode:['pigment','light','rgb','hsl'].indexOf(d.mixMode)>=0?d.mixMode:legacy?'hsl':'pigment',mixRatio:artStudioMixerNumber(d.mixRatio,0.5,0,1)};
+    [a,b].forEach(function(color,index){['H','S','L'].forEach(function(channel){var key='mix'+(index+1)+channel;model[key]=artStudioMixerNumber(d[key],color[channel.toLowerCase()],0,channel==='H'?360:100);});});
+    return model;
+  }
+  function artStudioMixerSetColor(index,hex) {
+    var color=artStudioMixerHSL(hex),patch={};patch['mix'+index+'H']=color.h;patch['mix'+index+'S']=color.s;patch['mix'+index+'L']=color.l;return patch;
+  }
+  function artStudioMixerInput(model,index) {return artStudioMixerHSLHex(model['mix'+index+'H'],model['mix'+index+'S'],model['mix'+index+'L']);}
+  function artStudioMixerColor(model,ratio,mode) {
+    var t=artStudioMixerNumber(ratio,model.mixRatio,0,1),kind=mode||model.mixMode,a=artStudioMixerInput(model,1),b=artStudioMixerInput(model,2);
+    if(t===0||a===b)return a;if(t===1)return b;
+    if(kind==='pigment')return artStudioSpectral.mix([new artStudioSpectral.Color(a),1-t],[new artStudioSpectral.Color(b),t]).toString().toLowerCase();
+    if(kind==='hsl'){
+      var h1=model.mix1H,h2=model.mix2H,diff=h2-h1;if(Math.abs(diff)>180){if(diff>0)h1+=360;else h2+=360;}
+      return artStudioMixerHSLHex(Math.round((h1+(h2-h1)*t+360)%360),Math.round(model.mix1S+(model.mix2S-model.mix1S)*t),Math.round(model.mix1L+(model.mix2L-model.mix1L)*t));
+    }
+    var rgbA=artStudioMixerRGB(a),rgbB=artStudioMixerRGB(b);
+    function linear(value){value/=255;return value<=0.04045?value/12.92:Math.pow((value+0.055)/1.055,2.4);}
+    function encoded(value){return 255*(value<=0.0031308?12.92*value:1.055*Math.pow(value,1/2.4)-0.055);}
+    return artStudioMixerRGBHex(rgbA.map(function(value,index){return kind==='light'?encoded(linear(value)*(1-t)+linear(rgbB[index])*t):value*(1-t)+rgbB[index]*t;}));
+  }
+  function artStudioMixerPalette(model) {return Array.from({length:7},function(_,index){return {ratio:index/6,hex:artStudioMixerColor(model,index/6)};});}
+  function artStudioMixerPaint(ctx,model,labels) {
+    if(!ctx)return;
+    var a=artStudioMixerInput(model,1),b=artStudioMixerInput(model,2),result=artStudioMixerColor(model),palette=artStudioMixerPalette(model);
+    ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,960,520);ctx.textAlign='left';ctx.fillStyle='#0f172a';ctx.font='bold 22px sans-serif';ctx.fillText(labels.title,32,38);
+    [{x:32,w:208,hex:a,title:labels.a},{x:260,w:440,hex:result,title:labels.result},{x:720,w:208,hex:b,title:labels.b}].forEach(function(item){
+      ctx.fillStyle=item.hex;ctx.fillRect(item.x,64,item.w,228);
+      ctx.fillStyle='#0f172a';ctx.font='bold 18px sans-serif';ctx.fillText(item.title,item.x,318);ctx.font='16px monospace';ctx.fillText(item.hex.toUpperCase(),item.x,342);
+    });
+    palette.forEach(function(color,index){var x=32+index*128;ctx.fillStyle=color.hex;ctx.fillRect(x,368,124,100);ctx.fillStyle='#0f172a';ctx.font='14px monospace';ctx.fillText(color.hex.toUpperCase(),x,490);});
+  }
+  // END ART STUDIO MIXER HELPERS
+
+  // BEGIN ART STUDIO PIXEL COLOR HELPERS
+  var artStudioPixelColorCache = new Map(), artStudioPixelColorContext;
+  function artStudioPixelColorKey(raw) {
+    if (typeof raw !== 'string' || raw.length > 160) return null;
+    var value = raw.trim().toLowerCase(), cached = artStudioPixelColorCache.get(value);
+    if (cached !== undefined) return cached;
+    function parse(color) {
+      if (/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(color)) {
+        var hex = color.length <= 5 ? '#' + color.slice(1).split('').map(function(c){return c+c;}).join('') : color;
+        return hex.length === 9 && hex.slice(7) === 'ff' ? hex.slice(0,7) : hex;
+      }
+      var match = /^(rgb|hsl)a?\(\s*([-\d.]+)(%?)\s*,\s*([-\d.]+)(%?)\s*,\s*([-\d.]+)(%?)(?:\s*,\s*([\d.]+)(%?))?\s*\)$/.exec(color);
+      if (!match) return null;
+      var a = Number(match[2]), b = Number(match[4]), c = Number(match[6]), alpha = match[8] === undefined ? 1 : Number(match[8]) / (match[9] ? 100 : 1);
+      if (![a,b,c,alpha].every(Number.isFinite)) return null;
+      var result;
+      if (match[1] === 'hsl') {
+        if (match[3] || !match[5] || !match[7]) return null;
+        result = artStudioMixerHSLHex(a,Math.max(0,Math.min(100,b)),Math.max(0,Math.min(100,c)));
+      } else result = artStudioMixerRGBHex([a/(match[3]?100:255)*255,b/(match[5]?100:255)*255,c/(match[7]?100:255)*255]);
+      var opacity = Math.round(Math.max(0,Math.min(1,alpha))*255);
+      return result + (opacity === 255 ? '' : opacity.toString(16).padStart(2,'0'));
+    }
+    var result = parse(value);
+    // Canvas resolves legacy named colors and additional browser CSS syntax.
+    // Two sentinels distinguish an invalid assignment from a valid black color.
+    if (!result && value && value !== 'currentcolor' && typeof document !== 'undefined') {
+      try {
+        if (artStudioPixelColorContext === undefined) artStudioPixelColorContext = document.createElement('canvas').getContext('2d');
+        var ctx = artStudioPixelColorContext;
+        if (ctx) {
+          ctx.fillStyle = '#010203'; ctx.fillStyle = value; var first = ctx.fillStyle;
+          ctx.fillStyle = '#040506'; ctx.fillStyle = value;
+          if (first === ctx.fillStyle && first !== value) result = parse(first);
+        }
+      } catch (_) {}
+    }
+    if (artStudioPixelColorCache.size >= 512) artStudioPixelColorCache.clear();
+    artStudioPixelColorCache.set(value,result);
+    return result;
+  }
+  function artStudioPixelCell(key,size) {
+    if (!/^(0|[1-9]\d*),(0|[1-9]\d*)$/.test(key)) return null;
+    var point = key.split(',').map(Number);
+    return point[0]<size && point[1]<size ? point : null;
+  }
+  function artStudioPixelInventory(raw,size) {
+    var data = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}, counts = new Map();
+    Object.keys(data).forEach(function(key){
+      if (!artStudioPixelCell(key,size)) return;
+      var color = artStudioPixelColorKey(data[key]);
+      if (!color || color.slice(7) === '00') return;
+      counts.set(color,(counts.get(color)||0)+1);
+    });
+    return Array.from(counts,function(pair){return {hex:pair[0],count:pair[1]};}).sort(function(a,b){return b.count-a.count || a.hex.localeCompare(b.hex);});
+  }
+  function artStudioPixelRecolor(raw,size,from,to) {
+    var next = Object.assign({},raw || {}), source = artStudioPixelColorKey(from), target = artStudioMixerHex(to), changed = 0;
+    if (!source || !target || source.slice(7) === '00') return {data:next,changed:0};
+    target += source.slice(7); // Recolor hue/RGB without flattening saved cell opacity.
+    if (target === source) return {data:next,changed:0};
+    Object.keys(next).forEach(function(key){
+      if (artStudioPixelCell(key,size) && artStudioPixelColorKey(next[key]) === source) { next[key]=target; changed++; }
+    });
+    return {data:next,changed:changed};
+  }
+  function artStudioPixelPreview(canvas,data,size,mode) {
+    if (!canvas) return;
+    var repeats = mode === 'tile' ? 3 : 1;
+    canvas.width = canvas.height = size*repeats;
+    var ctx = canvas.getContext('2d'); if (!ctx) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    Object.keys(data || {}).forEach(function(key){
+      var point = artStudioPixelCell(key,size), color = artStudioPixelColorKey(data[key]);
+      if (!point || !color) return;
+      ctx.fillStyle = color;
+      for (var y=0;y<repeats;y++) for(var x=0;x<repeats;x++) ctx.fillRect(point[0]+x*size,point[1]+y*size,1,1);
+    });
+  }
+  // END ART STUDIO PIXEL COLOR HELPERS
+
+  // BEGIN ART STUDIO CONTRAST HELPERS
+  function artStudioContrastModel(raw) {
+    var d=raw||{},model={contrastAccessibilityTarget:Number(d.contrastAccessibilityTarget)===7?7:4.5};
+    ['fg','bg'].forEach(function(role){
+      var hex=artStudioMixerHex(d[role+'Hex']),base=hex?artStudioMixerHSL(hex):{h:0,s:0,l:role==='fg'?0:100};
+      ['H','S','L'].forEach(function(channel){var key=role+channel,value=d[key];model[key]=channel==='H'?(typeof value==='number'&&Number.isFinite(value)?((value%360)+360)%360:base.h):artStudioMixerNumber(value,base[channel.toLowerCase()],0,100);});
+    });
+    return model;
+  }
+  function artStudioContrastColor(model,role) {return {h:model[role+'H'],s:model[role+'S'],l:model[role+'L']};}
+  function artStudioContrastCSS(color) {return 'hsl('+color.h+', '+color.s+'%, '+color.l+'%)';}
+  function artStudioContrastLuminance(color) {
+    var h=color.h,s=color.s/100,l=color.l/100,c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+    var rgb=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+    // WCAG 2.2 relative luminance; compare full precision, never a rounded ratio.
+    return rgb.reduce(function(total,value,index){value+=m;return total+[0.2126,0.7152,0.0722][index]*(value<=0.04045?value/12.92:Math.pow((value+0.055)/1.055,2.4));},0);
+  }
+  function artStudioContrastRatio(a,b) {var x=artStudioContrastLuminance(a),y=artStudioContrastLuminance(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);}
+  function artStudioContrastSuggestion(model,role) {
+    var color=artStudioContrastColor(model,role),other=artStudioContrastColor(model,role==='fg'?'bg':'fg'),target=model.contrastAccessibilityTarget;
+    if(artStudioContrastRatio(color,other)>=target)return null;
+    function candidate(lightness){var next=artStudioMixerHSL(artStudioMixerHSLHex(color.h,color.s,lightness));if(next.s===0)next.h=color.h;return next;}
+    var options=[0,100].map(function(endpoint){
+      if(artStudioContrastRatio(candidate(endpoint),other)<target)return null;
+      var fail=0,pass=1;
+      // Search both directions along HSL lightness, checking the actual RGB swatch.
+      for(var i=0;i<36;i++){var t=(fail+pass)/2;if(artStudioContrastRatio(candidate(color.l+(endpoint-color.l)*t),other)>=target)pass=t;else fail=t;}
+      return candidate(color.l+(endpoint-color.l)*pass);
+    }).filter(Boolean);
+    options.sort(function(a,b){return Math.abs(a.l-color.l)-Math.abs(b.l-color.l);});
+    return options[0]||null;
+  }
+  // END ART STUDIO CONTRAST HELPERS
+  // BEGIN ART STUDIO SCULPTURE VIEW HELPERS
+  function artStudioSculptView(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    function number(value, fallback, low, high) {
+      return typeof value === 'number' && isFinite(value) ? Math.max(low, Math.min(high, value)) : fallback;
+    }
+    return {
+      yaw: number(raw.yaw, 0.7, -100000, 100000),
+      pitch: number(raw.pitch, 0.5, -Math.PI / 2 + 0.001, Math.PI / 2 - 0.001),
+      distance: number(raw.distance, 2.6, 0.1, 500),
+      target: [0, 0.5, 0].map(function(value, index) { return number(Array.isArray(raw.target) ? raw.target[index] : null, value, -200, 200); })
+    };
+  }
+  function artStudioSculptFit(bounds, aspect, fov) {
+    var fallback = artStudioSculptView();
+    if (!bounds || !Array.isArray(bounds.min) || !Array.isArray(bounds.max)) return fallback;
+    if ([0, 1, 2].some(function(i) { return !Number.isFinite(bounds.min[i]) || !Number.isFinite(bounds.max[i]) || bounds.max[i] < bounds.min[i]; })) return fallback;
+    var size = bounds.max.map(function(value, i) { return value - bounds.min[i]; });
+    var radius = Math.max(0.05, Math.sqrt(size[0] * size[0] + size[1] * size[1] + size[2] * size[2]) / 2);
+    var halfFov = (Number.isFinite(fov) ? Math.max(10, Math.min(100, fov)) : 45) * Math.PI / 360;
+    var safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 4 / 3;
+    var limitingAngle = Math.min(halfFov, Math.atan(Math.tan(halfFov) * safeAspect));
+    // A bounding sphere fits from every orbit angle, including rotated and deformed parts.
+    return artStudioSculptView({ target: bounds.min.map(function(value, i) { return (value + bounds.max[i]) / 2; }), distance: radius * 1.12 / Math.sin(limitingAngle) });
+  }
+  // END ART STUDIO SCULPTURE VIEW HELPERS
+
+  // BEGIN ART STUDIO STEREOGRAM HELPERS
+  function artStudioStereoModel(raw) {
+    var d=raw||{};
+    return {stereoPattern:['bw','color','noise','ai'].indexOf(d.stereoPattern)>=0?d.stereoPattern:'bw',
+      stereoDensity:Math.round(artStudioMixerNumber(d.stereoDensity,100,60,150)),
+      stereoStrength:Math.round(artStudioMixerNumber(d.stereoStrength,15,0,30)),
+      stereoSeed:Math.round(artStudioMixerNumber(d.stereoSeed,12345,0,2147483647))};
+  }
+  function artStudioStereoRaster(raw) {
+    if(!raw||!Number.isInteger(raw.width)||!Number.isInteger(raw.height)||raw.width<1||raw.height<1||raw.width>1024||raw.height>1024||!raw.data)return null;
+    var size=raw.width*raw.height*4,data=raw.data;
+    if(typeof data!=='object'||(typeof data.length==='number'?data.length<size:!Object.prototype.hasOwnProperty.call(data,size-1)))return null;
+    return raw;
+  }
+  function artStudioStereoRows(image,depth,model,pattern,start,end) {
+    var W=image.width,H=image.height,data=image.data,d=artStudioStereoModel(model),map=artStudioStereoRaster(depth),tile=artStudioStereoRaster(pattern);
+    for(var y=Math.max(0,start);y<Math.min(H,end);y++){
+      var seed=(y*7919+d.stereoSeed)&0x7fffffff;
+      var rng=function(){seed=(seed*1664525+1013904223)&0x7fffffff;return seed/0x7fffffff;};
+      for(var x=0;x<W;x++){
+        var i=(y*W+x)*4;
+        if(x<d.stereoDensity){
+          if(d.stereoPattern==='ai'&&tile){var t=((y%tile.height)*tile.width+x%tile.width)*4;for(var c=0;c<3;c++)data[i+c]=tile.data[t+c];}
+          else if(d.stereoPattern==='color'){for(var c2=0;c2<3;c2++)data[i+c2]=Math.floor(rng()*200)+55;}
+          else {var value=d.stereoPattern==='bw'?(rng()>.5?230:25):Math.floor(rng()*220)+20;data[i]=data[i+1]=data[i+2]=value;}
+        }else{
+          var depthValue=map?Number(map.data[(Math.floor(y*map.height/H)*map.width+Math.floor(x*map.width/W))*4]):0;
+          var shift=Math.round((Number.isFinite(depthValue)?Math.max(0,Math.min(255,depthValue)):0)/255*d.stereoStrength);
+          var from=(y*W+x-d.stereoDensity+shift)*4;
+          data[i]=data[from];data[i+1]=data[from+1];data[i+2]=data[from+2];
+        }
+        data[i+3]=255;
+      }
+    }
+  }
+  // END ART STUDIO STEREOGRAM HELPERS
+  // BEGIN ART STUDIO HARMONY HELPERS
+  function artStudioHarmonyRecipe(raw) {
+    var d=raw&&typeof raw==='object'?raw:{},h=artStudioMixerNumber(d.baseHue,200,-1e9,1e9);
+    return {baseHue:((h%360)+360)%360,rotation:artStudioMixerNumber(d.rotation,0,-180,180),
+      saturation:artStudioMixerNumber(d.saturation,50+artStudioMixerNumber(d.satBlend,70,0,100)*0.4,0,100),
+      lightness:artStudioMixerNumber(d.lightness,40+artStudioMixerNumber(d.litVar,50,0,100)*0.3,0,100),
+      paletteSize:Math.round(artStudioMixerNumber(d.paletteSize,6,2,12)),spread:artStudioMixerNumber(d.spread,30,10,60),
+      scheme:['even','analogous','complementary','split','triadic','tetradic'].indexOf(d.scheme)>=0?d.scheme:'even'};
+  }
+  function artStudioHarmonyState(raw) {
+    var d=raw&&typeof raw==='object'?raw:{};
+    return Object.assign(artStudioHarmonyRecipe(d),{hypothesis:typeof d.hypothesis==='string'?d.hypothesis.slice(0,2000):'',explanation:typeof d.explanation==='string'?d.explanation.slice(0,4000):'',stuckRevealed:!!d.stuckRevealed,understood:!!d.understood,
+      log:(Array.isArray(d.log)?d.log:[]).filter(function(entry){return entry&&typeof entry==='object';}).slice(-8).map(function(entry){return {recipe:artStudioHarmonyRecipe(entry.recipe||{baseHue:entry.h,satBlend:entry.s,litVar:entry.l,rotation:entry.r,paletteSize:entry.n})};})});
+  }
+  function artStudioHarmonyPalette(raw) {
+    var d=artStudioHarmonyRecipe(raw),offsets={analogous:[0,-d.spread,d.spread],complementary:[0,180],split:[0,180-d.spread,180+d.spread],triadic:[0,120,240],tetradic:[0,d.spread,180,180+d.spread]}[d.scheme];
+    if(!offsets)offsets=Array.from({length:d.paletteSize},function(_,index){return index*360/d.paletteSize;});
+    return offsets.map(function(offset){var h=((d.baseHue+d.rotation+offset)%360+360)%360,color={h:h,s:d.saturation,l:d.lightness},light=artStudioContrastLuminance(color);return Object.assign(color,{hex:artStudioMixerHSLHex(h,d.saturation,d.lightness),css:artStudioContrastCSS(color),foreground:(light+0.05)/0.05>=1.05/(light+0.05)?'#000000':'#ffffff'});});
+  }
+  function artStudioHarmonyType(raw) {
+    var d=artStudioHarmonyRecipe(raw);return d.scheme==='even'?({2:'complementary',3:'triadic',4:'square'}[d.paletteSize]||'even'):d.scheme;
+  }
+  // END ART STUDIO HARMONY HELPERS
+  // BEGIN ART STUDIO COLOR WHEEL HELPERS
+  function artStudioWheelModel(raw) {
+    var d=raw||{},h=typeof d.hue==='number'&&Number.isFinite(d.hue)?d.hue:0;
+    return {hue:((h%360)+360)%360,sat:artStudioMixerNumber(d.sat,100,0,100),lit:artStudioMixerNumber(d.lit,50,0,100),harmony:['complementary','triadic','analogous','split'].indexOf(d.harmony)>=0?d.harmony:'complementary'};
+  }
+  function artStudioWheelPalette(raw) {
+    var model=artStudioWheelModel(raw),offsets={complementary:[0,180],triadic:[0,120,240],analogous:[-30,0,30],split:[0,150,210]};
+    return offsets[model.harmony].map(function(offset){var h=(model.hue+offset+360)%360;return {h:h,s:model.sat,l:model.lit,hex:artStudioMixerHSLHex(h,model.sat,model.lit),base:offset===0};});
+  }
+  function artStudioWheelPaletteSVG(raw) {
+    var model=artStudioWheelModel(raw),colors=artStudioWheelPalette(model),width=colors.length*240+64;
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+width+'" height="340" viewBox="0 0 '+width+' 340" role="img" aria-labelledby="title"><title id="title">'+model.harmony+' color harmony</title><rect width="100%" height="100%" fill="#f8fafc"/><g font-family="sans-serif" fill="#0f172a"><text x="32" y="44" font-size="24">'+model.harmony+' harmony</text>'+colors.map(function(color,index){var x=32+index*240;return '<rect x="'+x+'" y="72" width="224" height="180" rx="12" fill="'+color.hex+'"/><text x="'+x+'" y="284" font-size="22">'+color.hex.toUpperCase()+'</text><text x="'+x+'" y="310" font-size="15">H '+Number(color.h.toFixed(1))+' / S '+Number(color.s.toFixed(1))+'% / L '+Number(color.l.toFixed(1))+'%</text>';}).join('')+'</g></svg>';
+  }
+  // END ART STUDIO COLOR WHEEL HELPERS
+
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -48,6 +1150,568 @@ window.StemLab = window.StemLab || {
   function artTone(f,d,tp,v) { var ac = getArtAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxArtClick() { artTone(600, 0.03, "sine", 0.04); }
   function sfxArtSuccess() { artTone(523, 0.08, "sine", 0.07); setTimeout(function() { artTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { artTone(784, 0.1, "sine", 0.08); }, 140); }
+
+  // One bounded geometric model drives progressive drawing and full PNG/SVG
+  // exports. Integer radii guarantee a finite closure period.
+  function artStudioSpiroModel(state, color) {
+    function number(value, fallback, min, max) {
+      return typeof value === 'number' && Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+    }
+    var R = Math.round(number(state.spiroR, 120, 40, 200));
+    var outside = state.spiroCurve === 'outside';
+    var r = Math.round(number(state.spiror, 45, 10, outside ? 100 : Math.min(100, R - 1)));
+    r = Math.min(r, outside ? 100 : R - 1);
+    var a = R, b = r;
+    while (b) { var remainder = a % b; a = b; b = remainder; }
+    return {
+      R: R, r: r, p: number(state.spirop, 55, 0, 120), outside: outside,
+      revolutions: r / a, lobes: R / a,
+      width: number(state.spiroLineWidth, 1.5, 0.5, 8), fit: state.spiroFit !== false,
+      paper: state.spiroPaper === 'transparent' ? null : state.spiroPaper === 'light' ? '#f8fafc' : '#0f172a',
+      rainbow: !!state.spiroRainbow,
+      hue: number(color.h, 0, 0, 360), sat: number(color.s, 100, 0, 100), lit: number(color.l, 50, 0, 100)
+    };
+  }
+  function artStudioSpiroGeometry(model) {
+    var orbit = model.outside ? model.R + model.r : model.R - model.r;
+    var ratio = orbit / model.r, end = model.revolutions * Math.PI * 2;
+    var scale = model.fit ? (240 - model.width / 2) / (orbit + model.p) : 1;
+    var count = Math.min(36000, Math.max(360, Math.ceil(end * Math.max(1, ratio) / 0.025)));
+    var points = [];
+    for (var index = 0; index <= count; index++) {
+      var t = end * index / count;
+      points.push([
+        256 + scale * (orbit * Math.cos(t) + (model.outside ? -1 : 1) * model.p * Math.cos(ratio * t)),
+        256 + scale * (orbit * Math.sin(t) - model.p * Math.sin(ratio * t))
+      ]);
+    }
+    points[count] = points[0].slice();
+    return points;
+  }
+  function artStudioSpiroInk(model, index, count) {
+    var hue = model.rainbow ? Math.min(359, Math.floor((index - 1) * 360 / count)) : model.hue;
+    return 'hsl(' + hue + ',' + model.sat + '%,' + model.lit + '%)';
+  }
+  function artStudioSpiroDraw(context, model, points, from, to) {
+    context.lineWidth = model.width;
+    context.lineCap = 'round'; context.lineJoin = 'round';
+    context.globalCompositeOperation = 'source-over';
+    // Group equal-color segments into paths. Detailed lace no longer requires
+    // thousands of independent Canvas strokes or SVG elements.
+    var index = from + 1;
+    while (index <= to) {
+      var ink = artStudioSpiroInk(model, index, points.length - 1);
+      context.strokeStyle = ink;
+      context.beginPath(); context.moveTo(points[index - 1][0], points[index - 1][1]);
+      do {
+        context.lineTo(points[index][0], points[index][1]); index++;
+      } while (index <= to && artStudioSpiroInk(model, index, points.length - 1) === ink);
+      context.stroke();
+    }
+  }
+  function artStudioSpiroSVG(model, points) {
+    function coordinate(point) { return point.map(function(value){return Number(value.toFixed(3));}).join(' '); }
+    var result = ['<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img"><title>Spirograph ' + (model.outside ? 'epitrochoid' : 'hypotrochoid') + '</title>'];
+    if (model.paper) result.push('<rect width="512" height="512" fill="' + model.paper + '"/>');
+    var index = 1, count = points.length - 1;
+    while (index <= count) {
+      var ink = artStudioSpiroInk(model, index, count), path = 'M' + coordinate(points[index - 1]);
+      do { path += 'L' + coordinate(points[index]); index++; }
+      while (index <= count && artStudioSpiroInk(model, index, count) === ink);
+      result.push('<path d="' + path + '" fill="none" stroke="' + ink + '" stroke-width="' + model.width + '" stroke-linecap="round" stroke-linejoin="round"/>');
+    }
+    result.push('</svg>');
+    return result.join('');
+  }
+
+  function artStudioStringModel(d, color) {
+    function number(value, fallback, min, max) {
+      return typeof value === 'number' && Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+    }
+    var nails = Math.round(number(d.strNails, 80, 20, 200));
+    return {
+      shape: ['circle', 'square', 'triangle', 'star'].indexOf(d.strShape) === -1 ? 'circle' : d.strShape,
+      nails: nails, rule: d.strRule === 'skip' ? 'skip' : 'multiply',
+      multiplier: Math.round(number(d.strMult, 2, 2, 99)),
+      skip: Math.min(nails - 1, Math.round(number(d.strSkip, 7, 1, nails - 1))),
+      offset: Math.round(number(d.strOffset, 0, 0, nails - 1)),
+      opacity: number(d.strOpacity, 30, 5, 100) / 100,
+      width: number(d.strLineWidth, 1, 0.5, 6),
+      paper: d.strPaper === 'transparent' ? null : d.strPaper === 'light' ? '#f8fafc' : '#0f172a',
+      pins: d.strShowPins !== false, labels: !!d.strLabelPins, rainbow: !!d.strRainbow,
+      hue: number(color.h, 0, 0, 360), sat: number(color.s, 100, 0, 100), lit: number(color.l, 50, 0, 100)
+    };
+  }
+  function artStudioStringGeometry(model) {
+    var radius = 210, vertices = [], points = [], edges = [];
+    if (model.shape === 'square') vertices = [[46,46],[466,46],[466,466],[46,466]];
+    else if (model.shape !== 'circle') {
+      var count = model.shape === 'star' ? 10 : 3;
+      for (var v = 0; v < count; v++) {
+        var angle = v / count * Math.PI * 2 - Math.PI / 2;
+        var length = model.shape === 'star' && v % 2 ? radius * 0.4 : radius;
+        vertices.push([256 + Math.cos(angle) * length, 256 + Math.sin(angle) * length]);
+      }
+    }
+    for (var i = 0; i < model.nails; i++) {
+      var t = i / model.nails, point;
+      if (model.shape === 'circle') point = [256 + Math.cos(t * Math.PI * 2 - Math.PI / 2) * radius, 256 + Math.sin(t * Math.PI * 2 - Math.PI / 2) * radius];
+      else {
+        var position = t * vertices.length, side = Math.floor(position), fraction = position - side;
+        var first = vertices[side], second = vertices[(side + 1) % vertices.length];
+        point = [first[0] + (second[0] - first[0]) * fraction, first[1] + (second[1] - first[1]) * fraction];
+      }
+      points.push(point);
+      var target = (model.rule === 'skip' ? i + model.skip : i * model.multiplier) + model.offset;
+      target %= model.nails;
+      // A self-connection has no thread to draw or construct.
+      if (target !== i) edges.push({from:i, to:target});
+    }
+    return {points:points, edges:edges};
+  }
+  function artStudioStringInk(model, pin) {
+    var hue = model.rainbow ? Math.round(pin / model.nails * 360) % 360 : model.hue;
+    return 'hsl(' + hue + ',' + model.sat + '%,' + model.lit + '%)';
+  }
+  function artStudioStringDraw(context, model, geometry, from, to) {
+    context.lineWidth = model.width; context.lineCap = 'round';
+    context.globalCompositeOperation = 'source-over'; context.globalAlpha = model.opacity;
+    for (var i = from; i < to; i++) {
+      var edge = geometry.edges[i], start = geometry.points[edge.from], end = geometry.points[edge.to];
+      context.strokeStyle = artStudioStringInk(model, edge.from);
+      context.beginPath(); context.moveTo(start[0],start[1]); context.lineTo(end[0],end[1]); context.stroke();
+    }
+    context.globalAlpha = 1;
+  }
+  function artStudioStringPins(model, geometry, visit) {
+    var every = Math.ceil(model.nails / 40);
+    geometry.points.forEach(function(point, index) {
+      var dx = point[0] - 256, dy = point[1] - 256, distance = Math.sqrt(dx*dx + dy*dy) || 1;
+      visit(point, model.labels && index % every === 0 ? String(index) : '', [point[0] + dx/distance*14, point[1] + dy/distance*14]);
+    });
+  }
+  function artStudioStringPinColor(model) { return model.paper === '#0f172a' ? '#cbd5e1' : '#334155'; }
+  function artStudioStringDecorate(context, model, geometry) {
+    if (!model.pins) return;
+    context.globalAlpha = 1; context.fillStyle = artStudioStringPinColor(model);
+    context.font = '10px sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle';
+    artStudioStringPins(model, geometry, function(point, label, location) {
+      context.beginPath(); context.arc(point[0],point[1],1.5,0,Math.PI*2); context.fill();
+      if (label) context.fillText(label,location[0],location[1]);
+    });
+  }
+  function artStudioStringSVG(model, geometry) {
+    function coord(value) { return Number(value.toFixed(3)); }
+    var result = ['<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img"><title>String art construction</title>'];
+    if (model.paper) result.push('<rect width="512" height="512" fill="' + model.paper + '"/>');
+    geometry.edges.forEach(function(edge) {
+      var start = geometry.points[edge.from], end = geometry.points[edge.to];
+      result.push('<path d="M' + coord(start[0]) + ' ' + coord(start[1]) + 'L' + coord(end[0]) + ' ' + coord(end[1]) + '" fill="none" stroke="' + artStudioStringInk(model,edge.from) + '" stroke-opacity="' + model.opacity + '" stroke-width="' + model.width + '" stroke-linecap="round"/>');
+    });
+    if (model.pins) artStudioStringPins(model,geometry,function(point,label,location) {
+      result.push('<circle cx="' + coord(point[0]) + '" cy="' + coord(point[1]) + '" r="1.5" fill="' + artStudioStringPinColor(model) + '"/>');
+      if (label) result.push('<text x="' + coord(location[0]) + '" y="' + coord(location[1]) + '" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-size="10" fill="' + artStudioStringPinColor(model) + '">' + label + '</text>');
+    });
+    result.push('</svg>'); return result.join('');
+  }
+
+  var ART_STUDIO_TESS_COLORS = ['hsl(0,80%,55%)','hsl(30,90%,55%)','hsl(55,90%,55%)','hsl(120,60%,45%)','hsl(200,75%,50%)','hsl(270,70%,55%)','hsl(320,80%,55%)','hsl(0,0%,90%)'];
+  var ART_STUDIO_TESS_COLOR_NAMES = ['red','orange','yellow','green','blue','purple','pink','light gray'];
+  function artStudioTessModel(d) {
+    function finite(value, fallback, min, max) { return typeof value==='number'&&Number.isFinite(value)?Math.max(min,Math.min(max,value)):fallback; }
+    return {
+      tessShape:['triangle','square','hexagon'].indexOf(d.tessShape)>=0?d.tessShape:'hexagon',
+      tessGrid:Math.round(finite(d.tessGrid,6,2,20)),
+      tessRotation:finite(d.tessRotation,0,0,360),
+      tessWarpAmt:finite(d.tessWarpAmt,0,0,50),
+      tessScheme:['rainbow','warm','cool','mono','custom'].indexOf(d.tessScheme)>=0?d.tessScheme:'rainbow'
+    };
+  }
+  function artStudioTessColors(raw) {
+    var result={};
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return result;
+    Object.keys(raw).slice(0,6000).forEach(function(key){
+      var value=raw[key];
+      if((/^-?\d+_-?\d+$/.test(key)||/^(triangle|square|hexagon):-?\d+:-?\d+$/.test(key))&&typeof value==='number'&&Number.isFinite(value)&&value>=-1&&value<8)result[key]=Math.floor(value);
+    });
+    return result;
+  }
+  function artStudioTessGeometry(model) {
+    var shape=model.tessShape,grid=model.tessGrid,rotation=model.tessRotation*Math.PI/180;
+    var cosine=Math.cos(rotation),sine=Math.sin(rotation),extent=256*(Math.abs(cosine)+Math.abs(sine));
+    var low=256-extent,high=256+extent,tiles=[];
+    function display(point){var x=point[0]-256,y=point[1]-256;return [256+x*cosine-y*sine,256+x*sine+y*cosine];}
+    function add(vertices,row,col,index,total,legacyPoint){
+      var points=[],center=[0,0];
+      vertices.forEach(function(start,side){
+        center[0]+=start[0]/vertices.length;center[1]+=start[1]/vertices.length;
+        var end=vertices[(side+1)%vertices.length],dx=end[0]-start[0],dy=end[1]-start[1],length=Math.sqrt(dx*dx+dy*dy);
+        // Opposite traversals produce the same edge. Limit deformation so
+        // even the acute corners of triangular tiles cannot cross themselves.
+        var amplitude=Math.min(model.tessWarpAmt*0.3,length*0.075),steps=amplitude?12:1;
+        for(var step=0;step<steps;step++){
+          var t=step/steps,offset=Math.sin(t*Math.PI*2)*amplitude;
+          points.push(display([start[0]+dx*t-dy/length*offset,start[1]+dy*t+dx/length*offset]));
+        }
+      });
+      var xs=points.map(function(p){return p[0];}),ys=points.map(function(p){return p[1];});
+      if(Math.max.apply(null,xs)<0||Math.min.apply(null,xs)>512||Math.max.apply(null,ys)<0||Math.min.apply(null,ys)>512)return;
+      var anchor=legacyPoint||vertices[0];
+      tiles.push({key:shape+':'+row+':'+col,legacyKey:Math.round(anchor[0])+'_'+Math.round(anchor[1]),points:points,center:display(center),index:((index%total)+total)%total,total:total});
+    }
+    var row,col;
+    if(shape==='square'){
+      var size=512/grid;
+      for(row=Math.floor(low/size)-1;row<=Math.ceil(high/size)+1;row++)for(col=Math.floor(low/size)-1;col<=Math.ceil(high/size)+1;col++){
+        var x=col*size,y=row*size;add([[x,y],[x+size,y],[x+size,y+size],[x,y+size]],row,col,(row+1)*(grid+2)+col+1,(grid+2)*(grid+2));
+      }
+    }else if(shape==='triangle'){
+      var height=512/grid,width=height*2/Math.sqrt(3);
+      for(row=Math.floor(low/height)-1;row<=Math.ceil(high/height)+1;row++)for(col=Math.floor(low/(width/2))-2;col<=Math.ceil(high/(width/2))+2;col++){
+        var tx=col*width/2,ty=row*height;
+        var vertices=(col+row)%2===0?[[tx,ty+height],[tx+width/2,ty],[tx+width,ty+height]]:[[tx,ty],[tx+width,ty],[tx+width/2,ty+height]];
+        add(vertices,row,col,(row+1)*(grid*2+4)+col+2,(grid+3)*(grid*2+4));
+      }
+    }else{
+      var radius=512/(grid*1.8),hexHeight=radius*Math.sqrt(3);
+      for(row=Math.floor((low+hexHeight)/hexHeight)-2;row<=Math.ceil((high+hexHeight)/hexHeight)+2;row++)for(col=Math.floor((low+2*radius)/(radius*1.5))-2;col<=Math.ceil((high+2*radius)/(radius*1.5))+2;col++){
+        var hx=-2*radius+col*radius*1.5,hy=-hexHeight+row*hexHeight+(Math.abs(col%2)===1?hexHeight/2:0),hex=[];
+        for(var a=0;a<6;a++){var angle=a*Math.PI/3;hex.push([hx+Math.cos(angle)*radius,hy+Math.sin(angle)*radius]);}
+        add(hex,row,col,row*(grid+3)+col,(grid+3)*(grid+3),[hx+Math.cos(-Math.PI/6)*radius,hy+Math.sin(-Math.PI/6)*radius]);
+      }
+    }
+    return tiles;
+  }
+  function artStudioTessColorIndex(tile,colors){var value=colors[tile.key];if(value===undefined)value=colors[tile.legacyKey];return value>=0&&value<8?value:undefined;}
+  function artStudioTessFill(tile,model,colors){
+    var override=artStudioTessColorIndex(tile,colors);if(override!==undefined)return ART_STUDIO_TESS_COLORS[override];
+    var i=tile.index,total=tile.total;
+    if(model.tessScheme==='warm')return 'hsl('+Math.round(i/total*60)+',80%,'+(40+i%3*10)+'%)';
+    if(model.tessScheme==='cool')return 'hsl('+(180+Math.round(i/total*80))+',70%,'+(40+i%3*10)+'%)';
+    if(model.tessScheme==='mono')return 'hsl(210,'+(10+i%4*8)+'%,'+(30+i/total*40)+'%)';
+    if(model.tessScheme==='custom')return 'hsl('+(i*137.508%360)+',65%,55%)';
+    return 'hsl('+Math.round(i/total*360)+',75%,55%)';
+  }
+  function artStudioTessPaint(context,model,tiles,colors){
+    context.fillStyle='#0f172a';context.fillRect(0,0,512,512);
+    tiles.forEach(function(tile){context.beginPath();tile.points.forEach(function(point,index){if(index)context.lineTo(point[0],point[1]);else context.moveTo(point[0],point[1]);});context.closePath();context.fillStyle=artStudioTessFill(tile,model,colors);context.fill();context.lineWidth=1;context.strokeStyle='rgba(255,255,255,0.4)';context.stroke();});
+  }
+  function artStudioTessSVG(model,tiles,colors){
+    var result=['<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img"><title>Tessellation artwork</title><rect width="512" height="512" fill="#0f172a"/>'];
+    tiles.forEach(function(tile){var points=tile.points.map(function(point){return point.map(function(value){return Number(value.toFixed(4));}).join(',');}).join(' ');result.push('<polygon points="'+points+'" fill="'+artStudioTessFill(tile,model,colors)+'" stroke="white" stroke-opacity="0.4" stroke-width="1"/>');});
+    result.push('</svg>');return result.join('');
+  }
+  function artStudioTessContains(points,x,y){var inside=false;for(var i=0,j=points.length-1;i<points.length;j=i++){var a=points[i],b=points[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
+
+  function artStudioSpinNumber(value, fallback, min, max) {
+    return typeof value === 'number' && Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+  }
+  function artStudioSpinModel(d, reducedMotion) {
+    return { rpm: artStudioSpinNumber(d.spinRPM,120,20,300), brush: artStudioSpinNumber(d.spinBrush,6,2,20),
+      viscosity: artStudioSpinNumber(d.spinViscosity,50,0,100), direction: d.spinDirection === -1 ? -1 : 1,
+      paused: d.spinPaused === undefined ? !!reducedMotion : !!d.spinPaused };
+  }
+  function artStudioSpinEngine(canvas, initial, options) {
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    var W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,radius=Math.min(W,H)/2;
+    var angle=artStudioSpinNumber(initial.spinAngle,0,-1e6,1e6)%(Math.PI*2);
+    var drips=(Array.isArray(initial.spinDrips)?initial.spinDrips:[]).filter(function(drip){
+      return drip && ['x','y','vx','vy','life','size','hue'].every(function(key){return Number.isFinite(drip[key]);}) && Math.abs(drip.x)<=W*2 && Math.abs(drip.y)<=H*2 && Math.abs(drip.vx)<=W && Math.abs(drip.vy)<=H && drip.life>0 && drip.size>0;
+    }).slice(-2000).map(function(drip){return Object.assign({},drip,{size:Math.min(40,drip.size),life:Math.min(400,drip.life)});});
+    var snapshot=typeof initial.spinSnapshot==='string'?initial.spinSnapshot:'',restoring=!!snapshot,disposed=false;
+    var undo=[],redo=[],gesture=null,activePointer=null,activePointerType='',mouse={x:cx,y:cy};
+    var cursor={x:cx,y:cy},lastTime=null,accumulator=0,lastCheckpoint=0,dirty=false,painted=!!snapshot;
+    var stepMS=1000/60,resolveReady;
+    canvas._spinKeyboardCursor=cursor;
+    canvas._spinPointerDown=false;
+    canvas._artStudioRestoring=restoring;
+    canvas._artStudioReady=new Promise(function(resolve){resolveReady=resolve;});
+    ctx.clearRect(0,0,W,H);
+
+    function cloneDrips(){return drips.map(function(drip){return Object.assign({},drip);});}
+    function stop(){if(canvas._spinAnim)cancelAnimationFrame(canvas._spinAnim);canvas._spinAnim=null;lastTime=null;accumulator=0;}
+    function canRun(){return !disposed && canvas.isConnected && !restoring && !document.hidden && canvas.dataset.paused!=='1' && (drips.length>0 || canvas._spinPointerDown);}
+    function resume(){if(canRun()&&!canvas._spinAnim)canvas._spinAnim=requestAnimationFrame(animate);}
+    function checkpoint(){
+      try {var png=restoring?snapshot:canvas.toDataURL('image/png');return png&&png!=='data:,'?{spinSnapshot:png,spinPaperClipped:restoring?!!initial.spinPaperClipped:true,spinAngle:angle,spinDrips:cloneDrips()}:null;}catch(_){return null;}
+    }
+    function persist(){if(disposed)return;var saved=checkpoint();dirty=false;if(saved)options.persist(saved);}
+    function historyState(){try{return {pixels:ctx.getImageData(0,0,W,H),drips:cloneDrips(),angle:angle,painted:painted};}catch(_){return null;}}
+    function pushUndo(state){if(!state)return;undo.push(state);if(undo.length>20)undo.shift();redo=[];}
+    function syncButtons(){
+      var blocked=restoring||canvas._spinPointerDown;
+      [['undo',!undo.length],['redo',!redo.length],['clear',!painted&&!drips.length]].forEach(function(item){
+        var button=canvas.closest('[data-artstudio-spin-layout]')?.querySelector('#artstudio-spin-'+item[0]);
+        if(button)button.disabled=blocked||item[1];
+      });
+    }
+    function updateCursor(show){
+      var marker=canvas.parentElement&&canvas.parentElement.querySelector('[data-spin-keyboard-cursor]');
+      if(marker){var border=canvas.clientLeft||0;marker.style.left=(canvas.offsetLeft+border+cursor.x/W*(canvas.clientWidth||W)-10)+'px';marker.style.top=(canvas.offsetTop+border+cursor.y/H*(canvas.clientHeight||H)-10)+'px';marker.style.display=show?'block':'none';}
+      canvas.setAttribute('aria-label',options.describe(cursor));
+    }
+    function clipPaper(){ctx.save();ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.clip();}
+    function paint(drip,from){
+      var cos=Math.cos(angle),sin=Math.sin(angle),dx=drip.x-cx,dy=drip.y-cy;
+      var x=cx+dx*cos-dy*sin,y=cy+dx*sin+dy*cos;
+      ctx.globalAlpha=Math.min(1,drip.life/60)*0.85;
+      ctx.fillStyle=ctx.strokeStyle='hsl('+drip.hue+','+artStudioSpinNumber(drip.sat,85,0,100)+'%,'+artStudioSpinNumber(drip.lit,50,0,100)+'%)';
+      if(from&&Number.isFinite(drip.px)&&Number.isFinite(drip.py)){
+        ctx.lineWidth=drip.size*2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(drip.px,drip.py);ctx.lineTo(x,y);ctx.stroke();
+      }else{ctx.beginPath();ctx.arc(x,y,drip.size,0,Math.PI*2);ctx.fill();}
+      drip.px=x;drip.py=y;dirty=true;painted=true;
+    }
+    function addPaint(x,y){
+      if(restoring||disposed||!Number.isFinite(x)||!Number.isFinite(y)||Math.hypot(x-cx,y-cy)>radius)return false;
+      var splatter=canvas.dataset.splatter==='1',count=splatter?5+Math.floor(Math.random()*8):1;
+      var brush=Number(canvas.dataset.brush),hue=Number(canvas.dataset.hue),cos=Math.cos(-angle),sin=Math.sin(-angle);
+      clipPaper();
+      for(var i=0;i<count;i++){
+        var dx=x-cx+(splatter?(Math.random()-.5)*30:0),dy=y-cy+(splatter?(Math.random()-.5)*30:0);
+        var drip={x:cx+dx*cos-dy*sin,y:cy+dx*sin+dy*cos,vx:0,vy:0,life:200+Math.random()*150,
+          size:splatter?1+Math.random()*brush:brush*.6,hue:hue+(splatter?Math.random()*30-15:0),sat:Number(canvas.dataset.sat),lit:Number(canvas.dataset.lit),flow:.25+(100-Number(canvas.dataset.viscosity))/100*1.5};
+        drips.push(drip);paint(drip,false);
+      }
+      ctx.restore();if(drips.length>2000)drips.splice(0,drips.length-2000);
+      resume();return true;
+    }
+    function segment(point){
+      var distance=Math.hypot(point.x-mouse.x,point.y-mouse.y),spacing=Math.max(1,Number(canvas.dataset.brush)*.45);
+      if(distance<.01)return;
+      var count=Math.min(1024,Math.ceil(distance/spacing)),start=mouse;
+      for(var i=1;i<=count;i++)addPaint(start.x+(point.x-start.x)*i/count,start.y+(point.y-start.y)*i/count);
+      mouse=point;
+    }
+    function pointerPoint(event){
+      var rect=canvas.getBoundingClientRect(),border=canvas.clientLeft||0,displayW=rect.width-border*2,displayH=rect.height-border*2;
+      if(displayW<=0||displayH<=0||!Number.isFinite(event.clientX)||!Number.isFinite(event.clientY))return null;
+      return {x:Math.max(-W,Math.min(W*2,(event.clientX-rect.left-border)*W/displayW)),y:Math.max(-H,Math.min(H*2,(event.clientY-rect.top-border)*H/displayH))};
+    }
+    function finishPointer(event){
+      if(activePointer===null || event&&event.pointerId!==undefined&&event.pointerId!==activePointer)return;
+      if(event&&event.type==='pointerup'){var point=pointerPoint(event);if(point)segment(point);}
+      var pointer=activePointer;activePointer=null;canvas._spinPointerDown=false;pushUndo(gesture);gesture=null;
+      try{if(canvas.releasePointerCapture)canvas.releasePointerCapture(pointer);}catch(_){}
+      syncButtons();persist();if(!canRun())stop();
+    }
+    function historyAction(backward){
+      if(restoring||canvas._spinPointerDown)return;
+      var from=backward?undo:redo,to=backward?redo:undo;if(!from.length)return;
+      var current=historyState();if(!current)return;to.push(current);var state=from.pop();
+      stop();ctx.putImageData(state.pixels,0,0);drips=state.drips.map(function(drip){return Object.assign({},drip);});angle=state.angle;painted=state.painted;
+      canvas.dataset.paused='1';dirty=false;var saved=checkpoint();options.persist(Object.assign({},saved||{},{spinPaused:true}));syncButtons();updateCursor(document.activeElement===canvas);
+      options.announce(backward?'undo':'redo');
+    }
+    function tick(){
+      var rpm=Number(canvas.dataset.rpm);angle=(angle+Number(canvas.dataset.direction)*rpm/60*Math.PI*2/60)%(Math.PI*2);
+      if(canvas._spinPointerDown)addPaint(mouse.x,mouse.y);
+      clipPaper();
+      for(var i=drips.length-1;i>=0;i--){
+        var drip=drips[i];drip.life--;if(drip.life<=0){drips.splice(i,1);continue;}
+        var dx=drip.x-cx,dy=drip.y-cy,force=rpm*rpm*.00000125*artStudioSpinNumber(drip.flow,1,.25,1.75);
+        drip.vx=(drip.vx+dx*force)*.98;drip.vy=(drip.vy+dy*force)*.98;drip.x+=drip.vx;drip.y+=drip.vy;
+        paint(drip,true);if(Math.hypot(drip.x-cx,drip.y-cy)>radius+drip.size)drips.splice(i,1);
+      }
+      ctx.restore();
+    }
+    function animate(timestamp){
+      canvas._spinAnim=null;if(!canRun()){stop();return;}
+      if(lastTime===null)lastTime=timestamp;
+      accumulator+=Math.max(0,Math.min(100,timestamp-lastTime));lastTime=timestamp;
+      // Fixed simulation steps give 60 Hz and 120 Hz screens the same paint flow.
+      while(accumulator+1e-6>=stepMS){tick();accumulator-=stepMS;}
+      if(dirty&&(!drips.length&&!canvas._spinPointerDown||timestamp-lastCheckpoint>=750)){persist();lastCheckpoint=timestamp;}
+      if(canRun())resume();else stop();
+    }
+    function visibility(){if(document.hidden){stop();if(dirty)persist();}else resume();}
+    canvas._captureArtStudioState=checkpoint;
+    canvas._spinResume=resume;
+    canvas._spinUndoAction=function(){historyAction(true);};
+    canvas._spinRedoAction=function(){historyAction(false);};
+    canvas._spinClearAction=function(){
+      if(restoring||canvas._spinPointerDown||!painted&&!drips.length)return;
+      pushUndo(historyState());stop();ctx.clearRect(0,0,W,H);drips=[];angle=0;painted=false;syncButtons();persist();options.announce('clear');
+    };
+    canvas._spinExportAction=function(transparent){
+      if(restoring)return canvas._artStudioReady.then(function(){return disposed?'':canvas._spinExportAction(transparent);});
+      var output=document.createElement('canvas');output.width=W;output.height=H;var context=output.getContext('2d');if(!context)return '';
+      if(!transparent){context.fillStyle=canvas.dataset.dark==='1'?'#0f172a':'#fefefe';context.fillRect(0,0,W,H);}
+      context.drawImage(canvas,0,0);return output.toDataURL('image/png');
+    };
+    canvas._spinSync=function(){
+      if(activePointerType==='touch'&&canvas.dataset.touchMode!=='draw')finishPointer();
+      if(!canRun()){stop();if(dirty&&!canvas._spinPointerDown&&!restoring)persist();}else resume();
+      syncButtons();updateCursor(document.activeElement===canvas);
+    };
+    canvas.onpointerdown=function(event){
+      if(restoring||activePointer!==null||event.button!==undefined&&event.button!==0||event.isPrimary===false||!options.allows(event))return;
+      var point=pointerPoint(event);if(!point||Math.hypot(point.x-cx,point.y-cy)>radius)return;
+      event.preventDefault();gesture=historyState();activePointer=event.pointerId===undefined?1:event.pointerId;activePointerType=event.pointerType||'mouse';canvas._spinPointerDown=true;mouse=point;
+      try{canvas.focus({preventScroll:true});if(canvas.setPointerCapture)canvas.setPointerCapture(activePointer);}catch(_){}
+      updateCursor(false);addPaint(point.x,point.y);syncButtons();
+    };
+    canvas.onpointermove=function(event){
+      if(activePointer===null||event.pointerId!==undefined&&event.pointerId!==activePointer)return;
+      if(!options.allows(event)){finishPointer(event);return;}event.preventDefault();
+      var events=typeof event.getCoalescedEvents==='function'?event.getCoalescedEvents():[];
+      events.concat([event]).forEach(function(sample){var point=pointerPoint(sample);if(point)segment(point);});
+    };
+    canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=finishPointer;
+    canvas.onfocus=function(){updateCursor(true);};canvas.onblur=function(){updateCursor(false);};
+    canvas.onkeydown=function(event){
+      if((event.ctrlKey||event.metaKey)&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();historyAction(event.key.toLowerCase()==='z'&&!event.shiftKey);return;}
+      if(event.ctrlKey||event.metaKey||restoring||canvas._spinPointerDown)return;
+      var step=event.altKey?1:10,moved=true;
+      if(event.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-step);else if(event.key==='ArrowRight')cursor.x=Math.min(W,cursor.x+step);
+      else if(event.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-step);else if(event.key==='ArrowDown')cursor.y=Math.min(H,cursor.y+step);
+      else if(event.key==='Home'){cursor.x=cx;cursor.y=cy;}else moved=false;
+      if(!moved&&event.key!=='Enter'&&event.key!==' ')return;
+      event.preventDefault();var added=false;
+      if(!moved||event.shiftKey){var before=historyState();added=addPaint(cursor.x,cursor.y);if(added){pushUndo(before);persist();syncButtons();}}
+      updateCursor(true);options.announce(added?'paint':moved?'cursor':'outside',cursor);
+    };
+    document.addEventListener('visibilitychange',visibility);
+    var resize=typeof ResizeObserver!=='undefined'?new ResizeObserver(function(){updateCursor(document.activeElement===canvas);}):null;
+    if(resize)resize.observe(canvas);
+    if(snapshot){
+      var image=new Image();image.onload=function(){
+        // Legacy snapshots could contain hidden square corners. Clip those once;
+        // clipping every restore would repeatedly fade the antialiased rim.
+        if(!disposed){if(!initial.spinPaperClipped)clipPaper();ctx.drawImage(image,0,0,W,H);if(!initial.spinPaperClipped)ctx.restore();}finishRestore();
+      };image.onerror=function(){if(!disposed){snapshot='';painted=false;}finishRestore();};image.src=snapshot;
+    }else resolveReady();
+    function finishRestore(){restoring=false;canvas._artStudioRestoring=false;resolveReady();if(!disposed){syncButtons();resume();}}
+    syncButtons();updateCursor(document.activeElement===canvas);resume();
+    return {dispose:function(){disposed=true;stop();if(resize)resize.disconnect();document.removeEventListener('visibilitychange',visibility);resolveReady();}};
+  }
+
+  function artStudioOpModel(d) {
+    function number(key,fallback,min,max){var value=d[key];return typeof value==='number'&&Number.isFinite(value)?Math.max(min,Math.min(max,value)):fallback;}
+    var hueA=number('opHueA',0,0,360),hueB=number('opHueB',180,0,360);
+    return {opStyle:['concentric','checkerboard','moire','vibrating'].indexOf(d.opStyle)>=0?d.opStyle:'concentric',
+      opDensity:Math.round(number('opDensity',20,3,60)),opSpeed:number('opSpeed',5,1,20),opRotation:number('opRotation',0,0,360),opWarp:number('opWarp',60,0,100),opAngle:number('opAngle',12,0,90),
+      opHueA:hueA,opHueB:hueB,opSatA:number('opSatA',85,0,100),opSatB:number('opSatB',85,0,100),opLitA:number('opLitA',50,0,100),opLitB:number('opLitB',50,0,100),
+      opColorMode:d.opColorMode==='mono'||(d.opColorMode===undefined&&hueA===0&&hueB===0)?'mono':'custom'};
+  }
+  function artStudioOpPhase(value){return typeof value==='number'&&Number.isFinite(value)?((value%360)+360)%360:0;}
+  function artStudioOpColors(model){return model.opColorMode==='mono'?['#000000','#ffffff']:['A','B'].map(function(letter){return 'hsl('+model['opHue'+letter]+','+model['opSat'+letter]+'%,'+model['opLit'+letter]+'%)';});}
+  function artStudioOpScene(model,phase) {
+    var colors=artStudioOpColors(model),items=[],cell=512/model.opDensity,angle=model.opRotation*Math.PI/180,cosine=Math.cos(angle),sine=Math.sin(angle),time=phase*Math.PI/180;
+    var extent=256*(Math.abs(cosine)+Math.abs(sine)),low=256-extent,high=256+extent;
+    function rotate(x,y,a){var c=a===undefined?cosine:Math.cos(a),s=a===undefined?sine:Math.sin(a);return [256+(x-256)*c-(y-256)*s,256+(x-256)*s+(y-256)*c];}
+    function polygon(points,index){items.push({kind:'polygon',points:points,fill:colors[((index%2)+2)%2]});}
+    if(model.opStyle==='concentric'){
+      var aspect=1-model.opWarp/500,spacing=Math.SQRT2*256/model.opDensity,shift=phase/360*spacing*2,max=Math.ceil((Math.SQRT2*256/aspect+spacing*2)/spacing);
+      for(var ring=max;ring>=0;ring--){var radius=(ring+1)*spacing-shift;if(radius>0)items.push({kind:'ellipse',rx:radius,ry:radius*aspect,angle:angle,fill:colors[ring%2]});}
+    }else if(model.opStyle==='checkerboard'){
+      // Adjacent cells reuse the same warped vertices. The deformation's
+      // derivative stays below one, so its grid cannot fold over itself.
+      var amount=Math.min(cell*0.42,18)*model.opWarp/100;
+      function vertex(x,y){return rotate(x+amount*Math.sin(y*Math.PI/128+time),y+amount*Math.sin(x*Math.PI/128+time));}
+      var first=Math.floor((low-amount)/cell)-1,last=Math.ceil((high+amount)/cell)+1;
+      for(var row=first;row<last;row++)for(var column=first;column<last;column++)polygon([vertex(column*cell,row*cell),vertex((column+1)*cell,row*cell),vertex((column+1)*cell,(row+1)*cell),vertex(column*cell,(row+1)*cell)],row+column);
+    }else if(model.opStyle==='vibrating'){
+      var amplitude=cell*0.4*model.opWarp/100,bottom=high+8,top=low-8;
+      function boundary(index,y){return rotate(index*cell+amplitude*Math.sin(y*Math.PI/128+time+index*0.24),y);}
+      for(var stripe=Math.floor((low-amplitude)/cell)-1;stripe<Math.ceil((high+amplitude)/cell)+1;stripe++){
+        var points=[];for(var y=top;y<bottom;y+=4)points.push(boundary(stripe,y));points.push(boundary(stripe,bottom));
+        points.push(boundary(stripe+1,bottom));for(var y2=top+Math.floor((bottom-top-0.0001)/4)*4;y2>=top;y2-=4)points.push(boundary(stripe+1,y2));polygon(points,stripe);
+      }
+    }else{
+      var span=Math.SQRT2*256+cell*2,relative=model.opAngle*Math.PI/180+Math.sin(time)*Math.PI/15;
+      for(var layer=0;layer<2;layer++)for(var line=-Math.ceil(span/cell);line<=Math.ceil(span/cell);line++){
+        var position=256+line*cell+(layer?Math.sin(time)*cell*0.5:0),turn=angle+(layer?relative:0);
+        items.push({kind:'line',points:[rotate(256-span,position,turn),rotate(256+span,position,turn)],stroke:colors[0],width:Math.max(0.8,Math.min(6,cell*0.25)),opacity:0.7});
+      }
+    }
+    return {background:colors[1],items:items};
+  }
+  function artStudioOpPaint(context,scene) {
+    context.save();context.globalCompositeOperation='source-over';context.globalAlpha=1;context.fillStyle=scene.background;context.fillRect(0,0,512,512);
+    scene.items.forEach(function(item){context.beginPath();context.globalAlpha=item.opacity===undefined?1:item.opacity;
+      if(item.kind==='ellipse')context.ellipse(256,256,item.rx,item.ry,item.angle,0,Math.PI*2);
+      else {item.points.forEach(function(point,index){if(index)context.lineTo(point[0],point[1]);else context.moveTo(point[0],point[1]);});if(item.kind==='polygon')context.closePath();}
+      if(item.fill){context.fillStyle=item.fill;context.fill();}else{context.strokeStyle=item.stroke;context.lineWidth=item.width;context.stroke();}
+    });context.restore();
+  }
+  function artStudioOpSVG(scene) {
+    function number(value){return Number(value.toFixed(5));}
+    var result=['<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img"><title>Op Art still frame</title><rect width="512" height="512" fill="'+scene.background+'"/>'];
+    scene.items.forEach(function(item){
+      if(item.kind==='ellipse')result.push('<ellipse cx="256" cy="256" rx="'+number(item.rx)+'" ry="'+number(item.ry)+'" transform="rotate('+number(item.angle*180/Math.PI)+' 256 256)" fill="'+item.fill+'"/>');
+      else {var points=item.points.map(function(point){return point.map(number).join(',');}).join(' ');result.push(item.kind==='polygon'?'<polygon points="'+points+'" fill="'+item.fill+'"/>':'<polyline points="'+points+'" fill="none" stroke="'+item.stroke+'" stroke-width="'+number(item.width)+'" opacity="'+item.opacity+'"/>');}
+    });result.push('</svg>');return result.join('');
+  }
+
+  function artStudioFractalModel(d) {
+    function number(key,fallback,min,max) { var value=d[key];return typeof value==='number'&&Number.isFinite(value)?Math.max(min,Math.min(max,value)):fallback; }
+    return {
+      fractalType:['mandelbrot','julia','burningShip','sierpinski'].indexOf(d.fractalType)>=0?d.fractalType:'mandelbrot',
+      fractalColor:['classic','fire','ocean','psychedelic','grayscale'].indexOf(d.fractalColor)>=0?d.fractalColor:'classic',
+      fractalIter:Math.round(number('fractalIter',200,50,500)),fractalDepth:Math.round(number('fractalDepth',7,0,10)),
+      fractalZoom:number('fractalZoom',1,1,500),fractalPanX:number('fractalPanX',0,-200,200),fractalPanY:number('fractalPanY',0,-200,200),
+      juliaReal:number('juliaReal',-70,-200,200),juliaImag:number('juliaImag',27,-200,200)
+    };
+  }
+  function artStudioFractalPoint(model,u,v) {
+    var baseX=model.fractalType==='mandelbrot'?-0.5:model.fractalType==='burningShip'?-0.4:0;
+    var baseY=model.fractalType==='burningShip'?-0.5:0;
+    return [baseX-model.fractalPanX/50+(u-0.5)*3/model.fractalZoom,baseY-model.fractalPanY/50+(v-0.5)*3/model.fractalZoom];
+  }
+  function artStudioFractalZoom(model,factor,u,v,recenter) {
+    var zoom=Math.max(1,Math.min(500,model.fractalZoom*factor));
+    var delta=150*(1/model.fractalZoom-(recenter?0:1/zoom));
+    return {fractalZoom:zoom,fractalPanX:Math.max(-200,Math.min(200,model.fractalPanX-(u-0.5)*delta)),fractalPanY:Math.max(-200,Math.min(200,model.fractalPanY-(v-0.5)*delta))};
+  }
+  function artStudioFractalColor(value,scheme) {
+    var t=Math.max(0,Math.min(1,value));
+    if(scheme==='fire')return [Math.min(255,Math.round(t*765)),Math.round(t*t*255),Math.round(t*t*t*200)];
+    if(scheme==='ocean')return [Math.round(t*t*80),Math.round(t*180),Math.min(255,Math.round(t*382.5))];
+    if(scheme==='grayscale'){var gray=Math.round(t*255);return [gray,gray,gray];}
+    var hue=(t*(scheme==='psychedelic'?1080:720))%360,c=scheme==='psychedelic'?0.9:0.8,m=(1-c)/2,x=c*(1-Math.abs((hue/60)%2-1));
+    var rgb=hue<60?[c,x,0]:hue<120?[x,c,0]:hue<180?[0,c,x]:hue<240?[0,x,c]:hue<300?[x,0,c]:[c,0,x];
+    return rgb.map(function(channel){return Math.round((channel+m)*255);});
+  }
+  function artStudioFractalSample(model,x,y) {
+    if(model.fractalType==='sierpinski'){
+      // Barycentric subdivision of an equilateral triangle. Remove the middle
+      // child at each level; sample deterministically instead of random dots.
+      var height=2.76*Math.sqrt(3)/2,top=-height/2,bottom=height/2;
+      var a=(bottom-y)/height,b=(1-a-x/1.38)/2,c=1-a-b;
+      if(a<0||b<0||c<0)return -1;
+      for(var level=0;level<model.fractalDepth;level++){
+        if(a>=0.5){a=a*2-1;b*=2;c*=2;}
+        else if(b>=0.5){a*=2;b=b*2-1;c*=2;}
+        else if(c>=0.5){a*=2;b*=2;c=c*2-1;}
+        else return -1;
+      }
+      return 0.15+(y-top)/height*0.65+(x+1.38)/2.76*0.15;
+    }
+    var julia=model.fractalType==='julia',zr=julia?x:0,zi=julia?y:0,cr=julia?model.juliaReal/100:x,ci=julia?model.juliaImag/100:y,iter=0,max=model.fractalIter;
+    // A radius of 2 is insufficient for some exposed Julia constants. This
+    // bound satisfies R²-R >= |c| for every supported constant.
+    var radius=julia?Math.max(2,(1+Math.sqrt(1+4*Math.hypot(cr,ci)))/2):2,bound=radius*radius;
+    while(iter<max&&zr*zr+zi*zi<=bound){
+      if(model.fractalType==='burningShip'){zr=Math.abs(zr);zi=Math.abs(zi);}
+      var next=zr*zr-zi*zi+cr;zi=2*zr*zi+ci;zr=next;iter++;
+    }
+    if(iter===max&&zr*zr+zi*zi<=bound)return -1;
+    var smooth=iter+1-Math.log(Math.log(Math.sqrt(zr*zr+zi*zi))/Math.log(2))/Math.log(2);
+    return Math.max(0,(Number.isFinite(smooth)?smooth:iter)/max);
+  }
+  function artStudioFractalRaster(context,model,width,height) {
+    var image=context.createImageData(width,height),row=0;
+    var origin=artStudioFractalPoint(model,0,0),step=3/(model.fractalZoom*width);
+    return {image:image,get rows(){return row;},renderTo:function(end){
+      end=Math.min(height,end);
+      for(;row<end;row++)for(var column=0;column<width;column++){
+        var sample=artStudioFractalSample(model,origin[0]+(column+0.5)*step,origin[1]+(row+0.5)*step);
+        var color=sample<0?(model.fractalType==='sierpinski'?[10,10,26]:[0,0,0]):artStudioFractalColor(sample,model.fractalColor),offset=(row*width+column)*4;
+        image.data[offset]=color[0];image.data[offset+1]=color[1];image.data[offset+2]=color[2];image.data[offset+3]=255;
+      }
+    }};
+  }
 
   // The live watercolor grid is intentionally kept outside React state. This
   // small session cache lets wet paint keep diffusing after the canvas is
@@ -546,10 +2210,50 @@ const d = labToolData.artStudio || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
           const updMany = (values) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, ...values } }));
           const pixelHistoryRef = React.useRef({ undo: [], redo: [] });
+          const tessHistoryRef = React.useRef({undo:[],redo:[]});
+          const fractalHistoryRef = React.useRef({undo:[],redo:[]});
+          const fractalModel = artStudioFractalModel(d);
+          const fractalCanvasDescription = formatArtStudioLearningText(__alloT('stem.artstudio.fractal_output_description','{description}. {detail}, {zoom} times zoom, horizontal pan {x}, vertical pan {y}, {color} color scheme.'), {
+            description:fractalModel.fractalType==='mandelbrot'?__alloT('stem.artstudio.fractal_description_mandelbrot','Mandelbrot fractal: a dark cardioid and circular bulbs bordered by repeating colored tendrils'):fractalModel.fractalType==='julia'?__alloT('stem.artstudio.fractal_description_julia','Julia fractal: self-similar colored branches generated from the selected complex constant'):fractalModel.fractalType==='burningShip'?__alloT('stem.artstudio.fractal_description_ship','Burning Ship fractal: an asymmetric ship-like boundary with flame-shaped repeating detail'):__alloT('stem.artstudio.fractal_description_sierpinski','Sierpinski triangle: a self-similar triangle subdivided into three smaller triangles'),
+            detail:formatArtStudioLearningText(fractalModel.fractalType==='sierpinski'?__alloT('stem.artstudio.fractal_description_depth','{value} subdivisions'):__alloT('stem.artstudio.fractal_description_iterations','{value} maximum iterations'),{value:fractalModel.fractalType==='sierpinski'?fractalModel.fractalDepth:fractalModel.fractalIter}),
+            zoom:Number(fractalModel.fractalZoom.toFixed(5)),x:Number(fractalModel.fractalPanX.toFixed(5)),y:Number(fractalModel.fractalPanY.toFixed(5)),color:__alloT('stem.artstudio.fractal_color_'+fractalModel.fractalColor,fractalModel.fractalColor)
+          });
+          function changeFractal(values) {
+            var history=fractalHistoryRef.current,before=history.current||fractalModel,after=artStudioFractalModel(Object.assign({},before,values));
+            if(JSON.stringify(before)===JSON.stringify(after))return;
+            history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];
+            history.current=after;history.expected=JSON.stringify(after);
+            var canvas=document.getElementById('fractalCanvas');if(canvas)canvas._fractalModel=after;
+            updMany(after);
+          }
+          function changeFractalHistory(redo) {
+            var history=fractalHistoryRef.current,source=redo?history.redo:history.undo;if(!source.length)return;
+            (redo?history.undo:history.redo).push(history.current||fractalModel);var target=source.pop();history.current=target;history.expected=JSON.stringify(target);
+            var canvas=document.getElementById('fractalCanvas');if(canvas)canvas._fractalModel=target;
+            updMany(target);
+            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.fractal_forward_done','Next fractal view restored.'):__alloT('stem.artstudio.fractal_back_done','Previous fractal view restored.'));
+          }
+          const tessModel = artStudioTessModel(d);
+          const tessColors = artStudioTessColors(d.tessClickData);
+          function tessCheckpoint(){return Object.assign({},tessModel,{tessClickData:Object.assign({},tessColors)});}
+          function changeTessellation(values){
+            var before=tessHistoryRef.current.current||tessCheckpoint(),after=Object.assign({},before,values);
+            if(JSON.stringify(before)===JSON.stringify(after))return;
+            var history=tessHistoryRef.current;history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];
+            history.current=after;history.expected=JSON.stringify(after);updMany(values);
+          }
+          function changeTessHistory(redo){
+            var history=tessHistoryRef.current,source=redo?history.redo:history.undo;if(!source.length)return;
+            (redo?history.undo:history.redo).push(history.current||tessCheckpoint());var target=source.pop();history.current=target;history.expected=JSON.stringify(target);updMany(target);
+            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.tess_redone','Tessellation edit redone.'):__alloT('stem.artstudio.tess_undone','Tessellation edit undone.'));
+          }
           const pixelViewportRef = React.useRef(null);
           const pixelZoomAnchorRef = React.useRef(null);
           const [pixelZoom, setPixelZoom] = React.useState(1);
           const [pixelFit, setPixelFit] = React.useState(512);
+          const [pixelEditColor, setPixelEditColor] = React.useState(null);
+          const [pixelHexDraft, setPixelHexDraft] = React.useState(null);
+          const [pixelColorPage, setPixelColorPage] = React.useState(0);
           const watercolorPaperRef = React.useRef(null);
           const [watercolorFit, setWatercolorFit] = React.useState(512);
           const pixelGridSize = [8, 16, 24, 32, 48, 64].indexOf(Number(d.pixelGrid)) >= 0 ? Number(d.pixelGrid) : 16;
@@ -645,14 +2349,17 @@ const d = labToolData.artStudio || {};
           }, [d.tab, d.studioHome]);
           const normalizeThreadKitColor = function (color) {
             if (!color || typeof color !== 'object') return null;
+            if (!['h', 's', 'l'].every(function (key) { return typeof color[key] === 'number' || (typeof color[key] === 'string' && color[key].trim() !== ''); })) return null;
             var h = Number(color.h), s = Number(color.s), l = Number(color.l);
             if (!isFinite(h) || !isFinite(s) || !isFinite(l)) return null;
+            // Keep fractional channels: rounding HSL changes an exact RGB color.
             return {
-              h: Math.round(((h % 360) + 360) % 360),
-              s: Math.round(Math.max(0, Math.min(100, s))),
-              l: Math.round(Math.max(0, Math.min(100, l)))
+              h: ((h % 360) + 360) % 360,
+              s: Math.max(0, Math.min(100, s)),
+              l: Math.max(0, Math.min(100, l))
             };
           };
+          const studioColorValueLabel = function (value) { return Number.isFinite(value) ? Number(value.toFixed(1)) : 0; };
           const sanitizeStudioThreadKitEntry = function (candidate) {
             var source = candidate && typeof candidate === 'object' ? candidate : {};
             var paletteSource = source.palette && typeof source.palette === 'object' ? source.palette : null;
@@ -730,18 +2437,112 @@ const d = labToolData.artStudio || {};
           // missing pos, a non-object stop, and a non-finite hue.
           const ART_STUDIO_GRADIENT_STOPS = [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
           const artStudioGradientStops = function (raw) {
-            var list = Array.isArray(raw) ? raw : null;
-            if (!list || !list.length) return ART_STUDIO_GRADIENT_STOPS.slice();
-            var safe = [];
-            for (var i = 0; i < list.length && safe.length < 8; i++) {
-              var stop = list[i];
-              if (!stop || typeof stop !== 'object') continue;
-              var hue = (typeof stop.hue === 'number' && isFinite(stop.hue)) ? stop.hue : 0;
-              var pos = (typeof stop.pos === 'number' && isFinite(stop.pos)) ? stop.pos : 0;
-              safe.push({ hue: ((hue % 360) + 360) % 360, pos: Math.max(0, Math.min(100, pos)) });
+            var list=Array.isArray(raw)&&raw.length?raw:ART_STUDIO_GRADIENT_STOPS,safe=[];
+            for(var i=0;i<list.length&&safe.length<8;i++){
+              var stop=list[i];if(!stop||typeof stop!=='object')continue;
+              var hue=typeof stop.hue==='number'&&isFinite(stop.hue)?stop.hue:0;
+              var pos=typeof stop.pos==='number'&&isFinite(stop.pos)?stop.pos:0;
+              var sat=typeof stop.sat==='number'&&isFinite(stop.sat)?stop.sat:85;
+              var lit=typeof stop.lit==='number'&&isFinite(stop.lit)?stop.lit:55;
+              var next={hue:((hue%360)+360)%360,sat:Math.max(0,Math.min(100,sat)),lit:Math.max(0,Math.min(100,lit)),pos:Math.max(safe.length?safe[safe.length-1].pos:0,Math.min(100,pos))};
+              if(stop.alpha!==undefined)next.alpha=typeof stop.alpha==='number'&&isFinite(stop.alpha)?Math.max(0,Math.min(100,stop.alpha)):100;
+              safe.push(next);
             }
-            return safe.length ? safe : ART_STUDIO_GRADIENT_STOPS.slice();
+            // CSS requires two stops even for a constant color. Recover legacy
+            // one-stop saves as a uniform ramp instead of exporting invalid CSS.
+            if(safe.length===1)return [Object.assign({},safe[0],{pos:0}),Object.assign({},safe[0],{pos:100})];
+            return safe.length?safe:ART_STUDIO_GRADIENT_STOPS.map(function(stop){return Object.assign({sat:85,lit:55},stop);});
           };
+          const artStudioGradientAlpha=function(stop){return stop.alpha===undefined?100:stop.alpha;};
+          const artStudioGradientColor=function(stop){return artStudioGradientAlpha(stop)===100?'hsl('+stop.hue+', '+stop.sat+'%, '+stop.lit+'%)':'hsla('+stop.hue+', '+stop.sat+'%, '+stop.lit+'%, '+artStudioGradientAlpha(stop)/100+')';};
+          const artStudioGradientConfig=function(values){
+            var raw=values||d;
+            function number(key,fallback,min,max){return typeof raw[key]==='number'&&Number.isFinite(raw[key])?Math.max(min,Math.min(max,raw[key])):fallback;}
+            return {gradType:['linear','radial','conic'].indexOf(raw.gradType)>=0?raw.gradType:'linear',gradBlend:raw.gradBlend==='hard'?'hard':'smooth',gradAngle:number('gradAngle',90,0,360),gradRotation:number('gradRotation',0,0,360),gradCenterX:number('gradCenterX',50,0,100),gradCenterY:number('gradCenterY',50,0,100),gradStops:artStudioGradientStops(raw.gradStops)};
+          };
+          const artStudioGradientRenderStops=function(values){
+            var model=artStudioGradientConfig(values),stops=model.gradStops;if(model.gradBlend!=='hard')return stops;
+            var bands=[];stops.forEach(function(stop,index){bands.push(Object.assign({},stop,{pos:index===0?0:(stops[index-1].pos+stop.pos)/2}));bands.push(Object.assign({},stop,{pos:index===stops.length-1?100:(stop.pos+stops[index+1].pos)/2}));});return bands;
+          };
+          const artStudioGradientAngle=function(){return artStudioGradientConfig().gradAngle;};
+          const artStudioGradientCSS=function(values){
+            var model=artStudioGradientConfig(values),stops=artStudioGradientRenderStops(model).map(function(stop){return artStudioGradientColor(stop)+' '+stop.pos+'%';}).join(', ');
+            var center=model.gradCenterX===50&&model.gradCenterY===50?'':' at '+model.gradCenterX+'% '+model.gradCenterY+'%';
+            if(model.gradType==='radial')return 'radial-gradient(circle farthest-corner'+center+' in srgb, '+stops+')';
+            if(model.gradType==='conic')return 'conic-gradient(from '+model.gradRotation+'deg'+center+' in srgb, '+stops+')';
+            return 'linear-gradient('+model.gradAngle+'deg in srgb, '+stops+')';
+          };
+          const artStudioGradientRGB=function(stop){
+            var h=stop.hue/60,s=stop.sat/100,l=stop.lit/100,c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs(h%2-1)),m=l-c/2;
+            return (h<1?[c,x,0]:h<2?[x,c,0]:h<3?[0,c,x]:h<4?[0,x,c]:h<5?[x,0,c]:[c,0,x]).map(function(v){return (v+m)*255;}).concat([artStudioGradientAlpha(stop)/100]);
+          };
+          const artStudioGradientSample=function(stops,colors,position){
+            var lower=0;while(lower<stops.length-1&&position>=stops[lower+1].pos)lower++;
+            var upper=Math.min(stops.length-1,lower+1),a=colors[lower],b=colors[upper];
+            var fraction=position<=stops[lower].pos?0:Math.min(1,(position-stops[lower].pos)/Math.max(.000001,stops[upper].pos-stops[lower].pos));
+            var alpha=a[3]+(b[3]-a[3])*fraction;
+            // CSS interpolates premultiplied sRGB; native Canvas gradients do not.
+            return [0,1,2].map(function(channel){return alpha?(a[channel]*a[3]*(1-fraction)+b[channel]*b[3]*fraction)/alpha:0;}).concat([alpha]);
+          };
+          const artStudioGradientPaint=function(canvas,values){
+            var model=artStudioGradientConfig(values),ctx=canvas.getContext('2d');if(!ctx)return;
+            var W=canvas.width,H=canvas.height;canvas.width=W;
+            var stops=artStudioGradientRenderStops(model),transparent=stops.some(function(stop){return artStudioGradientAlpha(stop)<100;});
+            var radians=model.gradAngle*Math.PI/180,dx=Math.sin(radians),dy=-Math.cos(radians),length=Math.abs(W*dx)+Math.abs(H*dy);
+            var cx=W*model.gradCenterX/100,cy=H*model.gradCenterY/100,radius=Math.hypot(Math.max(cx,W-cx),Math.max(cy,H-cy));
+            var rotation=model.gradRotation*Math.PI/180,gradient=null;
+            if(!transparent){
+              if(model.gradType==='linear')gradient=ctx.createLinearGradient(W/2-dx*length/2,H/2-dy*length/2,W/2+dx*length/2,H/2+dy*length/2);
+              else if(model.gradType==='radial')gradient=ctx.createRadialGradient(cx,cy,0,cx,cy,radius);
+              else if(typeof ctx.createConicGradient==='function')gradient=ctx.createConicGradient(rotation-Math.PI/2,cx,cy);
+            }
+            if(gradient&&typeof gradient.addColorStop==='function'){
+              stops.forEach(function(stop){gradient.addColorStop(stop.pos/100,artStudioGradientColor(stop));});ctx.fillStyle=gradient;ctx.fillRect(0,0,W,H);return;
+            }
+            var colors=stops.map(artStudioGradientRGB),pixels=ctx.createImageData(W,H),tau=Math.PI*2;
+            for(var y=0;y<H;y++)for(var x=0;x<W;x++){
+              var position=model.gradType==='linear'?50+((x+.5-W/2)*dx+(y+.5-H/2)*dy)/length*100:model.gradType==='radial'?Math.hypot(x+.5-cx,y+.5-cy)/radius*100:(((Math.atan2(y+.5-cy,x+.5-cx)+Math.PI/2-rotation)%tau+tau)%tau)/tau*100;
+              var rgba=artStudioGradientSample(stops,colors,position),offset=(y*W+x)*4;
+              for(var channel=0;channel<3;channel++)pixels.data[offset+channel]=Math.round(rgba[channel]);pixels.data[offset+3]=Math.round(rgba[3]*255);
+            }
+            ctx.putImageData(pixels,0,0);
+          };
+          const artStudioGradientInsert=function(model){
+            var stops=model.gradStops.slice();if(stops.length>=8)return stops;
+            var positions=[0].concat(stops.map(function(stop){return stop.pos;}),[100]),gap=-1,position=50;
+            for(var i=1;i<positions.length;i++){var distance=positions[i]-positions[i-1];if(distance>gap){gap=distance;position=(positions[i]+positions[i-1])/2;}}
+            var rendered=artStudioGradientRenderStops(model),rgba=artStudioGradientSample(rendered,rendered.map(artStudioGradientRGB),position);
+            var rgb=rgba.slice(0,3).map(function(value){return value/255;}),max=Math.max.apply(null,rgb),min=Math.min.apply(null,rgb),delta=max-min,light=(max+min)/2,hue=0,sat=0;
+            if(delta){sat=delta/(1-Math.abs(2*light-1));hue=60*(max===rgb[0]?((rgb[1]-rgb[2])/delta+6)%6:max===rgb[1]?(rgb[2]-rgb[0])/delta+2:(rgb[0]-rgb[1])/delta+4);}
+            var added={hue:Number(hue.toFixed(4)),sat:Number((sat*100).toFixed(4)),lit:Number((light*100).toFixed(4)),pos:position};
+            if(rgba[3]<1)added.alpha=Number((rgba[3]*100).toFixed(4));stops.push(added);return stops.sort(function(a,b){return a.pos-b.pos;});
+          };
+          const gradientModel=artStudioGradientConfig();
+          const gradientHistoryRef=React.useRef({undo:[],redo:[]});
+          function changeGradient(values){
+            var history=gradientHistoryRef.current,before=history.current||gradientModel,after=artStudioGradientConfig(Object.assign({},before,values));
+            if(JSON.stringify(before)===JSON.stringify(after))return;
+            if(!history.gesture||!history.gesture.recorded){history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];if(history.gesture)history.gesture.recorded=true;}
+            history.current=after;history.expected=JSON.stringify(after);updMany(after);
+          }
+          function changeGradientStop(index,key,value){var stops=gradientHistoryRef.current.current.gradStops.slice();stops[index]=Object.assign({},stops[index]);stops[index][key]=value;changeGradient({gradStops:stops});}
+          function changeGradientHistory(forward){
+            var history=gradientHistoryRef.current,from=forward?history.redo:history.undo;history.gesture=null;if(!from.length)return;
+            (forward?history.undo:history.redo).push(history.current);history.current=from.pop();history.expected=JSON.stringify(history.current);updMany(history.current);
+            if(typeof announceToSR==='function')announceToSR(forward?__alloT('stem.artstudio.gradient_redone','Gradient edit redone.'):__alloT('stem.artstudio.gradient_undone','Gradient edit undone.'));
+          }
+          function gradientBeginGesture(event){if(event.target&&event.target.type==='range'&&!gradientHistoryRef.current.gesture)gradientHistoryRef.current.gesture={recorded:false,target:event.target};}
+          function gradientEndGesture(event){
+            var gesture=gradientHistoryRef.current.gesture;
+            // Pointerdown precedes focus: blurring the previous control must not
+            // split the gesture that has just begun on a different slider.
+            if(event&&event.type==='blur'&&gesture&&gesture.target!==event.target)return;
+            gradientHistoryRef.current.gesture=null;
+          }
+          function gradientKeyDown(event){
+            var key=event.key.toLowerCase();if((event.ctrlKey||event.metaKey)&&(key==='z'||key==='y')){event.preventDefault();changeGradientHistory(key==='y'||event.shiftKey);}
+            else if(['arrowleft','arrowright','arrowup','arrowdown','home','end','pageup','pagedown'].indexOf(key)>=0)gradientBeginGesture(event);
+          }
           // A saved colour is input, and `d.x || '#fallback'` is a truthiness guard:
           // a number or an object from a hand-edited save walks straight through it
           // and then .toLowerCase() throws, blanking the Watercolor lab.
@@ -803,13 +2604,14 @@ const d = labToolData.artStudio || {};
           const _studioInspectorTabState = React.useState(d.showTour ? 'guide' : 'make');
           const studioInspectorTab = _studioInspectorTabState[0];
           const setStudioInspectorTab = _studioInspectorTabState[1];
+          const [studioFocusView, setStudioFocusView] = React.useState(false);
           const compactStudioQuery = '(max-width: 1279px)';
           const [isCompactStudio, setIsCompactStudio] = React.useState(function () {
             return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(compactStudioQuery).matches;
           });
           const [studioMobileInspectorOpen, setStudioMobileInspectorOpen] = React.useState(false);
-          const studioGuideVisible = !!d.showTour && (!isCompactStudio || studioMobileInspectorOpen);
-          const studioProcessVisible = studioProcessOpen && (!isCompactStudio || studioMobileInspectorOpen);
+          const studioGuideVisible = !studioFocusView && !!d.showTour && (!isCompactStudio || studioMobileInspectorOpen);
+          const studioProcessVisible = !studioFocusView && studioProcessOpen && (!isCompactStudio || studioMobileInspectorOpen);
           const studioInspectorDialogRef = React.useRef(null);
           const studioInspectorReturnRef = React.useRef(null);
           React.useEffect(function () {
@@ -825,6 +2627,7 @@ const d = labToolData.artStudio || {};
             };
           }, []);
           const openCompactStudioInspector = function () {
+            setStudioFocusView(false);
             if (!isCompactStudio || studioMobileInspectorOpen) return;
             studioInspectorReturnRef.current = document.activeElement;
             setStudioMobileInspectorOpen(true);
@@ -871,6 +2674,20 @@ const d = labToolData.artStudio || {};
           const studioArchiveUndo = _studioArchiveUndoState[0];
           const setStudioArchiveUndo = _studioArchiveUndoState[1];
           const studioPersistenceScope = resolveArtStudioPersistenceScope(ctx);
+          const gradientOwner=studioPersistenceScope+'|'+(d.gradRestoreToken||'');
+          const gradientSignature=JSON.stringify(gradientModel);
+          if(gradientHistoryRef.current.owner!==gradientOwner||(gradientHistoryRef.current.expected&&gradientHistoryRef.current.expected!==gradientSignature))gradientHistoryRef.current={owner:gradientOwner,undo:[],redo:[]};
+          gradientHistoryRef.current.expected=gradientSignature;gradientHistoryRef.current.current=gradientModel;
+          const tessOwner=studioPersistenceScope+'|'+(d.tessRestoreToken||'');
+          const tessSignature=JSON.stringify(tessCheckpoint());
+          if(tessHistoryRef.current.owner!==tessOwner||(tessHistoryRef.current.expected&&tessHistoryRef.current.expected!==tessSignature))tessHistoryRef.current={owner:tessOwner,undo:[],redo:[]};
+          tessHistoryRef.current.expected=tessSignature;
+          tessHistoryRef.current.current=tessCheckpoint();
+          const fractalOwner=studioPersistenceScope+'|'+(d.fractalRestoreToken||'');
+          const fractalSignature=JSON.stringify(fractalModel);
+          if(fractalHistoryRef.current.owner!==fractalOwner||(fractalHistoryRef.current.expected&&fractalHistoryRef.current.expected!==fractalSignature))fractalHistoryRef.current={owner:fractalOwner,undo:[],redo:[]};
+          fractalHistoryRef.current.expected=fractalSignature;fractalHistoryRef.current.current=fractalModel;
+          React.useEffect(function(){setStudioFocusView(false);},[studioPersistenceScope]);
           const pixelArtworkOwner = studioPersistenceScope + '|' + (d.pixelRestoreToken || '');
           if (pixelHistoryRef.current.owner !== pixelArtworkOwner) {
             pixelHistoryRef.current = { owner: pixelArtworkOwner, undo: [], redo: [] };
@@ -1353,7 +3170,7 @@ const d = labToolData.artStudio || {};
             stereogram: { try: __alloT("stem.artstudio.learning_start_with_a_simple_depth_shape_and_a_pattern_wi_1a98fa7", "Start with a simple depth shape and a pattern with clear small-scale texture."), notice: __alloT("stem.artstudio.learning_depth_appears_when_each_eye_matches_repeated_inf_d9bb94c", "Depth appears when each eye matches repeated information at a slightly different position."), stretch: __alloT("stem.artstudio.learning_reduce_depth_until_the_hidden_form_is_discoverab_e700f4a", "Reduce depth until the hidden form is discoverable but not immediately obvious."), next: ['contrast', 'gradient'] },
             sculpt3d: { try: __alloT("stem.artstudio.learning_combine_three_forms_and_orbit_before_adding_a_fo_7e94b4d", "Combine three forms and orbit before adding a fourth."), notice: __alloT("stem.artstudio.learning_silhouette_balance_and_negative_space_change_wit_cd72e27", "Silhouette, balance, and negative space change with every viewpoint."), stretch: __alloT("stem.artstudio.learning_make_the_sculpture_feel_stable_from_one_view_and_8e2fff9", "Make the sculpture feel stable from one view and precarious from another."), next: ['contrast', 'gradient'] },
             contrast: { try: __alloT("stem.artstudio.learning_test_one_color_pair_then_change_only_the_foregro_f990a46", "Test one color pair, then change only the foreground lightness."), notice: __alloT("stem.artstudio.learning_readable_contrast_depends_on_relative_luminance__64b8ca8", "Readable contrast depends on relative luminance, text size, and visual context."), stretch: __alloT("stem.artstudio.learning_keep_the_relationship_expressive_while_meeting_t_c663445", "Keep the relationship expressive while meeting the intended accessibility target."), next: ['colorWheel', 'gradient'] },
-            harmonyHunt: { try: __alloT("stem.artstudio.learning_compare_a_simple_frequency_ratio_with_a_more_com_0ca2eeb", "Compare a simple frequency ratio with a more complex one."), notice: __alloT("stem.artstudio.learning_small_whole_number_relationships_often_feel_more_e776ebe", "Small whole-number relationships often feel more stable in sound and pattern."), stretch: __alloT("stem.artstudio.learning_translate_one_interval_into_spacing_scale_or_col_5576f8a", "Translate one interval into spacing, scale, or color rather than illustrating a note."), next: ['spirograph', 'generative'] }
+            harmonyHunt: { try: __alloT('stem.artstudio.hh_coach_try','Compare neighboring and opposite hues while keeping saturation and lightness fixed.'), notice: __alloT('stem.artstudio.hh_coach_notice','Hue spacing defines the relationship. Saturation and lightness change how the same arrangement appears.'), stretch: __alloT('stem.artstudio.hh_coach_stretch','Log two palettes, explain their differences, and carry one into an artwork.'), next: ['pixel', 'watercolor'] }
           };
           const STUDIO_SIMPLE_COACH = {
             artistExplorer: { try: __alloT("stem.artstudio.guide_simple_artistExplorer_try", "Choose one artist. Find a color, shape, or material they use."), notice: __alloT("stem.artstudio.guide_simple_artistExplorer_notice", "How does that choice help tell a story?"), stretch: __alloT("stem.artstudio.guide_simple_artistExplorer_stretch", "Use a related idea to make something of your own."), term: __alloT("stem.artstudio.guide_simple_artistExplorer_term", "Artistic choice"), definition: __alloT("stem.artstudio.guide_simple_artistExplorer_definition", "A decision about color, shape, material, or meaning.") },
@@ -1373,7 +3190,7 @@ const d = labToolData.artStudio || {};
             stereogram: { try: __alloT("stem.artstudio.guide_simple_stereogram_try", "Choose a simple depth shape and a repeating pattern."), notice: __alloT("stem.artstudio.guide_simple_stereogram_notice", "Look for the hidden shape, or explore the depth map."), stretch: __alloT("stem.artstudio.guide_simple_stereogram_stretch", "Try a smaller depth difference. Compare both versions."), term: __alloT("stem.artstudio.guide_simple_stereogram_term", "Depth"), definition: __alloT("stem.artstudio.guide_simple_stereogram_definition", "How near or far a part of a picture seems to be.") },
             sculpt3d: { try: __alloT("stem.artstudio.guide_simple_sculpt3d_try", "Put three shapes together. Turn the view."), notice: __alloT("stem.artstudio.guide_simple_sculpt3d_notice", "How does the outside shape change as you turn?"), stretch: __alloT("stem.artstudio.guide_simple_sculpt3d_stretch", "Choose a different view. Adjust one shape."), term: __alloT("stem.artstudio.guide_simple_sculpt3d_term", "Viewpoint"), definition: __alloT("stem.artstudio.guide_simple_sculpt3d_definition", "The position from which you look at something.") },
             contrast: { try: __alloT("stem.artstudio.guide_simple_contrast_try", "Choose a text color and a background color."), notice: __alloT("stem.artstudio.guide_simple_contrast_notice", "Check the result. Change just the text color."), stretch: __alloT("stem.artstudio.guide_simple_contrast_stretch", "Keep a pair that meets the target and suits your artwork."), term: __alloT("stem.artstudio.guide_simple_contrast_term", "Contrast ratio"), definition: __alloT("stem.artstudio.guide_simple_contrast_definition", "A number comparing how light or dark two colors are.") },
-            harmonyHunt: { try: __alloT("stem.artstudio.guide_simple_harmonyHunt_try", "Compare two sound or color combinations."), notice: __alloT("stem.artstudio.guide_simple_harmonyHunt_notice", "Which parts seem to fit together?"), stretch: __alloT("stem.artstudio.guide_simple_harmonyHunt_stretch", "Use one combination to inspire a visual pattern."), term: __alloT("stem.artstudio.guide_simple_harmonyHunt_term", "Frequency"), definition: __alloT("stem.artstudio.guide_simple_harmonyHunt_definition", "How many times something repeats in one second.") }
+            harmonyHunt: { try: __alloT('stem.artstudio.hh_simple_try','Compare two groups of colors.'), notice: __alloT('stem.artstudio.hh_simple_notice','Are the colors near each other or across the wheel?'), stretch: __alloT('stem.artstudio.hh_simple_stretch','Save a group of colors and try it in your artwork.'), term: __alloT('stem.artstudio.hh_simple_term','Hue spacing'), definition: __alloT('stem.artstudio.hh_simple_definition','How far apart colors sit around a color wheel.') }
           };
           const simpleStudioGuide = resolveStudioGuideWording(d.studioGuideWording) === 'simple';
           const simpleStudioCoach = STUDIO_SIMPLE_COACH[tab];
@@ -1382,7 +3199,7 @@ const d = labToolData.artStudio || {};
           };
           const activeArtStudioGroup = artStudioGroupForTab(tab);
           const visibleArtStudioTabs = ART_STUDIO_TAB_ITEMS.filter(function (item) { return activeArtStudioGroup.tabs.indexOf(item.id) !== -1; });
-          const canvasArtworkAvailable = ['colorWheel', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d'].indexOf(tab) !== -1;
+          const canvasArtworkAvailable = ['mixer', 'colorWheel', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d'].indexOf(tab) !== -1;
           const activeCreativeThread = CREATIVE_THREAD_TEMPLATES.filter(function (thread) { return thread.id === d.studioThreadId; })[0] || null;
           const activeCreativeThreadStep = activeCreativeThread
             ? Math.max(0, Math.min(activeCreativeThread.steps.length - 1, Math.floor(Number(d.studioThreadStep) || 0)))
@@ -1441,13 +3258,71 @@ const d = labToolData.artStudio || {};
               l: typeof d[prefix + 'Lit'] === 'number' ? d[prefix + 'Lit'] : typeof d.lit === 'number' ? d.lit : 50
             };
           };
+          const applyStudioScopedColor = function (prefix, nextColor, resetKey) {
+            var color = normalizeThreadKitColor(nextColor); if (!color) return;
+            var patch = {};
+            patch[prefix + 'Hue'] = color.h; patch[prefix + 'Sat'] = color.s; patch[prefix + 'Lit'] = color.l;
+            if (resetKey) patch[resetKey] = (Number(d[resetKey]) || 0) + 1;
+            if (prefix === 'gen') { patch.genFrame = 0; patch.genState = null; patch.genSnapshot = ''; }
+            updMany(patch);
+          };
           const pixelColor = readStudioScopedColor('pixel');
+          const pixelArtworkColors = tab === 'pixel' ? artStudioPixelInventory(d.pixelData,pixelGridSize) : [];
+          const pixelSelectedColor = pixelArtworkColors.find(function(color){return color.hex===pixelEditColor;}) || pixelArtworkColors[0] || null;
+          const pixelSelectedHex = pixelSelectedColor ? pixelSelectedColor.hex : '';
+          const pixelReplacementDraft = pixelHexDraft === null ? pixelSelectedHex.slice(0,7) : pixelHexDraft;
+          const pixelReplacementHex = artStudioMixerHex(pixelReplacementDraft);
+          const pixelPreviewMode = ['native','tile'].indexOf(d.pixelPreviewMode)>=0 ? d.pixelPreviewMode : 'sprite';
+          const pixelPreviewPaper = ['light','dark'].indexOf(d.pixelPreviewPaper)>=0 ? d.pixelPreviewPaper : 'checker';
+          const pixelColorPages = Math.max(1,Math.ceil(pixelArtworkColors.length/24));
+          const pixelVisibleColorPage = Math.min(pixelColorPages-1,pixelColorPage);
+          React.useEffect(function(){setPixelEditColor(null);setPixelHexDraft(null);setPixelColorPage(0);},[pixelArtworkOwner]);
+          React.useEffect(function(){setPixelHexDraft(null);},[pixelSelectedHex]);
+          function usePixelArtworkColor() {
+            if (!pixelReplacementHex) return;
+            var color = artStudioMixerHSL(pixelReplacementHex);
+            updMany({pixelHue:color.h,pixelSat:color.s,pixelLit:color.l,pixelTool:'brush'});
+            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.pixel_color_picked','Color picked. Brush selected.'));
+          }
+          function replacePixelArtworkColor() {
+            var canvas = document.getElementById('pixelCanvas');
+            if (!canvas || !canvas._pixelReplaceColor || !pixelSelectedColor || !pixelReplacementHex) return;
+            var count = canvas._pixelReplaceColor(pixelSelectedHex,pixelReplacementHex);
+            if (!count) return;
+            setPixelEditColor(pixelReplacementHex+pixelSelectedHex.slice(7)); setPixelHexDraft(null);
+            if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.pixel_recolor_done','Recolored {count} cells. Undo restores the original colors.'),{count:count}));
+          }
           const symmetryColor = readStudioScopedColor('sym');
           const spiroColor = readStudioScopedColor('spiro');
-          const generativeColor = readStudioScopedColor('gen');
+          const spiroModel = artStudioSpiroModel(d, spiroColor);
+          const spiroRuntimeRef = React.useRef(null);
+          React.useEffect(function () {
+            return function () { if (spiroRuntimeRef.current) spiroRuntimeRef.current.dispose(); };
+          }, []);
+          const generativeNumber = function (value, fallback, min, max) {
+            return typeof value === 'number' && Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+          };
+          const generativeRawColor = readStudioScopedColor('gen');
+          const generativeColor = {
+            h: generativeNumber(generativeRawColor.h, 0, 0, 360),
+            s: generativeNumber(generativeRawColor.s, 100, 0, 100),
+            l: generativeNumber(generativeRawColor.l, 50, 0, 100)
+          };
+          const generativeModel = {
+            style: ['flow', 'rain', 'stars', 'aurora'].indexOf(d.genStyle) === -1 ? 'flow' : d.genStyle,
+            density: Math.round(generativeNumber(d.genDensity, 100, 20, 300)),
+            seed: generativeNumber(d.genSeed, 1, 0, 4294967295) >>> 0,
+            trailFade: generativeNumber(d.genTrailFade, 4, 1, 25),
+            speed: [0.25, 0.5, 1, 2].indexOf(d.genSpeed) === -1 ? 1 : d.genSpeed,
+            burstSize: Math.round(generativeNumber(d.genBurstSize, 30, 5, 100))
+          };
+          const generativeRuntimeRef = React.useRef(null);
+          React.useEffect(function () {
+            return function () { if (generativeRuntimeRef.current) generativeRuntimeRef.current.dispose(); };
+          }, []);
           const resetGenerativeRun = function (changes) {
             updMany(Object.assign({
-              genSeed: typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1,
+              genSeed: generativeModel.seed,
               genFrame: 0,
               genState: null,
               genSnapshot: '',
@@ -1456,6 +3331,24 @@ const d = labToolData.artStudio || {};
           };
           const spinColor = readStudioScopedColor('spin');
           const stringColor = readStudioScopedColor('str');
+          const stringModel = artStudioStringModel(d, stringColor);
+          const stringGeometry = React.useMemo(function () { return artStudioStringGeometry(stringModel); }, [JSON.stringify(stringModel)]);
+          const stringRuntimeRef = React.useRef(null);
+          const fractalRuntimeRef = React.useRef(null);
+          const opRuntimeRef = React.useRef(null);
+          const spinRuntimeRef = React.useRef(null);
+          const spinModel = artStudioSpinModel(d,reducedMotion);
+          React.useEffect(function(){return function(){if(spinRuntimeRef.current)spinRuntimeRef.current.dispose();};},[]);
+          const opModel = artStudioOpModel(d);
+          const opPaused = d.opPaused===undefined?reducedMotion:!!d.opPaused;
+          function changeOp(values){var canvas=document.getElementById('opArtCanvas'),next=Object.assign({},canvas&&canvas._captureArtStudioState?canvas._captureArtStudioState():{opPhase:artStudioOpPhase(d.opPhase),opPaused:opPaused},values);if(canvas&&canvas._opUpdate)canvas._opUpdate(artStudioOpModel(Object.assign({},opModel,next)),next.opPaused,next.opPhase,Object.prototype.hasOwnProperty.call(values,'opPhase'));updMany(next);}
+          React.useEffect(function(){return function(){if(opRuntimeRef.current)opRuntimeRef.current.dispose();};},[]);
+          React.useEffect(function () {
+            return function () { if (fractalRuntimeRef.current) fractalRuntimeRef.current.dispose(); };
+          }, []);
+          React.useEffect(function () {
+            return function () { if (stringRuntimeRef.current) stringRuntimeRef.current.dispose(); };
+          }, []);
           React.useEffect(function () {
             var prefix = STUDIO_SCOPED_COLOR_PREFIXES[tab];
             if (!prefix) return;
@@ -1466,24 +3359,8 @@ const d = labToolData.artStudio || {};
             if (Object.keys(colorPatch).length) updMany(colorPatch);
           }, [tab]);
           const createColorWheelThreadPalette = function () {
-            var baseHue = typeof d.hue === 'number' ? d.hue : 0;
-            var saturation = typeof d.sat === 'number' ? d.sat : 100;
-            var lightness = typeof d.lit === 'number' ? d.lit : 50;
-            var harmony = d.harmony || 'complementary';
-            var harmonyOffsets = {
-              complementary: [0, 180],
-              triadic: [0, 120, 240],
-              analogous: [-30, 0, 30],
-              split: [0, 150, 210]
-            };
-            var offsets = harmonyOffsets[harmony] || harmonyOffsets.complementary;
-            return {
-              sourceTab: 'colorWheel',
-              harmony: harmony,
-              colors: offsets.map(function (offset) {
-                return normalizeThreadKitColor({ h: baseHue + offset, s: saturation, l: lightness });
-              }).filter(Boolean)
-            };
+            var model=artStudioWheelModel(d);
+            return {sourceTab:'colorWheel',harmony:model.harmony,colors:artStudioWheelPalette(model).map(function(color){return normalizeThreadKitColor(color);})};
           };
           const captureColorWheelPaletteToThreadKit = function () {
             var runId = activeCreativeThreadRunId || String(d.studioCurrentProjectRunId || d.studioFreeProjectId || '');
@@ -1511,6 +3388,17 @@ const d = labToolData.artStudio || {};
             if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_thread_kit_palette_loaded_in_pixel_art', 'Thread Kit palette loaded in Pixel Art.'), 'success');
             if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_thread_kit_palette_loaded_in_pixel_art', 'Thread Kit palette loaded in Pixel Art.'));
           };
+          const applyThreadKitPaletteToGradient = function () {
+            if(!studioThreadPalette.length)return;
+            var colors=studioThreadPalette.length===1?[studioThreadPalette[0],studioThreadPalette[0]]:studioThreadPalette;
+            changeGradient({gradStops:colors.map(function(color,index){return {hue:color.h,sat:color.s,lit:color.l,pos:Math.round(index*100/(colors.length-1))};})});
+            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.gradient_palette_loaded','Thread Kit colors loaded in Gradient Lab.'));
+          };
+          const captureGradientPaletteToThreadKit = function () {
+            var runId=activeCreativeThreadRunId || String(d.studioCurrentProjectRunId || d.studioFreeProjectId || '');
+            storeStudioThreadKitEntry({schemaVersion:1,accessibilityTarget:studioThreadKit.accessibilityTarget,palette:{sourceTab:'gradient',harmony:'custom',colors:artStudioGradientStops(d.gradStops).map(function(stop){return {h:stop.hue,s:stop.sat,l:stop.lit};})}},runId);
+            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.gradient_palette_saved','Gradient palette added to the Thread Kit.'));
+          };
           const applyThreadKitPaletteToContrast = function () {
             var contrastPatch = {
               contrastAccessibilityTarget: studioThreadKit.accessibilityTarget,
@@ -1522,11 +3410,78 @@ const d = labToolData.artStudio || {};
               contrastPatch.fgH = foreground.h; contrastPatch.fgS = foreground.s; contrastPatch.fgL = foreground.l;
               contrastPatch.bgH = background.h; contrastPatch.bgS = background.s; contrastPatch.bgL = background.l;
             }
-            updMany(contrastPatch);
+            changeContrast(contrastPatch);
             var transferLabel = studioThreadPalette.length >= 2 ? 'Thread Kit colors and contrast goal loaded.' : 'Thread Kit contrast goal loaded.';
             if (typeof addToast === 'function') addToast(transferLabel, 'success');
             if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_the_selected_goal_is', '{value1} The selected goal is {value2}'), { value1: transferLabel, value2: (studioThreadKit.accessibilityTarget === 7 ? __alloT('stem.artstudio.sr_aaa_7_to_1', 'AAA 7 to 1.') : __alloT('stem.artstudio.sr_aa_4_5_to_1', 'AA 4.5 to 1.')) }));
           };
+          const threadPaletteOwner = studioPersistenceScope + '|' + studioThreadKitRunId;
+          const threadPaletteSignature = JSON.stringify(studioThreadKit.palette || null);
+          const threadPaletteHistoryRef = React.useRef({undo:[],redo:[]});
+          if (threadPaletteHistoryRef.current.owner !== threadPaletteOwner || (threadPaletteHistoryRef.current.expected !== undefined && threadPaletteHistoryRef.current.expected !== threadPaletteSignature)) threadPaletteHistoryRef.current = {owner:threadPaletteOwner,undo:[],redo:[]};
+          threadPaletteHistoryRef.current.current = studioThreadKit.palette || null;
+          threadPaletteHistoryRef.current.expected = threadPaletteSignature;
+          const [threadPaletteSelected, setThreadPaletteSelected] = React.useState(0);
+          const [threadPaletteHexDraft, setThreadPaletteHexDraft] = React.useState(null);
+          React.useEffect(function () { setThreadPaletteHexDraft(null); setThreadPaletteSelected(function (index) { return Math.max(0, Math.min(index, studioThreadPalette.length - 1)); }); }, [threadPaletteOwner, threadPaletteSignature]);
+          React.useEffect(function () { setThreadPaletteSelected(0); }, [threadPaletteOwner]);
+          const threadPaletteIndex = Math.max(0, Math.min(threadPaletteSelected, studioThreadPalette.length - 1));
+          const threadPaletteColor = studioThreadPalette[threadPaletteIndex] || null;
+          const threadPaletteHex = threadPaletteColor ? artStudioMixerHSLHex(threadPaletteColor.h, threadPaletteColor.s, threadPaletteColor.l) : '#808080';
+          function currentThreadKitColor() {
+            var prefix = STUDIO_SCOPED_COLOR_PREFIXES[tab];
+            if (prefix) return normalizeThreadKitColor(readStudioScopedColor(prefix));
+            if (tab === 'colorWheel') { var wheel = artStudioWheelModel(d); return {h:wheel.hue,s:wheel.sat,l:wheel.lit}; }
+            if (tab === 'mixer') return artStudioMixerHSL(artStudioMixerColor(artStudioMixerModel(d)));
+            if (tab === 'watercolor') return artStudioMixerHSL(artStudioMixerHex(d.watercolorColor) || '#2f6fb0');
+            return null;
+          }
+          function publishThreadPalette(palette) {
+            var history = threadPaletteHistoryRef.current;
+            var entry = Object.assign({}, studioThreadKit); if (palette) entry.palette = palette; else delete entry.palette;
+            history.current = palette; history.expected = JSON.stringify(palette);
+            var runId = storeStudioThreadKitEntry(entry, studioThreadKitRunId);
+            // The first swatch creates a project. Retain its undo across that identity change.
+            history.owner = studioPersistenceScope + '|' + runId;
+          }
+          function changeThreadPalette(colors, selected) {
+            var history = threadPaletteHistoryRef.current, before = history.current;
+            var safe = colors.map(normalizeThreadKitColor).filter(Boolean).slice(0,8);
+            if (JSON.stringify(before ? before.colors : []) === JSON.stringify(safe)) { setThreadPaletteHexDraft(null); return; }
+            var after = safe.length ? {sourceTab:before ? before.sourceTab : tab,harmony:'custom',colors:safe} : null;
+            history.undo.push(before); if (history.undo.length > 30) history.undo.shift(); history.redo = [];
+            setThreadPaletteSelected(Math.max(0, Math.min(selected, safe.length - 1))); setThreadPaletteHexDraft(null); publishThreadPalette(after);
+          }
+          function changeThreadPaletteHistory(redo) {
+            var history = threadPaletteHistoryRef.current, from = redo ? history.redo : history.undo; if (!from.length) return;
+            (redo ? history.undo : history.redo).push(history.current); publishThreadPalette(from.pop());
+            if (typeof announceToSR === 'function') announceToSR(redo ? __alloT('stem.artstudio.kit_redone','Palette edit redone.') : __alloT('stem.artstudio.kit_undone','Palette edit undone.'));
+          }
+          function editThreadPaletteHex(value) {
+            var hex = artStudioMixerHex(value); if (!hex || !threadPaletteColor) return;
+            if (hex === threadPaletteHex) { setThreadPaletteHexDraft(null); return; }
+            var color = artStudioMixerHSL(hex); if (color.s === 0) color.h = threadPaletteColor.h;
+            var colors = studioThreadPalette.slice(); colors[threadPaletteIndex] = color; changeThreadPalette(colors, threadPaletteIndex);
+          }
+          function moveThreadPaletteColor(offset) {
+            var nextIndex = threadPaletteIndex + offset; if (nextIndex < 0 || nextIndex >= studioThreadPalette.length) return;
+            var colors = studioThreadPalette.slice(), color = colors.splice(threadPaletteIndex,1)[0]; colors.splice(nextIndex,0,color); changeThreadPalette(colors,nextIndex);
+          }
+          function applyThreadPaletteSelectedColor(index) {
+            if (!threadPaletteColor) return;
+            var color = threadPaletteColor, prefix = STUDIO_SCOPED_COLOR_PREFIXES[tab];
+            if (tab === 'colorWheel') changeWheel({hue:color.h,sat:color.s,lit:color.l});
+            else if (tab === 'mixer') commitMixerHex(index || 1,threadPaletteHex);
+            else if (tab === 'watercolor') upd('watercolorColor',threadPaletteHex);
+            else if (prefix) applyStudioScopedColor(prefix,color,{spiro:'spiroReset',gen:'genReset',str:'strReset'}[prefix]);
+            else return;
+            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.kit_applied_color','Applied {hex} to {tool}.'),{hex:threadPaletteHex,tool:ART_STUDIO_TAB_LABELS[tab]}));
+          }
+          function exportThreadPaletteCSS() {
+            if (!studioThreadPalette.length) return;
+            var css = ':root {\n' + studioThreadPalette.map(function (color,index) { return '  --palette-' + (index + 1) + ': ' + artStudioMixerHSLHex(color.h,color.s,color.l) + ';'; }).join('\n') + '\n}\n';
+            var link = document.createElement('a'); link.download = 'art-studio-palette.css'; link.href = 'data:text/css;charset=utf-8,' + encodeURIComponent(css); link.click();
+          }
           const artStudioSnapshots = Array.isArray(toolSnapshots)
             ? toolSnapshots.filter(function (snapshot) {
                 if (!snapshot || snapshot.tool !== 'artStudio') return false;
@@ -1625,6 +3580,20 @@ const d = labToolData.artStudio || {};
             });
           }, [toolSnapshots]);
           const studioHomeOpen = d.studioHome === true || (d.studioHome !== false && (!d.tab || d.tab === 'color'));
+          React.useEffect(function () {
+            if ((tab !== 'spirograph' || studioHomeOpen) && spiroRuntimeRef.current) spiroRuntimeRef.current.dispose();
+          }, [tab, studioHomeOpen]);
+          React.useEffect(function () {
+            if ((tab !== 'stringArt' || studioHomeOpen) && stringRuntimeRef.current) stringRuntimeRef.current.dispose();
+          }, [tab, studioHomeOpen]);
+          React.useEffect(function () {
+            if ((tab !== 'fractal' || studioHomeOpen) && fractalRuntimeRef.current) fractalRuntimeRef.current.dispose();
+          }, [tab, studioHomeOpen]);
+          React.useEffect(function(){if((tab!=='opArt'||studioHomeOpen)&&opRuntimeRef.current)opRuntimeRef.current.dispose();},[tab,studioHomeOpen]);
+          React.useEffect(function(){if((tab!=='spinArt'||studioHomeOpen)&&spinRuntimeRef.current)spinRuntimeRef.current.dispose();},[tab,studioHomeOpen]);
+          React.useEffect(function () {
+            if ((tab !== 'generative' || studioHomeOpen) && generativeRuntimeRef.current) generativeRuntimeRef.current.dispose();
+          }, [tab, studioHomeOpen]);
           const isFingerInputEvent = function (event) {
             return !!(event && (event.pointerType === 'touch' || (event.touches && event.touches.length)));
           };
@@ -1648,19 +3617,9 @@ const d = labToolData.artStudio || {};
           };
           const renderStudioColorCapsule = function (options) {
             var opts = options || {};
-            var color = opts.color || { h: 0, s: 100, l: 50 };
+            var color = normalizeThreadKitColor(opts.color) || { h: 0, s: 100, l: 50 };
             var applyColor = function (nextColor) {
-              var patch = {};
-              patch[opts.prefix + 'Hue'] = Math.round(Number(nextColor.h) || 0);
-              patch[opts.prefix + 'Sat'] = Math.max(0, Math.min(100, Math.round(Number(nextColor.s) || 0)));
-              patch[opts.prefix + 'Lit'] = Math.max(0, Math.min(100, Math.round(Number(nextColor.l) || 0)));
-              if (opts.resetKey) patch[opts.resetKey] = (Number(d[opts.resetKey]) || 0) + 1;
-              if (opts.prefix === 'gen') {
-                patch.genFrame = 0;
-                patch.genState = null;
-                patch.genSnapshot = '';
-              }
-              updMany(patch);
+              applyStudioScopedColor(opts.prefix,nextColor,opts.resetKey);
             };
             var controls = [
               { suffix: 'Hue', id: 'hue', label: 'Hue', max: 360, value: color.h, valueText: color.h + ' degrees' },
@@ -1672,24 +3631,24 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", {
                   role: "img",
-                  'aria-label': (opts.label || 'Artwork color') + ': hue ' + color.h + ' degrees, saturation ' + color.s + ' percent, lightness ' + color.l + ' percent',
+                  'aria-label': (opts.label || 'Artwork color') + ': hue ' + studioColorValueLabel(color.h) + ' degrees, saturation ' + studioColorValueLabel(color.s) + ' percent, lightness ' + studioColorValueLabel(color.l) + ' percent',
                   className: "block h-10 w-10 shrink-0 rounded-lg border-2 border-white shadow ring-1 ring-slate-400",
                   style: { background: 'hsl(' + color.h + ',' + color.s + '%,' + color.l + '%)' }
                 }),
-                React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600" }, 'HSL(' + color.h + ', ' + color.s + '%, ' + color.l + '%)')
+                React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600" }, 'HSL(' + studioColorValueLabel(color.h) + ', ' + studioColorValueLabel(color.s) + '%, ' + studioColorValueLabel(color.l) + '%)')
               ),
               React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-3" },
                 controls.map(function (control) {
                   var inputId = 'artstudio-' + opts.prefix + '-' + control.id;
                   return React.createElement("label", { key: control.id, htmlFor: inputId, className: "block text-[0.625rem] font-bold text-slate-700" },
-                    control.label + ': ' + control.value,
+                    control.label + ': ' + studioColorValueLabel(control.value),
                     React.createElement("input", {
                       id: inputId,
                       type: "range",
                       min: 0,
                       max: control.max,
                       value: control.value,
-                      'aria-valuetext': control.valueText,
+                      'aria-valuetext': studioColorValueLabel(control.value) + (control.id === 'hue' ? ' degrees' : ' percent'),
                       onChange: function (event) {
                         var nextColor = { h: color.h, s: color.s, l: color.l };
                         nextColor[control.id === 'hue' ? 'h' : control.id === 'saturation' ? 's' : 'l'] = parseInt(event.target.value);
@@ -1779,21 +3738,13 @@ const d = labToolData.artStudio || {};
             return WATERCOLOR_PIGMENTS[0];
           };
           const mixWatercolorPigments = function (first, second, secondPercent) {
-            var secondWeight = Math.max(0, Math.min(1, Number(secondPercent) / 100));
+            var secondWeight = artStudioMixerNumber(secondPercent, 50, 0, 100) / 100;
             var firstWeight = 1 - secondWeight;
-            var firstNumber = parseInt(first.color.slice(1), 16);
-            var secondNumber = parseInt(second.color.slice(1), 16);
-            var firstRgb = [(firstNumber >> 16) & 255, (firstNumber >> 8) & 255, firstNumber & 255];
-            var secondRgb = [(secondNumber >> 16) & 255, (secondNumber >> 8) & 255, secondNumber & 255];
-            var mixedRgb = firstRgb.map(function (channel, channelIndex) {
-              // Interpolate optical absorbance rather than display RGB. This
-              // produces the darker, less neon mixtures expected from paint.
-              var firstReflectance = (channel + 12) / 267;
-              var secondReflectance = (secondRgb[channelIndex] + 12) / 267;
-              var reflectance = Math.exp(Math.log(firstReflectance) * firstWeight + Math.log(secondReflectance) * secondWeight);
-              return Math.max(0, Math.min(255, Math.round(reflectance * 267 - 12)));
-            });
-            var mixedColor = '#' + mixedRgb.map(function (channel) { return channel.toString(16).padStart(2, '0'); }).join('');
+            // Share the pinned pigment model with Color Mixer. The prepared
+            // mixture is a single paint load; transport on paper remains the
+            // existing conservative RGB approximation with carried traits.
+            var mixedColor = secondWeight === 0 || first.color === second.color ? first.color : secondWeight === 1 ? second.color :
+              artStudioSpectral.mix([new artStudioSpectral.Color(first.color), firstWeight], [new artStudioSpectral.Color(second.color), secondWeight]).toString().toLowerCase();
             var mixedValues = {};
             ['watercolorGranulation', 'watercolorStaining', 'watercolorOpacity', 'watercolorMobility'].forEach(function (key) {
               mixedValues[key] = Math.round(first.values[key] * firstWeight + second.values[key] * secondWeight);
@@ -1812,6 +3763,7 @@ const d = labToolData.artStudio || {};
             }
           };
           const openStudioHome = function () {
+            setStudioFocusView(false);
             persistArtworkBeforeLeave();
             var nextState = { studioHome: true };
             if (tab === 'stereogram') {
@@ -1870,6 +3822,12 @@ const d = labToolData.artStudio || {};
               if (pendingGenSnapshot) return pendingGenSnapshot;
             }
             try {
+              if (canvas._spiroExportCanvas) canvas = canvas._spiroExportCanvas();
+              else if (canvas._strExportCanvas) canvas = canvas._strExportCanvas();
+              else if (canvas._fractalExportCanvas) canvas = canvas._fractalExportCanvas();
+              else if (canvas._opExportCanvas) canvas = canvas._opExportCanvas();
+              else if (canvas._stereoExportCanvas) canvas = canvas._stereoExportCanvas();
+              else if (canvas._sculptExportCanvas) canvas = canvas._sculptExportCanvas();
               var sourceWidth = Math.max(1, canvas.width || canvas.clientWidth || 1);
               var sourceHeight = Math.max(1, canvas.height || canvas.clientHeight || 1);
               var scale = Math.min(1, 240 / sourceWidth, 180 / sourceHeight);
@@ -1890,21 +3848,15 @@ const d = labToolData.artStudio || {};
               var gridSize = typeof d.pixelGrid === 'number' ? d.pixelGrid : 16;
               return gridSize + ' by ' + gridSize + ' grid, ' + Object.keys(d.pixelData || {}).length + ' colored cells';
             }
-            if (tab === 'colorWheel') return 'Hue ' + (d.hue || 0) + ' degrees, ' + (d.harmony || 'complementary') + ' harmony';
+            if (tab === 'colorWheel') { var wheel=artStudioWheelModel(d); return 'Hue ' + Number(wheel.hue.toFixed(1)) + ' degrees, ' + wheel.harmony + ' harmony'; }
             if (tab === 'watercolor') return (d.watercolorBrush || 'round') + ' brush on ' + (d.watercolorPaper || 'dry') + ' paper';
             if (tab === 'symmetry') return (d.symmetryFolds || 6) + ' folds, ' + (d.symStrokeMode || 'freehand') + ' stroke';
             if (tab === 'sculpt3d') return ((d.sculptRecipe && d.sculptRecipe.parts) || []).length + ' sculpture forms';
             if (tab === 'contrast') {
-              var summaryFgH = typeof d.fgH === 'number' ? d.fgH : 0;
-              var summaryFgS = typeof d.fgS === 'number' ? d.fgS : 0;
-              var summaryFgL = typeof d.fgL === 'number' ? d.fgL : 0;
-              var summaryBgH = typeof d.bgH === 'number' ? d.bgH : 0;
-              var summaryBgS = typeof d.bgS === 'number' ? d.bgS : 0;
-              var summaryBgL = typeof d.bgL === 'number' ? d.bgL : 100;
-              var summaryTarget = Number(d.contrastAccessibilityTarget) === 7 ? 7 : 4.5;
-              return 'Foreground HSL ' + summaryFgH + ', ' + summaryFgS + '%, ' + summaryFgL + '% on background HSL ' + summaryBgH + ', ' + summaryBgS + '%, ' + summaryBgL + '%, targeting ' + summaryTarget + ':1';
+              var pair=artStudioContrastModel(d),a=artStudioContrastColor(pair,'fg'),b=artStudioContrastColor(pair,'bg');
+              return 'Foreground '+artStudioMixerHSLHex(a.h,a.s,a.l)+' on background '+artStudioMixerHSLHex(b.h,b.s,b.l)+'; '+artStudioContrastRatio(a,b).toFixed(2)+':1, targeting '+pair.contrastAccessibilityTarget+':1';
             }
-            if (tab === 'mixer') return (d.mixMode || 'subtractive') + ' mix at ' + (d.mixRatio || 50) + ' percent';
+            if (tab === 'mixer') { var mix = artStudioMixerModel(d); return mix.mixMode + ' mix, ' + Math.round((1-mix.mixRatio)*100) + '% A + ' + Math.round(mix.mixRatio*100) + '% B; ' + artStudioMixerColor(mix); }
             if (tab === 'spirograph') return 'R ' + (d.spiroR || 120) + ', r ' + (d.spiror || 45) + ', pen offset ' + (d.spirop || 55);
             if (tab === 'generative') {
               var genCanvas = typeof document !== 'undefined' ? document.getElementById('genCanvas') : null;
@@ -1922,8 +3874,8 @@ const d = labToolData.artStudio || {};
             if (tab === 'stereogram') return (d.stereoAnimMode || 'static') + ' stereogram using ' + (d.stereoPattern || 'black and white') + ' pattern';
             if (tab === 'artistExplorer') return 'Artist inquiry with filters, comparison, and context preserved';
             if (tab === 'harmonyHunt') {
-              var harmonyStudy = d._harmonyHunt || {};
-              return (harmonyStudy.paletteSize || 6) + '-color harmony around hue ' + (harmonyStudy.baseHue || 200) + ' degrees';
+              var harmonyStudy=artStudioHarmonyRecipe(d._harmonyHunt);
+              return artStudioHarmonyPalette(harmonyStudy).length+'-color '+artStudioHarmonyType(harmonyStudy)+' harmony around hue '+studioColorValueLabel((harmonyStudy.baseHue+harmonyStudy.rotation+360)%360)+' degrees';
             }
             return (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') + ' settings and visual checkpoint';
           };
@@ -1945,7 +3897,7 @@ const d = labToolData.artStudio || {};
             stereogram: { prefixes: ['stereo'] },
             sculpt3d: { prefixes: ['sculpt'] },
             contrast: { prefixes: ['contrast'], keys: ['fgHex', 'bgHex', 'fgH', 'fgS', 'fgL', 'bgH', 'bgS', 'bgL'] },
-            harmonyHunt: { keys: ['_harmonyHunt'] }
+            harmonyHunt: { keys: ['_harmonyHunt','harmonyRestoreToken'] }
           };
           const cloneArtStudioStudyValue = function (value) {
             if (value == null || typeof value !== 'object') return value;
@@ -1970,6 +3922,9 @@ const d = labToolData.artStudio || {};
             Object.keys(source).forEach(function (key) {
               if (artStudioLabOwnsStateKey(tabId, key)) payload[key] = cloneArtStudioStudyValue(source[key]);
             });
+            if(tabId==='stereogram')Object.assign(payload,artStudioStereoModel(source));
+            if(tabId==='harmonyHunt')payload._harmonyHunt=artStudioHarmonyState(source._harmonyHunt);
+            if(tabId==='contrast')Object.assign(payload,artStudioContrastModel(source),{contrastSampleText:typeof source.contrastSampleText==='string'?source.contrastSampleText.slice(0,160):''});
             var legacyPaletteKey = {
               pixel: 'pixelActivePalette',
               symmetry: 'symmetryActivePalette',
@@ -2011,7 +3966,7 @@ const d = labToolData.artStudio || {};
                 ? canvas._watercolorEngine.captureSnapshot()
                 : canvas._symExportAction ? canvas._symExportAction()
                   : canvas._spinExportAction ? canvas._spinExportAction()
-                    : canvas._genExportAction ? canvas._genExportAction() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
+                    : canvas._genExportAction ? canvas._genExportAction() : canvas._sculptExportCanvas ? canvas._sculptExportCanvas(1600).toDataURL('image/png') : canvas._stereoExportPNG ? canvas._stereoExportPNG() : canvas._spiroExportPNG ? canvas._spiroExportPNG() : canvas._strExportPNG ? canvas._strExportPNG() : canvas._fractalExportPNG ? canvas._fractalExportPNG() : canvas._opExportPNG ? canvas._opExportPNG() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
             } catch (_) { return null; }
             if (!src || src === 'data:,') return null;
             var label = ART_STUDIO_TAB_LABELS[tab] || 'Art Studio artwork';
@@ -2485,6 +4440,20 @@ const d = labToolData.artStudio || {};
             }
             if (savedTab === 'symmetry') scopedPayload.symmetryRestoreToken = restoreToken;
             if (savedTab === 'pixel') scopedPayload.pixelRestoreToken = restoreToken;
+            if (savedTab === 'tessellation') scopedPayload.tessRestoreToken = restoreToken;
+            if (savedTab === 'fractal') scopedPayload.fractalRestoreToken = restoreToken;
+            if (savedTab === 'opArt') scopedPayload.opRestoreToken = restoreToken;
+            if (savedTab === 'gradient') scopedPayload.gradRestoreToken = restoreToken;
+            if (savedTab === 'colorWheel') scopedPayload.wheelRestoreToken = restoreToken;
+            if (savedTab === 'contrast') scopedPayload.contrastRestoreToken = restoreToken;
+            if (savedTab === 'stereogram') scopedPayload.stereoRestoreToken = restoreToken;
+            if (savedTab === 'harmonyHunt') scopedPayload.harmonyRestoreToken = restoreToken;
+            if (savedTab === 'mixer') {
+              // Older untouched studies saved no mixer fields at all. Keep their
+              // original red/blue hue blend; new studies capture an explicit model.
+              if (!Object.keys(scopedPayload).some(function (key) { return /^mix(?:[12][HSL]|Ratio|Mode)$/.test(key); })) scopedPayload.mixMode = 'hsl';
+              scopedPayload.mixRestoreToken = restoreToken;
+            }
             if (savedTab === 'spinArt') scopedPayload.spinReset = restoreToken;
             if (savedTab === 'generative') {
               scopedPayload.genPaused = true;
@@ -2575,174 +4544,113 @@ const d = labToolData.artStudio || {};
 
 
 
-          // Color Wheel Canvas
-
-          const wheelRef = function (canvas) {
-
-            if (!canvas) return;
-
-            if (canvas._wheelAnim) cancelAnimationFrame(canvas._wheelAnim);
-
-            var ctx = canvas.getContext('2d');
-
-            var W = canvas.width, H = canvas.height;
-
-            var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 20;
-
-            var tick = 0;
-
-            var hue = d.hue || 0, sat = (typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100, lit = (typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50;
-
-            // Pre-render the static 360-segment hue ring ONCE. sat/lit are frozen for
-            // this loop instance (wheelRef re-runs with fresh values on slider change),
-            // so the ring was rebuilt + 360 hsl-strings allocated EVERY frame purely to
-            // pulse the 2px selector dot. Cache it; redraw only the dot/markers live.
-            var _wheelBmp = document.createElement('canvas'); _wheelBmp.setAttribute('aria-hidden', 'true');
-            _wheelBmp.width = W; _wheelBmp.height = H;
-            var _wctx = _wheelBmp.getContext('2d');
-            for (var wa = 0; wa < 360; wa++) {
-              var wr1 = (wa - 90) * Math.PI / 180, wr2 = (wa - 89) * Math.PI / 180;
-              _wctx.beginPath(); _wctx.moveTo(cx, cy); _wctx.arc(cx, cy, R, wr1, wr2); _wctx.closePath();
-              _wctx.fillStyle = 'hsl(' + wa + ',' + sat + '%,' + lit + '%)'; _wctx.fill();
-            }
-
-
-
-            function drawWheel() {
-
-              tick++;
-
-              ctx.clearRect(0, 0, W, H);
-
-              ctx.drawImage(_wheelBmp, 0, 0); // cached static hue ring (was a 360-arc rebuild every frame)
-
-              ctx.beginPath(); ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
-
-              ctx.fillStyle = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)'; ctx.fill();
-
-              ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
-
-              var selRad = (hue - 90) * Math.PI / 180;
-
-              var sx = cx + Math.cos(selRad) * R * 0.75;
-
-              var sy = cy + Math.sin(selRad) * R * 0.75;
-
-              ctx.beginPath(); ctx.arc(sx, sy, reducedMotion ? 8 : 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
-
-              ctx.shadowBlur = 14; ctx.shadowColor = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)';
-
-              ctx.fillStyle = '#fff'; ctx.fill();
-
-              ctx.shadowBlur = 0;
-
-              ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
-
-              ctx.fillStyle = lit > 55 ? '#000' : '#fff';
-
-              ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-              ctx.fillText('H:' + hue + '\u00B0', cx, cy - 8);
-
-              ctx.fillText('S:' + sat + '% L:' + lit + '%', cx, cy + 8);
-
-              var harmony = d.harmony || 'complementary';
-
-              var harmAngles = [];
-
-              if (harmony === 'complementary') harmAngles = [(hue + 180) % 360];
-
-              else if (harmony === 'triadic') harmAngles = [(hue + 120) % 360, (hue + 240) % 360];
-
-              else if (harmony === 'analogous') harmAngles = [(hue + 30) % 360, (hue - 30 + 360) % 360];
-
-              else if (harmony === 'split') harmAngles = [(hue + 150) % 360, (hue + 210) % 360];
-
-              harmAngles.forEach(function (ha) {
-
-                var hr = (ha - 90) * Math.PI / 180;
-
-                var hx = cx + Math.cos(hr) * R * 0.75, hy = cy + Math.sin(hr) * R * 0.75;
-
-                ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'hsl(' + ha + ',' + sat + '%,' + lit + '%)'; ctx.fill();
-
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-
-              });
-
-              if (!reducedMotion && canvas.isConnected) canvas._wheelAnim = requestAnimationFrame(drawWheel);
-
-            }
-
-            function chooseHue(angle, messagePrefix) {
-
-              hue = (angle + 360) % 360;
-
-              canvas.setAttribute('aria-label', 'Interactive color wheel. Hue ' + hue + ' degrees, saturation ' + sat +
-
-                ' percent, lightness ' + lit + ' percent.');
-
-              upd('hue', hue);
-
-              if (typeof announceToSR === 'function') announceToSR((messagePrefix || 'Hue') + ' ' + hue + ' degrees.');
-
-            }
-
-            canvas.onmousedown = canvas.ontouchstart = function (e) {
-
-              var rect = canvas.getBoundingClientRect();
-
-              var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-
-              var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-
-              var scaleX = W / rect.width, scaleY = H / rect.height;
-
-              ex *= scaleX; ey *= scaleY;
-
-              var dx = ex - cx, dy = ey - cy;
-
-              var dist = Math.sqrt(dx * dx + dy * dy);
-
-              if (dist < R && dist > R * 0.35) {
-
-                chooseHue(Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360), 'Selected hue');
-
+          // Color Wheel: redraw only after edits, keeping the same canvas during drag.
+          const wheelModel=artStudioWheelModel(d),wheelSignature=JSON.stringify(wheelModel);
+          const wheelOwner=studioPersistenceScope+'|'+(d.wheelRestoreToken||'');
+          const wheelHistoryRef=React.useRef({undo:[],redo:[]});
+          if(wheelHistoryRef.current.owner!==wheelOwner||(wheelHistoryRef.current.expected&&wheelHistoryRef.current.expected!==wheelSignature))wheelHistoryRef.current={owner:wheelOwner,undo:[],redo:[]};
+          wheelHistoryRef.current.current=wheelModel;wheelHistoryRef.current.expected=wheelSignature;
+          const [wheelHexDraft,setWheelHexDraft]=React.useState(null);
+          React.useEffect(function(){setWheelHexDraft(null);},[wheelOwner,wheelSignature]);
+          React.useEffect(function(){wheelHistoryRef.current.gesture=null;},[tab]);
+          const wheelHex=artStudioMixerHSLHex(wheelModel.hue,wheelModel.sat,wheelModel.lit);
+          const wheelPalette=artStudioWheelPalette(wheelModel);
+          const wheelDisplay=function(value){return Number(value.toFixed(1));};
+          const wheelDescription=formatArtStudioLearningText(__alloT('stem.artstudio.a11y_interactive_color_wheel_hue_degrees_saturation','Interactive color wheel. Hue {value1} degrees, saturation {value2} percent, lightness {value3} percent.'),{value1:wheelDisplay(wheelModel.hue),value2:wheelDisplay(wheelModel.sat),value3:wheelDisplay(wheelModel.lit)});
+          function changeWheel(values){
+            var history=wheelHistoryRef.current,before=history.current,after=artStudioWheelModel(Object.assign({},before,values));
+            if(JSON.stringify(before)===JSON.stringify(after))return;
+            if(!history.gesture||!history.gesture.recorded){history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];if(history.gesture)history.gesture.recorded=true;}
+            history.current=after;history.expected=JSON.stringify(after);updMany(after);
+          }
+          function wheelBeginGesture(event){if(event.target&&event.target.type==='range'&&!wheelHistoryRef.current.gesture)wheelHistoryRef.current.gesture={recorded:false,target:event.target};}
+          function wheelEndGesture(event){var gesture=wheelHistoryRef.current.gesture;if(event&&event.type==='blur'&&gesture&&event.target!==gesture.target)return;wheelHistoryRef.current.gesture=null;}
+          function changeWheelHistory(redo){
+            var canvas=document.getElementById('colorWheelCanvas');if(canvas&&canvas._wheelPointer){var pointerId=canvas._wheelPointer.id;canvas._wheelPointer=null;try{canvas.releasePointerCapture(pointerId);}catch(_){}}
+            var history=wheelHistoryRef.current,from=redo?history.redo:history.undo;history.gesture=null;if(!from.length)return;
+            (redo?history.undo:history.redo).push(history.current);var next=from.pop();history.current=next;history.expected=JSON.stringify(next);updMany(next);
+            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.wheel_redone','Color edit redone.'):__alloT('stem.artstudio.wheel_undone','Color edit undone.'));
+          }
+          function commitWheelHex(value){
+            var hex=artStudioMixerHex(value);if(!hex)return;
+            var current=wheelHistoryRef.current.current;
+            if(hex===artStudioMixerHSLHex(current.hue,current.sat,current.lit)){setWheelHexDraft(null);return;}
+            var hsl=artStudioMixerHSL(hex);
+            // A neutral has no hue: retain the learner's hue for later saturation edits.
+            changeWheel({hue:hsl.s===0?wheelHistoryRef.current.current.hue:hsl.h,sat:hsl.s,lit:hsl.l});setWheelHexDraft(null);
+          }
+          function exportWheel(format){
+            try{var canvas=document.getElementById('colorWheelCanvas'),link=document.createElement('a');
+              link.download='color-wheel-'+wheelModel.harmony+'.'+format;
+              var url=format==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(artStudioWheelPaletteSVG(wheelModel)):canvas&&canvas.toDataURL('image/png');
+              if(!url||url==='data:,')throw new Error('No image');link.href=url;link.click();
+            }catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.wheel_export_failed','The color sheet could not be exported. Please try again.'),'error');}
+          }
+          const wheelRef=function(canvas){
+            if(!canvas)return;
+            canvas._captureArtStudioState=function(){return Object.assign({},wheelHistoryRef.current.current);};
+            var ctx=canvas.getContext('2d');if(!ctx)return;
+            var W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=Math.min(W,H)*.43;
+            var ringKey=wheelModel.sat+'|'+wheelModel.lit+'|'+W+'|'+H;
+            if(!canvas._wheelRing||canvas._wheelRingKey!==ringKey){
+              var ring=document.createElement('canvas');ring.width=W;ring.height=H;
+              var ringCtx=ring.getContext('2d');if(!ringCtx)return;
+              var hueGradient=typeof ringCtx.createConicGradient==='function'?ringCtx.createConicGradient(-Math.PI/2,cx,cy):null;
+              if(hueGradient&&typeof hueGradient.addColorStop==='function'){
+                for(var stop=0;stop<=6;stop++)hueGradient.addColorStop(stop/6,artStudioMixerHSLHex(stop*60,wheelModel.sat,wheelModel.lit));
+                ringCtx.beginPath();ringCtx.arc(cx,cy,R,0,Math.PI*2);ringCtx.fillStyle=hueGradient;ringCtx.fill();
+              }else{
+                for(var angle=0;angle<360;angle++){
+                  ringCtx.beginPath();ringCtx.moveTo(cx,cy);ringCtx.arc(cx,cy,R,(angle-90)*Math.PI/180,(angle-88.5)*Math.PI/180);ringCtx.closePath();
+                  ringCtx.fillStyle='hsl('+angle+','+wheelModel.sat+'%,'+wheelModel.lit+'%)';ringCtx.fill();
+                }
               }
-
+              canvas._wheelRing=ring;canvas._wheelRingKey=ringKey;
+            }
+            if(canvas._wheelSignature!==wheelSignature){
+              ctx.fillStyle='#111827';ctx.fillRect(0,0,W,H);ctx.drawImage(canvas._wheelRing,0,0);
+              ctx.beginPath();ctx.arc(cx,cy,R*.49,0,Math.PI*2);ctx.fillStyle='#111827';ctx.fill();
+              ctx.beginPath();ctx.arc(cx,cy,R*.37,0,Math.PI*2);ctx.strokeStyle=wheelHex;ctx.lineWidth=28;ctx.stroke();
+              ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 32px sans-serif';ctx.fillText(wheelHex.toUpperCase(),cx,cy-26);
+              ctx.font='22px sans-serif';ctx.fillText('H '+wheelDisplay(wheelModel.hue)+'\u00b0',cx,cy+17);ctx.fillText('S '+wheelDisplay(wheelModel.sat)+'% / L '+wheelDisplay(wheelModel.lit)+'%',cx,cy+50);
+              wheelPalette.forEach(function(color,index){
+                var radians=(color.h-90)*Math.PI/180,x=cx+Math.cos(radians)*R*.76,y=cy+Math.sin(radians)*R*.76;
+                ctx.beginPath();ctx.arc(x,y,color.base?27:21,0,Math.PI*2);ctx.fillStyle='#111827';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=color.base?6:3;ctx.stroke();
+                ctx.fillStyle='#fff';ctx.font='bold 23px sans-serif';ctx.fillText(String(index+1),x,y);
+              });
+              canvas._wheelSignature=wheelSignature;
+            }
+            function point(event){
+              var rect=canvas.getBoundingClientRect(),style=window.getComputedStyle(canvas),scale=rect.width/(canvas.offsetWidth||rect.width||1);
+              var left=(parseFloat(style.borderLeftWidth)||0)*scale,right=(parseFloat(style.borderRightWidth)||0)*scale,top=(parseFloat(style.borderTopWidth)||0)*scale,bottom=(parseFloat(style.borderBottomWidth)||0)*scale;
+              if(rect.width<=left+right||rect.height<=top+bottom)return null;
+              var dx=(event.clientX-rect.left-left)*W/(rect.width-left-right)-cx,dy=(event.clientY-rect.top-top)*H/(rect.height-top-bottom)-cy;
+              return {distance:Math.hypot(dx,dy),hue:Math.round((Math.atan2(dy,dx)*180/Math.PI+450)%360)%360};
+            }
+            function announceHue(){if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.wheel_hue_selected','Hue {value} degrees.'),{value:wheelDisplay(wheelHistoryRef.current.current.hue)}));}
+            function movePointer(event){if(!canvas.isConnected||!canvas._wheelPointer||canvas._wheelPointer.id!==event.pointerId||canvas._wheelPointer.history!==wheelHistoryRef.current)return;var p=point(event);if(p&&p.distance>R*.2)changeWheel({hue:p.hue});}
+            canvas.onpointerdown=function(event){
+              if(canvas._wheelPointer||event.button!==0||event.isPrimary===false)return;
+              var p=point(event);if(!p||p.distance>R||p.distance<R*.49)return;
+              event.preventDefault();canvas.focus({preventScroll:true});canvas._wheelPointer={id:event.pointerId,history:wheelHistoryRef.current};wheelHistoryRef.current.gesture={recorded:false,target:canvas};
+              try{canvas.setPointerCapture(event.pointerId);}catch(_){}changeWheel({hue:p.hue});
             };
-
-            canvas.onkeydown = function(event) {
-
-              var step = event.shiftKey ? 10 : 1;
-
-              var handled = true;
-
-              if (event.key === 'ArrowRight' || event.key === 'ArrowUp') chooseHue(hue + step, 'Hue');
-
-              else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') chooseHue(hue - step, 'Hue');
-
-              else if (event.key === 'Home') chooseHue(0, 'Hue');
-
-              else if (event.key === 'End') chooseHue(359, 'Hue');
-
-              else handled = false;
-
-              if (handled) event.preventDefault();
-
+            canvas.onpointermove=movePointer;
+            function finishPointer(event){
+              if(!canvas._wheelPointer||canvas._wheelPointer.id!==event.pointerId)return;
+              if(event.type==='pointerup')movePointer(event);
+              canvas._wheelPointer=null;wheelEndGesture();try{if(canvas.hasPointerCapture(event.pointerId))canvas.releasePointerCapture(event.pointerId);}catch(_){}announceHue();
+            }
+            canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=finishPointer;
+            canvas.onkeydown=function(event){
+              if(event.ctrlKey||event.metaKey||event.altKey)return;
+              var hue=wheelHistoryRef.current.current.hue,step=event.shiftKey?10:1,handled=true;
+              if(event.key==='ArrowRight'||event.key==='ArrowUp')hue+=step;
+              else if(event.key==='ArrowLeft'||event.key==='ArrowDown')hue-=step;
+              else if(event.key==='Home')hue=0;else if(event.key==='End')hue=359;else handled=false;
+              if(handled){event.preventDefault();changeWheel({hue:hue});announceHue();}
             };
-
-            canvas.setAttribute('aria-label', 'Interactive color wheel. Hue ' + hue + ' degrees, saturation ' + sat +
-
-              ' percent, lightness ' + lit + ' percent.');
-
-            drawWheel();
-
           };
-
-
 
           // Watercolor Simulation Canvas
 
@@ -3586,7 +5494,7 @@ const d = labToolData.artStudio || {};
               nextGranulationMass.set(pigmentGranulationMass); nextMobilityMass.set(pigmentMobilityMass);
               nextMobilityRMass.set(pigmentMobilityRMass); nextMobilityGMass.set(pigmentMobilityGMass); nextMobilityBMass.set(pigmentMobilityBMass);
 
-              function moveAcross(from,to,downhill) {
+              function moveAcross(from,to,downhill,upstream) {
                 var access = (1 - mask[from]) * (1 - mask[to]);
                 if (access <= 0.0001) return;
                 var donorWater = water[from], receiverWater = water[to];
@@ -3600,8 +5508,18 @@ const d = labToolData.artStudio || {};
                 var wetContact = Math.min(1, donorWater * 3) * (0.12 + Math.min(1, receiverWater * 3) * 0.88);
                 var granulation = clamp(pigmentGranulationMass[from] / mass,0,1);
                 var opacity = clamp(pigmentOpacityMass[from] / mass,0,1);
-                var rate = (pigmentFlow * 0.25 * wetContact * (1 - opacity * 0.18) * (1 - granulation * 0.22) +
-                  waterTransfer / Math.max(0.001, donorWater) * 0.42) * access;
+                // Fresh water entering a damp wash pushes its mobile pigment
+                // toward the drier front. A centered moisture gradient provides
+                // that direction even when the new water contains no pigment.
+                // The older boundary tint alone could not create a backrun:
+                // diffusion simply filled the clear patch with surrounding paint.
+                var moistureSlope = (water[upstream] - receiverWater) * (1 - mask[upstream]);
+                var bloomResponse = clamp(params.bloomSensitivity, 0, 1) * (0.65 + params.sizing * 0.35);
+                var counterFlow = 1 - clamp(-moistureSlope * 2, 0, 1) * bloomResponse * 0.85;
+                var capillaryDrift = Math.min(0.12, Math.max(0, moistureSlope) * 0.22 * bloomResponse) *
+                  Math.min(1, donorWater * 4) * (1 - granulation * 0.32);
+                var rate = (pigmentFlow * 0.25 * wetContact * (1 - opacity * 0.18) * (1 - granulation * 0.22) * counterFlow +
+                  waterTransfer / Math.max(0.001, donorWater) * 0.42 + capillaryDrift) * access;
                 // Bounded outgoing fractions prevent negative concentrations,
                 // even at maximum water, flow, and separation settings.
                 var fastRate = Math.min(0.19,rate * (1 + separation * 0.85));
@@ -3631,10 +5549,10 @@ const d = labToolData.artStudio || {};
               for (var y=0;y<SIM_H;y++) for (var x=0;x<SIM_W;x++) {
                 var i=y*SIM_W+x;
                 if (water[i] <= 0.0001) continue;
-                if (x>0) moveAcross(i,i-1,direction==='left');
-                if (x<SIM_W-1) moveAcross(i,i+1,direction==='right');
-                if (y>0) moveAcross(i,i-SIM_W,direction==='up');
-                if (y<SIM_H-1) moveAcross(i,i+SIM_W,direction==='down');
+                if (x>0) moveAcross(i,i-1,direction==='left',x<SIM_W-1?i+1:i);
+                if (x<SIM_W-1) moveAcross(i,i+1,direction==='right',x>0?i-1:i);
+                if (y>0) moveAcross(i,i-SIM_W,direction==='up',y<SIM_H-1?i+SIM_W:i);
+                if (y<SIM_H-1) moveAcross(i,i+SIM_W,direction==='down',y>0?i-SIM_W:i);
               }
               var nextWetCells=0, nextWaterTotal=0;
               var mobile = [nextR,nextG,nextB,nextDensity,nextStainingMass,nextOpacityMass,nextGranulationMass,nextMobilityMass,nextMobilityRMass,nextMobilityGMass,nextMobilityBMass];
@@ -4135,7 +6053,7 @@ const d = labToolData.artStudio || {};
                 pressure: clamp(pressure, 0.05, 1),
                 tilt: tilt,
                 angle: angle,
-                time: Number(event.timeStamp) || Date.now()
+                time: Number.isFinite(event.timeStamp) ? event.timeStamp : Date.now()
               };
             }
 
@@ -4150,23 +6068,39 @@ const d = labToolData.artStudio || {};
               else {
                 var dx = x - lastX, dy = y - lastY;
                 var distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 0.001) return;
+                // Stationary samples can change pressure and tilt, or mark a
+                // pause. Remember them without adding another puddle of paint.
+                if (distance < 0.001) {
+                  lastStrokeTime = dynamics.time; lastPressure = targetPressure;
+                  lastTilt = targetTilt; lastBrushAngle = targetAngle;
+                  return;
+                }
                 if (targetTilt < 0.02 && distance > 0.001 && (params.brush === 'flat' || params.brush === 'rigger')) {
                   targetAngle = Math.atan2(dy, dx) + (params.brush === 'flat' ? Math.PI / 2 : 0);
                 }
-                var elapsed = Math.max(4, dynamics.time - lastStrokeTime);
+                var elapsed = Math.max(1, dynamics.time - lastStrokeTime);
                 var speed = clamp((distance / elapsed) / 0.62, 0, 1);
                 var spacingFactor = params.brush === 'dry' ? 0.34 : (params.brush === 'flat' ? 0.27 : (params.brush === 'rigger' ? 0.23 : (params.brush === 'mop' ? 0.40 : 0.46)));
-                var spacing = Math.max(0.65, radius * spacingFactor);
+                var referenceSpacing = Math.max(0.65, radius * spacingFactor);
+                // Sample along the narrowest contact area, including light
+                // pressure and tilted rigger tips. Keep the paint load per
+                // travelled distance independent of the extra samples.
+                var fromFootprint = brushFootprint(lastPressure, lastTilt, lastBrushAngle);
+                var toFootprint = brushFootprint(targetPressure, targetTilt, targetAngle);
+                var spacing = Math.min(referenceSpacing, Math.max(0.35, Math.min(fromFootprint.minor, toFootprint.minor) * 0.55));
                 var count = Math.max(1, Math.ceil(distance / spacing));
-                var sampleScale = clamp(distance / Math.max(0.001, count * spacing), 0.001, 1);
+                var sampleScale = clamp(distance / Math.max(0.001, count * referenceSpacing), 0.001, 1);
+                // The contact footprint is symmetric through a half-turn.
+                // Interpolate its shortest rotation across angle wraparound
+                // instead of spinning the brush through an entire revolution.
+                var angleDelta = Math.atan2(Math.sin(2 * (targetAngle - lastBrushAngle)), Math.cos(2 * (targetAngle - lastBrushAngle))) / 2;
                 for (var step = 1; step <= count; step++) {
                   var amount = step / count;
                   addDab(lastX + dx * amount, lastY + dy * amount, {
                     pressure: lastPressure + (targetPressure - lastPressure) * amount,
                     speed: speed,
                     tilt: lastTilt + (targetTilt - lastTilt) * amount,
-                    angle: lastBrushAngle + (targetAngle - lastBrushAngle) * amount,
+                    angle: lastBrushAngle + angleDelta * amount,
                     depositScale: sampleScale
                   });
                 }
@@ -4180,8 +6114,10 @@ const d = labToolData.artStudio || {};
             }
 
             function paintPointerSamples(event) {
-              var samples = typeof event.getCoalescedEvents === 'function' ? event.getCoalescedEvents() : null;
-              if (!samples || samples.length === 0) samples = [event];
+              var samples = typeof event.getCoalescedEvents === 'function' ? Array.from(event.getCoalescedEvents() || []) : [];
+              // Some devices omit the dispatched event's final position from
+              // their coalesced list. Repeated positions only update dynamics.
+              samples.push(event);
               for (var sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
                 var sample = samples[sampleIndex];
                 var point = pointFor(sample);
@@ -4389,9 +6325,12 @@ const d = labToolData.artStudio || {};
             function updateSelectionControls(message) {
               var selection=canvas._pixelSelection, clipboard=canvas._pixelClipboard;
               var hasPixels=selection && Object.keys(selectionPixels(selection,grid)).length>0;
-              ['copy','cut','delete'].forEach(function(action){var button=document.getElementById('artstudio-pixel-selection-'+action);if(button)button.disabled=!hasPixels;});
+              var busy=!!(canvas._pixelSelectionDrag || canvas._pixelSelectionAnchor);
+              ['copy','cut','delete','rotate','flip-x','flip-y'].forEach(function(action){var button=document.getElementById('artstudio-pixel-selection-'+action);if(button)button.disabled=!hasPixels || busy;});
+              var selectAll=document.getElementById('artstudio-pixel-selection-all');
+              if(selectAll)selectAll.disabled=busy;
               var paste=document.getElementById('artstudio-pixel-selection-paste');
-              if(paste)paste.disabled=!clipboard || clipboard.w>gridSize || clipboard.h>gridSize;
+              if(paste)paste.disabled=busy || !clipboard || clipboard.w>gridSize || clipboard.h>gridSize;
               var deselect=document.getElementById('artstudio-pixel-selection-deselect');
               if(deselect)deselect.disabled=!selection && !canvas._pixelSelectionAnchor;
               var status=document.getElementById('artstudio-pixel-selection-status');
@@ -4453,6 +6392,18 @@ const d = labToolData.artStudio || {};
               }
               var pixels=selectionPixels(bounds,grid);
               if(!bounds || !Object.keys(pixels).length)return false;
+              if(action==='rotate' || action==='flip-x' || action==='flip-y') {
+                var rotating=action==='rotate', transformed={};
+                var target=selectionPlacement({x:bounds.x,y:bounds.y,w:rotating?bounds.h:bounds.w,h:rotating?bounds.w:bounds.h},0,0);
+                Object.keys(pixels).forEach(function(key){
+                  var point=key.split(',').map(Number),x=point[0],y=point[1];
+                  var tx=rotating?bounds.h-1-y:(action==='flip-x'?bounds.w-1-x:x);
+                  var ty=rotating?x:(action==='flip-y'?bounds.h-1-y:y);
+                  transformed[tx+','+ty]=pixels[key];
+                });
+                commitSelectionGrid(placeSelection(grid,bounds,target,transformed,true),target);
+                return true;
+              }
               if(action==='copy' || action==='cut')canvas._pixelClipboard={w:bounds.w,h:bounds.h,pixels:pixels};
               if(action==='cut' || action==='delete')commitSelectionGrid(placeSelection(grid,bounds,bounds,{},true),bounds);
               updateSelectionControls(action==='copy' || action==='cut' ? __alloT('stem.artstudio.pixel_selection_copied','Pixels copied in this canvas. Click a destination, then Paste. Empty cells preserve destination colors.') : null);
@@ -4527,13 +6478,14 @@ const d = labToolData.artStudio || {};
             }
             function floodFill(startX, startY, fillColor) {
               var targetColor = grid[startX + ',' + startY] || null;
-              if (targetColor === fillColor) return;
+              var targetKey = artStudioPixelColorKey(targetColor) || targetColor;
+              if (targetKey === (artStudioPixelColorKey(fillColor) || fillColor)) return;
               var queue = [[startX, startY]], visited = {};
               for (var index = 0; index < queue.length; index++) {
                 var x = queue[index][0], y = queue[index][1], key = x + ',' + y;
                 if (x < 0 || x >= gridSize || y < 0 || y >= gridSize || visited[key]) continue;
                 visited[key] = true;
-                if ((grid[key] || null) !== targetColor) continue;
+                if ((artStudioPixelColorKey(grid[key]) || grid[key] || null) !== targetKey) continue;
                 grid[key] = fillColor;
                 queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
               }
@@ -4756,6 +6708,15 @@ const d = labToolData.artStudio || {};
                 event.preventDefault(); drawPixelGrid();
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_pixel_row_column', 'Pixel row {value1}, column {value2}.'), { value1: keyboardCursor.y + 1, value2: keyboardCursor.x + 1 }));
               }
+            };
+            canvas._pixelReplaceColor = function(from,to) {
+              var result = artStudioPixelRecolor(grid,gridSize,from,to);
+              if (!result.changed) return 0;
+              canvas._pixelCancelGesture();
+              rememberPixelArtwork(pixelCheckpoint(grid,gridSize));
+              grid=result.data; canvas._pixelWorkingGrid=grid;
+              commit(); drawPixelGrid();
+              return result.changed;
             };
             canvas._captureArtStudioState = function () { return pixelCheckpoint(grid, gridSize); };
             canvas._pixelExport = function () {
@@ -5300,73 +7261,420 @@ const d = labToolData.artStudio || {};
 
 
 
-          // WCAG contrast helpers
-
-          function luminance(h, s, l) {
-
-            var c = (1 - Math.abs(2 * l / 100 - 1)) * s / 100;
-
-            var x = c * (1 - Math.abs((h / 60) % 2 - 1));
-
-            var m = l / 100 - c / 2;
-
-            var r, g, b;
-
-            if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
-
-            else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
-
-            else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
-
-            r += m; g += m; b += m;
-
-            var toL = function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-
-            return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
-
+          const mixerModel = artStudioMixerModel(d);
+          const mixerSignature = JSON.stringify(mixerModel);
+          const mixerOwner = studioPersistenceScope + '|' + (d.mixRestoreToken || '');
+          const mixerHistoryRef = React.useRef({undo:[],redo:[]});
+          if(mixerHistoryRef.current.owner!==mixerOwner||(mixerHistoryRef.current.expected&&mixerHistoryRef.current.expected!==mixerSignature))mixerHistoryRef.current={owner:mixerOwner,undo:[],redo:[]};
+          mixerHistoryRef.current.expected=mixerSignature;mixerHistoryRef.current.current=mixerModel;
+          const [mixerHexDrafts,setMixerHexDrafts]=React.useState({});
+          React.useEffect(function(){setMixerHexDrafts({});},[mixerOwner,mixerSignature]);
+          const mixerOutput=React.useMemo(function(){return {hex:artStudioMixerColor(mixerModel),palette:artStudioMixerPalette(mixerModel),comparisons:['pigment','light','rgb','hsl'].map(function(mode){return {mode:mode,hex:artStudioMixerColor(mixerModel,undefined,mode)};})};},[mixerSignature]);
+          const mixerChoices=[
+            {id:'pigment',label:__alloT('stem.artstudio.mix_pigment','Pigment'),help:__alloT('stem.artstudio.mix_pigment_help','A spectral approximation of pigment mixing. Real paint brands, opacity, paper, and water can change the result.')},
+            {id:'light',label:__alloT('stem.artstudio.mix_light','Linear light'),help:__alloT('stem.artstudio.mix_light_help','Crossfade two lights at a fixed total contribution. RGB channels are converted to linear light before mixing; this is not two full-strength lamps added together.')},
+            {id:'rgb',label:__alloT('stem.artstudio.mix_rgb','RGB blend'),help:__alloT('stem.artstudio.mix_rgb_help','Interpolate the encoded sRGB channel values directly, as in a simple digital color blend.')},
+            {id:'hsl',label:__alloT('stem.artstudio.mix_hsl','Hue blend'),help:__alloT('stem.artstudio.mix_hsl_help','Travel along the shorter hue arc while interpolating saturation and lightness. This preserves the earlier mixer rule; it is not a pigment model.')}
+          ];
+          const mixerModeLabel=mixerChoices.filter(function(choice){return choice.id===mixerModel.mixMode;})[0].label;
+          const mixerRatioLabel=formatArtStudioLearningText(__alloT('stem.artstudio.mix_proportions','{a}% A + {b}% B'),{a:Number(((1-mixerModel.mixRatio)*100).toFixed(1)),b:Number((mixerModel.mixRatio*100).toFixed(1))});
+          function changeMixer(values){
+            var history=mixerHistoryRef.current,before=history.current,after=artStudioMixerModel(Object.assign({},before,values));
+            if(JSON.stringify(before)===JSON.stringify(after))return;
+            if(!history.gesture||!history.gesture.recorded){history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];if(history.gesture)history.gesture.recorded=true;}
+            history.current=after;history.expected=JSON.stringify(after);updMany(after);
+          }
+          function mixerBeginGesture(event){if(event.target&&event.target.type==='range'&&!mixerHistoryRef.current.gesture)mixerHistoryRef.current.gesture={recorded:false,target:event.target};}
+          function mixerEndGesture(event){var gesture=mixerHistoryRef.current.gesture;if(event&&event.type==='blur'&&gesture&&event.target!==gesture.target)return;mixerHistoryRef.current.gesture=null;}
+          function changeMixerHistory(redo){
+            var history=mixerHistoryRef.current,from=redo?history.redo:history.undo;history.gesture=null;if(!from.length)return;
+            (redo?history.undo:history.redo).push(history.current);var next=from.pop();history.current=next;history.expected=JSON.stringify(next);updMany(next);
+            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.mix_redone','Mixer edit redone.'):__alloT('stem.artstudio.mix_undone','Mixer edit undone.'));
+          }
+          function commitMixerHex(index,value){var hex=artStudioMixerHex(value);if(!hex)return;changeMixer(artStudioMixerSetColor(index,hex));setMixerHexDrafts(function(previous){var next=Object.assign({},previous);delete next[index];return next;});}
+          function captureMixerPaletteToThreadKit(){
+            var runId=studioThreadKitRunId||'free-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+            storeStudioThreadKitEntry({schemaVersion:1,accessibilityTarget:studioThreadKit.accessibilityTarget,palette:{sourceTab:'mixer',harmony:'custom',colors:mixerOutput.palette.map(function(color){return artStudioMixerHSL(color.hex);})}},runId);
+            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.mix_palette_saved','Seven mix colors added to the Thread Kit.'));
+            if(typeof addToast==='function')addToast(__alloT('stem.artstudio.mix_palette_saved','Seven mix colors added to the Thread Kit.'),'success');
+          }
+          function exportMixerPalette(){
+            var canvas=document.getElementById('mixerCanvas');if(!canvas)return;
+            try{var png=canvas.toDataURL('image/png');if(!png||png==='data:,')throw new Error('No image');var link=document.createElement('a');link.download='color-mix-'+mixerModel.mixMode+'.png';link.href=png;link.click();}
+            catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.mix_export_failed','The mix sheet could not be exported. Please try again.'),'error');}
           }
 
-          function mixColors(c1, c2, ratio) {
 
-            var h1 = c1.h, s1 = c1.s, l1 = c1.l, h2 = c2.h, s2 = c2.s, l2 = c2.l;
-
-            var hDiff = h2 - h1; if (Math.abs(hDiff) > 180) { if (hDiff > 0) h1 += 360; else h2 += 360; }
-
-            return { h: Math.round((h1 + (h2 - h1) * ratio + 360) % 360), s: Math.round(s1 + (s2 - s1) * ratio), l: Math.round(l1 + (l2 - l1) * ratio) };
-
-          }
-
-          var mix1 = { h: d.mix1H || 0, s: d.mix1S || 100, l: d.mix1L || 50 };
-
-          var mix2 = { h: d.mix2H || 200, s: d.mix2S || 100, l: d.mix2L || 50 };
-
-          var mixRatio = d.mixRatio || 0.5;
-
-          var mixed = mixColors(mix1, mix2, mixRatio);
-
-          var fgH = typeof d.fgH === 'number' ? d.fgH : 0;
-
-          var fgS = typeof d.fgS === 'number' ? d.fgS : 0;
-
-          var fgL = typeof d.fgL === 'number' ? d.fgL : 0;
-
-          var bgH = typeof d.bgH === 'number' ? d.bgH : 0;
-
-          var bgS = typeof d.bgS === 'number' ? d.bgS : 0;
-
-          var bgL = typeof d.bgL === 'number' ? d.bgL : 100;
-
-          var l1c = luminance(fgH, fgS, fgL), l2c = luminance(bgH, bgS, bgL);
-
-          var contrastRatio = (Math.max(l1c, l2c) + 0.05) / (Math.min(l1c, l2c) + 0.05);
-
+          const contrastModel=artStudioContrastModel(d),contrastSignature=JSON.stringify(contrastModel);
+          const contrastOwner=studioPersistenceScope+'|'+studioThreadKitRunId+'|'+(d.contrastRestoreToken||'');
+          const contrastHistoryRef=React.useRef({undo:[],redo:[]});
+          if(contrastHistoryRef.current.owner!==contrastOwner||(contrastHistoryRef.current.expected&&contrastHistoryRef.current.expected!==contrastSignature))contrastHistoryRef.current={owner:contrastOwner,undo:[],redo:[]};
+          contrastHistoryRef.current.current=contrastModel;contrastHistoryRef.current.expected=contrastSignature;
+          const [contrastHexDrafts,setContrastHexDrafts]=React.useState({});
+          React.useEffect(function(){setContrastHexDrafts({});},[contrastOwner,contrastSignature]);
+          React.useEffect(function(){contrastHistoryRef.current.gesture=null;},[tab]);
+          const contrastForeground=artStudioContrastColor(contrastModel,'fg'),contrastBackground=artStudioContrastColor(contrastModel,'bg');
+          const contrastSuggestions=React.useMemo(function(){return tab==='contrast'?{fg:artStudioContrastSuggestion(contrastModel,'fg'),bg:artStudioContrastSuggestion(contrastModel,'bg')}:{};},[contrastSignature,tab]);
+          const contrastSample=typeof d.contrastSampleText==='string'?d.contrastSampleText.slice(0,160):'';
+          var fgH=contrastModel.fgH,fgS=contrastModel.fgS,fgL=contrastModel.fgL,bgH=contrastModel.bgH,bgS=contrastModel.bgS,bgL=contrastModel.bgL;
+          var contrastRatio=artStudioContrastRatio(contrastForeground,contrastBackground);
           var passAA = contrastRatio >= 4.5, passAAA = contrastRatio >= 7, passAALarge = contrastRatio >= 3;
-          var contrastGoalTarget = Number(d.contrastAccessibilityTarget) === 7 ? 7 : 4.5;
+          var contrastGoalTarget = contrastModel.contrastAccessibilityTarget;
           var contrastGoalLabel = contrastGoalTarget === 7 ? 'AAA' : 'AA';
           var passContrastGoal = contrastRatio >= contrastGoalTarget;
+          function changeContrast(values){
+            var history=contrastHistoryRef.current,before=history.current,after=artStudioContrastModel(Object.assign({},before,values));
+            if(JSON.stringify(before)!==JSON.stringify(after)){
+              if(!history.gesture||!history.gesture.recorded){history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];if(history.gesture)history.gesture.recorded=true;}
+              history.current=after;history.expected=JSON.stringify(after);updMany(after);
+            }
+            if(Object.prototype.hasOwnProperty.call(values,'contrastThreadKitApplied'))upd('contrastThreadKitApplied',!!values.contrastThreadKitApplied);
+          }
+          function contrastBeginGesture(event){if(event.target&&event.target.type==='range'&&!contrastHistoryRef.current.gesture)contrastHistoryRef.current.gesture={recorded:false,target:event.target};}
+          function contrastEndGesture(event){var gesture=contrastHistoryRef.current.gesture;if(event&&event.type==='blur'&&gesture&&event.target!==gesture.target)return;contrastHistoryRef.current.gesture=null;}
+          function changeContrastHistory(redo){
+            var history=contrastHistoryRef.current,from=redo?history.redo:history.undo;history.gesture=null;if(!from.length)return;
+            (redo?history.undo:history.redo).push(history.current);var next=from.pop();history.current=next;history.expected=JSON.stringify(next);updMany(next);
+            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.contrast_redone','Contrast edit redone.'):__alloT('stem.artstudio.contrast_undone','Contrast edit undone.'));
+          }
+          function contrastColorPatch(role,color){var patch={};patch[role+'H']=color.h;patch[role+'S']=color.s;patch[role+'L']=color.l;return patch;}
+          function commitContrastHex(role,value){
+            var hex=artStudioMixerHex(value);if(!hex)return;
+            var before=artStudioContrastColor(contrastHistoryRef.current.current,role);
+            if(hex!==artStudioMixerHSLHex(before.h,before.s,before.l)){var color=artStudioMixerHSL(hex);if(color.s===0)color.h=before.h;changeContrast(contrastColorPatch(role,color));}
+            setContrastHexDrafts(function(previous){var next=Object.assign({},previous);delete next[role];return next;});
+          }
+          function saveContrastPalette(){
+            storeStudioThreadKitEntry({schemaVersion:1,accessibilityTarget:contrastGoalTarget,palette:{sourceTab:'contrast',harmony:'custom',colors:[contrastForeground,contrastBackground]}},studioThreadKitRunId);
+            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.contrast_pair_saved','Text color, background color, and contrast goal saved to Thread Kit.'));
+          }
+          function exportContrastCSS(){
+            var css='/* WCAG 2.2 contrast: '+contrastRatio.toFixed(4)+':1; target '+contrastGoalTarget+':1; '+(passContrastGoal?'passes':'does not pass')+' */\n.contrast-sample {\n  color: '+artStudioContrastCSS(contrastForeground)+';\n  background-color: '+artStudioContrastCSS(contrastBackground)+';\n}\n';
+            var link=document.createElement('a');link.download='contrast-pair.css';link.href='data:text/css;charset=utf-8,'+encodeURIComponent(css);link.click();
+          }
+          function drawStereoPreset(canvas,preset){
+            var ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;ctx.fillStyle='#000000';ctx.fillRect(0,0,W,H);
 
 
+                          if (preset === 'sphere') {
 
+                            var grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.min(W,H)*0.35);
+
+                            grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#888888'); grad.addColorStop(1, '#000000');
+
+                            ctx.beginPath(); ctx.arc(W/2, H/2, Math.min(W,H)*0.35, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
+
+                          } else if (preset === 'pyramid') {
+
+                            ctx.beginPath(); ctx.moveTo(W/2, H*0.15); ctx.lineTo(W*0.2, H*0.85); ctx.lineTo(W*0.8, H*0.85); ctx.closePath();
+
+                            var pgr = ctx.createLinearGradient(W/2, H*0.15, W/2, H*0.85);
+
+                            pgr.addColorStop(0, '#ffffff'); pgr.addColorStop(1, '#555555'); ctx.fillStyle = pgr; ctx.fill();
+
+                          } else if (preset === 'heart') {
+
+                            ctx.save(); ctx.translate(W/2, H*0.45);
+
+                            var sc = Math.min(W,H) * 0.012; ctx.scale(sc, -sc);
+
+                            ctx.beginPath();
+
+                            for (var ht = 0; ht <= Math.PI * 2; ht += 0.01) {
+
+                              var hx = 16 * Math.pow(Math.sin(ht), 3);
+
+                              var hy = 13 * Math.cos(ht) - 5 * Math.cos(2*ht) - 2 * Math.cos(3*ht) - Math.cos(4*ht);
+
+                              if (ht === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+
+                            }
+
+                            ctx.closePath(); ctx.restore(); ctx.fillStyle = '#ffffff'; ctx.fill();
+
+                          } else if (preset === 'text') {
+
+                            ctx.fillStyle = '#ffffff'; ctx.font = 'bold ' + Math.round(H * 0.45) + 'px Arial';
+
+                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('HI', W/2, H/2);
+
+                          } else if (preset === 'rings') {
+
+                            for (var ri = 3; ri > 0; ri--) {
+
+                              var rr = ri * Math.min(W,H) * 0.12;
+
+                              var brt = Math.round((4 - ri) / 3 * 255);
+
+                              ctx.beginPath(); ctx.arc(W/2, H/2, rr, 0, Math.PI*2);
+
+                              ctx.lineWidth = 20; ctx.strokeStyle = 'rgb(' + brt + ',' + brt + ',' + brt + ')'; ctx.stroke();
+
+                            }
+
+                          }
+          }
+          const stereoModel=artStudioStereoModel(d),stereoOwner=studioPersistenceScope+'|'+studioThreadKitRunId+'|'+(d.stereoRestoreToken||'');
+          const stereoRuntimeRef=React.useRef({depth:null,output:null});
+          React.useEffect(function(){
+            var depth=stereoRuntimeRef.current.depth,output=stereoRuntimeRef.current.output;
+            return function(){if(output&&output._stereoCancel)output._stereoCancel();};
+          },[tab,d.stereoAnimMode,stereoOwner]);
+          function stereoDepthCheckpoint(){
+            var canvas=stereoRuntimeRef.current.depth;
+            if(!canvas||canvas._artStudioRestoring)return {stereoDepthSnapshot:d.stereoDepthSnapshot||'',stereoPreset:d.stereoPreset||null};
+            return {stereoDepthSnapshot:canvas.toDataURL('image/png'),stereoPreset:canvas._dmPreset||null};
+          }
+          function refreshStereoOutput(){var canvas=stereoRuntimeRef.current.output;if(canvas&&canvas.isConnected&&canvas._stereoRefresh)canvas._stereoRefresh();}
+          function stereoHistory(redo){var canvas=stereoRuntimeRef.current.depth;if(canvas&&canvas._dmHistoryAction)canvas._dmHistoryAction(redo);}
+          function stereoPreset(preset){var canvas=stereoRuntimeRef.current.depth;if(canvas&&canvas._dmEdit)canvas._dmEdit(function(){drawStereoPreset(canvas,preset);},preset);}
+          function exportStereo(){
+            var canvas=stereoRuntimeRef.current.output;if(!canvas)return;
+            var finish=function(){if(!canvas.isConnected)return;try{var src=canvas._stereoExportPNG();if(!src||src==='data:,')throw new Error('Empty image');var link=document.createElement('a');link.download='stereogram.png';link.href=src;link.click();}catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_export_failed','The image could not be exported. Please try again.'),'error');}};
+            if(canvas._artStudioRestoring&&canvas._artStudioReady)canvas._artStudioReady.then(finish);else finish();
+          }
+          function bindStereoDepth(canvas){
+            if(!canvas)return;
+            stereoRuntimeRef.current.depth=canvas;
+            canvas.dataset.touchMode=d.stereoDepthTouchMode==='draw'?'draw':'scroll';canvas.style.touchAction=canvas.dataset.touchMode==='draw'?'none':'pan-y';
+            var ctx=canvas.getContext('2d');if(!ctx)return;
+            var W=canvas.width,H=canvas.height;
+            canvas._dmPublish=function(){var checkpoint=stereoDepthCheckpoint();canvas._dmExpectedSnapshot=checkpoint.stereoDepthSnapshot;updMany(checkpoint);refreshStereoOutput();};
+            canvas._dmBrush={size:artStudioMixerNumber(d.stereoBrush,20,5,60),level:['near','mid','far','erase'].indexOf(d.stereoDepth)>=0?d.stereoDepth:'near'};
+            var incoming=typeof d.stereoDepthSnapshot==='string'&&d.stereoDepthSnapshot.indexOf('data:image/png')===0?d.stereoDepthSnapshot:'';
+            if(canvas._dmInit){if(canvas._dmExpectedSnapshot!==incoming)canvas._dmRestore(incoming,d.stereoPreset,d.stereoStaticDepthSnapshot);return;}
+            canvas._dmInit=true;canvas._dmPreset=d.stereoPreset||null;
+            var history={undo:[],redo:[]},stroke=null,cursor={x:W/2,y:H/2};
+            function snapshot(){return {pixels:ctx.getImageData(0,0,W,H),preset:canvas._dmPreset};}
+            function changed(a,b){var x=a.pixels.data,y=b.pixels.data;if(a.preset!==b.preset)return true;for(var i=0;i<x.length;i++)if(x[i]!==y[i])return true;return false;}
+            function publish(){canvas._dmRevision=(canvas._dmRevision||0)+1;canvas._dmPublish();}
+            function edit(action,preset){
+              if(canvas._artStudioRestoring)return;
+              finish();var before=snapshot();action();canvas._dmPreset=preset||null;var after=snapshot();
+              if(!changed(before,after))return;
+              history.undo.push(before);if(history.undo.length>20)history.undo.shift();history.redo=[];publish();
+            }
+            canvas._dmEdit=edit;
+            canvas._dmHistoryAction=function(redo){
+              if(canvas._artStudioRestoring)return;finish();var from=redo?history.redo:history.undo;if(!from.length)return;
+              (redo?history.undo:history.redo).push(snapshot());var next=from.pop();ctx.putImageData(next.pixels,0,0);canvas._dmPreset=next.preset;publish();
+              if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.stereo_redone','Depth edit redone.'):__alloT('stem.artstudio.stereo_undone','Depth edit undone.'));
+            };
+            canvas._dmHistory=history;
+            function position(event){var rect=canvas.getBoundingClientRect(),point=event.touches&&event.touches[0]||event.changedTouches&&event.changedTouches[0]||event;return {x:Math.max(0,Math.min(W,(point.clientX-rect.left)*W/(rect.width||W))),y:Math.max(0,Math.min(H,(point.clientY-rect.top)*H/(rect.height||H)))};}
+            function brush(from,to){var b=canvas._dmBrush,color={near:'#ffffff',mid:'#999999',far:'#333333',erase:'#000000'}[b.level];ctx.fillStyle=ctx.strokeStyle=color;ctx.lineWidth=b.size*2;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();if(from){ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();}else{ctx.arc(to.x,to.y,b.size,0,Math.PI*2);ctx.fill();}}
+            function start(event){
+              if(stroke||canvas._artStudioRestoring||(event.button!==undefined&&event.button!==0)||!canvasAllowsFingerInteraction(canvas,event))return;
+              event.preventDefault();stroke={before:snapshot(),last:position(event),id:event.pointerId};brush(null,stroke.last);
+              if(event.pointerId!==undefined&&canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId);}catch(_){}
+            }
+            function move(event){
+              if(!stroke||(stroke.id!==undefined&&event.pointerId!==undefined&&event.pointerId!==stroke.id))return;
+              if(event.preventDefault)event.preventDefault();var samples=typeof event.getCoalescedEvents==='function'?event.getCoalescedEvents():[];
+              Array.prototype.slice.call(samples).concat([event]).forEach(function(sample){var next=position(sample);if(!Number.isFinite(next.x)||!Number.isFinite(next.y))return;if(next.x!==stroke.last.x||next.y!==stroke.last.y)brush(stroke.last,next);stroke.last=next;});
+            }
+            function finish(event,cancel){
+              if(!stroke||(event&&stroke.id!==undefined&&event.pointerId!==undefined&&event.pointerId!==stroke.id))return;
+              if(event&&!cancel)move(event);var previous=stroke;stroke=null;var after=snapshot();
+              if(changed(previous.before,after)){history.undo.push(previous.before);if(history.undo.length>20)history.undo.shift();history.redo=[];canvas._dmPreset=null;publish();}
+              if(previous.id!==undefined&&canvas.releasePointerCapture)try{canvas.releasePointerCapture(previous.id);}catch(_){}
+            }
+            canvas._dmFinish=finish;
+            canvas.onpointerdown=start;canvas.onpointermove=move;canvas.onpointerup=function(e){finish(e,false);};canvas.onpointercancel=canvas.onlostpointercapture=function(e){finish(e,true);};
+            // Keep the fallback usable on hosts without PointerEvent and in the
+            // existing embedded touch adapter, without double-painting on modern browsers.
+            canvas.onmousedown=canvas.ontouchstart=function(e){if(typeof window.PointerEvent==='undefined')start(e);};
+            canvas.onmousemove=canvas.ontouchmove=function(e){if(typeof window.PointerEvent==='undefined')move(e);};
+            canvas.onmouseup=canvas.ontouchend=function(e){if(typeof window.PointerEvent==='undefined')finish(e,false);};
+            canvas.onmouseleave=canvas.ontouchcancel=function(e){if(typeof window.PointerEvent==='undefined')finish(e,true);};
+            function updateCursor(show){
+              var overlay=canvas.parentElement&&canvas.parentElement.querySelector('[data-depth-keyboard-cursor="true"]');
+              if(overlay){overlay.style.left=((canvas.offsetLeft||0)+cursor.x/W*(canvas.clientWidth||W)-10)+'px';overlay.style.top=((canvas.offsetTop||0)+cursor.y/H*(canvas.clientHeight||H)-10)+'px';overlay.style.display=show?'block':'none';}
+              canvas.setAttribute('aria-label',formatArtStudioLearningText(__alloT('stem.artstudio.stereo_cursor_label','Depth map drawing canvas. Current brush is {brush}. Keyboard cursor at x {x}, y {y}.'),{brush:__alloT('stem.artstudio.a11y_depth_'+canvas._dmBrush.level,canvas._dmBrush.level),x:Math.round(cursor.x),y:Math.round(cursor.y)}));
+            }
+            canvas.onfocus=function(){updateCursor(true);};canvas.onblur=function(){finish();updateCursor(false);};
+            canvas.onkeydown=function(event){
+              if((event.ctrlKey||event.metaKey)&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();canvas._dmHistoryAction(event.key.toLowerCase()==='y'||event.shiftKey);return;}
+              var before={x:cursor.x,y:cursor.y},step=event.altKey?1:10,moved=true;
+              if(event.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-step);else if(event.key==='ArrowRight')cursor.x=Math.min(W,cursor.x+step);else if(event.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-step);else if(event.key==='ArrowDown')cursor.y=Math.min(H,cursor.y+step);else if(event.key==='Home')cursor.x=W/2,cursor.y=H/2;else moved=false;
+              if(moved){event.preventDefault();if(event.shiftKey)edit(function(){brush(before,cursor);});updateCursor(true);if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(event.shiftKey?__alloT('stem.artstudio.sr_drew_depth_to_x_y','Drew depth to x {value1}, y {value2}.'):__alloT('stem.artstudio.sr_depth_cursor_x_y','Depth cursor x {value1}, y {value2}.'),{value1:Math.round(cursor.x),value2:Math.round(cursor.y)}));}
+              else if(event.key==='Enter'||event.key===' '){event.preventDefault();edit(function(){brush(null,cursor);});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_stamped_depth_at','Stamped {value1} depth at x {value2}, y {value3}.'),{value1:__alloT('stem.artstudio.sr_depth_'+canvas._dmBrush.level,canvas._dmBrush.level),value2:Math.round(cursor.x),value3:Math.round(cursor.y)}));}
+            };
+            canvas._dmRestore=function(saved,preset,rawLegacy){
+              stroke=null;history.undo=[];history.redo=[];canvas._dmExpectedSnapshot=saved;canvas._dmPreset=preset||null;
+              drawStereoPreset(canvas,preset);canvas._dmRevision=(canvas._dmRevision||0)+1;
+              var revision=(canvas._artStudioRestoreRevision||0)+1;canvas._artStudioRestoreRevision=revision;canvas._artStudioRestoring=!!saved;
+              if(saved){
+                canvas._artStudioReady=new Promise(function(resolve){
+                  var img=new Image();
+                  img.onload=function(){
+                    if(!canvas.isConnected||canvas._artStudioRestoreRevision!==revision){resolve();return;}
+                    ctx.drawImage(img,0,0,W,H);canvas._dmRevision++;canvas._artStudioRestoring=false;resolve();refreshStereoOutput();
+                  };
+                  img.onerror=function(){
+                    if(!canvas.isConnected||canvas._artStudioRestoreRevision!==revision){resolve();return;}
+                    canvas._artStudioRestoring=false;resolve();refreshStereoOutput();if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_restore_failed','The saved depth image could not be opened. The depth preset is still available.'),'error');
+                  };
+                  img.src=saved;
+                });
+              }else{
+                canvas._artStudioReady=null;
+                var legacy=artStudioStereoRaster(rawLegacy);
+                if(legacy&&typeof ctx.createImageData==='function'&&typeof ctx.putImageData==='function'){var pixels=ctx.createImageData(W,H);for(var y=0;y<H;y++)for(var x=0;x<W;x++){var i=(y*W+x)*4,j=(Math.floor(y*legacy.height/H)*legacy.width+Math.floor(x*legacy.width/W))*4;for(var c=0;c<4;c++)pixels.data[i+c]=legacy.data[j+c];}ctx.putImageData(pixels,0,0);}
+              }
+            };
+            canvas._dmRestore(incoming,d.stereoPreset,d.stereoStaticDepthSnapshot);
+            updateCursor(document.activeElement===canvas);
+          }
+          function bindStereoOutput(canvas){
+            if(!canvas)return;stereoRuntimeRef.current.output=canvas;
+            var ctx=canvas.getContext('2d');if(!ctx)return;
+            canvas._stereoSettings={model:stereoModel,pattern:d.stereoAiPatternImg,gen:d.stereoGen};
+            canvas._captureArtStudioState=stereoDepthCheckpoint;
+            if(!canvas._stereoRefresh){
+              var job=null,raf=null,signature='',patternRef=null;
+              canvas._stereoCancel=function(){if(raf!==null)cancelAnimationFrame(raf);raf=null;job=null;};
+              function draw(all){
+                if(!job||!canvas.isConnected)return;var end=all?canvas.height:Math.min(canvas.height,job.rows+32);
+                artStudioStereoRows(job.image,job.depth,job.settings.model,job.settings.pattern,job.rows,end);ctx.putImageData(job.image,0,0,0,job.rows,canvas.width,end-job.rows);job.rows=end;
+                canvas.dataset.stereoRows=String(end);canvas.setAttribute('aria-busy',String(end<canvas.height));
+                if(end<canvas.height)raf=requestAnimationFrame(function(){raf=null;draw(false);});
+              }
+              canvas._stereoRefresh=function(force){
+                var depth=stereoRuntimeRef.current.depth;if(!depth||!depth.isConnected)return;
+                canvas._artStudioRestoring=!!depth._artStudioRestoring;canvas._artStudioReady=depth._artStudioReady;canvas._artStudioRestoreRevision=depth._artStudioRestoreRevision;
+                if(depth._artStudioRestoring){canvas._stereoCancel();signature='';return;}
+                var settings=canvas._stereoSettings,next=JSON.stringify([settings.model,settings.gen,depth._dmRevision||0]);
+                if(!force&&signature===next&&patternRef===settings.pattern)return;
+                canvas._stereoCancel();signature=next;patternRef=settings.pattern;
+                var depthContext=depth.getContext('2d');if(!depthContext)return;
+                job={settings:settings,depth:depthContext.getImageData(0,0,depth.width,depth.height),image:ctx.createImageData(canvas.width,canvas.height),rows:0};
+                // Some older capture adapters omit dimensions from ImageData.
+                job.depth={width:depth.width,height:depth.height,data:job.depth.data};
+                ctx.putImageData(job.image,0,0);draw(false);
+              };
+              canvas._stereoExportCanvas=function(){canvas._stereoRefresh();if(canvas._artStudioRestoring)return null;if(raf!==null)cancelAnimationFrame(raf);raf=null;draw(true);return canvas;};
+              canvas._stereoExportPNG=function(){var complete=canvas._stereoExportCanvas();return complete?complete.toDataURL('image/png'):null;};
+            }
+            canvas._stereoRefresh();
+          }
+
+          const harmonyState=artStudioHarmonyState(d._harmonyHunt),harmonyRecipe=artStudioHarmonyRecipe(harmonyState),harmonySignature=JSON.stringify(harmonyRecipe);
+          const harmonyOwner=studioPersistenceScope+'|'+studioThreadKitRunId+'|'+(d.harmonyRestoreToken||'');
+          const harmonyStateRef=React.useRef(harmonyState);harmonyStateRef.current=harmonyState;
+          const harmonyHistoryRef=React.useRef({undo:[],redo:[]});
+          if(harmonyHistoryRef.current.owner!==harmonyOwner||(harmonyHistoryRef.current.expected&&harmonyHistoryRef.current.expected!==harmonySignature))harmonyHistoryRef.current={owner:harmonyOwner,undo:[],redo:[]};
+          harmonyHistoryRef.current.current=harmonyRecipe;harmonyHistoryRef.current.expected=harmonySignature;
+          const harmonyPalette=React.useMemo(function(){return artStudioHarmonyPalette(harmonyRecipe);},[harmonySignature]);
+          const [harmonySelected,setHarmonySelected]=React.useState(0);
+          React.useEffect(function(){setHarmonySelected(0);},[harmonyOwner]);
+          React.useEffect(function(){setHarmonySelected(function(index){return Math.min(index,harmonyPalette.length-1);});},[harmonyPalette.length]);
+          React.useEffect(function(){harmonyHistoryRef.current.gesture=null;},[tab]);
+          const harmonyIndex=Math.min(harmonySelected,harmonyPalette.length-1),harmonyColor=harmonyPalette[harmonyIndex];
+          function publishHarmony(values){var next=artStudioHarmonyState(Object.assign({},harmonyStateRef.current,values));harmonyStateRef.current=next;upd('_harmonyHunt',next);}
+          function changeHarmony(values){
+            var history=harmonyHistoryRef.current,before=history.current,after=artStudioHarmonyRecipe(Object.assign({},before,values));
+            if(JSON.stringify(before)===JSON.stringify(after))return;
+            if(!history.gesture||!history.gesture.recorded){history.undo.push(before);if(history.undo.length>30)history.undo.shift();history.redo=[];if(history.gesture)history.gesture.recorded=true;}
+            history.current=after;history.expected=JSON.stringify(after);publishHarmony(after);
+          }
+          function harmonyBeginGesture(event){if(event.target&&event.target.type==='range'&&!harmonyHistoryRef.current.gesture)harmonyHistoryRef.current.gesture={recorded:false,target:event.target};}
+          function harmonyEndGesture(event){var gesture=harmonyHistoryRef.current.gesture;if(event&&event.type==='blur'&&gesture&&event.target!==gesture.target)return;harmonyHistoryRef.current.gesture=null;}
+          function changeHarmonyHistory(redo){
+            var history=harmonyHistoryRef.current,from=redo?history.redo:history.undo;history.gesture=null;if(!from.length)return;
+            (redo?history.undo:history.redo).push(history.current);var next=from.pop();history.current=next;history.expected=JSON.stringify(next);publishHarmony(next);
+            if(typeof announceToSR==='function')announceToSR(redo?__alloT('stem.artstudio.hh_redone','Harmony edit redone.'):__alloT('stem.artstudio.hh_undone','Harmony edit undone.'));
+          }
+          function harmonyLabel(type){return {even:__alloT('stem.artstudio.hh_even','Evenly spaced'),analogous:__alloT('stem.artstudio.hh_analogous','Analogous'),complementary:__alloT('stem.artstudio.hh_complementary','Complementary'),split:__alloT('stem.artstudio.hh_split','Split complementary'),triadic:__alloT('stem.artstudio.hh_triadic','Triadic'),tetradic:__alloT('stem.artstudio.hh_tetradic','Tetradic'),square:__alloT('stem.artstudio.hh_square','Square')}[type];}
+          function logHarmony(){publishHarmony({log:harmonyStateRef.current.log.concat([{recipe:harmonyHistoryRef.current.current}]).slice(-8)});if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.hh_logged','Palette experiment saved for comparison.'));}
+          function saveHarmonyPalette(){storeStudioThreadKitEntry({schemaVersion:1,accessibilityTarget:studioThreadKit.accessibilityTarget,palette:{sourceTab:'harmonyHunt',harmony:artStudioHarmonyType(harmonyRecipe),colors:harmonyPalette.slice(0,8)}},studioThreadKitRunId);if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.hh_saved','Harmony colors saved to Thread Kit.'));}
+          function useHarmonyColor(watercolor){
+            if(watercolor)updMany({watercolorColor:harmonyColor.hex});else applyStudioScopedColor('pixel',harmonyColor);
+            selectArtStudioTab(watercolor?'watercolor':'pixel',ART_STUDIO_TAB_LABELS[watercolor?'watercolor':'pixel'],{focusPanel:true});
+          }
+          function exportHarmony(format){
+            var link=document.createElement('a');link.download='harmony-palette.'+format;
+            if(format==='css'){link.href='data:text/css;charset=utf-8,'+encodeURIComponent(':root {\n'+harmonyPalette.map(function(color,index){return '  --harmony-'+(index+1)+': '+color.css+';';}).join('\n')+'\n}\n');}
+            else {
+              var source=document.getElementById('artstudio-harmony-wheel');if(!source)return;
+              var svg=source.cloneNode(true);svg.setAttribute('viewBox','0 0 600 790');svg.setAttribute('width','900');svg.setAttribute('height','1185');svg.removeAttribute('class');svg.removeAttribute('style');svg.removeAttribute('id');svg.removeAttribute('xmlns');svg.querySelector('rect').setAttribute('height','790');
+              harmonyPalette.forEach(function(color,index){var x=20+(index%4)*145,y=620+Math.floor(index/4)*54,rect=document.createElementNS('http://www.w3.org/2000/svg','rect'),text=document.createElementNS('http://www.w3.org/2000/svg','text');rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width','135');rect.setAttribute('height','28');rect.setAttribute('fill',color.css);text.setAttribute('x',x);text.setAttribute('y',y+43);text.setAttribute('font-size','12');text.setAttribute('font-family','monospace');text.setAttribute('fill','#0f172a');text.textContent=(index+1)+'. '+color.hex.toUpperCase();svg.appendChild(rect);svg.appendChild(text);});
+              link.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(svg));
+            }
+            link.click();
+          }
+          function renderHarmonyStudio(){
+            var type=artStudioHarmonyType(harmonyRecipe),label=harmonyLabel(type),angle=(harmonyRecipe.baseHue+harmonyRecipe.rotation+360)%360;
+            var descriptions={
+              even:__alloT('stem.artstudio.hh_even_help','Equal hue steps around the whole wheel. Changing saturation does not change that spacing.'),
+              analogous:__alloT('stem.artstudio.hh_analogous_help','Three neighboring hues. Spread controls how far the two neighbors sit from the base.'),
+              complementary:__alloT('stem.artstudio.hh_complementary_help','Two hues 180 degrees apart on this HSL wheel.'),
+              split:__alloT('stem.artstudio.hh_split_help','The base plus two hues on either side of its opposite. Spread controls the split.'),
+              triadic:__alloT('stem.artstudio.hh_triadic_help','Three hues separated by 120 degrees.'),
+              tetradic:__alloT('stem.artstudio.hh_tetradic_help','Two opposite pairs. Spread controls the angle between the pairs.'),
+              square:__alloT('stem.artstudio.hh_square_help','Four hues separated by 90 degrees, forming two opposite pairs.')};
+            var points=harmonyPalette.map(function(color){var a=(color.h-90)*Math.PI/180;return {x:300+180*Math.cos(a),y:300+180*Math.sin(a)};});
+            var buttonClass='rounded-lg border border-violet-300 bg-white px-3 py-2 text-xs font-bold text-violet-900 disabled:opacity-40';
+            return React.createElement('div',{'data-artstudio-harmony':'true',className:'space-y-4',
+              onPointerDown:harmonyBeginGesture,onPointerUp:harmonyEndGesture,onPointerCancel:harmonyEndGesture,onLostPointerCapture:harmonyEndGesture,onBlur:harmonyEndGesture,
+              onKeyDown:function(event){if(event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeHarmonyHistory(event.key.toLowerCase()==='y'||event.shiftKey);}}},
+              React.createElement('style',null,'[data-artstudio-harmony] button,[data-artstudio-harmony] input,[data-artstudio-harmony] select{min-height:44px}[data-artstudio-harmony] button{min-width:44px;white-space:normal}[data-artstudio-harmony] input,[data-artstudio-harmony] select,[data-artstudio-harmony] textarea{max-width:100%}[data-harmony-wheel]{width:100%;max-width:560px;height:auto;margin:auto;display:block}[data-harmony-swatches]{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}[data-artstudio-focus="true"] [data-harmony-wheel]{max-width:760px}@media(min-width:1100px){[data-harmony-layout]{grid-template-columns:minmax(0,1fr) 320px}[data-artstudio-focus="true"] [data-harmony-controls]{max-height:78dvh;overflow:auto}}'),
+              React.createElement('div',{'data-harmony-layout':'true',className:'grid gap-4 items-start'},
+                React.createElement('section',{'data-harmony-preview':'true',className:'min-w-0 rounded-2xl border border-violet-200 bg-slate-50 p-3'},
+                  React.createElement('h3',{className:'text-center text-base font-bold text-violet-900'},__alloT('stem.artstudio.hh_title','Color harmony discovery')),
+                  React.createElement('p',{'data-harmony-description':'true',className:'mx-auto mt-2 max-w-xl text-center text-xs leading-relaxed text-slate-700'},descriptions[type]),
+                  React.createElement('svg',{id:'artstudio-harmony-wheel','data-harmony-wheel':'true',xmlns:'http://www.w3.org/2000/svg',viewBox:'0 0 600 600',role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_harmony_wheel_showing_with_colors_around','Color harmony wheel showing {value1} with {value2} colors around base hue {value3} degrees.'),{value1:label,value2:harmonyPalette.length,value3:studioColorValueLabel(angle)})},
+                    React.createElement('title',null,label+' · '+studioColorValueLabel(angle)+'°'),
+                    React.createElement('rect',{width:600,height:600,rx:16,fill:'#f8fafc'}),
+                    Array.from({length:72},function(_,index){var hue=index*5,a1=(hue-92.5)*Math.PI/180,a2=(hue-87.5)*Math.PI/180,point=function(radius,a){return (300+radius*Math.cos(a))+' '+(300+radius*Math.sin(a));};return React.createElement('path',{key:index,d:'M '+point(232,a1)+' L '+point(254,a1)+' A 254 254 0 0 1 '+point(254,a2)+' L '+point(232,a2)+' A 232 232 0 0 0 '+point(232,a1)+' Z',fill:'hsl('+hue+',75%,55%)'});}),
+                    React.createElement('polygon',{points:points.map(function(p){return p.x+','+p.y;}).join(' '),fill:'none',stroke:'#64748b',strokeWidth:2}),
+                    harmonyPalette.map(function(color,index){var radius=['analogous','split','tetradic'].indexOf(harmonyRecipe.scheme)>=0&&harmonyRecipe.spread<16?12:22,p=points[index];return React.createElement('g',{key:index},
+                      React.createElement('circle',{cx:p.x,cy:p.y,r:radius+5,fill:index===harmonyIndex?'#7c3aed':'#f8fafc'}),
+                      React.createElement('circle',{cx:p.x,cy:p.y,r:radius,fill:color.css,stroke:'#334155',strokeWidth:1.5}),
+                      React.createElement('text',{x:p.x,y:p.y+5,textAnchor:'middle',fontSize:radius<16?12:16,fontFamily:'sans-serif',fontWeight:'bold',fill:color.foreground},index+1));}),
+                    React.createElement('rect',{x:160,y:262,width:280,height:72,rx:8,fill:'#f8fafc'}),
+                    React.createElement('text',{x:300,y:290,textAnchor:'middle',fontSize:20,fontFamily:'sans-serif',fontWeight:'bold',fill:'#334155'},label),
+                    React.createElement('text',{x:300,y:318,textAnchor:'middle',fontSize:18,fontFamily:'sans-serif',fill:'#475569'},studioColorValueLabel(angle)+'°'),
+                    React.createElement('text',{x:300,y:578,textAnchor:'middle',fontSize:15,fontFamily:'sans-serif',fill:'#475569'},__alloT('stem.artstudio.hh_wheel_caption','Digital HSL hue relationships'))),
+                  React.createElement('div',{'data-harmony-swatches':'true',role:'group','aria-label':__alloT('stem.artstudio.hh_select_palette','Select a harmony color')},harmonyPalette.map(function(color,index){return React.createElement('button',{key:index,type:'button','data-harmony-swatch':index,'aria-pressed':index===harmonyIndex,'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.hh_select_color','Select harmony color {index}, {hex}'),{index:index+1,hex:color.hex}),onClick:function(){setHarmonySelected(index);},className:'rounded-xl border-2 p-2 text-center text-xs font-bold '+(index===harmonyIndex?'ring-2 ring-violet-700 ring-offset-2':'border-slate-400'),style:{background:color.css,color:color.foreground}},(index+1)+'. '+color.hex.toUpperCase(),React.createElement('span',{className:'mt-1 block font-normal'},studioColorValueLabel(color.h)+'°'));})),
+                  React.createElement('p',{className:'mt-3 text-xs leading-relaxed text-slate-600'},__alloT('stem.artstudio.hh_geometry_note','Hue spacing names a relationship, not a quality score. Pigment mixtures and perceived lightness behave differently from this digital HSL wheel.'))),
+                React.createElement('section',{'data-harmony-controls':'true',className:'min-w-0 rounded-2xl border border-violet-200 bg-violet-50 p-3 space-y-3'},
+                  React.createElement('label',{className:'block text-xs font-bold text-violet-900'},__alloT('stem.artstudio.hh_scheme','Hue relationship'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.hh_scheme','Hue relationship'),value:harmonyRecipe.scheme,onChange:function(event){changeHarmony({scheme:event.target.value});},className:'mt-1 block w-full rounded-lg border border-violet-300 bg-white px-2 text-sm text-slate-900'},['even','analogous','complementary','split','triadic','tetradic'].map(function(scheme){return React.createElement('option',{key:scheme,value:scheme},harmonyLabel(scheme));}))),
+                  [{k:'baseHue',label:__alloT('stem.artstudio.hh_base','Base hue'),min:0,max:359,unit:'°'},
+                   {k:'saturation',label:__alloT('stem.artstudio.hh_saturation','Saturation'),min:0,max:100,unit:'%'},
+                   {k:'lightness',label:__alloT('stem.artstudio.hh_lightness','Lightness'),min:0,max:100,unit:'%'},
+                   {k:'rotation',label:__alloT('stem.artstudio.hh_rotation','Rotate the whole palette'),min:-180,max:180,unit:'°'},
+                   {k:'spread',label:__alloT('stem.artstudio.hh_spread','Neighbor / split angle'),min:10,max:60,unit:'°',disabled:['analogous','split','tetradic'].indexOf(harmonyRecipe.scheme)<0},
+                   {k:'paletteSize',label:__alloT('stem.artstudio.hh_size','Evenly spaced color count'),min:2,max:12,unit:'',disabled:harmonyRecipe.scheme!=='even'}].map(function(control){return React.createElement('label',{key:control.k,htmlFor:'hh-'+control.k,className:'block text-xs font-bold text-slate-700'},control.label+': '+studioColorValueLabel(harmonyRecipe[control.k])+control.unit,React.createElement('input',{id:'hh-'+control.k,type:'range',min:control.min,max:control.max,step:1,disabled:control.disabled,value:harmonyRecipe[control.k],'aria-valuetext':studioColorValueLabel(harmonyRecipe[control.k])+control.unit,onChange:function(event){var patch={};patch[control.k]=Number(event.target.value);changeHarmony(patch);},className:'block w-full accent-violet-700'}));}),
+                  React.createElement('div',{className:'flex flex-wrap gap-2'},
+                    React.createElement('button',{type:'button',disabled:!harmonyHistoryRef.current.undo.length,onClick:function(){changeHarmonyHistory(false);},className:buttonClass},__alloT('stem.artstudio.hh_undo','Undo harmony edit')),
+                    React.createElement('button',{type:'button',disabled:!harmonyHistoryRef.current.redo.length,onClick:function(){changeHarmonyHistory(true);},className:buttonClass},__alloT('stem.artstudio.hh_redo','Redo harmony edit')),
+                    React.createElement('button',{type:'button',onClick:function(){changeHarmony(artStudioHarmonyRecipe({}));},className:buttonClass},__alloT('stem.artstudio.hh_reset','Reset palette'))),
+                  React.createElement('button',{type:'button',onClick:logHarmony,className:buttonClass+' w-full'},__alloT('stem.artstudio.hh_log','Log palette experiment')),
+                  React.createElement('button',{type:'button',onClick:saveHarmonyPalette,className:'w-full rounded-lg bg-violet-800 px-3 text-xs font-bold text-white'},harmonyPalette.length>8?__alloT('stem.artstudio.hh_save_eight','Save first 8 colors to Thread Kit'):__alloT('stem.artstudio.hh_save','Save harmony to Thread Kit')),
+                  harmonyPalette.length>8&&React.createElement('p',{className:'text-xs text-slate-700'},__alloT('stem.artstudio.hh_limit','Thread Kit holds eight colors. Downloads include the full palette.')),
+                  React.createElement('p',{className:'text-xs font-bold text-violet-900'},formatArtStudioLearningText(__alloT('stem.artstudio.hh_selected','Selected color {index}: {hex}'),{index:harmonyIndex+1,hex:harmonyColor.hex.toUpperCase()})),
+                  React.createElement('div',{className:'grid grid-cols-2 gap-2'},
+                    React.createElement('button',{type:'button',onClick:function(){useHarmonyColor(false);},className:buttonClass},__alloT('stem.artstudio.hh_pixel','Use in Pixel Art')),
+                    React.createElement('button',{type:'button',onClick:function(){useHarmonyColor(true);},className:buttonClass},__alloT('stem.artstudio.hh_watercolor','Paint in Watercolor')),
+                    React.createElement('button',{type:'button',onClick:function(){exportHarmony('svg');},className:buttonClass},__alloT('stem.artstudio.hh_svg','Download harmony SVG')),
+                    React.createElement('button',{type:'button',onClick:function(){exportHarmony('css');},className:buttonClass},__alloT('stem.artstudio.hh_css','Download harmony CSS'))))),
+              React.createElement('section',{'data-harmony-experiments':'true',className:'rounded-2xl border border-slate-300 bg-white p-4'},
+                React.createElement('h3',{className:'text-sm font-bold text-slate-900'},__alloT('stem.artstudio.hh_experiments','Palette experiments')),
+                React.createElement('p',{className:'mt-1 text-xs text-slate-600'},__alloT('stem.artstudio.hh_experiment_help','Keep up to eight experiments. Restore one to compare its settings; your written observations stay in place.')),
+                React.createElement('div',{className:'mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'},harmonyState.log.map(function(entry,index){var colors=artStudioHarmonyPalette(entry.recipe);return React.createElement('button',{key:index,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.hh_restore','Restore experiment {index}'),{index:index+1}),onClick:function(){changeHarmony(entry.recipe);},className:'min-w-0 rounded-xl border border-slate-300 p-2 text-left text-xs text-slate-800'},React.createElement('span',{'aria-hidden':true,className:'mb-2 flex overflow-hidden rounded-lg'},colors.map(function(color,i){return React.createElement('span',{key:i,style:{flex:1,height:32,background:color.css}});})),(index+1)+'. '+harmonyLabel(artStudioHarmonyType(entry.recipe)),React.createElement('span',{className:'mt-1 block text-slate-600'},studioColorValueLabel(entry.recipe.baseHue)+'° · '+colors.length+' '+__alloT('stem.artstudio.hh_colors','colors')));}))),
+              React.createElement('section',{className:'rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-3'},
+                React.createElement('label',{className:'block text-sm font-bold text-emerald-900'},__alloT('stem.artstudio.a11y_color_harmony_hypothesis','Color harmony hypothesis'),React.createElement('textarea',{'aria-label':__alloT('stem.artstudio.a11y_color_harmony_hypothesis','Color harmony hypothesis'),maxLength:2000,value:harmonyState.hypothesis,onChange:function(event){publishHarmony({hypothesis:event.target.value});},className:'mt-2 block w-full rounded-lg border border-emerald-300 bg-white p-3 text-sm font-normal text-slate-900',rows:3})),
+                !harmonyState.stuckRevealed&&React.createElement('button',{type:'button',onClick:function(){publishHarmony({stuckRevealed:true});},className:buttonClass},__alloT('stem.artstudio.stuck_show_open_prompts_no_answers','🤔 Stuck — show open prompts (no answers)')),
+                harmonyState.stuckRevealed&&React.createElement('ul',{className:'list-disc pl-5 space-y-2 text-sm text-slate-700'},
+                  React.createElement('li',null,__alloT('stem.artstudio.find_the_smallest_palette_that_still_f','Find the smallest palette that still feels "complete" to you.')),
+                  React.createElement('li',null,__alloT('stem.artstudio.hh_prompt_neighbors','Keep saturation fixed. Compare neighboring hues with opposite hues. What changes?')),
+                  React.createElement('li',null,__alloT('stem.artstudio.hh_prompt_lightness','Keep the hue relationship fixed. How does changing lightness affect your design?')),
+                  React.createElement('li',null,__alloT('stem.artstudio.hh_prompt_context','Log two palettes. Where might each work in your own artwork?'))),
+                React.createElement('label',{className:'flex items-center gap-3 text-sm font-bold text-emerald-900'},React.createElement('input',{id:'hh-und',type:'checkbox',checked:harmonyState.understood,onChange:function(event){publishHarmony({understood:event.target.checked});},style:{width:44,height:44,flexShrink:0}}),__alloT('stem.artstudio.i_think_i_understand_color_harmony_now','I think I understand color harmony now — let me explain it in my own words')),
+                harmonyState.understood&&React.createElement('label',{className:'block text-sm font-bold text-emerald-900'},__alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony','Explain your understanding of color harmony'),React.createElement('textarea',{'aria-label':__alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony','Explain your understanding of color harmony'),maxLength:4000,value:harmonyState.explanation,onChange:function(event){publishHarmony({explanation:event.target.value});},className:'mt-2 block w-full rounded-lg border border-emerald-300 bg-white p-3 text-sm font-normal text-slate-900',rows:4})))
+            );
+          }
           // Helper to toggle fullscreen for specific tool containers
 
           const toggleFullscreen = (elementId) => {
@@ -6439,6 +8747,8 @@ const d = labToolData.artStudio || {};
 
           const renderStudioThreadKit = function () {
             var hasPalette = studioThreadPalette.length > 0;
+            var canApplyColor = !!STUDIO_SCOPED_COLOR_PREFIXES[tab] || ['colorWheel','mixer','watercolor'].indexOf(tab) >= 0;
+            var draftInvalid = threadPaletteHexDraft !== null && !artStudioMixerHex(threadPaletteHexDraft);
             var paletteLabel = hasPalette
               ? (studioThreadKit.palette.harmony || 'custom') + ' palette from ' + (ART_STUDIO_TAB_LABELS[studioThreadKit.palette.sourceTab] || studioThreadKit.palette.sourceTab)
               : 'No carried materials yet';
@@ -6446,8 +8756,13 @@ const d = labToolData.artStudio || {};
               role: "region",
               'aria-labelledby': "artstudio-thread-kit-title",
               'data-artstudio-thread-kit': "true",
+              onKeyDown: function (event) {
+                if (event.defaultPrevented || (event.target && event.target.type === 'text')) return;
+                if ((event.ctrlKey || event.metaKey) && !event.altKey && ['z','y'].indexOf(event.key.toLowerCase()) >= 0) { event.preventDefault(); event.stopPropagation(); changeThreadPaletteHistory(event.key.toLowerCase() === 'y' || event.shiftKey); }
+              },
               className: "rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-white to-sky-50 p-3 shadow-sm"
             },
+              React.createElement('style',null,'[data-artstudio-thread-kit] button,[data-artstudio-thread-kit] input{min-height:44px}[data-artstudio-thread-kit] button{min-width:44px;white-space:normal}[data-artstudio-kit-swatches]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}[data-artstudio-kit-swatches] li{min-width:0}'),
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("div", { className: "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-xl", 'aria-hidden': "true" }, "\uD83E\uDDF0"),
                 React.createElement("div", { className: "min-w-0 flex-1" },
@@ -6464,22 +8779,41 @@ const d = labToolData.artStudio || {};
               ),
               React.createElement("p", { className: "mt-3 text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, paletteLabel),
               hasPalette
-                ? React.createElement("ol", { className: "mt-2 flex flex-wrap gap-2", 'aria-label': __alloT("stem.artstudio.learning_thread_kit_palette_colors_6c952d1", "Thread Kit palette colors") },
+                ? React.createElement("ol", { className: "mt-2", 'data-artstudio-kit-swatches':'true', 'aria-label': __alloT("stem.artstudio.learning_thread_kit_palette_colors_6c952d1", "Thread Kit palette colors") },
                     studioThreadPalette.map(function (color, colorIndex) {
-                      var label = "Color " + (colorIndex + 1) + ": hue " + color.h + " degrees, saturation " + color.s + " percent, lightness " + color.l + " percent";
-                      return React.createElement("li", { key: color.h + '-' + color.s + '-' + color.l + '-' + colorIndex },
-                        React.createElement("span", {
-                          role: "img",
-                          'aria-label': label,
-                          title: label,
-                          className: "block h-10 w-10 rounded-xl border-2 border-white shadow ring-1 ring-slate-300",
-                          style: { background: 'hsl(' + color.h + ',' + color.s + '%,' + color.l + '%)' }
-                        })
+                      var hex = artStudioMixerHSLHex(color.h,color.s,color.l);
+                      var label = formatArtStudioLearningText(__alloT('stem.artstudio.kit_select_color','Select palette color {index}, {hex}'),{index:colorIndex+1,hex:hex});
+                      return React.createElement("li", { key: colorIndex },
+                        React.createElement('button',{type:'button','aria-label':label,'aria-pressed':threadPaletteIndex===colorIndex,onClick:function(){setThreadPaletteSelected(colorIndex);setThreadPaletteHexDraft(null);},className:'block w-full rounded-lg border border-violet-300 bg-white p-1 text-left text-[0.625rem] font-bold text-slate-800 '+(threadPaletteIndex===colorIndex?'ring-2 ring-violet-700':'')},
+                          React.createElement('span',{'aria-hidden':true,className:'block h-8 rounded',style:{background:hex}}),
+                          React.createElement('span',{className:'mt-1 block'},(colorIndex+1)+'. '+hex.toUpperCase()))
                       );
                     })
                   )
                 : React.createElement("div", { className: "mt-2 rounded-xl border border-dashed border-violet-300 bg-white/80 p-3 text-[0.6875rem] leading-relaxed text-slate-600" }, __alloT("stem.artstudio.learning_nothing_is_applied_automatically_your_current_ar_ca4f6a0", "Nothing is applied automatically. Your current artwork always stays unchanged until you choose a transfer.")),
+              hasPalette && React.createElement('fieldset',{'data-artstudio-kit-editor':'true',className:'mt-3 rounded-xl border border-violet-200 bg-white p-2 space-y-2'},
+                React.createElement('legend',{className:'px-1 text-xs font-bold text-violet-900'},formatArtStudioLearningText(__alloT('stem.artstudio.kit_edit_color','Edit color {index}'),{index:threadPaletteIndex+1})),
+                React.createElement('div',{className:'flex items-center gap-2'},
+                  React.createElement('input',{type:'color','aria-label':__alloT('stem.artstudio.kit_picker','Selected palette color picker'),value:threadPaletteHex,onChange:function(event){editThreadPaletteHex(event.target.value);},className:'w-14 shrink-0 rounded-lg border border-violet-300 bg-white p-1'}),
+                  React.createElement('label',{className:'min-w-0 flex-1 text-[0.6875rem] font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),React.createElement('input',{id:'artstudio-kit-hex',type:'text',spellCheck:false,maxLength:7,'aria-label':__alloT('stem.artstudio.kit_hex','Selected palette hex color'),'aria-describedby':'artstudio-kit-hex-help','aria-invalid':draftInvalid,value:threadPaletteHexDraft===null?threadPaletteHex:threadPaletteHexDraft,onChange:function(event){setThreadPaletteHexDraft(event.target.value);},onBlur:function(event){editThreadPaletteHex(event.target.value);},onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();editThreadPaletteHex(event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setThreadPaletteHexDraft(null);}},className:'mt-1 block w-full rounded-lg border border-violet-300 px-2 font-mono text-sm text-slate-900'}))),
+                React.createElement('p',{id:'artstudio-kit-hex-help',className:'text-[0.6875rem] '+(draftInvalid?'text-red-700':'text-slate-600')},draftInvalid?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.kit_edit_hint','Palette edits stay in this project. Apply a color when you want to use it in your artwork.')),
+                React.createElement('div',{className:'grid grid-cols-3 gap-1'},
+                  React.createElement('button',{type:'button',disabled:threadPaletteIndex===0,onClick:function(){moveThreadPaletteColor(-1);},className:'rounded-lg border border-violet-300 bg-white px-1 text-[0.6875rem] font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.kit_move_left','Move left')),
+                  React.createElement('button',{type:'button',disabled:threadPaletteIndex===studioThreadPalette.length-1,onClick:function(){moveThreadPaletteColor(1);},className:'rounded-lg border border-violet-300 bg-white px-1 text-[0.6875rem] font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.kit_move_right','Move right')),
+                  React.createElement('button',{type:'button',onClick:function(){if(studioThreadPalette.length===1)focusArtStudioTarget('artstudio-kit-add');changeThreadPalette(studioThreadPalette.filter(function(_,index){return index!==threadPaletteIndex;}),threadPaletteIndex);},className:'rounded-lg border border-rose-300 bg-white px-1 text-[0.6875rem] font-bold text-rose-900'},__alloT('stem.artstudio.kit_remove','Remove color')))
+              ),
+              React.createElement('div',{className:'mt-3 flex flex-wrap gap-2'},
+                React.createElement('button',{id:'artstudio-kit-add',type:'button',disabled:studioThreadPalette.length>=8,onClick:function(){changeThreadPalette(studioThreadPalette.concat([currentThreadKitColor()||{h:0,s:0,l:50}]),studioThreadPalette.length);},className:'rounded-lg border border-violet-300 bg-white px-2 text-[0.6875rem] font-bold text-violet-900 disabled:opacity-40'},currentThreadKitColor()?__alloT('stem.artstudio.kit_add_current','Add current color'):__alloT('stem.artstudio.kit_add_gray','Add gray swatch')),
+                React.createElement('button',{type:'button',disabled:!threadPaletteHistoryRef.current.undo.length,onClick:function(){changeThreadPaletteHistory(false);},className:'rounded-lg border border-violet-300 bg-white px-2 text-[0.6875rem] font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.kit_undo','Undo palette edit')),
+                React.createElement('button',{type:'button',disabled:!threadPaletteHistoryRef.current.redo.length,onClick:function(){changeThreadPaletteHistory(true);},className:'rounded-lg border border-violet-300 bg-white px-2 text-[0.6875rem] font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.kit_redo','Redo palette edit'))),
+              React.createElement('p',{className:'mt-2 text-[0.6875rem] text-slate-600'},formatArtStudioLearningText(__alloT('stem.artstudio.kit_count','{count} of 8 colors. Select a swatch to edit or use it.'),{count:studioThreadPalette.length})),
+              hasPalette && canApplyColor && React.createElement('div',{className:'mt-2 grid gap-2'},
+                React.createElement('button',{type:'button',onClick:function(){applyThreadPaletteSelectedColor(1);},className:'rounded-lg bg-violet-800 px-2 text-xs font-bold text-white'},tab==='mixer'?__alloT('stem.artstudio.kit_mixer_a','Use selected color as Color A'):__alloT('stem.artstudio.kit_use_selected','Use selected color in this tool')),
+                tab==='mixer' && React.createElement('button',{type:'button',onClick:function(){applyThreadPaletteSelectedColor(2);},className:'rounded-lg bg-violet-800 px-2 text-xs font-bold text-white'},__alloT('stem.artstudio.kit_mixer_b','Use selected color as Color B'))),
+              hasPalette && React.createElement('button',{type:'button',onClick:exportThreadPaletteCSS,className:'mt-2 w-full rounded-lg border border-emerald-400 bg-white px-2 text-xs font-bold text-emerald-900'},__alloT('stem.artstudio.kit_export_css','Download palette CSS')),
               React.createElement("div", { className: "mt-3 grid gap-2" },
+                tab === 'gradient' && React.createElement('button',{type:'button',onClick:captureGradientPaletteToThreadKit,className:'min-h-[44px] rounded-xl bg-violet-700 px-3 text-xs font-black text-white'},__alloT('stem.artstudio.gradient_save_palette','Add gradient palette to Thread Kit')),
+                tab === 'gradient' && hasPalette && React.createElement('button',{type:'button',onClick:applyThreadKitPaletteToGradient,className:'min-h-[44px] rounded-xl bg-rose-700 px-3 text-xs font-black text-white'},__alloT('stem.artstudio.gradient_apply_palette','Use Thread Kit colors in Gradient')),
                 tab === 'colorWheel' && React.createElement("button", {
                   type: "button",
                   onClick: captureColorWheelPaletteToThreadKit,
@@ -6787,10 +9121,11 @@ const d = labToolData.artStudio || {};
 
           if (studioHomeOpen) return renderStudioHome();
 
-          return React.createElement("div", { className: (tab === 'pixel' || tab === 'watercolor' ? "w-full " : "max-w-7xl ") + "mx-auto animate-in fade-in duration-200 motion-reduce:animate-none", 'data-artstudio-root': 'true' },
+          return React.createElement("div", { className: (studioFocusView || tab === 'pixel' || tab === 'watercolor' ? "w-full " : "max-w-7xl ") + "mx-auto animate-in fade-in duration-200 motion-reduce:animate-none", 'data-artstudio-root': 'true', 'data-artstudio-focus': String(studioFocusView), onKeyDown:function(event){if(studioFocusView && event.key==='Escape' && !event.defaultPrevented && !document.fullscreenElement && !document.querySelector('[data-allo-fullscreen-active="true"]')){event.preventDefault();setStudioFocusView(false);focusArtStudioTarget('artstudio-focus-toggle');}} },
+            React.createElement('style',null,`[data-artstudio-focus="true"] [data-artstudio-stage-shell]{grid-template-columns:minmax(0,1fr)} [data-artstudio-focus="true"] [data-artstudio-inspector-shell],[data-artstudio-focus="true"] [data-artstudio-tab-intro]{display:none} [data-artstudio-focus="true"] :is(#symmetryCanvas,#spiroCanvas,#genCanvas,#spinCanvas,#stringCanvas,#opArtCanvas,#tessCanvas,#fractalCanvas,#gradientCanvas){width:min(100%,76dvh)!important;height:auto!important;max-width:100%} [data-artstudio-focus="true"] [data-artstudio-toolbar]{position:sticky;top:0} @media(prefers-reduced-motion:reduce){[data-artstudio-focus="true"]{scroll-behavior:auto}}`),
             React.createElement('style', null, "dialog[data-artstudio-inspector-shell]::backdrop{background:rgba(15,23,42,.58)} [data-artstudio-root] button,[data-artstudio-root] summary{scroll-margin-block:1rem} @media(max-width:639px){[data-artstudio-root] [data-studio-touch-description]{display:none}[data-artstudio-root] [data-studio-compact-palette]>summary{min-height:44px;display:list-item;align-content:center}[data-artstudio-root] [data-studio-compact-palette][open]>summary{margin-bottom:12px}} .theme-contrast [data-artstudio-root] :is(h1,h2,h3,summary,legend,a,small,strong,th,td,dt,dd,figcaption,time,code):not(button *){color:var(--allo-stem-text,#ffff00) !important}"),
 
-            React.createElement("div", { className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
+            React.createElement("div", { 'data-artstudio-toolbar':'true',className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
               React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
               React.createElement("div", { className: "min-w-0" },
                 React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
@@ -6799,6 +9134,7 @@ const d = labToolData.artStudio || {};
               React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[0.625rem] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || __alloT("stem.artstudio.learning_creative_24674ae", "CREATIVE")),
               React.createElement("div", { className: "ml-auto flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto" },
                 React.createElement("button", { type: "button", onClick: openStudioHome, className: "px-3 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-100", 'aria-label': __alloT("stem.artstudio.learning_open_studio_home_72a7ad7", "Open Studio home") }, __alloT("stem.artstudio.learning_home_3a78695", "Home")),
+                React.createElement('button',{id:'artstudio-focus-toggle',type:'button','aria-pressed':studioFocusView,'aria-controls':'artstudio-stage-shell',onClick:function(){setStudioFocusView(!studioFocusView);if(!studioFocusView){setStudioMobileInspectorOpen(false);focusArtStudioTarget('artstudio-panel-'+tab);}},className:'min-h-[44px] rounded-xl px-3 text-xs font-black '+(studioFocusView?'bg-slate-900 text-white':'bg-slate-100 text-slate-800')},studioFocusView?__alloT('stem.artstudio.exit_focus_view','Exit focus view (Esc)'):__alloT('stem.artstudio.focus_workspace','Focus workspace')),
                 React.createElement("button", {
                   id: "artstudio-kit-button",
                   type: "button",
@@ -6825,7 +9161,8 @@ const d = labToolData.artStudio || {};
               )
             ),
 
-            React.createElement('nav', { className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
+            studioFocusView && React.createElement('label',{className:'mb-3 flex flex-wrap items-center gap-2 text-sm font-bold text-slate-800'},__alloT('stem.artstudio.focus_tool','Studio tool'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.focus_tool','Studio tool'),value:tab,onChange:function(event){selectArtStudioTab(event.target.value,ART_STUDIO_TAB_LABELS[event.target.value],{focusPanel:true});},className:'min-h-[44px] max-w-full rounded-xl border border-slate-400 bg-white px-3 text-slate-900'},ART_STUDIO_GROUPS.map(function(group){return React.createElement('optgroup',{key:group.id,label:group.label},ART_STUDIO_TAB_ITEMS.filter(function(item){return group.tabs.indexOf(item.id)!==-1;}).map(function(item){return React.createElement('option',{key:item.id,value:item.id},item.label);}));}))),
+            React.createElement('nav', { hidden:studioFocusView,className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
               React.createElement('div', { className: 'sm:hidden rounded-2xl border border-slate-500 bg-white p-3 shadow-sm' },
                 React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[0.6875rem] font-black uppercase tracking-wider text-slate-600' }, __alloT("stem.artstudio.learning_choose_a_studio_tool_44b120e", "Choose a studio tool")),
                 React.createElement('select', { id: 'artstudio-mobile-tool-picker', 'aria-controls': 'artstudio-panel-' + tab, value: tab, onChange: function (event) { var nextId = event.target.value; selectArtStudioTab(nextId, ART_STUDIO_TAB_LABELS[nextId] || nextId); }, className: 'mt-1 min-h-[44px] w-full rounded-xl border-2 border-slate-500 bg-white px-3 text-sm font-bold text-slate-900' },
@@ -6856,6 +9193,7 @@ const d = labToolData.artStudio || {};
             ),
 
             React.createElement("div", {
+              id:'artstudio-stage-shell',
               'data-artstudio-stage-shell': "true",
               className: "grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]"
             },
@@ -6889,14 +9227,14 @@ const d = labToolData.artStudio || {};
             (function() {
               var TAB_META = {
                 artistExplorer:{ accent: '#9d174d', soft: 'rgba(157,23,77,0.09)', icon: '\uD83C\uDF0D', title: __alloT('stem.artstudio.artist_explorer_title', 'Artists & Traditions — decisions, context, and making'), hint: __alloT('stem.artstudio.artist_explorer_hint', 'Explore 28 practices across seven regions. Learn from artistic decisions and cultural context, then carry the question—not a copied signature style—into an interactive Studio lab.') },
-                colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.color_wheel_hsl_hsv_complementary_pair', 'Color Wheel \u2014 HSL/HSV + complementary pairs'),           hint: __alloT('stem.artstudio.hue_0_360_around_the_wheel_saturation_', 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.') },
-                mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.artstudio.color_mixer_subtractive_vs_additive', 'Color Mixer \u2014 subtractive vs additive'),                  hint: __alloT('stem.artstudio.paint_and_print_subtractive_cmy_mixes_', 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.') },
+                colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.wheel_title', 'Color Wheel \u2014 HSL + harmony palettes'), hint: __alloT('stem.artstudio.wheel_hint', 'Explore an HSL hue wheel, tune saturation and lightness, and build a reusable color harmony.') },
+                mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.artstudio.color_mixer_subtractive_vs_additive', 'Color Mixer \u2014 pigment, light, and digital blends'),                  hint: __alloT('stem.artstudio.paint_and_print_subtractive_cmy_mixes_', 'Compare how a pigment approximation, a linear-light crossfade, and digital blends combine the same two colors. Choose a ratio, save a palette, and try the result in Watercolor.') },
                 watercolor:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.watercolor_simulation', 'Watercolor \u2014 pigment, water, and paper'),                 hint: __alloT('stem.artstudio.watercolor_simulation_hint', 'Water carries pigment across paper; as the brush unloads and water evaporates, clustered pigment creates granulation and darker drying edges. Try a wash, then a dry brush.') },
                 pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: __alloT('stem.artstudio.pixel_art_bitmap_craft_at_8_8_to_64_64', 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 64\u00d764'),          hint: __alloT('stem.artstudio.each_pixel_is_a_deliberate_decision_ne', 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.') },
                 symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: __alloT('stem.artstudio.symmetry_reflection_rotation_glide', 'Symmetry \u2014 reflection, rotation, glide'),                hint: __alloT('stem.artstudio.bilateral_mirror_rotational_n_fold_poi', 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.') },
                 spirograph:   { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)',  icon: '\uD83C\uDF00', title: __alloT('stem.artstudio.spirograph_hypotrochoid_roulettes', 'Spirograph \u2014 hypotrochoid roulettes'),                  hint: __alloT('stem.artstudio.a_small_circle_rolls_inside_a_big_one_', 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.') },
                 generative:   { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83C\uDF86', title: __alloT('stem.artstudio.generative_algorithm_randomness_as_art', 'Generative \u2014 algorithm + randomness as artist'),         hint: __alloT('stem.artstudio.sol_lewitt_wrote_instructions_the_wall', 'Sol LeWitt wrote instructions; the wall installer was the executor. Today: Processing, p5.js, Cinder. \u201CThe artist is the rule, not the result.\u201D') },
-                spinArt:      { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDF00', title: __alloT('stem.artstudio.spin_art_centripetal_physics_in_paint', 'Spin Art \u2014 centripetal physics in paint'),               hint: __alloT('stem.artstudio.drop_paint_spin_watch_it_fling_outward', 'Drop paint, spin, watch it fling outward in spirals. Damien Hirst made millions selling spin paintings. Same physics as a salad spinner; F = m\u03c9\u00b2r.') },
+                spinArt:      { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDF00', title: __alloT('stem.artstudio.spin_art_rotation_and_paint', 'Spin Art \u2014 rotation and paint'), hint: __alloT('stem.artstudio.spin_art_experiment_hint', 'Place paint near the center and edge. Compare trail length at different speeds and paint thicknesses.') },
                 stringArt:    { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83D\uDD78', title: __alloT('stem.artstudio.string_art_curves_from_straight_lines', 'String Art \u2014 curves from straight lines'),                hint: __alloT('stem.artstudio.connect_every_n_th_nail_an_envelope_cu', 'Connect every n-th nail; an envelope curve emerges. Mary Everest Boole introduced this as classroom math c. 1900. The straight-line cardioid is still hypnotic.') },
                 opArt:        { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDC41', title: __alloT('stem.artstudio.op_art_fooling_the_visual_system', 'Op Art \u2014 fooling the visual system'),                    hint: __alloT('stem.artstudio.bridget_riley_s_moir_fields_vasarely_s', 'Bridget Riley\u2019s moir\u00e9 fields, Vasarely\u2019s grids. The brain\u2019s motion-detection edge cells over-fire on rapidly alternating contrast \u2014 the page appears to *vibrate*.') },
                 tessellation: { accent: '#047857', soft: 'rgba(4,120,87,0.10)',  icon: '\uD83D\uDD37', title: __alloT('stem.artstudio.tessellation_the_17_wallpaper_groups', 'Tessellation \u2014 the 17 wallpaper groups'),                hint: __alloT('stem.artstudio.every_periodic_2d_tiling_fits_one_of_1', 'Every periodic 2D tiling fits one of 17 symmetry groups. Escher figured this out by visiting the Alhambra in 1936; he then spent 30 years exhausting the catalogue.') },
@@ -6905,8 +9243,8 @@ const d = labToolData.artStudio || {};
                 stereogram:   { accent: '#0369a1', soft: 'rgba(3,105,161,0.10)', icon: '\uD83D\uDC53', title: __alloT('stem.artstudio.stereogram_3d_from_a_flat_page', 'Stereogram \u2014 3D from a flat page'),                       hint: __alloT('stem.artstudio.90s_magic_eye_craze_each_eye_sees_a_sl', '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.') },
                 sculpt3d:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)', icon: '\uD83D\uDDFF', title: __alloT("stem.artstudio.learning_3d_sculpture_form_balance_and_space_d970725", "3D Sculpture — form, balance, and space"),                    hint: 'Build with simple forms, then orbit the work to study silhouette, balance, negative space, scale, and how a sculpture changes from every viewpoint.' },
 
-                contrast:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA'),                   hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.') },
-                harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony - sound, ratio, and color'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Compare consonant and dissonant intervals, connect frequency ratios to pattern, and translate musical relationships into visual harmony.') }
+                contrast:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast — WCAG 2.2 color pairs'), hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'Try text and background colors, compare normal and large text, and find a pair that meets your chosen contrast goal.') },
+                harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony — hue relationships and palette experiments'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Explore hue spacing, saturation, and lightness. Compare saved experiments and carry a palette into your own artwork.') }
               };
               var meta = TAB_META[tab] || TAB_META.colorWheel;
               return React.createElement('details', {
@@ -7221,125 +9559,124 @@ const d = labToolData.artStudio || {};
               );
             })(),
 
-            tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
+            tab === 'colorWheel' && React.createElement('div',{'data-artstudio-wheel-layout':'true',
+              onPointerDown:wheelBeginGesture,onPointerUp:wheelEndGesture,onPointerCancel:wheelEndGesture,onBlur:wheelEndGesture,
+              onKeyDown:function(event){
+                if(event.target&&event.target.type==='text')return;
+                if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();changeWheelHistory(event.key.toLowerCase()==='y'||event.shiftKey);return;}
+                if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].indexOf(event.key)>=0)wheelBeginGesture(event);
+              },onKeyUp:wheelEndGesture},
+              React.createElement('style',null,'[data-artstudio-wheel-layout]{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}[data-artstudio-wheel-layout] button,[data-artstudio-wheel-layout] input{min-height:44px}[data-artstudio-wheel-layout] button{min-width:44px;white-space:normal}[data-artstudio-wheel-preview] canvas{width:min(100%,76dvh);height:auto;margin:auto;touch-action:none}[data-artstudio-wheel-swatches]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(min-width:1024px){[data-artstudio-wheel-layout]{grid-template-columns:minmax(260px,300px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-wheel-controls]{max-height:82dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-wheel-preview]{grid-row:1}}'),
+              React.createElement('div',{'data-artstudio-wheel-controls':'true',className:'min-w-0 space-y-3'},
+                React.createElement('div',{className:'flex gap-2 flex-wrap'},
+                  React.createElement('button',{type:'button',disabled:!wheelHistoryRef.current.undo.length,onClick:function(){changeWheelHistory(false);},className:'rounded-lg border border-pink-300 bg-white px-3 text-xs font-bold text-pink-900 disabled:opacity-40'},__alloT('stem.artstudio.wheel_undo','Undo color edit')),
+                  React.createElement('button',{type:'button',disabled:!wheelHistoryRef.current.redo.length,onClick:function(){changeWheelHistory(true);},className:'rounded-lg border border-pink-300 bg-white px-3 text-xs font-bold text-pink-900 disabled:opacity-40'},__alloT('stem.artstudio.wheel_redo','Redo color edit'))),
+                React.createElement('fieldset',{className:'rounded-xl border border-pink-300 bg-pink-50 p-3 space-y-3'},
+                  React.createElement('legend',{className:'px-1 text-xs font-bold text-pink-700'},__alloT('stem.artstudio.selected_color','Selected Color')),
+                  React.createElement('div',{className:'flex gap-2 items-center'},
+                    React.createElement('input',{type:'color',value:wheelHex,'aria-label':__alloT('stem.artstudio.wheel_picker','Wheel color picker'),onChange:function(event){commitWheelHex(event.target.value);},className:'w-16 shrink-0 rounded-lg border border-pink-300 bg-white p-1'}),
+                    React.createElement('label',{className:'min-w-0 flex-1 text-xs font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),
+                      React.createElement('input',{type:'text',value:wheelHexDraft===null?wheelHex:wheelHexDraft,maxLength:7,spellCheck:false,'aria-label':__alloT('stem.artstudio.wheel_hex','Wheel hex color'),'aria-invalid':wheelHexDraft!==null&&!artStudioMixerHex(wheelHexDraft),'aria-describedby':'artstudio-wheel-hex-help',
+                        onChange:function(event){setWheelHexDraft(event.target.value);},onBlur:function(event){commitWheelHex(event.target.value);},onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();commitWheelHex(event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setWheelHexDraft(null);}},className:'mt-1 block w-full rounded-lg border border-pink-300 px-2 font-mono text-sm text-slate-950'}))),
+                  React.createElement('p',{id:'artstudio-wheel-hex-help',className:'text-xs '+(wheelHexDraft!==null&&!artStudioMixerHex(wheelHexDraft)?'text-red-700':'text-slate-600')},wheelHexDraft!==null&&!artStudioMixerHex(wheelHexDraft)?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.mix_hex_help','Enter a hex color, then press Enter or leave the field.')),
+                  [{key:'hue',label:__alloT('stem.artstudio.mix_hue','Hue'),max:359},{key:'sat',label:__alloT('stem.artstudio.saturation','Saturation %'),max:100},{key:'lit',label:__alloT('stem.artstudio.lightness','Lightness %'),max:100}].map(function(channel){return React.createElement('label',{key:channel.key,htmlFor:'artstudio-color-'+channel.key,className:'block text-xs font-bold text-pink-700'},channel.label+': '+wheelDisplay(wheelModel[channel.key]),React.createElement('input',{id:'artstudio-color-'+channel.key,type:'range',min:0,max:channel.max,step:1,value:wheelModel[channel.key],onChange:function(event){var patch={};patch[channel.key]=Number(event.target.value);changeWheel(patch);},className:'block w-full accent-pink-700'}));})
+                ),
+                React.createElement('div',{className:'rounded-xl border border-pink-300 bg-white p-3 space-y-2'},
+                  React.createElement('p',{id:'artstudio-color-harmony-label',className:'text-xs font-bold text-pink-700'},__alloT('stem.artstudio.color_harmony','Color Harmony')),
+                  React.createElement('div',{role:'group','aria-labelledby':'artstudio-color-harmony-label',className:'grid grid-cols-2 gap-2'},['complementary','triadic','analogous','split'].map(function(harmony){return React.createElement('button',{key:harmony,type:'button','aria-pressed':wheelModel.harmony===harmony,onClick:function(){changeWheel({harmony:harmony});},className:'rounded-lg border border-pink-300 px-2 text-xs font-bold capitalize '+(wheelModel.harmony===harmony?'bg-pink-700 text-white':'bg-white text-pink-900')},__alloT('stem.artstudio.wheel_harmony_'+harmony,harmony));})),
+                  React.createElement('p',{className:'text-xs leading-relaxed text-slate-600'},wheelModel.harmony==='complementary'?__alloT('stem.artstudio.wheel_complementary_help','Two hues 180° apart.'):wheelModel.harmony==='triadic'?__alloT('stem.artstudio.wheel_triadic_help','Three hues spaced 120° apart.'):wheelModel.harmony==='analogous'?__alloT('stem.artstudio.wheel_analogous_help','Neighbors 30° either side of the base hue.'):__alloT('stem.artstudio.wheel_split_help','The base hue and the two neighbors of its complement.'))
+                ),
+                React.createElement('fieldset',{className:'rounded-xl border border-pink-300 bg-white p-3 space-y-2'},
+                  React.createElement('legend',{className:'px-1 text-xs font-bold text-pink-700'},__alloT('stem.artstudio.wheel_tones','Explore lightness')),
+                  React.createElement('p',{className:'text-xs text-slate-600'},__alloT('stem.artstudio.wheel_tones_help','Keep hue and saturation while trying darker or lighter colors.')),
+                  React.createElement('div',{className:'grid grid-cols-3 gap-2'},[10,25,40,60,75,90].map(function(lightness){var hex=artStudioMixerHSLHex(wheelModel.hue,wheelModel.sat,lightness);return React.createElement('button',{key:lightness,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.wheel_tone_label','Use {value}% lightness, {hex}'),{value:lightness,hex:hex}),'aria-pressed':wheelModel.lit===lightness,onClick:function(){changeWheel({lit:lightness});},className:'rounded-lg border border-slate-300 bg-white p-1 text-xs font-bold text-slate-800'},React.createElement('span',{'aria-hidden':true,className:'block h-8 rounded',style:{background:hex}}),lightness+'%');}))
+                )
+              ),
+              React.createElement('div',{'data-artstudio-wheel-preview':'true',className:'min-w-0 space-y-3'},
+                React.createElement('canvas',{id:'colorWheelCanvas',key:'wheel-'+wheelOwner,ref:wheelRef,width:900,height:900,tabIndex:0,role:'img','aria-label':wheelDescription,'aria-describedby':'artstudio-color-wheel-help','aria-keyshortcuts':'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Control+Z Control+Y Meta+Z Meta+Y',className:'block rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2',style:{background:'#111827'}}),
+                React.createElement('p',{id:'artstudio-color-wheel-help',className:'text-xs leading-relaxed text-slate-600'},__alloT('stem.artstudio.wheel_gesture_help','Drag around the ring to choose a hue. Arrow keys adjust by 1°, Shift by 10°; Home selects 0° and End selects 359°. Numbered palette colors match the wheel markers.')),
+                React.createElement('fieldset',{className:'rounded-xl border border-pink-300 bg-white p-3 space-y-2'},
+                  React.createElement('legend',{className:'px-1 text-xs font-bold text-pink-700'},__alloT('stem.artstudio.wheel_palette','Harmony palette')),
+                  React.createElement('div',{'data-artstudio-wheel-swatches':'true'},wheelPalette.map(function(color,index){return React.createElement('button',{key:index,type:'button','aria-pressed':color.base,'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.wheel_swatch_label','Use palette color {index}, {hex}, as base hue'),{index:index+1,hex:color.hex}),onClick:function(){changeWheel({hue:color.h});},className:'min-w-0 rounded-lg border border-slate-300 bg-white p-2 text-left text-xs font-bold text-slate-800 '+(color.base?'ring-2 ring-pink-700':'')},React.createElement('span',{'aria-hidden':true,className:'block h-12 rounded mb-2',style:{background:color.hex}}),React.createElement('span',{className:'block'},(index+1)+'. '+color.hex.toUpperCase()),React.createElement('span',{className:'block mt-1 font-normal'},wheelDisplay(color.h)+'°'+(color.base?' · '+__alloT('stem.artstudio.wheel_base','Base'):'')));}))
+                ),
+                React.createElement('div',{className:'flex flex-wrap gap-2'},
+                  React.createElement('button',{type:'button',onClick:captureColorWheelPaletteToThreadKit,className:'rounded-lg bg-pink-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wheel_save_palette','Save harmony to Thread Kit')),
+                  React.createElement('button',{type:'button',onClick:function(){upd('watercolorColor',wheelHex);selectArtStudioTab('watercolor');},className:'rounded-lg bg-teal-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wheel_paint','Paint with this color')),
+                  React.createElement('button',{type:'button',onClick:function(){exportWheel('png');},className:'rounded-lg border border-emerald-400 bg-white px-3 text-xs font-bold text-emerald-900'},__alloT('stem.artstudio.wheel_png','Export wheel PNG')),
+                  React.createElement('button',{type:'button',onClick:function(){exportWheel('svg');},className:'rounded-lg border border-emerald-400 bg-white px-3 text-xs font-bold text-emerald-900'},__alloT('stem.artstudio.wheel_svg','Export palette SVG')))
+              )
+            ),
 
-              React.createElement("div", { className: "flex flex-col lg:flex-row gap-4", style: { alignItems: 'flex-start' } },
-
-                React.createElement("canvas", { tabIndex: 0, ref: wheelRef, width: 320, height: 320, role: "img",
-                  'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_interactive_color_wheel_hue_degrees_saturation', 'Interactive color wheel. Hue {value1} degrees, saturation {value2} percent, lightness {value3} percent.'), { value1: (d.hue || 0), value2: ((typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100), value3: ((typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50) }),
-                  'aria-describedby': "artstudio-color-wheel-help",
-                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End",
-                  className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2",
-                  style: { background: '#1e1e2e', maxWidth: '100%' } }),
-
-                React.createElement("div", { className: "flex-1 space-y-3" },
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-200" },
-
-                    React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, __alloT('stem.artstudio.selected_color', "\uD83C\uDFAF Selected Color")),
-
-                    React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
-
-                      React.createElement("div", { "aria-hidden": "true", style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + ((typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100) + '%,' + ((typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
-
-                      React.createElement("div", null,
-
-                        React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + ((typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100) + "%, " + ((typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50) + "%)"),
-
-                        React.createElement("p", { id: "artstudio-color-wheel-help", className: "text-[0.6875rem] text-slate-600" }, "Click the wheel, or focus it and use Arrow keys to adjust hue; hold Shift for 10-degree steps; Home selects 0 degrees and End selects 359 degrees.")
-
-                      )
-
+            tab === 'mixer' && React.createElement('div',{'data-artstudio-mixer-layout':'true',
+              onPointerDown:mixerBeginGesture,onPointerUp:mixerEndGesture,onPointerCancel:mixerEndGesture,onBlur:mixerEndGesture,
+              onKeyDown:function(event){
+                if(event.target&&event.target.type==='text')return;
+                if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();changeMixerHistory(event.key.toLowerCase()==='y'||event.shiftKey);return;}
+                if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].indexOf(event.key)>=0)mixerBeginGesture(event);
+              },onKeyUp:mixerEndGesture},
+              React.createElement('style',null,'[data-artstudio-mixer-layout]{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}[data-artstudio-mixer-layout] button,[data-artstudio-mixer-layout] input,[data-artstudio-mixer-layout] summary{min-height:44px}[data-artstudio-mixer-layout] button{min-width:44px;white-space:normal}[data-artstudio-mixer-preview] canvas{width:100%;height:auto;max-width:1200px}[data-artstudio-mixer-palette]{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}@media(min-width:1024px){[data-artstudio-mixer-layout]{grid-template-columns:minmax(260px,300px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-mixer-controls]{max-height:80dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-mixer-preview]{grid-row:1}}@media(max-width:600px){[data-artstudio-mixer-palette]{grid-template-columns:repeat(4,minmax(0,1fr))}}'),
+              React.createElement('div',{'data-artstudio-mixer-controls':'true',className:'min-w-0 space-y-3'},
+                React.createElement('fieldset',{className:'rounded-xl border border-violet-300 bg-violet-50 p-3'},
+                  React.createElement('legend',{className:'px-1 text-xs font-bold text-violet-950'},__alloT('stem.artstudio.mix_model','Mixing model')),
+                  React.createElement('div',{className:'grid grid-cols-2 gap-2'},mixerChoices.map(function(choice){return React.createElement('button',{key:choice.id,type:'button','aria-pressed':mixerModel.mixMode===choice.id,onClick:function(){changeMixer({mixMode:choice.id});},className:'rounded-lg border border-violet-400 px-2 text-xs font-bold '+(mixerModel.mixMode===choice.id?'bg-violet-800 text-white':'bg-white text-violet-950')},choice.label);})),
+                  React.createElement('p',{id:'artstudio-mix-model-help',className:'mt-2 text-xs leading-relaxed text-slate-700'},mixerChoices.filter(function(choice){return choice.id===mixerModel.mixMode;})[0].help)
+                ),
+                React.createElement('div',{className:'flex flex-wrap gap-2'},
+                  React.createElement('button',{type:'button',disabled:!mixerHistoryRef.current.undo.length,onClick:function(){changeMixerHistory(false);},className:'rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.mix_undo','Undo mixer edit')),
+                  React.createElement('button',{type:'button',disabled:!mixerHistoryRef.current.redo.length,onClick:function(){changeMixerHistory(true);},className:'rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.mix_redo','Redo mixer edit')),
+                  React.createElement('button',{type:'button',onClick:function(){changeMixer({mix1H:mixerModel.mix2H,mix1S:mixerModel.mix2S,mix1L:mixerModel.mix2L,mix2H:mixerModel.mix1H,mix2S:mixerModel.mix1S,mix2L:mixerModel.mix1L,mixRatio:1-mixerModel.mixRatio});},className:'rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900'},__alloT('stem.artstudio.mix_swap','Swap A and B'))
+                ),
+                [1,2].map(function(index){
+                  var color=artStudioMixerInput(mixerModel,index),name=index===1?__alloT('stem.artstudio.color_a','Color A'):__alloT('stem.artstudio.color_b','Color B');
+                  var draft=mixerHexDrafts[index],invalid=draft!==undefined&&!artStudioMixerHex(draft);
+                  return React.createElement('fieldset',{key:index,className:'rounded-xl border border-slate-300 bg-white p-3 space-y-2'},
+                    React.createElement('legend',{className:'px-1 text-xs font-bold text-slate-800'},name),
+                    React.createElement('div',{className:'flex gap-2 items-center'},
+                      React.createElement('input',{type:'color',value:color,'aria-label':name+' '+__alloT('stem.artstudio.mix_color_picker','color picker'),onChange:function(event){commitMixerHex(index,event.target.value);},className:'w-16 shrink-0 rounded-lg border border-slate-400 bg-white p-1'}),
+                      React.createElement('label',{className:'min-w-0 flex-1 text-xs font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),React.createElement('input',{type:'text',value:draft===undefined?color:draft,maxLength:7,spellCheck:false,'aria-label':name+' '+__alloT('stem.artstudio.mix_hex','Hex color'),'aria-invalid':invalid,'aria-describedby':'artstudio-mix-hex-help-'+index,
+                        onChange:function(event){var value=event.target.value;setMixerHexDrafts(function(previous){var next=Object.assign({},previous);next[index]=value;return next;});},onBlur:function(event){commitMixerHex(index,event.target.value);},
+                        onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();commitMixerHex(index,event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setMixerHexDrafts(function(previous){var next=Object.assign({},previous);delete next[index];return next;});}},className:'mt-1 block w-full rounded-lg border border-slate-400 px-2 font-mono text-sm text-slate-950'}))
                     ),
-
-                    [{ k: 'hue', label: 'Hue', min: 0, max: 360 }, { k: 'sat', label: __alloT('stem.artstudio.saturation', 'Saturation %'), min: 0, max: 100 }, { k: 'lit', label: __alloT('stem.artstudio.lightness', 'Lightness %'), min: 0, max: 100 }].map(function (s) {
-
-                      return React.createElement("div", { key: s.k, className: "mb-2" },
-
-                        React.createElement("label", { htmlFor: 'artstudio-color-' + s.k, className: "text-[0.6875rem] font-bold text-pink-700 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
-
-                        React.createElement("input", { id: 'artstudio-color-' + s.k, type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
-
-                      );
-
-                    })
-
-                  ),
-
-                  React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
-
-                    React.createElement("p", { id: "artstudio-color-harmony-label", className: "text-[0.6875rem] font-bold text-pink-700 mb-2" }, __alloT('stem.artstudio.color_harmony', "\uD83D\uDD17 Color Harmony")),
-
-                    React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-color-harmony-label" },
-
-                      ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
-
-                        return React.createElement("button", { key: h, "aria-pressed": (d.harmony || 'complementary') === h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
-
-                      })
-
-                    )
-
-                  )
-
+                    React.createElement('p',{id:'artstudio-mix-hex-help-'+index,className:'text-xs '+(invalid?'text-red-700':'text-slate-600')},invalid?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.mix_hex_help','Enter a hex color, then press Enter or leave the field.')),
+                    React.createElement('details',null,
+                      React.createElement('summary',{className:'cursor-pointer content-center text-xs font-bold text-violet-900'},__alloT('stem.artstudio.mix_fine_tune','Fine-tune HSL')),
+                      [{key:'H',label:__alloT('stem.artstudio.mix_hue','Hue'),max:360},{key:'S',label:__alloT('stem.artstudio.saturation','Saturation %'),max:100},{key:'L',label:__alloT('stem.artstudio.lightness','Lightness %'),max:100}].map(function(channel){var key='mix'+index+channel.key;return React.createElement('label',{key:key,className:'block text-xs font-bold text-slate-700'},channel.label+': '+Number(mixerModel[key].toFixed(1)),React.createElement('input',{type:'range',min:0,max:channel.max,value:mixerModel[key],step:1,'aria-label':name+' '+channel.label,onChange:function(event){var patch={};patch[key]=Number(event.target.value);changeMixer(patch);},className:'block w-full accent-violet-700'}));})
+                    ),
+                    React.createElement('button',{type:'button',onClick:function(){commitMixerHex(index,mixerOutput.hex);},className:'w-full rounded-lg border border-violet-300 px-2 text-xs font-bold text-violet-900'},formatArtStudioLearningText(__alloT('stem.artstudio.mix_reuse_result','Use result as {color}'),{color:name}))
+                  );
+                }),
+                React.createElement('fieldset',{className:'rounded-xl border border-slate-300 bg-white p-3'},React.createElement('legend',{className:'px-1 text-xs font-bold text-slate-800'},__alloT('stem.artstudio.mix_starting_pairs','Starting pairs')),
+                  React.createElement('div',{className:'flex flex-wrap gap-2'},[{label:__alloT('stem.artstudio.mix_blue_yellow','Blue + yellow'),a:'#fcd200',b:'#002185'},{label:__alloT('stem.artstudio.mix_magenta_cyan','Magenta + cyan'),a:'#d7238b',b:'#00b4d8'},{label:__alloT('stem.artstudio.mix_black_white','Black + white'),a:'#000000',b:'#ffffff'}].map(function(pair){return React.createElement('button',{key:pair.a,type:'button',onClick:function(){changeMixer(Object.assign({},artStudioMixerSetColor(1,pair.a),artStudioMixerSetColor(2,pair.b),{mixRatio:0.5}));},className:'rounded-lg border border-violet-300 px-2 text-xs font-bold text-violet-900'},pair.label);}))
                 )
-
+              ),
+              React.createElement('div',{'data-artstudio-mixer-preview':'true',className:'min-w-0 space-y-3'},
+                React.createElement('div',{className:'rounded-xl border border-violet-300 bg-white p-3 space-y-2'},
+                  React.createElement('label',{htmlFor:'artstudio-mix-ratio',className:'block text-sm font-bold text-violet-950'},__alloT('stem.artstudio.color_mix_ratio','Color mix ratio')+' · '+mixerRatioLabel),
+                  React.createElement('input',{id:'artstudio-mix-ratio',type:'range',min:0,max:100,step:1,value:mixerModel.mixRatio*100,'aria-label':__alloT('stem.artstudio.color_mix_ratio','Color mix ratio'),'aria-valuetext':mixerRatioLabel,onChange:function(event){changeMixer({mixRatio:Number(event.target.value)/100});},className:'w-full accent-violet-700'}),
+                  React.createElement('output',{id:'artstudio-mix-result',className:'block text-sm font-bold text-slate-900'},__alloT('stem.artstudio.mix_result','Result')+': '+mixerOutput.hex.toUpperCase()+' · '+mixerModeLabel)
+                ),
+                React.createElement('canvas',{id:'mixerCanvas',key:'mixer-'+mixerOwner,width:960,height:520,role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.mix_canvas_description','Color mix sheet: {a} and {b}, {ratio}, using {mode}. Result {result}. Seven mixture samples below.'),{a:artStudioMixerInput(mixerModel,1),b:artStudioMixerInput(mixerModel,2),ratio:mixerRatioLabel,mode:mixerModeLabel,result:mixerOutput.hex}),className:'block rounded-xl border border-violet-200 shadow-lg',
+                  ref:function(canvas){if(!canvas)return;var signature=mixerSignature+'|'+mixerModeLabel+'|'+mixerRatioLabel;if(canvas._mixerSignature!==signature){artStudioMixerPaint(canvas.getContext('2d'),mixerModel,{title:__alloT('stem.artstudio.mix_sheet','Color mix sheet')+' · '+mixerModeLabel,a:__alloT('stem.artstudio.color_a','Color A'),b:__alloT('stem.artstudio.color_b','Color B'),result:mixerRatioLabel});canvas._mixerSignature=signature;}canvas._captureArtStudioState=function(){return Object.assign({},mixerModel);};}}),
+                React.createElement('fieldset',{className:'rounded-xl border border-violet-300 bg-white p-3'},
+                  React.createElement('legend',{className:'px-1 text-xs font-bold text-violet-950'},__alloT('stem.artstudio.mix_sample_ratios','Choose a mixture')),
+                  React.createElement('div',{'data-artstudio-mixer-palette':'true'},mixerOutput.palette.map(function(color,index){return React.createElement('button',{key:index,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.mix_sample_label','Use {percent}% Color B, {hex}'),{percent:Number((color.ratio*100).toFixed(1)),hex:color.hex}),'aria-pressed':Math.abs(mixerModel.mixRatio-color.ratio)<1e-9,onClick:function(){changeMixer({mixRatio:color.ratio});},className:'min-w-0 rounded-lg border border-slate-300 p-1 text-center text-xs font-bold text-slate-800 '+(Math.abs(mixerModel.mixRatio-color.ratio)<1e-9?'ring-2 ring-violet-700':'')},React.createElement('span',{'aria-hidden':true,className:'block h-10 rounded',style:{background:color.hex}}),React.createElement('span',{className:'block mt-1'},Math.round(color.ratio*100)+'% B'));}))
+                ),
+                React.createElement('div',{className:'flex flex-wrap gap-2'},
+                  React.createElement('button',{type:'button',onClick:exportMixerPalette,className:'rounded-lg bg-emerald-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.mix_export','Export mix sheet PNG')),
+                  React.createElement('button',{type:'button',onClick:captureMixerPaletteToThreadKit,className:'rounded-lg bg-violet-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.mix_save_palette','Add mix palette to Thread Kit')),
+                  React.createElement('button',{type:'button',onClick:function(){upd('watercolorColor',mixerOutput.hex);selectArtStudioTab('watercolor',ART_STUDIO_TAB_LABELS.watercolor,{focusPanel:true});},className:'rounded-lg border border-teal-500 bg-white px-3 text-xs font-bold text-teal-900'},__alloT('stem.artstudio.mix_paint_result','Paint with this mix'))
+                ),
+                React.createElement('fieldset',{className:'rounded-xl border border-slate-300 bg-white p-3'},React.createElement('legend',{className:'px-1 text-xs font-bold text-slate-800'},__alloT('stem.artstudio.mix_compare_models','Compare the same colors and ratio')),
+                  React.createElement('div',{className:'grid grid-cols-2 gap-2'},mixerOutput.comparisons.map(function(comparison,index){return React.createElement('button',{key:comparison.mode,type:'button','aria-pressed':mixerModel.mixMode===comparison.mode,onClick:function(){changeMixer({mixMode:comparison.mode});},className:'min-w-0 rounded-lg border border-slate-300 bg-white p-2 text-left text-xs text-slate-900'},React.createElement('span',{'aria-hidden':true,className:'block h-12 rounded mb-2',style:{background:comparison.hex}}),React.createElement('strong',null,mixerChoices[index].label),React.createElement('span',{className:'block font-mono mt-1'},comparison.hex.toUpperCase()));}))
+                )
               )
-
             ),
 
-            tab === 'mixer' && React.createElement("div", { className: "space-y-4" },
-
-              React.createElement("div", { className: "grid grid-cols-3 gap-4 items-center" },
-
-                React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 text-center" },
-
-                  React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix1.h + ',' + mix1.s + '%,' + mix1.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
-
-                  React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-2" }, __alloT('stem.artstudio.color_a', "Color A")),
-
-                  [{ k: 'mix1H', max: 360, val: mix1.h }, { k: 'mix1S', max: 100, val: mix1.s }, { k: 'mix1L', max: 100, val: mix1.l }].map(function (s) {
-
-                    return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.k + ' channel', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-indigo-500 mb-1" });
-
-                  })
-
-                ),
-
-                React.createElement("div", { className: "text-center" },
-
-                  React.createElement("div", { style: { width: 100, height: 100, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mixed.h + ',' + mixed.s + '%,' + mixed.l + '%)', border: '4px solid white', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' } }),
-
-                  React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, __alloT('stem.artstudio.result', "\uD83C\uDFAF Result")),
-
-                  React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), 'aria-label': __alloT('stem.artstudio.color_mix_ratio', 'Color mix ratio'), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
-
-                  React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
-
-                ),
-
-                React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 text-center" },
-
-                  React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix2.h + ',' + mix2.s + '%,' + mix2.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
-
-                  React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, __alloT('stem.artstudio.color_b', "Color B")),
-
-                  [{ k: 'mix2H', max: 360, val: mix2.h }, { k: 'mix2S', max: 100, val: mix2.s }, { k: 'mix2L', max: 100, val: mix2.l }].map(function (s) {
-
-                    return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, 'aria-label': s.k + ' filter', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-rose-500 mb-1" });
-
-                  })
-
-                )
-
-              )
-
-            ),
 
             tab === 'watercolor' && React.createElement("div", { id:'watercolorFullscreenWorkspace',className: "artstudio-watercolor-workspace space-y-3" },
               React.createElement('style',null,`
                 .artstudio-watercolor-workspace{min-width:0}
-                .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace input[type=color]{min-height:44px}
+                .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace summary,.artstudio-watercolor-workspace input[type=color],.artstudio-watercolor-workspace input[type=range]{min-height:44px}
                 .artstudio-watercolor-colors button{min-width:44px}
                 @media(max-width:700px){#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{flex:0 0 auto}}
                 .artstudio-watercolor-exit-label{display:none}
@@ -7419,7 +9756,7 @@ const d = labToolData.artStudio || {};
                   React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
                     React.createElement("div", null,
                       React.createElement("h4", { id: "artstudio-watercolor-mixing-title", className: "text-xs font-extrabold text-amber-950" }, __alloT('stem.artstudio.watercolor_mixing_tray', 'Pigment mixing tray')),
-                      React.createElement("p", { className: "text-[0.6875rem] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Blend two material profiles using optical absorbance.'))
+                      React.createElement("p", { className: "text-[0.6875rem] text-amber-900" }, __alloT('stem.artstudio.watercolor_mixing_help', 'Preview a pigment mixture and carry both its color and material behavior into your brush.'))
                     ),
                     React.createElement("div", { role: "img", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mixture_preview', 'Mixture preview: {value1}'), { value1: mixtureSummary }), title: mixtureSummary, className: "ml-auto h-10 w-16 rounded-lg border-2 border-white shadow-sm", style: { background: mixture.color } })
                   ),
@@ -7574,6 +9911,7 @@ const d = labToolData.artStudio || {};
                   React.createElement('button', {type:'button',onClick:function(){var c=document.getElementById('watercolorCanvas');if(c && c._watercolorEngine)c._watercolorEngine.wetPaper();if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.wet_paper_done','Paper wetted with clear water. Masked areas remain protected.'));},className:'min-h-[44px] rounded-lg bg-sky-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wet_paper','Wet paper')),
                   React.createElement('span',{className:'text-xs text-sky-950'},__alloT('stem.artstudio.wet_paper_help','Prepare a wet sheet for soft washes. Dry paint before adding a crisp glaze.'))
                 ),
+                React.createElement('p', { className: 'rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950', role: 'note' }, __alloT('stem.artstudio.watercolor_backrun_hint', 'Try a backrun: paint a wash, let it become damp, then add clean water with the Clear water brush. Watch mobile color move from the wetter center toward a darker rim.')),
                 React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
                 React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on."),
               ),
@@ -7584,7 +9922,18 @@ const d = labToolData.artStudio || {};
               { id: 'pixelFullscreenWorkspace', className: 'artstudio-pixel-workspace', role: 'region', 'aria-label': __alloT('stem.artstudio.pixel_workspace', 'Pixel drawing workspace') },
               React.createElement('style', null, `
                 .artstudio-pixel-workspace{display:flex;flex-direction:column;gap:12px;min-width:0}
-                .artstudio-pixel-workspace button,.artstudio-pixel-workspace select{min-height:44px}
+                .artstudio-pixel-workspace button,.artstudio-pixel-workspace select,.artstudio-pixel-workspace input[type=text],.artstudio-pixel-workspace input[type=color]{min-height:44px}
+                .artstudio-pixel-review{color:#0f172a;background:#fff;min-width:0}
+                .artstudio-pixel-preview-stage{display:flex;align-items:center;justify-content:center;width:100%;max-width:192px;height:192px;margin:8px auto;border:1px solid #94a3b8;overflow:hidden;background:#f8fafc}
+                .artstudio-pixel-preview-stage[data-paper=checker]{background-color:#e2e8f0;background-image:conic-gradient(#f8fafc 25%,transparent 0 50%,#f8fafc 0 75%,transparent 0);background-size:16px 16px}
+                .artstudio-pixel-preview-stage[data-paper=dark]{background:#1e1e2e}
+                #pixelArtworkPreview{image-rendering:pixelated;max-width:100%;flex:none}
+                .artstudio-pixel-color-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;margin:8px 0}
+                .artstudio-pixel-color-list button{display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #94a3b8;border-radius:6px;padding:5px}
+                .artstudio-pixel-color-list button[aria-pressed=true]{outline:3px solid #be185d;outline-offset:-3px}
+                .artstudio-pixel-color-list span{width:26px;height:26px;border:1px solid #64748b;border-radius:3px}
+                .artstudio-pixel-review select,.artstudio-pixel-review input{max-width:100%;min-width:0;background:#fff;color:#0f172a;border:1px solid #94a3b8;border-radius:6px}
+                .artstudio-pixel-review button:focus-visible,.artstudio-pixel-review input:focus-visible,.artstudio-pixel-review select:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
                 .artstudio-pixel-exit-label{display:none}
                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-expand-label{display:none}
                 #pixelFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-pixel-exit-label{display:inline}
@@ -7629,9 +9978,9 @@ const d = labToolData.artStudio || {};
                   React.createElement("select", { 'aria-label': __alloT('stem.artstudio.grid_size', 'Grid size'), value: pixelGridSize, onChange: function (e) { resizePixelArtwork(parseInt(e.target.value, 10)); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
 
                     [8, 16, 24, 32, 48, 64].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); })),
-                  React.createElement('button', { type:'button', disabled: !pixelHistoryRef.current.undo.length, onClick:function(){changePixelHistory(false);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold disabled:opacity-40' }, __alloT('stem.artstudio.pixel_undo','Undo')),
-                  React.createElement('button', { type:'button', disabled: !pixelHistoryRef.current.redo.length, onClick:function(){changePixelHistory(true);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold disabled:opacity-40' }, __alloT('stem.artstudio.pixel_redo','Redo')),
-                  React.createElement('button', { type:'button', 'aria-pressed':d.pixelShowGrid !== false, onClick:function(){upd('pixelShowGrid', d.pixelShowGrid === false);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold' }, __alloT('stem.artstudio.pixel_grid_lines','Grid lines')),
+                  React.createElement('button', { type:'button', disabled: !pixelHistoryRef.current.undo.length, onClick:function(){changePixelHistory(false);}, className:'px-3 rounded-lg border border-slate-400 bg-white text-slate-700 text-xs font-bold disabled:opacity-40' }, __alloT('stem.artstudio.pixel_undo','Undo')),
+                  React.createElement('button', { type:'button', disabled: !pixelHistoryRef.current.redo.length, onClick:function(){changePixelHistory(true);}, className:'px-3 rounded-lg border border-slate-400 bg-white text-slate-700 text-xs font-bold disabled:opacity-40' }, __alloT('stem.artstudio.pixel_redo','Redo')),
+                  React.createElement('button', { type:'button', 'aria-pressed':d.pixelShowGrid !== false, onClick:function(){upd('pixelShowGrid', d.pixelShowGrid === false);}, className:'px-3 rounded-lg border border-slate-400 text-xs font-bold '+(d.pixelShowGrid!==false?'bg-pink-600 text-white':'bg-white text-slate-700') }, __alloT('stem.artstudio.pixel_grid_lines','Grid lines')),
                   React.createElement('select', { 'aria-label':__alloT('stem.artstudio.pixel_zoom','Canvas zoom'), value:pixelZoom, onChange:function(e){zoomPixelCanvas(Number(e.target.value));}, className:'px-2 rounded-lg border border-slate-400 text-xs' },
                     [1,1.5,2,3].map(function(z){return React.createElement('option',{key:z,value:z},z===1?__alloT('stem.artstudio.pixel_fit','Fit canvas'):Math.round(z*100)+'%');})),
                   React.createElement('button', { type:'button', 'aria-label':__alloT('stem.artstudio.pixel_fullscreen','Expand pixel canvas'), 'data-fs-out':__alloT('stem.artstudio.pixel_fullscreen','Expand pixel canvas'), 'data-fs-in':__alloT('stem.artstudio.pixel_exit_fullscreen','Exit expanded canvas (Esc)'), ref:function(button){if(button && window.__alloStemFsBind) window.__alloStemFsBind(button,document.getElementById('pixelFullscreenWorkspace'));}, onClick:function(){toggleFullscreen('pixelFullscreenWorkspace');}, className:'px-3 rounded-lg bg-slate-800 text-white text-xs font-bold' }, React.createElement('span',{'aria-hidden':true},'⛶'), ' ', React.createElement('span',{className:'artstudio-pixel-expand-label'},__alloT('stem.artstudio.pixel_fullscreen_button','Expand canvas')), React.createElement('span',{className:'artstudio-pixel-exit-label'},__alloT('stem.artstudio.pixel_exit_button','Exit canvas')))
@@ -7666,10 +10015,45 @@ const d = labToolData.artStudio || {};
                 React.createElement('summary', { className:'cursor-pointer text-sm font-bold text-slate-800' }, __alloT('stem.artstudio.pixel_palette_options', 'Palettes and colors')),
                 d.pixelTool==='select' && React.createElement('div',{className:'my-2 rounded-lg border border-pink-300 bg-pink-50 p-2',role:'group','aria-label':__alloT('stem.artstudio.pixel_selection_actions','Selected pixels')},
                   React.createElement('div',{className:'flex flex-wrap gap-1'},[
-                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
+                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['rotate',__alloT('stem.artstudio.pixel_rotate_selection','Rotate selection ↻')],['flip-x',__alloT('stem.artstudio.pixel_flip_selection_x','Flip selection ↔')],['flip-y',__alloT('stem.artstudio.pixel_flip_selection_y','Flip selection ↕')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
                   ].map(function(action){return React.createElement('button',{id:'artstudio-pixel-selection-'+action[0],key:action[0],type:'button',ref:function(button){if(!button)return;var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelRefreshSelectionControls)canvas._pixelRefreshSelectionControls();else button.disabled=action[0]!=='all';},onClick:function(){var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelSelectionAction)canvas._pixelSelectionAction(action[0]);},className:'min-h-[44px] rounded-lg border border-pink-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},action[1]);})),
                   React.createElement('p',{id:'artstudio-pixel-selection-status','aria-live':'polite',className:'mt-2 text-xs text-slate-800'},__alloT('stem.artstudio.pixel_selection_empty','Drag to select a region. Keyboard: Enter, move to the opposite corner, then Enter again.')),
-                  React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_help','Drag inside to move. Arrow keys nudge; Shift moves 4 cells. Escape deselects. Ctrl/Cmd+C, X, V copy, cut, paste within this canvas. Delete clears selected pixels.'))
+                  React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_help','Drag inside to move. Arrow keys nudge; Shift moves 4 cells. Escape deselects. Ctrl/Cmd+C, X, V copy, cut, paste within this canvas. Delete clears selected pixels.')),
+                  React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_transform_help','Rotate turns the selection 90° clockwise. Flips affect selected pixels. A rotated region shifts inward if needed to stay on the grid.'))
+                ),
+
+                React.createElement('details',{id:'artstudio-pixel-review',open:true,className:'artstudio-pixel-review my-2 rounded-lg border border-slate-300 p-2'},
+                  React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_artwork_review','Artwork colors and preview')),
+                  React.createElement('label',{className:'block text-xs font-bold',htmlFor:'artstudio-pixel-preview-mode'},__alloT('stem.artstudio.pixel_preview_mode','Preview')),
+                  React.createElement('select',{id:'artstudio-pixel-preview-mode',value:pixelPreviewMode,onChange:function(e){upd('pixelPreviewMode',e.target.value);},className:'w-full px-2 text-xs'},
+                    [['sprite',__alloT('stem.artstudio.pixel_preview_sprite','Enlarged sprite')],['native',__alloT('stem.artstudio.pixel_preview_native','Actual size (1×)')],['tile',__alloT('stem.artstudio.pixel_preview_tile','Repeating tile (3 × 3)')]].map(function(option){return React.createElement('option',{key:option[0],value:option[0]},option[1]);})),
+                  React.createElement('div',{className:'artstudio-pixel-preview-stage','data-paper':pixelPreviewPaper},
+                    React.createElement('canvas',{id:'pixelArtworkPreview',role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.pixel_preview_label','Clean artwork preview: {size} by {size} cells. {mode}.'),{size:pixelGridSize,mode:pixelPreviewMode==='tile'?__alloT('stem.artstudio.pixel_preview_tile','Repeating tile (3 × 3)'):pixelPreviewMode==='native'?__alloT('stem.artstudio.pixel_preview_native','Actual size (1×)'):__alloT('stem.artstudio.pixel_preview_sprite','Enlarged sprite')}),ref:function(canvas){artStudioPixelPreview(canvas,d.pixelData,pixelGridSize,pixelPreviewMode);},style:{width:pixelPreviewMode==='native'?pixelGridSize:192,height:pixelPreviewMode==='native'?pixelGridSize:192}})),
+                  React.createElement('label',{className:'block text-xs font-bold',htmlFor:'artstudio-pixel-preview-paper'},__alloT('stem.artstudio.pixel_preview_paper','Preview background')),
+                  React.createElement('select',{id:'artstudio-pixel-preview-paper',value:pixelPreviewPaper,onChange:function(e){upd('pixelPreviewPaper',e.target.value);},className:'w-full px-2 text-xs'},
+                    [['checker',__alloT('stem.artstudio.pixel_preview_checker','Transparency checker')],['light',__alloT('stem.artstudio.pixel_preview_light','Light')],['dark',__alloT('stem.artstudio.pixel_preview_dark','Dark')]].map(function(option){return React.createElement('option',{key:option[0],value:option[0]},option[1]);})),
+                  React.createElement('p',{className:'mt-2 text-xs'},__alloT('stem.artstudio.pixel_preview_help','Preview backgrounds are for viewing only. Transparent sprite exports keep empty cells clear.')),
+                  React.createElement('p',{id:'artstudio-pixel-color-count',className:'mt-3 text-xs font-bold'},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_inventory_count','{colors} colors · {cells} painted cells'),{colors:pixelArtworkColors.length,cells:pixelArtworkColors.reduce(function(sum,color){return sum+color.count;},0)})),
+                  !pixelArtworkColors.length && React.createElement('p',{className:'my-2 text-xs'},__alloT('stem.artstudio.pixel_inventory_empty','Draw a few pixels to build your artwork palette.')),
+                  React.createElement('div',{className:'artstudio-pixel-color-list'},pixelArtworkColors.slice(pixelVisibleColorPage*24,pixelVisibleColorPage*24+24).map(function(color){
+                    var label=formatArtStudioLearningText(__alloT('stem.artstudio.pixel_inventory_swatch','Select {hex}, used in {count} cells'),{hex:color.hex.toUpperCase(),count:color.count});
+                    return React.createElement('button',{key:color.hex,type:'button','data-pixel-artwork-color':color.hex,'aria-label':label,title:label,'aria-pressed':color.hex===pixelSelectedHex,onClick:function(){setPixelEditColor(color.hex);setPixelHexDraft(null);}},React.createElement('span',{'aria-hidden':true,style:{background:color.hex}}));
+                  })),
+                  pixelColorPages>1 && React.createElement('div',{className:'flex items-center justify-between gap-1 text-xs'},
+                    React.createElement('button',{type:'button',disabled:pixelVisibleColorPage===0,onClick:function(){setPixelColorPage(pixelVisibleColorPage-1);},'aria-label':__alloT('stem.artstudio.pixel_colors_previous','Previous artwork colors'),className:'rounded border border-slate-400 px-3 disabled:opacity-40'},'←'),
+                    React.createElement('span',null,formatArtStudioLearningText(__alloT('stem.artstudio.pixel_colors_page','{page} / {pages}'),{page:pixelVisibleColorPage+1,pages:pixelColorPages})),
+                    React.createElement('button',{type:'button',disabled:pixelVisibleColorPage===pixelColorPages-1,onClick:function(){setPixelColorPage(pixelVisibleColorPage+1);},'aria-label':__alloT('stem.artstudio.pixel_colors_next','Next artwork colors'),className:'rounded border border-slate-400 px-3 disabled:opacity-40'},'→')),
+                  pixelSelectedColor && React.createElement('div',null,
+                    React.createElement('p',{className:'my-2 text-xs'},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_color_selected','{hex} · {count} cells'),{hex:pixelSelectedHex.toUpperCase(),count:pixelSelectedColor.count})),
+                    React.createElement('label',{htmlFor:'artstudio-pixel-replacement-hex',className:'block text-xs font-bold'},__alloT('stem.artstudio.pixel_replacement_hex','New color (hex)')),
+                    React.createElement('div',{className:'flex items-center gap-1'},
+                      React.createElement('input',{type:'color',value:pixelReplacementHex||pixelSelectedHex.slice(0,7),'aria-label':__alloT('stem.artstudio.pixel_replacement_picker','Choose replacement color'),onChange:function(e){setPixelHexDraft(e.target.value);},style:{width:44,flexShrink:0}}),
+                      React.createElement('input',{id:'artstudio-pixel-replacement-hex',type:'text',value:pixelReplacementDraft,spellCheck:false,autoComplete:'off',maxLength:7,'aria-invalid':!pixelReplacementHex,'aria-describedby':'artstudio-pixel-recolor-help',onChange:function(e){setPixelHexDraft(e.target.value);},className:'w-full px-2 font-mono text-xs'})),
+                    !pixelReplacementHex && React.createElement('p',{role:'status',className:'my-1 text-xs text-red-800'},__alloT('stem.artstudio.pixel_hex_invalid','Enter a hex color such as #3A8 or #33AA88.')),
+                    React.createElement('div',{className:'my-2 flex flex-wrap gap-1'},
+                      React.createElement('button',{id:'artstudio-pixel-use-color',type:'button',disabled:!pixelReplacementHex,onClick:usePixelArtworkColor,className:'rounded-lg border border-slate-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},__alloT('stem.artstudio.pixel_use_artwork_color','Use for brush')),
+                      React.createElement('button',{id:'artstudio-pixel-replace-color',type:'button',disabled:!pixelReplacementHex || pixelReplacementHex===pixelSelectedHex.slice(0,7),onClick:replacePixelArtworkColor,className:'rounded-lg bg-pink-700 px-2 text-xs font-bold text-white disabled:opacity-40'},__alloT('stem.artstudio.pixel_replace_color','Replace this color'))),
+                    React.createElement('p',{id:'artstudio-pixel-recolor-help',className:'text-xs'},__alloT('stem.artstudio.pixel_recolor_help','Replace every matching cell across the artwork in one undoable edit. Cell opacity is preserved.')))
                 ),
                 React.createElement('details', {className:'my-2 rounded-lg border border-slate-300 p-2'},
                   React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-xs font-bold',style:{paddingTop:10}},__alloT('stem.artstudio.pixel_brush_settings','Brush settings')+' · '+pixelBrushSize+' px'),
@@ -8015,9 +10399,12 @@ const d = labToolData.artStudio || {};
 
             ),
 
-            tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
-
-              React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+            tab === 'contrast' && React.createElement("div", { 'data-artstudio-contrast-layout':'true',
+              onPointerDown:contrastBeginGesture,onPointerUp:contrastEndGesture,onPointerCancel:contrastEndGesture,onLostPointerCapture:contrastEndGesture,onBlur:contrastEndGesture,
+              onKeyDown:function(event){if(event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeContrastHistory(event.key.toLowerCase()==='y'||event.shiftKey);}},
+              className: "grid gap-4 items-start" },
+              React.createElement('style',null,'[data-artstudio-contrast-layout]>style{display:none}[data-artstudio-contrast-controls]{order:2;min-width:0}[data-artstudio-contrast-preview]{order:1;min-width:0}[data-artstudio-contrast-layout] button,[data-artstudio-contrast-layout] input{min-height:44px}[data-artstudio-contrast-layout] button{min-width:44px;white-space:normal}[data-artstudio-contrast-layout] input{max-width:100%}@media(min-width:1100px){[data-artstudio-contrast-layout]{grid-template-columns:minmax(0,1fr) 320px}[data-artstudio-contrast-controls]{grid-template-columns:minmax(0,1fr)!important}[data-artstudio-contrast-preview]{position:sticky;top:84px}}'),
+              React.createElement("div", { 'data-artstudio-contrast-controls':'true',className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
 
                 [
 
@@ -8029,13 +10416,18 @@ const d = labToolData.artStudio || {};
 
                   var headingId = 'artstudio-contrast-' + group.prefix + '-heading';
 
-                  var colorText = 'HSL ' + group.h + ' degrees, ' + group.s + ' percent saturation, ' + group.l + ' percent lightness';
+                  var colorText = 'HSL ' + studioColorValueLabel(group.h) + ' degrees, ' + studioColorValueLabel(group.s) + ' percent saturation, ' + studioColorValueLabel(group.l) + ' percent lightness';
+                  var hex=artStudioMixerHSLHex(group.h,group.s,group.l),draft=contrastHexDrafts[group.prefix],invalid=draft!==undefined&&!artStudioMixerHex(draft),suggestion=contrastSuggestions[group.prefix];
 
                   return React.createElement("section", { key: group.prefix, role: "group", "aria-labelledby": headingId, className: "bg-white rounded-xl p-4 border border-slate-500" },
 
                     React.createElement("h4", { id: headingId, className: "text-xs font-bold text-slate-700 mb-3" }, group.title),
 
                     React.createElement("div", { role: "img", "aria-label": group.title + ' color preview: ' + colorText + '.', style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + group.h + ',' + group.s + '%,' + group.l + '%)', marginBottom: 8, border: '1px solid #64748b' } }),
+                    React.createElement('div',{className:'mb-2 flex gap-2 items-center'},
+                      React.createElement('input',{type:'color',value:hex,'aria-label':group.title+' '+__alloT('stem.artstudio.contrast_picker','color picker'),onChange:function(event){commitContrastHex(group.prefix,event.target.value);},className:'w-14 shrink-0 rounded-lg border border-slate-400 bg-white p-1'}),
+                      React.createElement('label',{className:'min-w-0 flex-1 text-xs font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),React.createElement('input',{id:'artstudio-contrast-'+group.prefix+'-hex',type:'text',spellCheck:false,maxLength:7,value:draft===undefined?hex:draft,'aria-label':group.title+' '+__alloT('stem.artstudio.mix_hex','Hex color'),'aria-invalid':invalid,'aria-describedby':'artstudio-contrast-'+group.prefix+'-hex-help',onChange:function(event){var value=event.target.value;setContrastHexDrafts(function(previous){var next=Object.assign({},previous);next[group.prefix]=value;return next;});},onBlur:function(event){commitContrastHex(group.prefix,event.target.value);},onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();commitContrastHex(group.prefix,event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setContrastHexDrafts(function(previous){var next=Object.assign({},previous);delete next[group.prefix];return next;});}},className:'block mt-1 w-full rounded-lg border border-slate-400 px-2 font-mono text-sm text-slate-900'}))),
+                    React.createElement('p',{id:'artstudio-contrast-'+group.prefix+'-hex-help',className:'mb-2 text-xs '+(invalid?'text-red-700':'text-slate-600')},invalid?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.contrast_hex_hint','Enter #RGB or #RRGGBB. Sliders retain the full HSL recipe.')),
 
                     [
 
@@ -8053,37 +10445,47 @@ const d = labToolData.artStudio || {};
 
                       return React.createElement("div", { key: stateKey, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: inputId, className: "text-[0.6875rem] text-slate-700 font-bold block" }, control.label + ': ' + control.val),
+                        React.createElement("label", { htmlFor: inputId, className: "text-[0.6875rem] text-slate-700 font-bold block" }, control.label + ': ' + studioColorValueLabel(control.val)),
 
-                        React.createElement("input", { id: inputId, type: "range", min: 0, max: control.max, value: control.val, "aria-valuetext": control.valueText, onChange: function (e) { upd(stateKey, parseInt(e.target.value)); }, className: "w-full accent-slate-700" })
+                        React.createElement("input", { id: inputId, type: "range", min: 0, max: control.max, value: control.val, "aria-valuetext": studioColorValueLabel(control.val)+(control.suffix==='H'?' degrees':' percent'), onChange: function (e) {var patch={};patch[stateKey]=Number(e.target.value);changeContrast(patch);}, className: "w-full accent-slate-700" })
 
                       );
 
-                    })
-
+                    }),
+                    React.createElement('button',{type:'button',disabled:!suggestion,'aria-describedby':'artstudio-contrast-'+group.prefix+'-suggestion',onClick:function(){if(suggestion)changeContrast(contrastColorPatch(group.prefix,suggestion));},className:'w-full rounded-lg bg-teal-800 px-3 py-2 text-xs font-bold text-white disabled:opacity-50'},group.prefix==='fg'?__alloT('stem.artstudio.contrast_find_text','Find passing text color'):__alloT('stem.artstudio.contrast_find_background','Find passing background')),
+                    React.createElement('p',{id:'artstudio-contrast-'+group.prefix+'-suggestion',className:'mt-2 text-xs leading-relaxed text-slate-600'},passContrastGoal?__alloT('stem.artstudio.contrast_already_passes','This pair already meets the selected goal.'):suggestion?formatArtStudioLearningText(__alloT('stem.artstudio.contrast_suggestion_hint','Try {hex}: a nearby lighter or darker color. The other color stays fixed.'),{hex:artStudioMixerHSLHex(suggestion.h,suggestion.s,suggestion.l).toUpperCase()}):__alloT('stem.artstudio.contrast_no_suggestion','Changing this color alone cannot reach the selected goal. Adjust the other color or choose AA.')),
+                    studioThreadPalette.length>0&&React.createElement('div',{className:'mt-3 flex flex-wrap gap-2',role:'group','aria-label':group.title+' '+__alloT('stem.artstudio.contrast_kit_colors','Thread Kit colors')},studioThreadPalette.map(function(color,index){return React.createElement('button',{key:index,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.contrast_use_kit','Use palette color {index} as {role}'),{index:index+1,role:group.title}),onClick:function(){changeContrast(contrastColorPatch(group.prefix,color));},className:'rounded-lg border-2 border-slate-400 text-xs font-bold',style:{background:artStudioContrastCSS(color),color:artStudioContrastLuminance(color)>0.179?'#000':'#fff'}},index+1);}))
                   );
-
-                })
-
+                }),
+                React.createElement('section',{'data-artstudio-contrast-actions':'true',className:'rounded-xl border border-slate-300 bg-white p-3 space-y-3'},
+                  React.createElement('div',{className:'flex flex-wrap gap-2'},
+                    React.createElement('button',{type:'button',onClick:function(){changeContrast(Object.assign({},contrastColorPatch('fg',contrastBackground),contrastColorPatch('bg',contrastForeground)));},className:'rounded-lg border border-slate-400 px-3 text-xs font-bold text-slate-800'},__alloT('stem.artstudio.contrast_swap','Swap colors')),
+                    React.createElement('button',{type:'button',disabled:!contrastHistoryRef.current.undo.length,onClick:function(){changeContrastHistory(false);},className:'rounded-lg border border-slate-400 px-3 text-xs font-bold text-slate-800 disabled:opacity-40'},__alloT('stem.artstudio.contrast_undo','Undo contrast edit')),
+                    React.createElement('button',{type:'button',disabled:!contrastHistoryRef.current.redo.length,onClick:function(){changeContrastHistory(true);},className:'rounded-lg border border-slate-400 px-3 text-xs font-bold text-slate-800 disabled:opacity-40'},__alloT('stem.artstudio.contrast_redo','Redo contrast edit'))),
+                  React.createElement('div',{role:'group','aria-label':__alloT('stem.artstudio.contrast_normal_goal','Normal text goal'),className:'grid grid-cols-2 gap-2'},[4.5,7].map(function(target){return React.createElement('button',{key:target,type:'button','aria-pressed':contrastGoalTarget===target,onClick:function(){changeContrast({contrastAccessibilityTarget:target});},className:'rounded-lg border border-teal-700 px-2 text-xs font-bold '+(contrastGoalTarget===target?'bg-teal-800 text-white':'bg-white text-teal-900')},target===7?__alloT('stem.artstudio.contrast_goal_aaa','AAA normal text'):__alloT('stem.artstudio.contrast_goal_aa','AA normal text'));})),
+                  React.createElement('label',{className:'block text-xs font-bold text-slate-700'},__alloT('stem.artstudio.contrast_sample_input','Try your own text'),React.createElement('input',{type:'text',maxLength:160,value:contrastSample,onChange:function(event){upd('contrastSampleText',event.target.value.slice(0,160));},className:'mt-1 block w-full rounded-lg border border-slate-400 px-2 text-sm text-slate-900'})),
+                  React.createElement('button',{type:'button',onClick:saveContrastPalette,className:'w-full rounded-lg bg-violet-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.contrast_save_pair','Save color pair to Thread Kit')),
+                  React.createElement('button',{type:'button',onClick:exportContrastCSS,className:'w-full rounded-lg border border-emerald-600 bg-emerald-50 px-3 text-xs font-bold text-emerald-900'},__alloT('stem.artstudio.contrast_export_css','Download contrast CSS')))
               ),
 
-              React.createElement("section", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-labelledby": "artstudio-contrast-result-heading", className: "rounded-xl border-2 p-4 sm:p-6 text-center " + (passContrastGoal ? 'border-green-400 bg-green-50' : 'border-red-400 bg-red-50') },
+              React.createElement("section", { 'data-artstudio-contrast-preview':'true',role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-labelledby": "artstudio-contrast-result-heading", className: "rounded-xl border-2 p-4 sm:p-6 text-center " + (passContrastGoal ? 'border-green-400 bg-green-50' : 'border-red-400 bg-red-50') },
 
                 React.createElement("h4", { id: "artstudio-contrast-result-heading", className: "text-sm font-bold text-slate-800 mb-3" }, __alloT('stem.artstudio.contrast_result', "WCAG 2.2 contrast result")),
 
-                React.createElement("div", { role: "group", "aria-label": __alloT('stem.artstudio.a11y_text_contrast_preview', 'Text contrast preview'), className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', border: '1px solid #64748b' } },
+                React.createElement("div", { 'data-artstudio-contrast-sample':'true',role: "group", "aria-label": __alloT('stem.artstudio.a11y_text_contrast_preview', 'Text contrast preview'), className: "mb-3", style: { minHeight:'min(40dvh,360px)',display:'flex',flexDirection:'column',justifyContent:'center',gap:24,padding:24,overflowWrap:'anywhere',borderRadius:12,background:artStudioContrastCSS(contrastBackground),border:'1px solid #64748b' } },
 
-                  React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, __alloT('stem.artstudio.sample_text', "Sample Text")),
+                  React.createElement("p", { style: { color: artStudioContrastCSS(contrastForeground), fontSize: 24, fontWeight: 'bold' } }, contrastSample||__alloT('stem.artstudio.sample_text', "Sample Text")),
 
-                  React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 14 } }, __alloT('stem.artstudio.the_quick_brown_fox_jumps_over_the_laz', "The quick brown fox jumps over the lazy dog"))
+                  React.createElement("p", { style: { color: artStudioContrastCSS(contrastForeground), fontSize: 14 } }, contrastSample||__alloT('stem.artstudio.the_quick_brown_fox_jumps_over_the_laz', "The quick brown fox jumps over the lazy dog"))
 
                 ),
 
                 React.createElement("p", { className: "mb-3 text-[0.6875rem] leading-relaxed text-slate-700" }, __alloT('stem.artstudio.contrast_sample_sizes', "The bold line above is 24-pixel large text. The smaller line is 14-pixel normal text. That is why the checks below use two different targets.")),
 
-                React.createElement("p", { className: "text-3xl font-bold " + (passContrastGoal ? 'text-green-800' : 'text-red-800') }, contrastRatio.toFixed(2) + ':1'),
+                React.createElement("p", { 'data-artstudio-contrast-ratio':contrastRatio,className: "text-3xl font-bold " + (passContrastGoal ? 'text-green-800' : 'text-red-800') }, contrastRatio.toFixed(2) + ':1'),
 
-                React.createElement("p", { id: "artstudio-contrast-goal-result", className: "mt-2 text-sm font-black " + (passContrastGoal ? 'text-green-900' : 'text-red-900') }, (passContrastGoal ? '\u2705 Meets' : '\u274C Does not meet') + ' selected ' + contrastGoalLabel + ' goal of ' + contrastGoalTarget + ':1'),
+                React.createElement("p", { id: "artstudio-contrast-goal-result", className: "mt-2 text-sm font-black " + (passContrastGoal ? 'text-green-900' : 'text-red-900') }, formatArtStudioLearningText(passContrastGoal?__alloT('stem.artstudio.contrast_goal_pass','✅ Meets selected {level} goal of {ratio}:1'):__alloT('stem.artstudio.contrast_goal_fail','❌ Does not meet selected {level} goal of {ratio}:1'),{level:contrastGoalLabel,ratio:contrastGoalTarget})),
+                React.createElement('p',{className:'mt-2 text-xs text-slate-600'},__alloT('stem.artstudio.contrast_rounding','The ratio is rounded for display. Pass/fail uses the full value.')),
 
                 React.createElement("p", { className: "text-xs text-slate-700 mt-2" }, __alloT('stem.artstudio.wcag_22_contrast_guidance', "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.")),
 
@@ -8093,9 +10495,11 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAA ? '\u2705 ' + __alloT('stem.artstudio.contrast_pass', 'Pass') : '\u274C ' + __alloT('stem.artstudio.contrast_fail', 'Fail')) + ' ' + __alloT('stem.artstudio.contrast_badge_aa_normal', 'AA Normal')),
 
-                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAAA ? '\u2705 ' + __alloT('stem.artstudio.contrast_pass', 'Pass') : '\u274C ' + __alloT('stem.artstudio.contrast_fail', 'Fail')) + ' ' + __alloT('stem.artstudio.contrast_badge_aaa_normal', 'AAA Normal'))
-
-                )
+                  React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900') }, (passAAA ? '\u2705 ' + __alloT('stem.artstudio.contrast_pass', 'Pass') : '\u274C ' + __alloT('stem.artstudio.contrast_fail', 'Fail')) + ' ' + __alloT('stem.artstudio.contrast_badge_aaa_normal', 'AAA Normal')),
+                  React.createElement('span',{className:'px-3 py-1 rounded-full text-xs font-bold '+(passAA?'bg-green-200 text-green-900':'bg-red-200 text-red-900')},(passAA?'✅ '+__alloT('stem.artstudio.contrast_pass','Pass'):'❌ '+__alloT('stem.artstudio.contrast_fail','Fail'))+' '+__alloT('stem.artstudio.contrast_badge_aaa_large','AAA Large (4.5:1)'))
+                ),
+                React.createElement('p',{className:'mt-4 text-xs text-slate-600'},__alloT('stem.artstudio.contrast_scope','These checks compare solid text and background colors. Images, transparency, and other accessibility requirements need separate review.')),
+                React.createElement('a',{href:'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html',target:'_blank',rel:'noopener noreferrer',className:'mt-2 inline-block py-3 text-xs font-bold text-teal-900 underline'},__alloT('stem.artstudio.contrast_reference','Read the WCAG contrast guidance'))
 
               )
 
@@ -8149,6 +10553,7 @@ const d = labToolData.artStudio || {};
               var sel = Math.min(d.sculptSel || 0, Math.max(0, parts.length - 1));
               var gallery = d.sculptGallery || {};
               var sculptAuto = d.sculptAuto === undefined ? !reducedMotion : !!d.sculptAuto;
+              var sculptView = artStudioSculptView(d.sculptView);
               var sculptMode = ['move', 'rotate', 'scale'].indexOf(d.sculptInteractMode) !== -1 ? d.sculptInteractMode : 'orbit';
               var sculptTransformAxis = ['x', 'y', 'z'].indexOf(d.sculptTransformAxis) !== -1 ? d.sculptTransformAxis : 'free';
               var sculptMirrorAxis = ['x', 'y', 'z'].indexOf(d.sculptMirrorAxis) !== -1 ? d.sculptMirrorAxis : 'x';
@@ -8191,9 +10596,14 @@ const d = labToolData.artStudio || {};
                 if (bypass || !increment) return Math.round(value * 1000) / 1000;
                 return Math.round((Math.round(value / increment) * increment) * 1000) / 1000;
               }
-              var setRecipe = function(r) {
+              var setRecipe = function(r, reframe) {
                 var next = r ? P3D.normalizeRecipe(r) : null;
-                if (JSON.stringify(next) === JSON.stringify(recipe)) return;
+                var preview = _cnvBox && _cnvBox.current && _cnvBox.current._p3d;
+                if (JSON.stringify(next) === JSON.stringify(recipe)) {
+                  if (reframe && preview) preview.viewCommand('fit');
+                  return;
+                }
+                if (reframe && preview) preview.hasFitted = false;
                 sculptAiRef.current.version += 1;
                 updMany({
                   sculptRecipe: next,
@@ -8308,7 +10718,104 @@ const d = labToolData.artStudio || {};
                   scene3.add(new THREE.AmbientLight(0xffffff, 0.6));
                   var d1 = new THREE.DirectionalLight(0xffffff, 0.7); d1.position.set(2, 3, 2); scene3.add(d1);
                   var grid = new THREE.GridHelper(3, 12, 0x475569, 0x1e293b); scene3.add(grid);
-                  cnv._p3d = { scene: scene3, cam: cam, ren: ren, obj: null, json: '', yaw: 0.7, pitch: 0.5, auto: sculptAuto };
+                  cnv._p3d = Object.assign({ scene: scene3, cam: cam, ren: ren, grid: grid, obj: null, json: '', auto: sculptAuto, dirty: true, hasFitted: !!d.sculptView, viewSignature: JSON.stringify(sculptView) }, sculptView);
+                  function renderSculptView() {
+                    var st = cnv._p3d;
+                    if (!st) return;
+                    var view = artStudioSculptView(st), target = view.target, R = view.distance;
+                    st.cam.position.set(target[0] + Math.sin(view.yaw) * Math.cos(view.pitch) * R, target[1] + Math.sin(view.pitch) * R, target[2] + Math.cos(view.yaw) * Math.cos(view.pitch) * R);
+                    st.cam.lookAt(target[0], target[1], target[2]);
+                    st.cam.near = Math.max(0.001, R / 1000); st.cam.far = Math.max(100, R * 10);
+                    if (st.cam.updateProjectionMatrix) st.cam.updateProjectionMatrix();
+                    st.ren.render(st.scene, st.cam);
+                    st.dirty = false;
+                  }
+                  function saveSculptView(pause) {
+                    var st = cnv._p3d;
+                    if (!st) return;
+                    var view = artStudioSculptView(st);
+                    st.viewSignature = JSON.stringify(view);
+                    if (pause) { st.auto = false; cnv.dataset.auto = '0'; }
+                    st.dirty = true;
+                    if (st.commitView) st.commitView(view, st.auto);
+                    updateSculptViewLabel();
+                  }
+                  function fitSculptView() {
+                    var st = cnv._p3d, bounds = null;
+                    if (!st) return;
+                    if (st.obj && THREE.Box3) {
+                      try {
+                        var box = new THREE.Box3().setFromObject(st.obj);
+                        bounds = { min: [box.min.x, box.min.y, box.min.z], max: [box.max.x, box.max.y, box.max.z] };
+                      } catch (_) {}
+                    }
+                    var fit = artStudioSculptFit(bounds, st.cam.aspect, st.cam.fov);
+                    st.target = fit.target; st.distance = fit.distance; st.hasFitted = true; st.dirty = true;
+                  }
+                  function sculptureViewCommand(command) {
+                    var st = cnv._p3d;
+                    if (!st || st.drag) return;
+                    var angles = { iso: [0.7, 0.5], front: [0, 0], back: [Math.PI, 0], left: [-Math.PI / 2, 0], right: [Math.PI / 2, 0], top: [0, Math.PI / 2 - 0.001] };
+                    if (command === 'in' || command === 'out') st.distance = Math.max(0.1, Math.min(500, st.distance * (command === 'in' ? 1 / 1.25 : 1.25)));
+                    else {
+                      fitSculptView();
+                      if (angles[command]) { st.yaw = angles[command][0]; st.pitch = angles[command][1]; }
+                    }
+                    saveSculptView(true);
+                    renderSculptView();
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sculpt_view_updated', 'Sculpture view updated. Auto-rotation paused.'));
+                  }
+                  function resizeSculptView() {
+                    var st = cnv._p3d;
+                    if (!st) return;
+                    var rect = cnv.getBoundingClientRect(), width = rect.width || 960, height = rect.height || 720;
+                    var ratio = Math.min(2, window.devicePixelRatio || 1, 1536 / Math.max(width, height));
+                    var w = Math.max(1, Math.round(width * ratio)), h = Math.max(1, Math.round(height * ratio));
+                    if (st.bufferWidth !== w || st.bufferHeight !== h) {
+                      st.bufferWidth = w; st.bufferHeight = h; st.cam.aspect = width / height;
+                      st.ren.setSize(w, h, false); st.dirty = true;
+                    }
+                  }
+                  cnv._p3d.renderNow = renderSculptView;
+                  cnv._p3d.saveView = saveSculptView;
+                  cnv._p3d.fitView = fitSculptView;
+                  cnv._p3d.viewCommand = sculptureViewCommand;
+                  cnv._p3d.resize = resizeSculptView;
+                  cnv._captureArtStudioState = function() {
+                    var st = cnv._p3d;
+                    return st ? { sculptView: artStudioSculptView(st), sculptAuto: st.auto } : null;
+                  };
+                  cnv._sculptExportCanvas = function(edge) {
+                    var st = cnv._p3d;
+                    if (!st) throw new Error('Sculpture preview is unavailable');
+                    var originalAspect = st.cam.aspect;
+                    try {
+                      if (edge) { st.ren.setSize(edge, Math.round(edge / originalAspect), false); }
+                      renderSculptView();
+                      var picture = document.createElement('canvas');
+                      picture.width = cnv.width; picture.height = cnv.height;
+                      var ctx = picture.getContext('2d');
+                      if (!ctx) throw new Error('Image capture is unavailable');
+                      ctx.drawImage(cnv, 0, 0);
+                      return picture;
+                    } finally {
+                      if (edge) { st.ren.setSize(st.bufferWidth || 960, st.bufferHeight || 720, false); st.cam.aspect = originalAspect; renderSculptView(); }
+                    }
+                  };
+                  if (typeof ResizeObserver === 'function') {
+                    cnv._p3d.resizeObserver = new ResizeObserver(resizeSculptView);
+                    cnv._p3d.resizeObserver.observe(cnv);
+                  }
+                  if (typeof IntersectionObserver === 'function') {
+                    cnv._p3d.visibilityObserver = new IntersectionObserver(function(entries) {
+                      var st = cnv._p3d;
+                      if (!st) return;
+                      entries.forEach(function(entry) { if (entry.target === cnv) st.inView = entry.isIntersecting; });
+                      if (st.inView) st.dirty = true;
+                    });
+                    cnv._p3d.visibilityObserver.observe(cnv);
+                  }
+                  resizeSculptView();
                   function updateSculptViewLabel() {
                     var state = cnv._p3d;
                     if (!state) return;
@@ -8375,6 +10882,8 @@ const d = labToolData.artStudio || {};
                     }
                     st.drag = null;
                     st.auto = !!drag.resumeAuto;
+                    st.dirty = true;
+                    if (drag.kind === 'orbit') saveSculptView(true);
                     updateSculptViewLabel();
                   }
                   // Orbit the view, or directly move, rotate, or scale a selected part.
@@ -8455,10 +10964,11 @@ const d = labToolData.artStudio || {};
                       // follows the hand, as in every common 3-D viewer). It used to
                       // move the CAMERA right, so the model appeared to turn left.
                       st.yaw -= dx * 0.01;
-                      st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + dy * 0.008));
+                      st.pitch = Math.max(-Math.PI / 2 + 0.001, Math.min(Math.PI / 2 - 0.001, st.pitch + dy * 0.008));
                     }
                     if (st.drag.kind !== 'orbit') st.drag.moved = st.drag.moved || Math.abs(dx) + Math.abs(dy) > 0;
                     st.drag.x = ev.clientX; st.drag.y = ev.clientY;
+                    st.dirty = true;
                     updateSculptViewLabel();
                   });
                   cnv.addEventListener('pointerup', function() { endSculptDrag(false); });
@@ -8524,22 +11034,25 @@ const d = labToolData.artStudio || {};
                       var step = event.altKey ? 0.02 : 0.12;
                       if (event.key === 'ArrowLeft') st.yaw -= step;
                       if (event.key === 'ArrowRight') st.yaw += step;
-                      if (event.key === 'ArrowUp') st.pitch = Math.min(1.45, st.pitch + step);
-                      if (event.key === 'ArrowDown') st.pitch = Math.max(0.05, st.pitch - step);
-                      st.auto = false; cnv.dataset.auto = '0'; upd('sculptAuto', false);
+                      if (event.key === 'ArrowUp') st.pitch = Math.min(Math.PI / 2 - 0.001, st.pitch + step);
+                      if (event.key === 'ArrowDown') st.pitch = Math.max(-Math.PI / 2 + 0.001, st.pitch - step);
+                      saveSculptView(true);
                       announceSculptView('Sculpture view moved; auto-rotation paused.');
                     } else if (event.key === 'Home') {
                       event.preventDefault();
-                      st.yaw = 0.7; st.pitch = 0.5; st.auto = false; cnv.dataset.auto = '0'; upd('sculptAuto', false);
+                      st.yaw = 0.7; st.pitch = 0.5; fitSculptView(); saveSculptView(true);
                       announceSculptView('Sculpture view reset; auto-rotation paused.');
+                    } else if (!event.ctrlKey && !event.metaKey && !event.altKey && (event.key === '+' || event.key === '=' || event.key === '-' || event.key.toLowerCase() === 'f')) {
+                      event.preventDefault();
+                      sculptureViewCommand(event.key.toLowerCase() === 'f' ? 'fit' : event.key === '-' ? 'out' : 'in');
                     } else if (event.key === ' ' || event.key === 'Enter') {
                       event.preventDefault();
-                      st.auto = !st.auto; cnv.dataset.auto = st.auto ? '1' : '0'; upd('sculptAuto', st.auto);
+                      st.auto = !st.auto; cnv.dataset.auto = st.auto ? '1' : '0'; saveSculptView(false);
                       announceSculptView(st.auto ? 'Sculpture auto-rotation resumed.' : 'Sculpture auto-rotation paused.');
                     }
                   };
                   updateSculptViewLabel();
-                  var loop = function() {
+                  var loop = function(time) {
                     var st = cnv._p3d;
                     if (!st) return;
                     if (!cnv.isConnected) {   // tab switched away — full teardown, no zombie loop
@@ -8549,19 +11062,22 @@ const d = labToolData.artStudio || {};
                           var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
                           mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
                         });
+                        if (st.resizeObserver) st.resizeObserver.disconnect();
+                        if (st.visibilityObserver) st.visibilityObserver.disconnect();
                         st.ren.dispose(); if (st.ren.forceContextLoss) st.ren.forceContextLoss();
                       } catch (e) {}
                       cnv._p3d = null;
                       return;
                     }
-                    if (st.auto) st.yaw += 0.006;
-                    var R = 2.6;
-                    st.cam.position.set(Math.sin(st.yaw) * Math.cos(st.pitch) * R, 0.5 + Math.sin(st.pitch) * R * 0.8, Math.cos(st.yaw) * Math.cos(st.pitch) * R);
-                    st.cam.lookAt(0, 0.5, 0);
-                    st.ren.render(st.scene, st.cam);
+                    var delta = st.lastFrame === undefined ? 16 : Math.max(0, Math.min(40, time - st.lastFrame));
+                    st.lastFrame = time;
+                    if (!document.hidden && st.inView !== false) {
+                      if (st.auto) { st.yaw += delta * 0.00036; st.dirty = true; }
+                      if (st.dirty) renderSculptView();
+                    }
                     cnv._p3dAnim = requestAnimationFrame(loop);
                   };
-                  loop();
+                  cnv._p3dAnim = requestAnimationFrame(loop);
                 }
                 var liveState = cnv._p3d;
                 if (liveState) {
@@ -8569,6 +11085,13 @@ const d = labToolData.artStudio || {};
                   liveState.recipe = recipe;
                   liveState.selectedIndex = sel;
                   liveState.commitRecipe = setRecipe;
+                  liveState.commitView = function(view, auto) { updMany({ sculptView: view, sculptAuto: auto }); };
+                  var viewSignature = JSON.stringify(sculptView);
+                  if (liveState.viewSignature !== viewSignature && !liveState.drag) {
+                    Object.assign(liveState, sculptView);
+                    liveState.viewSignature = viewSignature; liveState.hasFitted = !!d.sculptView; liveState.dirty = true;
+                  }
+                  if (liveState.grid.visible !== (d.sculptGrid !== false)) { liveState.grid.visible = d.sculptGrid !== false; liveState.dirty = true; }
                   liveState.selectPart = function(index) { upd('sculptSel', index); };
                   liveState.snap = sculptSnap;
                   liveState.transformAxis = sculptTransformAxis;
@@ -8588,8 +11111,12 @@ const d = labToolData.artStudio || {};
                     } catch (e) {}
                     st2.obj = null;
                   }
-                  if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1 }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
+                  if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1, surfaceQuality: 'smooth' }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
+                  st2.dirty = true;
+                  if (!st2.obj) st2.hasFitted = false;
+                  if (st2.obj && !st2.hasFitted) { st2.fitView(); st2.saveView(false); }
                 }
+                if (st2 && st2.dirty) st2.renderNow();
               };
               var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩', lathe: '🏺', extrude: '⭐' };
               var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-500 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
@@ -8624,7 +11151,7 @@ const d = labToolData.artStudio || {};
                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
                   if (!r) throw new Error('No editable model returned');
                   if (!recipe) r.name = subj.slice(0, 80);
-                  setRecipe(r);
+                  setRecipe(r, !recipe);
                   var context = d.sculptPrintContext || {};
                   updMany({ sculptSel: 0, sculptPrintContext: Object.assign({}, context, {
                     aiUse: context.aiUse === 'MOSTLY_AI' ? 'MOSTLY_AI' : 'ASSISTED',
@@ -8641,9 +11168,8 @@ const d = labToolData.artStudio || {};
               var doExportPng = function() {
                 var cnv = _cnvBox.current; if (!cnv || !cnv._p3d) return;
                 try {
-                  cnv._p3d.ren.render(cnv._p3d.scene, cnv._p3d.cam);   // synchronous render → valid buffer
                   var a = document.createElement('a');
-                  a.href = cnv.toDataURL('image/png');
+                  a.href = cnv._sculptExportCanvas(1600).toDataURL('image/png');
                   a.download = ((recipe && recipe.name) || 'sculpture').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_picture_saved', 'Sculpture picture saved.'));
@@ -8764,7 +11290,7 @@ const d = labToolData.artStudio || {};
                     var imported = P3D.normalizeRecipe(parsed);
                     if (!imported || !imported.parts || !imported.parts.length) throw new Error('No valid parts');
                     upd('sculptSel', 0);
-                    setRecipe(imported);
+                    setRecipe(imported, true);
                     if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(imported.parts.length === 1 ? __alloT('stem.artstudio.sr_imported_sculpture_one', 'Imported {value1} with {value2} part.') : __alloT('stem.artstudio.sr_imported_sculpture_many', 'Imported {value1} with {value2} parts.'), { value1: (imported.name || __alloT('stem.artstudio.sr_word_an_editable_sculpture', 'an editable sculpture')), value2: imported.parts.length }));
                     if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_sculpture_model_imported', 'Sculpture model imported.'), 'success');
                     finishImport();
@@ -8813,10 +11339,11 @@ const d = labToolData.artStudio || {};
                 upd('sculptSel', mirroredIndex);
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_created_a_mirrored_copy_of_part_on_the_axis', 'Created a mirrored copy of part {value1} on the {value2} axis.'), { value1: (sel + 1), value2: sculptMirrorAxis.toUpperCase() }));
               };
-              return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
+              return React.createElement("div", { 'data-sculpt-workspace': 'true', className: "grid gap-4" },
+                React.createElement('style', null, '[data-sculpt-workspace]{grid-template-columns:minmax(0,1fr)}[data-sculpt-toolbar]{grid-column:1/-1}[data-sculpt-preview],[data-sculpt-controls]{min-width:0;scroll-margin-top:160px}[data-sculpt-workspace] button,[data-sculpt-workspace] select,[data-sculpt-workspace] input{min-height:44px}[data-sculpt-workspace] button{min-width:44px;white-space:normal}[data-sculpt-workspace] #sculptCanvas{display:block;width:100%;max-width:calc(72dvh * 4 / 3);height:auto;aspect-ratio:4/3;margin-inline:auto;scroll-margin-top:160px}[data-sculpt-workspace] button[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:-3px}[data-sculpt-workspace] input{max-width:100%}@media(min-width:1100px){[data-sculpt-workspace]{grid-template-columns:minmax(0,1fr) 320px;align-items:start}[data-sculpt-controls]{max-height:82dvh;overflow:auto;padding:2px 6px 6px 2px}}'),
                 // preview column
                 React.createElement('div', { className: 'contents' },
-                  React.createElement('div', { className: 'md:col-span-2 -mb-2 flex flex-wrap gap-2 items-center' },
+                  React.createElement('div', { 'data-sculpt-toolbar': 'true', className: '-mb-2 flex flex-wrap gap-2 items-center' },
                     React.createElement('div', { className: 'flex gap-1 flex-1', role: 'group', 'aria-label': __alloT('stem.artstudio.a11y_sculpture_canvas_interaction', 'Sculpture canvas interaction') },
                       React.createElement('button', { className: mini + ' flex-1', 'aria-label': __alloT('stem.artstudio.a11y_orbit_sculpture_view', 'Orbit sculpture view'), 'aria-pressed': sculptMode === 'orbit', onClick: function() { upd('sculptInteractMode', 'orbit'); } }, '\uD83C\uDF10 Orbit'),
                       React.createElement('button', { className: mini + ' flex-1', 'aria-label': __alloT('stem.artstudio.a11y_move_sculpture_parts', 'Move sculpture parts'), 'aria-pressed': sculptMode === 'move', disabled: !parts.length, onClick: function() { upd('sculptInteractMode', 'move'); } }, '\u270B Move'),
@@ -8837,7 +11364,7 @@ const d = labToolData.artStudio || {};
                     )
                   )
                 ),
-                React.createElement("div", null,
+                React.createElement("div", { 'data-sculpt-preview': 'true' },
                   renderCanvasTouchMode({
                     stateKey: 'sculptTouchMode',
                     activeValue: 'interact',
@@ -8850,16 +11377,33 @@ const d = labToolData.artStudio || {};
                   }),
                   React.createElement("canvas", { id: "sculptCanvas", role: "img", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_sculpture_preview', '3D sculpture preview. {value1}. Auto-rotation {value2}. Position snapping {value3}. Transform constraint {value4}.'), { value1: sculptSummary, value2: (sculptAuto ? __alloT('stem.artstudio.a11y_state_running', 'running') : __alloT('stem.artstudio.a11y_state_paused', 'paused')), value3: (sculptSnap ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_snap_units', '{value1} units'), { value1: sculptSnap }) : __alloT('stem.artstudio.a11y_state_off', 'off')), value4: sculptTransformAxis }),
                     ref: sculptRef,
-                    width: 480,
-                    height: 420,
+                    width: 960,
+                    height: 720,
                     className: "w-full rounded-xl border border-slate-400 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2 " + (sculptMode === 'move' ? 'cursor-move' : sculptMode === 'rotate' ? 'cursor-grabbing' : sculptMode === 'scale' ? 'cursor-ns-resize' : 'cursor-grab'),
                     tabIndex: 0,
                     "aria-describedby": "artstudio-sculpt-touch-help artstudio-sculpt-keyboard-help",
-                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight PageUp PageDown Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
+                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight PageUp PageDown Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space + - F",
                     style: { touchAction: d.sculptTouchMode === 'interact' ? 'none' : 'pan-y' },
                     onDragOver: function(event) { event.preventDefault(); },
                     onDrop: placeDroppedShape
                   }),
+                  React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2', role: 'group', 'aria-label': __alloT('stem.artstudio.sculpt_camera_views', 'Camera views') },
+                    [
+                      ['iso', __alloT('stem.artstudio.sculpt_view_iso', 'Perspective')],
+                      ['front', __alloT('stem.artstudio.sculpt_view_front', 'Front')],
+                      ['back', __alloT('stem.artstudio.sculpt_view_back', 'Back')],
+                      ['left', __alloT('stem.artstudio.sculpt_view_left', 'Left side')],
+                      ['right', __alloT('stem.artstudio.sculpt_view_right', 'Right side')],
+                      ['top', __alloT('stem.artstudio.sculpt_view_top', 'Top')]
+                    ].map(function(view) { return React.createElement('button', { key: view[0], className: mini + ' px-3', 'data-sculpt-view': view[0], onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand(view[0]); } }, view[1]); })
+                  ),
+                  React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2', role: 'group', 'aria-label': __alloT('stem.artstudio.sculpt_framing', 'Frame the sculpture') },
+                    React.createElement('button', { className: mini + ' px-3', onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand('fit'); } }, __alloT('stem.artstudio.sculpt_fit', 'Fit sculpture')),
+                    React.createElement('button', { className: mini, 'aria-label': __alloT('stem.artstudio.sculpt_zoom_out', 'Zoom out sculpture view'), onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand('out'); } }, '−'),
+                    React.createElement('button', { className: mini, 'aria-label': __alloT('stem.artstudio.sculpt_zoom_in', 'Zoom in sculpture view'), onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand('in'); } }, '+'),
+                    React.createElement('button', { className: mini + ' px-3', 'aria-pressed': d.sculptGrid !== false, onClick: function() { upd('sculptGrid', d.sculptGrid === false); } }, __alloT('stem.artstudio.sculpt_floor_grid', 'Floor grid'))
+                  ),
+                  React.createElement('p', { className: 'mt-2 text-xs text-slate-600' }, __alloT('stem.artstudio.sculpt_view_help', 'Fit frames every visible part. + and − zoom; F fits; Home restores the perspective view. Camera buttons pause rotation. Pictures export at 1600 px wide.')),
                   React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[0.6875rem] text-slate-600" }, sculptMode === 'move' ? "Move parts: select and drag a form. Arrow keys move it; Page Up or Page Down changes depth. Choose Free or an X/Y/Z axis constraint and a Snap grid; hold Alt for fine unsnapped movement. Drop a shape button onto the canvas to place it." : sculptMode === 'rotate' ? "Rotate parts: select and drag a form. In Free mode, Arrow keys rotate X or Y and Page Up or Page Down rotates Z; choose an axis to lock every turn to it. Hold Alt for one-degree keyboard turns." : sculptMode === 'scale' ? "Morph parts: select and drag diagonally. Free scales the whole form; choose X, Y, or Z to stretch only that axis. Up, Right, or Page Up grows it; Down, Left, or Page Down shrinks it. Hold Alt for fine scaling." : "Orbit: drag or use Arrow keys to turn the view; Alt makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation."),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_3d_preview_actions', '3D preview actions'), "aria-describedby": "artstudio-sculpt-actions-help" },
                     !recipe ? React.createElement("p", { id: "artstudio-sculpt-actions-help", className: "text-[0.6875rem] text-slate-600", style: { flex: "1 1 100%" } }, __alloT('stem.artstudio.sculpt_actions_need_a_part', 'Model and Print Lab need at least one part in this sculpture. Undo and Redo switch on once you have made a change. Add a shape below to begin.')) : null,
@@ -8872,8 +11416,8 @@ const d = labToolData.artStudio || {};
                       onClick: function() {
                         var nextAuto = !sculptAuto;
                         var cnv = _cnvBox.current;
-                        if (cnv && cnv._p3d) { cnv._p3d.auto = nextAuto; cnv.dataset.auto = nextAuto ? '1' : '0'; }
-                        upd('sculptAuto', nextAuto);
+                        if (cnv && cnv._p3d) { cnv._p3d.auto = nextAuto; cnv.dataset.auto = nextAuto ? '1' : '0'; cnv._p3d.saveView(false); }
+                        else upd('sculptAuto', nextAuto);
                         if (typeof announceToSR === 'function') announceToSR(nextAuto ? __alloT('stem.artstudio.sr_sculpture_auto_rotation_resumed', 'Sculpture auto-rotation resumed.') : __alloT('stem.artstudio.sr_sculpture_auto_rotation_paused', 'Sculpture auto-rotation paused.'));
                       }
                     }, sculptAuto ? '⏸ ' + __alloT('stem.artstudio.pause', 'Pause') : '▶ ' + __alloT('stem.artstudio.resume', 'Resume')),
@@ -8887,12 +11431,12 @@ const d = labToolData.artStudio || {};
                   )
                 ),
                 // editor column
-                React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { 'data-sculpt-controls': 'true', className: "space-y-2" },
                   React.createElement("h3", { className: "font-black " + (isContrast ? "text-white" : "text-slate-700") + " text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
                   React.createElement("div", null,
                     React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[0.6875rem] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {
-                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_preset', 'Preset: {value1}'), { value1: ps.label }), onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
+                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_preset', 'Preset: {value1}'), { value1: ps.label }), onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id), true); } }, ps.emoji);
                     }))
                   ),
                   React.createElement("div", null,
@@ -9050,7 +11594,7 @@ const d = labToolData.artStudio || {};
                     ) : null,
                     Object.keys(gallery).length ? React.createElement("ul", { className: "space-y-1" }, Object.keys(gallery).map(function(nm) {
                       return React.createElement("li", { key: nm, className: "flex items-center gap-1 text-xs" },
-                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load', 'Load {value1}'), { value1: nm })}, nm),
+                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm]), true); }, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load', 'Load {value1}'), { value1: nm })}, nm),
                         React.createElement("button", { className: mini, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_delete', 'Delete {value1}'), { value1: nm }), onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
                       );
                     })) : React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))
@@ -9059,337 +11603,102 @@ const d = labToolData.artStudio || {};
               );
             })(),
 
-            // === H7b'' RICH inquiry widget: color harmony ===
-            tab === 'harmonyHunt' && (function() {
-              var iq = d._harmonyHunt || { baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('_harmonyHunt', Object.assign({}, iq, patch)); }
-              // Generate harmony palette based on base hue + offset
-              var palette = [];
-              var harmonyType;
-              for (var i = 0; i < iq.paletteSize; i++) {
-                var hue = ((iq.baseHue + (360 / iq.paletteSize) * i + iq.rotation) % 360 + 360) % 360;
-                var sat = 50 + (iq.satBlend / 100) * 40;
-                var lit = 40 + (iq.litVar / 100) * 30;
-                var relativeLuminance = luminance(hue, sat, lit);
-                var blackContrast = (relativeLuminance + 0.05) / 0.05;
-                var whiteContrast = 1.05 / (relativeLuminance + 0.05);
-                palette.push({
-                  hue: hue,
-                  sat: sat,
-                  lit: lit,
-                  css: 'hsl(' + hue + ',' + sat + '%,' + lit + '%)',
-                  foreground: blackContrast >= whiteContrast ? '#000000' : '#ffffff'
-                });
-              }
-              // Classify harmony type by palette spread
-              var hueSpread = 360 / iq.paletteSize;
-              if (iq.paletteSize === 2) harmonyType = 'complementary';
-              else if (iq.paletteSize === 3) harmonyType = 'triadic';
-              else if (iq.paletteSize === 4) harmonyType = 'tetradic';
-              else if (iq.paletteSize <= 6 && iq.satBlend < 30) harmonyType = 'analogous';
-              else harmonyType = 'rainbow';
-              var hMeta = {
-                complementary: { label: __alloT('stem.artstudio.complementary_2_opposites', '⚫⚪ Complementary (2 opposites)'), desc: __alloT('stem.artstudio.maximum_contrast_pop_art_brand_accents', 'Maximum contrast. Pop art, brand accents.') },
-                triadic:       { label: __alloT('stem.artstudio.triadic_3_equidistant', '🔺 Triadic (3 equidistant)'), desc: __alloT('stem.artstudio.vibrant_but_balanced_childrens_books_c', 'Vibrant but balanced. Children’s books, cartoons.') },
-                tetradic:      { label: __alloT('stem.artstudio.tetradic_4_corners', '◇ Tetradic (4 corners)'), desc: __alloT('stem.artstudio.rich_palette_with_two_opposing_pairs', 'Rich palette with two opposing pairs.') },
-                analogous:     { label: __alloT('stem.artstudio.analogous_low_saturation_neighbors', '🌅 Analogous (low saturation neighbors)'), desc: __alloT('stem.artstudio.calm_harmonious_landscape_painting', 'Calm, harmonious — landscape painting.') },
-                rainbow:       { label: __alloT('stem.artstudio.rainbow_many_vivid_hues', '🌈 Rainbow (many vivid hues)'), desc: __alloT('stem.artstudio.energetic_playful_childrens_design', 'Energetic, playful — children’s design.') }
-              }[harmonyType];
-              function logObs() {
-                setIQ({ log: (iq.log || []).concat([{ h: iq.baseHue, s: iq.satBlend, l: iq.litVar, r: iq.rotation, n: iq.paletteSize, t: harmonyType }]).slice(-8) });
-              }
-              return React.createElement('div', { className: 'space-y-3' },
-                React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-pink-300 shadow-sm space-y-3' },
-                  React.createElement('h3', { className: 'text-sm font-black text-pink-700' }, __alloT('stem.artstudio.color_harmony_discovery', '🎶 Color harmony discovery')),
-                  React.createElement('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' },
-                    __alloT('stem.artstudio.adjust_base_hue_saturation_lightness_v', 'Adjust base hue, saturation, lightness variation, rotation, and palette size. Widget renders a live harmony palette and classifies it into one of 5 discrete harmony types. No score, no reveal — sweep and notice which combinations produce which harmonies.')),
-                  // Classification badge
-                  React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: '#f5f3ff', border: '2px solid #c4b5fd' } },
-                    React.createElement('div', { className: 'text-base font-black text-violet-700' }, hMeta.label),
-                    React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, hMeta.desc)
-                  ),
-                  // SVG harmony wheel visualization
-                  React.createElement('div', { className: 'flex justify-center p-3 bg-slate-50 rounded border border-slate-200' },
-                    React.createElement('svg', { viewBox: '0 0 240 240', role: 'img', 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_harmony_wheel_showing_with_colors_around', 'Color harmony wheel showing {value1} with {value2} colors around base hue {value3} degrees.'), { value1: hMeta.label, value2: iq.paletteSize, value3: iq.baseHue }), className: 'w-64 h-64' },
-                      // Background hue ring (reference)
-                      Array.from({ length: 36 }, function(_, i) {
-                        var hue = i * 10;
-                        var a1 = (hue - 5 - 90) * Math.PI / 180;
-                        var a2 = (hue + 5 - 90) * Math.PI / 180;
-                        var rIn = 95, rOut = 110;
-                        var x1 = 120 + rIn * Math.cos(a1), y1 = 120 + rIn * Math.sin(a1);
-                        var x2 = 120 + rOut * Math.cos(a1), y2 = 120 + rOut * Math.sin(a1);
-                        var x3 = 120 + rOut * Math.cos(a2), y3 = 120 + rOut * Math.sin(a2);
-                        var x4 = 120 + rIn * Math.cos(a2), y4 = 120 + rIn * Math.sin(a2);
-                        return React.createElement('path', { key: 'r' + i, d: 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2 + ' A ' + rOut + ' ' + rOut + ' 0 0 1 ' + x3 + ' ' + y3 + ' L ' + x4 + ' ' + y4 + ' A ' + rIn + ' ' + rIn + ' 0 0 0 ' + x1 + ' ' + y1 + ' Z',
-                          fill: 'hsl(' + hue + ',75%,60%)', opacity: 0.35 });
-                      }),
-                      // Palette markers — show selected harmony positions
-                      palette.map(function(p, i) {
-                        var ang = (p.hue - 90) * Math.PI / 180;
-                        var cx = 120 + 78 * Math.cos(ang);
-                        var cy = 120 + 78 * Math.sin(ang);
-                        return React.createElement('g', { key: 'p' + i },
-                          React.createElement('circle', { cx: cx, cy: cy, r: 18, fill: p.css, stroke: '#1e293b', strokeWidth: 1.5 }),
-                          React.createElement('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: p.lit > 50 ? '#1e293b' : '#fff' }, (i + 1))
-                        );
-                      }),
-                      // Center label
-                      React.createElement('text', { x: 120, y: 118, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#475569' }, 'base ' + iq.baseHue + '°'),
-                      React.createElement('text', { x: 120, y: 132, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, harmonyType)
-                    )
-                  ),
-                  // Palette swatches with HSL values
-                  React.createElement('div', { className: 'flex flex-wrap gap-1' },
-                    palette.map(function(p, i) {
-                      return React.createElement('div', { key: 'sw' + i, 'data-harmony-swatch': i, className: 'flex-1 min-w-[60px] rounded text-center text-[0.625rem] font-mono', style: { background: p.css, color: p.foreground, padding: '8px 4px' } },
-                        '#' + (i + 1), React.createElement('div', null, p.hue.toFixed(0) + '°'));
-                    })
-                  ),
-                  // Sliders
-                  React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
-                    [{ k: 'baseHue', l: 'Base hue (°)', mn: 0, mx: 359, st: 5 },
-                     { k: 'satBlend', l: 'Saturation blend (%)', mn: 0, mx: 100, st: 5 },
-                     { k: 'litVar', l: 'Lightness variation (%)', mn: 0, mx: 100, st: 5 },
-                     { k: 'rotation', l: 'Rotation (°)', mn: -90, mx: 90, st: 5 },
-                     { k: 'paletteSize', l: 'Palette size', mn: 2, mx: 12, st: 1 }].map(function(s) {
-                      return React.createElement('div', { key: s.k },
-                        React.createElement('label', { htmlFor: 'hh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-pink-700' }, iq[s.k])),
-                        React.createElement('input', { id: 'hh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
-                          onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                          className: 'w-full', 'aria-label': s.l }));
-                    })
-                  ),
-                  // Log + reset
-                  React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.artstudio.log', '📋 Log')),
-                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.artstudio.reset', '↺ Reset')),
-                    (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
-                  ),
-                  // Log table
-                  (iq.log || []).length > 0 && React.createElement('div', { className: 'overflow-x-auto' },
-                    React.createElement('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
-                      React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-100' },
-                        ['base', 'sat', 'lit', 'rot', 'n', 'harmony'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
-                      React.createElement('tbody', null, iq.log.map(function(o, idx) {
-                        return React.createElement('tr', { key: 'lr' + idx },
-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.l),
-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.r),
-                          React.createElement('td', { className: 'px-1 border border-slate-200 font-mono' }, o.n),
-                          React.createElement('td', { className: 'px-1 border border-slate-200' }, o.t));
-                      }))
-                    )
-                  ),
-                  React.createElement('textarea', { 'aria-label': __alloT('stem.artstudio.a11y_color_harmony_hypothesis', 'Color harmony hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.artstudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): What makes a palette feel harmonious vs jarring?'),
-                    className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                  !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.artstudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
-                  iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
-                    React.createElement('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.artstudio.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
-                    React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
-                      React.createElement('li', null, __alloT('stem.artstudio.find_the_smallest_palette_that_still_f', 'Find the smallest palette that still feels "complete" to you.')),
-                      React.createElement('li', null, __alloT('stem.artstudio.real_impressionists_used_analogous_pal', 'Real impressionists used analogous palettes. Why might that be?')),
-                      React.createElement('li', null, __alloT('stem.artstudio.some_color_schemes_have_proper_names_c', 'Some color schemes have proper names (complementary, split-complementary, triadic). Look those up and try to reproduce them.')),
-                      React.createElement('li', null, __alloT('stem.artstudio.high_saturation_many_colors_busy_try_d', 'High saturation + many colors = busy. Try desaturating with the blend slider — what happens to "harmony"?')))),
-                  React.createElement('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                    React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-                      React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4 min-w-[24px] min-h-[24px]' }),
-                      React.createElement('label', { htmlFor: 'hh-und', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
-                        __alloT('stem.artstudio.i_think_i_understand_color_harmony_now', 'I think I understand color harmony now — let me explain it in my own words'))),
-                    iq.understood && React.createElement('textarea', { 'aria-label': __alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony', 'Explain your understanding of color harmony'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
-                      className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 })),
-                  React.createElement('div', { className: 'mt-3 text-[0.625rem] italic text-slate-500' },
-                    __alloT('stem.artstudio.design_note_discrete_5_state_harmony_m', 'Design note: discrete 5-state harmony marker; SVG wheel shows palette positions; no "good palette" score — by design.'))
-                )
-              );
-            })(),
+            tab === 'harmonyHunt' && renderHarmonyStudio(),
 
             // ═══ SPIROGRAPH TAB ═══
-
-            tab === 'spirograph' && React.createElement("div", { className: "space-y-3" },
-
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
-
-                React.createElement("div", { className: "space-y-3" },
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-200" },
-
-                    React.createElement("h4", { className: "text-xs font-bold text-indigo-700 mb-3" }, __alloT('stem.artstudio.spirograph_controls', "\uD83C\uDF00 Spirograph Controls")),
-
-                    [{ k: 'spiroR', label: __alloT('stem.artstudio.outer_radius', 'Outer Radius'), min: 40, max: 200, def: 120 },
-
-                     { k: 'spiror', label: __alloT('stem.artstudio.inner_radius', 'Inner Radius'), min: 10, max: 100, def: 45 },
-
-                     { k: 'spirop', label: __alloT('stem.artstudio.pen_offset', 'Pen Offset'), min: 5, max: 120, def: 55 },
-
-                     { k: 'spiroSpeed', label: __alloT('stem.artstudio.draw_speed', 'Draw Speed'), min: 1, max: 20, def: 8 }].map(function (s) {
-
-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
-
-                      return React.createElement("div", { key: s.k, className: "mb-2" },
-
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-indigo-700 block mb-0.5" }, s.label + ': ' + val),
-
-                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'spiroSpeed' ? val + ' drawing steps per frame' : val + ' units', onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('spiroReset', Date.now()); }, className: "w-full accent-indigo-600" })
-
-                      );
-
-                    }),
-
-                    renderStudioColorCapsule({
-                      prefix: 'spiro',
-                      color: spiroColor,
-                      label: 'Ink color',
-                      resetKey: 'spiroReset',
-                      note: d.spiroRainbow ? 'This color returns when Rainbow is turned off.' : 'Changing ink redraws the current curve.'
-                    }),
-
-                    React.createElement("div", { className: "flex gap-2 mt-3" },
-
-                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redrawing_the_spirograph', 'Redrawing the spirograph.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_spirograph', "\u21BB Redraw")),
-
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_png_exported', 'Spirograph PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
-
-                      React.createElement("button", { "aria-label": d.spiroRainbow ? "Use a single color for the spirograph" : "Use a rainbow color progression for the spirograph", "aria-pressed": !!d.spiroRainbow, onClick: function () { var nextRainbow = !d.spiroRainbow; upd('spiroRainbow', nextRainbow); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? __alloT('stem.artstudio.sr_rainbow_spirograph_enabled', 'Rainbow spirograph enabled.') : __alloT('stem.artstudio.sr_single_color_spirograph_enabled', 'Single-color spirograph enabled.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-indigo-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
-
-                    ),
-
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-spiro-presets-label" },
-
-                      React.createElement("span", { id: "artstudio-spiro-presets-label", className: "text-[0.6875rem] font-bold text-indigo-700 mr-1" }, "Presets:"),
-
-                      [{ label: __alloT('stem.artstudio.star', 'Star'), R: 120, r: 45, p: 55 }, { label: __alloT('stem.artstudio.flower', 'Flower'), R: 150, r: 50, p: 25 }, { label: __alloT('stem.artstudio.lace', 'Lace'), R: 100, r: 73, p: 80 }, { label: __alloT('stem.artstudio.atom', 'Atom'), R: 180, r: 25, p: 90 }, { label: __alloT('stem.artstudio.spiral', 'Spiral'), R: 140, r: 91, p: 60 }].map(function (pr) {
-
-                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_spirograph_preset', 'Load {value1} spirograph preset'), { value1: pr.label }), onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' spirograph preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, pr.label);
-
-                      })
-
-                    )
-
-                  ),
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
-
-                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 mb-1" }, __alloT('stem.artstudio.math_connection', "\uD83D\uDCDA Math Connection")),
-
-                    React.createElement("p", { id: "artstudio-spiro-description", className: "text-[0.6875rem] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.spirographs_draw', "Spirographs draw "), React.createElement("strong", null, __alloT('stem.artstudio.hypotrochoid_curves', "hypotrochoid curves")), __alloT('stem.artstudio.the_path_traced_by_a_point_on_a_small_', " \u2014 the path traced by a point on a small circle rolling inside a larger one. The pattern depends on the "), React.createElement("strong", null, "GCD"), __alloT('stem.artstudio.greatest_common_divisor_of_the_two_rad', " (greatest common divisor) of the two radii. When R/r is a simple fraction, you get fewer petals; complex ratios create intricate, never-repeating paths."))
-
-                  )
-
-                ),
-
-                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", "aria-describedby": "artstudio-spiro-description", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_spirograph_output', 'Spirograph output: a {value1} hypotrochoid with outer radius {value2}, inner radius {value3}, and pen offset {value4}.'), { value1: (d.spiroRainbow ? __alloT('stem.artstudio.a11y_word_rainbow', 'rainbow') : __alloT('stem.artstudio.a11y_word_single_color', 'single-color')), value2: (typeof d.spiroR === 'number' ? d.spiroR : 120), value3: (typeof d.spiror === 'number' ? d.spiror : 45), value4: (typeof d.spirop === 'number' ? d.spirop : 55) }), className: "rounded-xl border-2 border-indigo-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
-
-                  ref: function (canvas) {
-
-                    if (!canvas) return;
-
-                    if (canvas._spiroInit) return;
-
-                    canvas._spiroInit = true;
-
-                    var ctx = canvas.getContext('2d');
-
-                    var W = canvas.width, H = canvas.height;
-
-                    var cx = W / 2, cy = H / 2;
-
-                    var R = typeof d.spiroR === 'number' ? d.spiroR : 120;
-
-                    var r = typeof d.spiror === 'number' ? d.spiror : 45;
-
-                    var p = typeof d.spirop === 'number' ? d.spirop : 55;
-
-                    var speed = typeof d.spiroSpeed === 'number' ? d.spiroSpeed : 8;
-
-                    var rainbow = d.spiroRainbow;
-
-                    var baseHue = spiroColor.h;
-
-                    var baseSat = spiroColor.s;
-
-                    var baseLit = spiroColor.l;
-
-                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-
-                    var t = 0;
-
-                    var diff = R - r;
-
-                    var ratio = diff / r;
-
-                    var totalRevolutions = r / (function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); })(R, r);
-
-                    var maxT = totalRevolutions * Math.PI * 2;
-
-                    var prevX = cx + diff * Math.cos(0) + p * Math.cos(0 * ratio);
-
-                    var prevY = cy + diff * Math.sin(0) + p * Math.sin(0 * ratio);
-
-                    ctx.lineWidth = 1.5;
-
-                    ctx.lineCap = 'round';
-
-                    ctx.globalCompositeOperation = 'lighter';
-
-                    function announceSpiroComplete() {
-
-                      if (canvas._spiroDone) return;
-
-                      canvas._spiroDone = true;
-
-                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_drawing_complete', 'Spirograph drawing complete.'));
-
-                    }
-
-                    function drawStep() {
-
-                      if (t >= maxT) { announceSpiroComplete(); return; }
-
-                      var stepsThisFrame = reducedMotion ? Math.ceil((maxT - t) / 0.02) : speed;
-
-                      for (var si = 0; si < stepsThisFrame; si++) {
-
-                        t += 0.02;
-
-                        if (t > maxT) t = maxT;
-
-                        var x = cx + diff * Math.cos(t) + p * Math.cos(t * ratio);
-
-                        var y = cy + diff * Math.sin(t) + p * Math.sin(t * ratio);
-
-                        var hue = rainbow ? Math.round((t / maxT) * 360) % 360 : baseHue;
-
-                        ctx.strokeStyle = 'hsl(' + hue + ',' + baseSat + '%,' + baseLit + '%)';
-
-                        ctx.beginPath(); ctx.moveTo(prevX, prevY); ctx.lineTo(x, y); ctx.stroke();
-
-                        prevX = x; prevY = y;
-
-                      }
-
-                      if (t < maxT && canvas.isConnected) canvas._spiroAnim = requestAnimationFrame(drawStep);
-
-                      else announceSpiroComplete();
-
-                    }
-
-                    drawStep();
-
+            tab === 'spirograph' && React.createElement('div', {className:'space-y-3'},
+              React.createElement('style',null,`[data-artstudio-spiro-layout] button{min-height:44px;min-width:44px}[data-artstudio-spiro-layout] canvas{background-color:#e2e8f0;background-image:conic-gradient(#f8fafc 25%,#cbd5e1 0 50%,#f8fafc 0 75%,#cbd5e1 0);background-size:20px 20px}@media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-spiro-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-spiro-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-spiro-layout]>canvas{grid-row:1}}`),
+              React.createElement('div',{'data-artstudio-spiro-layout':'true',className:'grid grid-cols-1 lg:grid-cols-2 gap-4',style:{alignItems:'start'}},
+                React.createElement('div',{'data-artstudio-spiro-controls':'true',className:'space-y-3'},
+                  React.createElement('div',{className:'bg-indigo-50 rounded-xl p-4 border border-indigo-200 space-y-3'},
+                    React.createElement('h4',{className:'text-sm font-bold text-indigo-800'},__alloT('stem.artstudio.spirograph_controls','Spirograph Controls')),
+                    React.createElement('label',{className:'block text-xs font-bold text-indigo-800'},__alloT('stem.artstudio.spiro_curve','Rolling circle'),
+                      React.createElement('select',{'aria-label':__alloT('stem.artstudio.spiro_curve','Rolling circle'),value:spiroModel.outside?'outside':'inside',onChange:function(e){upd('spiroCurve',e.target.value);},className:'block w-full min-h-[44px] rounded-lg border border-indigo-300 bg-white px-2 mt-1'},
+                        React.createElement('option',{value:'inside'},__alloT('stem.artstudio.spiro_inside','Inside · hypotrochoid')),
+                        React.createElement('option',{value:'outside'},__alloT('stem.artstudio.spiro_outside','Outside · epitrochoid')))),
+                    [{k:'spiroR',label:__alloT('stem.artstudio.outer_radius','Outer Radius'),min:40,max:200,value:spiroModel.R},
+                     {k:'spiror',label:__alloT('stem.artstudio.spiro_rolling_radius','Rolling radius'),min:10,max:spiroModel.outside?100:Math.min(100,spiroModel.R-1),value:spiroModel.r},
+                     {k:'spirop',label:__alloT('stem.artstudio.pen_offset','Pen Offset'),min:0,max:120,value:spiroModel.p},
+                     {k:'spiroLineWidth',label:__alloT('stem.artstudio.spiro_line_width','Line width'),min:0.5,max:8,step:0.5,value:spiroModel.width},
+                     {k:'spiroSpeed',label:__alloT('stem.artstudio.draw_speed','Draw Speed'),min:1,max:20,value:typeof d.spiroSpeed==='number'&&Number.isFinite(d.spiroSpeed)?Math.max(1,Math.min(20,d.spiroSpeed)):8}].map(function(s){return React.createElement('div',{key:s.k},
+                       React.createElement('label',{htmlFor:'artstudio-'+s.k,className:'text-xs font-bold text-indigo-800 block'},s.label+': '+s.value),
+                       React.createElement('input',{id:'artstudio-'+s.k,type:'range',min:s.min,max:s.max,step:s.step||1,value:s.value,'aria-valuetext':s.k==='spiroSpeed'?s.value+' drawing steps per frame':s.value+' units',onChange:function(e){upd(s.k,Number(e.target.value));},className:'w-full accent-indigo-600'}));}),
+                    renderStudioColorCapsule({prefix:'spiro',color:spiroColor,label:'Ink color',resetKey:'spiroReset',note:d.spiroRainbow?'This color returns when Rainbow is turned off.':'Changing ink redraws the current curve.'}),
+                    React.createElement('div',{className:'flex flex-wrap items-center gap-3'},
+                      React.createElement('label',{className:'flex items-center gap-2 min-h-[44px] text-xs font-bold text-indigo-800'},React.createElement('input',{type:'checkbox',checked:spiroModel.fit,onChange:function(e){upd('spiroFit',e.target.checked);}}),__alloT('stem.artstudio.spiro_fit','Fit whole curve')),
+                      React.createElement('label',{className:'text-xs font-bold text-indigo-800'},__alloT('stem.artstudio.spiro_paper','Paper'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.spiro_paper','Paper'),value:spiroModel.paper===null?'transparent':spiroModel.paper==='#f8fafc'?'light':'dark',onChange:function(e){upd('spiroPaper',e.target.value);},className:'min-h-[44px] rounded-lg border border-indigo-300 bg-white px-2 ml-2'},
+                        React.createElement('option',{value:'dark'},__alloT('stem.artstudio.spiro_paper_dark','Dark')),
+                        React.createElement('option',{value:'light'},__alloT('stem.artstudio.spiro_paper_light','Light')),
+                        React.createElement('option',{value:'transparent'},__alloT('stem.artstudio.spiro_paper_transparent','Transparent'))))),
+                    React.createElement('div',{className:'flex flex-wrap gap-2'},
+                      React.createElement('button',{type:'button',onClick:function(){upd('spiroReset',(Number(d.spiroReset)||0)+1);if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_redrawing_the_spirograph','Redrawing the spirograph.'));},className:'flex-1 rounded-lg px-3 py-2 text-xs font-bold bg-white border border-indigo-300 text-indigo-800'},__alloT('stem.artstudio.redraw_spirograph','↻ Redraw')),
+                      React.createElement('button',{id:'artstudio-spiro-pause',type:'button','aria-pressed':!!d.spiroPaused,disabled:reducedMotion,onClick:function(){var c=document.getElementById('spiroCanvas');updMany(Object.assign({},c&&c._captureArtStudioState?c._captureArtStudioState():{},{spiroPaused:!d.spiroPaused}));},className:'flex-1 rounded-lg px-3 py-2 text-xs font-bold bg-white border border-indigo-300 text-indigo-800 disabled:opacity-50'},d.spiroPaused?__alloT('stem.artstudio.spiro_resume','Resume drawing'):__alloT('stem.artstudio.spiro_pause','Pause drawing')),
+                      React.createElement('button',{id:'artstudio-spiro-finish',type:'button',onClick:function(){var c=document.getElementById('spiroCanvas');if(c&&c._spiroFinish){c._spiroFinish();updMany(c._captureArtStudioState());}},className:'flex-1 rounded-lg px-3 py-2 text-xs font-bold bg-indigo-700 text-white disabled:opacity-50'},__alloT('stem.artstudio.spiro_finish','Finish drawing'))),
+                    React.createElement('progress',{id:'artstudio-spiro-progress',max:100,value:0,'aria-label':__alloT('stem.artstudio.spiro_progress','Spirograph drawing progress'),className:'w-full',style:{height:8}}),
+                    React.createElement('div',{className:'flex flex-wrap gap-2'},
+                      ['png','svg'].map(function(format){return React.createElement('button',{key:format,type:'button','aria-label':format==='png'?__alloT('stem.artstudio.export_spirograph_png','Export spirograph as PNG'):__alloT('stem.artstudio.export_spirograph_svg','Export spirograph as SVG'),onClick:function(){
+                        try {
+                          var c=document.getElementById('spiroCanvas');
+                          if(!c||!c._spiroExportPNG||!c._spiroSVG)throw new Error('Canvas unavailable');
+                          var src=format==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(c._spiroSVG()):c._spiroExportPNG();
+                          if(!src||src==='data:,')throw new Error('Empty export');
+                          var link=document.createElement('a');link.download='spirograph-'+Date.now()+'.'+format;link.href=src;link.click();
+                          if(typeof addToast==='function')addToast(__alloT('stem.artstudio.spiro_export_success','Complete spirograph exported.'),'success');
+                          if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.spiro_export_success','Complete spirograph exported.'));
+                        } catch(error) {if(typeof addToast==='function')addToast(__alloT('stem.artstudio.spiro_export_error','Could not export this curve. Try again.'),'error');}
+                      },className:'flex-1 rounded-lg px-3 py-2 text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300'},format==='png'?__alloT('stem.artstudio.spiro_export_full_png','Full PNG'):__alloT('stem.artstudio.spiro_export_full_svg','Vector SVG'));}),
+                      React.createElement('button',{type:'button','aria-label':d.spiroRainbow?'Use a single color for the spirograph':'Use a rainbow color progression for the spirograph','aria-pressed':!!d.spiroRainbow,onClick:function(){upd('spiroRainbow',!d.spiroRainbow);if(typeof announceToSR==='function')announceToSR(!d.spiroRainbow?__alloT('stem.artstudio.sr_rainbow_spirograph_enabled','Rainbow spirograph enabled.'):__alloT('stem.artstudio.sr_single_color_spirograph_enabled','Single-color spirograph enabled.'));},className:'flex-1 rounded-lg px-3 py-2 text-xs font-bold border border-indigo-300 '+(d.spiroRainbow?'bg-indigo-700 text-white':'bg-white text-indigo-800')},__alloT('stem.artstudio.spiro_rainbow','Rainbow'))),
+                    React.createElement('p',{className:'text-xs text-slate-700'},__alloT('stem.artstudio.spiro_export_hint','Exports include the complete curve, even while drawing is paused. Transparent paper keeps only the ink.')),
+                    React.createElement('div',{className:'flex gap-2 flex-wrap items-center',role:'group','aria-labelledby':'artstudio-spiro-presets-label'},
+                      React.createElement('span',{id:'artstudio-spiro-presets-label',className:'text-xs font-bold text-indigo-800'},__alloT('stem.artstudio.spiro_presets','Presets:')),
+                      [{label:__alloT('stem.artstudio.star','Star'),R:120,r:45,p:55},{label:__alloT('stem.artstudio.flower','Flower'),R:150,r:50,p:25},{label:__alloT('stem.artstudio.lace','Lace'),R:100,r:73,p:80},{label:__alloT('stem.artstudio.atom','Atom'),R:180,r:25,p:90},{label:__alloT('stem.artstudio.spiral','Spiral'),R:140,r:91,p:60}].map(function(pr){return React.createElement('button',{key:pr.label,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_spirograph_preset','Load {value1} spirograph preset'),{value1:pr.label}),onClick:function(){updMany({spiroR:pr.R,spiror:pr.r,spirop:pr.p,spiroCurve:'inside',spiroReset:(Number(d.spiroReset)||0)+1});},className:'rounded-lg px-2 py-1 text-xs font-bold text-indigo-800 bg-white border border-indigo-300'},pr.label);}))),
+                  React.createElement('div',{className:'rounded-xl bg-violet-50 p-3 border border-violet-200'},
+                    React.createElement('p',{className:'text-xs font-bold text-violet-800'},__alloT('stem.artstudio.math_connection','Math Connection')),
+                    React.createElement('p',{id:'artstudio-spiro-description',className:'text-xs text-slate-700 leading-relaxed'},__alloT('stem.artstudio.spiro_closed_math','Inside rolling makes a hypotrochoid; outside rolling makes an epitrochoid. With these whole-number radii, every curve closes. The greatest common divisor (GCD) determines how many trips around the fixed circle are needed.')),
+                    React.createElement('p',{id:'artstudio-spiro-closure',className:'text-xs font-bold text-violet-800 mt-2'},formatArtStudioLearningText(__alloT('stem.artstudio.spiro_closure','Radius ratio {R}:{r} · closes after {turns} trips.'),{R:spiroModel.lobes,r:spiroModel.revolutions,turns:spiroModel.revolutions})))),
+                React.createElement('canvas',{id:'spiroCanvas',key:'spiro-'+studioPersistenceScope+'-'+JSON.stringify(spiroModel)+'-'+(d.spiroReset||0),width:512,height:512,role:'img','aria-describedby':'artstudio-spiro-description','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.spiro_output_description','Spirograph output: a {color} {curve} with outer radius {R}, inner radius {r}, and pen offset {p}.'),{color:d.spiroRainbow?'rainbow':'single-color',curve:spiroModel.outside?'epitrochoid':'hypotrochoid',R:spiroModel.R,r:spiroModel.r,p:spiroModel.p}),className:'rounded-xl border-2 border-indigo-300 shadow-lg mx-auto block',style:{maxWidth:'100%'},ref:function(canvas){
+                  if(!canvas)return;
+                  var speed=typeof d.spiroSpeed==='number'&&Number.isFinite(d.spiroSpeed)?Math.max(1,Math.min(20,d.spiroSpeed)):8;
+                  if(canvas._spiroUpdate){canvas._spiroUpdate(!!d.spiroPaused,speed);return;}
+                  if(spiroRuntimeRef.current)spiroRuntimeRef.current.dispose();
+                  var context=canvas.getContext('2d');if(!context)return;
+                  var model=spiroModel,points=artStudioSpiroGeometry(model),index=0,total=points.length-1,paused=!!d.spiroPaused,disposed=false;
+                  var checkpointKey=JSON.stringify([model,d.spiroReset||0]);
+                  var savedProgress=d.spiroProgressModel===checkpointKey&&typeof d.spiroProgress==='number'&&Number.isFinite(d.spiroProgress)?Math.max(0,Math.min(1,d.spiroProgress)):0;
+                  if(model.paper){context.fillStyle=model.paper;context.fillRect(0,0,512,512);}
+                  function stop(){if(canvas._spiroAnim)cancelAnimationFrame(canvas._spiroAnim);canvas._spiroAnim=0;}
+                  function progress(){
+                    canvas.setAttribute('data-spiro-progress',String(index));canvas.setAttribute('data-spiro-total',String(total));
+                    var meter=document.getElementById('artstudio-spiro-progress');if(meter)meter.value=index/total*100;
+                    var finish=document.getElementById('artstudio-spiro-finish');if(finish)finish.disabled=index>=total;
+                    var pause=document.getElementById('artstudio-spiro-pause');if(pause)pause.disabled=reducedMotion||index>=total;
+                    if(index>=total&&!canvas._spiroDone){canvas._spiroDone=true;if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_spirograph_drawing_complete','Spirograph drawing complete.'));}
                   }
-
-                })
-
+                  function draw(to){artStudioSpiroDraw(context,model,points,index,to);index=to;progress();}
+                  function frame(){canvas._spiroAnim=0;if(disposed||!canvas.isConnected||paused)return;draw(Math.min(total,index+speed));schedule();}
+                  function schedule(){if(!disposed&&!paused&&index<total&&!canvas._spiroAnim)canvas._spiroAnim=requestAnimationFrame(frame);}
+                  canvas._spiroFinish=function(){stop();draw(total);};
+                  canvas._spiroSVG=function(){return artStudioSpiroSVG(model,points);};
+                  canvas._captureArtStudioState=function(){return {spiroProgress:index/total,spiroProgressModel:checkpointKey,spiroPaused:paused};};
+                  canvas._spiroExportCanvas=function(){
+                    var output=document.createElement('canvas');output.width=output.height=512;var target=output.getContext('2d');if(!target)throw new Error('Canvas unavailable');
+                    if(model.paper){target.fillStyle=model.paper;target.fillRect(0,0,512,512);}artStudioSpiroDraw(target,model,points,0,total);return output;
+                  };
+                  canvas._spiroExportPNG=function(){return canvas._spiroExportCanvas().toDataURL('image/png');};
+                  canvas._spiroUpdate=function(nextPaused,nextSpeed){paused=nextPaused;speed=nextSpeed;if(reducedMotion&&index<total){canvas._spiroFinish();return;}if(paused)stop();else schedule();progress();};
+                  spiroRuntimeRef.current={dispose:function(){disposed=true;stop();}};
+                  if(reducedMotion)canvas._spiroFinish();else{draw(Math.min(total,Math.round(savedProgress*total)+(paused?0:speed)));schedule();}
+                }})
               )
-
             ),
 
             // ═══ GENERATIVE ART TAB ═══
 
             tab === 'generative' && React.createElement("div",
 
-              { className: "relative space-y-3" },
+              {'data-artstudio-generative-layout': 'true'},
+              React.createElement('style', null, '[data-artstudio-generative-layout]{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}[data-artstudio-generative-layout] button{min-width:44px;min-height:44px;white-space:normal}[data-artstudio-generative-preview] canvas{width:100%;height:auto;max-width:960px}[data-artstudio-focus="true"] [data-artstudio-generative-preview] #genCanvas{width:min(100%,101.333dvh)!important}[data-artstudio-generative-controls] input[type="range"]{min-height:44px}@media(min-width:1024px){[data-artstudio-generative-layout]{grid-template-columns:minmax(250px,290px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-generative-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-generative-preview]{grid-row:1}}'),
+              React.createElement('div', {'data-artstudio-generative-controls':'true', className:'min-w-0 space-y-3'},
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap", role: "group", "aria-label": __alloT('stem.artstudio.a11y_generative_art_controls', 'Generative art controls') },
 
@@ -9397,7 +11706,7 @@ const d = labToolData.artStudio || {};
 
                 [{ id: 'flow', icon: '\uD83C\uDF0A', label: __alloT('stem.artstudio.flow_field', 'Flow Field') }, { id: 'rain', icon: '\uD83C\uDF27', label: __alloT('stem.artstudio.particle_rain', 'Particle Rain') }, { id: 'stars', icon: '\u2728', label: __alloT('stem.artstudio.starfield', 'Starfield') }, { id: 'aurora', icon: '\uD83C\uDF0C', label: __alloT('stem.artstudio.aurora', 'Aurora') }].map(function (s) {
 
-                  return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_generative_style', 'Use {value1} generative style'), { value1: s.label }), "aria-pressed": (d.genStyle || 'flow') === s.id, key: s.id, onClick: function () { resetGenerativeRun({ genStyle: s.id }); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.genStyle || 'flow') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
+                  return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_generative_style', 'Use {value1} generative style'), { value1: s.label }), "aria-pressed": generativeModel.style === s.id, key: s.id, onClick: function () { resetGenerativeRun({ genStyle: s.id }); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (generativeModel.style === s.id ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50') }, s.icon + ' ' + s.label);
 
                 }),
 
@@ -9406,7 +11715,8 @@ const d = labToolData.artStudio || {};
                   "aria-pressed": d.genPaused === undefined ? reducedMotion : !!d.genPaused,
                   onClick: function () {
                     var isPaused = d.genPaused === undefined ? reducedMotion : !!d.genPaused;
-                    upd('genPaused', !isPaused);
+                    var canvas = document.getElementById('genCanvas');
+                    updMany(Object.assign({}, canvas && canvas._captureArtStudioState ? canvas._captureArtStudioState() : {}, {genPaused: !isPaused}));
                     if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_generative_animation_resumed', 'Generative animation resumed.') : __alloT('stem.artstudio.sr_generative_animation_paused', 'Generative animation paused.'));
                   },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold " + ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? 'bg-amber-100 text-amber-700' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200')
@@ -9414,7 +11724,17 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { resetGenerativeRun(); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_6', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_4', "Export PNG"), onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c._genExportAction ? c._genExportAction() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_5', "\uD83D\uDCE5 Export PNG"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_4', 'Export PNG'), onClick: function () {
+                  var canvas = document.getElementById('genCanvas'); if (!canvas) return;
+                  try {
+                    var png = canvas._genExportAction ? canvas._genExportAction() : canvas.toDataURL('image/png');
+                    if (!png) throw new Error('Canvas export unavailable');
+                    var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = png; link.click();
+                    if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', 'PNG exported!'), 'success');
+                  } catch (_) {
+                    if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.generative_export_failed', 'The PNG could not be exported. Please try again.'), 'error');
+                  }
+                }, className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' }, __alloT('stem.artstudio.export_png_5', '\uD83D\uDCE5 Export PNG'))
 
               ),
 
@@ -9422,12 +11742,61 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("label", { htmlFor: "artstudio-generative-density", className: "text-[0.6875rem] font-bold text-slate-600" }, "Density:"),
 
-                React.createElement("input", { id: "artstudio-generative-density", type: "range", min: 20, max: 300, value: d.genDensity || 100, "aria-describedby": "artstudio-generative-density-value", onChange: function (e) { resetGenerativeRun({ genDensity: parseInt(e.target.value) }); }, className: "w-32 max-w-full accent-fuchsia-600" }),
+                React.createElement("input", { id: "artstudio-generative-density", type: "range", min: 20, max: 300, value: generativeModel.density, "aria-describedby": "artstudio-generative-density-value", onChange: function (e) { resetGenerativeRun({ genDensity: parseInt(e.target.value) }); }, className: "w-32 max-w-full accent-fuchsia-600" }),
 
-                React.createElement("span", { id: "artstudio-generative-density-value", className: "text-[0.6875rem] text-slate-600" }, (d.genDensity || 100) + ' particles')
+                React.createElement("span", { id: "artstudio-generative-density-value", className: "text-[0.6875rem] text-slate-600" }, generativeModel.density + ' particles')
 
               ),
 
+              React.createElement('fieldset', {className:'rounded-xl border border-fuchsia-200 p-3 space-y-2'},
+                React.createElement('legend',{className:'px-1 text-xs font-bold text-fuchsia-950'},__alloT('stem.artstudio.generative_motion_marks','Motion and marks')),
+                React.createElement('label',{htmlFor:'artstudio-generative-speed',className:'block text-xs font-bold text-slate-700'},__alloT('stem.artstudio.playback_speed','Playback speed')),
+                React.createElement('select',{id:'artstudio-generative-speed',value:generativeModel.speed,onChange:function(event){upd('genSpeed',Number(event.target.value));},className:'min-h-[44px] w-full rounded-lg border border-fuchsia-300 bg-white px-2 text-sm text-slate-900'},
+                  [0.25,0.5,1,2].map(function(speed){return React.createElement('option',{key:speed,value:speed},speed+'×');})),
+                React.createElement('label',{htmlFor:'artstudio-generative-trails',className:'block text-xs font-bold text-slate-700'},__alloT('stem.artstudio.generative_trail_fade','Trail fade')),
+                React.createElement('input',{id:'artstudio-generative-trails',type:'range',min:1,max:25,step:1,value:generativeModel.trailFade,'aria-describedby':'artstudio-generative-trails-help',onChange:function(event){resetGenerativeRun({genTrailFade:Number(event.target.value)});},className:'w-full accent-fuchsia-700'}),
+                React.createElement('p',{id:'artstudio-generative-trails-help',className:'text-xs text-slate-600'},generativeModel.trailFade+'% · '+__alloT('stem.artstudio.generative_trail_help','Lower values leave longer trails. Changing fade restarts the same seed.')),
+                React.createElement('label',{htmlFor:'artstudio-generative-burst',className:'block text-xs font-bold text-slate-700'},__alloT('stem.artstudio.generative_burst_size','Particles per burst')),
+                React.createElement('input',{id:'artstudio-generative-burst',type:'range',min:5,max:100,step:5,value:generativeModel.burstSize,'aria-describedby':'artstudio-generative-burst-value',onChange:function(event){upd('genBurstSize',Number(event.target.value));},className:'w-full accent-fuchsia-700'}),
+                React.createElement('p',{id:'artstudio-generative-burst-value',className:'text-xs text-slate-600'},generativeModel.burstSize+' '+__alloT('stem.artstudio.generative_particles_per_burst','particles per click, tap, or keyboard burst.')),
+                React.createElement('p',{className:'text-xs text-slate-600'},__alloT('stem.artstudio.generative_speed_help','Speed changes playback time. Equal seeds, settings, steps, and burst inputs still produce the same result.'))
+              ),
+              React.createElement("fieldset", { className: "mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3", 'aria-describedby': "artstudio-generative-experiment-help" },
+                React.createElement("legend", { className: "px-1 text-xs font-bold text-fuchsia-950" }, __alloT('stem.artstudio.repeatable_experiment', 'Repeatable experiment')),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("label", { htmlFor: "artstudio-generative-seed", className: "text-xs font-bold text-slate-700" }, __alloT('stem.artstudio.random_seed', 'Seed')),
+                  React.createElement("input", { id: "artstudio-generative-seed", type: "number", min: 0, max: 4294967295, step: 1, value: generativeModel.seed,
+                    onChange: function (event) { if (event.target.value !== '') resetGenerativeRun({ genSeed: Math.max(0, Math.min(4294967295, Math.floor(Number(event.target.value) || 0))), genPaused: true }); },
+                    className: "min-h-[44px] w-36 rounded-lg border border-fuchsia-300 px-2 text-sm text-slate-900" }),
+                  React.createElement("button", { type: "button", onClick: function () { resetGenerativeRun({ genPaused: true }); }, className: "min-h-[44px] rounded-lg border border-fuchsia-300 bg-white px-3 text-xs font-bold text-fuchsia-900" }, __alloT('stem.artstudio.same_seed', 'Same seed')),
+                  React.createElement("button", { type: "button", onClick: function () {
+                    var previousSeed = generativeModel.seed;
+                    var nextSeed = Math.floor(Math.random() * 4294967296) >>> 0;
+                    if (nextSeed === previousSeed) nextSeed = (previousSeed + 1) >>> 0;
+                    resetGenerativeRun({ genSeed: nextSeed, genPaused: true });
+                  }, className: "min-h-[44px] rounded-lg border border-fuchsia-300 bg-white px-3 text-xs font-bold text-fuchsia-900" }, __alloT('stem.artstudio.new_seed', 'New seed')),
+                  [1, 10, 100].map(function (count) {
+                    return React.createElement('button', {key:count,type:'button', 'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.advance_steps','Pause and advance {count} simulation steps'),{count:count}), onClick:function () {
+                      var canvas=document.getElementById('genCanvas');
+                      if(!canvas||!canvas._genAdvance||!canvas._genAdvance(count))return;
+                      updMany(canvas._captureArtStudioState());
+                      if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.generative_paused_step','Generative experiment paused at step')+' '+canvas.getAttribute('data-gen-frame')+'.');
+                    },className:'min-h-[44px] rounded-lg bg-fuchsia-800 px-3 text-xs font-bold text-white'},'+'+count+(count===1?' step':' steps'));
+                  }),
+                  React.createElement("span", { id: "artstudio-generative-step", className: "text-xs font-bold tabular-nums text-fuchsia-950" }, __alloT('stem.artstudio.simulation_step', 'Step') + ' ' + (Number(d.genFrame) || 0))
+                ),
+                React.createElement("p", { id: "artstudio-generative-experiment-help", className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.artstudio.seed_experiment_help', 'Same seed restarts at step 0 with the same random sequence. Change one setting, then use +100 steps to compare at an equal step. Canvas bursts are extra inputs; avoid them for a controlled comparison.'))
+              ),
+
+              renderStudioColorCapsule({
+                prefix: 'gen',
+                color: generativeColor,
+                label: 'Particle color',
+                resetKey: 'genReset',
+                note: 'Hue anchors the system; saturation and lightness shape every particle and glow.'
+              })
+              ),
+              React.createElement('div', {'data-artstudio-generative-preview':'true',className:'min-w-0 space-y-3'},
               renderCanvasTouchMode({
                 stateKey: 'genTouchMode',
                 activeValue: 'interact',
@@ -9439,8 +11808,9 @@ const d = labToolData.artStudio || {};
                 scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still create bursts; choose Interact with art for finger input.'
               }),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0) + '-' + (typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1) + '-' + (d.genDensity || 100) + '-' + generativeColor.h + '-' + generativeColor.s + '-' + generativeColor.l, width: 640, height: 480, role: "img",
-                'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_generative_canvas', 'Generative art canvas using {value1} style with {value2} particles; {value3}.'), { value1: __alloT('stem.artstudio.a11y_gen_style_' + String((d.genStyle || 'flow')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.genStyle || 'flow')), value2: (d.genDensity || 100), value3: ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? __alloT('stem.artstudio.a11y_state_paused', 'paused') : __alloT('stem.artstudio.a11y_state_playing', 'playing')) }),
+              React.createElement('div',{className:'relative'},
+              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + studioPersistenceScope + '-' + generativeModel.trailFade + '-' + generativeModel.style + '-' + (d.genReset || 0) + '-' + (generativeModel.seed) + '-' + generativeModel.density + '-' + generativeColor.h + '-' + generativeColor.s + '-' + generativeColor.l, width: 640, height: 480, role: "img",
+                'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_generative_canvas', 'Generative art canvas using {value1} style with {value2} particles; {value3}.'), { value1: __alloT('stem.artstudio.a11y_gen_style_' + String(generativeModel.style).toLowerCase().replace(/[^a-z0-9]+/g, '_'), generativeModel.style), value2: generativeModel.density, value3: ((d.genPaused === undefined ? reducedMotion : !!d.genPaused) ? __alloT('stem.artstudio.a11y_state_paused', 'paused') : __alloT('stem.artstudio.a11y_state_playing', 'playing')) }),
                 'aria-describedby': "artstudio-generative-keyboard-help",
                 'aria-details': "artstudio-generative-touch-help",
                 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
@@ -9457,34 +11827,42 @@ const d = labToolData.artStudio || {};
                   var isPaused = d.genPaused === undefined ? reducedMotion : !!d.genPaused;
 
                   canvas.setAttribute('data-paused', isPaused ? '1' : '0');
-                  // Restart the loop the moment play resumes; it stops itself on pause.
-                  if (!isPaused && typeof canvas._genResume === 'function') canvas._genResume();
+                  canvas.dataset.speed = String(generativeModel.speed);
+                  canvas.dataset.burstSize = String(generativeModel.burstSize);
+                  if (canvas._genSyncPlayback) canvas._genSyncPlayback();
 
-                  canvas.setAttribute('aria-label', 'Generative art canvas using ' + (d.genStyle || 'flow') + ' style with ' +
+                  canvas.setAttribute('aria-label', 'Generative art canvas using ' + generativeModel.style + ' style with ' +
 
-                    (d.genDensity || 100) + ' particles; ' + (isPaused ? 'paused' : 'playing') + '.');
+                    generativeModel.density + ' particles; ' + (isPaused ? 'paused' : 'playing') + '.');
 
                   if (canvas._genInit) {
                     if (canvas._genSyncStatus) canvas._genSyncStatus();
                     return;
                   }
 
+                  if (generativeRuntimeRef.current) generativeRuntimeRef.current.dispose();
                   canvas._genInit = true;
+                  canvas._genAnim = null;
 
                   var ctx = canvas.getContext('2d');
+                  if (!ctx) return;
 
                   var W = canvas.width, H = canvas.height;
 
-                  var style = d.genStyle || 'flow';
+                  var style = generativeModel.style;
 
-                  var density = d.genDensity || 100;
+                  var density = generativeModel.density;
 
                   var baseHue = generativeColor.h;
                   var baseSat = generativeColor.s;
                   var baseLit = generativeColor.l;
 
-                  var seed = typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1;
+                  var seed = generativeModel.seed;
                   var randomState = seed;
+                  var disposed = false, lastTime = null, accumulator = 0, generation = 0;
+                  var playbackSpeed = generativeModel.speed, playbackPaused = isPaused;
+                  var trailFade = generativeModel.trailFade / 100;
+                  var burstLimit = 3000;
                   // Mulberry32: all random evolution uses this saved 32-bit state.
                   function random() {
                     randomState = (randomState + 0x6D2B79F5) >>> 0;
@@ -9493,7 +11871,7 @@ const d = labToolData.artStudio || {};
                     value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
                     return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
                   }
-                  var settings = { seed: seed, style: style, density: density, hue: baseHue, saturation: baseSat, lightness: baseLit };
+                  var settings = { seed: seed, style: style, density: density, hue: baseHue, saturation: baseSat, lightness: baseLit, trailFade: generativeModel.trailFade };
                   var particles = [];
 
                   var mouseX = -1, mouseY = -1;
@@ -9573,11 +11951,11 @@ const d = labToolData.artStudio || {};
                   var savedState = d.genState;
                   var particleFields = ['x', 'y', 'vx', 'vy', 'life', 'maxLife', 'hue', 'size'];
                   var validState = savedState && savedState.version === 1 &&
-                    savedState.settings && Object.keys(settings).every(function (key) { return savedState.settings[key] === settings[key]; }) &&
+                    savedState.settings && Object.keys(settings).every(function (key) { return (key === 'trailFade' && savedState.settings[key] === undefined ? 4 : savedState.settings[key]) === settings[key]; }) &&
                     Number.isSafeInteger(savedState.frame) && savedState.frame >= 0 &&
-                    Number.isInteger(savedState.randomState) &&
-                    Array.isArray(savedState.particles) && savedState.particles.every(function (particle) {
-                      return particle && particleFields.every(function (key) { return Number.isFinite(particle[key]); }) && particle.size > 0;
+                    Number.isInteger(savedState.randomState) && savedState.randomState >= 0 && savedState.randomState <= 4294967295 &&
+                    Array.isArray(savedState.particles) && savedState.particles.length <= burstLimit && savedState.particles.every(function (particle) {
+                      return particle && particleFields.every(function (key) { return Number.isFinite(particle[key]); }) && particle.size > 0 && particle.size <= 20 && particle.life >= 0 && particle.life <= 1000 && particle.maxLife > 0 && particle.maxLife <= 1000 && Math.abs(particle.x) <= 1000000 && Math.abs(particle.y) <= 1000000 && Math.abs(particle.vx) <= 1000 && Math.abs(particle.vy) <= 1000;
                     });
                   function cloneParticles(list) {
                     return list.map(function (particle) {
@@ -9590,12 +11968,16 @@ const d = labToolData.artStudio || {};
                     particles = cloneParticles(savedState.particles);
                     randomState = savedState.randomState >>> 0;
                     tick = savedState.frame;
-                    burstCount = Math.max(0, Math.floor(Number(savedState.burstCount) || 0));
+                    burstCount = Number.isSafeInteger(savedState.burstCount) && savedState.burstCount >= 0 ? savedState.burstCount : 0;
                   }
                   canvas._genSyncStatus = function () {
                     canvas.setAttribute('data-gen-seed', String(seed));
                     canvas.setAttribute('data-gen-frame', String(tick));
                     canvas.setAttribute('data-gen-bursts', String(burstCount));
+                    canvas.setAttribute('data-gen-particles', String(particles.length));
+                    canvas.setAttribute('data-gen-restoring', isRestoring ? '1' : '0');
+                    var live = document.getElementById('artstudio-generative-live');
+                    if (live) live.textContent = formatArtStudioLearningText(__alloT('stem.artstudio.generative_live_status','Step {step} · {particles} active particles · {bursts} bursts'),{step:tick,particles:particles.length,bursts:burstCount});
                     var status = document.getElementById('artstudio-generative-step');
                     if (status) status.textContent = __alloT('stem.artstudio.simulation_step', 'Step') + ' ' + tick;
                   };
@@ -9608,6 +11990,8 @@ const d = labToolData.artStudio || {};
                     var snapshot = canvas._genExportAction();
                     return {
                       genSeed: seed,
+                      genStyle: style, genDensity: density, genTrailFade: settings.trailFade,
+                      genSpeed: Number(canvas.dataset.speed), genBurstSize: Number(canvas.dataset.burstSize),
                       genFrame: tick,
                       genPaused: canvas.getAttribute('data-paused') === '1',
                       genSnapshot: snapshot,
@@ -9621,14 +12005,18 @@ const d = labToolData.artStudio || {};
                     isRestoring = true;
                     var checkpointImage = new Image();
                     checkpointImage.onload = function () {
-                      if (!canvas.isConnected) return;
+                      if (disposed || !canvas.isConnected) return;
                       ctx.globalCompositeOperation = 'source-over';
                       ctx.drawImage(checkpointImage, 0, 0, W, H);
                       isRestoring = false;
+                      canvas._genSyncStatus();
+                      resume();
                     };
                     checkpointImage.onerror = function () {
-                      if (!canvas.isConnected) return;
+                      if (disposed || !canvas.isConnected) return;
                       isRestoring = false;
+                      canvas._genSyncStatus();
+                      resume();
                       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.generative_preview_unavailable', 'The saved particle trails could not be loaded. The simulation settings and particles are restored.'));
                     };
                     checkpointImage.src = d.genSnapshot;
@@ -9649,13 +12037,18 @@ const d = labToolData.artStudio || {};
                   }
 
                   function burstAt(x, y) {
-                    if (isRestoring) return;
+                    if (disposed || !canvas.isConnected || isRestoring) return false;
+                    var burstSize = Math.round(generativeNumber(Number(canvas.dataset.burstSize), 30, 5, 100));
+                    if (particles.length + burstSize > burstLimit) {
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.generative_burst_limit','The canvas is full of particles. Advance or resume the animation before adding another burst.'));
+                      return false;
+                    }
                     burstCount++;
                     canvas._genSyncStatus();
 
                     mouseX = x; mouseY = y;
 
-                    for (var bi = 0; bi < 30; bi++) {
+                    for (var bi = 0; bi < burstSize; bi++) {
 
                       var angle = random() * Math.PI * 2;
 
@@ -9682,19 +12075,23 @@ const d = labToolData.artStudio || {};
                     // preserve simulation time and all existing particle positions.
                     if (canvas.getAttribute('data-paused') === '1') {
                       ctx.globalCompositeOperation = 'lighter';
-                      for (var burstIndex = particles.length - 30; burstIndex < particles.length; burstIndex++) {
+                      for (var burstIndex = particles.length - burstSize; burstIndex < particles.length; burstIndex++) {
                         drawGenerativeParticle(particles[burstIndex], 1);
                       }
                       ctx.globalCompositeOperation = 'source-over';
                     }
+                    canvas._genSyncStatus();
+                    return true;
                   }
 
                   function updateGenerativePointer(e) {
                     var rect = canvas.getBoundingClientRect();
 
-                    mouseX = (e.clientX - rect.left) * (W / rect.width);
+                    var borderX = canvas.clientLeft || 0, borderY = canvas.clientTop || 0;
+                    var displayW = canvas.clientWidth || rect.width, displayH = canvas.clientHeight || rect.height;
+                    mouseX = Math.max(0, Math.min(W, (e.clientX - rect.left - borderX) * W / Math.max(1, displayW)));
 
-                    mouseY = (e.clientY - rect.top) * (H / rect.height);
+                    mouseY = Math.max(0, Math.min(H, (e.clientY - rect.top - borderY) * H / Math.max(1, displayH)));
 
                   }
 
@@ -9753,7 +12150,7 @@ const d = labToolData.artStudio || {};
 
                       canvas._genKeyboardCursor = keyboardCursor;
 
-                      if (event.shiftKey) burstAt(keyboardCursor.x, keyboardCursor.y);
+                      if (event.shiftKey && !burstAt(keyboardCursor.x, keyboardCursor.y)) return;
 
                       updateGenCursor(true);
 
@@ -9765,7 +12162,7 @@ const d = labToolData.artStudio || {};
 
                     if (event.key === 'Enter' || event.key === ' ') {
 
-                      event.preventDefault(); burstAt(keyboardCursor.x, keyboardCursor.y);
+                      event.preventDefault(); if (!burstAt(keyboardCursor.x, keyboardCursor.y)) return;
 
                       if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_created_particle_burst_at_x_y', 'Created particle burst at x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
 
@@ -9780,7 +12177,7 @@ const d = labToolData.artStudio || {};
 
                     // Fade trail
 
-                    ctx.fillStyle = 'rgba(10,10,26,0.04)';
+                    ctx.fillStyle = 'rgba(10,10,26,' + trailFade + ')';
 
                     ctx.fillRect(0, 0, W, H);
 
@@ -9870,31 +12267,63 @@ const d = labToolData.artStudio || {};
                   }
 
                   canvas._genAdvance = function (steps) {
-                    if (isRestoring) return false;
+                    if (disposed || !canvas.isConnected || isRestoring || !Number.isInteger(steps) || steps < 1 || steps > 1000) return false;
+                    stop();
                     canvas.setAttribute('data-paused', '1');
+                    playbackPaused = true;
                     for (var stepIndex = 0; stepIndex < steps; stepIndex++) stepSimulation();
-                    updateGenCursor(typeof document !== 'undefined' && document.activeElement === canvas);
+                    updateGenCursor(document.activeElement === canvas);
                     return true;
                   };
-                  function animate() {
-                    if (!canvas.isConnected) { canvas._genAnim = null; return; }
-                    // A paused loop used to keep asking for frames and do nothing with
-                    // them: 60 wake-ups a second, for as long as the tab stays open, on
-                    // a student's laptop or tablet. Stop instead, and let the render
-                    // path below restart it when play resumes — the same shape the
-                    // watercolour tick already uses.
-                    if (canvas.getAttribute('data-paused') === '1' && !isRestoring) { canvas._genAnim = null; return; }
-                    if (!isRestoring) stepSimulation();
-                    canvas._genAnim = requestAnimationFrame(animate);
+                  function stop() {
+                    generation++;
+                    if (canvas._genAnim != null) cancelAnimationFrame(canvas._genAnim);
+                    canvas._genAnim = null;
+                    lastTime = null; accumulator = 0;
                   }
-                  canvas._genResume = function () {
-                    if (!canvas.isConnected || canvas._genAnim) return;
-                    if (canvas.getAttribute('data-paused') === '1') return;
-                    canvas._genAnim = requestAnimationFrame(animate);
+                  function canPlay() {
+                    return !disposed && canvas.isConnected && !document.hidden && !isRestoring && canvas.getAttribute('data-paused') !== '1';
+                  }
+                  function resume() {
+                    if (!canPlay() || canvas._genAnim != null) return;
+                    var token = generation;
+                    canvas._genAnim = requestAnimationFrame(function (timestamp) {
+                      if (token !== generation) return;
+                      canvas._genAnim = null;
+                      if (!canPlay()) { stop(); return; }
+                      // Fixed simulation steps preserve the random sequence at 60, 120,
+                      // and 144 Hz. Limit catch-up work after a stalled foreground frame.
+                      if (Number.isFinite(timestamp)) {
+                        if (lastTime !== null) accumulator += Math.max(0, Math.min(100, timestamp - lastTime)) * playbackSpeed;
+                        lastTime = timestamp;
+                        var count = Math.floor((accumulator + 1e-7) / (1000 / 60));
+                        accumulator = Math.max(0, accumulator - count * (1000 / 60));
+                        for (var index = 0; index < count; index++) stepSimulation();
+                      }
+                      resume();
+                    });
+                  }
+                  canvas._genResume = resume;
+                  canvas._genSyncPlayback = function () {
+                    var nextSpeed = generativeNumber(Number(canvas.dataset.speed), 1, 0.25, 2);
+                    var nextPaused = canvas.getAttribute('data-paused') === '1';
+                    if (nextPaused || nextPaused !== playbackPaused || nextSpeed !== playbackSpeed) stop();
+                    playbackPaused = nextPaused; playbackSpeed = nextSpeed;
+                    resume();
                   };
-                  // A restored checkpoint remains at its exact frame until the next animation tick.
-                  if (validState) canvas._genAnim = requestAnimationFrame(animate);
-                  else animate();
+                  function visibility() { stop(); resume(); }
+                  document.addEventListener('visibilitychange', visibility);
+                  // Reposition the keyboard overlay when focus mode or window size changes.
+                  var cursorObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(function () { updateGenCursor(document.activeElement === canvas); }) : null;
+                  if (cursorObserver) cursorObserver.observe(canvas);
+                  generativeRuntimeRef.current = {dispose:function () {
+                    disposed = true; stop();
+                    document.removeEventListener('visibilitychange', visibility);
+                    if (cursorObserver) cursorObserver.disconnect();
+                    if (typeof checkpointImage !== 'undefined' && checkpointImage) checkpointImage.onload = checkpointImage.onerror = null;
+                  }};
+                  // Decoding a restored image schedules its own resume, with no polling.
+                  resume();
 
                 }
 
@@ -9905,62 +12334,28 @@ const d = labToolData.artStudio || {};
                 "aria-hidden": "true",
                 className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#c026d3]",
                 style: { display: 'none' }
-              }),
-
-              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves."),
-
-              React.createElement("fieldset", { className: "mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3", 'aria-describedby': "artstudio-generative-experiment-help" },
-                React.createElement("legend", { className: "px-1 text-xs font-bold text-fuchsia-950" }, __alloT('stem.artstudio.repeatable_experiment', 'Repeatable experiment')),
-                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
-                  React.createElement("label", { htmlFor: "artstudio-generative-seed", className: "text-xs font-bold text-slate-700" }, __alloT('stem.artstudio.random_seed', 'Seed')),
-                  React.createElement("input", { id: "artstudio-generative-seed", type: "number", min: 0, max: 4294967295, step: 1, value: typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1,
-                    onChange: function (event) { if (event.target.value !== '') resetGenerativeRun({ genSeed: Math.max(0, Math.min(4294967295, Math.floor(Number(event.target.value) || 0))), genPaused: true }); },
-                    className: "min-h-[44px] w-36 rounded-lg border border-fuchsia-300 px-2 text-sm text-slate-900" }),
-                  React.createElement("button", { type: "button", onClick: function () { resetGenerativeRun({ genPaused: true }); }, className: "min-h-[44px] rounded-lg border border-fuchsia-300 bg-white px-3 text-xs font-bold text-fuchsia-900" }, __alloT('stem.artstudio.same_seed', 'Same seed')),
-                  React.createElement("button", { type: "button", onClick: function () {
-                    var previousSeed = typeof d.genSeed === 'number' ? d.genSeed >>> 0 : 1;
-                    var nextSeed = Math.floor(Math.random() * 4294967296) >>> 0;
-                    if (nextSeed === previousSeed) nextSeed = (previousSeed + 1) >>> 0;
-                    resetGenerativeRun({ genSeed: nextSeed, genPaused: true });
-                  }, className: "min-h-[44px] rounded-lg border border-fuchsia-300 bg-white px-3 text-xs font-bold text-fuchsia-900" }, __alloT('stem.artstudio.new_seed', 'New seed')),
-                  React.createElement("button", { type: "button", 'aria-label': __alloT('stem.artstudio.advance_100_steps', 'Pause and advance 100 simulation steps'), onClick: function () {
-                    var canvas = document.getElementById('genCanvas');
-                    if (!canvas || !canvas._genAdvance || !canvas._genAdvance(100)) return;
-                    updMany(canvas._captureArtStudioState());
-                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.generative_paused_step', 'Generative experiment paused at step') + ' ' + canvas.getAttribute('data-gen-frame') + '.');
-                  }, className: "min-h-[44px] rounded-lg bg-fuchsia-800 px-3 text-xs font-bold text-white" }, __alloT('stem.artstudio.plus_100_steps', '+100 steps')),
-                  React.createElement("span", { id: "artstudio-generative-step", className: "text-xs font-bold tabular-nums text-fuchsia-950" }, __alloT('stem.artstudio.simulation_step', 'Step') + ' ' + (Number(d.genFrame) || 0))
-                ),
-                React.createElement("p", { id: "artstudio-generative-experiment-help", className: "mt-2 text-xs leading-relaxed text-slate-700" }, __alloT('stem.artstudio.seed_experiment_help', 'Same seed restarts at step 0 with the same random sequence. Change one setting, then use +100 steps to compare at an equal step. Canvas bursts are extra inputs; avoid them for a controlled comparison.'))
-              ),
-
-              renderStudioColorCapsule({
-                prefix: 'gen',
-                color: generativeColor,
-                label: 'Particle color',
-                resetKey: 'genReset',
-                note: 'Hue anchors the system; saturation and lightness shape every particle and glow.'
               })
+              ),
+              React.createElement('p',{id:'artstudio-generative-live',className:'text-xs font-bold tabular-nums text-fuchsia-950 text-center'},__alloT('stem.artstudio.generative_ready','Ready for a new experiment.')),
+
+              React.createElement("p", { id: "artstudio-generative-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, "Click the canvas to create a particle burst. Keyboard: Arrow keys move the cursor; Space or Enter creates a burst; Shift with an Arrow key moves and creates a burst; Home returns to center; Alt makes one-pixel moves.")
+              )
 
             ),
 
             // ═══ SPIN ART TAB ═══
 
-            tab === 'spinArt' && React.createElement("div", { className: "relative space-y-3" },
+            tab === 'spinArt' && React.createElement('div',{'data-artstudio-spin-layout':'true'},
+              React.createElement('style',null,'[data-artstudio-spin-layout]{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}[data-artstudio-spin-layout] button,[data-artstudio-spin-layout] summary{min-width:44px;min-height:44px}[data-artstudio-spin-layout] button{white-space:normal}[data-artstudio-spin-preview] canvas{width:100%;height:auto;max-width:512px;margin-top:0}@media(min-width:1024px){[data-artstudio-spin-layout]{grid-template-columns:minmax(250px,300px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-spin-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-spin-preview]{grid-row:1}}'),
+              React.createElement('div',{'data-artstudio-spin-controls':'true',className:'space-y-3'},
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap", role: "group", "aria-label": __alloT('stem.artstudio.a11y_spin_art_controls', 'Spin art controls') },
 
-                React.createElement("label", { htmlFor: "artstudio-spin-rpm", className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.rpm', "\uD83C\uDF00 RPM:")),
-
-                React.createElement("input", { id: "artstudio-spin-rpm", type: "range", min: 20, max: 300, value: d.spinRPM || 120, "aria-describedby": "artstudio-spin-rpm-value", onChange: function (e) { upd('spinRPM', parseInt(e.target.value)); }, className: "w-28 max-w-full accent-orange-600" }),
-
-                React.createElement("span", { id: "artstudio-spin-rpm-value", className: "text-[0.6875rem] text-slate-600 font-bold" }, (d.spinRPM || 120) + ' rpm'),
-
-                React.createElement("label", { htmlFor: "artstudio-spin-brush", className: "text-xs font-bold text-slate-600 ml-2" }, "Brush:"),
-
-                React.createElement("input", { id: "artstudio-spin-brush", type: "range", min: 2, max: 20, value: d.spinBrush || 6, "aria-describedby": "artstudio-spin-brush-value", onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 max-w-full accent-orange-600" }),
-
-                React.createElement("span", { id: "artstudio-spin-brush-value", className: "text-[0.6875rem] text-slate-600 font-bold" }, (d.spinBrush || 6) + ' pixels'),
+                [{id:'rpm',key:'spinRPM',label:__alloT('stem.artstudio.spin_speed','Spin speed'),min:20,max:300,value:spinModel.rpm,unit:'rpm'},
+                 {id:'brush',key:'spinBrush',label:__alloT('stem.artstudio.spin_brush_size','Brush size'),min:2,max:20,value:spinModel.brush,unit:__alloT('stem.artstudio.spin_pixels','pixels')}].map(function(control){return React.createElement('div',{key:control.id,className:'w-full'},
+                   React.createElement('label',{htmlFor:'artstudio-spin-'+control.id,className:'flex items-center justify-between text-xs font-bold text-slate-700'},control.label,
+                     React.createElement('span',{id:'artstudio-spin-'+control.id+'-value'},control.value+' '+control.unit)),
+                   React.createElement('input',{id:'artstudio-spin-'+control.id,type:'range',min:control.min,max:control.max,value:control.value,'aria-describedby':'artstudio-spin-'+control.id+'-value',onChange:function(event){upd(control.key,Number(event.target.value));},className:'w-full accent-orange-600',style:{minHeight:32}}));}),
 
                 React.createElement("button", { "aria-label": d.spinSplatter ? "Disable paint splatter" : "Enable paint splatter", "aria-pressed": !!d.spinSplatter, onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
@@ -9971,17 +12366,38 @@ const d = labToolData.artStudio || {};
                   "aria-pressed": d.spinPaused === undefined ? reducedMotion : !!d.spinPaused,
                   onClick: function () {
                     var isPaused = d.spinPaused === undefined ? reducedMotion : !!d.spinPaused;
-                    upd('spinPaused', !isPaused);
+                    var canvas=document.getElementById('spinCanvas');
+                    if(canvas){canvas.dataset.paused=!isPaused?'1':'0';if(canvas._spinSync)canvas._spinSync();}
+                    updMany(Object.assign({},canvas&&canvas._captureArtStudioState?canvas._captureArtStudioState():{},{spinPaused:!isPaused}));
                     if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_spin_art_animation_resumed', 'Spin art animation resumed.') : __alloT('stem.artstudio.sr_spin_art_animation_paused', 'Spin art animation paused.'));
                   },
                   className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold " + ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
                 }, (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                React.createElement("button", { onClick: function () { updMany({ spinReset: Date.now(), spinSnapshot: '', spinDrips: [], spinAngle: 0 }); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
+                React.createElement("button", { id:'artstudio-spin-clear', onClick: function () { var canvas=document.getElementById('spinCanvas');if(canvas&&canvas._spinClearAction)canvas._spinClearAction(); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_6', "Export PNG"), onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; var picture = c._spinExportAction ? c._spinExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_7', "\uD83D\uDCE5 Export PNG"))
+                ['undo','redo'].map(function(action){return React.createElement('button',{key:action,id:'artstudio-spin-'+action,type:'button','aria-label':action==='undo'?__alloT('stem.artstudio.spin_undo','Undo spin art change'):__alloT('stem.artstudio.spin_redo','Redo spin art change'),onClick:function(){var c=document.getElementById('spinCanvas');if(c)c[action==='undo'?'_spinUndoAction':'_spinRedoAction']?.();},className:'rounded-lg border border-orange-300 bg-white px-3 py-2 text-xs font-bold text-orange-800 disabled:opacity-40'},action==='undo'?__alloT('stem.artstudio.spin_undo_short','Undo'):__alloT('stem.artstudio.spin_redo_short','Redo'));}),
+                [false,true].map(function(transparent){return React.createElement('button',{key:String(transparent),type:'button','aria-label':transparent?__alloT('stem.artstudio.spin_transparent_png','Export spin art as transparent PNG'):__alloT('stem.artstudio.export_png_6','Export PNG'),onClick:function(){
+                  var c=document.getElementById('spinCanvas');if(!c||!c._spinExportAction)return;
+                  var fail=function(){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.spin_export_error','Could not export this painting. Try again.'),'error');};
+                  try{return Promise.resolve(c._spinExportAction(transparent)).then(function(src){
+                    if(!c.isConnected)return;if(!src||src==='data:,')throw new Error('Empty export');var link=document.createElement('a');link.download='spin-art-'+(transparent?'transparent-':'')+Date.now()+'.png';link.href=src;link.click();
+                    if(typeof addToast==='function')addToast(__alloT('stem.artstudio.toast_png_exported','PNG exported!'),'success');
+                  }).catch(fail);}catch(error){fail();}
+                },className:'rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800'},transparent?__alloT('stem.artstudio.spin_transparent_short','Transparent PNG'):__alloT('stem.artstudio.export_png_7','Export PNG'));})
 
               ),
+
+
+              React.createElement('div',{className:'rounded-xl border border-orange-200 bg-orange-50 p-3 space-y-3'},
+                React.createElement('label',{htmlFor:'artstudio-spin-viscosity',className:'block text-xs font-bold text-orange-800'},__alloT('stem.artstudio.spin_thickness','Paint thickness')+': '+spinModel.viscosity+'%',
+                  React.createElement('input',{id:'artstudio-spin-viscosity',type:'range',min:0,max:100,value:spinModel.viscosity,onChange:function(event){upd('spinViscosity',Number(event.target.value));},className:'block w-full accent-orange-600'})),
+                React.createElement('p',{className:'text-xs text-slate-700'},__alloT('stem.artstudio.spin_thickness_help','Thin paint spreads faster; thick paint makes shorter trails. Applies to new paint.')),
+                React.createElement('label',{className:'block text-xs font-bold text-orange-800'},__alloT('stem.artstudio.spin_direction','Spin direction'),
+                  React.createElement('select',{'aria-label':__alloT('stem.artstudio.spin_direction','Spin direction'),value:spinModel.direction,onChange:function(event){upd('spinDirection',Number(event.target.value));},className:'block min-h-[44px] w-full rounded-lg border border-orange-300 bg-white px-2 mt-1'},
+                    React.createElement('option',{value:1},__alloT('stem.artstudio.spin_clockwise','Clockwise')),
+                    React.createElement('option',{value:-1},__alloT('stem.artstudio.spin_counterclockwise','Counterclockwise')))),
+                React.createElement('p',{className:'text-xs text-slate-700'},__alloT('stem.artstudio.spin_paused_help','Pause to place paint precisely. Resume to spread it. Undo and Redo restore paint and pause the animation.'))),
 
               React.createElement("details", { open: !isCompactStudio || undefined, 'data-studio-compact-palette': 'spinArt', className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
                 React.createElement('summary', { className:'cursor-pointer text-sm font-bold text-slate-800' }, __alloT('stem.artstudio.spin_palette_options', 'Palettes and paint color')),
@@ -10013,7 +12429,7 @@ const d = labToolData.artStudio || {};
                     return activePal.map(function (c, i) {
 
                       var selected = spinColor.h === c[0] && spinColor.s === c[1] && spinColor.l === c[2];
-                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_select_color_hsl_percent_saturation_percent_li', 'Select color HSL {value1}, {value2} percent saturation, {value3} percent lightness'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { updMany({ spinHue: c[0], spinSat: c[1], spinLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2", style: { width: 28, height: 28, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#c2410c' : '#64748b', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
+                      return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_select_color_hsl_percent_saturation_percent_li', 'Select color HSL {value1}, {value2} percent saturation, {value3} percent lightness'), { value1: c[0], value2: c[1], value3: c[2] }), "aria-pressed": selected, key: i, onClick: function () { updMany({ spinHue: c[0], spinSat: c[1], spinLit: c[2] }); }, className: "rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2", style: { width: 44, height: 44, background: 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)', borderColor: selected ? '#c2410c' : '#64748b', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }, title: 'HSL(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)' });
 
                     });
 
@@ -10040,359 +12456,6 @@ const d = labToolData.artStudio || {};
                 scrollHelp: 'One-finger scrolling is active. A stylus and mouse can still add paint; choose Drip paint for finger drawing.'
               }),
 
-              React.createElement("canvas", { tabIndex: 0, id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img",
-                'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_spin_art_canvas', 'Spin art canvas at {value1} RPM with a {value2}-pixel brush; {value3}.'), { value1: (d.spinRPM || 120), value2: (d.spinBrush || 6), value3: ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? __alloT('stem.artstudio.a11y_state_paused', 'paused') : __alloT('stem.artstudio.a11y_state_playing', 'playing')) }),
-                'aria-describedby': "artstudio-spin-keyboard-help",
-                'aria-details': "artstudio-spin-touch-help",
-                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
-                className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2",
-                style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe', touchAction: d.spinTouchMode === 'draw' ? 'none' : 'pan-y' },
-
-                ref: function (canvas) {
-
-                  if (!canvas) return;
-
-                  canvas.dataset.touchMode = d.spinTouchMode === 'draw' ? 'draw' : 'scroll';
-                  canvas.style.touchAction = canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
-
-                  // Always sync current controls to canvas data attributes (runs on every render).
-                  var spinPaused = d.spinPaused === undefined ? reducedMotion : !!d.spinPaused;
-                  canvas.dataset.hue = spinColor.h;
-                  canvas.dataset.sat = spinColor.s;
-                  canvas.dataset.lit = spinColor.l;
-                  canvas.dataset.rpm = d.spinRPM || 120;
-                  // Restart after a pause; the loop above stops itself when idle.
-                  if (canvas.dataset.paused !== '1' && !canvas._spinAnim && canvas.isConnected
-                      && typeof canvas._spinResume === 'function') canvas._spinResume();
-                  canvas.dataset.dark = d.spinDark ? '1' : '0';
-                  canvas.dataset.brush = d.spinBrush || 6;
-                  canvas.dataset.splatter = d.spinSplatter ? '1' : '0';
-                  canvas.dataset.paused = spinPaused ? '1' : '0';
-                  canvas.setAttribute('aria-label', 'Spin art canvas at ' + (d.spinRPM || 120) + ' RPM with a ' +
-                    (d.spinBrush || 6) + '-pixel brush; ' + (spinPaused ? 'paused' : 'playing') + '.');
-
-                  if (canvas._spinInit) return;
-
-                  canvas._spinInit = true;
-
-                  var ctx = canvas.getContext('2d');
-
-                  var W = canvas.width, H = canvas.height;
-
-                  var cx = W / 2, cy = H / 2;
-
-                  var isDark = d.spinDark || false;
-
-                  var baseSat = spinColor.s;
-
-                  var baseLit = spinColor.l;
-
-
-
-
-                  // Paint remains transparent so changing the paper never erases marks.
-                  ctx.clearRect(0, 0, W, H);
-                  canvas._spinExportAction = function () {
-                    if (spinRestoring && canvas._artStudioReady) return canvas._artStudioReady.then(function () { return canvas._spinExportAction(); });
-                    var output = document.createElement('canvas');
-                    output.width = W; output.height = H;
-                    var outputContext = output.getContext('2d');
-                    outputContext.fillStyle = canvas.dataset.dark === '1' ? '#0f172a' : '#fefefe';
-                    outputContext.fillRect(0, 0, W, H);
-                    outputContext.drawImage(canvas, 0, 0);
-                    return output.toDataURL('image/png');
-                  };
-
-                  var angle = Number(d.spinAngle) || 0;
-
-                  var drips = Array.isArray(d.spinDrips) ? d.spinDrips.slice(0, 2000).map(function (drip) { return Object.assign({}, drip); }) : [];
-                  var spinSnapshot = d.spinSnapshot || '';
-                  var spinRestoring = !!spinSnapshot;
-                  canvas._artStudioRestoring = spinRestoring;
-                  var spinCheckpointPending = false;
-                  var finishSpinRestore;
-                  canvas._artStudioReady = new Promise(function (resolve) { finishSpinRestore = resolve; });
-                  if (!spinSnapshot) finishSpinRestore();
-                  if (spinSnapshot) {
-                    var spinImage = new Image();
-                    spinImage.onload = function () {
-                      try { ctx.drawImage(spinImage, 0, 0, W, H); } finally { spinRestoring = false; canvas._artStudioRestoring = false; finishSpinRestore(); }
-                    };
-                    spinImage.onerror = function () { spinRestoring = false; canvas._artStudioRestoring = false; finishSpinRestore(); };
-                    spinImage.src = spinSnapshot;
-                  }
-                  canvas._captureArtStudioState = function () {
-                    try {
-                      var snapshot = spinRestoring ? spinSnapshot : canvas.toDataURL('image/png');
-                      if (!snapshot || snapshot === 'data:,') return null;
-                      return { spinSnapshot: snapshot, spinAngle: angle,
-                        spinDrips: drips.slice(0, 2000).map(function (drip) { return Object.assign({}, drip); }) };
-                    } catch (_) { return null; }
-                  };
-
-                  function persistSpinArtwork() {
-                    var checkpoint = canvas._captureArtStudioState();
-                    if (checkpoint) updMany(checkpoint);
-                    spinCheckpointPending = false;
-                  }
-
-                  canvas._spinPointerDown = false;
-
-                  var mouseX = cx, mouseY = cy;
-
-                  var keyboardCursor = canvas._spinKeyboardCursor || { x: cx, y: cy };
-
-                  canvas._spinKeyboardCursor = keyboardCursor;
-
-                  function updateSpinCursor(show) {
-
-                    var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-spin-keyboard-cursor="true"]');
-
-                    if (cursor) {
-
-                      var displayW = canvas.clientWidth || W, displayH = canvas.clientHeight || H;
-
-                      cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
-
-                      cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
-
-                      cursor.style.display = show ? 'block' : 'none';
-
-                    }
-
-                    canvas.setAttribute('aria-label', 'Spin art canvas at ' + canvas.dataset.rpm + ' RPM with a ' +
-
-                      canvas.dataset.brush + '-pixel brush; ' + (canvas.dataset.paused === '1' ? 'paused' : 'playing') +
-
-                      '. Keyboard cursor at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
-
-                  }
-
-                  function updateSpinPointer(e) {
-                    var rect = canvas.getBoundingClientRect();
-
-                    mouseX = (e.clientX - rect.left) * (W / rect.width);
-
-                    mouseY = (e.clientY - rect.top) * (H / rect.height);
-
-                  }
-
-                  function finishSpinPointer(e) {
-
-                    canvas._spinPointerDown = false;
-                    persistSpinArtwork();
-
-                    try { if (e && e.pointerId !== undefined) canvas.releasePointerCapture(e.pointerId); } catch (err) {}
-
-                  }
-
-                  canvas.onpointerdown = function (e) {
-
-                    if ((e.button !== undefined && e.button !== 0) || e.isPrimary === false) return;
-
-                    if (!canvasAllowsFingerInteraction(canvas, e)) return;
-
-                    e.preventDefault();
-
-                    canvas._spinPointerDown = true;
-
-                    updateSpinPointer(e);
-
-                    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
-
-                  };
-
-                  canvas.onpointermove = function (e) {
-
-                    if (!canvasAllowsFingerInteraction(canvas, e)) return;
-
-                    if (isFingerInputEvent(e)) e.preventDefault();
-
-                    updateSpinPointer(e);
-
-                  };
-
-                  canvas.onpointerup = finishSpinPointer;
-
-                  canvas.onpointercancel = finishSpinPointer;
-
-                  canvas.onlostpointercapture = finishSpinPointer;
-
-                  canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = canvas.onmouseleave = null;
-
-                  canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = null;
-
-                  canvas.onfocus = function () { updateSpinCursor(true); };
-
-                  canvas.onblur = function () { updateSpinCursor(false); };
-
-                  canvas.onkeydown = function (event) {
-
-                    var step = event.altKey ? 1 : 10, moved = true;
-
-                    if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
-
-                    else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
-
-                    else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
-
-                    else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
-
-                    else if (event.key === 'Home') { keyboardCursor.x = cx; keyboardCursor.y = cy; }
-
-                    else moved = false;
-
-                    if (moved) {
-
-                      event.preventDefault();
-
-                      canvas._spinKeyboardCursor = keyboardCursor;
-
-                      if (event.shiftKey) spawnDrip(keyboardCursor.x, keyboardCursor.y);
-
-                      updateSpinCursor(true);
-
-                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_added_paint_at_x_y', 'Added paint at x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_spin_art_cursor_x_y', 'Spin art cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
-
-                    } else if (event.key === 'Enter' || event.key === ' ') {
-
-                      event.preventDefault();
-
-                      spawnDrip(keyboardCursor.x, keyboardCursor.y);
-
-                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_added_paint_at_x_y', 'Added paint at x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
-
-                    }
-
-                  };
-
-                  updateSpinCursor(typeof document !== 'undefined' && document.activeElement === canvas);
-
-                  function spawnDrip(x, y) {
-                    if (spinRestoring) return;
-                    spinCheckpointPending = true;
-
-                    var curHue = parseFloat(canvas.dataset.hue) || 0;
-                    var curSat = parseFloat(canvas.dataset.sat);
-                    var curLit = parseFloat(canvas.dataset.lit);
-                    var currentBrush = parseFloat(canvas.dataset.brush) || 6;
-                    var currentSplatter = canvas.dataset.splatter === '1';
-                    var count = currentSplatter ? 5 + Math.floor(Math.random() * 8) : 1;
-
-                    for (var i = 0; i < count; i++) {
-
-                      var ox = currentSplatter ? (Math.random() - 0.5) * 30 : 0;
-
-                      var oy = currentSplatter ? (Math.random() - 0.5) * 30 : 0;
-
-                      drips.push({ x: x + ox, y: y + oy, vx: 0, vy: 0, life: 200 + Math.random() * 150, size: currentSplatter ? 1 + Math.random() * currentBrush : currentBrush * 0.6, hue: curHue + (currentSplatter ? Math.random() * 30 - 15 : 0), sat: curSat, lit: curLit });
-
-                    }
-
-                  }
-
-                  function animate() {
-
-                    if (spinRestoring || canvas.dataset.paused === '1') {
-                      if (!spinRestoring && spinCheckpointPending && !canvas._spinPointerDown) persistSpinArtwork();
-
-                      // Keep the loop alive only while there is still work to flush or a
-                      // restore in flight. Otherwise stop: a paused disc used to ask for
-                      // 60 frames a second indefinitely and throw all of them away.
-                      var spinBusy = spinRestoring || spinCheckpointPending || canvas._spinPointerDown;
-                      if (canvas.isConnected && spinBusy) canvas._spinAnim = requestAnimationFrame(animate);
-                      else canvas._spinAnim = null;
-
-                      return;
-
-                    }
-
-                    var rpm = parseFloat(canvas.dataset.rpm) || 120;
-
-                    var radPerFrame = (rpm / 60) * (Math.PI * 2) / 60;
-
-                    angle += radPerFrame;
-
-                    if (canvas._spinPointerDown) spawnDrip(mouseX, mouseY);
-
-                    ctx.save();
-
-                    ctx.translate(cx, cy);
-
-                    ctx.rotate(angle);
-
-                    ctx.translate(-cx, -cy);
-
-                    for (var i = drips.length - 1; i >= 0; i--) {
-
-                      var dr = drips[i];
-
-                      dr.life--;
-
-                      if (dr.life <= 0) { drips.splice(i, 1); continue; }
-
-                      var dx = dr.x - cx, dy = dr.y - cy;
-
-                      var dist = Math.sqrt(dx * dx + dy * dy);
-
-                      if (dist > 1) {
-
-                        var centrifugal = rpm * 0.00015;
-
-                        dr.vx += (dx / dist) * centrifugal * dist;
-
-                        dr.vy += (dy / dist) * centrifugal * dist;
-
-                      }
-
-                      dr.vx *= 0.98; dr.vy *= 0.98;
-
-                      dr.x += dr.vx; dr.y += dr.vy;
-
-                      var alpha = Math.min(1, dr.life / 60);
-
-                      ctx.globalAlpha = alpha * 0.85;
-
-                      ctx.beginPath();
-
-                      ctx.arc(dr.x, dr.y, dr.size, 0, Math.PI * 2);
-
-                      ctx.fillStyle = 'hsl(' + Math.round(dr.hue) + ',' + (Number.isFinite(dr.sat) ? dr.sat : baseSat) + '%,' + (Number.isFinite(dr.lit) ? dr.lit : baseLit) + '%)';
-
-                      ctx.fill();
-
-                      if (dist > W * 0.48) { drips.splice(i, 1); }
-
-                    }
-
-                    ctx.restore();
-                    if (spinCheckpointPending && !canvas._spinPointerDown) persistSpinArtwork();
-
-                    if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
-                    else canvas._spinAnim = null;
-
-                  }
-
-                  canvas._spinResume = function () {
-                    if (!canvas.isConnected || canvas._spinAnim) return;
-                    canvas._spinAnim = requestAnimationFrame(animate);
-                  };
-
-                  animate();
-
-                }
-
-              }),
-
-              React.createElement("span", {
-                "data-spin-keyboard-cursor": "true",
-                "aria-hidden": "true",
-                className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#c2410c]",
-                style: { display: 'none' }
-              }),
-
-              React.createElement("p", { id: "artstudio-spin-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, "Click and drag to drip paint. Keyboard: Arrow keys move the cursor; Space or Enter adds paint; Shift with an Arrow key moves and adds paint; Home returns to center; Alt makes one-pixel moves."),
-
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
                 React.createElement("button", { id: "artstudio-spin-info-toggle", "aria-expanded": !!d.showSpinInfo, "aria-controls": "artstudio-spin-physics", onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-orange-700" },
@@ -10407,364 +12470,204 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, __alloT('stem.artstudio.centrifugal_effect', "Centrifugal effect:")), __alloT('stem.artstudio.in_a_spinning_reference_frame_objects_', " In a spinning reference frame, objects experience an outward pseudo-force proportional to their distance from the center and the square of angular velocity (\u03C9\u00B2r).")),
 
-                  React.createElement("p", null, "\uD83D\uDCA7 ", React.createElement("strong", null, __alloT('stem.artstudio.paint_behavior', "Paint behavior:")), __alloT('stem.artstudio.real_spin_art_uses_centripetal_acceler', " Real spin art uses centripetal acceleration to spread paint. Thinner paint flies outward faster; thicker paint creates shorter, more controlled trails.")),
+                  React.createElement("p", null, "\uD83D\uDCA7 ", React.createElement("strong", null, __alloT('stem.artstudio.paint_behavior', "Paint behavior:")), __alloT('stem.artstudio.spin_paint_model', " In this painting model, faster rotation spreads paint more strongly and thicker paint makes shorter trails. Try the same drop at different distances from the center.")),
 
-                  React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, __alloT('stem.artstudio.why_it_s_beautiful', "Why it\u2019s beautiful:")), __alloT('stem.artstudio.the_combination_of_rotational_motion_a', " The combination of rotational motion and paint viscosity creates natural spirals and interference patterns. No two spin paintings are ever alike \u2014 it\u2019s a form of "), React.createElement("strong", null, __alloT('stem.artstudio.chaotic_art', "chaotic art")), ".")
+                  React.createElement("p", null, "\uD83C\uDFA8 ", React.createElement("strong", null, __alloT('stem.artstudio.why_it_s_beautiful', "Why it\u2019s beautiful:")), __alloT('stem.artstudio.spin_layered_trails', " Rotation and outward paint motion build layered trails. This is a simplified painting model, not a full fluid simulation. Splatter adds randomness to your "), React.createElement("strong", null, __alloT('stem.artstudio.spin_composition', "composition")), ".")
 
                 )
 
               )
+              ),
+              React.createElement('div',{'data-artstudio-spin-preview':'true',className:'relative min-w-0'},
+              React.createElement("canvas", { tabIndex: 0, id: 'spinCanvas', key: 'spin-' + studioPersistenceScope + '-' + (d.spinReset || 0), width: 512, height: 512, role: "img",
+                'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_spin_art_canvas', 'Spin art canvas at {value1} RPM with a {value2}-pixel brush; {value3}.'), { value1: (spinModel.rpm), value2: (spinModel.brush), value3: ((d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? __alloT('stem.artstudio.a11y_state_paused', 'paused') : __alloT('stem.artstudio.a11y_state_playing', 'playing')) }),
+                'aria-describedby': "artstudio-spin-keyboard-help",
+                'aria-details': "artstudio-spin-touch-help",
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space Control+z Meta+z Control+Shift+z Meta+Shift+z Control+y Meta+y",
+                className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3 focus-visible:ring-4 focus-visible:ring-orange-600 focus-visible:ring-offset-2",
+                style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe', touchAction: d.spinTouchMode === 'draw' ? 'none' : 'pan-y' },
 
+                ref: function (canvas) {
+                  if(!canvas)return;
+                  canvas.dataset.touchMode=d.spinTouchMode==='draw'?'draw':'scroll';
+                  canvas.dataset.hue=spinColor.h;canvas.dataset.sat=spinColor.s;canvas.dataset.lit=spinColor.l;
+                  canvas.dataset.rpm=spinModel.rpm;canvas.dataset.brush=spinModel.brush;
+                  canvas.dataset.viscosity=spinModel.viscosity;canvas.dataset.direction=spinModel.direction;
+                  canvas.dataset.dark=d.spinDark?'1':'0';canvas.dataset.splatter=d.spinSplatter?'1':'0';
+                  canvas.dataset.paused=spinModel.paused?'1':'0';
+                  if(canvas._spinSync){canvas._spinSync();return;}
+                  if(spinRuntimeRef.current)spinRuntimeRef.current.dispose();
+                  spinRuntimeRef.current=artStudioSpinEngine(canvas,d,{
+                    persist:updMany,allows:function(event){return canvasAllowsFingerInteraction(canvas,event);},
+                    describe:function(cursor){return formatArtStudioLearningText(__alloT('stem.artstudio.spin_canvas_cursor','Spin art canvas at {rpm} RPM with a {brush}-pixel brush; {state}. Keyboard cursor at x {x}, y {y}.'),{rpm:canvas.dataset.rpm,brush:canvas.dataset.brush,state:canvas.dataset.paused==='1'?__alloT('stem.artstudio.a11y_state_paused','paused'):__alloT('stem.artstudio.a11y_state_playing','playing'),x:Math.round(cursor.x),y:Math.round(cursor.y)});},
+                    announce:function(action,cursor){
+                      if(typeof announceToSR!=='function')return;
+                      var message=action==='undo'?__alloT('stem.artstudio.spin_undone','Spin art change undone. Animation paused.'):action==='redo'?__alloT('stem.artstudio.spin_redone','Spin art change redone. Animation paused.'):action==='clear'?__alloT('stem.artstudio.spin_cleared','Spin art cleared. Undo restores your painting.'):action==='outside'?__alloT('stem.artstudio.spin_outside','Move the cursor inside the circular paper to add paint.'):action==='paint'?__alloT('stem.artstudio.sr_added_paint_at_x_y','Added paint at x {value1}, y {value2}.'):__alloT('stem.artstudio.sr_spin_art_cursor_x_y','Spin art cursor x {value1}, y {value2}.');
+                      announceToSR(cursor?formatArtStudioLearningText(message,{value1:Math.round(cursor.x),value2:Math.round(cursor.y)}):message);
+                    }
+                  });
+                }
+
+              }),
+
+              React.createElement("span", {
+                "data-spin-keyboard-cursor": "true",
+                "aria-hidden": "true",
+                className: "pointer-events-none absolute z-10 h-5 w-5 rounded-full border-4 border-white shadow-[0_0_0_2px_#c2410c]",
+                style: { display: 'none' }
+              }),
+
+              React.createElement("p", { id: "artstudio-spin-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, "Click and drag to drip paint, including while paused. Keyboard: Arrow keys move the cursor; Space or Enter adds paint; Shift with an Arrow key moves and adds paint; Home returns to center; Alt makes one-pixel moves. Ctrl or Cmd + Z undoes; add Shift to redo.")
+              )
             ),
 
             // ═══ STRING ART TAB ═══
-
-            tab === 'stringArt' && React.createElement("div", { className: "space-y-3" },
-
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
-
-                React.createElement("div", { className: "space-y-3" },
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200" },
-
-                    React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, __alloT('stem.artstudio.string_art_controls', "\uD83D\uDD78 String Art Controls")),
-
-                    React.createElement("div", { className: "mb-3" },
-
-                      React.createElement("span", { id: "artstudio-string-shape-label", className: "text-[0.6875rem] font-bold text-rose-700 block mb-1" }, __alloT('stem.artstudio.shape', "Shape")),
-
-                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-string-shape-label" },
-
-                        [{ id: 'circle', label: __alloT('stem.artstudio.circle', '\u25CB Circle') }, { id: 'square', label: __alloT('stem.artstudio.square', '\u25A1 Square') }, { id: 'triangle', label: __alloT('stem.artstudio.triangle', '\u25B3 Triangle') }, { id: 'star', label: __alloT('stem.artstudio.star_2', '\u2606 Star') }].map(function (s) {
-
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.strShape || 'circle') === s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' string-art frame selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
-
-                        })
-
-                      )
-
-                    ),
-
-                    [{ k: 'strNails', label: __alloT('stem.artstudio.nail_count', 'Nail Count'), min: 20, max: 200, def: 80 },
-
-                     { k: 'strMult', label: __alloT('stem.artstudio.multiplier', 'Multiplier'), min: 2, max: 99, def: 2 },
-
-                     { k: 'strOpacity', label: __alloT('stem.artstudio.thread_opacity', 'Thread Opacity %'), min: 5, max: 100, def: 30 }].map(function (s) {
-
-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
-
-                      return React.createElement("div", { key: s.k, className: "mb-2" },
-
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-rose-700 block mb-0.5" }, s.label + ': ' + val),
-
-                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'strOpacity' ? val + ' percent opacity' : val + (s.k === 'strNails' ? ' nails' : ' multiplier'), onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('strReset', Date.now()); }, className: "w-full accent-rose-600" })
-
-                      );
-
-                    }),
-
-                    renderStudioColorCapsule({
-                      prefix: 'str',
-                      color: stringColor,
-                      label: 'Thread color',
-                      resetKey: 'strReset',
-                      note: d.strRainbow ? 'This color returns when Rainbow is turned off.' : 'Changing thread color redraws the current construction.'
-                    }),
-
-                    React.createElement("div", { className: "flex gap-2 mt-3" },
-
-                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redrawing_the_string_art', 'Redrawing the string art.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_string_art', "\u21BB Redraw")),
-
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_png_exported', 'String-art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
-
-                      React.createElement("button", { "aria-label": d.strRainbow ? "Use a single thread color" : "Use a rainbow thread progression", "aria-pressed": !!d.strRainbow, onClick: function () { var nextRainbow = !d.strRainbow; upd('strRainbow', nextRainbow); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? __alloT('stem.artstudio.sr_rainbow_threads_enabled', 'Rainbow threads enabled.') : __alloT('stem.artstudio.sr_single_color_threads_enabled', 'Single-color threads enabled.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + (d.strRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-rose-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
-
-                    ),
-
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-string-presets-label" },
-
-                      React.createElement("span", { id: "artstudio-string-presets-label", className: "text-[0.6875rem] font-bold text-rose-700 mr-1" }, "Presets:"),
-
-                      [{ label: __alloT('stem.artstudio.cardioid', 'Cardioid'), nails: 100, mult: 2 }, { label: __alloT('stem.artstudio.nephroid', 'Nephroid'), nails: 100, mult: 3 }, { label: __alloT('stem.artstudio.star_burst', 'Star Burst'), nails: 72, mult: 37 }, { label: __alloT('stem.artstudio.lace_2', 'Lace'), nails: 150, mult: 71 }, { label: __alloT('stem.artstudio.weave', 'Weave'), nails: 60, mult: 23 }].map(function (pr) {
-
-                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_string_art_preset', 'Load {value1} string-art preset'), { value1: pr.label }), onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' string-art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
-
-                      })
-
-                    )
-
-                  ),
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-fuchsia-50 rounded-xl p-3 border border-pink-200" },
-
-                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-pink-700 mb-1" }, __alloT('stem.artstudio.math_connection_2', "\uD83D\uDCDA Math Connection")),
-
-                    React.createElement("p", { id: "artstudio-string-description", className: "text-[0.6875rem] text-slate-700 leading-relaxed" }, __alloT('stem.artstudio.string_art_creates', "String art creates "), React.createElement("strong", null, __alloT('stem.artstudio.envelope_curves', "envelope curves")), __alloT('stem.artstudio.from_straight_lines_with_a_circle_and_', " from straight lines. With a circle and multiplier of 2, you get a "), React.createElement("strong", null, "cardioid"), __alloT('stem.artstudio.the_heart_shaped_curve_seen_in_coffee_', " \u2014 the heart-shaped curve seen in coffee cups. Multiplier 3 makes a "), React.createElement("strong", null, "nephroid"), __alloT('stem.artstudio.higher_multipliers_create_intricate_pa', ". Higher multipliers create intricate patterns governed by "), React.createElement("strong", null, __alloT('stem.artstudio.modular_arithmetic', "modular arithmetic")), __alloT('stem.artstudio.nail_n_connects_to_nail_n_m_mod_total', ": nail N connects to nail (N \u00D7 M) mod total."))
-
-                  )
-
+            tab === 'stringArt' && React.createElement('div',{className:'space-y-3'},
+              React.createElement('style',null,`[data-artstudio-string-layout] button{min-width:44px;min-height:44px}[data-artstudio-string-layout] canvas{background-color:#e2e8f0;background-image:conic-gradient(#f8fafc 25%,#cbd5e1 0 50%,#f8fafc 0 75%,#cbd5e1 0);background-size:20px 20px}@media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-string-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-string-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-string-layout]>canvas{grid-row:1}}`),
+              React.createElement('div',{'data-artstudio-string-layout':'true',className:'grid grid-cols-1 lg:grid-cols-2 gap-4',style:{alignItems:'start'}},
+                React.createElement('div',{'data-artstudio-string-controls':'true',className:'space-y-3'},
+                  React.createElement('div',{className:'rounded-xl border border-rose-200 bg-rose-50 p-4 space-y-3'},
+                    React.createElement('h4',{className:'text-sm font-bold text-rose-800'},__alloT('stem.artstudio.string_art_controls','String Art Controls')),
+                    React.createElement('div',null,
+                      React.createElement('span',{id:'artstudio-string-shape-label',className:'block text-xs font-bold text-rose-800 mb-1'},__alloT('stem.artstudio.shape','Shape')),
+                      React.createElement('div',{className:'flex flex-wrap gap-2',role:'group','aria-labelledby':'artstudio-string-shape-label'},
+                        [{id:'circle',label:__alloT('stem.artstudio.circle','○ Circle')},{id:'square',label:__alloT('stem.artstudio.square','□ Square')},{id:'triangle',label:__alloT('stem.artstudio.triangle','△ Triangle')},{id:'star',label:__alloT('stem.artstudio.star_2','☆ Star')}].map(function(shape){return React.createElement('button',{key:shape.id,type:'button','aria-pressed':stringModel.shape===shape.id,onClick:function(){upd('strShape',shape.id);},className:'flex-1 rounded-lg border border-rose-300 px-2 py-1 text-xs font-bold '+(stringModel.shape===shape.id?'bg-rose-700 text-white':'bg-white text-rose-800')},shape.label);}))),
+                    React.createElement('label',{className:'block text-xs font-bold text-rose-800'},__alloT('stem.artstudio.string_rule','Connection rule'),
+                      React.createElement('select',{'aria-label':__alloT('stem.artstudio.string_rule','Connection rule'),value:stringModel.rule,onChange:function(e){upd('strRule',e.target.value);},className:'block w-full min-h-[44px] mt-1 rounded-lg border border-rose-300 bg-white px-2'},
+                        React.createElement('option',{value:'multiply'},__alloT('stem.artstudio.string_multiply','Multiply pin number')),
+                        React.createElement('option',{value:'skip'},__alloT('stem.artstudio.string_skip_rule','Skip by a fixed number')))),
+                    [{k:'strNails',label:__alloT('stem.artstudio.nail_count','Nail Count'),min:20,max:200,value:stringModel.nails},
+                     stringModel.rule==='skip'?{k:'strSkip',label:__alloT('stem.artstudio.string_skip','Pin skip'),min:1,max:stringModel.nails-1,value:stringModel.skip}:{k:'strMult',label:__alloT('stem.artstudio.multiplier','Multiplier'),min:2,max:99,value:stringModel.multiplier},
+                     {k:'strOffset',label:__alloT('stem.artstudio.string_offset','Destination offset'),min:0,max:stringModel.nails-1,value:stringModel.offset},
+                     {k:'strOpacity',label:__alloT('stem.artstudio.thread_opacity','Thread Opacity %'),min:5,max:100,value:Math.round(stringModel.opacity*100)},
+                     {k:'strLineWidth',label:__alloT('stem.artstudio.string_line_width','Thread width'),min:0.5,max:6,step:0.5,value:stringModel.width},
+                     {k:'strSpeed',label:__alloT('stem.artstudio.string_speed','Drawing speed'),min:1,max:20,value:typeof d.strSpeed==='number'&&Number.isFinite(d.strSpeed)?Math.max(1,Math.min(20,d.strSpeed)):1}].map(function(control){return React.createElement('div',{key:control.k},
+                       React.createElement('label',{htmlFor:'artstudio-'+control.k,className:'block text-xs font-bold text-rose-800'},control.label+': '+control.value),
+                       React.createElement('input',{id:'artstudio-'+control.k,type:'range',min:control.min,max:control.max,step:control.step||1,value:control.value,'aria-valuetext':control.value+(control.k==='strOpacity'?' percent opacity':control.k==='strNails'?' nails':control.k==='strMult'?' multiplier':control.k==='strSpeed'?' threads per frame':' units'),onChange:function(e){upd(control.k,Number(e.target.value));},className:'w-full accent-rose-600'}));}),
+                    renderStudioColorCapsule({prefix:'str',color:stringColor,label:'Thread color',resetKey:'strReset',note:d.strRainbow?'This color returns when Rainbow is turned off.':'Changing thread color redraws the current construction.'}),
+                    React.createElement('label',{className:'block text-xs font-bold text-rose-800'},__alloT('stem.artstudio.string_paper','Paper'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.string_paper','Paper'),value:stringModel.paper===null?'transparent':stringModel.paper==='#f8fafc'?'light':'dark',onChange:function(e){upd('strPaper',e.target.value);},className:'min-h-[44px] rounded-lg border border-rose-300 bg-white px-2 ml-2'},
+                      React.createElement('option',{value:'dark'},__alloT('stem.artstudio.string_dark','Dark')),
+                      React.createElement('option',{value:'light'},__alloT('stem.artstudio.string_light','Light')),
+                      React.createElement('option',{value:'transparent'},__alloT('stem.artstudio.string_transparent','Transparent')))),
+                    React.createElement('div',{className:'flex flex-wrap gap-3'},
+                      React.createElement('label',{className:'flex items-center gap-2 min-h-[44px] text-xs font-bold text-rose-800'},React.createElement('input',{type:'checkbox',checked:stringModel.pins,onChange:function(e){upd('strShowPins',e.target.checked);}}),__alloT('stem.artstudio.string_show_pins','Show pins')),
+                      React.createElement('label',{className:'flex items-center gap-2 min-h-[44px] text-xs font-bold text-rose-800'},React.createElement('input',{type:'checkbox',checked:stringModel.labels,disabled:!stringModel.pins,onChange:function(e){upd('strLabelPins',e.target.checked);}}),__alloT('stem.artstudio.string_number_pins','Number pins'))),
+                    React.createElement('div',{className:'flex flex-wrap gap-2'},
+                      React.createElement('button',{type:'button',onClick:function(){updMany({strReset:(Number(d.strReset)||0)+1,strPaused:false});if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_redrawing_the_string_art','Redrawing the string art.'));},className:'flex-1 rounded-lg border border-rose-300 bg-white px-3 py-2 text-xs font-bold text-rose-800'},__alloT('stem.artstudio.redraw_string_art','↻ Redraw')),
+                      React.createElement('button',{id:'artstudio-string-pause',type:'button','aria-pressed':!!d.strPaused,disabled:reducedMotion,onClick:function(){var c=document.getElementById('stringCanvas');updMany(Object.assign({},c&&c._captureArtStudioState?c._captureArtStudioState():{},{strPaused:!d.strPaused}));},className:'flex-1 rounded-lg border border-rose-300 bg-white px-3 py-2 text-xs font-bold text-rose-800 disabled:opacity-50'},d.strPaused?__alloT('stem.artstudio.string_resume','Resume drawing'):__alloT('stem.artstudio.string_pause','Pause drawing')),
+                      React.createElement('button',{id:'artstudio-string-finish',type:'button',onClick:function(){var c=document.getElementById('stringCanvas');if(c&&c._strFinish){c._strFinish();updMany(c._captureArtStudioState());}},className:'flex-1 rounded-lg bg-rose-700 text-white px-3 py-2 text-xs font-bold disabled:opacity-50'},__alloT('stem.artstudio.string_finish','Finish drawing'))),
+                    React.createElement('progress',{id:'artstudio-string-progress',max:100,value:0,'aria-label':__alloT('stem.artstudio.string_progress','String art drawing progress'),className:'w-full',style:{height:8}}),
+                    React.createElement('div',{className:'flex flex-wrap gap-2'},
+                      ['png','svg'].map(function(format){return React.createElement('button',{key:format,type:'button','aria-label':format==='png'?__alloT('stem.artstudio.export_string_art_png','Export string art as PNG'):__alloT('stem.artstudio.string_export_svg','Export string art as SVG'),onClick:function(){
+                        try {
+                          var canvas=document.getElementById('stringCanvas');
+                          var src=format==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(artStudioStringSVG(stringModel,stringGeometry)):canvas&&canvas._strExportPNG?canvas._strExportPNG():'';
+                          if(!src||src==='data:,')throw new Error('Empty export');
+                          var link=document.createElement('a');link.download='string-art-'+Date.now()+'.'+format;link.href=src;link.click();
+                          if(typeof addToast==='function')addToast(__alloT('stem.artstudio.string_export_success','Complete string art exported.'),'success');
+                          if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.string_export_success','Complete string art exported.'));
+                        }catch(error){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.string_export_error','Could not export this pattern. Try again.'),'error');}
+                      },className:'flex-1 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 px-3 py-2 text-xs font-bold'},format==='png'?__alloT('stem.artstudio.string_full_png','Full PNG'):__alloT('stem.artstudio.string_vector_svg','Vector SVG'));}),
+                      React.createElement('button',{type:'button','aria-label':d.strRainbow?'Use a single thread color':'Use a rainbow thread progression','aria-pressed':!!d.strRainbow,onClick:function(){upd('strRainbow',!d.strRainbow);if(typeof announceToSR==='function')announceToSR(!d.strRainbow?__alloT('stem.artstudio.sr_rainbow_threads_enabled','Rainbow threads enabled.'):__alloT('stem.artstudio.sr_single_color_threads_enabled','Single-color threads enabled.'));},className:'flex-1 rounded-lg border border-rose-300 px-3 py-2 text-xs font-bold '+(d.strRainbow?'bg-rose-700 text-white':'bg-white text-rose-800')},__alloT('stem.artstudio.string_rainbow','Rainbow'))),
+                    React.createElement('p',{className:'text-xs text-slate-700'},__alloT('stem.artstudio.string_export_hint','PNG and SVG include every thread, even while paused. Hide pins for an ink-only export, or show numbers for a construction template.')),
+                    React.createElement('div',{className:'flex flex-wrap items-center gap-2',role:'group','aria-labelledby':'artstudio-string-presets-label'},
+                      React.createElement('span',{id:'artstudio-string-presets-label',className:'text-xs font-bold text-rose-800'},__alloT('stem.artstudio.string_presets','Presets:')),
+                      [{label:__alloT('stem.artstudio.cardioid','Cardioid'),nails:100,mult:2},{label:__alloT('stem.artstudio.nephroid','Nephroid'),nails:100,mult:3},{label:__alloT('stem.artstudio.star_burst','Star Burst'),nails:72,mult:37},{label:__alloT('stem.artstudio.lace_2','Lace'),nails:150,mult:71},{label:__alloT('stem.artstudio.weave','Weave'),nails:60,mult:23}].map(function(preset){return React.createElement('button',{key:preset.label,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_string_art_preset','Load {value1} string-art preset'),{value1:preset.label}),onClick:function(){updMany({strShape:'circle',strNails:preset.nails,strMult:preset.mult,strRule:'multiply',strOffset:0,strPaused:false,strReset:(Number(d.strReset)||0)+1});},className:'rounded-lg border border-rose-300 bg-white px-2 py-1 text-xs font-bold text-rose-800'},preset.label);}))),
+                  React.createElement('div',{className:'rounded-xl border border-pink-200 bg-pink-50 p-3'},
+                    React.createElement('p',{className:'text-xs font-bold text-pink-800'},__alloT('stem.artstudio.math_connection_2','Math Connection')),
+                    React.createElement('p',{id:'artstudio-string-description',className:'text-xs text-slate-700 leading-relaxed'},__alloT('stem.artstudio.string_rule_explanation','Straight threads can form the envelope of a curve. Pins are numbered from 0. Multiplication connects pin i to (i × multiplier + offset) mod pin count. Skip connects it to (i + skip + offset) mod pin count. Mod wraps the result back around the frame.')),
+                    React.createElement('p',{id:'artstudio-string-formula',className:'text-xs font-bold text-rose-800 mt-2'},'i → (i '+(stringModel.rule==='skip'?'+ '+stringModel.skip:'× '+stringModel.multiplier)+' + '+stringModel.offset+') mod '+stringModel.nails),
+                    stringGeometry.edges.length===0&&React.createElement('p',{role:'status',className:'text-xs text-slate-700 mt-2'},__alloT('stem.artstudio.string_no_connections','This rule connects every pin to itself. Change the skip or offset to create threads.'))),
+                  React.createElement('details',{'data-artstudio-string-guide':'true',className:'rounded-xl border border-rose-200 bg-white p-3'},
+                    React.createElement('summary',{className:'min-h-[44px] cursor-pointer text-sm font-bold text-rose-800'},formatArtStudioLearningText(__alloT('stem.artstudio.string_guide_title','Connection guide · {count} threads'),{count:stringGeometry.edges.length})),
+                    React.createElement('p',{className:'text-xs text-slate-700 my-2'},formatArtStudioLearningText(__alloT('stem.artstudio.string_guide_help','Pins start at 0. Numbered previews label every {step} pins to avoid crowding. The table lists every connection; a row is one thread, and you can lift between rows. Self-connections are omitted.'),{step:Math.ceil(stringModel.nails/40)})),
+                    React.createElement('button',{type:'button',onClick:function(){
+                      var rows=['From pin,To pin'].concat(stringGeometry.edges.map(function(edge){return edge.from+','+edge.to;}));
+                      var link=document.createElement('a');link.download='string-art-connections-'+Date.now()+'.csv';link.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\r\n')+'\r\n');link.click();
+                    },className:'rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-800'},__alloT('stem.artstudio.string_csv','Download connection guide (CSV)')),
+                    React.createElement('div',{tabIndex:0,role:'region','aria-label':__alloT('stem.artstudio.string_connection_table','String art connection table'),style:{maxHeight:260,overflow:'auto'},className:'mt-3'},
+                      React.createElement('table',{className:'w-full text-xs text-slate-800'},
+                        React.createElement('caption',{className:'sr-only'},__alloT('stem.artstudio.string_connection_table','String art connection table')),
+                        React.createElement('thead',null,React.createElement('tr',null,React.createElement('th',{scope:'col'},__alloT('stem.artstudio.string_from_pin','From pin')),React.createElement('th',{scope:'col'},__alloT('stem.artstudio.string_to_pin','To pin')))),
+                        React.createElement('tbody',null,stringGeometry.edges.map(function(edge){return React.createElement('tr',{key:edge.from},React.createElement('td',{className:'text-center py-1'},edge.from),React.createElement('td',{className:'text-center py-1'},edge.to));})))))
                 ),
-
-                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", "aria-describedby": "artstudio-string-description", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_string_art_output', 'String-art output: {value1} nails arranged on a {value2} frame, connected with multiplier {value3} using {value4} threads at {value5} percent opacity.'), { value1: (typeof d.strNails === 'number' ? d.strNails : 80), value2: __alloT('stem.artstudio.a11y_str_shape_' + String((d.strShape || 'circle')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.strShape || 'circle')), value3: (typeof d.strMult === 'number' ? d.strMult : 2), value4: (d.strRainbow ? __alloT('stem.artstudio.a11y_word_rainbow', 'rainbow') : __alloT('stem.artstudio.a11y_word_single_color', 'single-color')), value5: (typeof d.strOpacity === 'number' ? d.strOpacity : 30) }), className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
-
-                  ref: function (canvas) {
-
-                    if (!canvas) return;
-
-                    if (canvas._strInit) return;
-
-                    canvas._strInit = true;
-
-                    var ctx = canvas.getContext('2d');
-
-                    var W = canvas.width, H = canvas.height;
-
-                    var cx = W / 2, cy = H / 2;
-
-                    var R = Math.min(W, H) * 0.42;
-
-                    var nails = typeof d.strNails === 'number' ? d.strNails : 80;
-
-                    var mult = typeof d.strMult === 'number' ? d.strMult : 2;
-
-                    var opacity = typeof d.strOpacity === 'number' ? d.strOpacity : 30;
-
-                    var rainbow = d.strRainbow;
-
-                    // `|| 'circle'` is not a type guard: a truthy but unknown value (a
-                    // number from a hand-edited save) passes it, matches none of the
-                    // shape branches below, and leaves nailPos empty — the draw loop
-                    // then reads from[0] of undefined and blanks the lab.
-                    var shape = ['circle', 'square', 'triangle', 'star'].indexOf(d.strShape) === -1 ? 'circle' : d.strShape;
-
-                    var baseHue = stringColor.h;
-
-                    var baseSat = stringColor.s;
-
-                    var baseLit = stringColor.l;
-
-                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-
-                    // Compute nail positions based on shape
-
-                    var nailPos = [];
-
-                    for (var i = 0; i < nails; i++) {
-
-                      var t = i / nails;
-
-                      if (shape === 'circle') {
-
-                        var ang = t * Math.PI * 2 - Math.PI / 2;
-
-                        nailPos.push([cx + Math.cos(ang) * R, cy + Math.sin(ang) * R]);
-
-                      } else if (shape === 'square') {
-
-                        var side = Math.floor(t * 4) % 4;
-
-                        var frac = (t * 4) % 1;
-
-                        var half = R;
-
-                        if (side === 0) nailPos.push([cx - half + frac * 2 * half, cy - half]);
-
-                        else if (side === 1) nailPos.push([cx + half, cy - half + frac * 2 * half]);
-
-                        else if (side === 2) nailPos.push([cx + half - frac * 2 * half, cy + half]);
-
-                        else nailPos.push([cx - half, cy + half - frac * 2 * half]);
-
-                      } else if (shape === 'triangle') {
-
-                        var side2 = Math.floor(t * 3) % 3;
-
-                        var frac2 = (t * 3) % 1;
-
-                        var triR = R;
-
-                        var pts = [[cx, cy - triR], [cx + triR * Math.cos(Math.PI / 6), cy + triR * Math.sin(Math.PI / 6)], [cx - triR * Math.cos(Math.PI / 6), cy + triR * Math.sin(Math.PI / 6)]];
-
-                        var p1 = pts[side2], p2 = pts[(side2 + 1) % 3];
-
-                        nailPos.push([p1[0] + (p2[0] - p1[0]) * frac2, p1[1] + (p2[1] - p1[1]) * frac2]);
-
-                      } else if (shape === 'star') {
-
-                        var starPts = 5;
-
-                        var segTotal = starPts * 2;
-
-                        var seg = Math.floor(t * segTotal) % segTotal;
-
-                        var frac3 = (t * segTotal) % 1;
-
-                        var outerR = R, innerR = R * 0.4;
-
-                        var allPts = [];
-
-                        for (var si = 0; si < starPts; si++) {
-
-                          var oAng = (si / starPts) * Math.PI * 2 - Math.PI / 2;
-
-                          var iAng = ((si + 0.5) / starPts) * Math.PI * 2 - Math.PI / 2;
-
-                          allPts.push([cx + Math.cos(oAng) * outerR, cy + Math.sin(oAng) * outerR]);
-
-                          allPts.push([cx + Math.cos(iAng) * innerR, cy + Math.sin(iAng) * innerR]);
-
-                        }
-
-                        var sp1 = allPts[seg], sp2 = allPts[(seg + 1) % allPts.length];
-
-                        nailPos.push([sp1[0] + (sp2[0] - sp1[0]) * frac3, sp1[1] + (sp2[1] - sp1[1]) * frac3]);
-
-                      }
-
-                    }
-
-                    // Draw nail dots
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-
-                    nailPos.forEach(function (np) { ctx.beginPath(); ctx.arc(np[0], np[1], 1.5, 0, Math.PI * 2); ctx.fill(); });
-
-                    // Animate strings
-
-                    var lineIdx = 0;
-
-                    ctx.lineWidth = 1;
-
-                    ctx.lineCap = 'round';
-
-                    ctx.globalCompositeOperation = 'lighter';
-
-                    function announceStringComplete() {
-
-                      if (canvas._strDone) return;
-
-                      canvas._strDone = true;
-
-                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_drawing_complete', 'String-art drawing complete.'));
-
-                    }
-
-                    function drawStep() {
-
-                      if (lineIdx >= nails) { announceStringComplete(); return; }
-
-                      var batchSize = reducedMotion ? nails : Math.max(1, Math.floor(nails / 80));
-
-                      for (var b = 0; b < batchSize && lineIdx < nails; b++, lineIdx++) {
-
-                        var from = nailPos[lineIdx];
-
-                        var toIdx = (lineIdx * mult) % nails;
-
-                        var to = nailPos[toIdx];
-
-                        var hue = rainbow ? Math.round((lineIdx / nails) * 360) % 360 : baseHue;
-
-                        ctx.strokeStyle = 'hsla(' + hue + ',' + baseSat + '%,' + baseLit + '%,' + (opacity / 100) + ')';
-
-                        ctx.beginPath(); ctx.moveTo(from[0], from[1]); ctx.lineTo(to[0], to[1]); ctx.stroke();
-
-                      }
-
-                      if (lineIdx < nails && canvas.isConnected) canvas._strAnim = requestAnimationFrame(drawStep);
-
-                      else announceStringComplete();
-
-                    }
-
-                    drawStep();
-
+                React.createElement('canvas',{id:'stringCanvas',key:'str-'+studioPersistenceScope+'-'+JSON.stringify(stringModel)+'-'+(d.strReset||0),width:512,height:512,role:'img','aria-describedby':'artstudio-string-description','aria-label':stringModel.rule==='multiply'&&stringModel.offset===0?formatArtStudioLearningText(__alloT('stem.artstudio.a11y_string_art_output','String-art output: {value1} nails arranged on a {value2} frame, connected with multiplier {value3} using {value4} threads at {value5} percent opacity.'),{value1:stringModel.nails,value2:__alloT('stem.artstudio.a11y_str_shape_'+stringModel.shape,stringModel.shape),value3:stringModel.multiplier,value4:d.strRainbow?__alloT('stem.artstudio.a11y_word_rainbow','rainbow'):__alloT('stem.artstudio.a11y_word_single_color','single-color'),value5:Math.round(stringModel.opacity*100)}):formatArtStudioLearningText(__alloT('stem.artstudio.string_custom_output','String-art output: {count} pins on a {shape} frame, {rule} {amount}, destination offset {offset}.'),{count:stringModel.nails,shape:__alloT('stem.artstudio.a11y_str_shape_'+stringModel.shape,stringModel.shape),rule:stringModel.rule==='skip'?__alloT('stem.artstudio.string_skip','Pin skip'):__alloT('stem.artstudio.multiplier','Multiplier'),amount:stringModel.rule==='skip'?stringModel.skip:stringModel.multiplier,offset:stringModel.offset}),className:'rounded-xl border-2 border-rose-300 shadow-lg mx-auto block',style:{maxWidth:'100%'},ref:function(canvas){
+                  if(!canvas)return;
+                  var speed=typeof d.strSpeed==='number'&&Number.isFinite(d.strSpeed)?Math.max(1,Math.min(20,Math.round(d.strSpeed))):1;
+                  if(canvas._strUpdate){canvas._strUpdate(!!d.strPaused,speed);return;}
+                  if(stringRuntimeRef.current)stringRuntimeRef.current.dispose();
+                  var context=canvas.getContext('2d');if(!context)return;
+                  var model=stringModel,geometry=stringGeometry,index=0,total=geometry.edges.length,paused=!!d.strPaused,disposed=false;
+                  var checkpointKey=JSON.stringify([model,d.strReset||0]);
+                  var saved=d.strProgressModel===checkpointKey&&typeof d.strProgress==='number'&&Number.isFinite(d.strProgress)?Math.max(0,Math.min(1,d.strProgress)):0;
+                  function stop(){if(canvas._strAnim)cancelAnimationFrame(canvas._strAnim);canvas._strAnim=0;}
+                  function progress(){
+                    canvas.setAttribute('data-str-progress',String(index));canvas.setAttribute('data-str-total',String(total));
+                    var meter=document.getElementById('artstudio-string-progress');if(meter)meter.value=total?index/total*100:100;
+                    var pause=document.getElementById('artstudio-string-pause');if(pause)pause.disabled=reducedMotion||index>=total;
+                    var finish=document.getElementById('artstudio-string-finish');if(finish)finish.disabled=index>=total;
+                    if(index>=total&&!canvas._strDone){canvas._strDone=true;if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_string_art_drawing_complete','String-art drawing complete.'));}
                   }
-
-                })
-
+                  function paint(target,amount){
+                    target.clearRect(0,0,512,512);target.globalAlpha=1;
+                    if(model.paper){target.fillStyle=model.paper;target.fillRect(0,0,512,512);}
+                    artStudioStringDraw(target,model,geometry,0,amount);artStudioStringDecorate(target,model,geometry);
+                  }
+                  function draw(to){index=to;paint(context,index);progress();}
+                  function frame(){canvas._strAnim=0;if(disposed||!canvas.isConnected||paused)return;draw(Math.min(total,index+speed));schedule();}
+                  function schedule(){if(!disposed&&!paused&&index<total&&!canvas._strAnim)canvas._strAnim=requestAnimationFrame(frame);}
+                  canvas._strFinish=function(){stop();draw(total);};
+                  canvas._captureArtStudioState=function(){return {strProgress:total?index/total:1,strProgressModel:checkpointKey,strPaused:paused};};
+                  canvas._strSVG=function(){return artStudioStringSVG(model,geometry);};
+                  canvas._strExportCanvas=function(){var output=document.createElement('canvas');output.width=output.height=512;var target=output.getContext('2d');if(!target)throw new Error('Canvas unavailable');paint(target,total);return output;};
+                  canvas._strExportPNG=function(){return canvas._strExportCanvas().toDataURL('image/png');};
+                  canvas._strUpdate=function(nextPaused,nextSpeed){paused=nextPaused;speed=nextSpeed;if(reducedMotion&&index<total){canvas._strFinish();return;}if(paused)stop();else schedule();progress();};
+                  stringRuntimeRef.current={dispose:function(){disposed=true;stop();}};
+                  if(reducedMotion)canvas._strFinish();else{draw(Math.min(total,Math.round(saved*total)+(paused?0:speed)));schedule();}
+                }})
               )
-
             ),
 
             // ═══ OP ART TAB ═══
-
-            tab === 'opArt' && React.createElement("div", { className: "space-y-3" },
-
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
-
-                React.createElement("div", { className: "space-y-3" },
-
-                  React.createElement("div", { className: "bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-xl p-4 border border-fuchsia-200" },
-
-                    React.createElement("h4", { className: "text-xs font-bold text-fuchsia-700 mb-3" }, __alloT('stem.artstudio.op_art_controls', "\uD83D\uDC41 Op Art Controls")),
-
-                    React.createElement("div", { className: "mb-3" },
-
-                      React.createElement("span", { id: "artstudio-op-style-label", className: "text-[0.6875rem] font-bold text-fuchsia-700 block mb-1" }, __alloT('stem.artstudio.style_2', "Style")),
-
-                      React.createElement("div", { className: "flex gap-1 flex-wrap", role: "group", "aria-labelledby": "artstudio-op-style-label" },
-
-                        [{ id: 'concentric', label: __alloT('stem.artstudio.rings', '\u25CE Rings') }, { id: 'checkerboard', label: __alloT('stem.artstudio.checker', '\u2593 Checker') }, { id: 'moire', label: __alloT('stem.artstudio.moir', '\u2261 Moir\u00E9') }, { id: 'vibrating', label: __alloT('stem.artstudio.vibrate', '\u2248 Vibrate') }].map(function (s) {
-
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.opStyle || 'concentric') === s.id, onClick: function () { upd('opStyle', s.id); if (typeof announceToSR === 'function') announceToSR(s.label + ' Op Art style selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-fuchsia-50') }, s.label);
-
-                        })
-
-                      )
-
-                    ),
-
-                    [{ k: 'opSpeed', label: __alloT('stem.artstudio.speed', 'Speed'), min: 1, max: 20, def: 5 },
-
-                     { k: 'opDensity', label: __alloT('stem.artstudio.density', 'Density'), min: 3, max: 60, def: 20 },
-
-                     { k: 'opHueA', label: __alloT('stem.artstudio.color_a_hue', 'Color A Hue'), min: 0, max: 360, def: 0 },
-
-                     { k: 'opHueB', label: __alloT('stem.artstudio.color_b_hue', 'Color B Hue'), min: 0, max: 360, def: 180 }].map(function (s) {
-
-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
-
-                      return React.createElement("div", { key: s.k, className: "mb-2" },
-
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-fuchsia-700 block mb-0.5" }, s.label + ': ' + val),
-
-                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": s.k === 'opSpeed' ? val + ' animation speed' : s.k === 'opDensity' ? val + ' pattern density' : val + ' degrees hue', onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-fuchsia-600" })
-
-                      );
-
-                    }),
-
-                    React.createElement("div", { className: "flex gap-2 mt-3" },
-
-                      React.createElement("button", { "aria-label": (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? "Resume Op Art animation" : "Pause Op Art animation", "aria-describedby": "artstudio-op-motion-status", onClick: function () { var isPaused = d.opPaused === undefined ? reducedMotion : !!d.opPaused; upd('opPaused', !isPaused); if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_op_art_animation_resumed', 'Op Art animation resumed.') : __alloT('stem.artstudio.sr_op_art_animation_paused', 'Op Art animation paused.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-800 border border-amber-600 hover:bg-amber-100') }, (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
-
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported', 'Op Art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
-
-                    ),
-
-                    React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap items-center", role: "group", "aria-labelledby": "artstudio-op-presets-label" },
-
-                      React.createElement("span", { id: "artstudio-op-presets-label", className: "text-[0.6875rem] font-bold text-fuchsia-700 mr-1" }, "Presets:"),
-
-                      [{ label: __alloT('stem.artstudio.classic_b_w', 'Classic B&W'), style: 'concentric', hA: 0, hB: 0, density: 25, speed: 4 },
-
-                       { label: __alloT('stem.artstudio.neon_pulse', 'Neon Pulse'), style: 'concentric', hA: 280, hB: 160, density: 15, speed: 8 },
-
-                       { label: __alloT('stem.artstudio.spiral_vortex', 'Spiral Vortex'), style: 'moire', hA: 200, hB: 30, density: 40, speed: 6 },
-
-                       { label: __alloT('stem.artstudio.wave_grid', 'Wave Grid'), style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
-
-                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_op_art_preset', 'Load {value1} Op Art preset'), { value1: pr.label }), onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); if (typeof announceToSR === 'function') announceToSR(pr.label + ' Op Art preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-fuchsia-700 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2" }, pr.label);
-
-                      })
-
-                    ),
-
-                    React.createElement("p", { id: "artstudio-op-motion-status", className: "mt-3 text-[0.6875rem] text-fuchsia-700 leading-relaxed" }, ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'Animation paused. ' : 'Animation running. ') + 'Use the pause or resume button to control motion; reduced-motion preferences start this view paused.')
-
+            tab==='opArt'&&React.createElement('div',{className:'space-y-3'},
+              React.createElement('style',null,`[data-artstudio-op-layout] button{min-width:44px;min-height:44px;overflow-wrap:anywhere}[data-artstudio-op-layout] :focus-visible{outline:3px solid #a21caf;outline-offset:3px}[data-artstudio-op-layout] [aria-labelledby="artstudio-op-style-label"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}@media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-op-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-op-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-op-preview]{grid-row:1}}`),
+              React.createElement('div',{'data-artstudio-op-layout':'true',className:'grid grid-cols-1 lg:grid-cols-2 gap-4',style:{alignItems:'flex-start'}},
+                React.createElement('div',{'data-artstudio-op-controls':'true',className:'space-y-3'},
+                  React.createElement('div',{className:'rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3 space-y-3'},
+                    React.createElement('div',{className:'flex flex-wrap gap-2'},
+                      React.createElement('button',{type:'button','aria-label':opPaused?__alloT('stem.artstudio.op_resume_label','Resume Op Art animation'):__alloT('stem.artstudio.op_pause_label','Pause Op Art animation'),'aria-describedby':'artstudio-op-motion-status',onClick:function(){changeOp({opPaused:!opPaused});if(typeof announceToSR==='function')announceToSR(opPaused?__alloT('stem.artstudio.sr_op_art_animation_resumed','Op Art animation resumed.'):__alloT('stem.artstudio.sr_op_art_animation_paused','Op Art animation paused.'));},className:'flex-1 rounded-lg bg-fuchsia-700 text-white px-3 py-2 text-xs font-bold'},opPaused?__alloT('stem.artstudio.op_resume','Resume'):__alloT('stem.artstudio.op_pause','Pause')),
+                      React.createElement('button',{id:'artstudio-op-step',type:'button',onClick:function(){var c=document.getElementById('opArtCanvas'),phase=c&&c._captureArtStudioState?c._captureArtStudioState().opPhase:artStudioOpPhase(d.opPhase);changeOp({opPhase:artStudioOpPhase(phase+5),opPaused:true});},className:'flex-1 rounded-lg border border-fuchsia-300 bg-white text-fuchsia-800 px-3 py-2 text-xs font-bold'},__alloT('stem.artstudio.op_step','Next frame')),
+                      React.createElement('button',{id:'artstudio-op-rewind',type:'button',onClick:function(){changeOp({opPhase:0,opPaused:true});},className:'flex-1 rounded-lg border border-fuchsia-300 bg-white text-fuchsia-800 px-3 py-2 text-xs font-bold'},__alloT('stem.artstudio.op_rewind','First frame'))),
+                    React.createElement('label',{htmlFor:'artstudio-opPhase',className:'block text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_frame_position','Frame position'),' ',React.createElement('output',{id:'artstudio-op-phase-value','aria-hidden':'true'},artStudioOpPhase(d.opPhase).toFixed(1)+'°')),
+                    React.createElement('input',{id:'artstudio-opPhase',type:'range',min:0,max:360,step:0.1,defaultValue:artStudioOpPhase(d.opPhase),'aria-valuetext':artStudioOpPhase(d.opPhase).toFixed(1)+' degrees',onChange:function(event){changeOp({opPhase:artStudioOpPhase(parseFloat(event.target.value)),opPaused:true});},className:'w-full accent-fuchsia-600'}),
+                    React.createElement('p',{id:'artstudio-op-motion-status',className:'text-xs text-fuchsia-800'},opPaused?__alloT('stem.artstudio.op_paused_status','Animation paused. Adjust the frame position or choose Next frame to compose a still image.'):__alloT('stem.artstudio.op_running_status','Animation running. Pause to hold this frame; reduced-motion preferences start this view paused.'))
                   ),
-
+                  React.createElement('div',{className:'rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-4 space-y-3'},
+                    React.createElement('h4',{className:'text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_art_controls','Op Art Controls')),
+                    React.createElement('span',{id:'artstudio-op-style-label',className:'block text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.style_2','Style')),
+                    React.createElement('div',{role:'group','aria-labelledby':'artstudio-op-style-label',className:'gap-2'},[
+                      {id:'concentric',label:__alloT('stem.artstudio.rings','◎ Rings')},{id:'checkerboard',label:__alloT('stem.artstudio.checker','▓ Checker')},{id:'moire',label:__alloT('stem.artstudio.moir','≡ Moiré')},{id:'vibrating',label:__alloT('stem.artstudio.vibrate','≈ Vibrate')}
+                    ].map(function(style){return React.createElement('button',{key:style.id,type:'button','aria-pressed':opModel.opStyle===style.id,onClick:function(){changeOp({opStyle:style.id});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.op_style_selected','{style} Op Art style selected.'),{style:style.label}));},className:'rounded-lg px-2 py-2 text-xs font-bold '+(opModel.opStyle===style.id?'bg-fuchsia-700 text-white':'bg-white border border-fuchsia-300 text-fuchsia-800')},style.label);})),
+                    [{key:'opSpeed',label:__alloT('stem.artstudio.speed','Speed'),min:1,max:20,units:' animation speed'},{key:'opDensity',label:__alloT('stem.artstudio.density','Density'),min:3,max:60,units:' pattern density'},{key:'opRotation',label:__alloT('stem.artstudio.op_rotation','Pattern rotation'),min:0,max:360,units:' degrees'},opModel.opStyle==='moire'?{key:'opAngle',label:__alloT('stem.artstudio.op_crossing_angle','Line crossing angle'),min:0,max:90,units:' degrees'}:{key:'opWarp',label:__alloT('stem.artstudio.op_distortion','Distortion'),min:0,max:100,units:' percent'}].map(function(control){var value=opModel[control.key];return React.createElement('div',{key:control.key},
+                      React.createElement('label',{htmlFor:'artstudio-'+control.key,className:'block text-xs font-bold text-fuchsia-800'},control.label+': '+value),
+                      React.createElement('input',{id:'artstudio-'+control.key,type:'range',min:control.min,max:control.max,value:value,'aria-valuetext':value+control.units,onChange:function(event){var patch={};patch[control.key]=parseFloat(event.target.value);changeOp(patch);},className:'w-full accent-fuchsia-600'}));}),
+                    React.createElement('div',{role:'group','aria-label':__alloT('stem.artstudio.op_color_mode','Pattern colors'),className:'flex gap-2'},[
+                      {id:'mono',label:__alloT('stem.artstudio.op_black_white','Black & white')},{id:'custom',label:__alloT('stem.artstudio.op_two_colors','Two colors')}
+                    ].map(function(mode){return React.createElement('button',{key:mode.id,type:'button','aria-pressed':opModel.opColorMode===mode.id,onClick:function(){changeOp({opColorMode:mode.id});},className:'flex-1 rounded-lg px-2 py-2 text-xs font-bold '+(opModel.opColorMode===mode.id?'bg-fuchsia-700 text-white':'bg-white border border-fuchsia-300 text-fuchsia-800')},mode.label);})),
+                    React.createElement('div',{'aria-hidden':'true',className:'flex gap-2'},artStudioOpColors(opModel).map(function(color,index){return React.createElement('span',{key:index,style:{background:color,height:32,flex:1,border:'1px solid #94a3b8',borderRadius:8}});})),
+                    React.createElement('details',{className:'rounded-lg border border-fuchsia-200 bg-white p-3'},
+                      React.createElement('summary',{className:'cursor-pointer text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_edit_colors','Edit color A and B')),
+                      ['A','B'].map(function(letter){return React.createElement('fieldset',{key:letter,disabled:opModel.opColorMode==='mono',className:'mt-3 space-y-2 disabled:opacity-50'},
+                        React.createElement('legend',{className:'text-xs font-bold text-fuchsia-800'},letter==='A'?__alloT('stem.artstudio.op_color_a','Color A · pattern'):__alloT('stem.artstudio.op_color_b','Color B · paper')),
+                        [{part:'Hue',label:letter==='A'?__alloT('stem.artstudio.color_a_hue','Color A Hue'):__alloT('stem.artstudio.color_b_hue','Color B Hue'),max:360,unit:' degrees hue'},{part:'Sat',label:__alloT('stem.artstudio.op_saturation','Saturation'),max:100,unit:' percent saturation'},{part:'Lit',label:__alloT('stem.artstudio.op_lightness','Lightness'),max:100,unit:' percent lightness'}].map(function(control){var key='op'+control.part+letter;return React.createElement('div',{key:key},React.createElement('label',{htmlFor:'artstudio-'+key,className:'block text-xs text-fuchsia-800'},control.label+': '+opModel[key]),React.createElement('input',{id:'artstudio-'+key,type:'range',min:0,max:control.max,value:opModel[key],'aria-valuetext':opModel[key]+control.unit,onChange:function(event){var patch={};patch[key]=parseFloat(event.target.value);changeOp(patch);},className:'w-full accent-fuchsia-600'}));}));}),
+                      React.createElement('button',{id:'artstudio-op-swap',type:'button',disabled:opModel.opColorMode==='mono',onClick:function(){changeOp({opHueA:opModel.opHueB,opSatA:opModel.opSatB,opLitA:opModel.opLitB,opHueB:opModel.opHueA,opSatB:opModel.opSatA,opLitB:opModel.opLitA});},className:'w-full mt-3 rounded-lg border border-fuchsia-300 text-fuchsia-800 text-xs font-bold disabled:opacity-50'},__alloT('stem.artstudio.op_swap_colors','Swap A and B'))
+                    ),
+                    React.createElement('div',{role:'group','aria-labelledby':'artstudio-op-presets-label',className:'flex flex-wrap gap-2'},
+                      React.createElement('span',{id:'artstudio-op-presets-label',className:'w-full text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_presets','Presets')),
+                      [{label:__alloT('stem.artstudio.classic_b_w','Classic B&W'),style:'concentric',hA:0,hB:0,density:25,speed:4,mode:'mono',warp:0},{label:__alloT('stem.artstudio.neon_pulse','Neon Pulse'),style:'concentric',hA:280,hB:160,density:15,speed:8,mode:'custom',warp:60},{label:__alloT('stem.artstudio.spiral_vortex','Spiral Vortex'),style:'moire',hA:200,hB:30,density:40,speed:6,mode:'custom',warp:60},{label:__alloT('stem.artstudio.wave_grid','Wave Grid'),style:'checkerboard',hA:10,hB:190,density:20,speed:5,mode:'custom',warp:85}].map(function(preset){return React.createElement('button',{key:preset.label,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_op_art_preset','Load {value1} Op Art preset'),{value1:preset.label}),onClick:function(){changeOp({opStyle:preset.style,opHueA:preset.hA,opHueB:preset.hB,opSatA:85,opSatB:85,opLitA:50,opLitB:50,opDensity:preset.density,opSpeed:preset.speed,opColorMode:preset.mode,opWarp:preset.warp,opAngle:12,opRotation:0,opPhase:0});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.op_preset_loaded','{preset} Op Art preset loaded.'),{preset:preset.label}));},className:'rounded-lg border border-fuchsia-300 bg-white px-2 py-2 text-xs font-bold text-fuchsia-800'},preset.label);})
+                    )
+                  ),
+                  React.createElement('div',{className:'flex flex-wrap gap-2'},['png','svg'].map(function(format){return React.createElement('button',{key:format,type:'button','aria-label':format==='png'?__alloT('stem.artstudio.export_op_art_png','Export Op Art as PNG'):__alloT('stem.artstudio.op_svg','Export Op Art as SVG'),onClick:function(){try{var canvas=document.getElementById('opArtCanvas');if(!canvas||!canvas._opExportPNG||!canvas._opSVG)throw new Error('Canvas unavailable');var link=document.createElement('a');link.download='op-art-'+Date.now()+'.'+format;link.href=format==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(canvas._opSVG()):canvas._opExportPNG();link.click();if(typeof addToast==='function')addToast(format==='svg'?__alloT('stem.artstudio.op_svg_exported','Op Art SVG exported.'):__alloT('stem.artstudio.toast_png_exported','PNG exported!'),'success');if(format==='png'&&typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported','Op Art PNG exported.'));}catch(error){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.op_export_failed','Could not export this frame. Please try again.'),'error');}},className:'flex-1 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800'},format==='png'?__alloT('stem.artstudio.export_png_10','Export PNG'):__alloT('stem.artstudio.op_vector','Vector SVG'));})),
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
                     React.createElement("button", { id: "artstudio-op-info-toggle", "aria-expanded": !!d.showOpInfo, "aria-controls": "artstudio-op-info", onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
@@ -10779,274 +12682,70 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("p", null, "\uD83D\uDC41 ", React.createElement("strong", null, __alloT('stem.artstudio.op_art_3', "Op Art")), __alloT('stem.artstudio.optical_art_emerged_in_the_1960s_pione', " (Optical Art) emerged in the 1960s, pioneered by "), React.createElement("strong", null, __alloT('stem.artstudio.bridget_riley', "Bridget Riley")), " and ", React.createElement("strong", null, __alloT('stem.artstudio.victor_vasarely', "Victor Vasarely")), __alloT('stem.artstudio.it_exploits_the_mechanics_of_human_vis', ". It exploits the mechanics of human vision to create illusions of movement, vibration, and depth on flat surfaces.")),
 
-                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, __alloT('stem.artstudio.moir_patterns', "Moir\u00E9 patterns")), __alloT('stem.artstudio.appear_when_two_regular_grids_overlap_', " appear when two regular grids overlap at slight angles. Your brain can\u2019t resolve the conflicting patterns, creating phantom curves and waves. This same effect causes the \u201Cscreen door\u201D shimmer on some fabrics.")),
+                      React.createElement("p", null, "\u2728 ", React.createElement("strong", null, __alloT('stem.artstudio.moir_patterns', "Moir\u00E9 patterns")), __alloT('stem.artstudio.op_moire_geometry', ' appear when repetitive patterns overlap. Their lines repeatedly align and separate, producing larger bands. Change the crossing angle to compare these bands; they remain visible in a still image.')),
 
-                      React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, __alloT('stem.artstudio.vibrating_colors', "Vibrating colors")), __alloT('stem.artstudio.occur_when_highly_saturated_complement', " occur when highly saturated complementary colors sit side by side. Your eye\u2019s color receptors compete, creating a buzzing, unstable edge\u2014this is called "), React.createElement("strong", null, __alloT('stem.artstudio.chromatic_vibration', "chromatic vibration")), "."),
+                      React.createElement("p", null, "\uD83C\uDF08 ", React.createElement("strong", null, __alloT('stem.artstudio.vibrating_colors', "Vibrating colors")), __alloT('stem.artstudio.op_color_edge_experiment', ' can be explored by placing two saturated colors beside each other. Change the lightness of one color, then lower its saturation. Compare how distinct their shared edge appears.')),
 
-                      React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, __alloT('stem.artstudio.persistence_of_vision', "Persistence of vision")), " and ", React.createElement("strong", null, __alloT('stem.artstudio.lateral_inhibition', "lateral inhibition")), __alloT('stem.artstudio.in_the_retina_are_the_main_perceptual_', " in the retina are the main perceptual mechanisms. Concentric ring patterns trigger involuntary eye saccades, making the artwork seem to breathe and pulse."))
-
+                      React.createElement('p',null,__alloT('stem.artstudio.op_still_inquiry','Try pausing the animation, then change the frame position. Compare what physically moves during playback with the movement you may perceive in a still pattern. Save two frames and describe which edges, colors, and repetitions changed.'))
                     )
-
                   )
 
                 ),
-
-                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-op-motion-status", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_op_art_output', 'Op Art output: {value1} at density {value2} and speed {value3}, {value4}.'), { value1: ((d.opStyle || 'concentric') === 'concentric' ? __alloT('stem.artstudio.a11y_op_concentric', 'concentric rings') : (d.opStyle || 'concentric') === 'checkerboard' ? __alloT('stem.artstudio.a11y_op_checkerboard', 'a warped checkerboard grid') : (d.opStyle || 'concentric') === 'moire' ? __alloT('stem.artstudio.a11y_op_moire', 'overlapping Moire line fields') : __alloT('stem.artstudio.a11y_op_waves', 'vibrating wavy stripes')), value2: (typeof d.opDensity === 'number' ? d.opDensity : 20), value3: (typeof d.opSpeed === 'number' ? d.opSpeed : 5), value4: ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? __alloT('stem.artstudio.a11y_state_paused', 'paused') : __alloT('stem.artstudio.a11y_state_animating', 'animating')) }), className: "rounded-xl border-2 border-fuchsia-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
-
-                  ref: function (canvas) {
-
-                    if (!canvas) return;
-
-                    if (canvas._opAnim) cancelAnimationFrame(canvas._opAnim);
-
-                    var ctx = canvas.getContext('2d');
-
-                    var W = canvas.width, H = canvas.height;
-
-                    var cx = W / 2, cy = H / 2;
-
-                    var tick = 0;
-
-                    var style = d.opStyle || 'concentric';
-
-                    var speed = typeof d.opSpeed === 'number' ? d.opSpeed : 5;
-
-                    var density = typeof d.opDensity === 'number' ? d.opDensity : 20;
-
-                    var hueA = typeof d.opHueA === 'number' ? d.opHueA : 0;
-
-                    var hueB = typeof d.opHueB === 'number' ? d.opHueB : 180;
-
-                    var paused = d.opPaused === undefined ? reducedMotion : !!d.opPaused;
-
-                    var isMonochrome = (hueA === 0 && hueB === 0);
-
-                    var colA = isMonochrome ? '#000000' : 'hsl(' + hueA + ',85%,50%)';
-
-                    var colB = isMonochrome ? '#ffffff' : 'hsl(' + hueB + ',85%,50%)';
-
-
-
-                    function drawFrame() {
-
-                      if (!paused) tick++;
-
-                      ctx.clearRect(0, 0, W, H);
-
-
-
-                      if (style === 'concentric') {
-
-                        var maxR = Math.sqrt(cx * cx + cy * cy);
-
-                        var ringWidth = maxR / density;
-
-                        var offset = (tick * speed * 0.3) % (ringWidth * 2);
-
-                        for (var r = maxR + ringWidth; r > 0; r -= ringWidth) {
-
-                          var rr = r - offset;
-
-                          if (rr < 0) rr += ringWidth * 2;
-
-                          ctx.beginPath();
-
-                          ctx.arc(cx, cy, Math.abs(rr), 0, Math.PI * 2);
-
-                          ctx.fillStyle = (Math.round(r / ringWidth) % 2 === 0) ? colA : colB;
-
-                          ctx.fill();
-
-                        }
-
-                        // Add subtle rotation warp
-
-                        ctx.save();
-
-                        ctx.globalCompositeOperation = 'overlay';
-
-                        ctx.globalAlpha = 0.08;
-
-                        var warpAngle = tick * speed * 0.005;
-
-                        for (var wr = 0; wr < maxR; wr += ringWidth * 1.5) {
-
-                          ctx.beginPath();
-
-                          ctx.ellipse(cx, cy, wr, wr * (0.9 + Math.sin(warpAngle + wr * 0.01) * 0.1), warpAngle, 0, Math.PI * 2);
-
-                          ctx.strokeStyle = colA; ctx.lineWidth = 2; ctx.stroke();
-
-                        }
-
-                        ctx.restore();
-
-
-
-                      } else if (style === 'checkerboard') {
-
-                        var cellSize = Math.max(8, Math.round(W / density));
-
-                        var t = tick * speed * 0.02;
-
-                        for (var gx = 0; gx < W; gx += cellSize) {
-
-                          for (var gy = 0; gy < H; gy += cellSize) {
-
-                            var dx = gx - cx, dy = gy - cy;
-
-                            var dist = Math.sqrt(dx * dx + dy * dy);
-
-                            var warp = Math.sin(dist * 0.015 - t) * cellSize * 0.4;
-
-                            var wx = gx + warp * (dx / (dist || 1));
-
-                            var wy = gy + warp * (dy / (dist || 1));
-
-                            var col = Math.floor(gx / cellSize);
-
-                            var row = Math.floor(gy / cellSize);
-
-                            ctx.fillStyle = ((col + row) % 2 === 0) ? colA : colB;
-
-                            ctx.fillRect(wx, wy, cellSize, cellSize);
-
-                          }
-
-                        }
-
-
-
-                      } else if (style === 'moire') {
-
-                        var spacing = Math.max(3, Math.round(200 / density));
-
-                        var t2 = tick * speed * 0.003;
-
-                        ctx.fillStyle = isMonochrome ? '#000' : 'hsl(' + hueA + ',30%,10%)';
-
-                        ctx.fillRect(0, 0, W, H);
-
-                        ctx.lineWidth = 1.5;
-
-                        // Layer 1 — horizontal lines
-
-                        ctx.strokeStyle = colB;
-
-                        ctx.globalAlpha = 0.7;
-
-                        for (var ly = -H; ly < H * 2; ly += spacing) {
-
-                          ctx.beginPath();
-
-                          ctx.moveTo(0, ly);
-
-                          ctx.lineTo(W, ly);
-
-                          ctx.stroke();
-
-                        }
-
-                        // Layer 2 — rotated lines
-
-                        ctx.save();
-
-                        ctx.translate(cx, cy);
-
-                        ctx.rotate(t2);
-
-                        ctx.strokeStyle = colA;
-
-                        for (var ly2 = -W * 2; ly2 < W * 2; ly2 += spacing) {
-
-                          ctx.beginPath();
-
-                          ctx.moveTo(-W, ly2);
-
-                          ctx.lineTo(W, ly2);
-
-                          ctx.stroke();
-
-                        }
-
-                        ctx.restore();
-
-                        ctx.globalAlpha = 1;
-
-
-
-                      } else if (style === 'vibrating') {
-
-                        var stripeW = Math.max(4, Math.round(W / density));
-
-                        var t3 = tick * speed * 0.04;
-
-                        for (var vx = 0; vx < W; vx += stripeW) {
-
-                          var wave = Math.sin(vx * 0.03 + t3) * stripeW * 0.3;
-
-                          var idx = Math.floor(vx / stripeW);
-
-                          ctx.fillStyle = (idx % 2 === 0) ? colA : colB;
-
-                          ctx.beginPath();
-
-                          ctx.moveTo(vx + wave, 0);
-
-                          ctx.lineTo(vx + stripeW + wave, 0);
-
-                          for (var vy = 0; vy < H; vy += 4) {
-
-                            var localWave = Math.sin(vy * 0.02 + t3 + vx * 0.01) * stripeW * 0.25;
-
-                            ctx.lineTo(vx + stripeW + localWave, vy);
-
-                          }
-
-                          ctx.lineTo(vx + stripeW, H);
-
-                          ctx.lineTo(vx, H);
-
-                          for (var vy2 = H; vy2 > 0; vy2 -= 4) {
-
-                            var localWave2 = Math.sin(vy2 * 0.02 + t3 + vx * 0.01) * stripeW * 0.25;
-
-                            ctx.lineTo(vx + localWave2, vy2);
-
-                          }
-
-                          ctx.closePath();
-
-                          ctx.fill();
-
-                        }
-
-                      }
-
-
-
-                      if (!paused && canvas.isConnected) canvas._opAnim = requestAnimationFrame(drawFrame);
-
+                React.createElement('div',{'data-artstudio-op-preview':'true',className:'min-w-0'},
+                  React.createElement('canvas',{id:'opArtCanvas',key:'op-'+studioPersistenceScope+'-'+(d.opRestoreToken||''),width:512,height:512,role:'img','aria-describedby':'artstudio-op-motion-status',
+                    'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_op_art_output','Op Art output: {value1} at density {value2} and speed {value3}, {value4}.'),{value1:opModel.opStyle==='concentric'?__alloT('stem.artstudio.a11y_op_concentric','concentric rings'):opModel.opStyle==='checkerboard'?__alloT('stem.artstudio.a11y_op_checkerboard','a warped checkerboard grid'):opModel.opStyle==='moire'?__alloT('stem.artstudio.a11y_op_moire','overlapping Moire line fields'):__alloT('stem.artstudio.a11y_op_waves','vibrating wavy stripes'),value2:opModel.opDensity,value3:opModel.opSpeed,value4:opPaused?__alloT('stem.artstudio.a11y_state_paused','paused'):__alloT('stem.artstudio.a11y_state_animating','animating')}),
+                    className:'rounded-xl border-2 border-fuchsia-300 shadow-lg mx-auto block',style:{maxWidth:'100%',background:'#0a0a0a'},ref:function(canvas){
+                      if(!canvas)return;
+                      if(canvas._opUpdate){canvas._opUpdate(opModel,opPaused,d.opPhase);return;}
+                      if(opRuntimeRef.current)opRuntimeRef.current.dispose();
+                      var context=canvas.getContext('2d');if(!context)return;
+                      var model=opModel,paused=opPaused,phase=artStudioOpPhase(d.opPhase),savedPhase=phase,scene=null,disposed=false,lastTime=null,pending=0;
+                      function stop(){if(canvas._opAnim)cancelAnimationFrame(canvas._opAnim);canvas._opAnim=0;lastTime=null;pending=0;}
+                      function draw(){scene=artStudioOpScene(model,phase);artStudioOpPaint(context,scene);canvas.setAttribute('data-op-phase',String(phase));var slider=document.getElementById('artstudio-opPhase');if(slider){slider.value=phase;slider.setAttribute('aria-valuetext',phase.toFixed(1)+' degrees');}var output=document.getElementById('artstudio-op-phase-value');if(output)output.textContent=phase.toFixed(1)+'°';}
+                      function schedule(){if(!disposed&&!paused&&!document.hidden&&!canvas._opAnim)canvas._opAnim=requestAnimationFrame(frame);}
+                      function frame(timestamp){canvas._opAnim=0;if(disposed||paused||!canvas.isConnected||document.hidden)return;if(lastTime!==null)pending+=Math.max(0,Math.min(100,timestamp-lastTime))/1000;lastTime=timestamp;if(pending>=1/30-1e-9){phase=artStudioOpPhase(phase+pending*model.opSpeed*6);pending=0;draw();}schedule();}
+                      function visibility(){stop();schedule();}
+                      document.addEventListener('visibilitychange',visibility);
+                      canvas._captureArtStudioState=function(){return Object.assign({},model,{opPhase:phase,opPaused:paused});};
+                      canvas._opSVG=function(){return artStudioOpSVG(scene);};
+                      canvas._opExportCanvas=function(){var output=document.createElement('canvas');output.width=output.height=512;var target=output.getContext('2d');if(!target)throw new Error('Canvas unavailable');artStudioOpPaint(target,scene);return output;};
+                      canvas._opExportPNG=function(){return canvas._opExportCanvas().toDataURL('image/png');};
+                      canvas._opUpdate=function(nextModel,nextPaused,nextSavedPhase,forcePhase){
+                        var next=artStudioOpPhase(nextSavedPhase),changed=JSON.stringify(model)!==JSON.stringify(nextModel),moved=forcePhase||next!==savedPhase,wasPaused=paused;
+                        model=nextModel;paused=nextPaused;if(moved){phase=next;savedPhase=next;}
+                        if(paused||wasPaused!==paused||moved)stop();if(changed||moved)draw();schedule();
+                      };
+                      opRuntimeRef.current={dispose:function(){disposed=true;stop();document.removeEventListener('visibilitychange',visibility);delete canvas._opUpdate;}};
+                      draw();schedule();
                     }
-
-                    drawFrame();
-
-                  }
-
-                })
-
+                  }),
+                  React.createElement('p',{className:'mt-3 text-xs text-center text-fuchsia-800'},__alloT('stem.artstudio.op_export_help','Pause or scrub to choose a frame. PNG and SVG save the frame shown here.'))
+                )
               )
-
             ),
 
             // ═══ TESSELLATION TAB ═══
 
             tab === 'tessellation' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("div", { className: "space-y-3" },
+              React.createElement('style',null,`[data-artstudio-tess-layout] button{min-height:44px;min-width:44px}[data-artstudio-tess-layout] :focus-visible{outline:3px solid #0f766e;outline-offset:3px}@media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-tess-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-tess-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-tess-preview]{grid-row:1}}`),
+              React.createElement("div", { 'data-artstudio-tess-layout':'true', className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
+                React.createElement("div", { 'data-artstudio-tess-controls':'true', className: "space-y-3" },
+
+
+                  React.createElement('div',{className:'rounded-xl border border-teal-200 bg-teal-50 p-3 space-y-3'},
+                    React.createElement('div',{className:'flex flex-wrap gap-2'},
+                      React.createElement('button',{id:'artstudio-tess-undo',type:'button',disabled:!tessHistoryRef.current.undo.length,onClick:function(){changeTessHistory(false);},className:'flex-1 rounded-lg border border-teal-300 bg-white px-3 py-2 text-xs font-bold text-teal-800 disabled:opacity-50'},__alloT('stem.artstudio.tess_undo','Undo edit')),
+                      React.createElement('button',{id:'artstudio-tess-redo',type:'button',disabled:!tessHistoryRef.current.redo.length,onClick:function(){changeTessHistory(true);},className:'flex-1 rounded-lg border border-teal-300 bg-white px-3 py-2 text-xs font-bold text-teal-800 disabled:opacity-50'},__alloT('stem.artstudio.tess_redo','Redo edit'))),
+                    React.createElement('label',{className:'block text-xs font-bold text-teal-800'},__alloT('stem.artstudio.tess_edit_mode','Tile action'),React.createElement('select',{'aria-label':__alloT('stem.artstudio.tess_edit_mode','Tile action'),value:['paint','reset'].indexOf(d.tessEditMode)>=0?d.tessEditMode:'cycle',onChange:function(event){upd('tessEditMode',event.target.value);},className:'block min-h-[44px] w-full mt-1 rounded-lg border border-teal-300 bg-white px-2'},
+                      React.createElement('option',{value:'cycle'},__alloT('stem.artstudio.tess_cycle','Cycle colors')),
+                      React.createElement('option',{value:'paint'},__alloT('stem.artstudio.tess_paint','Paint selected color')),
+                      React.createElement('option',{value:'reset'},__alloT('stem.artstudio.tess_reset_tile','Restore pattern color')))),
+                    React.createElement('div',{role:'group','aria-label':__alloT('stem.artstudio.tess_paint_palette','Tile paint colors'),className:'flex flex-wrap gap-2'},ART_STUDIO_TESS_COLORS.map(function(color,index){var name=__alloT('stem.artstudio.sr_color_'+ART_STUDIO_TESS_COLOR_NAMES[index].replace(/ /g,'_'),ART_STUDIO_TESS_COLOR_NAMES[index]);return React.createElement('button',{key:index,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.tess_paint_color','Paint tiles {color}'),{color:name}),'aria-pressed':d.tessEditMode==='paint'&&(Number(d.tessPaintIndex)||0)===index,onClick:function(){updMany({tessEditMode:'paint',tessPaintIndex:index});},className:'rounded-lg border-2 '+(d.tessEditMode==='paint'&&(Number(d.tessPaintIndex)||0)===index?'border-slate-950':'border-slate-400'),style:{background:color,width:44,height:44}},d.tessEditMode==='paint'&&(Number(d.tessPaintIndex)||0)===index?React.createElement('span',{'aria-hidden':'true',style:{background:'#fff',color:'#0f172a',borderRadius:8,padding:'0 3px'}},'✓'):null);})),
+                    React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.tess_svg','Export tessellation as SVG'),onClick:function(){try{var canvas=document.getElementById('tessCanvas');if(!canvas||!canvas._tessSVG)throw new Error('Canvas unavailable');var link=document.createElement('a');link.download='tessellation-'+Date.now()+'.svg';link.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(canvas._tessSVG());link.click();if(typeof addToast==='function')addToast(__alloT('stem.artstudio.tess_svg_exported','Tessellation SVG exported.'),'success');}catch(error){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.tess_export_error','Could not export this pattern. Try again.'),'error');}},className:'w-full rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800'},__alloT('stem.artstudio.tess_vector','Vector SVG'))
+                  ),
                   React.createElement("details", { open: !isCompactStudio || undefined, 'data-studio-compact-palette':'tessellation', className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200" },
                     React.createElement("summary", { className: "cursor-pointer text-sm font-bold text-teal-800" }, __alloT('stem.artstudio.tessellation_controls', "\uD83D\uDD37 Tessellation Controls")),
 
@@ -11058,7 +12757,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'triangle', label: __alloT('stem.artstudio.triangle_2', '\u25B3 Triangle') }, { id: 'square', label: __alloT('stem.artstudio.square_2', '\u25A1 Square') }, { id: 'hexagon', label: __alloT('stem.artstudio.hexagon', '\u2B21 Hexagon') }].map(function (s) {
 
-                          return React.createElement("button", { "aria-pressed": (d.tessShape || 'hexagon') === s.id, key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": tessModel.tessShape === s.id, key: s.id, onClick: function () { changeTessellation({tessShape:s.id,tessClickData:{}}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (tessModel.tessShape === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -11072,13 +12771,13 @@ const d = labToolData.artStudio || {};
 
                      { k: 'tessWarpAmt', label: __alloT('stem.artstudio.escher_warp', 'Escher Warp'), min: 0, max: 50, def: 0 }].map(function (s) {
 
-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      var val = tessModel[s.k];
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
                         React.createElement("label", { htmlFor: "artstudio-" + s.k, className: "text-[0.6875rem] font-bold text-teal-700 block mb-0.5" }, s.label + ': ' + val),
 
-                        React.createElement("input", { id: "artstudio-" + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-teal-600" })
+                        React.createElement("input", { id: "artstudio-" + s.k, type: "range", min: s.min, max: s.max, value: val, onChange: function (e) { var patch={};patch[s.k]=parseInt(e.target.value,10);changeTessellation(patch); }, className: "w-full accent-teal-600" })
 
                       );
 
@@ -11092,7 +12791,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'rainbow', label: __alloT('stem.artstudio.rainbow_2', '\uD83C\uDF08 Rainbow') }, { id: 'warm', label: __alloT('stem.artstudio.warm_4', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_4', '\u2744 Cool') }, { id: 'mono', label: __alloT('stem.artstudio.mono', '\u25AB Mono') }, { id: 'custom', label: __alloT('stem.artstudio.custom', '\uD83C\uDFA8 Custom') }].map(function (s) {
 
-                          return React.createElement("button", { "aria-pressed": (d.tessScheme || 'rainbow') === s.id, key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": tessModel.tessScheme === s.id, key: s.id, onClick: function () { changeTessellation({tessScheme:s.id}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (tessModel.tessScheme === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -11102,7 +12801,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_clear_tessellation_tile_colors', 'Clear tessellation tile colors'), onClick: function () { upd('tessClickData', {}); upd('tessReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_tessellation_tile_colors_cleared', 'Tessellation tile colors cleared.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_clear_tessellation_tile_colors', 'Clear tessellation tile colors'), onClick: function () { changeTessellation({tessClickData:{}}); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_tessellation_tile_colors_cleared', 'Tessellation tile colors cleared.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_11', "Export PNG"), onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_12', "\uD83D\uDCE5 Export PNG"))
 
@@ -11120,7 +12819,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.escher_fish', 'Escher Fish'), shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-teal-700 border border-teal-700 hover:bg-teal-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { changeTessellation({tessShape:pr.shape,tessGrid:pr.grid,tessRotation:pr.rot,tessWarpAmt:pr.warp,tessScheme:pr.scheme,tessClickData:{}}); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-teal-700 border border-teal-700 hover:bg-teal-50 transition-all" }, pr.label);
 
                       })
 
@@ -11152,531 +12851,67 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("p", { id: "artstudio-tess-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic" }, "Click a tile to cycle its color. Keyboard: Arrow keys move between tiles; Space or Enter cycles the selected tile; Shift with an Arrow key moves and cycles; Home selects the center tile.")
+                  React.createElement("p", { id: "artstudio-tess-keyboard-help", className: "text-[0.6875rem] text-center text-slate-600 italic" }, __alloT('stem.artstudio.tess_edit_help','Click a tile to apply the chosen tile action. Keyboard: Arrow keys move between tiles; Space or Enter edits the selected tile; Shift with an Arrow key moves and edits; Home selects the center tile. Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z or Ctrl+Y redoes.'))
 
                 ),
 
-                React.createElement("div", { className: "relative min-w-0" },
+                React.createElement("div", { 'data-artstudio-tess-preview':'true', className: "relative min-w-0" },
 
                   React.createElement("canvas", { tabIndex: 0, id: 'tessCanvas', width: 512, height: 512, role: "img",
-                    'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_tessellation_canvas', 'Tessellation canvas with {value1} tiles in a {value2} color scheme and grid size {value3}.'), { value1: __alloT('stem.artstudio.a11y_tess_shape_' + String((d.tessShape || 'hexagon')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.tessShape || 'hexagon')), value2: __alloT('stem.artstudio.a11y_tess_scheme_' + String((d.tessScheme || 'rainbow')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.tessScheme || 'rainbow')), value3: (typeof d.tessGrid === 'number' ? d.tessGrid : 6) }),
+                    'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_tessellation_canvas', 'Tessellation canvas with {value1} tiles in a {value2} color scheme and grid size {value3}.'), { value1: __alloT('stem.artstudio.a11y_tess_shape_' + String(tessModel.tessShape).toLowerCase().replace(/[^a-z0-9]+/g, '_'), tessModel.tessShape), value2: __alloT('stem.artstudio.a11y_tess_scheme_' + String(tessModel.tessScheme).toLowerCase().replace(/[^a-z0-9]+/g, '_'), tessModel.tessScheme), value3: tessModel.tessGrid }),
                     'aria-describedby': "artstudio-tess-keyboard-help",
-                    'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home Enter Space",
+                    'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home Enter Space Control+z Meta+z Control+Shift+z Meta+Shift+z Control+y",
                     className: "rounded-xl border-2 border-teal-300 shadow-lg mx-auto block cursor-pointer focus-visible:ring-4 focus-visible:ring-teal-600 focus-visible:ring-offset-2",
                     style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
-                    key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow') + '-' + (d.tessReset || 0),
+                    key: 'tess-'+studioPersistenceScope+'-'+(d.tessRestoreToken||''),
 
                   ref: function (canvas) {
-
-                    if (!canvas) return;
-
-                    if (canvas._tessInit) return;
-
-                    canvas._tessInit = true;
-
-                    var ctx = canvas.getContext('2d');
-
-                    var W = canvas.width, H = canvas.height;
-
-                    var shape = d.tessShape || 'hexagon';
-
-                    var gridSize = typeof d.tessGrid === 'number' ? d.tessGrid : 6;
-
-                    var rotation = (typeof d.tessRotation === 'number' ? d.tessRotation : 0) * Math.PI / 180;
-
-                    var warpAmt = typeof d.tessWarpAmt === 'number' ? d.tessWarpAmt : 0;
-
-                    var scheme = d.tessScheme || 'rainbow';
-
-                    var clickData = d.tessClickData || {};
-
-
-
-                    // Color palettes
-
-                    var palettes = {
-
-                      rainbow: function (i, total) { return 'hsl(' + Math.round((i / Math.max(total, 1)) * 360) + ',75%,55%)'; },
-
-                      warm: function (i, total) { return 'hsl(' + Math.round((i / Math.max(total, 1)) * 60) + ',80%,' + (40 + (i % 3) * 10) + '%)'; },
-
-                      cool: function (i, total) { return 'hsl(' + (180 + Math.round((i / Math.max(total, 1)) * 80)) + ',70%,' + (40 + (i % 3) * 10) + '%)'; },
-
-                      mono: function (i, total) { return 'hsl(210,' + (10 + (i % 4) * 8) + '%,' + (30 + (i / Math.max(total, 1)) * 40) + '%)'; },
-
-                      custom: function (i) { return 'hsl(' + ((i * 137.508) % 360) + ',65%,55%)'; }
-
+                    if(!canvas)return;
+                    canvas._tessPublish=changeTessellation;canvas._tessHistory=changeTessHistory;
+                    canvas._tessMode=['paint','reset'].indexOf(d.tessEditMode)>=0?d.tessEditMode:'cycle';
+                    canvas._tessPaintIndex=typeof d.tessPaintIndex==='number'&&Number.isFinite(d.tessPaintIndex)?Math.max(0,Math.min(7,Math.round(d.tessPaintIndex))):0;
+                    var incomingSignature=JSON.stringify(tessModel);
+                    if(canvas._tessModelSignature===incomingSignature&&canvas._tessSync){canvas._tessSync(tessColors);return;}
+                    var ctx=canvas.getContext('2d');if(!ctx)return;
+                    canvas._tessModelSignature=incomingSignature;
+                    var model=tessModel,tiles=artStudioTessGeometry(model),clickData=tessColors,selected=tiles.find(function(tile){return tile.key===canvas._tessSelectedKey;})||null;
+                    function selectCenter(){var best=Infinity;tiles.forEach(function(tile){var distance=Math.pow(tile.center[0]-256,2)+Math.pow(tile.center[1]-256,2);if(distance<best){best=distance;selected=tile;}});}
+                    if(!selected)selectCenter();
+                    function colorName(index){var name=ART_STUDIO_TESS_COLOR_NAMES[index];return __alloT('stem.artstudio.sr_color_'+name.replace(/ /g,'_'),name);}
+                    function updateSelection(show){
+                      if(!selected)return;canvas._tessSelectedKey=selected.key;
+                      var cursor=canvas.parentElement&&canvas.parentElement.querySelector('[data-tess-keyboard-cursor="true"]');
+                      if(cursor){var width=canvas.clientWidth||512,height=canvas.clientHeight||512;cursor.style.left=((canvas.offsetLeft||0)+Math.max(8,Math.min(504,selected.center[0]))/512*width-10)+'px';cursor.style.top=((canvas.offsetTop||0)+Math.max(8,Math.min(504,selected.center[1]))/512*height-10)+'px';cursor.style.display=show?'block':'none';}
+                      var index=artStudioTessColorIndex(selected,clickData),description=formatArtStudioLearningText(__alloT('stem.artstudio.tess_selected_description','Tessellation canvas with {shape} tiles in a {scheme} color scheme and grid size {grid}. Selected tile {number} of {total}{color}'),{shape:__alloT('stem.artstudio.a11y_tess_shape_'+model.tessShape,model.tessShape),scheme:__alloT('stem.artstudio.a11y_tess_scheme_'+model.tessScheme,model.tessScheme),grid:model.tessGrid,number:tiles.indexOf(selected)+1,total:tiles.length,color:index===undefined?'.':formatArtStudioLearningText(__alloT('stem.artstudio.tess_colored_description',', colored {color}.'),{color:colorName(index)})});canvas.setAttribute('aria-label',description);
+                    }
+                    function redraw(){artStudioTessPaint(ctx,model,tiles,clickData);updateSelection(document.activeElement===canvas);}
+                    canvas._tessSync=function(next){var changed=JSON.stringify(next)!==JSON.stringify(clickData);clickData=Object.assign({},next);if(changed)redraw();else updateSelection(document.activeElement===canvas);};
+                    canvas._tessSVG=function(){return artStudioTessSVG(model,tiles,clickData);};
+                    canvas._captureArtStudioState=function(){return {tessClickData:Object.assign({},clickData)};};
+                    function edit(tile){
+                      if(!tile)return;selected=tile;var previous=artStudioTessColorIndex(tile,clickData),next=canvas._tessMode==='reset'?-1:canvas._tessMode==='paint'?canvas._tessPaintIndex:((previous===undefined?0:previous)+1)%8;
+                      if((next===-1&&previous===undefined)||next===previous){updateSelection(true);return;}
+                      var updated=Object.assign({},clickData);updated[tile.key]=next;clickData=updated;redraw();canvas._tessPublish({tessClickData:updated});updateSelection(true);
+                      if(typeof announceToSR==='function')announceToSR(next<0?__alloT('stem.artstudio.tess_tile_reset','Selected tile restored to its pattern color.'):formatArtStudioLearningText(__alloT('stem.artstudio.sr_tile_changed_to_color','Tile {value1} of {value2} changed to {value3}.'),{value1:tiles.indexOf(tile)+1,value2:tiles.length,value3:colorName(next)}));
+                    }
+                    canvas.onfocus=function(){updateSelection(true);};canvas.onblur=function(){updateSelection(false);};
+                    canvas.onkeydown=function(event){
+                      var key=event.key.toLowerCase();
+                      if((event.ctrlKey||event.metaKey)&&(key==='z'||key==='y')){event.preventDefault();canvas._tessHistory(key==='y'||event.shiftKey);return;}
+                      if(event.key==='Home'){event.preventDefault();selectCenter();updateSelection(true);}
+                      else if(event.key.indexOf('Arrow')===0){
+                        event.preventDefault();var best=null,score=Infinity;
+                        tiles.forEach(function(tile){if(tile===selected||tile.center[0]<0||tile.center[0]>512||tile.center[1]<0||tile.center[1]>512)return;var dx=tile.center[0]-selected.center[0],dy=tile.center[1]-selected.center[1],forward=event.key==='ArrowLeft'?-dx:event.key==='ArrowRight'?dx:event.key==='ArrowUp'?-dy:dy;if(forward<=1)return;var next=forward+(event.key==='ArrowLeft'||event.key==='ArrowRight'?Math.abs(dy):Math.abs(dx))*2;if(next<score){score=next;best=tile;}});
+                        if(best)selected=best;if(event.shiftKey)edit(selected);else{updateSelection(true);if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_selected_tile_of','Selected tile {value1} of {value2}.'),{value1:tiles.indexOf(selected)+1,value2:tiles.length}));}
+                      }else if(event.key==='Enter'||event.key===' '){event.preventDefault();edit(selected);}
                     };
-
-                    var colorFn = palettes[scheme] || palettes.rainbow;
-
-                    var clickCyclePalette = ['hsl(0,80%,55%)', 'hsl(30,90%,55%)', 'hsl(55,90%,55%)', 'hsl(120,60%,45%)', 'hsl(200,75%,50%)', 'hsl(270,70%,55%)', 'hsl(320,80%,55%)', 'hsl(0,0%,90%)'];
-
-
-
-                    // Store tile polygons for click detection
-
-                    var tilePolys = [];
-
-
-
-                    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-
-                    ctx.save();
-
-                    ctx.translate(W / 2, H / 2);
-
-                    ctx.rotate(rotation);
-
-                    ctx.translate(-W / 2, -H / 2);
-
-
-
-                    var tileIdx = 0;
-
-
-
-                    function warpEdge(x1, y1, x2, y2, amt) {
-
-                      if (amt <= 0) return [[x1, y1], [x2, y2]];
-
-                      var pts = [[x1, y1]];
-
-                      var steps = 6;
-
-                      for (var s = 1; s < steps; s++) {
-
-                        var t = s / steps;
-
-                        var mx = x1 + (x2 - x1) * t;
-
-                        var my = y1 + (y2 - y1) * t;
-
-                        var dx = -(y2 - y1), dy = (x2 - x1);
-
-                        var len = Math.sqrt(dx * dx + dy * dy) || 1;
-
-                        var offset = Math.sin(t * Math.PI * 2) * amt * 0.3;
-
-                        pts.push([mx + (dx / len) * offset, my + (dy / len) * offset]);
-
-                      }
-
-                      pts.push([x2, y2]);
-
-                      return pts;
-
-                    }
-
-
-
-                    function warpedPoints(vertices) {
-
-                      var wPts = [];
-
-                      for (var vi = 0; vi < vertices.length; vi++) {
-
-                        var next = (vi + 1) % vertices.length;
-
-                        var edgePts = warpEdge(vertices[vi][0], vertices[vi][1], vertices[next][0], vertices[next][1], warpAmt);
-
-                        for (var ep = 0; ep < edgePts.length - (vi < vertices.length - 1 ? 1 : 0); ep++) wPts.push(edgePts[ep]);
-
-                      }
-
-                      return wPts;
-
-                    }
-
-                    function paintTile(vertices, fillColor) {
-
-                      var wPts = warpedPoints(vertices);
-
-                      ctx.beginPath();
-
-                      ctx.moveTo(wPts[0][0], wPts[0][1]);
-
-                      for (var wp = 1; wp < wPts.length; wp++) ctx.lineTo(wPts[wp][0], wPts[wp][1]);
-
-                      ctx.closePath();
-
-                      ctx.fillStyle = fillColor;
-
-                      ctx.fill();
-
-                      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-
-                      ctx.lineWidth = 1;
-
-                      ctx.stroke();
-
-                    }
-
-                    function drawTile(vertices, fillColor, idx) {
-
-                      var keyStr = Math.round(vertices[0][0]) + '_' + Math.round(vertices[0][1]);
-
-                      var useColor = clickData[keyStr] !== undefined ? clickCyclePalette[clickData[keyStr] % clickCyclePalette.length] : fillColor;
-
-                      paintTile(vertices, useColor);
-
-                      tilePolys.push({ vertices: vertices, key: keyStr, idx: idx });
-
-                    }
-
-
-
-                    if (shape === 'hexagon') {
-
-                      var hexR = W / (gridSize * 1.8);
-
-                      var hexH = hexR * Math.sqrt(3);
-
-                      var startX = -hexR * 2;
-
-                      var startY = -hexH;
-
-                      for (var row = 0; row < gridSize + 3; row++) {
-
-                        for (var col = 0; col < gridSize + 3; col++) {
-
-                          var hx = startX + col * hexR * 1.5;
-
-                          var hy = startY + row * hexH + (col % 2 === 1 ? hexH / 2 : 0);
-
-                          var verts = [];
-
-                          for (var a = 0; a < 6; a++) {
-
-                            var ang = (a * 60 - 30) * Math.PI / 180;
-
-                            verts.push([hx + Math.cos(ang) * hexR, hy + Math.sin(ang) * hexR]);
-
-                          }
-
-                          drawTile(verts, colorFn(tileIdx, (gridSize + 3) * (gridSize + 3)), tileIdx);
-
-                          tileIdx++;
-
-                        }
-
-                      }
-
-                    } else if (shape === 'square') {
-
-                      var sqSize = W / gridSize;
-
-                      for (var row2 = -1; row2 < gridSize + 1; row2++) {
-
-                        for (var col2 = -1; col2 < gridSize + 1; col2++) {
-
-                          var sx = col2 * sqSize;
-
-                          var sy = row2 * sqSize;
-
-                          var verts2 = [[sx, sy], [sx + sqSize, sy], [sx + sqSize, sy + sqSize], [sx, sy + sqSize]];
-
-                          drawTile(verts2, colorFn(tileIdx, (gridSize + 2) * (gridSize + 2)), tileIdx);
-
-                          tileIdx++;
-
-                        }
-
-                      }
-
-                    } else if (shape === 'triangle') {
-
-                      var triH2 = W / gridSize;
-
-                      var triW = triH2 * 2 / Math.sqrt(3);
-
-                      for (var row3 = -1; row3 < gridSize + 2; row3++) {
-
-                        for (var col3 = -2; col3 < gridSize * 2 + 2; col3++) {
-
-                          var isUp = (col3 + row3) % 2 === 0;
-
-                          var tx = col3 * triW / 2;
-
-                          var ty = row3 * triH2;
-
-                          var verts3;
-
-                          if (isUp) {
-
-                            verts3 = [[tx, ty + triH2], [tx + triW / 2, ty], [tx + triW, ty + triH2]];
-
-                          } else {
-
-                            verts3 = [[tx, ty], [tx + triW, ty], [tx + triW / 2, ty + triH2]];
-
-                          }
-
-                          drawTile(verts3, colorFn(tileIdx, (gridSize + 3) * (gridSize * 2 + 4)), tileIdx);
-
-                          tileIdx++;
-
-                        }
-
-                      }
-
-                    }
-
-                    ctx.restore();
-
-                    var clickCycleNames = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'light gray'];
-
-                    function displayPoint(px, py) {
-
-                      var dcx = W / 2, dcy = H / 2, ddx = px - dcx, ddy = py - dcy;
-
-                      return { x: dcx + ddx * Math.cos(rotation) - ddy * Math.sin(rotation), y: dcy + ddx * Math.sin(rotation) + ddy * Math.cos(rotation) };
-
-                    }
-
-                    function displayCenter(poly) {
-
-                      var px = 0, py = 0;
-
-                      for (var ci = 0; ci < poly.vertices.length; ci++) { px += poly.vertices[ci][0]; py += poly.vertices[ci][1]; }
-
-                      return displayPoint(px / poly.vertices.length, py / poly.vertices.length);
-
-                    }
-
-                    var visibleTiles = tilePolys.filter(function (poly) {
-
-                      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-                      for (var bvi = 0; bvi < poly.vertices.length; bvi++) {
-
-                        var point = displayPoint(poly.vertices[bvi][0], poly.vertices[bvi][1]);
-
-                        minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
-
-                        maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
-
-                      }
-
-                      return maxX >= 0 && minX <= W && maxY >= 0 && minY <= H;
-
-                    });
-
-                    var selectedPoly = visibleTiles[0] || tilePolys[0];
-
-                    var bestCenterDistance = Infinity;
-
-                    for (var vsi = 0; vsi < visibleTiles.length; vsi++) {
-
-                      var vc = displayCenter(visibleTiles[vsi]);
-
-                      var vd = Math.pow(vc.x - W / 2, 2) + Math.pow(vc.y - H / 2, 2);
-
-                      if (vd < bestCenterDistance) { bestCenterDistance = vd; selectedPoly = visibleTiles[vsi]; }
-
-                    }
-
-                    function updateTessSelection(show) {
-
-                      if (!selectedPoly) return;
-
-                      canvas._tessSelectedKey = selectedPoly.key;
-
-                      var selectedCenter = displayCenter(selectedPoly);
-
-                      var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-tess-keyboard-cursor="true"]');
-
-                      if (cursor) {
-
-                        var displayW = canvas.clientWidth || W, displayH = canvas.clientHeight || H;
-
-                        cursor.style.left = ((canvas.offsetLeft || 0) + selectedCenter.x / W * displayW - 10) + 'px';
-
-                        cursor.style.top = ((canvas.offsetTop || 0) + selectedCenter.y / H * displayH - 10) + 'px';
-
-                        cursor.style.display = show ? 'block' : 'none';
-
-                      }
-
-                      var selectedNumber = visibleTiles.indexOf(selectedPoly) + 1;
-
-                      var colorIndex = clickData[selectedPoly.key];
-
-                      canvas.setAttribute('aria-label', 'Tessellation canvas with ' + shape + ' tiles in a ' + scheme +
-
-                        ' color scheme and grid size ' + gridSize + '. Selected tile ' + selectedNumber + ' of ' +
-
-                        visibleTiles.length + (colorIndex === undefined ? '.' : ', colored ' + clickCycleNames[colorIndex] + '.'));
-
-                    }
-
-                    function cycleTile(poly) {
-
-                      if (!poly) return;
-
-                      var newClick = Object.assign({}, clickData);
-
-                      var nextColor = ((newClick[poly.key] || 0) + 1) % clickCyclePalette.length;
-
-                      newClick[poly.key] = nextColor;
-
-                      clickData = newClick;
-
-                      ctx.save();
-
-                      ctx.translate(W / 2, H / 2); ctx.rotate(rotation); ctx.translate(-W / 2, -H / 2);
-
-                      paintTile(poly.vertices, clickCyclePalette[nextColor]);
-
-                      ctx.restore();
-
-                      upd('tessClickData', newClick);
-
-                      updateTessSelection(true);
-
-                      if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_tile_changed_to_color', 'Tile {value1} of {value2} changed to {value3}.'), { value1: (visibleTiles.indexOf(poly) + 1), value2: visibleTiles.length, value3: __alloT('stem.artstudio.sr_color_' + String(clickCycleNames[nextColor]).toLowerCase().replace(/[^a-z0-9]+/g, '_'), clickCycleNames[nextColor]) }));
-
-                    }
-
-                    function moveTessSelection(key) {
-
-                      if (!selectedPoly) return;
-
-                      var current = displayCenter(selectedPoly), best = null, bestScore = Infinity;
-
-                      for (var mi = 0; mi < visibleTiles.length; mi++) {
-
-                        var candidate = visibleTiles[mi];
-
-                        if (candidate === selectedPoly) continue;
-
-                        var cc = displayCenter(candidate), dx = cc.x - current.x, dy = cc.y - current.y;
-
-                        var forward = key === 'ArrowLeft' ? -dx : key === 'ArrowRight' ? dx : key === 'ArrowUp' ? -dy : dy;
-
-                        if (forward <= 1) continue;
-
-                        var sideways = key === 'ArrowLeft' || key === 'ArrowRight' ? Math.abs(dy) : Math.abs(dx);
-
-                        var score = forward + sideways * 2;
-
-                        if (score < bestScore) { bestScore = score; best = candidate; }
-
-                      }
-
-                      if (best) selectedPoly = best;
-
-                    }
-
-                    canvas.onfocus = function () { updateTessSelection(true); };
-
-                    canvas.onblur = function () { updateTessSelection(false); };
-
-                    canvas.onkeydown = function (event) {
-
-                      if (event.key === 'Home') {
-
-                        event.preventDefault();
-
-                        bestCenterDistance = Infinity;
-
-                        for (var hi = 0; hi < visibleTiles.length; hi++) {
-
-                          var hc = displayCenter(visibleTiles[hi]);
-
-                          var hd = Math.pow(hc.x - W / 2, 2) + Math.pow(hc.y - H / 2, 2);
-
-                          if (hd < bestCenterDistance) { bestCenterDistance = hd; selectedPoly = visibleTiles[hi]; }
-
-                        }
-
-                        updateTessSelection(true);
-
-                      } else if (event.key.indexOf('Arrow') === 0) {
-
-                        event.preventDefault();
-
-                        moveTessSelection(event.key);
-
-                        if (event.shiftKey) cycleTile(selectedPoly);
-
-                        else {
-
-                          updateTessSelection(true);
-
-                          if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_selected_tile_of', 'Selected tile {value1} of {value2}.'), { value1: (visibleTiles.indexOf(selectedPoly) + 1), value2: visibleTiles.length }));
-
-                        }
-
-                      } else if (event.key === 'Enter' || event.key === ' ') {
-
-                        event.preventDefault();
-
-                        cycleTile(selectedPoly);
-
-                      }
-
+                    canvas.onclick=function(event){
+                      var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
+                      var x=(event.clientX-rect.left)*512/rect.width,y=(event.clientY-rect.top)*512/rect.height;
+                      for(var i=tiles.length-1;i>=0;i--)if(artStudioTessContains(tiles[i].points,x,y)){canvas.focus({preventScroll:true});edit(tiles[i]);break;}
                     };
-
-                    updateTessSelection(typeof document !== 'undefined' && document.activeElement === canvas);
-
-                    // Click handler for cycling tile colors.
-
-                    canvas.onclick = function (e) {
-
-                      var rect = canvas.getBoundingClientRect();
-
-                      var mx = (e.clientX - rect.left) * (W / rect.width);
-
-                      var my = (e.clientY - rect.top) * (H / rect.height);
-
-                      // Transform click point by inverse rotation
-
-                      var cos = Math.cos(-rotation), sin = Math.sin(-rotation);
-
-                      var cx2 = W / 2, cy2 = H / 2;
-
-                      var dx = mx - cx2, dy = my - cy2;
-
-                      var rx = cx2 + dx * cos - dy * sin;
-
-                      var ry = cy2 + dx * sin + dy * cos;
-
-                      // Find clicked tile
-
-                      for (var ti = tilePolys.length - 1; ti >= 0; ti--) {
-
-                        var poly = tilePolys[ti];
-
-                        var inside = false;
-
-                        var vs = poly.vertices;
-
-                        for (var pi = 0, pj = vs.length - 1; pi < vs.length; pj = pi++) {
-
-                          if (((vs[pi][1] > ry) !== (vs[pj][1] > ry)) && (rx < (vs[pj][0] - vs[pi][0]) * (ry - vs[pi][1]) / (vs[pj][1] - vs[pi][1]) + vs[pi][0])) {
-
-                            inside = !inside;
-
-                          }
-
-                        }
-
-                        if (inside) {
-
-                          selectedPoly = poly;
-
-                          cycleTile(poly);
-
-                          break;
-
-                        }
-
-                      }
-
-                    };
-
+                    redraw();
                   }
 
                 }),
@@ -11698,9 +12933,10 @@ const d = labToolData.artStudio || {};
 
             tab === 'fractal' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement('style',null,`[data-artstudio-fractal-layout] button{min-width:44px;min-height:44px;overflow-wrap:anywhere}[data-artstudio-fractal-layout] [aria-labelledby="artstudio-fractal-color-label"]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}[data-artstudio-fractal-layout] [aria-labelledby="artstudio-fractal-type-label"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}[data-artstudio-fractal-layout] progress{appearance:none;height:8px;border:0;border-radius:8px;overflow:hidden;accent-color:#7c3aed;background:#ede9fe}[data-artstudio-fractal-layout] progress::-webkit-progress-bar{background:#ede9fe}[data-artstudio-fractal-layout] progress::-webkit-progress-value{background:#7c3aed}[data-artstudio-fractal-layout] progress::-moz-progress-bar{background:#7c3aed}[data-artstudio-fractal-layout] :focus-visible{outline:3px solid #7c3aed;outline-offset:3px}@media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-fractal-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-fractal-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-fractal-preview]{grid-row:1}}`),
+              React.createElement("div", { 'data-artstudio-fractal-layout':'true', className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { 'data-artstudio-fractal-controls':'true', className: "space-y-3" },
 
                   React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200" },
 
@@ -11714,7 +12950,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'mandelbrot', label: __alloT('stem.artstudio.mandelbrot', '\uD83C\uDF00 Mandelbrot') }, { id: 'julia', label: __alloT('stem.artstudio.julia', '\u2728 Julia') }, { id: 'burningShip', label: __alloT('stem.artstudio.burning_ship', '\uD83D\uDD25 Burning Ship') }, { id: 'sierpinski', label: __alloT('stem.artstudio.sierpinski', '\u25B3 Sierpinski') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalType || 'mandelbrot') === s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": fractalModel.fractalType === s.id, onClick: function () { changeFractal({fractalType:s.id,fractalZoom:1,fractalPanX:0,fractalPanY:0}); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + (fractalModel.fractalType === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -11722,7 +12958,7 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'fractalIter', label: __alloT('stem.artstudio.max_iterations', 'Max Iterations'), min: 50, max: 500, def: 200 },
+                    [fractalModel.fractalType==='sierpinski'?{ k:'fractalDepth',label:__alloT('stem.artstudio.fractal_depth','Subdivision depth'),min:0,max:10,def:7 }:{ k: 'fractalIter', label: __alloT('stem.artstudio.max_iterations', 'Max Iterations'), min: 50, max: 500, def: 200 },
 
                      { k: 'fractalZoom', label: __alloT('stem.artstudio.zoom', 'Zoom'), min: 1, max: 500, def: 1 },
 
@@ -11730,25 +12966,25 @@ const d = labToolData.artStudio || {};
 
                      { k: 'fractalPanY', label: __alloT('stem.artstudio.vertical_pan', 'Vertical pan'), min: -200, max: 200, def: 0 }].map(function (s) {
 
-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      var val = fractalModel[s.k];
 
                       var valueText = s.k === 'fractalZoom' ? val + ' times magnification' :
 
                         s.k === 'fractalPanX' ? val + ' horizontal units' :
 
-                        s.k === 'fractalPanY' ? val + ' vertical units' : val + ' iterations';
+                        s.k === 'fractalPanY' ? val + ' vertical units' : s.k==='fractalDepth'?val+' subdivisions':val + ' iterations';
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
-                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-violet-700 block mb-0.5" }, s.label + ': ' + val),
+                        React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-violet-700 block mb-0.5" }, s.label + ': ' + Number(val.toFixed(5))),
 
-                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": valueText, onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
+                        React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, step: /Zoom|Pan/.test(s.k)?'any':1, value: val, "aria-valuetext": valueText, onChange: function (e) { var patch={};patch[s.k]=parseFloat(e.target.value);changeFractal(patch); }, className: "w-full accent-violet-600" })
 
                       );
 
                     }),
 
-                    (d.fractalType || 'mandelbrot') === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                    fractalModel.fractalType === 'julia' && React.createElement("div", { className: "space-y-2 mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200" },
 
                       React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700" }, __alloT('stem.artstudio.julia_constant_c', "Julia Constant (c)")),
 
@@ -11756,13 +12992,13 @@ const d = labToolData.artStudio || {};
 
                        { k: 'juliaImag', label: __alloT('stem.artstudio.c_imaginary', 'c imaginary'), min: -200, max: 200, def: 27 }].map(function (s) {
 
-                        var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                        var val = fractalModel[s.k];
 
                         return React.createElement("div", { key: s.k },
 
                           React.createElement("label", { htmlFor: 'artstudio-' + s.k, className: "text-[0.6875rem] font-bold text-violet-700 block" }, s.label + ': ' + (val / 100).toFixed(2)),
 
-                          React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": (val / 100).toFixed(2), onChange: function (e) { upd(s.k, parseInt(e.target.value)); upd('fractalReset', Date.now()); }, className: "w-full accent-violet-600" })
+                          React.createElement("input", { id: 'artstudio-' + s.k, type: "range", min: s.min, max: s.max, value: val, "aria-valuetext": (val / 100).toFixed(2), onChange: function (e) { var patch={};patch[s.k]=parseFloat(e.target.value);changeFractal(patch); }, className: "w-full accent-violet-600" })
 
                         );
 
@@ -11778,7 +13014,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'classic', label: __alloT('stem.artstudio.classic', '\uD83C\uDF08 Classic') }, { id: 'fire', label: __alloT('stem.artstudio.fire', '\uD83D\uDD25 Fire') }, { id: 'ocean', label: __alloT('stem.artstudio.ocean', '\uD83C\uDF0A Ocean') }, { id: 'psychedelic', label: __alloT('stem.artstudio.psychedelic', '\uD83D\uDC9C Psychedelic') }, { id: 'grayscale', label: __alloT('stem.artstudio.grayscale', '\u25AB Grayscale') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalColor || 'classic') === s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": fractalModel.fractalColor === s.id, onClick: function () { changeFractal({fractalColor:s.id}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + (fractalModel.fractalColor === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -11788,9 +13024,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_view_reset_to_one_times_zoom_and_centere', 'Fractal view reset to one times zoom and centered pan.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
+                      React.createElement("button", { onClick: function () { changeFractal({fractalZoom:1,fractalPanX:0,fractalPanY:0}); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_view_reset_to_one_times_zoom_and_centere', 'Fractal view reset to one times zoom and centered pan.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_png_exported', 'Fractal PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { try { var c=document.getElementById('fractalCanvas');if(!c||!c._fractalExportPNG)throw new Error('Canvas unavailable');var link=document.createElement('a');link.download='fractal-'+Date.now()+'.png';link.href=c._fractalExportPNG();link.click();if(typeof addToast==='function')addToast(__alloT('stem.artstudio.toast_png_exported','PNG exported!'),'success');if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_fractal_png_exported','Fractal PNG exported.')); } catch(error) {if(typeof addToast==='function')addToast(__alloT('stem.artstudio.fractal_export_failed','Unable to export this fractal. Please try again.'),'error');} }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -11798,21 +13034,28 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("span", { id: "artstudio-fractal-presets-label", className: "text-[0.6875rem] font-bold text-violet-700 mr-1" }, "Presets:"),
 
-                      [{ label: __alloT('stem.artstudio.seahorse_valley', 'Seahorse Valley'), type: 'mandelbrot', panX: 74, panY: -20, zoom: 120, iter: 350 },
+                      [{ label: __alloT('stem.artstudio.seahorse_valley', 'Seahorse Valley'), type: 'mandelbrot', panX: 12.5, panY: -5, zoom: 100, iter: 350 },
 
-                       { label: __alloT('stem.artstudio.elephant_valley', 'Elephant Valley'), type: 'mandelbrot', panX: 36, panY: -4, zoom: 80, iter: 300 },
+                       { label: __alloT('stem.artstudio.elephant_valley', 'Elephant Valley'), type: 'mandelbrot', panX: -40, panY: 0, zoom: 30, iter: 300 },
 
                        { label: __alloT('stem.artstudio.lightning', 'Lightning'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 250, jr: -12, ji: 75 },
 
                        { label: __alloT('stem.artstudio.spiral_arm', 'Spiral Arm'), type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_fractal_preset', 'Load {value1} fractal preset'), { value1: pr.label }), onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_fractal_preset', 'Load {value1} fractal preset'), { value1: pr.label }), onClick: function () { changeFractal(Object.assign({fractalType:pr.type,fractalPanX:pr.panX,fractalPanY:pr.panY,fractalZoom:pr.zoom,fractalIter:pr.iter},pr.jr!==undefined?{juliaReal:pr.jr,juliaImag:pr.ji}:{})); if (typeof announceToSR === 'function') announceToSR(pr.label + ' fractal preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-violet-700 border border-violet-300 hover:bg-violet-50 transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
                     ),
 
-                    React.createElement("p", { id: "artstudio-fractal-instructions", className: "mt-3 text-[0.6875rem] text-violet-700 leading-relaxed" }, __alloT('stem.artstudio.fractal_keyboard_instructions', "Keyboard: use the Zoom, Horizontal pan, and Vertical pan sliders to explore every view. Pointer users can also double-click a location or use the mouse wheel."))
+                    React.createElement('div',{className:'flex flex-wrap gap-2 mt-3'},
+                      React.createElement('button',{type:'button',id:'artstudio-fractal-back',disabled:!fractalHistoryRef.current.undo.length,onClick:function(){changeFractalHistory(false);},className:'flex-1 rounded-lg border border-violet-300 bg-white px-3 py-2 text-xs font-bold text-violet-800 disabled:opacity-50'},__alloT('stem.artstudio.fractal_back','Back view')),
+                      React.createElement('button',{type:'button',id:'artstudio-fractal-forward',disabled:!fractalHistoryRef.current.redo.length,onClick:function(){changeFractalHistory(true);},className:'flex-1 rounded-lg border border-violet-300 bg-white px-3 py-2 text-xs font-bold text-violet-800 disabled:opacity-50'},__alloT('stem.artstudio.fractal_forward','Forward view'))),
+                    React.createElement('div',{className:'grid grid-cols-3 gap-2 mt-2',role:'group','aria-label':__alloT('stem.artstudio.fractal_navigation','Fractal navigation')},
+                      [{id:'left',label:__alloT('stem.artstudio.fractal_left','Pan left'),dx:1,dy:0},{id:'up',label:__alloT('stem.artstudio.fractal_up','Pan up'),dx:0,dy:1},{id:'right',label:__alloT('stem.artstudio.fractal_right','Pan right'),dx:-1,dy:0},{id:'out',label:__alloT('stem.artstudio.fractal_out','Zoom out'),factor:0.5},{id:'down',label:__alloT('stem.artstudio.fractal_down','Pan down'),dx:0,dy:-1},{id:'in',label:__alloT('stem.artstudio.fractal_in','Zoom in'),factor:2}].map(function(action){return React.createElement('button',{key:action.id,type:'button',id:'artstudio-fractal-'+action.id,disabled:action.factor&&(action.factor>1?fractalModel.fractalZoom>=500:fractalModel.fractalZoom<=1),onClick:function(){var m=fractalHistoryRef.current.current;changeFractal(action.factor?artStudioFractalZoom(m,action.factor,0.5,0.5,false):{fractalPanX:m.fractalPanX+action.dx*30/m.fractalZoom,fractalPanY:m.fractalPanY+action.dy*30/m.fractalZoom});},className:'rounded-lg border border-violet-300 bg-white px-2 py-2 text-xs font-bold text-violet-800 disabled:opacity-50'},action.label);})
+                    ),
+                    React.createElement('p',{className:'mt-3 text-xs text-violet-800',id:'artstudio-fractal-coordinates'},formatArtStudioLearningText(__alloT('stem.artstudio.fractal_coordinates','View center: {x}, {y} · width: {span}'),{x:artStudioFractalPoint(fractalModel,0.5,0.5)[0].toFixed(6),y:artStudioFractalPoint(fractalModel,0.5,0.5)[1].toFixed(6),span:(3/fractalModel.fractalZoom).toFixed(6)})),
+                    React.createElement("p", { id: "artstudio-fractal-instructions", className: "mt-3 text-[0.6875rem] text-violet-700 leading-relaxed" }, __alloT('stem.artstudio.fractal_navigation_instructions', 'Focus the canvas: arrows pan, + and − zoom, Home resets, Ctrl/Cmd+Z goes back. Double-click to center and zoom; the wheel zooms around the pointer. Back view restores earlier settings. Scroll outside the canvas to move the page.'))
 
                   ),
 
@@ -11828,13 +13071,13 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { id: "artstudio-fractal-info", hidden: !d.showFractalInfo, role: "region", "aria-labelledby": "artstudio-fractal-info-toggle", className: "mt-3 space-y-2 text-xs text-slate-700 leading-relaxed" },
 
-                      React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, __alloT('stem.artstudio.the_mandelbrot_set', "The Mandelbrot set")), __alloT('stem.artstudio.is_generated_by_iterating_z_z_c_for_ev', " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals "), React.createElement("strong", null, __alloT('stem.artstudio.infinite_complexity', "infinite complexity")), __alloT('stem.artstudio.at_every_scale', " at every scale.")),
+                      React.createElement("p", null, "\uD83C\uDF00 ", React.createElement("strong", null, __alloT('stem.artstudio.the_mandelbrot_set', "The Mandelbrot set")), __alloT('stem.artstudio.is_generated_by_iterating_z_z_c_for_ev', " is generated by iterating z = z\u00B2 + c for every point c in the complex plane. Points where |z| stays bounded (never exceeds 2) are 'in' the set. The boundary reveals "), React.createElement("strong", null, __alloT('stem.artstudio.infinite_complexity', "infinite complexity")), __alloT('stem.artstudio.fractal_finite_detail', ' at every scale. This explorer uses a finite iteration limit: black means a point has not escaped yet, rather than proof that it will stay bounded forever.')),
 
                       React.createElement("p", null, "\u2728 ", React.createElement("strong", null, __alloT('stem.artstudio.julia_sets', "Julia sets")), __alloT('stem.artstudio.julia_parameter_connection_explained', " use the same formula but fix c and vary the starting z. For z squared plus c, parameters in the Mandelbrot set give connected Julia sets; parameters outside it give disconnected, dust-like Cantor Julia sets. The Fatou set is the complement of the Julia set.")),
 
                       React.createElement("p", null, __alloT('stem.artstudio.the', "\uD83D\uDD25 The "), React.createElement("strong", null, __alloT('stem.artstudio.burning_ship_2', "Burning Ship")), __alloT('stem.artstudio.fractal_modifies_the_iteration_to_z_re', " fractal modifies the iteration to z = (|Re(z)| + i|Im(z)|)\u00B2 + c, creating an asymmetric shape resembling a flaming vessel. It was discovered by Michael Michelitsch and Otto R\u00F6ssler in 1992.")),
 
-                      React.createElement("p", null, __alloT('stem.artstudio.the_2', "\u25B3 The "), React.createElement("strong", null, __alloT('stem.artstudio.sierpinski_triangle', "Sierpinski Triangle")), __alloT('stem.artstudio.is_built_by_the_chaos_game_pick_a_rand', " is built by the 'chaos game': pick a random point, then repeatedly jump halfway toward a randomly chosen vertex. Remarkably, this random process produces a perfectly self-similar fractal.")),
+                      React.createElement("p", null, __alloT('stem.artstudio.the_2', "\u25B3 The "), React.createElement("strong", null, __alloT('stem.artstudio.sierpinski_triangle', "Sierpinski Triangle")), __alloT('stem.artstudio.fractal_sierpinski_subdivision', ' is built here by splitting an equilateral triangle into four equal triangles and removing the middle one, then repeating in the remaining three. Subdivision depth controls how many times this happens; depth 0 shows the original triangle.')),
 
                       React.createElement("p", null, "\uD83E\uDDE0 ", React.createElement("strong", null, __alloT('stem.artstudio.benoit_mandelbrot', "Benoit Mandelbrot")), __alloT('stem.artstudio.1924_2010_coined_the_word_fractal_from', " (1924\u20132010) coined the word 'fractal' from Latin 'fractus' (broken). He showed that coastlines, mountains, blood vessels, and stock markets all exhibit fractal geometry \u2014 "), React.createElement("strong", null, __alloT('stem.artstudio.nature_is_fractal', "nature is fractal")), ".")
 
@@ -11844,323 +13087,81 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-fractal-instructions", 'aria-label': ((d.fractalType || 'mandelbrot') === 'mandelbrot' ? 'Mandelbrot fractal: a dark cardioid and circular bulbs bordered by repeating colored tendrils' : (d.fractalType || 'mandelbrot') === 'julia' ? 'Julia fractal: self-similar colored branches generated from the selected complex constant' : (d.fractalType || 'mandelbrot') === 'burningShip' ? 'Burning Ship fractal: an asymmetric ship-like boundary with flame-shaped repeating detail' : 'Sierpinski triangle: a self-similar triangle subdivided into three smaller triangles') + '. ' + (typeof d.fractalIter === 'number' ? d.fractalIter : 200) + ' maximum iterations, ' + (typeof d.fractalZoom === 'number' ? d.fractalZoom : 1) + ' times zoom, horizontal pan ' + (typeof d.fractalPanX === 'number' ? d.fractalPanX : 0) + ', vertical pan ' + (typeof d.fractalPanY === 'number' ? d.fractalPanY : 0) + ', ' + (d.fractalColor || 'classic') + ' color scheme.', className: "rounded-xl border-2 border-violet-300 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
-
-                  key: 'frac-' + (d.fractalType || 'mandelbrot') + '-' + (d.fractalReset || 0),
-
-                  ref: function (canvas) {
-
-                    if (!canvas) return;
-
-                    if (canvas._fracInit) return;
-
-                    canvas._fracInit = true;
-
-                    var ctx = canvas.getContext('2d');
-
-                    var W = canvas.width, H = canvas.height;
-
-                    var type = d.fractalType || 'mandelbrot';
-
-                    var maxIter = typeof d.fractalIter === 'number' ? d.fractalIter : 200;
-
-                    var zoom = typeof d.fractalZoom === 'number' ? d.fractalZoom : 1;
-
-                    var panX = typeof d.fractalPanX === 'number' ? d.fractalPanX : 0;
-
-                    var panY = typeof d.fractalPanY === 'number' ? d.fractalPanY : 0;
-
-                    var colorScheme = d.fractalColor || 'classic';
-
-                    var juliaR = typeof d.juliaReal === 'number' ? d.juliaReal / 100 : -0.7;
-
-                    var juliaI = typeof d.juliaImag === 'number' ? d.juliaImag / 100 : 0.27;
-
-
-
-                    function getColor(iter, max) {
-
-                      if (iter === max) return [0, 0, 0];
-
-                      var t = iter / max;
-
-                      if (colorScheme === 'fire') return [Math.min(255, Math.round(t * 3 * 255)), Math.round(t * t * 255), Math.round(t * t * t * 200)];
-
-                      if (colorScheme === 'ocean') return [Math.round(t * t * 80), Math.round(t * 180), Math.min(255, Math.round(t * 1.5 * 255))];
-
-                      if (colorScheme === 'psychedelic') {
-
-                        var h = (t * 360 * 3) % 360;
-
-                        var s = 0.9, l = 0.5;
-
-                        var c = (1 - Math.abs(2 * l - 1)) * s;
-
-                        var x = c * (1 - Math.abs((h / 60) % 2 - 1));
-
-                        var m = l - c / 2;
-
-                        var r1, g1, b1;
-
-                        if (h < 60) { r1 = c; g1 = x; b1 = 0; } else if (h < 120) { r1 = x; g1 = c; b1 = 0; }
-
-                        else if (h < 180) { r1 = 0; g1 = c; b1 = x; } else if (h < 240) { r1 = 0; g1 = x; b1 = c; }
-
-                        else if (h < 300) { r1 = x; g1 = 0; b1 = c; } else { r1 = c; g1 = 0; b1 = x; }
-
-                        return [Math.round((r1 + m) * 255), Math.round((g1 + m) * 255), Math.round((b1 + m) * 255)];
-
+                React.createElement('div',{'data-artstudio-fractal-preview':'true',className:'min-w-0'},
+                  React.createElement('canvas',{id:'fractalCanvas',tabIndex:0,key:'fractal-'+fractalOwner,width:512,height:512,role:'img','aria-describedby':'artstudio-fractal-instructions','aria-keyshortcuts':'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home Control+z Meta+z Control+Shift+z Meta+Shift+z',
+                    'aria-label':fractalCanvasDescription,
+                    className:'rounded-xl border-2 border-violet-300 shadow-lg mx-auto block cursor-crosshair',style:{maxWidth:'100%',background:'#0a0a1a'},ref:function(canvas){
+                      if(!canvas)return;
+                      canvas._fractalChange=changeFractal;canvas._fractalHistory=changeFractalHistory;canvas._fractalModel=fractalModel;
+                      if(canvas._fractalSignature===fractalSignature)return;
+                      if(fractalRuntimeRef.current)fractalRuntimeRef.current.dispose();
+                      var ctx=canvas.getContext('2d');if(!ctx)return;
+                      canvas._fractalSignature=fractalSignature;
+                      var model=fractalModel,job=artStudioFractalRaster(ctx,model,512,512),disposed=false,exportCanvas=null;
+                      ctx.fillStyle='#0a0a1a';ctx.fillRect(0,0,512,512);
+                      function stop(){if(canvas._fracAnim)cancelAnimationFrame(canvas._fracAnim);canvas._fracAnim=0;}
+                      function progress(){
+                        canvas.setAttribute('aria-busy',job.rows<512?'true':'false');canvas.setAttribute('data-fractal-rows',String(job.rows));
+                        var meter=document.getElementById('artstudio-fractal-progress');if(meter)meter.value=job.rows/512*100;
+                        var status=document.getElementById('artstudio-fractal-status');if(status)status.textContent=job.rows<512?__alloT('stem.artstudio.fractal_rendering','Rendering detail…'):__alloT('stem.artstudio.fractal_ready','Complete · ready to export');
                       }
-
-                      if (colorScheme === 'grayscale') { var v = Math.round(t * 255); return [v, v, v]; }
-
-                      // classic rainbow
-
-                      var h2 = (t * 360 * 2) % 360;
-
-                      var c2 = 1 * 0.8; var x2 = c2 * (1 - Math.abs((h2 / 60) % 2 - 1)); var m2 = 0.1;
-
-                      var r2, g2, b2;
-
-                      if (h2 < 60) { r2 = c2; g2 = x2; b2 = 0; } else if (h2 < 120) { r2 = x2; g2 = c2; b2 = 0; }
-
-                      else if (h2 < 180) { r2 = 0; g2 = c2; b2 = x2; } else if (h2 < 240) { r2 = 0; g2 = x2; b2 = c2; }
-
-                      else if (h2 < 300) { r2 = x2; g2 = 0; b2 = c2; } else { r2 = c2; g2 = 0; b2 = x2; }
-
-                      return [Math.round((r2 + m2) * 255), Math.round((g2 + m2) * 255), Math.round((b2 + m2) * 255)];
-
+                      function frame(){
+                        canvas._fracAnim=0;if(disposed||!canvas.isConnected)return;
+                        var from=job.rows;job.renderTo(from+8);
+                        if(!reducedMotion||job.rows===512)ctx.putImageData(job.image,0,0,0,reducedMotion?0:from,512,reducedMotion?512:job.rows-from);
+                        progress();if(job.rows<512)canvas._fracAnim=requestAnimationFrame(frame);
+                      }
+                      canvas._fractalExportCanvas=function(){
+                        if(!exportCanvas){var output=document.createElement('canvas');output.width=output.height=512;var target=output.getContext('2d');if(!target)throw new Error('Canvas unavailable');
+                          if(job.rows===512)target.putImageData(job.image,0,0);else{var complete=artStudioFractalRaster(target,model,512,512);complete.renderTo(512);target.putImageData(complete.image,0,0);}exportCanvas=output;
+                        }return exportCanvas;
+                      };
+                      canvas._fractalExportPNG=function(){return canvas._fractalExportCanvas().toDataURL('image/png');};
+                      canvas._captureArtStudioState=function(){return Object.assign({},canvas._fractalModel);};
+                      function zoom(factor,u,v,recenter){canvas._fractalChange(artStudioFractalZoom(canvas._fractalModel,factor,u,v,recenter));}
+                      canvas.ondblclick=function(event){var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;event.preventDefault();canvas.focus({preventScroll:true});zoom(2,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height,true);};
+                      function wheel(event){if(!event.deltaY)return;var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;event.preventDefault();zoom(event.deltaY<0?1.3:1/1.3,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height,false);}
+                      canvas.addEventListener('wheel',wheel,{passive:false});
+                      canvas.onkeydown=function(event){var key=event.key.toLowerCase(),m=canvas._fractalModel;
+                        if((event.ctrlKey||event.metaKey)&&(key==='z'||key==='y')){event.preventDefault();canvas._fractalHistory(key==='y'||event.shiftKey);}
+                        else if(key==='+'||key==='='||key==='-'){event.preventDefault();zoom(key==='-'?0.5:2,0.5,0.5,false);}
+                        else if(key==='home'){event.preventDefault();canvas._fractalChange({fractalZoom:1,fractalPanX:0,fractalPanY:0});}
+                        else if(/^arrow(left|right|up|down)$/.test(key)){event.preventDefault();var step=(event.shiftKey?60:15)/m.fractalZoom;canvas._fractalChange({fractalPanX:m.fractalPanX+(key==='arrowleft'?step:key==='arrowright'?-step:0),fractalPanY:m.fractalPanY+(key==='arrowup'?step:key==='arrowdown'?-step:0)});}
+                      };
+                      canvas.onpointerdown=function(){canvas.focus({preventScroll:true});};
+                      fractalRuntimeRef.current={dispose:function(){disposed=true;stop();canvas.removeEventListener('wheel',wheel);canvas._fractalSignature='';}};
+                      progress();canvas._fracAnim=requestAnimationFrame(frame);
                     }
-
-
-
-                    if (type === 'sierpinski') {
-
-                      // Chaos game Sierpinski
-
-                      ctx.fillStyle = '#0a0a1a'; ctx.fillRect(0, 0, W, H);
-
-                      var verts = [[W / 2, 20], [20, H - 20], [W - 20, H - 20]];
-
-                      var px = Math.random() * W, py = Math.random() * H;
-
-                      var si = 0, total = 100000;
-
-                      var batchSize = reducedMotion ? total : 500;
-
-                      function drawSierpBatch() {
-
-                        for (var b = 0; b < batchSize && si < total; b++, si++) {
-
-                          var vi = Math.floor(Math.random() * 3);
-
-                          px = (px + verts[vi][0]) / 2;
-
-                          py = (py + verts[vi][1]) / 2;
-
-                          if (si > 10) {
-
-                            var t = si / total;
-
-                            var col = getColor(Math.round(t * maxIter * 0.5), maxIter);
-
-                            ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.7)';
-
-                            ctx.fillRect(px, py, 1.2, 1.2);
-
-                          }
-
-                        }
-
-                        if (si < total && canvas.isConnected) canvas._fracAnim = requestAnimationFrame(drawSierpBatch);
-
-                      }
-
-                      drawSierpBatch();
-
-                    } else {
-
-                      // Mandelbrot / Julia / Burning Ship — pixel-by-pixel via ImageData
-
-                      var imgData = ctx.createImageData(W, H);
-
-                      var data = imgData.data;
-
-                      // Render in chunks for responsiveness
-
-                      var rowsDone = 0;
-
-                      var centerX = type === 'mandelbrot' ? -0.5 : type === 'burningShip' ? -0.4 : 0;
-
-                      var centerY = type === 'burningShip' ? -0.5 : 0;
-
-                      var scale = 3.0 / (zoom * Math.min(W, H));
-
-                      var offsetX = (panX / 100) * 2;
-
-                      var offsetY = (panY / 100) * 2;
-
-
-
-                      function renderChunk() {
-
-                        var endRow = Math.min(rowsDone + 16, H);
-
-                        for (var py2 = rowsDone; py2 < endRow; py2++) {
-
-                          for (var px2 = 0; px2 < W; px2++) {
-
-                            var x0 = (px2 - W / 2) * scale + centerX - offsetX;
-
-                            var y0 = (py2 - H / 2) * scale + centerY - offsetY;
-
-                            var zr, zi, cr, ci, iter = 0;
-
-
-
-                            if (type === 'julia') {
-
-                              zr = x0; zi = y0; cr = juliaR; ci = juliaI;
-
-                            } else {
-
-                              zr = 0; zi = 0; cr = x0; ci = y0;
-
-                            }
-
-
-
-                            while (iter < maxIter && zr * zr + zi * zi < 4) {
-
-                              if (type === 'burningShip') {
-
-                                var tr = Math.abs(zr), ti = Math.abs(zi);
-
-                                var newR = tr * tr - ti * ti + cr;
-
-                                zi = 2 * tr * ti + ci;
-
-                                zr = newR;
-
-                              } else {
-
-                                var newR2 = zr * zr - zi * zi + cr;
-
-                                zi = 2 * zr * zi + ci;
-
-                                zr = newR2;
-
-                              }
-
-                              iter++;
-
-                            }
-
-
-
-                            // Smooth coloring
-
-                            var smoothIter = iter;
-
-                            if (iter < maxIter) {
-
-                              var log_zn = Math.log(zr * zr + zi * zi) / 2;
-
-                              var nu = Math.log(log_zn / Math.log(2)) / Math.log(2);
-
-                              if (isFinite(nu)) smoothIter = iter + 1 - nu;
-
-                            }
-
-
-
-                            var col = getColor(smoothIter, maxIter);
-
-                            var idx = (py2 * W + px2) * 4;
-
-                            data[idx] = col[0]; data[idx + 1] = col[1]; data[idx + 2] = col[2]; data[idx + 3] = 255;
-
-                          }
-
-                        }
-
-                        if (reducedMotion) {
-
-                          if (endRow === H) ctx.putImageData(imgData, 0, 0);
-
-                        } else {
-
-                          ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
-
-                        }
-
-                        rowsDone = endRow;
-
-                        if (rowsDone < H && canvas.isConnected) canvas._fracAnim = requestAnimationFrame(renderChunk);
-
-                      }
-
-                      renderChunk();
-
-                    }
-
-
-
-                    // Click-to-zoom
-
-                    canvas.ondblclick = function (e) {
-
-                      var rect = canvas.getBoundingClientRect();
-
-                      var mx = (e.clientX - rect.left) * (W / rect.width);
-
-                      var my = (e.clientY - rect.top) * (H / rect.height);
-
-                      var newPanX = Math.round(((W / 2 - mx) / W) * 100 + panX);
-
-                      var newPanY = Math.round(((H / 2 - my) / H) * 100 + panY);
-
-                      var newZoom = Math.min(500, Math.round(zoom * 2));
-
-                      upd('fractalPanX', newPanX); upd('fractalPanY', newPanY); upd('fractalZoom', newZoom); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_fractal_view_zoomed_to_times_at_horizontal_pan', 'Fractal view zoomed to {value1} times at horizontal pan {value2} and vertical pan {value3}.'), { value1: newZoom, value2: newPanX, value3: newPanY }));
-
-                    };
-
-                    // Scroll-to-zoom
-
-                    canvas.onwheel = function (e) {
-
-                      e.preventDefault();
-
-                      var factor = e.deltaY < 0 ? 1.3 : 0.77;
-
-                      var newZoom2 = Math.max(1, Math.min(500, Math.round(zoom * factor)));
-
-                      upd('fractalZoom', newZoom2); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_fractal_zoom_times', 'Fractal zoom {value1} times.'), { value1: newZoom2 }));
-
-                    };
-
-                  }
-
-                })
+                  }),
+                  React.createElement('div',{className:'mt-3 mx-auto text-xs text-violet-800',style:{maxWidth:'min(100%,76dvh)'}},
+                    React.createElement('label',{htmlFor:'artstudio-fractal-progress',className:'block font-bold'},__alloT('stem.artstudio.fractal_render_progress','Render progress')),
+                    React.createElement('progress',{id:'artstudio-fractal-progress',max:100,defaultValue:0,className:'w-full','aria-label':__alloT('stem.artstudio.fractal_render_progress','Render progress')}),
+                    React.createElement('p',{id:'artstudio-fractal-status',role:'status','aria-live':'polite'},__alloT('stem.artstudio.fractal_rendering','Rendering detail…')))
+                )
 
               ),
 
-              React.createElement("p", { className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, __alloT('stem.artstudio.double_click_to_zoom_in_scroll_wheel_t', "\uD83D\uDC46 Double-click to zoom in \u2022 Scroll-wheel to zoom in/out"))
+              React.createElement("p", { className: "text-[0.6875rem] text-center text-slate-600 italic mt-1" }, __alloT('stem.artstudio.fractal_footer_help', 'Follow an edge to reveal detail. Increase iterations if an escape-time boundary looks too solid; use Back view to retrace your exploration.'))
 
             ),
 
             // ═══ GRADIENT LAB TAB ═══
 
-            tab === 'gradient' && React.createElement("div", { className: "space-y-3" },
+            tab === 'gradient' && React.createElement("div", { className: "space-y-3",onPointerDownCapture:gradientBeginGesture,onPointerUpCapture:gradientEndGesture,onPointerCancelCapture:gradientEndGesture,onBlurCapture:gradientEndGesture,onKeyDownCapture:gradientKeyDown,onKeyUpCapture:gradientEndGesture },
 
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement('style',null,`[data-artstudio-gradient-layout] button{min-height:44px;min-width:44px} @media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-gradient-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-gradient-controls]{max-height:76dvh;overflow:auto;padding-right:4px}} @media(max-width:1023px){[data-artstudio-gradient-preview]{grid-row:1}}`),
+              React.createElement("div", { 'data-artstudio-gradient-layout':'true',className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { 'data-artstudio-gradient-controls':'true',className: "space-y-3" },
 
                   React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-orange-50 rounded-xl p-4 border border-rose-200" },
 
                     React.createElement("h4", { className: "text-xs font-bold text-rose-700 mb-3" }, __alloT('stem.artstudio.gradient_lab', "\uD83C\uDF08 Gradient Lab")),
+                    React.createElement('div',{className:'flex flex-wrap gap-2 mb-3'},
+                      React.createElement('button',{type:'button',id:'artstudio-gradient-undo',disabled:!gradientHistoryRef.current.undo.length,onClick:function(){changeGradientHistory(false);},className:'rounded-lg border border-rose-300 bg-white px-3 py-2 text-xs font-bold text-rose-800 disabled:opacity-40'},__alloT('stem.artstudio.gradient_undo','Undo gradient edit')),
+                      React.createElement('button',{type:'button',id:'artstudio-gradient-redo',disabled:!gradientHistoryRef.current.redo.length,onClick:function(){changeGradientHistory(true);},className:'rounded-lg border border-rose-300 bg-white px-3 py-2 text-xs font-bold text-rose-800 disabled:opacity-40'},__alloT('stem.artstudio.gradient_redo','Redo gradient edit'))),
+                    React.createElement('p',{className:'text-xs text-slate-700 mb-3'},__alloT('stem.artstudio.gradient_history_hint','A slider drag is one undo step. Ctrl or Cmd + Z undoes; add Shift to redo.')),
+
 
                     React.createElement("div", { className: "mb-3" },
 
@@ -12170,7 +13171,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'linear', label: __alloT('stem.artstudio.linear', '\u2194 Linear') }, { id: 'radial', label: __alloT('stem.artstudio.radial', '\u25CE Radial') }, { id: 'conic', label: __alloT('stem.artstudio.conic', '\uD83C\uDF00 Conic') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradType || 'linear') === s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (gradientModel.gradType) === s.id, onClick: function () { changeGradient({gradType:s.id}); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((gradientModel.gradType) === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -12178,13 +13179,17 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    (d.gradType || 'linear') === 'linear' && React.createElement("div", { className: "mb-3" },
+                    (gradientModel.gradType) === 'linear' && React.createElement("div", { className: "mb-3" },
 
-                      React.createElement("label", { htmlFor: "artstudio-grad-angle", className: "text-[0.6875rem] font-bold text-rose-700 block mb-0.5" }, "Angle: " + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '\u00B0'),
+                      React.createElement("label", { htmlFor: "artstudio-grad-angle", className: "text-[0.6875rem] font-bold text-rose-700 block mb-0.5" }, "Angle: " + (gradientModel.gradAngle) + '\u00B0'),
 
-                      React.createElement("input", { id: "artstudio-grad-angle", type: "range", min: 0, max: 360, value: typeof d.gradAngle === 'number' ? d.gradAngle : 90, "aria-valuetext": (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + ' degrees', onChange: function (e) { upd('gradAngle', parseInt(e.target.value)); }, className: "w-full accent-rose-600" })
+                      React.createElement("input", { id: "artstudio-grad-angle", type: "range", min: 0, max: 360, value: gradientModel.gradAngle, "aria-valuetext": (gradientModel.gradAngle) + ' degrees', onChange: function (e) { changeGradient({gradAngle:Number(e.target.value)}); }, className: "w-full accent-rose-600" })
 
                     ),
+
+                    gradientModel.gradType!=='linear'&&React.createElement('div',{className:'mb-3 rounded-lg bg-white border border-rose-200 p-3 space-y-2'},
+                      [{key:'gradCenterX',label:__alloT('stem.artstudio.gradient_center_x','Center horizontal position')},{key:'gradCenterY',label:__alloT('stem.artstudio.gradient_center_y','Center vertical position')}].concat(gradientModel.gradType==='conic'?[{key:'gradRotation',label:__alloT('stem.artstudio.gradient_rotation','Conic rotation')}]:[]).map(function(control){return React.createElement('label',{key:control.key,className:'block text-xs font-bold text-rose-800'},control.label+': '+gradientModel[control.key]+(control.key==='gradRotation'?'°':'%'),React.createElement('input',{type:'range',min:0,max:control.key==='gradRotation'?360:100,value:gradientModel[control.key],'aria-label':control.label,onChange:function(event){var patch={};patch[control.key]=Number(event.target.value);changeGradient(patch);},className:'block w-full accent-rose-600'}));}),
+                      React.createElement('button',{type:'button',onClick:function(){changeGradient({gradCenterX:50,gradCenterY:50});},className:'rounded-lg border border-rose-300 px-3 py-1 text-xs font-bold text-rose-800'},__alloT('stem.artstudio.gradient_recenter','Recenter gradient'))),
 
                     React.createElement("div", { className: "mb-3" },
 
@@ -12194,7 +13199,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'smooth', label: __alloT('stem.artstudio.smooth', 'Smooth') }, { id: 'hard', label: __alloT('stem.artstudio.hard_edge', 'Hard Edge') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradBlend || 'smooth') === s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (gradientModel.gradBlend) === s.id, onClick: function () { changeGradient({gradBlend:s.id}); }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((gradientModel.gradBlend) === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -12212,27 +13217,18 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("button", { "aria-label": __alloT('stem.artstudio.add_stop', "Add color stop"), "aria-describedby": "artstudio-gradient-stop-help", disabled: (artStudioGradientStops(d.gradStops)).length >= 8, onClick: function () {
 
-                          var stops = artStudioGradientStops(d.gradStops);
-
-                          if (stops.length < 8) {
-
-                            var newPos = 50;
-
-                            stops = stops.concat([{ hue: Math.round(Math.random() * 360), pos: newPos }]);
-
-                            stops.sort(function (a, b) { return a.pos - b.pos; });
-
-                            upd('gradStops', stops);
-
-                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_color_stop_added_stops_total', 'Color stop added. {value1} stops total.'), { value1: stops.length }));
-
-                          }
+                          var stops=artStudioGradientInsert(gradientHistoryRef.current.current);
+                          if(stops.length>gradientHistoryRef.current.current.gradStops.length){changeGradient({gradStops:stops});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_color_stop_added_stops_total','Color stop added. {value1} stops total.'),{value1:stops.length}));}
 
                         }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
 
                       ),
 
-                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[0.6875rem] text-rose-700 mb-2 leading-relaxed" }, "Adjust hue and position with the sliders. Positions stay between neighboring stops. " + (artStudioGradientStops(d.gradStops)).length + " of 8 stops."),
+                      React.createElement('div',{'aria-hidden':'true',className:'h-8 rounded-lg border border-slate-400 mb-2',style:{backgroundImage:artStudioGradientCSS(Object.assign({},gradientModel,{gradType:'linear',gradAngle:90}))+',conic-gradient(#e2e8f0 25%,white 0 50%,#e2e8f0 0 75%,white 0)',backgroundSize:'100% 100%,16px 16px'}}),
+                      React.createElement('div',{className:'flex flex-wrap gap-2 mb-2'},
+                        React.createElement('button',{type:'button',onClick:function(){var stops=gradientHistoryRef.current.current.gradStops.slice().reverse().map(function(stop){return Object.assign({},stop,{pos:100-stop.pos});});changeGradient({gradStops:stops});},className:'rounded-lg border border-rose-300 bg-white px-2 py-1 text-xs font-bold text-rose-800'},__alloT('stem.artstudio.gradient_reverse','Reverse stops')),
+                        React.createElement('button',{type:'button',disabled:gradientModel.gradStops.length<2,onClick:function(){var stops=gradientHistoryRef.current.current.gradStops;changeGradient({gradStops:stops.map(function(stop,index){return Object.assign({},stop,{pos:Number((index*100/(stops.length-1)).toFixed(4))});})});},className:'rounded-lg border border-rose-300 bg-white px-2 py-1 text-xs font-bold text-rose-800 disabled:opacity-40'},__alloT('stem.artstudio.gradient_distribute','Space evenly'))),
+                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[0.6875rem] text-rose-700 mb-2 leading-relaxed" }, __alloT('stem.artstudio.gradient_stop_edit_help','Adjust color, opacity, and position. Add Stop samples the widest gap. Hard Edge splits colors halfway between neighboring stops.')+' '+(artStudioGradientStops(d.gradStops)).length+' / 8'),
 
                       (function () {
 
@@ -12240,9 +13236,9 @@ const d = labToolData.artStudio || {};
 
                         return stops.map(function (stop, idx) {
 
-                          return React.createElement("div", { key: idx, className: "flex items-end gap-2 mb-2 flex-wrap", role: "group", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_stop_hue_degrees_position_percent', 'Color stop {value1}, hue {value2} degrees, position {value3} percent'), { value1: (idx + 1), value2: stop.hue, value3: stop.pos })},
+                          return React.createElement("div", { key: idx, className: "flex items-end gap-2 mb-3 p-3 rounded-lg border border-rose-200 bg-white flex-wrap", role: "group", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_stop_hue_degrees_position_percent', 'Color stop {value1}, hue {value2} degrees, position {value3} percent'), { value1: (idx + 1), value2: stop.hue, value3: stop.pos })},
 
-                            React.createElement("div", { "aria-hidden": "true", style: { width: 24, height: 24, borderRadius: 4, background: 'hsl(' + stop.hue + ',85%,55%)', border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 } }),
+                            React.createElement("div", { "aria-hidden": "true", style: { width: 32, height: 32, borderRadius: 4, background: artStudioGradientColor(stop), border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 } }),
 
                             React.createElement("div", { className: "flex-1 min-w-[8rem]" },
 
@@ -12250,11 +13246,11 @@ const d = labToolData.artStudio || {};
 
                               React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-hue', type: "range", min: 0, max: 360, value: stop.hue, "aria-valuetext": stop.hue + ' degrees', onChange: function (e) {
 
-                                var newStops = (artStudioGradientStops(d.gradStops)).slice();
+                                var newStops = gradientHistoryRef.current.current.gradStops.slice();
 
                                 newStops[idx] = Object.assign({}, newStops[idx], { hue: parseInt(e.target.value) });
 
-                                upd('gradStops', newStops);
+                                changeGradient({gradStops:newStops});
 
                               }, className: "w-full accent-rose-500", title: "Hue: " + stop.hue })
 
@@ -12266,23 +13262,29 @@ const d = labToolData.artStudio || {};
 
                               React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-position', type: "range", min: idx === 0 ? 0 : stops[idx - 1].pos, max: idx === stops.length - 1 ? 100 : stops[idx + 1].pos, value: stop.pos, "aria-valuetext": stop.pos + ' percent', onChange: function (e) {
 
-                                var newStops2 = (artStudioGradientStops(d.gradStops)).slice();
+                                var newStops2 = gradientHistoryRef.current.current.gradStops.slice();
 
                                 newStops2[idx] = Object.assign({}, newStops2[idx], { pos: parseInt(e.target.value) });
 
-                                upd('gradStops', newStops2);
+                                changeGradient({gradStops:newStops2});
 
                               }, className: "w-full accent-orange-500" })
 
                             ),
 
+                            React.createElement('div',{className:'grid w-full grid-cols-2 gap-2'},[
+                              {key:'sat',label:__alloT('stem.artstudio.gradient_saturation','Saturation')},
+                              {key:'lit',label:__alloT('stem.artstudio.gradient_lightness','Lightness')},
+                              {key:'alpha',label:__alloT('stem.artstudio.gradient_opacity','Opacity')}
+                            ].map(function(control){var value=control.key==='alpha'?artStudioGradientAlpha(stop):stop[control.key];return React.createElement('label',{key:control.key,htmlFor:'artstudio-grad-stop-'+idx+'-'+control.key,className:'block text-xs font-bold text-rose-800'},control.label+': '+value+'%',React.createElement('input',{id:'artstudio-grad-stop-'+idx+'-'+control.key,type:'range',min:0,max:100,value:value,'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.gradient_stop_component','Stop {value1} {value2}'),{value1:idx+1,value2:control.label}),'aria-valuetext':value+' percent',onChange:function(event){changeGradientStop(idx,control.key,Number(event.target.value));},className:'block w-full accent-rose-600'}));})),
+                            React.createElement('button',{type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.gradient_duplicate_stop','Duplicate color stop {value1}'),{value1:idx+1}),disabled:stops.length>=8,onClick:function(){var next=gradientHistoryRef.current.current.gradStops.slice();if(next.length>=8)return;next.splice(idx+1,0,Object.assign({},next[idx]));changeGradient({gradStops:next});},className:'rounded-lg border border-rose-300 px-2 py-1 text-xs font-bold text-rose-800 disabled:opacity-40'},__alloT('stem.artstudio.gradient_duplicate','Duplicate')),
                             stops.length > 2 && React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_remove_color_stop', 'Remove color stop {value1}'), { value1: (idx + 1) }), onClick: function () {
 
-                              var newStops3 = (artStudioGradientStops(d.gradStops)).slice();
+                              var newStops3 = gradientHistoryRef.current.current.gradStops.slice();
 
                               newStops3.splice(idx, 1);
 
-                              upd('gradStops', newStops3);
+                              changeGradient({gradStops:newStops3});
 
                               if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_color_stop_removed_stops_remain', 'Color stop removed. {value1} stops remain.'), { value1: newStops3.length }));
 
@@ -12298,7 +13300,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_png_exported', 'Gradient PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { try{var c=document.getElementById('gradientCanvas');if(!c)return;var src=c.toDataURL('image/png');if(!src||src==='data:,')throw new Error('Empty gradient');var link=document.createElement('a');link.download='gradient-'+Date.now()+'.png';link.href=src;link.click();if(typeof addToast==='function')addToast(__alloT('stem.artstudio.toast_png_exported','PNG exported!'),'success');if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_gradient_png_exported','Gradient PNG exported.'));}catch(error){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.gradient_export_error','Could not export the gradient. Try again.'),'error');}}, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -12316,7 +13318,7 @@ const d = labToolData.artStudio || {};
 
                        { label: __alloT('stem.artstudio.deep_space', 'Deep Space'), stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
-                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_gradient_preset', 'Load {value1} gradient preset'), { value1: pr.label }), onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
+                        return React.createElement("button", { key: pr.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_gradient_preset', 'Load {value1} gradient preset'), { value1: pr.label }), onClick: function () { changeGradient({gradStops:pr.stops,gradType:pr.type,gradAngle:pr.angle,gradBlend:'smooth',gradCenterX:50,gradCenterY:50,gradRotation:0}); if (typeof announceToSR === 'function') announceToSR(pr.label + ' gradient preset loaded.'); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-rose-700 border border-rose-600 hover:bg-rose-50 transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, pr.label);
 
                       })
 
@@ -12333,38 +13335,15 @@ const d = labToolData.artStudio || {};
                       React.createElement("span", { id: "artstudio-gradient-css-label", className: "text-[0.6875rem] font-bold text-slate-300" }, __alloT('stem.artstudio.css_output', "\uD83D\uDCCB CSS Output")),
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.copy_gradient_css', "Copy gradient CSS to clipboard"), onClick: function () {
-
-                        var stops = artStudioGradientStops(d.gradStops);
-
-                        var stopsStr = stops.map(function (s) { return 'hsl(' + s.hue + ', 85%, 55%) ' + s.pos + '%'; }).join(', ');
-
-                        var css;
-
-                        if ((d.gradType || 'linear') === 'radial') css = 'background: radial-gradient(circle, ' + stopsStr + ');';
-
-                        else if (d.gradType === 'conic') css = 'background: conic-gradient(from 0deg, ' + stopsStr + ');';
-
-                        else css = 'background: linear-gradient(' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg, ' + stopsStr + ');';
-
-                        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(css).then(function () { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_css_copied', '\u2705 CSS copied!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_unable_to_copy_css', 'Unable to copy CSS.'), 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
+                        var css='background: '+artStudioGradientCSS()+';';
+                        Promise.resolve().then(function(){return (window.StemLab && window.StemLab.writeClipboard || function(value){return navigator.clipboard.writeText(value);})(css);}).then(function () { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_css_copied', '\u2705 CSS copied!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_unable_to_copy_css', 'Unable to copy CSS.'), 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
 
                       }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 
                     ),
 
-                    React.createElement("code", { id: "artstudio-gradient-css", "aria-labelledby": "artstudio-gradient-css-label", className: "text-[0.6875rem] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
-
-                      var stops = artStudioGradientStops(d.gradStops);
-
-                      var stopsStr = stops.map(function (s) { return 'hsl(' + s.hue + ', 85%, 55%) ' + s.pos + '%'; }).join(',\n  ');
-
-                      if ((d.gradType || 'linear') === 'radial') return 'radial-gradient(\n  circle,\n  ' + stopsStr + '\n)';
-
-                      if (d.gradType === 'conic') return 'conic-gradient(\n  from 0deg,\n  ' + stopsStr + '\n)';
-
-                      return 'linear-gradient(\n  ' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg,\n  ' + stopsStr + '\n)';
-
-                    })())
+                    React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.gradient_download_css','Download gradient CSS'),onClick:function(){var link=document.createElement('a');link.download='gradient-'+Date.now()+'.css';link.href='data:text/css;charset=utf-8,'+encodeURIComponent('.gradient {\n  background: '+artStudioGradientCSS()+';\n}\n');link.click();},className:'rounded-lg bg-slate-700 text-white px-3 py-2 text-xs font-bold mb-2'},__alloT('stem.artstudio.gradient_download_css','Download gradient CSS')),
+                    React.createElement("code", { id: "artstudio-gradient-css", "aria-labelledby": "artstudio-gradient-css-label", className: "text-[0.6875rem] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap",style:{overflowWrap:'anywhere'} },artStudioGradientCSS())
 
                   ),
 
@@ -12396,249 +13375,15 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-gradient-css", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_output', 'Gradient output: {value1}{value2}, {value3} blend, with {value4} color stops: {value5}.'), { value1: __alloT('stem.artstudio.a11y_grad_type_' + String((d.gradType || 'linear')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.gradType || 'linear')), value2: ((d.gradType || 'linear') === 'linear' ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_angle', ' at {value1} degrees'), { value1: (typeof d.gradAngle === 'number' ? d.gradAngle : 90) }) : ''), value3: __alloT('stem.artstudio.a11y_grad_blend_' + String((d.gradBlend || 'smooth')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.gradBlend || 'smooth')), value4: (artStudioGradientStops(d.gradStops)).length, value5: (artStudioGradientStops(d.gradStops)).map(function (stop) { return formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_stop', 'hue {value1} at {value2} percent'), { value1: stop.hue, value2: stop.pos }); }).join(__alloT('stem.artstudio.a11y_list_separator', ', ')) }), className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
-
-                  key: 'grad-' + (d.gradType || 'linear') + '-' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
-
-                  ref: function (canvas) {
-
-                    if (!canvas) return;
-
-                    if (canvas._gradInit) return;
-
-                    canvas._gradInit = true;
-
-                    var ctx = canvas.getContext('2d');
-
-                    var W = canvas.width, H = canvas.height;
-
-                    var type = d.gradType || 'linear';
-
-                    var angle = typeof d.gradAngle === 'number' ? d.gradAngle : 90;
-
-                    var blend = d.gradBlend || 'smooth';
-
-                    var stops = artStudioGradientStops(d.gradStops);
-
-
-
-                    if (blend === 'hard') {
-
-                      // Hard-edge gradient — fill bands
-
-                      if (type === 'linear') {
-
-                        var rad = angle * Math.PI / 180;
-
-                        var cos = Math.cos(rad), sin = Math.sin(rad);
-
-                        for (var py = 0; py < H; py++) {
-
-                          for (var px = 0; px < W; px++) {
-
-                            var t = ((px - W / 2) * cos + (py - H / 2) * sin) / (Math.max(W, H) * 0.5) * 0.5 + 0.5;
-
-                            t = Math.max(0, Math.min(1, t));
-
-                            var pos = t * 100;
-
-                            var stopIdx = 0;
-
-                            for (var si = 0; si < stops.length - 1; si++) {
-
-                              if (pos >= stops[si].pos) stopIdx = si;
-
-                            }
-
-                            ctx.fillStyle = 'hsl(' + stops[stopIdx].hue + ',85%,55%)';
-
-                            ctx.fillRect(px, py, 1, 1);
-
-                          }
-
-                        }
-
-                      } else if (type === 'conic') {
-
-                        var cx2 = W / 2, cy2 = H / 2;
-
-                        for (var py2 = 0; py2 < H; py2++) {
-
-                          for (var px2 = 0; px2 < W; px2++) {
-
-                            var ang = (Math.atan2(py2 - cy2, px2 - cx2) * 180 / Math.PI + 360 + 90) % 360;
-
-                            var pos2 = ang / 360 * 100;
-
-                            var si2 = 0;
-
-                            for (var k = 0; k < stops.length - 1; k++) { if (pos2 >= stops[k].pos) si2 = k; }
-
-                            ctx.fillStyle = 'hsl(' + stops[si2].hue + ',85%,55%)';
-
-                            ctx.fillRect(px2, py2, 1, 1);
-
-                          }
-
-                        }
-
-                      } else {
-
-                        var cx3 = W / 2, cy3 = H / 2;
-
-                        var maxR = Math.sqrt(cx3 * cx3 + cy3 * cy3);
-
-                        for (var py3 = 0; py3 < H; py3++) {
-
-                          for (var px3 = 0; px3 < W; px3++) {
-
-                            var dist = Math.sqrt((px3 - cx3) * (px3 - cx3) + (py3 - cy3) * (py3 - cy3));
-
-                            var pos3 = (dist / maxR) * 100;
-
-                            var si3 = 0;
-
-                            for (var k2 = 0; k2 < stops.length - 1; k2++) { if (pos3 >= stops[k2].pos) si3 = k2; }
-
-                            ctx.fillStyle = 'hsl(' + stops[si3].hue + ',85%,55%)';
-
-                            ctx.fillRect(px3, py3, 1, 1);
-
-                          }
-
-                        }
-
-                      }
-
-                    } else {
-
-                      // Smooth gradient using Canvas API
-
-                      if (type === 'linear') {
-
-                        var rad2 = angle * Math.PI / 180;
-
-                        var len = Math.max(W, H);
-
-                        var x1 = W / 2 - Math.cos(rad2) * len / 2;
-
-                        var y1 = H / 2 - Math.sin(rad2) * len / 2;
-
-                        var x2 = W / 2 + Math.cos(rad2) * len / 2;
-
-                        var y2 = H / 2 + Math.sin(rad2) * len / 2;
-
-                        var grad = ctx.createLinearGradient(x1, y1, x2, y2);
-
-                        stops.forEach(function (s) { grad.addColorStop(Math.max(0, Math.min(1, s.pos / 100)), 'hsl(' + s.hue + ',85%,55%)'); });
-
-                        ctx.fillStyle = grad;
-
-                        ctx.fillRect(0, 0, W, H);
-
-                      } else if (type === 'radial') {
-
-                        var grad2 = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
-
-                        stops.forEach(function (s) { grad2.addColorStop(Math.max(0, Math.min(1, s.pos / 100)), 'hsl(' + s.hue + ',85%,55%)'); });
-
-                        ctx.fillStyle = grad2;
-
-                        ctx.fillRect(0, 0, W, H);
-
-                      } else {
-
-                        // Conic — render pixel-by-pixel for smooth interpolation
-
-                        var cx4 = W / 2, cy4 = H / 2;
-
-                        var imgData = ctx.createImageData(W, H);
-
-                        var pxData = imgData.data;
-
-                        function hslToRgb(h, s, l) {
-
-                          h = h / 360; s = s / 100; l = l / 100;
-
-                          var r3, g3, b3;
-
-                          if (s === 0) { r3 = g3 = b3 = l; } else {
-
-                            var hue2rgb = function (p, q, t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1/6) return p + (q - p) * 6 * t; if (t < 1/2) return q; if (t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; };
-
-                            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-
-                            var p = 2 * l - q;
-
-                            r3 = hue2rgb(p, q, h + 1/3); g3 = hue2rgb(p, q, h); b3 = hue2rgb(p, q, h - 1/3);
-
-                          }
-
-                          return [Math.round(r3 * 255), Math.round(g3 * 255), Math.round(b3 * 255)];
-
-                        }
-
-                        for (var py4 = 0; py4 < H; py4++) {
-
-                          for (var px4 = 0; px4 < W; px4++) {
-
-                            var ang2 = (Math.atan2(py4 - cy4, px4 - cx4) * 180 / Math.PI + 360 + 90) % 360;
-
-                            var pos4 = ang2 / 360 * 100;
-
-                            // Interpolate between stops
-
-                            var s1 = stops[0], s2 = stops[stops.length - 1];
-
-                            for (var k3 = 0; k3 < stops.length - 1; k3++) {
-
-                              if (pos4 >= stops[k3].pos && pos4 <= stops[k3 + 1].pos) { s1 = stops[k3]; s2 = stops[k3 + 1]; break; }
-
-                            }
-
-                            var range = s2.pos - s1.pos || 1;
-
-                            var t4 = (pos4 - s1.pos) / range;
-
-                            var h1 = s1.hue, h2 = s2.hue;
-
-                            var hDiff = h2 - h1; if (Math.abs(hDiff) > 180) { if (hDiff > 0) h1 += 360; else h2 += 360; }
-
-                            var interpH = ((h1 + (h2 - h1) * t4) + 360) % 360;
-
-                            var rgb = hslToRgb(interpH, 85, 55);
-
-                            var idx = (py4 * W + px4) * 4;
-
-                            pxData[idx] = rgb[0]; pxData[idx + 1] = rgb[1]; pxData[idx + 2] = rgb[2]; pxData[idx + 3] = 255;
-
-                          }
-
-                        }
-
-                        ctx.putImageData(imgData, 0, 0);
-
-                      }
-
-                    }
-
-
-
-                    // Decorative border glow
-
-                    ctx.save();
-
-                    ctx.globalCompositeOperation = 'destination-over';
-
-                    ctx.fillStyle = '#1e1e2e';
-
-                    ctx.fillRect(0, 0, W, H);
-
-                    ctx.restore();
-
-                  }
-
-                })
+                React.createElement('div',{'data-artstudio-gradient-preview':'true',className:'min-w-0'},
+                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-gradient-css", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_output', 'Gradient output: {value1}{value2}, {value3} blend, with {value4} color stops: {value5}.'), { value1: __alloT('stem.artstudio.a11y_grad_type_' + String((gradientModel.gradType)).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (gradientModel.gradType)), value2: ((gradientModel.gradType) === 'linear' ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_angle', ' at {value1} degrees'), { value1: (gradientModel.gradAngle) }) : ''), value3: __alloT('stem.artstudio.a11y_grad_blend_' + String((gradientModel.gradBlend)).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (gradientModel.gradBlend)), value4: (artStudioGradientStops(d.gradStops)).length, value5: (artStudioGradientStops(d.gradStops)).map(function (stop) { return formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_stop', 'hue {value1} at {value2} percent'), { value1: stop.hue, value2: stop.pos }); }).join(__alloT('stem.artstudio.a11y_list_separator', ', ')) }), className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', backgroundColor:'#fff',backgroundImage:'conic-gradient(#e2e8f0 25%,white 0 50%,#e2e8f0 0 75%,white 0)',backgroundSize:'24px 24px' },
+
+                  key: 'grad-'+studioPersistenceScope+'-'+(d.gradRestoreToken||''),
+                  ref:function(canvas){if(!canvas)return;var signature=JSON.stringify(gradientModel);canvas._gradientModel=gradientModel;if(canvas._gradientSignature===signature)return;canvas._gradientSignature=signature;artStudioGradientPaint(canvas,gradientModel);}
+
+                }),
+                React.createElement('p',{className:'mt-2 text-xs text-center text-slate-700'},__alloT('stem.artstudio.gradient_transparency_hint','Checkerboard shows transparency. PNG and CSS contain only your gradient.'))
+                )
 
               )
 
@@ -12669,13 +13414,16 @@ const d = labToolData.artStudio || {};
 
               ),
 
+              (d.stereoAnimMode || 'static') === 'static' && React.createElement('div',{role:'group','aria-label':__alloT('stem.artstudio.stereo_workspace_view','Stereogram workspace view'),className:'flex flex-wrap gap-2'},['depth','output'].map(function(view){return React.createElement('button',{key:view,type:'button','aria-controls':'artstudio-stereo-'+view+'-view','aria-pressed':(d.stereoWorkspaceView==='output'?'output':'depth')===view,onClick:function(){upd('stereoWorkspaceView',view);},className:'rounded-lg border border-cyan-600 px-4 py-2 text-sm font-bold min-h-[44px] '+((d.stereoWorkspaceView==='output'?'output':'depth')===view?'bg-cyan-800 text-white':'bg-white text-cyan-800')},view==='depth'?__alloT('stem.artstudio.stereo_edit_depth','Edit depth map'):__alloT('stem.artstudio.stereo_view_output','View stereogram'));})),
+
               (d.stereoAnimMode || 'static') === 'static' &&
 
-              React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { 'data-stereo-static':'true','data-stereo-view':d.stereoWorkspaceView==='output'?'output':'depth',className: "grid grid-cols-1 lg:grid-cols-2 gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement('style',null,'[data-stereo-editor-column]{display:contents}[data-stereo-static]{grid-template-columns:minmax(0,1fr)}[data-stereo-controls]{order:2;min-width:0}[data-stereo-depth],[data-stereo-output]{order:1;min-width:0}[data-stereo-depth-export]{order:3}[data-stereo-science]{order:4}[data-stereo-view="depth"] [data-stereo-output],[data-stereo-view="output"] [data-stereo-depth],[data-stereo-view="output"] [data-stereo-depth-export]{display:none}[data-stereo-static] canvas{width:100%;height:auto;max-width:760px!important;margin:auto}[data-stereo-static] button,[data-stereo-static] input{min-height:44px;min-width:44px}[data-stereo-static] button{white-space:normal}[data-stereo-static] input{max-width:100%}@media(min-width:1100px){[data-stereo-static]{grid-template-columns:minmax(0,1fr) 320px;grid-template-areas:"preview controls" "extra controls" "science controls"}[data-stereo-controls]{grid-area:controls;max-height:78dvh;overflow:auto}[data-stereo-depth],[data-stereo-output]{grid-area:preview}[data-stereo-depth-export]{grid-area:extra}[data-stereo-science]{grid-area:science}}'),
 
-                React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { 'data-stereo-editor-column':'true',className: "space-y-3" },
 
-                  React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
+                  React.createElement("div", { 'data-stereo-controls':'true',className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-4 border border-cyan-200" },
 
                     React.createElement("h4", { className: "text-xs font-bold text-cyan-700 mb-3" }, __alloT('stem.artstudio.stereogram_generator', "\uD83D\uDC53 Stereogram Generator")),
 
@@ -12719,11 +13467,11 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    [{ k: 'stereoStrength', label: __alloT('stem.artstudio.depth_strength', 'Depth Strength'), min: 5, max: 30, def: 15 },
+                    [{ k: 'stereoStrength', label: __alloT('stem.artstudio.depth_strength', 'Depth Strength'), min: 0, max: 30, def: 15 },
 
                      { k: 'stereoDensity', label: __alloT('stem.artstudio.pattern_width', 'Pattern Width'), min: 60, max: 150, def: 100 }].map(function (s) {
 
-                      var val = typeof d[s.k] === 'number' ? d[s.k] : s.def;
+                      var val = stereoModel[s.k];
 
                       return React.createElement("div", { key: s.k, className: "mb-2" },
 
@@ -12737,6 +13485,12 @@ const d = labToolData.artStudio || {};
 
 
 
+                    React.createElement('div',{className:'flex gap-2 my-3'},
+                      React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.stereo_undo','Undo depth edit'),onClick:function(){stereoHistory(false);},className:'flex-1 rounded-lg bg-white border border-cyan-600 text-cyan-800 text-xs font-bold px-2'},__alloT('stem.artstudio.stereo_undo','Undo depth edit')),
+                      React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.stereo_redo','Redo depth edit'),onClick:function(){stereoHistory(true);},className:'flex-1 rounded-lg bg-white border border-cyan-600 text-cyan-800 text-xs font-bold px-2'},__alloT('stem.artstudio.stereo_redo','Redo depth edit'))),
+                    React.createElement('label',{className:'block text-xs font-bold text-cyan-800'},__alloT('stem.artstudio.stereo_seed','Pattern seed'),React.createElement('input',{type:'number',min:0,max:2147483647,step:1,'aria-label':__alloT('stem.artstudio.stereo_seed','Pattern seed'),value:stereoModel.stereoSeed,onChange:function(event){var value=event.target.valueAsNumber;if(Number.isFinite(value))upd('stereoSeed',Math.max(0,Math.min(2147483647,Math.round(value))));},className:'mt-1 block w-full rounded-lg border border-cyan-400 bg-white px-2 text-sm text-slate-900'})),
+                    React.createElement('button',{type:'button',onClick:function(){upd('stereoSeed',(stereoModel.stereoSeed+1)%2147483648);},className:'mt-2 w-full rounded-lg bg-white border border-cyan-600 text-cyan-800 text-xs font-bold px-2'},__alloT('stem.artstudio.stereo_new_pattern','New pattern texture')),
+                    React.createElement('p',{className:'mt-2 text-xs leading-relaxed text-slate-700'},__alloT('stem.artstudio.stereo_live_hint','Depth edits update the stereogram automatically. The same seed and settings reproduce the same texture. PNG export includes the complete image.')),
                     // --- AI GENERATION ---
 
                     callImagen && React.createElement("div", { className: "mt-4 bg-gradient-to-br from-indigo-50 to-blue-50 p-3 rounded-lg border border-indigo-200" },
@@ -12772,6 +13526,7 @@ const d = labToolData.artStudio || {};
 
                             if (!d.stereoAiStr) return;
 
+                            var requestedDepth=document.getElementById('depthMapCanvas'),requestedOwner=studioCaptureOwnerRef.current;
                             upd('stereoAiGen', 'Depth Map');
 
                             callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: ' + d.stereoAiStr + '. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
@@ -12782,15 +13537,14 @@ const d = labToolData.artStudio || {};
 
                                 img.onload = function() {
 
-                                  var cvs = document.getElementById('depthMapCanvas');
+                                  if(studioCaptureOwnerRef.current!==requestedOwner)return;
+                                  var cvs = requestedDepth;
 
-                                  if(cvs) {
+                                  if(cvs&&cvs.isConnected&&cvs._dmEdit) {
 
                                     var ztx = cvs.getContext('2d');
 
-                                    ztx.clearRect(0, 0, cvs.width, cvs.height);
-
-                                    ztx.drawImage(img, 0, 0, cvs.width, cvs.height);
+                                    cvs._dmEdit(function(){ztx.clearRect(0,0,cvs.width,cvs.height);ztx.drawImage(img,0,0,cvs.width,cvs.height);});
 
                                   }
 
@@ -12803,6 +13557,7 @@ const d = labToolData.artStudio || {};
                                 img.src = base64;
 
                               }).catch(function(e) {
+                                if(studioCaptureOwnerRef.current!==requestedOwner)return;
 
                                 upd('stereoAiGen', null);
 
@@ -12878,9 +13633,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
-                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_rendering_stereogram_from_the_current_depth_map', 'Rendering stereogram from the current depth map.')); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-700 to-teal-700 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
+                      React.createElement("button", { onClick: function () { updMany({stereoGen:Date.now(),stereoWorkspaceView:'output'}); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_rendering_stereogram_from_the_current_depth_map', 'Rendering stereogram from the current depth map.')); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-700 to-teal-700 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md transition-all" }, __alloT('stem.artstudio.render_stereogram', "\uD83D\uDC53 Render Stereogram")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_9', "Clear"), onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.clear_9', "Clear"), onClick: function () { stereoPreset(null); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_10', "\uD83D\uDDD1 Clear"))
 
                     ),
 
@@ -12890,17 +13645,17 @@ const d = labToolData.artStudio || {};
 
                       [{ label: __alloT('stem.artstudio.sphere', 'Sphere'), id: 'sphere' }, { label: __alloT('stem.artstudio.pyramid', 'Pyramid'), id: 'pyramid' }, { label: __alloT('stem.artstudio.heart', 'Heart'), id: 'heart' }, { label: __alloT('stem.artstudio.hi_text', 'HI Text'), id: 'text' }, { label: __alloT('stem.artstudio.rings_2', 'Rings'), id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_depth_map_preset', 'Use {value1} depth-map preset'), { value1: pr.label }), "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_use_depth_map_preset', 'Use {value1} depth-map preset'), { value1: pr.label }), "aria-pressed": d.stereoPreset === pr.id, key: pr.id, onClick: function () { stereoPreset(pr.id); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-cyan-700 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
                     ),
 
-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
+                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: exportStereo, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
 
                   ),
 
-                  React.createElement("div", { className: "relative" },
+                  React.createElement("div", { id:'artstudio-stereo-depth-view','data-stereo-depth':'true',className: "relative" },
 
                     React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 mb-1" }, __alloT('stem.artstudio.depth_map_canvas', "\uD83C\uDFA8 Depth Map Canvas")),
 
@@ -12925,224 +13680,11 @@ const d = labToolData.artStudio || {};
                       "aria-describedby": "artstudio-depth-map-legend artstudio-depth-map-touch-help artstudio-depth-map-keyboard-help",
                       "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
 
-                      key: 'dm-' + (d.stereoClear || 0),
+                      key: 'dm-' + stereoOwner,
 
                       className: "rounded-xl border-2 border-cyan-200 shadow-lg cursor-crosshair block focus-visible:ring-4 focus-visible:ring-cyan-600 focus-visible:ring-offset-2", style: { maxWidth: '100%', background: '#000000', touchAction: d.stereoDepthTouchMode === 'draw' ? 'none' : 'pan-y' },
 
-                      ref: function (canvas) {
-
-                        if (!canvas) return;
-
-                        canvas.dataset.touchMode = d.stereoDepthTouchMode === 'draw' ? 'draw' : 'scroll';
-                        canvas.style.touchAction = canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
-
-                        var ctx = canvas.getContext('2d');
-
-                        var W = canvas.width, H = canvas.height;
-
-                        if (!canvas._dmInit) {
-
-                          canvas._dmInit = true;
-
-                          ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H);
-
-                          var preset = d.stereoPreset;
-
-                          if (preset === 'sphere') {
-
-                            var grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.min(W,H)*0.35);
-
-                            grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#888888'); grad.addColorStop(1, '#000000');
-
-                            ctx.beginPath(); ctx.arc(W/2, H/2, Math.min(W,H)*0.35, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
-
-                          } else if (preset === 'pyramid') {
-
-                            ctx.beginPath(); ctx.moveTo(W/2, H*0.15); ctx.lineTo(W*0.2, H*0.85); ctx.lineTo(W*0.8, H*0.85); ctx.closePath();
-
-                            var pgr = ctx.createLinearGradient(W/2, H*0.15, W/2, H*0.85);
-
-                            pgr.addColorStop(0, '#ffffff'); pgr.addColorStop(1, '#555555'); ctx.fillStyle = pgr; ctx.fill();
-
-                          } else if (preset === 'heart') {
-
-                            ctx.save(); ctx.translate(W/2, H*0.45);
-
-                            var sc = Math.min(W,H) * 0.012; ctx.scale(sc, -sc);
-
-                            ctx.beginPath();
-
-                            for (var ht = 0; ht <= Math.PI * 2; ht += 0.01) {
-
-                              var hx = 16 * Math.pow(Math.sin(ht), 3);
-
-                              var hy = 13 * Math.cos(ht) - 5 * Math.cos(2*ht) - 2 * Math.cos(3*ht) - Math.cos(4*ht);
-
-                              if (ht === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
-
-                            }
-
-                            ctx.closePath(); ctx.restore(); ctx.fillStyle = '#ffffff'; ctx.fill();
-
-                          } else if (preset === 'text') {
-
-                            ctx.fillStyle = '#ffffff'; ctx.font = 'bold ' + Math.round(H * 0.45) + 'px Arial';
-
-                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('HI', W/2, H/2);
-
-                          } else if (preset === 'rings') {
-
-                            for (var ri = 3; ri > 0; ri--) {
-
-                              var rr = ri * Math.min(W,H) * 0.12;
-
-                              var brt = Math.round((4 - ri) / 3 * 255);
-
-                              ctx.beginPath(); ctx.arc(W/2, H/2, rr, 0, Math.PI*2);
-
-                              ctx.lineWidth = 20; ctx.strokeStyle = 'rgb(' + brt + ',' + brt + ',' + brt + ')'; ctx.stroke();
-
-                            }
-
-                          }
-
-                        }
-
-                        var depthLevel = d.stereoDepth || 'near';
-
-                        var brushSz = typeof d.stereoBrush === 'number' ? d.stereoBrush : 20;
-
-                        var depthColors = { near: '#ffffff', mid: '#999999', far: '#333333', erase: '#000000' };
-
-                        var painting = false;
-
-                        var keyboardCursor = canvas._depthKeyboardCursor || { x: W / 2, y: H / 2 };
-
-                        keyboardCursor.x = Math.max(0, Math.min(W, keyboardCursor.x));
-
-                        keyboardCursor.y = Math.max(0, Math.min(H, keyboardCursor.y));
-
-                        canvas._depthKeyboardCursor = keyboardCursor;
-
-                        function updateDepthKeyboardCursor(show) {
-
-                          var cursor = canvas.parentElement && canvas.parentElement.querySelector('[data-depth-keyboard-cursor="true"]');
-
-                          if (cursor) {
-
-                            var displayW = canvas.clientWidth || W;
-
-                            var displayH = canvas.clientHeight || H;
-
-                            cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
-
-                            cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
-
-                            cursor.style.display = show ? 'block' : 'none';
-
-                          }
-
-                          canvas.setAttribute('aria-label', 'Depth map drawing canvas. Current brush is ' + depthLevel +
-
-                            '. Keyboard cursor at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
-
-                        }
-
-                        function getP(e) {
-
-                          var rect = canvas.getBoundingClientRect();
-
-                          var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-
-                          var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-
-                          return { x: ex * (W / rect.width), y: ey * (H / rect.height) };
-
-                        }
-
-                        function doBrush(pos) {
-
-                          ctx.beginPath(); ctx.arc(pos.x, pos.y, brushSz, 0, Math.PI * 2);
-
-                          ctx.fillStyle = depthColors[depthLevel]; ctx.fill();
-
-                        }
-
-                        function doBrushLine(from, to) {
-
-                          ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
-
-                          ctx.lineWidth = brushSz * 2; ctx.lineCap = 'round';
-
-                          ctx.strokeStyle = depthColors[depthLevel]; ctx.stroke();
-
-                        }
-
-                        canvas.onmousedown = canvas.ontouchstart = function (e) { if (!canvasAllowsFingerInteraction(canvas, e)) return; e.preventDefault(); painting = true; doBrush(getP(e)); };
-
-                        canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) { if (isFingerInputEvent(e)) e.preventDefault(); doBrush(getP(e)); } };
-
-                        canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
-
-                        canvas.onmouseleave = function () { painting = false; };
-
-                        canvas.onfocus = function () { updateDepthKeyboardCursor(true); };
-
-                        canvas.onblur = function () { updateDepthKeyboardCursor(false); };
-
-                        canvas.onkeydown = function (event) {
-
-                          var step = event.altKey ? 1 : 10;
-
-                          var previous = { x: keyboardCursor.x, y: keyboardCursor.y };
-
-                          var moved = true;
-
-                          if (event.key === 'ArrowLeft') keyboardCursor.x = Math.max(0, keyboardCursor.x - step);
-
-                          else if (event.key === 'ArrowRight') keyboardCursor.x = Math.min(W, keyboardCursor.x + step);
-
-                          else if (event.key === 'ArrowUp') keyboardCursor.y = Math.max(0, keyboardCursor.y - step);
-
-                          else if (event.key === 'ArrowDown') keyboardCursor.y = Math.min(H, keyboardCursor.y + step);
-
-                          else if (event.key === 'Home') { keyboardCursor.x = W / 2; keyboardCursor.y = H / 2; }
-
-                          else moved = false;
-
-                          if (moved) {
-
-                            event.preventDefault();
-
-                            if (event.shiftKey) doBrushLine(previous, keyboardCursor);
-
-                            canvas._depthKeyboardCursor = keyboardCursor;
-
-                            updateDepthKeyboardCursor(true);
-
-                            if (typeof announceToSR === 'function') {
-
-                              announceToSR(formatArtStudioLearningText(event.shiftKey ? __alloT('stem.artstudio.sr_drew_depth_to_x_y', 'Drew depth to x {value1}, y {value2}.') : __alloT('stem.artstudio.sr_depth_cursor_x_y', 'Depth cursor x {value1}, y {value2}.'), { value1: Math.round(keyboardCursor.x), value2: Math.round(keyboardCursor.y) }));
-
-                            }
-
-                            return;
-
-                          }
-
-                          if (event.key === 'Enter' || event.key === ' ') {
-
-                            event.preventDefault(); doBrush(keyboardCursor);
-
-                            if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_stamped_depth_at', 'Stamped {value1} depth at x {value2}, y {value3}.'), { value1: __alloT('stem.artstudio.sr_depth_' + String(depthLevel).toLowerCase().replace(/[^a-z0-9]+/g, '_'), depthLevel), value2: Math.round(keyboardCursor.x), value3: Math.round(keyboardCursor.y) }));
-
-                          }
-
-                        };
-
-                        updateDepthKeyboardCursor(typeof document !== 'undefined' && document.activeElement === canvas);
-
-                      }
+                      ref: bindStereoDepth
 
                     }),
 
@@ -13160,13 +13702,13 @@ const d = labToolData.artStudio || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex gap-2 mt-2" },
+                  React.createElement("div", { 'data-stereo-depth-export':'true',className: "flex gap-2 mt-2" },
 
-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_depth_map_saved_as_png', '\uD83D\uDCE5 Depth map saved as PNG!'), 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
+                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas');if(!c)return;var finish=function(){if(!c.isConnected)return;try{var src=c.toDataURL('image/png');if(!src||src==='data:,')throw new Error('Empty depth image');var link=document.createElement('a');link.download='depth-map.png';link.href=src;link.click();}catch(_){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.stereo_export_failed','The image could not be exported. Please try again.'),'error');}};if(c._artStudioRestoring&&c._artStudioReady)c._artStudioReady.then(finish);else finish(); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
 
                   ),
 
-                  React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
+                  React.createElement("div", { 'data-stereo-science':'true',className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
 
                     React.createElement("button", { id: "artstudio-stereogram-info-toggle", "aria-expanded": !!d.showStereoInfo, "aria-controls": "artstudio-stereogram-science", onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-teal-700" },
 
@@ -13194,160 +13736,26 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { id:'artstudio-stereo-output-view','data-stereo-output':'true',className: "space-y-2" },
 
                   React.createElement("p", { className: "text-xs font-bold text-teal-700" }, __alloT('stem.artstudio.stereogram_output', "\uD83D\uDC53 Stereogram Output")),
 
                   React.createElement("p", { id: "artstudio-stereogram-output-help", className: "text-[0.6875rem] text-slate-600 mb-1" }, __alloT('stem.artstudio.relax_your_eyes_and_look_through_the_i', "Relax your eyes and look \u2018through\u2019 the image to see 3D")),
+
+                  React.createElement('svg',{'data-stereo-guides':'true',viewBox:'0 0 512 24',role:'img','aria-label':__alloT('stem.artstudio.stereo_guides','Two viewing dots spaced one background repeat apart.'),style:{display:'block',width:'100%',maxWidth:760,margin:'0 auto'}},
+                    React.createElement('circle',{cx:256-stereoModel.stereoDensity/2,cy:12,r:3,fill:'#0f172a'}),
+                    React.createElement('circle',{cx:256+stereoModel.stereoDensity/2,cy:12,r:3,fill:'#0f172a'})),
 
                   React.createElement("canvas", { id: 'stereoCanvas', width: 512, height: 512,
                     role: "img",
                     "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_stereogram_output', 'Stereogram output using the {value1} pattern and {value2} depth map.'), { value1: __alloT('stem.artstudio.a11y_pattern_' + String((d.stereoPattern || 'black and white')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoPattern || 'black and white')), value2: __alloT('stem.artstudio.a11y_preset_' + String((d.stereoPreset || 'drawn')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.stereoPreset || 'drawn')) }),
                     "aria-describedby": "artstudio-stereogram-output-help",
 
-                    key: 'stereo-' + (d.stereoGen || 0),
+                    key: 'stereo-' + stereoOwner,
 
                     className: "rounded-xl border-2 border-teal-200 shadow-lg block", style: { maxWidth: '100%', background: '#111' },
 
-                    ref: function (canvas) {
-
-                      if (!canvas) return;
-
-                      if (canvas._stereoInit) return;
-
-                      canvas._stereoInit = true;
-
-                      var ctx = canvas.getContext('2d');
-
-                      var W = canvas.width, H = canvas.height;
-
-                      var patternType = d.stereoPattern || 'bw';
-
-                      var patternWidth = typeof d.stereoDensity === 'number' ? d.stereoDensity : 100;
-
-                      var maxShift = typeof d.stereoStrength === 'number' ? d.stereoStrength : 15;
-
-                      var dmCanvas = document.getElementById('depthMapCanvas');
-
-                      if (!dmCanvas) {
-
-                        ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, W, H);
-
-                        ctx.fillStyle = '#444'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
-
-                        ctx.fillText('Draw on the depth map, then click Generate', W/2, H/2);
-
-                        return;
-
-                      }
-
-                      var dmCtx = dmCanvas.getContext('2d');
-
-                      var dmData = dmCtx.getImageData(0, 0, dmCanvas.width, dmCanvas.height).data;
-
-                      var dmW = dmCanvas.width, dmH = dmCanvas.height;
-
-                      function makeRng(seed) {
-
-                        var s = seed; return function () { s = (s * 1664525 + 1013904223) & 0x7FFFFFFF; return s / 0x7FFFFFFF; };
-
-                      }
-
-                      var imgData = ctx.createImageData(W, H);
-
-                      var data = imgData.data;
-
-                      var rowsDone = 0;
-
-                      function renderChunk() {
-
-                        var endRow = Math.min(rowsDone + 32, H);
-
-                        for (var y = rowsDone; y < endRow; y++) {
-
-                          var rng = makeRng(y * 7919 + 12345);
-
-                          var row = new Uint8Array(W * 3);
-
-                          for (var x = 0; x < W; x++) {
-
-                            if (x < patternWidth) {
-
-                              if (patternType === 'bw') { var c = rng() > 0.5 ? 230 : 25; row[x*3] = c; row[x*3+1] = c; row[x*3+2] = c; }
-
-                              else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
-
-                              else if (patternType === 'ai' && d.stereoAiPatternImg) {
-
-                                var pw = d.stereoAiPatternImg.width, ph = d.stereoAiPatternImg.height;
-
-                                var pIdx = ((y % ph) * pw + (x % pw)) * 4;
-
-                                row[x*3] = d.stereoAiPatternImg.data[pIdx]; row[x*3+1] = d.stereoAiPatternImg.data[pIdx+1]; row[x*3+2] = d.stereoAiPatternImg.data[pIdx+2];
-
-                              }
-
-                              else { var v = Math.floor(rng() * 220) + 20; row[x*3] = v; row[x*3+1] = v; row[x*3+2] = v; }
-
-                            } else {
-
-                              var dx = Math.floor(x * dmW / W), dy = Math.floor(y * dmH / H);
-
-                              var di = (dy * dmW + dx) * 4;
-
-                              var depth = dmData[di] / 255;
-
-                              var shift = Math.round(depth * maxShift);
-
-                              var srcX = x - patternWidth + shift;
-
-                              if (srcX >= 0) { row[x*3] = row[srcX*3]; row[x*3+1] = row[srcX*3+1]; row[x*3+2] = row[srcX*3+2]; }
-
-                              else {
-
-                                if (patternType === 'bw') { var c2 = rng() > 0.5 ? 230 : 25; row[x*3] = c2; row[x*3+1] = c2; row[x*3+2] = c2; }
-
-                                else if (patternType === 'color') { row[x*3] = Math.floor(rng()*200)+55; row[x*3+1] = Math.floor(rng()*200)+55; row[x*3+2] = Math.floor(rng()*200)+55; }
-
-                                else if (patternType === 'ai' && d.stereoAiPatternImg) {
-
-                                  var pw2 = d.stereoAiPatternImg.width, ph2 = d.stereoAiPatternImg.height;
-
-                                  var pIdx2 = ((y % ph2) * pw2 + (x % pw2)) * 4;
-
-                                  row[x*3] = d.stereoAiPatternImg.data[pIdx2]; row[x*3+1] = d.stereoAiPatternImg.data[pIdx2+1]; row[x*3+2] = d.stereoAiPatternImg.data[pIdx2+2];
-
-                                }
-
-                                else { var v2 = Math.floor(rng()*220)+20; row[x*3] = v2; row[x*3+1] = v2; row[x*3+2] = v2; }
-
-                              }
-
-                            }
-
-                          }
-
-                          for (var x2 = 0; x2 < W; x2++) {
-
-                            var idx = (y * W + x2) * 4;
-
-                            data[idx] = row[x2*3]; data[idx+1] = row[x2*3+1]; data[idx+2] = row[x2*3+2]; data[idx+3] = 255;
-
-                          }
-
-                        }
-
-                        ctx.putImageData(imgData, 0, 0, 0, rowsDone, W, endRow - rowsDone);
-
-                        rowsDone = endRow;
-
-                        if (rowsDone < H && canvas.isConnected) canvas._stereoAnim = requestAnimationFrame(renderChunk);
-
-                      }
-
-                      renderChunk();
-
-                    }
+                    ref: bindStereoOutput
 
                   }),
 

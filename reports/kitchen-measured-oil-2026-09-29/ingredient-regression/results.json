@@ -1,0 +1,30 @@
+{
+  "checks": [
+    "Six illustrated ingredients expose state-derived observations without changing recipe evidence.",
+    "Ingredient activities select the matching 3D tool and camera; the field-guide shortcut exits expanded mode with useful focus.",
+    "The detailed oil bottle fills a marked cup; carrying the measured oil into the pan changes both the cook and the live observation.",
+    "Both whole-produce models transition to measured slices after a real cut gesture.",
+    "Recipe quantities, narrow-screen layout, and text-view controls remain available.",
+    "A measured splash updates the saved-water observation and stays accurate after reload.",
+    "Ingredient actions follow live text-view changes; high-contrast colors remain readable."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop ingredient guide",
+      "issues": []
+    },
+    {
+      "label": "320px ingredient guide",
+      "issues": []
+    },
+    {
+      "label": "Text view ingredient guide",
+      "issues": []
+    },
+    {
+      "label": "Forced colors ingredient guide",
+      "issues": []
+    }
+  ],
+  "errors": []
+}

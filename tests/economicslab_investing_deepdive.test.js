@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_economicslab.js');
 const source = fs.readFileSync(sourcePath, 'utf8');
@@ -74,8 +75,17 @@ describe('Economics Lab investing deep-dives', () => {
   });
 
   it('wires the deep-dive achievements to real state flags', () => {
-    expect(source).toMatch(/if \(d\.paQuizDone\) econAchievements\.push/);
-    expect(source).toMatch(/if \(d\.mcRanRetire\) econAchievements\.push/);
+    // Render the panel and read each badge's earned state, rather than pinning
+    // how the achievement list is spelled in source.
+    const badge = (html, id) => (new RegExp('data-econ-ach="' + id + '" data-earned="(true|false)"').exec(html) || [])[1];
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_economicslab.js', 'economicsLab');
+    const off = renderTool('economicsLab', { showAchievements: true });
+    const on = renderTool('economicsLab', { showAchievements: true, paQuizDone: true, mcRanRetire: true });
+    expect(badge(off, 'know_thyself')).toBe('false');
+    expect(badge(off, 'stress_tested')).toBe('false');
+    expect(badge(on, 'know_thyself')).toBe('true');
+    expect(badge(on, 'stress_tested')).toBe('true');
   });
 
   it('keeps the custom ride mean-preserving: swing is symmetric around +7', () => {

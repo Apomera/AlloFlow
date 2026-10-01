@@ -141,6 +141,66 @@
     return fallbackInstructionalText(raw, type, request);
   }
 
+  // Module-missing fallback. Mirrors InstructionalContext.deriveTextAccessPlan:
+  // a grade-level text standard defaults to NO adapted companion (source
+  // 'standard'); an educator's include/omit is kept; a default the workflow or a
+  // standard made earlier is derived again. Parity: tests/text_access_parity.test.js.
+  function resourcePackTextAccessFallback(raw, standardsContext, standardsInput) {
+    var source = isObject(raw) ? raw : {};
+    var clean = function (value, limit) {
+      return value === undefined || value === null ? '' : String(value).replace(/\s+/g, ' ').trim().slice(0, limit);
+    };
+    var context = isObject(standardsContext) ? standardsContext : {};
+    var entries = Array.isArray(context.standards) ? context.standards : [];
+    var named = function (value) { return isObject(value) && clean(value.textAccessExpectation, 80) !== 'unspecified'; };
+    var entry = null;
+    for (var i = 0; i < entries.length && !entry; i++) {
+      if (entries[i] && named(entries[i].instructionalConstraints)) entry = entries[i];
+    }
+    var constraints = (named(context.instructionalConstraints) && context.instructionalConstraints)
+      || (entry && entry.instructionalConstraints)
+      || (isObject(context.instructionalConstraints) ? context.instructionalConstraints : {});
+    var expectation = clean(constraints.textAccessExpectation, 80) || 'unspecified';
+    var sourced = constraints.sourced === true
+      || !!clean(constraints.basis || constraints.authority || constraints.sourceUrl || constraints.url, 600);
+    var values = [standardsInput, context.inputText, context.promptText];
+    entries.forEach(function (item) {
+      if (isObject(item)) values.push(item.code, item.label, item.text, item.statement, item.description);
+      else values.push(item);
+    });
+    var searchable = values.map(function (value) { return clean(value, 3600); }).filter(Boolean).join(' ');
+    var complexity = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+      || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+    var requiresPrimary = expectation === 'preserve-primary' || expectation === 'adaptation-prohibited' || complexity;
+    var prohibition = sourced && expectation === 'adaptation-prohibited';
+    var requested = clean(source.adaptedTextPolicy, 40);
+    var priorSource = clean(source.adaptedTextPolicySource, 40);
+    var derivedEarlier = (priorSource === 'workflow-default' && requested === 'include')
+      || (priorSource === 'standard' && requested === 'omit');
+    var explicit = derivedEarlier ? '' : requested;
+    var valid = ['include', 'omit', 'prohibited'].indexOf(explicit) !== -1;
+    var standardOmit = requiresPrimary && !valid;
+    var policy = valid ? explicit : (standardOmit ? 'omit' : 'include');
+    if (policy === 'prohibited' && !prohibition) policy = 'omit';
+    if (prohibition) policy = 'prohibited';
+    var decision = derivedEarlier ? '' : priorSource;
+    if (prohibition || standardOmit) decision = 'standard';
+    else if (explicit === 'prohibited') decision = 'educator';
+    else if (['educator', 'standard', 'workflow-default'].indexOf(decision) === -1) decision = explicit ? 'educator' : 'workflow-default';
+    var explicitAccess = clean(source.primaryTextAccess, 40);
+    return {
+      primaryTextAccess: requiresPrimary ? 'required' : (['required', 'available'].indexOf(explicitAccess) !== -1 ? explicitAccess : 'available'),
+      adaptedTextPolicy: policy,
+      adaptedTextPolicySource: decision,
+      textAccessReason: prohibition ? 'sourced-adaptation-prohibition'
+        : (expectation === 'preserve-primary' && sourced ? 'sourced-primary-text-requirement'
+          : (complexity ? 'standard-text-complexity-requirement'
+            : (explicit ? 'educator-choice' : (standardOmit ? 'standard-primary-text-requirement' : 'default-access-companion')))),
+      standardRequiresPrimary: requiresPrimary,
+      sourcedAdaptationProhibition: prohibition
+    };
+  }
+
   function normalizeInstructionalContext(raw, request) {
     var source = isObject(raw) ? raw : {};
     var mod = resolveInstructionalModule();
@@ -152,20 +212,15 @@
       });
     }
     var standardsContext = clone(source.standardsContext || (request && request.standardsContext) || null);
-    var constraints = standardsContext && standardsContext.instructionalConstraints || {};
-    var prohibited = constraints.textAccessExpectation === 'adaptation-prohibited'
-      && (constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl));
-    var explicitAdapted = ['include', 'omit', 'prohibited'].indexOf(source.adaptedTextPolicy) !== -1
-      ? source.adaptedTextPolicy : '';
-    var effectiveAdapted = explicitAdapted === 'prohibited' && !prohibited ? 'omit' : explicitAdapted;
+    var access = resourcePackTextAccessFallback(source, standardsContext, request && request.standards);
     return {
       schemaVersion: 1,
       instructionalGrade: text(source.instructionalGrade, text(request && request.gradeLevel)),
       primaryTextPolicy: source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
-      primaryTextAccess: constraints.textAccessExpectation === 'preserve-primary' || prohibited ? 'required' : 'available',
-      adaptedTextPolicy: prohibited ? 'prohibited' : (effectiveAdapted || 'include'),
-      adaptedTextPolicySource: prohibited ? 'standard' : (explicitAdapted ? 'educator' : 'workflow-default'),
-      textAccessReason: prohibited ? 'sourced-adaptation-prohibition' : (explicitAdapted ? 'educator-choice' : 'default-access-companion'),
+      primaryTextAccess: access.primaryTextAccess,
+      adaptedTextPolicy: access.adaptedTextPolicy,
+      adaptedTextPolicySource: access.adaptedTextPolicySource,
+      textAccessReason: access.textAccessReason,
       standardsContext: standardsContext,
       standardsFingerprint: text(source.standardsFingerprint)
     };

@@ -1,0 +1,8 @@
+import {describe,it,expect} from 'vitest';import {readFileSync} from 'node:fs';
+const s=readFileSync('stem_lab/stem_tool_solarsystem.js','utf8'),plan=new Function(s.slice(s.indexOf('  function marsFollowUpPlan('),s.indexOf('  function addMarsTransferTrial('))+';return marsFollowUpPlan;')();
+describe('Mars follow-up planning',()=>{
+ it('starts at an opposite angle without inventing a prediction or progress',()=>{expect(plan(null)).toMatchObject({offset:-30,prediction:'',ready:false,launched:false});});
+ it('requires completion and a written prediction',()=>{expect(plan({followUp:{prediction:'A sufficiently long prediction'}}).ready).toBe(false);expect(plan({completedAt:1,followUp:{prediction:'short'}}).ready).toBe(false);expect(plan({completedAt:1,followUp:{prediction:'A sufficiently long prediction'}}).ready).toBe(true);});
+ it('restores each supported angle and rejects arbitrary values',()=>{for(const offset of [-30,60,-60])expect(plan({followUp:{offset}}).offset).toBe(offset);expect(plan({followUp:{offset:NaN}}).offset).toBe(-30);expect(plan({followUp:{offset:90}}).offset).toBe(-30);});
+ it('recognizes a launched setup only while its angle and prediction match',()=>{const draft={offset:60,prediction:'I expect a larger arrival gap.',launched:{offset:60,prediction:'I expect a larger arrival gap.'}},mission={completedAt:1,followUp:draft},before=JSON.stringify(mission);expect(plan(mission).launched).toBe(true);expect(plan({...mission,followUp:{...draft,offset:-60}}).launched).toBe(false);expect(plan({...mission,followUp:{...draft,prediction:'A revised prediction changes the reasoning.'}}).launched).toBe(false);expect(JSON.stringify(mission)).toBe(before);});
+});

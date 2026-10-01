@@ -1,0 +1,235 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/evolab_journal_round_trip.test.js
+[PureHelpers] 7 helpers registered
+
+stderr | tests/evolab_journal_round_trip.test.js > journal → class snapshot round trip  > carries every field, including unicode and CER notes, into the snapshot
+Warning: The current testing environment is not configured to support act(...)
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `StableView`. See https://reactjs.org/link/warning-keys for more information.
+    at ul
+    at StableView (eval at loadTool (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:131:3), <anonymous>:3274:64)
+    at Host (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/evolab_journal_round_trip.test.js:24:81)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal → class snapshot round trip  > survives a journal whose payload is truncated, padded or re-encoded
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > duplicate journals > counts a repeated journal once and says so
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > duplicate journals > pluralises, and stays silent when there are no duplicates
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > duplicate journals > two students with the same name are still two journals
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > offers a sample before anything is pasted, and the empty state says so
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > loading the sample fills every section a real class would
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > the sample can be cleared, and the button returns
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > Class Snapshot sample class  > every sample journal is well formed and distinct
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > shortens long answers in the readable half and says so
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > leaves short answers untouched and says nothing
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > the teacher still receives the note through the payload
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/evolab_journal_round_trip.test.js > journal copy stays paste-able  > a full journal copies to well under half of what it used to
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+ ✓ tests/evolab_journal_round_trip.test.js (13 tests) 985ms
+     ✓ carries every field, including unicode and CER notes, into the snapshot  361ms
+stdout | tests/evolab_living_island.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/evolab_living_island.test.js (103 tests | 1 failed) 47300ms
+     ✓ recreates the coastline and elevation from a seed without changing biological replay  448ms
+     ✓ keeps every creature and its decorative movement on dry ground across seeds and population sizes 285ms
+     ✓ replays an expedition exactly and preserves the original population 98ms
+     ✓ inherits one allele from each distinct surviving parent when mutation is off  1258ms
+     × keeps every allele bounded and never exceeds carrying capacity 16419ms
+     ✓ does not manufacture survivors or report a mean after extinction 80ms
+     ✓ makes neutral survival independent of all three traits 7ms
+     ✓ shows the expected insulation response to cold across independent seeds 119ms
+     ✓ records both parents in ancestry and excludes unrelated individuals 28ms
+     ✓ continues an identical RNG sequence after a save round trip 104ms
+     ✓ rejects corrupt and unbounded saved state and reconstructs statistics 47ms
+     ✓ exports one row per generation with the actual means and settings 10ms
+     ✓ replays actual survivor identities and unchanged parent genes without consuming randomness 14ms
+     ✓ traces both parents, direct children, and an unrecorded next generation 3ms
+     ✓ holds mission evidence at the result generation and detects changed experimental conditions 8ms
+     ✓ lets early extinction finish an investigation with missing means, never a fabricated result 58ms
+     ✓ validates saved mission bounds, settings and the tracked starting organism 22ms
+     ✓ keeps names cosmetic, bounded, Unicode-safe and attached only to recorded organisms 5ms
+     ✓ forks identical starting genes and randomness, changes one factor, and never advances the main world 9ms
+     ✓ isolates trait selection and reproduces identical outcomes when branch settings match 50ms
+     ✓ records extinction once while the other branch continues, without fabricating later frames 69ms
+     ✓ restores only small, coherent summaries with the original starting evidence 23ms
+     ✓ provides a prominent entry point while retaining the existing activities 32ms
+     ✓ renders organism access, evidence, explicit model limits and safe controls without WebGL 95ms
+     ✓ resolves a prediction when extinction ends the run before five generations 13ms
+     ✓ finds actual trait extremes without sorting, changing or resampling the population 144ms
+     ✓ handles ties, a single individual, empty cohorts and hostile saved lens choices 4ms
+     ✓ tells a recorded story with actual cohorts and undefined means at extinction 48ms
+     ✓ counts two-parent ancestry once and distinguishes future survival from recorded zero 3ms
+     ✓ reports a lost lineage while the population continues, without inventing descendants or changing the next generation 258ms
+     ✓ puts the island before advanced choices and restores an explicitly dismissed introduction 120ms
+     ✓ derives actual turnover, trait shifts and a recorded mutation specimen without drawing new randomness  361ms
+     ✓ keeps recorded climate and selection separate from pending changes and handles absent mutation or offspring evidence 116ms
+     ✓ makes deterministic tied observations without sorting or relabeling the population 3ms
+     ✓ preserves the pre-provenance outcome for seed 0 4ms
+     ✓ preserves the pre-provenance outcome for seed 42 3ms
+     ✓ preserves the pre-provenance outcome for seed 2026 3ms
+     ✓ preserves the pre-provenance outcome for seed 4294967295 165ms
+     ✓ records both exact parental choices and mutation draws and restores them independently  1268ms
+     ✓ resumes older saves without inventing their missing inheritance records  8917ms
+     ✓ rejects a corrupted copy inheritance record 10ms
+     ✓ rejects a corrupted delta inheritance record 41ms
+     ✓ rejects a corrupted result inheritance record 10ms
+     ✓ rejects a corrupted count inheritance record 2ms
+     ✓ rejects a corrupted missing-pair inheritance record 8ms
+     ✓ rejects a corrupted founder inheritance record 6ms
+     ✓ repeats the same starting genes with distinct reproducible streams and preserves the main expedition  2635ms
+     ✓ keeps a selection experiment one-factor-only and restores historical repeats after the main world advances  1734ms
+     ✓ recomputes saved repeat evidence and discards corrupted optional repeats while retaining the original comparison 24ms
+     ✓ includes extinction explicitly and never treats an extinct population as a zero-valued trait  2381ms
+     ✓ records actual extinction endpoints without fabricating later generations in repeats 6ms
+     ✓ preserves the original exact survival formula for every habitat and reveals its shared factors 14ms
+     ✓ selects actual contrasting residents without changing genes, RNG or original world 3ms
+     ✓ runs precisely one real round at a climate boundary, then restores living climate without rerolling 8ms
+     ✓ keeps neutral chances equal despite different traits and permits survival outcomes to differ  3126ms
+     ✓ blocks stale pending cases and grades no prediction against a changed recorded habitat or selection 146ms
+     ✓ rejects malformed saved cases and missing residents rather than trusting cached outcomes 16ms
+     ✓ reports one survivor with no offspring accurately when the population goes extinct 3ms
+     ✓ uses unique two-parent descendants and actual family ranges rather than counting ancestry paths 85ms
+     ✓ leaves family statistics undefined after lineage loss while retaining the living population comparison 18ms
+     ✓ keeps zero traits, tied extremes and a one-member generation distinct from missing data 121ms
+     ✓ preserves historical habitats and next-step determinism with a later-born ancestor over long histories  795ms
+     ✓ selects real contrasts across the recorded expedition without mutating history or RNG  740ms
+     ✓ never invents a starting event or turn extinction into a zero-valued trait shift 9ms
+     ✓ keeps historical moments after suggestions change and ignores queued conditions and forged metrics 17ms
+     ✓ bounds collections, removes duplicates and permits removing a moment to make room 53ms
+     ✓ rejects nonexistent or malformed references and never trusts an unrecorded mutation 5ms
+     ✓ breaks equal contrasts by earliest generation and mutation ID without inventing shifts 50ms
+     ✓ previews the same seeded climate choice that stepping uses without sampling survival  1008ms
+     ✓ uses queued settings and the current population, including intervention and fixed climates 5ms
+     ✓ ends honestly at extinction and the 60-generation limit 46ms
+     ✓ does not change a restored expedition or its subsequent biological random stream  484ms
+     ✓ partitions unrounded values once, includes 100, and retains actual organism references 3ms
+     ✓ distinguishes an empty cohort from a genuine zero or a uniform trait 2ms
+     ✓ compares actual parent, survivor and offspring denominators without changing ancestry or RNG 100ms
+     ✓ retains a surviving parent but no offspring percentage after extinction 2ms
+     ✓ uses the actual next-round habitat and selection, including a climate shift, without changing any history  751ms
+     ✓ keeps an unwritten outcome unknown, even at the generation limit 24ms
+     ✓ distinguishes death, surviving without offspring, and direct parenthood  816ms
+     ✓ retains a lone survivor honestly when the whole population leaves no offspring 3ms
+     ✓ uses actual allele averages, keeps four equiprobable copy pairings, and accepts true zero 4ms
+     ✓ can fall beyond both parental trait values without any mutation 2ms
+     ✓ uses copy provenance and never guesses it from matching values or legacy records 2ms
+     ✓ observes every real child and trait without rerolling, changing genes, or altering the next generation 195ms
+     ✓ uses both parent IDs in either order, excluding self and unrelated residents 5ms
+     ✓ keeps founders, missing residents and genuinely empty groups honest 3ms
+     ✓ revisits exact birth cohorts in old and new saves without changing future evolution  359ms
+     ✓ uses the exact model probability across all habitats without changing inherited measurements 143ms
+     ✓ retains equal neutral chances, stable ties and undefined empty or invalid views 4ms
+     ✓ keeps survivors at their original probabilities instead of reporting certainty 5ms
+     ✓ uses the upcoming climate without sampling survivors or advancing the random stream 19ms
+     ✓ sums the actual individual chances, including neutral and one-resident worlds 4ms
+     ✓ does not create a future forecast after extinction or the expedition limit 63ms
+     ✓ uses the same survival sampler as a real round without reproduction or RNG mutation 8ms
+     ✓ repeats all original parents in the upcoming climate with 20 distinct bounded streams 42ms
+     ✓ keeps equal neutral odds independent of genes and retains zero/one-survivor trials 7ms
+     ✓ rejects extra trials and unavailable source rounds without manufacturing future evidence 53ms
+     ✓ partitions every original parent using real recorded and trial IDs in the upcoming habitat 26ms
+     ✓ distinguishes identical totals from identical survivors and rejects incomplete identity evidence 3ms
+     ✓ preserves neutral probabilities and individual outcomes when the real round cannot reproduce 10ms
+     ✓ reveals the exact seeded uniform draw behind every selected trial outcome in the upcoming habitat 269ms
+     ✓ observes each sampler decision in order without changing the existing survivors or probability arithmetic 16ms
+     ✓ rejects non-residents and invalid trials and keeps original-parent evidence valid after actual extinction 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/evolab_living_island.test.js > Living Island inheritance and reproducibility > keeps every allele bounded and never exceeds carrying capacity
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/evolab_living_island.test.js:81:3
+     79|   });
+     80|
+     81|   it('keeps every allele bounded and never exceeds carrying capacity',…
+       |   ^
+     82|     for (const seed of [0, 1, 2026, 4294967295]) {
+     83|       const world = model.create(seed); world.mutation = 0.2;
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 115 passed (116)
+   Start at  19:48:35
+   Duration  64.42s (transform 343ms, setup 216ms, import 500ms, tests 48.29s, environment 16.24s)
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

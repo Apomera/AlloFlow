@@ -1,0 +1,12 @@
+{
+  "practice_flow_scan_intro": "Choose a scan, then find the named structure. Each question uses the selected modality, region, plane, and slice.",
+  "practice_flow_scan_context": "{modality} · {region} · {plane} · slice {slice}",
+  "practice_flow_scan_changed": "The scan changed, so the previous question ended. Start a new question on this scan. Your score and observations are saved.",
+  "practice_flow_scan_recovery": "This saved question cannot be matched to this scan. Start a new question here, or end the challenge to place observations.",
+  "practice_flow_scan_labels_hidden": "Labels are hidden until you answer.",
+  "practice_flow_scan_review": "Review outlined structure on scan",
+  "practice_flow_scan_escape": "On the scan, Escape returns to the question controls.",
+  "practice_flow_scan_annotations_paused": "End the challenge to place pins and rulers. Your observation note stays saved.",
+  "practice_flow_scan_ended": "Challenge ended. You can place observations on the scan.",
+  "practice_flow_scan_miss_review": "Check the outlined target: {name}. Your answer is marked by the red cross."
+}

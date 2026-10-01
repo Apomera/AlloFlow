@@ -1,0 +1,114 @@
+{
+  "soft": {
+    "calls": 17,
+    "textures": 13,
+    "geometries": 55,
+    "lights": [
+      {
+        "name": "raptor-studio-light-0",
+        "intensity": 1.05,
+        "position": [
+          0.9169315215113542,
+          63.893102314290005,
+          83.44321769588902
+        ]
+      },
+      {
+        "name": "raptor-studio-light-1",
+        "intensity": 0.65,
+        "position": [
+          0,
+          1,
+          0
+        ]
+      },
+      {
+        "name": "raptor-studio-light-2",
+        "intensity": 1.2,
+        "position": [
+          -3.371786173668016,
+          57.12458948099898,
+          84.86071289687943
+        ]
+      }
+    ]
+  },
+  "modes": [
+    {
+      "mode": "side",
+      "changed": 53156,
+      "draw": {
+        "calls": 17,
+        "textures": 13,
+        "geometries": 55,
+        "lights": [
+          {
+            "name": "raptor-studio-light-0",
+            "intensity": 1.65,
+            "position": [
+              3.318613430811801,
+              61.04394766087455,
+              83.33336449295608
+            ]
+          },
+          {
+            "name": "raptor-studio-light-1",
+            "intensity": 0.28,
+            "position": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "name": "raptor-studio-light-2",
+            "intensity": 0.5,
+            "position": [
+              -3.371786173668016,
+              57.12458948099898,
+              84.86071289687943
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "mode": "rim",
+      "changed": 55288,
+      "draw": {
+        "calls": 17,
+        "textures": 13,
+        "geometries": 55,
+        "lights": [
+          {
+            "name": "raptor-studio-light-0",
+            "intensity": 0.3,
+            "position": [
+              0.9169315215113542,
+              63.893102314290005,
+              83.44321769588902
+            ]
+          },
+          {
+            "name": "raptor-studio-light-1",
+            "intensity": 0.24,
+            "position": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "name": "raptor-studio-light-2",
+            "intensity": 2.2,
+            "position": [
+              -3.7148835892823655,
+              57.88501833867215,
+              84.96233541123578
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

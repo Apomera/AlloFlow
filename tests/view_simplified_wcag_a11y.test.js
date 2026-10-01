@@ -40,8 +40,11 @@ describe('Simplified View read-aloud sentence alignment', () => {
     // and Edit Audio cannot independently drift on bilingual/duplicate text.
     expect(source).toContain('var getReadAloudSentenceEntriesForText = function (rawText, sourceLanguage) {');
     expect(source).toContain('var parts = getSideBySideContent(text);');
+    // Narration (Save audio, recovery, readiness, Edit Audio) reads one text: the
+    // passage itself, plus a preserved original's word-support lines.
+    expect(source.includes("? listenPlanFor(simplifiedReadAloudText, checkedSupports.annotations, leveledTextLanguage || 'English').text : simplifiedReadAloudText;"), 'narration text is the passage plus its support lines').toBe(true);
     const entryConsumers =
-      source.match(/getReadAloudSentenceEntriesForText\(simplifiedReadAloudText\)/g) || [];
+      source.match(/getReadAloudSentenceEntriesForText\(narrationText\)/g) || [];
     expect(entryConsumers.length).toBeGreaterThanOrEqual(2);
 
     expect(source).toContain("handleSpeak(simplifiedReadAloudText, 'simplified-main',");

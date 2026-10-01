@@ -1,0 +1,60 @@
+{
+  "browser": "Chromium",
+  "results": [
+    {
+      "mode": "wide",
+      "viewport": 1280,
+      "scrollWidth": 1280,
+      "exactSentence": true,
+      "keyboard": true,
+      "focusPreserved": true
+    },
+    {
+      "mode": "narrow",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "exactSentence": true,
+      "keyboard": true,
+      "focusPreserved": true
+    },
+    {
+      "mode": "spacing",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "exactSentence": true,
+      "keyboard": true,
+      "focusPreserved": true
+    },
+    {
+      "mode": "200-text",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "exactSentence": true,
+      "keyboard": true,
+      "focusPreserved": true
+    },
+    {
+      "mode": "touch-and-speed",
+      "exactSentence": true,
+      "profileForwarded": true
+    },
+    {
+      "mode": "failure-retry",
+      "focusPreserved": true
+    },
+    {
+      "mode": "leave-edit",
+      "aborted": true,
+      "noLateStoreWrite": true
+    }
+  ],
+  "errors": [],
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "limitations": [
+    "Fixture audio and memory-only persistence; no provider, microphone, saved application state or real device durability tested",
+    "DOM focus/live-region assertions are not screen-reader verification",
+    "Doubled computed fonts are not actual 200% text resizing or 400% browser zoom",
+    "No real mobile hardware, Firefox/WebKit, sticky/nested assembled-shell verification"
+  ]
+}

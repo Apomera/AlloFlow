@@ -1,0 +1,94 @@
+[
+  {
+    "fixture": "reader_es419_long_labels_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_es419_long_labels_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [
+      {
+        "element": "DIV",
+        "text": "Cambiar tambiénOraciones más cortasExplicar vocabulario desconocidoConservar estos términos esencial",
+        "scrollWidth": 255,
+        "clientWidth": 86
+      }
+    ],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [
+      {
+        "element": "DIV",
+        "text": "غيّر أيضًاجمل أقصراشرح المفردات غير المألوفةاحتفظ بهذه المصطلحات الأساسيةافصل المصطلحات بفاصلة (,) أ",
+        "scrollWidth": 201,
+        "clientWidth": 86
+      }
+    ],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [
+      {
+        "element": "DIV",
+        "text": "同时更改缩短句子解释不熟悉的词汇保留以下重要术语请用半角逗号 (,) 或分号 (;) 分隔词语；如果词语本身含有这些符号，请用半角双引号 (\") 括起来。最多可填写 30 个不同的词语，且它们必须已出",
+        "scrollWidth": 126,
+        "clientWidth": 86
+      }
+    ],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "termFailures": [],
+    "previewFailures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_audio_preview_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "termFailures": [
+      {
+        "element": "DIV",
+        "text": "เปลี่ยนเพิ่มเติมประโยคสั้นลงอธิบายคำศัพท์ที่ไม่คุ้นเคยคงคำศัพท์สำคัญเหล่านี้ไว้คั่นคำด้วยจุลภาค (,) ",
+        "scrollWidth": 218,
+        "clientWidth": 86
+      }
+    ],
+    "previewFailures": []
+  }
+]

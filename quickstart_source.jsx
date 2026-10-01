@@ -1112,7 +1112,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     setUrlInput('');
                                                     if (addToast) addToast(t('wizard.link_opened_toast'), "info");
                                                 }}
-                                                className="absolute end-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
+                                                className="absolute end-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
                                                 data-help-key="wizard_search_result_link"
                                                 title={t('wizard.open_link_title')}
                                             >

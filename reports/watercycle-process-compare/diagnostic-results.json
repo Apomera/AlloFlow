@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-09-29T23:24:14.079Z",
+  "sourceSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844",
+  "mirrorSha256": "e5174f8277783e0c99e577f3393324ddb709bf17d692f4ec29b9efa323f05844",
+  "provenance": "Product source bytes captured before server launch; isolated localhost server and owned headless browser; no learner preview or browser tabs used.",
+  "checks": [
+    {
+      "label": "source and deployed copy are identical at capture",
+      "pass": true
+    }
+  ],
+  "audits": [],
+  "errors": [],
+  "failures": [],
+  "lastStep": "read checked activity",
+  "completedAt": "2026-09-29T23:24:42.443Z",
+  "sourceUnchangedAtCompletion": true
+}

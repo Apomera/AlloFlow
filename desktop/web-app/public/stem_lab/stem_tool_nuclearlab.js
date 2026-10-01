@@ -19,6 +19,13 @@
 // ═══════════════════════════════════════════════════════════════════════
 (function () {
   'use strict';
+  // Fallback-aware translator reachable from every call site in this tool.
+  var __alloCtx_nuclearlab = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCtx_nuclearlab && typeof __alloCtx_nuclearlab.t === "function") ? __alloCtx_nuclearlab.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   var NK_REVIEWED = '2026-08';
@@ -1347,6 +1354,432 @@
   function rxAttach(node) { RX_VIEWER.attach(node || null); }
 
   // BEGIN NUCLEAR EXPERIMENT STUDIO
+  function NuclearNucleusBuilder(props) {
+    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
+    function valid(row) { return row && typeof row === 'object' && !Array.isArray(row) && [6, 7].indexOf(row.protons) >= 0 && [6, 7, 8].indexOf(row.neutrons) >= 0; }
+    function keyFor(row) { return row.protons + ':' + row.neutrons; }
+    function nameFor(row) { return nt('nucleus_name', '{element}-{mass}', { element: row.protons === 6 ? nt('nucleus_carbon', 'Carbon') : nt('nucleus_nitrogen', 'Nitrogen'), mass: row.protons + row.neutrons }); }
+    var protons = [6, 7].indexOf(data.protons) >= 0 ? data.protons : 6;
+    var neutrons = [6, 7, 8].indexOf(data.neutrons) >= 0 ? data.neutrons : 6;
+    var current = { protons: protons, neutrons: neutrons };
+    var predictions = [
+      { id: 'same', label: nt('nucleus_predict_same', 'It stays carbon') },
+      { id: 'changes', label: nt('nucleus_predict_changes', 'It becomes another element') }
+    ];
+    var prediction = predictions.filter(function (item) { return item.id === data.prediction; })[0];
+    var cards = [];
+    if (prediction && Array.isArray(data.cards)) data.cards.forEach(function (row) {
+      if (!valid(row)) return;
+      cards = cards.filter(function (other) { return keyFor(row) !== keyFor(other); }).concat([{ protons: row.protons, neutrons: row.neutrons }]);
+    });
+    var targets = [{ protons: 6, neutrons: 6 }, { protons: 6, neutrons: 8 }, { protons: 7, neutrons: 8 }];
+    var checked = targets.filter(function (target) { return cards.some(function (row) { return keyFor(row) === keyFor(target); }); });
+    var eligible = !!prediction && checked.length === targets.length;
+    var explained = eligible && data.explanation === 'correct';
+    var missing = targets.filter(function (target) { return !cards.some(function (row) { return keyFor(row) === keyFor(target); }); })[0];
+    var solved = data.solved === true;
+    var comparisons = [
+      { id: 'neutrons', first: targets[0], second: targets[1], lesson: nt('nucleus_compare_isotopes', 'Same proton count, different neutron count: two isotopes of carbon.') },
+      { id: 'protons', first: targets[1], second: targets[2], lesson: nt('nucleus_compare_elements', 'Same neutron count, different proton count: carbon and nitrogen are different elements.') }
+    ].filter(function (pair) {
+      return [pair.first, pair.second].every(function (row) { return cards.some(function (saved) { return keyFor(saved) === keyFor(row); }); });
+    });
+    var comparison = comparisons.filter(function (pair) { return pair.id === data.comparison; })[0] || comparisons[0];
+    var rawNoticing = data.noticing && typeof data.noticing === 'object' && !Array.isArray(data.noticing) ? data.noticing : {}, noticing = {};
+    ['protons', 'neutrons'].forEach(function (id) { if (['protons', 'neutrons'].indexOf(rawNoticing[id]) >= 0) noticing[id] = rawNoticing[id]; });
+    var noticed = comparison && noticing[comparison.id], spotted = !!comparison && noticed === comparison.id;
+    var statusState = React.useState(''), status = statusState[0], setStatus = statusState[1];
+    var saveRef = React.useRef(null), pendingSaveFocus = React.useRef(false), explanationRef = React.useRef(null);
+    var comparisonRef = React.useRef(null), buildRef = React.useRef(null);
+    var checkRef = React.useRef(null), pendingCheckFocus = React.useRef(null);
+    React.useEffect(function () {
+      if (pendingSaveFocus.current && saveRef.current && !saveRef.current.disabled) {
+        saveRef.current.focus(); pendingSaveFocus.current = false;
+      }
+    }, [protons, neutrons]);
+    React.useEffect(function () {
+      if (pendingCheckFocus.current && comparison && pendingCheckFocus.current === comparison.id && spotted && checkRef.current) checkRef.current.focus();
+      pendingCheckFocus.current = null;
+    }, [comparison && comparison.id, noticed]);
+    function focusSection(ref) {
+      if (!ref.current) return;
+      ref.current.focus();
+      var section = ref.current.parentElement || ref.current;
+      if (typeof section.scrollIntoView === 'function') section.scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
+    function reviewComparisons() {
+      if (comparison) focusSection(comparisonRef);
+    }
+    function continueBuilding() {
+      if (!buildRef.current) return;
+      buildRef.current.parentElement.open = true;
+      focusSection(buildRef);
+    }
+    function reviewExplanation() {
+      if (eligible) focusSection(explanationRef);
+    }
+    function describe(row) { return nt('nucleus_description', '{name}: {protons} protons and {neutrons} neutrons.', { name: nameFor(row), protons: row.protons, neutrons: row.neutrons }); }
+    function changeParticle(part, delta) {
+      if (!prediction) return;
+      var next = { protons: protons, neutrons: neutrons }; next[part] += delta;
+      if (!valid(next)) return;
+      props.onChange(next); setStatus(describe(next));
+    }
+    function prepare() {
+      if (!prediction || !missing) return;
+      pendingSaveFocus.current = true;
+      props.onChange({ protons: missing.protons, neutrons: missing.neutrons });
+      setStatus(nt('nucleus_prepared', '{name} is ready. Save it to add a comparison.', { name: nameFor(missing) }));
+    }
+    function save() {
+      if (!prediction) return;
+      var duplicate = cards.some(function (row) { return keyFor(row) === keyFor(current); });
+      props.onChange({ cards: cards.filter(function (row) { return keyFor(row) !== keyFor(current); }).concat([current]) });
+      setStatus(describe(current) + ' ' + (duplicate ? nt('nucleus_repeat', 'This nucleus is already in your comparisons.') : nt('nucleus_saved', 'Added to your comparisons.')));
+    }
+    function explain(correct) {
+      if (!eligible) return;
+      props.onChange(correct ? { explanation: 'correct', solved: true } : { explanation: 'retry' });
+      setStatus(correct ? nt('nucleus_solved_status', 'Nucleus builder complete. Proton count identifies the element; neutron count distinguishes its isotopes.') : nt('nucleus_retry_status', 'Look at the two carbon rows. Which particle count stayed the same?'));
+    }
+    function notice(part) {
+      if (!comparison || ['protons', 'neutrons'].indexOf(part) < 0) return;
+      var next = Object.assign({}, noticing); next[comparison.id] = part;
+      pendingCheckFocus.current = part === comparison.id && !spotted ? comparison.id : null;
+      props.onChange({ noticing: next });
+    }
+    function savedTable() {
+      return h('table', null, h('caption', null, nt('nucleus_caption', 'Save a nucleus to keep its particle counts. Each distinct nucleus has one row.')),
+        h('thead', null, h('tr', null, h('th', { scope: 'col' }, nt('nucleus_column', 'Nucleus')), h('th', { scope: 'col' }, nt('nucleus_protons', 'Protons')), h('th', { scope: 'col' }, nt('nucleus_neutrons', 'Neutrons')))),
+        h('tbody', null, cards.map(function (row) { return h('tr', { key: keyFor(row) }, h('th', { scope: 'row' }, nameFor(row)), h('td', null, row.protons), h('td', null, row.neutrons)); })));
+    }
+    function comparisonView() {
+      return h('div', { className: 'ns-nucleus-comparison', 'data-ns-nucleus-comparison': comparison.id },
+        comparisons.length > 1 ? h('div', { className: 'ns-pair-choices', role: 'group', 'aria-label': nt('nucleus_compare_group', 'Choose a saved nucleus comparison') }, comparisons.map(function (item) {
+          return h('button', { key: item.id, type: 'button', className: 'ns-choice', 'aria-pressed': comparison.id === item.id, onClick: function () {
+            props.onChange({ comparison: item.id });
+            setStatus(nt('nucleus_pair_switched', 'Viewing the saved comparison of {first} and {second}.', { first: nameFor(item.first), second: nameFor(item.second) }));
+          } }, nt('nucleus_pair_label', '{first} → {second}', { first: nameFor(item.first), second: nameFor(item.second) }));
+        })) : h('p', { className: 'ns-result' }, nt('nucleus_pair_label', '{first} → {second}', { first: nameFor(comparison.first), second: nameFor(comparison.second) })),
+        h('div', { className: 'ns-pair-chart', role: 'img', 'aria-label': nt('nucleus_compare_picture', '{first}: {firstP} protons and {firstN} neutrons. {second}: {secondP} protons and {secondN} neutrons.', { first: nameFor(comparison.first), firstP: comparison.first.protons, firstN: comparison.first.neutrons, second: nameFor(comparison.second), secondP: comparison.second.protons, secondN: comparison.second.neutrons }) },
+          h('div', { className: 'ns-pair-row ns-pair-head' }, h('span', null), h('strong', { className: 'ns-pair-name' }, nameFor(comparison.first)), h('strong', { className: 'ns-pair-name' }, nameFor(comparison.second))),
+          ['protons', 'neutrons'].map(function (part) {
+            var change = comparison.second[part] - comparison.first[part];
+            return h('div', { key: part, className: 'ns-pair-row', 'data-ns-pair-part': part },
+              h('div', { className: 'ns-pair-kind' }, h('strong', null, part === 'protons' ? nt('nucleus_protons', 'Protons') : nt('nucleus_neutrons', 'Neutrons')), h('small', null, change === 0 ? nt('nucleus_compare_same_count', 'Same count') : nt('nucleus_compare_added', '+{count}', { count: change }))),
+              [comparison.first, comparison.second].map(function (row, i) {
+                return h('div', { key: i, className: 'ns-pair-value', 'data-changed': i === 1 && change !== 0, 'data-ns-pair-count': row[part] },
+                  h('strong', null, row[part]), h('div', { className: 'ns-pair-marks' }, Array.from({ length: 8 }, function (_, slot) { return h('span', { key: slot, className: 'ns-pair-dot', 'data-filled': slot < row[part], 'aria-hidden': 'true' }); })));
+              }));
+          })),
+        h('p', { className: 'ns-note ns-pair-caption' }, nt('nucleus_compare_caption', 'Each filled dot represents one particle.')),
+        h('details', { key: comparison.id, className: 'ns-pair-check', 'data-ns-pair-check': comparison.id, open: !spotted },
+          h('summary', { ref: checkRef }, spotted ? comparison.id === 'neutrons' ? nt('nucleus_check_spotted_neutrons', '✓ Neutron count changed') : nt('nucleus_check_spotted_protons', '✓ Proton count changed') : nt('nucleus_check_question', 'Quick check: which count changed?')),
+          h('div', { className: 'ns-pair-choices', role: 'group', 'aria-label': nt('nucleus_check_group', 'Which particle count changed between these saved nuclei?') }, ['protons', 'neutrons'].map(function (part) {
+            return h('button', { key: part, type: 'button', className: 'ns-choice', 'aria-pressed': noticed === part, onClick: function () { notice(part); } }, part === 'protons' ? nt('nucleus_check_protons', 'Proton count') : nt('nucleus_check_neutrons', 'Neutron count'));
+          }))),
+        h('p', { className: 'ns-pair-lesson', role: 'status', 'data-ns-pair-feedback': spotted ? 'correct' : noticed ? 'retry' : 'waiting' }, spotted ? comparison.lesson : noticed ? comparison.id === 'neutrons' ? nt('nucleus_check_neutrons_hint', 'Both nuclei have 6 protons. Look at the neutron counts and try again.') : nt('nucleus_check_protons_hint', 'Both nuclei have 8 neutrons. Look at the proton counts and try again.') : ''),
+        h('button', { type: 'button', className: 'ns-secondary ns-pair-next', 'data-ns-pair-next': 'true', onClick: missing ? continueBuilding : reviewExplanation },
+          missing ? nt('nucleus_compare_continue_build', 'Continue building {name} →', { name: nameFor(missing) }) : explained ? nt('nucleus_compare_review_explanation', 'Review your explanation →') : nt('nucleus_compare_continue_explain', 'Explain these comparisons →')));
+    }
+    var particles = [];
+    for (var i = 0; i < Math.max(protons, neutrons); i++) {
+      if (i < protons) particles.push(h('span', { key: 'p' + i, className: 'ns-nucleon', 'data-particle': 'proton', 'aria-hidden': 'true' }, 'p+'));
+      if (i < neutrons) particles.push(h('span', { key: 'n' + i, className: 'ns-nucleon', 'data-particle': 'neutron', 'aria-hidden': 'true' }, 'n'));
+    }
+    return h('div', { 'data-ns-nucleus': 'true' },
+      h('button', { type: 'button', className: 'ns-secondary ns-case-back', onClick: function () { props.onView('studio'); } }, nt('case_back', '← Back to introductions')),
+      h('div', { className: 'ns-heading' }, h('p', { className: 'ns-eyebrow' }, nt('nucleus_title', 'Nucleus builder')), h('h3', null, nt('nucleus_heading', 'What makes an isotope?')),
+        h('p', null, nt('nucleus_goal', 'Start with carbon. Change one kind of particle and watch the name.'))),
+      h('div', { className: 'ns-grid' },
+        h('div', null,
+          h('div', { className: 'ns-scene', 'data-ns-scene': 'nucleus' },
+            h('p', { className: 'ns-scene-note' }, nt('nucleus_current', 'Your current nucleus')),
+            h('div', { className: 'ns-nucleus-name', 'data-ns-nucleus-name': 'true' }, nameFor(current)),
+            h('div', { className: 'ns-nucleus-cluster', role: 'img', 'aria-label': nt('nucleus_picture', '{name} nucleus: {protons} protons and {neutrons} neutrons. Mass number {mass}.', { name: nameFor(current), protons: protons, neutrons: neutrons, mass: protons + neutrons }) }, particles),
+            h('div', { className: 'ns-nucleus-counts' }, h('span', null, nt('nucleus_proton_count', '{count} protons', { count: protons })), h('span', null, nt('nucleus_neutron_count', '{count} neutrons', { count: neutrons }))),
+            h('p', { className: 'ns-scene-note' }, nt('nucleus_mass', 'Mass number = protons + neutrons')), h('p', { className: 'ns-nucleus-equation', 'data-ns-nucleus-mass': 'true' }, protons + ' + ' + neutrons + ' = ' + (protons + neutrons))),
+          h('div', { className: 'ns-notebook ns-nucleus-stop', 'data-ns-nucleus-notebook': 'true' }, h('h5', { ref: comparisonRef, tabIndex: -1, 'data-ns-compare-heading': 'true' }, nt('nucleus_notebook', 'Your saved nuclei')),
+            comparison ? comparisonView() : null,
+            cards.length ? comparison ? h('details', { className: 'ns-pair-records' }, h('summary', null, nt('nucleus_compare_records', 'Review all saved counts ({count})', { count: cards.length })), savedTable()) : savedTable()
+              : h('p', { className: 'ns-note' }, nt('nucleus_empty', 'Save carbon-12 to start your comparison.')))),
+        h('div', { className: 'ns-controls' },
+          h(NuclearStudioPrediction, { ctx: props.ctx, observed: cards.length > 0, value: prediction && nt('nucleus_prediction_scope', '{choice} when neutrons are added', { choice: prediction.label }) },
+            h('h5', null, nt('nucleus_predict_question', 'If you add neutrons to carbon, does its element name change?')),
+            h('div', { className: 'ns-choices', role: 'group', 'aria-label': nt('nucleus_predict_group', 'Predict what adding neutrons changes') }, predictions.map(function (item) {
+              return h('button', { key: item.id, type: 'button', className: 'ns-choice', 'aria-pressed': !!prediction && prediction.id === item.id, disabled: cards.length > 0, onClick: function () { props.onChange({ prediction: item.id, cards: [], noticing: {}, explanation: null }); } }, item.label);
+            }))),
+          h('details', { className: 'ns-case-tests ns-nucleus-stop', open: !explained }, h('summary', { ref: buildRef, 'data-ns-build-heading': 'true' }, explained ? nt('nucleus_review_build', 'Review your particle changes') : nt('nucleus_build_step', '2 / Build and compare')),
+            prediction && missing ? nkStudioGuidance(h, nt,
+              keyFor(missing) === '6:6' ? nt('nucleus_guide_start', 'Save carbon-12: 6 protons and 6 neutrons.') : keyFor(missing) === '6:8' ? nt('nucleus_guide_isotope', 'Keep 6 protons. Add two neutrons, then save carbon-14.') : nt('nucleus_guide_element', 'Keep 8 neutrons. Add one proton, then save nitrogen-15.'),
+              nt('nucleus_prepare', 'Prepare {name}', { name: nameFor(missing) }), keyFor(missing) !== keyFor(current) ? prepare : null)
+              : eligible && !explained ? nkStudioGuidance(h, nt, nt('nucleus_ready_compare', 'Your three nuclei are saved. Review them side by side.'), nt('nucleus_go_compare', 'Review saved comparisons →'), reviewComparisons) : null,
+            !prediction ? h('p', { className: 'ns-note' }, nt('choose_first', 'Choose a prediction to start. It is fine to change your mind after testing.')) : null,
+            h('div', { className: 'ns-particle-control', role: 'group', 'aria-label': nt('nucleus_proton_controls', 'Change the proton count') },
+              h('p', null, h('strong', null, nt('nucleus_protons', 'Protons')), h('span', null, protons)),
+              h('div', { className: 'ns-particle-buttons' }, h('button', { type: 'button', className: 'ns-secondary', disabled: !prediction || protons === 6, onClick: function () { changeParticle('protons', -1); } }, nt('nucleus_remove_proton', '− Proton')), h('button', { type: 'button', className: 'ns-secondary', disabled: !prediction || protons === 7, onClick: function () { changeParticle('protons', 1); } }, nt('nucleus_add_proton', '+ Proton')))),
+            h('div', { className: 'ns-particle-control', role: 'group', 'aria-label': nt('nucleus_neutron_controls', 'Change the neutron count') },
+              h('p', null, h('strong', null, nt('nucleus_neutrons', 'Neutrons')), h('span', null, neutrons)),
+              h('div', { className: 'ns-particle-buttons' }, h('button', { type: 'button', className: 'ns-secondary', disabled: !prediction || neutrons === 6, onClick: function () { changeParticle('neutrons', -1); } }, nt('nucleus_remove_neutron', '− Neutron')), h('button', { type: 'button', className: 'ns-secondary', disabled: !prediction || neutrons === 8, onClick: function () { changeParticle('neutrons', 1); } }, nt('nucleus_add_neutron', '+ Neutron')))),
+            h('button', { ref: saveRef, type: 'button', className: 'ns-primary', disabled: !prediction, onClick: save }, nt('nucleus_save', 'Save this nucleus →')),
+            prediction ? h('p', { className: 'ns-note', 'data-ns-nucleus-evidence': 'true', style: { marginTop: 12 } }, nt('nucleus_evidence', '{count} of 3 comparison nuclei saved', { count: checked.length })) : null,
+            comparison && (missing || explained) ? h('button', { type: 'button', className: 'ns-secondary ns-pair-next', 'data-ns-review-comparisons': 'true', onClick: reviewComparisons }, nt('nucleus_go_compare', 'Review saved comparisons →')) : null),
+          h('p', { role: 'status', className: 'ns-note', 'data-ns-nucleus-status': 'true', style: { minHeight: 24, marginTop: 12 } }, status),
+          eligible ? h('div', { className: 'ns-explain ns-nucleus-stop', 'data-ns-explain': 'nucleus' }, h('p', { className: 'ns-step' }, nt('explain_step', '3 / Explain')), h('h5', { ref: explanationRef, tabIndex: -1 }, nt('nucleus_explain_question', 'What determines the element?')),
+            h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'retry', onClick: function () { explain(false); } }, nt('nucleus_explain_no', 'Adding neutrons always makes a different element.')),
+            h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': explained, onClick: function () { explain(true); } }, nt('nucleus_explain_yes', 'Protons identify the element. Neutrons distinguish its isotopes.')),
+            data.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('nucleus_retry', 'Carbon-12 and carbon-14 both have 6 protons. Their neutron counts differ. Compare them with nitrogen-15.')) : null,
+            data.explanation === 'retry' ? h('button', { type: 'button', className: 'ns-secondary ns-pair-next', onClick: reviewComparisons }, nt('nucleus_retry_compare', 'Look at the saved comparisons again →')) : null,
+            explained ? h('div', { className: 'ns-feedback' }, h('strong', null, nt('nucleus_solved', '✓ Nucleus builder complete')), h('p', null, nt('nucleus_takeaway', 'Same proton count, different neutron count: isotopes of one element. Change the proton count and the element changes.'))) : null,
+            explained ? h('button', { type: 'button', className: 'ns-primary', onClick: props.onDecay }, nt('nucleus_continue', 'Continue to the half-life experiment →')) : null) : null,
+          h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { props.onChange({ prediction: null, protons: 6, neutrons: 6, cards: [], comparison: 'neutrons', noticing: {}, explanation: null }); setStatus(nt('nucleus_restart_status', 'Builder reset to carbon-12. Your saved takeaway is kept.')); } }, nt('nucleus_restart', 'Restart the builder')),
+          nkStudioHint(h, nt, nt('nucleus_hint', 'Compare carbon-12 with carbon-14 first. Keep the protons fixed while changing neutrons. Then keep 8 neutrons while changing the proton count.'), 'nucleus'))),
+      solved ? h('div', { className: 'ns-notebook' }, h(NuclearStudioReflection, { ctx: props.ctx, kind: 'nucleus', title: nt('nucleus_title', 'Nucleus builder'), note: data.reflection, onChange: function (note) { props.onChange({ reflection: note }); } })) : null,
+      h('details', { className: 'ns-notebook' }, h('summary', null, nt('nucleus_more', 'Connect the names to the science')),
+        h('p', { className: 'ns-note' }, nt('nucleus_model', 'The diagram labels a nucleus from its particle counts. The particle positions are schematic. Changing counts here lets you compare nuclei; it does not represent a particular nuclear reaction.')),
+        h('p', { className: 'ns-note' }, nt('nucleus_stability', 'Isotopes can be stable or radioactive. Carbon-12 is stable; carbon-14 is radioactive. The half-life experiment explores how a radioactive sample changes over time.')),
+        h('a', { href: 'https://www.energy.gov/science/doe-explainsisotopes', target: '_blank', rel: 'noopener noreferrer' }, nt('nucleus_doe_source', 'Source: DOE isotope basics')), ' · ',
+        h('a', { href: 'https://www.isotopes.gov/isotope-basics', target: '_blank', rel: 'noopener noreferrer' }, nt('nucleus_nidc_source', 'Source: NIDC isotope notation'))));
+  }
+
+  function NuclearSignalInvestigation(props) {
+    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
+    var lead = SHIELDS.filter(function (item) { return item.id === 'lead'; })[0];
+    var tests = [
+      { id: 'closer', distance: 1, thickness: 2, title: nt('case_closer', 'Move closer'), detail: nt('case_closer_detail', 'Move to 1 m. Keep the 2 cm lead shield.'), changed: nt('case_distance_only', 'Distance only') },
+      { id: 'unshielded', distance: 2, thickness: 0, title: nt('case_unshielded', 'Remove the lead'), detail: nt('case_unshielded_detail', 'Remove the shield. Keep the detector at 2 m.'), changed: nt('case_shield_only', 'Shield only') },
+      { id: 'both', distance: 1, thickness: 0, title: nt('case_undo_both', 'Undo both changes'), detail: nt('case_undo_both_detail', 'Move to 1 m and remove the shield.'), changed: nt('case_two_changes', 'Distance + shield') }
+    ];
+    function testFor(id) { return tests.filter(function (item) { return item.id === id; })[0]; }
+    function signal(setup) { return 100 * Math.exp(-lead.mu * setup.thickness) / (setup.distance * setup.distance); }
+    var predictions = [
+      { id: 'distance', label: nt('case_predict_distance', 'The extra distance') },
+      { id: 'shield', label: nt('case_predict_shield', 'The added lead') },
+      { id: 'both', label: nt('case_predict_both', 'Both changes') }
+    ];
+    var prediction = predictions.filter(function (item) { return item.id === data.prediction; })[0];
+    var runs = prediction && Array.isArray(data.runs) ? data.runs.filter(function (id, i, all) { return testFor(id) && all.lastIndexOf(id) === i; }).slice(-3) : [];
+    var selected = testFor(data.selected) || tests[0];
+    var initial = { distance: 2, thickness: 2 };
+    var viewed = runs.indexOf(data.review) >= 0 ? data.review : runs[runs.length - 1];
+    var measured = viewed ? testFor(viewed) : initial;
+    var rawNoticing = data.noticing && typeof data.noticing === 'object' && !Array.isArray(data.noticing) ? data.noticing : {}, noticing = {};
+    runs.forEach(function (id) { if (['distance', 'shield', 'both'].indexOf(rawNoticing[id]) >= 0) noticing[id] = rawNoticing[id]; });
+    var changedPart = viewed === 'closer' ? 'distance' : viewed === 'unshielded' ? 'shield' : 'both';
+    var noticed = viewed && noticing[viewed], spotted = !!viewed && noticed === changedPart;
+    var checked = ['closer', 'unshielded'].filter(function (id) { return runs.indexOf(id) >= 0; });
+    var eligible = !!prediction && checked.length === 2;
+    var overview = eligible && data.evidenceView === 'effects';
+    var explained = eligible && data.explanation === 'correct';
+    var solved = data.solved === true;
+    var statusState = React.useState(''), status = statusState[0], setStatus = statusState[1];
+    var runRef = React.useRef(null), pendingRunFocus = React.useRef(false), explanationRef = React.useRef(null);
+    var evidenceRef = React.useRef(null), testsRef = React.useRef(null), pendingEvidenceFocus = React.useRef(null);
+    var singleViewRef = React.useRef(null), effectsViewRef = React.useRef(null), pendingViewFocus = React.useRef(false);
+    var checkRef = React.useRef(null), pendingCheckFocus = React.useRef(null);
+    React.useEffect(function () {
+      if (pendingRunFocus.current && runRef.current && !runRef.current.disabled) {
+        runRef.current.focus(); pendingRunFocus.current = false;
+      }
+    }, [selected.id]);
+    React.useEffect(function () {
+      if (pendingEvidenceFocus.current === viewed && !overview) {
+        focusSection(evidenceRef); pendingEvidenceFocus.current = null;
+      }
+    }, [viewed, overview]);
+    React.useEffect(function () {
+      if (pendingViewFocus.current) {
+        var button = overview ? effectsViewRef.current : singleViewRef.current;
+        if (button) button.focus();
+        var section = evidenceRef.current && evidenceRef.current.parentElement;
+        if (section && typeof section.scrollIntoView === 'function') section.scrollIntoView({ block: 'start', behavior: 'auto' });
+        pendingViewFocus.current = false;
+      }
+    }, [overview]);
+    function setEvidenceView(kind) {
+      if (!eligible || ['single', 'effects'].indexOf(kind) < 0 || (kind === 'effects') === overview) return;
+      pendingViewFocus.current = true;
+      props.onChange({ evidenceView: kind });
+    }
+    function inspectEffect(id) {
+      if (!eligible || ['closer', 'unshielded'].indexOf(id) < 0) return;
+      pendingEvidenceFocus.current = id;
+      review(id);
+    }
+    React.useEffect(function () {
+      if (pendingCheckFocus.current === viewed && spotted) foldCheck();
+      pendingCheckFocus.current = null;
+    }, [viewed, noticed]);
+    function foldCheck() {
+      if (!checkRef.current) return;
+      checkRef.current.parentElement.open = false;
+      checkRef.current.focus();
+    }
+    function notice(part) {
+      if (!viewed || runs.indexOf(viewed) < 0 || ['distance', 'shield', 'both'].indexOf(part) < 0) return;
+      if (spotted && part === changedPart) { foldCheck(); return; }
+      var next = Object.assign({}, noticing); next[viewed] = part;
+      pendingCheckFocus.current = part === changedPart ? viewed : null;
+      props.onChange({ noticing: next });
+    }
+    function focusSection(ref) {
+      if (!ref.current) return;
+      ref.current.focus();
+      var section = ref.current.parentElement || ref.current;
+      if (typeof section.scrollIntoView === 'function') section.scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
+    function reviewEvidence() {
+      if (runs.length) focusSection(evidenceRef);
+    }
+    function continueTesting() {
+      if (!testsRef.current) return;
+      testsRef.current.parentElement.open = true;
+      focusSection(testsRef);
+    }
+    function reviewExplanation() {
+      if (eligible) focusSection(explanationRef);
+    }
+    function reviewShielding() {
+      if (runs.indexOf('unshielded') < 0) return;
+      if (viewed === 'unshielded' && !overview) { reviewEvidence(); return; }
+      pendingEvidenceFocus.current = 'unshielded';
+      review('unshielded');
+    }
+    function prepareMissing() {
+      pendingRunFocus.current = true;
+      props.onChange({ selected: missing.id });
+    }
+    function run() {
+      if (!prediction) return;
+      var measurement = { runs: runs.filter(function (id) { return id !== selected.id; }).concat([selected.id]), review: selected.id };
+      if (data.evidenceView === 'effects') measurement.evidenceView = 'single';
+      props.onChange(measurement);
+      setStatus(nt('case_measured', '{test}: {percent}% of the original signal. {changed}.', { test: selected.title, percent: signal(selected).toFixed(1), changed: selected.changed }));
+    }
+    function review(id) {
+      if (runs.indexOf(id) < 0) return;
+      props.onChange(overview ? { review: id, evidenceView: 'single' } : { review: id });
+      setStatus(nt('case_review_status', 'Reviewing {test}: {percent}% of the original signal.', { test: testFor(id).title, percent: signal(testFor(id)).toFixed(1) }));
+    }
+    function explain(correct) {
+      if (!eligible) return;
+      props.onChange(correct ? { explanation: 'correct', solved: true } : { explanation: 'retry' });
+      setStatus(correct ? nt('case_solved_status', 'Case explained. Both separate comparisons support your conclusion.') : nt('case_retry_status', 'Compare each single change with the original mystery setup. You can revise your explanation.'));
+    }
+    var missing = checked.indexOf('closer') < 0 ? tests[0] : tests[1];
+    var detectorX = measured.distance === 1 ? 320 : 450;
+    function overviewContent() {
+      return h(React.Fragment, null,
+        h('p', { className: 'ns-case-effects-intro' }, nt('case_effects_intro', 'Compare the two single changes with the same mystery setup.')),
+        h('div', { className: 'ns-case-chart', role: 'img', 'data-ns-case-overview-chart': 'true', 'aria-label': nt('case_effects_chart_label', 'Saved single-change comparisons on a shared 0 to 100% scale. Mystery setup at 2 m with 2 cm lead: {mystery}%. Distance changed, 2 cm lead kept: {distance}%. Shield changed, distance kept at 2 m: {shield}%.', { mystery: signal(initial).toFixed(1), distance: signal(tests[0]).toFixed(1), shield: signal(tests[1]).toFixed(1) }) },
+          [{ id: 'mystery', label: nt('case_mystery_short', 'Mystery setup'), setup: initial, fixed: nt('case_effects_mystery_setup', '2 m · 2 cm lead') },
+            { id: 'closer', label: tests[0].title, setup: tests[0], fixed: nt('case_effects_distance_fixed', 'Distance changes · 2 cm lead kept') },
+            { id: 'unshielded', label: tests[1].title, setup: tests[1], fixed: nt('case_effects_shield_fixed', 'Shield changes · distance kept at 2 m') }].map(function (row) {
+            return h('div', { key: row.id, className: 'ns-case-chart-row', 'data-ns-case-effect': row.id, 'data-ns-case-bar': row.id },
+              h('span', null, row.label), h('strong', null, signal(row.setup).toFixed(1) + '%'),
+              h('div', { className: 'ns-case-track' }, h('div', { className: 'ns-case-fill', style: { width: signal(row.setup) + '%' } })),
+              h('span', { className: 'ns-case-effect-fixed' }, row.fixed));
+          }), h('p', { className: 'ns-case-scale' }, nt('case_effects_scale', 'All three bars use the same scale: 0–100%.'))),
+        h('div', { className: 'ns-case-effects-actions' },
+          h('button', { type: 'button', className: 'ns-secondary', onClick: function () { inspectEffect('closer'); } }, nt('case_effects_inspect_distance', 'Inspect distance test')),
+          h('button', { type: 'button', className: 'ns-secondary', onClick: function () { inspectEffect('unshielded'); } }, nt('case_effects_inspect_shield', 'Inspect shielding test'))));
+    }
+    return h('div', { 'data-ns-investigation': 'signal' },
+      h('button', { type: 'button', className: 'ns-secondary ns-case-back', onClick: function () { props.onView('studio'); } }, nt('case_back', '← Back to introductions')),
+      h('div', { className: 'ns-heading' }, h('p', { className: 'ns-eyebrow' }, nt('case_title', 'Signal detective')), h('h3', null, nt('case_heading', 'Why did the signal drop?')),
+        h('p', null, nt('case_story', 'The detector moved from 1 m to 2 m, and a lead shield was added. The source stayed the same. Separate the two effects with fair comparisons.'))),
+      h('div', { className: 'ns-grid' },
+        h('div', null,
+          h('div', { className: 'ns-scene', 'data-ns-scene': 'investigation' },
+            h('div', { className: 'ns-case-baseline' }, nt('case_before', 'Before: 1 m, no shield · '), h('strong', null, '100%')),
+            h('p', { className: 'ns-case-source' }, nt('case_fixed_source', 'Source output stays fixed · 1 MeV gamma')),
+            !overview ? h(React.Fragment, null, h('svg', { className: 'ns-beam', viewBox: '0 0 500 190', 'aria-hidden': 'true' },
+              h('circle', { cx: 48, cy: 86, r: 28, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
+              h('text', { x: 48, y: 96, fill: '#171131', fontSize: 30, textAnchor: 'middle' }, 'γ'),
+              [60, 86, 112].map(function (y) { return h('path', { key: y, d: 'M80 ' + y + ' H' + detectorX, stroke: '#83f5e2', strokeWidth: 3, strokeDasharray: '7 5' }); }),
+              h('rect', { x: 185, y: 30, width: 56, height: 112, rx: 6, fill: measured.thickness ? '#3d6480' : '#10243b', stroke: '#a7d8f2', strokeWidth: 2, strokeDasharray: measured.thickness ? undefined : '5 5' }),
+              h('text', { x: 213, y: 93, textAnchor: 'middle', fill: '#edf5ff', fontSize: 15 }, measured.thickness ? '2 cm' : '0 cm'),
+              h('rect', { x: detectorX, y: 42, width: 18, height: 90, rx: 5, fill: '#65e2ce', stroke: '#b8fff2', strokeWidth: 2 }),
+              h('path', { d: 'M48 162 H' + detectorX, stroke: '#a7d8f2', strokeWidth: 1 }),
+              h('text', { x: (48 + detectorX) / 2, y: 182, textAnchor: 'middle', fill: '#d0e3f5', fontSize: 17 }, measured.distance + ' m')),
+            h('div', { className: 'ns-readout' }, h('strong', { 'data-ns-case-reading': 'true' }, signal(measured).toFixed(1) + '%'), h('span', null, nt('case_relative', 'of the original expected detector signal'))),
+            h('p', { className: 'ns-scene-note', 'data-ns-case-measured': 'true' }, runs.length ? nt('case_review_setup', 'Saved test: {distance} m · {shield}', { distance: measured.distance, shield: measured.thickness ? nt('case_lead_present', '2 cm lead') : nt('case_no_lead', 'no lead') }) : nt('case_mystery_setup', 'Mystery setup: 2 m · 2 cm lead'))) : null,
+            runs.length ? h('div', { className: 'ns-case-saved ns-case-stop' },
+            h('h5', { ref: evidenceRef, tabIndex: -1, 'data-ns-case-evidence-heading': 'true' }, nt('case_saved_evidence', 'Your saved evidence')),
+            eligible ? h('div', { className: 'ns-case-view', role: 'group', 'aria-label': nt('case_view_group', 'View saved signal evidence') },
+              h('button', { ref: singleViewRef, type: 'button', className: 'ns-choice', 'aria-pressed': !overview, onClick: function () { setEvidenceView('single'); } }, nt('case_view_single', 'One saved test')),
+              h('button', { ref: effectsViewRef, type: 'button', className: 'ns-choice', 'aria-pressed': overview, onClick: function () { setEvidenceView('effects'); } }, nt('case_view_effects', 'Both effects'))) : null,
+            overview ? overviewContent() : h(React.Fragment, null,
+            runs.length > 1 ? h('label', { className: 'ns-case-review' }, h('span', null, nt('case_review_label', 'Review a saved test')),
+              h('select', { 'data-ns-case-review': 'true', value: viewed, onChange: function (event) { review(event.target.value); } }, runs.map(function (id) {
+                var item = testFor(id);
+                return h('option', { key: id, value: id }, nt('case_review_option', '{test} · {percent}%', { test: item.title, percent: signal(item).toFixed(1) }));
+              }))) : null,
+            h('div', { className: 'ns-case-chart', role: 'img', 'data-ns-case-chart': 'true', 'aria-label': nt('case_chart_label', 'Expected detector signal on a shared 0 to 100% scale. Mystery setup: {mystery}%. {test}: {reading}%.', { mystery: signal(initial).toFixed(1), test: measured.title, reading: signal(measured).toFixed(1) }) },
+              [{ id: 'mystery', label: nt('case_mystery_short', 'Mystery setup'), value: signal(initial) }, { id: 'test', label: measured.title, value: signal(measured) }].map(function (row) {
+                return h('div', { key: row.id, className: 'ns-case-chart-row', 'data-ns-case-bar': row.id },
+                  h('span', null, row.label), h('strong', null, row.value.toFixed(1) + '%'),
+                  h('div', { className: 'ns-case-track' }, h('div', { className: 'ns-case-fill', style: { width: row.value + '%' } })));
+              }),
+              h('p', { className: 'ns-case-scale' }, nt('case_shared_scale', 'Both bars use the same scale: 0–100%.')),
+              h('p', { className: 'ns-scene-note' }, measured.id === 'closer' ? nt('case_distance_fixed', 'Distance changed. The 2 cm lead shield stayed in place.') : measured.id === 'unshielded' ? nt('case_shield_fixed', 'The lead changed. Distance stayed at 2 m.') : nt('case_both_changed', 'Two things changed. Test each separately to see its effect.'))),
+            h('details', { key: viewed, className: 'ns-case-check', 'data-ns-case-check': viewed },
+              h('summary', { ref: checkRef }, spotted ? changedPart === 'distance' ? nt('case_check_distance', '✓ Distance changed') : changedPart === 'shield' ? nt('case_check_shield', '✓ Shielding changed') : nt('case_check_both', '✓ Both changed together') : nt('case_check_question', 'Quick check: what changed?')),
+              h('p', { className: 'ns-case-check-prompt' }, nt('case_check_prompt', 'From the mystery setup (2 m, 2 cm lead), what changed?')),
+              h('div', { className: 'ns-case-check-choices', role: 'group', 'aria-label': nt('case_check_prompt', 'From the mystery setup (2 m, 2 cm lead), what changed?') }, [
+                { id: 'distance', label: nt('case_distance_only', 'Distance only') }, { id: 'shield', label: nt('case_shield_only', 'Shield only') }, { id: 'both', label: nt('case_two_changes', 'Distance + shield') }
+              ].map(function (item) { return h('button', { key: item.id, type: 'button', className: 'ns-choice', 'aria-pressed': noticed === item.id, onClick: function () { notice(item.id); } }, item.label); }))),
+            h('p', { className: 'ns-case-check-feedback', role: 'status', 'data-ns-case-check-feedback': spotted ? 'correct' : noticed ? 'retry' : 'waiting' }, spotted ? changedPart === 'distance' ? nt('case_check_distance_lesson', 'Keeping the shield fixed lets you separate the distance effect.') : changedPart === 'shield' ? nt('case_check_shield_lesson', 'Keeping distance fixed lets you separate the shielding effect.') : nt('case_check_both_lesson', 'Two changes together cannot show each effect separately. Use the single-change tests.') : noticed ? changedPart === 'distance' ? nt('case_check_distance_hint', 'The detector moved from 2 m to 1 m. The lead stayed at 2 cm. Try again.') : changedPart === 'shield' ? nt('case_check_shield_hint', 'The lead was removed. The detector stayed at 2 m. Try again.') : nt('case_check_both_hint', 'The detector moved closer and the lead was removed. Count both changes and try again.') : '')),
+            h('button', { type: 'button', className: 'ns-secondary ns-case-next', onClick: eligible ? reviewExplanation : continueTesting }, eligible ? explained ? nt('case_revisit_explanation', 'Review your explanation') : nt('case_go_explain', 'Explain these results') : nt('case_continue_testing', 'Continue testing')))
+              : h('p', { className: 'ns-scene-note' }, nt('case_mystery_reference', 'Compare each test with the mystery reading: {percent}%.', { percent: signal(initial).toFixed(1) }))),
+          h('div', { className: 'ns-notebook', 'data-ns-case-notebook': 'true' }, h('h5', null, nt('case_comparisons', 'Your comparisons')),
+            runs.length ? h('table', { className: 'ns-case-table' }, h('caption', null, nt('case_notebook_caption', 'Each test starts from the mystery setup. Repeated tests update their row.')),
+              h('thead', null, h('tr', null, h('th', { scope: 'col' }, nt('case_test_column', 'Test')), h('th', { scope: 'col' }, nt('case_changed_column', 'Changed')), h('th', { scope: 'col' }, nt('case_signal_column', 'Signal')))),
+              h('tbody', null, runs.map(function (id) { var item = testFor(id); return h('tr', { key: id, 'data-ns-case-current': viewed === id, 'aria-current': viewed === id ? 'true' : undefined }, h('th', { scope: 'row' }, item.title), h('td', null, item.changed), h('td', null, signal(item).toFixed(1) + '%')); })))
+              : h('p', { className: 'ns-note' }, nt('case_empty', 'Run a test to collect your first comparison.')))),
+        h('div', { className: 'ns-controls' },
+          h(NuclearStudioPrediction, { ctx: props.ctx, observed: runs.length > 0, value: prediction && prediction.label },
+            h('h5', null, nt('case_predict_question', 'Which changes helped lower the signal?')),
+            h('div', { className: 'ns-choices', role: 'group', 'aria-label': nt('case_predict_group', 'Predict the cause of the signal drop') }, predictions.map(function (item) {
+              return h('button', { key: item.id, type: 'button', className: 'ns-choice', 'aria-pressed': prediction && prediction.id === item.id || false, disabled: runs.length > 0, onClick: function () { props.onChange({ prediction: item.id, runs: [], review: null, noticing: {}, evidenceView: 'single', explanation: null }); } }, item.label);
+            }))),
+          h('details', { className: 'ns-case-tests ns-case-stop', open: !explained },
+          h('summary', { ref: testsRef, 'data-ns-case-tests-heading': 'true' }, explained ? nt('case_review_tests', 'Review your comparison tests') : nt('case_test_step', '2 / Change one thing')),
+          prediction && !eligible ? nkStudioGuidance(h, nt, nt('case_next_test', 'Try {test}. Compare its signal with the mystery setup.', { test: missing.title }), nt('case_prepare', 'Prepare {test}', { test: missing.title }), selected.id !== missing.id ? prepareMissing : null)
+            : eligible && !explained ? nkStudioGuidance(h, nt, nt('case_ready_explain', 'You checked each effect separately. Use those results to explain the mystery.'), nt('case_review_evidence', 'Review saved evidence'), reviewEvidence) : null,
+          h('div', { className: 'ns-case-options', role: 'group', 'aria-label': nt('case_plan_group', 'Choose a comparison test') }, tests.map(function (item) {
+            return h('button', { key: item.id, type: 'button', className: 'ns-choice', 'data-ns-case-setup': item.id, 'aria-pressed': selected.id === item.id, disabled: !prediction, onClick: function () { props.onChange({ selected: item.id }); } }, h('strong', null, item.title), h('small', null, item.detail));
+          })),
+          h('p', { className: 'ns-note', 'data-ns-case-plan': 'true' }, nt('case_planned', 'Planned test: {test}. Run it to record a reading.', { test: selected.title })),
+          h('button', { ref: runRef, type: 'button', className: 'ns-primary', disabled: !prediction, onClick: run }, nt('case_run', 'Run this comparison →')),
+          !prediction ? h('p', { className: 'ns-note' }, nt('choose_first', 'Choose a prediction to start. It is fine to change your mind after testing.')) : null,
+          runs.indexOf('both') >= 0 ? h('p', { className: 'ns-feedback' }, nt('case_confounded', 'Undoing both restores the signal, but two things changed together. Use the single changes to separate their effects.')) : null,
+          prediction ? h('div', { className: 'ns-case-progress', 'data-ns-case-evidence': 'true' }, h('p', null, nt('case_evidence_count', '{count} of 2 separate effects checked', { count: checked.length })),
+            h('ul', null, h('li', null, checked.indexOf('closer') >= 0 ? nt('case_distance_checked', '✓ Distance checked: shield kept in place') : nt('case_distance_missing', 'Distance: keep the shield in place')), h('li', null, checked.indexOf('unshielded') >= 0 ? nt('case_shield_checked', '✓ Shield checked: distance kept at 2 m') : nt('case_shield_missing', 'Shield: keep the distance at 2 m'))),
+            runs.length && (!eligible || explained) ? h('button', { type: 'button', className: 'ns-secondary ns-case-next', onClick: reviewEvidence }, nt('case_review_evidence', 'Review saved evidence')) : null) : null),
+          h('p', { role: 'status', className: 'ns-note', 'data-ns-case-status': 'true', style: { minHeight: 24, marginTop: 12 } }, status),
+          eligible ? h('div', { className: 'ns-explain ns-case-stop', 'data-ns-explain': 'investigation' }, h('p', { className: 'ns-step' }, nt('explain_step', '3 / Explain')), h('h5', { ref: explanationRef, tabIndex: -1 }, nt('case_explain_question', 'What explains the lower signal?')),
+            h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'retry', onClick: function () { explain(false); } }, nt('case_explain_no', 'Only distance mattered; the shield did nothing.')),
+            h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': explained, onClick: function () { explain(true); } }, nt('case_explain_yes', 'Both distance and shielding reduced what reached the detector.')),
+            data.explanation === 'retry' ? h('div', { className: 'ns-feedback', 'data-kind': 'retry' }, h('p', null, nt('case_retry', 'Removing the lead changed the signal while distance stayed at 2 m. What does that tell you?')),
+              h('button', { type: 'button', className: 'ns-secondary ns-case-next', onClick: reviewShielding }, nt('case_review_shielding_evidence', 'Review the shielding evidence'))) : null,
+            explained ? h('div', { className: 'ns-feedback' }, h('strong', null, nt('case_solved', '✓ Case explained')), h('p', null, nt('case_takeaway', 'Change one thing at a time to see its effect. A lower detector reading can come from the path, even when the source is unchanged.'))) : null) : null,
+          h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { props.onChange({ prediction: null, selected: 'closer', runs: [], review: null, noticing: {}, evidenceView: 'single', explanation: null }); setStatus(nt('case_reset_status', 'Mystery reset. Your saved takeaway is kept.')); } }, nt('case_reset', 'Restart the investigation')),
+          nkStudioHint(h, nt, nt('case_hint', 'Compare the 2 m detector with and without lead. Then compare 1 m and 2 m while keeping the lead.'), 'investigation'))),
+      solved ? h('div', { className: 'ns-notebook' }, h(NuclearStudioReflection, { ctx: props.ctx, kind: 'investigation', title: nt('case_title', 'Signal detective'), note: data.reflection, onChange: function (note) { props.onChange({ reflection: note }); } })) : null,
+      h('details', { className: 'ns-notebook' }, h('summary', null, nt('model_notes', 'How this model works')),
+        h('p', { className: 'ns-note' }, nt('case_model', 'These are expected relative readings for an ideal point source of 1 MeV gamma photons. The model combines inverse-square spreading with the lab’s lead attenuation coefficient. It omits background counts and photons scattered into the detector.')),
+        h('p', { className: 'ns-note' }, nt('case_formula', 'Signal relative to the original 1 m setup = (1 m / distance)² × exp(−μ × lead thickness).')),
+        h('p', { className: 'ns-note' }, nt('case_coefficient', 'Here, μ is {mu} per centimetre in the lab’s lead model. Lead thickness is in centimetres.', { mu: lead.mu })),
+        h('a', { href: 'https://www.osha.gov/ionizing-radiation/control-prevention', target: '_blank', rel: 'noopener noreferrer' }, nt('case_source_distance', 'Source: OSHA distance and shielding')), ' · ',
+        h('a', { href: 'https://physics.nist.gov/PhysRefData/XrayMassCoef/chap2.html', target: '_blank', rel: 'noopener noreferrer' }, nt('nist_source', 'Source: NIST attenuation model'))),
+      h('details', { className: 'ns-notebook' }, h('summary', null, nt('case_review', 'Review an idea first')),
+        h('p', { className: 'ns-note' }, nt('case_review_help', 'Your investigation stays saved while you revisit an introduction.')),
+        h('div', { className: 'ns-case-help' }, h('button', { type: 'button', className: 'ns-secondary', onClick: function () { props.onIntro('distance'); } }, nt('case_review_distance', 'Review distance')), h('button', { type: 'button', className: 'ns-secondary', onClick: function () { props.onIntro('shield'); } }, nt('case_review_shield', 'Review shielding')))));
+  }
+
   function nkStudioTranslate(ctx) {
     return function (key, fallback, values) {
       var text;
@@ -1413,7 +1846,7 @@
     .ns-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.ns-eyebrow{color:var(--ns-accent);font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px}.ns-hero h3{font-size:clamp(23px,3vw,34px);line-height:1.2;letter-spacing:-.025em;margin:0 0 8px}.ns-hero p{color:var(--ns-muted);max-width:50ch;margin-bottom:0}
     .ns-progress{flex-shrink:0;border:1px solid var(--ns-line);border-radius:14px;padding:12px 16px;max-width:190px}.ns-progress strong{display:block;font-size:23px;color:var(--ns-accent)}.ns-progress span{display:block;color:var(--ns-muted);font-size:12px}
     .ns-missions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}.ns-mission{display:flex;gap:12px;text-align:left;align-items:center;padding:16px;border-radius:14px;background:var(--ns-panel);border:1px solid var(--ns-line);color:var(--ns-ink)}.ns-mission[aria-pressed=true]{border:2px solid var(--ns-accent);padding:15px;box-shadow:inset 4px 0 var(--ns-accent)}.ns-mission strong,.ns-mission small{display:block}.ns-mission small{color:var(--ns-muted);font-size:13px}.ns-mission-icon{font-size:28px;line-height:1.2}.ns-selected-mark{margin-left:auto;color:var(--ns-accent);font-size:20px}
-    .ns-heading h4{font-size:23px;line-height:1.3;margin:0 0 6px}.ns-heading p{color:var(--ns-muted);margin-bottom:16px}.ns-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:18px;align-items:start}.ns-grid>*{min-width:0}
+    .ns-heading h3,.ns-heading h4{font-size:23px;line-height:1.3;margin:0 0 6px}.ns-heading p{color:var(--ns-muted);margin-bottom:16px}.ns-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:18px;align-items:start}.ns-grid>*{min-width:0}
     .ns-scene{background:radial-gradient(ellipse at 50% 25%,#1d4660,#10243b 65%);border:1px solid #44617d;border-radius:16px;padding:22px;color:#ecf8ff;overflow:hidden}.ns-scene-top{display:flex;justify-content:space-between;gap:12px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#bed4eb}.ns-atom-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:clamp(7px,1.5vw,14px);max-width:340px;margin:28px auto}.ns-atom{aspect-ratio:1;border:1px solid #83f5e2;border-radius:50%;background:#65e2ce;box-shadow:0 0 14px #65e2ce33;transition:background .2s,box-shadow .2s}.ns-atom[data-decayed=true]{background:#18304b;border-color:#66839e;box-shadow:none}
     .ns-readout{text-align:center}.ns-readout strong{font-size:clamp(30px,5vw,44px);font-weight:800;line-height:1.2;color:#83f5e2}.ns-readout span{display:block;font-size:13px;color:#d0e3f5}.ns-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:18px;font-size:12px;color:#c5d9ee}.ns-legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:50%;background:#65e2ce}.ns-legend i[data-decayed=true]{background:#18304b;border:1px solid #a2bad1}
     .ns-controls{background:var(--ns-panel);border:1px solid var(--ns-line);border-radius:16px;padding:20px}.ns-controls h5,.ns-notebook h5{font-size:16px;margin:0 0 10px}.ns-step{font-size:12px;color:var(--ns-accent);font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}.ns-controls p{margin-bottom:12px}.ns-choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}.ns-choices .ns-choice{flex:1;min-width:70px}.ns-primary{width:100%;border:1px solid var(--ns-accent);background:var(--ns-accent);color:var(--ns-on);padding:12px 16px;border-radius:10px;font-weight:800}.ns-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.ns-actions>*{flex:1}.ns-note{font-size:13px;color:var(--ns-muted)}.ns-feedback{padding:12px;border-left:3px solid var(--ns-accent);background:var(--ns-bg);border-radius:0 8px 8px 0;margin:14px 0}.ns-feedback[data-kind=retry]{border-color:#f59e0b}.ns-result{font-size:16px;font-weight:700}.ns-label{display:flex;justify-content:space-between;gap:12px;font-weight:700;margin:14px 0 6px}.ns-range{width:100%;min-height:44px;accent-color:var(--ns-accent)}
@@ -1427,6 +1860,26 @@
     .ns-guidance{margin:8px 0 14px}.ns-guidance p{margin-bottom:8px}.ns-guidance strong,.ns-mission-state{color:var(--ns-accent)}.ns-guidance button{width:100%;text-align:left}.ns-mission-state{display:block;margin-top:8px;font-size:13px;font-weight:700}.ns-resume{margin:0 0 14px;max-width:100%;text-align:left}.ns-mission{min-width:0}.ns-mission>span{min-width:0}.nk-workspace[data-ns-large=true] .ns-mission-state{font-size:16px}
     @container(max-width:450px){.ns-missions{grid-template-columns:1fr}}
     .ns-reflection{margin-top:12px}.ns-reflection label{display:block;font-weight:700;margin:10px 0 6px}.ns-reflection textarea{width:100%;min-height:104px;resize:vertical;line-height:1.5;padding:12px;border:1px solid var(--ns-line);border-radius:10px;color:var(--ns-ink);background:var(--ns-bg)}.ns-reflection p{margin:10px 0}.ns-reflection summary{color:var(--ns-accent)}
+    .ns-case-entry summary{color:var(--ns-accent)}.ns-case-entry p{margin:10px 0}.ns-case-back{margin-bottom:16px}.ns-case-baseline{border:1px solid #719cbd;border-radius:10px;padding:10px 12px;color:#d0e3f5;font-size:14px}.ns-case-baseline strong{color:#edf5ff}.ns-case-source{margin:10px 0 0;text-align:center;color:#d0e3f5;font-size:14px}.ns-case-options{display:grid;gap:8px;margin:12px 0}.ns-case-options .ns-choice{text-align:left;width:100%;padding:12px}.ns-case-options strong,.ns-case-options small{display:block}.ns-case-options small{font-size:13px;font-weight:400;margin-top:4px}.ns-case-progress{padding:10px 12px;background:var(--ns-bg);border:1px solid var(--ns-line);border-radius:10px;margin:12px 0}.ns-case-progress p{margin:0 0 6px}.ns-case-progress ul{margin:0;padding-left:20px;font-size:14px}.ns-case-help{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.ns-case-help button{flex:1;min-width:120px}.nk-workspace[data-ns-large=true] :is(.ns-case-options small,.ns-case-baseline,.ns-case-source,.ns-case-progress ul){font-size:16px}
+    .ns-case-tests summary{cursor:pointer;min-height:44px;align-content:center;font-weight:700;color:var(--ns-accent)}
+    .ns-case-stop{scroll-margin-block-start:16px}.ns-case-saved{margin-top:20px}.ns-case-saved h5{font-size:16px;color:#edf5ff;margin:0 0 10px}.ns-case-next{width:100%;text-align:left;margin:12px 0 0}.nk-workspace[data-ns-large=true] .ns-case-saved h5{font-size:18px}
+    @media(forced-colors:active){.ns-case-saved h5{color:CanvasText}}
+    .ns-case-check{border-top:1px solid #719cbd;margin-top:12px;padding-top:6px}.ns-case-check summary{cursor:pointer;min-height:44px;align-content:center;font-size:14px;font-weight:700;color:#83f5e2}.ns-case-check-prompt,.ns-case-check-feedback{font-size:14px;color:#edf5ff;margin:8px 0}.ns-case-check-choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ns-case-check-choices button{flex:1;min-width:110px;padding:9px 10px;text-align:left}.ns-case-check-feedback:empty{margin:0}.nk-workspace[data-ns-large=true] :is(.ns-case-check summary,.ns-case-check-prompt,.ns-case-check-feedback){font-size:16px}
+    @media(forced-colors:active){.ns-case-check{border-color:CanvasText}.ns-case-check summary,.ns-case-check-prompt,.ns-case-check-feedback{color:CanvasText}}
+    .ns-case-view,.ns-case-effects-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.ns-case-view button,.ns-case-effects-actions button{flex:1;min-width:110px;padding:9px 10px;text-align:left}.ns-case-effects-intro{font-size:14px;color:#edf5ff;margin:12px 0 0}.ns-case-effect-fixed{grid-column:1/-1;font-size:13px;color:#d0e3f5}.nk-workspace[data-ns-large=true] :is(.ns-case-effects-intro,.ns-case-effect-fixed){font-size:16px}
+    @media(forced-colors:active){.ns-case-effects-intro,.ns-case-effect-fixed{color:CanvasText}}
+    .ns-warmup-entry{margin:0 0 18px}.ns-warmup-entry summary{color:var(--ns-accent)}.ns-warmup-entry p{margin:8px 0 12px}.ns-nucleus-name{text-align:center;font-size:clamp(26px,4vw,36px);font-weight:800;color:#83f5e2;margin:10px 0}.ns-nucleus-cluster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:250px;margin:26px auto}.ns-nucleon{display:grid;place-content:center;aspect-ratio:1;border-radius:50%;background:#65e2ce;color:#052c29;border:2px solid #b8fff2;font-weight:800;font-size:18px}.ns-nucleon[data-particle=neutron]{background:#c4b5fd;color:#231342;border-color:#e9ddff}.ns-nucleus-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;color:#edf5ff;font-size:14px}.ns-nucleus-equation{font-size:26px;color:#edf5ff;font-weight:800;text-align:center;margin:4px 0 0}.ns-particle-control{margin:16px 0}.ns-particle-control>p{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px}.ns-particle-control>p>span{font-weight:800;color:var(--ns-accent)}.ns-particle-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ns-particle-buttons button{padding:9px 6px}.nk-workspace[data-ns-large=true] .ns-nucleus-counts{font-size:16px}
+    @media(forced-colors:active){.ns-nucleus-name,.ns-nucleus-counts,.ns-nucleus-equation{color:CanvasText}.ns-nucleon,.ns-nucleon[data-particle=neutron]{background:Canvas;color:CanvasText;border-color:CanvasText}.ns-nucleon[data-particle=neutron]{border-style:dashed}}
+    .ns-pair-choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}.ns-pair-choices button{flex:1;min-width:100px;font-size:14px;padding:9px 10px}.ns-pair-chart{margin:12px 0}.ns-pair-row{display:grid;grid-template-columns:minmax(78px,.8fr) repeat(2,minmax(0,1fr));gap:8px;align-items:center;margin-top:10px}.ns-pair-name{font-size:14px;overflow-wrap:anywhere}.ns-pair-kind{font-size:14px;min-width:0}.ns-pair-kind strong,.ns-pair-kind small{display:block;overflow-wrap:anywhere}.ns-pair-kind small{color:var(--ns-muted);font-size:12px;margin-top:4px}.ns-pair-value{border:1px solid var(--ns-line);border-radius:8px;padding:6px;min-width:0}.ns-pair-value>strong{font-size:18px}.ns-pair-value[data-changed=true]{outline:2px solid var(--ns-accent);outline-offset:-2px}.ns-pair-marks{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;margin-top:6px}.ns-pair-dot{height:8px;border-radius:50%;border:1px solid transparent}.ns-pair-dot[data-filled=true]{background:var(--ns-accent);border-color:var(--ns-accent)}.ns-pair-caption{margin:8px 0}.ns-pair-lesson{margin:10px 0 14px;font-size:14px;color:var(--ns-ink)}.ns-pair-records{border-top:1px solid var(--ns-line);margin-top:14px;padding-top:6px}.ns-pair-records summary{font-size:14px;color:var(--ns-accent)}.nk-workspace[data-ns-large=true] :is(.ns-pair-choices button,.ns-pair-name,.ns-pair-kind,.ns-pair-kind small,.ns-pair-lesson,.ns-pair-records summary){font-size:16px}
+    @media(forced-colors:active){.ns-pair-dot[data-filled=true]{background:CanvasText;border-color:CanvasText;forced-color-adjust:none}.ns-pair-value[data-changed=true]{outline-color:Highlight}}
+    .ns-pair-dot[data-filled=false]{visibility:hidden}
+    .ns-pair-next{width:100%;text-align:left;margin:8px 0}.ns-nucleus-stop{scroll-margin-block-start:16px}
+    .ns-pair-check{border-top:1px solid var(--ns-line);margin-top:12px;padding-top:6px}.ns-pair-check summary{font-size:14px;color:var(--ns-accent);min-height:44px}.ns-pair-lesson:empty{margin:0}.nk-workspace[data-ns-large=true] .ns-pair-check summary{font-size:16px}
+    .ns-case-chart{border-top:1px solid #719cbd;margin-top:20px;padding-top:4px}.ns-case-chart-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;margin-top:12px;font-size:14px;color:#edf5ff}.ns-case-chart-row>strong{text-align:right}.ns-case-track{grid-column:1/-1;height:16px;border:1px solid #719cbd;border-radius:4px;overflow:hidden;background:#10243b}.ns-case-fill{height:100%;background:#65e2ce}.ns-case-chart-row[data-ns-case-bar=mystery] .ns-case-fill{background:#a7bdd5}.ns-case-scale{color:#d0e3f5;font-size:13px;margin:8px 0 0}.nk-workspace[data-ns-large=true] :is(.ns-case-chart-row,.ns-case-scale){font-size:16px}
+    @media(forced-colors:active){.ns-case-chart{border-color:CanvasText}.ns-case-chart-row,.ns-case-scale{color:CanvasText}.ns-case-track{background:Canvas;border-color:CanvasText}.ns-case-fill,.ns-case-chart-row[data-ns-case-bar=mystery] .ns-case-fill{background:Highlight;forced-color-adjust:none}}
+    .ns-case-review{display:block;margin-top:16px;color:#d0e3f5;font-size:14px}.ns-case-review>span{display:block;margin-bottom:6px}.ns-case-review select{display:block;width:100%;min-width:0;min-height:44px;padding:10px 8px;border:1px solid #719cbd;border-radius:8px;background:#10243b;color:#edf5ff;font:inherit;touch-action:manipulation}.ns-case-review select:focus-visible{outline:3px solid #f59e0b;outline-offset:4px}.ns-case-table tbody th{border-inline-start:3px solid transparent}.ns-case-table tr[data-ns-case-current=true]{background:var(--ns-bg)}.ns-case-table tr[data-ns-case-current=true] th{border-inline-start-color:var(--ns-accent)}.nk-workspace[data-ns-large=true] .ns-case-review{font-size:16px}
+    @media(forced-colors:active){.ns-case-review,.ns-case-review select{color:CanvasText}.ns-case-review select{background:Canvas;border-color:CanvasText}.ns-case-table tr[data-ns-case-current=true] th{border-inline-start-color:Highlight}}
+    @media(forced-colors:active){[data-ns-investigation] .ns-beam path{stroke:CanvasText}[data-ns-investigation] .ns-beam text{fill:CanvasText}[data-ns-investigation] .ns-beam rect,[data-ns-investigation] .ns-beam circle{fill:Canvas;stroke:CanvasText}[data-ns-investigation] .ns-beam rect:last-of-type{fill:Highlight}}
     .nk-workspace[data-ns-reduced=true] *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
     @media(prefers-reduced-motion:reduce){.nk-workspace *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
     @media(forced-colors:active){.ns-choice[aria-pressed=true],.ns-mission[aria-pressed=true],.ns-nav button[aria-pressed=true]{outline:3px solid Highlight;outline-offset:-4px}.ns-atom{background:Highlight;border-color:Highlight}.ns-atom[data-decayed=true]{background:Canvas;border:1px dashed CanvasText}.ns-scene{background:Canvas;color:CanvasText}.ns-readout strong,.ns-readout span,.ns-scene-top,.ns-legend{color:CanvasText}}
@@ -1859,6 +2312,9 @@
       h('div', { className: 'ns-hero' },
         h('div', null, h('p', { className: 'ns-eyebrow' }, nt('eyebrow', 'Nuclear & Radiation Lab')), h('h3', null, nt('title', 'Small experiments. Big discoveries.')), h('p', null, nt('intro', 'Make a prediction, change one thing, and see what the evidence says.'))),
         h('div', { className: 'ns-progress', 'aria-label': nt('progress_total', '{count} of {total} discoveries recorded', { count: completed.length, total: journey.length }) }, h('strong', null, completed.length + ' / ' + journey.length), h('span', null, nt('discoveries', 'discoveries recorded')))),
+      h('details', { className: 'ns-notebook ns-warmup-entry' }, h('summary', null, nt('nucleus_invite', 'New to nuclei? Try the nucleus builder')),
+        h('p', { className: 'ns-note' }, nt('nucleus_entry', 'Meet protons, neutrons, and isotopes by building three small comparisons.')),
+        h('button', { type: 'button', className: 'ns-primary', onClick: function () { props.onView('nucleus'); } }, raw.nucleus && raw.nucleus.solved === true ? nt('nucleus_revisit', 'Revisit the nucleus builder →') : raw.nucleus && ['same', 'changes'].indexOf(raw.nucleus.prediction) >= 0 ? nt('nucleus_resume', 'Resume the nucleus builder →') : nt('nucleus_start', 'Start the nucleus builder →'))),
       h('details', { className: 'ns-chooser', ref: chooserRef },
         h('summary', null, nt('choose_experiment', 'Choose an experiment'), h('span', { className: 'ns-position' }, nt('experiment_number', '{number} of {total}', { number: missionIndex + 1, total: journey.length }))),
         resume ? h('button', { type: 'button', className: 'ns-secondary ns-resume', 'data-ns-resume': resume.id, onClick: function () { selectMission(resume.id); } }, nt('resume_experiment', 'Resume: {title}', { title: resume.title })) : null,
@@ -1882,13 +2338,16 @@
           return h('li', { key: item.id, 'data-ns-discovery': item.id }, h('p', null, takeaways[item.id]), h('button', { type: 'button', className: 'ns-secondary', onClick: function () { selectMission(item.id); } }, nt('recap_revisit', 'Revisit: {title}', { title: item.title })),
             h(NuclearStudioReflection, { ctx: props.ctx, kind: item.id, title: item.title, note: raw[item.id] && raw[item.id].reflection, onChange: function (note) { update(item.id, { reflection: note }); } }));
         }))) : null,
+      h('details', { className: 'ns-notebook ns-case-entry' }, h('summary', null, nt('case_title', 'Signal detective')),
+        h('p', { className: 'ns-note' }, nt('case_entry', 'Put distance and shielding together. Solve a signal mystery with fair comparisons.')),
+        h('button', { type: 'button', className: 'ns-primary', onClick: function () { props.onView('investigate'); } }, raw.investigation && raw.investigation.solved === true ? nt('case_revisit', 'Revisit the signal mystery →') : raw.investigation && (['distance', 'shield', 'both'].indexOf(raw.investigation.prediction) >= 0) ? nt('case_resume', 'Resume the signal mystery →') : nt('case_start', 'Start the signal mystery →'))),
       h('div', { className: 'ns-studio-footer' }, h('span', null, nt('self_paced_footer', 'No timer. Test, revisit, and revise.')), h('button', { type: 'button', className: 'ns-secondary', onClick: function () { props.onView('reactor'); } }, nt('reactor_invite', 'Ready for more? Operate a reactor →'))));
   }
 
   function NuclearLabWorkspace(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
     var d = ctx.toolData && ctx.toolData._nuclearLab || {};
-    var mode = d.nkView === 'reference' || (!d.nkView && ['safe', 'me', 'safety', 'works', 'know'].indexOf(d.nkPath) >= 0) ? 'reference' : d.nkView === 'reactor' ? 'reactor' : 'studio';
+    var mode = d.nkView === 'reference' || (!d.nkView && ['safe', 'me', 'safety', 'works', 'know'].indexOf(d.nkPath) >= 0) ? 'reference' : d.nkView === 'reactor' ? 'reactor' : d.nkView === 'investigate' ? 'investigate' : d.nkView === 'nucleus' ? 'nucleus' : 'studio';
     var contentRef = React.useRef(null), pendingFocus = React.useRef(false);
     React.useEffect(function () { if (pendingFocus.current && contentRef.current) { contentRef.current.focus(); pendingFocus.current = false; } }, [mode]);
     function changeView(next) {
@@ -1896,19 +2355,40 @@
       pendingFocus.current = true;
       ctx.setToolData(function (prev) { return Object.assign({}, prev, { _nuclearLab: Object.assign({}, prev && prev._nuclearLab, { nkView: next, nkPath: null, nkOpen: false }) }); });
     }
+    function saveStudio(update, nextView) {
+      ctx.setToolData(function (prev) {
+        var current = prev && prev._nuclearLab || {}, studio = current.nkStudio;
+        if (!studio || typeof studio !== 'object' || Array.isArray(studio)) studio = {};
+        return Object.assign({}, prev, { _nuclearLab: Object.assign({}, current, { nkStudio: update(studio), nkView: nextView || mode }) });
+      });
+    }
     return h('div', { className: 'nk-workspace', 'data-nuclear-lab': mode === 'studio' ? 'true' : undefined, 'data-ns-large': !!d.nkLargeText, 'data-ns-reduced': !!d.nkReduceMotion, 'data-theme': ctx.theme === 'light' ? 'light' : 'dark', style: { containerType: 'inline-size' } },
       h('style', null, NK_STUDIO_CSS),
       h('nav', { className: 'ns-nav', 'aria-label': nt('workspace_views', 'Nuclear Lab views') },
         [{ id: 'studio', label: nt('studio_view', 'Experiment studio') }, { id: 'reference', label: nt('reference_view', 'All topics & routes') }, { id: 'reactor', label: nt('reactor_view', 'Reactor control room') }].map(function (view) {
-          return h('button', { key: view.id, type: 'button', 'aria-pressed': mode === view.id, onClick: function () { changeView(view.id); } }, view.label);
+          return h('button', { key: view.id, type: 'button', 'aria-pressed': mode === view.id || (mode === 'investigate' || mode === 'nucleus') && view.id === 'studio', onClick: function () { changeView(view.id); } }, view.label);
         })),
-      h('div', { ref: contentRef, tabIndex: -1, role: 'region', 'aria-label': mode === 'studio' ? nt('studio_view', 'Experiment studio') : mode === 'reactor' ? nt('reactor_view', 'Reactor control room') : nt('reference_view', 'All topics & routes') },
+      h('div', { ref: contentRef, tabIndex: -1, role: 'region', 'aria-label': mode === 'nucleus' ? nt('nucleus_title', 'Nucleus builder') : mode === 'investigate' ? nt('case_title', 'Signal detective') : mode === 'studio' ? nt('studio_view', 'Experiment studio') : mode === 'reactor' ? nt('reactor_view', 'Reactor control room') : nt('reference_view', 'All topics & routes') },
         mode === 'studio' ? h(NuclearExperimentStudio, { ctx: ctx, state: d.nkStudio, onView: changeView, onChange: function (update) {
-          ctx.setToolData(function (prev) {
-            var current = prev && prev._nuclearLab || {}, studio = current.nkStudio;
-            if (!studio || typeof studio !== 'object' || Array.isArray(studio)) studio = {};
-            return Object.assign({}, prev, { _nuclearLab: Object.assign({}, current, { nkStudio: update(studio), nkView: 'studio' }) });
+          saveStudio(update);
+        } }) : mode === 'nucleus' ? h(NuclearNucleusBuilder, { ctx: ctx, data: d.nkStudio && d.nkStudio.nucleus, onView: changeView, onChange: function (patch) {
+          saveStudio(function (current) {
+            var saved = current.nucleus;
+            if (!saved || typeof saved !== 'object' || Array.isArray(saved)) saved = {};
+            return Object.assign({}, current, { nucleus: Object.assign({}, saved, patch) });
           });
+        }, onDecay: function () {
+          pendingFocus.current = true;
+          saveStudio(function (current) { return Object.assign({}, current, { mission: 'decay' }); }, 'studio');
+        } }) : mode === 'investigate' ? h(NuclearSignalInvestigation, { ctx: ctx, data: d.nkStudio && d.nkStudio.investigation, onView: changeView, onChange: function (patch) {
+          saveStudio(function (current) {
+            var saved = current.investigation;
+            if (!saved || typeof saved !== 'object' || Array.isArray(saved)) saved = {};
+            return Object.assign({}, current, { investigation: Object.assign({}, saved, patch) });
+          });
+        }, onIntro: function (id) {
+          pendingFocus.current = true;
+          saveStudio(function (current) { return Object.assign({}, current, { mission: id }); }, 'studio');
         } }) : h(props.Reference, { key: mode, ctx: ctx })),
       mode === 'studio' && typeof ctx.setStemLabTool === 'function' ? h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { ctx.setStemLabTool(null); } }, nt('back_tools', '← Back to tools')) : null);
   }
@@ -2000,6 +2480,7 @@
     render: (function () {
       function Reference(props) { return renderReference(props.ctx); }
       function renderReference(ctx) {
+      try { __alloCtx_nuclearlab = ctx; } catch (e) {}
       var React = ctx.React;
       var h = React.createElement;
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
@@ -6662,7 +7143,7 @@
                 rxSet({ scrammed: true, sinceScram: 0, rods: 100, holdOk: 0 });
                 rxPatchUi({ scrammed: true, rodStep: 100 });
                 if (typeof beep === 'function') beep();
-                if (typeof announceToSR === 'function') announceToSR('Scrammed. Fission stopped. Decay heat continues.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.nuclearlab.sr_scrammed_fission_stopped_decay_heat_continues', 'Scrammed. Fission stopped. Decay heat continues.'));
               },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black text-white',
               style: { background: '#dc2626', border: '1px solid #dc2626' } }, '🛑 SCRAM'),

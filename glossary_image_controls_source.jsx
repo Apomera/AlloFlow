@@ -139,7 +139,7 @@ function containGlossaryImageDialogFocus(event) {
   else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) { event.preventDefault(); first.focus(); }
 }
 // A failed preview must be visible and retryable before choosing a symbol.
-function GlossaryMulberryResult({ result, term, working, buttonClass, onChoose }) {
+function GlossaryMulberryResult({ result, term, working, buttonClass, onChoose, text = (key, fallback) => fallback }) {
   const [preview, setPreview] = React.useState('loading');
   const [attempt, setAttempt] = React.useState(0);
   const chooseRef = React.useRef(null), retryRef = React.useRef(null);
@@ -151,12 +151,12 @@ function GlossaryMulberryResult({ result, term, working, buttonClass, onChoose }
   let previewUrl = result.url;
   if (attempt) { const url = new URL(result.url); url.searchParams.set('_alloflow_preview_retry', String(attempt)); previewUrl = url.href; }
   return <div className="min-w-0 rounded-lg border border-slate-300 bg-white p-2">
-    <button ref={chooseRef} type="button" disabled={working || preview !== 'ready'} onClick={() => onChoose(previewUrl)} className={buttonClass + ' w-full'} aria-label={'Use ' + result.label + ' for ' + term}>
+    <button ref={chooseRef} type="button" disabled={working || preview !== 'ready'} onClick={() => onChoose(previewUrl)} className={buttonClass + ' w-full'} aria-label={text('glossary.images.use_symbol_aria', 'Use {symbol} for {term}').replace('{symbol}', result.label).replace('{term}', term)}>
       <img key={attempt} src={previewUrl} alt="" onLoad={() => setPreview('ready')} onError={() => setPreview('error')} className={preview === 'error' ? 'hidden' : 'h-24 w-full object-contain bg-white'} loading="lazy" />
-      {preview === 'error' && <span className="flex min-h-24 items-center justify-center text-xs text-slate-700">Preview unavailable</span>}
+      {preview === 'error' && <span className="flex min-h-24 items-center justify-center text-xs text-slate-700">{text('glossary.images.preview_unavailable', 'Preview unavailable')}</span>}
       <span className="block break-words">{result.label}</span>
     </button>
-    {preview !== 'ready' && (preview === 'error' || attempt > 0) && <button ref={retryRef} type="button" className={buttonClass + ' mt-2 w-full'} disabled={working || preview === 'loading'} aria-label={'Retry preview for ' + result.label} onClick={() => { setPreview('loading'); setAttempt(value => value + 1); }}>{preview === 'loading' ? 'Retrying preview...' : 'Retry preview'}</button>}
+    {preview !== 'ready' && (preview === 'error' || attempt > 0) && <button ref={retryRef} type="button" className={buttonClass + ' mt-2 w-full'} disabled={working || preview === 'loading'} aria-label={text('glossary.images.retry_preview_aria', 'Retry preview for {symbol}').replace('{symbol}', result.label)} onClick={() => { setPreview('loading'); setAttempt(value => value + 1); }}>{preview === 'loading' ? text('glossary.images.retrying_preview', 'Retrying preview...') : text('glossary.images.retry_preview', 'Retry preview')}</button>}
   </div>;
 }
 function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, generating = false, t }) {
@@ -229,7 +229,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     try {
       const found = await searchGlossaryMulberry(q, controller.signal);
       if (!mountedRef.current || searchRef.current !== controller) return;
-      setResults(found); setStatus(found.length ? found.length + ' symbols found. Choose an image that fits the definition.' : 'No symbols found. Try a simpler word.');
+      setResults(found); setStatus(found.length ? text('glossary.images.symbols_found', '{count} symbols found. Choose an image that fits the definition.').replace('{count}', found.length) : text('glossary.images.no_symbols', 'No symbols found. Try a simpler word.'));
     } catch (_) {
       if (mountedRef.current && searchRef.current === controller) setError('Mulberry search is unavailable. Check your connection and try again.');
     } finally {
@@ -240,7 +240,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   function openMulberry() { setMode('mulberry'); setQuery(item.term || ''); search(item.term); }
   function recordReplacement(before, image) {
     setUndo({ before, afterImage: image }); setDescription(''); setMode('choices'); stopSearch();
-    setStatus('Image updated. You can add a description or undo this change.');
+    setStatus(text('glossary.images.updated', 'Image updated. You can add a description or undo this change.'));
     focusDescriptionRef.current = true;
   }
   async function replace(load, attribution, extraFor) {
@@ -262,7 +262,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
         else setError('The term changed while the image loaded. Please try again.');
       }
     } catch (err) {
-      if (mountedRef.current && pendingRef.current === task && (task.isOwner() || timedOut)) setError(timedOut ? 'The image took too long to load. Please try again.' : err.message || 'The image could not be loaded.');
+      if (mountedRef.current && pendingRef.current === task && (task.isOwner() || timedOut)) setError(timedOut ? text('glossary.images.load_timeout', 'The image took too long to load. Please try again.') : err.message || text('glossary.images.load_failed', 'The image could not be loaded.'));
     } finally {
       clearTimeout(timeout); task.finish();
       if (pendingRef.current === task) { pendingRef.current = null; if (mountedRef.current) setBusy(false); }
@@ -296,7 +296,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     const task = beginTask(index);
     if (!task) return;
     const saved = task.commit(() => ({ imageAlt: description.trim(), imageAltHash: glossaryImageDescriptionHash(item.image), imageAltSource: 'author', imageDecorative: false })); task.finish();
-    if (saved) { setError(''); setStatus('Image description saved.'); }
+    if (saved) { setError(''); setStatus(text('glossary.images.description_saved', 'Image description saved.')); }
     else setError('The image changed. Reopen the image picker before describing it.');
   }
   function upload(event) {
@@ -310,9 +310,9 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   const buttonClass = 'min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   const feedback = <>{working && <p role="status" className="text-sm text-slate-700">{text('glossary.images.loading', 'Loading image...')}</p>}{status && <p role="status" className="text-sm text-slate-700">{status}</p>}{error && <p role="alert" className="text-sm text-red-700">{error}</p>}</>;
   return <div className="mt-2 space-y-2 print:hidden" data-glossary-image-controls="true">
-    <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" className="hidden" aria-label={'Upload image for ' + item.term} onChange={upload} />
+    <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" className="hidden" aria-label={text('glossary.images.upload_aria', 'Upload image for {term}').replace('{term}', item.term)} onChange={upload} />
     <div className="flex flex-wrap justify-center gap-2">
-      <button ref={openerRef} type="button" className={buttonClass} disabled={!beginTask} aria-haspopup="dialog" aria-label={'Change image for ' + item.term} onClick={openDialog}>{text('glossary.images.change', 'Change image')}</button>
+      <button ref={openerRef} type="button" className={buttonClass} disabled={!beginTask} aria-haspopup="dialog" aria-label={text('glossary.images.change_aria', 'Change image for {term}').replace('{term}', item.term)} onClick={openDialog}>{text('glossary.images.change', 'Change image')}</button>
       {canUndo && !open && <button type="button" className={buttonClass} disabled={working} onClick={undoReplacement}>{text('common.undo', 'Undo')}</button>}
     </div>
     {!open && feedback}
@@ -330,18 +330,18 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
         <button type="button" className={buttonClass} disabled={working || !onGenerate} onClick={generate}>{text('glossary.images.generate', 'Generate image')}</button>
       </div>
       <p id={uploadHelpId} className="mb-4 text-xs text-slate-600">{text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')}</p>
-      {mode === 'mulberry' ? <section aria-label={'Mulberry symbols for ' + item.term}>
+      {mode === 'mulberry' ? <section aria-label={text('glossary.images.mulberry_section_aria', 'Mulberry symbols for {term}').replace('{term}', item.term)}>
         <form onSubmit={event => { event.preventDefault(); search(); }} className="flex flex-wrap items-end gap-2">
           <label className="min-w-0 flex-1 text-sm font-semibold">{text('glossary.images.search_label', 'Search Mulberry symbols')}<input ref={searchInputRef} type="search" value={query} onChange={event => { stopSearch(); setQuery(event.target.value); setResults([]); setStatus(''); setError(''); }} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 text-sm text-slate-800" /></label>
           <button type="submit" className={buttonClass} disabled={searching || working || !query.trim()}>{text('common.search', 'Search')}</button>
         </form>
         {searching && <p role="status" className="mt-2 text-sm text-slate-700">{text('glossary.images.searching', 'Searching Mulberry...')}</p>}
         <div className="my-3 grid grid-cols-2 sm:grid-cols-3 gap-2" aria-busy={searching || working}>
-          {results.map(result => <GlossaryMulberryResult key={result.url} result={result} term={item.term} working={working} buttonClass={buttonClass} onChoose={previewUrl => replace(signal => prepareGlossaryMulberry({ ...result, url: previewUrl }, signal), { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', via: 'Global Symbols', url: result.url, label: result.label })} />)}
+          {results.map(result => <GlossaryMulberryResult key={result.url} result={result} term={item.term} working={working} buttonClass={buttonClass} text={text} onChoose={previewUrl => replace(signal => prepareGlossaryMulberry({ ...result, url: previewUrl }, signal), { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', via: 'Global Symbols', url: result.url, label: result.label })} />)}
         </div>
         <p className="my-3 text-xs text-slate-700"><a className="underline" href="https://globalsymbols.com/symbolsets/mulberry" target="_blank" rel="noopener noreferrer">Mulberry Symbols by Steve Lee</a> · <a className="underline" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>. Credit is included in saved images.</p>
         <button type="button" className={buttonClass} onClick={() => { stopSearch(); setMode('choices'); setStatus(''); setError(''); }}>{text('glossary.images.back', 'Back to current image')}</button>
-      </section> : mode === 'photos' ? <section aria-label={'Photos for ' + item.term}>
+      </section> : mode === 'photos' ? <section aria-label={text('glossary.images.photos_section_aria', 'Photos for {term}').replace('{term}', item.term)}>
         {window.AlloModules && window.AlloModules.ClassroomImagePicker
           ? React.createElement(window.AlloModules.ClassroomImagePicker, {
             idPrefix: 'glossary-photo-' + index, initialQuery: item.term, sources: ['photos'], t,

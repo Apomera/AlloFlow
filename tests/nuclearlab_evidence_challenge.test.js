@@ -8,7 +8,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab,
-} from './helpers/stem_widgets_smoke_harness.js';
+} from './helpers/nuclear_lab_reference_harness.js';
 
 let act;
 let cfg;
@@ -146,7 +146,7 @@ describe('evidence challenge semantics', () => {
     expect(host.querySelector('button[aria-label^="Motion: low."]').getAttribute('aria-pressed')).toBe('true');
     expect(buttonNamed('Skip topic controls and start reading')).toBeTruthy();
     expect(host.querySelector('#nksec-halflife').getAttribute('tabindex')).toBe('-1');
-    const adaptations = host.querySelector('style').textContent;
+    const adaptations = host.querySelector('[data-nuclear-lab] style').textContent;
     expect(adaptations).toContain('[data-nk-sec]:focus');
     expect(adaptations).toContain('.nk-readable textarea:focus-visible');
     expect(adaptations).toContain('.nk-index-secondary{display:none!important}');

@@ -23,17 +23,20 @@ function harness(rows, generate = vi.fn(), teacher = true) {
   const source = readFileSync(ANTI, 'utf8');
   const from = source.indexOf('  const handleUpdateReadingSupports =');
   const to = source.indexOf('  const getFilteredHistory =', from);
-  const onUpdateResource = (id, updater) => {
-    const current = stateRef.current.history.find(row => row.id === id);
+  // Like the host's: an instance id narrows the change to that one copy.
+  const onUpdateResource = (id, updater, options = {}) => {
+    const match = row => row.id === id && (!options.instanceId || row._artifactInstanceId === options.instanceId);
+    const current = stateRef.current.history.find(match);
     if (!current) return false;
     const updated = updater(current);
     if (!updated || updated === current) return false;
-    stateRef.current.history = stateRef.current.history.map(row => row.id === id ? updated : row);
+    stateRef.current.history = stateRef.current.history.map(row => row === current ? updated : match(row) ? updater(row) : row);
     return true;
   };
+  const getArtifactInstanceId = item => item && typeof item._artifactInstanceId === 'string' ? item._artifactInstanceId : '';
   window.AlloModules.GenDispatcher = { generateReadingSupports: generate };
-  const callbacks = new Function('window', '_resourceMutationStateRef', 'onUpdateResource', 'callGemini', 'cleanJson', 'gradeLevel', 'leveledTextLanguage',
-    source.slice(from, to) + '\nreturn { edit: handleUpdateReadingSupports, generate: handleGenerateReadingSupports };')(window, stateRef, onUpdateResource, vi.fn(), vi.fn(), '5', 'English');
+  const callbacks = new Function('window', '_resourceMutationStateRef', 'onUpdateResource', 'callGemini', 'cleanJson', 'gradeLevel', 'leveledTextLanguage', 'getArtifactInstanceId',
+    source.slice(from, to) + '\nreturn { edit: handleUpdateReadingSupports, generate: handleGenerateReadingSupports };')(window, stateRef, onUpdateResource, vi.fn(), vi.fn(), '5', 'English', getArtifactInstanceId);
   return { ...callbacks, stateRef, row: id => stateRef.current.history.find(row => row.id === id) };
 }
 const at = (quote, extra = {}) => { const start = PASSAGE.indexOf(quote); return { id: 'a-' + start, start, end: start + quote.length, quote, text: 'Meaning of ' + quote, ...extra }; };
@@ -48,6 +51,20 @@ describe('adapted word help host callbacks', () => {
     expect(h.row('adapted-1').readingSupports).toBeUndefined();
     expect(h.row('adapted-1').data).toBe(adapted.data);
     expect(h.row('orig')).toBe(original);
+  });
+
+  it('shows word help only on the copy the teacher has open when an imported pack repeats its id', () => {
+    const { adapted } = fixture();
+    const mine = { ...adapted, _artifactInstanceId: 'artifact-mine0001' };
+    const imported = { ...adapted, _artifactInstanceId: 'artifact-pack0001' };
+    const h = harness([mine, imported]);
+    h.edit(mine, { type: 'upsert', annotation: at('heron') });
+    h.edit(imported, { type: 'upsert', annotation: at('shallow', { text: 'UNREVIEWED AI TEXT' }) });
+    const [first] = h.stateRef.current.history;
+    h.edit(first, { type: 'show', shown: true });
+    const [openCopy, otherCopy] = h.stateRef.current.history;
+    expect(openCopy.adaptedReadingSupports).toMatchObject({ shown: true, annotations: [{ quote: 'heron' }] });
+    expect(otherCopy.adaptedReadingSupports).toMatchObject({ shown: false, annotations: [{ text: 'UNREVIEWED AI TEXT' }] });
   });
 
   it('shows and hides word help for students', () => {

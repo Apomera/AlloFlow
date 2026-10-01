@@ -1,0 +1,10 @@
+{
+  "syntax": "passed",
+  "inMemoryAssertions": 7,
+  "sharedHostUnchanged": true,
+  "applied": false,
+  "limitations": [
+    "Five-character compatibility is retained; limited human-code entropy remains.",
+    "Longer join codes require UI/signalling/mailbox compatibility work; no external settings or deployment changed."
+  ]
+}

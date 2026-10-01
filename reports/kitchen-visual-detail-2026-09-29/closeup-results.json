@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "recipes": [
+    "mushroom",
+    "tomato"
+  ],
+  "checks": [
+    "Focused close-up zoom",
+    "Return to whole bench",
+    "Finished recipe unchanged"
+  ],
+  "errors": []
+}

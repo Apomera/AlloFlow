@@ -1414,7 +1414,7 @@ function SimplifiedPanel(props) {
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("simplified.rewrite"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("sidebar.create_adapted_companion") || "Create adapted companion", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
   ));
 }
@@ -2049,7 +2049,7 @@ function SourceInputPanel(props) {
         setUrlToFetch("");
         addToast(t("common.link_opened_copy_paste"), "info");
       },
-      className: "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20",
+      className: "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20",
       title: t("common.open_link_paste_mode")
     },
     /* @__PURE__ */ React.createElement(ExternalLink, { size: 14 })
@@ -4827,7 +4827,9 @@ function GeneratorActionsView(props) {
         textFormat,
         translationMode,
         universalImageStyle,
-        useEmojis
+        useEmojis,
+        // Grade-level standard: the pack's main reading is the original with supports.
+        handleReadOriginal: props.handleReadOriginal
       }
     }
   ), /* @__PURE__ */ React.createElement("div", { style: { display: !guidedMode || guidedActiveSteps[guidedStep]?.id === "alignment" ? void 0 : "none" }, id: "tour-tool-alignment", "data-help-key": "tool_alignment", className: "bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all motion-reduce:transition-none group" }, /* @__PURE__ */ React.createElement(

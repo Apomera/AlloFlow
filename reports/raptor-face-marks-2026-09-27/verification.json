@@ -1,0 +1,76 @@
+{
+  "date": "2026-09-27",
+  "scope": "Continuous peregrine and osprey facial markings, peregrine dark iris and yellow eye ring, species-specific identification prompts",
+  "runs": [
+    {
+      "suites": ["raptor-face-marks.spec.ts"],
+      "output": "initial-browser-results",
+      "passed": 2,
+      "failed": 1,
+      "skipped": 1,
+      "retries": 0,
+      "duration": "1.6 minutes",
+      "note": "Bit-exact quaternion comparison after phone resize differed by less than 2e-15. Changed the assertion to a 12-decimal tolerance. Visual review also identified the old peregrine crown shell obscuring its eye ring; moved crown coloring onto the head surface."
+    },
+    {
+      "suites": ["raptor-face-marks.spec.ts"],
+      "output": "refined-browser-results",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "1.2 minutes",
+      "note": "Before the final osprey eye-surround color and active prey-tracking assertions."
+    },
+    {
+      "suites": ["raptor-face-marks.spec.ts", "raptor-gaze-rendering.spec.ts", "raptor-study-anatomy.spec.ts"],
+      "output": "final-browser-results",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "4.2 minutes",
+      "note": "All scenarios use the final application source, including active head turns, eagle and owl regression controls, saved observations, accessibility, fullscreen, and restart cleanup."
+    }
+  ],
+  "uniqueScenariosValidated": 9,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "scopedAxeViolations": 0,
+    "visualInspection": "pass",
+    "finiteGeometry": "pass",
+    "frontAndSideShaderPixelContribution": "pass",
+    "stableGeometryAndEyeAttachmentDuringGaze": "pass",
+    "savedStudyImages": "pass",
+    "noIdleStudyRedraws": "pass"
+  },
+  "resources": {
+    "peregrineHeadMeshesBefore": 9,
+    "peregrineHeadMeshesAfter": 8,
+    "ospreyHeadMeshesBefore": 10,
+    "ospreyHeadMeshesAfter": 8,
+    "extraTextures": 0,
+    "extraMaterials": 0,
+    "extraAnimationLoops": 0,
+    "headVerticesUnchanged": true,
+    "eyeVerticesUnchanged": true
+  },
+  "sourceFiles": [
+    {
+      "path": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "37914ad6b0d4041af23130820ccd674a970b1f8865c87df1787486fff3a1cd8c"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "37914ad6b0d4041af23130820ccd674a970b1f8865c87df1787486fff3a1cd8c"
+    }
+  ],
+  "newTranslationKeys": 3,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "environment": "Local Chromium/WebGL, low and high graphics quality, phone viewport and reduced motion. No physical-device frame-rate benchmark.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

@@ -1,0 +1,18 @@
+{
+  "before": [
+    "Warm"
+  ],
+  "proposed": [
+    "Warm"
+  ],
+  "repaired": [
+    "Warm"
+  ],
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0045977011494254,
+    "textRatio": 1,
+    "textLost": 0
+  }
+}

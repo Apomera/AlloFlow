@@ -1,0 +1,48 @@
+{
+  "errors": [],
+  "initialViewMs": 446,
+  "shadow": {
+    "measuredRadius": 70.5,
+    "expectedRadius": 70.35484774735733
+  },
+  "cameraFramePairMs": [
+    112.79999999998836,
+    82.89999999996508,
+    62.399999999965075,
+    40,
+    77.89999999996508,
+    41.70000000001164,
+    74.20000000001164,
+    35.5,
+    29.20000000001164,
+    32.20000000001164,
+    41.40000000002328,
+    77.5,
+    46.199999999953434,
+    63.90000000002328,
+    76.09999999997672
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "bufferWidth": 908,
+      "bufferHeight": 500
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "bufferWidth": 338,
+      "bufferHeight": 300
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "bufferWidth": 268,
+      "bufferHeight": 300
+    }
+  ],
+  "pausedRendering": true,
+  "experimentPreserved": true,
+  "contextRecovered": true
+}

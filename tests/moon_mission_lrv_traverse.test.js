@@ -202,7 +202,7 @@ describe('Moon Mission optional LRV traverse', () => {
   });
 
   it('adds bounded ballistic dust and keeps geology an on-foot activity', () => {
-    expect(source).toContain('var LRV_DUST_COUNT = _evaLowPower ? 18 : 42');
+    expect(source).toContain('var LRV_DUST_COUNT = _evaLowPower ? 120 : 360');
     expect(source).toContain('var lrvDustLife = new Float32Array(LRV_DUST_COUNT)');
     expect(source).toContain('lrvDustVY[dustN] -= 1.62 * evaDt');
     expect(source).toContain('(1 + lrvSlipSignal * 2.2)');

@@ -1,0 +1,66 @@
+DINO LAB | FIELD NOTEBOOK
+Student observations and explanations
+Catalog measurements are estimates. Model observations are not direct observations of living extinct animals.
+
+Microraptor (Microraptor gui)
+Early Cretaceous | 125–120 mya | Asia (China)
+Catalog evidence: Many beautifully preserved specimens from China’s Jehol deposits.
+Catalog uncertainty: Exactly how it used four wings is still modeled.
+
+My question:
+How did it glide?
+
+Evidence I noticed:
+(not recorded)
+
+My explanation:
+(not recorded)
+
+What I still wonder:
+(not recorded)
+
+---
+
+EVIDENCE WORKBENCH | Velociraptor
+What can attachment marks on a forearm tell us?
+Source: Turner, Makovicky & Norell (2007) | https://doi.org/10.1126/science.1145076
+Illustration: schematic, not a fossil photograph or a measurement.
+Student writing is recorded without automatic assessment.
+First classification attempt (not a mastery score):
+The fossil forearm has quill knobs. | Learner: observation | Reference: observation
+Those knobs prove that Velociraptor could fly. | Learner: inference | Reference: overreach
+Velociraptor had large feathers on its forearms. | Learner: inference | Reference: inference
+First recorded explanation
+Cited evidence:
+Fossil observation: Researchers reported quill knobs on a Velociraptor forearm bone.
+Living comparison: In living birds, these knobs anchor large feathers through ligaments.
+My claim: The forearm carried feathers.
+How the evidence supports it: The reported knobs resemble attachment sites in living birds.
+A limit and a next question: Flight needs more evidence about anatomy and movement.
+Latest recorded explanation
+Cited evidence:
+Fossil observation: Researchers reported quill knobs on a Velociraptor forearm bone.
+Living comparison: In living birds, these knobs anchor large feathers through ligaments.
+My claim: The evidence supports large feathers on the forearm, but not flight.
+How the evidence supports it: The reported knobs resemble attachment sites in living birds.
+A limit and a next question: Flight needs more evidence about anatomy and movement.
+Self-review: link=checked by learner; scope=not checked; question=not checked
+---
+
+EVIDENCE WORKBENCH | Tyrannosaurus
+How far can we extend evidence from preserved skin?
+Source: Bell and colleagues (2017) | https://doi.org/10.1098/rsbl.2017.0092
+Illustration: schematic, not a fossil photograph or a measurement.
+Student writing is recorded without automatic assessment.
+First classification attempt (not a mastery score):
+Every T. rex had scales everywhere throughout its life. | Learner: overreach | Reference: overreach
+The sampled parts of this animal had scaly skin. | Learner: inference | Reference: inference
+The preserved impressions show a scale pattern. | Learner: observation | Reference: observation
+Current draft (not yet recorded)
+Cited evidence:
+Sample coverage: These patches do not preserve the entire skin surface of the animal.
+My claim: A partial sample cannot map the whole skin.
+How the evidence supports it: (not recorded)
+A limit and a next question: (not recorded)
+Self-review: link=not checked; scope=not checked; question=not checked
+---

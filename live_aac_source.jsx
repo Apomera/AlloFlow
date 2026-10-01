@@ -49,6 +49,17 @@ const _alloAacTimestamp = (value) => {
   const parsed = Date.parse(String(value || String()));
   return Number.isFinite(parsed) ? parsed : 0;
 };
+// A picture's credit (Mulberry is CC BY-SA, Commons photos their own licence)
+// travels with the picture it names; text only, links only when https.
+const _alloAacCredit = (value) => {
+  if (!value || typeof value !== 'object' || typeof value.license !== 'string' || !value.license.trim()) return null;
+  const credit = { license: _alloAacText(value.license, 120) };
+  ['set', 'author', 'via'].forEach((key) => { const text = _alloAacText(value[key], 160); if (text) credit[key] = text; });
+  const title = _alloAacText(value.title, 160); if (title) credit.title = title;
+  ['url', 'licenseUrl'].forEach((key) => { const link = _alloAacText(value[key], 500); if (/^https:\/\/[^\s]+$/i.test(link)) credit[key] = link; });
+  if (value.modified === true) credit.modified = true;
+  return credit;
+};
 const _alloAacSafeImage = (value, remaining, perItemLimit = ALLO_AAC_MAX_IMAGE_CHARS) => {
   if (typeof value !== 'string' || value.length > perItemLimit || value.length > remaining) return null;
   if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/]*={0,2}$/i.test(value)) return value;
@@ -176,6 +187,8 @@ const _alloNormalizePortableAacBoardPackage = (value, options = {}) => {
         category: _alloAacText(cell.category, 80),
         image: safeImage
       };
+      const credit = safeImage ? _alloAacCredit(cell.credit) : null;
+      if (credit) clean.credit = credit;
       if (cell.audio && cell.audio.kind === 'custom') {
         if (allowAudio && !preparedOnly && privacy.customAudioIncluded === true) {
           const audio = _alloAacSafeAudio(cell.audio, remainingAudio, false, audioItemLimit);
@@ -310,6 +323,13 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   const sanitizeHistoryForCloud = deps && deps.sanitizeHistoryForCloud;
   const stripUndefined = deps && deps.stripUndefined;
     if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+    // An imported submission copy is the teacher's review record, never a student resource.
+    if (item.data && typeof item.data === 'object' && item.data.submissionCopy) return null;
+    // A Study or Family Guide travels only as its learner projection.
+    const guideTransport = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
+    if (item.type === 'lesson-plan' && typeof guideTransport?.isStudentDeliverableGuide === 'function' && guideTransport.isStudentDeliverableGuide(item)) {
+        item = guideTransport.projectStudentGuide(item) || item;
+    }
     const referenceAudioSource = item;
     // Hydrated or not, explicit reading text is decoded exactly once. Invalid
     // envelopes retain their marker so packing cannot turn them into ready prose.
@@ -450,9 +470,21 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         }
     }
     // Adapted word help is anchored to the adapted text itself, so it is restored
-    // whether or not the reading has a captured original.
-    if (item.adaptedReadingSupports && readingContract?.validateAdaptedReadingSupports && cleaned && typeof cleaned === 'object') {
-        cleaned.adaptedReadingSupports = readingContract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports);
+    // whether or not the reading has a captured original. Students receive only
+    // help the teacher has shown; hidden or stale help (unreviewed AI text
+    // included) stays on the teacher's copy, and fails closed without a validator.
+    let adaptedHelpWithheld = null;
+    if (cleaned && typeof cleaned === 'object') {
+        const studentHelp = item.adaptedReadingSupports && typeof readingContract?.studentAdaptedReadingSupports === 'function'
+            ? readingContract.studentAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+        if (studentHelp) cleaned.adaptedReadingSupports = studentHelp;
+        else {
+            delete cleaned.adaptedReadingSupports;
+            const teacherHelp = item.adaptedReadingSupports && typeof readingContract?.validateAdaptedReadingSupports === 'function'
+                ? readingContract.validateAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+            if (teacherHelp?.status === 'stale') adaptedHelpWithheld = 'stale';
+            else if (teacherHelp?.annotations?.length && teacherHelp.shown !== true) adaptedHelpWithheld = 'hidden';
+        }
     }
     // The shared Firestore sanitizer must stay conservative because session
     // documents have a strict size ceiling. Mailbox/P2P packs are already
@@ -620,7 +652,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
             for (const kept of accepted) {
                 if (kept.origin !== 'educator' || kept.image) continue;
                 const identity = pictureKey(key, cleaned[key], kept);
-                const entry = annotations.find(note => note.start === kept.start && note.end === kept.end && note.quote === kept.quote);
+                const entry = annotations.find(note => note && note.start === kept.start && note.end === kept.end && note.quote === kept.quote);
                 // Retain omissions only for unchanged surviving supports without art.
                 if (entry?.image || priorPictureKeys.has(identity)) omittedPictureKeys.add(identity);
             }
@@ -629,11 +661,72 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         cleaned.readingDelivery = {
             version: 1,
             referenceAudio: { inclusion: 'omitted', reason: omittedAudio ? 'route-unsupported' : 'not-provided' },
-            pictures: { omittedCount: omittedSupportKeys.length, omittedSupportKeys }
+            pictures: { omittedCount: omittedSupportKeys.length, omittedSupportKeys },
+            // State only, never the help itself: lets the sharing teacher see why none was sent.
+            ...(adaptedHelpWithheld ? { adaptedWordHelp: adaptedHelpWithheld } : {})
         };
     }
+    // Teacher working data never reaches a student copy. A quiz fact check stays
+    // only when the student view could already show it as an explanation (not
+    // disputed or stale); keyCheck shrinks to a bare confirmation. Mirrors
+    // stripTeacherOnlyResourceFields in firestore_sync_module.js.
+    const teacherOnlyKeys = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview'];
+    const studentFactCheck = (node) => {
+        const text = typeof node.factCheck === 'string' ? node.factCheck : '';
+        if (!text.trim() || typeof node.question !== 'string') return '';
+        const quality = typeof window !== 'undefined' && window.AlloModules?.QuizView?.keyQuality;
+        if (typeof quality?.studentExplanation === 'function') {
+            try { return quality.studentExplanation(node, true) ? text : ''; } catch (_) { return ''; }
+        }
+        const check = node.keyCheck && typeof node.keyCheck === 'object' ? node.keyCheck : null;
+        if (check && (!['confirmed', 'unclear'].includes(check.status) || String(check.checkedKey ?? '') !== String(node.correctAnswer ?? ''))) return '';
+        return /\[\[\s*KEY\s*:\s*DISPUTED|CORRECTION\s*\/\s*WARNING|Actual Correct Answer/i.test(text) ? '' : text;
+    };
+    const stripTeacherOnlyFields = (value, memoryAid = false, seen = new WeakMap()) => {
+        if (!value || typeof value !== 'object' || value instanceof Date) return value;
+        const prototype = Object.getPrototypeOf(value);
+        if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+        if (seen.has(value)) return seen.get(value);
+        const scope = memoryAid || (!Array.isArray(value) && isMemoryAidNode(value));
+        const out = Array.isArray(value) ? [] : {};
+        seen.set(value, out);
+        const explanation = !Array.isArray(value) && !scope && Object.prototype.hasOwnProperty.call(value, 'factCheck') ? studentFactCheck(value) : '';
+        Object.entries(value).forEach(([key, nested]) => {
+            if (teacherOnlyKeys.includes(key)) return;
+            if (key === 'factCheck') { if (explanation) out.factCheck = explanation; return; }
+            if (key === 'keyCheck') {
+                if (explanation && nested && nested.status === 'confirmed' && String(nested.checkedKey ?? '') === String(value.correctAnswer ?? '')) out.keyCheck = { status: 'confirmed', checkedKey: nested.checkedKey };
+                return;
+            }
+            out[key] = stripTeacherOnlyFields(nested, scope, seen);
+        });
+        return out;
+    };
+    // A quiz the teacher marked graded travels without its key: answers,
+    // per-option correctness, explanations, answer guides, fact checks and
+    // rubrics stay on the teacher's copy, which live quizzes grade against.
+    // Mirrors withholdGradedQuizKeys in firestore_sync_module.js.
+    const gradedKeyFields = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
+        'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey',
+        'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality',
+        'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
+    const gradedOptionFields = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
+    const withholdGradedQuizKeys = (resource) => {
+        const data = resource && resource.type === 'quiz' && resource.data && typeof resource.data === 'object' && !Array.isArray(resource.data) ? resource.data : null;
+        if (!data || !data.deliverySettings || data.deliverySettings.feedbackTiming !== 'teacher-graded') return resource;
+        const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => !fields.includes(key)));
+        const questions = Array.isArray(data.questions) ? data.questions.map(question => {
+            if (!question || typeof question !== 'object' || Array.isArray(question)) return question;
+            const kept = omit(question, gradedKeyFields);
+            ['options', 'answerOptions', 'evidenceOptions'].forEach(field => {
+                if (Array.isArray(kept[field])) kept[field] = kept[field].map(option => option && typeof option === 'object' && !Array.isArray(option) ? omit(option, gradedOptionFields) : option);
+            });
+            return kept;
+        }) : data.questions;
+        return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview']), questions, answerKeysWithheld: true } };
+    };
     const { karaokeStudentAudio, ...safe } = cleaned || {};
-    return stripUndefined(safe);
+    return stripUndefined(withholdGradedQuizKeys(stripTeacherOnlyFields(safe)));
 };
 
 // Mailbox media preparation is separate from the synchronous privacy serializer.

@@ -2,21 +2,13 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFile } = require('node:child_process');
-const { promisify } = require('node:util');
+const { runFixtureProcess } = require('./fixture_subprocess.cjs');
 const { materializeFixture } = require('./remediation_benchmark_corpus.cjs');
 const ROOT = path.resolve(__dirname, '..');
-const run = promisify(execFile);
+const PORTABLE_EXPORT_TIMEOUT_MS = 240000;
+const FIXTURE_SUITE_TIMEOUT_MS = 2 * PORTABLE_EXPORT_TIMEOUT_MS + 30000;
 async function renderPdf(html, pdf) {
-  const startedAt = Date.now();
-  try {
-    return await run(process.execPath, [path.join(ROOT, 'agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs'), '--html', html, '--pdf', pdf], { cwd: ROOT, windowsHide: true, timeout: 120000, maxBuffer: 4 * 1024 * 1024 });
-  } catch (error) {
-    const elapsedMs = Date.now() - startedAt;
-    const detail = String(error.stdout || error.stderr || error.message || '').trim().slice(0, 4000);
-    throw new Error('Tagged PDF renderer failed after ' + elapsedMs + ' ms (exit=' + (error.code ?? 'unknown')
-      + ', signal=' + (error.signal || 'none') + ', killed=' + !!error.killed + ', timeout=120000 ms). ' + detail, { cause: error });
-  }
+  return runFixtureProcess(process.execPath, [path.join(ROOT, 'agent_skills/alloflow-portable-remediation/scripts/render_tagged_pdf.cjs'), '--html', html, '--pdf', pdf], { label: 'Tagged PDF renderer', cwd: ROOT, timeout: 120000 });
 }
 function expectations(plan) {
   const headings = plan.blocks.filter(b => b.type === 'heading').map(b => ({ level: b.level, name: b.text }));
@@ -39,10 +31,10 @@ async function buildFixtureSuite(output) {
     const fixture = materializeFixture(fixtureId, path.join(output, fixtureId, 'source'));
     const plan = JSON.parse(fs.readFileSync(fixture.planPath, 'utf8'));
     const exported = path.join(output, fixtureId, 'export');
-    const result = await run(process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [
+    const result = await runFixtureProcess(process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), [
       path.join(ROOT, 'agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py'), 'remediate',
       '--source', fixture.sourcePath, '--plan', fixture.planPath, '--out-dir', exported, '--pdf', 'required', '--verapdf', 'never',
-    ], { cwd: ROOT, windowsHide: true, timeout: 150000, maxBuffer: 4 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }).catch(error => { throw Error(error.stdout || error.stderr || error.message); });
+    ], { label: 'Portable export ' + fixtureId, cwd: ROOT, timeout: PORTABLE_EXPORT_TIMEOUT_MS, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
     fs.writeFileSync(path.join(output, fixtureId, 'export-process.json'), result.stdout);
     const files = fs.readdirSync(exported);
     for (const [kind, file] of [['html', files.find(name => name.endsWith('-accessible.html'))], ['pdf', files.find(name => name.endsWith('.pdf'))]]) {
@@ -75,5 +67,5 @@ async function buildFixtureSuite(output) {
   fs.writeFileSync(manifest, JSON.stringify({ schema: 1, fixtureScope: 'Synthetic education reading/table sources and native HTML form; not real learner AT results.', artifacts }, null, 2) + '\n');
   return manifest;
 }
-if (require.main === module) buildFixtureSuite(process.argv[2] || '').then(file => console.log(file)).catch(error => { console.error(error.stderr || error.message); process.exitCode = 1; });
-module.exports = { buildFixtureSuite, renderPdf };
+if (require.main === module) buildFixtureSuite(process.argv[2] || '').then(file => console.log(file)).catch(error => { console.error(error.message); process.exitCode = 1; });
+module.exports = { buildFixtureSuite, renderPdf, PORTABLE_EXPORT_TIMEOUT_MS, FIXTURE_SUITE_TIMEOUT_MS };

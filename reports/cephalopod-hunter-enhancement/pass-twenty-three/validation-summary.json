@@ -1,0 +1,294 @@
+{
+  "status": "complete",
+  "scope": [
+    "Humboldt continuous ventral funnel",
+    "four closed floats at each existing kelp blade base",
+    "failed-strike feedback suppressed only during actual clam gathering"
+  ],
+  "finalRuntimeSha256": "22314e02f0487b3ac626f26450392da440b2ea04ed0e1118b1326d4898d51c7e",
+  "unit": {
+    "distinctPassed": 164,
+    "files": 30,
+    "reports": [
+      {
+        "report": "unit-results.json",
+        "exitCode": 1,
+        "passedTests": 140,
+        "collectionFailure": "stale pre-existing strike-clock delimiter",
+        "missingFromReport": [
+          "tests/cephalopodlab_clam_geometry.test.js",
+          "tests/cephalopodlab_crab_geometry.test.js",
+          "tests/cephalopodlab_reef_placement.test.js",
+          "tests/cephalopodlab_shelter_feedback.test.js"
+        ]
+      },
+      {
+        "report": "unit-supplement.json",
+        "exitCode": 0,
+        "passedTests": 24,
+        "selectedFiles": [
+          "tests/cephalopodlab_clam_geometry.test.js",
+          "tests/cephalopodlab_crab_geometry.test.js",
+          "tests/cephalopodlab_reef_placement.test.js",
+          "tests/cephalopodlab_shelter_feedback.test.js",
+          "tests/cephalopodlab_squid_strike_clock.test.js"
+        ]
+      },
+      {
+        "report": "unit-kelp-fixture.json",
+        "exitCode": 0,
+        "passedTests": 6,
+        "replaces": "the same six kelp cases; no duplicate count",
+        "reason": "Permanent original-b34 fixture replaces dependency on ignored author script",
+        "fixture": "tests/fixtures/cephalopod_kelp_original.json",
+        "fixtureSha256": "49427d9fcf6384aefc5195584f237853395a8df3b47e0b710d07f46bb7f6e459"
+      }
+    ]
+  },
+  "native": {
+    "passed": 19,
+    "retries": 0,
+    "workers": 1,
+    "unexpected": 0,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "visual": {
+    "matchedNaturalViews": 9,
+    "errors": [],
+    "reviewers": [
+      "root",
+      "pass23_notes_review"
+    ],
+    "captures": [
+      "squid-profile.png",
+      "squid-funnel-oblique.png",
+      "squid-funnel-mouth.png",
+      "squid-underside.png",
+      "kelp-reef.png",
+      "kelp-bladder.png",
+      "kelp-blades.png",
+      "squid-phone.png",
+      "kelp-phone.png"
+    ],
+    "fixture": "visual-fixtures.json",
+    "limitations": [
+      "Arm crown partly masks the funnel opening",
+      "Eight-sided float facets and existing alpha overlap visible in closest views"
+    ]
+  },
+  "baselineFeedback": {
+    "cpuPassed": 1,
+    "cpuFailed": 4,
+    "nativePassed": 1,
+    "nativeFailed": 2,
+    "positiveControlsRequired": true
+  },
+  "geometry": {
+    "baselineSha256": "b34c982127743a9d1f47ed392d0d48d09fa6adba588560bb178ab5e180e5d369",
+    "finalSha256": "22314e02f0487b3ac626f26450392da440b2ea04ed0e1118b1326d4898d51c7e",
+    "animal": {
+      "before": {
+        "meshes": 28,
+        "geometryCount": 28,
+        "geometryBytes": 283936,
+        "ownedMaterials": 10,
+        "allocatedMaterials": 9,
+        "unusedAllocatedMaterials": 0,
+        "siphon": [
+          {
+            "name": "cl-siphon-tube",
+            "vertices": 42,
+            "triangles": 40,
+            "bytes": 1584
+          },
+          {
+            "name": "",
+            "vertices": 42,
+            "triangles": 40,
+            "bytes": 1584
+          },
+          {
+            "name": "",
+            "vertices": 168,
+            "triangles": 280,
+            "bytes": 7056
+          },
+          {
+            "name": "",
+            "vertices": 22,
+            "triangles": 20,
+            "bytes": 824
+          }
+        ]
+      },
+      "after": {
+        "meshes": 25,
+        "geometryCount": 25,
+        "geometryBytes": 300608,
+        "ownedMaterials": 8,
+        "allocatedMaterials": 7,
+        "unusedAllocatedMaterials": 0,
+        "siphon": [
+          {
+            "name": "cl-siphon-tube",
+            "vertices": 578,
+            "triangles": 1152,
+            "bytes": 27720
+          }
+        ]
+      }
+    },
+    "kelp": {
+      "before": {
+        "vertices": 141,
+        "triangles": 168,
+        "bytes": 7212,
+        "attributes": {
+          "position": {
+            "bytes": 1692,
+            "itemSize": 3
+          },
+          "color": {
+            "bytes": 1692,
+            "itemSize": 3
+          },
+          "uv": {
+            "bytes": 1128,
+            "itemSize": 2
+          },
+          "normal": {
+            "bytes": 1692,
+            "itemSize": 3
+          }
+        },
+        "indexBytes": 1008
+      },
+      "after": {
+        "vertices": 277,
+        "triangles": 424,
+        "bytes": 14732,
+        "attributes": {
+          "position": {
+            "bytes": 3324,
+            "itemSize": 3
+          },
+          "color": {
+            "bytes": 3324,
+            "itemSize": 3
+          },
+          "uv": {
+            "bytes": 2216,
+            "itemSize": 2
+          },
+          "normal": {
+            "bytes": 3324,
+            "itemSize": 3
+          }
+        },
+        "indexBytes": 2544
+      },
+      "deltaBytesEach": 7520,
+      "deltaBytesOver25": 188000
+    },
+    "grass": {
+      "before": {
+        "vertices": 33,
+        "triangles": 40,
+        "bytes": 1692,
+        "attributes": {
+          "position": {
+            "bytes": 396,
+            "itemSize": 3
+          },
+          "color": {
+            "bytes": 396,
+            "itemSize": 3
+          },
+          "uv": {
+            "bytes": 264,
+            "itemSize": 2
+          },
+          "normal": {
+            "bytes": 396,
+            "itemSize": 3
+          }
+        },
+        "indexBytes": 240
+      },
+      "after": {
+        "vertices": 33,
+        "triangles": 40,
+        "bytes": 1692,
+        "attributes": {
+          "position": {
+            "bytes": 396,
+            "itemSize": 3
+          },
+          "color": {
+            "bytes": 396,
+            "itemSize": 3
+          },
+          "uv": {
+            "bytes": 264,
+            "itemSize": 2
+          },
+          "normal": {
+            "bytes": 396,
+            "itemSize": 3
+          }
+        },
+        "indexBytes": 240
+      },
+      "unchanged": true
+    },
+    "oracle": {
+      "atMeasuredMigration": "8adda109e7915f049e5c26b7941dfe68a7208c3328bcba5d017a8c6bb8f5f794",
+      "final": "025b3fab4bfa102b31ea981be16d04212c8ad907941fb97534bd29867f783615",
+      "soleLaterChange": "strict static-buffer reference identity",
+      "protectedHelperUnchanged": true,
+      "protectedHelperSha256": "3a13ea97c4ca77604bba92c4db77e01753c7527a791691c42698d51438d4732c"
+    },
+    "mirrors": [
+      "stem_lab/stem_tool_cephalopodlab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+      "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+      "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js"
+    ],
+    "wrappersPerRuntime": 12,
+    "taskOwnedStagedFiles": [],
+    "taskOwnedCommits": []
+  },
+  "fixturePortability": {
+    "squidProtectedFixture": "tests/fixtures/cephalopod_siphon_protected.json",
+    "kelpOriginalFixture": "tests/fixtures/cephalopod_kelp_original.json",
+    "newTestsNeedNoIgnoredAuthorOrBaselineFiles": true
+  },
+  "preview": {
+    "url": "http://127.0.0.1:50807/__harness?species=humboldtSquid&mode=observe&pass=23",
+    "httpStatus": 200,
+    "sourceUrl": "http://127.0.0.1:50807/stem_lab/stem_tool_cephalopodlab.js?pass=23",
+    "servedSHA256": "22314e02f0487b3ac626f26450392da440b2ea04ed0e1118b1326d4898d51c7e",
+    "openInCodex": "queued"
+  },
+  "taskOwnedStagedFiles": [],
+  "taskOwnedCommits": [],
+  "initialHead": "1e30b7451891b20980cd7301e1e407904d2fca3f",
+  "currentHead": "0817283b5757b05dd4b20847719cc25a78967c23",
+  "priorUncommittedPassesPreserved": [
+    21,
+    22
+  ],
+  "wrappersPerRuntime": 12,
+  "noCommit": true,
+  "fixtureRunRecovery": {
+    "retainedReport": "unit-kelp-fixture-first-attempt.json",
+    "passed": 5,
+    "failed": 1,
+    "phaseSweepWallMs": 37100.1253,
+    "originalBudgetMs": 30000,
+    "finalBudgetMs": 90000,
+    "assertionsAndSamplesUnchanged": true,
+    "finalSixPassed": true
+  }
+}

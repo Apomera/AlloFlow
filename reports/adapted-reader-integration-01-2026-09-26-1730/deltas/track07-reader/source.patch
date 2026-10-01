@@ -1,0 +1,197 @@
+diff --git a/tests/reader_place_review_adapt.test.js b/tests/reader_place_review_adapt.test.js
+index bcff47bab..1af5deab5 100644
+--- a/tests/reader_place_review_adapt.test.js
++++ b/tests/reader_place_review_adapt.test.js
+@@ -238,7 +238,7 @@ describe('precise adaptation choices', () => {
+   const open = { isTeacherMode: true, isZenMode: false, isTeacherToolbarExpanded: true, complexityLevel: 5 };
+   it('previews a change before applying it, then offers the way back', async () => {
+     const content = item('The heron walked slowly in the shallow water.');
+-    const preview = { status: 'preview', resourceId: content.id, baseData: content.data, data: 'The heron walked slowly. The water was shallow.', config: {}, changeLabel: 'Adjusted' };
++    const preview = { status: 'preview', resourceId: content.id, baseData: content.data, data: 'The heron walked slowly. It stayed in the shallow water.', vocabulary: { version: 1, valid: true }, config: {}, changeLabel: 'Adjusted' };
+     const handleComplexityAdjustment = vi.fn(async plan => plan.preview ? preview : { status: 'applied', previousId: content.id, newId: content.id, previousData: content.data, data: preview.data });
+     const view = mount(content, { ...open, handleComplexityAdjustment });
+     const go = $('[data-apply-complexity]');
+@@ -254,13 +254,85 @@ describe('precise adaptation choices', () => {
+     expect(panel.querySelector('del')).not.toBe(null);
+     expect(view.props.handleSimplifiedTextChange).not.toHaveBeenCalled();
+     await click($('[data-adaptation-apply]'));
+-    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ apply: preview });
++    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ apply: preview, options: { shorterSentences: true, explainVocabulary: false, keepTerms: ['heron', 'shallow water'] } });
+     view.rerender({ generatedContent: { ...content, data: preview.data } });
+     expect($('[data-adaptation-preview]')).toBe(null);
+     await click($('[data-adaptation-undo]'));
+     expect(view.props.handleSimplifiedTextChange).toHaveBeenCalledWith(content.data);
+   });
+ 
++  it('shows missing-term feedback from the real helper and cannot Apply the rejected candidate', async () => {
++    const content = item('Herons are wading birds. They eat fish.');
++    const writes = { setGeneratedContent: vi.fn(), setHistory: vi.fn() };
++    const handleComplexityAdjustment = plan => helpers.handleComplexityAdjustment({
++      ...writes, generatedContent: content, complexityLevel: 5, gradeLevel: 'Grade 4', leveledTextLanguage: 'English',
++      adaptationPlan: plan, saveOriginalOnAdjust: false, setIsProcessing: vi.fn(), setComplexityLevel: vi.fn(),
++      setWordSoundsCustomTerms: vi.fn(), setWsPreloadedWords: vi.fn(), setError: vi.fn(), addToast: vi.fn(), warnLog: vi.fn(),
++      callGemini: vi.fn(), cleanJson: value => value, t: key => key, getDefaultTitle: () => 'Reading',
++      extractSourceTextForProcessing: window.AlloModules.TextPipelineHelpers.extractSourceTextForProcessing,
++      generateBilingualText: vi.fn(async () => 'Herons are birds that wade. They eat fish.')
++    });
++    mount(content, { ...open, handleComplexityAdjustment });
++    await typeInto($('[data-adapt-keep-terms]'), 'wading birds');
++    await click($('[data-apply-complexity]'));
++    expect($('[data-adaptation-notice]').textContent).toContain('missing: “wading birds”');
++    expect($('[data-adaptation-notice]').textContent).toContain('Current text kept');
++    expect($('[data-adaptation-apply]')).toBe(null);
++    expect($('[data-adapt-keep-terms]').value).toBe('wading birds');
++    expect(writes.setGeneratedContent).not.toHaveBeenCalled();
++    expect(writes.setHistory).not.toHaveBeenCalled();
++  });
++
++  it('invalidates a preview when the preserved list or level changes', async () => {
++    const content = item('Herons are wading birds. They eat fish.');
++    const handleComplexityAdjustment = vi.fn(async () => ({ status: 'preview', resourceId: content.id, baseData: content.data, data: content.data, vocabulary: { version: 1, valid: true } }));
++    const view = mount(content, { ...open, handleComplexityAdjustment });
++    await typeInto($('[data-adapt-keep-terms]'), 'wading birds');
++    await click($('[data-apply-complexity]'));
++    expect($('[data-adaptation-apply]')).not.toBe(null);
++    await typeInto($('[data-adapt-keep-terms]'), 'fish');
++    expect($('[data-adaptation-apply]')).toBe(null);
++    await click($('[data-apply-complexity]'));
++    view.rerender({ ...open, handleComplexityAdjustment, complexityLevel: 3 });
++    expect($('[data-adaptation-apply]')).toBe(null);
++  });
++
++  it('blocks over-limit/unfinished lists visibly and preserves literal quoted punctuation', async () => {
++    const handleComplexityAdjustment = vi.fn(async () => ({ status: 'rejected', message: 'Current text kept.' }));
++    mount(item(), { ...open, handleComplexityAdjustment });
++    await typeInto($('[data-adapt-keep-terms]'), Array.from({ length: 31 }, (_, i) => 'term' + i).join(', '));
++    expect($('[data-apply-complexity]').disabled).toBe(true);
++    expect($('[data-adapt-keep-terms]').getAttribute('aria-invalid')).toBe('true');
++    expect($('#simplified-adapt-terms-error').textContent).toContain('No terms were dropped');
++    await typeInto($('[data-adapt-keep-terms]'), '"Washington, D.C.');
++    expect($('[data-apply-complexity]').disabled).toBe(true);
++    await typeInto($('[data-adapt-keep-terms]'), '"Washington, D.C."; fish');
++    await click($('[data-apply-complexity]'));
++    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ preview: true, options: { shorterSentences: false, explainVocabulary: false, keepTerms: ['Washington, D.C.', 'fish'] } });
++  });
++
++  it('does not present an unchecked legacy preview as compliant with requested terms', async () => {
++    const content = item('Herons are wading birds.');
++    mount(content, { ...open, handleComplexityAdjustment: vi.fn(async () => ({ status: 'preview', data: 'Herons are birds.' })) });
++    await typeInto($('[data-adapt-keep-terms]'), 'wading birds');
++    await click($('[data-apply-complexity]'));
++    expect($('[data-adaptation-apply]')).toBe(null);
++    expect($('[data-adaptation-notice]').textContent).toContain('could not be verified');
++  });
++
++  it('clears Apply and explains an Apply-time rejection', async () => {
++    const content = item('Herons are wading birds.');
++    const handleComplexityAdjustment = vi.fn(async plan => plan.preview
++      ? { status: 'preview', data: content.data, vocabulary: { version: 1, valid: true } }
++      : { status: 'rejected', message: 'Current text kept. The proposed version is missing: “wading birds” (primary reading). Retry or edit the preserved-term list.' });
++    mount(content, { ...open, handleComplexityAdjustment });
++    await typeInto($('[data-adapt-keep-terms]'), 'wading birds');
++    await click($('[data-apply-complexity]'));
++    await click($('[data-adaptation-apply]'));
++    expect($('[data-adaptation-apply]')).toBe(null);
++    expect($('[data-adaptation-notice]').textContent).toContain('missing: “wading birds”');
++    expect($('[data-adaptation-undo]')).toBe(null);
++  });
+   it('discards a preview without touching the text', async () => {
+     const content = item('The heron walked.');
+     const handleComplexityAdjustment = vi.fn(async () => ({ status: 'preview', resourceId: content.id, baseData: content.data, data: 'A heron walked.', config: {} }));
+@@ -282,7 +354,7 @@ describe('the adaptation helper', () => {
+       setIsProcessing: vi.fn(), setComplexityLevel: vi.fn(), setGeneratedContent: vi.fn(), setHistory: vi.fn(), setWordSoundsCustomTerms: vi.fn(), setWsPreloadedWords: vi.fn(), setError: vi.fn(),
+       addToast: vi.fn(), t: key => key, warnLog: vi.fn(), cleanJson: value => value, callGemini: vi.fn(),
+       extractSourceTextForProcessing: window.AlloModules.TextPipelineHelpers.extractSourceTextForProcessing,
+-      generateBilingualText: vi.fn(async () => 'Herons are birds that wade. They eat fish.'), getDefaultTitle: () => 'Leveled Text', ...extra };
++      generateBilingualText: vi.fn(async () => 'Herons are wading birds. They catch fish.'), getDefaultTitle: () => 'Leveled Text', ...extra };
+   }
+   it('does nothing at the current level with no choices', async () => {
+     const d = deps();
+@@ -297,17 +369,18 @@ describe('the adaptation helper', () => {
+     expect(prompt).toContain('explain it briefly in plain words');
+     expect(prompt).toContain('Keep these essential terms exactly as written; do not replace or simplify them: wading birds.');
+     expect(prompt).toContain('Keep the overall difficulty the same');
+-    expect(result).toMatchObject({ status: 'preview', resourceId: 'r1', baseData: TEXT, data: 'Herons are birds that wade. They eat fish.' });
++    expect(result).toMatchObject({ status: 'preview', resourceId: 'r1', baseData: TEXT, data: 'Herons are wading birds. They catch fish.' });
+     expect(d.setGeneratedContent).not.toHaveBeenCalled();
+     expect(d.setComplexityLevel).not.toHaveBeenCalled();
+   });
+   it('applies a previewed version without asking the model again', async () => {
+-    const d = deps({ adaptationPlan: { apply: { resourceId: 'r1', baseData: TEXT, data: 'Previewed text.', config: { language: 'English' }, changeLabel: 'Adjusted' } } });
++    const preview = await helpers.handleComplexityAdjustment(deps({ adaptationPlan: { preview: true, options: { keepTerms: ['wading birds'] } } }));
++    const d = deps({ adaptationPlan: { apply: preview } });
+     const result = await helpers.handleComplexityAdjustment(d);
+     expect(d.generateBilingualText).not.toHaveBeenCalled();
+     const update = d.setGeneratedContent.mock.calls[0][0];
+-    expect(update(d.generatedContent).data).toBe('Previewed text.');
+-    expect(result).toMatchObject({ status: 'applied', previousId: 'r1', previousData: TEXT, data: 'Previewed text.' });
++    expect(update(d.generatedContent).data).toBe(preview.data);
++    expect(result).toMatchObject({ status: 'applied', previousId: 'r1', previousData: TEXT, data: preview.data });
+   });
+   it('refuses a preview made for different text', async () => {
+     const d = deps({ adaptationPlan: { apply: { resourceId: 'r1', baseData: 'Older text.', data: 'Previewed text.' } } });
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index 20a64b45a..743c33db3 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -3594,27 +3594,42 @@
+     var [adaptUndo, setAdaptUndo] = React.useState(null);
+     var [adaptNotice, setAdaptNotice] = React.useState('');
+     var adaptPreviewRef = React.useRef(null);
+-    React.useEffect(function () { setAdaptPreview(null); }, [generatedContent?.id, generatedContent?.data]);
++    React.useEffect(function () { setAdaptPreview(null); }, [generatedContent?.id, generatedContent?.data, complexityLevel, adaptOptions.shorterSentences, adaptOptions.explainVocabulary, adaptOptions.keepTerms]);
+     React.useEffect(function () { if (adaptPreview && adaptPreviewRef.current) adaptPreviewRef.current.focus(); }, [!!adaptPreview]);
+-    var adaptTerms = adaptOptions.keepTerms.split(/[,;\n]/).map(term => term.trim()).filter(Boolean);
++    var adaptVocabulary = window.AlloModules?.GenerationHelpers?.preservedVocabulary;
++    var adaptTermInput = adaptVocabulary?.parseInput ? adaptVocabulary.parseInput(adaptOptions.keepTerms) : { valid: !adaptOptions.keepTerms.trim(), terms: [] };
++    var adaptTerms = adaptTermInput.terms;
++    var adaptTermCheck = adaptTermInput.valid && adaptVocabulary?.normalize ? adaptVocabulary.normalize(adaptTerms) : null;
++    var adaptTermError = !adaptTermInput.valid ? (adaptTermInput.reason || 'Essential-term validation is unavailable. Reload before previewing.')
++      : adaptTermCheck && !adaptTermCheck.valid ? adaptVocabulary.feedback(adaptTermCheck) : '';
++    var currentAdaptOptions = () => ({ shorterSentences: adaptOptions.shorterSentences, explainVocabulary: adaptOptions.explainVocabulary, keepTerms: adaptTerms });
+     var adaptHasOptions = adaptOptions.shorterSentences || adaptOptions.explainVocabulary || adaptTerms.length > 0;
+     var adaptUndoAvailable = !!adaptUndo && (adaptUndo.keptOriginal ? generatedContent?.id === adaptUndo.newId : generatedContent?.id === adaptUndo.previousId && generatedContent?.data !== adaptUndo.previousData && (adaptUndo.appliedData == null || generatedContent?.data === adaptUndo.appliedData));
+     async function prepareAdaptation() {
+       if (typeof handleComplexityAdjustment !== 'function') return;
++      if (adaptTermError) { setAdaptNotice(adaptTermError); return; }
+       var before = { id: generatedContent.id, data: generatedContent.data, kept: !!saveOriginalOnAdjust };
+       setAdaptNotice(''); setAdaptPreview(null);
+-      var result = await handleComplexityAdjustment({ preview: true, options: { shorterSentences: adaptOptions.shorterSentences, explainVocabulary: adaptOptions.explainVocabulary, keepTerms: adaptTerms } });
+-      if (result && result.status === 'preview') { setAdaptPreview(result); return; }
++      var result = await handleComplexityAdjustment({ preview: true, options: currentAdaptOptions() });
++      if (result && result.status === 'rejected') { setAdaptNotice(result.message || 'Current text kept. Essential terms could not be verified.'); return; }
++      if (result && result.status === 'preview') {
++        if (adaptTerms.length && (!result.vocabulary?.valid || result.vocabulary.version !== 1)) {
++          setAdaptNotice('Current text kept. Essential terms could not be verified. Reload and preview again.'); return;
++        }
++        setAdaptPreview(result); return;
++      }
+       // A host without previews applies straight away; still offer the way back.
+       if (!result) setAdaptUndo({ previousId: before.id, previousData: before.data, keptOriginal: false, appliedData: null });
+     }
+     async function applyAdaptation() {
+       var previousData = generatedContent.data;
+-      var result = await handleComplexityAdjustment({ apply: adaptPreview });
++      var result = await handleComplexityAdjustment({ apply: adaptPreview, options: currentAdaptOptions() });
+       if (result && result.status === 'applied') {
+         setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data == null ? null : result.data });
+         setAdaptPreview(null);
+         setAdaptNotice(viewText('simplified.adapt_applied', 'Change applied. You can go back to the previous version.'));
++      } else if (result && result.status === 'rejected') {
++        setAdaptPreview(null); setAdaptNotice(result.message || 'Current text kept. Essential terms could not be verified.');
+       } else if (result && result.status === 'stale') setAdaptPreview(null);
+     }
+     function undoAdaptation() {
+@@ -3634,9 +3649,10 @@
+         <fieldset className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold uppercase tracking-wide text-indigo-700">{viewText('simplified.adapt_also', 'Also change')}</legend>
+           {check('shorterSentences', viewText('simplified.adapt_shorter', 'Shorter sentences'))}
+           {check('explainVocabulary', viewText('simplified.adapt_explain_vocab', 'Explain unfamiliar vocabulary'))}
+-          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id="simplified-adapt-terms-hint" className="block text-xs font-normal text-slate-600">{viewText('simplified.adapt_keep_terms_hint', 'Separate terms with commas. They stay exactly as written.')}</span><input type="text" data-adapt-keep-terms aria-describedby="simplified-adapt-terms-hint" value={adaptOptions.keepTerms} disabled={isProcessing} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id="simplified-adapt-terms-hint" className="block text-xs font-normal text-slate-600">{'Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.'}</span><input type="text" data-adapt-keep-terms aria-describedby="simplified-adapt-terms-hint simplified-adapt-terms-error" aria-invalid={!!adaptTermError} value={adaptOptions.keepTerms} disabled={isProcessing} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          <p id="simplified-adapt-terms-error" role={adaptTermError ? 'alert' : undefined} className={adaptTermError ? 'text-sm text-red-800' : 'sr-only'}>{adaptTermError}</p>
+         </fieldset>
+-        <div className="text-center"><button type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
++        <div className="text-center"><button type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || !!adaptTermError || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
+         {adaptPreview && <section ref={adaptPreviewRef} tabIndex={-1} data-adaptation-preview aria-labelledby="simplified-adapt-preview-title" className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+           <h4 id="simplified-adapt-preview-title" className="font-bold text-indigo-950">{viewText('simplified.adapt_preview_title', 'Preview of the change')}</h4>
+           <p className="text-xs text-slate-700">{diff ? viewText('simplified.adapt_preview_hint', 'Removed words are struck through and new words are underlined. Nothing changes until you apply it.') : viewText('simplified.adapt_preview_plain', 'The proposed text is shown below. Nothing changes until you apply it.')}</p>

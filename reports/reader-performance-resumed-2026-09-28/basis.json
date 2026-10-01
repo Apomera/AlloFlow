@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-09-29T03:33:04.238Z",
+  "primaryHead": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "sourceHashes": {
+    "view_simplified_source.jsx": "9431eee6d1b44ed67ccc02d3992c09c22831561147ff37ec263458d97758c04b",
+    "immersive_reader_source.jsx": "8c3d4943fcbbfe2e1fc3dbd0102de787879bfc1075aedaf578ca11368b4493ca",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "reader_place_store.js": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3",
+    "reader_support_drafts.js": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace",
+    "ui_strings.js": "e9fb8b84f486ca6a871679eb41371f9b4bdc422023030a925a3cfa6e5ace328c"
+  },
+  "oldCandidate": "../reader-performance-current"
+}

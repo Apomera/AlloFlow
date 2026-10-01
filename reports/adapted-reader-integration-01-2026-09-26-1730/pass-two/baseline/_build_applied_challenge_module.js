@@ -1,0 +1,171 @@
+#!/usr/bin/env node
+/** Build applied_challenge_module.js from applied_challenge_source.jsx. */
+
+const { execFileSync } = require('child_process');
+const { transformSync } = require('esbuild');
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = __dirname;
+const SOURCE = path.join(ROOT, 'applied_challenge_source.jsx');
+const OUTPUT = path.join(ROOT, 'applied_challenge_module.js');
+const PUBLIC = path.join(ROOT, 'desktop', 'web-app', 'public', 'applied_challenge_module.js');
+
+if (!fs.existsSync(SOURCE)) {
+  console.error('[AppliedChallenge] Source not found:', SOURCE);
+  process.exit(1);
+}
+
+let compiled = '';
+try {
+  compiled = transformSync('/* global React */\n' + fs.readFileSync(SOURCE, 'utf8'), {
+    loader: 'jsx',
+    format: 'esm',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+    target: 'es2020',
+  }).code.replace(/\/\*.*global.*\*\/\n/g, '').trim();
+} catch (error) {
+  console.error('[AppliedChallenge] esbuild compilation failed');
+  console.error(error && error.message ? error.message : error);
+  process.exit(1);
+}
+
+const outputCode = [
+  '/** AlloFlow Applied Challenge Studio module. Generated from applied_challenge_source.jsx. */',
+  '(function() {',
+  '\'use strict\';',
+  'if (window.AlloModules && window.AlloModules.AppliedChallengeModule) { return; }',
+  'var React = window.React;',
+  'if (!React) { console.error(\'[AppliedChallenge] React not found on window\'); return; }',
+  compiled,
+  'window.AlloModules = window.AlloModules || {};',
+  'window.AlloModules.AppliedChallengePanel = AppliedChallengePanel;',
+  'window.AlloModules.AppliedChallengeView = AppliedChallengeView;',
+  'window.AlloModules.AppliedChallenge = {',
+  '  APPLIED_CHALLENGE_FAMILIES: APPLIED_CHALLENGE_FAMILIES,',
+  '  stages: APPLIED_CHALLENGE_STAGES,',
+  '  normalize: normalizeAppliedChallengeData,',
+  '  normalizePlan: normalizeAppliedChallengePlan,',
+  '  generationIssues: appliedChallengeGenerationIssues,',
+  '  APPLIED_CHALLENGE_AGENCY_MODES: APPLIED_CHALLENGE_AGENCY_MODES,',
+  '  APPLIED_CHALLENGE_SCOPES: APPLIED_CHALLENGE_SCOPES,',
+  '  APPLIED_CHALLENGE_EVIDENCE_STATUSES: APPLIED_CHALLENGE_EVIDENCE_STATUSES,',
+  '  APPLIED_CHALLENGE_VALIDATION_METHODS: APPLIED_CHALLENGE_VALIDATION_METHODS,',
+  '  APPLIED_CHALLENGE_VALIDATION_SOURCES: APPLIED_CHALLENGE_VALIDATION_SOURCES,',
+  '  APPLIED_CHALLENGE_VALIDATION_DISPOSITIONS: APPLIED_CHALLENGE_VALIDATION_DISPOSITIONS,',
+  '  APPLIED_CHALLENGE_VALIDATION_OUTCOMES: APPLIED_CHALLENGE_VALIDATION_OUTCOMES,',
+  '  APPLIED_CHALLENGE_VALIDATION_DECISIONS: APPLIED_CHALLENGE_VALIDATION_DECISIONS,',
+  '  APPLIED_CHALLENGE_EVIDENCE_MODES: APPLIED_CHALLENGE_EVIDENCE_MODES,',
+  '  APPLIED_CHALLENGE_WORKSPACE_PHASES: APPLIED_CHALLENGE_WORKSPACE_PHASES,',
+  '  APPLIED_CHALLENGE_SELF_CHECK_RATINGS: APPLIED_CHALLENGE_SELF_CHECK_RATINGS,',
+  '  exportModel: appliedChallengeExportModel,',
+  '  renderPreset: renderAppliedChallengePreset,',
+  '  submissionResourceId: appliedChallengeSubmissionResourceId,',
+  '  fromSubmission: appliedChallengeFromSubmission,',
+  '  phaseLabel: appliedChallengePhaseLabel,',
+  '  familyText: appliedChallengeFamilyText,',
+  '  feedbackStatusLabel: appliedChallengeFeedbackStatusLabel,',
+  '  coverageText: appliedChallengeCoverageText,',
+  '  _testing: {',
+  '    normalizeAppliedReasoningReferences, appliedReasoningSource, appliedReasoningReferenceState, appliedChallengeAttachNoteReference,',
+  '    appliedChallengeReviewFollowups: appliedChallengeReviewFollowups,',
+  '    appliedChallengeReviewTarget: appliedChallengeReviewTarget,',
+  '    appliedChallengeEvidenceHasNotes: appliedChallengeEvidenceHasNotes,',
+  '    appliedChallengeAttachReference: appliedChallengeAttachReference,',
+  '    appliedChallengeEvidenceLinks: appliedChallengeEvidenceLinks,',
+  '    normalizeAppliedChallengeSearchResults: normalizeAppliedChallengeSearchResults,',
+  '    appliedChallengeOutsideReference: appliedChallengeOutsideReference,',
+  '    AppliedChallengeSourceSearch: AppliedChallengeSourceSearch,',
+  '    appliedChallengeSourceReview: appliedChallengeSourceReview,',
+  '    appliedChallengeFeedbackContext: appliedChallengeFeedbackContext,',
+  '    appliedChallengeCoverageText: appliedChallengeCoverageText,',
+  '    normalizeAppliedChallengeCoverage: normalizeAppliedChallengeCoverage,',
+  '    appliedChallengeQualityContext: appliedChallengeQualityContext,',
+  '    buildAppliedChallengeQualityPrompt: buildAppliedChallengeQualityPrompt,',
+  '    parseAppliedChallengeQualityReview: parseAppliedChallengeQualityReview,',
+  '    normalizeAppliedChallengeFamily: normalizeAppliedChallengeFamily,',
+  '    appliedChallengeReferenceItems: appliedChallengeReferenceItems,',
+  '    appliedChallengeFeedbackOutdated: appliedChallengeFeedbackOutdated,',
+  '    appliedChallengeGenerationIssues: appliedChallengeGenerationIssues,',
+  '    normalizeAppliedChallengeAgencyMode: normalizeAppliedChallengeAgencyMode,',
+  '    normalizeAppliedChallengeScope: normalizeAppliedChallengeScope,',
+  '    normalizeAppliedChallengeBrief: normalizeAppliedChallengeBrief,',
+  '    normalizeAppliedChallengeSupports: normalizeAppliedChallengeSupports,',
+  '    normalizeAppliedChallengeWorkspace: normalizeAppliedChallengeWorkspace,',
+  '    normalizeAppliedChallengeEvidenceLedger: normalizeAppliedChallengeEvidenceLedger,',
+  '    normalizeAppliedChallengeStressTest: normalizeAppliedChallengeStressTest,',
+  '    normalizeAppliedChallengeValidationCycles: normalizeAppliedChallengeValidationCycles,',
+  '    normalizeAppliedChallengeSources: normalizeAppliedChallengeSources,',
+  '    appliedChallengeSourceCaptureCheck: appliedChallengeSourceCaptureCheck,',
+  '    appliedChallengeSourceConnection: appliedChallengeSourceConnection,',
+  '    normalizeAppliedChallengeData: normalizeAppliedChallengeData,',
+  '    appliedChallengeFeedbackReady: appliedChallengeFeedbackReady,',
+  '    appliedChallengeHasResponse: appliedChallengeHasResponse,',
+  '    appliedChallengeReviewItems: appliedChallengeReviewItems,',
+  '    appliedChallengeStressTestReady: appliedChallengeStressTestReady,',
+  '    appliedChallengeWorkspacePromptSnapshot: appliedChallengeWorkspacePromptSnapshot,',
+  '    appliedChallengeEvidenceLedgerPromptSnapshot: appliedChallengeEvidenceLedgerPromptSnapshot,',
+  '    appliedChallengeCoachingFingerprint: appliedChallengeCoachingFingerprint,',
+  '    appliedChallengeHashText: appliedChallengeHashText,',
+  '    appliedChallengeDraftFingerprint: appliedChallengeDraftFingerprint,',
+  '    appliedChallengeRequestFingerprint: appliedChallengeRequestFingerprint,',
+  '    appliedChallengeWorkspaceProgress: appliedChallengeWorkspaceProgress,',
+  '    appliedChallengeEvidenceLedgerProgress: appliedChallengeEvidenceLedgerProgress,',
+  '    appliedChallengeValidationCycleProgress: appliedChallengeValidationCycleProgress,',
+  '    appliedChallengeValidationCyclesProgress: appliedChallengeValidationCyclesProgress,',
+  '    appliedChallengeValidationCyclesPromptSnapshot: appliedChallengeValidationCyclesPromptSnapshot,',
+  '    appliedChallengePromptContextSnapshot: appliedChallengePromptContextSnapshot,',
+  '    buildAppliedChallengeHintPrompt: buildAppliedChallengeHintPrompt,',
+  '    buildAppliedChallengeStressTestPrompt: buildAppliedChallengeStressTestPrompt,',
+  '    buildAppliedChallengeFeedbackPrompt: buildAppliedChallengeFeedbackPrompt,',
+  '    parseAppliedChallengeHint: parseAppliedChallengeHint,',
+  '    parseAppliedChallengeStressTest: parseAppliedChallengeStressTest,',
+  '    parseAppliedChallengeFeedback: parseAppliedChallengeFeedback,',
+  '    finalizeAppliedChallengeFeedback: finalizeAppliedChallengeFeedback,',
+  '    appliedChallengeVisiblePhases: appliedChallengeVisiblePhases,',
+  '    appliedChallengePhaseLabel: appliedChallengePhaseLabel,',
+  '    appliedChallengeExportModel: appliedChallengeExportModel,',
+  '    appliedChallengeSelfCheckItems: appliedChallengeSelfCheckItems,',
+  '    appliedChallengeSubmissionResourceId: appliedChallengeSubmissionResourceId,',
+  '    appliedChallengeFromSubmission: appliedChallengeFromSubmission,',
+  '    appliedChallengeSelfCheckProgress: appliedChallengeSelfCheckProgress,',
+  '    normalizeAppliedChallengeCriteriaCheck: normalizeAppliedChallengeCriteriaCheck,',
+  '    normalizeAppliedChallengeTeacherComment: normalizeAppliedChallengeTeacherComment,',
+  '    appliedChallengeFamilyText: appliedChallengeFamilyText,',
+  '    appliedChallengeAgencyText: appliedChallengeAgencyText,',
+  '    appliedChallengeScopeText: appliedChallengeScopeText,',
+  '    appliedChallengeFeedbackStatusLabel: appliedChallengeFeedbackStatusLabel,',
+  '    _apsT: _apsT,',
+  '    _apsFill: _apsFill',
+  '  }',
+  '};',
+  'window.AlloModules.AppliedChallengeModule = true;',
+  '})();',
+  '',
+].join('\n');
+
+if (process.argv.includes('--check')) {
+  const stale = [OUTPUT, PUBLIC].filter(file => !fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== outputCode);
+  if (stale.length) { console.error('[AppliedChallenge] Stale modules: ' + stale.join(', ')); process.exit(1); }
+  console.log('[AppliedChallenge] Source and generated modules are fresh.');
+  process.exit(0);
+}
+function writeGenerated(file) {
+  const temporary = file + '.next-build';
+  fs.writeFileSync(temporary, outputCode, 'utf8');
+  fs.renameSync(temporary, file);
+}
+writeGenerated(OUTPUT);
+fs.mkdirSync(path.dirname(PUBLIC), { recursive: true });
+writeGenerated(PUBLIC);
+
+try {
+  execFileSync(process.execPath, ['-c', OUTPUT], { stdio: 'pipe' });
+} catch (error) {
+  console.error('[AppliedChallenge] syntax check failed');
+  console.error((error.stderr && error.stderr.toString()) || error.message);
+  process.exit(1);
+}
+
+console.log('[AppliedChallenge] Built root and public modules (' + outputCode.split('\n').length + ' lines)');

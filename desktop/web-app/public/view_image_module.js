@@ -84,6 +84,41 @@ function restoreSingleImage(item) {
     data: next
   };
 }
+
+// A learner never edits the teacher's annotations. The learner keeps only their own
+// drawings and the labels they added; the teacher's labels, captions, replacements and
+// challenge settings always come from the resource.
+function learnerOwnedAnnotations(annotations, teacher) {
+  const a = annotations || {},
+    teacherLabels = teacher && teacher.userLabels || {},
+    userLabels = {};
+  Object.keys(a.userLabels || {}).forEach(panel => {
+    const taken = new Set((teacherLabels[panel] || []).map(label => label && label.id));
+    const own = (a.userLabels[panel] || []).filter(label => label && !taken.has(label.id));
+    if (own.length) userLabels[panel] = own;
+  });
+  return {
+    drawings: a.drawings || {},
+    userLabels
+  };
+}
+function learnerPanelAnnotations(teacher, learner) {
+  const base = {
+      ...(teacher || {})
+    },
+    own = learner && typeof learner === 'object' ? learner : {};
+  const userLabels = {
+    ...(base.userLabels || {})
+  };
+  Object.keys(own.userLabels || {}).forEach(panel => {
+    userLabels[panel] = [...(userLabels[panel] || []), ...(own.userLabels[panel] || [])];
+  });
+  return {
+    ...base,
+    userLabels,
+    drawings: own.drawings || {}
+  };
+}
 function ImageView(props) {
   var t = props.t;
   var leveledTextLanguage = props.leveledTextLanguage;
@@ -251,7 +286,8 @@ function ImageView(props) {
     className: "hidden",
     "aria-label": t('common.upload_replacement_image') || 'Upload replacement image',
     onChange: uploadImage
-  }), /*#__PURE__*/React.createElement("div", {
+  }), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    "data-image-udl-goal": true,
     className: "bg-purple-50 p-3 rounded-lg border border-purple-100 mb-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-purple-800"
@@ -262,7 +298,7 @@ function ImageView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-400 shadow-md p-2 mb-4 relative overflow-hidden"
   }, generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1 ? /*#__PURE__*/React.createElement(VisualPanelGrid, {
-    key: generatedContent?.id || "default",
+    key: (generatedContent?.id || "default") + (isTeacherMode ? ':teacher' : ':learner'),
     visualPlan: generatedContent?.data.visualPlan,
     onRefinePanel: handleRefinePanel,
     onAnimatePanel: handleAnimatePanel,
@@ -272,7 +308,10 @@ function ImageView(props) {
     onReorderFrame: handleReorderPanelFrame,
     onSetPanelFps: handleSetPanelFps,
     onUpdateLabel: handleUpdateVisualLabel,
-    onUpdatePanel: handleUpdateVisualPanel,
+    onUpdatePanel: typeof handleUpdateVisualPanel === 'function' ? (panelIdx, patch, expect) => handleUpdateVisualPanel(panelIdx, patch, {
+      ...(expect || {}),
+      resourceId: generatedContent?.id
+    }) : undefined,
     language: leveledTextLanguage,
     onSpeak: handleSpeak,
     t: t,
@@ -294,15 +333,18 @@ function ImageView(props) {
       }]);
     },
     callGemini: callGemini,
-    initialAnnotations: generatedContent?.data.annotations,
+    initialAnnotations: isTeacherMode ? generatedContent?.data.annotations : learnerPanelAnnotations(generatedContent?.data.annotations, props.learnerAnnotations),
+    readOnlyDrawings: isTeacherMode ? undefined : generatedContent?.data?.annotations?.drawings,
+    onRetryFailed: isTeacherMode && typeof handleRestoreImage === 'function' ? () => handleRestoreImage() : undefined,
     onAnnotationsChange: annotations => {
-      updateImageResource(item => ({
+      // The teacher's annotations are the resource; a learner's marks go to their own work.
+      if (isTeacherMode) updateImageResource(item => ({
         ...item,
         data: {
           ...item.data,
           annotations
         }
-      }));
+      }));else if (typeof props.onLearnerAnnotationsChange === 'function') props.onLearnerAnnotationsChange(generatedContent?.id, learnerOwnedAnnotations(annotations, generatedContent?.data?.annotations));
     }
   }) : generatedContent?.data.imageUrl ? /*#__PURE__*/React.createElement("div", {
     style: {
@@ -437,7 +479,7 @@ function ImageView(props) {
     className: "font-bold text-slate-600"
   }, t('visuals.image_not_saved')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs"
-  }, t('visuals.image_stripped'))), /*#__PURE__*/React.createElement("button", {
+  }, t('visuals.image_stripped'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     onClick: handleRestoreImage,
     disabled: isProcessing,
     "aria-busy": isProcessing,
@@ -467,7 +509,7 @@ function ImageView(props) {
     type: "button",
     onClick: closeFind,
     className: "mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
-  }, t('common.close') || 'Close')), /*#__PURE__*/React.createElement("div", {
+  }, t('common.close') || 'Close')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6",
     "data-help-key": "visuals_prompt"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -558,6 +600,8 @@ function ImageView(props) {
 }
 ImageView.replaceSingleImage = replaceSingleImage;
 ImageView.restoreSingleImage = restoreSingleImage;
+ImageView.learnerPanelAnnotations = learnerPanelAnnotations;
+ImageView.learnerOwnedAnnotations = learnerOwnedAnnotations;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ImageView = ImageView;

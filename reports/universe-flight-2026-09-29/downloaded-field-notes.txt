@@ -1,0 +1,9 @@
+UNIVERSE EXPLORER — FIELD NOTES
+Generated 3D teaching scenes; sizes, colors, and brightness are illustrative.
+
+1. Amber survey
+Paused beside the amber landmark to inspect parallax.
+Saved: 2026-09-30T11:38:44.161Z
+Mode: explore | Scene: neighborhood
+Position (light-years): 0, 0, 0.06
+Path traveled: 0.06 light-years

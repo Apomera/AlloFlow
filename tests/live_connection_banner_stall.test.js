@@ -105,9 +105,11 @@ describe('the student poll loop reports into it', () => {
 
 describe('banners are painted above the full-screen student activities', () => {
   const zOf = (cls) => Number(/z-\[(\d+)\]/.exec(cls)[1]);
-  const firebaseBanner = /\{!isTeacherMode && activeSessionCode && \['connecting', 'retrying', 'failed', 'access-required'\]\.includes\(liveSessionConnectionState\.status\) && \(\s*<div role="status" aria-live="polite" className="([^"]+)"/.exec(anti);
-  const hostWarning = /\{showLiveHostWarning && !mbStudentStalled && liveSessionConnectionState\.status === 'connected' && \(\s*<div[^>]*?className=\{\s*'([^']+)'/.exec(anti);
-  const mailboxBanner = /\{!isTeacherMode && activeSessionCode && mbStudentStalled && [^\n]*\n\s*<div role="status" aria-live="polite" data-live-mailbox-stalled="true" className="([^"]+)">\s*<span>\{t\('live_connection\.retrying'\)\}<\/span>\s*<button type="button" onClick=\{\(\) => mbPollNowRef\.current\?\.\(\)\}[^>]*>\{t\('live_connection\.reconnect'\)\}<\/button>/.exec(anti);
+  // Each global banner steps aside (!studentQuizCovering) while the quiz shows
+  // the same notice inside its focus trap; see the next describe.
+  const firebaseBanner = /\{!isTeacherMode && activeSessionCode && !studentQuizCovering && \['connecting', 'retrying', 'failed', 'access-required'\]\.includes\(liveSessionConnectionState\.status\) && \(\s*<div role="status" aria-live="polite" className="([^"]+)"/.exec(anti);
+  const hostWarning = /\{showLiveHostWarning && !mbStudentStalled && !studentQuizCovering && liveSessionConnectionState\.status === 'connected' && \(\s*<div[^>]*?className=\{\s*'([^']+)'/.exec(anti);
+  const mailboxBanner = /\{!isTeacherMode && activeSessionCode && mbStudentStalled && !studentQuizCovering && [^\n]*\n\s*<div role="status" aria-live="polite" data-live-mailbox-stalled="true" className="([^"]+)">\s*<span>\{t\('live_connection\.retrying'\)\}<\/span>\s*<button type="button" onClick=\{\(\) => mbPollNowRef\.current\?\.\(\)\}[^>]*>\{t\('live_connection\.reconnect'\)\}<\/button>/.exec(anti);
   const quizOverlay = /const StudentQuizOverlay[\s\S]*?className=\{`fixed inset-0 z-\[(\d+)\]/.exec(readFileSync(resolve(ROOT, 'ui_modals_source.jsx'), 'utf8'));
   const escapeSrc = readFileSync(resolve(ROOT, 'teacher_source.jsx'), 'utf8');
   const escapeZ = Math.max(...[...slice(escapeSrc, 'const ClassicStudentEscapeRoomOverlay', 'const StudentEscapeRoomOverlay').matchAll(/z-\[(\d+)\]/g)].map(m => Number(m[1])));
@@ -137,12 +139,68 @@ describe('banners are painted above the full-screen student activities', () => {
   });
 });
 
+// 2026-09-27: the quiz traps focus, so a banner outside it was unreachable by
+// keyboard. The host passes the status in; the quiz shows it inside the trap
+// and reports when it covers the screen, and the global banners step aside.
+describe('the quiz shows the connection notice inside its focus trap', () => {
+  const mount = slice(anti, '            <StudentQuizOverlay\n', '            />');
+  it('passes every connection state into the quiz', () => {
+    expect(mount).toMatch(/connectionStatus=\{\['connecting', 'retrying', 'failed'\]\.includes\(liveSessionConnectionState\.status\) \? liveSessionConnectionState\.status/);
+    expect(mount).toContain("liveSessionConnectionState.code === 'unauthenticated' ? 'sign_in' : 'access'");
+    expect(mount).toContain(": mbStudentStalled ? 'mailbox-stalled'");
+    expect(mount).toContain("(liveHostConnectionState === 'stale' ? 'host-stale' : 'host-paused')");
+    expect(mount).toContain('onConnectionAction={studentConnectionAction}');
+    expect(mount).toContain('onCoverChange={setStudentQuizCovering}');
+  });
+  it('routes the quiz buttons to the same actions as the global banners', () => {
+    expect(anti).toMatch(/studentConnectionActionRef\.current = \(action\) => \{\s*if \(action === 'dismiss'\) \{ setDismissedLiveHostWarningKey\(liveHostWarningKey\); return; \}\s*if \(\['retrying', 'failed', 'access-required'\]\.includes\(liveSessionConnectionState\.status\)\) retryLiveSessionConnection\(\);\s*else if \(mbStudentStalled\) mbPollNowRef\.current\?\.\(\);/);
+    // A stable function, so the memoised quiz is not re-rendered by every host render.
+    expect(anti).toMatch(/const studentConnectionAction = useRef\(\(action\) => \{[^\n]*\}\)\.current;/);
+  });
+});
+
+// A 30 s module watchdog that fires LATE means the device slept or the tab was
+// throttled (13 modules "timed out" at once in a field report). Wait one more
+// round before declaring failure; lateness is measured from when each timer was
+// armed, because the fallback path re-arms without resetting startedAt.
+describe('module watchdog tolerates sleep and background tabs', () => {
+  const shouldWait = new Function(slice(anti, 'function _alloModuleWatchdogShouldWait(', 'function _alloMbStallTracker(') + '\nreturn _alloModuleWatchdogShouldWait;')();
+  const T = 1_000_000;
+  it('fails an on-time timer in a visible tab', () => {
+    expect(shouldWait(T - 30000, T, false, false)).toBe(false);
+    expect(shouldWait(T - 34000, T, false, false)).toBe(false);
+  });
+  it('waits once for a late timer or a hidden tab', () => {
+    expect(shouldWait(T - 40000, T, false, false)).toBe(true);
+    expect(shouldWait(T - 30000, T, true, false)).toBe(true);
+  });
+  it('waits only once', () => {
+    expect(shouldWait(T - 90000, T, true, true)).toBe(false);
+  });
+  it('treats a timer with no arm time as on time', () => {
+    expect(shouldWait(undefined, T, false, false)).toBe(false);
+  });
+  it('arms every watchdog with its own start time and re-arms once', () => {
+    const loader = slice(anti, '      var watchdogRearmed = false;', '      var clearModuleLoadWatchdog = function() {');
+    expect(loader).toMatch(/var expireModuleLoad = function\(armedAt\) \{/);
+    expect(loader).toMatch(/if \(_alloModuleWatchdogShouldWait\(armedAt, Date\.now\(\), typeof document !== 'undefined' && document\.hidden, watchdogRearmed\)\) \{\s*watchdogRearmed = true;\s*moduleLoadWatchdog = setTimeout\(expireModuleLoad, 30000, Date\.now\(\)\);\s*return;\s*\}\s*console\.error\('\[CDN-TIMEOUT\]/);
+    expect(loader).toContain('var moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000, Date.now());');
+    expect(anti).not.toContain('setTimeout(expireModuleLoad, 30000);');
+  });
+});
+
 describe('generated copies carry the same change', () => {
   it('App.jsx and src/AlloFlowANTI.txt match the host for the tracker and the banner', () => {
     const banner = slice(anti, '{!isTeacherMode && activeSessionCode && mbStudentStalled', '{!isTeacherMode && activeSessionCode && liveSessionConnectionState.status === \'connected\'');
+    const watchdogHelper = slice(anti, 'function _alloModuleWatchdogShouldWait(', 'function _alloMbStallTracker(');
+    const loader = slice(anti, '      var watchdogRearmed = false;', '      var clearModuleLoadWatchdog = function() {');
+    const quizMount = slice(anti, '            <StudentQuizOverlay\n', '            />');
     for (const copy of [appJsx, srcMirror]) {
       expect(copy).toContain(trackerSource);
       expect(copy).toContain(banner);
+      expect(copy).toContain(watchdogHelper);
+      expect(copy).toContain(loader);
+      expect(copy).toContain(quizMount);
     }
   });
 });

@@ -101,7 +101,9 @@ describe('Persona workspace extraction', () => {
     const p = render(fixture({ personaTeacherEditor: editor }));
     const dialog = host.querySelector('[role="dialog"]'); expect(dialog).toBe(p.personaTeacherEditorRef.current);
     expect(dialog.querySelector('select').value).toBe('Existing voice');
-    expect(button(t('persona.completed')).disabled).toBe(true);
+    // 2026-09-27 (I1): quest completion is learner progress, no longer stored on the
+    // resource, so a stale isCompleted flag must not lock the teacher's editor.
+    expect(button(t('persona.remove_quest')).disabled).toBe(false);
     act(() => Simulate.change(dialog.querySelector('input'), { target: { value: 'Computing pioneer' } }));
     expect(p.updatePersonaTeacherEditor).toHaveBeenCalledWith({ role: 'Computing pioneer' });
     act(() => button(t('persona.save_changes')).click()); expect(p.savePersonaTeacherEditor).toHaveBeenCalledTimes(1);

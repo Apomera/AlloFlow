@@ -1,0 +1,47 @@
+{
+  "at": "2026-09-26T22:29:46.182Z",
+  "browser": "Chromium",
+  "tests": [
+    {
+      "name": "two real tabs merge independent fields and receive storage events",
+      "passed": true,
+      "milliseconds": 301
+    },
+    {
+      "name": "two real tabs preserve competing drafts and reject stale conflict choices",
+      "passed": true,
+      "milliseconds": 286
+    },
+    {
+      "name": "actual reload prompt protects failed work; accepted reload restores only durable work",
+      "passed": true,
+      "milliseconds": 5239
+    },
+    {
+      "name": "queued real Web Lock save is guarded until the lock is released",
+      "passed": true,
+      "milliseconds": 399
+    },
+    {
+      "name": "denied reads and malformed records keep local text and durable bytes unchanged",
+      "passed": true,
+      "milliseconds": 141
+    },
+    {
+      "name": "native Chromium quota exhaustion retains the latest answer and the previous durable bytes",
+      "passed": true,
+      "milliseconds": 156
+    },
+    {
+      "name": "legacy direct writes are detected on retry without migrating a bookmark to revised text",
+      "passed": true,
+      "milliseconds": 276
+    },
+    {
+      "name": "real reader downloads readable anonymous recovery and keeps reload protection",
+      "passed": true,
+      "milliseconds": 827
+    }
+  ],
+  "limitation": "Legacy tabs do not participate in Web Locks. Detection on retry is tested; atomic safety against arbitrary legacy writers is not claimed."
+}

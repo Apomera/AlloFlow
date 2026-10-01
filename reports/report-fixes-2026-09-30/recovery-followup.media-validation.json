@@ -1,0 +1,11 @@
+{
+  "status": "Review-only proposal; actual host untouched",
+  "hostBeforeSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+  "proposalSha256": "e30f3936f2813c8df0db9b14dc6341da7f22923bcc50ea56e2fdf8b629e5d0d6",
+  "candidateSha256": "83d89bc0ceb31647a4e2cf6a2748067cf2f791a82d959d93545eac40029c7541",
+  "inMemoryApplyPassed": true,
+  "jsxSyntaxPassed": true,
+  "hostUnchanged": true,
+  "problem": "A session-only blob omission marks the prior snapshot text-only; later host save strips valid data-URI supports and records device-quota despite no quota failure.",
+  "behavior": "Only explicit user media removal persists as a host stripping policy. Subsequent saves attempt valid media; real quota failures still use the existing saveWithQuotaFallback ladder."
+}

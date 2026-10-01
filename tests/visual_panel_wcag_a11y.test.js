@@ -13,8 +13,8 @@ describe('Visual Panel WCAG controls', () => {
   });
 
   it('uses explicit non-submit types for every native button', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(48);
-    expect(source.match(/\btype="button"/g)).toHaveLength(48);
+    expect(source.match(/<button\b/g)).toHaveLength(49);
+    expect(source.match(/\btype="button"/g)).toHaveLength(49);
   });
 
   it('uses persistent native removal controls for every editable label type', () => {

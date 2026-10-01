@@ -1,0 +1,56 @@
+{
+  "browserSuite": {
+    "passed": 22,
+    "lastRun": "browser/.last-run.json"
+  },
+  "finalRefresh": {
+    "passed": 2,
+    "lastRun": "browser-final-refresh/.last-run.json"
+  },
+  "viewportWidths": [
+    1000,
+    390,
+    320
+  ],
+  "browserErrors": 0,
+  "documentHorizontalOverflow": false,
+  "pdf": {
+    "pages": 2,
+    "charactersByPage": [
+      1413,
+      2180
+    ],
+    "requiredEvidencePresent": [
+      "Current design crossing test",
+      "Saved design comparison",
+      "Saved crossing evidence",
+      "I predict that a thicker section",
+      "The whole crossing met the target",
+      "Sources:"
+    ],
+    "lastPageUnusedBackground": [
+      255,
+      255,
+      255
+    ],
+    "renders": [
+      "portfolio-page-1.png",
+      "portfolio-page-2.png"
+    ]
+  },
+  "bucklingGeometry": {
+    "intervalM": [
+      3,
+      33
+    ],
+    "bowedTopChordMembers": [
+      "TC0",
+      "TC1",
+      "TC2",
+      "TC3",
+      "TC4"
+    ],
+    "geometryUnitTestsPassed": 5,
+    "illustrativeDeformation": true
+  }
+}

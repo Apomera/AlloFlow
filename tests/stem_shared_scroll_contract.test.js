@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { parse } from 'acorn';
 
+// desktop/web-app/build/ is a gitignored build output: a fresh checkout (CI) has none, and reading
+// it at collection time threw ENOENT and failed the whole file. Those two copies are checked only
+// once they have been built; otherwise their suites are reported as skipped. The committed copies
+// are always required.
+const BUILD_HOSTS = [
+  'desktop/web-app/build/stem_lab/stem_lab_module.js',
+  'desktop/web-app/build/stem_lab_module.js',
+];
 const HOSTS = [
   'stem_lab/stem_lab_module.js',
   'desktop/web-app/public/stem_lab/stem_lab_module.js',
   'desktop/web-app/public/stem_lab_module.js',
-  'desktop/web-app/build/stem_lab/stem_lab_module.js',
-  'desktop/web-app/build/stem_lab_module.js',
+  ...BUILD_HOSTS,
 ];
 
 function findScrollRegionCall(source) {
@@ -44,8 +51,10 @@ function findScrollRegionCall(source) {
   return null;
 }
 
-describe.each(HOSTS)('shared STEM scrolling contract — %s', (host) => {
-  const source = readFileSync(host, 'utf8');
+for (const host of HOSTS) {
+const unbuilt = BUILD_HOSTS.includes(host) && !existsSync(host);
+describe.skipIf(unbuilt)(`shared STEM scrolling contract — ${host}${unbuilt ? ' (skipped: gitignored build output not present)' : ''}`, () => {
+  const source = unbuilt ? '' : readFileSync(host, 'utf8');
 
   it('bounds the modal shell independently of injected utility CSS', () => {
     const shellStart = source.indexOf('className: "stem-lab-modal-shell');
@@ -88,3 +97,4 @@ describe.each(HOSTS)('shared STEM scrolling contract — %s', (host) => {
     expect(regionCall.end).toBeGreaterThan(pluginRenderer);
   });
 });
+}

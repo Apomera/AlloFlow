@@ -1,0 +1,19 @@
+{
+  "recordedAt": "2026-09-29T04:16:16.293Z",
+  "scratch": "C:/tmp/tyler-history-panel-mutant-XFBHbO",
+  "mutation": "Create panel hidden property forced to false",
+  "exitCode": 1,
+  "failed": 1,
+  "skipped": 5,
+  "candidateUnchanged": true,
+  "candidateHashes": {
+    "tests/history_navigation_lane_visual.test.js": "ba18ec622494bb40b0efc18cb30e04a78689a24bb92aaa54c70c5649460e7357",
+    "AlloFlowANTI.txt": "158e41e744c027bedd24821bcb63248e0466baa23400f592c0d0e7f7565ed72b",
+    "view_history_panel_source.jsx": "f60a5036653c3e045a05f53ad2b29d4ade98ef09cc9720a8a8aeb11735cb6669",
+    "view_history_panel_module.js": "875a75a84a9502c3396fc493933f35ce3f5812058dec7c0cf8ac18d20e67b487",
+    "desktop/web-app/public/view_history_panel_module.js": "875a75a84a9502c3396fc493933f35ce3f5812058dec7c0cf8ac18d20e67b487",
+    "view_sidebar_tabs_nav_source.jsx": "b193a81fbaff6723b919d3475686d7fce7f408918e951e7db1e9037b3dc73237",
+    "view_sidebar_tabs_nav_module.js": "c83eea2f35ac19157e8e2ee78ec096e7ed883845d89208f8c5505824a9c005cc",
+    "desktop/web-app/public/view_sidebar_tabs_nav_module.js": "c83eea2f35ac19157e8e2ee78ec096e7ed883845d89208f8c5505824a9c005cc"
+  }
+}

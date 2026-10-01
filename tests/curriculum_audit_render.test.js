@@ -194,7 +194,9 @@ function renderAuditTree(generatedContent = auditFixture(), extraProps = {}) {
   const View = window.AlloModules.AlignmentReportView;
   return View({
     generatedContent,
-    t: () => 'Curriculum audit summary',
+    // Like the app's t(): a known key resolves, an unknown one does not (2026-09-27: the
+    // view now routes its own chrome through t, so a stub answering every key would replace it all).
+    t: (key) => (key === 'a11y.curriculum_audit_summary' ? 'Curriculum audit summary' : key),
     ...extraProps,
   });
 }
@@ -468,20 +470,25 @@ describe('rendered curriculum audit report', () => {
     expect(textContent(tree)).toContain('Regenerate the curriculum audit');
   });
 
-  it('uses canonical language tags for new and legacy saved reports', () => {
+  it('tags the report with the language its prose was written in, not the student-content language', () => {
+    // 2026-09-27 (B1): auditLanguage records the student-content language, but the audit
+    // prompts never request it, so saved reports are English prose.
     const legacyFixture = auditFixture();
     legacyFixture.data.comprehensive.auditLanguage = 'Spanish (Latin America)';
     delete legacyFixture.data.comprehensive.auditLanguageTag;
-    expect(renderAuditTree(legacyFixture).props.lang).toBe('es');
+    expect(renderAuditTree(legacyFixture).props.lang).toBe('en');
 
     const currentFixture = auditFixture();
     currentFixture.data.comprehensive.auditLanguage = 'Portuguese';
     currentFixture.data.comprehensive.auditLanguageTag = 'pt-BR';
-    expect(renderAuditTree(currentFixture).props.lang).toBe('pt-BR');
+    expect(renderAuditTree(currentFixture).props.lang).toBe('en');
+
+    const recordedFixture = auditFixture();
+    recordedFixture.data.comprehensive.reportLanguageTag = 'pt-BR';
+    expect(renderAuditTree(recordedFixture).props.lang).toBe('pt-BR');
 
     const unknownFixture = auditFixture();
-    unknownFixture.data.comprehensive.auditLanguage = 'All Selected Languages';
-    delete unknownFixture.data.comprehensive.auditLanguageTag;
+    unknownFixture.data.comprehensive.reportLanguage = 'All Selected Languages';
     expect(renderAuditTree(unknownFixture).props.lang).toBe('und');
   });
 

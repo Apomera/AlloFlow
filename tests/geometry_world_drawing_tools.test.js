@@ -15,7 +15,7 @@ beforeAll(()=>{
   const start=source.indexOf('        // Atomic student construction:'),end=source.indexOf('        // End bounded drawing previews.',start);
   if(start<0 || end<0)throw Error('Production drawing implementation is not installed');
   const history=source.slice(source.indexOf('        var MAX_UNDO = 200;'),source.indexOf('        engine.undo = function()'));
-  const deps={engine,THREE,MAX_BLOCKS:1500,BLOCK_TYPES:[{id:'stone',color:0x998877},{id:'wood',color:0x886644}],BLOCK_SHAPES:[{id:'cube'},{id:'halfB'},{id:'halfA'},{id:'quarter'}],createShapeGeometry:makeShape,upd:(k,v)=>f.updates.push({key:k,value:v}),announceToSR:f.effects.sr};
+  const deps={engine,THREE,MAX_BLOCKS:1500,BLOCK_TYPES:[{id:'stone',color:0x998877},{id:'wood',color:0x886644}],BLOCK_SHAPES:[{id:'cube'},{id:'halfB'},{id:'halfA'},{id:'quarter'}],createShapeGeometry:makeShape,upd:(k,v)=>f.updates.push({key:k,value:v}),announceToSR:f.effects.sr,__alloT:(k,fb)=>(fb==null?k:fb)};
   new Function(...Object.keys(deps),history+source.slice(start,end))(...Object.values(deps));
   return f;
  };

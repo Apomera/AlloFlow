@@ -1,0 +1,40 @@
+{
+  "checks": [
+    "The oil ingredient card opens the measuring routine without recording an oil addition.",
+    "Move ingredients uses the measured-oil flow too. Tilting fills the 3D cup and leveling stops flow; partial measures cannot enter the pan and can be returned without changing the cook.",
+    "Exactly 15 mL can be carried into the pan for two servings. Only the final transfer records the canonical oil action; native provenance survives reload.",
+    "An overfilled cup is visibly above the recipe line, cannot silently add an automatic recipe dose, and can be returned for another attempt.",
+    "The cup target doubles to 30 mL for four servings, and the measured transfer records the scaled recipe quantity.",
+    "The native keyboard shortcut focuses a one-milliliter control. The same exact measure enables an equivalent oil transfer and keeps simulated time unchanged.",
+    "The illustrated bottle supports actual tilt-and-hold gestures. Escape stops flow, and a fresh cook clears an unrecorded measure even when no cooking action has been taken.",
+    "Picking up the bottle pauses a running cook. Cancelling the carry leaves saved cooking state and evidence unchanged.",
+    "Real phone touch fills, levels and carries the measured cup into the pan. The page fits 390px and passes accessibility checks.",
+    "The pan quest opens oil measurement on the native bench and through keyboard controls; choosing a step never adds oil automatically.",
+    "Replay and finished cooks expose no leftover practice measure and cannot add oil.",
+    "Narrow screens and forced colors pass. Graphics loss cancels a native carry and leaves the measuring cup usable through text controls."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Native measured oil",
+      "violations": []
+    },
+    {
+      "name": "Keyboard measuring cup",
+      "violations": []
+    },
+    {
+      "name": "390px touch oil",
+      "violations": []
+    },
+    {
+      "name": "320px oil controls",
+      "violations": []
+    },
+    {
+      "name": "Forced-color oil controls",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

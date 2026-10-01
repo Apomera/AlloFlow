@@ -1,0 +1,54 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/scale_explorer_comparison.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer_comparison.test.js (4 tests) 6349ms
+     ✓ keeps exact endpoints, tenfold intermediate steps and a fractional final step for every catalog pair  6344ms
+stdout | tests/scale_explorer.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer.test.js (85 tests) 3990ms
+     ✓ starts state and refs from the link, and offers the copy control with a spoken name  387ms
+     ✓ the focus card offers "Compare this", which fills the first slot and moves focus to the second  515ms
+     ✓ the notation toggle reaches the card, the ladder, the selects and the stage, and persists  502ms
+     ✓ paints the caption and progress strip only while playing, and the controls carry pressed state  430ms
+     ✓ the population strip shares the scrubber axis, one column per power of ten, and is decorative to readers  485ms
+     ✓ setting the height persists, re-centres on the person, and can be undone  549ms
+     ✓ the Earth and the Sun point at their gallery images; nothing else does  459ms
+     ✓ a stop flies to its item, is announced with its line, and finishing a tour counts  545ms
+stdout | tests/scaleexplorer_fullscreen_state.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/scaleexplorer_fullscreen_state.test.js > Scale Explorer fullscreen control reports its own state > ships a named, unpressed button wired to a stage
+[StemLab] stem_tool_scaleexplorer.js loaded — Scale Explorer (powers of ten)
+
+ ✓ tests/scaleexplorer_fullscreen_state.test.js (4 tests) 3236ms
+     ✓ ships a named, unpressed button wired to a stage  1533ms
+     ✓ re-labels itself on entering, and on an Esc-style exit  738ms
+     ✓ makes the marked stage the fullscreen element, matched to the viewport  505ms
+stdout | tests/scale_explorer_inquiry.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer_inquiry.test.js (6 tests) 457ms
+     ✓ registers every themed title and reflection prompt in the available English catalogs  448ms
+stdout | tests/scale_explorer_drawing.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer_drawing.test.js (6 tests) 198ms
+stdout | tests/scale_explorer_scaling.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer_scaling.test.js (5 tests) 62ms
+stdout | tests/scale_explorer_notebook.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/scale_explorer_notebook.test.js (10 tests) 7ms
+
+ Test Files  7 passed (7)
+      Tests  120 passed (120)
+   Start at  11:18:06
+   Duration  25.74s (transform 160ms, setup 221ms, import 1.78s, tests 14.30s, environment 7.52s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/scale-explorer-descent/unit-results.json

@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:8688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:8688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1826:5 › birth comparison opens for a newborn and visits either real parent without losing the way back
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1870:5 › birth comparison on a phone supports keyboard parent round trips and honest legacy records
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1896:5 › birth comparison without WebGL pauses playback and returns from a parent on the habitat map
+[1A[2K  3 passed (2.0m)

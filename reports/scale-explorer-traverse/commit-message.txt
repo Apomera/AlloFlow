@@ -1,0 +1,5 @@
+Add geographic Everest terrain and free mountain exploration
+
+Render an 18 km elevation grid at true horizontal and vertical proportions, with alpine lighting and a sea-level datum. Add map dragging, direct terrain picking, keyboard movement, sampled elevations, and saved exploration positions.
+
+Validate terrain data, recover failed loads, release resources, and keep rendering after batched visibility updates. Include local assets, source attribution, reproducible terrain generation, and desktop mirrors.

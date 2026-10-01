@@ -40,6 +40,12 @@ const resolvePersonaSpeakingChar = (personaState, activeSpeaker, speakerName) =>
   ) || personaState.selectedCharacters.find((c) => c.voice === activeSpeaker) : personaState.selectedCharacter;
 };
 const READ_ALOUD_STORE_CONTENT_IDS = /* @__PURE__ */ new Set(["simplified-main", "faq-active"]);
+const READ_ALOUD_SOURCE_PANE_ID = "simplified-source";
+const readAloudScriptFormat = (item, fallback) => {
+  if (item && item.instructionalText && item.instructionalText.form === "same-text-supported") return "";
+  const saved = item && item.config && item.config.textFormat;
+  return typeof saved === "string" && saved ? saved : fallback || "";
+};
 const readAloudUnitText = (unit) => {
   if (unit && typeof unit === "object" && !Array.isArray(unit)) {
     return String(unit.text ?? unit.sentence ?? "");
@@ -1318,7 +1324,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     playbackRuntime.cleanup();
     return;
   }
-  const _isSequenceRead = !!contentId && (contentId === "simplified-main" || contentId === "adventure-active" || contentId === "faq-active" || contentId.startsWith("persona-message-"));
+  const _isSequenceRead = !!contentId && (contentId === "simplified-main" || contentId === READ_ALOUD_SOURCE_PANE_ID || contentId === "adventure-active" || contentId === "faq-active" || contentId.startsWith("persona-message-"));
   if (!_isSequenceRead && !sanitizeTtsText(effectiveText).replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{P}\p{S}\s]/gu, "")) {
     isPlayingRef.current = false;
     isSystemAudioActiveRef.current = false;
@@ -1368,7 +1374,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
       return;
     }
   }
-  if (contentId && (contentId === "simplified-main" || contentId === "adventure-active" || contentId === "faq-active" || contentId.startsWith("persona-message-"))) {
+  if (contentId && (contentId === "simplified-main" || contentId === READ_ALOUD_SOURCE_PANE_ID || contentId === "adventure-active" || contentId === "faq-active" || contentId.startsWith("persona-message-"))) {
     let cleanSentences = [];
     let sourceSentenceCount = null;
     const isTable = (p) => p.trim().startsWith("|") || p.includes("\n|");
@@ -1393,7 +1399,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     if (contentId === "adventure-active") {
       mode = "adventure";
       voiceMap = adventureState.voiceMap;
-    } else if (textFormat === "Podcast Script" && contentId === "simplified-main") {
+    } else if (contentId === "simplified-main" && readAloudScriptFormat(generatedContent, textFormat) === "Podcast Script") {
       mode = "script";
       voiceMap = { Alex: "Fenrir", Sam: "Aoede" };
     } else if (contentId === "faq-active") {
@@ -1902,6 +1908,9 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
     if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired");
   } catch (_) {
   }
+  const saveStillCurrent = () => typeof deps.isSaveRequestCurrent !== "function" || deps.isSaveRequestCurrent();
+  const cancelledSave = { ok: false, cancelled: true, reason: "save-context-changed", narration: "Save cancelled because the dialog or project changed. Save again to download the current project." };
+  if (!saveStillCurrent()) return cancelledSave;
   if (!saveFileName.trim()) return { ok: false, reason: "filename-required", narration: "A filename is required before saving." };
   let currentLog = [...studentProgressLog];
   if (saveType === "student") {
@@ -1940,10 +1949,10 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
     } else {
       currentLog.push(newLogEntry);
     }
-    setStudentProgressLog(currentLog);
   }
   const filename = saveFileName.trim().endsWith(".json") ? saveFileName.trim() : `${saveFileName.trim()}.json`;
   const resolvedBuilderDraft = saveType === "teacher" ? await Promise.resolve(deps.builderDraft || null) : null;
+  if (!saveStillCurrent()) return cancelledSave;
   let dataStr = "";
   const selEngagement = typeof window !== "undefined" && window.__alloflowSelEngagement || null;
   const birdLab = typeof window !== "undefined" && window.__alloflowBirdLab || null;
@@ -2224,9 +2233,12 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
       outName = _dot > 0 ? outName.slice(0, _dot) + "_CONFIDENTIAL" + outName.slice(_dot) : outName + "_CONFIDENTIAL";
     }
   }
-  if (deps.saveEncryptPassword && window.AlloModules && window.AlloModules.AlloCrypto) {
+  if (!saveStillCurrent()) return cancelledSave;
+  if (deps.saveEncryptPassword) {
     try {
-      const _env = await window.AlloModules.AlloCrypto.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
+      const cryptoApi = window.AlloModules && window.AlloModules.AlloCrypto;
+      if (typeof cryptoApi?.encryptJSON !== "function") throw new Error("Encryption is unavailable");
+      const _env = await cryptoApi.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
       dataStr = JSON.stringify(_env);
       if (!/\.enc(\.|$)/i.test(outName)) {
         const _d = outName.lastIndexOf(".");
@@ -2240,6 +2252,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
       return { ok: false, reason: "encryption-failed", narration: t("save.encrypt_failed") || "Could not encrypt the file. Save cancelled." };
     }
   }
+  if (!saveStillCurrent()) return cancelledSave;
   const blob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -2267,6 +2280,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
     return { ok: false, reason: "download-blocked", narration: _dlMsg };
   }
   addToast(`Project saved as ${outName}`, "success");
+  if (saveType === "student") setStudentProgressLog(currentLog);
   setLastJsonFileSave(Date.now());
   setIsSaveActionPulsing(false);
   setShowSaveModal(false);
@@ -2638,8 +2652,23 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
     if (window._DEBUG_PHASE_K) console.log("[PhaseK] translateResourceItem fired");
   } catch (_) {
   }
-  if (["image", "gemini-bridge", "audio", "udl-advice"].includes(item.type)) return item;
-  const dataStr = JSON.stringify(item.data);
+  if (["image", "gemini-bridge", "audio", "udl-advice"].includes(item.type)) throw new Error("This resource type has no text to translate.");
+  const media = [];
+  const isInlineMedia = (value) => typeof value === "string" && /^\s*data:/i.test(value);
+  const stripMedia = (value) => isInlineMedia(value) ? "__ALLO_MEDIA_" + (media.push(value) - 1) + "__" : Array.isArray(value) ? value.map(stripMedia) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, stripMedia(nested)])) : value;
+  const restoreMedia = (value, source) => {
+    if (typeof value === "string") {
+      const slot = value.match(/^__ALLO_MEDIA_(\d+)__$/);
+      return slot && media[Number(slot[1])] !== void 0 ? media[Number(slot[1])] : value;
+    }
+    if (!value || typeof value !== "object") return value;
+    const out = Array.isArray(value) ? value.map((nested, index) => restoreMedia(nested, source && source[index])) : Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, restoreMedia(nested, source && source[key])]));
+    if (source && typeof source === "object") Object.keys(source).forEach((key) => {
+      if (isInlineMedia(source[key]) && !isInlineMedia(out[key])) out[key] = source[key];
+    });
+    return out;
+  };
+  const dataStr = JSON.stringify(stripMedia(item.data));
   let prompt = "";
   if (item.type === "simplified") {
     let sourceText = typeof item.data === "string" ? item.data : "";
@@ -2686,10 +2715,11 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
     const _dirBody = _dirIsObj ? String(item.data.body || "") : String(item.data || "");
     const _dirLabels = _dirIsObj && Array.isArray(item.data.objectives) ? item.data.objectives.map((o) => String(o && o.label || "")) : [];
     const board = _dirIsObj && item.data.choiceBoard;
+    const _dirCards = board && typeof board === "object" ? Array.isArray(board.choices) ? board.choices : Array.isArray(board.items) ? board.items : [] : [];
     const choiceBoard = board && typeof board === "object" ? {
       title: String(board.title || ""),
       prompt: String(board.prompt || ""),
-      items: (Array.isArray(board.items) ? board.items : []).map((card) => ({ label: String(card.label || ""), description: String(card.description || "") }))
+      items: _dirCards.map((card) => ({ label: String(card && card.label || ""), description: String(card && card.description || "") }))
     } : null;
     prompt = `
               You are an expert translator for educators.
@@ -2716,9 +2746,11 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
     const result = await callGemini(prompt, item.type !== "simplified");
     let newData;
     if (item.type === "simplified") {
+      if (typeof result !== "string" || !result.trim()) throw new Error("The translation reply was empty.");
       newData = result;
     } else {
-      newData = JSON.parse(cleanJson(result));
+      newData = restoreMedia(JSON.parse(cleanJson(result)), item.data);
+      if (!newData || typeof newData !== "object") throw new Error("The translation reply was not usable.");
     }
     if (item.type === "quiz") {
       if (!newData.questions || !Array.isArray(newData.questions)) newData.questions = [];
@@ -2778,6 +2810,17 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
         else newData = [];
       }
     }
+    const contentUnits = (value) => Array.isArray(value) ? value.length : value && typeof value === "object" ? ["questions", "items", "branches", "problems", "events", "terms", "faqs", "ideas"].reduce((count, key) => count + (Array.isArray(value[key]) ? value[key].length : 0), 0) : 0;
+    if (item.type !== "simplified" && item.type !== "directions" && contentUnits(item.data) > 0 && contentUnits(newData) === 0) throw new Error("The translation reply was empty.");
+    const unverify = (value) => {
+      if (!value || typeof value !== "object") return value;
+      if (Array.isArray(value)) return value.map(unverify);
+      const out = Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, unverify(nested)]));
+      if (out.factVerified === true) out.factVerified = false;
+      if (typeof out.question === "string" && out.factCheck) out.keyCheck = { status: "unclear", suggestedAnswer: "", checkedKey: "" };
+      return out;
+    };
+    if (item.type !== "simplified") newData = unverify(newData);
     if (item.type === "directions") {
       const _dSrc = item.data;
       const _dIsObj = _dSrc && typeof _dSrc === "object" && !Array.isArray(_dSrc);
@@ -2789,14 +2832,17 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
         const board = _dSrc.choiceBoard;
         const translatedBoard = newData && newData.choiceBoard || {};
         const translatedText = (value, fallback) => typeof value === "string" && value.trim() ? value : fallback;
+        const cardKey = Array.isArray(board.choices) || !Array.isArray(board.items) ? "choices" : "items";
+        const { items: _staleItems, ...boardRest } = board;
         _dData.choiceBoard = {
-          ...board,
+          ...cardKey === "choices" && Array.isArray(_staleItems) && !_staleItems.length ? boardRest : board,
           title: translatedText(translatedBoard.title, board.title),
           prompt: translatedText(translatedBoard.prompt, board.prompt),
-          items: (Array.isArray(board.items) ? board.items : []).map((card, index) => {
+          ...Array.isArray(board[cardKey]) ? { [cardKey]: board[cardKey].map((card, index) => {
+            if (!card || typeof card !== "object") return card;
             const translatedCard = Array.isArray(translatedBoard.items) && translatedBoard.items[index] || {};
             return { ...card, label: translatedText(translatedCard.label, card.label), description: translatedText(translatedCard.description, card.description) };
-          })
+          }) } : {}
         };
       }
       return {
@@ -2814,7 +2860,7 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
     };
   } catch (e) {
     warnLog(`Translation failed for ${item.type}`, e);
-    return item;
+    throw e;
   }
 };
 const extractReflectionGroundingContext = (metadata) => {
@@ -2988,11 +3034,17 @@ const handleSaveReflection = async (deps) => {
       }, 45e3);
       gradingController?.signal?.addEventListener("abort", rejectCancelled, { once: true });
     });
+    let gradingCallError = null;
     const result = await Promise.race([
       callGemini(prompt, true, false, null, null, gradingController?.signal || null),
       gradingTimeoutPromise
-    ]);
+    ]).catch((error) => {
+      gradingCallError = error;
+      return null;
+    });
     if (!reflectionIsCurrent()) return;
+    if (gradingCallError && (gradingCallError.name === "AbortError" || /cancelled|aborted/i.test(gradingCallError.message || ""))) throw gradingCallError;
+    if (gradingCallError) warnLog("Reflection grading failed; saving without a score", gradingCallError);
     const parseGradingResult = (candidate) => {
       if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) {
         const isDirectGrading = ["score", "feedback", "xpBonus"].some((key) => Object.prototype.hasOwnProperty.call(candidate, key));
@@ -3130,10 +3182,11 @@ const handleSaveReflection = async (deps) => {
       xpEarned: totalXP,
       subjectName: persistedSubjectName
     });
+    if (gradingCallError) addToast(t("toasts.reflection_grade_error"), "warning");
   } catch (err) {
-    warnLog("Reflection grading failed", err);
+    warnLog("Reflection save failed", err);
     const wasCancelled = err?.name === "AbortError" || /cancelled|aborted/i.test(err?.message || "");
-    if (reflectionIsCurrent() && !wasCancelled) addToast(t("toasts.reflection_grade_error"), "error");
+    if (reflectionIsCurrent() && !wasCancelled) addToast(t("toasts.reflection_save_failed") || "Your reflection was not saved. Please submit it again.", "error");
   } finally {
     if (gradingTimeout) clearTimeout(gradingTimeout);
     if (gradingAbortRef?.current === gradingHandle) gradingAbortRef.current = null;

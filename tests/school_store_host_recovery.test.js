@@ -1,9 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { readHostSource } from './helpers/host_source.js';
 
 const files = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
-const read = file => readFileSync(resolve(process.cwd(), file), 'utf8');
+// The portal callbacks moved to host_handlers_source.jsx (09-13); the helper inlines them at their host shims.
+const read = file => readHostSource(file);
 const oldUrl = 'https://script.google.com/macros/s/FICTIONAL_OLD/exec';
 const newUrl = 'https://script.google.com/macros/s/FICTIONAL_NEW/exec';
 const key = 'allo_school_rewards_portal_url_v1';

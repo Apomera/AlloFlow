@@ -1,0 +1,72 @@
+{
+  "at": "2026-09-26T23:37:59.420Z",
+  "label": "pass2-15-offline",
+  "patch": "21f4467728425a2b7f7ab510a64045cbb90d1d1168f4d04f46a7357e2afbb33b",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "b7d2f7cd47f87c15324c0a6d1374e4fc879cb4ea5e0b65fdd3c8786f09f0776d",
+      "after": "68dc3d035fa27dba8988a3b39509bc812e7695667baef03cfb2f51435c7096b6",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/check_offline_storybook_recovery.cjs",
+      "targets": [
+        "dev-tools/check_offline_storybook_recovery.cjs"
+      ],
+      "before": "ff986287843150057670319d1daf52ca4390f0d3a4342c143e7b08bfe02c90dc",
+      "after": "b8b0a116df53063c28466f81a542b9740cd653371a782caff2fcaaf9cf52be15",
+      "changed": true
+    },
+    {
+      "target": "export_source.jsx",
+      "targets": [
+        "export_source.jsx"
+      ],
+      "before": "4d74b537e59dd1d7cfa7967ff9a1dfad2c216542429291df4f2ee1439147ed52",
+      "after": "49e21b76d9f59b1d1b7b87c906439c1d2e3d9f18ca8d411105fdf790aa14fc21",
+      "changed": true
+    },
+    {
+      "target": "read_aloud_artifact_audio_source.jsx",
+      "targets": [
+        "read_aloud_artifact_audio_source.jsx"
+      ],
+      "before": "81c27a4f2ef7fd9ca2af80d236f239ee9a953372bac7cee424440cef49cad1bd",
+      "after": "d7bb1b09fc1287978ad21367e110ae9742fc0922c657e503f3400216fc4ab8af",
+      "changed": true
+    },
+    {
+      "target": "tests/adventure_storybook_read_aloud_export.test.js",
+      "targets": [
+        "tests/adventure_storybook_read_aloud_export.test.js"
+      ],
+      "before": "aab147f1ce18ab8a270f550a74c73224c65cfdecbc9b90ebbb9602abbf5c3405",
+      "after": "e9dd8d794e19994607915d919a44a9fa7469fc88c9689379e362425807826936",
+      "changed": true
+    },
+    {
+      "target": "tests/offline_media_recovery.test.js",
+      "targets": [
+        "tests/offline_media_recovery.test.js"
+      ],
+      "before": "8a337149e332ae74390e51b9741e250150d67bb24835f2f69167e7e3982a9407",
+      "after": "7270cde53fa6696aef66e87cdda9466a2cf13c9b25e1373d3026aac744a5069c",
+      "changed": true
+    },
+    {
+      "target": "view_storybook_export_modal_source.jsx",
+      "targets": [
+        "view_storybook_export_modal_source.jsx"
+      ],
+      "before": "26b75e0505d89d077f4610597f31167e73073d7c917effbe57e7d0241ceb4f7c",
+      "after": "7ea0e65d98657a2f71d24433d7a9f2f7da9f22b52124b36f5892e134da4019c7",
+      "changed": true
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-26T22:09:25.269Z",
+  "label": "track07-reader",
+  "patch": "e839b8dbf5d9a22d9993dd9e98e3c82eabcc95455dc0f523778d10db7015623c",
+  "plans": [
+    {
+      "target": "tests/reader_place_review_adapt.test.js",
+      "targets": [
+        "tests/reader_place_review_adapt.test.js"
+      ],
+      "before": "29ada5748626c731bdfda621a4a3d777e665736895450f44e18885bb8151c522",
+      "after": "0ba5b53f35b6f90fe07c6023a5ecee14106ef3333c64d55d75e5768fad1834f8",
+      "changed": true
+    },
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "17abb5fd47438420c8a25ea4f69527b5b117f8ee8716ef1f49aaa8646fe98e1d",
+      "after": "cbfb31548a68bf0127ffc72a856b16dffbacda6327b9ced3065b0596b94f0123",
+      "changed": true
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "en": {
+    "resource_incomplete": "This saved resource is incomplete and could not be opened. Your current work is still available.",
+    "open_failed": "Could not open this saved resource. Check the connection and try again."
+  },
+  "fr": {
+    "resource_incomplete": "Cette ressource enregistrée est incomplète et n’a pas pu être ouverte. Votre travail actuel reste disponible.",
+    "open_failed": "Impossible d’ouvrir cette ressource enregistrée. Vérifiez la connexion et réessayez."
+  },
+  "es": {
+    "resource_incomplete": "Este recurso guardado está incompleto y no se pudo abrir. Tu trabajo actual sigue disponible.",
+    "open_failed": "No se pudo abrir este recurso guardado. Revisa la conexión e inténtalo de nuevo."
+  },
+  "ar": {
+    "resource_incomplete": "هذا المورد المحفوظ غير مكتمل وتعذّر فتحه. لا يزال عملك الحالي متاحًا.",
+    "open_failed": "تعذّر فتح هذا المورد المحفوظ. تحقّق من الاتصال وحاول مرة أخرى."
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "at": "2026-09-29T22:26:30.648Z",
+  "preview": {
+    "at": "2026-09-29T21:55:02.424Z",
+    "hostSha256": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "shellSha256": "c11aded1290d1d2b5e793c417e2fece35d210e265f59472ca1e5eda10ca225a5",
+    "js": "main.6e73f904.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "results": [
+    {
+      "role": "Parent",
+      "width": 390,
+      "errors": [],
+      "failure": "AssertionError [ERR_ASSERTION]: Dashboard should be available in the compact phone header",
+      "buttons": [
+        {
+          "text": "",
+          "label": "Dismiss"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": "Create",
+          "label": null
+        },
+        {
+          "text": "Preview",
+          "label": null
+        },
+        {
+          "text": "History",
+          "label": null
+        },
+        {
+          "text": "Upload",
+          "label": "Upload file"
+        },
+        {
+          "text": "Link",
+          "label": null,
+          "help": "source_link_btn"
+        },
+        {
+          "text": "Generate",
+          "label": null,
+          "help": "source_generate_btn"
+        },
+        {
+          "text": "📖Books",
+          "label": null,
+          "help": "source_books_btn"
+        },
+        {
+          "text": "Collapse",
+          "label": null
+        },
+        {
+          "text": "Show all tools",
+          "label": null
+        },
+        {
+          "text": "Recommended",
+          "label": null
+        },
+        {
+          "text": "Make accessible",
+          "label": null
+        },
+        {
+          "text": "Engage",
+          "label": null
+        },
+        {
+          "text": "Assess & deliver",
+          "label": null
+        },
+        {
+          "text": "All tools",
+          "label": null
+        },
+        {
+          "text": "Expand All",
+          "label": null
+        },
+        {
+          "text": " Universal Settings5th Grade · English",
+          "label": null
+        },
+        {
+          "text": " Analyze Source Material",
+          "label": null,
+          "help": "tool_analysis"
+        },
+        {
+          "text": " Word Helper",
+          "label": null,
+          "help": "tool_glossary"
+        },
+        {
+          "text": "",
+          "label": "More information"
+        },
+        {
+          "text": "",
+          "label": "More information"
+        },
+        {
+          "text": "Custom Instructions (Optional)",
+          "label": null
+        },
+        {
+          "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null,
+          "help": "sidebar_ai_setup_notice"
+        },
+        {
+          "text": "Generate Glossary ",
+          "label": null
+        },
+        {
+          "text": " Reading Story",
+          "label": null,
+          "help": "tool_simplified"
+        },
+        {
+          "text": "Custom Instructions (Optional)",
+          "label": null
+        },
+        {
+          "text": "Read original with supports",
+          "label": null
+        },
+        {
+          "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null,
+          "help": "sidebar_ai_setup_notice"
+        },
+        {
+          "text": "Create adapted companion ",
+          "label": null
+        },
+        {
+          "text": " Lesson Images",
+          "label": null,
+          "help": "tool_visual"
+        },
+        {
+          "text": " Assess",
+          "label": null,
+          "help": "tool_quiz"
+        },
+        {
+          "text": "Generate Family Guide",
+          "label": null,
+          "help": "tool_lesson_plan"
+        },
+        {
+          "text": "Assignment Directionsyou write it",
+          "label": null,
+          "help": "tool_directions"
+        },
+        {
+          "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null,
+          "help": "sidebar_ai_setup_notice"
+        },
+        {
+          "text": "Plan full packStart with a resource list you can review and edit before generati",
+          "label": "Plan Full Pack",
+          "help": "fullpack_generate"
+        }
+      ]
+    }
+  ]
+}

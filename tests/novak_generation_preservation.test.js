@@ -7,6 +7,10 @@ let dispatcher, contract, helpers, audit;
 beforeAll(() => {
   loadAlloModule('instructional_context_module.js');
   loadAlloModule('generate_dispatcher_module.js');
+  // The app loads the text parser before adaptations run; without it the
+  // pane and vocabulary checks fail closed and keep the old text.
+  loadAlloModule('pure_helpers_module.js');
+  loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('generation_helpers_module.js');
   loadAlloModule('content_engine_module.js');
   dispatcher = window.AlloModules.GenDispatcher;

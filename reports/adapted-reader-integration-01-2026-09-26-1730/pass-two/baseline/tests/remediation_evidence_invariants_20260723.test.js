@@ -1,0 +1,242 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const appSrc = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
+const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+function extractEvidenceHelpers() {
+  const start = src.indexOf('function _alloAiAuditHasFullCoverage');
+  const end = src.indexOf('function _alloDeriveVerificationState', start);
+  if (start < 0 || end < 0) throw new Error('canonical evidence helpers not found');
+  return new Function(`${src.slice(start, end)}
+    return {
+      fullAi: _alloAiAuditHasFullCoverage,
+      usableAi: _alloUsableCompleteAiAudit,
+      usableAxe: _alloUsableAxeAudit,
+      taggedVerdict: _alloTaggedPdfDeliveryVerdict,
+      ocrVerdict: _alloOcrTextLayerVerdict,
+      liveSignal: _alloLiveAbortSignalOrNull,
+      passComplete: _alloAutoFixPassHasCompleteEvidence,
+    };`)();
+}
+
+function extractOutcome(helpersSource) {
+  const start = src.indexOf('function _alloRemediationOutcome');
+  const end = src.indexOf('function _alloDistributionVerdict', start);
+  if (start < 0 || end < 0) throw new Error('canonical remediation outcome not found');
+  return new Function(`${helpersSource}
+    ${src.slice(start, end)}
+    return _alloRemediationOutcome;`)();
+}
+
+const helperStart = src.indexOf('function _alloAiAuditHasFullCoverage');
+const helperEnd = src.indexOf('function _alloTaggedPdfDeliveryVerdict', helperStart);
+const helpersSource = src.slice(helperStart, helperEnd);
+const evidence = extractEvidenceHelpers();
+const remediationOutcome = extractOutcome(helpersSource);
+
+const completeAi = (overrides = {}) => ({
+  score: 96,
+  issues: [],
+  chunksRequested: 10,
+  chunksAudited: 10,
+  _partialAudit: false,
+  ...overrides,
+});
+const cleanAxe = (overrides = {}) => ({
+  score: 100,
+  totalViolations: 0,
+  ...overrides,
+});
+const delivered = (ocrTextLayer) => ({
+  roundTrip: { ok: true, checks: [], warnings: [] },
+  postExportValidator: { summary: { overall: 'PASS' }, checks: [] },
+  ...(ocrTextLayer ? { ocrTextLayer } : {}),
+});
+
+describe('remediation evidence predicates', () => {
+  it('accepts only exact, full AI section coverage', () => {
+    expect(evidence.usableAi(completeAi())).toBe(true);
+    expect(evidence.usableAi(completeAi({ chunksAudited: 9 }))).toBe(false);
+    expect(evidence.usableAi(completeAi({ chunksRequested: 100, chunksAudited: 99 }))).toBe(false);
+    expect(evidence.usableAi(completeAi({ chunksRequested: undefined, chunksAudited: undefined }))).toBe(false);
+    expect(evidence.usableAi(completeAi({ _partialAudit: true }))).toBe(false);
+    expect(evidence.usableAi(completeAi({ _scoreDegraded: true }))).toBe(false);
+    expect(evidence.usableAi(completeAi({ synthesized: true }))).toBe(false);
+  });
+
+  it('rejects auto-fix pass deltas when a fixer chunk was throttle-deferred or either audit is partial, not when a chunk came back unchanged', () => {
+    const meta = { totalChunks: 3, shippedOriginalChunks: 0, deferredChunks: 0 };
+    expect(evidence.passComplete(meta, completeAi(), completeAi())).toBe(true);
+    // An unchanged chunk is a finished chunk (nothing left to fix, or kept by the gate); only a
+    // deferred chunk was never carried through the pass (2026-09-13: the old rule discarded every
+    // landed fix whenever one chunk had nothing to change).
+    expect(evidence.passComplete({ ...meta, shippedOriginalChunks: 1 }, completeAi(), completeAi())).toBe(true);
+    expect(evidence.passComplete({ ...meta, shippedOriginalChunks: 3 }, completeAi(), completeAi())).toBe(true);
+    expect(evidence.passComplete({ ...meta, deferredChunks: 1 }, completeAi(), completeAi())).toBe(false);
+    expect(evidence.passComplete({ totalChunks: 3, shippedOriginalChunks: 1 }, completeAi(), completeAi())).toBe(true);
+    expect(evidence.passComplete(meta, completeAi({ chunksAudited: 9 }), completeAi())).toBe(false);
+    expect(evidence.passComplete(meta, completeAi(), completeAi({ chunksAudited: 9 }))).toBe(false);
+    expect(evidence.passComplete(null, completeAi(), completeAi())).toBe(false);
+  });
+
+  it('does not turn missing or malformed axe evidence into a clean audit', () => {
+    expect(evidence.usableAxe(cleanAxe())).toBe(true);
+    expect(evidence.usableAxe(null)).toBe(false);
+    expect(evidence.usableAxe({ score: 100 })).toBe(false);
+    expect(evidence.usableAxe({ score: 100, totalViolations: Number.NaN })).toBe(false);
+    expect(evidence.usableAxe({ score: 100, totalViolations: -1 })).toBe(false);
+  });
+
+  it('never restores an already-aborted global signal', () => {
+    const live = { aborted: false };
+    expect(evidence.liveSignal(live)).toBe(live);
+    expect(evidence.liveSignal({ aborted: true })).toBeNull();
+    expect(evidence.liveSignal(null)).toBeNull();
+  });
+});
+
+describe('tagged-PDF OCR evidence gate', () => {
+  const completeLayer = {
+    scanned: true,
+    coveragePct: 100,
+    nonLatinDropped: false,
+    droppedChars: 0,
+    pagesWithText: 2,
+    pagesCovered: 2,
+    pagesIncomplete: 0,
+    pagesEmpty: 0,
+  };
+
+  it('accepts born-digital output and a complete scanned text layer', () => {
+    expect(evidence.taggedVerdict(delivered())).toMatchObject({ ok: true, code: 'verified' });
+    expect(evidence.taggedVerdict(delivered(completeLayer))).toMatchObject({ ok: true, code: 'verified' });
+  });
+
+  it.each([
+    ['dropped characters', { droppedChars: 1 }],
+    ['sub-100% coverage', { coveragePct: 99 }],
+    ['incomplete page', { pagesIncomplete: 1, pagesCovered: 1 }],
+    ['empty page', { pagesEmpty: 1 }],
+    ['missing page layer', { pagesCovered: 1 }],
+  ])('withholds verified delivery for %s', (_label, overrides) => {
+    const result = evidence.taggedVerdict(delivered({ ...completeLayer, ...overrides }));
+    expect(result).toMatchObject({ ok: false, code: 'ocr-text-layer-incomplete' });
+  });
+});
+
+describe('canonical remediation outcome', () => {
+  const complete = (overrides = {}) => ({
+    afterScore: 96,
+    verificationAudit: completeAi(),
+    axeAudit: cleanAxe(),
+    equalAccessAudit: { score: 100, failViolations: 0 },
+    verificationState: 'complete',
+    requiresManualReview: false,
+    _aiVerificationIncomplete: false,
+    ...overrides,
+  });
+
+  it('claims success only with canonical complete evidence at the configured target', () => {
+    expect(remediationOutcome(complete(), { targetScore: 95 })).toMatchObject({
+      state: 'success',
+      canonicalComplete: true,
+      aiCompleted: true,
+      axeCompleted: true,
+    });
+    expect(remediationOutcome(complete({ afterScore: 94 }), { targetScore: 95 }).state).toBe('incomplete');
+  });
+
+  it('keeps missing, partial, tested-scope, review, and residual evidence incomplete', () => {
+    expect(remediationOutcome(complete({ axeAudit: null }), { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome(complete({ verificationAudit: completeAi({ chunksAudited: 9 }) }), { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome(complete({ verificationState: 'complete-for-tested-scope' }), { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome(complete({ requiresManualReview: true }), { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome(complete({ axeAudit: cleanAxe({ totalViolations: 1 }) }), { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome(complete({ equalAccessAudit: { score: 98, failViolations: 1 } }), { targetScore: 95 }).state).toBe('incomplete');
+  });
+});
+
+describe('source-level anti-drift wiring', () => {
+  it('requires fresh complete evidence for promotion and clean/target stops', () => {
+    expect(src).toContain('const _passCoverageComplete = _alloAutoFixPassHasCompleteEvidence(_fixPassEvidence, verification, reVerify);');
+    expect(src).toContain('deferredChunks: Math.max(0, Number(deferredChunks) || 0),');
+    expect(src).toContain('|| (Number(_fixPassEvidence && _fixPassEvidence.deferredChunks) || 0) > 0);');
+    expect(src).not.toContain('|| (Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks) || 0) > 0);');
+    expect(src).toContain('&& Number.isSafeInteger(deferred) && deferred === 0;');
+    expect(src).toContain('const _passEvidenceComplete = _reThreeEngine.engineExecutionComplete === true && _passCoverageComplete;');
+    expect(src).toContain('const _comparisonEvidenceComplete = _passEvidenceComplete && _bestEvidenceComplete;');
+    expect(src).toContain('const _passIsBest = _passEvidenceComplete');
+    expect(src).toContain('else if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0');
+    expect(src).toContain('if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0 && !_reReviewRequired && newAiScore >= targetScore)');
+    expect(src).not.toContain('const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;');
+  });
+
+  it('serializes unknown axe evidence as null and gates green UI on the outcome', () => {
+    expect(src).toContain('axeViolations: _alloUsableAxeAudit(axeResults) ? axeResults.totalViolations : null');
+    // The green-UI gate moved into the pure _alloSelectCompletionToast
+    // selector, which is fed _remediationOutcome.state as outcomeState. The
+    // property this test wants — green requires a 'success' OUTCOME, not merely
+    // a score — is unchanged, so exercise the selector instead of the branch.
+    expect(src).toContain('outcomeState: _remediationOutcome.state,');
+    const _selStart = src.indexOf('function _alloSelectCompletionToast(state) {');
+    expect(_selStart).toBeGreaterThan(-1);
+    const selectToast = new Function(src.slice(_selStart, src.indexOf('\n}', _selStart) + 2) + '\nreturn _alloSelectCompletionToast;')();
+    expect(selectToast({ outcomeState: 'success', finalAfterScore: 96 })).toBe('success');
+    // a high score without a success outcome is NOT the green branch
+    expect(selectToast({ outcomeState: 'incomplete', finalAfterScore: 96 })).not.toBe('success');
+    expect(src).not.toContain('axeViolations: axeResults ? axeResults.totalViolations : 0');
+  });
+
+  it('uses collision-safe exact-prompt memoization with in-flight deduplication', () => {
+    expect(src).toContain("crypto.subtle.digest('SHA-256'");
+    expect(src).toContain('const _auditChunkInFlight = new Map();');
+    expect(src).toContain('const _auditMemoRunOnce = (key, prompt, producer)');
+    expect(src).toContain('rec && rec.prompt === prompt && rec.json');
+    expect(src).toContain('await _auditMemoKey(prompt)');
+  });
+
+  it('bounds persistent cache work and defaults sensitive retention to 24 hours', () => {
+    expect(src).toContain('var _REMEDIATION_DEFAULT_RETENTION_MS = 24 * 60 * 60 * 1000;');
+    expect(src).toContain('window.__alloRemediationLongRetentionOptIn === true');
+    expect(src).toContain('const _boundedRemediationCacheAwait');
+    expect(src).toContain('const _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS = 7000;');
+    expect(src).toContain('const a = rec && (rec.audit || rec.result);');
+  });
+
+
+  it('keeps throttle-deferred sections pending and separates pass telemetry from section telemetry', () => {
+    expect(src).toContain("new CustomEvent('alloflow:remediation-pass-start'");
+    expect(src).toContain("new CustomEvent('alloflow:remediation-pass-complete'");
+    expect(src).toContain('if (_stormActive && _rePartial)');
+    expect(src).not.toContain('if (_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial)');
+    expect(appSrc).toContain("status: 'deferred'");
+    expect(antiSrc).toContain("status: 'deferred'");
+    expect(appSrc).not.toContain("status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true, score:");
+    expect(viewSrc).toContain("const _liveChunkCompleteCount = liveChunkStream.filter(c => c.status === 'complete').length;");
+    expect(viewSrc).toContain('AI verification pending');
+  });
+  it('bounds final AI tail work and defers post-mutation re-audit under throttle', () => {
+    expect(src).toContain('const _finalAiAuditHardStop = Math.min(');
+    expect(src).toContain('const _deferHardStop = _finalAiAuditHardStop;');
+    // The defer gate now leads with the run-level pause flag (2026-08 telemetry).
+    expect(src).toContain('const _deferPostMutationAi = _remediationThrottlePaused');
+    expect(src).toContain('|| _finalAuditThrottled');
+    expect(src).toContain("post-audit-reaudit-throttled");
+    expect(src).toContain("_finalAuditThrottleDeferred: !!_finalAuditThrottleDeferred");
+    expect(src).toContain('AI verification remains pending for a later retry');
+
+    const postMutationAnchor = src.indexOf('if (_htmlChangedAfterFinalAiAudit)');
+    const postMutationGuard = src.indexOf('if (_deferPostMutationAi)', postMutationAnchor);
+    const postMutationCall = src.indexOf('auditOutputAccessibility(accessibleHtml', postMutationAnchor);
+    expect(postMutationAnchor).toBeGreaterThan(-1);
+    expect(postMutationGuard).toBeGreaterThan(postMutationAnchor);
+    expect(postMutationCall).toBeGreaterThan(postMutationGuard);
+  });  it('pins Tesseract to an exact release on both mirrors', () => {
+    expect(src).toContain('tesseract.js@5.1.1/dist/tesseract.min.js');
+    expect(src).not.toMatch(/tesseract\.js@5\/dist/);
+  });
+});

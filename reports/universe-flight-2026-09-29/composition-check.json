@@ -1,0 +1,937 @@
+{
+  "errors": [],
+  "checks": [
+    "decorative four-line composition grid",
+    "grid preserves scene state",
+    "grid excluded from saved snapshots and PNG pixels",
+    "all three exact anchors",
+    "paused frames retain position and clocks",
+    "orientation undo",
+    "frame action focuses canvas",
+    "saved views restore composition",
+    "manual gaze clears framing undo",
+    "relativistic apparent framing at beta 0.9",
+    "unshifted comparison framing",
+    "display change invalidates undo",
+    "active orbit ends without camera translation",
+    "undo does not restart orbit",
+    "guided route retained paused",
+    "pole reachability gates side framing",
+    "unreachable frame rejection is atomic",
+    "coincident landmark disables framing",
+    "clean view hides grid",
+    "grid preference persists across modes and reopening",
+    "shared fullscreen grid preference",
+    "fullscreen grid toggle retains panel",
+    "fullscreen framing closes panel and focuses canvas",
+    "320px controls fit",
+    "568x320 controls fit",
+    "relativity fullscreen composition",
+    "scoped accessibility checks"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop composition controls",
+      "violations": []
+    },
+    {
+      "name": "desktop scene with grid",
+      "violations": []
+    },
+    {
+      "name": "320px composition controls",
+      "violations": []
+    },
+    {
+      "name": "320px fullscreen composition controls",
+      "violations": []
+    },
+    {
+      "name": "568x320 fullscreen controls",
+      "violations": []
+    },
+    {
+      "name": "relativity fullscreen composition controls",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "320px normal controls",
+      "boundary": {
+        "left": 0,
+        "right": 320
+      },
+      "controls": [
+        {
+          "text": "Composition grid",
+          "left": 63,
+          "right": 257,
+          "top": 210.6875,
+          "bottom": 254.6875,
+          "width": 194,
+          "height": 44
+        },
+        {
+          "text": "Left third",
+          "left": 63,
+          "right": 122.328125,
+          "top": 266.6875,
+          "bottom": 320.28125,
+          "width": 59.328125,
+          "height": 53.59375
+        },
+        {
+          "text": "Center",
+          "left": 130.328125,
+          "right": 189.65625,
+          "top": 266.6875,
+          "bottom": 320.28125,
+          "width": 59.328125,
+          "height": 53.59375
+        },
+        {
+          "text": "Right third",
+          "left": 197.65625,
+          "right": 256.984375,
+          "top": 266.6875,
+          "bottom": 320.28125,
+          "width": 59.328125,
+          "height": 53.59375
+        },
+        {
+          "text": "Undo framing",
+          "left": 63,
+          "right": 257,
+          "top": 332.28125,
+          "bottom": 376.28125,
+          "width": 194,
+          "height": 44
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "name": "320px fullscreen controls",
+      "boundary": {
+        "left": 12,
+        "right": 308
+      },
+      "controls": [
+        {
+          "text": "Composition grid",
+          "left": 44,
+          "right": 276,
+          "top": 317.09375,
+          "bottom": 361.09375,
+          "width": 232,
+          "height": 44
+        },
+        {
+          "text": "Left third",
+          "left": 44,
+          "right": 116,
+          "top": 373.09375,
+          "bottom": 426.6875,
+          "width": 72,
+          "height": 53.59375
+        },
+        {
+          "text": "Center",
+          "left": 124,
+          "right": 196,
+          "top": 373.09375,
+          "bottom": 426.6875,
+          "width": 72,
+          "height": 53.59375
+        },
+        {
+          "text": "Right third",
+          "left": 204,
+          "right": 276,
+          "top": 373.09375,
+          "bottom": 426.6875,
+          "width": 72,
+          "height": 53.59375
+        },
+        {
+          "text": "Undo framing",
+          "left": 44,
+          "right": 276,
+          "top": 438.6875,
+          "bottom": 482.6875,
+          "width": 232,
+          "height": 44
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "name": "568x320 fullscreen controls",
+      "boundary": {
+        "left": 236,
+        "right": 556
+      },
+      "controls": [
+        {
+          "text": "Composition grid",
+          "left": 258,
+          "right": 534,
+          "top": 30.09375,
+          "bottom": 74.09375,
+          "width": 276,
+          "height": 44
+        },
+        {
+          "text": "Left third",
+          "left": 258,
+          "right": 344.65625,
+          "top": 86.09375,
+          "bottom": 139.6875,
+          "width": 86.65625,
+          "height": 53.59375
+        },
+        {
+          "text": "Center",
+          "left": 352.65625,
+          "right": 439.328125,
+          "top": 86.09375,
+          "bottom": 139.6875,
+          "width": 86.671875,
+          "height": 53.59375
+        },
+        {
+          "text": "Right third",
+          "left": 447.328125,
+          "right": 533.984375,
+          "top": 86.09375,
+          "bottom": 139.6875,
+          "width": 86.65625,
+          "height": 53.59375
+        },
+        {
+          "text": "Undo framing",
+          "left": 258,
+          "right": 534,
+          "top": 151.6875,
+          "bottom": 195.6875,
+          "width": 276,
+          "height": 44
+        }
+      ],
+      "overflow": false
+    }
+  ],
+  "framed": [
+    {
+      "item": {
+        "u": 0.3333333333333333,
+        "label": "Frame Amber star on left third",
+        "placement": "left"
+      },
+      "info": {
+        "distanceLy": 12.5,
+        "universeYears": 4,
+        "travelerYears": 2,
+        "position": [
+          -3.1,
+          1,
+          -1.5
+        ],
+        "yaw": 0.4016279604409325,
+        "pitch": 0,
+        "running": false,
+        "target": {
+          "id": "amber-star",
+          "name": "Amber star",
+          "distanceLy": 10,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.3333333333333335,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 23.01158706771262,
+            "behind": false,
+            "sector": "left",
+            "arrowDeg": -180,
+            "edge": [
+              0.09999999999999998,
+              0.5
+            ]
+          },
+          "screen": [
+            0.3333333333333335,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 0,
+          "apparentAngleDeg": 0
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.38409044412331594,
+          "kind": "free"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": true,
+          "placement": "left"
+        },
+        "trail": [
+          [
+            -3.1,
+            1,
+            -1.5
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "action": {
+        "name": "frameTarget",
+        "args": [
+          "amber-star",
+          0.3333333333333333
+        ],
+        "before": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -3.1,
+              1,
+              -1.5
+            ],
+            "yaw": 0.40000000000000036,
+            "pitch": 0.1,
+            "distanceLy": 12.5,
+            "universeYears": 4,
+            "travelerYears": 2
+          },
+          "targetId": "amber-star"
+        },
+        "after": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -3.1,
+              1,
+              -1.5
+            ],
+            "yaw": 0.4016279604409325,
+            "pitch": 0,
+            "distanceLy": 12.5,
+            "universeYears": 4,
+            "travelerYears": 2
+          },
+          "targetId": "amber-star"
+        },
+        "result": true
+      }
+    },
+    {
+      "item": {
+        "u": 0.5,
+        "label": "Frame Amber star at center",
+        "placement": "center"
+      },
+      "info": {
+        "distanceLy": 12.5,
+        "universeYears": 4,
+        "travelerYears": 2,
+        "position": [
+          -3.1,
+          1,
+          -1.5
+        ],
+        "yaw": 0,
+        "pitch": 0,
+        "running": false,
+        "target": {
+          "id": "amber-star",
+          "name": "Amber star",
+          "distanceLy": 10,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.5,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 0,
+            "behind": false,
+            "sector": "right",
+            "arrowDeg": 0,
+            "edge": [
+              0.5,
+              0.5
+            ]
+          },
+          "screen": [
+            0.5,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 0,
+          "apparentAngleDeg": 0
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.38409044412331594,
+          "kind": "free"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": true,
+          "placement": "center"
+        },
+        "trail": [
+          [
+            -3.1,
+            1,
+            -1.5
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "action": {
+        "name": "frameTarget",
+        "args": [
+          "amber-star",
+          0.5
+        ],
+        "before": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -3.1,
+              1,
+              -1.5
+            ],
+            "yaw": 0.40000000000000036,
+            "pitch": 0.1,
+            "distanceLy": 12.5,
+            "universeYears": 4,
+            "travelerYears": 2
+          },
+          "targetId": "amber-star"
+        },
+        "after": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -3.1,
+              1,
+              -1.5
+            ],
+            "yaw": 0,
+            "pitch": 0,
+            "distanceLy": 12.5,
+            "universeYears": 4,
+            "travelerYears": 2
+          },
+          "targetId": "amber-star"
+        },
+        "result": true
+      }
+    },
+    {
+      "item": {
+        "u": 0.6666666666666666,
+        "label": "Frame Amber star on right third",
+        "placement": "right"
+      },
+      "info": {
+        "distanceLy": 12.5,
+        "universeYears": 4,
+        "travelerYears": 2,
+        "position": [
+          -3.1,
+          1,
+          -1.5
+        ],
+        "yaw": 5.881557346738654,
+        "pitch": 0,
+        "running": false,
+        "target": {
+          "id": "amber-star",
+          "name": "Amber star",
+          "distanceLy": 10,
+          "coincident": false,
+          "guide": {
+            "screen": [
+              0.6666666666666666,
+              0.5
+            ],
+            "inView": true,
+            "angleDeg": 23.011587067712632,
+            "behind": false,
+            "sector": "right",
+            "arrowDeg": 0,
+            "edge": [
+              0.9,
+              0.5
+            ]
+          },
+          "screen": [
+            0.6666666666666666,
+            0.5
+          ],
+          "inView": true,
+          "doppler": 1,
+          "restAngleDeg": 0,
+          "apparentAngleDeg": 0
+        },
+        "navigation": {
+          "active": false,
+          "targetId": null,
+          "completed": false,
+          "alreadyWithin": false,
+          "remainingLy": 0,
+          "arrivalRadiusLy": 0,
+          "estimatedSeconds": 0,
+          "progress": 0
+        },
+        "orbit": {
+          "active": false,
+          "targetId": null
+        },
+        "motion": {
+          "smoothTravel": true,
+          "paceLyPerSecond": 0,
+          "targetLyPerSecond": 0.38409044412331594,
+          "kind": "free"
+        },
+        "framing": {
+          "canLeft": true,
+          "canCenter": true,
+          "canRight": true,
+          "canUndo": true,
+          "placement": "right"
+        },
+        "trail": [
+          [
+            -3.1,
+            1,
+            -1.5
+          ]
+        ],
+        "cameraMoves": 0
+      },
+      "action": {
+        "name": "frameTarget",
+        "args": [
+          "amber-star",
+          0.6666666666666666
+        ],
+        "before": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -3.1,
+              1,
+              -1.5
+            ],
+            "yaw": 0.40000000000000036,
+            "pitch": 0.1,
+            "distanceLy": 12.5,
+            "universeYears": 4,
+            "travelerYears": 2
+          },
+          "targetId": "amber-star"
+        },
+        "after": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -3.1,
+              1,
+              -1.5
+            ],
+            "yaw": 5.881557346738654,
+            "pitch": 0,
+            "distanceLy": 12.5,
+            "universeYears": 4,
+            "travelerYears": 2
+          },
+          "targetId": "amber-star"
+        },
+        "result": true
+      }
+    }
+  ],
+  "apparent": {
+    "item": {
+      "u": 0.6666666666666666,
+      "label": "Frame Amber star on right third",
+      "placement": "right"
+    },
+    "info": {
+      "distanceLy": 12.5,
+      "universeYears": 4,
+      "travelerYears": 2,
+      "position": [
+        -9.1,
+        1,
+        16.5
+      ],
+      "yaw": 0.8039611450635968,
+      "pitch": 0,
+      "running": false,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            0.6666666666666667,
+            0.5
+          ],
+          "inView": true,
+          "angleDeg": 23.01158706771265,
+          "behind": false,
+          "sector": "right",
+          "arrowDeg": 0,
+          "edge": [
+            0.8999999999999999,
+            0.5
+          ]
+        },
+        "screen": [
+          0.6666666666666667,
+          0.5
+        ],
+        "inView": true,
+        "doppler": 0.6423640548375729,
+        "restAngleDeg": 143.13010235415598,
+        "apparentAngleDeg": 69.07516757236168
+      },
+      "navigation": {
+        "active": false,
+        "targetId": null,
+        "completed": false,
+        "alreadyWithin": false,
+        "remainingLy": 0,
+        "arrivalRadiusLy": 0,
+        "estimatedSeconds": 0,
+        "progress": 0
+      },
+      "orbit": {
+        "active": false,
+        "targetId": null
+      },
+      "motion": {
+        "smoothTravel": true,
+        "paceLyPerSecond": 0,
+        "targetLyPerSecond": 0,
+        "kind": "relativity"
+      },
+      "framing": {
+        "canLeft": true,
+        "canCenter": true,
+        "canRight": true,
+        "canUndo": true,
+        "placement": "right"
+      },
+      "trail": [
+        [
+          -9.1,
+          1,
+          16.5
+        ]
+      ],
+      "cameraMoves": 0
+    },
+    "action": {
+      "name": "frameTarget",
+      "args": [
+        "amber-star",
+        0.6666666666666666
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -9.1,
+            1,
+            16.5
+          ],
+          "yaw": 0.40000000000000036,
+          "pitch": 0.1,
+          "distanceLy": 12.5,
+          "universeYears": 4,
+          "travelerYears": 2
+        },
+        "targetId": "amber-star"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -9.1,
+            1,
+            16.5
+          ],
+          "yaw": 0.8039611450635968,
+          "pitch": 0,
+          "distanceLy": 12.5,
+          "universeYears": 4,
+          "travelerYears": 2
+        },
+        "targetId": "amber-star"
+      },
+      "result": true
+    }
+  },
+  "unshifted": {
+    "item": {
+      "u": 0.6666666666666666,
+      "label": "Frame Amber star on right third",
+      "placement": "right"
+    },
+    "info": {
+      "distanceLy": 12.5,
+      "universeYears": 4,
+      "travelerYears": 2,
+      "position": [
+        -9.1,
+        1,
+        16.5
+      ],
+      "yaw": 2.0964635843555754,
+      "pitch": 0,
+      "running": false,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            0.666666666666667,
+            0.5
+          ],
+          "inView": true,
+          "angleDeg": 23.01158706771267,
+          "behind": false,
+          "sector": "right",
+          "arrowDeg": 0,
+          "edge": [
+            0.9,
+            0.5
+          ]
+        },
+        "screen": [
+          0.666666666666667,
+          0.5
+        ],
+        "inView": true,
+        "doppler": 0.6423640548375729,
+        "restAngleDeg": 143.13010235415598,
+        "apparentAngleDeg": 69.07516757236168
+      },
+      "navigation": {
+        "active": false,
+        "targetId": null,
+        "completed": false,
+        "alreadyWithin": false,
+        "remainingLy": 0,
+        "arrivalRadiusLy": 0,
+        "estimatedSeconds": 0,
+        "progress": 0
+      },
+      "orbit": {
+        "active": false,
+        "targetId": null
+      },
+      "motion": {
+        "smoothTravel": true,
+        "paceLyPerSecond": 0,
+        "targetLyPerSecond": 0,
+        "kind": "relativity"
+      },
+      "framing": {
+        "canLeft": true,
+        "canCenter": true,
+        "canRight": true,
+        "canUndo": true,
+        "placement": "right"
+      },
+      "trail": [
+        [
+          -9.1,
+          1,
+          16.5
+        ]
+      ],
+      "cameraMoves": 0
+    },
+    "action": {
+      "name": "frameTarget",
+      "args": [
+        "amber-star",
+        0.6666666666666666
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": true,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -9.1,
+            1,
+            16.5
+          ],
+          "yaw": 0.8039611450635968,
+          "pitch": 0,
+          "distanceLy": 12.5,
+          "universeYears": 4,
+          "travelerYears": 2
+        },
+        "targetId": "amber-star"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": true,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -9.1,
+            1,
+            16.5
+          ],
+          "yaw": 2.0964635843555754,
+          "pitch": 0,
+          "distanceLy": 12.5,
+          "universeYears": 4,
+          "travelerYears": 2
+        },
+        "targetId": "amber-star"
+      },
+      "result": true
+    }
+  }
+}

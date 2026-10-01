@@ -1,0 +1,59 @@
+{
+  "browserName": "chromium",
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:2"
+  },
+  "source": {
+    "payload": [
+      [
+        "answer",
+        "abcdefghijkl\nmnopqrstuvwx\nyz"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "abcdefghijklmnopqrstuvwxyz",
+        "dirname": "",
+        "direction": "ltr",
+        "wrap": "hard",
+        "cols": 10
+      }
+    ]
+  },
+  "candidate": {
+    "payload": [
+      [
+        "answer",
+        "abcdefghijklmnopqrstuvwxyz"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "abcdefghijklmnopqrstuvwxyz",
+        "dirname": "",
+        "direction": "ltr",
+        "wrap": "soft",
+        "cols": 10
+      }
+    ]
+  },
+  "repaired": {
+    "payload": [
+      [
+        "answer",
+        "abcdefghijkl\nmnopqrstuvwx\nyz"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "abcdefghijklmnopqrstuvwxyz",
+        "dirname": "",
+        "direction": "ltr",
+        "wrap": "hard",
+        "cols": 10
+      }
+    ]
+  }
+}

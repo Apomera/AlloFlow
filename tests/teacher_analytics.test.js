@@ -30,7 +30,10 @@ beforeAll(() => {
 
 // quiz history helper
 const quiz = (id, questions) => ({ id, type: 'quiz', data: { questions } });
-const adv = (level) => ({ type: 'adventure', data: { level } });
+// 2026-09-27 (AD1): the real shape. The game saves progress under data.snapshot
+// (adventure_handlers + the ANTI history sync); the old { data: { level } } fixture
+// was a shape the product never writes, which let the dashboard read the wrong field.
+const adv = (level) => ({ type: 'adventure', data: { snapshot: { level, turnCount: 3 } } });
 
 describe('calculateAnalyticsMetrics — empty / guard cases', () => {
   it('empty array → all-zero metrics + no misconceptions', () => {

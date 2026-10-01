@@ -19,6 +19,19 @@ beforeAll(() => {
 const labels = (judgement) => judgement.notes.map((n) => n.label);
 const has = (judgement, text) => labels(judgement).some((l) => l.includes(text));
 
+// The per-cook reset lives in one place, freshCookState, which all three cook
+// starts build on; a field reset there (and in defaultState) is reset everywhere.
+const COOK_STARTS = ['function startRecipe(', 'function startTournamentRound(', 'function startCompetition('];
+function resetEverywhere(field, value, { inDefault = true } = {}) {
+  expect(E.freshCookState('scrambledEggs', 1)[field], 'freshCookState.' + field).toEqual(value);
+  if (inDefault) expect(E.defaultState()[field], 'defaultState.' + field).toEqual(value);
+  for (const sig of COOK_STARTS) {
+    const at = source.indexOf(sig);
+    expect(at, sig).toBeGreaterThan(-1);
+    expect(source.slice(at, source.indexOf('\n      }\n', at)), sig).toContain('freshCookState(');
+  }
+}
+
 // Drive a whole cook through the engine's own headless cook (simulateCook: the
 // same pan + doneness math the 500 ms tick runs, with the cockpit's add / stir /
 // mark / off mechanics) and hand the judge the snapshot nextStep() builds.
@@ -123,7 +136,7 @@ describe('Kitchen Lab food model gives thick cuts a realistic clock', () => {
     expect(r.snapshot.itemAddPanF.oil).toBe(70);
     expect(r.snapshot.itemAddPanF.chicken).toBeGreaterThan(400);
     expect(source).toContain('newPanF[itemId] = Math.round(prior.recipePanTempF || 70);');
-    expect(source.match(/recipeItemAddPanF: \{\},/g)).toHaveLength(5);   // 4 reset blocks + the headless cook's seed
+    resetEverywhere('recipeItemAddPanF', {});
   });
 });
 
@@ -344,8 +357,8 @@ describe('Kitchen Lab scrambled-egg judge reads one doneness state', () => {
   });
 
   it('declares the doneness thresholds the tick integrates against', () => {
-    expect(eggs().doneness).toEqual({ foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, browningFrom: 'eggs', browningScale: [0.12, 0.3, 0.5, 0.8], stir: { label: 'Stir + fold', icon: '🥄', grace: 15 } });
-    expect(E.RECIPES.omelet.doneness).toEqual({ foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, browningFrom: 'eggs', browningScale: [0.4, 0.9, 1.4, 2.5], stir: { label: 'Shake + scrape', icon: '🍳', grace: 10 } });
+    expect(eggs().doneness).toEqual({ foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, safeF: 160, browningFrom: 'eggs', browningScale: [0.12, 0.3, 0.5, 0.8], stir: { label: 'Stir + fold', icon: '🥄', grace: 15 } });
+    expect(E.RECIPES.omelet.doneness).toEqual({ foodK: 0.014, foodMaxF: 212, setF: 145, overF: 175, safeF: 160, browningFrom: 'eggs', browningScale: [0.4, 0.9, 1.4, 2.5], stir: { label: 'Shake + scrape', icon: '🍳', grace: 10 } });
   });
 
   it('grades a textbook low-and-slow scramble A with no negative notes', () => {
@@ -459,8 +472,9 @@ describe('Kitchen Lab tick guards real time', () => {
   });
 
   it('resets the doneness state in default state and in all three cook starts, and shifts the set time on resume', () => {
-    expect(source.match(/recipeOptions: \{\}, recipeMarks: \{\},/g)).toHaveLength(4); // the per-cook reset line, in defaultState + 3 cook starts
-    expect(source.match(/recipeTempHistory: \[\]/g)).toHaveLength(3);
+    resetEverywhere('recipeOptions', {});
+    resetEverywhere('recipeMarks', {});
+    resetEverywhere('recipeTempHistory', [], { inDefault: false });
     expect(source).toContain('recipeFoodSetAt: shiftTimestamp(d.recipeFoodSetAt),');
   });
 
@@ -511,7 +525,9 @@ describe('Kitchen Lab stirring', () => {
     expect(source).toContain("if (stir.disturbs) patch.recipeBrowning = (prior.recipeBrowning || 0) * 0.8;");
     expect(source).toContain("'data-kl-stir': stir.disturbs ? 'disturbs' : 'stir'");
     expect(source).toContain('recipeUnattendedSec: (prior.recipeUnattendedSec || 0) + (unattended ? dtSec : 0)');
-    expect(source.match(/recipeLastStirSimSec: null, recipeStirCount: 0, recipeUnattendedSec: 0, recipeTraceStepSec: 1,/g)).toHaveLength(4);
+    resetEverywhere('recipeLastStirSimSec', null);
+    resetEverywhere('recipeStirCount', 0);
+    resetEverywhere('recipeUnattendedSec', 0);
   });
 });
 
@@ -651,7 +667,8 @@ describe('Kitchen Lab oil and smoke points', () => {
   it('wires the oil selector and smoke warning into the cockpit', () => {
     expect(source).toContain("h('select', { id: 'kl-oil-select', 'data-kl-oil': oil ? oil.oil : '', value: oil ? oil.oil : fat.default, disabled: lockedOil || isPaused,");
     expect(source).toContain("nowSmoking ? h('div', { 'data-kl-smoke': 'true',");
-    expect(source.match(/recipeOil: null, recipeSmokeSec: 0,/g)).toHaveLength(4);
+    resetEverywhere('recipeOil', null);
+    resetEverywhere('recipeSmokeSec', 0);
   });
 });
 
@@ -697,7 +714,8 @@ describe('Kitchen Lab Free Cook sandbox', () => {
   it('is not in the catalog, so competition, tournament and the suggester never pick it', () => {
     expect(E.RECIPE_CATALOG.some((r) => r.id === 'freeCook')).toBe(false);
     expect(source).toContain("if (rec.sandbox) {\n              return { recipePhase: 'done', recipeJudgement: judgement, recipeCurrentStep: rec.steps.length - 1, klNewAchievements: [] };");
-    expect(source).toContain("if (!isSandbox && ctx.callGemini");
+    // no AI critique for the sandbox, and only where the teacher has AI on
+    expect(source).toContain("var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false;");
   });
 
   it('describes a soft scramble without a grade', () => {
@@ -894,7 +912,8 @@ describe('Kitchen Lab catalog with ten recipes', () => {
   it('renders the option radiogroup only for recipes that declare options', () => {
     expect(source).toContain("(rec.options || []).map(function(opt) {");
     expect(source).toContain("'data-kl-option': opt.id + ':' + c.id,");
-    expect(E.RECIPES.scrambledEggs.options).toBeUndefined();
+    expect(E.RECIPES.sheetPan.options).toBeUndefined();
+    expect(E.RECIPES.scrambledEggs.options.map((o) => o.id)).toEqual(['eggs']);   // the carton sets the safe minimum
   });
 });
 
@@ -941,7 +960,7 @@ describe('Kitchen Lab Heat & Technique micro-cook', () => {
   });
 
   it('is wired into the Heat tab with a food picker, live readout and a run log', () => {
-    expect(source).toContain("var live = microCook(food, panTemp, secs);");
+    expect(source).toContain("var live = microCook(food, panTemp, secs, { water: water, bp: bp });");
     expect(source).toContain("'data-kl-heat-food': f.id,");
     expect(source).toContain("h('div', { 'data-kl-heat-live': live.label.label,");
     expect(source).toContain("setKL({ heatRuns: runs.concat([entry]).slice(-4) });");
@@ -993,7 +1012,7 @@ describe('Kitchen Lab surface moisture (the Recipe Kitchen model, brought across
 
   it('shows the surface state on the cockpit tile and seeds the Heat-tab micro-cook with it', () => {
     expect(source).toContain("'data-kl-moisture': (d.recipeMoisture || 0) > 10 ? 'wet' : (d.recipeMoisture || 0) > 3 ? 'drying' : 'dry'");
-    expect(source).toContain("s.recipeMoisture = initialMoisture(rec, s);   // the food brings its surface water");
+    expect(source).toContain("s.recipeMoisture = water ? 300 : initialMoisture(rec, s);   // the food brings its surface water (or sits in it)");
     expect(E.microCook(E.sandboxFood('mushrooms'), 375, 300).steamSec).toBeGreaterThan(30);
     expect(E.microCook(E.sandboxFood('mushrooms'), 375, 300).label.label).toBe('golden');
   });
@@ -1023,7 +1042,12 @@ describe('Kitchen Lab danger-zone clock', () => {
 
   it('reproduces the 64× in two hours the tab has always claimed, and the USDA 2 h / 1 h limits', () => {
     expect(Math.round(E.dangerClock(98, 2).multiplier)).toBe(64);
-    expect(E.dangerClock(98, 2)).toMatchObject({ limitHours: 1, overLimit: true });
+    // the 1-hour rule belongs to the ROOM (over 90°F), not the food: warm
+    // leftovers cooling in a normal kitchen still get two hours
+    expect(E.dangerClock(98, 2)).toMatchObject({ limitHours: 2, overLimit: false });
+    expect(E.dangerClock(98, 2, true)).toMatchObject({ limitHours: 1, overLimit: true });
+    expect(E.dangerClock(139, 1.5)).toMatchObject({ limitHours: 2, overLimit: false });
+    expect(E.dangerClock(72, 1.5, true).overLimit).toBe(true);
     expect(E.dangerClock(72, 2)).toMatchObject({ limitHours: 2, overLimit: false });
     expect(E.dangerClock(72, 2.25).overLimit).toBe(true);
     expect(E.dangerClock(38, 8)).toMatchObject({ multiplier: 1, inZone: false, overLimit: false });
@@ -1031,7 +1055,8 @@ describe('Kitchen Lab danger-zone clock', () => {
   });
 
   it('is wired into the Safety tab with an hours slider', () => {
-    expect(source).toContain("var clock = dangerClock(curTemp, hoursOut);");
+    expect(source).toContain("var clock = dangerClock(curTemp, hoursOut, hotRoom);");
+    expect(source).toContain("onClick: function() { setKL({ safetyHotRoom: !hotRoom }); },");
     expect(source).toContain("onChange: function(e) { setKL({ safetyHours: parseFloat(e.target.value) }); },");
     expect(source).toContain("'data-kl-danger-clock': clock.inZone ? (clock.overLimit ? 'over' : 'within') : 'none'");
     expect(source).not.toContain('var growthAfter2h');
@@ -1313,7 +1338,7 @@ describe('Kitchen Lab rice: a pot of water', () => {
     // arrow keys stepping the dial 1, 2, 3 schedule three checks; each must advance only the step it saw
     expect(source).toContain("if (fromStep != null && (prior.recipeCurrentStep || 0) !== fromStep) return {};");
     const auto = source.slice(source.indexOf('function maybeAutoAdvance() {'), source.indexOf('function renderRecipe() {'));
-    expect(auto.match(/nextStep\(stepNow\);/g)).toHaveLength(7);
+    expect(auto.match(/nextStep\(stepNow[,)]/g)).toHaveLength(7);   // with or without the "why" it announces
     expect(auto).not.toContain('nextStep();');
     // setBurner: heat back on clears the heat-removed stamp
     expect(source).toContain("if (level > 0 && prior.recipeHeatRemovedAt) {");
@@ -1355,7 +1380,7 @@ describe('Kitchen Lab experiment bench', () => {
   it('offers the pan, the dial, the fat, each recipe choice, attention and the pull point where they apply', () => {
     const ids = (rec) => E.benchVariables(rec).map((v) => v.id);
     expect(ids(E.RECIPES.steak)).toEqual(['pan', 'dial', 'oil', 'opt:dry', 'opt:target', 'pull']);   // poking a steak is a mistake, not a variable
-    expect(ids(E.RECIPES.scrambledEggs)).toEqual(['pan', 'dial', 'stir', 'pull']);
+    expect(ids(E.RECIPES.scrambledEggs)).toEqual(['pan', 'dial', 'opt:eggs', 'stir', 'pull']);
     expect(ids(E.RECIPES.sheetPan)).toEqual(['dial', 'x:door']);                                    // an oven has no pan and no fat choice, but it has a door
     expect(ids(E.RECIPES.pastaSauce)).toEqual(['pan', 'dial', 'oil', 'opt:lid', 'stir', 'alt', 'x:water', 'x:drop', 'x:potDial', 'x:pastaTime']);   // the pot's actions are the recipe's own variables
     expect(ids(E.RECIPES.rice)).toEqual(['pan', 'dial', 'opt:ratio', 'opt:lid', 'opt:rinse', 'alt']);   // cooked in water: the altitude matters
@@ -1374,7 +1399,7 @@ describe('Kitchen Lab experiment bench', () => {
     expect(low[0].level).toBe(1);
     const late = E.applyBenchSetup(E.TEXTBOOK_COOKS.steak, E.benchSetup(E.RECIPES.steak, 'pull', '+15'));
     const st = Object.assign(E.defaultState(), { recipeOptions: {} });
-    expect(late.find((g) => g.untilFoodF).untilFoodF(E.RECIPES.steak, st)).toBe(145 - 4 + 15);
+    expect(late.find((g) => g.untilFoodF).untilFoodF(E.RECIPES.steak, st)).toBe(145 + 15);   // the textbook pulls on the number
     const quiet = E.applyBenchSetup(E.TEXTBOOK_COOKS.scrambledEggs, E.benchSetup(E.RECIPES.scrambledEggs, 'stir', 'never'));
     expect(quiet.some((g) => g.stirEvery)).toBe(false);
   });
@@ -1398,7 +1423,7 @@ describe('Kitchen Lab experiment bench', () => {
     const setup = E.benchSetup(E.RECIPES.steak, 'opt:target', 'well');
     const lines = E.describeCook(E.RECIPES.steak, E.applyBenchSetup(E.TEXTBOOK_COOKS.steak, setup), setup);
     expect(lines[0]).toBe('dial 9 until the pan reads 430°F');
-    expect(lines[4]).toBe("dial 9 until the centre reads 156°F");   // well done 160 minus the 4°F pull
+    expect(lines[4]).toBe("dial 9 until the centre reads 160°F");   // well done: pulled on the number, never under 145°F
     expect(lines[5]).toBe('off 3:00');
     const rows = E.benchNumbers(E.RECIPES.rice, E.runBench(E.RECIPES.rice, 'dial', '0').result).map((r) => r.id);
     expect(rows).toEqual(['time', 'panPeak', 'foodPeak', 'browning', 'water']);
@@ -1569,7 +1594,7 @@ describe('Kitchen Lab replay: the logged cook, one thing changed', () => {
   });
 
   it('offers the set-up variables plus attention, never the pull point or the pot buttons', () => {
-    expect(E.replayVariables(E.RECIPES.scrambledEggs).map((v) => v.id)).toEqual(['pan', 'dial', 'stir']);
+    expect(E.replayVariables(E.RECIPES.scrambledEggs).map((v) => v.id)).toEqual(['pan', 'dial', 'opt:eggs', 'stir']);
     expect(E.replayVariables(E.RECIPES.steak).map((v) => v.id)).toEqual(['pan', 'dial', 'oil', 'opt:dry', 'opt:target']);
     expect(E.replayVariables(E.RECIPES.pastaSauce).map((v) => v.id)).toEqual(['pan', 'dial', 'oil', 'opt:lid', 'alt', 'stir']);
     const dial = E.replayVariables(E.RECIPES.rice).find((v) => v.id === 'dial');
@@ -1612,7 +1637,7 @@ describe('Kitchen Lab replay: the logged cook, one thing changed', () => {
     expect(source).toContain("recipeLog: logEvent(prior, { k: 'stir' })");
     expect(source).toContain("advance.recipeLog = logEvent(prior, { k: 'mark', id: finishing.record });");
     expect(source).toContain("if (Object.keys(patch).length) patch.recipeLog = logEvent(prior, action === 'dial' ? { k: 'pot', action: action, level: arg } : { k: 'pot', action: action });");
-    expect(source.match(/recipeLog: \[\],/g)).toHaveLength(4);
+    resetEverywhere('recipeLog', []);
     expect(source).toContain("!isSandbox && (d.recipeLog || []).length >= 2 ? renderReplayPanel(rec, j) : null,");
   });
 });
@@ -1628,10 +1653,10 @@ describe('Kitchen Lab forecast: if you change nothing', () => {
     expect(f.marks[0].label).toBe('browning: deep brown');
     for (let i = 1; i < f.marks.length; i++) expect(f.marks[i].sec).toBeGreaterThanOrEqual(f.marks[i - 1].sec);
     expect(f.pastHorizon).toEqual([]);
-    // the same steak with a well-done target asks for 160°F instead, and the USDA floor becomes 'set'
+    // the same steak with a well-done target asks for 160°F instead, and the USDA floor is marked 'safe'
     const well = E.forecast(E.RECIPES.steak, st({ recipeItemsInPan: ['oil', 'steak'], recipeBurnerLevel: 9, recipePanTempF: 460, recipeFoodInternalF: 110, recipeOptions: { target: 'well' } }));
     expect(well.marks.map((m) => m.label)).toContain('centre 160°F (your target)');
-    expect(well.marks.map((m) => m.label)).toContain('centre 145°F (set)');
+    expect(well.marks.map((m) => m.label)).toContain('centre 145°F (safe)');
   });
 
   it('follows carryover off the heat, and says what lies beyond the horizon', () => {
@@ -1740,7 +1765,8 @@ describe('Kitchen Lab class set and trace scrubber', () => {
     expect(text).toContain('    A. ');
     expect(text).toMatch(/Answer key \(teacher\): 1-[ABCD] \(/);
     expect(text).toContain('the judge said: ');
-    expect(text).not.toContain('°C');
+    // °F throughout, except a temperature difference's own dual form, e.g. "10°F (6°C) early"
+    expect(text.replace(/°F \(\d+(?:[-–]\d+)?°C\)/g, '°F')).not.toContain('°C');
     const rice = E.detectiveWorksheet(1, 3, 'rice', 'C');
     expect(rice).toContain('class set of 3 · Rice (Absorption Method)');
     expect(rice.split('\n').filter((l) => /^Case \d+ · Rice/.test(l))).toHaveLength(3);
@@ -1848,7 +1874,7 @@ describe('Kitchen Lab oven door, sauce lid and portfolio', () => {
     expect(E.describeEvent(E.RECIPES.sheetPan, E.defaultState(), { k: 'peek' })).toBe('opened the oven door');
     expect(E.describeCook(E.RECIPES.sheetPan, E.applyBenchSetup(E.TEXTBOOK_COOKS.sheetPan, E.benchSetup(E.RECIPES.sheetPan, 'x:door', 'peeks'), E.RECIPES.sheetPan), {})[2]).toContain('opening the door every 4:00');
     expect(source).toContain("h('button', { type: 'button', disabled: isPaused, 'data-kl-peek': d.recipePeeks || 0,");
-    expect(source.match(/recipePeeks: 0,/g)).toHaveLength(4);
+    resetEverywhere('recipePeeks', 0);
   });
 
   it('gives the pasta sauce a lid that keeps it thin', () => {
@@ -1928,7 +1954,9 @@ describe('Kitchen Lab evidence ladder (matches the 3D studio)', () => {
     expect(E.evidenceStatus(st([{ k: 'probe', reading: 140 }]), jud(true))).toMatchObject({ status: 'independent' });
     expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'probe' }, { k: 'probe' }]), jud(true))).toMatchObject({ status: 'supported' });
     expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'flick' }, { k: 'flick' }]), jud(true)).detail).toContain('2 water flicks');
-    expect(E.evidenceStatus(st([], { aiCritique: 'x' }), jud(true)).detail).toContain('the AI critique');
+    // the AI critique is written after the judge scores a cook, so it cannot have
+    // supported it; a leftover one from the last cook used to mark this one "supported"
+    expect(E.evidenceStatus(st([], { aiCritique: 'x' }), jud(true))).toMatchObject({ status: 'independent' });
     expect(E.evidenceStatus(st([]), { score: null })).toBeNull();          // the sandbox has no grade to stand behind
     expect(E.cookSupports(st([{ k: 'probe' }, { k: 'probe' }, { k: 'flick' }]), jud(true)).count).toBe(2);
     expect(E.cookSupports(st([{ k: 'dial', level: 9 }, { k: 'add', id: 'oil' }]), jud(true)).count).toBe(0);   // cooking is not a support

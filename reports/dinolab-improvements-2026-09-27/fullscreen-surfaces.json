@@ -1,0 +1,17 @@
+[
+  {
+    "theme": "theme-default",
+    "background": "rgb(255, 255, 255)",
+    "text": "rgb(15, 23, 42)"
+  },
+  {
+    "theme": "theme-dark",
+    "background": "rgb(15, 23, 42)",
+    "text": "rgb(226, 232, 240)"
+  },
+  {
+    "theme": "theme-contrast",
+    "background": "rgb(0, 0, 0)",
+    "text": "rgb(255, 255, 0)"
+  }
+]

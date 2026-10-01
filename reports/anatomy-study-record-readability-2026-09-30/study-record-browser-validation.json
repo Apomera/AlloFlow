@@ -1,0 +1,2674 @@
+{
+  "study": {
+    "errors": [],
+    "scans": [
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "overflow": {
+          "client": 302,
+          "scroll": 302
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "overflow": {
+          "client": 302,
+          "scroll": 302
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "overflow": {
+          "client": 298,
+          "scroll": 298
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "overflow": {
+          "client": 372,
+          "scroll": 372
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "overflow": {
+          "client": 372,
+          "scroll": 372
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "overflow": {
+          "client": 368,
+          "scroll": 368
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "overflow": {
+          "client": 742,
+          "scroll": 742
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "overflow": {
+          "client": 742,
+          "scroll": 742
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "overflow": {
+          "client": 738,
+          "scroll": 738
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "overflow": {
+          "client": 1126,
+          "scroll": 1126
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "overflow": {
+          "client": 1126,
+          "scroll": 1126
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "overflow": {
+          "client": 1122,
+          "scroll": 1122
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "overflow": {
+          "client": 302,
+          "scroll": 302
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "overflow": {
+          "client": 302,
+          "scroll": 302
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "overflow": {
+          "client": 298,
+          "scroll": 298
+        },
+        "violations": []
+      }
+    ],
+    "mergedState": {
+      "_activeTab": "explore",
+      "system": "skeletal",
+      "view": "posterior",
+      "complexity": 3,
+      "selectedStructure": "ribs",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_showStudySheet": true,
+      "quizScore": 7,
+      "_aiInput": "Keep my Tutor draft.",
+      "_structuresViewed": {
+        "skull": true,
+        "ribs": true,
+        "mandible": true
+      },
+      "_structureConfidence": {
+        "skull": "mastered",
+        "mandible": "practice",
+        "ribs": "learning"
+      },
+      "_confidenceAt": {
+        "skull": 1789925426572,
+        "mandible": 1790789426572,
+        "ribs": 1790789426572
+      },
+      "_structureNotes": {
+        "ribs": "My own explanation stays saved: the ribs protect the chest. هذا شرح محفوظ للتعلّم والمراجعة.",
+        "femur": "The femur transmits weight through the thigh to the knee.",
+        "mandible": "The mandible supports the lower teeth and moves during chewing."
+      },
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 7,
+          "correct": 4
+        }
+      },
+      "_systemsMotionLearning": {
+        "exercise": {
+          "explanation": "My saved exercise explanation.",
+          "prediction": "same",
+          "transfer": 2,
+          "transferExplanation": "My new comparison of exercise and rest."
+        }
+      },
+      "_feedbackExperiment": {
+        "explanation": "My explanation: feedback reduces the temperature disturbance. تبقى ملاحظاتي محفوظة.",
+        "direction": "cooling",
+        "prediction": "active",
+        "revealed": true
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "posterior": true
+      },
+      "_badges": {
+        "firstStructure": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.3668556272571054,
+          "y": 0.22049614115731742,
+          "vx": 0.9651833661711742,
+          "vy": -1.8358204284892448,
+          "rot": 5.987141683808931,
+          "spin": 2.0467076489074643,
+          "ci": 0,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5989940829283381,
+          "y": 0.22101330281056944,
+          "vx": 0.10215928234450078,
+          "vy": -1.6252857799245468,
+          "rot": 4.294224696358615,
+          "spin": -0.7108368784229171,
+          "ci": 1,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.3218960958141975,
+          "y": 0.290893358734529,
+          "vx": -0.6901121746858703,
+          "vy": -2.230644351159761,
+          "rot": 4.609786945973566,
+          "spin": -1.2303426549379488,
+          "ci": 2,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.4250446201592878,
+          "y": 0.23297243958241942,
+          "vx": 0.6076429969188311,
+          "vy": -1.5012660060039027,
+          "rot": 1.469556375779731,
+          "spin": -1.2406680749777401,
+          "ci": 3,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.42592164212290856,
+          "y": 0.21151603321574777,
+          "vx": 0.1488809074236641,
+          "vy": -1.0993485669332232,
+          "rot": 4.728022988650726,
+          "spin": 0.08290927533315573,
+          "ci": 4,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6925027146534886,
+          "y": 0.12361369883281957,
+          "vx": 0.4100743844017998,
+          "vy": -1.5601987665897668,
+          "rot": 6.161954877696668,
+          "spin": 1.2696089962730333,
+          "ci": 5,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5451983872898281,
+          "y": 0.11818635607688888,
+          "vx": 0.08095000682915243,
+          "vy": -1.478287229676111,
+          "rot": 3.3765756569678707,
+          "spin": 2.7690200795226168,
+          "ci": 6,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5672910566463494,
+          "y": 0.2215762598141797,
+          "vx": 0.08969726700828096,
+          "vy": -2.0826684481390014,
+          "rot": 5.318495904979489,
+          "spin": 2.5771984753452735,
+          "ci": 7,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.41196914640384863,
+          "y": 0.1688656093019611,
+          "vx": 0.6836508000390482,
+          "vy": -2.575847810755853,
+          "rot": 6.096287593556596,
+          "spin": 1.6419908503051226,
+          "ci": 8,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.40250750108345473,
+          "y": 0.12524260014917013,
+          "vx": -0.0425376557713073,
+          "vy": -1.7486434034903706,
+          "rot": 2.5029102362912394,
+          "spin": 0.029646972765876356,
+          "ci": 9,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5889313879241204,
+          "y": 0.2816325859032187,
+          "vx": -0.015645799611767153,
+          "vy": -2.604791335847243,
+          "rot": 2.6412603345313173,
+          "spin": -0.8695677018562566,
+          "ci": 10,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.3963000741486325,
+          "y": 0.172117388027502,
+          "vx": -0.8373451288036944,
+          "vy": -1.749946026581875,
+          "rot": 2.4288047795353123,
+          "spin": 2.9846398769478393,
+          "ci": 11,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.3777953825243015,
+          "y": 0.13025791675122161,
+          "vx": -0.4517108702467274,
+          "vy": -1.790089672379796,
+          "rot": 3.8981399186808297,
+          "spin": -1.6350409960499113,
+          "ci": 12,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5902476728371613,
+          "y": 0.16835996136096548,
+          "vx": 0.9726060342489902,
+          "vy": -1.0887884112286796,
+          "rot": 3.1088168750144596,
+          "spin": -2.0975852190871924,
+          "ci": 13,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.4217325012999064,
+          "y": 0.19498533441323698,
+          "vx": 0.1832009919121631,
+          "vy": -1.7721849129613978,
+          "rot": 5.714860137628716,
+          "spin": -1.1498763907505765,
+          "ci": 14,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6506812355536764,
+          "y": 0.21542892435087915,
+          "vx": -0.7825412987925984,
+          "vy": -1.611617690685235,
+          "rot": 1.6063399673407794,
+          "spin": -1.2902332671873953,
+          "ci": 15,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5771413218507793,
+          "y": 0.1957450641442325,
+          "vx": -0.6722420153504016,
+          "vy": -2.793401299247167,
+          "rot": 5.56314060703995,
+          "spin": 2.678322988837264,
+          "ci": 16,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.390327585902176,
+          "y": 0.1474342098625867,
+          "vx": -0.28870866461194034,
+          "vy": -2.668343028722656,
+          "rot": 3.032029127448881,
+          "spin": -0.1960937491728385,
+          "ci": 17,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6013228068596279,
+          "y": 0.29292373254076054,
+          "vx": 0.28372087111829125,
+          "vy": -2.8332396165650064,
+          "rot": 4.675056270999785,
+          "spin": 0.26266177575621086,
+          "ci": 18,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.68677662216247,
+          "y": 0.27909184592736175,
+          "vx": 0.811416382263993,
+          "vy": -2.9447755754765006,
+          "rot": 4.769021408755547,
+          "spin": 1.174002234198253,
+          "ci": 19,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6188344306728484,
+          "y": 0.1787787494597749,
+          "vx": -0.9107922132715445,
+          "vy": -2.0310733647849375,
+          "rot": 1.3902316956339955,
+          "spin": 2.0638270561311693,
+          "ci": 20,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6381945950968559,
+          "y": 0.14299527912857582,
+          "vx": 0.3797054719056121,
+          "vy": -1.190519840507617,
+          "rot": 1.5289437459053672,
+          "spin": 2.782698647080912,
+          "ci": 21,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.4193963266856208,
+          "y": 0.19984839466808124,
+          "vx": -0.9481210287211539,
+          "vy": -2.2005780030195803,
+          "rot": 4.980375185609674,
+          "spin": 2.42389424249245,
+          "ci": 22,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.5743542005991287,
+          "y": 0.26525218666970934,
+          "vx": 0.05162695252568961,
+          "vy": -2.194870984048941,
+          "rot": 2.0084300680908127,
+          "spin": 0.3467572496911102,
+          "ci": 23,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.3545417945707355,
+          "y": 0.26713573355714637,
+          "vx": 0.46117449528835586,
+          "vy": -2.7888441084648976,
+          "rot": 2.7471189412334946,
+          "spin": 2.4291520803806597,
+          "ci": 24,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.531701520902535,
+          "y": 0.13240429122646924,
+          "vx": -0.17050437913453798,
+          "vy": -2.4116068891933624,
+          "rot": 1.6439001225811438,
+          "spin": 2.849797448336752,
+          "ci": 25,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6744085235507102,
+          "y": 0.18102838565261434,
+          "vx": 0.8922388912193253,
+          "vy": -1.4167030275446528,
+          "rot": 1.178111583390235,
+          "spin": 1.159660424619784,
+          "ci": 26,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6136913822561728,
+          "y": 0.22460008936968134,
+          "vx": -0.22283203689694409,
+          "vy": -1.4839402343663564,
+          "rot": 2.881222145972237,
+          "spin": 2.7133385426011607,
+          "ci": 27,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6217125743576477,
+          "y": 0.29238726830768286,
+          "vx": 0.10539184243399724,
+          "vy": -1.5285631255960697,
+          "rot": 5.171470820308127,
+          "spin": 2.944830387700606,
+          "ci": 28,
+          "born": 1790789427108
+        },
+        {
+          "x": 0.6760333638349125,
+          "y": 0.13456451345497383,
+          "vx": 0.5244034607494223,
+          "vy": -1.247920387328435,
+          "rot": 1.9353712831563703,
+          "spin": -1.1605468666027268,
+          "ci": 29,
+          "born": 1790789427108
+        }
+      ],
+      "_studyImportReading": false,
+      "_studyImportToken": null,
+      "_studySheetRevision": 4,
+      "_studySheetFilter": "all",
+      "_studySheetSystem": "all",
+      "_studyImportPreview": null,
+      "_studyImportName": "resume-notes-الأناتومي-2026-09-30-long-file-name.json",
+      "_studyImportRevision": 10,
+      "_studyRecordNotice": "Study record merged. Structures imported: 2. Existing notes preserved: 1. Existing explanations preserved: 2."
+    },
+    "beforeScans": {
+      "_activeTab": "flashcards",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "selectedStructure": "mandible",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_showStudySheet": true,
+      "quizScore": 7,
+      "_aiInput": "Keep my Tutor draft.",
+      "_structuresViewed": {
+        "skull": true,
+        "mandible": true,
+        "ribs": true
+      },
+      "_structureConfidence": {
+        "skull": "mastered",
+        "mandible": "practice",
+        "ribs": "learning"
+      },
+      "_confidenceAt": {
+        "skull": 1789925426572,
+        "mandible": 1790789426572,
+        "ribs": 1790789426572
+      },
+      "_structureNotes": {
+        "mandible": "The mandible supports the lower teeth and moves during chewing.",
+        "ribs": "My own explanation stays saved: the ribs protect the chest. هذا شرح محفوظ للتعلّم والمراجعة.",
+        "femur": "The femur transmits weight through the thigh to the knee."
+      },
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 7,
+          "correct": 4
+        }
+      },
+      "_systemsMotionLearning": {
+        "exercise": {
+          "explanation": "My saved exercise explanation.",
+          "prediction": "same",
+          "transfer": 2,
+          "transferExplanation": "My new comparison of exercise and rest."
+        }
+      },
+      "_feedbackExperiment": {
+        "explanation": "My explanation: feedback reduces the temperature disturbance. تبقى ملاحظاتي محفوظة.",
+        "direction": "cooling",
+        "prediction": "active",
+        "revealed": true
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "posterior": true,
+        "anterior": true
+      },
+      "_badges": {
+        "firstStructure": true,
+        "viewToggler": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.6107877668878117,
+          "y": 0.2094629553453268,
+          "vx": -0.38849008741192015,
+          "vy": -1.3198901104728264,
+          "rot": 1.4430432754494076,
+          "spin": -1.9585954597782402,
+          "ci": 0,
+          "born": 1790789429543
+        },
+        {
+          "x": 0.6092577317341392,
+          "y": 0.1993248729229121,
+          "vx": 0.35119916102134296,
+          "vy": -1.1843859349856898,
+          "rot": 0.18668057391827647,
+          "spin": 1.6629467708372778,
+          "ci": 1,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.48539770704865565,
+          "y": 0.269953698557456,
+          "vx": -0.7264737478695356,
+          "vy": -1.0591363310030752,
+          "rot": 1.245606179662862,
+          "spin": 1.53656377379857,
+          "ci": 2,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.659933860895116,
+          "y": 0.2151794509612014,
+          "vx": -0.5864199764384612,
+          "vy": -1.0227723432167963,
+          "rot": 4.146014402567886,
+          "spin": 2.3710636472958657,
+          "ci": 3,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.48045610315159326,
+          "y": 0.16228039829426608,
+          "vx": 0.32999770534232753,
+          "vy": -2.150104932319397,
+          "rot": 3.7510644049095476,
+          "spin": 0.38526429075469615,
+          "ci": 4,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5210826117290903,
+          "y": 0.2867539213993655,
+          "vx": 0.01747777935704775,
+          "vy": -1.7976780264035301,
+          "rot": 1.3610010830474035,
+          "spin": -2.7751255833915263,
+          "ci": 5,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6051239481406352,
+          "y": 0.2608525295091051,
+          "vx": 0.9294537784165069,
+          "vy": -2.1106945024479113,
+          "rot": 4.30237496458611,
+          "spin": -2.9977691983065684,
+          "ci": 6,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.4900581760729622,
+          "y": 0.14112246661971264,
+          "vx": -0.4361432978268789,
+          "vy": -1.5142629614784082,
+          "rot": 0.5364714979588483,
+          "spin": -1.1259559507583603,
+          "ci": 7,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.4221826575295713,
+          "y": 0.144430921309242,
+          "vx": 0.07064202603261549,
+          "vy": -2.763284072715897,
+          "rot": 0.14641694540040845,
+          "spin": 2.1343297524980573,
+          "ci": 8,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.660303786489101,
+          "y": 0.2635357795064305,
+          "vx": -0.3435199066743211,
+          "vy": -1.6635631972867047,
+          "rot": 3.3184232576521584,
+          "spin": 1.210771671189962,
+          "ci": 9,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6560165835344443,
+          "y": 0.21292814913768562,
+          "vx": 0.471662477891871,
+          "vy": -1.7387285961460712,
+          "rot": 2.0126596138741903,
+          "spin": 0.39783661383357183,
+          "ci": 10,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.375862464388353,
+          "y": 0.1876557065752526,
+          "vx": 0.20367941770783604,
+          "vy": -1.7367339241236834,
+          "rot": 5.7890686210411735,
+          "spin": -1.4128881508339113,
+          "ci": 11,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.3312931439384878,
+          "y": 0.2602168808442354,
+          "vx": -0.9904066843934851,
+          "vy": -1.9561769312623083,
+          "rot": 5.5861353020134725,
+          "spin": -2.549344232225083,
+          "ci": 12,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5083660292949859,
+          "y": 0.14922707295750015,
+          "vx": 0.9690943971587194,
+          "vy": -1.6533593813726464,
+          "rot": 1.490599874768927,
+          "spin": -2.321680906888401,
+          "ci": 13,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6336296954312617,
+          "y": 0.29876752559522124,
+          "vx": 0.05809113510833619,
+          "vy": -1.478199553493763,
+          "rot": 0.014555761886283299,
+          "spin": 1.0799632667691899,
+          "ci": 14,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6469977586824651,
+          "y": 0.2733628107206729,
+          "vx": 0.7396008680507846,
+          "vy": -1.5401145780060703,
+          "rot": 5.110407214578365,
+          "spin": -1.7281675963221073,
+          "ci": 15,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5520826452925037,
+          "y": 0.2604062410436113,
+          "vx": -0.4361559629458249,
+          "vy": -1.3728298499516578,
+          "rot": 1.0669706990186034,
+          "spin": 0.8761044797761921,
+          "ci": 16,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5617543357668976,
+          "y": 0.1260480909320913,
+          "vx": 0.370300305470316,
+          "vy": -1.8109564280635606,
+          "rot": 3.3436610577942094,
+          "spin": -1.5358987803912967,
+          "ci": 17,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6929568875098432,
+          "y": 0.19405131895734753,
+          "vx": -0.33836457929841,
+          "vy": -1.8834987774869527,
+          "rot": 1.3889257069370167,
+          "spin": 0.6747285284321503,
+          "ci": 18,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.4288835917302988,
+          "y": 0.11615632483602925,
+          "vx": 0.7042737229660061,
+          "vy": -2.9632186234842535,
+          "rot": 0.7090661284364699,
+          "spin": -0.34172295055262136,
+          "ci": 19,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.617414834089538,
+          "y": 0.17042841907676604,
+          "vx": 0.2673732948279941,
+          "vy": -2.114061628958188,
+          "rot": 2.9159044738289586,
+          "spin": -2.9281891177677526,
+          "ci": 20,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.39447835416858007,
+          "y": 0.1451268196644666,
+          "vx": 0.5953568942704852,
+          "vy": -2.6835353998340765,
+          "rot": 1.8730435377805148,
+          "spin": 1.9582789281238602,
+          "ci": 21,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6143706200974408,
+          "y": 0.22557355637279766,
+          "vx": -0.672190088618797,
+          "vy": -1.5203792514579533,
+          "rot": 1.6497331687174417,
+          "spin": 0.7743867369156565,
+          "ci": 22,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6389472735943874,
+          "y": 0.1576970903291937,
+          "vx": -0.20486826928954516,
+          "vy": -1.6969754121019804,
+          "rot": 1.3706115776891419,
+          "spin": -1.1999676931981973,
+          "ci": 23,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5905964460334815,
+          "y": 0.20611646595998734,
+          "vx": -0.9175916270349809,
+          "vy": -1.6524512918383976,
+          "rot": 4.860703117347148,
+          "spin": -0.6836257433804014,
+          "ci": 24,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6327445165216825,
+          "y": 0.2719941252924419,
+          "vx": -0.9273674505886331,
+          "vy": -1.7399127917046642,
+          "rot": 2.8365136975136673,
+          "spin": 0.26695378259448055,
+          "ci": 25,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6828065922635131,
+          "y": 0.2729294915035585,
+          "vx": -0.584940510982938,
+          "vy": -1.8281219208487303,
+          "rot": 5.0494359640650694,
+          "spin": 1.4295324886011278,
+          "ci": 26,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6302359051806834,
+          "y": 0.29247683584733963,
+          "vx": 0.06650367704375792,
+          "vy": -2.5336832234563227,
+          "rot": 1.0899458239765254,
+          "spin": -1.7451968729286964,
+          "ci": 27,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6348989842194472,
+          "y": 0.2430042513882129,
+          "vx": 0.9526838890607994,
+          "vy": -1.6514823282995692,
+          "rot": 1.3877162219634214,
+          "spin": 2.751209690513808,
+          "ci": 28,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.366447183086889,
+          "y": 0.2140310850173237,
+          "vx": -0.27587462333350965,
+          "vy": -2.4283437899089844,
+          "rot": 0.5128534508891925,
+          "spin": -1.6794842366293794,
+          "ci": 29,
+          "born": 1790789429544
+        }
+      ],
+      "_studyImportReading": false,
+      "_studyImportToken": null,
+      "_studySheetRevision": 11,
+      "_studySheetFilter": "all",
+      "_studySheetSystem": "all",
+      "_studyImportPreview": {
+        "schema": "alloflow-anatomy-study",
+        "version": 1,
+        "records": [
+          {
+            "id": "ribs",
+            "viewed": true,
+            "confidence": "learning",
+            "ratedAt": 1790789426572,
+            "note": "A conflicting incoming note.",
+            "recall": {
+              "attempts": 7,
+              "correct": 4
+            }
+          },
+          {
+            "id": "mandible",
+            "viewed": true,
+            "confidence": "practice",
+            "ratedAt": 1790789426572,
+            "note": "The mandible supports the lower teeth and moves during chewing."
+          }
+        ],
+        "skipped": 1,
+        "learningNotes": [
+          {
+            "id": "exercise",
+            "explanation": "A conflicting incoming explanation.",
+            "transferExplanation": "My new comparison of exercise and rest."
+          },
+          {
+            "id": "homeostasis",
+            "explanation": "A conflicting incoming temperature explanation.",
+            "transferExplanation": ""
+          }
+        ]
+      },
+      "_studyImportName": "resume-notes-الأناتومي-2026-09-30-long-file-name.json",
+      "_studyImportRevision": 15,
+      "_studyRecordNotice": "Preview ready. Review the counts, then merge to add this work.",
+      "quizMode": false,
+      "_anatomyModelFocus": false,
+      "search": "",
+      "_flashcardScope": "review",
+      "_flashcardDeck": [
+        "mandible",
+        "skull"
+      ],
+      "_flashcardDeckContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundRated": {},
+      "_flashcardIdx": 0,
+      "_flashcardFlipped": false,
+      "_flashcardRounds": {
+        "skeletal:3:review": {
+          "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+          "deckIds": [
+            "mandible",
+            "skull"
+          ],
+          "index": 0,
+          "rated": {}
+        }
+      },
+      "_flashcardRevision": 1
+    },
+    "arabicRecommendation": {
+      "reviewIds": [
+        "mandible",
+        "ribs"
+      ],
+      "title": "مراجعة الفك السفلي",
+      "detail": "عدد البنى المحددة للمراجعة في هذا العرض: 2."
+    },
+    "readingFonts": [
+      {
+        "tag": "SPAN",
+        "text": "احتفظ بها معك",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "9/30/2026 · تُعدّ من البنى التي عرضتها وقيّمتها، وإجاباتك ال",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "🖨 طباعة / حفظ بصيغة PDF",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "📋 نسخ كنص",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "تنزيل النص",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "تنزيل سجل الدراسة",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "إغلاق",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "مجموعة التصفحجميع المجموعاتالهيكليالعضليالدوريالعصبيأجهزة ال",
+        "size": 17
+      },
+      {
+        "tag": "SELECT",
+        "text": "جميع المجموعاتالهيكليالعضليالدوريالعصبيأجهزة الأعضاءالتنفسيا",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "عرضجميع البنى المسجّلةتحتاج إلى مراجعةمع ملاحظاتفهمت",
+        "size": 17
+      },
+      {
+        "tag": "SELECT",
+        "text": "جميع البنى المسجّلةتحتاج إلى مراجعةمع ملاحظاتفهمت",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "عدد مدخلات الفهرس المعروضة: 4. تستخدم الطباعة هذه المرشّحات،",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "المعاينة جاهزة. راجع الأعداد، ثم ادمج السجل لإضافة هذا العمل",
+        "size": 17
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "استئناف العمل من سجل دراسة",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "استورد ملاحظات البنى وتقييماتها وتواريخ مراجعتها من سجل JSON",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تُدرج نتائج التدريب المصحح وتفسيرات الأنشطة عند توفرها. يحتف",
+        "size": 17
+      },
+      {
+        "tag": "LABEL",
+        "text": "اختر سجل دراسة للتشريح ⁦(.json)⁩",
+        "size": 17
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "الملف المحدد: resume-notes-الأناتومي-2026-09-30-long-file-na",
+        "size": 17
+      },
+      {
+        "tag": "BDI",
+        "text": "resume-notes-الأناتومي-2026-09-30-long-file-name.json",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "2 تقييمات · 2 ملاحظات · 1 بنى غير معروفة تم تخطيها",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "1 سجلات تدريب · 2 تأملات الأنشطة",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "دمج سجل الدراسة",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "إلغاء الاستيراد",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "البنى المختلفة التي فتحتها",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "أحتاج إلى تدريب",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "ما زلت أتعلم",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "فهمت",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "إجابات صحيحة",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "عمليات التحديد",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "مدخلات تتضمن ملاحظات",
+        "size": 17
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "معنى هذه السجلات",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "عرض البنية يعني فتحها، ولا يعني تعلّمها. توجّه التقييمات الت",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تقترح هذه الأداة المراجعة الآن عند اختيار «أحتاج إلى تدريب»،",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تشترك المدخلات المتكررة للبنية نفسها في التقييمات وسجلات الإ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "الخطوة التالية: مراجعة الفك السفلي — عدد البنى المحددة للمرا",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "⏰ أعد التحقق اليوم: الجمجمة. حاول تذكّر وظيفة كل بنية قبل ال",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "مراجعة هذه المجموعة",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "الجمجمة",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "فهمت",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "الفك السفلي",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "أحتاج إلى تدريب",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "Only moveable skull bone. Enables mastication, speech, and f",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "بكلماتي: The mandible supports the lower teeth and moves dur",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "The mandible supports the lower teeth and moves during chewi",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "الأضلاع (1-12)",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "ما زلت أتعلم",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "4/7 إجابات مصححة صحيحة. مشتركة بين بطاقات هذا العضو، ومنفصلة",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "بكلماتي: My own explanation stays saved: the ribs protect th",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "My own explanation stays saved: the ribs protect the chest. ",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "عظم الفخذ",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "عمل محفوظ · لم يُقيّم",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "عظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "بكلماتي: The femur transmits weight through the thigh to the",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "The femur transmits weight through the thigh to the knee.",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "كتابة محفوظة للتأمل وليست درجة إتقان آلية. تُدرج هذه الملاحظ",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "يزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، ه",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تفسيري: My saved exercise explanation.",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "My saved exercise explanation.",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تحمل حقيبة ثابتة ومرفقك مثني. أي تفسير يناسب عضلات الذراع ال",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "مقارنتي: My new comparison of exercise and rest.",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "My new comparison of exercise and rest.",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "العودة إلى هذا النشاط",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "فسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرارة.",
+        "size": 17
+      },
+      {
+        "tag": "P",
+        "text": "تفسيري: My explanation: feedback reduces the temperature dis",
+        "size": 17
+      },
+      {
+        "tag": "SPAN",
+        "text": "My explanation: feedback reduces the temperature disturbance",
+        "size": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "العودة إلى هذا النشاط",
+        "size": 17
+      }
+    ],
+    "printChecks": [
+      {
+        "theme": "light",
+        "metrics": {
+          "text": {
+            "heading": [
+              {
+                "text": "📄 ورقة دراستي للتشريح",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "numbers": [
+              {
+                "text": "3",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "0",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "0",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "3",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "notes": [
+              {
+                "text": "The mandible supports the lower teeth and moves during chewing.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "My own explanation stays saved: the ribs protect the chest. هذا شرح محفوظ للتعلّم والمراجعة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "The femur transmits weight through the thigh to the knee.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "badges": [
+              {
+                "text": "فهمت",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "أحتاج إلى تدريب",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "ما زلت أتعلم",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "reflectionHeadings": [
+              {
+                "text": "النشاط البدني: من القوة إلى تبادل الغازات",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارة",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "body": [
+              {
+                "text": "تشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة واحدة، حتى إن ظهرت في أكثر من مجموعة. تُ",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "عرض البنية يعني فتحها، ولا يعني تعلّمها. توجّه التقييمات التدريب: يمكنك اختيارها بنفسك، ويمكن للإجاب",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تقترح هذه الأداة المراجعة الآن عند اختيار «أحتاج إلى تدريب»، وبعد يومين عند اختيار «ما زلت أتعلم»، و",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تشترك المدخلات المتكررة للبنية نفسها في التقييمات وسجلات الإجابات المصحّحة. وتبقى ملاحظاتها منفصلة. ",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "الخطوة التالية: مراجعة الفك السفلي — عدد البنى المحددة للمراجعة في هذا العرض: 2.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "⏰ أعد التحقق اليوم: الجمجمة. حاول تذكّر وظيفة كل بنية قبل التحقق منها. تتبع هذه التذكيرات تواريخ الت",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thoracic organs and assist venti",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "4/7 إجابات مصححة صحيحة. مشتركة بين بطاقات هذا العضو، ومنفصلة عن تقييم ثقتك.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "عظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأسه بحُق الورك ويشكل طرفه السفلي جزءاً من",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "يزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، هل يقل انتقال الأكسجين أم يزيد أم يبقى كم",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تفسيري: My saved exercise explanation.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تحمل حقيبة ثابتة ومرفقك مثني. أي تفسير يناسب عضلات الذراع النشطة؟",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "مقارنتي: My new comparison of exercise and rest.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "فسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرارة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تفسيري: My explanation: feedback reduces the temperature disturbance. تبقى ملاحظاتي محفوظة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ]
+          },
+          "paper": {
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          },
+          "surfaces": [
+            {
+              "text": "3البنى المختلفة التي فتحتها",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1أحتاج إلى تدريب",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1ما زلت أتعلم",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1فهمت",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "0إجابات صحيحة",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "0عمليات التحديد",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "3مدخلات تتضمن ملاحظات",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "معنى هذه السجلاتتشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة واحدة، حتى إن ظهرت في أك",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الجمجمةفهمتتم التقييم قبل 10 يوم · أعد التحقق",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "فهمت",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الفك السفليأحتاج إلى تدريبOnly moveable skull bone. Enables mastication, speech, and facial expressi",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "أحتاج إلى تدريب",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الأضلاع (1-12)ما زلت أتعلم12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thorac",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "ما زلت أتعلم",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "عظم الفخذعمل محفوظ · لم يُقيّمعظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأسه بحُق ال",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "النشاط البدني: من القوة إلى تبادل الغازاتيزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، ",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارةفسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرا",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            }
+          ],
+          "hidden": {
+            "workbench": "none",
+            "actions": "none"
+          }
+        }
+      },
+      {
+        "theme": "dark",
+        "metrics": {
+          "text": {
+            "heading": [
+              {
+                "text": "📄 ورقة دراستي للتشريح",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "numbers": [
+              {
+                "text": "3",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "0",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "0",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "3",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "notes": [
+              {
+                "text": "The mandible supports the lower teeth and moves during chewing.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "My own explanation stays saved: the ribs protect the chest. هذا شرح محفوظ للتعلّم والمراجعة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "The femur transmits weight through the thigh to the knee.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "badges": [
+              {
+                "text": "فهمت",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "أحتاج إلى تدريب",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "ما زلت أتعلم",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "reflectionHeadings": [
+              {
+                "text": "النشاط البدني: من القوة إلى تبادل الغازات",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارة",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "body": [
+              {
+                "text": "تشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة واحدة، حتى إن ظهرت في أكثر من مجموعة. تُ",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "عرض البنية يعني فتحها، ولا يعني تعلّمها. توجّه التقييمات التدريب: يمكنك اختيارها بنفسك، ويمكن للإجاب",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تقترح هذه الأداة المراجعة الآن عند اختيار «أحتاج إلى تدريب»، وبعد يومين عند اختيار «ما زلت أتعلم»، و",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تشترك المدخلات المتكررة للبنية نفسها في التقييمات وسجلات الإجابات المصحّحة. وتبقى ملاحظاتها منفصلة. ",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "الخطوة التالية: مراجعة الفك السفلي — عدد البنى المحددة للمراجعة في هذا العرض: 2.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "⏰ أعد التحقق اليوم: الجمجمة. حاول تذكّر وظيفة كل بنية قبل التحقق منها. تتبع هذه التذكيرات تواريخ الت",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thoracic organs and assist venti",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "4/7 إجابات مصححة صحيحة. مشتركة بين بطاقات هذا العضو، ومنفصلة عن تقييم ثقتك.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "عظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأسه بحُق الورك ويشكل طرفه السفلي جزءاً من",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "يزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، هل يقل انتقال الأكسجين أم يزيد أم يبقى كم",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تفسيري: My saved exercise explanation.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تحمل حقيبة ثابتة ومرفقك مثني. أي تفسير يناسب عضلات الذراع النشطة؟",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "مقارنتي: My new comparison of exercise and rest.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "فسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرارة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تفسيري: My explanation: feedback reduces the temperature disturbance. تبقى ملاحظاتي محفوظة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ]
+          },
+          "paper": {
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          },
+          "surfaces": [
+            {
+              "text": "3البنى المختلفة التي فتحتها",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1أحتاج إلى تدريب",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1ما زلت أتعلم",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1فهمت",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "0إجابات صحيحة",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "0عمليات التحديد",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "3مدخلات تتضمن ملاحظات",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "معنى هذه السجلاتتشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة واحدة، حتى إن ظهرت في أك",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الجمجمةفهمتتم التقييم قبل 10 يوم · أعد التحقق",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "فهمت",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الفك السفليأحتاج إلى تدريبOnly moveable skull bone. Enables mastication, speech, and facial expressi",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "أحتاج إلى تدريب",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الأضلاع (1-12)ما زلت أتعلم12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thorac",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "ما زلت أتعلم",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "عظم الفخذعمل محفوظ · لم يُقيّمعظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأسه بحُق ال",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "النشاط البدني: من القوة إلى تبادل الغازاتيزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، ",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارةفسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرا",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            }
+          ],
+          "hidden": {
+            "workbench": "none",
+            "actions": "none"
+          }
+        }
+      },
+      {
+        "theme": "contrast",
+        "metrics": {
+          "text": {
+            "heading": [
+              {
+                "text": "📄 ورقة دراستي للتشريح",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "numbers": [
+              {
+                "text": "3",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "1",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "0",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "0",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "3",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "notes": [
+              {
+                "text": "The mandible supports the lower teeth and moves during chewing.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "My own explanation stays saved: the ribs protect the chest. هذا شرح محفوظ للتعلّم والمراجعة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "The femur transmits weight through the thigh to the knee.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "badges": [
+              {
+                "text": "فهمت",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "أحتاج إلى تدريب",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "ما زلت أتعلم",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              }
+            ],
+            "reflectionHeadings": [
+              {
+                "text": "النشاط البدني: من القوة إلى تبادل الغازات",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارة",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ],
+            "body": [
+              {
+                "text": "تشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة واحدة، حتى إن ظهرت في أكثر من مجموعة. تُ",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "عرض البنية يعني فتحها، ولا يعني تعلّمها. توجّه التقييمات التدريب: يمكنك اختيارها بنفسك، ويمكن للإجاب",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تقترح هذه الأداة المراجعة الآن عند اختيار «أحتاج إلى تدريب»، وبعد يومين عند اختيار «ما زلت أتعلم»، و",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تشترك المدخلات المتكررة للبنية نفسها في التقييمات وسجلات الإجابات المصحّحة. وتبقى ملاحظاتها منفصلة. ",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "الخطوة التالية: مراجعة الفك السفلي — عدد البنى المحددة للمراجعة في هذا العرض: 2.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "⏰ أعد التحقق اليوم: الجمجمة. حاول تذكّر وظيفة كل بنية قبل التحقق منها. تتبع هذه التذكيرات تواريخ الت",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thoracic organs and assist venti",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "4/7 إجابات مصححة صحيحة. مشتركة بين بطاقات هذا العضو، ومنفصلة عن تقييم ثقتك.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "عظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأسه بحُق الورك ويشكل طرفه السفلي جزءاً من",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "يزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، هل يقل انتقال الأكسجين أم يزيد أم يبقى كم",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تفسيري: My saved exercise explanation.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تحمل حقيبة ثابتة ومرفقك مثني. أي تفسير يناسب عضلات الذراع النشطة؟",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "مقارنتي: My new comparison of exercise and rest.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "فسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرارة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              {
+                "text": "تفسيري: My explanation: feedback reduces the temperature disturbance. تبقى ملاحظاتي محفوظة.",
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              }
+            ]
+          },
+          "paper": {
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          },
+          "surfaces": [
+            {
+              "text": "3البنى المختلفة التي فتحتها",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1أحتاج إلى تدريب",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1ما زلت أتعلم",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "1فهمت",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "0إجابات صحيحة",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "0عمليات التحديد",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "3مدخلات تتضمن ملاحظات",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "معنى هذه السجلاتتشمل الإجماليات كل العمل المحفوظ. تُحسب كل بنية تشريحية مرة واحدة، حتى إن ظهرت في أك",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الجمجمةفهمتتم التقييم قبل 10 يوم · أعد التحقق",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "فهمت",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "تم التقييم قبل 10 يوم · أعد التحقق",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الفك السفليأحتاج إلى تدريبOnly moveable skull bone. Enables mastication, speech, and facial expressi",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "أحتاج إلى تدريب",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الأضلاع (1-12)ما زلت أتعلم12 pairs: 7 true (1–7), 3 false (8–10), 2 floating (11–12). Protect thorac",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "ما زلت أتعلم",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "عظم الفخذعمل محفوظ · لم يُقيّمعظم الفخذ هو عظم منطقة الفخذ، وهو عادةً أطول العظام. يتصل رأسه بحُق ال",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "النشاط البدني: من القوة إلى تبادل الغازاتيزداد سمك الحاجز بين الهواء والدم. مع ثبات العوامل الأخرى، ",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            },
+            {
+              "text": "الاتزان الداخلي: التغذية الراجعة لدرجة الحرارةفسّر كيف تغيّر التغذية الراجعة اتجاه اضطراب درجة الحرا",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)"
+            }
+          ],
+          "hidden": {
+            "workbench": "none",
+            "actions": "none"
+          }
+        }
+      }
+    ],
+    "finalState": {
+      "_activeTab": "flashcards",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "selectedStructure": "mandible",
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_showStudySheet": true,
+      "quizScore": 7,
+      "_aiInput": "Keep my Tutor draft.",
+      "_structuresViewed": {
+        "skull": true,
+        "mandible": true,
+        "ribs": true
+      },
+      "_structureConfidence": {
+        "skull": "mastered",
+        "mandible": "practice",
+        "ribs": "learning"
+      },
+      "_confidenceAt": {
+        "skull": 1789925426572,
+        "mandible": 1790789426572,
+        "ribs": 1790789426572
+      },
+      "_structureNotes": {
+        "mandible": "The mandible supports the lower teeth and moves during chewing.",
+        "ribs": "My own explanation stays saved: the ribs protect the chest. هذا شرح محفوظ للتعلّم والمراجعة.",
+        "femur": "The femur transmits weight through the thigh to the knee."
+      },
+      "_retrievalEvidence": {
+        "ribs": {
+          "attempts": 7,
+          "correct": 4
+        }
+      },
+      "_systemsMotionLearning": {
+        "exercise": {
+          "explanation": "My saved exercise explanation.",
+          "prediction": "same",
+          "transfer": 2,
+          "transferExplanation": "My new comparison of exercise and rest."
+        }
+      },
+      "_feedbackExperiment": {
+        "explanation": "My explanation: feedback reduces the temperature disturbance. تبقى ملاحظاتي محفوظة.",
+        "direction": "cooling",
+        "prediction": "active",
+        "revealed": true
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "posterior": true,
+        "anterior": true
+      },
+      "_badges": {
+        "firstStructure": true,
+        "viewToggler": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.6107877668878117,
+          "y": 0.2094629553453268,
+          "vx": -0.38849008741192015,
+          "vy": -1.3198901104728264,
+          "rot": 1.4430432754494076,
+          "spin": -1.9585954597782402,
+          "ci": 0,
+          "born": 1790789429543
+        },
+        {
+          "x": 0.6092577317341392,
+          "y": 0.1993248729229121,
+          "vx": 0.35119916102134296,
+          "vy": -1.1843859349856898,
+          "rot": 0.18668057391827647,
+          "spin": 1.6629467708372778,
+          "ci": 1,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.48539770704865565,
+          "y": 0.269953698557456,
+          "vx": -0.7264737478695356,
+          "vy": -1.0591363310030752,
+          "rot": 1.245606179662862,
+          "spin": 1.53656377379857,
+          "ci": 2,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.659933860895116,
+          "y": 0.2151794509612014,
+          "vx": -0.5864199764384612,
+          "vy": -1.0227723432167963,
+          "rot": 4.146014402567886,
+          "spin": 2.3710636472958657,
+          "ci": 3,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.48045610315159326,
+          "y": 0.16228039829426608,
+          "vx": 0.32999770534232753,
+          "vy": -2.150104932319397,
+          "rot": 3.7510644049095476,
+          "spin": 0.38526429075469615,
+          "ci": 4,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5210826117290903,
+          "y": 0.2867539213993655,
+          "vx": 0.01747777935704775,
+          "vy": -1.7976780264035301,
+          "rot": 1.3610010830474035,
+          "spin": -2.7751255833915263,
+          "ci": 5,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6051239481406352,
+          "y": 0.2608525295091051,
+          "vx": 0.9294537784165069,
+          "vy": -2.1106945024479113,
+          "rot": 4.30237496458611,
+          "spin": -2.9977691983065684,
+          "ci": 6,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.4900581760729622,
+          "y": 0.14112246661971264,
+          "vx": -0.4361432978268789,
+          "vy": -1.5142629614784082,
+          "rot": 0.5364714979588483,
+          "spin": -1.1259559507583603,
+          "ci": 7,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.4221826575295713,
+          "y": 0.144430921309242,
+          "vx": 0.07064202603261549,
+          "vy": -2.763284072715897,
+          "rot": 0.14641694540040845,
+          "spin": 2.1343297524980573,
+          "ci": 8,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.660303786489101,
+          "y": 0.2635357795064305,
+          "vx": -0.3435199066743211,
+          "vy": -1.6635631972867047,
+          "rot": 3.3184232576521584,
+          "spin": 1.210771671189962,
+          "ci": 9,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6560165835344443,
+          "y": 0.21292814913768562,
+          "vx": 0.471662477891871,
+          "vy": -1.7387285961460712,
+          "rot": 2.0126596138741903,
+          "spin": 0.39783661383357183,
+          "ci": 10,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.375862464388353,
+          "y": 0.1876557065752526,
+          "vx": 0.20367941770783604,
+          "vy": -1.7367339241236834,
+          "rot": 5.7890686210411735,
+          "spin": -1.4128881508339113,
+          "ci": 11,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.3312931439384878,
+          "y": 0.2602168808442354,
+          "vx": -0.9904066843934851,
+          "vy": -1.9561769312623083,
+          "rot": 5.5861353020134725,
+          "spin": -2.549344232225083,
+          "ci": 12,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5083660292949859,
+          "y": 0.14922707295750015,
+          "vx": 0.9690943971587194,
+          "vy": -1.6533593813726464,
+          "rot": 1.490599874768927,
+          "spin": -2.321680906888401,
+          "ci": 13,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6336296954312617,
+          "y": 0.29876752559522124,
+          "vx": 0.05809113510833619,
+          "vy": -1.478199553493763,
+          "rot": 0.014555761886283299,
+          "spin": 1.0799632667691899,
+          "ci": 14,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6469977586824651,
+          "y": 0.2733628107206729,
+          "vx": 0.7396008680507846,
+          "vy": -1.5401145780060703,
+          "rot": 5.110407214578365,
+          "spin": -1.7281675963221073,
+          "ci": 15,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5520826452925037,
+          "y": 0.2604062410436113,
+          "vx": -0.4361559629458249,
+          "vy": -1.3728298499516578,
+          "rot": 1.0669706990186034,
+          "spin": 0.8761044797761921,
+          "ci": 16,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5617543357668976,
+          "y": 0.1260480909320913,
+          "vx": 0.370300305470316,
+          "vy": -1.8109564280635606,
+          "rot": 3.3436610577942094,
+          "spin": -1.5358987803912967,
+          "ci": 17,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6929568875098432,
+          "y": 0.19405131895734753,
+          "vx": -0.33836457929841,
+          "vy": -1.8834987774869527,
+          "rot": 1.3889257069370167,
+          "spin": 0.6747285284321503,
+          "ci": 18,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.4288835917302988,
+          "y": 0.11615632483602925,
+          "vx": 0.7042737229660061,
+          "vy": -2.9632186234842535,
+          "rot": 0.7090661284364699,
+          "spin": -0.34172295055262136,
+          "ci": 19,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.617414834089538,
+          "y": 0.17042841907676604,
+          "vx": 0.2673732948279941,
+          "vy": -2.114061628958188,
+          "rot": 2.9159044738289586,
+          "spin": -2.9281891177677526,
+          "ci": 20,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.39447835416858007,
+          "y": 0.1451268196644666,
+          "vx": 0.5953568942704852,
+          "vy": -2.6835353998340765,
+          "rot": 1.8730435377805148,
+          "spin": 1.9582789281238602,
+          "ci": 21,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6143706200974408,
+          "y": 0.22557355637279766,
+          "vx": -0.672190088618797,
+          "vy": -1.5203792514579533,
+          "rot": 1.6497331687174417,
+          "spin": 0.7743867369156565,
+          "ci": 22,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6389472735943874,
+          "y": 0.1576970903291937,
+          "vx": -0.20486826928954516,
+          "vy": -1.6969754121019804,
+          "rot": 1.3706115776891419,
+          "spin": -1.1999676931981973,
+          "ci": 23,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.5905964460334815,
+          "y": 0.20611646595998734,
+          "vx": -0.9175916270349809,
+          "vy": -1.6524512918383976,
+          "rot": 4.860703117347148,
+          "spin": -0.6836257433804014,
+          "ci": 24,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6327445165216825,
+          "y": 0.2719941252924419,
+          "vx": -0.9273674505886331,
+          "vy": -1.7399127917046642,
+          "rot": 2.8365136975136673,
+          "spin": 0.26695378259448055,
+          "ci": 25,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6828065922635131,
+          "y": 0.2729294915035585,
+          "vx": -0.584940510982938,
+          "vy": -1.8281219208487303,
+          "rot": 5.0494359640650694,
+          "spin": 1.4295324886011278,
+          "ci": 26,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6302359051806834,
+          "y": 0.29247683584733963,
+          "vx": 0.06650367704375792,
+          "vy": -2.5336832234563227,
+          "rot": 1.0899458239765254,
+          "spin": -1.7451968729286964,
+          "ci": 27,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.6348989842194472,
+          "y": 0.2430042513882129,
+          "vx": 0.9526838890607994,
+          "vy": -1.6514823282995692,
+          "rot": 1.3877162219634214,
+          "spin": 2.751209690513808,
+          "ci": 28,
+          "born": 1790789429544
+        },
+        {
+          "x": 0.366447183086889,
+          "y": 0.2140310850173237,
+          "vx": -0.27587462333350965,
+          "vy": -2.4283437899089844,
+          "rot": 0.5128534508891925,
+          "spin": -1.6794842366293794,
+          "ci": 29,
+          "born": 1790789429544
+        }
+      ],
+      "_studyImportReading": false,
+      "_studyImportToken": null,
+      "_studySheetRevision": 11,
+      "_studySheetFilter": "all",
+      "_studySheetSystem": "all",
+      "_studyImportPreview": {
+        "schema": "alloflow-anatomy-study",
+        "version": 1,
+        "records": [
+          {
+            "id": "ribs",
+            "viewed": true,
+            "confidence": "learning",
+            "ratedAt": 1790789426572,
+            "note": "A conflicting incoming note.",
+            "recall": {
+              "attempts": 7,
+              "correct": 4
+            }
+          },
+          {
+            "id": "mandible",
+            "viewed": true,
+            "confidence": "practice",
+            "ratedAt": 1790789426572,
+            "note": "The mandible supports the lower teeth and moves during chewing."
+          }
+        ],
+        "skipped": 1,
+        "learningNotes": [
+          {
+            "id": "exercise",
+            "explanation": "A conflicting incoming explanation.",
+            "transferExplanation": "My new comparison of exercise and rest."
+          },
+          {
+            "id": "homeostasis",
+            "explanation": "A conflicting incoming temperature explanation.",
+            "transferExplanation": ""
+          }
+        ]
+      },
+      "_studyImportName": "resume-notes-الأناتومي-2026-09-30-long-file-name.json",
+      "_studyImportRevision": 21,
+      "_studyRecordNotice": "المعاينة جاهزة. راجع الأعداد، ثم ادمج السجل لإضافة هذا العمل.",
+      "quizMode": false,
+      "_anatomyModelFocus": false,
+      "search": "",
+      "_flashcardScope": "review",
+      "_flashcardDeck": [
+        "mandible",
+        "skull"
+      ],
+      "_flashcardDeckContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundContext": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+      "_flashcardRoundRated": {},
+      "_flashcardIdx": 0,
+      "_flashcardFlipped": false,
+      "_flashcardRounds": {
+        "skeletal:3:review": {
+          "context": "skeletal:3:review:skull,mandible,clavicle,sternum,ribs,scapula,humerus,radius,ulna,carpals,vertebral,pelvis,femur,patella,tibia,fibula,tarsals,sacrum,hyoid,atlas_axis,metatarsals,metacarpals,scaphoid_bone",
+          "deckIds": [
+            "mandible",
+            "skull"
+          ],
+          "index": 0,
+          "rated": {}
+        }
+      },
+      "_flashcardRevision": 1,
+      "_readingMode": true
+    }
+  }
+}

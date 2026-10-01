@@ -1,0 +1,22 @@
+[
+  {
+    "file": "content_engine_source.jsx",
+    "existed": true,
+    "conflicts": 1
+  },
+  {
+    "file": "tests/revision_target.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/free_var_crashes_2026_09_14.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/bilingual_revision_transaction.test.js",
+    "existed": false,
+    "conflicts": 0
+  }
+]

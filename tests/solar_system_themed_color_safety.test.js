@@ -75,8 +75,9 @@ describe('themed planet colours never get concatenated into a new colour', () =>
       // An alpha suffix on a value that may be `var(...)` is the whole failure mode.
       const suffixed = [...source.matchAll(/\bp\.color \+ ['"][0-9a-fA-F]{2}['"]/g)].map((m) => m[0]);
       expect(suffixed, `raw planet colour given an alpha suffix: ${suffixed.join(', ')}`).toEqual([]);
-      // The three sites that used to do it now go through the accent helper.
-      expect(source).toContain("getSolarPlanetAccent(p) + 'cc)'");
+      // The picker passes a concrete accent to CSS, and derived colour strings
+      // elsewhere also go through the accent helper.
+      expect(source).toContain("'--planet-glow': getSolarPlanetAccent(p),");
       expect(source).toContain("getSolarPlanetAccent(p) + '99,'");
       expect(source).toContain('color: getSolarPlanetAccent(p),');
     });

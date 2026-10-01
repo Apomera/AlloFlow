@@ -1,0 +1,275 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser.config.tmp.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass12-2026-09-30/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-departure.spec.ts",
+      "file": "moon-mission-departure.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "measured burn changes energy and mass; cutoff removes the plume and coast conserves energy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6432,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T21:11:39.943Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "sps-burn",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser-results\\moon-mission-departure-mea-d0f95--and-coast-conserves-energy-chromium\\attachments\\sps-burn-aa17c876d5791408957c2789b0f114cecfdfd477.png"
+                    },
+                    {
+                      "name": "reference-escape",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser-results\\moon-mission-departure-mea-d0f95--and-coast-conserves-energy-chromium\\attachments\\reference-escape-054fbc14c44a19a2bafcd9f23aa56d6aa3fa2dc6.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d5f41edb58f69103ef73-b8cd4f8247e1c046fd89",
+          "file": "moon-mission-departure.spec.ts",
+          "line": 14,
+          "column": 5
+        },
+        {
+          "title": "short, late and depleted burns produce distinct measured results",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5969,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T21:11:47.130Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "short-bound",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser-results\\moon-mission-departure-sho-58c96-e-distinct-measured-results-chromium\\attachments\\short-bound-f674e984f4faace06bc5550d8b7028ed35282a37.png"
+                    },
+                    {
+                      "name": "late-departure",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser-results\\moon-mission-departure-sho-58c96-e-distinct-measured-results-chromium\\attachments\\late-departure-0b9595a416fe7606ed769e4fccd71742c5c45944.png"
+                    },
+                    {
+                      "name": "fuel-exhaustion",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser-results\\moon-mission-departure-sho-58c96-e-distinct-measured-results-chromium\\attachments\\fuel-exhaustion-78b9e7ced20c83b3a2cf1c5d291cddc8f78517eb.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d5f41edb58f69103ef73-2ee05fc8292b320e182e",
+          "file": "moon-mission-departure.spec.ts",
+          "line": 15,
+          "column": 5
+        },
+        {
+          "title": "rewind reload and corruption validation retain only matching measured evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4561,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T21:11:53.113Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d5f41edb58f69103ef73-250584055781c13e8bdc",
+          "file": "moon-mission-departure.spec.ts",
+          "line": 16,
+          "column": 5
+        },
+        {
+          "title": "hidden playback and close reopen preserve time without wall-clock catch-up",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3496,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T21:11:57.690Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d5f41edb58f69103ef73-c86e85ae07be934ea67e",
+          "file": "moon-mission-departure.spec.ts",
+          "line": 17,
+          "column": 5
+        },
+        {
+          "title": "320px keyboard seek, view resize and reload preserve state with zero scoped axe findings",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6332,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T21:12:01.200Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "departure-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass12-2026-09-30\\browser-results\\moon-mission-departure-320-44888-th-zero-scoped-axe-findings-chromium\\attachments\\departure-phone-320-80871baa6548c10995ffb55256b1515ce2e7166e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d5f41edb58f69103ef73-f5883300213a04f2ebbd",
+          "file": "moon-mission-departure.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T21:11:37.895Z",
+    "duration": 42946.278999999995,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

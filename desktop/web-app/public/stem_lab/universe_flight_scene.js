@@ -98,6 +98,58 @@
     return [x / (gamma(b) * denominator), y / (gamma(b) * denominator), (z + b) / denominator];
   }
 
+  function targetView(direction, yaw, pitch, beta, fov, aspect) {
+    // Follow the renderer: aberrate in the travel frame, then rotate into
+    // the camera view. Rear targets keep their transverse turn direction.
+    var apparent = aberrate(direction || [], beta);
+    var sy = Math.sin(finite(yaw, 0)), cy = Math.cos(finite(yaw, 0));
+    var sp = Math.sin(finite(pitch, 0)), cp = Math.cos(finite(pitch, 0));
+    var x = apparent[0] * cy - apparent[2] * sy;
+    var y = -apparent[0] * sy * sp + apparent[1] * cp - apparent[2] * cy * sp;
+    var z = apparent[0] * sy * cp + apparent[1] * sp + apparent[2] * cy * cp;
+    var viewportAspect = finite(aspect, 1);
+    if (viewportAspect <= 0) viewportAspect = 1;
+    var lens = 1 / Math.tan(clamp(finite(fov, 65), 30, 100) * Math.PI / 360);
+    var screen = z > 0.001 ? [0.5 + x * lens / z / viewportAspect / 2, 0.5 - y * lens / z / 2] : [null, null];
+    var antipode = z < 0 && Math.hypot(x, y) < 1e-8;
+    var arrow = antipode ? 0 : Math.atan2(-y, x);
+    var sectors = ['right', 'lower-right', 'down', 'lower-left', 'left', 'upper-left', 'up', 'upper-right'];
+    var sector = antipode ? 'behind' : sectors[(Math.round(arrow / (Math.PI / 4)) + 8) % 8];
+    var dx = antipode ? 1 : x / viewportAspect, dy = antipode ? 0 : -y;
+    var edgeScale = Math.min(dx ? 0.4 / Math.abs(dx) : Infinity, dy ? 0.4 / Math.abs(dy) : Infinity);
+    var edge = Number.isFinite(edgeScale) ? [0.5 + dx * edgeScale, 0.5 + dy * edgeScale] : [0.5, 0.5];
+    return {
+      screen: screen,
+      inView: z > 0.001 && screen[0] >= 0 && screen[0] <= 1 && screen[1] >= 0 && screen[1] <= 1,
+      angleDeg: Math.atan2(Math.hypot(x, y), z) * 180 / Math.PI,
+      behind: z < 0, sector: sector, arrowDeg: arrow * 180 / Math.PI, edge: edge
+    };
+  }
+
+  function targetFrame(direction, beta, fov, aspect, u) {
+    if (!direction || ![0, 1, 2].every(function (i) { return Number.isFinite(direction[i]); })) return null;
+    var length = Math.hypot(direction[0], direction[1], direction[2]);
+    if (!length || !Number.isFinite(length)) return null;
+    var anchor = u === undefined ? 0.5 : u;
+    if (!Number.isFinite(anchor) || anchor < 0 || anchor > 1) return null;
+    var viewportAspect = finite(aspect, 1);
+    if (viewportAspect <= 0) viewportAspect = 1;
+    var lensFov = clamp(finite(fov, 65), 30, 100);
+    var source = [direction[0] / length, direction[1] / length, direction[2] / length];
+    var apparent = aberrate(source, beta);
+    var a = (2 * anchor - 1) * viewportAspect * Math.tan(lensFov * Math.PI / 360);
+    var c = 1 / Math.hypot(1, a), pitchMax = Math.PI / 2 - 0.01;
+    // The camera has no roll. A target too close to its vertical axis cannot
+    // reach this horizontal anchor without exceeding the allowed pitch.
+    if (!Number.isFinite(a) || c <= 0.001 || Math.abs(apparent[1]) > c * Math.sin(pitchMax) + 1e-12) return null;
+    var pitch = clamp(Math.asin(clamp(apparent[1] / c, -1, 1)), -pitchMax, pitchMax);
+    var yaw = Math.atan2(apparent[0], apparent[2]) - Math.atan2(a, Math.cos(pitch));
+    yaw = ((yaw % TAU) + TAU) % TAU;
+    var projection = targetView(source, yaw, pitch, beta, lensFov, viewportAspect);
+    if (!projection.screen.every(Number.isFinite) || Math.abs(projection.screen[0] - anchor) > 1e-9 || Math.abs(projection.screen[1] - 0.5) > 1e-9) return null;
+    return { yaw: yaw, pitch: pitch, screen: [anchor, 0.5] };
+  }
+
   // yaw/pitch describe the observer-frame sightline, not the photon direction.
   // Inverting aberration gives D = 1 / [gamma * (1 - beta * cos(thetaObserved))].
   function viewSpectrum(beta, yaw, pitch, wavelengthNm) {
@@ -153,6 +205,20 @@
     return next;
   }
 
+  function easePace(current, target, dt, response) {
+    var start = clamp(finite(current, 0), 0, 1e10);
+    var wanted = clamp(finite(target, 0), 0, 1e10);
+    var seconds = clamp(finite(dt, 0), 0, 0.1);
+    var settling = clamp(finite(response, 0.6), 0.05, 10);
+    // Zero pace is a stop, not a coast. Integrate the exponential exactly so
+    // the camera covers the same distance across different frame intervals.
+    if (!wanted) return { speed: 0, distance: 0 };
+    var change = Math.expm1(-seconds / settling);
+    var speed = start + (wanted - start) * -change;
+    var distance = start * settling * -change + wanted * Math.max(0, seconds + settling * change);
+    return { speed: clamp(speed, 0, 1e10), distance: Math.max(0, distance) };
+  }
+
   function randomGenerator(seed) {
     return function () {
       seed = (Math.imul(1664525, seed) + 1013904223) >>> 0;
@@ -160,12 +226,44 @@
     };
   }
 
+  // Small procedural atlases are shared as CPU bytes; every renderer owns its
+  // GPU textures. Atlas generation is static; navigation and clocks are unchanged.
+  var galaxyAtlasBytes = null, cloudAtlasBytes = null;
+  var GALAXY_TILE_SIZE = 512, GALAXY_GUTTER = 8;
+  var CLOUD_TILE_SIZE = 128, CLOUD_GUTTER = 8;
+  var GALAXY_STYLES = ['spiral', 'two-arm', 'barred', 'elliptical'];
+  function emissionNoise(x, y, seed) {
+    function hash(ix, iy) {
+      var n = Math.imul(ix + seed, 374761393) ^ Math.imul(iy + seed, 668265263);
+      n = Math.imul(n ^ (n >>> 13), 1274126177);
+      return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+    }
+    var ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+    return (hash(ix, iy) * (1 - fx) + hash(ix + 1, iy) * fx) * (1 - fy) +
+      (hash(ix, iy + 1) * (1 - fx) + hash(ix + 1, iy + 1) * fx) * fy;
+  }
+  // Adapted from Galaxy's shared morphology layout: the point population and
+  // the baked arms use exactly the same centerline, including bar branches.
+  function spiralAngle(style, arm, radius) {
+    if (style === 'two-arm') return arm * Math.PI + radius * 3.5;
+    if (style === 'barred') {
+      var branch = clamp((radius - 0.46) / (0.88 - 0.46), 0, 1);
+      branch = branch * branch * (3 - 2 * branch);
+      return 0.85 + (arm % 2) * Math.PI + (radius - 0.34) * 2.5 + (arm >= 2 ? branch * 0.55 : 0);
+    }
+    return arm * Math.PI / 2 + Math.log(1 + radius * 9) * 2.15;
+  }
   function makeRegion(name) {
     var random = randomGenerator(REGIONS[name].seed);
     var points = [], galaxies = [];
     function normal() { return Math.sqrt(-2 * Math.log(Math.max(1e-8, random()))) * Math.cos(TAU * random()); }
     function add(x, y, z, color, size, light, cloud) {
-      points.push(x, y, z, color[0], color[1], color[2], size, light, cloud || 0);
+      // Pack a stable tile and rotation into the existing cloud float. This
+      // consumes no scene RNG samples and keeps the nine-float point layout.
+      var index = points.length / 9;
+      var profile = cloud ? 1 + index % 4 + ((index * 0.61803398875) % 1) * 0.98 : 0;
+      points.push(x, y, z, color[0], color[1], color[2], size, light, profile);
     }
     function starColor() {
       var t = random();
@@ -181,16 +279,25 @@
         add(p[0], p[1], p[2], starColor(), pointSize, 0.2 + random() * 0.42, 0);
       }
     }
-    function spiral(cx, cy, cz, radius, count, tilt, turn, cloudScale, elliptical) {
-      galaxies.push({ center: [cx, cy, cz], radius: radius, tilt: tilt, turn: turn, elliptical: !!elliptical });
+    function spiral(cx, cy, cz, radius, count, tilt, turn, cloudScale, elliptical, morphology) {
+      var style = elliptical ? 'elliptical' : morphology || 'spiral';
+      galaxies.push({ center: [cx, cy, cz], radius: radius, tilt: tilt, turn: turn, elliptical: !!elliptical, style: style });
       var ct = Math.cos(tilt), st = Math.sin(tilt), cr = Math.cos(turn), sr = Math.sin(turn);
       for (var j = 0; j < count; j++) {
         var bulge = random() < 0.23;
         var r = bulge ? Math.abs(normal()) * radius * 0.135 : radius * Math.pow(random(), 0.72);
-        var arm = Math.floor(random() * 4) * Math.PI / 2;
-        var angle = bulge || random() < 0.25 ? random() * TAU : arm + Math.log(1 + r / radius * 9) * 2.15 + normal() * 0.24;
+        var arm = Math.floor(random() * 4);
+        if (style === 'two-arm') arm %= 2;
+        var centerline = spiralAngle(style, arm, r / radius);
+        var angle = bulge || random() < 0.25 ? random() * TAU : centerline + normal() * 0.24;
         var x = Math.cos(angle) * r, z = Math.sin(angle) * r;
         var y = normal() * radius * (bulge ? 0.065 : 0.012);
+        if (style === 'barred' && !bulge && r / radius < 0.34) {
+          var alongBar = (arm % 2 ? -1 : 1) * r;
+          var acrossBar = Math.sin(angle - centerline) * radius * 0.055;
+          x = alongBar * Math.cos(0.85) - acrossBar * Math.sin(0.85);
+          z = alongBar * Math.sin(0.85) + acrossBar * Math.cos(0.85);
+        }
         if (elliptical) {
           r = Math.min(1.1, Math.abs(normal()) * 0.32) * radius;
           angle = random() * TAU; x = Math.cos(angle) * r; z = Math.sin(angle) * r * 0.72;
@@ -207,12 +314,52 @@
     }
 
     if (name === 'neighborhood') {
-      // A local star field with depth and a distant, inclined galactic band.
-      for (var n = 0; n < 8500; n++) {
-        var local = sphere(5 + 245 * Math.pow(random(), 1 / 3));
-        add(local[0], local[1], local[2], starColor(), 0.018 + Math.pow(random(), 6) * 0.22, 0.38 + random() * 0.6, 0);
+      // Spend the same point budget across nearby depth, loose clusters, and the
+      // distant band. The nearby population gives a moving camera parallax;
+      // these are illustrative distributions, not surveyed stellar densities.
+      for (var n = 0; n < 7200; n++) {
+        var nearby = n < 1500;
+        var local = sphere(nearby ? 4 + 61 * Math.sqrt(random()) : 5 + 245 * Math.pow(random(), 1 / 3));
+        add(local[0], local[1], local[2], starColor(), (nearby ? 0.015 : 0.018) + Math.pow(random(), 6) * (nearby ? 0.1 : 0.22), 0.4 + random() * 0.6, 0);
       }
-      for (var b = 0; b < 9000; b++) {
+      [
+        { center: [-8.5, 4, 27], spread: 5, count: 480 },
+        { center: [18, -10, 61], spread: 8, count: 460 },
+        { center: [-30, 15, 106], spread: 12, count: 360 }
+      ].forEach(function (cluster) {
+        for (var c = 0; c < cluster.count; c++) {
+          // A loose halo surrounds a tighter core. Both have genuine depth,
+          // so their stars separate as you pass rather than forming a sky decal.
+          var spread = cluster.spread * (random() < 0.28 ? 0.4 : 1);
+          var x = normal() * spread, y = normal() * spread * 0.75, z = normal() * spread * 1.4;
+          add(cluster.center[0] + x, cluster.center[1] + y, cluster.center[2] + z,
+            starColor(), 0.02 + Math.pow(random(), 4) * 0.1, 0.48 + random() * 0.52, 0);
+        }
+      });
+      [
+        { center: [9, -2, 34], extent: 11.5, turn: -0.35, count: 570, color: [0.30, 0.64, 0.90] },
+        { center: [-22, 11, 83], extent: 21, turn: 0.48, count: 430, color: [0.65, 0.36, 0.72] }
+      ].forEach(function (nebula) {
+        var ct = Math.cos(nebula.turn), st = Math.sin(nebula.turn);
+        for (var e = 0; e < nebula.count; e++) {
+          var branch = e % 3, phase = branch * TAU / 3;
+          var knot = random() < 0.38;
+          var along = knot ? [-0.62, -0.05, 0.51][Math.floor(random() * 3)] + normal() * 0.1 : random() * 2 - 1;
+          var thickness = knot ? 0.075 : 0.13;
+          var x = along * nebula.extent;
+          var y = (Math.sin(along * 3.8 + phase) * 0.32 + normal() * thickness) * nebula.extent;
+          var z = (Math.cos(along * 2.7 + phase) * 0.34 + normal() * thickness * 1.6) * nebula.extent;
+          // Layered emission knots and gaps remain fixed in world space. The
+          // gaps are reduced emission, not a gas extinction or scattering model.
+          var color = knot && branch === 1 ? [0.95, 0.35, 0.48] : nebula.color;
+          var size = nebula.extent * (knot ? 0.095 : 0.16) * (0.65 + random() * 0.7);
+          // Compensate the opacity grain in these nearby emission regions;
+          // distant band and galaxy light keep their restrained profiles.
+          var light = 1.35 * (knot ? 0.095 : 0.062) * (0.65 + random() * 0.7);
+          add(nebula.center[0] + x * ct - y * st, nebula.center[1] + x * st + y * ct, nebula.center[2] + z, color, size, light, 1);
+        }
+      });
+      for (var b = 0; b < 8000; b++) {
         var bandAngle = random() * TAU, bandR = 18000 + 24000 * random();
         var bandX = Math.cos(bandAngle) * bandR;
         var bandZ = Math.sin(bandAngle) * bandR;
@@ -228,6 +375,7 @@
       sky(80000, 1700, 20);
     } else if (name === 'galaxy') {
       spiral(0, 0, 0, 52000, 30000, 0.88, -0.22, 1);
+      var resolvedStarStart = points.length / 9;
       // Resolved stars occupy the same tilted three-dimensional disk.
       for (var g = 0; g < 5000; g++) {
         var a = random() * TAU, gr = Math.pow(random(), 0.8) * 55000;
@@ -237,12 +385,53 @@
         add(gx * Math.cos(-0.22) - ty * Math.sin(-0.22), gx * Math.sin(-0.22) + ty * Math.cos(-0.22), tz,
           starColor(), 9 + random() * 18, 0.08 + random() * 0.19, 0);
       }
+      // Reuse 960 resolved stars for compact, fixed concentrations in the halo.
+      // The original population is generated first, so this separate seed does
+      // not disturb the disk clouds, remaining stars, or distant-sky RNG stream.
+      // These are generated stellar groups, not a surveyed globular catalog.
+      var clusterRandom = randomGenerator(REGIONS[name].seed ^ 0x6f29a3c1);
+      function clusterNormal() { return Math.sqrt(-2 * Math.log(Math.max(1e-8, clusterRandom()))) * Math.cos(TAU * clusterRandom()); }
+      var clusterAnchors = [
+        [-18000, 9000, 8000], [23000, -13000, -18000], [-32000, -7000, -16000],
+        [12000, 19000, 16000], [27000, 10000, 24000], [-11000, -21000, 10000]
+      ];
+      var clusterSpreads = [48, 60, 55, 72, 64, 80];
+      var clusterTilt = 0.88, clusterTurn = -0.22;
+      var clusterCT = Math.cos(clusterTilt), clusterST = Math.sin(clusterTilt);
+      var clusterCR = Math.cos(clusterTurn), clusterSR = Math.sin(clusterTurn);
+      clusterAnchors.forEach(function(anchor, clusterIndex) {
+        var outerRadius = 200 + clusterIndex % 3 * 10;
+        for (var star = 0; star < 160; star++) {
+          var spread = clusterSpreads[clusterIndex] * (clusterRandom() < 0.35 ? 0.38 : 1);
+          var dx = clusterNormal() * spread, dy = clusterNormal() * spread, dz = clusterNormal() * spread;
+          var length = Math.hypot(dx, dy, dz);
+          if (length > outerRadius) {
+            var bounded = outerRadius * (0.88 + clusterRandom() * 0.10) / length;
+            dx *= bounded; dy *= bounded; dz *= bounded;
+          }
+          var localX = anchor[0] + dx, localY = anchor[1] + dy, localZ = anchor[2] + dz;
+          var tiltedY = localY * clusterCT - localZ * clusterST;
+          var tiltedZ = localY * clusterST + localZ * clusterCT;
+          var offset = (resolvedStarStart + 4040 + clusterIndex * 160 + star) * 9;
+          var warmth = clusterRandom(), brightness = clusterRandom();
+          points[offset] = localX * clusterCR - tiltedY * clusterSR;
+          points[offset + 1] = localX * clusterSR + tiltedY * clusterCR;
+          points[offset + 2] = tiltedZ;
+          points[offset + 3] = 1;
+          points[offset + 4] = 0.86 + warmth * 0.12;
+          points[offset + 5] = 0.68 + warmth * 0.24;
+          points[offset + 6] = 5 + clusterRandom() * 9;
+          // Readable individual members retain their warm color at normal
+          // exposure. A few brighter stars give the compact group definition.
+          points[offset + 7] = star % 40 === 0 ? 0.48 + clusterRandom() * 0.09 : 0.16 + 0.28 * Math.pow(brightness, 3);
+        }
+      });
       sky(2200000, 1400, 800);
     } else {
       // Galaxy groups arranged along curved filaments, with real spatial depth.
       spiral(0, 0, 0, 110000, 2600, 0.80, -0.35, 1.2);
-      spiral(-480000, 190000, 1300000, 100000, 1400, 1.05, 0.45, 1.2);
-      spiral(2100000, -800000, 4200000, 90000, 1400, 0.7, -0.2, 1.2);
+      spiral(-480000, 190000, 1300000, 100000, 1400, 1.05, 0.45, 1.2, false, 'two-arm');
+      spiral(2100000, -800000, 4200000, 90000, 1400, 0.7, -0.2, 1.2, false, 'barred');
       spiral(800000, 550000, 850000, 135000, 2200, 1.05, -0.55, 1.5, true);
       for (var f = 0; f < 5; f++) {
         var fa = f * TAU / 5;
@@ -252,7 +441,8 @@
           var cx = Math.cos(fa) * along + normal() * 280000;
           var cy = Math.sin(fa * 1.7) * along * 0.3 + bend + normal() * 280000;
           var cz = Math.sin(fa) * along + 3200000 + normal() * 380000;
-          spiral(cx, cy, cz, 45000 + random() * 90000, 180 + Math.floor(random() * 150), random() * 1.5, random() * TAU, 1.8, random() < 0.32);
+          spiral(cx, cy, cz, 45000 + random() * 90000, 180 + Math.floor(random() * 150), random() * 1.5, random() * TAU, 1.8, random() < 0.32,
+            GALAXY_STYLES[(f * 26 + k) % 3]);
         }
       }
       sky(90000000, 1200, 38000);
@@ -263,46 +453,113 @@
   // An analytic emission/dust map, generated locally rather than telescope imagery.
   // The tilted surfaces share the same world-space geometry as the 3D spiral stars.
   function galaxyPixels(size) {
-    // Two adjacent maps share one GPU texture: spiral emission and a smooth halo.
-    var data=new Uint8Array(size*size*2*4);
-    function hash(x,y) { var n=Math.imul(x,374761393)^Math.imul(y,668265263);n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295; }
-    function noise(x,y) {
-      var ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
-      fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
-      return (hash(ix,iy)*(1-fx)+hash(ix+1,iy)*fx)*(1-fy)+(hash(ix,iy+1)*(1-fx)+hash(ix+1,iy+1)*fx)*fy;
+    if (size === GALAXY_TILE_SIZE && galaxyAtlasBytes) return galaxyAtlasBytes;
+    // Four power-of-two tiles, with black/transparent gutters around each map.
+    // UVs address the inner texel centers so linear filtering cannot leak colors
+    // between neighboring morphologies. Distant mip levels stay soft and dim.
+    var data = new Uint8Array(size * size * 4 * 4);
+    var gutter = Math.max(2, Math.round(size / 64)), span = size - gutter * 2;
+    function write(tile, x, y, rgb, alpha, gain) {
+      // Solar's highlight-rolloff principle, adapted to a baked emission map:
+      // one common scale preserves hue instead of whitening channels separately.
+      // This is display styling, not calibrated photometry or a spectral model.
+      var peak = Math.max(rgb[0], rgb[1], rgb[2]);
+      var scale = peak > 0 ? (1 - Math.exp(-peak * gain)) / peak : 0;
+      var offset = (y * size * 4 + tile * size + x) * 4;
+      for (var channel = 0; channel < 3; channel++) data[offset + channel] = Math.round(255 * rgb[channel] * scale);
+      data[offset + 3] = Math.round(255 * clamp(alpha, 0, 1));
     }
-    for(var y=0;y<size;y++)for(var x=0;x<size;x++) {
-      var px=(x/(size-1)*2-1)*1.22,pz=(y/(size-1)*2-1)*1.22,r=Math.hypot(px,pz);
-      var a=Math.atan2(pz,px),phase=a-Math.log(1+r*9)*2.15;
-      var grain=noise(px*17+41,pz*17+73)*0.55+noise(px*43+17,pz*43+9)*0.3+noise(px*103,pz*103)*0.15;
-      phase += Math.sin(a*3+r*13)*0.075+(grain-0.5)*0.18;
-      var width=0.32+0.3*r;
-      var arms=Math.exp(-Math.pow(Math.sin(phase*2)/width,2));
-      var edge=Math.pow(Math.max(0,1-Math.pow(r/1.12,4)),2);
-      var disk=Math.exp(-r*2.5)*edge;
-      var dust=Math.exp(-Math.pow(Math.sin((phase+0.105)*2)/0.14,2))*(1-Math.exp(-r*r*90));
-      var attenuation=1-dust*(0.5+grain*0.32);
-      var structure=(0.09+arms*(0.35+grain*0.85))*disk*attenuation;
-      var bulge=Math.exp(-r*r*52)*0.76+Math.exp(-r*r*8)*0.085;
-      var knots=Math.pow(Math.max(0,(grain-0.58)/0.42),2)*arms*disk*0.65;
-      var rgb=[bulge+structure*0.53+knots,bulge*0.80+structure*0.74+knots*0.22,bulge*0.56+structure+knots*0.49];
-      var i=(y*size*2+x)*4;
-      for(var c=0;c<3;c++)data[i+c]=Math.round(255*(1-Math.exp(-rgb[c]*1.85)));
-      data[i+3]=Math.round(255*Math.min(0.93,bulge+structure*0.7));
-      var er=Math.hypot(px,pz/0.72), halo=(Math.exp(-er*er*24)*0.85+Math.exp(-er*4.2)*0.42)*Math.pow(Math.max(0,1-er/1.18),0.7);
-      var ei=i+size*4;
-      [1,0.77,0.49].forEach(function(tint,channel){data[ei+channel]=Math.round(255*(1-Math.exp(-halo*tint*1.6)));});
-      data[ei+3]=Math.round(255*Math.min(1,halo));
+    GALAXY_STYLES.forEach(function(style, tile) {
+      for (var y = gutter; y < size - gutter; y++) for (var x = gutter; x < size - gutter; x++) {
+        var px = ((x - gutter) / (span - 1) * 2 - 1) * 1.22;
+        var pz = ((y - gutter) / (span - 1) * 2 - 1) * 1.22;
+        var r = Math.hypot(px, pz), a = Math.atan2(pz, px);
+        if (style === 'elliptical') {
+          var er = Math.hypot(px, pz / 0.72);
+          var halo = (Math.exp(-er * er * 24) * 0.85 + Math.exp(-er * 4.2) * 0.42) * Math.pow(Math.max(0, 1 - er / 1.18), 0.7);
+          write(tile, x, y, [halo, halo * 0.77, halo * 0.49], halo, 1.6);
+          continue;
+        }
+        var grain = emissionNoise(px * 17 + 41, pz * 17 + 73, 0) * 0.55 +
+          emissionNoise(px * 43 + 17, pz * 43 + 9, 0) * 0.3 + emissionNoise(px * 103, pz * 103, 0) * 0.15;
+        var perturb = Math.sin(a * 3 + r * 13) * 0.075 + (grain - 0.5) * 0.18;
+        var phase = a - spiralAngle(style, 0, r) + perturb;
+        var width = 0.32 + 0.3 * r, arms, dust;
+        if (style === 'barred') {
+          var armDistance = 2, dustDistance = 2;
+          for (var arm = 0; arm < 4; arm++) {
+            var difference = a - spiralAngle(style, arm, r) + perturb;
+            armDistance = Math.min(armDistance, Math.abs(Math.sin(difference * 0.5)) * 2);
+            dustDistance = Math.min(dustDistance, Math.abs(Math.sin((difference + 0.105) * 0.5)) * 2);
+          }
+          var openArms = clamp((r - 0.28) / 0.12, 0, 1);
+          arms = Math.exp(-Math.pow(armDistance / (0.19 + r * 0.2), 2)) * openArms;
+          var bx = px * Math.cos(0.85) + pz * Math.sin(0.85);
+          var bz = -px * Math.sin(0.85) + pz * Math.cos(0.85);
+          arms += Math.exp(-Math.pow(bz / 0.065, 2) - Math.pow(bx / 0.36, 6)) * 0.88;
+          dust = Math.exp(-Math.pow(dustDistance / 0.09, 2)) * openArms;
+        } else {
+          var frequency = style === 'two-arm' ? 1 : 2;
+          arms = Math.exp(-Math.pow(Math.sin(phase * frequency) / width, 2));
+          dust = Math.exp(-Math.pow(Math.sin((phase + 0.105) * frequency) / 0.14, 2));
+        }
+        var edge = Math.pow(Math.max(0, 1 - Math.pow(r / 1.12, 4)), 2);
+        var disk = Math.exp(-r * 2.5) * edge;
+        dust *= 1 - Math.exp(-r * r * 90);
+        var attenuation = 1 - dust * (0.5 + grain * 0.32);
+        var structure = (0.09 + arms * (0.35 + grain * 0.85)) * disk * attenuation;
+        var bulge = Math.exp(-r * r * 52) * 0.76 + Math.exp(-r * r * 8) * 0.085;
+        var knots = Math.pow(Math.max(0, (grain - 0.58) / 0.42), 2) * arms * disk * 0.65;
+        write(tile, x, y, [bulge + structure * 0.53 + knots, bulge * 0.80 + structure * 0.74 + knots * 0.22, bulge * 0.56 + structure + knots * 0.49],
+          Math.min(0.93, bulge + structure * 0.7), 1.85);
+      }
+    });
+    if (size === GALAXY_TILE_SIZE) galaxyAtlasBytes = data;
+    return data;
+  }
+  function cloudPixels() {
+    if (cloudAtlasBytes) return cloudAtlasBytes;
+    // Galaxy's correlated opacity grain and feathered lobes, in a compact alpha
+    // atlas. Uneven emission only: no obscuring dust, scattering, or animated gas.
+    var size = CLOUD_TILE_SIZE, span = size - CLOUD_GUTTER * 2;
+    var data = new Uint8Array(size * size * 4 * 4);
+    for (var tile = 0; tile < 4; tile++) {
+      var phase = tile * 1.37, seed = 389 + tile * 97;
+      for (var y = CLOUD_GUTTER; y < size - CLOUD_GUTTER; y++) for (var x = CLOUD_GUTTER; x < size - CLOUD_GUTTER; x++) {
+        var px = (x - CLOUD_GUTTER) / (span - 1) * 2 - 1;
+        var py = (y - CLOUD_GUTTER) / (span - 1) * 2 - 1;
+        var radius = Math.hypot(px, py);
+        var feather = clamp((0.97 - radius) / (0.97 - 0.64), 0, 1);
+        feather = feather * feather * (3 - 2 * feather);
+        var grain = emissionNoise(px * 4.5 + 13, py * 4.5 + 7, seed) * 0.55 +
+          emissionNoise(px * 11 + 3, py * 11 + 19, seed) * 0.3 + emissionNoise(px * 30, py * 30, seed) * 0.15;
+        var density = clamp((grain - 0.18) / 0.64, 0, 1);
+        var lobes = 0;
+        for (var lobe = 0; lobe < 3; lobe++) {
+          var angle = phase + lobe * 2.1, reach = 0.22 + lobe * 0.07;
+          var lx = px - Math.cos(angle) * reach, ly = py - Math.sin(angle) * reach * 0.72;
+          lobes += Math.exp(-(lx * lx * 7 + ly * ly * 11));
+        }
+        var envelope = Math.exp(-radius * radius * 3.5);
+        var light = envelope * (0.58 + 0.42 * density) * (0.68 + 0.32 * Math.min(1, lobes)) * feather;
+        var offset = (y * size * 4 + tile * size + x) * 4;
+        data[offset] = data[offset + 1] = data[offset + 2] = 255;
+        data[offset + 3] = Math.round(255 * light);
+      }
     }
+    cloudAtlasBytes = data;
     return data;
   }
   function galaxyGeometry(models) {
     var values=[],segments=8;
     models.forEach(function(model){
+      var tile = Math.max(0, GALAXY_STYLES.indexOf(model.style || (model.elliptical ? 'elliptical' : 'spiral')));
+      var first = GALAXY_GUTTER + 0.5, span = GALAXY_TILE_SIZE - GALAXY_GUTTER * 2 - 1;
       function vertex(u,v){
         var x=(u*2-1)*model.radius*1.22,z=(v*2-1)*model.radius*1.22;
         var ty=-z*Math.sin(model.tilt),tz=z*Math.cos(model.tilt);
-        values.push(model.center[0]+x*Math.cos(model.turn)-ty*Math.sin(model.turn),model.center[1]+x*Math.sin(model.turn)+ty*Math.cos(model.turn),model.center[2]+tz,u*0.5+(model.elliptical?0.5:0),v);
+        values.push(model.center[0]+x*Math.cos(model.turn)-ty*Math.sin(model.turn),model.center[1]+x*Math.sin(model.turn)+ty*Math.cos(model.turn),model.center[2]+tz,
+          (tile * GALAXY_TILE_SIZE + first + u * span) / (GALAXY_TILE_SIZE * 4), (first + v * span) / GALAXY_TILE_SIZE);
       }
       for(var j=0;j<segments;j++)for(var k=0;k<segments;k++){
         var u=k/segments,v=j/segments,u1=(k+1)/segments,v1=(j+1)/segments;
@@ -332,8 +589,9 @@
     'attribute vec3 a_position; attribute vec3 a_color;',
     'attribute float a_size; attribute float a_light; attribute float a_cloud;',
     'uniform vec3 u_position; uniform vec3 u_right; uniform vec3 u_up; uniform vec3 u_forward;',
-    'uniform float u_aspect; uniform float u_height; uniform float u_dpr; uniform float u_beta; uniform float u_gamma; uniform float u_exposure; uniform float u_lens;',
-    'varying vec3 v_color; varying float v_light; varying float v_cloud;',
+    'uniform float u_aspect; uniform float u_height; uniform float u_dpr; uniform float u_beta; uniform float u_gamma; uniform float u_exposure; uniform float u_lens; uniform float u_pointMax;',
+    'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
+    'varying vec3 v_stellarDetail;',
     'void main() {',
     '  vec3 delta = a_position - u_position;',
     '  float distance = max(length(delta), 0.00001);',
@@ -346,10 +604,18 @@
     '  float lens = u_lens;',
     '  gl_Position = vec4(camera.x * lens / u_aspect, camera.y * lens, camera.z * 0.5, camera.z);',
     '  float angularSize = a_size / distance / D;',
-    '  float minimumSize = mix(1.65, 1.6, a_cloud) * u_dpr;',
+    '  float isCloud = step(0.5, a_cloud);',
+    '  float minimumSize = mix(1.65, 1.6, isCloud) * u_dpr;',
     '  float projectedSize = angularSize * u_height * lens / max(camera.z, 0.03);',
-    '  gl_PointSize = clamp(projectedSize, minimumSize, 60.0 * u_dpr);',
+    '  float maximumSize = min(mix(120.0, 60.0, isCloud) * u_dpr, u_pointMax);',
+    '  gl_PointSize = clamp(projectedSize, min(minimumSize, maximumSize), maximumSize);',
     '  if (camera.z <= 0.001) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 1.0; }',
+    // Only resolved stellar sprites get a surface. Hardware-clamped CSS size
+    // keeps that threshold consistent across quality levels and device scales.
+    '  float resolved = (1.0 - isCloud) * smoothstep(12.0, 26.0, gl_PointSize / u_dpr);',
+    '  float seed = 0.0;',
+    '  if (resolved > 0.0) seed = fract(sin(dot(a_position, vec3(0.173, 0.317, 0.619))) * 137.631);',
+    '  v_stellarDetail = vec3(resolved, seed, 2.0 / gl_PointSize);',
     '  float shift = clamp(log(max(D, 0.0001)) * 0.42, -0.85, 0.85);',
     '  vec3 tint = shift >= 0.0 ? vec3(0.51, 0.73, 1.0) : vec3(1.0, 0.35, 0.15);',
     '  v_color = mix(a_color, tint, abs(shift));',
@@ -358,36 +624,88 @@
     // Subpixel clouds fade with projected area instead of becoming a bright
     // minimum-size dot. The diffuse surface carries their collective light.
     '  float coverage = min(1.0, pow(projectedSize / minimumSize, 2.0));',
-    '  v_light = a_light * u_exposure * exposure * mix(1.0, coverage, a_cloud);',
-    '  v_cloud = a_cloud;',
+    '  v_light = a_light * u_exposure * exposure * mix(1.0, coverage, isCloud);',
+    '  v_cloud = isCloud;',
+    '  float rotation = fract(a_cloud) * 6.28318530718;',
+    '  v_cloudProfile = vec3(max(0.0, floor(a_cloud) - 1.0), cos(rotation), sin(rotation));',
     '}'
   ].join('\n');
   var FRAGMENT = [
     'precision mediump float;',
-    'varying vec3 v_color; varying float v_light; varying float v_cloud;',
+    'uniform sampler2D u_cloudTexture;',
+    'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
+    'varying vec3 v_stellarDetail;',
+    'float stellarHash(vec2 cell, float seed) { return fract(sin(dot(cell, vec2(12.9898, 78.233)) + seed * 6.28318530718) * 127.1); }',
+    'float stellarNoise(vec2 point, float seed) {',
+    '  vec2 cell = floor(point), f = fract(point); f = f * f * (3.0 - 2.0 * f);',
+    '  float a = stellarHash(cell, seed), b = stellarHash(cell + vec2(1.0, 0.0), seed);',
+    '  float c = stellarHash(cell + vec2(0.0, 1.0), seed), d = stellarHash(cell + vec2(1.0, 1.0), seed);',
+    '  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);',
+    '}',
     'void main() {',
     '  vec2 p = gl_PointCoord * 2.0 - 1.0;',
     '  float radius2 = dot(p,p);',
     '  if (radius2 > 1.0) discard;',
     '  float star = exp(-radius2 * 17.0) * 1.45 + exp(-radius2 * 3.5) * 0.18;',
-    '  float cloud = exp(-radius2 * 3.5) * 0.55;',
+    '  float cloud = 0.0;',
+    '  if (v_cloud > 0.5) {',
+    '    vec2 q = vec2(p.x * v_cloudProfile.y - p.y * v_cloudProfile.z, p.x * v_cloudProfile.z + p.y * v_cloudProfile.y);',
+    '    vec2 uv = (q * 0.5 + 0.5) * 111.0 + 8.5;',
+    '    uv.x += v_cloudProfile.x * 128.0;',
+    '    cloud = texture2D(u_cloudTexture, uv / vec2(512.0, 128.0)).a * 0.55;',
+    '  }',
     '  float light = mix(star, cloud, v_cloud) * v_light * (1.0 - smoothstep(0.72, 1.0, radius2));',
-    '  gl_FragColor = vec4(v_color * light, light);',
+    // Preserve the existing cloud and unresolved-star calculations exactly.
+    '  if (v_stellarDetail.x <= 0.0) { gl_FragColor = vec4(v_color * light, light); return; }',
+    // Solar's granular photosphere and gentle limb darkening, adapted to an
+    // illustrative stellar sprite. Source-position seeds remain still on pause;
+    // neither gas motion nor a changing photosphere is simulated here.
+    '  float radius = sqrt(radius2);',
+    '  float edge = v_stellarDetail.z;',
+    '  float disk = 1.0 - smoothstep(0.35 - edge, 0.35 + edge, radius);',
+    '  float mu = sqrt(max(0.0, 1.0 - radius2 / 0.1225));',
+    '  vec2 surface = p / 0.35;',
+    '  float phase = v_stellarDetail.y * 6.28318530718;',
+    // Fade small cells until the sprite has enough physical pixels to sample
+    // them, so zooming and traveling do not turn surface detail into sparkle.
+    '  float surfacePixels = 2.0 / edge;',
+    '  float diskPixels = surfacePixels * 0.35;',
+    '  float fineDetail = smoothstep(28.0, 48.0, diskPixels);',
+    '  float broadDetail = smoothstep(14.0, 30.0, diskPixels);',
+    '  float cells = 1.0;',
+    '  if (broadDetail > 0.0) cells += 0.018 * broadDetail * (stellarNoise(surface * 4.5, v_stellarDetail.y) * 2.0 - 1.0);',
+    '  if (fineDetail > 0.0) cells += 0.009 * fineDetail * (stellarNoise(surface * 9.0, v_stellarDetail.y + 0.37) * 2.0 - 1.0);',
+    // A lower surface peak spreads roughly the old Gaussian's integrated light
+    // over the disk, retaining color instead of producing a white glare patch.
+    '  float photosphere = disk * 1.08 * (0.6 + 0.4 * mu) * cells;',
+    '  float corona = 0.0;',
+    '  if (disk < 1.0) {',
+    '    float angle = atan(p.y, p.x);',
+    '    corona = (1.0 - disk) * 0.16 * exp(-max(0.0, radius - 0.35) * 6.0) * (0.88 + 0.12 * cos(angle * 6.0 + phase));',
+    '  }',
+    '  float feather = 1.0 - smoothstep(0.72, 1.0, radius2);',
+    '  vec3 resolvedColor = (v_color * photosphere + mix(v_color, vec3(1.0), 0.08) * corona) * v_light * feather;',
+    '  float resolvedLight = (photosphere + corona) * v_light * feather;',
+    '  gl_FragColor = vec4(mix(v_color * light, resolvedColor, v_stellarDetail.x), mix(light, resolvedLight, v_stellarDetail.x));',
     '}'
   ].join('\n');
 
   function create(canvas, options) {
     options = options || {};
-    var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1 };
+    var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1, smoothTravel: false };
     var state, gl, program, buffer, pointCount = 0, uniforms = {}, disposed = false, lost = false;
-    var galaxyProgram, galaxyBuffer, galaxyTexture, galaxyCount = 0, galaxyUniforms = {};
+    var galaxyProgram, galaxyBuffer, galaxyTexture, cloudTexture, galaxyCount = 0, galaxyUniforms = {};
     var pointAttributes = [], galaxyAttributes = [];
+    var pointMax = 512;
     var raf = 0, lastFrame = 0, lastTelemetry = -Infinity, inView = true;
     var resizeObserver, intersectionObserver, shaders = [];
     var targetId = null, navigation = { active: false, targetId: null };
     var orbitId = null;
+    var freePace = 0;
     var trail = [];
     var cameraMoves = [];
+    var frameUndo = null, framePlacement = null;
+    function clearFraming() { frameUndo = null; framePlacement = null; }
     function endOrbit(message) {
       if (!orbitId) return false;
       orbitId = null;
@@ -410,23 +728,29 @@
       var item = getLandmark(targetId);
       if (!item) return null;
       var relative = toLandmark(item), direction = relative.direction;
+      var coincident = relative.distance === 0;
       var physicalBeta = settings.mode === 'relativity' ? settings.beta : 0;
       var physicalDirection = aberrate(direction, physicalBeta);
-      var apparent = aberrate(direction, displayBeta());
-      var sy = Math.sin(state.yaw), cy = Math.cos(state.yaw), sp = Math.sin(state.pitch), cp = Math.cos(state.pitch);
-      var x = apparent[0] * cy - apparent[2] * sy;
-      var y = -apparent[0] * sy * sp + apparent[1] * cp - apparent[2] * cy * sp;
-      var z = apparent[0] * sy * cp + apparent[1] * sp + apparent[2] * cy * cp;
-      var lens = 1 / Math.tan(settings.fov * Math.PI / 360);
       var aspect = canvas.width / Math.max(1, canvas.height);
-      var screen = z > 0.001 ? [0.5 + x * lens / z / aspect / 2, 0.5 - y * lens / z / 2] : [null, null];
+      var guide = coincident ? null : targetView(direction, state.yaw, state.pitch, displayBeta(), settings.fov, aspect);
       return {
-        id: item.id, name: item.name, distanceLy: relative.distance, screen: screen,
-        inView: z > 0.001 && screen[0] >= 0 && screen[0] <= 1 && screen[1] >= 0 && screen[1] <= 1,
-        doppler: doppler(direction[2], physicalBeta),
-        restAngleDeg: Math.acos(clamp(direction[2], -1, 1)) * 180 / Math.PI,
-        apparentAngleDeg: Math.acos(clamp(physicalDirection[2], -1, 1)) * 180 / Math.PI
+        id: item.id, name: item.name, distanceLy: relative.distance, coincident: coincident,
+        guide: guide, screen: guide ? guide.screen : [null, null], inView: !!guide && guide.inView,
+        doppler: coincident ? null : doppler(direction[2], physicalBeta),
+        restAngleDeg: coincident ? null : Math.acos(clamp(direction[2], -1, 1)) * 180 / Math.PI,
+        apparentAngleDeg: coincident ? null : Math.acos(clamp(physicalDirection[2], -1, 1)) * 180 / Math.PI
       };
+    }
+    function targetFraming(item, u) {
+      if (disposed || lost || !gl || !program || !item) return null;
+      var relative = toLandmark(item);
+      if (!relative.distance) return null;
+      return targetFrame(relative.direction, displayBeta(), settings.fov, canvas.width / Math.max(1, canvas.height), u);
+    }
+    function framingTelemetry() {
+      var item = getLandmark(targetId);
+      return { canLeft: !!targetFraming(item, 1 / 3), canCenter: !!targetFraming(item, 0.5), canRight: !!targetFraming(item, 2 / 3),
+        canUndo: !!frameUndo && !disposed && !lost && !!gl && !!program, placement: framePlacement };
     }
     function navigationTelemetry() {
       var item = getLandmark(navigation.targetId);
@@ -436,13 +760,32 @@
         estimatedSeconds:plan?plan.estimatedSeconds:0,
         progress:navigation.completed?1:plan&&navigation.totalLy>0?clamp(1-plan.remainingLy/navigation.totalLy,0,1):0 };
     }
-    function pauseWithMessage(message) {
-      settings.running = false; lastFrame = 0;
+    function motionTelemetry() {
+      var kind = settings.mode === 'relativity' ? 'relativity' : orbitId ? 'orbit' : navigation.active ? 'approach' : 'free';
+      var target = settings.mode === 'relativity' ? 0 : settings.speed;
+      var item = getLandmark(orbitId || navigation.targetId);
+      if (kind === 'orbit' && item) {
+        target = Math.hypot(state.position[0] - item.position[0], state.position[2] - item.position[2]) * settings.orbitRate * Math.PI / 180;
+      } else if (kind === 'approach' && item) {
+        var radius = navigation.arrivalRadiusLy || item.arrivalRadiusLy;
+        var remaining = Math.max(0, toLandmark(item).distance - radius);
+        target = Math.min(settings.speed, Math.max(radius * 0.5, remaining * 1.2));
+      }
+      var moving = settings.running && isVisible() && !lost && !disposed && kind !== 'relativity';
+      return { smoothTravel: settings.smoothTravel, paceLyPerSecond: moving ? kind === 'free' && settings.smoothTravel ? freePace : target : 0, targetLyPerSecond: target, kind: kind };
+    }
+    function pauseWithMessage(message, detail) {
+      settings.running = false; lastFrame = 0; freePace = 0;
       emitTelemetry(true); status('ready', message);
-      if (typeof options.onPause === 'function') options.onPause(message);
+      if (typeof options.onPause === 'function') {
+        if (detail) options.onPause(message, detail);
+        else options.onPause(message);
+      }
     }
     function faceTarget(item) {
-      var direction = aberrate(toLandmark(item).direction, displayBeta());
+      var relative = toLandmark(item);
+      if (!relative.distance) return;
+      var direction = aberrate(relative.direction, displayBeta());
       state.yaw = Math.atan2(direction[0], direction[2]);
       state.pitch = clamp(Math.asin(clamp(direction[1], -1, 1)), -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
     }
@@ -462,7 +805,7 @@
       if (typeof options.onTelemetry === 'function') options.onTelemetry({
         distanceLy: state.distanceLy, universeYears: state.universeYears, travelerYears: state.travelerYears,
         position: state.position.slice(), yaw: state.yaw, pitch: state.pitch, running: settings.running,
-        target: targetTelemetry(), navigation: navigationTelemetry(), orbit: { active: !!orbitId, targetId: orbitId }, trail: trail.map(function(p) { return p.slice(); }), cameraMoves: cameraMoves.length
+        target: targetTelemetry(), navigation: navigationTelemetry(), orbit: { active: !!orbitId, targetId: orbitId }, motion: motionTelemetry(), framing: framingTelemetry(), trail: trail.map(function(p) { return p.slice(); }), cameraMoves: cameraMoves.length
       });
     }
     function initialState() {
@@ -470,7 +813,7 @@
     }
     state = initialState();
     function isVisible() { return !global.document.hidden && inView; }
-    function cancelFrame() { if (raf) global.cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
+    function cancelFrame() { if (raf) global.cancelAnimationFrame(raf); raf = 0; lastFrame = 0; freePace = 0; }
     function requestDraw() {
       if (disposed || lost || !gl || !program || !isVisible() || raf) return;
       raf = global.requestAnimationFrame(frame);
@@ -492,6 +835,7 @@
       var ratio = pixelRatio();
       var width = Math.max(1, Math.round(box.width * ratio));
       var height = Math.max(1, Math.round(box.height * ratio));
+      if (canvas.width / Math.max(1, canvas.height) !== width / height && framePlacement !== 'center') framePlacement = null;
       if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
       requestDraw();
       if (targetId) emitTelemetry(true);
@@ -535,10 +879,13 @@
       gl.uniform1f(uniforms.aspect, canvas.width / Math.max(1, canvas.height));
       gl.uniform1f(uniforms.height, canvas.height);
       gl.uniform1f(uniforms.dpr, pixelRatio());
+      gl.uniform1f(uniforms.pointMax, pointMax);
       gl.uniform1f(uniforms.beta, b);
       gl.uniform1f(uniforms.gamma, gamma(b));
       gl.uniform1f(uniforms.exposure, REGIONS[settings.region].exposure * settings.exposure);
       gl.uniform1f(uniforms.lens, 1 / Math.tan(settings.fov * Math.PI / 360));
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, cloudTexture);
+      gl.uniform1i(uniforms.cloudTexture, 0);
       gl.drawArrays(gl.POINTS, 0, pointCount);
     }
     function limitToRegion(previous) {
@@ -558,7 +905,7 @@
       navigation.active = false;
       orbitId = null;
       var message = 'Reached the edge of this generated model. Reset position or look back to explore it.';
-      pauseWithMessage(message);
+      pauseWithMessage(message, { kind: 'boundary', region: settings.region, mode: settings.mode, position: state.position.slice() });
     }
     function stepNavigation(dt) {
       var item = getLandmark(navigation.targetId);
@@ -577,7 +924,8 @@
       };
       if (remaining - travel <= Math.max(1e-9, radius * 1e-9)) {
         navigation.active = false; navigation.completed = true;
-        pauseWithMessage('Arrived at ' + item.name + '. Travel is paused; look around or choose another destination.');
+        pauseWithMessage('Arrived at ' + item.name + '. Travel is paused; look around or choose another destination.',
+          { kind: 'arrival', region: settings.region, mode: settings.mode, position: state.position.slice(), targetId: item.id, targetName: item.name, arrivalRadiusLy: radius });
       }
     }
     function stepOrbit(dt) {
@@ -592,23 +940,33 @@
     }
     function frame(now) {
       raf = 0;
-      if (disposed || lost || !isVisible()) { lastFrame = 0; return; }
+      if (disposed || lost || !isVisible()) { lastFrame = 0; freePace = 0; return; }
       if (settings.running) {
         var previous = state;
-        var dt = lastFrame ? (now - lastFrame) / 1000 : 0;
-        if (orbitId && settings.mode === 'explore') stepOrbit(dt);
-        else if (navigation.active && settings.mode === 'explore') stepNavigation(dt);
-        else state = stepFlight(state, settings, dt);
+        var dt = clamp(finite(lastFrame ? (now - lastFrame) / 1000 : 0, 0), 0, 0.1);
+        if (orbitId && settings.mode === 'explore') { freePace = 0; stepOrbit(dt); }
+        else if (navigation.active && settings.mode === 'explore') { freePace = 0; stepNavigation(dt); }
+        else if (settings.mode === 'explore' && settings.smoothTravel) {
+          var eased = easePace(freePace, settings.speed, dt);
+          freePace = eased.speed;
+          state = stepFlight(state, Object.assign({}, settings, { speed: dt ? eased.distance / dt : 0 }), dt);
+        } else {
+          freePace = settings.mode === 'explore' ? settings.speed : 0;
+          state = stepFlight(state, settings, dt);
+        }
         lastFrame = now;
-        if (!settings.running) lastFrame = 0;
+        if (!settings.running) { lastFrame = 0; freePace = 0; }
         limitToRegion(previous);
-      } else lastFrame = 0;
+      } else { lastFrame = 0; freePace = 0; }
       draw();
       // A paused interaction gets only one frame; always publish its final view.
       emitTelemetry(!settings.running);
       if (settings.running) requestDraw();
     }
-    function visibilityChanged() { if (!isVisible()) cancelFrame(); else { lastFrame = 0; requestDraw(); } }
+    function visibilityChanged() {
+      if (!isVisible()) { cancelFrame(); emitTelemetry(true); }
+      else { lastFrame = 0; requestDraw(); }
+    }
     function contextLost(event) {
       event.preventDefault(); lost = true; cancelFrame();
       status('error', 'The 3D graphics context was interrupted. Close and reopen the flight explorer to restore it.');
@@ -625,6 +983,7 @@
         if (buffer) gl.deleteBuffer(buffer);
         if (galaxyBuffer) gl.deleteBuffer(galaxyBuffer);
         if (galaxyTexture) gl.deleteTexture(galaxyTexture);
+        if (cloudTexture) gl.deleteTexture(cloudTexture);
         if (galaxyProgram) gl.deleteProgram(galaxyProgram);
         if (program) gl.deleteProgram(program);
         shaders.forEach(function (shader) { gl.deleteShader(shader); });
@@ -661,10 +1020,11 @@
       };
       targetId = getLandmark(saved.targetId) ? saved.targetId : null;
       cameraMoves = [];
+      clearFraming();
       trail = [];
       orbitId = null;
       navigation = { active: false, targetId: null };
-      lastFrame = 0;
+      lastFrame = 0; freePace = 0;
       if (oldRegion !== settings.region) uploadRegion();
       resize(); requestDraw();
       pauseWithMessage('Saved view restored. Travel is paused.');
@@ -678,9 +1038,13 @@
         var previousMode = settings.mode;
         var previousQuality = settings.quality;
         var wasRunning = settings.running;
+        var previousSmooth = settings.smoothTravel;
+        var previousSpeed = settings.speed;
+        var previousFov = settings.fov, previousBeta = displayBeta();
         if (next.mode === 'explore' || next.mode === 'relativity') settings.mode = next.mode;
         if (Object.prototype.hasOwnProperty.call(REGIONS, next.region)) settings.region = next.region;
         if (next.speed !== undefined) settings.speed = clamp(finite(next.speed, 0), 0, 1e10);
+        if (next.smoothTravel !== undefined) settings.smoothTravel = !!next.smoothTravel;
         if (next.orbitRate !== undefined) settings.orbitRate = clamp(finite(next.orbitRate, 3), 0.25, 12);
         if (next.orbitDirection === 1 || next.orbitDirection === -1) settings.orbitDirection = next.orbitDirection;
         if (next.beta !== undefined) settings.beta = safeBeta(next.beta);
@@ -696,13 +1060,21 @@
         if (previousRegion !== settings.region || previousMode !== settings.mode) {
           navigation = { active: false, targetId: null }; orbitId = null; trail = []; cameraMoves = []; settings.running = false;
         }
+        if (previousRegion !== settings.region || previousMode !== settings.mode || previousFov !== settings.fov || previousBeta !== displayBeta() || settings.running) clearFraming();
+        var resetTravel = !settings.running || !wasRunning || !isVisible() || lost || previousRegion !== settings.region || previousMode !== settings.mode;
+        if (resetTravel) { freePace = 0; lastFrame = 0; }
+        else if (settings.mode === 'explore' && !orbitId && !navigation.active) {
+          if (!settings.speed) freePace = 0;
+          else if (!settings.smoothTravel) freePace = settings.speed;
+          else if (!previousSmooth) freePace = previousSpeed;
+        }
         if (previousQuality !== settings.quality) resize();
-        if (targetId || previousRegion !== settings.region || (wasRunning && !settings.running)) emitTelemetry(true);
-        lastFrame = 0;
+        if (targetId || previousRegion !== settings.region || (wasRunning && !settings.running) || next.speed !== undefined || next.smoothTravel !== undefined || next.running !== undefined) emitTelemetry(true);
         requestDraw();
       },
       look: function (yawDelta, pitchDelta) {
         if (disposed) return;
+        clearFraming();
         endOrbit('Manual look ended the orbit. Travel is paused.');
         state.yaw = ((state.yaw + finite(yawDelta, 0)) % TAU + TAU) % TAU;
         state.pitch = clamp(state.pitch + finite(pitchDelta, 0), -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
@@ -712,6 +1084,7 @@
         if (disposed) return;
         var views = { forward: [0, 0], back: [Math.PI, 0], left: [-Math.PI / 2, 0], right: [Math.PI / 2, 0], up: [0, Math.PI / 2 - 0.01], down: [0, -Math.PI / 2 + 0.01] };
         if (!views[direction]) return;
+        clearFraming();
         endOrbit('Manual look ended the orbit. Travel is paused.');
         state.yaw = views[direction][0]; state.pitch = views[direction][1];
         requestDraw(); emitTelemetry(true);
@@ -723,9 +1096,10 @@
         var forward=[sy*cp,sp,cy*cp],right=[cy,0,-sy],up=[-sy*sp,cp,-cy*sp];
         var axes={forward:forward,back:forward.map(function(v){return -v;}),right:right,left:right.map(function(v){return -v;}),up:up,down:up.map(function(v){return -v;})};
         if (!axes[direction] || !amount) return false;
+        clearFraming();
         var previous=state;
         var undo={position:state.position.slice(),distanceLy:state.distanceLy,trail:trail.map(function(p){return p.slice();})};
-        settings.running=false;orbitId=null;navigation={active:false,targetId:null};lastFrame=0;
+        settings.running=false;orbitId=null;navigation={active:false,targetId:null};lastFrame=0;freePace=0;
         state=Object.assign({},state,{position:state.position.map(function(v,i){return v+axes[direction][i]*amount;}),distanceLy:state.distanceLy+amount});
         limitToRegion(previous);
         var traveled=state.distanceLy-previous.distanceLy;
@@ -735,6 +1109,7 @@
       },
       undoNudge: function () {
         if (disposed || lost || settings.mode!=='explore' || !cameraMoves.length) return false;
+        clearFraming();
         var undo=cameraMoves.pop();
         state=Object.assign({},state,{position:undo.position.slice(),distanceLy:undo.distanceLy});
         trail=undo.trail.map(function(p){return p.slice();});
@@ -744,6 +1119,7 @@
       },
       selectTarget: function (id) {
         if (disposed || (id && !getLandmark(id))) return false;
+        if (targetId !== (id || null)) clearFraming();
         if (orbitId && orbitId !== id) endOrbit('Target changed. Orbit is paused and ended.');
         if (navigation.targetId && navigation.targetId !== id) {
           var guidedWasActive = navigation.active;
@@ -756,10 +1132,43 @@
       focusTarget: function (id) {
         if (disposed) return false;
         var item = getLandmark(id || targetId);
-        if (!item) return false;
+        if (!item || !toLandmark(item).distance) return false;
+        clearFraming();
         if (orbitId && orbitId !== item.id) endOrbit();
         targetId = item.id; faceTarget(item); emitTelemetry(true); requestDraw();
         return true;
+      },
+      faceSceneCenter: function () {
+        if (disposed || lost || !gl || !program || !state.position.every(Number.isFinite)) return false;
+        var distance = Math.hypot.apply(Math, state.position);
+        if (!distance || !Number.isFinite(distance)) return false;
+        var direction = aberrate(state.position.map(function (value) { return -value / distance; }), displayBeta());
+        var yaw = Math.atan2(direction[0], direction[2]);
+        var pitch = clamp(Math.atan2(direction[1], Math.hypot(direction[0], direction[2])), -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
+        if (!Number.isFinite(yaw) || !Number.isFinite(pitch)) return false;
+        clearFraming(); navigation = { active: false, targetId: null }; orbitId = null;
+        state.yaw = yaw; state.pitch = pitch;
+        pauseWithMessage('Looking toward the center of this generated scene. Travel is paused.');
+        requestDraw(); return true;
+      },
+      frameTarget: function (id, u) {
+        var item = getLandmark(id || targetId);
+        var pose = targetFraming(item, u);
+        if (!pose) return false;
+        frameUndo = { yaw: state.yaw, pitch: state.pitch };
+        framePlacement = pose.screen[0] === 1 / 3 ? 'left' : pose.screen[0] === 0.5 ? 'center' : pose.screen[0] === 2 / 3 ? 'right' : null;
+        if (navigation.targetId && navigation.targetId !== item.id) navigation = { active: false, targetId: null };
+        targetId = item.id; state.yaw = pose.yaw; state.pitch = pose.pitch;
+        orbitId = null;
+        pauseWithMessage(item.name + ' framed in the paused view.');
+        requestDraw(); return true;
+      },
+      undoFrame: function () {
+        if (disposed || lost || !gl || !program || !frameUndo) return false;
+        var pose = frameUndo;
+        clearFraming(); state.yaw = pose.yaw; state.pitch = pose.pitch; orbitId = null;
+        pauseWithMessage('Previous look direction restored. Travel is paused.');
+        requestDraw(); return true;
       },
       planApproach: function (id, multiplier) {
         var item = !disposed && getLandmark(id);
@@ -769,8 +1178,10 @@
         if (disposed || lost || !gl || settings.mode !== 'explore') return false;
         var item = getLandmark(id);
         if (!item) return false;
+        clearFraming();
         cameraMoves = [];
         orbitId = null;
+        freePace = 0;
         targetId = item.id; faceTarget(item);
         var plan = approachPlan(toLandmark(item).distance,item.arrivalRadiusLy,multiplier,settings.speed);
         navigation = { active:false, targetId:item.id, arrivalRadiusLy:plan.arrivalRadiusLy, totalLy:plan.remainingLy, completed:false };
@@ -796,8 +1207,9 @@
         if (Math.hypot(state.position[0] - item.position[0], state.position[2] - item.position[2]) < item.arrivalRadiusLy * 0.01) {
           pauseWithMessage('Move away from the destination’s vertical axis before starting an orbit.'); return false;
         }
+        clearFraming();
         targetId = item.id; orbitId = item.id; navigation = { active: false, targetId: null };
-        cameraMoves = [];
+        cameraMoves = []; freePace = 0;
         faceTarget(item); settings.running = true; lastFrame = 0;
         emitTelemetry(true); requestDraw(); return true;
       },
@@ -815,7 +1227,8 @@
           orbitId = null;
           trail = [];
           cameraMoves = [];
-          settings.running = false; lastFrame = 0; requestDraw(); emitTelemetry(true);
+          clearFraming();
+          settings.running = false; lastFrame = 0; freePace = 0; requestDraw(); emitTelemetry(true);
         }
       },
       dispose: dispose
@@ -823,6 +1236,8 @@
     try {
       gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, powerPreference: 'low-power' });
       if (!gl) throw new Error('WebGL is unavailable');
+      var pointRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
+      if (pointRange && typeof pointRange[1] === 'number' && isFinite(pointRange[1]) && pointRange[1] > 0) pointMax = pointRange[1];
       function compile(type, source) {
         var shader = gl.createShader(type); shaders.push(shader);
         gl.shaderSource(shader, source); gl.compileShader(shader);
@@ -842,7 +1257,7 @@
         gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, attribute[1], gl.FLOAT, false, 36, attribute[2] * 4);
       });
-      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens'].forEach(function (name) {
+      ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture'].forEach(function (name) {
         uniforms[name] = gl.getUniformLocation(program, 'u_' + name);
       });
       galaxyProgram = gl.createProgram();
@@ -853,8 +1268,19 @@
       galaxyBuffer = gl.createBuffer();
       galaxyAttributes = [[gl.getAttribLocation(galaxyProgram, 'a_position'), 3, 0], [gl.getAttribLocation(galaxyProgram, 'a_uv'), 2, 12]];
       ['position', 'right', 'up', 'forward', 'aspect', 'beta', 'gamma', 'exposure', 'lens', 'texture'].forEach(function(name) { galaxyUniforms[name] = gl.getUniformLocation(galaxyProgram, 'u_' + name); });
-      galaxyTexture = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, galaxyTexture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1024, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, galaxyPixels(512));
+      galaxyTexture = gl.createTexture();
+      if (!galaxyTexture) throw new Error('Galaxy texture allocation failed');
+      gl.bindTexture(gl.TEXTURE_2D, galaxyTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 2048, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, galaxyPixels(GALAXY_TILE_SIZE));
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      cloudTexture = gl.createTexture();
+      if (!cloudTexture) throw new Error('Cloud texture allocation failed');
+      gl.bindTexture(gl.TEXTURE_2D, cloudTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, CLOUD_TILE_SIZE * 4, CLOUD_TILE_SIZE, 0, gl.RGBA, gl.UNSIGNED_BYTE, cloudPixels());
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
@@ -880,6 +1306,7 @@
         if (buffer) gl.deleteBuffer(buffer);
         if (galaxyBuffer) gl.deleteBuffer(galaxyBuffer);
         if (galaxyTexture) gl.deleteTexture(galaxyTexture);
+        if (cloudTexture) gl.deleteTexture(cloudTexture);
         if (galaxyProgram) gl.deleteProgram(galaxyProgram);
         if (program) gl.deleteProgram(program);
         shaders.forEach(function (shader) { gl.deleteShader(shader); });
@@ -890,5 +1317,5 @@
     return api;
   }
 
-  global.UniverseFlight = { create: create, landmarks: landmarks, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan } };
+  global.UniverseFlight = { create: create, landmarks: landmarks, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan, targetView: targetView, targetFrame: targetFrame, easePace: easePace } };
 })(window);

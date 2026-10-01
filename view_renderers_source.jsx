@@ -1169,6 +1169,18 @@ const OrganizerMountReceipt = ({ children, activityKey, onReady, onFailed }) => 
   return mountFailed ? <div role="alert" className="mx-auto my-6 max-w-xl rounded-xl border-2 border-amber-400 bg-amber-50 p-5 text-amber-950"><h3 className="font-bold">This activity could not be opened.</h3><p className="mt-2">Ask your teacher to retry the activity from the Live Dashboard. Your saved work is still on this device.</p></div> : <div ref={element}>{children}</div>;
 };
 
+// A learner's 3D / palace stores overlay the teacher's resource in their own view only.
+const _organizerOverlayCache = new WeakMap();
+const organizerDataWithLearnerWork = (data, work) => {
+  if (!data || !work || typeof work !== 'object') return data;
+  const hit = _organizerOverlayCache.get(data);
+  if (hit && hit.work === work) return hit.merged;
+  const merged = { ...data };
+  Object.keys(work).forEach((key) => { if (work[key] !== undefined) merged[key] = work[key]; });
+  _organizerOverlayCache.set(data, { work, merged });
+  return merged;
+};
+
 const renderOutlineContentCore = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
@@ -1243,6 +1255,11 @@ const renderOutlineContentCore = (deps) => {
         const organizerData = normalizeVisualOrganizerData(generatedContent?.data, requestedType);
         const { main, main_en, branches, structureType } = organizerData;
         const type = structureType || 'Structured Outline';
+        // Persists are bound to THIS resource; a learner's work goes to their own store (host routes by role).
+        const _organizerResourceId = generatedContent.id;
+        const _organizerPersist = typeof deps.handleConceptSpacePersist === 'function'
+            ? (arrangement, key) => deps.handleConceptSpacePersist(arrangement, key, _organizerResourceId) : undefined;
+        const _organizerViewData = isTeacherMode ? generatedContent.data : organizerDataWithLearnerWork(generatedContent.data, deps.organizerLearnerWork);
         const activityTypeByStructure = {
             'Flow Chart': 'pipeline', 'Process Flow / Sequence': 'pipeline',
             'T-Chart': 'tchart', 'Fishbone': 'fishbone', 'Cause and Effect': 'cesort',
@@ -2024,6 +2041,12 @@ const renderOutlineContentCore = (deps) => {
                 effects = [branches[1]];
                 chains = branches.slice(2);
             }
+            const sharedRoles = branches.length ? window.AlloModules?.UtilsPure?.organizerBranchRoles?.(type, branches) : null;
+            if (sharedRoles) {
+                causes = branches.filter((_, i) => sharedRoles[i] === 'cause');
+                effects = branches.filter((_, i) => sharedRoles[i] === 'effect');
+                chains = branches.filter((_, i) => sharedRoles[i] === 'chain');
+            }
             const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
             // ── Sort Game rendering ──
             if (isCESortPlaying || (isInteractiveCESort && !isTeacherMode)) {
@@ -2176,7 +2199,8 @@ const renderOutlineContentCore = (deps) => {
             );
         }
         if (type === 'Problem Solution') {
-            const outcomeIndex = branches.findIndex(b =>
+            const sharedRoles = window.AlloModules?.UtilsPure?.organizerBranchRoles?.(type, branches);
+            const outcomeIndex = sharedRoles ? sharedRoles.indexOf('outcome') : branches.findIndex(b =>
                 ['outcome', 'result', 'evaluation'].includes(String(b.role || b.semanticRole || '').toLowerCase()) ||
                 b.title.toLowerCase().includes('outcome') ||
                 b.title.toLowerCase().includes('result') ||
@@ -2807,11 +2831,12 @@ const renderOutlineContentCore = (deps) => {
                     <div className="mb-3 flex justify-center"><LiveOrganizerStatus type="palacerecall" /></div>
                     <ErrorBoundary fallbackMessage="Memory Palace encountered an error.">
                         <MemoryPalaceView
-                            data={generatedContent?.data}
+                            key={String(_organizerResourceId)}
+                            data={_organizerViewData}
                             title={main}
                             t={t}
                             addToast={deps.addToast}
-                            onPersist={deps.handleConceptSpacePersist}
+                            onPersist={_organizerPersist}
                             callImagen={deps.callImagen}
                             playSound={playSound}
                             onScoreUpdate={handleGameScoreUpdate}
@@ -2842,12 +2867,13 @@ const renderOutlineContentCore = (deps) => {
                     <div className="mb-3 flex justify-center gap-2"><LiveOrganizerStatus type="strandchallenge3d" /><LiveOrganizerStatus type="conceptrecall3d" /></div>
                     <ErrorBoundary fallbackMessage="3D Concept Space encountered an error.">
                         <ConceptSpace3DView
-                            data={generatedContent?.data}
+                            key={String(_organizerResourceId)}
+                            data={_organizerViewData}
                             title={main}
                             t={t}
                             addToast={deps.addToast}
                             callImagen={deps.callImagen}
-                            onPersist={deps.handleConceptSpacePersist}
+                            onPersist={_organizerPersist}
                             playSound={playSound}
                             onScoreUpdate={handleGameScoreUpdate}
                             onGameComplete={handleGameCompletion}
@@ -3185,7 +3211,7 @@ function openConceptMap3D(opts) {
         addToast('📷 ' + (t('concept_map.view_3d_snapshot_saved') || 'Snapshot saved'), 'success');
       } catch (e) { addToast(t('concept_map.view_3d_snapshot_failed') || 'Could not capture the 3D view here.', 'error'); }
     };
-    if (canPersist) {
+    if (canPersist && opts.canReset !== false) {
       // Parity with the embedded view: clear the saved arrangement and glide back
       // to the deterministic default layout.
       var resetArrBtn = document.createElement('button');
@@ -3504,8 +3530,11 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
         if (!E || !graphRef.current || !_alloRuntimeAiAvailable()) return;
         setArranging(true);
+        const startGraph = graphRef.current;
         E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || '' })
             .then((merged) => {
+                // Left the view or the content changed meanwhile: drop the stale layout.
+                if (!artAliveRef.current || graphRef.current !== startGraph) return;
                 graphRef.current = merged;
                 if (persist && E.extractArrangement) {
                     persist(E.extractArrangement(merged), 'conceptSpace');
@@ -3524,6 +3553,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             generated: data,
             arrangement: data?.conceptSpace,
             onArrangementChange: persist ? ((arr) => { persist(arr, 'conceptSpace'); setNonce((n) => n + 1); }) : undefined,
+            canReset: !!isTeacherMode,
             title: data?.main || title || '',
             t, addToast,
         });
@@ -4159,7 +4189,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     ✨ {arranging ? (t('concept_map.view_3d_arranging') || 'Arranging…') : (t('concept_map.view_3d_arrange') || 'Arrange by meaning')}
                                 </button>
                             )}
-                            {hasContent && persist && data?.conceptSpace && !failed && (
+                            {hasContent && persist && isTeacherMode && data?.conceptSpace && !failed && (
                                 <button
                                     onClick={() => { persist(null, 'conceptSpace'); setNonce((n) => n + 1); }}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
@@ -7531,7 +7561,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             )}
             {finished && (
                 <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2" role="status">
-                    <span className="font-bold outline-none" tabIndex={-1} data-recall-focus="true">
+                    <span className="font-bold rounded outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" tabIndex={-1} data-recall-focus="true">
                         {_recallSummary(finished)}
                     </span>
                     {' '}· ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_points') || '{points} points').replace('{points}', String(finished.points))}
@@ -8096,8 +8126,9 @@ const renderInteractiveMap = (deps) => {
                                     nodes: conceptMapNodes, edges: conceptMapEdges,
                                     structureType: generatedContent?.data?.structureType,
                                     title: generatedContent?.data?.main || generatedContent?.title || '',
-                                    arrangement: generatedContent?.data?.conceptSpaceLive,
-                                    onArrangementChange: typeof deps.handleConceptSpacePersist === 'function' ? ((arr) => deps.handleConceptSpacePersist(arr, 'conceptSpaceLive')) : undefined,
+                                    arrangement: (isTeacherMode ? generatedContent?.data : organizerDataWithLearnerWork(generatedContent?.data, deps.organizerLearnerWork))?.conceptSpaceLive,
+                                    onArrangementChange: typeof deps.handleConceptSpacePersist === 'function' ? ((arr) => deps.handleConceptSpacePersist(arr, 'conceptSpaceLive', generatedContent?.id)) : undefined,
+                                    canReset: !!isTeacherMode,
                                     t, addToast
                                 })}
                                 className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm"
@@ -8494,6 +8525,7 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderers = {
   normalizeVisualOrganizerData,
   organizerReviewText, OrganizerReviewPanel, OrganizerLearnerFeedback, OrganizerReflectionBoard, OrganizerMountReceipt, organizerReflectionKey, organizerReflectionFields,
+  organizerDataWithLearnerWork,
   renderFormattedText,
   renderOutlineContent,
   renderInteractiveMap,

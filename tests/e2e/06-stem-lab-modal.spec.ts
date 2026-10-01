@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { hubTile, learningToolsCard } from './helpers/learning_hub';
 
 /**
  * STEM Lab modal opens via Learning Tools → STEM Lab tile.
@@ -9,10 +10,11 @@ test.describe('STEM Lab modal lifecycle', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(3000);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
-    await page.locator('button').filter({ hasText: /STEM Lab.*interactive math/i }).first().click({ force: true });
-    await page.waitForTimeout(6000);
+    await hubTile(page, 'stem-lab').click({ force: true });
+    // The STEAM Lab shell loads from the CDN and then registers ~140 tools; a fixed 6 s sleep lost that race.
+    await page.waitForFunction(() => !!((window as any).AlloModules?.StemLab && (window as any).StemLab?._registry), null, { timeout: 60000 }).catch(() => {}); // the assertions below report a miss
   });
 
   test('window.AlloModules.StemLab is loaded', async ({ page }) => {

@@ -1,0 +1,48 @@
+{
+  "checks": [
+    {
+      "width": 1280,
+      "check": "unsupported topic preserves reading without model or search calls",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "check": "real TXT import, mixed web/document generation and exact citation inspection",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "check": "documents-only exact excerpts perform no web search",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "check": "saved source and exact citation survive reload without horizontal overflow",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "unsupported topic preserves reading without model or search calls",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "real TXT import, mixed web/document generation and exact citation inspection",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "documents-only exact excerpts perform no web search",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "check": "saved source and exact citation survive reload without horizontal overflow",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "model": "synthetic",
+  "searchTransport": "synthetic",
+  "modules": "actual rebuilt modules"
+}

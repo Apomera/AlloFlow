@@ -1,0 +1,181 @@
+Water Worlds investigation
+Learning lens: investigate
+Investigation focus: My own question
+
+Prediction: (not recorded)
+Explanation: (not recorded)
+
+Current run — completed
+Mean rainfall: 45 mm/h for 40 min
+Pattern: Steady rain
+First / second half: 45 / 45 mm/h
+Observation: 100.0 min
+Rain in: 1152.00 m³
+Outflow: 547.86 m³
+Peak flow: 0.1499 m³/s
+Storage change: 593.57 m³
+Evaporation: 10.56 m³
+
+Saved observations (cell depths in mm; valley volumes in m³)
+Observation 1 — elapsed minute 3; model minute 3
+Experiment: same starting world and rainfall as current run
+Recorded rainfall: 45 mm/h mean for 40 min; Steady rain
+Cell: column 9, row 4; Meadow
+Cell water: surface 1.981 mm; soil 42.626 mm; delayed storage 0.000 mm
+Valley water: surface 63.853 m³; soil 1634.360 m³; delayed storage 0.000 m³
+Since run start: rain 86.400 m³; outflow 0.624 m³; flow now 0.0059 m³/s
+Learner note: I see water gathering during the rain.
+
+Observation 2 — elapsed minute 20; model minute 20
+Experiment: same starting world and rainfall as current run
+Recorded rainfall: 45 mm/h mean for 40 min; Steady rain
+Cell: column 9, row 4; Meadow
+Cell water: surface 12.672 mm; soil 46.102 mm; delayed storage 0.000 mm
+Valley water: surface 409.323 m³; soil 1753.204 m³; delayed storage 0.000 m³
+Since run start: rain 576.000 m³; outflow 23.853 m³; flow now 0.0451 m³/s
+Learner note: My revised evidence: the same patch stores more water.
+
+Observation 3 — elapsed minute 35; model minute 35
+Experiment: same starting world and rainfall as current run
+Recorded rainfall: 45 mm/h mean for 40 min; Steady rain
+Cell: column 11, row 6; Paving
+Cell water: surface 8.886 mm; soil 42.158 mm; delayed storage 0.000 mm
+Valley water: surface 670.972 m³; soil 1853.529 m³; delayed storage 0.000 m³
+Since run start: rain 1008.000 m³; outflow 92.064 m³; flow now 0.1081 m³/s
+Learner note: (not recorded)
+
+Observation 5 — elapsed minute 60; model minute 60
+Experiment: same starting world and rainfall as current run
+Recorded rainfall: 45 mm/h mean for 40 min; Steady rain
+Cell: column 11, row 6; Paving
+Cell water: surface 0.861 mm; soil 42.271 mm; delayed storage 0.000 mm
+Valley water: surface 455.586 m³; soil 2000.281 m³; delayed storage 0.000 m³
+Since run start: rain 1152.000 m³; outflow 301.747 m³; flow now 0.1464 m³/s
+Learner note: (not recorded)
+
+Observation 6 — elapsed minute 80; model minute 80
+Experiment: same starting world and rainfall as current run
+Recorded rainfall: 45 mm/h mean for 40 min; Steady rain
+Cell: column 11, row 6; Paving
+Cell water: surface 0.267 mm; soil 42.361 mm; delayed storage 0.000 mm
+Valley water: surface 263.313 m³; soil 2039.913 m³; delayed storage 0.000 m³
+Since run start: rain 1152.000 m³; outflow 452.563 m³; flow now 0.1013 m³/s
+Learner note: (not recorded)
+
+Observation 7 — elapsed minute 80; model minute 80
+Experiment: same starting world and rainfall as current run
+Recorded rainfall: 45 mm/h mean for 40 min; Steady rain
+Cell: column 11, row 6; Paving
+Cell water: surface 0.267 mm; soil 42.361 mm; delayed storage 0.000 mm
+Valley water: surface 263.313 m³; soil 2039.913 m³; delayed storage 0.000 m³
+Since run start: rain 1152.000 m³; outflow 452.563 m³; flow now 0.1013 m³/s
+Learner note: (not recorded)
+
+Exploratory run. Starting conditions may differ.
+Changed land-cover cells: 0
+
+Model: Water Worlds v1; 12 × 8 cells, 400 m² per cell.
+Process-based teaching model; prescribed rain, mild constant evaporative demand, head-gradient surface routing, and delayed subsurface storage. Not a flood or aquifer forecast. Weather and exported water cross the domain boundary.
+
+Minute samples for current run (minute, flow m³/s, surface m³, soil m³)
+0.0000, 0.0000, 0.0000, 1612.8000
+1.0000, 0.0023, 21.3828, 1620.0068
+2.0000, 0.0043, 42.6605, 1627.1936
+3.0000, 0.0059, 63.8526, 1634.3605
+4.0000, 0.0075, 84.9705, 1641.5075
+5.0000, 0.0090, 106.0158, 1648.6346
+6.0000, 0.0106, 126.9868, 1655.7420
+7.0000, 0.0122, 147.8804, 1662.8296
+8.0000, 0.0140, 168.6922, 1669.8977
+9.0000, 0.0158, 189.4165, 1676.9461
+10.0000, 0.0177, 210.0466, 1683.9750
+11.0000, 0.0198, 230.5754, 1690.9845
+12.0000, 0.0220, 250.9946, 1697.9746
+13.0000, 0.0243, 271.2958, 1704.9453
+14.0000, 0.0268, 291.4699, 1711.8968
+15.0000, 0.0295, 311.5077, 1718.8290
+16.0000, 0.0323, 331.3998, 1725.7421
+17.0000, 0.0353, 351.1367, 1732.6361
+18.0000, 0.0384, 370.7090, 1739.5110
+19.0000, 0.0416, 390.1074, 1746.3670
+20.0000, 0.0451, 409.3230, 1753.2040
+21.0000, 0.0486, 428.3470, 1760.0222
+22.0000, 0.0523, 447.1712, 1766.8216
+23.0000, 0.0561, 465.7879, 1773.6022
+24.0000, 0.0601, 484.1898, 1780.3642
+25.0000, 0.0641, 502.3703, 1787.1075
+26.0000, 0.0682, 520.3234, 1793.8322
+27.0000, 0.0725, 538.0436, 1800.5385
+28.0000, 0.0768, 555.5261, 1807.2262
+29.0000, 0.0811, 572.7668, 1813.8956
+30.0000, 0.0855, 589.7620, 1820.5467
+31.0000, 0.0900, 606.5089, 1827.1794
+32.0000, 0.0945, 623.0050, 1833.7940
+33.0000, 0.0990, 639.2484, 1840.3903
+34.0000, 0.1036, 655.2378, 1846.9686
+35.0000, 0.1081, 670.9723, 1853.5288
+36.0000, 0.1127, 686.4515, 1860.0710
+37.0000, 0.1172, 701.6755, 1866.5952
+38.0000, 0.1218, 716.6445, 1873.1015
+39.0000, 0.1263, 731.3593, 1879.5901
+40.0000, 0.1308, 745.8210, 1886.0608
+41.0000, 0.1328, 731.3247, 1892.5138
+42.0000, 0.1349, 716.7231, 1898.9491
+43.0000, 0.1369, 702.0150, 1905.3668
+44.0000, 0.1389, 687.2026, 1911.7670
+45.0000, 0.1408, 672.2911, 1918.1496
+46.0000, 0.1426, 657.2879, 1924.5148
+47.0000, 0.1442, 642.2019, 1930.8626
+48.0000, 0.1456, 627.0432, 1937.1931
+49.0000, 0.1469, 611.8231, 1943.5062
+50.0000, 0.1479, 596.5533, 1949.8021
+51.0000, 0.1487, 581.2465, 1956.0809
+52.0000, 0.1494, 565.9410, 1962.3169
+53.0000, 0.1497, 550.8117, 1968.3500
+54.0000, 0.1499, 536.2175, 1973.8356
+55.0000, 0.1498, 521.8777, 1979.0672
+56.0000, 0.1496, 507.8466, 1984.0036
+57.0000, 0.1491, 494.2736, 1988.5092
+58.0000, 0.1484, 481.0085, 1992.7459
+59.0000, 0.1475, 468.1073, 1996.6711
+60.0000, 0.1464, 455.5863, 2000.2805
+61.0000, 0.1451, 443.5301, 2003.5009
+62.0000, 0.1436, 431.7076, 2006.5724
+63.0000, 0.1420, 420.0582, 2009.5658
+64.0000, 0.1402, 408.7208, 2012.3531
+65.0000, 0.1383, 397.6085, 2015.0285
+66.0000, 0.1362, 386.8107, 2017.5117
+67.0000, 0.1340, 376.3683, 2019.7689
+68.0000, 0.1318, 366.2542, 2021.8334
+69.0000, 0.1294, 356.3785, 2023.7994
+70.0000, 0.1270, 346.6864, 2025.7262
+71.0000, 0.1245, 337.3269, 2027.4697
+72.0000, 0.1220, 328.1590, 2029.1725
+73.0000, 0.1194, 319.2080, 2030.8123
+74.0000, 0.1168, 310.4719, 2032.3926
+75.0000, 0.1142, 302.0143, 2033.8513
+76.0000, 0.1116, 293.7746, 2035.2495
+77.0000, 0.1090, 285.7910, 2036.5493
+78.0000, 0.1064, 278.0814, 2037.7321
+79.0000, 0.1038, 270.5675, 2038.8750
+80.0000, 0.1013, 263.3133, 2039.9128
+81.0000, 0.0988, 256.2288, 2040.9328
+82.0000, 0.0963, 249.4368, 2041.8110
+83.0000, 0.0939, 242.8554, 2042.6249
+84.0000, 0.0915, 236.4474, 2043.4087
+85.0000, 0.0892, 230.3038, 2044.0687
+86.0000, 0.0870, 224.3976, 2044.6277
+87.0000, 0.0848, 218.6569, 2045.1535
+88.0000, 0.0827, 213.1053, 2045.6191
+89.0000, 0.0806, 207.6903, 2046.0729
+90.0000, 0.0786, 202.4212, 2046.5021
+91.0000, 0.0767, 197.3869, 2046.8147
+92.0000, 0.0748, 192.4668, 2047.1268
+93.0000, 0.0730, 187.6570, 2047.4382
+94.0000, 0.0713, 182.9540, 2047.7491
+95.0000, 0.0696, 178.4240, 2047.9903
+96.0000, 0.0680, 173.9932, 2048.2311
+97.0000, 0.0664, 169.6612, 2048.4676
+98.0000, 0.0649, 165.4854, 2048.6388
+99.0000, 0.0635, 161.3970, 2048.8098
+100.0000, 0.0621, 157.3931, 2048.9804

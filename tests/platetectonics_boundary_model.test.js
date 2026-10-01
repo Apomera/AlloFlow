@@ -19,7 +19,9 @@ import { resolve } from 'node:path';
  * encodes are still checkable statements about the source.
  */
 
-const SOURCE = resolve(process.cwd(), 'stem_lab/stem_tool_platetectonics.js');
+// PT_TEST_SOURCE lets a mutation check run these tests against a scratch copy
+// instead of editing the shared file in place.
+const SOURCE = resolve(process.cwd(), process.env.PT_TEST_SOURCE || 'stem_lab/stem_tool_platetectonics.js');
 const MIRRORS = [
   'desktop/web-app/public/stem_lab/stem_tool_platetectonics.js',
   'desktop/app-build/stem_lab/stem_tool_platetectonics.js'
@@ -227,13 +229,14 @@ describe('Plate Tectonics cross-section — the mantle drives the plates', () =>
     expect(text).toMatch(/clampPlateX\(plates, dr, dpl\.x \+ dpl\.vx \* [\d.]+ \* speed\)/);
   });
 
-  it('runs drift by default so the mechanism is seen, not just offered', () => {
+  it('keeps drift opt-in: a labelled simplification the student switches on', () => {
     const text = src();
-    // The invariant is "on unless the student turned it off" — NOT the exact
-    // expression. It is now also off by default for anyone who asked the system
-    // for reduced motion, which is a different question from whether they chose.
-    expect(text).toMatch(/var ptDrift = d\.ptDrift != null \? !!d\.ptDrift : /);
-    expect(text).not.toMatch(/var ptDrift = !!d\.ptDrift;/);
+    // Reversed 2026-09-27. Drift ran by default to show "the mantle flow moves
+    // the plates", which is the conveyor-belt picture; the force lab now
+    // carries the mechanism, and drift is off until the student turns it on.
+    expect(text).toMatch(/var ptDrift = !!d\.ptDrift;/);
+    expect(text).not.toMatch(/convection currents are carrying the plates/);
+    expect(text).toMatch(/'data-pt-to-forces': 'true'/);
   });
 
   it('throttles the events drift produces', () => {
@@ -257,7 +260,8 @@ describe('Plate Tectonics cross-section — the mantle drives the plates', () =>
 describe('Plate Tectonics — the explanation beside the picture', () => {
   it('answers the same four questions for all three boundary types', () => {
     const text = src();
-    const panel = text.slice(text.indexOf('var BOUNDARY_NOTES'), text.indexOf('var BOUNDARY_NOTES') + 4000);
+    // The whole object, not a byte budget: translating the fields made it longer.
+    const panel = text.slice(text.indexOf('var BOUNDARY_NOTES'), text.indexOf('var TONES', text.indexOf('var BOUNDARY_NOTES')));
     ['subduction', 'collision', 'divergent'].forEach((k) => {
       expect(panel).toMatch(new RegExp(k + ': \\{'));
     });
@@ -404,18 +408,67 @@ describe('Plate Tectonics — deployed copies', () => {
       const text = src();
       const at = text.indexOf("id: 'major_quake'");
       expect(at).toBeGreaterThan(-1);
-      const ch = text.slice(at, at + 480);
-      expect(ch).toMatch(/maxQuakeMag/);
+      const ch = text.slice(at, text.indexOf('},', at) + 2);
+      // ptMadeMaxMag: the largest quake the STUDENT made. maxQuakeMag also
+      // counts quakes mantle drift makes while nobody touches anything.
+      expect(ch).toMatch(/s\.ptMadeMaxMag/);
       expect(ch, 'badge still readable off the seismograph slider').not.toMatch(/s\.eqMagnitude/);
+      expect(ch, 'badge readable off drift-made quakes').not.toMatch(/s\.maxQuakeMag/);
+    });
+
+    it('keeps repeated mantle-drift events silent and awards only learner events', () => {
+      const text = src();
+      const at = text.indexOf('function settleBoundary(idx, fromDrift)');
+      expect(at, 'settleBoundary must know who moved the plate').toBeGreaterThan(-1);
+      const end = text.indexOf('var mouseUp = function', at);
+      const body = text.slice(at, end);
+      const state = {};
+      const awards = [], sounds = [], checks = [];
+      const update = (fn) => Object.assign(state, fn(state));
+      const award = (...args) => awards.push(args);
+      const canvas = { isConnected: true, _ptLive: { updFn: update, awardStemXP: award, checkChallenges() {} } };
+      const eruptState = { active: false };
+      // Run the real settlement logic; the canvas/audio sinks are the mocks.
+      const settle = new Function('canvasEl', 'plates', 'updFn', 'quakeParticles', 'GEO', 'sfxTectQuake', 'sfxTectErupt', 'eruptState', 'triggerEruption', 'cW', 'classifyPair', 'setTimeout', 'checkChallenges', 'awardStemXP',
+        'return ' + body)(canvas,
+        [{ x: 0, w: 100, type: 'oceanic' }, { x: 100, w: 100, type: 'continental' }],
+        update, [], { seaY: 100 }, () => sounds.push('quake'), () => sounds.push('eruption'),
+        eruptState, () => { eruptState.active = true; }, 540,
+        () => ({ kind: 'subduction' }), (fn) => checks.push(fn), () => {}, award);
+      for (let i = 0; i < 10; i++) settle(0, true);
+      expect(state.quakeCount).toBe(10);
+      expect(state.eruptionCount).toBe(1);
+      expect(state.ptMadeQuakes).toBeUndefined();
+      expect(state.ptMadeEruptions).toBeUndefined();
+      expect(state.ptMadeMaxMag).toBeUndefined();
+      expect(state.ptMadeKinds).toBeUndefined();
+      expect(awards).toEqual([]);
+      expect(sounds).toEqual([]);
+      expect(checks).toEqual([]);
+      eruptState.active = false;
+      settle(0, false);
+      expect(state.quakeCount).toBe(11);
+      expect(state.ptMadeQuakes).toBe(1);
+      expect(state.ptMadeEruptions).toBe(1);
+      expect(state.ptMadeKinds).toEqual({ subduction: true });
+      expect(awards).toEqual([['plateTectonics', 3, 'Boundary interaction']]);
+      expect(sounds).toEqual(['quake', 'eruption']);
+      expect(checks).toHaveLength(1);
+      // and the drift loop is the one caller that says so
+      expect(text).toMatch(/settleBoundary\(ds, true\);/);
+      ['first_quake', 'erupt_volcano', 'five_eruptions'].forEach((id) => {
+        const c = text.slice(text.indexOf("id: '" + id + "'"), text.indexOf('} },', text.indexOf("id: '" + id + "'")) + 4);
+        expect(c, id + ' reads a student-made counter').toMatch(/s\.ptMade(Quakes|Eruptions)/);
+      });
     });
 
     it('points the seismograph at the quake the student just made', () => {
       const text = src();
-      const at = text.indexOf('lastQuakeMag: qMag');
+      const at = text.indexOf('patch.lastQuakeMag = lastMag');
       expect(at).toBeGreaterThan(-1);
       const block = text.slice(at - 200, at + 300);
-      expect(block).toMatch(/eqMagnitude: qMag/);
-      expect(block).toMatch(/maxQuakeMag: Math\.max\(liveD\.maxQuakeMag \|\| 0, qMag\)/);
+      expect(block).toMatch(/patch\.eqMagnitude = lastMag/);
+      expect(block).toMatch(/patch\.maxQuakeMag = Math\.max\(cur\.maxQuakeMag \|\| 0, largestMag\)/);
     });
 
     it('draws the magnitude underground, out of the crowded sky band', () => {
@@ -569,13 +622,13 @@ describe('Plate Tectonics — a gap is not a boundary until the plates say so', 
     // vx decides whether a gap is opening or closing. A plate you let go of is
     // not moving, and leaving the last drag direction on it would let a boundary
     // nobody is touching be judged by a movement that finished.
-    const up = text.slice(text.indexOf('var mouseUp = function()'), text.indexOf('var mouseUp = function()') + 600);
+    const up = text.slice(text.indexOf('var mouseUp = function()'), text.indexOf('// Publish which plate', text.indexOf('var mouseUp = function()')));
     // ★ The first draft of this asserted only /plates\[dragIdx\]\.vx = 0/, which
     // matched happily when the statement was disabled as
     // `if (false && plates[dragIdx]) plates[dragIdx].vx = 0;`. Calibration caught
     // it: a substring that survives its own sabotage is not an assertion. Pin the
     // whole statement, guard included.
-    expect(up).toMatch(/if \(plates\[dragIdx\]\)\s*plates\[dragIdx\]\.vx = 0;/);
+    expect(up).toMatch(/if \(plates\[released\]\)\s*plates\[released\]\.vx = 0;/);
   });
 
   it('names all three kinds of divergence, and does not call them all rifts', () => {
@@ -601,8 +654,260 @@ describe('Plate Tectonics — a gap is not a boundary until the plates say so', 
     expect(text).toMatch(/realRiftingMargin:/);
     // The rifting-margin case is the one worth splitting out: it is how a
     // passive margin forms, and it stops being a plate boundary at all.
-    expect(text).toMatch(/realRiftingMargin: 'The Red Sea/);
+    expect(text).toMatch(/realRiftingMargin: (?:__alloT\('[^']+', )?["']The Red Sea/);
     // And the panel has to actually choose between them.
     expect(text).toMatch(/rifting margin\/i\.test\(lbl\)/);
+  });
+});
+
+// ── 2026-09-27: places the tool taught the wrong thing ──────────────────────
+/** Evaluate a `var NAME = <expr>;` constant declared in the source. */
+function constValue(name) {
+  const m = src().match(new RegExp('var ' + name + ' = ([^;]+);'));
+  expect(m, name + ' not declared').toBeTruthy();
+  // eslint-disable-next-line no-new-func
+  return new Function('return (' + m[1] + ');')();
+}
+
+describe('Plate Boundary Simulator — the clock multiplies out', () => {
+  it('runs one geological clock whatever the rate, and moves distance = rate x time', () => {
+    const text = src();
+    // The old clock ran years at rate*50/s and the rift at rate*0.6 km/s, so the
+    // rift opened 12 m/yr at EVERY rate and the slider only changed playback.
+    expect(text).toMatch(/var yearsDelta = TECT_YEARS_PER_SEC \* dt;/);
+    expect(text).not.toMatch(/var yearsDelta = cur\.rate \* 50 \* dt/);
+    expect(text).toMatch(/var slidKm = cur\.rate \* yearsDelta \/ 1e5;/);
+    expect(text).toMatch(/patch\.rift = Math\.min\(180, cur\.rift \+ slidKm\)/);
+    expect(text).toMatch(/patch\.offset = cur\.offset \+ slidKm;/);
+    // Pace preserved: a 5 cm/yr rift still opens 3 km of drawing per second.
+    const yps = constValue('TECT_YEARS_PER_SEC');
+    expect(5 * yps / 1e5).toBeCloseTo(3, 5);
+  });
+
+  it('keeps the flow markers on their own pace, not the 60,000 yr/s clock', () => {
+    const text = src();
+    const i = text.indexOf('var flowPhase = ');
+    const line = text.slice(i, text.indexOf('\n', i));
+    expect(line).toMatch(/animYr/);
+    expect(line).not.toMatch(/cur\.years/);
+  });
+
+  it('draws earthquake sizes with Gutenberg-Richter, not a uniform draw', () => {
+    const text = src();
+    const a = text.indexOf('var mBand = ');
+    const b = text.indexOf('\n', text.indexOf('var magnitude = ', a));
+    expect(a).toBeGreaterThan(-1);
+    const code = text.slice(a, b);
+    // Run the tool's own two lines with a deterministic random stream.
+    let seed = 7;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    // eslint-disable-next-line no-new-func
+    const draw = new Function('cur', 'Math', code + '; return magnitude;');
+    const M = Object.create(Math); M.random = rnd;
+    const mags = [];
+    for (let k = 0; k < 20000; k++) mags.push(draw({ mode: 'convergent' }, M));
+    expect(Math.min(...mags)).toBeGreaterThanOrEqual(3.5);
+    expect(Math.max(...mags)).toBeLessThanOrEqual(8);
+    const ge = (m) => mags.filter((x) => x >= m).length;
+    // b = 1: each whole magnitude is about ten times rarer.
+    expect(ge(4.5) / ge(3.5)).toBeGreaterThan(0.07);
+    expect(ge(4.5) / ge(3.5)).toBeLessThan(0.13);
+    expect(ge(5.5) / ge(4.5)).toBeLessThan(0.2);
+  });
+
+  it('paints the mantle as solid rock, not red magma', () => {
+    const text = src();
+    const i = text.indexOf('var mantle = ctx.createLinearGradient(0, H * 0.5, 0, H);');
+    expect(i).toBeGreaterThan(-1);
+    const blk = text.slice(i, text.indexOf('ctx.fillStyle = mantle;', i));
+    const stops = [...blk.matchAll(/addColorStop\([^,]+, '#([0-9a-f]{6})'\)/g)].map((m) => m[1]);
+    expect(stops.length).toBe(6);
+    stops.forEach((hex) => {
+      const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), bl = parseInt(hex.slice(4, 6), 16);
+      // Saturated red is what students read as molten rock.
+      expect(r - Math.max(g, bl), '#' + hex + ' reads as red').toBeLessThan(70);
+    });
+  });
+});
+
+describe('Main sim — the crust is drawn to scale', () => {
+  it('puts the Moho 7 km under the sea floor and ~35 km under continents', () => {
+    const text = src();
+    expect(text).toMatch(/var MOHO_KM = \{ oceanic: 14 \+ 7, continental: 35 \};/);
+    expect(text).toMatch(/var mohoY = pTop \+ pThick \* mohoFr;/);
+    expect(text).not.toMatch(/var mohoY = pTop \+ pThick \* 0\.36;/);
+  });
+});
+
+describe('Quiz bank — reasoning, and the right answer about what moves plates', () => {
+  const bank = () => {
+    const text = src();
+    const start = text.indexOf('var QUIZZES = ptBalanceAnswers([');
+    const end = text.indexOf('\n          ]);', start);
+    const literal = text.slice(text.indexOf('[', start), end + 12).replace(/\);\s*$/, '');
+    // eslint-disable-next-line no-new-func
+    return new Function('__alloT', 'return (' + literal + ');')((k, fb) => fb);
+  };
+
+  it('no longer teaches that convection currents drag the plates along', () => {
+    const qs = bank();
+    const drive = qs.find((q) => /keeps the plates moving/.test(q.q));
+    expect(drive, 'driving-force question present').toBeTruthy();
+    expect(drive.opts[drive.ans]).toMatch(/sink/i);
+    const all = JSON.stringify(qs);
+    expect(all).not.toMatch(/drag plates along/i);
+    expect(all).not.toMatch(/Pangaea means/);
+  });
+
+  it('does not make the key guessable from its length', () => {
+    const qs = bank();
+    const longest = qs.filter((q) => {
+      const L = q.opts.map((o) => o.length);
+      return L[q.ans] === Math.max(...L);
+    }).length;
+    expect(longest / qs.length).toBeLessThanOrEqual(0.4);
+  });
+
+  it('names a concept card for every question', () => {
+    const text = src();
+    bank().forEach((q) => {
+      // A boolean, not toContain on the whole 2.5 MB source: a failing toContain
+      // makes vitest diff the entire file, which hangs the run instead of failing it.
+      const needle = "'" + q.concept + "': __alloT('stem.platetectonics.vocab_";
+      expect(text.includes(needle), 'no vocabulary card for ' + q.concept).toBe(true);
+    });
+  });
+});
+
+describe('Quick review — sixty cards, not ten printed six times', () => {
+  it('has sixty different questions and sixty different answers', () => {
+    const text = src();
+    const blk = text.slice(text.indexOf('simTab === "review"'), text.indexOf('simTab === "faq"'));
+    const answers = [...blk.matchAll(/ptReviewAnswer\(\d+, __alloT\('[^']+', "([^"]+)"\)/g)].map((m) => m[1]);
+    const questions = [...blk.matchAll(/ptReviewField\("Question: ", __alloT\('[^']+', "([^"]+)"\)/g)].map((m) => m[1]);
+    expect(answers.length).toBe(60);
+    expect(new Set(answers).size).toBe(60);
+    expect(questions.length).toBe(60);
+    expect(new Set(questions).size).toBe(60);
+  });
+});
+
+describe('Catalogue facts corrected 2026-09-27', () => {
+  it('puts the Galapagos, Easter Island and San Felix hotspots on the Nazca plate', () => {
+    const text = src();
+    ['galapagos_2', "easter_island'", 'san_felix'].forEach((k) => {
+      const line = text.split('\n').find((l) => l.includes('stem.platetectonics.' + k) && l.includes('plate:'));
+      expect(line, k).toMatch(/plate: __alloT\('stem\.platetectonics\.hs_plat_nazca/);
+    });
+  });
+
+  it('lists each hotspot once', () => {
+    const text = src();
+    const hs = text.slice(text.indexOf('var HOTSPOT_DB = ['), text.indexOf('];', text.indexOf('var HOTSPOT_DB = [')));
+    const names = [...hs.matchAll(/name: (?:__alloT\('[^']+', )?"([^"]+)"/g)].map((m) => m[1]);
+    expect(names.length).toBeGreaterThan(30);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('gives the Mid-Atlantic Ridge its real length and elastic rebound its real author', () => {
+    const text = src();
+    expect(text).toMatch(/Mid-Atlantic Ridge"\), region: [^\n]*lengthKm: 16000/);
+    expect(text).not.toMatch(/Henry Fielding Reid|Hutton-Reid/);
+    expect(text).not.toMatch(/10,000 km long divergent boundary/);
+  });
+});
+
+describe('Main sim — an opening boundary is drawn as what it is (2026-09-28)', () => {
+  const ridgeBlock = () => {
+    const text = src();
+    const i = text.indexOf("if (B.kind === 'divergent') {");
+    expect(i).toBeGreaterThan(-1);
+    return text.slice(i, text.indexOf("} else if (B.kind === 'collision') {", i));
+  };
+
+  it('no longer fills the gap with a full-thickness block of orange', () => {
+    const blk = ridgeBlock();
+    // the old wall of "lava": an orange-to-maroon gradient over the whole gap
+    expect(blk).not.toMatch(/addColorStop\(0, '#f97316'\);\s*nGrad\.addColorStop\(1, '#7f1d1d'\)/);
+    expect(blk).not.toMatch(/ctx\.fillRect\(gx0, topN, gw, botN - topN\)/);
+  });
+
+  it('thins the new lithosphere toward the axis and puts water over an ocean ridge', () => {
+    const blk = ridgeBlock();
+    expect(blk).toMatch(/ctx\.lineTo\(axisX, axisBase\)/);
+    expect(blk).toMatch(/if \(!bothLand\) \{[\s\S]*ctx\.fillRect\(gx0, seaY, gw,/);
+  });
+
+  it('mirrors the magnetic stripes across the axis at a fixed width', () => {
+    const blk = ridgeBlock();
+    expect(blk).toMatch(/ctx\.fillRect\(axisX \+ sk \* stripeW, topN, w0, crustPx\)/);
+    expect(blk).toMatch(/ctx\.fillRect\(axisX - sk \* stripeW - w0, topN, w0, crustPx\)/);
+    // not re-spaced as the gap grows
+    expect(blk).not.toMatch(/gx0 \+ gw \* \(ag \/ 5\)/);
+  });
+});
+
+describe('Main sim — a collision builds its range at the seam (2026-09-28)', () => {
+  it('grows the range with the squeeze and keeps the root about twice its drawn height', () => {
+    const text = src();
+    const col = text.slice(text.indexOf("} else if (B.kind === 'collision') {"));
+    const blk = col.slice(0, col.indexOf("fig_crustal_root"));
+    expect(blk).toMatch(/var collH = Math\.min\(cH \* [\d.]+, cH \* [\d.]+ \+ squeeze \* [\d.]+\);/);
+    expect(blk).toMatch(/collH \* 2/);
+    expect(blk).toMatch(/B\.mid \+ pk\[0\] \* collW/);
+  });
+});
+
+describe('Sim tab — the model comes first (2026-09-28)', () => {
+  it('renders the canvas before the mission card and readouts', () => {
+    const text = src();
+    const screen = text.indexOf("'data-pt-sim-screen': 'true'");
+    const canvas = text.indexOf("'data-pt-main-canvas': 'true'", screen);
+    const mission = text.indexOf('renderSimulationFocus(),', screen);
+    expect(screen).toBeGreaterThan(-1);
+    expect(canvas).toBeGreaterThan(screen);
+    expect(mission, 'mission card after the canvas').toBeGreaterThan(canvas);
+  });
+
+  it('no longer promises sideways motion the cross-section cannot show', () => {
+    expect(src()).not.toMatch(/drag plates together, apart, or sideways/);
+  });
+});
+
+describe('Simulation teaching text reaches every language (2026-09-28)', () => {
+  it('routes every explainer field through __alloT and shows boundary labels translated', () => {
+    const text = src();
+    const i = text.indexOf('var BOUNDARY_NOTES');
+    const panel = text.slice(i, text.indexOf('var TONES', i));
+    expect(panel).not.toMatch(/\b(motion|rock|look|inquiry|real\w*): '/);
+    expect((panel.match(/: __alloT\('stem\.platetectonics\.bn_/g) || []).length).toBe(18);
+    // labels stay English inside the model and are translated at display
+    expect(text).toMatch(/ptFocusBoundary \? ptBLabel\(ptFocusBoundary\.label\)/);
+    expect(text).toMatch(/: ptBLabel\(C\.label\);/);
+  });
+
+  it('gives every myth a Try-it that goes somewhere real', () => {
+    const text = src();
+    const goes = [...text.matchAll(/tryIt: __alloT\('stem\.platetectonics\.mytry_\d+', "[^"]+"\), go: '([a-z_]+)'/g)].map((m) => m[1]);
+    expect(goes.length).toBe(19);
+    const cats = text.slice(text.indexOf('var PT_CATEGORIES = ['), text.indexOf('var PT_CATEGORY_INK'));
+    goes.forEach((g) => { if (g !== 'edu') expect(cats.includes('"' + g + '"'), g + ' is a real tab').toBe(true); });
+    // the three that pointed at nothing
+    expect(text).not.toMatch(/Open the Seafloor tab and look at the age of the crust/);
+    expect(text).not.toMatch(/On the Earthquake tab, trigger a quake/);
+    expect(text).not.toMatch(/on the plate info panels/);
+  });
+});
+
+describe('Interactive boundary model: passive playback', () => {
+  it('records simulated earthquakes without sound or reward feedback', () => {
+    const text = src();
+    const start = text.indexOf('window.AlloTectonicsInteractive =');
+    const end = text.indexOf('function draw(ctx, W, H, cur)', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const frame = text.slice(start, end);
+    expect(frame).toContain('patch.quakeTotal');
+    expect(frame).not.toMatch(/\b(?:playQuakeRumble|sfxTectQuake|sfxTectCorrect|awardStemXP)\s*\(/);
   });
 });

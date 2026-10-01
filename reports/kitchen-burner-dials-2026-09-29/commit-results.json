@@ -1,0 +1,24 @@
+{
+  "hash": "321fac7ab933a70e88caa6c1f7779fe8ca963ca1",
+  "files": [
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_burners.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "dev-tools/kitchen_recipe_burners_qa.cjs",
+    "reports/kitchen-burner-dials-2026-09-29/validation-summary.json",
+    "stem_lab/kitchen_studio/recipe_lab.html",
+    "stem_lab/kitchen_studio/recipe_lab.js",
+    "stem_lab/kitchen_studio/recipe_lab_burners.js",
+    "stem_lab/kitchen_studio/recipe_lab_engine.js",
+    "stem_lab/kitchen_studio/recipe_lab_gesture_guide.js",
+    "stem_lab/kitchen_studio/recipe_lab_scene.js",
+    "stem_lab/kitchen_studio/recipe_lab_workspace.js",
+    "tests/kitchen_recipe_burners.test.js"
+  ],
+  "verification": 314,
+  "remaining": ""
+}

@@ -1,0 +1,112 @@
+{
+  "pass": true,
+  "assets": [
+    {
+      "name": "recipe_lab.css",
+      "matches": true,
+      "sha256": "e84032f57bd765b3172dc08cf1e744af9d19311cbde46242ad9350ddfad28f8d"
+    },
+    {
+      "name": "recipe_lab.html",
+      "matches": true,
+      "sha256": "06f4a03b84c8a85084acdc2c6f56b957b11c94f5f0352a8f7c5beac5c9fea9ae"
+    },
+    {
+      "name": "recipe_lab.js",
+      "matches": true,
+      "sha256": "974914449191fd3f98f5019d5374635917b4deb391d6ae2e31f939697a24fe1b"
+    },
+    {
+      "name": "recipe_lab_clock.js",
+      "matches": true,
+      "sha256": "f0af8135f141588689bcc6d004db730994fa9f15e5a70ecb1e7d8d593a10a743"
+    },
+    {
+      "name": "recipe_lab_compare.js",
+      "matches": true,
+      "sha256": "ffd184c76d0706e94a043bd27e31547951afa692146775fcdac1f8bafe6d65f8"
+    },
+    {
+      "name": "recipe_lab_compare_ui.js",
+      "matches": true,
+      "sha256": "c9bebada0dc61b890323d9d76d8a738dc6e9a29a8bba40403198be7b5f3b4e31"
+    },
+    {
+      "name": "recipe_lab_crushing.js",
+      "matches": true,
+      "sha256": "e9aa848a97107a6cb80193d372ec34f5149a4ee8fed5e874f3c1bfd8f82e086c"
+    },
+    {
+      "name": "recipe_lab_drying.js",
+      "matches": true,
+      "sha256": "69618c1a37706e230118826bb13b0dece8e5de894cd28ff531e388a470d289f1"
+    },
+    {
+      "name": "recipe_lab_engine.js",
+      "matches": true,
+      "sha256": "5c227a1b175a12232e58758a6dba36fbf642d6440c89329c69f254043436e78d"
+    },
+    {
+      "name": "recipe_lab_garlic.js",
+      "matches": true,
+      "sha256": "9a81e36b0bad51d7cd39dce7dd31f914ec703767311961ed8d173e0d59c66657"
+    },
+    {
+      "name": "recipe_lab_hands.css",
+      "matches": true,
+      "sha256": "e3147788d8858403e076080b1c61a34d80ebc81081f0ff1c3c1be9af6d85bf14"
+    },
+    {
+      "name": "recipe_lab_hands.js",
+      "matches": true,
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+    },
+    {
+      "name": "recipe_lab_hands_ui.js",
+      "matches": true,
+      "sha256": "a890c318c4c80636df5d398a0ec815aac60c4678494ceb8f180d3c837526cdb3"
+    },
+    {
+      "name": "recipe_lab_heat.js",
+      "matches": true,
+      "sha256": "d9e25766b4c2005c7dfb99f12b8cf8512ae3bfd117decbd064a9b5646cbcff88"
+    },
+    {
+      "name": "recipe_lab_inspection.css",
+      "matches": true,
+      "sha256": "2a9194923e65353c885d66a3b0802f07cf451b160306ee83cb6ac92bdfdc17c6"
+    },
+    {
+      "name": "recipe_lab_inspection.js",
+      "matches": true,
+      "sha256": "ac6485ff8acd368f8956d3603821d10b119a423f378023b2e07a8207781c5a05"
+    },
+    {
+      "name": "recipe_lab_pasta.js",
+      "matches": true,
+      "sha256": "12a42b94b7df3de4ca1cece5edb94e5de2de33267447fa1ae9d0f2cdec30d989"
+    },
+    {
+      "name": "recipe_lab_scene.js",
+      "matches": true,
+      "sha256": "e6bad04dec23cc5863dec70a0e5214d47984b9b8afa45e48f3d5ecaea06fea36"
+    },
+    {
+      "name": "recipe_lab_serving.js",
+      "matches": true,
+      "sha256": "c1ed67739ac6e2bdb0d1eb4e8691d4e30f4261d7fdedf52247db042e0e518be0"
+    },
+    {
+      "name": "recipe_lab_stir.js",
+      "matches": true,
+      "sha256": "4cbcd9c8a3607c2df59ee53e88563134f5bc774ba4a8dc7e045283ce44d9c1dc"
+    },
+    {
+      "name": "recipe_lab_water.js",
+      "matches": true,
+      "sha256": "d41a20e3c9a9244923e4481466d688a7e29ba4522eb134742ace9638fe4fbd52"
+    }
+  ],
+  "syntax": "All recipe JavaScript and the serving browser QA script parse successfully.",
+  "whitespace": "Scoped git diff --check passed."
+}

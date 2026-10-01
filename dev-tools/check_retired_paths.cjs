@@ -35,6 +35,8 @@ const RETIRED = { 'prismflow-deploy': 'desktop/web-app' };
 const ALLOWED = new Set([
   '.assetsignore',
   'tests/desktop_web_shell_boundary.test.js',
+  'tests/retired_paths_index_search.test.js',
+  'reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/baseline/tests/desktop_web_shell_boundary.test.js',
   'dev-tools/check_retired_paths.cjs',
 ]);
 
@@ -42,8 +44,8 @@ const SCAN = /\.(js|cjs|mjs|sh|json|ya?ml|toml)$/;
 
 let tracked = [];
 try {
-  tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 512 * 1024 * 1024 })
-    .split('\n').filter(Boolean);
+  tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 512 * 1024 * 1024 })
+    .split('\0').filter(Boolean);
 } catch (_) {
   if (!QUIET) console.log('✓ check_retired_paths: skipped (not a git checkout).');
   process.exit(0);
@@ -59,8 +61,32 @@ for (const [retired, replacement] of Object.entries(RETIRED)) {
   if (back.length) {
     failures.push(`${retired}/ has ${back.length} tracked file(s) — e.g. ${back.slice(0, 3).join(', ')}`);
   }
+  // Search index blobs first, then check disk for matches and unstaged paths.
+  // This keeps the same tracked-file coverage without hydrating every archived
+  // source snapshot from OneDrive merely to prove it contains no retired path.
+  let indexedMatches = [];
+  try {
+    indexedMatches = execFileSync('git', ['grep', '--cached', '-a', '-l', '-z', '-F', '-e', retired, '--',
+      '*.js', '*.cjs', '*.mjs', '*.sh', '*.json', '*.yml', '*.yaml', '*.toml'],
+      { cwd: ROOT, encoding: 'utf8', maxBuffer: 512 * 1024 * 1024 }).split('\0').filter(Boolean);
+  } catch (error) {
+    if (error.status !== 1) {
+      failures.push(`Cannot scan tracked scripts for ${retired}/: ${error.message}`);
+      continue;
+    }
+  }
+  let unstaged = [];
+  try {
+    unstaged = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z'],
+      { cwd: ROOT, encoding: 'utf8', maxBuffer: 512 * 1024 * 1024 }).split('\0').filter(Boolean);
+  } catch (error) {
+    failures.push(`Cannot inspect unstaged scripts for ${retired}/: ${error.message}`);
+    continue;
+  }
+  const trackedSet = new Set(tracked);
+  const candidates = new Set([...indexedMatches, ...unstaged].filter((p) => trackedSet.has(p)));
   // The root cause: a script that still names the retired path will recreate it.
-  for (const p of tracked) {
+  for (const p of candidates) {
     if (ALLOWED.has(p) || !SCAN.test(p)) continue;
     if (p.startsWith(retired + '/')) continue; // already reported above
     if (p.startsWith('app/static/')) continue; // built student-shell bundles

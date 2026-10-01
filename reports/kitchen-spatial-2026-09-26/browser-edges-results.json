@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "A rescue can begin with a continuous 3D pour; Escape stops flow while preserving all completed doses.",
+    "A direct-pour rescue completes and records evidence; 3D interaction cannot modify it during replay.",
+    "WebGL context loss stops an active pour and leaves working text and keyboard controls.",
+    "Real touch dragging operates the 3D bottle on a 390px screen; touch cancellation changes no cooking state."
+  ],
+  "errors": [],
+  "pass": true
+}

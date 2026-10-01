@@ -6546,7 +6546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]),
           inDrought ? h('p', { key: 'drought' }, __alloT('stem.treelab.field_scheduled_drought', 'A scheduled drought is overriding soil water. End it in Field tools to use your water setting.')) : null,
           h('div', { key: 'run', className: 'allo-tree-field-actions' }, [
-            btn('field-year', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { primary: true, disabled: !tree.alive }),
+            btn('field-year', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { disabled: !tree.alive }),
             btn('field-decade', __alloT('stem.treelab.plus_10', '+10 years'), function () { stepYears(10); }, { disabled: !tree.alive }),
             btn('field-evidence', __alloT('stem.treelab.field_read_rings', 'Read the rings'), function () { revealFieldSection('grow-sec-memory'); }, { tone: 'ghost' })
           ]),

@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-01T00:11:40.492Z",
+  "appliedToWorkspace": false,
+  "hostSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+  "patchSha256": "42ca0c52555d8b976d1f1bdd03757ef3e50017978072685542c8c52af27c9dde",
+  "syntax": "passed",
+  "unchanged": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  },
+  "behavior": "Close clears the minimized mount flag; only the setup view returns to input. Other current views and resource content are retained. Functional view update uses the latest state.",
+  "scope": "Only the WordSoundsGenerator onClose prop. The shared dashboard callback, preparation cancellation, and other tools are unchanged.",
+  "limits": [
+    "Review-only until host ownership is clarified.",
+    "This does not prove production keyboard, focus restoration, or preparation cancellation behavior."
+  ]
+}

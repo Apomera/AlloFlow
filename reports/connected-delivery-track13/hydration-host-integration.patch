@@ -1,0 +1,27 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt
++++ AlloFlowANTI.txt
+@@ -23499,18 +23499,20 @@
+                             parsedData = restArt;
+                         }
+                     }
+                 }
++                // Preserve explicit reading envelopes across local saves, including failed decodes.
++                const preserveReadingEnvelope = item.type === 'simplified' && item.dataEncoding === 'json-text/v1';
+                 const serializedItem = {
+                     id: item.id || Date.now().toString(),
+                     unitId: item.unitId || null,
+                     type: item.type || 'unknown',
+                     title: item.title || '',
+                     meta: item.meta || '',
+                     timestamp: item.timestamp || new Date(),
+-                    data: JSON.stringify(parsedData) || "{}",
++                    data: preserveReadingEnvelope && typeof parsedData === 'string' ? parsedData : JSON.stringify(parsedData) || "{}",
+                 };
+-                if (typeof parsedData === 'string' && (item.type === 'simplified' || item.dataEncoding === 'text/v1')) serializedItem.dataEncoding = 'json-text/v1';
++                if (preserveReadingEnvelope || (typeof parsedData === 'string' && (item.type === 'simplified' || item.dataEncoding === 'text/v1'))) serializedItem.dataEncoding = 'json-text/v1';
+                 if (item.sourceSnapshot) serializedItem.sourceSnapshot = item.sourceSnapshot;
+                 if (item.sourceInstructionalText) serializedItem.sourceInstructionalText = item.sourceInstructionalText;
+                 if (item.sourceFamilyId) serializedItem.sourceFamilyId = item.sourceFamilyId;
+                 if (item.inputArtifactId) serializedItem.inputArtifactId = item.inputArtifactId;

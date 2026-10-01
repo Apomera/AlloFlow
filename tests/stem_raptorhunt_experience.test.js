@@ -212,7 +212,8 @@ describe('Raptor Hunt accessible flight controls and lifecycle', () => {
     expect(text).toContain("'data-raptor-controls': 'true'");
     expect(text).toContain("role: 'group'");
     expect(text).toContain(`'aria-label': __alloT('stem.raptorhunt.a11y_raptor_flight_controls', 'Raptor flight controls')`);
-    expect(text).toMatch(/type:\s*'button'[\s\S]{0,500}onPointerDown/);
+    // b4d7ed714 added a title and key shortcuts ahead of the handlers; check the factory itself.
+    expect(functionBody(text, 'holdFlightButton')).toMatch(/h\('button', \{\s*type: 'button',[\s\S]*onPointerDown: function\(event\) \{[\s\S]*setPointerCapture/);
     expect(text).toContain("'aria-pressed': active");
     expect(text).toContain('function requestHuntFullscreen()');
     expect(text).toMatch(/requestFullscreen|webkitRequestFullscreen/);
@@ -251,12 +252,15 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
   it('uses one three-dimensional forward/target calculation for both reticle and strike', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toMatch(/function flightForwardVector\([^)]*\)/);
-    expect(init).toContain('function acquireTarget()');
+    // acquireTarget(commit): the per-frame lock commits attention; strike and snapshots only query.
+    expect(init).toContain('function acquireTarget(commit)');
     expect(init).toMatch(/Math\.sin\(raptor\.pitch\)/);
     expect(init).not.toMatch(/-Math\.sin\(raptor\.pitch\)/);
+    // A strike throws the talons; each frame of the throw queries (never commits) the target.
     const strike = functionBody(init, 'strike');
-    expect(strike).toMatch(/acquireTarget\(\)/);
-    expect(init).toMatch(/var targetInfo\s*=\s*targetLockOn\s*\?\s*acquireTarget\(\)\s*:\s*null/);
+    expect(strike).toContain('resolveTalonThrow(true)');
+    expect(functionBody(init, 'resolveTalonThrow')).toMatch(/acquireTarget\(\)/);
+    expect(init).toMatch(/var targetInfo\s*=\s*targetLockOn\s*&&\s*!soaring\s*\?\s*acquireTarget\(true\)\s*:\s*null/);
     expect(init).toMatch(/inStrikeRange\s*=\s*!!\(targetInfo\s*&&\s*targetInfo\.canStrike/);
   });
 
@@ -281,7 +285,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain("'data-raptor-edit-flight': 'true'");
     expect(text).toContain("'data-raptor-flight-settings': 'true'");
     expect(text).toContain("'data-raptor-performance': 'true'");
-    expect(text).toContain("'data-active': 'false'");
+    expect(text).toContain("'data-active': buttonHeld ? 'true' : 'false'");
     expect(text).toContain('telemetryCaloriesFill.style.width');
     expect(text).toContain('data-energy-state');
     expect(text).toContain('raptorAltitude');
@@ -304,7 +308,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('var windSummary =');
     expect(text).toContain('data-target-edge*');
     expect(text).toContain("'data-raptor-selected-profile': 'true'");
-    expect(text).toContain("'aria-keyshortcuts': raptorSchemeShortcuts(activeScheme)");
+    expect(text).toContain("'aria-keyshortcuts': simUI.studyActive ? 'ArrowLeft ArrowRight ArrowUp ArrowDown Escape' : raptorSchemeShortcuts(activeScheme)");
     expect(text).toContain("'data-raptor-target-announcement': 'true'");
     expect(text).toContain('targetStateChanged');
     expect(text).toContain("'aria-live': 'polite'");
@@ -334,7 +338,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('Flight setup opened from coach read');
     expect(text).toContain('runHistory.push(historyEntry)');
     expect(text).toContain("'data-raptor-flight-history': 'true'");
-    expect(text).toContain("'aria-label': 'Review ' + speciesName + ' ' + missionName + ' setup'");
+    expect(text).toContain("'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_review_setup', 'Review {value1} {value2} setup'), { value1: speciesName, value2: missionName })");
     expect(text).toContain("'data-trend-state': trendState");
     expect(text).toContain("'data-raptor-performance-help': 'true'");
     expect(text).toContain('Low graphics quality enabled for smoother flight');
@@ -342,10 +346,11 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('function missionProgressLabel()');
     expect(text).toContain('function missionPhaseText()');
     expect(text).toContain("'aria-label', 'Mission completion'");
-    expect(text).toContain("missionMeterLabelValueEl.textContent = progressPct + '%'");
+    expect(text).toContain("missionMeterLabelValueEl.textContent = stoopSpeedMeter ? highStoopSpeedText() : progressPct + '%'");
     expect(text).toContain('missionMeterLabelEl.dataset.progressState = missionOutcome');
     expect(text).toContain('missionPhaseEl.dataset.phaseState = missionOutcome');
-    expect(text).toContain("missionMeterEl.setAttribute('aria-valuetext', progressPct + '% complete. ' + missionProgressText())");
+    expect(text).toContain("missionMeterEl.setAttribute('aria-valuetext', stoopSpeedMeter ? highStoopSpeedText() + '. '");
+    expect(text).toContain(": progressPct + '% complete. ' + missionProgressText());");
     expect(text).toContain('missionMeterFillEl.style.width');
     expect(text).toContain("setAttribute('data-raptor-mission-focus', 'true')");
     expect(text).toContain('flightSummary: finalSummary');
@@ -374,21 +379,24 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain("flightTrail.name = 'raptor-flight-trail'");
     expect(text).toContain("targetGuide.name = 'raptor-target-guide'");
     expect(text).toContain("airflowLines.name = 'raptor-airflow-lines'");
-    expect(text).toContain('updateFlightTrail();');
+    expect(text).toContain('updateFlightTrail(dt);');
     expect(text).toContain('updateAirflowLines(now);');
     expect(text).toContain('updateWingtipVortices(now);');
-    expect(text).toContain('updateWaterWakes(now);');
+    expect(text).toContain('updateWaterWakes(now,dt);');
     expect(text).toContain('updateTouchdownFx(dt);');
     expect(text).toContain('updateTargetGuide(targetInfo, nextTargetState, now);');
     expect(text).toContain('updateBiomeLandmarks(now);');
     expect(text).toContain('updateAltitudeLighting();');
     expect(text).toMatch(/thermalLiftParticles\.visible = !_rmFX && thermalActive/);
     expect(text).toMatch(/var vortexActive = !_rmFX && !raptor\.landed && !raptor\.crashed/);
-    expect(text).toMatch(/shadowAltitudeRatio = Math\.max\(0, Math\.min\(1, altAboveGround \/ 220\)\)/);
-    expect(text).toMatch(/var wakeActive = !_rmFX && wakeSpeed > 0\.16 && !wakePrey\.alerted/);
-    expect(text).toMatch(/if \(raptor\.landed && !wasLanded\) spawnTouchdownFx\('land'\)/);
+    // The altitude fade lives in raptorShadowProfile (see stem_raptor_shadow.test.js).
+    expect(text).toMatch(/fade:Math\.pow\(Math\.max\(0,1-h\/220\),2\)/);
+    // Wakes fade in with speed and are off under reduced motion (see stem_raptor_water_wakes.test.js).
+    expect(text).toContain('var opacityGoal=reduced?0:0.38*contact*Math.max(0,Math.min(1,(speed-0.12)/1.8));');
+    expect(text).toContain("prey.surfaceMode==='subsurface',dt,_rmFX);");
+    expect(text).toMatch(/if \(raptor\.landed && !wasLanded && !activePerch\) spawnTouchdownFx\('land'\)/);
     expect(text).toMatch(/if \(raptor\.crashed && !wasCrashed\) spawnTouchdownFx\('crash'\)/);
-    expect(text).toMatch(/var trailActive = !_rmFX && \(raptor\.diving \|\| diveIntensity > 0\.18 \|\| strikeFeedbackActive\)/);
+    expect(text).toMatch(/var trailActive = !_rmFX && !raptor\.landed && !raptor\.crashed && \(raptor\.diving \|\| diveIntensity > 0\.18 \|\| strikeFeedbackActive\)/);
   });
 
   it('prioritizes a resumable mission briefing before compact topic discovery', () => {
@@ -3135,7 +3143,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('function dampingAlpha(response, deltaSeconds)');
     expect(init).toMatch(/1 - Math\.exp\(-response \* Math\.max\(0, deltaSeconds\)\)/);
-    expect(init).toContain('var cameraFollowAlpha = dampingAlpha(12, dt)');
+    expect(init).toContain('var cameraFollowAlpha = (snap ? 1 : dampingAlpha(12, dt))');
     expect(init).toContain('dampingAlpha(8, dt)');
     expect(init).toContain('dampingAlpha(3, dt)');
     expect(init).toContain('var inwardYaw = Math.atan2(-raptor.x, raptor.z)');
@@ -3182,7 +3190,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     });
     expect(init).toContain("root.name = 'prey-' + kind + '-' + preyData.id");
     expect(init).toContain('var birdHead =');
-    expect(init).toContain('var dorsal =');
+    expect(init).toContain('var dorsal=new THREE.Mesh(createFishFinGeometry(size,false),finMaterial)');
     expect(init).toContain('var mammalHead =');
     expect(init).toContain('var ear =');
     expect(init).toContain('animation: preyVisual');
@@ -3201,7 +3209,8 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain("pm2.animation.kind === 'fish'");
     expect(init).toContain('pm2.animation.wings.forEach');
     expect(init).toContain('pm2.animation.legs.forEach');
-    expect(init).toContain('var pulse = _rmFX ? 1');
+    // a3a2b8473 moved the beacon pulse into target feedback; it still holds still under reduced motion.
+    expect(init).toContain('pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 0.6 + Math.sin(');
   });
 
   it('animates each raptor family with distinct wing and tail mechanics', () => {
@@ -3212,9 +3221,11 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('flightAnimationProfile.glideDihedral');
     expect(functionBody(init, 'updateRaptorWingPose')).toContain('profile.tuck');
     expect(init).toContain('var tailSteerTarget =');
-    expect(init).toContain('var tailSpreadTarget = pullUpKey ? 1.35 : diveKey ? 0.70 : 1');
+    expect(init).toContain('var tailSpreadTarget = tailResting ? 1 : pullUpKey ? 1.35 : diveKey ? 0.70 : ');
     expect(init).toContain('tail.rotation.y +=');
-    expect(init).toContain('tail.scale.x +=');
+    expect(init).not.toContain('tail.scale.x');
+    expect(init).toContain('tail.morphTargetInfluences[1]=Math.max(0,Math.min(1,(tailFanSpread-1)/0.35))');
+    expect(init).toContain('tail.morphTargetInfluences[2]=Math.max(0,Math.min(1,(1-tailFanSpread)/0.30))');
     expect(init).toContain('dampingAlpha(5, dt)');
   });
 
@@ -3247,7 +3258,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('skyDome.material.color.copy(skyTintColor)');
     expect(init).toContain('skyFill.intensity =');
     expect(init).toContain('rimLight.intensity =');
-    expect(init).toContain('sun.position.copy(sunDir)');
+    expect(init).toContain('sun.position.copy(sun.target.position).addScaledVector(sunDir,350)');
     expect(init).toContain('var sunSprite = new THREE.Sprite');
     expect(init).toContain('var moonSprite = new THREE.Sprite');
     expect(init).toContain('scene.add(sunSprite)');
@@ -3260,7 +3271,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('skyDome.position.copy(camera.position)');
     expect(init).toContain('var skyDomeRadius = 900');
     expect(init).not.toContain('sunSprite.position.y = sunDir.y * sunDistance');
-    expect(init).toContain('starVisibility *');
+    expect(init).toContain('starsList.points.material.opacity = starVisibility;');
     expect(init).toContain('updateEnvironmentalLight(dayPhase)');
   });
 
@@ -3297,7 +3308,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain("nextTargetState === 'recovering'");
     expect(init).toContain("nextTargetState === 'ready' ? 'READY - press Strike'");
     expect(init).toContain("nextTargetState === 'close' ? 'CLOSE - '");
-    expect(init).toContain("targetInfo.verticalOffset > 0 ? 'ALIGN ' + _alignPct + '% - pull up' : 'ALIGN ' + _alignPct + '% - dive lower'");
+    expect(init).toContain("'ALIGN ' + _alignPct + '% - ' + targetCorrectionLabel(nextTargetCorrection) +");
     expect(init).toContain('reticle.dataset.lockState = nextTargetState');
     expect(init).toContain('var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,');
     expect(init).toContain('targetAlign: nextTargetAlign, targetRange: nextTargetRange };');
@@ -3357,7 +3368,9 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('emissive: new THREE.Color(bodyColor).multiplyScalar(0.035)');
     expect(init).toContain('emissive: new THREE.Color(wingColor).multiplyScalar(0.025)');
-    expect(init).toContain('var wingEdgeMark = new THREE.Mesh');
+    // b4d7ed714: tonal variation moved onto the feather surfaces; the overlay strips are gone.
+    expect(init).not.toContain('wingEdgeMark');
+    expect(init).toContain('var tint=new THREE.Color(wingColor).convertSRGBToLinear().multiplyScalar(0.97+Math.sin(feather*2.399)*0.025+centerU*0.035);');
     expect(init).toContain('emissive: new THREE.Color(tailColor).multiplyScalar(0.02)');
   });
 
@@ -3392,8 +3405,9 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('var particleFrame = Math.min(3, dt * 60)');
     expect(init).toContain('var particleWindX = Math.sin(weather.windDir) * effWindSpeed * dt * 0.08');
     expect(init).not.toMatch(/pos\[[^\]]+\]\s*\+=\s*v\.v[xyz]\s*;/);
-    expect(init).toContain('if (!_rmFX && lake && lakeOriginalY && now - lastWaterUpdate >= waterUpdateInterval)');
-    expect(init).toContain("starsList.points.material.opacity = starVisibility * (_rmFX ? 0.78");
+    expect(init).toContain('waterAppearance.time.value=_rmFX ? 0 : motionNow*0.001;');
+    expect(init).toContain('starsList.points.material.opacity = starVisibility;');
+    expect(init).toContain('starsList.motion.value = _rmFX ? 0 : 1;');
     expect(init).toContain("telemetryWeather.parentElement.dataset.raptorWeather = 'true'");
     expect(init).toContain("telemetryWeather.parentElement.dataset.dayPeriod = dayPeriod");
     expect(init).toContain("telemetryWeather.parentElement.dataset.cloudBand = cloudBand");
@@ -3472,11 +3486,12 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('waterHz: 10');
     expect(init).toContain('waterHz: 16');
     expect(init).toContain('waterHz: 24');
-    expect(init).toContain('var waterUpdateInterval = 1000 / qualityProfile.waterHz');
-    expect(init).toContain('now - lastWaterUpdate >= waterUpdateInterval');
-    expect(init).toContain('lastWaterUpdate = now');
+    // The lake surface is displaced in the vertex shader from one shared clock, not rebuilt on the CPU.
+    expect(init).not.toContain('lastWaterUpdate');
+    expect(init).toContain("'transformed.z+=rhLakeWave(vec2(position.x,-position.y),rhWaterDepth).x;'");
+    expect(init).toContain('waterAppearance.time.value=_rmFX ? 0 : motionNow*0.001;');
     expect(init).not.toContain('lake.geometry.computeVertexNormals()');
-    expect(init).toContain('normal=normalize(mat3(viewMatrix)*rhLakeNormal');
+    expect(init).toContain('normal=normalize(mat3(viewMatrix)*rhWaterSurfaceNormal)');
     expect(init).toContain("action === 'environment' && value");
     expect(init).toContain('canvasEl._rhSnapshot = function()');
     expect(init).toContain('sunAltitude: (sunSprite.position.y - camera.position.y) / sunDistance');
@@ -3503,11 +3518,13 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('targetCorrectionLabel(targetInfo.correction).toUpperCase()');
     expect(init).toContain("beginStrikeFeedback('hit', catchFeedback, now,");
     expect(init).toContain("beginStrikeFeedback('miss', missMessage, now, strikeTip)");
-    expect(init).toContain("energyEventLog.push({ msg: '× MISS - '");
-    expect(init).toContain('strikeFeedbackEl.dataset.raptorStrikeFeedback = strikeFeedback.kind');
+    // f5b045fc9 replaced the canvas overlay and log line with one strike review card.
+    expect(init).toContain("notifyUI({ lastStrikeResult: { kind: kind, message: kind === 'hit' ? message.replace(/^CATCH - /, '') : message, tip: tip } });");
+    expect(source()).toContain("'data-raptor-strike-review': simUI.lastStrikeResult.kind");
+    expect(init).not.toContain('strikeFeedbackEl');
     expect(init).toContain("var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)");
     expect(init).toContain("var impactCameraPush = (!_rmFX && strikeFeedbackActive)");
-    expect(init).toContain('var talonStrikeAmount = !_rmFX && !raptor.landed && !raptor.crashed && strikeFeedbackActive');
+    expect(init).toContain('var talonStrikeAmount = _rmFX || raptor.landed || raptor.crashed ? 0 : talonThrow.active ? 1 : strikeFeedbackActive');
     expect(init).toContain("targetInfo.canStrike && !strikeReady ? 'recovering'");
     expect(init).toContain('var STRIKE_FX_SLOT_COUNT = 4');
     expect(init).toContain('var STRIKE_FX_PER_SLOT = 28');
@@ -3516,7 +3533,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('function updateCatchFx(deltaSeconds)');
     expect(init).toContain("strikeContactMesh.name = 'raptor-strike-contact-pool'");
     expect(init).not.toContain('catchFxList');
-    expect(init).toMatch(/diveVig,\s*strikeFeedbackEl,\s*eventLogEl/);
+    expect(init).toMatch(/diveVig,\s*eventLogEl/);
   });
 
   it('keeps the packaged desktop copy byte-identical to the canonical tool source', () => {
@@ -3548,7 +3565,7 @@ describe('Raptor Hunt configurable controls and key guide', () => {
   });
   it('renders a contextual key guide that refreshes on target, pause, and landing changes', () => {
     expect(text).toContain("keyGuide.className = 'rh-flight-key-guide';");
-    expect(text).toContain('if (targetStateChanged) refreshKeyGuide();');
+    expect(text).toContain('if (targetStateChanged || targetCorrectionChanged) refreshKeyGuide();');
     expect(text).toContain('if (raptor.landed !== wasLanded || raptor.crashed !== wasCrashed) refreshKeyGuide();');
     expect(text).toContain("'data-raptor-key-guide-toggle': 'true'");
     expect(text).toContain("'data-raptor-control-scheme-select': 'true'");
@@ -3557,9 +3574,10 @@ describe('Raptor Hunt configurable controls and key guide', () => {
   it('offers a custom preset that rebinds one key per action and survives a corrupt saved map', () => {
     expect(text).toContain("h('option', { value: 'custom' }, 'Custom (rebind each key)')");
     expect(text).toContain("window.addEventListener('keydown', onRebindKey, true);");
-    expect(text).toContain("if (customControlKeys[key] !== rebindAction && key !== raw) next[key] = customControlKeys[key];");
+    // With pitch inverted the list shows swapped keys but stores the plain action.
+    expect(text).toContain("if (customControlKeys[key] !== storedAction && key !== raw) next[key] = customControlKeys[key];");
     expect(text).toContain("if (!Object.keys(clean).length) clean = Object.assign({}, RAPTOR_CONTROL_SCHEMES.classic.keys);");
-    expect(text).toContain("controlScheme = schemeId === 'custom' ? raptorCustomScheme(customKeys) : raptorControlScheme(schemeId);");
+    expect(text).toContain("controlScheme = raptorInvertPitchScheme(schemeId === 'custom' ? raptorCustomScheme(customKeys) : raptorControlScheme(schemeId), invertPitch);");
     expect(text).toContain("'data-raptor-control-keys': controlScheme === 'custom' ? JSON.stringify(customControlKeys) : undefined,");
   });
   it('limits the pull-out by the G tolerance it already ships per species', () => {
@@ -3736,12 +3754,13 @@ describe('Raptor Hunt configurable controls and key guide', () => {
     expect(text).toContain("'data-raptor-tutorial-signal':");
   });
   it('drives the on-screen controls from the same guided prompts as the key chips', () => {
-    expect(text).toContain('rows.push({ key: label, text: text, primary: !!primary, actions: [action] });');
+    expect(text).toContain("if (label || buttonAvailable) rows.push({ key: label || 'Button', input: label ? 'key' : 'button', text: text, primary: !!primary, actions: [action] });");
     expect(text).toContain("notifyUI({ controlCues: cues });");
     expect(text).toContain("var cueState = (simUI.controlCues || {})[cueAction];");
     expect(text).toContain("'data-raptor-cue': cueState || undefined,");
     // A disabled strike button must not glow as if it were actionable.
-    expect(text).toContain("'data-raptor-cue': simUI.strikeReady === false ? undefined : (simUI.controlCues || {}).strike || undefined,");
+    expect(text).toContain("'data-raptor-cue': strikeButtonState ? undefined : (simUI.controlCues || {}).strike || undefined,");
+    expect(text).toContain("simUI.strikeReady === false ? 'Recovering' : '';");
     // Static ring, no opacity animation, so reduced motion needs no special case.
     expect(text).toContain('.rh-flight-btn[data-raptor-cue="primary"]{border-color:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.55);color:#fef3c7;}');
   });
@@ -3757,8 +3776,8 @@ describe('Raptor Hunt configurable controls and key guide', () => {
   it('spells the dive and take-off keys from the preset instead of hard-coding Shift and Space', () => {
     expect(text).not.toContain("'STOOP - hold Shift (");
     expect(text).not.toContain("SPACE to take off'");
-    expect(text).toContain("'STOOP - hold ' + controlKeyLabel('dive') + ' ('");
-    expect(text).toContain("controlKeyLabel('pullUp') + ' to take off'");
+    expect(text).toContain("'STOOP - hold ' + (controlKeyLabel('dive') || 'Dive') + ' ('");
+    expect(text).toContain("function takeoffControlHint() { return 'Hold ' + (controlKeyLabel('pullUp') || 'Take off') + ' to launch'; }");
   });
 });
 
@@ -3791,7 +3810,7 @@ describe('Raptor Hunt wind advection and ground speed', () => {
 
   it('names the airspeed metric and puts ground speed on the wind chip', () => {
     expect(text).toContain("addTelemetryMetric('Airspeed', 'speed')");
-    expect(text).toContain("+ (windShowsGround ? ' · GS ' + windGroundMph + ' mph' : '')");
+    expect(text).toContain("(windShowsGround ? (!thermalActive && windFlowLabel ? ' · ' : '') + 'GS ' + windGroundMph + ' mph' : '')");
     expect(text).toContain('var windShowsGround = Math.abs(raptor.windEffect) >= 1.2;');
     // Screen readers get the number too, in the weather summary that already says wind.
     expect(text).toContain("windGroundMph + ' miles per hour, thermal quality ' +");
@@ -4306,7 +4325,7 @@ describe('Raptor Hunt stylesheet structure', () => {
   });
 
   it('catches a stray closing brace', () => {
-    const anchor = '.rh-flight-key kbd{';
+    const anchor = '.rh-flight-key kbd,.rh-flight-key .rh-flight-input-label{';
     expect(text).toContain(anchor);
     const broken = text.replace(anchor, '}' + anchor);
     expect(cssProblems(broken).problems.join(' ')).toContain('unbalanced braces');
@@ -4633,7 +4652,7 @@ describe('Raptor Hunt visual field and target lock cone', () => {
   });
 
   it('leaves the strike gate alone so a wider lock does not mean a looser hit', () => {
-    expect(init).toContain('canStrike: distance <= reach && dot >= 0.7');
+    expect(init).toContain('canStrike: !raptor.landed && !activePerch && !raptor.crashed && distance <= reach && dot >= 0.7');
     // Every species\' lock cone is at least as wide as the strike cone, so a lockable
     // target is never one the bird could hit without turning toward it.
     roster.forEach((s) => expect(lockConeDot(s.fov), s.name).toBeLessThan(0.7));
@@ -4797,7 +4816,8 @@ describe('Raptor Hunt prey detection distance', () => {
   it('scales the silent-strike pull-up alert and the calm-down range the same way', () => {
     // 30 of 25 becomes 48 of 40; calming down also uses true distance, or a bird that
     // climbs straight up keeps the prey below it alerted from half a kilometre.
-    expect(init).toContain("if (mission.id === 'silentStrike' && pullUpKey && pd3 < 48 && !pm2.missionAlerted) {");
+    expect(text).toContain('var SILENT_STRIKE_ALERT_RANGE_M = 48;');
+    expect(init).toContain("if (mission.id === 'silentStrike' && pullUpKey && pd3 < SILENT_STRIKE_ALERT_RANGE_M && !pm2.missionAlerted) {");
     expect(48 / 40).toBeCloseTo(30 / 25, 10);
     expect(init).toContain('if (pd3 > 80) {');
     expect(init).not.toContain('if (pd2 > 80) {');

@@ -15,12 +15,13 @@
 //   per record (uiIds collide across plans by construction).
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { readFileSync } from './helpers/host_source.js';
 
-const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf8');
 const HOSTS = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'];
+// Blueprint handlers moved to host_handlers_source.jsx (09-13): host files are read with them inlined at their shims.
+const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf8');
 
 let S;
 beforeAll(() => {
@@ -202,9 +203,17 @@ describe('module wiring guardrails (red-team i + ii)', () => {
     expect(destructure).toContain('archiveLivePlan,');
   });
 
-  it.each(MODALS)('%s archives (guarded) on BOTH cancel paths', (file) => {
+  // ed897988b (09-07) folded the per-message card and the restored-plan mount into ONE card mount in the
+  // active-work panel, so there is one cancel path left; it must still archive (guarded).
+  it.each(MODALS)('%s archives (guarded) on every cancel path', (file) => {
     const src = read(file);
-    expect((src.match(/typeof archiveLivePlan === ["']function["']/g) || []).length).toBe(2);
+    expect((src.match(/typeof archiveLivePlan === ["']function["']/g) || []).length).toBe(1);
+  });
+  it('the modal source mounts the blueprint card exactly once (one cancel path)', () => {
+    const src = read('view_misc_modals_source.jsx');
+    expect((src.match(/<InteractiveBlueprintCard\b/g) || []).length).toBe(1);
+    const card = src.slice(src.indexOf('<InteractiveBlueprintCard'), src.indexOf('/>', src.indexOf('onCancel=', src.indexOf('<InteractiveBlueprintCard'))));
+    expect(card).toContain("if (typeof archiveLivePlan === 'function') archiveLivePlan();");
   });
 
   it('modal destructures every archive prop it renders', () => {
@@ -220,7 +229,10 @@ describe('module wiring guardrails (red-team i + ii)', () => {
     const earlyReturn = src.indexOf('return null;');
     const picker = src.indexOf('bp-archive-picker');
     expect(picker).toBeGreaterThan(earlyReturn);
-    const pickerBlock = src.slice(picker, src.indexOf('Restored-plan mount', picker));
+    // The Restored-plan mount that used to follow the picker was folded into the active-work panel (ed897988b).
+    const pickerEnd = src.indexOf('{isChatProcessing && (', picker);
+    expect(pickerEnd).toBeGreaterThan(picker);
+    const pickerBlock = src.slice(picker, pickerEnd);
     expect(pickerBlock).not.toMatch(/use(State|Effect|Ref|Memo|Callback)\(/);
   });
 

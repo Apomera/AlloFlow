@@ -1,0 +1,250 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "tab": "artistExplorer",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "colorWheel",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "mixer",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "watercolor",
+      "normalWidth": 1088,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "pixel",
+      "normalWidth": 1088,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "symmetry",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "spirograph",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "generative",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "spinArt",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "stringArt",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "opArt",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "tessellation",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "fractal",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "gradient",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "stereogram",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "sculpt3d",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "contrast",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "tab": "harmonyHunt",
+      "normalWidth": 944,
+      "focusWidth": 1424,
+      "sameCanvas": true,
+      "escape": true
+    },
+    {
+      "gradient": {
+        "type": "linear",
+        "angle": 0
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.15151515151515152
+      }
+    },
+    {
+      "gradient": {
+        "type": "linear",
+        "angle": 45
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.2196969696969697
+      }
+    },
+    {
+      "gradient": {
+        "type": "linear",
+        "angle": 90
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.1893939393939394
+      }
+    },
+    {
+      "gradient": {
+        "type": "linear",
+        "angle": 135
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.20454545454545456
+      }
+    },
+    {
+      "gradient": {
+        "type": "radial"
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.1893939393939394
+      }
+    },
+    {
+      "gradient": {
+        "type": "conic"
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.22727272727272727
+      }
+    },
+    {
+      "gradient": {
+        "type": "linear",
+        "angle": 90,
+        "blend": "hard"
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.22727272727272727
+      }
+    },
+    {
+      "gradient": {
+        "type": "radial",
+        "blend": "hard"
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.24242424242424243
+      }
+    },
+    {
+      "gradient": {
+        "type": "conic",
+        "blend": "hard"
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.17424242424242425
+      }
+    },
+    {
+      "gradient": {
+        "type": "conic",
+        "legacy": true
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.5833333333333334
+      }
+    },
+    {
+      "gradient": {
+        "type": "conic",
+        "blend": "hard",
+        "legacy": true
+      },
+      "channelDifference": {
+        "maximum": 1,
+        "average": 0.7196969696969697
+      }
+    },
+    {
+      "phoneFocus": true,
+      "kitDialogRestored": true,
+      "noHorizontalOverflow": true,
+      "previewBeforeControls": true,
+      "previewWidth": 374,
+      "gradientTouchTargetHeight": 44
+    }
+  ],
+  "errors": []
+}

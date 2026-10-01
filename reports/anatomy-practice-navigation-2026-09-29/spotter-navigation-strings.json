@@ -1,0 +1,11 @@
+{
+  "practice_flow_spotter_return_feedback": "Return to feedback",
+  "practice_flow_spotter_return_question": "Return to question",
+  "practice_flow_spotter_diagram_label": "Spotter diagram. Identify the structure at the crosshair. Use the diagram controls to inspect it, then return to the question to answer.",
+  "practice_flow_spotter_diagram": "Show diagram",
+  "practice_flow_spotter_navigation_help": "Move between the crosshair and this question. Your current attempt stays the same.",
+  "practice_flow_spotter_question_help": "Choose one answer, or use keys 1–4 while the question is focused.",
+  "practice_flow_spotter_your_answer": "Your answer",
+  "practice_flow_spotter_correct_answer": "Correct answer",
+  "practice_flow_spotter_diagram_review": "Spotter answer review. The crosshair marks {name}. Inspect the diagram, then return to feedback."
+}

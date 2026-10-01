@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "The actual 3D oil bottle moves into the pan; the pasta packet still obeys weighing and boiling prerequisites.",
+    "Seven straight 3D knife strokes create eight equal pieces; prepared produce, weighed pasta, and minced garlic transfer through the scene.",
+    "A full circle in the 3D pan redistributes and turns food; tapping and dragging an individual piece changes its surface and position.",
+    "Holding the actual saved-water jug over the pan transfers water; release stops flow and preserves the transferred amount.",
+    "Camera gestures do not cook; keyboard piece controls share model effects; desktop and 320px text view pass automated accessibility checks."
+  ],
+  "accessibility": [
+    {
+      "label": "3D tools and accessible individual-piece controls",
+      "issues": []
+    },
+    {
+      "label": "320px text view",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

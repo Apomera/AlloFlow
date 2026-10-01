@@ -1,0 +1,127 @@
+{
+  "status": "passed",
+  "completedAt": "2026-09-29T23:42:13.642Z",
+  "section": "Sky Lab: Galaxies — Gravitational lens lab",
+  "changes": [
+    "Side-by-side source and lensed-image diagrams keep the same fixed angular scale",
+    "Continuous point-lens mapping produces a finite-source ring or unequal images",
+    "Einstein radius scales with the square root of relative mass",
+    "Flux magnification follows lensed area while surface brightness stays constant",
+    "Aligned, near-alignment, left and right examples preserve control focus",
+    "Image offsets and angular units make source and image positions explicit",
+    "Existing lens settings migrate to bounded physical controls",
+    "320px contrast layouts retain 44px touch targets and readable SVG labels"
+  ],
+  "data": {
+    "reference": {
+      "name": "Cosmic Horseshoe",
+      "publicationYear": 2007,
+      "table": 1,
+      "diameterArcsec": 10.2,
+      "extentDegrees": 300,
+      "referenceRadiusArcsec": 5.1,
+      "source": "https://arxiv.org/pdf/0706.2326",
+      "observation": "https://esahubble.org/images/potw1151a/"
+    },
+    "relation": "beta = theta - theta_E^2 / theta; theta_E = 5.1 arcsec × sqrt(relative mass)",
+    "relationSource": "https://www.mdpi.com/2073-8994/12/4/494",
+    "sourceRadiusArcsec": 0.918,
+    "boundarySamples": 360,
+    "plotBoundsArcsec": [
+      -20.4,
+      20.4
+    ],
+    "flux": "Mapped finite-source area / source area, checked independently by integrating point-source magnification over the disk",
+    "scope": "The measured ring diameter sets an angular reference. Source size, alignment and relative mass are teaching choices. This point-mass model does not reconstruct the Cosmic Horseshoe galaxy, its mass profile or its source."
+  },
+  "unit": {
+    "passed": 185,
+    "failed": 0,
+    "files": [
+      {
+        "file": "astronomy_cosmic_redshift.test.js",
+        "passed": 25
+      },
+      {
+        "file": "astronomy_functional_regressions.test.js",
+        "passed": 20
+      },
+      {
+        "file": "astronomy_gravitational_lens.test.js",
+        "passed": 33
+      },
+      {
+        "file": "astronomy_stellar_spectrum.test.js",
+        "passed": 27
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "passed": 80
+      }
+    ],
+    "checks": [
+      "Published angular reference",
+      "Square-root mass scaling",
+      "Analytic aligned finite-source magnification",
+      "Independent polar flux integration",
+      "Image-center lens equation, product and sum",
+      "Boundary inverse mapping and plot bounds",
+      "Reflection symmetry and unequal image positions",
+      "Finite magnification through alignment",
+      "Malformed state, legacy migration and clamped restoration",
+      "Cosmic redshift, stellar spectrum and general UI regressions"
+    ],
+    "report": "unit-tests.json"
+  },
+  "browser": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "suites": [
+      "astronomy-gravitational-lens.spec.ts",
+      "astronomy-cosmic-redshift.spec.ts"
+    ],
+    "viewportWidths": [
+      1280,
+      320
+    ],
+    "themes": [
+      "dark",
+      "contrast"
+    ],
+    "checks": [
+      "Image patterns, signed image offsets and active examples",
+      "Keyboard steps, limits, preserved focus and reset",
+      "Saved comparison through section navigation",
+      "Malformed state and legacy restoration",
+      "Measured reference and teaching scope disclosures",
+      "Minimum 44px control height",
+      "Minimum 11px SVG label size, sans-serif font and no clipping",
+      "No whole-page horizontal overflow",
+      "No runtime errors or unhandled promise rejections in tested scenarios",
+      "Existing cosmic redshift interactions remain coherent"
+    ],
+    "report": "browser-tests.json"
+  },
+  "parity": {
+    "sourceAndPublicMatch": true,
+    "sha256": "35fd3e7a4e5a5cf72bdc25f3635b97b3cd465a3ba18599aada5106d3d9e85a4d",
+    "priorSourceSha256": "007045be8a90fa0afdff7753d14e7ee7d871929c45ee638478f5c555d08aae25",
+    "newEnglishLabels": 38,
+    "labelsMatchBothRegistries": true
+  },
+  "checks": {
+    "sourceAndMirrorSyntax": true,
+    "scopedDiffWhitespace": true
+  },
+  "visualReview": {
+    "status": "reviewed",
+    "images": [
+      "aligned-desktop.png",
+      "images-desktop.png",
+      "images-phone-contrast.png"
+    ]
+  }
+}

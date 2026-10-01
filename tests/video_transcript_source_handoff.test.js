@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'path';
 
 const hostFiles = [
@@ -20,7 +22,9 @@ describe('Video Studio transcript handoff into Source', () => {
   it('restores transcript history items back into the Source panel', () => {
     for (const [name, src] of hostFiles) {
       expect(src, name).toContain("typeof moduleApi.handleRestoreView === 'function'");
-      expect(src, name).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
+      // f5b045fc9 (09-20) strips the host-only preservePendingAssignment flag before delegating.
+      expect(src, name).toContain('const { preservePendingAssignment, ...restoreOptions } = options || {};');
+      expect(src, name).toContain('moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps())');
     }
     expect(restoreSource).toContain("item && item.type === 'video-transcript'");
     expect(restoreSource).toContain("setActiveSidebarTab('create')");

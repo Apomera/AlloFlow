@@ -1,0 +1,390 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/sky-lab-transit-profile-2026-09-29/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "astronomy-transit-explorer.spec.ts",
+      "file": "astronomy-transit-explorer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "transit explorer links measured radii, scene scale, chart cursor, controls and reference text",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17121,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:08:42.492Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0c4fb16df4439980512-25b555a4395d8f54ea18",
+          "file": "astronomy-transit-explorer.spec.ts",
+          "line": 40,
+          "column": 5
+        },
+        {
+          "title": "transit charts remain readable and interactive on a 320px contrast screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21766,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:09:00.088Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0c4fb16df4439980512-855e0fca54108333f2ea",
+          "file": "astronomy-transit-explorer.spec.ts",
+          "line": 76,
+          "column": 5
+        },
+        {
+          "title": "grazing, missed and total occultation geometries keep both views consistent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8159,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:09:21.905Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0c4fb16df4439980512-65f882e8dbb29db68da8",
+          "file": "astronomy-transit-explorer.spec.ts",
+          "line": 95,
+          "column": 5
+        },
+        {
+          "title": "transit playback stops, replays, pauses on input and releases its clock on leaving",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5636,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:09:30.100Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0c4fb16df4439980512-7d2472694d5ef8826192",
+          "file": "astronomy-transit-explorer.spec.ts",
+          "line": 124,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "astronomy-transit-profile.spec.ts",
+      "file": "astronomy-transit-profile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "brightness choices and native controls link the scene and comparison without changing geometry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8868,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:10:43.971Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9a344c727313bce6432-0711c32e119fb40689e7",
+          "file": "astronomy-transit-profile.spec.ts",
+          "line": 52,
+          "column": 5
+        },
+        {
+          "title": "measured example preserves the clock across brightness changes and removes it on geometry changes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3118,
+                  "error": {
+                    "message": "Error: locator.screenshot: ENOSPC: no space left on device, write",
+                    "stack": "Error: locator.screenshot: ENOSPC: no space left on device, write\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-transit-profile.spec.ts:110:13",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-transit-profile.spec.ts",
+                      "column": 13,
+                      "line": 110
+                    },
+                    "snippet": "  108 |   await lab.getByRole('button',{name:'Dimmer edge · u = 0.6',exact:true}).click();\n  109 |   await expect(lab.locator('[data-transit-duration]')).toHaveText(duration);\n> 110 |   await lab.screenshot({path:OUT+'/measured-transit-desktop.png'});\n      |             ^\n  111 |   const chart=lab.locator('#astronomy-transit-curve');await chart.focus();await chart.press('Home');\n  112 |   const first=Number(await lab.locator('[data-transit-minutes]').getAttribute('data-transit-minutes'));expect(first).toBeLessThan(-35);\n  113 |   await chart.press('End');await expect(chart).toHaveAttribute('aria-valuetext',/min/);expect(Number(await lab.locator('[data-transit-minutes]').getAttribute('data-transit-minutes'))).toBeCloseTo(-first,10);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-transit-profile.spec.ts",
+                        "column": 13,
+                        "line": 110
+                      },
+                      "message": "Error: locator.screenshot: ENOSPC: no space left on device, write\n\n  108 |   await lab.getByRole('button',{name:'Dimmer edge · u = 0.6',exact:true}).click();\n  109 |   await expect(lab.locator('[data-transit-duration]')).toHaveText(duration);\n> 110 |   await lab.screenshot({path:OUT+'/measured-transit-desktop.png'});\n      |             ^\n  111 |   const chart=lab.locator('#astronomy-transit-curve');await chart.focus();await chart.press('Home');\n  112 |   const first=Number(await lab.locator('[data-transit-minutes]').getAttribute('data-transit-minutes'));expect(first).toBeLessThan(-35);\n  113 |   await chart.press('End');await expect(chart).toHaveAttribute('aria-valuetext',/min/);expect(Number(await lab.locator('[data-transit-minutes]').getAttribute('data-transit-minutes'))).toBeCloseTo(-first,10);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-transit-profile.spec.ts:110:13"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:10:55.297Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-transit-profile-2026-09-29\\test-results\\astronomy-transit-profile--91ded-oves-it-on-geometry-changes-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-transit-profile-2026-09-29\\test-results\\astronomy-transit-profile--91ded-oves-it-on-geometry-changes-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-transit-profile.spec.ts",
+                    "column": 13,
+                    "line": 110
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d9a344c727313bce6432-a5a387d45988c954b946",
+          "file": "astronomy-transit-profile.spec.ts",
+          "line": 97,
+          "column": 5
+        },
+        {
+          "title": "320px contrast charts have readable labels, touch scrubbing and unclipped comparison curves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4633,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:11:15.641Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9a344c727313bce6432-a19b01f4238d2ae3c798",
+          "file": "astronomy-transit-profile.spec.ts",
+          "line": 125,
+          "column": 5
+        },
+        {
+          "title": "dim-edge playback pauses on input, releases its timer and restores corrupt saved state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3291,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T04:11:20.507Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9a344c727313bce6432-b3e408b436c159c4e6dc",
+          "file": "astronomy-transit-profile.spec.ts",
+          "line": 144,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-30T04:08:34.885Z",
+    "duration": 169781.413,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

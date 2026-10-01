@@ -1,0 +1,4 @@
+{
+  "note": "Recorded answer-length-tell rates for authored batches that were applied BEFORE the originality gate existed. Ratchet only: an entry here may fall, never rise, and no new batch may be added - new work is held to the 45% limit in dev-tools/authored_batch_originality_checks.cjs. This list is EMPTY as of 2026-08-17: all six recorded batches (ParaPro banks 3-5 at 71/69/76%, Early Childhood 63%, Audiology 86%, Educational Leadership 100%) were remediated by hand to 22-29% against a 25% chance rate, so every registered batch now satisfies the real limit and needs no exemption. The remediation rewrote one distractor per affected item to carry the same false claim at parallel length; see dev-tools/authored/length_remediation_2026-08-17.json for the per-item ledger. Keep this file: re-adding an entry is how a future batch would be granted an exemption, and an empty list makes that decision explicit rather than silent.",
+  "batches": {}
+}

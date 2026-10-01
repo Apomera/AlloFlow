@@ -1,0 +1,122 @@
+
+Running 10 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:25:5 › layered terrain retains river length when vertical relief and the camera change (7.4s)
+  ok  2 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:39:5 › Earth leads into the canyon and returns to the same globe viewpoint on a phone (6.0s)
+  ok  3 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:53:5 › notebook restores the relief and follows the repositioned landmark, while comparisons use actual proportions (10.2s)
+  ok  4 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:65:5 › terrain remains interactive in WebGL 1 and blocked Earth imagery cannot offer geographic entry (5.5s)
+  x   5 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:75:5 › animated Earth entry and relief inspection settle while ambience is paused (33.1s)
+  ok  6 [chromium] › tests\e2e\scale-explorer-river.spec.ts:29:5 › river distance guides the camera through bends without changing the measured terrain (9.7s)
+  ok  7 [chromium] › tests\e2e\scale-explorer-river.spec.ts:45:5 › phone keyboard controls stay reachable and preserve position when leaving the journey (7.6s)
+  ok  8 [chromium] › tests\e2e\scale-explorer-river.spec.ts:57:5 › notebook restores river position, relief and manual camera direction and exports the route context (9.5s)
+  x   9 [chromium] › tests\e2e\scale-explorer-river.spec.ts:70:5 › animated travel follows the river and becomes idle with ambience paused (31.5s)
+  -  10 [chromium] › tests\e2e\scale-explorer-river.spec.ts:90:5 › WebGL 1 renders the route marker and scene after a river journey
+
+
+  1) [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:75:5 › animated Earth entry and relief inspection settle while ambience is paused 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('[data-atlas-ready]')
+    Expected: [32m"3.[7m50[27m"[39m
+    Received: [31m"3.[7m49[27m"[39m
+    Timeout:  15000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-atlas-ready]')[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="2.37" data-atlas-ready="true" data-atlas-yaw="0.0203" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "2.37"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="2.57" data-atlas-ready="true" data-atlas-yaw="0.0233" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "2.57"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.22" data-atlas-ready="true" data-atlas-yaw="0.0328" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.22"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.27" data-atlas-ready="true" data-atlas-yaw="0.0335" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.27"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.31" data-atlas-ready="true" data-atlas-yaw="0.0342" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.31"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.37" data-atlas-ready="true" data-atlas-yaw="0.0351" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.37"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.41" data-atlas-ready="true" data-atlas-yaw="0.0357" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.41"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.43" data-atlas-ready="true" data-atlas-yaw="0.0359" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.43"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.45" data-atlas-ready="true" data-atlas-yaw="0.0363" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.45"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.46" data-atlas-ready="true" data-atlas-yaw="0.0364" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.46"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.47" data-atlas-ready="true" data-atlas-yaw="0.0365" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.47"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.48" data-atlas-ready="true" data-atlas-yaw="0.0366" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.48"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.48" data-atlas-ready="true" data-atlas-yaw="0.0367" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.48"[22m
+    [2m    2 × locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.49" data-atlas-ready="true" data-atlas-yaw="0.0368" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m      - unexpected value "3.49"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="614" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="3.49" data-atlas-ready="true" data-atlas-yaw="0.0369" data-atlas-comparison="" data-atlas-cutaway="open" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-detail="canyon-rim" data-atlas-surface="procedural" aria-describedby="sx-desc-6ctxoe" data-atlas-objects="grand-canyon" data-atlas-p…></canvas>[22m
+    [2m    - unexpected value "3.49"[22m
+
+
+      80 |   await expect(canvas(page)).toHaveAttribute('aria-busy','true');await expect(canvas(page)).toHaveAttribute('aria-busy','false',{timeout:15000});
+      81 |   await expect(canvas(page)).toHaveAttribute('data-atlas-objects','grand-canyon');await expect(canvas(page)).toHaveAttribute('data-atlas-relief','8');
+    > 82 |   await page.getByRole('button',{name:'Approach the rim',exact:true}).click();await expect(canvas(page)).toHaveAttribute('data-atlas-zoom','3.50');
+         |                                                                                                          ^
+      83 |   const localAim=()=>page.evaluate(()=>{
+      84 |     const w=window as any,T=w.THREE,r=w.__glRecorder.records.find((r:any)=>!r.ctx.isContextLost());let root:any;r.scene.traverse((n:any)=>{if(n.userData.itemId==='grand-canyon')root=n;});
+      85 |     return root.userData.model.worldToLocal(new T.Vector3().fromArray(r.canvas.dataset.atlasAim.split(',').map(Number))).toArray();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\scale-explorer-landscape.spec.ts:82:106
+
+    Error Context: reports\scale-explorer-river\browser-results\scale-explorer-landscape-a-7ad8d-le-while-ambience-is-paused-chromium\error-context.md
+
+    Error Context: reports\scale-explorer-river\browser-results\scale-explorer-landscape-a-7ad8d-le-while-ambience-is-paused-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\scale-explorer-river.spec.ts:70:5 › animated travel follows the river and becomes idle with ambience paused 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('[data-atlas-ready]')
+    Expected: [32m"3[7m50[27m.0[7m0[27m"[39m
+    Received: [31m"3[7m49[27m.0[7m6[27m"[39m
+    Timeout:  15000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-atlas-ready]')[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-1.2831" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "201.82"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-1.3896" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "225.53"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-1.4327" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "262.18"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-1.3357" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "297.95"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-1.2817" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "306.27"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-1.0757" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "324.08"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-0.8399" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "340.90"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-0.7982" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "346.80"[22m
+    [2m    - locator resolved to <canvas tabindex="0" width="1048" height="671" aria-busy="false" role="application" data-atlas-flight="" data-atlas-relief="8" data-atlas-zoom="8.00" data-atlas-ready="true" data-atlas-comparison="" data-atlas-yaw="-0.8129" data-atlas-cutaway="open" data-atlas-river-km="350" data-atlas-target="5.6493" data-atlas-habitat="canyon" data-atlas-exponent="5.6493" data-atlas-flight-progress="" data-atlas-surface="procedural" aria-describedby="sx-desc-67at11" data-atlas-objects="grand-canyon" data-atlas-detai…></canvas>[22m
+    [2m    - unexpected value "349.06"[22m
+
+
+      71 |  await mount(page);await slider(page).fill('100');await page.emulateMedia({reducedMotion:'no-preference'});
+      72 |  await page.getByRole('button',{name:'Pause ambience',exact:true}).click();await page.evaluate(()=>{(window as any).__riverSamples=[];});
+    > 73 |  await slider(page).fill('350');await expect(canvas(page)).toHaveAttribute('data-atlas-river-travel-km','350.00',{timeout:15000});
+         |                                                            ^
+      74 |  const samples=await page.evaluate(()=>(window as any).__riverSamples as number[][]);expect(samples.length).toBeGreaterThan(10);
+      75 |  for(let i=1;i<samples.length;i++)expect(samples[i][0]).toBeGreaterThanOrEqual(samples[i-1][0]);
+      76 |  const error=await page.evaluate(()=>{
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\scale-explorer-river.spec.ts:73:60
+
+    Error Context: reports\scale-explorer-river\browser-results\scale-explorer-river-anima-05c93-s-idle-with-ambience-paused-chromium\error-context.md
+
+    Error Context: reports\scale-explorer-river\browser-results\scale-explorer-river-anima-05c93-s-idle-with-ambience-paused-chromium\error-context.md
+
+  2 failed
+    [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:75:5 › animated Earth entry and relief inspection settle while ambience is paused 
+    [chromium] › tests\e2e\scale-explorer-river.spec.ts:70:5 › animated travel follows the river and becomes idle with ambience paused 
+  1 did not run
+  7 passed (2.1m)

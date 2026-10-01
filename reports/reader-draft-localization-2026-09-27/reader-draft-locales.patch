@@ -1,0 +1,742 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1500,6 +1500,16 @@
+       source: ['mulberry', 'wikimedia'].includes(image.source) ? image.source : 'upload',
+       attribution: ['set', 'author', 'license', 'via', 'url', 'title', 'licenseUrl'].map(key => clean(credit[key], key === 'author' || key === 'title' ? 160 : key.toLowerCase().includes('url') ? 2000 : 120)) };
+   }
++  function ReadingDraftChangedNotice({ disabled, onChoose }) {
++    const template = simplifiedText('simplified.gloss_draft_passage_changed', 'The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.');
++    const parts = template.split('{chooseOccurrence}');
++    // Keep exactly one actionable slot. A malformed translation must not remove it
++    // or expose template tokens; React renders the surrounding copy as plain text.
++    const valid = parts.length === 2 && parts.every(part => !/[{}]/.test(part));
++    const [before, after] = valid ? parts : ['The passage changed. Your draft is retained. Review the word supports, then ', ' before saving.'];
++    const label = valid ? simplifiedText('simplified.gloss_draft_choose_occurrence', 'choose the occurrence in the current text') : 'choose the occurrence in the current text';
++    return <p role="status" className="break-words">{before}<button type="button" disabled={disabled} onClick={onChoose} className="underline [overflow-wrap:anywhere]">{label}</button>{after}</p>;
++  }
+   function ReadingGlossEditor({ item, supports, request, onUpdate, disabled, adapted, snapshot: adaptedSnapshot, embedded, draftSession, supportsStale }) {
+     // An adapted text's word help anchors to the adapted passage, never the original.
+     const snapshot = adapted ? adaptedSnapshot : getInstructionalContextApi()?.getSourceSnapshot?.(item);
+@@ -1658,7 +1668,7 @@
+     const save = async () => {
+       if (disabled || busy || pickingPicture || preparingPicture) return false;
+       setNotice(''); setError('');
+-      if (staleDraft || supportsStale) { setError('The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.'); return false; }
++      if (staleDraft || supportsStale) { setError(simplifiedText('simplified.gloss_draft_passage_changed_error', 'The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.')); return false; }
+       if (!selected || !draft?.text.trim()) { setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.')); return false; }
+       if (draft.text.trim().length > 2400) { setError(simplifiedText('simplified.gloss_shorten_this_explanation_to_2_400', 'Shorten this explanation to 2,400 characters or fewer before saving.')); return false; }
+       // IDs can change during a refresh. The exact source occurrence owns the
+@@ -1669,12 +1679,12 @@
+       const baseId = id;
+       for (let suffix = 1; entries.some(entry => entry.id === id && !sameAnchor(entry, selected)); suffix++) id = baseId + '-' + suffix;
+       const annotation = { id, kind: current?.kind || 'gloss', ...anchorFor(selected), text: draft.text.trim(), priority: draft.priority, pinned: draft.pinned, image: draft.image || null };
+-      const saved = await mutate({ type: 'upsert', annotation }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
++      const saved = await mutate({ type: 'upsert', annotation }, simplifiedText('simplified.gloss_save_word_support_confirmed', 'Word support saved. Your wording will be kept when suggestions are refreshed.'));
+       // A matching anchor alone does not confirm the submitted values. Keep
+       // unaccepted edits dirty against the actual save result so retry is safe.
+       const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : adapted ? saved.adaptedReadingSupports : saved.readingSupports);
+       const accepted = savedSupports?.annotations?.find(entry => entry.id === id && sameAnchor(entry, selected));
+-      if (!accepted) { if (saved) { setNotice(''); setError('The save did not confirm this word support. Your draft is retained.'); } return false; }
++      if (!accepted) { if (saved) { setNotice(''); setError(simplifiedText('simplified.gloss_save_support_unconfirmed', 'The save did not confirm this word support. Your draft is retained.')); } return false; }
+       const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: annotation.text };
+       const confirmed = { ...next, text: accepted.definition || accepted.explanation || accepted.text || '',
+         priority: accepted.priority === 'essential' ? 'essential' : 'helpful', pinned: accepted.pinned === true, image: accepted.image || null };
+@@ -1710,10 +1720,10 @@
+         <button ref={addRef} type="button" disabled={disabled || busy || !!pendingAction} onClick={() => requestAction({ type: 'add' })} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.gloss_add_a_word_or_phrase', 'Add a word or phrase')}</button>
+         {pendingAction && <div role="alertdialog" aria-labelledby={panelId + '-discard-title'} aria-describedby={panelId + '-discard-description'} className="space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-3" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); dismissPending(); } }}>
+           <p id={panelId + '-discard-title'} className="font-bold">{simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')}</p><p id={panelId + '-discard-description'}>{pickingPicture || preparingPicture ? simplifiedText('simplified.gloss_picture_selection_pending', 'Your picture selection is still open. Keep editing to finish choosing or cancel the picture search, or discard it to continue.') : simplifiedText('simplified.gloss_unsaved_choices', 'Save these changes before continuing, keep editing, or discard them.')}</p>
+-          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : 'Save and continue'}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
++          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_and_continue', 'Save and continue')}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
+         </div>}
+         {draft && <fieldset disabled={disabled || busy || !!pendingAction} data-gloss-draft aria-label={draft.anchor ? simplifiedText('simplified.gloss_edit_word_support', 'Edit word support') : simplifiedText('simplified.gloss_add_word_support', 'Add word support')} className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+-          {(staleDraft || supportsStale) && <p role="status">The passage changed. Your draft is retained. Review the word supports, then <button type="button" disabled={supportsStale} onClick={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} className="underline">choose the occurrence in the current text</button> before saving.</p>}
++          {(staleDraft || supportsStale) && <ReadingDraftChangedNotice disabled={supportsStale} onChoose={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} />}
+           <label className="block font-semibold">{simplifiedText('simplified.gloss_word_from', 'Word or phrase from the {passage}', { passage: passageName })}<input ref={termRef} type="text" maxLength={draft.anchor ? undefined : 160} value={draft.query} readOnly={!!draft.anchor} onChange={event => updateDraft({ query: event.target.value, start: '' })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
+           {!draft.anchor && matches.length > 1 && <label className="block font-semibold">{simplifiedText('simplified.gloss_which_occurrence', 'Which occurrence?')}<select value={draft.start} onChange={event => updateDraft({ start: event.target.value })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"><option value="">{simplifiedText('simplified.gloss_choose_the_word_in_context', 'Choose the word in context')}</option>{matches.map((match, index) => <option key={match.start} value={String(match.start)}>{simplifiedText('simplified.gloss_occurrence_option', '{number}. Text position {start}–{end}: {context}', { number: index + 1, start: match.start + 1, end: match.end, context: match.context })}</option>)}</select></label>}
+           {matches.truncated && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_showing_the_first_200_matching_occurrenc', 'Showing the first 200 matching occurrences. Use a longer phrase to find a later occurrence.')}</p>}
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6903,7 +6903,14 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_draft_passage_changed": "The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.",
++    "gloss_draft_choose_occurrence": "choose the occurrence in the current text",
++    "gloss_draft_passage_changed_error": "The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.",
++    "gloss_save_and_continue": "Save and continue",
++    "gloss_save_word_support_confirmed": "Word support saved. Your wording will be kept when suggestions are refreshed.",
++    "gloss_save_support_unconfirmed": "The save did not confirm this word support. Your draft is retained.",
++    "gloss_save_changes_unconfirmed": "The save did not confirm all your changes. Your draft is retained. Try saving again."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/desktop/web-app/public/ui_strings.js b/desktop/web-app/public/ui_strings.js
+--- a/desktop/web-app/public/ui_strings.js
++++ b/desktop/web-app/public/ui_strings.js
+@@ -6903,7 +6903,14 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_draft_passage_changed": "The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.",
++    "gloss_draft_choose_occurrence": "choose the occurrence in the current text",
++    "gloss_draft_passage_changed_error": "The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.",
++    "gloss_save_and_continue": "Save and continue",
++    "gloss_save_word_support_confirmed": "Word support saved. Your wording will be kept when suggestions are refreshed.",
++    "gloss_save_support_unconfirmed": "The save did not confirm this word support. Your draft is retained.",
++    "gloss_save_changes_unconfirmed": "The save did not confirm all your changes. Your draft is retained. Try saving again."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4892,7 +4892,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario y luego {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se guardó la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se confirmó que esta ayuda de vocabulario se haya guardado. Se conservó tu borrador.",
++    "gloss_save_changes_unconfirmed": "No se confirmó que todos tus cambios se hayan guardado. Se conservó tu borrador. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_latin_america.js b/desktop/web-app/public/lang/spanish_latin_america.js
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -4892,7 +4892,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario y luego {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se guardó la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se confirmó que esta ayuda de vocabulario se haya guardado. Se conservó tu borrador.",
++    "gloss_save_changes_unconfirmed": "No se confirmó que todos tus cambios se hayan guardado. Se conservó tu borrador. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4884,7 +4884,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario y, después, {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se ha guardado la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se ha confirmado que esta ayuda de vocabulario se haya guardado. Tu borrador se ha conservado.",
++    "gloss_save_changes_unconfirmed": "No se ha confirmado que todos tus cambios se hayan guardado. Tu borrador se ha conservado. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_castilian.js b/desktop/web-app/public/lang/spanish_castilian.js
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -4884,7 +4884,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario y, después, {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se ha guardado la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se ha confirmado que esta ayuda de vocabulario se haya guardado. Tu borrador se ha conservado.",
++    "gloss_save_changes_unconfirmed": "No se ha confirmado que todos tus cambios se hayan guardado. Tu borrador se ha conservado. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/arabic.js b/lang/arabic.js
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -4727,7 +4727,14 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_draft_passage_changed": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات، ثم {chooseOccurrence} قبل الحفظ.",
++    "gloss_draft_choose_occurrence": "اختر موضع الكلمة في النص الحالي",
++    "gloss_draft_passage_changed_error": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات الحالية واختر موضع الكلمة من جديد قبل الحفظ.",
++    "gloss_save_and_continue": "احفظ وتابع",
++    "gloss_save_word_support_confirmed": "تم حفظ شرح الكلمة. ستُحفظ صياغتك عند تحديث الاقتراحات.",
++    "gloss_save_support_unconfirmed": "لم يتم تأكيد حفظ شرح هذه الكلمة. تم الاحتفاظ بمسودتك.",
++    "gloss_save_changes_unconfirmed": "لم يتم تأكيد حفظ جميع تغييراتك. تم الاحتفاظ بمسودتك. حاول الحفظ مرة أخرى."
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/desktop/web-app/public/lang/arabic.js b/desktop/web-app/public/lang/arabic.js
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -4727,7 +4727,14 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_draft_passage_changed": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات، ثم {chooseOccurrence} قبل الحفظ.",
++    "gloss_draft_choose_occurrence": "اختر موضع الكلمة في النص الحالي",
++    "gloss_draft_passage_changed_error": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات الحالية واختر موضع الكلمة من جديد قبل الحفظ.",
++    "gloss_save_and_continue": "احفظ وتابع",
++    "gloss_save_word_support_confirmed": "تم حفظ شرح الكلمة. ستُحفظ صياغتك عند تحديث الاقتراحات.",
++    "gloss_save_support_unconfirmed": "لم يتم تأكيد حفظ شرح هذه الكلمة. تم الاحتفاظ بمسودتك.",
++    "gloss_save_changes_unconfirmed": "لم يتم تأكيد حفظ جميع تغييراتك. تم الاحتفاظ بمسودتك. حاول الحفظ مرة أخرى."
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/lang/chinese_simplified.js b/lang/chinese_simplified.js
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -4894,7 +4894,14 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_draft_passage_changed": "文章已更改。你的草稿已保留。请检查词语解释，然后{chooseOccurrence}，再保存。",
++    "gloss_draft_choose_occurrence": "在当前文本中选择词语出现的位置",
++    "gloss_draft_passage_changed_error": "文章已更改。你的草稿已保留。请检查当前的词语解释，并重新选择词语出现的位置，然后再保存。",
++    "gloss_save_and_continue": "保存并继续",
++    "gloss_save_word_support_confirmed": "词语解释已保存。更新建议时会保留你的措辞。",
++    "gloss_save_support_unconfirmed": "尚未确认此词语解释已保存。你的草稿已保留。",
++    "gloss_save_changes_unconfirmed": "尚未确认你的所有更改已保存。你的草稿已保留。请再次尝试保存。"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/desktop/web-app/public/lang/chinese_simplified.js b/desktop/web-app/public/lang/chinese_simplified.js
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -4894,7 +4894,14 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_draft_passage_changed": "文章已更改。你的草稿已保留。请检查词语解释，然后{chooseOccurrence}，再保存。",
++    "gloss_draft_choose_occurrence": "在当前文本中选择词语出现的位置",
++    "gloss_draft_passage_changed_error": "文章已更改。你的草稿已保留。请检查当前的词语解释，并重新选择词语出现的位置，然后再保存。",
++    "gloss_save_and_continue": "保存并继续",
++    "gloss_save_word_support_confirmed": "词语解释已保存。更新建议时会保留你的措辞。",
++    "gloss_save_support_unconfirmed": "尚未确认此词语解释已保存。你的草稿已保留。",
++    "gloss_save_changes_unconfirmed": "尚未确认你的所有更改已保存。你的草稿已保留。请再次尝试保存。"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/lang/thai.js b/lang/thai.js
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -5578,7 +5578,14 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_draft_passage_changed": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำ แล้ว{chooseOccurrence}ก่อนบันทึก",
++    "gloss_draft_choose_occurrence": "เลือกตำแหน่งของคำในข้อความปัจจุบัน",
++    "gloss_draft_passage_changed_error": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำในปัจจุบันและเลือกตำแหน่งของคำอีกครั้งก่อนบันทึก",
++    "gloss_save_and_continue": "บันทึกและดำเนินการต่อ",
++    "gloss_save_word_support_confirmed": "บันทึกคำอธิบายคำแล้ว ระบบจะเก็บถ้อยคำของคุณไว้เมื่ออัปเดตคำแนะนำ",
++    "gloss_save_support_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกคำอธิบายคำนี้แล้ว ระบบเก็บฉบับร่างของคุณไว้",
++    "gloss_save_changes_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกการเปลี่ยนแปลงทั้งหมดของคุณแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดลองบันทึกอีกครั้ง"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/desktop/web-app/public/lang/thai.js b/desktop/web-app/public/lang/thai.js
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -5578,7 +5578,14 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_draft_passage_changed": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำ แล้ว{chooseOccurrence}ก่อนบันทึก",
++    "gloss_draft_choose_occurrence": "เลือกตำแหน่งของคำในข้อความปัจจุบัน",
++    "gloss_draft_passage_changed_error": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำในปัจจุบันและเลือกตำแหน่งของคำอีกครั้งก่อนบันทึก",
++    "gloss_save_and_continue": "บันทึกและดำเนินการต่อ",
++    "gloss_save_word_support_confirmed": "บันทึกคำอธิบายคำแล้ว ระบบจะเก็บถ้อยคำของคุณไว้เมื่ออัปเดตคำแนะนำ",
++    "gloss_save_support_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกคำอธิบายคำนี้แล้ว ระบบเก็บฉบับร่างของคุณไว้",
++    "gloss_save_changes_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกการเปลี่ยนแปลงทั้งหมดของคุณแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดลองบันทึกอีกครั้ง"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/translations/reader-draft-locales.json b/translations/reader-draft-locales.json
+new file mode 100644
+--- /dev/null
++++ b/translations/reader-draft-locales.json
+@@ -0,0 +1,59 @@
++{
++  "schemaVersion": 1,
++  "english": {
++    "simplified.gloss_draft_passage_changed": "The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.",
++    "simplified.gloss_draft_choose_occurrence": "choose the occurrence in the current text",
++    "simplified.gloss_draft_passage_changed_error": "The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.",
++    "simplified.gloss_save_and_continue": "Save and continue",
++    "simplified.gloss_save_word_support_confirmed": "Word support saved. Your wording will be kept when suggestions are refreshed.",
++    "simplified.gloss_save_support_unconfirmed": "The save did not confirm this word support. Your draft is retained.",
++    "simplified.gloss_save_changes_unconfirmed": "The save did not confirm all your changes. Your draft is retained. Try saving again."
++  },
++  "locales": {
++    "spanish_latin_america": {
++      "simplified.gloss_draft_passage_changed": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario y luego {chooseOccurrence} antes de guardar.",
++      "simplified.gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++      "simplified.gloss_draft_passage_changed_error": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++      "simplified.gloss_save_and_continue": "Guardar y continuar",
++      "simplified.gloss_save_word_support_confirmed": "Se guardó la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++      "simplified.gloss_save_support_unconfirmed": "No se confirmó que esta ayuda de vocabulario se haya guardado. Se conservó tu borrador.",
++      "simplified.gloss_save_changes_unconfirmed": "No se confirmó que todos tus cambios se hayan guardado. Se conservó tu borrador. Intenta guardar de nuevo."
++    },
++    "spanish_castilian": {
++      "simplified.gloss_draft_passage_changed": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario y, después, {chooseOccurrence} antes de guardar.",
++      "simplified.gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++      "simplified.gloss_draft_passage_changed_error": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++      "simplified.gloss_save_and_continue": "Guardar y continuar",
++      "simplified.gloss_save_word_support_confirmed": "Se ha guardado la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++      "simplified.gloss_save_support_unconfirmed": "No se ha confirmado que esta ayuda de vocabulario se haya guardado. Tu borrador se ha conservado.",
++      "simplified.gloss_save_changes_unconfirmed": "No se ha confirmado que todos tus cambios se hayan guardado. Tu borrador se ha conservado. Intenta guardar de nuevo."
++    },
++    "arabic": {
++      "simplified.gloss_draft_passage_changed": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات، ثم {chooseOccurrence} قبل الحفظ.",
++      "simplified.gloss_draft_choose_occurrence": "اختر موضع الكلمة في النص الحالي",
++      "simplified.gloss_draft_passage_changed_error": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات الحالية واختر موضع الكلمة من جديد قبل الحفظ.",
++      "simplified.gloss_save_and_continue": "احفظ وتابع",
++      "simplified.gloss_save_word_support_confirmed": "تم حفظ شرح الكلمة. ستُحفظ صياغتك عند تحديث الاقتراحات.",
++      "simplified.gloss_save_support_unconfirmed": "لم يتم تأكيد حفظ شرح هذه الكلمة. تم الاحتفاظ بمسودتك.",
++      "simplified.gloss_save_changes_unconfirmed": "لم يتم تأكيد حفظ جميع تغييراتك. تم الاحتفاظ بمسودتك. حاول الحفظ مرة أخرى."
++    },
++    "chinese_simplified": {
++      "simplified.gloss_draft_passage_changed": "文章已更改。你的草稿已保留。请检查词语解释，然后{chooseOccurrence}，再保存。",
++      "simplified.gloss_draft_choose_occurrence": "在当前文本中选择词语出现的位置",
++      "simplified.gloss_draft_passage_changed_error": "文章已更改。你的草稿已保留。请检查当前的词语解释，并重新选择词语出现的位置，然后再保存。",
++      "simplified.gloss_save_and_continue": "保存并继续",
++      "simplified.gloss_save_word_support_confirmed": "词语解释已保存。更新建议时会保留你的措辞。",
++      "simplified.gloss_save_support_unconfirmed": "尚未确认此词语解释已保存。你的草稿已保留。",
++      "simplified.gloss_save_changes_unconfirmed": "尚未确认你的所有更改已保存。你的草稿已保留。请再次尝试保存。"
++    },
++    "thai": {
++      "simplified.gloss_draft_passage_changed": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำ แล้ว{chooseOccurrence}ก่อนบันทึก",
++      "simplified.gloss_draft_choose_occurrence": "เลือกตำแหน่งของคำในข้อความปัจจุบัน",
++      "simplified.gloss_draft_passage_changed_error": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำในปัจจุบันและเลือกตำแหน่งของคำอีกครั้งก่อนบันทึก",
++      "simplified.gloss_save_and_continue": "บันทึกและดำเนินการต่อ",
++      "simplified.gloss_save_word_support_confirmed": "บันทึกคำอธิบายคำแล้ว ระบบจะเก็บถ้อยคำของคุณไว้เมื่ออัปเดตคำแนะนำ",
++      "simplified.gloss_save_support_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกคำอธิบายคำนี้แล้ว ระบบเก็บฉบับร่างของคุณไว้",
++      "simplified.gloss_save_changes_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกการเปลี่ยนแปลงทั้งหมดของคุณแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดลองบันทึกอีกครั้ง"
++    }
++  }
++}
+diff --git a/dev-tools/i18n/apply_reader_draft_locales.cjs b/dev-tools/i18n/apply_reader_draft_locales.cjs
+new file mode 100644
+--- /dev/null
++++ b/dev-tools/i18n/apply_reader_draft_locales.cjs
+@@ -0,0 +1,76 @@
++#!/usr/bin/env node
++// Only the frozen seven-message draft batch is writable; other catalog values are preserved.
++const fs = require('node:fs');
++const path = require('node:path');
++const ROOT = path.resolve(__dirname, '../..');
++const LOCALES = ['spanish_latin_america', 'spanish_castilian', 'arabic', 'chinese_simplified', 'thai'];
++const COPY = Object.freeze({
++  "simplified.gloss_draft_passage_changed": "The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.",
++  "simplified.gloss_draft_choose_occurrence": "choose the occurrence in the current text",
++  "simplified.gloss_draft_passage_changed_error": "The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.",
++  "simplified.gloss_save_and_continue": "Save and continue",
++  "simplified.gloss_save_word_support_confirmed": "Word support saved. Your wording will be kept when suggestions are refreshed.",
++  "simplified.gloss_save_support_unconfirmed": "The save did not confirm this word support. Your draft is retained.",
++  "simplified.gloss_save_changes_unconfirmed": "The save did not confirm all your changes. Your draft is retained. Try saving again."
++});
++const KEYS = Object.keys(COPY);
++const lookup = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
++const placeholders = text => [...text.matchAll(/\{([^{}]+)\}/g)].map(match => match[1]).sort();
++const sameKeys = (object, keys) => object && JSON.stringify(Object.keys(object).sort()) === JSON.stringify([...keys].sort());
++function validatePayload(payload) {
++  if (payload?.schemaVersion !== 1 || !sameKeys(payload.english, KEYS) || !sameKeys(payload.locales, LOCALES)) throw Error('Expected the frozen seven-message reader-draft contract and five locales.');
++  for (const key of KEYS) if (payload.english[key] !== COPY[key]) throw Error('English copy changed; review before translating: ' + key);
++  for (const locale of LOCALES) {
++    const values = payload.locales[locale];
++    if (!sameKeys(values, KEYS)) throw Error('Key coverage differs: ' + locale);
++    for (const key of KEYS) {
++      const value = values[key];
++      if (typeof value !== 'string' || !value.trim() || value.includes('simplified.') || value === COPY[key]) throw Error('Missing translation: ' + locale + ' ' + key);
++      if (JSON.stringify(placeholders(value)) !== JSON.stringify(placeholders(COPY[key]))) throw Error('Placeholder mismatch: ' + locale + ' ' + key);
++      if (/[{}]/.test(value.replace(/\{[^{}]+\}/g, ''))) throw Error('Malformed placeholder: ' + locale + ' ' + key);
++    }
++  }
++  return KEYS;
++}
++function mergePack(pack, values) {
++  if (!sameKeys(values, KEYS)) throw Error('Unexpected merge keys.');
++  const next = { ...pack, simplified: { ...pack.simplified } };
++  for (const key of KEYS) {
++    const leaf = key.slice('simplified.'.length), existing = next.simplified[leaf];
++    if (existing !== undefined && existing !== values[key]) throw Error('Existing catalog value differs; resolve ownership first: ' + key);
++    next.simplified[leaf] = values[key];
++  }
++  return next;
++}
++function plan(root = ROOT) {
++  const payload = JSON.parse(fs.readFileSync(path.join(root, 'translations/reader-draft-locales.json'), 'utf8'));
++  validatePayload(payload);
++  const targets = [['ui_strings.js', payload.english], ['desktop/web-app/public/ui_strings.js', payload.english]];
++  for (const locale of LOCALES) for (const prefix of ['lang', 'desktop/web-app/public/lang']) targets.push([prefix + '/' + locale + '.js', payload.locales[locale]]);
++  const changes = [];
++  for (const [relative, values] of targets) {
++    const file = path.join(root, relative), original = fs.readFileSync(file, 'utf8'), pack = JSON.parse(original), next = mergePack(pack, values);
++    if (KEYS.some(key => lookup(pack, key) !== values[key])) changes.push({ file, original, contents: JSON.stringify(next, null, 2) + (original.endsWith('\n') ? '\n' : '') });
++  }
++  return changes;
++}
++function run(apply = false, root = ROOT) {
++  const changes = plan(root);
++  if (!apply && changes.length) throw Error(changes.length + ' catalogs need the scoped merge; run with --apply.');
++  // Validate all targets before any write; preserve concurrent edits and use per-file atomic replacement.
++  for (const change of changes) if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Catalog changed during merge: ' + change.file);
++  for (const change of changes) {
++    if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Catalog changed during merge: ' + change.file);
++    const temporary = change.file + '.reader-draft-locale-' + process.pid + '.tmp';
++    try { fs.writeFileSync(temporary, change.contents); fs.renameSync(temporary, change.file); }
++    finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
++  }
++  return { keys: KEYS.length, locales: LOCALES.length, changedFiles: changes.length, mode: apply ? 'apply' : 'check' };
++}
++function parseArgs(args) {
++  if (!args.length || args.length === 1 && args[0] === '--check') return false;
++  if (args.length === 1 && args[0] === '--apply') return true;
++  throw Error('Use --check (default) or --apply.');
++}
++module.exports = { COPY, KEYS, LOCALES, lookup, placeholders, validatePayload, mergePack, plan, run, parseArgs };
++if (require.main === module) console.log(JSON.stringify(run(parseArgs(process.argv.slice(2))), null, 2));
+diff --git a/tests/fixtures/reader_draft_locales.json b/tests/fixtures/reader_draft_locales.json
+new file mode 100644
+--- /dev/null
++++ b/tests/fixtures/reader_draft_locales.json
+@@ -0,0 +1,66 @@
++[
++  {
++    "id": "draft_en_v1",
++    "locale": "English",
++    "tag": "en",
++    "direction": "ltr",
++    "word": "heron",
++    "passage": "The heron walked through the water.",
++    "changed": "A heron stood in a pond."
++  },
++  {
++    "id": "draft_es419_v1",
++    "locale": "spanish_latin_america",
++    "tag": "es-419",
++    "direction": "ltr",
++    "word": "garza",
++    "passage": "La garza caminaba por el agua.",
++    "changed": "Una garza estaba en el estanque."
++  },
++  {
++    "id": "draft_esES_v1",
++    "locale": "spanish_castilian",
++    "tag": "es-ES",
++    "direction": "ltr",
++    "word": "garza",
++    "passage": "La garza caminaba por el agua.",
++    "changed": "Una garza estaba en el estanque."
++  },
++  {
++    "id": "draft_ar_rtl_v1",
++    "locale": "arabic",
++    "tag": "ar",
++    "direction": "rtl",
++    "word": "الماء",
++    "passage": "يتدفق الماء في الحديقة.",
++    "changed": "هذا الماء صافٍ."
++  },
++  {
++    "id": "draft_zh_unspaced_v1",
++    "locale": "chinese_simplified",
++    "tag": "zh-Hans",
++    "direction": "ltr",
++    "word": "河水",
++    "passage": "河水清澈。",
++    "changed": "花园里的河水很清澈。"
++  },
++  {
++    "id": "draft_th_unspaced_v1",
++    "locale": "thai",
++    "tag": "th",
++    "direction": "ltr",
++    "word": "หนังสือ",
++    "passage": "หนังสือเล่มนี้น่าอ่าน",
++    "changed": "ฉันอ่านหนังสือทุกวัน"
++  },
++  {
++    "id": "draft_zh_compound_subword_v1",
++    "locale": "chinese_simplified",
++    "tag": "zh-Hans",
++    "direction": "ltr",
++    "word": "水",
++    "passage": "水流过花园。",
++    "changed": "清澈的水流过花园。",
++    "reselectable": false
++  }
++]
+diff --git a/tests/helpers/reader_draft_locale_harness.js b/tests/helpers/reader_draft_locale_harness.js
+new file mode 100644
+--- /dev/null
++++ b/tests/helpers/reader_draft_locale_harness.js
+@@ -0,0 +1,63 @@
++import { createRequire } from 'node:module';
++import { readFileSync } from 'node:fs';
++import { resolve } from 'node:path';
++import { vi } from 'vitest';
++import { loadAlloModule } from '../setup.js';
++const require = createRequire(import.meta.url);
++export const React = require(resolve('desktop/web-app/node_modules/react'));
++const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
++export const act = React.act;
++export const fixtures = JSON.parse(readFileSync('tests/fixtures/reader_draft_locales.json', 'utf8'));
++export const payload = JSON.parse(readFileSync('translations/reader-draft-locales.json', 'utf8'));
++export const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++const packs = new Map(fixtures.map(f => [f.locale, f.locale === 'English' ? {} : JSON.parse(readFileSync('lang/' + f.locale + '.js', 'utf8'))]));
++const hostSource = readFileSync('AlloFlowANTI.txt', 'utf8');
++const callbacks = [...hostSource.matchAll(/const t = useCallback\((\(keyString, params = \{\}\) => \{[\s\S]+?\}), \[languagePack\]\);/g)];
++if (callbacks.length !== 1) throw Error('Host translator extraction needs review.');
++const translate = new Function('languagePack', 'UI_STRINGS', 'WORD_SOUNDS_STRINGS', 'return (' + callbacks[0][1] + ');');
++export function translator(fixture, overrides = {}) {
++  const pack = packs.get(fixture.locale);
++  return translate({ ...pack, simplified: { ...pack.simplified, ...overrides } }, english, {});
++}
++export function copy(fixture, leaf) { return (payload.locales[fixture.locale] || payload.english)['simplified.' + leaf]; }
++let View, contract, root, host;
++export function setupDraftReader() {
++  globalThis.React = window.React = React; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  for (const file of ['instructional_context_module.js','alt_text_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','view_simplified_module.js']) loadAlloModule(file);
++  contract = window.AlloModules.InstructionalContext;
++  const files = ['reader_place_store.js','reader_support_drafts.js',process.env.ALLO_DRAFT_SOURCE || 'view_simplified_source.jsx'];
++  const compiled = require('@babel/core').transformSync(files.map(f => readFileSync(f, 'utf8')).join('\n'), { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false, parserOpts: { sourceType: 'script', plugins: ['jsx'] } }).code;
++  View = new Function('React', 'Fragment', compiled + '\nreturn SimplifiedView;')(React, React.Fragment);
++}
++export function cleanupDraftReader() { if (root) act(() => root.unmount()); root = null; host?.remove(); host = null; delete window.__alloT; vi.restoreAllMocks(); }
++export const click = async node => { if (!node) throw Error('Missing control'); await act(async () => node.dispatchEvent(new MouseEvent('click', { bubbles: true }))); };
++export const type = (node, value) => act(() => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); });
++export function mountDraft(fixture, { adapted = true, translate: t = translator(fixture), outcome = 'complete' } = {}) {
++  window.__alloT = t;
++  const id = fixture.id + (adapted ? '-adapted' : '-original');
++  const makeItem = text => adapted ? { id, _artifactInstanceId: id, type: 'simplified', data: text, config: { language: fixture.tag }, instructionalText: { form: 'adapted', role: 'supplemental' } } : contract.createSupportedReading(contract.createSourceSnapshot(text, { language: fixture.tag }), { id });
++  let item = makeItem(fixture.passage), supports, stale = false;
++  const upsert = (owner, existing, annotation) => adapted ? contract.upsertAdaptedReadingSupport(owner, existing, annotation) : contract.upsertReadingSupport(owner, existing, annotation);
++  const annotationFor = text => { const start = text.indexOf(fixture.word); return { id: 'word-' + start, start, end: start + fixture.word.length, quote: fixture.word, text: 'Prepared explanation.', origin: 'educator', kind: 'gloss', priority: 'essential' }; };
++  supports = upsert(item, undefined, annotationFor(fixture.passage));
++  if (supports?.annotations?.length !== 1) throw Error('Fixture support rejected: ' + fixture.id);
++  const session = window.AlloModules.ReaderSupportDrafts.createSession();
++  const onUpdate = vi.fn(async (owner, action) => {
++    const saved = outcome === 'missing' ? { ...supports, annotations: [] } : upsert(owner, supports, outcome === 'partial' ? { ...action.annotation, text: 'Only the prior wording was confirmed.' } : action.annotation);
++    supports = saved; render(); return saved;
++  });
++  host = document.createElement('div'); host.dir = fixture.direction; host.lang = fixture.tag; document.body.append(host); root = createRoot(host);
++  function render() { root.render(React.createElement(View.ReadingGlossEditor, { item, supports, onUpdate, adapted, snapshot: adapted ? contract.createSourceSnapshot(item.data, { language: fixture.tag }) : undefined, embedded: true, disabled: false, supportsStale: stale, draftSession: session })); }
++  act(render);
++  const button = text => [...host.querySelectorAll('button')].find(n => n.textContent.trim() === text);
++  const input = () => host.querySelector('[data-gloss-draft] textarea');
++  return { host, onUpdate, session, button, input, t,
++    edit: async value => { await click([...host.querySelectorAll('button')].find(n => n.getAttribute('aria-label')?.startsWith('Edit gloss for'))); type(input(), value); },
++    change: (unreviewed = false) => act(() => { item = makeItem(fixture.changed); stale = unreviewed; if (!unreviewed) supports = upsert(item, undefined, annotationFor(fixture.changed)); render(); }),
++    saved: () => supports,
++    current: () => item,
++    saveButton: () => button(t('simplified.gloss_save_word_support')),
++    requestAdd: async () => click(button(t('simplified.gloss_add_a_word_or_phrase'))),
++  };
++}
+diff --git a/tests/reader_draft_locales.test.js b/tests/reader_draft_locales.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_draft_locales.test.js
+@@ -0,0 +1,71 @@
++import { afterEach, beforeAll, describe, expect, it } from 'vitest';
++import { fixtures, payload, copy, translator, setupDraftReader, cleanupDraftReader, mountDraft, click } from './helpers/reader_draft_locale_harness.js';
++beforeAll(setupDraftReader); afterEach(cleanupDraftReader);
++const notice = h => [...h.host.querySelectorAll('[role=status]')].find(n => n.querySelector('button'));
++const owned = value => { expect(value).not.toMatch(/simplified\.gloss_|\{chooseOccurrence\}/); expect(value.trim()).not.toBe(''); };
++describe.each(fixtures.filter(f => f.reselectable !== false))('$id', f => {
++  it.each([true, false])('retains and explicitly reanchors a localized draft (adapted=%s)', async adapted => {
++    const h = mountDraft(f, { adapted }), answer = f.word + ' $& {literal}'; await h.edit(answer); h.change();
++    const warning = notice(h), action = copy(f, 'gloss_draft_choose_occurrence');
++    expect(warning?.textContent).toBe(copy(f, 'gloss_draft_passage_changed').replace('{chooseOccurrence}', () => action)); owned(warning.textContent);
++    expect(h.input().value).toBe(answer); expect(h.saveButton().disabled).toBe(true); expect(h.session.hasChanges()).toBe(true);
++    await click(warning.querySelector('button')); expect(notice(h)).toBeUndefined(); expect(h.input().value).toBe(answer);
++    await click(h.saveButton());
++    expect(h.onUpdate).toHaveBeenCalledTimes(1); expect(h.saved().annotations[0]).toMatchObject({ quote: f.word, start: f.changed.indexOf(f.word), text: answer });
++    expect(h.host.textContent).toContain(copy(f, 'gloss_save_word_support_confirmed')); expect(h.session.hasChanges()).toBe(false);
++    expect(adapted ? h.current().data : h.current().sourceSnapshot.text).toBe(f.changed);
++  });
++  it('keeps the occurrence action disabled until refreshed supports are reviewed', async () => {
++    const h = mountDraft(f); await h.edit(f.word); h.change(true);
++    expect(notice(h).querySelector('button').disabled).toBe(true); await click(notice(h).querySelector('button'));
++    expect(h.saveButton().disabled).toBe(true); expect(h.input().value).toBe(f.word); expect(h.onUpdate).not.toHaveBeenCalled();
++  });
++  it('saves before continuing through a translated pending action', async () => {
++    const h = mountDraft(f); await h.edit(f.word); await h.requestAdd();
++    const pending = h.host.querySelector('[role=alertdialog]'); expect(pending).toBeTruthy();
++    const button = h.button(copy(f, 'gloss_save_and_continue')); expect(button).toBeTruthy(); owned(button.textContent); await click(button);
++    expect(h.onUpdate).toHaveBeenCalledTimes(1); expect(h.host.querySelector('[role=alertdialog]')).toBeNull();
++    expect(h.saved().annotations[0].text).toBe(f.word); expect(h.input().value).toBe('');
++  });
++  it.each([['missing','gloss_save_support_unconfirmed'],['partial','gloss_save_changes_unconfirmed']])('retains an unconfirmed %s save and blocks continuing', async (outcome, key) => {
++    const h = mountDraft(f, { outcome }); await h.edit(f.word); await h.requestAdd(); await click(h.button(copy(f, 'gloss_save_and_continue')));
++    expect(h.host.querySelector('[role=alertdialog]')).toBeTruthy(); expect(h.session.hasChanges()).toBe(true); expect(h.input().value).toBe(f.word);
++    const alert = h.host.querySelector('[role=alert]'); expect(alert?.textContent).toBe(copy(f, key)); owned(alert.textContent);
++  });
++});
++const arabic = fixtures.find(f => f.locale === 'arabic');
++describe('inline warning action and readable fallback', () => {
++  it.each(['{chooseOccurrence} ثم راجع النص.','راجع النص. {chooseOccurrence}'])('can place the real action at either sentence edge: %s', async template => {
++    const t = translator(arabic, { gloss_draft_passage_changed: template }), h = mountDraft(arabic, { translate: t }); await h.edit(arabic.word); h.change();
++    const warning = notice(h); expect(warning.textContent).toBe(template.replace('{chooseOccurrence}', () => copy(arabic, 'gloss_draft_choose_occurrence')));
++    expect(warning.querySelectorAll('button')).toHaveLength(1); expect(warning.firstChild.nodeType === 1).toBe(template.startsWith('{chooseOccurrence}'));
++    await click(warning.querySelector('button')); expect(h.saveButton().disabled).toBe(false);
++  });
++  it.each(['No action slot.','{chooseOccurrence}{chooseOccurrence}','{chooseOccurrence} {other}','{chooseOccurrence','{chooseOccurrence} }'])('falls back completely when the action slot is malformed: %s', async template => {
++    const h = mountDraft(arabic, { translate: translator(arabic, { gloss_draft_passage_changed: template }) }); await h.edit(arabic.word); h.change();
++    const warning = notice(h), english = payload.english;
++    expect(warning.textContent).toBe(english['simplified.gloss_draft_passage_changed'].replace('{chooseOccurrence}', () => english['simplified.gloss_draft_choose_occurrence']));
++    expect(warning.querySelectorAll('button')).toHaveLength(1); owned(warning.textContent); await click(warning.querySelector('button')); expect(h.saveButton().disabled).toBe(false);
++  });
++  it.each(['missing','echo','empty','throws','object'])('uses readable English when draft lookups are %s', async mode => {
++    const base = translator(arabic), t = (key, params) => key.startsWith('simplified.gloss_draft_') ? mode === 'missing' ? undefined : mode === 'echo' ? key : mode === 'empty' ? ' ' : mode === 'object' ? {} : (() => { throw Error('lookup failed'); })() : base(key, params);
++    const h = mountDraft(arabic, { translate: t }); await h.edit(arabic.word); h.change();
++    const english = payload.english; expect(notice(h).textContent).toBe(english['simplified.gloss_draft_passage_changed'].replace('{chooseOccurrence}', () => english['simplified.gloss_draft_choose_occurrence']));
++    expect(h.input().value).toBe(arabic.word); owned(notice(h).textContent);
++  });
++  it('renders markup-looking translation as text while keeping exactly one real button', async () => {
++    const template = '<img src=x onerror=alert(1)> {chooseOccurrence} <script>bad()</script>';
++    const h = mountDraft(arabic, { translate: translator(arabic, { gloss_draft_passage_changed: template }) }); await h.edit(arabic.word); h.change();
++    const warning = notice(h); expect(warning.querySelector('img,script')).toBeNull(); expect(warning.querySelectorAll('button')).toHaveLength(1);
++    expect(warning.textContent).toContain('<img src=x onerror=alert(1)>');
++  });
++});
++
++// Existing exact-whole-word behavior, not an acceptance claim for subword support.
++it('draft_zh_compound_subword_v1 retains work when a supplied subword cannot be reselected', async () => {
++  const f = fixtures.find(f => f.reselectable === false), h = mountDraft(f); await h.edit('Retained subword explanation.'); h.change();
++  await click(notice(h).querySelector('button')); await click(h.saveButton());
++  expect(h.onUpdate).not.toHaveBeenCalled(); expect(h.session.hasChanges()).toBe(true); expect(h.input().value).toBe('Retained subword explanation.');
++  expect(h.saveButton().disabled).toBe(true);
++  expect(h.host.textContent).toContain('No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.');
++});
+diff --git a/tests/reader_draft_locale_catalogs.test.js b/tests/reader_draft_locale_catalogs.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_draft_locale_catalogs.test.js
+@@ -0,0 +1,46 @@
++import { describe, expect, it } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++const require = createRequire(import.meta.url);
++const guard = require('../dev-tools/i18n/apply_reader_draft_locales.cjs');
++const payload = JSON.parse(readFileSync('translations/reader-draft-locales.json', 'utf8'));
++const clone = () => JSON.parse(JSON.stringify(payload));
++const read = file => JSON.parse(readFileSync(file, 'utf8'));
++it('freezes exactly seven English messages and five locale batches', () => {
++  expect(guard.validatePayload(payload)).toHaveLength(7); expect(guard.LOCALES).toHaveLength(5);
++  expect(guard.run(false)).toEqual({ keys: 7, locales: 5, changedFiles: 0, mode: 'check' });
++});
++it('registers each owned fallback verbatim at a literal reader lookup', () => {
++  const parser = require('@babel/parser'), traverse = require('@babel/traverse').default;
++  const source = readFileSync('view_simplified_source.jsx', 'utf8'), calls = new Map();
++  traverse(parser.parse(source, { sourceType: 'script', plugins: ['jsx'] }), { CallExpression(p) {
++    const n = p.node; if (n.callee.name === 'simplifiedText' && guard.KEYS.includes(n.arguments[0]?.value)) calls.set(n.arguments[0].value, n.arguments[1]?.value);
++  } });
++  expect(Object.fromEntries(calls)).toEqual(payload.english);
++});
++it.each(['English', ...guard.LOCALES])('ships the bounded keys and an exact public mirror for %s', locale => {
++  const file = locale === 'English' ? 'ui_strings.js' : 'lang/' + locale + '.js';
++  const pack = read(file), values = locale === 'English' ? payload.english : payload.locales[locale];
++  for (const key of guard.KEYS) { expect(guard.lookup(pack, key)).toBe(values[key]); expect(guard.placeholders(values[key])).toEqual(guard.placeholders(payload.english[key])); }
++  expect(readFileSync('desktop/web-app/public/' + file, 'utf8')).toBe(readFileSync(file, 'utf8'));
++});
++it.each(['missing','duplicate','renamed','extra'])('rejects %s inline action slots before writing', mode => {
++  const p = clone(), key = 'simplified.gloss_draft_passage_changed';
++  p.locales.arabic[key] = mode === 'missing' ? 'No action.' : mode === 'duplicate' ? '{chooseOccurrence}{chooseOccurrence}' : mode === 'renamed' ? '{choose}' : '{chooseOccurrence}{other}';
++  expect(() => guard.validatePayload(p)).toThrow('Placeholder mismatch');
++});
++it('rejects frozen English changes and conflicting owner translations', () => {
++  const p = clone(); p.english['simplified.gloss_save_and_continue'] += '!'; expect(() => guard.validatePayload(p)).toThrow('English copy changed');
++  expect(() => guard.mergePack({ simplified: { gloss_save_and_continue: 'Other owner wording' } }, payload.locales.arabic)).toThrow('Existing catalog value differs');
++});
++it('preserves other catalog values and refuses extra keys or untranslated copy', () => {
++  const old = { common: { save: 'Keep' }, simplified: { other: 'Keep too' } }, before = JSON.stringify(old);
++  const merged = guard.mergePack(old, payload.locales.arabic); expect(JSON.stringify(old)).toBe(before); expect(merged.common).toEqual(old.common); expect(merged.simplified.other).toBe('Keep too');
++  const extra = clone(); extra.locales.arabic.extra = 'No'; expect(() => guard.validatePayload(extra)).toThrow('Key coverage');
++  const untranslated = clone(); untranslated.locales.arabic['simplified.gloss_save_and_continue'] = untranslated.english['simplified.gloss_save_and_continue']; expect(() => guard.validatePayload(untranslated)).toThrow('Missing translation');
++});
++
++it.each(['{', '}'])('rejects stray %s braces even when the action token survives', brace => {
++  const p = clone(); p.locales.arabic['simplified.gloss_draft_passage_changed'] += brace;
++  expect(() => guard.validatePayload(p)).toThrow('Malformed placeholder');
++});
+diff --git a/tests/reader_draft_locale_layout.test.js b/tests/reader_draft_locale_layout.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_draft_locale_layout.test.js
+@@ -0,0 +1,41 @@
++// Isolated warning markup in Chromium; uses the current Tailwind configuration.
++// No app server, live profile, provider request or application save is involved.
++import { beforeAll, afterEach, afterAll, describe, it, expect } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { mkdirSync, writeFileSync } from 'node:fs';
++import { fixtures, copy, setupDraftReader, cleanupDraftReader, mountDraft } from './helpers/reader_draft_locale_harness.js';
++const require = createRequire(import.meta.url), webRequire = createRequire(resolve('desktop/web-app/package.json'));
++const report = resolve('reports/draft-layout'), results = [];
++let browser, css;
++(process.env.ALLO_READER_DRAFT_LAYOUT === '1' ? describe : describe.skip)('localized inline draft warning reflow', () => {
++  beforeAll(async () => {
++    setupDraftReader();
++    const config = { ...require(resolve('desktop/web-app/tailwind.config.js')), content: [resolve('view_simplified_source.jsx')] };
++    css = (await webRequire('postcss')([webRequire('tailwindcss')(config)]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined })).css;
++    browser = await require('@playwright/test').chromium.launch({ headless: true }); mkdirSync(report, { recursive: true });
++  }, 60000);
++  afterEach(cleanupDraftReader);
++  afterAll(async () => { await browser?.close(); writeFileSync(resolve(report, 'results.json'), JSON.stringify(results, null, 2) + '\n'); });
++  for (const f of fixtures.filter(f => f.reselectable !== false)) for (const scale of [1, 2]) it(f.id + ' at 320px and ' + scale + 'x text', async () => {
++    const h = mountDraft(f); await h.edit(f.word); h.change();
++    const warning = [...h.host.querySelectorAll('[role=status]')].find(n => n.querySelector('button'));
++    const fieldset = h.host.querySelector('[data-gloss-draft]');
++    const page = await browser.newPage({ viewport: { width: 320, height: 800 } }); const errors = []; page.on('pageerror', e => errors.push(e.message));
++    await page.route('**/*', route => route.abort());
++    try {
++      await page.setContent('<!doctype html><html lang="' + f.tag + '" dir="' + f.direction + '"><head><meta charset="utf-8"><style>' + css + '\nhtml{font-size:' + (16 * scale) + 'px}</style></head><body><fieldset class="' + fieldset.className + '">' + warning.outerHTML + '</fieldset></body></html>');
++      const button = page.getByRole('button', { name: copy(f, 'gloss_draft_choose_occurrence'), exact: true });
++      await page.keyboard.press('Tab'); expect(await button.evaluate(n => document.activeElement === n)).toBe(true);
++      const geometry = await page.locator('[role=status]').evaluate(n => {
++        const b = n.querySelector('button'), rect = b.getBoundingClientRect();
++        return { documentWidth: document.documentElement.scrollWidth, warningWidth: n.clientWidth, warningScroll: n.scrollWidth, buttonWidth: b.clientWidth, buttonScroll: b.scrollWidth, left: rect.left, right: rect.right, direction: getComputedStyle(n).direction };
++      });
++      expect(geometry.documentWidth).toBe(320); expect(geometry.warningScroll).toBeLessThanOrEqual(geometry.warningWidth + 1);
++      expect(geometry.buttonScroll).toBeLessThanOrEqual(geometry.buttonWidth + 1); expect(geometry.left).toBeGreaterThanOrEqual(0); expect(geometry.right).toBeLessThanOrEqual(321); expect(geometry.direction).toBe(f.direction);
++      expect(await button.textContent()).toBe(copy(f, 'gloss_draft_choose_occurrence')); expect(errors).toEqual([]);
++      await page.locator('fieldset').screenshot({ path: resolve(report, f.id + '-' + scale + 'x.png') });
++      results.push({ fixture: f.id, viewportCssPx: 320, rootTextScale: scale, nativeZoom: false, scope: 'warning in its fieldset; not full reader', geometry, errors });
++    } finally { await page.close(); }
++  }, 30000);
++});

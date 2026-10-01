@@ -1,0 +1,255 @@
+/**
+ * AlloFlow — Storybook Export Modal Module
+ *
+ * Chooses the Storybook visual format and optionally requests a durable,
+ * narrated download. Export progress stays in the dialog for screen-reader
+ * and sighted feedback while the asynchronous TTS preparation runs.
+ *
+ * Required props:
+ *   handleExportStorybook                    — function(bool | options)
+ *   handleSetShowStorybookExportModalToFalse — close handler
+ *   isProcessing                             — bool
+ *   setShowStorybookExportModal              — direct setter
+ *   t                                        — translation function
+ */
+function _useStorybookDialogFocus(dialogRef, onClose, busy) {
+  const onCloseRef = React.useRef(onClose);
+  const busyRef = React.useRef(busy);
+  onCloseRef.current = onClose;
+  busyRef.current = busy;
+  React.useEffect(() => {
+    const root = dialogRef.current;
+    if (!root || typeof document === 'undefined') return undefined;
+    const previouslyFocused = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
+    const handleKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!busyRef.current && typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        root.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!root.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    const focusable = getFocusable();
+    const requestedFocus = root.querySelector('[data-autofocus]');
+    const initialFocus = requestedFocus && focusable.includes(requestedFocus)
+      ? requestedFocus
+      : (focusable[0] || root);
+    initialFocus.focus();
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body
+          && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+    };
+  }, [dialogRef]);
+}
+
+function StorybookExportModal({
+  handleExportStorybook,
+  handleSetShowStorybookExportModalToFalse,
+  isProcessing,
+  setShowStorybookExportModal,
+  t,
+}) {
+  const BookOpen = window.BookOpen || (() => null);
+  const ImageIcon = window.ImageIcon || (() => null);
+  const Type = window.Type || (() => null);
+  const [includeNarration, setIncludeNarration] = React.useState(false);
+  const [localProcessing, setLocalProcessing] = React.useState(false);
+  const [progress, setProgress] = React.useState(null);
+  const busy = !!isProcessing || localProcessing;
+  const dialogRef = React.useRef(null);
+  const requestRef = React.useRef(null);
+  React.useEffect(() => () => { requestRef.current?.abort(); requestRef.current = null; }, []);
+  _useStorybookDialogFocus(dialogRef, handleSetShowStorybookExportModalToFalse, busy);
+
+  const runExport = async (includeImages) => {
+    if (busy || requestRef.current) return;
+    const controller = new AbortController();
+    requestRef.current = controller;
+    setLocalProcessing(true);
+    setProgress({ phase: 'story', completed: 0, total: 0, message: 'Preparing your Storybook…' });
+    try {
+      const result = await handleExportStorybook({
+        includeImages,
+        includeNarration,
+        keepModalOpen: true,
+        signal: controller.signal,
+        onProgress: (update) => { if (requestRef.current === controller) setProgress(update || null); },
+      });
+      if (requestRef.current !== controller) return;
+      if (controller.signal.aborted) {
+        setProgress({ phase: 'cancelled', message: 'Export stopped. Completed narration is kept for your next attempt.' });
+      } else if (result !== false) {
+        setShowStorybookExportModal(false);
+      } else {
+        setProgress({ phase: 'error', completed: 0, total: 0, message: 'Storybook export could not be completed.' });
+      }
+    } catch (_) {
+      if (requestRef.current === controller) setProgress({ phase: controller.signal.aborted ? 'cancelled' : 'error', completed: 0, total: 0, message: controller.signal.aborted ? 'Export stopped. Completed narration is kept for your next attempt.' : 'Storybook export could not be completed.' });
+    } finally {
+      if (requestRef.current === controller) { requestRef.current = null; setLocalProcessing(false); }
+    }
+  };
+
+  const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
+  const progressCompleted = progressTotal ? Math.min(Number(progress.completed) || 0, progressTotal) : 0;
+  const progressMessage = progress && progress.message
+    ? progress.message
+    : (busy ? 'Preparing your Storybook…' : '');
+
+  return (
+    <div
+      className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200"
+      onClick={(event) => {
+        if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="bg-white rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] max-w-md w-full overflow-y-auto p-6 animate-in zoom-in-95 duration-300"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="storybook-export-title"
+        aria-describedby="storybook-export-description storybook-export-progress"
+        aria-busy={busy}
+        onClick={event => event.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+            <BookOpen size={24} className="text-indigo-600" aria-hidden="true" />
+          </div>
+          <div>
+            <h3 id="storybook-export-title" className="text-xl font-bold text-slate-800">{t('adventure.storybook')}</h3>
+            <p className="text-sm text-slate-600">{t('adventure.export_options')}</p>
+          </div>
+        </div>
+        <p id="storybook-export-description" className="text-slate-600 mb-5">
+          {t('adventure.storybook_export_description')}
+        </p>
+
+        <div className="mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+          <div className="flex items-start gap-3">
+            <input
+              id="storybook-include-narration"
+              type="checkbox"
+              checked={includeNarration}
+              data-autofocus="true"
+              onChange={event => setIncludeNarration(event.target.checked)}
+              disabled={busy}
+              className="mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label htmlFor="storybook-include-narration" className="cursor-pointer text-sm text-slate-800">
+              <span className="block font-bold">Include narrated TTS audio</span>
+              <span className="mt-1 block text-xs leading-relaxed text-slate-600">
+                Creates HTML and JSON downloads with embedded audio. A separate narration recovery copy is saved on this device when space allows, so interrupted exports can resume.
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            aria-label={t('adventure.include_images')}
+            onClick={() => runExport(true)}
+            disabled={busy}
+            aria-busy={busy}
+            className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            data-help-key="export_storybook_images"
+          >
+            <ImageIcon size={20} aria-hidden="true" />
+            {t('adventure.include_images')}
+          </button>
+          <button
+            type="button"
+            onClick={() => runExport(false)}
+            disabled={busy}
+            aria-busy={busy}
+            className="w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            data-help-key="export_storybook_text"
+          >
+            <Type size={20} aria-hidden="true" />
+            {t('adventure.text_only')}
+          </button>
+          <button
+            type="button"
+            data-alloflow-close-on-escape="true"
+            onClick={() => {
+              if (requestRef.current) { requestRef.current.abort(); setProgress({ phase: 'stopping', message: 'Stopping export… Completed narration will be kept.' }); }
+              else if (!busy) handleSetShowStorybookExportModalToFalse();
+            }}
+            disabled={busy && !localProcessing}
+            className="w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {localProcessing ? 'Stop export' : t('common.cancel')}
+          </button>
+        </div>
+
+        <div
+          id="storybook-export-progress"
+          className={`mt-4 min-h-6 text-center text-sm ${progress && progress.phase === 'error' ? 'text-red-700' : 'text-slate-700'}`}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {busy && (
+            <span
+              className="mr-2 inline-block h-4 w-4 animate-spin motion-reduce:animate-none rounded-full border-2 border-indigo-200 border-t-indigo-600 align-[-0.15em]"
+              aria-hidden="true"
+            />
+          )}
+          {progressMessage}
+          {busy && progressTotal > 0 && (
+            <progress
+              className="mt-2 block h-2 w-full"
+              max={progressTotal}
+              value={progressCompleted}
+              aria-label="Narration export progress"
+            />
+          )}
+        </div>
+        <p className="text-xs text-slate-600 text-center mt-3">
+          {t('adventure.storybook_image_warning')}
+        </p>
+      </div>
+    </div>
+  );
+}

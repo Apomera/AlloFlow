@@ -5290,7 +5290,21 @@
     "measured_on_target": "Ekkar ñan {grade}",
     "measured_above": "Elōñḷọk jān joñan {grade}",
     "measured_below": "Ettā jān joñan {grade}",
-    "measured_note": "Flesch-Kincaid, eṃōj joñe ioon jeje in. Kōjerbal Check Level ñan juon etale eḷapḷọk."
+    "measured_note": "Flesch-Kincaid, eṃōj joñe ioon jeje in. Kōjerbal Check Level ñan juon etale eḷapḷọk.",
+    "listen_along": "Roñjake ippān",
+    "compare_listen_here": "Roñjake ijin",
+    "compare_listen_here_original": "Roñjake ijin: jeje eo m̧oktata",
+    "compare_listen_here_adapted": "Roñjake ijin: jeje eo em̧ōj kōm̧anm̧an",
+    "compare_stop_reading_original": "Bōjrak: riit jeje eo m̧oktata",
+    "compare_stop_reading_adapted": "Bōjrak: riit jeje eo em̧ōj kōm̧anm̧an",
+    "compare_scroll_together": "Scroll ippān doon",
+    "reading_width": "Depakpak in riit",
+    "width_narrow": "Kadu",
+    "width_medium": "Ilubwilij",
+    "width_wide": "Depakpak",
+    "width_extra_wide": "Depakpak tata",
+    "reading_width_characters": "enanin {count} leta ilo juon lain",
+    "original_support_spoken": "Jipan̄ kōn naan “{word}”: {support}"
   },
   "quiz": {
     "title": "Etale",

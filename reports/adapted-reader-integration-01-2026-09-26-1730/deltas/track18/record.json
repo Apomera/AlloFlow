@@ -1,0 +1,79 @@
+{
+  "at": "2026-09-26T22:28:44.274Z",
+  "label": "track18",
+  "patch": "6c55c827f67ed08141d0a6f07a1eec2f989e52024540f6049084a11c98132fc5",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "687866a6202a20700ba8dd40bcf59a7b8a5edc0552ffed4091f8c764a01ba9f1",
+      "after": "c56e1432d6b80c9464160e8d69b715e1e200491bdf9f43f869a08d2ba95a0a38",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_route_a11y.test.js",
+      "targets": [
+        "tests/reader_route_a11y.test.js"
+      ],
+      "before": null,
+      "after": "9a4462e6a3a5e09d3a8333aabafdd217489408645bbfe1a4ce7626489b735d6b",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_display_menu.test.js",
+      "targets": [
+        "tests/reader_display_menu.test.js"
+      ],
+      "before": "cb77638ab02f23d730eed00784d3926a565713327b186c547885c5ee76bed027",
+      "after": "44443d890de9e6ce42d3085f7d0e994a134fc02542a67a8f476532b51304144a",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_layout_quick_wins.test.js",
+      "targets": [
+        "tests/reader_layout_quick_wins.test.js"
+      ],
+      "before": "2242959b4138b90188979999d2d305e6347168ae425e6bc4410f2d651e613772",
+      "after": "d464bdcf59105c2841896a717fc3735b67472fa91040b731f0cc55f8a02e6143",
+      "changed": true
+    },
+    {
+      "target": "tests/adapted_reading_enhancements.test.js",
+      "targets": [
+        "tests/adapted_reading_enhancements.test.js"
+      ],
+      "before": "600afb1b76c385391c3f2f71efe92b7b18534c190eeabde28d0019845196572f",
+      "after": "f0e957d145a30e3330331b7d6ef97d6335426206bd22f65638f7c16fce47b44c",
+      "changed": true
+    },
+    {
+      "target": "tests/view_simplified_dialog_a11y.test.js",
+      "targets": [
+        "tests/view_simplified_dialog_a11y.test.js"
+      ],
+      "before": "51e7cdf6a61b854bde704ea1aa2bf0e74849914b7439158ac4c5846da0bb5b97",
+      "after": "c33044228cf3be824554f5163e74a707f3f404e11b0f7045b30241cebe64ac00",
+      "changed": true
+    },
+    {
+      "target": "tests/adapted_reading_popup_read_aloud.test.js",
+      "targets": [
+        "tests/adapted_reading_popup_read_aloud.test.js"
+      ],
+      "before": "c291fbd00b7ca03d556f02333815cf5ae5e8af92c5d360b19dd04d62926a712d",
+      "after": "0b238bc11571de171a76c78675cf4c57d03daf814a65d46a4a09e1d12e31431d",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader_route_browser.cjs",
+      "targets": [
+        "dev-tools/reader_route_browser.cjs"
+      ],
+      "before": null,
+      "after": "c827fcd2f7d23d6f115e42e5275832d0e547161aa772b029ed3309e44ba25f6c",
+      "changed": true
+    }
+  ]
+}

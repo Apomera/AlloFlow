@@ -23,7 +23,7 @@ describe('Shared-patch observation records', () => {
   });
   it.each([
     ['unready renderer', { ready: false }], ['hidden routes', { routes: false }],
-    ['winter', { cycle: 95 }], ['both colonies', { colony: 'both' }],
+    ['winter', { cycle: 35 }], ['both colonies', { colony: 'both' }],
     ['wrong patch', { patchId: 'patch_b' }], ['whole landscape', { patchId: null }],
     ['unknown colony', { colony: 'missing' }],
   ])('does not fabricate an observation for %s', (_, overrides) => {

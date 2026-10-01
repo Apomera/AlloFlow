@@ -1,0 +1,87 @@
+utils_pure_source.jsx
+Snapshot SHA256 92e64bf18f65f7b6476df70be5bf714e141572096345b2eab0a9b289ccc6de2e
+
+436: const storageDB = {
+437:   get: async (key, options) => {
+438:     const strict = !!(options && options.throwOnError);
+439:     try {
+440:       if (typeof window === 'undefined' || !window.idbKeyval) {
+441:         if (strict) throw new Error('Device storage is not ready yet.');
+442:         warnLog('storageDB.get: IDB not yet loaded, returning null for', key); return null;
+443:       }
+444:       let val = await window.idbKeyval.get(key);
+445:       if ((val === undefined || val === null) && _dsBridgeWanted && !(options && options.localOnly)) {
+446:         // Fresh Canvas session: local IDB is empty but the bridge may hold
+447:         // the previous session's autosave. Backfill local so later reads hit
+448:         // the fast path.
+449:         try {
+450:           val = await _dsBridge().then((ds) => ds.get('app_kv', key));
+451:           if (val !== undefined && val !== null) {
+452:             try { await window.idbKeyval.set(key, val); } catch (_) {}
+453:           }
+454:         } catch (e) {
+455:           warnLog(`storageDB bridge read failed [${key}]:`, e?.code || e?.message || e);
+456:           if (strict) throw e;
+457:           val = null;
+458:         }
+459:       }
+460:       if (val === undefined || val === null) return null;
+461:       if (typeof val === 'object') return val;
+462:       if (window.LZString) {
+463:         let decompressed = window.LZString.decompressFromUTF16(val);
+464:         if (!decompressed) {
+465:             decompressed = window.LZString.decompress(val);
+466:         }
+467:         return decompressed ? JSON.parse(decompressed) : JSON.parse(val);
+468:       }
+469:       return JSON.parse(val);
+470:     } catch (e) {
+471:       warnLog(`storageDB Read Error [${key}]:`, e);
+472:       if (strict) throw e;
+
+476:   set: async (key, value, options) => {
+477:     const strict = !!(options && options.throwOnError);
+478:     // Reports success as a boolean (2026-07-13): true when the write LANDED,
+479:     // false when it was skipped or failed (quota, IDB unavailable). Durability-
+480:     // sensitive callers (batch checkpoints) check the report; legacy callers
+481:     // that ignore the return keep non-throwing semantics. Strict recovery
+482:     // writers opt in to the original error for accurate quota classification.
+483:     if (typeof window === 'undefined' || !window.idbKeyval) {
+484:       if (strict) {
+485:         const error = new Error('Device storage is not ready yet.');
+486:         error.code = 'storage-unavailable';
+487:         throw error;
+488:       }
+489:       warnLog('storageDB.set: IDB not yet loaded, skipping write for', key);
+490:       return false;
+491:     }
+492:     try {
+493:       const stringified = JSON.stringify(value);
+494:       const valToStore = window.LZString ? window.LZString.compressToUTF16(stringified) : stringified;
+495:       await window.idbKeyval.set(key, valToStore);
+496:       _dsMirrorSet(key, valToStore);
+497:       return true;
+498:     } catch (e) {
+499:       warnLog(`storageDB Write Error [${key}]:`, e);
+500:       // Local quota blew but the bridge bucket has its own (usually larger)
+501:       // quota — still try to land the durable copy there.
+502:       try {
+503:         const stringified = JSON.stringify(value);
+504:         _dsMirrorSet(key, window.LZString ? window.LZString.compressToUTF16(stringified) : stringified);
+
+530: 
+531: // A successful state update or a fulfilled legacy set() promise is not a
+532: // durability receipt. Recovery callers require an acknowledged write and a
+533: // matching strict read. The caller owns sequencing and quota fallback.
+534: const writeVerifiedStorageSnapshot = async (storage, key, snapshot, isCurrent = () => true) => {
+535:   const fail = (code, message) => { const error = new Error(message); error.code = code; throw error; };
+536:   if (!isCurrent()) return { status: 'superseded', verified: false };
+537:   const expected = JSON.stringify(snapshot);
+538:   const written = await storage.set(key, snapshot, { throwOnError: true });
+539:   if (written !== true) fail('storage-write-unacknowledged', 'Device storage did not acknowledge this save.');
+540:   if (!isCurrent()) return { status: 'superseded', verified: false };
+541:   const saved = await storage.get(key, { throwOnError: true, localOnly: true });
+542:   if (!isCurrent()) return { status: 'superseded', verified: false };
+543:   if (JSON.stringify(saved) !== expected) fail('storage-readback-mismatch', 'The saved snapshot could not be verified.');
+544:   return { status: 'saved', verified: true, verifiedAt: new Date().toISOString(), snapshot: saved };
+545: };

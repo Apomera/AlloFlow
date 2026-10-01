@@ -1,0 +1,21 @@
+{
+  "at": "2026-09-26T22:33:48.443Z",
+  "expected": {
+    "reader_place_store.js": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_source.jsx": "687866a6202a20700ba8dd40bcf59a7b8a5edc0552ffed4091f8c764a01ba9f1",
+    "ui_strings.js": "d669ed5e7a37d56cb3fdff3f11c5993831b93078296f46bf892ad75ecff729ee"
+  },
+  "actual": {
+    "reader_place_store.js": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+    "view_simplified_source.jsx": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+    "ui_strings.js": "d669ed5e7a37d56cb3fdff3f11c5993831b93078296f46bf892ad75ecff729ee"
+  },
+  "unchanged": {
+    "reader_place_store.js": true,
+    "reader_support_drafts.js": true,
+    "view_simplified_source.jsx": false,
+    "ui_strings.js": true
+  }
+}

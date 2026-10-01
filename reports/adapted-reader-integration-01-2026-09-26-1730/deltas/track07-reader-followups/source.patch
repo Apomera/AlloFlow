@@ -1,0 +1,549 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1045,8 +1045,9 @@
+     flush();
+     return grouped;
+   }
+   function simplifiedPlainInline(text) {
++    try { const shared = window.AlloModules?.TextPipelineHelpers?.readingText; if (shared) return shared.plain(String(text || '')); } catch (_) {}
+     return String(text || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\*\*|__|~~|`/g, '').replace(/\*([^*]+)\*/g, '$1');
+   }
+   // Named as in formatInteractiveText (phase_n): "Source 1, opens in a new tab",
+   // not "superscript one". The superscript digits and brackets are char codes.
+@@ -1057,8 +1058,24 @@
+     var name = inner && inner.every(d => d >= 0) ? simplifiedText('common.source_number', 'Source {number}', { number: inner.join('') }) : value;
+     return name + ', ' + simplifiedText('common.opens_new_tab', 'opens in a new tab');
+   }
+   function simplifiedInline(text, leaf, sourceOffset) {
++    const shared = window.AlloModules?.TextPipelineHelpers?.readingText;
++    if (shared && !Number.isInteger(sourceOffset) && !/!\[|\$/.test(String(text || ''))) {
++      try {
++        const render = (node, key, linkLabel = false) => {
++          if (node.hidden) return null;
++          if (node.text !== undefined) return <React.Fragment key={key}>{linkLabel ? node.text : leaf(node.text)}</React.Fragment>;
++          const children = (node.children || []).map((child, index) => render(child, index, linkLabel || node.tag === 'a'));
++          if (node.tag === 'body') return children;
++          if (node.tag === 'a') return /^(https?:\/\/|mailto:|#|\/)/i.test(node.href || '')
++            ? <a key={key} href={node.href} aria-label={simplifiedLinkLabel((function labelOf(value) { return value.hidden ? '' : value.text !== undefined ? value.text : (value.children || []).map(labelOf).join(''); })(node), node.href)} aria-haspopup={/^#allo-doc-[a-z0-9-]+$/.test(node.href || '') ? 'dialog' : undefined} target={/^#allo-doc-[a-z0-9-]+$/.test(node.href || '') ? undefined : '_blank'} rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600">{children}</a>
++            : <React.Fragment key={key}>{children}</React.Fragment>;
++          return React.createElement(node.tag, { key }, ...children);
++        };
++        return render(shared.tree(text));
++      } catch (_) { /* Unsupported formatting stays on the existing reader path. */ }
++    }
+     // Optional source offsets keep glosses anchored to the stored Markdown.
+     var cursor = sourceOffset || 0, withOffsets = Number.isInteger(sourceOffset);
+     return String(text || '').split(/(\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^\)]+\))/g).map(function (part, index) {
+       var start = cursor; cursor += part.length;
+@@ -4362,58 +4379,102 @@
+       adaptFocusRecoveryRef.current = null;
+       target?.focus();
+     }
+     React.useLayoutEffect(restoreAdaptationFocus);
+-    React.useEffect(function () { dismissAdaptationPreview(); }, [generatedContent?.id, generatedContent?.data, complexityLevel, adaptOptions.shorterSentences, adaptOptions.explainVocabulary, adaptOptions.keepTerms]);
++    var adaptTermsRef = React.useRef(null), adaptPreviewButtonRef = adaptPreviewTriggerRef;
++    var adaptRequestRef = React.useRef(0), adaptMountedRef = React.useRef(true), adaptPendingCommitRef = React.useRef(null);
++    var [adaptBusy, setAdaptBusy] = React.useState(false), [adaptCommitRevision, setAdaptCommitRevision] = React.useState(0);
++    var [adaptFocus, setAdaptFocus] = React.useState(null);
++    var adaptKey = JSON.stringify([generatedContent?.id, generatedContent?.data, generatedContent?.type, generatedContent?.instructionalText?.form,
++      generatedContent?.config, complexityLevel, saveOriginalOnAdjust, adaptOptions, props.translationMode, props.currentUiLanguage, leveledTextLanguage]);
++    var adaptLiveRef = React.useRef(null);
++    adaptLiveRef.current = { key: adaptKey, content: generatedContent };
++    React.useEffect(function () { adaptMountedRef.current = true; return () => {
++      adaptMountedRef.current = false; adaptRequestRef.current++;
++      const pending = adaptPendingCommitRef.current;
++      if (pending) { pending.cancelled = true; pending.resolve(false); adaptPendingCommitRef.current = null; }
++    }; }, []);
++    React.useEffect(function () { dismissAdaptationPreview(); setAdaptBusy(false); }, [adaptKey]);
+     React.useEffect(function () { if (adaptPreview && adaptPreviewRef.current) adaptPreviewRef.current.focus(); }, [!!adaptPreview]);
++    React.useEffect(function () {
++      if (!adaptFocus || isProcessing) return;
++      (adaptFocus === 'terms' ? adaptTermsRef : adaptPreviewButtonRef).current?.focus(); setAdaptFocus(null);
++    }, [adaptFocus, isProcessing, adaptBusy]);
++    React.useLayoutEffect(function () {
++      const pending = adaptPendingCommitRef.current;
++      if (!pending) return;
++      adaptPendingCommitRef.current = null;
++      // The host retains the exact candidate object (artifact identity is added in place).
++      // Equal text alone cannot acknowledge a declined no-op rewrite.
++      const accepted = !pending.cancelled && generatedContent === pending.item;
++      pending.cancelled = !accepted;
++      if (accepted && typeof setHistory === 'function') setHistory(previous => pending.keepOriginal
++        ? (previous.some(item => item.id === pending.baseId && item.data === pending.baseData) && !previous.some(item => item.id === pending.item.id) ? [...previous, pending.item] : previous)
++        : previous.map(item => item.id === pending.baseId && item.data === pending.baseData ? pending.item : item));
++      pending.resolve(accepted);
++    }, [generatedContent, adaptCommitRevision]);
+     var adaptVocabulary = window.AlloModules?.GenerationHelpers?.preservedVocabulary;
+     var adaptTermInput = adaptVocabulary?.parseInput ? adaptVocabulary.parseInput(adaptOptions.keepTerms) : { valid: !adaptOptions.keepTerms.trim(), terms: [] };
+     var adaptTerms = adaptTermInput.terms;
+     var adaptTermCheck = adaptTermInput.valid && adaptVocabulary?.normalize ? adaptVocabulary.normalize(adaptTerms) : null;
+-    var adaptTermError = !adaptTermInput.valid ? (adaptTermInput.reason || 'Essential-term validation is unavailable. Reload before previewing.')
+-      : adaptTermCheck && !adaptTermCheck.valid ? adaptVocabulary.feedback(adaptTermCheck) : '';
++    var adaptTermError = !adaptTermInput.valid ? (adaptVocabulary?.feedback ? adaptVocabulary.feedback(adaptTermInput, t) : viewText('simplified.adapt_validation_unavailable', 'Essential-term validation is unavailable. Reload before previewing.'))
++      : adaptTermCheck && !adaptTermCheck.valid ? adaptVocabulary.feedback(adaptTermCheck, t) : '';
+     var currentAdaptOptions = () => ({ shorterSentences: adaptOptions.shorterSentences, explainVocabulary: adaptOptions.explainVocabulary, keepTerms: adaptTerms });
+     var adaptHasOptions = adaptOptions.shorterSentences || adaptOptions.explainVocabulary || adaptTerms.length > 0;
+     var adaptUndoAvailable = !!adaptUndo && (adaptUndo.keptOriginal ? generatedContent?.id === adaptUndo.newId : generatedContent?.id === adaptUndo.previousId && generatedContent?.data !== adaptUndo.previousData && (adaptUndo.appliedData == null || generatedContent?.data === adaptUndo.appliedData));
++    function startAdaptRequest() {
++      const serial = ++adaptRequestRef.current, key = adaptKey;
++      setAdaptBusy(true);
++      return () => adaptMountedRef.current && adaptRequestRef.current === serial && adaptLiveRef.current.key === key;
++    }
++    function adaptationFailure(result) {
++      setAdaptPreview(null);
++      setAdaptNotice(result?.message || viewText('simplified.adapt_not_applied', 'The change was not applied. Review the current text and preview again.'));
++      setAdaptFocus(result?.status === 'rejected' ? 'terms' : 'preview');
++    }
+     async function prepareAdaptation() {
+-      if (typeof handleComplexityAdjustment !== 'function') return;
+-      if (adaptTermError) { setAdaptNotice(adaptTermError); return; }
+-      var before = { id: generatedContent.id, data: generatedContent.data, kept: !!saveOriginalOnAdjust };
++      if (typeof handleComplexityAdjustment !== 'function' || adaptBusy) return;
++      if (adaptTermError) { setAdaptNotice(adaptTermError); setAdaptFocus('terms'); return; }
++      const isCurrent = startAdaptRequest();
+       setAdaptNotice(''); setAdaptPreview(null);
+-      var result = await handleComplexityAdjustment({ preview: true, options: currentAdaptOptions() });
+-      if (result && result.status === 'rejected') { setAdaptNotice(result.message || 'Current text kept. Essential terms could not be verified.'); return; }
+-      if (result && result.status === 'preview') {
++      try {
++        const result = await handleComplexityAdjustment({ preview: true, options: currentAdaptOptions(), isCurrent });
++        if (!isCurrent()) return;
++        if (result?.status !== 'preview') { adaptationFailure(result); return; }
+         if (adaptTerms.length && (!result.vocabulary?.valid || result.vocabulary.version !== 1)) {
+-          setAdaptNotice('Current text kept. Essential terms could not be verified. Reload and preview again.'); return;
++          adaptationFailure({ status: 'rejected', message: viewText('simplified.adapt_preview_unverified', 'Current text kept. Essential terms could not be verified. Reload and preview again.') }); return;
+         }
+-        setAdaptPreview(result); return;
+-      }
+-      // A host without previews applies straight away; still offer the way back.
+-      if (!result) setAdaptUndo({ previousId: before.id, previousData: before.data, keptOriginal: false, appliedData: null });
++        setAdaptPreview(result);
++      } catch (_) { if (isCurrent()) adaptationFailure(); }
++      finally { if (isCurrent()) setAdaptBusy(false); }
+     }
+     async function applyAdaptation() {
+       if (supportDraftSession?.blocked()) return requestSupportTransition(applyAdaptation);
+-      var previousData = generatedContent.data;
++      if (adaptBusy || !adaptPreview) return;
++      const previousData = generatedContent.data, isCurrent = startAdaptRequest();
+       if (adaptPreviewRef.current?.contains(document.activeElement)) adaptFocusRecoveryRef.current = 'undo';
+       adaptApplyInFlightRef.current = true;
++      let committed = false;
++      const commit = transaction => {
++        if (!isCurrent() || typeof setGeneratedContent !== 'function' || typeof setHistory !== 'function') return Promise.resolve(false);
++        return new Promise(resolve => {
++          const pending = { ...transaction, resolve: value => { committed = value; resolve(value); }, cancelled: false };
++          adaptPendingCommitRef.current = pending;
++          setGeneratedContent(previous => !pending.cancelled && isCurrent() && previous?.id === pending.baseId && previous?.data === pending.baseData
++            && !['original', 'same-text-supported'].includes(previous.instructionalText?.form || previous.config?.instructionalText?.form) ? pending.item : previous);
++          setAdaptCommitRevision(value => value + 1);
++        });
++      };
+       try {
+-        var result = await handleComplexityAdjustment({ apply: adaptPreview, options: currentAdaptOptions() });
+-        if (result && result.status === 'applied') {
+-          setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data == null ? null : result.data });
++        const result = await handleComplexityAdjustment({ apply: adaptPreview, options: currentAdaptOptions(), isCurrent, commit });
++        if (!adaptMountedRef.current) return;
++        if (result?.status === 'applied' && committed) {
++          setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data });
+           dismissAdaptationPreview('undo');
+           setAdaptNotice(viewText('simplified.adapt_applied', 'Change applied. You can go back to the previous version.'));
+-        } else if (result && result.status === 'rejected') {
+-          if (adaptFocusRecoveryRef.current) adaptFocusRecoveryRef.current = 'preview';
+-          dismissAdaptationPreview(); setAdaptNotice(result.message || 'Current text kept. Essential terms could not be verified.');
+-        } else if (result && result.status === 'stale') {
+-          if (adaptFocusRecoveryRef.current) adaptFocusRecoveryRef.current = 'preview';
+-          dismissAdaptationPreview();
+-        }
+-      } finally {
+-        adaptApplyInFlightRef.current = false;
+-        if (adaptFocusRecoveryRef.current && (!result || !['applied', 'stale'].includes(result.status))) adaptFocusRecoveryRef.current = adaptPreviewRef.current ? null : 'preview';
+-        if (!result || result.status !== 'applied') restoreAdaptationFocus();
+-      }
++        } else if (isCurrent()) adaptationFailure(result);
++      } catch (_) { if (isCurrent()) adaptationFailure(); }
++      finally { adaptApplyInFlightRef.current = false; if (adaptMountedRef.current && (isCurrent() || committed)) setAdaptBusy(false); if (!committed) restoreAdaptationFocus(); }
+     }
+     function undoAdaptation() {
+       if (supportDraftSession?.blocked()) return requestSupportTransition(undoAdaptation);
+       var undo = adaptUndo;
+@@ -4426,24 +4487,24 @@
+       setAdaptUndo(null);
+       setAdaptNotice(viewText('simplified.adapt_undone', 'Back to the previous version.'));
+     }
+     function renderAdaptationControls() {
+-      var check = (field, label) => <label className="flex min-h-11 items-center gap-2 text-sm text-slate-800"><input type="checkbox" data-adapt-option={field} checked={!!adaptOptions[field]} disabled={isProcessing} onChange={event => setAdaptOptions(current => ({ ...current, [field]: event.target.checked }))} className="h-4 w-4 accent-indigo-600" />{label}</label>;
++      var check = (field, label) => <label className="flex min-h-11 items-center gap-2 text-sm text-slate-800"><input type="checkbox" data-adapt-option={field} checked={!!adaptOptions[field]} disabled={isProcessing || adaptBusy} onChange={event => setAdaptOptions(current => ({ ...current, [field]: event.target.checked }))} className="h-4 w-4 accent-indigo-600" />{label}</label>;
+       var diff = adaptPreview ? simplifiedWordDiff(generatedContent.data, adaptPreview.data) : null;
+-      return <div data-adaptation-controls className="space-y-3 text-left">
++      return <div data-adaptation-controls aria-busy={isProcessing || adaptBusy} className="space-y-3 text-left">
+         <fieldset className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold uppercase tracking-wide text-indigo-700">{viewText('simplified.adapt_also', 'Also change')}</legend>
+           {check('shorterSentences', viewText('simplified.adapt_shorter', 'Shorter sentences'))}
+           {check('explainVocabulary', viewText('simplified.adapt_explain_vocab', 'Explain unfamiliar vocabulary'))}
+-          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id={readerId('simplified-adapt-terms-hint')} className="block text-xs font-normal text-slate-600">{'Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.'}</span><input type="text" data-adapt-keep-terms aria-describedby={[readerId('simplified-adapt-terms-hint'), readerId('simplified-adapt-terms-error')].join(' ')} aria-invalid={!!adaptTermError} value={adaptOptions.keepTerms} disabled={isProcessing} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id={readerId('simplified-adapt-terms-hint')} className="block text-xs font-normal text-slate-600">{viewText('simplified.adapt_exact_terms_hint', 'Separate terms with commas or semicolons; quote a term containing either. Up to 30 distinct terms. Terms must already occur in the text. We check that each remains at least once, with exact spelling, case, and punctuation, in its source reading pane.')}</span><input ref={adaptTermsRef} type="text" data-adapt-keep-terms aria-describedby={[readerId('simplified-adapt-terms-hint'), readerId('simplified-adapt-terms-error')].join(' ')} aria-invalid={!!adaptTermError} value={adaptOptions.keepTerms} disabled={isProcessing || adaptBusy} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
+           <p id={readerId('simplified-adapt-terms-error')} role={adaptTermError ? 'alert' : undefined} className={adaptTermError ? 'text-sm text-red-800' : 'sr-only'}>{adaptTermError}</p>
+         </fieldset>
+-        <div className="text-center"><button ref={adaptPreviewTriggerRef} type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || !!adaptTermError || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
++        <div className="text-center"><button ref={adaptPreviewButtonRef} type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || adaptBusy || !!adaptTermError || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
+         {adaptPreview && <section ref={adaptPreviewRef} tabIndex={-1} data-adaptation-preview aria-labelledby={readerId('simplified-adapt-preview-title')} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+           <h4 id={readerId('simplified-adapt-preview-title')} className="font-bold text-indigo-950">{viewText('simplified.adapt_preview_title', 'Preview of the change')}</h4>
+           <p className="text-xs text-slate-700">{diff ? viewText('simplified.adapt_preview_hint', 'Removed words are struck through and new words are underlined. Nothing changes until you apply it.') : viewText('simplified.adapt_preview_plain', 'The proposed text is shown below. Nothing changes until you apply it.')}</p>
+           <div role="region" tabIndex={0} aria-label={viewText('simplified.adapt_proposed', 'Proposed text')} data-adaptation-diff className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded border border-indigo-100 bg-white p-3 text-base leading-relaxed text-slate-900" style={{ overflowWrap: 'anywhere' }}>{diff ? diff.map((part, index) => part.type === 'same' ? <React.Fragment key={index}>{part.value}</React.Fragment> : part.type === 'del' ? <del key={index} className="bg-red-100 text-red-900">{part.value}</del> : <ins key={index} className="bg-green-100 text-green-900">{part.value}</ins>) : String(adaptPreview.data || '')}</div>
+           <p className="text-xs text-slate-700">{saveOriginalOnAdjust ? viewText('simplified.adapt_apply_keeps', 'Applying saves this as a new version and keeps the current one.') : viewText('simplified.adapt_apply_replaces', 'Applying replaces the current text. You can go back afterward.')}</p>
+-          <div className="flex flex-wrap justify-center gap-2"><button type="button" data-adaptation-apply onClick={applyAdaptation} disabled={isProcessing} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white disabled:opacity-50">{viewText('simplified.adapt_apply', 'Apply this version')}</button><button type="button" data-adaptation-discard onClick={() => { dismissAdaptationPreview(); setAdaptNotice(viewText('simplified.adapt_discarded', 'Preview discarded. The text is unchanged.')); }} disabled={isProcessing} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3">{viewText('simplified.adapt_discard', 'Discard')}</button></div>
++          <div className="flex flex-wrap justify-center gap-2"><button type="button" data-adaptation-apply onClick={applyAdaptation} disabled={isProcessing || adaptBusy} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white disabled:opacity-50">{viewText('simplified.adapt_apply', 'Apply this version')}</button><button type="button" data-adaptation-discard onClick={() => { dismissAdaptationPreview('preview'); setAdaptNotice(viewText('simplified.adapt_discarded', 'Preview discarded. The text is unchanged.')); }} disabled={isProcessing || adaptBusy} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3">{viewText('simplified.adapt_discard', 'Discard')}</button></div>
+         </section>}
+         <p role="status" data-adaptation-notice className={adaptNotice ? 'text-center text-sm text-indigo-900' : 'sr-only'}>{adaptNotice}</p>
+         {adaptUndoAvailable && <div className="text-center"><button ref={adaptUndoButtonRef} type="button" data-adaptation-undo onClick={undoAdaptation} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900">{viewText('simplified.adapt_back', 'Back to previous version')}</button></div>}
+       </div>;
+@@ -4732,8 +4793,9 @@
+                 moveRovingStop(event, '[data-reading-word]');
+               }} className="cursor-help rounded px-0.5 hover:bg-yellow-100 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{part.text}</span>;
+             });
+           };
++          var renderReadingInline = value => /\$|!\[/.test(value) || !window.AlloModules?.TextPipelineHelpers?.readingText ? formatInteractiveText(value, false, !!isLineFocusMode) : simplifiedInline(value, text => typeof highlightGlossaryTerms === 'function' ? highlightGlossaryTerms(text, latestGlossary, false, !!isLineFocusMode) : text);
+           var renderBlock = function (block, key) {
+             if (block.type === 'rule') return <hr key={key} aria-hidden="true" style={{ border: 0, borderTop: '1px solid currentColor', opacity: 0.25, marginBlock: '1em' }} />;
+             var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : block.type === 'li' ? 'span' : 'p';
+             var text = block.text === undefined ? block.raw : block.text;
+@@ -4751,9 +4813,9 @@
+               // the button; a sentence with a link inside it stays plain text and gets
+               // its own read button, shown when it has focus.
+               var trailingLinks = (cleanText.match(/(?:\s*\[[^\]]*\]\([^)]*\))+\s*$/) || [''])[0];
+               var sentenceText = trailingLinks ? cleanText.slice(0, cleanText.length - trailingLinks.length) : cleanText;
+-              var innerLink = /\[[^\]]*\]\([^)]*\)/.test(sentenceText);
++              var innerLink = /\[[^\]]*\]\([^)]*\)|<a\b/i.test(sentenceText);
+               var speakSentence = function (event) {
+                 var control = event.target.closest('a,button,input,select,textarea');
+                 if (control && control !== event.currentTarget) return;
+                 // A drag-selection is handled on mouseup; a leftover selection must not block Enter.
+@@ -4773,23 +4835,23 @@
+                   selection.removeAllRanges(); selection.addRange(range);
+                   handleTextMouseUp({ currentTarget: node.closest('[data-reading-paragraph]') });
+                 } else handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx, true, readingLanguage);
+               };
+-              if (trailingLinks && !sentenceText.trim()) return <React.Fragment key={index}>{formatInteractiveText(cleanText.trim(), false, !!isLineFocusMode)} </React.Fragment>;
++              if (trailingLinks && !sentenceText.trim()) return <React.Fragment key={index}>{renderReadingInline(cleanText.trim())} </React.Fragment>;
+               var order = sentenceOrder++;
+               var sentenceAction = interactionMode === 'explain' ? readerText('simplified.explain_mode', 'Explain') : interactionMode === 'revise' ? readerText('simplified.revise_mode', 'Revise') : simplifiedReadSentenceLabel;
+               var sentenceClass = `rounded px-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${interactionMode === 'revise' ? '' : 'cursor-pointer '}${active ? 'bg-yellow-300 text-slate-950' : interactionMode === 'revise' ? '' : 'hover:bg-indigo-100/30'}`;
+               var sentenceTitle = interactionMode === 'explain' || interactionMode === 'revise' ? sentenceAction : t('common.click_read_from_here');
+               var sentenceLabel = sentenceAction + ': ' + simplifiedPlainInline(cleanText);
+               var stopProps = { 'data-sentence-stop': true, tabIndex: order === 0 ? 0 : -1, onFocus: function (event) { claimRovingStop(event, '[data-sentence-stop]'); } };
+-              if (props.isStudentPreview) return <span key={index} id={firstPart ? readerId('sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx}>{formatInteractiveText(cleanText)} </span>;
+-              if (innerLink) return <span key={index} id={firstPart ? readerId('sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx} aria-current={active ? 'true' : undefined} onClick={speakSentence} className={sentenceClass} title={sentenceTitle}>{formatInteractiveText(cleanText, false, !!isLineFocusMode)}<button type="button" data-sentence-read {...stopProps} aria-label={sentenceLabel} onClick={speakSentence} onKeyDown={event => moveRovingStop(event, '[data-sentence-stop]')} className="sr-only focus:not-sr-only focus:ms-1 focus:rounded focus:bg-indigo-700 focus:px-2 focus:py-0.5 focus:text-sm focus:font-bold focus:text-white">{sentenceAction}</button> </span>;
++              if (props.isStudentPreview) return <span key={index} id={firstPart ? readerId('sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx}>{renderReadingInline(cleanText)} </span>;
++              if (innerLink) return <span key={index} id={firstPart ? readerId('sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx} aria-current={active ? 'true' : undefined} onClick={speakSentence} className={sentenceClass} title={sentenceTitle}>{renderReadingInline(cleanText)}<button type="button" data-sentence-read {...stopProps} aria-label={sentenceLabel} onClick={speakSentence} onKeyDown={event => moveRovingStop(event, '[data-sentence-stop]')} className="sr-only focus:not-sr-only focus:ms-1 focus:rounded focus:bg-indigo-700 focus:px-2 focus:py-0.5 focus:text-sm focus:font-bold focus:text-white">{sentenceAction}</button> </span>;
+               var sentenceButton = <span key={index} id={firstPart ? readerId('sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx} role="button" {...stopProps} aria-current={active ? 'true' : undefined} aria-label={trailingLinks ? sentenceAction + ': ' + simplifiedPlainInline(sentenceText) : sentenceLabel} onClick={speakSentence} onKeyDown={function (event) {
+                 if (event.target !== event.currentTarget) return;
+                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); speakSentence(event); return; }
+                 moveRovingStop(event, '[data-sentence-stop]');
+-              }} className={sentenceClass} title={sentenceTitle}>{formatInteractiveText(trailingLinks ? sentenceText : cleanText, false, !!isLineFocusMode)}{trailingLinks ? null : ' '}</span>;
+-              return trailingLinks ? <React.Fragment key={index}>{sentenceButton}{formatInteractiveText(trailingLinks.trim(), false, !!isLineFocusMode)} </React.Fragment> : sentenceButton;
++              }} className={sentenceClass} title={sentenceTitle}>{renderReadingInline(trailingLinks ? sentenceText : cleanText)}{trailingLinks ? null : ' '}</span>;
++              return trailingLinks ? <React.Fragment key={index}>{sentenceButton}{renderReadingInline(trailingLinks.trim())} </React.Fragment> : sentenceButton;
+             });
+             var style = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 'inherit' };
+             if (block.type === 'heading') { style.fontWeight = 750; style.fontSize = block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em'; style.marginBlock = '0.9em 0.45em'; }
+             return <Tag key={key} style={style} className={block.type === 'quote' ? 'border-l-4 border-indigo-200 pl-4 my-3 italic' : block.type === 'p' ? 'my-3' : undefined}>{content}</Tag>;
+===================================================================
+--- a/tests/reader_place_review_adapt.test.js
++++ b/tests/reader_place_review_adapt.test.js
+@@ -351,24 +351,26 @@
+   const open = { isTeacherMode: true, isZenMode: false, isTeacherToolbarExpanded: true, complexityLevel: 5 };
+   it('previews a change before applying it, then offers the way back', async () => {
+     const content = item('The heron walked slowly in the shallow water.');
+     const preview = { status: 'preview', resourceId: content.id, baseData: content.data, data: 'The heron walked slowly. It stayed in the shallow water.', vocabulary: { version: 1, valid: true }, config: {}, changeLabel: 'Adjusted' };
+-    const handleComplexityAdjustment = vi.fn(async plan => plan.preview ? preview : { status: 'applied', previousId: content.id, newId: content.id, previousData: content.data, data: preview.data });
+-    const view = mount(content, { ...open, handleComplexityAdjustment });
++    const handleComplexityAdjustment = vi.fn(async plan => plan.preview ? preview : (await plan.commit({ item: { ...content, data: preview.data }, baseId: content.id, baseData: content.data, keepOriginal: false })) ? { status: 'applied', previousId: content.id, newId: content.id, previousData: content.data, data: preview.data } : { status: 'stale' });
++    let view; const setHistory = vi.fn();
++    const setGeneratedContent = update => view.rerender({ generatedContent: update(content), setGeneratedContent, setHistory });
++    view = mount(content, { ...open, handleComplexityAdjustment, setGeneratedContent, setHistory });
+     const go = $('[data-apply-complexity]');
+     expect(go.textContent).toBe('Preview change');
+     expect(go.disabled).toBe(true); // no level change and no choice yet
+     await click($('[data-adapt-option="shorterSentences"]'));
+     await typeInto($('[data-adapt-keep-terms]'), 'heron, shallow water');
+     await click($('[data-apply-complexity]'));
+-    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ preview: true, options: { shorterSentences: true, explainVocabulary: false, keepTerms: ['heron', 'shallow water'] } });
++    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ preview: true, isCurrent: expect.any(Function), options: { shorterSentences: true, explainVocabulary: false, keepTerms: ['heron', 'shallow water'] } });
+     const panel = $('[data-adaptation-preview]');
+     expect(document.activeElement).toBe(panel);
+     expect([...panel.querySelectorAll('ins')].map(node => node.textContent).join('')).toContain('slowly.');
+     expect(panel.querySelector('del')).not.toBe(null);
+     expect(view.props.handleSimplifiedTextChange).not.toHaveBeenCalled();
+     await click($('[data-adaptation-apply]'));
+-    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ apply: preview, options: { shorterSentences: true, explainVocabulary: false, keepTerms: ['heron', 'shallow water'] } });
++    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ apply: preview, isCurrent: expect.any(Function), commit: expect.any(Function), options: { shorterSentences: true, explainVocabulary: false, keepTerms: ['heron', 'shallow water'] } });
+     view.rerender({ generatedContent: { ...content, data: preview.data } });
+     expect($('[data-adaptation-preview]')).toBe(null);
+     await click($('[data-adaptation-undo]'));
+     expect(view.props.handleSimplifiedTextChange).toHaveBeenCalledWith(content.data);
+@@ -420,9 +422,9 @@
+     await typeInto($('[data-adapt-keep-terms]'), '"Washington, D.C.');
+     expect($('[data-apply-complexity]').disabled).toBe(true);
+     await typeInto($('[data-adapt-keep-terms]'), '"Washington, D.C."; fish');
+     await click($('[data-apply-complexity]'));
+-    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ preview: true, options: { shorterSentences: false, explainVocabulary: false, keepTerms: ['Washington, D.C.', 'fish'] } });
++    expect(handleComplexityAdjustment).toHaveBeenLastCalledWith({ preview: true, isCurrent: expect.any(Function), options: { shorterSentences: false, explainVocabulary: false, keepTerms: ['Washington, D.C.', 'fish'] } });
+   });
+ 
+   it('does not present an unchecked legacy preview as compliant with requested terms', async () => {
+     const content = item('Herons are wading birds.');
+@@ -444,9 +446,28 @@
+     await click($('[data-adaptation-apply]'));
+     expect($('[data-adaptation-apply]')).toBe(null);
+     expect($('[data-adaptation-notice]').textContent).toContain('missing: “wading birds”');
+     expect($('[data-adaptation-undo]')).toBe(null);
++    expect(document.activeElement).toBe($('[data-adapt-keep-terms]'));
+   });
++  it('ignores an in-flight preview after the resource or options change', async () => {
++    let finish;
++    const content = item('Herons are wading birds.');
++    const callback = vi.fn(() => new Promise(resolve => { finish = resolve; }));
++    const view = mount(content, { ...open, complexityLevel: 3, handleComplexityAdjustment: callback });
++    await click($('[data-apply-complexity]'));
++    view.rerender({ generatedContent: { ...content, id: 'different' }, complexityLevel: 4 });
++    await act(async () => finish({ status: 'preview', data: 'Obsolete result', vocabulary: { version: 1, valid: true } }));
++    expect($('[data-adaptation-preview]')).toBe(null);
++    expect(callback.mock.calls[0][0].isCurrent()).toBe(false);
++  });
++  it('does not turn an unacknowledged applied result into success or Undo', async () => {
++    mount(item(), { ...open, complexityLevel: 3, handleComplexityAdjustment: vi.fn(async plan => plan.preview ? { status: 'preview', data: 'Candidate' } : { status: 'applied' }) });
++    await click($('[data-apply-complexity]')); await click($('[data-adaptation-apply]'));
++    expect($('[data-adaptation-notice]').textContent).toContain('not applied');
++    expect($('[data-adaptation-undo]')).toBe(null);
++    expect(document.activeElement).toBe($('[data-apply-complexity]'));
++  });
+   it('discards a preview without touching the text', async () => {
+     const content = item('The heron walked.');
+     const handleComplexityAdjustment = vi.fn(async () => ({ status: 'preview', resourceId: content.id, baseData: content.data, data: 'A heron walked.', config: {} }));
+     const view = mount(content, { ...open, complexityLevel: 3, handleComplexityAdjustment });
+@@ -492,9 +513,9 @@
+     const result = await helpers.handleComplexityAdjustment(d);
+     expect(d.generateBilingualText).not.toHaveBeenCalled();
+     const update = d.setGeneratedContent.mock.calls[0][0];
+     expect(update(d.generatedContent).data).toBe(preview.data);
+-    expect(result).toMatchObject({ status: 'applied', previousId: 'r1', previousData: TEXT, data: preview.data });
++    expect(result).toMatchObject({ status: 'scheduled', previousId: 'r1', previousData: TEXT, data: preview.data });
+   });
+   it('refuses a preview made for different text', async () => {
+     const d = deps({ adaptationPlan: { apply: { resourceId: 'r1', baseData: 'Older text.', data: 'Previewed text.' } } });
+     expect(await helpers.handleComplexityAdjustment(d)).toEqual({ status: 'stale' });
+===================================================================
+--- a/tests/original_reader_markdown.test.js
++++ b/tests/original_reader_markdown.test.js
+@@ -19,8 +19,9 @@
+   act = React.act;
+   global.React = window.React = React;
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
++  loadAlloModule('text_pipeline_helpers_module.js');
+   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js'); loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView; api = window.AlloModules.InstructionalContext;
+ });
+ afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; });
+===================================================================
+--- a/tests/reader_keyboard_a11y.test.js
++++ b/tests/reader_keyboard_a11y.test.js
+@@ -31,8 +31,9 @@
+   global.React = window.React = React;
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
+   if (!Range.prototype.getBoundingClientRect) Range.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
++  loadAlloModule('text_pipeline_helpers_module.js');
+   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
+   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView; api = window.AlloModules.InstructionalContext;
+ });
+===================================================================
+--- a/tests/reader_render_cost.test.js
++++ b/tests/reader_render_cost.test.js
+@@ -18,8 +18,9 @@
+   act = React.act;
+   global.React = window.React = React;
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
++  loadAlloModule('text_pipeline_helpers_module.js');
+   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
+   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
+ });
+@@ -27,9 +28,9 @@
+ 
+ const DATA = 'Plants need light. Roots take in water.\n\nLeaves make food. Energy moves on.';
+ function setup() {
+   const counts = { split: 0, format: 0, words: 0 };
+-  const base = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'a', type: 'simplified', data: DATA, config: { language: 'English' }, immersiveData: DATA.split(' ').map(text => ({ text, pos: 'noun' })), immersiveSource: DATA, posEnriched: true }, leveledTextLanguage: 'English', isTeacherMode: false, isZenMode: true, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => { counts.split++; return pure.splitTextToSentences(s, {}); }, getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => { counts.format++; return phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }); }, SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [], setFocusedParagraphIndex: () => {}, ErrorBoundary: ({ children }) => children, FocusReaderOverlay: () => null, PerspectiveCrawlOverlay: () => null, KaraokeReaderOverlay: () => null, ImmersiveToolbar: () => null, ImmersiveWord: ({ wordData }) => { counts.words++; return wordData.text; }, immersiveSettings: {}, isChunkReaderActive: true, chunkReaderIdx: 0 };
++  const base = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'a', type: 'simplified', data: DATA, config: { language: 'English' }, immersiveData: DATA.split(' ').map(text => ({ text, pos: 'noun' })), immersiveSource: DATA, posEnriched: true }, leveledTextLanguage: 'English', isTeacherMode: false, isZenMode: true, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => { counts.split++; return pure.splitTextToSentences(s, {}); }, getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => { counts.format++; return phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }); }, SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: text => { counts.format++; return text; }, latestGlossary: [], setFocusedParagraphIndex: () => {}, ErrorBoundary: ({ children }) => children, FocusReaderOverlay: () => null, PerspectiveCrawlOverlay: () => null, KaraokeReaderOverlay: () => null, ImmersiveToolbar: () => null, ImmersiveWord: ({ wordData }) => { counts.words++; return wordData.text; }, immersiveSettings: {}, isChunkReaderActive: true, chunkReaderIdx: 0 };
+   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
+   const render = extra => act(() => root.render(React.createElement(View, { ...base, ...extra })));
+   return { counts, render, base };
+ }
+===================================================================
+--- a/tests/reader_sentence_links.test.js
++++ b/tests/reader_sentence_links.test.js
+@@ -17,8 +17,9 @@
+   global.React = window.React = React;
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
+   if (!Range.prototype.getBoundingClientRect) Range.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0 });
++  loadAlloModule('text_pipeline_helpers_module.js');
+   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
+   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
+ });
+===================================================================
+--- a/tests/reader_sentence_numbering.test.js
++++ b/tests/reader_sentence_numbering.test.js
+@@ -18,8 +18,9 @@
+   act = React.act;
+   global.React = window.React = React;
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
++  loadAlloModule('text_pipeline_helpers_module.js');
+   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
+   loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
+ });
+===================================================================
+--- /dev/null
++++ b/tests/track07-browser-fixture.js
+@@ -0,0 +1,40 @@
++
++window.AlloIcons = new Proxy({}, { get: () => () => null });
++window.warnLog = window.debugLog = () => {};
++window.mountReading = function (options = {}) {
++  if (window.readerRoot) ReactDOM.flushSync(() => window.readerRoot.unmount());
++  document.body.innerHTML = '<div id="reader"></div>';
++  const React = window.React, noop = () => {};
++  const contract=AlloModules.InstructionalContext, pure=AlloModules.PureHelpers, phase=AlloModules.PhaseNHelpers;
++  const data=options.source || 'Herons are wading birds. They eat fish.';
++  const original=contract.createSupportedReading(contract.createSourceSnapshot('A source reading.', {sourceArtifactId:'src'}),{id:'orig',sourceFamilyId:'birds'});
++  const content={id:'fixture-1', type:'simplified', data, config:{language:options.language || 'English'}, sourceSnapshot:original.sourceSnapshot, instructionalText:{form:'adapted',role:'supplemental'}};
++  const extra={};
++  const props={ ComplexityGauge: () => null, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, setReadingTheme: noop, setSelectionMenu: noop, setIsCustomReviseOpen: noop, setInteractionMode: noop, setIsCompareMode: noop, setIsFluencyMode: noop, stopPlayback: noop, closeDefinition: noop, closePhonics: noop, closeRevision: noop, handleToggleIsEditingLeveledText: noop, t: k => k, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: false, isEditingLeveledText: false, isImmersiveReaderActive: false, isCompareMode: false, isSideBySide: false, isZenMode: true, isProcessing: false, isPlaying: false, interactionMode: 'read', history: [content], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: content, readingLearnerKey: 'learner|Blue Fox', ...extra };
++  window.fixture={...options, initial:content, toasts:[], requests:[], preview:null};
++  function Host() {
++    const [current,setCurrent]=React.useState(content), [history,setHistory]=React.useState([content]);
++    const [processing,setProcessing]=React.useState(false),[level,setLevel]=React.useState(5);
++    const setGeneratedContent=React.useCallback(update=>{if(!window.fixture.decline) setCurrent(update);},[]);
++    fixture.state={current,history,processing};
++    fixture.changeSource=data=>setCurrent(previous=>({...previous,data}));
++    const handleComplexityAdjustment=async plan=>{
++      const result=await AlloModules.GenerationHelpers.handleComplexityAdjustment({generatedContent:current, complexityLevel:level, gradeLevel:'Grade 4',leveledTextLanguage:content.config.language,
++        adaptationPlan:plan,saveOriginalOnAdjust:!!fixture.keepOriginal,setIsProcessing:setProcessing,setComplexityLevel:setLevel,setGeneratedContent,setHistory,
++        setWordSoundsCustomTerms:noop,setWsPreloadedWords:noop,setError:noop,addToast:(message,tone)=>fixture.toasts.push({message,tone}),warnLog:noop,
++        callGemini:noop,cleanJson:value=>value,t:key=>key,getDefaultTitle:()=> 'Reading',
++        extractSourceTextForProcessing:AlloModules.TextPipelineHelpers.extractSourceTextForProcessing,
++        generateBilingualText:async(...args)=>{fixture.requests.push(args);return fixture.delayed ? new Promise(resolve=>fixture.finish=resolve) : fixture.candidate || 'Herons are wading birds. They catch fish.';}
++      });
++      if(result?.status==='preview') fixture.preview=result;
++      return result;
++    };
++    return React.createElement(AlloModules.SimplifiedView,{...props,generatedContent:current, history, setGeneratedContent,setHistory,
++      complexityLevel:level,setComplexityLevel:setLevel,isProcessing:processing,handleComplexityAdjustment,isTeacherMode:true,isZenMode:false,isTeacherToolbarExpanded:true,
++      saveOriginalOnAdjust:!!fixture.keepOriginal,readingLearnerKey:'',getSideBySideContent:text=>{const parts=text.split(/--- ENGLISH TRANSLATION ---/);return parts.length===2 ? {source:parts[0].trim().split(/\n{2,}/),target:parts[1].trim().split(/\n{2,}/),sourceFull:parts[0].trim(),targetFull:parts[1].trim()} : null;}
++    });
++  }
++  window.readerRoot=ReactDOM.createRoot(document.getElementById('reader'));
++  ReactDOM.flushSync(()=>readerRoot.render(React.createElement(React.StrictMode,null,React.createElement(Host))));
++  document.querySelector('[data-teacher-reading-review]').open=true;
++};
+===================================================================
+--- /dev/null
++++ b/tests/track07-browser-acceptance.cjs
+@@ -0,0 +1,89 @@
++const { chromium } = require('playwright');
++const { expect } = require('@playwright/test');
++const assert = require('node:assert/strict');
++const path = require('node:path');
++const fs = require('node:fs');
++const root = path.resolve(__dirname, '..');
++(async () => {
++  const browser = await chromium.launch({ headless: true });
++  const context = await browser.newContext();
++  const page = await context.newPage();
++  const failures = [], results = [], errors = [];
++  page.on('pageerror', error => errors.push(error.message));
++  await context.route('**/*', route => route.abort());
++  try {
++    await page.setContent('<!doctype html><html><head><meta charset="UTF-8"></head><body></body></html>');
++    for (const file of ['desktop/web-app/node_modules/react/umd/react.development.js','desktop/web-app/node_modules/react-dom/umd/react-dom.development.js','instructional_context_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','text_pipeline_helpers_module.js','generation_helpers_module.js','view_simplified_module.js','tests/track07-browser-fixture.js']) await page.addScriptTag({ path: path.join(root,file) });
++    const mount = async options => { await page.evaluate(options => mountReading(options),options || {}); await expect(page.locator('[data-adapt-keep-terms]')).toBeVisible(); };
++    const preview = async (terms='wading birds') => { await page.locator('[data-adapt-keep-terms]').fill(terms); await page.locator('[data-apply-complexity]').click(); };
++    const apply = async () => { await page.locator('[data-adaptation-apply]').focus(); await page.keyboard.press('Enter'); };
++    const check = async (name, fn) => { try { await fn(); results.push({name,status:'passed'}); console.log('PASS '+name); } catch(error) { failures.push(name);results.push({name,status:'failed',error:error.stack});console.error('FAIL '+name+': '+error.message); } };
++    await check('acknowledged overwrite and keyboard Apply',async()=>{
++      await mount();await preview();await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
++      const state=await page.evaluate(()=>({data:fixture.state.current.data,history:fixture.state.history,toasts:fixture.toasts}));
++      assert.equal(state.data,'Herons are wading birds. They catch fish.');assert.equal(state.history[0].data,state.data);
++      assert.equal(state.toasts.filter(t=>t.tone==='success').length,1);
++      await expect(page.locator('[data-adaptation-undo]')).toBeVisible();
++    });
++    await check('acknowledged new version retains original',async()=>{
++      await mount({keepOriginal:true});await preview();await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('Change applied');
++      const state=await page.evaluate(()=>fixture.state);
++      assert.equal(state.history.length,2);assert.equal(state.history[0].data,'Herons are wading birds. They eat fish.');assert.notEqual(state.current.id,'fixture-1');
++    });
++    await check('declined save has no success or history entry',async()=>{
++      await mount({decline:true});await preview();await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('not applied');
++      await expect(page.locator('[data-apply-complexity]')).toBeFocused();
++      assert.deepEqual(await page.evaluate(()=>fixture.state.current),await page.evaluate(()=>fixture.initial));
++      assert.equal(await page.evaluate(()=>fixture.toasts.some(t=>t.tone==='success')),false);
++      await expect(page.locator('[data-adaptation-undo]')).toHaveCount(0);
++    });
++    await check('declined unchanged text is not mistaken for a committed rewrite',async()=>{
++      await mount({decline:true,candidate:'Herons are wading birds. They eat fish.'});await preview();await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('not applied');
++      assert.equal(await page.evaluate(()=>fixture.toasts.some(t=>t.tone==='success')),false);
++    });
++    await check('Apply revalidation returns focus to preserved terms',async()=>{
++      await mount();await preview();await expect(page.locator('[data-adaptation-apply]')).toBeVisible();
++      await page.evaluate(()=>fixture.preview.data='Herons are birds that wade.');await apply();
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('missing: “wading birds”');
++      await expect(page.locator('[data-adapt-keep-terms]')).toBeFocused();
++      assert.equal(await page.evaluate(()=>fixture.state.current.data), 'Herons are wading birds. They eat fish.');
++    });
++    await check('obsolete in-flight preview cannot restore Apply',async()=>{
++      await mount({delayed:true});await preview();
++      await page.evaluate(()=>fixture.changeSource('A different reading.'));
++      await page.evaluate(()=>fixture.finish('Herons are wading birds.'));
++      await expect.poll(()=>page.evaluate(()=>fixture.state.processing)).toBe(false);
++      await expect(page.locator('[data-adaptation-preview]')).toHaveCount(0);
++      assert.equal(await page.evaluate(()=>fixture.state.current.data),'A different reading.');
++    });
++    await check('bilingual candidate reports the missing translation term',async()=>{
++      const source='Las aves zancudas comen peces.\n\n--- ENGLISH TRANSLATION ---\n\nHerons are wading birds.';
++      await mount({source,language:'Spanish',candidate:'Las aves zancudas comen.\n\n--- ENGLISH TRANSLATION ---\n\nHerons are birds that wade.'});
++      await preview('aves zancudas; wading birds');
++      await expect(page.locator('[data-adaptation-notice]')).toContainText('“wading birds” (translation)');
++      await expect(page.locator('[data-adaptation-apply]')).toHaveCount(0);
++      assert.equal(await page.evaluate(()=>fixture.state.current.data),source);
++    });
++    await check('supported inline markup matches the shared visible-text projection',async()=>{
++      for(const source of ['Herons are wading **birds**.','Herons are wading <em>birds</em>.','Herons are wading [birds](https://example.org/a_(b)).','Herons are wading&nbsp;birds.','Herons are wading <a href="https://example.org/birds">birds</a>.']) {
++        await mount({source});
++        const visible=await page.locator('[data-reading-passage] [data-reading-paragraph]').first().innerText();
++        assert.match(visible.replace(/\s+/g,' '), /Herons are wading birds\./);
++        for (const link of await page.locator('[data-reading-passage] a').all()) assert.equal(await link.evaluate(node => !!node.closest('[data-reading-sentence][role=button]') || !!node.querySelector('[role=button]')),false);
++        assert.equal(await page.evaluate(source=>AlloModules.GenerationHelpers.preservedVocabulary.validate(source,source,['wading birds'],AlloModules.TextPipelineHelpers.splitReferencesFromBody).valid,source),true);
++      }
++    });
++    await check('Discard restores keyboard focus',async()=>{
++      await mount();await preview();await page.locator('[data-adaptation-discard]').focus();await page.keyboard.press('Enter');
++      await expect(page.locator('[data-apply-complexity]')).toBeFocused();
++      await expect(page.locator('[data-adaptation-preview]')).toHaveCount(0);
++    });
++    assert.deepEqual(errors,[]);
++  } catch(error) { results.push({name:'browser harness',status:'failed',error:error.stack});failures.push('browser harness'); }
++  finally { fs.writeFileSync(path.join(root,'track07-browser-results.json'),JSON.stringify({results,errors},null,2));await browser.close(); }
++  if(failures.length) process.exitCode=1;
++})();

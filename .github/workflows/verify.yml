@@ -91,8 +91,20 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            desktop/web-app/package-lock.json
       - run: npm install --no-audit --no-fund
+      # check_stem_render, check_sel_render, check_sel_a11y, check_sel_hub_wcag and
+      # check_module_render load React + jsdom from desktop/web-app/node_modules. This job never
+      # installed them, so all five printed "SKIPPED - React/jsdom not found" and exited 0: five
+      # render gates passing without running. ALLOFLOW_REQUIRE_RENDER_DEPS=1 turns that skip into
+      # a failure here (the checkers still skip quietly in lanes that do not install the deps).
+      - name: Install desktop web-app dependencies (React + jsdom for the render gates)
+        run: npm install --no-audit --no-fund --prefix desktop/web-app
       - name: verify:gate (generated modules + render refs + module contracts)
+        env:
+          ALLOFLOW_REQUIRE_RENDER_DEPS: '1'
         run: npm run verify:gate
 
   adventure-journey:
@@ -138,6 +150,11 @@ jobs:
     # non-blocking `quarantine` job below, and `check_quarantine` fails if that list ever stops
     # shrinking honestly (a listed file that now passes, or no longer exists, must be removed).
     runs-on: windows-latest
+    # The runner clock is UTC, but local-day baselines were recorded in America/New_York
+    # (behavior_lens_exports_order_and_units dates a 00:30Z session on the previous day;
+    # stem_sim_tools_golden's astronomy + throwlab digests). Under UTC those failed on every run.
+    env:
+      TZ: America/New_York
     strategy:
       fail-fast: false
       matrix:
@@ -151,6 +168,33 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: Install React 18 for golden-master harnesses
         run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+      # About 65 Vitest files drive a real Chromium through Playwright (*_browser, *_wcag_browser,
+      # the SEL/STEM a11y sweeps). Without browsers each failed at browserType.launch
+      # ("Executable doesn't exist"), so none of them had ever run here. The cache is keyed on the
+      # installed Playwright version; on a hit the install step finds the browsers and exits.
+      - id: playwright
+        name: Resolve Playwright version (browser cache key)
+        shell: bash
+        run: echo "version=$(node -p "require('playwright-core/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/AppData/Local/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+      # The MCP e2e files load desktop/mcp/vendor/epubcheck/ (kept out of git, pinned by
+      # vendor/manifest.json) and tests/e2e/artifacts/remediation-e2e.source.pdf (gitignored; a
+      # by-product of remediation_corpus_golden.spec.ts). Both were missing on a fresh checkout.
+      - name: Cache EPUBCheck vendor assets
+        uses: actions/cache@v4
+        with:
+          path: desktop/mcp/vendor/epubcheck
+          key: epubcheck-${{ hashFiles('desktop/mcp/vendor/manifest.json', 'desktop/mcp/fetch_epubcheck.cjs') }}
+      - name: Install pinned EPUBCheck vendor assets
+        run: node desktop/mcp/fetch_epubcheck.cjs
+      - name: Generate the MCP source-PDF fixture
+        run: node dev-tools/make_remediation_e2e_fixture.cjs
       - name: Run Vitest shard
         run: npm run test:ci:shard -- --shard=${{ matrix.shard }}/8
 

@@ -2,6 +2,70 @@
 // (args, deps) => pattern. Body is byte-identical to original; closure-captured
 // state and helpers are passed via the deps object and destructured at top.
 
+// Module-missing fallback. Mirrors InstructionalContext.deriveTextAccessPlan:
+// a grade-level text standard defaults to NO adapted companion (source
+// 'standard'); an educator's include/omit is kept; a default the workflow or a
+// standard made earlier is derived again. Parity: tests/text_access_parity.test.js.
+const _udlChatTextAccessFallback = (raw, standardsContext, standardsInput = '') => {
+  const isObj = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  const source = isObj(raw) ? raw : {};
+  const clean = (value, limit) => value === undefined || value === null ? '' : String(value).replace(/\s+/g, ' ').trim().slice(0, limit);
+  const context = isObj(standardsContext) ? standardsContext : {};
+  const entries = Array.isArray(context.standards) ? context.standards : [];
+  const named = value => isObj(value) && clean(value.textAccessExpectation, 80) !== 'unspecified';
+  const entry = entries.find(item => item && named(item.instructionalConstraints));
+  const constraints = (named(context.instructionalConstraints) && context.instructionalConstraints)
+    || (entry && entry.instructionalConstraints)
+    || (isObj(context.instructionalConstraints) ? context.instructionalConstraints : {});
+  const expectation = clean(constraints.textAccessExpectation, 80) || 'unspecified';
+  const sourced = constraints.sourced === true
+    || !!clean(constraints.basis || constraints.authority || constraints.sourceUrl || constraints.url, 600);
+  const searchable = [standardsInput, context.inputText, context.promptText]
+    .concat(...entries.map(item => isObj(item)
+      ? [item.code, item.label, item.text, item.statement, item.description] : [item]))
+    .map(value => clean(value, 3600)).filter(Boolean).join(' ');
+  const complexity = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+    || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+  const requiresPrimary = expectation === 'preserve-primary' || expectation === 'adaptation-prohibited' || complexity;
+  const prohibition = sourced && expectation === 'adaptation-prohibited';
+  const requested = clean(source.adaptedTextPolicy, 40);
+  const priorSource = clean(source.adaptedTextPolicySource, 40);
+  const derivedEarlier = (priorSource === 'workflow-default' && requested === 'include')
+    || (priorSource === 'standard' && requested === 'omit');
+  const explicit = derivedEarlier ? '' : requested;
+  const valid = ['include', 'omit', 'prohibited'].includes(explicit);
+  const standardOmit = requiresPrimary && !valid;
+  let policy = valid ? explicit : (standardOmit ? 'omit' : 'include');
+  if (policy === 'prohibited' && !prohibition) policy = 'omit';
+  if (prohibition) policy = 'prohibited';
+  let decision = derivedEarlier ? '' : priorSource;
+  if (prohibition || standardOmit) decision = 'standard';
+  else if (explicit === 'prohibited') decision = 'educator';
+  else if (!['educator', 'standard', 'workflow-default'].includes(decision)) decision = explicit ? 'educator' : 'workflow-default';
+  const explicitAccess = clean(source.primaryTextAccess, 40);
+  return {
+    primaryTextAccess: requiresPrimary ? 'required' : (['required', 'available'].includes(explicitAccess) ? explicitAccess : 'available'),
+    adaptedTextPolicy: policy,
+    adaptedTextPolicySource: decision,
+    textAccessReason: prohibition ? 'sourced-adaptation-prohibition'
+      : (expectation === 'preserve-primary' && sourced ? 'sourced-primary-text-requirement'
+        : (complexity ? 'standard-text-complexity-requirement'
+          : (explicit ? 'educator-choice' : (standardOmit ? 'standard-primary-text-requirement' : 'default-access-companion')))),
+    standardRequiresPrimary: requiresPrimary,
+    sourcedAdaptationProhibition: prohibition,
+  };
+};
+const _udlChatFallbackInstructionalContext = (provided, defaults, standardsInput) => {
+  const raw = provided && typeof provided === 'object' ? provided : null;
+  const access = _udlChatTextAccessFallback(raw, (raw && raw.standardsContext) || defaults.standardsContext, standardsInput);
+  return Object.assign({}, defaults, raw || {}, {
+    primaryTextAccess: access.primaryTextAccess,
+    adaptedTextPolicy: access.adaptedTextPolicy,
+    adaptedTextPolicySource: access.adaptedTextPolicySource,
+    textAccessReason: access.textAccessReason,
+  });
+};
+
 // Bundled locally, not a lazy dependency: recognition text must never fall
 // through to a cloud router because the command module is unavailable.
 const _storeRecognitionTools = typeof createSchoolStoreRecognitionTools === 'function' ? createSchoolStoreRecognitionTools() : null;
@@ -747,17 +811,13 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
               standardsContext: resolvedStandardsContext,
               standardsInput: requestedStandards,
           })
-          : (overrides.instructionalContext || {
+          : _udlChatFallbackInstructionalContext(overrides.instructionalContext, {
               schemaVersion: 1,
               instructionalGrade: requestedGrade,
               primaryTextPolicy: 'preserve-primary',
-              primaryTextAccess: 'available',
-              adaptedTextPolicy: 'include',
-              adaptedTextPolicySource: 'workflow-default',
-              textAccessReason: 'default-access-companion',
               standardsContext: resolvedStandardsContext,
               standardsFingerprint: '',
-          });
+          }, requestedStandards);
       const requestedLanguage = owns('language') ? overrides.language : leveledTextLanguage;
       const frozenSelectedLanguages = owns('selectedLanguages')
           ? (Array.isArray(overrides.selectedLanguages) ? overrides.selectedLanguages.slice() : [])

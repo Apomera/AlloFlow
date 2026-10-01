@@ -1,0 +1,26 @@
+{
+  "commit": "133c6176c01ce742e0d4cbd7edc6df2da9a32a3e",
+  "parent": "6a40f4f488a0fbc4121b7cf61f057bbacf54e656",
+  "files": [
+    "desktop/web-app/public/stem_lab/stem_tool_galaxy.js",
+    "desktop/web-app/public/ui_strings.js",
+    "dev-tools/galaxy_black_hole_qa.cjs",
+    "dev-tools/i18n/stem_galaxy_en.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/REVIEW.md",
+    "reports/galaxy-black-hole-debris-2026-09-29/debris-browser-results.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/galaxy-tests.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/inspector-rtl-320.png",
+    "reports/galaxy-black-hole-debris-2026-09-29/regression/browser-results.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/regression/distance-results.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/regression/follow-results.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/regression/planning-results.json",
+    "reports/galaxy-black-hole-debris-2026-09-29/selected-fragment-1440.png",
+    "reports/galaxy-black-hole-debris-2026-09-29/selected-fragment-320.png",
+    "reports/galaxy-black-hole-debris-2026-09-29/selected-fragment-390.png",
+    "reports/galaxy-black-hole-debris-2026-09-29/validation-summary.json",
+    "stem_lab/stem_tool_galaxy.js",
+    "tests/galaxy_black_hole_physics.test.js",
+    "ui_strings.js"
+  ],
+  "otherStagedWorkPreserved": true
+}

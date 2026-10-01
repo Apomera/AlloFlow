@@ -1,0 +1,102 @@
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const read = (file) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+const anti = read('AlloFlowANTI.txt');
+const phase = read('phase_o_misc_handlers_source.jsx');
+const rules = read('firestore.rules');
+const moduleSource = read('phase_o_misc_handlers_module.js');
+const publicModule = read('desktop/web-app/public/phase_o_misc_handlers_module.js');
+const helperStart = anti.indexOf('const LIVE_HOST_HEARTBEAT_INTERVAL_MS');
+const helperEnd = anti.indexOf("const ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY", helperStart);
+const helpers = new Function(anti.slice(helperStart, helperEnd) + '\nreturn { LIVE_HOST_HEARTBEAT_INTERVAL_MS, LIVE_HOST_LEASE_TTL_MS, LIVE_HOST_RECONNECT_GRACE_MS, normalizeLiveHostPresence, getLiveHostConnectionState, buildLiveHostPresence, validLiveHostPresenceValue };')();
+
+describe('teacher host liveness lease', () => {
+  it('defines a bounded Tier-1 lease envelope and keeps the module mirror synchronized', () => {
+    expect(helpers.LIVE_HOST_HEARTBEAT_INTERVAL_MS).toBe(20000);
+    expect(helpers.LIVE_HOST_LEASE_TTL_MS).toBe(90000);
+    expect(helpers.LIVE_HOST_RECONNECT_GRACE_MS).toBe(45000);
+    expect(anti).toContain("'hostPresence',");
+    expect(anti).toContain('validLiveHostPresenceValue(safePayload.hostPresence)');
+    expect(rules).toContain('hostPresence is host-owned lease metadata');
+    expect(publicModule).toBe(moduleSource);
+  });
+
+  it('accepts the lease the heartbeat builds and rejects malformed values (the guard MUST exist: 2026-09-14 it was undefined, every beat threw)', () => {
+    // A text pin on the call site cannot see a ReferenceError; evaluate the guard for real.
+    expect(typeof helpers.validLiveHostPresenceValue).toBe('function');
+    expect(helpers.validLiveHostPresenceValue(helpers.buildLiveHostPresence('lease-1', 100000))).toBe(true);
+    expect(helpers.validLiveHostPresenceValue(null)).toBe(false);
+    expect(helpers.validLiveHostPresenceValue({ state: 'online' })).toBe(false);
+    expect(helpers.validLiveHostPresenceValue({ heartbeatAt: 200, expiresAt: 100 })).toBe(false);
+  });
+
+  it('derives online, reconnecting, stale, and unknown states from timestamps', () => {
+    const presence = helpers.buildLiveHostPresence('lease-test-1234', 100000);
+    expect(helpers.normalizeLiveHostPresence(presence)).toMatchObject({ state: 'online', heartbeatAt: 100000, expiresAt: 190000 });
+    expect(helpers.getLiveHostConnectionState(presence, 150000)).toBe('online');
+    expect(helpers.getLiveHostConnectionState(presence, 200000)).toBe('reconnecting');
+    expect(helpers.getLiveHostConnectionState(presence, 245001)).toBe('stale');
+    expect(helpers.getLiveHostConnectionState(null, 245001)).toBe('unknown');
+  });
+
+  it('starts the lease from existing session creation and refreshes it through the existing write gate', () => {
+    expect(phase).toContain('const hostPresence = {');
+    expect(phase).toContain('hostPresence,');
+    expect(anti).toContain('const _mbEmptySessionShape = () => {');
+    expect(anti).toContain("writeToSession(sessionRef, { hostPresence: buildLiveHostPresence(leaseId, now) })");
+    expect(anti).toContain('setInterval(beat, beatMs + Math.floor(Math.random() * 5000))');
+    expect(anti).toContain('const beatMs = onMailbox ? 45 * 1000 : LIVE_HOST_HEARTBEAT_INTERVAL_MS;');
+    expect(anti).toContain("document.addEventListener('visibilitychange', onVisible)");
+  });
+
+  it('surfaces a recoverable student state without changing resource-targeting precedence', () => {
+    expect(anti).toContain('Teacher connection paused — keeping your place while AlloFlow reconnects.');
+    expect(anti).toContain('Teacher status check is stale - the live session may still be connected. Your work stays on this device.');
+    expect(anti).toContain('const leaveLiveSession = React.useCallback');
+    expect(anti).toContain("hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive)");
+    expect(anti).not.toContain("hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive) && liveHostConnectionState !== 'stale'");
+    expect(anti).toContain('individual > group > class');
+  });
+
+  it('does not turn a lease timeout into an implicit Firestore session end', () => {
+    const staleIdx = anti.indexOf("liveHostConnectionState === 'stale'");
+    const terminalIdx = anti.indexOf("if (data && (data.isActive === false || data.status === 'ended'))");
+    expect(staleIdx).toBeGreaterThan(-1);
+    expect(terminalIdx).toBeGreaterThan(-1);
+    expect(anti.slice(staleIdx, staleIdx + 1800)).not.toContain('updateDoc(sessionRef, { isActive: false');
+  });
+});
+
+
+describe('host lease on the MAILBOX pathway', () => {
+  it('the mailbox pathway also heartbeats — it has no Firebase user to gate on', () => {
+    // The bug: auth is deliberately skipped on the mailbox pathway (`user` is
+    // set to null), so a `!user?.uid` gate meant the lease was stamped once at
+    // session creation and never refreshed. Students saw 'Teacher connection is
+    // unavailable' ~135s in, permanently, while resources kept arriving.
+    expect(anti).toContain('const hostUid = user?.uid || (_alloMbBridgeState && _alloMbBridgeState.uid) || null;');
+    expect(anti).toContain('if (!isTeacherMode || !activeSessionCode || !hostUid || sessionData?.isLocalOnly)');
+    expect(anti).not.toContain('if (!isTeacherMode || !activeSessionCode || !user?.uid || sessionData?.isLocalOnly)');
+  });
+
+  it('beats less often on the mailbox, because Apps Script quota is finite', () => {
+    expect(anti).toContain('const onMailbox = !user?.uid && _alloMbBridgeActive();');
+    // Two beats inside one 90s lease: a whole beat of margin before a student
+    // would see anything, at 1.3 writes/min instead of 3.
+    expect(anti).toContain('const beatMs = onMailbox ? 45 * 1000 : LIVE_HOST_HEARTBEAT_INTERVAL_MS;');
+  });
+
+  it('the beat interval stays INSIDE the lease the server will accept', () => {
+    // Code.gs rejects any presence whose expiresAt - heartbeatAt exceeds
+    // LIVE_HOST_LEASE_TTL_MS + 10s, so the TTL cannot be lengthened to buy a
+    // slower beat. The beat must therefore stay comfortably under the TTL.
+    const gs = read('apps_script/session_mailbox/Code.gs');
+    expect(gs).toContain('if (value.expiresAt - value.heartbeatAt > LIVE_HOST_LEASE_TTL_MS + 10000) return false;');
+    const ttl = Number((anti.match(/const LIVE_HOST_LEASE_TTL_MS = (\d+) \* 1000/) || [])[1]);
+    expect(ttl).toBe(90);
+    expect(45 * 2).toBeLessThanOrEqual(ttl);   // two beats fit inside one lease
+  });
+});
+

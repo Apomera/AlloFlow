@@ -94,11 +94,12 @@ describe('automatic level check in the adapted-text pipeline', () => {
 describe('simplified view: receipt, undo, disagreement note, and the preference toggle', () => {
     it('renders the re-level receipt with an Undo that restores the kept draft in place', () => {
         const receipt = between(simplified, '{isTeacherMode && generatedContent.relevel && (() => {', "{isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null");
-        expect(receipt).toContain('const restored = { ...generatedContent, data: info.fromText };');
+        // Restored from the live item (2026-09-28), so word help saved in between is kept.
+        expect(receipt).toContain('const restored = { ...item, data: info.fromText };');
         expect(receipt).toContain('delete restored.relevel;');
         expect(receipt).toContain('if (info.fromLevelCheck) restored.levelCheck = info.fromLevelCheck;');
-        expect(receipt).toContain('setGeneratedContent(restored);');
-        expect(receipt).toContain("setHistory(prev => prev.map(item => item.id === restored.id ? restored : item))");
+        expect(receipt).toContain('setGeneratedContent(current => restoreDraft(current));');
+        expect(receipt).toContain('setHistory(prev => prev.map(restoreDraft))');
         expect(receipt).toContain("'Undo re-level'");
         expect(receipt).toContain('data-relevel="disagreement"');
         expect(receipt).toContain('!generatedContent.levelCheck.triangulation.agree');

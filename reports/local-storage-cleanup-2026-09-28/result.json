@@ -1,0 +1,10 @@
+{
+  "Root": "C:\\Users\\cabba\\.claude\\file-history",
+  "CutoffUtc": "2026-09-22T03:26:57.3836071Z",
+  "CompletedUtc": "2026-09-29T03:28:13.6518367Z",
+  "DeletedFiles": 4479,
+  "DeletedBytes": 912226804,
+  "SkippedChangedFiles": 0,
+  "Failures": [],
+  "FreeBytesAfter": 17594834944
+}

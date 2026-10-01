@@ -1,0 +1,421 @@
+diff --git a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-sculpture-view-pass.js b/stem_lab/stem_tool_artstudio.js
+index 94caeaf04..aab1906ed 100644
+--- a/C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/artstudio-before-sculpture-view-pass.js
++++ b/stem_lab/stem_tool_artstudio.js
+@@ -951,6 +951,33 @@ window.StemLab = window.StemLab || {
+     return options[0]||null;
+   }
+   // END ART STUDIO CONTRAST HELPERS
++  // BEGIN ART STUDIO SCULPTURE VIEW HELPERS
++  function artStudioSculptView(raw) {
++    raw = raw && typeof raw === 'object' ? raw : {};
++    function number(value, fallback, low, high) {
++      return typeof value === 'number' && isFinite(value) ? Math.max(low, Math.min(high, value)) : fallback;
++    }
++    return {
++      yaw: number(raw.yaw, 0.7, -100000, 100000),
++      pitch: number(raw.pitch, 0.5, -Math.PI / 2 + 0.001, Math.PI / 2 - 0.001),
++      distance: number(raw.distance, 2.6, 0.1, 500),
++      target: [0, 0.5, 0].map(function(value, index) { return number(Array.isArray(raw.target) ? raw.target[index] : null, value, -200, 200); })
++    };
++  }
++  function artStudioSculptFit(bounds, aspect, fov) {
++    var fallback = artStudioSculptView();
++    if (!bounds || !Array.isArray(bounds.min) || !Array.isArray(bounds.max)) return fallback;
++    if ([0, 1, 2].some(function(i) { return !Number.isFinite(bounds.min[i]) || !Number.isFinite(bounds.max[i]) || bounds.max[i] < bounds.min[i]; })) return fallback;
++    var size = bounds.max.map(function(value, i) { return value - bounds.min[i]; });
++    var radius = Math.max(0.05, Math.sqrt(size[0] * size[0] + size[1] * size[1] + size[2] * size[2]) / 2);
++    var halfFov = (Number.isFinite(fov) ? Math.max(10, Math.min(100, fov)) : 45) * Math.PI / 360;
++    var safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 4 / 3;
++    var limitingAngle = Math.min(halfFov, Math.atan(Math.tan(halfFov) * safeAspect));
++    // A bounding sphere fits from every orbit angle, including rotated and deformed parts.
++    return artStudioSculptView({ target: bounds.min.map(function(value, i) { return (value + bounds.max[i]) / 2; }), distance: radius * 1.12 / Math.sin(limitingAngle) });
++  }
++  // END ART STUDIO SCULPTURE VIEW HELPERS
++
+   // BEGIN ART STUDIO STEREOGRAM HELPERS
+   function artStudioStereoModel(raw) {
+     var d=raw||{};
+@@ -3698,6 +3725,7 @@ const d = labToolData.artStudio || {};
+               else if (canvas._fractalExportCanvas) canvas = canvas._fractalExportCanvas();
+               else if (canvas._opExportCanvas) canvas = canvas._opExportCanvas();
+               else if (canvas._stereoExportCanvas) canvas = canvas._stereoExportCanvas();
++              else if (canvas._sculptExportCanvas) canvas = canvas._sculptExportCanvas();
+               var sourceWidth = Math.max(1, canvas.width || canvas.clientWidth || 1);
+               var sourceHeight = Math.max(1, canvas.height || canvas.clientHeight || 1);
+               var scale = Math.min(1, 240 / sourceWidth, 180 / sourceHeight);
+@@ -3836,7 +3864,7 @@ const d = labToolData.artStudio || {};
+                 ? canvas._watercolorEngine.captureSnapshot()
+                 : canvas._symExportAction ? canvas._symExportAction()
+                   : canvas._spinExportAction ? canvas._spinExportAction()
+-                    : canvas._genExportAction ? canvas._genExportAction() : canvas._stereoExportPNG ? canvas._stereoExportPNG() : canvas._spiroExportPNG ? canvas._spiroExportPNG() : canvas._strExportPNG ? canvas._strExportPNG() : canvas._fractalExportPNG ? canvas._fractalExportPNG() : canvas._opExportPNG ? canvas._opExportPNG() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
++                    : canvas._genExportAction ? canvas._genExportAction() : canvas._sculptExportCanvas ? canvas._sculptExportCanvas(1600).toDataURL('image/png') : canvas._stereoExportPNG ? canvas._stereoExportPNG() : canvas._spiroExportPNG ? canvas._spiroExportPNG() : canvas._strExportPNG ? canvas._strExportPNG() : canvas._fractalExportPNG ? canvas._fractalExportPNG() : canvas._opExportPNG ? canvas._opExportPNG() : canvas._pixelExport ? canvas._pixelExport() : canvas.toDataURL('image/png');
+             } catch (_) { return null; }
+             if (!src || src === 'data:,') return null;
+             var label = ART_STUDIO_TAB_LABELS[tab] || 'Art Studio artwork';
+@@ -10357,6 +10385,7 @@ const d = labToolData.artStudio || {};
+               var sel = Math.min(d.sculptSel || 0, Math.max(0, parts.length - 1));
+               var gallery = d.sculptGallery || {};
+               var sculptAuto = d.sculptAuto === undefined ? !reducedMotion : !!d.sculptAuto;
++              var sculptView = artStudioSculptView(d.sculptView);
+               var sculptMode = ['move', 'rotate', 'scale'].indexOf(d.sculptInteractMode) !== -1 ? d.sculptInteractMode : 'orbit';
+               var sculptTransformAxis = ['x', 'y', 'z'].indexOf(d.sculptTransformAxis) !== -1 ? d.sculptTransformAxis : 'free';
+               var sculptMirrorAxis = ['x', 'y', 'z'].indexOf(d.sculptMirrorAxis) !== -1 ? d.sculptMirrorAxis : 'x';
+@@ -10399,9 +10428,14 @@ const d = labToolData.artStudio || {};
+                 if (bypass || !increment) return Math.round(value * 1000) / 1000;
+                 return Math.round((Math.round(value / increment) * increment) * 1000) / 1000;
+               }
+-              var setRecipe = function(r) {
++              var setRecipe = function(r, reframe) {
+                 var next = r ? P3D.normalizeRecipe(r) : null;
+-                if (JSON.stringify(next) === JSON.stringify(recipe)) return;
++                var preview = _cnvBox && _cnvBox.current && _cnvBox.current._p3d;
++                if (JSON.stringify(next) === JSON.stringify(recipe)) {
++                  if (reframe && preview) preview.viewCommand('fit');
++                  return;
++                }
++                if (reframe && preview) preview.hasFitted = false;
+                 sculptAiRef.current.version += 1;
+                 updMany({
+                   sculptRecipe: next,
+@@ -10516,7 +10550,104 @@ const d = labToolData.artStudio || {};
+                   scene3.add(new THREE.AmbientLight(0xffffff, 0.6));
+                   var d1 = new THREE.DirectionalLight(0xffffff, 0.7); d1.position.set(2, 3, 2); scene3.add(d1);
+                   var grid = new THREE.GridHelper(3, 12, 0x475569, 0x1e293b); scene3.add(grid);
+-                  cnv._p3d = { scene: scene3, cam: cam, ren: ren, obj: null, json: '', yaw: 0.7, pitch: 0.5, auto: sculptAuto };
++                  cnv._p3d = Object.assign({ scene: scene3, cam: cam, ren: ren, grid: grid, obj: null, json: '', auto: sculptAuto, dirty: true, hasFitted: !!d.sculptView, viewSignature: JSON.stringify(sculptView) }, sculptView);
++                  function renderSculptView() {
++                    var st = cnv._p3d;
++                    if (!st) return;
++                    var view = artStudioSculptView(st), target = view.target, R = view.distance;
++                    st.cam.position.set(target[0] + Math.sin(view.yaw) * Math.cos(view.pitch) * R, target[1] + Math.sin(view.pitch) * R, target[2] + Math.cos(view.yaw) * Math.cos(view.pitch) * R);
++                    st.cam.lookAt(target[0], target[1], target[2]);
++                    st.cam.near = Math.max(0.001, R / 1000); st.cam.far = Math.max(100, R * 10);
++                    if (st.cam.updateProjectionMatrix) st.cam.updateProjectionMatrix();
++                    st.ren.render(st.scene, st.cam);
++                    st.dirty = false;
++                  }
++                  function saveSculptView(pause) {
++                    var st = cnv._p3d;
++                    if (!st) return;
++                    var view = artStudioSculptView(st);
++                    st.viewSignature = JSON.stringify(view);
++                    if (pause) { st.auto = false; cnv.dataset.auto = '0'; }
++                    st.dirty = true;
++                    if (st.commitView) st.commitView(view, st.auto);
++                    updateSculptViewLabel();
++                  }
++                  function fitSculptView() {
++                    var st = cnv._p3d, bounds = null;
++                    if (!st) return;
++                    if (st.obj && THREE.Box3) {
++                      try {
++                        var box = new THREE.Box3().setFromObject(st.obj);
++                        bounds = { min: [box.min.x, box.min.y, box.min.z], max: [box.max.x, box.max.y, box.max.z] };
++                      } catch (_) {}
++                    }
++                    var fit = artStudioSculptFit(bounds, st.cam.aspect, st.cam.fov);
++                    st.target = fit.target; st.distance = fit.distance; st.hasFitted = true; st.dirty = true;
++                  }
++                  function sculptureViewCommand(command) {
++                    var st = cnv._p3d;
++                    if (!st || st.drag) return;
++                    var angles = { iso: [0.7, 0.5], front: [0, 0], back: [Math.PI, 0], left: [-Math.PI / 2, 0], right: [Math.PI / 2, 0], top: [0, Math.PI / 2 - 0.001] };
++                    if (command === 'in' || command === 'out') st.distance = Math.max(0.1, Math.min(500, st.distance * (command === 'in' ? 1 / 1.25 : 1.25)));
++                    else {
++                      fitSculptView();
++                      if (angles[command]) { st.yaw = angles[command][0]; st.pitch = angles[command][1]; }
++                    }
++                    saveSculptView(true);
++                    renderSculptView();
++                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sculpt_view_updated', 'Sculpture view updated. Auto-rotation paused.'));
++                  }
++                  function resizeSculptView() {
++                    var st = cnv._p3d;
++                    if (!st) return;
++                    var rect = cnv.getBoundingClientRect(), width = rect.width || 960, height = rect.height || 720;
++                    var ratio = Math.min(2, window.devicePixelRatio || 1, 1536 / Math.max(width, height));
++                    var w = Math.max(1, Math.round(width * ratio)), h = Math.max(1, Math.round(height * ratio));
++                    if (st.bufferWidth !== w || st.bufferHeight !== h) {
++                      st.bufferWidth = w; st.bufferHeight = h; st.cam.aspect = width / height;
++                      st.ren.setSize(w, h, false); st.dirty = true;
++                    }
++                  }
++                  cnv._p3d.renderNow = renderSculptView;
++                  cnv._p3d.saveView = saveSculptView;
++                  cnv._p3d.fitView = fitSculptView;
++                  cnv._p3d.viewCommand = sculptureViewCommand;
++                  cnv._p3d.resize = resizeSculptView;
++                  cnv._captureArtStudioState = function() {
++                    var st = cnv._p3d;
++                    return st ? { sculptView: artStudioSculptView(st), sculptAuto: st.auto } : null;
++                  };
++                  cnv._sculptExportCanvas = function(edge) {
++                    var st = cnv._p3d;
++                    if (!st) throw new Error('Sculpture preview is unavailable');
++                    var originalAspect = st.cam.aspect;
++                    try {
++                      if (edge) { st.ren.setSize(edge, Math.round(edge / originalAspect), false); }
++                      renderSculptView();
++                      var picture = document.createElement('canvas');
++                      picture.width = cnv.width; picture.height = cnv.height;
++                      var ctx = picture.getContext('2d');
++                      if (!ctx) throw new Error('Image capture is unavailable');
++                      ctx.drawImage(cnv, 0, 0);
++                      return picture;
++                    } finally {
++                      if (edge) { st.ren.setSize(st.bufferWidth || 960, st.bufferHeight || 720, false); st.cam.aspect = originalAspect; renderSculptView(); }
++                    }
++                  };
++                  if (typeof ResizeObserver === 'function') {
++                    cnv._p3d.resizeObserver = new ResizeObserver(resizeSculptView);
++                    cnv._p3d.resizeObserver.observe(cnv);
++                  }
++                  if (typeof IntersectionObserver === 'function') {
++                    cnv._p3d.visibilityObserver = new IntersectionObserver(function(entries) {
++                      var st = cnv._p3d;
++                      if (!st) return;
++                      entries.forEach(function(entry) { if (entry.target === cnv) st.inView = entry.isIntersecting; });
++                      if (st.inView) st.dirty = true;
++                    });
++                    cnv._p3d.visibilityObserver.observe(cnv);
++                  }
++                  resizeSculptView();
+                   function updateSculptViewLabel() {
+                     var state = cnv._p3d;
+                     if (!state) return;
+@@ -10583,6 +10714,8 @@ const d = labToolData.artStudio || {};
+                     }
+                     st.drag = null;
+                     st.auto = !!drag.resumeAuto;
++                    st.dirty = true;
++                    if (drag.kind === 'orbit') saveSculptView(true);
+                     updateSculptViewLabel();
+                   }
+                   // Orbit the view, or directly move, rotate, or scale a selected part.
+@@ -10663,10 +10796,11 @@ const d = labToolData.artStudio || {};
+                       // follows the hand, as in every common 3-D viewer). It used to
+                       // move the CAMERA right, so the model appeared to turn left.
+                       st.yaw -= dx * 0.01;
+-                      st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + dy * 0.008));
++                      st.pitch = Math.max(-Math.PI / 2 + 0.001, Math.min(Math.PI / 2 - 0.001, st.pitch + dy * 0.008));
+                     }
+                     if (st.drag.kind !== 'orbit') st.drag.moved = st.drag.moved || Math.abs(dx) + Math.abs(dy) > 0;
+                     st.drag.x = ev.clientX; st.drag.y = ev.clientY;
++                    st.dirty = true;
+                     updateSculptViewLabel();
+                   });
+                   cnv.addEventListener('pointerup', function() { endSculptDrag(false); });
+@@ -10732,22 +10866,25 @@ const d = labToolData.artStudio || {};
+                       var step = event.altKey ? 0.02 : 0.12;
+                       if (event.key === 'ArrowLeft') st.yaw -= step;
+                       if (event.key === 'ArrowRight') st.yaw += step;
+-                      if (event.key === 'ArrowUp') st.pitch = Math.min(1.45, st.pitch + step);
+-                      if (event.key === 'ArrowDown') st.pitch = Math.max(0.05, st.pitch - step);
+-                      st.auto = false; cnv.dataset.auto = '0'; upd('sculptAuto', false);
++                      if (event.key === 'ArrowUp') st.pitch = Math.min(Math.PI / 2 - 0.001, st.pitch + step);
++                      if (event.key === 'ArrowDown') st.pitch = Math.max(-Math.PI / 2 + 0.001, st.pitch - step);
++                      saveSculptView(true);
+                       announceSculptView('Sculpture view moved; auto-rotation paused.');
+                     } else if (event.key === 'Home') {
+                       event.preventDefault();
+-                      st.yaw = 0.7; st.pitch = 0.5; st.auto = false; cnv.dataset.auto = '0'; upd('sculptAuto', false);
++                      st.yaw = 0.7; st.pitch = 0.5; fitSculptView(); saveSculptView(true);
+                       announceSculptView('Sculpture view reset; auto-rotation paused.');
++                    } else if (!event.ctrlKey && !event.metaKey && !event.altKey && (event.key === '+' || event.key === '=' || event.key === '-' || event.key.toLowerCase() === 'f')) {
++                      event.preventDefault();
++                      sculptureViewCommand(event.key.toLowerCase() === 'f' ? 'fit' : event.key === '-' ? 'out' : 'in');
+                     } else if (event.key === ' ' || event.key === 'Enter') {
+                       event.preventDefault();
+-                      st.auto = !st.auto; cnv.dataset.auto = st.auto ? '1' : '0'; upd('sculptAuto', st.auto);
++                      st.auto = !st.auto; cnv.dataset.auto = st.auto ? '1' : '0'; saveSculptView(false);
+                       announceSculptView(st.auto ? 'Sculpture auto-rotation resumed.' : 'Sculpture auto-rotation paused.');
+                     }
+                   };
+                   updateSculptViewLabel();
+-                  var loop = function() {
++                  var loop = function(time) {
+                     var st = cnv._p3d;
+                     if (!st) return;
+                     if (!cnv.isConnected) {   // tab switched away — full teardown, no zombie loop
+@@ -10757,19 +10894,22 @@ const d = labToolData.artStudio || {};
+                           var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+                           mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
+                         });
++                        if (st.resizeObserver) st.resizeObserver.disconnect();
++                        if (st.visibilityObserver) st.visibilityObserver.disconnect();
+                         st.ren.dispose(); if (st.ren.forceContextLoss) st.ren.forceContextLoss();
+                       } catch (e) {}
+                       cnv._p3d = null;
+                       return;
+                     }
+-                    if (st.auto) st.yaw += 0.006;
+-                    var R = 2.6;
+-                    st.cam.position.set(Math.sin(st.yaw) * Math.cos(st.pitch) * R, 0.5 + Math.sin(st.pitch) * R * 0.8, Math.cos(st.yaw) * Math.cos(st.pitch) * R);
+-                    st.cam.lookAt(0, 0.5, 0);
+-                    st.ren.render(st.scene, st.cam);
++                    var delta = st.lastFrame === undefined ? 16 : Math.max(0, Math.min(40, time - st.lastFrame));
++                    st.lastFrame = time;
++                    if (!document.hidden && st.inView !== false) {
++                      if (st.auto) { st.yaw += delta * 0.00036; st.dirty = true; }
++                      if (st.dirty) renderSculptView();
++                    }
+                     cnv._p3dAnim = requestAnimationFrame(loop);
+                   };
+-                  loop();
++                  cnv._p3dAnim = requestAnimationFrame(loop);
+                 }
+                 var liveState = cnv._p3d;
+                 if (liveState) {
+@@ -10777,6 +10917,13 @@ const d = labToolData.artStudio || {};
+                   liveState.recipe = recipe;
+                   liveState.selectedIndex = sel;
+                   liveState.commitRecipe = setRecipe;
++                  liveState.commitView = function(view, auto) { updMany({ sculptView: view, sculptAuto: auto }); };
++                  var viewSignature = JSON.stringify(sculptView);
++                  if (liveState.viewSignature !== viewSignature && !liveState.drag) {
++                    Object.assign(liveState, sculptView);
++                    liveState.viewSignature = viewSignature; liveState.hasFitted = !!d.sculptView; liveState.dirty = true;
++                  }
++                  if (liveState.grid.visible !== (d.sculptGrid !== false)) { liveState.grid.visible = d.sculptGrid !== false; liveState.dirty = true; }
+                   liveState.selectPart = function(index) { upd('sculptSel', index); };
+                   liveState.snap = sculptSnap;
+                   liveState.transformAxis = sculptTransformAxis;
+@@ -10796,8 +10943,12 @@ const d = labToolData.artStudio || {};
+                     } catch (e) {}
+                     st2.obj = null;
+                   }
+-                  if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1 }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
++                  if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1, surfaceQuality: 'smooth' }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
++                  st2.dirty = true;
++                  if (!st2.obj) st2.hasFitted = false;
++                  if (st2.obj && !st2.hasFitted) { st2.fitView(); st2.saveView(false); }
+                 }
++                if (st2 && st2.dirty) st2.renderNow();
+               };
+               var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩', lathe: '🏺', extrude: '⭐' };
+               var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-500 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
+@@ -10832,7 +10983,7 @@ const d = labToolData.artStudio || {};
+                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+                   if (!r) throw new Error('No editable model returned');
+                   if (!recipe) r.name = subj.slice(0, 80);
+-                  setRecipe(r);
++                  setRecipe(r, !recipe);
+                   var context = d.sculptPrintContext || {};
+                   updMany({ sculptSel: 0, sculptPrintContext: Object.assign({}, context, {
+                     aiUse: context.aiUse === 'MOSTLY_AI' ? 'MOSTLY_AI' : 'ASSISTED',
+@@ -10849,9 +11000,8 @@ const d = labToolData.artStudio || {};
+               var doExportPng = function() {
+                 var cnv = _cnvBox.current; if (!cnv || !cnv._p3d) return;
+                 try {
+-                  cnv._p3d.ren.render(cnv._p3d.scene, cnv._p3d.cam);   // synchronous render → valid buffer
+                   var a = document.createElement('a');
+-                  a.href = cnv.toDataURL('image/png');
++                  a.href = cnv._sculptExportCanvas(1600).toDataURL('image/png');
+                   a.download = ((recipe && recipe.name) || 'sculpture').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
+                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_picture_saved', 'Sculpture picture saved.'));
+@@ -10972,7 +11122,7 @@ const d = labToolData.artStudio || {};
+                     var imported = P3D.normalizeRecipe(parsed);
+                     if (!imported || !imported.parts || !imported.parts.length) throw new Error('No valid parts');
+                     upd('sculptSel', 0);
+-                    setRecipe(imported);
++                    setRecipe(imported, true);
+                     if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(imported.parts.length === 1 ? __alloT('stem.artstudio.sr_imported_sculpture_one', 'Imported {value1} with {value2} part.') : __alloT('stem.artstudio.sr_imported_sculpture_many', 'Imported {value1} with {value2} parts.'), { value1: (imported.name || __alloT('stem.artstudio.sr_word_an_editable_sculpture', 'an editable sculpture')), value2: imported.parts.length }));
+                     if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_sculpture_model_imported', 'Sculpture model imported.'), 'success');
+                     finishImport();
+@@ -11021,10 +11171,11 @@ const d = labToolData.artStudio || {};
+                 upd('sculptSel', mirroredIndex);
+                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_created_a_mirrored_copy_of_part_on_the_axis', 'Created a mirrored copy of part {value1} on the {value2} axis.'), { value1: (sel + 1), value2: sculptMirrorAxis.toUpperCase() }));
+               };
+-              return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
++              return React.createElement("div", { 'data-sculpt-workspace': 'true', className: "grid gap-4" },
++                React.createElement('style', null, '[data-sculpt-workspace]{grid-template-columns:minmax(0,1fr)}[data-sculpt-toolbar]{grid-column:1/-1}[data-sculpt-preview],[data-sculpt-controls]{min-width:0;scroll-margin-top:160px}[data-sculpt-workspace] button,[data-sculpt-workspace] select,[data-sculpt-workspace] input{min-height:44px}[data-sculpt-workspace] button{min-width:44px;white-space:normal}[data-sculpt-workspace] #sculptCanvas{display:block;width:100%;max-width:calc(72dvh * 4 / 3);height:auto;aspect-ratio:4/3;margin-inline:auto;scroll-margin-top:160px}[data-sculpt-workspace] button[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:-3px}[data-sculpt-workspace] input{max-width:100%}@media(min-width:1100px){[data-sculpt-workspace]{grid-template-columns:minmax(0,1fr) 320px;align-items:start}[data-sculpt-controls]{max-height:82dvh;overflow:auto;padding:2px 6px 6px 2px}}'),
+                 // preview column
+                 React.createElement('div', { className: 'contents' },
+-                  React.createElement('div', { className: 'md:col-span-2 -mb-2 flex flex-wrap gap-2 items-center' },
++                  React.createElement('div', { 'data-sculpt-toolbar': 'true', className: '-mb-2 flex flex-wrap gap-2 items-center' },
+                     React.createElement('div', { className: 'flex gap-1 flex-1', role: 'group', 'aria-label': __alloT('stem.artstudio.a11y_sculpture_canvas_interaction', 'Sculpture canvas interaction') },
+                       React.createElement('button', { className: mini + ' flex-1', 'aria-label': __alloT('stem.artstudio.a11y_orbit_sculpture_view', 'Orbit sculpture view'), 'aria-pressed': sculptMode === 'orbit', onClick: function() { upd('sculptInteractMode', 'orbit'); } }, '\uD83C\uDF10 Orbit'),
+                       React.createElement('button', { className: mini + ' flex-1', 'aria-label': __alloT('stem.artstudio.a11y_move_sculpture_parts', 'Move sculpture parts'), 'aria-pressed': sculptMode === 'move', disabled: !parts.length, onClick: function() { upd('sculptInteractMode', 'move'); } }, '\u270B Move'),
+@@ -11045,7 +11196,7 @@ const d = labToolData.artStudio || {};
+                     )
+                   )
+                 ),
+-                React.createElement("div", null,
++                React.createElement("div", { 'data-sculpt-preview': 'true' },
+                   renderCanvasTouchMode({
+                     stateKey: 'sculptTouchMode',
+                     activeValue: 'interact',
+@@ -11058,16 +11209,33 @@ const d = labToolData.artStudio || {};
+                   }),
+                   React.createElement("canvas", { id: "sculptCanvas", role: "img", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_sculpture_preview', '3D sculpture preview. {value1}. Auto-rotation {value2}. Position snapping {value3}. Transform constraint {value4}.'), { value1: sculptSummary, value2: (sculptAuto ? __alloT('stem.artstudio.a11y_state_running', 'running') : __alloT('stem.artstudio.a11y_state_paused', 'paused')), value3: (sculptSnap ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_snap_units', '{value1} units'), { value1: sculptSnap }) : __alloT('stem.artstudio.a11y_state_off', 'off')), value4: sculptTransformAxis }),
+                     ref: sculptRef,
+-                    width: 480,
+-                    height: 420,
++                    width: 960,
++                    height: 720,
+                     className: "w-full rounded-xl border border-slate-400 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2 " + (sculptMode === 'move' ? 'cursor-move' : sculptMode === 'rotate' ? 'cursor-grabbing' : sculptMode === 'scale' ? 'cursor-ns-resize' : 'cursor-grab'),
+                     tabIndex: 0,
+                     "aria-describedby": "artstudio-sculpt-touch-help artstudio-sculpt-keyboard-help",
+-                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight PageUp PageDown Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
++                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight PageUp PageDown Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space + - F",
+                     style: { touchAction: d.sculptTouchMode === 'interact' ? 'none' : 'pan-y' },
+                     onDragOver: function(event) { event.preventDefault(); },
+                     onDrop: placeDroppedShape
+                   }),
++                  React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2', role: 'group', 'aria-label': __alloT('stem.artstudio.sculpt_camera_views', 'Camera views') },
++                    [
++                      ['iso', __alloT('stem.artstudio.sculpt_view_iso', 'Perspective')],
++                      ['front', __alloT('stem.artstudio.sculpt_view_front', 'Front')],
++                      ['back', __alloT('stem.artstudio.sculpt_view_back', 'Back')],
++                      ['left', __alloT('stem.artstudio.sculpt_view_left', 'Left side')],
++                      ['right', __alloT('stem.artstudio.sculpt_view_right', 'Right side')],
++                      ['top', __alloT('stem.artstudio.sculpt_view_top', 'Top')]
++                    ].map(function(view) { return React.createElement('button', { key: view[0], className: mini + ' px-3', 'data-sculpt-view': view[0], onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand(view[0]); } }, view[1]); })
++                  ),
++                  React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2', role: 'group', 'aria-label': __alloT('stem.artstudio.sculpt_framing', 'Frame the sculpture') },
++                    React.createElement('button', { className: mini + ' px-3', onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand('fit'); } }, __alloT('stem.artstudio.sculpt_fit', 'Fit sculpture')),
++                    React.createElement('button', { className: mini, 'aria-label': __alloT('stem.artstudio.sculpt_zoom_out', 'Zoom out sculpture view'), onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand('out'); } }, '−'),
++                    React.createElement('button', { className: mini, 'aria-label': __alloT('stem.artstudio.sculpt_zoom_in', 'Zoom in sculpture view'), onClick: function() { var canvas = _cnvBox.current; if (canvas && canvas._p3d) canvas._p3d.viewCommand('in'); } }, '+'),
++                    React.createElement('button', { className: mini + ' px-3', 'aria-pressed': d.sculptGrid !== false, onClick: function() { upd('sculptGrid', d.sculptGrid === false); } }, __alloT('stem.artstudio.sculpt_floor_grid', 'Floor grid'))
++                  ),
++                  React.createElement('p', { className: 'mt-2 text-xs text-slate-600' }, __alloT('stem.artstudio.sculpt_view_help', 'Fit frames every visible part. + and − zoom; F fits; Home restores the perspective view. Camera buttons pause rotation. Pictures export at 1600 px wide.')),
+                   React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[0.6875rem] text-slate-600" }, sculptMode === 'move' ? "Move parts: select and drag a form. Arrow keys move it; Page Up or Page Down changes depth. Choose Free or an X/Y/Z axis constraint and a Snap grid; hold Alt for fine unsnapped movement. Drop a shape button onto the canvas to place it." : sculptMode === 'rotate' ? "Rotate parts: select and drag a form. In Free mode, Arrow keys rotate X or Y and Page Up or Page Down rotates Z; choose an axis to lock every turn to it. Hold Alt for one-degree keyboard turns." : sculptMode === 'scale' ? "Morph parts: select and drag diagonally. Free scales the whole form; choose X, Y, or Z to stretch only that axis. Up, Right, or Page Up grows it; Down, Left, or Page Down shrinks it. Hold Alt for fine scaling." : "Orbit: drag or use Arrow keys to turn the view; Alt makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation."),
+                   React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_3d_preview_actions', '3D preview actions'), "aria-describedby": "artstudio-sculpt-actions-help" },
+                     !recipe ? React.createElement("p", { id: "artstudio-sculpt-actions-help", className: "text-[0.6875rem] text-slate-600", style: { flex: "1 1 100%" } }, __alloT('stem.artstudio.sculpt_actions_need_a_part', 'Model and Print Lab need at least one part in this sculpture. Undo and Redo switch on once you have made a change. Add a shape below to begin.')) : null,
+@@ -11080,8 +11248,8 @@ const d = labToolData.artStudio || {};
+                       onClick: function() {
+                         var nextAuto = !sculptAuto;
+                         var cnv = _cnvBox.current;
+-                        if (cnv && cnv._p3d) { cnv._p3d.auto = nextAuto; cnv.dataset.auto = nextAuto ? '1' : '0'; }
+-                        upd('sculptAuto', nextAuto);
++                        if (cnv && cnv._p3d) { cnv._p3d.auto = nextAuto; cnv.dataset.auto = nextAuto ? '1' : '0'; cnv._p3d.saveView(false); }
++                        else upd('sculptAuto', nextAuto);
+                         if (typeof announceToSR === 'function') announceToSR(nextAuto ? __alloT('stem.artstudio.sr_sculpture_auto_rotation_resumed', 'Sculpture auto-rotation resumed.') : __alloT('stem.artstudio.sr_sculpture_auto_rotation_paused', 'Sculpture auto-rotation paused.'));
+                       }
+                     }, sculptAuto ? '⏸ ' + __alloT('stem.artstudio.pause', 'Pause') : '▶ ' + __alloT('stem.artstudio.resume', 'Resume')),
+@@ -11095,12 +11263,12 @@ const d = labToolData.artStudio || {};
+                   )
+                 ),
+                 // editor column
+-                React.createElement("div", { className: "space-y-2" },
++                React.createElement("div", { 'data-sculpt-controls': 'true', className: "space-y-2" },
+                   React.createElement("h3", { className: "font-black " + (isContrast ? "text-white" : "text-slate-700") + " text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
+                   React.createElement("div", null,
+                     React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[0.6875rem] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
+                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {
+-                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_preset', 'Preset: {value1}'), { value1: ps.label }), onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
++                      return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_preset', 'Preset: {value1}'), { value1: ps.label }), onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id), true); } }, ps.emoji);
+                     }))
+                   ),
+                   React.createElement("div", null,
+@@ -11258,7 +11426,7 @@ const d = labToolData.artStudio || {};
+                     ) : null,
+                     Object.keys(gallery).length ? React.createElement("ul", { className: "space-y-1" }, Object.keys(gallery).map(function(nm) {
+                       return React.createElement("li", { key: nm, className: "flex items-center gap-1 text-xs" },
+-                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm])); }, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load', 'Load {value1}'), { value1: nm })}, nm),
++                        React.createElement("button", { className: "flex-1 text-left min-h-[40px] px-2 rounded-lg border border-slate-200 hover:bg-pink-50 font-bold text-slate-700", onClick: function() { upd('sculptSel', 0); setRecipe(P3D.normalizeRecipe(gallery[nm]), true); }, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load', 'Load {value1}'), { value1: nm })}, nm),
+                         React.createElement("button", { className: mini, "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_delete', 'Delete {value1}'), { value1: nm }), onClick: function() { var g2 = Object.assign({}, gallery); delete g2[nm]; upd('sculptGallery', g2); } }, '✕')
+                       );
+                     })) : React.createElement("p", { className: "text-[0.6875rem] text-slate-600" }, __alloT('stem.artstudio.sculpt_gallery_empty', 'Saved sculptures appear here.'))

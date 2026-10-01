@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-27",
+  "focusedTestFiles": 9,
+  "focusedTestsPassed": 120,
+  "browserScenariosPassed": 12,
+  "browserSuites": {
+    "microbiology-review-notebooks": 4,
+    "microbiology-deeper-inquiry": 4,
+    "microbiology-investigation": 4
+  },
+  "viewportWidthsReviewed": [320, 390, 1000, 1280],
+  "printMediaReviewed": true,
+  "runtimeCopiesMatch": true,
+  "runtimeSha256": "D8706EA7905D791039547DEC2E0B67D2A6FA9328FBB150702E81133B1E10A7F5",
+  "scopedWhitespaceCheckPassed": true,
+  "repositoryWideSuiteRun": false,
+  "deployed": false
+}

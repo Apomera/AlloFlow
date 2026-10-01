@@ -1,0 +1,11 @@
+
+╔══════════════════════════════════════════════════════════════════════╗
+║   AlloFlow Deploy Mirror Sync Check                                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+  Files checked: 8227
+  Matched:       8227
+  Drifted:       0
+  Excluded:      4 (allowed to differ)
+
+  ✅ All 8227 mirrored files match root.
+

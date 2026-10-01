@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-solar.spec.ts:37:5 › solar layers, surface features and the comparison preserve photospheric diameter (14.7s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-solar.spec.ts:63:5 › inspection travels while ambience is paused and yields to manual orbit (15.6s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-solar.spec.ts:88:5 › phone keyboard inspection, occlusion and notebook restore the solar interior (6.5s)
+
+  3 passed (1.2m)

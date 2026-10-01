@@ -17,6 +17,22 @@ window.SelHub = window.SelHub || {
 
 if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 (function() {
+
+  // Translation: __alloT reads the ctx that render() stores in _ctx, or the
+  // hub-published t for helpers that run outside render. Text tables are
+  // rebuilt at the top of each render, so a language switch applies at once.
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function') ? _ctx.t : ((window.SelHub && typeof window.SelHub.t === 'function') ? window.SelHub.t : null);
+    var v = null;
+    if (fn) { try { v = fn(key); } catch (e) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : fallback;
+  };
+  var _selFill = function (text, params) {
+    var s = String(text == null ? '' : text);
+    Object.keys(params || {}).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); });
+    return s;
+  };
   'use strict';
 
   (function() {
@@ -31,80 +47,81 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
     document.body.appendChild(liveRegion);
   })();
 
-  var SKILLS = [
+  function _selBuild_SKILLS() { return [
     {
       id: 'temperature',
       letter: 'T',
-      label: 'Temperature',
+      label: __alloT('sel.tipp.skills.temperature.label', 'Temperature'),
       icon: '❄️',
       color: '#0ea5e9',
       duration: 30,                  // seconds for a single round
-      headline: 'Cold water on your face',
+      headline: __alloT('sel.tipp.skills.temperature.headline', 'Cold water on your face'),
       steps: [
-        'Fill a bowl with cold water (with ice if you have it).',
-        'Hold your breath.',
-        'Lean over and submerge your face from above the eyebrows to below the cheekbones, for 15-30 seconds. (If you cannot submerge, hold a cold pack or wet washcloth over your eyes and upper cheeks instead.)',
-        'Come up and breathe normally.',
-        'Repeat once if needed.'
+        __alloT('sel.tipp.skills.temperature.steps.0', 'Fill a bowl with cold water (with ice if you have it).'),
+        __alloT('sel.tipp.skills.temperature.steps.1', 'Hold your breath.'),
+        __alloT('sel.tipp.skills.temperature.steps.2', 'Lean over and submerge your face from above the eyebrows to below the cheekbones, for 15-30 seconds. (If you cannot submerge, hold a cold pack or wet washcloth over your eyes and upper cheeks instead.)'),
+        __alloT('sel.tipp.skills.temperature.steps.3', 'Come up and breathe normally.'),
+        __alloT('sel.tipp.skills.temperature.steps.4', 'Repeat once if needed.')
       ],
-      why: 'Cold on the face triggers the mammalian dive reflex: heart rate slows, blood shifts away from extremities, and the parasympathetic system activates. It works in seconds. This is the single fastest physiological way to interrupt extreme distress.',
-      caution: 'AVOID if you have a heart condition, eating disorder, or any condition where slowing the heart rate could be dangerous. If unsure, ask a doctor or school nurse first. Water should be cold (~10-15°C or 50-60°F), not ice-cold.'
+      why: __alloT('sel.tipp.skills.temperature.why', 'Cold on the face triggers the mammalian dive reflex: heart rate slows, blood shifts away from extremities, and the parasympathetic system activates. It works in seconds. This is the single fastest physiological way to interrupt extreme distress.'),
+      caution: __alloT('sel.tipp.skills.temperature.caution', 'AVOID if you have a heart condition, eating disorder, or any condition where slowing the heart rate could be dangerous. If unsure, ask a doctor or school nurse first. Water should be cold (~10-15°C or 50-60°F), not ice-cold.')
     },
     {
       id: 'intense',
       letter: 'I',
-      label: 'Intense exercise',
+      label: __alloT('sel.tipp.skills.intense.label', 'Intense exercise'),
       icon: '🏃',
       color: '#ef4444',
       duration: 600,
-      headline: 'Burn off the activation',
+      headline: __alloT('sel.tipp.skills.intense.headline', 'Burn off the activation'),
       steps: [
-        'For 5 to 10 minutes, do something physically intense.',
-        'Options: sprint, jumping jacks, burpees, running stairs, push-ups to exhaustion, fast jump rope, hard dance.',
-        'You want to actually be out of breath and feel your heart rate climb.',
-        'Then slow down to a walk and let your body settle.'
+        __alloT('sel.tipp.skills.intense.steps.0', 'For 5 to 10 minutes, do something physically intense.'),
+        __alloT('sel.tipp.skills.intense.steps.1', 'Options: sprint, jumping jacks, burpees, running stairs, push-ups to exhaustion, fast jump rope, hard dance.'),
+        __alloT('sel.tipp.skills.intense.steps.2', 'You want to actually be out of breath and feel your heart rate climb.'),
+        __alloT('sel.tipp.skills.intense.steps.3', 'Then slow down to a walk and let your body settle.')
       ],
-      why: 'When you are hyperaroused (fight or flight), your body is flooded with stress hormones meant to be used. Intense exercise burns through the adrenaline and gives the body the "I did the thing" signal. Sitting still while hyperaroused keeps the engine revving.',
-      caution: 'If you have a medical condition that limits exercise (cardiac, asthma, recent injury), use lower-intensity movement or pick a different TIPP skill. Do not do intense exercise to the point of injury.'
+      why: __alloT('sel.tipp.skills.intense.why', 'When you are hyperaroused (fight or flight), your body is flooded with stress hormones meant to be used. Intense exercise burns through the adrenaline and gives the body the "I did the thing" signal. Sitting still while hyperaroused keeps the engine revving.'),
+      caution: __alloT('sel.tipp.skills.intense.caution', 'If you have a medical condition that limits exercise (cardiac, asthma, recent injury), use lower-intensity movement or pick a different TIPP skill. Do not do intense exercise to the point of injury.')
     },
     {
       id: 'paced',
       letter: 'P',
-      label: 'Paced breathing',
+      label: __alloT('sel.tipp.skills.paced.label', 'Paced breathing'),
       icon: '🫁',
       color: '#22c55e',
       duration: 120,
-      headline: 'Exhale longer than you inhale',
+      headline: __alloT('sel.tipp.skills.paced.headline', 'Exhale longer than you inhale'),
       steps: [
-        'Sit or lie down comfortably.',
-        'Breathe in through your nose for a count of 4.',
-        'Breathe out slowly through your mouth for a count of 6 to 8 (longer than your inhale).',
-        'Keep this rhythm for 1 to 2 minutes.',
-        'No need to push or strain; the LENGTHENED EXHALE is the active ingredient.'
+        __alloT('sel.tipp.skills.paced.steps.0', 'Sit or lie down comfortably.'),
+        __alloT('sel.tipp.skills.paced.steps.1', 'Breathe in through your nose for a count of 4.'),
+        __alloT('sel.tipp.skills.paced.steps.2', 'Breathe out slowly through your mouth for a count of 6 to 8 (longer than your inhale).'),
+        __alloT('sel.tipp.skills.paced.steps.3', 'Keep this rhythm for 1 to 2 minutes.'),
+        __alloT('sel.tipp.skills.paced.steps.4', 'No need to push or strain; the LENGTHENED EXHALE is the active ingredient.')
       ],
-      why: 'A longer exhale than inhale shifts the autonomic nervous system toward parasympathetic dominance ("rest and digest"). Studies of paced breathing find measurable drops in heart rate variability stress markers within 90 seconds. The point is not relaxation; it is biology.',
-      caution: 'If breathing slowly makes you feel MORE anxious (which happens for some people with panic disorder or trauma), try a different TIPP skill. Do not force it.'
+      why: __alloT('sel.tipp.skills.paced.why', 'A longer exhale than inhale shifts the autonomic nervous system toward parasympathetic dominance ("rest and digest"). Studies of paced breathing find measurable drops in heart rate variability stress markers within 90 seconds. The point is not relaxation; it is biology.'),
+      caution: __alloT('sel.tipp.skills.paced.caution', 'If breathing slowly makes you feel MORE anxious (which happens for some people with panic disorder or trauma), try a different TIPP skill. Do not force it.')
     },
     {
       id: 'paired',
       letter: 'P',
-      label: 'Paired muscle relaxation',
+      label: __alloT('sel.tipp.skills.paired.label', 'Paired muscle relaxation'),
       icon: '💪',
       color: '#a855f7',
       duration: 300,
-      headline: 'Tense, then release, muscle by muscle',
+      headline: __alloT('sel.tipp.skills.paired.headline', 'Tense, then release, muscle by muscle'),
       steps: [
-        'Sit or lie down. Breathe in slowly.',
-        'On the inhale, tense one muscle group hard (clench your fists, scrunch your shoulders, tighten your face).',
-        'Hold the tension for 5 seconds.',
-        'On the exhale, release the tension completely. Notice the difference between tense and released.',
-        'Move through the body: hands, arms, shoulders, face, neck, chest, belly, legs, feet.',
-        'Whole thing takes about 5 minutes.'
+        __alloT('sel.tipp.skills.paired.steps.0', 'Sit or lie down. Breathe in slowly.'),
+        __alloT('sel.tipp.skills.paired.steps.1', 'On the inhale, tense one muscle group hard (clench your fists, scrunch your shoulders, tighten your face).'),
+        __alloT('sel.tipp.skills.paired.steps.2', 'Hold the tension for 5 seconds.'),
+        __alloT('sel.tipp.skills.paired.steps.3', 'On the exhale, release the tension completely. Notice the difference between tense and released.'),
+        __alloT('sel.tipp.skills.paired.steps.4', 'Move through the body: hands, arms, shoulders, face, neck, chest, belly, legs, feet.'),
+        __alloT('sel.tipp.skills.paired.steps.5', 'Whole thing takes about 5 minutes.')
       ],
-      why: 'Tensing a muscle to its max and then releasing produces deeper relaxation than just trying to relax (research from Jacobson on Progressive Muscle Relaxation, formalized in the 1930s). Pairing each release with an exhale stacks the two effects.',
-      caution: 'If you have an injury, pain syndrome, or hypermobility, skip the muscle groups that hurt. The tension should be hard but never painful.'
+      why: __alloT('sel.tipp.skills.paired.why', 'Tensing a muscle to its max and then releasing produces deeper relaxation than just trying to relax (research from Jacobson on Progressive Muscle Relaxation, formalized in the 1930s). Pairing each release with an exhale stacks the two effects.'),
+      caution: __alloT('sel.tipp.skills.paired.caution', 'If you have an injury, pain syndrome, or hypermobility, skip the muscle groups that hurt. The tension should be hard but never painful.')
     }
-  ];
+  ]; }
+  var SKILLS = _selBuild_SKILLS();
 
   function defaultState() {
     return {
@@ -125,11 +142,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
   window.SelHub.registerTool('tipp', {
     icon: '🆘',
-    label: 'TIPP',
-    desc: 'Four DBT crisis-survival skills (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) for acute distress. Designed to down-regulate the body in 30 seconds to 10 minutes BEFORE you try to think your way out. Foundational DBT Distress Tolerance skill from Linehan.',
+    label: __alloT('sel.tipp.ui.tipp', 'TIPP'),
+    desc: __alloT('sel.tipp.ui.four_dbt_crisis_survival_skills_temperature', 'Four DBT crisis-survival skills (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) for acute distress. Designed to down-regulate the body in 30 seconds to 10 minutes BEFORE you try to think your way out. Foundational DBT Distress Tolerance skill from Linehan.'),
     color: 'red',
     category: 'self-regulation',
     render: function(ctx) {
+      _ctx = ctx; SKILLS = _selBuild_SKILLS();
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _tpT = (ctx && ctx.theme) || {};
       var _tpHC = !!_tpT.isContrast, _tpL = !_tpHC && !_tpT.isDark;
@@ -165,11 +183,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _tpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': __alloT('sel.tipp.ui.back_to_sel_hub', 'Back to SEL Hub'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _tpFg('#cbd5e1'), fontSize: 14 } }, __alloT('sel.tipp.ui.back', '← Back')),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: _tpFg('#fca5a5'), fontSize: 22, fontWeight: 900 } }, '🆘 TIPP'),
-            h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Four DBT crisis-survival skills for acute distress. Do, then think.')
+            h('h2', { style: { margin: 0, color: _tpFg('#fca5a5'), fontSize: 22, fontWeight: 900 } }, __alloT('sel.tipp.ui.tipp_2', '🆘 TIPP')),
+            h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, __alloT('sel.tipp.ui.four_dbt_crisis_survival_skills_for', 'Four DBT crisis-survival skills for acute distress. Do, then think.'))
           )
         );
       }
@@ -178,12 +196,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
       function navTabs() {
         var tabs = [
-          { id: 'home', label: 'I need this now', icon: '🆘' },
-          { id: 'log', label: 'My log', icon: '📋' },
-          { id: 'print', label: 'Pocket card', icon: '🖨' },
-          { id: 'about', label: 'About', icon: 'ℹ' }
+          { id: 'home', label: __alloT('sel.tipp.tabs.home.label', 'I need this now'), icon: '🆘' },
+          { id: 'log', label: __alloT('sel.tipp.tabs.log.label', 'My log'), icon: '📋' },
+          { id: 'print', label: __alloT('sel.tipp.tabs.print.label', 'Pocket card'), icon: '🖨' },
+          { id: 'about', label: __alloT('sel.tipp.tabs.about.label', 'About'), icon: 'ℹ' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': 'TIPP sections',
+        return h('div', { role: 'tablist', 'aria-label': __alloT('sel.tipp.ui.tipp_sections', 'TIPP sections'),
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
@@ -199,8 +217,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
       function safetyBanner() {
         return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _tpFg('#fecaca'), lineHeight: 1.65 } },
-          h('strong', null, '🆘 TIPP is for ACUTE distress, not everyday stress. '),
-          'If you are in crisis right now (thinking about hurting yourself, in immediate danger), please use Crisis Companion in this SEL Hub or call 988 (Suicide and Crisis Lifeline) or text HOME to 741741 (Crisis Text Line). TIPP can buy you the next 5 minutes; a human can be with you for longer.'
+          h('strong', null, __alloT('sel.tipp.ui.tipp_is_for_acute_distress_not', '🆘 TIPP is for ACUTE distress, not everyday stress. ')),
+          __alloT('sel.tipp.ui.if_you_are_in_crisis_right', 'If you are in crisis right now (thinking about hurting yourself, in immediate danger), please use Crisis Companion in this SEL Hub or call 988 (Suicide and Crisis Lifeline) or text HOME to 741741 (Crisis Text Line). TIPP can buy you the next 5 minutes; a human can be with you for longer.')
         );
       }
 
@@ -208,7 +226,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         return h('div', {
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'TIPP is a real DBT skill but it is not therapy. If you find yourself reaching for TIPP often, that is information; bring it to a counselor or school psych.'
+          __alloT('sel.tipp.ui.tipp_is_a_real_dbt_skill', 'TIPP is a real DBT skill but it is not therapy. If you find yourself reaching for TIPP often, that is information; bring it to a counselor or school psych.')
         );
       }
 
@@ -216,33 +234,33 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         var log = (Array.isArray(d.log) ? d.log : []);
         var helped = log.filter(function(e) { return e.helped; }).length;
         var routes = [
-          { signal: 'Too hot or impulsive', skill: 'temperature', fit: 'Fastest reset' },
-          { signal: 'Adrenaline is high', skill: 'intense', fit: 'Use the body' },
-          { signal: 'Breath can lead', skill: 'paced', fit: 'Quietest option' },
-          { signal: 'Clenched or tense', skill: 'paired', fit: 'Release tension' }
+          { signal: __alloT('sel.tipp.routes.0.signal', 'Too hot or impulsive'), skill: 'temperature', fit: __alloT('sel.tipp.routes.0.fit', 'Fastest reset') },
+          { signal: __alloT('sel.tipp.routes.1.signal', 'Adrenaline is high'), skill: 'intense', fit: __alloT('sel.tipp.routes.1.fit', 'Use the body') },
+          { signal: __alloT('sel.tipp.routes.2.signal', 'Breath can lead'), skill: 'paced', fit: __alloT('sel.tipp.routes.2.fit', 'Quietest option') },
+          { signal: __alloT('sel.tipp.routes.3.signal', 'Clenched or tense'), skill: 'paired', fit: __alloT('sel.tipp.routes.3.fit', 'Release tension') }
         ];
-        return h('section', { 'aria-label': 'TIPP quick chooser',
+        return h('section', { 'aria-label': __alloT('sel.tipp.ui.tipp_quick_chooser', 'TIPP quick chooser'),
           style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(239,68,68,0.34)', marginBottom: 14 } },
           h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('div', { style: { fontSize: 12, color: _tpFg('#fca5a5'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Body-first chooser'),
-              h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), lineHeight: 1.55 } }, 'Match the skill to the signal your body is giving right now.')
+              h('div', { style: { fontSize: 12, color: _tpFg('#fca5a5'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, __alloT('sel.tipp.ui.body_first_chooser', 'Body-first chooser')),
+              h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), lineHeight: 1.55 } }, __alloT('sel.tipp.ui.match_the_skill_to_the_signal', 'Match the skill to the signal your body is giving right now.'))
             ),
             h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #334155', color: _tpFg('#cbd5e1'), fontSize: 12, fontWeight: 800 } },
-              log.length ? helped + '/' + log.length + ' helped' : 'No sessions logged'
+              log.length ? _selFill(__alloT('sel.tipp.ui.helped_logcount_helped', '{helped}/{logCount} helped'), { helped: helped, logCount: log.length }) : __alloT('sel.tipp.ui.no_sessions_logged', 'No sessions logged')
             )
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
             routes.map(function(route) {
               var skill = SKILLS.find(function(s) { return s.id === route.skill; });
               return h('button', { key: route.skill, onClick: function() { if (skill) setTIPP({ activeSkill: skill.id, timerSeconds: 0 }); },
-                'aria-label': skill ? 'Start ' + skill.label : route.signal,
+                'aria-label': skill ? _selFill(__alloT('sel.tipp.ui.start_label', 'Start {label}'), { label: skill.label }) : route.signal,
                 style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '1px solid ' + (skill ? skill.color : '#334155'), background: skill ? skill.color + '16' : _tpBg('#1e293b'), color: _tpFg('#e2e8f0'), cursor: 'pointer', minHeight: 104 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 20 } }, skill ? skill.icon : '+'),
                   h('div', { style: { fontSize: 12, color: skill ? _tpFg(skill.color) : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
                 ),
-                h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 800, marginBottom: 3 } }, skill ? skill.label : 'Choose'),
+                h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 800, marginBottom: 3 } }, skill ? skill.label : __alloT('sel.tipp.ui.choose', 'Choose')),
                 h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.45 } }, route.fit)
               );
             })
@@ -261,9 +279,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           tippCommandPanel(),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(239,68,68,0.4)', marginBottom: 14, textAlign: 'center' } },
             h('div', { style: { fontSize: 38, marginBottom: 4 } }, '🆘'),
-            h('h3', { style: { margin: '0 0 6px', color: _tpFg('#fecaca'), fontSize: 18 } }, 'Pick one. Do it. Notice if the dial moves.'),
+            h('h3', { style: { margin: '0 0 6px', color: _tpFg('#fecaca'), fontSize: 18 } }, __alloT('sel.tipp.ui.pick_one_do_it_notice_if', 'Pick one. Do it. Notice if the dial moves.')),
             h('p', { style: { margin: 0, color: _tpFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
-              'You do not need to do all four. Pick the one that fits where you are right now. TIPP is FAST: 30 seconds to 10 minutes.'
+              __alloT('sel.tipp.ui.you_do_not_need_to_do', 'You do not need to do all four. Pick the one that fits where you are right now. TIPP is FAST: 30 seconds to 10 minutes.')
             )
           ),
 
@@ -271,7 +289,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 14 } },
             SKILLS.map(function(s) {
               return h('button', { key: s.id, onClick: function() { setTIPP({ activeSkill: s.id, timerSeconds: 0 }); },
-                'aria-label': 'Start ' + s.label,
+                'aria-label': _selFill(__alloT('sel.tipp.ui.start_label', 'Start {label}'), { label: s.label }),
                 style: { textAlign: 'left', padding: 14, borderRadius: 12, border: '2px solid ' + s.color, background: s.color + '14', cursor: 'pointer', color: _tpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('span', { style: { fontSize: 28 } }, s.icon),
@@ -282,7 +300,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
                 ),
                 h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 600, marginBottom: 6 } }, s.headline),
                 h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.5 } },
-                  s.duration < 60 ? '~' + s.duration + ' seconds' : '~' + Math.round(s.duration / 60) + ' min')
+                  s.duration < 60 ? _selFill(__alloT('sel.tipp.ui.duration_seconds', '~{duration} seconds'), { duration: s.duration }) : _selFill(__alloT('sel.tipp.ui.duration_min', '~{duration} min'), { duration: Math.round(s.duration / 60) }))
               );
             })
           ),
@@ -301,8 +319,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         function done(helped) {
           var entry = { date: todayISO(), skill: s.id, helped: !!helped };
           setTIPP({ activeSkill: null, timerSeconds: 0, log: ((Array.isArray(d.log) ? d.log : [])).concat([entry]) });
-          if (addToast) addToast(helped ? 'Logged — glad it helped.' : 'Logged — try a different TIPP next time.', 'info');
-          if (announceToSR) announceToSR('TIPP session logged.');
+          if (addToast) addToast(helped ? __alloT('sel.tipp.ui.logged_glad_it_helped', 'Logged — glad it helped.') : __alloT('sel.tipp.ui.logged_try_a_different_tipp_next', 'Logged — try a different TIPP next time.'), 'info');
+          if (announceToSR) announceToSR(__alloT('sel.tipp.ui.tipp_session_logged', 'TIPP session logged.'));
         }
 
         function exit() { setTIPP({ activeSkill: null, timerSeconds: 0 }); }
@@ -312,7 +330,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 48 } }, s.icon),
               h('div', { style: { flex: 1, minWidth: 180 } },
-                h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Active · ' + s.letter),
+                h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, _selFill(__alloT('sel.tipp.ui.active_letter', 'Active · {letter}'), { letter: s.letter })),
                 h('h3', { style: { margin: '2px 0 0', color: _tpFg(s.color), fontSize: 22, fontWeight: 900 } }, s.label),
                 h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), marginTop: 4 } }, s.headline)
               )
@@ -320,7 +338,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
             // Steps
             h('div', { style: { padding: 14, borderRadius: 10, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
-              h('div', { style: { fontSize: 12, color: _tpFg(s.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'Steps'),
+              h('div', { style: { fontSize: 12, color: _tpFg(s.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, __alloT('sel.tipp.ui.steps', 'Steps')),
               h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: _tpFg('#e2e8f0'), fontSize: 14, lineHeight: 1.7 } },
                 s.steps.map(function(step, i) { return h('li', { key: i, style: { marginBottom: 6 } }, step); })
               )
@@ -328,22 +346,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
             // Why it works
             h('details', { style: { padding: 10, borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 8 } },
-              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _tpFg('#94a3b8'), fontWeight: 700 } }, '🧠 Why this works'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _tpFg('#94a3b8'), fontWeight: 700 } }, __alloT('sel.tipp.ui.why_this_works', '🧠 Why this works')),
               h('p', { style: { margin: '8px 0 0', color: _tpFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } }, s.why)
             ),
 
             // Caution
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 11.5, color: _tpFg('#fde68a'), lineHeight: 1.6, marginBottom: 12 } },
-              h('strong', null, '⚖️ Caution: '), s.caution
+              h('strong', null, __alloT('sel.tipp.ui.caution', '⚖️ Caution: ')), s.caution
             ),
 
             // Done buttons
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { done(true); }, style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _tpBg('#15803d'), color: _tpFg('#fff'), fontWeight: 800, fontSize: 14 } }, '✓ Done. That helped.'),
-              h('button', { onClick: function() { done(false); }, 'aria-label': 'Done. Try a different one.',
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _tpFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '⤴ Try a different one'),
-              h('button', { onClick: exit, 'aria-label': 'Exit without logging',
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #475569', background: _tpBg('#1e293b'), color: _tpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, 'Exit')
+              h('button', { onClick: function() { done(true); }, style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _tpBg('#15803d'), color: _tpFg('#fff'), fontWeight: 800, fontSize: 14 } }, __alloT('sel.tipp.ui.done_that_helped', '✓ Done. That helped.')),
+              h('button', { onClick: function() { done(false); }, 'aria-label': __alloT('sel.tipp.ui.done_try_a_different_one', 'Done. Try a different one.'),
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _tpFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, __alloT('sel.tipp.ui.try_a_different_one', '⤴ Try a different one')),
+              h('button', { onClick: exit, 'aria-label': __alloT('sel.tipp.ui.exit_without_logging', 'Exit without logging'),
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #475569', background: _tpBg('#1e293b'), color: _tpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, __alloT('sel.tipp.ui.exit', 'Exit'))
             )
           ),
 
@@ -364,8 +382,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _tpBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📋'),
-              h('div', { style: { color: _tpFg('#cbd5e1'), fontSize: 14 } }, 'No TIPP sessions logged yet.'),
-              h('div', { style: { color: _tpFg('#94a3b8'), fontSize: 12, marginTop: 4 } }, 'After you do a TIPP skill, log it to learn which ones work for you.')
+              h('div', { style: { color: _tpFg('#cbd5e1'), fontSize: 14 } }, __alloT('sel.tipp.ui.no_tipp_sessions_logged_yet', 'No TIPP sessions logged yet.')),
+              h('div', { style: { color: _tpFg('#94a3b8'), fontSize: 12, marginTop: 4 } }, __alloT('sel.tipp.ui.after_you_do_a_tipp_skill', 'After you do a TIPP skill, log it to learn which ones work for you.'))
             )
           );
         }
@@ -373,17 +391,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         return h('div', null,
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
             h('div', { style: { padding: 10, borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Total sessions'),
+              h('div', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('sel.tipp.ui.total_sessions', 'Total sessions')),
               h('div', { style: { fontSize: 22, color: _tpFg('#fca5a5'), fontWeight: 900 } }, log.length)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Helped'),
+              h('div', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('sel.tipp.ui.helped', 'Helped')),
               h('div', { style: { fontSize: 22, color: _tpFg('#22c55e'), fontWeight: 900 } }, helpedCount + '/' + log.length)
             )
           ),
 
           h('div', { style: { padding: 10, borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'By skill'),
+            h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, __alloT('sel.tipp.ui.by_skill', 'By skill')),
             SKILLS.map(function(s) {
               var c = counts[s.id] || 0;
               return h('div', { key: s.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' } },
@@ -394,14 +412,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             })
           ),
 
-          h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Recent sessions'),
+          h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, __alloT('sel.tipp.ui.recent_sessions', 'Recent sessions')),
           log.slice(0, 20).map(function(e, i) {
             var s = SKILLS.find(function(x) { return x.id === e.skill; });
             return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _tpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + (s ? s.color : '#64748b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
               h('span', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 75 } }, e.date),
               h('span', { style: { fontSize: 18 } }, s ? s.icon : '?'),
-              h('span', { style: { flex: 1, fontSize: 13, color: _tpFg('#e2e8f0') } }, s ? s.label : '(unknown)'),
-              h('span', { style: { fontSize: 11, color: e.helped ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? '✓ helped' : '⤴ tried another')
+              h('span', { style: { flex: 1, fontSize: 13, color: _tpFg('#e2e8f0') } }, s ? s.label : __alloT('sel.tipp.ui.unknown', '(unknown)')),
+              h('span', { style: { fontSize: 11, color: e.helped ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? __alloT('sel.tipp.ui.helped_2', '✓ helped') : __alloT('sel.tipp.ui.tried_another', '⤴ tried another'))
             );
           })
         );
@@ -416,52 +434,52 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
           // Strong safety frame at top
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', color: _tpFg('#fca5a5'), fontSize: 16 } }, '🆘 Read this first'),
+            h('h3', { style: { margin: '0 0 8px', color: _tpFg('#fca5a5'), fontSize: 16 } }, __alloT('sel.tipp.ui.read_this_first', '🆘 Read this first')),
             h('p', { style: { margin: 0, color: _tpFg('#fecaca'), fontSize: 13.5, lineHeight: 1.7 } },
-              'TIPP is for ACUTE distress: the moment you are about to do something you will regret, or feel like you cannot tolerate the next 5 minutes. It is NOT for everyday stress, low mood, or anxious thoughts. TIPP is fast, it is physical, and it is meant to buy you the next minutes so that talking, reflecting, or asking for help becomes possible again. If you are in crisis, please use Crisis Companion or call 988 / text HOME to 741741.'
+              __alloT('sel.tipp.ui.tipp_is_for_acute_distress_the', 'TIPP is for ACUTE distress: the moment you are about to do something you will regret, or feel like you cannot tolerate the next 5 minutes. It is NOT for everyday stress, low mood, or anxious thoughts. TIPP is fast, it is physical, and it is meant to buy you the next minutes so that talking, reflecting, or asking for help becomes possible again. If you are in crisis, please use Crisis Companion or call 988 / text HOME to 741741.')
             )
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fca5a5'), fontSize: 16 } }, 'What TIPP is'),
+            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fca5a5'), fontSize: 16 } }, __alloT('sel.tipp.ui.what_tipp_is', 'What TIPP is')),
             h('p', { style: { margin: '0 0 10px', color: _tpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
-              'TIPP is a set of four DBT crisis-survival skills that work directly on the body before they work on the mind. The idea is that when you are hyperaroused (heart racing, mind racing, ready to act on impulse), trying to "think your way out" rarely works because the thinking brain is offline. The body has to come back first.'
+              __alloT('sel.tipp.ui.tipp_is_a_set_of_four', 'TIPP is a set of four DBT crisis-survival skills that work directly on the body before they work on the mind. The idea is that when you are hyperaroused (heart racing, mind racing, ready to act on impulse), trying to "think your way out" rarely works because the thinking brain is offline. The body has to come back first.')
             ),
             h('p', { style: { margin: 0, color: _tpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
-              'Each TIPP skill uses a physiological mechanism that interrupts the stress response: cold on the face triggers the dive reflex, intense exercise burns adrenaline, paced breathing shifts the autonomic balance, and paired muscle relaxation produces post-tension release. They work in 30 seconds to 10 minutes, not in days.'
+              __alloT('sel.tipp.ui.each_tipp_skill_uses_a_physiological', 'Each TIPP skill uses a physiological mechanism that interrupts the stress response: cold on the face triggers the dive reflex, intense exercise burns adrenaline, paced breathing shifts the autonomic balance, and paired muscle relaxation produces post-tension release. They work in 30 seconds to 10 minutes, not in days.')
             )
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fca5a5'), fontSize: 16 } }, 'Where TIPP comes from'),
+            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fca5a5'), fontSize: 16 } }, __alloT('sel.tipp.ui.where_tipp_comes_from', 'Where TIPP comes from')),
             h('p', { style: { margin: 0, color: _tpFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'TIPP is part of the Distress Tolerance module of Dialectical Behavior Therapy (DBT), developed by Marsha Linehan starting in the 1980s. Linehan developed DBT for people who experience emotion intensely and reactively, originally for chronically suicidal patients with borderline personality disorder. The Distress Tolerance skills are designed for "crisis survival" moments where the goal is just to not make things worse for the next few minutes. TIPP is now taught widely in pediatric mental health, trauma-informed schools, and outpatient DBT skills groups.'
+              __alloT('sel.tipp.ui.tipp_is_part_of_the_distress', 'TIPP is part of the Distress Tolerance module of Dialectical Behavior Therapy (DBT), developed by Marsha Linehan starting in the 1980s. Linehan developed DBT for people who experience emotion intensely and reactively, originally for chronically suicidal patients with borderline personality disorder. The Distress Tolerance skills are designed for "crisis survival" moments where the goal is just to not make things worse for the next few minutes. TIPP is now taught widely in pediatric mental health, trauma-informed schools, and outpatient DBT skills groups.')
             )
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _tpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fca5a5'), fontSize: 16 } }, '📚 Sources and learn more'),
-            h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for TIPP and DBT.'),
-            sourceCard('Linehan, M. M. (2014)', 'DBT Skills Training Manual (2nd ed.), Guilford Press', 'The standard manual; TIPP is in the Distress Tolerance module.', null),
-            sourceCard('Linehan, M. M. (2014)', 'DBT Skills Training Handouts and Worksheets (2nd ed.), Guilford Press', 'Practical worksheets including TIPP handouts.', null),
-            sourceCard('Behavioral Tech', 'behavioraltech.org', 'Linehan-founded organization for DBT training and certification.', 'https://behavioraltech.org/'),
-            sourceCard('DBT Self Help', 'dbtselfhelp.com', 'Free open educational resource; covers TIPP and other Distress Tolerance skills.', 'https://dbtselfhelp.com/')
+            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fca5a5'), fontSize: 16 } }, __alloT('sel.tipp.ui.sources_and_learn_more', '📚 Sources and learn more')),
+            h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, __alloT('sel.tipp.ui.authoritative_resources_for_tipp_and_dbt', 'Authoritative resources for TIPP and DBT.')),
+            sourceCard(__alloT('sel.tipp.ui.linehan_m_m_2014', 'Linehan, M. M. (2014)'), 'DBT Skills Training Manual (2nd ed.), Guilford Press', __alloT('sel.tipp.ui.the_standard_manual_tipp_is_in', 'The standard manual; TIPP is in the Distress Tolerance module.'), null),
+            sourceCard(__alloT('sel.tipp.ui.linehan_m_m_2014', 'Linehan, M. M. (2014)'), 'DBT Skills Training Handouts and Worksheets (2nd ed.), Guilford Press', __alloT('sel.tipp.ui.practical_worksheets_including_tipp_handouts', 'Practical worksheets including TIPP handouts.'), null),
+            sourceCard(__alloT('sel.tipp.ui.behavioral_tech', 'Behavioral Tech'), 'behavioraltech.org', __alloT('sel.tipp.ui.linehan_founded_organization_for_dbt_training', 'Linehan-founded organization for DBT training and certification.'), 'https://behavioraltech.org/'),
+            sourceCard(__alloT('sel.tipp.ui.dbt_self_help', 'DBT Self Help'), 'dbtselfhelp.com', __alloT('sel.tipp.ui.free_open_educational_resource_covers_tipp', 'Free open educational resource; covers TIPP and other Distress Tolerance skills.'), 'https://dbtselfhelp.com/')
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('h3', { style: { margin: '0 0 10px', color: _tpFg('#fcd34d'), fontSize: 15 } }, __alloT('sel.tipp.ui.honest_limits', '⚖️ Honest limits')),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _tpFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
-              h('li', null, 'TIPP is a survival skill, not a fix. It helps you get through the next 5 minutes; it does not address why you are in distress.'),
-              h('li', null, 'If you find yourself reaching for TIPP daily, that is a sign that something larger is happening in your life that deserves a counselor or therapist on it with you.'),
-              h('li', null, 'TIPP works on hyperarousal (too activated). It does NOT work on hypoarousal (shut down, numb, dissociated); for that, a different DBT skill (Self-Soothe, ACCEPTS) or simply human connection is more useful.'),
-              h('li', null, 'The cautions on each skill are real. Temperature is contraindicated for heart conditions and some eating disorders; intense exercise is contraindicated for some medical conditions; pace your way out if a skill feels wrong.'),
-              h('li', null, 'TIPP is best LEARNED in a non-crisis moment so the skills are practiced before you need them. Doing them once during a calm period is the best preparation.')
+              h('li', null, __alloT('sel.tipp.ui.tipp_is_a_survival_skill_not', 'TIPP is a survival skill, not a fix. It helps you get through the next 5 minutes; it does not address why you are in distress.')),
+              h('li', null, __alloT('sel.tipp.ui.if_you_find_yourself_reaching_for', 'If you find yourself reaching for TIPP daily, that is a sign that something larger is happening in your life that deserves a counselor or therapist on it with you.')),
+              h('li', null, __alloT('sel.tipp.ui.tipp_works_on_hyperarousal_too_activated', 'TIPP works on hyperarousal (too activated). It does NOT work on hypoarousal (shut down, numb, dissociated); for that, a different DBT skill (Self-Soothe, ACCEPTS) or simply human connection is more useful.')),
+              h('li', null, __alloT('sel.tipp.ui.the_cautions_on_each_skill_are', 'The cautions on each skill are real. Temperature is contraindicated for heart conditions and some eating disorders; intense exercise is contraindicated for some medical conditions; pace your way out if a skill feels wrong.')),
+              h('li', null, __alloT('sel.tipp.ui.tipp_is_best_learned_in_a', 'TIPP is best LEARNED in a non-crisis moment so the skills are practiced before you need them. Doing them once during a calm period is the best preparation.'))
             )
           ),
 
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.3)', borderRight: '1px solid rgba(239,68,68,0.3)', borderBottom: '1px solid rgba(239,68,68,0.3)', borderLeft: '3px solid #ef4444', fontSize: 12.5, color: _tpFg('#fecaca'), lineHeight: 1.6 } },
-            h('strong', null, '📝 Notes for educators: '),
-            'TIPP is most useful when students have practiced it once or twice during Crew time, not first encountered it in a crisis. A simple Crew protocol: walk through one TIPP skill together (paced breathing is the easiest in a classroom), name the other three, then point students to this tool. Pair with Crisis Companion for any student showing acute distress patterns.'
+            h('strong', null, __alloT('sel.tipp.ui.notes_for_educators', '📝 Notes for educators: ')),
+            __alloT('sel.tipp.ui.tipp_is_most_useful_when_students', 'TIPP is most useful when students have practiced it once or twice during Crew time, not first encountered it in a crisis. A simple Crew protocol: walk through one TIPP skill together (paced breathing is the easiest in a classroom), name the other three, then point students to this tool. Pair with Crisis Companion for any student showing acute distress patterns.')
           ),
 
           softPointer()
@@ -482,11 +500,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       function renderPrintView() {
         return h('div', null,
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _tpFg('#fecaca'), lineHeight: 1.65 } },
-            h('strong', null, '🖨 TIPP pocket card. '),
-            'Print and fold; carry in a pocket, wallet, or planner. The point is to have the four skills with you BEFORE you need them. The pocket card prints onto one page; the cautions are kept because they matter.'
+            h('strong', null, __alloT('sel.tipp.ui.tipp_pocket_card', '🖨 TIPP pocket card. ')),
+            __alloT('sel.tipp.ui.print_and_fold_carry_in_a', 'Print and fold; carry in a pocket, wallet, or planner. The point is to have the four skills with you BEFORE you need them. The pocket card prints onto one page; the cautions are kept because they matter.')
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: _tpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: _tpFg('#fff'), fontWeight: 800, fontSize: 13 } }, __alloT('sel.tipp.ui.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
 
           h('style', null,
@@ -499,12 +517,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
           h('div', { id: 'tipp-print-region', style: { padding: 18, borderRadius: 12, background: _tpBg('#ffffff'), color: _tpFg('#0f172a'), border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _tpFg('#0f172a') } }, 'TIPP · Pocket Card'),
-              h('div', { style: { fontSize: 11, color: _tpFg('#475569') } }, 'DBT Distress Tolerance · Linehan')
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _tpFg('#0f172a') } }, __alloT('sel.tipp.ui.tipp_pocket_card_2', 'TIPP · Pocket Card')),
+              h('div', { style: { fontSize: 11, color: _tpFg('#475569') } }, __alloT('sel.tipp.ui.dbt_distress_tolerance_linehan', 'DBT Distress Tolerance · Linehan'))
             ),
             h('div', { style: { padding: 10, background: _tpBg('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _tpFg('#7f1d1d') } },
-              h('strong', null, 'When to use: '),
-              'acute distress where you might do something you will regret. Do the body part first; talk later. If you are in crisis, call 988 or text HOME to 741741.'
+              h('strong', null, __alloT('sel.tipp.ui.when_to_use', 'When to use: ')),
+              __alloT('sel.tipp.ui.acute_distress_where_you_might_do', 'acute distress where you might do something you will regret. Do the body part first; talk later. If you are in crisis, call 988 or text HOME to 741741.')
             ),
             SKILLS.map(function(s, i) {
               return h('div', { key: s.id, style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
@@ -512,19 +530,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
                   h('div', { style: { fontSize: 24, fontWeight: 900, color: _tpFg('#0f172a'), minWidth: 28 } }, s.letter),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontSize: 15, fontWeight: 800, color: _tpFg('#0f172a') } }, s.label + ' · ' + s.headline),
-                    h('div', { style: { fontSize: 11, color: _tpFg('#475569') } }, s.duration < 60 ? '~' + s.duration + ' seconds' : '~' + Math.round(s.duration / 60) + ' min')
+                    h('div', { style: { fontSize: 11, color: _tpFg('#475569') } }, s.duration < 60 ? _selFill(__alloT('sel.tipp.ui.duration_seconds', '~{duration} seconds'), { duration: s.duration }) : _selFill(__alloT('sel.tipp.ui.duration_min', '~{duration} min'), { duration: Math.round(s.duration / 60) }))
                   )
                 ),
                 h('ol', { style: { margin: '4px 0 6px 22px', padding: 0, fontSize: 12, lineHeight: 1.55, color: _tpFg('#0f172a') } },
                   s.steps.map(function(st, si) { return h('li', { key: si }, st); })
                 ),
                 h('div', { style: { fontSize: 10.5, color: _tpFg('#7f1d1d'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 4, borderTop: '1px dashed #cbd5e1', marginTop: 4 } },
-                  h('strong', null, 'Caution: '), s.caution
+                  h('strong', null, __alloT('sel.tipp.ui.caution_2', 'Caution: ')), s.caution
                 )
               );
             }),
             h('div', { style: { marginTop: 12, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _tpFg('#475569'), lineHeight: 1.5, textAlign: 'center' } },
-              'Practice TIPP once in a calm moment before you need it. Printed from AlloFlow SEL Hub. Source: Linehan, DBT Skills Training Manual (2014).'
+              __alloT('sel.tipp.ui.practice_tipp_once_in_a_calm', 'Practice TIPP once in a calm moment before you need it. Printed from AlloFlow SEL Hub. Source: Linehan, DBT Skills Training Manual (2014).')
             )
           )
         );
@@ -536,7 +554,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       else if (view === 'print') body = renderPrintView();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'TIPP crisis-survival skills' },
+      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': __alloT('sel.tipp.ui.tipp_crisis_survival_skills', 'TIPP crisis-survival skills') },
         header(),
         navTabs(),
         body

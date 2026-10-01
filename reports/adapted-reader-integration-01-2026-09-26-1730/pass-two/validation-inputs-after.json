@@ -1,0 +1,1032 @@
+{
+  "at": "2026-09-26T23:53:25.669Z",
+  "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "startHead": "a9c8fb36285c661a9b85a1cf376f99f05f382de5",
+  "endHead": "a9c8fb36285c661a9b85a1cf376f99f05f382de5",
+  "files": {
+    "AlloFlowANTI.txt": {
+      "bytes": 2792148,
+      "sha256": "fad66c37438116adbd586ce615f099f42b3b81b48a9fae566c7bcb7995fa7b42"
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "bytes": 2792148,
+      "sha256": "fad66c37438116adbd586ce615f099f42b3b81b48a9fae566c7bcb7995fa7b42"
+    },
+    "desktop/web-app/src/App.jsx": {
+      "bytes": 2792148,
+      "sha256": "fad66c37438116adbd586ce615f099f42b3b81b48a9fae566c7bcb7995fa7b42"
+    },
+    "reader_place_store.js": {
+      "bytes": 23363,
+      "sha256": "f3f1b718ae496003fecf365f070e4ef98c4efcceb5e6b11761cea44e047a75ae"
+    },
+    "reader_support_drafts.js": {
+      "bytes": 1768,
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    "_build_view_simplified_module.js": {
+      "bytes": 2897,
+      "sha256": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+    },
+    "dev-tools/build_adapted_reader.cjs": {
+      "bytes": 2227,
+      "sha256": "10c48a4575a17f6666b4eca1362eb9b986bb65f5895183d3bdc1ede410db5ddf"
+    },
+    "desktop/web-app/src/content_engine_source.jsx": {
+      "bytes": 210040,
+      "sha256": "b541b4d6e29c097f8955314acb87f82344e62f6ce2c4418879ddc4275d6edee8"
+    },
+    "dev-tools/host_handlers_wave3_manifest.json": {
+      "bytes": 43836,
+      "sha256": "a79dc9178aa95bd5e3ef90521721b6325a8f80286a46da72af756413d8f0ce5e"
+    },
+    "view_simplified_source.jsx": {
+      "bytes": 518808,
+      "sha256": "9cacc36529da0568318c3aff2f008dfa46686b7c62d18d3507db71fcae3286ad"
+    },
+    "view_simplified_module.js": {
+      "bytes": 499258,
+      "sha256": "2344b55e6ac4229bd71b2d511881db1abb7c2be2b33c2047208815fd1e1f3c6e"
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "bytes": 499258,
+      "sha256": "2344b55e6ac4229bd71b2d511881db1abb7c2be2b33c2047208815fd1e1f3c6e"
+    },
+    "pure_helpers_source.jsx": {
+      "bytes": 30278,
+      "sha256": "48d854fe019ac81e47b5c0b86cd1d64bf041f7c1d7d7723791d7c648c980a82e"
+    },
+    "pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "desktop/web-app/public/pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "content_engine_source.jsx": {
+      "bytes": 210040,
+      "sha256": "b541b4d6e29c097f8955314acb87f82344e62f6ce2c4418879ddc4275d6edee8"
+    },
+    "content_engine_module.js": {
+      "bytes": 210210,
+      "sha256": "189593ed46af578e9a9a9ab830d5b39a351ae8e0d06b61b0cc669e2a316404a4"
+    },
+    "desktop/web-app/public/content_engine_module.js": {
+      "bytes": 210210,
+      "sha256": "189593ed46af578e9a9a9ab830d5b39a351ae8e0d06b61b0cc669e2a316404a4"
+    },
+    "app_styles_source.jsx": {
+      "bytes": 299339,
+      "sha256": "c923bc2f774b913fa1857e2cf41318fe38506b8aba88da749933a674ac9c3f1b"
+    },
+    "app_styles_module.js": {
+      "bytes": 298731,
+      "sha256": "d15f4e168c0d7d1f255232af89d1e2c66b085cac7dc2a868da30937af7d339ee"
+    },
+    "desktop/web-app/public/app_styles_module.js": {
+      "bytes": 298731,
+      "sha256": "d15f4e168c0d7d1f255232af89d1e2c66b085cac7dc2a868da30937af7d339ee"
+    },
+    "generation_helpers_source.jsx": {
+      "bytes": 296690,
+      "sha256": "273032e72bba18c91707b59b62867487f56ecefe01444d9605fe8b14467e1cbc"
+    },
+    "generation_helpers_module.js": {
+      "bytes": 297061,
+      "sha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce"
+    },
+    "desktop/web-app/public/generation_helpers_module.js": {
+      "bytes": 297061,
+      "sha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce"
+    },
+    "read_aloud_audio_service_source.jsx": {
+      "bytes": 82530,
+      "sha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7"
+    },
+    "read_aloud_audio_service_module.js": {
+      "bytes": 82717,
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047"
+    },
+    "desktop/web-app/public/read_aloud_audio_service_module.js": {
+      "bytes": 82717,
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047"
+    },
+    "live_aac_source.jsx": {
+      "bytes": 62977,
+      "sha256": "a1a26a9e23a447fd30c0bcaefd7a946426c1861f6b819ce0a9b9605d8757c537"
+    },
+    "live_aac_module.js": {
+      "bytes": 63572,
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    "desktop/web-app/public/live_aac_module.js": {
+      "bytes": 63572,
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    "shared_activity_source.jsx": {
+      "bytes": 114494,
+      "sha256": "11afe5c929be9fe7f115bad6837a5405f442fbbe1de4b0a111c50c59e6b57487"
+    },
+    "shared_activity_module.js": {
+      "bytes": 110123,
+      "sha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7"
+    },
+    "desktop/web-app/public/shared_activity_module.js": {
+      "bytes": 110123,
+      "sha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7"
+    },
+    "view_share_session_surfaces_source.jsx": {
+      "bytes": 61294,
+      "sha256": "f7d706f56e502bfe885d1a6b2748a933083d2e7cf6bc094d057b8b84da8da806"
+    },
+    "view_share_session_surfaces_module.js": {
+      "bytes": 66128,
+      "sha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df"
+    },
+    "desktop/web-app/public/view_share_session_surfaces_module.js": {
+      "bytes": 66128,
+      "sha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df"
+    },
+    "export_source.jsx": {
+      "bytes": 195832,
+      "sha256": "49e21b76d9f59b1d1b7b87c906439c1d2e3d9f18ca8d411105fdf790aa14fc21"
+    },
+    "export_module.js": {
+      "bytes": 188532,
+      "sha256": "262f743504adcea642739990252671494a59445ec930ba8e8fcfe2c853ca966a"
+    },
+    "desktop/web-app/public/export_module.js": {
+      "bytes": 188532,
+      "sha256": "262f743504adcea642739990252671494a59445ec930ba8e8fcfe2c853ca966a"
+    },
+    "read_aloud_artifact_audio_source.jsx": {
+      "bytes": 23007,
+      "sha256": "d7bb1b09fc1287978ad21367e110ae9742fc0922c657e503f3400216fc4ab8af"
+    },
+    "read_aloud_artifact_audio_module.js": {
+      "bytes": 23196,
+      "sha256": "f8a017fc9a1cb1ef0fc507883c4a78ffda5ef843085fcf83c44dc9060915485e"
+    },
+    "desktop/web-app/public/read_aloud_artifact_audio_module.js": {
+      "bytes": 23196,
+      "sha256": "f8a017fc9a1cb1ef0fc507883c4a78ffda5ef843085fcf83c44dc9060915485e"
+    },
+    "utils_pure_source.jsx": {
+      "bytes": 91495,
+      "sha256": "92e64bf18f65f7b6476df70be5bf714e141572096345b2eab0a9b289ccc6de2e"
+    },
+    "utils_pure_module.js": {
+      "bytes": 91845,
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11"
+    },
+    "desktop/web-app/public/utils_pure_module.js": {
+      "bytes": 91845,
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11"
+    },
+    "immersive_reader_source.jsx": {
+      "bytes": 158000,
+      "sha256": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c"
+    },
+    "immersive_reader_module.js": {
+      "bytes": 129621,
+      "sha256": "718a334275dae108386380adcfe0a85af0ed1e616948a569dc246bf2899dc589"
+    },
+    "desktop/web-app/public/immersive_reader_module.js": {
+      "bytes": 129621,
+      "sha256": "718a334275dae108386380adcfe0a85af0ed1e616948a569dc246bf2899dc589"
+    },
+    "text_pipeline_helpers_source.jsx": {
+      "bytes": 83420,
+      "sha256": "020f9342929fd432467593734fc962b1f2c59e04f66fd92890d0ee33bb05fdac"
+    },
+    "text_pipeline_helpers_module.js": {
+      "bytes": 84242,
+      "sha256": "d254c1ff001f544d3734d5d8fc922e460751eeb023c7a395eaceb1c54695dcee"
+    },
+    "desktop/web-app/public/text_pipeline_helpers_module.js": {
+      "bytes": 84242,
+      "sha256": "d254c1ff001f544d3734d5d8fc922e460751eeb023c7a395eaceb1c54695dcee"
+    },
+    "host_handlers_source.jsx": {
+      "bytes": 630666,
+      "sha256": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848"
+    },
+    "host_handlers_module.js": {
+      "bytes": 498892,
+      "sha256": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132"
+    },
+    "desktop/web-app/public/host_handlers_module.js": {
+      "bytes": 498892,
+      "sha256": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132"
+    },
+    "generate_dispatcher_source.jsx": {
+      "bytes": 612761,
+      "sha256": "6b70e1de0e99b6e8c245a30abfd18357d2422911a239de0d4dcc78fa3729b4ad"
+    },
+    "generate_dispatcher_module.js": {
+      "bytes": 613046,
+      "sha256": "2eb366e72cb494eb675b2c3276b9bf78a45991ecfb0f0cabb4f6ccf7436e1703"
+    },
+    "desktop/web-app/public/generate_dispatcher_module.js": {
+      "bytes": 613046,
+      "sha256": "2eb366e72cb494eb675b2c3276b9bf78a45991ecfb0f0cabb4f6ccf7436e1703"
+    },
+    "phase_n_misc_helpers_source.jsx": {
+      "bytes": 35332,
+      "sha256": "fdb97efea89bb7769f4df582f9d6a86066a677e1c850cdf6dea431c0faadaf02"
+    },
+    "phase_n_misc_helpers_module.js": {
+      "bytes": 32491,
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    "desktop/web-app/public/phase_n_misc_helpers_module.js": {
+      "bytes": 32491,
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    "phase_o_misc_handlers_source.jsx": {
+      "bytes": 161809,
+      "sha256": "ae97b8eb34bc80a80324865360d253299f1ae46297ec0f31e88b4c48229b5666"
+    },
+    "phase_o_misc_handlers_module.js": {
+      "bytes": 162085,
+      "sha256": "5e470d0bf0b505acf66fa011aed003267d1e783733369f78474f18323c2c84bf"
+    },
+    "desktop/web-app/public/phase_o_misc_handlers_module.js": {
+      "bytes": 162085,
+      "sha256": "5e470d0bf0b505acf66fa011aed003267d1e783733369f78474f18323c2c84bf"
+    },
+    "view_sidebar_panels_source.jsx": {
+      "bytes": 369073,
+      "sha256": "3dc25188b09460969db3d8e39a727fa7e97b9465f404b015383baf6426044645"
+    },
+    "view_sidebar_panels_module.js": {
+      "bytes": 377060,
+      "sha256": "d91a3b8a09edc1546be67bb383f992dfa6ada716982c0d726b1376273338cb8f"
+    },
+    "desktop/web-app/public/view_sidebar_panels_module.js": {
+      "bytes": 377060,
+      "sha256": "d91a3b8a09edc1546be67bb383f992dfa6ada716982c0d726b1376273338cb8f"
+    },
+    "view_live_session_dock_source.jsx": {
+      "bytes": 85694,
+      "sha256": "77f00a410ffa13f90e7292de0d08d8501fd2bf1e91c8f1c5060c72a9e588043d"
+    },
+    "view_live_session_dock_module.js": {
+      "bytes": 83640,
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f"
+    },
+    "desktop/web-app/public/view_live_session_dock_module.js": {
+      "bytes": 83640,
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f"
+    },
+    "view_storybook_export_modal_source.jsx": {
+      "bytes": 11687,
+      "sha256": "7ea0e65d98657a2f71d24433d7a9f2f7da9f22b52124b36f5892e134da4019c7"
+    },
+    "view_storybook_export_modal_module.js": {
+      "bytes": 12514,
+      "sha256": "429a1ae27a8608e1459ad83f5a16d892d357f5d59d0e5e46812b7e96623c4f9f"
+    },
+    "desktop/web-app/public/view_storybook_export_modal_module.js": {
+      "bytes": 12514,
+      "sha256": "429a1ae27a8608e1459ad83f5a16d892d357f5d59d0e5e46812b7e96623c4f9f"
+    },
+    "own_sources_module.js": {
+      "bytes": 32149,
+      "sha256": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a"
+    },
+    "desktop/web-app/public/own_sources_module.js": {
+      "bytes": 32149,
+      "sha256": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a"
+    },
+    "quickstart_module.js": {
+      "bytes": 112784,
+      "sha256": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62"
+    },
+    "desktop/web-app/public/quickstart_module.js": {
+      "bytes": 112784,
+      "sha256": "ac2eb44c91e92588055d6629fee5583182ffd8a7311b9f094132a653bd472c62"
+    },
+    "view_misc_panels_module.js": {
+      "bytes": 214409,
+      "sha256": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6"
+    },
+    "desktop/web-app/public/view_misc_panels_module.js": {
+      "bytes": 214409,
+      "sha256": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6"
+    },
+    "ui_strings.js": {
+      "bytes": 9784179,
+      "sha256": "920796891b735cf5dde27e190a87769b2cbf90b99d7047a85265bc3ee1e3af03"
+    },
+    "desktop/web-app/public/ui_strings.js": {
+      "bytes": 9784179,
+      "sha256": "920796891b735cf5dde27e190a87769b2cbf90b99d7047a85265bc3ee1e3af03"
+    },
+    "stem_lab/stem_tool_cephalopodlab.js": {
+      "bytes": 2173416,
+      "sha256": "2bb4a9d9c99d8121e5feb174734961c7353027c444a9b81a40a28823097f3011"
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js": {
+      "bytes": 2173416,
+      "sha256": "2bb4a9d9c99d8121e5feb174734961c7353027c444a9b81a40a28823097f3011"
+    },
+    "stem_lab/stem_tool_raptorhunt.js": {
+      "bytes": 3691005,
+      "sha256": "55c61f96ab756052443efba6d124ace7e344de1e58a3d4f40c29dcdc8032b05b"
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js": {
+      "bytes": 3691005,
+      "sha256": "55c61f96ab756052443efba6d124ace7e344de1e58a3d4f40c29dcdc8032b05b"
+    },
+    "stem_lab/stem_tool_evolab.js": {
+      "bytes": 1432306,
+      "sha256": "f5b78c190bd5aa05c161412e0a519379ae26b60c7cf24a78b5e49c4b14f06c1c"
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_evolab.js": {
+      "bytes": 1432306,
+      "sha256": "f5b78c190bd5aa05c161412e0a519379ae26b60c7cf24a78b5e49c4b14f06c1c"
+    },
+    "stem_lab/kitchen_studio/recipe_lab.html": {
+      "bytes": 29315,
+      "sha256": "2cc9d68ce8cbfebf9d57a8952e6ac82c27cfd49c7502c7127668a12d54d5d395"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html": {
+      "bytes": 29315,
+      "sha256": "2cc9d68ce8cbfebf9d57a8952e6ac82c27cfd49c7502c7127668a12d54d5d395"
+    },
+    "stem_lab/kitchen_studio/recipe_lab.js": {
+      "bytes": 76500,
+      "sha256": "e2af6ade8eb6ffcb53c06f23c24ffc8cae256176046d28fb27702f70915de8e2"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js": {
+      "bytes": 76500,
+      "sha256": "e2af6ade8eb6ffcb53c06f23c24ffc8cae256176046d28fb27702f70915de8e2"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_engine.js": {
+      "bytes": 39362,
+      "sha256": "c636ec88dfe354b8fe67d70f7454937ea96b88455d1198a7871972165a2d0269"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js": {
+      "bytes": 39362,
+      "sha256": "c636ec88dfe354b8fe67d70f7454937ea96b88455d1198a7871972165a2d0269"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_hands.js": {
+      "bytes": 2105,
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.js": {
+      "bytes": 2105,
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_hands.css": {
+      "bytes": 6622,
+      "sha256": "412bf442aa95f08daf8fafdb266eadd9035eb354400a3b568dd6bbfcaf79f623"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.css": {
+      "bytes": 6622,
+      "sha256": "412bf442aa95f08daf8fafdb266eadd9035eb354400a3b568dd6bbfcaf79f623"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_hands_ui.js": {
+      "bytes": 20355,
+      "sha256": "b2e301ef90245faa0c4e7f14c3f44c2ffac6ddec22a7fe204b30cf5cfdb34b1e"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands_ui.js": {
+      "bytes": 20355,
+      "sha256": "b2e301ef90245faa0c4e7f14c3f44c2ffac6ddec22a7fe204b30cf5cfdb34b1e"
+    },
+    "dictionary_loader.js": {
+      "bytes": 11660,
+      "sha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91"
+    },
+    "desktop/web-app/public/dictionary_loader.js": {
+      "bytes": 11660,
+      "sha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91"
+    },
+    "karaoke_audio_store_module.js": {
+      "bytes": 55366,
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    "desktop/web-app/public/karaoke_audio_store_module.js": {
+      "bytes": 55366,
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    "ai_backend_module.js": {
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    "desktop/web-app/public/ai_backend_module.js": {
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_scene.js": {
+      "bytes": 14221,
+      "sha256": "0879d117b0b4c6ca781778c6bf09fe2db1fe4eea4a95a8fd8b03cd78d70e72f1"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js": {
+      "bytes": 14221,
+      "sha256": "0879d117b0b4c6ca781778c6bf09fe2db1fe4eea4a95a8fd8b03cd78d70e72f1"
+    },
+    "lang/spanish_castilian.js": {
+      "bytes": 7759224,
+      "sha256": "622215bcdc6c3ba50a6f8440c46faa6deb041691a61ee4017179caa3a06c0f4e"
+    },
+    "desktop/web-app/public/lang/spanish_castilian.js": {
+      "bytes": 7759224,
+      "sha256": "622215bcdc6c3ba50a6f8440c46faa6deb041691a61ee4017179caa3a06c0f4e"
+    },
+    "lang/spanish_latin_america.js": {
+      "bytes": 8514037,
+      "sha256": "d1d1263e62a7486d065139da2a1cfdb1ef151856d17de0027abd5a443462b816"
+    },
+    "desktop/web-app/public/lang/spanish_latin_america.js": {
+      "bytes": 8514037,
+      "sha256": "d1d1263e62a7486d065139da2a1cfdb1ef151856d17de0027abd5a443462b816"
+    },
+    "lang/arabic.js": {
+      "bytes": 8671950,
+      "sha256": "bc14247e6889751aa0258ff2e095b1448d84d373e78f1dc2c3d6eb5eceb1923c"
+    },
+    "desktop/web-app/public/lang/arabic.js": {
+      "bytes": 8671950,
+      "sha256": "bc14247e6889751aa0258ff2e095b1448d84d373e78f1dc2c3d6eb5eceb1923c"
+    },
+    "lang/chinese_simplified.js": {
+      "bytes": 7258651,
+      "sha256": "87a7c963d0c4555168e723690394b31fd558a318e53d50ff4ff24f3a59f62bb3"
+    },
+    "desktop/web-app/public/lang/chinese_simplified.js": {
+      "bytes": 7258651,
+      "sha256": "87a7c963d0c4555168e723690394b31fd558a318e53d50ff4ff24f3a59f62bb3"
+    },
+    "lang/thai.js": {
+      "bytes": 9236240,
+      "sha256": "5f17baf1bab9bffffaef5e17e2beac8018c41e00af99f2cc8197213e87b69e04"
+    },
+    "desktop/web-app/public/lang/thai.js": {
+      "bytes": 9236240,
+      "sha256": "5f17baf1bab9bffffaef5e17e2beac8018c41e00af99f2cc8197213e87b69e04"
+    },
+    "tests/adventure_storybook_read_aloud_export.test.js": {
+      "sha256": "e9dd8d794e19994607915d919a44a9fa7469fc88c9689379e362425807826936",
+      "bytes": 20675
+    },
+    "tests/bilingual_revision_transaction.test.js": {
+      "sha256": "ec4aaea50a8548b1864bfcde6eece36635c322781f49ca698df474646931125d",
+      "bytes": 17882
+    },
+    "tests/dictionary_lookup_cancellation.test.js": {
+      "sha256": "5889f10f2fead50f8822fc04f2e807ebec59bb24ecc76116b9042e05c5259497",
+      "bytes": 9576
+    },
+    "tests/document_citation_renderer_transform.test.js": {
+      "sha256": "f1e3f5883cf8457e3a0385e39bc79a757ad6140991edee659e448bb115757e90",
+      "bytes": 5992
+    },
+    "tests/edit_audio_ui.test.js": {
+      "sha256": "2c76556d49d37412a705925ecb12f5ea3f41e6fde5aa0acf28f6f3917a6c72e8",
+      "bytes": 19871
+    },
+    "tests/karaoke_audio_store_notifications.test.js": {
+      "sha256": "b40bf17b72bde7434be17f216ff2ea342da133f585206f1f99e6551ff0d63bf7",
+      "bytes": 5523
+    },
+    "tests/offline_media_reader_integration.test.js": {
+      "sha256": "99ed32318276f3fcad2d14d818d395a1e35eb93973351baf6d351b76f63891d8",
+      "bytes": 8516
+    },
+    "tests/offline_media_recovery.test.js": {
+      "sha256": "7270cde53fa6696aef66e87cdda9466a2cf13c9b25e1373d3026aac744a5069c",
+      "bytes": 27056
+    },
+    "tests/prepared_word_help_regressions.test.js": {
+      "sha256": "cca8d09b1f6e3bf292fad3cfbc06d6ee6028fa36db7edb9072e9c41f87e67c7f",
+      "bytes": 20304
+    },
+    "tests/preserved_vocabulary.test.js": {
+      "sha256": "197e1882df6b96c8c2abe9c3551359e6a31705575e54fa716ac496d1838e90c9",
+      "bytes": 18552
+    },
+    "tests/reader_audio_readiness.test.js": {
+      "sha256": "80030c68a40d78608132f87f21907289b2f44c642fc735f09ac76f0f404990d7",
+      "bytes": 24289
+    },
+    "tests/reader_display_menu.test.js": {
+      "sha256": "44443d890de9e6ce42d3085f7d0e994a134fc02542a67a8f476532b51304144a",
+      "bytes": 12835
+    },
+    "tests/reader_keyboard_a11y.test.js": {
+      "sha256": "946ad99266910e35c3b18f56d114cda0691318d88b4868f9e71e2f96205af78e",
+      "bytes": 15840
+    },
+    "tests/reader_locale_catalogs.test.js": {
+      "sha256": "02a5bde9dcd518ef681b4fff9c50299788ca1513d5d50bd19ae3ec2f82c2170d",
+      "bytes": 2510
+    },
+    "tests/reader_narration_access.test.js": {
+      "sha256": "6a5b917b7d2507dfee7afd9f9b57f482ac969fd26bab59b4ad0a2e03f0125fe4",
+      "bytes": 9284
+    },
+    "tests/reader_place_lifecycle.test.js": {
+      "sha256": "a6f3c7f5718395482d6c90d774f0bf666d70abca2cf46a099c679414e23c9d13",
+      "bytes": 10487
+    },
+    "tests/reader_place_persistence.test.js": {
+      "sha256": "527b2a0d96d70e63adf83395bfab0624581ced1f8861573082cd693a2ff07307",
+      "bytes": 17445
+    },
+    "tests/reader_place_review_adapt.test.js": {
+      "sha256": "1f476fcf886f65037c2c4f47eaf19a546230b12e9e9566cc8034166e5889de27",
+      "bytes": 34443
+    },
+    "tests/reader_preview_host_boundary.test.js": {
+      "sha256": "28decc45d87754213dc14a3cb5fd17d5a2e55dfb9a1198cea4b400e23d69fa31",
+      "bytes": 5271
+    },
+    "tests/reader_preview_isolation.test.js": {
+      "sha256": "ee88bc407e44abaa711d1ccac6a410259434cb9ca63edbe5bd4a45b398d32e1f",
+      "bytes": 28577
+    },
+    "tests/reader_recovery_locales.test.js": {
+      "sha256": "85329fb71043174efb4fd7a177cec508ae3cc92e59b4d1a117c54e56946fbf0b",
+      "bytes": 8177
+    },
+    "tests/reader_recovery_locale_catalogs.test.js": {
+      "sha256": "c9223bf58ac1ad714007ab1a193734c7a467bff60ba401c617c6b61e7109ad49",
+      "bytes": 5871
+    },
+    "tests/reader_render_cost.test.js": {
+      "sha256": "c394ccd2086b0d67c4ea48c1bd3bcc2dda49c2f2b401849f6b97e258b3599876",
+      "bytes": 11262
+    },
+    "tests/reader_route_a11y.test.js": {
+      "sha256": "5cf1e398b729d9de58a9b44bce920ba27dcadb89e82e026725806b948f5477d4",
+      "bytes": 14824
+    },
+    "tests/reading_lookup_popup_adapter.test.js": {
+      "sha256": "c01e3ec94cf50c92580a88eb4a258d6d7b13ff7e7472e68b7caa33c23d463516",
+      "bytes": 33752
+    },
+    "tests/reading_lookup_recovery.test.js": {
+      "sha256": "4968d3fa6ab871aa86dc73eb4fff32b38ba56bca2b9f13bd2d7211da94cd43e6",
+      "bytes": 27220
+    },
+    "tests/reading_support_draft_host.test.js": {
+      "sha256": "9e8bc993aa148b974c526bcf7ecca722447fb195f24ea3f1024f6b54f9570770",
+      "bytes": 8592
+    },
+    "tests/reading_support_draft_transitions.test.js": {
+      "sha256": "142bb76fe1c22c9c6bf884fd586ae63ee4eec75e0c7b2b5214a71227cf2fe79a",
+      "bytes": 30711
+    },
+    "tests/reading_word_image_ownership.test.js": {
+      "sha256": "cb2bdf3e3f9993a003b14ee041e5b97badde0ea56761cad510546aad210fbff4",
+      "bytes": 6534
+    },
+    "tests/read_aloud_artifact_audio.test.js": {
+      "sha256": "f485f4a6034e4a51aab502a7c3b9504513a1bf9ab7f18b0d440e2c911bc2b3cb",
+      "bytes": 4219
+    },
+    "tests/read_aloud_audio_service.test.js": {
+      "sha256": "6e188cd5f2c7f36119bc2ff836384537f372850fd3d33c266d2620cab966a983",
+      "bytes": 47500
+    },
+    "tests/revision_target.test.js": {
+      "sha256": "cd72aeadd436520fe68066f37807b77182a17b9d96dbcca68db1ad1f12b3df0b",
+      "bytes": 5052
+    },
+    "tests/utils_pure_storage.test.js": {
+      "sha256": "acc81184eacf93b52aa83025f8824a7c3b14058988e69c16101f42256285d6d8",
+      "bytes": 2347
+    },
+    "tests/reader_narration_recovery.test.js": {
+      "sha256": "f73dd47127915cf13ed2c2b1c4ef7ac6bdcad61632a3b627d59b94f50816ffa8",
+      "bytes": 10386
+    },
+    "tests/reader_listen_along_access.test.js": {
+      "sha256": "4e0b4e6798267ac875433486c0d3405116e2fabbafe87e1282fb7dc487c59158",
+      "bytes": 9011
+    },
+    "tests/immersive_preference_persistence.test.js": {
+      "sha256": "fcfdc72322148d34ed3b8a895358aeb350edf367cd4c2b240d3237eb6c18fb36",
+      "bytes": 4206
+    },
+    "tests/preserved_vocabulary_enhancements.test.js": {
+      "sha256": "a3ecd10adcf146982205abf93537e9d9c985ca37d482231432ab9333a2e8c305",
+      "bytes": 9177
+    },
+    "tests/read_aloud_recovery.test.js": {
+      "sha256": "318a3002473807beb1d4bf10e16e0de855aa1951858fd3f28c649f366b8c9587",
+      "bytes": 6960
+    },
+    "tests/leveled_text_karaoke_persistence_e2e.test.js": {
+      "sha256": "363753d337ff441fb1f3fa81f1793ec1f66607fb91852f95f90017dbe7a4d21c",
+      "bytes": 20696
+    },
+    "tests/reader_terms_locales.test.js": {
+      "sha256": "501fdb2d98d94281db945f7a5948a5b7f93fe9a7caf216e07fbb35b5e314c2fe",
+      "bytes": 6736
+    },
+    "stem_lab/stem_lumen_evidence.js": {
+      "sha256": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+      "bytes": 51738
+    },
+    "desktop/web-app/public/stem_lab/stem_lumen_evidence.js": {
+      "sha256": "d8c1a66d5220ba352c24e2120f2e30e6e3ed25b63b255357d9e46df4ca97d901",
+      "bytes": 51738
+    },
+    "quickstart_source.jsx": {
+      "sha256": "f827f68655af0fbc6f6d841b670dc3d1627f5cab6a3d0256b94e0d64e2206bd3",
+      "bytes": 132416
+    },
+    "view_misc_panels_source.jsx": {
+      "sha256": "7b04648466f43f2ea2bc72562fcd2ff0a504742a89a98a31966cb73ea710c2d9",
+      "bytes": 266156
+    },
+    "dev-tools/reader-performance/run.cjs": {
+      "sha256": "7bde37be20b42b87fa2bc40c45ce554a8ee6d93bfb97f25724b00c445bf8ed7d",
+      "bytes": 17293
+    },
+    "dev-tools/reader-performance/fixtures.cjs": {
+      "sha256": "449a4d0c9f3ddb890749753cd904a720f37284ae52f8b53217a307be6a49ea8f",
+      "bytes": 3600
+    }
+  },
+  "mirrors": [
+    {
+      "module": "view_simplified",
+      "matches": true
+    },
+    {
+      "module": "pure_helpers",
+      "matches": true
+    },
+    {
+      "module": "content_engine",
+      "matches": true
+    },
+    {
+      "module": "app_styles",
+      "matches": true
+    },
+    {
+      "module": "generation_helpers",
+      "matches": true
+    },
+    {
+      "module": "read_aloud_audio_service",
+      "matches": true
+    },
+    {
+      "module": "live_aac",
+      "matches": true
+    },
+    {
+      "module": "shared_activity",
+      "matches": true
+    },
+    {
+      "module": "view_share_session_surfaces",
+      "matches": true
+    },
+    {
+      "module": "export",
+      "matches": true
+    },
+    {
+      "module": "read_aloud_artifact_audio",
+      "matches": true
+    },
+    {
+      "module": "utils_pure",
+      "matches": true
+    },
+    {
+      "module": "immersive_reader",
+      "matches": true
+    },
+    {
+      "module": "text_pipeline_helpers",
+      "matches": true
+    },
+    {
+      "module": "host_handlers",
+      "matches": true
+    },
+    {
+      "module": "generate_dispatcher",
+      "matches": true
+    },
+    {
+      "module": "phase_n_misc_helpers",
+      "matches": true
+    },
+    {
+      "module": "phase_o_misc_handlers",
+      "matches": true
+    },
+    {
+      "module": "view_sidebar_panels",
+      "matches": true
+    },
+    {
+      "module": "view_live_session_dock",
+      "matches": true
+    },
+    {
+      "module": "view_storybook_export_modal",
+      "matches": true
+    }
+  ],
+  "projectMirrors": [
+    {
+      "file": "own_sources_module.js",
+      "matches": true
+    },
+    {
+      "file": "quickstart_module.js",
+      "matches": true
+    },
+    {
+      "file": "view_misc_panels_module.js",
+      "matches": true
+    },
+    {
+      "file": "ui_strings.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/stem_tool_cephalopodlab.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/stem_tool_raptorhunt.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/stem_tool_evolab.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab.html",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_engine.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands.css",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands_ui.js",
+      "matches": true
+    },
+    {
+      "file": "dictionary_loader.js",
+      "matches": true
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "matches": true
+    },
+    {
+      "file": "ai_backend_module.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_scene.js",
+      "matches": true
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "matches": true
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "matches": true
+    },
+    {
+      "file": "lang/arabic.js",
+      "matches": true
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "matches": true
+    },
+    {
+      "file": "lang/thai.js",
+      "matches": true
+    }
+  ],
+  "hostsMatch": true,
+  "contentSourceMatches": true,
+  "pins": {
+    "AlloFlowANTI.txt": {
+      "view_simplified": [
+        "2344b55e"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "189593ed"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "7e9a1a5c"
+      ],
+      "read_aloud_audio_service": [
+        "961229e6"
+      ],
+      "live_aac": [
+        "0ae0268e"
+      ],
+      "shared_activity": [
+        "43722e2b"
+      ],
+      "view_share_session_surfaces": [
+        "341e486b"
+      ],
+      "export": [
+        "262f7435"
+      ],
+      "read_aloud_artifact_audio": [
+        "f8a017fc"
+      ],
+      "utils_pure": [
+        "aa4eebe1"
+      ],
+      "immersive_reader": [
+        "718a3342"
+      ],
+      "text_pipeline_helpers": [
+        "d254c1ff"
+      ],
+      "host_handlers": [
+        "fbda9fa8"
+      ],
+      "generate_dispatcher": [
+        "2eb366e7"
+      ],
+      "phase_n_misc_helpers": [
+        "abda3c02"
+      ],
+      "phase_o_misc_handlers": [
+        "5e470d0b"
+      ],
+      "view_sidebar_panels": [
+        "d91a3b8a"
+      ],
+      "view_live_session_dock": [
+        "9987a5cb"
+      ],
+      "view_storybook_export_modal": [
+        "429a1ae2"
+      ]
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "view_simplified": [
+        "2344b55e"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "189593ed"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "7e9a1a5c"
+      ],
+      "read_aloud_audio_service": [
+        "961229e6"
+      ],
+      "live_aac": [
+        "0ae0268e"
+      ],
+      "shared_activity": [
+        "43722e2b"
+      ],
+      "view_share_session_surfaces": [
+        "341e486b"
+      ],
+      "export": [
+        "262f7435"
+      ],
+      "read_aloud_artifact_audio": [
+        "f8a017fc"
+      ],
+      "utils_pure": [
+        "aa4eebe1"
+      ],
+      "immersive_reader": [
+        "718a3342"
+      ],
+      "text_pipeline_helpers": [
+        "d254c1ff"
+      ],
+      "host_handlers": [
+        "fbda9fa8"
+      ],
+      "generate_dispatcher": [
+        "2eb366e7"
+      ],
+      "phase_n_misc_helpers": [
+        "abda3c02"
+      ],
+      "phase_o_misc_handlers": [
+        "5e470d0b"
+      ],
+      "view_sidebar_panels": [
+        "d91a3b8a"
+      ],
+      "view_live_session_dock": [
+        "9987a5cb"
+      ],
+      "view_storybook_export_modal": [
+        "429a1ae2"
+      ]
+    },
+    "desktop/web-app/src/App.jsx": {
+      "view_simplified": [
+        "2344b55e"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "189593ed"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "7e9a1a5c"
+      ],
+      "read_aloud_audio_service": [
+        "961229e6"
+      ],
+      "live_aac": [
+        "0ae0268e"
+      ],
+      "shared_activity": [
+        "43722e2b"
+      ],
+      "view_share_session_surfaces": [
+        "341e486b"
+      ],
+      "export": [
+        "262f7435"
+      ],
+      "read_aloud_artifact_audio": [
+        "f8a017fc"
+      ],
+      "utils_pure": [
+        "aa4eebe1"
+      ],
+      "immersive_reader": [
+        "718a3342"
+      ],
+      "text_pipeline_helpers": [
+        "d254c1ff"
+      ],
+      "host_handlers": [
+        "fbda9fa8"
+      ],
+      "generate_dispatcher": [
+        "2eb366e7"
+      ],
+      "phase_n_misc_helpers": [
+        "abda3c02"
+      ],
+      "phase_o_misc_handlers": [
+        "5e470d0b"
+      ],
+      "view_sidebar_panels": [
+        "d91a3b8a"
+      ],
+      "view_live_session_dock": [
+        "9987a5cb"
+      ],
+      "view_storybook_export_modal": [
+        "429a1ae2"
+      ]
+    }
+  },
+  "errors": []
+}

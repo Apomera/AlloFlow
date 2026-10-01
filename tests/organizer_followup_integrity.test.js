@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {describe,it,expect,vi} from 'vitest';
+import {readHostSource} from './helpers/host_source.js';
 
 const hosts=['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt','desktop/web-app/src/App.jsx'];
 function removeBranch(file,data,index){
- const source=fs.readFileSync(file,'utf8');
+ // handleRemoveFromMapList moved to host_handlers_source.jsx (09-13): read it inlined at its shim.
+ const source=readHostSource(file);
  const start=source.indexOf('const handleRemoveFromMapList =');
  const end=source.indexOf('const handleOutlineChange =',start);
  let active={id:'map',type:'outline',data},history=[active];

@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "desktopCanvas": 760,
+      "pausedPaint": true,
+      "wholeStrokeUndoRedo": true,
+      "clearUndo": true,
+      "oneClickResume": true,
+      "pausePreservesFrame": true,
+      "tabRoundTrip": true
+    },
+    {
+      "translucentRimRoundTripExact": true
+    },
+    {
+      "marks": 97660,
+      "outside": 0,
+      "opaqueCount": 262144,
+      "paintDifference": 0,
+      "transparentCorner": 0
+    },
+    {
+      "actualPngDownloads": true,
+      "paperPreservesPaint": true,
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets": true
+    }
+  ],
+  "errors": []
+}

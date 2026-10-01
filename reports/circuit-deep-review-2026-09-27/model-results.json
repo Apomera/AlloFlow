@@ -1,0 +1,84 @@
+{
+  "nodeVersion": "v24.11.1",
+  "conditions": "Read-only probes on 2026-09-27. A complete circuit Vitest suite was running concurrently. These are model execution times in Node, not browser measurements.",
+  "vmMeasurements": [
+    {
+      "count": 1,
+      "ms": 330.1658,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "rejected": 0
+    },
+    {
+      "count": 4,
+      "ms": 75623.28779999999,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "rejected": 0
+    }
+  ],
+  "directMeasurements": [
+    {
+      "count": 1,
+      "ms": 51.275099999999995,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "rejected": 0
+    },
+    {
+      "count": 4,
+      "ms": 5722.863600000001,
+      "ok": true,
+      "steps": 384,
+      "frames": 769,
+      "rejected": 0
+    }
+  ],
+  "timingInterpretation": "Use browserMeasurements for the browser finding. Direct Node and VM timings are retained for comparison. This measures model execution, not host rendering, and confirms that the calculation alone occupies the browser main thread.",
+  "overdampedInitialCondition": {
+    "line": 613,
+    "sourceVoltage": 12,
+    "components": "One series voltmeter (1e9 ohm), 1 mH inductor, 10000 microfarad capacitor; all allowed by the mixed workbench",
+    "time": 0,
+    "expected": {
+      "current": 0,
+      "voltmeterVoltage": 0,
+      "inductorVoltage": 12,
+      "capacitorVoltage": 0
+    },
+    "actual": {
+      "current": 1.1999999999987998e-8,
+      "voltmeterVoltage": 11.999999999987997,
+      "inductorVoltage": 1.2001776356827399e-11,
+      "capacitorVoltage": 0
+    },
+    "cause": "b=A-a cancels the tiny fast-mode coefficient to zero in the overdamped analytic response"
+  },
+  "browserMeasurements": {
+    "engine": "Chromium",
+    "version": "148.0.7778.96",
+    "cleanupNote": "Both computations completed and results were saved. The original 45-second overall watchdog fired during browser shutdown afterward; the probe script now clears its computation watchdog before normal shutdown and retains the 60-second hard limit.",
+    "context": "Headless blank page; current source loaded with page.addScriptTag; model executed synchronously on the browser main thread. A full circuit test suite was running concurrently.",
+    "measurements": [
+      {
+        "count": 1,
+        "ms": 449.5,
+        "ok": true,
+        "steps": 384,
+        "frames": 769,
+        "rejected": 0
+      },
+      {
+        "count": 4,
+        "ms": 2529.100000023842,
+        "ok": true,
+        "steps": 384,
+        "frames": 769,
+        "rejected": 0
+      }
+    ]
+  }
+}

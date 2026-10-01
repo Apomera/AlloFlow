@@ -223,6 +223,12 @@ Decided along the way:
 - **A repeat claim by the same student is flagged `replayed`.** Staff opening a
   link are told it is a student code.
 
+Added 2026-09-27: a typeable 8-character code on every coupon with an **Have a
+reward code?** box for students (10 wrong guesses per hour per student), an
+optional **one code per student** rule per sheet, a **30-day default expiry** in
+the form, cancelling unused codes when a year closes with balances reset, and a
+sign-in failure page that tells the student the code is still unused.
+
 Still open (section 8): bearer tokens only (no pre-assigned codes); staff-only
-minting (no automated source); **no default expiry**. The form accepts one and
-coupons print it, but a sheet without one stays live until it is cancelled.
+minting (no automated source). The expiry is a default, not a rule: a teacher
+can still clear it.

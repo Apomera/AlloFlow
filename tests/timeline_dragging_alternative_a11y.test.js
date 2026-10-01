@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 
-const view = fs.readFileSync('view_timeline_source.jsx', 'utf8');
-const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+const view = readSourceFile('view_timeline_source.jsx', 'utf8');
+const app = readSourceFile('AlloFlowANTI.txt', 'utf8');
 
 describe('timeline dragging alternative', () => {
   it('provides single-click move controls for every draggable row', () => {

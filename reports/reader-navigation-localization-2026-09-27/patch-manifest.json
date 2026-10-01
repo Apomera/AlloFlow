@@ -1,0 +1,187 @@
+{
+  "base": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "files": [
+    {
+      "file": "dev-tools/i18n/apply_reader_contract_locales.cjs",
+      "newFile": false,
+      "beforeSha256": "3645cd6b97c836ca42979b3fe9b6f0319ee577673866e66c92c73adac054f57e",
+      "afterSha256": "6d1ba057a1e0349ec2c1a7b7331fecde72a6e2af0cef794acd16673f14be36b2",
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "newFile": false,
+      "beforeSha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+      "afterSha256": "502f41eeb91fb2d0ca6a28c7cf137fb54c1183c3e73a57801c831b2eee3620b3",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "newFile": false,
+      "beforeSha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+      "afterSha256": "502f41eeb91fb2d0ca6a28c7cf137fb54c1183c3e73a57801c831b2eee3620b3",
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "newFile": false,
+      "beforeSha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+      "afterSha256": "b644a0eb12e1757f51bbec9fd34d6eb0c0f4ca9d4d2f5924977a31f8f94b5e02",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "newFile": false,
+      "beforeSha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+      "afterSha256": "b644a0eb12e1757f51bbec9fd34d6eb0c0f4ca9d4d2f5924977a31f8f94b5e02",
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/arabic.js",
+      "newFile": false,
+      "beforeSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "afterSha256": "7f7e56caaeee7d2d76d1115e26eda06a0234bba6ec00db4abe2cbf58a99f6fe9",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "newFile": false,
+      "beforeSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "afterSha256": "7f7e56caaeee7d2d76d1115e26eda06a0234bba6ec00db4abe2cbf58a99f6fe9",
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "newFile": false,
+      "beforeSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "afterSha256": "582b2835bd7dbf830850a698b754cef1f7aba5e7f38e01314e348e76e6faae5e",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "newFile": false,
+      "beforeSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "afterSha256": "582b2835bd7dbf830850a698b754cef1f7aba5e7f38e01314e348e76e6faae5e",
+      "appliesToShared": true
+    },
+    {
+      "file": "lang/thai.js",
+      "newFile": false,
+      "beforeSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "afterSha256": "9ce891600380ed6d801429515b7cddcfa801df72ceba4a6a3b5c3fb15814279d",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "newFile": false,
+      "beforeSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "afterSha256": "9ce891600380ed6d801429515b7cddcfa801df72ceba4a6a3b5c3fb15814279d",
+      "appliesToShared": true
+    },
+    {
+      "file": "ui_strings.js",
+      "newFile": false,
+      "beforeSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "afterSha256": "610763fdeddffc56a2ec6706b5e9ce9664e51aeeba8f4c1b79579f030ec3d9f8",
+      "appliesToShared": true
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "newFile": false,
+      "beforeSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "afterSha256": "610763fdeddffc56a2ec6706b5e9ce9664e51aeeba8f4c1b79579f030ec3d9f8",
+      "appliesToShared": true
+    },
+    {
+      "file": "translations/reader-navigation-locales.json",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "cf4cfb2b45aad7a6accdf3cf8abd0baeece967a8db4e802daf23e5edac816be5",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/fixtures/reader_navigation_locales.json",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "d6bf14d6002a50cbf3ced444a0ff4c545236a54da2092a27f516d57be793204c",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/helpers/reader_navigation_locale_harness.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "4462179f9f92311b0c534261def4842f4c2ba4d2e989b0c6dec5b349f0d60ac5",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/reader_navigation_locales.test.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "693dffd7d4e1e8b8700194623508b1c99e1236be3500e74d70f87199e3e81523",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/reader_navigation_locale_catalogs.test.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "216e31ae6c6c4bb15047de500eb1cca13dd81419ff690bb73c43cd914d8aff18",
+      "appliesToShared": true
+    },
+    {
+      "file": "tests/reader_navigation_locale_layout.test.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "a48e145b810501c04bf5ea40cb8086e1855eba49899e3df528a52d78615d7711",
+      "appliesToShared": true
+    }
+  ],
+  "patchBytes": 71558,
+  "patchSha256": "0bc303c255b5c1026cd855ab70a82bb2ffff697f22c14e1726adf4ebe94edb3b",
+  "coverage": [
+    {
+      "locale": "spanish_latin_america",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "spanish_castilian",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "arabic",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "chinese_simplified",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "thai",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    }
+  ]
+}

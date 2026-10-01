@@ -1639,7 +1639,7 @@ function LiveSessionDockView(props) {
       currentResourceId: sessionData && sessionData.currentResourceId,
       sessionMode: sessionData && sessionData.mode
     });
-    const canPushCurrent = !!(generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type));
+    const canPushCurrent = !!(generatedContent && generatedContent.id && _alloStudentSafeResources([generatedContent]).length > 0);
     const rows = studentUids.map(uid => ({
       uid,
       entry: rosterEntries[uid] || {}

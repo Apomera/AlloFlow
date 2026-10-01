@@ -1,0 +1,70 @@
+{
+  "at": "2026-09-26T23:41:20.516Z",
+  "label": "pass2-validation-fixtures",
+  "patch": "3bd9ef176fe356eb88270c492fb6cd028d657f04917c64b753b30ba4bd01d6c8",
+  "plans": [
+    {
+      "target": "tests/prepared_word_help_regressions.test.js",
+      "targets": [
+        "tests/prepared_word_help_regressions.test.js"
+      ],
+      "before": "13b6fad986e3b1957a2761d386c615a6a55e85b17cf6eb1d3a0619c7dd78ea08",
+      "after": "cca8d09b1f6e3bf292fad3cfbc06d6ee6028fa36db7edb9072e9c41f87e67c7f",
+      "changed": true
+    },
+    {
+      "target": "tests/immersive_preference_persistence.test.js",
+      "targets": [
+        "tests/immersive_preference_persistence.test.js"
+      ],
+      "before": null,
+      "after": "fcfdc72322148d34ed3b8a895358aeb350edf367cd4c2b240d3237eb6c18fb36",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/fixtures.cjs",
+      "targets": [
+        "dev-tools/reader-performance/fixtures.cjs"
+      ],
+      "before": "cf578256464ca57111629fe5c73eb3550f36e69ac58508f0f02ee139a5235627",
+      "after": "449a4d0c9f3ddb890749753cd904a720f37284ae52f8b53217a307be6a49ea8f",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_preview_locale_layout.test.js",
+      "targets": [
+        "tests/reader_preview_locale_layout.test.js"
+      ],
+      "before": null,
+      "after": "58f007c95a8532adcd589b970962d28777f5272740762e57669ff20b40d3d2e8",
+      "changed": true
+    },
+    {
+      "target": "tests/helpers/reader_preview_locale_harness.js",
+      "targets": [
+        "tests/helpers/reader_preview_locale_harness.js"
+      ],
+      "before": null,
+      "after": "48f93d3cb7483557b117bf3b18ef725d26e9548aa4b7ae8fc96353c7d90fa142",
+      "changed": true
+    },
+    {
+      "target": "tests/fixtures/reader_preview_locales.json",
+      "targets": [
+        "tests/fixtures/reader_preview_locales.json"
+      ],
+      "before": null,
+      "after": "58e938122dc7f5aed946e3ecfdc4954e70a402d0827bd2ff8f30243047f47602",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader-performance/run.cjs",
+      "targets": [
+        "dev-tools/reader-performance/run.cjs"
+      ],
+      "before": "b3665d049252c40aceb47547efe6631891932d93f25c8be9d281bad1edfc17ba",
+      "after": "7bde37be20b42b87fa2bc40c45ce554a8ee6d93bfb97f25724b00c445bf8ed7d",
+      "changed": true
+    }
+  ]
+}

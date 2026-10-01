@@ -1,4 +1,4 @@
-// Builds the First Response body scene against a stub THREE and reports the
+// Builds the First Response body scene against bundled Three.js and reports the
 // recovery-position landmarks in world space.
 //
 // Why this exists: the recovery tab's teaching content IS the pose, and the
@@ -9,47 +9,9 @@
 // airway step moved nothing. Positions answer the actual question, in
 // milliseconds and with no browser.
 //
-// The stub implements only what buildBodyScene touches. Segment ORIENTATION is
-// not modelled (quaternion is a no-op) because every assertion here is about
-// where joints are, which the builder sets directly.
-
-class V3 {
-  constructor(x = 0, y = 0, z = 0) { this.x = x; this.y = y; this.z = z; }
-  set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }
-  copy(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
-  add(v) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
-  subVectors(a, b) { this.x = a.x - b.x; this.y = a.y - b.y; this.z = a.z - b.z; return this; }
-  multiplyScalar(s) { this.x *= s; this.y *= s; this.z *= s; return this; }
-  length() { return Math.hypot(this.x, this.y, this.z); }
-  normalize() { const l = this.length() || 1; return this.multiplyScalar(1 / l); }
-  setScalar(s) { return this.set(s, s, s); }
-}
-
-class Obj {
-  constructor() {
-    this.position = new V3();
-    this.rotation = new V3();
-    this.scale = new V3(1, 1, 1);
-    this.children = [];
-    this.userData = {};
-    this.visible = true;
-    this.quaternion = { setFromUnitVectors() {} };
-  }
-  add(o) { this.children.push(o); return this; }
-  traverse(f) { f(this); this.children.forEach((c) => c.traverse(f)); }
-}
-
-class Mesh extends Obj {
-  constructor(g, m) { super(); this.geometry = g; this.material = m || {}; this.isMesh = true; }
-}
-
-function geom() { return {}; }
-
-const THREE = {
-  Group: Obj, Mesh, Vector3: V3,
-  BoxGeometry: geom, SphereGeometry: geom, CylinderGeometry: geom,
-  TorusGeometry: geom, RingGeometry: geom, ConeGeometry: geom,
-};
+import { readFileSync } from 'node:fs';
+const THREE = {};
+new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js', 'utf8'))(THREE, { exports: THREE });
 
 function arrayLiteral(src, name) {
   const start = src.indexOf('var ' + name + ' = [');
@@ -98,17 +60,22 @@ export function makePoseProbe(src) {
   // eslint-disable-next-line no-new-func
   const build = new Function('THREE', sandbox)(THREE);
   return function pose(phase, age, tab) {
-    const built = build(THREE, {
-      scene: new Obj(),
-      phase,
-      dark: true,
-      contrast: false,
-      wantShadow: false,
-      trim: () => ({}),
-      sceneProps: { tab: tab || 'recovery', age: age || 'adult' },
-    });
-    if (!built.landmarks) throw new Error('pose probe: buildBodyScene returned no landmarks');
-    return built.landmarks;
+    const scene = new THREE.Scene();
+    try {
+      const built = build(THREE, {
+        scene,
+        phase,
+        dark: true,
+        contrast: false,
+        wantShadow: false,
+        trim: color => new THREE.MeshPhongMaterial({ color }),
+        sceneProps: { tab: tab || 'recovery', age: age || 'adult' },
+      });
+      if (!built.landmarks) throw new Error('pose probe: buildBodyScene returned no landmarks');
+      return built.landmarks;
+    } finally {
+      scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
   };
 }
 

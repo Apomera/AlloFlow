@@ -1,0 +1,47 @@
+[
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 6
+  },
+  {
+    "file": "tests/reader_place_review_adapt.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/original_reader_markdown.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/reader_keyboard_a11y.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/reader_render_cost.test.js",
+    "existed": true,
+    "conflicts": 1
+  },
+  {
+    "file": "tests/reader_sentence_links.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/reader_sentence_numbering.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/track07-browser-fixture.js",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/track07-browser-acceptance.cjs",
+    "existed": false,
+    "conflicts": 0
+  }
+]

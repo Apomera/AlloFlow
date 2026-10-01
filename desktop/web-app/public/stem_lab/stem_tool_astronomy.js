@@ -556,8 +556,13 @@
     });
     return { state: 'available', intervals: intervals, selected: selected, peak: selectedPeak };
   }
-  // Uniform-brightness transit model. Display, cursor and light curve share the
-  // same projected path; no visual minimum size changes the physical geometry.
+  // Agol et al. (2021), as archived by NASA. Keep one published solution
+  // together; the clock is available only while its geometry is unchanged.
+  var TRANSIT_REFERENCE = { planet: 0.920, star: 0.1192, impact: 0.191,
+    periodDays: 6.101013, scaledOrbit: 52.855, durationMinutes: 0.9293 * 60,
+    durationErrorMinutes: 0.0043 * 60 };
+  // Linked projected geometry and normalized flux. Linear limb darkening uses
+  // I(r)/I(0) = 1-u+u*sqrt(1-r^2); the total stellar flux is pi*(1-u/3).
   function transitModel(saved) {
     saved = saved || {};
     function valid(value, low, high, fallback) {
@@ -566,9 +571,15 @@
     }
     var planet = valid(saved.transitPlanetR, 0.3, 12, 1), star = valid(saved.transitStarR, 0.1, 3, 1);
     var impact = valid(saved.transitImpact, 0, 1.2, 0), time = valid(saved.transitTime, 0, 1, 0.5);
+    var limb = valid(saved.transitLimb, 0, 1, 0);
+    var reference = saved.transitOrbit === 'trappist' &&
+      Math.abs(planet - TRANSIT_REFERENCE.planet) < 1e-10 &&
+      Math.abs(star - TRANSIT_REFERENCE.star) < 1e-10 &&
+      Math.abs(impact - TRANSIT_REFERENCE.impact) < 1e-10 ? TRANSIT_REFERENCE : null;
     // IAU 2015 B3 nominal equatorial Earth and solar radii, in km.
     var ratio = planet * 6378.1 / (star * 695700), halfWindow = 1 + ratio + 0.35;
-    function blockedAt(separation) {
+    var halfAngle = reference ? Math.asin(halfWindow / reference.scaledOrbit) : null;
+    function uniformAt(separation) {
       var k = ratio, distance = Math.max(0, separation);
       if (distance >= 1 + k) return 0;
       if (distance <= Math.abs(1 - k)) return Math.min(1, k * k);
@@ -578,19 +589,54 @@
       var lens = 0.5 * Math.sqrt(Math.max(0, (-distance + 1 + k) * (distance + 1 - k) * (distance - 1 + k) * (distance + 1 + k)));
       return Math.max(0, Math.min(1, (a + k * k * b - lens) / Math.PI));
     }
+    function muDisc(radius) {
+      var r = Math.max(0, Math.min(1, radius));
+      return -(2 / 3) * Math.expm1(1.5 * Math.log1p(-r * r));
+    }
+    function blockedAt(separation, uniform) {
+      var distance = Math.max(0, separation), k = ratio;
+      if (uniform === 0 || uniform === 1 || limb === 0) return uniform;
+      if (distance < 1e-12) return ((1 - limb) * uniform + limb * muDisc(k)) / (1 - limb / 3);
+      var fullRadius = Math.max(0, Math.min(1, k - distance));
+      var muFlux = muDisc(fullRadius), low = Math.abs(distance - k), high = Math.min(1, distance + k);
+      if (high > low) {
+        // Integrate only the intersected annuli. A sin^2 change of variable
+        // resolves both tangencies and the stellar limb, including tiny planets.
+        var steps = 64, dq = Math.PI / (2 * steps), sum = 0, span = high - low;
+        for (var i = 1; i < steps; i++) {
+          var q = i * dq, sin = Math.sin(q), r = low + span * sin * sin;
+          var cosine = (r * r + distance * distance - k * k) / (2 * r * distance);
+          var fraction = Math.acos(Math.max(-1, Math.min(1, cosine))) / Math.PI;
+          var integrand = 2 * r * Math.sqrt(Math.max(0, 1 - r * r)) * fraction * span * Math.sin(2 * q);
+          sum += (i % 2 ? 4 : 2) * integrand;
+        }
+        muFlux += sum * dq / 3;
+      }
+      return Math.max(0, Math.min(1, ((1 - limb) * uniform + limb * muFlux) / (1 - limb / 3)));
+    }
+    function minutesAt(position) {
+      return reference ? (2 * valid(position, 0, 1, 0.5) - 1) * halfAngle * reference.periodDays * 1440 / (2 * Math.PI) : null;
+    }
     function at(position) {
-      var t = valid(position, 0, 1, 0.5), x = (2 * t - 1) * halfWindow;
-      var blocked = blockedAt(Math.hypot(x, impact));
-      return { time: t, x: x, blocked: blocked, brightness: 1 - blocked };
+      var t = valid(position, 0, 1, 0.5), angle = reference ? (2 * t - 1) * halfAngle : null;
+      var x = reference ? reference.scaledOrbit * Math.sin(angle) : (2 * t - 1) * halfWindow;
+      var y = reference ? impact * Math.cos(angle) : impact;
+      var uniform = uniformAt(Math.hypot(x, y)), blocked = blockedAt(Math.hypot(x, y), uniform);
+      return { time: t, x: x, y: y, blocked: blocked, uniformBlocked: uniform, brightness: 1 - blocked, minutes: minutesAt(t) };
     }
-    var depth = blockedAt(impact), contacts = null;
-    if (depth > 0) {
-      var outer = Math.sqrt(Math.max(0, (1 + ratio) * (1 + ratio) - impact * impact));
-      var inner = impact <= Math.abs(1 - ratio) ? Math.sqrt(Math.max(0, (1 - ratio) * (1 - ratio) - impact * impact)) : null;
-      contacts = { first: 0.5 - outer / (2 * halfWindow), second: inner === null ? null : 0.5 - inner / (2 * halfWindow),
-        third: inner === null ? null : 0.5 + inner / (2 * halfWindow), fourth: 0.5 + outer / (2 * halfWindow) };
+    var uniformDepth = uniformAt(impact), depth = blockedAt(impact, uniformDepth), contacts = null;
+    function contactOffset(radius) {
+      if (impact > radius) return null;
+      return reference ? Math.asin(Math.sqrt(Math.max(0, (radius * radius - impact * impact) /
+        (reference.scaledOrbit * reference.scaledOrbit - impact * impact)))) / (2 * halfAngle)
+        : Math.sqrt(Math.max(0, radius * radius - impact * impact)) / (2 * halfWindow);
     }
-    var current = at(time), geometry = depth === 0 ? 'miss' : impact > Math.abs(1 - ratio) ? 'grazing' : ratio > 1 ? 'occultation' : 'full';
+    if (uniformDepth > 0) {
+      var outer = contactOffset(1 + ratio), inner = contactOffset(Math.abs(1 - ratio));
+      contacts = { first: 0.5 - outer, second: inner === null ? null : 0.5 - inner,
+        third: inner === null ? null : 0.5 + inner, fourth: 0.5 + outer };
+    }
+    var current = at(time), geometry = uniformDepth === 0 ? 'miss' : impact > Math.abs(1 - ratio) ? 'grazing' : ratio > 1 ? 'occultation' : 'full';
     var stage = 'middle';
     if (!contacts) stage = 'miss';
     else if (time <= contacts.first) stage = 'before';
@@ -598,7 +644,110 @@
     else if (time < (contacts.second === null ? 0.5 : contacts.second)) stage = 'entering';
     else if (time > (contacts.third === null ? 0.5 : contacts.third)) stage = 'leaving';
     return { planet: planet, star: star, impact: impact, time: time, ratio: ratio, halfWindow: halfWindow,
-      depth: depth, centralDepth: Math.min(1, ratio * ratio), contacts: contacts, geometry: geometry, stage: stage, current: current, at: at };
+      limb: limb, reference: reference, uniformDepth: uniformDepth, depth: depth,
+      centralDepth: blockedAt(0, Math.min(1, ratio * ratio)), contacts: contacts, geometry: geometry,
+      stage: stage, current: current, at: at, minutesAt: minutesAt,
+      durationMinutes: reference && contacts ? minutesAt(contacts.fourth) - minutesAt(contacts.first) : null,
+      intensityAt: function(radius) { var r = valid(radius, 0, 1, 0); return 1 - limb + limb * Math.sqrt(1 - r * r); } };
+  }
+
+  // One frozen-frequency orbit in an early circular inspiral. Leading
+  // quadrupole amplitude uses redshifted chirp mass and luminosity distance.
+  // This is an ideal face-on source and a normally incident plus component.
+  var GW_REFERENCE = { mass1: 36, mass2: 29, distance: 410, redshift: 0.09 };
+  function gravitationalWaveModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function number(value, fallback, low, high) {
+      var n = typeof value === 'number' || typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+      return Number.isFinite(n) ? Math.max(low, Math.min(high, n)) : fallback;
+    }
+    var mass1 = number(state.waveMass1, 36, 5, 80), mass2 = number(state.waveMass2, 29, 5, 80);
+    var distance = number(state.waveDistance, 410, 50, 2000), redshift = number(state.waveRedshift, 0.09, 0, 1);
+    var orientation = number(state.waveOrientation, 0, 0, 90), phase = number(state.wavePhase, 0, 0, 1);
+    var G = 6.67430e-11, c = 299792458, solarMass = 1.98847e30, mpc = 3.0856775814913673e22;
+    var total = mass1 + mass2, chirp = Math.pow(mass1 * mass2, 3 / 5) / Math.pow(total, 1 / 5);
+    var detectorChirp = chirp * (1 + redshift), massTime = G * total * solarMass * (1 + redshift) / Math.pow(c, 3);
+    // Restrict v/c <= 0.3, with a separate 120 Hz teaching cap.
+    var frequencyLimit = Math.min(120, Math.floor(Math.pow(0.3, 3) / (Math.PI * massTime) * 10) / 10);
+    var frequency = number(state.waveFrequency, Math.min(20, frequencyLimit), 2, frequencyLimit);
+    var sourceFrequency = frequency * (1 + redshift);
+    var separation = Math.pow(G * total * solarMass / Math.pow(Math.PI * sourceFrequency, 2), 1 / 3);
+    var radius1 = separation * mass2 / total, radius2 = separation * mass1 / total;
+    var horizon1 = 2 * G * mass1 * solarMass / (c * c), horizon2 = 2 * G * mass2 * solarMass / (c * c);
+    var chirpTime = G * detectorChirp * solarMass / Math.pow(c, 3);
+    var amplitude = 4 * c / (distance * mpc) * Math.pow(chirpTime, 5 / 3) * Math.pow(Math.PI * frequency, 2 / 3);
+    var response = Math.cos(2 * orientation * Math.PI / 180);
+    if (Math.abs(response) < 1e-12) response = 0;
+    var armMeters = 4000, duration = 2 / frequency;
+    var reference = mass1 === GW_REFERENCE.mass1 && mass2 === GW_REFERENCE.mass2 && distance === GW_REFERENCE.distance && redshift === GW_REFERENCE.redshift;
+    function at(value) {
+      var t = number(value, 0, 0, 1), orbitAngle = t * Math.PI * 2, waveAngle = orbitAngle * 2;
+      var cosine = Math.cos(waveAngle); if (Math.abs(cosine) < 1e-12) cosine = 0;
+      var plus = amplitude * cosine, strain = plus === 0 || response === 0 ? 0 : plus * response;
+      var xChange = armMeters * strain / 2, yChange = -xChange;
+      return { phase: t, seconds: t * duration, orbitAngle: orbitAngle, waveAngle: waveAngle,
+        x1: radius1 * Math.cos(orbitAngle), y1: radius1 * Math.sin(orbitAngle),
+        x2: -radius2 * Math.cos(orbitAngle), y2: -radius2 * Math.sin(orbitAngle),
+        plus: plus, strain: strain, xChange: xChange, yChange: yChange, differential: xChange - yChange };
+    }
+    return { mass1: mass1, mass2: mass2, distance: distance, redshift: redshift, orientation: orientation, phase: phase,
+      total: total, chirp: chirp, detectorChirp: detectorChirp, frequency: frequency, frequencyLimit: frequencyLimit,
+      sourceFrequency: sourceFrequency, separation: separation, radius1: radius1, radius2: radius2, horizon1: horizon1, horizon2: horizon2,
+      amplitude: amplitude, response: response, duration: duration, armMeters: armMeters, displayGain: 0.2 / amplitude,
+      reference: reference, at: at, current: at(phase) };
+  }
+
+  // Fixed published spin examples. Geometry and beam brightness are chosen
+  // teaching inputs; these values do not supply an observed pulse profile.
+  var PULSAR_SPINS = [
+    { id: 'b1919', name: 'PSR B1919+21', periodMs: 1337.30, frequencyHz: 1000 / 1337.30,
+      source: 'https://www.nasa.gov/missions/station/nasa-continues-to-study-pulsars-50-years-after-their-chance-discovery/' },
+    { id: 'j1748', name: 'PSR J1748−2446ad', periodMs: 1000 / 716, frequencyHz: 716,
+      source: 'https://arxiv.org/abs/astro-ph/0601337' }
+  ];
+  function pulsarLighthouseModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function number(value, fallback, low, high) {
+      var parsed = typeof value === 'number' || typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+      return Number.isFinite(parsed) ? Math.max(low, Math.min(high, parsed)) : fallback;
+    }
+    var tilt = number(state.pulsarTilt, 45, 0, 90);
+    var observer = number(state.pulsarObserver, 45, 0, 180);
+    var width = number(state.pulsarWidth, 12, 1, 45);
+    var phase = number(state.pulsarPhase, 0, 0, 1);
+    var spin = PULSAR_SPINS.find(function(s) { return s.id === state.pulsarSpin; }) || PULSAR_SPINS[0];
+    var rad = Math.PI / 180, alpha = tilt * rad, zeta = observer * rad, rho = width * rad;
+    var amplitude = Math.sin(alpha) * Math.sin(zeta), offset = Math.cos(alpha) * Math.cos(zeta);
+    var observerVector = [Math.sin(zeta), 0, Math.cos(zeta)], threshold = Math.cos(rho);
+    function clamp(value) { return Math.max(-1, Math.min(1, value)); }
+    // Analytic visibility windows include wraparound near phase zero.
+    function windows(sign) {
+      var constant = sign * offset;
+      if (amplitude < 1e-12) return constant > threshold + 1e-12 ? [[0, 1]] : [];
+      if (constant + amplitude <= threshold + 1e-12) return [];
+      if (constant - amplitude > threshold) return [[0, 1]];
+      var half = Math.acos(clamp((threshold - constant) / amplitude)) / (2 * Math.PI);
+      return sign === 1 ? [[0, half], [1 - half, 1]] : [[0.5 - half, 0.5 + half]];
+    }
+    var windowsA = windows(1), windowsB = windows(-1);
+    var duty = windowsA.concat(windowsB).reduce(function(sum, w) { return sum + w[1] - w[0]; }, 0);
+    var kind = duty === 0 ? 'none' : amplitude < 1e-12 ? 'steady' : duty >= 1 - 1e-12 ? 'continuous' : windowsA.length && windowsB.length ? 'two' : 'one';
+    function at(value) {
+      var t = number(value, 0, 0, 1), phi = t * Math.PI * 2;
+      var axis = [Math.sin(alpha) * Math.cos(phi), Math.sin(alpha) * Math.sin(phi), Math.cos(alpha)];
+      var dot = clamp(axis[0] * observerVector[0] + axis[2] * observerVector[2]);
+      var angleA = Math.acos(dot), angleB = Math.acos(-dot);
+      // A smooth filled cone, chosen for teaching. Its center is one and
+      // its edge is zero; two disjoint cones cannot add above one.
+      function strength(angle) { return angle < rho - 1e-12 ? Math.pow(Math.cos(angle / rho * Math.PI / 2), 2) : 0; }
+      var signalA = strength(angleA), signalB = strength(angleB);
+      return { phase: t, timeMs: t * spin.periodMs, axis: axis, angleA: angleA / rad, angleB: angleB / rad,
+        separation: Math.min(angleA, angleB) / rad, nearest: angleA <= angleB ? 'A' : 'B',
+        signalA: signalA, signalB: signalB, signal: signalA + signalB, visible: signalA + signalB > 0 };
+    }
+    return { tilt: tilt, observer: observer, width: width, phase: phase, spin: spin,
+      observerVector: observerVector, amplitude: amplitude, offset: offset,
+      windowsA: windowsA, windowsB: windowsB, duty: Math.min(1, duty), kind: kind, at: at, current: at(phase) };
   }
 
   // Illustrative HR band: a teaching guide rather than a stellar evolution track.
@@ -610,6 +759,277 @@
     }
     return 5.5;
   }
+  // Vacuum reference wavelengths, nm: SDSS DR20 conversions and SDSS line list.
+  var REDSHIFT_LINES = [
+    { id: 'lya', name: 'Lyman-alpha', nm: 121.567 },
+    { id: 'hb', name: 'H-beta', nm: 486.2683 },
+    { id: 'oiii', name: '[O III]', nm: 500.8239 },
+    { id: 'ha', name: 'H-alpha', nm: 656.4614 }
+  ];
+  var REDSHIFT_REFERENCES = [
+    { id: 'gnz11', name: 'GN-z11', z: 10.603, year: 2023, url: 'https://arxiv.org/abs/2302.07256' },
+    { id: 'jades14', name: 'JADES-GS-z14-0', z: 14.1793, uncertainty: 0.0007, year: 2025, url: 'https://arxiv.org/abs/2409.20549' }
+  ];
+
+  // Paraxial ray paths use an enlarged schematic layout. Numeric optics and
+  // the pupil comparison are calculated independently in millimeters.
+  function telescopeOpticsModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function normalizedScopeValue(value, min, max, step, fallback) {
+      var numeric = typeof value === 'number' || typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+      if (!Number.isFinite(numeric)) return fallback;
+      return min + Math.round((Math.max(min, Math.min(max, numeric)) - min) / step) * step;
+    }
+    var type = state.scopeType === 'reflector' ? 'reflector' : 'refractor';
+    var aperture = normalizedScopeValue(state.scopeAperture, 50, 400, 10, 100);
+    var focal = normalizedScopeValue(state.scopeFocalLen, 300, 3000, 50, 1000);
+    var eyepiece = normalizedScopeValue(state.eyepieceFl, 4, 40, 1, 25);
+    var stage = ['all', 'collect', 'focus', 'eyepiece'].indexOf(state.scopeRayStage) >= 0 ? state.scopeRayStage : 'all';
+    var power = focal / eyepiece, pupil = aperture / power, eye = 6, pupilScale = 68 / Math.max(eye, pupil);
+    var half = 18 + (aperture - 50) / 350 * 40;
+    var diagramF = (type === 'reflector' ? 260 : 120) + (focal - 300) / 2700 * 50;
+    var diagramEp = 24 + (eyepiece - 4) / 36 * 20;
+    var axis = type === 'reflector' ? 195 : 160;
+    var objective = { x: type === 'reflector' ? 310 : 65, y: axis };
+    var focus = type === 'reflector' ? { x: 120, y: axis - (diagramF - 190) } : { x: 65 + diagramF, y: axis };
+    var ep = type === 'reflector' ? { x: focus.x, y: focus.y - diagramEp } : { x: focus.x + diagramEp, y: axis };
+    var rays = (type === 'reflector' ? [-1, -.65, .65, 1] : [-1, -.5, 0, .5, 1]).map(function(fraction) {
+      var h = fraction * half, start = { x: 12, y: axis + h }, primary = { x: objective.x, y: axis + h };
+      if (type === 'refractor') {
+        var atEp = { x: ep.x, y: axis - h * diagramEp / diagramF };
+        return { fraction: fraction, incoming: [start, primary], focusing: [primary, focus],
+          eyepiece: [focus, atEp, { x: 342, y: atEp.y }], primary: primary, atEp: atEp };
+      }
+      // Intersection with a 45-degree flat mirror, y - x = axis - 120.
+      // Reflecting the unfolded focus in that line gives the physical side focus.
+      var unfoldedX = objective.x - diagramF;
+      var hitX = (120 - h * unfoldedX / diagramF) / (1 - h / diagramF);
+      var hit = { x: hitX, y: hitX + axis - 120 };
+      var atEp = { x: focus.x - h * diagramEp / diagramF, y: ep.y };
+      return { fraction: fraction, incoming: [start, primary], focusing: [primary, hit, focus],
+        eyepiece: [focus, atEp, { x: atEp.x, y: 20 }], primary: primary, secondary: hit, atEp: atEp };
+    });
+    var secondary = type === 'reflector' ? {
+      first: { x: rays[0].secondary.x - 4, y: rays[0].secondary.y - 4 },
+      last: { x: rays[rays.length - 1].secondary.x + 4, y: rays[rays.length - 1].secondary.y + 4 }
+    } : null;
+    return { type: type, apertureMm: aperture, focalMm: focal, eyepieceMm: eyepiece, stage: stage,
+      magnification: power, focalRatio: focal / aperture, exitPupilMm: pupil, eyePupilMm: eye,
+      grossAreaRatio: Math.pow(aperture / eye, 2), dawesArcsec: 116 / aperture, approximateMaxPower: aperture * 2,
+      eyeRadiusPx: eye * pupilScale, beamRadiusPx: pupil * pupilScale,
+      halfAperturePx: half, diagramFocalPx: diagramF, diagramEyepiecePx: diagramEp,
+      axis: axis, objective: objective, focus: focus, ep: ep, secondary: secondary, rays: rays };
+  }
+
+  // Angular geometry is calculated; seeing and sky brightness are teaching sketches.
+  function eyepieceFieldModel(saved, target) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function normalized(value, min, max, step, fallback) {
+      var numeric = typeof value === 'number' || typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+      if (!Number.isFinite(numeric)) return fallback;
+      return Number((min + Math.round((Math.max(min, Math.min(max, numeric)) - min) / step) * step).toFixed(6));
+    }
+    var aperture = normalized(state.eyApertureMm, 50, 400, 10, 150);
+    var focal = normalized(state.eyFocalMm, 200, 4000, 50, 1200);
+    var eyepiece = normalized(state.eyEpFlMm, 4, 40, 1, 25);
+    var apparentField = normalized(state.eyEpField, 40, 100, 5, 60);
+    var seeing = normalized(state.eySeeing, 0.5, 10, 0.5, 2.5);
+    var bortle = normalized(state.eyBortle, 1, 9, 1, 4);
+    var diameter = target && typeof target.sizeArcmin === 'number' && Number.isFinite(target.sizeArcmin) && target.sizeArcmin > 0 ? Math.min(360, target.sizeArcmin) : 65;
+    var magnification = focal / eyepiece, fieldDeg = apparentField / magnification, fieldArcmin = fieldDeg * 60;
+    var radius = diameter / fieldArcmin * 230;
+    // Saturn's illustrated ring edge; Jupiter's illustrative moon positions.
+    var footprintScale = target && target.id === 'saturn' ? 2.26 : target && target.id === 'jupiter' ? 2.8 : 1;
+    return { apertureMm: aperture, focalMm: focal, eyepieceMm: eyepiece, apparentFieldDeg: apparentField,
+      seeingArcsec: seeing, bortle: bortle, magnification: magnification, fieldDeg: fieldDeg, fieldArcmin: fieldArcmin,
+      exitPupilMm: aperture / magnification, focalRatio: focal / aperture, dawesArcsec: 116 / aperture,
+      targetDiameterArcmin: diameter, targetRadiusPx: radius, footprintScale: footprintScale,
+      footprintArcmin: diameter * footprintScale, fits: diameter * footprintScale <= fieldArcmin,
+      fieldRadiusPx: 230, seeingSigmaPx: seeing / (fieldArcmin * 60) * 460 / 2.355,
+      diffuseOpacity: 1 - (bortle - 1) * 0.09, starOpacity: 0.9 - (bortle - 1) * 0.045,
+      isReferenceInstrument: aperture === 130 && focal === 650 };
+  }
+
+  // Point lens with a finite, uniformly bright circular source. The measured
+  // Cosmic Horseshoe diameter sets an angular reference, not a galaxy mass model.
+  function gravitationalLensModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function normalized(value, min, max, step, fallback) {
+      var numeric = typeof value === 'number' || typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+      if (!Number.isFinite(numeric)) return fallback;
+      return Number((min + Math.round((Math.max(min, Math.min(max, numeric)) - min) / step) * step).toFixed(6));
+    }
+    var referenceRadius = 5.1; // Belokurov et al. 2007, Table 1: 10.2 arcsec diameter.
+    var legacyMass = normalized(state.lensMass, 10, 200, 5, 50) / 50;
+    var legacyOffset = normalized(state.lensOffset, -80, 80, 2, 0) / 40 * referenceRadius;
+    var massRatio = normalized(state.lensMassRatio === undefined ? legacyMass : state.lensMassRatio, 0.2, 4, 0.1, 1);
+    var sourceArcsec = normalized(state.lensSourceArcsec === undefined ? legacyOffset : state.lensSourceArcsec, -10, 10, 0.25, 0);
+    var beta = sourceArcsec / referenceRadius, rho = 0.18, einstein = Math.sqrt(massRatio);
+    var outer = [], inner = [], samples = 360;
+    for (var i = 0; i < samples; i++) {
+      var angle = i / samples * 2 * Math.PI;
+      var bx = beta + rho * Math.cos(angle), by = rho * Math.sin(angle);
+      var radius = Math.hypot(bx, by);
+      var root = Math.sqrt(radius * radius + 4 * massRatio);
+      var plus = (radius + root) / 2, minus = (radius - root) / 2;
+      outer.push({ x: bx / radius * plus, y: by / radius * plus, bx: bx, by: by });
+      inner.push({ x: bx / radius * minus, y: by / radius * minus, bx: bx, by: by });
+    }
+    function polygonArea(points) {
+      var area = 0;
+      for (var j = 0; j < points.length; j++) { var next = points[(j + 1) % points.length]; area += points[j].x * next.y - next.x * points[j].y; }
+      return Math.abs(area) / 2;
+    }
+    var connected = Math.abs(beta) < rho;
+    var sourceArea = samples / 2 * rho * rho * Math.sin(2 * Math.PI / samples);
+    var magnification = (polygonArea(outer) + (connected ? -1 : 1) * polygonArea(inner)) / sourceArea;
+    var centerImages = [];
+    if (beta !== 0) {
+      var direction = beta > 0 ? 1 : -1, centerRoot = Math.sqrt(beta * beta + 4 * massRatio);
+      centerImages = [{ id: 'outer', arcsec: (beta + direction * centerRoot) / 2 * referenceRadius }, { id: 'inner', arcsec: (beta - direction * centerRoot) / 2 * referenceRadius }];
+    }
+    function plotX(value) { return 180 + value / referenceRadius * 40; }
+    function outline(points) { return points.map(function(point,index) { return (index ? 'L' : 'M') + (180 + point.x * 40).toFixed(3) + ' ' + (180 - point.y * 40).toFixed(3); }).join(' ') + ' Z'; }
+    return { massRatio: massRatio, sourceArcsec: sourceArcsec, referenceRadiusArcsec: referenceRadius,
+      einsteinRadiusArcsec: einstein * referenceRadius, sourceRadiusArcsec: rho * referenceRadius,
+      appearance: beta === 0 ? 'ring' : connected ? 'distorted-ring' : 'images', connected: connected,
+      magnification: magnification, outer: outer, inner: inner, centerImages: centerImages,
+      outerPath: outline(outer), innerPath: outline(inner), plotX: plotX, plotScale: 40 / referenceRadius,
+      boundsArcsec: [-4 * referenceRadius, 4 * referenceRadius] };
+  }
+
+  var STELLAR_SPECTRUM_LINES = [REDSHIFT_LINES[3], REDSHIFT_LINES[1],
+    { id: 'hg', name: 'H-gamma', nm: 434.168 }, { id: 'hd', name: 'H-delta', nm: 410.289 }];
+  function stellarSpectrumModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    var mode = ['continuous','emission','absorption'].indexOf(state.spectrumType) >= 0 ? state.spectrumType : 'absorption';
+    var raw = state.dopplerKms;
+    var numeric = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+    var velocity = Number.isFinite(numeric) ? Math.round(Math.max(-300, Math.min(300, numeric)) / 10) * 10 || 0 : 0;
+    // Pure radial motion, special relativity. Cosmological/gravitational shifts are separate.
+    var beta = velocity / 299792.458, factor = Math.sqrt((1 + beta) / (1 - beta));
+    function overviewX(nm) { return 24 + (nm - 380) / 370 * 372; }
+    var rows = STELLAR_SPECTRUM_LINES.map(function(line) { var observed = line.nm * factor; return { id: line.id, name: line.name, restNm: line.nm, observedNm: observed, deltaNm: observed - line.nm, restX: overviewX(line.nm), observedX: overviewX(observed) }; });
+    var selected = rows.find(function(line) { return line.id === state.spectrumLine; }) || rows[0];
+    var zoomMinNm = selected.restNm - 1.25, zoomMaxNm = selected.restNm + 1.25;
+    function zoomX(nm) { return 24 + (nm - zoomMinNm) / 2.5 * 372; }
+    return { mode: mode, hasLines: mode !== 'continuous', velocity: velocity, factor: factor, selected: selected, rows: rows,
+      direction: velocity > 0 ? 'away' : velocity < 0 ? 'toward' : 'rest',
+      zoomMinNm: zoomMinNm, zoomMaxNm: zoomMaxNm, zoomRestX: zoomX(selected.restNm), zoomObservedX: zoomX(selected.observedNm), zoomMagnification: 148, overviewX: overviewX, zoomX: zoomX };
+  }
+
+  function cosmicRedshiftModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    var requestedReference = REDSHIFT_REFERENCES.find(function(example) { return example.id === state.redshiftReference; });
+    var raw = state.redshiftZ;
+    var numeric = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+    var fallback = raw === undefined && requestedReference ? requestedReference.z : 1;
+    var z = Number.isFinite(numeric) ? Math.max(0, Math.min(15, numeric)) : fallback;
+    z = Math.round(z * 10000) / 10000;
+    var stretch = 1 + z;
+    function x(nm) { return 24 + Math.log(nm / 100) / Math.log(120) * 372; }
+    function band(nm) { return nm < 380 ? 'uv' : nm <= 750 ? 'visible' : 'infrared'; }
+    var rows = REDSHIFT_LINES.map(function(line) { return { id: line.id, name: line.name, restNm: line.nm, observedNm: line.nm * stretch, restX: x(line.nm), observedX: x(line.nm * stretch), band: band(line.nm * stretch) }; });
+    var selected = rows.find(function(line) { return line.id === state.redshiftLine; }) || rows[3];
+    var reference = requestedReference && Math.abs(z - requestedReference.z) < 0.00005 ? requestedReference : null;
+    return { z: z, stretch: stretch, selected: selected, rows: rows, reference: reference, minNm: 100, maxNm: 12000, x: x, band: band };
+  }
+
+  function planetComparisonModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    var selected = PLANETS.find(function(planet) { return planet.id === state.selectedPlanet; }) || PLANETS[2];
+    var reference = PLANETS.find(function(planet) { return planet.id === state.planetCompareWith; }) || PLANETS[selected.id === 'earth' ? 4 : 2];
+    var mode = ['size', 'distance', 'year'].indexOf(state.planetCompareMode) >= 0 ? state.planetCompareMode : 'size';
+    var rawYears = state.planetElapsedYears;
+    var numericYears = typeof rawYears === 'number' || typeof rawYears === 'string' && rawYears.trim() !== '' ? Number(rawYears) : 0;
+    var elapsedYears = Number.isFinite(numericYears) ? Math.max(0, Math.min(5, numericYears)) : 0;
+    function value(planet) { return mode === 'size' ? planet.diameterEarth : mode === 'distance' ? planet.auFromSun : planet.yearDays / 365.2; }
+    var extent = Math.max.apply(null, PLANETS.map(value));
+    var maxDiameter = Math.max(selected.diameterKm, reference.diameterKm);
+    function orbitPoint(planet, radius) {
+      var turns = elapsedYears * 365.2 / planet.yearDays;
+      var angle = Math.PI / 2 + turns * Math.PI * 2;
+      return { turns: turns, x: 180 + radius * Math.cos(angle), y: 115 - radius * Math.sin(angle), radius: radius };
+    }
+    return {
+      selected: selected, reference: reference, mode: mode, elapsedYears: elapsedYears,
+      selectedValue: value(selected), referenceValue: value(reference), ratio: value(selected) / value(reference),
+      extent: extent, pairExtent: Math.max(value(selected), value(reference)),
+      selectedRadius: 72 * selected.diameterKm / maxDiameter, referenceRadius: 72 * reference.diameterKm / maxDiameter,
+      selectedOrbit: orbitPoint(selected, 92), referenceOrbit: orbitPoint(reference, 64),
+      rows: PLANETS.map(function(planet) { return { planet: planet, value: value(planet), fraction: value(planet) / extent }; })
+    };
+  }
+
+
+  // Fixed literature examples: Bond et al. (2017), sections 8 and 9.
+  // Sirius B's quoted thermal uncertainties are internal fit errors.
+  var HR_STELLAR_REFERENCES = [
+    { id: 'sun', name: 'Sun', t: 5772, l: 1, m: 1, source: 'https://arxiv.org/abs/1510.07674' },
+    { id: 'siriusA', name: 'Sirius A', t: 9845, l: 24.74, m: 2.063, tError: 64, lError: 0.70, mError: 0.023, source: 'https://arxiv.org/abs/1703.10625' },
+    { id: 'siriusB', name: 'Sirius B', t: 25369, l: 0.02448, m: 1.018, tError: 46, lError: 0.00033, mError: 0.011, source: 'https://arxiv.org/abs/1703.10625' }
+  ];
+
+  // Schwarzschild equivalents; observed masses do not imply measured Hawking radiation.
+  // IAU nominal solar GM and CODATA 2022 constants; Fixsen (2009) CMB reference.
+  var BH_THERMAL = { c: 299792458, G: 6.67430e-11, h: 6.62607015e-34, k: 1.380649e-23,
+    solarGM: 1.3271244e20, cmbK: 2.72548, logMin: -14, logMax: 10 };
+  function blackHoleThermalModel(saved) {
+    var raw = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    var value = raw.bhMassSolar;
+    var n = typeof value === 'number' || typeof value === 'string' && value.trim() ? Number(value) : NaN;
+    var mass = Number.isFinite(n) ? Math.max(1e-14, Math.min(1e10, n)) : 1;
+    var c = BH_THERMAL.c, G = BH_THERMAL.G, hbar = BH_THERMAL.h / (2 * Math.PI), k = BH_THERMAL.k;
+    var solarRadius = 2 * BH_THERMAL.solarGM / (c * c);
+    var solarTemperature = hbar * c * c * c / (8 * Math.PI * BH_THERMAL.solarGM * k);
+    var mmMass = 0.001 / (2 * solarRadius), cmbMass = solarTemperature / BH_THERMAL.cmbK;
+    var examples = [
+      { id: 'solar', mass: 1 },
+      { id: 'millimeter', mass: mmMass },
+      { id: 'cmb', mass: cmbMass },
+      { id: 'sgrA', mass: 4.0e6 },
+      { id: 'm87', mass: 6.5e9 }
+    ];
+    var example = examples.find(function(entry) { return mass === entry.mass; }) || null;
+    var radius = solarRadius * mass, temperature = solarTemperature / mass;
+    var area = 4 * Math.PI * radius * radius, planckArea = hbar * G / (c * c * c);
+    var ratio = temperature / BH_THERMAL.cmbK;
+    var relation = Math.abs(Math.log(ratio)) < 1e-10 ? 'balanced' : ratio > 1 ? 'hotter' : 'colder';
+    var scale = 76 / Math.max(1, mass), logMass = Math.log10(mass);
+    function chartPoint(m) {
+      var t = solarTemperature / m;
+      return { x: (Math.log10(m) - BH_THERMAL.logMin) / (BH_THERMAL.logMax - BH_THERMAL.logMin),
+        y: (7 - Math.log10(t)) / 25, temperatureK: t };
+    }
+    return { massSolar: mass, massKg: mass * BH_THERMAL.solarGM / G, logMass: logMass,
+      radiusM: radius, diameterM: 2 * radius, temperatureK: temperature,
+      entropyOverK: area / (4 * planckArea), areaM2: area, cmbK: BH_THERMAL.cmbK,
+      cmbRatio: ratio, cmbRelation: relation, cmbMassSolar: cmbMass, millimeterMassSolar: mmMass,
+      example: example ? example.id : 'custom', examples: examples,
+      solarDisk: scale, selectedDisk: scale * mass,
+      solarTiny: scale < 1, selectedTiny: scale * mass < 1,
+      chart: chartPoint(mass), cmbChart: chartPoint(cmbMass),
+      curve: Array.from({ length: 49 }, function(_, index) {
+        return chartPoint(Math.pow(10, BH_THERMAL.logMin + index / 48 * (BH_THERMAL.logMax - BH_THERMAL.logMin)));
+      }) };
+  }
+
+  function hrComparisonModel(tempK, luminosity, mass, scaleMode) {
+    var star = hrStellarModel(tempK, luminosity);
+    var n = typeof mass === 'number' || typeof mass === 'string' && mass.trim() ? Number(mass) : NaN;
+    var solarMass = Number.isFinite(n) ? Math.max(0.1, Math.min(20, n)) : 1;
+    var mode = scaleMode === 'true' ? 'true' : 'compressed';
+    var reference = HR_STELLAR_REFERENCES.find(function(entry) {
+      return star.tempK === entry.t && star.lumin === entry.l && solarMass === entry.m;
+    }) || null;
+    var scale = 80 / Math.max(1, star.radius);
+    var sunDisk = mode === 'true' ? scale : 36;
+    var starDisk = mode === 'true' ? scale * star.radius : Math.max(10, Math.min(72, 36 + 18 * Math.log10(star.radius)));
+    return { star: star, mass: solarMass, mode: mode, reference: reference,
+      sunDisk: sunDisk, starDisk: starDisk, sunTiny: sunDisk < 1, starTiny: starDisk < 1,
+      surfaceArea: star.radius * star.radius, emissionPerArea: Math.pow(star.tempK / 5772, 4) };
+  }
+
   function hrStellarModel(tempK, luminosity) {
     function valid(value, low, high, fallback) {
       var n = typeof value === 'number' || typeof value === 'string' && value.trim() ? Number(value) : NaN;
@@ -634,8 +1054,8 @@
   }
   try {
     window.__alloAstroPure = {
-      transitModel: transitModel,
-      hrStellarModel: hrStellarModel, hrMainSequenceLogLum: hrMainSequenceLogLum,
+      gravitationalWaveModel: gravitationalWaveModel, pulsarLighthouseModel: pulsarLighthouseModel, transitModel: transitModel, planetComparisonModel: planetComparisonModel, cosmicRedshiftModel: cosmicRedshiftModel, stellarSpectrumModel: stellarSpectrumModel, gravitationalLensModel: gravitationalLensModel, eyepieceFieldModel: eyepieceFieldModel, telescopeOpticsModel: telescopeOpticsModel,
+      blackHoleThermalModel: blackHoleThermalModel, hrComparisonModel: hrComparisonModel, hrStellarModel: hrStellarModel, hrMainSequenceLogLum: hrMainSequenceLogLum,
       astroDayNumber: astroDayNumber, obliquity: obliquity, sunRaDec: sunRaDec, sunEcliptic: sunEcliptic,
       moonRaDec: moonRaDec, topocentricRaDec: topocentricRaDec, moonTopocentricRaDec: moonTopocentricRaDec, moonPhaseAt: moonPhaseAt, moonPhaseFromAge: moonPhaseFromAge, moonGlyphGeometry: moonGlyphGeometry,
       moonAgeAtDate: moonAgeAtDate, amEclipseState: amEclipseState, AM_SYNODIC: AM_SYNODIC, planetRaDec: planetRaDec, siderealTime: siderealTime,
@@ -1088,6 +1508,15 @@
       var node = panel.current;
       if (!node) return;
       node.scrollTop = 0;
+      var targetId = node.dataset.sectionTarget;
+      delete node.dataset.sectionTarget;
+      var target = targetId ? document.getElementById(targetId) : null;
+      if (target && node.contains(target)) {
+        delete node.dataset.focusNewSection;
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+        return;
+      }
       if (node.dataset.focusNewSection === 'true') {
         delete node.dataset.focusNewSection;
         node.focus({ preventScroll: true });
@@ -4291,25 +4720,32 @@
   // ──────────────────────────────────────────────────────────────────
   // DATA: Planets (naked-eye + others, with key facts)
   // ──────────────────────────────────────────────────────────────────
+  // Rounded reference values: NASA/NSSDCA Planetary Fact Sheet, 18 March 2025.
+  // Diameter is equatorial; yearDays is the sheet's tropical orbital period.
+  // Signed rotationHours describes star-relative spin, solarDayHours noon to noon.
+  var PLANET_FACT_SOURCE = 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/';
   var PLANETS = [
-    { id: 'mercury', name: 'Mercury',  icon: '☿', auFromSun: 0.39, diameterEarth: 0.38, dayHours: 4222.6, yearDays: 88,    moons: 0,   visible: 'naked-eye', color: '#8b7355',
-      fact: 'Closest to the Sun. Surface ranges from −180°C at night to +430°C in daylight. Has a strange 3:2 spin-orbit resonance — 3 rotations for every 2 orbits.' },
-    { id: 'venus',   name: 'Venus',    icon: '♀', auFromSun: 0.72, diameterEarth: 0.95, dayHours: 5832,   yearDays: 225,   moons: 0,   visible: 'naked-eye', color: '#e8c47a',
-      fact: 'Brightest planet, often the "morning star" or "evening star." Thick CO₂ atmosphere creates runaway greenhouse — surface is 465°C (hotter than Mercury). Spins backwards (retrograde).' },
-    { id: 'earth',   name: 'Earth',    icon: '🜨', auFromSun: 1.00, diameterEarth: 1.00, dayHours: 24,     yearDays: 365.25, moons: 1,   visible: 'self', color: '#4a90e2',
-      fact: 'The only known world with liquid water on its surface, a magnetic field strong enough to protect from solar wind, and life. So far we have not detected life anywhere else, despite 6,300+ confirmed exoplanets.' },
-    { id: 'mars',    name: 'Mars',     icon: '♂', auFromSun: 1.52, diameterEarth: 0.53, dayHours: 24.6,   yearDays: 687,   moons: 2,   visible: 'naked-eye', color: '#d76f43',
-      fact: 'Olympus Mons is the largest volcano in the solar system — 22 km tall, two and a half times the height of Everest. Past evidence of running water; now mostly frozen. The two moons (Phobos, Deimos) are probably captured asteroids.' },
-    { id: 'jupiter', name: 'Jupiter',  icon: '♃', auFromSun: 5.20, diameterEarth: 11.2, dayHours: 9.9,    yearDays: 4333,  moons: 115,  visible: 'naked-eye', color: '#c9a877',
-      fact: 'The largest planet — could fit 1,300 Earths inside. The Great Red Spot is a storm bigger than Earth that has been raging for at least 190 years. Four large moons (Io, Europa, Ganymede, Callisto) visible with binoculars; Europa likely has a subsurface ocean.' },
-    { id: 'saturn',  name: 'Saturn',   icon: '♄', auFromSun: 9.54, diameterEarth: 9.45, dayHours: 10.7,   yearDays: 10759, moons: 293, visible: 'naked-eye', color: '#e6d39f',
-      fact: 'The rings are mostly ice particles, from dust-sized to house-sized. So thin (about 10 m thick) that they almost disappear when seen edge-on. Saturn is less dense than water — if you had an ocean big enough, it would float.' },
-    { id: 'uranus',  name: 'Uranus',   icon: '♅', auFromSun: 19.2, diameterEarth: 4.0,  dayHours: 17.2,   yearDays: 30687, moons: 29,  visible: 'binoculars', color: '#a3d4d9',
-      fact: 'Tipped on its side — axial tilt of 98°. Each pole gets 42 years of continuous sunlight, then 42 years of darkness. The methane in its atmosphere gives the cyan color.' },
-    { id: 'neptune', name: 'Neptune',  icon: '♆', auFromSun: 30.1, diameterEarth: 3.9,  dayHours: 16.1,   yearDays: 60190, moons: 16,  visible: 'telescope',  color: '#4068c4',
-      fact: 'Discovered by mathematics first — astronomers noticed Uranus wasn\'t orbiting quite right, predicted where another planet had to be, and pointed telescopes there. Winds reach 2,100 km/h, the fastest in the solar system.' }
+    { id: 'mercury', name: 'Mercury', icon: '☿', diameterKm: 4879, distanceMillionKm: 57.9, rotationHours: 1407.6, solarDayHours: 4222.6, yearDays: 88, visible: 'naked-eye', color: '#9a8b7b',
+      fact: 'The smallest of the eight planets. Its solar day is longer than its year.' },
+    { id: 'venus', name: 'Venus', icon: '♀', diameterKm: 12104, distanceMillionKm: 108.2, rotationHours: -5832.5, solarDayHours: 2802, yearDays: 224.7, visible: 'naked-eye', color: '#e8c47a',
+      fact: 'Nearly Earth\'s width. It spins retrograde; one star-relative spin takes longer than its year.' },
+    { id: 'earth', name: 'Earth', icon: '🜨', diameterKm: 12756, distanceMillionKm: 149.6, rotationHours: 23.9, solarDayHours: 24, yearDays: 365.2, visible: 'self', color: '#4a90e2',
+      fact: 'Our reference world. Its solar day and its star-relative spin are slightly different lengths.' },
+    { id: 'mars', name: 'Mars', icon: '♂', diameterKm: 6792, distanceMillionKm: 228, rotationHours: 24.6, solarDayHours: 24.7, yearDays: 687, visible: 'naked-eye', color: '#d76f43',
+      fact: 'About half Earth\'s width. Its solar day is close to Earth\'s; its year is much longer.' },
+    { id: 'jupiter', name: 'Jupiter', icon: '♃', diameterKm: 142984, distanceMillionKm: 778.5, rotationHours: 9.9, solarDayHours: 9.9, yearDays: 4331, visible: 'naked-eye', color: '#c9a877',
+      fact: 'The widest planet. It spins in about ten hours, but one year lasts nearly twelve Earth years.' },
+    { id: 'saturn', name: 'Saturn', icon: '♄', diameterKm: 120536, distanceMillionKm: 1432, rotationHours: 10.7, solarDayHours: 10.7, yearDays: 10747, visible: 'naked-eye', color: '#e6d39f',
+      fact: 'The second-widest planet. One reference year lasts about 29 Earth years.' },
+    { id: 'uranus', name: 'Uranus', icon: '♅', diameterKm: 51118, distanceMillionKm: 2867, rotationHours: -17.2, solarDayHours: 17.2, yearDays: 30589, visible: 'binoculars', color: '#a3d4d9',
+      fact: 'About four Earth diameters wide. Its signed rotation period indicates retrograde spin.' },
+    { id: 'neptune', name: 'Neptune', icon: '♆', diameterKm: 49528, distanceMillionKm: 4515, rotationHours: 16.1, solarDayHours: 16.1, yearDays: 59800, visible: 'telescope', color: '#4068c4',
+      fact: 'Farthest of the eight planets. Its reference year spans about 164 Earth years.' }
   ];
-
+  PLANETS.forEach(function(planet) {
+    planet.diameterEarth = planet.diameterKm / 12756;
+    planet.auFromSun = planet.distanceMillionKm / 149.6;
+  });
   // ──────────────────────────────────────────────────────────────────
   // DATA: Stellar types (HR diagram simplified)
   // ──────────────────────────────────────────────────────────────────
@@ -4609,11 +5045,11 @@
       ];
       var SECTION_PURPOSE = {
         constellations: __alloT('stem.astronomy.purpose_constellations', 'Recognize star patterns and learn their stories. Choose a constellation to see its guide and add it to your observing list.'),
-        planets: __alloT('stem.astronomy.purpose_planets', 'Compare the worlds in our solar system. Select a planet to explore its size, orbit and features.'),
+        planets: __alloT('stem.astronomy.purpose_planets_compare', 'Compare the planets using size, Sun distance or orbital pace. Choose a reference planet, try an example, then move elapsed time to explore their different year lengths.'),
         exoplanets: __alloT('stem.astronomy.purpose_exoplanets', 'Explore planets around other stars. Start with a transit example to see how a planet crossing its star changes the light we receive.'),
         seasons: __alloT('stem.astronomy.purpose_seasons', 'See how Earth’s tilt changes sunlight through the year. Change the month and compare the two hemispheres.'),
         stars: __alloT('stem.astronomy.purpose_stars', 'Explore star types, colors and distances. Use the catalog to look up a star, or compare how different stars produce light.'),
-        galaxies: __alloT('stem.astronomy.purpose_galaxies', 'Explore galaxies and the wider universe. Choose a topic, then use its diagram or controls to investigate.'),
+        galaxies: __alloT('stem.astronomy.purpose_galaxies_redshift', 'Start with the redshift lab: choose a spectral line, change the light’s stretch, or try a measured galaxy. Then explore lensing and the wider universe below.'),
         eclipses: __alloT('stem.astronomy.purpose_eclipses', 'Compare solar and lunar eclipses. Choose a type, then use the stage buttons to follow the alignment.'),
         indigenous: __alloT('stem.astronomy.purpose_traditions', 'Explore sky knowledge from different cultures. Choose a tradition to read its stories and observing connections.'),
         history: __alloT('stem.astronomy.purpose_history', 'Follow how people have studied the sky, from early observations to modern astronomy.'),
@@ -4625,11 +5061,15 @@
 
       var requestedTab = typeof d.tab === 'string' ? d.tab : 'tonight';
       var activeTab = TABS.some(function(tab) { return tab.id === requestedTab; }) ? requestedTab : 'tonight';
-      function activateAstronomyTab(tabId) {
+      function activateAstronomyTab(tabId, targetId) {
         if (!TABS.some(function(tab) { return tab.id === tabId; })) return;
         if (tabId === activeTab) return;
         var panel = document.getElementById('astronomy-main');
-        if (panel) panel.dataset.focusNewSection = panel.contains(document.activeElement) ? 'true' : 'false';
+        if (panel) {
+          panel.dataset.focusNewSection = panel.contains(document.activeElement) ? 'true' : 'false';
+          if (targetId) panel.dataset.sectionTarget = targetId;
+          else delete panel.dataset.sectionTarget;
+        }
         upd({ tab: tabId });
         var selectedTab = document.getElementById('astronomy-tab-' + tabId);
         if (selectedTab && typeof selectedTab.scrollIntoView === 'function') selectedTab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -7076,49 +7516,127 @@
       // PLANETS
       // ──────────────────────────────────────────────────────────────
       function renderPlanets() {
-        var selected = PLANETS.find(function(p) { return p.id === d.selectedPlanet; }) || PLANETS.find(function(p) { return p.id === 'earth'; }) || PLANETS[0];
-        return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            __alloT('stem.astronomy.our_solar_system_mercury_venus_mars_ju', 'Our solar system. Mercury, Venus, Mars, Jupiter, and Saturn can all be seen with the naked eye. Uranus is at the edge of naked-eye visibility; Neptune requires a telescope.')
-          ),
-          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_planets', 'Planets'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8, marginBottom: 16 } },
-            PLANETS.map(function(p) {
-              var active = selected.id === p.id;
-              return h('button', {
-                key: p.id,
-                'aria-pressed': active,
-                onClick: function() { upd({ selectedPlanet: p.id }); },
-                'aria-label': p.name,
-                style: {
-                  padding: 10, borderRadius: 8, textAlign: 'left',
-                  background: active ? 'rgba(99,102,241,0.20)' : '#1e293b',
-                  border: '1px solid ' + (active ? INDIGO : '#334155'),
-                  cursor: 'pointer', color: '#e2e8f0'
-                }
-              },
-                h('div', { style: { fontSize: 24, marginBottom: 2 } }, p.icon),
-                h('div', { style: { fontSize: 13, fontWeight: 800 } }, p.name),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, p.visible === 'naked-eye' ? 'Naked eye' : p.visible === 'binoculars' ? 'Binoculars' : p.visible === 'telescope' ? 'Telescope' : 'You\'re on it')
-              );
-            })
-          ),
-          selected ? h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 } },
-              h('div', { style: { width: 90, height: 90, borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, ' + selected.color + ', #000)', border: '2px solid #475569' } }),
-              h('div', null,
-                h('h3', { style: { margin: '0 0 4px', color: '#c7d2fe', fontSize: 22 } }, selected.icon + ' ' + selected.name)
+        var model = planetComparisonModel(d), selected = model.selected, reference = model.reference;
+        var planetNames = {
+          mercury: __alloT('stem.astronomy.planet_mercury', 'Mercury'), venus: __alloT('stem.astronomy.planet_venus', 'Venus'),
+          earth: __alloT('stem.astronomy.planet_earth', 'Earth'), mars: __alloT('stem.astronomy.planet_mars', 'Mars'),
+          jupiter: __alloT('stem.astronomy.planet_jupiter', 'Jupiter'), saturn: __alloT('stem.astronomy.planet_saturn', 'Saturn'),
+          uranus: __alloT('stem.astronomy.planet_uranus', 'Uranus'), neptune: __alloT('stem.astronomy.planet_neptune', 'Neptune')
+        };
+        function name(planet) { return planetNames[planet.id]; }
+        function number(value, digits) { return Number(value).toLocaleString(undefined, { maximumFractionDigits: digits === undefined ? 3 : digits }); }
+        var unit = model.mode === 'size' ? __alloT('stem.astronomy.planet_earth_diameters', 'Earth diameters') : model.mode === 'distance' ? 'AU' : __alloT('stem.astronomy.planet_earth_years', 'Earth years');
+        var measure = model.mode === 'size' ? __alloT('stem.astronomy.planet_equatorial_diameter', 'Equatorial diameter') : model.mode === 'distance' ? __alloT('stem.astronomy.planet_mean_sun_distance', 'Mean distance from Sun') : __alloT('stem.astronomy.planet_year_length', 'Year length');
+        var summary = name(selected) + ': ' + number(model.selectedValue) + ' ' + unit + '. ' + name(reference) + ': ' + number(model.referenceValue) + ' ' + unit + '.';
+        if (model.mode === 'year') summary += ' ' + number(model.elapsedYears) + ' ' + __alloT('stem.astronomy.planet_elapsed_earth_years', 'Earth years elapsed') + '. ' + name(selected) + ': ' + number(model.selectedOrbit.turns) + ' ' + __alloT('stem.astronomy.planet_orbits_completed', 'orbits completed') + '; ' + name(reference) + ': ' + number(model.referenceOrbit.turns) + '.';
+        function preset(planet, compareWith, mode, years) { upd({ selectedPlanet: planet, planetCompareWith: compareWith, planetCompareMode: mode, planetElapsedYears: years }); }
+        function drawDisk(planet, cx, cy, radius, slot) {
+          var clip = 'astronomy-planet-' + slot + '-clip', shade = 'astronomy-planet-' + slot + '-shade';
+          return h('g', { key: slot },
+            h('defs', null,
+              h('clipPath', { id: clip }, h('circle', { cx: cx, cy: cy, r: radius })),
+              h('radialGradient', { id: shade, cx: '30%', cy: '25%', r: '80%' }, h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.10 }), h('stop', { offset: '50%', stopColor: '#000000', stopOpacity: 0.08 }), h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.80 }))
+            ),
+            h('circle', { cx: cx, cy: cy, r: radius, fill: planet.color, 'data-planet-disk': slot, 'data-diameter-km': planet.diameterKm }),
+            h('g', { clipPath: 'url(#' + clip + ')' },
+              h('g', { transform: 'translate(' + cx + ' ' + cy + ') scale(' + radius / 50 + ')' },
+                planet.id === 'earth' ? h('g', { fill: '#4f9f83', opacity: 0.9 },
+                  h('path', { d: 'M -35 -30 L -16 -37 L -5 -20 L -15 -8 L -4 3 L -10 17 L -21 6 L -28 -7 Z' }),
+                  h('path', { d: 'M 12 -36 L 31 -26 L 36 -7 L 22 5 L 24 25 L 10 36 L 3 20 L 8 3 L -2 -12 Z' })
+                ) : null,
+                planet.id === 'jupiter' || planet.id === 'saturn' ? [-28, -13, 6, 23].map(function(y, index) { return h('path', { key: y, d: 'M -60 ' + y + ' Q 0 ' + (y + 8) + ' 60 ' + y, fill: 'none', stroke: index % 2 ? '#8d664d' : '#f5ead2', strokeWidth: planet.id === 'jupiter' ? 8 : 5, opacity: 0.5 }); }) : null,
+                planet.id === 'mercury' || planet.id === 'mars' ? [[-22,-14,8],[16,17,10],[-7,30,5],[20,-26,6]].map(function(crater,index) { return h('circle', { key: index, cx: crater[0], cy: crater[1], r: crater[2], fill: '#000000', fillOpacity: 0.13, stroke: '#ffffff', strokeOpacity: 0.14, strokeWidth: 1.5 }); }) : null,
+                planet.id === 'venus' || planet.id === 'uranus' || planet.id === 'neptune' ? [-22, 0, 22].map(function(y) { return h('path', { key: y, d: 'M -60 ' + y + ' Q 0 ' + (y - 12) + ' 60 ' + y, fill: 'none', stroke: '#ffffff', strokeWidth: 5, opacity: 0.12 }); }) : null
               )
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginBottom: 12 } },
-              dataPair('Distance from Sun', selected.auFromSun + ' AU'),
-              dataPair('Diameter (Earth=1)', selected.diameterEarth),
-              dataPair('Day length', selected.dayHours + ' hours'),
-              dataPair('Year length', selected.yearDays + ' Earth days'),
-              dataPair('Known moons', selected.moons),
-              dataPair('Visibility', selected.visible)
+            h('circle', { cx: cx, cy: cy, r: radius, fill: 'url(#' + shade + ')', stroke: '#cbd5e1', strokeOpacity: 0.5, strokeWidth: 0.6 })
+          );
+        }
+        function comparisonFigure() {
+          var title = model.mode === 'size' ? __alloT('stem.astronomy.planet_size_view', 'Planet widths on the same scale') : model.mode === 'distance' ? __alloT('stem.astronomy.planet_distance_view', 'Mean Sun distances on the same scale') : __alloT('stem.astronomy.planet_orbit_view', 'Orbit pace over the same elapsed time');
+          return h('figure', { style: { margin: 0 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginBottom: 8 } },
+              [selected, reference].map(function(planet, index) { return h('div', { key: index, style: { color: index ? '#7dd3fc' : '#fde68a', fontSize: 13, fontWeight: 800, minWidth: 0 } },
+                h('span', { 'aria-hidden': 'true' }, index ? '● ' : '◆ '), name(planet), h('span', { style: { display: 'block', fontSize: 11, color: '#cbd5e1', fontWeight: 500 } }, index ? __alloT('stem.astronomy.planet_reference', 'Reference planet') : __alloT('stem.astronomy.planet_selected', 'Selected planet'))
+              ); })
             ),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, selected.fact)
-          ) : null,
+            h('svg', { id: 'astronomy-planet-comparison-figure', viewBox: model.mode === 'year' ? '0 0 360 235' : '0 0 360 200', role: 'img', 'aria-labelledby': 'astronomy-planet-figure-title astronomy-planet-figure-desc', 'data-mode': model.mode, 'data-selected': selected.id, 'data-reference': reference.id, style: { display: 'block', width: '100%', height: 'auto', background: '#070e1c', border: '1px solid #475569', borderRadius: 10 } },
+              h('title', { id: 'astronomy-planet-figure-title' }, title),
+              h('desc', { id: 'astronomy-planet-figure-desc' }, summary),
+              model.mode === 'size' ? h('g', { 'aria-hidden': 'true' },
+                drawDisk(selected, 90, 92, model.selectedRadius, 'selected'), drawDisk(reference, 270, 92, model.referenceRadius, 'reference'),
+                [{ x: 90, r: model.selectedRadius, color: '#fde68a' }, { x: 270, r: model.referenceRadius, color: '#7dd3fc' }].map(function(disk, index) { return h('g', { key: index, stroke: disk.color, strokeWidth: 1.5 }, h('line', { x1: disk.x - disk.r, x2: disk.x + disk.r, y1: 180, y2: 180 }), h('line', { x1: disk.x - disk.r, x2: disk.x - disk.r, y1: 176, y2: 184 }), h('line', { x1: disk.x + disk.r, x2: disk.x + disk.r, y1: 176, y2: 184 })); })
+              ) : model.mode === 'distance' ? h('g', { 'aria-hidden': 'true' },
+                [0, 0.5, 1].map(function(fraction) { var x = 30 + fraction * 300; return h('g', { key: fraction }, h('line', { x1: x, x2: x, y1: 30, y2: 145, stroke: '#334155', strokeDasharray: '3 5' }), h('text', { x: x, y: 178, textAnchor: fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle', fill: '#cbd5e1', fontSize: 16 }, number(fraction * model.pairExtent) + ' AU')); }),
+                [selected, reference].map(function(planet, index) { var y = index ? 125 : 55, x = 30 + planet.auFromSun / model.pairExtent * 300, color = index ? '#7dd3fc' : '#fde68a'; return h('g', { key: index }, h('line', { x1: 30, x2: x, y1: y, y2: y, stroke: color, strokeWidth: 3 }), h('circle', { cx: 30, cy: y, r: 3, fill: '#fbbf24' }), h('circle', { cx: x, cy: y, r: 5, fill: planet.color, stroke: color, strokeWidth: 2, 'data-planet-distance': index ? 'reference' : 'selected', 'data-au': planet.auFromSun })); })
+              ) : h('g', { 'aria-hidden': 'true' },
+                Array.from({ length: 18 }, function(_, index) { return h('circle', { key: index, cx: (index * 73 + 19) % 350 + 5, cy: (index * 43 + 17) % 225 + 5, r: 0.7, fill: '#cbd5e1', opacity: 0.35 }); }),
+                h('circle', { cx: 180, cy: 115, r: 14, fill: '#fde047' }),
+                [{ orbit: model.selectedOrbit, color: '#fde68a', planet: selected, slot: 'selected' }, { orbit: model.referenceOrbit, color: '#7dd3fc', planet: reference, slot: 'reference' }].map(function(body) { return h('g', { key: body.slot },
+                  h('circle', { cx: 180, cy: 115, r: body.orbit.radius, fill: 'none', stroke: body.color, strokeOpacity: 0.5, strokeDasharray: '3 4' }),
+                  h('circle', { cx: body.orbit.x, cy: body.orbit.y, r: 7, fill: body.planet.color, stroke: body.color, strokeWidth: 2, 'data-planet-orbit': body.slot, 'data-turns': body.orbit.turns })
+                ); })
+              )
+            ),
+            h('figcaption', { id: 'astronomy-planet-figure-help', style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', marginTop: 8 } }, model.mode === 'size' ? __alloT('stem.astronomy.planet_size_help', 'Disk widths follow equatorial diameters. The surface patterns are illustrative; the space between the disks is just for comparison.') : model.mode === 'distance' ? __alloT('stem.astronomy.planet_distance_help', 'Both lines start at the Sun and use the same distance scale. Planet markers are enlarged. AU is the average Earth–Sun distance.') : __alloT('stem.astronomy.planet_orbit_help', 'Both planets start aligned. Motion uses their reference year lengths at a steady pace. Tracks are separated and bodies enlarged for clarity; these are teaching positions.'))
+          );
+        }
+        return h('div', { style: { padding: 16 } },
+          h('section', { id: 'astronomy-planet-comparison', 'aria-label': __alloT('stem.astronomy.planet_lab_title', 'Planet comparison lab'), style: { padding: 14, borderRadius: 14, border: '1px solid #475569', background: '#111c30', minWidth: 0 } },
+            h('h2', { style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 20 } }, __alloT('stem.astronomy.planet_lab_title', 'Planet comparison lab')),
+            h('p', { style: { margin: '0 0 12px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } }, __alloT('stem.astronomy.planet_lab_intro', 'Choose what to compare, select a planet, then change the reference. Try Earth & Jupiter for size or Neptune’s long year for orbital pace.')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.planet_measure_group', 'Compare planet measurements'), style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6, marginBottom: 12 } },
+              [{ id: 'size', label: __alloT('stem.astronomy.planet_mode_size', 'Size') }, { id: 'distance', label: __alloT('stem.astronomy.planet_mode_distance', 'Sun distance') }, { id: 'year', label: __alloT('stem.astronomy.planet_mode_year', 'Orbit pace') }].map(function(mode) { return h('button', { key: mode.id, type: 'button', 'aria-pressed': model.mode === mode.id, onClick: function() { upd({ planetCompareMode: mode.id }); }, style: { padding: '9px 6px', minHeight: 44, borderRadius: 8, border: '1px solid ' + (model.mode === mode.id ? '#fbbf24' : '#64748b'), background: model.mode === mode.id ? '#422006' : '#0f172a', color: model.mode === mode.id ? '#fde68a' : '#f8fafc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, mode.label); })
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 10 } },
+              h('label', { htmlFor: 'astronomy-planet-reference', style: { color: '#e2e8f0', fontSize: 13, fontWeight: 700 } }, __alloT('stem.astronomy.planet_compare_with', 'Compare with')),
+              h('select', { id: 'astronomy-planet-reference', value: reference.id, onChange: function(event) { upd({ planetCompareWith: event.target.value }); }, 'aria-describedby': 'astronomy-planet-comparison-status', style: { flex: '1 1 130px', width: '100%', minWidth: 0, minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid #64748b', background: '#0f172a', color: '#f8fafc', fontSize: 13 } }, PLANETS.map(function(planet) { return h('option', { key: planet.id, value: planet.id }, name(planet)); })),
+              h('button', { type: 'button', onClick: function() { upd({ selectedPlanet: reference.id, planetCompareWith: selected.id }); }, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #64748b', color: '#f8fafc', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.astronomy.planet_swap', 'Swap planets'))
+            ),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.planet_examples', 'Planet comparison examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              [{ label: __alloT('stem.astronomy.planet_example_jupiter', 'Earth & Jupiter'), planet: 'earth', reference: 'jupiter', mode: 'size', years: 0 }, { label: __alloT('stem.astronomy.planet_example_venus', 'Earth & Venus'), planet: 'venus', reference: 'earth', mode: 'size', years: 0 }, { label: __alloT('stem.astronomy.planet_example_neptune', 'Neptune’s long year'), planet: 'neptune', reference: 'earth', mode: 'year', years: 5 }].map(function(example) { return h('button', { key: example.planet, type: 'button', onClick: function() { preset(example.planet, example.reference, example.mode, example.years); }, style: { padding: '8px 10px', minHeight: 44, borderRadius: 8, background: '#1e293b', border: '1px solid #64748b', color: '#e2e8f0', fontSize: 12, cursor: 'pointer' } }, example.label); })
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 16, alignItems: 'start' } },
+              h('div', { style: { minWidth: 0 } },
+                comparisonFigure(),
+                model.mode === 'year' ? h('div', { id: 'astronomy-planet-orbit-controls', style: { marginTop: 12 } },
+                  h('label', { htmlFor: 'astronomy-planet-elapsed', style: { fontSize: 13, fontWeight: 700, color: '#f8fafc' } }, __alloT('stem.astronomy.planet_elapsed_label', 'Elapsed Earth years') + ': ' + number(model.elapsedYears)),
+                  h('input', { id: 'astronomy-planet-elapsed', type: 'range', min: 0, max: 5, step: 0.05, value: model.elapsedYears, onChange: function(event) { upd({ planetElapsedYears: Number(event.target.value) }); }, 'aria-label': __alloT('stem.astronomy.planet_elapsed_label', 'Elapsed Earth years'), 'aria-valuetext': number(model.elapsedYears) + ' ' + __alloT('stem.astronomy.planet_earth_years', 'Earth years'), 'aria-describedby': 'astronomy-planet-comparison-status astronomy-planet-figure-help', style: { display: 'block', width: '100%', minHeight: 44, margin: '6px 0', accentColor: '#fbbf24' } }),
+                  h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.planet_time_shortcuts', 'Orbit time shortcuts'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    [{ time: 0, label: __alloT('stem.astronomy.planet_time_start', 'Start') }, { time: 1, label: __alloT('stem.astronomy.planet_time_one_year', '1 Earth year') }, { time: 5, label: __alloT('stem.astronomy.planet_time_five_years', '5 Earth years') }].map(function(shortcut) { return h('button', { key: shortcut.time, type: 'button', 'aria-pressed': model.elapsedYears === shortcut.time, onClick: function() { upd({ planetElapsedYears: shortcut.time }); }, style: { padding: '8px 10px', minHeight: 44, borderRadius: 8, background: '#0f172a', border: '1px solid #64748b', color: '#f8fafc', fontSize: 12, cursor: 'pointer' } }, shortcut.label); })
+                  )
+                ) : null,
+                h('div', { id: 'astronomy-planet-comparison-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0a1425', border: '1px solid #475569', color: '#e2e8f0', fontSize: 13, lineHeight: 1.65, overflowWrap: 'anywhere' } },
+                  h('strong', { style: { display: 'block', color: '#fde68a' } }, measure), summary,
+                  h('div', { 'data-planet-ratio': model.ratio, style: { marginTop: 6, fontSize: 12, color: '#cbd5e1' } }, __alloT('stem.astronomy.planet_ratio_help', 'Selected / reference') + ': ' + number(model.ratio) + '×')
+                )
+              ),
+              h('div', { style: { minWidth: 0 } },
+                h('h3', { style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 15 } }, measure + ' · ' + unit),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, __alloT('stem.astronomy.planet_rows_help', 'Select a row to choose a planet. All eight bars use one scale; the dot marks each endpoint.')),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 6, color: '#94a3b8', fontSize: 11 } }, h('span', null, '0'), h('span', null, number(model.extent) + ' ' + unit)),
+                h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_planets', 'Planets'), style: { display: 'grid', gap: 6 } },
+                  model.rows.map(function(row) { var active = selected.id === row.planet.id, isReference = reference.id === row.planet.id; return h('button', { key: row.planet.id, type: 'button', 'aria-label': name(row.planet), 'aria-pressed': active, 'aria-describedby': 'astronomy-planet-row-description-' + row.planet.id, onClick: function() { upd({ selectedPlanet: row.planet.id, planetCompareWith: reference.id }); }, 'data-planet-row': row.planet.id, 'data-value': row.value, 'data-fraction': row.fraction, style: { width: '100%', minWidth: 0, minHeight: 54, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + (active ? '#fbbf24' : isReference ? '#38bdf8' : '#475569'), background: active ? '#422006' : '#0f172a', color: '#f8fafc', textAlign: 'left', cursor: 'pointer' } },
+                    h('span', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2px 8px', fontSize: 13, fontWeight: 700 } }, h('span', null, name(row.planet), isReference ? h('span', { style: { marginLeft: 5, fontSize: 10, color: '#7dd3fc' } }, __alloT('stem.astronomy.planet_reference_badge', 'ref')) : null), h('span', { style: { color: active ? '#fde68a' : '#cbd5e1' } }, number(row.value))),
+                    h('span', { id: 'astronomy-planet-row-description-' + row.planet.id, className: 'astr-sr-only' }, measure + ': ' + number(row.value) + ' ' + unit + (isReference ? '. ' + __alloT('stem.astronomy.planet_reference', 'Reference planet') : '')),
+                    h('span', { 'aria-hidden': 'true', style: { display: 'block', position: 'relative', height: 7, margin: '8px 3px 1px 0', background: '#26364f', borderRadius: 3 } }, h('span', { style: { display: 'block', height: '100%', width: row.fraction * 100 + '%', background: active ? '#fbbf24' : '#38bdf8', borderRadius: 3 }, 'data-planet-bar': 'true' }), h('span', { style: { position: 'absolute', left: row.fraction * 100 + '%', top: 1, width: 5, height: 5, marginLeft: -2.5, borderRadius: '50%', background: '#f8fafc' } }))
+                  ); })
+                )
+              )
+            ),
+            h('h3', { id: 'astronomy-planet-detail-title', style: { margin: '18px 0 8px', fontSize: 16, color: '#f8fafc' } }, name(selected) + ' · ' + __alloT('stem.astronomy.planet_measurements', 'reference measurements')),
+            h('dl', { id: 'astronomy-planet-measurements', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: 8, margin: '0 0 10px' } },
+              dataPair(__alloT('stem.astronomy.planet_equatorial_diameter', 'Equatorial diameter'), number(selected.diameterKm, 0) + ' km'),
+              dataPair(__alloT('stem.astronomy.planet_mean_sun_distance', 'Mean distance from Sun'), number(selected.auFromSun) + ' AU'),
+              dataPair(__alloT('stem.astronomy.planet_year_length', 'Year length'), number(selected.yearDays, 1) + ' ' + __alloT('stem.astronomy.planet_earth_days', 'Earth days')),
+              dataPair(__alloT('stem.astronomy.planet_spin_period', 'Spin period'), number(Math.abs(selected.rotationHours), 1) + ' ' + __alloT('stem.astronomy.planet_hours', 'hours')),
+              dataPair(__alloT('stem.astronomy.planet_solar_day', 'Solar day'), number(selected.solarDayHours, 1) + ' ' + __alloT('stem.astronomy.planet_hours', 'hours')),
+              dataPair(__alloT('stem.astronomy.planet_spin_direction', 'Spin direction'), selected.rotationHours < 0 ? __alloT('stem.astronomy.planet_retrograde', 'Retrograde') : __alloT('stem.astronomy.planet_prograde', 'Prograde'))
+            ),
+            h('p', { id: 'astronomy-planet-day-help', style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.65, color: '#cbd5e1' } }, __alloT('stem.astronomy.planet_day_help', 'Spin period measures one turn against the distant stars. A solar day runs from one local noon to the next. Retrograde means opposite Earth’s spin direction.')),
+            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.65 } }, selected.fact),
+            h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 12, lineHeight: 1.6 } }, h('a', { href: PLANET_FACT_SOURCE, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, __alloT('stem.astronomy.planet_data_source', 'NASA planetary reference table')), ' · ', __alloT('stem.astronomy.planet_data_date', 'Published March 18, 2025. Rounded reference values; the diagrams compare measurements and orbital pace.'))
+          ),
 
           sectionCard('🌀 How the solar system formed — 4.6 billion years ago',
             (function() {
@@ -7335,9 +7853,9 @@
           )
         );
         function dataPair(label, value) {
-          return h('div', { style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-            h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginTop: 2 } }, String(value))
+          return h('div', { style: { padding: 10, borderRadius: 8, background: '#0a1425', border: '1px solid #475569', minWidth: 0 } },
+            h('dt', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, lineHeight: 1.5 } }, label),
+            h('dd', { style: { fontSize: 14, fontWeight: 800, color: '#f8fafc', margin: '4px 0 0', overflowWrap: 'anywhere' } }, String(value))
           );
         }
       }
@@ -7364,7 +7882,7 @@
           sectionCard('📉 Transit light-curve simulator',
             (function() {
               var m = transitModel(d), playing = d.transitPlaying === true;
-              var fullScale = d.transitScale === 'full';
+              var fullScale = d.transitScale === 'full', compare = m.limb > 0 && d.transitCompare !== false;
               var bg = astronomyContrast ? '#000000' : '#07111f';
               var border = astronomyContrast ? '#facc15' : '#334155';
               var muted = astronomyContrast ? '#ffffff' : '#cbd5e1';
@@ -7372,10 +7890,11 @@
                 { id: 'earth', label: __alloT('stem.astronomy.transit_earth_sun', 'Earth / Sun'), planet: 1, star: 1, impact: 0 },
                 { id: 'jupiter', label: __alloT('stem.astronomy.transit_jupiter_sun', 'Jupiter-size / Sun'), planet: 11.2, star: 1, impact: 0 },
                 { id: 'trappist', label: __alloT('stem.astronomy.transit_trappist', 'TRAPPIST-1 e radii'), planet: 0.920, star: 0.1192, impact: 0 },
+                { id: 'measured', label: __alloT('stem.astronomy.transit_measured_trappist', 'TRAPPIST-1 e · measured path'), planet: TRANSIT_REFERENCE.planet, star: TRANSIT_REFERENCE.star, impact: TRANSIT_REFERENCE.impact, orbit: 'trappist' },
                 { id: 'grazing', label: __alloT('stem.astronomy.transit_grazing_example', 'Grazing crossing'), planet: 11.2, star: 1, impact: 1 },
                 { id: 'miss', label: __alloT('stem.astronomy.transit_miss_example', 'Miss the star'), planet: 11.2, star: 1, impact: 1.2 }
               ];
-              var active = presets.find(function(p) { return Math.abs(p.planet - m.planet) < 1e-8 && Math.abs(p.star - m.star) < 1e-8 && Math.abs(p.impact - m.impact) < 1e-8; });
+              var active = presets.find(function(p) { return Math.abs(p.planet - m.planet) < 1e-8 && Math.abs(p.star - m.star) < 1e-8 && Math.abs(p.impact - m.impact) < 1e-8 && (p.orbit === 'trappist') === !!m.reference; });
               var geometryLabel = m.geometry === 'miss'
                 ? __alloT('stem.astronomy.transit_geometry_miss', 'No transit: the planet passes outside the star disc.')
                 : m.geometry === 'grazing'
@@ -7401,7 +7920,7 @@
                 return h('button', Object.assign({ type: 'button', className: 'astr-focus', onClick: action,
                   'aria-pressed': typeof selected === 'boolean' ? selected : undefined,
                   style: { minHeight: 44, padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (selected ? '#7dd3fc' : border),
-                    background: selected ? '#164e63' : bg, color: '#f8fafc', cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, extra || {}), label);
+                    background: selected ? '#164e63' : bg, color: '#f8fafc', cursor: extra && extra.disabled ? 'default' : 'pointer', opacity: extra && extra.disabled ? 0.65 : 1, fontSize: 13, fontWeight: 700 } }, extra || {}), label);
               }
               function setTime(value) { upd({ transitTime: Math.max(0, Math.min(1, value)), transitPlaying: false }); }
               function advanceTransit() {
@@ -7418,7 +7937,8 @@
                   h('dd', Object.assign({ style: { margin: 0, color: '#fde68a', fontSize: 19, fontWeight: 800 } }, extra || {}), value));
               }
               var chart = { x: 65, y: 48, w: 315, h: 186 };
-              var range = fullScale ? 1 : m.depth > 0 ? Math.min(1, Math.max(0.000001, m.depth * 1.25)) : 0.0001;
+              var peak = compare ? Math.max(m.depth, m.uniformDepth) : m.depth;
+              var range = fullScale ? 1 : peak > 0 ? Math.min(1, Math.max(0.000001, peak * 1.25)) : 0.0001;
               var inPpm = range < 0.01, unit = inPpm ? 'ppm' : '%';
               function plotY(blocked) { return chart.y + blocked / range * chart.h; }
               function scrub(e) {
@@ -7436,15 +7956,23 @@
               }
               function sceneSvg() {
                 var r = Math.min(92, 176 / (m.halfWindow + m.ratio), 128 / Math.max(1, m.impact + m.ratio));
-                var cx = 200, cy = 140, px = cx + m.current.x * r, py = cy + m.impact * r, pr = r * m.ratio;
+                var cx = 200, cy = 140, px = cx + m.current.x * r, py = cy + m.current.y * r, pr = r * m.ratio;
+                var path = Array.from({ length: 65 }, function(_, i) { var p = m.at(i / 64); return (cx + p.x * r).toFixed(3) + ',' + (cy + p.y * r).toFixed(3); }).join(' ');
                 return h('svg', { id: 'astronomy-transit-scene', viewBox: '0 0 400 300', role: 'img',
+                  'data-limb-coefficient': m.limb, 'data-orbit-model': m.reference ? 'circular' : 'straight',
                   'aria-label': __alloT('stem.astronomy.transit_scene_label', 'Planet crossing the star, seen by an observer'), style: { display: 'block', width: '100%', height: 'auto' } },
                   h('title', null, geometryLabel),
-                  h('defs', null, h('radialGradient', { id: 'astr-transit-glow' }, h('stop', { offset: '55%', stopColor: '#fbbf24', stopOpacity: 0.18 }), h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 }))),
+                  h('defs', null,
+                    h('radialGradient', { id: 'astr-transit-glow' }, h('stop', { offset: '55%', stopColor: '#fbbf24', stopOpacity: 0.18 }), h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })),
+                    h('radialGradient', { id: 'astr-transit-surface' }, Array.from({ length: 33 }, function(_, i) {
+                      var f = i / 32, intensity = m.intensityAt(f);
+                      return h('stop', { key: i, offset: f * 100 + '%', 'data-transit-intensity': intensity,
+                        stopColor: 'rgb(' + [253, 230, 138].map(function(channel) { return Math.round(channel * intensity); }).join(',') + ')' });
+                    }))),
                   Array.from({ length: 24 }, function(_, i) { return h('circle', { key: 'star' + i, cx: 12 + (i * 137) % 375, cy: 15 + (i * 73) % 268, r: i % 4 ? 0.7 : 1, fill: '#94a3b8', opacity: 0.3 }); }),
                   h('circle', { cx: cx, cy: cy, r: r * 1.35, fill: 'url(#astr-transit-glow)' }),
-                  h('circle', { 'data-transit-star': true, cx: cx, cy: cy, r: r, fill: '#fde68a' }),
-                  h('line', { x1: cx - m.halfWindow * r, x2: cx + m.halfWindow * r, y1: py, y2: py, stroke: '#0284c7', strokeWidth: 1, strokeDasharray: '4 5' }),
+                  h('circle', { 'data-transit-star': true, cx: cx, cy: cy, r: r, fill: 'url(#astr-transit-surface)', stroke: '#b08939', strokeWidth: 0.7 }),
+                  h('polyline', { points: path, fill: 'none', stroke: '#38bdf8', strokeWidth: 1, strokeDasharray: '4 5' }),
                   h('line', { x1: cx, x2: cx, y1: cy, y2: py, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
                   h('circle', { 'data-transit-planet': true, cx: px, cy: py, r: pr, fill: '#020617' }),
                   h('circle', { cx: px, cy: py, r: Math.max(6, pr + 5), fill: 'none', stroke: '#67e8f9', strokeWidth: 1.3, strokeDasharray: '3 3' }),
@@ -7456,12 +7984,14 @@
                 // Exact contact points preserve even very narrow ingress/egress.
                 if (m.contacts) [m.contacts.first, m.contacts.second, m.contacts.third, m.contacts.fourth].forEach(function(value) { if (value !== null) samples.push(value); });
                 samples.sort(function(a, b) { return a - b; });
-                var points = samples.map(function(t) { return (chart.x + t * chart.w).toFixed(3) + ',' + plotY(m.at(t).blocked).toFixed(3); }).join(' ');
+                var frames = samples.map(function(t) { return m.at(t); });
+                var points = frames.map(function(f) { return (chart.x + f.time * chart.w).toFixed(3) + ',' + plotY(f.blocked).toFixed(3); }).join(' ');
+                var uniformPoints = compare ? frames.map(function(f) { return (chart.x + f.time * chart.w).toFixed(3) + ',' + plotY(f.uniformBlocked).toFixed(3); }).join(' ') : null;
                 var cursorX = chart.x + m.time * chart.w;
                 return h('svg', { id: 'astronomy-transit-curve', viewBox: '0 0 400 300', role: 'slider', tabIndex: 0,
                   className: 'astr-focus', 'aria-label': __alloT('stem.astronomy.transit_scrub_label', 'Explore the transit light curve'),
                   'aria-describedby': 'astronomy-transit-help', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(m.time * 100),
-                  'aria-valuetext': Math.round(m.time * 100) + '% · ' + stageNames[m.stage] + ' · ' + (m.current.brightness * 100).toFixed(4) + '%',
+                  'aria-valuetext': (m.reference ? m.current.minutes.toFixed(1) + ' min' : Math.round(m.time * 100) + '%') + ' · ' + stageNames[m.stage] + ' · ' + (m.current.brightness * 100).toFixed(4) + '%',
                   'data-axis-range': range, 'data-blocked': m.current.blocked,
                   style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y', cursor: 'crosshair' },
                   onKeyDown: keyScrub, onPointerDown: function(e) { if (e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); e.currentTarget.setPointerCapture(e.pointerId); scrub(e); },
@@ -7471,17 +8001,19 @@
                   h('text', { x: chart.x, y: 25, fill: muted, className: 'transit-svg-label' }, __alloT('stem.astronomy.transit_light_lost', 'Light lost') + ' (' + unit + ')'),
                   h('rect', { x: chart.x, y: chart.y, width: chart.w, height: chart.h, fill: '#0b182a', stroke: border }),
                   m.contacts ? h('rect', { x: chart.x + m.contacts.first * chart.w, y: chart.y, width: (m.contacts.fourth - m.contacts.first) * chart.w, height: chart.h, fill: '#164e63', opacity: 0.26 }) : null,
+                  m.contacts ? [m.contacts.first, m.contacts.fourth].map(function(t, i) { return h('line', { key: 'contact' + i, 'data-transit-contact': i === 0 ? 'first' : 'last', x1: chart.x + t * chart.w, x2: chart.x + t * chart.w, y1: chart.y, y2: chart.y + chart.h, stroke: '#38bdf8', strokeWidth: 1, strokeDasharray: '2 4' }); }) : null,
                   [0, 0.5, 1].map(function(f) {
                     return h('g', { key: f },
                       h('line', { x1: chart.x, x2: chart.x + chart.w, y1: chart.y + chart.h * f, y2: chart.y + chart.h * f, stroke: '#475569', strokeDasharray: '3 5' }),
                       h('text', { x: chart.x - 9, y: chart.y + chart.h * f + 5, textAnchor: 'end', fill: muted, className: 'transit-svg-label' }, inPpm ? (range * 1e6 < 10 ? (range * f * 1e6).toFixed(2) : Math.round(range * f * 1e6)) : (range * f * 100).toFixed(1)));
                   }),
                   h('polygon', { points: chart.x + ',' + chart.y + ' ' + points + ' ' + (chart.x + chart.w) + ',' + chart.y, fill: '#fbbf24', opacity: 0.10 }),
+                  compare ? h('polyline', { 'data-transit-uniform': true, points: uniformPoints, fill: 'none', stroke: '#e2e8f0', strokeWidth: 1.5, strokeDasharray: '6 5' }) : null,
                   h('polyline', { 'data-transit-line': true, points: points, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinejoin: 'round' }),
                   h('line', { x1: cursorX, x2: cursorX, y1: chart.y, y2: chart.y + chart.h, stroke: '#67e8f9', strokeWidth: 1.5, strokeDasharray: '4 3' }),
                   h('circle', { 'data-transit-cursor': true, cx: cursorX, cy: plotY(m.current.blocked), r: 5, fill: '#ffffff', stroke: '#0891b2', strokeWidth: 2 }),
-                  [0, 0.5, 1].map(function(t) { return h('text', { key: t, x: chart.x + t * chart.w, y: 260, textAnchor: t === 0 ? 'start' : t === 1 ? 'end' : 'middle', fill: muted, className: 'transit-svg-label' }, Math.round(t * 100) + '%'); }),
-                  h('text', { x: chart.x + chart.w / 2, y: 287, textAnchor: 'middle', fill: muted, className: 'transit-svg-label' }, __alloT('stem.astronomy.transit_window', 'Progress through crossing →'))
+                  [0, 0.5, 1].map(function(t) { return h('text', { key: t, x: chart.x + t * chart.w, y: 260, textAnchor: t === 0 ? 'start' : t === 1 ? 'end' : 'middle', fill: muted, className: 'transit-svg-label' }, m.reference ? m.minutesAt(t).toFixed(1) : Math.round(t * 100) + '%'); }),
+                  h('text', { x: chart.x + chart.w / 2, y: 287, textAnchor: 'middle', fill: muted, className: 'transit-svg-label' }, m.reference ? __alloT('stem.astronomy.transit_minutes_axis', 'Minutes from midpoint →') : __alloT('stem.astronomy.transit_window', 'Progress through crossing →'))
                 );
               }
               return h('section', { id: 'astronomy-transit-lab', 'aria-label': __alloT('stem.astronomy.transit_lab_name', 'Transit explorer') },
@@ -7489,12 +8021,20 @@
                 h(AstronomyPlaybackClock, { React: React, playing: playing, delay: _prefersReducedMotion ? 250 : 80, step: advanceTransit }),
                 h('p', { style: { margin: '0 0 14px', color: muted, fontSize: 14, lineHeight: 1.7 } }, __alloT('stem.astronomy.transit_intro_linked', 'Watch a planet block a little starlight. The moving point on the light curve shows the same moment as the planet in the crossing view. Try a larger planet, a smaller star, or a path near the edge.')),
                 h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.transit_examples', 'Transit examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
-                  presets.map(function(p) { return button(p.label, function() { upd({ transitPlanetR: p.planet, transitStarR: p.star, transitImpact: p.impact, transitTime: 0.5, transitPlaying: false }); }, !!active && active.id === p.id, { key: p.id }); })),
+                  presets.map(function(p) { return button(p.label, function() { upd({ transitPlanetR: p.planet, transitStarR: p.star, transitImpact: p.impact, transitOrbit: p.orbit || null, transitTime: 0.5, transitPlaying: false }); }, !!active && active.id === p.id, { key: p.id }); })),
                 h('div', { id: 'astronomy-transit-reference', style: { padding: '10px 12px', borderLeft: '3px solid #38bdf8', color: muted, background: bg, fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
-                  active && active.id === 'trappist'
+                  m.reference
+                    ? h('div', null,
+                      h('strong', { style: { color: '#7dd3fc', display: 'block' } }, __alloT('stem.astronomy.transit_measured_brief', 'TRAPPIST-1 e · published inputs, simulated crossing')),
+                      h('span', null, __alloT('stem.astronomy.transit_measured_citation', 'Circular-orbit model using Agol et al. (2021). ')),
+                      h('a', { href: 'https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1e', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, __alloT('stem.astronomy.transit_archive', 'NASA Exoplanet Archive')),
+                      h('details', { style: { marginTop: 6 } },
+                        h('summary', { className: 'astr-focus', style: { cursor: 'pointer', minHeight: 44, padding: '10px 0', color: muted, fontWeight: 700 } }, __alloT('stem.astronomy.transit_measured_details', 'See measured inputs and duration')),
+                        h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.astronomy.transit_measured_source', 'TRAPPIST-1 e: Agol et al. (2021) gives a 6.101013-day orbit, orbital radius 52.855 star radii, and path offset 0.191 ± 0.041. Published first-to-last contact duration: 55.76 ± 0.26 minutes. This simulation uses the published planet and star radii with a circular-orbit approximation. '))))
+                    : active && active.id === 'trappist'
                     ? h('span', null, __alloT('stem.astronomy.transit_trappist_source', 'Published radii: planet 0.920 Earth radii; star 0.1192 Sun radii (Agol et al., 2021). This model uses a chosen central path and does not reproduce the observed light curve. '),
                       h('a', { href: 'https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, __alloT('stem.astronomy.transit_archive', 'NASA Exoplanet Archive')))
-                    : __alloT('stem.astronomy.transit_example_source', 'Explore a chosen geometry. Earth / Sun and Jupiter-size / Sun are size comparisons; TRAPPIST-1 e loads published planet and star radii.')),
+                    : __alloT('stem.astronomy.transit_profile_example_source', 'Earth / Sun and Jupiter-size / Sun are size comparisons. TRAPPIST-1 e radii uses a chosen central path; measured path adds published orbit and path measurements. Changing size or path returns to a progress scale.')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,360px),1fr))', gap: 12, marginBottom: 12 } },
                   h('div', { style: panel },
                     h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 16 } }, __alloT('stem.astronomy.transit_observer_view', '1. Watch the crossing')),
@@ -7503,13 +8043,16 @@
                   h('div', { style: panel },
                     h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 16 } }, __alloT('stem.astronomy.transit_graph_title', '2. Read the light curve')),
                     curveSvg(),
-                    h('p', { id: 'astronomy-transit-help', style: { margin: '0 0 10px', fontSize: 12, color: muted, lineHeight: 1.65 } }, __alloT('stem.astronomy.transit_graph_help', 'Drag across the chart, or focus it and use arrow keys. Home goes to the start; End goes to the finish. Time is normalized, not measured in hours.')),
+                    h('p', { id: 'astronomy-transit-help', style: { margin: '0 0 10px', fontSize: 12, color: muted, lineHeight: 1.65 } }, m.reference ? __alloT('stem.astronomy.transit_clock_help', 'Drag across the chart, or focus it and use arrow keys. Home goes to the start; End goes to the finish. Minutes are relative to the modeled midpoint. Playback runs at an illustrative speed.') : __alloT('stem.astronomy.transit_graph_help', 'Drag across the chart, or focus it and use arrow keys. Home goes to the start; End goes to the finish. Time is normalized, not measured in hours.')),
                     h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.transit_scale_label', 'Light curve vertical scale'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
                       button(__alloT('stem.astronomy.transit_zoom_dip', 'Magnify dip'), function() { upd({ transitScale: 'zoom' }); }, !fullScale),
                       button(__alloT('stem.astronomy.transit_full_scale', 'Full 0–100% scale'), function() { upd({ transitScale: 'full' }); }, fullScale)),
                     h('p', { style: { margin: '8px 0 0', fontSize: 12, color: '#fde68a', lineHeight: 1.6 } }, fullScale
                       ? __alloT('stem.astronomy.transit_full_scale_note', 'Fixed scale: small dips may look flat. The readout still shows the full precision.')
                       : __alloT('stem.astronomy.transit_zoom_note', 'Vertical scale adjusts to reveal the dip. Compare the numbers when changing examples.')))),
+                m.limb > 0 ? h('div', { id: 'astronomy-transit-legend', style: { margin: '0 0 14px', fontSize: 13, color: muted, lineHeight: 1.7 } },
+                  h('span', { style: { color: '#fde68a', fontWeight: 700 } }, __alloT('stem.astronomy.transit_profile_curve_key', 'Solid gold: selected brightness model. ')),
+                  compare ? __alloT('stem.astronomy.transit_uniform_curve_key', 'Dashed white: a uniform star with the same planet and path. Cyan dotted lines mark first and last contact.') : __alloT('stem.astronomy.transit_contact_curve_key', 'Cyan dotted lines mark first and last contact.')) : null,
                 h('div', { id: 'astronomy-transit-status', role: 'status', 'aria-live': playing ? 'off' : 'polite', 'aria-atomic': 'true', style: { padding: '12px 14px', border: '1px solid ' + border, borderRadius: 10, background: bg, color: muted, fontSize: 13, lineHeight: 1.6, marginBottom: 12 } },
                   h('strong', { 'data-transit-stage': m.stage, style: { display: 'block', color: '#67e8f9', fontSize: 17, marginBottom: 3 } }, stageNames[m.stage]), geometryLabel),
                 h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.transit_stages', 'Transit stage shortcuts'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
@@ -7521,7 +8064,25 @@
                 h('dl', { id: 'astronomy-transit-readout', 'aria-live': playing ? 'off' : 'polite', 'aria-atomic': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: 8, margin: '0 0 12px' } },
                   metric(__alloT('stem.astronomy.transit_current_brightness', 'Brightness now'), (m.current.brightness * 100).toFixed(4) + '%', { 'data-transit-brightness': true }),
                   metric(__alloT('stem.astronomy.transit_current_blocked', 'Light blocked now'), (m.current.blocked * 1e6).toFixed(1) + ' ppm'),
-                  metric(__alloT('stem.astronomy.transit_depth', 'Modeled transit depth'), (m.depth * 100).toFixed(4) + ' %', { 'data-transit-depth': true })),
+                  metric(__alloT('stem.astronomy.transit_depth', 'Modeled transit depth'), (m.depth * 100).toFixed(4) + ' %', { 'data-transit-depth': true }),
+                  m.reference ? metric(__alloT('stem.astronomy.transit_midpoint_clock', 'Time from midpoint'), (m.current.minutes > 0 ? '+' : '') + m.current.minutes.toFixed(1) + ' min', { 'data-transit-minutes': m.current.minutes }) : null,
+                  m.reference ? metric(__alloT('stem.astronomy.transit_modeled_duration', 'First to last contact'), m.durationMinutes.toFixed(2) + ' min', { 'data-transit-duration': m.durationMinutes }) : null),
+                h('section', { id: 'astronomy-transit-profile', 'aria-labelledby': 'astronomy-transit-profile-heading', style: Object.assign({}, panel, { marginBottom: 14 }) },
+                  h('h3', { id: 'astronomy-transit-profile-heading', style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 16 } }, __alloT('stem.astronomy.transit_profile_heading', '3. Explore the star’s brightness')),
+                  h('p', { style: { margin: '0 0 10px', color: muted, fontSize: 13, lineHeight: 1.7 } }, __alloT('stem.astronomy.transit_profile_intro', 'A star can be brighter at its center than at its edge. This is called limb darkening. A planet crossing the brighter center then blocks more light, rounding the bottom of the curve.')),
+                  h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.transit_profile_choices', 'Star brightness examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 } },
+                    button(__alloT('stem.astronomy.transit_uniform_star', 'Uniform star'), function() { upd({ transitLimb: 0, transitPlaying: false }); }, m.limb === 0),
+                    button(__alloT('stem.astronomy.transit_dim_edge', 'Dimmer edge · u = 0.6'), function() { upd({ transitLimb: 0.6, transitPlaying: false }); }, m.limb === 0.6),
+                    button(__alloT('stem.astronomy.transit_compare_uniform', 'Compare a uniform star'), function() { upd({ transitCompare: d.transitCompare === false, transitPlaying: false }); }, compare, { disabled: m.limb === 0 })),
+                  h('label', { htmlFor: 'astr-transitLimb', style: { display: 'block', color: muted, fontSize: 13, lineHeight: 1.7 } },
+                    __alloT('stem.astronomy.transit_limb_control', 'Limb darkening strength (u)') + ': ' + m.limb.toFixed(2),
+                    h('input', { id: 'astr-transitLimb', type: 'range', min: 0, max: 1, step: 0.05, value: m.limb, 'aria-valuetext': m.limb.toFixed(2) + ' · ' + Math.round((1 - m.limb) * 100) + '% ' + __alloT('stem.astronomy.transit_edge_vs_center', 'edge brightness relative to center'),
+                      onChange: function(e) { upd({ transitLimb: Number(e.target.value), transitPlaying: false }); },
+                      style: { display: 'block', width: '100%', minHeight: 44, margin: '3px 0', accentColor: '#fbbf24' } })),
+                  h('p', { id: 'astronomy-transit-profile-note', style: { margin: '5px 0 0', color: muted, fontSize: 12, lineHeight: 1.7 } },
+                    __alloT('stem.astronomy.transit_edge_readout', 'Edge brightness relative to center: ') + Math.round((1 - m.limb) * 100) + '%. ',
+                    __alloT('stem.astronomy.transit_profile_limit', 'The coefficient is a chosen teaching value. Actual limb darkening depends on the star and wavelength. Colors are illustrative; this is a simulated curve.'))),
+
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: 10, marginBottom: 14 } },
                   [
                     { label: __alloT('stem.astronomy.planet_size_earth_radii', 'Planet size (Earth radii)'), value: m.planet, min: 0.3, max: 12, step: 0.1, key: 'transitPlanetR', unit: 'R⊕' },
@@ -7541,9 +8102,11 @@
                   })),
                 h('p', { style: { fontSize: 12, color: muted, lineHeight: 1.7, margin: '0 0 12px' } }, __alloT('stem.astronomy.transit_units_plain', 'ppm means parts per million: 10,000 ppm is a 1% brightness drop. Path offset sets how far from the star’s center the planet passes: 0 crosses the center; 1 follows the edge. Astronomers call this the impact parameter.')),
                 h('details', { style: { padding: 12, background: bg, border: '1px solid ' + border, borderRadius: 10, color: muted, fontSize: 13, lineHeight: 1.7 } },
-                  h('summary', { style: { cursor: 'pointer', minHeight: 32, fontWeight: 700, color: '#7dd3fc' } }, __alloT('stem.astronomy.transit_limits_heading', 'What this model can tell you')),
-                  h('p', null, __alloT('stem.astronomy.transit_limits_geometry', 'This idealized curve uses circular, opaque discs, a uniform-brightness star and constant projected speed. For a small planet fully in front of the star, the fractional dip is (planet radius / star radius)². Grazing crossings block less light.')),
-                  h('p', null, __alloT('stem.astronomy.transit_limits_detection', 'A dip alone does not guarantee detection. Real measurements depend on stellar brightness and variability, instrument noise, observing cadence and repeated transits. Limb darkening, starspots, atmospheres and measurement noise are omitted here.')),
+                  h('summary', { className: 'astr-focus', style: { cursor: 'pointer', minHeight: 44, padding: '6px 0', fontWeight: 700, color: '#7dd3fc' } }, __alloT('stem.astronomy.transit_limits_heading', 'What this model can tell you')),
+                  h('p', null, __alloT('stem.astronomy.transit_profile_model_limit', 'The model uses circular, opaque discs and either uniform brightness or a linear limb darkening law. For a uniform star with the planet fully inside its disc, the fractional dip is (planet radius / star radius)². With limb darkening, the blocked light also depends on position. The measured-path example uses a circular orbit; other examples use constant projected speed.')),
+                  h('p', null, __alloT('stem.astronomy.transit_profile_math', 'For the linear brightness law, I(μ) / I(center) = 1 − u(1 − μ), where μ = √(1 − r²) and r is distance from the center in star radii. The total stellar brightness is proportional to 1 − u/3. The curve sums the brightness behind the planet and divides by that total.')),
+                  h('p', null, h('a', { href: 'https://faculty.washington.edu/agol/MandelAgol2002.pdf', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, __alloT('stem.astronomy.transit_profile_paper', 'Research background: Mandel & Agol (2002)'))),
+                  h('p', null, __alloT('stem.astronomy.transit_profile_detection_limit', 'A dip alone does not guarantee detection. Real measurements depend on stellar brightness and variability, instrument noise, observing cadence and repeated transits. Starspots, atmospheres, orbital eccentricity, transit timing variations and measurement noise are omitted here. The clock illustrates one crossing and does not predict future transit dates.')),
                   h('a', { href: 'https://science.nasa.gov/citizen-science/exoplanet-watch/background/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, __alloT('stem.astronomy.transit_learn_nasa', 'How NASA Exoplanet Watch measures transits')))
               );
             })(),
@@ -8191,6 +8754,101 @@
       // ──────────────────────────────────────────────────────────────
       // STARS
       // ──────────────────────────────────────────────────────────────
+      function renderStellarSpectrum() {
+        var model = stellarSpectrumModel(d), selected = model.selected;
+        function number(value, digits) { return value.toLocaleString(undefined, { maximumFractionDigits: digits === undefined ? 4 : digits }); }
+        function signed(value) { return (value > 0 ? '+' : '') + number(value); }
+        var names = { ha: __alloT('stem.astronomy.redshift_ha', 'H-alpha'), hb: __alloT('stem.astronomy.redshift_hb', 'H-beta'), hg: __alloT('stem.astronomy.spectrum_hg', 'H-gamma'), hd: __alloT('stem.astronomy.spectrum_hd', 'H-delta') };
+        var modes = [
+          { id:'continuous', name:__alloT('stem.astronomy.spectrum_continuous', 'Continuous'), help:__alloT('stem.astronomy.spectrum_continuous_help', 'A hot, dense source makes a smooth spectrum. This teaching view has no sharp lines to track.') },
+          { id:'emission', name:__alloT('stem.astronomy.spectrum_emission', 'Emission'), help:__alloT('stem.astronomy.spectrum_emission_help', 'Excited, thin hydrogen gas produces bright lines. Their positions identify the gas and reveal its radial motion.') },
+          { id:'absorption', name:__alloT('stem.astronomy.spectrum_absorption', 'Absorption'), help:__alloT('stem.astronomy.spectrum_absorption_help', 'Hydrogen gas in front of a hotter background absorbs light at characteristic wavelengths, leaving dark lines.') }
+        ];
+        var mode = modes.find(function(entry) { return entry.id === model.mode; });
+        var motion = model.direction === 'rest' ? __alloT('stem.astronomy.spectrum_at_rest', 'At rest along the line of sight') : model.direction === 'toward' ? __alloT('stem.astronomy.spectrum_approaching', 'Approaching · blueshift') : __alloT('stem.astronomy.spectrum_receding', 'Moving away · redshift');
+        var velocityText = model.velocity === 0 ? 'At rest: no Doppler shift' : Math.abs(model.velocity) + ' ' + __alloT('stem.astronomy.spectrum_velocity_units', 'kilometers per second') + ' ' + (model.velocity < 0 ? __alloT('stem.astronomy.spectrum_toward', 'toward us, blueshifted') : __alloT('stem.astronomy.spectrum_away', 'away from us, redshifted'));
+        var noLines = __alloT('stem.astronomy.spectrum_no_lines', 'Choose emission or absorption to activate the line close-up and Doppler controls.');
+        var summary = model.hasLines ? motion + ' · ' + signed(model.velocity) + ' km/s. ' + names[selected.id] + ': ' + number(selected.restNm) + ' nm → ' + number(selected.observedNm) + ' nm. ' + __alloT('stem.astronomy.spectrum_wavelength_shift', 'Wavelength shift') + ': ' + signed(selected.deltaNm) + ' nm.' : mode.help + ' ' + noLines;
+        var colors = { ha:'#fca5a5', hb:'#7dd3fc', hg:'#a5b4fc', hd:'#d8b4fe' };
+        var buttonStyle = { minHeight:44, padding:'9px 12px', border:'1px solid #64748b', borderRadius:8, background:'#0f172a', color:'#f8fafc', fontSize:13, cursor:'pointer' };
+        function activeStyle(active, disabled) { return Object.assign({},buttonStyle,{ borderColor:active?'#fbbf24':'#64748b', background:active?'#422006':'#0f172a', color:active?'#fde68a':'#f8fafc', opacity:disabled?0.5:1, cursor:disabled?'default':'pointer' }); }
+        function spectrumOverview() {
+          return h('figure', { style:{ margin:0 } },
+            h('h3', { style:{ margin:'0 0 8px', fontSize:15, color:'#f8fafc' } }, __alloT('stem.astronomy.spectrum_overview_title', 'Visible spectrum overview')),
+            h('svg', { id:'astronomy-spectrum-overview', viewBox:'0 0 420 144', role:'img', 'aria-labelledby':'astronomy-spectrum-overview-title astronomy-spectrum-overview-desc', 'data-mode':model.mode, style:{ display:'block', width:'100%', height:'auto', background:'#070e1c', border:'1px solid #475569', borderRadius:10 } },
+              h('title', { id:'astronomy-spectrum-overview-title' }, mode.name + ' · ' + __alloT('stem.astronomy.spectrum_overview_range', '380–750 nm')),
+              h('desc', { id:'astronomy-spectrum-overview-desc' }, mode.help + ' ' + summary),
+              h('defs', null, h('linearGradient', { id:'astronomy-spectrum-rainbow' }, ['#7c3aed','#2563eb','#22d3ee','#22c55e','#fde047','#f97316','#dc2626'].map(function(color,index) { return h('stop', { key:index, offset:index/6*100+'%', stopColor:color }); }))),
+              h('g', { 'aria-hidden':'true' },
+                h('rect', { x:24, y:34, width:372, height:45, fill:model.mode==='emission'?'#000':'url(#astronomy-spectrum-rainbow)' }),
+                model.hasLines ? model.rows.map(function(row) { return h('g', { key:row.id },
+                  h('line', { x1:row.observedX, x2:row.observedX, y1:34, y2:79, stroke:model.mode==='absorption'?'#030712':colors[row.id], strokeWidth:2.5, 'data-spectrum-line':row.id, 'data-wavelength-nm':row.observedNm }),
+                  row.id===selected.id ? h('path', { d:'M'+(row.observedX-5)+' 21 L'+(row.observedX+5)+' 21 L'+row.observedX+' 29 Z', fill:'#fde68a' }) : null
+                ); }) : null,
+                [400,500,600,700].map(function(nm) { var x=model.overviewX(nm); return h('g', { key:nm }, h('line', { x1:x, x2:x, y1:80, y2:87, stroke:'#94a3b8' }), h('text', { x:x, y:108, className:'spectrum-svg-label', textAnchor:'middle', fill:'#cbd5e1', fontSize:13 }, nm)); }),
+                h('text', { x:210, y:134, className:'spectrum-svg-axis', textAnchor:'middle', fill:'#cbd5e1', fontSize:12 }, __alloT('stem.astronomy.spectrum_axis', 'Wavelength · nm · linear scale'))
+              )
+            ),
+            h('figcaption', { style:{ marginTop:8, fontSize:12, color:'#cbd5e1', lineHeight:1.6 } }, model.hasLines ? __alloT('stem.astronomy.spectrum_overview_help', 'Four hydrogen lines are shown. The gold pointer identifies the selected line; small Doppler shifts are easier to see in the close-up.') : mode.help)
+          );
+        }
+        function lineProfile(centerX, top, bottom) {
+          var points=[];
+          for(var i=0;i<=120;i++) { var x=24+i/120*372, peak=Math.exp(-0.5*Math.pow((x-centerX)/6,2)); var y=model.mode==='emission'?bottom-8-(bottom-top-16)*peak:top+8+(bottom-top-16)*peak; points.push((i?'L':'M')+x.toFixed(2)+' '+y.toFixed(2)); }
+          return points.join(' ');
+        }
+        function zoomFigure() {
+          return h('figure', { style:{ margin:'16px 0 0' } },
+            h('h3', { style:{ margin:'0 0 8px', fontSize:15, color:'#f8fafc' } }, names[selected.id]+' · '+__alloT('stem.astronomy.spectrum_closeup_title', '148× wavelength close-up')),
+            h('svg', { id:'astronomy-spectrum-closeup', viewBox:'0 0 420 246', role:'img', 'aria-labelledby':'astronomy-spectrum-closeup-title astronomy-spectrum-closeup-desc', 'data-line':selected.id, 'data-velocity-kms':model.velocity, 'data-min-nm':model.zoomMinNm, 'data-max-nm':model.zoomMaxNm, style:{ display:'block', width:'100%', height:'auto', background:'#070e1c', border:'1px solid #475569', borderRadius:10 } },
+              h('title', { id:'astronomy-spectrum-closeup-title' }, names[selected.id]+' · '+__alloT('stem.astronomy.spectrum_closeup_title', '148× wavelength close-up')),
+              h('desc', { id:'astronomy-spectrum-closeup-desc' }, summary),
+              h('g', { 'aria-hidden':'true' },
+                h('rect', { x:24, y:42, width:372, height:132, fill:'#0f172a' }),
+                h('line', { x1:model.zoomRestX, x2:model.zoomRestX, y1:42, y2:176, stroke:'#94a3b8', strokeDasharray:'4 4', opacity:0.6 }),
+                h('text', { x:24, y:30, className:'spectrum-svg-label', fill:'#cbd5e1', fontSize:13 }, __alloT('stem.astronomy.spectrum_reference_short', 'Rest reference')),
+                h('path', { d:lineProfile(model.zoomRestX,44,98), fill:'none', stroke:'#cbd5e1', strokeWidth:2, 'data-spectrum-profile':'rest', 'data-center-x':model.zoomRestX, 'data-wavelength-nm':selected.restNm }),
+                h('text', { x:24, y:116, className:'spectrum-svg-label', fill:'#fde68a', fontSize:13 }, __alloT('stem.astronomy.spectrum_observed_short', 'Observed')),
+                h('path', { d:lineProfile(model.zoomObservedX,124,178), fill:'none', stroke:'#fde68a', strokeWidth:2.5, 'data-spectrum-profile':'observed', 'data-center-x':model.zoomObservedX, 'data-wavelength-nm':selected.observedNm }),
+                h('line', { x1:model.zoomObservedX, x2:model.zoomObservedX, y1:124, y2:178, stroke:'#fde68a', strokeDasharray:'2 4', opacity:0.5 }),
+                [-1,0,1].map(function(delta) { var x=model.zoomX(selected.restNm+delta); return h('g', { key:delta }, h('line', { x1:x, x2:x, y1:184, y2:190, stroke:'#94a3b8' }), h('text', { x:x, y:208, className:'spectrum-svg-label', textAnchor:'middle', fill:'#cbd5e1', fontSize:12 }, number(selected.restNm+delta,3))); }),
+                h('text', { x:210, y:239, className:'spectrum-svg-axis', textAnchor:'middle', fill:'#cbd5e1', fontSize:12 }, __alloT('stem.astronomy.spectrum_axis', 'Wavelength · nm · linear scale'))
+              )
+            ),
+            h('figcaption', { id:'astronomy-spectrum-zoom-help', style:{ marginTop:8, fontSize:12, color:'#cbd5e1', lineHeight:1.6 } }, __alloT('stem.astronomy.spectrum_zoom_help', 'The close-up spans 2.5 nm around the rest wavelength. Its horizontal scale magnifies displacement by 148×. The line profiles illustrate peaks or dips; their widths and strengths are teaching choices.'))
+          );
+        }
+        function metric(label,value) { return h('div', { style:{ padding:10, border:'1px solid #475569', borderRadius:10, background:'#0a1425', minWidth:0 } }, h('dt', { style:{ color:'#cbd5e1', fontSize:12, marginBottom:6 } }, label), h('dd', { style:{ margin:0, color:'#f8fafc', fontSize:16, fontWeight:800, overflowWrap:'anywhere' } }, value)); }
+        return h('section', { id:'astronomy-spectrum-lab', tabIndex:-1, className:'astr-focus', 'aria-label':__alloT('stem.astronomy.spectrum_lab_title', 'Stellar spectrum lab'), style:{ padding:14, borderRadius:14, border:'1px solid #475569', background:'#111c30', marginBottom:16, minWidth:0 } },
+          h('style', null, '#astronomy-spectrum-lab svg text{font-family:inherit}@media(max-width:600px){#astronomy-spectrum-lab .spectrum-svg-label{font-size:20px}#astronomy-spectrum-lab .spectrum-svg-axis{font-size:18px}}'),
+          h('h2', { style:{ margin:'0 0 6px', fontSize:20, color:'#f8fafc' } }, __alloT('stem.astronomy.spectrum_lab_title', 'Stellar spectrum lab')),
+          h('p', { style:{ margin:'0 0 12px', color:'#cbd5e1', fontSize:13, lineHeight:1.65 } }, __alloT('stem.astronomy.spectrum_intro', 'Compare continuous light with bright emission lines and dark absorption lines. Choose a hydrogen line, then move the radial velocity to see its wavelength shift.')),
+          h('div', { role:'group', 'aria-label':__alloT('stem.astronomy.spectrum_mode_group', 'Spectrum modes'), style:{ display:'grid', gridTemplateColumns:'repeat(3,minmax(0,1fr))', gap:6 } }, modes.map(function(entry) { return a11yButton({ key:entry.id, type:'button', 'aria-pressed':model.mode===entry.id, 'aria-describedby':'astronomy-spectrum-mode-help', onClick:function(){upd({spectrumType:entry.id});}, style:Object.assign({},activeStyle(model.mode===entry.id,false),{padding:'9px 5px',fontSize:12,fontWeight:800}) },entry.name); })),
+          h('p', { id:'astronomy-spectrum-mode-help', style:{ margin:'10px 0 14px', color:'#e2e8f0', fontSize:13, lineHeight:1.65 } }, mode.help),
+          h('div', { style:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap:16, alignItems:'start' } },
+            h('div', { style:{ minWidth:0 } }, spectrumOverview(), model.hasLines ? zoomFigure() : h('div', { id:'astronomy-spectrum-empty', style:{ marginTop:14, padding:14, border:'1px solid #475569', borderRadius:10, color:'#e2e8f0', fontSize:13, lineHeight:1.65 } }, noLines, h('div', { style:{ marginTop:10 } }, a11yButton({ type:'button', onClick:function(){upd({spectrumType:'absorption'});}, style:buttonStyle }, __alloT('stem.astronomy.spectrum_show_absorption', 'Show absorption lines'))))),
+            h('div', { style:{ minWidth:0 } },
+              h('label', { htmlFor:'astronomy-spectrum-velocity', style:{ display:'block', color:'#f8fafc', fontSize:14, fontWeight:800 } }, __alloT('stem.astronomy.spectrum_velocity_label', 'Radial velocity') + ': '+signed(model.velocity)+' km/s'),
+              h('p', { style:{ margin:'5px 0 8px', color:model.direction==='toward'?'#7dd3fc':model.direction==='away'?'#fca5a5':'#e2e8f0', fontSize:13, fontWeight:700 } }, motion),
+              h('input', { id:'astronomy-spectrum-velocity', type:'range', min:-300, max:300, step:10, value:model.velocity, disabled:!model.hasLines, onChange:function(event){upd({dopplerKms:Number(event.target.value)});}, 'aria-label':__alloT('stem.astronomy.doppler_radial_velocity_in_km_s', 'Doppler radial velocity in km/s'), 'aria-valuetext':velocityText, 'aria-describedby':'astronomy-spectrum-velocity-help', style:{display:'block',width:'100%',minHeight:44,margin:'6px 0',accentColor:'#fbbf24'} }),
+              h('p', { id:'astronomy-spectrum-velocity-help', style:{ margin:'0 0 10px', color:'#cbd5e1', fontSize:12, lineHeight:1.65 } }, model.hasLines ? __alloT('stem.astronomy.spectrum_velocity_help', 'Negative velocity means approaching; positive means moving away. Arrow keys step by 10 km/s. Home and End reach −300 and +300 km/s.') : noLines),
+              h('div', { role:'group', 'aria-label':__alloT('stem.astronomy.spectrum_motion_examples', 'Radial motion examples'), style:{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:14 } }, [{v:-300,label:__alloT('stem.astronomy.spectrum_example_toward', 'Approaching')},{v:0,label:__alloT('stem.astronomy.spectrum_example_rest', 'At rest')},{v:300,label:__alloT('stem.astronomy.spectrum_example_away', 'Moving away')}].map(function(example){return a11yButton({key:example.v,type:'button',disabled:!model.hasLines,'aria-pressed':model.velocity===example.v,onClick:function(){upd({dopplerKms:example.v});},style:activeStyle(model.velocity===example.v,!model.hasLines)},example.label);})),
+              h('h3', { style:{margin:'0 0 8px',fontSize:15,color:'#f8fafc'} }, __alloT('stem.astronomy.spectrum_line_label', 'Choose a hydrogen line')),
+              h('div', { role:'group','aria-label':__alloT('stem.astronomy.spectrum_line_label', 'Choose a hydrogen line'),style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:6} }, model.rows.map(function(row){return a11yButton({key:row.id,type:'button',disabled:!model.hasLines,'aria-label':names[row.id],'aria-pressed':selected.id===row.id,'aria-describedby':'astronomy-spectrum-line-description-'+row.id,onClick:function(){upd({spectrumLine:row.id});},style:Object.assign({},activeStyle(selected.id===row.id,!model.hasLines),{textAlign:'left',padding:10})},h('span',null,h('strong',{style:{display:'block',marginBottom:3}},names[row.id]),h('span',{style:{fontSize:12,color:'#cbd5e1'}},number(row.restNm)+' nm'),h('span',{id:'astronomy-spectrum-line-description-'+row.id,className:'astr-sr-only'},__alloT('stem.astronomy.spectrum_rest_wavelength', 'Rest wavelength')+': '+number(row.restNm)+' nm. '+(model.hasLines?__alloT('stem.astronomy.spectrum_observed_wavelength', 'Observed wavelength')+': '+number(row.observedNm)+' nm.':noLines))));})),
+              model.hasLines ? h('dl', { id:'astronomy-spectrum-measurements',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,150px),1fr))',gap:8,margin:'12px 0 0'} }, metric(__alloT('stem.astronomy.spectrum_rest_wavelength', 'Rest wavelength'),number(selected.restNm)+' nm'),metric(__alloT('stem.astronomy.spectrum_observed_wavelength', 'Observed wavelength'),number(selected.observedNm)+' nm'),metric(__alloT('stem.astronomy.spectrum_wavelength_shift', 'Wavelength shift'),signed(selected.deltaNm)+' nm')) : null
+            )
+          ),
+          h('div', { id:'astronomy-spectrum-status',role:'status','aria-live':'polite','aria-atomic':'true',style:{marginTop:14,padding:12,border:'1px solid #475569',borderRadius:10,background:'#0a1425',color:'#e2e8f0',fontSize:13,lineHeight:1.65} }, summary),
+          h('p', { style:{margin:'10px 0 0',color:'#cbd5e1',fontSize:12,lineHeight:1.65} }, __alloT('stem.astronomy.spectrum_model_scope', 'Reference wavelengths are in vacuum, matching the cosmic redshift lab. Velocities and line profiles are teaching examples. The calculation uses the relativistic Doppler relation for motion directly along the line of sight. Expanding space and gravitational shifts are separate effects.')),
+          h('div', { style:{display:'flex',flexWrap:'wrap',gap:'8px 14px',alignItems:'center',marginTop:10,fontSize:12} },
+            h('a', { href:'https://sdss.org/dr20/tutorials/conversions/',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'} }, __alloT('stem.astronomy.redshift_sdss_source', 'SDSS: vacuum wavelength references')),
+            h('a', { href:'https://classic.sdss.org/dr2/algorithms/speclinefits.php',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'} }, __alloT('stem.astronomy.redshift_sdss_lines', 'SDSS: spectral line list')),
+            h('a', { href:'https://science.nasa.gov/asset/webb/absorption-and-emission-spectra-of-various-elements/',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'} }, __alloT('stem.astronomy.spectrum_nasa_source', 'NASA: absorption and emission')),
+            a11yButton({type:'button',onClick:function(){activateAstronomyTab('galaxies', 'astronomy-redshift-lab');},style:buttonStyle},__alloT('stem.astronomy.open_cosmic_redshift', 'Open cosmic redshift lab'))
+          )
+        );
+      }
+
       function renderStars() {
         var selected = STAR_TYPES.find(function(s) { return s.id === d.selectedStarType; }) || STAR_TYPES.find(function(s) { return s.id === 'G'; }) || STAR_TYPES[0];
 
@@ -8375,157 +9033,7 @@
             )
           ),
 
-          // Spectroscopy — how we know what stars are made of, their temperature, motion
-          sectionCard('🌈 Spectroscopy — the cipher of starlight',
-            (function() {
-              var spectrumType = boundedChoice(d.spectrumType, ['continuous', 'emission', 'absorption'], 'continuous');
-              var dopplerKms = boundedNumber(d.dopplerKms, -300, 300, 0);  // -300 to +300 km/s
-              var c = 299792.458; // km/s
-              var zApprox = dopplerKms / c;
-              var shiftPct = Math.abs(zApprox * 100).toFixed(3);
-              var shiftSummary = dopplerKms === 0
-                ? 'Spectral lines match their rest wavelengths: no radial Doppler shift.'
-                : 'Spectral lines shift ' + (dopplerKms > 0 ? 'redward' : 'blueward') + ' by about ' + shiftPct + '%. This is ordinary radial Doppler motion.';
-              var shiftValueText = dopplerKms === 0
-                ? 'At rest: no Doppler shift'
-                : Math.abs(dopplerKms) + ' kilometers per second ' + (dopplerKms > 0 ? 'away from us, redshifted' : 'toward us, blueshifted');
-              var rest = [
-                { name: __alloT('stem.astronomy.h_balmer', 'Hα (Balmer)'), nm: 656.28, color: '#ff6666' },
-                { name: 'Hβ', nm: 486.13, color: '#66ccff' },
-                { name: 'Hγ', nm: 434.05, color: '#aa88ff' },
-                { name: 'Hδ', nm: 410.17, color: '#ddaaff' },
-                { name: __alloT('stem.astronomy.na_d_doublet', 'Na D doublet'), nm: 589.30, color: '#ffcc44' },
-                { name: __alloT('stem.astronomy.ca_h_k', 'Ca H+K'), nm: 396.85, color: '#ddccff' },
-                { name: __alloT('stem.astronomy.mg_b_triplet', 'Mg b triplet'), nm: 517.00, color: '#88dd88' }
-              ];
-
-              // Map wavelength (nm, 380-750) to visible color
-              function wavelengthToColor(nm) {
-                var r = 0, g = 0, b = 0;
-                if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; g = 0; b = 1; }
-                else if (nm >= 440 && nm < 490) { r = 0; g = (nm - 440) / 50; b = 1; }
-                else if (nm >= 490 && nm < 510) { r = 0; g = 1; b = -(nm - 510) / 20; }
-                else if (nm >= 510 && nm < 580) { r = (nm - 510) / 70; g = 1; b = 0; }
-                else if (nm >= 580 && nm < 645) { r = 1; g = -(nm - 645) / 65; b = 0; }
-                else if (nm >= 645 && nm <= 780) { r = 1; g = 0; b = 0; }
-                var factor = 1;
-                if (nm >= 380 && nm < 420) factor = 0.3 + 0.7 * (nm - 380) / 40;
-                if (nm > 700) factor = 0.3 + 0.7 * (780 - nm) / 80;
-                var toHex = function(v) { var x = Math.round(255 * Math.pow(Math.max(0, v) * factor, 0.8)); return ('0' + x.toString(16)).slice(-2); };
-                return '#' + toHex(r) + toHex(g) + toHex(b);
-              }
-
-              function spectrumSvg() {
-                var svgW = 640, svgH = 80;
-                var leftPad = 50, rightPad = 30;
-                var plotW = svgW - leftPad - rightPad;
-                var lambdaMin = 380, lambdaMax = 750;
-                function xOf(nm) { return leftPad + (nm - lambdaMin) / (lambdaMax - lambdaMin) * plotW; }
-                // Build continuous gradient stops
-                var grad = [];
-                for (var n = lambdaMin; n <= lambdaMax; n += 10) {
-                  grad.push({ pct: ((n - lambdaMin) / (lambdaMax - lambdaMin) * 100).toFixed(1), color: wavelengthToColor(n) });
-                }
-                // Doppler-shifted line positions
-                var shiftFactor = 1 + dopplerKms / c; // λ_observed = λ_rest * (1 + v/c)
-                var shifted = rest.map(function(r) { return { name: r.name, nm: r.nm * shiftFactor, restNm: r.nm }; });
-                var spectrumUid = 'astroSpectrum-' + spectrumType + '-' + String(Math.round(dopplerKms)).replace('-', 'm');
-                var titleId = spectrumUid + '-title';
-                var descId = spectrumUid + '-desc';
-                var gradientId = spectrumUid + '-gradient';
-
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': titleId + ' ' + descId },
-                  h('title', { id: titleId }, spectrumType + ' spectrum with Doppler shift of ' + dopplerKms + ' km/s'),
-                  h('desc', { id: descId }, 'A visual spectrum from 380 to 750 nm showing ' + spectrumType + ' lines. ' + shiftSummary),
-                  h('defs', null,
-                    h('linearGradient', { id: gradientId, x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
-                      grad.map(function(g, i) { return h('stop', { key: i, offset: g.pct + '%', stopColor: g.color }); })
-                    )
-                  ),
-                  // Spectrum bar
-                  h('rect', { x: leftPad, y: 15, width: plotW, height: 35,
-                    fill: spectrumType === 'continuous' || spectrumType === 'absorption' ? 'url(#' + gradientId + ')' : '#000' }),
-                  // Lines
-                  shifted.map(function(l, i) {
-                    if (l.nm < lambdaMin || l.nm > lambdaMax) return null;
-                    var x = xOf(l.nm);
-                    var lineColor = spectrumType === 'absorption' ? '#000' : wavelengthToColor(l.restNm);
-                    return h('line', { key: 'line' + i, x1: x, y1: 15, x2: x, y2: 50, stroke: lineColor, strokeWidth: 2, opacity: spectrumType === 'continuous' ? 0 : (spectrumType === 'absorption' ? 0.95 : 1) });
-                  }),
-                  // Axis
-                  [400, 450, 500, 550, 600, 650, 700].map(function(t, i) {
-                    return h('g', { key: 't' + i },
-                      h('line', { x1: xOf(t), y1: 50, x2: xOf(t), y2: 55, stroke: '#94a3b8', strokeWidth: 1 }),
-                      h('text', { x: xOf(t), y: 67, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, t + ' nm')
-                    );
-                  }),
-                  h('text', { x: 8, y: 35, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 },
-                    spectrumType === 'continuous' ? 'Continuous' : spectrumType === 'emission' ? 'Emission' : 'Absorption'
-                  )
-                );
-              }
-
-              return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-                  __alloT('stem.astronomy.light_from_a_star_spreads_into_a_spect', 'Light from a star spreads into a spectrum when passed through a prism or diffraction grating. The pattern of bright and dark lines tells us a remarkable amount about the star: what it is made of (line positions), how hot it is (line intensities), how it is moving (line shifts), and even its magnetic field (line splitting). Spectroscopy is one of the most important techniques in modern astrophysics.')
-                ),
-                h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
-                  [
-                    { id: 'continuous', name: __alloT('stem.astronomy.continuous_hot_solid', 'Continuous (hot solid)'), desc: __alloT('stem.astronomy.a_hot_dense_object_emits_at_all_wavele', 'A hot dense object emits at all wavelengths. The Sun\'s interior or a tungsten light bulb.') },
-                    { id: 'emission', name: __alloT('stem.astronomy.emission_hot_thin_gas', 'Emission (hot thin gas)'), desc: __alloT('stem.astronomy.a_hot_gas_under_low_pressure_emits_onl', 'A hot gas under low pressure emits only at specific wavelengths characteristic of the elements present. Neon signs, nebulae.') },
-                    { id: 'absorption', name: __alloT('stem.astronomy.absorption_cool_gas_in_front_of_hot', 'Absorption (cool gas in front of hot)'), desc: __alloT('stem.astronomy.the_standard_stellar_spectrum_continuo', 'The standard stellar spectrum: continuous from the hot star, with dark lines where cooler outer atmosphere has absorbed specific wavelengths. The Sun looks like this.') }
-                  ].map(function(s) {
-                    var active = spectrumType === s.id;
-                    return h('button', { key: s.id,
-                      type: 'button',
-                      onClick: function() { upd({ spectrumType: s.id }); },
-                      'aria-label': 'Show ' + s.name + ' spectrum. ' + s.desc,
-                      'aria-pressed': active ? 'true' : 'false',
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#fbbf24' : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left', maxWidth: 220 } },
-                      h('div', null, s.name),
-                      h('div', { style: { fontSize: 10, fontWeight: 500, marginTop: 2, lineHeight: 1.4 } }, s.desc)
-                    );
-                  })
-                ),
-
-                h('div', { style: { padding: 10, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', marginBottom: 10 } },
-                  spectrumSvg()
-                ),
-
-                // Doppler shift slider
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                    h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, __alloT('stem.astronomy.doppler_shift_radial_velocity', 'Doppler shift (radial velocity)')),
-                    h('span', { style: { fontSize: 13, color: dopplerKms > 50 ? '#fca5a5' : dopplerKms < -50 ? '#7dd3fc' : '#86efac', fontWeight: 800 } }, dopplerKms.toFixed(0) + ' km/s ' + (dopplerKms > 0 ? '(redshift, moving away)' : dopplerKms < 0 ? '(blueshift, approaching)' : '(at rest)'))
-                  ),
-                  h('input', { type: 'range', min: -300, max: 300, step: 10, value: dopplerKms,
-                    onChange: function(e) { upd({ dopplerKms: parseInt(e.target.value, 10) }); },
-                    'aria-label': __alloT('stem.astronomy.doppler_radial_velocity_in_km_s', 'Doppler radial velocity in km/s'),
-                    'aria-valuetext': shiftValueText,
-                    style: { width: '100%', accentColor: '#fbbf24' }
-                  }),
-                  h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55 } }, shiftSummary)
-                ),
-
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.32)', fontSize: 12, color: '#bae6fd', lineHeight: 1.65, marginBottom: 10 } },
-                  h('strong', null, __alloT('stem.astronomy.model_boundary', 'Model boundary: ')),
-                  __alloT('stem.astronomy.this_slider_models_ordinary_doppler_m', 'This slider models ordinary Doppler radial velocity for nearby stars and exoplanet wobbles. Distant galaxies can also be redshifted because expanding space stretches light during travel; use the Universe redshift section for that distinction.')
-                ),
-
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, __alloT('stem.astronomy.what_spectroscopy_tells_us_about_a_sta', 'What spectroscopy tells us about a star: ')),
-                  h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
-                    h('li', null, h('strong', null, 'Composition: '), __alloT('stem.astronomy.each_element_has_a_unique_pattern_of_s', 'Each element has a unique pattern of spectral lines (its "fingerprint"). Hydrogen, helium, calcium, sodium, iron — all identifiable by line wavelength.')),
-                    h('li', null, h('strong', null, 'Temperature: '), __alloT('stem.astronomy.the_continuum_background_spectrum_foll', 'The continuum background roughly follows a blackbody curve. Hotter stars peak at shorter (bluer) wavelengths; cooler stars at longer (redder).')),
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.radial_velocity', 'Radial velocity: ')), __alloT('stem.astronomy.a_star_moving_toward_us_blueshifts_its', 'A star moving toward us blueshifts its lines; moving away redshifts them. For these speeds, Δλ/λ ≈ v/c. This is how exoplanets are found by the radial-velocity method. Cosmological redshift is different: space stretches the light during travel.')),
-                    h('li', null, h('strong', null, 'Rotation: '), __alloT('stem.astronomy.a_spinning_star_has_one_limb_moving_to', 'A spinning star has one limb moving toward us, the other away — blueshifted + redshifted at once. Lines BROADEN. Astronomers measure rotation by line width.')),
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.magnetic_field', 'Magnetic field: ')), __alloT('stem.astronomy.strong_magnetic_fields_split_a_single_', 'Strong magnetic fields split a single line into multiple components (Zeeman effect). The Sun\'s sunspot magnetic fields show this clearly.'))
-                  )
-                )
-              );
-            })(),
-            '#fbbf24'
-          ),
+          renderStellarSpectrum(),
 
           sectionCard('☁️ Nebulae + star formation — where stars are born',
             (function() {
@@ -9373,8 +9881,681 @@
       // ──────────────────────────────────────────────────────────────
       // GALAXIES & SCALE
       // ──────────────────────────────────────────────────────────────
+      function renderCosmicRedshift() {
+        var model = cosmicRedshiftModel(d), line = model.selected;
+        function number(value, digits) { return value.toLocaleString(undefined, { maximumFractionDigits: digits === undefined ? 4 : digits }); }
+        function wavelength(nm) { return number(nm, 3) + ' nm · ' + number(nm / 1000, 4) + ' μm'; }
+        function bandName(id) { return id === 'uv' ? __alloT('stem.astronomy.redshift_uv', 'Ultraviolet') : id === 'visible' ? __alloT('stem.astronomy.redshift_visible', 'Visible') : __alloT('stem.astronomy.redshift_infrared', 'Infrared'); }
+        var names = { lya: __alloT('stem.astronomy.redshift_lya', 'Lyman-alpha'), hb: __alloT('stem.astronomy.redshift_hb', 'H-beta'), oiii: '[O III]', ha: __alloT('stem.astronomy.redshift_ha', 'H-alpha') };
+        var summary = names[line.id] + ': ' + number(line.restNm, 3) + ' nm → ' + number(line.observedNm, 3) + ' nm. ' + __alloT('stem.astronomy.redshift_stretch', 'Wavelength stretch') + ': ' + number(model.stretch) + '×. ' + bandName(line.band) + '.';
+        function setRedshift(z) { upd({ redshiftZ: z, redshiftReference: '' }); }
+        function onRedshiftKey(event) {
+          var step = event.shiftKey ? 0.5 : 0.05, next;
+          if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next = model.z + step;
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next = model.z - step;
+          else if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = 15;
+          else return;
+          event.preventDefault();
+          setRedshift(Math.round(Math.max(0, Math.min(15, next)) * 10000) / 10000);
+        }
+        var buttonStyle = { padding: '9px 12px', minHeight: 44, borderRadius: 8, border: '1px solid #64748b', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 };
+        function exampleStyle(active, measured) { return Object.assign({}, buttonStyle, { borderColor: active ? '#fbbf24' : measured ? '#7dd3fc' : '#64748b', background: active ? '#422006' : '#0f172a', color: active ? '#fde68a' : '#e2e8f0', fontWeight: active ? 800 : 500 }); }
+        function metric(label, value, extra) { return h('div', { style: { padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#0a1425', minWidth: 0 } }, h('dt', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 6 } }, label), h('dd', { style: { margin: 0, color: '#f8fafc', fontSize: 17, fontWeight: 800, overflowWrap: 'anywhere' } }, value), extra ? h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, extra) : null); }
+        return h('section', { id: 'astronomy-redshift-lab', tabIndex:-1, className:'astr-focus', 'aria-label': __alloT('stem.astronomy.redshift_title', 'Cosmic redshift lab'), style: { padding: 14, border: '1px solid #475569', borderRadius: 14, background: '#111c30', marginBottom: 16, minWidth: 0 } },
+          h('h2', { style: { margin: '0 0 6px', fontSize: 20, color: '#f8fafc' } }, __alloT('stem.astronomy.redshift_title', 'Cosmic redshift lab')),
+          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#cbd5e1', lineHeight: 1.65 } }, __alloT('stem.astronomy.redshift_intro', 'As space expands, traveling light stretches to longer wavelengths. Choose a line, then change redshift z to compare its emitted and observed positions.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.redshift_examples', 'Redshift examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+            [{ z: 0, label: __alloT('stem.astronomy.redshift_none', 'No stretch') }, { z: 1, label: __alloT('stem.astronomy.redshift_double', 'Double wavelength') }, { z: 3, label: __alloT('stem.astronomy.redshift_quadruple', 'Four times longer') }].map(function(example) { return a11yButton({ key: example.z, type: 'button', 'aria-pressed': !model.reference && model.z === example.z, onClick: function() { setRedshift(example.z); }, style: exampleStyle(!model.reference && model.z === example.z, false) }, example.label); }),
+            REDSHIFT_REFERENCES.map(function(example) { return a11yButton({ key: example.id, type: 'button', 'aria-pressed': !!model.reference && model.reference.id === example.id, 'aria-describedby': 'astronomy-redshift-reference', onClick: function() { upd({ redshiftZ: example.z, redshiftReference: example.id, redshiftLine: 'lya' }); }, style: exampleStyle(!!model.reference && model.reference.id === example.id, true) }, example.name); })
+          ),
+          h('div', { id: 'astronomy-redshift-reference', style: { marginBottom: 12, fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } },
+            model.reference ? h('span', null, __alloT('stem.astronomy.redshift_published', 'Published measurement') + ': ' + model.reference.name + ' · z = ' + number(model.reference.z) + (model.reference.uncertainty ? ' ± ' + number(model.reference.uncertainty) : '') + ' · ', h('a', { href: model.reference.url, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, __alloT('stem.astronomy.redshift_measurement_paper', 'Measurement paper') + ' (' + model.reference.year + ')')) : __alloT('stem.astronomy.redshift_custom', 'Teaching setting. Galaxy examples use published redshifts; moving the slider explores your own value.')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 16, alignItems: 'start' } },
+            h('div', { style: { minWidth: 0 } },
+              h('figure', { style: { margin: 0 } },
+                h('svg', { id: 'astronomy-redshift-chart', viewBox: '0 0 420 245', role: 'img', 'aria-labelledby': 'astronomy-redshift-chart-title astronomy-redshift-chart-desc', 'data-redshift': model.z, style: { display: 'block', width: '100%', height: 'auto', background: '#070e1c', border: '1px solid #475569', borderRadius: 10 } },
+                  h('title', { id: 'astronomy-redshift-chart-title' }, __alloT('stem.astronomy.redshift_chart_title', 'Emitted and observed wavelengths on one scale')),
+                  h('desc', { id: 'astronomy-redshift-chart-desc' }, summary),
+                  h('defs', null,
+                    h('linearGradient', { id: 'astronomy-redshift-visible' }, ['#a78bfa','#60a5fa','#34d399','#fde047','#fb923c','#f87171'].map(function(color, i) { return h('stop', { key: i, offset: i * 20 + '%', stopColor: color }); })),
+                    h('marker', { id: 'astronomy-redshift-arrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto' }, h('path', { d: 'M0 0 L0 6 L6 3 Z', fill: '#fde68a' }))
+                  ),
+                  h('g', { 'aria-hidden': 'true' },
+                    [{ start:100, end:380, fill:'#7c3aed', label:'UV' }, { start:380, end:750, fill:'url(#astronomy-redshift-visible)', label:__alloT('stem.astronomy.redshift_visible', 'Visible') }, { start:750, end:12000, fill:'#be185d', label:__alloT('stem.astronomy.redshift_ir_short', 'IR') }].map(function(band) { var left=model.x(band.start), width=model.x(band.end)-left; return h('g', { key:band.start }, h('rect', { x:left, y:26, width:width, height:166, fill:band.fill, opacity:0.15 }), h('rect', { x:left, y:26, width:width, height:5, fill:band.fill }), h('text', { x:left+width/2, y:47, textAnchor:'middle', fill:'#e2e8f0', fontSize:12 }, band.label)); }),
+                    h('text', { x:24, y:69, fill:'#cbd5e1', fontSize:13 }, __alloT('stem.astronomy.redshift_emitted_short', 'Emitted')),
+                    h('text', { x:24, y:139, fill:'#cbd5e1', fontSize:13 }, __alloT('stem.astronomy.redshift_observed_short', 'Observed')),
+                    [92,162].map(function(y) { return h('line', { key:y, x1:24, x2:396, y1:y, y2:y, stroke:'#64748b' }); }),
+                    [100,400,1000,3000,10000].map(function(nm) { var x=model.x(nm); return h('g', { key:nm }, h('line', { x1:x, x2:x, y1:192, y2:200, stroke:'#94a3b8' }), h('text', { x:x, y:217, textAnchor:'middle', fill:'#cbd5e1', fontSize:13 }, String(nm/1000))); }),
+                    h('text', { x:210, y:236, textAnchor:'middle', fill:'#cbd5e1', fontSize:12 }, __alloT('stem.astronomy.redshift_axis', 'Wavelength · μm · logarithmic scale')),
+                    line.observedX > line.restX + 8 ? h('line', { x1:line.restX, x2:line.observedX, y1:122, y2:122, stroke:'#fde68a', strokeWidth:2, markerEnd:'url(#astronomy-redshift-arrow)' }) : null,
+                    model.rows.map(function(row) { var active=row.id===line.id, color=active?'#fde68a':'#7dd3fc'; return h('g', { key:row.id, opacity:active?1:0.6 },
+                      [{ x:row.restX, y:92, slot:'emitted', nm:row.restNm }, { x:row.observedX, y:162, slot:'observed', nm:row.observedNm }].map(function(marker) { return h('g', { key:marker.slot, 'data-redshift-line':row.id, 'data-slot':marker.slot, 'data-wavelength-nm':marker.nm },
+                        h('line', { x1:marker.x, x2:marker.x, y1:marker.y-15, y2:marker.y+15, stroke:color, strokeWidth:active?3:1.5 }),
+                        h('circle', { cx:marker.x, cy:marker.y, r:active?5:2.5, fill:color, stroke:'#070e1c', strokeWidth:1 }),
+                        h('title', null, names[row.id] + ': ' + wavelength(marker.nm))
+                      ); })
+                    ); })
+                  )
+                ),
+                h('figcaption', { id: 'astronomy-redshift-chart-help', style: { marginTop: 8, color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } }, __alloT('stem.astronomy.redshift_chart_help', 'Gold marks the selected line. Both rows share a fixed logarithmic wavelength scale: equal steps represent equal ratios. Marker heights and colors are illustrative.'))
+              ),
+              h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } }, __alloT('stem.astronomy.redshift_bands_help', 'UV is below 380 nm; visible light is about 380–750 nm; infrared is longer. 1 μm = 1,000 nm.'))
+            ),
+            h('div', { style: { minWidth: 0 } },
+              h('label', { htmlFor:'astronomy-redshift-z', style: { fontSize:14, fontWeight:800, color:'#f8fafc' } }, __alloT('stem.astronomy.redshift_z_label', 'Redshift z') + ': ' + number(model.z)),
+              h('input', { id:'astronomy-redshift-z', type:'range', min:0, max:15, step:0.0001, value:model.z, onChange:function(event) { setRedshift(Number(event.target.value)); }, onKeyDown:onRedshiftKey, 'aria-label':__alloT('stem.astronomy.redshift_z_label', 'Redshift z'), 'aria-valuetext':number(model.z) + ', ' + number(model.stretch) + '× ' + __alloT('stem.astronomy.redshift_stretch', 'Wavelength stretch'), 'aria-describedby':'astronomy-redshift-slider-help', style:{ display:'block', width:'100%', minHeight:44, margin:'6px 0', accentColor:'#fbbf24' } }),
+              h('p', { id:'astronomy-redshift-slider-help', style:{ margin:'0 0 12px', color:'#cbd5e1', fontSize:12, lineHeight:1.65 } }, __alloT('stem.astronomy.redshift_slider_help', 'Drag to explore. Arrow keys change z by 0.05; Shift + arrow changes it by 0.5. Home returns to 0 and End to 15.')),
+              h('h3', { style:{ margin:'0 0 8px', color:'#f8fafc', fontSize:15 } }, __alloT('stem.astronomy.redshift_line_label', 'Choose a spectral line')),
+              h('div', { role:'group', 'aria-label':__alloT('stem.astronomy.redshift_line_label', 'Choose a spectral line'), style:{ display:'grid', gridTemplateColumns:'repeat(2,minmax(0,1fr))', gap:6 } }, model.rows.map(function(row) { var active=line.id===row.id; return a11yButton({ key:row.id, type:'button', 'aria-label':names[row.id], 'aria-pressed':active, 'aria-describedby':'astronomy-redshift-line-description-'+row.id, onClick:function() { upd({ redshiftLine:row.id }); }, style:Object.assign({},buttonStyle,{ padding:10, textAlign:'left', borderColor:active?'#fbbf24':'#64748b', background:active?'#422006':'#0f172a', color:active?'#fde68a':'#f8fafc' }) }, h('span', null,
+                h('strong', { style:{ display:'block', marginBottom:3 } }, names[row.id]),
+                h('span', { style:{ color:'#cbd5e1', fontSize:12 } }, number(row.restNm,3)+' nm'),
+                h('span', { id:'astronomy-redshift-line-description-'+row.id, className:'astr-sr-only' }, __alloT('stem.astronomy.redshift_rest', 'Emitted wavelength')+': '+wavelength(row.restNm)+'. '+__alloT('stem.astronomy.redshift_observed', 'Observed wavelength')+': '+wavelength(row.observedNm)+'. '+bandName(row.band))
+              )); })),
+              h('dl', { id:'astronomy-redshift-measurements', style:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap:8, margin:'12px 0 0' } },
+                metric(__alloT('stem.astronomy.redshift_rest', 'Emitted wavelength'), number(line.restNm,3)+' nm', number(line.restNm/1000,4)+' μm'),
+                metric(__alloT('stem.astronomy.redshift_observed', 'Observed wavelength'), number(line.observedNm/1000,4)+' μm', number(line.observedNm,3)+' nm · '+bandName(line.band)),
+                metric(__alloT('stem.astronomy.redshift_stretch', 'Wavelength stretch'), number(model.stretch)+'×', __alloT('stem.astronomy.redshift_factor_help', 'Every wavelength is multiplied by 1 + z.'))
+              )
+            )
+          ),
+          h('div', { id:'astronomy-redshift-status', role:'status', 'aria-live':'polite', 'aria-atomic':'true', style:{ marginTop:14, padding:12, border:'1px solid #475569', borderRadius:10, background:'#0a1425', color:'#e2e8f0', fontSize:13, lineHeight:1.65 } }, summary),
+          h('p', { style:{ margin:'10px 0 0', color:'#e2e8f0', fontSize:13, lineHeight:1.65 } }, __alloT('stem.astronomy.redshift_scope', 'Galaxy presets apply measured redshifts to these reference lines. Actual galaxy spectra have different line strengths and additional features. Cosmological redshift describes light stretched by expanding space; distance and travel time require a cosmological model.')),
+          h('div', { style:{ marginTop:10, display:'flex', flexWrap:'wrap', gap:'8px 14px', alignItems:'center', color:'#cbd5e1', fontSize:12 } },
+            h('a', { href:'https://science.nasa.gov/asset/webb/what-is-cosmological-redshift/', target:'_blank', rel:'noopener noreferrer', style:{ color:'#7dd3fc', textDecoration:'underline' } }, __alloT('stem.astronomy.redshift_nasa_source', 'NASA: cosmological redshift')),
+            h('a', { href:'https://sdss.org/dr20/tutorials/conversions/', target:'_blank', rel:'noopener noreferrer', style:{ color:'#7dd3fc', textDecoration:'underline' } }, __alloT('stem.astronomy.redshift_sdss_source', 'SDSS: vacuum wavelength references')),
+            h('a', { href:'https://classic.sdss.org/dr2/algorithms/speclinefits.php', target:'_blank', rel:'noopener noreferrer', style:{ color:'#7dd3fc', textDecoration:'underline' } }, __alloT('stem.astronomy.redshift_sdss_lines', 'SDSS: spectral line list')),
+            a11yButton({ type:'button', onClick:function() { activateAstronomyTab('stars', 'astronomy-spectrum-lab'); }, style:buttonStyle }, __alloT('stem.astronomy.redshift_doppler_link', 'Compare with stellar Doppler shift'))
+          )
+        );
+      }
+
+      function renderGravitationalLens() {
+        var model = gravitationalLensModel(d);
+        function number(value,digits) { return value.toLocaleString(undefined,{maximumFractionDigits:digits === undefined ? 2 : digits}); }
+        function signed(value) { return (value > 0 ? '+' : '') + number(value); }
+        var appearance = model.appearance === 'ring' ? __alloT('stem.astronomy.lens_ring_state', 'Einstein ring') : model.appearance === 'distorted-ring' ? __alloT('stem.astronomy.lens_distorted_state', 'Distorted ring') : __alloT('stem.astronomy.lens_images_state', 'Two stretched images');
+        var explanation = model.appearance === 'ring' ? __alloT('stem.astronomy.lens_ring_explanation', 'The source is centered behind the lens. Its light forms a ring around the lens.') : model.appearance === 'distorted-ring' ? __alloT('stem.astronomy.lens_distorted_explanation', 'The source still covers the alignment point, so its images join into a distorted ring.') : __alloT('stem.astronomy.lens_images_explanation', 'The source is off the alignment point. A larger outer image and a smaller inner image appear on opposite sides.');
+        var summary = appearance + '. ' + __alloT('stem.astronomy.lens_relative_mass', 'Relative lens mass') + ': ' + number(model.massRatio) + '×. ' + __alloT('stem.astronomy.lens_source_offset', 'Source offset') + ': ' + signed(model.sourceArcsec) + ' arcsec. ' + __alloT('stem.astronomy.lens_radius_label', 'Einstein radius') + ': ' + number(model.einsteinRadiusArcsec) + ' arcsec. ' + __alloT('stem.astronomy.lens_flux_label', 'Total flux magnification') + ': ' + number(model.magnification) + '×. ' + explanation;
+        var buttonStyle = {minHeight:44,padding:'9px 12px',border:'1px solid #64748b',borderRadius:8,background:'#0f172a',color:'#f8fafc',fontSize:13,cursor:'pointer'};
+        function activeStyle(active) { return Object.assign({},buttonStyle,{borderColor:active?'#fbbf24':'#64748b',background:active?'#422006':'#0f172a',color:active?'#fde68a':'#f8fafc'}); }
+        function figure(lensed) {
+          var prefix = lensed ? 'astronomy-lens' : 'astronomy-lens-source';
+          var title = lensed ? __alloT('stem.astronomy.lens_observed_title', 'With gravitational lensing') : __alloT('stem.astronomy.lens_source_title', 'Source position before lensing');
+          return h('figure',{style:{margin:0,minWidth:0}},
+            h('h3',{style:{margin:'0 0 8px',fontSize:15,color:'#f8fafc'}},title),
+            h('svg',{id:lensed?'astronomy-lens-diagram':'astronomy-lens-source-diagram',viewBox:'0 0 360 378',role:'img','aria-labelledby':prefix+'-title '+prefix+'-desc','aria-describedby':'astronomy-lens-status astronomy-lens-help','data-mass-ratio':model.massRatio,'data-source-arcsec':model.sourceArcsec,'data-appearance':model.appearance,style:{display:'block',width:'100%',maxWidth:440,height:'auto',margin:'0 auto',border:'1px solid #475569',borderRadius:10,background:'#070e1c'}},
+              h('title',{id:prefix+'-title'},title),h('desc',{id:prefix+'-desc'},lensed?summary:__alloT('stem.astronomy.lens_source_description','Blue shows the unlensed source; the orange cross marks the projected lens center. Both panels use the same angular scale.')+' '+__alloT('stem.astronomy.lens_source_offset','Source offset')+': '+signed(model.sourceArcsec)+' arcsec.'),
+              h('g',{'aria-hidden':'true'},
+                h('rect',{x:20,y:20,width:320,height:320,fill:'#080f1e'}),
+                [-15.3,-7.65,0,7.65,15.3].map(function(value){var x=model.plotX(value);return h('g',{key:value},h('line',{x1:x,x2:x,y1:20,y2:320,stroke:'#334155',strokeWidth:value===0?1:0.5,strokeDasharray:value===0?null:'3 5'}),h('line',{x1:20,x2:340,y1:x,y2:x,stroke:'#334155',strokeWidth:value===0?1:0.5,strokeDasharray:value===0?null:'3 5'}));}),
+                lensed ? h('path',{d:model.outerPath+' '+model.innerPath,fill:'#7dd3fc',fillRule:'evenodd',stroke:'none','data-lens-images':'finite-source'}) : h('circle',{cx:model.plotX(model.sourceArcsec),cy:180,r:model.sourceRadiusArcsec*model.plotScale,fill:'#7dd3fc','data-lens-source':true,'data-source-arcsec':model.sourceArcsec}),
+                lensed ? h('circle',{cx:180,cy:180,r:model.einsteinRadiusArcsec*model.plotScale,fill:'none',stroke:'#fbbf24',strokeDasharray:'4 5',strokeWidth:1.3,'data-lens-critical-radius':model.einsteinRadiusArcsec}) : null,
+                lensed ? h('g',null,h('circle',{cx:180,cy:180,r:9,fill:'#422006',stroke:'#fbbf24',strokeWidth:1.5}),h('circle',{cx:180,cy:180,r:3,fill:'#fbbf24'})) : h('path',{d:'M174 180 H186 M180 174 V186',stroke:'#fbbf24',strokeWidth:1.7}),
+                lensed ? h('g',{'data-lens-unlensed-marker':model.sourceArcsec},h('circle',{cx:model.plotX(model.sourceArcsec),cy:180,r:model.sourceRadiusArcsec*model.plotScale,fill:'none',stroke:'#cbd5e1',strokeDasharray:'2 3',strokeWidth:1})) : null,
+                [-15.3,0,15.3].map(function(value){var x=model.plotX(value);return h('g',{key:'tick'+value},h('line',{x1:x,x2:x,y1:321,y2:328,stroke:'#cbd5e1'}),h('text',{x:x,y:345,textAnchor:'middle',fill:'#e2e8f0',fontSize:16,className:'lens-svg-label'},signed(value)));}),
+                h('text',{x:180,y:369,textAnchor:'middle',fill:'#cbd5e1',fontSize:14,className:'lens-svg-axis'},__alloT('stem.astronomy.lens_axis','Angular offset · arcseconds'))
+              )
+            ),
+            h('figcaption',{style:{marginTop:8,color:'#cbd5e1',fontSize:12,lineHeight:1.65}},lensed?__alloT('stem.astronomy.lens_observed_caption','Blue is the lensed light. The dashed orange circle marks the Einstein radius; the pale outline marks the source position without lensing.'):__alloT('stem.astronomy.lens_source_caption','This is a position reference, with the foreground lens removed. The blue disk has the same brightness per unit area as its lensed images.'))
+          );
+        }
+        function metric(label,value) { return h('div',{style:{padding:11,minWidth:0,border:'1px solid #475569',borderRadius:10,background:'#0a1425'}},h('dt',{style:{fontSize:12,color:'#cbd5e1',marginBottom:6}},label),h('dd',{style:{margin:0,fontSize:17,fontWeight:800,color:'#f8fafc',overflowWrap:'anywhere'}},value)); }
+        function slider(id,label,value,min,max,step,text,help,onChange) { return h('div',{style:{padding:12,minWidth:0,border:'1px solid #475569',borderRadius:10,background:'#0a1425'}},h('label',{htmlFor:id,style:{display:'block',fontSize:14,fontWeight:800,color:'#f8fafc'}},label+': '+text),h('input',{id:id,type:'range',min:min,max:max,step:step,value:value,'aria-valuetext':text,'aria-describedby':id+'-help',onChange:function(event){onChange(Number(event.target.value));},className:'astr-focus',style:{display:'block',width:'100%',margin:'8px 0',minHeight:44,accentColor:'#fbbf24'}}),h('p',{id:id+'-help',style:{margin:0,color:'#cbd5e1',fontSize:12,lineHeight:1.65}},help)); }
+        return h('section',{id:'astronomy-lens-lab',tabIndex:-1,className:'astr-focus','aria-label':__alloT('stem.astronomy.lens_lab_title','Gravitational lens lab'),style:{padding:14,border:'1px solid #475569',borderRadius:14,background:'#111c30',marginBottom:16,minWidth:0}},
+          h('style',null,'#astronomy-lens-lab svg text{font-family:Inter,ui-sans-serif,system-ui,sans-serif}@media(max-width:600px){#astronomy-lens-lab .lens-svg-label{font-size:19px}#astronomy-lens-lab .lens-svg-axis{font-size:18px}}'),
+          h('h2',{style:{margin:'0 0 6px',fontSize:20,color:'#f8fafc'}},__alloT('stem.astronomy.lens_lab_title','Gravitational lens lab')),
+          h('p',{style:{margin:'0 0 14px',color:'#cbd5e1',fontSize:13,lineHeight:1.65}},__alloT('stem.astronomy.lens_intro','A foreground mass bends light from a background source. Move the source left or right and compare its original position with the ring or multiple images seen by an observer.')),
+          h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,260px),1fr))',gap:16}},figure(false),figure(true)),
+          h('div',{role:'group','aria-label':__alloT('stem.astronomy.a11y_gravitational_lens_controls','Gravitational lens controls'),style:{marginTop:16}},
+            h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,240px),1fr))',gap:12}},
+              slider('astronomy-lens-mass',__alloT('stem.astronomy.lens_relative_mass','Relative lens mass'),model.massRatio,0.2,4,0.1,number(model.massRatio)+'×',__alloT('stem.astronomy.lens_mass_help','1× sets the reference Einstein radius to 5.1 arcseconds. Distances stay fixed; doubling the radius needs four times the mass. Arrow keys change mass by 0.1×.'),function(value){upd({lensMassRatio:value});}),
+              slider('astronomy-lens-offset',__alloT('stem.astronomy.lens_source_offset','Source offset'),model.sourceArcsec,-10,10,0.25,signed(model.sourceArcsec)+' arcsec',__alloT('stem.astronomy.lens_offset_help','Zero aligns the source with the lens center. Negative moves left; positive moves right. Arrow keys step by 0.25 arcseconds. Home and End reach the limits.'),function(value){upd({lensSourceArcsec:value});})
+            ),
+            h('div',{role:'group','aria-label':__alloT('stem.astronomy.lens_alignment_examples','Alignment examples'),style:{display:'flex',flexWrap:'wrap',gap:6,marginTop:10}},[{value:0,label:__alloT('stem.astronomy.lens_aligned_example','Aligned')},{value:0.5,label:__alloT('stem.astronomy.lens_near_example','Near alignment')},{value:-5,label:__alloT('stem.astronomy.lens_left_example','Source left')},{value:5,label:__alloT('stem.astronomy.lens_right_example','Source right')}].map(function(example){return a11yButton({key:example.value,type:'button','aria-pressed':model.sourceArcsec===example.value,'aria-label':example.value===0?__alloT('stem.astronomy.a11y_show_perfect_gravitational_lens_alignment','Show perfect gravitational lens alignment'):example.label,onClick:function(){upd({lensSourceArcsec:example.value});},style:activeStyle(model.sourceArcsec===example.value)},example.label);}),a11yButton({type:'button','aria-label':__alloT('stem.astronomy.a11y_reset_gravitational_lens_simulation','Reset gravitational lens simulation'),onClick:function(){upd({lensMassRatio:1,lensSourceArcsec:0});},style:buttonStyle},__alloT('stem.astronomy.lens_reset','Reset lens')))
+          ),
+          h('dl',{id:'astronomy-lens-measurements',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,180px),1fr))',gap:8,margin:'14px 0'}},metric(__alloT('stem.astronomy.lens_radius_label','Einstein radius'),number(model.einsteinRadiusArcsec)+' arcsec'),metric(__alloT('stem.astronomy.lens_flux_label','Total flux magnification'),number(model.magnification)+'×'),metric(__alloT('stem.astronomy.lens_pattern_label','Image pattern'),appearance),model.appearance==='images'?metric(__alloT('stem.astronomy.lens_outer_offset','Outer image offset'),signed(model.centerImages[0].arcsec)+' arcsec'):null,model.appearance==='images'?metric(__alloT('stem.astronomy.lens_inner_offset','Inner image offset'),signed(model.centerImages[1].arcsec)+' arcsec'):null),
+          h('div',{id:'astronomy-lens-status',role:'status','aria-live':'polite','aria-atomic':'true',style:{padding:12,color:'#e2e8f0',fontSize:13,lineHeight:1.65,border:'1px solid #475569',borderRadius:10,background:'#0a1425'}},summary),
+          h('p',{id:'astronomy-lens-help',style:{margin:'10px 0 0',fontSize:12,color:'#cbd5e1',lineHeight:1.65}},__alloT('stem.astronomy.lens_model_help','Both panels keep the same fixed angular scale. A point-mass lens maps a uniformly bright disk of radius 0.918 arcseconds into the blue shapes. Magnification is the ratio of lensed area to source area; surface brightness stays constant. The finite disk keeps the aligned magnification finite.')),
+          h('aside',{id:'astronomy-lens-reference','aria-label':__alloT('stem.astronomy.lens_reference_title','Measured angular reference'),style:{marginTop:12,padding:12,border:'1px solid #475569',borderRadius:10,background:'#0a1425',color:'#e2e8f0',fontSize:12,lineHeight:1.65}},
+            h('h3',{style:{margin:'0 0 5px',fontSize:14,color:'#f8fafc'}},__alloT('stem.astronomy.lens_reference_title','Measured angular reference')+' · Cosmic Horseshoe'),
+            h('p',{style:{margin:'0 0 6px'}},__alloT('stem.astronomy.lens_reference_data','Belokurov et al. (2007), Table 1: a ring diameter of 10.2 arcseconds spanning about 300°. Half that diameter gives this lab its 5.1 arcsecond reference radius.')),
+            h('p',{style:{margin:'0 0 8px'}},__alloT('stem.astronomy.lens_scope','The angular reference is measured. Mass ratios, source size and alignments are teaching choices. This point-mass model illustrates lensing; the actual Cosmic Horseshoe requires a detailed galaxy mass distribution and source model.')),
+            h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px 14px'}},h('a',{href:'https://arxiv.org/pdf/0706.2326',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'}},__alloT('stem.astronomy.lens_paper_link','Discovery paper · measured ring')),h('a',{href:'https://esahubble.org/images/potw1151a/',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'}},__alloT('stem.astronomy.lens_hubble_link','Hubble observation')),h('a',{href:'https://www.mdpi.com/2073-8994/12/4/494',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'}},__alloT('stem.astronomy.lens_equation_link','Lens equation reference')))
+          ),
+          h('details',{style:{marginTop:12,color:'#e2e8f0',fontSize:13,lineHeight:1.65}},h('summary',{className:'astr-focus',style:{minHeight:44,padding:'10px 0',cursor:'pointer',fontWeight:700}},__alloT('stem.astronomy.lens_applications_title','What astronomers learn from lensing')),h('p',{style:{margin:'0 0 8px'}},__alloT('stem.astronomy.lens_applications','Distorted images reveal how mass is distributed in galaxies and clusters, including matter that does not emit visible light. Lensing can also magnify distant galaxies and reveal planets through changes in a background star’s brightness. Real observations include lens light, irregular source shapes, telescope resolution and noise.')))
+        );
+      }
+
+
+      function renderBlackHoleThermal() {
+        var m = blackHoleThermalModel(d), panel = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#334155';
+        var plot = { x: 80, y: 40, w: 250, h: 240 };
+        function power(n) { return String(n).split('').map(function(c) { return { '-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' }[c] || c; }).join(''); }
+        function number(value) {
+          if (value >= 0.001 && value < 1e6) return Number(value.toPrecision(3)).toLocaleString('en-US', { maximumSignificantDigits: 3 });
+          var parts = value.toExponential(2).split('e'); return parts[0] + ' × 10' + power(Number(parts[1]));
+        }
+        function temperature(value) {
+          return value < 1e-9 ? number(value) + ' K' : value < 1e-6 ? number(value * 1e9) + ' nK'
+            : value < 1e-3 ? number(value * 1e6) + ' µK' : value < 1 ? number(value * 1e3) + ' mK' : number(value) + ' K';
+        }
+        function diameter(value) { return value < 1 ? number(value * 1000) + ' mm' : value < 1000 ? number(value) + ' m' : number(value / 1000) + ' km'; }
+        function point(p) { return { x: plot.x + p.x * plot.w, y: plot.y + p.y * plot.h }; }
+        function setMass(value) { upd({ bhMassSolar: value }); }
+        function setExponent(value) { setMass(Math.pow(10, Math.max(BH_THERMAL.logMin, Math.min(BH_THERMAL.logMax, value)))); }
+        function setChart(event) {
+          var box = event.currentTarget.getBoundingClientRect(); if (!box.width) return;
+          var x = Math.max(0, Math.min(1, ((event.clientX - box.left) * 360 / box.width - plot.x) / plot.w));
+          setExponent(BH_THERMAL.logMin + x * (BH_THERMAL.logMax - BH_THERMAL.logMin));
+        }
+        function massKeys(event, chart) {
+          if (event.key === 'Home' && chart) { event.preventDefault(); setMass(1); return; }
+          var delta = { ArrowLeft: -0.25, ArrowDown: -0.25, ArrowRight: 0.25, ArrowUp: 0.25, PageDown: -1, PageUp: 1 }[event.key];
+          if (delta === undefined) return;
+          event.preventDefault(); setExponent(m.logMass + delta * (event.shiftKey ? 4 : 1));
+        }
+        function label(id) {
+          return { solar: __alloT('stem.astronomy.bht_solar_example', 'One solar mass'),
+            millimeter: __alloT('stem.astronomy.bht_mm_example', '1 mm horizon'),
+            cmb: __alloT('stem.astronomy.bht_cmb_example', 'Match CMB temperature'), sgrA: 'Sagittarius A*', m87: 'M87*' }[id];
+        }
+        function metric(labelText, text, key, value) {
+          return h('div', null, h('dt', { style: { color: '#cbd5e1', fontSize: 12 } }, labelText),
+            h('dd', { 'data-bht-metric': key, 'data-value': value, style: { margin: 0, color: '#f8fafc', fontSize: 14, fontWeight: 750, overflowWrap: 'anywhere' } }, text));
+        }
+        function sourceLink(url, text) {
+          return h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', minHeight: 44, alignItems: 'center', color: '#7dd3fc', fontSize: 12, marginRight: 12 } }, text);
+        }
+        function disk(id, cx, radius, tiny) {
+          return h('g', { key: id, 'aria-hidden': true },
+            h('circle', { 'data-bht-disk': id, cx: cx, cy: 100, r: radius, fill: id === 'solar' ? '#e2e8f0' : '#7dd3fc' }),
+            tiny && h('path', { d: 'M' + cx + ',111 L' + cx + ',146', stroke: '#cbd5e1', strokeDasharray: '3 3' }),
+            tiny && h('text', { x: cx, y: 172, textAnchor: 'middle', fill: '#cbd5e1' }, __alloT('stem.astronomy.bht_tiny_disk', 'Tiny horizon ↑')),
+            h('text', { x: cx, y: 211, textAnchor: 'middle', fill: '#e2e8f0' }, id === 'solar' ? __alloT('stem.astronomy.bht_solar_disk', 'Solar mass') : __alloT('stem.astronomy.bht_selected_disk', 'Selected')));
+        }
+        var current = point(m.chart), cmb = point(m.cmbChart);
+        var relation = {
+          hotter: { title: __alloT('stem.astronomy.bht_hotter', 'Hotter than the CMB'), detail: __alloT('stem.astronomy.bht_hotter_detail', 'Considering photons alone, a black hole hotter than the cosmic microwave background would emit more photon energy than it absorbs from that background. This comparison does not calculate the total mass-loss rate.') },
+          colder: { title: __alloT('stem.astronomy.bht_colder', 'Colder than the CMB'), detail: __alloT('stem.astronomy.bht_colder_detail', 'Considering photons alone, absorption from the cosmic microwave background would outweigh the hole’s photon emission. A cold black hole still emits in this theory.') },
+          balanced: { title: __alloT('stem.astronomy.bht_balanced', 'At the CMB temperature'), detail: __alloT('stem.astronomy.bht_balanced_detail', 'The model temperatures match for photon exchange with the CMB. This ideal balance is unstable: gaining mass makes a black hole colder, and losing mass makes it hotter.') }
+        }[m.cmbRelation];
+        return h('section', { id: 'astronomy-black-hole-thermal', 'aria-labelledby': 'astronomy-bht-heading', style: { marginBottom: 14, padding: 14, border: '1px solid ' + border, borderRadius: 14, background: panel } },
+          h('style', null, '#astronomy-black-hole-thermal button,#astronomy-black-hole-thermal summary{min-height:44px}#astronomy-bht-horizons text,#astronomy-bht-curve text{font-size:18px}#astronomy-page-curve-diagram text{font-size:19px}@media(max-width:600px){#astronomy-bht-horizons text,#astronomy-bht-curve text,#astronomy-page-curve-diagram text{font-size:24px}}'),
+          h('h3', { id: 'astronomy-bht-heading', style: { margin: '0 0 7px', color: '#a5f3fc', fontSize: 16 } }, __alloT('stem.astronomy.bht_heading', 'Black-hole size and temperature')),
+          h('p', { style: { fontSize: 13, lineHeight: 1.6, color: '#e2e8f0', margin: '0 0 12px' } }, __alloT('stem.astronomy.bht_intro', 'Increase the mass to enlarge the horizon and lower the predicted Hawking temperature. These calculations assume a nonrotating, uncharged black hole. A solar-mass black hole is hypothetical; the Sun is not a black hole.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.bht_examples', 'Black-hole mass examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, m.examples.map(function(example) {
+            return h('button', { key: example.id, type: 'button', className: 'astr-focus', 'aria-pressed': m.example === example.id, onClick: function() { setMass(example.mass); },
+              style: { padding: '9px 12px', border: '1px solid ' + border, borderRadius: 8, color: '#e0f2fe', fontSize: 13, background: m.example === example.id ? '#164e63' : panel, cursor: 'pointer' } }, label(example.id));
+          })),
+          h('p', { id: 'astronomy-bht-input-status', role: 'status', 'aria-live': 'polite', 'data-bht-example': m.example, style: { margin: '9px 0', fontSize: 12, lineHeight: 1.6, color: '#cbd5e1' } },
+            m.example === 'sgrA' || m.example === 'm87' ? __alloT('stem.astronomy.bht_published_status', 'Published mass input:') + ' ' + label(m.example) + ' · EHT ' + (m.example === 'sgrA' ? '2022' : '2019') + '.'
+              : m.example === 'custom' ? __alloT('stem.astronomy.bht_custom_status', 'Custom mass. Published presets restore their original mass input.')
+                : __alloT('stem.astronomy.bht_teaching_status', 'Teaching example. The millimetre horizon and CMB match are theoretical comparisons.')),
+          h('label', { htmlFor: 'astronomy-bht-mass', style: { display: 'block', fontSize: 13, color: '#e0f2fe', fontWeight: 700 } }, __alloT('stem.astronomy.bht_mass_control', 'Mass (Sun = 1)'), ': ' + number(m.massSolar)),
+          h('input', { id: 'astronomy-bht-mass', type: 'range', min: BH_THERMAL.logMin, max: BH_THERMAL.logMax, step: 'any', value: m.logMass,
+            'aria-label': __alloT('stem.astronomy.bht_mass_control', 'Mass (Sun = 1)'), 'aria-valuetext': number(m.massSolar) + ' ' + __alloT('stem.astronomy.bht_solar_masses', 'solar masses'),
+            'aria-describedby': 'astronomy-bht-control-help', onChange: function(event) { setExponent(Number(event.target.value)); }, onKeyDown: function(event) { massKeys(event, false); }, className: 'astr-focus', style: { width: '100%', minHeight: 44 } }),
+          h('p', { id: 'astronomy-bht-control-help', style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.6, color: '#cbd5e1' } }, __alloT('stem.astronomy.bht_control_help', 'The mass slider and chart use log scales: equal steps multiply the mass. Arrow keys change mass by a factor of about 1.78; Page Up or Down changes it tenfold. Shift makes arrow steps tenfold.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', alignItems: 'start', gap: 14 } },
+            h('figure', { style: { margin: 0, padding: 10, border: '1px solid ' + border, borderRadius: 12, minWidth: 0 } },
+              h('h4', { style: { fontSize: 14, color: '#a5f3fc', margin: '0 0 8px' } }, __alloT('stem.astronomy.bht_horizon_heading', 'Horizon size at a shared scale')),
+              h('svg', { id: 'astronomy-bht-horizons', viewBox: '0 0 360 235', role: 'img', 'aria-labelledby': 'astronomy-bht-horizon-title', 'aria-describedby': 'astronomy-bht-horizon-note', 'data-mass-solar': m.massSolar, 'data-diameter-m': m.diameterM, style: { display: 'block', width: '100%' } },
+                h('title', { id: 'astronomy-bht-horizon-title' }, __alloT('stem.astronomy.bht_horizon_title', 'Schwarzschild horizon cross sections for one solar mass and the selected mass')),
+                disk('solar', 90, m.solarDisk, m.solarTiny), disk('selected', 270, m.selectedDisk, m.selectedTiny)),
+              h('figcaption', { id: 'astronomy-bht-horizon-note', style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.bht_horizon_note', 'Both silhouettes use the same diameter scale, fitted to the larger horizon. Tiny horizons remain tiny; dashed pointers locate them. Colors and spacing are illustrative. These circles show a theoretical horizon, not an accretion ring or the larger lensed shadow in an EHT image.'))),
+            h('figure', { style: { margin: 0, padding: 10, border: '1px solid ' + border, borderRadius: 12, minWidth: 0 } },
+              h('svg', { id: 'astronomy-bht-curve', viewBox: '0 0 360 360', role: 'slider', tabIndex: 0, className: 'astr-focus',
+                'aria-label': __alloT('stem.astronomy.bht_chart_label', 'Explore mass and Hawking temperature'), 'aria-orientation': 'horizontal', 'aria-valuemin': -14, 'aria-valuemax': 10, 'aria-valuenow': m.logMass,
+                'aria-valuetext': number(m.massSolar) + ' ' + __alloT('stem.astronomy.bht_solar_masses', 'solar masses') + ', ' + temperature(m.temperatureK),
+                'aria-describedby': 'astronomy-bht-chart-help astronomy-bht-cmb-status', 'data-temperature-k': m.temperatureK, 'data-mass-solar': m.massSolar,
+                onPointerDown: function(event) { if (event.button !== 0) return; event.preventDefault(); event.currentTarget.focus({ preventScroll: true }); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); setChart(event); },
+                onPointerMove: function(event) { if (event.buttons === 1 && event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) setChart(event); },
+                onKeyDown: function(event) { massKeys(event, true); }, style: { display: 'block', width: '100%', touchAction: 'none', cursor: 'ew-resize' } },
+                h('title', null, __alloT('stem.astronomy.bht_chart_title', 'Higher mass means lower Hawking temperature')),
+                h('rect', { x: plot.x, y: plot.y, width: plot.w, height: plot.h, fill: astronomyContrast ? '#000' : '#0e1c32', stroke: border }),
+                [6,0,-6,-12,-18].map(function(exp) { var y = plot.y + (7 - exp) / 25 * plot.h; return h('g', { key: exp, 'aria-hidden': true },
+                  h('line', { x1: plot.x, x2: plot.x + plot.w, y1: y, y2: y, stroke: '#52627a', strokeDasharray: '2 5' }),
+                  h('text', { x: plot.x - 9, y: y + 5, textAnchor: 'end', fill: '#e2e8f0' }, exp === 0 ? '1' : '10' + power(exp))); }),
+                [-14,0,10].map(function(exp) { var x = plot.x + (exp + 14) / 24 * plot.w; return h('g', { key: exp, 'data-bht-mass-tick': true, 'aria-hidden': true },
+                  h('line', { x1: x, x2: x, y1: plot.y, y2: plot.y + plot.h, stroke: '#52627a', strokeDasharray: '2 5' }),
+                  h('text', { x: x, y: 313, textAnchor: exp === -14 ? 'start' : exp === 10 ? 'end' : 'middle', fill: '#e2e8f0' }, exp === 0 ? '1' : '10' + power(exp))); }),
+                h('text', { x: plot.x, y: 29, fill: '#e2e8f0', 'aria-hidden': true }, __alloT('stem.astronomy.bht_temperature_axis', 'Temperature (K)')),
+                h('text', { x: 204, y: 351, textAnchor: 'middle', fill: '#e2e8f0', 'aria-hidden': true }, __alloT('stem.astronomy.bht_mass_axis', 'Mass (Sun = 1) →')),
+                h('line', { x1: plot.x, x2: plot.x + plot.w, y1: cmb.y, y2: cmb.y, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '5 4', 'aria-hidden': true }),
+                h('text', { x: plot.x + plot.w, y: cmb.y - 8, textAnchor: 'end', fill: '#fde68a', 'aria-hidden': true }, 'CMB'),
+                h('polyline', { points: m.curve.map(function(p) { var q = point(p); return q.x + ',' + q.y; }).join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 3, 'aria-hidden': true }),
+                h('g', { 'aria-hidden': true }, h('circle', { cx: current.x, cy: current.y, r: 10, fill: '#7dd3fc', opacity: 0.2 }), h('circle', { 'data-bht-marker': true, cx: current.x, cy: current.y, r: 5, fill: '#e0f2fe', stroke: '#fff', strokeWidth: 1.5 }))),
+              h('figcaption', { id: 'astronomy-bht-chart-help', style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1' } }, __alloT('stem.astronomy.bht_chart_help', 'Drag across the chart or use arrow keys. Home on the chart selects one solar mass. The blue line is the temperature prediction; the gold dashed line is the measured CMB temperature. This is a mass comparison, not an evaporation timeline.')))),
+          h('dl', { id: 'astronomy-bht-readout', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,155px),1fr))', gap: 12, margin: '14px 0', lineHeight: 1.6 } },
+            metric(__alloT('stem.astronomy.bht_mass_value', 'Mass'), number(m.massSolar) + ' M☉', 'mass', m.massSolar),
+            metric(__alloT('stem.astronomy.bht_diameter_value', 'Horizon diameter'), diameter(m.diameterM), 'diameter', m.diameterM),
+            metric(__alloT('stem.astronomy.bht_temperature_value', 'Hawking temperature'), temperature(m.temperatureK), 'temperature', m.temperatureK),
+            metric(__alloT('stem.astronomy.bht_entropy_value', 'Entropy / kB'), number(m.entropyOverK), 'entropy', m.entropyOverK)),
+          h('div', { id: 'astronomy-bht-cmb-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-cmb-relation': m.cmbRelation, style: { border: '1px solid ' + border, borderRadius: 10, padding: 12 } },
+            h('strong', { style: { color: '#fde68a', fontSize: 14 } }, relation.title),
+            h('p', { style: { margin: '6px 0', fontSize: 12, lineHeight: 1.6, color: '#e2e8f0' } }, relation.detail),
+            h('p', { style: { margin: '6px 0 0', fontSize: 12, lineHeight: 1.6, color: '#cbd5e1' } }, __alloT('stem.astronomy.bht_cmb_reference', 'CMB reference: 2.72548 ± 0.00057 K · Fixsen (2009). Other radiation, matter, spin and charge are omitted.'))),
+          h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.bht_detection_note', 'Published examples supply mass estimates. Horizon size, entropy and Hawking temperature here are theoretical calculations. Hawking radiation from an astrophysical black hole has not been directly detected.')),
+          h('details', { style: { border: '1px solid ' + border, borderRadius: 9, padding: '0 10px' } },
+            h('summary', { className: 'astr-focus', style: { cursor: 'pointer', padding: '11px 0', color: '#e0f2fe', fontSize: 13 } }, __alloT('stem.astronomy.bht_source_details', 'Sources, uncertainties and equations')),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } }, __alloT('stem.astronomy.bht_mass_sources', 'Sagittarius A*: 4.0 million solar masses, with a −0.6 / +1.1 million interval, from EHT (2022). M87*: 6.5 billion solar masses, ±0.2 billion statistical and ±0.7 billion systematic error, from EHT (2019). These are fixed study estimates; the explorer uses their central values without propagating uncertainty.')),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } }, __alloT('stem.astronomy.bht_equations', 'Schwarzschild radius r = 2GM/c²; Hawking temperature T = ħc³/(8πGMkB); entropy S/kB = A/(4ℓP²), with A = 4πr² and ℓP² = ħG/c³. Mass units use the IAU nominal solar GM. Other constants use CODATA 2022 values.')),
+            h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.7 } }, __alloT('stem.astronomy.bht_equation_help', 'G is the gravitational constant, c the speed of light, ħ the reduced Planck constant, kB the Boltzmann constant, and A the horizon area. Entropy grows with mass squared; temperature falls in inverse proportion to mass. This explorer does not simulate the quantum endpoint of evaporation.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              sourceLink('https://eventhorizontelescope.org/publications/first-sagittarius-event-horizon-telescope-results-iv-variability-morphology-and', __alloT('stem.astronomy.bht_sgra_source', 'Sagittarius A* · EHT 2022')),
+              sourceLink('https://arxiv.org/abs/1906.11243', __alloT('stem.astronomy.bht_m87_source', 'M87* · EHT 2019')),
+              sourceLink('https://doi.org/10.1007/BF02345020', __alloT('stem.astronomy.bht_hawking_source', 'Hawking · 1975')),
+              sourceLink('https://arxiv.org/abs/0911.1955', __alloT('stem.astronomy.bht_cmb_source', 'CMB temperature · Fixsen 2009')),
+              sourceLink('https://physics.nist.gov/cuu/Constants/index.html', __alloT('stem.astronomy.bht_constants_source', 'Physical constants · NIST')),
+              sourceLink('https://arxiv.org/abs/1510.07674', __alloT('stem.astronomy.bht_solar_source', 'Solar units · IAU 2015')))),
+          h('details', { id: 'astronomy-page-comparison', style: { border: '1px solid ' + border, borderRadius: 9, padding: '0 10px', marginTop: 10 } },
+            h('summary', { className: 'astr-focus', style: { cursor: 'pointer', padding: '11px 0', color: '#e0f2fe', fontSize: 13 } }, __alloT('stem.astronomy.bht_page_details', 'Compare information models')),
+            h('figure', { style: { margin: '0 0 12px' } },
+              h('h4', { style: { fontSize: 14, color: '#a5f3fc', margin: '0 0 8px' } }, __alloT('stem.astronomy.bht_radiation_entropy', 'Entropy of emitted radiation')),
+              h('svg', { id: 'astronomy-page-curve-diagram', viewBox: '0 0 360 260', role: 'img', 'aria-labelledby': 'astronomy-page-curve-title astronomy-page-curve-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                h('title', { id: 'astronomy-page-curve-title' }, __alloT('stem.astronomy.bht_page_title', 'Conceptual Page curve comparison')),
+                h('desc', { id: 'astronomy-page-curve-desc' }, __alloT('stem.astronomy.bht_page_desc', 'The leading thermal calculation gives rising radiation entropy during evaporation. In a unitary model starting in a pure state, radiation entropy peaks near the Page time and returns to zero after complete evaporation.')),
+                h('line', { x1: 40, y1: 200, x2: 335, y2: 200, stroke: '#94a3b8', strokeWidth: 2 }),
+                h('line', { x1: 40, y1: 200, x2: 40, y2: 40, stroke: '#94a3b8', strokeWidth: 2 }),
+                h('line', { x1: 185, y1: 40, x2: 185, y2: 200, stroke: '#94a3b8', strokeDasharray: '5 5' }),
+                h('text', { x: 185, y: 29, textAnchor: 'middle', fill: '#e2e8f0', 'aria-hidden': true }, __alloT('stem.astronomy.bht_page_time', 'Page time')),
+                h('path', { d: 'M40 200 C100 157 225 95 335 48', fill: 'none', stroke: '#fb7185', strokeWidth: 4 }),
+                h('path', { d: 'M40 200 C95 157 145 70 185 67 C228 84 295 168 335 200', fill: 'none', stroke: '#38bdf8', strokeWidth: 4 }),
+                h('text', { x: 185, y: 245, textAnchor: 'middle', fill: '#e2e8f0', 'aria-hidden': true }, __alloT('stem.astronomy.bht_evaporation_axis', 'Evaporation →'))),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6, margin: '6px 0' } },
+                h('span', null, h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 22, borderTop: '3px solid #fb7185', marginRight: 6 } }), __alloT('stem.astronomy.bht_thermal_curve', 'Thermal calculation: entropy rises')),
+                h('span', null, h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 22, borderTop: '3px solid #38bdf8', marginRight: 6 } }), __alloT('stem.astronomy.bht_unitary_curve', 'Unitary Page curve: entropy returns to zero'))),
+              h('figcaption', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, __alloT('stem.astronomy.bht_page_note', 'Conceptual curves: axes are not numerical or to scale. The horizontal axis is evaporation progress; the vertical axis is radiation entropy. Page time concerns an entropy balance, not a fixed fraction of mass lost. This figure is independent of the mass controls above.')),
+              sourceLink('https://arxiv.org/abs/hep-th/9306083', __alloT('stem.astronomy.bht_page_source', 'Information in black-hole radiation · Page 1993')))));
+      }
+
+      function renderGravitationalWave() {
+        var m = gravitationalWaveModel(d), playing = d.wavePlaying === true;
+        var bg = astronomyContrast ? '#000000' : '#07111f', border = astronomyContrast ? '#facc15' : '#334155';
+        var muted = astronomyContrast ? '#ffffff' : '#cbd5e1', gold = '#fde68a', violet = '#d8b4fe', cyan = '#67e8f9';
+        var panel = { minWidth: 0, padding: 12, background: bg, border: '1px solid ' + border, borderRadius: 12 };
+        function button(label, action, selected, extra) {
+          return h('button', Object.assign({ type: 'button', className: 'astr-focus', onClick: action,
+            'aria-pressed': typeof selected === 'boolean' ? selected : undefined,
+            style: { minHeight: 44, padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (selected ? cyan : border),
+              background: selected ? '#164e63' : bg, color: '#f8fafc', cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, extra || {}), label);
+        }
+        function setPhase(value) { upd({ wavePhase: Math.max(0, Math.min(1, value)), wavePlaying: false }); }
+        function advanceWave() {
+          setLabToolData(function(prev) {
+            var current = prev && prev.astronomy;
+            if (!current || current.tab !== 'galaxies' || current.wavePlaying !== true) return prev;
+            var next = Math.min(1, gravitationalWaveModel(current).phase + (_prefersReducedMotion ? 0.025 : 0.008));
+            return Object.assign({}, prev, { astronomy: Object.assign({}, current, { wavePhase: next, wavePlaying: next < 1, pulsarPlaying: false }) });
+          });
+        }
+        function slider(key, label, value, low, high, step, text) {
+          return h('label', { htmlFor: 'astr-' + key, style: { display: 'block', fontSize: 13, color: muted, lineHeight: 1.7 } }, label + ': ' + text,
+            h('input', { id: 'astr-' + key, type: 'range', min: low, max: high, step: step, value: value, className: 'astr-focus', 'aria-valuetext': text,
+              style: { display: 'block', width: '100%', minHeight: 44, margin: 0, accentColor: '#38bdf8' },
+              onChange: function(e) { var patch = { wavePlaying: false }; patch[key] = Number(e.target.value) / (key === 'wavePhase' ? 100 : 1); upd(patch); } }));
+        }
+        function strainText(value) { return value !== 0 && Math.abs(value) * 1e21 < 0.001 ? value.toExponential(2) : (value * 1e21).toFixed(3) + ' × 10⁻²¹'; }
+        function text(x, y, value, color, anchor) { return h('text', { x: x, y: y, textAnchor: anchor || 'middle', fill: color || muted, className: 'wave-svg-label' }, value); }
+        function orbit() {
+          var scale = 122 / Math.max(m.radius1, m.radius2), cx = 180, cy = 145;
+          return h('svg', { id: 'astronomy-wave-orbit', viewBox: '0 0 360 320', role: 'img', 'data-wave-phase': m.phase,
+            'aria-label': __alloT('stem.astronomy.wave_orbit_label', 'Two black holes orbiting their shared center of mass'), style: { display: 'block', width: '100%', height: 'auto' } },
+            h('title', null, __alloT('stem.astronomy.wave_orbit_title', 'One orbit produces two wave cycles')),
+            h('circle', { cx: cx, cy: cy, r: 139, fill: '#0c1830' }),
+            [m.radius1, m.radius2].map(function(r, i) { return h('circle', { key: i, cx: cx, cy: cy, r: r * scale, fill: 'none', stroke: i ? cyan : gold, strokeOpacity: 0.4, strokeDasharray: '3 5' }); }),
+            h('line', { x1: cx + m.current.x1 * scale, y1: cy - m.current.y1 * scale, x2: cx + m.current.x2 * scale, y2: cy - m.current.y2 * scale, stroke: muted, strokeOpacity: 0.4, strokeDasharray: '3 4' }),
+            h('path', { d: 'M174 145h12 M180 139v12', stroke: muted, strokeWidth: 1.5 }),
+            [{ x: m.current.x1, y: m.current.y1, r: m.horizon1, color: gold, mass: m.mass1, id: '1' },
+             { x: m.current.x2, y: m.current.y2, r: m.horizon2, color: cyan, mass: m.mass2, id: '2' }].map(function(p) {
+               var radius = p.r * scale, x = cx + p.x * scale, y = cy - p.y * scale;
+               return h('g', { key: p.id, 'data-wave-body': p.id },
+                 h('circle', { cx: x, cy: y, r: radius + 6, fill: p.color, fillOpacity: 0.13 }),
+                 h('circle', { 'data-wave-horizon': p.id, cx: x, cy: y, r: radius, fill: '#000000', stroke: p.color, strokeWidth: 1 }),
+                 h('circle', { cx: x, cy: y, r: Math.max(radius + 3, 6), fill: 'none', stroke: p.color, strokeDasharray: '2 3' }),
+                 text(x, y - radius - 12 < 25 ? y + radius + 25 : y - radius - 12, p.mass.toFixed(0), p.color));
+             }), text(180, 310, __alloT('stem.astronomy.wave_mass_units', 'Masses in Suns')));
+        }
+        function detector() {
+          var ox = 110, oy = 205, delta = m.current.strain * m.displayGain / 2, xEnd = ox + 150 * (1 + delta), yEnd = oy - 150 * (1 - delta);
+          return h('svg', { id: 'astronomy-interferometer-diagram', viewBox: '0 0 360 300', role: 'img',
+            'aria-labelledby': 'astronomy-interferometer-title astronomy-interferometer-desc',
+            'data-wave-strain': m.current.strain, 'data-wave-differential': m.current.differential, 'data-visual-gain': m.displayGain,
+            style: { display: 'block', width: '100%', height: 'auto' } },
+            h('title', { id: 'astronomy-interferometer-title' }, __alloT('stem.astronomy.wave_detector_title', 'Laser interferometer response')),
+            h('desc', { id: 'astronomy-interferometer-desc' }, __alloT('stem.astronomy.wave_detector_desc', 'A laser reaches a beam splitter and travels along two perpendicular arms. The wave changes the two arm lengths oppositely. Mirrors move by a magnified amount in this diagram; readouts show the physical length difference.')),
+            h('path', { d: 'M260 205H110V55', fill: 'none', stroke: muted, strokeOpacity: 0.5, strokeDasharray: '3 5' }),
+            h('line', { x1: 40, y1: oy, x2: ox, y2: oy, stroke: gold, strokeWidth: 4 }),
+            h('rect', { x: 24, y: oy - 10, width: 22, height: 20, rx: 3, fill: '#b45309', stroke: gold }),
+            text(36, oy - 19, __alloT('stem.astronomy.wave_laser', 'Laser'), gold),
+            h('line', { 'data-wave-arm': 'x', x1: ox, y1: oy, x2: xEnd, y2: oy, stroke: cyan, strokeWidth: 3.5 }),
+            h('line', { 'data-wave-arm': 'y', x1: ox, y1: oy, x2: ox, y2: yEnd, stroke: violet, strokeWidth: 3.5 }),
+            h('line', { x1: ox + 6, y1: oy - 6, x2: xEnd - 5, y2: oy - 6, stroke: cyan, strokeWidth: 1.5, strokeDasharray: '4 4' }),
+            h('line', { x1: ox + 6, y1: oy - 6, x2: ox + 6, y2: yEnd + 5, stroke: violet, strokeWidth: 1.5, strokeDasharray: '4 4' }),
+            h('rect', { x: ox - 6, y: oy - 6, width: 12, height: 12, fill: '#bae6fd', transform: 'rotate(45 ' + ox + ' ' + oy + ')' }),
+            h('rect', { 'data-wave-mirror': 'x', x: xEnd - 4, y: oy - 15, width: 8, height: 30, rx: 2, fill: cyan }),
+            h('rect', { 'data-wave-mirror': 'y', x: ox - 15, y: yEnd - 4, width: 30, height: 8, rx: 2, fill: violet }),
+            text(226, oy + 31, __alloT('stem.astronomy.wave_x_arm', 'X arm'), cyan),
+            text(ox + 22, 111, __alloT('stem.astronomy.wave_y_arm', 'Y arm'), violet, 'start'),
+            text(207, 161, __alloT('stem.astronomy.wave_splitter', 'Splitter')),
+            h('line', { x1: ox, y1: oy + 8, x2: ox, y2: 259, stroke: gold, strokeWidth: 2 }),
+            h('rect', { x: ox - 38, y: 259, width: 76, height: 30, rx: 5, fill: '#164e63', stroke: gold }),
+            text(ox, 280, __alloT('stem.astronomy.wave_readout', 'Readout'), gold),
+            text(246, 38, __alloT('stem.astronomy.wave_four_km', '4 km each')));
+        }
+        var chart = { x: 46, y: 39, w: 286, h: 167 }, extent = m.amplitude * 1.25;
+        function plotY(strain) { return chart.y + chart.h / 2 * (1 - strain / extent); }
+        function scrub(e) { var box = e.currentTarget.getBoundingClientRect(); if (box.width > 0) setPhase(((e.clientX - box.left) * 360 / box.width - chart.x) / chart.w); }
+        function keyScrub(e) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var next = null, step = e.shiftKey ? 0.1 : 0.01;
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = m.phase - step;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = m.phase + step;
+          if (e.key === 'Home') next = 0;
+          if (e.key === 'End') next = 1;
+          if (next !== null) { e.preventDefault(); setPhase(next); }
+        }
+        function curve() {
+          var frames = Array.from({ length: 241 }, function(_, i) { return m.at(i / 240); }), cursorX = chart.x + m.phase * chart.w;
+          function trace(key) { return frames.map(function(f) { return (chart.x + f.phase * chart.w).toFixed(3) + ',' + plotY(f[key]).toFixed(3); }).join(' '); }
+          return h('svg', { id: 'astronomy-wave-curve', viewBox: '0 0 360 300', role: 'slider', tabIndex: 0, className: 'astr-focus',
+            'aria-label': __alloT('stem.astronomy.wave_scrub_label', 'Explore one binary orbit'), 'aria-describedby': 'astronomy-wave-help',
+            'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Number((m.phase * 100).toFixed(1)),
+            'aria-valuetext': (m.phase * 100).toFixed(1) + '% · ' + (m.current.seconds * 1000).toFixed(1) + ' ms · ' + strainText(m.current.strain),
+            'data-wave-strain': m.current.strain, 'data-wave-phase': m.phase, 'data-axis-extent': extent,
+            style: { display: 'block', width: '100%', height: 'auto', cursor: 'crosshair', touchAction: 'pan-y' }, onKeyDown: keyScrub,
+            onPointerDown: function(e) { if (e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); e.currentTarget.setPointerCapture(e.pointerId); scrub(e); },
+            onPointerMove: function(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) scrub(e); },
+            onPointerUp: function(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); },
+            onPointerCancel: function(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } },
+            h('title', null, __alloT('stem.astronomy.wave_curve_title', 'Two signal cycles during one orbit')),
+            [-1, 0, 1].map(function(value) { var y = chart.y + (1 - value) * chart.h / 2;
+              return h('g', { key: value }, h('line', { x1: chart.x, x2: chart.x + chart.w, y1: y, y2: y, stroke: border, strokeDasharray: value ? '3 5' : undefined }),
+                text(chart.x - 7, y + 6, value, muted, 'end')); }),
+            h('polyline', { 'data-wave-trace': 'plus', points: trace('plus'), fill: 'none', stroke: gold, strokeWidth: 2.5 }),
+            h('polyline', { 'data-wave-trace': 'detector', points: trace('strain'), fill: 'none', stroke: violet, strokeWidth: 2.5, strokeDasharray: '5 3' }),
+            [0, 0.5, 1].map(function(t) { return h('g', { key: t }, text(chart.x + t * chart.w, 236, (t * m.duration * 1000).toFixed(1), muted, t === 0 ? 'start' : t === 1 ? 'end' : 'middle')); }),
+            text(180, 278, __alloT('stem.astronomy.wave_chart_time', 'Time in ms')),
+            h('line', { x1: cursorX, x2: cursorX, y1: chart.y - 5, y2: chart.y + chart.h, stroke: cyan, strokeWidth: 1.5 }),
+            h('circle', { 'data-wave-cursor': true, cx: cursorX, cy: plotY(m.current.strain), r: 5, fill: cyan, stroke: bg, strokeWidth: 1.5 }));
+        }
+        function metric(label, value, props) { return h('div', { style: panel }, h('dt', { style: { color: muted, fontSize: 12, marginBottom: 5 } }, label),
+          h('dd', Object.assign({ style: { margin: 0, color: cyan, fontSize: 18, fontWeight: 800 } }, props || {}), value)); }
+        var responseLabel = m.response === 0 ? __alloT('stem.astronomy.wave_null', 'Detector is blind to this plus component')
+          : m.current.strain > m.amplitude * 1e-10 ? __alloT('stem.astronomy.wave_x_longer', 'X arm longer · Y arm shorter')
+          : m.current.strain < -m.amplitude * 1e-10 ? __alloT('stem.astronomy.wave_y_longer', 'Y arm longer · X arm shorter')
+          : __alloT('stem.astronomy.wave_balanced', 'Arms have equal length at this moment');
+        return h('section', { id: 'astronomy-wave-lab', 'aria-labelledby': 'astronomy-wave-heading' },
+          h('style', null, '#astronomy-wave-lab .wave-svg-label{font-size:19px}@media(max-width:600px){#astronomy-wave-lab .wave-svg-label{font-size:22px}}'),
+          h(AstronomyPlaybackClock, { React: React, playing: playing, delay: _prefersReducedMotion ? 250 : 80, step: advanceWave }),
+          h('h3', { id: 'astronomy-wave-heading', style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 18 } }, __alloT('stem.astronomy.wave_heading', 'Binary orbit and detector explorer')),
+          h('p', { style: { margin: '0 0 12px', color: muted, fontSize: 14, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_intro', 'Follow one orbit of two black holes. Two wave cycles pass the detector during that orbit, alternately lengthening and shortening its arms. These three views show the same selected moment.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.wave_examples', 'Binary source examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            button(__alloT('stem.astronomy.wave_reference_example', 'GW150914 inputs'), function() { upd({ waveMass1: 36, waveMass2: 29, waveDistance: 410, waveRedshift: 0.09, waveFrequency: 20, wavePhase: 0, wavePlaying: false }); }, m.reference),
+            button(__alloT('stem.astronomy.wave_equal_example', 'Equal 30 + 30'), function() { upd({ waveMass1: 30, waveMass2: 30, waveDistance: 410, waveRedshift: 0, waveFrequency: 20, wavePhase: 0, wavePlaying: false }); }, m.mass1 === 30 && m.mass2 === 30 && m.distance === 410 && m.redshift === 0),
+            button(__alloT('stem.astronomy.wave_small_example', 'Smaller 10 + 10'), function() { upd({ waveMass1: 10, waveMass2: 10, waveDistance: 410, waveRedshift: 0, waveFrequency: 40, wavePhase: 0, wavePlaying: false }); }, m.mass1 === 10 && m.mass2 === 10 && m.distance === 410 && m.redshift === 0)),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,310px),1fr))', gap: 12, marginBottom: 12 } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: 0, color: '#f8fafc', fontSize: 15 } }, __alloT('stem.astronomy.wave_orbit_heading', '1. Follow the orbit')), orbit(),
+              h('figcaption', { style: { fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_orbit_note', 'The cross marks the center of mass. Orbit and horizon sizes share a scale that fits this view; colored locator rings help you find small black holes.'))),
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: 0, color: '#f8fafc', fontSize: 15 } }, __alloT('stem.astronomy.wave_detector_heading', '2. Watch the detector')), detector(),
+              h('figcaption', { style: { fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_detector_note', 'Solid arms show magnified motion; gray dotted lines mark their resting lengths. Each real arm is 4 km. The physical length difference appears below.'))),
+            h('div', { style: panel }, h('h4', { style: { margin: 0, color: '#f8fafc', fontSize: 15 } }, __alloT('stem.astronomy.wave_chart_heading', '3. Read the signal')), curve(),
+              h('p', { style: { margin: '0 0 8px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_scale_note', 'Vertical scale adjusts to fit the wave. One chart unit equals ') + extent.toExponential(2) + '. ' + __alloT('stem.astronomy.wave_scale_compare', 'Compare readouts when changing sources or distance.')),
+              h('p', { id: 'astronomy-wave-help', style: { margin: 0, color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_scrub_help', 'Drag the chart, or focus it and use arrow keys. Home selects the start; End completes one orbit.')))),
+          h('p', { style: { margin: '0 0 12px', color: muted, fontSize: 13, lineHeight: 1.7 } }, h('strong', { style: { color: gold } }, __alloT('stem.astronomy.wave_plus_key', 'Gold solid: arriving plus component. ')),
+            h('strong', { style: { color: violet } }, __alloT('stem.astronomy.wave_detector_key', 'Violet dashed: ideal detector response. ')), __alloT('stem.astronomy.wave_null_key', 'At 45°, this detector has no response to the plus component even though the wave is present.')),
+          h('div', { id: 'astronomy-wave-status', role: 'status', 'aria-live': playing ? 'off' : 'polite', 'aria-atomic': 'true', style: Object.assign({}, panel, { marginBottom: 12, color: muted, fontSize: 13, lineHeight: 1.7 }) },
+            h('strong', { 'data-wave-response': m.response, style: { display: 'block', color: cyan, fontSize: 17 } }, responseLabel),
+            __alloT('stem.astronomy.wave_gain_note', 'Arm motion is magnified by ') + m.displayGain.toExponential(2) + '×. ' + __alloT('stem.astronomy.wave_gain_limits', 'Magnification adjusts to the arriving wave; it does not change the physical readouts.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.wave_phase_shortcuts', 'Orbit shortcuts'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            [0, 0.125, 0.25, 0.5, 0.75, 1].map(function(t) { return button((t * 100) + '%', function() { setPhase(t); }, Math.abs(m.phase - t) < 0.0001, { key: t }); }),
+            button(playing ? __alloT('stem.astronomy.wave_pause', 'Pause orbit') : m.phase === 1 ? __alloT('stem.astronomy.wave_replay', 'Replay orbit') : __alloT('stem.astronomy.wave_play', 'Play orbit'),
+              function() { upd({ wavePlaying: !playing, pulsarPlaying: playing ? d.pulsarPlaying : false, wavePhase: !playing && m.phase === 1 ? 0 : m.phase }); }, playing)),
+          h('p', { style: { margin: '0 0 12px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_playback_note', 'Playback takes about 10 seconds per orbit. Physical time follows the selected frequency. Playback stops at the end, and controls pause it.')),
+          h('dl', { 'aria-live': playing ? 'off' : 'polite', 'aria-atomic': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,170px),1fr))', gap: 8, margin: '0 0 12px' } },
+            metric(__alloT('stem.astronomy.wave_frequency_metric', 'Wave frequency'), m.frequency.toFixed(1) + ' Hz', { 'data-wave-frequency': m.frequency }),
+            metric(__alloT('stem.astronomy.wave_separation_metric', 'Binary separation'), (m.separation / 1000).toFixed(1) + ' km', { 'data-wave-separation': m.separation }),
+            metric(__alloT('stem.astronomy.wave_strain_metric', 'Detector strain now'), strainText(m.current.strain), { 'data-wave-strain-value': m.current.strain }),
+            metric(__alloT('stem.astronomy.wave_difference_metric', 'X length − Y length'), m.current.differential.toExponential(2) + ' m', { 'data-wave-difference': m.current.differential }),
+            metric(__alloT('stem.astronomy.wave_time_metric', 'Time since orbit start'), (m.current.seconds * 1000).toFixed(1) + ' ms', { 'data-wave-time': m.current.seconds }),
+            metric(__alloT('stem.astronomy.wave_amplitude_metric', 'Arriving plus amplitude'), strainText(m.amplitude), { 'data-wave-amplitude': m.amplitude })),
+          h('section', { 'aria-labelledby': 'astronomy-wave-controls-heading', style: Object.assign({}, panel, { marginBottom: 12 }) },
+            h('h4', { id: 'astronomy-wave-controls-heading', style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 15 } }, __alloT('stem.astronomy.wave_controls_heading', 'Choose the source and alignment')),
+            h('p', { style: { color: muted, fontSize: 12, lineHeight: 1.7, margin: '0 0 8px' } }, __alloT('stem.astronomy.wave_controls_note', 'Masses are measured at the source. Redshift stretches the arriving signal’s time scale. Distance and redshift can be chosen independently here; the controls do not fit a cosmological model.')),
+            slider('waveMass1', __alloT('stem.astronomy.wave_mass1_label', 'First black hole mass'), m.mass1, 5, 80, 1, m.mass1.toFixed(0) + ' Suns'),
+            slider('waveMass2', __alloT('stem.astronomy.wave_mass2_label', 'Second black hole mass'), m.mass2, 5, 80, 1, m.mass2.toFixed(0) + ' Suns'),
+            slider('waveDistance', __alloT('stem.astronomy.wave_distance_label', 'Luminosity distance'), m.distance, 50, 2000, 10, m.distance.toFixed(0) + ' Mpc'),
+            slider('waveRedshift', __alloT('stem.astronomy.wave_redshift_label', 'Redshift (z)'), m.redshift, 0, 1, 0.01, m.redshift.toFixed(2)),
+            slider('waveFrequency', __alloT('stem.astronomy.wave_frequency_label', 'Arriving wave frequency'), m.frequency, 2, m.frequencyLimit, 0.1, m.frequency.toFixed(1) + ' Hz'),
+            h('p', { style: { margin: '0 0 8px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.wave_frequency_limit_note', 'Frequency is capped for an early orbit with relative orbital speed at most 0.3 times light speed: ') + m.frequencyLimit.toFixed(1) + ' Hz. ' + __alloT('stem.astronomy.wave_frequency_clamp', 'Changing mass or redshift can lower this limit.')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.wave_alignment_examples', 'Detector alignment examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 8 } },
+              button(__alloT('stem.astronomy.wave_aligned_example', '0° · aligned'), function() { upd({ waveOrientation: 0, wavePlaying: false }); }, m.orientation === 0),
+              button(__alloT('stem.astronomy.wave_null_example', '45° · no plus response'), function() { upd({ waveOrientation: 45, wavePlaying: false }); }, m.orientation === 45),
+              button(__alloT('stem.astronomy.wave_reverse_example', '90° · reversed'), function() { upd({ waveOrientation: 90, wavePlaying: false }); }, m.orientation === 90)),
+            slider('waveOrientation', __alloT('stem.astronomy.wave_orientation_label', 'X arm angle to plus axis'), m.orientation, 0, 90, 1, m.orientation.toFixed(0) + '°'),
+            slider('wavePhase', __alloT('stem.astronomy.wave_progress_label', 'Orbit progress'), m.phase * 100, 0, 100, 0.1, (m.phase * 100).toFixed(1) + '%')),
+          h('section', { id: 'astronomy-wave-reference', 'aria-labelledby': 'astronomy-wave-reference-heading', style: Object.assign({}, panel, { marginBottom: 12, color: muted, fontSize: 13, lineHeight: 1.7 }) },
+            h('h4', { id: 'astronomy-wave-reference-heading', style: { margin: '0 0 8px', color: cyan, fontSize: 15 } }, m.reference ? __alloT('stem.astronomy.wave_reference_heading', 'GW150914 · published source inputs') : __alloT('stem.astronomy.wave_custom_heading', 'Chosen binary · simulated signal')),
+            h('p', { style: { margin: '0 0 8px' } }, m.reference ? __alloT('stem.astronomy.wave_reference_values', 'The initial 2016 discovery paper estimated source masses of 36 and 29 Suns, luminosity distance 410 Mpc, and redshift 0.09. This model uses those rounded estimates; the wave frequency and ideal viewing geometry are chosen.') : __alloT('stem.astronomy.wave_custom_values', 'These source settings are a teaching example. Restore GW150914 inputs to use the initial published mass, distance, and redshift estimates.')),
+            h('a', { href: 'https://arxiv.org/abs/1602.03837', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-block', minHeight: 44, padding: '10px 0', color: cyan, textDecoration: 'underline' } }, __alloT('stem.astronomy.wave_discovery_link', 'Read the GW150914 discovery paper')),
+            h('p', { style: { margin: '4px 0 0' } }, __alloT('stem.astronomy.wave_observation_limits', 'The observed event swept upward in frequency through inspiral, merger, and ringdown. This view holds one early orbit at a fixed frequency. It does not reproduce the recorded strain or the merger.'))),
+          h('details', { style: Object.assign({}, panel, { marginBottom: 14, color: muted, fontSize: 12, lineHeight: 1.7 }) },
+            h('summary', { className: 'astr-focus', style: { minHeight: 44, padding: '10px 0', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.astronomy.wave_model_details', 'How the model works')),
+            h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.wave_model_law', 'A circular orbit uses Newtonian gravity, and a leading quadrupole formula sets the wave amplitude. The ideal source is face-on. The plus component travels perpendicular to the detector plane. Each arm changes by ±Lh/2; their difference is Lh, with L = 4,000 m.')),
+            h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.wave_model_limits', 'The detector reads only the plus component here. Real waves also have a cross component, and real detectors use optical cavities, feedback, and noise filtering. Spins, full inspiral evolution, merger physics, travel delays, and measurement noise are omitted. This is not a detector sensitivity forecast.')),
+            h('a', { href: 'https://ligo.org/science-summaries/GW150914Detector/', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-block', minHeight: 44, padding: '10px 0', color: cyan } }, __alloT('stem.astronomy.wave_detector_link', 'LIGO: how the 4 km detector measures a wave'))));
+      }
+
+      function renderPulsarLighthouse() {
+        var m = pulsarLighthouseModel(d), playing = d.pulsarPlaying === true && d.wavePlaying !== true;
+        var bg = astronomyContrast ? '#000000' : '#07111f';
+        var border = astronomyContrast ? '#facc15' : '#334155', muted = astronomyContrast ? '#ffffff' : '#cbd5e1';
+        var gold = '#fde68a', violet = '#d8b4fe', cyan = '#67e8f9';
+        var panel = { minWidth: 0, padding: 12, background: bg, border: '1px solid ' + border, borderRadius: 12 };
+        var presets = [
+          { id: 'one', label: __alloT('stem.astronomy.pulsar_one_example', 'One pulse'), tilt: 45, observer: 45, width: 12 },
+          { id: 'two', label: __alloT('stem.astronomy.pulsar_two_example', 'Two pulses'), tilt: 90, observer: 90, width: 12 },
+          { id: 'none', label: __alloT('stem.astronomy.pulsar_miss_example', 'Miss both beams'), tilt: 30, observer: 90, width: 12 },
+          { id: 'steady', label: __alloT('stem.astronomy.pulsar_steady_example', 'Steady signal'), tilt: 0, observer: 5, width: 12 }
+        ];
+        var explanations = {
+          one: __alloT('stem.astronomy.pulsar_one_note', 'One beam reaches the observer during each rotation. A peak split across the left and right chart edges is the same pulse.'),
+          two: __alloT('stem.astronomy.pulsar_two_note', 'Both opposite beams reach the observer, giving two pulses per rotation. Peaks at the left and right chart edges are the same pulse wrapping around.'),
+          none: __alloT('stem.astronomy.pulsar_none_note', 'The star still rotates, but neither beam reaches this observer. A flat zero signal does not mean the star stopped.'),
+          steady: __alloT('stem.astronomy.pulsar_steady_note', 'The angle between observer and beam stays constant during rotation. The observer stays inside a beam, so the signal is steady.'),
+          continuous: __alloT('stem.astronomy.pulsar_continuous_note', 'A beam reaches the observer throughout the rotation. Its modeled strength can vary without switching off.')
+        };
+        function button(label, action, selected, extra) {
+          return h('button', Object.assign({ type: 'button', className: 'astr-focus', onClick: action,
+            'aria-pressed': typeof selected === 'boolean' ? selected : undefined,
+            style: { minHeight: 44, padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (selected ? cyan : border),
+              background: selected ? '#164e63' : bg, color: '#f8fafc', cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, extra || {}), label);
+        }
+        function setPhase(value) { upd({ pulsarPhase: Math.max(0, Math.min(1, value)), pulsarPlaying: false }); }
+        function advancePulsar() {
+          setLabToolData(function(prev) {
+            var current = prev && prev.astronomy;
+            if (!current || current.tab !== 'galaxies' || current.pulsarPlaying !== true || current.wavePlaying === true) return prev;
+            var next = Math.min(1, pulsarLighthouseModel(current).phase + (_prefersReducedMotion ? 0.025 : 0.008));
+            return Object.assign({}, prev, { astronomy: Object.assign({}, current, { pulsarPhase: next, pulsarPlaying: next < 1 }) });
+          });
+        }
+        function slider(key, label, value, low, high, unit) {
+          return h('label', { htmlFor: 'astr-' + key, style: { display: 'block', fontSize: 13, color: muted, lineHeight: 1.7 } },
+            label + ': ' + value + unit,
+            h('input', { id: 'astr-' + key, type: 'range', min: low, max: high, step: 1, value: value,
+              'aria-valuetext': value + unit, className: 'astr-focus',
+              style: { display: 'block', width: '100%', minHeight: 44, margin: 0, accentColor: '#38bdf8' },
+              onChange: function(e) { var patch = { pulsarPlaying: false }; patch[key] = Number(e.target.value) / (key === 'pulsarPhase' ? 100 : 1); upd(patch); } }));
+        }
+        // Orthographic projection: x is right, z is up, and y contributes
+        // depth. All cone edges and the observer use the same 3D basis.
+        function project(v) { return [180 + 104 * v[0], 140 + 104 * (0.4 * v[1] - Math.sqrt(0.84) * v[2])]; }
+        function points(vectors) { return vectors.map(function(v) { return project(v).map(function(n) { return n.toFixed(3); }).join(','); }).join(' '); }
+        function hull(vertices) {
+          var p = vertices.slice().sort(function(a, b) { return a[0] - b[0] || a[1] - b[1]; });
+          function cross(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
+          var lower = [], upper = [];
+          p.forEach(function(v) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], v) <= 0) lower.pop(); lower.push(v); });
+          p.reverse().forEach(function(v) { while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], v) <= 0) upper.pop(); upper.push(v); });
+          return lower.slice(0, -1).concat(upper.slice(0, -1)).map(function(v) { return v.map(function(n) { return n.toFixed(3); }).join(','); }).join(' ');
+        }
+        function beam(sign) {
+          var axis = m.current.axis.map(function(v) { return v * sign; });
+          var phi = m.phase * Math.PI * 2, a = m.tilt * Math.PI / 180, rho = m.width * Math.PI / 180;
+          var tangent = [Math.cos(a) * Math.cos(phi), Math.cos(a) * Math.sin(phi), -Math.sin(a)];
+          var sideways = [-Math.sin(phi), Math.cos(phi), 0];
+          var cap = Array.from({ length: 49 }, function(_, i) {
+            var q = i / 48 * Math.PI * 2;
+            return axis.map(function(v, j) { return v * Math.cos(rho) + (tangent[j] * Math.cos(q) + sideways[j] * Math.sin(q)) * Math.sin(rho); });
+          });
+          var color = sign === 1 ? gold : violet, end = project(axis), active = sign === 1 ? m.current.signalA > 0 : m.current.signalB > 0;
+          return h('g', { key: sign, 'data-pulsar-beam': sign === 1 ? 'A' : 'B' },
+            h('polygon', { points: hull([[180, 140]].concat(cap.map(project))), fill: color, fillOpacity: active ? 0.24 : 0.12, stroke: color, strokeWidth: 1 }),
+            h('polyline', { points: points(cap), fill: 'none', stroke: color, strokeWidth: 1.5 }),
+            h('line', { x1: 180, y1: 140, x2: end[0], y2: end[1], stroke: color, strokeWidth: 2, strokeDasharray: sign === 1 ? undefined : '5 3' }),
+            h('circle', { cx: end[0], cy: end[1], r: 4, fill: color }));
+        }
+        function scene() {
+          var o = project(m.observerVector), zTop = project([0, 0, 1.22]), zBottom = project([0, 0, -1.22]);
+          var a = m.tilt * Math.PI / 180;
+          var equator = Array.from({ length: 73 }, function(_, i) { var q = i / 72 * Math.PI * 2; return [Math.cos(q), Math.sin(q), 0]; });
+          var track = Array.from({ length: 73 }, function(_, i) { var q = i / 72 * Math.PI * 2; return [Math.sin(a) * Math.cos(q), Math.sin(a) * Math.sin(q), Math.cos(a)]; });
+          return h('svg', { id: 'astronomy-pulsar-diagram', viewBox: '0 0 360 280', role: 'img',
+            'aria-labelledby': 'astronomy-pulsar-title astronomy-pulsar-desc', 'data-phase': m.phase, 'data-signal': m.current.signal,
+            style: { display: 'block', width: '100%', height: 'auto' } },
+            h('title', { id: 'astronomy-pulsar-title' }, __alloT('stem.astronomy.pulsar_scene_title', 'Pulsar lighthouse geometry')),
+            h('desc', { id: 'astronomy-pulsar-desc' }, __alloT('stem.astronomy.pulsar_scene_desc', 'A neutron star rotates around a fixed spin axis. Two opposite beam cones rotate with its magnetic axis. The cyan observer direction stays fixed. The chart computes their alignment in three dimensions.')),
+            h('defs', null, h('radialGradient', { id: 'astronomy-pulsar-star-glow', cx: '35%', cy: '30%' },
+              h('stop', { offset: '0%', stopColor: '#ffffff' }), h('stop', { offset: '45%', stopColor: '#67e8f9' }), h('stop', { offset: '100%', stopColor: '#1d4ed8' }))),
+            Array.from({ length: 20 }, function(_, i) { return h('circle', { key: 'star' + i, cx: 12 + i * 137 % 337, cy: 12 + i * 73 % 253, r: 0.8, fill: '#94a3b8', opacity: 0.35 }); }),
+            h('circle', { cx: 180, cy: 140, r: 104, fill: 'none', stroke: border, strokeWidth: 1 }),
+            h('polyline', { points: points(equator), fill: 'none', stroke: border, strokeDasharray: '3 4' }),
+            h('polyline', { points: points(track), fill: 'none', stroke: gold, strokeOpacity: 0.55, strokeDasharray: '2 5' }),
+            h('line', { x1: zTop[0], y1: zTop[1], x2: zBottom[0], y2: zBottom[1], stroke: muted, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+            beam(-1), beam(1),
+            h('line', { x1: 180, y1: 140, x2: o[0], y2: o[1], stroke: cyan, strokeWidth: 2.5, strokeDasharray: '2 4' }),
+            h('circle', { cx: 180, cy: 140, r: 30, fill: '#38bdf8', opacity: 0.1 }),
+            h('circle', { cx: 180, cy: 140, r: 19, fill: 'url(#astronomy-pulsar-star-glow)' }),
+            h('circle', { 'data-pulsar-observer': true, cx: o[0], cy: o[1], r: 9, fill: bg, stroke: cyan, strokeWidth: 2 }),
+            h('path', { d: 'M' + (o[0] - 4) + ',' + o[1] + 'h8 M' + o[0] + ',' + (o[1] - 4) + 'v8', stroke: cyan, strokeWidth: 1.5 }),
+            h('text', { x: 180, y: 273, textAnchor: 'middle', fill: muted, className: 'pulsar-svg-label' }, __alloT('stem.astronomy.pulsar_projected_view', 'Projected view')));
+        }
+        var chart = { x: 44, y: 36, w: 292, h: 166 };
+        function scrub(e) {
+          var box = e.currentTarget.getBoundingClientRect();
+          if (box.width > 0) setPhase(((e.clientX - box.left) * 360 / box.width - chart.x) / chart.w);
+        }
+        function keyScrub(e) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var next = null, step = e.shiftKey ? 0.1 : 0.01;
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = m.phase - step;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = m.phase + step;
+          if (e.key === 'Home') next = 0;
+          if (e.key === 'End') next = 1;
+          if (next !== null) { e.preventDefault(); setPhase(next); }
+        }
+        function curve() {
+          var samples = Array.from({ length: 241 }, function(_, i) { return i / 240; });
+          // Add exact cone edges and local peak samples, including pulses
+          // narrower than the regular grid and peaks at the chart endpoints.
+          m.windowsA.concat(m.windowsB).forEach(function(w) { samples.push(w[0], w[1]); for (var i = 1; i < 25; i++) samples.push(w[0] + (w[1] - w[0]) * i / 25); });
+          samples.push(0.5); samples.sort(function(a, b) { return a - b; });
+          var frames = samples.map(m.at), cursorX = chart.x + m.phase * chart.w;
+          function trace(key) { return frames.map(function(f) { return (chart.x + f.phase * chart.w).toFixed(3) + ',' + (chart.y + (1 - f[key]) * chart.h).toFixed(3); }).join(' '); }
+          return h('svg', { id: 'astronomy-pulsar-curve', viewBox: '0 0 360 280', role: 'slider', tabIndex: 0, className: 'astr-focus',
+            'aria-label': __alloT('stem.astronomy.pulsar_scrub_label', 'Explore one pulsar rotation'), 'aria-describedby': 'astronomy-pulsar-help',
+            'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(m.phase * 100),
+            'aria-valuetext': (m.phase * 100).toFixed(0) + '% · ' + m.current.timeMs.toFixed(m.spin.periodMs < 10 ? 3 : 2) + ' ms · ' + m.current.signal.toFixed(3) + ' ' + __alloT('stem.astronomy.pulsar_signal_unit', 'modeled signal'),
+            'data-signal': m.current.signal, 'data-phase': m.phase, 'data-period-ms': m.spin.periodMs,
+            style: { display: 'block', width: '100%', height: 'auto', touchAction: 'pan-y', cursor: 'crosshair' },
+            onKeyDown: keyScrub,
+            onPointerDown: function(e) { if (e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); e.currentTarget.setPointerCapture(e.pointerId); scrub(e); },
+            onPointerMove: function(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) scrub(e); },
+            onPointerUp: function(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); },
+            onPointerCancel: function(e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } },
+            h('title', null, __alloT('stem.astronomy.pulsar_curve_title', 'Modeled signal over one rotation')),
+            [0, 0.5, 1].map(function(value) {
+              var y = chart.y + (1 - value) * chart.h;
+              return h('g', { key: value }, h('line', { x1: chart.x, x2: chart.x + chart.w, y1: y, y2: y, stroke: border, strokeDasharray: value === 0 ? undefined : '3 5' }),
+                h('text', { x: chart.x - 7, y: y + 6, textAnchor: 'end', fill: muted, className: 'pulsar-svg-label' }, value));
+            }),
+            h('polyline', { 'data-pulsar-trace': 'A', points: trace('signalA'), fill: 'none', stroke: gold, strokeWidth: 2.5 }),
+            h('polyline', { 'data-pulsar-trace': 'B', points: trace('signalB'), fill: 'none', stroke: violet, strokeWidth: 2.5, strokeDasharray: '5 3' }),
+            [0, 0.5, 1].map(function(t) { return h('text', { key: t, x: chart.x + t * chart.w, y: 231,
+              textAnchor: t === 1 ? 'end' : t === 0 ? 'start' : 'middle', fill: muted, className: 'pulsar-svg-label' }, (t * m.spin.periodMs).toFixed(m.spin.periodMs < 10 ? 3 : 2)); }),
+            h('line', { x1: cursorX, x2: cursorX, y1: chart.y - 5, y2: chart.y + chart.h, stroke: cyan, strokeWidth: 1.5 }),
+            h('circle', { 'data-pulsar-cursor': true, cx: cursorX, cy: chart.y + (1 - m.current.signal) * chart.h, r: 5, fill: cyan, stroke: bg, strokeWidth: 1.5 }));
+        }
+        function metric(label, value, attributes) {
+          return h('div', { style: panel }, h('dt', { style: { color: muted, fontSize: 12, marginBottom: 5 } }, label),
+            h('dd', Object.assign({ style: { margin: 0, color: cyan, fontWeight: 800, fontSize: 19 } }, attributes || {}), value));
+        }
+        return h('section', { id: 'astronomy-pulsar-lab', 'aria-labelledby': 'astronomy-pulsar-heading' },
+          h('style', null, '#astronomy-pulsar-lab .pulsar-svg-label{font-size:19px} @media(max-width:600px){#astronomy-pulsar-lab .pulsar-svg-label{font-size:22px}}'),
+          h(AstronomyPlaybackClock, { React: React, playing: playing, delay: _prefersReducedMotion ? 250 : 80, step: advancePulsar }),
+          h('h3', { id: 'astronomy-pulsar-heading', style: { fontSize: 18, color: '#f8fafc', margin: '0 0 8px' } }, __alloT('stem.astronomy.pulsar_heading', 'Pulsar lighthouse explorer')),
+          h('p', { style: { fontSize: 14, lineHeight: 1.7, color: muted, margin: '0 0 12px' } }, __alloT('stem.astronomy.pulsar_intro', 'A rotating neutron star can look like a flashing lighthouse. Explore how its tilted beams reach an observer, then read the signal from the same moment on the chart.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.pulsar_examples', 'Beam geometry examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            presets.map(function(p) { return button(p.label, function() { upd({ pulsarTilt: p.tilt, pulsarObserver: p.observer, pulsarWidth: p.width, pulsarPhase: 0, pulsarPlaying: false }); },
+              m.tilt === p.tilt && m.observer === p.observer && m.width === p.width, { key: p.id }); })),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,310px),1fr))', gap: 12, marginBottom: 12 } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('h4', { style: { fontSize: 15, color: '#f8fafc', margin: 0 } }, __alloT('stem.astronomy.pulsar_view_heading', '1. Watch the beams')), scene(),
+              h('figcaption', { style: { fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.pulsar_projection_note', 'The sphere is a guide to directions. Cones and observer can overlap in this projected view even when they are separated in depth. The readout uses their true angle in 3D. Star size and observer distance are illustrative.'))),
+            h('div', { style: panel },
+              h('h4', { style: { fontSize: 15, color: '#f8fafc', margin: 0 } }, __alloT('stem.astronomy.pulsar_chart_heading', '2. Read the signal')), curve(),
+              h('p', { style: { margin: '-18px 0 8px', fontSize: 12, color: muted, textAlign: 'center' } }, __alloT('stem.astronomy.pulsar_chart_units', 'Time within one rotation (ms) · signal from 0 to 1')),
+              h('p', { id: 'astronomy-pulsar-help', style: { margin: 0, color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.pulsar_scrub_help', 'Drag the chart, or focus it and use arrow keys. Home selects the start; End completes one rotation.')))),
+          h('div', { style: { color: muted, fontSize: 13, lineHeight: 1.7, marginBottom: 12 } },
+            h('strong', { style: { color: gold } }, __alloT('stem.astronomy.pulsar_beam_a_key', 'Gold solid: beam A. ')),
+            h('strong', { style: { color: violet } }, __alloT('stem.astronomy.pulsar_beam_b_key', 'Violet dashed: opposite beam B. ')),
+            __alloT('stem.astronomy.pulsar_axes_key', 'Cyan: observer direction and selected moment. Gray dashed: spin axis. Gold dotted: path of beam A.')),
+          h('div', { id: 'astronomy-pulsar-status', role: 'status', 'aria-live': playing ? 'off' : 'polite', 'aria-atomic': 'true',
+            'data-kind': m.kind, style: Object.assign({}, panel, { marginBottom: 12, color: muted, fontSize: 13, lineHeight: 1.7 }) },
+            h('strong', { 'data-pulsar-visible': m.current.visible, style: { display: 'block', fontSize: 17, color: m.current.visible ? cyan : '#f8fafc' } },
+              m.current.visible ? __alloT('stem.astronomy.pulsar_receiving', 'Observer receives a beam') : __alloT('stem.astronomy.pulsar_away', 'Beams point away from observer')), explanations[m.kind]),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.pulsar_phase_shortcuts', 'Rotation shortcuts'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            [0, 0.25, 0.5, 0.75, 1].map(function(t) { return button(Math.round(t * 100) + '%', function() { setPhase(t); }, Math.abs(m.phase - t) < 0.0001, { key: t }); }),
+            button(playing ? __alloT('stem.astronomy.pulsar_pause', 'Pause rotation') : m.phase === 1 ? __alloT('stem.astronomy.pulsar_replay', 'Replay rotation') : __alloT('stem.astronomy.pulsar_play', 'Play rotation'),
+              function() { upd({ pulsarPlaying: !playing, wavePlaying: playing ? d.wavePlaying : false, pulsarPhase: !playing && m.phase === 1 ? 0 : m.phase }); }, playing)),
+          h('p', { style: { margin: '0 0 12px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.pulsar_playback_note', 'Playback takes about 10 seconds per rotation for every example. The time axis uses the published spin period. Playback stops at the end; changing a control pauses it.')),
+          h('dl', { 'aria-live': playing ? 'off' : 'polite', 'aria-atomic': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,170px),1fr))', gap: 8, margin: '0 0 12px' } },
+            metric(__alloT('stem.astronomy.pulsar_strength_label', 'Modeled signal now'), m.current.signal.toFixed(3), { 'data-pulsar-signal': m.current.signal }),
+            metric(__alloT('stem.astronomy.pulsar_separation_label', 'Angle to nearest beam axis'), m.current.separation.toFixed(1) + '° · ' + m.current.nearest),
+            metric(__alloT('stem.astronomy.pulsar_time_label', 'Time since rotation start'), m.current.timeMs.toFixed(m.spin.periodMs < 10 ? 3 : 2) + ' ms', { 'data-pulsar-time': m.current.timeMs }),
+            metric(__alloT('stem.astronomy.pulsar_duty_label', 'Rotation inside a beam'), (m.duty * 100).toFixed(1) + '%')),
+          h('section', { 'aria-labelledby': 'astronomy-pulsar-controls-heading', style: Object.assign({}, panel, { marginBottom: 12 }) },
+            h('h4', { id: 'astronomy-pulsar-controls-heading', style: { fontSize: 15, color: '#f8fafc', margin: '0 0 8px' } }, __alloT('stem.astronomy.pulsar_controls_heading', '3. Choose the geometry')),
+            h('p', { style: { color: muted, fontSize: 12, lineHeight: 1.7, margin: '0 0 8px' } }, __alloT('stem.astronomy.pulsar_controls_help', 'Both angles are measured from the spin axis. Beam half-width is the largest angle from a beam axis that reaches the observer. These are chosen examples, not measured angles for either pulsar.')),
+            slider('pulsarTilt', __alloT('stem.astronomy.pulsar_tilt_label', 'Magnetic tilt'), m.tilt, 0, 90, '°'),
+            slider('pulsarObserver', __alloT('stem.astronomy.pulsar_observer_label', 'Observer angle'), m.observer, 0, 180, '°'),
+            slider('pulsarWidth', __alloT('stem.astronomy.pulsar_width_label', 'Beam half-width'), m.width, 1, 45, '°'),
+            slider('pulsarPhase', __alloT('stem.astronomy.pulsar_phase_label', 'Rotation progress'), Math.round(m.phase * 100), 0, 100, '%')),
+          h('section', { id: 'astronomy-pulsar-reference', 'aria-labelledby': 'astronomy-pulsar-reference-heading', style: Object.assign({}, panel, { marginBottom: 12, color: muted, fontSize: 13, lineHeight: 1.7 }) },
+            h('h4', { id: 'astronomy-pulsar-reference-heading', style: { fontSize: 15, color: '#f8fafc', margin: '0 0 8px' } }, __alloT('stem.astronomy.pulsar_spin_heading', '4. Compare published spin periods')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.pulsar_spin_examples', 'Published spin examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 } },
+              button(__alloT('stem.astronomy.pulsar_first_spin', 'B1919+21 · 1.33730 s'), function() { upd({ pulsarSpin: 'b1919', pulsarPlaying: false }); }, m.spin.id === 'b1919'),
+              button(__alloT('stem.astronomy.pulsar_fast_spin', 'J1748−2446ad · 716 Hz'), function() { upd({ pulsarSpin: 'j1748', pulsarPlaying: false }); }, m.spin.id === 'j1748')),
+            h('strong', { 'data-pulsar-period': m.spin.periodMs, style: { display: 'block', color: cyan, marginBottom: 5 } },
+              m.spin.name + ' · ' + m.spin.periodMs.toFixed(m.spin.periodMs < 10 ? 3 : 2) + ' ms · ' + m.spin.frequencyHz.toFixed(m.spin.frequencyHz < 1 ? 3 : 0) + ' Hz'),
+            h('span', null, m.spin.id === 'b1919'
+              ? __alloT('stem.astronomy.pulsar_first_source', 'NASA’s 2017 discovery history quotes the original 1.33730-second pulse interval. Frequency here is derived from that interval. ')
+              : __alloT('stem.astronomy.pulsar_fast_source', 'Hessels et al. (2006) reported a 716-Hz spin. The period here is derived from that rounded frequency. ')),
+            h('a', { href: m.spin.source, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { color: cyan, textDecoration: 'underline', display: 'inline-block', minHeight: 44, padding: '10px 0' } }, __alloT('stem.astronomy.pulsar_source_link', 'Read the published reference')),
+            h('p', { style: { margin: '4px 0 0' } }, __alloT('stem.astronomy.pulsar_source_limits', 'The spin choice changes the time scale only. It does not reproduce either pulsar’s observed brightness, beam angles, or pulse shape. These fixed references are not a current timing solution.'))),
+          h('details', { style: Object.assign({}, panel, { color: muted, fontSize: 12, lineHeight: 1.7, marginBottom: 14 }) },
+            h('summary', { className: 'astr-focus', style: { minHeight: 44, padding: '10px 0', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.astronomy.pulsar_model_details', 'How the model works')),
+            h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.pulsar_model_law', 'Two identical filled cones point along opposite magnetic poles. Alignment is calculated from rotating unit vectors in 3D. Inside a cone, a chosen smooth profile falls from 1 at the axis to 0 at the edge. Outside, its signal is zero.')),
+            h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.pulsar_model_limits', 'Real pulsar beams and pulse profiles can be more complex. This model omits emission height, relativistic effects, propagation delays, eclipses, and measurement noise. The star’s surface does not turn off between pulses.')),
+            h('a', { href: 'https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-pulsars/', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { color: cyan, display: 'inline-block', minHeight: 44, padding: '10px 0' } }, __alloT('stem.astronomy.pulsar_nasa_explainer', 'NASA: why pulsars act like lighthouses'))));
+      }
+
       function renderGalaxies() {
         return h('div', { style: { padding: 16 } },
+          renderCosmicRedshift(),
           sectionCard('🌌 Our Milky Way',
             h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
               __alloT('stem.astronomy.a_barred_spiral_galaxy_about_100_000_l', 'A barred spiral galaxy, about 100,000 light-years across, containing 100-400 billion stars and an unknown number of planets (probably trillions). Our Sun is about 26,000 light-years from the center, in a quiet spiral arm called the Orion Arm. The supermassive black hole at the center (Sagittarius A*) is 4 million times the mass of the Sun. The Milky Way is one of hundreds of billions to trillions of galaxies in the observable universe.')
@@ -9409,144 +10590,7 @@
             )
           ),
 
-          sectionCard('🔭 Gravitational lensing — Einstein\'s curve-light prediction',
-            (function() {
-              function normalizedLensValue(value, min, max, step, fallback) {
-                var numeric = Number(value);
-                if (!Number.isFinite(numeric)) return fallback;
-                var clamped = Math.min(max, Math.max(min, numeric));
-                return Math.min(max, Math.max(min, min + Math.round((clamped - min) / step) * step));
-              }
-              var mass = normalizedLensValue(d.lensMass, 10, 200, 5, 50);
-              var offset = normalizedLensValue(d.lensOffset, -80, 80, 2, 0);
-              var absoluteOffset = Math.abs(offset);
-              var lensAppearance = absoluteOffset < 5 ? 'Einstein ring' : absoluteOffset < 25 ? 'distorted arcs' : 'two separated images';
-              var lensAppearanceSentence = lensAppearance === 'Einstein ring'
-                ? 'Perfect alignment produces a complete Einstein ring.'
-                : lensAppearance === 'distorted arcs'
-                  ? 'Near alignment produces two distorted arcs.'
-                  : 'Wide misalignment produces two separated images.';
-              var lensStatus = 'Lens mass ' + mass + ' times 10 to the 14th solar masses; source offset ' + offset + '. ' + lensAppearanceSentence;
-              return h('div', null,
-                h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-                  __alloT('stem.astronomy.light_follows_curves_in_spacetime_eins', 'Light follows curves in spacetime. Einstein\'s 1915 general relativity predicted that mass would bend the path of light passing nearby — so a massive object can act like a lens, distorting the appearance of objects behind it. Confirmed in 1919 by Eddington during a solar eclipse: stars near the Sun\'s edge appeared shifted by the predicted amount. The discovery made Einstein a global celebrity.')
-                ),
-
-                // Interactive SVG
-                (function() {
-                  var svgW = 600, svgH = 220;
-                  var cx = svgW / 2, cy = svgH / 2;
-                  // Keep this schematic legible and inside its viewBox across the full mass range.
-                  var massRatio = (mass - 10) / 190;
-                  var lensSize = 10 + massRatio * 28;
-                  // When perfectly aligned (offset=0), bg source appears as a ring (Einstein ring)
-                  // When slightly offset, splits into two arcs
-                  // When very offset, two separated images
-                  var ringR = 30 + massRatio * 45;
-                  var imageSpread = ringR + absoluteOffset * 0.35;
-                  return h('svg', { id: 'astronomy-lens-diagram', viewBox: '0 0 ' + svgW + ' ' + svgH, role: 'img', 'aria-labelledby': 'lensTitle lensDesc', 'aria-describedby': 'astronomy-lens-status astronomy-lens-help', style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, overflow: 'hidden' } },
-                    h('title', { id: 'lensTitle' }, __alloT('stem.astronomy.gravitational_lensing_diagram', 'Gravitational lensing diagram')),
-                    h('desc', { id: 'lensDesc' }, 'A massive galaxy cluster lies between us and a distant background galaxy. Its gravity bends the light, producing ' + (lensAppearance === 'Einstein ring' ? 'a complete Einstein ring' : lensAppearance) + '.'),
-                    // Background starfield
-                    h('rect', { x: 0, y: 0, width: svgW, height: svgH, fill: '#000' }),
-                    [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550].map(function(x, i) {
-                      var ys = [30, 50, 80, 130, 170, 200, 25, 90, 140, 190, 60][i];
-                      return h('circle', { key: 'bg' + i, cx: x, cy: ys, r: 1, fill: '#fde68a', opacity: 0.6 });
-                    }),
-                    // Lensed images (depending on offset)
-                    (function() {
-                      if (lensAppearance === 'Einstein ring') {
-                        // Einstein ring
-                        return h('g', null,
-                          h('circle', { cx: cx, cy: cy, r: ringR, fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, opacity: 0.85 }),
-                          h('text', { x: cx, y: cy + ringR + 18, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, __alloT('stem.astronomy.einstein_ring', 'Einstein ring'))
-                        );
-                      } else if (lensAppearance === 'distorted arcs') {
-                        // Arcs
-                        var arcOffset = offset / 4;
-                        return h('g', null,
-                          h('path', { d: 'M ' + (cx - ringR + arcOffset) + ',' + cy + ' A ' + ringR + ',' + ringR + ' 0 0,1 ' + (cx + ringR - arcOffset) + ',' + cy, fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, opacity: 0.85 }),
-                          h('path', { d: 'M ' + (cx - ringR + arcOffset) + ',' + cy + ' A ' + ringR + ',' + ringR + ' 0 0,0 ' + (cx + ringR - arcOffset) + ',' + cy, fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, opacity: 0.85 }),
-                          h('text', { x: cx, y: svgH - 16, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, __alloT('stem.astronomy.lensed_arcs', 'Lensed arcs'))
-                        );
-                      } else {
-                        // Two separated images
-                        return h('g', null,
-                          h('ellipse', { cx: cx - imageSpread, cy: cy, rx: 8, ry: 12, fill: '#7dd3fc', opacity: 0.9 }),
-                          h('ellipse', { cx: cx + imageSpread, cy: cy, rx: 8, ry: 12, fill: '#7dd3fc', opacity: 0.9 }),
-                          h('text', { x: cx - 100, y: cy + 25, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.astronomy.image_1', 'Image 1')),
-                          h('text', { x: cx + 100, y: cy + 25, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.astronomy.image_2', 'Image 2'))
-                        );
-                      }
-                    })(),
-                    // The lens (massive object — galaxy cluster as orange blob)
-                    h('circle', { cx: cx, cy: cy, r: lensSize, fill: '#f97316', opacity: 0.9, stroke: '#fbbf24', strokeWidth: 1 }),
-                    // Spacetime distortion grid
-                    [1, 2, 3].map(function(level) {
-                      var rad = lensSize + level * 18;
-                      return h('circle', { key: 'g' + level, cx: cx, cy: cy, r: rad, fill: 'none', stroke: '#fbbf24', strokeWidth: 0.5, strokeDasharray: '2 4', opacity: 0.4 });
-                    }),
-                    h('text', { x: cx, y: cy + lensSize + 22, textAnchor: 'middle', fill: '#fbbf24', fontSize: 11, fontWeight: 700 }, __alloT('stem.astronomy.lens_massive_galaxy_cluster', 'Lens (massive galaxy cluster)')),
-                    // True position of background source (shown as dim cross)
-                    h('g', { transform: 'translate(' + (cx + offset) + ',' + (cy + 60) + ')' },
-                      h('line', { x1: -5, y1: 0, x2: 5, y2: 0, stroke: '#94a3b8', strokeWidth: 1 }),
-                      h('line', { x1: 0, y1: -5, x2: 0, y2: 5, stroke: '#94a3b8', strokeWidth: 1 }),
-                      h('text', { x: 0, y: 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.astronomy.true_source_position', 'true source position'))
-                    )
-                  );
-                })(),
-
-                h('div', { id: 'astronomy-lens-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(56,189,248,0.30)', color: '#bae6fd', fontSize: 12, lineHeight: 1.5 } }, lensStatus),
-
-                h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_gravitational_lens_controls', 'Gravitational lens controls'), style: { marginTop: 12, marginBottom: 12 } },
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 } },
-                    h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155' } },
-                      a11ySlider({
-                        id: 'astronomy-lens-mass',
-                        label: __alloT('stem.astronomy.lens_mass_10_m', 'Lens mass (×10¹⁴ M☉)'),
-                        value: mass, min: 10, max: 200, step: 5,
-                        valueText: mass + ' times 10^14 solar masses',
-                        ariaDescribedBy: 'astronomy-lens-status astronomy-lens-help',
-                        onChange: function(v) { upd({ lensMass: v }); },
-                        accent: '#fbbf24'
-                      })
-                    ),
-                    h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155' } },
-                      a11ySlider({
-                        id: 'astronomy-lens-offset',
-                        label: __alloT('stem.astronomy.source_offset_alignment', 'Source offset (alignment)'),
-                        value: offset, min: -80, max: 80, step: 2,
-                        valueText: offset === 0 ? '0, perfect alignment' : Math.abs(offset) + ', source ' + (offset < 0 ? 'left' : 'right') + ' of lens',
-                        ariaDescribedBy: 'astronomy-lens-status astronomy-lens-help',
-                        onChange: function(v) { upd({ lensOffset: v }); },
-                        accent: '#38bdf8'
-                      })
-                    )
-                  ),
-                  h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 } },
-                    a11yButton({ type: 'button', onClick: function() { upd({ lensOffset: 0 }); }, 'aria-label': __alloT('stem.astronomy.a11y_show_perfect_gravitational_lens_alignment', 'Show perfect gravitational lens alignment'), 'aria-controls': 'astronomy-lens-diagram astronomy-lens-status', style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #0ea5e9', background: '#0c4a6e', color: '#e0f2fe', fontWeight: 700, cursor: 'pointer' } }, '◎ Perfect alignment'),
-                    a11yButton({ type: 'button', onClick: function() { upd({ lensMass: 50, lensOffset: 0 }); }, 'aria-label': __alloT('stem.astronomy.a11y_reset_gravitational_lens_simulation', 'Reset gravitational lens simulation'), 'aria-controls': 'astronomy-lens-diagram astronomy-lens-status', style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #475569', background: '#1e293b', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' } }, '↺ Reset lens')
-                  ),
-                  h('div', { id: 'astronomy-lens-help', style: { marginTop: 8, color: '#94a3b8', fontSize: 11.5, lineHeight: 1.55 } }, 'Schematic, not to scale. Mass changes the lens and ring size; alignment changes whether the source appears as a ring, arcs, or separated images.')
-                ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, __alloT('stem.astronomy.what_we_do_with_lensing', 'What we DO with lensing: ')),
-                  h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.weigh_galaxy_clusters', 'Weigh galaxy clusters: ')), __alloT('stem.astronomy.the_amount_of_distortion_tells_us_how_', 'The amount of distortion tells us how much mass is doing the bending. Clusters consistently show more lensing than visible matter alone explains — the strongest direct evidence for dark matter.')),
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.magnify_the_distant_universe', 'Magnify the distant universe: ')), __alloT('stem.astronomy.a_foreground_galaxy_cluster_magnifies_', 'A foreground galaxy cluster magnifies background galaxies behind it — sometimes by 30× or more. Hubble + JWST routinely point at "lensing clusters" (Abell 1689, MACS J0416) to see otherwise-too-faint objects.')),
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.find_exoplanets', 'Find exoplanets: ')), __alloT('stem.astronomy.microlensing_a_star_with_a_planet_pass', 'Microlensing — a star with a planet passing in front of a distant star slightly distorts the light. The planet causes a brief extra blip. Detects planets far from their stars + even rogue (unbound) planets.')),
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.test_general_relativity', 'Test general relativity: ')), __alloT('stem.astronomy.every_observed_lens_system_is_a_test_o', 'Every observed lens system is a test of Einstein\'s theory. So far it has passed every test, including in extreme regimes (LIGO BH mergers, EHT BH images).'))
-                  )
-                ),
-
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
-                  h('strong', null, __alloT('stem.astronomy.the_1919_confirmation', 'The 1919 confirmation: ')),
-                  __alloT('stem.astronomy.arthur_eddington_led_an_expedition_to_', 'Arthur Eddington led an expedition to the island of Príncipe to observe a total solar eclipse on May 29 1919. Without the Sun\'s glare, stars near its edge could be photographed. The shift in their apparent positions matched Einstein\'s prediction (~1.75 arcseconds at the solar limb), not Newton\'s (~0.87 arcseconds). News went global; on November 7 1919 the Times of London announced "Revolution in Science." Einstein went from physicist to public figure overnight.')
-                )
-              );
-            })(),
-            '#fbbf24'
-          ),
+          renderGravitationalLens(),
 
           sectionCard('💥 The Big Bang + cosmic microwave background',
             (function() {
@@ -9621,7 +10665,7 @@
                     why: 'How the 1998 acceleration-of-the-universe was discovered (the discovery that led to "dark energy"). Calibrated by Cepheids.',
                     color: '#ef4444' },
                   { rung: '6', name: __alloT('stem.astronomy.hubble_s_law_redshift', 'Hubble\'s law (redshift)'), range: 'Most of the observable universe',
-                    how: 'Distant galaxies are receding from us; their light is stretched ("redshifted") in proportion to distance. Distance = redshift × (speed of light) / Hubble constant H₀. Current best value of H₀ ≈ 67-73 km/s/Mpc.',
+                    how: 'At small cosmological redshift, distance ≈ cz/H₀, where c is the speed of light and H₀ is the present expansion rate. At larger redshift, distance and light travel time depend on the expansion history and cosmological parameters.',
                     why: 'Calibrated by Type Ia supernovae. The current ~9% discrepancy between H₀ measured locally vs from the cosmic microwave background ("Hubble tension") is one of the biggest open questions in cosmology.',
                     color: '#a855f7' }
                 ].map(function(r, i) {
@@ -9884,12 +10928,12 @@
                   caveat: 'This was already philosophically uncomfortable. But in classical relativity, the information is at least in principle still inside the hole. The paradox shows up only when you add quantum mechanics.'
                 },
                 { id: 'entropy', name: __alloT('stem.astronomy.bekenstein_hawking_entropy', 'Bekenstein-Hawking entropy'), emoji: '🧮',
-                  body: __alloT('stem.astronomy.jacob_bekenstein_1972_as_a_princeton_g', 'Jacob Bekenstein (1972, as a Princeton graduate student) argued that black holes MUST have entropy proportional to the area of their event horizon — otherwise you could throw entropy-bearing matter (a hot cup of coffee) into a black hole and violate the second law of thermodynamics. Hawking initially disagreed, then in 1974 worked out the quantum field theory in curved spacetime and showed Bekenstein was right: a black hole has entropy S = (kᵦ × A) / (4 × L²ₚ), where A is the horizon area and Lₚ is the Planck length. A black hole the mass of the Sun has entropy ~10⁷⁷ — astonishingly more than the matter that fell in had. Information density on the horizon is one bit per ~4 Planck areas. This is one of the most surprising results in modern physics.'),
+                  body: __alloT('stem.astronomy.jacob_bekenstein_1972_as_a_princeton_g', 'Bekenstein argued that black holes must carry entropy related to horizon area, so that adding matter does not defeat the second law of thermodynamics. Hawking’s quantum calculation supplied a temperature and fixed the entropy relation: S/kB = A/(4ℓP²). A solar-mass Schwarzschild hole has S/kB of order 10⁷⁷. Here A is horizon area, ℓP is the Planck length, and kB is the Boltzmann constant. Expressed as information capacity in bits, the equivalent quantity is S/(kB ln 2), corresponding to one bit per 4 ln 2 Planck areas. This thermodynamic entropy is different from the entropy of emitted radiation plotted in a Page curve.'),
                   caveat: 'Bekenstein died young (2015, age 68). His insight about black-hole entropy is now considered foundational; it underlies the holographic principle (\'t Hooft + Susskind, 1990s) — the idea that all the information in a 3D region is encoded on its 2D boundary. The full implications are still being worked out.'
                 },
                 { id: 'hawking', name: __alloT('stem.astronomy.hawking_radiation', 'Hawking radiation'), emoji: '🌡️',
-                  body: __alloT('stem.astronomy.in_1974_stephen_hawking_made_a_stunnin', 'In 1974 Stephen Hawking made a stunning calculation. Combining quantum field theory with the curved spacetime near a black hole, he showed that black holes are not perfectly black. They emit thermal radiation with a temperature T = ħc³ / (8π G M kᵦ) — INVERSELY proportional to mass. A solar-mass black hole has a Hawking temperature of about 60 nanokelvin (colder than empty space). A black hole 1 mm across would have a temperature of ~10²³ K (hotter than anything). The radiation carries energy away, so the black hole LOSES mass and gets HOTTER — runaway evaporation at the end. A solar-mass BH would take ~10⁶⁷ years to evaporate; a small primordial BH from the Big Bang could be evaporating right now.'),
-                  caveat: 'Hawking radiation has never been directly observed — the Hawking temperature of any astrophysical BH is FAR colder than the cosmic microwave background, so they absorb more energy than they radiate. Analog systems (sonic Hawking radiation in fluid flows, optical analogs) have shown the basic mechanism. Hawking died in 2018, never having received a Nobel Prize, in part because the radiation that bears his name has never been directly detected. His result is universally accepted theoretically.'
+                  body: __alloT('stem.astronomy.in_1974_stephen_hawking_made_a_stunnin', 'Hawking predicted in 1974 that quantum fields around a black hole produce thermal radiation. For a nonrotating, uncharged hole, T = ħc³/(8πGMkB), so a more massive hole is colder. A one-solar-mass hole has a temperature of about 62 nanokelvin. A hole with a horizon diameter of 1 mm would be about 0.36 K, also colder than today’s 2.725 K cosmic microwave background. Emission carries energy away, but absorption from the surroundings also matters. An isolated hole that loses mass becomes hotter. The explorer compares masses and temperatures; it does not model an evaporation history.'),
+                  caveat: 'This is a semiclassical prediction. Hawking radiation from an astrophysical black hole has not been directly detected. Analog experiments study related mathematical effects in other physical systems. Mass measurements and EHT images do not measure a Hawking temperature.'
                 },
                 { id: 'paradox', name: __alloT('stem.astronomy.the_information_paradox', 'The information paradox'), emoji: '❓',
                   body: __alloT('stem.astronomy.here_is_the_puzzle_quantum_mechanics_s', 'Here is the puzzle. Quantum mechanics says information is NEVER lost — the state of a closed system evolves unitarily, and you can always reconstruct the past from the present if you have full information. But Hawking\'s calculation says the radiation coming out of a black hole is purely thermal — random, carrying no information about what fell in. If the black hole eventually evaporates completely into thermal radiation, the information about everything that fell in is GONE. Unitarity violated. The two pillars of modern physics, GR and QM, are giving incompatible answers. Hawking himself stated in 1976 that information IS lost. Most physicists came to believe that cannot be right; the resolution must be that the radiation carries information in some subtle way Hawking\'s leading-order calculation missed.'),
@@ -9900,8 +10944,8 @@
                   caveat: 'The firewall paradox sparked roughly a decade of intense theoretical work and produced ER = EPR (Maldacena + Susskind 2013), the suggestion that quantum entanglement and spatial wormholes are the same thing. These are some of the strangest, deepest, most active areas in theoretical physics. Students should know: these are not crank ideas; they come from the most respected practitioners in the field. But they are also not yet established.'
                 },
                 { id: 'page', name: __alloT('stem.astronomy.page_curve_the_recent_breakthrough', 'Page curve + the recent breakthrough'), emoji: '📈',
-                  body: __alloT('stem.astronomy.don_page_1993_calculated_what_entangle', 'Don Page (1993) calculated what entanglement entropy SHOULD look like over the life of an evaporating BH if information is preserved. The result is a characteristic curve (the "Page curve") that rises, peaks at the Page time (when half the mass has evaporated), then decreases back to zero. Hawking\'s original calculation gave a curve that just keeps rising forever — incompatible with unitarity. In 2019-2020, Penington; Almheiri-Engelhardt-Marolf-Maxfield; Penington-Shenker-Stanford-Yang (working largely in the AdS/CFT correspondence) showed how to reproduce the Page curve using "quantum extremal surfaces" + previously-unrecognized contributions from "replica wormholes." The information comes out in subtle correlations between the late and early Hawking radiation, recoverable in principle but in practice requiring impossibly precise measurements.'),
-                  caveat: 'This is genuinely a recent breakthrough, less than 7 years old. It is widely considered the biggest progress on the information paradox since the paradox was identified. The Page curve result is now reproduced in many specific models. But these results are MOSTLY in highly-supersymmetric, anti-de-Sitter spacetimes — not the universe we live in. Whether the lessons carry over to realistic 4D cosmology is being actively studied.'
+                  body: __alloT('stem.astronomy.don_page_1993_calculated_what_entangle', 'Page studied the information expected in black-hole radiation if formation and evaporation preserve a pure quantum state. Radiation entropy first rises, then turns over and returns to zero after complete unitary evaporation. The turnover concerns the balance between radiation entropy and the entropy available to the remaining hole; it does not mean half the mass has evaporated. The leading thermal calculation instead gives increasing radiation entropy during evaporation. In 2019 and 2020, calculations using quantum extremal surfaces and replica wormholes reproduced Page curves in controlled gravity models. How these lessons apply to realistic black holes remains an active research question.'),
+                  caveat: 'Controlled models help test how information might be preserved. They do not provide a directly observed Page curve for an astrophysical black hole or a complete description of its quantum interior.'
                 },
                 { id: 'inside', name: __alloT('stem.astronomy.what_is_inside_a_black_hole', 'What is inside a black hole?'), emoji: '⚫',
                   body: __alloT('stem.astronomy.classical_gr_predicts_a_singularity_at', 'Classical GR predicts a SINGULARITY at the center — a point of infinite density where the equations break down. This is universally regarded as a placeholder for "we need quantum gravity here, and we don\'t have it." String theory + loop quantum gravity each have partial proposals (fuzzballs, planck-scale stars, etc.), but no consensus. The interior of a real BH is one of the most extreme environments to which physics applies. Some physicists (Penrose, Hawking + Hartle "no-boundary" proposal) have explored whether the singularity is replaced by something else, like another universe, or a smooth quantum bounce. Speculation is high; observational constraints are essentially zero (you cannot send a signal back out).'),
@@ -9942,26 +10986,7 @@
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.black_holes_are_not_just_astronomical_', 'Black holes are not just astronomical curiosities. They are the cleanest laboratory we have for the place where general relativity meets quantum mechanics — the two best-tested theories of physics, which famously give incompatible answers in extreme regimes. The "information paradox" is the sharpest version of that conflict.')
                 ),
-                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #0c4a6e' } },
-                  h('svg', { id: 'astronomy-page-curve-diagram', viewBox: '0 0 600 230', role: 'img', 'aria-labelledby': 'astronomy-page-curve-title astronomy-page-curve-desc', style: { width: '100%', height: 'auto', display: 'block' } },
-                    h('title', { id: 'astronomy-page-curve-title' }, 'Page curve comparison'),
-                    h('desc', { id: 'astronomy-page-curve-desc' }, 'Entanglement entropy over a black hole lifetime. Hawking’s original calculation rises continuously, implying lost information. A unitary Page curve rises to the Page time and then falls to zero as information returns in the radiation.'),
-                    h('line', { x1: 64, y1: 184, x2: 558, y2: 184, stroke: '#64748b', strokeWidth: 2 }),
-                    h('line', { x1: 64, y1: 184, x2: 64, y2: 25, stroke: '#64748b', strokeWidth: 2 }),
-                    h('text', { x: 310, y: 218, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, 'black-hole lifetime →'),
-                    h('text', { x: 18, y: 108, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12, transform: 'rotate(-90 18 108)' }, 'entanglement entropy'),
-                    h('line', { x1: 310, y1: 35, x2: 310, y2: 184, stroke: '#94a3b8', strokeDasharray: '5 5' }),
-                    h('text', { x: 310, y: 27, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11 }, 'Page time'),
-                    h('path', { d: 'M64 184 C170 151 274 103 558 45', fill: 'none', stroke: '#fb7185', strokeWidth: 4, strokeLinecap: 'round' }),
-                    h('path', { d: 'M64 184 C165 151 246 79 310 67 C379 82 451 151 558 184', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round' }),
-                    h('line', { x1: 382, y1: 48, x2: 410, y2: 48, stroke: '#fb7185', strokeWidth: 4 }),
-                    h('text', { x: 418, y: 52, fill: '#fecdd3', fontSize: 11 }, 'Hawking: keeps rising'),
-                    h('line', { x1: 382, y1: 68, x2: 410, y2: 68, stroke: '#38bdf8', strokeWidth: 4 }),
-                    h('text', { x: 418, y: 72, fill: '#bae6fd', fontSize: 11 }, 'Unitary Page curve'),
-                    h('text', { x: 550, y: 174, textAnchor: 'end', fill: '#7dd3fc', fontSize: 11 }, 'information recovered')
-                  ),
-                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual comparison: the curve shape matters; axes are not numerical or to scale.')
-                ),
+                renderBlackHoleThermal(),
                 h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_black_hole_information_topics', 'Black-hole information topics'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   BH_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
@@ -10059,33 +11084,7 @@
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.for_99_9999_of_human_history_astronomy', 'For 99.9999% of human history, astronomy meant looking at light. In 2015 that changed. Gravitational-wave astronomy added a completely new sense — the ability to LISTEN to the universe rather than just SEE it. Multi-messenger astronomy combines all of these: light + neutrinos + gravitational waves from the same event.')
                 ),
-                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #134e4a' } },
-                  h('svg', { id: 'astronomy-interferometer-diagram', viewBox: '0 0 600 270', role: 'img', 'aria-labelledby': 'astronomy-interferometer-title astronomy-interferometer-desc', style: { width: '100%', height: 'auto', display: 'block' } },
-                    h('title', { id: 'astronomy-interferometer-title' }, 'Laser interferometer schematic'),
-                    h('desc', { id: 'astronomy-interferometer-desc' }, 'A laser reaches a beam splitter and travels along two perpendicular arms to mirrors. Returning beams recombine at a detector. A gravitational wave changes the arms by different tiny amounts, shifting the interference signal.'),
-                    h('path', { d: 'M35 42 C60 22 85 62 110 42 S160 62 185 42', fill: 'none', stroke: '#a78bfa', strokeWidth: 3 }),
-                    h('path', { d: 'M35 58 C60 38 85 78 110 58 S160 78 185 58', fill: 'none', stroke: '#818cf8', strokeWidth: 2, opacity: 0.8 }),
-                    h('text', { x: 110, y: 91, textAnchor: 'middle', fill: '#c4b5fd', fontSize: 11, fontWeight: 700 }, 'passing gravitational wave'),
-                    h('line', { x1: 82, y1: 166, x2: 252, y2: 166, stroke: '#fef08a', strokeWidth: 5 }),
-                    h('rect', { x: 45, y: 151, width: 38, height: 30, rx: 5, fill: '#f59e0b', stroke: '#fde68a' }),
-                    h('text', { x: 64, y: 143, textAnchor: 'middle', fill: '#fde68a', fontSize: 11 }, 'laser'),
-                    h('line', { x1: 258, y1: 160, x2: 500, y2: 160, stroke: '#2dd4bf', strokeWidth: 4 }),
-                    h('line', { x1: 252, y1: 154, x2: 252, y2: 36, stroke: '#2dd4bf', strokeWidth: 4 }),
-                    h('line', { x1: 258, y1: 172, x2: 490, y2: 172, stroke: '#5eead4', strokeWidth: 2, strokeDasharray: '7 5' }),
-                    h('line', { x1: 264, y1: 160, x2: 264, y2: 46, stroke: '#5eead4', strokeWidth: 2, strokeDasharray: '7 5' }),
-                    h('rect', { x: 246, y: 153, width: 18, height: 18, fill: '#bae6fd', stroke: '#e0f2fe', transform: 'rotate(45 255 162)' }),
-                    h('text', { x: 285, y: 197, fill: '#bae6fd', fontSize: 11 }, 'beam splitter'),
-                    h('rect', { x: 500, y: 143, width: 12, height: 38, rx: 2, fill: '#cbd5e1', stroke: '#f8fafc' }),
-                    h('rect', { x: 235, y: 25, width: 38, height: 12, rx: 2, fill: '#cbd5e1', stroke: '#f8fafc' }),
-                    h('text', { x: 506, y: 135, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'mirror'),
-                    h('text', { x: 286, y: 34, fill: '#cbd5e1', fontSize: 11 }, 'mirror'),
-                    h('line', { x1: 255, y1: 171, x2: 255, y2: 226, stroke: '#38bdf8', strokeWidth: 3 }),
-                    h('rect', { x: 225, y: 226, width: 60, height: 26, rx: 6, fill: '#0c4a6e', stroke: '#38bdf8' }),
-                    h('text', { x: 255, y: 243, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 11, fontWeight: 700 }, 'detector'),
-                    h('text', { x: 406, y: 215, textAnchor: 'middle', fill: '#99f6e4', fontSize: 11 }, 'relative arm-length change → interference shift')
-                  ),
-                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual L-shaped interferometer — arm lengths and strain are not to scale.')
-                ),
+                renderGravitationalWave(),
                 h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_gravitational_wave_astronomy_topics', 'Gravitational-wave astronomy topics'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   GW_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
@@ -10183,37 +11182,7 @@
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.neutron_stars_are_the_densest_objects_', 'Neutron stars are the densest objects in the universe short of black holes. Some of them are pulsars, some are magnetars, and some appear to be the sources of fast radio bursts — millisecond flashes of radio energy bright enough to be seen across the universe. Each tells us something different about extreme physics.')
                 ),
-                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #78350f' } },
-                  h('svg', { id: 'astronomy-pulsar-diagram', viewBox: '0 0 600 270', role: 'img', 'aria-labelledby': 'astronomy-pulsar-title astronomy-pulsar-desc', style: { width: '100%', height: 'auto', display: 'block' } },
-                    h('title', { id: 'astronomy-pulsar-title' }, 'Pulsar lighthouse geometry'),
-                    h('desc', { id: 'astronomy-pulsar-desc' }, 'A neutron star spins around its rotation axis. Its magnetic axis is tilted, producing two radiation beams. An observer detects a pulse whenever a beam sweeps across Earth.'),
-                    h('defs', null,
-                      h('radialGradient', { id: 'astronomy-pulsar-star-glow' },
-                        h('stop', { offset: '0%', stopColor: '#ffffff' }),
-                        h('stop', { offset: '45%', stopColor: '#67e8f9' }),
-                        h('stop', { offset: '100%', stopColor: '#1d4ed8' })
-                      ),
-                      h('marker', { id: 'astronomy-pulsar-rotation-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 3, orient: 'auto' },
-                        h('path', { d: 'M0,0 L0,6 L8,3 z', fill: '#fbbf24' })
-                      )
-                    ),
-                    h('line', { x1: 300, y1: 24, x2: 300, y2: 236, stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '6 5' }),
-                    h('text', { x: 312, y: 36, fill: '#cbd5e1', fontSize: 11 }, 'rotation axis'),
-                    h('polygon', { points: '322,112 492,40 516,67 329,126', fill: 'rgba(250,204,21,0.22)', stroke: '#fde047', strokeWidth: 1.5 }),
-                    h('polygon', { points: '278,148 108,230 84,203 271,134', fill: 'rgba(250,204,21,0.16)', stroke: '#facc15', strokeWidth: 1.5 }),
-                    h('line', { x1: 105, y1: 218, x2: 503, y2: 54, stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5 5' }),
-                    h('text', { x: 407, y: 103, fill: '#fde68a', fontSize: 11 }, 'magnetic / beam axis'),
-                    h('circle', { cx: 300, cy: 130, r: 38, fill: 'rgba(56,189,248,0.14)', stroke: '#38bdf8', strokeWidth: 2 }),
-                    h('circle', { cx: 300, cy: 130, r: 25, fill: 'url(#astronomy-pulsar-star-glow)' }),
-                    h('path', { d: 'M252 105 A58 58 0 0 1 347 102', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, markerEnd: 'url(#astronomy-pulsar-rotation-arrow)' }),
-                    h('text', { x: 300, y: 189, textAnchor: 'middle', fill: '#bae6fd', fontSize: 12, fontWeight: 700 }, 'rotating neutron star'),
-                    h('circle', { cx: 531, cy: 54, r: 12, fill: '#2563eb', stroke: '#93c5fd', strokeWidth: 2 }),
-                    h('path', { d: 'M522 50 Q531 43 540 50', fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
-                    h('text', { x: 531, y: 82, textAnchor: 'middle', fill: '#bfdbfe', fontSize: 11 }, 'Earth / observer'),
-                    h('text', { x: 461, y: 23, textAnchor: 'middle', fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'pulse when beam crosses observer')
-                  ),
-                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual lighthouse model — angles, beam width, and sizes are not to scale.')
-                ),
+                renderPulsarLighthouse(),
                 h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_pulsar_magnetar_and_fast_radio_burst_topics', 'Pulsar, magnetar, and fast radio burst topics'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   PSR_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
@@ -12348,187 +13317,144 @@
         var bortle = BORTLE.find(function(b) { return b.class === bortleClass; }) || BORTLE[4];
 
         // Telescope ray-diagram simulator
+
         function telescopeSim() {
-          function normalizedScopeValue(value, min, max, step, fallback) {
-            var numeric = Number(value);
-            if (!Number.isFinite(numeric)) return fallback;
-            var clamped = Math.min(max, Math.max(min, numeric));
-            return Math.min(max, Math.max(min, min + Math.round((clamped - min) / step) * step));
+          var model = telescopeOpticsModel(d), type = model.type, aperture = model.apertureMm, focalLen = model.focalMm, eyepieceFl = model.eyepieceMm;
+          function number(value, digits) { return value.toLocaleString(undefined, { maximumFractionDigits: digits === undefined ? 1 : digits }); }
+          var maxOK = model.magnification <= model.approximateMaxPower;
+          var warning = !maxOK || model.exitPupilMm > 7 || model.exitPupilMm < 0.5;
+          var powerState = maxOK ? __alloT('stem.astronomy.scope_power_within', 'Magnification is within the approximate useful limit.') :
+            __alloT('stem.astronomy.scope_power_exceeds', 'Magnification exceeds the approximate useful limit of') + ' ' + model.approximateMaxPower.toFixed(0) + ' ' + __alloT('stem.astronomy.scope_times', 'times.');
+          var pupilState = model.exitPupilMm > 7 ? __alloT('stem.astronomy.scope_pupil_large', 'The exit pupil can exceed the observer’s eye pupil, reducing the light that reaches the eye.') :
+            model.exitPupilMm < 0.5 ? __alloT('stem.astronomy.scope_pupil_small', 'The exit pupil is too small for many views of faint extended objects. More power makes those objects dimmer.') :
+              __alloT('stem.astronomy.scope_pupil_practical', 'The exit pupil is in a commonly used range; observing conditions still matter.');
+          var stages = [
+            { id: 'all', title: __alloT('stem.astronomy.scope_all_rays', 'All rays'), detail: __alloT('stem.astronomy.scope_all_detail', 'Follow one centered star: parallel light enters, the objective forms an image, and the eyepiece returns a parallel beam to a relaxed eye.') },
+            { id: 'collect', title: __alloT('stem.astronomy.scope_collect', '1 · Collect'), detail: type === 'refractor' ? __alloT('stem.astronomy.scope_collect_lens', 'The objective lens admits light across its aperture and bends the rays toward the image plane.') : __alloT('stem.astronomy.scope_collect_mirror', 'Light enters the open tube and reaches the primary mirror. The mirror starts the focusing path back toward the front.') },
+            { id: 'focus', title: __alloT('stem.astronomy.scope_focus', '2 · Focus'), detail: type === 'refractor' ? __alloT('stem.astronomy.scope_focus_lens', 'The rays meet at the focal plane and form an image. A longer objective focal length gives a larger image for the same angular target.') : __alloT('stem.astronomy.scope_focus_mirror', 'The primary mirror converges the rays. A flat secondary turns that converging beam out of the tube; the rays meet at the side focus after the secondary.') },
+            { id: 'eyepiece', title: __alloT('stem.astronomy.scope_view', '3 · View'), detail: __alloT('stem.astronomy.scope_view_detail', 'The eyepiece sits beyond the image plane. For a relaxed eye, rays from this centered star leave it parallel. A shorter eyepiece increases angular magnification and reduces the exit pupil.') }
+          ];
+          var stage = stages.find(function(entry) { return entry.id === model.stage; });
+          var scopeStatus = (type === 'refractor' ? 'Refractor' : 'Reflector') + ': ' + aperture + ' millimeter aperture, ' + focalLen + ' millimeter focal length, ' + eyepieceFl + ' millimeter eyepiece. ' +
+            model.magnification.toFixed(1).replace(/\.0$/, '') + ' times magnification, f/' + model.focalRatio.toFixed(1) + ', ' + model.exitPupilMm.toFixed(1) + ' millimeter exit pupil. ' + powerState + ' ' + pupilState;
+          var buttonStyle = { minHeight: 44, padding: '9px 12px', border: '1px solid #64748b', borderRadius: 8, color: '#f8fafc', background: '#0a1425', fontSize: 13, cursor: 'pointer', maxWidth: '100%' };
+          function activeStyle(active) { return Object.assign({}, buttonStyle, active ? { color: '#ddd6fe', background: '#272045', borderColor: '#a78bfa' } : {}); }
+          function path(points) { return points.map(function(point, index) { return (index ? 'L' : 'M') + point.x.toFixed(4) + ' ' + point.y.toFixed(4); }).join(' '); }
+          function rayGroup(id, color, pointsKey) {
+            return h('g', { 'data-ray-stage': id, opacity: model.stage === 'all' || model.stage === id ? 1 : 0.18 },
+              model.rays.map(function(ray, index) { return h('path', { key: index, d: path(ray[pointsKey]), fill: 'none', stroke: color, strokeWidth: 1.7, strokeLinejoin: 'round', 'data-ray-index': index }); }));
           }
-          var type = d.scopeType === 'reflector' ? 'reflector' : 'refractor';
-          var aperture = normalizedScopeValue(d.scopeAperture, 50, 400, 10, 100);  // mm
-          var focalLen = normalizedScopeValue(d.scopeFocalLen, 300, 3000, 50, 1000);  // mm objective focal length
-          var eyepieceFl = normalizedScopeValue(d.eyepieceFl, 4, 40, 1, 25);     // mm eyepiece focal length
-
-          // Calculations
-          var magnification = focalLen / eyepieceFl;
-          var focalRatio = focalLen / aperture; // "f/N"
-          var eyePupilMm = 6;                    // typical dark-adapted pupil
-          var lightGather = (aperture * aperture) / (eyePupilMm * eyePupilMm); // vs naked eye
-          var exitPupil = aperture / magnification; // mm
-          var resolveDawes = 116 / aperture;       // Dawes limit in arcseconds (for visible light)
-          var limMag = 2 + 5 * Math.log10(aperture); // approximate limiting magnitude
-          var maxMag = aperture * 2;               // max useful magnification (~2x aperture in mm)
-
-          // Render SVG ray diagram
-          function refractorSvg() {
-            return h('svg', { id: 'astronomy-scope-refractor-diagram', viewBox: '0 0 600 220', role: 'img', 'aria-labelledby': 'refractorT refractorD', 'aria-describedby': 'astronomy-scope-status astronomy-scope-help', style: { width: '100%', height: 'auto', display: 'block' } },
-              h('title', { id: 'refractorT' }, __alloT('stem.astronomy.refractor_telescope_ray_diagram', 'Refractor telescope ray diagram')),
-              h('desc', { id: 'refractorD' }, 'A refractor telescope uses an objective lens to focus parallel light from a distant object to a focal point, where an eyepiece lens magnifies it to the eye. ' + aperture + ' mm aperture, ' + focalLen + ' mm focal length, magnification ' + magnification.toFixed(0) + ' times.'),
-              // Tube
-              h('rect', { x: 50, y: 80, width: 480, height: 60, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5 }),
-              // Star light arrows (parallel rays from infinity)
-              [90, 100, 110, 120, 130].map(function(y, i) {
-                return h('g', { key: 'r' + i },
-                  h('line', { x1: 0, y1: y, x2: 80, y2: y, stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: i % 2 ? '4 2' : null }),
-                  h('polygon', { points: '78,' + (y - 3) + ' 78,' + (y + 3) + ' 84,' + y, fill: '#fbbf24' })
-                );
-              }),
-              h('text', { x: 6, y: 75, fill: '#fde68a', fontSize: 10 }, __alloT('stem.astronomy.light_from_a_star', 'Light from a star →')),
-              // Objective lens (biconvex, at x=80)
-              h('ellipse', { cx: 80, cy: 110, rx: 4, ry: 30, fill: '#7dd3fc', opacity: 0.55, stroke: '#0ea5e9', strokeWidth: 1.5 }),
-              h('text', { x: 80, y: 60, textAnchor: 'middle', fill: '#bae6fd', fontSize: 9, fontWeight: 700 }, __alloT('stem.astronomy.objective_lens', 'Objective lens')),
-              h('text', { x: 80, y: 162, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, aperture + ' mm aperture'),
-              // Convergent rays from objective to focal point
-              [90, 110, 130].map(function(y, i) {
-                return h('line', { key: 'c' + i, x1: 84, y1: y, x2: 420, y2: 110, stroke: '#fbbf24', strokeWidth: 1, opacity: 0.85 });
-              }),
-              // Focal point marker
-              h('circle', { cx: 420, cy: 110, r: 3, fill: '#fde68a' }),
-              h('text', { x: 420, y: 75, textAnchor: 'middle', fill: '#fde68a', fontSize: 9, fontWeight: 700 }, __alloT('stem.astronomy.focal_plane', 'Focal plane')),
-              h('text', { x: 420, y: 162, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'fl = ' + focalLen + ' mm'),
-              // Focal length dimension
-              h('line', { x1: 80, y1: 175, x2: 420, y2: 175, stroke: '#64748b', strokeWidth: 0.5 }),
-              // Eyepiece (smaller biconvex at x=460)
-              h('ellipse', { cx: 460, cy: 110, rx: 3, ry: 16, fill: '#86efac', opacity: 0.55, stroke: '#22c55e', strokeWidth: 1.5 }),
-              h('text', { x: 460, y: 80, textAnchor: 'middle', fill: '#bbf7d0', fontSize: 9, fontWeight: 700 }, __alloT('stem.astronomy.eyepiece', 'Eyepiece')),
-              h('text', { x: 460, y: 175, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, eyepieceFl + ' mm'),
-              // Rays diverging from eyepiece into eye
-              [97, 110, 123].map(function(y, i) {
-                return h('line', { key: 'div' + i, x1: 462, y1: 110, x2: 555, y2: y, stroke: '#fbbf24', strokeWidth: 1, opacity: 0.85 });
-              }),
-              // Eye
-              h('circle', { cx: 565, cy: 110, r: 14, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5 }),
-              h('circle', { cx: 565, cy: 110, r: 4, fill: '#1e293b' })
-            );
+          function badge(label, x, y) {
+            return h('g', null, h('circle', { cx: x, cy: y, r: 13, fill: '#1d2940', stroke: '#e2e8f0', strokeWidth: 1.2 }),
+              h('text', { x: x, y: y + 7, fill: '#f8fafc', textAnchor: 'middle', fontSize: 20, fontWeight: 800 }, label));
           }
-
-          function reflectorSvg() {
-            // Newtonian reflector: primary concave mirror at far end, light comes IN, bounces off primary,
-            // hits secondary mirror, exits side to eyepiece
-            return h('svg', { id: 'astronomy-scope-reflector-diagram', viewBox: '0 0 600 220', role: 'img', 'aria-labelledby': 'reflectorT reflectorD', 'aria-describedby': 'astronomy-scope-status astronomy-scope-help', style: { width: '100%', height: 'auto', display: 'block' } },
-              h('title', { id: 'reflectorT' }, __alloT('stem.astronomy.newtonian_reflector_ray_diagram', 'Newtonian reflector ray diagram')),
-              h('desc', { id: 'reflectorD' }, 'A Newtonian reflector uses a concave primary mirror at the back end of the tube to focus light forward to a flat secondary mirror, which reflects it out the side to an eyepiece. ' + aperture + ' mm aperture, ' + focalLen + ' mm focal length, magnification ' + magnification.toFixed(0) + ' times.'),
-              // Tube
-              h('rect', { x: 50, y: 80, width: 480, height: 60, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5 }),
-              // Star light enters from the left
-              [88, 102, 116, 128].map(function(y, i) {
-                return h('g', { key: 'r' + i },
-                  h('line', { x1: 0, y1: y, x2: 470, y2: y, stroke: '#fbbf24', strokeWidth: 1, opacity: 0.85 })
-                );
-              }),
-              h('text', { x: 6, y: 75, fill: '#fde68a', fontSize: 10 }, __alloT('stem.astronomy.light_enters', 'Light enters →')),
-              // Primary concave mirror (curved shape at far right inside tube)
-              h('path', { d: 'M 500,84 Q 480,110 500,136 L 510,136 Q 495,110 510,84 Z', fill: '#bfdbfe', stroke: '#3b82f6', strokeWidth: 1.5 }),
-              h('text', { x: 505, y: 60, textAnchor: 'middle', fill: '#bfdbfe', fontSize: 9, fontWeight: 700 }, __alloT('stem.astronomy.primary_mirror', 'Primary mirror')),
-              h('text', { x: 505, y: 165, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, aperture + ' mm'),
-              // Converging rays bouncing off primary toward secondary
-              [88, 102, 116, 128].map(function(y, i) {
-                return h('line', { key: 'b' + i, x1: 500, y1: y, x2: 200, y2: 110, stroke: '#fbbf24', strokeWidth: 1, opacity: 0.85, strokeDasharray: '3 2' });
-              }),
-              // Secondary mirror (diagonal flat at center)
-              h('rect', { x: 195, y: 105, width: 14, height: 10, transform: 'rotate(45 202 110)', fill: '#fde68a', stroke: '#f59e0b', strokeWidth: 1 }),
-              h('text', { x: 202, y: 100, textAnchor: 'middle', fill: '#fde68a', fontSize: 9, fontWeight: 700 }, __alloT('stem.astronomy.secondary', 'Secondary')),
-              // Rays leaving secondary upward to eyepiece
-              h('line', { x1: 200, y1: 105, x2: 200, y2: 50, stroke: '#fbbf24', strokeWidth: 2, opacity: 0.85 }),
-              // Eyepiece on top
-              h('ellipse', { cx: 200, cy: 40, rx: 16, ry: 4, fill: '#86efac', opacity: 0.55, stroke: '#22c55e', strokeWidth: 1.5 }),
-              h('text', { x: 230, y: 42, fill: '#bbf7d0', fontSize: 9, fontWeight: 700 }, 'Eyepiece (' + eyepieceFl + ' mm)'),
-              // Eye
-              h('circle', { cx: 200, cy: 20, r: 12, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5 }),
-              h('circle', { cx: 200, cy: 20, r: 3, fill: '#1e293b' }),
-              // Focal length annotation
-              h('text', { x: 350, y: 175, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Focal length = ' + focalLen + ' mm')
-            );
+          function rayDiagram() {
+            var refl = type === 'reflector', prefix = 'astronomy-scope-' + type, half = model.halfAperturePx, obj = model.objective, focus = model.focus, ep = model.ep;
+            return h('svg', { id: prefix + '-diagram', viewBox: refl ? '0 0 360 280' : '0 60 360 180', role: 'img', 'aria-labelledby': prefix + '-title ' + prefix + '-desc',
+              'aria-describedby': 'astronomy-scope-status astronomy-scope-help', 'data-optical-design': type, 'data-ray-view': model.stage,
+              style: { display: 'block', width: '100%', height: 'auto', background: '#070f1e', border: '1px solid #475569', borderRadius: 10 } },
+              h('title', { id: prefix + '-title' }, refl ? __alloT('stem.astronomy.newtonian_reflector_ray_diagram', 'Newtonian reflector ray diagram') : __alloT('stem.astronomy.refractor_telescope_ray_diagram', 'Refractor telescope ray diagram')),
+              h('desc', { id: prefix + '-desc' }, stage.detail + ' ' + __alloT('stem.astronomy.scope_ray_desc', 'Number 1 marks the objective, 2 the image focus, and 3 the eyepiece. Amber is incoming light, blue is focusing light, and mint is the eyepiece path. The enlarged layout is schematic.')),
+              h('g', { 'aria-hidden': 'true' },
+                h('rect', { x: refl ? 52 : 58, y: model.axis - half - 7, width: refl ? 264 : ep.x - 48, height: 2 * (half + 7), rx: 8, fill: '#101d30', stroke: '#536783', strokeWidth: 1.5 }),
+                h('path', { d: refl ? 'M20 '+model.axis+' H328 M120 20 V'+model.axis : 'M20 '+model.axis+' H342', fill: 'none', stroke: '#52637a', strokeWidth: 0.8, strokeDasharray: '4 5' }),
+                rayGroup('collect', '#fbbf24', 'incoming'),
+                rayGroup('focus', '#7dd3fc', 'focusing'),
+                rayGroup('eyepiece', '#6ee7b7', 'eyepiece'),
+                // Direction markers stay away from the image crossing.
+                model.rays.map(function(ray, i) { return h('path', { key: 'arrow-' + i, d: 'M28 '+(ray.primary.y-3)+' L33 '+ray.primary.y+' L28 '+(ray.primary.y+3), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.4, opacity: model.stage === 'all' || model.stage === 'collect' ? 1 : 0.18 }); }),
+                refl ? h('g', null,
+                  h('path', { d: 'M318 '+(obj.y-half)+' Q330 '+obj.y+' 318 '+(obj.y+half), fill: 'none', stroke: '#4e6889', strokeWidth: 7 }),
+                  h('line', { x1: obj.x, x2: obj.x, y1: obj.y-half, y2: obj.y+half, stroke: '#b8ddff', strokeWidth: 5, 'data-primary-mirror': true }),
+                  h('path', { d: path([model.secondary.first, model.secondary.last]), fill: 'none', stroke: '#d8e6f8', strokeWidth: 4, 'data-secondary-mirror': true }))
+                  : h('ellipse', { cx: obj.x, cy: obj.y, rx: 6, ry: half, fill: '#0c7193', fillOpacity: 0.45, stroke: '#7dd3fc', strokeWidth: 2, 'data-objective-lens': true }),
+                h('path', { d: refl ? 'M'+(focus.x-12)+' '+focus.y+' H'+(focus.x+12) : 'M'+focus.x+' '+(focus.y-12)+' V'+(focus.y+12), stroke: '#f1f5f9', strokeWidth: 1, strokeDasharray: '2 3' }),
+                h('circle', { cx: focus.x, cy: focus.y, r: 3.5, fill: '#f8fafc', 'data-image-focus': true, 'data-focus-x': focus.x, 'data-focus-y': focus.y }),
+                h('ellipse', { cx: ep.x, cy: ep.y, rx: refl ? 16 : 5, ry: refl ? 5 : 16, fill: '#165c45', fillOpacity: 0.75, stroke: '#6ee7b7', strokeWidth: 2, 'data-eyepiece-lens': true }),
+                badge('1', refl ? 337 : obj.x, refl ? obj.y : obj.y-half-22),
+                badge('2', refl ? focus.x+29 : focus.x, refl ? focus.y : focus.y+30),
+                badge('3', refl ? ep.x-27 : ep.x, refl ? ep.y : ep.y-40)));
           }
-
-          var maxOK = magnification <= maxMag;
-          var exitPupilState = exitPupil > 7 ? 'Exit pupil is larger than a typical dark-adapted eye and wastes some light.' : exitPupil < 0.5 ? 'Exit pupil is very small, so the image will be dim.' : 'Exit pupil is in a practical range.';
-          var magnificationState = maxOK ? 'Magnification is within the approximate useful limit.' : 'Magnification exceeds the approximate useful limit of ' + maxMag.toFixed(0) + ' times.';
-          var scopeStatus = (type === 'refractor' ? 'Refractor' : 'Reflector') + ': ' + aperture + ' millimeter aperture, ' + focalLen + ' millimeter focal length, ' + eyepieceFl + ' millimeter eyepiece. ' + magnification.toFixed(0) + ' times magnification, f/' + focalRatio.toFixed(1) + ', ' + exitPupil.toFixed(1) + ' millimeter exit pupil. ' + magnificationState + ' ' + exitPupilState;
-
-          return h('div', null,
-            h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_telescope_optical_design', 'Telescope optical design'), style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
-              ['refractor', 'reflector'].map(function(t) {
-                var active = type === t;
-                return h('button', { id: 'astronomy-scope-tab-' + t, key: t,
-                  type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false',
-                  'aria-controls': 'astronomy-scope-diagram-panel', tabIndex: active ? 0 : -1,
-                  onClick: function() { upd({ scopeType: t }); },
-                  onKeyDown: function(e) {
-                    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
-                    e.preventDefault();
-                    var nextType = e.key === 'Home' ? 'refractor'
-                      : e.key === 'End' ? 'reflector'
-                      : t === 'refractor' ? 'reflector' : 'refractor';
-                    upd({ scopeType: nextType });
-                    if (typeof document !== 'undefined') setTimeout(function() {
-                      var target = document.getElementById('astronomy-scope-tab-' + nextType);
-                      if (target) target.focus();
-                    }, 0);
-                  },
-                  className: 'astr-focus',
-                  style: { padding: '8px 14px', borderRadius: 8, background: active ? 'rgba(99,102,241,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#818cf8' : '#475569'), color: active ? '#c7d2fe' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
-                }, t === 'refractor' ? '🔭 Refractor (lens)' : '🔭 Reflector (mirror)');
-              })
-            ),
-
-            h('div', { id: 'astronomy-scope-diagram-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-scope-tab-' + type, style: { padding: 10, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', marginBottom: 10, overflow: 'hidden' } },
-              type === 'refractor' ? refractorSvg() : reflectorSvg()
-            ),
-
-            h('div', { id: 'astronomy-scope-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: '8px 10px', borderRadius: 8, background: maxOK && exitPupil >= 0.5 && exitPupil <= 7 ? 'rgba(34,197,94,0.10)' : 'rgba(245,158,11,0.10)', border: '1px solid ' + (maxOK && exitPupil >= 0.5 && exitPupil <= 7 ? 'rgba(34,197,94,0.35)' : 'rgba(245,158,11,0.40)'), color: maxOK && exitPupil >= 0.5 && exitPupil <= 7 ? '#bbf7d0' : '#fde68a', fontSize: 11.5, lineHeight: 1.55, marginBottom: 10 } }, scopeStatus),
-
-            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_telescope_optical_controls', 'Telescope optical controls'), style: { marginBottom: 12 } },
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
-                h('div', { style: { padding: 9, borderRadius: 7, background: '#1e293b', border: '1px solid #334155' } },
-                  a11ySlider({ id: 'astronomy-scope-aperture', label: __alloT('stem.astronomy.aperture_mm', 'Aperture (mm)'), value: aperture, min: 50, max: 400, step: 10, valueText: aperture + ' millimeters', ariaDescribedBy: 'astronomy-scope-status astronomy-scope-help', onChange: function(v) { upd({ scopeAperture: v }); }, accent: INDIGO })
-                ),
-                h('div', { style: { padding: 9, borderRadius: 7, background: '#1e293b', border: '1px solid #334155' } },
-                  a11ySlider({ id: 'astronomy-scope-focal-length', label: __alloT('stem.astronomy.focal_length_mm', 'Focal length (mm)'), value: focalLen, min: 300, max: 3000, step: 50, valueText: focalLen + ' millimeters', ariaDescribedBy: 'astronomy-scope-status astronomy-scope-help', onChange: function(v) { upd({ scopeFocalLen: v }); }, accent: INDIGO })
-                ),
-                h('div', { style: { padding: 9, borderRadius: 7, background: '#1e293b', border: '1px solid #334155' } },
-                  a11ySlider({ id: 'astronomy-scope-eyepiece', label: __alloT('stem.astronomy.eyepiece_focal_length_mm', 'Eyepiece focal length (mm)'), value: eyepieceFl, min: 4, max: 40, step: 1, valueText: eyepieceFl + ' millimeters', ariaDescribedBy: 'astronomy-scope-status astronomy-scope-help', onChange: function(v) { upd({ eyepieceFl: v }); }, accent: INDIGO })
-                )
-              ),
-              h('div', { style: { marginTop: 9, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
-                h('div', { id: 'astronomy-scope-help', style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.45 } }, 'Adjust aperture, telescope focal length, and eyepiece focal length. The ray path is conceptual; dimensions are not drawn to scale.'),
-                a11yButton({ type: 'button', onClick: function() { upd({ scopeType: 'refractor', scopeAperture: 100, scopeFocalLen: 1000, eyepieceFl: 25 }); }, 'aria-label': __alloT('stem.astronomy.a11y_reset_telescope_simulator', 'Reset telescope simulator'), 'aria-controls': 'astronomy-scope-diagram-panel astronomy-scope-status', style: { padding: '6px 10px', borderRadius: 7, border: '1px solid #475569', background: '#1e293b', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' } }, '↺ Reset telescope')
-              )
-            ),
-            // Stats
-            h('div', { id: 'astronomy-scope-stats', role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_calculated_telescope_performance', 'Calculated telescope performance'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 } },
-              [
-                { label: __alloT('stem.astronomy.magnification', 'Magnification'), value: magnification.toFixed(0) + '×', color: maxOK ? '#86efac' : '#fca5a5', sub: maxOK ? '' : 'Exceeds max useful (' + maxMag.toFixed(0) + '×)' },
-                { label: __alloT('stem.astronomy.focal_ratio', 'Focal ratio'), value: 'f/' + focalRatio.toFixed(1), color: '#c7d2fe', sub: focalRatio < 6 ? 'fast (wide field)' : focalRatio > 12 ? 'slow (high mag)' : 'medium' },
-                { label: __alloT('stem.astronomy.light_gathering', 'Light gathering'), value: lightGather.toFixed(0) + '× eye', color: '#fde68a', sub: 'vs naked eye' },
-                { label: __alloT('stem.astronomy.exit_pupil', 'Exit pupil'), value: exitPupil.toFixed(1) + ' mm', color: exitPupil > 7 ? '#fca5a5' : '#86efac', sub: exitPupil > 7 ? 'too large — wastes light' : exitPupil < 0.5 ? 'too small — dim image' : 'OK' },
-                { label: __alloT('stem.astronomy.resolution_dawes', 'Resolution (Dawes)'), value: resolveDawes.toFixed(2) + '″', color: '#c7d2fe', sub: 'arcseconds' },
-                { label: __alloT('stem.astronomy.limiting_magnitude', 'Limiting magnitude'), value: '~+' + limMag.toFixed(1), color: '#c7d2fe', sub: 'in dark sky' }
-              ].map(function(s, i) {
-                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#0f172a', border: '1px solid #334155' } },
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
-                  h('div', { style: { fontSize: 14, fontWeight: 800, color: readableAccent(s.color, '#0f172a'), marginTop: 2 } }, s.value),
-                  s.sub ? h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub) : null
-                );
-              })
-            ),
-
-            h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.6 } },
-              h('strong', null, __alloT('stem.astronomy.key_insight', 'Key insight: ')),
-              __alloT('stem.astronomy.aperture_is_everything_magnification_f', 'Aperture is everything. Magnification = focal length / eyepiece focal length, but USEFUL magnification is capped at ~2× aperture in mm. Beyond that, you just magnify the blur. A 100 mm scope tops out around 200×; a 300 mm scope can usefully push to ~600×. The Dawes limit (resolution) and limiting magnitude (faintest visible) both scale with aperture, not magnification. "Bigger eye, not bigger zoom."')
-            )
-          );
+          function pupilDiagram() {
+            return h('svg', { id: 'astronomy-scope-pupil', viewBox: '0 0 360 230', role: 'img', 'aria-labelledby': 'astronomy-scope-pupil-title astronomy-scope-pupil-desc',
+              'data-exit-pupil': model.exitPupilMm, style: { display: 'block', width: '100%', height: 'auto', background: '#070f1e', border: '1px solid #475569', borderRadius: 10 } },
+              h('title', { id: 'astronomy-scope-pupil-title' }, __alloT('stem.astronomy.scope_pupil_title', 'Compare the exit beam with an eye pupil')),
+              h('desc', { id: 'astronomy-scope-pupil-desc' }, __alloT('stem.astronomy.scope_pupil_desc', 'Both circles use the same size scale. The eye pupil is a fixed 6 millimeter reference; the exit beam diameter is aperture divided by magnification.') + ' ' + number(model.exitPupilMm, 2) + ' mm.'),
+              h('g', { 'aria-hidden': 'true' },
+                h('circle', { cx: 90, cy: 90, r: model.eyeRadiusPx, fill: '#172c45', stroke: '#cbd5e1', strokeWidth: 2, 'data-eye-reference': true }),
+                h('circle', { cx: 270, cy: 90, r: model.beamRadiusPx, fill: '#6ee7b7', fillOpacity: 0.35, stroke: '#6ee7b7', strokeWidth: Math.min(2, model.beamRadiusPx * 0.15), 'data-exit-beam': true }),
+                h('circle', { cx: 270, cy: 90, r: model.eyeRadiusPx, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+                [['eye',90,__alloT('stem.astronomy.scope_eye_ref', 'Eye reference'),'6 mm'],['beam',270,__alloT('stem.astronomy.scope_exit_beam', 'Exit beam'),number(model.exitPupilMm,2)+' mm']].map(function(label) {
+                  return h('g', { key: label[0] }, h('text', { x: label[1], y: 189, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 18 }, label[2]),
+                    h('text', { x: label[1], y: 214, textAnchor: 'middle', fill: '#f8fafc', fontSize: 20, fontWeight: 800 }, label[3])); })));
+          }
+          function slider(id, label, value, min, max, step, key) {
+            return h('div', { style: { padding: 12, minWidth: 0, border: '1px solid #475569', borderRadius: 10, background: '#0a1425' } },
+              h('label', { htmlFor: id, style: { display: 'block', fontSize: 13, color: '#f8fafc', fontWeight: 700 } }, label + ': ' + value + ' mm'),
+              h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value+' millimeters',
+                'aria-describedby': 'astronomy-scope-status astronomy-scope-help', className: 'astr-focus', style: { width: '100%', display: 'block', minHeight: 44, margin: '4px 0 0', accentColor: '#a78bfa' },
+                onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); upd(patch); } }));
+          }
+          var presets = [
+            { id: '90eq', label: 'AstroMaster 90EQ', type: 'refractor', aperture: 90, focal: 1000, ep: 20 },
+            { id: '130eq', label: 'AstroMaster 130EQ', type: 'reflector', aperture: 130, focal: 650, ep: 20 }
+          ];
+          return h('section', { id: 'astronomy-scope-lab', tabIndex: -1, className: 'astr-focus', 'aria-label': __alloT('stem.astronomy.scope_lab_title', 'Telescope optics lab'),
+            style: { padding: 14, border: '1px solid #475569', borderRadius: 14, background: '#111c30', marginBottom: 16, minWidth: 0 } },
+            h('style', null, '#astronomy-scope-lab svg text{font-family:Inter,ui-sans-serif,system-ui,sans-serif}'),
+            h('h2', { style: { margin: '0 0 6px', fontSize: 20, color: '#f8fafc' } }, __alloT('stem.astronomy.scope_lab_title', 'Telescope optics lab')),
+            h('p', { style: { margin: '0 0 14px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } }, __alloT('stem.astronomy.scope_intro', 'Follow light through a lens or mirror telescope, then compare the beam that reaches your eye. Change the instrument and eyepiece to connect the light path with magnification and exit pupil.')),
+            h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_telescope_optical_design', 'Telescope optical design'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+              ['refractor','reflector'].map(function(t) { var active = t === type;
+                return h('button', { id: 'astronomy-scope-tab-'+t, type: 'button', role: 'tab', 'aria-selected': String(active), key: t, tabIndex: active ? 0 : -1,
+                  'aria-controls': 'astronomy-scope-diagram-panel', className: 'astr-focus', style: activeStyle(active), onClick: function() { upd({scopeType:t}); },
+                  onKeyDown: function(e) { if(['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key)<0)return;e.preventDefault();
+                    var nextType = e.key === 'Home' ? 'refractor' : e.key === 'End' ? 'reflector' : t === 'refractor' ? 'reflector' : 'refractor';
+                    upd({scopeType:nextType});setTimeout(function(){var target=document.getElementById('astronomy-scope-tab-' + nextType);if(target)target.focus();},0); }
+                }, t === 'refractor' ? __alloT('stem.astronomy.scope_refractor', 'Refractor · lens') : __alloT('stem.astronomy.scope_reflector', 'Reflector · mirror')); })),
+            h('div', { id: 'astronomy-scope-diagram-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-scope-tab-'+type, style: { minWidth: 0 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 16, alignItems: 'start' } },
+                h('figure', { style: { margin: 0, minWidth: 0 } }, h('h3', { style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 15 } }, __alloT('stem.astronomy.scope_light_path', 'Light path · schematic')), rayDiagram(),
+                  h('figcaption', { style: { marginTop: 8, color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } }, __alloT('stem.astronomy.scope_ray_caption', 'Amber: incoming light. Blue: focusing light. Mint: the eyepiece path. The numbers match the steps below. The diagram follows one star on the optical axis.'))),
+                h('figure', { style: { margin: 0, minWidth: 0 } }, h('h3', { style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 15 } }, __alloT('stem.astronomy.scope_pupil_title', 'Compare the exit beam with an eye pupil')), pupilDiagram(),
+                  h('figcaption', { style: { marginTop: 8, color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } }, __alloT('stem.astronomy.scope_pupil_caption', 'Both circles use the same scale, which zooms to include the larger diameter. The dashed circle repeats the 6 mm eye reference. Actual eye pupils vary with age and lighting.'))))),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.scope_stages', 'Follow the light path'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
+              stages.map(function(entry){return a11yButton({key:entry.id,type:'button','aria-pressed':entry.id===model.stage,style:activeStyle(entry.id===model.stage),onClick:function(){upd({scopeRayStage:entry.id});}},entry.title);})),
+            h('div', { id: 'astronomy-scope-ray-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 12, marginTop: 10, borderRadius: 10, border: '1px solid #475569', background: '#0a1425', color: '#e2e8f0', fontSize: 13, lineHeight: 1.65 } }, stage.detail),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.scope_real_examples', 'Real instrument examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '14px 0 12px' } },
+              presets.map(function(preset){var active=type===preset.type&&aperture===preset.aperture&&focalLen===preset.focal&&eyepieceFl===preset.ep;
+                return a11yButton({key:preset.id,type:'button','aria-pressed':active,style:activeStyle(active),onClick:function(){upd({scopeType:preset.type,scopeAperture:preset.aperture,scopeFocalLen:preset.focal,eyepieceFl:preset.ep});}},preset.label+' · 20 mm');}),
+              a11yButton({type:'button','aria-label':__alloT('stem.astronomy.a11y_reset_telescope_simulator','Reset telescope simulator'),style:buttonStyle,onClick:function(){upd({scopeType:'refractor',scopeAperture:100,scopeFocalLen:1000,eyepieceFl:25,scopeRayStage:'all'});}},__alloT('stem.astronomy.scope_reset','Reset optics'))),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.a11y_telescope_optical_controls', 'Telescope optical controls') },
+              h('div', { style: { display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,220px),1fr))',gap:10 } },
+                slider('astronomy-scope-aperture',__alloT('stem.astronomy.aperture','Aperture'),aperture,50,400,10,'scopeAperture'),
+                slider('astronomy-scope-focal-length',__alloT('stem.astronomy.scope_focal','Objective focal length'),focalLen,300,3000,50,'scopeFocalLen'),
+                slider('astronomy-scope-eyepiece',__alloT('stem.astronomy.eyepiece_focal_length','Eyepiece focal length'),eyepieceFl,4,40,1,'eyepieceFl'))),
+            h('div', { id:'astronomy-scope-stats',role:'group','aria-label':__alloT('stem.astronomy.a11y_calculated_telescope_performance','Calculated telescope performance') },
+              h('dl', { style: { display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,150px),1fr))',gap:8,margin:'12px 0' } },
+                [
+                  [__alloT('stem.astronomy.magnification','Magnification'),number(model.magnification)+'×'],
+                  [__alloT('stem.astronomy.focal_ratio','Focal ratio'),'f/'+number(model.focalRatio,2)],
+                  [__alloT('stem.astronomy.ey_exit_pupil','Exit pupil'),number(model.exitPupilMm,2)+' mm'],
+                  [__alloT('stem.astronomy.scope_gross_area','Gross area vs. 6 mm pupil'),number(model.grossAreaRatio,0)+'×'],
+                  [__alloT('stem.astronomy.ey_dawes','Dawes double-star criterion'),number(model.dawesArcsec,2)+' arcsec'],
+                  [__alloT('stem.astronomy.scope_power_guide','Approx. power guideline'),'≤ '+model.approximateMaxPower+'×']
+                ].map(function(entry){return h('div',{key:entry[0],style:{padding:11,minWidth:0,border:'1px solid #475569',borderRadius:10,background:'#0a1425'}},h('dt',{style:{color:'#cbd5e1',fontSize:12,marginBottom:5}},entry[0]),h('dd',{style:{margin:0,color:'#f8fafc',fontSize:17,fontWeight:800,overflowWrap:'anywhere'}},entry[1]));}))),
+            h('div',{id:'astronomy-scope-status',role:'status','aria-live':'polite','aria-atomic':'true',style:{padding:12,border:'1px solid '+(warning?'#c08842':'#475569'),borderRadius:10,background:'#0a1425',color:'#f8fafc',fontSize:13,lineHeight:1.65}},scopeStatus),
+            h('p',{id:'astronomy-scope-help',style:{margin:'10px 0',color:'#cbd5e1',fontSize:12,lineHeight:1.65}},__alloT('stem.astronomy.scope_model_scope','The ray layout enlarges separations for readability; dimensions are not drawn to scale. The pupil circles and numeric optics are calculated. Gross area omits mirror obstruction, optical losses and the eye’s light acceptance. The power guideline is about 2× aperture in mm; seeing and optical quality can impose a lower limit. Dawes is a double-star criterion.')),
+            a11yButton({type:'button','aria-controls':'astronomy-eyepiece-lab',style:Object.assign({},buttonStyle,{borderColor:'#fb923c',color:'#fed7aa'}),
+              onClick:function(){upd({eyApertureMm:aperture,eyFocalMm:focalLen,eyEpFlMm:eyepieceFl});setTimeout(function(){var target=document.getElementById('astronomy-eyepiece-lab');if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'auto'});}},0);}
+            },__alloT('stem.astronomy.scope_preview','Preview this setup in the field lab')),
+            h('details',{id:'astronomy-scope-reference',style:{marginTop:12,color:'#e2e8f0',fontSize:13,lineHeight:1.65}},
+              h('summary',{className:'astr-focus',style:{minHeight:44,padding:'10px 0',cursor:'pointer',fontWeight:700}},__alloT('stem.astronomy.scope_sources','Instrument references and optics')),
+              h('p',{style:{margin:'0 0 8px'}},__alloT('stem.astronomy.scope_reference_scope','Celestron lists the 90EQ as a 90 mm, 1000 mm refractor and the 130EQ as a 130 mm, 650 mm Newtonian reflector. Both include a 20 mm eyepiece. These presets use those dimensions; the simplified rays omit the 90EQ diagonal, lens aberrations, mirror shape details and secondary obstruction.')),
+              h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px 14px'}},[
+                ['https://www.celestron.com/products/astromaster-90eq-telescope','Celestron · 90EQ'],
+                ['https://www.celestron.com/products/astromaster-130eq-telescope','Celestron · 130EQ'],
+                ['https://openstax.org/books/university-physics-volume-3/pages/2-8-microscopes-and-telescopes',__alloT('stem.astronomy.scope_ray_source','OpenStax · telescope rays')],
+                ['https://science.nasa.gov/universe/telescopes-101/',__alloT('stem.astronomy.scope_nasa_source','NASA · lenses and mirrors')],
+                ['https://www.skywatcher.com/faq/',__alloT('stem.astronomy.scope_power_source','Sky-Watcher · power guideline')]
+              ].map(function(link){return h('a',{key:link[0],href:link[0],target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',textDecoration:'underline'}},link[1]);}))));
         }
 
         return h('div', { style: { padding: 16 } },
@@ -12610,10 +13536,7 @@
             )
           ),
 
-          sectionCard('🔬 Interactive telescope simulator',
-            telescopeSim(),
-            INDIGO
-          ),
+          telescopeSim(),
 
           observingList.length > 0 ? sectionCard('\u2B50 Your observing list',
             h('div', null,
@@ -13311,92 +14234,34 @@
         }
 
         // ──────────────────────────────────────────────────────────────
-        // Eyepiece View Simulator — what you'd actually see in a telescope
+        // Eyepiece field geometry with illustrative target and sky sketches
         // ──────────────────────────────────────────────────────────────
         function eyepieceViewSimulatorSection() {
-          // Target catalog with apparent magnitude, angular size (arcmin), object type, mythology
+          // Fixed angular examples; the Moon uses the NASA 30 arcmin reference.
           var TARGETS = [
-            { id: 'moon', name: __alloT('stem.astronomy.the_moon', 'The Moon'), type: 'Solar System', mag: -12.7, sizeArcmin: 31, color: '#e0e0e0', spec: 'rocky',
-              info: 'Earth\'s only natural satellite. Diameter 3,474 km; orbits at ~ 384,400 km. Magnitude -12.7 at full phase. Through ANY telescope: craters, mountains, dark maria, terminator detail. Best viewing: gibbous phase (more shadow detail than full).',
-              eyepiece: 'At 50× a 100-mm scope shows the full Moon nearly filling the field of view. At 200× you can see craters smaller than 1 km across at the terminator.'
-            },
-            { id: 'saturn', name: __alloT('stem.astronomy.saturn', 'Saturn'), type: 'Planet', mag: 0.4, sizeArcmin: 0.7, color: '#fde68a', spec: 'planet',
-              info: 'The most-photographed planet through amateur scopes. Rings visible at 30× + above. Cloud bands + the Cassini division (gap in the rings) at 100× + good seeing. Titan (largest moon) visible at any magnification as a star-like dot. Up to 5 moons in a 6-inch scope.',
-              eyepiece: 'Through a 6-inch (150 mm) Dobsonian at 100×, Saturn looks unmistakable + breathtaking. The first time most observers see it, they think they\'re looking at a Hubble image. Best apparition: summer evenings when Saturn is highest in the sky.'
-            },
-            { id: 'jupiter', name: __alloT('stem.astronomy.jupiter', 'Jupiter'), type: 'Planet', mag: -2.5, sizeArcmin: 0.8, color: '#fdba74', spec: 'planet',
-              info: 'Largest planet. Cloud bands visible at 50× — typically 2-4 bands depending on the year. Great Red Spot visible at 150×+ on appropriate longitude rotation. Galilean moons (Io, Europa, Ganymede, Callisto) easily visible at any magnification + change position from night to night.',
-              eyepiece: 'A 6-inch scope at 100× shows Jupiter as a small disk with 2-4 visible bands + the 4 Galilean moons as a string of bright dots. Apt Jupiter session: watch moon positions change over 2 hours, drawing them each 30 minutes.'
-            },
-            { id: 'venus', name: __alloT('stem.astronomy.venus', 'Venus'), type: 'Planet', mag: -4.5, sizeArcmin: 0.9, color: '#fef9c3', spec: 'planet',
-              info: 'Bright "morning/evening star." Through a telescope, it shows PHASES like the Moon — Galileo\'s 1610 observation of Venus\' phases was decisive evidence for the heliocentric model. NO surface detail (Venus is permanently shrouded in clouds). The "crescent Venus" near sun-grazing is one of the most striking simple telescope views.',
-              eyepiece: 'A 4-inch refractor at 75× shows phases beautifully. Best when Venus is at gibbous-to-crescent transition. Use a Moon filter or grey filter to reduce dazzle.'
-            },
-            { id: 'mars', name: __alloT('stem.astronomy.mars_2', 'Mars'), type: 'Planet', mag: -0.5, sizeArcmin: 0.2, color: '#fb923c', spec: 'planet',
-              info: 'Visible detail depends ENTIRELY on apparition (Mars is at opposition only every 2 years). At opposition, polar ice caps + dark surface features visible at 150×+. Off-opposition, Mars is just a small orange dot. The 2018 + 2020 apparitions were strong; 2022 was good; 2025 + 2027 are weak.',
-              eyepiece: 'At a strong opposition with a 6-inch scope at 200×, Mars shows polar caps + Syrtis Major (a dark albedo feature). At a weak apparition, just an orange dot. Patience + opposition timing matter more than equipment size.'
-            },
-            { id: 'orion-nebula', name: __alloT('stem.astronomy.orion_nebula_m42', 'Orion Nebula (M42)'), type: 'Nebula', mag: 4.0, sizeArcmin: 65, color: '#86efac', spec: 'nebula',
-              info: 'The most famous emission nebula + the easiest deep-sky target. Visible to the naked eye in Orion\'s sword as a fuzzy patch. Through a small telescope, the green-grey wings of glowing gas surround the Trapezium cluster (4 hot young stars at center, technically 6 in good seeing). 1,344 light-years away. Active stellar nursery.',
-              eyepiece: 'Through a 6-inch scope at 50× with a 25-mm wide-field eyepiece, M42 fills the field with delicate green wings of nebulosity + the bright Trapezium cluster at center. An OIII filter dramatically enhances contrast. One of the most rewarding amateur targets year-round (best in winter when Orion is high).'
-            },
-            { id: 'andromeda', name: __alloT('stem.astronomy.andromeda_galaxy_m31', 'Andromeda Galaxy (M31)'), type: 'Galaxy', mag: 3.4, sizeArcmin: 180, color: '#fde68a', spec: 'galaxy',
-              info: 'Largest galaxy in the Local Group. Naked-eye visible from dark skies as a small fuzzy patch. Through binoculars or a low-power telescope, the bright central bulge + extended disk are visible. 2.5 million light-years away — the farthest object visible to the naked eye. Will collide with the Milky Way in ~ 4 billion years.',
-              eyepiece: 'A 6-inch Dobsonian at 30× shows the bright central core + extends fading from there. Companion galaxies M32 (small bright dot) + M110 (faint elongated patch) visible nearby. Dust lanes + spiral structure require larger apertures (10-inch+) or astrophotography.'
-            },
-            { id: 'pleiades', name: __alloT('stem.astronomy.pleiades_m45', 'Pleiades (M45)'), type: 'Open Cluster', mag: 1.6, sizeArcmin: 110, color: '#bae6fd', spec: 'cluster',
-              info: 'The "Seven Sisters" — one of the brightest + closest open clusters. 6-7 naked-eye stars in a small group. Through binoculars or a low-power telescope, dozens of stars + faint blue reflection nebulosity around the brightest stars (the Maia + Merope nebulae — dust the cluster is passing through, NOT the cluster\'s birth gas which dissipated long ago).',
-              eyepiece: 'Best in a 50-mm finder scope or wide-field eyepiece — the cluster is too LARGE for most telescope fields. Through 10×50 binoculars, the cluster is glorious. A 25-mm 70°-field eyepiece in a small scope works well.'
-            },
-            { id: 'ring-nebula', name: __alloT('stem.astronomy.ring_nebula_m57', 'Ring Nebula (M57)'), type: 'Planetary Nebula', mag: 8.8, sizeArcmin: 1.4, color: '#fbcfe8', spec: 'planetary',
-              info: 'A textbook planetary nebula in Lyra. Looks like a small smoke ring — the expanding shell of gas + dust thrown off by a dying star ~ 6,000-8,000 years ago. The central white dwarf is faint (magnitude 15.7) + visible only in larger scopes. Distance: ~ 2,300 light-years.',
-              eyepiece: 'A 4-inch scope at 100× clearly shows the ring shape — like a small smoke ring with darker center. A 6-inch scope at 150× reveals the ring structure beautifully. An OIII filter enhances the nebula significantly. One of the great visual treats of the summer sky.'
-            },
-            { id: 'hercules-cluster', name: __alloT('stem.astronomy.hercules_cluster_m13', 'Hercules Cluster (M13)'), type: 'Globular Cluster', mag: 5.8, sizeArcmin: 20, color: '#e2e8f0', spec: 'globular',
-              info: 'The brightest globular cluster visible from the Northern Hemisphere. ~ 300,000 stars in a tight spherical ball ~ 145 light-years across, at 22,200 light-years distance. Halley first noticed it in 1714; Messier catalogued it in 1764. The 1974 Arecibo Message was famously aimed at M13.',
-              eyepiece: 'A 4-inch scope at 100× resolves outer stars but the core remains a glow. A 6-inch at 150× resolves the cluster into "frozen swarm of bees." An 8-inch at 200× resolves to the core. One of the great progressions of amateur astronomy — see how aperture transforms the view.'
-            },
-            { id: 'double-cluster', name: __alloT('stem.astronomy.double_cluster_ngc_869_884', 'Double Cluster (NGC 869/884)'), type: 'Open Cluster Pair', mag: 4.3, sizeArcmin: 60, color: '#bfdbfe', spec: 'cluster',
-              info: 'Two open clusters about half a degree apart in Perseus — both visible at once in any low-power eyepiece. NGC 869 + NGC 884 are ~ 7,000 + 14,000 light-years away, around 12 million years old. The pair was first catalogued by Hipparchus around 130 BCE.',
-              eyepiece: 'Best in a wide-field eyepiece (30-50× with a 70°+ field) — fills the view with dozens to hundreds of stars in two adjacent groupings, plus a sprinkling of red giants. Spectacular through ANY equipment from binoculars up.'
-            },
-            { id: 'whirlpool', name: __alloT('stem.astronomy.whirlpool_galaxy_m51', 'Whirlpool Galaxy (M51)'), type: 'Galaxy', mag: 8.4, sizeArcmin: 11, color: '#fef3c7', spec: 'galaxy',
-              info: 'A face-on interacting spiral galaxy with a small companion (NGC 5195) connected by a tidal bridge of stars. 31 million light-years away. The first object identified as a "spiral nebula" (Lord Rosse, 1845). The spiral arms are visible in larger amateur scopes; in smaller scopes, just two adjacent bright patches.',
-              eyepiece: 'A 4-inch scope at 75× shows the bright cores of both galaxies. A 10-inch scope at dark sky shows the spiral arms wrapping around — a remarkable view. A challenging but rewarding target for spring evening observing in Ursa Major.'
-            }
+            { id: 'moon', name: __alloT('stem.astronomy.the_moon', 'The Moon'), type: 'Solar System', mag: -12.7, sizeArcmin: 30, color: '#e0e0e0', spec: 'rocky' },
+            { id: 'saturn', name: __alloT('stem.astronomy.saturn', 'Saturn'), type: 'Planet', mag: 0.4, sizeArcmin: 0.7, color: '#fde68a', spec: 'planet' },
+            { id: 'jupiter', name: __alloT('stem.astronomy.jupiter', 'Jupiter'), type: 'Planet', mag: -2.5, sizeArcmin: 0.8, color: '#fdba74', spec: 'planet' },
+            { id: 'venus', name: __alloT('stem.astronomy.venus', 'Venus'), type: 'Planet', mag: -4.5, sizeArcmin: 0.9, color: '#fef9c3', spec: 'planet' },
+            { id: 'mars', name: __alloT('stem.astronomy.mars_2', 'Mars'), type: 'Planet', mag: -0.5, sizeArcmin: 0.2, color: '#fb923c', spec: 'planet' },
+            { id: 'orion-nebula', name: __alloT('stem.astronomy.orion_nebula_m42', 'Orion Nebula (M42)'), type: 'Nebula', mag: 4.0, sizeArcmin: 65, color: '#86efac', spec: 'nebula' },
+            { id: 'andromeda', name: __alloT('stem.astronomy.andromeda_galaxy_m31', 'Andromeda Galaxy (M31)'), type: 'Galaxy', mag: 3.4, sizeArcmin: 180, color: '#fde68a', spec: 'galaxy' },
+            { id: 'pleiades', name: __alloT('stem.astronomy.pleiades_m45', 'Pleiades (M45)'), type: 'Open Cluster', mag: 1.6, sizeArcmin: 110, color: '#bae6fd', spec: 'cluster' },
+            { id: 'ring-nebula', name: __alloT('stem.astronomy.ring_nebula_m57', 'Ring Nebula (M57)'), type: 'Planetary Nebula', mag: 8.8, sizeArcmin: 1.4, color: '#fbcfe8', spec: 'planetary' },
+            { id: 'hercules-cluster', name: __alloT('stem.astronomy.hercules_cluster_m13', 'Hercules Cluster (M13)'), type: 'Globular Cluster', mag: 5.8, sizeArcmin: 20, color: '#e2e8f0', spec: 'globular' },
+            { id: 'double-cluster', name: __alloT('stem.astronomy.double_cluster_ngc_869_884', 'Double Cluster (NGC 869/884)'), type: 'Open Cluster Pair', mag: 4.3, sizeArcmin: 60, color: '#bfdbfe', spec: 'cluster' },
+            { id: 'whirlpool', name: __alloT('stem.astronomy.whirlpool_galaxy_m51', 'Whirlpool Galaxy (M51)'), type: 'Galaxy', mag: 8.4, sizeArcmin: 11, color: '#fef3c7', spec: 'galaxy' }
           ];
 
           var requestedTargetId = typeof d.eyepieceTarget === 'string' ? d.eyepieceTarget : 'orion-nebula';
           var selectedTarget = TARGETS.find(function(t) { return t.id === requestedTargetId; }) || TARGETS.find(function(t) { return t.id === 'orion-nebula'; }) || TARGETS[0];
           var selectedTargetId = selectedTarget.id;
 
-          // Telescope/eyepiece settings
-          var apMm = boundedNumber(d.eyApertureMm, 50, 400, 150);
-          var focalMm = boundedNumber(d.eyFocalMm, 200, 4000, 1200);
-          var epFlMm = boundedNumber(d.eyEpFlMm, 4, 40, 25);
-          var epField = boundedNumber(d.eyEpField, 40, 100, 60); // apparent field of view, degrees
-          var seeingArcsec = boundedNumber(d.eySeeing, 0.3, 10, 2.5);
-          var bortleSim = Math.round(boundedNumber(d.eyBortle, 1, 9, 4));
 
-          // Calculations
-          var magnification = focalMm / epFlMm;
-          var trueFOVdeg = epField / magnification;
-          var trueFOVarcmin = trueFOVdeg * 60;
-          var lightGain = (apMm * apMm) / (7 * 7); // vs 7mm naked-eye pupil
-          var limitingMag = 2.0 + 5 * Math.log10(apMm);
-          var exitPupilMm = apMm / magnification;
-          var dawesLimit = 116 / apMm; // arcseconds
-
-          // Visibility check — can this telescope at this setting see the target?
-          var targetVisible = limitingMag >= selectedTarget.mag - 1.5;
-          var targetTooSmall = selectedTarget.sizeArcmin < (seeingArcsec / 60) * 5;
-          var targetTooBig = selectedTarget.sizeArcmin > trueFOVarcmin * 0.9;
-
-          // Render the eyepiece view as an SVG
-          // 600 px diameter virtual eyepiece. Scale target size to fit FOV.
-          var viewSize = 480;
-          var targetPxRadius = Math.min(viewSize / 2 - 10, (selectedTarget.sizeArcmin / trueFOVarcmin) * (viewSize / 2));
-          if (targetPxRadius < 4) targetPxRadius = 4; // Minimum visible
+          var model = eyepieceFieldModel(d, selectedTarget);
+          var apMm = model.apertureMm, focalMm = model.focalMm, epFlMm = model.eyepieceMm, epField = model.apparentFieldDeg;
+          var seeingArcsec = model.seeingArcsec, bortleSim = model.bortle, magnification = model.magnification;
+          var viewSize = 480, targetPxRadius = model.targetRadiusPx;
 
           // Define the object visualization based on spec
           function renderTargetSvg() {
@@ -13435,8 +14300,8 @@
               var ry = targetPxRadius * 0.85;
               return h('g', null,
                 h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 2.2, ry: targetPxRadius * 0.35, fill: 'none', stroke: '#fde68a', strokeWidth: targetPxRadius * 0.12, opacity: 0.85 }),
-                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.8, ry: targetPxRadius * 0.28, fill: 'none', stroke: '#1e293b', strokeWidth: 2, opacity: 0.8 }), // Cassini division
-                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.0, ry: ry, fill: '#fde68a', stroke: '#fdba74', strokeWidth: 1 }),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.8, ry: targetPxRadius * 0.28, fill: 'none', stroke: '#1e293b', strokeWidth: targetPxRadius * 0.025, opacity: 0.8 }), // Cassini division
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.0, ry: ry, fill: '#fde68a', stroke: '#fdba74', strokeWidth: targetPxRadius * 0.02 }),
                 // bands
                 h('ellipse', { cx: cx, cy: cy + ry * 0.3, rx: targetPxRadius * 0.95, ry: ry * 0.06, fill: '#a16207', opacity: 0.5 }),
                 h('ellipse', { cx: cx, cy: cy - ry * 0.3, rx: targetPxRadius * 0.92, ry: ry * 0.06, fill: '#a16207', opacity: 0.5 })
@@ -13444,7 +14309,7 @@
             }
             if (selectedTarget.spec === 'planet' && selectedTargetId === 'jupiter') {
               return h('g', null,
-                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.0, ry: targetPxRadius * 0.94, fill: '#fdba74', stroke: '#c2410c', strokeWidth: 1 }),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.0, ry: targetPxRadius * 0.94, fill: '#fdba74', stroke: '#c2410c', strokeWidth: targetPxRadius * 0.02 }),
                 // bands
                 h('ellipse', { cx: cx, cy: cy + targetPxRadius * 0.2, rx: targetPxRadius * 0.96, ry: targetPxRadius * 0.12, fill: '#9a3412', opacity: 0.5 }),
                 h('ellipse', { cx: cx, cy: cy - targetPxRadius * 0.25, rx: targetPxRadius * 0.94, ry: targetPxRadius * 0.1, fill: '#9a3412', opacity: 0.45 }),
@@ -13452,7 +14317,7 @@
                 // Great Red Spot
                 h('ellipse', { cx: cx + targetPxRadius * 0.3, cy: cy + targetPxRadius * 0.25, rx: targetPxRadius * 0.18, ry: targetPxRadius * 0.08, fill: '#dc2626', opacity: 0.75 }),
                 // Moons (Galilean) — as small white dots offset from Jupiter
-                magnification < 50 ? null : [
+                [
                   { x: -2.5, name: 'Io' }, { x: -1.5, name: __alloT('stem.astronomy.europa', 'Europa') }, { x: 1.7, name: __alloT('stem.astronomy.ganymede', 'Ganymede') }, { x: 2.8, name: __alloT('stem.astronomy.callisto', 'Callisto') }
                 ].map(function(m, i) {
                   return h('circle', { key: 'moon-' + i, cx: cx + targetPxRadius * m.x, cy: cy, r: 1.5, fill: '#fff' });
@@ -13463,16 +14328,16 @@
               // Crescent Venus
               return h('g', null,
                 h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: '#1e293b' }),
-                h('path', { d: 'M ' + (cx - targetPxRadius) + ' ' + cy + ' A ' + targetPxRadius + ' ' + targetPxRadius + ' 0 0 1 ' + (cx + targetPxRadius) + ' ' + cy + ' A ' + (targetPxRadius * 0.3) + ' ' + targetPxRadius + ' 0 0 0 ' + (cx - targetPxRadius) + ' ' + cy + ' Z', fill: '#fef9c3', style: { filter: 'drop-shadow(0 0 5px rgba(254,249,195,0.7))' } })
+                h('path', { d: 'M ' + (cx - targetPxRadius) + ' ' + cy + ' A ' + targetPxRadius + ' ' + targetPxRadius + ' 0 0 1 ' + (cx + targetPxRadius) + ' ' + cy + ' A ' + (targetPxRadius * 0.3) + ' ' + targetPxRadius + ' 0 0 0 ' + (cx - targetPxRadius) + ' ' + cy + ' Z', fill: '#fef9c3' })
               );
             }
             if (selectedTarget.spec === 'planet' && selectedTargetId === 'mars') {
               return h('g', null,
-                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: '#fb923c', stroke: '#c2410c', strokeWidth: 1 }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: '#fb923c', stroke: '#c2410c', strokeWidth: targetPxRadius * 0.02 }),
                 // polar cap
-                magnification >= 100 ? h('ellipse', { cx: cx, cy: cy - targetPxRadius * 0.85, rx: targetPxRadius * 0.3, ry: targetPxRadius * 0.12, fill: '#fff', opacity: 0.7 }) : null,
+                h('ellipse', { cx: cx, cy: cy - targetPxRadius * 0.85, rx: targetPxRadius * 0.3, ry: targetPxRadius * 0.12, fill: '#fff', opacity: 0.7 }),
                 // surface feature
-                magnification >= 150 ? h('ellipse', { cx: cx - targetPxRadius * 0.15, cy: cy + targetPxRadius * 0.1, rx: targetPxRadius * 0.4, ry: targetPxRadius * 0.18, fill: '#7c2d12', opacity: 0.55 }) : null
+                h('ellipse', { cx: cx - targetPxRadius * 0.15, cy: cy + targetPxRadius * 0.1, rx: targetPxRadius * 0.4, ry: targetPxRadius * 0.18, fill: '#7c2d12', opacity: 0.55 })
               );
             }
             if (selectedTarget.spec === 'nebula') {
@@ -13485,19 +14350,51 @@
                     h('stop', { offset: '100%', stopColor: '#14532d', stopOpacity: 0 })
                   )
                 ),
-                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.2, ry: targetPxRadius * 0.95, fill: 'url(#neb-grad)' }),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius, ry: targetPxRadius * 0.95, fill: 'url(#neb-grad)' }),
                 // Trapezium cluster (4 dots)
-                h('circle', { cx: cx - 4, cy: cy - 3, r: 1.5, fill: '#fff' }),
-                h('circle', { cx: cx + 5, cy: cy - 2, r: 1.7, fill: '#fff' }),
-                h('circle', { cx: cx - 2, cy: cy + 5, r: 1.4, fill: '#fff' }),
-                h('circle', { cx: cx + 4, cy: cy + 4, r: 1.3, fill: '#fff' }),
+                h('circle', { cx: cx - targetPxRadius * 0.018, cy: cy - targetPxRadius * 0.014, r: 1.5, fill: '#fff' }),
+                h('circle', { cx: cx + targetPxRadius * 0.023, cy: cy - targetPxRadius * 0.009, r: 1.7, fill: '#fff' }),
+                h('circle', { cx: cx - targetPxRadius * 0.009, cy: cy + targetPxRadius * 0.023, r: 1.4, fill: '#fff' }),
+                h('circle', { cx: cx + targetPxRadius * 0.018, cy: cy + targetPxRadius * 0.018, r: 1.3, fill: '#fff' }),
                 // diffuse star field
                 [0,1,2,3,4,5,6,7,8,9,10,11].map(function(idx) {
                   var ang = idx * 0.53;
-                  var dist = (idx * 7 + 30) % (targetPxRadius - 10);
+                  var dist = ((idx * 7 + 30) % 90) / 100 * targetPxRadius;
                   return h('circle', { key: 'fs-' + idx, cx: cx + Math.cos(ang) * dist, cy: cy + Math.sin(ang) * dist, r: 0.7, fill: '#fff', opacity: 0.6 });
                 })
               );
+            }
+
+            if (selectedTargetId === 'whirlpool') {
+              // A schematic spiral plus companion, with the pair inside the example extent.
+              function spiral(phase) {
+                var points = [];
+                for (var i = 0; i <= 48; i++) {
+                  var t = i / 48, angle = phase + t * Math.PI * 2.1, radius = targetPxRadius * (0.08 + 0.6 * t);
+                  points.push((i ? 'L' : 'M') + (cx + Math.cos(angle) * radius) + ' ' + (cy + Math.sin(angle) * radius * 0.8));
+                }
+                return points.join(' ');
+              }
+              return h('g', { 'data-target-shape': 'spiral-pair' },
+                h('defs', null, h('radialGradient', { id: 'ey-m51-glow' },
+                  h('stop', { offset: '0%', stopColor: '#e2e8d9', stopOpacity: 0.8 }),
+                  h('stop', { offset: '100%', stopColor: '#a8b5a3', stopOpacity: 0 }))),
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 0.72, ry: targetPxRadius * 0.58, fill: 'url(#ey-m51-glow)' }),
+                [0, Math.PI].map(function(phase, i) { return h('path', { key: i, d: spiral(phase), fill: 'none', stroke: '#bccbbb', strokeWidth: targetPxRadius * 0.08, opacity: 0.4 }); }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.12, fill: '#e5e9de', opacity: 0.8 }),
+                h('circle', { cx: cx + targetPxRadius * 0.74, cy: cy - targetPxRadius * 0.22, r: targetPxRadius * 0.2, fill: 'url(#ey-m51-glow)' }));
+            }
+            if (selectedTargetId === 'double-cluster') {
+              return h('g', { 'data-target-shape': 'cluster-pair' },
+                [-1, 1].map(function(side) {
+                  return h('g', { key: side, 'data-cluster-center': side },
+                    Array.from({ length: 24 }, function(_, i) {
+                      var angle = i * 2.39996 + side, radius = Math.sqrt(((i * 13 + 3) % 24) / 24) * targetPxRadius * 0.42;
+                      return h('circle', { key: i, cx: cx + side * targetPxRadius * 0.52 + Math.cos(angle) * radius,
+                        cy: cy + Math.sin(angle) * radius, r: 0.7 + (i % 4) * 0.35,
+                        fill: i % 7 === 0 ? '#f4c58a' : '#d8e7ff' });
+                    }));
+                }));
             }
             if (selectedTarget.spec === 'galaxy') {
               // Elliptical fuzzy patch with bright core
@@ -13510,8 +14407,8 @@
                     h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0 })
                   )
                 ),
-                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.4, ry: targetPxRadius * 0.5, fill: 'url(#gal-grad)' }),
-                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.15, fill: '#fff', style: { filter: 'drop-shadow(0 0 6px rgba(253,230,138,0.8))' } })
+                h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius, ry: targetPxRadius * 0.5, fill: 'url(#gal-grad)' }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.15, fill: '#fff' })
               );
             }
             if (selectedTarget.spec === 'cluster') {
@@ -13529,7 +14426,7 @@
             if (selectedTarget.spec === 'planetary') {
               // Ring nebula
               return h('g', null,
-                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'none', stroke: '#fbcfe8', strokeWidth: targetPxRadius * 0.3, opacity: 0.75, style: { filter: 'blur(2px)' } }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.85, fill: 'none', stroke: '#fbcfe8', strokeWidth: targetPxRadius * 0.3, opacity: 0.75 }),
                 h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.5, fill: '#1e293b', opacity: 0.8 })
               );
             }
@@ -13544,132 +14441,146 @@
                   )
                 ),
                 h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'url(#glob-grad)' }),
-                // sprinkled resolved stars (if aperture is large)
-                apMm >= 150 ? Array.from({length: 60}, function(_, idx) {
+                // Illustrative cluster stars; this does not predict resolution.
+                Array.from({length: 60}, function(_, idx) {
                   var ang = idx * 0.85;
                   var dist = ((idx * 11) % 100) / 100 * targetPxRadius * 0.95;
                   return h('circle', { key: 'gs-' + idx, cx: cx + Math.cos(ang) * dist, cy: cy + Math.sin(ang) * dist, r: 0.6, fill: '#fff', opacity: 0.85 });
-                }) : null
+                })
               );
             }
             return h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: selectedTarget.color });
           }
 
-          return sectionCard('🔭 Eyepiece view simulator — what you would see',
-            h('div', null,
-              h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, __alloT('stem.astronomy.pick_a_target_adjust_your_telescope_ey', 'Pick a target, adjust your telescope, eyepiece, sky conditions — see what would actually be visible. This simulator approximates real visual appearance: small telescopes show less; light-polluted skies wash out faint objects; higher magnification shrinks the field of view + dims everything.')),
 
-              // Target picker
-              h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.observing_targets', 'Observing targets'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                TARGETS.map(function(t) {
-                  var on = t.id === selectedTargetId;
-                  return a11yButton({
-                    key: t.id, type: 'button', 'aria-pressed': on,
-                    onClick: function() { upd({ eyepieceTarget: t.id }); },
-                    style: { padding: '5px 9px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: on ? '#f97316' : '#1e293b', color: on ? '#0f172a' : '#cbd5e1', border: on ? '2px solid #f97316' : '1px solid #334155' }
-                  }, t.name);
-                })
-              ),
-
-              // Layout: 2 columns - SVG view + controls
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 12, alignItems: 'start' } },
-                // Left: eyepiece view (SVG)
-                h('div', { style: { position: 'relative', background: '#000', borderRadius: '50%', overflow: 'hidden', aspectRatio: '1', maxWidth: 500, justifySelf: 'center', width: '100%', border: '6px solid #1e293b' } },
-                  h('svg', {
-                    viewBox: '0 0 ' + viewSize + ' ' + viewSize,
-                    role: 'img',
-                    'aria-label': 'Telescope eyepiece view of ' + selectedTarget.name + '. ' + (targetVisible ? 'Target is visible.' : 'Target may be too dim for this setup.'),
-                    style: { width: '100%', height: '100%' }
-                  },
-                    // Sky background — affected by Bortle
+          function number(value, digits) { return value.toLocaleString(undefined, { maximumFractionDigits: digits === undefined ? 1 : digits }); }
+          var fieldText = number(model.fieldArcmin) + ' arcmin (' + number(model.fieldDeg, 2) + '°)';
+          var fitText = model.fits ? __alloT('stem.astronomy.ey_fit', 'Fits inside this field') : __alloT('stem.astronomy.ey_crop', 'Cropped by the field edge');
+          var sizeLabel = selectedTarget.spec === 'planet' ? __alloT('stem.astronomy.ey_disk_size', 'Example planet disk diameter') : __alloT('stem.astronomy.ey_major_size', 'Example angular extent');
+          var pointTarget = selectedTarget.spec === 'rocky' || selectedTarget.spec === 'planet';
+          var summary = selectedTarget.name + ' · ' + number(magnification) + '× · ' + fieldText + '. ' + fitText + '.';
+          var buttonStyle = { minHeight: 44, padding: '9px 12px', border: '1px solid #64748b', borderRadius: 8, background: '#0a1425', color: '#f8fafc', fontSize: 13, cursor: 'pointer', maxWidth: '100%', overflowWrap: 'anywhere' };
+          function activeStyle(active) { return Object.assign({}, buttonStyle, active ? { borderColor: '#fb923c', background: '#431f0c', color: '#fed7aa' } : {}); }
+          function slider(id, label, value, min, max, step, valueText, key) {
+            return h('div', { style: { minWidth: 0 } },
+              h('label', { htmlFor: id, style: { display: 'block', fontSize: 13, color: '#f8fafc', fontWeight: 700 } }, label + ': ' + valueText),
+              h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': valueText,
+                className: 'astr-focus', onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); upd(patch); },
+                style: { display: 'block', width: '100%', minHeight: 44, margin: '4px 0', accentColor: '#fb923c' } }));
+          }
+          function group(title, help, controls) {
+            return h('fieldset', { style: { margin: 0, padding: '8px 12px 10px', border: '1px solid #475569', borderRadius: 10, minWidth: 0, background: '#0a1425' } },
+              h('legend', { style: { padding: '0 5px', color: '#fed7aa', fontSize: 14, fontWeight: 800 } }, title), controls,
+              h('p', { style: { margin: '2px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, help));
+          }
+          function metric(label, value) {
+            return h('div', { style: { minWidth: 0, padding: 10, border: '1px solid #475569', borderRadius: 9, background: '#0a1425' } },
+              h('dt', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 4 } }, label),
+              h('dd', { style: { margin: 0, color: '#f8fafc', fontSize: 17, fontWeight: 800, overflowWrap: 'anywhere' } }, value));
+          }
+          return h('section', { id: 'astronomy-eyepiece-lab', tabIndex: -1, className: 'astr-focus',
+            'aria-label': __alloT('stem.astronomy.ey_lab_title', 'Eyepiece field lab'),
+            style: { padding: 14, border: '1px solid #475569', borderRadius: 14, background: '#111c30', marginBottom: 16, minWidth: 0 } },
+            h('h2', { style: { margin: '0 0 6px', fontSize: 20, color: '#f8fafc' } }, __alloT('stem.astronomy.ey_lab_title', 'Eyepiece field lab')),
+            h('p', { style: { margin: '0 0 14px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
+              __alloT('stem.astronomy.ey_intro', 'Compare how much sky fits through an eyepiece. A shorter eyepiece increases magnification and narrows the field. Targets keep their calculated angular scale, so large objects extend beyond the circular edge.')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.observing_targets', 'Observing targets'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+              TARGETS.map(function(target) { return a11yButton({ key: target.id, type: 'button', 'aria-pressed': target.id === selectedTargetId,
+                onClick: function() { upd({ eyepieceTarget: target.id }); }, style: activeStyle(target.id === selectedTargetId) }, target.name); })),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16, alignItems: 'start' } },
+              h('div', { style: { minWidth: 0 } },
+                h('figure', { style: { margin: 0 } },
+                  h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: '#f8fafc' } }, selectedTarget.name),
+                  h('svg', { id: 'astronomy-eyepiece-field', viewBox: '0 0 480 480', role: 'img',
+                    'aria-labelledby': 'astronomy-eyepiece-title astronomy-eyepiece-desc', 'aria-describedby': 'astronomy-eyepiece-scope',
+                    'data-target-radius': targetPxRadius, 'data-field-arcmin': model.fieldArcmin, 'data-fits': String(model.fits),
+                    style: { display: 'block', width: '100%', maxWidth: 500, height: 'auto', margin: '0 auto', background: '#070e1c', borderRadius: 12, border: '1px solid #475569' } },
+                    h('title', { id: 'astronomy-eyepiece-title' }, selectedTarget.name + ' · ' + __alloT('stem.astronomy.ey_field_title', 'Angular field comparison')),
+                    h('desc', { id: 'astronomy-eyepiece-desc' }, summary + ' ' + __alloT('stem.astronomy.ey_svg_description', 'The circular rim is the field boundary. Target features and star positions are illustrative. Seeing blurs the sketch; sky brightness reduces its contrast.')),
                     h('defs', null,
-                      h('radialGradient', { id: 'eyepiece-sky', cx: '50%', cy: '50%' },
-                        h('stop', { offset: '0%', stopColor: bortleSim <= 3 ? '#000' : (bortleSim <= 6 ? '#1a1a3a' : '#3a3a5a') }),
-                        h('stop', { offset: '100%', stopColor: bortleSim <= 3 ? '#000' : (bortleSim <= 6 ? '#0a0a2a' : '#1a1a3a') })
-                      )
-                    ),
-                    h('rect', { x: 0, y: 0, width: viewSize, height: viewSize, fill: 'url(#eyepiece-sky)' }),
-                    // Background field stars — count depends on aperture/Bortle
-                    Array.from({length: Math.round(Math.max(5, Math.min(80, apMm / 2 - bortleSim * 5)))}, function(_, idx) {
-                      var sx = ((idx * 47 + 11) % viewSize);
-                      var sy = ((idx * 71 + 23) % viewSize);
-                      var ssize = 0.5 + ((idx * 13) % 100) / 80;
-                      var sop = 0.4 + ((idx * 17) % 100) / 250;
-                      return h('circle', { key: 's' + idx, cx: sx, cy: sy, r: ssize, fill: '#fff', opacity: sop });
-                    }),
-                    // Show target only if visible
-                    targetVisible ? renderTargetSvg() : null,
-                    // Crosshair (reticle) for aiming
-                    h('line', { x1: viewSize / 2 - 8, y1: viewSize / 2, x2: viewSize / 2 + 8, y2: viewSize / 2, stroke: '#fbbf24', strokeWidth: 0.6, opacity: 0.45 }),
-                    h('line', { x1: viewSize / 2, y1: viewSize / 2 - 8, x2: viewSize / 2, y2: viewSize / 2 + 8, stroke: '#fbbf24', strokeWidth: 0.6, opacity: 0.45 }),
-                    // Field of view caption
-                    h('text', { x: 12, y: viewSize - 12, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, 'FOV: ' + (trueFOVdeg < 1 ? (trueFOVarcmin.toFixed(1) + "'") : (trueFOVdeg.toFixed(2) + '°'))),
-                    h('text', { x: viewSize - 12, y: viewSize - 12, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace', textAnchor: 'end' }, magnification.toFixed(0) + '×'),
-                    !targetVisible ? h('text', { x: viewSize / 2, y: viewSize / 2 + 5, fill: '#ef4444', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.astronomy.target_too_dim_for_this_setup', 'Target too dim for this setup')) : null
-                  )
-                ),
+                      h('clipPath', { id: 'astronomy-eyepiece-clip' }, h('circle', { cx: 240, cy: 240, r: model.fieldRadiusPx })),
+                      h('radialGradient', { id: 'eyepiece-sky' },
+                        h('stop', { offset: '0%', stopColor: bortleSim <= 3 ? '#02050c' : bortleSim <= 6 ? '#151d32' : '#303b53' }),
+                        h('stop', { offset: '100%', stopColor: '#02050c' })),
+                      h('filter', { id: 'astronomy-eyepiece-seeing', x: 0, y: 0, width: 480, height: 480, filterUnits: 'userSpaceOnUse', colorInterpolationFilters: 'sRGB' },
+                        h('feGaussianBlur', { stdDeviation: model.seeingSigmaPx, 'data-seeing-arcsec': seeingArcsec }))),
+                    h('g', { clipPath: 'url(#astronomy-eyepiece-clip)', 'aria-hidden': 'true' },
+                      h('rect', { x: 0, y: 0, width: 480, height: 480, fill: 'url(#eyepiece-sky)' }),
+                      h('g', { filter: 'url(#astronomy-eyepiece-seeing)' },
+                        // Fixed example angular offsets: changing the field scales the same stars.
+                        Array.from({ length: 90 }, function(_, index) {
+                          var xArcmin = ((index * 47 + 11) % 360) - 180;
+                          var yArcmin = ((index * 71 + 23) % 360) - 180;
+                          return h('circle', { key: 'field-star-' + index, cx: 240 + xArcmin / model.fieldArcmin * 460,
+                            cy: 240 + yArcmin / model.fieldArcmin * 460, r: 0.65 + (index % 3) * 0.35,
+                            fill: '#f1f5ff', opacity: model.starOpacity, 'data-example-star': index });
+                        }),
+                        h('g', { opacity: pointTarget ? 1 : model.diffuseOpacity, 'data-target-contrast': pointTarget ? 1 : model.diffuseOpacity }, renderTargetSvg()))),
+                    h('circle', { cx: 240, cy: 240, r: 231, fill: 'none', stroke: '#64748b', strokeWidth: 3 }),
+                    h('circle', { cx: 240, cy: 240, r: 236, fill: 'none', stroke: '#24364d', strokeWidth: 5 })),
+                  h('figcaption', { style: { marginTop: 10, color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } },
+                    __alloT('stem.astronomy.ey_caption', 'The circle shows the whole eyepiece field. The view is centered on the target; anything beyond the rim is cropped. Very small disks can be smaller than a screen pixel.'))),
 
-                // Right: controls + readout
-                h('div', null,
-                  h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 10 } },
-                    h('h3', { style: { margin: 0, color: '#f97316', fontSize: 14, marginBottom: 4 } }, selectedTarget.name),
-                    h('div', { style: { fontSize: 11, color: '#94a3b8' } }, selectedTarget.type + ' · magnitude ' + selectedTarget.mag + ' · ~ ' + selectedTarget.sizeArcmin + " arcmin"),
-                    h('p', { style: { margin: '6px 0 0', fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, selectedTarget.info)
-                  ),
-
-                  h('div', { style: { display: 'grid', gap: 10, marginBottom: 10 } },
-                    a11ySlider({
-                      id: 'astr-ey-ap', label: __alloT('stem.astronomy.aperture', 'Aperture'), value: apMm, min: 50, max: 400, step: 10,
-                      valueText: apMm + ' mm (' + (apMm / 25.4).toFixed(1) + '")',
-                      onChange: function(v) { upd({ eyApertureMm: v, eyFocalMm: v * 8 }); }, accent: '#f97316'
-                    }),
-                    a11ySlider({
-                      id: 'astr-ey-ep', label: __alloT('stem.astronomy.eyepiece_focal_length', 'Eyepiece focal length'), value: epFlMm, min: 4, max: 40, step: 1,
-                      valueText: epFlMm + ' mm',
-                      onChange: function(v) { upd({ eyEpFlMm: v }); }, accent: '#f97316'
-                    }),
-                    a11ySlider({
-                      id: 'astr-ey-fld', label: __alloT('stem.astronomy.eyepiece_apparent_field', 'Eyepiece apparent field'), value: epField, min: 40, max: 100, step: 5,
-                      valueText: epField + '°',
-                      onChange: function(v) { upd({ eyEpField: v }); }, accent: '#f97316'
-                    }),
-                    a11ySlider({
-                      id: 'astr-ey-bort', label: __alloT('stem.astronomy.sky_quality_bortle_2', 'Sky quality (Bortle)'), value: bortleSim, min: 1, max: 9, step: 1,
-                      valueText: 'Bortle ' + bortleSim,
-                      onChange: function(v) { upd({ eyBortle: v }); }, accent: '#f97316'
-                    })
-                  ),
-
-                  // Calculations panel
-                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.35)', fontSize: 11.5, color: '#fed7aa', lineHeight: 1.7 } },
-                    h('div', null, h('strong', null, 'Magnification: '), magnification.toFixed(0) + '×'),
-                    h('div', null, h('strong', null, __alloT('stem.astronomy.true_field_of_view', 'True field of view: ')), trueFOVdeg < 1 ? trueFOVarcmin.toFixed(1) + " arcmin" : trueFOVdeg.toFixed(2) + '°'),
-                    h('div', null, h('strong', null, __alloT('stem.astronomy.exit_pupil_2', 'Exit pupil: ')), exitPupilMm.toFixed(1) + ' mm', exitPupilMm > 7 ? ' (too large — wasted light)' : (exitPupilMm < 0.5 ? ' (too small — image dim)' : ' (good)')),
-                    h('div', null, h('strong', null, __alloT('stem.astronomy.limiting_magnitude_2', 'Limiting magnitude: ')), limitingMag.toFixed(1)),
-                    h('div', null, h('strong', null, __alloT('stem.astronomy.light_gathering_2', 'Light gathering: ')), lightGain.toFixed(0) + '× naked eye'),
-                    h('div', null, h('strong', null, __alloT('stem.astronomy.dawes_limit', 'Dawes limit: ')), dawesLimit.toFixed(2) + '" (resolution)')
-                  )
-                )
-              ),
-
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
-                h('strong', null, __alloT('stem.astronomy.what_this_is_like_through_a_real_teles', '👁️ What this is like through a real telescope: ')),
-                selectedTarget.eyepiece
-              ),
-
-              targetTooBig ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
-                h('strong', null, __alloT('stem.astronomy.target_is_larger_than_your_field_of_vi', '⚠️ Target is larger than your field of view. ')),
-                __alloT('stem.astronomy.try_a_longer_focal_length_eyepiece_low', 'Try a longer focal-length eyepiece (lower magnification, wider FOV).')
-              ) : null,
-
-              targetTooSmall ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
-                h('strong', null, __alloT('stem.astronomy.target_is_small_relative_to_atmospheri', '⚠️ Target is small relative to atmospheric seeing. ')),
-                __alloT('stem.astronomy.use_higher_magnification_wait_for_stea', 'Use higher magnification + wait for steady atmosphere.')
-              ) : null
-            ),
-            '#f97316'
-          );
+                h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.ey_compare_ep', 'Compare eyepieces'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
+                  h('span', { style: { width: '100%', fontSize: 13, fontWeight: 700, color: '#e2e8f0' } }, __alloT('stem.astronomy.ey_compare_ep', 'Compare eyepieces')),
+                  [40, 25, 10].map(function(ep) { return a11yButton({ key: ep, type: 'button', 'aria-pressed': epFlMm === ep,
+                    style: activeStyle(epFlMm === ep), onClick: function() { upd({ eyEpFlMm: ep }); } }, ep + ' mm'); })),
+                h('dl', { id: 'astronomy-eyepiece-measurements', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8, margin: '12px 0' } },
+                  metric(__alloT('stem.astronomy.ey_magnification', 'Magnification'), number(magnification) + '×'),
+                  metric(__alloT('stem.astronomy.ey_field_width', 'Approx. field width'), number(model.fieldArcmin) + ' arcmin'),
+                  metric(__alloT('stem.astronomy.ey_exit_pupil', 'Exit pupil'), number(model.exitPupilMm, 2) + ' mm'),
+                  metric(__alloT('stem.astronomy.ey_focal_ratio', 'Focal ratio'), 'f/' + number(model.focalRatio, 2))),
+                h('div', { id: 'astronomy-eyepiece-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                  style: { padding: 12, border: '1px solid ' + (model.fits ? '#475569' : '#c08842'), borderRadius: 10, background: '#0a1425', color: '#f8fafc', fontSize: 13, lineHeight: 1.65 } },
+                  h('strong', null, fitText), ' · ', number(magnification) + '× · ' + fieldText + '. ', sizeLabel + ': ' + number(model.targetDiameterArcmin) + ' arcmin. ',
+                  model.fits ? __alloT('stem.astronomy.ey_fit_help', 'Compare a shorter eyepiece to see how the same target fills more of the field.') :
+                    __alloT('stem.astronomy.ey_crop_help', 'Try a longer eyepiece or a wider apparent field to include more of the target.'),
+                  selectedTargetId === 'saturn' ? ' ' + __alloT('stem.astronomy.ey_saturn_scope', 'The size above is the disk; the fit check also includes the illustrative rings.') :
+                    selectedTargetId === 'jupiter' ? ' ' + __alloT('stem.astronomy.ey_jupiter_scope', 'The size above is the disk; the fit check also includes the illustrative moons. Their positions are teaching choices.') : null),
+                h('p', { id: 'astronomy-eyepiece-scope', style: { margin: '10px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } },
+                  __alloT('stem.astronomy.ey_scope', 'Angular scale and optics are calculated. Shapes, colors, phases and star positions are illustrative; target sizes are fixed examples. This view does not predict what you can detect tonight.')),
+                h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } },
+                  model.exitPupilMm > 7 ? __alloT('stem.astronomy.ey_large_pupil', 'An exit pupil above 7 mm can exceed the observer’s pupil, reducing the light that reaches the eye.') :
+                    model.exitPupilMm < 0.5 ? __alloT('stem.astronomy.ey_small_pupil', 'A very small exit pupil dims extended objects. More magnification alone cannot recover detail lost to seeing or diffraction.') :
+                    __alloT('stem.astronomy.ey_pupil_help', 'Exit pupil is the beam diameter at the eye. Increasing magnification makes that beam smaller.'))),
+              h('div', { style: { display: 'grid', gap: 12, minWidth: 0 } },
+                h('div', { style: { padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#0a1425' } },
+                  h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: '#f8fafc' } }, __alloT('stem.astronomy.ey_reference_examples', 'Real telescope examples')),
+                  h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.ey_reference_examples', 'Real telescope examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    [20, 10].map(function(ep) { return a11yButton({ key: ep, type: 'button', 'aria-pressed': model.isReferenceInstrument && epFlMm === ep,
+                      style: activeStyle(model.isReferenceInstrument && epFlMm === ep),
+                      onClick: function() { upd({ eyApertureMm: 130, eyFocalMm: 650, eyEpFlMm: ep }); } }, '130EQ · ' + ep + ' mm'); }),
+                    a11yButton({ type: 'button', 'aria-label': __alloT('stem.astronomy.ey_reset', 'Reset eyepiece field lab'), style: buttonStyle,
+                      onClick: function() { upd({ eyApertureMm: 150, eyFocalMm: 1200, eyEpFlMm: 25, eyEpField: 60, eySeeing: 2.5, eyBortle: 4 }); } }, __alloT('stem.astronomy.ey_reset_short', 'Reset optics + sky'))),
+                  h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } },
+                    __alloT('stem.astronomy.ey_preset_help', 'AstroMaster 130EQ: 130 mm aperture, 650 mm focal length and included 20 mm / 10 mm eyepieces. Presets keep your apparent field and sky settings.'))),
+                group(__alloT('stem.astronomy.ey_telescope_group', '1 · Telescope'), __alloT('stem.astronomy.ey_telescope_help', 'Aperture changes the exit pupil and diffraction limit. Focal length changes magnification. Each control is independent.'),
+                  h('div', null,
+                    slider('astr-ey-ap', __alloT('stem.astronomy.aperture', 'Aperture'), apMm, 50, 400, 10, apMm + ' mm', 'eyApertureMm'),
+                    slider('astr-ey-fl', __alloT('stem.astronomy.ey_telescope_focal', 'Telescope focal length'), focalMm, 200, 4000, 50, focalMm + ' mm', 'eyFocalMm'))),
+                group(__alloT('stem.astronomy.ey_eyepiece_group', '2 · Eyepiece'), __alloT('stem.astronomy.ey_eyepiece_help', 'Magnification = telescope focal length ÷ eyepiece focal length. Field width ≈ apparent field ÷ magnification.'),
+                  h('div', null,
+                    slider('astr-ey-ep', __alloT('stem.astronomy.eyepiece_focal_length', 'Eyepiece focal length'), epFlMm, 4, 40, 1, epFlMm + ' mm', 'eyEpFlMm'),
+                    slider('astr-ey-fld', __alloT('stem.astronomy.eyepiece_apparent_field', 'Eyepiece apparent field'), epField, 40, 100, 5, epField + '°', 'eyEpField'))),
+                group(__alloT('stem.astronomy.ey_sky_group', '3 · Sky conditions'), __alloT('stem.astronomy.ey_sky_help', 'Lower seeing means steadier air; it controls a Gaussian blur in angular units. FWHM is the blur’s width at half its peak. Higher Bortle means a brighter sky; its contrast effect here is qualitative.'),
+                  h('div', null,
+                    slider('astr-ey-see', __alloT('stem.astronomy.ey_seeing', 'Seeing blur (FWHM)'), seeingArcsec, 0.5, 10, 0.5, number(seeingArcsec) + ' arcsec', 'eySeeing'),
+                    slider('astr-ey-bort', __alloT('stem.astronomy.sky_quality_bortle_2', 'Sky quality (Bortle)'), bortleSim, 1, 9, 1, 'Bortle ' + bortleSim, 'eyBortle'))),
+                h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.65 } },
+                  __alloT('stem.astronomy.ey_dawes', 'Dawes double-star criterion') + ': ' + number(model.dawesArcsec, 2) + ' arcsec. ',
+                  __alloT('stem.astronomy.ey_dawes_help', 'This aperture-based estimate is separate from atmospheric seeing. The sketch omits diffraction, optical aberrations and detector or eye response.')))),
+            h('details', { id: 'astronomy-eyepiece-reference', style: { marginTop: 14, color: '#e2e8f0', fontSize: 13, lineHeight: 1.65 } },
+              h('summary', { className: 'astr-focus', style: { minHeight: 44, padding: '10px 0', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.astronomy.ey_sources', 'Sources and model limits')),
+              h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.ey_reference_scope', 'The instrument dimensions and supplied eyepieces come from Celestron. The Moon uses NASA’s approximate 30 arcminute reference. Other target extents are fixed teaching examples; planetary sizes and phases change with date. Apparent field defaults to 60° as a teaching choice, not a manufacturer specification. The field estimate omits field-stop measurements and eyepiece distortion.')),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px 14px' } },
+                [
+                  { url: 'https://www.celestron.com/products/astromaster-130eq-telescope', text: __alloT('stem.astronomy.ey_instrument_link', 'Celestron · instrument specifications') },
+                  { url: 'https://www.celestron.com/blogs/knowledgebase/how-to-determine-which-eyepieces-to-use-with-your-telescope', text: __alloT('stem.astronomy.ey_optics_link', 'Celestron · eyepiece calculations') },
+                  { url: 'https://www.celestron.com/blogs/knowledgebase/astronomy-glossary-of-terms', text: __alloT('stem.astronomy.ey_field_link', 'Celestron · field of view') },
+                  { url: 'https://imagine.gsfc.nasa.gov/educators/programs/fermi/classroom/agn_guide.html', text: __alloT('stem.astronomy.ey_moon_link', 'NASA · Moon angular reference') }
+                ].map(function(link) { return h('a', { key: link.url, href: link.url, target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, link.text); }))));
         }
+
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -13774,6 +14685,7 @@
             };
           }).filter(Boolean).slice(-8) : [];
           return {
+            sizeScale: raw.sizeScale === 'true' ? 'true' : 'compressed',
             mass: boundedHrValue(raw.mass, 0.1, 20, 1),
             tempK: boundedHrValue(raw.tempK, 2000, 50000, 5800),
             lumin: boundedHrValue(raw.lumin, 0.001, 100000, 1),
@@ -13786,7 +14698,8 @@
         }
         var iq = normalizeHrHunt(d.hrHunt);
         function setIQ(patch) { upd({ hrHunt: normalizeHrHunt(Object.assign({}, iq, patch)) }); }
-        var stellar = hrStellarModel(iq.tempK, iq.lumin), category = stellar.category;
+        var comparison = hrComparisonModel(iq.tempK, iq.lumin, iq.mass, iq.sizeScale);
+        var stellar = comparison.star, category = stellar.category;
         var catMeta = {
           redDwarf:   { color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.astronomy.hr_red_detail', 'Cool and faint, near the lower end of the main sequence.') },
           sunLike:    { color: '#a16207', bg: '#fefce8', border: '#fde047', desc: __alloT('stem.astronomy.hr_sun_detail', 'Near the part of the main sequence occupied by the Sun.') },
@@ -13801,6 +14714,78 @@
           setIQ({ log: iq.log.concat([{ m: iq.mass, t: iq.tempK, l: iq.lumin, c: category }]).slice(-8) });
         }
         function hrNumber(value) { return Number(value.toPrecision(3)).toLocaleString('en-US', { maximumSignificantDigits: 3 }); }
+
+        function renderHrSizeComparison() {
+          var panel = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#334155';
+          var trueScale = comparison.mode === 'true';
+          function metric(label, value, key) {
+            return h('div', null, h('dt', { style: { color: '#cbd5e1', fontSize: 12 } }, label),
+              h('dd', { 'data-hr-metric': key, 'data-value': value, style: { margin: 0, color: '#f8fafc', fontWeight: 750 } }, hrNumber(value) + ' × ' + __alloT('stem.astronomy.hr_sun_short', 'Sun')));
+          }
+          function disk(which, cx, radius, color) {
+            var tiny = radius < 1;
+            return h('g', { key: which, 'aria-hidden': true },
+              h('circle', { 'data-hr-disk': which, cx: cx, cy: 102, r: radius, fill: color }),
+              tiny && h('path', { d: 'M' + cx + ',112 L' + cx + ',145', stroke: '#cbd5e1', strokeDasharray: '3 3', fill: 'none' }),
+              tiny && h('text', { x: cx, y: 170, textAnchor: 'middle', fill: '#cbd5e1' }, __alloT('stem.astronomy.hr_tiny_disk', 'Tiny disk ↑')),
+              h('text', { x: cx, y: 208, textAnchor: 'middle', fill: '#e2e8f0' }, which === 'sun' ? __alloT('stem.astronomy.hr_sun_short', 'Sun') : __alloT('stem.astronomy.hr_selected_short', 'Selected star')));
+          }
+          return h('div', { id: 'astronomy-hr-size-panel', style: { minWidth: 0, border: '1px solid ' + border, borderRadius: 14, padding: 14, background: panel } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: '#a5f3fc' } }, __alloT('stem.astronomy.hr_your_star', 'Your star beside the Sun')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.hr_scale_choices', 'Star size display'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+              [{ id: 'true', label: __alloT('stem.astronomy.hr_true_scale', 'True scale') }, { id: 'compressed', label: __alloT('stem.astronomy.hr_readable_sizes', 'Readable sizes') }].map(function(mode) {
+                return h('button', { key: mode.id, type: 'button', className: 'astr-focus', 'aria-pressed': comparison.mode === mode.id, 'aria-describedby': 'astronomy-hr-scale-note',
+                  onClick: function() { setIQ({ sizeScale: mode.id }); }, style: { padding: '9px 12px', minHeight: 44, border: '1px solid ' + border, borderRadius: 8, background: comparison.mode === mode.id ? '#164e63' : panel, color: '#e0f2fe', fontSize: 13, cursor: 'pointer' } }, mode.label);
+              })),
+            h('svg', { id: 'astronomy-hr-size', viewBox: '0 0 360 230', role: 'img', 'aria-labelledby': 'astronomy-hr-size-title', 'aria-describedby': 'astronomy-hr-scale-note astronomy-hr-readout',
+              'data-size-scale': comparison.mode, style: { width: '100%', display: 'block', margin: '8px 0' } },
+              h('title', { id: 'astronomy-hr-size-title' }, trueScale ? __alloT('stem.astronomy.hr_true_size_title', 'Sun and selected star with the same radius scale') : __alloT('stem.astronomy.hr_readable_size_title', 'Sun and selected star with compressed disk sizes')),
+              h('defs', null,
+                h('radialGradient', { id: 'astr-hr-star-face' }, h('stop', { offset: '0%', stopColor: '#fff' }), h('stop', { offset: '65%', stopColor: stellar.color }), h('stop', { offset: '100%', stopColor: stellar.color })),
+                h('radialGradient', { id: 'astr-hr-sun-face' }, h('stop', { offset: '0%', stopColor: '#fff' }), h('stop', { offset: '65%', stopColor: '#fff4e6' }), h('stop', { offset: '100%', stopColor: '#fff4e6' }))),
+              disk('sun', 90, comparison.sunDisk, 'url(#astr-hr-sun-face)'),
+              disk('star', 270, comparison.starDisk, 'url(#astr-hr-star-face)')),
+            h('p', { id: 'astronomy-hr-scale-note', style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', margin: '0 0 12px' } },
+              trueScale ? __alloT('stem.astronomy.hr_true_scale_note', 'Both disks use the same scale; the view fits the larger star. Very small disks may be less than a pixel wide. Dashed pointers locate them without enlarging them. Spacing and colors are illustrative.')
+                : __alloT('stem.astronomy.hr_compressed_scale_note', 'Sizes are compressed to keep both stars visible. Use True scale to compare their actual radius ratio. Spacing and colors are illustrative.')),
+            h('dl', { id: 'astronomy-hr-readout', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(100px,1fr))', gap: 10, margin: 0, fontSize: 13, lineHeight: 1.6 } },
+              h('div', null, h('dt', { style: { color: '#cbd5e1', fontSize: 12 } }, __alloT('stem.astronomy.hr_temperature_value', 'Temperature')), h('dd', { style: { margin: 0, fontWeight: 750 } }, Math.round(iq.tempK).toLocaleString('en-US') + ' K')),
+              h('div', null, h('dt', { style: { color: '#cbd5e1', fontSize: 12 } }, __alloT('stem.astronomy.hr_luminosity_value', 'Luminosity')), h('dd', { style: { margin: 0, fontWeight: 750 } }, hrNumber(iq.lumin) + ' L☉')),
+              h('div', null, h('dt', { style: { color: '#cbd5e1', fontSize: 12 } }, __alloT('stem.astronomy.hr_radius_value', 'Inferred radius')), h('dd', { style: { margin: 0, fontWeight: 750 } }, hrNumber(stellar.radius) + ' R☉'))),
+            h('div', { style: { marginTop: 14, padding: 12, borderRadius: 9, background: astronomyContrast ? '#000' : '#142238', border: '1px solid ' + border } },
+              h('h5', { style: { margin: '0 0 8px', fontSize: 13, color: '#a5f3fc' } }, __alloT('stem.astronomy.hr_output_explained', 'Why this star gives off this much light')),
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 10, margin: 0, fontSize: 13, lineHeight: 1.6 } },
+                metric(__alloT('stem.astronomy.hr_surface_area', 'Surface area'), comparison.surfaceArea, 'area'),
+                metric(__alloT('stem.astronomy.hr_surface_power', 'Power per surface area'), comparison.emissionPerArea, 'emission')),
+              h('p', { id: 'astronomy-hr-output-equation', style: { margin: '9px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.6 } }, hrNumber(comparison.surfaceArea) + ' × ' + hrNumber(comparison.emissionPerArea) + ' ≈ ' + hrNumber(stellar.lumin) + ' L☉'),
+              h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_output_relation', 'Surface area × power per surface area gives total luminosity across all wavelengths. Relative to the Sun, area scales as radius squared and surface power as temperature to the fourth power. This is the Stefan–Boltzmann relation.'))));
+        }
+        function renderHrReferences() {
+          var reference = comparison.reference;
+          return h('div', { id: 'astronomy-hr-references', style: { marginBottom: 12 } },
+            h('h4', { style: { fontSize: 14, margin: '0 0 7px', color: '#a5f3fc' } }, __alloT('stem.astronomy.hr_published_examples', 'Published star examples')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.hr_reference_choices', 'Published stellar inputs'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, HR_STELLAR_REFERENCES.map(function(entry) {
+              var selected = reference && reference.id === entry.id;
+              return h('button', { key: entry.id, type: 'button', className: 'astr-focus', 'aria-pressed': !!selected, onClick: function() { setIQ({ tempK: entry.t, lumin: entry.l, mass: entry.m }); },
+                style: { minHeight: 44, padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (astronomyContrast ? '#fbbf24' : '#334155'), background: selected ? '#164e63' : '#091323', color: '#e0f2fe', cursor: 'pointer', fontSize: 13 } }, entry.id === 'sun' ? __alloT('stem.astronomy.hr_example_sun', 'Sun reference') : entry.name);
+            })),
+            h('p', { id: 'astronomy-hr-reference-status', role: 'status', 'aria-live': 'polite', 'data-reference': reference ? reference.id : 'custom', style: { fontSize: 12, color: '#e0f2fe', lineHeight: 1.6, margin: '8px 0' } },
+              reference ? (reference.id === 'sun' ? __alloT('stem.astronomy.hr_solar_reference_status', 'Solar reference inputs: nominal temperature and one solar luminosity and mass.') : __alloT('stem.astronomy.hr_published_status', 'Published inputs:') + ' ' + reference.name + ' · Bond et al. (2017).')
+                : __alloT('stem.astronomy.hr_custom_status', 'Custom star. Choose a published example to restore its temperature, luminosity and mass.')),
+            h('details', { style: { border: '1px solid ' + (astronomyContrast ? '#fbbf24' : '#334155'), borderRadius: 9, padding: '0 10px', color: '#cbd5e1' } },
+              h('summary', { className: 'astr-focus', style: { minHeight: 44, display: 'list-item', alignContent: 'center', cursor: 'pointer', fontSize: 13, padding: '10px 0' } }, __alloT('stem.astronomy.hr_reference_details', 'Sources, uncertainties and model')),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_reference_inputs_note', 'Sirius inputs are fixed estimates adopted by the 2017 study, with its quoted uncertainties. They come from observations and fitted stellar atmospheres. Selecting an example uses central values; uncertainty is not simulated.')),
+              HR_STELLAR_REFERENCES.slice(1).map(function(entry) {
+                return h('p', { key: entry.id, style: { fontSize: 12, lineHeight: 1.7 } }, h('strong', { style: { color: '#e0f2fe' } }, entry.name + ': '),
+                  entry.t.toLocaleString('en-US') + ' ± ' + entry.tError + ' K; ' + entry.l + ' ± ' + entry.lError + ' L☉; ' + entry.m + ' ± ' + entry.mError + ' M☉.');
+              }),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_sirius_uncertainty_note', 'Sirius B’s temperature and luminosity errors are internal model-fit errors; larger systematic uncertainty is not included. Radius here is inferred from luminosity and temperature, using the same solar reference for every example.')),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_sun_nominal_note', 'The 5,772 K solar temperature is the IAU nominal conversion reference. Solar mass and luminosity are set to one for comparison. These reference numbers do not describe every change in the real Sun.')),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6 } },
+                h('a', { href: 'https://arxiv.org/abs/1703.10625', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { color: '#7dd3fc', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginRight: 12 } }, __alloT('stem.astronomy.hr_sirius_source', 'Sirius study · Bond et al., 2017')),
+                h('a', { href: 'https://arxiv.org/abs/1510.07674', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { color: '#7dd3fc', display: 'inline-flex', alignItems: 'center', minHeight: 44 } }, __alloT('stem.astronomy.hr_iau_source', 'IAU solar reference · 2015')))));
+        }
+
         function renderHrExplorer() {
           var plot = { x: 80, y: 36, w: 320, h: 300 };
           function position(temp, lum) { var p = hrStellarModel(temp, lum); return { x: plot.x + p.x * plot.w, y: plot.y + p.y * plot.h }; }
@@ -13814,26 +14799,26 @@
             var box = event.currentTarget.getBoundingClientRect();
             if (!box.width || !box.height) return;
             var x = Math.max(0, Math.min(1, ((event.clientX - box.left) * 430 / box.width - plot.x) / plot.w));
-            var y = Math.max(0, Math.min(1, ((event.clientY - box.top) * 408 / box.height - plot.y) / plot.h));
+            var y = Math.max(0, Math.min(1, ((event.clientY - box.top) * 440 / box.height - plot.y) / plot.h));
             setIQ({ tempK: Math.round(50000 * Math.pow(2000 / 50000, x)), lumin: Number(Math.pow(10, 5 - y * 8).toPrecision(5)) });
           }
           var panel = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#334155';
-          function hrMetric(label, value) { return h('div', null, h('dt', { style: { color: '#cbd5e1', fontSize: 12 } }, label), h('dd', { style: { margin: 0, color: '#f8fafc', fontWeight: 750 } }, value)); }
           var examples = [
-            { id: 'sun', label: __alloT('stem.astronomy.hr_example_sun', 'Sun reference'), t: 5772, l: 1, m: 1 },
             { id: 'dwarf', label: __alloT('stem.astronomy.hr_example_dwarf', 'Cool dwarf'), t: 3500, l: 0.03, m: 0.3 },
             { id: 'giant', label: __alloT('stem.astronomy.hr_example_giant', 'Cool giant'), t: 4000, l: 1000, m: 1.5 },
             { id: 'white', label: __alloT('stem.astronomy.hr_example_white', 'White dwarf'), t: 20000, l: 0.01, m: 0.6 },
             { id: 'hot', label: __alloT('stem.astronomy.hr_example_hot', 'Hot main sequence'), t: 30000, l: 10000, m: 15 }
           ];
           return h('section', { id: 'astronomy-hr-explorer', 'aria-label': __alloT('stem.astronomy.hr_visual_explorer', 'Stellar diagram explorer'), style: { marginBottom: 14 } },
-            h('style', null, '#astronomy-hr-plot text{font-size:17px}#astronomy-hr-lab button{min-height:44px}@media(max-width:600px){#astronomy-hr-plot text{font-size:21px}}'),
+            h('style', null, '#astronomy-hr-plot text{font-size:17px}#astronomy-hr-size text{font-size:18px}#astronomy-hr-lab button{min-height:44px}@media(max-width:600px){#astronomy-hr-plot text{font-size:25px}#astronomy-hr-size text{font-size:23px}#astronomy-hr-plot .astr-hr-mid-tick{display:none}}'),
+            renderHrReferences(),
+            h('h4', { style: { fontSize: 14, margin: '0 0 7px', color: '#cbd5e1' } }, __alloT('stem.astronomy.hr_teaching_examples', 'Teaching examples')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.hr_examples', 'Example stars'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } }, examples.map(function(example) {
               return h('button', { key: example.id, type: 'button', className: 'astr-focus', 'aria-pressed': iq.tempK === example.t && iq.lumin === example.l, onClick: function() { setIQ({ tempK: example.t, lumin: example.l, mass: example.m }); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 9, border: '1px solid ' + border, background: iq.tempK === example.t && iq.lumin === example.l ? '#164e63' : panel, color: '#e0f2fe', cursor: 'pointer', fontSize: 13 } }, example.label);
             })),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: 14, alignItems: 'start' } },
               h('div', { style: { minWidth: 0, padding: 8, background: panel, border: '1px solid ' + border, borderRadius: 14 } },
-                h('svg', { id: 'astronomy-hr-plot', viewBox: '0 0 430 408', role: 'group', tabIndex: 0, className: 'astr-focus', 'aria-label': __alloT('stem.astronomy.hr_plot_label', 'Temperature and luminosity diagram'), 'aria-describedby': 'astronomy-hr-help astronomy-hr-classification astronomy-hr-readout',
+                h('svg', { id: 'astronomy-hr-plot', viewBox: '0 0 430 440', role: 'group', tabIndex: 0, className: 'astr-focus', 'aria-label': __alloT('stem.astronomy.hr_plot_label', 'Temperature and luminosity diagram'), 'aria-describedby': 'astronomy-hr-help astronomy-hr-classification astronomy-hr-readout',
                   onPointerDown: function(event) { if (event.button !== 0) return; event.preventDefault(); event.currentTarget.focus({ preventScroll: true }); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); setPlot(event); },
                   onPointerMove: function(event) { if (event.buttons === 1 && event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) setPlot(event); },
                   onKeyDown: function(event) { var step = event.shiftKey ? 0.1 : 0.025;
@@ -13852,15 +14837,21 @@
                     h('polygon', { points: bandTop.concat(bandBottom).join(' '), fill: '#22d3ee', opacity: astronomyContrast ? 0.2 : 0.12, stroke: '#67e8f9', strokeWidth: 1.5, strokeDasharray: '4 4' }),
                     h('ellipse', { cx: position(3800, 700).x, cy: position(3800, 700).y, rx: 50, ry: 32, fill: '#fb923c', opacity: 0.12, stroke: '#fdba74', strokeDasharray: '3 3' }),
                     h('ellipse', { cx: position(15000, 0.016).x, cy: position(15000, 0.016).y, rx: 65, ry: 26, transform: 'rotate(18 ' + position(15000, 0.016).x + ' ' + position(15000, 0.016).y + ')', fill: '#c4b5fd', opacity: 0.14, stroke: '#ddd6fe', strokeDasharray: '3 3' })),
-                  [5, 3, 1, 0, -1, -3].map(function(exponent) { var y = plot.y + (5 - exponent) / 8 * plot.h; return h('g', { key: 'l' + exponent, 'aria-hidden': true }, h('line', { x1: plot.x, y1: y, x2: plot.x + plot.w, y2: y, stroke: '#52627a', opacity: 0.5, strokeDasharray: exponent === 0 ? 'none' : '2 5' }), h('text', { x: plot.x - 9, y: y + 5, fill: '#d5deed', textAnchor: 'end', fontSize: 14 }, String(Math.pow(10, exponent)))); }),
-                  [50000, 10000, 5000, 2000].map(function(temp) { var x = position(temp, 1).x; return h('g', { key: 't' + temp, 'aria-hidden': true }, h('line', { x1: x, y1: plot.y, x2: x, y2: plot.y + plot.h, stroke: '#52627a', opacity: 0.4, strokeDasharray: '2 5' }), h('text', { x: x, y: plot.y + plot.h + 36, textAnchor: temp === 50000 ? 'start' : temp === 2000 ? 'end' : 'middle', fill: '#d5deed', fontSize: 14 }, temp.toLocaleString('en-US'))); }),
-                  h('text', { x: plot.x, y: 20, fill: '#e2e8f0', fontSize: 14 }, __alloT('stem.astronomy.hr_luminosity_axis', 'Luminosity (Sun = 1) ↑')),
-                  h('text', { x: 238, y: 395, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 14 }, __alloT('stem.astronomy.hr_temperature_axis', '← Hotter · Temperature (K) · Cooler →')),
+                  [5, 3, 1, 0, -1, -3].map(function(exponent) { var y = plot.y + (5 - exponent) / 8 * plot.h; return h('g', { key: 'l' + exponent, 'aria-hidden': true }, h('line', { x1: plot.x, y1: y, x2: plot.x + plot.w, y2: y, stroke: '#52627a', opacity: 0.5, strokeDasharray: exponent === 0 ? 'none' : '2 5' }), h('text', { x: plot.x - 9, y: y + 5, fill: '#d5deed', textAnchor: 'end', fontSize: 14 }, ({5:'10⁵',3:'10³',1:'10',0:'1','-1':'0.1','-3':'10⁻³'})[exponent])); }),
+                  [50000, 10000, 5000, 2000].map(function(temp) { var x = position(temp, 1).x; return h('g', { key: 't' + temp, className: temp === 5000 ? 'astr-hr-mid-tick' : undefined, 'aria-hidden': true }, h('line', { x1: x, y1: plot.y, x2: x, y2: plot.y + plot.h, stroke: '#52627a', opacity: 0.4, strokeDasharray: '2 5' }), h('text', { x: x, y: plot.y + plot.h + 44, textAnchor: temp === 50000 ? 'start' : temp === 2000 ? 'end' : 'middle', fill: '#d5deed', fontSize: 14 }, temp.toLocaleString('en-US'))); }),
+                  h('text', { x: plot.x, y: 28, fill: '#e2e8f0', fontSize: 14 }, __alloT('stem.astronomy.hr_luminosity_axis', 'Luminosity (Sun = 1) ↑')),
+                  h('text', { x: 238, y: 427, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 14 }, __alloT('stem.astronomy.hr_temp_axis_short', '← Hotter · kelvin · Cooler →')),
                   h('rect', { x: plot.x, y: plot.y + plot.h + 9, width: plot.w, height: 7, rx: 3, fill: 'url(#astr-hr-spectrum)', 'aria-hidden': true }),
                   h('g', { fill: '#dce8f7', fontSize: 12, 'aria-hidden': true },
                     h('text', { x: 89, y: 59 }, __alloT('stem.astronomy.hr_sequence_short', 'Main sequence')),
                     h('text', { x: 302, y: 91 }, __alloT('stem.astronomy.hr_giants_short', 'Giants')),
                     h('text', { x: 133, y: 260 }, __alloT('stem.astronomy.hr_white_short', 'White dwarfs'))),
+                  HR_STELLAR_REFERENCES.slice(1).map(function(entry) {
+                    var p = position(entry.t, entry.l);
+                    return h('g', { key: entry.id, 'data-hr-reference': entry.id, 'aria-hidden': true },
+                      h('path', { d: 'M' + p.x + ',' + (p.y - 7) + ' L' + (p.x + 7) + ',' + p.y + ' L' + p.x + ',' + (p.y + 7) + ' L' + (p.x - 7) + ',' + p.y + ' Z', fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
+                      h('text', { x: p.x + 12, y: p.y - 9, fill: '#7dd3fc' }, entry.id === 'siriusA' ? 'A' : 'B'));
+                  }),
                   iq.log.map(function(entry, index) { var p = position(entry.t, entry.l); return h('circle', { key: 'saved' + index, cx: p.x, cy: p.y, r: 4, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.5, opacity: 0.8, 'aria-hidden': true }); }),
                   h('g', { 'aria-hidden': true }, h('circle', { cx: sun.x, cy: sun.y, r: 5, fill: '#fde68a', stroke: '#fff', strokeWidth: 1 }), h('text', { x: sun.x + 10, y: sun.y + 20, fill: '#fde68a', fontSize: 13 }, __alloT('stem.astronomy.hr_sun_short', 'Sun'))),
                   h('g', { 'data-hr-marker': true, 'data-temperature': iq.tempK, 'data-luminosity': iq.lumin, 'aria-hidden': true },
@@ -13869,22 +14860,9 @@
                     h('circle', { cx: current.x, cy: current.y, r: 12, fill: stellar.color, opacity: 0.18 }),
                     h('circle', { cx: current.x, cy: current.y, r: 6, fill: stellar.color, stroke: '#fff', strokeWidth: 2 }))),
                 h('p', { id: 'astronomy-hr-help', style: { margin: '6px 5px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_plot_help_plain', 'Drag the point, or focus the diagram and use arrow keys. Left is hotter; up means more light output. Home returns to the Sun. The axes use log scales: equal steps represent multiplication, not equal additions.')),
-                h('p', { style: { margin: '6px 5px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_marker_legend', 'Filled marker: your star. Gold dot: Sun. Purple rings: logged observations.'))),
-              h('div', { style: { minWidth: 0, border: '1px solid ' + border, borderRadius: 14, padding: 14, background: panel } },
-                h('div', { style: { fontSize: 13, color: '#a5f3fc', fontWeight: 750 } }, __alloT('stem.astronomy.hr_your_star', 'Your star beside the Sun')),
-                h('svg', { viewBox: '0 0 300 185', role: 'img', 'aria-label': __alloT('stem.astronomy.hr_radius_preview', 'Compressed star size comparison'), style: { width: '100%', display: 'block', maxHeight: 215 } },
-                  h('defs', null, h('radialGradient', { id: 'astr-hr-star-face' }, h('stop', { offset: '0%', stopColor: '#fff' }), h('stop', { offset: '60%', stopColor: stellar.color }), h('stop', { offset: '100%', stopColor: stellar.color, stopOpacity: 0.75 })), h('radialGradient', { id: 'astr-hr-star-halo' }, h('stop', { offset: '0%', stopColor: stellar.color, stopOpacity: 0.3 }), h('stop', { offset: '100%', stopColor: stellar.color, stopOpacity: 0 })), h('radialGradient', { id: 'astr-hr-sun-face' }, h('stop', { offset: '0%', stopColor: '#fff' }), h('stop', { offset: '60%', stopColor: '#fff4e6' }), h('stop', { offset: '100%', stopColor: '#fff4e6', stopOpacity: 0.75 }))),
-                  h('circle', { cx: 67, cy: 82, r: 36, fill: 'url(#astr-hr-sun-face)' }),
-                  h('circle', { cx: 212, cy: 82, r: Math.max(10, Math.min(72, 36 + 18 * Math.log10(stellar.radius))) + 22, fill: 'url(#astr-hr-star-halo)' }),
-                  h('circle', { cx: 212, cy: 82, r: Math.max(10, Math.min(72, 36 + 18 * Math.log10(stellar.radius))), fill: 'url(#astr-hr-star-face)' }),
-                  h('text', { x: 67, y: 175, textAnchor: 'middle', fill: '#fde68a', fontSize: 14 }, __alloT('stem.astronomy.hr_sun_short', 'Sun')),
-                  h('text', { x: 212, y: 175, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 14 }, __alloT('stem.astronomy.hr_selected_short', 'Selected star'))),
-                h('dl', { id: 'astronomy-hr-readout', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(100px,1fr))', gap: 10, margin: 0, fontSize: 13, lineHeight: 1.6 } },
-                  hrMetric(__alloT('stem.astronomy.hr_temperature_value', 'Temperature'), Math.round(iq.tempK).toLocaleString('en-US') + ' K'),
-                  hrMetric(__alloT('stem.astronomy.hr_luminosity_value', 'Luminosity'), hrNumber(iq.lumin) + ' L☉'),
-                  hrMetric(__alloT('stem.astronomy.hr_radius_value', 'Inferred radius'), hrNumber(stellar.radius) + ' R☉')),
-                h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', marginBottom: 0 } }, __alloT('stem.astronomy.hr_size_note', 'Disk sizes are compressed so small and giant stars stay visible. Radius follows the Stefan–Boltzmann relation: luminosity depends on surface area and temperature.')))),
-            h('p', { style: { margin: '10px 0 0', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_regions_note', 'Shaded regions and example stars are teaching guides, not measured catalog points or an evolution track. Region boundaries are approximate. The Sun reference uses 5,772 K and one solar luminosity.')));
+                h('p', { style: { margin: '6px 5px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_reference_legend', 'Filled marker: your star. Gold dot: Sun. Blue diamonds: Sirius A and B. Purple rings: logged observations. Reference marker sizes are symbols, not star radii.'))),
+              renderHrSizeComparison()),
+            h('p', { style: { margin: '10px 0 0', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_regions_reference_note', 'Shaded regions and the Teaching examples are approximate guides. Sun and Sirius markers use the referenced inputs above. The diagram shows positions, not an evolution track; its axes are logarithmic.')));
         }
         return h('div', { style: { padding: 16 } },
           h('div', { id: 'astronomy-hr-lab', style: { padding: 16, background: '#0f172a', borderRadius: 12, color: '#e2e8f0' } },
@@ -13898,7 +14876,7 @@
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 10, marginBottom: 12 } },
               [
-                { key: 'mass',   label: __alloT('stem.astronomy.hr_mass_plain', 'Mass (Sun = 1)'),          val: iq.mass,   min: 0.1, max: 20, step: 0.1 },
+                { key: 'mass',   label: __alloT('stem.astronomy.hr_mass_plain', 'Mass (Sun = 1)'),          val: iq.mass,   min: 0.1, max: 20, step: 0.001 },
                 { key: 'tempK',  label: __alloT('stem.astronomy.hr_temperature_plain', 'Temperature (K)'),      val: iq.tempK,  min: 2000, max: 50000, step: 1 },
                 { key: 'lumin',  label: __alloT('stem.astronomy.hr_luminosity_plain', 'Luminosity (Sun = 1)'),    val: iq.lumin,  min: -3, max: 5, step: 'any', logarithmic: true }
               ].map(function(s) {
@@ -13920,7 +14898,7 @@
             h('p', { id: 'astronomy-hr-controls-note', style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_control_note', 'The luminosity slider uses a log scale, so faint and bright stars are easy to reach. Mass is recorded separately and does not move the point or set its radius. These independent controls do not predict a star’s evolution.')),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
               h('button', { type: 'button', onClick: logObs, 'aria-label': __alloT('stem.astronomy.a11y_log_this_star_observation', 'Log this star observation'), className: 'astr-focus astr-btn', style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.astronomy.hr_log_plain', 'Log this star')),
-              h('button', { type: 'button', onClick: function() { setIQ({ mass: 1, tempK: 5800, lumin: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, 'aria-label': __alloT('stem.astronomy.hr_reset_plain', 'Reset investigation'), 'aria-describedby': 'astronomy-hr-reset-help', className: 'astr-focus astr-btn', style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, __alloT('stem.astronomy.hr_reset_plain', 'Reset investigation')),
+              h('button', { type: 'button', onClick: function() { setIQ({ sizeScale: 'compressed', mass: 1, tempK: 5800, lumin: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, 'aria-label': __alloT('stem.astronomy.hr_reset_plain', 'Reset investigation'), 'aria-describedby': 'astronomy-hr-reset-help', className: 'astr-focus astr-btn', style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, __alloT('stem.astronomy.hr_reset_plain', 'Reset investigation')),
               h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, iq.log.length > 0 ? iq.log.length + ' logged' : 'No observations logged yet')
             ),
             h('p', { id: 'astronomy-hr-reset-help', style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, __alloT('stem.astronomy.hr_reset_help', 'Reset investigation clears logged stars, predictions and explanations. To keep your notes and return the point to the Sun, choose Sun reference.')),
@@ -13947,7 +14925,7 @@
               h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                 h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, 'aria-expanded': iq.understood ? 'true' : 'false', 'aria-controls': iq.understood ? 'astronomy-hr-explanation' : undefined }),
                 __alloT('stem.astronomy.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-              iq.understood && h('textarea', { id: 'astronomy-hr-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value.slice(0, 1500) }); }, placeholder: __alloT('stem.astronomy.explain_how_mass_temperature_and_lumin', 'Explain how mass, temperature, and luminosity define a stellar category.'),
+              iq.understood && h('textarea', { id: 'astronomy-hr-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value.slice(0, 1500) }); }, placeholder: __alloT('stem.astronomy.hr_explanation_prompt', 'Explain how temperature and luminosity determine the point, and how radius relates to total light output.'),
                 'aria-label': __alloT('stem.astronomy.a11y_explain_your_h_r_diagram_understanding', 'Explain your H-R diagram understanding'), maxLength: 1500,
                 style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
             h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },

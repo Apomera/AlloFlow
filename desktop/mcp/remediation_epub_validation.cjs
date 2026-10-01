@@ -8,26 +8,40 @@ let javaProbe=null;
 // ships a /usr/bin/java stub that is present (and executable) with no runtime installed and only
 // prints "Unable to locate a Java Runtime". A positive result is cached for the process lifetime; a
 // negative one is re-probed after 60 s so a runtime installed mid-session is noticed without restart.
-function javaRuntime(bin){
+// A probe that TIMED OUT is not absence (a cold JVM on a busy machine can take over 15 s): it is
+// reported as timedOut and never cached, and the default wait is 60 s (ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS).
+function javaProbeTimeoutMs(){
+  const n=Number(process.env.ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS);
+  return Number.isSafeInteger(n)&&n>0?n:60000;
+}
+function javaRuntime(bin,options){
+  const o=options||{},run=typeof o.spawnSync==='function'?o.spawnSync:spawnSync;
   const java=bin||(process.env.JAVA_HOME?path.join(process.env.JAVA_HOME,'bin',process.platform==='win32'?'java.exe':'java'):'java');
-  const now=Date.now();
-  if(javaProbe&&javaProbe.java===java&&(javaProbe.present||now-javaProbe.at<60000))return javaProbe;
-  let present=false,version=null,error=null;
+  const now=Date.now(),timeoutMs=Number.isSafeInteger(o.timeoutMs)&&o.timeoutMs>0?o.timeoutMs:javaProbeTimeoutMs();
+  if(!o.spawnSync&&javaProbe&&javaProbe.java===java&&!javaProbe.timedOut&&(javaProbe.present||now-javaProbe.at<60000))return javaProbe;
+  let present=false,version=null,error=null,timedOut=false,notFound=false;
   try{
-    const r=spawnSync(java,['-version'],{encoding:'utf8',timeout:15000,windowsHide:true,stdio:['ignore','pipe','pipe']});
+    const r=run(java,['-version'],{encoding:'utf8',timeout:timeoutMs,windowsHide:true,stdio:['ignore','pipe','pipe']});
     const out=(String(r.stderr||'')+String(r.stdout||'')).trim();
-    if(r.error)error=r.error.message;
+    if(r.error){error=r.error.message;timedOut=r.error.code==='ETIMEDOUT'||/ETIMEDOUT/.test(error);notFound=r.error.code==='ENOENT'||/ENOENT/.test(error);}
     else if(r.status!==0)error=out.split(/\r?\n/)[0]||('java -version exited with status '+r.status);
     else{present=true;const m=out.match(/version "([^"]+)"/);version=m?m[1]:null;}
-  }catch(e){error=e.message;}
-  javaProbe={java,present,version,error,at:now};
-  return javaProbe;
+  }catch(e){error=e.message;timedOut=e.code==='ETIMEDOUT'||/ETIMEDOUT/.test(String(error));}
+  const probe={java,present,version,error,timedOut,notFound,timeoutMs,at:now};
+  if(!o.spawnSync)javaProbe=probe;
+  return probe;
+}
+// One wording for both validators, so a timeout never reads as "install Java".
+function javaUnavailableMessage(probe,tool){
+  const p=probe||{},what=tool||'This check';
+  if(p.timedOut)return 'Java did not respond in time (`'+(p.java||'java')+' -version` took longer than '+Math.round((p.timeoutMs||60000)/1000)+' s). Java may well be installed; the machine may be busy. '+what+' did not run. Retry when the machine is less busy, or raise ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS.';
+  return 'Java runtime not found (`'+(p.java||'java')+' -version` failed: '+(p.error||'unknown error')+'). '+what+' needs Java 11 or newer. Install Java and rerun verification.';
 }
 function runtime() {
   const jar=process.env.ALLOFLOW_MCP_EPUBCHECK_JAR||path.join(__dirname,'vendor','epubcheck','epubcheck.jar');
   let ace=null;try{ace=require.resolve('@daisy/ace-cli/bin/ace.js',{paths:[__dirname,path.join(__dirname,'runtime')]});}catch(_){}
   const probe=javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN||null);
-  return {jar,ace,java:probe.java,javaPresent:probe.present,javaVersion:probe.version,javaError:probe.error,nodeSupported:Number(process.versions.node.split('.')[0])>=20};
+  return {jar,ace,java:probe.java,javaPresent:probe.present,javaVersion:probe.version,javaError:probe.error,javaProbe:probe,nodeSupported:Number(process.versions.node.split('.')[0])>=20};
 }
 function capabilities() {
   const r=runtime();return {epubcheck:{installed:fs.existsSync(r.jar),version:'5.3.0',javaAvailable:r.javaPresent,javaVersion:r.javaVersion},ace:{installed:!!r.ace,version:'1.4.6',nodeSupported:r.nodeSupported},scope:'Automated EPUB format and accessibility checks; human review remains necessary.'};
@@ -102,7 +116,8 @@ async function validate(filePath,options={}) {
     const inputSha256=await fileDigest(snapshot),inputBytes=fs.statSync(snapshot).size;
     const stem=path.basename(filePath,'.epub');
     await stage('epubcheck',async()=>{
-      if(!fs.existsSync(r.jar)||!r.javaPresent)throw Error('EPUBCheck or Java is unavailable. Install Java and rerun verification.');
+      if(!fs.existsSync(r.jar))throw Error('EPUBCheck is unavailable. Reinstall the full connector and rerun verification.');
+      if(!r.javaPresent)throw Error(javaUnavailableMessage(r.javaProbe,'EPUBCheck'));
       const reportPath=path.join(scratch,'epubcheck.json');log('Checking EPUB format with EPUBCheck…');
       const result=await run(r.java,['-jar',r.jar,'--json',reportPath,snapshot],{signal,env,cwd:scratch,timeoutMs});
       const report=readJson(reportPath);save('epubcheckReport',stem+'-epubcheck.json',reportPath);const parsed=parseEpubcheck(report);
@@ -134,4 +149,4 @@ async function validate(filePath,options={}) {
     }
   }
 }
-module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime};
+module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime,javaUnavailableMessage};

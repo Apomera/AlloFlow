@@ -1,0 +1,18 @@
+Index: ui_strings.js
+===================================================================
+--- ui_strings.js
++++ ui_strings.js
+@@ -6679,7 +6679,12 @@
+     "review_preview": "Preview as a student",
+     "layout_preview_open": "Preview reading layout",
+     "layout_preview_title": "Reading layout preview",
+-    "layout_preview_note": "Try the appearance, navigation and prepared word help for this snapshot. Changes here are discarded when you close it. This does not preview a delivered lesson.",
++    "layout_preview_read_hint": "Read at your own pace. Display changes the appearance of this preview.",
++    "layout_preview_refresh": "Refresh preview",
++    "layout_preview_refresh_hint": "Refresh uses the current reading and appearance. Changes made in this preview are discarded when you refresh or close it.",
++    "layout_preview_refreshed": "Preview refreshed.",
++    "layout_preview_refresh_unavailable": "A current adapted reading is needed to refresh. Close preview to choose one.",
++    "layout_preview_note": "Try appearance, navigation and prepared word help. This snapshot stays the same until you refresh or reopen it. It does not preview a delivered lesson.",
+     "layout_preview_limits": "Listening, recording, AI help and scored practice are unavailable. Any current playback remains controlled by the main reader.",
+     "layout_preview_word_help": "Select an underlined word to see prepared help. Other words have no help in this preview.",
+     "layout_preview_chart": "Charts are unavailable in this layout preview. View the main reading to inspect the chart.",

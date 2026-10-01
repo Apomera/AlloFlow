@@ -1,0 +1,74 @@
+
+Running 6 tests using 1 worker
+
+
+
+[1A[2K(node:59728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:59728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:2184:5 › chance lab compares isolated survival trials with a recorded climate round and saves separate evidence
+[1A[2K[2/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:2219:5 › chance lab on a phone supports keyboard trial browsing and preserves the next real outcome
+[1A[2K[3/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:2239:5 › chance lab without WebGL retains zero and one survivor trials after the real island goes extinct
+[1A[2K[4/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:2256:5 › individual chance follows real parent identities across trials and saves separate evidence
+[1A[2K[5/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.ei-chance-residents')
+    Expected substring: [32m"LongNamedSprigletExplorer"[39m
+    Received string:    [31m"Who survived? Follow an individualChoose a spriglet, then switch trials to follow its outcomes. Its inherited traits and modeled chance stay the same.7Survived in both8Recorded only12Trial only9Neither20 of 36 individuals have different outcomes in the recorded round and this trial.Individual to followSage · #1LongNamedSprigletExplore · #2Mica · #3Wren · #4Juniper · #5Ember · #6Ash · #7Pico · #8Clover · #9Pip · #10Kelp · #11Coco · #12Lumi · #13Roo · #14Sunny · #15Moss · #16Cove · #17Dune · #18Nori · #19Tavi · #20Basil · #21Tide · #22Pebble · #23Flint · #24Sage · #25Fern · #26Mica · #27Wren · #28Juniper · #29Ember · #30Ash · #31Pico · #32Clover · #33Pip · #34Kelp · #35Coco · #36Previous individualNext individualFind a changed outcomeLongNamedSprigletExplore#2 · Generation 049.0%Modeled survival chance in every trialCoat lightness69.5Insulation56.9Leg length10.6Inherited traits · 0–100 teaching scale. Higher is not always better.Recorded round✓ SurvivedTrial 5✓ Survived—1✓2✓3—4✓5Survived 3 of 5 explored trials. This observed share can differ from its modeled probability.Trial survival does not change the recorded life or imply offspring. Each trial gives the original individual a fresh survival draw.Save individual comparison"[39m
+    Timeout: 15000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 15000ms[22m
+    [2m  - waiting for locator('.ei-chance-residents')[22m
+    [2m    31 × locator resolved to <details open="" data-resident-trial="5" class="ei-chance-residents">…</details>[22m
+    [2m       - unexpected value "Who survived? Follow an individualChoose a spriglet, then switch trials to follow its outcomes. Its inherited traits and modeled chance stay the same.7Survived in both8Recorded only12Trial only9Neither20 of 36 individuals have different outcomes in the recorded round and this trial.Individual to followSage · #1LongNamedSprigletExplore · #2Mica · #3Wren · #4Juniper · #5Ember · #6Ash · #7Pico · #8Clover · #9Pip · #10Kelp · #11Coco · #12Lumi · #13Roo · #14Sunny · #15Moss · #16Cove · #17Dune · #18Nori · #19Tavi · #20Basil · #21Tide · #22Pebble · #23Flint · #24Sage · #25Fern · #26Mica · #27Wren · #28Juniper · #29Ember · #30Ash · #31Pico · #32Clover · #33Pip · #34Kelp · #35Coco · #36Previous individualNext individualFind a changed outcomeLongNamedSprigletExplore#2 · Generation 049.0%Modeled survival chance in every trialCoat lightness69.5Insulation56.9Leg length10.6Inherited traits · 0–100 teaching scale. Higher is not always better.Recorded round✓ SurvivedTrial 5✓ Survived—1✓2✓3—4✓5Survived 3 of 5 explored trials. This observed share can differ from its modeled probability.Trial survival does not change the recorded life or imply offspring. Each trial gives the original individual a fresh survival draw.Save individual comparison"[22m
+
+
+      2293 |   await page.getByRole('button',{name:'Predict this round',exact:true}).click();await page.getByRole('button',{name:'Lock forecast & watch',exact:true}).click();await page.getByRole('button',{name:'Reveal survivors',exact:false}).click();
+      2294 |   await page.getByText('Explore chance: repeat this round',{exact:true}).click();await page.getByRole('button',{name:'Try five trials',exact:true}).click();const summary=page.getByText('Who survived? Follow an individual',{exact:true});await summary.focus();await page.keyboard.press('Enter');const panel=page.locator('.ei-chance-residents');
+    > 2295 |   await page.locator('#ei-chance-resident').focus();await page.keyboard.press('Home');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await expect(page.locator('#ei-chance-resident')).toHaveValue('2');await expect(panel).toContainText('LongNamedSprigletExplorer');
+           |                                                                                                                                                                                                                                                        ^
+      2296 |   await expect(panel.locator('[data-resident-chance]')).toHaveAttribute('data-resident-chance',String(.68*.72));const portrait=await panel.locator('.ei-portrait').evaluate(el=>el.outerHTML);
+      2297 |   await panel.locator('[data-resident-trial-chip="1"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ei-chance-trial')).toHaveValue('0');await expect(page.locator('#ei-chance-resident')).toHaveValue('2');await expect(panel.locator('[data-resident-trial-chip="1"]')).toBeFocused();
+      2298 |   await panel.getByRole('button',{name:'Next individual',exact:true}).focus();await page.keyboard.press('Enter');await expect(page.locator('#ei-chance-resident')).toHaveValue('3');await panel.getByRole('button',{name:'Previous individual',exact:true}).click();await expect(page.locator('#ei-chance-resident')).toHaveValue('2');expect(await panel.locator('.ei-portrait').evaluate(el=>el.outerHTML)).toBe(portrait);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:2295:248
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\chance-residents-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\chance-residents-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\chance-residents-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\chance-residents-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\chance-residents-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\chance-residents-browser-artifacts\evolab-living-island-indiv-52845-al-controls-change-outcomes-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:53268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:53268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[6/6] [chromium] › tests\e2e\evolab-living-island.spec.ts:2307:5 › individual chance without WebGL explains identical and different survivors after actual extinction
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:2289:5 › individual chance on a phone keeps the selected spriglet while keyboard trial controls change outcomes 
+  5 passed (4.3m)

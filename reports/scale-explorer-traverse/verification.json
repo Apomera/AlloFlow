@@ -1,0 +1,30 @@
+{
+  "verifiedAt": "2026-09-30T23:52:03.808Z",
+  "sourceSHA256": "9be3bd6837c2e551c61686f6c18590e3974b07040a5d28879a0ee815756b4858",
+  "unit": {
+    "passed": 132,
+    "failed": 0,
+    "report": "unit-results.json"
+  },
+  "browser": {
+    "passed": 16,
+    "failed": 0,
+    "reports": [
+      "browser-results.json",
+      "browser-motion-results.json"
+    ]
+  },
+  "visualReview": [
+    "everest-explore.png",
+    "everest-explore-phone.png"
+  ],
+  "commit": "584099e0bca94f4ac2c84242a6e6b5e5847a1879",
+  "features": [
+    "Measured elevation terrain and sea-level datum",
+    "Map dragging and direct terrain picking",
+    "Keyboard navigation and accessible step controls",
+    "Sampled elevation readout",
+    "Saved position, orbit and lighting",
+    "Camera clearance and interrupted drag recovery"
+  ]
+}

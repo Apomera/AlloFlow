@@ -96,7 +96,7 @@ describe('the Display (Aa) panel', () => {
     expect(panel().style.display).toBe('none');
     expect(panel().querySelector('[data-help-key="simplified_immersive_reader"]')).not.toBeNull();
     expect(panel().querySelector('[data-adapted-theme-picker]')).not.toBeNull();
-    expect(panel().querySelector('select[aria-label="Reading width"]')).not.toBeNull();
+    expect(panel().querySelector('input[aria-label="Reading width"]')).not.toBeNull();
     act(() => toggle().click());
     expect(toggle().getAttribute('aria-expanded')).toBe('true');
     expect(panel().hidden).toBe(false);

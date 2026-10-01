@@ -62,6 +62,16 @@ const resolvePersonaSpeakingChar = (personaState, activeSpeaker, speakerName) =>
 };
 
 const READ_ALOUD_STORE_CONTENT_IDS = new Set(['simplified-main', 'faq-active']);
+// The original pane of the Both view: read sentence by sentence and highlighted,
+// but its clips belong to the original, not the adapted resource that is open.
+const READ_ALOUD_SOURCE_PANE_ID = 'simplified-source';
+// Script voices follow the reading's own saved format; the sidebar setting is the
+// fallback only for adaptations saved without one. A preserved original never is one.
+const readAloudScriptFormat = (item, fallback) => {
+    if (item && item.instructionalText && item.instructionalText.form === 'same-text-supported') return '';
+    const saved = item && item.config && item.config.textFormat;
+    return typeof saved === 'string' && saved ? saved : (fallback || '');
+};
 // Ordinary read-aloud used to identify a clip by sentence text alone. That is
 // ambiguous as soon as the same sentence occurs twice (and especially across a
 // bilingual source/English pair). Strings remain accepted for adventure,
@@ -1452,7 +1462,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         // playback at that index. Only the direct/glossary path actually
         // speaks this string, and there an emoji has nothing to pronounce:
         // end quietly instead of sending an empty request to the provider.
-        const _isSequenceRead = !!contentId && (contentId === 'simplified-main' || contentId === 'adventure-active'
+        const _isSequenceRead = !!contentId && (contentId === 'simplified-main' || contentId === READ_ALOUD_SOURCE_PANE_ID || contentId === 'adventure-active'
             || contentId === 'faq-active' || contentId.startsWith('persona-message-'));
         if (!_isSequenceRead && !sanitizeTtsText(effectiveText).replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{P}\p{S}\s]/gu, '')) {
             isPlayingRef.current = false;
@@ -1500,7 +1510,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             return;
         }
     }
-    if (contentId && (contentId === 'simplified-main' || contentId === 'adventure-active' || contentId === 'faq-active' || contentId.startsWith('persona-message-'))) {
+    if (contentId && (contentId === 'simplified-main' || contentId === READ_ALOUD_SOURCE_PANE_ID || contentId === 'adventure-active' || contentId === 'faq-active' || contentId.startsWith('persona-message-'))) {
         let cleanSentences = [];
         let sourceSentenceCount = null;
         const isTable = p => p.trim().startsWith('|') || p.includes('\n|');
@@ -1525,7 +1535,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         if (contentId === 'adventure-active') {
             mode = 'adventure';
             voiceMap = adventureState.voiceMap;
-        } else if (textFormat === 'Podcast Script' && contentId === 'simplified-main') {
+        } else if (contentId === 'simplified-main' && readAloudScriptFormat(generatedContent, textFormat) === 'Podcast Script') {
             mode = 'script';
             voiceMap = { Alex: 'Fenrir', Sam: 'Aoede' };
         } else if (contentId === 'faq-active') {
@@ -2024,6 +2034,9 @@ const buildStudentProgressSummary = ({
 const executeSaveFile = async (deps, interactionOptions = {}) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureTypingPaceEnabled, adventureFluencyEnabled, adventureConsistentCharacters, isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle, adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, conceptMasteryLocal, user } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired"); } catch(_) {}
+      const saveStillCurrent = () => typeof deps.isSaveRequestCurrent !== 'function' || deps.isSaveRequestCurrent();
+      const cancelledSave = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
+      if (!saveStillCurrent()) return cancelledSave;
       if (!saveFileName.trim()) return { ok: false, reason: 'filename-required', narration: 'A filename is required before saving.' };
       let currentLog = [...studentProgressLog];
       if (saveType === 'student') {
@@ -2062,10 +2075,10 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
         } else {
             currentLog.push(newLogEntry);
         }
-        setStudentProgressLog(currentLog);
       }
       const filename = saveFileName.trim().endsWith('.json') ? saveFileName.trim() : `${saveFileName.trim()}.json`;
       const resolvedBuilderDraft = saveType === 'teacher' ? await Promise.resolve(deps.builderDraft || null) : null;
+      if (!saveStillCurrent()) return cancelledSave;
       let dataStr = "";
       // SEL Hub engagement state (streak, per-tool usage). Lives at
       // window.__alloflowSelEngagement, written by sel_hub_module.js whenever
@@ -2400,12 +2413,15 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
               outName = _dot > 0 ? outName.slice(0, _dot) + '_CONFIDENTIAL' + outName.slice(_dot) : outName + '_CONFIDENTIAL';
           }
       }
+      if (!saveStillCurrent()) return cancelledSave;
       // Optional educator encryption (AES-256-GCM, key derived from the password via
       // PBKDF2). Without the password the file is unreadable ciphertext, so there is no
       // gate to bypass, and there is NO recovery if the password is lost (warned at save time).
-      if (deps.saveEncryptPassword && window.AlloModules && window.AlloModules.AlloCrypto) {
+      if (deps.saveEncryptPassword) {
           try {
-              const _env = await window.AlloModules.AlloCrypto.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
+              const cryptoApi = window.AlloModules && window.AlloModules.AlloCrypto;
+              if (typeof cryptoApi?.encryptJSON !== 'function') throw new Error('Encryption is unavailable');
+              const _env = await cryptoApi.encryptJSON(JSON.parse(dataStr), deps.saveEncryptPassword);
               dataStr = JSON.stringify(_env);
               if (!/\.enc(\.|$)/i.test(outName)) {
                   const _d = outName.lastIndexOf('.');
@@ -2416,6 +2432,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
               return { ok: false, reason: 'encryption-failed', narration: t('save.encrypt_failed') || 'Could not encrypt the file. Save cancelled.' };
           }
       }
+      if (!saveStillCurrent()) return cancelledSave;
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -2433,6 +2450,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
           return { ok: false, reason: 'download-blocked', narration: _dlMsg };
       }
       addToast(`Project saved as ${outName}`, "success");
+      if (saveType === 'student') setStudentProgressLog(currentLog);
       setLastJsonFileSave(Date.now());
       setIsSaveActionPulsing(false);
       setShowSaveModal(false);
@@ -2817,8 +2835,24 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
 const translateResourceItem = async (item, targetLanguage, deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] translateResourceItem fired"); } catch(_) {}
-      if (['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type)) return item;
-      const dataStr = JSON.stringify(item.data);
+      // A copy of an untranslatable resource is not a translation: report it.
+      if (['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type)) throw new Error('This resource type has no text to translate.');
+      // Inline pictures and audio never go to the model (one picture can be
+      // megabytes). Placeholders keep their place; restoreMedia puts them back.
+      const media = [];
+      const isInlineMedia = value => typeof value === 'string' && /^\s*data:/i.test(value);
+      const stripMedia = value => isInlineMedia(value) ? '__ALLO_MEDIA_' + (media.push(value) - 1) + '__'
+          : Array.isArray(value) ? value.map(stripMedia)
+          : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, stripMedia(nested)])) : value;
+      const restoreMedia = (value, source) => {
+          if (typeof value === 'string') { const slot = value.match(/^__ALLO_MEDIA_(\d+)__$/); return slot && media[Number(slot[1])] !== undefined ? media[Number(slot[1])] : value; }
+          if (!value || typeof value !== 'object') return value;
+          const out = Array.isArray(value) ? value.map((nested, index) => restoreMedia(nested, source && source[index])) : Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, restoreMedia(nested, source && source[key])]));
+          // A reply that dropped a placeholder keeps the picture at its original path.
+          if (source && typeof source === 'object') Object.keys(source).forEach(key => { if (isInlineMedia(source[key]) && !isInlineMedia(out[key])) out[key] = source[key]; });
+          return out;
+      };
+      const dataStr = JSON.stringify(stripMedia(item.data));
       let prompt = "";
       if (item.type === 'simplified') {
           let sourceText = typeof item.data === 'string' ? item.data : '';
@@ -2869,9 +2903,11 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
           const _dirBody = _dirIsObj ? String(item.data.body || '') : String(item.data || '');
           const _dirLabels = (_dirIsObj && Array.isArray(item.data.objectives)) ? item.data.objectives.map(o => String((o && o.label) || '')) : [];
           const board = _dirIsObj && item.data.choiceBoard;
+          // Saved boards keep cards in choices[]; items[] is a legacy spelling.
+          const _dirCards = board && typeof board === 'object' ? (Array.isArray(board.choices) ? board.choices : (Array.isArray(board.items) ? board.items : [])) : [];
           const choiceBoard = board && typeof board === 'object' ? {
               title: String(board.title || ''), prompt: String(board.prompt || ''),
-              items: (Array.isArray(board.items) ? board.items : []).map(card => ({ label: String(card.label || ''), description: String(card.description || '') }))
+              items: _dirCards.map(card => ({ label: String((card && card.label) || ''), description: String((card && card.description) || '') }))
           } : null;
           prompt = `
               You are an expert translator for educators.
@@ -2898,9 +2934,11 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
           const result = await callGemini(prompt, item.type !== 'simplified');
           let newData;
           if (item.type === 'simplified') {
+              if (typeof result !== 'string' || !result.trim()) throw new Error('The translation reply was empty.');
               newData = result;
           } else {
-              newData = JSON.parse(cleanJson(result));
+              newData = restoreMedia(JSON.parse(cleanJson(result)), item.data);
+              if (!newData || typeof newData !== 'object') throw new Error('The translation reply was not usable.');
           }
           if (item.type === 'quiz') {
             if (!newData.questions || !Array.isArray(newData.questions)) newData.questions = [];
@@ -2960,6 +2998,20 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
                   else newData = [];
               }
           }
+          // An empty reply for a resource with content is a failure, not a translation.
+          const contentUnits = value => Array.isArray(value) ? value.length : value && typeof value === 'object'
+              ? ['questions', 'items', 'branches', 'problems', 'events', 'terms', 'faqs', 'ideas'].reduce((count, key) => count + (Array.isArray(value[key]) ? value[key].length : 0), 0) : 0;
+          if (item.type !== 'simplified' && item.type !== 'directions' && contentUnits(item.data) > 0 && contentUnits(newData) === 0) throw new Error('The translation reply was empty.');
+          // Teacher verification belongs to the checked text, not to a machine translation of it.
+          const unverify = value => {
+              if (!value || typeof value !== 'object') return value;
+              if (Array.isArray(value)) return value.map(unverify);
+              const out = Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, unverify(nested)]));
+              if (out.factVerified === true) out.factVerified = false;
+              if (typeof out.question === 'string' && out.factCheck) out.keyCheck = { status: 'unclear', suggestedAnswer: '', checkedKey: '' };
+              return out;
+          };
+          if (item.type !== 'simplified') newData = unverify(newData);
           if (item.type === 'directions') {
               // Dedicated return: rebuild the REAL data shape (translated prose + labels, machinery
               // untouched) and keep the meta OBJECT (derivedFrom provenance) — the generic return
@@ -2976,14 +3028,18 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
                   const board = _dSrc.choiceBoard;
                   const translatedBoard = newData && newData.choiceBoard || {};
                   const translatedText = (value, fallback) => typeof value === 'string' && value.trim() ? value : fallback;
+                  // Write cards back under the key they were read from; drop the empty items[] older builds added.
+                  const cardKey = Array.isArray(board.choices) || !Array.isArray(board.items) ? 'choices' : 'items';
+                  const { items: _staleItems, ...boardRest } = board;
                   _dData.choiceBoard = {
-                      ...board,
+                      ...(cardKey === 'choices' && Array.isArray(_staleItems) && !_staleItems.length ? boardRest : board),
                       title: translatedText(translatedBoard.title, board.title),
                       prompt: translatedText(translatedBoard.prompt, board.prompt),
-                      items: (Array.isArray(board.items) ? board.items : []).map((card, index) => {
+                      ...(Array.isArray(board[cardKey]) ? { [cardKey]: board[cardKey].map((card, index) => {
+                          if (!card || typeof card !== 'object') return card;
                           const translatedCard = Array.isArray(translatedBoard.items) && translatedBoard.items[index] || {};
                           return { ...card, label: translatedText(translatedCard.label, card.label), description: translatedText(translatedCard.description, card.description) };
-                      })
+                      }) } : {})
                   };
               }
               return {
@@ -3000,8 +3056,9 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
               title: `${item.title} (${targetLanguage})`
           };
       } catch (e) {
+          // Rethrow so the caller reports the failure instead of adding an untranslated copy.
           warnLog(`Translation failed for ${item.type}`, e);
-          return item;
+          throw e;
       }
 };
 
@@ -3207,11 +3264,15 @@ const handleSaveReflection = async (deps) => {
               }, 45000);
               gradingController?.signal?.addEventListener('abort', rejectCancelled, { once: true });
           });
+          let gradingCallError = null;
           const result = await Promise.race([
               callGemini(prompt, true, false, null, null, gradingController?.signal || null),
               gradingTimeoutPromise
-          ]);
+          ]).catch(error => { gradingCallError = error; return null; });
           if (!reflectionIsCurrent()) return;
+          // A failed grading call (network/timeout) still saves the reflection, with no score.
+          if (gradingCallError && (gradingCallError.name === 'AbortError' || /cancelled|aborted/i.test(gradingCallError.message || ''))) throw gradingCallError;
+          if (gradingCallError) warnLog("Reflection grading failed; saving without a score", gradingCallError);
           // Honest fallback: if grading JSON can't be parsed, do NOT fabricate
           // a score — award participation XP and say feedback was unavailable.
           // (The view hides the score tile when score is not a number.)
@@ -3366,13 +3427,13 @@ const handleSaveReflection = async (deps) => {
               xpEarned: totalXP,
               subjectName: persistedSubjectName
           });
+          if (gradingCallError) addToast(t('toasts.reflection_grade_error'), "warning");
       } catch (err) {
-          // Transient failure (network/API): keep the chat, the reflection
-          // text, and the open panel so the student can just press Submit
-          // again — this used to wipe the whole session and dump them out.
-          warnLog("Reflection grading failed", err);
+          // Nothing was saved: keep the chat, the reflection text, and the
+          // open panel so the student can just press Submit again.
+          warnLog("Reflection save failed", err);
           const wasCancelled = err?.name === 'AbortError' || /cancelled|aborted/i.test(err?.message || '');
-          if (reflectionIsCurrent() && !wasCancelled) addToast(t('toasts.reflection_grade_error'), "error");
+          if (reflectionIsCurrent() && !wasCancelled) addToast(t('toasts.reflection_save_failed') || 'Your reflection was not saved. Please submit it again.', "error");
       } finally {
           if (gradingTimeout) clearTimeout(gradingTimeout);
           if (gradingAbortRef?.current === gradingHandle) gradingAbortRef.current = null;

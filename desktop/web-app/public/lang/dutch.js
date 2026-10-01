@@ -1,4 +1,2412 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "Temperatuur",
+          "headline": "Koud water op je gezicht",
+          "steps": {
+            "0": "Vul een kom met koud water (met ijs als je dat hebt).",
+            "1": "Houd je adem in.",
+            "2": "Buig voorover en dompel je gezicht 15-30 seconden onder, van boven je wenkbrauwen tot onder je jukbeenderen. (Lukt onderdompelen niet, houd dan een coldpack of een natte washand op je ogen en bovenste wangen.)",
+            "3": "Kom omhoog en adem normaal.",
+            "4": "Herhaal het zo nodig één keer."
+          },
+          "why": "Kou op je gezicht zet de duikreflex van zoogdieren in gang: je hartslag vertraagt, bloed verplaatst zich weg van je armen en benen, en het parasympathische zenuwstelsel wordt actief. Het werkt binnen seconden. Dit is de allersnelste lichamelijke manier om extreme nood te onderbreken.",
+          "caution": "VERMIJD dit als je een hartaandoening, een eetstoornis of een andere aandoening hebt waarbij een tragere hartslag gevaarlijk kan zijn. Twijfel je, vraag het dan eerst aan een arts of de schoolverpleegkundige. Het water moet koud zijn (~10-15°C of 50-60°F), niet ijskoud."
+        },
+        "intense": {
+          "label": "Intensief bewegen",
+          "headline": "Verbrand de spanning",
+          "steps": {
+            "0": "Doe 5 tot 10 minuten iets wat lichamelijk zwaar is.",
+            "1": "Opties: sprinten, jumping jacks, burpees, trappen oprennen, push-ups tot je niet meer kunt, snel touwtjespringen, wild dansen.",
+            "2": "Je wilt echt buiten adem zijn en voelen hoe je hartslag omhooggaat.",
+            "3": "Ga daarna langzamer, wandel verder en laat je lichaam tot rust komen."
+          },
+          "why": "Als je lichaam op scherp staat (vechten of vluchten), wordt het overspoeld met stresshormonen die bedoeld zijn om verbruikt te worden. Intensief bewegen verbrandt de adrenaline en geeft je lichaam het signaal “ik heb het gedaan”. Stilzitten terwijl je op scherp staat, houdt de motor op volle toeren.",
+          "caution": "Heb je een medische aandoening waardoor je minder kunt sporten (hart, astma, een recente blessure), beweeg dan minder intensief of kies een andere TIPP-vaardigheid. Ga met intensief bewegen nooit zo ver dat je jezelf blesseert."
+        },
+        "paced": {
+          "label": "Rustig ademen",
+          "headline": "Langer uitademen dan inademen",
+          "steps": {
+            "0": "Ga comfortabel zitten of liggen.",
+            "1": "Adem in door je neus terwijl je tot 4 telt.",
+            "2": "Adem langzaam uit door je mond, 6 tot 8 tellen lang (langer dan je inademing).",
+            "3": "Houd dit ritme 1 tot 2 minuten vol.",
+            "4": "Je hoeft niet te duwen of te forceren; de VERLENGDE UITADEMING is het werkzame bestanddeel."
+          },
+          "why": "Als je langer uitademt dan inademt, verschuift je autonome zenuwstelsel richting parasympathische overheersing (“rust en vertering”). Onderzoek naar rustig ademen vindt binnen 90 seconden meetbare dalingen in stressmarkers van de hartslagvariabiliteit. Het gaat niet om ontspanning; het gaat om biologie.",
+          "caution": "Word je van langzaam ademen juist NOG angstiger (dat gebeurt bij sommige mensen met een paniekstoornis of trauma), probeer dan een andere TIPP-vaardigheid. Forceer het niet."
+        },
+        "paired": {
+          "label": "Spierontspanning op de adem",
+          "headline": "Aanspannen, dan loslaten, spier voor spier",
+          "steps": {
+            "0": "Ga zitten of liggen. Adem langzaam in.",
+            "1": "Span bij het inademen één spiergroep flink aan (bal je vuisten, trek je schouders op, span je gezicht aan).",
+            "2": "Houd de spanning 5 seconden vast.",
+            "3": "Laat bij het uitademen de spanning helemaal los. Merk het verschil tussen gespannen en losgelaten.",
+            "4": "Ga zo je hele lichaam door: handen, armen, schouders, gezicht, nek, borst, buik, benen, voeten.",
+            "5": "Het geheel duurt ongeveer 5 minuten."
+          },
+          "why": "Een spier maximaal aanspannen en dan loslaten geeft diepere ontspanning dan alleen proberen te ontspannen (onderzoek van Jacobson naar progressieve spierontspanning, uitgewerkt in de jaren 1930). Als je elk loslaten combineert met een uitademing, versterken de twee effecten elkaar.",
+          "caution": "Heb je een blessure, een pijnsyndroom of hypermobiliteit, sla dan de spiergroepen over die pijn doen. De spanning moet stevig zijn, maar nooit pijnlijk."
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "Vier DBT-vaardigheden om een crisis te doorstaan (Temperatuur, Intensief bewegen, Rustig ademen, Spierontspanning op de adem) bij acute nood. Bedoeld om je lichaam in 30 seconden tot 10 minuten te kalmeren VOORDAT je probeert er met nadenken uit te komen. Basisvaardigheid voor stresstolerantie uit DBT, van Linehan.",
+        "back_to_sel_hub": "Terug naar SEL Hub",
+        "back": "← Terug",
+        "four_dbt_crisis_survival_skills_for": "Vier DBT-vaardigheden om een crisis te doorstaan bij acute nood. Eerst doen, dan denken.",
+        "tipp_sections": "TIPP-onderdelen",
+        "tipp_is_for_acute_distress_not": "🆘 TIPP is voor ACUTE nood, niet voor gewone stress. ",
+        "if_you_are_in_crisis_right": "Zit je nu in een crisis (denk je erover jezelf iets aan te doen, ben je in direct gevaar), gebruik dan de Crisisgids in deze SEL Hub, bel 988 (Suicide and Crisis Lifeline) of sms HOME naar 741741 (Crisis Text Line). TIPP kan je door de komende 5 minuten helpen; een mens kan langer bij je zijn.",
+        "tipp_is_a_real_dbt_skill": "TIPP is een echte DBT-vaardigheid, maar het is geen therapie. Merk je dat je vaak naar TIPP grijpt, dan zegt dat iets; bespreek het met een schoolbegeleider of schoolpsycholoog.",
+        "tipp_quick_chooser": "TIPP-snelkiezer",
+        "body_first_chooser": "Kiezer: eerst het lichaam",
+        "match_the_skill_to_the_signal": "Kies de vaardigheid die past bij het signaal dat je lichaam nu geeft.",
+        "helped_logcount_helped": "{helped}/{logCount} geholpen",
+        "no_sessions_logged": "Geen sessies vastgelegd",
+        "start_label": "{label} starten",
+        "choose": "Kiezen",
+        "pick_one_do_it_notice_if": "Kies er één. Doe het. Let op of de meter beweegt.",
+        "you_do_not_need_to_do": "Je hoeft niet alle vier te doen. Kies degene die past bij waar je nu bent. TIPP is SNEL: 30 seconden tot 10 minuten.",
+        "duration_seconds": "~{duration} seconden",
+        "logged_glad_it_helped": "Vastgelegd — fijn dat het hielp.",
+        "logged_try_a_different_tipp_next": "Vastgelegd — probeer volgende keer een andere TIPP-vaardigheid.",
+        "tipp_session_logged": "TIPP-sessie vastgelegd.",
+        "active_letter": "Actief · {letter}",
+        "steps": "Stappen",
+        "why_this_works": "🧠 Waarom dit werkt",
+        "caution": "⚖️ Let op: ",
+        "done_that_helped": "✓ Klaar. Dat hielp.",
+        "done_try_a_different_one": "Klaar. Probeer een andere.",
+        "try_a_different_one": "⤴ Probeer een andere",
+        "exit_without_logging": "Stoppen zonder vastleggen",
+        "exit": "Stoppen",
+        "no_tipp_sessions_logged_yet": "Nog geen TIPP-sessies vastgelegd.",
+        "after_you_do_a_tipp_skill": "Leg een TIPP-vaardigheid vast nadat je hem hebt gedaan, zodat je leert welke voor jou werken.",
+        "total_sessions": "Totaal aantal sessies",
+        "helped": "Geholpen",
+        "by_skill": "Per vaardigheid",
+        "recent_sessions": "Recente sessies",
+        "unknown": "(onbekend)",
+        "helped_2": "✓ geholpen",
+        "tried_another": "⤴ andere geprobeerd",
+        "read_this_first": "🆘 Lees dit eerst",
+        "tipp_is_for_acute_distress_the": "TIPP is voor ACUTE nood: het moment waarop je op het punt staat iets te doen waar je spijt van krijgt, of het gevoel hebt dat je de komende 5 minuten niet volhoudt. Het is NIET voor gewone stress, een sombere bui of angstige gedachten. TIPP is snel, het is lichamelijk, en het is bedoeld om je door de komende minuten te helpen, zodat praten, nadenken of om hulp vragen weer mogelijk wordt. Zit je in een crisis, gebruik dan de Crisisgids of bel 988 / sms HOME naar 741741.",
+        "what_tipp_is": "Wat TIPP is",
+        "tipp_is_a_set_of_four": "TIPP is een set van vier DBT-vaardigheden om een crisis te doorstaan, die direct op je lichaam werken voordat ze op je hoofd werken. Het idee: als je lichaam op scherp staat (bonzend hart, racende gedachten, klaar om op een impuls te handelen), werkt proberen “je eruit te denken” zelden, omdat je denkende brein offline is. Eerst moet je lichaam terugkomen.",
+        "each_tipp_skill_uses_a_physiological": "Elke TIPP-vaardigheid gebruikt een lichamelijk mechanisme dat de stressreactie onderbreekt: kou op je gezicht zet de duikreflex in gang, intensief bewegen verbrandt adrenaline, rustig ademen verschuift de balans van het autonome zenuwstelsel, en spierontspanning op de adem geeft ontspanning na de spanning. Ze werken binnen 30 seconden tot 10 minuten, niet pas na dagen.",
+        "where_tipp_comes_from": "Waar TIPP vandaan komt",
+        "tipp_is_part_of_the_distress": "TIPP hoort bij de module Stresstolerantie van Dialectische Gedragstherapie (DBT), die Marsha Linehan vanaf de jaren 1980 ontwikkelde. Linehan ontwikkelde DBT voor mensen die emoties heftig en reactief beleven, oorspronkelijk voor chronisch suïcidale patiënten met een borderline-persoonlijkheidsstoornis. De vaardigheden voor stresstolerantie zijn bedoeld voor momenten van “een crisis doorstaan”, waarin het enige doel is om de komende minuten niets erger te maken. TIPP wordt nu veel aangeleerd in de geestelijke gezondheidszorg voor kinderen en jongeren, op traumasensitieve scholen en in ambulante DBT-vaardigheidsgroepen.",
+        "sources_and_learn_more": "📚 Bronnen en meer weten",
+        "authoritative_resources_for_tipp_and_dbt": "Betrouwbare bronnen over TIPP en DBT.",
+        "the_standard_manual_tipp_is_in": "Het standaardhandboek; TIPP staat in de module Stresstolerantie (Distress Tolerance).",
+        "practical_worksheets_including_tipp_handouts": "Praktische werkbladen, waaronder hand-outs over TIPP.",
+        "linehan_founded_organization_for_dbt_training": "Door Linehan opgerichte organisatie voor DBT-training en -certificering.",
+        "free_open_educational_resource_covers_tipp": "Gratis open leermiddel; behandelt TIPP en andere vaardigheden voor stresstolerantie.",
+        "honest_limits": "⚖️ Eerlijke grenzen",
+        "tipp_is_a_survival_skill_not": "TIPP is een overlevingsvaardigheid, geen oplossing. Het helpt je door de komende 5 minuten; het pakt niet aan waarom je in nood zit.",
+        "if_you_find_yourself_reaching_for": "Merk je dat je elke dag naar TIPP grijpt, dan is dat een teken dat er iets groters in je leven speelt, waar een begeleider of therapeut samen met jou naar zou moeten kijken.",
+        "tipp_works_on_hyperarousal_too_activated": "TIPP werkt bij hyperarousal (te veel geactiveerd). Het werkt NIET bij hypoarousal (uitgeschakeld, verdoofd, gedissocieerd); daarvoor is een andere DBT-vaardigheid (Zelf troosten – Self-Soothe, ACCEPTS) of gewoon contact met een ander mens nuttiger.",
+        "the_cautions_on_each_skill_are": "De waarschuwingen bij elke vaardigheid zijn echt. Temperatuur is niet geschikt (gecontra-indiceerd) bij hartaandoeningen en sommige eetstoornissen; intensief bewegen is niet geschikt bij sommige medische aandoeningen; bouw het rustig af als een vaardigheid niet goed voelt.",
+        "tipp_is_best_learned_in_a": "TIPP kun je het best LEREN op een moment zonder crisis, zodat je de vaardigheden hebt geoefend voordat je ze nodig hebt. Ze één keer doen in een rustige periode is de beste voorbereiding.",
+        "notes_for_educators": "📝 Opmerkingen voor leerkrachten: ",
+        "tipp_is_most_useful_when_students": "TIPP is het nuttigst als leerlingen het een of twee keer hebben geoefend tijdens Crew-tijd, en het niet voor het eerst tegenkomen in een crisis. Een eenvoudig Crew-protocol: loop samen één TIPP-vaardigheid door (rustig ademen is het makkelijkst in een klas), noem de andere drie en wijs leerlingen dan op deze tool. Combineer met de Crisisgids voor elke leerling die tekenen van acute nood laat zien.",
+        "tipp_pocket_card": "🖨 TIPP-zakkaart. ",
+        "print_and_fold_carry_in_a": "Print en vouw; draag hem in je broekzak, portemonnee of agenda. Het gaat erom dat je de vier vaardigheden bij je hebt VOORDAT je ze nodig hebt. De zakkaart past op één pagina; de waarschuwingen staan erop omdat ze ertoe doen.",
+        "print_save_as_pdf": "🖨 Afdrukken / Opslaan als pdf",
+        "tipp_pocket_card_2": "TIPP · Zakkaart",
+        "dbt_distress_tolerance_linehan": "DBT Stresstolerantie · Linehan",
+        "when_to_use": "Wanneer gebruiken: ",
+        "acute_distress_where_you_might_do": "bij acute nood waarin je iets zou kunnen doen waar je spijt van krijgt. Eerst je lichaam; praten komt later. Zit je in een crisis, bel dan 988 of sms HOME naar 741741.",
+        "caution_2": "Let op: ",
+        "practice_tipp_once_in_a_calm": "Oefen TIPP één keer op een rustig moment, voordat je het nodig hebt. Afgedrukt vanuit AlloFlow SEL Hub. Bron: Linehan, DBT Skills Training Manual (2014).",
+        "tipp_crisis_survival_skills": "TIPP-vaardigheden om een crisis te doorstaan"
+      },
+      "tabs": {
+        "home": {
+          "label": "Ik heb dit nu nodig"
+        },
+        "log": {
+          "label": "Mijn logboek"
+        },
+        "print": {
+          "label": "Zakkaart"
+        },
+        "about": {
+          "label": "Over"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "Te heet of impulsief",
+          "fit": "Snelste reset"
+        },
+        "1": {
+          "signal": "Veel adrenaline",
+          "fit": "Gebruik je lichaam"
+        },
+        "2": {
+          "signal": "Je adem kan leiden",
+          "fit": "Stilste optie"
+        },
+        "3": {
+          "signal": "Verkrampt of gespannen",
+          "fit": "Spanning loslaten"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "Voor wie: ",
+      "label_what": "Wat: ",
+      "crisis_resources": {
+        "988": {
+          "label": "988 Suicide & Crisis Lifeline (hulplijn voor zelfdoding en crisis)",
+          "contact": "Bel of sms 988",
+          "script": "Je kunt zeggen: “Ik maak me zorgen om een vriend of vriendin.” Dat is genoeg. Zij leiden het gesprek vanaf daar."
+        },
+        "crisistext": {
+          "contact": "Sms HOME naar 741741",
+          "script": "Je kunt sms'en: “Iemand uit mijn vriendengroep heeft het erover zichzelf iets aan te doen en ik weet niet wat ik moet doen.” Dat werkt."
+        },
+        "trevor": {
+          "contact": "Bel 1-866-488-7386 · Sms START naar 678-678",
+          "script": "Je kunt bellen of sms'en: “Ik heb een vriend of vriendin die LGBTQ+ is en het nu echt heel zwaar heeft.”"
+        },
+        "911": {
+          "label": "911 Noodnummer",
+          "contact": "Bel 911",
+          "script": "Je kunt zeggen: “Iemand uit mijn vriendengroep is in gevaar en ik weet niet wat ik moet doen.” Ze helpen je."
+        },
+        "211": {
+          "label": "211 — lijn voor hulp in je buurt",
+          "contact": "Bel 211 · of ga naar 211.org",
+          "script": "Je kunt zeggen: “Ik zoek crisisdiensten voor psychische gezondheid in mijn buurt, voor een vriend of vriendin.” Ze sturen je door naar de juiste organisatie in de buurt."
+        },
+        "namilocator": {
+          "label": "NAMI Affiliate Locator (landelijke gids)",
+          "contact": "Ga naar nami.org/findsupport",
+          "script": "Op de site: vul je postcode in → “Find My Local NAMI” → bekijk contactgegevens, programma's en het hulplijnnummer voor jouw regio."
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov (federale gids)",
+          "contact": "Ga naar findtreatment.gov · of 1-800-662-HELP (4357)",
+          "script": "Op de site: vul je postcode in → filter op “Mental Health Services” → verfijn op wat je kunt betalen of op je verzekering. De telefonische hulplijn is handig als de website te veel is."
+        },
+        "befrienders": {
+          "contact": "Ga naar befrienders.org",
+          "script": "Op de site: kies je land → bekijk lokale hulplijnnummers, openingstijden, talen en manieren om contact op te nemen."
+        },
+        "iasp": {
+          "label": "IASP — International Association for Suicide Prevention (Internationale Vereniging voor Zelfdodingspreventie)",
+          "contact": "Ga naar iasp.info/resources/Crisis_Centres",
+          "script": "Op de site: kies je land → bekijk crisislijnen met contactmogelijkheden en openingstijden."
+        },
+        "mainecrisis": {
+          "contact": "Bel 1-888-568-1112",
+          "script": "Noem je county of woonplaats als je kunt. Ze sturen je door naar het juiste team in de buurt."
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance (Cumberland County + heel Maine)",
+          "contact": "Algemeen: 207-553-5800 · Crisis: 1-888-568-1112",
+          "script": "Voor een vriend(in) in acute crisis in Cumberland County: bel 1-888-568-1112 en vraag of het mobiele crisisteam kan komen naar de plek waar je vriend(in) is. Voor steun zonder crisis / om een gezin te verbinden met langdurige hulp: bel het algemene nummer tijdens kantooruren."
+        },
+        "namimaine": {
+          "contact": "Bel 1-800-464-5767",
+          "script": "Handig voor vragen die niet meteen dringend zijn: “Hoe help ik een vriend of vriendin een therapeut te vinden?” of “Waar kunnen gezinnen terecht voor steun?” Ook: “Doet onze school mee aan Ending the Silence?”"
+        },
+        "school": {
+          "label": "Je schoolbegeleider of schoolpsycholoog",
+          "contact": "Loop binnen, stuur een briefje of vraag een leerkracht om je erheen te brengen",
+          "script": "Je kunt zeggen: “Ik maak me zorgen om een vriend of vriendin.” Lukt het niet om het hardop te zeggen, schrijf het dan op een plakbriefje en geef het aan hen."
+        }
+      },
+      "res_988_who": "Iedereen in de VS — ook jongeren die zich zorgen maken om een vriend(in)",
+      "res_988_what": "Gratis, vertrouwelijk, 24/7. Getrainde crisishulpverleners. Verwijst zo nodig door naar hulp bij jou in de buurt.",
+      "res_crisistext_who": "Iedereen in de VS, Canada, het VK of Ierland (codes verschillen per land) — alleen sms'en is fijn als je niet wilt praten",
+      "res_crisistext_what": "Gratis, vertrouwelijk, 24/7. Een echte hulpverlener sms't terug. Gemiddelde wachttijd onder de 5 minuten.",
+      "res_trevor_who": "LGBTQ+-jongeren en vrienden die hen steunen (VS)",
+      "res_trevor_what": "Gratis, vertrouwelijk, 24/7. Speciaal getraind voor crisissen bij LGBTQ+-jongeren. LGBTQ+-jongeren hebben vaker gedachten aan zelfdoding; deze hulp is gemaakt voor die realiteit.",
+      "res_911_who": "Als iemand op dit moment in direct lichamelijk gevaar is (VS)",
+      "res_911_what": "Voor acute noodgevallen: iemand doet zichzelf pijn, heeft iets ingenomen of is nu niet veilig. Stuurt politie, brandweer en ambulance.",
+      "res_211_who": "Iedereen in de VS of Canada — stuurt je via het netnummer automatisch door naar hulp bij jou in de buurt",
+      "res_211_what": "Gratis, vertrouwelijk, 24/7. Verbindt je met crisisdiensten voor psychische gezondheid in je buurt, voedselhulp, huisvesting, gezinsondersteuning en honderden andere programma's in je gemeente. Gerund door United Way + lokale non-profitorganisaties. Anders dan 988 — 211 is de bredere lijn voor maatschappelijke hulp.",
+      "res_namilocator_who": "Iedereen in de VS — typ je postcode en zie je lokale NAMI-afdeling",
+      "res_namilocator_what": "Elke staat heeft minstens één NAMI-afdeling; veel staten hebben er meerdere. Lokale afdelingen bieden gratis steungroepen voor gezinnen, herstelprogramma's onder leiding van ervaringsdeskundigen, cursussen (Family-to-Family, Ending the Silence op scholen) en warmlines (luisterlijnen voor als het geen crisis is). NAMI HelpLine: 1-800-950-6264.",
+      "res_samhsa_who": "Iedereen in de VS die langdurige hulp zoekt bij psychische problemen of middelengebruik",
+      "res_samhsa_what": "Federale database van ~13,000 behandelcentra — therapie, psychiatrie, intensieve ambulante zorg, residentiële zorg, dubbele diagnose. Filter op postcode, op je verzekering, op taal en op aangeboden hulp. SAMHSA heeft ook een National Helpline die 24/7 bereikbaar is (1-800-662-4357) en gratis doorverwijst.",
+      "res_befrienders_who": "Iedereen buiten de VS die in eigen land crisishulp zoekt",
+      "res_befrienders_what": "Een wereldwijd netwerk van centra met vrijwilligers voor emotionele steun in meer dan 30 landen. Typ je land in op de site en je krijgt de hulplijnnummers en chatmogelijkheden voor jouw regio. De meeste aangesloten centra zijn gratis, vertrouwelijk en 24/7 bereikbaar.",
+      "res_iasp_who": "Iedereen buiten de VS — uitgebreide wereldwijde gids van crisislijnen",
+      "res_iasp_what": "IASP houdt de meest volledige internationale lijst bij van crisislijnen voor zelfdodingspreventie. Doorzoekbaar per land, met opties voor telefoon, sms en online chat. Vaak het beste startpunt als jouw land niet bij Befrienders staat.",
+      "res_mainecrisis_who": "Iedereen in Maine — verbindt met crisisdiensten in de hele staat",
+      "res_mainecrisis_what": "Gratis, vertrouwelijk, 24/7. Hulpverleners uit Maine. Gerund door The Opportunity Alliance voor het zuiden van Maine en door andere regionale organisaties in de rest van de staat. Kan zo nodig lokale mobiele crisisteams sturen.",
+      "res_opportunityalliance_who": "Kinderen, tieners, gezinnen en volwassenen in Cumberland County en in heel Maine",
+      "res_opportunityalliance_what": "Runt het Cumberland County Crisis Mobile Response-team — de mensen die echt naar je toe komen als 1-888-568-1112 iemand stuurt in Portland en omliggende gemeenten. Biedt ook Children's Behavioral Health Services, psychische zorg aan huis, gezinsondersteuning en de basis van 211 Maine voor het zuiden van Maine.",
+      "res_namimaine_who": "Iedereen in Maine die informatie, steun of een doorverwijzing zoekt rond psychische gezondheid",
+      "res_namimaine_what": "Geen crisislijn, maar een prima plek overdag om je weg te vinden in de geestelijke gezondheidszorg, voor steun van ervaringsdeskundigen en voor lokale programma's. Runt ook het schoolprogramma Ending the Silence — jonge sprekers van ongeveer schoolleeftijd die direct in klassen op de middelbare school vertellen over psychische aandoeningen.",
+      "res_school_who": "Elke openbare school in de VS heeft getrainde begeleiders; de meeste middelbare scholen hebben ook een schoolpsycholoog",
+      "res_school_what": "Ze zijn hiervoor opgeleid. Ze hebben een geheimhoudingsplicht, behalve als het om veiligheid gaat. Ze kunnen je in contact brengen met hulp van buiten, samen met jou met je ouders praten en je de hele tijd blijven steunen.",
+      "resource_groups": {
+        "national": {
+          "label": "Werkt overal in de VS",
+          "desc": "Deze vier vormen de basis, overal. Leer 988 uit je hoofd."
+        },
+        "lookup": {
+          "label": "Vind hulp bij jou in de buurt (VS)",
+          "desc": "Gidsen die je doorsturen naar hulp in jouw regio. Handig voor langdurige hulp na het crisisgesprek."
+        },
+        "international": {
+          "label": "Buiten de VS?",
+          "desc": "988, 211, Trevor en SAMHSA zijn alleen voor de VS. Deze gidsen dekken de rest van de wereld."
+        },
+        "maine": {
+          "label": "Partners in Maine (lokale organisaties bij naam)",
+          "desc": "Bij naam genoemd omdat King Middle en Portland Public Schools de pilotomgeving van deze tool zijn. Ben je ergens anders, gebruik dan de gidsen hierboven om vergelijkbare hulp bij jou te vinden."
+        },
+        "school": {
+          "label": "Hulp op school",
+          "desc": "Vaak de volwassene die je tijdens de schooldag het makkelijkst bereikt. Beschikbaar op elke openbare school in de VS."
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "Aanhoudend sombere stemming",
+          "desc": "Verdriet, leegte of een vlak / verdoofd gevoel dat wekenlang bijna elke dag het grootste deel van de dag aanhoudt. Anders dan gewone verdrietige dagen die komen en gaan."
+        },
+        "irritability": {
+          "label": "Meer prikkelbaarheid",
+          "desc": "Vooral bij jongeren uit een depressie zich vaak meer als prikkelbaarheid of boosheid dan als verdriet. Uitvallen om kleine dingen, de hele tijd lichtgeraakt zijn."
+        },
+        "withdrawal": {
+          "label": "Terugtrekken uit activiteiten",
+          "desc": "Afstand nemen van hobby's, sport, vrienden en dingen waar iemand vroeger van genoot. Steeds weer afspraken afzeggen. Veel meer tijd alleen doorbrengen dan vroeger."
+        },
+        "sleep": {
+          "label": "Veranderingen in slaap",
+          "desc": "Veel meer slapen dan normaal, of amper slapen. Moeilijk in slaap komen, uitgeput wakker worden, de dag doorslapen."
+        },
+        "appetite": {
+          "label": "Veranderingen in eetlust",
+          "desc": "Veel meer of veel minder eten dan normaal. Maaltijden overslaan, of steeds eten zonder ervan te genieten. Opvallende gewichtsveranderingen binnen een paar weken."
+        },
+        "energy": {
+          "label": "Weinig energie / vermoeidheid",
+          "desc": "Alles voelt zwaar. Zelfs kleine taken voelen onmogelijk. Misschien zegt iemand dat hij of zij altijd moe is, zelfs na het slapen."
+        },
+        "school": {
+          "label": "Minder betrokken bij school",
+          "desc": "Cijfers gaan omlaag, opdrachten worden niet ingeleverd, achterop raken bij vakken die vroeger geen probleem waren. Vaak samen met gemiste schooldagen."
+        },
+        "selfcare": {
+          "label": "Minder zelfzorg",
+          "desc": "Minder aandacht voor hygiëne, uiterlijk of dagelijkse routines die iemand vroeger wel volhield. Geen nieuwe stijl — eerder het gevoel dat het iemand niets meer kan schelen."
+        },
+        "hopeless": {
+          "label": "Hopeloze of zelfkritische uitspraken",
+          "desc": "Vaak dingen zeggen als “wat heeft het voor zin”, “niks doet ertoe”, “ik ben niks waard”, “ik ben een last”. Dit zijn taalpatronen om serieus te nemen, ook als ze terloops worden gezegd."
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "PRATEN — wat iemand zegt",
+        "mood_what_you_re_seeing": "STEMMING — wat je ziet",
+        "behavior_what_they_re_doing": "GEDRAG — wat iemand doet",
+        "a_friend_opens_up_at_lunch": "Een vriendin vertelt iets tijdens de lunch",
+        "a_direct_disclosure_over_text": "Iemand vertelt het je direct via een bericht",
+        "the_aftermath_your_friend_is_now": "Daarna — je vriend(in) krijgt nu hulp",
+        "help_is_available_right_now": "Er is nu meteen hulp",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline · bel of sms 988",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line · sms HOME naar 741741",
+        "tell_a_school_counselor_teacher_parent": "🏫 Vertel het aan een schoolbegeleider, leerkracht, ouder of een andere volwassene die je vertrouwt",
+        "box_breathing_started_4_seconds_in": "Vierkantsademhaling gestart. 4 seconden in, 4 vasthouden, 4 uit, 4 vasthouden.",
+        "box_breathing_paused": "Vierkantsademhaling gepauzeerd.",
+        "box_breathing_pacer": "🌬️ Ritmegever voor vierkantsademhaling",
+        "a_4_4_4_4_rhythm": "Een 4-4-4-4-ritme: adem 4 tellen in, houd 4 tellen vast, adem 4 tellen uit, houd 4 tellen vast. Wordt gebruikt door zorgprofessionals en hulpverleners om het zenuwstelsel te kalmeren. De cirkel wordt groter als je inademt en kleiner als je uitademt.",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}, ronde {cyclesDone}",
+        "breathing_pacer_ready": "Ademritmegever klaar",
+        "ready": "Klaar",
+        "cycle_cyclesdone": "Ronde {cyclesDone}",
+        "start_box_breathing_pacer": "Ritmegever voor vierkantsademhaling starten",
+        "pause_box_breathing_pacer": "Ritmegever voor vierkantsademhaling pauzeren",
+        "pause": "⏸ Pauze",
+        "if_breathing_exercises_feel_uncomfortable_or": "Als ademhalingsoefeningen ongemakkelijk voelen of je angstiger maken, is dat eigenlijk heel gewoon — stop en probeer in plaats daarvan gronden. Met de instelling voor minder beweging blijft de cirkel stil en volg je het label van de fase.",
+        "grounding_complete_you_ve_returned_to": "Gronden voltooid. Je bent terug in het hier en nu.",
+        "grounding_reset": "Gronden opnieuw gestart.",
+        "5_4_3_2_1_grounding": "👁️ 5-4-3-2-1 gronden",
+        "a_sensory_anchor_when_your_thoughts": "Een anker via je zintuigen als je gedachten racen of je je losgekoppeld voelt. Ga de zintuigen één voor één langs. Je hoeft niets op te schrijven — merk het alleen op.",
+        "you_ve_come_back_to_the": "Je bent terug in het nu.",
+        "grounding_doesn_t_make_hard_feelings": "Gronden laat moeilijke gevoelens niet verdwijnen. Het geeft ze alleen even een kleinere plek, zodat de golf voorbij kan gaan.",
+        "do_it_again": "↻ Nog een keer",
+        "step_stepidx_of_groundstepscount": "Stap {stepIdx} van {GROUNDSTEPSCount}",
+        "optional_jot_what_you_notice_private": "Optioneel: schrijf op wat je opmerkt (privé, wordt niet opgeslagen).",
+        "notes_for_step_stepidx": "Notities bij stap {stepIdx}",
+        "reset_grounding_to_first_step": "Gronden terugzetten naar de eerste stap",
+        "reset": "↻ Opnieuw",
+        "next_step": "Volgende stap",
+        "finish_grounding_exercise": "Oefening gronden afronden",
+        "next": "Volgende →",
+        "finish": "Klaar ✓",
+        "this_device_would_not_save_it": "Dit apparaat kon het niet opslaan. Je werk staat nog op het scherm — gebruik Exporteren of Afdrukken om een kopie te bewaren voordat je deze pagina sluit.",
+        "added_to_your_toolkit": "Toegevoegd aan je gereedschapskist",
+        "removed_from_your_toolkit": "Verwijderd uit je gereedschapskist",
+        "my_coping_toolkit": "🧰 Mijn coping-gereedschapskist",
+        "tap_any_strategy_to_add_it": "Tik op een strategie om die aan je persoonlijke gereedschapskist toe te voegen. Alleen op je apparaat opgeslagen — er wordt niets geüpload. Maak een lijst van 5-7 dingen die in het verleden echt voor je hebben gewerkt, zodat je in een moeilijk moment niet vanaf nul hoeft na te denken.",
+        "my_toolkit_savedcount": "✓ Mijn gereedschapskist ({savedCount})",
+        "remove_label_from_toolkit": "“{label}” uit gereedschapskist verwijderen",
+        "remove_from_toolkit": "Uit gereedschapskist verwijderen: ",
+        "add_to_toolkit": "Toevoegen aan gereedschapskist: ",
+        "note_this_toolkit_is_a_complement": "Let op: deze gereedschapskist is een aanvulling op professionele steun, geen vervanging. Zit je in een crisis, bel of sms dan 988.",
+        "e_g_when_i_haven_t": "bijv. “Als ik niet heb geslapen en het hele weekend alleen ben geweest”",
+        "e_g_listen_to_a_calming": "bijv. “Naar een rustgevende playlist luisteren, een wandeling maken, koud water in mijn gezicht spetteren”",
+        "e_g_library_after_school_my": "bijv. “De bieb na school, mijn vriendin Maya, het koffietentje”",
+        "e_g_mom_cell_aunt_liz": "bijv. “Mama (mobiel ____), tante Liz (mobiel ____), begeleider meneer K (lokaal 204)”",
+        "e_g_988_lifeline_call_or": "bijv. “988 Lifeline (bellen of sms'en), Crisis Text Line (sms HOME naar 741741), dr. ____ bij praktijk ____, schoolbegeleider”",
+        "e_g_give_my_medications_to": "bijv. “Mijn medicijnen aan mama geven om weg te sluiten. Uit de kelder blijven. 's Nachts bij iemand blijven als het echt slecht gaat.”",
+        "could_not_open_print_window_your": "Kon het afdrukvenster niet openen — je browser heeft het misschien geblokkeerd.",
+        "print_preview_opened": "Afdrukvoorbeeld geopend.",
+        "print_could_not_be_opened": "Afdrukken kon niet worden geopend.",
+        "my_safety_plan_stanley_brown": "📋 Mijn veiligheidsplan (Stanley-Brown)",
+        "best_built_with_a_counselor_or": "Het best SAMEN met een begeleider of therapeut te maken. ",
+        "a_safety_plan_is_most_effective": "Een veiligheidsplan werkt het best als een volwassene die je kent je helpt het in te vullen — die denkt aan dingen die jij zou missen, en het is dan iemand bij wie je al hebt geoefend om contact op te nemen. Je kunt hier beginnen, het opslaan en het samen afmaken. Alleen op dit apparaat opgeslagen.",
+        "filledcount_stepscount_filled": "{filledCount} / {STEPSCount} ingevuld",
+        "print_save_as_pdf": "🖨 Afdrukken / opslaan als pdf",
+        "clear_my_saved_safety_plan": "Mijn opgeslagen veiligheidsplan wissen",
+        "clear_plan": "✕ Plan wissen",
+        "stanley_brown_safety_planning_intervention_is": "De Stanley-Brown Safety Planning Intervention wordt aanbevolen door het Suicide Prevention Resource Center en is een van de best onderzochte, wetenschappelijk onderbouwde veiligheidsplannen. De volledige klinische versie doorloop je samen met een opgeleide hulpverlener.",
+        "you_are_not_the_therapist": "Jij bent niet de therapeut",
+        "your_job_ended_when_you_connected": "Je taak zat erop toen je je vriend(in) in contact bracht met een volwassene. Vanaf nu wordt je rol weer kleiner: gewoon vriend(in) zijn — en dat is precies de goede maat. Behandeling, veiligheidsplannen, nazorg — dat zijn taken voor opgeleide professionals. Jouw taak is er zijn, vriendschap en niet verdwijnen.",
+        "if_your_friend_goes_to_treatment": "Als je vriend(in) in behandeling gaat, is dat een succes — geen in de steek laten",
+        "when_a_friend_gets_professional_help": "Als een vriend(in) professionele hulp krijgt — therapie, medicijnen, intensieve programma's, soms een opname in het ziekenhuis — kan het voelen alsof de vriendschap op pauze is gezet. Dat is niet zo. Die behandeling heb jij mogelijk helpen maken. Je vriend(in) doet het zware werk dat ervoor zorgt dat die er blijft. Stuur een appje. Houd een plekje vrij bij de lunch. Wees er als je vriend(in) terugkomt.",
+        "concrete_moves_that_help": "Concrete stappen die helpen",
+        "tell_another_adult_you_trust": "Vertel het aan nog een volwassene die je vertrouwt. ",
+        "even_if_the_situation_has_been": "Ook als de situatie “afgehandeld” is: JIJ hebt iets meegemaakt. Een ouder, begeleider of therapeut kan je helpen het te verwerken.",
+        "pause_platforms_that_are_amplifying_it": "Neem pauze van platforms die het erger maken. ",
+        "if_social_media_is_making_your": "Als sociale media je zorgen groter maken, neem dan een pauze. Demp, ontvolg of sluit de app voor een dag.",
+        "keep_your_own_routines": "Houd je eigen routines vast. ",
+        "sleep_food_school_hobbies_these_are": "Slapen, eten, school, hobby's. Dat zijn de vloerplanken die je stevig houden — laat ze niet wegglijden terwijl je dit draagt.",
+        "ask_for_breaks_when_you_need": "Vraag om pauzes als je ze nodig hebt. ",
+        "you_are_allowed_to_not_text": "Je mag best niet meteen terugappen. Je mag een paar uur niet bereikbaar zijn. Het herstel van je vriend(in) vraagt niet dat jij altijd paraat staat.",
+        "notice_your_own_feelings": "Let op je eigen gevoelens. ",
+        "sadness_anger_fear_exhaustion_are_normal": "Verdriet, boosheid, angst, uitputting zijn normaal. Je verdoofd voelen is ook normaal. Blijven de gevoelens langer dan een paar weken zwaar, dan is dat een moment om met een begeleider te praten.",
+        "keep_your_other_friendships": "Houd je andere vriendschappen vast. ",
+        "don_t_let_supporting_one_friend": "Laat het steunen van één vriend(in) je niet isoleren van alle anderen. Je hele sociale netwerk is wat je overeind houdt.",
+        "when_supporting_a_friend_has_hit": "Als het steunen van een vriend(in) JOU hard heeft geraakt",
+        "if_you_re_losing_sleep_having": "Slaap je slecht, heb je gedachten die zich blijven opdringen, voel je je verdoofd of krijg je zelf gedachten aan zelfbeschadiging — dan zijn dat tekenen dat jij ook steun nodig hebt. Bel 988, sms HOME naar 741741 of praat met een schoolbegeleider. Helpers hebben ook hulp nodig. Het is geen schande om die nodig te hebben.",
+        "you_showed_up_you_noticed_you": "Je was er. Je merkte het op. Je zei iets. Je vertelde het aan iemand. Dat is genoeg. Dat is alles.",
+        "today": "vandaag",
+        "yesterday": "gisteren",
+        "value_days_ago": "{value} dagen geleden",
+        "value_weeks_ago": "{value} weken geleden",
+        "value_months_ago": "{value} maanden geleden",
+        "if_you_are_in_crisis_right": "🚨 ZIT JE NU IN EEN CRISIS:",
+        "call_or_text": "Bel of sms ",
+        "us_suicide_crisis_lifeline": " (Suicide + Crisis Lifeline in de VS). ",
+        "text": "Sms ",
+        "to": " naar ",
+        "reach_a_real_person_24_7": "Bereik 24/7 een echt mens.",
+        "my_safety_plan": "Mijn veiligheidsplan",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012 — de interventie met het sterkste bewijs om nieuwe pogingen te verminderen. Maak JOUW plan als je rustig bent.",
+        "why_this_works": "🎓 Waarom dit werkt: ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry. Door dit plan op te schrijven als je rustig bent, kun je er in een crisis makkelijker bij. Deel het met iemand die je vertrouwt — begeleider, ouder, vriend(in).",
+        "need_a_sign": "Vul een signaal in.",
+        "my_warning_signs_log": "Mijn logboek met waarschuwingssignalen",
+        "track_when_warning_signs_appear_so": "Houd bij wanneer waarschuwingssignalen verschijnen, zodat het patroon zichtbaar wordt. Je patroon kennen = het eerder opmerken.",
+        "what_sign_showed_up_e_g": "Welk signaal zag je? (bijv. “voelde me de hele middag verdoofd”, “wilde verdwijnen”)",
+        "context_where_what_was_happening": "Context (waar, wat er gebeurde)",
+        "intensity": "Intensiteit: ",
+        "what_helped_if_anything": "Wat hielp (als er iets hielp)",
+        "log_it": "💾 Vastleggen",
+        "helped_whathelped": "✓ Hielp: {whatHelped}",
+        "add_a_few_words_first_then": "Schrijf eerst een paar woorden en druk dan nog een keer op de knop.",
+        "my_coping_arsenal": "Mijn coping-arsenaal",
+        "strategies_that_have_actually_worked_for": "Strategieën die voor MIJ echt hebben gewerkt. Tik op “+1 gebruikt” als er een helpt — houd bij wat werkt.",
+        "a_strategy_that_worked_for_me": "Een strategie die voor mij werkte (bijv. “koud water op mijn gezicht”, “mama bellen”)",
+        "add_to_arsenal": "+ Toevoegen aan arsenaal",
+        "used_value": "{value} keer gebruikt",
+        "a_name_is_needed_before_this": "Er is een naam nodig voordat dit kan worden opgeslagen.",
+        "my_support_contacts": "Mijn steuncontacten",
+        "quick_access_list_of_people_crisis": "Snel te vinden lijst met mensen + crisislijnen + wanneer je wie gebruikt. Kaartje voor in je portemonnee.",
+        "name": "Naam",
+        "role_mom_therapist_friend": "Rol (moeder, therapeut, vriend(in))",
+        "contact_phone_text": "Contact (telefoon / sms)",
+        "when_to_reach_out_to_this": "Wanneer ik contact opneem met DEZE persoon",
+        "add": "+ Toevoegen",
+        "need_a_brief_description": "Voeg een korte beschrijving toe.",
+        "my_recovery_notes": "Mijn herstelnotities",
+        "after_a_hard_moment_log_what": "Schrijf na een moeilijk moment op wat hielp + wat niet. Zo leer je jezelf steeds beter kennen.",
+        "what_happened_brief": "Wat gebeurde er? (kort)",
+        "what_helped": "✓ Wat hielp",
+        "what_didn_t_help_or_made": "✗ Wat niet hielp (of het erger maakte)",
+        "what_i_want_future_me_to": "💌 Wat ik wil dat mijn toekomstige ik hiervan onthoudt",
+        "save": "💾 Opslaan",
+        "helped": "✓ Hielp: ",
+        "didn_t": "✗ Hielp niet: ",
+        "write_something_first_then_press_add": "Schrijf eerst iets en druk dan op Toevoegen.",
+        "my_hope_list": "Mijn hooplijst",
+        "reasons_to_keep_going_people_plans": "Redenen om door te gaan. Mensen, plannen, plekken, wat dan ook. Lees dit als het zwaar is.",
+        "one_of_your_reasons": "💛 Een van je redenen",
+        "a_reason_to_keep_going_small": "Een reden om door te gaan (klein of groot, wat dan ook)",
+        "my_safety_kit": "🛡 Mijn veiligheidskit",
+        "personal_crisis_support_tools": "Persoonlijke hulpmiddelen voor crisissteun",
+        "6_tools_to_build_your_safety": "6 tools om JOUW veiligheidsplan + coping-arsenaal op te bouwen. De nummers van crisislijnen zijn altijd zichtbaar. Alle gegevens blijven in je browser.",
+        "open": "Openen →",
+        "my_safety_kit_2": "← Mijn veiligheidskit",
+        "crisis_companion": "Crisisgids",
+        "peer_support_and_suicide_prevention_skills": "Steun aan leeftijdgenoten en vaardigheden voor zelfdodingspreventie. Wat je kunt doen als een vriend(in) depressief lijkt, in crisis is of erover denkt zichzelf iets aan te doen. Signalen herkennen, wat je wel (en niet) zegt, hoe je het vertelt aan een volwassene die je vertrouwt. Afgestemd op NEDA + AFSP + Sources of Strength + 988. Met inhoudswaarschuwing vooraf.",
+        "safety_plan_cleared": "Veiligheidsplan gewist.",
+        "all_distress_readings_cleared": "Alle metingen gewist.",
+        "clear_your_saved_safety_plan": "Je opgeslagen veiligheidsplan wissen?",
+        "clear_all_distress_readings": "Alle metingen wissen?",
+        "this_permanently_removes_every_step_of": "Hiermee wordt elke stap van je opgeslagen veiligheidsplan definitief van dit apparaat verwijderd. Dit kan niet ongedaan worden gemaakt. Druk eerst een kopie af of sla die op als je hem misschien nodig hebt.",
+        "this_permanently_deletes_your_entire_distress": "Hiermee wordt je hele geschiedenis van metingen definitief verwijderd, inclusief notities en trendgegevens. Dit kan niet ongedaan worden gemaakt.",
+        "cancel": "Annuleren",
+        "clear_safety_plan": "Veiligheidsplan wissen",
+        "clear_all_readings": "Alle metingen wissen",
+        "now_viewing_label": "Je bekijkt nu: {label}",
+        "content_note_before_you_continue": "Inhoudswaarschuwing voordat je verdergaat",
+        "this_module_is_about_what_to": "Deze module gaat over wat je kunt doen als een vriend(in) depressief is, in crisis is of erover denkt zichzelf iets aan te doen — ook over zelfdoding. Het gaat over:",
+        "recognizing_signs_of_depression_in_a": "Signalen van depressie herkennen bij een vriend(in)",
+        "crisis_warning_signs_at_a_general": "Waarschuwingssignalen van een crisis — op algemeen niveau, geen gedetailleerde instructies",
+        "how_to_ask_listen_and_respond": "Hoe je vraagt, luistert en reageert",
+        "how_and_when_to_tell_a": "Hoe en wanneer je het vertelt aan een volwassene die je vertrouwt",
+        "crisis_helplines_and_what_to_say": "Crisislijnen en wat je zegt als je belt",
+        "how_to_take_care_of_yourself": "Hoe je voor jezelf zorgt als je een vriend(in) hebt gesteund",
+        "what_this_module_does_not_include": "Wat deze module NIET bevat: ",
+        "specific_methods_of_self_harm_descriptions": "specifieke methoden van zelfbeschadiging, beschrijvingen van pogingen tot zelfdoding, “voor/na”-verhalen of andere inhoud die als handleiding zou kunnen werken. De informatie is bewust algemeen — gericht op bewustzijn, steun en mensen in contact brengen met hulp.",
+        "if_reading_about_these_topics_is": "Als lezen over deze onderwerpen nu moeilijk voor je is, ",
+        "please_consider_one_of_these_instead": "kies dan liever een van deze opties:",
+        "talk_with_a_trusted_adult_before": "Praat met een volwassene die je vertrouwt voordat je verdergaat — een schoolbegeleider, ouder of leerkracht",
+        "skip_this_module_and_explore_other": "Sla deze module over en ontdek andere tools in de SEL Hub",
+        "the_988_suicide_crisis_lifeline_free": " — de 988 Suicide & Crisis Lifeline (gratis, vertrouwelijk, 24/7)",
+        "home_to_741741": "HOME naar 741741",
+        "crisis_text_line_free_confidential_24": " — Crisis Text Line (gratis, vertrouwelijk, 24/7)",
+        "continuing_into_crisis_companion": "Verder naar de Crisisgids",
+        "i_understand_the_content_note_and": "Ik begrijp de inhoudswaarschuwing en wil verder naar de Crisisgids",
+        "i_understand_continue": "✓ Ik begrijp het — verder",
+        "returning_to_sel_hub_menu": "Terug naar het menu van de SEL Hub",
+        "take_me_back_to_the_menu": "← Breng me terug naar het menu",
+        "visitedcount_sectionscount_sections_visited": "{visitedCount} / {SECTIONSCount} onderdelen bekeken",
+        "crisis_companion_sections": "Onderdelen van de Crisisgids",
+        "visited": " (bekeken)",
+        "next_label": "Volgende: {label} →",
+        "breath_pacer": "Ademritmegever",
+        "a_visual_breathing_pacer_watch_the": "Een visuele ademritmegever. Kijk hoe de cirkel groter en kleiner wordt en laat je adem meegaan. Handig bij acute stress vóór een moeilijk gesprek, erna, of wanneer je lichaam je hoofd vóór is. Dit is een tool om te GEBRUIKEN — het vervangt geen enkele vorm van steun uit de rest van deze module.",
+        "cycle_cycles": "Ronde {cycles}",
+        "keep_going_as_long_as_feels": " · ga door zolang het goed voelt",
+        "press_start_when_you_re_ready": "Druk op Start als je er klaar voor bent",
+        "restart": "↺ Opnieuw beginnen",
+        "when_to_use_which": "💡 Wanneer gebruik je wat: ",
+        "box_breathing_4_4_4_4": "Vierkantsademhaling (4-4-4-4) voor algemene regulatie — militairen en hulpverleners gebruiken het. ",
+        "4_7_8_for_falling_asleep": "4-7-8 om in slaap te vallen of voor snelle rust in een acuut moment — de lange uitademing activeert het parasympathische systeem. ",
+        "equal_breath_6_6_for_sustainable": "Gelijke ademhaling (6-6) voor dagelijks gebruik op de lange termijn — zonder vasthouden, makkelijk vol te houden.",
+        "write_something_first_then_press_the": "Schrijf eerst iets en druk dan nog een keer op de knop.",
+        "grounding_5_4_3_2_1": "Gronden 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "Als je gedachten racen of je angst toeneemt, haalt de 5-4-3-2-1-techniek je aandacht terug naar je lichaam en het huidige moment. Gebruik elk van de 5 zintuigen, ook als sommige nu niet werken — noem wat je je herinnert, wat je je voorstelt, wat je had willen ruiken. Het werkt nog steeds.",
+        "itemscount_of_count_added": "{itemsCount} van {count} toegevoegd",
+        "remove": "Verwijderen",
+        "finish_2": "✓ Klaar",
+        "grounding_complete": "Gronden voltooid",
+        "you_named_15_specific_things_in": "Je hebt 15 concrete dingen in je huidige moment genoemd. Merk op hoe je je nu voelt vergeleken met toen je begon.",
+        "start_again": "↺ Opnieuw beginnen",
+        "distress_reading_saved": "Meting opgeslagen.",
+        "calm": "Rustig",
+        "mild_stress": "Lichte stress",
+        "notable_distress": "Duidelijke spanning",
+        "high_distress": "Hoge spanning",
+        "crisis_level_distress": "Spanning op crisisniveau",
+        "distress_check": "Spanningscheck",
+        "a_quick_way_to_track_how": "Een snelle manier om bij te houden hoe je je over tijd voelt. Geef je spanning een cijfer van 0–10. Voeg eventueel een notitie toe. Het patroon over een week vertelt je iets wat woorden alleen niet doen. ",
+        "if_your_reading_is_8_or": "Als je meting langer dan een uur op 8 of hoger staat, neem dan contact op met een volwassene die je vertrouwt of sms HOME naar 741741.",
+        "right_now_i_m_feeling": "Op dit moment voel ik me:",
+        "0_calm": "0 · rustig",
+        "optional_note_what_s_going_on": "Optionele notitie (wat is er aan de hand?):",
+        "e_g_math_test_in_3rd": "bijv. wiskundetoets het 3e uur; amper geslapen",
+        "log_this_reading": "💾 Deze meting vastleggen",
+        "this_is_a_hard_moment": "⚠ Dit is een moeilijk moment.",
+        "you_re_in_real_distress_the": "Je zit echt in nood. De ademritmegever (één onderdeel hoger) en Gronden 5-4-3-2-1 zijn allebei hier. ",
+        "if_thoughts_of_self_harm_are": "Als er gedachten aan zelfbeschadiging zijn, sms dan nu meteen HOME naar 741741 (Crisis Text Line) of bel/sms 988.",
+        "above_average_distress": "Bovengemiddelde spanning.",
+        "worth_pausing_for_try_the_breath": "De moeite waard om even bij stil te staan. Probeer de ademritmegever of Gronden. Komt dit niveau steeds terug, dan is het een goede stap om het aan een volwassene die je vertrouwt te vertellen.",
+        "your_pattern": "📊 Jouw patroon",
+        "7_day_avg_avg_sevendayreadingscount_readings": "Gem. 7 dagen: {avg} · {sevenDayReadingsCount} metingen",
+        "distress_over_time_chart": "Grafiek van spanning over tijd",
+        "recent_readings_readingscount": "📋 Recente metingen ({readingsCount})",
+        "why_this_matters": "Waarom dit belangrijk is",
+        "you_don_t_have_to_be": "Je hoeft geen begeleider te zijn. Je hoeft niet te weten wat je moet zeggen. Je hoeft niets op te lossen.",
+        "you_have_to_be_a_person": "Je moet iemand zijn die het opmerkt, ",
+        "and_a_person_who_tells_an": "en iemand die het aan een volwassene vertelt. Dat is alles. Allebei die vaardigheden kun je leren, en allebei redden ze levens.",
+        "friends_are_usually_the_first_to": "Vrienden merken meestal als eerste dat er iets mis is. Volwassenen missen de vroege signalen vaak, omdat jongeren meer delen met vrienden dan met ouders of leerkrachten. Dat is geen probleem — zo werkt vriendschap op jouw leeftijd nu eenmaal. Het betekent alleen dat jouw rol ertoe doet.",
+        "what_this_module_teaches": "Wat deze module je leert",
+        "how_to_recognize_when_a_friend": "Hoe je herkent wanneer de stemming of het gedrag van een vriend(in) richting depressie gaat",
+        "how_to_recognize_warning_signs_of": "Hoe je waarschuwingssignalen van een crisis herkent — ook gedachten aan zelfdoding",
+        "how_to_ask_listen_and_respond_2": "Hoe je vraagt, luistert en reageert — met de woorden die helpen en de woorden die dat niet doen",
+        "how_to_tell_a_trusted_adult": "Hoe je het vertelt aan een volwassene die je vertrouwt — wanneer, aan wie en hoe",
+        "crisis_resources_you_can_call_or": "Crisishulp die je altijd kunt bellen of sms'en — voor je vriend(in) of voor jezelf",
+        "how_to_take_care_of_yourself_2": "Hoe je voor jezelf zorgt als je een vriend(in) door iets zwaars hebt gesteund",
+        "what_this_module_does_not_do": "Wat deze module NIET doet",
+        "it_does_not_turn_you_into": "Je wordt er geen therapeut door. Jouw rol is er zijn en de ander in contact brengen met hulp.",
+        "it_does_not_require_you_to": "Je hoeft geen geheimen te bewaren. Als veiligheid in het geding is, is het aan een volwassene vertellen loyaliteit, geen verraad.",
+        "it_does_not_describe_specific_methods": "Ze beschrijft geen specifieke methoden van zelfbeschadiging. We blijven bewust algemeen over waarschuwingsgedrag.",
+        "it_does_not_replace_professional_help": "Ze vervangt geen professionele hulp. Ze leert je een brug te zijn naar professionele hulp.",
+        "sources_framework": "Bronnen & kader",
+        "this_module_aligns_with_safe_messaging": "Deze module volgt de richtlijnen voor veilige communicatie (safe messaging) van AFSP (afsp.org), SAMHSA, de mediarichtlijnen Reporting on Suicide (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), het QPR Institute, NIMH en de adviezen van de AAP over de gezondheid van jongeren. Ze is ontworpen door een schoolpsycholoog voor gebruik met leerlingen van de middelbare school en redactioneel getoetst aan de richtlijnen voor veilige communicatie.",
+        "recognizing_depression_in_a_friend": "Depressie herkennen bij een vriend(in)",
+        "every_kid_has_bad_days_every": "Iedereen heeft weleens een slechte dag. Iedereen heeft af en toe een zware week. Dat is menselijk, geen depressie.",
+        "depression_is_a_pattern": "Depressie is een PATROON. ",
+        "it_s_a_cluster_of_changes": "Het is een combinatie van veranderingen die weken aanhoudt, niet één slechte dag. De signalen hieronder zijn het serieus nemen waard als er MEERDERE tegelijk spelen ÉN als ze langer duren dan een normale moeilijke periode.",
+        "a_useful_question_to_keep_in": "Een handige vraag om in je achterhoofd te houden: “Duurt dit patroon van veranderingen langer, wordt het erger of zit het iemands dagelijks leven in de weg?”",
+        "patterns_to_notice_over_weeks_not": "Patronen om op te letten (over weken, niet dagen)",
+        "important_nuance": "Belangrijke kanttekening",
+        "in_adolescents_especially_depression_often_shows": "Vooral bij jongeren uit een depressie zich vaak als PRIKKELBAARHEID in plaats van verdriet. Een vriend(in) die al weken kortaf is, lichtgeraakt bij kleine dingen, of lijkt te smeulen op een laag pitje, kan het zwaarder hebben dan iemand die zichtbaar verdrietig is.",
+        "boys_athletes_kids_of_color_larger": "Jongens, sporters, jongeren van kleur, jongeren met een groter lichaam en hoge presteerders worden vaak over het hoofd gezien omdat ze niet passen in het stereotype van de “depressieve tiener”. Neem de combinatie van veranderingen serieus, hoe je vriend(in) er ook uitziet.",
+        "what_to_do_if_you_re": "Wat je kunt doen als je het patroon ziet",
+        "reach_out_send_a_text_sit": "Zoek contact. Stuur een appje. Ga bij de lunch naast je vriend(in) zitten. Het signaal dat je oplet, doet ertoe.",
+        "ask_gently_and_specifically_i_ve": "Vraag voorzichtig en concreet: “Ik merk dat je de laatste tijd echt moe en stil lijkt. Hoe gaat het nou echt met je?”",
+        "listen_don_t_fix_most_people": "Luister. Ga niet oplossen. De meeste mensen willen geen oplossing; ze willen zich minder alleen voelen.",
+        "if_they_share_something_heavy_that": "Vertelt je vriend(in) iets zwaars, dan is dat het moment om de moeilijkere vraag te stellen (volgend onderdeel: waarschuwingssignalen van een crisis).",
+        "if_you_re_worried_about_them": "Maak je je zorgen, vertel het dan aan een volwassene die je vertrouwt. Je hebt geen zekerheid nodig. Bezorgdheid is genoeg.",
+        "crisis_warning_signs": "Waarschuwingssignalen van een crisis",
+        "when_depression_deepens_into_crisis_including": "Als een depressie overgaat in een crisis — ook met gedachten aan zelfdoding — zijn er meestal waarschuwingssignalen. De American Foundation for Suicide Prevention (AFSP) deelt die in drie groepen in: ",
+        "talk": "PRATEN",
+        "mood": "STEMMING",
+        "and": " en ",
+        "behavior": "GEDRAG",
+        "a_note_about_how_this_section": "Een opmerking over hoe dit onderdeel is geschreven: we noemen bewust GEEN specifieke gedragingen die als handleiding of checklist zouden kunnen werken. De algemene categorieën zijn genoeg om als vriend(in) te herkennen dat er iets mis is. Zie je een aantal hiervan tegelijk, dan is dat het moment om in actie te komen — niet het moment om zelf verder te gaan speuren.",
+        "examples": "Voorbeelden",
+        "note": "Let op: ",
+        "if_you_see_any_of_these": "Zie je ÉÉN van deze signalen, dan zijn dit de volgende stappen:",
+        "stay_with_them_if_you_can": "Blijf bij je vriend(in) als dat kan. ",
+        "don_t_leave_them_alone_if": "Laat iemand die in acute nood is niet alleen.",
+        "ask_directly": "Vraag het direct. ",
+        "are_you_thinking_about_hurting_yourself": "“Denk je erover om jezelf pijn te doen?” Vragen brengt iemand NIET op het idee (het volgende onderdeel legt het onderzoek uit).",
+        "tell_a_trusted_adult_today": "Vertel het aan een volwassene die je vertrouwt — vandaag. ",
+        "not_next_week_today": "Niet volgende week. Vandaag.",
+        "call_or_text_988": "Bel of sms 988 ",
+        "if_you_re_unsure_what_to": "als je niet zeker weet wat je moet doen — zij helpen JOU om je vriend(in) te helpen.",
+        "call_911": "Bel 911 ",
+        "if_your_friend_is_in_immediate": "als je vriend(in) nu in direct lichamelijk gevaar is.",
+        "question_persuade_refer": "Vragen · Overtuigen · Doorverwijzen",
+        "question_persuade_refer_2": "Question, Persuade, Refer – Vragen, Overtuigen, Doorverwijzen",
+        "is_the_most_widely_taught_suicide": ") is het meest aangeleerde kader voor zelfdodingspreventie voor mensen die geen hulpverlener zijn. Het wordt wereldwijd gebruikt op scholen, in ziekenhuizen en in programma's in de wijk. Het kader is expres eenvoudig: drie stappen, en elke stap kan een vriend(in) zetten.",
+        "you_re_not_the_therapist_you": "Jij bent niet de therapeut. Jij bent de schakel tussen iemand die het moeilijk heeft en de mensen die zijn opgeleid om te helpen. Precies die schakel redt levens.",
+        "question_ask_directly": "Vragen — vraag het direct",
+        "if_you_suspect_your_friend_is": "Vermoed je dat je vriend(in) aan zelfdoding denkt, vraag het dan. Direct en voorzichtig. De precieze woorden zijn minder belangrijk dan de bereidheid om het te vragen.",
+        "examples_2": "Voorbeelden: ",
+        "are_you_thinking_about_hurting_yourself_2": "“Denk je erover om jezelf pijn te doen?” · “Heb je gedachten aan zelfdoding?” · “Denk je erover om een einde aan je leven te maken?”",
+        "the_most_cited_barrier_to_asking": "🔬 De vaakst genoemde reden om het niet te vragen, klopt niet: ",
+        "asking_does_not_plant_the_idea": "Vragen brengt iemand NIET op het idee. Meerdere meta-analyses (Dazzi et al., 2014, Psychological Medicine) en tientallen jaren onderzoek van AFSP, NIMH en het QPR Institute bevestigen: direct vragen beschermt. Vaak is het juist een opluchting — de persoon wachtte tot iemand het zou merken.",
+        "persuade_listen_and_stay": "Overtuigen — luisteren en blijven",
+        "persuade_doesn_t_mean_talking_them": "“Overtuigen” betekent niet dat je iemand zijn of haar gevoelens uit het hoofd praat. Het betekent echt luisteren, erkennen dat het zwaar is en helpen om JA te zeggen tegen hulp.",
+        "listen_without_judgment": "Luister zonder oordeel. ",
+        "don_t_debate_don_t_minimize": "Ga niet in discussie. Maak het niet kleiner. Kom niet met een eigen verhaal dat nog erger is.",
+        "reflect": "Vat samen wat je hoort. ",
+        "it_sounds_like_you_ve_been": "“Het klinkt alsof je zoveel met je meedraagt en helemaal op bent.” Je gehoord voelen is het medicijn.",
+        "don_t_promise_secrecy": "Beloof geen geheimhouding. ",
+        "you_can_say_i_care_about": "Je kunt zeggen: “Je bent me te dierbaar om dit voor mezelf te houden. Ik wil dat we praten met iemand die echt kan helpen.”",
+        "stay_with_them": "Blijf bij je vriend(in). ",
+        "don_t_leave_them_alone_if_2": "Laat iemand die in acute nood is niet alleen. Ga zitten. Loop mee. Wees er gewoon.",
+        "skip_the_promise_me_trap": "⚠ Trap niet in de “beloof het me”-valkuil: ",
+        "don_t_ask_them_to_promise": "Vraag niet om te “beloven” dat je vriend(in) niks doet. Dan moet die iets beloven wat misschien niet lukt, en dat voegt schaamte toe. Zeg in plaats daarvan: “Ik wil dat je veilig bent. Laten we nu meteen samen hulp zoeken.”",
+        "refer_connect_them_to_help": "Doorverwijzen — breng de ander in contact met hulp",
+        "refer_means_getting_them_to_someone": "“Doorverwijzen” betekent je vriend(in) bij iemand brengen die meer kan doen dan jij. Dit is het deel waarin JIJ er ook niet alleen voor staat.",
+        "best_walk_with_them_to_a": "Het beste: loop samen naar een schoolbegeleider, schoolpsycholoog of een volwassene die je vertrouwt. Nu meteen.",
+        "if_that_s_not_possible_call": "Lukt dat niet: bel samen 988 (of blijf erbij terwijl je vriend(in) belt of sms't). 988 is er voor de persoon die gevaar loopt ÉN voor de vriend(in) die helpt.",
+        "if_they_refuse_to_tell_anyone": "Weigert je vriend(in) het aan iemand te vertellen: ",
+        "tell_an_adult_yourself": "vertel het dan zelf aan een volwassene. ",
+        "you_re_not_breaking_trust_you": "Je schendt geen vertrouwen — je handelt vanuit de loyaliteit die deze crisis verdient. Waarschijnlijk is je vriend(in) later opgelucht.",
+        "if_immediate_physical_danger_911_not": "Bij direct lichamelijk gevaar: 911. Niet volgende week. Nu.",
+        "the_whole_framework_in_one_sentence": "Het hele kader in één zin: ",
+        "ask_directly_listen_fully_and_bring": "Vraag direct, luister echt en schakel een volwassene in die kan helpen.",
+        "what_to_say_and_what_not": "Wat je kunt zeggen (en wat niet)",
+        "you_don_t_need_a_perfect": "Je hebt geen perfect script nodig. Je hoeft niet wijs te zijn. Je moet er zijn, eerlijk zijn en bereid zijn een volwassene in te schakelen. De formuleringen hieronder zijn voorbeelden — in je echte gesprek gebruik je je eigen woorden.",
+        "a_useful_frame_would_what_i": "Een handige vraag aan jezelf: zorgt wat ik ga zeggen ervoor dat mijn vriend(in) zich MEER veilig voelt om door te praten, of MINDER?",
+        "these_help": "Dit helpt",
+        "why": "Waarom: ",
+        "these_don_t_help_even_when": "Dit helpt niet (ook al is het goed bedoeld)",
+        "if_you_said_one_of_the": "Heb je vroeger weleens een van de “niet doen”-zinnen gezegd — ",
+        "that_s_ok_you_didn_t": "dat is oké. Je wist het niet. Niemand van ons is geboren met deze kennis. Nu heb je andere woorden. Het volgende gesprek kan anders gaan.",
+        "telling_a_trusted_adult": "Het vertellen aan een volwassene die je vertrouwt",
+        "this_is_the_most_important_skill": "Dit is de belangrijkste vaardigheid in de hele module. ",
+        "telling_an_adult_is_what_turns": "Het vertellen aan een volwassene is wat jouw zorg verandert in hulp die echt verschil maakt. Het is de dragende stap — het moment waarop professionals kunnen doen waarvoor ze zijn opgeleid.",
+        "loyalty_not_betrayal": "Loyaliteit, geen verraad",
+        "a_friend_in_crisis_may_ask": "Een vriend(in) in crisis vraagt je misschien om het aan niemand te vertellen. Misschien moet je het zelfs beloven. Je vriend(in) is misschien bang, schaamt zich of is ervan overtuigd dat het alles erger maakt.",
+        "tell_anyway": "Vertel het toch. ",
+        "safety_overrides_secrecy_telling_an_adult": "Veiligheid gaat vóór geheimhouding. Het aan een volwassene vertellen als het leven of welzijn van een vriend(in) in gevaar is, is het meest loyale wat je kunt doen. De meeste mensen die zo worden beschermd, zijn achteraf DANKBAAR — ook als ze op dat moment boos waren. Een vriendschap kan een moeilijk gesprek overleven; ze kan het niet overleven als je je vriend(in) verliest.",
+        "when_to_tell_every_time": "Wanneer je het vertelt — elke keer",
+        "your_friend_mentioned_wanting_to_die": "Je vriend(in) zei dood te willen, zichzelf pijn te willen doen of een einde aan het leven te willen maken — ook al was het terloops",
+        "you_re_seeing_a_cluster_of": "Je ziet meerdere waarschuwingssignalen van een crisis tegelijk (PRATEN / STEMMING / GEDRAG)",
+        "your_friend_has_a_plan_a": "Je vriend(in) heeft een plan, een middel of een tijdstip — ook al is het vaag",
+        "your_friend_has_hurt_themselves_even": "Je vriend(in) heeft zichzelf pijn gedaan, ook al was het maar een beetje",
+        "you_re_scared_and_you_don": "Je bent bang en weet niet wat je moet doen — dat alleen is al reden genoeg om het te vertellen",
+        "who_to_tell_pick_whoever_you": "Aan wie je het vertelt — kies wie je het snelst kunt bereiken",
+        "how": "Hoe: ",
+        "how_to_tell_practical_moves": "Hoe je het vertelt — praktische stappen",
+        "you_don_t_need_a_script": "Je hebt geen script nodig. “Ik heb hulp nodig bij iets ernstigs met een vriend of vriendin” is genoeg.",
+        "you_can_write_it_down_if": "Je kunt het opschrijven als je het niet hardop kunt zeggen. Een briefje, een bericht, een e-mail: het werkt allemaal.",
+        "you_can_ask_another_friend_to": "Je kunt een andere vriend(in) vragen om mee te gaan naar de schoolbegeleider.",
+        "you_can_leave_class_to_do": "Je mag hiervoor de les verlaten. Zeg tegen de leerkracht: “Ik moet naar de begeleider — het is dringend.” De meeste leerkrachten laten je gaan zonder vragen.",
+        "if_the_first_adult_doesn_t": "Neemt de eerste volwassene je niet serieus — en dat gebeurt — probeer dan een ander. Ga door tot iemand luistert.",
+        "if_it_s_outside_school_hours": "Is het buiten schooltijd, bel dan 988. Zij helpen je uitzoeken wat je kunt doen.",
+        "in_maine_schools": "🍎 Op scholen in Maine",
+        "school_counselors_and_school_psychologists_are": "Schoolbegeleiders en schoolpsychologen hebben een meldplicht — ze zijn wettelijk verplicht om iets te doen bij zorgen over veiligheid. Ze gaan NIET alleen je ouders inlichten en dan weglopen. Ze volgen een protocol: ze schatten in hoe het met je vriend(in) gaat, nemen op een veilige manier contact op met de familie en zorgen voor verdere hulp. De meldplicht is een vangrail, geen straf.",
+        "marked_as_myth_correct": "Gemarkeerd als mythe — klopt",
+        "marked_as_truth_but_research_says": "Gemarkeerd als waar — maar volgens onderzoek is dit een mythe",
+        "myths_debunked": "Mythes ontkracht",
+        "six_of_the_most_cited_myths": "Zes van de vaakst genoemde mythes die mensen ervan weerhouden een vriend(in) in crisis te helpen. Bepaal bij elke uitspraak: is het een MYTHE of is het WAAR? Lees daarna het onderbouwde antwoord met bronnen.",
+        "score_so_far_correctcount_totalanswered_answered": "Tot nu toe: {correctCount} / {totalAnswered} goed beantwoord.",
+        "myth_value_of_mythscount": "Mythe {value} van {MYTHSCount}",
+        "this_is_a_myth": "Dit is een MYTHE",
+        "this_is_true": "Dit is WAAR",
+        "correct_this_is_a_myth": "✓ Goed — dit is een mythe.",
+        "common_misconception_this_is_actually_a": "⚠ Veelgemaakte misvatting — dit is eigenlijk een mythe.",
+        "what_the_evidence_says": "Wat het onderzoek zegt: ",
+        "sources_cite": "Bronnen: {cite}",
+        "what_to_say": "Wat je kunt zeggen: ",
+        "crisis_resources": "Crisishulp",
+        "every_resource_here_is_free_confidential": "Alle hulp hier is gratis, vertrouwelijk en getraind. Je kunt bellen VOOR je vriend(in), SAMEN MET je vriend(in) of voor jezelf. Hulplijnen zijn er niet alleen voor de persoon in crisis — ook voor de vriend(in), ouder of helper die probeert uit te zoeken wat te doen.",
+        "below": "Hieronder: ",
+        "national": "Landelijk",
+        "works_anywhere_in_the_u_s": " (werkt overal in de VS) → ",
+        "find_your_local_help": "Vind hulp in je buurt",
+        "directory_lookups_by_zip": " (zoeken in gidsen op postcode) → ",
+        "outside_the_u_s": "Buiten de VS?",
+        "maine_partners": "Partners in Maine",
+        "named_local_agencies": " (lokale organisaties bij naam) → ",
+        "school_based": "Op school",
+        "you_don_t_need_to_know": "Je hoeft niet te weten wat je moet zeggen. Zij zijn getraind om het gesprek te beginnen. Je kunt terugbellen. Je kunt ophangen. Je kunt het niet fout doen.",
+        "a_note_about_lgbtq_youth": "Een opmerking over LGBTQ+-jongeren",
+        "research_consistently_shows_lgbtq_youth_and": "Onderzoek laat steeds weer zien dat LGBTQ+-jongeren — en vooral transgender jongeren — veel vaker gedachten aan zelfdoding hebben en pogingen doen dan leeftijdgenoten die niet LGBTQ+ zijn. De redenen zijn goed onderzocht: afwijzing door familie, pesten op school, gebrek aan bevestigende zorg en minderheidsstress. Bij The Trevor Project (1-866-488-7386 / sms START naar 678-678) werken mensen die speciaal zijn getraind voor deze realiteit. Is je vriend(in) LGBTQ+, dan is deze hulp speciaal daarvoor gemaakt.",
+        "self_care_sub_sections": "Onderdelen over zelfzorg",
+        "supporting_a_friend_through_a_mental": "Een vriend(in) steunen tijdens een psychische crisis is zwaar. Het verandert je. Onderzoekers noemen dit ",
+        "secondary_stress": "secundaire stress",
+        "the_way_that_being_close_to": " — de manier waarop dicht bij de pijn van een ander zijn je eigen welzijn beïnvloedt. Het is echt, en het verdient aandacht.",
+        "taking_care_of_yourself_is_not": "Voor jezelf zorgen is niet egoïstisch. Zo blijf je in staat om er te blijven zijn.",
+        "interactive_tools_above": "🧰 Interactieve tools hierboven",
+        "the_tabs_at_the_top_of": "De tabs bovenaan dit onderdeel hebben praktische hulpmiddelen die je nu meteen kunt gebruiken: een begeleide ",
+        "breathing_pacer": "ademritmegever",
+        "a_sensory": ", een zintuiglijke ",
+        "grounding_exercise": "grondingsoefening",
+        "a_personal": ", een persoonlijke ",
+        "coping_toolkit": "coping-gereedschapskist",
+        "you_can_build_and_the_evidence": " die je zelf opbouwt, en het wetenschappelijk onderbouwde ",
+        "stanley_brown_safety_plan": "Stanley-Brown-veiligheidsplan",
+        "they_re_for_you_and_for": ". Ze zijn voor jou ÉN om te delen met een vriend(in) die het moeilijk heeft.",
+        "caring_for_yourself_when_you_ve": "Voor jezelf zorgen als je een vriend(in) hebt gesteund",
+        "helpful_response": "Behulpzaam antwoord",
+        "this_response_could_harm_see_explanation": "Dit antwoord kan schade doen — zie uitleg",
+        "neutral_response_see_explanation": "Neutraal antwoord — zie uitleg",
+        "practice_three_scenarios": "Oefenen — drie situaties",
+        "three_short_scenarios_drawn_from_typical": "Drie korte situaties uit het dagelijks leven van jongeren. Kies bij elke situatie het antwoord dat volgens jou het meest helpt. Er is geen perfect antwoord — alleen antwoorden die in die situatie meer of minder helpen. Gebaseerd op de oefenprotocollen van Sources of Strength.",
+        "loaded_scenario_title": "Situatie geladen: {title}",
+        "scenario_value": "Situatie {value}",
+        "how_would_you_respond": "Hoe zou jij reageren?",
+        "helpful": "✓ Behulpzaam — ",
+        "harmful": "× Schadelijk — ",
+        "neutral": "~ Neutraal — ",
+        "a_note_on_practice": "Een opmerking over oefenen: ",
+        "real_conversations_are_messier_than_scripted": "Echte gesprekken zijn rommeliger dan geoefende situaties. Het doel van oefenen is niet om zinnen uit je hoofd te leren — maar om het INSTINCT te ontwikkelen om te vragen, te luisteren, te blijven en het te vertellen. Met oefening wordt dat instinct sneller.",
+        "loading": "Laden…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "Directe of indirecte uitspraken over dood willen, een einde willen maken aan de pijn, een last zijn of geen toekomst hebben. Soms terloops of als grap gezegd. Neem het serieus, hoe het ook wordt verpakt.",
+          "examples": {
+            "0": "“Ik wil dood” of “Ik wou dat ik er niet was”",
+            "1": "“Iedereen is beter af zonder mij”",
+            "2": "“Ik kan dit niet meer”",
+            "3": "“Ik wil gewoon dat het stopt”",
+            "4": "“Over mij hoef je je niet lang meer zorgen te maken”",
+            "5": "Afscheid nemen op een manier die definitief voelt, ook al is het subtiel"
+          },
+          "note": "Als een vriend(in) grapt over dood willen, is dat nog steeds een moment om voorzichtig te vragen hoe het gaat. De meeste mensen die later een poging tot zelfdoding doen, hebben het aan iemand verteld — soms terloops of op een manier die onbelangrijk leek."
+        },
+        "mood": {
+          "desc": "Grote veranderingen in stemming, vooral in korte tijd. Plotselinge rust of opluchting NA een zware periode kan een ernstig teken zijn — soms besluit iemand die gevaar loopt tot een plan en voelt die zich daardoor tijdelijk rustig.",
+          "examples": {
+            "0": "Aanhoudende depressie of angst die niet overgaat",
+            "1": "Een plotseling gevoel van rust of “alles is nu goed” na een lange, zware periode",
+            "2": "Hopeloosheid over de toekomst",
+            "3": "Woede of praten over wraak",
+            "4": "Geen interesse meer in dingen die iemand vroeger belangrijk vond"
+          },
+          "note": "Plotselinge verbetering na een lange, zware tijd is goed als die volgt op behandeling, steun en rust. Het is een waarschuwingsteken als die nergens op volgt — als er na weken van worstelen uit het niets rust verschijnt."
+        },
+        "behavior": {
+          "desc": "Patronen in wat iemand doet, vooral patronen van voorbereiding. We noemen hier bewust GEEN details die als handleiding zouden kunnen werken. De algemene categorieën zijn genoeg om als vriend(in) te herkennen dat er iets mis is.",
+          "examples": {
+            "0": "Zich terugtrekken van vrienden, familie of activiteiten waar iemand vroeger dol op was",
+            "1": "Meer middelengebruik (alcohol, wiet, pillen, meer vapen dan normaal)",
+            "2": "Betekenisvolle spullen weggeven",
+            "3": "Afscheid nemen van mensen op een manier die definitief voelt",
+            "4": "Roekeloos doen, risico's nemen die iemand normaal niet zou nemen",
+            "5": "Online zoeken naar manieren om zichzelf iets aan te doen (misschien zie je de schermtijd op vreemde uren pieken, of merk je dat iemand zoekopdrachten verbergt)"
+          },
+          "note": "Je hoeft het niet zeker te weten. Zie je een aantal van deze dingen tegelijk, dan is dat het moment om voorzichtig te vragen hoe het gaat ÉN het te vertellen aan een volwassene die je vertrouwt. Je hebt geen zekerheid nodig — je zorgen zijn genoeg."
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "“Ik merk dat je de laatste tijd echt down lijkt. Je bent belangrijk voor me. Hoe gaat het nou echt met je?”",
+          "why": "Concreet, zorgzaam, geeft de ander een opening. “Echt” laat zien dat je verder wilt dan het gebruikelijke “het gaat prima”."
+        },
+        "1": {
+          "say": "“Denk je erover om jezelf pijn te doen? Denk je erover om een einde aan je leven te maken?”",
+          "why": "Er direct naar vragen brengt iemand NIET op het idee — onderzoek is daar duidelijk over. Vaak is het juist een opluchting. Waarschijnlijk wachtte die persoon al tot iemand het zou merken."
+        },
+        "2": {
+          "say": "“Ik ben blij dat je het me hebt verteld. Dat was moedig.”",
+          "why": "Erkent dat iemand zich heeft opengesteld. Spring niet meteen naar oplossen — bedank eerst voor het vertrouwen."
+        },
+        "3": {
+          "say": "“Dit is meer dan ik alleen aankan, en ik wil zeker weten dat je veilig bent. Zullen we het samen aan iemand vertellen?”",
+          "why": "Eerlijk over je grenzen. Laat zien dat het vertellen aan een volwassene een daad van liefde is, geen verraad. Het “samen” is belangrijk — je laat de ander niet vallen."
+        },
+        "4": {
+          "say": "“Ik ben er. Ik ga nergens heen. We kunnen ook gewoon samen stil zijn als je wilt.”",
+          "why": "Er zijn is het medicijn. Je hoeft geen antwoorden te hebben. Je hoeft alleen te blijven."
+        },
+        "5": {
+          "say": "“Is er iemand die je vertrouwt met wie ik je nu kan helpen praten?”",
+          "why": "Maakt duidelijk dat hulp van een volwassene de volgende stap is, maar laat de ander meebeslissen over wie."
+        },
+        "6": {
+          "say": "“Ik hou van je. Ik ben bang dat er iets met je gebeurt. Laat me alsjeblieft helpen.”",
+          "why": "Directe emotionele eerlijkheid. “Bang” mag — zo voel je je echt, en het laat de ander zien dat dit belangrijk voor je is."
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "“Zo zou je je niet moeten voelen.”",
+          "why": "Zegt dat hun gevoelens fout zijn. Ze vertellen je niks meer als hun gevoelens worden beoordeeld."
+        },
+        "1": {
+          "say": "“Andere mensen hebben het veel zwaarder dan jij.”",
+          "why": "Pijn is geen wedstrijd. Dit smoort het gesprek en voegt schaamte toe."
+        },
+        "2": {
+          "say": "“Vertel het aan niemand. Ik zeg ook niks.”",
+          "why": "Geheimhouding beloven als het om veiligheid gaat, is het tegenovergestelde van helpen. Veiligheid gaat vóór geheimhouding. Loyaal zijn betekent hier: het vertellen."
+        },
+        "3": {
+          "say": "“Beloof me dat je niks doet.”",
+          "why": "Vraagt de ander iets te beloven wat misschien niet in zijn of haar macht ligt — en geeft het gevoel dat die jou heeft teleurgesteld als het niet lukt. Zeg in plaats daarvan: “Ik wil dat je veilig bent. Laten we samen hulp zoeken.”"
+        },
+        "4": {
+          "say": "“Je hebt zoveel om voor te leven.”",
+          "why": "Goed bedoeld, maar in een heel diep moment kan iemand dit echt niet voelen. Het kan overkomen als “je zou dankbaar moeten zijn” — en dat voegt schaamte toe aan de pijn."
+        },
+        "5": {
+          "say": "“Kom er gewoon overheen / vrolijk op / doe beter je best.”",
+          "why": "Depressie is geen keuze. Als je iemand zegt dat die gewoon anders moet kiezen, laat je zien dat je niet begrijpt wat die persoon doormaakt."
+        },
+        "6": {
+          "say": "“Waarom zou je dat nou denken?” (op een geïrriteerde toon)",
+          "why": "Irritatie komt over als een oordeel. Als je het echt wilt begrijpen, vraag het dan rustig — “Kun je me helpen begrijpen wat je nu voelt?” — en sta open voor wat de ander ook zegt."
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "Schoolbegeleider of schoolpsycholoog",
+          "pro": "Hiervoor opgeleid. Vaak het makkelijkst bereikbaar tijdens een schooldag. Heeft een geheimhoudingsplicht, behalve als het om veiligheid gaat. Kan je helpen het je ouders te vertellen en je in contact brengen met hulp van buiten.",
+          "how": "Loop binnen. Stuur een briefje. Vraag een leerkracht om je erheen te brengen. Je kunt het opschrijven als je het niet kunt zeggen."
+        },
+        "1": {
+          "label": "Een leerkracht die je vertrouwt",
+          "pro": "Ziet je regelmatig en kent je vriendengroep. Heeft een meldplicht — en weet wat er moet gebeuren.",
+          "how": "Na de les, tijdens een spreekuur of met een briefje. “Ik moet met u praten over iets ernstigs met een vriend of vriendin.”"
+        },
+        "2": {
+          "label": "Schoolverpleegkundige",
+          "pro": "Vertrouwelijke hulp op school voor lichamelijke en psychische gezondheid. Vaak makkelijker bereikbaar dan de begeleider.",
+          "how": "Loop binnen bij de schoolverpleegkundige. Die maakt tijd voor je."
+        },
+        "3": {
+          "label": "Ouder, voogd of oudere broer of zus",
+          "pro": "Ze houden van je. Ze willen helpen. Ook als ze niet weten wat ze moeten doen, kunnen ze de volgende stap samen met jou zetten.",
+          "how": "Kies een rustig moment. Begin met: “Ik heb hulp nodig bij iets ernstigs met een vriend of vriendin.” Vraag of jullie even samen kunnen gaan zitten."
+        },
+        "4": {
+          "label": "Huisarts of kinderarts",
+          "pro": "Medische professional met beroepsgeheim. Kan doorverwijzen naar psychische zorg, met de familie van je vriend(in) praten of overleggen met school.",
+          "how": "Je kunt de praktijk bellen en zeggen dat je de arts moet spreken. Veel artsen bieden jongeren vertrouwelijkheid."
+        },
+        "5": {
+          "label": "Coach of clubbegeleider",
+          "pro": "Volwassenen die jou en je vriend(in) al kennen van activiteiten. Hebben vaak contact met de schoolbegeleiders.",
+          "how": "Na de training of een bijeenkomst. “Ik moet met je praten over iets waar ik me zorgen over maak.”"
+        },
+        "6": {
+          "label": "Geestelijk leider (als je familie bij een geloofsgemeenschap hoort)",
+          "pro": "Voor gezinnen waar dit een vertrouwde relatie is, kunnen geestelijk leiders een waardevolle eerste stap zijn.",
+          "how": "De meesten staan open voor zulke gesprekken. Velen hebben een traumasensitieve training gehad."
+        },
+        "7": {
+          "label": "Een therapeut (die van jou of van je vriend(in), als een van jullie er een heeft)",
+          "pro": "Al opgeleid voor precies dit gesprek. Als jij of je vriend(in) al bij een therapeut komt, is dit de meest directe weg.",
+          "how": "Bel de praktijk. “Ik maak me zorgen over iemands veiligheid en moet daar vandaag over praten.”"
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "Als je iemand vraagt of die aan zelfdoding denkt, breng je diegene op het idee.",
+          "truth": "Niet waar. Onderzoek is eenduidig en duidelijk: vragen verhoogt het risico NIET. Vaak is het juist een opluchting — de persoon wachtte tot iemand het zou merken. Vragen is een van de meest beschermende dingen die een vriend(in) kan doen.",
+          "cite": "Dazzi et al., Psychological Medicine (2014), meta-analyse · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "Mensen die over zelfdoding praten, willen alleen aandacht. Ze zouden het niet echt doen.",
+          "truth": "Gevaarlijke mythe. De meeste mensen die later een poging doen, hebben het eerst aan iemand verteld — soms terloops, soms als grap. Elke keer dat iemand zich uitspreekt, verdient een serieuze reactie. “Aandacht zoeken” betekent vaak eigenlijk “in nood zijn en geen andere manier hebben om hulp te vragen”."
+        },
+        "2": {
+          "claim": "Als iemand echt dood wilde, zou die het aan niemand vertellen.",
+          "truth": "Niet waar. Het tegendeel is waar. Veel mensen die een poging doen, hebben mensen om zich heen directe of indirecte waarschuwingssignalen gegeven. Het aan iemand vertellen is vaak een teken van twijfel — een deel van hen wil leven en zoekt contact."
+        },
+        "3": {
+          "claim": "Een vriend(in) kan niets doen — alleen een arts of therapeut kan helpen.",
+          "truth": "Aanwezigheid van leeftijdgenoten werkt aantoonbaar beschermend. Je hoeft niets op te lossen. Luisteren, het serieus nemen en helpen contact te leggen met een volwassene die je vertrouwt, is echte hulp. Programma's als Sources of Strength zijn gebouwd op het feit dat vrienden ertoe doen.",
+          "cite": "Onderzoek naar Sources of Strength · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "Praten over zelfdoding maakt het erger.",
+          "truth": "Alleen waar bij ONVEILIGE berichtgeving — het verheerlijken, methoden beschrijven, er sensatie van maken. Met zorg praten, veilige taal gebruiken en naar hulp verwijzen beschermt juist. Alle grote organisaties voor zelfdodingspreventie raden een eerlijk gesprek aan."
+        },
+        "5": {
+          "claim": "Zelfdoding gebeurt zonder waarschuwing.",
+          "truth": "Niet waar. Onderzoek laat steeds weer zien dat er in de meeste gevallen waarschuwingssignalen zijn — al vallen ze soms pas achteraf op. Daarom is training in steun aan leeftijdgenoten belangrijk: je leert wat je op het moment zelf kunt opmerken.",
+          "cite": "AFSP · CDC YRBSS · onderzoeksoverzichten van het NIMH"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "Jij en Maya zitten samen te lunchen. Ze is de laatste tijd stiller dan normaal. Ze prikt wat in haar eten en zegt, bijna terloops: “Eerlijk, soms zie ik gewoon het nut niet meer van dit alles.”",
+          "responses": {
+            "0": {
+              "text": "“Hoe bedoel je? Praat niet zo.”",
+              "why": "Hiermee sluit je het gesprek af. Tegen iemand zeggen “praat niet zo” zegt dat die gevoelens fout zijn ÉN dat het niet veilig is om eerlijk tegen jou te zijn. Waarschijnlijk trekt de ander zich terug."
+            },
+            "1": {
+              "text": "“Dat klinkt echt zwaar. Wil je me meer vertellen over wat er speelt? Je bent belangrijk voor me.”",
+              "why": "Erkent het gevoel zonder oordeel. Nodigt uit om meer te vertellen zonder te dwingen. “Je bent belangrijk voor me” maakt het veilig om door te praten. Dit opent de deur voor de moeilijkere vraag die daarna komt: “Heb je gedachten om jezelf pijn te doen?”"
+            },
+            "2": {
+              "text": "“Ja, school is nu echt stressvol.”",
+              "why": "Niet schadelijk, maar het gaat voorbij aan wat ze echt zei. “Het nut niet meer zien van dit alles” is meer dan schoolstress. Een neutraal antwoord kan haar het gevoel geven dat ze niet gehoord wordt. Stel één vervolgvraag om het zeker te weten."
+            }
+          }
+        },
+        "sc2": {
+          "setting": "Het is dinsdag, 11 uur 's avonds. Je vriend(in) Jamie appt: “Ik moet steeds denken dat iedereen prima zonder mij zou kunnen.” Je leest het en je hart staat stil.",
+          "responses": {
+            "0": {
+              "text": "“Ik ben er. Doe niks. Ik bel nu meteen mijn moeder zodat ze kan helpen.”",
+              "why": "Direct, aanwezig, neemt het serieus en schakelt snel een volwassene in. “Ik bel mijn moeder” benoemt de stap. Kun je tijdens het wachten ook blijven appen of Jamie bellen, doe dat dan. Kun je veilig bij Jamie komen, doe dat dan."
+            },
+            "1": {
+              "text": "“omg gaat het wel?? je hebt zoveel om voor te leven!!”",
+              "why": "Je hart zit op de goede plek, maar het komt verkeerd over. “Je hebt zoveel om voor te leven” kan in een heel diep moment voelen als een schuldgevoel aanpraten. Beter: zeg dat je bang bent, zeg dat je van de ander houdt en schakel een volwassene in."
+            },
+            "2": {
+              "text": "“Ik zeg het tegen niemand, maar doe vannacht alsjeblieft niks, oké?”",
+              "why": "Geheimhouding beloven als het om veiligheid gaat, maakt het erger. Het meest loyale hier is het vertellen aan een volwassene — ook als Jamie je vraagt dat niet te doen. Veiligheid gaat vóór geheimhouding. Vannacht vertel je het aan iemand."
+            }
+          }
+        },
+        "sc3": {
+          "setting": "Vorige week werd je vriend(in) na een heel zware nacht opgenomen in het ziekenhuis. Jij was degene die het aan een volwassene vertelde. Vandaag is die weer op school en ziet er uitgeput uit. In de gang kijkt die je niet aan. Je bent bang dat die boos op je is.",
+          "responses": {
+            "0": {
+              "text": "Je loopt naar je vriend(in) toe: “Hé. Ik heb aan je gedacht. Fijn dat je er vandaag bent. Wanneer je maar wilt praten — over wat dan ook, of over helemaal niks — ik ben er.”",
+              "why": "Laat merken dat je er nog bent, zonder dat het om jou draait. Eist niets. Het “over wat dan ook, of over helemaal niks” laat de ander zelf het tempo kiezen. Zo ziet loyaliteit eruit NADAT je het hebt verteld."
+            },
+            "1": {
+              "text": "Je ontloopt je vriend(in), zodat het niet raar voelt om jou te zien.",
+              "why": "Begrijpelijke reactie, maar wegblijven komt over als afwijzing — precies het tegenovergestelde van wat de ander nu nodig heeft. Zelfs een klein “Hé, fijn dat je er bent” doet ertoe. Je hoeft niet te weten wat je moet zeggen."
+            },
+            "2": {
+              "text": "Je appt later: “Ik heb het verteld omdat ik van je hou en bang was. Ben je boos op me?”",
+              "why": "Eerlijk, maar zo moet de ander JOU troosten over jouw beslissing. Die gevoelens kun je later bespreken met een volwassene die je vertrouwt of met een therapeut. Begin bij je vriend(in) met: “Fijn dat je er bent. Ik ben er als je me nodig hebt.”"
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "Beweging",
+        "sensory": "Zintuigen",
+        "connection": "Verbinding",
+        "creative": "Creatief",
+        "cognitive": "Denken",
+        "inhale": "Inademen",
+        "exhale": "Uitademen",
+        "hold": "Vasthouden"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "Maak buiten een wandeling van 5 minuten"
+        },
+        "stretch": {
+          "label": "Rek je 5 minuten langzaam uit"
+        },
+        "pushwall": {
+          "label": "Duw tegen een muur (laat spanning los)"
+        },
+        "run_stairs": {
+          "label": "Ren één keer de trap op en af"
+        },
+        "cold_water": {
+          "label": "Spetter koud water op je gezicht of polsen"
+        },
+        "ice_cube": {
+          "label": "Houd een ijsblokje in je hand"
+        },
+        "heavy_blanket": {
+          "label": "Wikkel je in een zware deken"
+        },
+        "rain_sounds": {
+          "label": "Luister naar geluiden van regen of de zee"
+        },
+        "safe_smell": {
+          "label": "Ruik aan iets wat je lekker vindt (bodylotion, eten, een kaars)"
+        },
+        "text_friend": {
+          "label": "App een vriend(in) die je vertrouwt: “ik denk aan je”"
+        },
+        "hug_pet": {
+          "label": "Knuffel een huisdier of knuffelbeest"
+        },
+        "call_family": {
+          "label": "Bel een familielid bij wie je je veilig voelt"
+        },
+        "with_someone": {
+          "label": "Ga bij iemand zitten bij wie je je veilig voelt (praten hoeft niet)"
+        },
+        "playlist": {
+          "label": "Luister naar een rustgevende playlist die je vertrouwt"
+        },
+        "doodle": {
+          "label": "Teken of krabbel (geen doel, geen regels)"
+        },
+        "journal": {
+          "label": "Schrijf op wat er in je hoofd zit, al is het maar één zin"
+        },
+        "make": {
+          "label": "Maak iets met je handen (origami, bakken, bouwen)"
+        },
+        "three_okay": {
+          "label": "Schrijf 3 kleine dingen op die nu OK zijn"
+        },
+        "five_breaths": {
+          "label": "Adem 5 keer langzaam (tel tot 4 in, 4 uit)"
+        },
+        "will_pass": {
+          "label": "Herinner jezelf eraan: “dit gevoel gaat voorbij”"
+        },
+        "one_step": {
+          "label": "Kies één klein ding om hierna te doen (maar één)"
+        }
+      },
+      "phaselabel": {
+        "0": "Inademen",
+        "1": "Vasthouden",
+        "2": "Uitademen"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "Noem 5 dingen die je nu om je heen kunt ZIEN.",
+          "helper": "Alles telt. De lamp. De hoek van een bureau. Een wolk."
+        },
+        "1": {
+          "prompt": "Noem 4 dingen die je kunt VOELEN.",
+          "helper": "Je voeten op de vloer. De stof van je shirt. Lucht op je huid."
+        },
+        "2": {
+          "prompt": "Noem 3 dingen die je kunt HOREN.",
+          "helper": "Een klok. Verkeer. Je eigen ademhaling."
+        },
+        "3": {
+          "prompt": "Noem 2 dingen die je kunt RUIKEN.",
+          "helper": "(Of dingen waarvan je de geur nog weet, als er niets in de buurt is.)"
+        },
+        "4": {
+          "prompt": "Noem 1 ding dat je kunt PROEVEN.",
+          "helper": "(Of je laatste slok water, of je lievelingseten.)"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. Waarschuwingssignalen",
+          "sub": "Welke gedachten, gevoelens of situaties vertellen me dat er een zware golf aankomt?"
+        },
+        "internal": {
+          "label": "2. Wat ik alleen kan doen (innerlijke coping)",
+          "sub": "Dingen waardoor ik me ook maar een beetje beter voelde en die ik zonder iemand anders kan doen."
+        },
+        "distract": {
+          "label": "3. Mensen + plekken die me afleiden (op een goede manier)",
+          "sub": "Vrienden om te appen, plekken waar ik me gewoon oké voel. NIET voor crisissteun — alleen om mijn gedachten te verzetten.",
+          "label_2": "3. Mensen + plekken die me helpen afleiden"
+        },
+        "helpers": {
+          "label": "4. Mensen die ik direct om hulp kan vragen",
+          "sub": "Vrienden of familie die weten wat er speelt, of die ik genoeg vertrouw om het te vertellen. Schrijf namen op + hoe je ze bereikt.",
+          "label_2": "4. Mensen die ik om hulp kan vragen"
+        },
+        "professionals": {
+          "label": "5. Professionals + crisislijnen",
+          "sub": "Mijn therapeut (als ik die heb), psychiater, arts, schoolbegeleider, plus crisislijnen die 24/7 bereikbaar zijn."
+        },
+        "environment": {
+          "label": "6. Mijn omgeving veiliger maken",
+          "sub": "Wat kan ik (of iemand die ik vertrouw) doen om afstand te maken tussen mij en alles waarmee ik mezelf pijn zou kunnen doen? Dit is de stap met het sterkste bewijs."
+        },
+        "warning": {
+          "label": "1. Waarschuwingssignalen (gedachten, gevoelens, situaties)"
+        },
+        "coping": {
+          "label": "2. Innerlijke coping die ik alleen kan doen"
+        },
+        "pros": {
+          "label": "5. Professionals + crisislijnen"
+        },
+        "safer": {
+          "label": "6. Mijn omgeving veiliger maken"
+        },
+        "0": {
+          "label": "5 dingen die je kunt ZIEN",
+          "prompt": "Kijk om je heen. Noem 5 dingen die je nu kunt zien. Wees precies — “de hoek van een boek”, niet “een boek”."
+        },
+        "1": {
+          "label": "4 dingen die je kunt AANRAKEN",
+          "prompt": "Steek je hand uit en raak 4 verschillende dingen aan. Let op hoe ze aanvoelen. Koud of warm? Glad of ruw?"
+        },
+        "2": {
+          "label": "3 dingen die je kunt HOREN",
+          "prompt": "Luister. Noem 3 verschillende geluiden — ze mogen dichtbij of ver weg zijn, hard of zacht."
+        },
+        "3": {
+          "label": "2 dingen die je kunt RUIKEN",
+          "prompt": "Merk 2 geuren op. Kun je niets ruiken, noem dan 2 geuren waar je fijne herinneringen aan hebt."
+        },
+        "4": {
+          "label": "1 ding dat je kunt PROEVEN",
+          "prompt": "Merk 1 smaak in je mond op — wat je laatste drankje of eten heeft achtergelaten, of gewoon de smaak van de lucht."
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 Lichaam"
+        },
+        "mind": {
+          "label": "🧠 Hoofd"
+        },
+        "distract": {
+          "label": "🎮 Afleiding"
+        },
+        "connect": {
+          "label": "🤝 Verbinding"
+        },
+        "creative": {
+          "label": "🎨 Creatief"
+        },
+        "spirit": {
+          "label": "🌅 Spiritueel"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "Mijn veiligheidsplan",
+          "desc": "Stanley + Brown-plan in 6 stappen",
+          "stat": "{Count} stappen ingevuld"
+        },
+        "warning": {
+          "label": "Mijn logboek met waarschuwingssignalen",
+          "desc": "Signalen bijhouden over tijd = patroon",
+          "stat": "{Count} vastgelegd"
+        },
+        "arsenal": {
+          "label": "Mijn coping-arsenaal",
+          "desc": "Strategieën die voor MIJ werken",
+          "stat": "{Count} opgeslagen"
+        },
+        "contacts": {
+          "label": "Mijn steuncontacten",
+          "desc": "Snel zien wie je wanneer belt",
+          "stat": "{Count} mensen"
+        },
+        "recovery": {
+          "label": "Mijn herstelnotities",
+          "desc": "Na moeilijke momenten — wat werkte",
+          "stat": "{Count} notities"
+        },
+        "hope": {
+          "label": "Mijn hooplijst",
+          "desc": "Redenen om door te gaan. Willekeurige keuze.",
+          "stat": "{Count} redenen"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "Mijn veiligheidskit"
+        },
+        "breath": {
+          "label": "Ademritmegever"
+        },
+        "grounding": {
+          "label": "Gronden 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "Spanningscheck"
+        },
+        "whyMatters": {
+          "label": "Waarom dit belangrijk is"
+        },
+        "recognizeDepression": {
+          "label": "Depressie herkennen"
+        },
+        "crisisSigns": {
+          "label": "Waarschuwingssignalen van een crisis"
+        },
+        "qpr": {
+          "label": "Vragen · Overtuigen · Doorverwijzen"
+        },
+        "whatToSay": {
+          "label": "Wat je kunt zeggen"
+        },
+        "tellingAdult": {
+          "label": "Het vertellen aan een volwassene die je vertrouwt"
+        },
+        "myths": {
+          "label": "Mythes ontkracht"
+        },
+        "resources": {
+          "label": "Crisishulp"
+        },
+        "selfCare": {
+          "label": "Voor jezelf zorgen"
+        },
+        "practice": {
+          "label": "Oefenen"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "Vierkantsademhaling (4-4-4-4)"
+        },
+        "fourseven": {
+          "name": "4-7-8-kalmeringsademhaling"
+        },
+        "equal": {
+          "name": "Gelijke ademhaling (6-6)"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "Lezen"
+        },
+        "breath": {
+          "label": "Ademritmegever"
+        },
+        "ground": {
+          "label": "5-4-3-2-1 gronden"
+        },
+        "toolkit": {
+          "label": "Mijn gereedschapskist"
+        },
+        "safety": {
+          "label": "Veiligheidsplan"
+        }
+      },
+      "print": {
+        "title": "Mijn veiligheidsplan",
+        "intro": "Gemaakt met de Stanley-Brown Safety Planning Intervention. Het nuttigst als je het doorneemt met een begeleider of therapeut.",
+        "empty": "(nog niet ingevuld)",
+        "crisis_head": "Zit je nu in een crisis:",
+        "crisis_body": "Bel of sms {call} (24/7). Sms {text}. Vertel het aan een volwassene die je vertrouwt.",
+        "created": "Gemaakt op {date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "positive_psychology": "Positieve psychologie",
+        "coaching_tradition": "Coachingtraditie",
+        "trauma_informed": "Traumasensitief",
+        "media_literacy": "Mediawijsheid",
+        "contemplative": "Contemplatief",
+        "trauma_informed_practice": "Traumasensitieve praktijk",
+        "philosophy_ethics": "Filosofie / Ethiek",
+        "social_work": "Sociaal werk",
+        "person_centered_planning": "Persoonsgerichte planning",
+        "family_systems": "Gezinssystemen",
+        "self_determination_theory": "Zelfdeterminatietheorie",
+        "executive_function": "Executieve functies",
+        "bystander_intervention": "Ingrijpen als omstander",
+        "restorative_practices": "Herstelgericht werken",
+        "motivational_interviewing": "Motiverende gespreksvoering",
+        "place_based_education": "Plaatsgebonden onderwijs",
+        "harm_reduction": "Schadebeperking",
+        "body_appreciation": "Lichaamswaardering",
+        "occupational_therapy": "Ergotherapie",
+        "grief_counseling": "Rouwbegeleiding",
+        "neurodiversity_paradigm": "Neurodiversiteitsparadigma",
+        "suicide_prevention": "Zelfdodingspreventie"
+      },
+      "tool": {
+        "zones": {
+          "label": "Emotiezones",
+          "desc": "Ontdek in welke zone je zit (blauw, groen, geel, rood) en verken strategieën om jezelf te reguleren."
+        },
+        "emotions": {
+          "label": "Emotieverkenner",
+          "desc": "Bouw je woordenschat voor emoties op — herken en benoem gevoelens en geef aan hoe sterk ze zijn."
+        },
+        "strengths": {
+          "label": "Sterktevinder",
+          "desc": "Ontdek je persoonlijke sterktes, talenten en groeipunten en denk erover na."
+        },
+        "viaStrengths": {
+          "label": "VIA-sterktes",
+          "desc": "Een vereenvoudigde zelfsortering van de 24 VIA-karaktersterktes (Peterson en Seligman, 2004), met 6 deugden en het herkennen van je kernsterktes. Ga voor de officiële gratis vragenlijst naar viacharacter.org. Een reflectieoefening, geen psychometrische test."
+        },
+        "wheelOfLife": {
+          "label": "Levenswiel",
+          "desc": "Spindiagram van 8 levensgebieden, elk beoordeeld van 1 tot 10. Een zelfportret van waar je leven nu vol is en waar het mager is. Uit de coachingtraditie (Meyer, jaren 60; Co-Active Coaching). Een vuistregel; geen gevalideerd psychometrisch instrument."
+        },
+        "perma": {
+          "label": "PERMA-welzijn",
+          "desc": "Zelfcheck op de vijf PERMA-domeinen plus een reflectie op gezondheid: positieve emoties, betrokkenheid, relaties, betekenis, prestaties en gezondheid. 24 items, resultaat als staafdiagram, reflectie per domein. Naar Seligman; past bij VIA-sterktes."
+        },
+        "coping": {
+          "label": "Coping-gereedschapskist",
+          "desc": "Verken en oefen copingstrategieën — ademhalen, gronden, bewegen en meer."
+        },
+        "windowOfTolerance": {
+          "label": "Tolerantievenster",
+          "desc": "Traumasensitieve visual voor zelfbewustzijn. Drie arousalzones (hyperarousal, tolerantievenster, hypoarousal). Breng je persoonlijke signalen van elke zone in kaart, je triggers en de oefeningen die je terugbrengen. Gebaseerd op Siegel (1999); standaard op traumasensitieve scholen."
+        },
+        "stressBucket": {
+          "label": "Stressemmer",
+          "desc": "Een visual van je draagkracht. Stressoren stromen erin; copingoefeningen laten ze weglopen. Kijk of instroom en uitstroom in balans zijn. Een tool uit de CBT-traditie (Brabban en Turkington 2002), gebruikt binnen NHS IAPT en Mind UK. Eerlijk over structurele stressoren."
+        },
+        "tipp": {
+          "desc": "Vier DBT-vaardigheden om een crisis te doorstaan (Temperatuur, Intensief bewegen, rustig ademen – Paced breathing, spierontspanning op de adem – Paired muscle relaxation) bij ACUTE nood. Kalmeert je lichaam in 30 seconden tot 10 minuten, voordat je probeert er met nadenken uit te komen. Basisvaardigheid voor stresstolerantie uit DBT (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Angst-gereedschapskist",
+          "desc": "Op CBT gebaseerde vaardigheden om met angst om te gaan: psycho-educatie, de piekerboom (nuttig vs. nutteloos piekeren), vaste piekertijd, decatastroferen, grondingsvaardigheden en een overzicht van je persoonlijke patronen. Naar Beck Institute, AACAP, ADAA. Past bij Tolerantievenster en Stressemmer."
+        },
+        "sleep": {
+          "label": "Slaap & rust",
+          "desc": "Slaap bij jongeren is een crisis in de volksgezondheid. De door de AAP aanbevolen 8-10 uur wordt zelden gehaald. Psycho-educatie, zelfcheck, 8 veelvoorkomende obstakels + wat bij elk helpt, en een slaapdagboek. Naar AAP, CDC, NSF en onderzoek van Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Sensorische regulatie",
+          "desc": "Een neurodiversiteit-bevestigende tool om je eigen zintuiglijke verwerking in de 8 zintuiglijke systemen te begrijpen. Maak een persoonlijk profiel, plan een sensorisch dieet en ontdek aanpassingen op school. Identity-first-taalgebruik; gebaseerd op Ayres / Dunn / onderzoek onder leiding van autistische mensen."
+        },
+        "bigFeelings": {
+          "label": "Grote gevoelens (boosheid)",
+          "desc": "Psycho-educatie en vaardigheidstraining speciaal over boosheid. Boosheid als informatie, niet als het probleem; reactieve agressie als de valkuil. Gebaseerd op Lochmans Coping Power-traditie + de wetenschappelijke basis voor CBT bij boosheid. Ergernislogboek, overzicht van triggers, het keuzemoment, persoonlijke afkoelstrategieën."
+        },
+        "substancePsychoed": {
+          "label": "Middelengebruik",
+          "desc": "Psycho-educatie over middelen gericht op schadebeperking (alcohol, cannabis, nicotine, opioïden, stimulerende middelen, benzo's, hallucinogenen). Risico's voor het brein van jongeren. Voorlichting over naloxon. GEEN screening, NIET alleen gericht op onthouding. Duidelijke doorverwijzing naar SAMHSA. Reflectieruimte in de geest van motiverende gespreksvoering (MI)."
+        },
+        "behavioralActivation": {
+          "label": "Gedragsactivatie",
+          "desc": "Plan kleine activiteiten, voer ze uit en beoordeel ze op beheersing (je voelde je bekwaam) en plezier (je genoot ervan). Merk op wat past en kies een haalbare volgende stap. Deze planningsactiviteit put uit gedragsactivatie; ze biedt of beoordeelt geen therapie."
+        },
+        "mindfulness": {
+          "label": "Mindfulnesshoek",
+          "desc": "Begeleide ademhalingsoefeningen, bodyscans en mindfulnessactiviteiten."
+        },
+        "quietQuestions": {
+          "label": "Stille vragen",
+          "desc": "Wekelijkse oefening in innerlijk onderzoek. Blijf een hele week bij één open vraag. 20 wisselende vragen over aandacht, verlangen, moeilijkheden, verbinding en worden. Geïnspireerd door de quakertraditie van vragen; seculier en niet-voorschrijvend."
+        },
+        "orientations": {
+          "label": "Oriëntaties",
+          "desc": "Levenswijzen vergeleken. Acht filosofische tradities (taoïsme, zen, stoïcisme, existentialisme, confucianistische ethiek, ubuntu, inheemse relationaliteit, zorgethiek) vergeleken op grote levensvragen. Niet-voorschrijvend; elke traditie heeft een eerlijk paneel “Wat deze traditie niet goed kan”."
+        },
+        "thoughtRecord": {
+          "label": "CBT-gedachtenschema",
+          "desc": "Het gedachtenschema met 7 kolommen uit de cognitieve gedragstherapie. Loop een moeilijk moment door: situatie, emotie, automatische gedachte, bewijs voor en tegen, evenwichtige gedachte, emotie opnieuw beoordelen. Bewaart je invullingen door de tijd heen. Naar Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Kosten-batenraster",
+          "desc": "Een 2x2-beslisraster uit de dialectische gedragstherapie. Voor- en nadelen van een beslissing op korte en lange termijn, naast elkaar. Handig wanneer een emotie je naar één optie duwt. Naar Linehan."
+        },
+        "sfbt": {
+          "label": "Oplossingsgericht",
+          "desc": "Oplossingsgerichte kortdurende therapie: de wondervraag, schaalvragen, uitzonderingen zoeken en complimenten. Kijkt vooruit in plaats van terug en vraagt wat al werkt. De meestgebruikte techniek in de schoolbegeleiding in de VS. Naar de Shazer en Berg."
+        },
+        "careConstellations": {
+          "label": "Zorgconstellaties",
+          "desc": "Een relationele kaart van wie voor jou zorgt en voor wie jij zorgt. Wijst het individualistische of consumentistische kader van “zelfzorg” af. Bevat een grondige filosofische beschouwing over zorg voor het zelf vs. zelfzorg (Foucault, het Griekse epimeleia heautou, Audre Lorde, eudaimonisch vs. hedonisch)."
+        },
+        "ecomap": {
+          "label": "Ecogram",
+          "desc": "Kaart van de relaties tussen persoon en omgeving. Jij in het midden; de 12 belangrijkste levenssystemen om je heen. Elke verbinding krijgt een beoordeling voor sterkte, stress en richting van de energie. Standaardinstrument in het sociaal werk sinds Hartman (1978); gebruikt bij IEP's, gezinsbeoordeling en een persoonlijke inventaris van je leven."
+        },
+        "circlesOfSupport": {
+          "label": "Steuncirkels",
+          "desc": "Vier concentrische relatiecirkels: intimiteit, vriendschap, deelname, uitwisseling (betaald). Maakt zichtbaar wie echt dichtbij is, ook als betaalde mensen de binnenste cirkels vullen. Naar Forest en Snow van Inclusion Press."
+        },
+        "genogram": {
+          "desc": "Familiekaart over drie generaties met de standaardsymbolen uit de gezinssysteemtheorie. Alleen voor persoonlijk zelfinzicht (GEEN klinische beoordeling). Gebaseerd op Bowens gezinssysteemtheorie en de notatie van McGoldrick, Gerson en Petry. Bevat duidelijke richtlijnen om het veilig aan te pakken."
+        },
+        "griefLoss": {
+          "label": "Rouw & verlies",
+          "desc": "Een begeleide metgezel voor jezelf bij rouw. Het overlijden van een persoon of huisdier, veranderingen in het gezin, verloren vriendschappen, verlies van identiteit, onduidelijk verlies — het telt allemaal. Loop de vier rouwtaken van Worden door, schrijf een brief, plan rituelen. Duidelijke veiligheidsinformatie met verwijzing naar Crisisgids / 988 bij zware of gecompliceerde rouw."
+        },
+        "traumaPsychoed": {
+          "label": "Trauma begrijpen",
+          "desc": "Alleen psycho-educatie (GEEN screening). Wat trauma wel en niet is, neurobiologie in gewone taal, veelvoorkomende reacties opnieuw bekeken als aanpassingen, de 6 principes van SAMHSA, wetenschappelijk onderbouwde behandelingen. Voor leerlingen en onderwijsprofessionals. Bevat duidelijke veiligheidsinformatie over waarom screenen zonder vervolgzorg onveilig is."
+        },
+        "bodyStory": {
+          "label": "Lichaamsverhaal",
+          "desc": "Tool voor lichaamsacceptatie en belichaming. NIET gericht op gewicht, NIET verwant aan diëten, GEEN screening. Gebaseerd op Tylka's lichaamswaardering, principes van intuïtief eten en mediawijsheid. Inclusief voor alle lichamen, alle genders, alle maten. Duidelijke doorverwijzing naar NEDA bij eetstoornissen."
+        },
+        "sourcesOfStrength": {
+          "label": "Krachtbronnen",
+          "desc": "Breng je 8 beschermende factoren in kaart. Verken beschermende steun, geïnspireerd door het programma Sources of Strength. Deze kaart die je zelfstandig invult is een bewerking, geen uitvoering van het geëvalueerde schoolprogramma."
+        },
+        "crisiscompanion": {
+          "label": "Crisisgids",
+          "desc": "Steun aan leeftijdgenoten en vaardigheden voor zelfdodingspreventie: wat te doen als jij of een vriend(in) depressief is, in crisis is of denkt aan zelfbeschadiging — de signalen herkennen, wat je wel (en niet) zegt, het vertellen aan een volwassene die je vertrouwt, plus 988 en een persoonlijk veiligheidsplan. Met inhoudswaarschuwing vooraf. Afgestemd op NEDA, AFSP, Sources of Strength en 988. De tegenhanger van Krachtbronnen voor acute steun."
+        },
+        "identitySupport": {
+          "label": "Steun bij identiteit",
+          "desc": "Een inclusieve, bevestigende ruimte voor vragen over genderidentiteit, seksuele oriëntatie, romantische oriëntatie en identiteit in bredere zin. Woordenschat, identiteitsontwikkeling, gemeenschap vinden, veiligheid voor trans jongeren, tips voor bondgenoten. Gebaseerd op Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Stemmen van mensen met een beperking",
+          "desc": "Echte autistische en gehandicapte pleitbezorgers wier werk de praktijk rond beperking heeft gevormd én bekritiseerd. Citaten, context en een zorgvuldig gekozen leeslijst. Zo opgezet dat de mensen OP wie het vakgebied zijn methoden heeft toegepast centraal staan, in plaats van weggezet in een zijbalk van een gedragswetenschappelijke tool. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Doelenplanner",
+          "desc": "Stel SMART-doelen, volg je voortgang en vier mijlpalen."
+        },
+        "howlTracker": {
+          "label": "HOWL-tracker",
+          "desc": "Zelfbeoordeling van de Habits of Work and Learning (werk- en leergewoonten) voor Crew-tijd. Wekelijkse check-ins, kwartaaldoelen, trendgrafiek, gespreksvragen voor de Crew. Afgestemd op het HOWL-kader van EL Education."
+        },
+        "onePageProfile": {
+          "label": "Eén-paginaprofiel",
+          "desc": "Een handig, afdrukbaar profiel dat op één pagina past. Drie delen: wat mensen in mij waarderen en bewonderen, wat belangrijk is voor mij, hoe je mij het best ondersteunt. Document voor persoonsgerichte planning bij IEP-overleg, overgangen, invalleerkrachten of de Crew. Naar het format van Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (actieplannen maken). Acht vragen in vaste volgorde (Mijn verhaal, Droom, Nachtmerrie, Wie ik ben, Gaven, Behoeften, Actieplan, Eerste stappen). Persoonsgerichte visual van Pearpoint, O'Brien en Forest van Inclusion Press; veel gebruikt bij het plannen van overgangen."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (andere toekomsten plannen met hoop). Visual voor toekomstplanning: acht fasen, van je Noordster op de lange termijn terug naar de eerste stappen binnen twee weken. Pearpoint, O'Brien en Forest van Inclusion Press; past bij MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Waarden & actie",
+          "desc": "Sorteer wat belangrijk voor je is, benoem je belangrijkste waarden en maak van elke waarde een kleine, concrete actie voor deze week. Uit Acceptance and Commitment Therapy (Hayes); DNA-V-benadering voor jongeren. Het onderscheid in ACT tussen waarden (richtingen) en doelen (bestemmingen)."
+        },
+        "careerCompass": {
+          "label": "Beroepenkompas",
+          "desc": "Verken beroepen via je interesses. Een RIASEC-zelfcheck met 36 items geeft een Holland-code met je top drie; blader door beroepen, de 16 federale Career Clusters van de VS en concrete volgende stappen (meeloopdagen, informatiegesprekken, CTE, leerwerktrajecten). Gebaseerd op het model van Holland; verwijst naar de officiële O*NET Interest Profiler op mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio Voor jezelf opkomen",
+          "desc": "Maak een concreet plan voor ondersteuning op school bij vragen over IEP of 504, aanpassingen, keuzes over wat je vertelt en hoe je volwassenen die je vertrouwt om hulp vraagt."
+        },
+        "perspective": {
+          "label": "Perspectieflens",
+          "desc": "Bekijk situaties vanuit verschillende gezichtspunten — oefen empathie en je inleven in anderen."
+        },
+        "community": {
+          "label": "Gemeenschap & cultuur",
+          "desc": "Verken diversiteit, cultureel bewustzijn en je thuis voelen in een gemeenschap."
+        },
+        "conflict": {
+          "label": "Conflicten oplossen",
+          "desc": "Oefen een conflict met weinig op het spel of een verzonnen conflict met je inleven in de ander, ik-boodschappen, de-escalatie en keuzes voor herstel. Als iemand niet veilig is, schakel dan een volwassene in in plaats van alleen te onderhandelen."
+        },
+        "social": {
+          "label": "Lab sociale vaardigheden",
+          "desc": "Oefen gespreksvaardigheden, actief luisteren, lichaamstaal en samenwerken."
+        },
+        "teamwork": {
+          "label": "Samenwerkingsbouwer",
+          "desc": "Uitdagingen om samen op te lossen en rollen in een team verkennen."
+        },
+        "dearMan": {
+          "desc": "Maak in zeven stappen een script voor een moeilijk verzoek: Beschrijven (Describe), Uiten (Express), Duidelijk vragen (Assert), Belonen (Reinforce), Aandachtig blijven (Mindful), Zelfverzekerd overkomen (Appear confident), Onderhandelen (Negotiate). Uit de DBT-module interpersoonlijke effectiviteit (Linehan); het meestgebruikte script voor assertieve communicatie in de schoolbegeleiding. Past bij Studio Voor jezelf opkomen."
+        },
+        "motivationalInterviewing": {
+          "label": "Motiverende gespreksvoering",
+          "desc": "Een gesprekskader om iemand (of jezelf) te helpen over een verandering na te denken. Leer de OARS-vaardigheden (open vragen, bevestigen, reflecteren, samenvatten), de drie meetlatten en verandertaal (Change Talk). Naar Miller en Rollnick; de basis van schoolbegeleiding en steun door leeftijdgenoten."
+        },
+        "crewProtocols": {
+          "label": "Crew-protocollen",
+          "desc": "Een bibliotheek met gestructureerde groepsvormen voor Crew-tijd, het mentoruur of de stamgroep: gemeenschapsvormende activiteiten, openingen, afsluitingen, herstelcirkels, reflectieprotocollen, vieringsvormen en gidsen voor moeilijke gesprekken. Plus een overzicht van alle Crew-vragen uit de hele SEL Hub. Gebaseerd op EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Gezonde relaties",
+          "desc": "Het spectrum (gezond / ongezond / gewelddadig) over 8 dimensies van elke hechte relatie. Toestemming in detail, preventie van datinggeweld, veiligheid + hulplijnen. Gebaseerd op het kader van Loveisrespect / NDVH. Inclusief voor queer, neurodivergente en gehandicapte mensen."
+        },
+        "decisions": {
+          "label": "Keuzelab",
+          "desc": "Werk echte situaties uit het leven door met stop-denk-doe-modellen."
+        },
+        "journal": {
+          "label": "Gevoelensdagboek",
+          "desc": "Dagelijks check-in-dagboek — houd stemmingen, triggers en reflecties bij door de tijd heen."
+        },
+        "safety": {
+          "label": "Veiligheid & grenzen",
+          "desc": "Leer over persoonlijke grenzen, volwassenen die je vertrouwt en veilige vs. onveilige situaties."
+        },
+        "landPlace": {
+          "label": "Land & plek",
+          "desc": "Rentmeesterschapsstudio voor een blijvende relatie met het land waarop je woont. Drie lijnen (geschiedenis, ecologie, heden), kritische reflectie op landerkenning als praktijk in plaats van als optreden, door Wabanaki geleide organisaties als gezaghebbende stemmen, en een privé-reflectiedagboek."
+        },
+        "somaticReset": {
+          "label": "Lichaam- & adem-reset",
+          "desc": "Kies een lichaamszone en volg een korte reset met stilte, ademhaling of zachte beweging die je op een stoel kunt doen, met een privé-check-in ervoor en erna."
+        },
+        "restorativeCircle": {
+          "label": "Herstelcirkel",
+          "desc": "Begeleid herstelcirkels en gemeenschapsvormende cirkels met vaste afspraken, begeleiding door volwassenen en zorg voor culturele wortels. Niet voor gedwongen openheid of bij een actueel veiligheidsrisico."
+        },
+        "compassion": {
+          "label": "Compassie & zelfpraat",
+          "desc": "Oefen zelfcompassie, herformuleer je innerlijke criticus en bouw een vriendelijkere innerlijke stem op."
+        },
+        "friendship": {
+          "label": "Vriendschapsbouwer",
+          "desc": "Verken vriendschapsstijlen, strategieën om het goed te maken en gezonde relatiepatronen."
+        },
+        "transitions": {
+          "label": "Levensovergangen",
+          "desc": "Ga om met veranderingen zoals verhuizen, een nieuwe school en opgroeien."
+        },
+        "upstander": {
+          "label": "Opkomen voor anderen",
+          "desc": "Leer veilig op te komen voor anderen — van omstander naar iemand die in actie komt."
+        },
+        "growthmindset": {
+          "label": "Groeimindset",
+          "desc": "Hersenwetenschap, uitdagingen anders bekijken en veerkracht opbouwen."
+        },
+        "execfunction": {
+          "label": "Executieve functies",
+          "desc": "Strategieën voor de lastigere kanten van dingen gedaan krijgen: aan taken beginnen, je focus vasthouden, vooruit plannen en de tijd bijhouden."
+        },
+        "advocacy": {
+          "label": "Je stem laten horen",
+          "desc": "Oefen algemene zinnen om je behoeften te uiten, om steun te vragen en om voor jezelf op te komen in alledaagse situaties."
+        },
+        "civicAction": {
+          "label": "Maatschappelijk handelen & hoop",
+          "desc": "Verwerk moeilijke gevoelens over onrecht, bouw aan je maatschappelijke slagkracht en vind hoop door in actie te komen."
+        },
+        "ethicalReasoning": {
+          "label": "Ethieklab",
+          "desc": "Verken actuele ethische dilemma's via meerdere denkkaders en een socratische dialoog met AI."
+        },
+        "cultureExplorer": {
+          "label": "Cultuurverkenner",
+          "desc": "Duik met behulp van AI diep in culturen van de wereld, met illustraties en audio."
+        },
+        "voicedetective": {
+          "label": "Stemdetective",
+          "desc": "Luister naar stemmen en herken emoties aan de toon."
+        },
+        "practiceJourneys": {
+          "label": "Oefenreizen (pilot)",
+          "desc": "Oefen in vier samenhangende ontmoetingen met het vragen om steun. Reageer met keuzes, je eigen woorden of allebei. Houd een dagboek bij en probeer een andere route."
+        },
+        "sociallab": {
+          "label": "Rollenspel sociale vaardigheden",
+          "desc": "Oefen sociale situaties en rollenspellen met een AI-leeftijdgenoot, met vertakte dialogen."
+        },
+        "peersupport": {
+          "label": "Coach voor steun aan leeftijdgenoten",
+          "desc": "Leer de OARS-luistervaardigheden en wanneer je hulp van een volwassene moet halen."
+        },
+        "conflicttheater": {
+          "label": "Conflicttheater",
+          "desc": "Oefen een verzonnen conflict met twee AI-personages in een meeslepende scène. Alleen een bèta-rollenspel; gebruik het niet om te bemiddelen wanneer iemand op dit moment schade wordt aangedaan."
+        },
+        "digitalWellbeing": {
+          "label": "Studio digitaal welzijn",
+          "desc": "Check je relatie met sociale media en AI-chatbots, bouw gezondere telefoongewoonten op, herstel van cyberpesten, herken manipulatie in je feed, ga veilig om met relaties met chatbots en vind hulp wanneer je die nodig hebt."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Zelfbewustzijn",
+          "desc": "Emoties, sterktes en groeipunten herkennen"
+        },
+        "self-regulation": {
+          "label": "Zelfregulatie",
+          "desc": "Emoties, spanning en aandacht reguleren; coping oefenen"
+        },
+        "self-direction": {
+          "label": "Zelfsturing",
+          "desc": "Doelen stellen, eigen regie, executieve functies, groeimindset"
+        },
+        "inner-work": {
+          "label": "Innerlijk werk",
+          "desc": "Contemplatieve en reflectieve oefeningen"
+        },
+        "care-of-self": {
+          "label": "Zorg voor jezelf",
+          "desc": "Zelfcompassie, zelfzorg in relatie tot anderen"
+        },
+        "social-awareness": {
+          "label": "Sociaal bewustzijn",
+          "desc": "Empathie, je inleven in anderen en diversiteit waarderen"
+        },
+        "relationship-skills": {
+          "label": "Relatievaardigheden",
+          "desc": "Communicatie, samenwerking en conflicten oplossen"
+        },
+        "responsible-decision-making": {
+          "label": "Verantwoorde besluitvorming",
+          "desc": "Ethische keuzes, gevolgen afwegen en problemen oplossen"
+        },
+        "stewardship": {
+          "label": "Rentmeesterschap",
+          "desc": "Zorgen voor de gemeenschap, rechtvaardigheid, het land en de toekomst"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Benoem in welke zone je nu zit en kies een reguleringsstrategie die past.",
+          "next": "Check je zone, kies één strategie en sla op als je er later op terug wilt komen."
+        },
+        "coping": {
+          "purpose": "Kies een copingstrategie en oefen die één keer, met een duidelijk eindpunt.",
+          "next": "Kies één strategie voor je lichaam of om te gronden, probeer die en merk op of het hielp."
+        },
+        "journal": {
+          "purpose": "Schrijf een privéreflectie en merk patronen op die je misschien wilt bewaren.",
+          "next": "Kies een vraag, schrijf eerlijk en sla op of exporteer voordat je afsluit."
+        },
+        "emotions": {
+          "purpose": "Bouw je woordenschat voor emoties op en benoem preciezer wat je voelt.",
+          "next": "Kies een gevoel, geef aan hoe sterk het is en kies dan één woord dat het best past."
+        },
+        "mindfulness": {
+          "purpose": "Pauzeer, adem en oefen aandacht zonder dat je iets hoeft te schrijven.",
+          "next": "Kies één korte oefening, doe die helemaal en merk op wat er veranderde."
+        },
+        "somaticReset": {
+          "purpose": "Gebruik een privé-check-in van je lichaamszones om een korte reset te kiezen die je op een stoel kunt doen.",
+          "next": "Kies een lichaamsdeel, probeer één optie met stilte, ademhaling of zachte beweging en merk op wat er veranderde."
+        },
+        "thoughtRecord": {
+          "purpose": "Vertraag een moeilijke gedachte en zoek naar een evenwichtiger beeld.",
+          "next": "Benoem de situatie, geef aan hoe sterk het gevoel is en toets de gedachte dan aan bewijs."
+        },
+        "anxietyToolkit": {
+          "purpose": "Sorteer zorgen, verminder hoe sterk de angst is en kies een praktische volgende stap.",
+          "next": "Kies de zorg die het luidst is, probeer één strategie en sla het plan op als het helpt."
+        },
+        "sleep": {
+          "purpose": "Merk op wat je slaap in de weg zit en kies één rustgewoonte om hierna te proberen.",
+          "next": "Check wat in de weg zit, kies één kleine verandering en kom er later op terug."
+        },
+        "goals": {
+          "purpose": "Maak van een voornemen een concrete, realistische volgende actie.",
+          "next": "Schrijf één doel op, kies een eerste stap en sla het plan op voordat je afsluit."
+        },
+        "friendship": {
+          "purpose": "Denk na over wat je nodig hebt in vriendschappen, over erbij horen en over keuzes onder leeftijdgenoten.",
+          "next": "Kies één situatie in een vriendschap en bedenk één vriendelijke volgende stap."
+        },
+        "conflict": {
+          "purpose": "Begrijp een conflict en bereid een reactie voor die gericht is op herstel.",
+          "next": "Benoem wat er gebeurde, bekijk beide kanten en kies dan één actie om het goed te maken."
+        },
+        "safety": {
+          "purpose": "Maak een praktisch veiligheidsplan en bepaal bij wie je terechtkunt voor steun die je vertrouwt.",
+          "next": "Voeg waarschuwingssignalen, copingstappen en mensen om contact mee op te nemen toe; sla op voordat je afsluit."
+        },
+        "crisiscompanion": {
+          "purpose": "Gebruik een gestructureerde steunroute wanneer emoties dringend of onveilig voelen.",
+          "next": "Kies de steunoptie die het dichtst bij je is en schakel zo nodig een volwassene die je vertrouwt of een crisisdienst in."
+        },
+        "conflicttheater": {
+          "purpose": "Oefen een verzonnen conflictscène en test herstelgerichte taal, zonder de tool als bemiddeling te gebruiken.",
+          "next": "Kies een verzonnen scène, probeer één reactie en bespreek na waarvoor je in het echte leven steun van een volwassene nodig zou hebben."
+        },
+        "restorativeCircle": {
+          "purpose": "Plan of begeleid een herstelgericht groepsproces met duidelijke afspraken en begeleiding door volwassenen.",
+          "next": "Maak eerst de afspraken voor de cirkel en kies dan een vraag; eis nooit dat iemand in het openbaar iets persoonlijks deelt."
+        },
+        "strengths": {
+          "next": "Kies de sterktes die bij je passen en zoek dan voor elke sterkte een echt moment uit dit trimester dat die laat zien."
+        },
+        "viaStrengths": {
+          "purpose": "Gebruik een op VIA geïnspireerde zelfsortering als reflectieactiviteit, niet als formele beoordeling.",
+          "next": "Sorteer de sterktes, merk patronen op en schrijf één voorbeeld op dat het resultaat concreet maakt."
+        },
+        "perma": {
+          "purpose": "Maak een reflectief overzicht van je welzijn over de PERMA-domeinen plus gezondheid.",
+          "next": "Gebruik het overzicht om een gesprek of een klein experiment te kiezen, niet om jezelf een etiket op te plakken."
+        },
+        "advocacy": {
+          "purpose": "Oefen alledaagse taal om je behoeften te uiten en om steun te vragen.",
+          "next": "Kies een situatie, schrijf een kort verzoek en bedenk wie zou kunnen helpen."
+        },
+        "selfAdvocacy": {
+          "purpose": "Maak een concreet plan voor ondersteuning op school voor IEP, 504, aanpassingen of keuzes over wat je vertelt.",
+          "next": "Kies één ondersteuningsbehoefte, verzamel je vragen en bepaal welke volwassene die je vertrouwt je erbij wilt betrekken."
+        },
+        "crewProtocols": {
+          "next": "Blader op doel, kies één protocol voor vandaag en noteer dan in “Mijn Crew-plan” wanneer je het gaat doen."
+        },
+        "perspective": {
+          "next": "Kies een situatie, bekijk eerst het andere standpunt en zeg dan wat jij anders zou doen."
+        },
+        "windowOfTolerance": {
+          "next": "Voeg aan elk van je drie zones één signaal toe en gebruik dan “Check-in” om te bepalen waar je vandaag zit."
+        },
+        "sensoryRegulation": {
+          "next": "Begin met “Wat is sensorisch?” en markeer dan de systemen die bij jou luid of stil zijn."
+        },
+        "execfunction": {
+          "next": "Ga naar “Starten” en kies één startzet voor vandaag, en dan naar “Volhouden” om de plek te kiezen waar je dingen noteert."
+        },
+        "growthmindset": {
+          "next": "Open “Anders bekijken”, schrijf de vaste gedachte op en maak er een concrete, werkbare gedachte van."
+        },
+        "dearMan": {
+          "next": "Schrijf je verzoek in één zin op, werk de zeven stappen uit en oefen het één keer."
+        },
+        "howlTracker": {
+          "next": "Vul een Pols in en doe dan de wekelijkse check-in: beoordeel elke HOWL-gewoonte en voeg één concreet voorbeeld toe."
+        },
+        "peersupport": {
+          "next": "Kies twee open vragen die je aan een vriend(in) zou kunnen stellen en probeer er dan één uit op een verzonnen situatie in het oefentabblad."
+        },
+        "upstander": {
+          "next": "Lees de moedladder bij “Stappen” en kies de twee kleinste stappen die je deze week echt zou kunnen zetten."
+        },
+        "digitalWellbeing": {
+          "next": "Doe de zelfcheck eerlijk en kies dan één gewoonte uit de gereedschapskist en één grens die je van tevoren stelt."
+        },
+        "teamwork": {
+          "next": "Bekijk de rollen en schrijf dan een communicatieplan voor een echte groep: wie doet wat, waar en wanneer het klaar moet zijn."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Begin hier",
+        "name_it": "Benoem het",
+        "calm_now": "Nu tot rust komen",
+        "body_reset": "Lichaamsreset",
+        "make_a_plan": "Maak een plan",
+        "understand_patterns": "Patronen begrijpen",
+        "practice_repair": "Herstel oefenen",
+        "role_play": "Rollenspel",
+        "facilitated_group": "Begeleide groep",
+        "reflect": "Reflecteren",
+        "practice_speaking_up": "Oefenen met je uitspreken",
+        "make_a_support_plan": "Maak een steunplan",
+        "urgent_support": "Dringende steun",
+        "get_support": "Steun zoeken",
+        "move_gently": "Rustig aan",
+        "learn_not_diagnose": "Leren, niet diagnosticeren",
+        "learn_and_get_support": "Leren en steun zoeken",
+        "check_boundaries": "Grenzen checken",
+        "explore_identity": "Identiteit verkennen",
+        "practice_body_respect": "Respect voor je lichaam oefenen",
+        "map_carefully": "Zorgvuldig in kaart brengen",
+        "understand_needs": "Behoeften begrijpen"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Benoem wat er gebeurt voordat je een strategie kiest."
+        },
+        "emotions": {
+          "note": "Zoek precieze woorden voor gevoelens en merk op hoe sterk ze zijn."
+        },
+        "coping": {
+          "note": "Probeer één strategie voor je lichaam of om te gronden en merk dan op wat er veranderde."
+        },
+        "mindfulness": {
+          "note": "Een pauze met weinig schrijven, voor ademhaling, aandacht of lichaamsbewustzijn."
+        },
+        "somaticReset": {
+          "note": "Kies een lichaamsdeel en probeer dan een korte oefening met stilte, ademhaling of zachte beweging. Een compacte kiezer die met het toetsenbord te bedienen is, houdt elke visual overzichtelijk op kleine schermen. De visuals zijn onder meer een “Stromende golf” die IN · STIJGEN koppelt aan een doorgetrokken lijn en een ronde markering, UIT · ZAKKEN aan een stippellijn en een ruitvormige markering, en GEPAUZEERD aan pauzestrepen; een “Bloembloei” die IN · OPENEN koppelt aan doorgetrokken bloemblaadcontouren en een rond midden, UIT · ZACHTER WORDEN aan gestippelde contouren en een ruitvormig midden, en GEPAUZEERD aan pauzestrepen in het midden; een “Aardende horizon” die IN · STIJGEN koppelt aan een doorgetrokken zoncontour en een cirkelvormig midden, UIT · ZAKKEN aan een gestippelde zoncontour en een ruitvormig midden, en GEPAUZEERD aan pauzestrepen op de zon; een voorspelbaar lineair pad met richtingsmarkeringen, directe IN- en UIT-labels, ronde IN- en ruitvormige UIT-doelen, een spoor vanaf het actieve beginpunt en een omlijnde volgende bestemming; en een tweedelige “Ademorbit” met doorgetrokken en gestippelde fasebogen die dikker worden wanneer ze actief zijn, een bijpassende middenring met fasepatroon, directe IN- en UIT-labels, een middensymbool voor de pauzestand, een omlijnd station voor de volgende overgang, een fasevormige markering met de klok mee, een ritmekaart met vormcodes en fasehints voor schermlezers. Leerlingen kunnen één ademhaling aan beweging uitproberen voordat de timer start, en de gids daarna vergroten, stilzetten of uitzetten. In “Rustige weergave” wordt de vergrote visual een start/pauze-knop die met toetsenbord en aanraking werkt. Het aftellen kan verborgen worden; begeleidende woorden kunnen volledig, alleen per fase of verborgen zijn; en ademtellingen en cijferbeoordelingen zijn optioneel.",
+          "boundary": "Dit is geen behandeling of diagnose. Houd bewegingen klein en pijnvrij; stop bij pijn, duizeligheid of een doof gevoel en vertel het aan een volwassene die je vertrouwt of aan een zorgprofessional."
+        },
+        "anxietyToolkit": {
+          "note": "Scheid piekeren van handelen en kies één praktische volgende stap."
+        },
+        "windowOfTolerance": {
+          "note": "Breng signalen van spanning en steun in kaart door de tijd heen; het is geen diagnose."
+        },
+        "stressBucket": {
+          "note": "Bekijk druk en steun samen, ook druk waar jij geen invloed op hebt."
+        },
+        "bigFeelings": {
+          "note": "Gebruik boosheid als informatie en plan een veiligere pauze of een manier om het goed te maken."
+        },
+        "conflict": {
+          "note": "Het best om een conflict met weinig op het spel of een verzonnen conflict te oefenen.",
+          "boundary": "Als er sprake is van bedreiging, dwang, pesten, misbruik of een onveilig machtsverschil, stop dan en schakel een volwassene die je vertrouwt in in plaats van alleen te onderhandelen."
+        },
+        "conflicttheater": {
+          "note": "Meeslepende bèta-oefening met verzonnen personages; gebruik het niet om te bemiddelen wanneer iemand op dit moment schade wordt aangedaan.",
+          "boundary": "Echte bedreigingen, misbruik of pesten vragen om steun van volwassenen en een veiligheidsaanpak, niet om een rollenspel."
+        },
+        "restorativeCircle": {
+          "note": "Gebruik dit met vaste afspraken voor de cirkel en een volwassen begeleider.",
+          "boundary": "Gebruik een cirkel niet om iemand onder druk te zetten iets persoonlijks in het openbaar te delen, of om een actueel veiligheidsrisico af te handelen."
+        },
+        "strengths": {
+          "note": "Open reflectie op sterktes zonder score, rangorde of diagnose."
+        },
+        "viaStrengths": {
+          "note": "Een zelfsortering om over na te denken, niet de officiële VIA-vragenlijst of een psychometrische uitslag."
+        },
+        "perma": {
+          "note": "Een overzicht van je welzijn om een gesprek op gang te brengen, geen beoordeling van mentale gezondheid."
+        },
+        "advocacy": {
+          "note": "Algemene zinnen en oefening om je behoeften te uiten en om steun te vragen."
+        },
+        "selfAdvocacy": {
+          "note": "Gebruik dit voor concrete planning rond IEP, 504, aanpassingen, wat je vertelt of ondersteuning op school."
+        },
+        "crisiscompanion": {
+          "note": "Een steungids voor jou of een vriend(in); het is geen crisisscreening en geen vervanging van een volwassene.",
+          "boundary": "Als iemand in direct gevaar kan zijn of gedachten over zelfbeschadiging kan uitvoeren, stop dan hier en neem nu contact op met een volwassene die je vertrouwt of met nood- of crisishulp."
+        },
+        "safety": {
+          "note": "Leer over grenzen en stappen met volwassenen die je vertrouwt; dit is geen test of een situatie veilig is.",
+          "boundary": "Als je in direct gevaar bent of iemand je pijn doet, stop dan en neem nu contact op met een volwassene die je vertrouwt of met de noodhulp."
+        },
+        "griefLoss": {
+          "note": "Een privé-metgezel bij rouw en verlies; sla alles over wat te veel voelt.",
+          "boundary": "Als rouw ondraaglijk voelt, je je niet veilig voelt of iemand anders gevaar loopt, schakel dan een volwassene die je vertrouwt of crisishulp in."
+        },
+        "traumaPsychoed": {
+          "note": "Psycho-educatie over reacties op trauma; geen screening of behandeling.",
+          "boundary": "Je hoeft hier niets over trauma te vertellen. Pauzeer en zoek een volwassene die je vertrouwt of een begeleider op als de inhoud iets onveiligs bij je naar boven haalt."
+        },
+        "substancePsychoed": {
+          "note": "Informatie en reflectie gericht op schadebeperking; geen screening en geen toestemming om middelen te gebruiken.",
+          "boundary": "Gebruik deze tool niet bij een overdosis of een dringende medische situatie; neem contact op met de noodhulp of een volwassene die je vertrouwt."
+        },
+        "healthyRelationships": {
+          "note": "Verken toestemming en relatiepatronen zonder een persoon of relatie een etiket te geven.",
+          "boundary": "Als er in een relatie sprake is van bedreiging, dwang of geweld, zoek dan hulp bij een volwassene; confronteer niemand in je eentje."
+        },
+        "identitySupport": {
+          "note": "Bevestigende reflectie en steun uit de gemeenschap; delen is vrijwillig.",
+          "boundary": "Houd persoonlijke informatie privé en schakel een volwassene die je vertrouwt in als je je niet veilig voelt."
+        },
+        "bodyStory": {
+          "note": "Lichaamswaardering en mediawijsheid; geen afvalprogramma en geen beoordeling van eetstoornissen.",
+          "boundary": "Als eten, lichaamsbeeld of sporten onveilig voelt of alles overheerst, praat dan met een volwassene die je vertrouwt of een zorgprofessional."
+        },
+        "genogram": {
+          "note": "Persoonlijke reflectie op je familie; geen klinische beoordeling, en delen is vrijwillig.",
+          "boundary": "Sla familiedetails over die onveilig of privé voelen; vraag een volwassene die je vertrouwt om steun."
+        },
+        "sensoryRegulation": {
+          "note": "Maak een sensorisch profiel en bedenk aanpassingen; geen diagnose.",
+          "boundary": "Kies steun die veilig voelt; deel aanpassingen alleen als jij dat wilt."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Ochtend-check-in",
+          "desc": "Begin de dag met een stemmingscheck, ademhaling en doelen stellen"
+        },
+        "calm_down": {
+          "name": "Rusthoek",
+          "desc": "Reguleringsstrategieën voor als emoties hoog oplopen"
+        },
+        "conflict_unit": {
+          "name": "Lessenreeks conflicten oplossen",
+          "desc": "Oefen met het oplossen van meningsverschillen en bouw vaardigheden op om het goed te maken"
+        },
+        "empathy_week": {
+          "name": "Week van empathie & perspectief",
+          "desc": "Bouw empathie op door je in anderen te verplaatsen en door cultureel bewustzijn"
+        },
+        "decision_making": {
+          "name": "Verdieping: beslissingen nemen",
+          "desc": "Oefen ethisch redeneren en verantwoordelijke keuzes"
+        },
+        "self_discovery": {
+          "name": "Ontdekkingsreis naar jezelf",
+          "desc": "Ontdek wie je bent — sterktes, emoties en groeimindset"
+        },
+        "friendship": {
+          "name": "Vriendschap & sociale vaardigheden",
+          "desc": "Bouw gezonde vriendschappen en communicatievaardigheden op"
+        },
+        "transitions": {
+          "name": "Omgaan met verandering",
+          "desc": "Ondersteun leerlingen bij overgangen in hun leven en nieuwe ervaringen"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Merk op wat je nodig hebt en kies één haalbare volgende stap.",
+          "model": "Ik voel me onrustig. Ik kan even strekken en dan het eerste deel van mijn taak kiezen.",
+          "practice": "Benoem een gevoel, wijs een keuze aan of merk het stil op. Probeer één vorm van steun en kies een klein doel.",
+          "reflect": "Wat viel je op? Wat zou je houden of veranderen?",
+          "transfer": "Als de volgende les begint, kan ik ____ proberen. Als ik hulp nodig heb, kan ik ____ vragen."
+        },
+        "calm_down": {
+          "goal": "Verken een vorm van steun die past bij je lichaam en dit moment.",
+          "model": "Ademhalingsoefeningen voelen vandaag niet behulpzaam. Ik kan rondkijken in de ruimte of vragen of iemand bij me komt.",
+          "practice": "Kies maar één strategie die prettig voelt. Zitten, kijken of een pauze nemen zijn ook goede keuzes.",
+          "reflect": "Hielp het, voelde het hetzelfde of voelde het ongemakkelijk? Je kunt stoppen of een andere manier kiezen.",
+          "transfer": "Als ik ____ merk, kan ik ____ proberen of ____ om steun vragen."
+        },
+        "conflict_unit": {
+          "goal": "Bekijk verschillende standpunten en oefen een respectvolle reactie op een alledaags meningsverschil.",
+          "model": "We willen allebei hetzelfde materiaal. Ik kan vragen wat jij nodig hebt, uitleggen wat ik nodig heb en voorstellen om om de beurt te gaan.",
+          "practice": "Gebruik een verzonnen meningsverschil met weinig op het spel. Oefen één luistervraag en één mogelijke volgende stap.",
+          "reflect": "Op wiens behoeften ging de reactie in? Wat moet er misschien anders?",
+          "transfer": "Bij een veilig meningsverschil kan ik ____. Bij bedreiging, pesten of dwang kan ik een volwassene die ik vertrouw om hulp vragen."
+        },
+        "empathy_week": {
+          "goal": "Verken een ander standpunt zonder aan te nemen dat je weet hoe iemand zich voelt.",
+          "model": "Die persoon is stil. Misschien is die moe of aan het nadenken; ik kan het vragen in plaats van het voor diegene in te vullen.",
+          "practice": "Gebruik een verzonnen voorbeeld. Noem twee mogelijke standpunten en een respectvolle vraag die je zou kunnen stellen.",
+          "reflect": "Wat weet je, en wat gok je? Hoe zou je het kunnen checken?",
+          "transfer": "Voordat ik deze week iets aanneem, kan ik ____ vragen."
+        },
+        "decision_making": {
+          "goal": "Vergelijk keuzes op hun gevolgen voor jezelf en anderen.",
+          "model": "Voordat ik een groepsfoto post, kan ik om toestemming vragen en bedenken wie hem zou kunnen zien.",
+          "practice": "Kies een verzonnen beslissing. Vergelijk twee opties, mogelijke gevolgen en iemand die zou kunnen helpen.",
+          "reflect": "Welke informatie ontbreekt? Is er een veiligere of eerlijkere optie?",
+          "transfer": "Voordat ik beslis over ____, kan ik even stoppen om ____ te checken."
+        },
+        "self_discovery": {
+          "goal": "Herken een sterkte en kies een manier om die met steun in te zetten.",
+          "model": "Ik stel nuttige vragen. Ik kan die sterkte gebruiken als een taak onduidelijk is en om een voorbeeld vragen.",
+          "practice": "Kies een sterkte die bij jou past, of bij een verzonnen personage. Geef één voorbeeld van die sterkte in actie.",
+          "reflect": "Wat hielp om die sterkte zichtbaar te maken? Welke steun zou de volgende stap mogelijk maken?",
+          "transfer": "Ik kan ____ gebruiken wanneer ____. Een persoon of hulpmiddel dat kan helpen is ____."
+        },
+        "friendship": {
+          "goal": "Oefen communicatie die jouw behoeften en de grenzen van anderen respecteert.",
+          "model": "Ik kan iemand uitnodigen om mee te doen en die keuze accepteren als diegene nee zegt.",
+          "practice": "Oefen een uitnodiging, een luistervraag of een respectvolle grens. Spreken, schrijven of ondersteunde communicatie tellen allemaal.",
+          "reflect": "Had iedereen een echte keuze? Wat zou het contact gastvrijer kunnen maken?",
+          "transfer": "In een veilig contact deze week kan ik ____ proberen en letten op ____."
+        },
+        "transitions": {
+          "goal": "Ontdek wat er verandert, wat hetzelfde kan blijven en één bron van steun.",
+          "model": "Een nieuwe les voelt onzeker. Ik kan het lokaal van tevoren opzoeken en vragen wie kan helpen.",
+          "practice": "Kies een echte of verzonnen verandering. Noem één onzekerheid, één vaste steun en één kleine volgende stap.",
+          "reflect": "Welk deel heb jij in de hand? Welke hulp of aanpassing zou nuttig zijn?",
+          "transfer": "Voor de verandering kan ik ____. Als het plan moet veranderen, kan ik ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Alleen of in een groep",
+          "cue": "Handige eerste check-in voordat er iets gedeeld wordt."
+        },
+        "emotions": {
+          "format": "Alleen of in tweetallen",
+          "cue": "Goede opwarmer voor woordenschat."
+        },
+        "coping": {
+          "format": "Alleen of in een groep",
+          "cue": "Het best voor een reguleringsreset."
+        },
+        "mindfulness": {
+          "format": "Hele klas",
+          "cue": "Reguleringsoptie met weinig schrijven."
+        },
+        "somaticReset": {
+          "format": "Alleen of hele klas",
+          "cue": "De compacte visuele kiezer houdt elke gids beschikbaar zonder een vol raster met knoppen. De “Ademorbit” combineert doorgetrokken en gestippelde bogen met een dikkere actieve fase, een bijpassende doorgetrokken of gestippelde middenring en directe IN- en UIT-labels; het midden verandert van een stip in pauzestrepen bij pauzeren, en de omlijnde ruit of ring geeft de volgende faseovergang aan, terwijl de ronde of ruitvormige markering met de klok mee, de overgangsruit, de terugkeerring, korte inademstreepjes en holle uitademstippen de fase en de optionele telling zonder kleur leesbaar houden. Laat leerlingen één ademhaling aan beweging uitproberen voordat de timer start, of “Stil” kiezen. Bied volledige, alleen-fase- of verborgen begeleidende woorden aan. “Rustige weergave” maakt van de vergrote visual een directe start/pauze-knop. De “Stromende golf” gebruikt IN · STIJGEN met een doorgetrokken lijn en ronde markering, UIT · ZAKKEN met een stippellijn en ruitvormige markering, en pauzestrepen voor een gepauzeerde sessie. De “Bloembloei” gebruikt IN · OPENEN met doorgetrokken bloemblaadcontouren en een rond midden, UIT · ZACHTER WORDEN met gestippelde contouren en een ruitvormig midden, en pauzestrepen in het midden voor een gepauzeerde sessie. De “Aardende horizon” gebruikt IN · STIJGEN met een doorgetrokken zoncontour en een cirkelvormig midden, UIT · ZAKKEN met een gestippelde zoncontour en een ruitvormig midden, en pauzestrepen op de zon bij pauzeren. De “Ademroute” gebruikt een rond IN-doel, een ruitvormig UIT-doel, een spoor vanaf het actieve beginpunt en een omlijnde volgende bestemming, zodat de richting niet van kleur afhangt. Bied fasehints voor schermlezers aan, plus keuzes voor verborgen aftellen, verborgen begeleiding, stilstaande beweging, geen visual, natuurlijk ademen en geen cijfers; vraag nooit om beoordelingen of uitleg van lichamelijke gewaarwordingen."
+        },
+        "journal": {
+          "format": "Alleen",
+          "cue": "Privéreflectie. Delen moet vrijwillig zijn."
+        },
+        "goals": {
+          "format": "Alleen of in het mentoruur",
+          "cue": "Goede afsluitende stap na reflectie."
+        },
+        "conflict": {
+          "format": "In tweetallen of een kleine groep",
+          "cue": "Bespreek de afspraken vooraf, voor het rollenspel."
+        },
+        "restorativeCircle": {
+          "format": "Cirkel",
+          "cue": "Gebruik dit met vaste afspraken voor de cirkel."
+        },
+        "peersupport": {
+          "format": "Oefenen in tweetallen",
+          "cue": "Sterk om luistervaardigheden te oefenen."
+        },
+        "perspective": {
+          "format": "In tweetallen of een groep",
+          "cue": "Goede brug naar empathie voor een discussie."
+        },
+        "digitalWellbeing": {
+          "format": "Alleen of in het mentoruur",
+          "cue": "Handig voordat je afspraken maakt over telefoon of AI."
+        },
+        "sleep": {
+          "format": "Alleen",
+          "cue": "Goed voor gezondheidslessen in het mentoruur."
+        },
+        "safety": {
+          "format": "Alleen",
+          "cue": "Eerst zelf bekijken; vermijd gedwongen openheid."
+        },
+        "crisiscompanion": {
+          "format": "Alleen",
+          "cue": "Voor vaardigheden bij dringende steun, niet als klassenopdracht."
+        },
+        "griefLoss": {
+          "format": "Alleen",
+          "cue": "Eerst zelf bekijken; gebruik alternatieven voor wie niet meedoet."
+        },
+        "identitySupport": {
+          "format": "Alleen",
+          "cue": "Gebruik dit met zorg voor privacy en de mogelijkheid om niet mee te doen."
+        },
+        "traumaPsychoed": {
+          "format": "Alleen of begeleid door een leerkracht",
+          "cue": "Alleen psycho-educatie; bied de mogelijkheid om niet mee te doen en een route naar een vertrouwde volwassene."
+        },
+        "substancePsychoed": {
+          "format": "Alleen of in een gezondheidsles",
+          "cue": "Bekijk vooraf de benadering vanuit schadebeperking en zorg voor steun van volwassenen en medische hulp."
+        },
+        "healthyRelationships": {
+          "format": "Alleen of in een gezondheidsles",
+          "cue": "Bekijk vooraf de taal over toestemming en veiligheid; eis nooit dat iemand iets persoonlijks deelt."
+        },
+        "bodyStory": {
+          "format": "Alleen",
+          "cue": "Benadering vanuit respect voor het lichaam; bied de mogelijkheid om niet mee te doen en vermijd gesprekken die om gewicht draaien."
+        },
+        "genogram": {
+          "format": "Alleen",
+          "cue": "Alleen reflectie op de familie; delen moet vrijwillig zijn."
+        },
+        "sensoryRegulation": {
+          "format": "Alleen of bij ondersteuningsplanning",
+          "cue": "Gebruik identiteitsbevestigende taal en laat leerlingen kiezen wat ze delen."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Ochtend-check-in in het mentoruur",
+          "format": "Hele klas",
+          "focus": "Stemming, adem, één volgende stap",
+          "studentView": "Leerlingen checken voor zichzelf hun zone, proberen een reguleringsoptie en kiezen dan één behoefte voor de dag, of slaan over.",
+          "teacherMove": "Laat eerst zien dat overslaan mag. Nodig pas na de privéoefening uit om één woord of een kleur te delen.",
+          "privacyBoundary": "Er wordt geen dagboektekst verzameld; leerlingen beslissen later of een momentopname in een deelpakket komt.",
+          "note": "Begin met een privé-zonecheck en bied dan ademhaling of doelen stellen aan. Leerlingen mogen één woord of een kleur delen, of overslaan."
+        },
+        "calm_reset": {
+          "name": "Rustreset van vijf minuten",
+          "format": "Hele klas of rusthoek",
+          "focus": "Lichaamsregulatie",
+          "studentView": "Leerlingen merken op hoe hun lichaam er nu aan toe is en kiezen één oefening voor een rustig lichaam.",
+          "teacherMove": "Houd de routine praatarm en binnen een vaste tijd. Bied beweging, ademhaling of stille alternatieven aan.",
+          "privacyBoundary": "Leerlingen kunnen een momentopname voor zichzelf opslaan; niemand hoeft uit te leggen waarom een reset nodig was.",
+          "note": "Houd dit praatarm. Leerlingen kiezen één reguleringsoefening en merken op wat er veranderde."
+        },
+        "repair_routine": {
+          "name": "Herstelroutine na een conflict",
+          "format": "Kleine groep of mentoruur",
+          "focus": "Perspectief, herstel, volgende actie",
+          "studentView": "Leerlingen kunnen een echt, verzonnen of door de leerkracht aangereikt scenario gebruiken om hersteltaal te oefenen.",
+          "teacherMove": "Maak eerst afspraken over herstel en vermijd openbare bekentenissen. Stop als de situatie bemiddeling door een volwassene nodig heeft.",
+          "privacyBoundary": "Leerlingen kiezen wat ze delen; privéreflecties over conflicten mogen geen bewijs in de klas worden.",
+          "note": "Gebruik dit nadat de afspraken zijn gemaakt. Houd de focus op hersteltaal, niet op openbare bekentenissen."
+        },
+        "digital_reset": {
+          "name": "Minilesje digitaal welzijn",
+          "format": "Mentoruur of gezondheid",
+          "focus": "Telefoon, slaap, AI en grenzen",
+          "studentView": "Leerlingen bekijken hun gewoonten, kiezen één grens om uit te testen en houden de reden voor zich als ze dat willen.",
+          "teacherMove": "Breng het als het ontwerpen van gewoonten, niet als een telefooncontrole. Vraag leerlingen niet om screenshots of gebruiksgegevens te laten zien.",
+          "privacyBoundary": "Leerlingen kunnen een doel voor een grens delen, maar persoonlijke details over slaap, telefoon of AI blijven vrijwillig.",
+          "note": "Breng het als het ontwerpen van gewoonten, niet als een telefooncontrole. Leerlingen kiezen één grens om te proberen."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Onderzoeksgeïnformeerde aanpak",
+          "title": "Onderzoek gaat over de onderliggende aanpak; deze digitale bewerking is hier niet geëvalueerd"
+        },
+        "emerging": {
+          "label": "Beperkt bewijs voor de aanpak",
+          "title": "Veelbelovend, maar beperkt of wisselend bewijs"
+        },
+        "contested": {
+          "label": "Omstreden model",
+          "title": "Populair maar wetenschappelijk omstreden; het best te gebruiken als metafoor, niet als mechanisme"
+        },
+        "practice": {
+          "label": "Reflectieve oefening",
+          "title": "Een gestructureerde oefening of vuistregel, geen empirische claim over effectiviteit"
+        }
+      },
+      "ui": {
+        "sel_practice": "SEL-oefening",
+        "default_purpose": "Oefen zorgvuldig één SEL-vaardigheid.",
+        "default_next": "Maak één kleine stap af en beslis dan of je wilt opslaan.",
+        "private_checkpoint": "Privé-momentopname",
+        "share_packet_eligible": "Geschikt voor een deelpakket",
+        "saving_preparing": "Je SEL-werk wordt klaargezet om op te slaan...",
+        "save_requested": "Opslaan aangevraagd voor {title}",
+        "returned_to_grid": "Terug naar het overzicht met tools",
+        "back_to_sel_tools": "Terug naar SEL-tools",
+        "export_now_aria": "SEL-projectbestand nu exporteren",
+        "export_now": "Nu exporteren",
+        "purpose": "Doel",
+        "next_step": "Volgende stap",
+        "saved_work": "Opgeslagen werk",
+        "checkpoints_private": "Momentopnames van tools blijven hier privé, tenzij je ze kiest voor een deelpakket.",
+        "use_with_care_label": "Gebruik met zorg:",
+        "tool_open_failed_title": "Deze tool kon niet worden geopend",
+        "tool_open_failed_body": "Iets in de opgeslagen informatie voor deze activiteit is niet geladen. Jij hebt niets verkeerd gedaan.",
+        "saved_work_kept": "Je opgeslagen werk is niet verwijderd.",
+        "back_to_hub": "Terug naar de SEL Hub",
+        "tell_teacher": "Als dit blijft gebeuren, vertel je leerkracht dan om welke activiteit het ging.",
+        "load_did_not_start": "De tool is gedownload, maar niet gestart.",
+        "load_too_long": "Het laden van de tool duurde te lang.",
+        "this_sel_tool": "Deze SEL-tool",
+        "tool_opening": "{name} wordt geopend...",
+        "tool_open_retry": "{name} kon niet worden geopend. Probeer het opnieuw of kies een andere tool.",
+        "station_link_missing": "Deze link noemt een station dat niet in dit project zit. Laad het pakket waarin het zit, of start er een via “SEL-stations” in het geschiedenispaneel.",
+        "started_station": "Station {name} gestart",
+        "tool_could_not_open": "{name} kon niet openen.",
+        "tool_not_available": "{name} is niet beschikbaar in deze SEL Hub.",
+        "try_again": "Opnieuw proberen",
+        "dismiss": "Sluiten",
+        "back_to_tools": "Terug naar tools",
+        "band_elementary": "Basisschool",
+        "band_middle": "Middenschool",
+        "band_high": "Middelbare school",
+        "unsaved_aria": "Je hebt niet-opgeslagen wijzigingen",
+        "unsaved_title": "Niet-opgeslagen wijzigingen",
+        "unsaved": "Niet opgeslagen",
+        "unsaved_hint": "Je hebt niet-opgeslagen wijzigingen — tik op “Nu exporteren” om ze op te slaan",
+        "educators_opened": "Gids “Voor leerkrachten” geopend",
+        "educators_aria": "Voor leerkrachten: zo gebruik je deze Hub op een verantwoorde manier",
+        "for_educators": "Voor leerkrachten",
+        "theme_aria": "Thema wisselen (licht / donker / hoog contrast)",
+        "theme_contrast": "Hoog contrast",
+        "theme_dark": "Donkere modus",
+        "theme_light": "Lichte modus",
+        "theme_contrast_short": "Contrast",
+        "theme_dark_short": "Donker",
+        "theme_light_short": "Licht",
+        "xp_aria": "{count} SEL-ervaringspunten",
+        "close_hub": "SEL Hub sluiten",
+        "keep_share_title": "Kies wat je bewaart en deelt",
+        "keep_share_body": "Sommige activiteiten slaan werk op dit apparaat op; ander werk blijft alleen in dit tabblad bewaard. Het tabblad sluiten wist niet alles. Exporteer een bestand om een kopie te bewaren. Bekijk op een gedeeld apparaat “Gegevens & privacy” bij “Voor leerkrachten”. AI- en deelfuncties gebruiken je ingestelde diensten.",
+        "got_it_aria": "Begrepen, begin met de SEL Hub",
+        "got_it": "Begrepen",
+        "practice_support": "Oefenhulp",
+        "learning_guide": "Leergids en manieren om te oefenen",
+        "what_you_can_explore": "Wat je kunt verkennen",
+        "worked_example": "Een uitgewerkt voorbeeld",
+        "try_one_step": "Probeer één stap",
+        "reflect_transfer": "Reflecteer en gebruik het ergens anders",
+        "look_closer": "Kijk beter",
+        "next_use": "Een mogelijk volgend gebruik",
+        "adapt_together": "Pas de oefening samen aan",
+        "adapt_smaller": "Begin kleiner: doe één zin of keuze voor, gebruik een afbeelding of een concreet voorwerp en geef bedenktijd.",
+        "adapt_deeper": "Ga dieper: vergelijk twee reacties, zoek ontbrekende informatie en leg uit wat je keuze zou kunnen veranderen.",
+        "adapt_context": "Verander de context: gebruik een verzonnen situatie die past bij de taal, interesses, cultuur en toegankelijkheidsbehoeften van de leerling.",
+        "adapt_check": "Check begrip via een zelfgekozen voorbeeld of uitleg, niet via een verplicht persoonlijk verhaal, een emotionele verandering of een score.",
+        "optional_prompts": "Deze optionele vragen leveren geen antwoorden in, kennen geen voltooiing toe en vervangen niet de eigen instructies en veiligheidsinformatie van de activiteit.",
+        "returned_to_activities": "Terug naar de activiteiten. Deze actie heeft geen voltooide oefening geregistreerd.",
+        "return_to_activities": "Terug naar de activiteiten",
+        "chooser_first_reset_coping": "Kies één prettige manier om te gronden. Merk op of het past; stoppen mag.",
+        "chooser_first_reset_journal": "Schrijf één ding op dat de komende minuten beter te doen zou maken. Een persoonlijk verhaal is niet nodig.",
+        "chooser_first_feelings_zones": "Wijs een gevoel aan of merk het stil op. Kies één vorm van steun; er is geen juiste zone die je moet bereiken.",
+        "chooser_first_feelings_emotions": "Verken twee gevoelswoorden voor een verzonnen personage. Er kan meer dan één antwoord passen.",
+        "chooser_first_feelings_journal": "Schrijf een woord of een korte reflectie over een verzonnen of alledaagse situatie.",
+        "chooser_first_conversation_advocacy": "Gebruik een verzonnen situatie om één verzoek te oefenen: hardop, met ondersteunde communicatie of in stilte, los van het formulier.",
+        "chooser_first_conversation_journal": "Schrijf één respectvol verzoek voor een veilige, alledaagse situatie; je hoeft het niet te versturen.",
+        "chooser_first_decision_decisions": "Denk in een verzonnen situatie na over twee keuzes en één mogelijk gevolg van elke keuze.",
+        "chooser_first_decision_goals": "Schrijf één realistische volgende stap op en een vorm van steun die je zou kunnen vragen.",
+        "try_a_reset": "Probeer een reset",
+        "need_feeling": "Een gevoel begrijpen",
+        "need_conversation": "Een gesprek voorbereiden",
+        "need_decision": "Een volgende stap kiezen",
+        "help_choose": "Help me een activiteit kiezen",
+        "help_choose_intro": "Kies wat je wilt proberen. Suggesties gebruiken alleen deze keuzes; ze beoordelen je gevoelens niet. De tijden gaan over een eerste stap, niet over de hele activiteit.",
+        "what_would_help": "Wat zou helpen?",
+        "time_first_step": "Tijd voor een eerste stap",
+        "n_minutes": "{count} minuten",
+        "how_respond": "Hoe wil je reageren?",
+        "respond_any": "Maakt niet uit",
+        "respond_offline": "Denken, spreken, tekenen of ondersteunde communicatie",
+        "respond_write": "Een kort antwoord schrijven",
+        "options_one": "{count} startoptie voor jouw keuzes.",
+        "options_many": "{count} startopties voor jouw keuzes.",
+        "options_none": "Er past nog geen startoptie. Probeer meer tijd of een andere manier van reageren; de volledige catalogus is nog steeds beschikbaar.",
+        "why_option_write": "Waarom deze optie: {need}, met een voorgestelde eerste stap van {minutes} minuten en een kort geschreven antwoord.",
+        "why_option_offline": "Waarom deze optie: {need}, met een voorgestelde eerste stap van {minutes} minuten en een manier om te oefenen zonder te typen.",
+        "open_named": "{name} openen",
+        "open_named_unavailable": "{name} openen (niet beschikbaar)",
+        "pathway_guide": "Oefengids voor de leerroute",
+        "pathway_opened": "{opened} van {total} tools geopend. Een tool openen betekent niet dat je de vaardigheid hebt geoefend.",
+        "exit_pathway_aria": "Leerroutemodus verlaten",
+        "pathway_cleared": "Leerroute gestopt",
+        "exit_pathway": "Leerroute verlaten",
+        "practice_goal": "Oefendoel:",
+        "pathway_intro": "Kies één activiteit of volg de voorgestelde volgorde. Je kunt overslaan, een verzonnen voorbeeld gebruiken of reageren door te spreken, te tekenen, te schrijven of met ondersteunde communicatie. Delen is vrijwillig.",
+        "model_practice_reflect": "Voordoen, oefenen en reflecteren",
+        "an_example": "Een voorbeeld",
+        "notice_adjust": "Opmerken en bijsturen",
+        "take_with_you": "Neem het mee",
+        "self_check_aria": "Optionele zelfcheck bij het oefenen",
+        "self_check_intro": "Kies na het proberen van een stap wat past. Dit is optioneel en telt niet voor een cijfer; het blijft in deze leerroutesessie.",
+        "i_tried": "Ik heb een stap geprobeerd",
+        "another_way": "Ik heb een andere manier nodig",
+        "pass_for_now": "Voorlopig overslaan",
+        "tried_feedback": "Merk op wat hielp, wat niet, en waar je de vaardigheid nog eens zou kunnen proberen.",
+        "adapt_feedback": "Probeer een kleinere stap, een andere manier van reageren, een andere tool of steun van iemand die je vertrouwt.",
+        "pass_feedback": "Overslaan is een prima keuze. Je kunt later terugkomen of om steun vragen.",
+        "next_option": "Volgende optie: {name}",
+        "open_next": "Hierna openen: {name}",
+        "view_pathway_tools": "Tools van de leerroute bekijken",
+        "revisit_any": "Je kunt elke activiteit opnieuw bezoeken. Kies één idee om buiten de hub te proberen; je hoeft niet elke tool af te maken.",
+        "station_activities": "Activiteiten van het station",
+        "active_station": "Actief SEL-station: {name}",
+        "steps_recorded_passed": "{done} van {total} stappen geregistreerd · {passed} voorlopig overgeslagen. Dit is een oefenoverzicht, geen cijfer.",
+        "steps_recorded": "{done} van {total} stappen geregistreerd. Dit is een oefenoverzicht, geen cijfer.",
+        "active_minutes_done": "{mins} van {goal} actieve minuten hier. Stap geregistreerd.",
+        "active_minutes_counting": "{mins} van {goal} actieve minuten hier. Telt mee zolang dit tabblad zichtbaar is en je het gebruikt.",
+        "exit_station_aria": "Stationmodus verlaten",
+        "station_cleared": "Station gestopt",
+        "exit_station": "Station verlaten",
+        "station_tools_steps": "Tools, stappen en reflectie van het station",
+        "station_steps": "Stappen en reflectie van het station",
+        "station_privacy": "Stappen en notities worden op dit apparaat opgeslagen en kunnen in projectbestanden terechtkomen. Gebruik verzonnen voorbeelden of laat persoonlijke details weg. Kies wat je deelt.",
+        "step_passed": "Voorlopig overgeslagen. Je kunt terugkomen wanneer je er klaar voor bent.",
+        "step_marked": "Je hebt deze stap als voltooid gemarkeerd.",
+        "step_target": "Activiteitsdoel geregistreerd; dit meet geen vaardigheid of welzijn.",
+        "step_ready": "Klaar wanneer jij dat bent.",
+        "open_step_activity": "Activiteit voor deze stap openen",
+        "xp_progress": "{xp} / {target} SEL-XP in totaal. Dit omvat eerdere activiteit; het is geen vaardigheidsscore.",
+        "time_progress": "{mins} / {target} actieve minuten. Tijd is geen bewijs van leren.",
+        "default_reflect": "Wat viel je op? Wat zou je houden of veranderen?",
+        "self_check_ways": "Denk, teken, spreek, gebaar of gebruik ondersteunde communicatie. Een geschreven notitie is optioneel. Markeer de stap zelf als voltooid, of sla hem voorlopig over.",
+        "length_target": "Deze opgeslagen stap gebruikt een lengtedoel: {count} / {target} tekens. Lengte zegt niets over de kwaliteit van je reflectie. Je notitie blijft bewerkbaar.",
+        "reflection_for": "Reflectie voor {name}",
+        "optional_note": "Optionele notitie: wat hielp, of wat je hierna zou kunnen proberen...",
+        "write_reflection": "Schrijf een reflectie...",
+        "mark_complete_aria": "“{name}” als voltooid markeren",
+        "step_reopened": "Stap heropend: {name}",
+        "step_marked_named": "Je hebt deze stap als voltooid gemarkeerd: {name}",
+        "mark_complete": "Als voltooid markeren",
+        "step_passed_named": "Voorlopig overgeslagen: {name}",
+        "filter_pathway": "leerroute: {name}",
+        "no_tools_match": "Geen tools passen bij {filters}",
+        "results_one": "{count} van {total} tools past bij {filters}",
+        "results_many": "{count} van {total} tools passen bij {filters}",
+        "showing_all": "Alle {total} tools worden getoond",
+        "crisis_elementary": "Als je niet meteen een volwassene kunt vinden, blijf het dan vragen tot iemand luistert. Je verdient hulp.",
+        "crisis_call_or_text": "Bel of sms",
+        "crisis_988": "de 988-hulplijn voor zelfdoding en crisis (gratis, vertrouwelijk, 24/7).",
+        "crisis_text": "Sms",
+        "crisis_text_line": "Crisis Text Line (gratis, vertrouwelijk, 24/7).",
+        "tool_selection": "Toolkeuze in de SEL Hub",
+        "jumped_to_list": "Naar de lijst met tools gesprongen. {summary}.",
+        "skip_to_list": "Naar de lijst met tools gaan",
+        "start_here": "Begin hier",
+        "quick_route": "Kies een snelle route, of blader hieronder.",
+        "browsing_all": "Je bekijkt alle SEL-tools",
+        "continue": "Verder",
+        "continue_desc": "Ga verder met de laatste SEL-tool die je opende.",
+        "starting_idea": "Startidee",
+        "starting_idea_desc": "{name}: een voorgestelde activiteit voor deze leeftijdsgroep, met voorbeelden die je kunt aanpassen.",
+        "starting_idea_none": "Open een startpunt dat bij de leeftijdsgroep past.",
+        "try_a_reset_desc": "Verken een strategie die prettig voelt; je hoeft je niet rustig te voelen.",
+        "journal": "Dagboek",
+        "journal_desc": "Schrijf een reflectie; bekijk je keuzes voor opslaan en delen.",
+        "browse_all": "Alles bekijken",
+        "browse_all_desc": "Zoek of filter in de volledige catalogus.",
+        "need_chip_calm": "Mijn lichaam kalmeren",
+        "need_chip_feelings": "Gevoelens benoemen",
+        "need_chip_stress": "Stress of zorgen",
+        "need_chip_friend": "Ruzie met een vriend",
+        "need_chip_write": "Het opschrijven",
+        "need_chip_decision": "Een beslissing nemen",
+        "need_chip_sleep": "Slaap of moe",
+        "need_chip_crisis": "Onveilig of in crisis",
+        "need_chip_relationshipsafety": "Veiligheid in relaties",
+        "need_chip_schoolsupport": "Steun op school",
+        "need_chip_grief": "Rouw of verlies",
+        "storage_notice": "Sommig SEL-werk wordt op dit apparaat opgeslagen. AI-functies gebruiken je ingestelde dienst. Kies wat je opslaat of deelt, vooral op een gedeeld apparaat.",
+        "save_now_aria": "SEL-werk nu opslaan of exporteren",
+        "save_now": "Nu opslaan",
+        "recent_work": "Recent SEL-werk",
+        "saved_here": "Hier opgeslagen. Exporteer om het na het sluiten te bewaren.",
+        "create_packet_aria": "SEL-deelpakket maken van opgeslagen momentopnames",
+        "review_packets_aria": "Opgeslagen SEL-deelpakketten bekijken",
+        "create_packet": "Deelpakket maken",
+        "review_packets": "Deelpakketten bekijken",
+        "open_related": "Gerelateerde tool openen.",
+        "related_unavailable": "De gerelateerde tool is niet beschikbaar in deze SEL Hub.",
+        "streak_aria": "SEL-reeks van {count} dagen. Langste reeks: {longest} dagen.",
+        "streak": "Reeks van {count} dagen",
+        "streak_best": "record {count}",
+        "find_activity": "Zoek een activiteit",
+        "search_placeholder": "Zoek op gevoelens, vrienden, stress, doelen...",
+        "search_aria": "SEL-tools zoeken",
+        "support_options": "Steunopties",
+        "crisis_hard_moment": "Het klinkt alsof dit een moeilijk moment kan zijn.",
+        "crisis_tell_adult": "Je hoeft dit niet alleen uit te zoeken, en je hoeft niet eerst de juiste tool te vinden. Vertel het nu alsjeblieft aan een volwassene die je vertrouwt — een schoolbegeleider, een leerkracht, een ouder of een andere volwassene die je vertrouwt. Hier zoeken vertelt niemand iets; iemand weet het alleen als jij het vertelt.",
+        "open_crisis_companion": "Crisisgids openen",
+        "find_by_need": "SEL-tools vinden op behoefte",
+        "i_need": "Ik heb nodig...",
+        "cleared_search": "SEL-zoekopdracht gewist",
+        "clear_search_aria": "SEL-zoekopdracht wissen",
+        "clear": "Wissen",
+        "cleared_need": "SEL-behoeftefilter gewist",
+        "showing_for": "SEL-tools voor {name} worden getoond",
+        "clear_need_aria": "Behoeftefilter wissen: {name}",
+        "find_for_aria": "Tools zoeken voor: {name}",
+        "browse_by_area": "Bladeren op vaardigheidsgebied",
+        "filter_by_category": "SEL-tools filteren op categorie",
+        "showing_all_categories": "Alle categorieën worden getoond",
+        "show_all_categories_aria": "Alle categorieën tonen ({count} tools)",
+        "all": "Alle",
+        "filtered_to": "Gefilterd op {name}",
+        "pathways_heading": "SEL-leerroutes — zorgvuldig samengestelde leerlijnen",
+        "started_pathway": "Leerroute gestart: {name}",
+        "pathway_started": "Leerroute {name} gestart!",
+        "n_activities": "{count} activiteiten",
+        "grades_range": "leerjaren {range}",
+        "use_with_care": "Gebruik met zorg",
+        "visits_many": "{count} bezoeken",
+        "visits_one": "{count} bezoek",
+        "best_for": "Het best voor: {mode}.",
+        "teacher_cue": "Tip voor de leerkracht: {time}, {format}. {cue}",
+        "preview_first": "Eerst zelf bekijken",
+        "evidence_tradition": "Onderzoekstraditie: {tag}",
+        "approach_context": "Context van de aanpak: {label}. {title}. Deze badge toont niet aan dat het werkt voor deze app of voor een bepaalde leerling.",
+        "step_opened": "Stap {n} · Geopend",
+        "step_not_opened": "Stap {n} · Niet geopend",
+        "suggested_grades": "Aanbevolen leerjaren {range}",
+        "no_tools_current_view": "Geen tools passen bij de huidige weergave",
+        "empty_try": "Probeer rust, gevoelens, stress, vriend, schrijven, beslissing of slaap.",
+        "filters_cleared": "Filters gewist. Alle {total} tools worden getoond.",
+        "show_all_tools": "Alle {total} tools tonen",
+        "error_loading": "Fout bij het laden van {name}",
+        "unknown_error": "Onbekende fout",
+        "back_to_tools_error": "Terug naar tools",
+        "tool_load_failed": "Deze tool kon niet laden.",
+        "loading_tool": "Tool wordt geladen...",
+        "file_not_arrived": "Het bestand is niet aangekomen.",
+        "check_connection": "Controleer de verbinding en probeer het opnieuw.",
+        "plugin_fetching": "Het pluginbestand wordt nog opgehaald.",
+        "research_about": "Over onderzoekslabels",
+        "research_summary": "Wat de onderzoekslabels betekenen",
+        "research_context": "Context van de aanpak: {label}.",
+        "research_not_app": "Onderzoek naar een therapie, curriculum of kader toont niet aan dat deze digitale activiteit dezelfde effecten heeft. De labels beschrijven de aanpak; ze beoordelen deze app of een leerling niet.",
+        "research_check": "Controleer voordat je een activiteit kiest de geciteerde bronnen, de onderzochte leeftijden en omgevingen, de benodigde ondersteuning en de gemeten uitkomsten. Deze labels tonen niet aan dat deze bewerking bij je doelgroep past of effectief is.",
+        "research_casel_link": "CASEL: een SEL-programma kiezen en evalueren",
+        "project_save_failed": "Het verzoek om het project op te slaan is mislukt. Houd deze hub open en probeer “Opslaan / Exporteren” in de hoofdapp.",
+        "project_save_requested": "Opslaan van het project aangevraagd. Rond het opslaan af in de hoofdapp; hier is geen opgeslagen bestand bevestigd.",
+        "saving_aria": "SEL: opslaan en delen",
+        "saving_failed_alert": "Sommige SEL-wijzigingen konden niet op dit apparaat worden opgeslagen. Houd deze hub open en sla een kopie van het project op; stationconcepten moeten als stations worden opgeslagen om in die kopie te komen.",
+        "saving_attention": "Opslaan vraagt aandacht",
+        "saving_title": "Opslaan en delen",
+        "saving_failed_body": "Het huidige werk is nog beschikbaar in deze geopende hub. Een mislukte lokale opslag kan een oudere kopie op dit apparaat achterlaten.",
+        "saving_ok_body": "Opgeslagen stations, stationnotities en momentopnames van de hub worden op dit apparaat bewaard. Losse activiteiten hebben hun eigen opslagknoppen; deze status bevestigt niet dat alle invoer in elke activiteit is opgeslagen.",
+        "saving_drafts": "Stationconcepten blijven op dit apparaat staan zodat je ze kunt herstellen. Als je een station opslaat, wordt het toegevoegd aan de projectgegevens die beschikbaar zijn voor “Opslaan / Exporteren”; een projectopslag aanvragen bevestigt niet dat er een bestand is geschreven.",
+        "saving_live": "Er is een livesessie verbonden. Die kan voortgang of veiligheidssignalen naar de sessieleider sturen. Optionele AI stuurt tekst uit activiteiten naar de ingestelde dienst. Bekijk een deelpakket voordat je besluit het te delen.",
+        "saving_ai": "Optionele AI stuurt tekst uit activiteiten naar de ingestelde dienst. Een deelpakket bevat de onderdelen en detailniveaus die jij kiest; bekijk het voorbeeld voordat je deelt.",
+        "saving_retry": "Lokaal opslaan opnieuw proberen",
+        "saving_request": "Projectopslag aanvragen",
+        "removed_stations": "Verwijderde stations",
+        "removed_body": "Maak het verwijderen van een station ongedaan zolang deze hub open is. Bestaande oefenoverzichten blijven bewaard.",
+        "station_restored": "Station hersteld: {name}",
+        "undo_removal": "Verwijderen ongedaan maken: {name}",
+        "launch_routines_aria": "Startroutines voor leerkrachten",
+        "launch_title": "Start voor leerkrachten",
+        "launch_note": "Houd het oefenen zonder cijfer en het delen vrijwillig. Leg voor je begint uit hoe opslag op het apparaat, de ingestelde AI-functies en delen werken. Gebruik verzonnen voorbeelden; nodig leerlingen uit om hulp te vragen of over te slaan.",
+        "launch_guardrails_aria": "Vangrails voor de start door leerkrachten",
+        "launch_step_boundary": "Stel de grens",
+        "launch_step_boundary_body": "Zeg wat privé is, wat vrijwillig is en hoe leerlingen kunnen overslaan.",
+        "launch_step_run": "Voer de routine uit",
+        "launch_step_run_body": "Gebruik de tools als oefening. Houd reflectie formatief en zonder cijfer.",
+        "launch_step_close": "Sluit af met keuze",
+        "launch_step_close_body": "Leerlingen beslissen of ze later opslaan, exporteren of een momentopname toevoegen.",
+        "launch_student_sees": "Wat de leerling ziet",
+        "launch_student_sees_default": "Leerlingen doen een privé-SEL-routine en kiezen wat ze delen.",
+        "launch_teacher_move": "Aanpak van de leerkracht",
+        "launch_teacher_move_default": "Breng dit als oefening, niet als beoordeling.",
+        "launch_sharing_boundary": "Grens bij delen",
+        "launch_sharing_boundary_default": "Delen blijft in handen van de leerling.",
+        "launch_tools_loading": "Tools worden geladen...",
+        "launch_still_loading": "Wordt nog geladen: {tools}",
+        "launch_preview_sensitive": "Bekijk gevoelige tools eerst zelf: {tools}",
+        "launch_load_aria": "Startplan voor leerkrachten laden: {name}",
+        "launch_finish_draft": "Maak eerst het huidige concept af of verwijder het",
+        "launch_waiting": "Wachten op tools",
+        "launch_loading": "Laden",
+        "launch_load": "Laden in Stationbouwer",
+        "builder_note_student": "Leerlingweergave: {text}",
+        "builder_note_teacher": "Aanpak van de leerkracht: {text}",
+        "builder_note_sharing": "Grens bij delen: {text}",
+        "builder_note_note": "Notitie van de leerkracht: {text}",
+        "launch_finish_existing": "Maak eerst je bestaande stationconcept af of verwijder het.",
+        "launch_tools_still_loading": "De starttools voor leerkrachten worden nog geladen. Probeer het zo meteen opnieuw.",
+        "launch_tools_still_loading_sr": "De starttools voor leerkrachten worden nog geladen.",
+        "launch_default_name": "SEL-klasroutine",
+        "launch_default_short": "SEL-routine",
+        "launch_loaded_sr": "Startplan voor leerkrachten geladen in de stationbouwer: {name}",
+        "launch_loaded_toast": "Startplan voor leerkrachten geladen in Stationbouwer.",
+        "stations_summary": "Eigen SEL-stations — door leerkrachten samengestelde bundels",
+        "station_delete_aria": "Station {name} verwijderen",
+        "station_removed_sr": "Station verwijderd. Ongedaan maken kan tot deze hub sluit.",
+        "station_removed": "Station verwijderd",
+        "station_quests_count": "{count} missies",
+        "station_activated_sr": "SEL-station geactiveerd: {name}",
+        "station_started": "{name} gestart!",
+        "station_activate_aria": "Station {name} activeren",
+        "station_start": "Station starten",
+        "station_adapt_aria": "Een kopie van station {name} aanpassen",
+        "station_adapt": "Kopie aanpassen",
+        "draft_aria": "Herstelbaar stationconcept",
+        "draft_untitled": "Naamloos station",
+        "draft_body": "Er staat een onafgemaakt stationconcept op dit apparaat: {name}. Ga ermee verder of verwijder het voordat je een ander begint.",
+        "draft_resume": "Verder met stationconcept",
+        "draft_discard": "Stationconcept verwijderen",
+        "builder_opened": "Stationbouwer geopend",
+        "build_station_aria": "Een nieuw eigen SEL-station bouwen",
+        "build_station": "+ Eigen station bouwen"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Verbinding van de leraar gepauzeerd – je plek blijft bewaard terwijl AlloFlow opnieuw verbinding maakt.",
+    "host_stale": "De status van de leraar is niet meer actueel – de live sessie kan nog steeds verbonden zijn. Je werk blijft op dit apparaat.",
+    "dismiss": "Sluiten",
+    "dismiss_aria": "Waarschuwing over de status van de leraar sluiten",
+    "connecting": "Verbinden met de klas…",
+    "retrying": "Klasupdates gepauzeerd. Automatisch opnieuw verbinden…",
+    "failed": "De verbinding voor klasupdates is verbroken. Controleer je verbinding en probeer opnieuw te verbinden.",
+    "access": "Je hebt geen toegang tot de klas gekregen. Vraag je leraar om de toegang te controleren en maak daarna opnieuw verbinding.",
+    "sign_in": "Log opnieuw in om weer toegang tot de klas te krijgen en maak daarna opnieuw verbinding.",
+    "reconnect": "Opnieuw verbinden"
+  },
   "tour": {
     "input_panel_title": "Invoerpaneel",
     "input_panel_text": "Begin met de passage of het onderwerp dat je wilt onderwijzen. De meeste bronnentools gebruiken dit bronmateriaal.\n### Voeg je bron toe\n• Plak of typ tekst, upload een ondersteund bestand, importeer een URL of gebruik de tools voor bronteksten.\n• Controleer geïmporteerde of gegenereerde tekst op volledigheid en juistheid voordat je verdergaat. Sommige websites beperken extractie.\n### Stel de context in\n• Open Algemene instellingen om leerjaar, taal en didactische voorkeuren na te lopen.\n• Kies een gericht pad in Begeleide Modus als je stap voor stap wilt werken. Beoordeel elk resultaat aan de hand van de bron en je leerdoel.",
@@ -5445,9 +7853,99 @@
     "measured_on_target": "Op niveau voor {grade}",
     "measured_above": "Boven het niveau van {grade}",
     "measured_below": "Onder het niveau van {grade}",
-    "measured_note": "Flesch-Kincaid, gemeten op deze tekst. Gebruik Niveau controleren voor een volledigere controle."
+    "measured_note": "Flesch-Kincaid, gemeten op deze tekst. Gebruik Niveau controleren voor een volledigere controle.",
+    "listen_along": "Meeluisteren",
+    "compare_listen_here": "Hier luisteren",
+    "compare_listen_here_original": "Hier luisteren naar het origineel",
+    "compare_listen_here_adapted": "Hier luisteren naar de aangepaste tekst",
+    "compare_stop_reading_original": "Stoppen met voorlezen van het origineel",
+    "compare_stop_reading_adapted": "Stoppen met voorlezen van de aangepaste tekst",
+    "compare_scroll_together": "Samen scrollen",
+    "reading_width": "Leesbreedte",
+    "width_narrow": "Smal",
+    "width_medium": "Gemiddeld",
+    "width_wide": "Breed",
+    "width_extra_wide": "Extra breed",
+    "reading_width_characters": "ongeveer {count} tekens per regel",
+    "original_support_spoken": "Woordhulp bij ‘{word}’: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Typ het ontbrekende woord of de ontbrekende woordgroep",
+      "explain_thinking": "Leg je redenering uit",
+      "write_response": "Schrijf je antwoord",
+      "submit_response": "Antwoord indienen",
+      "numeric_answer": "Antwoord als getal",
+      "unit_named": "Eenheid ({unit})",
+      "unit_optional": "Eenheid (optioneel)",
+      "submit_numeric": "Getal indienen",
+      "select_all_apply": "Kies alle antwoorden die kloppen",
+      "submit_selections": "Keuzes indienen",
+      "part1": "Deel 1 – Kies het beste antwoord",
+      "part2": "Deel 2 – {prompt}",
+      "default_evidence_prompt": "Kies het bewijs dat het antwoord het best ondersteunt.",
+      "submit_answer_evidence": "Antwoord en bewijs indienen",
+      "order_check": "Is deze volgorde juist?",
+      "order_yes": "Ja, het klopt",
+      "order_no": "Nee, er staat iets op de verkeerde plek",
+      "select_misplaced": "Kies hierboven een item dat op de verkeerde plek staat.",
+      "arrange_instructions": "Zet de items in de juiste volgorde. Staan ze al goed, laat ze dan zo staan.",
+      "your_order": "Jouw volgorde",
+      "move_up": "Omhoog: {item}",
+      "move_down": "Omlaag: {item}",
+      "done_arranging": "Klaar met ordenen",
+      "principle_question": "Wat bepaalt de volgorde?",
+      "principle_chronological": "chronologisch",
+      "principle_cause_effect": "oorzaak-gevolg",
+      "principle_process": "proces",
+      "principle_size": "grootte",
+      "principle_hierarchy": "rangorde",
+      "find_mismatch": "Vind het paar dat niet klopt",
+      "choose_mismatch": "Kies het paar dat er niet bij hoort.",
+      "pair_with_question": "Waarmee moet het gekozen item een paar vormen?",
+      "replacement_partner": "Nieuwe partner",
+      "submit_replacement": "Nieuwe partner indienen",
+      "retry_failed": "Je antwoord kon niet worden verzonden. Je deelname is wel geregistreerd; probeer het opnieuw als je weer verbinding hebt.",
+      "return_to_quiz": "Terug naar de live quiz",
+      "minimize": "Minimaliseren",
+      "minimize_aria": "Weergave van de live quiz verlaten",
+      "battle_result": "Uitslag van het gevecht",
+      "class_victory": "De klas heeft gewonnen!",
+      "battle_complete": "Gevecht afgelopen",
+      "regroup": "Een kans om je te hergroeperen",
+      "end_no_scored": "Deze vragen waren bedoeld om te bespreken of om door de leraar te laten bekijken. Er is geen gevechtsscore gegeven.",
+      "end_questions_complete": "Alle vragen zijn klaar. De uitslag vergelijkt welk percentage gezondheid er nog over is; bij gelijkspel wint de klas.",
+      "end_victory": "Je klas heeft samen het monster verslagen.",
+      "end_regroup": "Gebruik de uitleg hieronder om samen jullie volgende poging te plannen.",
+      "end_review_last": "Bekijk de laatste vraag hieronder. Je leraar kan het gevecht opnieuw starten.",
+      "boss_default_name": "Baas",
+      "boss_hp": "HP van {name}",
+      "boss_health": "Gezondheid van {name}",
+      "battle_scoring_paused": "Gevechtsscore gepauzeerd",
+      "tick_of": "{value} van {total}",
+      "confidence_legend": "Hoe zeker was je?",
+      "confidence_knew": "Ik wist het",
+      "confidence_guessed": "Ik heb goed nagedacht en toen gegokt",
+      "confidence_unsure": "Ik wist het niet zeker",
+      "confidence_help": "Zo ziet je leraar wat je al goed weet en wat je misschien verkeerd begrijpt. Het verandert nooit of je antwoord goed is, en ook niet je punten.",
+      "retry_send": "Antwoord opnieuw versturen",
+      "waiting_for_teacher": "Wachten tot je leraar deze vraag start.",
+      "sending": "Je antwoord wordt verstuurd…",
+      "receipt_only": "Deelname geregistreerd. Je antwoord is niet bij de leraar aangekomen om te beoordelen.",
+      "complete_and_submit": "Maak je antwoord af en dien het in",
+      "poll_closed": "Deze meningsvraag is gesloten.",
+      "receipt_not_scored": "Je leraar heeft alleen je deelname ontvangen. Dit antwoord is niet beoordeeld.",
+      "no_answer_submitted": "Er is geen antwoord ingediend voor deze vraag. Bespreek de vraag met je klas.",
+      "answer_review": "Antwoord bespreken",
+      "review_answer": "Bekijk het antwoord",
+      "discuss_with_teacher": "Bespreek het antwoord met je leraar.",
+      "response_correct": "Goed antwoord.",
+      "response_partial": "Gedeeltelijk goed antwoord.",
+      "response_incorrect": "Kijk nog eens goed naar dit antwoord.",
+      "response_none": "Er is geen antwoord ingediend.",
+      "response_submitted": "Antwoord ingediend om te bekijken.",
+      "explanation": "Uitleg"
+    },
     "title": "Beoordelen",
     "mcq_count": "Aantal meerkeuzevragen",
     "reflections": "Reflecties",

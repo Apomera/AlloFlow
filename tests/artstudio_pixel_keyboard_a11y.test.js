@@ -73,6 +73,123 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
     return { updateArtwork: patch => updateArtwork(patch), updateProfile: profile => updateProfile(profile) };
   }
 
+
+  async function setPixelHex(value) {
+    const input=host.querySelector('#artstudio-pixel-replacement-hex');
+    await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));});
+  }
+
+  it('replaces equivalent artwork colors through the real controls as one reversible edit',async()=>{
+    const original={'0,0':'#f00','1,0':'hsl(0,100%,50%)','7,7':'rgb(255,0,0)','3,3':'#00f'};
+    await mount({pixelGrid:8,pixelData:original});
+    expect(host.querySelectorAll('[data-pixel-artwork-color]')).toHaveLength(2);
+    expect(host.querySelector('#artstudio-pixel-color-count').textContent).toBe('2 colors · 4 painted cells');
+    await setPixelHex('#12aBCd');
+    await act(async()=>host.querySelector('#artstudio-pixel-replace-color').click());
+    const canvas=host.querySelector('#pixelCanvas'),changed={'0,0':'#12abcd','1,0':'#12abcd','7,7':'#12abcd','3,3':'#00f'};
+    expect(canvas._captureArtStudioState().pixelData).toEqual(changed);
+    expect(announce).toHaveBeenCalledWith('Recolored 3 cells. Undo restores the original colors.');
+    await act(async()=>[...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').click());
+    expect(canvas._captureArtStudioState().pixelData).toEqual(original);
+    expect([...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').disabled).toBe(true);
+    await act(async()=>[...host.querySelectorAll('button')].find(b=>b.textContent==='Redo').click());
+    expect(canvas._captureArtStudioState().pixelData).toEqual(changed);
+  });
+
+  it('guards incomplete hex input and uses exact RGB brush colors without painting',async()=>{
+    const original={'0,0':'#f00'};await mount({pixelGrid:8,pixelData:original});
+    await setPixelHex('#gg');
+    expect(host.querySelector('#artstudio-pixel-replace-color').disabled).toBe(true);
+    expect(host.querySelector('#artstudio-pixel-use-color').disabled).toBe(true);
+    expect(host.querySelector('#artstudio-pixel-replacement-hex').getAttribute('aria-invalid')).toBe('true');
+    await setPixelHex('#234567');
+    await act(async()=>host.querySelector('#artstudio-pixel-use-color').click());
+    const state=JSON.parse(host.querySelector('[data-testid=pixel-options]').textContent);
+    expect(state.pixelTool).toBe('brush');expect(state.pixelHue).toBeCloseTo(210);expect(state.pixelSat).toBeCloseTo(49.2753623188);
+    expect(state.pixelData).toEqual(original);
+    expect([...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').disabled).toBe(true);
+  });
+
+  it('fills a connected visible color across equivalent hex, RGB and HSL spellings',async()=>{
+    await mount({pixelGrid:8,pixelTool:'fill',pixelHue:120,pixelSat:100,pixelLit:50,pixelData:{'0,0':'#f00','1,0':'rgb(255,0,0)','2,0':'hsl(0,100%,50%)','7,7':'#f00','3,0':'#00f'}});
+    const canvas=host.querySelector('#pixelCanvas');
+    await act(async()=>canvas.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})));
+    const data=canvas._captureArtStudioState().pixelData;
+    expect(data['0,0']).toBe('hsl(120,100%,50%)');expect(data['1,0']).toBe(data['0,0']);expect(data['2,0']).toBe(data['0,0']);
+    expect(data['7,7']).toBe('#f00');expect(data['3,0']).toBe('#00f');expect(data['0,1']).toBeUndefined();
+  });
+
+  it('keeps preview choices separate from artwork history and restores editing drafts on owner change',async()=>{
+    const controls=await mount({pixelGrid:8,pixelData:{'0,0':'#f00'}});
+    await setPixelHex('#abc');
+    const select=host.querySelector('#artstudio-pixel-preview-mode');
+    await act(async()=>{select.value='tile';select.dispatchEvent(new Event('change',{bubbles:true}));});
+    expect(host.querySelector('#pixelArtworkPreview').width).toBe(24);
+    expect(host.querySelector('#pixelCanvas')._captureArtStudioState().pixelData).toEqual({'0,0':'#f00'});
+    expect([...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').disabled).toBe(true);
+    await act(async()=>controls.updateProfile('another-learner'));
+    expect(host.querySelector('#artstudio-pixel-replacement-hex').value).toBe('#ff0000');
+  });
+
+  it('rotates a rectangular selection at the edge without clipping, and undoes the whole edit', async () => {
+    const original={'6,3':'red','7,3':'blue','6,4':'green','7,5':'gold','1,1':'purple','5,4':'orange'};
+    await mount({pixelGrid:8,pixelTool:'select',pixelData:original});
+    const canvas=host.querySelector('#pixelCanvas');
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:80,height:80});
+    const event=(x,y,type)=>({clientX:x,clientY:y,type,pointerId:1,button:0,preventDefault(){}});
+    const rotate=host.querySelector('#artstudio-pixel-selection-rotate');
+    expect(rotate.disabled).toBe(true);
+    await act(async()=>{canvas.onpointerdown(event(65,35,'pointerdown'));canvas.onpointerup(event(75,55,'pointerup'));});
+    await act(async()=>host.querySelector('#artstudio-pixel-selection-copy').click());
+    const copied=canvas._pixelClipboard;
+    expect(rotate.disabled).toBe(false);
+    await act(async()=>rotate.click());
+    expect(canvas._pixelSelection).toEqual({x:5,y:3,w:3,h:2});
+    const rotated={'7,3':'red','7,4':'blue','6,3':'green','5,4':'gold','1,1':'purple'};
+    expect(canvas._captureArtStudioState().pixelData).toEqual(rotated);
+    expect(canvas._pixelClipboard).toEqual(copied);
+    await act(async()=>[...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').click());
+    expect(canvas._captureArtStudioState().pixelData).toEqual(original);
+    await act(async()=>[...host.querySelectorAll('button')].find(b=>b.textContent==='Redo').click());
+    expect(canvas._captureArtStudioState().pixelData).toEqual(rotated);
+  });
+
+  it.each([
+    ['flip-x',{'4,2':'red','2,3':'blue','0,0':'gold'}],
+    ['flip-y',{'2,3':'red','4,2':'blue','0,0':'gold'}],
+  ])('flips only the selected pixels with %s and keeps transparent cells empty', async (action,expected) => {
+    const original={'2,2':'red','4,3':'blue','0,0':'gold'};
+    await mount({pixelGrid:8,pixelTool:'select',pixelData:original});
+    const canvas=host.querySelector('#pixelCanvas');
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:80,height:80});
+    const event=(x,y,type)=>({clientX:x,clientY:y,type,pointerId:1,button:0,preventDefault(){}});
+    await act(async()=>{canvas.onpointerdown(event(25,25,'pointerdown'));canvas.onpointerup(event(45,35,'pointerup'));});
+    await act(async()=>host.querySelector('#artstudio-pixel-selection-'+action).click());
+    expect(canvas._captureArtStudioState().pixelData).toEqual(expected);
+    expect(canvas._pixelSelection).toEqual({x:2,y:2,w:3,h:2});
+    await act(async()=>host.querySelector('#artstudio-pixel-selection-'+action).click());
+    expect(canvas._captureArtStudioState().pixelData).toEqual(original);
+  });
+
+  it('keeps selection transforms disabled during a drag and skips history for an unchanged transform', async () => {
+    await mount({pixelGrid:8,pixelTool:'select',pixelData:{'2,2':'red'}});
+    const canvas=host.querySelector('#pixelCanvas');
+    canvas.getBoundingClientRect=()=>({left:0,top:0,width:80,height:80});
+    const event=type=>({clientX:25,clientY:25,type,pointerId:1,button:0,preventDefault(){}});
+    const rotate=host.querySelector('#artstudio-pixel-selection-rotate');
+    await act(async()=>canvas.onpointerdown(event('pointerdown')));
+    expect(rotate.disabled).toBe(true);
+    await act(async()=>canvas.onpointerup(event('pointerup')));
+    await act(async()=>rotate.click());
+    expect([...host.querySelectorAll('button')].find(b=>b.textContent==='Undo').disabled).toBe(true);
+    await act(async()=>canvas.onpointerdown(event('pointerdown')));
+    expect(rotate.disabled).toBe(true);
+    expect(canvas._pixelSelectionAction('rotate')).toBe(false);
+    await act(async()=>canvas.onpointercancel(event('pointercancel')));
+    expect(rotate.disabled).toBe(false);
+    expect(canvas._captureArtStudioState().pixelData).toEqual({'2,2':'red'});
+  });
+
   it('moves an overlapping selection as one undoable edit without saving the drag preview', async () => {
     const original={'1,1':'red','2,1':'blue','1,2':'green','6,6':'gold'};
     await mount({pixelGrid:8,pixelTool:'select',pixelData:original});
@@ -211,7 +328,7 @@ describe('Art Studio Pixel Art keyboard accessibility', () => {
   it('shows the mirrored brush footprint on hover without changing artwork or export', async () => {
     await mount({pixelGrid:8,pixelBrushSize:2,pixelMirrorX:true});
     const canvas=host.querySelector('#pixelCanvas');
-    const context=HTMLCanvasElement.prototype.getContext.mock.results.at(-1).value;
+    const context=HTMLCanvasElement.prototype.getContext.mock.results[HTMLCanvasElement.prototype.getContext.mock.contexts.lastIndexOf(canvas)].value;
     canvas.getBoundingClientRect=()=>({left:0,top:0,width:80,height:80});
     await act(async()=>canvas.onpointermove({clientX:25,clientY:25,pointerType:'mouse'}));
     expect(canvas._pixelHoverCell).toEqual([2,2]);

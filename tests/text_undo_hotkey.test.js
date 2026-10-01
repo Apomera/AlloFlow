@@ -11,7 +11,9 @@
 //      contains Bold/Italic/Highlighter (the toolbar icons were invisible
 //      because window.AlloIcons never included them).
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
@@ -55,7 +57,8 @@ describe('tracked textareas carry data-allo-textundo (source + compiled module)'
   for (const [srcFile, modFile, scope] of pairs) {
     it(`${scope}: ${srcFile} + ${modFile}`, () => {
       expect(read(srcFile)).toContain(`data-allo-textundo="${scope}"`);
-      expect(read(modFile)).toContain(`"data-allo-textundo": "${scope}"`);
+      // view_simplified_module.js is built without whitespace since 14a2d9cfa (09-26): allow either spacing.
+      expect(read(modFile)).toMatch(new RegExp(`"data-allo-textundo":\\s*"${scope}"`));
     });
   }
 });

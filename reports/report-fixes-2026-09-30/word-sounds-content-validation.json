@@ -1,0 +1,38 @@
+{
+  "frozenAt": "2026-09-30T23:41:59.461Z",
+  "sourceHashes": {
+    "word_sounds_core.js": "a4934a1757716141c754a260bcdf5620798eed89da11b298a634b9f7833aeb54",
+    "word_sounds_setup_source.jsx": "57e97d42d537dccaa2c1c0081ee4d348bbc2abfb9eed445b4c4212c86847928f",
+    "word_sounds_module.js": "933aec5cb759acd8e1e54f67adf59ad917a4a04e7f6d7ddfed9e59f0deae9ac3"
+  },
+  "beforeSourceHashes": {
+    "word_sounds_core.js": "616de22e05bb3fae5f4c938911cd7e1a05fa842a5b41bf5ae709e2b9a6b1833e",
+    "word_sounds_setup_source.jsx": "6e5bef90133f058c28794e603b723b38cce89c59d26a6f80385758966d85e505",
+    "word_sounds_module.js": "2c2c8261399da0f9fc4d44796100b78b4e3bf8d1acd9fd4b1791c3669e23e6d3"
+  },
+  "preEditEmbeddedCoreMatchesCanonical": {
+    "word_sounds_setup_source.jsx": true,
+    "word_sounds_module.js": true
+  },
+  "generatedHashesBeforeRootBuild": {
+    "word_sounds_setup_module.js": "c9fd395376cee36bf703ad495f8e7645ff78c4f7a59c6bee982fc889a643f443",
+    "desktop/web-app/public/word_sounds_setup_module.js": "c9fd395376cee36bf703ad495f8e7645ff78c4f7a59c6bee982fc889a643f443",
+    "desktop/web-app/public/word_sounds_module.js": "2c2c8261399da0f9fc4d44796100b78b4e3bf8d1acd9fd4b1791c3669e23e6d3"
+  },
+  "syncScriptHash": "0e0fd7f6f0d796935e9a7fefb6e657eae3d47db5c308a0b18630f921688f367f",
+  "syncTargets": [
+    "word_sounds_module.js",
+    "word_sounds_setup_source.jsx"
+  ],
+  "syncCli": [
+    "--check"
+  ],
+  "inMemoryEmbeddingSyntax": "pass",
+  "sourceEmbeddingAndMirrorsWrittenByWorker": false,
+  "limits": [
+    "Curated local examples have not received new phonemic content review.",
+    "Schema and decodability do not validate generated grammar or science.",
+    "Custom tasks remain editable review drafts because no explicit verification state exists.",
+    "A real deployed build is needed to verify old-live behavior and preparation duration."
+  ]
+}

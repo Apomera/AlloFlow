@@ -1,6 +1,8 @@
 // Preserve split-index keys used by existing student projects and voice inputs.
+// Numeric citations ([1], [2, 3]) and Markdown links ([text](url)) are not blanks.
+const SCAFFOLD_BLANK_PATTERN = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
 function scaffoldParagraphParts(text) {
-  return String(text || '').split(/(\[.*?\])/).map((part, index) => ({
+  return String(text || '').split(SCAFFOLD_BLANK_PATTERN).map((part, index) => ({
     text: part, responseKey: index % 2 === 1 ? 'paragraph-' + index : null
   }));
 }
@@ -64,11 +66,17 @@ function SentenceFramesView(props) {
   if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
     return <div role="status" className="rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700">{label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.')}</div>;
   }
+  // A Mastery Check draft belongs to the scaffold it was started on.
+  const sessionResourceId = gradingSession.resourceId;
+  const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
+  const isSessionOpen = !!gradingSession.isOpen && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
+  const canGenerateRubric = !!isTeacherMode && !isParentMode;
+  const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
   return (
                   <div className="space-y-6">
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-start gap-4" data-help-key="scaffolds_goal_panel">
-                        <p className="text-sm text-rose-800 flex-grow"><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</p>
-                        <div className="flex flex-wrap items-center gap-3">
+                        {isTeacherMode && <p className="text-sm text-rose-800 flex-grow"><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</p>}
+                        <div className="flex flex-wrap items-center gap-3 ml-auto">
                             {['saving', 'saved', 'error'].includes(studentWorkStatus) && (
                                 <div role="status" aria-live="polite" aria-atomic="true" className={`flex flex-wrap items-center gap-1.5 text-xs font-bold ${studentWorkStatus === 'error' ? 'text-red-700' : studentWorkStatus === 'saving' ? 'text-rose-700' : 'text-green-700'}`}>
                                     {studentWorkStatus === 'saving' ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('status.saving')}</>
@@ -110,16 +118,18 @@ function SentenceFramesView(props) {
                             )}
                         </div>
                     </div>
-                    {gradingSession.isOpen ? (<ErrorBoundary fallbackMessage="Draft feedback encountered an error. Please try again.">
+                    {isSessionOpen ? (<ErrorBoundary fallbackMessage="Draft feedback encountered an error. Please try again.">
                         <DraftFeedbackInterface
                             status={gradingSession.status}
                             draftText={gradingSession.draftText}
-                            setDraftText={(val) => setGradingSession(prev => ({ ...prev, draftText: val }))}
+                            setDraftText={(val) => setGradingSession(prev => ownsSession(prev) ? { ...prev, draftText: val } : prev)}
                             previousDraft={gradingSession.previousDraft}
                             gradingDetails={gradingSession.feedback}
                             draftCount={gradingSession.draftCount}
+                            finalScore={gradingSession.finalScore}
+                            xpEarned={gradingSession.xpAwarded}
                             onSubmit={submitGradingSession}
-                            onCancel={() => setGradingSession(prev => ({ ...prev, isOpen: false }))}
+                            onCancel={() => setGradingSession(prev => ownsSession(prev) ? { ...prev, isOpen: false } : prev)}
                         />
                     </ErrorBoundary>
                     ) : generatedContent?.data.mode === 'list' ? (
@@ -161,7 +171,7 @@ function SentenceFramesView(props) {
                                                         data-help-key="scaffolds_student_input"
                                                         className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans"
                                                         rows={3}
-                                                        placeholder={t('scaffolds.sentence_placeholder')}
+                                                        placeholder={isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')}
                                                     />
                                                 </>
                                             )}
@@ -222,19 +232,21 @@ function SentenceFramesView(props) {
                     <div className="mt-1 pt-4 border-t border-rose-100 animate-in fade-in slide-in-from-bottom-4">
                         <div className="flex justify-between items-center mb-3">
                                 <h4 className="font-bold text-rose-900 flex items-center gap-2">
-                                <ClipboardList size={18} className="text-rose-500"/> {isIndependentMode ? "Self-Checklist" : "Grading Rubric"}
+                                <ClipboardList size={18} className="text-rose-500"/> {isIndependentMode ? label('scaffolds.self_checklist', 'Self-Checklist') : label('scaffolds.rubric', 'Grading Rubric')}
                                 </h4>
                                 <div className="flex items-center gap-2">
-                                    {!isParentMode && (
+                                    {canGenerateRubric && (
                                         <button
+                                        type="button"
                                         onClick={handleGenerateRubric}
                                         disabled={isGeneratingRubric}
+                                        aria-busy={!!isGeneratingRubric}
                                         className="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                         >
                                         {isGeneratingRubric ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={12}/>}
                                         {generatedContent?.data.rubric
-                                            ? "Regenerate Rubric"
-                                            : (isIndependentMode ? "Generate Self-Checklist" : "Generate Rubric")}
+                                            ? (isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric'))
+                                            : (isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric'))}
                                         </button>
                                     )}
                                     {generatedContent?.data.rubric && (

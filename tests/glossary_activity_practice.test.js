@@ -8,12 +8,14 @@ const key=el=>{expect(el).toBeTruthy();act(()=>el.dispatchEvent(new KeyboardEven
 const control=(c,name)=>c.querySelector('[data-help-key="'+name+'"]');
 const practice=c=>c.querySelector('[data-game-review-practice]');
 const byText=(c,text)=>[...c.querySelectorAll('button')].find(button=>button.textContent.trim()===text);
+// 548a67131 dropped aria-label "common.check" from Submit: its name is now its visible text.
+const check=c=>[...c.querySelectorAll('button')].find(b=>b.textContent.trim()==='games.scramble.submit'&&!b.hasAttribute('aria-label'));
 const terms=c=>[...c.querySelectorAll('[data-help-key="matching_term_item"]')];
 function mount(name,extra={}){game=mountGame(name,{data:words,onClose:vi.fn(),...extra});return game.container;}
 function connect(c,term,def){key(terms(c).find(el=>el.textContent===term));key([...c.querySelectorAll('[data-help-key="matching_def_item"]')].find(el=>el.getAttribute('aria-label').endsWith(': '+def)));}
 function changeMode(c,value){act(()=>{const select=c.querySelector('select');select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));});}
 function input(c,value){act(()=>{const el=c.querySelector('input');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el,value);el.dispatchEvent(new Event('input',{bubbles:true}));});}
-function answer(c,value){input(c,value);click(c.querySelector('[aria-label="common.check"]'));act(()=>vi.advanceTimersByTime(1100));}
+function answer(c,value){input(c,value);click(check(c));act(()=>vi.advanceTimersByTime(1100));}
 function setupScramble(){vi.useFakeTimers();vi.spyOn(Math,'random').mockReturnValue(0.999);}
 
 describe('Matching practice rounds',()=>{
@@ -58,14 +60,14 @@ describe('Word Scramble practice rounds',()=>{
   click(byText(c,'Restart all words'));expect(c.textContent).toContain(words[0].def);expect(c.querySelector('[data-game-practice-round]')).toBeNull();answer(c,'Leaf');answer(c,'Root');answer(c,'Seed');expect(complete).toHaveBeenLastCalledWith('wordScramble',expect.objectContaining({totalItems:3,correctCount:3,score:30}));expect(complete).toHaveBeenCalledTimes(3);
  });
  it('offers words solved after an incorrect attempt without including later independent answers',()=>{
-  setupScramble();const c=mount('WordScrambleGame');input(c,'wrong');click(c.querySelector('[aria-label="common.check"]'));answer(c,'Leaf');answer(c,'Root');answer(c,'Seed');
+  setupScramble();const c=mount('WordScrambleGame');input(c,'wrong');click(check(c));answer(c,'Leaf');answer(c,'Root');answer(c,'Seed');
   expect(practice(c).textContent).toContain('(1)');expect(c.textContent).toContain('Solved after another try');click(practice(c));answer(c,'Leaf');expect(practice(c)).toBeNull();
  });
  it('uses item identity when duplicate terms have different clues',()=>{
   setupScramble();const data=[{term:'bank',def:'River edge'},{term:'bank',def:'A financial institution'}],c=mount('WordScrambleGame',{data});answer(c,'bank');click(c.querySelector('[aria-label="common.skip"]'));click(practice(c));expect(c.textContent).toContain('A financial institution');expect(c.textContent).not.toContain('River edge');
  });
  it('clears stale practice and completion timers when the glossary changes',()=>{
-  setupScramble();const complete=vi.fn(),c=mount('WordScrambleGame',{onGameComplete:complete});for(let i=0;i<3;i++)click(c.querySelector('[aria-label="common.skip"]'));click(practice(c));input(c,'Leaf');click(c.querySelector('[aria-label="common.check"]'));
+  setupScramble();const complete=vi.fn(),c=mount('WordScrambleGame',{onGameComplete:complete});for(let i=0;i<3;i++)click(c.querySelector('[aria-label="common.skip"]'));click(practice(c));input(c,'Leaf');click(check(c));
   game.rerender({data:[{term:'Sun',def:'A star'}],onClose:vi.fn(),onGameComplete:complete});act(()=>vi.advanceTimersByTime(1200));expect(complete).toHaveBeenCalledTimes(1);expect(c.textContent).toContain('A star');expect(c.querySelector('[data-game-practice-round]')).toBeNull();answer(c,'Sun');expect(practice(c)).toBeNull();expect(complete).toHaveBeenLastCalledWith('wordScramble',expect.objectContaining({totalItems:1,correctCount:1}));
  });
 });

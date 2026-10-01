@@ -111,7 +111,9 @@ export function ConnectedSolo({ room, user, onExit, t }) {
     <RoomView key={workspaceKey} room={room} progress={state.progress} workspaceKey={workspaceKey} onAction={action} notice={notice} solo t={t}/>
   </section>;
 }
-export function ConnectedSetup({ callGemini, inputText, generatedContent, language = 'English', activeSessionCode, appId, sessionData, onClose, onLaunched, user, allowLive = !!activeSessionCode, t }) {
+// learnerMode: an independent learner builds a room for themself, so it opens in play
+// view and keeps the solutions hidden until they choose to see them.
+export function ConnectedSetup({ callGemini, inputText, generatedContent, language = 'English', activeSessionCode, appId, sessionData, onClose, onLaunched, user, allowLive = !!activeSessionCode, learnerMode = false, t }) {
   const source = useMemo(() => engine.sourceText(inputText, generatedContent), [inputText, generatedContent]);
   const [room, setRoom] = useState(null), [stage, setStage] = useState(''), [error, setError] = useState('');
   const [library, setLibrary] = useState({ entries: [] }), [libraryChoice, setLibraryChoice] = useState(null), libraryCancelRef = useRef(null), libraryPickerRef = useRef(null), librarySummaryRef = useRef(null), previousLibraryChoice = useRef(null);
@@ -120,7 +122,11 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
   const libraryError = error => error?.message === 'library-full' ? tr(t, 'library_full', 'This lesson already has eight saved rooms in this language. Open and remove a room you no longer need before saving another. Your current room stays open.') : error?.message === 'library-invalid' ? tr(t, 'library_invalid', 'The saved-room library could not be read. Existing saved data has been kept. You can generate and play a room, but saving is unavailable until the stored library is repaired.') : tr(t, 'save_failed', 'This room could not be saved in this browser. Keep this page open to retain it, and try saving again.');
   const [theme, setTheme] = useState(''), [level, setLevel] = useState(''), [structure, setStructure] = useState('parallel');
   const [previewVersion, setPreviewVersion] = useState(0), [soloOpen, setSoloOpen] = useState(false), [review, setReview] = useState(null), [reviewStep, setReviewStep] = useState(null);
-  const [view, setView] = useState('review'), [preview, setPreview] = useState(engine.emptyProgress), [previewNotice, setPreviewNotice] = useState(''), [saved, setSaved] = useState(false);
+  const firstView = learnerMode ? 'play' : 'review';
+  const [view, setView] = useState(firstView), [preview, setPreview] = useState(engine.emptyProgress), [previewNotice, setPreviewNotice] = useState(''), [saved, setSaved] = useState(false);
+  // failure keeps the last model answer so one more repair can be asked for; confirmLaunch
+  // is the pause before launching a room nobody has tried or checked.
+  const [failure, setFailure] = useState(null), [confirmLaunch, setConfirmLaunch] = useState(false), [showSolutions, setShowSolutions] = useState(!learnerMode);
   const requestRef = useRef(0), dialogRef = useRef(null), closeRef = useRef(onClose), scopeRef = useRef('');
   const scope = appId + ':' + activeSessionCode + ':' + language + ':' + source;
   scopeRef.current = scope; closeRef.current = stage === 'launching' ? null : onClose;
@@ -128,18 +134,24 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
   useEffect(() => () => { requestRef.current++; }, []);
   useEffect(() => { if (!soloOpen) dialogRef.current?.querySelector('[data-play-solo]')?.focus(); }, [soloOpen]);
   useEffect(() => {
-    requestRef.current++; setStage(''); setError(''); setRoom(null); setSoloOpen(false); setReview(null); setReviewStep(null); setSaved(false); setView('review'); setPreview(engine.emptyProgress()); setPreviewVersion(n => n + 1); setLibrary({ entries: [] }); setLibraryChoice(null);
+    requestRef.current++; setStage(''); setError(''); setFailure(null); setConfirmLaunch(false); setRoom(null); setSoloOpen(false); setReview(null); setReviewStep(null); setSaved(false); setView(firstView); setPreview(engine.emptyProgress()); setPreviewVersion(n => n + 1); setLibrary({ entries: [] }); setLibraryChoice(null);
     try { const next = readLibrary(localStorage, source, language); setLibrary(next); const candidate = next.entries.find(entry => entry.id === next.selectedId); if (candidate) { setRoom(candidate.room); setSaved(true); } } catch (error) { setError(libraryError(error)); }
   }, [scope, language]);
-  const generate = async () => {
+  const generate = async repairFrom => {
     if (stage || libraryChoice) return;
     const id = ++requestRef.current, startedScope = scope;
-    setError('');
+    const resume = repairFrom && typeof repairFrom.response === 'string' ? repairFrom : null;
+    setError(''); setFailure(null); setConfirmLaunch(false);
     try {
-      const result = await engine.generateRoom(callGemini, source, { language, theme, level, seed: engine.identity('variation'), structure }, next => { if (requestRef.current === id) setStage(next); });
+      const result = await engine.generateRoom(callGemini, source, { language, theme, level, seed: engine.identity('variation'), structure, repairFrom: resume }, next => { if (requestRef.current === id) setStage(next); });
       if (requestRef.current !== id || scopeRef.current !== startedScope) return;
-      setRoom(result); setSaved(library.entries.some(entry => sameRoom(entry.room, result))); setReview(null); setPreview(engine.emptyProgress()); setPreviewVersion(n => n + 1); setPreviewNotice(''); setView('review');
-    } catch (e) { if (requestRef.current === id) setError(e.message); }
+      setRoom(result); setSaved(library.entries.some(entry => sameRoom(entry.room, result))); setReview(null); setPreview(engine.emptyProgress()); setPreviewVersion(n => n + 1); setPreviewNotice(''); setView(firstView);
+    } catch (e) {
+      if (requestRef.current !== id) return;
+      // A room that failed its checks keeps the model's answer, so the teacher can ask for one more repair.
+      if (e.candidate) { setError(tr(t, 'room_needs_repair', 'The AI room did not pass the playability checks, even after a repair. Ask for another repair, or generate a new room.')); setFailure({ candidate: e.candidate, detail: e.message }); }
+      else setError(e.message);
+    }
     finally { if (requestRef.current === id) setStage(''); }
   };
   const save = () => { try { engine.prepareRoom(room, source); } catch (error) { setError(tr(t, 'review_invalid_edits', 'Check the room text before saving: ') + error.message); return false; } try { const next = saveLibraryRoom(localStorage, source, language, room); setLibrary(next); setSaved(true); setError(''); return true; } catch (error) { setError(libraryError(error)); return false; } };
@@ -156,8 +168,11 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
     try { const next = removeLibraryRoom(localStorage, source, language, id); setLibrary(next); setSaved(next.entries.some(entry => sameRoom(entry.room, room))); setLibraryChoice(null); setError(''); libraryPickerRef.current?.focus(); }
     catch (error) { setLibraryChoice(null); setError(libraryError(error)); }
   };
-  const launch = async () => {
+  const launch = async force => {
     if (stage || !room || !allowLive || !activeSessionCode || sessionData?.escapeRoomState?.isActive) return;
+    // A room nobody has tried or checked gets one pause before it reaches the class.
+    if (force !== true && !readiness.ready) { setConfirmLaunch(true); return; }
+    setConfirmLaunch(false);
     const id = ++requestRef.current, startedScope = scope;
     setStage('launching'); setError('');
     try {
@@ -206,9 +221,20 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
     const patch = engine.planRequest(room, preview, request, 'teacher', { attemptId: 'preview', active: true, paused: false });
     setPreview(engine.mergeProgress(preview, patch)); setPreviewNotice(roomStatus(t, patch['receipts.' + request.requestId]?.code));
   };
+  // Launch readiness: has anyone played the preview, and did the optional AI check pass?
+  // Editing the room clears both, because either could now be out of date.
+  const readiness = (() => {
+    const tried = room ? room.nodes.filter(n => preview?.solved?.[n.id] === true).length : 0;
+    const check = !review ? 'none' : !review.complete ? 'incomplete' : review.checks.every(c => c.status === 'matched') ? 'matched' : 'concerns';
+    return { tried, total: room ? room.nodes.length : 0, check, ready: tried > 0 || check === 'matched' };
+  })();
+  const launchConfirmRef = useRef(null);
+  useEffect(() => { if (confirmLaunch) launchConfirmRef.current?.focus(); }, [confirmLaunch]);
+  useEffect(() => { if (readiness.ready) setConfirmLaunch(false); }, [readiness.ready]);
   return <div className="cer-modal-backdrop"><Styles/><section className="cer cer-modal" role="dialog" aria-modal="true" tabIndex={-1} aria-label={tr(t, 'setup_title', 'Create an escape room')} ref={dialogRef}>
     <header className="cer-row cer-between"><h2>{tr(t, 'setup_title', 'Create an escape room')}</h2><button type="button" disabled={stage === 'launching'} onClick={onClose}>{tr(t, 'close', 'Close')}</button></header>
     {error && <p className="cer-alert cer-error" role="alert">{error}</p>}
+    {failure && <div className="cer-row" data-generation-failure><button type="button" data-repair-again disabled={!!stage || !!libraryChoice} onClick={() => generate(failure.candidate)}>{tr(t, 'repair_again', 'Ask the AI to repair it again')}</button><details><summary>{tr(t, 'technical_details', 'Technical details')}</summary><p style={{ whiteSpace: 'pre-wrap' }}>{failure.detail}</p></details></div>}
     {soloOpen && room ? <ConnectedSolo key={soloStorageKey(room, user?.uid)} room={room} user={user} onExit={() => setSoloOpen(false)} t={t}/> : <>
     <p>{tr(t, 'setup_intro', 'AI creates connected clues from your lesson. Review the room, then play solo or launch it collaboratively from a live session.')}</p>
     <p className="cer-muted">{tr(t, 'room_language', 'Room language: {language}', { language })}</p>
@@ -240,7 +266,12 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
       </section>
       <nav className="cer-row" aria-label={tr(t, 'preview_views', 'Room preview views')} style={{ marginTop: 18 }}><button type="button" aria-pressed={view === 'review'} onClick={() => setView('review')}>{tr(t, 'review', 'Review clues and solutions')}</button><button type="button" aria-pressed={view === 'play'} onClick={() => setView('play')}>{tr(t, 'try_room', 'Try the room')}</button>{view === 'play' && <button type="button" onClick={() => { setPreview(engine.emptyProgress()); setPreviewNotice(''); setPreviewVersion(n => n + 1); }}>{tr(t, 'reset_preview', 'Reset preview')}</button>}</nav>
       {view === 'play' ? <RoomView key={previewVersion} room={room} progress={preview} onAction={previewAction} disabled={!!stage || !!libraryChoice} notice={previewNotice} t={t}/> : <section style={{ marginTop: 16 }} data-room-editor><h3>{room.title}</h3><button type="button" data-return-room-flow onClick={() => { const flow = dialogRef.current?.querySelector('[data-room-flow]'); if (flow) { flow.open = true; flow.querySelector('summary')?.focus(); } }}>{tr(t, 'flow_return', 'Back to room connections')}</button>
-        <details><summary>{tr(t, 'edit_room_story', 'Edit room title, mission, and debrief')}</summary><label>{tr(t, 'edit_room_title', 'Room title')}<input data-edit-room-title maxLength={120} value={room.title} disabled={!!stage || !!libraryChoice} onChange={event => edit(null, 'title', event.target.value)}/></label><label>{tr(t, 'edit_room_mission', 'Room mission')}<textarea maxLength={1500} value={room.mission} disabled={!!stage || !!libraryChoice} onChange={event => edit(null, 'mission', event.target.value)}/></label><label>{tr(t, 'edit_room_debrief', 'Room debrief text')}<textarea maxLength={1500} value={room.debrief} disabled={!!stage || !!libraryChoice} onChange={event => edit(null, 'debrief', event.target.value)}/></label></details><p>{room.mission}</p><p className="cer-muted">{tr(t, 'review_guidance', 'Check that the clues are clear and the solutions match your lesson. You can edit the story, object descriptions, evidence, and hints. Editing clears the AI review; check playability again after making changes.')}</p>{room.nodes.map(n => <details key={n.id} data-edit-object={n.id}><summary>{n.name} · {n.requires.length ? tr(t, 'requires', 'Needed: {items}', { items: n.requires.map(id => room.nodes.find(x => x.reward.id === id)?.reward.name).join(', ') }) : tr(t, 'starting_object', 'Starting object')}</summary><label>{tr(t, 'player_instruction', 'Player instruction')}<textarea value={n.instruction} maxLength={1000} disabled={!!stage || !!libraryChoice} onChange={e => edit(n.id, 'instruction', e.target.value)}/></label><label>{tr(t, 'edit_object_description', 'What players observe')}<textarea maxLength={1000} value={n.description} disabled={!!stage || !!libraryChoice} onChange={event => edit(n.id, 'description', event.target.value)}/></label><p><strong>{tr(t, 'discovery_label', 'Discovery: ')}</strong>{n.reward.name}</p><label>{tr(t, 'edit_evidence', 'Collected evidence or tool description')}<textarea data-edit-evidence={n.id} maxLength={1200} value={n.reward.text} disabled={!!stage || !!libraryChoice} onChange={event => edit(n.id, 'rewardText', event.target.value)}/></label>{n.explanation && <><p><strong>{tr(t, 'solution_label', 'Solution: ')}</strong>{n.explanation}</p><blockquote>{n.sourceQuote}</blockquote></>}<details><summary>{tr(t, 'edit_hints', 'Edit the three graduated hints')}</summary>{n.hints.map((hint, index) => <label key={index}>{tr(t, 'edit_hint_number', 'Hint {number}', { number: index + 1 })}<textarea data-edit-hint={n.id + '-' + index} maxLength={450} value={hint} disabled={!!stage || !!libraryChoice} onChange={event => edit(n.id, 'hint' + index, event.target.value)}/></label>)}</details></details>)}</section>}
+        <details><summary>{tr(t, 'edit_room_story', 'Edit room title, mission, and debrief')}</summary><label>{tr(t, 'edit_room_title', 'Room title')}<input data-edit-room-title maxLength={120} value={room.title} disabled={!!stage || !!libraryChoice} onChange={event => edit(null, 'title', event.target.value)}/></label><label>{tr(t, 'edit_room_mission', 'Room mission')}<textarea maxLength={1500} value={room.mission} disabled={!!stage || !!libraryChoice} onChange={event => edit(null, 'mission', event.target.value)}/></label><label>{tr(t, 'edit_room_debrief', 'Room debrief text')}<textarea maxLength={1500} value={room.debrief} disabled={!!stage || !!libraryChoice} onChange={event => edit(null, 'debrief', event.target.value)}/></label></details>{learnerMode && <button type="button" data-toggle-solutions aria-pressed={showSolutions} onClick={() => setShowSolutions(value => !value)}>{showSolutions ? tr(t, 'hide_solutions', 'Hide solutions') : tr(t, 'show_solutions', 'Show solutions')}</button>}<p>{room.mission}</p><p className="cer-muted">{tr(t, 'review_guidance', 'Check that the clues are clear and the solutions match your lesson. You can edit the story, object descriptions, evidence, and hints. Editing clears the AI review; check playability again after making changes.')}</p>{room.nodes.map(n => <details key={n.id} data-edit-object={n.id}><summary>{n.name} · {n.requires.length ? tr(t, 'requires', 'Needed: {items}', { items: n.requires.map(id => room.nodes.find(x => x.reward.id === id)?.reward.name).join(', ') }) : tr(t, 'starting_object', 'Starting object')}</summary><label>{tr(t, 'player_instruction', 'Player instruction')}<textarea value={n.instruction} maxLength={1000} disabled={!!stage || !!libraryChoice} onChange={e => edit(n.id, 'instruction', e.target.value)}/></label><label>{tr(t, 'edit_object_description', 'What players observe')}<textarea maxLength={1000} value={n.description} disabled={!!stage || !!libraryChoice} onChange={event => edit(n.id, 'description', event.target.value)}/></label><p><strong>{tr(t, 'discovery_label', 'Discovery: ')}</strong>{n.reward.name}</p><label>{tr(t, 'edit_evidence', 'Collected evidence or tool description')}<textarea data-edit-evidence={n.id} maxLength={1200} value={n.reward.text} disabled={!!stage || !!libraryChoice} onChange={event => edit(n.id, 'rewardText', event.target.value)}/></label>{n.explanation && showSolutions && <><p><strong>{tr(t, 'solution_label', 'Solution: ')}</strong>{n.explanation}</p><blockquote>{n.sourceQuote}</blockquote></>}<details><summary>{tr(t, 'edit_hints', 'Edit the three graduated hints')}</summary>{n.hints.map((hint, index) => <label key={index}>{tr(t, 'edit_hint_number', 'Hint {number}', { number: index + 1 })}<textarea data-edit-hint={n.id + '-' + index} maxLength={450} value={hint} disabled={!!stage || !!libraryChoice} onChange={event => edit(n.id, 'hint' + index, event.target.value)}/></label>)}</details></details>)}</section>}
+      {!learnerMode && <section className="cer-panel" style={{ marginTop: 18 }} data-launch-readiness aria-labelledby="cer-readiness-title"><h3 id="cer-readiness-title">{tr(t, 'readiness_title', 'Before students play')}</h3><ul className="cer-facts">
+        <li>{readiness.tried ? tr(t, 'readiness_tried', 'Tried in preview: {count} of {total} objects solved.', { count: readiness.tried, total: readiness.total }) : tr(t, 'readiness_not_tried', 'Not tried yet. Choose Try the room to play it as a student would.')}</li>
+        <li>{readiness.check === 'matched' ? tr(t, 'readiness_check_matched', 'AI check: every device solution matched.') : readiness.check === 'concerns' ? tr(t, 'readiness_check_concerns', 'AI check: some devices need a closer look.') : readiness.check === 'incomplete' ? tr(t, 'readiness_check_incomplete', 'AI check: incomplete.') : tr(t, 'readiness_check_none', 'AI check: not run (optional).')}</li>
+      </ul></section>}
+      {confirmLaunch && <div className="cer-alert" role="group" data-launch-confirm aria-label={tr(t, 'launch_unchecked_title', 'Launch an untried room?')}><p>{tr(t, 'launch_unchecked', 'Nobody has tried this room and the AI check has not passed. Students may meet a clue that does not work. Launch anyway?')}</p><div className="cer-row"><button type="button" ref={launchConfirmRef} onClick={() => { setConfirmLaunch(false); setView('play'); }}>{tr(t, 'try_first', 'Try the room first')}</button><button type="button" data-launch-anyway disabled={!!stage} onClick={() => launch(true)}>{tr(t, 'launch_anyway', 'Launch anyway')}</button></div></div>}
       <footer className="cer-row" style={{ marginTop: 20 }}><button type="button" disabled={!!stage || !!libraryChoice} onClick={save}>{tr(t, 'save', 'Save room in this browser')}</button><button type="button" data-play-solo disabled={!!stage || !!libraryChoice} onClick={startSolo}>{tr(t, 'play_solo', 'Play solo')}</button>{allowLive && activeSessionCode && <button type="button" className="cer-primary" data-launch-connected disabled={!!stage || !!libraryChoice || !!sessionData?.escapeRoomState?.isActive || !!sessionData?.quizState?.isActive} onClick={launch}>{tr(t, 'launch', 'Launch for everyone')}</button>}</footer>
       {(sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive) && <p>{tr(t, 'end_activity', 'End the current live activity before launching this room. Your preview is kept.')}</p>}
     </>}

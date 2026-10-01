@@ -7,7 +7,7 @@ const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js'
 // of its equations or a WebGL stub pretending to verify their behavior.
 const source = readFileSync('stem_lab/stem_tool_galaxy.js', 'utf8');
 const kernel = source.split('// BEGIN BLACK HOLE EXPERIMENT MODEL')[1].split('// END BLACK HOLE EXPERIMENT MODEL')[0];
-const { trajectory, sample, tides, fragments, launchThrow, events, prediction, adjustThrow, cameraFit, distanceProfile, fragmentState, integrate } = new Function(kernel + ';return {trajectory:blackHoleTrajectory,sample:blackHoleSample,tides:blackHoleTides,fragments:blackHoleFragments,launchThrow:blackHoleThrow,events:blackHoleEvents,prediction:blackHolePrediction,adjustThrow:blackHoleAdjustThrow,cameraFit:blackHoleCameraFit,distanceProfile:blackHoleDistanceProfile,fragmentState:blackHoleFragmentState,integrate:blackHoleIntegrate};')();
+const { trajectory, sample, tides, fragments, launchThrow, events, prediction, adjustThrow, cameraFit, distanceProfile, fragmentState, integrate, captureTime, references, clearSight, localMotion, fragmentMotion, turningPoints, fragmentMoments, adjacentMoment } = new Function(kernel + ';return {trajectory:blackHoleTrajectory,sample:blackHoleSample,tides:blackHoleTides,fragments:blackHoleFragments,launchThrow:blackHoleThrow,events:blackHoleEvents,prediction:blackHolePrediction,adjustThrow:blackHoleAdjustThrow,cameraFit:blackHoleCameraFit,distanceProfile:blackHoleDistanceProfile,fragmentState:blackHoleFragmentState,integrate:blackHoleIntegrate,captureTime:blackHoleFragmentCaptureTime,references:blackHoleLocalReferences,clearSight:blackHoleClearSight,localMotion:blackHoleLocalMotion,fragmentMotion:blackHoleFragmentMotion,turningPoints:blackHoleTurningPoints,fragmentMoments:blackHoleFragmentMoments,adjacentMoment:blackHoleAdjacentMoment};')();
 
 describe('black hole experiment dynamics', () => {
   it.each([4,5,8])('radial release at %s Rs reaches the horizon in the analytical proper time', radius => {
@@ -311,4 +311,115 @@ describe('black hole experiment dynamics', () => {
     expect(fragmentState(debris,0,middle).phase).toBe('outside');
     expect(end.phase).toBe('captured');
   });
+
+  it('bookmarks individual capture at its exact absolute playback time', () => {
+    const run=trajectory({radius:5}),debris=fragments(run,'stellar','probe',[{x:0,y:0,z:0},{x:0,y:0,z:.4}]);
+    expect(captureTime(debris,0)).toBe(debris.time+debris.paths[0].trajectory.duration);
+    expect(fragmentState(debris,0,captureTime(debris,0)).phase).toBe('captured');
+    expect(captureTime(debris,1)).toBe(debris.time);
+    expect(captureTime(debris,-1)).toBeNull();expect(captureTime(debris,2)).toBeNull();expect(captureTime(null,0)).toBeNull();
+    const orbit=trajectory({radius:5,sideways:1}),outside=fragments(orbit,'stellar','star',[{x:0,y:0,z:0}]);
+    expect(captureTime(outside,0)).toBeNull();
+  });
+
+  it('scales local radius and tides with mass while retaining the same static-clock factor', () => {
+    const small=references(5,'stellar'),large=references(5,'supermassive');
+    expect(small.distanceKm).toBeCloseTo(147.667,6);
+    expect(large.distanceKm/small.distanceKm).toBe(400000);
+    expect(small.gradient/large.gradient).toBeCloseTo(400000**2,0);
+    expect(small.clockFactor).toBeCloseTo(Math.sqrt(.8),10);
+    expect(large.clockFactor).toBe(small.clockFactor);
+    expect(references(2,'stellar').gradient/references(4,'stellar').gradient).toBeCloseTo(8,10);
+    for(const radius of [1,0,-3,NaN,Infinity])expect(references(radius,'stellar')).toBeNull();
+  });
+
+  it('blocks sight through the horizon while allowing foreground and grazing parcels', () => {
+    expect(clearSight([0,0,5],[0,0,-2],.43)).toBe(false);
+    expect(clearSight([0,0,5],[0,0,2],.43)).toBe(true);
+    expect(clearSight([0,0,5],[1,0,-2],.43)).toBe(true);
+    expect(clearSight([-5,.43,0],[5,.43,0],.43)).toBe(true);
+    expect(clearSight([-5,.42,0],[5,.42,0],.43)).toBe(false);
+    expect(clearSight([0,0,5],[0,0,0],.43)).toBe(false);
+    expect(clearSight([0,0,5],[0,0,5],.43)).toBe(true);
+    expect(clearSight([0,0,5],[NaN,0,2],.43)).toBe(false);
+  });
+  it('measures circular and retrograde speed in the local stationary frame', () => {
+    for(const radius of [4,5,8])for(const sign of [-1,1]){
+      const run=trajectory({radius,sideways:sign}),m=localMotion(run,run.duration*.4);
+      expect(m.speed).toBeCloseTo(1/Math.sqrt(2*(radius-1)),10);
+      expect(m.radial).toBeCloseTo(0,10);expect(m.transverse).toBeCloseTo(sign*m.speed,10);
+      expect(m.clockRate).toBeCloseTo(Math.sqrt(1-3/(2*radius)),10);
+    }
+  });
+
+  it('distinguishes a clock at rest from moving infall and approaches c outside the horizon', () => {
+    const released=trajectory({radius:5}),rest=localMotion(released,0);
+    expect(rest.speed).toBeCloseTo(0,10);expect(rest.clockRate).toBeCloseTo(Math.sqrt(.8),10);
+    const run=integrate(8,-Math.sqrt(1/8),0,20);
+    expect(run.energySquared).toBeCloseTo(1,12);
+    for(const p of run.samples.slice(0,-1).filter((_,i)=>i%60===0)){
+      const m=localMotion(run,p.time);
+      expect(m.speed).toBeCloseTo(Math.sqrt(1/p.radius),8);
+      expect(m.radial).toBeCloseTo(-m.speed,7);expect(m.transverse).toBe(0);
+      expect(m.clockRate).toBeCloseTo(1-1/p.radius,10);expect(m.speed).toBeLessThan(1);
+    }
+    expect(localMotion(run,run.duration-.0001).speed).toBeGreaterThan(.999);
+    expect(localMotion(run,run.duration)).toBeNull();
+  });
+
+  it('links the fragment arrow to its drawn tangent and reproduces motion after rewind', () => {
+    const run=trajectory({radius:4,sideways:1}),debris=fragments(run,'stellar','star',[{x:.03,y:.04,z:-.03}]),plan=debris.paths[0],time=debris.time+.7;
+    const position=(time,rotation)=>{const p=sample(plan.trajectory,time-debris.time),a=rotation+plan.angle+p.angle;return [.43*p.radius*Math.cos(a),plan.vertical*p.radius/plan.initialRadius,.43*p.radius*Math.sin(a)];};
+    for(const rotation of [0,1.2]){
+      const m=fragmentMotion(debris,0,time,rotation),a=position(time-.0001,rotation),b=position(time+.0001,rotation),delta=b.map((v,i)=>v-a[i]),length=Math.hypot(...delta);
+      expect(Math.hypot(...m.direction)).toBeCloseTo(1,10);
+      expect(m.direction.reduce((sum,v,i)=>sum+v*delta[i]/length,0)).toBeGreaterThan(.99999);
+      expect(m.clockRate).toBeCloseTo(Math.sqrt(1-1/fragmentState(debris,0,time).radius)*Math.sqrt(1-m.speed*m.speed),10);
+      fragmentMotion(debris,0,debris.duration,rotation);expect(fragmentMotion(debris,0,time,rotation)).toEqual(m);
+    }
+    expect(fragmentMotion(debris,0,0,0)).toBeNull();expect(fragmentMotion(debris,-1,time,0)).toBeNull();
+  });
+
+  it('omits stationary-frame motion references at capture or for invalid energy', () => {
+    expect(localMotion(null,0)).toBeNull();expect(localMotion({samples:[],energySquared:NaN},0)).toBeNull();
+    expect(localMotion({samples:[],energySquared:0},0)).toBeNull();
+    const run=trajectory({radius:5}),debris=fragments(run,'stellar','probe',[{x:0,y:0,z:0},{x:0,y:0,z:.4}]);
+    expect(fragmentMotion(debris,0,captureTime(debris,0),0)).toBeNull();
+    expect(fragmentMotion(debris,1,debris.time,0)).toBeNull();
+  });
+
+  it('finds radial turns without treating release, zero touches, or circular noise as turns', () => {
+    const run={duration:6,samples:[{time:0,radius:5,radialVelocity:0},{time:1,radius:4,radialVelocity:-1},{time:2,radius:3,radialVelocity:0},{time:3,radius:4,radialVelocity:1},{time:4,radius:5,radialVelocity:0},{time:5,radius:4,radialVelocity:-1},{time:6,radius:3,radialVelocity:-1}]};
+    expect(turningPoints(run,10,20)).toEqual([{key:'closest',time:12,radius:3},{key:'farthest',time:14,radius:5}]);
+    expect(turningPoints(run,10,13)).toEqual([{key:'closest',time:12,radius:3}]);
+    const touch={duration:2,samples:[{time:0,radius:4,radialVelocity:-1},{time:1,radius:3,radialVelocity:0},{time:2,radius:2,radialVelocity:-1}]};
+    expect(turningPoints(touch,0,2)).toEqual([]);
+    expect(turningPoints(trajectory({radius:5,sideways:1}),0,120)).toEqual([]);
+  });
+
+  it('interpolates a real fragment turn at the same time used by its scene sample', () => {
+    const run=integrate(5,-.12,5/Math.sqrt(7),120,{stopAtOutcome:false,sampleEvery:8}),debris={time:2,paths:[{trajectory:run}]};
+    const moments=fragmentMoments(debris,0,2+run.duration),turns=moments.filter(e=>e.key==='closest'||e.key==='farthest');
+    expect(turns.length).toBeGreaterThan(1);expect(moments[0].key).toBe('breakup');expect(moments.at(-1).key).toBe('end');
+    for(const event of turns){const p=sample(run,event.time-2);expect(p.radius).toBe(event.radius);expect(Math.abs(p.radialVelocity)).toBeLessThan(1e-7);const before=sample(run,event.time-2-.001),after=sample(run,event.time-2+.001);expect(before.radialVelocity<0).toBe(event.key==='closest');expect(after.radialVelocity>0).toBe(event.key==='closest');}
+    expect(moments.every((e,i)=>e.time>=2&&e.time<=2+run.duration&&(!i||e.time>moments[i-1].time))).toBe(true);
+  });
+
+  it('ends captured fragment moments at the exact crossing and clips to the observation', () => {
+    const run=trajectory({radius:5}),debris=fragments(run,'stellar','probe',[{x:0,y:0,z:0},{x:0,y:0,z:.4}]);
+    const moments=fragmentMoments(debris,0,debris.duration);expect(moments.at(-1)).toEqual({key:'capture',time:captureTime(debris,0),radius:1});
+    expect(fragmentMoments(debris,1,debris.duration)).toEqual([{key:'capture',time:debris.time,radius:1}]);
+    expect(fragmentMoments(debris,0,debris.time-.01)).toEqual([]);expect(fragmentMoments(null,0,10)).toEqual([]);expect(fragmentMoments(debris,-1,10)).toEqual([]);
+    const cutoff=(debris.time+captureTime(debris,0))/2;expect(fragmentMoments(debris,0,cutoff).at(-1).key).toBe('end');
+  });
+
+  it('navigates strictly before or after a moment and stops at the boundaries', () => {
+    const events=[{time:1},{time:2},{time:3}];
+    expect(adjacentMoment(events,0,1)).toBe(0);expect(adjacentMoment(events,0,-1)).toBe(-1);
+    expect(adjacentMoment(events,2,1)).toBe(2);expect(adjacentMoment(events,2,-1)).toBe(0);
+    expect(adjacentMoment(events,2+1e-10,-1)).toBe(0);expect(adjacentMoment(events,2-1e-10,1)).toBe(2);
+    expect(adjacentMoment(events,4,1)).toBe(-1);expect(adjacentMoment(events,4,-1)).toBe(2);
+    expect(adjacentMoment([],2,1)).toBe(-1);expect(adjacentMoment(events,NaN,1)).toBe(-1);
+  });
+
 });

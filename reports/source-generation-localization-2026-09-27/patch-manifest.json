@@ -1,0 +1,213 @@
+{
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "files": [
+    {
+      "file": "ui_strings.js",
+      "newFile": false,
+      "beforeSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "afterSha256": "795bcc028ec3f9d8154fc8c00840df8a9bf34ef5da0418c6d62a86eb63fa47ab"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "newFile": false,
+      "beforeSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "afterSha256": "795bcc028ec3f9d8154fc8c00840df8a9bf34ef5da0418c6d62a86eb63fa47ab"
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "newFile": false,
+      "beforeSha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+      "afterSha256": "457d8bab4bad8b7b3e744119b5c65d8fcb072bca4a02725780a3281c30b4b8a7"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "newFile": false,
+      "beforeSha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379",
+      "afterSha256": "457d8bab4bad8b7b3e744119b5c65d8fcb072bca4a02725780a3281c30b4b8a7"
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "newFile": false,
+      "beforeSha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+      "afterSha256": "4f1fb7278d5017bf6f859abce041f0a17361bb73d11a94263ddd45753c4367fd"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "newFile": false,
+      "beforeSha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996",
+      "afterSha256": "4f1fb7278d5017bf6f859abce041f0a17361bb73d11a94263ddd45753c4367fd"
+    },
+    {
+      "file": "lang/arabic.js",
+      "newFile": false,
+      "beforeSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "afterSha256": "e2a161a0accaf0e4d1d72e9511d14a8ea32f67b528cfae03272fc4ae4feb0c49"
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "newFile": false,
+      "beforeSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "afterSha256": "e2a161a0accaf0e4d1d72e9511d14a8ea32f67b528cfae03272fc4ae4feb0c49"
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "newFile": false,
+      "beforeSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "afterSha256": "ee4f237bb368da0bd77b0a99b8fbf0b09b7cfe07c3ad3d997846827c8b7378fb"
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "newFile": false,
+      "beforeSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "afterSha256": "ee4f237bb368da0bd77b0a99b8fbf0b09b7cfe07c3ad3d997846827c8b7378fb"
+    },
+    {
+      "file": "lang/thai.js",
+      "newFile": false,
+      "beforeSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "afterSha256": "7ab6c4bbabb396510698fb17f3aa3a5eded30511fe0fdb305f8a85ff3111af66"
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "newFile": false,
+      "beforeSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "afterSha256": "7ab6c4bbabb396510698fb17f3aa3a5eded30511fe0fdb305f8a85ff3111af66"
+    },
+    {
+      "file": "translations/source-generation-locales.json",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "2c448a0c2070d1ebc14698c23715bb14d2c14edb7cf7d47908bb2d7d640a917d"
+    },
+    {
+      "file": "dev-tools/i18n/apply_source_generation_locales.cjs",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "d177bc9dfd97c7f54e9501d75d00c9fd28bb3156db1ec9b0874a910a12844dbb"
+    },
+    {
+      "file": "tests/fixtures/source_generation_locales.json",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "b62bf38650701b28b8486a74bb4751da3004cf3f2c7d750cb6ff974578a7c0f7"
+    },
+    {
+      "file": "tests/helpers/source_generation_locale_harness.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "5843765fe7a3b67b11b589081a3ac32b4269043366d405b406e695496cb9ca9b"
+    },
+    {
+      "file": "tests/source_generation_locales.test.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "17073f8e57be155a2d0d7c49069a2afd0891129a064eedd7e07c3b14b8f8675a"
+    },
+    {
+      "file": "tests/source_generation_locale_catalogs.test.js",
+      "newFile": true,
+      "beforeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "afterSha256": "04a489036a8f64f0f5cbc817ba148b907163d50eddae9b32adfcb2b24ef5169f"
+    }
+  ],
+  "patchSha256": "3de17d861bbb0705d88755e7ae3eff7f19522ffd5c0e4a0c863abf41c83f86e4",
+  "bytes": 35319,
+  "coverage": [
+    {
+      "file": "ui_strings.js",
+      "before": 59,
+      "after": 61,
+      "added": 2,
+      "preservedReaderKeys": 561,
+      "preservedDeliveryKeys": 172
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "before": 59,
+      "after": 61,
+      "added": 2,
+      "preservedReaderKeys": 561,
+      "preservedDeliveryKeys": 172
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "lang/arabic.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "lang/thai.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "before": 33,
+      "after": 35,
+      "added": 2,
+      "preservedReaderKeys": 271,
+      "preservedDeliveryKeys": 173
+    }
+  ]
+}

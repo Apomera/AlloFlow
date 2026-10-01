@@ -1,0 +1,674 @@
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+
+const SOURCE = fs.readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
+
+describe('Geometry World animation runtime', () => {
+  it('captures Three.js before conditional frame branches can shadow it', () => {
+    expect(SOURCE).toMatch(
+      /function animate\(\) \{[\s\S]*?if \(!window\.THREE \|\| !engine \|\| !engine\.scene \|\| !engine\.camera\) return;\s*\/\/ Capture Three\.js[\s\S]*?var THREE = window\.THREE;\s*var dt =/
+    );
+  });
+
+  it('stops a failed frame and exposes a recoverable error panel', () => {
+    expect(SOURCE).toContain('function stopAnimationAfterError(error, failureKind)');
+    expect(SOURCE).toContain('catch (error) { stopAnimationAfterError(error); }');
+    expect(SOURCE).toContain("var kind = failureKind || 'runtime';");
+    expect(SOURCE).toContain("window[engineKey + '_failure'] = { kind: kind, message: detail };");
+    expect(SOURCE).toContain("'Technical details'");
+  });
+
+  it('resizes the WebGL backing buffer without feeding dimensions into layout', () => {
+    expect(SOURCE).toContain('engine.renderer.setSize(container.clientWidth, container.clientHeight, false);');
+    expect(SOURCE).toContain('engine.renderer.setSize(cw, ch, false);');
+    expect(SOURCE).toContain('engine._resizeRafId = requestAnimationFrame(applyViewportResize);');
+    expect(SOURCE).toContain("if (typeof ResizeObserver === 'function')");
+    expect(SOURCE).toContain("window.addEventListener('resize', _winH.resize = scheduleViewportResize);");
+    expect(SOURCE).toContain('cancelAnimationFrame(engine._resizeRafId)');
+  });
+
+  it('routes WebGL context loss through the safe animation fallback', () => {
+    expect(SOURCE).toContain("canvas.addEventListener('webglcontextlost'");
+    expect(SOURCE).toContain('ev.preventDefault();');
+    expect(SOURCE).toContain("stopAnimationAfterError(new Error('WebGL context lost.");
+  });
+
+  it('creates a copyable diagnostic and cleans stale state before retry', () => {
+    expect(SOURCE).toContain('function copyEngineFailureDetails()');
+    expect(SOURCE).toContain("(window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report)");
+    expect(SOURCE).toContain("'Copy error details'");
+    expect(SOURCE).toContain('if (window[engineKey]) destroyEngine();');
+  });
+
+  it('pauses background animation and resumes without a time or input jump', () => {
+    expect(SOURCE).toContain("document.addEventListener('visibilitychange'");
+    expect(SOURCE).toContain('engine._pausedByVisibility = true;');
+    expect(SOURCE).toContain('if (engine.clock) engine.clock.getDelta();');
+    expect(SOURCE).toContain('if (engine && (engine._pausedByVisibility || engine._pausedByViewport)) return;');
+  });
+
+  it('preserves valid zero coordinates in camera focus and scene summaries', () => {
+    const helperSource = SOURCE.match(/function finiteWorldCoordinate\(value, fallback\) \{[\s\S]*?\n        \}/)?.[0];
+    expect(helperSource).toBeTruthy();
+    const finiteWorldCoordinate = new Function(`return (${helperSource})`)();
+    expect(finiteWorldCoordinate(0, 2)).toBe(0);
+    expect(finiteWorldCoordinate('0', 3)).toBe(0);
+    expect(finiteWorldCoordinate('', 4)).toBe(4);
+    expect(finiteWorldCoordinate(null, 4)).toBe(4);
+    expect(finiteWorldCoordinate('not-a-coordinate', 5)).toBe(5);
+    expect(SOURCE).toContain('x2 = finiteWorldCoordinate(structure.x2, x1)');
+    expect(SOURCE).toContain('x: finiteWorldCoordinate(spawn[0], 2)');
+    expect(SOURCE).not.toContain('Number(structure.x2) || x1');
+    expect(SOURCE).not.toContain('Number(spawn[0]) || 2');
+  });
+});
+
+function loadMeasurementMath() {
+  const start = SOURCE.indexOf('  function formatVolume(vol)');
+  const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);
+  const body = SOURCE.slice(start, end);
+  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, geometryMeasurementTargetKey, normalizeVolumeEstimateTargetKeys, commitVolumeEstimateDraft, resolveVolumeEstimateMeasurement, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, recommendVolumeRepresentation, buildRepresentationConnectionReadiness, buildRepresentationSentenceStarter, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
+}
+
+describe('Geometry World measurement model', () => {
+  const math = loadMeasurementMath();
+
+  it('uses L x W x H for a completely filled rectangular prism', () => {
+    const result = math.enrichMeasurement({ count: 24, totalVolume: 24, boundingVolume: 24, hasFractions: false });
+
+    expect(result.isSolidPrism).toBe(true);
+    expect(result.occupiedVolume).toBe(24);
+    expect(result.missingVolume).toBe(0);
+    expect(result.fillPercent).toBe(100);
+  });
+
+  it('separates occupied volume from bounding-box volume for composite forms', () => {
+    const result = math.enrichMeasurement({ count: 8, totalVolume: 8, boundingVolume: 12, hasFractions: false });
+
+    expect(result.isSolidPrism).toBe(false);
+    expect(result.formattedOccupiedVolume).toBe('8');
+    expect(result.missingVolume).toBe(4);
+    expect(result.fillPercent).toBe(67);
+  });
+
+  it('preserves fractional occupied volume', () => {
+    const result = math.enrichMeasurement({ count: 2, totalVolume: 1.5, boundingVolume: 2, hasFractions: true });
+
+    expect(result.isSolidPrism).toBe(false);
+    expect(result.formattedOccupiedVolume).toBe('1 1/2');
+    expect(result.missingVolume).toBe(0.5);
+    expect(result.fillPercent).toBe(75);
+  });
+
+  it('counts exposed unit faces for solid and composite cube structures', () => {
+    const single = math.countExposedCubeFaces([{ x: 0, y: 0, z: 0 }]);
+    const pair = math.countExposedCubeFaces([{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }]);
+    const cube = [];
+    for (let x = 0; x < 2; x += 1) for (let y = 0; y < 2; y += 1) for (let z = 0; z < 2; z += 1) cube.push({ x, y, z });
+    expect(single.surfaceArea).toBe(6);
+    expect(pair).toMatchObject({ xFaces: 2, yFaces: 4, zFaces: 4, surfaceArea: 10 });
+    expect(math.countExposedCubeFaces(cube).surfaceArea).toBe(24);
+    expect(math.countExposedCubeFaces([{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }]).surfaceArea).toBe(14);
+  });
+
+  it('compares equal-volume structures by exposed surface efficiency', () => {
+    const efficient = math.compareMeasurementRecords({ occupiedVolume: 24, surfaceArea: 52 }, { occupiedVolume: 24, surfaceArea: 46 });
+    expect(efficient).toMatchObject({ sameVolume: true, surfaceAreaDifference: -6, moreSurfaceEfficient: 'latest' });
+    expect(efficient.volumeDifference).toBe(0);
+    const changed = math.compareMeasurementRecords({ occupiedVolume: 18, surfaceArea: 42 }, { occupiedVolume: 24, surfaceArea: 52 });
+    expect(changed).toMatchObject({ sameVolume: false, volumeDifference: 6, moreSurfaceEfficient: null });
+    const legacy = math.compareMeasurementRecords({ vol: '1 1/2' }, { vol: '2' });
+    expect(legacy).toMatchObject({ previousVolume: 1.5, latestVolume: 2, volumeDifference: 0.5 });
+  });
+  it('marks capped measurements incomplete and excludes them from comparisons', () => {
+    const incomplete = math.enrichMeasurement({ count: 1500, totalVolume: 1500, boundingVolume: 1500, hasFractions: false, shapeCounts: { cube: 1500 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: false });
+    expect(incomplete).toMatchObject({ isComplete: false, isSolidPrism: false, surfaceAreaExact: false, exposedSurfaceArea: null, exposedFaces: null });
+    expect(math.compareMeasurementRecords(incomplete, { occupiedVolume: 10, surfaceArea: 20, isComplete: true })).toBeNull();
+  });
+
+  it('retains incomplete scans but skips them when selecting complete history', () => {
+    const records = [{ id: 'first' }, { id: 'capped', isComplete: false }, { id: 'latest', isComplete: true }];
+    expect(math.completeMeasurementRecords(records).map((record) => record.id)).toEqual(['first', 'latest']);
+    expect(math.completeMeasurementRecords(null)).toEqual([]);
+  });
+
+  it('summarizes actual prediction quality instead of cube shape', () => {
+    const summary = math.summarizePredictionAccuracy([{ data: { predictionPercentError: 0 } }, { data: { predictionPercentError: 5 } }, { percentError: 25 }, { data: { predictionPercentError: null } }]);
+    expect(summary).toEqual({ predictionsMade: 3, exactPredictions: 1, predictionsWithin10Percent: 2, averagePredictionPercentError: 10, measurementsWithoutPrediction: 1 });
+  });
+
+  it('preserves structured event details for deterministic CSV export', () => {
+    const details = math.formatSessionEventDetails({ prediction: null, note: 'a "quote"', materialCounts: { stone: 2, gold: 1 } });
+    expect(details).toBe('materialCounts={"stone":2,"gold":1}; note=a "quote"; prediction=');
+    expect(math.serializeEventDetailValue([1, 2])).toBe('[1,2]');
+  });
+
+  it('builds deterministic measurement-level educator evidence', () => {
+    const detail = math.measurementDetailsForReport([{ elapsed: '2.5s', data: { L: 2, W: 3, H: 4, isSolidPrism: true, volume: 24, prediction: 20, predictionPercentError: 17, surfaceArea: 52, blocks: 24, materialCounts: { stone: 20, gold: 4 } } }])[0];
+    expect(detail).toEqual({ sequence: 1, elapsed: '2.5s', dimensions: '2\u00d73\u00d74', shape: 'Rectangular prism', occupiedVolume: 24, prediction: 20, predictionPercentError: 17, surfaceArea: 52, blocks: 24, materials: ['gold', 'stone'] });
+  });
+
+  it('keeps question evidence chronological with valid report times', () => {
+    const details = math.questionDetailsForReport([{ type: 'answer_wrong', timestamp: 1250, elapsed: '1.3s', data: { question: 'First', choice: 'A' } }, { type: 'block_place', timestamp: 1800, data: {} }, { type: 'answer_correct', elapsed: '2.6s', data: { question: 'Second', chosenAnswer: 'B' } }]);
+    expect(details.map((detail) => detail.correct)).toEqual([false, true]);
+    expect(details.map((detail) => detail.elapsedSeconds)).toEqual([1, 3]);
+    expect(details.map((detail) => detail.sequence)).toEqual([1, 2]);
+    expect(math.elapsedSecondsForEvent({ elapsed: 'not available' })).toBeNull();
+  });
+
+
+
+
+
+  it('keeps world layers separate while combining connected student materials', () => {
+    const student = { blockType: 'stone', _measurementLayer: 'student' };
+    const anotherStudent = { blockType: 'stone', _measurementLayer: 'student' };
+    const ground = { blockType: 'stone', _measurementLayer: 'ground', _lessonBlock: true };
+    const lesson = { blockType: 'stone', _measurementLayer: 'lesson', _lessonBlock: true };
+    expect(math.measurementLayerFor({ blockType: 'stone' })).toBe('student');
+    expect(math.belongsToMeasuredComponent(student, anotherStudent)).toBe(true);
+    expect(math.belongsToMeasuredComponent(student, ground)).toBe(false);
+    expect(math.belongsToMeasuredComponent(lesson, ground)).toBe(false);
+    expect(math.belongsToMeasuredComponent(student, { blockType: 'gold', _measurementLayer: 'student' })).toBe(true);
+  });
+
+  it('parses decimal, simple-fraction, and mixed-number predictions', () => {
+    expect(math.parseVolumePrediction('24.5')).toBe(24.5);
+    expect(math.parseVolumePrediction('3/4')).toBe(0.75);
+    expect(math.parseVolumePrediction('1 1/2')).toBe(1.5);
+    expect(math.parseVolumePrediction('not a number')).toBeNull();
+  });
+
+  it('compares predictions without treating an estimate as a score', () => {
+    const exact = math.compareVolumePrediction('24', 24);
+    const over = math.compareVolumePrediction('30', 24);
+    const under = math.compareVolumePrediction('23', 24);
+    expect(exact).toMatchObject({ relation: 'exact', percentError: 0, accuracyLabel: 'Estimate matched the measured volume' });
+    expect(over).toMatchObject({ relation: 'over', percentError: 25 });
+    expect(under).toMatchObject({ relation: 'under', percentError: 4 });
+  });
+
+  it('compares only an estimate committed for that structure before evidence', () => {
+    const structure = {
+      minX: 0, minY: 0, minZ: 0, L: 2, W: 1, H: 1,
+      count: 2, occupiedVolume: 2, boundingVolume: 2, missingVolume: 0,
+      isComplete: true, isSolidPrism: true, hasFractions: false,
+      blocks: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }]
+    };
+    const reordered = { ...structure, blocks: [...structure.blocks].reverse() };
+    const other = {
+      ...structure, minX: 5,
+      blocks: [{ x: 6, y: 0, z: 0 }, { x: 5, y: 0, z: 0 }]
+    };
+    const targetKey = math.geometryMeasurementTargetKey(structure);
+
+    expect(targetKey).toBeTruthy();
+    expect(math.geometryMeasurementTargetKey(reordered)).toBe(targetKey);
+    expect(math.commitVolumeEstimateDraft({ input: '' }, targetKey, [])).toMatchObject({ ok: false, code: 'invalid_estimate' });
+    expect(math.commitVolumeEstimateDraft({ input: '3' }, '', [])).toMatchObject({ ok: false, code: 'no_target' });
+    expect(math.commitVolumeEstimateDraft({ input: '3' }, targetKey, [targetKey])).toMatchObject({ ok: false, code: 'already_observed' });
+
+    const draft = { input: '3', strategy: 'layers', reason: 'I counted two spaces and estimated one more.' };
+    const committed = math.commitVolumeEstimateDraft(draft, targetKey, []);
+    draft.input = '99';
+    expect(committed).toMatchObject({ ok: true, code: 'committed' });
+    expect(committed.commitment).toMatchObject({ input: '3', prediction: 3, targetKey });
+
+    const mismatch = math.resolveVolumeEstimateMeasurement(other, committed.commitment, []);
+    expect(mismatch).toMatchObject({ status: 'target_mismatch', comparison: null, nextCommitment: committed.commitment, consumed: false });
+    expect(mismatch.observedTargetKeys).toContain(math.geometryMeasurementTargetKey(other));
+
+    const compared = math.resolveVolumeEstimateMeasurement(structure, committed.commitment, mismatch.observedTargetKeys);
+    expect(compared).toMatchObject({ status: 'compared', nextCommitment: null, consumed: true });
+    expect(compared.comparison).toMatchObject({ prediction: 3, actual: 2, strategy: 'layers' });
+    expect(compared.observedTargetKeys).toContain(targetKey);
+
+    const observation = math.resolveVolumeEstimateMeasurement(structure, null, []);
+    expect(observation).toMatchObject({ status: 'observation', comparison: null, consumed: false });
+    const repeat = math.resolveVolumeEstimateMeasurement(structure, committed.commitment, observation.observedTargetKeys);
+    expect(repeat).toMatchObject({ status: 'already_observed', comparison: null, consumed: false });
+  });
+
+
+  it('turns common volume errors into targeted learning prompts', () => {
+    const prism = { L: 4, W: 3, H: 2, occupiedVolume: 24, boundingVolume: 24, missingVolume: 0, count: 24, isSolidPrism: true, hasFractions: false };
+    const oneLayer = math.evaluateVolumePrediction(prism, { input: '12', strategy: 'layers', reason: 'I counted the base' });
+    expect(oneLayer).toMatchObject({ diagnosisCode: 'one_layer', strategy: 'layers', reason: 'I counted the base' });
+    expect(oneLayer.learningPrompt).toContain('area of one layer');
+
+    const composite = { L: 3, W: 2, H: 2, occupiedVolume: 8, boundingVolume: 12, missingVolume: 4, count: 8, isSolidPrism: false, hasFractions: false };
+    expect(math.evaluateVolumePrediction(composite, { input: '12' }).diagnosisCode).toBe('bounding_box');
+
+    const fractional = { L: 2, W: 1, H: 1, occupiedVolume: 1.5, boundingVolume: 2, missingVolume: 0.5, count: 2, isSolidPrism: false, hasFractions: true };
+    expect(math.evaluateVolumePrediction(fractional, { input: '2' }).diagnosisCode).toBe('fraction_count');
+  });
+
+  it('shows whether revising a prediction improves the estimate', () => {
+    const original = math.compareVolumePrediction('12', 24);
+    expect(math.comparePredictionRevision(original, '20')).toMatchObject({ prediction: 20, percentError: 17, improvement: 33 });
+    expect(math.comparePredictionRevision(original, '24')).toMatchObject({ percentError: 0, improvement: 50, feedback: 'Revision matches the measured volume exactly.' });
+    expect(math.comparePredictionRevision(original, '')).toBeNull();
+  });
+
+  it('requires meaningful evidence for geometry objectives', () => {
+    const base = { answered: 0, totalQuestions: 2, blocksPlaced: 1, measurements: [], structureCount: 3 };
+    expect(math.objectiveEvidenceFor('Build a room', base)).toMatchObject({ done: false, evidence: '1/5 blocks placed' });
+    expect(math.objectiveEvidenceFor('Build a room', { ...base, blocksPlaced: 5 }).done).toBe(true);
+    expect(math.objectiveEvidenceFor('Explore the structures', { ...base, measurements: [{}, { isComplete: false }] })).toMatchObject({ done: false, evidence: '1/2 structures investigated' });
+    expect(math.objectiveEvidenceFor('Explore the structures', { ...base, measurements: [{}, {}] }).done).toBe(true);
+    expect(math.objectiveEvidenceFor('Compare two shapes', { ...base, measurements: [{}, {}] }).done).toBe(true);
+    expect(math.objectiveEvidenceFor('Answer every question', { ...base, answered: 2 }).done).toBe(true);
+  });
+
+  it('requires saved reasoning for equivalent-representation objectives', () => {
+    const measuredOnly = { measurements: [{}, {}], representationConnections: 0 };
+    expect(math.objectiveEvidenceFor('Compare two representations', measuredOnly)).toMatchObject({
+      done: false,
+      evidence: '0 saved representation connections'
+    });
+    expect(math.objectiveEvidenceFor('Explain equivalent volume representations', { ...measuredOnly, representationConnections: 1 })).toMatchObject({
+      done: true,
+      evidence: '1 saved representation connection'
+    });
+    expect(math.objectiveEvidenceFor('Show volume in two ways', { representationConnections: 2 })).toMatchObject({ done: true, evidence: '2 saved representation connections' });
+    expect(math.objectiveEvidenceFor('Compare two shapes', measuredOnly).done).toBe(true);
+    expect(SOURCE).toContain("event.type === 'representation_connection'");
+  });
+
+  it('requires reasoning for prediction objectives', () => {
+    const unexplained = { measurements: [{ prediction: 20 }], structureCount: 1 };
+    const explained = { measurements: [{ prediction: 20, strategy: 'layers' }], structureCount: 1 };
+    expect(math.objectiveEvidenceFor('Make and explain a volume prediction', unexplained).done).toBe(false);
+    expect(math.objectiveEvidenceFor('Make and explain a volume prediction', explained)).toMatchObject({ done: true, evidence: '1 explained prediction' });
+    expect(math.objectiveEvidenceFor('Revise using evidence', { revisionCompleted: true }).done).toBe(true);
+    expect(math.objectiveEvidenceFor('Revise using evidence', { reflectionsCompleted: 1 }).done).toBe(false);
+  });
+
+  it('requires separately saved revision and reflection evidence', () => {
+    expect(math.objectiveEvidenceFor('Reflect on your strategy', { reflectionText: 'Unsaved draft' })).toMatchObject({ done: false, evidence: '0 saved reflections' });
+    expect(math.objectiveEvidenceFor('Reflect on your strategy', { reflectionsCompleted: 1 })).toMatchObject({ done: true, evidence: '1 saved reflection' });
+    expect(math.objectiveEvidenceFor('Revise and reflect using evidence', { revisionCompleted: true, reflectionsCompleted: 0 }).done).toBe(false);
+    expect(math.objectiveEvidenceFor('Revise and reflect using evidence', { revisionCompleted: true, reflectionsCompleted: 1 }).done).toBe(true);
+    expect(SOURCE).toContain("event.type === 'reflection'");
+  });
+
+
+  it('builds reflection prompts from the student?s measurement evidence', () => {
+    const prompt = math.buildEvidenceReflectionPrompt(
+      { occupiedVolume: 24, prediction: 12, strategy: 'layers' },
+      { prediction: 12, strategy: 'layers' },
+      { prediction: 20 }
+    );
+    expect(prompt).toContain('predicted 12 cubic units using layers');
+    expect(prompt).toContain('measured 24');
+    expect(prompt).toContain('revised your prediction to 20');
+    expect(prompt).toContain('I first thought');
+    expect(math.buildEvidenceReflectionPrompt(null, null, null)).toContain('what evidence you noticed');
+  });
+
+  it('fades prediction scaffolds as evidence becomes stronger', () => {
+    expect(math.determinePredictionScaffold([])).toMatchObject({ level: 'guided', label: 'Guided support' });
+    const supported = [
+      { prediction: 20, strategy: 'layers', percentError: 8 },
+      { prediction: 30, reason: 'counted cubes', percentError: 20 }
+    ];
+    expect(math.determinePredictionScaffold(supported)).toMatchObject({ level: 'supported', label: 'Light support' });
+    const independent = supported.concat([
+      { prediction: 24, strategy: 'decomposition', percentError: 4 },
+      { prediction: 18, reason: 'used layers', percentError: 6 }
+    ]);
+    expect(math.determinePredictionScaffold(independent)).toMatchObject({ level: 'independent', label: 'Independent transfer' });
+    expect(SOURCE).toContain("'data-geometry-prediction-scaffold': predictionScaffold.level");
+  });
+
+  it('connects solid, composite, and fractional volume representations', () => {
+    const solid = math.buildVolumeRepresentations({
+      isComplete: true, occupiedVolume: 24, isSolidPrism: true, hasFractions: false,
+      L: 2, W: 3, H: 4, shapeCounts: { cube: 24 }
+    });
+    expect(solid.map((view) => view.key)).toEqual(['layers', 'rotated_layers', 'occupied_units']);
+    expect(solid[0].expression).toContain('2\u00d73');
+    expect(solid[0].expression).toContain('= 24');
+
+    const composite = math.buildVolumeRepresentations({
+      isComplete: true, occupiedVolume: 8, boundingVolume: 12, missingVolume: 4,
+      isSolidPrism: false, hasFractions: false, shapeCounts: { cube: 8 }
+    });
+    expect(composite.map((view) => view.key)).toEqual(['bounding_subtraction', 'decomposition', 'occupied_units']);
+    expect(composite[0].expression).toContain('12 \u2212 4 = 8');
+
+    const fractional = math.buildVolumeRepresentations({
+      isComplete: true, occupiedVolume: 1.5, boundingVolume: 2,
+      isSolidPrism: false, hasFractions: true, shapeCounts: { cube: 1, halfA: 1 }
+    });
+    expect(fractional.map((view) => view.key)).toEqual(['fraction_composition', 'whole_equivalent', 'occupied_units']);
+    expect(fractional[0].expression).toContain('1\u00d71 + 1\u00d71/2 = 1 1/2');
+    expect(math.buildVolumeRepresentations({ isComplete: false })).toEqual([]);
+  });
+
+  it('guides learners to compare at least two equivalent views', () => {
+    const views = [
+      { key: 'layers', label: 'Base layers' },
+      { key: 'rotated_layers', label: 'Reoriented layers' },
+      { key: 'occupied_units', label: 'Occupied units' }
+    ];
+    const started = math.buildRepresentationExploration(views, ['unknown', 'layers', 'layers'], 'layers');
+    expect(started).toMatchObject({ visitedKeys: ['layers'], remainingKeys: ['rotated_layers', 'occupied_units'], visitedCount: 1, total: 3, target: 2, progressValue: 1, percent: 50, complete: false });
+    expect(started.prompt).toContain('Explore one more view');
+
+    const compared = math.buildRepresentationExploration(views, ['layers'], 'rotated_layers');
+    expect(compared).toMatchObject({ visitedKeys: ['layers', 'rotated_layers'], visitedCount: 2, progressValue: 2, percent: 100, complete: true });
+    expect(compared.prompt).toContain('Explain what stays equal');
+
+    expect(math.buildRepresentationExploration([], [], '')).toMatchObject({ visitedCount: 0, target: 0, percent: 0, complete: false });
+    expect(SOURCE).toContain('data-geometry-representation-progress');
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_equivalent_volume_views_explored', 'Equivalent volume views explored')`);
+    expect(SOURCE).toContain('viewsExplored: representationExploration.visitedCount');
+  });
+
+  it('recommends representations that respond to diagnosed misconceptions', () => {
+    const solid = { isComplete: true, occupiedVolume: 24, isSolidPrism: true, hasFractions: false, L: 2, W: 3, H: 4, shapeCounts: { cube: 24 } };
+    const solidViews = math.buildVolumeRepresentations(solid);
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'one_layer' }, solidViews)).toMatchObject({
+      key: 'layers',
+      diagnosisCode: 'one_layer',
+      reason: expect.stringContaining('area of one layer')
+    });
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'underestimate' }, solidViews).key).toBe('layers');
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'exact' }, solidViews)).toBeNull();
+
+    const composite = { isComplete: true, occupiedVolume: 8, boundingVolume: 12, missingVolume: 4, isSolidPrism: false, hasFractions: false, shapeCounts: { cube: 8 } };
+    const compositeViews = math.buildVolumeRepresentations(composite);
+    expect(math.recommendVolumeRepresentation(composite, { diagnosisCode: 'bounding_box' }, compositeViews).key).toBe('bounding_subtraction');
+    expect(math.recommendVolumeRepresentation(composite, { diagnosisCode: 'underestimate' }, compositeViews).key).toBe('decomposition');
+
+    const fractional = { isComplete: true, occupiedVolume: 1.5, boundingVolume: 2, isSolidPrism: false, hasFractions: true, shapeCounts: { cube: 1, halfA: 1 } };
+    expect(math.recommendVolumeRepresentation(fractional, { diagnosisCode: 'fraction_count' }, math.buildVolumeRepresentations(fractional)).key).toBe('fraction_composition');
+    expect(math.recommendVolumeRepresentation({ ...solid, isComplete: false }, { diagnosisCode: 'one_layer' }, solidViews)).toBeNull();
+    expect(math.recommendVolumeRepresentation(solid, { diagnosisCode: 'unknown' }, solidViews)).toBeNull();
+
+    const fallback = math.recommendVolumeRepresentation(solid, { diagnosisCode: 'one_layer' }, [{ key: 'occupied_units', label: 'Occupied unit cubes' }]);
+    expect(fallback).toMatchObject({ key: 'occupied_units', label: 'Occupied unit cubes' });
+    expect(SOURCE).toContain('data-geometry-representation-recommendation');
+    expect(SOURCE).toContain("source: 'misconception_recommendation'");
+    expect(SOURCE).toContain('Open recommended view');
+  });
+
+  it('shows adaptive guidance before switching and announces representation changes', () => {
+    const recommendationIndex = SOURCE.indexOf("recommendedVolumeRepresentation && el('div'");
+    const connectionIndex = SOURCE.indexOf('volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key');
+    expect(recommendationIndex).toBeGreaterThan(0);
+    expect(connectionIndex).toBeGreaterThan(recommendationIndex);
+
+    expect(SOURCE).toContain("role: 'note'");
+    expect(SOURCE).toContain("id: 'gw-volume-representation', value: activeVolumeRepresentation.key, className: 'gw-focusable'");
+    expect(SOURCE).toContain("id: 'gw-representation-reason', className: 'gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_open_recommended_volume_view', 'Open recommended volume view: {value1}')");
+    expect(SOURCE).toContain("'aria-describedby': representationSentenceStarter");
+    expect(SOURCE).toContain("announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_equivalent_view', 'Showing equivalent view: {value1}");
+    expect(SOURCE).toContain("announceToSR(__alloFill(__alloT('stem.geometryworld.sr_showing_recommended_view', 'Showing recommended view: {value1}");
+    expect(SOURCE).toContain("'aria-live': 'polite'");
+  });
+
+
+  it('uses a learner self-check instead of auto-grading representation explanations', () => {
+    const blank = math.buildRepresentationConnectionReadiness('', false, false);
+    expect(blank).toMatchObject({ ready: false, hasExplanation: false, invariantChecked: false, evidenceChecked: false });
+    expect(blank.missing).toEqual(['a fuller explanation', 'what stays the same', 'evidence from the structure or equation']);
+    expect(blank.message).toContain('Write a fuller explanation');
+
+    const unchecked = math.buildRepresentationConnectionReadiness('Both equations equal 24.', false, false);
+    expect(unchecked).toMatchObject({ ready: false, hasExplanation: true });
+    expect(unchecked.message).toContain('what stays the same');
+
+    const oneCheck = math.buildRepresentationConnectionReadiness('Both equations equal 24.', true, false);
+    expect(oneCheck.missing).toEqual(['evidence from the structure or equation']);
+    expect(oneCheck.message).toBe('Add evidence from the structure or equation before saving.');
+
+    expect(math.buildRepresentationConnectionReadiness('Both equations count the same 24 cubes.', true, true)).toMatchObject({ ready: true, missing: [], message: '' });
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_explanation_self_check', 'Explanation self-check')`);
+    expect(SOURCE).toContain('I named what stays the same.');
+    expect(SOURCE).toContain('I used evidence from the structure or equation.');
+    expect(SOURCE).toContain('selfCheck: { invariant: true, evidence: true }');
+  });
+
+  it('allows view switching after a representation explanation is saved', () => {
+    const helperStart = SOURCE.indexOf('  function hasUnsavedRepresentationConnection');
+    const helperEnd = SOURCE.indexOf('  function buildRepresentationSentenceStarter', helperStart);
+    const hasUnsavedDraft = new Function(SOURCE.slice(helperStart, helperEnd) + '\nreturn hasUnsavedRepresentationConnection;')();
+
+    expect(hasUnsavedDraft('Both views equal 24.', false)).toBe(true);
+    expect(hasUnsavedDraft('Both views equal 24.', true)).toBe(false);
+    expect(hasUnsavedDraft('   ', false)).toBe(false);
+
+    const guardUses = SOURCE.match(/if \(hasUnsavedRepresentationDraft\)/g) || [];
+    expect(guardUses.length).toBeGreaterThanOrEqual(2);
+    expect(SOURCE).toContain('hasUnsavedRepresentationConnection(volumeRepresentationReason, volumeRepresentationConnectionSaved)');
+  });
+
+  it('fades shape-specific representation sentence starters with independence', () => {
+    const solid = { isComplete: true, occupiedVolume: 24, L: 2, W: 3, H: 4, isSolidPrism: true };
+    const guidedLayers = math.buildRepresentationSentenceStarter({ key: 'layers' }, solid, 'guided');
+    expect(guidedLayers).toContain('One layer has 6 cubic units');
+    expect(guidedLayers).toContain('4 equal layers make 24');
+
+    const supported = math.buildRepresentationSentenceStarter({ key: 'layers' }, solid, 'supported');
+    expect(supported).toBe('Both views show 24 cubic units because one shows ___ while the other shows ___.');
+    expect(math.buildRepresentationSentenceStarter({ key: 'layers' }, solid, 'independent')).toBe('');
+
+    const composite = { isComplete: true, occupiedVolume: 8, boundingVolume: 12, missingVolume: 4, isSolidPrism: false };
+    expect(math.buildRepresentationSentenceStarter({ key: 'bounding_subtraction' }, composite, 'guided'))
+      .toContain('Subtracting 4 empty units leaves 8');
+    expect(math.buildRepresentationSentenceStarter({ key: 'decomposition' }, composite, 'guided'))
+      .toContain('non-overlapping parts');
+
+    const fractional = { isComplete: true, occupiedVolume: 1.5, hasFractions: true };
+    expect(math.buildRepresentationSentenceStarter({ key: 'fraction_composition' }, fractional, 'guided'))
+      .toContain('1 1/2 cubic units');
+    expect(math.buildRepresentationSentenceStarter({ key: 'occupied_units' }, solid, 'guided'))
+      .toContain('Counting the occupied units gives 24');
+
+    expect(math.buildRepresentationSentenceStarter(null, solid, 'guided')).toBe('');
+    expect(math.buildRepresentationSentenceStarter({ key: 'layers' }, { ...solid, isComplete: false }, 'guided')).toBe('');
+    expect(SOURCE).toContain('data-geometry-representation-sentence-starter');
+    expect(SOURCE).toContain("'Sentence starter: '");
+    expect(SOURCE).toContain("scaffoldLevel === 'independent'");
+  });
+  it('records representation switching as teacher learning evidence', () => {
+    const summary = math.summarizeLearningEvidence([
+      { type: 'representation_view', data: { representation: 'layers' } },
+      { type: 'representation_view', data: { representation: 'rotated_layers' } },
+      { type: 'representation_view', data: { representation: 'layers', source: 'misconception_recommendation', misconception: 'one_layer' } },
+      { type: 'representation_connection', data: { from: 'layers', to: 'rotated_layers', text: 'The factors are regrouped but still multiply to 24.' } },
+      { type: 'representation_connection', data: { from: 'rotated_layers', to: 'layers', text: 'Both count all 24 cubes in different layer directions.' } },
+      { type: 'representation_connection', data: { from: 'layers', to: 'rotated_layers', text: '   ' } }
+    ]);
+    expect(summary).toMatchObject({ representationViews: 3, targetedRepresentationViews: 1, representationConnections: 2 });
+    expect(summary.representationConnectionExamples).toEqual([
+      { from: 'layers', to: 'rotated_layers', text: 'The factors are regrouped but still multiply to 24.' },
+      { from: 'rotated_layers', to: 'layers', text: 'Both count all 24 cubes in different layer directions.' }
+    ]);
+    expect(summary.representations).toEqual([
+      { representation: 'layers', count: 2 },
+      { representation: 'rotated_layers', count: 1 }
+    ]);
+    expect(summary.targetedRepresentationSupports).toEqual([
+      { code: 'one_layer', label: 'Used one layer as total volume', count: 1 }
+    ]);
+    expect(SOURCE).toContain('data-geometry-volume-representation');
+    expect(SOURCE).toContain("eng.logEvent('representation_view'");
+    expect(SOURCE).toContain('Equivalent views explored');
+    expect(SOURCE).toContain('data-geometry-representation-connection');
+    expect(SOURCE).toContain("eng.logEvent('representation_connection'");
+    expect(SOURCE).toContain('Connections explained');
+    expect(SOURCE).toContain('Student connections between equivalent views');
+  });
+
+  it('interleaves layer and scaling retrieval from complete measurements', () => {
+    const earlier = { L: 1, W: 2, H: 3, occupiedVolume: 6, isSolidPrism: true, t: 1 };
+    const latest = { L: 2, W: 3, H: 4, occupiedVolume: 24, isSolidPrism: true, t: 2 };
+    expect(math.buildRetrievalCheckpoint([earlier, { ...latest, isComplete: false }])).toBeNull();
+    expect(SOURCE).toContain('Targeted views opened');
+    expect(SOURCE).toContain('Targeted representation support used');
+    expect(SOURCE).toContain('targetedRepresentationSupports.length');
+
+    const scaling = math.buildRetrievalCheckpoint([earlier, latest]);
+    expect(scaling).toMatchObject({ concept: 'scale_height', expected: 8 });
+    expect(scaling.prompt).toContain('doubles the volume');
+
+    const layer = math.buildRetrievalCheckpoint([earlier, latest, { ...latest, t: 3 }]);
+    expect(layer).toMatchObject({ concept: 'layer_area', expected: 6 });
+  });
+
+  it('retrieves composite and fractional volume relationships', () => {
+    const earlier = { occupiedVolume: 4, L: 1, W: 2, H: 2, isSolidPrism: true, t: 1 };
+    const composite = { occupiedVolume: 8, boundingVolume: 12, blocks: 8, hasFractions: false, isSolidPrism: false, t: 2 };
+    const emptySpace = math.buildRetrievalCheckpoint([earlier, composite]);
+    expect(emptySpace).toMatchObject({ concept: 'empty_space', expected: 4 });
+
+    const fractional = { occupiedVolume: 1.5, boundingVolume: 2, blocks: 2, hasFractions: true, isSolidPrism: false, t: 3 };
+    const fractionalCheck = math.buildRetrievalCheckpoint([earlier, fractional]);
+    expect(fractionalCheck).toMatchObject({ concept: 'fractional_volume', expected: 0.5 });
+    expect(math.checkRetrievalAnswer(fractionalCheck, '1/2')).toMatchObject({ correct: true, valid: true });
+    expect(math.checkRetrievalAnswer(fractionalCheck, '1', 1)).toMatchObject({ correct: false, valid: true, feedback: expect.stringContaining('what stays the same') });
+    expect(math.checkRetrievalAnswer(fractionalCheck, '1', 2)).toMatchObject({ correct: false, valid: true, feedback: fractionalCheck.hint });
+    expect(math.checkRetrievalAnswer(fractionalCheck, '1/2', 2)).toMatchObject({ correct: true, valid: true });
+    expect(math.checkRetrievalAnswer(fractionalCheck, '')).toMatchObject({ correct: false, valid: false });
+  });
+
+  it('logs retrieval accuracy as teacher learning evidence', () => {
+    const summary = math.summarizeLearningEvidence([
+      { type: 'retrieval_check', data: { checkpointId: 'a', concept: 'layer_area', attempt: 1, correct: false } },
+      { type: 'retrieval_check', data: { checkpointId: 'a', concept: 'layer_area', attempt: 2, correct: true } },
+      { type: 'retrieval_check', data: { checkpointId: 'b', concept: 'empty_space', attempt: 1, correct: true } }
+    ]);
+    expect(summary).toMatchObject({ retrievalAttempts: 3, retrievalCorrect: 2, retrievalCheckpoints: 2, retrievalCheckpointsCorrect: 2, retrievalFirstTryCorrect: 1 });
+    expect(SOURCE).toContain("'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept");
+    expect(SOURCE).toContain("'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry'");
+    expect(SOURCE).toContain("eng.logEvent('retrieval_check'");
+    expect(SOURCE).toContain('Checkpoints mastered');
+    expect(SOURCE).toContain('First-try retrieval');
+  });
+
+  it('summarizes misconception patterns and learning from revisions', () => {
+    const summary = math.summarizeLearningEvidence([
+      { type: 'measurement', data: { prediction: 12, predictionStrategy: 'layers', predictionReason: 'one layer', misconception: 'one_layer' } },
+      { type: 'measurement', data: { prediction: 18, predictionStrategy: 'layers', misconception: 'one_layer' } },
+      { type: 'measurement', data: { prediction: 24, predictionReason: 'full box', misconception: 'bounding_box' } },
+      { type: 'measurement', data: { prediction: 100, predictionStrategy: 'guessing', misconception: 'overestimate', isComplete: false } },
+      { type: 'prediction_revision', data: { improvement: 33 } },
+      { type: 'prediction_revision', data: { improvement: -5 } },
+      { type: 'reflection', data: { text: 'I changed my strategy.' } },
+      { type: 'reflection', data: { text: '   ' } }
+    ]);
+    expect(summary).toMatchObject({
+      explainedPredictions: 3,
+      revisionsMade: 2,
+      revisionsImproved: 1,
+      averageRevisionImprovement: 14,
+      reflectionsCompleted: 1
+    });
+    expect(summary.strategies).toEqual([{ strategy: 'layers', count: 2 }]);
+    expect(summary.mostCommonMisconception).toMatchObject({ code: 'one_layer', count: 2 });
+    expect(summary.misconceptions.map((item) => item.code)).toEqual(['one_layer', 'bounding_box']);
+  });
+
+  it('provides safe, actionable printable report guidance', () => {
+    expect(math.misconceptionGuidance('fraction_count').nextStep).toContain('fractional pieces');
+    expect(math.misconceptionGuidance('<unknown>')).toMatchObject({ label: 'Unclassified pattern' });
+    expect(math.escapeReportHtml('<script>"x" & y</script>')).toBe('&lt;script&gt;&quot;x&quot; &amp; y&lt;/script&gt;');
+    expect(SOURCE).toContain('learningEvidence: learningEvidence');
+    expect(SOURCE).toContain('<h2>Learning Evidence</h2>');
+    expect(SOURCE).toContain('Suggested instructional response');
+  });
+
+  it('keeps touch measurements in history and exposes accessible prediction feedback in the HUD', () => {
+    // The touch path used to be a SECOND measurement implementation with its own
+    // `mobileHistory` / `mobilePrediction` locals; it had drifted badly (no dimension
+    // lines, no selection glow, no first-measurement XP, no tutorial advance) and read
+    // history from a stale React closure. Both inputs now go through
+    // engine.performMeasurement, so what matters is that touch still records history
+    // and still tags the event as touch — asserted here instead of the old locals.
+    expect(SOURCE).toContain("engine.performMeasurement('touch');");
+    expect(SOURCE).toContain("blocks: m.count, input: inputMode || 'key' });");
+    expect(SOURCE).toContain('(predictionState.history || []).concat');
+    expect(SOURCE).toContain("'Composite structure'");
+    expect(SOURCE).toContain("'Bounding box ' + measureResult.boundingVolume");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_estimated_volume_in_cubic_units', 'Estimated volume in cubic units')`);
+    expect(SOURCE).toContain("'data-geometry-prediction-result': 'true'");
+    expect(SOURCE).toContain("'data-geometry-estimate-result': 'committed-before-measurement'");
+    expect(SOURCE).toContain('var estimateOutcome = resolveVolumeEstimateMeasurement');
+    expect(SOURCE).toContain("'data-geometry-prediction-cycle': 'commit-before-measure'");
+    expect(SOURCE).toContain("'data-geometry-estimation-challenge': 'draft-commit-measure-reflect'");
+    expect(SOURCE).toContain('This is an ungraded estimate. Aim at one unmeasured structure');
+    expect(SOURCE).toContain('Estimate locked for the aimed structure. Measure that same structure; the original stays fixed.');
+    expect(SOURCE).toContain("'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit'");
+    expect(SOURCE).toContain("'data-geometry-misconception-feedback': predictionResult.diagnosisCode");
+    expect(SOURCE).toContain("'data-geometry-revision-result': 'true'");
+    expect(SOURCE).toContain("eng.logEvent('prediction_revision'");
+    expect(SOURCE).toContain("if (!nm.isSolidPrism) {");
+    expect(SOURCE).toContain("'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial'");
+    expect(SOURCE).toContain('hasFractions: hasPartialShapes');
+    expect(SOURCE).toContain("'data-geometry-measurement-comparison': 'true'");
+    expect(SOURCE).toContain("_measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student')");
+    expect(SOURCE).toContain('belongsToMeasuredComponent(seedData, mesh.userData)');
+    expect(SOURCE).toContain("'data-geometry-material-breakdown': 'true'");
+    expect(SOURCE).not.toContain('candidateData.blockType === blockType');
+    expect(SOURCE).toContain('MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS');
+    expect(SOURCE).toContain("'data-geometry-measurement-incomplete': 'true'");
+    expect(SOURCE).toContain('queue[queueIndex++]');
+    expect(SOURCE).not.toContain('result.length < 500');
+    expect(SOURCE).toContain('COMPARE LATEST TWO COMPLETE');
+    expect(SOURCE).toContain('incompleteMeasurementAttempts: allMeasurements.length - measurements.length');
+    expect(SOURCE).toContain("completedMeasurements.length + ' complete measurements'");
+    expect(SOURCE).toContain("policy: 'descriptive-ungraded'");
+    expect(SOURCE).toContain('averageAbsolutePercentDifference: predictionSummary.averagePredictionPercentError');
+    expect(SOURCE).toContain('Estimates compared<br>');
+    expect(SOURCE).toContain('Avg absolute difference<br>');
+    expect(SOURCE).not.toContain('correctMeasurements: predictionSummary.predictionsWithin10Percent');
+    expect(SOURCE).not.toContain('Predictions within 10%');
+    expect(SOURCE).not.toContain('Avg prediction error');
+    expect(SOURCE).not.toContain('m.data.blocks === m.data.volume');
+    expect(SOURCE).toContain('var details = formatSessionEventDetails(entry.data)');
+    expect(SOURCE).not.toContain("key + '=' + entry.data[key]");
+    expect(SOURCE).toContain('measurementDetails: measurementDetailsForReport(measurements)');
+    expect(SOURCE).toContain('Measurement-Level Evidence');
+    expect(SOURCE).toContain('<th>Measured V</th><th>Committed estimate</th><th>Absolute % difference (descriptive, ungraded)</th>');
+    expect(SOURCE).not.toContain('<th>Actual V</th><th>Prediction</th><th>Error</th>');
+    expect(SOURCE).toContain('questionDetails: questionDetailsForReport(log)');
+    expect(SOURCE).not.toContain('Math.round(q.timestamp)');
+  });
+
+  it('protects unsaved representation explanations from accidental view changes', () => {
+    expect(SOURCE).toContain('var hasUnsavedRepresentationDraft = hasUnsavedRepresentationConnection(volumeRepresentationReason, volumeRepresentationConnectionSaved)');
+    expect(SOURCE).toContain('ev.target.value = activeVolumeRepresentation.key');
+    expect(SOURCE).toContain('Save or discard your explanation draft before switching views.');
+    expect(SOURCE).toContain('Save or discard your explanation draft before opening another view.');
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_discard_unsaved_representation_explanation', 'Discard unsaved representation explanation')`);
+    expect(SOURCE).toContain("announceToSR(__alloT('stem.geometryworld.sr_explanation_draft_discarded_you_can_now_choose_an', 'Explanation draft discarded.");
+
+    const guardIndex = SOURCE.indexOf('if (hasUnsavedRepresentationDraft)');
+    const switchIndex = SOURCE.indexOf('upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key', guardIndex);
+    expect(guardIndex).toBeGreaterThan(0);
+    expect(switchIndex).toBeGreaterThan(guardIndex);
+  });
+
+  it('keeps touch HUD layers clear and keyboard focus visible', () => {
+    expect(SOURCE).toContain("uiStyle.id = 'allo-geometryworld-ui-css'");
+    expect(SOURCE).toContain('.gw-focusable:focus-visible');
+    expect(SOURCE).toContain('.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}');
+    expect(SOURCE).toContain("whiteSpace: 'normal'");
+    expect(SOURCE).toContain("maxWidth: isMobile ? 'calc(100vw - 168px)'");
+    // Touch actions take their names through touchActionButton's ariaLabel (2026-09-24).
+    expect(SOURCE).toContain("'aria-label': ariaLabel,");
+    expect(SOURCE).toContain(`__alloT('stem.geometryworld.a11y_place_block', 'Place block')`);
+    expect(SOURCE).toContain(`__alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure')`);
+    expect(SOURCE).toContain(`__alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action')`);
+    expect(SOURCE).toContain("engine._undoStack && engine._undoStack.length > 0 && el('button'");
+    expect(SOURCE).toContain("engine._redoStack && engine._redoStack.length > 0 && el('button'");
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_toggle_fly_mode', 'Toggle fly mode')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_return_to_spawn_point', 'Return to spawn point')`);
+    expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_clear_my_placed_blocks', 'Clear my placed blocks')`);
+    expect(SOURCE).not.toContain("engine._undoStack && engine._undoStack.length > 0 && el('div'");
+  });
+});

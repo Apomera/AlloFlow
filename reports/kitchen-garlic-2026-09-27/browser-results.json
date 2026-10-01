@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "The actual 3D cloves require washed hands and a full cut-and-lift motion. Taps, partial cuts, release before lifting, sideways motions, and Escape do not mince. Individual progress survives reload, and the bowl becomes ready only when all cloves are minced.",
+    "The completed garlic batch can be carried from its 3D bowl into the oiled sauce pan through the existing transfer action.",
+    "The 3D keyboard route focuses the illustrated knife. Arrow selection updates its accessible name, one key press makes one pass, and illustrated mouse gestures share the same rules. Blur cancels unfinished work. Four servings provide four cloves.",
+    "Recorded preparation is immutable during replay; completed evidence includes every clove and the 12 direct knife passes. Desktop, 320px, and forced-color views pass accessibility scans.",
+    "Real touch can cut and lift in 3D; touch cancellation does not count. The same clove remains usable in illustrated controls after graphics-context loss."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop garlic preparation",
+      "issues": []
+    },
+    {
+      "label": "320px illustrated preparation",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

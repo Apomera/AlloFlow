@@ -1,0 +1,72 @@
+{
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "snapshot": ".codex-artifacts/source-generation-locales-track17",
+  "unit": {
+    "passed": 40,
+    "failed": 0,
+    "pending": 0,
+    "testTimeoutMs": 30000,
+    "hookTimeoutMs": 60000
+  },
+  "catalogGuard": {
+    "keys": 2,
+    "locales": 5,
+    "changedFiles": 0,
+    "mode": "check"
+  },
+  "coverage": [
+    {
+      "locale": "spanish_latin_america",
+      "before": 33,
+      "after": 35,
+      "english": 61,
+      "remaining": 26
+    },
+    {
+      "locale": "spanish_castilian",
+      "before": 33,
+      "after": 35,
+      "english": 61,
+      "remaining": 26
+    },
+    {
+      "locale": "arabic",
+      "before": 33,
+      "after": 35,
+      "english": 61,
+      "remaining": 26
+    },
+    {
+      "locale": "chinese_simplified",
+      "before": 33,
+      "after": 35,
+      "english": 61,
+      "remaining": 26
+    },
+    {
+      "locale": "thai",
+      "before": 33,
+      "after": 35,
+      "english": 61,
+      "remaining": 26
+    }
+  ],
+  "patchSha256": "3de17d861bbb0705d88755e7ae3eff7f19522ffd5c0e4a0c863abf41c83f86e4",
+  "patchApplyCheck": "git apply --check --whitespace=error-all passed",
+  "fullSharedInputStability": false,
+  "contractCheck": {
+    "checkedAt": "2026-09-27T15:02:32.113Z",
+    "testedEngineSha256": "de3cb4c3030a40b0af8fbf21112379bfca7033d202c5d3738f78ffcadbeb99cc",
+    "currentEngineSha256": "34d1d8ac5c667ef5844eefe36ee1f332842a19ac0d9ef71d66329d9769d82335",
+    "testedHostSha256": "a4462e3f7c7aa7a18fc0a70134ad1829eb578dd6dd3f8324a253fc7ac01cba95",
+    "currentHostSha256": "94bee9c4194511caadd93b5ab3d1a7f687653531c842e28b898aebca263872e9",
+    "messageHelperUnchanged": true,
+    "hostTranslatorUnchanged": true,
+    "ownedCallLiteralsUnchanged": [
+      "input.error_no_source_content",
+      "input.source_partial_generation"
+    ],
+    "otherSourceChangesNotRevalidated": true
+  },
+  "unrelatedCatalogValuesPreserved": true
+}

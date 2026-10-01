@@ -1,0 +1,988 @@
+{
+  "at": "2026-09-29T23:23:50.641Z",
+  "preview": {
+    "at": "2026-09-29T23:15:54.303Z",
+    "hostSha256": "05e355c901685edb11527b0ba2c5cd8a565e670bc133c010ea7449d700236fee",
+    "shellSha256": "707ef16f3b4a914f89fe08b497bea99b2b6d539882847bf3ecc4e9bd33d78145",
+    "js": "main.96c881a5.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "results": [
+    {
+      "scenario": "plain",
+      "errors": [],
+      "downloads": [],
+      "cryptoRequests": 1,
+      "failure": "TimeoutError: locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button').filter({ hasText: /Teacher|Educator/ }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"lp-card\" data-pathway=\"educator\" aria-labelledby=\"launch-pad-educator-title\" aria-describedby=\"launch-pad-educator-desc\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-help-key=\"header_dashboard\" title=\"Teacher Grading Dashboard\" aria-label=\"Teacher Grading Dashboard\" class=\"inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors text-white/85 hover:bg-white/10 hover:text-white\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"min-h-full flex items-center justify-center\">…</div> from <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" data-allo-ui-modal=\"role-selection\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-description\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"min-h-full flex items-center justify-center\">…</div> from <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" data-allo-ui-modal=\"role-selection\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-description\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    22 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"min-h-full flex items-center justify-center\">…</div> from <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" data-allo-ui-modal=\"role-selection\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-description\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    59 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-ai-backend-modal-overlay=\"true\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n",
+      "buttons": [
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Learn",
+          "label": "Learning Tools",
+          "help": "header_learning_hub"
+        },
+        {
+          "text": "Tools",
+          "label": "Educator Tools",
+          "help": "header_educator_hub"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "Start & setup",
+          "label": null,
+          "help": "header_rerun_wizard"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": " Create",
+          "label": null,
+          "help": "sidebar_tab_create"
+        },
+        {
+          "text": " History",
+          "label": null,
+          "help": "sidebar_tab_history"
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "Upload",
+          "label": "Upload file"
+        },
+        {
+          "text": "Link",
+          "label": null,
+          "help": "source_link_btn"
+        },
+        {
+          "text": "Generate",
+          "label": null,
+          "help": "source_generate_btn"
+        },
+        {
+          "text": "📖Books",
+          "label": null,
+          "help": "source_books_btn"
+        },
+        {
+          "text": "Collapse",
+          "label": null
+        },
+        {
+          "text": "Show all tools",
+          "label": null
+        },
+        {
+          "text": "Recommended",
+          "label": null
+        },
+        {
+          "text": "Make accessible",
+          "label": null
+        },
+        {
+          "text": "Engage",
+          "label": null
+        },
+        {
+          "text": "Assess & deliver",
+          "label": null
+        },
+        {
+          "text": "All tools",
+          "label": null
+        },
+        {
+          "text": "Expand All",
+          "label": null
+        },
+        {
+          "text": " Universal Settings5th Grade · English",
+          "label": null
+        },
+        {
+          "text": " Analyze Source Material",
+          "label": null,
+          "help": "tool_analysis"
+        },
+        {
+          "text": " Glossary",
+          "label": null,
+          "help": "tool_glossary"
+        },
+        {
+          "text": " Text Adaptation",
+          "label": null,
+          "help": "tool_simplified"
+        },
+        {
+          "text": " Lesson Images",
+          "label": null,
+          "help": "tool_visual"
+        },
+        {
+          "text": " Assess",
+          "label": null,
+          "help": "tool_quiz"
+        },
+        {
+          "text": "Lesson Plan",
+          "label": null,
+          "help": "tool_lesson_plan"
+        },
+        {
+          "text": "Assignment Directionsyou write it",
+          "label": null,
+          "help": "tool_directions"
+        },
+        {
+          "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null,
+          "help": "sidebar_ai_setup_notice"
+        },
+        {
+          "text": "Plan full packStart with a resource list you can review and edit before generati",
+          "label": "Plan Full Pack",
+          "help": "fullpack_generate"
+        },
+        {
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "text": "Open reading catalogBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "text": "Find a resource onlinePaste a link or let AI search",
+          "label": null
+        },
+        {
+          "text": "Generate from a topicAI writes it for you",
+          "label": null
+        },
+        {
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        },
+        {
+          "text": "",
+          "label": "Import Language Pack",
+          "help": "ui_lang_import_btn"
+        },
+        {
+          "text": "",
+          "label": "Set Custom Language",
+          "help": "ui_lang_manual_submit"
+        },
+        {
+          "text": "StudentJoin your class and learn with a private codename.",
+          "label": null,
+          "help": "role_student"
+        },
+        {
+          "text": "TeacherBuild accessible lessons and adapt materials for your class.",
+          "label": null,
+          "help": "role_teacher"
+        },
+        {
+          "text": "ParentSupport learning at home with family-friendly tools.",
+          "label": null,
+          "help": "role_parent"
+        },
+        {
+          "text": "Independent LearnerStudy at your own pace with progress tracking and no class to",
+          "label": null,
+          "help": "role_independent"
+        },
+        {
+          "text": "Enable Voice Access",
+          "label": null,
+          "help": "role_voice_access"
+        },
+        {
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "text": "🚀Use AlloFlow inside Gemini CanvasNo setupThe easiest way to get AI: open AlloF",
+          "label": null,
+          "help": "ai_backend_guided_card_canvas"
+        },
+        {
+          "text": "✨Google GeminiRecommendedBest quality and speed. Runs in Google's cloud with a f",
+          "label": null,
+          "help": "ai_backend_guided_card_gemini"
+        },
+        {
+          "text": "🔒Private AI on this computerMost privateEverything stays on this computer — no ",
+          "label": null,
+          "help": "ai_backend_guided_card_private"
+        },
+        {
+          "text": "🔌An AI app I already runAlready use LM Studio, Ollama, or LocalAI on this compu",
+          "label": null,
+          "help": "ai_backend_guided_card_connect"
+        },
+        {
+          "text": "Open saved work",
+          "label": null,
+          "help": "ai_backend_guided_storage_btn"
+        },
+        {
+          "text": "▼Advanced settings",
+          "label": null,
+          "help": "ai_backend_advanced_toggle"
+        }
+      ]
+    },
+    {
+      "scenario": "cancel-encryption",
+      "errors": [],
+      "downloads": [],
+      "cryptoRequests": 1,
+      "failure": "TimeoutError: locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button').filter({ hasText: /Teacher|Educator/ }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"lp-card\" data-pathway=\"educator\" aria-labelledby=\"launch-pad-educator-title\" aria-describedby=\"launch-pad-educator-desc\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-help-key=\"header_dashboard\" title=\"Teacher Grading Dashboard\" aria-label=\"Teacher Grading Dashboard\" class=\"inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors text-white/85 hover:bg-white/10 hover:text-white\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"min-h-full flex items-center justify-center\">…</div> from <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" data-allo-ui-modal=\"role-selection\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-description\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"min-h-full flex items-center justify-center\">…</div> from <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" data-allo-ui-modal=\"role-selection\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-description\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    31 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"min-h-full flex items-center justify-center\">…</div> from <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" data-allo-ui-modal=\"role-selection\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-description\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    51 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-ai-backend-modal-overlay=\"true\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+      "buttons": [
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Learn",
+          "label": "Learning Tools",
+          "help": "header_learning_hub"
+        },
+        {
+          "text": "Tools",
+          "label": "Educator Tools",
+          "help": "header_educator_hub"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "Start & setup",
+          "label": null,
+          "help": "header_rerun_wizard"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": " Create",
+          "label": null,
+          "help": "sidebar_tab_create"
+        },
+        {
+          "text": " History",
+          "label": null,
+          "help": "sidebar_tab_history"
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "Upload",
+          "label": "Upload file"
+        },
+        {
+          "text": "Link",
+          "label": null,
+          "help": "source_link_btn"
+        },
+        {
+          "text": "Generate",
+          "label": null,
+          "help": "source_generate_btn"
+        },
+        {
+          "text": "📖Books",
+          "label": null,
+          "help": "source_books_btn"
+        },
+        {
+          "text": "Collapse",
+          "label": null
+        },
+        {
+          "text": "Show all tools",
+          "label": null
+        },
+        {
+          "text": "Recommended",
+          "label": null
+        },
+        {
+          "text": "Make accessible",
+          "label": null
+        },
+        {
+          "text": "Engage",
+          "label": null
+        },
+        {
+          "text": "Assess & deliver",
+          "label": null
+        },
+        {
+          "text": "All tools",
+          "label": null
+        },
+        {
+          "text": "Expand All",
+          "label": null
+        },
+        {
+          "text": " Universal Settings5th Grade · English",
+          "label": null
+        },
+        {
+          "text": " Analyze Source Material",
+          "label": null,
+          "help": "tool_analysis"
+        },
+        {
+          "text": " Glossary",
+          "label": null,
+          "help": "tool_glossary"
+        },
+        {
+          "text": " Text Adaptation",
+          "label": null,
+          "help": "tool_simplified"
+        },
+        {
+          "text": " Lesson Images",
+          "label": null,
+          "help": "tool_visual"
+        },
+        {
+          "text": " Assess",
+          "label": null,
+          "help": "tool_quiz"
+        },
+        {
+          "text": "Lesson Plan",
+          "label": null,
+          "help": "tool_lesson_plan"
+        },
+        {
+          "text": "Assignment Directionsyou write it",
+          "label": null,
+          "help": "tool_directions"
+        },
+        {
+          "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null,
+          "help": "sidebar_ai_setup_notice"
+        },
+        {
+          "text": "Plan full packStart with a resource list you can review and edit before generati",
+          "label": "Plan Full Pack",
+          "help": "fullpack_generate"
+        },
+        {
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "text": "Open reading catalogBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "text": "Find a resource onlinePaste a link or let AI search",
+          "label": null
+        },
+        {
+          "text": "Generate from a topicAI writes it for you",
+          "label": null
+        },
+        {
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        },
+        {
+          "text": "",
+          "label": "Import Language Pack",
+          "help": "ui_lang_import_btn"
+        },
+        {
+          "text": "",
+          "label": "Set Custom Language",
+          "help": "ui_lang_manual_submit"
+        },
+        {
+          "text": "StudentJoin your class and learn with a private codename.",
+          "label": null,
+          "help": "role_student"
+        },
+        {
+          "text": "TeacherBuild accessible lessons and adapt materials for your class.",
+          "label": null,
+          "help": "role_teacher"
+        },
+        {
+          "text": "ParentSupport learning at home with family-friendly tools.",
+          "label": null,
+          "help": "role_parent"
+        },
+        {
+          "text": "Independent LearnerStudy at your own pace with progress tracking and no class to",
+          "label": null,
+          "help": "role_independent"
+        },
+        {
+          "text": "Enable Voice Access",
+          "label": null,
+          "help": "role_voice_access"
+        },
+        {
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "text": "🚀Use AlloFlow inside Gemini CanvasNo setupThe easiest way to get AI: open AlloF",
+          "label": null,
+          "help": "ai_backend_guided_card_canvas"
+        },
+        {
+          "text": "✨Google GeminiRecommendedBest quality and speed. Runs in Google's cloud with a f",
+          "label": null,
+          "help": "ai_backend_guided_card_gemini"
+        },
+        {
+          "text": "🔒Private AI on this computerMost privateEverything stays on this computer — no ",
+          "label": null,
+          "help": "ai_backend_guided_card_private"
+        },
+        {
+          "text": "🔌An AI app I already runAlready use LM Studio, Ollama, or LocalAI on this compu",
+          "label": null,
+          "help": "ai_backend_guided_card_connect"
+        },
+        {
+          "text": "Open saved work",
+          "label": null,
+          "help": "ai_backend_guided_storage_btn"
+        },
+        {
+          "text": "▼Advanced settings",
+          "label": null,
+          "help": "ai_backend_advanced_toggle"
+        },
+        {
+          "text": "⚠ 1 error",
+          "label": "View captured errors and report a bug"
+        }
+      ]
+    },
+    {
+      "scenario": "failed-encryption",
+      "errors": [],
+      "downloads": [],
+      "cryptoRequests": 4,
+      "failure": "TimeoutError: locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-help-key=\"sidebar_tab_history\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button role=\"tab\" type=\"button\" tabindex=\"-1\" id=\"tab-history\" aria-selected=\"false\" data-help-key=\"sidebar_tab_history\" aria-controls=\"sidebar-history-panel\" class=\"relative min-h-11 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <p id=\"educator-hub-subtitle\" class=\"text-sm text-slate-600 mt-1\">Professional tools for educators and clinicians</p> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <p id=\"educator-hub-subtitle\" class=\"text-sm text-slate-600 mt-1\">Professional tools for educators and clinicians</p> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div>…</div> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  4 × retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <p id=\"educator-hub-subtitle\" class=\"text-sm text-slate-600 mt-1\">Professional tools for educators and clinicians</p> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <p id=\"educator-hub-subtitle\" class=\"text-sm text-slate-600 mt-1\">Professional tools for educators and clinicians</p> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div>…</div> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div>…</div> from <div role=\"presentation\" class=\"fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  49 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-ai-backend-modal-overlay=\"true\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n",
+      "buttons": [
+        {
+          "text": "1 failed — retry",
+          "label": null
+        },
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Learn",
+          "label": "Learning Tools",
+          "help": "header_learning_hub"
+        },
+        {
+          "text": "Tools",
+          "label": "Educator Tools",
+          "help": "header_educator_hub"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "Start & setup",
+          "label": null,
+          "help": "header_rerun_wizard"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": " Create",
+          "label": null,
+          "help": "sidebar_tab_create"
+        },
+        {
+          "text": " History",
+          "label": null,
+          "help": "sidebar_tab_history"
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "Upload",
+          "label": "Upload file"
+        },
+        {
+          "text": "Link",
+          "label": null,
+          "help": "source_link_btn"
+        },
+        {
+          "text": "Generate",
+          "label": null,
+          "help": "source_generate_btn"
+        },
+        {
+          "text": "📖Books",
+          "label": null,
+          "help": "source_books_btn"
+        },
+        {
+          "text": "Collapse",
+          "label": null
+        },
+        {
+          "text": "Show all tools",
+          "label": null
+        },
+        {
+          "text": "Recommended",
+          "label": null
+        },
+        {
+          "text": "Make accessible",
+          "label": null
+        },
+        {
+          "text": "Engage",
+          "label": null
+        },
+        {
+          "text": "Assess & deliver",
+          "label": null
+        },
+        {
+          "text": "All tools",
+          "label": null
+        },
+        {
+          "text": "Expand All",
+          "label": null
+        },
+        {
+          "text": " Universal Settings5th Grade · English",
+          "label": null
+        },
+        {
+          "text": " Analyze Source Material",
+          "label": null,
+          "help": "tool_analysis"
+        },
+        {
+          "text": " Glossary",
+          "label": null,
+          "help": "tool_glossary"
+        },
+        {
+          "text": " Text Adaptation",
+          "label": null,
+          "help": "tool_simplified"
+        },
+        {
+          "text": " Lesson Images",
+          "label": null,
+          "help": "tool_visual"
+        },
+        {
+          "text": " Assess",
+          "label": null,
+          "help": "tool_quiz"
+        },
+        {
+          "text": "Lesson Plan",
+          "label": null,
+          "help": "tool_lesson_plan"
+        },
+        {
+          "text": "Assignment Directionsyou write it",
+          "label": null,
+          "help": "tool_directions"
+        },
+        {
+          "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null,
+          "help": "sidebar_ai_setup_notice"
+        },
+        {
+          "text": "Plan full packStart with a resource list you can review and edit before generati",
+          "label": "Plan Full Pack",
+          "help": "fullpack_generate"
+        },
+        {
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "text": "Open reading catalogBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "text": "Find a resource onlinePaste a link or let AI search",
+          "label": null
+        },
+        {
+          "text": "Generate from a topicAI writes it for you",
+          "label": null
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        },
+        {
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "text": "🚀Use AlloFlow inside Gemini CanvasNo setupThe easiest way to get AI: open AlloF",
+          "label": null,
+          "help": "ai_backend_guided_card_canvas"
+        },
+        {
+          "text": "✨Google GeminiRecommendedBest quality and speed. Runs in Google's cloud with a f",
+          "label": null,
+          "help": "ai_backend_guided_card_gemini"
+        },
+        {
+          "text": "🔒Private AI on this computerMost privateEverything stays on this computer — no ",
+          "label": null,
+          "help": "ai_backend_guided_card_private"
+        },
+        {
+          "text": "🔌An AI app I already runAlready use LM Studio, Ollama, or LocalAI on this compu",
+          "label": null,
+          "help": "ai_backend_guided_card_connect"
+        },
+        {
+          "text": "Open saved work",
+          "label": null,
+          "help": "ai_backend_guided_storage_btn"
+        },
+        {
+          "text": "▼Advanced settings",
+          "label": null,
+          "help": "ai_backend_advanced_toggle"
+        },
+        {
+          "text": "✕",
+          "label": "Close educator tools"
+        },
+        {
+          "text": "☆ Favorites",
+          "label": null
+        },
+        {
+          "text": "Manage favorites",
+          "label": null
+        },
+        {
+          "text": "Help me build a lesson",
+          "label": null
+        },
+        {
+          "text": "Document Hub",
+          "label": null
+        },
+        {
+          "text": "Lumen",
+          "label": null
+        },
+        {
+          "text": "Whiteboard",
+          "label": null
+        },
+        {
+          "text": "Page Designer",
+          "label": null
+        },
+        {
+          "text": "-",
+          "label": "Collapse section"
+        },
+        {
+          "text": "🪄Blueprint ModeHelp me build a lessonAnswer a few questions, then build a diffe",
+          "label": null,
+          "help": "educator_hub_lesson_builder_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Help me build a lesson"
+        },
+        {
+          "text": "💡LumenResearch sources or explore data in one evidence workspace. Cite exact pa",
+          "label": null,
+          "help": "educator_hub_lumen_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Lumen"
+        },
+        {
+          "text": "📄Document HubDocument builder with themes, WYSIWYG editing, accessibility audit",
+          "label": null,
+          "help": "educator_hub_document_hub_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Document Hub"
+        },
+        {
+          "text": "✏️WhiteboardSketch ideas, build diagrams, and map thinking with graphic organize",
+          "label": null,
+          "help": "educator_hub_whiteboard_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Whiteboard"
+        },
+        {
+          "text": "-",
+          "label": "Collapse section"
+        },
+        {
+          "text": "🧵Learning Web: Unit PathArrange lessons into a teachable sequence, then inspect",
+          "label": null
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Learning Web: Unit Path"
+        },
+        {
+          "text": "🎨Page DesignerCreate flyers, worksheets, posters, and slide decks with accessib",
+          "label": null,
+          "help": "educator_hub_allo_studio_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Page Designer"
+        },
+        {
+          "text": "🎥Video StudioRecord, trim, caption, and export short videos, with prompt tools ",
+          "label": null,
+          "help": "educator_hub_video_studio_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Video Studio"
+        },
+        {
+          "text": "🪧Symbol StudioAI-generated PCS-style icons for visual supports, AAC boards, and",
+          "label": null,
+          "help": "educator_hub_symbol_studio_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Symbol Studio"
+        },
+        {
+          "text": "📊AlloSheet (Pilot)Explore educator data with agent assistance, review every cha",
+          "label": null,
+          "help": "educator_hub_allosheet_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: AlloSheet"
+        },
+        {
+          "text": "-",
+          "label": "Collapse section"
+        },
+        {
+          "text": "🗓️Polls & Sign-upsSchedule a meeting, collect sign-ups, or run a quick word clo",
+          "label": null,
+          "help": "educator_hub_activities_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Polls &amp; Sign-ups"
+        },
+        {
+          "text": "🗒️Assessment CenterScreening batteries, CBM probes, RTI decision aids, interven",
+          "label": null,
+          "help": "educator_hub_assessment_center_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Assessment Center"
+        },
+        {
+          "text": "🩺Dynamic AssessmentCreate dynamic, standard-aligned assessment tasks for diagno",
+          "label": null,
+          "help": "educator_hub_dynamic_assessment_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Dynamic Assessment"
+        },
+        {
+          "text": "👁️BehaviorLensFBA/BIP behavioral observation, ABC data collection, and 80+ clin",
+          "label": null,
+          "help": "educator_hub_behavior_lens_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: BehaviorLens"
+        },
+        {
+          "text": "📝Report WriterAI-powered clinical report generation with fact-chunks, accuracy ",
+          "label": null,
+          "help": "educator_hub_report_writer_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Report Writer"
+        },
+        {
+          "text": "-",
+          "label": "Collapse section"
+        },
+        {
+          "text": "♿Document accessibilityImprove PDFs, Word documents, slides, spreadsheets, image",
+          "label": null,
+          "help": "educator_hub_pdf_accessibility_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: PDF Accessibility"
+        },
+        {
+          "text": "🔍Accessibility LabVerify the student experience: preview as student, keyboard-o",
+          "label": null,
+          "help": "educator_hub_accessibility_lab_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Accessibility Lab"
+        },
+        {
+          "text": "-",
+          "label": "Collapse section"
+        },
+        {
+          "text": "🗂️Community CatalogBrowse open-licensed lessons from the AlloFlow community, or",
+          "label": null,
+          "help": "educator_hub_community_catalog_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Community Catalog"
+        },
+        {
+          "text": "📇Research SuiteRun a named study: IRB tracking, consent provenance, Likert inst",
+          "label": null,
+          "help": "educator_hub_research_suite_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Research Suite"
+        },
+        {
+          "text": "🎓Professional DevelopmentWork through short, self-paced modules, take a knowled",
+          "label": null,
+          "help": "educator_hub_professional_dev_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Professional Development"
+        },
+        {
+          "text": "🏛️Leadership HubFor leaders: conduct UDL walkthroughs, examine disproportionali",
+          "label": null,
+          "help": "educator_hub_admin_hub_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Leadership Hub"
+        },
+        {
+          "text": "🎟️School Rewards & StoreAward recognition points and open the school-owned rewa",
+          "label": null,
+          "help": "educator_hub_school_rewards_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: School Rewards & Store"
+        },
+        {
+          "text": "✉️Communications StudioFamily updates, batch report-card comments, recommendatio",
+          "label": null,
+          "help": "educator_hub_communications_studio_card"
+        },
+        {
+          "text": "☆",
+          "label": "Add to favorites: Communications Studio"
+        },
+        {
+          "text": "⚠ 4 errors",
+          "label": "View captured errors and report a bug"
+        }
+      ]
+    }
+  ]
+}

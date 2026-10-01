@@ -1,0 +1,64 @@
+{
+  "at": "2026-09-26T22:08:49.282Z",
+  "label": "track02",
+  "patch": "2b1a7237a5bd66031838d68a89229e6aa78b1faf4df7e223c21ac78e70d7ad7b",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "295fc8048279ed76c991e70ddcf99ea5385e975ac98fb32661cad552318ce9b5",
+      "after": "6dfd5a626db9a6b5bae5a963542ce916635bf159b93616a8bf470dba0f26d0d4",
+      "changed": true
+    },
+    {
+      "target": "read_aloud_audio_service_source.jsx",
+      "targets": [
+        "read_aloud_audio_service_source.jsx"
+      ],
+      "before": "7d4cc712db9dc572e3a30b7e50f9e0b3d85ab99eaae86989316589c731509885",
+      "after": "aa68bfd5b4d8a0e3cd702e8339552f486e780910a30948bf94f2675e2872b82c",
+      "changed": true
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "408058c2da5cb68704d8f36eec52f183e0002812731881c15f1579f25fd32944",
+      "after": "cb6c02c3f3b5213ef81b8a454f56573841699f808ee4022aaa39125eb1fa69ff",
+      "changed": true
+    },
+    {
+      "target": "ui_strings.js",
+      "targets": [
+        "ui_strings.js",
+        "desktop/web-app/public/ui_strings.js"
+      ],
+      "before": "d07f337276b33dacf2734869b64071badc783140ff1fdaefdbdace18f1b92396",
+      "after": "8548ad57a1cf810b23c5086642f9de7f3ac4e9dece6aaf9aaf534b5386303927",
+      "changed": true
+    },
+    {
+      "target": "tests/read_aloud_audio_service.test.js",
+      "targets": [
+        "tests/read_aloud_audio_service.test.js"
+      ],
+      "before": "55577befcf81b6eea453a3cda41076740387dbbf9f1712ff3329989cbecc46c3",
+      "after": "8ef5852c566bd7ed785f4a559d6a34f806d84ce0df6ec932ca1510cd49c93988",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_audio_readiness.test.js",
+      "targets": [
+        "tests/reader_audio_readiness.test.js"
+      ],
+      "before": null,
+      "after": "9b1bd0cbe9a324f2ed156679a931c7a94a6753913e7c4e93ee2634a010689873",
+      "changed": true
+    }
+  ]
+}

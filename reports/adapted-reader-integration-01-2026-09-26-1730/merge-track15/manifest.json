@@ -1,0 +1,37 @@
+[
+  {
+    "file": "AlloFlowANTI.txt",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "read_aloud_audio_service_source.jsx",
+    "existed": true,
+    "conflicts": 1
+  },
+  {
+    "file": "read_aloud_artifact_audio_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "utils_pure_source.jsx",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/offline_media_recovery.test.js",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/read_aloud_audio_service.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/check_offline_media_recovery.cjs",
+    "existed": false,
+    "conflicts": 0
+  }
+]

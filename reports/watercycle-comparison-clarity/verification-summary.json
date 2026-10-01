@@ -1,0 +1,296 @@
+{
+  "title": "Water Cycle comparison clarity: final verification",
+  "recordedAt": "2026-09-30T22:34:43.601Z",
+  "successful": true,
+  "sourceSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+  "publicSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+  "baselineSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+  "reportSha256": {
+    "baseline-results.json": "5af6663875e7d0b5c23a40f3f7e08be5e98af172eab4a61ed2c4fb90278374f5",
+    "results.json": "b3c702b8f2d122917c53f15a784720c7eac4d8b8083c2ed19d2949a63ef14e19",
+    "unit-results.json": "444a4e1b34d0680ea6d747321c0a1cd19ab0729b9067a851e36b86707a3d3a79",
+    "regression-results.json": "ad33f900d081d4693b9b798f62eddaa518853c60c297e50b1bc7e6800afdea46"
+  },
+  "tests": {
+    "total": 129,
+    "passed": 129,
+    "focused": 25,
+    "regression": 104,
+    "distinctFiles": 9,
+    "skipped": 0
+  },
+  "browser": {
+    "passed": 788,
+    "failed": 0,
+    "snapshots": 137,
+    "scopedAccessibilityAudits": 16,
+    "violations": 0,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "unchangedCalculationAndStateAnchors": 24,
+  "derivations": [
+    {
+      "start": "var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "end": "var wcRouteBaselineActive",
+      "sha256": "12e3f9595438a0ad4bd2326ef4e2553c337d6bbae798cfe1e656dab3a4700507",
+      "unchanged": true
+    },
+    {
+      "start": "var wcCausalStageIds = [];",
+      "end": "var wcDataTrailStatus",
+      "sha256": "9716c3180a30c1e21957919d1901b19cb2121a17992eed6c6caa1cfee88a9baf",
+      "unchanged": true
+    }
+  ],
+  "git": {
+    "scopedWhitespaceCheckPassed": true,
+    "stagedEnhancementFiles": []
+  },
+  "checks": [
+    {
+      "label": "Current runtime hash",
+      "passed": true
+    },
+    {
+      "label": "Public mirror hash",
+      "passed": true
+    },
+    {
+      "label": "Frozen final runtime hash",
+      "passed": true
+    },
+    {
+      "label": "Frozen baseline hash",
+      "passed": true
+    },
+    {
+      "label": "Report hash baseline-results.json",
+      "passed": true
+    },
+    {
+      "label": "Report hash results.json",
+      "passed": true
+    },
+    {
+      "label": "Report hash unit-results.json",
+      "passed": true
+    },
+    {
+      "label": "Report hash regression-results.json",
+      "passed": true
+    },
+    {
+      "label": "Baseline completed with resources closed",
+      "passed": true
+    },
+    {
+      "label": "Final browser source pinned",
+      "passed": true
+    },
+    {
+      "label": "Final browser checks passed",
+      "passed": true
+    },
+    {
+      "label": "16 clean scoped accessibility audits",
+      "passed": true
+    },
+    {
+      "label": "QA resources closed",
+      "passed": true
+    },
+    {
+      "label": "All 25 tests passed without skips",
+      "passed": true
+    },
+    {
+      "label": "Test report pins final source/public",
+      "passed": true
+    },
+    {
+      "label": "Recorded test files match",
+      "passed": true
+    },
+    {
+      "label": "All 104 tests passed without skips",
+      "passed": true
+    },
+    {
+      "label": "Test report pins final source/public",
+      "passed": true
+    },
+    {
+      "label": "Recorded test files match",
+      "passed": true
+    },
+    {
+      "label": "129 distinct test assertions",
+      "passed": true
+    },
+    {
+      "label": "24 unique recorded calculation/state anchors",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state WCExploreNotebook",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state wcLandResponse",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state estimateWcLandIndices",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state estimateWcRouteShares",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state evaporationIndex",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state wcBaselineEvaporationIndex",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state wcCurrentSnapshot",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state wcComparisonDeltas",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state formatWcDelta",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state WATER_CYCLE_PRESETS",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state WATER_CYCLE_PREDICTIONS",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state getWcInteractionBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state adjustClimate",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state adjustLand",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state resetClimate",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state resetLandScenario",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state captureWcScenarioBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state restoreWcScenarioBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state clearWcScenarioBaseline",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state isolateWcComparisonInput",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state saveWcObservation",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state replayWcObservation",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state recordWcPrediction",
+      "passed": true
+    },
+    {
+      "label": "Unchanged calculation/state resetWcPrediction",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation start var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "passed": true
+    },
+    {
+      "label": "Derivation end found var wcRouteBaselineActive",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation start var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "passed": true
+    },
+    {
+      "label": "Derivation end found var wcRouteBaselineActive",
+      "passed": true
+    },
+    {
+      "label": "Unchanged full derivation var wcScenarioBaseline = d.wcScenarioBaseline || null;",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation start var wcCausalStageIds = [];",
+      "passed": true
+    },
+    {
+      "label": "Derivation end found var wcDataTrailStatus",
+      "passed": true
+    },
+    {
+      "label": "Unique derivation start var wcCausalStageIds = [];",
+      "passed": true
+    },
+    {
+      "label": "Derivation end found var wcDataTrailStatus",
+      "passed": true
+    },
+    {
+      "label": "Unchanged full derivation var wcCausalStageIds = [];",
+      "passed": true
+    },
+    {
+      "label": "JavaScript syntax stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "JavaScript syntax desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "passed": true
+    },
+    {
+      "label": "JavaScript syntax dev-tools/watercycle_comparison_clarity_qa.cjs",
+      "passed": true
+    },
+    {
+      "label": "git diff --check -- stem_lab/stem_tool_watercycle.js desktop/web-app/public/stem_lab/stem_tool_watercycle.js tests/watercycle_comparison_clarity.test.js tests/watercycle_compare_visual.test.js tests/watercycle_prediction.test.js tests/watercycle_baseline_restore.test.js tests/watercycle_experiment_trail.test.js tests/watercycle_replay_indicator.test.js dev-tools/watercycle_comparison_clarity_qa.cjs docs/water-cycle-visual-design.md reports/watercycle-comparison-clarity",
+      "passed": true
+    },
+    {
+      "label": "git diff --cached --name-only -- stem_lab/stem_tool_watercycle.js desktop/web-app/public/stem_lab/stem_tool_watercycle.js tests/watercycle_comparison_clarity.test.js tests/watercycle_compare_visual.test.js tests/watercycle_prediction.test.js tests/watercycle_baseline_restore.test.js tests/watercycle_experiment_trail.test.js tests/watercycle_replay_indicator.test.js dev-tools/watercycle_comparison_clarity_qa.cjs docs/water-cycle-visual-design.md reports/watercycle-comparison-clarity",
+      "passed": true
+    },
+    {
+      "label": "No enhancement files staged",
+      "passed": true
+    }
+  ]
+}

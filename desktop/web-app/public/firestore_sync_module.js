@@ -653,10 +653,83 @@
     }), 'live-session-size-limit');
   }
 
+  // Live students receive only adapted word help the teacher has shown. Hidden
+  // or stale help never enters the session document; no validator, no help.
+  function withStudentWordHelpOnly(item) {
+    if (!item || typeof item !== 'object' || !Object.prototype.hasOwnProperty.call(item, 'adaptedReadingSupports')) return item;
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const help = api && typeof api.studentAdaptedReadingSupports === 'function'
+      ? api.studentAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+    const out = { ...item };
+    if (help) out.adaptedReadingSupports = help; else delete out.adaptedReadingSupports;
+    return out;
+  }
+
+  // Teacher working data never enters the session document. A quiz fact check
+  // stays only when students could already see it as an explanation.
+  // Mirrors _alloStripTeacherOnlyFields in live_aac_source.jsx.
+  const TEACHER_ONLY_RESOURCE_KEYS = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview'];
+  function studentFactCheck(node) {
+    const text = typeof node.factCheck === 'string' ? node.factCheck : '';
+    if (!text.trim() || typeof node.question !== 'string') return '';
+    const quality = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.keyQuality;
+    if (quality && typeof quality.studentExplanation === 'function') {
+      try { return quality.studentExplanation(node, true) ? text : ''; } catch (_) { return ''; }
+    }
+    const check = node.keyCheck && typeof node.keyCheck === 'object' ? node.keyCheck : null;
+    if (check && (['confirmed', 'unclear'].indexOf(check.status) < 0 || String(check.checkedKey == null ? '' : check.checkedKey) !== String(node.correctAnswer == null ? '' : node.correctAnswer))) return '';
+    return /\[\[\s*KEY\s*:\s*DISPUTED|CORRECTION\s*\/\s*WARNING|Actual Correct Answer/i.test(text) ? '' : text;
+  }
+  function stripTeacherOnlyResourceFields(value, memoryAid, seen) {
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    const visited = seen || new WeakMap();
+    if (visited.has(value)) return visited.get(value);
+    const scope = !!memoryAid || isMemoryAidBoundaryNode(value);
+    const out = Array.isArray(value) ? [] : {};
+    visited.set(value, out);
+    const explanation = !Array.isArray(value) && !scope && Object.prototype.hasOwnProperty.call(value, 'factCheck') ? studentFactCheck(value) : '';
+    Object.entries(value).forEach(([key, nested]) => {
+      if (TEACHER_ONLY_RESOURCE_KEYS.indexOf(key) >= 0) return;
+      if (key === 'factCheck') { if (explanation) out.factCheck = explanation; return; }
+      if (key === 'keyCheck') {
+        if (explanation && nested && nested.status === 'confirmed' && String(nested.checkedKey == null ? '' : nested.checkedKey) === String(value.correctAnswer == null ? '' : value.correctAnswer)) out.keyCheck = { status: 'confirmed', checkedKey: nested.checkedKey };
+        return;
+      }
+      out[key] = stripTeacherOnlyResourceFields(nested, scope, visited);
+    });
+    return out;
+  }
+
+  // A quiz the teacher marked graded reaches the session without its key:
+  // answers, per-option correctness, explanations, answer guides, fact checks
+  // and rubrics stay on the teacher's copy, which live quizzes grade against.
+  // Mirrors withholdGradedQuizKeys in live_aac_source.jsx.
+  const GRADED_KEY_FIELDS = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
+    'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey',
+    'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality',
+    'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
+  const GRADED_OPTION_FIELDS = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
+  function withholdGradedQuizKeys(resource) {
+    const data = resource && resource.type === 'quiz' && resource.data && typeof resource.data === 'object' && !Array.isArray(resource.data) ? resource.data : null;
+    if (!data || !data.deliverySettings || data.deliverySettings.feedbackTiming !== 'teacher-graded') return resource;
+    const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => fields.indexOf(key) < 0));
+    const questions = Array.isArray(data.questions) ? data.questions.map(question => {
+      if (!question || typeof question !== 'object' || Array.isArray(question)) return question;
+      const kept = omit(question, GRADED_KEY_FIELDS);
+      ['options', 'answerOptions', 'evidenceOptions'].forEach(field => {
+        if (Array.isArray(kept[field])) kept[field] = kept[field].map(option => option && typeof option === 'object' && !Array.isArray(option) ? omit(option, GRADED_OPTION_FIELDS) : option);
+      });
+      return kept;
+    }) : data.questions;
+    return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview']), questions, answerKeysWithheld: true } };
+  }
+
   function prepareSessionResourcesForWrite(resources, options) {
     const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
-    const source = Array.isArray(resources) ? resources : [];
-    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource')));
+    const source = (Array.isArray(resources) ? resources : []).map(withStudentWordHelpOnly).map(withholdGradedQuizKeys);
+    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => stripTeacherOnlyResourceFields(sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource'))));
     const kept = [];
     let droppedCount = 0;
 
@@ -764,6 +837,8 @@
   window.fitArtworkToBudget = fitArtworkToBudget;
   window.stripReadingSupportPictures = stripReadingSupportPictures;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
+  window.stripTeacherOnlyResourceFields = stripTeacherOnlyResourceFields;
+  window.withholdGradedQuizKeys = withholdGradedQuizKeys;
   window.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
   window.normalizeReadingPreservation = normalizeReadingPreservation;
   window.normalizeReadingRoleMetadata = normalizeReadingRoleMetadata;

@@ -1,0 +1,168 @@
+{
+  "errors": [],
+  "buttons": [
+    {
+      "text": "",
+      "label": "Dismiss notification"
+    },
+    {
+      "text": "Teacher Grading Dashboard",
+      "label": "Teacher Grading Dashboard",
+      "help": "header_dashboard"
+    },
+    {
+      "text": "Learn",
+      "label": "Learning Tools",
+      "help": "header_learning_hub"
+    },
+    {
+      "text": "Tools",
+      "label": "Educator Tools",
+      "help": "header_educator_hub"
+    },
+    {
+      "text": "Teach Live",
+      "label": "Teach Live",
+      "help": "header_session_start"
+    },
+    {
+      "text": "Start & setup",
+      "label": null,
+      "help": "header_rerun_wizard"
+    },
+    {
+      "text": "More information",
+      "label": null
+    },
+    {
+      "text": "Create",
+      "label": null,
+      "help": "sidebar_tab_create"
+    },
+    {
+      "text": "History",
+      "label": null,
+      "help": "sidebar_tab_history"
+    },
+    {
+      "text": "Upload",
+      "label": "Upload file"
+    },
+    {
+      "text": "Link",
+      "label": null,
+      "help": "source_link_btn"
+    },
+    {
+      "text": "Generate",
+      "label": null,
+      "help": "source_generate_btn"
+    },
+    {
+      "text": "📖Books",
+      "label": null,
+      "help": "source_books_btn"
+    },
+    {
+      "text": "Collapse",
+      "label": null
+    },
+    {
+      "text": "Show all tools",
+      "label": null
+    },
+    {
+      "text": "Recommended",
+      "label": null
+    },
+    {
+      "text": "Make accessible",
+      "label": null
+    },
+    {
+      "text": "Engage",
+      "label": null
+    },
+    {
+      "text": "Assess & deliver",
+      "label": null
+    },
+    {
+      "text": "All tools",
+      "label": null
+    },
+    {
+      "text": "Expand All",
+      "label": null
+    },
+    {
+      "text": "Universal Settings5th Grade · English",
+      "label": null
+    },
+    {
+      "text": "Analyze Source Material",
+      "label": null,
+      "help": "tool_analysis"
+    },
+    {
+      "text": "Glossary",
+      "label": null,
+      "help": "tool_glossary"
+    },
+    {
+      "text": "Text Adaptation",
+      "label": null,
+      "help": "tool_simplified"
+    },
+    {
+      "text": "Lesson Images",
+      "label": null,
+      "help": "tool_visual"
+    },
+    {
+      "text": "Assess",
+      "label": null,
+      "help": "tool_quiz"
+    },
+    {
+      "text": "Lesson Plan",
+      "label": null,
+      "help": "tool_lesson_plan"
+    },
+    {
+      "text": "Assignment Directionsyou write it",
+      "label": null,
+      "help": "tool_directions"
+    },
+    {
+      "text": "✨Needs AI setup · Tap to connect an AI, or use AlloFlow inside Gemini ",
+      "label": null,
+      "help": "sidebar_ai_setup_notice"
+    },
+    {
+      "text": "Plan full packStart with a resource list you can review and edit befor",
+      "label": "Plan Full Pack",
+      "help": "fullpack_generate"
+    },
+    {
+      "text": "",
+      "label": null
+    },
+    {
+      "text": "Source Material",
+      "label": null
+    },
+    {
+      "text": "Open reading catalogBooks, articles & primary sources",
+      "label": null
+    },
+    {
+      "text": "Find a resource onlinePaste a link or let AI search",
+      "label": null
+    },
+    {
+      "text": "Generate from a topicAI writes it for you",
+      "label": null
+    }
+  ]
+}

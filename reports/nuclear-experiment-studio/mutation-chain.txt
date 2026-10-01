@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:143:5 › a learner compares chain generations and continues to the reactor with all discoveries saved (58.1s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:143:5 › a learner compares chain generations and continues to the reactor with all discoveries saved 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-reading]')
+    Expected: "8.2"
+    Received: "6.6"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-reading]')
+        23 × locator resolved to <strong data-ns-reading="true">6.6</strong>
+           - unexpected value "6.6"
+
+
+      155 |   await page.getByRole('button', { name: '0.8 · Fewer', exact: true }).click();
+      156 |   for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Advance one generation' }).click();
+    > 157 |   await expect(page.locator('[data-ns-reading]')).toHaveText('8.2');
+          |                                                   ^
+      158 |   await page.getByRole('button', { name: 'A steady chain keeps producing' }).click();
+      159 |   await expect(page.locator('.ns-progress')).toContainText('4 / 4');
+      160 |   await page.screenshot({ path: `${output}/chain-discovery.png`, fullPage: true });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:157:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-chain\43-nuclearlab-experiment-s-acef4--with-all-discoveries-saved-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-chain\43-nuclearlab-experiment-s-acef4--with-all-discoveries-saved-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-chain\43-nuclearlab-experiment-s-acef4--with-all-discoveries-saved-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-chain\43-nuclearlab-experiment-s-acef4--with-all-discoveries-saved-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-chain\43-nuclearlab-experiment-s-acef4--with-all-discoveries-saved-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:143:5 › a learner compares chain generations and continues to the reactor with all discoveries saved 
+(node:35524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-chain.js in place of stem_lab/stem_tool_nuclearlab.js

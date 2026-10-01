@@ -1,0 +1,22 @@
+{
+  "at": "2026-09-30T22:42:26.083Z",
+  "phase": "recovery",
+  "hostIntegration": "paused pending shared writer clarification",
+  "modules": [
+    {
+      "output": "view_canvas_recovery_dialog_module.js",
+      "sha256": "caf6d4837158e087c42732475116b837abad86d1f3a2a398c90809af739a94ec",
+      "inputs": {
+        "view_canvas_recovery_dialog_source.jsx": "655cfba01f30e2e71e64bddcb0beeac7411c00da71012b73e3e8f47c092f0790"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

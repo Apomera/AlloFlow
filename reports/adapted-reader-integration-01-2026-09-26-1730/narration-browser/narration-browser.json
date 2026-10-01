@@ -1,0 +1,346 @@
+{
+  "browser": "Chromium",
+  "viewport": {
+    "width": 320,
+    "height": 640
+  },
+  "simulatedTouch": true,
+  "reducedMotion": true,
+  "results": [
+    {
+      "route": "adapted",
+      "mode": "normal",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 149,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "adapted",
+      "mode": "spacing",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 154,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "adapted",
+      "mode": "200-text",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 298,
+          "overflow": "hidden"
+        },
+        {
+          "tag": "DIV",
+          "text": "Use in this lessonMain readingSupporting readingNot designated",
+          "class": "mt-3 flex flex-wrap items-center gap-3",
+          "width": 266,
+          "scrollWidth": 279,
+          "overflow": "visible"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "adapted",
+      "mode": "dark",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 149,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "adapted",
+      "mode": "contrast",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "normal",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 149,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "spacing",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 154,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "200-text",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 298,
+          "overflow": "hidden"
+        },
+        {
+          "tag": "DIV",
+          "text": "Use in this lessonMain readingSupporting readingNot designated",
+          "class": "mt-3 flex flex-wrap items-center gap-3",
+          "width": 266,
+          "scrollWidth": 279,
+          "overflow": "visible"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "dark",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 149,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "original",
+      "mode": "contrast",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "normal",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 149,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "spacing",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 154,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "200-text",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 298,
+          "overflow": "hidden"
+        },
+        {
+          "tag": "DIV",
+          "text": "Use in this lessonMain readingSupporting readingNot designated",
+          "class": "mt-3 flex flex-wrap items-center gap-3",
+          "width": 266,
+          "scrollWidth": 279,
+          "overflow": "visible"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Linked source / originalOriginal with supports",
+          "class": "mt-1 block w-full min-w-0 rounded border border-slate-300 p-2",
+          "width": 256,
+          "scrollWidth": 310,
+          "overflow": "visible"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "dark",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Skip reading controls",
+          "class": "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white",
+          "width": 1,
+          "scrollWidth": 149,
+          "overflow": "hidden"
+        }
+      ],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "both",
+      "mode": "contrast",
+      "scrollX": 0,
+      "width": 320,
+      "pageWidth": 320,
+      "panelWidth": 290,
+      "panelScrollWidth": 290,
+      "nested": 0,
+      "overflow": [],
+      "closeFocusVisible": true
+    },
+    {
+      "route": "both-to-edit",
+      "editorFocused": true
+    },
+    {
+      "route": "student",
+      "authoringHidden": true
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "No real assistive technology or microphone",
+    "200% computed-font simulation; not real browser text zoom",
+    "320 CSS px is reflow coverage, not real 400% browser zoom",
+    "No live storage, network, device restart or cloud/export verification"
+  ]
+}

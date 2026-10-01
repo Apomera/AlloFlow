@@ -49,7 +49,7 @@ for (const rel in MARKERS) {
       cwd: ROOT, encoding: 'utf8',
     }).trim();
     if (staged) {
-      sources.push(['staged blob', execFileSync('git', ['show', ':' + rel], { cwd: ROOT, encoding: 'utf8' })]);
+      sources.push(['staged blob', execFileSync('git', ['show', ':' + rel], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })]);
     }
   } catch (e) {
     // not a git checkout / index unreadable — the working-tree check above still stands

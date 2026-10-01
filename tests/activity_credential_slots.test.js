@@ -11,7 +11,9 @@
 // 'mb-<uuid>' and validates it independently. So this is client-side, and the
 // store logic is pure so it can be tested without React or a network.
 import { describe, it, expect, beforeAll } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 
 let S;
 beforeAll(() => {
@@ -153,7 +155,8 @@ describe('the extracted panel actually uses it', () => {
     for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const host = readFileSync(f, 'utf8');
       expect(host, f).toContain("loadModule('SharedActivity'");
-      expect(host, f).toContain('_alloSharedActivityModule().SharedAssignmentActivityPanel');
+      // f5b045fc9 (09-20): the host panel now renders the module's component through CDNModuleGate.
+      expect(host, f).toContain('<CDNModuleGate moduleKey="SharedActivity.SharedAssignmentActivityPanel"');
     }
   });
 });

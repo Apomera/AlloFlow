@@ -1,0 +1,36 @@
+[
+  {
+    "source": "ui_strings.js",
+    "mirror": "desktop/web-app/public/ui_strings.js",
+    "byteEqual": false,
+    "differentKeys": [
+      "stem.platetectonics.bn_collision_rock",
+      "stem.platetectonics.bn_divergent_look",
+      "stem.platetectonics.bn_divergent_rock",
+      "stem.platetectonics.bn_subduction_look",
+      "stem.platetectonics.bn_subduction_rock",
+      "stem.platetectonics.gist_collision",
+      "stem.platetectonics.gist_divergent",
+      "stem.platetectonics.mytry_4",
+      "lesson_board.symbol_results"
+    ]
+  },
+  {
+    "source": "lang/french.js",
+    "mirror": "desktop/web-app/public/lang/french.js",
+    "byteEqual": true,
+    "differentKeys": []
+  },
+  {
+    "source": "lang/spanish_latin_america.js",
+    "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+    "byteEqual": true,
+    "differentKeys": []
+  },
+  {
+    "source": "lang/arabic.js",
+    "mirror": "desktop/web-app/public/lang/arabic.js",
+    "byteEqual": true,
+    "differentKeys": []
+  }
+]

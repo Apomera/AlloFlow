@@ -1,0 +1,82 @@
+{
+  "uncommitted": true,
+  "unitChecks": 799,
+  "unitSuites": 13,
+  "newBehaviorChecks": 144,
+  "newLocalizationChecks": 9,
+  "browserJourneys": 2,
+  "accessibilityScans": 30,
+  "accessibilityScanScope": "Saved-reflection cards, study-sheet controls and resumed motion editors exercised by the two journeys",
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "noHorizontalOverflow": true,
+  "minimumLargerTextPx": 17,
+  "printChecks": [
+    {
+      "theme": "light",
+      "visibleTextNodes": 33,
+      "whiteSurfaces": 18,
+      "blackTextOnWhitePaper": true,
+      "controlsHidden": true
+    },
+    {
+      "theme": "dark",
+      "visibleTextNodes": 33,
+      "whiteSurfaces": 18,
+      "blackTextOnWhitePaper": true,
+      "controlsHidden": true
+    },
+    {
+      "theme": "contrast",
+      "visibleTextNodes": 33,
+      "whiteSurfaces": 18,
+      "blackTextOnWhitePaper": true,
+      "controlsHidden": true
+    }
+  ],
+  "exportedFeedbackDirections": [
+    "warm",
+    "cool",
+    null
+  ],
+  "sourceMirrorsMatch": true,
+  "sourceSha256": "2a7aac033f38e157342041d6b329619ad910159f3820494b3dcbd4fbdbcea313",
+  "sourceHashLineEndings": "LF",
+  "translatedLabelsPerCatalog": 5,
+  "localeMirrorsMatch": true,
+  "localeKeys": [
+    "study_reflection_unknown_title",
+    "study_reflection_unknown_context",
+    "study_reflection_use_warm",
+    "study_reflection_use_cool",
+    "study_reflection_conflict"
+  ],
+  "localeLanguages": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "screenshots": [
+    "sheet-phone.png",
+    "sheet-dark.png",
+    "sheet-arabic.png",
+    "resumed-motion.png"
+  ],
+  "unitFiles": [
+    "anatomy_study_record_refinements.test.js",
+    "anatomy_study_record_localization.test.js",
+    "anatomy_study_portfolio.test.js",
+    "anatomy_study_clarity.test.js",
+    "anatomy_study_localization.test.js",
+    "anatomy_learning_continuity.test.js",
+    "anatomy_comparison_navigation.test.js",
+    "anatomy_search_continuity.test.js",
+    "anatomy_tutor_draft_continuity.test.js",
+    "anatomy_lab_science.test.js",
+    "anatomy_reflection_continuity.test.js",
+    "anatomy_reflection_localization.test.js",
+    "anatomy_homeostasis_flow.test.js"
+  ],
+  "testTimeoutMs": 30000,
+  "hookTimeoutMs": 30000
+}

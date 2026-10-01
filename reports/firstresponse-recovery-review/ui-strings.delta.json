@@ -1,0 +1,10 @@
+{
+  "recovery_review_title": "Review the movement",
+  "recovery_review_help": "Choose a completed pose, then move one step backward or forward to compare how the body changes.",
+  "recovery_review_pose": "Pose to inspect",
+  "recovery_review_before": "Before the sequence",
+  "recovery_review_previous": "Previous pose",
+  "recovery_review_next": "Next pose",
+  "recovery_review_latest": "Latest completed pose",
+  "recovery_review_showing": "Shown pose: step {step} — {label}"
+}

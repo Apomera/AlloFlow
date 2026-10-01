@@ -58,6 +58,32 @@ const t = function() {
   return arguments.length > 1 ? arguments[1] : arguments[0];
 };
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+const _ac_withIcon = (section, iconUrl) => {
+  if (section.iconUrl === iconUrl) return { ...section, iconUrl };
+  const next = { ...section, iconUrl };
+  delete next.iconAlt;
+  delete next.iconAltSource;
+  return next;
+};
+const _ac_normalizeGrading = (value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const text = (input) => typeof input === "string" ? input.trim().slice(0, 600) : "";
+  const strength = text(value.strength), growthNudge = text(value.growthNudge);
+  if (!strength || !growthNudge) return null;
+  const xp = typeof value.suggestedXP === "number" && Number.isFinite(value.suggestedXP) ? Math.max(0, Math.min(120, Math.round(value.suggestedXP))) : 0;
+  return { strength, growthNudge, xp };
+};
+const _ac_draftFingerprint = (answers) => {
+  const text = JSON.stringify(answers || {});
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+  return "anchor-v1:" + (hash >>> 0).toString(16);
+};
+const _ac_feedbackIsEarlier = (feedback, answers) => {
+  if (!feedback) return false;
+  const fp = feedback.draftFingerprint;
+  return !fp || fp !== _ac_draftFingerprint(answers) && fp !== JSON.stringify(answers || {});
+};
 const _loadHtml2Canvas = /* @__PURE__ */ (() => {
   let pending = null;
   return () => {
@@ -116,6 +142,10 @@ const ANCHOR_CHART_TYPE_META = {
   misconception: { label: "Misconceptions", layout: "grid", caption: "Spot the mix-up, then fix it.", badge: "FIX", badgeColor: "#b91c1c" },
   "question-guide": { label: "Question guide", layout: "reference", caption: "Use these questions to deepen thinking.", badge: "?", badgeColor: "#7e22ce" }
 };
+if (typeof window !== "undefined") {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.AnchorChartTypeMeta = ANCHOR_CHART_TYPE_META;
+}
 const _chartTypeMeta = (chartType) => ANCHOR_CHART_TYPE_META[String(chartType || "reference")] || ANCHOR_CHART_TYPE_META.reference;
 const _layoutForChartType = (chartType) => _chartTypeMeta(chartType).layout || "reference";
 const _badgeForChartType = (chartType, idx) => {
@@ -153,6 +183,7 @@ const AnchorChartSection = React.memo((props) => {
   const label = section.label || "";
   const bullets = Array.isArray(section.bullets) ? section.bullets : [];
   const iconUrl = section.iconUrl || "";
+  const iconAlt = typeof section.iconAlt === "string" ? section.iconAlt.trim() : "";
   const iconPrompt = section.iconPrompt || "";
   const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
   const [showIconEditor, setShowIconEditor] = React.useState(false);
@@ -178,7 +209,7 @@ const AnchorChartSection = React.memo((props) => {
       const resultB64 = await callGeminiImageEdit(fullRefinePrompt, rawB64);
       if (resultB64) {
         if (props.onIconChange) props.onIconChange(resultB64);
-        else onChange({ ...section, iconUrl: resultB64 });
+        else onChange(_ac_withIcon(section, resultB64));
         setRefinePrompt("");
         addToast("Image refined successfully!", "success");
       }
@@ -232,7 +263,7 @@ const AnchorChartSection = React.memo((props) => {
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: "", role: "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
+    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: iconAlt, role: iconAlt ? void 0 : "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : viewerIsStudent ? null : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -261,7 +292,7 @@ const AnchorChartSection = React.memo((props) => {
         "aria-label": "Section label"
       }
     ) : /* @__PURE__ */ React.createElement(
-      "div",
+      "h2",
       {
         className: "ac-section-label",
         style: {
@@ -270,9 +301,11 @@ const AnchorChartSection = React.memo((props) => {
           fontSize: "1.375rem",
           color: marker.ink,
           letterSpacing: "0.02em",
-          lineHeight: 1.1
+          lineHeight: 1.1,
+          margin: 0
         }
       },
+      props.stepLabel ? /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, props.stepLabel, " ") : null,
       label
     ), /* @__PURE__ */ React.createElement("ul", { className: "ac-bullets mt-2 space-y-1" }, bullets.length === 0 && !isEditing && !isInteractiveStudent ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "(no items yet)") : null, isInteractiveStudent ? bullets.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "(your teacher left this section blank)") : bullets.map((_, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: marker.hex, fontWeight: "bold", marginTop: 4 } }, "\u2022"), /* @__PURE__ */ React.createElement(
       "input",
@@ -493,6 +526,7 @@ ${bulletText}`;
   }, [showInteractiveDialog]);
   const studentAnswers = data.studentAnswers || {};
   const gradingResult = data.feedback || null;
+  const gradingIsEarlier = _ac_feedbackIsEarlier(gradingResult, studentAnswers);
   const awardedXp = Number(data.prevFeedbackScore) || 0;
   const [gradingState, setGradingState] = React.useState("idle");
   const callGeminiProp = allowRuntimeAi ? props.callGemini === void 0 ? typeof window !== "undefined" && window.callGemini : props.callGemini : null;
@@ -529,7 +563,7 @@ ${bulletText}`;
       const latest = normalizeSections(resource.data);
       const section = latest.find((row) => row.id === sectionId);
       if (!section || expectedPrompt !== void 0 && (section.iconPrompt || section.label || "") !== expectedPrompt) return resource;
-      return { ...resource, data: { ...resource.data, sections: latest.map((row) => row.id === sectionId ? { ...row, iconUrl } : row) } };
+      return { ...resource, data: { ...resource.data, sections: latest.map((row) => row.id === sectionId ? _ac_withIcon(row, iconUrl) : row) } };
     };
     if (!currentChart.current.isTeacherMode || !currentChart.current.allowRuntimeAi) return;
     if (typeof props.onUpdateResource === "function") props.onUpdateResource(resourceId, update);
@@ -692,7 +726,6 @@ ${bulletText}`;
   };
   const handleStudentAnswerChange = (sectionId, bulletId, text) => {
     handleNoteUpdate("studentAnswers", (previous) => ({ ...previous, [sectionId]: { ...previous?.[sectionId] || {}, [bulletId]: text } }));
-    handleNoteUpdate("feedback", null);
   };
   const flattenedAnswers = () => {
     const out = [];
@@ -720,7 +753,8 @@ ${bulletText}`;
     }
     setGradingState("submitting");
     const requestId = generatedContent.id, requestDraft = JSON.stringify(studentAnswers);
-    handleNoteUpdate("feedback", null);
+    const sameDraft = !!gradingResult && !_ac_feedbackIsEarlier(gradingResult, studentAnswers);
+    let outcome = "idle";
     try {
       const rubric = (interactive.rubric || "").trim() || "(no rubric provided \u2014 grade for general accuracy + thoughtfulness)";
       const sectionList = sections.map((s, i) => `${i + 1}. ${s.label || "(untitled)"}`).join("\n");
@@ -757,26 +791,25 @@ ${bulletText}`;
       let txt = String(raw || "").trim();
       txt = txt.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
       const m = txt.match(/\{[\s\S]*\}/);
-      const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
-      const xpCandidate = Number(parsed.suggestedXP);
-      const xpRaw = Number.isFinite(xpCandidate) ? Math.max(0, Math.min(120, Math.round(xpCandidate))) : 0;
-      const delta = Math.max(0, xpRaw - awardedXp);
-      const strength = String(parsed.strength || "").slice(0, 600);
-      const growthNudge = String(parsed.growthNudge || "").slice(0, 600);
-      const result = { strength, growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
-      handleNoteUpdate("feedback", { ...result, draftFingerprint: requestDraft, createdAt: (/* @__PURE__ */ new Date()).toISOString() });
-      setGradingState("done");
+      const parsed = _ac_normalizeGrading(m ? JSON.parse(m[0]) : JSON.parse(txt));
+      if (!parsed) throw new Error("Grading reply had no usable feedback");
+      const xpRaw = parsed.xp;
+      const delta = sameDraft ? 0 : Math.max(0, xpRaw - awardedXp);
+      const result = { strength: parsed.strength, growthNudge: parsed.growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
+      handleNoteUpdate("feedback", { ...result, draftFingerprint: _ac_draftFingerprint(studentAnswers), createdAt: (/* @__PURE__ */ new Date()).toISOString() });
+      outcome = "done";
       if (delta > 0 && addXpProp) {
         addXpProp(delta);
         handleNoteUpdate("prevFeedbackScore", Math.max(awardedXp, xpRaw));
         addToastProp(`\u2728 +${delta} XP earned!`);
       }
     } catch (err) {
+      if (!mounted.current || currentChart.current.id !== requestId) return;
       console.warn("[AnchorChart] grading failed", err && err.message);
-      setGradingState("error");
-      addToastProp("AI grading hit an error. Try again in a moment.");
+      outcome = "error";
+      addToastProp(tx("anchor_chart.grading_error_toast", "AI grading hit an error. Try again in a moment."));
     } finally {
-      if (mounted.current && currentChart.current.id === requestId) setGradingState("idle");
+      if (mounted.current && currentChart.current.id === requestId) setGradingState(outcome);
     }
   };
   if (!generatedContent || generatedContent.type !== "anchor-chart") return null;
@@ -1030,6 +1063,7 @@ ${bulletText}`;
           {
             section: s,
             sectionIndex: idx,
+            stepLabel: chartMeta.badge === "number" ? tx("anchor_chart.step_label", "Step {n}").replace("{n}", String(idx + 1)) : "",
             isEditing,
             onChange: (next) => updateSection(idx, next),
             onIconChange: (iconUrl) => writeIcon(generatedContent.id, s.id, iconUrl),
@@ -1065,7 +1099,7 @@ ${bulletText}`;
       "aria-busy": gradingState === "submitting"
     },
     gradingState === "submitting" ? "\u23F3 Grading\u2026" : "\u2728 Submit for AI feedback"
-  )), gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2", role: "status", "aria-live": "polite", "aria-atomic": "true" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, "One thing to try next"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, "+", gradingResult.xpAwarded, " XP earned")) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, "You've already earned XP here \u2014 improve your answers to earn more.") : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700", role: "alert" }, "Couldn't reach the AI grader \u2014 try again in a moment.") : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
+  )), gradingResult && gradingIsEarlier ? /* @__PURE__ */ React.createElement("p", { role: "status", "data-anchor-feedback-earlier-draft": "true", className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[12px] font-semibold text-amber-950" }, tx("anchor_chart.feedback_earlier_draft", "Feedback on an earlier draft of your chart. Keep it in view while you revise, or submit again for new feedback.")) : null, gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2", role: "status", "aria-live": "polite", "aria-atomic": "true" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, "One thing to try next"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, "+", gradingResult.xpAwarded, " XP earned")) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, "You've already earned XP here \u2014 improve your answers to earn more.") : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700", role: "alert" }, tx("anchor_chart.grading_error", "Couldn't get AI feedback. Your answers are still here. Try again in a moment.")) : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4",

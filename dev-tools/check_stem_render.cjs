@@ -52,6 +52,8 @@ try {
   // node_modules). SKIP rather than fail — this gate is best-effort where React+jsdom exist
   // (locally + the test jobs); it must never block a deploy/CI lane that simply lacks them.
   console.warn('[check_stem_render] SKIPPED — React/jsdom not found at ' + MODULES + ' (' + e.message + ')');
+  // The verify.yml gate job installs these deps and sets ALLOFLOW_REQUIRE_RENDER_DEPS=1, so there a skip would be a gate passing without running.
+  if (process.env.ALLOFLOW_REQUIRE_RENDER_DEPS === '1') { console.error('[check_stem_render] FAILED: ALLOFLOW_REQUIRE_RENDER_DEPS=1 but React/jsdom did not load from desktop/web-app/node_modules'); process.exit(1); }
   process.exit(0);
 }
 

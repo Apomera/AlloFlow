@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-30",
+  "scope": "Thread Kit palette editing, exact color reuse, history, export and durable workflow precision",
+  "sourceSHA256": "617635886C47AAF82D3F22D5071E8CC314C04350E3030D962BF8AEE4AEB79D0F",
+  "sourcePublicIdentical": true,
+  "tests": [
+    {"report": "palette-precision-results.json", "files": 2, "passed": 21},
+    {"report": "palette-regression-results.json", "files": 14, "passed": 173, "failed": 0, "newCases": 20}
+  ],
+  "browser": {"report": "palette-browser-results.json", "passed": true, "pageErrors": 0, "desktopViewport": [1440, 1000], "phoneViewport": [390, 844], "phoneOverflow": false, "touchTargetsMinPx": 44, "cssDownloadExact": true, "spritePixelRGBA": [18, 52, 86, 255], "existingPixelPreserved": true, "lastSwatchFocusRecovery": true},
+  "previews": ["palette-desktop-editor.png", "palette-phone-editor.png", "palette-browser-export.css", "palette-pixel-sprite.png"],
+  "syntaxCheck": true,
+  "spectralVendorCheck": true,
+  "scopedWhitespaceCheck": true,
+  "prePassPreservationDiffReviewed": true,
+  "committed": false,
+  "deployed": false
+}

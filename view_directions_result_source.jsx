@@ -136,10 +136,12 @@ function DirectionsResultView({
     mapAllVisited: 'directions.map_all_visited',
     mapJumpAny: 'directions.map_jump_any',
     mapVisitedSr: 'directions.map_visited_sr',
-    yourGoals: 'directions.your_goals',
+    // Own keys: directions.your_goals / signals_note belong to the command palette.
+    yourGoals: 'directions.goals_heading',
     goalDone: 'directions.goal_done',
     goalOpen: 'directions.goal_open',
-    signalsNote: 'directions.signals_note',
+    goalMissing: 'directions.goal_not_in_pack',
+    signalsNote: 'directions.goals_device_note',
     missingChoices: 'directions.missing_choices',
     choices: 'directions.choices',
     selectedPrefix: 'directions.selected_prefix',
@@ -181,6 +183,7 @@ function DirectionsResultView({
       done: goal.done === true,
       progressText: directionsResultText(goal.progressText, '', 80),
       resourceRef: typeof goal.resourceRef === 'string' ? goal.resourceRef.slice(0, 200) : '',
+      missing: goal.missing === true && goal.done !== true,
     }));
   const recommendation = recommendationView && typeof recommendationView === 'object'
     ? recommendationView
@@ -221,14 +224,16 @@ function DirectionsResultView({
     : 0;
   const choiceBoard = choiceValue && choiceItems.length >= 1
     ? {
-      title: directionsResultText(choiceValue.title, 'Choose an activity', 120),
-      prompt: directionsResultText(choiceValue.prompt, 'Pick one activity to work on first.', 240),
+      title: directionsResultText(choiceValue.title, text('directions.choice_board_title', 'Choose an activity', 120), 120),
+      prompt: directionsResultText(choiceValue.prompt, text('directions.choice_board_prompt', 'Pick one activity to work on first. You can return here and choose another later.', 240), 240),
       items: choiceItems,
     }
     : null;
 
   const visitedCount = stations.filter(station => station.visited).length;
   const doneCount = goals.filter(goal => goal.done).length;
+  // A goal whose resource is not in this pack can never tick, so it is not counted.
+  const goalTotal = goals.filter(goal => !goal.missing).length;
   const showMap = showQuestMap === true;
   const mapWidth = Math.max(340, 100 + stations.length * 88, goals.length ? 120 + (goals.length - 1) * 92 : 0);
   const nodeX = index => 100 + index * 88;
@@ -243,7 +248,7 @@ function DirectionsResultView({
 
   const mapAriaLabel = text('mapSummary', 'Quest map') + ': ' + visitedCount + '/' + stations.length + ' '
     + text('stationsVisited', 'stations visited')
-    + (goals.length ? ', ' + doneCount + '/' + goals.length + ' ' + text('goals', 'goals') : '');
+    + (goalTotal ? ', ' + doneCount + '/' + goalTotal + ' ' + text('goals', 'goals') : '');
   const trustedBodyHtml = typeof bodyHtml === 'string' ? bodyHtml : '';
 
   return (
@@ -454,9 +459,15 @@ function DirectionsResultView({
 
         {goals.length > 0 && (
           <div className="border-t border-amber-100 pt-3" role="group" aria-label={text('yourGoals', 'Your goals')}>
-            <p className="text-xs font-bold text-amber-700 mb-2" aria-live="polite">{text('yourGoals', 'Your goals')} · {doneCount}/{goals.length}</p>
+            <p className="text-xs font-bold text-amber-700 mb-2" aria-live="polite">{text('yourGoals', 'Your goals')}{goalTotal > 0 ? ' · ' + doneCount + '/' + goalTotal : ''}</p>
             <ul className="space-y-2 list-none p-0 m-0">
-              {goals.map(goal => (
+              {goals.map(goal => goal.missing ? (
+                <li key={goal.id} className="flex items-center gap-2" data-goal-missing="true">
+                  <span className="w-4 h-4 rounded-full border-2 border-dashed border-slate-300 inline-block flex-shrink-0" aria-hidden="true" />
+                  <span className="text-sm text-slate-600">{goal.label}<span className="sr-only">{', '}</span></span>
+                  <span className="text-[11px] text-slate-600 font-semibold ml-auto flex-shrink-0">{text('goalMissing', 'Not in this pack')}</span>
+                </li>
+              ) : (
                 <li key={goal.id} className="flex items-center gap-2">
                   {goal.kind === 'manual' ? (
                     <input
@@ -480,7 +491,7 @@ function DirectionsResultView({
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-slate-600 mt-3">{text('signalsNote', 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.', 500)}</p>
+            <p className="text-xs text-slate-600 mt-3">{text('signalsNote', 'Goals check themselves on this device as you play and earn XP, and your own checkmarks count too.', 500)}</p>
           </div>
         )}
       </div>

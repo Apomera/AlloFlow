@@ -1,0 +1,66 @@
+
+Running 13 tests using 1 worker
+
+
+
+[1A[2K(node:42572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:42572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K[2/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:66:5 › phone layout, reduced motion and keyboard-equivalent selection
+[1A[2K[3/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:88:5 › volcanic terrain, scenic exploration and habitat changes preserve the experiment and release scenery
+[1A[2K[4/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:135:5 › 3D failure retains the complete simulation in a habitat map
+[1A[2K[5/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:159:5 › guided investigation pauses at its result, records reviewed evidence, and resumes its field notes
+[1A[2K[6/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:201:5 › replay preserves survivor positions and genes; family connections navigate recorded generations
+[1A[2K[7/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:238:5 › named residents and two futures preserve the expedition, save evidence, and release both renderers
+[1A[2K[8/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:292:5 › two futures and resident browsing remain usable on a phone with motion reduced
+[1A[2K[9/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:325:5 › trait lenses display actual values, preserve coats and reuse measurement buffers
+[1A[2K[10/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:399:5 › generation stories replay actual cohorts, stop reliably and keep the expedition unchanged
+[1A[2K[11/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:434:5 › generation stories keep the recorded habitat after a pending change and close without advancing
+[1A[2K[12/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:465:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K[13/13] [chromium] › tests\e2e\evolab-living-island.spec.ts:517:5 › phone family journey stays usable across long histories and reports a lost lineage
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:517:5 › phone family journey stays usable across long histories and reports a lost lineage 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      543 |   await page.getByText('Read the complete family record', { exact: true }).click();
+      544 |   await expect(page.locator('.ei-family-record tbody tr')).toHaveCount(13);
+    > 545 |   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+          |                                                                                                    ^
+      546 |   await page.locator('.ei-family-journey').screenshot({ path: report + '/family-journey-phone.png' });
+      547 |   expect(await page.evaluate(() => (window as any).__toolData.evoLab.island)).toEqual(world);
+      548 | });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:545:100
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\discovery-full-artifacts\evolab-living-island-phone-42785--and-reports-a-lost-lineage-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\discovery-full-artifacts\evolab-living-island-phone-42785--and-reports-a-lost-lineage-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\discovery-full-artifacts\evolab-living-island-phone-42785--and-reports-a-lost-lineage-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\discovery-full-artifacts\evolab-living-island-phone-42785--and-reports-a-lost-lineage-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\discovery-full-artifacts\evolab-living-island-phone-42785--and-reports-a-lost-lineage-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\discovery-full-artifacts\evolab-living-island-phone-42785--and-reports-a-lost-lineage-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  Slow test file: [chromium] › tests\e2e\evolab-living-island.spec.ts (7.3m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:517:5 › phone family journey stays usable across long histories and reports a lost lineage 
+  12 passed (7.4m)

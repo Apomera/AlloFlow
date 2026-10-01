@@ -543,7 +543,9 @@ const DraftFeedbackInterface = React.memo(({
   previousDraft,
   onSubmit,
   onCancel,
-  draftCount = 1
+  draftCount = 1,
+  finalScore = null,
+  xpEarned = null
 }) => {
   const { t } = useContext(LanguageContext);
   const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
@@ -706,18 +708,18 @@ const DraftFeedbackInterface = React.memo(({
             {t('mastery.mastery_desc')}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto">
-            <div className={cx('p-6 rounded-2xl', styles.stat)}>
+            {(typeof finalScore === 'number' || typeof gradingDetails?.rawScore === 'number') && <div className={cx('p-6 rounded-2xl', styles.stat)}>
                 <div className={cx('font-bold uppercase text-xs mb-2', styles.muted)}>{t('mastery.final_score')}</div>
-                <div className={cx('text-5xl font-black', styles.title)}>{gradingDetails?.score || 100}</div>
-            </div>
+                <div className={cx('text-5xl font-black', styles.title)}>{typeof finalScore === 'number' ? finalScore : gradingDetails.rawScore}</div>
+            </div>}
             <div className={cx('p-6 rounded-2xl', styles.stat)}>
                 <div className={cx('font-bold uppercase text-xs mb-2', styles.muted)}>{t('mastery.drafts')}</div>
                 <div className={cx('text-5xl font-black', styles.title)}>{draftCount}</div>
             </div>
-            <div className={cx('p-6 rounded-2xl', styles.stat)}>
+            {typeof xpEarned === 'number' && <div className={cx('p-6 rounded-2xl', styles.stat)}>
                 <div className={cx('font-bold uppercase text-xs mb-2', styles.muted)}>{t('mastery.xp_earned')}</div>
-                <div className={cx('text-5xl font-black', styles.title)}>+{gradingDetails?.score * 2 || 200}</div>
-            </div>
+                <div className={cx('text-5xl font-black', styles.title)}>+{xpEarned}</div>
+            </div>}
         </div>
         {gradingDetails?.feedback?.strength && (
              <div className={cx('p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto', styles.panel)}>

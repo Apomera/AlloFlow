@@ -1,13 +1,16 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const anti = readSourceFile(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 // Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
-const liveDock = fs.readFileSync(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
-const liveLessonSource = fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
+const liveDock = readSourceFile(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
+const liveLessonSource = readSourceFile(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
 let moduleApi;
 
 beforeAll(() => {
@@ -18,7 +21,7 @@ beforeAll(() => {
     },
   };
   // eslint-disable-next-line no-new-func
-  new Function('window', fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_module.js'), 'utf8'))(windowStub);
+  new Function('window', readSourceFile(path.join(ROOT, 'view_live_lesson_run_module.js'), 'utf8'))(windowStub);
   moduleApi = windowStub.AlloModules.LiveLessonRun;
 });
 

@@ -1,0 +1,818 @@
+{
+  "spotter": {
+    "errors": [],
+    "scans": [
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "target": "radius",
+    "feedbackFont": "14px",
+    "tabScrollY": 1200,
+    "finalState": {
+      "_activeTab": "spotter",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "_bodyView3d": false,
+      "_startHereDismissed": true,
+      "_structureNotes": {
+        "skull": "My saved note"
+      },
+      "_structureConfidence": {
+        "skull": "learning",
+        "radius": "practice"
+      },
+      "_retrievalEvidence": {
+        "skull": {
+          "attempts": 2,
+          "correct": 1
+        },
+        "radius": {
+          "attempts": 1,
+          "correct": 0
+        }
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_spotterActive": true,
+      "_spotterTarget": "tarsals",
+      "_spotterFeedback": null,
+      "_spotterOpts": [
+        {
+          "id": "scaphoid_bone"
+        },
+        {
+          "id": "tarsals"
+        },
+        {
+          "id": "metacarpals"
+        },
+        {
+          "id": "tibia"
+        }
+      ],
+      "_spotterStartTime": 1790769428921,
+      "_spotterElapsed": null,
+      "_spotterRoundTimed": false,
+      "_spotterSerial": 3,
+      "_anatomyModelFocus": false,
+      "_spotterTotal": 1,
+      "_confidenceAt": {
+        "radius": 1790769424149
+      },
+      "_quizQuestion": {
+        "context": "science-v3|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone",
+        "index": 0,
+        "poolIds": [
+          "radius",
+          "skull",
+          "mandible",
+          "clavicle",
+          "sternum",
+          "ribs",
+          "humerus",
+          "ulna",
+          "carpals",
+          "pelvis",
+          "femur",
+          "patella",
+          "tibia",
+          "fibula",
+          "tarsals",
+          "hyoid",
+          "metatarsals",
+          "metacarpals",
+          "scaphoid_bone"
+        ],
+        "schedule": "coverage-v1",
+        "structureId": "radius",
+        "type": 0,
+        "token": "muo1voye-n1f3fo2v09",
+        "binaryTrue": true
+      },
+      "_readingMode": true,
+      "_showSystemsMotion": false,
+      "quizMode": false,
+      "_tourActive": true,
+      "_tourStepIdx": 0,
+      "_tourSystem": "skeletal",
+      "selectedStructure": "skull",
+      "search": "",
+      "_structuresViewed": {
+        "skull": true
+      },
+      "_badges": {
+        "firstStructure": true
+      },
+      "_confettiParticles": [
+        {
+          "x": 0.5072599865472494,
+          "y": 0.1621981757446942,
+          "vx": -0.1298768851873986,
+          "vy": -2.8924842574836607,
+          "rot": 2.492455837792648,
+          "spin": 2.466168494818022,
+          "ci": 0,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.5023897643467613,
+          "y": 0.16408410623862857,
+          "vx": -0.9957191496920916,
+          "vy": -1.0979901869190938,
+          "rot": 5.124980577279755,
+          "spin": -0.4312062510386898,
+          "ci": 1,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.49538313741856826,
+          "y": 0.1461497268287082,
+          "vx": -0.4601713352145551,
+          "vy": -1.8177914877257124,
+          "rot": 5.835955587489921,
+          "spin": -1.109383205607525,
+          "ci": 2,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.3170708879866743,
+          "y": 0.10708951493177628,
+          "vx": -0.7446375158961591,
+          "vy": -2.423553376247625,
+          "rot": 6.270798586590047,
+          "spin": 2.8006677416229744,
+          "ci": 3,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.38209170186453767,
+          "y": 0.13196289652466667,
+          "vx": -0.8687262203676525,
+          "vy": -2.9519152808619236,
+          "rot": 3.938932139101688,
+          "spin": -1.3165085674771453,
+          "ci": 4,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6759174478696692,
+          "y": 0.24849200009491593,
+          "vx": -0.01090745895426215,
+          "vy": -1.3407896944776998,
+          "rot": 3.681891506070444,
+          "spin": -0.6271340704526653,
+          "ci": 5,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.5604770110001804,
+          "y": 0.15153312687749504,
+          "vx": 0.6535025273185731,
+          "vy": -2.2483121447237835,
+          "rot": 4.215553961995653,
+          "spin": 0.08922138107334732,
+          "ci": 6,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6779604953077458,
+          "y": 0.24537400193728873,
+          "vx": 0.28231576441266815,
+          "vy": -1.850480435116893,
+          "rot": 2.862860683141904,
+          "spin": -0.16323953469252372,
+          "ci": 7,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6900764474167486,
+          "y": 0.2278956849913697,
+          "vx": -0.8658603048930165,
+          "vy": -2.100998670360478,
+          "rot": 6.26395766144508,
+          "spin": 0.997120701452008,
+          "ci": 8,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6381586486647937,
+          "y": 0.24794250870864287,
+          "vx": -0.12308089955723744,
+          "vy": -2.862366591110166,
+          "rot": 4.79540800954022,
+          "spin": 0.5066869859108505,
+          "ci": 9,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6437869060392101,
+          "y": 0.11266986785343487,
+          "vx": 0.20100727074752522,
+          "vy": -2.4819097629376166,
+          "rot": 1.8381638429842417,
+          "spin": -0.954991551303128,
+          "ci": 10,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.476091332018676,
+          "y": 0.2741879311863638,
+          "vx": -0.6826735032928521,
+          "vy": -2.9532609445879894,
+          "rot": 3.085282023528294,
+          "spin": 1.8811238263922525,
+          "ci": 11,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6494397076473364,
+          "y": 0.2227076398848552,
+          "vx": 0.9688602084321427,
+          "vy": -1.3281114519730868,
+          "rot": 5.79706450453063,
+          "spin": 1.5398941053336486,
+          "ci": 12,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.4031679906789683,
+          "y": 0.116605411005105,
+          "vx": 0.31232006917794175,
+          "vy": -2.4862559182183928,
+          "rot": 1.154068940747966,
+          "spin": 2.7784935407431446,
+          "ci": 13,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.42420022615818925,
+          "y": 0.18963082080801152,
+          "vx": -0.34138877730593986,
+          "vy": -2.973575850058013,
+          "rot": 5.748723137705442,
+          "spin": -1.226475571333288,
+          "ci": 14,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.4615236763100101,
+          "y": 0.16810877802976681,
+          "vx": -0.8313672450310954,
+          "vy": -2.8294327461811575,
+          "rot": 1.3262495174859485,
+          "spin": 1.0433234250625927,
+          "ci": 15,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.38109847336578395,
+          "y": 0.12270928717414423,
+          "vx": -0.19059264060897796,
+          "vy": -1.790862460394465,
+          "rot": 1.340795629557562,
+          "spin": 0.22717655649575774,
+          "ci": 16,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.41671481274330385,
+          "y": 0.13310574509858275,
+          "vx": 0.6383329097193604,
+          "vy": -1.8078183530819452,
+          "rot": 3.9592890150572697,
+          "spin": -2.009831198274698,
+          "ci": 17,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.3220033394832475,
+          "y": 0.1732718830972108,
+          "vx": 0.6095067279537196,
+          "vy": -2.7544649650005892,
+          "rot": 3.080179150509738,
+          "spin": 1.7454012412582005,
+          "ci": 18,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6865069260212461,
+          "y": 0.2980504794674418,
+          "vx": -0.1727658479827734,
+          "vy": -2.669971385389438,
+          "rot": 4.9238108221865735,
+          "spin": -0.8726195770023584,
+          "ci": 19,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.5566218827743745,
+          "y": 0.1653713463177088,
+          "vx": -0.7187253343308528,
+          "vy": -1.8145543113920888,
+          "rot": 2.09027047618652,
+          "spin": 2.61237359205322,
+          "ci": 20,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.43222349970342955,
+          "y": 0.12037741179424953,
+          "vx": -0.39819324707956416,
+          "vy": -2.2388309132120514,
+          "rot": 1.4603435947757786,
+          "spin": -1.7534688001160563,
+          "ci": 21,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.5655838400764067,
+          "y": 0.17677263455283887,
+          "vx": 0.8160413087800165,
+          "vy": -1.7389466396794215,
+          "rot": 1.0311590757304065,
+          "spin": 2.1119606975414627,
+          "ci": 22,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.5223967503263623,
+          "y": 0.2248850222316191,
+          "vx": -0.7054078176757357,
+          "vy": -2.5887886979664794,
+          "rot": 5.126122611613985,
+          "spin": 1.8180548018865703,
+          "ci": 23,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.4764232017460498,
+          "y": 0.18420391916765158,
+          "vx": 0.5923643848367197,
+          "vy": -1.87715627274906,
+          "rot": 5.349523774305417,
+          "spin": -0.5117740534466797,
+          "ci": 24,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.44625622283632027,
+          "y": 0.18387538118231062,
+          "vx": 0.8860208653222521,
+          "vy": -2.9246302696586355,
+          "rot": 5.012295181949991,
+          "spin": 1.8655701962410676,
+          "ci": 25,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.3618267707190831,
+          "y": 0.2819046600132785,
+          "vx": 0.593109133325664,
+          "vy": -2.0130838981997767,
+          "rot": 5.3849780128464815,
+          "spin": 0.18602664596735874,
+          "ci": 26,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.6838267637439897,
+          "y": 0.26153901414413716,
+          "vx": 0.6293033781617858,
+          "vy": -2.2997184659624583,
+          "rot": 4.010538980155553,
+          "spin": -2.2457187575643403,
+          "ci": 27,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.4743620486778092,
+          "y": 0.26410289990393865,
+          "vx": -0.009946021934963856,
+          "vy": -1.4691337194530922,
+          "rot": 0.6111506593904329,
+          "spin": -2.484595496776267,
+          "ci": 28,
+          "born": 1790769428563
+        },
+        {
+          "x": 0.5849802692859795,
+          "y": 0.12904907508960967,
+          "vx": 0.14174893949676592,
+          "vy": -1.7827743075747102,
+          "rot": 3.301623100162392,
+          "spin": 2.9685281236015397,
+          "ci": 29,
+          "born": 1790769428563
+        }
+      ]
+    }
+  },
+  "imaging": {
+    "errors": [],
+    "scans": [
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "violations": []
+      },
+      {
+        "width": 390,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 390,
+          "scroll": 390
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 768,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 768,
+          "scroll": 768
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 1440,
+        "theme": "contrast",
+        "locale": "en",
+        "dimensions": {
+          "width": 1440,
+          "scroll": 1440
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "light",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "width": 320,
+        "theme": "contrast",
+        "locale": "ar-larger",
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "positions": {
+      "canvasTop": 1181.28125,
+      "promptTop": 921.9375,
+      "gap": 14
+    },
+    "finalState": {
+      "_activeTab": "imaging",
+      "system": "organs",
+      "view": "anterior",
+      "complexity": 3,
+      "_startHereDismissed": true,
+      "_structureNotes": {
+        "heart": "My structure note"
+      },
+      "imaging": {
+        "modality": "MRI",
+        "region": "chest",
+        "plane": "coronal",
+        "slice": 50,
+        "showLabels": true,
+        "note": "My scan note",
+        "annotations": [
+          {
+            "id": 901,
+            "type": "pin",
+            "note": "Saved observation",
+            "x": 0.35,
+            "y": 0.45,
+            "modality": "CT",
+            "region": "head",
+            "plane": "axial",
+            "slice": 50
+          },
+          {
+            "id": 902,
+            "type": "ruler",
+            "note": "Saved measurement",
+            "x": 0.2,
+            "y": 0.4,
+            "x2": 0.4,
+            "y2": 0.4,
+            "distanceMm": 88.3,
+            "modality": "CT",
+            "region": "head",
+            "plane": "axial",
+            "slice": 50
+          },
+          {
+            "id": "img-1790769431824",
+            "type": "pin",
+            "x": 0.52,
+            "y": 0.5,
+            "note": "My scan note",
+            "modality": "MRI",
+            "region": "chest",
+            "plane": "coronal",
+            "slice": 50
+          }
+        ],
+        "modalityPicks": {
+          "fracture": "CT"
+        },
+        "bodyScopeAnswers": {
+          "saved": "above"
+        },
+        "spot": {
+          "active": true,
+          "target": "Right lung",
+          "result": "miss",
+          "score": 0,
+          "total": 2,
+          "labelsWere": true,
+          "version": 1,
+          "serial": 2,
+          "context": {
+            "modality": "MRI",
+            "region": "chest",
+            "plane": "coronal",
+            "slice": 50,
+            "sequence": "T2"
+          },
+          "clickX": 0.52,
+          "clickY": 0.5,
+          "interrupted": null
+        },
+        "rulerStart": null,
+        "kbX": 0.52,
+        "kbY": 0.5,
+        "sequence": "T2",
+        "windowWidth": 900,
+        "windowLevel": 450
+      },
+      "_systemsExplored": {
+        "organs": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_readingMode": true
+    }
+  }
+}

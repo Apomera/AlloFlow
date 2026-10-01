@@ -1,0 +1,56 @@
+{
+  "tab": "notes",
+  "notebook": {
+    "microraptor": {
+      "question": "Could it glide?"
+    }
+  },
+  "evidenceWorkbench": {
+    "caseId": "quills",
+    "cases": {
+      "quills": {
+        "claim": "My existing feather idea."
+      }
+    }
+  },
+  "kpgInvestigation": {
+    "citations": [
+      "crater",
+      "soot"
+    ],
+    "claim": "A local impact could cause distant food-web disruption through reduced sunlight.",
+    "reasoning": "The crater supports an impact. Models connect atmospheric particles to reduced light and food production.",
+    "limit": "I am now asking why some lineages survived.",
+    "step": 2,
+    "source": "soot",
+    "links": {
+      "sky": "particles",
+      "plants": "production",
+      "web": "connections"
+    },
+    "checked": true,
+    "firstLinks": {
+      "sky": "local",
+      "plants": "all",
+      "web": "hunters"
+    },
+    "first": {
+      "citations": [
+        "crater",
+        "soot"
+      ],
+      "claim": "A local impact disrupted distant food webs.",
+      "reasoning": "The crater supports an impact. Models connect atmospheric particles to reduced light and food production.",
+      "limit": "This does not tell us exactly how long darkness lasted."
+    },
+    "record": {
+      "citations": [
+        "crater",
+        "soot"
+      ],
+      "claim": "A local impact could cause distant food-web disruption through reduced sunlight.",
+      "reasoning": "The crater supports an impact. Models connect atmospheric particles to reduced light and food production.",
+      "limit": "This does not tell us exactly how long darkness lasted."
+    }
+  }
+}

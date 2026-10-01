@@ -1,0 +1,21 @@
+{
+  "depth_inquiry_same": "Same depression",
+  "depth_inquiry_title": "Predict and test",
+  "depth_inquiry_intro": "Make two predictions for this A/B comparison, inspect the evidence, then explain what you found. You can revise your predictions.",
+  "depth_inquiry_peak_question": "At the deepest point, which chest is more depressed?",
+  "depth_inquiry_release_question": "Between pushes, which chest is more depressed?",
+  "depth_inquiry_check": "Check predictions",
+  "depth_inquiry_result": "{count} of 2 predictions match this model.",
+  "depth_inquiry_peak_evidence": "At the deepest point: A is {a} cm depressed; B is {b} cm depressed.",
+  "depth_inquiry_release_evidence": "Between pushes: A is {a} cm depressed; B is {b} cm depressed.",
+  "depth_inquiry_view_peak": "View peak evidence",
+  "depth_inquiry_view_release": "View release evidence",
+  "depth_inquiry_both_seen": "Both positions inspected. Use the curves and numbers to explain your comparison.",
+  "depth_inquiry_inspect_both": "Inspect both positions with the evidence buttons, then write your explanation.",
+  "depth_inquiry_explain": "My explanation",
+  "depth_inquiry_explain_help": "Use an observation from the peak and one from the release. Your note is saved with these settings; it is not graded.",
+  "depth_inquiry_takeaway_recoil": "The peak depths match, but the release heights differ. Inspecting the peak alone cannot show whether both settings fully recoil.",
+  "depth_inquiry_takeaway_depth": "The peak depths differ, but depression at release matches. Compare depth and recoil at their separate points in the cycle.",
+  "depth_inquiry_takeaway_general": "Peak depth and depression at release describe separate points in the cycle. Use both observations to explain the settings.",
+  "depth_inquiry_reset_hint": "Changing depth, recoil, saved A, or age starts new predictions. Cycle position, rate, and anatomy leave these predictions in place."
+}

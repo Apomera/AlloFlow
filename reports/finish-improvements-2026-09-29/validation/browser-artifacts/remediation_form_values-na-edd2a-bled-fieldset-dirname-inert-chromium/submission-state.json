@@ -1,0 +1,46 @@
+{
+  "browserName": "chromium",
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 0.9770742358078602,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "source": {
+    "payload": [],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "candidate": {
+    "payload": [],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "repaired": {
+    "payload": [],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  }
+}

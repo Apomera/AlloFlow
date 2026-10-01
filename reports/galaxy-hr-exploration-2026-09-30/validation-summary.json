@@ -1,0 +1,170 @@
+{
+  "uniqueSuites": 17,
+  "uniqueAssertions": 474,
+  "passedAssertions": 474,
+  "failedAssertions": [],
+  "reports": [
+    "galaxy-tests.json",
+    "updated-tests.json"
+  ],
+  "note": "The initial full run found eight outdated H-R wording/source-shape expectations. Those contracts were updated, and the review, mode smoke, and H-R exploration suites were rerun against the final source. The later report replaces the same suites in the initial report.",
+  "source": {
+    "sourceSha256": "54ac6e1aa8d50320f9964a72daa3e5959263c1b0e9159c0942d9c57b431a380b",
+    "mirrorSha256": "54ac6e1aa8d50320f9964a72daa3e5959263c1b0e9159c0942d9c57b431a380b",
+    "sourceMirrorMatch": true,
+    "labelsChecked": 30,
+    "labelMismatches": [],
+    "missingLabels": []
+  },
+  "browser": {
+    "passed": true,
+    "checks": [
+      "Native mouse and bounded keyboard stage selection update plot and star scene, preserving focus.",
+      "Drags, canceled pointers, and empty plot space preserve the stage.",
+      "Keep, Sun, and Clear use native controls; reference survives mass and mode changes while investigation notes remain.",
+      "Region labels retain space with 40% wider text on the smallest layout.",
+      "1440, 390, 320 px and RTL preserve readable labels, axis directions, targets, and near-point touch selection.",
+      "Six mass cases retain one keyboard entry point; brown dwarfs and unmodeled remnants show explicit model limits."
+    ],
+    "sizes": [
+      {
+        "width": 1440,
+        "noOverflow": true,
+        "readableLabels": true,
+        "touchTargets": true,
+        "nearPointTouch": true
+      },
+      {
+        "width": 390,
+        "noOverflow": true,
+        "readableLabels": true,
+        "touchTargets": true,
+        "nearPointTouch": true
+      },
+      {
+        "width": 320,
+        "noOverflow": true,
+        "readableLabels": true,
+        "touchTargets": true,
+        "nearPointTouch": true
+      }
+    ],
+    "branches": [
+      {
+        "mass": 0.03,
+        "plottedStages": [
+          "protostar",
+          "main_sequence"
+        ]
+      },
+      {
+        "mass": 0.3,
+        "plottedStages": [
+          "protostar",
+          "main_sequence",
+          "blue_dwarf",
+          "white_dwarf"
+        ]
+      },
+      {
+        "mass": 1,
+        "plottedStages": [
+          "protostar",
+          "main_sequence",
+          "red_giant",
+          "planetary_nebula",
+          "white_dwarf"
+        ]
+      },
+      {
+        "mass": 12,
+        "plottedStages": [
+          "protostar",
+          "main_sequence",
+          "red_supergiant"
+        ]
+      },
+      {
+        "mass": 30,
+        "plottedStages": [
+          "protostar",
+          "main_sequence",
+          "blue_supergiant"
+        ]
+      },
+      {
+        "mass": 50,
+        "plottedStages": [
+          "protostar",
+          "main_sequence",
+          "blue_supergiant"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "connected": {
+    "errors": [],
+    "layouts": [
+      {
+        "width": 1440,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "overflow": false
+      },
+      {
+        "width": 320,
+        "overflow": false
+      }
+    ],
+    "stageBranches": [
+      {
+        "mass": 0.05,
+        "stages": 4,
+        "last": "black_dwarf"
+      },
+      {
+        "mass": 0.3,
+        "stages": 6,
+        "last": "black_dwarf"
+      },
+      {
+        "mass": 1,
+        "stages": 7,
+        "last": "black_dwarf"
+      },
+      {
+        "mass": 12,
+        "stages": 6,
+        "last": "neutron_star"
+      },
+      {
+        "mass": 30,
+        "stages": 6,
+        "last": "black_hole"
+      }
+    ],
+    "starToLife": true,
+    "starToChemistry": true,
+    "chemistryToLife": true,
+    "chemistryRestore": true,
+    "notesPreserved": true,
+    "keyboardTimeLapse": true,
+    "modeCleanup": true,
+    "quizResume": true,
+    "quizActiveTabPreserved": true,
+    "quizResultsPreserved": true,
+    "quizRestart": true,
+    "quizCancel": true,
+    "quizModeCancellation": true,
+    "quizInvalidResponse": true,
+    "quizStaleReply": true,
+    "quizTimeout": true,
+    "quizServiceFailure": true,
+    "quizUnmount": true,
+    "quizRestoredLoading": true,
+    "rtl": true
+  }
+}

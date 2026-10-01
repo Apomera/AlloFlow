@@ -1,0 +1,179 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "shape": "triangle",
+      "grid": 2,
+      "rotation": 45,
+      "warp": 50,
+      "tiles": 16,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0
+    },
+    {
+      "shape": "triangle",
+      "grid": 6,
+      "rotation": 0,
+      "warp": 0,
+      "tiles": 104,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0
+    },
+    {
+      "shape": "triangle",
+      "grid": 6,
+      "rotation": 123,
+      "warp": 35,
+      "tiles": 86,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.000232696533203125
+    },
+    {
+      "shape": "triangle",
+      "grid": 20,
+      "rotation": 45,
+      "warp": 50,
+      "tiles": 775,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.0008595784505208334
+    },
+    {
+      "shape": "square",
+      "grid": 2,
+      "rotation": 45,
+      "warp": 50,
+      "tiles": 12,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.000012715657552083334
+    },
+    {
+      "shape": "square",
+      "grid": 6,
+      "rotation": 0,
+      "warp": 0,
+      "tiles": 64,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0
+    },
+    {
+      "shape": "square",
+      "grid": 6,
+      "rotation": 123,
+      "warp": 35,
+      "tiles": 52,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.000044504801432291664
+    },
+    {
+      "shape": "square",
+      "grid": 20,
+      "rotation": 45,
+      "warp": 50,
+      "tiles": 480,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.00008646647135416667
+    },
+    {
+      "shape": "hexagon",
+      "grid": 2,
+      "rotation": 45,
+      "warp": 50,
+      "tiles": 12,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.00009918212890625
+    },
+    {
+      "shape": "hexagon",
+      "grid": 6,
+      "rotation": 0,
+      "warp": 0,
+      "tiles": 68,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0
+    },
+    {
+      "shape": "hexagon",
+      "grid": 6,
+      "rotation": 123,
+      "warp": 35,
+      "tiles": 59,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.0002657572428385417
+    },
+    {
+      "shape": "hexagon",
+      "grid": 20,
+      "rotation": 45,
+      "warp": 50,
+      "tiles": 555,
+      "samples": 2116,
+      "holes": 0,
+      "overlaps": 0,
+      "failures": [],
+      "uncoveredPixels": 0,
+      "svgMeanChannelDifference": 0.0006739298502604166
+    },
+    {
+      "warpedRotatedHit": true,
+      "pickedPixel": [
+        32,
+        159,
+        223,
+        255
+      ],
+      "undoExact": true,
+      "redoExact": true
+    },
+    {
+      "desktopPreview": 760,
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets": true
+    }
+  ],
+  "errors": []
+}

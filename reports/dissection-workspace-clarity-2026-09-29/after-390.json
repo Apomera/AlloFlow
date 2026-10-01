@@ -1,0 +1,137 @@
+{
+  "documentWidth": 390,
+  "viewport": 390,
+  "rootWidth": 390,
+  "rootScrollWidth": 390,
+  "panels": [
+    {
+      "selector": ".diss-workspace",
+      "columns": "390px",
+      "x": 0,
+      "right": 390,
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390
+    },
+    {
+      "selector": ".diss-stage",
+      "columns": "none",
+      "x": 0,
+      "right": 390,
+      "width": 390,
+      "scrollWidth": 388,
+      "clientWidth": 388
+    },
+    {
+      "selector": ".diss-stage__telemetry-grid",
+      "columns": "160.328px 160.344px",
+      "x": 31.625,
+      "right": 358.375,
+      "width": 326.75,
+      "scrollWidth": 327,
+      "clientWidth": 327
+    },
+    {
+      "selector": ".diss-stage__telemetry-head",
+      "columns": "none",
+      "x": 31.625,
+      "right": 358.375,
+      "width": 326.75,
+      "scrollWidth": 327,
+      "clientWidth": 327
+    },
+    {
+      "selector": ".diss-stage__telemetry-foot",
+      "columns": "none",
+      "x": 31.625,
+      "right": 358.375,
+      "width": 326.75,
+      "scrollWidth": 327,
+      "clientWidth": 327
+    },
+    {
+      "selector": ".diss-field-readiness__checks",
+      "missing": true
+    },
+    {
+      "selector": ".diss-selection-card",
+      "columns": "none",
+      "x": 0,
+      "right": 390,
+      "width": 390,
+      "scrollWidth": 388,
+      "clientWidth": 388
+    },
+    {
+      "selector": ".diss-selection-nav",
+      "columns": "none",
+      "x": 233,
+      "right": 373,
+      "width": 140,
+      "scrollWidth": 140,
+      "clientWidth": 140
+    }
+  ],
+  "texts": [
+    {
+      "text": "Exposure and tissue-response details",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Well preserved · 90% preservation",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "8%",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "80%",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "18%",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "12%",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Orientation",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Ventral surface centered with the limbs stabilized symmetrically. Recommended view: ventral. Current view: dorsal.Align to ventral view",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Access route",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "shallow ventral midline corridor",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Protected landmarks",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Heart (3-chamber), Liver (3 lobes), Lungs",
+      "size": 16,
+      "clipped": false
+    }
+  ]
+}

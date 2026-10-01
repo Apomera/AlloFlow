@@ -3,7 +3,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab,
-} from './helpers/stem_widgets_smoke_harness.js';
+} from './helpers/nuclear_lab_reference_harness.js';
 
 let act;
 let cfg;
@@ -229,7 +229,7 @@ describe('question-route progress semantics', () => {
       expect(grid.classList.contains('grid')).toBe(true);
       expect(grid.className).not.toMatch(/grid-cols-/);
     }
-    expect(host.querySelector('style').textContent)
+    expect(host.querySelector('[data-nuclear-lab] style').textContent)
       .toContain('.nk-readable .nk-stat-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr))}');
 
     host.innerHTML = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false } });

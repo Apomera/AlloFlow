@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "The live guide follows carry, tilt, flow, and level phases. Destination hints do not capture the pointer. Progress follows the draft, announcements change only with phases, and only recording changes the recipe.",
+    "Movement hints can be turned off and remain off after reload. Garlic requires a down-and-up pass; sideways movement gives retry guidance and does not alter the clove.",
+    "Ingredient guidance marks the correct cookware. The ladle first needs a dip; only releasing a filled ladle over the jug saves water.",
+    "Drain guidance shows positioning, tilt, and the water already removed. Escape stops flow. Circular stirring displays progress from the actual sweep recognizer.",
+    "The guide fits within a 320px expanded scene and passes accessibility scans, including forced colors. Real touch follows knife phases; graphics loss clears the guide and restores the fallback."
+  ],
+  "accessibility": [
+    {
+      "label": "Live movement guide",
+      "issues": []
+    },
+    {
+      "label": "320px expanded movement guide",
+      "issues": []
+    },
+    {
+      "label": "Forced-color movement guide",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

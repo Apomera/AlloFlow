@@ -1,0 +1,83 @@
+{
+  "observedAt": "2026-09-27T14:30:10.739Z",
+  "search": [
+    {
+      "query": "photosynthesis",
+      "status": 200,
+      "cors": "*",
+      "resultCount": 3,
+      "results": [
+        {
+          "title": "Photosynthesis",
+          "url": "https://en.wikipedia.org/wiki/Photosynthesis"
+        },
+        {
+          "title": "What is Photosynthesis |",
+          "url": "https://ssec.si.edu/stemvisions-blog/what-photosynthesis"
+        },
+        {
+          "title": "Photosynthesis",
+          "url": "https://education.nationalgeographic.org/resource/photosynthesis/"
+        }
+      ]
+    },
+    {
+      "query": "How clouds form",
+      "status": 200,
+      "cors": "*",
+      "resultCount": 3,
+      "results": [
+        {
+          "title": "How Do Clouds Form?",
+          "url": "https://science.nasa.gov/kids/earth/how-do-clouds-form/"
+        },
+        {
+          "title": "How Clouds Form",
+          "url": "https://www.noaa.gov/jetstream/clouds/how-clouds-form"
+        },
+        {
+          "title": "Clouds and How They Form | Center for Science Education",
+          "url": "https://scied.ucar.edu/learning-zone/clouds/how-clouds-form"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "file": "content_engine_module.js",
+      "status": 200,
+      "liveSha256": "415f6200f8c9a36ef90acfe5673b948129d29196a2f7c96150638fe3901f77e2",
+      "localSha256": "75e23e376148a78e8314f2f9dd81965bc9e85f39f5b226ffedabfc7b1215a043",
+      "same": false,
+      "explicitResearchQuery": true
+    },
+    {
+      "file": "ai_backend_module.js",
+      "status": 200,
+      "liveSha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "localSha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "same": true
+    },
+    {
+      "file": "gemini_api_module.js",
+      "status": 200,
+      "liveSha256": "c31781fb75fec8167f0e6cc83a72d7bfd969bff852da0ae5eeaa070ed57a3ed4",
+      "localSha256": "c31781fb75fec8167f0e6cc83a72d7bfd969bff852da0ae5eeaa070ed57a3ed4",
+      "same": true
+    },
+    {
+      "file": "view_misc_panels_module.js",
+      "status": 200,
+      "liveSha256": "71c38634b235e48f8e6619ef7ab77b00ef89c781e409f9155133e172f1c4f7d6",
+      "localSha256": "88bc30fc3c286f5c9a208c201b97ce00664277cacd585544751e485929bf24f6",
+      "same": false
+    },
+    {
+      "file": "own_sources_module.js",
+      "status": 200,
+      "liveSha256": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+      "localSha256": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a",
+      "same": false
+    }
+  ]
+}

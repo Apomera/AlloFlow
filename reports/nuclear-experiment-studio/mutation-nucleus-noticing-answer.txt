@@ -1,0 +1,48 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:737:5 › nucleus comparison checks give specific hints and retain separate answers when revisiting the builder (16.1s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:737:5 › nucleus comparison checks give specific hints and retain separate answers when revisiting the builder 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "retry"
+    Received: "correct"
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      748 |   await choices.getByRole('button', { name: 'Proton count', exact: true }).focus();
+      749 |   await page.keyboard.press('Enter');
+    > 750 |   await expect.poll(() => feedback.getAttribute('data-ns-pair-feedback')).toBe('retry');
+          |                                                                           ^
+      751 |   await expect(feedback).toHaveText('Both nuclei have 6 protons. Look at the neutron counts and try again.');
+      752 |   await expect(choices.getByRole('button', { name: 'Proton count', exact: true })).toBeFocused();
+      753 |   await expect(check).toHaveAttribute('open');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:750:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-noticing-answer\43-nuclearlab-experiment-s-8eaae-when-revisiting-the-builder-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-noticing-answer\43-nuclearlab-experiment-s-8eaae-when-revisiting-the-builder-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-nucleus-noticing-answer\43-nuclearlab-experiment-s-8eaae-when-revisiting-the-builder-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-nucleus-noticing-answer\43-nuclearlab-experiment-s-8eaae-when-revisiting-the-builder-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-nucleus-noticing-answer\43-nuclearlab-experiment-s-8eaae-when-revisiting-the-builder-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:737:5 › nucleus comparison checks give specific hints and retain separate answers when revisiting the builder 
+(node:30608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-nucleus-noticing-answer.js in place of stem_lab/stem_tool_nuclearlab.js

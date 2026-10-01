@@ -1,0 +1,8 @@
+{
+  "input": {
+    "web_topic_required": "This search connection requires a supported public topic. Choose one from Supported web-search topics, or turn off Research with Web Search to draft from your topic and selected documents. Your existing source and reading have been kept.",
+    "web_supported_topics": "Supported web-search topics",
+    "web_supported_topics_desc": "Canvas and connected search providers support these public topics. Choosing one replaces the topic above. Your instructions and selected documents stay in place.",
+    "web_choose_topic": "Choose a public topic"
+  }
+}

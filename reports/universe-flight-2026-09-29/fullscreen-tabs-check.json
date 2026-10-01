@@ -1,0 +1,278 @@
+{
+  "errors": [],
+  "checks": [
+    "tablist associations and roving tabindex",
+    "mounted inactive panels are hidden",
+    "automatic Left/Right wrapping",
+    "Home and End select endpoints",
+    "keyboard tab changes preserve paused state",
+    "Tab enters only active controls",
+    "native speed keys preserve section and gaze",
+    "native mode select preserves focus",
+    "Compose lens synchronization",
+    "Compose exposure synchronization",
+    "Compose quality synchronization",
+    "display controls preserve position and clocks",
+    "native lens keys preserve section and gaze",
+    "selected section persists after close and reopen",
+    "selected section persists after fullscreen exit and reentry",
+    "opening focuses the selected tab",
+    "section changes preserve running travel and settings",
+    "common play/pause stays reachable in every section",
+    "selected section persists during mode changes",
+    "all six mode and section combinations pass scoped accessibility",
+    "selected section persists through renderer retry",
+    "tabs remain reachable in clean view",
+    "320px tabs and all sections fit",
+    "568x320 fixed header and usable scrolling body",
+    "compact native quality and common transport remain reachable",
+    "compact Close and reopening preserve selected section",
+    "short-landscape failed orbit keeps fixed chrome and readable notice",
+    "short-landscape failed approach keeps fixed chrome and readable notice"
+  ],
+  "accessibility": [
+    {
+      "mode": "explore",
+      "section": "travel",
+      "violations": []
+    },
+    {
+      "mode": "explore",
+      "section": "explore",
+      "violations": []
+    },
+    {
+      "mode": "explore",
+      "section": "compose",
+      "violations": []
+    },
+    {
+      "mode": "relativity",
+      "section": "travel",
+      "violations": []
+    },
+    {
+      "mode": "relativity",
+      "section": "explore",
+      "violations": []
+    },
+    {
+      "mode": "relativity",
+      "section": "compose",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "desktop-compose",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "panel": {
+        "x": 1108,
+        "y": 60,
+        "width": 320,
+        "height": 790
+      },
+      "body": {
+        "x": 1125,
+        "y": 181,
+        "width": 286,
+        "height": 652
+      },
+      "scroll": {
+        "client": 652,
+        "height": 1246
+      }
+    },
+    {
+      "name": "phone-travel",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "panel": {
+        "x": 12,
+        "y": 120.578125,
+        "width": 296,
+        "height": 529.421875
+      },
+      "body": {
+        "x": 29,
+        "y": 241.578125,
+        "width": 262,
+        "height": 391.421875
+      },
+      "scroll": {
+        "client": 391,
+        "height": 391
+      }
+    },
+    {
+      "name": "phone-explore",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "panel": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 590
+      },
+      "body": {
+        "x": 29,
+        "y": 181,
+        "width": 262,
+        "height": 452
+      },
+      "scroll": {
+        "client": 452,
+        "height": 729
+      }
+    },
+    {
+      "name": "phone-compose",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "panel": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 590
+      },
+      "body": {
+        "x": 29,
+        "y": 181,
+        "width": 262,
+        "height": 452
+      },
+      "scroll": {
+        "client": 452,
+        "height": 1246
+      }
+    },
+    {
+      "name": "landscape-travel",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "panel": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "scroll": {
+        "client": 94,
+        "height": 387
+      }
+    },
+    {
+      "name": "landscape-explore",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "panel": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "scroll": {
+        "client": 94,
+        "height": 706
+      }
+    },
+    {
+      "name": "landscape-compose",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "panel": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "scroll": {
+        "client": 94,
+        "height": 1242
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "orbit",
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "notice": {
+        "x": 245,
+        "y": 103.375,
+        "width": 302,
+        "height": 63.375
+      },
+      "outerScroll": 0,
+      "bodyScroll": 1259,
+      "text": "Move away from the destination’s vertical axis before starting an orbit."
+    },
+    {
+      "name": "approach",
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "body": {
+        "x": 245,
+        "y": 73,
+        "width": 302,
+        "height": 94
+      },
+      "notice": {
+        "x": 245,
+        "y": 103.375,
+        "width": 302,
+        "height": 63.375
+      },
+      "outerScroll": 0,
+      "bodyScroll": 1259,
+      "text": "Already within the viewing distance of Amber star. Travel is paused so you can look around."
+    }
+  ]
+}

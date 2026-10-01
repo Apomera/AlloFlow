@@ -1,0 +1,32 @@
+
+Running 18 tests using 1 worker
+
+
+
+[1A[2K(node:11832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:11832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K[2/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:72:5 › phone layout, reduced motion and keyboard-equivalent selection
+[1A[2K[3/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:94:5 › volcanic terrain, scenic exploration and habitat changes preserve the experiment and release scenery
+[1A[2K[4/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:141:5 › 3D failure retains the complete simulation in a habitat map
+[1A[2K[5/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:166:5 › guided investigation pauses at its result, records reviewed evidence, and resumes its field notes
+[1A[2K[6/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:215:5 › replay preserves survivor positions and genes; family connections navigate recorded generations
+[1A[2K[7/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:253:5 › named residents and two futures preserve the expedition, save evidence, and release both renderers
+[1A[2K[8/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:309:5 › two futures and resident browsing remain usable on a phone with motion reduced
+[1A[2K[9/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:343:5 › trait lenses display actual values, preserve coats and reuse measurement buffers
+[1A[2K[10/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:417:5 › generation stories replay actual cohorts, stop reliably and keep the expedition unchanged
+[1A[2K[11/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:452:5 › generation stories keep the recorded habitat after a pending change and close without advancing
+[1A[2K[12/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K[13/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:536:5 › phone family journey stays usable across long histories and reports a lost lineage
+[1A[2K[14/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:571:5 › generation field reports reveal actual shifts and mutated offspring without rewriting evidence
+[1A[2K[15/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:622:5 › seasonal atmosphere reuses buffers, freezes with pause and reduced motion, and leaves biology unchanged
+[1A[2K[16/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K[17/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:724:5 › inheritance reveal shows recorded choices, mutations and trait averages without drawing new genes
+[1A[2K[18/18] [chromium] › tests\e2e\evolab-living-island.spec.ts:776:5 › phone inheritance is self paced, accessible and does not overflow with reduced motion
+[1A[2K  Slow test file: [chromium] › tests\e2e\evolab-living-island.spec.ts (6.3m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  18 passed (6.3m)

@@ -7,7 +7,7 @@
 //
 // The hole it does not cover is timing. deploy.sh pushes and publishes to the CDN
 // in the SAME run, so the live site updates minutes before CI finishes judging the
-// commit. Everything deploy.sh checks today is STATIC — free variables, module
+// commit. Everything deploy.sh checks today is STATIC â€” free variables, module
 // freshness, registry producers, render smoke. Nothing RUNS the test suite. On
 // 2026-08-11 two ReferenceError crashes (an undeclared __alloT in an SVG
 // aria-label, in Aquaculture Lab and Logic Lab) reached the live CDN; deploy.sh's
@@ -33,7 +33,7 @@ const QUIET = args.includes('--quiet');
 const baseArg = args.find((a) => a.startsWith('--base='));
 
 function git(argv) {
-  const res = spawnSync('git', argv, { cwd: ROOT, encoding: 'utf8' });
+  const res = spawnSync('git', argv, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   return res.status === 0 ? String(res.stdout || '').trim() : '';
 }
 
@@ -51,11 +51,11 @@ function resolveBase() {
 const quarantined = readQuarantine();
 const base = resolveBase();
 
-// ── Size cap ──────────────────────────────────────────────────────────────
+// â”€â”€ Size cap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // This gate is a FAST pre-publish check, not a substitute for the blocking
 // 8-shard CI job. On a typical deploy vitest --changed selects ~5 files and the
 // gate costs ~30s. On a very large batch (a full day of multi-session work) it
-// selected 106 files, ran for 20 minutes, and reported failures in 102 of them —
+// selected 106 files, ran for 20 minutes, and reported failures in 102 of them â€”
 // which sounded catastrophic and was not: the sampled failures reproduce at HEAD,
 // so they are pre-existing test debt beyond tests/QUARANTINE.txt, not regressions
 // from the change being deployed.
@@ -67,8 +67,8 @@ const base = resolveBase();
 // the cap this defers to CI explicitly and says so, rather than pretending to a
 // verdict it cannot support.
 // The cap is measured from git, not from vitest. Asking `vitest list --changed`
-// how many files it would select costs a full module-graph resolve — 9 minutes on
-// this batch — so the cheap check has to come first or the gate is slow precisely
+// how many files it would select costs a full module-graph resolve â€” 9 minutes on
+// this batch â€” so the cheap check has to come first or the gate is slow precisely
 // when it is about to decline to run.
 const MAX_CHANGED_FILES = 120;
 function changedFileCount() {
@@ -81,9 +81,9 @@ function changedFileCount() {
 }
 const changed = changedFileCount();
 if (changed > MAX_CHANGED_FILES) {
-  console.log('check_changed_tests: ' + changed + ' files changed — over the ' + MAX_CHANGED_FILES
+  console.log('check_changed_tests: ' + changed + ' files changed â€” over the ' + MAX_CHANGED_FILES
     + '-file cap for a pre-publish check.');
-  console.log('check_changed_tests: SKIPPED — the blocking 8-shard unit job in CI covers this push.');
+  console.log('check_changed_tests: SKIPPED â€” the blocking 8-shard unit job in CI covers this push.');
   process.exit(0);
 }
 
@@ -113,17 +113,17 @@ if (!QUIET) process.stdout.write(output);
 // touch only assets, docs, or language packs. Vitest exits non-zero for it, so
 // without this the gate would block those deploys outright.
 if (/No test files found/i.test(output)) {
-  console.log('check_changed_tests: no test files cover this change — nothing to run.');
+  console.log('check_changed_tests: no test files cover this change â€” nothing to run.');
   process.exit(0);
 }
 
 if (res.status !== 0) {
   console.error('');
-  console.error('FAIL — a test covering this change is red. This deploy publishes to the live CDN,');
+  console.error('FAIL â€” a test covering this change is red. This deploy publishes to the live CDN,');
   console.error('so it would ship the failure before CI ever sees the commit. Fix the test or the');
   console.error('code, or (only if it is genuinely pre-existing and understood) add the file to');
   console.error('tests/QUARANTINE.txt with a reason and a count.');
   process.exit(1);
 }
 
-console.log('check_changed_tests: OK — every test covering this change passes.');
+console.log('check_changed_tests: OK â€” every test covering this change passes.');

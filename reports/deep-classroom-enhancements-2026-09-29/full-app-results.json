@@ -1,0 +1,55 @@
+{
+  "at": "2026-09-29T22:25:05.055Z",
+  "preview": {
+    "at": "2026-09-29T21:55:02.424Z",
+    "hostSha256": "c0d6fc0ec10817aa187a7addaf724451e3f647e86233a98d1b55a7e5d5b3cecd",
+    "shellSha256": "c11aded1290d1d2b5e793c417e2fece35d210e265f59472ca1e5eda10ca225a5",
+    "js": "main.6e73f904.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "results": [
+    {
+      "role": "Parent",
+      "width": 1280,
+      "errors": [],
+      "heading": "Family Dashboard",
+      "headingBox": {
+        "x": 216,
+        "y": 119,
+        "width": 701.421875,
+        "height": 48
+      },
+      "overflow": false,
+      "passed": true
+    },
+    {
+      "role": "Parent",
+      "width": 390,
+      "errors": [],
+      "heading": "Family Dashboard",
+      "headingBox": {
+        "x": 24,
+        "y": 124.1875,
+        "width": 342,
+        "height": 40
+      },
+      "overflow": false,
+      "passed": true
+    },
+    {
+      "role": "Independent",
+      "width": 1280,
+      "errors": [],
+      "heading": "My Learning Journey",
+      "headingBox": {
+        "x": 216,
+        "y": 119,
+        "width": 701.421875,
+        "height": 48
+      },
+      "overflow": false,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "initialHead": "286e09850680047d44efcc836075916cf488eff6",
+  "finalHead": "c4c8d6f8bffc88e5e1549b2f84448f15184b2fe8",
+  "packagedAt": "2026-09-27T17:42:01.940Z",
+  "files": [
+    {
+      "file": "view_simplified_source.jsx",
+      "group": "reader_increment",
+      "beforeSha256": "765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f",
+      "afterSha256": "f6f46acdaf48fc26091b39df283db8d268c2f9ee7b97c8d78b212418a4ca8b73"
+    },
+    {
+      "file": "ui_strings.js",
+      "group": "catalogs",
+      "beforeSha256": "5efc6f09039cd6bb10a60404b9a27b5e35f63e05c167b1e0a50c983ba59d8e5f",
+      "afterSha256": "2549af4de6d192f727c31a12285413f63a1e34625c67eb5dc1d0b0b30dc5ff12",
+      "sameAsTestedCandidate": false
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "group": "catalogs",
+      "beforeSha256": "5efc6f09039cd6bb10a60404b9a27b5e35f63e05c167b1e0a50c983ba59d8e5f",
+      "afterSha256": "2549af4de6d192f727c31a12285413f63a1e34625c67eb5dc1d0b0b30dc5ff12",
+      "sameAsTestedCandidate": false
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "group": "catalogs",
+      "beforeSha256": "3c7de838ff102daab8a5cdc1c34f5813bee8debbfd8e0bb8b4c8e931143a5018",
+      "afterSha256": "16ae301441f11f443707eb2997fa741d267f82eccb6a404dabdfc7b06b529ce1",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "group": "catalogs",
+      "beforeSha256": "3c7de838ff102daab8a5cdc1c34f5813bee8debbfd8e0bb8b4c8e931143a5018",
+      "afterSha256": "16ae301441f11f443707eb2997fa741d267f82eccb6a404dabdfc7b06b529ce1",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "group": "catalogs",
+      "beforeSha256": "aa70abaa31b49f19c103da5f4ad71836f543cfb51fe6f526d13a641c16078299",
+      "afterSha256": "a3ef8fbeae9fa4d54eea9c8e7dafb31c958612442e69df9fbcc15173671a6a25",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "group": "catalogs",
+      "beforeSha256": "aa70abaa31b49f19c103da5f4ad71836f543cfb51fe6f526d13a641c16078299",
+      "afterSha256": "a3ef8fbeae9fa4d54eea9c8e7dafb31c958612442e69df9fbcc15173671a6a25",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "lang/arabic.js",
+      "group": "catalogs",
+      "beforeSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "afterSha256": "e11c4544eba9ba0e7bfc9279104d7f7b5facf973102ada430a7da67f55064f59",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "group": "catalogs",
+      "beforeSha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436",
+      "afterSha256": "e11c4544eba9ba0e7bfc9279104d7f7b5facf973102ada430a7da67f55064f59",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "group": "catalogs",
+      "beforeSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "afterSha256": "d3890c5d42f95b5ec552ad2d0facffd099c02be24587552bb046281b86779358",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "group": "catalogs",
+      "beforeSha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b",
+      "afterSha256": "d3890c5d42f95b5ec552ad2d0facffd099c02be24587552bb046281b86779358",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "lang/thai.js",
+      "group": "catalogs",
+      "beforeSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "afterSha256": "2dc70dfafdacf1b0eb456618ab78304c6431f192bddc53195cba8b574edf8d28",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "group": "catalogs",
+      "beforeSha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d",
+      "afterSha256": "2dc70dfafdacf1b0eb456618ab78304c6431f192bddc53195cba8b574edf8d28",
+      "sameAsTestedCandidate": true
+    },
+    {
+      "file": "translations/reader-passage-label-locales.json",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "fab15d05fb7edbe6a16f3f2ef8dd5c17f6b86e98e0cc1542bfdbf9950632f921"
+    },
+    {
+      "file": "dev-tools/i18n/apply_reader_passage_label_locales.cjs",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "81a69621036bff23f0720c7058895a90af686c097091401b7e8615d69068ed89"
+    },
+    {
+      "file": "tests/fixtures/reader_passage_label_locales.json",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "b04e91eacc41b63ca5ceb4f8ee34a7b4229c6740dc7f5b60941607a2b4fae7c6"
+    },
+    {
+      "file": "tests/helpers/reader_passage_label_harness.js",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "d0d59c18c3a43cb531a4c2f9149c3c93ed82b9a7ddc8727fa31323898249b01d"
+    },
+    {
+      "file": "tests/reader_passage_label_locales.test.js",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "7d02d8a062a3945aa3d72b039cade8d1c5d8ace09857fbe34a56fdef1ae14e3d"
+    },
+    {
+      "file": "tests/reader_passage_label_catalogs.test.js",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "165b6b68ee712394e582aa313c03713caa50c95afadeec70b0d4468ddc697224"
+    },
+    {
+      "file": "tests/reader_passage_literal_labels.test.js",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "441e0cb7df6911fddf508053461f4bc25aacdc94b973c38cfa67002cd42e68c1"
+    },
+    {
+      "file": "tests/reader_passage_label_layout.test.js",
+      "group": "tools_and_tests",
+      "newFile": true,
+      "afterSha256": "ed95b35cf35c0a796b32f748360f5ec7f5f46c7aaa0246b89c4dbc5dcb2b7bda"
+    }
+  ],
+  "runtimeFiles": [
+    {
+      "file": "view_simplified_source.jsx",
+      "beforeSha256": "765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f",
+      "afterSha256": "4ff2acfdecd483db2b49b6238229b67058b76f3de5dde68d0b8de0e4c83b9fb1"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforeSha256": "2ee7db230ff15684a70d8e61440de0c42b594b517388344410efa17338a5d64f",
+      "afterSha256": "925b8430b2348d40bfc5eb3869987ca86c3995f66028261432cd8c9e342cc792"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforeSha256": "2ee7db230ff15684a70d8e61440de0c42b594b517388344410efa17338a5d64f",
+      "afterSha256": "925b8430b2348d40bfc5eb3869987ca86c3995f66028261432cd8c9e342cc792"
+    }
+  ],
+  "coverage": [
+    {
+      "locale": "English",
+      "keys": 8,
+      "before": 2,
+      "after": 8,
+      "added": 6,
+      "existingKeysRewritten": 0
+    },
+    {
+      "locale": "spanish_latin_america",
+      "keys": 8,
+      "before": 0,
+      "after": 8,
+      "added": 8,
+      "existingKeysRewritten": 0
+    },
+    {
+      "locale": "spanish_castilian",
+      "keys": 8,
+      "before": 0,
+      "after": 8,
+      "added": 8,
+      "existingKeysRewritten": 0
+    },
+    {
+      "locale": "arabic",
+      "keys": 8,
+      "before": 0,
+      "after": 8,
+      "added": 8,
+      "existingKeysRewritten": 0
+    },
+    {
+      "locale": "chinese_simplified",
+      "keys": 8,
+      "before": 0,
+      "after": 8,
+      "added": 8,
+      "existingKeysRewritten": 0
+    },
+    {
+      "locale": "thai",
+      "keys": 8,
+      "before": 0,
+      "after": 8,
+      "added": 8,
+      "existingKeysRewritten": 0
+    }
+  ],
+  "increment": {
+    "files": 21,
+    "bytes": 63966,
+    "sha256": "1f9cec8ead4629e8196c9af6f9ec81229ccab694d945fb253a03924a27afe550"
+  },
+  "runtime": {
+    "files": 3,
+    "bytes": 17249,
+    "sha256": "89c74a3af4b3077ad5a3ce3df6831d77374fd7d9e54f017ebf9c6e90ce2c2ce3"
+  },
+  "integration": {
+    "files": 23,
+    "bytes": 73512,
+    "sha256": "0998530d5d06fe1e42b76af99ebd0aee8668862bc85b3e395b84e626466ce7b0"
+  },
+  "checks": {
+    "passage-labels.patch": {
+      "exitCode": 0,
+      "output": ""
+    },
+    "runtime-combined.patch": {
+      "exitCode": 0,
+      "output": ""
+    },
+    "integration.patch": {
+      "exitCode": 0,
+      "output": ""
+    }
+  },
+  "changedCapturedInputs": [
+    "AGENT_HANDOFF.md",
+    "AlloFlowANTI.txt",
+    "view_simplified_source.jsx",
+    "view_simplified_module.js",
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ]
+}

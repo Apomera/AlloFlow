@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "corpusId": "mixed-education-v1",
+  "description": "Privacy-safe structural fixtures plus a scripted real-pipeline check. No independently human-reviewed quality labels.",
+  "cases": [
+    {
+      "id": "education-worksheet",
+      "documentKind": "worksheet",
+      "backend": "portable",
+      "fixture": "worksheet",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "education-reading",
+      "documentKind": "reading",
+      "backend": "portable",
+      "fixture": "multi-column-reading-order",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "education-table",
+      "documentKind": "table",
+      "backend": "portable",
+      "fixture": "complex-table",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "education-scan",
+      "documentKind": "scan",
+      "backend": "portable",
+      "fixture": "scanned-page-review",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "education-form",
+      "documentKind": "form",
+      "backend": "portable",
+      "fixture": "interactive-form-blocked",
+      "expected": {
+        "exitCode": 3,
+        "readiness": "blocked"
+      }
+    },
+    {
+      "id": "education-figure",
+      "documentKind": "figure",
+      "backend": "portable",
+      "fixture": "meaningful-image",
+      "expected": {
+        "exitCode": 0,
+        "readiness": "review-required"
+      }
+    },
+    {
+      "id": "scripted-pipeline",
+      "documentKind": "integration-fixture",
+      "backend": "mcp-selftest",
+      "expected": {
+        "exitCode": 0,
+        "checksPassed": true
+      }
+    }
+  ]
+}

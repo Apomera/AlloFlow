@@ -1,0 +1,866 @@
+import { existsSync } from 'node:fs';
+// Scale Explorer contract (2026-09-07).
+//
+// A powers-of-ten tool is only worth anything if its numbers are right and if
+// it can be driven without a mouse, so those are what these tests pin:
+//   1. every size is a positive number with a stated dimension and a real
+//      description, and the ladder spans the range it claims
+//   2. sizes agree with the ratios the tool tells students about
+//   3. the log mapping is a true log axis (equal screen distance = equal ratio)
+//   4. the keyboard reaches every control, and the canvas is a named target
+//   5. announcements fire per power of ten, never per frame
+//   6. all four ui_strings copies carry every key at the source's English
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+
+const ROOT = process.cwd();
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const TOOL = 'stem_lab/stem_tool_scaleexplorer.js';
+const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js';
+// desktop/app-build/ is a desktop BUILD ARTIFACT: never committed, absent from a
+// fresh checkout. Reading it unconditionally threw ENOENT at module load and took
+// the whole suite down — zero tests ran, which reports nothing rather than
+// failing loudly. Check the mirror only when it has actually been built, the same
+// way magnetism_numeric_render_guard and sel_four_copy_parity do.
+const UI_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'].filter((p) => existsSync(p));
+const src = read(TOOL);
+
+function readArray(text, name) {
+  const s = text.indexOf('var ' + name + ' = ');
+  const o = text.indexOf('[', s);
+  let i = o, d = 0, q = null;
+  for (; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '\\') { i++; continue; } if (c === q) q = null; continue; }
+    if (c === '\'' || c === '"' || c === '`') { q = c; continue; }
+    if (c === '[') d++; else if (c === ']') { d--; if (d === 0) break; }
+  }
+  return vm.runInNewContext('(' + text.slice(o, i + 1) + ')');
+}
+const ITEMS = readArray(src, 'ITEMS');
+const byId = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+
+describe('Scale Explorer ladder', () => {
+  it('gives every entry a size, a dimension and a real description', () => {
+    expect(ITEMS.length).toBeGreaterThanOrEqual(45);
+    for (const it of ITEMS) {
+      expect(typeof it.size, it.id).toBe('number');
+      expect(it.size, it.id + ' size must be positive and finite').toBeGreaterThan(0);
+      expect(Number.isFinite(it.size), it.id).toBe(true);
+      expect(it.dim, it.id + ' must say which dimension the size is').toBeTruthy();
+      expect(it.emoji, it.id).toBeTruthy();
+      // The description is what a student who cannot see the canvas gets instead.
+      expect(it.describe.length, it.id + ' describe too short').toBeGreaterThan(60);
+      expect(it.describe, it.id).not.toBe(it.name);
+    }
+    const ids = ITEMS.map((i) => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('spans at least 40 powers of ten', () => {
+    const logs = ITEMS.map((i) => Math.log10(i.size));
+    expect(Math.max(...logs) - Math.min(...logs)).toBeGreaterThanOrEqual(40);
+  });
+
+  it('leaves no gap wider than four powers of ten', () => {
+    // A gap larger than the screen width means zooming through empty space with
+    // nothing to hold on to.
+    const logs = ITEMS.map((i) => Math.log10(i.size)).sort((a, b) => a - b);
+    const gaps = logs.slice(1).map((v, i) => v - logs[i]);
+    const worst = Math.max(...gaps);
+    expect(worst, 'largest gap in decades').toBeLessThanOrEqual(4);
+  });
+
+  it('labels distances as distances, so they are not read as sizes', () => {
+    const distances = ITEMS.filter((i) => i.dim === 'distance');
+    expect(distances.length).toBeGreaterThan(0);
+    for (const d of distances) {
+      expect(d.describe.toLowerCase(), d.id + ' should say it is a distance').toMatch(/distance|how far|gap/);
+    }
+  });
+
+  it('carries an uncertainty note wherever the number is genuinely soft', () => {
+    // Betelgeuse's published radii span 640 to 887 solar radii; an atom has no
+    // edge; sand is a size range by definition. Saying so is the honest move
+    // and is itself part of the subject.
+    for (const id of ['betelgeuse', 'carbon', 'sand', 'hair', 'proton']) {
+      expect(byId[id], id + ' missing from the ladder').toBeTruthy();
+      expect(byId[id].note, id + ' needs an uncertainty note').toBeTruthy();
+    }
+  });
+});
+
+describe('Scale Explorer sizes agree with reality', () => {
+  // Spot checks against values a teacher would recognise. These are ratios, so
+  // they stay true whichever unit the tool renders in.
+  const ratio = (a, b) => byId[a].size / byId[b].size;
+  it('the Sun is about 109 Earths across', () => {
+    expect(ratio('sun', 'earth')).toBeGreaterThan(105);
+    expect(ratio('sun', 'earth')).toBeLessThan(113);
+  });
+  it('the Earth is about 3.7 Moons across', () => {
+    expect(ratio('earth', 'moon')).toBeGreaterThan(3.5);
+    expect(ratio('earth', 'moon')).toBeLessThan(3.8);
+  });
+  it('a red blood cell is a few micrometres', () => {
+    expect(byId['rbc'].size).toBeGreaterThan(6e-6);
+    expect(byId['rbc'].size).toBeLessThan(9e-6);
+  });
+  it('an atom is about ten thousand times its nucleus', () => {
+    const r = byId['carbon'].size / byId['nucleus'].size;
+    expect(r).toBeGreaterThan(3000);
+    expect(r).toBeLessThan(30000);
+  });
+  it('a person to a proton is about fifteen powers of ten', () => {
+    expect(Math.log10(ratio('human', 'proton'))).toBeGreaterThan(14.5);
+    expect(Math.log10(ratio('human', 'proton'))).toBeLessThan(15.5);
+  });
+  it('the observable universe is tens of billions of light years across', () => {
+    const ly = byId['universe'].size / 9.461e15;
+    expect(ly).toBeGreaterThan(8e10);
+    expect(ly).toBeLessThan(1e11);
+  });
+});
+
+describe('Scale Explorer view model', () => {
+  it('positions objects on a true log axis', () => {
+    // Equal distance across the screen must mean equal ratio, or the tool is
+    // teaching the wrong thing while looking right.
+    expect(src).toMatch(/var x = cssW \/ 2 \+ \(lg - e\) \* pxPerDecade/);
+    expect(src).toMatch(/var lg = log10\(it\.size\)/);
+  });
+  it('draws objects at true relative size', () => {
+    expect(src).toMatch(/var dia = it\.size \/ Math\.pow\(10, e\) \* refPx/);
+  });
+  it('caps the emoji so a larger neighbour cannot cover the view', () => {
+    // At true scale an object one decade bigger is several screens wide.
+    expect(src).toMatch(/maxGlyph = Math\.min\(cssW, cssH\) \* 0\.62/);
+    expect(src).toMatch(/glyph >= 10 && glyph <= maxGlyph/);
+  });
+  it('gives the focused label first claim on space, rather than exempting it', () => {
+    // Exempting the focus from collision meant it drew ON TOP of whatever had
+    // already claimed the space. Labels are now a second pass ordered nearest
+    // first, so the thing the student is looking at claims its space first and
+    // everything else fits around it.
+    expect(src).toMatch(/\.sort\(function \(a, b\) \{ return a\.dist - b\.dist; \}\)/);
+    expect(src).toMatch(/if \(clash\) continue;/);
+    expect(src).not.toMatch(/if \(!clash \|\| isFocus\)/);
+  });
+
+  it('keeps a label from being cut in half by the edge of the stage', () => {
+    expect(src).toMatch(/var lx = clamp\(lc\.x, wpx \/ 2 \+ 8, cssW - wpx \/ 2 - 8\)/);
+  });
+
+  it('separates neighbours into lanes so they cannot draw on top of each other', () => {
+    // Everything shared one centreline, so a ladybird sat inside a bee and both
+    // labels landed on an elephant. Position on y carries no meaning here, so it
+    // is free to use for separation; the diameter still carries the size.
+    expect(src).toMatch(/var lane = \(i % 3\) - 1;/);
+    expect(src).toMatch(/y: midY \+ lane \* laneGap/);
+    expect(src).toMatch(/g\.arc\(c\.x, c\.y, c\.dia \/ 2/);
+  });
+
+  it('paints canvas text against the stage, not against the panel', () => {
+    // The axis and size labels used the panel's dim ink on a near-black stage;
+    // in the light theme that was about 1.8:1, and axe cannot see painted text.
+    expect(src).toMatch(/g\.fillStyle = P\.stageDim;/);
+    expect(src).not.toMatch(/g\.fillStyle = P\.dim;/);
+    for (const theme of ['light', 'contrast', 'dark']) expect(src).toMatch(/stageDim: '#/);
+  });
+
+  it('reads the focus through a ref, because the animation loop outlives the render', () => {
+    // draw() closed over focusId, so the highlight lagged a step behind the
+    // panel and during a zoom never appeared at all.
+    expect(src).toMatch(/var isFocus = obj\.id === focusIdRef\.current;/);
+    expect(src).toMatch(/focusIdRef\.current = focusId;/);
+  });
+  it('uses an absolute canvas transform, so a redraw cannot compound the scale', () => {
+    expect(src).toMatch(/g\.setTransform\(dpr, 0, 0, dpr, 0, 0\)/);
+    expect(src).not.toMatch(/g\.scale\(dpr, dpr\)/);
+  });
+});
+
+describe('Scale Explorer accessibility', () => {
+  it('makes the canvas a named, focusable target with real keys', () => {
+    expect(src).toMatch(/tabIndex: 0, role: 'application'/);
+    expect(src).toMatch(/'aria-label': S\('canvas_aria'/);
+    for (const key of ['ArrowRight', 'ArrowLeft', 'PageUp', 'PageDown', 'Home']) {
+      expect(src, key + ' should be handled').toContain(key);
+    }
+  });
+  it('offers the whole ladder as buttons, so the tool works with no canvas at all', () => {
+    expect(src).toMatch(/id: 'sx-ladder'/);
+    expect(src).toMatch(/'aria-current': on \? 'true' : undefined/);
+    expect(src).toMatch(/onClick: function \(\) \{ openItem\(i\); \}/);
+  });
+  it('announces once per power of ten, not once per frame', () => {
+    // A live region fed a running number talks over everything else.
+    expect(src).toMatch(/if \(d === lastDecadeRef\.current\) return;/);
+    expect(src).toMatch(/lastDecadeRef\.current = d;/);
+  });
+  it('speaks the numbers rather than leaving a screen reader to guess at 10⁻⁶', () => {
+    expect(src).toMatch(/decade_sr_near/);
+    expect(src).toMatch(/ten to the power \{n\}/);
+  });
+  it('respects a reduced-motion preference instead of animating regardless', () => {
+    expect(src).toMatch(/prefers-reduced-motion/);
+    expect(src).toMatch(/if \(reduceMotion \|\| opts\.instant\)/);
+  });
+  it('hides read-aloud when the host cannot speak, and cannot get stuck', () => {
+    expect(src).toMatch(/if \(typeof ctx\.callTTS !== 'function' \|\| !text\) return null;/);
+    expect(src).toMatch(/\{ force: true \}/);
+    expect(src).toMatch(/speakTokenRef\.current !== token/);
+    expect(src).toMatch(/setTimeout\(function \(\) \{ settle\(true\); \}, 30000\)/);
+  });
+  it('paints its own ground, because the host card is white in both themes', () => {
+    expect(src).toMatch(/background: P\.bg, color: P\.text, borderRadius: 14/);
+  });
+});
+
+// Icon uniqueness is already enforced repo-wide by tests/tool_icon_uniqueness.js,
+// which globs every stem tool; duplicating it here re-read 150 files for 25s.
+describe('Scale Explorer wiring', () => {
+  it('is registered in every copy of the loader list', () => {
+    for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx']) {
+      expect(read(f), f).toContain("'stem_lab/stem_tool_scaleexplorer.js'");
+    }
+  });
+  it('keeps the desktop mirror byte-identical', () => {
+    expect(read(MIRROR)).toBe(src);
+  });
+
+  it('is in the desktop bundle list, so an offline classroom gets it too', () => {
+    // build.js names every stem tool the desktop build packages locally. A tool
+    // missing here still works online and fails only where the CDN is not
+    // reachable, which is exactly the case the desktop build exists for.
+    expect(read('build.js')).toContain("'stem_lab/stem_tool_scaleexplorer.js'");
+  });
+});
+
+describe('Scale Explorer strings in ui_strings.js (all four copies)', () => {
+  const sections = UI_COPIES.map((p) => ({ path: p, section: (JSON.parse(read(p)).stem || {}).scaleExplorer || {} }));
+  it('registers a key for every ladder entry, with the source English', () => {
+    const missing = [], drift = [];
+    for (const it of ITEMS) {
+      const base = 'item_' + it.id.replace(/-/g, '_') + '_';
+      const expected = { name: it.name, describe: it.describe };
+      if (it.note) expected.note = it.note;
+      for (const f of Object.keys(expected)) {
+        const v = sections[0].section[base + f];
+        if (v == null) missing.push(base + f);
+        else if (v !== expected[f]) drift.push(base + f);
+      }
+    }
+    expect(missing, 'missing keys').toEqual([]);
+    expect(drift, 'shipped value differs from source').toEqual([]);
+  });
+  it('all four copies agree', () => {
+    for (const s of sections.slice(1)) expect(s.section, s.path).toEqual(sections[0].section);
+  });
+  it('reads every string through the stem.scaleExplorer prefix', () => {
+    expect(src).toMatch(/t\('stem\.scaleExplorer\.' \+ key, fb\)/);
+    expect(src).toMatch(/t\('stem\.scaleExplorer\.item_' \+ item\.id\.replace/);
+  });
+});
+
+describe('Scale Explorer estimate-first loop', () => {
+  // Browsing alone does not build a feel for orders of magnitude. This is the
+  // house Predict → Explore → Explain shape applied to scale.
+  it('asks before it tells, and never scores the student', () => {
+    expect(src).toMatch(/function lockInEstimate\(\)/);
+    expect(src).toMatch(/revealed \? h\('p', \{ role: 'status'/);
+    // The reveal is gated on `revealed`, which only lockInEstimate sets.
+    expect(src).toMatch(/setRevealed\(true\);/);
+    // The three verdicts describe distance, they do not judge. Checking the
+    // verdict strings themselves rather than the whole file, which legitimately
+    // contains words like "points of light" in an image description.
+    const verdicts = [...src.matchAll(/S\('est_(spot|close|off)', '([^']*(?:\\'[^']*)*)'/g)].map((m) => m[2]);
+    expect(verdicts.length, 'all three verdict tiers').toBe(3);
+    for (const v of verdicts) expect(v, v).not.toMatch(/\b(wrong|incorrect|failed|bad)\b/i);
+  });
+
+  it('picks pairs that are worth guessing at', () => {
+    // Under two decades is a coin flip; over twenty is unguessable rather than
+    // instructive, and either way the student learns nothing from the reveal.
+    expect(src).toMatch(/if \(gap < 2 \|\| gap > 20\) continue;/);
+    expect(src).toMatch(/if \(a\.id === b\.id\) continue;/);
+  });
+
+  it('grades by distance in decades, and says the factor that distance means', () => {
+    expect(src).toMatch(/if \(off <= 0\.5\) return S\('est_spot'/);
+    expect(src).toMatch(/if \(off <= 1\.5\) return S\('est_close'/);
+    expect(src).toMatch(/est_off.*factor of \{factor\}/);
+  });
+
+  it('always gives the real number, whatever the student guessed', () => {
+    expect(src).toMatch(/function challengeReveal\(\)/);
+    expect(src).toMatch(/The gap is \{dec\} powers of ten/);
+  });
+
+  it('counts an estimate toward its own quest', () => {
+    expect(src).toMatch(/cur\.estimateCount = \(cur\.estimateCount \|\| 0\) \+ 1;/);
+    expect(src).toMatch(/id: 'scale_estimate'/);
+    expect(src).toMatch(/\(d\.estimateCount \|\| 0\) >= 1/);
+  });
+
+  it('lets the keyboard commit without reaching for the button', () => {
+    expect(src).toMatch(/if \(e\.key === 'Enter'\) \{ e\.preventDefault\(\); lockInEstimate\(\); \}/);
+  });
+});
+
+describe('Scale Explorer camera cost', () => {
+  // Measured, not assumed: one keypress used to cause 34 full React renders of a
+  // 345-node panel carrying a 53-row ladder and two 53-option selects. Free on a
+  // laptop, not free on a Chromebook.
+  it('does not push the animated exponent through React state every frame', () => {
+    expect(src).toMatch(/function paintReadout\(\)/);
+    expect(src).toMatch(/el\.textContent = viewLineFor\(expRef\.current\)/);
+    // The frame path paints; only the settle path touches state.
+    const stepBody = src.slice(src.indexOf('function step()'), src.indexOf('// ── Drawing'));
+    expect(stepBody, 'step() must not call setExp directly').not.toMatch(/setExp\(/);
+    expect(stepBody).toMatch(/paintReadout\(\);/);
+    // Pin the invariant, not the spelling: the settle path is the only place
+    // that touches React state, and it repaints once when it does.
+    const settle = src.slice(src.indexOf('function settleExp('), src.indexOf('function step()'));
+    expect(settle).toMatch(/setExp\(v\)/);
+    expect(settle).toMatch(/paintReadout\(\)/);
+  });
+
+  it('keeps the continuously-updating readout out of a live region', () => {
+    // It changes every frame. As role="status" it queued an announcement per
+    // frame, on top of the one-per-decade announcement that already exists.
+    // Only this element's own props, so a legitimately-live sibling (the
+    // end-of-ladder notice) cannot be mistaken for it.
+    const at = src.indexOf("h('p', { id: descId");
+    const readout = src.slice(at, src.indexOf('}, viewLine)', at));
+    expect(readout, 'the readout must not be a live region').not.toMatch(/role: 'status'/);
+    expect(readout).toMatch(/ref: readoutRef/);
+    // ...and the decade announcement is still the screen-reader path.
+    expect(src).toMatch(/say\(Math\.abs\(d\) <= 2/);
+  });
+});
+
+describe('Scale Explorer guided journey', () => {
+  // The Eames film is a continuous outward trip, not a control panel. Dragging a
+  // slider does not give a student the experience of passing each power of ten.
+  it('walks one power of ten per step and names what is there', () => {
+    expect(src).toMatch(/function startJourney\(dir\)/);
+    expect(src).toMatch(/var next = targetRef\.current \+ dir;/);
+    expect(src).toMatch(/var here = nearestItem\(clamp\(next, MIN_EXP, MAX_EXP\)\);/);
+    expect(src).toMatch(/if \(here\) setFocusId\(here\.id\);/);
+  });
+
+  it('stops itself at the end of the ladder rather than running against the clamp', () => {
+    expect(src).toMatch(/var atEnd = dir > 0 \? next >= MAX_EXP : next <= MIN_EXP;/);
+    expect(src).toMatch(/if \(atEnd\) \{ stopJourney\(\); say\(S\('journey_end'/);
+  });
+
+  it('yields to the student instead of fighting them', () => {
+    // Manual navigation cancels the trip; two things driving one camera is worse
+    // than either alone.
+    expect(src).toMatch(/function zoomBy\(decades\) \{ stopJourney\(\);/);
+    expect(src).toMatch(/function flyTo\(item, opts\) \{\n\s*stopJourney\(\);/);
+  });
+
+  it('clears its timer on unmount, so it cannot outlive the tool', () => {
+    expect(src).toMatch(/if \(journeyRef\.current\) clearInterval\(journeyRef\.current\);/);
+    expect(src).toMatch(/function stopJourney\(\)/);
+  });
+
+  it('exposes its state to assistive tech as a toggle', () => {
+    expect(src).toMatch(/'aria-pressed': journey !== 0 \? 'true' : 'false'/);
+    expect(src).toMatch(/journey_pause/);
+  });
+});
+
+describe('Scale Explorer keeps the panel honest', () => {
+  // A sweep of all 44 decades showed the "In focus" card stuck on whatever was
+  // last picked — describing a person while the camera sat at the observable
+  // universe. The card claims to show what is in focus, so it has to.
+  it('follows the camera, but only when the nearest object changes', () => {
+    expect(src).toMatch(/var near = nearestItem\(expRef\.current\);/);
+    expect(src).toMatch(/if \(near && near\.id !== nearestRef\.current\)/);
+    // Guarded on the nearest CHANGING, so this costs a render per object passed
+    // rather than one per frame.
+    expect(src).toMatch(/nearestRef\.current = near\.id;/);
+  });
+
+  it('does not flicker through everything it passes on the way to a pick', () => {
+    // flyTo declares an intent; tracking stands down until the camera settles.
+    expect(src).toMatch(/intentRef\.current = item\.id;/);
+    expect(src).toMatch(/if \(!intentRef\.current\)/);
+    expect(src).toMatch(/function settleExp\(v\) \{ intentRef\.current = null;/);
+  });
+
+  it('explains the empty space past the ends instead of looking broken', () => {
+    // Zooming out past the largest object gave pure void with no word about it.
+    expect(src).toMatch(/edge_big/);
+    expect(src).toMatch(/edge_small/);
+    expect(src).toMatch(/exp > log10\(biggest\.size\) \+ 0\.55/);
+    expect(src).toMatch(/exp < log10\(smallest\.size\) - 0\.55/);
+  });
+
+  it('names a length in units a person can picture, at every scale', () => {
+    // A sweep produced "4218 times the Earth-Sun distance" and, after a careless
+    // fix, "420787623458 light years". Both are numbers nobody can hold.
+    const start = src.indexOf('function humanLength');
+    const body = src.slice(start, src.indexOf('function round2'));
+    expect(body).toMatch(/a >= 9\.461e15\) return bigCount/);
+    expect(body).toMatch(/a >= 1e14\) return round2/);
+  });
+});
+
+describe('Scale Explorer position scrubber', () => {
+  // The log axis shows about three decades. Nothing showed where those three sat
+  // among the other forty-one, so there was no sense of position or of distance
+  // travelled, and no single control that jumped anywhere in the range.
+  it('spans the whole range and is a native, keyboard-driven control', () => {
+    expect(src).toMatch(/type: 'range', ref: scrubRef, min: MIN_EXP, max: MAX_EXP/);
+    expect(src).toMatch(/'aria-label': S\('scrub_aria'/);
+    // A bare number is meaningless read aloud, so the value is spoken as a length.
+    expect(src).toMatch(/'aria-valuetext': viewLineFor\(exp\)/);
+    expect(src).toMatch(/sc\.setAttribute\('aria-valuetext', viewLineFor\(expRef\.current\)\)/);
+  });
+
+  it('is painted, not bound, so moving the camera cannot re-render the panel', () => {
+    const paint = src.slice(src.indexOf('function paintReadout()'), src.indexOf('function settleExp'));
+    expect(paint).toMatch(/sc\.value = String\(expRef\.current\)/);
+    expect(src).not.toMatch(/value: exp, *\n?\s*'aria-label': S\('scrub_aria'/);
+  });
+
+  it('stands back only while a pointer is down, not merely while focused', () => {
+    // Guarding on focus froze the thumb: a slider keeps focus long after the
+    // student stops touching it, so it sat still while the camera moved on.
+    expect(src).toMatch(/if \(sc && !scrubDragRef\.current\)/);
+    expect(src).not.toMatch(/document\.activeElement !== sc/);
+    expect(src).toMatch(/onPointerDown: function \(\) \{ scrubDragRef\.current = true; \}/);
+    expect(src).toMatch(/onPointerUp: function \(\) \{ scrubDragRef\.current = false; \}/);
+    expect(src).toMatch(/onBlur: function \(\) \{ scrubDragRef\.current = false; \}/);
+  });
+
+  it('cancels a running journey rather than fighting it', () => {
+    expect(src).toMatch(/onChange: function \(e\) \{ stopJourney\(\); goTo\(parseFloat\(e\.target\.value\)/);
+  });
+});
+
+// 2026-09-10. The shell deep link (?tool=scaleExplorer) requests this plugin as soon as
+// the app is ready, while stem_lab_module.js is still queued in the deferred
+// module pump, so on a cold load the plugin runs with no window.StemLab. The
+// file used to return silently in that case and the live app showed "The
+// plugin loaded but did not register" on every shared link. It now installs
+// the same minimal registry the other plugins install; the module adopts it.
+describe('scaleExplorer registers even when it runs before stem_lab_module.js', () => {
+  it('leaves a registry entry behind in a context that had no window.StemLab', () => {
+    const win = {
+      AlloModules: {}, addEventListener() {}, navigator: {},
+      location: { hostname: '', pathname: '', origin: '', href: 'about:blank' },
+      __alloT: (k, fb) => fb || k,
+      localStorage: { getItem() { return null; }, setItem() {} },
+    };
+    win.window = win; win.self = win;
+    const ctx = {
+      window: win, self: win, console: { log() {}, warn() {}, error() {} }, setTimeout, clearTimeout,
+      navigator: win.navigator, location: win.location, localStorage: win.localStorage,
+      document: { createElement() { return { style: {}, setAttribute() {}, appendChild() {} }; }, head: { appendChild() {} }, body: { appendChild() {} }, addEventListener() {}, querySelector() { return null; } },
+    };
+    ctx.globalThis = ctx;
+    vm.runInNewContext(fs.readFileSync(path.join(process.cwd(), 'stem_lab/stem_tool_scaleexplorer.js'), 'utf8'), ctx, { filename: 'stem_lab/stem_tool_scaleexplorer.js' });
+    expect(win.StemLab && win.StemLab._registry && Object.keys(win.StemLab._registry)).toEqual(['scaleExplorer']);
+    expect(typeof win.StemLab.isRegistered).toBe('function');
+    expect(win.StemLab.isRegistered('scaleExplorer')).toBe(true);
+  });
+
+  it('the shim is the recognisable kind: it lacks ensureThree, so the module knows to adopt it', () => {
+    // stem_lab_module.js tells a plugin shim from its own full object by that
+    // one method. If a shim ever grows an ensureThree, the module would keep it
+    // and the session would lose the real helpers again.
+    const shim = fs.readFileSync(path.join(process.cwd(), 'stem_lab/stem_tool_scaleexplorer.js'), 'utf8').match(/window\.StemLab = window\.StemLab \|\| \{[\s\S]*?\n  \};/);
+    expect(shim, 'shim block present').toBeTruthy();
+    expect(shim[0]).not.toMatch(/ensureThree/);
+  });
+});
+
+// 2026-09-13. A shared link can name a place: ?tool=scaleExplorer&focus=<id> or
+// &at=<power of ten>. The functions are module-level, so they are lifted out of
+// the source and run against a fake window; the real-host run on the dev
+// server confirmed the same behaviour end to end (focus=rbc landed on the red
+// blood cell, at=-9 on the DNA helix, and the copied link was the public one).
+describe('Scale Explorer shareable views', () => {
+  function lift(name, until) {
+    const s = src.indexOf('function ' + name + '(');
+    const e = src.indexOf('function ' + until + '(', s);
+    if (s < 0 || e < 0) throw new Error('could not lift ' + name);
+    return src.slice(s, e);
+  }
+  const helpers = lift('linkNamesThisTool', 'shareBase') + lift('shareBase', 'copyPlain');
+  function evalWith(search, hostname) {
+    const ctx = {
+      window: { location: { search, hostname, origin: 'https://' + hostname, pathname: '/app/' } },
+      URLSearchParams,
+      MIN_EXP: -16.2, MAX_EXP: 27.6,
+      log10: (v) => Math.log(v) / Math.LN10,
+      encodeURIComponent,
+    };
+    vm.runInNewContext(helpers + '\nthis.readStartFromLink = readStartFromLink; this.shareLinkFor = shareLinkFor;', ctx);
+    return ctx;
+  }
+  const items = ITEMS;
+
+  it('opens at a named item, and only when the link names this tool', () => {
+    expect(evalWith('?tool=scaleExplorer&focus=rbc', 'alloflow-cdn.pages.dev').readStartFromLink(items)).toMatchObject({ focusId: 'rbc' });
+    expect(evalWith('?tool=scale_explorer&focus=RBC', 'x').readStartFromLink(items)).toMatchObject({ focusId: 'rbc' });
+    // another tool's focus= is not ours
+    expect(evalWith('?tool=zoomGallery&focus=rbc', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('?tool=scaleExplorer&focus=nonsense', 'x').readStartFromLink(items)).toBeNull();
+  });
+
+  it('opens at a power of ten with the nearest item in focus, and ignores values off the ladder', () => {
+    const at = evalWith('?tool=scaleExplorer&at=-9', 'x').readStartFromLink(items);
+    expect(at.exp).toBe(-9);
+    expect(at.focusId).toBe('dna'); // 2 nm is the nearest entry to 1 nm
+    expect(evalWith('?tool=scaleExplorer&at=999', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('?tool=scaleExplorer&at=abc', 'x').readStartFromLink(items)).toBeNull();
+    expect(evalWith('?tool=scaleExplorer&at=27.6', 'x').readStartFromLink(items).exp).toBe(27.6);
+  });
+
+  it('copies a link students can open: the current origin on an AlloFlow host, the public shell elsewhere', () => {
+    expect(evalWith('', 'alloflow-cdn.pages.dev').shareLinkFor({ id: 'rbc' })).toBe('https://alloflow-cdn.pages.dev/app/?tool=scaleExplorer&focus=rbc');
+    // Gemini Canvas, localhost and the desktop app are not reachable by a class
+    for (const host of ['localhost', '123-abc.usercontent.goog', '127.0.0.1']) {
+      expect(evalWith('', host).shareLinkFor({ id: 'oort' })).toBe('https://alloflow-cdn.pages.dev/app/?tool=scaleExplorer&focus=oort');
+    }
+  });
+
+  it('starts state and refs from the link, and offers the copy control with a spoken name', () => {
+    expect(src).toMatch(/var start = React\.useMemo\(function \(\) \{\s*var r = readStartFromLink\(ITEMS\);/);
+    expect(src).toMatch(/React\.useState\(start\.focusId \|\| 'human'\)/);
+    expect(src).toMatch(/var expRef = React\.useRef\(start\.exp\)/);
+    expect(src).toMatch(/'aria-label': S\('copy_link_aria'/);
+    expect(src).toMatch(/S\('link_copied_sr', 'Link to \{name\} copied\.'/);
+    // failure path shows the link for hand copying instead of failing silently
+    expect(src).toMatch(/linkState === 'failed' \? h\('div'/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['copy_link', 'copy_link_aria', 'copy_link_title', 'link_copied', 'link_copied_sr', 'link_failed', 'link_field_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+describe('Scale Explorer compare follows the thing in focus', () => {
+  it('a link that names a focus preselects it in Compare, against the person', () => {
+    expect(src).toMatch(/var linkedFocus = start\.focusId && start\.focusId !== 'human' \? start\.focusId : null;/);
+    expect(src).toMatch(/React\.useState\(linkedFocus \|\| 'human'\)/);
+    expect(src).toMatch(/React\.useState\(linkedFocus \? 'human' : 'rbc'\)/);
+  });
+  it('the focus card offers "Compare this", which fills the first slot and moves focus to the second', () => {
+    expect(src).toMatch(/onClick: compareFocused/);
+    expect(src).toMatch(/'aria-label': S\('cmp_from_focus_aria', 'Compare \{name\} with something else'/);
+    const fn = src.slice(src.indexOf('function compareFocused'), src.indexOf('function runCompare'));
+    expect(fn).toMatch(/setCmpA\(item\.id\)/);
+    expect(fn).toMatch(/if \(cmpB === item\.id\) setCmpB/); // never the same thing twice
+    expect(fn).toMatch(/cmpSecondRef\.current/);
+    expect(src).toMatch(/h\('select', \{ ref: cmpSecondRef, value: cmpB/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['cmp_from_focus', 'cmp_from_focus_aria', 'cmp_from_focus_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+// 2026-09-13. Three ways of SHOWING an order of magnitude rather than stating it:
+// nested ÷10 / ÷100 frames inside the focused object with a guide to the axis
+// tick one decade left; the ×10 staircase under a comparison; and scientific
+// notation beside the friendly unit. Seen in the real host before these pins.
+describe('Scale Explorer shows orders of magnitude, not just names them', () => {
+  function lift(name, until) {
+    const a = src.indexOf('function ' + name + '(');
+    const b = src.indexOf('function ' + until + '(', a);
+    if (a < 0 || b < 0) throw new Error('could not lift ' + name);
+    return src.slice(a, b);
+  }
+  it('writes scientific notation with two significant figures and a real superscript exponent', () => {
+    const ctx = { SUPERSCRIPT: { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' } };
+    vm.runInNewContext(lift('sup', 'sciNotation') + lift('sciNotation', 'bigCount') + '\nthis.sci = sciNotation;', ctx);
+    expect(ctx.sci(7.5e-6)).toBe('7.5 × 10⁻⁶ m');
+    expect(ctx.sci(1.7)).toBe('1.7 × 10⁰ m');
+    expect(ctx.sci(1.3e7)).toBe('1.3 × 10⁷ m');
+    expect(ctx.sci(9.96e6), 'rounds up across the decade').toBe('1 × 10⁷ m');
+    expect(ctx.sci(0)).toBe('');
+  });
+
+  it('the staircase is one chip per whole decade, with a real neighbour as the example or a bare step', () => {
+    const sorted = ITEMS.slice().sort((a, b) => b.size - a.size);
+    const by = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+    const log10 = (v) => Math.log(v) / Math.LN10;
+    const mk = (small, big) => ({ small: by[small], big: by[big], decades: log10(by[big].size / by[small].size) });
+    const body = src.slice(src.indexOf('function staircaseSteps'), src.indexOf('function staircase()'));
+    const run = (compare) => { const ctx = { compare, sorted, log10, Math }; vm.runInNewContext(body + '\nthis.steps = staircaseSteps();', ctx); return ctx.steps; };
+    const s1 = run(mk('human', 'earth'));
+    expect(s1.length).toBe(6); // 6.87 decades -> six whole steps, the rest is the last arrow
+    expect(s1.map((st) => st.item && st.item.id)).toEqual(['trex', 'pyramid', null, 'everest', 'chicxulub', 'reef']);
+    // the bare step is drawn at exactly 10^k times the small thing
+    expect(s1[2].size).toBeCloseTo(1.7e3, 6);
+    // endpoints are never used as their own example
+    for (const st of s1) if (st.item) expect(['human', 'earth']).not.toContain(st.item.id);
+    expect(run(mk('proton', 'universe')).length).toBe(41); // 43 chips in the UI = 41 steps + the two endpoints
+    expect(run(mk('human', 'door')).length).toBe(0); // under one decade: sentence only
+  });
+
+  it('nested frames are drawn for the focus only, backed for legibility, with a guide to one tick left', () => {
+    const block = src.slice(src.indexOf('// Nested decade frames.'), src.indexOf('// Labels are a second pass'));
+    expect(block).toMatch(/if \(isFocus && c\.dia >= 60\)/);
+    expect(block).toMatch(/var fs = side \/ Math\.pow\(10, f\);/);
+    expect(block).toMatch(/strokeStyle = P\.stage; g\.lineWidth = 4;/); // backing stroke under the dash
+    expect(block).toMatch(/var gx = fx - pxPerDecade;/);              // the guide lands one decade LEFT
+    expect(block).toMatch(/g\.lineTo\(gx, axisY - 6\)/);
+  });
+
+  it('the notation toggle reaches the card, the ladder, the selects and the stage, and persists', () => {
+    expect(src).toMatch(/function lengthText\(m\) \{ return sci \? humanLength\(m\) \+ ' · ' \+ sciNotation\(m\) : humanLength\(m\); \}/);
+    expect(src).toMatch(/\{ len: lengthText\(focused\.size\)/);
+    expect(src).toMatch(/itemText\(i, 'name'\) \+ ' — ' \+ lengthText\(i\.size\)/);
+    expect(src).toMatch(/sciRef\.current \? sciNotation\(lo\.size\) : humanLength\(lo\.size\)/);
+    expect(src).toMatch(/updateSlice\(function \(cur\) \{ cur\.sci = on; \}\)/);
+    expect(src).toMatch(/React\.useEffect\(function \(\) \{ draw\(\); \}, \[theme, focusId, uiLang, sci, items\]\)/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['sci_toggle', 'stair_caption', 'stair_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+
+  it('the stage no longer stretches to a long side panel', () => {
+    expect(src).toMatch(/minHeight: 'min\(56vh, 420px\)', maxHeight: 'max\(420px, 78vh\)'/);
+  });
+});
+
+// 2026-09-13. "Play the zoom": one unbroken constant-rate zoom along the axis
+// (the Eames film), on its own rAF, painted imperatively like every other
+// per-frame value here, with a caption and progress strip on the stage. Rates
+// and stopping were measured in the real host (about 1.4 decades/s at "fast";
+// manual navigation stops it; it ends at the top of the ladder).
+describe('Scale Explorer film mode', () => {
+  const film = src.slice(src.indexOf('// ── The film ───'), src.indexOf('function startJourney'));
+  it('moves at a fixed number of powers of ten per second, frame-time based, never per-frame state', () => {
+    expect(src).toMatch(/var FILM_RATE = \{ slow: 0\.35, normal: 0\.7, fast: 1\.4 \}/);
+    expect(film).toMatch(/var dt = f\.last \? Math\.min\(0\.1, \(ts - f\.last\) \/ 1000\) : 0;/);
+    expect(film).toMatch(/expRef\.current \+ f\.dir \* rate \* dt/);
+    // the per-frame path paints and draws; React state is settled only when it stops
+    expect(film).toMatch(/paintReadout\(\);\s*draw\(\);\s*afterMove\(\);/);
+    expect(film).not.toMatch(/setExp\(/);
+    expect(film).toMatch(/settleExp\(expRef\.current\)/);
+  });
+  it('stops on any manual navigation, at the ladder end, on space, and on unmount', () => {
+    expect(src).toMatch(/function stopJourney\(\) \{[\s\S]*?stopFilm\(\);\s*\}/);
+    expect(film).toMatch(/var done = f\.dir > 0 \? next >= f\.to : next <= f\.to;/);
+    expect(film).toMatch(/say\(S\('journey_end'/);
+    expect(src).toMatch(/if \(k === ' ' \|\| k === 'Spacebar'\) \{ ev\.preventDefault\(\); toggleFilm/);
+    expect(src).toMatch(/function onWheel\(ev\) \{\s*ev\.preventDefault\(\);\s*stopJourney\(\);/);
+    expect(src).toMatch(/if \(filmRafRef\.current\) cancelAnimationFrame\(filmRafRef\.current\);/);
+  });
+  it('falls back to the stepwise journey under reduced motion, and says so', () => {
+    expect(film).toMatch(/if \(reduceMotion\) \{ startJourney\(dir\); return; \}/);
+    expect(src).toMatch(/S\('film_reduced'/);
+  });
+  it('paints the caption and progress strip only while playing, and the controls carry pressed state', () => {
+    const chrome = src.slice(src.indexOf('// Film chrome:'), src.indexOf('// The stage now grows to match the side panel'));
+    expect(chrome).toMatch(/if \(fm\.dir !== 0\) \{/);
+    expect(chrome).toMatch(/powerLabel\(dec\) \+ '  ·  ' \+ humanLength\(Math\.pow\(10, e\)\)/);
+    expect(src).toMatch(/'aria-pressed': film > 0 \? 'true' : 'false'/);
+    expect(src).toMatch(/'aria-pressed': film < 0 \? 'true' : 'false'/);
+    expect(src).toMatch(/'aria-label': S\('film_speed_aria'/);
+    expect(src).toMatch(/space plays or pauses the zoom/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['film_out', 'film_in', 'film_pause', 'film_speed', 'film_start_out', 'film_start_in', 'film_paused', 'film_reduced']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+  it('names the astronomical unit itself without a count of one', () => {
+    const start = src.indexOf('function humanLength');
+    const body = src.slice(start, src.indexOf('function round2'));
+    expect(body).toMatch(/if \(au < 1\.05\) return 'the Earth–Sun distance';/);
+  });
+});
+
+// 2026-09-13. Two more ways of seeing the ladder: side-by-side tiling for near
+// neighbours in Compare, and a population strip on the scrubber's own axis.
+// Checked in the real host: 8.3 basketballs across a doorway as glyphs, 40 mice
+// across an elephant as cells with the one-step staircase beneath, person vs
+// red blood cell hands off to the staircase alone, person vs doorway reads
+// "nearly the same size"; the strip has 44 columns with 6 empty decades.
+describe('Scale Explorer tiling and population strip', () => {
+  it('tiles only under two powers of ten, glyphs when a copy is wide enough, cells otherwise', () => {
+    expect(src).toMatch(/compare && compare\.ratio >= 1\.02 && compare\.decades < 2 \? tiling\(\) : null/);
+    const fn = src.slice(src.indexOf('function tiling()'), src.indexOf('function staircase()'));
+    expect(fn).toMatch(/var cellW = W \/ ratio;/);
+    expect(fn).toMatch(/var glyph = cellW >= 14;/);
+    expect(fn).toMatch(/if \(frac > 0\.04\)/);            // the part-copy at the end
+    expect(fn).toMatch(/role: 'img', 'aria-label': caption/); // the picture has the sentence as its name
+    expect(fn).toMatch(/ratio < 1\.5\s*\? S\('fit_line_close'/);
+  });
+  it('the population strip shares the scrubber axis, one column per power of ten, and is decorative to readers', () => {
+    const fn = src.slice(src.indexOf('function populationStrip()'), src.indexOf('function itemOptions()'));
+    expect(fn).toMatch(/var lo = Math\.ceil\(MIN_EXP\), hi = Math\.floor\(MAX_EXP\);/);
+    expect(fn).toMatch(/var x = \(\(d - MIN_EXP\) \/ span\) \* 100;/);
+    expect(fn).toMatch(/'aria-hidden': 'true', focusable: 'false'/);
+    expect(fn).toMatch(/onClick: \(function \(n\) \{ return function \(\) \{ stopJourney\(\); goTo\(n\); \}; \}\)\(d\)/);
+    // the ladder really does have empty decades; the strip must not hide them
+    const counts = {};
+    for (const i of ITEMS) { const d = Math.round(Math.log(i.size) / Math.LN10); counts[d] = (counts[d] || 0) + 1; }
+    let empties = 0; for (let d = -16; d <= 27; d++) if (!counts[d]) empties++;
+    // 2026-09-13: four rungs were added where something well defined exists (a
+    // light minute, a light month, the Coma Cluster, ten billion light years).
+    // The two that remain are honestly empty: nothing has a defined width below
+    // the proton, and nothing familiar sits at a hundred femtometres.
+    expect(empties).toBe(2);
+    expect(counts[-16]).toBeUndefined(); expect(counts[-13]).toBeUndefined();
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['fit_line', 'fit_line_close']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+// 2026-09-13. "Make the person your height": the one personalisation that
+// changes what every other number means. Checked in the real host: 999 is
+// refused, 152 makes the card read "You, 1.52 m tall", the select and Compare
+// say "you" ("About 16 of you fit side by side across a blue whale"), it
+// survives closing and reopening the tool, and "Back to average" restores 1.7 m.
+describe('Scale Explorer: the person can be the student', () => {
+  it('accepts a height between 50 and 250 cm and nothing else', () => {
+    const ctx = {};
+    vm.runInNewContext(src.slice(src.indexOf('function validHeightCm'), src.indexOf('function round2')) + '\nthis.v = validHeightCm;', ctx);
+    expect(ctx.v('152')).toBe(152);
+    expect(ctx.v(50)).toBe(50);
+    expect(ctx.v(250)).toBe(250);
+    for (const bad of ['999', '49', '', 'abc', null, undefined, '1e9']) expect(ctx.v(bad), String(bad)).toBeNull();
+  });
+  it('"You" is a card name and "you" is a sentence word', () => {
+    const ctx = {};
+    vm.runInNewContext(src.slice(src.indexOf('function lowerArticle'), src.indexOf('// The person can be made')) + '\nthis.la = lowerArticle;', ctx);
+    expect(ctx.la('You')).toBe('you');
+    expect(ctx.la('The Earth')).toBe('the Earth');
+    expect(ctx.la('Jupiter')).toBe('Jupiter');
+  });
+  it('everything reads from one derived list, and the animation loop reads it through a ref', () => {
+    expect(src).toMatch(/var items = React\.useMemo\(function \(\) \{\s*if \(!yourCm\) return ITEMS;/);
+    expect(src).toMatch(/return items\.slice\(\)\.sort\(function \(a, b\) \{ return b\.size - a\.size; \}\);\s*\}, \[items\]\);/);
+    expect(src).toMatch(/var sortedRef = React\.useRef\(sorted\); sortedRef\.current = sorted;/);
+    const draw = src.slice(src.indexOf('function draw()'), src.indexOf('// The stage now grows to match the side panel'));
+    expect(draw).toMatch(/var list = sortedRef\.current;/);
+    expect(draw).not.toMatch(/for \(var i = 0; i < sorted\.length/);
+    const near = src.slice(src.indexOf('function nearestItem'), src.indexOf('function stopJourney'));
+    expect(near).toMatch(/var list = sortedRef\.current/);
+    expect(src).toMatch(/\[theme, focusId, uiLang, sci, items\]\)/);
+  });
+  it('setting the height persists, re-centres on the person, and can be undone', () => {
+    const fn = src.slice(src.indexOf('function applyHeight'), src.indexOf('function submitHeight'));
+    expect(fn).toMatch(/updateSlice\(function \(cur\) \{ if \(cm\) cur\.yourHeightCm = cm; else delete cur\.yourHeightCm; \}\)/);
+    expect(fn).toMatch(/setFocusId\('human'\);\s*goTo\(log10\(size\)\)/);
+    expect(src).toMatch(/validHeightCm\(slice\.yourHeightCm\)/);
+    expect(src).toMatch(/S\('you_reset', 'Back to average'\)/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['you_name', 'you_describe', 'you_label', 'you_input_aria', 'you_apply', 'you_reset', 'you_invalid', 'you_set_sr', 'you_cleared_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+describe('Scale Explorer accepts a hand-off from another tool', () => {
+  function lift(name, until) { const a = src.indexOf('function ' + name + '('); const b = src.indexOf('function ' + until + '(', a); return src.slice(a, b); }
+  const helpers = lift('linkNamesThisTool', 'shareBase');
+  function evalWith(win) {
+    const ctx = { window: Object.assign({ location: { search: '', hostname: 'x' } }, win), URLSearchParams, MIN_EXP: -16.2, MAX_EXP: 27.6, log10: (v) => Math.log(v) / Math.LN10, Math };
+    vm.runInNewContext(helpers + '\nthis.read = readStartFromLink;', ctx);
+    return ctx;
+  }
+  it('opens at the handed-over width with the nearest item in focus, clamped to the ladder', () => {
+    const r = evalWith({ __alloScaleExplorerStart: { exp: 7.48, from: 'zoomGallery' } }).read(ITEMS);
+    expect(r.exp).toBeCloseTo(7.48, 6);
+    expect(r.focusId).toBe('earth');
+    expect(evalWith({ __alloScaleExplorerStart: { exp: 99 } }).read(ITEMS).exp).toBe(27.6);
+    expect(evalWith({ __alloScaleExplorerStart: { exp: 'nope' } }).read(ITEMS)).toBeNull();
+  });
+  it('does not consume the hand-off in the initialiser (StrictMode runs it twice); the mount effect clears it', () => {
+    const c = evalWith({ __alloScaleExplorerStart: { exp: 7.48 } });
+    c.read(ITEMS); c.read(ITEMS);
+    expect(c.window.__alloScaleExplorerStart).toBeTruthy();
+    expect(src).toMatch(/React\.useEffect\(function \(\) \{\s*try \{ window\.__alloScaleExplorerStart = null; \} catch \(_\) \{\}\s*draw\(\);/);
+  });
+});
+
+describe('Scale Explorer: a real photograph one click away', () => {
+  it('the Earth and the Sun point at their gallery images; nothing else does', () => {
+    const withPhoto = ITEMS.filter((i) => i.photo).map((i) => [i.id, i.photo]);
+    expect(withPhoto).toEqual([['sun', 'solarflare'], ['earth', 'earthrise'], ['moon', 'farside']]);
+    expect(src).toMatch(/focused\.photo && typeof ctx\.setStemLabTool === 'function' \? h\('button'/);
+    expect(src).toMatch(/window\.__alloZoomGalleryStart = \{ image: focused\.photo, from: 'scaleExplorer' \}/);
+    expect(src).toMatch(/ctx\.setStemLabTool\('zoomGallery'\)/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const k of ['see_photo', 'see_photo_aria']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+// 2026-09-13. Guided tours: a handful of stops with one sentence each. The
+// sentences make numerical claims, so the claims are checked here against the
+// same ITEMS sizes the stage draws from.
+describe('Scale Explorer guided tours', () => {
+  const TOURS = readArray(src, 'TOURS');
+  const size = (id) => byId[id].size;
+  it('has three tours whose every stop is a real item, with a line to read', () => {
+    expect(TOURS.map((t) => t.id)).toEqual(['out', 'in', 'solar']);
+    for (const t of TOURS) {
+      expect(t.stops.length).toBeGreaterThanOrEqual(8);
+      for (const st of t.stops) { expect(byId[st.id], t.id + ' stop ' + st.id).toBeTruthy(); expect(st.line.length).toBeGreaterThan(30); }
+    }
+    // outward and inward tours are monotonic in size
+    const out = TOURS[0].stops.map((s) => size(s.id)); expect(out.every((v, i) => !i || v > out[i - 1])).toBe(true);
+    const inn = TOURS[1].stops.map((s) => size(s.id)); expect(inn.every((v, i) => !i || v < inn[i - 1])).toBe(true);
+  });
+  it('the numbers in the lines hold against the ladder', () => {
+    const r = (a, b) => size(a) / size(b);
+    expect(r('blue-whale', 'human')).toBeGreaterThan(13); expect(r('blue-whale', 'human')).toBeLessThan(17);   // "about fifteen of you"
+    expect(r('eiffel', 'human')).toBeGreaterThan(180); expect(r('eiffel', 'human')).toBeLessThan(210);        // "nearly two hundred"
+    expect(r('everest', 'human')).toBeGreaterThan(4800); expect(r('everest', 'human')).toBeLessThan(5500);    // "five thousand"
+    expect(r('sun', 'earth')).toBeGreaterThan(105); expect(r('sun', 'earth')).toBeLessThan(113);              // "one hundred and nine Earths"
+    expect(r('au', 'sun')).toBeGreaterThan(104); expect(r('au', 'sun')).toBeLessThan(111);                    // "a hundred and seven Suns"
+    expect(r('lightyear', 'au')).toBeGreaterThan(62000); expect(r('lightyear', 'au')).toBeLessThan(64500);   // "sixty-three thousand"
+    expect(r('hair', 'rbc')).toBeGreaterThan(8); expect(r('hair', 'rbc')).toBeLessThan(11);                   // "about ten"
+    expect(r('rbc', 'ecoli')).toBeGreaterThan(3); expect(r('rbc', 'ecoli')).toBeLessThan(4.5);                // "nearly four"
+    expect(r('ecoli', 'dna')).toBeGreaterThan(700); expect(r('ecoli', 'dna')).toBeLessThan(1200);             // "a thousand"
+    expect(r('moon', 'earth')).toBeGreaterThan(0.25); expect(r('moon', 'earth')).toBeLessThan(0.29);          // "a quarter"
+    expect(r('jupiter', 'earth')).toBeGreaterThan(10.5); expect(r('jupiter', 'earth')).toBeLessThan(11.8);    // "eleven Earths"
+    expect(r('sun', 'jupiter')).toBeGreaterThan(9); expect(r('sun', 'jupiter')).toBeLessThan(10.5);           // "ten Jupiters"
+    expect(r('solar-system', 'au')).toBeGreaterThan(55); expect(r('solar-system', 'au')).toBeLessThan(65);    // "sixty times"
+  });
+  it('a stop flies to its item, is announced with its line, and finishing a tour counts', () => {
+    const fn = src.slice(src.indexOf('function goToStop'), src.indexOf('function startTour'));
+    expect(fn).toMatch(/flyTo\(item\)/);
+    expect(fn).toMatch(/S\('tour_stop_sr', 'Stop \{n\} of \{total\}: \{name\}\. \{line\}'/);
+    expect(fn).toMatch(/if \(i === tour\.stops\.length - 1\) updateSlice\(function \(cur\) \{ cur\.tourDoneCount = \(cur\.tourDoneCount \|\| 0\) \+ 1; \}\)/);
+    expect(src).toMatch(/id: 'scale_tour'[\s\S]{0,120}tourDoneCount/);
+    for (const rel of UI_COPIES) {
+      const sec = JSON.parse(read(rel)).stem.scaleExplorer;
+      for (const t of TOURS) { expect(sec['tour_' + t.id + '_title']).toBe(t.title); t.stops.forEach((st, i) => expect(sec['tour_' + t.id + '_stop_' + i], rel + ' ' + t.id + ' ' + i).toBe(st.line)); }
+      for (const k of ['tour_group', 'tour_label', 'tour_select_aria', 'tour_none', 'tour_prev', 'tour_next', 'tour_progress', 'tour_done', 'tour_stop_sr']) expect(sec[k], rel + ' ' + k).toBeTruthy();
+    }
+  });
+});
+
+describe('Scale Explorer: a link can start a tour', () => {
+  it('?tour=<id> opens at the tour\'s first stop; unknown ids are ignored', () => {
+    const lift = (name, until) => { const a = src.indexOf('function ' + name + '('); const b = src.indexOf('function ' + until + '(', a); return src.slice(a, b); };
+    const TOURS = readArray(src, 'TOURS');
+    const ctx = { window: { location: { search: '?tool=scaleExplorer&tour=solar', hostname: 'x' } }, URLSearchParams, MIN_EXP: -16.2, MAX_EXP: 27.6, log10: (v) => Math.log(v) / Math.LN10, Math, TOURS };
+    vm.runInNewContext(lift('linkNamesThisTool', 'shareBase') + '\nthis.read = readStartFromLink;', ctx);
+    expect(ctx.read(ITEMS)).toMatchObject({ tour: 'solar' });
+    ctx.window.location.search = '?tool=scaleExplorer&tour=nope&focus=rbc';
+    expect(ctx.read(ITEMS)).toMatchObject({ focusId: 'rbc' }); // falls through to focus
+    expect(src).toMatch(/React\.useState\(start\.tour \|\| ''\)/);
+    expect(src).toMatch(/React\.useState\(start\.tour \? 0 : -1\)/);
+  });
+});

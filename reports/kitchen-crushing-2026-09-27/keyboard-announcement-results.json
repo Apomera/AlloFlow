@@ -1,0 +1,7 @@
+{
+  "pass": true,
+  "checks": [
+    "Arrow navigation updates the focused masher accessible name and live selection status.",
+    "Space acts on the announced piece and reports its resistance."
+  ]
+}

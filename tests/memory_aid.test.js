@@ -1417,7 +1417,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     });
     expect(Array.from(host.querySelectorAll('.memory-aid-practice-content')).every(item => item.hidden === false)).toBe(true);
     expect(host.querySelectorAll('article')).toHaveLength(2);
-    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Preview student worksheet')).toBeTruthy();
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Print my practice sheet')).toBeTruthy();
     expect(host.textContent).toContain('SIBLING HEADER ANSWER SENTINEL');
     expect(host.textContent).toContain('SECOND CARD PRIVATE HISTORY SENTINEL');
     expect(document.activeElement.id).toBe(Array.from(articles[0].querySelectorAll('button')).find(item => item.textContent === 'Start recall practice').id);

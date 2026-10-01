@@ -1,0 +1,1 @@
+check_staleness_delta: no English rewording vs HEAD (19 added, 0 removed - gap-report territory).

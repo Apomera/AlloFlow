@@ -1,0 +1,215 @@
+diff --git a/reader_place_store.js b/reader_place_store.js
+index 1c730a7b5..a333ea7ad 100644
+--- a/reader_place_store.js
++++ b/reader_place_store.js
+@@ -205,13 +205,17 @@ function createReadingPlaceStore(options) {
+       return result(entry);
+     } catch (error) { return fail(entry, error && error.name === 'QuotaExceededError' ? 'quota' : 'denied'); }
+   }
+-  function save(scope, patch) {
++  function save(scope, patch, saveOptions) {
+     var entry = entryFor(scope);
+     // Removing a reading is intentional. Scroll/retry must not recreate it.
+     if (entry.removed && !patch?.responses && !patch?.bookmark) return Promise.resolve(result(entry));
+     entry.removed = false;
+     accept(entry, patch || {});
+     if (!scope.learner) { entry.status = 'session-only'; entry.reason = 'anonymous'; return Promise.resolve(result(entry)); }
++    // Restoring a recovery copy is a page-memory action. Scroll or typing must
++    // not silently authorize writing that restored draft to durable storage.
++    if (entry.recoveryPending && !saveOptions?.confirmRecovery) return Promise.resolve(fail(entry, 'recovered-draft'));
++    entry.recoveryPending = false;
+     entry.status = 'saving'; entry.reason = null; entry.problem = null; syncGuard();
+     try {
+       var locks = options.getLocks && options.getLocks();
+@@ -258,6 +262,7 @@ function createReadingPlaceStore(options) {
+         // Earlier queued autosaves must not recreate work explicitly discarded
+         // by this choice, including a removed record with a pending scroll save.
+         entry.generation++;
++        entry.recoveryPending = false;
+         if (choice === 'saved') {
+           retainCopy(entry, entry.draft, 'local');
+           entry.base = copy(saved); entry.draft = copy(saved) || { responses: {} };
+@@ -288,6 +293,35 @@ function createReadingPlaceStore(options) {
+         place: checked.row, corrupt: checked.bad, characters: JSON.stringify(original).length };
+     } catch (error) { fail(entry, error?.name === 'SyntaxError' ? 'corrupt-store' : 'denied'); return null; }
+   }
++  function reviewRecovery(scope, index) {
++    var entry = entryFor(scope), selected = Number.isSafeInteger(index) && entry.recoveryCopies[index];
++    if (!selected) return null;
++    return { scopeKey: memoryKey(scope), index, token: JSON.stringify(selected), draftToken: authoredToken(entry.draft),
++      local: copy(entry.draft), recovered: copy(selected.place), rawRow: selected.rawRow || null, canRestore: hasWork(selected.place) };
++  }
++  function changeRecovery(scope, reviewed, action) {
++    var entry = entryFor(scope), selected = reviewed && entry.recoveryCopies[reviewed.index];
++    if (!reviewed || reviewed.scopeKey !== memoryKey(scope) || !selected || JSON.stringify(selected) !== reviewed.token || !['restore', 'remove'].includes(action)) return fail(entry, 'recovery-changed');
++    if (action === 'remove') {
++      entry.recoveryCopies.splice(reviewed.index, 1);
++      if (!entry.dirty.size && ['recovery-changed', 'recovery-empty'].includes(entry.reason)) return load(scope);
++      return result(entry);
++    }
++    if (reviewed.draftToken !== authoredToken(entry.draft)) return fail(entry, 'recovery-changed');
++    var checked = normalize(selected.place);
++    if (checked.bad || !hasWork(checked.row)) return fail(entry, 'recovery-empty');
++    var before = flatten(entry.draft);
++    if (authoredToken(entry.draft) !== authoredToken(checked.row)) retainCopy(entry, entry.draft, 'local');
++    entry.draft = { ...entry.draft, responses: copy(checked.row.responses), bookmark: copy(checked.row.bookmark) || null, at: now() };
++    var after = flatten(entry.draft);
++    [...new Set([...Object.keys(before), ...Object.keys(after)])].forEach(key => { if (key !== 'position') entry.dirty.add(key); });
++    // Old queued saves may finish after the review. They cannot publish this
++    // restored draft without its explicit save confirmation.
++    entry.generation++; entry.revision++; entry.removed = false;
++    entry.recoveryPending = !!scope.learner; entry.problem = null;
++    entry.status = scope.learner ? 'failed' : 'session-only'; entry.reason = scope.learner ? 'recovered-draft' : 'anonymous';
++    return result(entry);
++  }
+   function manageSaved(scope, reviewed, action) {
+     var entry = entryFor(scope);
+     if (!scope.learner || !reviewed || reviewed.scopeKey !== memoryKey(scope) || !['remove', 'repair'].includes(action)) return Promise.resolve(fail(entry, 'review-changed'));
+@@ -316,16 +350,17 @@ function createReadingPlaceStore(options) {
+         entry.recoveryCopies.push({ source: 'saved', place: copy(fresh.place) || { responses: {} }, rawRow: fresh.token });
+         if (action === 'remove') {
+           entry.base = null; entry.draft = { responses: {} }; entry.dirty.clear(); entry.removed = true;
++          entry.recoveryPending = false;
+           entry.status = 'ready'; entry.reason = null;
+         } else {
+           entry.base = copy(next);
+           if (!entry.dirty.size) entry.draft = copy(next);
+-          entry.status = entry.dirty.size ? 'failed' : 'saved'; entry.reason = entry.dirty.size ? 'retry-needed' : null;
++          entry.status = entry.dirty.size ? 'failed' : 'saved'; entry.reason = entry.recoveryPending ? 'recovered-draft' : entry.dirty.size ? 'retry-needed' : null;
+         }
+         entry.problem = null; entry.revision++;
+         return result(entry);
+       })).catch(error => fail(entry, error?.name === 'QuotaExceededError' ? 'quota' : 'unavailable'));
+     } catch (_) { return Promise.resolve(fail(entry, 'unavailable')); }
+   }
+-  return { key: storageKey, load, save, review, resolve, inspectSaved, manageSaved, watchPage, hasUnsavedWork, hasSessionWork, exportSession, peek: scope => result(entryFor(scope)) };
++  return { key: storageKey, load, save, review, resolve, reviewRecovery, changeRecovery, inspectSaved, manageSaved, watchPage, hasUnsavedWork, hasSessionWork, exportSession, peek: scope => result(entryFor(scope)) };
+ }
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index 8932a9a60..1b32a9c1e 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -3979,10 +3979,10 @@
+       var state = current.store.peek(current.scope);
+       setReadingPlace(state.place); setPlacePersistence(state);
+     }
+-    function storeReadingPlace(update) {
++    function storeReadingPlace(update, saveOptions) {
+       var current = placeRef.current;
+       if (!current.available || previewOpenRef.current) return null;
+-      var pending = current.store.save(current.scope, update);
++      var pending = current.store.save(current.scope, update, saveOptions);
+       applyPlacePersistence(current);
+       return pending.then(function (result) { applyPlacePersistence(current); return result; });
+     }
+@@ -4120,10 +4120,52 @@
+       </>;
+     }
+ 
++    var [placeCopyReviewState, setPlaceCopyReviewState] = React.useState(null);
++    var placeCopyReview = placeCopyReviewState?.key === placeScopeKey ? placeCopyReviewState : null;
++    var placeCopyReviewRef = React.useRef(null), priorPlaceCopyReviewRef = React.useRef(null);
++    React.useEffect(function () {
++      if (placeCopyReview) placeCopyReviewRef.current?.focus();
++      else if (priorPlaceCopyReviewRef.current === placeScopeKey) placeStatusRef.current?.focus();
++      priorPlaceCopyReviewRef.current = placeCopyReview ? placeScopeKey : null;
++    }, [placeCopyReview?.review, placeScopeKey]);
++    function reviewRecoveryCopy(index) {
++      var current = placeRef.current;
++      if (!current.available || previewOpenRef.current) return;
++      var review = current.store.reviewRecovery(current.scope, index);
++      setPlaceCopyReviewState(review ? { key: current.key, review, confirmed: false } : null);
++    }
++    function changeRecoveryCopy(action) {
++      var current = placeRef.current;
++      if (!current.available || previewOpenRef.current || !placeCopyReview || (action === 'remove' && !placeCopyReview.confirmed)) return;
++      current.store.changeRecovery(current.scope, placeCopyReview.review, action);
++      applyPlacePersistence(current); setPlaceCopyReviewState(null);
++    }
++    function renderRecoveryCopyReview(button, textArea) {
++      if (!placeCopyReview) return null;
++      var review = placeCopyReview.review;
++      return <section data-reading-copy-panel ref={placeCopyReviewRef} tabIndex={-1} aria-label={viewText('simplified.place_copy_review_title', 'Review a recovery copy')} className="my-3 space-y-3 rounded border border-amber-600 bg-white p-3">
++        <h4 className="font-bold">{viewText('simplified.place_copy_review_title', 'Review a recovery copy')}</h4>
++        <p>{viewText('simplified.place_copy_restore_help', 'Restoring replaces this page’s answers and bookmark with the copy below. Your current work is kept in another recovery copy. Review the restored draft before saving it.')}</p>
++        <div className="grid gap-3 md:grid-cols-2">
++          <label>{viewText('simplified.place_review_local', 'This page’s draft')}<textarea data-reading-copy-current readOnly rows={6} className={textArea} value={readingRecoveryText(review.local)} onFocus={event => event.target.select()} /></label>
++          <label>{viewText('simplified.place_copy_selected', 'Selected recovery copy')}<textarea data-reading-copy-selected readOnly rows={6} className={textArea} value={readingRecoveryText(review.recovered)} onFocus={event => event.target.select()} /></label>
++        </div>
++        {!review.canRestore && <p>{viewText('simplified.place_copy_no_readable_work', 'This copy has no readable answers or bookmark to restore. Its original record is still available in the recovery download.')}</p>}
++        <button type="button" data-reading-copy-restore disabled={!review.canRestore} onClick={() => changeRecoveryCopy('restore')} className={button}>{viewText('simplified.place_copy_restore', 'Restore as a draft')}</button>
++        <p>{viewText('simplified.place_copy_remove_help', 'Removing this copy only removes it from this page. It does not change your current answers, bookmark, or saved work.')}</p>
++        <label className="flex min-h-11 items-center gap-2"><input data-reading-copy-confirm type="checkbox" checked={placeCopyReview.confirmed} onChange={event => setPlaceCopyReviewState({ ...placeCopyReview, confirmed: event.target.checked })} />{viewText('simplified.place_copy_remove_confirm', 'I have kept this copy or no longer need it.')}</label>
++        <div className="flex flex-wrap gap-2">
++          <button type="button" data-reading-copy-remove disabled={!placeCopyReview.confirmed} onClick={() => changeRecoveryCopy('remove')} className={button}>{viewText('simplified.place_copy_remove', 'Remove this recovery copy')}</button>
++          <button type="button" data-reading-copy-cancel onClick={() => setPlaceCopyReviewState(null)} className={button}>{viewText('common.cancel', 'Cancel')}</button>
++        </div>
++      </section>;
++    }
++
+     function renderPlacePersistence() {
+       var state = placePersistence;
+       if (!state) return null;
+-      var label = state.status === 'saved' ? viewText('simplified.place_saved_device', 'Saved on this device for this version of the reading.')
++      var label = state.reason === 'recovered-draft' ? viewText('simplified.place_copy_restored', 'Recovery copy restored on this page. Review it, then choose Save restored work. Reloading will discard unsaved changes.')
++        : state.status === 'saved' ? viewText('simplified.place_saved_device', 'Saved on this device for this version of the reading.')
+         : state.status === 'saving' ? viewText('simplified.place_saving', 'Saving on this device…')
+         : state.status === 'session-only' ? (placePreview ? viewText('simplified.place_preview_only', 'Kept only while this preview is open.') : viewText('simplified.place_page_only', 'Kept only while this page is open. Reloading will clear this work.'))
+         : state.status === 'failed' ? viewText('simplified.place_save_failed', 'Couldn’t save on this device. Your work is still here while this page stays open. Reloading may lose these changes.')
+@@ -4137,6 +4179,8 @@
+         capacity: ['simplified.place_save_capacity', 'Reading storage is full. Existing bookmarks and answers have been kept.'],
+         'coordination-unavailable': ['simplified.place_save_coordination', 'This browser cannot safely save reading work across tabs. Keep this page open or copy your answers.']
+       };
++      reasons['recovery-changed'] = ['simplified.place_copy_changed', 'The draft or recovery copy changed. Review it again before continuing.'];
++      reasons['recovery-empty'] = ['simplified.place_copy_empty', 'This recovery copy has no readable answers or bookmark to restore.'];
+       var reason = reasons[state.reason];
+       var hasCopyableWork = !!readingPlace?.bookmark || Object.values(readingPlace?.responses || {}).some(answer => ['mainIdea', 'support', 'confusing', 'confusingNote'].some(field => !!answer[field]));
+       var textArea = 'block w-full rounded border border-slate-400 bg-white p-2';
+@@ -4144,10 +4188,11 @@
+       return <div data-reading-persistence={state.status} className={'my-2 rounded-lg p-2 text-sm ' + (state.status === 'failed' ? 'border border-amber-500 bg-amber-50 text-amber-950' : 'text-slate-700')}>
+         <p role="status" ref={placeStatusRef} tabIndex={-1}>{label}{reason ? ' ' + viewText(reason[0], reason[1]) : ''}</p>
+         {state.status === 'failed' && <div className="mt-2 flex flex-wrap gap-2">
+-          <button type="button" data-reading-save-retry disabled={placeReviewBusy} onClick={() => storeReadingPlace({})} className={button}>{viewText('simplified.place_retry', 'Retry saving')}</button>
++          <button type="button" data-reading-save-retry disabled={placeReviewBusy} onClick={() => storeReadingPlace({}, { confirmRecovery: true })} className={button}>{state.reason === 'recovered-draft' ? viewText('simplified.place_copy_save', 'Save restored work') : viewText('simplified.place_retry', 'Retry saving')}</button>
+           {['conflict', 'review-changed'].includes(state.reason) && <button type="button" data-reading-conflict-review disabled={placeReviewBusy} onClick={reviewReadingConflict} className={button}>{viewText('simplified.place_review_versions', 'Review both versions')}</button>}
+         </div>}
+         {renderReadingRecoveryActions(state, hasCopyableWork, button, textArea)}
++        {renderRecoveryCopyReview(button, textArea)}
+         {placeReview && <section data-reading-conflict-panel ref={placeReviewRef} tabIndex={-1} aria-label={viewText('simplified.place_review_title', 'Choose which work to use')} aria-busy={!!placeReviewBusy} className="mt-3 space-y-3 rounded border border-amber-600 bg-white p-3">
+           <h4 className="font-bold">{viewText('simplified.place_review_title', 'Choose which work to use')}</h4>
+           <p>{viewText('simplified.place_review_retained', 'A copy of the version you replace stays available below while this page is open.')}</p>
+@@ -4164,7 +4209,7 @@
+         {hasCopyableWork && ['failed', 'session-only'].includes(state.status) && <details className="mt-2"><summary className="min-h-11 cursor-pointer py-2">{viewText('simplified.place_copy_work', 'Copy your work')}</summary><label className="block">{viewText('simplified.place_work_to_copy', 'Work to copy')}<textarea data-reading-work-copy readOnly rows={6} value={readingRecoveryText(readingPlace)} onFocus={event => event.target.select()} className={textArea} /></label></details>}
+         {!!state.recoveryCopies?.length && <details data-reading-recovery-copies className="mt-2"><summary className="min-h-11 cursor-pointer py-2">{viewText('simplified.place_recovery_copies', 'Recovery copies for this page')}</summary>
+           <p>{viewText('simplified.place_recovery_lifetime', 'These copies are temporary. Copy any work you need before closing or reloading this page.')}</p>
+-          {state.recoveryCopies.map((entry, index) => <label key={index} className="my-2 block">{entry.source === 'local' ? viewText('simplified.place_recovery_local', 'Your earlier draft') : viewText('simplified.place_recovery_saved', 'Previously saved work')}{' ' + (index + 1)}<textarea data-reading-recovery-copy readOnly rows={6} value={readingRecoveryText(entry.place)} onFocus={event => event.target.select()} className={textArea} /></label>)}
++          {state.recoveryCopies.map((entry, index) => <div key={index} className="my-2"><label className="block">{entry.source === 'local' ? viewText('simplified.place_recovery_local', 'Your earlier draft') : viewText('simplified.place_recovery_saved', 'Previously saved work')}{' ' + (index + 1)}<textarea data-reading-recovery-copy readOnly rows={6} value={readingRecoveryText(entry.place)} onFocus={event => event.target.select()} className={textArea} /></label><button type="button" data-reading-copy-review onClick={() => reviewRecoveryCopy(index)} className={button}>{viewText('simplified.place_copy_review_action', 'Review copy {number}', { number: index + 1 })}</button></div>)}
+         </details>}
+       </div>;
+     }
+diff --git a/ui_strings.js b/ui_strings.js
+index 6f2854823..04f7f894c 100644
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6819,7 +6819,20 @@
+     "place_storage_repair_help": "This record contains damaged fields. Repair keeps readable fields and retains the original record in a recovery copy. Other damaged records may still prevent saving.",
+     "place_storage_confirm": "I have kept a copy of the work I need.",
+     "place_storage_remove": "Remove this reading’s saved work",
+-    "place_storage_repair": "Repair readable fields"
++    "place_storage_repair": "Repair readable fields",
++    "place_copy_changed": "The draft or recovery copy changed. Review it again before continuing.",
++    "place_copy_empty": "This recovery copy has no readable answers or bookmark to restore.",
++    "place_copy_review_title": "Review a recovery copy",
++    "place_copy_restore_help": "Restoring replaces this page’s answers and bookmark with the copy below. Your current work is kept in another recovery copy. Review the restored draft before saving it.",
++    "place_copy_selected": "Selected recovery copy",
++    "place_copy_no_readable_work": "This copy has no readable answers or bookmark to restore. Its original record is still available in the recovery download.",
++    "place_copy_restore": "Restore as a draft",
++    "place_copy_remove_help": "Removing this copy only removes it from this page. It does not change your current answers, bookmark, or saved work.",
++    "place_copy_remove_confirm": "I have kept this copy or no longer need it.",
++    "place_copy_remove": "Remove this recovery copy",
++    "place_copy_restored": "Recovery copy restored on this page. Review it, then choose Save restored work. Reloading will discard unsaved changes.",
++    "place_copy_save": "Save restored work",
++    "place_copy_review_action": "Review copy {number}"
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",

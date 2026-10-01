@@ -7,6 +7,7 @@
   "question": "memory",
   "learningLevel": "model",
   "designChanges": 9,
+  "observations": [],
   "prediction": "Woodland will store more water.",
   "explanation": "The same storm produced less outlet flow after changing the patch. These are simplified model results, not a flood forecast.",
   "run": {

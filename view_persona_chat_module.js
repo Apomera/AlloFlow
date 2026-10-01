@@ -331,8 +331,9 @@ function PersonaChatView(props) {
       placeholder: panel ? t('persona.panel_question_placeholder') : t('persona.character_question_placeholder', {
         name: personaState.selectedCharacter?.name
       }),
-      disabled: busy,
-      className: "block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+      readOnly: busy,
+      "aria-disabled": busy || undefined,
+      className: "block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" + (busy ? ' opacity-60 cursor-wait' : '')
     }), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex flex-wrap items-center justify-between gap-2"
     }, /*#__PURE__*/React.createElement("p", {
@@ -599,6 +600,8 @@ function PersonaChatView(props) {
         if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog], [data-persona-archive-dialog]')) {
           return;
         }
+        // Closing erases the interview, so Escape while typing does not close it.
+        if (event.target && /^(TEXTAREA|INPUT|SELECT)$/.test(event.target.tagName || '')) return;
         event.preventDefault();
         personaCloseHandlerRef.current();
         return;
@@ -832,7 +835,7 @@ function PersonaChatView(props) {
         id: id,
         text: text,
         difficulty: _boundedSnapshotNumber(quest.difficulty, 0, 100, 20),
-        isCompleted: quest.isCompleted === true || resumedQuestCompletion.get(id) === true
+        isCompleted: resumedQuestCompletion.get(id) === true
       });
       return list;
     }, []);
@@ -862,8 +865,8 @@ function PersonaChatView(props) {
       suggestedQuestions: suggestedQuestions,
       quests: quests,
       initialRapport: _boundedSnapshotNumber(authoritativeCharacter.initialRapport, 0, 100, 10),
-      rapport: _boundedSnapshotNumber(character.rapport, 0, 100, _boundedSnapshotNumber(authoritativeCharacter.rapport ?? authoritativeCharacter.initialRapport, 0, 100, 10)),
-      accumulatedXP: _boundedSnapshotNumber(character.accumulatedXP, 0, 300, _boundedSnapshotNumber(authoritativeCharacter.accumulatedXP, 0, 300, 0)),
+      rapport: _boundedSnapshotNumber(character.rapport, 0, 100, _boundedSnapshotNumber(authoritativeCharacter.initialRapport, 0, 100, 10)),
+      accumulatedXP: _boundedSnapshotNumber(character.accumulatedXP, 0, 300, 0),
       avatarUrl: avatarUrl
     };
   };
@@ -1170,6 +1173,11 @@ function PersonaChatView(props) {
       };
     });
   };
+  // Named for what it does: it ends and clears the interview ("Continue" did not say so).
+  var finishInterviewLabel = function () {
+    var value = t('persona.finish_interview');
+    return value && value !== 'persona.finish_interview' ? value : 'Finish interview';
+  }();
   personaCloseHandlerRef.current = _handleCloseAndClearSnapshot;
   // The final numeric segment remains the transcript index when playback IDs
   // are generation-scoped to prevent stale TTS callbacks.
@@ -1863,7 +1871,7 @@ function PersonaChatView(props) {
     disabled: suggestionsRetryPending,
     "aria-busy": suggestionsRetryPending ? 'true' : 'false',
     className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
-  }, t('persona.retry_choices'))))) : panelChoicePending || personaState.isLoading ? /*#__PURE__*/React.createElement("div", {
+  }, t('persona.retry_choices'))))) : panelChoicePending || personaState.isLoading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200",
     role: "status",
     "aria-live": "polite",
@@ -1872,8 +1880,9 @@ function PersonaChatView(props) {
     className: "flex items-center justify-center gap-2 text-sm font-bold text-indigo-700"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
+    "aria-hidden": "true",
     className: "animate-spin motion-reduce:animate-none"
-  }), t('persona.waiting_for_response'))) : isPersonaFreeResponse ? renderPersonaComposer(true) : /*#__PURE__*/React.createElement("div", {
+  }), t('persona.waiting_for_response'))), isPersonaFreeResponse && renderPersonaComposer(true)) : isPersonaFreeResponse ? renderPersonaComposer(true) : /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-center gap-3",
     role: "status",
     "aria-live": "polite"
@@ -1960,12 +1969,13 @@ function PersonaChatView(props) {
     className: "mt-6"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-expanded": isPersonaReflectionOpen,
+    "data-persona-finish-interview": true,
     onClick: _handleCompleteReflection,
     className: "w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 22
-  }), " ", t('common.continue') || 'Continue'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    size: 22,
+    "aria-hidden": "true"
+  }), " ", finishInterviewLabel))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6 relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"
@@ -2639,12 +2649,13 @@ function PersonaChatView(props) {
     className: "mt-6"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.continue'),
+    "data-persona-finish-interview": true,
     onClick: _handleCompleteReflection,
     className: "w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 22
-  }), " ", t('common.continue') || 'Continue'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    size: 22,
+    "aria-hidden": "true"
+  }), " ", finishInterviewLabel))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6 relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"

@@ -1,0 +1,13 @@
+{
+  "evidenceType": "recorded completed tool output",
+  "sourceSHA256": "4d7d2950d3275b1bd690e3495b773604c430046c0c88e09e547713db3cfca664",
+  "total": 167,
+  "passed": 167,
+  "failed": 0,
+  "files": 10,
+  "exitCode": 0,
+  "inputStable": true,
+  "durationSeconds": 90.1,
+  "rawAssertionReportRetained": false,
+  "note": "The runner reused interview-tests.json; the later113-assertion worker-start-failure report replaced the prior raw167 JSON. This record preserves verified prior tool output, not reconstructed assertion details."
+}

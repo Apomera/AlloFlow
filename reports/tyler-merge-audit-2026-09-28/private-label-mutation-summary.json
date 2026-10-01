@@ -1,0 +1,75 @@
+{
+  "fixture": "C:\\Users\\cabba\\AppData\\Local\\Temp\\tyler-label-mutants-NusGWn",
+  "results": [
+    {
+      "name": "ignore-persistence-failure",
+      "exit": 1,
+      "passed": 1,
+      "failed": 11,
+      "failures": [
+        "keeps an unsaved draft and durable label until retry (existing: false, save: Enter)",
+        "keeps an unsaved draft and durable label until retry (existing: true, save: Enter)",
+        "keeps an unsaved draft and durable label until retry (existing: false, save: blur)",
+        "keeps an unsaved draft and durable label until retry (existing: true, save: blur)",
+        "keeps labels visible and stored after refused class clearing, then retries (other class: false)",
+        "keeps labels visible and stored after refused class clearing, then retries (other class: true)",
+        "keeps the roster and private label intact if learner deletion cannot persist label removal (another label: false)",
+        "keeps the roster and private label intact if learner deletion cannot persist label removal (another label: true)",
+        "reports failed legacy migration without claiming migrated labels, then retries (only departed: false)",
+        "reports failed legacy migration without claiming migrated labels, then retries (only departed: true)",
+        "does not claim label eviction or lose the draft when a class-limit save fails"
+      ]
+    },
+    {
+      "name": "discard-failed-draft",
+      "exit": 1,
+      "passed": 7,
+      "failed": 5,
+      "failures": [
+        "keeps an unsaved draft and durable label until retry (existing: false, save: Enter)",
+        "keeps an unsaved draft and durable label until retry (existing: true, save: Enter)",
+        "keeps an unsaved draft and durable label until retry (existing: false, save: blur)",
+        "keeps an unsaved draft and durable label until retry (existing: true, save: blur)",
+        "does not claim label eviction or lose the draft when a class-limit save fails"
+      ]
+    },
+    {
+      "name": "delete-before-label-durable",
+      "exit": 1,
+      "passed": 10,
+      "failed": 2,
+      "failures": [
+        "keeps the roster and private label intact if learner deletion cannot persist label removal (another label: false)",
+        "keeps the roster and private label intact if learner deletion cannot persist label removal (another label: true)"
+      ]
+    },
+    {
+      "name": "silent-storage-failure",
+      "exit": 1,
+      "passed": 1,
+      "failed": 11,
+      "failures": [
+        "keeps an unsaved draft and durable label until retry (existing: false, save: Enter)",
+        "keeps an unsaved draft and durable label until retry (existing: true, save: Enter)",
+        "keeps an unsaved draft and durable label until retry (existing: false, save: blur)",
+        "keeps an unsaved draft and durable label until retry (existing: true, save: blur)",
+        "keeps labels visible and stored after refused class clearing, then retries (other class: false)",
+        "keeps labels visible and stored after refused class clearing, then retries (other class: true)",
+        "keeps the roster and private label intact if learner deletion cannot persist label removal (another label: false)",
+        "keeps the roster and private label intact if learner deletion cannot persist label removal (another label: true)",
+        "reports failed legacy migration without claiming migrated labels, then retries (only departed: false)",
+        "reports failed legacy migration without claiming migrated labels, then retries (only departed: true)",
+        "does not claim label eviction or lose the draft when a class-limit save fails"
+      ]
+    },
+    {
+      "name": "write-unchanged-label-store",
+      "exit": 1,
+      "passed": 11,
+      "failed": 1,
+      "failures": [
+        "can delete a learner with no private label even when private-label storage is read-only"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-30",
+  "scope": "Color Wheel workspace, palette editing, input, history, exports and study integration",
+  "sourceSHA256": "5F8BFBA5B698675D58EBB9AE04CA93519EA92009282E554683FEB3231FECC3F8",
+  "sourcePublicIdentical": true,
+  "tests": [
+    {"log": "wheel-focused-tests.log", "files": 3, "passed": 45},
+    {"log": "wheel-final-tests.log", "files": 15, "passed": 161},
+    {"log": "wheel-final-focused.log", "files": 2, "passed": 24, "newWorkflowCases": 20}
+  ],
+  "browser": {"report": "wheel-browser-results.json", "passed": true, "pageErrors": 0, "desktopViewport": [1440, 1000], "desktopWheelWidth": 760, "canvasBacking": [900, 900], "phoneViewport": [390, 844], "phoneOverflow": false, "touchTargetsMinPx": 44, "mouseAndTouchUndo": true, "pngDownloadMatchesCanvas": true, "svgPaletteChecked": true},
+  "previews": ["wheel-triadic-focus.png", "wheel-phone-focus.png", "wheel-browser-export.png", "wheel-browser-export.svg"],
+  "syntaxCheck": true,
+  "spectralVendorCheck": true,
+  "scopedWhitespaceCheck": true,
+  "committed": false,
+  "deployed": false
+}

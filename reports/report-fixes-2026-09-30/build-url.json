@@ -1,0 +1,22 @@
+{
+  "at": "2026-09-30T23:32:17.110Z",
+  "phase": "url",
+  "hostIntegration": "paused pending shared writer clarification",
+  "modules": [
+    {
+      "output": "utils_pure_module.js",
+      "sha256": "4a9dfc53ce019866ea1db5370f7c099075ecd260fb4f9710fdfc7460d75a97f3",
+      "inputs": {
+        "utils_pure_source.jsx": "19b83ade09ad2ba0ef7b793a206debc397184d579dbe30f8cebe69d07d83c9da"
+      },
+      "mirrorEqual": true,
+      "syntax": "passed"
+    }
+  ],
+  "untouchedByBuild": {
+    "AlloFlowANTI.txt": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true,
+    "desktop/web-app/src/App.jsx": true,
+    "reflective_journal.md": true
+  }
+}

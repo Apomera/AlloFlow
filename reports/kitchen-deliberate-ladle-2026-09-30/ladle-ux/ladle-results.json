@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Fresh-kitchen feedback explains the cooking-water prerequisite without creating a saved supply.",
+    "Actual phone dip, lift and level carry show a filled bowl while water, evidence and cooking time remain unchanged.",
+    "Levelling the tipped ladle or cancelling a real touch returns the preview to the pot without saving water.",
+    "Tip and release conserve exactly 50 mL, record one canonical action, and restore the jug, allowance and receipt on reload.",
+    "The new panel routes to focused keyboard ladle and careful draining tools without changing evidence on navigation.",
+    "An external cooking-state change cancels a loaded native ladle even when pot-water volume stays the same.",
+    "Using saved water never refills the recipe allowance, and drained water is unavailable for collection.",
+    "The saved-water panel fits a 320px screen and passes accessibility checks with forced colors and reduced motion."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "390px saved-water feedback",
+      "violations": []
+    },
+    {
+      "name": "320px forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

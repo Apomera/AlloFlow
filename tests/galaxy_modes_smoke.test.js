@@ -46,7 +46,7 @@ describe('galaxy explorer mode/state smoke', () => {
     for (const mass of [0.3, 0.6, 1, 5, 20, 50]) {
       const html = renderTool('galaxy', { galaxy: { simMode: 'star', lifecycleMass: mass } });
       expect(html, 'mass=' + mass).toContain('H-R Diagram');
-      expect(html, 'mass=' + mass).toContain('MAIN SEQUENCE');
+      expect(html, 'mass=' + mass).toContain('Main sequence');
       expect(html, 'mass=' + mass).toContain('You Are Star Stuff');
       // NaN in an SVG coordinate would surface literally in the markup
       expect(html, 'mass=' + mass).not.toContain('NaN');

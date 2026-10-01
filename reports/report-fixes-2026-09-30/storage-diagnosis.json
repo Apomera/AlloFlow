@@ -1,0 +1,139 @@
+{
+  "date": "2026-09-30",
+  "status": "Current local acknowledgement and loader safeguards validated with mocks; live recovery pilot blocker remains open.",
+  "ownership": "Only new report_storage test/config and storage report artifacts written. Host, storage modules, existing tests, journal and actual saved data untouched.",
+  "execution": {
+    "lastTestSession": 58314,
+    "lastTestExitCode": 0,
+    "testsPassed": 24,
+    "newTests": 16,
+    "existingBootstrapTests": 8,
+    "report": "storage-validation.json",
+    "mutation": {
+      "scope": "In-memory premature-ACK mutation of bridge function; no source file modified.",
+      "exitCode": 1,
+      "failedTests": 9,
+      "passedTests": 15,
+      "report": "storage-mutation-validation.json",
+      "unmodifiedSourceRerun": "24/24 passed after mutation run; mutation flag was confined to its executor process."
+    },
+    "initialHarnessIssue": "Initial new suite lacked a browser window parameter while evaluating actual recovery helpers. Corrected fixture; unchanged bootstrap suite already passed 8/8."
+  },
+  "inputHashes": {
+    "allo_device_storage_module.js": "e040340f63419c44a7f8b4671b2f9e2834b44a472678e006d1820d0d1e37d2da",
+    "storage_bridge.html": "b370046d25cc14e2647cf97ac4a19271f4d341b0dd62213cdc17b5b72590d81f",
+    "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+    "view_canvas_recovery_dialog_source.jsx": "655cfba01f30e2e71e64bddcb0beeac7411c00da71012b73e3e8f47c092f0790",
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "tests/report_storage_ack_recovery.test.js": "5caea2af37de4fc85bd393e7b1b8fe959f4fe212522d07b4e40b48aa0ab35186",
+    "tests/report_storage_validation.vitest.config.js": "94bb25bc92cabe2a1af572265b4b8235b77c9d675383d74e9a80a92392d3b16c",
+    "tests/storage_adapter_bootstrap_readiness.test.js": "92ee59e7737b9a9d2435df5b93857f15c2e2fdc040b1ac19cab051683ffb9820"
+  },
+  "alreadyPresentSafeguards": [
+    {
+      "files": [
+        "storage_bridge.html:646",
+        "storage_bridge.html:669",
+        "storage_bridge.html:600",
+        "storage_bridge.html:631"
+      ],
+      "finding": "Recovery mutation and vault compare-and-swap resolve only on IndexedDB transaction completion; abort/error rejects. The tests hold get request success separate from commit and prove that rejected transactions preserve the last-good durable value."
+    },
+    {
+      "files": [
+        "allo_device_storage_module.js:633",
+        "allo_device_storage_module.js:712",
+        "allo_device_storage_module.js:978"
+      ],
+      "finding": "Bridge replies require matching source, origin and nonce. Requests reject after 8 seconds without a reply. Disconnected queue:false recovery writes reject and are not counted as queued success. Actual client and bridge functions exercised locally."
+    },
+    {
+      "files": [
+        "allo_device_storage_module.js:1058"
+      ],
+      "finding": "Approval retry stays in the iframe backend; switching to top-level popup would address a different browser storage partition. Actual native browser partition/consent behavior was not simulated."
+    },
+    {
+      "files": [
+        "AlloFlowANTI.txt:8234",
+        "AlloFlowANTI.txt:12028",
+        "tests/storage_adapter_bootstrap_readiness.test.js:43"
+      ],
+      "finding": "Storage readiness has watchdogs and clears rejected cached promises. Bootstrap awaits the actual UtilsPure storage adapter and vendors before local hydration; failure publishes disabled storage before loaded state, supports explicit retry/reconnect, coalesces in-flight attempts and suppresses updates after unmount. Existing 8-test suite retained unchanged."
+    },
+    {
+      "files": [
+        "AlloFlowANTI.txt:23300",
+        "AlloFlowANTI.txt:23316",
+        "AlloFlowANTI.txt:23440"
+      ],
+      "finding": "Canvas reload reads workspace_recovery/store_v1, handles vault lock, preserves unsupported versions, offers legacy migration, and marks a failed check non-authoritative with error mode. A valid nonempty store presents recovery choice; empty History alone is not proof of absent stored data. Full recovery-dialog restore and bridge approval were not exercised in this new suite."
+    },
+    {
+      "files": [
+        "AlloFlowANTI.txt:35737",
+        "AlloFlowANTI.txt:35759",
+        "AlloFlowANTI.txt:35811",
+        "AlloFlowANTI.txt:35848",
+        "AlloFlowANTI.txt:35863"
+      ],
+      "finding": "Canvas autosave gates student/mutation/locked-vault runs, saves with queue:false, waits for result containing the owned workspace before saved status, reports rejected-save errors, clears pending count, and checks run token/current workspace when publishing saved or error. Actual effect tested with delayed/rejected bridge transactions and interrupted ownership."
+    },
+    {
+      "files": [
+        "allo_recovery_vault_integration_module.js:39",
+        "allo_recovery_vault_integration_module.js:41",
+        "allo_recovery_vault_integration_module.js:56"
+      ],
+      "finding": "Vault repository defaults queue to false, supports absent/exact-legacy/revision read tokens, awaits storage CAS, and accepts only applied:true as a successful mutation. Actual repository tested with controlled commit and fresh-instance readback."
+    }
+  ],
+  "remainingCurrentSourceCopyGap": {
+    "file": "view_canvas_recovery_dialog_source.jsx:431",
+    "finding": "The empty snapshot list renders 'No saved work remains on this device.' Recovery snapshots and the durable namespace/category inventory are different scopes; zero recovery snapshots cannot establish absence of all saved work.",
+    "status": "Newly fixed in source; generated build delegated to root. Real Canvas recovery pilot blocker remains open."
+  },
+  "loadingDiagnosis": {
+    "files": [
+      "AlloFlowANTI.txt:21445",
+      "AlloFlowANTI.txt:14902",
+      "AlloFlowANTI.txt:14270",
+      "AlloFlowANTI.txt:14163",
+      "AlloFlowANTI.txt:11823"
+    ],
+    "facts": [
+      "The background module pump parks while document.hidden or body has alloflow-workspace-concealed/alloflow-launchpad-active. Actual park/resume behavior passed for both classes.",
+      "Workspace conceal class is derived from app readiness and mode/deep-link selection, not directly from canvasRecoveryDecisionMade. Recovery decision separately gates deep-link launch at line 21458.",
+      "Continuous keyboard/pointer interaction is bounded by an 8-second starvation window; tested background progress under continuous input.",
+      "Explicit queued module promotion bypasses the parked background queue; actual loadModule and __alloPromoteModule path tested for ReadingLibrary.",
+      "Current script requests have generation-scoped 30-second watchdogs; ensure-module waits and storage readiness have separate bounded deadlines. A queued count does not itself identify stalled network requests."
+    ],
+    "inference": "A persistent 143 queued modules can be consistent with a still-concealed/launch-pad surface. Visible catalog plus loading reading choices could also involve stale conceal state or failed/missing promotion; the deployed post-reload cause and version are not known. No root cause or current-local fix is claimed."
+  },
+  "liveEvidenceQualification": {
+    "preReloadBuild": "1300a2da3",
+    "postReloadBuild": "Not exposed/verified",
+    "observed": "Parent QA saw 15 resources, Saving on this device, then reload History 0, recovery 0/20 and 0 B; device categories still showed saved-work bytes and namespace records. Loading tools 143 left persisted about 43 minutes while catalog shell responded.",
+    "notEstablished": "Irreversible data loss, current-local reproduction, successful native IndexedDB/Canvas partition reload, or specific module-loading/storage root cause.",
+    "remainingBlocker": "Validate the frozen candidate in real Canvas with approved iframe bridge, delayed/rejected write acknowledgement, teacher review/save then reload/restore, authoritative failure UI and module promotion. Preserve the existing live evidence; no reset/delete/import performed. Shared-host changes remain held pending ownership."
+  },
+  "copyCorrection": {
+    "status": "Newly fixed in source; root owns guarded generated build",
+    "file": "view_canvas_recovery_dialog_source.jsx",
+    "line": 432,
+    "before": "No saved work remains on this device.",
+    "after": "No recovery workspaces are listed. Other saved work may still be available in Device storage.",
+    "sourceBeforeSha256": "32362d4009d2ec4502f7508fe5528feb546bcef9fe23f1369454231c561c4e5e",
+    "sourceAfterSha256": "655cfba01f30e2e71e64bddcb0beeac7411c00da71012b73e3e8f47c092f0790",
+    "outputBeforeSha256": "5f13b3340a5ae2c50e660fe2b22619697de56e0daceb0a83e00d3f54537e7919",
+    "compiledCandidateSha256": "caf6d4837158e087c42732475116b837abad86d1f3a2a398c90809af739a94ec",
+    "checks": {
+      "sourceHashGuard": true,
+      "rootPublicEqual": true,
+      "existingCanonicalOutputEqual": true,
+      "candidateCompileAndSyntax": true,
+      "onlySentenceChanged": true,
+      "generatedFilesUnchanged": true
+    }
+  }
+}

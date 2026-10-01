@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-30",
+  "scope": "Art Studio Color Mixer",
+  "savedLocally": true,
+  "deployed": false,
+  "syntaxPassed": true,
+  "scopedDiffWhitespacePassed": true,
+  "sourcePublicParity": true,
+  "sha256": "577E99AA82251D5788EB4D3A7473D767F3306D2BAEFA763C09847391EDD1C441",
+  "tests": {
+    "uniquePassed": 112,
+    "files": 10,
+    "newRegressionCases": 30,
+    "broadRun": {"passed": 111, "failed": 0, "files": 10, "durationSeconds": 55.05, "log": "mixer-final-tests.log"},
+    "afterLegacyRestoreFix": {"passed": 31, "failed": 0, "files": 3, "newCases": 1, "durationSeconds": 10.16, "log": "mixer-restore-final-tests.log"},
+    "fullRepositorySuiteRun": false
+  },
+  "browser": {
+    "passed": true,
+    "pageErrors": [],
+    "results": "mixer-browser-results.json",
+    "desktopViewport": [1440, 1000],
+    "focusCanvasWidth": 1108,
+    "canvasBackingStore": [960, 520],
+    "phoneViewport": [390, 844],
+    "phonePreviewFirst": true,
+    "phoneNoOverflow": true,
+    "minimumButtonHeight": 44,
+    "exportMatchesDisplayedCanvas": true,
+    "screenshotsReviewed": ["mixer-pigment-focus.png", "mixer-light-focus.png", "mixer-phone-focus.png"]
+  },
+  "spectralLibrary": {
+    "version": "3.0.0",
+    "commit": "bb2b05c9d1e65ae824d47e3b1cc17ea32c8ee68f",
+    "sourceSha256": "DBAA1A8B44D2C734B48B6D44777B1F182C9740E9220D2CBDED02002C8E6D271A",
+    "license": "MIT",
+    "embeddedLicense": true,
+    "offline": true,
+    "embedCheckPassed": true
+  },
+  "modelReferences": {
+    "equalBlueYellowPigment": "#3d933e",
+    "equalBlackWhiteRGB": "#808080",
+    "equalBlackWhiteLinearLight": "#bcbcbc"
+  }
+}

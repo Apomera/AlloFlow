@@ -6151,7 +6151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function tryAgain() {
         writeCheck(null, false);
-        petsAnnounce('Prediction cleared. Choose again.');
+        petsAnnounce(__alloT('stem.pets.sr_prediction_cleared_choose_again', 'Prediction cleared. Choose again.'));
       }
 
       var groupLabel = 'Prediction check: ' + check.prompt;
@@ -9873,7 +9873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }
           function resetCalls() {
             upd('serviceCalls', {});
-            petsAnnounce('Access calls cleared.');
+            petsAnnounce(__alloT('stem.pets.sr_access_calls_cleared', 'Access calls cleared.'));
           }
 
           return h('section', {
@@ -10338,7 +10338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           completeModule('picker', 'Confirmed every readiness item', {
             answered: confirmedCount, total: PICK_READINESS_ITEMS.length
           });
-          petsAnnounce('All readiness items confirmed.');
+          petsAnnounce(__alloT('stem.pets.sr_all_readiness_items_confirmed', 'All readiness items confirmed.'));
         }
       }
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -12237,7 +12237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }
           function resetCommit() {
             upd('costCommit', {});
-            petsAnnounce('Budget answers cleared.');
+            petsAnnounce(__alloT('stem.pets.sr_budget_answers_cleared', 'Budget answers cleared.'));
           }
 
           return h('section', {
@@ -12419,7 +12419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function resetChecks() {
         upd('mythChecks', {});
-        petsAnnounce('Myth check cleared. Judge each claim again.');
+        petsAnnounce(__alloT('stem.pets.sr_myth_check_cleared_judge_each_claim_again', 'Myth check cleared. Judge each claim again.'));
       }
 
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -12586,7 +12586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               completeModule('careers', 'Completed the career self-inventory', {
                 answered: after.answered, total: after.total
               });
-              petsAnnounce('All questions answered. Your shortlist is shown below.');
+              petsAnnounce(__alloT('stem.pets.sr_all_questions_answered_your_shortlist_is_shown_be', 'All questions answered. Your shortlist is shown below.'));
               focusPetsTarget(_careerResultRef);
             } else {
               petsAnnounce('Answer recorded. ' + after.answered + ' of ' + after.total + '.');
@@ -12594,7 +12594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }
           function resetMatch() {
             upd('careerMatch', {});
-            petsAnnounce('Self-inventory cleared.');
+            petsAnnounce(__alloT('stem.pets.sr_self_inventory_cleared', 'Self-inventory cleared.'));
           }
 
           var top = result.complete ? result.ranked.slice(0, 3) : [];
@@ -12724,7 +12724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           return next;
         });
         if (already) {
-          petsAnnounce('Removed from your plan.');
+          petsAnnounce(__alloT('stem.pets.sr_removed_from_your_plan', 'Removed from your plan.'));
           return;
         }
         // First commitment is what completes the module; the rest just refine
@@ -12738,7 +12738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function clearPlan() {
         upd('actionPlan', []);
-        petsAnnounce('Plan cleared.');
+        petsAnnounce(__alloT('stem.pets.sr_plan_cleared', 'Plan cleared.'));
       }
 
       function actionList(title, items) {
@@ -16122,7 +16122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               delete next[welfareSec];
               return next;
             });
-            petsAnnounce('Choice cleared. Decide again.');
+            petsAnnounce(__alloT('stem.pets.sr_choice_cleared_decide_again', 'Choice cleared. Decide again.'));
           }
 
           return h('section', {
@@ -17842,7 +17842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   onClick: function() {
                     if (recordedThisWeek || words === 0) return;
                     recordEvidence('careSim', 'Reflected on the care week', { species: c.species }, 'self-review');
-                    petsAnnounce('Reflection recorded for teacher review.');
+                    petsAnnounce(__alloT('stem.pets.sr_reflection_recorded_for_teacher_review', 'Reflection recorded for teacher review.'));
                     addToast('✍️ Reflection recorded.');
                   },
                   style: btn({ padding: '8px 14px', fontSize: 12, opacity: recordedThisWeek || words === 0 ? 0.6 : 1 })

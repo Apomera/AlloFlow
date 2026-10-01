@@ -1,0 +1,27 @@
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -646,8 +646,8 @@
+     "step_change_confirm_title": "Change included steps?",
+     "step_change_confirm_text": "This returns Guided Mode to step 1. Completed resources remain in History.",
+     "change_steps": "Change steps",
+-    "preset_reading-access_label": "Adapt a reading",
+-    "preset_reading-access_description": "Analyze the passage, add vocabulary, adapt the text, then review and deliver it. Add other supports if needed.",
++    "preset_reading-access_label": "Read original with supports",
++    "preset_reading-access_description": "Choose the source, review vocabulary and the original with supports, then preview and deliver. An adapted companion and other tools are optional.",
+     "preset_step_count": "{count} steps, including review and delivery",
+     "preset_assessment_label": "Build an assessment",
+     "preset_assessment_description": "Create questions, evidence tasks, alignment, directions, and a delivery-ready package.",
+diff --git a/AlloFlowANTI.txt b/AlloFlowANTI.txt
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -39809,7 +39809,8 @@
+     const existing = history.find(item => api.isSupportedOriginal(item) && api.sameReadingFamily(item, family) && item.data === snapshot.text);
+     const linkedSource = sourceItem && history.find(item => item.type === 'analysis' && api.getInstructionalText(item).form !== 'adapted' && api.sameReadingFamily(item, sourceItem));
+     const sourceProfile = api.getSourceInstructionalText(linkedSource || sourceItem || { instructionalText: resolved?.instructionalText });
+-    const item = existing || api.createSupportedReading(snapshot, { id: 'original-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: (sourceItem?.title || sourceTopic || 'Source text') + ' — Original with supports', config: { grade: sourceItem?.config?.grade || gradeLevel, language: snapshot.language }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
++    const sourceTitle = String(sourceItem?.title || snapshot.text.split(/\r?\n/).find(line => line.trim()) || 'Source text').replace(/\s+/g, ' ').trim().slice(0, 120);
++    const item = existing || api.createSupportedReading(snapshot, { id: 'original-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: sourceTitle + ' — Original with supports', config: { grade: sourceItem?.config?.grade || gradeLevel, language: snapshot.language }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
+     if (!existing) { item.timestamp = new Date(); setHistory(previous => [...previous, item]); }
+     openReadingArtifact(item);
+   };

@@ -1,0 +1,230 @@
+[
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_es419_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 490,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Show in text",
+          "width": 200,
+          "scrollWidth": 200,
+          "left": 288.46875,
+          "right": 490.28125
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_es419_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_ar_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 486,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Show in text",
+          "width": 200,
+          "scrollWidth": 200,
+          "left": -166.28125,
+          "right": 35.53125
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_ar_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_zh_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 490,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Show in text",
+          "width": 200,
+          "scrollWidth": 200,
+          "left": 288.46875,
+          "right": 490.28125
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_zh_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scrollX": 0,
+      "overflow": [],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_th_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  },
+  {
+    "geometry": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 490,
+      "scrollX": 0,
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "text": "Show in text",
+          "width": 200,
+          "scrollWidth": 200,
+          "left": 288.46875,
+          "right": 490.28125
+        }
+      ],
+      "card": {
+        "x": 8,
+        "right": 312,
+        "width": 304
+      }
+    },
+    "reflowProposal": {
+      "viewport": 320,
+      "documentWidth": 320
+    },
+    "fixture": "reader_th_navigation_help_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "navigationFailures": [],
+    "cardFailures": []
+  }
+]

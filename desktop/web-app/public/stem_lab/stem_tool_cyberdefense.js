@@ -19,6 +19,13 @@
  */
 (function () {
   'use strict';
+  // Fallback-aware translator reachable from every call site in this tool.
+  var __alloCtx_cyberdefense = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCtx_cyberdefense && typeof __alloCtx_cyberdefense.t === "function") ? __alloCtx_cyberdefense.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
 
   // ── Audio (auto-injected) ──
   var _cyberdAC = null;
@@ -470,6 +477,7 @@
       { id: 'warroom_perfect_defense', label: 'Zero assets lost on Threat Hunter difficulty', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return !!d.warRoomPerfectDefense; }, progress: function(d) { return d.warRoomPerfectDefense ? 'Achieved!' : 'In progress'; } }
     ],
     render: function (ctx) {
+      try { __alloCtx_cyberdefense = ctx; } catch (e) {}
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
     var React = ctx.React;
@@ -3714,7 +3722,7 @@
                   !pwChallengeDone && pwStrength.checks.length >= 15 && !pwStrength.checks.isCommon && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
                     el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your made-up sample is 15+ characters and avoids this lesson\'s blocklist.'),
-                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR('Password challenge complete! Plus 5 XP.'); },
+                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR(__alloT('stem.cyberdefense.sr_password_challenge_complete_plus_5_xp', 'Password challenge complete! Plus 5 XP.')); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   ),
                   // Tips
@@ -3815,7 +3823,7 @@
                           upd('solvedCiphers', nextSolved);
                           ctx.awardXP('cyberDefense', 5);
                           if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success');
-                          if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.');
+                          if (announceToSR) announceToSR(__alloT('stem.cyberdefense.sr_cipher_cracked_plus_5_xp', 'Cipher cracked! Plus 5 XP.'));
                         }
                       }, placeholder: t('stem.cyberdefense.type_the_decoded_message', 'Type the decoded message...'), 'aria-label': t('stem.cyberdefense.cipher_challenge_answer', 'Cipher challenge answer'), disabled: activeChallengeSolved,
                         style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (activeChallengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: activeChallengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: activeChallengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),

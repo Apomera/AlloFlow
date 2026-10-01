@@ -1,0 +1,328 @@
+{
+  "started": "2026-09-30T22:37:27.774Z",
+  "inputHashes": {
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "view_simplified_source.jsx": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "desktop/web-app/public/view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9"
+  },
+  "checks": [
+    {
+      "name": "adapted: six repeated terms per passage, no nested controls",
+      "passed": true,
+      "evidence": {
+        "terms": 6,
+        "nested": 0
+      }
+    },
+    {
+      "name": "adapted: touch exposes saved definition/image without speech",
+      "passed": true
+    },
+    {
+      "name": "adapted: Escape keeps term focus",
+      "passed": true
+    },
+    {
+      "name": "adapted: 320 CSSpx popup fits viewport",
+      "passed": true,
+      "evidence": {
+        "x": 8,
+        "y": 269.25,
+        "width": 256,
+        "height": 202.75
+      }
+    },
+    {
+      "name": "adapted: native keyboard sentence read still works",
+      "passed": true
+    },
+    {
+      "name": "adapted: current sentence announced during playback",
+      "passed": true
+    },
+    {
+      "name": "adapted: current sentence marker clears on stop",
+      "passed": true
+    },
+    {
+      "name": "adapted preview: six repeated terms per passage, no nested controls",
+      "passed": true,
+      "evidence": {
+        "terms": 6,
+        "nested": 0
+      }
+    },
+    {
+      "name": "adapted preview: touch exposes saved definition/image without speech",
+      "passed": true
+    },
+    {
+      "name": "adapted: Escape keeps term focus",
+      "passed": true
+    },
+    {
+      "name": "adapted: 320 CSSpx popup fits viewport",
+      "passed": true,
+      "evidence": {
+        "x": 8,
+        "y": 269.25,
+        "width": 256,
+        "height": 202.75
+      }
+    },
+    {
+      "name": "original: six repeated terms per passage, no nested controls",
+      "passed": true,
+      "evidence": {
+        "terms": 6,
+        "nested": 0
+      }
+    },
+    {
+      "name": "original: touch exposes saved definition/image without speech",
+      "passed": true
+    },
+    {
+      "name": "original: Escape keeps term focus",
+      "passed": true
+    },
+    {
+      "name": "original: 320 CSSpx popup fits viewport",
+      "passed": true,
+      "evidence": {
+        "x": 8,
+        "y": 364.25,
+        "width": 256,
+        "height": 202.75
+      }
+    },
+    {
+      "name": "original: native keyboard sentence read still works",
+      "passed": true
+    },
+    {
+      "name": "original: current sentence announced during playback",
+      "passed": true
+    },
+    {
+      "name": "original: current sentence marker clears on stop",
+      "passed": true
+    },
+    {
+      "name": "original preview: six repeated terms per passage, no nested controls",
+      "passed": true,
+      "evidence": {
+        "terms": 6,
+        "nested": 0
+      }
+    },
+    {
+      "name": "original preview: touch exposes saved definition/image without speech",
+      "passed": true
+    },
+    {
+      "name": "original: Escape keeps term focus",
+      "passed": true
+    },
+    {
+      "name": "original: 320 CSSpx popup fits viewport",
+      "passed": true,
+      "evidence": {
+        "x": 8,
+        "y": 364.25,
+        "width": 256,
+        "height": 202.75
+      }
+    },
+    {
+      "name": "both: six repeated terms per passage, no nested controls",
+      "passed": true,
+      "evidence": {
+        "terms": 12,
+        "nested": 0
+      }
+    },
+    {
+      "name": "both: touch exposes saved definition/image without speech",
+      "passed": true
+    },
+    {
+      "name": "both: Escape keeps term focus",
+      "passed": true
+    },
+    {
+      "name": "both: 320 CSSpx popup fits viewport",
+      "passed": true,
+      "evidence": {
+        "x": 8,
+        "y": 534.25,
+        "width": 256,
+        "height": 202.75
+      }
+    },
+    {
+      "name": "Both Show changes: glossary in both columns",
+      "passed": true
+    },
+    {
+      "name": "Both Show changes: help on repeated word",
+      "passed": true
+    },
+    {
+      "name": "both: native keyboard sentence read still works",
+      "passed": true
+    },
+    {
+      "name": "both: current sentence announced during playback",
+      "passed": true
+    },
+    {
+      "name": "both: current sentence marker clears on stop",
+      "passed": true
+    },
+    {
+      "name": "both preview: six repeated terms per passage, no nested controls",
+      "passed": true,
+      "evidence": {
+        "terms": 12,
+        "nested": 0
+      }
+    },
+    {
+      "name": "both preview: touch exposes saved definition/image without speech",
+      "passed": true
+    },
+    {
+      "name": "both: Escape keeps term focus",
+      "passed": true
+    },
+    {
+      "name": "both: 320 CSSpx popup fits viewport",
+      "passed": true,
+      "evidence": {
+        "x": 8,
+        "y": 162.25,
+        "width": 256,
+        "height": 202.75
+      }
+    },
+    {
+      "name": "Both Show changes: glossary in both columns",
+      "passed": true
+    },
+    {
+      "name": "Both Show changes: help on repeated word",
+      "passed": true
+    },
+    {
+      "name": "Original Word meaning: RightArrow reaches glossary and displays help",
+      "passed": true
+    },
+    {
+      "name": "Original Word meaning: existing glossary avoids AI lookup",
+      "passed": true
+    },
+    {
+      "name": "Reflow width 320 font 16: native focus scroll keeps help open",
+      "passed": true
+    },
+    {
+      "name": "Reflow width 320 font 16: no horizontal overflow; tooltip fits",
+      "passed": true,
+      "evidence": {
+        "bounds": {
+          "x": 8,
+          "y": 364.25,
+          "width": 256,
+          "height": 202.75
+        },
+        "dimensions": {
+          "client": 320,
+          "scroll": 320
+        }
+      }
+    },
+    {
+      "name": "Reflow width 320 font 32: native focus scroll keeps help open",
+      "passed": true
+    },
+    {
+      "name": "Reflow width 320 font 32: no horizontal overflow; tooltip fits",
+      "passed": true,
+      "evidence": {
+        "bounds": {
+          "x": 8,
+          "y": 120.5,
+          "width": 256,
+          "height": 289.5
+        },
+        "dimensions": {
+          "client": 320,
+          "scroll": 320
+        }
+      }
+    },
+    {
+      "name": "Reflow width 640 font 16: native focus scroll keeps help open",
+      "passed": true
+    },
+    {
+      "name": "Reflow width 640 font 16: no horizontal overflow; tooltip fits",
+      "passed": true,
+      "evidence": {
+        "bounds": {
+          "x": 8,
+          "y": 240.25,
+          "width": 256,
+          "height": 202.75
+        },
+        "dimensions": {
+          "client": 640,
+          "scroll": 640
+        }
+      }
+    },
+    {
+      "name": "Reflow width 640 font 32: native focus scroll keeps help open",
+      "passed": true
+    },
+    {
+      "name": "Reflow width 640 font 32: no horizontal overflow; tooltip fits",
+      "passed": true,
+      "evidence": {
+        "bounds": {
+          "x": 8,
+          "y": 120.5,
+          "width": 256,
+          "height": 289.5
+        },
+        "dimensions": {
+          "client": 640,
+          "scroll": 640
+        }
+      }
+    },
+    {
+      "name": "No uncaught generated-module browser errors",
+      "passed": true,
+      "evidence": []
+    }
+  ],
+  "errors": [],
+  "status": "passed",
+  "bundledJavaScriptSHA256": "133308fd06c8ac939622fa20e34f06c995e252e00582055259f4843fb2cf3243",
+  "generatedCssSHA256": "10a3882ff56ad7f7458692d106ba28e614223cd8d8766d61c0b1333592f26364",
+  "changedInputs": [],
+  "completed": "2026-09-30T22:37:32.345Z"
+}

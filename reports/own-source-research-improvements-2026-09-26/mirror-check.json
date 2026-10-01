@@ -1,0 +1,57 @@
+[
+  {
+    "file": "own_sources_module.js",
+    "match": true,
+    "sha256": "feb653e45ba1ca567ae2d7f9f7b960829b6b35c2e7c4350eb51fb5a45e9bd41c"
+  },
+  {
+    "file": "content_engine_module.js",
+    "match": true,
+    "sha256": "b1b2f895fe812f1768631e5e5524861370c9d87114dbf5e44f2b60016c8bf74e"
+  },
+  {
+    "file": "quickstart_module.js",
+    "match": true,
+    "sha256": "474212e1e6039e21e2126f13427076f4b79961dc4ff3acf1ca1c6357c1ef3b05"
+  },
+  {
+    "file": "view_misc_panels_module.js",
+    "match": true,
+    "sha256": "3dcc2bb8fa0e1b8ec41824ce73ee8bd3b55a4bc51bb478bc308372e9beee41a9"
+  },
+  {
+    "file": "view_sidebar_panels_module.js",
+    "match": true,
+    "sha256": "d91a3b8a09edc1546be67bb383f992dfa6ada716982c0d726b1376273338cb8f"
+  },
+  {
+    "file": "phase_o_misc_handlers_module.js",
+    "match": true,
+    "sha256": "5e470d0bf0b505acf66fa011aed003267d1e783733369f78474f18323c2c84bf"
+  },
+  {
+    "file": "phase_n_misc_helpers_module.js",
+    "match": true,
+    "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+  },
+  {
+    "file": "host_handlers_module.js",
+    "match": true,
+    "sha256": "2211ea32e03d074439197ac73176732f1362e2b1e239ba97bc66e171b4838346"
+  },
+  {
+    "file": "generate_dispatcher_module.js",
+    "match": true,
+    "sha256": "2eb366e72cb494eb675b2c3276b9bf78a45991ecfb0f0cabb4f6ccf7436e1703"
+  },
+  {
+    "file": "view_simplified_module.js",
+    "match": true,
+    "sha256": "4bf8b03e21cb7988090b0d23d8b8d0da292b0844d6d6bdbf69c4a6d338498373"
+  },
+  {
+    "file": "stem_lab/stem_lumen_evidence.js",
+    "match": true,
+    "sha256": "5c3068579905e12a41f9b36acb9a6f7ad7f4d8af1fa91946410ebbafe7db84d0"
+  }
+]

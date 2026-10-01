@@ -19,7 +19,7 @@
 
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, renderTool, resetStemLab } from './helpers/nuclear_lab_reference_harness.js';
 
 const SRC = fs.readFileSync('stem_lab/stem_tool_nuclearlab.js', 'utf8');
 
@@ -128,8 +128,10 @@ describe('the same nucleus, described in more than one table', () => {
 });
 
 describe('every quest can actually be earned', () => {
-  const hooks = SRC.slice(SRC.indexOf('questHooks:'), SRC.indexOf('render: function (ctx)'));
-  const render = SRC.slice(SRC.indexOf('render: function (ctx)'));
+  const hooks = SRC.slice(SRC.indexOf('questHooks:'), SRC.indexOf('render: (function'));
+  const renderStart = SRC.indexOf('function renderReference(ctx)');
+  expect(renderStart).toBeGreaterThan(0);
+  const render = SRC.slice(renderStart);
   const quests = [...hooks.matchAll(/\{\s*id:\s*'([^']+)'[\s\S]*?check:\s*function\s*\(d\)\s*\{([\s\S]*?)\}\s*\}/g)]
     .map((m) => ({
       id: m[1],
@@ -247,7 +249,7 @@ describe('a malformed save cannot buy a quest', () => {
   it('routes every list read in questHooks through the array guard', () => {
     // If a new hook is written with the old idiom, this catches it before the
     // behaviour test below has to.
-    const hooksBlock = SRC.slice(SRC.indexOf('questHooks:'), SRC.indexOf('render: function (ctx)'));
+    const hooksBlock = SRC.slice(SRC.indexOf('questHooks:'), SRC.indexOf('render: (function'));
     const unguarded = [...hooksBlock.matchAll(/\(d\.([A-Za-z0-9_]+) \|\| \[\]\)\.length/g)]
       .map((m) => m[1]);
     expect(unguarded, 'these read a saved list without checking it is an array').toEqual([]);

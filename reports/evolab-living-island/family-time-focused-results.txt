@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:48772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:48772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1051:5 › family time machine scrubs real history, compares inherited traits, finds members and saves evidence
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1124:5 › family time machine on a phone leaves a lost lineage undefined and makes the exact record keyboard-scrollable
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1162:5 › family time machine without WebGL handles a single zero-valued ancestor and a later-born family
+[1A[2K  3 passed (1.4m)

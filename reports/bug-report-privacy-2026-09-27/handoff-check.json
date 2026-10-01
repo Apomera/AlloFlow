@@ -1,0 +1,114 @@
+{
+  "basisHead": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "checkedHead": "758bdb5e7d0974f8afc9a5f9ef7443bbaba12322",
+  "checkedAt": "2026-09-27T18:46:41.805Z",
+  "patchApplies": true,
+  "patchCheckOutput": "",
+  "files": [
+    "error_reporter_module.js",
+    "desktop/web-app/public/error_reporter_module.js",
+    "catalog/cloudflare-worker/src/index.js",
+    "catalog/cloudflare-worker/wrangler.toml",
+    "catalog/cloudflare-worker/README.md",
+    "catalog/cloudflare-worker/smoke_test.mjs",
+    "tests/error_reporter_stale_entries_and_secrets.test.js",
+    "tests/error_reporter_tts_tab.test.js",
+    "catalog/cloudflare-worker/read-queues.ps1",
+    "catalog/cloudflare-worker/set-admin-token.ps1",
+    "catalog/cloudflare-worker/SETUP.md",
+    "catalog/cloudflare-worker/CLOUDFLARE_SETUP.md",
+    "catalog/cloudflare-worker/src/bug-reports.js",
+    "catalog/cloudflare-worker/BUG_REPORTING.md",
+    "tests/bug_report_governance.test.js",
+    "tests/error_reporter_privacy.test.js"
+  ],
+  "candidateHashes": {
+    "error_reporter_module.js": "d0e543ddf53c578b813d36bcea9b2c7f469db59b6503b57e554e7eda171a668d",
+    "desktop/web-app/public/error_reporter_module.js": "d0e543ddf53c578b813d36bcea9b2c7f469db59b6503b57e554e7eda171a668d",
+    "catalog/cloudflare-worker/src/index.js": "6504e652723eaac924ed602ca35f8d890c10cd33876fdfa4c8bbf92b1d83ea4a",
+    "catalog/cloudflare-worker/wrangler.toml": "c282ba9be7b44fb059c6e040aae394e3ef611567ec47f12766e9b1c69defdd76",
+    "catalog/cloudflare-worker/README.md": "1af34e2418585906497247b2810f6e41d8cc1c7779201295e26b04958b017840",
+    "catalog/cloudflare-worker/smoke_test.mjs": "b37b628e360bbd794ee6b04912a42a042b0c2ca591a11917971c63b1e10560c0",
+    "tests/error_reporter_stale_entries_and_secrets.test.js": "d50b175fc3577b684abc99450df07e162e4fcc109b30bd282ff96375ba7ea955",
+    "tests/error_reporter_tts_tab.test.js": "2578aaa649bde271511fb16ec908ccb79e0d484e24c407fc1d755705697dde91",
+    "catalog/cloudflare-worker/read-queues.ps1": "16925de5076d9075fa5be71e444bc0c5e0fcdc76e6d7987f66ddee3d9989f203",
+    "catalog/cloudflare-worker/set-admin-token.ps1": "46a1e50046afba615fd212185b301bce20116cef1f26541dc751ac66403c2d35",
+    "catalog/cloudflare-worker/SETUP.md": "4896648b11bd05524dd57c67b44e45109e6841e4f160713ca2520da6f6114a44",
+    "catalog/cloudflare-worker/CLOUDFLARE_SETUP.md": "9d3fd15036afe12e93077871213f4695b872319003359b5c6f58622e48477af8",
+    "catalog/cloudflare-worker/src/bug-reports.js": "085b4cbce3434f92b7bb1dc906bf1e86cea534d3ad42e4a2e286e9f316c975d7",
+    "catalog/cloudflare-worker/BUG_REPORTING.md": "7586132168f37a07927410cba93697faf58f1186e198903f28d4069c095bd7b3",
+    "tests/bug_report_governance.test.js": "b5f2234ae83cf792d5d7d0126613de519ce47da69fe9e21768e698a44ae4316f",
+    "tests/error_reporter_privacy.test.js": "5df153e2e2ecb0acf37d91dccd4ca8dcbb36364e131f406067d072f83c5f63af"
+  },
+  "primaryMatches": {
+    "error_reporter_module.js": true,
+    "desktop/web-app/public/error_reporter_module.js": true,
+    "catalog/cloudflare-worker/src/index.js": true,
+    "catalog/cloudflare-worker/wrangler.toml": true,
+    "catalog/cloudflare-worker/README.md": true,
+    "catalog/cloudflare-worker/smoke_test.mjs": true,
+    "catalog/cloudflare-worker/package.json": true,
+    "tests/error_reporter_stale_entries_and_secrets.test.js": true,
+    "tests/error_reporter_tts_tab.test.js": true,
+    "catalog/cloudflare-worker/read-queues.ps1": true,
+    "catalog/cloudflare-worker/set-admin-token.ps1": true,
+    "catalog/cloudflare-worker/SETUP.md": true,
+    "catalog/cloudflare-worker/CLOUDFLARE_SETUP.md": true
+  },
+  "tests": {
+    "total": 74,
+    "passed": 74,
+    "failed": 0
+  },
+  "browser": {
+    "browser": "154.0.4258.37",
+    "observations": [
+      {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "requests": [
+          {
+            "path": "/app",
+            "method": "GET"
+          },
+          {
+            "path": "/api/reporting/policy",
+            "method": "GET"
+          },
+          {
+            "path": "/api/reporting/reports",
+            "method": "POST"
+          }
+        ],
+        "screenshot": "review-1280.png",
+        "uncaughtErrors": 0
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "requests": [
+          {
+            "path": "/app",
+            "method": "GET"
+          },
+          {
+            "path": "/api/reporting/policy",
+            "method": "GET"
+          },
+          {
+            "path": "/api/reporting/reports",
+            "method": "POST"
+          }
+        ],
+        "screenshot": "review-390.png",
+        "uncaughtErrors": 0
+      }
+    ],
+    "storedSyntheticReports": 2,
+    "auditEvents": 4
+  }
+}

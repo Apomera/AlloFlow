@@ -1,0 +1,115 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:59668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:59668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:215:5 › replay preserves survivor positions and genes; family connections navigate recorded generations
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:724:5 › inheritance reveal shows recorded choices, mutations and trait averages without drawing new genes
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.ei-stage-label')
+    Expected substring: [32m"Sunlit meadow"[39m
+    Error: strict mode violation: locator('.ei-stage-label') resolved to 2 elements:
+        1) <div class="ei-stage-label">…</div> aka getByText('☀ Sunlit meadowWorld seed')
+        2) <div class="ei-stage-label">…</div> aka getByText('Generation 4Replay · recorded')
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 15000ms[22m
+    [2m  - waiting for locator('.ei-stage-label')[22m
+
+
+      1616 |     await expect(page.locator('[data-island-generation]')).toHaveAttribute('data-island-generation', chapter === 'birth' ? '4' : '5');
+      1617 |     await expect(page.locator('[data-island-phase]')).toHaveAttribute('data-island-phase', chapter === 'birth' ? 'offspring' : chapter);
+    > 1618 |     await expect(page.locator('.ei-stage-label')).toContainText(chapter === 'birth' ? fixture.birthName : fixture.roundName);
+           |                                                   ^
+      1619 |     if (chapter === 'survivors') await expect(page.locator('.ei-life-context')).toContainText('Still here among the recorded survivors');
+      1620 |     if (chapter === 'offspring') await expect(page.locator('.ei-life-context')).toContainText('viewing the entire offspring cohort');
+      1621 |     expect(await page.evaluate(() => (window as any).__toolData.evoLab.island)).toEqual(fixture.world);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:1618:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--953fe-offspring-without-rerolling-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:22268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:22268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1644:5 › life story on a phone keeps an unwritten fate unknown and updates after one watched generation
+[1A[2K  2) [chromium] › tests\e2e\evolab-living-island.spec.ts:1644:5 › life story on a phone keeps an unwritten fate unknown and updates after one watched generation 
+
+    Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'rng')
+        at Object.step (http://127.0.0.1:50652/stem_lab/stem_tool_evolab.js:212:25)
+        at eval (eval at evaluate (:302:30), <anonymous>:3:37)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at Object.step (http://127.0.0.1:50652/stem_lab/stem_tool_evolab.js:212:25)
+        at eval (eval at evaluate (:302:30), <anonymous>:3:37)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:1656:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--fa6e4-fter-one-watched-generation-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--fa6e4-fter-one-watched-generation-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--fa6e4-fter-one-watched-generation-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--fa6e4-fter-one-watched-generation-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--fa6e4-fter-one-watched-generation-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\life-story-browser-artifacts\evolab-living-island-life--fa6e4-fter-one-watched-generation-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:31268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:31268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1673:5 › life story without WebGL separates a lone survivor from the organism that died
+[1A[2K  2 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling 
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:1644:5 › life story on a phone keeps an unwritten fate unknown and updates after one watched generation 
+  3 passed (4.1m)

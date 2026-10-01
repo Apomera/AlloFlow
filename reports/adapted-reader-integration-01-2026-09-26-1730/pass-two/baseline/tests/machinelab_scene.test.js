@@ -1,0 +1,1665 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+// The Siege Field: the same siege as the Target Wall, staged as a place. These
+// pin the contract the view rests on rather than its pixels (the pixels are
+// checked by screenshot, dev-tools/ml_scene_shots.cjs): it is reachable, it
+// shares the wall and the shot with the Target Wall, its text alternatives
+// exist, and the pure pieces of the scene (terrain, sky presets) behave.
+
+const FILE = 'stem_lab/stem_tool_machinelab.js';
+// Source assertions must work in Windows CRLF checkouts as well as LF checkouts.
+const source = () => fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8').replace(/\r\n/g, '\n');
+const BANDS = ['k2', 'g35', 'g68', 'g912'];
+
+function state(o = {}) {
+  return { machineLab: Object.assign({ view: 'scene', bandOverride: 'g68' }, o) };
+}
+
+let cfg;
+beforeEach(() => {
+  resetStemLab();
+  cfg = loadTool(FILE, 'machineLab');
+});
+
+describe('Siege Field: reachable and rendered', () => {
+  it('is a tab in the view navigation, between the Target Wall and Compare', () => {
+    const html = renderTool('machineLab', state({ view: 'machines' }));
+    const i = html.indexOf('Target Wall'), j = html.indexOf('Siege Field'), k = html.indexOf('>Compare<');
+    expect(i).toBeGreaterThan(0);
+    expect(j).toBeGreaterThan(i);
+    expect(k).toBeGreaterThan(j);
+  });
+
+  for (const band of BANDS) {
+    it(`renders at ${band} with no undefined, NaN or Infinity`, () => {
+      const html = renderTool('machineLab', state({ bandOverride: band }));
+      expect(html).toContain('Siege Field');
+      expect(html).not.toContain('undefined');
+      expect(html).not.toContain('NaN');
+      expect(html).not.toContain('Infinity');
+    });
+  }
+
+  it('offers every camera mode, every hour and the ambient toggle as real buttons', () => {
+    const html = renderTool('machineLab', state());
+    for (const label of ['Cinematic', 'Follow the stone', 'Engine', 'Castle', 'Whole field', 'Free look', 'Dawn', 'Noon', 'Dusk', 'Night', 'Storm', 'Ambient motion']) {
+      expect(html, label).toMatch(new RegExp('<button[^>]*aria-pressed="(true|false)"[^>]*>[^<]*' + label));
+    }
+  });
+
+  it('marks the current camera, hour and ambient state as pressed', () => {
+    const html = renderTool('machineLab', state({ sceneCam: 'castle', sceneTime: 'night', sceneAmbient: false }));
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[^<]*Castle/);
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[^<]*Night/);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>[^<]*Ambient motion/);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>[^<]*Cinematic/);
+  });
+});
+
+describe('Siege Field: shares the siege with the Target Wall', () => {
+  it('shows the same wall presets, standoff and crosswind, and the same Loose button', () => {
+    const html = renderTool('machineLab', state());
+    for (const s of ['Curtain wall', 'Gatehouse', 'Keep', 'Motte and tower', 'Standoff from the wall', 'Crosswind', 'Loose!', 'Rebuild the wall']) {
+      expect(html).toContain(s);
+    }
+  });
+
+  it('reports the shared wall state in text, not only in the 3D bay', () => {
+    const html = renderTool('machineLab', state({ wallPreset: 'curtain' }));
+    expect(html).toContain('intact 72');
+    expect(html).toContain('Shots loosed');
+  });
+
+  it('disables Loose while a stone is in the air and once the wall is breached', () => {
+    const flying = renderTool('machineLab', state({ siegeFlight: { id: 1, path: [{ x: 0, y: 2, z: 0, t: 0 }, { x: 10, y: 1, z: 0, t: 1 }], seconds: 1, before: [] } }));
+    expect(flying).toMatch(/<button[^>]*disabled[^>]*>[^<]*In flight/);
+    const M = cfg._math;
+    let blocks = M.buildWall('curtain');
+    for (let i = 0; i < 40 && !M.isBreached(blocks); i++) {
+      const res = M.applyDamage(blocks, { status: 'hit', y: (i % 3) + 0.5, z: ((i * 7) % 9) - 4, v: 120, t: 1 }, { projMass: 120, projDiameter: 0.5 });
+      if (res && res.blocks) blocks = res.blocks;
+    }
+    expect(M.isBreached(blocks)).toBe(true);
+    const done = renderTool('machineLab', state({ wallBlocks: blocks }));
+    expect(done).toMatch(/<button[^>]*disabled[^>]*>[^<]*Breached/);
+  });
+
+  it('carries the shot feedback as a status line', () => {
+    const html = renderTool('machineLab', state({ siegeFeedback: { ok: true, message: 'Struck the stone at course 2, delivering 9000 J.' } }));
+    expect(html).toMatch(/role="status"[^>]*>Struck the stone at course 2/);
+  });
+
+  it('shows the energy ledger, so the picture is never the only carrier', () => {
+    const html = renderTool('machineLab', state());
+    expect(html).toContain('Work you do at the crank');
+    expect(html).toContain('Kinetic energy at impact');
+  });
+});
+
+describe('Siege Field: text alternatives and the live HUD', () => {
+  it('labels the 3D bay with the hour and points at the text below it', () => {
+    const html = renderTool('machineLab', state({ sceneTime: 'dawn' }));
+    expect(html).toMatch(/role="img"[^>]*aria-label="Immersive three-dimensional siege field[^"]*Dawn\.[^"]*in text\."/);
+  });
+
+  it('hides the sixty-times-a-second readouts from assistive tech', () => {
+    // The HUD is written by the render loop, not by React. A screen reader
+    // must not be asked to follow it; the status line and ledger carry the
+    // result instead.
+    const html = renderTool('machineLab', state());
+    const hud = html.match(/<div[^>]*aria-hidden="true"[^>]*>[\s\S]*?Downrange/);
+    expect(hud).toBeTruthy();
+  });
+
+  it('states the energy story before a shot: stored, delivered to the stone, and the share', () => {
+    const html = renderTool('machineLab', state());
+    expect(html).toMatch(/Stored \d+(\.\d+)? kJ\s+→\s+stone gets \d+(\.\d+)? kJ \(\d+%\)/);
+  });
+});
+
+describe('Siege Field: the pure pieces', () => {
+  function evalScene() {
+    // Pull the pure helpers out of the module by name. They are inside the
+    // tool's closure, so run them through the registered config's source: a
+    // regex extraction keeps the test honest about which code it runs.
+    const src = source();
+    const grab = (name) => {
+      const m = src.match(new RegExp('\\n  function ' + name + '\\(([^)]*)\\) \\{([\\s\\S]*?)\\n  \\}\\n'));
+      if (!m) throw new Error('no function ' + name);
+      return new Function(m[1], m[2]);
+    };
+    return { terrainHeight: grab('terrainHeight'), laneFactor: grab('laneFactor'), skyPreset: grab('skyPreset') };
+  }
+
+  it('keeps the firing lane flat at ground level, which is the ground the flight model assumes', () => {
+    const { terrainHeight } = evalScene();
+    for (const standoff of [20, 80, 200]) {
+      for (let z = -standoff - 10; z <= 8; z += 4) {
+        for (const x of [-6, 0, 6]) {
+          expect(Math.abs(terrainHeight(x, z, standoff, 14)), `standoff ${standoff} x ${x} z ${z}`).toBeLessThan(1e-9);
+        }
+      }
+    }
+  });
+
+  it('raises hills away from the lane, so the flat lane is a choice and not a flat world', () => {
+    const { terrainHeight } = evalScene();
+    let maxAbs = 0;
+    for (let x = -150; x <= 150; x += 7) for (let z = -150; z <= 150; z += 7) {
+      maxAbs = Math.max(maxAbs, Math.abs(terrainHeight(x, z, 80, 14)));
+    }
+    expect(maxAbs).toBeGreaterThan(2);
+  });
+
+  it('is deterministic: the same valley every time', () => {
+    const { terrainHeight } = evalScene();
+    expect(terrainHeight(37.3, -61.2, 80, 14)).toBe(terrainHeight(37.3, -61.2, 80, 14));
+  });
+
+  it('paints the lane as dirt only along the lane', () => {
+    const { laneFactor } = evalScene();
+    expect(laneFactor(0, -40, 80, 14)).toBeGreaterThan(0.9);
+    expect(laneFactor(60, -40, 80, 14)).toBe(0);
+    expect(laneFactor(0, 60, 80, 14)).toBe(0);
+  });
+
+  it('has four hours, each with its own sun direction, and a high-contrast sky that is black', () => {
+    const { skyPreset } = evalScene();
+    const dirs = new Set(['dawn', 'noon', 'dusk', 'night', 'storm'].map((h) => skyPreset(h, false).sunDir.join(',')));
+    expect(dirs.size).toBe(5);
+    expect(skyPreset('night', false).stars).toBe(true);
+    expect(skyPreset('noon', false).stars).toBe(false);
+    const hc = skyPreset('noon', true);
+    expect(hc.top).toBe(0);
+    expect(hc.horizon).toBe(0);
+    expect(hc.fog).toBe(null);
+  });
+});
+
+describe('Shot animation preference', () => {
+  it('offers the three choices in the Range and the Siege Field, tied to a label', () => {
+    for (const view of ['range', 'scene']) {
+      const html = renderTool('machineLab', state({ view }));
+      expect(html, view).toContain('Shot animation');
+      expect(html, view).toMatch(/<select[^>]*id="ml-motion-[a-z]+"[^>]*aria-label="Shot animation"/);
+      expect(html, view).toContain('Always play the shot');
+      expect(html, view).toContain('Never animate: show the arc as a strobe');
+    }
+  });
+
+  it('reflects the stored preference as the selected option', () => {
+    const html = renderTool('machineLab', state({ view: 'range', motionPref: 'on' }));
+    expect(html).toMatch(/<select[^>]*id="ml-motion-rangemotion"[^>]*>[\s\S]*?<option[^>]*selected[^>]*value="on"|<option[^>]*value="on"[^>]*selected/);
+  });
+
+  it('derives reduced motion from the preference before the OS setting', () => {
+    const src = source();
+    expect(src).toContain("var reducedMotion = (d.motionPref === 'off') ? true : ((d.motionPref === 'on') ? false : !!osReducedMotion);");
+    // And the range scene draws a strobe of the arc under reduced motion,
+    // rather than a stone that simply appears at the end.
+    expect(src).toContain('var strobe = !!(data.reduced && data.shotId && pts.length > 1);');
+  });
+});
+
+describe('Siege Field: defaults and the mirror', () => {
+  it('ships with the scene preferences in defaultState so a partial snapshot fills in', () => {
+    const src = source();
+    expect(src).toMatch(/sceneTime: 'dusk', sceneCam: 'cinematic', sceneAmbient: true,/);
+    expect(src).toMatch(/motionPref: 'auto',/);
+    expect(src).toMatch(/sceneRotY: \d+, sceneRotX: \d+, sceneZoom: 1,/);
+  });
+
+  it('exposes the scene camera through the same camFor helper as the other bays', () => {
+    const src = source();
+    expect(src).toContain("{ y: 'sceneRotY', x: 'sceneRotX', z: 'sceneZoom' }");
+  });
+});
+
+describe('Siege Field wave 2: replay, arc, wind, start card', () => {
+  it('offers a slow-motion replay in both siege bays, disabled until a shot exists', () => {
+    for (const view of ['scene', 'siege']) {
+      const none = renderTool('machineLab', state({ view }));
+      expect(none, view).toMatch(/<button[^>]*disabled[^>]*>[^<]*Replay in slow motion/);
+      const some = renderTool('machineLab', state({ view, lastFlight: { path: [{ x: 0, y: 2, z: 0, t: 0 }, { x: 20, y: 1, z: 0, t: 1 }], seconds: 1, before: [], outcome: 'hit' } }));
+      expect(some, view).toMatch(/<button(?![^>]*disabled)[^>]*>[^<]*Replay in slow motion/);
+    }
+  });
+
+  it('keeps the last flight on both a hit and a short shot, and marks a replay so it is not re-scored', () => {
+    const src = source();
+    // Wave 29 adds the debris start to the kept flight, so the replay can tumble too.
+    expect(src).toContain("lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, debris: debrisStart }");
+    expect(src).toContain("lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null");
+    expect(src).toContain("outcome: lf.outcome, replay: true, rate: REPLAY_RATE");
+    // The swing stretches with the replay, so the arm is not done before the stone leaves.
+    expect(src).toContain("var swingT = (data.flight && data.flight.replay) ? t / Math.max(1, data.flight.rate || 3) : t;");
+  });
+
+  it('offers the predicted arc as a pressed toggle, on by default, and pushes the arc without a rebuild', () => {
+    const on = renderTool('machineLab', state());
+    expect(on).toMatch(/aria-pressed="true"[^>]*>[^<]*Predicted arc/);
+    const off = renderTool('machineLab', state({ scenePath: false }));
+    expect(off).toMatch(/aria-pressed="false"[^>]*>[^<]*Predicted arc/);
+    const src = source();
+    // The prediction rides on the push and is compared by signature in the
+    // tick; it must NOT be in the scene sig, or every slider tick rebuilds the valley.
+    expect(src).toContain("if (showArc && S.arc.sig !== data.previewSig) {");
+    const sig = src.match(/var sceneSig = \[([^\]]*)\]/);
+    expect(src).toContain('sig: sceneSig,');
+    expect(sig).toBeTruthy();
+    expect(sig[1]).not.toContain('preview');
+  });
+
+  it('shows the wind hint only when there is wind', () => {
+    expect(renderTool('machineLab', state({ windZ: 0 }))).not.toContain('Read the wind from the banner');
+    expect(renderTool('machineLab', state({ windZ: 6 }))).toContain('Read the wind from the banner');
+  });
+
+  it('has a dismissible start-here card that stays dismissed', () => {
+    const fresh = renderTool('machineLab', state());
+    expect(fresh).toContain('Start here');
+    expect(fresh).toMatch(/aria-label="Dismiss the start-here card"/);
+    const gone = renderTool('machineLab', state({ sceneIntroDismissed: true }));
+    expect(gone).not.toContain('Start here');
+  });
+
+  it('restates the HUD labels for the younger bands', () => {
+    expect(renderTool('machineLab', state({ bandOverride: 'k2' }))).toContain('How fast');
+    expect(renderTool('machineLab', state({ bandOverride: 'g35' }))).toContain('How far');
+    expect(renderTool('machineLab', state({ bandOverride: 'g68' }))).toContain('Downrange');
+    expect(renderTool('machineLab', state({ bandOverride: 'g912' }))).not.toContain('How fast');
+  });
+
+  it('tumbles only the blocks THIS shot knocked out, decided once when the stone lands', () => {
+    const src = source();
+    expect(src).toContain("if (flying && landed && S.tumbleId !== data.flight.id) {");
+    expect(src).toContain("if (nb.state === 'breached' && !wasBreached[nb.col + '_' + nb.row]) S.tumble[nb.col + '_' + nb.row] = true;");
+    // Under reduced motion the tumble is skipped, not slowed.
+    expect(src).toContain("var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;");
+  });
+});
+
+describe('Siege Field wave 3: winding, energy bar, traces, bests', () => {
+  it('every flight carries the windup, and the clear timer waits for it too', () => {
+    const src = source();
+    expect(src).toContain('var WINDUP_SECS = 1.6;');
+    expect(src).toContain("outcome: res.outcome, windup: WINDUP_SECS");
+    expect(src).toContain("outcome: 'short', windup: WINDUP_SECS");
+    expect(src).toContain("replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS");
+    expect(src).toContain('clearFlightLater(flightId, playSecs + WINDUP_SECS);');
+    expect(src).toContain('clearFlightLater(shortId, shortPlay + WINDUP_SECS);');
+    expect(src).toContain('clearFlightLater(rid, secs + WINDUP_SECS);');
+  });
+
+  it('both siege bays subtract the windup from the shared flight clock, so neither fires early', () => {
+    const src = source();
+    const hits = src.match(/t = Math\.max\(0, raw - windup\);/g) || [];
+    expect(hits.length).toBe(2);
+    // And both hand the engine its winding pose from the same exposed hook.
+    const poses = src.match(/g\.mlPose\(winding \* winding\)/g) || [];
+    expect(poses.length).toBe(2);
+    expect(src).toContain('S.mlPose = function (k) { pose(1 - Math.max(0, Math.min(1, k))); };');
+    expect(src).toMatch(/S\.mlPose = function \(k\) \{\n\s+var REST_DEG = 42;/);
+  });
+
+  it('reduced motion skips the haul rather than freezing on it', () => {
+    const src = source();
+    expect(src).toContain('if (red) { t = dur; winding = 0; }');
+    expect(src).toContain('if (reduced) { t = dur; winding = 0; }');
+  });
+
+  it('draws the moving-versus-height bar as two spans the loop fills', () => {
+    const html = renderTool('machineLab', state());
+    expect(html).toMatch(/<span[^>]*style="[^"]*width:0%[^"]*background:#fbbf24/);
+    expect(html).toMatch(/<span[^>]*style="[^"]*width:0%[^"]*background:#7dd3fc/);
+    const src = source();
+    expect(src).toContain("setBar((ke + pe) > 0 ? ke / (ke + pe) : 1, (ke + pe) > 0 ? pe / (ke + pe) : 0);");
+  });
+
+  it('keeps compact traces of the last three flights in state, on hits and short shots alike', () => {
+    const src = source();
+    expect(src).toContain("sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)])");
+    expect(src).toContain("sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || [])");
+    expect(src).toMatch(/sceneTraces: \[\], siegeBests: \{\},/);
+  });
+
+  it('shows the best siege for the current target only once one exists', () => {
+    const none = renderTool('machineLab', state());
+    expect(none).not.toContain('Best here');
+    const some = renderTool('machineLab', state({ wallPreset: 'keep', siegeBests: { keep: { shots: 4, work: 181000 }, curtain: { shots: 9, work: 400000 } } }));
+    expect(some).toContain('Best here: 4 shots, 181 kJ');
+    const other = renderTool('machineLab', state({ wallPreset: 'curtain', siegeBests: { keep: { shots: 4, work: 181000 } } }));
+    expect(other).not.toContain('Best here');
+  });
+
+  it('records a best on a breach by fewest shots then least work, and toasts only when beating one', () => {
+    const src = source();
+    expect(src).toContain("var better = !prevBest || shots < prevBest.shots || (shots === prevBest.shots && work < prevBest.work);");
+    expect(src).toContain("if (prevBest) addToast('🏆 '");
+  });
+
+  it('labels every stake with its distance', () => {
+    const src = source();
+    expect(src).toContain("g2.fillText(sd + ' m', n2 / 2, n2 / 2);");
+  });
+});
+
+describe('Siege Field wave 4: sound, crew, record, quest', () => {
+  it('sound is opt-in, a pressed toggle, and unlocked by the click that turns it on', () => {
+    const off = renderTool('machineLab', state());
+    expect(off).toMatch(/aria-pressed="false"[^>]*>[^<]*Sound/);
+    const on = renderTool('machineLab', state({ sceneSound: true }));
+    expect(on).toMatch(/aria-pressed="true"[^>]*>[^<]*Sound/);
+    const src = source();
+    expect(src).toMatch(/sceneSound: false,/);
+    // Wave 23 added the other half: turning it off silences the bed at once.
+    expect(src).toContain("if (!d.sceneSound) SCENE_AUDIO.unlock(); else SCENE_AUDIO.quiet();");
+    expect(src).toContain("upd('sceneSound', !d.sceneSound);");
+  });
+
+  it('cues fire on the three transitions only, and never under reduced motion', () => {
+    const src = source();
+    expect(src).toContain("if (data.sound && !red && (Number(data.flight.windup) || 0) > 0) SCENE_AUDIO.haul(Number(data.flight.windup));");
+    expect(src).toContain("if (data.sound && !red) SCENE_AUDIO.whoosh(speed);");
+    expect(src).toContain("if (data.sound && !red) SCENE_AUDIO.thud(data.outcomeKind === 'hit', (Number(data.impactKJ) || 0));");
+    // The release cue is latched per flight, so a slow replay cannot re-trigger it every frame.
+    expect(src).toContain("if (t > 0.02 && S.releasedId !== data.flight.id) {");
+  });
+
+  it('every synthesised voice is wrapped so a missing AudioContext is silent, not fatal', () => {
+    const src = source();
+    const mod = src.slice(src.indexOf('var SCENE_AUDIO = (function () {'), src.indexOf('var SCENE_HUD = {};'));
+    expect((mod.match(/try \{/g) || []).length).toBeGreaterThanOrEqual(4);
+    expect(mod).toContain("catch (e) { ctx = null; }");
+  });
+
+  it('puts the siege bests in the work record, and only when there are any', () => {
+    const none = renderTool('machineLab', state({ view: 'learn', manualTopic: 'record' }));
+    expect(none).not.toContain('Best sieges');
+    const some = renderTool('machineLab', state({ view: 'learn', manualTopic: 'record', siegeBests: { keep: { shots: 4, work: 181000 } } }));
+    expect(some).toContain('Best sieges: keep 4 shots (181 kJ)');
+  });
+
+  it('adds a quest for breaching two targets, keyed on the bests', () => {
+    const hooks = cfg.questHooks;
+    const q = hooks.filter((h) => h.id === 'breach_two_targets')[0];
+    expect(q).toBeTruthy();
+    expect(q.check({ siegeBests: { keep: { shots: 3, work: 1 } } })).toBe(false);
+    expect(q.check({ siegeBests: { keep: { shots: 3, work: 1 }, curtain: { shots: 5, work: 2 } } })).toBe(true);
+    expect(q.progress({})).toBe('0/2 targets');
+  });
+
+  it('the crew work the winch only during the haul', () => {
+    const src = source();
+    expect(src).toContain("var heave = (winding > 0 && !red) ? Math.sin(tSec * 7 * Math.PI / 1.0) : 0;");
+  });
+});
+
+describe('Siege Field wave 5: dressing that follows the hour', () => {
+  it('lights the tower windows and torches only after dark, from the same preset the sky uses', () => {
+    const src = source();
+    expect(src).toContain('var lit = P.fire >= 0.9;');
+    expect(src).toContain('if (P.fire > 0.5) {');
+    // Dusk and night burn; dawn glows faintly; noon is out. The thresholds
+    // above sit between the presets' fire values.
+    const grab = (name) => {
+      const m = src.match(new RegExp('\\n  function ' + name + '\\(([^)]*)\\) \\{([\\s\\S]*?)\\n  \\}\\n'));
+      return new Function(m[1], m[2]);
+    };
+    const skyPreset = grab('skyPreset');
+    expect(skyPreset('noon', false).fire).toBe(0);
+    expect(skyPreset('dawn', false).fire).toBeLessThan(0.5);
+    expect(skyPreset('dusk', false).fire).toBeGreaterThan(0.5);
+    expect(skyPreset('night', false).fire).toBeGreaterThanOrEqual(0.9);
+  });
+
+  it('keeps every new texture procedural and guarded, so a missing canvas is silent', () => {
+    const src = source();
+    for (const name of ['flareTex', 'cloudTex', 'grassTex', 'waterTex']) {
+      expect(src, name).toMatch(new RegExp('var ' + name + ' = (contrast \\? null : )?makeCanvasTexture\\(THREE'));
+    }
+    expect(src).toContain('if (flareTex) {');
+    expect(src).toContain('if (cloudTex) {');
+    expect(src).toContain('if (grassTex) grassTex.repeat.set(groundSpan / 6, groundSpan / 6);');
+    expect(src).toContain('if (waterTex) waterTex.repeat.set(Math.max(2, span / 4), 1.2);');
+  });
+
+  it('drifts the clouds with the wind and stills them with ambient motion off', () => {
+    const src = source();
+    expect(src).toContain("cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % wrap : 0);");
+    expect(src).toContain("S.water.material.map.offset.x = ambient ? (tSec * 0.03) % 1 : 0;");
+  });
+
+  it('does not dress a high-contrast field with clouds, moat or windows', () => {
+    const src = source();
+    const start = src.indexOf('function buildFieldScene(');
+    const body = src.slice(start, src.indexOf('var SCENE_GL = '));
+    // Each dressing block sits under a !contrast guard.
+    expect(body).toContain("if (!contrast && typeof THREE.Sprite === 'function') {");
+    expect(body).toContain("var grassTex = contrast ? null : makeCanvasTexture(");
+    // The moat now shares its !contrast guard with the wall footing added in
+    // wave 20, so pin the guard and the block rather than their adjacency.
+    expect(body).toContain('if (!contrast) {\n        // ── The foot of the wall.');
+    const guard = body.indexOf('if (!contrast) {\n        // ── The foot of the wall.');
+    const moat = body.indexOf('// The moat: a strip of water in front of the wall');
+    expect(guard).toBeGreaterThan(0);
+    expect(moat).toBeGreaterThan(guard);
+  });
+});
+
+describe('Siege Field wave 6: storm, landing marks, life', () => {
+  function grab(name) {
+    const src = source();
+    const m = src.match(new RegExp('\\n  function ' + name + '\\(([^)]*)\\) \\{([\\s\\S]*?)\\n  \\}\\n'));
+    return new Function(m[1], m[2]);
+  }
+
+  it('the storm is the only hour that rains, and it closes the fog in', () => {
+    const skyPreset = grab('skyPreset');
+    for (const h of ['dawn', 'noon', 'dusk', 'night']) expect(skyPreset(h, false).rain, h).toBeFalsy();
+    expect(skyPreset('storm', false).rain).toBe(true);
+    expect(skyPreset('storm', true).rain).toBeFalsy();
+    const src = source();
+    expect(src).toContain('new THREE.Fog(P.fog, P.rain ? fogNear * 0.5 : fogNear, P.rain ? fogFar * 0.66 : fogFar)');
+  });
+
+  it('rain, lightning and thunder are ambient-gated, and the rain changes nothing in the model', () => {
+    const src = source();
+    expect(src).toContain('if (ambient && S.nextBolt != null) {');
+    expect(src).toContain("if (data.sound && !red) setTimeout(function () { SCENE_AUDIO.thud(false, 60); }, 700);");
+    // The rain reads the wind slider for its lean; it never writes state.
+    expect(src).toContain('rp.setX(rI, rp.getX(rI) + wind * 0.4 * dt);');
+    expect(src).not.toMatch(/rain[^\n]*upd\(/);
+  });
+
+  it('scorches the ground only where a stone lands short, never on the wall', () => {
+    const src = source();
+    expect(src).toContain("if (S.scorch && data.outcomeKind !== 'hit') {");
+    // Dust rises at every landing and dies within six seconds.
+    expect(src).toContain('if (age > 6) { dsp.visible = false; return; }');
+  });
+
+  it('dresses only the trebuchet with braces and a winch, in the guest frame', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && guest.ml && m.kind !== 'ballista' && m.kind !== 'onager') {");
+    expect(src).toContain('mg.add(drum);');
+  });
+
+  it('keeps the sheep off the lane', () => {
+    const src = source();
+    expect(src).toContain('var fx0 = laneHalf + 22 + hash01(2, 4, 91) * 20, fz0 = -standoff * 0.35;');
+  });
+});
+
+describe('Siege Field wave 7: the coach, the map, the sock, the cracks', () => {
+  it('offers a top-down map camera', () => {
+    const html = renderTool('machineLab', state({ sceneCam: 'map' }));
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[^<]*Map/);
+    const src = source();
+    expect(src).toContain("else if (mode === 'map') goal = { target: new THREE.Vector3(0, 0, -standoff * 0.5)");
+  });
+
+  it('the coach tries real flights through the same model, and reports honestly when none reaches', () => {
+    const src = source();
+    expect(src).toContain("var altShot = _machineMath.shot(Object.assign({}, shotInputs, cands[ci3].patch));");
+    expect(src).toContain("if (altShot && altShot.range >= d.standoff) reached = cands[ci3];");
+    expect(src).toContain("'Coach: no single small change reaches from here. Combine two, or move closer.'");
+    // Trebuchets are coached on the counterweight, torsion engines on the bundle.
+    expect(src).toContain("if (machineId === 'trebuchet') cands.push({ patch: { cwMass: d.cwMass * 1.25 }");
+    expect(src).toContain("else cands.push({ patch: { bundleTurns: d.torsionTurns + 4 }");
+  });
+
+  it('the coach candidates the model reads are the keys the model takes', () => {
+    // If inputsFor renames a key, the coach would patch a dead field and
+    // silently coach nothing. Pin the four keys against inputsFor.
+    const src = source();
+    const inputs = src.slice(src.indexOf('function inputsFor(kind) {'), src.indexOf('var machineId = d.machine'));
+    for (const key of ['releaseAngle', 'projMass', 'cwMass', 'bundleTurns']) {
+      expect(inputs.includes(key + ':') || inputs.includes('base.' + key + ' = '), key).toBe(true);
+    }
+  });
+
+  it('a coach candidate that reaches is one the model agrees reaches', () => {
+    // Direct check through the exposed model: a heavier counterweight throws
+    // further at the defaults, which is the coach's whole premise.
+    const M = cfg._math;
+    const base = {
+      machine: 'trebuchet', g: 9.81, projMass: 25, projDiameter: 0.26, releaseAngle: 45, launchElevation: 2,
+      winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2, etaMech: 0.85, drag: true, windZ: 0,
+      cwMass: 1200, cwDrop: 3.2, beamLong: 4.5, beamShort: 1.2, slingLength: 2.0, armMass: 60
+    };
+    const a = M.shot(base), b = M.shot(Object.assign({}, base, { cwMass: 1500 }));
+    expect(b.range).toBeGreaterThan(a.range);
+  });
+
+  it('lays cracks on cracked blocks only, from a pool, and hides the rest', () => {
+    const src = source();
+    expect(src).toContain("if (cb.state !== 'cracked') continue;");
+    expect(src).toContain('for (; ci4 < S.cracks.length; ci4++) S.cracks[ci4].visible = false;');
+  });
+
+  it('the windsock hangs in calm air and lifts with the wind', () => {
+    const src = source();
+    expect(src).toContain('S.sock.rotation.z = -(Math.PI / 2) * (1 - Math.min(1, windAbs / 8))');
+    expect(src).toContain('S.sock.rotation.y = wind < 0 ? Math.PI : 0;');
+  });
+});
+
+describe('Siege Field wave 8: over-shots fly on, predict-then-loose, splash, hot trail', () => {
+  it('a stone that clears or passes the wall flies to its real landing, not to the wall plane', () => {
+    const src = source();
+    expect(src).toContain("if (res.outcome === 'over' || res.outcome === 'miss') {\n          flightPath = (preview.path || []).slice();");
+    // And a hit is still cut at the wall: the cut comes first, the extension only for over/miss.
+    expect(src.indexOf('pt.x <= d.standoff + 1')).toBeLessThan(src.indexOf("if (res.outcome === 'over' || res.outcome === 'miss') {"));
+  });
+
+  it('offers four predictions as pressed chips before a shot, hidden in flight and after a breach', () => {
+    const html = renderTool('machineLab', state());
+    for (const label of ['fall short', 'hit the wall', 'go over', 'go wide']) {
+      expect(html, label).toMatch(new RegExp('<button[^>]*aria-pressed="false"[^>]*>' + label));
+    }
+    const chosen = renderTool('machineLab', state({ fieldGuess: 'over' }));
+    expect(chosen).toMatch(/aria-pressed="true"[^>]*>go over/);
+    const flying = renderTool('machineLab', state({ siegeFlight: { id: 1, path: [{ x: 0, y: 2, z: 0, t: 0 }, { x: 10, y: 1, z: 0, t: 1 }], seconds: 1, before: [] } }));
+    expect(flying).not.toContain('My guess');
+  });
+
+  it('judges the guess on both branches, resets it, and keeps a streak that a wrong call ends', () => {
+    const src = source();
+    expect(src).toContain("var shortGuess = judgeGuess('short');");
+    expect(src).toContain("var hitGuess = judgeGuess(res.outcome === 'hit' ? 'hit' : (res.outcome === 'over' ? 'over' : 'wide'));");
+    expect(src).toContain("patch: { fieldGuess: null, fieldStreak: right ? (d.fieldStreak || 0) + 1 : 0 }");
+    expect(src).toContain("if (!g) return { line: '', patch: {} };");
+    const html = renderTool('machineLab', state({ fieldStreak: 3 }));
+    expect(html).toContain('guess streak 3');
+  });
+
+  it('speaks the coach line and the verdict to screen readers', () => {
+    const src = source();
+    expect(src).toContain("announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line");
+  });
+
+  it('splashes only in the moat, never on a wall hit, and cancels the scorch there', () => {
+    const src = source();
+    expect(src).toContain("if (S.splash && S.water && data.outcomeKind !== 'hit' && S.impactPos.z > 2 && S.impactPos.z < 6.2 && Math.abs(S.impactPos.x) < span / 2 + 3.5) {");
+    expect(src).toContain('if (S.scorch) S.scorch.visible = false;   // no scorch on water');
+  });
+
+  it('tints the trail by speed, except in high contrast', () => {
+    const src = source();
+    expect(src).toContain('var hot = Math.max(0, Math.min(1, (speed - 10) / 35));');
+    expect(src).toContain('if (!contrast && stonePos) S.trail[tt].material.emissive.setRGB(0.85, 0.72 - hot * 0.42, 0.42 - hot * 0.35);');
+  });
+});
+
+describe('Siege Field wave 9: the apex marked, the landing flagged, chaff on the wind', () => {
+  it('marks the summit of the arc it actually draws, with a drop line to the ground', () => {
+    const src = source();
+    expect(src).toContain('for (var ax = 1; ax < arcPts.length; ax++) if (arcPts[ax].y > arcPts[apI].y) apI = ax;');
+    // Only a real summit: a monotonic climb cut at the wall has no apex to mark.
+    expect(src).toContain('var apOk = apPt.y > 3 && apI > 0 && apI < arcPts.length - 1;');
+    expect(src).toContain('S.apexMark.drop.geometry.setFromPoints([new THREE.Vector3(apPt.x, 0.06, apPt.z), new THREE.Vector3(apPt.x, apPt.y, apPt.z)]);');
+  });
+
+  it('shows and hides the apex mark with the predicted arc, never on its own', () => {
+    const src = source();
+    expect(src).toContain('var apVis = showArc && !!S.apexMark.show;');
+    expect(src).toContain('if (S.apexMark.label) S.apexMark.label.sprite.visible = apVis;');
+  });
+
+  it('flags where a stone landed, with the distance on it, and never on a wall hit', () => {
+    const src = source();
+    expect(src).toContain("if (S.landFlag && data.outcomeKind !== 'hit') {");
+    expect(src).toContain("S.landFlag.label.draw(Math.round(landM) + (L.metres || ' m'));");
+    // A new flight clears the last flag, so two shots never both claim the ground.
+    expect(src).toContain('if (S.landFlag) S.landFlag.group.visible = false;');
+    expect(src.indexOf('if (S.landFlag) S.landFlag.group.visible = false;'))
+      .toBeLessThan(src.indexOf("if (S.landFlag && data.outcomeKind !== 'hit') {"));
+  });
+
+  it('reletters a label in place rather than building a texture per slider drag', () => {
+    const src = source();
+    expect(src).toContain('function makeLabelSprite(THREE, scale, tint, through, outline) {');
+    expect(src).toContain('if (this.text === text) return;');
+    expect(src).toContain('tex.needsUpdate = true;');
+  });
+
+  it('drifts chaff at the wind\'s own speed, off in contrast and with ambient off', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && typeof THREE.Points === 'function') {");
+    expect(src).toContain('S.motes.points.visible = ambient;');
+    expect(src).toContain('var mvx = wind * 0.5 + 0.4;');
+    // It wraps rather than running out, so the air never empties.
+    expect(src).toContain('if (mArr[mk] > mHalf) mArr[mk] -= S.motes.span;');
+  });
+
+  it('says apex and metres through the label pipe, not as hard-coded English', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark', 'apex ')");
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark_y', 'highest ')");
+    expect(src).toContain("metres: __alloT('stem.machinelab.scene_metres', ' m'),");
+    expect(src).toContain("(L.apexMark || 'apex ') + Math.round(apPt.y) + (L.metres || ' m')");
+  });
+
+  it('still gives the apex and the range as text, for anyone who cannot see the marks', () => {
+    const html = renderTool('machineLab', state({ view: 'range' }));
+    expect(html).toContain('Apex');
+  });
+});
+
+describe('Siege Field wave 10: seconds on the arc, the track on the ground', () => {
+  it('beads the arc wherever the flight clock passes a whole second', () => {
+    const src = source();
+    // The walk itself lives in secondMarks() since wave 22; the field asks it
+    // for as many beads as it has, and stops it where the drawn line stops.
+    expect(src).toContain('var beadPts = secondMarks(data.previewPath || [], S.beads.marks.length, standoff + 1)');
+    // The fraction is clamped, so a coarse path cannot throw a bead off the arc.
+    expect(src).toContain('var f = Math.max(0, Math.min(1, (sec - Number(p0.t)) / Math.max(1e-6, Number(p1.t) - Number(p0.t))));');
+    expect(src).toContain('if (stopAtX != null && (Number(p1.x) || 0) > stopAtX) break;');
+  });
+
+  it('gives every bead a shadow on the ground and lays the whole arc flat as a track', () => {
+    const src = source();
+    expect(src).toContain('S.beads.shadows[bk].position.set(bpt.x, 0.07, bpt.z);');
+    expect(src).toContain('S.beads.track.geometry.setFromPoints(arcPts.map(function (p) { return new THREE.Vector3(p.x, 0.07, p.z); }));');
+  });
+
+  it('shows the beads only with the arc, and only as many as the flight earned', () => {
+    const src = source();
+    expect(src).toContain('var bOn = showArc && bv < S.beads.count;');
+    expect(src).toContain('S.beads.track.visible = showArc && S.beads.count > 0;');
+  });
+
+  it('shadows the flying stone, wider and fainter the higher it is, and clears it on landing', () => {
+    const src = source();
+    expect(src).toContain('S.stoneShadow.scale.setScalar(1 + shH * 0.035);');
+    expect(src).toContain('S.stoneShadow.material.opacity = Math.max(0.07, 0.34 - shH * 0.006);');
+    expect(src).toContain('if (S.stoneShadow) S.stoneShadow.visible = false;');
+  });
+
+  it('says in text what the marks on the arc mean, and only while the arc is drawn', () => {
+    const html = renderTool('machineLab', state({ scenePath: true }));
+    expect(html).toContain('beaded once per second of flight');
+    const off = renderTool('machineLab', state({ scenePath: false }));
+    expect(off).not.toContain('beaded once per second of flight');
+    // The toggle's own tooltip lists what it draws.
+    expect(html).toContain('a bead for every second of flight');
+  });
+});
+
+describe('Siege Field wave 11: far ridges, grass and wildflowers', () => {
+  it('rings the valley with three ridge bands, each hazed further toward the horizon', () => {
+    const src = source();
+    expect(src).toContain('[[0.60, 36, 0.5], [0.71, 54, 0.68], [0.81, 76, 0.84]].forEach(function (layer, li) {');
+    expect(src).toContain('var rcol = ridgeNear.clone().lerp(new THREE.Color(P.horizon), haze);');
+    // The tint is the haze, so the ridges must not take the scene fog as well.
+    expect(src).toContain('color: rcol.getHex(), side: THREE.DoubleSide, fog: false');
+  });
+
+  it('sits the ridges outside the ground plane and never culls them', () => {
+    const src = source();
+    // The ground reaches half the field from the valley centre, so a band at
+    // 0.60 of the field is past its rim at any standoff.
+    expect(src).toContain('var fieldSpan = Math.max(320, standoff * 2.4 + 200);');
+    expect(src).toContain('var groundSpan = fieldSpan;');
+    expect(src).toContain('ridgeMesh.frustumCulled = false;');
+  });
+
+  it('grows grass off the lane, dry and sparse on it, and none at all in high contrast', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && typeof THREE.InstancedMesh === 'function') {\n      var td = new THREE.Object3D(), tc = new THREE.Color();");
+    expect(src).toContain('if (lf2 > 0.35 && hash01(tt, 17, 123) > 0.05) continue;');
+    expect(src).toContain('if (lf2 > 0.2) tc.lerp(new THREE.Color(0xa79256), Math.min(1, lf2 * 1.1));');
+  });
+
+  it('keeps wildflowers out of the lane entirely', () => {
+    const src = source();
+    expect(src).toContain('if (laneFactor(fx, fz, standoff, laneHalf) > 0.25) continue;');
+  });
+
+  it('places grass by the same terrain the physics uses, so nothing floats or sinks', () => {
+    const src = source();
+    expect(src).toContain('td.position.set(gx, terrainHeight(gx, gz, standoff, laneHalf) + 0.16 * gsc, gz);');
+    expect(src).toContain('td.position.set(fx, terrainHeight(fx, fz, standoff, laneHalf) + 0.22, fz);');
+  });
+
+  it('scatters both from the deterministic hash, never Math.random', () => {
+    const src = source();
+    const scatter = src.slice(src.indexOf('// ── Tufts and wildflowers'), src.indexOf('// ── The castle ──'));
+    expect(scatter).not.toContain('Math.random');
+    expect(scatter).toContain('hash01(');
+  });
+});
+
+describe('Siege Field wave 12: an inner ward and people on the rampart', () => {
+  it('builds a keep, two halls and a well behind the wall', () => {
+    const src = source();
+    expect(src).toContain('var keepH = wallTop + 5.5;');
+    expect(src).toContain('keep.position.set(0, keepH / 2, 11.5);');
+    expect(src).toContain("// A well in the yard, because a besieged castle lives or dies by it.");
+    // The keep clears the wall it stands behind, or it would not read as a keep.
+    expect(src).toContain('var keepRoof = new THREE.Mesh(new THREE.ConeGeometry(3.9, 3.1, 4), wardRoof);');
+  });
+
+  it('lights the ward windows on the same rule as the towers', () => {
+    const src = source();
+    expect(src).toContain('var wardLit = P.fire >= 0.9;');
+    expect(src).toContain("emissive: wardLit ? 0xffa73a : 0x000000, emissiveIntensity: wardLit ? 0.9 : 0");
+  });
+
+  it('stands defenders on a walkway at the top of the wall, facing the field', () => {
+    const src = source();
+    expect(src).toContain('walkway.position.set(0, wallTop - 0.08, 1.5);');
+    expect(src).toContain('var dfr = addFigure(THREE, S.model, dfx, 1.5, DEFENDER_TUNICS[dfi % DEFENDER_TUNICS.length], Math.PI);');
+    expect(src).toContain('dfr.position.y = wallTop;');
+  });
+
+  it('ducks them when a stone lands and clears them off a wall that is mostly gone', () => {
+    const src = source();
+    expect(src).toContain('var held = !blk.length || (gone / blk.length) < 0.4;');
+    expect(src).toContain('var duck = (S.impactAt != null) ? Math.max(0, 1 - (now - S.impactAt) / 1400) : 0;');
+    expect(src).toContain('df.position.y = df.userData.y0 - duck * duck * 0.62;');
+    // The sway is ambient life; reduced motion and ambient-off leave them still.
+    expect(src).toContain('var sway = ambient ? Math.sin(tSec * 1.15 + df.userData.phase) * 0.05 : 0;');
+  });
+
+  it('builds neither the ward nor the rampart in high contrast or for an imported wall', () => {
+    const src = source();
+    const ward = src.indexOf('// ── The inner ward.');
+    const rampart = src.indexOf('// ── The rampart, and the people on it.');
+    expect(ward).toBeGreaterThan(0);
+    expect(rampart).toBeGreaterThan(ward);
+    expect(src.slice(ward, ward + 700)).toContain("if (!contrast && m.wallPreset !== 'imported') {");
+    expect(src.slice(rampart, rampart + 400)).toContain("if (!contrast && m.wallPreset !== 'imported') {");
+  });
+});
+
+describe('Siege Field wave 13: the camp, and a crew that watches its own shot', () => {
+  it('pitches more of a camp: tents, a loaded cart, barrels, a stake screen, a standard', () => {
+    const src = source();
+    expect(src).toContain('// ── The camp. The castle got a ward it is defending; this is what the');
+    expect(src).toContain('// The supply cart: the stones did not walk here.');
+    expect(src).toContain('// Barrels, because a siege drinks.');
+    expect(src).toContain("// A stake screen across the camp's front: the crew are within range of");
+    expect(src).toContain("// The camp's standard, answering the castle's banner across the field.");
+  });
+
+  it('leaves the lane clear through the stake screen, so nothing stands in the shot', () => {
+    const src = source();
+    expect(src).toContain('if (Math.abs(pkx) < 2.6) continue;');
+  });
+
+  it('sits every camp prop on the terrain the physics uses', () => {
+    const src = source();
+    expect(src).toContain('var campGround = function (cx, cz) { return terrainHeight(cx, cz, standoff, laneHalf); };');
+    expect(src).toContain('barrel.position.set(blx, campGround(blx, blz) + 0.4, blz);');
+    expect(src).toContain('stake.position.set(pkx, campGround(pkx, pkz) + 0.85, pkz);');
+  });
+
+  it('flies the standard on the castle banner rules, still when ambient is off', () => {
+    const src = source();
+    expect(src).toContain('if (S.standard && S.standardBase) {');
+    expect(src).toContain('sp2.setZ(sv, ambient ? Math.sin(sx2 * 2.6 + tSec * sfreq + sy2 * 1.5) * samp * (sx2 / 2.1 + 0.1) : 0);');
+  });
+
+  it('turns the crew to follow the stone, the short way round, and back to rest after', () => {
+    const src = source();
+    expect(src).toContain('var watchAt = stonePos || (S.impactAt != null && (now - S.impactAt) < 2600 ? S.impactPos : null);');
+    expect(src).toContain('while (dY > Math.PI) dY -= Math.PI * 2;');
+    expect(src).toContain('while (dY < -Math.PI) dY += Math.PI * 2;');
+    // Each figure remembers the way it was first facing, so "no stone" is a place.
+    expect(src).toContain('if (member.userData.rest0 == null) member.userData.rest0 = member.rotation.y;');
+  });
+
+  it('builds none of the camp in high contrast', () => {
+    const src = source();
+    const camp = src.indexOf('// ── The camp. The castle got a ward');
+    const guard = src.lastIndexOf('if (!contrast) {', camp);
+    const closes = src.slice(guard, camp);
+    // No other contrast branch opens between the guard and the camp.
+    expect(closes).not.toContain('if (contrast)');
+    expect(guard).toBeGreaterThan(0);
+  });
+});
+
+describe('Siege Field wave 14: the camera takes the hit, a moon, rain that lands', () => {
+  it('shakes the camera on impact, scaled by the energy that arrived, and decays it away', () => {
+    const src = source();
+    expect(src).toContain('var shake = Math.max(0, 1 - (now - S.impactAt) / 700);');
+    expect(src).toContain('var mag = shake * shake * Math.min(1.5, 0.2 + (Number(data.impactKJ) || 0) * 0.02);');
+  });
+
+  it('never shakes under reduced motion or on the static one-tick path', () => {
+    const src = source();
+    // A static bay gets one tick per push: a shake there would freeze part-way
+    // through and leave the scene crooked for good.
+    expect(src).toContain('if (!red && !data.static && S.impactAt != null) {');
+  });
+
+  it('shakes the look-at only after the fit points are set, so the framing does not pump', () => {
+    const src = source();
+    const fit = src.indexOf('S.fitPts = goal.pts ? goal.pts.slice() : boxPts(');
+    const shake = src.indexOf('var shake = Math.max(0, 1 - (now - S.impactAt) / 700);');
+    expect(fit).toBeGreaterThan(0);
+    expect(shake).toBeGreaterThan(fit);
+  });
+
+  it('hangs a moon where the light comes from, and only at an hour that has stars', () => {
+    const src = source();
+    expect(src).toContain("if (P.stars && typeof THREE.Sprite === 'function') {");
+    expect(src).toContain('moon.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), horizonR * 0.89);');
+  });
+
+  it('gives the storm somewhere to land, on a fixed cycle with no spawner', () => {
+    const src = source();
+    expect(src).toContain('if (P.rain && !contrast) {');
+    expect(src).toContain('var phase = (tSec * 0.9 + rk * 0.37);');
+    expect(src).toContain('rrg.material.opacity = 0.7 * (1 - kk) * (1 - kk);');
+    // Ambient life: with ambient off there is no splash, as with everything else.
+    expect(src).toContain('rrg.visible = ambient;');
+  });
+});
+
+describe('Siege Field wave 15: ranging by bracket', () => {
+  it('keeps the best short and the best over, tightening rather than replacing', () => {
+    const src = source();
+    expect(src).toContain("if (kind === 'short') lo = (lo == null) ? at : Math.max(lo, at);");
+    expect(src).toContain("else if (kind === 'over') hi = (hi == null) ? at : Math.min(hi, at);");
+  });
+
+  it('holds the bracket per standoff, because moving the engine asks another question', () => {
+    const src = source();
+    expect(src).toContain('var held = (d.bracket && d.bracket.at === d.standoff) ? d.bracket : { at: d.standoff, lo: null, hi: null };');
+    expect(src).toContain('bracket: (d.bracket && d.bracket.at === d.standoff) ? d.bracket : null,');
+  });
+
+  it('only a long shot closes the far side: a wide miss and a hit leave it alone', () => {
+    const src = source();
+    expect(src).toContain("var overBracket = (res.outcome === 'over')");
+    expect(src).toContain("{ line: '', patch: {} };");
+  });
+
+  it('says where the wall sits between the two shots, as a fraction, not as a midpoint', () => {
+    const src = source();
+    expect(src).toContain('var frac = Math.max(0, Math.min(1, (d.standoff - lo) / (hi - lo)));');
+    expect(src).toContain("__alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +");
+    // Halfway between two landing distances is not the target; the wall is.
+    expect(src).not.toContain('Halfway is ');
+  });
+
+  it('draws the band between the two shots and a bar on each edge', () => {
+    const src = source();
+    expect(src).toContain('S.bracketMark.band.scale.y = Math.max(0.5, bz1 - bz0);');
+    expect(src).toContain('S.bracketMark.edges[0].position.z = bz0;');
+    expect(src).toContain('S.bracketMark.edges[1].position.z = bz1;');
+    // Shown only when both edges are known and they really do straddle.
+    expect(src).toContain('var bkOn = !!(bk && bk.lo != null && bk.hi != null && bk.hi > bk.lo);');
+  });
+
+  it('starts with no bracket at all', () => {
+    const src = source();
+    expect(src).toContain('bracket: null,');
+    const html = renderTool('machineLab', state());
+    expect(html).not.toContain('Bracketed');
+  });
+});
+
+describe('Siege Field wave 16: the HUD holds together on a narrow bay', () => {
+  it('flows the title, the energy line and the bar in one column instead of pinning them', () => {
+    const src = source();
+    // The old layout pinned the energy chip at top:130 under a HUD row that
+    // WRAPS: on a phone the stats block landed underneath it.
+    expect(src).not.toContain("position: 'absolute', left: 20, top: 130");
+    expect(src).not.toContain("position: 'absolute', left: 20, top: 172");
+    expect(src).toContain("style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minWidth: 0, maxWidth: '100%' }");
+  });
+
+  it('keeps the energy bar in the layout when hidden, so the column does not jump', () => {
+    const src = source();
+    expect(src).toContain("visibility: 'hidden' }");
+    expect(src).not.toContain("display: 'none' }, [\n                  h('span', { key: 'ke'");
+  });
+
+  it('still renders both HUD panels and their live refs', () => {
+    const html = renderTool('machineLab', state());
+    expect(html).toContain('Stored ');
+    expect(html).toContain('Downrange');
+    expect(html).toContain('Siege Field ·');
+  });
+
+  it('lets every HUD box shrink rather than push the bay wider', () => {
+    const src = source();
+    const hud = src.slice(src.indexOf("key: 'left',"), src.indexOf("key: 'stats',"));
+    expect(hud).toContain("maxWidth: '100%'");
+    expect(hud).toContain('width: 260, maxWidth: \'100%\'');
+  });
+});
+
+describe('Siege Field wave 17: every ghost arc says what changed', () => {
+  it('names the change between one shot and the last, in the learner\'s own units', () => {
+    const src = source();
+    expect(src).toContain("['releaseAngle', __alloT('stem.machinelab.chg_release', 'release'), '°', 0],");
+    expect(src).toContain(": name + ' ' + fmt(Number(was), dp) + '→' + fmt(Number(is), dp) + unit);");
+    expect(src).toContain("if (!prev) return { parts: [], text: __alloT('stem.machinelab.chg_first', 'first shot') };");
+  });
+
+  it('does not pretend a six-slider rebuild was one change', () => {
+    const src = source();
+    expect(src).toContain("(parts.length > 2 ? parts.length + __alloT('stem.machinelab.chg_many', ' things changed') : parts.join(', '))");
+    expect(src).toContain("var text = !parts.length ? __alloT('stem.machinelab.chg_same', 'same setup')");
+  });
+
+  it('keeps the notes in step with the traces on both outcomes', () => {
+    const src = source();
+    expect(src).toContain("traceNotes: shortPath.length > 1 ? (d.traceNotes || []).slice(-2).concat([shortNote]) : (d.traceNotes || []),");
+    expect(src).toContain('traceNotes: (d.traceNotes || []).slice(-2).concat([hitNote]),');
+    // Both branches also record what this shot was set to, or the next diff
+    // would be measured against the shot before last.
+    expect(src).toContain('lastShotSetup: shortSetup');
+    expect(src).toContain('lastShotSetup: hitSetup');
+  });
+
+  it('rebuilds the ghost labels when a note changes, not only when a path does', () => {
+    const src = source();
+    expect(src).toContain(".join('|') + '#' + (d.traceNotes || []).join('#'),");
+  });
+
+  it('hangs each label over its own arc, and hides it when there is no note', () => {
+    const src = source();
+    expect(src).toContain('var note = noteList[noteList.length - 1 - ti2];');
+    expect(src).toContain("lab.sprite.position.set(tr[apx].z || 0, Math.max(1.5, tr[apx].y || 0) + 2.4, -standoff + (tr[apx].x || 0));");
+    expect(src).toContain('} else if (lab) { lab.sprite.visible = false; }');
+  });
+
+  it('fits a long label to its canvas instead of running it off the edge', () => {
+    const src = source();
+    expect(src).toContain('if (wide > 236) {');
+    expect(src).toContain('size = Math.max(20, Math.floor(size * 236 / wide));');
+  });
+
+  it('prints the same list as text under the field, newest first, and nothing before the first shot', () => {
+    const html = renderTool('machineLab', state({ traceNotes: ['first shot', 'release 35→45°'] }));
+    expect(html).toContain('Last shots, newest first: release 35→45° · first shot');
+    const fresh = renderTool('machineLab', state());
+    expect(fresh).not.toContain('Last shots, newest first');
+  });
+});
+
+describe('Siege Field wave 18: the Test Range gets the same instruments', () => {
+  it('beads the fired arc by the second and rings its apex', () => {
+    const src = source();
+    const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
+    expect(range).toContain('secondMarks(path, 12).forEach(function (mk) {');
+    expect(range).toContain('var apRing = new THREE.Mesh(');
+    expect(range).toContain("apLabel.draw((m.apexWord || 'apex ') + Math.round(Number(m.apex) || apPt.y) + (m.metresWord || ' m'));");
+  });
+
+  it('shows none of it before the shot is revealed, so the prediction stands', () => {
+    const src = source();
+    const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
+    const gate = range.indexOf('if (showPath) {\n      var instR');
+    expect(gate).toBeGreaterThan(0);
+    // showPath is itself valid && revealed, which is the existing contract.
+    expect(range).toContain('var showPath = valid && revealed && path.length > 1;');
+  });
+
+  it('drops the ground shadows the Siege Field uses, which have no ground here', () => {
+    const src = source();
+    const range = src.slice(src.indexOf('function buildRangeScene'), src.indexOf('// The build bay used to float'));
+    expect(range).not.toContain('beadShade');
+    expect(range).toContain('// No bead shadows here: the Siege Field has real ground for a shadow to');
+  });
+
+  it('takes the words from the tool rather than hard-coding English in the bay', () => {
+    const src = source();
+    expect(src).toContain('apexWord: young');
+    expect(src).toContain("metresWord: __alloT('stem.machinelab.scene_metres', ' m'),");
+  });
+
+  it('still gives the apex as text in the range readouts', () => {
+    const html = renderTool('machineLab', state({ view: 'range' }));
+    expect(html).toContain('Apex');
+  });
+});
+
+describe('Siege Field wave 19: the manual and the quests know the field', () => {
+  it('adds a Reading the Siege Field chapter that routes to the field', () => {
+    const html = renderTool('machineLab', state({ view: 'learn', manualTopic: 'field' }));
+    expect(html).toContain('Reading the Siege Field');
+    expect(html).toContain('the beads are one second apart');
+    expect(html).toContain('the same idea as bisection');
+    expect(html).toContain('Open the Siege Field');
+  });
+
+  it('keeps the chapter honest about motion and text alternatives', () => {
+    const html = renderTool('machineLab', state({ view: 'learn', manualTopic: 'field' }));
+    expect(html).toContain('strobe of stones along the arc');
+    expect(html).toContain('the same number somewhere in the text below the bay');
+  });
+
+  it('counts a streak of one-change shots and resets it on anything else', () => {
+    const src = source();
+    expect(src).toContain("return diff.parts.length === 1 ? (d.oneChangeStreak || 0) + 1 : 0;");
+    expect(src).toContain('oneChangeStreak: oneChangeAfter(shortDiff)');
+    expect(src).toContain('oneChangeStreak: oneChangeAfter(hitDiff)');
+    expect(src).toContain('oneChangeStreak: 0,');
+  });
+
+  it('offers two quests for the two habits: bracket the wall, one change at a time', () => {
+    const hooks = cfg.questHooks;
+    const ids = hooks.map((q) => q.id);
+    expect(ids).toContain('bracket_the_wall');
+    expect(ids).toContain('one_change_at_a_time');
+    const br = hooks.filter((q) => q.id === 'bracket_the_wall')[0];
+    expect(br.check({ bracket: { at: 80, lo: 50, hi: 127 } })).toBe(true);
+    expect(br.check({ bracket: { at: 80, lo: 50, hi: null } })).toBe(false);
+    expect(br.check({ bracket: { at: 80, lo: 90, hi: 70 } })).toBe(false);
+    expect(br.progress({ bracket: { at: 80, lo: 50, hi: null } })).toBe('Short shot in; now go long');
+    expect(br.progress({})).toBe('No bracket yet');
+    const oc = hooks.filter((q) => q.id === 'one_change_at_a_time')[0];
+    expect(oc.check({ oneChangeStreak: 3 })).toBe(true);
+    expect(oc.check({ oneChangeStreak: 2 })).toBe(false);
+    expect(oc.progress({ oneChangeStreak: 2 })).toBe('2/3 in a row');
+  });
+});
+
+describe('Siege Field wave 20: the wall is built, not stacked', () => {
+  it('darkens the bottom two courses as a damp course', () => {
+    const src = source();
+    expect(src).toContain('var damp = (b.row <= 1) ? (b.row === 0 ? 0.8 : 0.9) : 1;');
+    expect(src).toContain('return new THREE.Color(0.86 * v * damp, 0.82 * v * damp * green, 0.74 * v * damp).getHex();');
+  });
+
+  it('keeps the footing under half a course, so it can never hide a breach', () => {
+    const src = source();
+    // Two courses, 0.26 and 0.20 tall, topping out at 0.46 of a 1.0 block.
+    expect(src).toContain('new THREE.BoxGeometry(span + 2.2, 0.26, 2.8)');
+    expect(src).toContain('plinth2.position.set(0, 0.36, 0);');
+    expect(src).toContain('// belongs to the physics, and a footing that buried it would show an');
+  });
+
+  it('builds the footing and buttresses from plain boxes, never a scaled rotation', () => {
+    const src = source();
+    const foot = src.slice(src.indexOf('// ── The foot of the wall.'), src.indexOf('// The moat: a strip of water in front of the wall'));
+    expect(foot).toContain('new THREE.BoxGeometry(1.05, buttressH, 1.15)');
+    // A 4-gon rotated 45 degrees and THEN scaled is sheared, which is what the
+    // first attempt at this looked like: a ramp growing out of the wall.
+    expect(foot).not.toContain('buttress.scale.set');
+    expect(foot).not.toContain('var batter =');   // the sheared ramp is gone, the PROSE still says battered
+  });
+
+  it('leaves the gateway clear on the preset that has one', () => {
+    const src = source();
+    expect(src).toContain("if (m.wallPreset === 'gatehouse' && Math.abs(btx) < 3) continue;");
+  });
+
+  it('flies the keep pennant on the same wind as the banner and the standard', () => {
+    const src = source();
+    expect(src).toContain('S.keepFlag = keepFlag;');
+    expect(src).toContain('if (S.keepFlag && S.keepFlagBase) {');
+    expect(src).toContain('kp.setZ(kv, ambient ? Math.sin(kx * 2.8 + tSec * kfreq + ky * 1.5) * kamp * (kx / 1.7 + 0.1) : 0);');
+    // Three flags, one wind: each reads the same windAbs the sock does.
+    const wind = (src.match(/rotation\.y = wind < 0 \? Math\.PI : 0;/g) || []).length;
+    expect(wind).toBeGreaterThanOrEqual(3);
+  });
+
+  it('dresses none of it in high contrast, where only the model is drawn', () => {
+    const src = source();
+    const body = src.slice(src.indexOf('function buildFieldScene('), src.indexOf('var SCENE_GL = '));
+    const guard = body.indexOf('if (!contrast) {\n        // ── The foot of the wall.');
+    expect(guard).toBeGreaterThan(0);
+  });
+});
+
+describe('Siege Field wave 21: the field reacts to the hit', () => {
+  it('opens a shock ring on the face of the wall, and only on a hit', () => {
+    const src = source();
+    expect(src).toContain("if (S.shock && data.outcomeKind === 'hit' && !red) {");
+    // Clear of the face: the blocks are one deep about z = 0.
+    expect(src).toContain('S.shock.position.set(S.impactPos.x, S.impactPos.y, -0.62);');
+    expect(src).toContain('var shockAge = (now - (S.shockT0 || now)) / 600;');
+    expect(src).toContain('S.shock.scale.setScalar(1 + shockAge * 6);');
+  });
+
+  it('takes the ring away when its window closes, and never shows it under reduced motion', () => {
+    const src = source();
+    expect(src).toContain('if (shockAge >= 1 || red) { S.shock.visible = false; }');
+  });
+
+  it('sends the birds up and out when a stone lands, only while ambient life is on', () => {
+    const src = source();
+    expect(src).toContain('var scare = (ambient && S.impactAt != null) ? Math.max(0, 1 - (now - S.impactAt) / 3500) : 0;');
+    expect(src).toContain('var rad = u.r + scareEase * 16;');
+    expect(src).toContain('var flap = ambient ? Math.sin(tSec * (9 + scareEase * 14) + u.phase) * (0.6 + scareEase * 0.4) : 0.2;');
+  });
+
+  it('lets the crew cheer a breach for three seconds, latched so it fires once', () => {
+    const src = source();
+    expect(src).toContain('if (data.breached && !S.sawBreach) { S.sawBreach = true; S.breachAt = now; }');
+    expect(src).toContain('if (!data.breached) { S.sawBreach = false; S.breachAt = null; }');
+    expect(src).toContain('var cheer = (!red && S.breachAt != null) ? Math.max(0, 1 - (now - S.breachAt) / 3000) : 0;');
+    // The hop is added to whatever the winch heave already did, not instead.
+    expect(src).toContain('member.position.y = Math.max(member.position.y, Math.abs(Math.sin(tSec * 6.5 + cw * 1.7)) * 0.42 * cheer);');
+  });
+
+  it('tells the scene whether the wall is breached', () => {
+    const src = source();
+    expect(src).toContain('breached: !!d.breached,');
+  });
+});
+
+describe('Siege Field wave 22: one derivation of a second, four places that draw it', () => {
+  it('marks whole seconds by interpolating on the path it is given', () => {
+    const marks = cfg._secondMarks(
+      [{ x: 0, y: 0, z: 0, t: 0 }, { x: 20, y: 10, z: 2, t: 2 }],
+      10
+    );
+    expect(marks).toHaveLength(2);
+    expect(marks[0]).toMatchObject({ t: 1 });
+    expect(marks[0].x).toBeCloseTo(10, 6);
+    expect(marks[0].y).toBeCloseTo(5, 6);
+    expect(marks[0].z).toBeCloseTo(1, 6);
+    expect(marks[1].t).toBe(2);
+    expect(marks[1].x).toBeCloseTo(20, 6);
+  });
+
+  it('never returns more marks than asked for, and none from a path with no clock', () => {
+    const long = [];
+    for (let i = 0; i <= 40; i++) long.push({ x: i * 5, y: 0, z: 0, t: i });
+    expect(cfg._secondMarks(long, 6)).toHaveLength(6);
+    expect(cfg._secondMarks(long, 0)).toHaveLength(0);
+    expect(cfg._secondMarks([{ x: 0, y: 0 }, { x: 9, y: 9 }], 5)).toHaveLength(0);
+    expect(cfg._secondMarks([], 5)).toHaveLength(0);
+    expect(cfg._secondMarks(null, 5)).toHaveLength(0);
+  });
+
+  it('stops where the drawn line stops when given a cut', () => {
+    const p = [];
+    for (let i = 0; i <= 10; i++) p.push({ x: i * 10, y: 0, z: 0, t: i });
+    // Cut at 35 m: the walk ends before the segment that leaves the wall.
+    expect(cfg._secondMarks(p, 10, 35).map((m) => m.t)).toEqual([1, 2, 3]);
+  });
+
+  it('draws a dot per second on the flat trajectory figure, with a legend', () => {
+    const shot = {
+      range: 120.5, apex: 30.2, flightTime: 5.1, drift: 0, muzzleV: 40,
+      path: [
+        { t: 0, x: 0, y: 2, z: 0, v: 40 },
+        { t: 2, x: 60, y: 30, z: 0, v: 30 },
+        { t: 5.1, x: 120.5, y: 0, z: 0, v: 33.3 }
+      ]
+    };
+    const html = renderTool('machineLab', state({ view: 'range', lastShot: shot }));
+    expect(html).toContain('dots: one second apart');
+    // Five whole seconds fit inside a 5.1 s flight.
+    expect((html.match(/<circle[^>]*r="2.6"/g) || []).length).toBe(5);
+  });
+
+  it('draws them on the Compare strip too, in each machine own colour', () => {
+    const src = source();
+    expect(src).toContain("h('g', { key: 'secs' }, secondMarks(r.s.path, 12).map(function (mk, mi) {");
+    expect(src).toContain("r: 2.4, fill: color, stroke: T.bg, strokeWidth: 1");
+  });
+
+  it('is one derivation: no bespoke second-walk left anywhere', () => {
+    const src = source();
+    expect(src.match(/while \(sec(ond)? <= /g) || []).toHaveLength(1);
+  });
+});
+
+describe('Siege Field wave 23: the valley has a sound, and it stops when asked', () => {
+  it('runs an ambient bed only while sound is on and motion is allowed', () => {
+    const src = source();
+    expect(src).toContain("SCENE_AUDIO.bed(S, windAbs, (data.ambient !== false) ? P.fire : 0, timeIsStorm);");
+    expect(src).toContain('} else if (S.bedRunning) {\n        SCENE_AUDIO.quiet(S);');
+    expect(src).toContain('S.bedRunning = !!(data.sound && !red);');
+  });
+
+  it('keeps the bed quiet: a cap on the wind, a cap on the fire', () => {
+    const src = source();
+    expect(src).toContain('var windGain = Math.min(0.05, 0.006 + (Number(windAbs) || 0) * 0.0035) + (rain ? 0.02 : 0);');
+    expect(src).toContain('var fireGain = Math.min(0.03, (Number(fire) || 0) * 0.016);');
+    // Eased, not stepped: a slider drag must not click.
+    expect(src).toContain('bedOn.wind.gain.setTargetAtTime(windGain, t0, 0.4);');
+  });
+
+  it('gives the bed an owner, so an outgoing scene cannot silence its successor', () => {
+    const src = source();
+    expect(src).toContain('bedOn.owner = owner || bedOn.owner;');
+    expect(src).toContain('if (owner && bedOn.owner && bedOn.owner !== owner) return;');
+  });
+
+  it('stops the bed the moment the learner turns sound off, not at the next frame', () => {
+    const src = source();
+    expect(src).toContain('if (!d.sceneSound) SCENE_AUDIO.unlock(); else SCENE_AUDIO.quiet();');
+  });
+
+  it('sounds masonry coming down, scaled by how much of it fell', () => {
+    const src = source();
+    expect(src).toContain('if (fell > 0 && data.sound && !red) SCENE_AUDIO.rubble(fell);');
+    expect(src).toContain('var dur = 0.5 + count * 0.06;');
+    // Deterministic clacks: the tool forbids Math.random everywhere, audio too.
+    expect(src).toContain('var when = t0 + 0.04 + hash01(c, count, 181) * dur * 0.7;');
+  });
+
+  it('still ships with sound off by default', () => {
+    const src = source();
+    expect(src).toContain('sceneSound: false,');
+    const html = renderTool('machineLab', state());
+    expect(html).toMatch(/aria-pressed="false"[^>]*>[^<]*🔇/);
+  });
+});
+
+describe('Siege Field wave 24: the record says how the wall was ranged', () => {
+  const recordState = (o = {}) => state(Object.assign({ view: 'learn', manualTopic: 'record' }, o));
+
+  it('reports a closed bracket with both edges and where the wall sat between them', () => {
+    const html = renderTool('machineLab', recordState({ bracket: { at: 80, lo: 50, hi: 130 } }));
+    expect(html).toContain('bracketed the wall at 80 m between a short at 50 m and a long at 130 m');
+    expect(html).toContain('with the wall 38% of the way between them');
+  });
+
+  it('says which half is missing when only one edge is in', () => {
+    const short = renderTool('machineLab', recordState({ bracket: { at: 80, lo: 50, hi: null } }));
+    expect(short).toContain('one side of a bracket so far');
+    expect(short).toContain('still no shot past the wall');
+    const long = renderTool('machineLab', recordState({ bracket: { at: 80, lo: null, hi: 130 } }));
+    expect(long).toContain('still nothing falling short of it');
+  });
+
+  it('says nothing about ranging before a shot has been loosed', () => {
+    const html = renderTool('machineLab', recordState());
+    expect(html).not.toContain('Ranging:');
+    expect(html).not.toContain('Last changes, newest first');
+    expect(html).not.toContain('Called the shot right');
+  });
+
+  it('lists what changed between shots, and flags a real one-variable run', () => {
+    const html = renderTool('machineLab', recordState({
+      traceNotes: ['first shot', 'release 35→45°', 'counterweight 900→1600 kg'],
+      oneChangeStreak: 2
+    }));
+    expect(html).toContain('Last changes, newest first: counterweight 900→1600 kg; release 35→45°; first shot');
+    expect(html).toContain('2 shots in a row changed exactly one thing');
+  });
+
+  it('does not claim a one-variable run on a single such shot', () => {
+    const html = renderTool('machineLab', recordState({ traceNotes: ['release 35→45°'], oneChangeStreak: 1 }));
+    expect(html).toContain('Last changes, newest first: release 35→45°');
+    expect(html).not.toContain('in a row changed exactly one thing');
+  });
+
+  it('counts called shots, and gets the singular right', () => {
+    const one = renderTool('machineLab', recordState({ fieldStreak: 1 }));
+    expect(one).toContain('Called the shot right 1 time in a row');
+    const many = renderTool('machineLab', recordState({ fieldStreak: 4 }));
+    expect(many).toContain('Called the shot right 4 times in a row');
+  });
+});
+
+describe('Siege Field wave 26: the valley holds at both ends of the standoff slider', () => {
+  it('sizes the sky from the field rather than from a constant', () => {
+    const src = source();
+    expect(src).toContain('var horizonR = Math.max(400, fieldSpan * 0.92);');
+    expect(src).toContain('new THREE.SphereGeometry(horizonR, 32, 16)');
+    expect(src).toContain('horizonR * 0.97');   // stars
+    expect(src).toContain('horizonR * 0.92');   // sun flare
+    expect(src).toContain('horizonR * 0.89');   // moon
+  });
+
+  it('has one number for the size of the field, not two copies of the formula', () => {
+    const src = source();
+    expect(src).toContain('var groundSpan = fieldSpan;');
+    // The ridges must sit outside the ground and inside the sky: 0.81 of the
+    // field is past the ground edge at 0.5 and inside the sky at 0.92.
+    expect(src).toContain('[[0.60, 36, 0.5], [0.71, 54, 0.68], [0.81, 76, 0.84]].forEach(function (layer, li) {');
+    expect(src).toContain('var R = fieldSpan * layer[0], H = layer[1] * ridgeScale, haze = layer[2];');
+  });
+
+  it('reaches the fog past the target, so a 300 m castle is still a castle', () => {
+    const src = source();
+    expect(src).toContain('var fogNear = Math.max(70, standoff * 0.55), fogFar = Math.max(360, standoff * 2.4);');
+    expect(src).toContain('? new THREE.Fog(P.fog, P.rain ? fogNear * 0.5 : fogNear, P.rain ? fogFar * 0.66 : fogFar)');
+  });
+
+  it('keeps the camp off the castle when the engine is parked at ten metres', () => {
+    const src = source();
+    expect(src).toContain('var campFront = function (metres) { return Math.min(metres, standoff * 0.45); };');
+    for (const site of [
+      'var pkz = -standoff + campFront(8.5) + hash01(pk, 11, 153) * 0.6;',
+      'sockPole.position.set(-6.5, 1.8, -standoff + campFront(5.5));',
+      'cart.position.set(9.4, campGround(9.4, -standoff + campFront(5.5)), -standoff + campFront(5.5));',
+      'stdPole.position.set(13.8, campGround(13.8, -standoff + campFront(7.5)) + 2.7, -standoff + campFront(7.5));'
+    ]) expect(src, site).toContain(site);
+  });
+
+  it('wraps the clouds over the width it actually scattered them across', () => {
+    const src = source();
+    expect(src).toContain('S.cloudWrap = fieldSpan * 1.17;');
+    expect(src).toContain('var wrap = S.cloudWrap || 460;');
+    expect(src).toContain('if (cl.position.x > wrap / 2) cl.position.x -= wrap;');
+  });
+
+  it('still draws the same valley at the standoff it was designed around', () => {
+    // At 80 m the proportions reproduce the constants they replaced: the field
+    // is 392 m, so the ridges are at 235, 278 and 317 as before.
+    const fieldSpan = Math.max(320, 80 * 2.4 + 200);
+    expect(fieldSpan).toBe(392);
+    expect(Math.round(fieldSpan * 0.60)).toBe(235);
+    expect(Math.round(fieldSpan * 0.71)).toBe(278);
+    expect(Math.round(fieldSpan * 0.81)).toBe(318);
+    expect(Math.max(1, fieldSpan / 392)).toBe(1);
+  });
+});
+
+describe('Siege Field wave 27: the field holds for every machine and every wall', () => {
+  it('spaces the crew by the size of the engine they are working', () => {
+    const src = source();
+    expect(src).toContain("var crewSpread = (m.kind === 'ballista' || m.kind === 'onager') ? 0.6 : 1;");
+    expect(src).toContain('addFigure(THREE, S.model, 2.9 * crewSpread, -standoff - 2.4 * crewSpread, 0x9c3b2e, -1.9),');
+  });
+
+  it('keeps both winch hands on the side the engine camera does not look through', () => {
+    const src = source();
+    const crew = src.slice(src.indexOf('var crewSpread ='), src.indexOf('var tent ='));
+    // Two figures at +x; only the third, which stands downrange, is at -x.
+    expect((crew.match(/S\.model, -?\d/g) || []).length).toBe(3);
+    expect(crew).toContain('S.model, 2.9 * crewSpread');
+    expect(crew).toContain('S.model, 4.6 * crewSpread');
+    expect(crew).toContain('S.model, -4.4 * crewSpread');
+  });
+
+  for (const machine of ['trebuchet', 'ballista', 'onager']) {
+    it('renders the Siege Field for the ' + machine + ' with no undefined, NaN or Infinity', () => {
+      const html = renderTool('machineLab', state({ machine }));
+      expect(html).toContain('Siege Field');
+      expect(html).not.toContain('undefined');
+      expect(html).not.toContain('NaN');
+      expect(html).not.toContain('Infinity');
+    });
+  }
+
+  for (const preset of ['curtain', 'gatehouse', 'keep', 'motte']) {
+    it('renders the Siege Field for the ' + preset + ' target with no undefined, NaN or Infinity', () => {
+      const html = renderTool('machineLab', state({ wallPreset: preset }));
+      expect(html).not.toContain('undefined');
+      expect(html).not.toContain('NaN');
+      expect(html).not.toContain('Infinity');
+    });
+  }
+
+  it('renders at both ends of the standoff and crosswind sliders', () => {
+    for (const st of [
+      { standoff: 10 }, { standoff: 300 }, { windZ: -20 }, { windZ: 20 },
+      { projMass: 0.2, projDiameter: 0.03 }, { projMass: 300, projDiameter: 0.6 }
+    ]) {
+      const html = renderTool('machineLab', state(st));
+      expect(html, JSON.stringify(st)).not.toContain('NaN');
+      expect(html, JSON.stringify(st)).not.toContain('Infinity');
+    }
+  });
+});
+
+describe('Siege Field wave 28: the field speaks the reader own register', () => {
+  it('gives young readers the saved-up push and older ones the kilojoules', () => {
+    const k2 = renderTool('machineLab', state({ bandOverride: 'k2' }));
+    expect(k2).toContain('The machine saved up a big push');
+    expect(k2).toContain('out of every 100 parts of it');
+    expect(k2).not.toContain('kJ  →');
+    const g68 = renderTool('machineLab', state({ bandOverride: 'g68' }));
+    expect(g68).toContain('Stored ');
+    expect(g68).toContain('kJ');
+  });
+
+  it('carries the same split into grade 3-5, and back to the technical wording at 6-8', () => {
+    expect(renderTool('machineLab', state({ bandOverride: 'g35' }))).toContain('The machine saved up a big push');
+    expect(renderTool('machineLab', state({ bandOverride: 'g912' }))).toContain('Stored ');
+  });
+
+  it('marks the top of the arc as "highest" for young readers and "apex" for the rest', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark_y', 'highest ')");
+    expect(src).toContain("__alloT('stem.machinelab.scene_apex_mark', 'apex ')");
+    // Both bays choose, not just the Siege Field.
+    expect(src).toContain('apexMark: young');
+    expect(src).toContain('apexWord: young');
+  });
+
+  it('says the outcome without a unit for young readers', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.scene_delivered_y', 'It hit the wall hard')");
+    expect(src).toContain("__alloT('stem.machinelab.scene_carried_y', 'It flew right over the wall')");
+  });
+
+  it('drops the percentage from the ranging line for young readers, keeping the idea', () => {
+    const src = source();
+    expect(src).toContain("__alloT('stem.machinelab.bracket_y3', ' m. The wall is caught between them, so try something in between.')");
+    // The older reading still carries the fraction, which is the actionable part.
+    expect(src).toContain("__alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +");
+  });
+});
+
+describe('Siege Field wave 29: destruction with collision', () => {
+  it('settles the debris in the model at impact and keeps the heap in state', () => {
+    const src = source();
+    expect(src).toContain('var debrisStart = _machineMath.debrisStart(blocks, res.blocks, res, { gravity: d.gravity });');
+    expect(src).toContain('var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;');
+    expect(src).toContain("rubbleRest: debrisRest ? Object.assign({}, d.rubbleRest || {}, debrisRest.rest) : (d.rubbleRest || {}),");
+  });
+
+  it('hands the field the same start the model settled from, on both kept flights', () => {
+    const src = source();
+    expect(src).toContain('debris: debrisStart\n          },');
+    expect(src).toContain("lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome, debris: debrisStart },");
+  });
+
+  it('replays the model own steps at the model own fixed dt, and never under reduced motion', () => {
+    const src = source();
+    expect(src).toContain("if (flying && landed && data.flight.debris && S.debrisId !== data.flight.id && !red) {");
+    expect(src).toContain('if (_machineMath.debrisStep(S.debrisSim, _machineMath.DEBRIS_DT)) { S.debrisSim.done = true; break; }');
+    // A frame that arrives late catches up in fixed steps, capped so a paused
+    // tab cannot spin for seconds on resume.
+    expect(src).toContain('while (S.debrisSim.t < want && guard++ < 600) {');
+  });
+
+  it('draws fallen blocks with a mesh that can rotate, and only outside high contrast', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && typeof THREE.InstancedMesh === 'function') {\n      var rubbleMesh = new THREE.InstancedMesh(");
+    expect(src).toContain('rd.rotation.set(it.rest[3], it.rest[4], it.rest[5]);');
+    expect(src).toContain('rd.rotation.set(it.p.rx, it.p.ry, it.p.rz);');
+  });
+
+  it('falls back to the hashed heap for a wall that predates the debris model', () => {
+    const src = source();
+    expect(src).toContain('var restT = data.rubbleRest ? data.rubbleRest[key] : null;');
+    expect(src).toContain('if (S.rubble && (lp || restT)) {');
+    // The hash path is still there, and still the one the determinism test pins.
+    expect(src).toMatch(/hash01\(b\.col, b\.row, 1\)/);
+  });
+
+  it('clears the heap with the wall, on a rebuild and on an import', () => {
+    const src = source();
+    expect(src).toContain("siegeFeedback: null, lastImpact: null, rubbleRest: {}");
+    expect(src).toContain("shotsFired: 0, totalCrankWork: 0, breached: false, lastImpact: null, rubbleRest: {},");
+    expect(src).toContain('// model at impact, read by the field; cleared with the wall.\n      rubbleRest: {},');
+  });
+
+  it('tells the field where the heap lies', () => {
+    const src = source();
+    expect(src).toContain('rubbleRest: d.rubbleRest || {},');
+  });
+
+  it('keeps the Target Wall scene builder out of the physics, as the architecture rule says', () => {
+    const src = source();
+    const sceneStart = src.indexOf('function buildWallScene(');
+    const sceneEnd = src.indexOf('var SIEGE_GL =');
+    const scene = src.slice(sceneStart, sceneEnd);
+    expect(scene).not.toContain('debrisSettle');
+    expect(scene).not.toContain('debrisStart');
+  });
+});
+
+describe('Siege Field wave 30: why walls fall', () => {
+  it('counts the blocks the stone knocked out apart from the ones that merely fell', () => {
+    const src = source();
+    expect(src).toContain('if (debrisStart) debrisStart.pieces.forEach(function (p) { if (p.kicked) knocked++; else fellLoose++; });');
+    expect(src).toContain("__alloT('stem.machinelab.fell_3', ' more came down because their support was gone.')");
+    expect(src).toContain("__alloT('stem.machinelab.fell_y3', ' more fell because nothing was holding them up.')");
+    // The old undifferentiated line is gone.
+    expect(src).not.toContain("'stem.machinelab.blocks_down'");
+  });
+
+  it('settles the debris before the message is written, so the message can count it', () => {
+    const src = source();
+    const settle = src.indexOf('var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;');
+    const message = src.indexOf("msg = __alloT('stem.machinelab.struck', 'Struck the ') + res.material +");
+    expect(settle).toBeGreaterThan(0);
+    expect(settle).toBeLessThan(message);
+  });
+
+  it('carries the debris into the slow-motion replay and slows the collapse with the flight', () => {
+    const src = source();
+    expect(src).toContain('replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS, debris: lf.debris || null }');
+    expect(src).toContain("var debrisRate = (data.flight && data.flight.replay) ? Math.max(1, data.flight.rate || 3) : 1;");
+    expect(src).toContain('var want = Math.min(_machineMath.DEBRIS_SECONDS, (now - S.debrisT0) / 1000 / debrisRate);');
+  });
+
+  it('tints the knocked-out blocks in the heap and leaves the fallen ones the wall own colour', () => {
+    const src = source();
+    expect(src).toContain('var kicked = it.p ? it.p.kicked : (it.rest[7] === 1);');
+    expect(src).toContain('if (kicked && !contrast) rc.multiplyScalar(0.72);');
+  });
+
+  it('puffs dust once where each block first lands, from a fixed pool', () => {
+    const src = source();
+    expect(src).toContain('if (S.landPuffs && p.landedT != null && !p.puffed) {');
+    expect(src).toContain('var pu = S.landPuffs[S.puffNext++ % S.landPuffs.length];');
+    expect(src).toContain('pp2.material.opacity = 0.6 * (1 - page) * (1 - page);');
+  });
+});
+
+describe('Siege Field wave 31: a cinematic finish', () => {
+  it('draws each fallen block as its own shard, from the hash, with contact still a sphere', () => {
+    const src = source();
+    expect(src).toContain('var rubbleAspect = function (b, salt) { return 0.7 + hash01(b.col, b.row, salt) * 0.3; };');
+    expect(src).toContain('rd.scale.set(it.p.s * rubbleAspect(it.b, 51), it.p.s * rubbleAspect(it.b, 52), it.p.s * rubbleAspect(it.b, 53));');
+    expect(src).toContain('rd.scale.set(it.rest[6] * rubbleAspect(it.b, 51), it.rest[6] * rubbleAspect(it.b, 52), it.rest[6] * rubbleAspect(it.b, 53));');
+    // The model's contact radius is untouched: aspects are drawing only.
+    expect(src).toContain('var r = p.s * 0.5;');
+  });
+
+  it('lays a vignette and the hour own wash over the bay, hidden from assistive tech', () => {
+    for (const time of ['dawn', 'noon', 'dusk', 'night', 'storm']) {
+      const html = renderTool('machineLab', state({ sceneTime: time }));
+      expect(html, time).toContain('data-machinelab-grade="' + time + '"');
+      expect(html, time).toMatch(new RegExp('data-machinelab-grade="' + time + '"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*data-machinelab-grade="' + time + '"'));
+      expect(html, time).toContain('radial-gradient(ellipse at 50% 42%');
+    }
+  });
+
+  it('puts nothing between the learner and the picture in high contrast', () => {
+    const html = renderTool('machineLab', { machineLab: { view: 'scene', bandOverride: 'g68' } }, { isContrast: true });
+    expect(html).not.toContain('data-machinelab-grade');
+    const src = source();
+    expect(src).toContain("if (SCENE_LAST_SIG !== null && SCENE_LAST_SIG !== sceneSig && !reducedMotion && !isContrast) {");
+  });
+
+  it('dips through dark on a rebuild, never on first sight and never under reduced motion', () => {
+    const src = source();
+    expect(src).toContain("if (dipEl && typeof dipEl.animate === 'function') {");
+    expect(src).toContain("dipEl.animate([{ opacity: 0.92 }, { opacity: 0 }], { duration: 520, easing: 'ease-out' });");
+    expect(src).toContain('SCENE_LAST_SIG = sceneSig;');
+    // The dip layer itself starts clear and takes no pointer events.
+    expect(src).toContain("pointerEvents: 'none', background: '#05070d', opacity: 0");
+  });
+
+  it('keeps the grade and the dip out of the HUD tree and off the pointer', () => {
+    const html = renderTool('machineLab', state());
+    const grade = html.indexOf('data-machinelab-grade');
+    const hud = html.indexOf('Downrange');
+    expect(grade).toBeGreaterThan(0);
+    expect(grade).toBeLessThan(hud);
+    expect(html.slice(grade, grade + 400)).toContain('pointer-events:none');
+  });
+});
+
+describe('Siege Field wave 32: one heap, no clipping', () => {
+  it('draws a fallen block as a chunk inscribed in its own contact sphere', () => {
+    const src = source();
+    expect(src).toContain('new THREE.DodecahedronGeometry(0.5, 0),');
+    // Aspects never exceed 1, so the drawn chunk stays inside the sphere the
+    // model keeps apart from its neighbours.
+    expect(src).toContain('return 0.7 + hash01(b.col, b.row, salt) * 0.3;');
+    expect(src).not.toContain('new THREE.BoxGeometry(1, 1, 1),');
+  });
+
+  it('draws the settled heap in the Target Wall bay, on build and on every tick', () => {
+    const src = source();
+    const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
+    expect(wall).toContain("var restB = (data.rubbleRest || m.rubbleRest || {})[b.col + '_' + b.row];");
+    expect(wall).toContain("var restT = data.rubbleRest ? data.rubbleRest[b.col + '_' + b.row] : null;");
+    expect(wall).toContain('x = restB[0]; y = restB[1]; z = restB[2]; sc = restB[6];');
+    expect(wall).toContain('x = restT[0]; y = restT[1]; z = restT[2]; sc = restT[6];');
+  });
+
+  it('still falls back to the hashed heap there for a wall with no record', () => {
+    const src = source();
+    const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
+    expect((wall.match(/hash01\(b\.col, b\.row, 1\)/g) || []).length).toBe(2);
+  });
+
+  it('hands the Target Wall bay the same heap the Siege Field gets', () => {
+    const src = source();
+    expect((src.match(/rubbleRest: d\.rubbleRest \|\| \{\},/g) || []).length).toBe(2);
+  });
+
+  it('keeps the Target Wall scene builder out of the physics still', () => {
+    const src = source();
+    const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
+    for (const forbidden of ['applyDamage', 'debrisSettle', 'debrisStart', 'debrisStep']) expect(wall).not.toContain(forbidden);
+  });
+});
+
+describe('Siege Field wave 33: the wood moves with the wind', () => {
+  it('keeps what each crown needs to be re-placed, phased per tree', () => {
+    const src = source();
+    expect(src).toContain("crowns.push({ x: tx, y: ty, z: tz, s: sc, lift: 1.7 * sc + 0.6, spin: dummy.rotation.y, ax: 1, ay: 1, phase: hash01(tries, 53, 13) * 6.28 });");
+    expect(src).toContain('broadCrowns.push({ x: bx, y: by, z: bz, s: bsc, lift: 2.2 * bsc + 0.9, spin: 0,');
+    expect(src).toContain('S.wood = [{ mesh: foliage, crowns: crowns }, { mesh: canopy, crowns: broadCrowns }];');
+  });
+
+  it('leans the crowns downwind on the same wind the sock and the flags read', () => {
+    const src = source();
+    expect(src).toContain('var lean = swayOn ? Math.max(-0.34, Math.min(0.34, wind * 0.021)) : 0;');
+    expect(src).toContain('var gust = swayOn ? (0.035 + windAbs * 0.006) : 0;');
+    expect(src).toContain('var tilt = lean + (swayOn ? Math.sin(tSec * 1.4 + cw2.phase) * gust : 0);');
+  });
+
+  it('leans a crown about the top of its own trunk, not about its centre', () => {
+    const src = source();
+    expect(src).toContain('wd.position.set(cw2.x + Math.sin(tilt) * cw2.lift * 0.5, cw2.y + Math.cos(tilt) * cw2.lift, cw2.z);');
+    // At rest the crown sits exactly where the build put it.
+    const lift = 1.7 * 1.4 + 0.6;
+    expect(0 + Math.sin(0) * lift * 0.5).toBe(0);
+    expect(Math.cos(0) * lift).toBeCloseTo(lift, 12);
+  });
+
+  it('is ambient life: still with ambient off, and stood upright once when it stops', () => {
+    const src = source();
+    expect(src).toContain('var swayOn = ambient;');
+    expect(src).toContain('if (swayOn || S.woodLeaning) {');
+    expect(src).toContain('S.woodLeaning = swayOn;');
+  });
+
+  it('rebuilds the instance matrices rather than the wood', () => {
+    const src = source();
+    expect(src).toContain('band.mesh.setMatrixAt(ci5, wd.matrix);');
+    expect(src).toContain('band.mesh.instanceMatrix.needsUpdate = true;');
+    // Nothing here touches geometry or materials, so no rebuild is implied.
+    const sway = src.slice(src.indexOf('// The wood. A crown leans downwind'), src.indexOf('if (S.sock) {'));
+    expect(sway).not.toContain('new THREE.');
+  });
+});

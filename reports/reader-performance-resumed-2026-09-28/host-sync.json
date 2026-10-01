@@ -1,0 +1,12 @@
+{
+  "moduleHash": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2",
+  "oldPin": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=3123536f",
+  "newPin": "86029309",
+  "hosts": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "previousHostHash": "82f0f2d70e59b2434260ad835cde7541058135b56aecc224bde984dc01450e79",
+  "hostHash": "31cb9d270f861c3c66a1ac9810c3c388edec7ccb6fab970e277b4a7cb9075c97"
+}

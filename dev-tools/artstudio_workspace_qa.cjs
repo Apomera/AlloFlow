@@ -27,7 +27,7 @@ const shell = probe.match(/const SHELL = `([\s\S]+?)`;/)[1];
     await page.locator(tab === 'pixel' ? '#pixelCanvas' : '#watercolorCanvas').waitFor();
   }
   try {
-    if(process.env.ARTSTUDIO_QA_ONLY!=='selection') {
+    if(!['selection','editing'].includes(process.env.ARTSTUDIO_QA_ONLY)) {
     await mount('pixel', {pixelGrid:32});
     await page.getByRole('button', {name:'Expand pixel canvas', exact:true}).click();
     await page.waitForFunction(() => !!document.fullscreenElement || document.querySelector('#pixelFullscreenWorkspace').hasAttribute('data-allo-fullscreen-active'));
@@ -320,8 +320,102 @@ const shell = probe.match(/const SHELL = `([\s\S]+?)`;/)[1];
     await page.getByRole('button',{name:'Undo',exact:true}).click();
     assert.equal(await page.evaluate(()=>document.querySelector('#pixelCanvas')._captureArtStudioState().pixelData['9,9']),undefined);
     measurements.push({name:'pixel-selection',previewExcludedFromExport:true,overlapMove:true,copyPaste:true,transparentHoles:true,undo:true});
+
+    const transformSeed={'13,5':'#e11d48','15,5':'#2563eb','13,9':'#16a34a','14,8':'#eab308','2,2':'#9333ea','11,7':'#f9a8d4'};
+    await mount('pixel',{pixelGrid:16,pixelTool:'select',pixelData:transformSeed});
+    await page.getByRole('button',{name:'Expand pixel canvas',exact:true}).click();
+    await page.waitForFunction(()=>!!document.fullscreenElement || document.querySelector('#pixelFullscreenWorkspace').hasAttribute('data-allo-fullscreen-active'));
+    await page.waitForTimeout(150);
+    const transformBox=await page.locator('#pixelCanvas').boundingBox();
+    const tp=(x,y)=>({x:transformBox.x+transformBox.width*(x+.5)/16,y:transformBox.y+transformBox.height*(y+.5)/16});
+    await drag(tp(13,5),tp(15,9));
+    await page.locator('#artstudio-pixel-selection-rotate').click();
+    const rotated=await page.evaluate(()=>{const c=document.querySelector('#pixelCanvas');return {pixels:c._captureArtStudioState().pixelData,bounds:c._pixelSelection};});
+    assert.deepEqual(rotated.bounds,{x:11,y:5,w:5,h:3});
+    assert.equal(rotated.pixels['15,5'],transformSeed['13,5']);
+    assert.equal(rotated.pixels['15,7'],transformSeed['15,5']);
+    assert.equal(rotated.pixels['11,5'],transformSeed['13,9']);
+    assert.equal(rotated.pixels['12,6'],transformSeed['14,8']);
+    assert.equal(rotated.pixels['2,2'],transformSeed['2,2']);
+    assert.equal(rotated.pixels['11,7'],transformSeed['11,7']);
+    await page.screenshot({path:path.join(out,'pixel-selection-transforms.png')});
+    await page.locator('#artstudio-pixel-selection-flip-x').click();
+    assert.equal(await page.evaluate(()=>document.querySelector('#pixelCanvas')._captureArtStudioState().pixelData['11,5']),transformSeed['13,5']);
+    await page.locator('#artstudio-pixel-selection-flip-y').click();
+    assert.equal(await page.evaluate(()=>document.querySelector('#pixelCanvas')._captureArtStudioState().pixelData['11,7']),transformSeed['13,5']);
+    for(let i=0;i<3;i++)await page.getByRole('button',{name:'Undo',exact:true}).click();
+    assert.deepEqual(await page.evaluate(()=>document.querySelector('#pixelCanvas')._captureArtStudioState().pixelData),transformSeed);
+    measurements.push({name:'pixel-selection-transforms',rotatedBounds:rotated.bounds,unselectedPaintRetained:true,transparentDestinationRetained:true,flips:true,undo:true,gridPx:transformBox.width});
+
+    await page.getByRole('button',{name:'Exit expanded canvas (Esc)',exact:true}).click();
+    await page.waitForFunction(()=>!document.fullscreenElement && !document.querySelector('#pixelFullscreenWorkspace').hasAttribute('data-allo-fullscreen-active'));
+    await page.waitForTimeout(150);
+    await page.setViewportSize({width:390,height:844});
+    await mount('pixel',{pixelGrid:16,pixelTool:'select',pixelData:transformSeed});
+    await page.evaluate(()=>{document.querySelector('#pixelFullscreenWorkspace').requestFullscreen=()=>Promise.reject(new Error('embedded browser'));});
+    await page.getByRole('button',{name:'Expand pixel canvas',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('#pixelFullscreenWorkspace').hasAttribute('data-allo-fullscreen-active'));
+    const palette=page.locator('[data-studio-compact-palette="pixel"]');
+    if(!await palette.evaluate(e=>e.open))await palette.locator('summary').first().click();
+    await page.locator('#artstudio-pixel-selection-all').click();
+    for(const action of ['rotate','flip-x','flip-y']) {
+      const button=page.locator('#artstudio-pixel-selection-'+action);
+      await button.scrollIntoViewIfNeeded();
+      const bounds=await button.boundingBox();
+      assert(bounds.x>=0 && bounds.x+bounds.width<=390 && bounds.height>=44,'Selection actions must fit on the phone and retain touch targets');
+      assert(await button.isEnabled());
+    }
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=390));
+    await page.locator('#artstudio-pixel-selection-rotate').click();
+    const phoneContrast=await page.evaluate(()=>{
+      const light=color=>{const rgb=color.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);});return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];};
+      return ['Undo','Grid lines'].map(label=>{
+        const button=[...document.querySelectorAll('#pixelFullscreenWorkspace button')].find(b=>b.textContent===label);
+        const style=getComputedStyle(button),fg=light(style.color),bg=light(style.backgroundColor);
+        return {label,ratio:(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05),background:style.backgroundColor,enabled:!button.disabled};
+      });
+    });
+    for(const control of phoneContrast)assert(control.enabled && control.ratio>=4.5 && !control.background.includes('rgba'),'Active toolbar controls must remain legible on the fullscreen fallback: '+JSON.stringify(control));
+    await page.screenshot({path:path.join(out,'pixel-selection-phone.png')});
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(()=>!document.querySelector('#pixelFullscreenWorkspace').hasAttribute('data-allo-fullscreen-active'));
+    measurements.push({name:'pixel-selection-phone',viewportWidth:390,transformTouchTargets:true,noHorizontalOverflow:true,escape:true,toolbarContrast:phoneContrast});
+    await page.setViewportSize({width:1440,height:1000});
+
+    if(process.env.ARTSTUDIO_QA_ONLY!=='selection') {
+      await mount('watercolor',{watercolorSize:28});
+      const strokeCheck=await page.evaluate(()=>{
+        const canvas=document.querySelector('#watercolorCanvas'),engine=canvas._watercolorEngine;
+        engine.togglePause();
+        const rect=canvas.getBoundingClientRect();
+        const params={color:{r:.18,g:.43,b:.69},brush:'flat',surface:'dry',flowDirection:'none',showWetness:false,showFlow:false,size:36,water:0,pigment:.65,paper:.48,granulation:.6,bleed:.65,absorption:.45,drying:.4,flowStrength:0,staining:.34,opacity:.28,mobility:.62,separation:.7,rewetting:.48,humidity:.5,airflow:.2,sizing:.58,bloomSensitivity:.7};
+        const event=(x,y,timeStamp,extra={})=>({clientX:rect.left+x*rect.width/192,clientY:rect.top+y*rect.height/192,timeStamp,pointerId:1,pointerType:'pen',pressure:.7,button:0,preventDefault(){},...extra});
+        engine.configure(params);
+        canvas.onpointerdown(event(32,38,0,{pressure:.1,tiltX:-60,tiltY:1}));
+        canvas.onpointerup(event(160,38,220,{type:'pointerup',pressure:.1,tiltX:-60,tiltY:-1}));
+        const wrap=engine.captureState();
+        const stray=wrap.pigmentDensity.reduce((n,v,i)=>n+(Math.abs(Math.floor(i/192)-38)>6?v:0),0);
+        engine.configure({...params,brush:'rigger',size:80,color:{r:.62,g:.20,b:.44}});
+        canvas.onpointerdown(event(32,76,300,{pressure:.05,tiltY:85}));
+        canvas.onpointerup(event(160,76,620,{type:'pointerup',pressure:.05,tiltY:85}));
+        engine.configure({...params,brush:'round',size:25,water:.55,color:{r:.13,g:.48,b:.36}});
+        canvas.onpointerdown(event(32,113,700,{pressure:.05}));
+        for(let x=36;x<=160;x+=4)canvas.onpointermove(event(x,113+Math.sin((x-32)/128*Math.PI*2)*5,700+(x-32)*3,{pressure:.05+.8*Math.sin((x-32)/128*Math.PI)}));
+        canvas.onpointerup(event(160,113,1100,{type:'pointerup',pressure:0}));
+        engine.configure({...params,brush:'dry',size:32,water:.15,color:{r:.7,g:.3,b:.12}});
+        canvas.onpointerdown(event(32,154,1200,{pressure:.5}));
+        canvas.onpointerup(event(160,154,1600,{type:'pointerup',pressure:.5}));
+        engine.advanceSimulation(12);
+        return {angleWrapStrayPigment:stray,snapshot:engine.captureExport()};
+      });
+      assert.equal(strokeCheck.angleWrapStrayPigment,0);
+      fs.writeFileSync(path.join(out,'watercolor-strokes.png'),Buffer.from(strokeCheck.snapshot.split(',')[1],'base64'));
+      delete strokeCheck.snapshot;
+      measurements.push({name:'watercolor-stroke-gallery',...strokeCheck,exportPx:1024});
+    }
     assert.deepEqual(errors, []);
-    fs.writeFileSync(path.join(out,process.env.ARTSTUDIO_QA_ONLY==='selection'?'selection-browser-results.json':'browser-results.json'),JSON.stringify({passed:true,measurements,errors},null,2));
+    const reportName=process.env.ARTSTUDIO_QA_ONLY==='selection'?'selection-browser-results.json':(process.env.ARTSTUDIO_QA_ONLY==='editing'?'editing-browser-results.json':'browser-results.json');
+    fs.writeFileSync(path.join(out,reportName),JSON.stringify({passed:true,measurements,errors},null,2));
     console.log(JSON.stringify({passed:true,measurements,errors},null,2));
   } finally { await browser.close(); }
 })().catch(error => {console.error(error);process.exitCode=1;});

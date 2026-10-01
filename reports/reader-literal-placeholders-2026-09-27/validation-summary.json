@@ -1,0 +1,59 @@
+{
+  "baselineHead": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "snapshot": ".codex-artifacts/reader-literal-placeholders-track17",
+  "combined": {
+    "passed": 91,
+    "failed": 0
+  },
+  "readerI18nBehavior": {
+    "passed": 5,
+    "failed": 0,
+    "unselected": 7
+  },
+  "existingReaderI18nStaticFailure": {
+    "baselineFailures": 1,
+    "candidateFailures": 1,
+    "sameThreeFragments": true
+  },
+  "patchApplyCheck": "git apply --check --whitespace=error-all passed",
+  "patchSha256": "cad60c23459a98a5d8a31c4fd21870649fb796ec6d8629fdc10bb0e0075378eb",
+  "repeatedEnglishCatalogKeys": [
+    "pdf_audit.mo.confirm",
+    "stem.gisstudio.ui_area_model_note",
+    "stem.evolab.ne_lead_skew",
+    "stem.evolab.ne_lead_even",
+    "stem.evolab.combo_calc_result",
+    "stem.evolab.chicks_last",
+    "stem.evolab.tvn_summary",
+    "stem.weathersystems.predict_why_sea",
+    "stem.weathersystems.precip_key_aria",
+    "stem.spacestation.a11y_orbit_curve_summary",
+    "stem.spacestation.a11y_ground_track",
+    "stem.spacestation.orbit_predict_question",
+    "report_writer.paste_issue_percentile_bound",
+    "lesson_board.visual_balance_counts"
+  ],
+  "relevantCurrentCatalogCopyUnchanged": [
+    "simplified.word_help_show_word_in_text",
+    "simplified.gloss_occurrence",
+    "simplified.gloss_edit_for",
+    "simplified.gloss_remove_for",
+    "pdf_audit.mo.confirm"
+  ],
+  "allRepeatedCurrentCatalogCopyUnchanged": true,
+  "sharedDrift": [
+    {
+      "file": "ui_strings.js",
+      "capturedSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "currentSha256": "8f4b78011431f5c462d398ddf0aadf6ceb5ece85371c8fd5483fe2a0e4399022"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "capturedSha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2",
+      "currentSha256": "8f4b78011431f5c462d398ddf0aadf6ceb5ece85371c8fd5483fe2a0e4399022"
+    }
+  ],
+  "catalogEdits": 0,
+  "localeKeysAdded": 0,
+  "finalHead": "3752fe48d98ee8096e456d766427f3f513a11b25"
+}

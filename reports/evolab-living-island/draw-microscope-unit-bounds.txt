@@ -1,0 +1,14 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/evolab_living_island.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/evolab_living_island.test.js (103 tests | 102 skipped) 28563ms
+     ✓ keeps every allele bounded and never exceeds carrying capacity  28523ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 102 skipped (103)
+   Start at  19:52:31
+   Duration  49.33s (transform 1.94s, setup 887ms, import 1.42s, tests 28.56s, environment 14.03s)
+

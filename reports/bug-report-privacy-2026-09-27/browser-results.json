@@ -1,0 +1,51 @@
+{
+  "browser": "154.0.4258.37",
+  "observations": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "requests": [
+        {
+          "path": "/app",
+          "method": "GET"
+        },
+        {
+          "path": "/api/reporting/policy",
+          "method": "GET"
+        },
+        {
+          "path": "/api/reporting/reports",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "review-1280.png",
+      "uncaughtErrors": 0
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requests": [
+        {
+          "path": "/app",
+          "method": "GET"
+        },
+        {
+          "path": "/api/reporting/policy",
+          "method": "GET"
+        },
+        {
+          "path": "/api/reporting/reports",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "review-390.png",
+      "uncaughtErrors": 0
+    }
+  ],
+  "storedSyntheticReports": 2,
+  "auditEvents": 4
+}

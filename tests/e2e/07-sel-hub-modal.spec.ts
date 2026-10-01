@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { hubTile, learningToolsCard } from './helpers/learning_hub';
 
 test.describe('SEL Hub modal lifecycle', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(3000);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
-    await page.locator('button').filter({ hasText: /SEL Hub.*self-awareness/i }).first().click({ force: true });
-    await page.waitForTimeout(6000);
+    await hubTile(page, 'sel-hub').click({ force: true });
+    await page.waitForFunction(() => !!((window as any).AlloModules?.SelHub && (window as any).SelHub?.registerTool), null, { timeout: 60000 }).catch(() => {}); // the assertions below report a miss
   });
 
   test('SEL Hub module loads', async ({ page }) => {
@@ -30,9 +31,9 @@ test.describe('StoryForge module', () => {
   test('StoryForge module loads when tile clicked', async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(3000);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
-    await page.locator('button').filter({ hasText: /StoryForge/i }).first().click({ force: true });
+    await hubTile(page, 'storyforge').click({ force: true });
     await page.waitForTimeout(6000);
 
     const has = await page.evaluate(() => !!(window as any).AlloModules?.StoryForge);
@@ -44,9 +45,9 @@ test.describe('AlloHaven module', () => {
   test('AlloHaven module loads when tile clicked', async ({ page }) => {
     await page.goto('./');
     await page.waitForTimeout(3000);
-    await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
+    await learningToolsCard(page).click({ force: true });
     await page.waitForTimeout(2500);
-    await page.locator('button').filter({ hasText: /AlloHaven.*focusing/i }).first().click({ force: true });
+    await hubTile(page, 'allohaven').click({ force: true });
     await page.waitForTimeout(6000);
 
     const has = await page.evaluate(() => !!(window as any).AlloModules?.AlloHaven);

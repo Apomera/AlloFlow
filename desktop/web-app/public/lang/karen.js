@@ -5289,7 +5289,21 @@
     "measured_on_target": "ဘၣ်လိၥ်ဒီး {grade}",
     "measured_above": "ထီၣ်န့ၢ် {grade} အတီၤ",
     "measured_below": "စှၤန့ၢ် {grade} အတီၤ",
-    "measured_note": "Flesch-Kincaid, ထိၣ်ဝဲလၢလံၥ်တၢ်ကွဲးအံၤအပူၤ. သူ Check Level လၢကသ့ၣ်ညါအါထီၣ်အဂီၢ်."
+    "measured_note": "Flesch-Kincaid, ထိၣ်ဝဲလၢလံၥ်တၢ်ကွဲးအံၤအပူၤ. သူ Check Level လၢကသ့ၣ်ညါအါထီၣ်အဂီၢ်.",
+    "listen_along": "ဒိကနဲၣ်တပူၤဃီၤ",
+    "compare_listen_here": "ဒိကနဲၣ်ဖဲအံၤ",
+    "compare_listen_here_original": "ဒိကနဲၣ်ဖဲအံၤ- လံာ်အခဵၣ်ထံး",
+    "compare_listen_here_adapted": "ဒိကနဲၣ်ဖဲအံၤ- လံာ်လၢအဘၣ်တဘိၣ်ဘၣ်တ့ၢ်",
+    "compare_stop_reading_original": "ပတုၥ်- ဖးလံာ်အခဵၣ်ထံး",
+    "compare_stop_reading_adapted": "ပတုၥ်- ဖးလံာ်လၢအဘၣ်တဘိၣ်ဘၣ်တ့ၢ်",
+    "compare_scroll_together": "Scroll တပူၤဃီၤ",
+    "reading_width": "လံာ်အလၢ်",
+    "width_narrow": "အံၣ်",
+    "width_medium": "သးခိၣ်",
+    "width_wide": "လၢ်",
+    "width_extra_wide": "လၢ်ဒိၣ်မး",
+    "reading_width_characters": "တကျိၤ လံာ်မဲာ်ဖျၢၣ် {count} ဘ့ၣ်ဘၣ်",
+    "original_support_spoken": "တၢ်မၤစၢၤလၢ “{word}”- {support}"
   },
   "quiz": {
     "title": "စံၣ်ညီၣ်",

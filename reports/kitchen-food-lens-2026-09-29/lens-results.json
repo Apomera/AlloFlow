@@ -1,0 +1,37 @@
+{
+  "checks": [
+    "A real pointer drag scans multiple food pieces and magnifies the actual 3D canvas. Release selects the view without cooking actions, time or evidence.",
+    "Escape cancels the lens overlay and leaves the cook unchanged.",
+    "Grabbing the lens pauses a running kitchen for an observation.",
+    "Keyboard selection and keeping a view pause the kitchen. Real turning and time advancement update only the current observation; the kept view remains intact.",
+    "Cut labels distinguish unequal widths; sketches show the recorded upward face. Text view offers the same observations and comparisons without changing the cook.",
+    "A fresh cook clears kept observations and disables the lens until food is in the pan.",
+    "Replay observes its historical pan frame, allows comparisons within that recording, and never reads the final dish as an earlier observation or alters stored evidence.",
+    "Real touch scans pieces at 390px, shows the magnifier, and leaves the cook unchanged with no horizontal overflow.",
+    "The lens fits 320px and forced colors. Graphics loss cancels an active lens and retains working observation controls."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop food lens",
+      "violations": []
+    },
+    {
+      "name": "Text view food comparisons",
+      "violations": []
+    },
+    {
+      "name": "Recorded food observation",
+      "violations": []
+    },
+    {
+      "name": "320px food lens",
+      "violations": []
+    },
+    {
+      "name": "Forced-color observations",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

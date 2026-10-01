@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 
 const headerSource = readFileSync('view_header_source.jsx', 'utf8');
 const headerModule = readFileSync('view_header_module.js', 'utf8');
@@ -10,7 +12,9 @@ const ui = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
 const uiMirror = JSON.parse(readFileSync('desktop/web-app/public/ui_strings.js', 'utf8'));
 
 function returnHandler(source) {
-  const start = source.indexOf('const handleReturnToStart = () => {');
+  // The body moved to host_handlers_source.jsx (09-13, inlined back by the helper) and the host shim is
+  // wrapped in requestReadingSupportTransition (14a2d9cfa), so anchor on the declaration, not its arrow.
+  const start = source.indexOf('const handleReturnToStart =');
   const end = source.indexOf("// The chat's delivery path", start);
   expect(start).toBeGreaterThanOrEqual(0);
   expect(end).toBeGreaterThan(start);

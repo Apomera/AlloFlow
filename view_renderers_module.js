@@ -1013,6 +1013,18 @@ const OrganizerMountReceipt = ({ children, activityKey, onReady, onFailed }) => 
   }, [activityKey]);
   return mountFailed ? /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mx-auto my-6 max-w-xl rounded-xl border-2 border-amber-400 bg-amber-50 p-5 text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold" }, "This activity could not be opened."), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, "Ask your teacher to retry the activity from the Live Dashboard. Your saved work is still on this device.")) : /* @__PURE__ */ React.createElement("div", { ref: element }, children);
 };
+const _organizerOverlayCache = /* @__PURE__ */ new WeakMap();
+const organizerDataWithLearnerWork = (data, work) => {
+  if (!data || !work || typeof work !== "object") return data;
+  const hit = _organizerOverlayCache.get(data);
+  if (hit && hit.work === work) return hit.merged;
+  const merged = { ...data };
+  Object.keys(work).forEach((key) => {
+    if (work[key] !== void 0) merged[key] = work[key];
+  });
+  _organizerOverlayCache.set(data, { work, merged });
+  return merged;
+};
 const renderOutlineContentCore = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
@@ -1058,6 +1070,9 @@ const renderOutlineContentCore = (deps) => {
   const organizerData = normalizeVisualOrganizerData(generatedContent?.data, requestedType);
   const { main, main_en, branches, structureType } = organizerData;
   const type = structureType || "Structured Outline";
+  const _organizerResourceId = generatedContent.id;
+  const _organizerPersist = typeof deps.handleConceptSpacePersist === "function" ? (arrangement, key) => deps.handleConceptSpacePersist(arrangement, key, _organizerResourceId) : void 0;
+  const _organizerViewData = isTeacherMode ? generatedContent.data : organizerDataWithLearnerWork(generatedContent.data, deps.organizerLearnerWork);
   const activityTypeByStructure = {
     "Flow Chart": "pipeline",
     "Process Flow / Sequence": "pipeline",
@@ -1534,6 +1549,12 @@ const renderOutlineContentCore = (deps) => {
       effects = [branches[1]];
       chains = branches.slice(2);
     }
+    const sharedRoles = branches.length ? window.AlloModules?.UtilsPure?.organizerBranchRoles?.(type, branches) : null;
+    if (sharedRoles) {
+      causes = branches.filter((_, i) => sharedRoles[i] === "cause");
+      effects = branches.filter((_, i) => sharedRoles[i] === "effect");
+      chains = branches.filter((_, i) => sharedRoles[i] === "chain");
+    }
     const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
     if (isCESortPlaying || isInteractiveCESort && !isTeacherMode) {
       const causeItems = [];
@@ -1601,7 +1622,8 @@ const renderOutlineContentCore = (deps) => {
     ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "cesort" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-end" }, causes.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `c-${i}`, className: "bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-orange-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-orange-400" }), " ", t("outline.labels.causes")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-orange-300 mt-1.5 shrink-0" }), it)))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center gap-4 z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-full border-2 border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 32, className: "text-slate-600 rotate-90 lg:rotate-0", strokeWidth: 3 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-start" }, effects.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `e-${i}`, className: "bg-teal-50 border-r-4 border-teal-400 p-5 rounded-l-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow text-right lg:text-left" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-teal-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 justify-end lg:justify-start" }, t("outline.labels.effects"), " ", /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-teal-400" })), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2 justify-end lg:justify-start" }, it, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-teal-300 mt-1.5 shrink-0 order-first lg:order-last" })))))))));
   }
   if (type === "Problem Solution") {
-    const outcomeIndex = branches.findIndex(
+    const sharedRoles = window.AlloModules?.UtilsPure?.organizerBranchRoles?.(type, branches);
+    const outcomeIndex = sharedRoles ? sharedRoles.indexOf("outcome") : branches.findIndex(
       (b) => ["outcome", "result", "evaluation"].includes(String(b.role || b.semanticRole || "").toLowerCase()) || b.title.toLowerCase().includes("outcome") || b.title.toLowerCase().includes("result") || b.title.toLowerCase().includes("evaluation")
     );
     const outcomeBranch = outcomeIndex !== -1 ? branches[outcomeIndex] : null;
@@ -1948,11 +1970,12 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex justify-center" }, /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "palacerecall" })), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Memory Palace encountered an error." }, /* @__PURE__ */ React.createElement(
       MemoryPalaceView,
       {
-        data: generatedContent?.data,
+        key: String(_organizerResourceId),
+        data: _organizerViewData,
         title: main,
         t,
         addToast: deps.addToast,
-        onPersist: deps.handleConceptSpacePersist,
+        onPersist: _organizerPersist,
         callImagen: deps.callImagen,
         playSound,
         onScoreUpdate: handleGameScoreUpdate,
@@ -1975,12 +1998,13 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex justify-center gap-2" }, /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "strandchallenge3d" }), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "conceptrecall3d" })), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "3D Concept Space encountered an error." }, /* @__PURE__ */ React.createElement(
       ConceptSpace3DView,
       {
-        data: generatedContent?.data,
+        key: String(_organizerResourceId),
+        data: _organizerViewData,
         title: main,
         t,
         addToast: deps.addToast,
         callImagen: deps.callImagen,
-        onPersist: deps.handleConceptSpacePersist,
+        onPersist: _organizerPersist,
         playSound,
         onScoreUpdate: handleGameScoreUpdate,
         onGameComplete: handleGameCompletion,
@@ -2342,7 +2366,7 @@ function openConceptMap3D(opts) {
         addToast(t("concept_map.view_3d_snapshot_failed") || "Could not capture the 3D view here.", "error");
       }
     };
-    if (canPersist) {
+    if (canPersist && opts.canReset !== false) {
       var resetArrBtn = document.createElement("button");
       resetArrBtn.textContent = "\u21BA " + (t("concept_space.reset") || "Reset arrangement");
       resetArrBtn.style.cssText = "font-size:12px;font-weight:700;padding:6px 12px;min-height:44px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;";
@@ -2673,7 +2697,9 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
     if (!E || !graphRef.current || !_alloRuntimeAiAvailable()) return;
     setArranging(true);
+    const startGraph = graphRef.current;
     E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || "" }).then((merged) => {
+      if (!artAliveRef.current || graphRef.current !== startGraph) return;
       graphRef.current = merged;
       if (persist && E.extractArrangement) {
         persist(E.extractArrangement(merged), "conceptSpace");
@@ -2697,6 +2723,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         persist(arr, "conceptSpace");
         setNonce((n) => n + 1);
       }) : void 0,
+      canReset: !!isTeacherMode,
       title: data?.main || title || "",
       t,
       addToast
@@ -3425,7 +3452,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u2728 ",
     arranging ? t("concept_map.view_3d_arranging") || "Arranging\u2026" : t("concept_map.view_3d_arrange") || "Arrange by meaning"
-  ), hasContent && persist && data?.conceptSpace && !failed && /* @__PURE__ */ React.createElement(
+  ), hasContent && persist && isTeacherMode && data?.conceptSpace && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -6485,7 +6512,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     t("memory_palace.decorate_remove") || "Remove art at this locus"
   )))), !presenting && recall && /* @__PURE__ */ React.createElement("div", { ref: recallPanelRef, onClickCapture: (event) => {
     recallKeyboardRef.current = event.detail === 0;
-  }, "data-palace-recall-panel": "true" }, !finished && recall.choiceFallback && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950", role: "status", "data-palace-choice-fallback": "true" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, t("memory_palace.repeated_answers_heading") || "Guided self-check for repeated answers"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, t("memory_palace.repeated_answers_help") || "These stops share the same answer. Recall it privately, reveal it, then mark whether you remembered it.")), finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold outline-none", tabIndex: -1, "data-recall-focus": "true" }, _recallSummary(finished)), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points)), recall.focused && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-emerald-800" }, (t("memory_palace.recall_scope_note") || "Focused review: {count} selected stops.").replace("{count}", String(finished.total))), finished.selfRated > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-emerald-800" }, (t("memory_palace.self_rated_guidance") || "These are your own ratings for {count} stops. Try Recall walk to check your answers against the facts.").replace("{count}", String(finished.selfRated))), (() => {
+  }, "data-palace-recall-panel": "true" }, !finished && recall.choiceFallback && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950", role: "status", "data-palace-choice-fallback": "true" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, t("memory_palace.repeated_answers_heading") || "Guided self-check for repeated answers"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, t("memory_palace.repeated_answers_help") || "These stops share the same answer. Recall it privately, reveal it, then mark whether you remembered it.")), finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold rounded outline-none focus-visible:ring-2 focus-visible:ring-emerald-700", tabIndex: -1, "data-recall-focus": "true" }, _recallSummary(finished)), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points)), recall.focused && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-emerald-800" }, (t("memory_palace.recall_scope_note") || "Focused review: {count} selected stops.").replace("{count}", String(finished.total))), finished.selfRated > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-emerald-800" }, (t("memory_palace.self_rated_guidance") || "These are your own ratings for {count} stops. Try Recall walk to check your answers against the facts.").replace("{count}", String(finished.selfRated))), (() => {
     const stops = _recallStopsToStrengthen();
     if (!stops.length) return null;
     return /* @__PURE__ */ React.createElement("section", { className: "mt-4 rounded-2xl border border-amber-200 bg-white p-3 text-slate-800", "aria-label": t("memory_palace.strengthen_heading") || "Stops to strengthen" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-extrabold text-slate-900" }, t("memory_palace.strengthen_heading") || "Stops to strengthen", " ", /* @__PURE__ */ React.createElement("span", { className: "ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900" }, stops.length)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retryRecall("forward", stops.map((stop) => stop.id)), className: "bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800" }, t("memory_palace.practice_selected") || "Practice these stops")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, t("memory_palace.strengthen_help") || "Review the facts and cues below, then try these stops again from memory. Other stops keep their practice records."), /* @__PURE__ */ React.createElement("details", { className: "mt-2 rounded-xl border border-slate-200 bg-slate-50" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-[44px] cursor-pointer rounded-xl px-3 py-3 text-xs font-bold text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, t("memory_palace.review_facts_cues") || "Review facts and memory cues"), /* @__PURE__ */ React.createElement("ol", { className: "space-y-2 px-3 pb-3" }, stops.map((stop) => /* @__PURE__ */ React.createElement("li", { key: stop.id, className: "min-w-0 rounded-xl border border-slate-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, (t("memory_palace.stop_number") || "Stop {number}").replace("{number}", String(stop.stop))), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-amber-50 px-2 py-1 text-amber-900" }, stop.reason === "revealed" ? t("memory_palace.answer_revealed") || "Answer revealed" : stop.reason === "retried" ? t("memory_palace.needed_retry") || "Needed another try" : t("memory_palace.not_yet_recalled") || "Not yet recalled")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 break-words font-bold text-slate-900" }, stop.label), stop.mnemonic && /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-xs leading-relaxed text-slate-600" }, stop.mnemonic))))));
@@ -6893,8 +6920,9 @@ const renderInteractiveMap = (deps) => {
         edges: conceptMapEdges,
         structureType: generatedContent?.data?.structureType,
         title: generatedContent?.data?.main || generatedContent?.title || "",
-        arrangement: generatedContent?.data?.conceptSpaceLive,
-        onArrangementChange: typeof deps.handleConceptSpacePersist === "function" ? ((arr) => deps.handleConceptSpacePersist(arr, "conceptSpaceLive")) : void 0,
+        arrangement: (isTeacherMode ? generatedContent?.data : organizerDataWithLearnerWork(generatedContent?.data, deps.organizerLearnerWork))?.conceptSpaceLive,
+        onArrangementChange: typeof deps.handleConceptSpacePersist === "function" ? ((arr) => deps.handleConceptSpacePersist(arr, "conceptSpaceLive", generatedContent?.id)) : void 0,
+        canReset: !!isTeacherMode,
         t,
         addToast
       }),
@@ -7138,6 +7166,7 @@ window.AlloModules.ViewRenderers = {
   OrganizerMountReceipt,
   organizerReflectionKey,
   organizerReflectionFields,
+  organizerDataWithLearnerWork,
   renderFormattedText,
   renderOutlineContent,
   renderInteractiveMap,

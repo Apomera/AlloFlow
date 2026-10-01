@@ -561,6 +561,96 @@ describe('monthly calendar + Maine numbers', () => {
   });
 });
 
+describe('wing loading lab', () => {
+  // The old hidden widget took wing areas up to 10 m² (an eagle's are under
+  // 1 m²), reported loading in g/m² with thresholds ~100x low, and said the
+  // albatross "glides on thermals" (it soars on ocean wind, with HIGH loading).
+  const WL = () => new Function(sliceBetween(SRC, 'var WINGLOAD = (function() {', '\n  })();', { label: 'WINGLOAD' }) + '\n  })();\nreturn WINGLOAD;')();
+  // Alerstam et al. 2007, PLoS Biology 5: e197, Protocol S1: mass (kg),
+  // wingspan (m), wing area (m², Pennycuick's method), copied here by hand.
+  const SOURCE = {
+    'Barn Swallow': [0.016, 0.32, 0.0136], 'Arctic Tern': [0.110, 0.80, 0.0571], 'European Starling': [0.083, 0.38, 0.0244],
+    'Red Knot': [0.128, 0.50, 0.0286], 'Great Egret': [0.888, 1.44, 0.2443], 'Peregrine Falcon': [0.789, 1.02, 0.1257],
+    'Common Raven': [1.149, 1.21, 0.2472], 'Herring Gull': [1.142, 1.34, 0.1968], 'Common Buzzard': [0.885, 1.24, 0.2689],
+    'White-tailed Eagle': [4.967, 2.18, 0.8824], 'Mallard': [1.082, 0.88, 0.1062], 'Canada Goose': [3.628, 1.69, 0.3717],
+    'Common Eider': [2.015, 0.98, 0.1310], 'Red-throated Loon': [1.505, 1.04, 0.0890],
+  };
+  it('uses the measured values for every bird, and a real albatross', () => {
+    const w = WL();
+    const bad = [];
+    for (const b of w.BIRDS) {
+      if (b.name === 'Wandering Albatross') continue;
+      const s = SOURCE[b.name];
+      if (!s) { bad.push(`${b.name}: not in the source table`); continue; }
+      if (b.m !== s[0] || b.b !== s[1] || b.s !== s[2]) bad.push(`${b.name}: ${b.m}/${b.b}/${b.s} vs ${s.join('/')}`);
+    }
+    expect(bad).toEqual([]);
+    expect(w.BIRDS.length).toBe(Object.keys(SOURCE).length + 1);
+    // Albatross: ~140 N/m² (Pennycuick), aspect ratio ~16, soars on wind, not thermals.
+    const alb = w.BIRDS.find((b) => b.name === 'Wandering Albatross');
+    const albWl = (alb.m * 9.81) / alb.s;
+    expect(albWl).toBeGreaterThan(130);
+    expect(albWl).toBeLessThan(150);
+    expect((alb.b * alb.b) / alb.s).toBeCloseTo(16, 0);
+    expect(alb.fly).toBe('wind');
+    expect(alb.how).toMatch(/wind/);
+    expect(alb.how).not.toMatch(/thermal/i);
+  });
+  it('computes span, wing loading and slowest flight from the physics', () => {
+    const w = WL();
+    // 1 kg on 0.1 m² at aspect ratio 10: span 1 m, 98.1 N/m², and the speed
+    // where 0.5 x 1.225 x v² x 1.6 x 0.1 m² lifts 9.81 N.
+    const d = w.derive(1, 0.1, 10);
+    expect(d.span).toBeCloseTo(1, 6);
+    expect(d.wl).toBeCloseTo(98.1, 6);
+    expect(d.vmin).toBeCloseTo(Math.sqrt(9.81 / (0.5 * 1.225 * 1.6 * 0.1)), 6);
+    // Every measured bird sits inside the range flying birds show (~10-200 N/m²).
+    for (const b of w.BIRDS) {
+      const x = w.derive(b.m, b.s, (b.b * b.b) / b.s);
+      expect(x.wl, b.name).toBeGreaterThan(10);
+      expect(x.wl, b.name).toBeLessThan(200);
+      expect(x.span, b.name).toBeCloseTo(b.b, 6);
+    }
+    // Log sliders round-trip.
+    for (const v of [5, 16, 1082, 12000]) expect(w.fromPos(w.toPos(v, w.RANGE.mass), w.RANGE.mass) / v).toBeCloseTo(1, 2);
+  });
+  it('is on the menu, keeps its state across renders, and its Back button leaves', () => {
+    expect(SRC).toMatch(/id: 'wingHunt', title: __alloT\('stem\.birdlab\.wl_menu_title', 'Wing Loading Lab'\)/);
+    expect(SRC).toContain("if (view === 'wingHunt') return h(stableType('WingHuntView', WingHuntView));");
+    const body = sliceBetween(SRC, 'function WingHuntView() {', "if (view === 'wingHunt')", { label: 'WingHuntView' });
+    expect(body).toContain("setView('menu'); upd('view', 'menu');");
+    expect(SRC).not.toMatch(/Glides on thermals/);
+    expect(SRC).not.toMatch(/g\/m²/);
+  });
+});
+
+describe('bird mortality numbers', () => {
+  it('states each cause at its published estimate, and never less than its parts', () => {
+    // Loss and others 2013 (turbines: 140,000-328,000 a year, continental
+    // US); May and others 2020 (one black blade, Smola: ~70% fewer deaths,
+    // one study); cats alone ~2.4 billion, so "1-2 billion" for cats +
+    // windows + pesticides could not be right.
+    const wind = sliceBetween(SRC, 'var WIND_ENERGY = [', '\n  ];', { label: 'WIND_ENERGY' });
+    expect(wind).not.toMatch(/200,000-600,000/);
+    expect(wind).toMatch(/140,000 to 330,000 bird deaths a year in the continental US/);
+    expect(wind).not.toMatch(/in some studies/);
+    expect(wind).toMatch(/Smøla wind farm in Norway; May and others, 2020/);
+    expect(SRC).not.toMatch(/accounts for 1-2 billion bird deaths/);
+    expect(SRC).toMatch(/outdoor cats about 2\.4 billion, buildings and windows 365 to 988 million/);
+    const mort = new Function(sliceBetween(SRC, 'var MORTALITY = [', '\n  ];', { label: 'MORTALITY' }) + '\n];\nreturn MORTALITY;')();
+    const by = Object.fromEntries(mort.map((r) => [r.key, [r.lo, r.hi]]));
+    expect(by.wind).toEqual([140000, 328000]);
+    expect(by.glass).toEqual([365e6, 988e6]);
+    expect(by.cats).toEqual([1.3e9, 4.0e9]);
+    expect(mort.find((r) => r.key === 'cats').mid).toBe(2.4e9);
+  });
+  it('sends hawks behind the cold front, not on its leading edge', () => {
+    const wx = sliceBetween(SRC, 'var WEATHER_BIRDING = [', '\n  ];', { label: 'WEATHER_BIRDING' });
+    expect(wx).not.toMatch(/leading-edge thermals/);
+    expect(wx).toMatch(/northwest-wind days after a cold front passes/);
+  });
+});
+
 describe('mirror', () => {
   it('ships the same corrected source in the public mirror', () => {
     expect(MIRROR).toBe(SRC);

@@ -3,7 +3,9 @@
 // normalizer + evaluator are behavior, not pins); the wiring (composer build, view branch,
 // baseline capture, celebration, derivation excerpts) is pinned. NO GATING is itself a pin.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
@@ -156,9 +158,9 @@ describe('wiring pins', () => {
   it('P2: evidence rides BOTH transports and the teacher normalizes it defensively', () => {
     // student side: channel-first, mailbox fallback, once per snapshot (re-send only on change)
     expect(anti).toContain("kind: 'hw-evidence',");
-    expect(anti).toContain('if (sent.code === mbStudent.code && sent.doneCount === doneCount) continue;');
+    expect(anti).toContain("if (sent.code === mbStudent.code && sent.doneCount === doneCount && (sent.choice || '') === (chosen ? chosen.resourceRef : '')) continue;");
     expect(anti).toContain("if (!prog || !prog.startedAt) continue; // never started here — nothing honest to report");
-    expect(anti).toContain("evidenceSent: { code: mbStudent.code, doneCount }");
+    expect(anti).toContain("evidenceSent: { code: mbStudent.code, doneCount, choice: chosen ? chosen.resourceRef : '' }");
     // teacher side: dispatched from the RTC datachannel AND the mailbox up-pump
     expect(anti).toContain("if (parsed && parsed.kind === 'hw-evidence') { applyHwEvidence(parsed); return; }");
     expect(anti).toContain("else if (v.kind === 'hw-evidence') applyHwEvidence(v);");

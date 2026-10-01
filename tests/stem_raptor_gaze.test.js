@@ -13,10 +13,17 @@ describe('Raptor facial surfaces and gaze',()=>{
     for(let i=0;i<ids.length;i+=3){a.fromBufferAttribute(p,ids[i]);b.fromBufferAttribute(p,ids[i+1]);c.fromBufferAttribute(p,ids[i+2]);expect(b.sub(a).cross(c.sub(a)).length()).toBeGreaterThan(1e-7);for(let j=0;j<3;j++){const u=ids[i+j],v=ids[i+(j+1)%3],key=[Math.min(u,v),Math.max(u,v)].join(':');edges.set(key,(edges.get(key)||0)+1);}}
     expect([...edges.values()].every(count=>count===2)).toBe(true);const tip=(g.userData.rings-1)*g.userData.segments,middle=8*g.userData.segments;expect(p.getZ(tip)).toBeGreaterThan(p.getZ(0));expect(p.getY(tip)).toBeLessThan(p.getY(middle)-0.05);expect(n.getX(g.userData.segments)).toBeGreaterThan(0);expect(g.attributes.rhBillAlong.count).toBe(p.count);expect(g.attributes.rhBillSection.count).toBe(p.count);
   });
-  it('fits curved owl cheeks to the head with finite colors and outward faces',()=>{
-    const g=api.face(),p=g.attributes.position,n=g.attributes.normal,ids=g.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();expect(p.count).toBe(242);expect(g.attributes.color.count).toBe(p.count);
+  // 66296cfd0: the disc takes (species id, graphics quality). Two discs of 1 + rings x segments
+  // vertices: 10 x 48 at low quality, 14 x 64 otherwise; great horned and snowy owls get own colours.
+  for(const [quality,count] of [['low',2*(1+10*48)],['balanced',2*(1+14*64)]])for(const kind of ['barnOwl','greatHorned','snowyOwl'])it('fits curved owl cheeks to the head with finite colors and outward faces: '+kind+' ('+quality+')',()=>{
+    const g=api.face(kind,quality),p=g.attributes.position,n=g.attributes.normal,ids=g.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();expect(p.count).toBe(count);expect(g.attributes.color.count).toBe(p.count);expect(Array.from(g.attributes.color.array).every(Number.isFinite)).toBe(true);
     for(let i=0;i<p.count;i++){a.fromBufferAttribute(p,i);expect(a.length()).toBeCloseTo(0.224,6);expect(n.getZ(i)).toBeGreaterThan(0);}
     for(let i=0;i<ids.length;i+=3){a.fromBufferAttribute(p,ids[i]);b.fromBufferAttribute(p,ids[i+1]);c.fromBufferAttribute(p,ids[i+2]);expect(b.sub(a).cross(c.sub(a)).z).toBeGreaterThan(0);}
+  });
+  it('paints the snowy owl disc pale and keeps the default disc tawny',()=>{
+    const centre=kind=>{const color=api.face(kind,'low').attributes.color;return [color.getX(0),color.getY(0),color.getZ(0)];};
+    const [r,g,b]=centre('snowyOwl'),[tr,tg,tb]=centre('barnOwl');
+    expect(Math.min(r,g,b)).toBeGreaterThan(0.75);expect(tb).toBeLessThan(tr*0.6);expect(centre('greatHorned')).not.toEqual([tr,tg,tb]);
   });
   it('selects by three-dimensional distance and releases removed or distant prey',()=>{
     const origin=new THREE.Vector3(),high=prey(1,100,0),near=prey(25,-8,15);expect(api.select([high,near],null,origin)).toBe(near);expect(api.select([high],near,origin)).toBe(null);

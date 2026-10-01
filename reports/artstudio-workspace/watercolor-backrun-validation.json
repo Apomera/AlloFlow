@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-30",
+  "enhancement": "Watercolor backruns and pigment premixing",
+  "uncommitted": true,
+  "sourceSha256": "DA85E381B809C33B378405EA1D2EABF3411482661040C4356FD000E8D0D866B8",
+  "publicMirrorMatches": true,
+  "updatedEnglishEntries": 2,
+  "savedStateVersion": 9,
+  "tests": {
+    "passed": 125,
+    "failed": 0,
+    "files": 14,
+    "reports": [
+      "watercolor-backrun-engine-results.json",
+      "watercolor-backrun-regression-results.json"
+    ]
+  },
+  "browser": {
+    "passed": true,
+    "report": "watercolor-backrun-browser-results.json",
+    "checks": [
+      {
+        "backrun": {
+          "initial": {
+            "core": 362.43998670578003,
+            "rim": 547.0399799346924,
+            "total": 2107.55992269516
+          },
+          "quiet": {
+            "core": 352.92691111564636,
+            "rim": 557.8996564745903,
+            "total": 2107.5599038770015
+          },
+          "responsive": {
+            "core": 273.7202506661415,
+            "rim": 639.9092227816582,
+            "total": 2107.5599252003594
+          },
+          "restored": {
+            "core": 273.7201878428459,
+            "rim": 639.9093236923218,
+            "total": 2107.558474287973
+          },
+          "compactVersion": 9
+        }
+      },
+      {
+        "tray": {
+          "color": "#598341",
+          "granulation": 67,
+          "staining": 38,
+          "opacity": 53,
+          "mobility": 48
+        }
+      },
+      "Loading a mixture leaves the existing rendered painting unchanged",
+      {
+        "phoneTrayTargets": [
+          {
+            "id": "artstudio-watercolor-mix-a",
+            "height": 44
+          },
+          {
+            "id": "artstudio-watercolor-mix-b",
+            "height": 44
+          },
+          {
+            "id": "artstudio-watercolor-mix-ratio",
+            "height": 44
+          },
+          {
+            "id": "artstudio-watercolor-load-mixture",
+            "height": 44
+          }
+        ]
+      },
+      "Phone mixing tray has no horizontal overflow"
+    ]
+  },
+  "verified": [
+    "JavaScript syntax",
+    "Scoped whitespace check",
+    "Spectral vendor and license verification",
+    "Source/public parity",
+    "English string parity",
+    "Pre-pass source diff reviewed",
+    "Comparison and desktop/phone images visually inspected"
+  ],
+  "limitations": [
+    "Moisture-driven flow is a conservative grid approximation, not a full fluid solver.",
+    "Premixing uses the pinned spectral model; on-paper transport and compositing retain the RGB approximation.",
+    "The browser harness uses local React, CSS, and Art Studio code; it does not launch the packaged application.",
+    "No non-English translations were authored."
+  ]
+}

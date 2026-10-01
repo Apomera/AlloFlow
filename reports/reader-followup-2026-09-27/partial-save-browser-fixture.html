@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Disposable reader draft fixture</title>
+<style>body{font:16px system-ui;max-width:850px;margin:24px}button{padding:12px;margin:5px}textarea{display:block;width:95%;min-height:90px}label{display:block;margin:12px}fieldset{padding:15px}[role=alertdialog]{background:#fef3c7;padding:12px}img{max-width:64px}</style><div id="root"></div>
+<script src="file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/node_modules/react/umd/react.development.js"></script>
+<script src="file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/node_modules/react-dom/umd/react-dom.development.js"></script>
+<script>window.AlloIcons=new Proxy({}, {get:()=>()=>null});</script>
+<script src="file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/instructional_context_module.js"></script><script src="file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/alt_text_module.js"></script><script src="file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/view_simplified_module.js"></script>
+<script>
+const api=window.AlloModules.InstructionalContext, Editor=window.AlloModules.SimplifiedView.ReadingGlossEditor;
+const session=window.draftSession=window.AlloModules.ReaderSupportDrafts.createSession();
+const item=api.createSupportedReading('The heron stood in the water.', {id:'browser-fixture'});
+const initial=JSON.parse(localStorage.getItem('reader-draft-fixture-supports')||'null') || api.upsertReadingSupport(item,null,{id:'heron',start:4,end:9,quote:'heron',text:'A bird.'});
+window.AlloModules.ClassroomImagePicker=({onChoose})=>{const [query,setQuery]=React.useState('heron');return React.createElement('div',{'data-classroom-image-picker':true},React.createElement('input',{'aria-label':'Picture query',value:query,onChange:event=>setQuery(event.target.value)}),React.createElement('button',{onClick:()=>onChoose({dataUrl:'data:image/png;base64,QUJD',alt:'A heron.',source:'upload'})},'Choose fixture picture'));};
+window.AlloModules.AltText.shrinkImageDataUrl=async src=>src;
+window.addEventListener('beforeunload', event=>session.protectUnload(event));
+function App(){const [supports,setSupports]=React.useState(initial),[away,setAway]=React.useState(false);
+ const onUpdate=async(owner,action)=>{if(window.deferSave)await new Promise((resolve,reject)=>{window.releaseSave=resolve;window.rejectSave=reject;});if(window.failSave)throw Error('Fixture save failed.');const saved=api.upsertReadingSupport(item,supports,{...action.annotation,...window.partialSave});localStorage.setItem('reader-draft-fixture-supports',JSON.stringify(saved));setSupports(saved);return saved;};
+ return React.createElement(React.Fragment,null,React.createElement('button',{id:'leave',onClick:()=>session.request(()=>window.nativeLeave?(window.location.href='about:blank'):setAway(true))},'Leave reader'),away?React.createElement('p',{id:'away'},'Other artifact'):React.createElement(Editor,{item,supports,onUpdate,draftSession:session}));}
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script></html>

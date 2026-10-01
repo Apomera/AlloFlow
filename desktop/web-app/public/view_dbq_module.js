@@ -84,6 +84,52 @@ function dbqPrintSourceUrl(value) {
     return '';
   }
 }
+// Generated excerpts are not all quotations. Unknown kinds never read as verbatim.
+function dbqExcerptKind(doc) {
+  const kind = String(doc && doc.excerptKind || '').trim().toLowerCase();
+  if (['verbatim', 'adapted', 'reconstructed'].includes(kind)) return kind;
+  return doc && (doc.documentType === 'linked' || doc.documentType === 'reconstructed') ? 'reconstructed' : 'adapted';
+}
+function dbqExcerptLabel(kind, t) {
+  const tr = (key, fallback) => {
+    const value = typeof t === 'function' ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  };
+  if (kind === 'verbatim') return {
+    prefix: tr('dbq.source_prefix_verbatim', 'Source:'),
+    badge: tr('dbq.excerpt_badge_verbatim', 'Quoted'),
+    note: tr('dbq.excerpt_note_verbatim', 'Quoted from the source.')
+  };
+  if (kind === 'reconstructed') return {
+    prefix: tr('dbq.source_prefix_reconstructed', 'Reconstructed from:'),
+    badge: tr('dbq.excerpt_badge_reconstructed', 'Reconstructed'),
+    note: tr('dbq.excerpt_note_reconstructed', 'Written by AI to represent this source. It is not a quotation, so check the original.')
+  };
+  return {
+    prefix: tr('dbq.source_prefix_adapted', 'Adapted from:'),
+    badge: tr('dbq.excerpt_badge_adapted', 'Adapted'),
+    note: tr('dbq.excerpt_note_adapted', 'Adapted or shortened from the source. The wording may differ from the original.')
+  };
+}
+// Every document needs a unique id: responses and navigation are keyed by it.
+function dbqNormalizeDocs(documents) {
+  const used = new Set();
+  const nextId = () => {
+    for (let n = 0;; n++) {
+      const id = String.fromCharCode(65 + n % 26) + (n >= 26 ? Math.floor(n / 26) + 1 : '');
+      if (!used.has(id)) return id;
+    }
+  };
+  return (Array.isArray(documents) ? documents : []).filter(doc => doc && typeof doc === 'object' && !Array.isArray(doc)).map(doc => {
+    let id = doc.id == null ? '' : String(doc.id).trim();
+    if (!id || used.has(id)) id = nextId();
+    used.add(id);
+    return id === doc.id ? doc : {
+      ...doc,
+      id
+    };
+  });
+}
 // Feedback belongs to the source and answer revision that was evaluated.
 function dbqFeedbackFingerprint(key, data, responses, gradeLevel) {
   const docs = Array.isArray(data.documents) ? data.documents : [];
@@ -131,13 +177,19 @@ function DbqView(props) {
   var callTTS = props.callTTS;
   var selectedVoice = props.selectedVoice;
   const dbqData = generatedContent.data;
-  const docs = dbqData.documents || [];
+  const docs = dbqNormalizeDocs(dbqData.documents);
+  const docIdSet = new Set(docs.map(doc => doc.id));
+  const knownDocIds = ids => (Array.isArray(ids) ? ids : []).map(String).filter(id => docIdSet.has(id));
   const rubric = dbqData.rubric || [];
-  const claims = dbqData.corroborationClaims || [];
+  const claims = (Array.isArray(dbqData.corroborationClaims) ? dbqData.corroborationClaims : []).filter(claim => claim && typeof claim === 'object').map(claim => ({
+    ...claim,
+    supportingDocs: knownDocIds(claim.supportingDocs),
+    challengingDocs: knownDocIds(claim.challengingDocs)
+  }));
   const resId = generatedContent.id;
   const r = studentResponses[resId] || {};
   const dbqTab = r._dbqTab || 'documents';
-  const dbqActiveDoc = r._dbqActiveDoc || docs[0]?.id || 'A';
+  const dbqActiveDoc = String(r._dbqActiveDoc || docs[0]?.id || 'A');
   // The briefing card (title, historical context, print/timer, progress steps)
   // is reference material, not work surface. On a short window, or with a long
   // historical context, it crowded the documents into a few visible lines with
@@ -145,6 +197,17 @@ function DbqView(props) {
   const headerCollapsed = !!r._dbqHeaderCollapsed;
   const feedbackRequests = React.useRef(new Map());
   const [, setFeedbackTick] = React.useState(0);
+  // Which document is being read aloud. Kept here, not in the learner record:
+  // a saved "speaking" flag outlived the audio and stuck the button on Stop.
+  // (The excerpt's Highlight/Listen/Vocab row is a normal row above the text;
+  // it was absolutely positioned over the first lines on phones.)
+  const [speakingDocId, setSpeakingDocId] = React.useState(null);
+  const speechListenerRef = React.useRef(null);
+  const stopSpeechListener = () => {
+    if (speechListenerRef.current) window.removeEventListener('allo-speech-state', speechListenerRef.current);
+    speechListenerRef.current = null;
+  };
+  React.useEffect(() => stopSpeechListener, []);
   const feedbackScope = JSON.stringify([resId, props.feedbackScopeKey || '', typeof callGemini === 'function']);
   const feedbackLive = React.useRef(null);
   feedbackLive.current = {
@@ -363,7 +426,10 @@ function DbqView(props) {
                                                 <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || 'Document ' + doc.id)}</h3>
                                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType || 'source')}</span>
                                             </div>
-                                            ${doc.source ? '<p style="font-size:11px;color:#64748b;padding:8px 16px 0;margin:0;font-style:italic">Source: ' + dbqEscapePrintText(doc.source) + '</p>' : ''}
+                                            ${(() => {
+          const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t);
+          return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : '');
+        })()}
                                             ${dbqPrintSourceUrl(doc.sourceUrl) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqPrintSourceUrl(doc.sourceUrl)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
           try {
             return new URL(doc.sourceUrl).hostname;
@@ -483,7 +549,12 @@ function DbqView(props) {
     const essayLen = (essayText || '').split(/\s+/).filter(Boolean).length;
     const hasEssayFb = r._aiFeedback && typeof r._aiFeedback === 'object' && !r._aiFeedback.error;
     const selfDone = Object.keys(selfScores).length === rubric.length && rubric.length > 0;
-    const steps = [{
+    // Without AI feedback, the learner's own answers complete the feedback-gated steps.
+    const aiAvailable = typeof callGemini === 'function';
+    const docQuestionsDone = docs.filter(d => ['sourcing', 'analysis'].every(field => (d[field + 'Questions'] || []).every((_, qi) => String(r[`doc-${d.id}-${field}-${qi}`] || '').trim()))).length;
+    const docQuestionsStarted = docs.some(d => ['sourcing', 'analysis'].some(field => (d[field + 'Questions'] || []).some((_, qi) => String(r[`doc-${d.id}-${field}-${qi}`] || '').trim())));
+    const essayCitesDoc = docs.some(doc => essayText.toLowerCase().includes(`document ${String(doc.id).toLowerCase()}`) || essayText.toLowerCase().includes(`doc ${String(doc.id).toLowerCase()}`));
+    const steps = aiAvailable ? [{
       label: 'Analyze',
       done: docsDone === docs.length && docs.length > 0,
       partial: docsDone > 0,
@@ -501,6 +572,31 @@ function DbqView(props) {
     }, {
       label: 'Essay',
       done: hasEssayFb,
+      partial: essayLen > 0,
+      detail: essayLen > 0 ? `${essayLen}w` : ''
+    }, {
+      label: 'Self-Assess',
+      done: selfDone,
+      partial: Object.keys(selfScores).length > 0,
+      detail: selfDone ? '✓' : ''
+    }] : [{
+      label: 'Analyze',
+      done: docsDone === docs.length && docs.length > 0,
+      partial: docsDone > 0,
+      detail: `${docsDone}/${docs.length} docs`
+    }, {
+      label: 'Questions',
+      done: docQuestionsDone === docs.length && docs.length > 0,
+      partial: docQuestionsStarted,
+      detail: `${docQuestionsDone}/${docs.length}`
+    }, {
+      label: 'Corroborate',
+      done: !!corrobDone,
+      partial: !!corrobDone,
+      detail: corrobDone ? '✓' : ''
+    }, {
+      label: 'Essay',
+      done: essayLen > 0 && essayCitesDoc,
       partial: essayLen > 0,
       detail: essayLen > 0 ? `${essayLen}w` : ''
     }, {
@@ -588,10 +684,20 @@ function DbqView(props) {
       color: '#7c3aed',
       marginLeft: '4px'
     }
-  }, "⚔️ ", activeDoc.perspective)), activeDoc.source && /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 italic -mt-2 mb-3"
-  }, "Source: ", activeDoc.source), activeDoc.sourceUrl && /*#__PURE__*/React.createElement("a", {
-    href: activeDoc.sourceUrl,
+  }, "⚔️ ", activeDoc.perspective)), (() => {
+    const kindLabel = dbqExcerptLabel(dbqExcerptKind(activeDoc), t);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "-mt-2 mb-3 space-y-1"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-700"
+    }, /*#__PURE__*/React.createElement("span", {
+      "data-dbq-excerpt-kind": dbqExcerptKind(activeDoc),
+      className: "inline-block mr-2 px-2 py-0.5 rounded-full border border-cyan-700 bg-cyan-50 text-cyan-900 text-[11px] font-bold not-italic"
+    }, kindLabel.badge), kindLabel.note), activeDoc.source && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600 italic"
+    }, kindLabel.prefix, " ", activeDoc.source));
+  })(), dbqPrintSourceUrl(activeDoc.sourceUrl) && /*#__PURE__*/React.createElement("a", {
+    href: dbqPrintSourceUrl(activeDoc.sourceUrl),
     target: "_blank",
     rel: "noopener noreferrer",
     className: "inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline"
@@ -606,7 +712,8 @@ function DbqView(props) {
   })())), /*#__PURE__*/React.createElement("div", {
     className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4 text-sm leading-relaxed text-slate-800 relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-2 right-2"
+    "data-dbq-excerpt-tools": true,
+    className: "flex flex-wrap justify-end gap-1 mb-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       const sel = window.getSelection()?.toString();
@@ -638,39 +745,55 @@ function DbqView(props) {
       // colour, surfaced via the 'allo-speech-state' event below.
       const text = activeDoc.excerpt || '';
       if (!text) return;
+      const docId = activeDoc.id;
       const player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
-      if (r[`_docSpeaking_${activeDoc.id}`]) {
+      const finished = () => {
+        stopSpeechListener();
+        setSpeakingDocId(current => current === docId ? null : current);
+      };
+      stopSpeechListener();
+      if (speakingDocId === docId) {
         if (player) player.stop();else if (window.speechSynthesis) window.speechSynthesis.cancel();
-        setDbq(`_docSpeaking_${activeDoc.id}`, false);
+        setSpeakingDocId(null);
         return;
       }
       if (player) {
-        setDbq(`_docSpeaking_${activeDoc.id}`, true);
+        // speak() first stops any other clip (a "not playing" event that is
+        // not ours), then announces ours. Wait for ours to start, then treat
+        // "not playing" or a different clip as the end.
+        let ourId = null;
         const onState = e => {
-          const speaking = !!(e.detail && e.detail.isPlaying && e.detail.currentText === text);
-          if (!speaking) {
-            setDbq(`_docSpeaking_${activeDoc.id}`, false);
-            window.removeEventListener('allo-speech-state', onState);
+          const d = e.detail || {};
+          if (ourId === null) {
+            if (d.isPlaying) ourId = d.currentId;
+            return;
           }
+          if (!d.isPlaying || d.currentId !== ourId) finished();
         };
+        speechListenerRef.current = onState;
         window.addEventListener('allo-speech-state', onState);
-        player.speak(text, {
+        setSpeakingDocId(docId);
+        // Muted (or nothing to say): speak() resolves null and announces nothing.
+        Promise.resolve(player.speak(text, {
           voice: selectedVoice || 'Kore'
-        });
+        })).then(result => {
+          if (result === null && ourId === null) finished();
+        }, finished);
       } else if (window.speechSynthesis) {
         // Cold-boot fallback: player module not yet loaded.
-        setDbq(`_docSpeaking_${activeDoc.id}`, true);
+        setSpeakingDocId(docId);
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.rate = window.__alloPlaybackRate || 1;
         u.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
-        u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false);
+        u.onend = finished;
         window.speechSynthesis.speak(u);
       }
     },
-    className: `text-[11px] font-bold px-2 py-1 rounded-full ${r[`_docSpeaking_${activeDoc.id}`] ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`,
-    "aria-label": r[`_docSpeaking_${activeDoc.id}`] ? t('a11y.stop_reading') || 'Stop reading' : t('a11y.read_aloud') || 'Read aloud'
-  }, r[`_docSpeaking_${activeDoc.id}`] ? '⏹️ Stop' : '🔊 Listen'), /*#__PURE__*/React.createElement("button", {
+    "data-dbq-listen": true,
+    className: `text-[11px] font-bold px-2 py-1 rounded-full ${speakingDocId === activeDoc.id ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`,
+    "aria-label": speakingDocId === activeDoc.id ? t('a11y.stop_reading') || 'Stop reading' : t('a11y.read_aloud') || 'Read aloud'
+  }, speakingDocId === activeDoc.id ? '⏹️ Stop' : '🔊 Listen'), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       if (feedbackPending(`_docVocab_${activeDoc.id}`)) return;
       if (feedbackFor(`_docVocab_${activeDoc.id}`)) {
@@ -1106,7 +1229,7 @@ Rules:
     className: "text-xs text-slate-600 mb-2"
   }, pov.description), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
-  }, (pov.docIds || []).map(id => /*#__PURE__*/React.createElement("span", {
+  }, knownDocIds(pov.docIds).map(id => /*#__PURE__*/React.createElement("span", {
     key: id,
     className: `text-xs font-bold px-2 py-0.5 rounded-full ${pi === 0 ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-red-100 text-red-700 border border-red-200'}`
   }, "Doc ", id)))))), /*#__PURE__*/React.createElement("div", {

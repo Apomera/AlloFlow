@@ -1,0 +1,117 @@
+{
+  "checks": [
+    {
+      "name": "Small-current evidence",
+      "readout": "Baseline current\n100 µA\nCurrent now\n200 µA\nChange\n+100 µA",
+      "delta": 0.0001
+    },
+    {
+      "name": "Save-edit-load returns to the saved circuit and evidence",
+      "voltage": 2
+    },
+    {
+      "name": "Legacy wrong answer rejected without rewards"
+    },
+    {
+      "name": "Generated quiz has four distinct options and rewards its exact answer",
+      "question": {
+        "text": "A 3V battery drives current through a 500Ω resistor. What is the current?",
+        "answer": 0.006,
+        "unit": "A",
+        "formula": "I = V/R = 3/500 = 0.006A",
+        "opts": [
+          0.006,
+          0.008,
+          0.009,
+          0.001
+        ],
+        "answered": false
+      }
+    },
+    {
+      "name": "EN to ES to FR updates Simple and Connected controls without losing state"
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "workspace": "Simple circuits",
+      "violations": []
+    },
+    {
+      "workspace": "Mixed circuits",
+      "violations": []
+    },
+    {
+      "workspace": "Active electronics",
+      "violations": []
+    },
+    {
+      "workspace": "Connected circuits",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "workspace": "Simple circuits",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "workspace": "Simple circuits",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "workspace": "Simple circuits",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "workspace": "Mixed circuits",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "workspace": "Mixed circuits",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "workspace": "Mixed circuits",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "workspace": "Active electronics",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "workspace": "Active electronics",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "workspace": "Active electronics",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "workspace": "Connected circuits",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "workspace": "Connected circuits",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "workspace": "Connected circuits",
+      "width": 320,
+      "scrollWidth": 320
+    }
+  ],
+  "passed": true
+}

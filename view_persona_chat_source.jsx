@@ -217,6 +217,7 @@ function PersonaChatView(props) {
       {renderPersonaHintRecovery(panel)}
       <label htmlFor={id} className="block text-sm font-bold mb-1">{composerLabel(panel ? 'panel_label' : 'single_label', panel ? 'Your question for the panel' : 'Your question')}</label>
       <p id={id + '-guide'} className="text-xs leading-relaxed text-slate-600 mb-2">{composerLabel(panel ? 'panel_guide' : 'single_guide', panel ? 'Ask both figures to compare their ideas, explain a difference, or support a claim with evidence.' : 'Ask about an idea, request an example, or follow up with evidence from the lesson.')}</p>
+      {/* Read-only, not disabled, while a reply is pending: disabling the focused box dropped focus out of the dialog. */}
       <textarea id={id} rows={2} maxLength={2000} value={value} onChange={(e) => setPersonaInput(e.target.value)}
         aria-describedby={id + '-guide ' + id + '-keys' + (personaState.turnError ? ' persona-turn-error' : '')}
         onKeyDown={(e) => {
@@ -225,8 +226,9 @@ function PersonaChatView(props) {
           }
         }}
         placeholder={panel ? t('persona.panel_question_placeholder') : t('persona.character_question_placeholder', { name: personaState.selectedCharacter?.name })}
-        disabled={busy}
-        className="block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed" />
+        readOnly={busy}
+        aria-disabled={busy || undefined}
+        className={"block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" + (busy ? ' opacity-60 cursor-wait' : '')} />
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <p id={id + '-keys'} className="text-[11px] leading-relaxed text-slate-600">{composerLabel('keyboard', 'Enter to send · Shift + Enter for a new line.')}</p>
         <button type="button" onClick={send} disabled={busy || !value.trim()} aria-busy={busy}
@@ -447,6 +449,8 @@ function PersonaChatView(props) {
         if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog], [data-persona-archive-dialog]')) {
           return;
         }
+        // Closing erases the interview, so Escape while typing does not close it.
+        if (event.target && /^(TEXTAREA|INPUT|SELECT)$/.test(event.target.tagName || '')) return;
         event.preventDefault();
         personaCloseHandlerRef.current();
         return;
@@ -683,7 +687,7 @@ function PersonaChatView(props) {
         id: id,
         text: text,
         difficulty: _boundedSnapshotNumber(quest.difficulty, 0, 100, 20),
-        isCompleted: quest.isCompleted === true || resumedQuestCompletion.get(id) === true
+        isCompleted: resumedQuestCompletion.get(id) === true
       });
       return list;
     }, []);
@@ -710,8 +714,8 @@ function PersonaChatView(props) {
       suggestedQuestions: suggestedQuestions,
       quests: quests,
       initialRapport: _boundedSnapshotNumber(authoritativeCharacter.initialRapport, 0, 100, 10),
-      rapport: _boundedSnapshotNumber(character.rapport, 0, 100, _boundedSnapshotNumber(authoritativeCharacter.rapport ?? authoritativeCharacter.initialRapport, 0, 100, 10)),
-      accumulatedXP: _boundedSnapshotNumber(character.accumulatedXP, 0, 300, _boundedSnapshotNumber(authoritativeCharacter.accumulatedXP, 0, 300, 0)),
+      rapport: _boundedSnapshotNumber(character.rapport, 0, 100, _boundedSnapshotNumber(authoritativeCharacter.initialRapport, 0, 100, 10)),
+      accumulatedXP: _boundedSnapshotNumber(character.accumulatedXP, 0, 300, 0),
       avatarUrl: avatarUrl
     };
   };
@@ -979,6 +983,11 @@ function PersonaChatView(props) {
       };
     });
   };
+  // Named for what it does: it ends and clears the interview ("Continue" did not say so).
+  var finishInterviewLabel = (function () {
+    var value = t('persona.finish_interview');
+    return value && value !== 'persona.finish_interview' ? value : 'Finish interview';
+  })();
   personaCloseHandlerRef.current = _handleCloseAndClearSnapshot;
   // The final numeric segment remains the transcript index when playback IDs
   // are generation-scoped to prevent stale TTS callbacks.
@@ -1606,12 +1615,16 @@ function PersonaChatView(props) {
                                         )}
                                     </div>
                                 ) : panelChoicePending || personaState.isLoading ? (
+                                    <>
                                     <div className="p-4 bg-white border-t border-slate-200" role="status" aria-live="polite" aria-busy="true">
                                         <div className="flex items-center justify-center gap-2 text-sm font-bold text-indigo-700">
-                                            <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" />
+                                            <RefreshCw size={18} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
                                             {t('persona.waiting_for_response')}
                                         </div>
                                     </div>
+                                    {/* The question box stays (read-only) so focus is not dropped while the panel replies. */}
+                                    {isPersonaFreeResponse && renderPersonaComposer(true)}
+                                    </>
                                 ) : isPersonaFreeResponse ? (
                                     renderPersonaComposer(true)
                                 ) : (
@@ -1689,8 +1702,8 @@ function PersonaChatView(props) {
                                             </div>
                                         </div>
                                         <div className="mt-6">
-                                            <button type="button" aria-expanded={isPersonaReflectionOpen} onClick={_handleCompleteReflection} className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg">
-                                                <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
+                                            <button type="button" data-persona-finish-interview onClick={_handleCompleteReflection}className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg">
+                                                <CheckCircle2 size={22} aria-hidden="true" /> {finishInterviewLabel}
                                             </button>
                                         </div>
                                     </>
@@ -2322,11 +2335,11 @@ function PersonaChatView(props) {
                                     </div>
                                     <div className="mt-6">
                                         <button type="button"
-                                            aria-label={t('common.continue')}
+                                            data-persona-finish-interview
                                             onClick={_handleCompleteReflection}
                                             className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
                                         >
-                                            <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
+                                            <CheckCircle2 size={22} aria-hidden="true" /> {finishInterviewLabel}
                                         </button>
                                     </div>
                                 </>

@@ -55,10 +55,21 @@ describe('Raptor Hunt steering and model heading regressions', () => {
   it('maps A/left to negative yaw and D/right to positive yaw', () => {
     const text = source();
     expect(text).toContain("var turnInput = (keys['d'] ? 1 : 0) - (keys['a'] ? 1 : 0);");
-    expect(text).toContain('raptor.yaw += turnInput * 1.5 * dt;');
-    expect(text).toContain('raptor.yaw += dx * touchYawSensitivity;');
+    // ed897988b smooths both inputs (frame-rate independent) before they reach yaw.
+    // The step argument's name is not the point (a slow-motion pass may pass a scaled step).
+    expect(text).toMatch(/smoothFlightAxis\(turnAxis,turnInput,turnInput===0\?26:18,\w+\);/);
+    expect(text).toContain('raptor.yaw += turnAxis.integral * 1.5;');
+    expect(text).toContain('pendingPointerYaw=Math.max(-0.75,Math.min(0.75,pendingPointerYaw+dx*touchYawSensitivity));');
+    expect(text).toContain('raptor.yaw+=pointerYawStep;');
     expect(text).not.toContain("if (keys['a']) raptor.yaw += 1.5 * dt;");
     expect(text).not.toContain("if (keys['d']) raptor.yaw -= 1.5 * dt;");
+    // The smoothing keeps the sign: held D turns right (+yaw), held A turns left.
+    const start = text.indexOf('function smoothFlightAxis(');
+    const smooth = Function('return (' + text.slice(start, text.indexOf('\n        }', start) + 10) + ')')();
+    const held = (input) => { const axis = { value: 0, integral: 0 }; let yaw = 0; for (let i = 0; i < 30; i += 1) { smooth(axis, input, input === 0 ? 26 : 18, 1 / 60); yaw += axis.integral * 1.5; } return yaw; };
+    expect(held(1)).toBeGreaterThan(0.3);
+    expect(held(-1)).toBeLessThan(-0.3);
+    expect(held(0)).toBe(0);
 
     const turn = (a, d) => (d ? 1 : 0) - (a ? 1 : 0);
     expect(turn(true, false)).toBe(-1);
@@ -176,7 +187,8 @@ describe('Raptor Hunt contrast regressions', () => {
     const expand = (hex) => (hex.length === 4
       ? '#' + hex.slice(1).split('').map((channel) => channel + channel).join('')
       : hex);
-    const cap = text.match(/\.rh-flight-key kbd\{[^}]*\}/)[0];
+    // f5b045fc9 shares the key-cap rule with the on-screen button label.
+    const cap = text.match(/\.rh-flight-key kbd,\.rh-flight-key \.rh-flight-input-label\{[^}]*\}/)[0];
     expect(contrast(expand(cap.match(/color:(#[0-9a-f]{3,6})/)[1]), cap.match(/background:(#[0-9a-f]{6})/)[1]))
       .toBeGreaterThanOrEqual(4.5);
   });

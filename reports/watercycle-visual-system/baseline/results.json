@@ -1,0 +1,368 @@
+{
+  "sourceSha256": "82087dd2a1a373eaf3bf485a435c27da63e760478fb40e6ce44ea579e10255ef",
+  "baseline": true,
+  "capturedAt": "2026-09-29T03:54:05.501Z",
+  "checks": [
+    {
+      "label": "explore-light-1280 fits viewport",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "explore-light-1280 navigation targets are at least 44px tall",
+      "pass": true
+    },
+    {
+      "label": "explore-light-1280 exactly one selected mode",
+      "pass": true
+    },
+    {
+      "label": "storm-light-1280 fits viewport",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "storm-light-1280 navigation targets are at least 44px tall",
+      "pass": true
+    },
+    {
+      "label": "storm-light-1280 exactly one selected mode",
+      "pass": true
+    },
+    {
+      "label": "steward-light-1280 fits viewport",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "steward-light-1280 navigation targets are at least 44px tall",
+      "pass": true
+    },
+    {
+      "label": "steward-light-1280 exactly one selected mode",
+      "pass": true
+    },
+    {
+      "label": "explore-light-390 fits viewport",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "explore-light-390 navigation targets are at least 44px tall",
+      "pass": true
+    },
+    {
+      "label": "explore-light-390 exactly one selected mode",
+      "pass": true
+    },
+    {
+      "label": "storm-light-390 fits viewport",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "storm-light-390 navigation targets are at least 44px tall",
+      "pass": true
+    },
+    {
+      "label": "storm-light-390 exactly one selected mode",
+      "pass": true
+    },
+    {
+      "label": "steward-light-390 fits viewport",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "label": "steward-light-390 navigation targets are at least 44px tall",
+      "pass": true
+    },
+    {
+      "label": "steward-light-390 exactly one selected mode",
+      "pass": true
+    },
+    {
+      "label": "steward-light-390 year fits viewport",
+      "pass": true
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "explore-light-1280",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "buttons": [
+        {
+          "text": "Explore",
+          "pressed": "true",
+          "height": 56,
+          "width": 194.390625
+        },
+        {
+          "text": "Be the Water",
+          "pressed": "false",
+          "height": 56,
+          "width": 194.40625
+        },
+        {
+          "text": "Storm Lab",
+          "pressed": "false",
+          "height": 56,
+          "width": 194.390625
+        },
+        {
+          "text": "Steward",
+          "pressed": "false",
+          "height": 56,
+          "width": 194.40625
+        },
+        {
+          "text": "Water Worlds",
+          "pressed": "false",
+          "height": 56,
+          "width": 194.390625
+        }
+      ],
+      "canvases": [
+        {
+          "id": "wcCanvas",
+          "width": 2008,
+          "height": 1036,
+          "displayWidth": 1004
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "id": "storm-light-1280",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "buttons": [
+        {
+          "text": "Explore",
+          "pressed": "false",
+          "height": 56,
+          "width": 213.59375
+        },
+        {
+          "text": "Be the Water",
+          "pressed": "false",
+          "height": 56,
+          "width": 213.59375
+        },
+        {
+          "text": "Storm Lab",
+          "pressed": "true",
+          "height": 56,
+          "width": 213.609375
+        },
+        {
+          "text": "Steward",
+          "pressed": "false",
+          "height": 56,
+          "width": 213.59375
+        },
+        {
+          "text": "Water Worlds",
+          "pressed": "false",
+          "height": 56,
+          "width": 213.609375
+        }
+      ],
+      "canvases": [
+        {
+          "id": "wcPrecipCanvas",
+          "width": 713,
+          "height": 474,
+          "displayWidth": 713.4375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "id": "steward-light-1280",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "buttons": [
+        {
+          "text": "Explore",
+          "pressed": "false",
+          "height": 56,
+          "width": 182.390625
+        },
+        {
+          "text": "Be the Water",
+          "pressed": "false",
+          "height": 56,
+          "width": 182.40625
+        },
+        {
+          "text": "Storm Lab",
+          "pressed": "false",
+          "height": 56,
+          "width": 182.390625
+        },
+        {
+          "text": "Steward",
+          "pressed": "true",
+          "height": 56,
+          "width": 182.40625
+        },
+        {
+          "text": "Water Worlds",
+          "pressed": "false",
+          "height": 56,
+          "width": 182.390625
+        }
+      ],
+      "canvases": [],
+      "overflow": []
+    },
+    {
+      "id": "explore-light-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "buttons": [
+        {
+          "text": "Explore",
+          "pressed": "true",
+          "height": 48,
+          "width": 162.5
+        },
+        {
+          "text": "Be the Water",
+          "pressed": "false",
+          "height": 48,
+          "width": 162.5
+        },
+        {
+          "text": "Storm Lab",
+          "pressed": "false",
+          "height": 48,
+          "width": 162.5
+        },
+        {
+          "text": "Steward",
+          "pressed": "false",
+          "height": 48,
+          "width": 162.5
+        },
+        {
+          "text": "Water Worlds",
+          "pressed": "false",
+          "height": 48,
+          "width": 330
+        }
+      ],
+      "canvases": [
+        {
+          "id": "wcCanvas",
+          "width": 684,
+          "height": 756,
+          "displayWidth": 342
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "id": "storm-light-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "buttons": [
+        {
+          "text": "Explore",
+          "pressed": "false",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Be the Water",
+          "pressed": "false",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Storm Lab",
+          "pressed": "true",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Steward",
+          "pressed": "false",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Water Worlds",
+          "pressed": "false",
+          "height": 48,
+          "width": 326
+        }
+      ],
+      "canvases": [
+        {
+          "id": "wcPrecipCanvas",
+          "width": 338,
+          "height": 290,
+          "displayWidth": 338
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "id": "steward-light-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "buttons": [
+        {
+          "text": "Explore",
+          "pressed": "false",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Be the Water",
+          "pressed": "false",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Storm Lab",
+          "pressed": "false",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Steward",
+          "pressed": "true",
+          "height": 48,
+          "width": 160.5
+        },
+        {
+          "text": "Water Worlds",
+          "pressed": "false",
+          "height": 48,
+          "width": 326
+        }
+      ],
+      "canvases": [],
+      "overflow": []
+    }
+  ],
+  "audits": [
+    {
+      "label": "explore-light-1280 mode navigation",
+      "selector": ".wc-mode-bar",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "failures": [
+    "storm light 1280: page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "steward light 1280: page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "worlds light 1280: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ww-app') to be visible\u001b[22m\n",
+    "storm light 390: page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "worlds light 390: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ww-app') to be visible\u001b[22m\n"
+  ]
+}

@@ -117,6 +117,8 @@ const WORD_SOUNDS_STRINGS = {
         'word_sounds.lesson_practice_complete': 'Lesson complete! You practiced every activity.',
         'word_sounds.picture_clue_for': 'Picture clue: {{word}}',
         'word_sounds.sound_sort_review_needed': 'This sound needs a reviewed word set. Choose another activity or return to setup.',
+        'word_sounds.word_families_review_needed': 'This word needs a reviewed word family. Choose another activity or return to setup.',
+        'word_sounds.word_families_skipped_for_students': '{{count}} skipped for students in Word Families (needs a reviewed word family): {{words}}',
         'word_sounds.adaptive_evidence': 'Current activity and support: {{count}} recent responses across {{words}} words. Difficulty moves one step after sustained practice.',
         'word_sounds.choose_lesson_activity': 'Choose at least one lesson activity before preparing.',
         'word_sounds.activity_item_count': '{{activity}}: item count',

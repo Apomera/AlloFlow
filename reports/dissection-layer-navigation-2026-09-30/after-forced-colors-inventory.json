@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Layer 1: Skin, revealed",
+    "state": "revealed",
+    "disabled": false,
+    "current": null
+  },
+  {
+    "name": "Layer 2: Muscle, revealed",
+    "state": "revealed",
+    "disabled": false,
+    "current": null
+  },
+  {
+    "name": "Layer 3: Organs, current",
+    "state": "current",
+    "disabled": false,
+    "current": "step"
+  },
+  {
+    "name": "Layer 4: Skeleton, locked",
+    "state": "locked",
+    "disabled": true,
+    "current": null
+  },
+  {
+    "name": "Layer 5: Nervous, locked",
+    "state": "locked",
+    "disabled": true,
+    "current": null
+  }
+]

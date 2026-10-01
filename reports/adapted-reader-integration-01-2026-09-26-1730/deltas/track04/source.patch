@@ -1,0 +1,1006 @@
+===================================================================
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -12261,9 +12261,21 @@
+   const setShowVoiceSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showVoiceSettings', value: v });
+   const setWordSearchLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'wordSearchLang', value: v });
+   const setStandardDeckLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'standardDeckLang', value: v });
+   const setTargetTranslationLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'targetTranslationLang', value: v });
+-  const [isTeacherMode, setIsTeacherMode] = useState(true);
++  const supportDraftSessionRef = useRef(null);
++  const requestReadingSupportTransition = run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run) : run();
++  useEffect(() => {
++      const protect = event => supportDraftSessionRef.current?.protectUnload(event);
++      window.addEventListener('beforeunload', protect);
++      return () => window.removeEventListener('beforeunload', protect);
++  }, []);
++  const [isTeacherMode, _setIsTeacherMode] = useState(true);
++  const teacherModeRef = useRef(isTeacherMode); teacherModeRef.current = isTeacherMode;
++  const setIsTeacherMode = useCallback(value => {
++      const next = typeof value === 'function' ? value(teacherModeRef.current) : value;
++      return next === teacherModeRef.current ? undefined : requestReadingSupportTransition(() => _setIsTeacherMode(next));
++  }, []);
+   const [studentAiConfigRevision, setStudentAiConfigRevision] = useState(0);
+   useEffect(() => {
+       const refreshStudentAi = () => {
+           try { _syncQrStudentAiAccess(); } catch (_) {}
+@@ -13198,9 +13210,14 @@
+   const [generatedContent, _setGeneratedContent] = useState(null);
+   const generationDisplayStateRef = useRef({ resource: null, view: 'input' });
+   generationDisplayStateRef.current.resource = generatedContent;
+   const setGeneratedContent = useCallback((nextContent, generationOwner = null) => {
++      if (generationOwner && generationOwner !== generationViewOwnerRef.current) return;
+       const displayed = generationDisplayStateRef.current.resource;
++      if (typeof nextContent !== 'function' && supportDraftSessionRef.current?.blocked()
++          && (nextContent?.id !== displayed?.id || nextContent?._artifactInstanceId !== displayed?._artifactInstanceId || nextContent?.type !== displayed?.type || nextContent?.data !== displayed?.data)) {
++          return requestReadingSupportTransition(() => setGeneratedContent(nextContent, generationOwner));
++      }
+       if (!generationOwner && typeof nextContent !== 'function' && (nextContent?.id !== displayed?.id || nextContent?.type !== displayed?.type)) generationViewOwnerRef.current = null;
+       _setGeneratedContent(previous => {
+           if (generationOwner && generationOwner !== generationViewOwnerRef.current) return previous;
+           const candidate = typeof nextContent === 'function' ? nextContent(previous) : nextContent;
+@@ -16110,8 +16127,10 @@
+   const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
+   const [activeView, _setActiveView] = useState('input');
+   generationDisplayStateRef.current.view = activeView;
+   const setActiveView = useCallback((value, generationOwner = null) => {
++      if (generationOwner && generationOwner !== generationViewOwnerRef.current) return;
++      if (typeof value !== 'function' && value !== generationDisplayStateRef.current.view && supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => setActiveView(value, generationOwner));
+       // Invalidate synchronously so a late result in the same React batch
+       // cannot win before the navigation state updater is evaluated.
+       if (!generationOwner && typeof value !== 'function' && value !== generationDisplayStateRef.current.view) generationViewOwnerRef.current = null;
+       _setActiveView(previous => {
+@@ -20434,9 +20453,9 @@
+   const handleToggleIsFlashcardFlipped = React.useCallback(() => setIsFlashcardFlipped(prev => !prev), []);
+   const handleToggleShowWordSearchAnswers = React.useCallback(() => setShowWordSearchAnswers(prev => !prev), []);
+   const handleToggleShowHealthCheckPanel = React.useCallback(() => setShowHealthCheckPanel(prev => !prev), []);
+   const handleToggleIsTeacherToolbarExpanded = React.useCallback(() => setIsTeacherToolbarExpanded(prev => !prev), []);
+-  const handleToggleIsEditingLeveledText = React.useCallback(() => setIsEditingLeveledText(prev => !prev), []);
++  const handleToggleIsEditingLeveledText = React.useCallback(() => requestReadingSupportTransition(() => setIsEditingLeveledText(prev => !prev)), []);
+   const handleToggleIsEditingOutline = React.useCallback(() => setIsEditingOutline(prev => !prev), []);
+   const handleToggleIsPresentationMode = React.useCallback(() => setIsPresentationMode(prev => !prev), []);
+   const handleToggleIsReviewGame = React.useCallback(() => setIsReviewGame(prev => !prev), []);
+   const handleToggleIsEditingQuiz = React.useCallback(() => setIsEditingQuiz(prev => !prev), []);
+@@ -36015,8 +36034,9 @@
+   const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);
+   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
+   const pendingQrAssignmentOpenGenerationRef = useRef(0);
+   const handleRestoreView = (item, options = {}) => {
++      if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleRestoreView(item, options));
+       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
+       if (moduleApi && typeof moduleApi.handleRestoreView === 'function') {
+           const { preservePendingAssignment, ...restoreOptions } = options || {};
+           const result = moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps());
+@@ -37797,9 +37817,9 @@
+   // Returning to Start is app navigation, never a document reload. Release the
+   // shared microphone owner first (including dictation/persona voice surfaces),
+   // stop spoken output, close tutorial chrome, and request a fresh Canvas
+   // checkpoint. The workspace and selected role stay mounted behind LaunchPad.
+-  const handleReturnToStart = (...__a) => _alloHostHandlers().handleReturnToStart(...__a);
++  const handleReturnToStart = (...__a) => requestReadingSupportTransition(() => _alloHostHandlers().handleReturnToStart(...__a));
+   // The chat's delivery path to the conversational UdlChat module. Split out so
+   // handleSendUDLMessage (below) can reach it after the command preview/confirm
+   // step, and so a "just chat" reply can re-send the original text as normal chat.
+   const _sendUdlToChat = (manualText = null) => {
+@@ -38350,8 +38370,9 @@
+     if (clock) return clock({ isEscapeTimerRunning, escapeTimeLeft, escapeRoomState,
+       setEscapeTimeLeft, setIsEscapeTimerRunning, setEscapeRoomState, t, addToast });
+   }, [isEscapeTimerRunning, escapeTimeLeft, escapeRoomState.isActive, escapeRoomState.isEscaped, escapeRoomState.isGameOver, escapeRoomState.timerEnabled, t, addToast]);
+   const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
++    if (switchView && supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, generationDepsOverride));
+     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
+     const viewOwner = {};
+     if (switchView) generationViewOwnerRef.current = viewOwner;
+     const ownsView = () => switchView && generationViewOwnerRef.current === viewOwner;
+@@ -39147,13 +39168,19 @@
+   };
+   // A reader snapshot belongs to its source, independent of later analysis edits.
+   const openReadingArtifact = (item, compare = false) => {
+     if (!item) return;
++    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => openReadingArtifact(item, compare));
++    const live = _resourceMutationStateRef.current;
++    item = [live.generatedContent, ...(live.history || [])].find(candidate => candidate?.id === item.id && candidate?._artifactInstanceId === item._artifactInstanceId) || item;
+     stopPlayback(); setSelectionMenu(null); setRevisionData(null); setPhonicsData(null);
+     setIsEditingLeveledText(false); setIsFluencyMode(false); setIsCompareMode(!!compare); setInteractionMode('read');
+-    setGeneratedContent(item); setActiveView('simplified');
++    // A support save may still be queued in this React batch. Preserve that
++    // latest artifact when changing its reader layout instead of restoring a captured copy.
++    setGeneratedContent(previous => previous?.id === item.id && previous?._artifactInstanceId === item._artifactInstanceId && previous?.type === item.type ? previous : item); setActiveView('simplified');
+   };
+   const handleReadOriginal = (selected = null) => {
++    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleReadOriginal(selected));
+     const api = window.AlloModules?.InstructionalContext;
+     if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
+     let sourceItem = selected, resolved = null;
+     if (!sourceItem) {
+@@ -41762,8 +41789,9 @@
+                         }}
+                     />;
+                 })()}
+                 {activeView === 'simplified' && React.createElement(LazySimplifiedView, {
++                    supportDraftSessionRef,
+                     onInstructionalRoleChange: handleReadingRoleChange, onSelectReadingSource: handleSelectReadingSource,
+                     onGenerateReadingSupports: handleGenerateReadingSupports, onUpdateReadingSupports: handleUpdateReadingSupports, onReadOriginal: handleReadOriginal, onOpenReadingArtifact: openReadingArtifact, onCreateAdaptedCompanion: handleCreateAdaptedCompanion,
+                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
+                     studentInterests, standardsInput, sourceTopic,
+===================================================================
+--- a/_build_view_simplified_module.js
++++ b/_build_view_simplified_module.js
+@@ -9,9 +9,9 @@
+  */
+ const babel = require('@babel/core');
+ const fs = require('fs');
+ 
+-const source = fs.readFileSync('reader_place_store.js', 'utf-8') + '\n' + fs.readFileSync('view_simplified_source.jsx', 'utf-8');
++const source = ['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx'].map(file => fs.readFileSync(file, 'utf-8')).join('\n');
+ 
+ const result = babel.transformSync(source, {
+   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
+   babelrc: false,
+===================================================================
+--- a/tests/glossary_resource_lifecycle.test.js
++++ b/tests/glossary_resource_lifecycle.test.js
+@@ -170,11 +170,11 @@
+     const contentQueue = [], viewQueue = [];
+     const contentSetter = fn => queued ? contentQueue.push(fn) : resource = fn(resource);
+     const viewSetter = fn => queued ? viewQueue.push(fn) : view = fn(view);
+     const start = host.indexOf('  const setGeneratedContent = useCallback('), end = host.indexOf('\n  //', start);
+-    const setGeneratedContent = new Function('_setGeneratedContent', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', 'ensureArtifactInstanceId', host.slice(start, end) + ';return setGeneratedContent;')(contentSetter, ref, displayed, fn => fn, value => value);
++    const setGeneratedContent = new Function('_setGeneratedContent', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', 'ensureArtifactInstanceId', 'supportDraftSessionRef', 'requestReadingSupportTransition', host.slice(start, end) + ';return setGeneratedContent;')(contentSetter, ref, displayed, fn => fn, value => value, { current: null }, run => run());
+     const viewStart = host.indexOf('  const setActiveView = useCallback('), viewEnd = host.indexOf('\n  const [showReadThisPage', viewStart);
+-    const setActiveView = new Function('_setActiveView', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', host.slice(viewStart, viewEnd) + ';return setActiveView;')(viewSetter, ref, displayed, fn => fn);
++    const setActiveView = new Function('_setActiveView', 'generationViewOwnerRef', 'generationDisplayStateRef', 'useCallback', 'supportDraftSessionRef', 'requestReadingSupportTransition', host.slice(viewStart, viewEnd) + ';return setActiveView;')(viewSetter, ref, displayed, fn => fn, { current: null }, run => run());
+     return { owner, ref, setGeneratedContent, setActiveView, read: () => ({ resource, view }), flush: () => { contentQueue.forEach(fn => { resource = fn(resource); }); viewQueue.forEach(fn => { view = fn(view); }); } };
+   }
+   it('revokes display ownership before queued navigation updates flush', () => {
+     const state = setters(true);
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1286,17 +1286,31 @@
+   // A search box appears once the list is this long.
+   var GLOSS_FILTER_MIN = 6;
+   // embedded: the editor sits inside a panel that already has its own disclosure,
+   // so it shows its list directly instead of adding a second toggle.
+-  function ReadingGlossEditor({ item, supports, request, onUpdate, disabled, adapted, snapshot: adaptedSnapshot, embedded }) {
++  function readingSupportDraftKey(item, adapted) {
++    return JSON.stringify([item?.id, item?._artifactInstanceId || '', item?.sourceFamilyId || '', item?.unitId || '', !!adapted]);
++  }
++  function readingSupportImageSignature(image) {
++    if (!image) return null;
++    const clean = (value, limit) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, limit);
++    const credit = image.attribution || {};
++    return { src: image.src, alt: clean(image.alt, 250), altSource: image.altSource === 'vision' ? 'vision' : 'author',
++      source: ['mulberry', 'wikimedia'].includes(image.source) ? image.source : 'upload',
++      attribution: ['set', 'author', 'license', 'via', 'url', 'title', 'licenseUrl'].map(key => clean(credit[key], key === 'author' || key === 'title' ? 160 : key.toLowerCase().includes('url') ? 2000 : 120)) };
++  }
++  function ReadingGlossEditor({ item, supports, request, onUpdate, disabled, adapted, snapshot: adaptedSnapshot, embedded, draftSession, supportsStale }) {
+     // An adapted text's word help anchors to the adapted passage, never the original.
+     const snapshot = adapted ? adaptedSnapshot : getInstructionalContextApi()?.getSourceSnapshot?.(item);
+     const passageName = adapted ? 'adapted text' : 'original';
+     const sourceText = snapshot?.text || '';
+     const sourceKey = String(item?.id || '') + ':' + (snapshot?.fingerprint || '');
+-    const [open, setOpen] = React.useState(false);
+-    const [draft, setDraft] = React.useState(null);
+-    const [baseline, setBaseline] = React.useState('');
++    const ownerKey = readingSupportDraftKey(item, adapted);
++    const cached = draftSession?.records.get(ownerKey);
++    const [open, setOpen] = React.useState(!!cached?.draft);
++    const [draft, setDraft] = React.useState(cached?.draft || null);
++    const [baseline, setBaseline] = React.useState(cached?.baseline || '');
++    const [draftSource, setDraftSource] = React.useState(cached?.sourceText || sourceText);
+     const [pendingAction, setPendingAction] = React.useState(null);
+     const [notice, setNotice] = React.useState('');
+     const [error, setError] = React.useState('');
+     const [busy, setBusy] = React.useState(false);
+@@ -1306,18 +1320,50 @@
+     const termRef = React.useRef(null), definitionRef = React.useRef(null), addRef = React.useRef(null), toggleRef = React.useRef(null), keepRef = React.useRef(null);
+     const editRefs = React.useRef({});
+     const panelId = 'reading-gloss-editor-' + String(item?.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
+     const entries = supports?.annotations || [];
+-    const signature = value => value ? JSON.stringify({ query: value.query, start: value.start, text: value.text, priority: value.priority, pinned: value.pinned, image: value.image ? value.image.src.length + ':' + value.image.alt : '' }) : '';
++    const signature = value => value ? JSON.stringify({ query: value.query, start: value.start, text: value.text, priority: value.priority, pinned: value.pinned, image: readingSupportImageSignature(value.image) }) : '';
+     const [pickingPicture, setPickingPicture] = React.useState(false);
++    const [preparingPicture, setPreparingPicture] = React.useState(false);
++    const pictureEpoch = React.useRef(0), mountedRef = React.useRef(true), ownerRef = React.useRef(ownerKey), pendingRef = React.useRef(null), focusRef = React.useRef(null), sectionRef = React.useRef(null);
++    pendingRef.current = pendingAction;
+     // Removing, choosing or cancelling a picture removes the focused button; land on the picture button instead.
+     const pictureButtonRef = React.useRef(null), refocusPicture = React.useRef(false);
+     React.useEffect(() => { if (refocusPicture.current && pictureButtonRef.current) { refocusPicture.current = false; pictureButtonRef.current.focus(); } });
+     const dirty = !!draft && signature(draft) !== baseline;
++    const validGrowth = sourceText.startsWith(draftSource) && !(/[\p{L}\p{N}]$/u.test(draftSource) && /^[\p{L}\p{N}]/u.test(sourceText.slice(draftSource.length)));
++    const staleDraft = !!draft && draftSource !== sourceText && !validGrowth;
++    const cancelPicture = () => { pictureEpoch.current++; setPreparingPicture(false); };
++    const dismissPending = () => { pendingRef.current?.cancel?.(); pendingRef.current = null; setPendingAction(null); };
++    const reveal = () => { setOpen(true); const details = sectionRef.current?.closest('details'); if (details) details.open = true; };
++    React.useLayoutEffect(() => {
++      if (ownerRef.current !== ownerKey) {
++        const saved = draftSession?.records.get(ownerKey);
++        ownerRef.current = ownerKey; cancelPicture(); dismissPending();
++        setDraft(saved?.draft || null); setBaseline(saved?.baseline || ''); setDraftSource(saved?.sourceText || sourceText);
++        setOpen(!!saved?.draft); setPickingPicture(false); setNotice(''); setError(''); setBusy(false);
++        return;
++      }
++      if (draftSession) {
++        if (draft) draftSession.records.set(ownerKey, { draft, baseline, sourceText: draftSource, dirty });
++        else draftSession.records.delete(ownerKey);
++      }
++    });
++    React.useLayoutEffect(() => {
++      if (!draftSession) return;
++      return draftSession.register({ hasChanges: () => dirty || busy || preparingPicture,
++        defer: action => { if (pendingRef.current) { action.cancel?.(); return; } reveal(); pendingRef.current = action; setPendingAction(action); } });
++    }, [draftSession, dirty, busy, preparingPicture, ownerKey]);
++    React.useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; pictureEpoch.current++; pendingRef.current?.cancel?.(); }; }, []);
++    React.useEffect(() => {
++      const protect = event => { if (dirty || busy || preparingPicture) { event.preventDefault(); event.returnValue = ''; } };
++      window.addEventListener('beforeunload', protect);
++      return () => window.removeEventListener('beforeunload', protect);
++    }, [dirty, busy, preparingPicture]);
+     const sameAnchor = (left, right) => !!left && !!right && left.start === right.start && left.end === right.end && left.quote === right.quote;
+     const contextFor = entry => readingGlossContext(sourceText, entry.start, entry.end).text;
+     const anchorFor = entry => ({ start: entry.start, end: entry.end, quote: entry.quote });
+-    const replaceDraft = value => { setDraft(value); setBaseline(signature(value)); setNotice(''); setError(''); setPendingAction(null); setPickingPicture(false); };
++    const replaceDraft = value => { cancelPicture(); dismissPending(); if (!value) draftSession?.records.delete(ownerKey); setDraft(value); setDraftSource(sourceText); setBaseline(signature(value)); setNotice(''); setError(''); setPickingPicture(false); };
+     const clearDraft = () => replaceDraft(null);
+     const applyEdit = entry => {
+       const value = { id: entry.id, anchor: anchorFor(entry), query: entry.quote, start: String(entry.start),
+         text: entry.definition || entry.explanation || entry.text || '', priority: entry.priority || 'helpful', pinned: entry.pinned === true, image: entry.image || null };
+@@ -1329,19 +1375,21 @@
+       const key = sourceKeyRef.current;
+       setBusy(true); setNotice(''); setError('');
+       try {
+         const result = await onUpdate(item, action);
+-        if (sourceKeyRef.current !== key) return null;
++        if (!mountedRef.current || sourceKeyRef.current !== key) return null;
+         if (!result) throw new Error(simplifiedText('simplified.gloss_the_reading_changed_reopen_its_word', 'The reading changed. Reopen its word supports and try again.'));
+         setNotice(success);
+         return result;
+       } catch (failure) {
+-        if (sourceKeyRef.current === key) setError(failure?.message || 'This word support could not be saved.');
++        if (mountedRef.current && sourceKeyRef.current === key) setError(failure?.message || 'This word support could not be saved.');
+         return null;
+-      } finally { if (sourceKeyRef.current === key) setBusy(false); }
++      } finally { if (mountedRef.current && sourceKeyRef.current === key) setBusy(false); }
+     };
+     const performAction = async action => {
++      pendingRef.current = null;
+       setPendingAction(null);
++      if (action.type === 'transition') { clearDraft(); action.run(); return; }
+       if (action.type === 'edit') { applyEdit(action.entry); return; }
+       if (action.type === 'add') { setOpen(true); replaceDraft({ id: null, query: '', start: '', text: '', priority: 'essential', pinned: false }); return; }
+       if (action.type === 'close' || action.type === 'finish') {
+         const id = draft?.id; clearDraft();
+@@ -1359,15 +1407,15 @@
+         }
+       }
+     };
+     const requestAction = action => {
+-      if (disabled || busy) return;
++      if (disabled || busy || preparingPicture) return;
+       if (action.type === 'edit' && sameAnchor(draft?.anchor, action.entry)) { setOpen(true); definitionRef.current?.focus(); return; }
+       const replacesDraft = action.type !== 'remove' || sameAnchor(draft?.anchor, action.entry);
+-      if (dirty && replacesDraft) { setOpen(true); setPendingAction(action); return; }
++      if (dirty && replacesDraft) { reveal(); pendingRef.current = action; setPendingAction(action); return; }
+       performAction(action);
+     };
+-    React.useEffect(() => { setOpen(false); setDraft(null); setBaseline(''); setPendingAction(null); setNotice(''); setError(''); setBusy(false); setPickingPicture(false); setFilterQuery(''); setFilterKind('all'); }, [sourceKey]);
++    React.useEffect(() => { cancelPicture(); dismissPending(); setBusy(false); setPickingPicture(false); setFilterQuery(''); setFilterKind('all'); }, [sourceKey]);
+     const isOpen = !!embedded || open;
+     const canFilter = entries.length >= GLOSS_FILTER_MIN;
+     const needle = canFilter ? filterQuery.trim().toLocaleLowerCase() : '';
+     const kind = canFilter ? filterKind : 'all';
+@@ -1381,9 +1429,9 @@
+       if (entry) requestAction({ type: 'edit', entry });
+     }, [request]);
+     React.useEffect(() => {
+       if (pendingAction) keepRef.current?.focus();
+-      else if (draft) (draft.anchor ? definitionRef.current : termRef.current)?.focus();
++      else if (draft) (focusRef.current?.isConnected && !focusRef.current.disabled ? focusRef.current : draft.anchor ? definitionRef.current : termRef.current)?.focus();
+     }, [!!draft, draft?.anchor?.start, pendingAction]);
+     const matches = React.useMemo(() => {
+       const anchor = draft?.anchor;
+       if (anchor) return sourceText.slice(anchor.start, anchor.end) === anchor.quote
+@@ -1392,11 +1440,13 @@
+     }, [sourceText, draft?.query, draft?.anchor]);
+     const selected = draft && (draft.start !== '' ? matches.find(value => String(value.start) === draft.start) : matches.length === 1 ? matches[0] : null);
+     const updateDraft = fields => { setDraft(previous => ({ ...previous, ...fields })); setNotice(''); setError(''); };
+     const save = async () => {
++      if (disabled || busy || preparingPicture) return false;
+       setNotice(''); setError('');
+-      if (!selected || !draft?.text.trim()) { setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.')); return; }
+-      if (draft.text.trim().length > 2400) { setError(simplifiedText('simplified.gloss_shorten_this_explanation_to_2_400', 'Shorten this explanation to 2,400 characters or fewer before saving.')); return; }
++      if (staleDraft || supportsStale) { setError('The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.'); return false; }
++      if (!selected || !draft?.text.trim()) { setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.')); return false; }
++      if (draft.text.trim().length > 2400) { setError(simplifiedText('simplified.gloss_shorten_this_explanation_to_2_400', 'Shorten this explanation to 2,400 characters or fewer before saving.')); return false; }
+       // IDs can change during a refresh. The exact source occurrence owns the
+       // edit; an old ID reused for another range must never redirect it.
+       const current = entries.find(entry => sameAnchor(entry, selected));
+       let id = current?.id || draft.id || 'gloss-' + selected.start + '-' + selected.end;
+@@ -1405,17 +1455,22 @@
+       for (let suffix = 1; entries.some(entry => entry.id === id && !sameAnchor(entry, selected)); suffix++) id = baseId + '-' + suffix;
+       const annotation = { id, kind: current?.kind || 'gloss', ...anchorFor(selected), text: draft.text.trim(), priority: draft.priority, pinned: draft.pinned, image: draft.image || null };
+       const saved = await mutate({ type: 'upsert', annotation }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
+       // A reading's pictures share one budget: say so if this picture did not fit.
+-      const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : saved.readingSupports);
+-      if (savedSupports && draft.image && !(savedSupports.annotations || []).some(entry => entry.id === id && entry.image)) {
++      const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : adapted ? saved.adaptedReadingSupports : saved.readingSupports);
++      const accepted = savedSupports?.annotations?.find(entry => entry.id === id && sameAnchor(entry, selected));
++      if (!accepted) { if (saved) { setNotice(''); setError('The save did not confirm this word support. Your draft is retained.'); } return false; }
++      const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: accepted.definition || accepted.explanation || accepted.text, image: accepted.image || null };
++      setBaseline(signature(next)); setDraftSource(sourceText);
++      if (JSON.stringify(readingSupportImageSignature(draft.image)) !== JSON.stringify(readingSupportImageSignature(accepted.image))) {
+         setNotice(''); setError(simplifiedText('simplified.gloss_the_explanation_was_saved_but_its', 'The explanation was saved, but its picture did not fit: this reading already has as many pictures as it can hold. Remove another picture first.'));
++        setDraft({ ...next, image: draft.image });
++        return false;
+       }
+-      if (saved) {
+-        const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: annotation.text };
+-        setDraft(next); setBaseline(signature(next));
+-      }
++      setDraft(next);
++      return true;
+     };
++    const saveAndContinue = async () => { const action = pendingRef.current; if (await save()) { if (mountedRef.current && action && pendingRef.current === action) performAction(action); } };
+     const pin = async (entry, pinned) => {
+       const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? 'This support will stay visible in lighter view.' : 'This support now follows the lighter-view selection.');
+       if (saved && sameAnchor(draft?.anchor, entry)) {
+         setDraft(previous => previous && ({ ...previous, pinned }));
+@@ -1425,21 +1480,22 @@
+     const occurrenceLabel = entry => {
+       const quote = entry.quote.length > 80 ? entry.quote.slice(0, 80) + '…' : entry.quote;
+       return simplifiedText('simplified.gloss_occurrence', '{word}, text position {start}–{end}: {context}', { word: quote, start: entry.start + 1, end: entry.end, context: contextFor(entry) });
+     };
+-    return <section data-reading-gloss-editor className={embedded ? 'text-sm text-slate-800' : 'my-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800'}>
++    return <section ref={sectionRef} data-reading-gloss-editor onFocusCapture={event => { if (event.target.closest('[data-gloss-draft]')) focusRef.current = event.target; }} className={embedded ? 'text-sm text-slate-800' : 'my-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800'}>
+       {!embedded && <button ref={toggleRef} type="button" aria-expanded={open} aria-controls={panelId} disabled={busy} onClick={() => open ? requestAction({ type: 'close' }) : setOpen(true)} className="flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2 text-left font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:cursor-wait">
+         <span>{simplifiedText('simplified.gloss_review_word_supports', 'Review word supports')}{' '}{entries.length ? '(' + entries.length + ')' : ''}</span>
+         <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d={open ? 'm6 15 6-6 6 6' : 'm9 6 6 6-6 6'} /></svg>
+       </button>}
+       {isOpen && <div id={panelId} className={embedded ? 'space-y-3' : 'mt-2 space-y-3'}>
+         <p className="text-sm leading-relaxed text-slate-600">{adapted ? simplifiedText('simplified.gloss_add_or_adjust_explanations_for_words', 'Add or adjust explanations for words in the adapted text.') : simplifiedText('simplified.gloss_add_or_adjust_explanations_beside_the', 'Add or adjust explanations beside the original words.')}{' '}{simplifiedText('simplified.gloss_teacher_edits_and_removed_supports_are', 'Teacher edits and removed supports are kept when AI suggestions are refreshed.')}</p>
+         <button ref={addRef} type="button" disabled={disabled || busy || !!pendingAction} onClick={() => requestAction({ type: 'add' })} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.gloss_add_a_word_or_phrase', 'Add a word or phrase')}</button>
+-        {pendingAction && <div role="alertdialog" aria-labelledby={panelId + '-discard-title'} aria-describedby={panelId + '-discard-description'} className="space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-3" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); setPendingAction(null); } }}>
++        {pendingAction && <div role="alertdialog" aria-labelledby={panelId + '-discard-title'} aria-describedby={panelId + '-discard-description'} className="space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-3" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); dismissPending(); } }}>
+           <p id={panelId + '-discard-title'} className="font-bold">{simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')}</p><p id={panelId + '-discard-description'}>{simplifiedText('simplified.gloss_your_explanation_has_not_been_saved', 'Your explanation has not been saved. Keep editing to preserve this draft, or discard it to continue.')}</p>
+-          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={() => setPendingAction(null)}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" className="min-h-11 rounded border border-amber-700 px-3" onClick={() => { const action = pendingAction; setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
++          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : 'Save and continue'}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
+         </div>}
+         {draft && <fieldset disabled={disabled || busy || !!pendingAction} data-gloss-draft aria-label={draft.anchor ? simplifiedText('simplified.gloss_edit_word_support', 'Edit word support') : simplifiedText('simplified.gloss_add_word_support', 'Add word support')} className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
++          {(staleDraft || supportsStale) && <p role="status">The passage changed. Your draft is retained. Review the word supports, then <button type="button" disabled={supportsStale} onClick={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} className="underline">choose the occurrence in the current text</button> before saving.</p>}
+           <label className="block font-semibold">{simplifiedText('simplified.gloss_word_from', 'Word or phrase from the {passage}', { passage: passageName })}<input ref={termRef} type="text" maxLength={draft.anchor ? undefined : 160} value={draft.query} readOnly={!!draft.anchor} onChange={event => updateDraft({ query: event.target.value, start: '' })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
+           {!draft.anchor && matches.length > 1 && <label className="block font-semibold">{simplifiedText('simplified.gloss_which_occurrence', 'Which occurrence?')}<select value={draft.start} onChange={event => updateDraft({ start: event.target.value })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"><option value="">{simplifiedText('simplified.gloss_choose_the_word_in_context', 'Choose the word in context')}</option>{matches.map((match, index) => <option key={match.start} value={String(match.start)}>{simplifiedText('simplified.gloss_occurrence_option', '{number}. Text position {start}–{end}: {context}', { number: index + 1, start: match.start + 1, end: match.end, context: match.context })}</option>)}</select></label>}
+           {matches.truncated && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_showing_the_first_200_matching_occurrenc', 'Showing the first 200 matching occurrences. Use a longer phrase to find a later occurrence.')}</p>}
+           {!!draft.query.trim() && !matches.length && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_no_exact_match', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the {passage}.', { passage: passageName })}</p>}
+@@ -1456,11 +1512,14 @@
+             {pickingPicture && (window.AlloModules?.ClassroomImagePicker && window.AlloModules?.AltText
+               ? <>{React.createElement(window.AlloModules.ClassroomImagePicker, {
+                   idPrefix: panelId + '-picture', initialQuery: draft.query, language: snapshot?.language, sources: ['symbols', 'photos'],
+                   onChoose: async choice => {
++                    const epoch = ++pictureEpoch.current, owner = ownerKey, key = sourceKey;
++                    setPreparingPicture(true);
+                     const A = window.AlloModules.AltText, contract = getInstructionalContextApi();
+                     try {
+                       const src = await A.shrinkImageDataUrl(choice.dataUrl, 200, { kind: choice.source === 'mulberry' ? 'symbol' : 'photo' });
++                      if (!mountedRef.current || epoch !== pictureEpoch.current || owner !== ownerRef.current || key !== sourceKeyRef.current) return;
+                       const budget = contract?.readingSupportPictureBudget ? contract.readingSupportPictureBudget(supports) : { remaining: Infinity, perPicture: Infinity };
+                       const replacing = entries.find(entry => draft.anchor && sameAnchor(entry, draft.anchor))?.image?.src?.length || 0;
+                       if (src.length > budget.perPicture || src.length > budget.remaining + replacing) {
+                         setError(simplifiedText('simplified.gloss_this_reading_has_no_room_for', 'This reading has no room for another picture. Pictures share a small budget so the lesson stays light to save and share. Remove a picture from another word first.'));
+@@ -1468,14 +1527,15 @@
+                       }
+                       updateDraft({ image: { src, alt: choice.alt || '', altSource: choice.altSource || 'author', source: choice.source, attribution: choice.attribution || null } });
+                       refocusPicture.current = true;
+                       setPickingPicture(false);
+-                    } catch (_) { setError(simplifiedText('simplified.gloss_that_picture_could_not_be_added', 'That picture could not be added. Try another one.')); }
++                    } catch (_) { if (mountedRef.current && epoch === pictureEpoch.current) setError(simplifiedText('simplified.gloss_that_picture_could_not_be_added', 'That picture could not be added. Try another one.')); }
++                    finally { if (mountedRef.current && epoch === pictureEpoch.current) setPreparingPicture(false); }
+                   },
+-                })}<button type="button" onClick={() => { refocusPicture.current = true; setPickingPicture(false); }} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('common.cancel', 'Cancel')}</button></>
++                })}<button type="button" onClick={() => { cancelPicture(); refocusPicture.current = true; setPickingPicture(false); }} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('common.cancel', 'Cancel')}</button></>
+               : <p role="status" className="text-slate-700">{simplifiedText('simplified.gloss_picture_search_is_still_loading_try', 'Picture search is still loading. Try again in a moment.')}</p>)}
+           </div>
+-          <div className="flex flex-wrap gap-2"><button type="button" disabled={disabled || busy || !selected || !draft.text.trim()} onClick={save} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50">{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_word_support', 'Save word support')}</button><button type="button" disabled={busy} onClick={() => requestAction({ type: 'finish' })} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('simplified.gloss_done_editing', 'Done editing')}</button></div>
++          <div className="flex flex-wrap gap-2"><button type="button" disabled={disabled || busy || preparingPicture || staleDraft || supportsStale || !selected || !draft.text.trim()} onClick={save} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50">{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_word_support', 'Save word support')}</button><button type="button" disabled={busy} onClick={() => requestAction({ type: 'finish' })} className="min-h-11 rounded-lg border border-slate-300 px-3">{simplifiedText('simplified.gloss_done_editing', 'Done editing')}</button></div>
+         </fieldset>}
+         {error && <p role="alert" className="rounded bg-red-50 p-2 text-red-900">{error}</p>}
+         {/* Mounted empty so screen readers announce the text when it arrives. */}
+         <p role="status" data-gloss-notice className={notice ? 'rounded bg-indigo-50 p-2 text-indigo-900' : 'sr-only'}>{notice}</p>
+@@ -1598,9 +1658,9 @@
+ 
+   // Word help for an ADAPTED text: its own supports (item.adaptedReadingSupports),
+   // hidden from students until the teacher shows them, and listed after the
+   // passage because the adapted reader does not keep character positions.
+-  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet }) {
++  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession }) {
+     const contract = getInstructionalContextApi();
+     const [busy, setBusy] = React.useState(false);
+     const [notice, setNotice] = React.useState('');
+     // The panel opens by itself when an edit leaves word help stale, and stays open
+@@ -1675,9 +1735,10 @@
+     const stored = item.adaptedReadingSupports;
+     const help = contract.validateAdaptedReadingSupports(item, stored);
+     const entries = help.annotations || [];
+     const stale = help.status === 'stale';
+-    const snapshot = stale ? null : contract.getAdaptedSupportSnapshot(item, stored);
++    const retainedDraft = draftSession?.records.get(readingSupportDraftKey(item, true))?.draft;
++    const snapshot = stale ? retainedDraft && contract.getAdaptedSupportSnapshot(item, null) : contract.getAdaptedSupportSnapshot(item, stored);
+     // After an edit, how many explanations are for words still in the passage.
+     const staleCount = stale && Array.isArray(stored?.annotations) ? stored.annotations.length : 0;
+     let keepable = 0;
+     if (staleCount && contract.rebaseAdaptedReadingSupports) { try { keepable = contract.rebaseAdaptedReadingSupports(item, stored).annotations.length; } catch (_) {} }
+@@ -1710,15 +1771,27 @@
+         {onGenerate && <button type="button" data-adapted-word-help-generate disabled={disabled || busy} onClick={() => run(() => onGenerate(item), result => result?.status === 'unavailable' ? simplifiedText('simplified.word_help_word_help_could_not_be_suggested', 'Word help could not be suggested. The adapted text is unchanged.') : result?.status === 'partial' ? simplifiedText('simplified.word_help_some_words_could_not_be_supported', 'Some words could not be supported. Review the suggestions before showing them.') : simplifiedText('simplified.word_help_suggested_word_help_is_ready_review', 'Suggested word help is ready. Review it, then show it to students.'))} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{busy ? simplifiedText('simplified.word_help_working', 'Working…') : entries.length ? simplifiedText('simplified.word_help_refresh_suggested_word_help', 'Refresh suggested word help') : simplifiedText('simplified.word_help_suggest_word_help', 'Suggest word help')}</button>}
+         {onUpdate && importable > 0 && <button type="button" data-adapted-word-help-import disabled={disabled || busy} onClick={() => run(() => onUpdate(item, { type: 'import', annotations: fromOriginal }), result => (focusNotice.current = true) && simplifiedText('simplified.word_help_added_from_original', 'Added explanations from the original ({count}). Students will not see word help until you check them and show it again.', { count: Math.max(0, (result?.annotations?.length || 0) - entries.length) }))} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.word_help_use_from_original', 'Reuse explanations from the original ({count})', { count: importable })}</button>}
+       </div>
+       <p ref={noticeRef} tabIndex={-1} role="status" data-word-help-notice className={notice ? 'rounded bg-indigo-50 p-2 text-indigo-900' : 'sr-only'}>{notice}</p>
+-      {snapshot && onUpdate && <ReadingGlossEditor item={item} supports={help} snapshot={snapshot} adapted embedded onUpdate={onUpdate} disabled={disabled || busy} />}
++      {snapshot && onUpdate && <ReadingGlossEditor key={readingSupportDraftKey(item, true)} item={item} supports={help} snapshot={snapshot} adapted embedded onUpdate={onUpdate} disabled={disabled || busy} draftSession={draftSession} supportsStale={stale} />}
+     </details>;
+     if (!list && !panel) return null;
+     return <>{list}{panel}</>;
+   }
+ 
+   function SimplifiedView(props) {
++    const liveReaderProps = React.useRef(props); liveReaderProps.current = props;
++    const localDraftSessionRef = React.useRef(null);
++    const supportDraftSessionRef = props.supportDraftSessionRef || localDraftSessionRef;
++    if (!supportDraftSessionRef.current) supportDraftSessionRef.current = window.AlloModules?.ReaderSupportDrafts?.createSession();
++    const supportDraftSession = props.isStudentPreview ? null : supportDraftSessionRef.current;
++    const requestSupportTransition = work => supportDraftSession ? supportDraftSession.request(work) : work();
++    React.useEffect(() => {
++      if (!supportDraftSession || props.supportDraftSessionRef) return;
++      const protect = event => supportDraftSession.protectUnload(event);
++      window.addEventListener('beforeunload', protect);
++      return () => window.removeEventListener('beforeunload', protect);
++    }, [supportDraftSession, props.supportDraftSessionRef]);
+     var viewText = (key, fallback, params) => simplifiedText(key, fallback, params, props.t);
+     // State reads
+     var t = props.t;
+     var simplifiedAudioEditLabel = t('common.edit') || '';
+@@ -1934,9 +2007,9 @@
+     var handleCheckAlignment = props.handleCheckAlignment;
+     var handleDuplicateResource = props.handleDuplicateResource;
+     var handleDownloadAudio = props.handleDownloadAudio;
+     var handleToggleIsTeacherToolbarExpanded = props.handleToggleIsTeacherToolbarExpanded;
+-    var handleToggleIsEditingLeveledText = props.handleToggleIsEditingLeveledText;
++    var handleToggleIsEditingLeveledText = props.handleToggleIsEditingLeveledText && (() => requestSupportTransition(() => props.handleToggleIsEditingLeveledText()));
+     var handleSetIsCustomReviseOpenToFalse = props.handleSetIsCustomReviseOpenToFalse;
+     var closeDefinition = props.closeDefinition;
+     var closePhonics = props.closePhonics;
+     var closeRevision = props.closeRevision;
+@@ -3244,8 +3317,9 @@
+     var selectedComparisonArtifact = isTeacherMode && (history || []).find(item => String(item.id) === requestedComparisonSource && item.id !== generatedContent?.id && ['analysis', 'simplified'].includes(item.type) && getArtifactReadingText(item));
+     var comparisonSourceId = selectedComparisonArtifact ? requestedComparisonSource : 'linked';
+     React.useEffect(function () { setComparisonKaraoke(null); }, [generatedContent?.id, generatedContent?.data, isCompareMode, comparisonSourceId, comparisonLanguage]);
+     function updateComparisonPreference(field, value) {
++      if (supportDraftSession?.blocked()) return requestSupportTransition(() => updateComparisonPreference(field, value));
+       if (typeof stopPlayback === 'function') stopPlayback();
+       prepareReadingNavigation(null, false);
+       setRelatedPassage(null); setLinkedSection(0);
+       setComparisonPreferences(previous => {
+@@ -3301,8 +3375,9 @@
+       }
+     }, [navigationViewKey]);
+     function openOriginalReading(item, expectedText, focusPassage) {
+       if (protectedOriginal && !isCompareMode && item?.id === generatedContent?.id) return;
++      if (supportDraftSession?.blocked()) return requestSupportTransition(() => openOriginalReading(item, expectedText, focusPassage));
+       prepareReadingNavigation('original', focusPassage);
+       var requestedSnapshot = item?.type === 'simplified' ? readingContract?.getSourceSnapshot?.(item) : null;
+       if (isCompareMode) setComparisonReturn({ id: generatedContent.id, fingerprint: readingFingerprint(generatedContent.data), scope: readingScopeIdentity(generatedContent), expectedText: requestedSnapshot?.text || expectedText || capturedSource?.text || '', sourceItem: item });
+       if (typeof stopPlayback === 'function') stopPlayback();
+@@ -3322,8 +3397,9 @@
+       }
+     }
+     var readerText = function (key, fallback) { var value = t(key); return value && value !== key ? value : fallback; };
+     function chooseReadingMode(mode) {
++      if (isCompareMode && !['read', 'define', 'phonics', 'explain'].includes(mode) && supportDraftSession?.blocked()) return requestSupportTransition(() => chooseReadingMode(mode));
+       if (typeof stopPlayback === 'function') stopPlayback();
+       if (typeof props.closeDefinition === 'function') props.closeDefinition();
+       if (typeof props.closePhonics === 'function') props.closePhonics();
+       if (typeof props.closeRevision === 'function') props.closeRevision();
+@@ -3716,9 +3792,9 @@
+       var rows = [
+         { key: 'text', tone: textChanged ? 'attention' : 'ok',
+           label: textChanged ? viewText('simplified.review_text_changed', 'Text changed') : viewText('simplified.review_text_unchanged', 'Text unchanged'),
+           detail: textChanged ? viewText('simplified.review_text_changed_detail', 'Edited since you opened it. Check word help and audio.') : viewText('simplified.review_text_unchanged_detail', 'No edits since you opened it.'),
+-          actions: [capturedSource && typeof setIsCompareMode === 'function' && ['compare', viewText('simplified.review_compare', 'Compare with original'), () => { chooseReadingMode('read'); setIsCompareMode(true); }],
++          actions: [capturedSource && typeof setIsCompareMode === 'function' && ['compare', viewText('simplified.review_compare', 'Compare with original'), () => requestSupportTransition(() => { chooseReadingMode('read'); setIsCompareMode(true); })],
+             typeof handleToggleIsEditingLeveledText === 'function' && ['edit', isEditingLeveledText ? t('common.done_editing') : viewText('simplified.review_edit', 'Edit text'), handleToggleIsEditingLeveledText]] },
+         help && { key: 'help', tone: help.status === 'stale' || (helpCount && !help.shown) ? 'attention' : helpCount ? 'ok' : 'neutral',
+           label: help.status === 'stale' || (helpCount && !help.shown) ? viewText('simplified.review_help_needs_review', 'Word help needs review') : helpCount ? viewText('simplified.review_help_shown', 'Word help shown to students') : viewText('simplified.review_help_none', 'No word help'),
+           detail: help.status === 'stale' ? viewText('simplified.review_help_stale_detail', 'The text changed after word help was made, so students do not see it.') : helpCount ? (helpCount === 1 ? viewText('simplified.word_help_summary_one', '1 support') : viewText('simplified.word_help_summary_count', '{count} supports', { count: helpCount })) + (help.shown ? '' : ' · ' + viewText('simplified.word_help_summary_hidden', 'Hidden from students')) : viewText('simplified.review_help_none_detail', 'Optional explanations for hard words.'),
+@@ -3794,8 +3870,9 @@
+       // A host without previews applies straight away; still offer the way back.
+       if (!result) setAdaptUndo({ previousId: before.id, previousData: before.data, keptOriginal: false, appliedData: null });
+     }
+     async function applyAdaptation() {
++      if (supportDraftSession?.blocked()) return requestSupportTransition(applyAdaptation);
+       var previousData = generatedContent.data;
+       var result = await handleComplexityAdjustment({ apply: adaptPreview, options: currentAdaptOptions() });
+       if (result && result.status === 'applied') {
+         setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data == null ? null : result.data });
+@@ -3805,8 +3882,9 @@
+         setAdaptPreview(null); setAdaptNotice(result.message || 'Current text kept. Essential terms could not be verified.');
+       } else if (result && result.status === 'stale') setAdaptPreview(null);
+     }
+     function undoAdaptation() {
++      if (supportDraftSession?.blocked()) return requestSupportTransition(undoAdaptation);
+       var undo = adaptUndo;
+       if (!undo) return;
+       if (undo.keptOriginal) {
+         var previous = (props.history || []).find(item => item && item.id === undo.previousId);
+@@ -3920,10 +3998,10 @@
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ key: 'source', title: t('simplified.diff_original'), text: sourceText, language: originalLanguage }, { key: 'adapted', title: t('simplified.diff_adapted'), text: targetText, language: targetLanguage }].map(version => <section key={version.key} className="min-w-0 rounded-xl border border-slate-300 bg-white p-4"><h3 className="mb-3 font-bold">{version.title}{version.language ? ' · ' + version.language : ''}</h3><div className="mb-3 flex flex-wrap gap-2"><button type="button" data-comparison-karaoke={version.key} disabled={!version.text || !KaraokeReaderOverlay} className="min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={version.key === 'source' ? readerText('simplified.listen_along_original', 'Listen along to the original') : readerText('simplified.listen_along_adapted', 'Listen along to the adapted text')} onClick={() => {
+             if (typeof stopPlayback === 'function') stopPlayback();
+             var entries = getReadAloudSentenceEntriesForText(version.text, version.language || readingLanguage);
+             setComparisonKaraoke({ text: version.text, language: version.language || readingLanguage, entries, sentences: entries.map(entry => entry.text), languages: entries.map(entry => simplifiedLanguageTag(entry.language)) });
+-          }}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_along', 'Listen along')}</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>{viewText('simplified.compare_open_original_reader', 'Open original reader')}</button>}</div><div data-compare-version={version.key} data-word-help-language={version.key === 'adapted' && showReadingGlosses && !showDiff && !(adaptedParts && effectiveLanguage === 'english') ? targetLanguage : undefined} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && !showDiff && renderPictureCredits(comparisonGlosses)}{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor key={comparisonSupportOwner.id} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
+-        {showReadingGlosses && !showDiff && <AdaptedWordHelp key={generatedContent?.id} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
++          }}><Volume2 size={16} aria-hidden="true" />{readerText('simplified.listen_along', 'Listen along')}</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>{viewText('simplified.compare_open_original_reader', 'Open original reader')}</button>}</div><div data-compare-version={version.key} data-word-help-language={version.key === 'adapted' && showReadingGlosses && !showDiff && !(adaptedParts && effectiveLanguage === 'english') ? targetLanguage : undefined} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && !showDiff && renderPictureCredits(comparisonGlosses)}{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(comparisonSupportOwner, false)} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
++        {showReadingGlosses && !showDiff && <AdaptedWordHelp draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
+       </div>;
+     }
+ 
+     function isExactPassagePlaying(pane) { return !!isPlaying && playingContentId === 'reading-' + generatedContent.id + '-' + pane; }
+@@ -3978,16 +4056,20 @@
+     }
+     var returnComparisonItem = protectedOriginal && comparisonReturn && generatedContent.data === comparisonReturn.expectedText && readingContract?.sameReadingSourceFamily?.(generatedContent, comparisonReturn.sourceItem) && (history || []).find(item => item.id === comparisonReturn.id && readingFingerprint(item.data) === comparisonReturn.fingerprint && readingScopeIdentity(item) === comparisonReturn.scope && getSimplifiedInstructionalText(item).form === 'adapted');
+     function switchReadingVersion(item, compare) {
+       if (!item || (item.id === generatedContent?.id && !!compare === !!isCompareMode)) return;
++      if (supportDraftSession?.blocked()) return requestSupportTransition(() => switchReadingVersion(item, compare));
++      // A deferred save can replace this artifact while the requested transition waits.
++      const live = liveReaderProps.current;
++      item = [live.generatedContent, ...(live.history || [])].find(candidate => candidate && readingSupportDraftKey(candidate, false) === readingSupportDraftKey(item, false)) || item;
+       prepareReadingNavigation(compare ? 'both' : 'adapted', false);
+       if (typeof stopPlayback === 'function') stopPlayback();
+       if (props.onOpenReadingArtifact) props.onOpenReadingArtifact(item, compare);
+-      else { chooseReadingMode('read'); setGeneratedContent?.(item); setIsCompareMode?.(!!compare); }
++      else { chooseReadingMode('read'); setGeneratedContent?.(previous => previous && readingSupportDraftKey(previous, false) === readingSupportDraftKey(item, false) ? previous : item); setIsCompareMode?.(!!compare); }
+     }
+     var versionControls = <div data-reading-versions className="my-3 flex flex-wrap items-center gap-2" role="group" aria-label={viewText('simplified.reader_reading_versions', 'Reading versions')}>{props.onReadOriginal && <button type="button" disabled={!capturedSource && !protectedOriginal} aria-pressed={protectedOriginal && !isCompareMode} className={`min-h-11 rounded-lg border px-3 disabled:opacity-50 ${protectedOriginal && !isCompareMode ? 'bg-indigo-700 text-white border-indigo-700' : 'border-indigo-300'}`} data-reading-version="original" onClick={() => openOriginalReading(generatedContent, capturedSource?.text, false)}>{viewText('simplified.reader_original', 'Original')}</button>}{(companion || !protectedOriginal) && <><button type="button" aria-pressed={!protectedOriginal && !isCompareMode} className={`min-h-11 rounded-lg border px-3 ${!protectedOriginal && !isCompareMode ? 'bg-indigo-700 text-white border-indigo-700' : 'border-indigo-300'}`} data-reading-version="adapted" onClick={() => switchReadingVersion(companion || generatedContent, false)}>{viewText('simplified.diff_adapted', 'Adapted')}</button><button type="button" aria-pressed={isCompareMode} disabled={!capturedSource} className={`min-h-11 rounded-lg border px-3 disabled:opacity-50 ${isCompareMode ? 'bg-indigo-700 text-white border-indigo-700' : 'border-indigo-300'}`} data-reading-version="both" onClick={() => switchReadingVersion(companion || generatedContent, true)}>{viewText('simplified.reader_both', 'Both')}</button></>}{returnComparisonItem && <button type="button" className="min-h-11 rounded-lg border border-indigo-300 px-3" onClick={() => switchReadingVersion(returnComparisonItem, true)}>{viewText('simplified.reader_back_to_comparison', 'Back to comparison')}</button>}{protectedOriginal && isTeacherMode && props.onCreateAdaptedCompanion && <button type="button" disabled={isProcessing} onClick={() => props.onCreateAdaptedCompanion(generatedContent)} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white disabled:opacity-50">{viewText('simplified.reader_create_adapted_companion', 'Create adapted companion')}</button>}</div>;
+     function renderOriginalReading() {
+-      return <div data-simplified-reading-body="true" style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><div className="mb-3 flex flex-wrap items-center gap-3"><button type="button" data-reader-listen onClick={() => speakExactPassage(simplifiedReadAloudText, 'original', readingLanguage)} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white">{isExactPassagePlaying('original') ? viewText('simplified.original_stop_original', 'Stop original') : viewText('simplified.original_listen_to_original', 'Listen to original')}</button>{checkedSupports?.annotations?.length > 0 && <><label className="inline-flex min-h-11 items-center gap-2"><input type="checkbox" checked={showReadingGlosses} onChange={e => setShowReadingGlosses(e.target.checked)} />{viewText('simplified.compare_show_glosses', 'Show glosses')}</label><label>{viewText('simplified.compare_gloss_density', 'Gloss density')}{' '}<select value={glossDensity} onChange={e => setGlossDensity(e.target.value)} className="min-h-11 rounded border p-2"><option value="all">{viewText('simplified.compare_all_supports', 'All supports')}</option><option value="light">{viewText('simplified.compare_lighter', 'Lighter')}</option></select></label><button type="button" className="min-h-11 rounded border px-3" onClick={() => { let audio = '', from = 0; audioGlosses.forEach(entry => { audio += simplifiedReadAloudText.slice(from, entry.end) + '. ' + (entry.definition || entry.explanation || entry.text) + '. '; from = entry.end; }); audio += simplifiedReadAloudText.slice(from); speakExactPassage(audio, 'glosses-' + audioGlosses.length, readingLanguage); }}>{isExactPassagePlaying('glosses-' + audioGlosses.length) ? viewText('simplified.original_stop_gloss_reading', 'Stop gloss reading') : viewText('simplified.original_listen_with_glosses', 'Listen with glosses')}</button></>}{isTeacherMode && props.onGenerateReadingSupports && <button type="button" disabled={glossBusy || !verifiedOriginal} className="min-h-11 rounded border border-indigo-300 px-3 disabled:opacity-50" onClick={async () => { const request = currentGlossSourceRef.current; setGlossBusy(true); setGlossNotice(''); try { const result = await props.onGenerateReadingSupports(generatedContent); if (request === currentGlossSourceRef.current) setGlossNotice(result?.status === 'unavailable' ? viewText('simplified.original_word_supports_could_not_be_generated', 'Word supports could not be generated. The original is unchanged.') : result?.status === 'partial' ? viewText('simplified.original_some_words_could_not_be_supported', 'Some words could not be supported. The original is unchanged.') : viewText('simplified.original_word_supports_are_ready', 'Word supports are ready.')); } catch(error) { if (request === currentGlossSourceRef.current) setGlossNotice(error?.message || viewText('simplified.original_word_supports_could_not_be_generated', 'Word supports could not be generated. The original is unchanged.')); } finally { setGlossBusy(false); } }}>{glossBusy ? viewText('simplified.original_adding_word_supports', 'Adding word supports…') : checkedSupports?.annotations?.length ? viewText('simplified.original_refresh_suggested_supports', 'Refresh suggested supports') : viewText('simplified.original_add_word_supports', 'Add word supports')}</button>}</div><p role="status" data-gloss-status className={glossNotice ? 'my-3 rounded bg-indigo-50 p-3 text-indigo-900' : 'sr-only'}>{glossNotice}</p>{isTeacherMode && verifiedOriginal && props.onUpdateReadingSupports && <ReadingGlossEditor key={generatedContent.id} item={generatedContent} supports={checkedSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}<div data-reading-passage="true" data-original-source="true" role="region" aria-label={viewText('simplified.original_original_reading', 'Original reading')} tabIndex={-1} ref={readingStartRef} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }} className="text-lg leading-relaxed">{renderExactPassage(simplifiedReadAloudText, 'original', readingLanguage, activeGlosses, generatedContent, null, true)}</div>{renderPictureCredits(activeGlosses)}</div>;
++      return <div data-simplified-reading-body="true" style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><div className="mb-3 flex flex-wrap items-center gap-3"><button type="button" data-reader-listen onClick={() => speakExactPassage(simplifiedReadAloudText, 'original', readingLanguage)} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-white">{isExactPassagePlaying('original') ? viewText('simplified.original_stop_original', 'Stop original') : viewText('simplified.original_listen_to_original', 'Listen to original')}</button>{checkedSupports?.annotations?.length > 0 && <><label className="inline-flex min-h-11 items-center gap-2"><input type="checkbox" checked={showReadingGlosses} onChange={e => setShowReadingGlosses(e.target.checked)} />{viewText('simplified.compare_show_glosses', 'Show glosses')}</label><label>{viewText('simplified.compare_gloss_density', 'Gloss density')}{' '}<select value={glossDensity} onChange={e => setGlossDensity(e.target.value)} className="min-h-11 rounded border p-2"><option value="all">{viewText('simplified.compare_all_supports', 'All supports')}</option><option value="light">{viewText('simplified.compare_lighter', 'Lighter')}</option></select></label><button type="button" className="min-h-11 rounded border px-3" onClick={() => { let audio = '', from = 0; audioGlosses.forEach(entry => { audio += simplifiedReadAloudText.slice(from, entry.end) + '. ' + (entry.definition || entry.explanation || entry.text) + '. '; from = entry.end; }); audio += simplifiedReadAloudText.slice(from); speakExactPassage(audio, 'glosses-' + audioGlosses.length, readingLanguage); }}>{isExactPassagePlaying('glosses-' + audioGlosses.length) ? viewText('simplified.original_stop_gloss_reading', 'Stop gloss reading') : viewText('simplified.original_listen_with_glosses', 'Listen with glosses')}</button></>}{isTeacherMode && props.onGenerateReadingSupports && <button type="button" disabled={glossBusy || !verifiedOriginal} className="min-h-11 rounded border border-indigo-300 px-3 disabled:opacity-50" onClick={async () => { const request = currentGlossSourceRef.current; setGlossBusy(true); setGlossNotice(''); try { const result = await props.onGenerateReadingSupports(generatedContent); if (request === currentGlossSourceRef.current) setGlossNotice(result?.status === 'unavailable' ? viewText('simplified.original_word_supports_could_not_be_generated', 'Word supports could not be generated. The original is unchanged.') : result?.status === 'partial' ? viewText('simplified.original_some_words_could_not_be_supported', 'Some words could not be supported. The original is unchanged.') : viewText('simplified.original_word_supports_are_ready', 'Word supports are ready.')); } catch(error) { if (request === currentGlossSourceRef.current) setGlossNotice(error?.message || viewText('simplified.original_word_supports_could_not_be_generated', 'Word supports could not be generated. The original is unchanged.')); } finally { setGlossBusy(false); } }}>{glossBusy ? viewText('simplified.original_adding_word_supports', 'Adding word supports…') : checkedSupports?.annotations?.length ? viewText('simplified.original_refresh_suggested_supports', 'Refresh suggested supports') : viewText('simplified.original_add_word_supports', 'Add word supports')}</button>}</div><p role="status" data-gloss-status className={glossNotice ? 'my-3 rounded bg-indigo-50 p-3 text-indigo-900' : 'sr-only'}>{glossNotice}</p>{isTeacherMode && verifiedOriginal && props.onUpdateReadingSupports && <ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, false)} item={generatedContent} supports={checkedSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}<div data-reading-passage="true" data-original-source="true" role="region" aria-label={viewText('simplified.original_original_reading', 'Original reading')} tabIndex={-1} ref={readingStartRef} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }} className="text-lg leading-relaxed">{renderExactPassage(simplifiedReadAloudText, 'original', readingLanguage, activeGlosses, generatedContent, null, true)}</div>{renderPictureCredits(activeGlosses)}</div>;
+     }
+ 
+     function renderSimplifiedReading() {
+       var parts = getSideBySideContent(simplifiedReadAloudText);
+@@ -4363,8 +4445,9 @@
+             {isTeacherMode && generatedContent.relevel && (() => {
+               const info = generatedContent.relevel || {};
+               const fmt = (v) => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '?');
+               const undoRelevel = () => {
++                if (supportDraftSession?.blocked()) return requestSupportTransition(undoRelevel);
+                 const restored = { ...generatedContent, data: info.fromText };
+                 delete restored.relevel;
+                 delete restored.levelCheck;
+                 if (info.fromLocalStats) restored.localStats = info.fromLocalStats; else delete restored.localStats;
+@@ -4464,9 +4547,9 @@
+                 setSelectionMenu(null);
+               }} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Plus size={12} className="text-green-700" /> {t('text_tools.add_term')}</button>}</>}</div><div className="w-2 h-2 bg-slate-800 rotate-45" /></div>}{selectionMenu && <div className={`fixed inset-0 ${_popupBackdropZ} bg-transparent`} onMouseDown={e => {
+           setSelectionMenu(null);
+           setIsCustomReviseOpen(false);
+-        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-revision-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100"><h5 id="simplified-revision-title" className="font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp key={generatedContent?.id} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div>;
++        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-revision-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100"><h5 id="simplified-revision-title" className="font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div>;
+   }
+   SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
+   SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;
+   SimplifiedView.ReadingGlossEditor = ReadingGlossEditor;
+===================================================================
+--- /dev/null
++++ b/reader_support_drafts.js
+@@ -0,0 +1,46 @@
++(function (root) {
++  'use strict';
++  function createSession() {
++    const records = new Map();
++    let active = null, pending = null, running = false;
++    const session = {
++      records,
++      register(controller) {
++        active = controller;
++        return () => { if (active === controller) active = null; };
++      },
++      blocked() { return !running && !!active && active.hasChanges(); },
++      hasChanges() { return (!!active && active.hasChanges()) || [...records.values()].some(record => record.dirty); },
++      request(run) {
++        if (!session.blocked()) return run();
++        // Setters in one host action form one transition, not competing dialogs.
++        if (pending) { if (pending.collecting) pending.steps.push(run); return false; }
++        const request = { steps: [run], collecting: true };
++        pending = request;
++        queueMicrotask(() => { request.collecting = false; });
++        active.defer({
++          type: 'transition',
++          cancel() { if (pending === request) pending = null; },
++          run() {
++            if (pending !== request) return false;
++            pending = null;
++            running = true;
++            try { for (const step of request.steps) step(); }
++            finally { running = false; }
++            return true;
++          }
++        });
++        return false;
++      },
++      protectUnload(event) {
++        if (!session.hasChanges()) return;
++        event.preventDefault();
++        event.returnValue = '';
++      }
++    };
++    return session;
++  }
++  const api = { createSession };
++  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.ReaderSupportDrafts = api; }
++  if (typeof module !== 'undefined' && module.exports) module.exports = api;
++})(typeof window !== 'undefined' ? window : null);
+===================================================================
+--- /dev/null
++++ b/tests/reading_support_draft_transitions.test.js
+@@ -0,0 +1,249 @@
++import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++let React, createRoot, act, contract, View, pure, phase, root, host;
++const PASSAGE = 'The heron walked slowly in the shallow water.';
++const IMAGE = { src: 'data:image/png;base64,QUJD', alt: 'A heron.', source: 'mulberry', altSource: 'author' };
++const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'))); act = React.act;
++  global.React = window.React = React; global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  for (const name of ['instructional_context_module.js', 'alt_text_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'view_simplified_module.js']) loadAlloModule(name);
++  contract = window.AlloModules.InstructionalContext; View = window.AlloModules.SimplifiedView;
++  pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers;
++});
++afterEach(() => { if (root) act(() => root.unmount()); root = null; host?.remove(); host = null; vi.restoreAllMocks(); });
++function fixture({ image, original = false } = {}) {
++  const source = contract.createSupportedReading('The heron walked through the shallow water.', { id: 'original', sourceFamilyId: 'birds' });
++  const adapted = { id: 'adapted', _artifactInstanceId: 'adapted-instance', type: 'simplified', data: PASSAGE, sourceSnapshot: source.sourceSnapshot, sourceFamilyId: 'birds', instructionalText: { form: 'adapted', role: 'supplemental' }, config: { language: 'English', grade: '3' } };
++  const entry = { id: 'heron', start: 4, end: 9, quote: 'heron', text: 'A wading bird.', origin: 'educator', image };
++  source.readingSupports = contract.upsertReadingSupport(source, undefined, entry);
++  adapted.adaptedReadingSupports = contract.upsertAdaptedReadingSupport(adapted, undefined, entry);
++  const sessionRef = { current: window.AlloModules.ReaderSupportDrafts.createSession() };
++  const state = { item: original ? source : adapted, history: [source, adapted], teacher: true, compare: false, editing: false, view: 'simplified', mode: 'read' };
++  const request = work => sessionRef.current.request(work);
++  const commit = work => { work(); render(); };
++  const navigate = vi.fn((item, compare = false) => request(() => commit(() => { state.item = item; state.compare = compare; state.editing = false; state.view = 'simplified'; })));
++  const persist = vi.fn(async (owner, action) => {
++    const live = state.history.find(item => item.id === owner.id);
++    return contract.isAdaptedReading(live) ? contract.upsertAdaptedReadingSupport(live, live.adaptedReadingSupports, action.annotation) : contract.upsertReadingSupport(live, live.readingSupports, action.annotation);
++  });
++  const onUpdate = vi.fn(async (owner, action) => {
++    const saved = await persist(owner, action);
++    if (saved) {
++      state.history = state.history.map(item => item.id === owner.id ? { ...item, [contract.isAdaptedReading(item) ? 'adaptedReadingSupports' : 'readingSupports']: saved } : item);
++      state.item = state.history.find(item => item.id === state.item.id) || state.item; render();
++    }
++    return saved;
++  });
++  const generate = vi.fn(async owner => ({ ...owner.adaptedReadingSupports, annotations: owner.adaptedReadingSupports.annotations.map(entry => ({ ...entry, id: 'refreshed-' + entry.id })) }));
++  const noop = () => {};
++  const props = () => ({ ComplexityGauge: () => null, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, setReadingTheme: noop, setSelectionMenu: noop, setIsCustomReviseOpen: noop,
++    setInteractionMode: mode => commit(() => { state.mode = mode; }), setIsCompareMode: compare => request(() => commit(() => { state.compare = compare; })), setIsFluencyMode: noop,
++    stopPlayback: noop, closeDefinition: noop, closePhonics: noop, closeRevision: noop, handleToggleIsEditingLeveledText: () => commit(() => { state.editing = !state.editing; }),
++    t: key => key, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: state.teacher,
++    isEditingLeveledText: state.editing, isImmersiveReaderActive: false, isCompareMode: state.compare, isSideBySide: false, isZenMode: false, isProcessing: false, isPlaying: false,
++    interactionMode: state.mode, history: state.history, textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null,
++    handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop,
++    isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: { read: '', define: '', 'add-glossary': '', revise: '' }, getContentDirection: () => 'ltr',
++    isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }),
++    SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: state.item,
++    supportDraftSessionRef: sessionRef, onUpdateReadingSupports: onUpdate, onOpenReadingArtifact: navigate, onReadOriginal: () => navigate(source),
++    onGenerateReadingSupports: async owner => { const help = await generate(owner); commit(() => { state.item = { ...state.item, adaptedReadingSupports: help }; state.history = state.history.map(item => item.id === state.item.id ? state.item : item); }); return help; }
++  });
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  function render() { root.render(state.view === 'simplified' ? React.createElement(View, props()) : React.createElement('div', { 'data-other-view': true }, 'Other view')); }
++  act(render);
++  return { state, source, adapted, session: sessionRef.current, navigate, persist, onUpdate, generate, props,
++    open: item => act(() => navigate(item)), role: teacher => act(() => request(() => commit(() => { state.teacher = teacher; }))),
++    outside: () => act(() => request(() => commit(() => { state.view = 'other'; }))),
++    force: patch => act(() => commit(() => { Object.assign(state, patch); })), rerender: () => act(render) };
++}
++const byText = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text);
++const click = node => act(async () => { if (!node) throw new Error('Missing control'); node.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
++const draft = () => host.querySelector('[data-gloss-draft]');
++const prompt = () => host.querySelector('[role=alertdialog]');
++const type = (node, value) => act(() => { node.focus(); Object.getOwnPropertyDescriptor(node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); });
++async function edit() {
++  const toggle = [...host.querySelectorAll('button')].find(node => node.textContent.startsWith('Review word supports'));
++  if (toggle && toggle.getAttribute('aria-expanded') === 'false') await click(toggle);
++  await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
++}
++async function dirtyExplanation() { await edit(); type(draft().querySelector('textarea'), 'My unsaved explanation.'); }
++async function pictureChoice(next = { ...IMAGE, src: 'data:image/png;base64,REVG' }, resize) {
++  vi.spyOn(window.AlloModules, 'ClassroomImagePicker').mockImplementation(({ onChoose }) => React.createElement('button', { onClick: () => onChoose({ dataUrl: next.src, ...next }) }, 'Choose fixture picture'));
++  vi.spyOn(window.AlloModules.AltText, 'shrinkImageDataUrl').mockImplementation(resize || (async () => next.src));
++  await click(byText('Choose a different picture') || byText('Choose a picture'));
++  await click(byText('Choose fixture picture'));
++}
++const transitions = {
++  Edit: () => click(host.querySelector('[data-help-key="simplified_edit"]')),
++  Both: () => click(host.querySelector('[data-reading-version="both"]')),
++  Original: () => click(host.querySelector('[data-reading-version="original"]')),
++  'new artifact': async h => h.open({ ...h.adapted, id: 'another', _artifactInstanceId: 'another-instance' }),
++  'outside navigation': async h => h.outside(),
++  'student role': async h => h.role(false)
++};
++describe('deferred reader transitions', () => {
++  for (const [name, transition] of Object.entries(transitions)) {
++    for (const kind of ['explanation', 'picture']) {
++      it(`retains a dirty ${kind} before ${name}, restores focus, and discards only explicitly`, async () => {
++        const h = fixture({ image: kind === 'picture' ? IMAGE : undefined });
++        if (kind === 'picture') { await edit(); await pictureChoice(); } else await dirtyExplanation();
++        const editingControl = kind === 'picture' ? byText('Choose a different picture') : draft().querySelector('textarea');
++        act(() => editingControl.focus());
++        const value = draft().querySelector('textarea').value;
++        await transition(h);
++        expect(prompt()).toBeTruthy(); expect(h.state.item.id).toBe('adapted'); expect(h.state.compare).toBe(false); expect(h.state.editing).toBe(false); expect(h.state.teacher).toBe(true); expect(h.state.view).toBe('simplified');
++        expect(h.onUpdate).not.toHaveBeenCalled();
++        await click(byText('Keep editing'));
++        expect(prompt()).toBeNull(); expect(draft().querySelector('textarea').value).toBe(value); expect(document.activeElement).toBe(editingControl);
++        await transition(h); await click(byText('Discard changes'));
++        expect(prompt()).toBeNull(); expect(h.session.hasChanges()).toBe(false);
++        expect(name === 'Edit' ? h.state.editing : name === 'Both' ? h.state.compare : name === 'Original' ? h.state.item.id === 'original' : name === 'new artifact' ? h.state.item.id === 'another' : name === 'student role' ? !h.state.teacher : h.state.view === 'other').toBe(true);
++      });
++    }
++    it(`waits for a complete save before ${name}`, async () => {
++      const h = fixture(); await dirtyExplanation(); const pending = deferred();
++      h.persist.mockReturnValueOnce(pending.promise);
++      await transition(h); await click(byText('Save and continue'));
++      expect(h.state.item.id).toBe('adapted'); expect(h.state.compare).toBe(false); expect(h.state.editing).toBe(false); expect(h.state.teacher).toBe(true); expect(h.state.view).toBe('simplified');
++      const annotation = h.onUpdate.mock.calls[0][1].annotation;
++      await act(async () => pending.resolve(contract.upsertAdaptedReadingSupport(h.adapted, h.adapted.adaptedReadingSupports, annotation)));
++      expect(prompt()).toBeNull(); expect(h.session.hasChanges()).toBe(false);
++      expect(h.state.history.find(item => item.id === 'adapted').adaptedReadingSupports.annotations[0].text).toBe('My unsaved explanation.');
++      if (h.state.item.id === 'adapted') expect(h.state.item.adaptedReadingSupports.annotations[0].text).toBe('My unsaved explanation.');
++      expect(name === 'Edit' ? h.state.editing : name === 'Both' ? h.state.compare : name === 'Original' ? h.state.item.id === 'original' : name === 'new artifact' ? h.state.item.id === 'another' : name === 'student role' ? !h.state.teacher : h.state.view === 'other').toBe(true);
++    });
++  }
++  it.each(['reject', 'null', 'cancel'])('does not continue after a %s save', async outcome => {
++    const h = fixture(); await dirtyExplanation(); const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise);
++    await transitions.Both(h); await click(byText('Save and continue'));
++    if (outcome === 'cancel') await click(byText('Keep editing'));
++    await act(async () => outcome === 'reject' ? pending.reject(new Error('Storage unavailable.')) : pending.resolve(outcome === 'null' ? null : contract.upsertAdaptedReadingSupport(h.adapted, h.adapted.adaptedReadingSupports, h.onUpdate.mock.calls[0][1].annotation)));
++    expect(h.state.compare).toBe(false); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++  });
++  it('keeps a picture draft dirty when the explanation saves without its picture', async () => {
++    const h = fixture(); await dirtyExplanation(); await pictureChoice();
++    h.persist.mockImplementationOnce(async (owner, action) => contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, { ...action.annotation, image: null }));
++    await transitions.Both(h); await click(byText('Save and continue'));
++    expect(h.state.compare).toBe(false); expect(h.session.hasChanges()).toBe(true); expect(host.textContent).toContain('its picture did not fit');
++    expect(draft().querySelector('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
++    await click(byText('Keep editing')); await transitions.Both(h); expect(prompt()).toBeTruthy();
++  });
++  it('saves an equal-length picture replacement before navigating', async () => {
++    const h = fixture({ image: IMAGE }); await edit(); await pictureChoice();
++    await transitions.Both(h); await click(byText('Save and continue'));
++    expect(h.state.compare).toBe(true);
++    expect(h.state.history.find(item => item.id === 'adapted').adaptedReadingSupports.annotations[0].image.src).toBe('data:image/png;base64,REVG');
++  });
++  it('recognizes an equal-length same-alt picture replacement on the existing local close path', async () => {
++    fixture({ image: IMAGE }); await edit(); await pictureChoice();
++    await click(byText('Done editing')); expect(prompt()).toBeTruthy();
++    await click(byText('Keep editing')); expect(draft().querySelector('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
++  });
++  it('treats changed picture credit as unsaved work even with identical pixels and alt', async () => {
++    fixture({ image: IMAGE }); await edit(); await pictureChoice({ ...IMAGE, attribution: { set: 'New collection', author: 'New author', license: 'CC0' } });
++    await transitions.Both(); expect(prompt()).toBeTruthy();
++  });
++  it('cancels deferred navigation when the source changes during a save', async () => {
++    const h = fixture(); await dirtyExplanation(); const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise);
++    await transitions.Both(h); await click(byText('Save and continue'));
++    h.force({ item: { ...h.adapted, data: 'A heron stood in a pond.' } });
++    await act(async () => pending.resolve(null));
++    expect(h.state.compare).toBe(false); expect(prompt()).toBeNull(); expect(draft().disabled).toBe(false);
++    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++  });
++  it('does not prompt for an unchanged existing picture', async () => {
++    const h = fixture({ image: IMAGE }); await edit(); await pictureChoice(IMAGE);
++    await transitions.Both(h); expect(prompt()).toBeNull(); expect(h.state.compare).toBe(true);
++  });
++  it('preserves the draft and exact occurrence through refreshed suggestion IDs', async () => {
++    const h = fixture(); await dirtyExplanation(); await click(host.querySelector('[data-adapted-word-help-generate]'));
++    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++    await click(byText('Save word support'));
++    expect(h.onUpdate.mock.calls[0][1].annotation).toMatchObject({ id: 'refreshed-heron', start: 4, end: 9, quote: 'heron' });
++  });
++  it('retains valid drafts after passage growth and holds stale drafts for explicit re-anchoring', async () => {
++    const h = fixture(); await dirtyExplanation();
++    h.force({ item: { ...h.state.item, data: PASSAGE + ' Another sentence.' } });
++    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(host.textContent).not.toContain('Your draft is retained');
++    h.force({ item: { ...h.state.item, data: 'A heron stood in a pond.' } });
++    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(host.textContent).toContain('Your draft is retained');
++    await click(byText('Save word support')); expect(h.onUpdate).not.toHaveBeenCalled();
++  });
++  it('successfully saves a retained draft after valid passage growth', async () => {
++    const h = fixture(); await dirtyExplanation(); const grown = { ...h.adapted, data: PASSAGE + ' Another sentence.' };
++    h.force({ item: grown, history: [h.source, grown] }); await click(byText('Save word support'));
++    expect(h.session.hasChanges()).toBe(false);
++    expect(h.state.item.adaptedReadingSupports.annotations[0]).toMatchObject({ start: 4, end: 9, text: 'My unsaved explanation.' });
++  });
++  it('saves a stale draft only after reviewing supports and explicitly choosing its current occurrence', async () => {
++    const h = fixture(); await dirtyExplanation(); const changed = { ...h.adapted, data: 'A heron stood in a pond.' };
++    changed.adaptedReadingSupports = contract.upsertAdaptedReadingSupport(changed, undefined, { id: 'current-heron', start: 2, end: 7, quote: 'heron', text: 'Current suggestion.' });
++    h.force({ item: changed, history: [h.source, changed] });
++    expect(byText('Save word support').disabled).toBe(true);
++    await click(byText('choose the occurrence in the current text')); await click(byText('Save word support'));
++    expect(h.session.hasChanges()).toBe(false);
++    expect(h.state.item.adaptedReadingSupports.annotations[0]).toMatchObject({ id: 'current-heron', start: 2, end: 7, text: 'My unsaved explanation.' });
++  });
++  it('recovers an unmounted draft only for its artifact instance', async () => {
++    const h = fixture(); await dirtyExplanation();
++    h.force({ view: 'other' }); expect(h.session.hasChanges()).toBe(true);
++    h.force({ view: 'simplified', item: { ...h.adapted, _artifactInstanceId: 'different-instance' } }); expect(draft()).toBeNull();
++    h.force({ item: h.adapted }); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++  });
++  it('cancels an interrupted confirmation so the restored editor can defer another transition', async () => {
++    const h = fixture(); await dirtyExplanation(); await transitions.Both(h); expect(prompt()).toBeTruthy();
++    h.force({ view: 'other' }); h.force({ view: 'simplified' });
++    await transitions.Both(h); expect(prompt()).toBeTruthy();
++    await click(byText('Keep editing')); expect(h.state.compare).toBe(false);
++  });
++  it('protects an original support draft before opening Both', async () => {
++    const h = fixture({ original: true }); await dirtyExplanation(); await transitions.Both(h);
++    expect(prompt()).toBeTruthy(); expect(h.state.item.id).toBe('original');
++    await click(byText('Save and continue'));
++    expect(h.state.compare).toBe(true); expect(h.state.item.id).toBe('adapted');
++    expect(h.state.history.find(item => item.id === 'original').readingSupports.annotations[0].text).toBe('My unsaved explanation.');
++  });
++  it('protects a comparison support draft before a mode unmounts its editor', async () => {
++    const h = fixture(); await transitions.Both(h); await dirtyExplanation();
++    await click(host.querySelector('[data-reading-mode="revise"]')); expect(prompt()).toBeTruthy(); expect(h.state.compare).toBe(true);
++    await click(byText('Keep editing')); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++    await click(host.querySelector('[data-reading-mode="revise"]')); await click(byText('Discard changes'));
++    expect(h.state.compare).toBe(false); expect(h.state.mode).toBe('revise');
++  });
++  it('warns on refresh only for unresolved reader work', async () => {
++    const h = fixture();
++    const reload = () => { const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); return event; };
++    expect(reload().defaultPrevented).toBe(false); await dirtyExplanation(); expect(reload().defaultPrevented).toBe(true);
++    expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++    await click(byText('Save word support')); expect(reload().defaultPrevented).toBe(false); expect(h.session.hasChanges()).toBe(false);
++  });
++  it('does not add a second disclosure or prompt for harmless reader changes', async () => {
++    fixture(); await dirtyExplanation();
++    expect(host.querySelector('[data-adapted-word-help-teacher] [aria-expanded]')).toBeNull();
++    await click(host.querySelector('[data-reading-mode="define"]'));
++    expect(prompt()).toBeNull(); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
++  });
++});
++describe('picture preparation cancellation', () => {
++  it('ignores an unfinished picture after forced unmount without leaving a false dirty record', async () => {
++    const h = fixture(); await edit(); const resized = deferred(); await pictureChoice(IMAGE, () => resized.promise);
++    h.force({ view: 'other' }); await act(async () => resized.resolve(IMAGE.src));
++    expect(h.session.hasChanges()).toBe(false);
++    h.force({ view: 'simplified' }); expect(draft().querySelector('img')).toBeNull();
++  });
++  it.each(['cancel picker', 'discard transition'])('ignores resize completion after %s', async action => {
++    const h = fixture(); await edit(); const resized = deferred(); await pictureChoice(IMAGE, () => resized.promise);
++    if (action === 'cancel picker') await click(byText('Cancel'));
++    else { await transitions.Both(h); expect(byText('Save and continue').disabled).toBe(true); await click(byText('Discard changes')); }
++    await act(async () => resized.resolve(IMAGE.src));
++    if (action === 'cancel picker') expect(draft().querySelector('img')).toBeNull();
++    expect(h.session.hasChanges()).toBe(false);
++  });
++});
+===================================================================
+--- /dev/null
++++ b/tests/reading_support_draft_host.test.js
+@@ -0,0 +1,110 @@
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++import { describe, expect, it, vi } from 'vitest';
++const require = createRequire(import.meta.url);
++const { createSession } = require('../reader_support_drafts.js');
++const host = readFileSync('AlloFlowANTI.txt', 'utf8');
++function extract(start, end, name, deps) {
++  const from = host.indexOf(start), to = host.indexOf(end, from);
++  expect(from).toBeGreaterThan(-1); expect(to).toBeGreaterThan(from);
++  return new Function('deps', 'with (deps) { ' + host.slice(from, to) + '\n; return ' + name + '; }')(deps);
++}
++function fixture(queued = false) {
++  const session = createSession(); let dirty = true, pending;
++  const defer = vi.fn(action => { pending = action; });
++  const detach = session.register({ hasChanges: () => dirty, defer });
++  const initial = { id: 'a', _artifactInstanceId: 'a-instance', type: 'simplified', data: 'A bird.' };
++  const owner = {}, ownerRef = { current: owner };
++  const display = { current: { resource: initial, view: 'simplified' } };
++  const state = { resource: initial, view: 'simplified' };
++  const updates = [];
++  const applyContent = update => { state.resource = update(state.resource); display.current.resource = state.resource; };
++  const deps = {
++    useCallback: fn => fn, supportDraftSessionRef: { current: session }, requestReadingSupportTransition: run => session.request(run),
++    generationViewOwnerRef: ownerRef, generationDisplayStateRef: display, ensureArtifactInstanceId: value => value,
++    _setGeneratedContent: update => queued ? updates.push(update) : applyContent(update),
++    _setActiveView: update => { state.view = update(state.view); display.current.view = state.view; }
++  };
++  deps.setGeneratedContent = extract('  const setGeneratedContent = useCallback(', '\n  //', 'setGeneratedContent', deps);
++  deps.setActiveView = extract('  const setActiveView = useCallback(', '\n  const [showReadThisPage', 'setActiveView', deps);
++  return { session, deps, state, initial, owner, ownerRef, defer, detach,
++    discard() { dirty = false; pending.run(); }, keep() { pending.cancel(); }, clean() { dirty = false; }, flush() { updates.splice(0).forEach(applyContent); } };
++}
++describe('reader draft protection in real host adapters', () => {
++  it('defers a generation completion as one transition and retains its display ownership', () => {
++    const h = fixture(), next = { ...h.initial, id: 'generated' };
++    expect(h.deps.setGeneratedContent(next, h.owner)).toBe(false);
++    expect(h.deps.setActiveView('image', h.owner)).toBe(false);
++    expect(h.defer).toHaveBeenCalledTimes(1); expect(h.state.resource).toBe(h.initial);
++    expect(h.state.view).toBe('simplified'); expect(h.ownerRef.current).toBe(h.owner);
++    h.discard(); expect(h.state).toEqual({ resource: next, view: 'image' });
++  });
++  it('Keep editing cancels the entire deferred host transition', () => {
++    const h = fixture(); h.deps.setGeneratedContent({ ...h.initial, id: 'next' }); h.deps.setActiveView('history');
++    h.keep(); expect(h.state).toEqual({ resource: h.initial, view: 'simplified' });
++    h.deps.setActiveView('input'); expect(h.defer).toHaveBeenCalledTimes(2);
++    h.discard(); expect(h.state.view).toBe('input');
++  });
++  it('rejects an obsolete generation without a draft prompt', () => {
++    const h = fixture(); h.ownerRef.current = {};
++    h.deps.setGeneratedContent({ ...h.initial, id: 'obsolete' }, h.owner); h.deps.setActiveView('image', h.owner);
++    expect(h.defer).not.toHaveBeenCalled(); expect(h.state.resource).toBe(h.initial); expect(h.state.view).toBe('simplified');
++  });
++  it('rechecks generation ownership when a deferred result is released', () => {
++    const h = fixture(); h.deps.setGeneratedContent({ ...h.initial, id: 'obsolete' }, h.owner); h.deps.setActiveView('image', h.owner);
++    h.ownerRef.current = {}; h.discard(); expect(h.state.resource).toBe(h.initial); expect(h.state.view).toBe('simplified');
++  });
++  it('allows support refreshes and unrelated functional updates without confirmation', () => {
++    const h = fixture(); const saved = { ...h.initial, readingSupports: { annotations: [] } };
++    h.deps.setGeneratedContent(saved); h.deps.setGeneratedContent(previous => ({ ...previous, title: 'A title' }));
++    h.deps.setActiveView('simplified'); expect(h.defer).not.toHaveBeenCalled(); expect(h.state.resource.title).toBe('A title');
++  });
++  it('guards a new instance that reuses the same artifact ID', () => {
++    const h = fixture(); h.deps.setGeneratedContent({ ...h.initial, _artifactInstanceId: 'new-instance' });
++    expect(h.defer).toHaveBeenCalledTimes(1); expect(h.state.resource).toBe(h.initial);
++  });
++  it('defers resource restoration before its side effects and preserves explicit rejection', () => {
++    const h = fixture(), restore = vi.fn(() => false), clearAssignment = vi.fn();
++    const prior = window.AlloModules.MiscHandlers;
++    window.AlloModules.MiscHandlers = { handleRestoreView: restore };
++    try {
++      Object.assign(h.deps, { _alloMiscHandlersDeps: () => ({}), pendingQrAssignmentOpenGenerationRef: { current: 0 }, setPendingQrAssignmentResource: clearAssignment });
++      const run = extract('  const handleRestoreView = (', '\n  learningWebRestoreViewRef', 'handleRestoreView', h.deps);
++      expect(run({ id: 'new' })).toBe(false); expect(restore).not.toHaveBeenCalled(); h.keep(); expect(clearAssignment).not.toHaveBeenCalled();
++      run({ id: 'new' }); h.discard(); expect(restore).toHaveBeenCalledTimes(1); expect(clearAssignment).not.toHaveBeenCalled();
++    } finally { window.AlloModules.MiscHandlers = prior; }
++  });
++  it('opens the newly saved artifact after a deferred reader switch', () => {
++    const h = fixture(), stop = vi.fn(), noop = () => {};
++    const live = { current: { generatedContent: h.initial, history: [h.initial] } };
++    Object.assign(h.deps, { _resourceMutationStateRef: live, stopPlayback: stop, setSelectionMenu: noop, setRevisionData: noop, setPhonicsData: noop, setIsEditingLeveledText: noop, setIsFluencyMode: noop, setIsCompareMode: noop, setInteractionMode: noop });
++    const open = extract('  const openReadingArtifact = (', '\n  const handleReadOriginal', 'openReadingArtifact', h.deps);
++    open(h.initial, true); expect(stop).not.toHaveBeenCalled();
++    const saved = { ...h.initial, adaptedReadingSupports: { annotations: [{ text: 'Saved explanation.' }] } };
++    live.current.generatedContent = saved; live.current.history = [saved]; h.deps.setGeneratedContent(saved); h.discard();
++    expect(h.state.resource).toBe(saved); expect(stop).toHaveBeenCalledTimes(1);
++  });
++  it('does not overwrite a support save still queued in the same React batch', () => {
++    const h = fixture(true), noop = () => {};
++    Object.assign(h.deps, { _resourceMutationStateRef: { current: { generatedContent: h.initial, history: [h.initial] } }, stopPlayback: noop, setSelectionMenu: noop, setRevisionData: noop, setPhonicsData: noop, setIsEditingLeveledText: noop, setIsFluencyMode: noop, setIsCompareMode: noop, setInteractionMode: noop });
++    const open = extract('  const openReadingArtifact = (', '\n  const handleReadOriginal', 'openReadingArtifact', h.deps);
++    open(h.initial, true);
++    const supports = { annotations: [{ text: 'Queued saved explanation.' }] };
++    h.deps.setGeneratedContent(previous => ({ ...previous, adaptedReadingSupports: supports }));
++    h.discard(); expect(h.state.resource).toBe(h.initial); h.flush();
++    expect(h.state.resource.adaptedReadingSupports).toBe(supports);
++  });
++  it('defers the real teacher role setter and passes through when clean', () => {
++    const h = fixture(), apply = vi.fn();
++    Object.assign(h.deps, { teacherModeRef: { current: true }, _setIsTeacherMode: apply });
++    const setRole = extract('  const setIsTeacherMode = useCallback(', '\n  const [studentAiConfigRevision', 'setIsTeacherMode', h.deps);
++    setRole(false); expect(apply).not.toHaveBeenCalled(); h.keep(); expect(apply).not.toHaveBeenCalled();
++    h.clean(); setRole(false); expect(apply).toHaveBeenCalledExactlyOnceWith(false);
++  });
++  it('retained drafts protect unload even after their controller unmounts', () => {
++    const h = fixture(); h.session.records.set('a', { dirty: true }); h.detach();
++    const event = { preventDefault: vi.fn(), returnValue: undefined }; h.session.protectUnload(event);
++    expect(event.preventDefault).toHaveBeenCalledOnce(); expect(event.returnValue).toBe('');
++    h.session.records.clear(); event.preventDefault.mockClear(); h.session.protectUnload(event); expect(event.preventDefault).not.toHaveBeenCalled();
++  });
++});

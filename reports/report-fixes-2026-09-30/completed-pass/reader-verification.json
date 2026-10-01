@@ -1,0 +1,73 @@
+{
+  "at": "2026-09-30T22:49:24.396Z",
+  "status": "passed",
+  "candidateHashes": {
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "view_simplified_source.jsx": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/public/view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "tests/report_reader_glossary_parity.test.js": "302522afcb8e4458160efebf07cc0108ea7b9f2a529dc192f100488b63057d96",
+    "tests/reader_exact_sentence_start.test.js": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "reports/report-fixes-2026-09-30/reader-browser.cjs": "d221de68fddd46ab25d32451b2304079b68ae9e894ea029ecf92b2bb84293cc1",
+    "reports/report-fixes-2026-09-30/reader-adjacent-run.cjs": "b9685da7e23a6336fef9d59bbb9f488dd45a8f891511c512dd5c7b353dfa97f3"
+  },
+  "fix": "Open glossary help repositions on scroll/resize while its trigger has focus; hover-only help still dismisses on passage scroll. Escape keeps focus and does not reopen on later scroll.",
+  "tests": {
+    "mountedReader": {
+      "passed": 22,
+      "failed": 0,
+      "report": "reader-parity-tests.json"
+    },
+    "generatedModuleChromium": {
+      "passed": 48,
+      "failed": 0,
+      "errors": [],
+      "report": "reader-browser-results.json"
+    },
+    "adjacentReader": {
+      "passed": 149,
+      "failed": 0,
+      "files": 8,
+      "report": "reader-adjacent-tests.json"
+    }
+  },
+  "negativeEvidence": {
+    "nativeFocusProbe": "reader-browser-focus-probe.json",
+    "originalBrowserAttempt": "reader-browser-before-focus.json",
+    "mountedPreFix": "reader-focus-before-tests.json",
+    "initialAdjacentLabelMismatch": "reader-adjacent-before-label-expectation-tests.json"
+  },
+  "screenshotsInspected": [
+    "reader-browser-reflow320-font16.png",
+    "reader-browser-reflow320-font32.png"
+  ],
+  "validationScope": "Local generated reader/helper modules, real React/CSS and canonical host glossary adapter, using fixture props and mocked speech/lookup callbacks. Built-browser and adjacent loaded inputs were unchanged.",
+  "limits": [
+    "Not a full app/student-session/cloud test.",
+    "Root font 16/32px at 320/640 CSSpx tested; actual browser zoom and manual screen reader testing were not performed.",
+    "No WCAG conformance or instructional-content-validity claim.",
+    "Shared host/cache-pin integration remains coordinator-owned and held."
+  ],
+  "labelContractAdaptation": {
+    "at": "2026-09-30T22:46:07.288Z",
+    "status": "label-contract-adaptation",
+    "preexisting": "Not established: Git source lacks the current dirty exact renderer, and no full pre-task dirty source copy is available.",
+    "runtimeChange": false,
+    "sourceHash": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "labelContract": "Each accessible label uses the full raw sentence range, then plainReadingText; callback reads from sentence.start.",
+    "test": "tests/reader_exact_sentence_start.test.js",
+    "beforeTestHash": "db864642f5d20d83addbd592e4566cde3bfbcdfc081a94a45c24b0f303e60a33",
+    "failedReport": "reader-adjacent-before-label-expectation-tests.json",
+    "preservedAssertions": [
+      "visible words included in accessible name",
+      "one Tab stop per line",
+      "read-from-here offsets and actual spoken sentence",
+      "keyboard Enter/Space/arrows/Home/End",
+      "shown and hidden original supports"
+    ],
+    "afterTestHash": "85eec681af4c03918194ed18a322c6a3746ec06c21e661b48f58ce2f17686e28",
+    "validation": "All 149 adjacent tests passed after only three expected labels changed."
+  }
+}

@@ -74,16 +74,20 @@ function loadManifest(directory) {
   };
 }
 
-function checkClinicalAssets() {
+// { includeBuild: false } leaves out desktop/web-app/build, a gitignored build output that a fresh
+// checkout (CI) does not have: each build copy then stands in as the canonical bytes. The CLI and the
+// default still compare all three copies.
+function checkClinicalAssets(options = {}) {
+  const includeBuild = options.includeBuild !== false;
   const canonicalManifest = loadManifest(CANONICAL_DIR);
   const publicManifest = loadManifest(PUBLIC_DIR);
-  const buildManifest = loadManifest(BUILD_DIR);
+  const buildManifest = includeBuild ? loadManifest(BUILD_DIR) : canonicalManifest;
   if (!canonicalManifest.buffer.equals(publicManifest.buffer) || !canonicalManifest.buffer.equals(buildManifest.buffer)) {
     throw new Error('Clinical Atlas canonical, public, and build manifests differ');
   }
   const canonicalAttribution = fs.readFileSync(path.join(CANONICAL_DIR, 'ATTRIBUTION.md'));
   const publicAttribution = fs.readFileSync(path.join(PUBLIC_DIR, 'ATTRIBUTION.md'));
-  const buildAttribution = fs.readFileSync(path.join(BUILD_DIR, 'ATTRIBUTION.md'));
+  const buildAttribution = includeBuild ? fs.readFileSync(path.join(BUILD_DIR, 'ATTRIBUTION.md')) : canonicalAttribution;
   if (!canonicalAttribution.equals(publicAttribution) || !canonicalAttribution.equals(buildAttribution)) {
     throw new Error('Clinical Atlas canonical, public, and build attribution files differ');
   }
@@ -102,8 +106,8 @@ function checkClinicalAssets() {
     const crosswalk = fs.readFileSync(crosswalkPath);
     const publicModel = fs.readFileSync(publicModelPath);
     const publicCrosswalk = fs.readFileSync(publicCrosswalkPath);
-    const buildModel = fs.readFileSync(buildModelPath);
-    const buildCrosswalk = fs.readFileSync(buildCrosswalkPath);
+    const buildModel = includeBuild ? fs.readFileSync(buildModelPath) : model;
+    const buildCrosswalk = includeBuild ? fs.readFileSync(buildCrosswalkPath) : crosswalk;
 
     if (!model.equals(publicModel) || !model.equals(buildModel) || !crosswalk.equals(publicCrosswalk) || !crosswalk.equals(buildCrosswalk)) {
       throw new Error(`${pack.id}: canonical, public, and build assets differ`);
@@ -113,7 +117,7 @@ function checkClinicalAssets() {
     if (pack.metadata) {
       const metadata = fs.readFileSync(path.join(CANONICAL_DIR, pack.metadata));
       const publicMetadata = fs.readFileSync(path.join(PUBLIC_DIR, pack.metadata));
-      const buildMetadata = fs.readFileSync(path.join(BUILD_DIR, pack.metadata));
+      const buildMetadata = includeBuild ? fs.readFileSync(path.join(BUILD_DIR, pack.metadata)) : metadata;
       if (!metadata.equals(publicMetadata) || !metadata.equals(buildMetadata)) throw new Error(`${pack.id}: canonical, public, and build metadata differ`);
       assertAssetHash(metadata, pack.sha256.metadata, `${pack.id}: ${pack.metadata}`, true);
       const metadataText = metadata.toString('utf8');
@@ -166,7 +170,7 @@ function checkClinicalAssets() {
     for (const name of names) {
       canonicalAssets[name] = fs.readFileSync(path.join(CANONICAL_DIR, atlas[name]));
       const publicAsset = fs.readFileSync(path.join(PUBLIC_DIR, atlas[name]));
-      const buildAsset = fs.readFileSync(path.join(BUILD_DIR, atlas[name]));
+      const buildAsset = includeBuild ? fs.readFileSync(path.join(BUILD_DIR, atlas[name])) : canonicalAssets[name];
       if (!canonicalAssets[name].equals(publicAsset) || !canonicalAssets[name].equals(buildAsset)) {
         throw new Error(`${atlas.id}: canonical, public, and build ${name} assets differ`);
       }
@@ -225,4 +229,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { checkClinicalAssets, readGlbNodeNames, assertAssetHash };
+module.exports = { checkClinicalAssets, readGlbNodeNames, assertAssetHash, BUILD_DIR };

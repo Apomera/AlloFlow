@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Maeneo ya Hisia",
+          "desc": "Tambua eneo lako (bluu, kijani, njano, nyekundu) na uchunguze mbinu za kujidhibiti."
+        },
+        "emotions": {
+          "label": "Mchunguzi wa Hisia",
+          "desc": "Jenga msamiati wa hisia — tambua, taja, na pima ukubwa wa hisia."
+        },
+        "strengths": {
+          "label": "Kitafuta Nguvu",
+          "desc": "Gundua na utafakari kuhusu nguvu zako binafsi, vipaji, na mambo unayoweza kukuza."
+        },
+        "viaStrengths": {
+          "label": "Nguvu za VIA",
+          "desc": "Upangaji binafsi uliorahisishwa wa Nguvu 24 za Tabia za VIA (Peterson na Seligman, 2004), wenye fadhila 6 na utambuzi wa nguvu zako kuu. Kwa dodoso rasmi la bure, nenda viacharacter.org. Ni zoezi la kutafakari, si kipimo cha kisaikolojia."
+        },
+        "wheelOfLife": {
+          "label": "Gurudumu la Maisha",
+          "desc": "Chati ya buibui ya nyanja 8 za maisha, kila moja ikipimwa 1 hadi 10. Picha binafsi ya mahali maisha yamejaa na mahali yamepungua kwa sasa. Kutoka katika mapokeo ya ukocha (Meyer miaka ya 1960; Co-Active Coaching). Ni mwongozo wa jumla; si kipimo cha kisaikolojia kilichothibitishwa."
+        },
+        "perma": {
+          "label": "Ustawi wa PERMA",
+          "desc": "Kujipima katika nyanja tano za PERMA pamoja na tafakari ya Afya: Hisia chanya, Kujihusisha, Mahusiano, Maana, Mafanikio, na Afya. Vipengele 24, matokeo kwa chati ya mihimili, tafakari kwa kila nyanja. Kutoka kwa Seligman; inaendana na Nguvu za VIA."
+        },
+        "coping": {
+          "label": "Kisanduku cha Mbinu za Kukabiliana",
+          "desc": "Chunguza na ujizoeze mbinu za kukabiliana — kupumua, kutuliza kwa hisi, kusogea, na zaidi."
+        },
+        "windowOfTolerance": {
+          "label": "Dirisha la Uvumilivu",
+          "desc": "Kielelezo cha kujitambua kinachozingatia kiwewe. Maeneo matatu ya msisimko (msisimko wa juu kupita kiasi, dirisha, msisimko wa chini kupita kiasi). Weka kwenye ramani dalili zako binafsi za kila eneo, vichochezi vyako, na mazoea yanayokurudisha. Kulingana na Siegel (1999); ni kawaida katika shule zinazozingatia kiwewe."
+        },
+        "stressBucket": {
+          "label": "Ndoo ya Msongo",
+          "desc": "Kielelezo cha uwezo wa kubeba. Vyanzo vya msongo humiminika ndani; mazoea ya kukabiliana huyamwaga nje. Ona kama kinachoingia na kinachotoka vina uwiano. Zana ya mapokeo ya CBT (Brabban na Turkington 2002), inayotumika katika NHS IAPT na Mind UK. Iko wazi kuhusu vyanzo vya msongo vya kimfumo."
+        },
+        "tipp": {
+          "desc": "Stadi nne za DBT za kuvuka hali ya dharura (Joto, Mazoezi makali, Kupumua kwa mwendo maalum, Kulegeza misuli kwa jozi) kwa dhiki KALI. Hutuliza mwili ndani ya sekunde 30 hadi dakika 10 kabla hujajaribu kufikiri jinsi ya kutoka. Stadi ya msingi ya DBT ya Kustahimili Dhiki (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Kisanduku cha Kukabiliana na Wasiwasi",
+          "desc": "Stadi zinazotokana na CBT za kushughulikia wasiwasi: elimu-saikolojia, mti wa wasiwasi (wasiwasi wenye tija dhidi ya usio na tija), muda maalum wa wasiwasi, kupunguza kufikiria mabaya zaidi, stadi za kutuliza kwa hisi, na orodha ya mifumo yako binafsi. Kutoka Beck Institute, AACAP, ADAA. Inaendana na Dirisha la Uvumilivu na Ndoo ya Msongo."
+        },
+        "sleep": {
+          "label": "Usingizi na Mapumziko",
+          "desc": "Usingizi wa vijana ni janga la afya ya umma. Saa 8-10 zinazopendekezwa na AAP hufikiwa mara chache. Elimu-saikolojia, kujipima, vikwazo 8 vya kawaida + kinachosaidia kwa kila kimoja, na shajara ya usingizi. Kutoka AAP, CDC, NSF, na utafiti wa Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Udhibiti wa Hisi",
+          "desc": "Zana inayothamini utofauti wa kinyurolojia ya kuelewa jinsi unavyochakata hisi katika mifumo 8 ya hisi. Jenga wasifu binafsi, panga lishe ya hisi, tambua marekebisho unayohitaji shuleni. Lugha ya utambulisho kwanza; imejengwa juu ya Ayres / Dunn / utafiti unaoongozwa na watu wenye usonji."
+        },
+        "bigFeelings": {
+          "label": "Hisia Kubwa (Hasira)",
+          "desc": "Elimu-saikolojia na ujenzi wa stadi kuhusu hasira hasa. Hasira ni taarifa, si tatizo; uchokozi wa papo hapo ndio mtego. Imejengwa juu ya mapokeo ya Coping Power ya Lochman + msingi wa ushahidi wa CBT kwa hasira. Daftari la kero, orodha ya vichochezi, wakati wa kuchagua, na njia zako binafsi za kupoa."
+        },
+        "substancePsychoed": {
+          "label": "Matumizi ya Dawa za Kulevya",
+          "desc": "Elimu-saikolojia ya kupunguza madhara kuhusu dawa za kulevya na vilevi (pombe, bangi, nikotini, opioidi, vichangamshi, benzo, dawa za kuleta maono). Hatari kwa ubongo wa vijana. Elimu kuhusu naloxone. SI kipimo cha uchunguzi, SI mafunzo ya kuacha kabisa pekee. Rufaa madhubuti kwa SAMHSA. Nafasi ya kutafakari inayoendana na MI."
+        },
+        "behavioralActivation": {
+          "label": "Uamshaji wa Kitabia",
+          "desc": "Panga shughuli ndogo, zifanye, kisha zipime kwa umahiri (ulijihisi na uwezo) na furaha (ulifurahia). Tambua kinachokufaa na uchague hatua inayofuata unayoweza kuimudu. Shughuli hii ya kupanga inatokana na uamshaji wa kitabia; haitoi wala haitathmini mpango wa tiba."
+        },
+        "mindfulness": {
+          "label": "Kona ya Uzingativu",
+          "desc": "Mazoezi ya kupumua yenye mwongozo, kuchunguza mwili, na shughuli za uzingativu."
+        },
+        "quietQuestions": {
+          "label": "Maswali ya Kimya",
+          "desc": "Zoezi la kila wiki la kujiuliza ndani. Kaa na swali moja lililo wazi kwa wiki nzima. Maswali 20 yanayobadilishana kuhusu umakini, shauku, ugumu, uhusiano, na kukua. Yamechochewa na mapokeo ya maswali ya Quaker; si ya kidini na hayakuelekezi cha kufanya."
+        },
+        "orientations": {
+          "label": "Mielekeo",
+          "desc": "Namna za Kuishi, Zikilinganishwa. Mapokeo manane ya kifalsafa (Dao, Zen, Ustoa, Udhanaishi, maadili ya Konfusio, Ubuntu, uhusiano wa watu wa Asili, Maadili ya Kujali) yakilinganishwa kuhusu maswali makubwa ya maisha. Hayakuelekezi cha kufanya; kila pokeo lina sehemu ya ukweli ya \"kile kisichoweza kufanya vizuri\"."
+        },
+        "thoughtRecord": {
+          "label": "Rekodi ya Mawazo ya CBT",
+          "desc": "Rekodi ya mawazo yenye safu 7 kutoka Tiba ya Utambuzi na Tabia. Pitia wakati mgumu: hali, hisia, wazo la papo hapo, ushahidi unaounga mkono na unaopinga, wazo lenye uwiano, kupima hisia upya. Huhifadhi maingizo kwa muda. Kutoka Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Jedwali la Gharama na Faida",
+          "desc": "Jedwali la maamuzi la 2x2 kutoka Tiba ya Tabia ya Kidialektika. Faida na hasara za muda mfupi na mrefu za uamuzi, kando kwa kando. Linasaidia pale hisia zinaposukuma kuelekea chaguo moja. Kutoka Linehan."
+        },
+        "sfbt": {
+          "label": "Kulenga Suluhisho",
+          "desc": "Tiba Fupi Inayolenga Suluhisho: Swali la Muujiza, Kupima kwa Kiwango, Kutafuta Nyakati za Tofauti, na Pongezi. Inaangalia mbele badala ya nyuma, inauliza kile ambacho tayari kinafanya kazi. Mbinu inayotumika zaidi katika ushauri wa shule nchini Marekani. Kutoka de Shazer na Berg."
+        },
+        "careConstellations": {
+          "label": "Makundi ya Nyota ya Kujaliana",
+          "desc": "Ramani ya mahusiano ya nani anakujali na wewe unamjali nani. Inakataa mtazamo wa \"kujitunza\" wa ubinafsi au wa ulaji. Inajumuisha mtazamo wa kina wa kifalsafa kuhusu Kujali Nafsi dhidi ya Kujitunza (Foucault, epimeleia heautou ya Kigiriki, Audre Lorde, eudaimonia dhidi ya hedonia)."
+        },
+        "ecomap": {
+          "label": "Ramani ya Mazingira",
+          "desc": "Ramani ya uhusiano wa mtu na mazingira yake. Wewe katikati; mifumo 12 mikuu ya maisha ikikuzunguka. Kila muunganisho hupimwa kwa nguvu, msongo, na mwelekeo wa nishati. Zana ya kawaida ya ustawi wa jamii tangu Hartman (1978); hutumika katika IEP, tathmini ya familia, na orodha ya maisha binafsi."
+        },
+        "circlesOfSupport": {
+          "label": "Duara za Msaada",
+          "desc": "Pete nne za mahusiano zinazozungukana: Ukaribu, Urafiki, Ushiriki, Mabadilishano (wanaolipwa). Huonyesha wazi nani yuko karibu kweli, hata pale watu wanaolipwa wanapojaza pete za ndani. Kutoka Forest na Snow wa Inclusion Press."
+        },
+        "genogram": {
+          "label": "Jenogramu",
+          "desc": "Ramani ya familia ya vizazi vitatu kwa kutumia alama za kawaida za mifumo ya familia. Kwa ajili ya kujielewa binafsi tu (SI tathmini ya kitabibu). Imetokana na nadharia ya mifumo ya familia ya Bowen na alama za McGoldrick-Gerson-Petry. Inajumuisha mwongozo ulio wazi wa kuitumia kwa usalama."
+        },
+        "griefLoss": {
+          "label": "Huzuni na Kupoteza",
+          "desc": "Mwenzi wa kujiongoza katika huzuni. Kifo cha mtu au mnyama kipenzi, mabadiliko ya familia, kupoteza marafiki, kupoteza utambulisho, kupoteza kusiko wazi — yote yanahesabika. Pitia kazi nne za maombolezo za Worden, andika barua, panga matambiko. Mwongozo madhubuti wa usalama unaoelekeza kwa Mwandani wa Dharura / 988 kwa huzuni kali au tata."
+        },
+        "traumaPsychoed": {
+          "label": "Kuelewa Kiwewe",
+          "desc": "Elimu-saikolojia tu (SI kipimo cha uchunguzi). Kiwewe ni nini na si nini, sayansi ya ubongo kwa lugha rahisi, miitikio ya kawaida ikielezwa upya kama namna za kujilinda, kanuni 6 za SAMHSA, matibabu yenye ushahidi. Kwa wanafunzi na waelimishaji. Inajumuisha maelezo ya wazi ya usalama kuhusu kwa nini uchunguzi bila ufuatiliaji si salama."
+        },
+        "bodyStory": {
+          "label": "Hadithi ya Mwili",
+          "desc": "Zana ya kukubali mwili na kuishi ndani ya mwili wako. SI ya kulenga uzito, SI ya karibu na lishe za kupunguza uzito, SI kipimo cha uchunguzi. Imejengwa juu ya kuthamini mwili ya Tylka, kanuni za kula kwa kusikiliza mwili, na ujuzi wa vyombo vya habari. Inajumuisha miili yote, jinsia zote, maumbo yote. Rufaa madhubuti kwa NEDA kuhusu matatizo ya ulaji."
+        },
+        "sourcesOfStrength": {
+          "label": "Vyanzo vya Nguvu",
+          "desc": "Weka kwenye ramani vipengele vyako 8 vya kinga. Chunguza misaada ya kinga iliyochochewa na programu ya Sources of Strength. Ramani hii ya kujiongoza ni marekebisho, si utekelezaji wa programu ya shule iliyotathminiwa."
+        },
+        "crisiscompanion": {
+          "label": "Mwandani wa Dharura",
+          "desc": "Msaada wa rika na stadi za kuzuia kujiua: nini cha kufanya ikiwa wewe au rafiki ana msongo mkubwa wa mawazo, yuko katika dharura, au anafikiria kujidhuru — kutambua dalili, nini cha kusema (na kutosema), kumwambia mtu mzima unayemwamini, pamoja na 988 na mpango binafsi wa usalama. Hufunguliwa baada ya onyo la maudhui. Inaendana na NEDA, AFSP, Sources of Strength, na 988. Ni mwenza wa msaada wa dharura wa Vyanzo vya Nguvu."
+        },
+        "identitySupport": {
+          "label": "Msaada wa Utambulisho",
+          "desc": "Nafasi jumuishi inayokuthibitisha kwa maswali ya utambulisho wa kijinsia, mwelekeo wa kingono, mwelekeo wa kimapenzi, na maswali mapana ya utambulisho. Msamiati, ukuaji wa utambulisho, kupata jamii, usalama kwa vijana waliobadili jinsia, mwongozo kwa washirika. Imejengwa juu ya Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Sauti za Ulemavu",
+          "desc": "Watetezi halisi wenye usonji na wenye ulemavu ambao kazi yao iliunda, na kukosoa, mazoea kuhusu ulemavu. Nukuu, muktadha, na orodha teule ya kusoma. Imejengwa ili watu ambao fani hii ILIWATENDEA mambo wawe katikati, si kusukumwa pembeni katika zana ya sayansi ya tabia. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Mpangaji wa Malengo",
+          "desc": "Weka malengo SMART, fuatilia maendeleo, na sherehekea hatua muhimu."
+        },
+        "howlTracker": {
+          "label": "Kifuatiliaji cha HOWL",
+          "desc": "Kujitathmini kwa Tabia za Kazi na Kujifunza kwa ajili ya muda wa Crew. Ukaguzi wa kila wiki, malengo ya kila robo mwaka, chati ya mwenendo, maswali ya mazungumzo ya Crew. Inaendana na mfumo wa HOWL wa EL Education."
+        },
+        "onePageProfile": {
+          "label": "Wasifu wa Ukurasa Mmoja",
+          "desc": "Wasifu unaobebeka na kuchapishwa unaotosha ukurasa mmoja. Sehemu tatu: kile watu wanachopenda na kuvutiwa nacho kunihusu, kilicho muhimu kwangu, jinsi bora ya kunisaidia. Zana ya mipango inayomlenga mtu kwa mikutano ya IEP, mabadiliko ya hatua, walimu wa akiba, au Crew. Kulingana na muundo wa Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Kutengeneza Mipango ya Utekelezaji. Maswali manane kwa mfuatano (Hadithi Yangu, Ndoto, Jinamizi, Mimi Ni Nani, Vipawa, Mahitaji, Mpango wa Utekelezaji, Hatua za Kwanza). Kielelezo kinachomlenga mtu kutoka Pearpoint, O'Brien, na Forest wa Inclusion Press; hutumika sana katika kupanga mabadiliko ya hatua za maisha."
+        },
+        "path": {
+          "desc": "Kupanga Kesho Mbadala kwa Matumaini. Kielelezo cha kupanga siku zijazo: awamu nane kuanzia Nyota yako ya Kaskazini ya muda mrefu kurudi nyuma hadi hatua za kwanza ndani ya wiki mbili. Pearpoint, O'Brien, na Forest wa Inclusion Press; inaendana na MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Maadili na Vitendo",
+          "desc": "Panga kilicho muhimu, taja maadili yako makuu, na geuza kila moja kuwa kitendo kidogo halisi wiki hii. Kutoka Tiba ya Kukubali na Kujitolea (Hayes); mtazamo wa DNA-V kwa vijana. Tofauti ya ACT kati ya maadili (mwelekeo) na malengo (mahali pa kufika)."
+        },
+        "careerCompass": {
+          "label": "Dira ya Taaluma",
+          "desc": "Chunguza taaluma kupitia mambo yanayokuvutia. Kujipima kwa RIASEC kwa vipengele 36 kunatoa msimbo wa Holland wa herufi tatu za juu; vinjari taaluma, Makundi 16 ya Taaluma ya serikali kuu, na hatua halisi zinazofuata (siku za kufuatilia mtu kazini, mahojiano ya kupata taarifa, CTE, uanagenzi). Imejengwa juu ya mfumo wa Holland; inaelekeza kwa O*NET Interest Profiler rasmi kwenye mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio ya Kujitetea",
+          "desc": "Jenga mpango halisi wa msaada shuleni kwa maswali ya IEP au 504, marekebisho, uchaguzi wa kufichua, na kuwaomba msaada watu wazima unaowaamini."
+        },
+        "perspective": {
+          "label": "Lenzi ya Mitazamo",
+          "desc": "Ona hali kutoka mitazamo tofauti — jizoeze huruma na kujiweka katika nafasi ya wengine."
+        },
+        "community": {
+          "label": "Jamii na Utamaduni",
+          "desc": "Chunguza utofauti, utambuzi wa tamaduni, na hali ya kuwa sehemu ya jamii."
+        },
+        "conflict": {
+          "label": "Utatuzi wa Migogoro",
+          "desc": "Jizoeze mgogoro mdogo au wa kubuni kwa kujiweka katika nafasi ya wengine, kauli za \"Mimi\", kupunguza mvutano, na chaguo za kurekebisha. Ikiwa mtu hayuko salama, mhusishe mtu mzima badala ya kujadiliana peke yako."
+        },
+        "social": {
+          "label": "Maabara ya Stadi za Kijamii",
+          "desc": "Jizoeze stadi za mazungumzo, kusikiliza kwa makini, lugha ya mwili, na ushirikiano."
+        },
+        "teamwork": {
+          "label": "Kijenzi cha Kazi ya Pamoja",
+          "desc": "Changamoto za kushirikiana na kuchunguza majukumu katika timu."
+        },
+        "dearMan": {
+          "desc": "Tunga maneno ya ombi gumu kwa hatua saba: Eleza, Onyesha hisia, Sisitiza, Imarisha, Kuwa makini, Onekana kujiamini, Jadiliana. Kutoka DBT Ufanisi wa Mahusiano (Linehan); mpangilio wa mawasiliano ya uthubutu unaotumika zaidi katika ushauri wa shule. Inaendana na Studio ya Kujitetea."
+        },
+        "motivationalInterviewing": {
+          "label": "Usaili wa Kuhamasisha",
+          "desc": "Mfumo wa mazungumzo wa kumsaidia mtu (au wewe mwenyewe) kufikiria kuhusu mabadiliko. Jifunze stadi za OARS (Maswali ya wazi, Uthibitisho, Kuakisi, Muhtasari), rula tatu, na Mazungumzo ya Mabadiliko. Kutoka Miller na Rollnick; msingi wa ushauri wa shule na kazi ya msaada wa rika."
+        },
+        "crewProtocols": {
+          "label": "Itifaki za Crew",
+          "desc": "Maktaba ya miundo ya vikundi iliyopangwa kwa muda wa Crew, kipindi cha ushauri, au darasa la mwanzo wa siku: kujenga jamii, kufungua, kufunga, duara za urekebishaji, itifaki za kutafakari, miundo ya kusherehekea, na miongozo ya mazungumzo magumu. Pamoja na mkusanyiko wa maswali yote ya Crew kutoka kote kwenye SEL Hub. Imejengwa juu ya EL Education Crew, Restorative Practices, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Mahusiano Yenye Afya",
+          "desc": "Wigo (yenye afya / yasiyo na afya / ya unyanyasaji) katika vipimo 8 vya uhusiano wowote wa karibu. Ridhaa kwa undani, kuzuia ukatili katika mahusiano ya kimapenzi, usalama + laini za msaada. Imejengwa juu ya mfumo wa Loveisrespect / NDVH. Inajumuisha watu wa jinsia na mapenzi mbalimbali, wenye utofauti wa kinyurolojia, na wenye ulemavu."
+        },
+        "decisions": {
+          "label": "Maabara ya Maamuzi",
+          "desc": "Pitia hali za maisha halisi kwa kutumia mifumo ya simama-fikiri-tenda."
+        },
+        "journal": {
+          "label": "Jarida la Hisia",
+          "desc": "Jarida la ukaguzi wa kila siku — andika hali ya moyo, vichochezi, na tafakari kwa muda."
+        },
+        "safety": {
+          "label": "Usalama na Mipaka",
+          "desc": "Jifunze kuhusu mipaka binafsi, watu wazima unaowaamini, na hali salama dhidi ya zisizo salama."
+        },
+        "landPlace": {
+          "label": "Ardhi na Mahali",
+          "desc": "Studio ya Utunzaji kwa uhusiano endelevu na ardhi unayoishi. Nyuzi tatu (historia, ikolojia, sasa), tafakari ya kina kuhusu kutambua ardhi kama zoezi badala ya maonyesho, mashirika yanayoongozwa na Wabanaki kama sauti zenye mamlaka, na jarida la faragha la tafakari."
+        },
+        "somaticReset": {
+          "label": "Kujiweka Sawa kwa Mwili na Pumzi",
+          "desc": "Chagua sehemu ya mwili na ufuate zoezi fupi la kutulia, kupumua, au kusogea taratibu unaloweza kufanya ukiwa kitini, pamoja na ukaguzi wa faragha kabla na baada."
+        },
+        "restorativeCircle": {
+          "label": "Duara la Urekebishaji",
+          "desc": "Ongoza duara za urekebishaji na za kujenga jamii zenye kanuni zilizowekwa, mwongozo wa mtu mzima, na uangalifu kuhusu mizizi ya kitamaduni. Si kwa kulazimisha mtu kufichua mambo wala kwa hatari ya usalama inayoendelea."
+        },
+        "compassion": {
+          "label": "Huruma na Kujisemea",
+          "desc": "Jizoeze kujihurumia, geuza sauti ya ndani inayokukosoa, na jenga sauti ya ndani yenye upole zaidi."
+        },
+        "friendship": {
+          "label": "Kijenzi cha Urafiki",
+          "desc": "Chunguza mitindo ya urafiki, mbinu za kurekebisha, na mifumo ya mahusiano yenye afya."
+        },
+        "transitions": {
+          "label": "Mabadiliko ya Maisha",
+          "desc": "Pitia mabadiliko kama kuhama, shule mpya, na kukua."
+        },
+        "upstander": {
+          "label": "Mafunzo ya Mtetezi",
+          "desc": "Jifunze kuwatetea wengine kwa usalama — stadi za kutoka kuwa mtazamaji hadi kuwa mtetezi."
+        },
+        "growthmindset": {
+          "label": "Mtazamo wa Kukua",
+          "desc": "Sayansi ya ubongo, kuziona changamoto kwa mtazamo mpya, na kujenga ustahimilivu."
+        },
+        "execfunction": {
+          "label": "Uwezo wa Kiutendaji",
+          "desc": "Mbinu za sehemu ngumu zaidi za kukamilisha mambo: kuanza kazi, kudumisha umakini, kupanga mapema, na kufuatilia muda."
+        },
+        "advocacy": {
+          "label": "Mazoezi ya Utetezi",
+          "desc": "Jizoeze maneno ya jumla ya kueleza mahitaji, kuomba msaada, na kusema waziwazi katika hali za kila siku."
+        },
+        "civicAction": {
+          "label": "Hatua za Kiraia na Matumaini",
+          "desc": "Shughulikia hisia ngumu kuhusu dhuluma, jenga uwezo wa kushiriki kiraia, na kuza matumaini kupitia vitendo."
+        },
+        "ethicalReasoning": {
+          "label": "Maabara ya Hoja za Kimaadili",
+          "desc": "Chunguza changamoto za kimaadili za leo kupitia mifumo mbalimbali na mazungumzo ya Kisokrati na akili bandia."
+        },
+        "cultureExplorer": {
+          "label": "Mchunguzi wa Tamaduni",
+          "desc": "Zama kwa kina katika tamaduni za ulimwengu kwa msaada wa akili bandia, pamoja na michoro na sauti."
+        },
+        "voicedetective": {
+          "label": "Mpelelezi wa Sauti",
+          "desc": "Sikiliza sauti na utambue hisia kutokana na toni."
+        },
+        "practiceJourneys": {
+          "label": "Safari za Mazoezi (Majaribio)",
+          "desc": "Jizoeze kuomba msaada kupitia matukio manne yanayounganika. Jibu kwa chaguo, maneno yako mwenyewe, au vyote viwili. Tunza jarida na ujaribu njia nyingine."
+        },
+        "sociallab": {
+          "label": "Igizo la Stadi za Kijamii",
+          "desc": "Jizoeze hali za kijamii na igizo na rika wa akili bandia lenye mazungumzo yenye matawi."
+        },
+        "peersupport": {
+          "label": "Kocha wa Msaada wa Rika",
+          "desc": "Jifunze stadi za kusikiliza za OARS na wakati wa kupata msaada wa mtu mzima."
+        },
+        "conflicttheater": {
+          "label": "Tamthilia ya Migogoro",
+          "desc": "Jizoeze mgogoro wa kubuni na wahusika wawili wa akili bandia katika onyesho linalokuzamisha ndani. Ni igizo la majaribio (beta) tu; usiitumie kusuluhisha madhara yanayoendelea."
+        },
+        "digitalWellbeing": {
+          "label": "Studio ya Ustawi wa Kidijitali",
+          "desc": "Jipime uhusiano wako na mitandao ya kijamii na chatbot za akili bandia, jenga tabia bora za kutumia simu, pona baada ya unyanyasaji mtandaoni, tambua udanganyifu kwenye mlisho, pitia mahusiano na chatbot kwa usalama, na upate msaada unapouhitaji."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Kujitambua",
+          "desc": "Kutambua hisia, nguvu, na mambo ya kukuza"
+        },
+        "self-regulation": {
+          "label": "Kujidhibiti",
+          "desc": "Kudhibiti hisia, msisimko, umakini; mazoezi ya kukabiliana"
+        },
+        "self-direction": {
+          "label": "Kujiongoza",
+          "desc": "Kuweka malengo, uwezo wa kujiamulia, uwezo wa kiutendaji, mtazamo wa kukua"
+        },
+        "inner-work": {
+          "label": "Kazi ya Ndani",
+          "desc": "Mazoea ya kutafakari na kujitathmini"
+        },
+        "care-of-self": {
+          "label": "Kujali Nafsi",
+          "desc": "Kujihurumia, kujitunza kwa kushirikiana na wengine"
+        },
+        "social-awareness": {
+          "label": "Utambuzi wa Kijamii",
+          "desc": "Huruma, kujiweka katika nafasi ya wengine, na kuthamini utofauti"
+        },
+        "relationship-skills": {
+          "label": "Stadi za Mahusiano",
+          "desc": "Mawasiliano, kazi ya pamoja, na utatuzi wa migogoro"
+        },
+        "responsible-decision-making": {
+          "label": "Kufanya Maamuzi kwa Uwajibikaji",
+          "desc": "Chaguo za kimaadili, kutathmini matokeo, na kutatua matatizo"
+        },
+        "stewardship": {
+          "label": "Utunzaji",
+          "desc": "Kujali jamii, haki, ardhi, na siku zijazo"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "dakika 5-8",
+          "purpose": "Taja eneo ulilopo sasa na uchague mbinu ya kujidhibiti inayokufaa.",
+          "next": "Kagua eneo lako, chagua mbinu moja, kisha hifadhi ukitaka kuirudia."
+        },
+        "coping": {
+          "time": "dakika 3-10",
+          "purpose": "Chagua mbinu ya kukabiliana na uijaribu mara moja ukiwa na mahali pa wazi pa kuishia.",
+          "next": "Chagua mbinu moja ya mwili au ya kutuliza kwa hisi, ijaribu, kisha tambua kama ilisaidia."
+        },
+        "journal": {
+          "time": "dakika 5-12",
+          "purpose": "Andika tafakari ya faragha na utambue mifumo ambayo huenda ukataka kuitunza.",
+          "next": "Chagua swali, andika kwa uaminifu, na hifadhi au hamisha kabla ya kufunga."
+        },
+        "emotions": {
+          "time": "dakika 4-8",
+          "purpose": "Jenga msamiati wa hisia na utaje unachohisi kwa usahihi zaidi.",
+          "next": "Chagua hisia, pima ukubwa wake, kisha chagua neno moja linalofaa zaidi."
+        },
+        "mindfulness": {
+          "time": "dakika 2-10",
+          "purpose": "Tulia kidogo, pumua, na jizoeze umakini bila kuhitaji kuandika chochote.",
+          "next": "Chagua zoezi moja fupi, lifuate hadi mwisho, kisha tambua kilichobadilika."
+        },
+        "somaticReset": {
+          "time": "dakika 3-8",
+          "purpose": "Tumia ukaguzi wa faragha wa sehemu za mwili kuchagua zoezi fupi la kujiweka sawa unaloweza kufanya ukiwa kitini.",
+          "next": "Chagua sehemu ya mwili, jaribu chaguo moja la kutulia, kupumua, au kusogea taratibu, kisha tambua kilichobadilika."
+        },
+        "thoughtRecord": {
+          "time": "dakika 8-15",
+          "purpose": "Punguza kasi ya wazo gumu na utafute mtazamo wenye uwiano zaidi.",
+          "next": "Taja hali, pima hisia, kisha pima wazo dhidi ya ushahidi."
+        },
+        "anxietyToolkit": {
+          "time": "dakika 5-12",
+          "purpose": "Panga wasiwasi, punguza ukali wake, na uchague hatua inayofuata inayotekelezeka.",
+          "next": "Chagua wasiwasi wenye sauti kubwa zaidi, jaribu mbinu moja, kisha hifadhi mpango ikiwa unasaidia."
+        },
+        "sleep": {
+          "time": "dakika 4-10",
+          "purpose": "Tambua vikwazo vya usingizi na uchague tabia moja ya kupumzika ya kujaribu.",
+          "next": "Kagua kinachokuzuia, chagua badiliko moja dogo, kisha rudi kuangalia baadaye."
+        },
+        "goals": {
+          "time": "dakika 5-10",
+          "purpose": "Geuza nia kuwa kitendo halisi kinachowezekana kinachofuata.",
+          "next": "Andika lengo moja, chagua hatua ya kwanza, na hifadhi mpango kabla ya kufunga."
+        },
+        "friendship": {
+          "time": "dakika 5-10",
+          "purpose": "Fikiria kuhusu mahitaji ya urafiki, kuwa sehemu ya kundi, na chaguo kuhusu rika.",
+          "next": "Chagua hali moja ya urafiki na utambue hatua moja ya upole inayofuata."
+        },
+        "conflict": {
+          "time": "dakika 6-12",
+          "purpose": "Elewa mgogoro na uandae jibu linalolenga kurekebisha.",
+          "next": "Taja kilichotokea, fikiria pande zote mbili, kisha chagua kitendo kimoja cha kurekebisha."
+        },
+        "safety": {
+          "time": "dakika 8-15",
+          "purpose": "Tengeneza mpango wa usalama unaotekelezeka na utambue watu wa kuaminika wa kukusaidia.",
+          "next": "Ongeza dalili za tahadhari, hatua za kukabiliana, na watu wa kuwasiliana nao; hifadhi kabla ya kufunga."
+        },
+        "crisiscompanion": {
+          "time": "dakika 3-10",
+          "purpose": "Tumia hatua za msaada zilizopangwa pale hisia zinapoonekana za dharura au si salama.",
+          "next": "Chagua chaguo la msaada lililo karibu zaidi na umhusishe mtu mzima unayemwamini au huduma ya dharura inapohitajika."
+        },
+        "conflicttheater": {
+          "time": "dakika 8-15",
+          "purpose": "Jizoeze onyesho la mgogoro wa kubuni na ujaribu lugha ya urekebishaji bila kuichukulia zana hii kama usuluhishi.",
+          "next": "Chagua onyesho la kubuni, jaribu jibu moja, kisha jadili ni nini kingehitaji msaada wa mtu mzima katika maisha halisi."
+        },
+        "restorativeCircle": {
+          "time": "dakika 15-30",
+          "purpose": "Panga au ongoza mchakato wa kikundi wa urekebishaji wenye kanuni wazi na mwongozo wa mtu mzima.",
+          "next": "Weka makubaliano ya duara kwanza, kisha chagua swali; usiwahi kulazimisha mtu kufichua mambo hadharani."
+        },
+        "strengths": {
+          "time": "dakika 5-10",
+          "next": "Chagua nguvu zinazokuelezea wewe, kisha tafuta tukio moja halisi la muhula huu linaloonyesha kila moja."
+        },
+        "viaStrengths": {
+          "time": "dakika 8-15",
+          "purpose": "Tumia upangaji binafsi uliochochewa na VIA kama shughuli ya kutafakari, si tathmini rasmi.",
+          "next": "Panga nguvu, tambua mifumo, na andika mfano mmoja unaothibitisha matokeo."
+        },
+        "perma": {
+          "time": "dakika 8-15",
+          "purpose": "Pata picha ya kutafakari ya ustawi wako katika nyanja za PERMA pamoja na Afya.",
+          "next": "Tumia picha hii kuchagua mazungumzo au jaribio dogo, si kujipa lebo."
+        },
+        "advocacy": {
+          "time": "dakika 5-12",
+          "purpose": "Jizoeze lugha ya kila siku ya kueleza mahitaji na kuomba msaada.",
+          "next": "Chagua hali, andika ombi fupi, na uamue nani anaweza kusaidia."
+        },
+        "selfAdvocacy": {
+          "time": "dakika 10-20",
+          "purpose": "Jenga mpango halisi wa msaada shuleni kwa IEP, 504, marekebisho, au uchaguzi wa kufichua.",
+          "next": "Chagua hitaji moja la msaada, kusanya maswali yako, na umtambue mtu mzima unayemwamini wa kumhusisha."
+        },
+        "crewProtocols": {
+          "time": "dakika 10-20",
+          "next": "Vinjari kwa lengo, chagua itifaki moja ya leo, kisha andika katika Mpango Wangu wa Crew ni lini utaiendesha."
+        },
+        "perspective": {
+          "time": "dakika 6-12",
+          "next": "Chagua hali, anza kwa mtazamo wa mtu mwingine, kisha sema ungefanya nini tofauti."
+        },
+        "windowOfTolerance": {
+          "time": "dakika 8-12",
+          "next": "Ongeza dalili moja kwenye kila moja ya maeneo yako matatu, kisha tumia Kagua Hali kuonyesha ulipo leo."
+        },
+        "sensoryRegulation": {
+          "time": "dakika 8-15",
+          "next": "Anza na Hisi ni nini?, kisha weka alama kwenye mifumo iliyo na sauti kubwa au tulivu kwako."
+        },
+        "execfunction": {
+          "time": "dakika 5-10",
+          "next": "Nenda kwenye Anza na uchague hatua moja ya kuanzia kwa leo, kisha Dumisha ili uchague mahali pa kuandika mawazo yako."
+        },
+        "growthmindset": {
+          "time": "dakika 5-10",
+          "next": "Fungua Liangalie Upya, andika wazo lisilobadilika, na ligeuze kuwa wazo mahususi linalowezekana."
+        },
+        "dearMan": {
+          "time": "dakika 8-12",
+          "next": "Andika ombi lako kwa sentensi moja, andaa hatua saba, kisha lifanyie mazoezi mara moja."
+        },
+        "howlTracker": {
+          "time": "dakika 5-10",
+          "next": "Rekodi Kipimo cha Haraka, kisha fanya Ukaguzi wa kila wiki: pima kila HOWL na uongeze mfano mmoja mahususi."
+        },
+        "peersupport": {
+          "time": "dakika 5-10",
+          "next": "Chagua maswali mawili ya wazi ambayo ungeweza kumuuliza rafiki, kisha jaribu moja katika hali ya kubuni kwenye kichupo cha mazoezi."
+        },
+        "upstander": {
+          "time": "dakika 8-12",
+          "next": "Soma ngazi ya ujasiri katika Hatua, kisha chagua hatua mbili ndogo zaidi ambazo ungeweza kuchukua kweli wiki hii."
+        },
+        "digitalWellbeing": {
+          "time": "dakika 8-12",
+          "next": "Fanya Kujipima kwa uaminifu, kisha chagua tabia moja kutoka Kisanduku cha Zana na mpaka mmoja unaouweka mapema."
+        },
+        "teamwork": {
+          "time": "dakika 8-12",
+          "next": "Angalia Majukumu, kisha andika Mpango wa Mawasiliano kwa kikundi halisi: nani anafanya nini, wapi, na kufikia lini."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Anza hapa",
+        "name_it": "Kitaje",
+        "calm_now": "Tulia sasa",
+        "body_reset": "Kuweka mwili sawa",
+        "make_a_plan": "Tengeneza mpango",
+        "understand_patterns": "Elewa mifumo",
+        "practice_repair": "Jizoeze kurekebisha",
+        "role_play": "Igizo",
+        "facilitated_group": "Kikundi chenye mwezeshaji",
+        "reflect": "Tafakari",
+        "practice_speaking_up": "Jizoeze kusema waziwazi",
+        "make_a_support_plan": "Tengeneza mpango wa msaada",
+        "urgent_support": "Msaada wa haraka",
+        "get_support": "Pata msaada",
+        "move_gently": "Songa taratibu",
+        "learn_not_diagnose": "Jifunze, si kutambua ugonjwa",
+        "learn_and_get_support": "Jifunze na upate msaada",
+        "check_boundaries": "Kagua mipaka",
+        "explore_identity": "Chunguza utambulisho",
+        "practice_body_respect": "Jizoeze kuheshimu mwili",
+        "map_carefully": "Weka ramani kwa uangalifu",
+        "understand_needs": "Elewa mahitaji"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Taja kinachoendelea kabla ya kuchagua mbinu."
+        },
+        "emotions": {
+          "note": "Jenga maneno sahihi ya hisia na utambue ukali wake."
+        },
+        "coping": {
+          "note": "Jaribu mbinu moja ya mwili au ya kutuliza kwa hisi, kisha tambua kilichobadilika."
+        },
+        "mindfulness": {
+          "note": "Pumziko lisilohitaji uandishi mwingi kwa ajili ya kupumua, umakini, au kuutambua mwili."
+        },
+        "somaticReset": {
+          "note": "Chagua sehemu ya mwili, kisha jaribu zoezi fupi la kutulia, kupumua, au kusogea taratibu. Kichaguzi kidogo kinachotumika kwa kibodi hufanya kila kielelezo kiweze kutumika kwenye skrini ndogo. Vielelezo vinajumuisha Wimbi Linalotiririka linalooanisha VUTA · PANDA na mstari kamili na alama ya duara, TOA · TULIA na mstari wa vitone na alama ya almasi, na IMESITISHWA na mistari ya kusitisha; Ua Linalochanua linalooanisha VUTA · FUNGUKA na mistari kamili ya petali na kitovu cha duara, TOA · LAINIKA na mistari ya vitone na kitovu cha almasi, na IMESITISHWA na mistari ya kusitisha katikati; Upeo wa Kutuliza unaooanisha VUTA · PANDA na muhtasari kamili wa jua na kitovu cha duara, TOA · TULIA na muhtasari wa jua wa vitone na kitovu cha almasi, na IMESITISHWA na mistari ya kusitisha ya jua; njia ya mstari inayotabirika yenye alama za mwelekeo, lebo za moja kwa moja za VUTA na TOA, shabaha ya duara ya VUTA na ya almasi ya TOA, mkondo wa mahali pa kuanzia, na mahali panapofuata palipozungushiwa mstari; na Mzunguko wa Pumzi wa sehemu mbili wenye tao za awamu za mstari kamili na za vitone zinazokoza zikiwa hai, pete ya katikati yenye mpangilio unaolingana na awamu, lebo za moja kwa moja za VUTA na TOA, alama ya katikati ya hali ya kusitishwa, sehemu ya makabidhiano inayofuata iliyozungushiwa mstari, alama ya mwendo wa saa yenye umbo la awamu, ramani ya mdundo yenye misimbo ya maumbo, na vidokezo vya awamu kwa kisoma skrini. Wanafunzi wanaweza kujaribu pumzi moja ya mwendo kabla kipima muda hakijaanza, kisha kukuza, kusimamisha mwendo, au kuzima mwongozo. Katika Mwonekano Tulivu, kielelezo kilichokuzwa kinakuwa kitufe cha kuanza/kusitisha kinachotumika kwa kibodi na kwa kugusa. Hesabu ya kurudi nyuma inaweza kufichwa; maneno ya mwongozo yanaweza kuwa kamili, ya awamu tu, au kufichwa; na hesabu za pumzi na vipimo vya namba ni hiari.",
+          "boundary": "Hii si tiba wala utambuzi wa ugonjwa. Fanya miondoko midogo isiyo na maumivu; acha ukihisi maumivu, kizunguzungu, au ganzi na umwambie mtu mzima unayemwamini au mtaalamu wa afya."
+        },
+        "anxietyToolkit": {
+          "note": "Tenganisha wasiwasi na hatua, na uchague hatua moja inayotekelezeka inayofuata."
+        },
+        "windowOfTolerance": {
+          "note": "Weka kwenye ramani dalili za msisimko na misaada kwa muda; si utambuzi wa ugonjwa."
+        },
+        "stressBucket": {
+          "note": "Angalia shinikizo na misaada kwa pamoja, ikiwemo shinikizo lililo nje ya uwezo wako."
+        },
+        "bigFeelings": {
+          "note": "Tumia hasira kama taarifa na upange pumziko salama zaidi au urekebishaji."
+        },
+        "conflict": {
+          "note": "Inafaa zaidi kwa mazoezi ya migogoro midogo au ya kubuni.",
+          "boundary": "Ikiwa kuna vitisho, kulazimishwa, uonevu, unyanyasaji, au tofauti ya madaraka isiyo salama, simama na umhusishe mtu mzima unayemwamini badala ya kujadiliana peke yako."
+        },
+        "conflicttheater": {
+          "note": "Mazoezi ya majaribio (beta) yanayokuzamisha ndani pamoja na wahusika wa kubuni; usiitumie kusuluhisha madhara yanayoendelea.",
+          "boundary": "Vitisho halisi, unyanyasaji, au uonevu vinahitaji msaada wa mtu mzima na hatua za usalama, si zoezi la igizo."
+        },
+        "restorativeCircle": {
+          "note": "Tumia pamoja na kanuni za duara zilizowekwa na mwezeshaji mtu mzima.",
+          "boundary": "Usitumie duara kumshinikiza mtu kufichua mambo hadharani wala kushughulikia hatari ya usalama inayoendelea."
+        },
+        "strengths": {
+          "note": "Tafakari ya wazi kuhusu nguvu bila alama, cheo, wala utambuzi wa ugonjwa."
+        },
+        "viaStrengths": {
+          "note": "Upangaji binafsi wa kutafakari, si dodoso rasmi la VIA wala matokeo ya kipimo cha kisaikolojia."
+        },
+        "perma": {
+          "note": "Picha ya ustawi ya kuanzisha mazungumzo, si tathmini ya afya ya akili."
+        },
+        "advocacy": {
+          "note": "Maneno ya jumla na mazoezi ya kueleza mahitaji na kuomba msaada."
+        },
+        "selfAdvocacy": {
+          "note": "Tumia kwa mipango halisi ya IEP, 504, marekebisho, kufichua, au msaada shuleni."
+        },
+        "crisiscompanion": {
+          "note": "Mwongozo wa msaada kwako au kwa rafiki; si kipimo cha uchunguzi wa dharura wala mbadala wa mtu mzima.",
+          "boundary": "Ikiwa mtu yeyote anaweza kuwa katika hatari ya papo hapo au anaweza kutekeleza mawazo ya kujidhuru, simama hapa na uwasiliane na mtu mzima unayemwamini au msaada wa dharura sasa hivi."
+        },
+        "safety": {
+          "note": "Jifunze mipaka na hatua za kumwendea mtu mzima unayemwamini; hiki si kipimo cha kujua kama hali ni salama.",
+          "boundary": "Ikiwa uko katika hatari ya papo hapo au mtu anakuumiza, simama na uwasiliane na mtu mzima unayemwamini au msaada wa dharura sasa hivi."
+        },
+        "griefLoss": {
+          "note": "Mwenzi wa faragha kwa huzuni na kupoteza; ruka chochote kinachohisi kuwa kizito mno.",
+          "boundary": "Ikiwa huzuni inahisi kuwa isiyovumilika, hujisikii salama, au mtu mwingine yuko hatarini, mhusishe mtu mzima unayemwamini au msaada wa dharura."
+        },
+        "traumaPsychoed": {
+          "note": "Elimu-saikolojia kuhusu miitikio ya kiwewe; si kipimo cha uchunguzi wala tiba.",
+          "boundary": "Huhitaji kufichua kiwewe hapa. Simama na umtafute mtu mzima unayemwamini au mshauri ikiwa maudhui yanaibua jambo lisilo salama."
+        },
+        "substancePsychoed": {
+          "note": "Taarifa za kupunguza madhara na tafakari; si kipimo cha uchunguzi wala ruhusa ya kutumia dawa za kulevya.",
+          "boundary": "Usitumie zana hii kwa kuzidisha dozi au hali ya dharura ya kiafya; wasiliana na msaada wa dharura au mtu mzima unayemwamini."
+        },
+        "healthyRelationships": {
+          "note": "Chunguza ridhaa na mifumo ya mahusiano bila kumpa mtu au uhusiano lebo.",
+          "boundary": "Ikiwa uhusiano una vitisho, kulazimishwa, au ukatili, tafuta msaada wa mtu mzima; usimkabili mtu peke yako."
+        },
+        "identitySupport": {
+          "note": "Tafakari inayokuthibitisha na msaada wa jamii; kushiriki ni hiari.",
+          "boundary": "Weka taarifa zako binafsi faragha na umhusishe mtu mzima unayemwamini ikiwa hujisikii salama."
+        },
+        "bodyStory": {
+          "note": "Kuthamini mwili na ujuzi wa vyombo vya habari; si tathmini ya kupunguza uzito wala ya matatizo ya ulaji.",
+          "boundary": "Ikiwa chakula, taswira ya mwili, au mazoezi yanahisi si salama au yanakutawala, zungumza na mtu mzima unayemwamini au mtaalamu wa afya."
+        },
+        "genogram": {
+          "note": "Tafakari binafsi kuhusu familia; si tathmini ya kitabibu na kushiriki ni hiari.",
+          "boundary": "Ruka maelezo ya familia yanayohisi si salama au ni ya faragha; mwombe mtu mzima unayemwamini msaada."
+        },
+        "sensoryRegulation": {
+          "note": "Jenga wasifu wa hisi na marekebisho; si utambuzi wa ugonjwa.",
+          "boundary": "Chagua misaada inayohisi salama; shiriki marekebisho pale tu unapotaka."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Ukaguzi wa Asubuhi",
+          "desc": "Anza siku kwa kukagua hali ya moyo, kupumua, na kuweka malengo"
+        },
+        "calm_down": {
+          "name": "Kona ya Kutuliza",
+          "desc": "Mbinu za kujidhibiti pale hisia zinapopanda juu"
+        },
+        "conflict_unit": {
+          "name": "Kitengo cha Utatuzi wa Migogoro",
+          "desc": "Jizoeze kutatua kutokubaliana na kujenga stadi za kurekebisha"
+        },
+        "empathy_week": {
+          "name": "Wiki ya Huruma na Mitazamo",
+          "desc": "Jenga huruma kupitia kujiweka katika nafasi ya wengine na utambuzi wa tamaduni"
+        },
+        "decision_making": {
+          "name": "Uchunguzi wa Kina wa Kufanya Maamuzi",
+          "desc": "Jizoeze hoja za kimaadili na chaguo za kuwajibika"
+        },
+        "self_discovery": {
+          "name": "Safari ya Kujigundua",
+          "desc": "Chunguza wewe ni nani — nguvu, hisia, na mtazamo wa kukua"
+        },
+        "friendship": {
+          "name": "Urafiki na Stadi za Kijamii",
+          "desc": "Jenga urafiki wenye afya na stadi za mawasiliano"
+        },
+        "transitions": {
+          "name": "Kupitia Mabadiliko",
+          "desc": "Wasaidie wanafunzi katika mabadiliko ya maisha na uzoefu mpya"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Tambua unachohitaji na uchague hatua moja inayofuata unayoweza kuimudu.",
+          "model": "Najihisi sina utulivu. Naweza kujaribu kujinyoosha, kisha kuchagua sehemu ya kwanza ya kazi yangu.",
+          "practice": "Taja hisia, onyesha chaguo kwa kidole, au tambua kimya kimya. Jaribu msaada mmoja na uchague lengo dogo.",
+          "reflect": "Uligundua nini? Ungebakiza nini au kubadilisha nini?",
+          "transfer": "Somo linalofuata likianza, naweza kujaribu ____. Nikihitaji msaada, naweza kumuuliza ____."
+        },
+        "calm_down": {
+          "goal": "Chunguza msaada unaofaa mwili wako na wakati huu.",
+          "model": "Zoezi la kupumua halionekani kusaidia leo. Naweza kujaribu kutazama kuzunguka chumba au kuomba mtu akae nami.",
+          "practice": "Chagua mbinu moja tu inayokufaa. Kukaa, kutazama, au kupumzika ni chaguo halali.",
+          "reflect": "Ilisaidia, ilihisi vilevile, au ilihisi vibaya? Unaweza kuacha au kuchagua namna nyingine.",
+          "transfer": "Ninapogundua ____, naweza kujaribu ____ au kumwomba ____ msaada."
+        },
+        "conflict_unit": {
+          "goal": "Fikiria mitazamo tofauti na ufanyie mazoezi jibu la heshima kwa kutokubaliana kwa kila siku.",
+          "model": "Sote tunataka kifaa kilekile. Naweza kukuuliza unahitaji nini, kueleza hitaji langu, na kupendekeza tupokezane.",
+          "practice": "Tumia kutokubaliana kwa kubuni kusiko na madhara makubwa. Fanyia mazoezi swali moja la kusikiliza na hatua moja inayowezekana inayofuata.",
+          "reflect": "Jibu lilishughulikia mahitaji ya nani? Ni nini kingehitaji kubadilishwa?",
+          "transfer": "Katika kutokubaliana kusiko na hatari, naweza ____. Kwa vitisho, uonevu, au kulazimishwa, naweza kumwomba msaada mtu mzima ninayemwamini."
+        },
+        "empathy_week": {
+          "goal": "Chunguza mtazamo mwingine bila kudhani unajua jinsi mtu anavyohisi.",
+          "model": "Wako kimya. Huenda wamechoka au wanafikiri; naweza kuuliza badala ya kuamua kwa niaba yao.",
+          "practice": "Tumia mfano wa kubuni. Taja mitazamo miwili inayowezekana na swali la heshima ambalo ungeweza kuuliza.",
+          "reflect": "Unajua nini, na unakisia nini? Ungewezaje kuhakikisha?",
+          "transfer": "Kabla ya kudhani jambo wiki hii, naweza kuuliza ____."
+        },
+        "decision_making": {
+          "goal": "Linganisha chaguo kwa athari zake kwako na kwa wengine.",
+          "model": "Kabla ya kuchapisha picha ya kikundi, naweza kuomba ruhusa na kufikiria nani anaweza kuiona.",
+          "practice": "Chagua uamuzi wa kubuni. Linganisha chaguo mbili, athari zinazowezekana, na mtu anayeweza kusaidia.",
+          "reflect": "Ni taarifa gani inakosekana? Je, kuna chaguo salama zaidi au la haki zaidi?",
+          "transfer": "Kabla sijaamua kuhusu ____, naweza kusimama kidogo kukagua ____."
+        },
+        "self_discovery": {
+          "goal": "Tambua nguvu moja na uchague namna ya kuitumia ukiwa na msaada.",
+          "model": "Mimi huuliza maswali yenye manufaa. Naweza kutumia nguvu hiyo kazi inapokuwa haieleweki na kuomba mfano.",
+          "practice": "Chagua nguvu inayokufaa, au ya mhusika wa kubuni. Toa mfano mmoja wa nguvu hiyo ikitumika.",
+          "reflect": "Ni nini kiliisaidia nguvu hiyo kujitokeza? Msaada gani ungefanya hatua inayofuata iwezekane?",
+          "transfer": "Naweza kutumia ____ wakati ____. Mtu au rasilimali inayoweza kusaidia ni ____."
+        },
+        "friendship": {
+          "goal": "Jizoeze mawasiliano yanayoheshimu mahitaji yako na mipaka ya watu wengine.",
+          "model": "Naweza kumkaribisha mtu ajiunge nasi na kukubali uamuzi wake akisema hapana.",
+          "practice": "Fanyia mazoezi mwaliko, swali la kusikiliza, au mpaka wa heshima. Kuzungumza, kuandika, au AAC — vyote vinahesabika.",
+          "reflect": "Je, kila mtu alikuwa na chaguo la kweli? Ni nini kingefanya mwingiliano uwe wa kukaribisha zaidi?",
+          "transfer": "Katika mwingiliano salama wiki hii, naweza kujaribu ____ na kutambua ____."
+        },
+        "transitions": {
+          "goal": "Tambua kinachobadilika, kinachoweza kubaki thabiti, na chanzo kimoja cha msaada.",
+          "model": "Sina uhakika kuhusu darasa jipya. Naweza kutafuta chumba mapema na kuuliza nani anaweza kusaidia.",
+          "practice": "Chagua badiliko halisi au la kubuni. Taja jambo moja lisilo na uhakika, msaada mmoja thabiti, na hatua moja ndogo inayofuata.",
+          "reflect": "Ni sehemu gani iko ndani ya uwezo wako? Msaada au marekebisho gani yangefaa?",
+          "transfer": "Kabla ya badiliko, naweza ____. Mpango ukihitaji kubadilika, naweza ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "dakika 5-8",
+          "format": "Mmoja mmoja au kikundi",
+          "cue": "Ukaguzi mzuri wa kwanza kabla ya kushiriki chochote."
+        },
+        "emotions": {
+          "time": "dakika 5-8",
+          "format": "Mmoja mmoja au wawili wawili",
+          "cue": "Maandalizi mazuri ya msamiati."
+        },
+        "coping": {
+          "time": "dakika 3-10",
+          "format": "Mmoja mmoja au kikundi",
+          "cue": "Bora kwa kujiweka sawa na kujidhibiti upya."
+        },
+        "mindfulness": {
+          "time": "dakika 2-10",
+          "format": "Darasa zima",
+          "cue": "Chaguo la kujidhibiti lisilohitaji uandishi mwingi."
+        },
+        "somaticReset": {
+          "time": "dakika 3-8",
+          "format": "Mmoja mmoja au darasa zima",
+          "cue": "Kichaguzi kidogo cha vielelezo hufanya kila mwongozo upatikane bila gridi ya vitufe vilivyobanana. Mzunguko wa Pumzi unaoanisha tao za mstari kamili na za vitone na awamu hai iliyokozwa, pete ya katikati inayolingana ya mstari kamili au vitone, na lebo za moja kwa moja za VUTA na TOA; kitovu chake hubadilika kutoka nukta hadi mistari ya kusitisha kinaposimamishwa, na almasi au pete yake iliyozungushiwa mstari huonyesha makabidhiano ya awamu inayofuata, huku alama yake ya mwendo wa saa ya duara au almasi, almasi ya makabidhiano, pete ya kurudi, mistari mifupi ya kuvuta pumzi, na vitone vyenye uwazi vya kutoa pumzi vikifanya awamu na hesabu ya hiari zisomeke bila kutegemea rangi. Waruhusu wanafunzi wajaribu pumzi moja ya mwendo kabla ya kipima muda, au wachague Tuli. Toa maneno ya mwongozo kamili, ya awamu tu, au yaliyofichwa. Mwonekano Tulivu hufanya kielelezo kilichokuzwa kuwa kitufe cha moja kwa moja cha kuanza/kusitisha. Wimbi Linalotiririka hutumia VUTA · PANDA na mstari kamili na alama ya duara, TOA · TULIA na mstari wa vitone na alama ya almasi, na mistari ya kusitisha kwa kipindi kilichosimamishwa. Ua Linalochanua hutumia VUTA · FUNGUKA na mistari kamili ya petali na kitovu cha duara, TOA · LAINIKA na mistari ya vitone na kitovu cha almasi, na mistari ya kusitisha katikati kwa kipindi kilichosimamishwa. Upeo wa Kutuliza hutumia VUTA · PANDA na muhtasari kamili wa jua na kitovu cha duara, TOA · TULIA na muhtasari wa jua wa vitone na kitovu cha almasi, na mistari ya kusitisha ya jua unaposimamishwa. Njia ya Pumzi hutumia shabaha ya duara ya VUTA, shabaha ya almasi ya TOA, mkondo wa mahali pa kuanzia, na mahali panapofuata palipozungushiwa mstari ili mwelekeo usitegemee rangi. Toa vidokezo vya awamu kwa kisoma skrini, pamoja na chaguo za kuficha hesabu ya kurudi nyuma, kuficha mwongozo, mwendo tuli, bila kielelezo, kupumua kwa kawaida, na bila namba; usiwahi kulazimisha vipimo au maelezo ya hisia za mwili."
+        },
+        "journal": {
+          "time": "dakika 5-12",
+          "format": "Mmoja mmoja",
+          "cue": "Tafakari ya faragha. Kushiriki kunapaswa kuwa hiari."
+        },
+        "goals": {
+          "time": "dakika 5-10",
+          "format": "Mmoja mmoja au kipindi cha ushauri",
+          "cue": "Hatua nzuri ya kufunga baada ya tafakari."
+        },
+        "conflict": {
+          "time": "dakika 8-12",
+          "format": "Wawili wawili au kikundi kidogo",
+          "cue": "Pitia kanuni kwanza kabla ya igizo."
+        },
+        "restorativeCircle": {
+          "time": "dakika 15-30",
+          "format": "Duara",
+          "cue": "Tumia pamoja na kanuni za duara zilizowekwa."
+        },
+        "peersupport": {
+          "time": "dakika 8-15",
+          "format": "Mazoezi ya wawili wawili",
+          "cue": "Nzuri sana kwa mazoezi ya stadi za kusikiliza."
+        },
+        "perspective": {
+          "time": "dakika 6-12",
+          "format": "Wawili wawili au kikundi",
+          "cue": "Daraja zuri la huruma kabla ya majadiliano."
+        },
+        "digitalWellbeing": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja au kipindi cha ushauri",
+          "cue": "Inafaa kabla ya kuweka kanuni za simu au akili bandia."
+        },
+        "sleep": {
+          "time": "dakika 5-10",
+          "format": "Mmoja mmoja",
+          "cue": "Nzuri kwa vitengo vya afya katika kipindi cha ushauri."
+        },
+        "safety": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja",
+          "cue": "Kagua kwanza; epuka kulazimisha mtu kufichua mambo."
+        },
+        "crisiscompanion": {
+          "time": "dakika 3-10",
+          "format": "Mmoja mmoja",
+          "cue": "Kwa stadi za msaada wa haraka, si kazi ya darasani."
+        },
+        "griefLoss": {
+          "time": "dakika 10-20",
+          "format": "Mmoja mmoja",
+          "cue": "Kagua kwanza; tumia shughuli mbadala kwa wanaochagua kujiondoa."
+        },
+        "identitySupport": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja",
+          "cue": "Tumia kwa kuzingatia faragha na chaguo la kujiondoa."
+        },
+        "traumaPsychoed": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja au kwa mwongozo wa mwalimu",
+          "cue": "Elimu-saikolojia tu; toa chaguo la kujiondoa na utaratibu wa kumwendea mtu mzima anayeaminika."
+        },
+        "substancePsychoed": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja au somo la afya",
+          "cue": "Kagua kwanza mtazamo wa kupunguza madhara na utoe misaada ya watu wazima/ya kitabibu."
+        },
+        "healthyRelationships": {
+          "time": "dakika 10-20",
+          "format": "Mmoja mmoja au somo la afya",
+          "cue": "Kagua kwanza lugha ya ridhaa na usalama; usiwahi kulazimisha mtu kufichua mambo binafsi."
+        },
+        "bodyStory": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja",
+          "cue": "Mtazamo wa kuheshimu mwili; toa chaguo la kujiondoa na epuka majadiliano yanayolenga uzito."
+        },
+        "genogram": {
+          "time": "dakika 10-20",
+          "format": "Mmoja mmoja",
+          "cue": "Tafakari kuhusu familia tu; kushiriki kunapaswa kuwa hiari."
+        },
+        "sensoryRegulation": {
+          "time": "dakika 8-15",
+          "format": "Mmoja mmoja au kupanga msaada",
+          "cue": "Tumia lugha inayothibitisha utambulisho na uwaache wanafunzi wachague cha kushiriki."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Ukaguzi wa asubuhi wa kipindi cha ushauri",
+          "time": "dakika 10-15",
+          "format": "Darasa zima",
+          "focus": "Hali ya moyo, pumzi, hatua moja inayofuata",
+          "studentView": "Wanafunzi hukagua eneo lao kwa faragha, hujaribu chaguo la kujidhibiti, kisha huchagua hitaji moja la siku au kupita.",
+          "teacherMove": "Onyesha kwanza chaguo la kupita. Alika kushiriki kwa neno moja au rangi tu baada ya mazoezi ya faragha.",
+          "privacyBoundary": "Hakuna maandishi ya jarida yanayokusanywa; wanafunzi huamua baadaye kama kumbukumbu yoyote itaingia katika Kifurushi cha Kushiriki.",
+          "note": "Anza na ukaguzi wa faragha wa eneo, kisha toa zoezi la kupumua au kuweka malengo. Wanafunzi wanaweza kushiriki neno moja, rangi, au kupita."
+        },
+        "calm_reset": {
+          "name": "Kujiweka sawa kwa utulivu kwa dakika tano",
+          "time": "dakika 5-8",
+          "format": "Darasa zima au kona ya utulivu",
+          "focus": "Kudhibiti mwili",
+          "studentView": "Wanafunzi hutambua hali ya sasa ya mwili wao na huchagua zoezi moja la kutuliza mwili.",
+          "teacherMove": "Weka utaratibu huu wenye mazungumzo machache na muda maalum. Toa chaguo za kusogea, kupumua, au kukaa kimya.",
+          "privacyBoundary": "Wanafunzi wanaweza kuhifadhi kumbukumbu kwa ajili yao wenyewe; hakuna anayepaswa kueleza kwa nini alihitaji kujiweka sawa.",
+          "note": "Weka mazungumzo machache. Wanafunzi huchagua zoezi moja la kujidhibiti na kutambua kilichobadilika."
+        },
+        "repair_routine": {
+          "name": "Utaratibu wa kurekebisha baada ya mgogoro",
+          "time": "dakika 15-25",
+          "format": "Kikundi kidogo au kipindi cha ushauri",
+          "focus": "Mtazamo, urekebishaji, hatua inayofuata",
+          "studentView": "Wanafunzi wanaweza kutumia hali halisi, ya kubuni, au iliyotolewa na mwalimu kujizoeza lugha ya kurekebisha.",
+          "teacherMove": "Weka kanuni za urekebishaji kwanza na epuka kukiri hadharani. Simama ikiwa hali inahitaji usuluhishi wa mtu mzima.",
+          "privacyBoundary": "Wanafunzi huchagua cha kushiriki; tafakari za faragha kuhusu migogoro hazipaswi kuwa ushahidi wa darasa.",
+          "note": "Tumia baada ya kanuni kuwekwa. Lenga lugha ya kurekebisha, si kukiri hadharani."
+        },
+        "digital_reset": {
+          "name": "Somo fupi la ustawi wa kidijitali",
+          "time": "dakika 12-20",
+          "format": "Kipindi cha ushauri au afya",
+          "focus": "Simu, usingizi, akili bandia na mipaka",
+          "studentView": "Wanafunzi hupitia tabia zao, huchagua mpaka mmoja wa kujaribu, na huweka sababu kuwa siri wakitaka.",
+          "teacherMove": "Eleza kama ubunifu wa tabia, si ukaguzi wa simu. Epuka kuwaomba wanafunzi waonyeshe picha za skrini au data ya matumizi.",
+          "privacyBoundary": "Wanafunzi wanaweza kushiriki lengo la mpaka, lakini maelezo binafsi kuhusu usingizi, simu, au akili bandia yanabaki kuwa hiari.",
+          "note": "Eleza kama ubunifu wa tabia, si ukaguzi wa simu. Wanafunzi huchagua mpaka mmoja wa kujaribu."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Mbinu inayotokana na utafiti",
+          "title": "Utafiti unahusu mbinu ya msingi; marekebisho haya ya kidijitali hayajatathminiwa hapa"
+        },
+        "emerging": {
+          "label": "Ushahidi mdogo wa mbinu",
+          "title": "Inatia matumaini lakini ushahidi ni mdogo au unatofautiana"
+        },
+        "contested": {
+          "label": "Kielelezo kinachobishaniwa",
+          "title": "Maarufu lakini kinabishaniwa kisayansi; kinafaa zaidi kutumika kama mfano wa kufikirika, si maelezo ya jinsi mambo yanavyofanya kazi"
+        },
+        "practice": {
+          "label": "Zoezi la kutafakari",
+          "title": "Zoezi lililopangwa au mwongozo wa jumla, si dai la ufanisi lililothibitishwa kwa utafiti"
+        }
+      },
+      "ui": {
+        "sel_practice": "Zoezi la SEL",
+        "default_purpose": "Jizoeze stadi moja ya SEL kwa uangalifu.",
+        "default_next": "Kamilisha hatua moja ndogo, kisha amua kama utahifadhi.",
+        "private_checkpoint": "Kumbukumbu ya faragha",
+        "share_packet_eligible": "Inaweza kuingia katika Kifurushi cha Kushiriki",
+        "saving_preparing": "Inaandaa kuhifadhi kazi yako ya SEL...",
+        "save_requested": "Ombi la kuhifadhi limetumwa kwa {title}",
+        "returned_to_grid": "Umerudi kwenye gridi ya zana",
+        "back_to_sel_tools": "Rudi kwenye zana za SEL",
+        "export_now_aria": "Hamisha faili la mradi wa SEL sasa",
+        "export_now": "Hamisha sasa",
+        "purpose": "Lengo",
+        "next_step": "Hatua inayofuata",
+        "saved_work": "Kazi iliyohifadhiwa",
+        "checkpoints_private": "Kumbukumbu za zana zinabaki faragha hapa isipokuwa ukizichagua kwa ajili ya Kifurushi cha Kushiriki.",
+        "use_with_care_label": "Tumia kwa uangalifu:",
+        "tool_open_failed_title": "Zana hii haikuweza kufunguka",
+        "tool_open_failed_body": "Kitu fulani katika taarifa zilizohifadhiwa za shughuli hii hakikupakia. Hili si kosa ulilofanya.",
+        "saved_work_kept": "Kazi yako iliyohifadhiwa haijafutwa.",
+        "back_to_hub": "Rudi kwenye SEL Hub",
+        "tell_teacher": "Hili likiendelea kutokea, mwambie mwalimu wako ilikuwa shughuli gani.",
+        "load_did_not_start": "Zana ilipakuliwa lakini haikuanza.",
+        "load_too_long": "Zana ilichukua muda mrefu mno kupakia.",
+        "this_sel_tool": "Zana hii ya SEL",
+        "tool_opening": "{name} inafunguka...",
+        "tool_open_retry": "{name} haikuweza kufunguliwa. Jaribu tena, au chagua zana nyingine.",
+        "station_link_missing": "Kiungo hiki kinataja kituo ambacho hakimo katika mradi huu. Pakia pakiti yenye kituo hicho, au anzisha kimoja kutoka Vituo vya SEL kwenye paneli ya Historia.",
+        "started_station": "Kituo {name} kimeanzishwa",
+        "tool_could_not_open": "{name} haikuweza kufunguka.",
+        "tool_not_available": "{name} haipatikani katika SEL Hub hii.",
+        "try_again": "Jaribu tena",
+        "dismiss": "Ondoa",
+        "back_to_tools": "Rudi kwenye zana",
+        "band_elementary": "Shule ya Msingi",
+        "band_middle": "Shule ya Kati",
+        "band_high": "Shule ya Upili",
+        "unsaved_aria": "Una mabadiliko ambayo hayajahifadhiwa",
+        "unsaved_title": "Mabadiliko ambayo hayajahifadhiwa",
+        "unsaved": "Haijahifadhiwa",
+        "unsaved_hint": "Una mabadiliko ambayo hayajahifadhiwa — gusa Hamisha sasa ili kuyahifadhi",
+        "educators_opened": "Mwongozo wa Kwa Waelimishaji umefunguliwa",
+        "educators_aria": "Kwa Waelimishaji: jinsi ya kutumia Hub hii kwa uwajibikaji",
+        "for_educators": "Kwa Waelimishaji",
+        "theme_aria": "Badilisha mandhari (angavu / giza / utofautishaji wa juu)",
+        "theme_contrast": "Utofautishaji wa Juu",
+        "theme_dark": "Hali ya Giza",
+        "theme_light": "Hali Angavu",
+        "theme_contrast_short": "Utof. Juu",
+        "theme_dark_short": "Giza",
+        "theme_light_short": "Angavu",
+        "xp_aria": "Pointi {count} za uzoefu wa SEL",
+        "close_hub": "Funga SEL Hub",
+        "keep_share_title": "Chagua cha kuhifadhi na kushiriki",
+        "keep_share_body": "Baadhi ya shughuli huhifadhi kazi kwenye kifaa hiki; kazi nyingine hudumu kwenye kichupo hiki tu. Kufunga kichupo hakufuti kila kitu. Hamisha faili ili kuweka nakala. Kwenye kifaa kinachotumiwa na watu wengi, pitia Data na faragha katika Kwa Waelimishaji. Vipengele vya akili bandia na vya kushiriki hutumia huduma zako zilizowekwa.",
+        "got_it_aria": "Nimeelewa, anza kutumia SEL Hub",
+        "got_it": "Nimeelewa",
+        "practice_support": "Msaada wa mazoezi",
+        "learning_guide": "Mwongozo wa kujifunza na namna za kujizoeza",
+        "what_you_can_explore": "Unachoweza kuchunguza",
+        "worked_example": "Mfano uliofanyiwa kazi",
+        "try_one_step": "Jaribu hatua moja",
+        "reflect_transfer": "Tafakari na uitumie mahali pengine",
+        "look_closer": "Angalia kwa makini zaidi",
+        "next_use": "Matumizi yanayowezekana yanayofuata",
+        "adapt_together": "Rekebisheni zoezi pamoja",
+        "adapt_smaller": "Anza kidogo: onyesha sentensi au chaguo moja, tumia picha au kitu halisi, na toa muda wa kufikiri.",
+        "adapt_deeper": "Nenda ndani zaidi: linganisha majibu mawili, tambua taarifa inayokosekana, na eleza kinachoweza kubadilisha chaguo lako.",
+        "adapt_context": "Badilisha muktadha: tumia hali ya kubuni inayoendana na lugha, mambo anayopenda, utamaduni, na mahitaji ya ufikiaji ya mwanafunzi.",
+        "adapt_check": "Kagua uelewa kupitia mfano au maelezo aliyochagua, si hadithi binafsi ya lazima, mabadiliko ya kihisia, au alama.",
+        "optional_prompts": "Maswali haya ya hiari hayawasilishi majibu, hayatoi alama ya kukamilisha, wala hayachukui nafasi ya maelekezo na taarifa za usalama za shughuli yenyewe.",
+        "returned_to_activities": "Umerudi kwenye shughuli. Kitendo hiki hakikurekodi kukamilika kwa zoezi lolote.",
+        "return_to_activities": "Rudi kwenye shughuli",
+        "chooser_first_reset_coping": "Chagua chaguo moja la kutuliza kwa hisi linalokufaa. Tambua kama linakufaa; kuacha kunaruhusiwa.",
+        "chooser_first_reset_journal": "Andika jambo moja ambalo lingefanya dakika chache zijazo ziwe rahisi kumudu. Hakuna haja ya hadithi binafsi.",
+        "chooser_first_feelings_zones": "Onyesha hisia kwa kidole au tambua kimya kimya. Chagua msaada mmoja; hakuna eneo sahihi la kufikia.",
+        "chooser_first_feelings_emotions": "Chunguza maneno mawili ya hisia kwa mhusika wa kubuni. Jibu zaidi ya moja linaweza kufaa.",
+        "chooser_first_feelings_journal": "Andika neno au tafakari fupi kuhusu hali ya kubuni au ya kila siku.",
+        "chooser_first_conversation_advocacy": "Tumia hali ya kubuni kufanyia mazoezi ombi moja kwa sauti, kwa AAC, au kimya kimya, bila kujaza fomu.",
+        "chooser_first_conversation_journal": "Andaa ombi moja la heshima kwa hali salama ya kila siku; huhitaji kulituma.",
+        "chooser_first_decision_decisions": "Fikiria chaguo mbili katika hali ya kubuni na athari moja inayowezekana ya kila moja.",
+        "chooser_first_decision_goals": "Andaa hatua moja halisi inayofuata na msaada ambao ungeweza kuuomba.",
+        "try_a_reset": "Jaribu kujiweka sawa",
+        "need_feeling": "Kuelewa hisia",
+        "need_conversation": "Kuandaa mazungumzo",
+        "need_decision": "Kuchagua hatua inayofuata",
+        "help_choose": "Nisaidie kuchagua shughuli",
+        "help_choose_intro": "Chagua unachotaka kujaribu. Mapendekezo yanatumia chaguo hizi tu; hayatathmini hisia zako. Muda unaelezea hatua ya kwanza, si shughuli nzima.",
+        "what_would_help": "Nini kingesaidia?",
+        "time_first_step": "Muda wa hatua ya kwanza",
+        "n_minutes": "Dakika {count}",
+        "how_respond": "Ungependa kujibu vipi?",
+        "respond_any": "Namna yoyote",
+        "respond_offline": "Fikiri, zungumza, chora, au AAC",
+        "respond_write": "Andika jibu fupi",
+        "options_one": "Chaguo {count} la kuanzia kwa chaguo zako.",
+        "options_many": "Chaguo {count} za kuanzia kwa chaguo zako.",
+        "options_none": "Bado hakuna chaguo la kuanzia linalolingana. Jaribu muda zaidi au namna nyingine ya kujibu; orodha kamili bado inapatikana.",
+        "why_option_write": "Kwa nini chaguo hili: {need}, pamoja na hatua ya kwanza inayopendekezwa ya dakika {minutes} na jibu fupi la kuandika.",
+        "why_option_offline": "Kwa nini chaguo hili: {need}, pamoja na hatua ya kwanza inayopendekezwa ya dakika {minutes} na namna ya kujizoeza bila kuandika kwa kibodi.",
+        "open_named": "Fungua {name}",
+        "open_named_unavailable": "Fungua {name} (haipatikani)",
+        "pathway_guide": "Mwongozo wa mazoezi ya njia",
+        "pathway_opened": "Zana {opened} kati ya {total} zimefunguliwa. Kufungua zana hakumaanishi umejizoeza stadi.",
+        "exit_pathway_aria": "Toka kwenye hali ya njia",
+        "pathway_cleared": "Njia imeondolewa",
+        "exit_pathway": "Toka kwenye njia",
+        "practice_goal": "Lengo la mazoezi:",
+        "pathway_intro": "Chagua shughuli moja au fuata mpangilio uliopendekezwa. Unaweza kupita, kutumia mfano wa kubuni, au kujibu kwa kuzungumza, kuchora, kuandika, au AAC. Kushiriki ni hiari.",
+        "model_practice_reflect": "Onyesha mfano, jizoeze, na tafakari",
+        "an_example": "Mfano",
+        "notice_adjust": "Tambua na urekebishe",
+        "take_with_you": "Ondoka nayo",
+        "self_check_aria": "Kujipima kwa hiari kuhusu mazoezi",
+        "self_check_intro": "Baada ya kujaribu hatua, chagua kinachofaa. Hii ni hiari na haina alama; inabaki katika kipindi hiki cha njia.",
+        "i_tried": "Nilijaribu hatua",
+        "another_way": "Nahitaji namna nyingine",
+        "pass_for_now": "Pita kwa sasa",
+        "tried_feedback": "Tambua kilichosaidia, kisichosaidia, na mahali unapoweza kujaribu stadi hii tena.",
+        "adapt_feedback": "Jaribu hatua ndogo zaidi, namna nyingine ya kujibu, zana tofauti, au msaada kutoka kwa mtu unayemwamini.",
+        "pass_feedback": "Kupita ni chaguo halali. Unaweza kurudi baadaye au kuomba msaada.",
+        "next_option": "Chaguo linalofuata: {name}",
+        "open_next": "Fungua inayofuata: {name}",
+        "view_pathway_tools": "Tazama zana za njia",
+        "revisit_any": "Unaweza kurudia shughuli yoyote. Chagua wazo moja la kujaribu nje ya hub; hakuna sharti la kumaliza kila zana.",
+        "station_activities": "Shughuli za kituo",
+        "active_station": "Kituo cha SEL kinachotumika: {name}",
+        "steps_recorded_passed": "Hatua {done} kati ya {total} zimerekodiwa · {passed} zimepitwa kwa sasa. Hii ni rekodi ya mazoezi, si alama.",
+        "steps_recorded": "Hatua {done} kati ya {total} zimerekodiwa. Hii ni rekodi ya mazoezi, si alama.",
+        "active_minutes_done": "Dakika {mins} kati ya {goal} za kushiriki hapa. Hatua imerekodiwa.",
+        "active_minutes_counting": "Dakika {mins} kati ya {goal} za kushiriki hapa. Zinahesabiwa wakati kichupo hiki kinaonekana na unakitumia.",
+        "exit_station_aria": "Toka kwenye hali ya kituo",
+        "station_cleared": "Kituo kimeondolewa",
+        "exit_station": "Toka kwenye kituo",
+        "station_tools_steps": "Zana za kituo, hatua na tafakari",
+        "station_steps": "Hatua za kituo na tafakari",
+        "station_privacy": "Hatua na maelezo huhifadhiwa kwenye kifaa hiki na yanaweza kujumuishwa katika faili za mradi. Tumia mifano ya kubuni au acha maelezo binafsi. Chagua cha kushiriki.",
+        "step_passed": "Umepita kwa sasa. Unaweza kurudi ukiwa tayari.",
+        "step_marked": "Umeweka alama kuwa hatua hii imekamilika.",
+        "step_target": "Lengo la shughuli limerekodiwa; hili halipimi stadi wala ustawi.",
+        "step_ready": "Iko tayari ukiwa tayari.",
+        "open_step_activity": "Fungua shughuli ya hatua hii",
+        "xp_progress": "{xp} / {target} jumla ya XP ya SEL. Hii inajumuisha shughuli za awali; si alama ya stadi.",
+        "time_progress": "Dakika {mins} / {target} za kushiriki. Muda si ushahidi wa kujifunza.",
+        "default_reflect": "Uligundua nini? Ungebakiza nini au kubadilisha nini?",
+        "self_check_ways": "Fikiri, chora, zungumza, tumia lugha ya ishara, au tumia AAC. Maandishi ni hiari. Weka alama ya kukamilisha hatua mwenyewe, au pita kwa sasa.",
+        "length_target": "Hatua hii iliyohifadhiwa inatumia lengo la urefu: herufi {count} / {target}. Urefu haupimi ubora wa tafakari. Maelezo yako bado yanaweza kuhaririwa.",
+        "reflection_for": "Tafakari ya {name}",
+        "optional_note": "Maelezo ya hiari: kilichosaidia, au unachoweza kujaribu baadaye...",
+        "write_reflection": "Andika tafakari...",
+        "mark_complete_aria": "Weka alama kuwa \"{name}\" imekamilika",
+        "step_reopened": "Hatua imefunguliwa tena: {name}",
+        "step_marked_named": "Umeweka alama kuwa hatua hii imekamilika: {name}",
+        "mark_complete": "Weka alama ya kukamilika",
+        "step_passed_named": "Umepita kwa sasa: {name}",
+        "filter_pathway": "njia: {name}",
+        "filter_station": "kituo: {name}",
+        "no_tools_match": "Hakuna zana zinazolingana na {filters}",
+        "results_one": "Zana {count} kati ya {total} inalingana na {filters}",
+        "results_many": "Zana {count} kati ya {total} zinalingana na {filters}",
+        "showing_all": "Zinaonyeshwa zana zote {total}",
+        "crisis_elementary": "Ikiwa huwezi kumpata mtu mzima mara moja, endelea kuuliza hadi mtu akusikilize. Unastahili msaada.",
+        "crisis_call_or_text": "Piga simu au tuma ujumbe kwa",
+        "crisis_988": "Laini ya 988 ya Msaada kuhusu Kujiua na Dharura (bure, ni siri, 24/7).",
+        "crisis_text": "Tuma ujumbe kwa",
+        "crisis_text_line": "Crisis Text Line (bure, ni siri, 24/7).",
+        "tool_selection": "Uchaguzi wa zana za SEL Hub",
+        "jumped_to_list": "Umerukia orodha ya zana. {summary}.",
+        "skip_to_list": "Ruka hadi orodha ya zana",
+        "start_here": "Anza hapa",
+        "quick_route": "Chagua mkato wa haraka, au vinjari hapa chini.",
+        "browsing_all": "Unavinjari zana zote za SEL",
+        "continue": "Endelea",
+        "continue_desc": "Rudia zana ya SEL uliyofungua mwisho.",
+        "starting_idea": "Wazo la kuanzia",
+        "starting_idea_desc": "{name}: shughuli inayopendekezwa kwa kundi hili la madarasa, yenye mifano unayoweza kurekebisha.",
+        "starting_idea_none": "Fungua mahali pa kuanzia panapofaa darasa lako.",
+        "try_a_reset_desc": "Chunguza mbinu inayokufaa; si lazima uhisi utulivu.",
+        "journal": "Jarida",
+        "journal_desc": "Andika tafakari; pitia chaguo za kuhifadhi na kushiriki.",
+        "browse_all": "Vinjari Zote",
+        "browse_all_desc": "Tafuta au chuja orodha kamili.",
+        "need_chip_calm": "Tuliza mwili wangu",
+        "need_chip_feelings": "Taja hisia",
+        "need_chip_stress": "Msongo au wasiwasi",
+        "need_chip_friend": "Mgogoro na rafiki",
+        "need_chip_write": "Andika yaliyo moyoni",
+        "need_chip_decision": "Fanya uamuzi",
+        "need_chip_sleep": "Usingizi au uchovu",
+        "need_chip_crisis": "Si salama au katika dharura",
+        "need_chip_relationshipsafety": "Usalama katika mahusiano",
+        "need_chip_schoolsupport": "Msaada shuleni",
+        "need_chip_grief": "Huzuni au kupoteza",
+        "storage_notice": "Baadhi ya kazi za SEL huhifadhiwa kwenye kifaa hiki. Vipengele vya akili bandia hutumia huduma yako iliyowekwa. Chagua cha kuhifadhi au kushiriki, hasa kwenye kifaa kinachotumiwa na watu wengi.",
+        "save_now_aria": "Hifadhi au hamisha kazi ya SEL sasa",
+        "save_now": "Hifadhi sasa",
+        "recent_work": "Kazi za hivi karibuni za SEL",
+        "saved_here": "Imehifadhiwa hapa. Hamisha ili kuitunza baada ya kufunga.",
+        "create_packet_aria": "Tengeneza Kifurushi cha Kushiriki cha SEL kutoka kwa kumbukumbu zilizohifadhiwa",
+        "review_packets_aria": "Pitia Vifurushi vya Kushiriki vya SEL vilivyohifadhiwa",
+        "create_packet": "Tengeneza Kifurushi cha Kushiriki",
+        "review_packets": "Pitia Vifurushi vya Kushiriki",
+        "open_related": "Fungua zana inayohusiana.",
+        "related_unavailable": "Zana inayohusiana haipatikani katika SEL Hub hii.",
+        "streak_aria": "Mfululizo wa SEL wa siku {count}. Mrefu zaidi: siku {longest}.",
+        "streak": "Mfululizo wa siku {count}",
+        "streak_best": "bora {count}",
+        "find_activity": "Tafuta shughuli",
+        "search_placeholder": "Tafuta hisia, marafiki, msongo, malengo...",
+        "search_aria": "Tafuta zana za SEL",
+        "support_options": "Chaguo za msaada",
+        "crisis_hard_moment": "Inaonekana huu unaweza kuwa wakati mgumu.",
+        "crisis_tell_adult": "Huhitaji kulishughulikia hili peke yako, na huhitaji kupata zana sahihi kwanza. Tafadhali mwambie mtu mzima unayemwamini sasa — mshauri wa shule, mwalimu, mzazi, au mtu mzima mwingine unayemwamini. Kutafuta hapa hakumwambii mtu yeyote; mtu anajua tu ukimwambia.",
+        "open_crisis_companion": "Fungua Mwandani wa Dharura",
+        "find_by_need": "Tafuta zana za SEL kwa hitaji",
+        "i_need": "Nahitaji...",
+        "cleared_search": "Utafutaji wa SEL umefutwa",
+        "clear_search_aria": "Futa utafutaji wa SEL",
+        "clear": "Futa",
+        "cleared_need": "Kichujio cha hitaji cha SEL kimeondolewa",
+        "showing_for": "Zinaonyeshwa zana za SEL za {name}",
+        "clear_need_aria": "Ondoa kichujio cha hitaji: {name}",
+        "find_for_aria": "Tafuta zana za: {name}",
+        "browse_by_area": "Vinjari kwa aina ya stadi",
+        "filter_by_category": "Chuja zana za SEL kwa aina",
+        "showing_all_categories": "Zinaonyeshwa aina zote",
+        "show_all_categories_aria": "Onyesha aina zote (zana {count})",
+        "all": "Zote",
+        "filtered_to": "Imechujwa kwa {name}",
+        "filter_chip_aria": "Kichujio: {name} (zana {count})",
+        "pathways_heading": "Njia za SEL — Mifuatano ya Kujifunza Iliyochaguliwa",
+        "started_pathway": "Njia imeanzishwa: {name}",
+        "pathway_started": "Njia ya {name} imeanza!",
+        "n_activities": "Shughuli {count}",
+        "grades_range": "madarasa {range}",
+        "use_with_care": "Tumia kwa uangalifu",
+        "visits_many": "Ziara {count}",
+        "visits_one": "Ziara {count}",
+        "best_for": "Inafaa zaidi kwa: {mode}.",
+        "teacher_cue": "Kidokezo kwa mwalimu: {time}, {format}. {cue}",
+        "preview_first": "Kagua kwanza",
+        "evidence_tradition": "Mapokeo ya ushahidi: {tag}",
+        "approach_context": "Muktadha wa mbinu: {label}. {title}. Beji hii haithibitishi ufanisi kwa programu hii wala kwa mwanafunzi fulani.",
+        "step_opened": "Hatua {n} · Imefunguliwa",
+        "step_not_opened": "Hatua {n} · Haijafunguliwa",
+        "suggested_grades": "Madarasa yanayopendekezwa {range}",
+        "no_tools_current_view": "Hakuna zana zinazolingana na mwonekano huu",
+        "empty_try": "Jaribu utulivu, hisia, msongo, rafiki, kuandika, uamuzi, au usingizi.",
+        "filters_cleared": "Vichujio vimeondolewa. Zinaonyeshwa zana zote {total}.",
+        "show_all_tools": "Onyesha zana zote {total}",
+        "error_loading": "Hitilafu ya kupakia {name}",
+        "unknown_error": "Hitilafu isiyojulikana",
+        "back_to_tools_error": "Rudi kwenye Zana",
+        "tool_load_failed": "Zana hii haikuweza kupakia.",
+        "loading_tool": "Inapakia zana...",
+        "file_not_arrived": "Faili halikufika.",
+        "check_connection": "Kagua muunganisho, kisha jaribu tena.",
+        "plugin_fetching": "Faili la programu-jalizi bado linapakuliwa.",
+        "research_about": "Kuhusu lebo za utafiti",
+        "research_summary": "Maana ya lebo za utafiti",
+        "research_context": "Muktadha wa mbinu: {label}.",
+        "research_not_app": "Utafiti kuhusu tiba, mtaala, au mfumo fulani hauthibitishi kwamba shughuli hii ya kidijitali ina athari zilezile. Lebo zinaelezea mbinu; hazipimi programu hii wala mwanafunzi.",
+        "research_check": "Kabla ya kuchagua shughuli, kagua vyanzo vyake vilivyotajwa, umri na mazingira yaliyofanyiwa utafiti, msaada unaohitajika, na matokeo yaliyopimwa. Lebo hizi hazijathibitisha kufaa kwa kundi fulani la watu wala ufanisi wa marekebisho haya.",
+        "research_casel_link": "CASEL: kuchagua na kutathmini programu ya SEL",
+        "project_save_failed": "Ombi la kuhifadhi mradi limeshindikana. Acha hub hii wazi na ujaribu Hifadhi / Hamisha kwenye programu kuu.",
+        "project_save_requested": "Ombi la kuhifadhi mradi limetumwa. Kamilisha hatua za kuhifadhi kwenye programu kuu; faili lililohifadhiwa halijathibitishwa hapa.",
+        "saving_aria": "Kuhifadhi na kushiriki kwa SEL",
+        "saving_failed_alert": "Baadhi ya mabadiliko ya SEL hayakuweza kuhifadhiwa kwenye kifaa hiki. Acha hub hii wazi na uhifadhi nakala ya mradi; rasimu za vituo lazima zihifadhiwe kama vituo ili ziingie katika nakala hiyo.",
+        "saving_attention": "Kuhifadhi kunahitaji uangalifu",
+        "saving_title": "Kuhifadhi na kushiriki",
+        "saving_failed_body": "Kazi ya sasa bado inapatikana katika hub hii iliyo wazi. Uhifadhi wa ndani ulioshindikana unaweza kuacha nakala ya zamani kwenye kifaa hiki.",
+        "saving_ok_body": "Vituo vilivyohifadhiwa, maelezo ya vituo, na kumbukumbu za hub zinahifadhiwa kwenye kifaa hiki. Kila shughuli ina vidhibiti vyake vya kuhifadhi; hali hii haithibitishi kwamba kila ingizo la shughuli limehifadhiwa.",
+        "saving_drafts": "Rasimu za vituo hubaki kwenye kifaa hiki kwa ajili ya kurejesha. Kuhifadhi kituo hukiongeza kwenye data ya mradi inayopatikana kwa Hifadhi / Hamisha; kuomba kuhifadhi mradi hakuthibitishi kwamba faili limeandikwa.",
+        "saving_live": "Kipindi cha moja kwa moja kimeunganishwa. Kinaweza kutuma maendeleo au ishara za usalama kwa mwenyeji. Akili bandia ya hiari hutuma maandishi ya shughuli kwa huduma iliyowekwa. Pitia Kifurushi cha Kushiriki kabla ya kuchagua kukishiriki.",
+        "saving_ai": "Akili bandia ya hiari hutuma maandishi ya shughuli kwa huduma iliyowekwa. Kifurushi cha Kushiriki kina vitu na viwango vya maelezo unavyochagua; pitia onyesho lake la awali kabla ya kushiriki.",
+        "saving_retry": "Jaribu tena kuhifadhi ndani ya kifaa",
+        "saving_request": "Omba kuhifadhi mradi",
+        "removed_stations": "Vituo vilivyoondolewa",
+        "removed_body": "Tendua kuondolewa kwa kituo wakati hub hii iko wazi. Rekodi za mazoezi zilizopo zinabaki.",
+        "station_restored": "Kituo kimerejeshwa: {name}",
+        "undo_removal": "Tendua kuondolewa: {name}",
+        "launch_routines_aria": "Taratibu za mwalimu za kuanzisha",
+        "launch_title": "Kuanzisha kwa mwalimu",
+        "launch_note": "Weka mazoezi bila alama na kushiriki kuwe hiari. Eleza uhifadhi kwenye kifaa, vipengele vya akili bandia vilivyowekwa, na kushiriki kabla ya kuanza. Tumia mifano ya kubuni; waalike wanafunzi kuomba msaada au kupita.",
+        "launch_guardrails_aria": "Kinga za mwalimu za kuanzisha",
+        "launch_step_boundary": "Weka mipaka",
+        "launch_step_boundary_body": "Sema kilicho faragha, kilicho hiari, na jinsi wanafunzi wanavyoweza kupita.",
+        "launch_step_run": "Endesha utaratibu",
+        "launch_step_run_body": "Tumia zana kama mazoezi. Weka tafakari kuwa ya kukuza ujifunzaji na bila alama.",
+        "launch_step_close": "Funga kwa kuchagua",
+        "launch_step_close_body": "Wanafunzi huamua kama watahifadhi, watahamisha, au watajumuisha kumbukumbu baadaye.",
+        "launch_student_sees": "Mwanafunzi anaona",
+        "launch_student_sees_default": "Wanafunzi hukamilisha utaratibu wa faragha wa SEL na huchagua cha kushiriki.",
+        "launch_teacher_move": "Hatua ya mwalimu",
+        "launch_teacher_move_default": "Eleza hili kama mazoezi, si tathmini.",
+        "launch_sharing_boundary": "Mpaka wa kushiriki",
+        "launch_sharing_boundary_default": "Kushiriki kunabaki chini ya udhibiti wa mwanafunzi.",
+        "launch_tools_loading": "Zana zinapakia...",
+        "launch_still_loading": "Bado zinapakia: {tools}",
+        "launch_preview_sensitive": "Kagua kwanza zana nyeti: {tools}",
+        "launch_load_aria": "Pakia mpango wa mwalimu wa kuanzisha: {name}",
+        "launch_finish_draft": "Maliza au tupa rasimu ya sasa kwanza",
+        "launch_waiting": "Inasubiri zana",
+        "launch_loading": "Inapakia",
+        "launch_load": "Pakia kwenye Kijenzi cha Vituo",
+        "builder_note_student": "Mwonekano wa mwanafunzi: {text}",
+        "builder_note_teacher": "Hatua ya mwalimu: {text}",
+        "builder_note_sharing": "Mpaka wa kushiriki: {text}",
+        "builder_note_note": "Maelezo ya mwalimu: {text}",
+        "launch_finish_existing": "Maliza au tupa rasimu yako ya kituo iliyopo kwanza.",
+        "launch_tools_still_loading": "Zana za mwalimu za kuanzisha bado zinapakia. Jaribu tena baada ya muda mfupi.",
+        "launch_tools_still_loading_sr": "Zana za mwalimu za kuanzisha bado zinapakia.",
+        "launch_default_name": "Utaratibu wa SEL wa darasani",
+        "launch_default_short": "Utaratibu wa SEL",
+        "launch_loaded_sr": "Mpango wa mwalimu wa kuanzisha umepakiwa kwenye kijenzi cha vituo: {name}",
+        "launch_loaded_toast": "Mpango wa mwalimu wa kuanzisha umepakiwa kwenye Kijenzi cha Vituo.",
+        "stations_summary": "Vituo Maalum vya SEL — mikusanyiko iliyoandaliwa na walimu",
+        "station_delete_aria": "Futa kituo {name}",
+        "station_removed_sr": "Kituo kimeondolewa. Kutendua kunapatikana hadi hub hii ifungwe.",
+        "station_removed": "Kituo kimeondolewa",
+        "station_tools_count": "Zana {count}",
+        "station_quests_count": "Changamoto {count}",
+        "station_activated_sr": "Kituo cha SEL kimewashwa: {name}",
+        "station_started": "{name} imeanza!",
+        "station_activate_aria": "Washa kituo {name}",
+        "station_start": "Anzisha kituo",
+        "station_adapt_aria": "Rekebisha nakala ya kituo {name}",
+        "station_adapt": "Rekebisha nakala",
+        "draft_aria": "Rasimu ya kituo inayoweza kurejeshwa",
+        "draft_untitled": "Kituo kisicho na jina",
+        "draft_body": "Rasimu ya kituo ambayo haijakamilika imehifadhiwa kwenye kifaa hiki: {name}. Iendeleze au uitupe kabla ya kuanzisha nyingine.",
+        "draft_resume": "Endeleza rasimu ya kituo",
+        "draft_discard": "Tupa rasimu ya kituo",
+        "builder_opened": "Kijenzi cha vituo kimefunguliwa",
+        "build_station_aria": "Jenga Kituo kipya maalum cha SEL",
+        "build_station": "+ Jenga Kituo Maalum"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Muunganisho wa mwalimu umesitishwa — tunahifadhi nafasi yako wakati AlloFlow inaunganisha upya.",
+    "host_stale": "Hali ya mwalimu haijasasishwa kwa muda — huenda kipindi cha moja kwa moja bado kimeunganishwa. Kazi yako inabaki kwenye kifaa hiki.",
+    "dismiss": "Funga",
+    "dismiss_aria": "Funga onyo kuhusu hali ya mwalimu",
+    "connecting": "Inaunganisha na darasa…",
+    "retrying": "Masasisho ya darasa yamesitishwa. Inaunganisha upya kiotomatiki…",
+    "failed": "Masasisho ya darasa yamekatika. Angalia muunganisho wako kisha ujaribu kuunganisha upya.",
+    "access": "Ufikiaji wa darasa umekataliwa. Mwombe mwalimu wako aangalie ufikiaji, kisha uunganishe upya.",
+    "sign_in": "Ingia tena ili urejeshe ufikiaji wa darasa, kisha uunganishe upya.",
+    "reconnect": "Unganisha upya"
+  },
   "_version": "20260526T1779819431422",
   "tour": {
     "input_panel_title": "ingizo paneli",
@@ -5283,9 +6504,99 @@
     "measured_on_target": "Inafaa kwa {grade}",
     "measured_above": "Juu ya kiwango cha {grade}",
     "measured_below": "Chini ya kiwango cha {grade}",
-    "measured_note": "Flesch-Kincaid, kilichopimwa kwenye maandishi haya. Tumia Angalia kiwango kwa ukaguzi kamili zaidi."
+    "measured_note": "Flesch-Kincaid, kilichopimwa kwenye maandishi haya. Tumia Angalia kiwango kwa ukaguzi kamili zaidi.",
+    "listen_along": "Sikiliza ukifuatilia",
+    "compare_listen_here": "Sikiliza hapa",
+    "compare_listen_here_original": "Sikiliza hapa maandishi asili",
+    "compare_listen_here_adapted": "Sikiliza hapa maandishi yaliyorahisishwa",
+    "compare_stop_reading_original": "Simamisha usomaji wa maandishi asili",
+    "compare_stop_reading_adapted": "Simamisha usomaji wa maandishi yaliyorahisishwa",
+    "compare_scroll_together": "Sogeza pamoja",
+    "reading_width": "Upana wa kusoma",
+    "width_narrow": "Mwembamba",
+    "width_medium": "Wastani",
+    "width_wide": "Mpana",
+    "width_extra_wide": "Mpana sana",
+    "reading_width_characters": "takriban herufi {count} kwa kila mstari",
+    "original_support_spoken": "Msaada wa neno “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Andika neno au kifungu kinachokosekana",
+      "explain_thinking": "Eleza jinsi ulivyofikiri",
+      "write_response": "Andika jibu lako",
+      "submit_response": "Wasilisha jibu",
+      "numeric_answer": "Jibu la namba",
+      "unit_named": "Kipimo ({unit})",
+      "unit_optional": "Kipimo (si lazima)",
+      "submit_numeric": "Wasilisha jibu la namba",
+      "select_all_apply": "Chagua kila jibu linalofaa",
+      "submit_selections": "Wasilisha ulivyochagua",
+      "part1": "Sehemu ya 1 — Chagua jibu bora zaidi",
+      "part2": "Sehemu ya 2 — {prompt}",
+      "default_evidence_prompt": "Chagua ushahidi bora zaidi unaounga mkono jibu.",
+      "submit_answer_evidence": "Wasilisha jibu na ushahidi",
+      "order_check": "Je, mpangilio huu ni sahihi?",
+      "order_yes": "Ndiyo, ni sahihi",
+      "order_no": "Hapana, kuna kitu kilicho mahali pasipo pake",
+      "select_misplaced": "Chagua hapo juu kipengee kilicho mahali pasipo pake.",
+      "arrange_instructions": "Panga vipengee kwa mpangilio sahihi. Kama tayari viko sawa, viache kama vilivyo.",
+      "your_order": "Mpangilio wako",
+      "move_up": "Sogeza juu: {item}",
+      "move_down": "Sogeza chini: {item}",
+      "done_arranging": "Nimemaliza kupanga",
+      "principle_question": "Vipengee hivi vimepangwa kwa kanuni gani?",
+      "principle_chronological": "mfuatano wa wakati",
+      "principle_cause_effect": "sababu na matokeo",
+      "principle_process": "hatua za mchakato",
+      "principle_size": "ukubwa",
+      "principle_hierarchy": "ngazi",
+      "find_mismatch": "Tafuta jozi isiyolingana",
+      "choose_mismatch": "Chagua jozi isiyofaa kuwa hapa.",
+      "pair_with_question": "Kipengee ulichochagua kiunganishwe na nini?",
+      "replacement_partner": "Mwenza mbadala",
+      "submit_replacement": "Wasilisha mbadala",
+      "retry_failed": "Jibu lako halikuweza kutumwa. Ushiriki wako bado umerekodiwa; jaribu tena ukiwa umeunganishwa.",
+      "return_to_quiz": "Rudi kwenye jaribio la moja kwa moja",
+      "minimize": "Punguza",
+      "minimize_aria": "Ondoka kwenye mwonekano wa jaribio la moja kwa moja",
+      "battle_result": "Matokeo ya pambano",
+      "class_victory": "Darasa limeshinda!",
+      "battle_complete": "Pambano limekamilika",
+      "regroup": "Nafasi ya kujipanga upya",
+      "end_no_scored": "Maswali haya yalikuwa ya majadiliano au ya kukaguliwa na mwalimu. Hakuna alama za pambano zilizotolewa.",
+      "end_questions_complete": "Maswali yote yamekamilika. Matokeo yanalinganisha asilimia ya afya iliyobaki; mkitoka sare, darasa linashinda.",
+      "end_victory": "Darasa lenu limemshinda zimwi kwa pamoja.",
+      "end_regroup": "Tumia maelezo yaliyo hapa chini kupanga jaribio lenu lijalo pamoja.",
+      "end_review_last": "Pitia swali la mwisho hapa chini. Mwalimu wako anaweza kuanzisha pambano upya.",
+      "boss_default_name": "Bosi",
+      "boss_hp": "HP ya {name}",
+      "boss_health": "Afya ya {name}",
+      "battle_scoring_paused": "Utoaji wa alama za pambano umesitishwa",
+      "tick_of": "{value} kati ya {total}",
+      "confidence_legend": "Ulikuwa na uhakika kiasi gani?",
+      "confidence_knew": "Nililijua hili",
+      "confidence_guessed": "Nilikisia kwa kutumia ujuzi wangu",
+      "confidence_unsure": "Sikuwa na uhakika",
+      "confidence_help": "Hii inamsaidia mwalimu wako kutambua maarifa thabiti na dhana potofu. Haibadilishi kamwe usahihi wala alama.",
+      "retry_send": "Jaribu kutuma jibu tena",
+      "waiting_for_teacher": "Tunasubiri mwalimu wako aanzishe swali hili.",
+      "sending": "Inatuma jibu lako…",
+      "receipt_only": "Ushiriki umerekodiwa. Jibu lako halijamfikia mwalimu ili kupewa alama.",
+      "complete_and_submit": "Kamilisha na uwasilishe jibu lako",
+      "poll_closed": "Swali hili la maoni limefungwa.",
+      "receipt_not_scored": "Mwalimu wako amepokea ushiriki pekee. Jibu hili halikupewa alama.",
+      "no_answer_submitted": "Hakuna jibu lililowasilishwa kwa swali hili. Lipitie pamoja na darasa lako.",
+      "answer_review": "Mapitio ya jibu",
+      "review_answer": "Pitia jibu",
+      "discuss_with_teacher": "Jadili jibu na mwalimu wako.",
+      "response_correct": "Jibu sahihi.",
+      "response_partial": "Jibu sahihi kwa sehemu.",
+      "response_incorrect": "Jibu hili linahitaji kuangaliwa tena.",
+      "response_none": "Hakuna jibu lililowasilishwa.",
+      "response_submitted": "Jibu limewasilishwa kwa ukaguzi.",
+      "explanation": "Maelezo"
+    },
     "title": "Tathmini",
     "mcq_count": "MCQ Hesabu",
     "reflections": "Tafakari",

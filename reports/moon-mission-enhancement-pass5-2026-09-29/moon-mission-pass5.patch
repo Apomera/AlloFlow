@@ -1,0 +1,1129 @@
+--- a/stem_lab/stem_tool_moonmission.js
++++ b/stem_lab/stem_tool_moonmission.js
+@@ -528,6 +528,8 @@
+       when: when || '',
+       difficulty: MM_MODE_NAMES[d.difficulty] ? d.difficulty : 'pilot',
+       launch: d.launchRun && d.launchRun.recorded === true ? mmCleanLaunchResult(d.launchResult) : null,
++      ascent: mmCleanAscentPlayback(d).ascentResult,
++      docking: mmCleanAscentPlayback(d).ascentResult ? mmCleanDockingPlayback(d).dockingResult : null,
+       tli: ta ? { onTime: !!ta.onTime, offByDeg: mmNum(ta.offByDeg) ? ta.offByDeg : 0, side: ta.side === 'late' ? 'late' : 'early' } : null,
+       mcc: d.mccChoice === 'corrected' || d.mccChoice === 'skipped' ? d.mccChoice : null,
+       landing: lr ? { crashed: !!lr.crashed, score: mmNum(lr.score) ? lr.score : 0, grade: String(lr.grade || ''),
+@@ -641,6 +643,8 @@
+       (launchReport.outcome === 'orbit' ? 'orbit ' + (launchReport.perigee / 1000).toFixed(0) + ' by ' + (launchReport.apogee / 1000).toFixed(0) + ' km' : 'suborbital cutoff') +
+       ', peak load ' + launchReport.peakG.toFixed(2) + ' g, Max Q ' + (launchReport.peakQ / 1000).toFixed(1) + ' kPa, ' +
+       (launchReport.propellantRemaining / 1000).toFixed(1) + ' t of propellant remaining.');
++    if (sum.ascent && mmNum(sum.ascent.duration) && mmNum(sum.ascent.perilune) && mmNum(sum.ascent.apolune)) ln('Lunar ascent model: ' + sum.ascent.duration.toFixed(1) + ' s burn; ' + (sum.ascent.perilune / 1000).toFixed(1) + ' by ' + (sum.ascent.apolune / 1000).toFixed(1) + ' km insertion orbit.');
++    if (sum.docking && mmNum(sum.docking.closingSpeed) && mmNum(sum.docking.offset) && mmNum(sum.docking.propellantRemaining)) ln('Final docking exercise: contact at ' + sum.docking.closingSpeed.toFixed(3) + ' m/s, radial offset ' + sum.docking.offset.toFixed(2) + ' m, RCS propellant remaining ' + sum.docking.propellantRemaining.toFixed(2) + ' kg. Intervening rendezvous burns were not simulated.');
+     ln('TLI burn: ' + (!sum.tli ? 'not flown' : sum.tli.onTime ? 'inside the window' : sum.tli.offByDeg + MM_DEG_SIGN + ' ' + sum.tli.side + ', outside the window'));
+     ln('Mid-course correction: ' + (sum.mcc === 'corrected' ? 'burned' : sum.mcc === 'skipped' ? 'declined' : 'not needed'));
+     var L = sum.landing;
+@@ -1369,6 +1373,342 @@
+     ctx.restore();
+   }
+ 
++  // Lunar Module silhouettes for the ascent recorder. Local up is -Y. These
++  // pictures are enlarged; position, attitude and thrust come from the model.
++  // NASA LM News Reference: triangular windows, a dorsal docking tunnel, four
++  // RCS quads and a fixed-thrust, restartable ascent engine.
++  function mmDrawLunarAscentStage(ctx, x, y, scale, pitch, opts) {
++    opts = opts || {};
++    var time = Number.isFinite(opts.time) ? opts.time : 0;
++    var firing = opts.engineOn === true && opts.thrust > 0;
++    ctx.save(); ctx.translate(x, y); ctx.rotate(pitch || 0); ctx.scale(scale, scale);
++    // Faint expanding vacuum exhaust. Its glow is illustrative; ignition and
++    // cutoff follow thrust, with no invented flame during the coast.
++    if (firing) {
++      var plume = ctx.createLinearGradient(0, 12, 0, 50);
++      plume.addColorStop(0, 'rgba(255,243,218,0.46)'); plume.addColorStop(0.18, 'rgba(211,206,244,0.16)');
++      plume.addColorStop(0.68, 'rgba(186,179,221,0.04)'); plume.addColorStop(1, 'rgba(186,179,221,0)');
++      ctx.fillStyle = plume; ctx.globalAlpha = 0.96 + 0.04 * Math.sin(time * 19.7);
++      ctx.beginPath(); ctx.moveTo(-3.2, 12); ctx.bezierCurveTo(-6, 23, -16, 37, -21, 49);
++      ctx.quadraticCurveTo(0, 57, 21, 49); ctx.bezierCurveTo(16, 37, 6, 23, 3.2, 12); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
++    }
++    var bell = ctx.createLinearGradient(-4, 7, 4, 12);
++    bell.addColorStop(0, '#29313b'); bell.addColorStop(0.6, '#65707b'); bell.addColorStop(1, '#202731');
++    ctx.fillStyle = bell; ctx.beginPath(); ctx.moveTo(-1.8, 5); ctx.lineTo(1.8, 5);
++    ctx.bezierCurveTo(1.9, 8, 2.5, 10, 4, 12); ctx.lineTo(-4, 12); ctx.bezierCurveTo(-2.5, 10, -1.9, 8, -1.8, 5); ctx.closePath(); ctx.fill();
++    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(4, 12); ctx.stroke();
++    // Silvery cabin and black thermal blankets, with side tanks behind it.
++    ctx.fillStyle = '#171d27'; ctx.strokeStyle = '#5c626d'; ctx.lineWidth = 0.55;
++    ctx.beginPath(); ctx.moveTo(-13, -6); ctx.lineTo(-17, -3); ctx.lineTo(-16, 5); ctx.lineTo(-9, 8); ctx.lineTo(-7, -5); ctx.closePath(); ctx.fill(); ctx.stroke();
++    ctx.fillStyle = '#4c535b'; ctx.beginPath(); ctx.moveTo(11, -8); ctx.lineTo(16, -5); ctx.lineTo(17, 3); ctx.lineTo(12, 7); ctx.lineTo(7, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
++    var cabin = ctx.createLinearGradient(-11, -6, 11, 1);
++    cabin.addColorStop(0, '#626c76'); cabin.addColorStop(0.58, '#c4cbd0'); cabin.addColorStop(1, '#edf0ed');
++    ctx.fillStyle = cabin; ctx.strokeStyle = '#98a4b1'; ctx.lineWidth = 0.5;
++    ctx.beginPath(); ctx.moveTo(-9, -9); ctx.lineTo(-4, -14); ctx.lineTo(7, -13); ctx.lineTo(12, -6);
++    ctx.lineTo(11, 4); ctx.lineTo(6, 8); ctx.lineTo(-7, 8); ctx.lineTo(-11, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
++    ctx.fillStyle = '#353e49'; ctx.beginPath(); ctx.moveTo(-9, -9); ctx.lineTo(-4, -14); ctx.lineTo(-3, -1); ctx.lineTo(-11, 2); ctx.closePath(); ctx.fill();
++    ctx.fillStyle = '#777f80'; ctx.beginPath(); ctx.moveTo(-7, 8); ctx.lineTo(-3, -1); ctx.lineTo(6, 0); ctx.lineTo(11, 4); ctx.lineTo(6, 8); ctx.closePath(); ctx.fill();
++    // Triangular flight windows and the forward hatch.
++    ctx.fillStyle = '#071b29'; ctx.strokeStyle = '#d1dbe0'; ctx.lineWidth = 0.7;
++    ctx.beginPath(); ctx.moveTo(-7.8, -8); ctx.lineTo(-3.5, -11); ctx.lineTo(-3.5, -4); ctx.closePath(); ctx.fill(); ctx.stroke();
++    ctx.beginPath(); ctx.moveTo(2, -11); ctx.lineTo(8.5, -7.8); ctx.lineTo(2, -4); ctx.closePath(); ctx.fill(); ctx.stroke();
++    ctx.fillStyle = '#568496'; ctx.globalAlpha = 0.55;
++    ctx.beginPath(); ctx.moveTo(2.6, -10); ctx.lineTo(6.7, -8); ctx.lineTo(2.6, -6.5); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
++    ctx.strokeStyle = '#28323e'; ctx.lineWidth = 0.7; ctx.strokeRect(-1.8, 0.5, 5.5, 5.8);
++    ctx.fillStyle = '#d7d8d0'; ctx.fillRect(1.8, 2, 1.1, 0.7);
++    // Dorsal docking tunnel and roof antenna hardware.
++    ctx.fillStyle = '#b7bfc7'; ctx.fillRect(-2.8, -17.8, 5.6, 4.8);
++    ctx.fillStyle = '#4a545e'; ctx.fillRect(-3.4, -19, 6.8, 1.5);
++    ctx.fillStyle = '#dce1e4'; ctx.fillRect(-2.8, -19, 5.6, 0.55);
++    ctx.strokeStyle = '#aeb9c3'; ctx.lineWidth = 0.65;
++    ctx.beginPath(); ctx.moveTo(8, -10); ctx.lineTo(11, -20); ctx.lineTo(14, -20); ctx.moveTo(-9, -8); ctx.lineTo(-13, -17); ctx.stroke();
++    ctx.save(); ctx.translate(11.7, -20); ctx.rotate(-0.6); ctx.fillStyle = '#aeb5b9';
++    ctx.beginPath(); ctx.ellipse(0, 0, 4, 1.8, 0, 0, Math.PI * 2); ctx.fill();
++    ctx.strokeStyle = '#687a85'; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(-3.5, 0); ctx.lineTo(3.5, 0); ctx.stroke(); ctx.restore();
++    // The near-side RCS quads remain unlit without an explicit RCS command.
++    [-1, 1].forEach(function (side) {
++      ctx.fillStyle = '#676e76'; ctx.fillRect(side * 15 - 1.7, -9, 3.4, 3.7); ctx.fillStyle = '#151b24';
++      ctx.beginPath(); ctx.moveTo(side * 16, -8.5); ctx.lineTo(side * 21, -9.5); ctx.lineTo(side * 21, -6.5); ctx.lineTo(side * 16, -7.5); ctx.closePath(); ctx.fill();
++      ctx.beginPath(); ctx.moveTo(side * 15 - 0.8, -8); ctx.lineTo(side * 15 - 1.5, -12); ctx.lineTo(side * 15 + 1.5, -12); ctx.lineTo(side * 15 + 0.8, -8); ctx.closePath(); ctx.fill();
++    });
++    ctx.restore();
++    return { engineVisible: firing, plumeVisible: firing, nozzleX: x - Math.sin(pitch || 0) * 12 * scale, nozzleY: y + Math.cos(pitch || 0) * 12 * scale };
++  }
++
++  function mmDrawLunarDescentRemnant(ctx, x, y, scale) {
++    ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
++    ctx.strokeStyle = '#99a0a7'; ctx.lineWidth = 1.35;
++    [-1, 1].forEach(function (side) {
++      ctx.beginPath(); ctx.moveTo(side * 12, -5); ctx.lineTo(side * 25, 13); ctx.moveTo(side * 12, 3); ctx.lineTo(side * 25, 13); ctx.stroke();
++      ctx.fillStyle = '#d0b75d'; ctx.fillRect(side * 25 - 4, 12.5, 8, 1.9);
++    });
++    var foil = ctx.createLinearGradient(-14, 0, 14, 0);
++    foil.addColorStop(0, '#726027'); foil.addColorStop(0.45, '#b69842'); foil.addColorStop(1, '#ead28b');
++    ctx.fillStyle = foil; ctx.strokeStyle = '#5e511f'; ctx.lineWidth = 0.55;
++    ctx.beginPath(); ctx.moveTo(-14, -6); ctx.lineTo(-9, -9); ctx.lineTo(11, -9); ctx.lineTo(15, -6); ctx.lineTo(15, 6); ctx.lineTo(-14, 6); ctx.closePath(); ctx.fill(); ctx.stroke();
++    ctx.fillStyle = '#292820'; ctx.fillRect(4, -6, 8, 9); ctx.strokeStyle = '#f0df94'; ctx.globalAlpha = 0.45; ctx.lineWidth = 0.45;
++    for (var stripe = 0; stripe < 6; stripe++) { ctx.beginPath(); ctx.moveTo(-12 + stripe * 2.5, -5); ctx.lineTo(-11 + stripe * 2, 5); ctx.stroke(); }
++    ctx.globalAlpha = 1; ctx.fillStyle = '#373e43'; ctx.beginPath(); ctx.moveTo(-3, 6); ctx.lineTo(3, 6); ctx.lineTo(5.5, 11); ctx.lineTo(-5.5, 11); ctx.closePath(); ctx.fill();
++    ctx.fillStyle = '#373a34'; ctx.fillRect(-8, -10, 16, 2);
++    ctx.strokeStyle = '#b7b8b5'; ctx.lineWidth = 0.6;
++    ctx.beginPath(); ctx.moveTo(-3, 3); ctx.lineTo(-6, 14); ctx.moveTo(2, 3); ctx.lineTo(-1, 14); ctx.stroke();
++    for (var rung = 0; rung < 5; rung++) { ctx.beginPath(); ctx.moveTo(-3 - rung * 0.6, 4 + rung * 2); ctx.lineTo(2 - rung * 0.6, 4 + rung * 2); ctx.stroke(); }
++    ctx.restore();
++  }
++
++  function mmAscentCanvasCaption(ctx, text, x, y, width, lineHeight) {
++    var words = text.split(' '), row = '';
++    words.forEach(function (word) {
++      var next = row ? row + ' ' + word : word;
++      if (row && ctx.measureText(next).width > width) { ctx.fillText(row, x, y); y += lineHeight; row = word; }
++      else row = next;
++    });
++    if (row) ctx.fillText(row, x, y);
++    return y + lineHeight;
++  }
++
++  function mmAscentVector(ctx, x, y, dx, dy, color) {
++    var length = Math.hypot(dx, dy);
++    if (length < 0.5) return;
++    var angle = Math.atan2(dy, dx);
++    ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
++    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + dx, y + dy); ctx.stroke();
++    ctx.beginPath(); ctx.moveTo(x + dx, y + dy);
++    ctx.lineTo(x + dx - 5 * Math.cos(angle - 0.5), y + dy - 5 * Math.sin(angle - 0.5));
++    ctx.lineTo(x + dx - 5 * Math.cos(angle + 0.5), y + dy - 5 * Math.sin(angle + 0.5)); ctx.closePath(); ctx.fill(); ctx.restore();
++  }
++
++  // The surface view is an equal-axis downrange/altitude plot with automatic
++  // zoom. The orbital map retains the physical angle but enlarges altitude six
++  // times so the initial insertion ellipse is visible on a small screen.
++  function mmDrawAscentScene(ctx, W, H, sample, profile, opts) {
++    opts = opts || {};
++    var time = Number.isFinite(opts.time) ? opts.time : sample.time;
++    var view = opts.view === 'orbit' ? 'orbit' : 'surface';
++    var firing = time >= 0 && sample.engineOn && sample.thrust > 0;
++    var k = Math.min(1.65, Math.max(1.05, W / 680));
++    var craftX, craftY, craftPitch, pictureScale;
++    ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
++    drawStarfield(ctx, W, H, Math.max(0, time) * 0.3, 85);
++    ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0';
++    ctx.fillText(view === 'orbit' ? 'LUNAR ORBIT MAP' : 'SURFACE TRACK', 16, 23);
++    ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
++    ctx.fillText(view === 'orbit' ? 'Altitude \u00d7 6 \u00b7 craft enlarged' : 'Automatic zoom \u00b7 craft enlarged', 16, 39);
++    if (view === 'surface') {
++      var baseX = Math.max(56, W * 0.16), baseY = H * 0.70;
++      pictureScale = Math.min(2.5, (W - baseX - 65) / Math.max(1, sample.downrange), (baseY - 88) / Math.max(1, sample.altitude));
++      var groundY = baseY + 36 * k;
++      var ground = ctx.createLinearGradient(0, groundY, 0, H);
++      ground.addColorStop(0, '#8c8880'); ground.addColorStop(0.25, '#696863'); ground.addColorStop(1, '#3f4141');
++      ctx.fillStyle = ground; ctx.fillRect(0, groundY, W, H - groundY);
++      var terrain = _seededRand(17011);
++      ctx.save(); ctx.beginPath(); ctx.rect(0, groundY, W, H - groundY); ctx.clip();
++      for (var ri = 0; ri < 28; ri++) {
++        var rockX = terrain.next() * W, rockY = groundY + terrain.next() * (H - groundY);
++        var rockR = 0.7 + terrain.next() * 2.1;
++        ctx.fillStyle = 'rgba(10,14,18,0.45)'; ctx.beginPath(); ctx.ellipse(rockX - rockR * 4, rockY, rockR * 5, rockR * 0.45, 0, 0, Math.PI * 2); ctx.fill();
++        ctx.fillStyle = '#aaa79c'; ctx.beginPath(); ctx.ellipse(rockX, rockY, rockR, rockR * 0.6, 0, 0, Math.PI * 2); ctx.fill();
++      }
++      ctx.restore();
++      // The descent stage remains at the launch origin as the camera zooms.
++      ctx.fillStyle = 'rgba(9,13,18,0.55)'; ctx.beginPath(); ctx.ellipse(baseX - 43 * k, groundY + 1, 68 * k, 4 * k, 0, 0, Math.PI * 2); ctx.fill();
++      mmDrawLunarDescentRemnant(ctx, baseX, groundY - 14 * k, k);
++      ctx.fillStyle = '#cbd5e1'; ctx.font = '9px system-ui'; ctx.textAlign = 'left';
++      ctx.fillText('Descent stage stays here', 14, H - 12);
++      // Dust is a short, shallow ballistic sheet at liftoff, with no rolling
++      // smoke in a vacuum. The same time always draws the same particles.
++      if (time > 0 && time < 14 && sample.altitude < 150) {
++        var dust = _seededRand(71019);
++        for (var di = 0; di < 36; di++) {
++          var launchT = dust.next() * 2, age = time - launchT;
++          var dvx = (dust.next() - 0.5) * 17, dvy = 0.4 + dust.next() * 2.2;
++          var dustHeight = dvy * age - 0.81 * age * age;
++          if (age < 0 || dustHeight < 0) continue;
++          ctx.globalAlpha = Math.max(0, 0.5 - age * 0.09); ctx.fillStyle = '#c7bda6';
++          ctx.fillRect(baseX + dvx * age * 2, groundY - dustHeight * 2, 1.4, 0.7);
++        }
++        ctx.globalAlpha = 1;
++      }
++      // Actual integrated trail, clipped at the current playback time.
++      ctx.strokeStyle = 'rgba(56,189,248,0.66)'; ctx.lineWidth = 1.4; ctx.setLineDash([3, 4]); ctx.beginPath();
++      var started = false;
++      for (var pi = 0; pi < profile.samples.length; pi += 12) {
++        var point = profile.samples[pi]; if (point.time > sample.time) break;
++        var px = baseX + point.downrange * pictureScale, py = baseY - point.altitude * pictureScale;
++        if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
++      }
++      craftX = baseX + sample.downrange * pictureScale; craftY = baseY - sample.altitude * pictureScale; craftPitch = sample.pitch;
++      ctx.lineTo(craftX, craftY); ctx.stroke(); ctx.setLineDash([]);
++      // A ruler is tied to the current world scale, never to the readout.
++      var distance = 70 / pictureScale, power = Math.pow(10, Math.floor(Math.log10(distance)));
++      var ruler = (distance / power >= 5 ? 5 : distance / power >= 2 ? 2 : 1) * power;
++      var rulerPx = ruler * pictureScale;
++      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
++      ctx.beginPath(); ctx.moveTo(W - 20 - rulerPx, H - 26); ctx.lineTo(W - 20, H - 26);
++      ctx.moveTo(W - 20 - rulerPx, H - 29); ctx.lineTo(W - 20 - rulerPx, H - 23); ctx.moveTo(W - 20, H - 29); ctx.lineTo(W - 20, H - 23); ctx.stroke();
++      ctx.textAlign = 'right'; ctx.fillStyle = '#cbd5e1'; ctx.font = '9px system-ui';
++      ctx.fillText((ruler >= 1000 ? (ruler / 1000).toFixed(0) + ' km' : ruler.toFixed(0) + ' m') + ' \u00b7 equal axes', W - 20, H - 34);
++      mmDrawLunarAscentStage(ctx, craftX, craftY, k, craftPitch, { time: time, engineOn: firing, thrust: sample.thrust });
++      if (sample.speed > 5) {
++        var velocityScale = Math.min(45 / sample.speed, 0.4);
++        mmAscentVector(ctx, craftX, craftY, sample.tangentialSpeed * velocityScale, -sample.radialSpeed * velocityScale, '#67e8f9');
++      }
++    } else {
++      var moonR = Math.min(W * 0.24, H * 0.26), moonX = W * 0.5, moonY = H * 0.55;
++      var moonRadius = 1737400, magnify = 6;
++      var referenceR = moonR * (1 + 110000 / moonRadius * magnify);
++      drawDetailedMoon(ctx, moonX, moonY, moonR);
++      ctx.strokeStyle = 'rgba(148,163,184,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
++      ctx.beginPath(); ctx.arc(moonX, moonY, referenceR, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
++      ctx.fillStyle = '#94a3b8'; ctx.font = '9px system-ui'; ctx.textAlign = 'center';
++      ctx.fillText('Columbia reference orbit \u00b7 110 km', moonX, Math.min(H - 50, moonY + referenceR + 17));
++      // A dotted insertion ellipse is shown only once it has been measured.
++      if (!sample.engineOn && time >= profile.summary.duration && profile.summary.outcome === 'orbit') {
++        var peri = profile.summary.perilune, apo = profile.summary.apolune;
++        var periR = moonRadius + peri, apoR = moonRadius + apo;
++        var ecc = (apoR - periR) / (apoR + periR), semilatus = 2 * periR * apoR / (periR + apoR);
++        var cosNu = Math.max(-1, Math.min(1, (semilatus / (moonRadius + sample.altitude) - 1) / Math.max(1e-9, ecc)));
++        var anomaly = Math.acos(cosNu) * (sample.radialSpeed >= 0 ? 1 : -1), periAngle = sample.angle - anomaly;
++        ctx.strokeStyle = 'rgba(251,191,36,0.58)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath();
++        for (var oi = 0; oi <= 180; oi++) {
++          var theta = oi / 180 * Math.PI * 2, orbitAlt = semilatus / (1 + ecc * Math.cos(theta - periAngle)) - moonRadius;
++          var orbitR = moonR * (1 + orbitAlt / moonRadius * magnify), ox = moonX + Math.sin(theta) * orbitR, oy = moonY - Math.cos(theta) * orbitR;
++          if (oi === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
++        }
++        ctx.stroke(); ctx.setLineDash([]);
++      }
++      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.8; ctx.beginPath();
++      for (var ti = 0; ti < profile.samples.length; ti += 12) {
++        var trail = profile.samples[ti]; if (trail.time > sample.time) break;
++        var tr = moonR * (1 + trail.altitude / moonRadius * magnify);
++        var tx = moonX + Math.sin(trail.angle) * tr, ty = moonY - Math.cos(trail.angle) * tr;
++        if (ti === 0) ctx.moveTo(tx, ty); else ctx.lineTo(tx, ty);
++      }
++      var currentR = moonR * (1 + sample.altitude / moonRadius * magnify);
++      craftX = moonX + Math.sin(sample.angle) * currentR; craftY = moonY - Math.cos(sample.angle) * currentR;
++      ctx.lineTo(craftX, craftY); ctx.stroke();
++      craftPitch = sample.angle + sample.pitch; pictureScale = moonR / moonRadius;
++      ctx.fillStyle = '#fcd34d'; ctx.beginPath(); ctx.arc(moonX, moonY - moonR, 2.3, 0, Math.PI * 2); ctx.fill();
++      mmDrawLunarAscentStage(ctx, craftX, craftY, 0.62 * k, craftPitch, { time: time, engineOn: firing, thrust: sample.thrust });
++      if (sample.speed > 5) {
++        var vx = sample.radialSpeed * Math.sin(sample.angle) + sample.tangentialSpeed * Math.cos(sample.angle);
++        var vy = -sample.radialSpeed * Math.cos(sample.angle) + sample.tangentialSpeed * Math.sin(sample.angle);
++        mmAscentVector(ctx, craftX, craftY, vx / sample.speed * 38, vy / sample.speed * 38, '#67e8f9');
++      }
++      ctx.fillStyle = '#cbd5e1'; ctx.font = '10px system-ui'; ctx.textAlign = 'left';
++      mmAscentCanvasCaption(ctx, 'Cyan: measured ascent + velocity. Amber: insertion orbit after cutoff.', 16, H - 27, W - 32, 13);
++    }
++    ctx.textAlign = 'right'; ctx.font = 'bold 10px monospace'; ctx.fillStyle = firing ? '#fbbf24' : '#cbd5e1';
++    ctx.fillText(time < 0 ? 'T\u2212' + Math.ceil(-time) : firing ? 'APS FIRING' : 'APS OFF', W - 16, 23);
++    ctx.restore();
++    return { view: view, engineVisible: !!firing, plumeVisible: !!firing, craftX: craftX, craftY: craftY, pictureScale: pictureScale };
++  }
++
++  function mmDrawDockingCSM(ctx, portX, portY, scale) {
++    ctx.save(); ctx.translate(portX, portY); ctx.scale(scale, scale);
++    // Port at the origin, nose left, service module and SPS bell to the right.
++    ctx.fillStyle = '#3e4856'; ctx.fillRect(0, -2, 4, 4);
++    ctx.fillStyle = '#cbd5dd'; ctx.fillRect(3, -3.5, 3, 7);
++    var capsule = ctx.createLinearGradient(0, -12, 0, 12);
++    capsule.addColorStop(0, '#f1f5f9'); capsule.addColorStop(0.5, '#b3c0ce'); capsule.addColorStop(1, '#586676');
++    ctx.fillStyle = capsule; ctx.beginPath(); ctx.moveTo(6, -3.5); ctx.lineTo(23, -12); ctx.lineTo(27, -12);
++    ctx.lineTo(27, 12); ctx.lineTo(23, 12); ctx.lineTo(6, 3.5); ctx.closePath(); ctx.fill();
++    ctx.fillStyle = '#162637'; ctx.beginPath(); ctx.moveTo(13, -4); ctx.lineTo(17, -7); ctx.lineTo(18.7, -3.5); ctx.lineTo(15, -1.8); ctx.closePath(); ctx.fill();
++    ctx.fillStyle = '#494641'; ctx.fillRect(26, -12.4, 2.3, 24.8);
++    var module = ctx.createLinearGradient(0, -11, 0, 11);
++    module.addColorStop(0, '#dae2e8'); module.addColorStop(0.35, '#a8b9c6'); module.addColorStop(1, '#4e5c6b');
++    ctx.fillStyle = module; ctx.fillRect(28.3, -11, 33, 22);
++    ctx.strokeStyle = '#7a8998'; ctx.lineWidth = 0.65;
++    for (var panel = 0; panel < 4; panel++) { ctx.strokeRect(30 + panel * 7.5, -9, 5, 18); }
++    ctx.fillStyle = '#d7dfe4'; ctx.fillRect(34, -9, 16, 3); ctx.fillRect(34, 6, 16, 3);
++    ctx.fillStyle = '#68747e'; ctx.fillRect(39, -14.5, 5, 3.5); ctx.fillRect(39, 11, 5, 3.5);
++    ctx.fillStyle = '#29313b'; ctx.beginPath(); ctx.moveTo(61, -4); ctx.lineTo(65, -4); ctx.bezierCurveTo(68, -5, 73, -10, 77, -11);
++    ctx.lineTo(77, 11); ctx.bezierCurveTo(73, 10, 68, 5, 65, 4); ctx.lineTo(61, 4); ctx.closePath(); ctx.fill();
++    ctx.strokeStyle = '#9aa7b4'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(77, -11); ctx.lineTo(77, 11); ctx.stroke();
++    ctx.restore();
++  }
++
++  // Local rendezvous coordinates: x is radial (screen up), y along-track
++  // (screen right). Both axes use the same meters-to-pixels ratio. The ports
++  // meet at the actual model origin despite the enlarged craft silhouettes.
++  function mmDrawDockingPractice(ctx, W, H, state, opts) {
++    opts = opts || {};
++    var time = Number.isFinite(opts.time) ? opts.time : state.time;
++    var k = Math.min(1.3, Math.max(0.72, W / 670));
++    var portX = W - 88 * k - 20, portY = H * 0.51;
++    var distanceScale = Math.min((portX - 58 * k - 16) / Math.max(140, Math.abs(state.y) + 20), (H * 0.28) / Math.max(25, Math.abs(state.x) + 10));
++    var eaglePortX = portX + state.y * distanceScale, eaglePortY = portY - state.x * distanceScale;
++    var eagleX = eaglePortX - 19 * k, eagleY = eaglePortY;
++    var commanded = state.status === 'flying' && state.propellant > 0 && Math.hypot(state.ax || 0, state.ay || 0) > 1e-8;
++    ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020815'; ctx.fillRect(0, 0, W, H);
++    drawStarfield(ctx, W, H, Math.max(0, time || 0) * 0.2, 75);
++    // A distant lunar limb adds depth without an atmosphere or false haze.
++    var limb = ctx.createLinearGradient(0, H * 0.8, 0, H);
++    limb.addColorStop(0, '#333a43'); limb.addColorStop(1, '#141b25');
++    ctx.fillStyle = limb; ctx.beginPath(); ctx.moveTo(0, H); ctx.quadraticCurveTo(W * 0.52, H * 0.7, W, H * 0.9); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
++    ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('DOCKING PRACTICE', 16, 24);
++    ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8'; ctx.fillText('Local relative motion \u00b7 craft enlarged', 16, 40);
++    // The visual corridor uses the same tolerance as the contact gate and
++    // shares the same scale on each axis.
++    var corridorStart = portX - 140 * distanceScale, halfCorridor = MM_DOCKING.portTolerance * distanceScale;
++    ctx.fillStyle = 'rgba(52,211,153,0.07)'; ctx.fillRect(corridorStart, portY - halfCorridor, portX - corridorStart, halfCorridor * 2);
++    ctx.strokeStyle = 'rgba(52,211,153,0.35)'; ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
++    ctx.beginPath(); ctx.moveTo(corridorStart, portY - halfCorridor); ctx.lineTo(portX, portY - halfCorridor);
++    ctx.moveTo(corridorStart, portY + halfCorridor); ctx.lineTo(portX, portY + halfCorridor); ctx.stroke();
++    ctx.strokeStyle = 'rgba(148,163,184,0.45)'; ctx.beginPath(); ctx.moveTo(corridorStart, portY); ctx.lineTo(portX, portY); ctx.stroke(); ctx.setLineDash([]);
++    ctx.font = '9px monospace'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
++    [100, 50, 10].forEach(function (mark) {
++      var markX = portX - mark * distanceScale;
++      if (markX < 16 || markX > W - 16) return;
++      ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.beginPath(); ctx.moveTo(markX, portY - 52); ctx.lineTo(markX, portY + 52); ctx.stroke();
++      ctx.fillText(mark + ' m', markX, portY + 65);
++    });
++    mmDrawDockingCSM(ctx, portX, portY, k);
++    mmDrawLunarAscentStage(ctx, eagleX, eagleY, k, Math.PI / 2, { engineOn: false, thrust: 0, time: time });
++    // Reaction-control jets appear opposite the commanded acceleration.
++    if (commanded) {
++      var dx = state.ay || 0, dy = -(state.ax || 0), commandLength = Math.hypot(dx, dy);
++      var ux = dx / commandLength, uy = dy / commandLength;
++      function rcsJet(jx, jy) {
++        var jetX = eagleX - jx * 15 * k, jetY = eagleY - jy * 15 * k;
++        var jet = ctx.createLinearGradient(jetX, jetY, jetX - jx * 27 * k, jetY - jy * 27 * k);
++        jet.addColorStop(0, 'rgba(243,239,255,0.7)'); jet.addColorStop(0.3, 'rgba(191,187,255,0.2)'); jet.addColorStop(1, 'rgba(191,187,255,0)');
++        ctx.fillStyle = jet; ctx.beginPath(); ctx.moveTo(jetX - jy * 1.7 * k, jetY + jx * 1.7 * k);
++        ctx.lineTo(jetX - jx * 27 * k - jy * 5 * k, jetY - jy * 27 * k + jx * 5 * k);
++        ctx.lineTo(jetX - jx * 27 * k + jy * 5 * k, jetY - jy * 27 * k - jx * 5 * k);
++        ctx.lineTo(jetX + jy * 1.7 * k, jetY - jx * 1.7 * k); ctx.closePath(); ctx.fill();
++      }
++      // The quads use fixed nozzles: diagonal acceleration combines two axes.
++      if (Math.abs(dx) > 1e-8) rcsJet(Math.sign(dx), 0);
++      if (Math.abs(dy) > 1e-8) rcsJet(0, Math.sign(dy));
++      mmAscentVector(ctx, eagleX, eagleY, ux * 34, uy * 34, '#fcd34d');
++    }
++    if (Math.hypot(state.vx, state.vy) > 0.005 && state.status !== 'docked') {
++      var velocityScale = Math.min(70, 42 / Math.hypot(state.vx, state.vy));
++      mmAscentVector(ctx, eaglePortX, eaglePortY, state.vy * velocityScale, -state.vx * velocityScale, '#67e8f9');
++    }
++    ctx.fillStyle = '#fbbf24'; ctx.font = '10px system-ui'; ctx.textAlign = 'center';
++    ctx.fillText('Eagle', Math.max(28, eagleX), eagleY - 30 * k);
++    ctx.fillStyle = '#cbd5e1'; ctx.fillText('Columbia', portX + 36 * k, portY - 27 * k);
++    // Port marker remains at the measured target, rather than a craft centroid.
++    ctx.strokeStyle = state.status === 'docked' ? '#34d399' : '#67e8f9'; ctx.lineWidth = 1;
++    ctx.beginPath(); ctx.arc(portX, portY, 4.5, 0, Math.PI * 2); ctx.stroke();
++    ctx.textAlign = 'left'; ctx.fillStyle = '#cbd5e1'; ctx.font = '10px system-ui';
++    mmAscentCanvasCaption(ctx, 'Cyan: relative velocity. Amber: commanded RCS. Centerline: docking axis.', 16, H - 27, W - 32, 13);
++    if (state.status !== 'flying') {
++      var statusText = state.status === 'docked' ? 'DOCKED \u00b7 CONTACT CONFIRMED' : state.status === 'collision' ? 'CONTACT TOO FAST OR MISALIGNED' : state.status === 'fuel-empty' ? 'RCS PROPELLANT EXHAUSTED' : 'APPROACH MISSED';
++      ctx.fillStyle = state.status === 'docked' ? '#6ee7b7' : '#fda4af'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'left';
++      mmAscentCanvasCaption(ctx, statusText, 16, 61, W - 32, 13);
++    }
++    ctx.restore();
++    return { rcsVisible: commanded, engineVisible: false, plumeVisible: false, pictureScale: distanceScale,
++      portX: portX, portY: portY, eaglePortX: eaglePortX, eaglePortY: eaglePortY, corridorHalfWidth: halfCorridor };
++  }
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
++    drawAscentScene: mmDrawAscentScene, drawDockingPractice: mmDrawDockingPractice,
++    drawLunarAscentStage: mmDrawLunarAscentStage
++  }); } catch (e) {}
++
+   // ── Saturn V, drawn in its real proportions ──
+   // Top to bottom: visible height in metres, diameter at the top and bottom of each
+   // section. Each stage's own engines hang inside the interstage below it, so only
+@@ -1792,9 +2132,215 @@
+     };
+   }
+ 
+-  // Scripted ascent/rendezvous demonstration. Distances belong to this model,
+-  // never to canvas pixels; its 200 km initial along-track gap is illustrative.
+-  // The lower-orbit coast and final climb are compressed into the existing clock.
++  // Lunar ascent: a planar point mass above a spherical, nonrotating Moon.
++  // APS thrust is fixed (3500 lbf); 311 s Isp is a rounded flight-performance
++  // value, not a throttle setting. NASA TN D-7082 documents the APS propellant
++  // load/residuals; the Apollo 12 APS final flight evaluation reports Isp.
++  // ntrs.nasa.gov/citations/19730010173; ntrs.nasa.gov/citations/19730018123
++  // The 4890 kg liftoff preset includes crew, samples, RCS and consumables in
++  // its 2525 kg non-APS mass. Guidance changes attitude only, never velocity.
++  var MM_ASCENT = Object.freeze({ radius: 1737400, mu: 4.9048695e12, g0: 9.80665,
++    thrust: 3500 * 4.4482216152605, isp: 311, dryMass: 2525, propellant: 2365,
++    reserve: 90, step: 0.25, maxTime: 600, verticalSeconds: 10,
++    targetAltitude: 20000, targetPerilune: 15000, targetApolune: 85000,
++    guidanceHorizon: 65, radialSpeedLimit: 55, pitchRate: Math.PI / 60 });
++  function mmAscentOrbitElements(state) {
++    var C = MM_ASCENT, r = C.radius + state.altitude, vr = state.radialSpeed, vt = state.tangentialSpeed;
++    var energy = (vr * vr + vt * vt) / 2 - C.mu / r, angularMomentum = r * vt;
++    var eccentricity = Math.sqrt(Math.max(0, 1 + 2 * energy * angularMomentum * angularMomentum / (C.mu * C.mu)));
++    var axis = energy < 0 ? -C.mu / (2 * energy) : null;
++    return { energy: energy, angularMomentum: angularMomentum, eccentricity: eccentricity,
++      semimajorAxis: axis, bound: energy < 0,
++      perilune: angularMomentum * angularMomentum / C.mu / (1 + eccentricity) - C.radius,
++      apolune: axis === null ? null : axis * (1 + eccentricity) - C.radius,
++      period: axis === null ? null : 2 * Math.PI * Math.sqrt(axis * axis * axis / C.mu) };
++  }
++  function mmAscentPitchCommand(y, time) {
++    var C = MM_ASCENT;
++    if (time <= C.verticalSeconds) return 0;
++    var r = C.radius + y[0];
++    var desiredRadialSpeed = Math.max(-10, Math.min(C.radialSpeedLimit, (C.targetAltitude - y[0]) / C.guidanceHorizon));
++    var desiredAcceleration = (desiredRadialSpeed - y[1]) / 30;
++    var cosPitch = (desiredAcceleration + C.mu / (r * r) - y[2] * y[2] / r) / (C.thrust / y[4]);
++    return Math.acos(Math.max(-0.25, Math.min(1, cosPitch)));
++  }
++  function mmAscentDerivative(y, time, engineOn) {
++    var C = MM_ASCENT, r = C.radius + y[0], thrust = engineOn ? C.thrust : 0;
++    var flow = thrust / (C.isp * C.g0), a = thrust / y[4];
++    var radialThrust = a * Math.cos(y[6]), tangentThrust = a * Math.sin(y[6]);
++    var pitchRate = engineOn ? Math.max(-C.pitchRate, Math.min(C.pitchRate, (mmAscentPitchCommand(y, time) - y[6]) / 1.5)) : 0;
++    return [y[1], radialThrust + y[2] * y[2] / r - C.mu / (r * r),
++      tangentThrust - y[1] * y[2] / r, y[2] / r, -flow, -flow, pitchRate,
++      radialThrust * y[1] + tangentThrust * y[2], a];
++  }
++  function mmAscentIntegrate(y, time, dt, engineOn) {
++    var a = mmAscentDerivative(y, time, engineOn);
++    var b = mmAscentDerivative(y.map(function (v, i) { return v + a[i] * dt / 2; }), time + dt / 2, engineOn);
++    var c = mmAscentDerivative(y.map(function (v, i) { return v + b[i] * dt / 2; }), time + dt / 2, engineOn);
++    var d = mmAscentDerivative(y.map(function (v, i) { return v + c[i] * dt; }), time + dt, engineOn);
++    return y.map(function (v, i) { return v + dt / 6 * (a[i] + 2 * b[i] + 2 * c[i] + d[i]); });
++  }
++  function mmAscentRecord(y, time, engineOn, orbit, initialPropellant) {
++    var C = MM_ASCENT, thrust = engineOn ? C.thrust : 0;
++    return { time: time, altitude: y[0], radialSpeed: y[1], tangentialSpeed: y[2],
++      speed: Math.hypot(y[1], y[2]), angle: y[3], downrange: y[3] * C.radius,
++      mass: y[4], propellant: Math.max(0, y[5]), propellantUsed: initialPropellant - y[5],
++      thrust: thrust, massFlow: thrust / (C.isp * C.g0), loadG: thrust / (y[4] * C.g0),
++      gravity: C.mu / Math.pow(C.radius + y[0], 2), pitch: y[6], energyGain: y[7], idealDeltaV: y[8],
++      engineOn: engineOn, orbit: !!orbit, phase: engineOn ? 'ascent' : orbit ? 'orbit' : 'suborbital' };
++  }
++  var _mmAscentProfile = null;
++  function mmAscentProfile(options) {
++    var custom = options && (Number.isFinite(options.step) || Number.isFinite(options.propellant));
++    if (!custom && _mmAscentProfile) return _mmAscentProfile;
++    var C = MM_ASCENT, dt = options && Number.isFinite(options.step) ? Math.max(0.025, Math.min(1, options.step)) : C.step;
++    var propellant = options && Number.isFinite(options.propellant) ? Math.max(0, Math.min(C.propellant, options.propellant)) : C.propellant;
++    var y = [0, 0, 0, 0, C.dryMass + propellant, propellant, 0, 0, 0], time = 0;
++    var samples = [], events = { liftoff: null, pitch: null, cutoff: null }, peakG = 0;
++    var engineOn = propellant > C.reserve, outcome = 'suborbital', cutoffReason = 'propellant';
++    function save() {
++      var row = Object.freeze(mmAscentRecord(y, time, engineOn, outcome === 'orbit' || outcome === 'target-miss', propellant));
++      samples.push(row); peakG = Math.max(peakG, row.loadG);
++      return row;
++    }
++    events.liftoff = save();
++    while (engineOn && time < C.maxTime) {
++      var flow = C.thrust / (C.isp * C.g0), exhaustion = time + Math.max(0, y[5] - C.reserve) / flow;
++      var boundary = Math.min(exhaustion, C.maxTime, time < C.verticalSeconds ? C.verticalSeconds : Infinity);
++      var step = Math.min(dt, boundary - time), next = mmAscentIntegrate(y, time, step, true);
++      var elements = mmAscentOrbitElements({ altitude: next[0], radialSpeed: next[1], tangentialSpeed: next[2] });
++      if (elements.bound && elements.perilune >= C.targetPerilune && elements.apolune >= C.targetApolune) {
++        var lo = 0, hi = step;
++        for (var root = 0; root < 24; root++) {
++          var mid = (lo + hi) / 2, probe = mmAscentIntegrate(y, time, mid, true);
++          var orbit = mmAscentOrbitElements({ altitude: probe[0], radialSpeed: probe[1], tangentialSpeed: probe[2] });
++          if (orbit.bound && orbit.perilune >= C.targetPerilune && orbit.apolune >= C.targetApolune) hi = mid; else lo = mid;
++        }
++        step = hi; next = mmAscentIntegrate(y, time, step, true); outcome = 'orbit'; cutoffReason = 'insertion';
++      }
++      y = next; time += step; save();
++      if (!events.pitch && time >= C.verticalSeconds) events.pitch = samples[samples.length - 1];
++      if (outcome === 'orbit' || y[5] <= C.reserve + 1e-7 || y[0] < -1 || time >= C.maxTime) {
++        if (y[0] < -1) cutoffReason = 'surface'; else if (time >= C.maxTime) cutoffReason = 'time-limit';
++        engineOn = false;
++      }
++    }
++    var finalOrbit = mmAscentOrbitElements({ altitude: y[0], radialSpeed: y[1], tangentialSpeed: y[2] });
++    // A depleted vehicle can be orbiting yet miss the required insertion
++    // ellipse. Keep that distinct from a trajectory that intersects the Moon.
++    if (outcome !== 'orbit' && finalOrbit.bound && finalOrbit.perilune > 0) outcome = 'target-miss';
++    events.cutoff = save();
++    var end = events.cutoff;
++    var summary = Object.freeze({ outcome: outcome, cutoffReason: cutoffReason, duration: time,
++      cutoffAltitude: end.altitude, cutoffSpeed: end.speed, perilune: finalOrbit.perilune,
++      apolune: finalOrbit.apolune, eccentricity: finalOrbit.eccentricity, period: finalOrbit.period,
++      peakG: peakG, propellantRemaining: end.propellant, propellantUsed: end.propellantUsed, idealDeltaV: end.idealDeltaV });
++    var profile = Object.freeze({ version: 1, samples: Object.freeze(samples), events: Object.freeze(events), summary: summary });
++    if (!custom) _mmAscentProfile = profile;
++    return profile;
++  }
++  function mmAscentSample(profile, seconds) {
++    profile = profile || mmAscentProfile();
++    var rows = profile.samples, t = Number.isFinite(seconds) ? Math.max(0, Math.min(profile.summary.duration, seconds)) : 0;
++    if (t >= profile.summary.duration) return Object.assign({}, rows[rows.length - 1]);
++    var lo = 0, hi = rows.length - 1;
++    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (rows[mid].time <= t + 1e-9) lo = mid; else hi = mid; }
++    var a = rows[lo], b = rows[hi], k = b.time > a.time ? Math.max(0, Math.min(1, (t - a.time) / (b.time - a.time))) : 0;
++    var fields = ['altitude', 'radialSpeed', 'tangentialSpeed', 'angle', 'mass', 'propellant', 'pitch', 'energyGain', 'idealDeltaV'];
++    var y = fields.map(function (key) { return a[key] + (b[key] - a[key]) * k; });
++    return mmAscentRecord(y, t, a.engineOn, false, rows[0].propellant);
++  }
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { ascent: MM_ASCENT,
++    ascentProfile: mmAscentProfile, ascentSample: mmAscentSample, ascentOrbitElements: mmAscentOrbitElements }); } catch (e) {}
++
++  // Final approach in a rotating frame centered on a circular-orbit CSM.
++  // Hill equations: x radially outward, y along-track. Orbit transfer is separate.
++  // ntrs.nasa.gov/citations/20050061014, equations 2.33 and 2.34.
++  // NASA SVS Apollo preset: 100 lbf jets, 284 s Isp:
++  // ntrs.nasa.gov/citations/20080013635. Precision inputs are average pulse duty.
++  var MM_DOCKING = Object.freeze({ altitude: 110000, propellant: 40, isp: 284,
++    thrust: 2 * 100 * 4.4482216152605, duty: 0.2, step: 1 / 60,
++    portTolerance: 0.6, maxClosing: 0.2, maxLateral: 0.1 });
++  function mmDockingState() {
++    return { version: 1, time: 0, x: 8, y: -120, vx: 0, vy: 0.55,
++      propellant: MM_DOCKING.propellant, status: 'flying', ax: 0, ay: 0 };
++  }
++  function mmDockingMass(s) {
++    // RCS allocation already belongs to ascent dryMass; do not count it twice.
++    return MM_ASCENT.dryMass + mmAscentProfile().summary.propellantRemaining - MM_DOCKING.propellant + s.propellant;
++  }
++  function mmDockingGuidance(s) {
++    var n = Math.sqrt(MM_ASCENT.mu / Math.pow(MM_ASCENT.radius + MM_DOCKING.altitude, 3));
++    var maxA = MM_DOCKING.thrust / mmDockingMass(s), closing = Math.min(0.65, Math.max(0.08, -s.y * 0.025));
++    return { x: (-0.003 * s.x - 0.14 * s.vx - 3 * n * n * s.x - 2 * n * s.vy) / maxA,
++      y: ((closing - s.vy) * 0.14 + 2 * n * s.vx) / maxA };
++  }
++  function mmDockingStep(state, seconds, control) {
++    var s = Object.assign({}, state), C = MM_DOCKING;
++    if (s.status !== 'flying' || !mmNum(seconds) || seconds <= 0) return s;
++    var remaining = Math.min(10, seconds), n = Math.sqrt(MM_ASCENT.mu / Math.pow(MM_ASCENT.radius + C.altitude, 3));
++    while (remaining > 1e-9 && s.status === 'flying') {
++      var cmd = control === 'guided' ? mmDockingGuidance(s) : control || {};
++      var ux = mmNum(cmd.x) ? Math.max(-C.duty, Math.min(C.duty, cmd.x)) : 0;
++      var uy = mmNum(cmd.y) ? Math.max(-C.duty, Math.min(C.duty, cmd.y)) : 0;
++      if (s.propellant <= 0) { ux = 0; uy = 0; }
++      var dt = Math.min(C.step, remaining), flow = C.thrust * (Math.abs(ux) + Math.abs(uy)) / (C.isp * MM_ASCENT.g0);
++      // End the burn at fuel exhaustion; any remaining time is an unforced
++      // coast rather than spreading the last impulse across the whole slice.
++      if (flow > 0) dt = Math.min(dt, s.propellant / flow);
++      var mass = mmDockingMass(s) - flow * dt / 2, ax = C.thrust * ux / mass, ay = C.thrust * uy / mass;
++      function deriv(v) { return [v[2], v[3], 3 * n * n * v[0] + 2 * n * v[3] + ax, -2 * n * v[2] + ay]; }
++      var q = [s.x, s.y, s.vx, s.vy], a = deriv(q);
++      var b = deriv(q.map(function(v, i) { return v + a[i] * dt / 2; }));
++      var c = deriv(q.map(function(v, i) { return v + b[i] * dt / 2; }));
++      var e = deriv(q.map(function(v, i) { return v + c[i] * dt; }));
++      var next = q.map(function(v, i) { return v + dt / 6 * (a[i] + 2 * b[i] + 2 * c[i] + e[i]); });
++      var crossing = s.y < 0 && next[1] >= 0, part = crossing ? -s.y / (next[1] - s.y) : 1;
++      s.x += (next[0] - s.x) * part; s.y += (next[1] - s.y) * part;
++      s.vx += (next[2] - s.vx) * part; s.vy += (next[3] - s.vy) * part;
++      s.time += dt * part; s.propellant = Math.max(0, s.propellant - flow * dt * part); s.ax = ax; s.ay = ay;
++      if (crossing) {
++        s.y = 0;
++        s.status = Math.abs(s.x) <= C.portTolerance && s.vy > 0 && s.vy <= C.maxClosing && Math.abs(s.vx) <= C.maxLateral ? 'docked' : Math.abs(s.x) <= 4 ? 'collision' : 'missed';
++      } else if (Math.abs(s.x) > 250 || Math.abs(s.y) > 500 || s.time >= 1800) s.status = 'missed';
++      remaining -= dt;
++    }
++    if (s.status !== 'flying') { s.ax = 0; s.ay = 0; }
++    return s;
++  }
++  function mmCleanAscentPlayback(raw) {
++    raw = mmIsObj(raw) ? raw : {};
++    var profile = mmAscentProfile(), expected = profile.summary, saved = raw.ascentRun, result = raw.ascentResult;
++    var valid = mmIsObj(result) && result.version === 1 && result.outcome === expected.outcome &&
++      Object.keys(expected).every(function(key) { return typeof expected[key] === 'number' ? mmNum(result[key]) && Math.abs(result[key] - expected[key]) < 0.001 : result[key] === expected[key]; });
++    var run = mmIsObj(saved) && saved.version === 1 && mmNum(saved.time) ?
++      { version: 1, time: Math.max(0, Math.min(expected.duration, saved.time)), recorded: saved.recorded === true && valid } : null;
++    return { ascentRun: run, ascentResult: run && run.recorded ? Object.assign({ version: 1 }, expected) : null,
++      ascentPaused: raw.ascentPaused === true, ascentPlaybackRate: [1, 10, 30, 60].indexOf(raw.ascentPlaybackRate) >= 0 ? raw.ascentPlaybackRate : 30,
++      ascentAwarded: raw.ascentAwarded === true };
++  }
++  function mmCleanDockingPlayback(raw) {
++    raw = mmIsObj(raw) ? raw : {};
++    var saved = raw.dockingRun, run = null;
++    if (mmIsObj(saved) && saved.version === 1 && ['time', 'x', 'y', 'vx', 'vy', 'propellant'].every(function(k) { return mmNum(saved[k]); }) &&
++      saved.time >= 0 && saved.time <= 1801 && Math.abs(saved.x) <= 251 && saved.y >= -501 && saved.y <= 0 &&
++      Math.abs(saved.vx) <= 100 && Math.abs(saved.vy) <= 100 && saved.propellant >= 0 && saved.propellant <= MM_DOCKING.propellant &&
++      ['flying', 'docked', 'collision', 'missed'].indexOf(saved.status) >= 0) {
++      run = { version: 1, time: saved.time, x: saved.x, y: saved.y, vx: saved.vx, vy: saved.vy, propellant: saved.propellant, status: saved.status, ax: 0, ay: 0 };
++      if (run.status === 'docked' && !(run.time > 0 && run.y === 0 && Math.abs(run.x) <= MM_DOCKING.portTolerance && run.vy > 0 && run.vy <= MM_DOCKING.maxClosing && Math.abs(run.vx) <= MM_DOCKING.maxLateral)) run = null;
++      if (run && run.status === 'flying' && run.y >= 0) run = null;
++    }
++    return { dockingRun: run, dockingResult: run && run.status === 'docked' ? { version: 1, duration: run.time, offset: run.x, closingSpeed: run.vy, lateralSpeed: run.vx, propellantRemaining: run.propellant } : null,
++      dockingGuided: raw.dockingGuided === true, dockingPaused: raw.dockingPaused === true };
++  }
++  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { docking: MM_DOCKING, dockingState: mmDockingState,
++    dockingMass: mmDockingMass, dockingStep: mmDockingStep, dockingGuidance: mmDockingGuidance,
++    cleanAscentPlayback: mmCleanAscentPlayback, cleanDockingPlayback: mmCleanDockingPlayback }); } catch (e) {}
++
++  // Legacy scripted ascent/rendezvous helper, retained for old report fixtures.
++  // Live ascent uses the force-integrated model above. These demonstration
++  // distances never depend on canvas pixels; the 200 km initial gap is illustrative.
++  // Its lower-orbit coast and final climb are compressed into the legacy clock.
+   function mmAscentDemoState(tick) {
+     tick = mmNum(tick) ? Math.max(0, tick) : 0;
+     var launch = Math.max(0, Math.min(1, (tick - 90) / 360));
+@@ -3680,6 +4226,9 @@
+         });
+         Object.assign(s, mmCleanEntryState(s));
+         Object.assign(s, mmCleanLaunchPlayback(s));
++        Object.assign(s, mmCleanAscentPlayback(s));
++        Object.assign(s, mmCleanDockingPlayback(s));
++        if (!s.ascentResult) { s.dockingRun = null; s.dockingResult = null; }
+         if (s.deltaVHunt != null && (!isObj(s.deltaVHunt) || (s.deltaVHunt.log != null && !Array.isArray(s.deltaVHunt.log)))) s.deltaVHunt = null;
+         return s;
+       })(d);
+@@ -4407,7 +4956,7 @@
+         t('stem.moonmission.task_4', 'Watch one orbit: loss of signal behind the Moon, Earthrise, then undock for the descent.'),
+         t('stem.moonmission.task_5', 'Fly the landing: W or \u2191 for thrust, A/D to slide. Touch down under 3 m/s down and 5 m/s sideways.'),
+         t('stem.moonmission.task_6', 'Walk the surface: collect 4 rocks with F, deploy the seismometer, then End EVA.'),
+-        t('stem.moonmission.task_7', 'Watch the ascent and docking, then fire the TEI burn to head home.'),
++        t('stem.moonmission.task_7_flight', 'Review the ascent, dock safely, then fire the TEI burn to head home.'),
+         t('stem.moonmission.task_entry_plan', 'Compare entry angles and predicted loads, then begin re-entry.'),
+         t('stem.moonmission.task_entry_playback', 'Watch or scrub the entry flight. Inspect its result, then complete the mission after splashdown or try another angle.'),
+         t('stem.moonmission.task_10', 'Read your flight record \u2014 four graded calls \u2014 then fly again and beat it.')
+@@ -10642,380 +11191,145 @@
+         ),
+ 
+         // ═══ PHASE 7: LUNAR ASCENT & RENDEZVOUS (Animated Canvas) ═══
+-        phase === 7 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+-            h('div', { className: 'relative', style: { height: '300px' } },
+-              h('canvas', {
+-                role: 'img',
+-                'aria-label': t('stem.moonmission.ascent_canvas_alt', 'Animated lunar ascent and rendezvous. The ascent stage lifts off from the descent stage, its exhaust knocking over the flag, and climbs into orbit. Columbia\'s orbit, about 110 kilometers up, and Eagle\'s are both drawn, with Eagle\'s height and its distance to Columbia shown until it docks. Earth hangs still in the sky above the landing site.'),
+-                style: { width: '100%', height: '100%', display: 'block' },
+-                ref: function(cvEl) {
+-                  if (!cvEl || cvEl._ascentInit) return;
+-                  cvEl._ascentInit = true;
+-                  var ctx = cvEl.getContext('2d');
+-                  var W = cvEl.offsetWidth || 500, HA = cvEl.offsetHeight || 300;
+-                  cvEl.width = W * 2; cvEl.height = HA * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HA)) { W = nw; HA = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
+-                  var tick = 0;
+-                  var _lastAscentState = null;   // throttle the readiness publish
+-                  var aClock = { last: null, acc: 0 };
+-                  function drawAscent(ts) {
+-                    if (_mmAnimPaused && tick > 0) { aClock.last = null; if (document.contains(cvEl)) requestAnimationFrame(drawAscent); return; }
+-                    tick += mmFrameSteps(aClock, ts);
+-                    ctx.clearRect(0, 0, W, HA);
+-                    // Black lunar sky + stars
+-                    ctx.fillStyle = '#000008'; ctx.fillRect(0, 0, W, HA);
+-                    drawStarfield(ctx, W, HA, tick, 130);
+-                    var ascentDemo = mmAscentDemoState(tick);
+-                    var prelaunch = ascentDemo.phase === 'prelaunch';
+-                    var launching = ascentDemo.phase === 'ascent';
+-                    var rendezvous = ascentDemo.phase === 'rendezvous';
+-                    var docked = ascentDemo.phase === 'docked';
+-                    var aState = docked ? 'docked' : rendezvous ? 'rendezvous' : launching ? 'ascent' : 'prelaunch';
+-                    if (aState !== _lastAscentState) { _lastAscentState = aState; upd('ascentStatus', aState); }
+-                    // Lunar surface with curving horizon (we're on a small world). Lunar
+-                    // morning at Tranquility Base: the sun is low in the east (right), so
+-                    // every rock and crater throws a long shadow to the left.
+-                    var horizonY = HA * 0.78;
+-                    ctx.save();
+-                    var grd = ctx.createLinearGradient(0, horizonY - 6, 0, HA);
+-                    grd.addColorStop(0, '#a39d93'); grd.addColorStop(0.35, '#8c867d'); grd.addColorStop(1, '#6d6860');
+-                    ctx.fillStyle = grd;
+-                    ctx.beginPath();
+-                    var hzR = W * 4, hzA = Math.asin(0.5 / 4);   // a gentle curve edge to edge
+-                    ctx.moveTo(0, HA);
+-                    ctx.arc(W * 0.5, horizonY + hzR, hzR, -Math.PI / 2 - hzA, -Math.PI / 2 + hzA);
+-                    ctx.lineTo(W, HA); ctx.closePath(); ctx.fill();
+-                    ctx.clip();
+-                    // Craters, flattened by perspective: the sunward (left) inner wall is
+-                    // lit and the far wall in shadow.
+-                    var gr = _seededRand(11);
+-                    for (var ci = 0; ci < 14; ci++) {
+-                      var cfx = gr.next(), cfy = gr.next();
+-                      var ccy = horizonY + 6 + cfy * cfy * (HA - horizonY - 8);
+-                      var depth = (ccy - horizonY) / (HA - horizonY);
+-                      var ccx = cfx * W, crx = (4 + gr.next() * 12) * (0.4 + depth), cry = crx * (0.18 + depth * 0.22);
+-                      ctx.fillStyle = 'rgba(60,56,50,0.55)';
+-                      ctx.beginPath(); ctx.ellipse(ccx, ccy, crx, cry, 0, 0, Math.PI * 2); ctx.fill();
+-                      ctx.fillStyle = 'rgba(200,194,182,0.55)';
+-                      ctx.beginPath(); ctx.ellipse(ccx - crx * 0.25, ccy, crx * 0.7, cry * 0.75, 0, Math.PI * 0.5, Math.PI * 1.5); ctx.fill();
+-                      ctx.strokeStyle = 'rgba(225,219,206,0.5)'; ctx.lineWidth = 0.8;
+-                      ctx.beginPath(); ctx.ellipse(ccx, ccy, crx, cry, 0, -Math.PI * 0.1, Math.PI * 0.6); ctx.stroke();
+-                    }
+-                    // Rocks and their shadows.
+-                    for (var ri = 0; ri < 22; ri++) {
+-                      var rfy = gr.next();
+-                      var ry = horizonY + 4 + rfy * rfy * (HA - horizonY - 6), rdep = (ry - horizonY) / (HA - horizonY);
+-                      var rx = gr.next() * W, rs = (0.8 + gr.next() * 2.2) * (0.5 + rdep * 1.6);
+-                      ctx.fillStyle = 'rgba(30,28,25,0.45)';
+-                      ctx.fillRect(rx - rs * 5, ry - rs * 0.25, rs * 5, rs * 0.5);
+-                      ctx.fillStyle = '#b9b2a6';
+-                      ctx.beginPath(); ctx.ellipse(rx, ry - rs * 0.4, rs, rs * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+-                    }
+-                    ctx.restore();
+-                    // Earth hangs high in the sky here, and stays put: the Moon keeps one
+-                    // face to Earth, so from the near side it never rises or sets. (It was
+-                    // labelled "Earthrise" and parked on the horizon.)
+-                    var eX = W * 0.22, eY = HA * 0.2;
+-                    drawDetailedEarth(ctx, eX, eY, 12, tick);
+-                    ctx.fillStyle = 'rgba(148,163,184,0.8)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+-                    ctx.fillText('Earth: it never rises or sets here', eX, eY + 24);
+-                    // LM descent stage left behind: the launch pad for the ascent stage.
+-                    var descentX = W * 0.44;
+-                    var lmK = Math.min(1.8, Math.max(1, W / 560));   // lander scale on wide screens
+-                    var descentY = horizonY - 8 * lmK, padY = descentY - 10 * lmK;
+-                    ctx.fillStyle = 'rgba(25,23,20,0.5)';                        // long shadow to the west
+-                    ctx.beginPath(); ctx.moveTo(descentX + 20 * lmK, descentY + 19 * lmK); ctx.lineTo(descentX - 80 * lmK, descentY + 17 * lmK); ctx.lineTo(descentX - 80 * lmK, descentY + 21 * lmK); ctx.lineTo(descentX + 20 * lmK, descentY + 21 * lmK); ctx.closePath(); ctx.fill();
+-                    ctx.save();
+-                    ctx.translate(descentX, descentY); ctx.scale(lmK, lmK);
+-                    ctx.strokeStyle = '#8b8f96'; ctx.lineWidth = 1.4;                // legs: two in profile, one toward us
+-                    ctx.beginPath(); ctx.moveTo(-13, 3); ctx.lineTo(-24, 18); ctx.moveTo(-13, 10); ctx.lineTo(-24, 18); ctx.stroke();
+-                    ctx.beginPath(); ctx.moveTo(13, 3); ctx.lineTo(24, 18); ctx.moveTo(13, 10); ctx.lineTo(24, 18); ctx.stroke();
+-                    ctx.beginPath(); ctx.moveTo(-4, 10); ctx.lineTo(-5, 19); ctx.stroke();
+-                    ctx.fillStyle = '#6b7078';
+-                    ctx.fillRect(-27, 17.5, 6, 2); ctx.fillRect(21, 17.5, 6, 2); ctx.fillRect(-8, 18.5, 6, 2);
+-                    ctx.strokeStyle = 'rgba(203,213,225,0.7)'; ctx.lineWidth = 0.6;   // the ladder on the front leg
+-                    for (var li = 0; li < 4; li++) { ctx.beginPath(); ctx.moveTo(-7, 11 + li * 2); ctx.lineTo(-3, 11 + li * 2); ctx.stroke(); }
+-                    var foil = ctx.createLinearGradient(-14, 0, 14, 0);                // body: gold foil, lit from the east
+-                    foil.addColorStop(0, '#8a6a22'); foil.addColorStop(0.55, '#c9a444'); foil.addColorStop(1, '#f1d98a');
+-                    ctx.fillStyle = foil;
+-                    ctx.beginPath(); ctx.moveTo(-14, 1); ctx.lineTo(-11, -1); ctx.lineTo(11, -1); ctx.lineTo(14, 1); ctx.lineTo(14, 10); ctx.lineTo(-14, 10); ctx.closePath(); ctx.fill();
+-                    ctx.fillStyle = 'rgba(20,18,16,0.75)';                             // black foil quadrant
+-                    ctx.fillRect(3, 2, 8, 6);
+-                    ctx.fillStyle = '#4b5057';                                         // descent engine skirt
+-                    ctx.beginPath(); ctx.moveTo(-4, 10); ctx.lineTo(4, 10); ctx.lineTo(5.5, 14); ctx.lineTo(-5.5, 14); ctx.closePath(); ctx.fill();
+-                    ctx.restore();
+-                    // The flag. Aldrin watched the ascent engine's blast knock it flat.
+-                    var flagFall = Math.min(1, Math.max(0, (tick - 92) / 18));
+-                    ctx.save();
+-                    ctx.translate(descentX - 32 * lmK, descentY + 19 * lmK); ctx.scale(lmK, lmK);
+-                    ctx.rotate(-flagFall * Math.PI * 0.5);
+-                    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 0.7;
+-                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -23); ctx.stroke();
+-                    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(0.4, -23, 8, 5);
+-                    ctx.fillStyle = '#b91c1c'; ctx.fillRect(0.4, -22, 8, 1); ctx.fillRect(0.4, -20, 8, 1);
+-                    ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0.4, -23, 3.4, 2.6);
+-                    ctx.restore();
+-                    // Relative rendezvous diagram: map one state to every viewport.
+-                    // The 14 px docking offset keeps the craft silhouettes separate;
+-                    // it never contributes to the reported physical separation.
+-                    var csmX = W * 0.75, csmY = HA * 0.22;
+-                    var ascentX = csmX - 14 - (csmX - 14 - descentX) * ascentDemo.alongTrackKm / 200;
+-                    var ascentY = padY - (padY - csmY) * ascentDemo.altitudeKm / ascentDemo.csmAltitudeKm;
+-                    var ascentAng = 0.5 * ascentDemo.launchFraction + 0.4 * ascentDemo.rendezvousFraction;
+-                    // The two orbits: Eagle was put into a low 17 x 83 km orbit below and
+-                    // behind Columbia (about 110 km) and caught up because a lower orbit
+-                    // laps faster. The readout used to jump straight to 110 km.
+-                    if (rendezvous) {
+-                      ctx.save();
+-                      ctx.setLineDash([4, 5]); ctx.lineWidth = 1;
+-                      ctx.font = '8px system-ui'; ctx.textAlign = 'left';
+-                      [[csmY, 'rgba(147,197,253,0.55)', 'Columbia ~110 km'], [padY - (padY - csmY) * 83 / 110, 'rgba(251,191,36,0.55)', 'Eagle 17-83 km']].forEach(function(o) {
+-                        ctx.strokeStyle = o[1];
+-                        ctx.beginPath(); ctx.moveTo(W * 0.3, o[0] + 3); ctx.quadraticCurveTo(W * 0.62, o[0] - 5, W * 0.96, o[0] + 3); ctx.stroke();
+-                        ctx.fillStyle = o[1]; ctx.fillText(o[2], W * 0.3, o[0] - 4);
+-                      });
+-                      ctx.restore();
+-                    }
+-                    // Trajectory trail (dashed arc from descent stage to ascent stage)
+-                    if (launching || rendezvous) {
+-                      ctx.save();
+-                      ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+-                      ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+-                      ctx.beginPath();
+-                      ctx.moveTo(descentX, padY);
+-                      ctx.quadraticCurveTo(descentX + 50, descentY - 60, ascentX, ascentY);
+-                      ctx.stroke();
+-                      ctx.setLineDash([]);
+-                      ctx.restore();
+-                    }
+-                    // Dust plume at liftoff
+-                    if (tick >= 85 && tick < 220) {
+-                      ctx.save();
+-                      var dustF = tick - 85;
+-                      for (var pi = 0; pi < 18; pi++) {
+-                        var pAlpha = Math.max(0, 0.55 - dustF * 0.004 - pi * 0.015);
+-                        ctx.globalAlpha = pAlpha;
+-                        ctx.fillStyle = pi < 9 ? '#e0d8c8' : '#b8b0a0';
+-                        var ppx = descentX + (Math.sin(pi * 1.7) * 35) + (Math.random() - 0.5) * 8;
+-                        var ppy = descentY + 10 + (Math.random() - 0.5) * 6;
+-                        var ppr = 3 + dustF * 0.1 + Math.random() * 2;
+-                        ctx.beginPath(); ctx.arc(ppx, ppy, ppr, 0, Math.PI * 2); ctx.fill();
+-                      }
+-                      ctx.restore();
+-                    }
+-                    // Shreds of gold foil thrown off at liftoff, as in the Apollo 17 film.
+-                    if (tick >= 90 && tick < 150) {
+-                      var fr = _seededRand(17), fT = tick - 90;
+-                      for (var fi = 0; fi < 24; fi++) {
+-                        var fvx = (fr.next() - 0.5) * 3, fvy = 0.6 + fr.next() * 2.2;
+-                        var fpx = descentX + fvx * fT, fpy = descentY - 4 - fvy * fT + 0.016 * fT * fT;   // one-sixth g
+-                        if (fpy > horizonY + 12) continue;
+-                        ctx.globalAlpha = Math.max(0, 1 - fT / 60) * (0.5 + 0.5 * Math.abs(Math.sin(tick * 0.4 + fi)));
+-                        ctx.fillStyle = fi % 3 ? '#fcd34d' : '#fef3c7';
+-                        ctx.fillRect(fpx, fpy, 1.6, 1.1);
+-                      }
+-                      ctx.globalAlpha = 1;
+-                    }
+-                    // Draw CSM (Columbia)
+-                    ctx.save();
+-                    ctx.translate(csmX, csmY);
+-                    // Engine bell (rear)
+-                    ctx.fillStyle = '#888';
+-                    ctx.beginPath(); ctx.moveTo(-20, -2.5); ctx.lineTo(-24, -4.5); ctx.lineTo(-24, 4.5); ctx.lineTo(-20, 2.5); ctx.closePath(); ctx.fill();
+-                    // Service module
+-                    ctx.fillStyle = '#c0c8d0';
+-                    ctx.fillRect(-20, -3.5, 22, 7);
+-                    // Command module cone
+-                    ctx.fillStyle = '#e8ecf0';
+-                    ctx.beginPath();
+-                    ctx.moveTo(7, 0); ctx.lineTo(2, -3.5); ctx.lineTo(-3, -3.5); ctx.lineTo(-3, 3.5); ctx.lineTo(2, 3.5); ctx.closePath(); ctx.fill();
+-                    // Docking port
+-                    ctx.fillStyle = '#555';
+-                    ctx.fillRect(7, -1.5, 2, 3);
+-                    // Window
+-                    ctx.fillStyle = '#38bdf8';
+-                    ctx.fillRect(0, -1.2, 2, 2.4);
+-                    // RCS thruster quad
+-                    ctx.fillStyle = '#999';
+-                    ctx.fillRect(-10, -5, 3, 1.5); ctx.fillRect(-10, 3.5, 3, 1.5);
+-                    ctx.restore();
+-                    // CSM label
+-                    ctx.fillStyle = 'rgba(148,163,184,0.75)';
+-                    ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+-                    ctx.fillText('CSM "Columbia"', csmX, csmY - 12);
+-                    // Draw ascent stage ("Eagle")
+-                    ctx.save();
+-                    ctx.translate(ascentX, ascentY); ctx.scale(lmK, lmK);
+-                    ctx.rotate(ascentAng);
+-                    // Octagonal ascent body (gold foil) — an actual octagon path now,
+-                    // with a lit/shadow foil split (the comment used to promise an
+-                    // octagon while drawing a plain rectangle)
+-                    ctx.beginPath();
+-                    ctx.moveTo(-5, -1.5); ctx.lineTo(-3.2, -4); ctx.lineTo(3.2, -4); ctx.lineTo(5, -1.5);
+-                    ctx.lineTo(5, 1.5); ctx.lineTo(3.2, 4); ctx.lineTo(-3.2, 4); ctx.lineTo(-5, 1.5);
+-                    ctx.closePath();
+-                    ctx.fillStyle = '#c9a444';
+-                    ctx.fill();
+-                    ctx.fillStyle = 'rgba(90,62,20,0.35)';           // shadowed foil facet
+-                    ctx.beginPath();
+-                    ctx.moveTo(5, 1.5); ctx.lineTo(3.2, 4); ctx.lineTo(-3.2, 4); ctx.lineTo(-5, 1.5);
+-                    ctx.closePath(); ctx.fill();
+-                    // Top white section (RCS + docking tunnel)
+-                    ctx.fillStyle = '#e8ecf0';
+-                    ctx.fillRect(-3, -6, 6, 2);
+-                    ctx.fillStyle = '#888';
+-                    ctx.fillRect(-1, -7, 2, 1);
+-                    // Window (front-facing)
+-                    ctx.fillStyle = '#38bdf8';
+-                    ctx.fillRect(-3.5, -2, 2, 2);
+-                    // Antenna
+-                    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 0.5;
+-                    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(2, -10); ctx.stroke();
+-                    // Engine flame (below)
+-                    if (launching || rendezvous) {
+-                      var flameLen = launching ? (7 + Math.random() * 5) : (2 + Math.random() * 1.5);
+-                      var flameW = launching ? 3 : 1.5;
+-                      var fg = ctx.createLinearGradient(0, 4, 0, 4 + flameLen);
+-                      // Hydrazine and nitrogen tetroxide burn almost clear in vacuum: a
+-                      // faint glow, not a rocket-poster flame.
+-                      fg.addColorStop(0, 'rgba(255,237,213,0.75)');
+-                      fg.addColorStop(0.5, 'rgba(253,186,116,0.28)');
+-                      fg.addColorStop(1, 'rgba(251,146,60,0)');
+-                      ctx.fillStyle = fg;
+-                      ctx.beginPath();
+-                      ctx.moveTo(-flameW, 4); ctx.lineTo(0, 4 + flameLen); ctx.lineTo(flameW, 4); ctx.closePath();
+-                      ctx.fill();
+-                    }
+-                    ctx.restore();
+-                    // Ascent label (only during launch/rendezvous, fades when docked)
+-                    if (!docked) {
+-                      ctx.fillStyle = 'rgba(251,191,36,0.75)';
+-                      ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+-                      ctx.fillText('"Eagle" ascent', ascentX, prelaunch ? padY - 14 * lmK : ascentY + 14 * lmK);
+-                    }
+-                    // HUD left (altitude + phase)
+-                    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+-                    ctx.fillRect(8, 8, 140, 74);
+-                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+-                    ctx.fillStyle = '#fbbf24'; ctx.fillText('LM ASCENT STAGE', 14, 22);
+-                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+-                    ctx.fillText('ALTITUDE', 14, 36);
+-                    ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
+-                    var altKm = ascentDemo.altitudeKm;
+-                    ctx.fillText(altKm.toFixed(1) + ' km', 14, 50);
+-                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+-                    ctx.fillText('PHASE', 14, 64);
+-                    ctx.font = 'bold 10px monospace';
+-                    ctx.fillStyle = prelaunch ? '#fbbf24' : launching ? '#ef4444' : rendezvous ? '#38bdf8' : '#22c55e';
+-                    ctx.fillText(prelaunch ? 'PRE-LAUNCH' : launching ? 'ASCENT' : rendezvous ? 'RENDEZVOUS' : 'DOCKED', 14, 78);
+-                    // HUD right (distance to CSM; drops under the left panel below ~290px)
+-                    ctx.save();
+-                    if (W < 290) ctx.translate(0, 78);
+-                    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+-                    ctx.fillRect(W - 128, 8, 120, 58);
+-                    ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
+-                    ctx.fillStyle = '#fbbf24'; ctx.fillText('DIST TO CSM', W - 14, 22);
+-                    // Model range uses along-track and altitude separation. Resizing
+-                    // the picture cannot change the kilometers or proximity colour.
+-                    var distKm = ascentDemo.rangeKm.toFixed(1);
+-                    ctx.font = 'bold 17px monospace';
+-                    ctx.fillStyle = ascentDemo.rangeKm < 1 ? '#22c55e' : ascentDemo.rangeKm < 30 ? '#fbbf24' : '#fff';
+-                    ctx.fillText(distKm + ' km', W - 14, 42);
+-                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+-                    ctx.fillText(docked ? 'HARD DOCK' : rendezvous ? 'closing...' : prelaunch ? 'aligned' : 'pursuing', W - 14, 56);
+-                    ctx.restore();
+-                    // Countdown during prelaunch
+-                    if (prelaunch) {
+-                      var secs = Math.max(1, Math.ceil((90 - tick) / 30));
+-                      ctx.textAlign = 'center'; ctx.font = 'bold 40px monospace';
+-                      ctx.globalAlpha = 0.75 + Math.sin(tick * 0.3) * 0.25;
+-                      ctx.fillStyle = '#fbbf24';
+-                      ctx.fillText('T-' + secs, W * 0.5, HA * 0.38);
+-                      ctx.globalAlpha = 1;
+-                      ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+-                      ctx.fillText('Ascent engine \u2014 single-start, cannot abort', W * 0.5, HA * 0.46);
+-                    }
+-                    // DOCKED confirmation
+-                    if (docked) {
+-                      var dPulse = 0.65 + Math.sin(tick * 0.15) * 0.3;
+-                      ctx.globalAlpha = dPulse;
+-                      ctx.textAlign = 'center'; ctx.font = 'bold 18px system-ui';
+-                      ctx.fillStyle = '#22c55e';
+-                      ctx.fillText('\u2705 HARD DOCK CONFIRMED', W * 0.5, HA * 0.52);
+-                      ctx.globalAlpha = 1;
+-                      ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+-                      ctx.fillText('Ready to jettison "Eagle" and head home', W * 0.5, HA * 0.58);
+-                    }
+-                    // Comms chatter
+-                    var msgs = prelaunch ? ['Houston: "Eagle, you are GO for ascent."'] :
+-                               launching ? ['Aldrin: "We\'re lifting off! Beautiful."', 'Houston: "Nominal ascent, Eagle."'] :
+-                               rendezvous ? ['Collins: "I have visual on Eagle."', 'Armstrong: "Closing to 100 feet."'] :
+-                                            ['Aldrin: "We are docked, Houston."', 'Houston: "Roger, Eagle. Great job."'];
+-                    var mIdx = Math.floor(tick / 180) % msgs.length;
+-                    var mFade = Math.min(1, (tick % 180) < 150 ? (tick % 180) / 25 : (180 - tick % 180) / 30);
+-                    ctx.globalAlpha = mFade * 0.85;
+-                    ctx.textAlign = 'center'; ctx.font = 'italic 10px system-ui';
+-                    ctx.fillStyle = '#a5b4fc';
+-                    ctx.fillText(msgs[mIdx], W * 0.5, HA - 10);
+-                    ctx.globalAlpha = 1;
+-                    drawVignette(ctx, W, HA, 0.25);
+-                    if (document.contains(cvEl)) requestAnimationFrame(drawAscent);
++        phase === 7 && (function() {
++          var ap = mmAscentProfile(), ar = d.ascentRun || { time: 0, recorded: false };
++          var insertionReady = !!(ar.recorded && d.ascentResult && d.ascentResult.outcome === 'orbit');
++          var dockingReady = insertionReady && !!d.dockingResult;
++          var aPaused = d.ascentPaused || _mmAnimPaused, dockPaused = d.dockingPaused || _mmAnimPaused;
++          var buttonStyle = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#f8fafc', fontSize: '13px', fontWeight: 600 };
++          var cardStyle = { background: '#0f172a', color: '#e2e8f0', padding: '14px', borderRadius: '12px', border: '1px solid #334155' };
++          function ascentControl(ev, action, value) { var host = ev.currentTarget.closest('[data-ascent-workspace]'), cv = host && host.querySelector('[data-ascent-canvas]'); if (cv && cv._ascentAction) cv._ascentAction(action, value); }
++          function dockControl(ev, action, value) { var host = ev.currentTarget.closest('[data-ascent-workspace]'), cv = host && host.querySelector('[data-docking-canvas]'); if (cv && cv._dockingAction) cv._dockingAction(action, value); }
++          function metrics(items, attr) { return h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(118px,1fr))', gap: '10px', margin: '12px 0' } }, items.map(function(item) {
++            var props = { style: { margin: 0, color: '#f8fafc', fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', minHeight: '22px' } }; props[attr] = item[0];
++            return h('div', { key: item[0] }, h('dt', { style: { color: '#cbd5e1', fontSize: '11px' } }, item[1]), h('dd', props, '\u2014'));
++          })); }
++          return h('div', { 'data-ascent-workspace': true, className: 'space-y-3' },
++            h('section', { style: cardStyle },
++              h('p', { style: { color: '#7dd3fc', fontSize: '11px', letterSpacing: '0.12em', margin: 0 } }, 'EAGLE / LUNAR ASCENT'),
++              h('h3', { style: { color: '#f8fafc', fontSize: '19px', fontWeight: 700, margin: '5px 0' } }, 'From the surface to orbit'),
++              h('p', { style: { fontSize: '12px', color: '#cbd5e1' } }, 'Fixed thrust \u00b7 pressure-fed ascent engine \u00b7 no backup engine'),
++              h('canvas', { 'data-ascent-canvas': true, role: 'img', 'aria-label': 'Lunar ascent: computed altitude, downrange, engine burn and insertion orbit. Measurements are listed below.', style: { display: 'block', width: '100%', height: '320px', borderRadius: '8px' }, ref: function(cv) {
++                if (!cv || cv._ascentInit) return; cv._ascentInit = true;
++                var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 320;
++                var time = ar.time, recorded = ar.recorded, paused = !!d.ascentPaused, rate = d.ascentPlaybackRate;
++                var lastTs = null, lastPublish = -Infinity, checkpoint = '', observer;
++                if (!recorded) upd('ascentResult', null);
++                function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); }
++                resize();
++                if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(cv); }
++                function persist() {
++                  if (time >= ap.summary.duration && !recorded) { recorded = true; upd('ascentResult', Object.assign({ version: 1 }, ap.summary)); if (typeof announceToSR === 'function') announceToSR('Ascent engine cutoff. Lunar insertion orbit recorded. The final docking exercise is available.'); }
++                  var stamp = time + ':' + recorded; if (stamp === checkpoint) return; checkpoint = stamp;
++                  upd('ascentRun', { version: 1, time: time, recorded: recorded });
++                }
++                function visibility() { lastTs = null; persist(); }
++                document.addEventListener('visibilitychange', visibility);
++                cv._ascentAction = function(action, value) {
++                  if (action === 'seek') { time = Math.max(0, Math.min(ap.summary.duration, Number(value) || 0)); paused = true; upd('ascentPaused', true); }
++                  if (action === 'result') { time = ap.summary.duration; paused = true; upd('ascentPaused', true); }
++                  if (action === 'pause') { paused = !!value; upd('ascentPaused', paused); if (!paused) upd('animPaused', false); }
++                  if (action === 'rate' && [1, 10, 30, 60].indexOf(Number(value)) >= 0) { rate = Number(value); upd('ascentPlaybackRate', rate); }
++                  lastTs = null; persist();
++                };
++                function paint(ts) {
++                  if (!document.contains(cv)) { if (observer) observer.disconnect(); document.removeEventListener('visibilitychange', visibility); return; }
++                  var running = !paused && !_mmAnimPaused && !document.hidden;
++                  if (running && lastTs !== null) time = Math.min(ap.summary.duration, time + Math.max(0, Math.min(0.1, (ts - lastTs) / 1000)) * rate);
++                  lastTs = running && Number.isFinite(ts) ? ts : null;
++                  var s = mmAscentSample(ap, time), view = mmDrawAscentScene(ctx, width, height, s, ap, { time: time, view: time >= ap.summary.duration ? 'orbit' : 'surface' });
++                  cv.dataset.ascentTime = String(time); cv.dataset.ascentAltitude = String(s.altitude); cv.dataset.ascentSpeed = String(s.speed);
++                  cv.dataset.ascentVertical = String(s.radialSpeed); cv.dataset.ascentHorizontal = String(s.tangentialSpeed);
++                  cv.dataset.ascentMass = String(s.mass); cv.dataset.ascentPropellant = String(s.propellant); cv.dataset.ascentThrust = String(s.thrust);
++                  cv.dataset.ascentEngine = s.engineOn ? 'on' : 'off'; cv.dataset.ascentPhase = s.phase; cv.dataset.ascentView = view.view;
++                  var values = { time: time.toFixed(1) + ' s', altitude: (s.altitude / 1000).toFixed(2) + ' km', speed: (s.speed / 1000).toFixed(3) + ' km/s', vertical: s.radialSpeed.toFixed(1) + ' m/s', horizontal: s.tangentialSpeed.toFixed(1) + ' m/s', mass: s.mass.toFixed(0) + ' kg', propellant: s.propellant.toFixed(1) + ' kg', thrust: (s.thrust / 1000).toFixed(2) + ' kN', load: s.loadG.toFixed(3) + ' g', downrange: (s.downrange / 1000).toFixed(1) + ' km' };
++                  var host = cv.closest('[data-ascent-workspace]');
++                  if (host) { host.querySelectorAll('[data-ascent-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-ascent-value')] || ''; }); var slider = host.querySelector('[data-ascent-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time); }
++                  if (Number.isFinite(ts) && ts - lastPublish >= 250 || time >= ap.summary.duration) { lastPublish = ts; persist(); }
++                  requestAnimationFrame(paint);
++                }
++                requestAnimationFrame(paint);
++              } }),
++              h('div', { 'data-ascent-instruments': true }, metrics([['time', 'Burn time'], ['altitude', 'Altitude'], ['speed', 'Orbital speed'], ['vertical', 'Vertical speed'], ['horizontal', 'Sideways speed'], ['mass', 'Ascent stage mass'], ['propellant', 'APS propellant'], ['thrust', 'APS thrust'], ['load', 'Thrust load (Earth g)'], ['downrange', 'Downrange']], 'data-ascent-value')),
++              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' } },
++                h('button', { type: 'button', 'data-ascent-pause': true, style: buttonStyle, onClick: function(ev) { ascentControl(ev, 'pause', !aPaused); } }, aPaused ? 'Play ascent' : 'Pause ascent'),
++                h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'aria-label': 'Ascent playback speed', style: buttonStyle, value: d.ascentPlaybackRate, onChange: function(ev) { ascentControl(ev, 'rate', ev.target.value); } }, [1, 10, 30, 60].map(function(n) { return h('option', { value: n, key: n }, n + '\u00d7'); }))),
++                h('button', { type: 'button', 'data-ascent-complete-review': true, style: buttonStyle, onClick: function(ev) { ascentControl(ev, 'result'); } }, 'Review insertion')),
++              h('label', { htmlFor: 'mm-ascent-playback', style: { display: 'block', fontSize: '12px', marginTop: '12px' } }, 'Inspect the computed ascent'),
++              h('input', { id: 'mm-ascent-playback', 'data-ascent-seek': true, type: 'range', min: 0, max: ap.summary.duration, step: 0.1, defaultValue: ar.time, style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { ascentControl(ev, 'seek', ev.target.value); } }),
++              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, [['liftoff', 'Liftoff'], ['pitch', 'Pitch over'], ['cutoff', 'Engine cutoff']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-ascent-milestone': item[0], style: buttonStyle, onClick: function(ev) { ascentControl(ev, 'seek', ap.events[item[0]].time); } }, item[1]); })),
++              insertionReady && h('p', { 'data-ascent-result': 'orbit', role: 'status', style: { color: '#86efac', fontSize: '13px', lineHeight: 1.6 } }, 'Insertion recorded: ' + (d.ascentResult.perilune / 1000).toFixed(2) + ' \u00d7 ' + (d.ascentResult.apolune / 1000).toFixed(2) + ' km. Burn ' + d.ascentResult.duration.toFixed(1) + ' s; ' + d.ascentResult.propellantRemaining.toFixed(1) + ' kg APS propellant remaining.'),
++              !insertionReady && d.ascentStatus && h('p', { role: 'status', style: { color: '#fde68a', fontSize: '12px' } }, 'This save used the earlier ascent animation. Review the computed insertion and complete the docking exercise to continue.'),
++              h('details', { 'data-ascent-model-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, marginTop: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'Flight model and assumptions'),
++                h('p', null, 'Numerical lunar ascent integrates fixed engine thrust, changing propellant mass and spherical lunar gravity in two dimensions. Attitude guidance aims for an insertion ellipse; velocity is never set to the target. The Moon is nonrotating and has no atmosphere. The preset is an educational approximation, not a replay of Apollo telemetry.'),
++                h('p', null, 'The 3,500 lbf engine uses a rounded 311 s specific impulse. The camera and spacecraft are enlarged for visibility. Review insertion inspects the integrated result and awards no points. The APS could shut down and restart; the lack of a backup engine made reliability essential.'),
++                h('a', { href: 'https://ntrs.nasa.gov/citations/19730010173', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA ascent propulsion experience report'))),
++            h('section', { style: cardStyle },
++              h('p', { style: { color: '#7dd3fc', fontSize: '11px', letterSpacing: '0.12em', margin: 0 } }, 'COLUMBIA / FINAL APPROACH'),
++              h('h3', { style: { color: '#f8fafc', fontSize: '19px', margin: '5px 0' } }, 'Dock with care'),
++              h('p', { style: { fontSize: '12px', color: '#cbd5e1' } }, mmDistinctSamples(d.lunarSamples).length + ' collected samples aboard Eagle. Crew and samples transfer to Columbia after a safe dock.'),
++              h('p', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6 } }, 'This separate exercise begins 120 m from Columbia in a circular 110 km reference orbit. The intervening orbital rendezvous burns are not simulated. Attitude is held aligned; you control translation with reaction-control thrusters.'),
++              !d.dockingRun && h('button', { type: 'button', 'data-ascent-to-docking': true, disabled: !insertionReady, style: Object.assign({}, buttonStyle, { opacity: insertionReady ? 1 : 0.5 }), onClick: function() { if (!insertionReady) return; upd('dockingRun', mmDockingState()); upd('dockingResult', null); upd('dockingPaused', true); upd('dockingGuided', false); } }, insertionReady ? 'Begin final docking approach' : 'Record insertion to unlock docking'),
++              d.dockingRun && h('div', null,
++                h('canvas', { 'data-docking-canvas': true, role: 'img', tabIndex: 0, 'aria-label': 'Final docking approach. Focus this view and use arrow keys for one-second precision thruster pulses.', 'aria-describedby': 'mm-docking-instructions', style: { display: 'block', width: '100%', height: '280px', borderRadius: '8px' }, onKeyDown: function(ev) { var key = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'brake', ArrowRight: 'approach' }[ev.key]; if (key) { ev.preventDefault(); if (!ev.repeat) dockControl(ev, 'pulse', key); } }, ref: function(cv) {
++                  if (!cv || cv._dockingInit) return; cv._dockingInit = true;
++                  var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 280;
++                  var state = Object.assign({}, d.dockingRun), paused = !!d.dockingPaused, guided = !!d.dockingGuided;
++                  var lastTs = null, lastPublish = -Infinity, stamp = '', pulse = null, pulseLeft = 0, observer;
++                  function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); }
++                  resize(); if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(cv); }
++                  function persist() { var nextStamp = state.time + ':' + state.status + ':' + guided + ':' + state.ax + ':' + state.ay; if (nextStamp === stamp) return; stamp = nextStamp; upd('dockingRun', Object.assign({}, state)); upd('dockingResult', mmCleanDockingPlayback({ dockingRun: state }).dockingResult); }
++                  function visibility() { lastTs = null; pulse = null; pulseLeft = 0; state.ax = 0; state.ay = 0; persist(); }
++                  document.addEventListener('visibilitychange', visibility);
++                  cv._dockingAction = function(action, value) {
++                    if (action === 'pause') { paused = !!value; upd('dockingPaused', paused); if (!paused) upd('animPaused', false); pulse = null; pulseLeft = 0; state.ax = 0; state.ay = 0; }
++                    if (action === 'guidance') { guided = !guided; upd('dockingGuided', guided); pulse = null; pulseLeft = 0; state.ax = 0; state.ay = 0; }
++                    if (action === 'retry') { state = mmDockingState(); paused = true; guided = false; upd('dockingPaused', true); upd('dockingGuided', false); pulse = null; pulseLeft = 0; stamp = ''; }
++                    if (action === 'pulse' && !paused && !_mmAnimPaused && !document.hidden && state.status === 'flying') { pulse = { up: { x: 0.2 }, down: { x: -0.2 }, approach: { y: 0.2 }, brake: { y: -0.2 } }[value] || null; pulseLeft = pulse ? 1 : 0; guided = false; upd('dockingGuided', false); }
++                    if (action === 'demonstrate' && state.status === 'flying') { for (var finish = 0; finish < 181 && state.status === 'flying'; finish++) state = mmDockingStep(state, 10, 'guided'); paused = true; guided = true; upd('dockingPaused', true); upd('dockingGuided', true); pulse = null; pulseLeft = 0; }
++                    lastTs = null; persist();
++                  };
++                  function paint(ts) {
++                    if (!document.contains(cv)) { if (observer) observer.disconnect(); document.removeEventListener('visibilitychange', visibility); return; }
++                    var running = !paused && !_mmAnimPaused && !document.hidden && state.status === 'flying';
++                    if (running && lastTs !== null) {
++                      var dt = Math.max(0, Math.min(0.1, (ts - lastTs) / 1000)), oldStatus = state.status;
++                      if (pulse && pulseLeft > 0) { var burn = Math.min(dt, pulseLeft); state = mmDockingStep(state, burn, pulse); pulseLeft -= burn; if (dt > burn) state = mmDockingStep(state, dt - burn); if (pulseLeft <= 1e-9) pulse = null; }
++                      else state = mmDockingStep(state, dt, guided ? 'guided' : null);
++                      if (state.status !== oldStatus) { persist(); if (typeof announceToSR === 'function') announceToSR(state.status === 'docked' ? 'Safe docking contact confirmed.' : 'Approach ended. Review the contact measurements and retry.'); }
++                    }
++                    lastTs = running && Number.isFinite(ts) ? ts : null;
++                    mmDrawDockingPractice(ctx, width, height, state, { time: state.time });
++                    cv.dataset.dockingRange = String(Math.hypot(state.x, state.y)); cv.dataset.dockingOffset = String(state.x); cv.dataset.dockingClosingSpeed = String(state.vy); cv.dataset.dockingPropellant = String(state.propellant); cv.dataset.dockingStatus = state.status;
++                    var values = { time: state.time.toFixed(1) + ' s', range: Math.hypot(state.x, state.y).toFixed(2) + ' m', offset: state.x.toFixed(2) + ' m', closing: state.vy.toFixed(3) + ' m/s', lateral: state.vx.toFixed(3) + ' m/s', propellant: state.propellant.toFixed(2) + ' kg' };
++                    var host = cv.closest('[data-ascent-workspace]'); if (host) host.querySelectorAll('[data-docking-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-docking-value')] || ''; });
++                    if (Number.isFinite(ts) && ts - lastPublish >= 250) { lastPublish = ts; persist(); }
++                    requestAnimationFrame(paint);
+                   }
+-                  drawAscent();
+-                }
+-              })
+-            ),
+-            h('div', { className: 'p-4 text-white border-t border-slate-700' },
+-              h('div', { className: 'text-center mb-3' },
+-                h('div', { className: 'text-3xl' }, '\u2B06\uFE0F'),
+-                h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.lunar_ascent_rendezvous', 'Lunar Ascent & Rendezvous')),
+-                h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.ascent_stage_launches_from_moon_docks_', 'Ascent stage launches from Moon, docks with Columbia'))
+-              ),
+-              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
+-                h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
+-                  t('stem.moonmission.the_lm_s_ascent_engine_a_single_start_', 'The LM\'s ascent engine — a deliberately simple hypergolic motor with no backup engine — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle", which Apollo 11 left in lunar orbit.')),
+-                h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed mt-2', 'data-ascent-model-note': 'true' },
+-                  t('stem.moonmission.ascent_model_note', 'Scripted rendezvous demonstration: the initial 200 km along-track gap and the timing are illustrative. The diagram compresses altitude; the range combines along-track and altitude separation and stays the same when the view is resized.')),
+-                h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
+-                  h('p', { className: 'text-[0.6875rem] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + mmSampleTypeCount(d.lunarSamples) + ' / ' + LUNAR_SAMPLES_DATA.length),
+-                  (d.lunarSamples || []).map(function(s, i) {
+-                    return h('p', { key: i, className: 'text-[0.6875rem] text-slate-400 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
+-                  })
+-                )
+-              ),
+-              h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
+-                h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
+-              )
+-            )
+-          ),
+-          predictCard('rendezvous_catch', d.ascentStatus === 'docked',
+-            d.ascentStatus === 'docked' ? t('stem.moonmission.predict_rdv_observed', 'Eagle caught up from an orbit 17 to 83 km up; Columbia was at about 110 km.') : null),
+-          (function() {
+-            var as = d.ascentStatus || 'prelaunch';
+-            return phaseStatus(as === 'docked',
+-              as === 'prelaunch' ? 'Ascent engine armed. There is no backup engine; it was built as simply as possible so that it would light.'
+-                : as === 'ascent' ? 'Ascent burn — climbing off the descent stage, which stays behind as the launch pad.'
+-                : 'Closing on Columbia. Eagle flies the rendezvous while Collins stands ready to come down and fetch it. Watch the two heights.',
+-              'Hard dock confirmed. Eagle is secured to Columbia and the samples are aboard.');
+-          })(),
+-          h('button', {
+-            title: t('stem.moonmission.fire_trans_earth_injection_burn_to_beg', 'Fire trans-Earth injection burn to begin the two-and-a-half-day journey home'),
+-            disabled: eventPending,
+-                onClick: function() {
+-                  if (!canProceed()) return;
+-              advancePhase(8);
+-              log('\u2B06\uFE0F Docked with Columbia. LM jettisoned.');
+-              addXP(15);
+-              // Second quiz block on the way home. showQuiz was raised exactly once in the
+-              // whole mission (at TLI) and the handler closes the overlay after 5 answers,
+-              // so questions 6-10 were unreachable content and "answer 5 correctly" \u2014 both
+-              // a quest hook and the Space Scholar badge \u2014 demanded a flawless 5/5.
++                  requestAnimationFrame(paint);
++                } }),
++                metrics([['time', 'Approach time'], ['range', 'Port separation'], ['offset', 'Radial offset'], ['closing', 'Closing speed'], ['lateral', 'Radial drift'], ['propellant', 'RCS propellant']], 'data-docking-value'),
++                h('p', { id: 'mm-docking-instructions', style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Contact limits: radial offset within 0.60 m, closing speed at most 0.20 m/s, radial drift at most 0.10 m/s. Thrust changes velocity; releasing it leaves you coasting. Up/down correct radial offset; approach/brake change closing speed. Each click or arrow-key press commands a one-second pulse at 20% average duty.'),
++                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
++                  h('button', { type: 'button', 'data-docking-pause': true, disabled: d.dockingRun.status !== 'flying', style: buttonStyle, onClick: function(ev) { dockControl(ev, 'pause', !dockPaused); } }, d.dockingRun.status === 'docked' ? 'Docking complete' : d.dockingRun.status !== 'flying' ? 'Approach ended' : dockPaused ? 'Play docking' : 'Pause docking'),
++                  h('button', { type: 'button', 'data-docking-guidance': true, 'aria-pressed': !!d.dockingGuided, disabled: d.dockingRun.status !== 'flying', style: buttonStyle, onClick: function(ev) { dockControl(ev, 'guidance'); } }, 'Guided approach ' + (d.dockingGuided ? 'on' : 'off')),
++                  h('button', { type: 'button', 'data-docking-demonstrate': true, disabled: d.dockingRun.status !== 'flying', style: buttonStyle, onClick: function(ev) { dockControl(ev, 'demonstrate'); } }, 'Run guided docking'),
++                  h('button', { type: 'button', 'data-docking-retry': true, style: buttonStyle, onClick: function(ev) { dockControl(ev, 'retry'); } }, 'Retry approach')),
++                h('div', { role: 'group', 'aria-label': 'Precision thruster pulses', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' } }, [['up', '\u2191 Radial out'], ['down', '\u2193 Radial in'], ['approach', '\u2192 Approach'], ['brake', '\u2190 Brake']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-docking-pulse': item[0], disabled: dockPaused || d.dockingRun.status !== 'flying' || d.dockingRun.propellant <= 0, style: Object.assign({}, buttonStyle, { opacity: dockPaused || d.dockingRun.status !== 'flying' ? 0.5 : 1 }), onClick: function(ev) { dockControl(ev, 'pulse', item[0]); } }, item[1]); })),
++                h('p', { 'data-docking-outcome': d.dockingRun.status, role: 'status', style: { fontSize: '13px', color: d.dockingRun.status === 'docked' ? '#86efac' : '#fde68a', lineHeight: 1.6 } }, d.dockingRun.status === 'docked' ? 'Safe contact recorded. The docking port is aligned and relative speed is within the exercise limits.' : d.dockingRun.status === 'collision' ? 'Unsafe contact: closing speed, radial drift or alignment exceeded the limits. Retry with earlier braking and smaller corrections.' : d.dockingRun.status === 'missed' ? 'Approach missed the port or exceeded the practice area. Retry and align the radial offset before contact.' : d.dockingRun.propellant <= 0 ? 'RCS propellant depleted. The spacecraft continues coasting; retry to restore the practice allocation.' : 'Final approach in progress. A lower speed near the port leaves more time to correct alignment.'),
++                h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Guided approach uses the same finite thrusters and orbital relative-motion equations. Run guided docking computes the remaining approach immediately, including fuel use and contact checks. No points are awarded until you proceed home.')),
++              h('details', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, marginTop: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'Docking model and limits'),
++                h('p', null, 'Linear Hill equations include relative orbital drift and Coriolis acceleration around the 110 km reference orbit. Paired 100 lbf jets use a 284 s specific impulse. The 40 kg RCS practice allocation is part of the vehicle mass, separate from APS propellant. Jet duty is averaged; attitude dynamics, contact mechanics and the real docking latch sequence are simplified.'),
++                h('a', { href: 'https://ntrs.nasa.gov/citations/20080013635', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA lunar simulation reference'))),
++            predictCard('rendezvous_catch', dockingReady, dockingReady ? 'The ascent reached a ' + (d.ascentResult.perilune / 1000).toFixed(1) + ' by ' + (d.ascentResult.apolune / 1000).toFixed(1) + ' km ellipse. Lower orbits have shorter periods; the final approach was a separate 110 km exercise.' : null),
++            h('button', { type: 'button', 'data-ascent-proceed': true, disabled: eventPending || !dockingReady, title: 'Complete a safe docking approach before heading home', className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed', onClick: function() {
++              if (!dockingReady || !canProceed()) return;
++              advancePhase(8); log('Docking exercise complete. Crew and samples aboard Columbia; LM jettisoned.');
++              if (!d.ascentAwarded) { upd('ascentAwarded', true); addXP(15); }
+               if (quizIdx < QUIZ_BANK.length) upd('showQuiz', true);
+-              if (addToast) addToast('\uD83C\uDF0D TEI burn complete. Heading home.', 'success');
+-            },
+-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
+-          }, t('stem.moonmission.tei_burn_head_home', '\uD83D\uDE80 TEI Burn \u2014 Head Home'))
+-        ),
++              if (addToast) addToast('TEI burn complete. Heading home.', 'success');
++            } }, '\uD83D\uDE80 TEI Burn \u2014 Head Home'));
++        })(),
+ 
+         // ═══ PHASE 8: TRANS-EARTH COAST ═══
+         phase === 8 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+@@ -12288,6 +12602,9 @@
+                 upd('orbitPaused', false);
+                 upd('orbitPlaybackRate', 360);
+                 upd('ascentStatus', null);
++                upd('ascentRun', null); upd('ascentResult', null); upd('ascentPaused', false);
++                upd('ascentPlaybackRate', 30); upd('ascentAwarded', false);
++                upd('dockingRun', null); upd('dockingResult', null); upd('dockingPaused', true); upd('dockingGuided', false);
+                 upd('reentryStatus', null);
+                 upd('orbitStatus', null);
+                 upd('seismoDeployed', false);

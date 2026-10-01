@@ -1,0 +1,257 @@
+{
+  "numTotalTestSuites": 4,
+  "numPassedTestSuites": 2,
+  "numFailedTestSuites": 2,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 16,
+  "numPassedTests": 8,
+  "numFailedTests": 8,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790464544997,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium spanish_latin_america at 320px",
+          "status": "passed",
+          "title": "spanish_latin_america at 320px",
+          "duration": 3812.8603999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium spanish_latin_america at 320 CSS px / 640 device px (2x scale)",
+          "status": "passed",
+          "title": "spanish_latin_america at 320 CSS px / 640 device px (2x scale)",
+          "duration": 8433.113700000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium arabic at 320px",
+          "status": "passed",
+          "title": "arabic at 320px",
+          "duration": 1122.1314999999959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium arabic at 320 CSS px / 640 device px (2x scale)",
+          "status": "passed",
+          "title": "arabic at 320 CSS px / 640 device px (2x scale)",
+          "duration": 1583.2327000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium chinese_simplified at 320px",
+          "status": "passed",
+          "title": "chinese_simplified at 320px",
+          "duration": 1166.684000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium chinese_simplified at 320 CSS px / 640 device px (2x scale)",
+          "status": "passed",
+          "title": "chinese_simplified at 320 CSS px / 640 device px (2x scale)",
+          "duration": 2831.7780000000057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium thai at 320px",
+          "status": "passed",
+          "title": "thai at 320px",
+          "duration": 3907.6238999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "long translated reader labels in Chromium"
+          ],
+          "fullName": "long translated reader labels in Chromium thai at 320 CSS px / 640 device px (2x scale)",
+          "status": "passed",
+          "title": "thai at 320 CSS px / 640 device px (2x scale)",
+          "duration": 2121.2357000000047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790464669532,
+      "endTime": 1790464694511.2356,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_locale_layout.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts spanish_latin_america: 320 CSS px with 1x root text size",
+          "status": "failed",
+          "title": "spanish_latin_america: 320 CSS px with 1x root text size",
+          "duration": 1257.3113000000012,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 id=\"simplified-student-preview-title-r0\" class=\"text-lg font-bold text-slate-900\">Vista previa del diseño de lectura</h2> aka getByRole('heading', { name: 'Vista previa del diseño de' })\n    2) <h2>…</h2> aka getByRole('heading', { name: 'Definir: Las Definir: garzas' })\n    3) <h2>…</h2> aka getByRole('heading', { name: 'Definir: Alimentación' })\n    4) <h2>…</h2> aka getByRole('heading', { name: 'Definir: Nidos' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts spanish_latin_america: 320 CSS px with 2x root text size",
+          "status": "failed",
+          "title": "spanish_latin_america: 320 CSS px with 2x root text size",
+          "duration": 1378.1444000000047,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 id=\"simplified-student-preview-title-r6\" class=\"text-lg font-bold text-slate-900\">Vista previa del diseño de lectura</h2> aka getByRole('heading', { name: 'Vista previa del diseño de' })\n    2) <h2>…</h2> aka getByRole('heading', { name: 'Definir: Las Definir: garzas' })\n    3) <h2>…</h2> aka getByRole('heading', { name: 'Definir: Alimentación' })\n    4) <h2>…</h2> aka getByRole('heading', { name: 'Definir: Nidos' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts arabic: 320 CSS px with 1x root text size",
+          "status": "failed",
+          "title": "arabic: 320 CSS px with 1x root text size",
+          "duration": 1188.0434000000023,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 id=\"simplified-student-preview-title-rc\" class=\"text-lg font-bold text-slate-900\">معاينة تنسيق القراءة</h2> aka getByRole('heading', { name: 'معاينة تنسيق القراءة' })\n    2) <h2>…</h2> aka getByRole('heading', { name: 'عرِّف: الماء' })\n    3) <h2>…</h2> aka getByRole('heading', { name: 'عرِّف: الأشجار' })\n    4) <h2>…</h2> aka getByRole('heading', { name: 'عرِّف: المطر' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts arabic: 320 CSS px with 2x root text size",
+          "status": "failed",
+          "title": "arabic: 320 CSS px with 2x root text size",
+          "duration": 1745.2629000000015,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 id=\"simplified-student-preview-title-ri\" class=\"text-lg font-bold text-slate-900\">معاينة تنسيق القراءة</h2> aka getByRole('heading', { name: 'معاينة تنسيق القراءة' })\n    2) <h2>…</h2> aka getByRole('heading', { name: 'عرِّف: الماء' })\n    3) <h2>…</h2> aka getByRole('heading', { name: 'عرِّف: الأشجار' })\n    4) <h2>…</h2> aka getByRole('heading', { name: 'عرِّف: المطر' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts chinese_simplified: 320 CSS px with 1x root text size",
+          "status": "failed",
+          "title": "chinese_simplified: 320 CSS px with 1x root text size",
+          "duration": 1740.144699999997,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 id=\"simplified-student-preview-title-ro\" class=\"text-lg font-bold text-slate-900\">阅读布局预览</h2> aka getByRole('heading', { name: '阅读布局预览' })\n    2) <h2>…</h2> aka getByRole('heading', { name: '释义: 水' })\n    3) <h2>…</h2> aka getByRole('heading', { name: '释义: 云' })\n    4) <h2>…</h2> aka getByRole('heading', { name: '释义: 雨' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts chinese_simplified: 320 CSS px with 2x root text size",
+          "status": "failed",
+          "title": "chinese_simplified: 320 CSS px with 2x root text size",
+          "duration": 1988.1737999999968,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 id=\"simplified-student-preview-title-ru\" class=\"text-lg font-bold text-slate-900\">阅读布局预览</h2> aka getByRole('heading', { name: '阅读布局预览' })\n    2) <h2>…</h2> aka getByRole('heading', { name: '释义: 水' })\n    3) <h2>…</h2> aka getByRole('heading', { name: '释义: 云' })\n    4) <h2>…</h2> aka getByRole('heading', { name: '释义: 雨' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts thai: 320 CSS px with 1x root text size",
+          "status": "failed",
+          "title": "thai: 320 CSS px with 1x root text size",
+          "duration": 6644.288099999998,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 class=\"text-lg font-bold text-slate-900\" id=\"simplified-student-preview-title-r14\">ตัวอย่างรูปแบบการอ่าน</h2> aka getByRole('heading', { name: 'ตัวอย่างรูปแบบการอ่าน' })\n    2) <h2>…</h2> aka getByRole('heading', { name: 'นิยาม: การนิยาม: อ่าน' })\n    3) <h2>…</h2> aka getByRole('heading', { name: 'นิยาม: ต้นไม้' })\n    4) <h2>…</h2> aka getByRole('heading', { name: 'นิยาม: ฝน' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "audio, preview and term labels in narrow Chromium layouts"
+          ],
+          "fullName": "audio, preview and term labels in narrow Chromium layouts thai: 320 CSS px with 2x root text size",
+          "status": "failed",
+          "title": "thai: 320 CSS px with 2x root text size",
+          "duration": 3180.8610000000044,
+          "failureMessages": [
+            "locator.textContent: Error: strict mode violation: locator('[data-student-preview]').locator('h2') resolved to 4 elements:\n    1) <h2 class=\"text-lg font-bold text-slate-900\" id=\"simplified-student-preview-title-r1a\">ตัวอย่างรูปแบบการอ่าน</h2> aka getByRole('heading', { name: 'ตัวอย่างรูปแบบการอ่าน' })\n    2) <h2>…</h2> aka getByRole('heading', { name: 'นิยาม: การนิยาม: อ่าน' })\n    3) <h2>…</h2> aka getByRole('heading', { name: 'นิยาม: ต้นไม้' })\n    4) <h2>…</h2> aka getByRole('heading', { name: 'นิยาม: ฝน' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-student-preview]').locator('h2')\u001b[22m\n\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js:48:44\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@vitest\\runner\\dist\\chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790464598604,
+      "endTime": 1790464617725.861,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-preview-track17/tests/reader_preview_locale_layout.test.js"
+    }
+  ]
+}

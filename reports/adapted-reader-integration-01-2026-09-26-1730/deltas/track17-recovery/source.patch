@@ -1,0 +1,1192 @@
+===================================================================
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4751,7 +4751,41 @@
+     "adapt_apply": "Aplicar esta versión",
+     "adapt_discarded": "Vista previa descartada. El texto no ha cambiado.",
+     "adapt_discard": "Descartar",
+-    "adapt_back": "Volver a la versión anterior"
++    "adapt_back": "Volver a la versión anterior",
++    "place_bookmark_temporary": "Marcador conservado durante esta visita en: {snippet}",
++    "place_saved_device": "Guardado en este dispositivo para esta versión de la lectura.",
++    "place_saving": "Guardando en este dispositivo…",
++    "place_preview_only": "Se conserva solo mientras esta vista previa esté abierta.",
++    "place_page_only": "Se conserva solo mientras esta página esté abierta. Al recargarla, se borrará este trabajo.",
++    "place_save_failed": "No se pudo guardar en este dispositivo. Tu trabajo sigue aquí mientras esta página permanezca abierta. Si la recargas, podrías perder estos cambios.",
++    "place_save_ready": "Opcional. Las respuestas se guardarán en este dispositivo cuando haya almacenamiento disponible.",
++    "place_save_conflict": "El trabajo guardado de esta lectura cambió en otra pestaña. Tu borrador sigue aquí. Revisa ambas versiones antes de elegir cuál usar.",
++    "place_save_version_conflict": "El trabajo guardado pertenece a otro texto. Tu marcador y tus respuestas no se han trasladado.",
++    "place_save_corrupt": "No se pudieron leer algunos datos guardados de la lectura. Los datos ya guardados no se han modificado.",
++    "place_save_large": "Este trabajo es demasiado grande para guardarlo. Copia tus respuestas antes de acortarlas.",
++    "place_save_capacity": "El almacenamiento de lecturas está lleno. Los marcadores y las respuestas existentes se han conservado.",
++    "place_save_coordination": "Este navegador no puede guardar de forma segura el trabajo de lectura entre pestañas. Mantén esta página abierta o copia tus respuestas.",
++    "place_retry": "Volver a intentar guardar",
++    "place_copy_answers": "Copiar tus respuestas",
++    "place_answers_to_copy": "Respuestas para copiar",
++    "place_review_changed": "Tu borrador o el trabajo guardado cambió después de esta revisión. Revisa ambas versiones de nuevo antes de elegir.",
++    "place_recovery_bookmark": "Marcador",
++    "place_recovery_paragraph": "Párrafo {number}",
++    "place_recovery_empty": "Todavía no hay marcadores ni respuestas.",
++    "place_review_versions": "Revisar ambas versiones",
++    "place_review_title": "Elige qué trabajo usar",
++    "place_review_retained": "Una copia de la versión que dejes de usar seguirá abajo mientras esta página esté abierta.",
++    "place_review_local": "Borrador de esta página",
++    "place_review_saved": "Trabajo guardado",
++    "place_review_removed": "Ya no queda trabajo guardado para esta lectura.",
++    "place_review_keep": "Guardar en su lugar el borrador de esta página",
++    "place_review_use": "Usar el trabajo guardado",
++    "place_copy_work": "Copiar tu trabajo",
++    "place_work_to_copy": "Trabajo para copiar",
++    "place_recovery_copies": "Copias de recuperación de esta página",
++    "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
++    "place_recovery_local": "Tu borrador anterior",
++    "place_recovery_saved": "Trabajo guardado anteriormente"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+===================================================================
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -4751,7 +4751,41 @@
+     "adapt_apply": "Aplicar esta versión",
+     "adapt_discarded": "Vista previa descartada. El texto no ha cambiado.",
+     "adapt_discard": "Descartar",
+-    "adapt_back": "Volver a la versión anterior"
++    "adapt_back": "Volver a la versión anterior",
++    "place_bookmark_temporary": "Marcador conservado durante esta visita en: {snippet}",
++    "place_saved_device": "Guardado en este dispositivo para esta versión de la lectura.",
++    "place_saving": "Guardando en este dispositivo…",
++    "place_preview_only": "Se conserva solo mientras esta vista previa esté abierta.",
++    "place_page_only": "Se conserva solo mientras esta página esté abierta. Al recargarla, se borrará este trabajo.",
++    "place_save_failed": "No se pudo guardar en este dispositivo. Tu trabajo sigue aquí mientras esta página permanezca abierta. Si la recargas, podrías perder estos cambios.",
++    "place_save_ready": "Opcional. Las respuestas se guardarán en este dispositivo cuando haya almacenamiento disponible.",
++    "place_save_conflict": "El trabajo guardado de esta lectura cambió en otra pestaña. Tu borrador sigue aquí. Revisa ambas versiones antes de elegir cuál usar.",
++    "place_save_version_conflict": "El trabajo guardado pertenece a otro texto. Tu marcador y tus respuestas no se han trasladado.",
++    "place_save_corrupt": "No se pudieron leer algunos datos guardados de la lectura. Los datos ya guardados no se han modificado.",
++    "place_save_large": "Este trabajo es demasiado grande para guardarlo. Copia tus respuestas antes de acortarlas.",
++    "place_save_capacity": "El almacenamiento de lecturas está lleno. Los marcadores y las respuestas existentes se han conservado.",
++    "place_save_coordination": "Este navegador no puede guardar de forma segura el trabajo de lectura entre pestañas. Mantén esta página abierta o copia tus respuestas.",
++    "place_retry": "Volver a intentar guardar",
++    "place_copy_answers": "Copiar tus respuestas",
++    "place_answers_to_copy": "Respuestas para copiar",
++    "place_review_changed": "Tu borrador o el trabajo guardado cambió después de esta revisión. Revisa ambas versiones de nuevo antes de elegir.",
++    "place_recovery_bookmark": "Marcador",
++    "place_recovery_paragraph": "Párrafo {number}",
++    "place_recovery_empty": "Todavía no hay marcadores ni respuestas.",
++    "place_review_versions": "Revisar ambas versiones",
++    "place_review_title": "Elige qué trabajo usar",
++    "place_review_retained": "Una copia de la versión que dejes de usar seguirá abajo mientras esta página esté abierta.",
++    "place_review_local": "Borrador de esta página",
++    "place_review_saved": "Trabajo guardado",
++    "place_review_removed": "Ya no queda trabajo guardado para esta lectura.",
++    "place_review_keep": "Guardar en su lugar el borrador de esta página",
++    "place_review_use": "Usar el trabajo guardado",
++    "place_copy_work": "Copiar tu trabajo",
++    "place_work_to_copy": "Trabajo para copiar",
++    "place_recovery_copies": "Copias de recuperación de esta página",
++    "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
++    "place_recovery_local": "Tu borrador anterior",
++    "place_recovery_saved": "Trabajo guardado anteriormente"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+===================================================================
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4743,7 +4743,41 @@
+     "adapt_apply": "Aplicar esta versión",
+     "adapt_discarded": "Vista previa descartada. El texto no ha cambiado.",
+     "adapt_discard": "Descartar",
+-    "adapt_back": "Volver a la versión anterior"
++    "adapt_back": "Volver a la versión anterior",
++    "place_bookmark_temporary": "Marcador conservado durante esta visita en: {snippet}",
++    "place_saved_device": "Guardado en este dispositivo para esta versión de la lectura.",
++    "place_saving": "Guardando en este dispositivo…",
++    "place_preview_only": "Se conserva solo mientras esta vista previa esté abierta.",
++    "place_page_only": "Se conserva solo mientras esta página esté abierta. Al recargarla, se borrará este trabajo.",
++    "place_save_failed": "No se pudo guardar en este dispositivo. Tu trabajo sigue aquí mientras esta página permanezca abierta. Si la recargas, podrías perder estos cambios.",
++    "place_save_ready": "Opcional. Las respuestas se guardarán en este dispositivo cuando haya almacenamiento disponible.",
++    "place_save_conflict": "El trabajo guardado de esta lectura cambió en otra pestaña. Tu borrador sigue aquí. Revisa ambas versiones antes de elegir cuál usar.",
++    "place_save_version_conflict": "El trabajo guardado pertenece a otro texto. Tu marcador y tus respuestas no se han trasladado.",
++    "place_save_corrupt": "No se pudieron leer algunos datos guardados de la lectura. Los datos ya guardados no se han modificado.",
++    "place_save_large": "Este trabajo es demasiado grande para guardarlo. Copia tus respuestas antes de acortarlas.",
++    "place_save_capacity": "El almacenamiento de lecturas está lleno. Los marcadores y las respuestas existentes se han conservado.",
++    "place_save_coordination": "Este navegador no puede guardar de forma segura el trabajo de lectura entre pestañas. Mantén esta página abierta o copia tus respuestas.",
++    "place_retry": "Volver a intentar guardar",
++    "place_copy_answers": "Copiar tus respuestas",
++    "place_answers_to_copy": "Respuestas para copiar",
++    "place_review_changed": "Tu borrador o el trabajo guardado cambió después de esta revisión. Revisa ambas versiones de nuevo antes de elegir.",
++    "place_recovery_bookmark": "Marcador",
++    "place_recovery_paragraph": "Párrafo {number}",
++    "place_recovery_empty": "Todavía no hay marcadores ni respuestas.",
++    "place_review_versions": "Revisar ambas versiones",
++    "place_review_title": "Elige qué trabajo usar",
++    "place_review_retained": "Una copia de la versión que dejes de usar seguirá abajo mientras esta página esté abierta.",
++    "place_review_local": "Borrador de esta página",
++    "place_review_saved": "Trabajo guardado",
++    "place_review_removed": "Ya no queda trabajo guardado para esta lectura.",
++    "place_review_keep": "Guardar en su lugar el borrador de esta página",
++    "place_review_use": "Usar el trabajo guardado",
++    "place_copy_work": "Copiar tu trabajo",
++    "place_work_to_copy": "Trabajo para copiar",
++    "place_recovery_copies": "Copias de recuperación de esta página",
++    "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
++    "place_recovery_local": "Tu borrador anterior",
++    "place_recovery_saved": "Trabajo guardado anteriormente"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+===================================================================
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -4743,7 +4743,41 @@
+     "adapt_apply": "Aplicar esta versión",
+     "adapt_discarded": "Vista previa descartada. El texto no ha cambiado.",
+     "adapt_discard": "Descartar",
+-    "adapt_back": "Volver a la versión anterior"
++    "adapt_back": "Volver a la versión anterior",
++    "place_bookmark_temporary": "Marcador conservado durante esta visita en: {snippet}",
++    "place_saved_device": "Guardado en este dispositivo para esta versión de la lectura.",
++    "place_saving": "Guardando en este dispositivo…",
++    "place_preview_only": "Se conserva solo mientras esta vista previa esté abierta.",
++    "place_page_only": "Se conserva solo mientras esta página esté abierta. Al recargarla, se borrará este trabajo.",
++    "place_save_failed": "No se pudo guardar en este dispositivo. Tu trabajo sigue aquí mientras esta página permanezca abierta. Si la recargas, podrías perder estos cambios.",
++    "place_save_ready": "Opcional. Las respuestas se guardarán en este dispositivo cuando haya almacenamiento disponible.",
++    "place_save_conflict": "El trabajo guardado de esta lectura cambió en otra pestaña. Tu borrador sigue aquí. Revisa ambas versiones antes de elegir cuál usar.",
++    "place_save_version_conflict": "El trabajo guardado pertenece a otro texto. Tu marcador y tus respuestas no se han trasladado.",
++    "place_save_corrupt": "No se pudieron leer algunos datos guardados de la lectura. Los datos ya guardados no se han modificado.",
++    "place_save_large": "Este trabajo es demasiado grande para guardarlo. Copia tus respuestas antes de acortarlas.",
++    "place_save_capacity": "El almacenamiento de lecturas está lleno. Los marcadores y las respuestas existentes se han conservado.",
++    "place_save_coordination": "Este navegador no puede guardar de forma segura el trabajo de lectura entre pestañas. Mantén esta página abierta o copia tus respuestas.",
++    "place_retry": "Volver a intentar guardar",
++    "place_copy_answers": "Copiar tus respuestas",
++    "place_answers_to_copy": "Respuestas para copiar",
++    "place_review_changed": "Tu borrador o el trabajo guardado cambió después de esta revisión. Revisa ambas versiones de nuevo antes de elegir.",
++    "place_recovery_bookmark": "Marcador",
++    "place_recovery_paragraph": "Párrafo {number}",
++    "place_recovery_empty": "Todavía no hay marcadores ni respuestas.",
++    "place_review_versions": "Revisar ambas versiones",
++    "place_review_title": "Elige qué trabajo usar",
++    "place_review_retained": "Una copia de la versión que dejes de usar seguirá abajo mientras esta página esté abierta.",
++    "place_review_local": "Borrador de esta página",
++    "place_review_saved": "Trabajo guardado",
++    "place_review_removed": "Ya no queda trabajo guardado para esta lectura.",
++    "place_review_keep": "Guardar en su lugar el borrador de esta página",
++    "place_review_use": "Usar el trabajo guardado",
++    "place_copy_work": "Copiar tu trabajo",
++    "place_work_to_copy": "Trabajo para copiar",
++    "place_recovery_copies": "Copias de recuperación de esta página",
++    "place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
++    "place_recovery_local": "Tu borrador anterior",
++    "place_recovery_saved": "Trabajo guardado anteriormente"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+===================================================================
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -4606,7 +4606,41 @@
+     "adapt_apply": "طبّق هذه النسخة",
+     "adapt_discarded": "تم تجاهل المعاينة. النص لم يتغيّر.",
+     "adapt_discard": "تجاهل",
+-    "adapt_back": "عد إلى النسخة السابقة"
++    "adapt_back": "عد إلى النسخة السابقة",
++    "place_bookmark_temporary": "تم الاحتفاظ بالإشارة المرجعية لهذه الزيارة عند: {snippet}",
++    "place_saved_device": "تم الحفظ على هذا الجهاز لهذه النسخة من النص.",
++    "place_saving": "جارٍ الحفظ على هذا الجهاز…",
++    "place_preview_only": "يُحتفظ بالعمل فقط ما دامت هذه المعاينة مفتوحة.",
++    "place_page_only": "يُحتفظ بالعمل فقط ما دامت هذه الصفحة مفتوحة. ستؤدي إعادة تحميلها إلى مسح هذا العمل.",
++    "place_save_failed": "تعذّر الحفظ على هذا الجهاز. لا يزال عملك موجودًا هنا ما دامت هذه الصفحة مفتوحة. قد تفقد هذه التغييرات إذا أعدت تحميل الصفحة.",
++    "place_save_ready": "اختياري. ستُحفظ الإجابات على هذا الجهاز عندما تتوفر إمكانية التخزين.",
++    "place_save_conflict": "تغيّر العمل المحفوظ لهذا النص في علامة تبويب أخرى. لا تزال مسودتك هنا. راجع النسختين قبل اختيار أيهما تريد استخدامه.",
++    "place_save_version_conflict": "العمل المحفوظ يخص نصًا مختلفًا. لم تُنقل إشارتك المرجعية أو إجاباتك.",
++    "place_save_corrupt": "تعذّرت قراءة بعض بيانات القراءة المحفوظة. تُركت البيانات المحفوظة الحالية دون تغيير.",
++    "place_save_large": "هذا العمل أكبر من أن يُحفظ. انسخ إجاباتك قبل اختصارها.",
++    "place_save_capacity": "مساحة تخزين القراءات ممتلئة. تم الاحتفاظ بالإشارات المرجعية والإجابات الحالية.",
++    "place_save_coordination": "لا يستطيع هذا المتصفح حفظ عمل القراءة بأمان عبر علامات التبويب. أبقِ هذه الصفحة مفتوحة أو انسخ إجاباتك.",
++    "place_retry": "إعادة محاولة الحفظ",
++    "place_copy_answers": "نسخ إجاباتك",
++    "place_answers_to_copy": "إجابات لنسخها",
++    "place_review_changed": "تغيّرت مسودتك أو العمل المحفوظ بعد هذه المراجعة. راجع النسختين مجددًا قبل الاختيار.",
++    "place_recovery_bookmark": "إشارة مرجعية",
++    "place_recovery_paragraph": "الفقرة {number}",
++    "place_recovery_empty": "لا توجد إشارات مرجعية أو إجابات بعد.",
++    "place_review_versions": "مراجعة النسختين",
++    "place_review_title": "اختر العمل الذي تريد استخدامه",
++    "place_review_retained": "ستبقى نسخة من الإصدار الذي تستبدله متاحة أدناه ما دامت هذه الصفحة مفتوحة.",
++    "place_review_local": "مسودة هذه الصفحة",
++    "place_review_saved": "العمل المحفوظ",
++    "place_review_removed": "لم يعد هناك عمل محفوظ لهذا النص.",
++    "place_review_keep": "حفظ مسودة هذه الصفحة بدلًا منه",
++    "place_review_use": "استخدام العمل المحفوظ",
++    "place_copy_work": "نسخ عملك",
++    "place_work_to_copy": "عمل لنسخه",
++    "place_recovery_copies": "نسخ الاسترداد لهذه الصفحة",
++    "place_recovery_lifetime": "هذه النسخ مؤقتة. انسخ أي عمل تحتاج إليه قبل إغلاق هذه الصفحة أو إعادة تحميلها.",
++    "place_recovery_local": "مسودتك السابقة",
++    "place_recovery_saved": "العمل المحفوظ سابقًا"
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+===================================================================
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -4606,7 +4606,41 @@
+     "adapt_apply": "طبّق هذه النسخة",
+     "adapt_discarded": "تم تجاهل المعاينة. النص لم يتغيّر.",
+     "adapt_discard": "تجاهل",
+-    "adapt_back": "عد إلى النسخة السابقة"
++    "adapt_back": "عد إلى النسخة السابقة",
++    "place_bookmark_temporary": "تم الاحتفاظ بالإشارة المرجعية لهذه الزيارة عند: {snippet}",
++    "place_saved_device": "تم الحفظ على هذا الجهاز لهذه النسخة من النص.",
++    "place_saving": "جارٍ الحفظ على هذا الجهاز…",
++    "place_preview_only": "يُحتفظ بالعمل فقط ما دامت هذه المعاينة مفتوحة.",
++    "place_page_only": "يُحتفظ بالعمل فقط ما دامت هذه الصفحة مفتوحة. ستؤدي إعادة تحميلها إلى مسح هذا العمل.",
++    "place_save_failed": "تعذّر الحفظ على هذا الجهاز. لا يزال عملك موجودًا هنا ما دامت هذه الصفحة مفتوحة. قد تفقد هذه التغييرات إذا أعدت تحميل الصفحة.",
++    "place_save_ready": "اختياري. ستُحفظ الإجابات على هذا الجهاز عندما تتوفر إمكانية التخزين.",
++    "place_save_conflict": "تغيّر العمل المحفوظ لهذا النص في علامة تبويب أخرى. لا تزال مسودتك هنا. راجع النسختين قبل اختيار أيهما تريد استخدامه.",
++    "place_save_version_conflict": "العمل المحفوظ يخص نصًا مختلفًا. لم تُنقل إشارتك المرجعية أو إجاباتك.",
++    "place_save_corrupt": "تعذّرت قراءة بعض بيانات القراءة المحفوظة. تُركت البيانات المحفوظة الحالية دون تغيير.",
++    "place_save_large": "هذا العمل أكبر من أن يُحفظ. انسخ إجاباتك قبل اختصارها.",
++    "place_save_capacity": "مساحة تخزين القراءات ممتلئة. تم الاحتفاظ بالإشارات المرجعية والإجابات الحالية.",
++    "place_save_coordination": "لا يستطيع هذا المتصفح حفظ عمل القراءة بأمان عبر علامات التبويب. أبقِ هذه الصفحة مفتوحة أو انسخ إجاباتك.",
++    "place_retry": "إعادة محاولة الحفظ",
++    "place_copy_answers": "نسخ إجاباتك",
++    "place_answers_to_copy": "إجابات لنسخها",
++    "place_review_changed": "تغيّرت مسودتك أو العمل المحفوظ بعد هذه المراجعة. راجع النسختين مجددًا قبل الاختيار.",
++    "place_recovery_bookmark": "إشارة مرجعية",
++    "place_recovery_paragraph": "الفقرة {number}",
++    "place_recovery_empty": "لا توجد إشارات مرجعية أو إجابات بعد.",
++    "place_review_versions": "مراجعة النسختين",
++    "place_review_title": "اختر العمل الذي تريد استخدامه",
++    "place_review_retained": "ستبقى نسخة من الإصدار الذي تستبدله متاحة أدناه ما دامت هذه الصفحة مفتوحة.",
++    "place_review_local": "مسودة هذه الصفحة",
++    "place_review_saved": "العمل المحفوظ",
++    "place_review_removed": "لم يعد هناك عمل محفوظ لهذا النص.",
++    "place_review_keep": "حفظ مسودة هذه الصفحة بدلًا منه",
++    "place_review_use": "استخدام العمل المحفوظ",
++    "place_copy_work": "نسخ عملك",
++    "place_work_to_copy": "عمل لنسخه",
++    "place_recovery_copies": "نسخ الاسترداد لهذه الصفحة",
++    "place_recovery_lifetime": "هذه النسخ مؤقتة. انسخ أي عمل تحتاج إليه قبل إغلاق هذه الصفحة أو إعادة تحميلها.",
++    "place_recovery_local": "مسودتك السابقة",
++    "place_recovery_saved": "العمل المحفوظ سابقًا"
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+===================================================================
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -4773,7 +4773,41 @@
+     "adapt_apply": "应用此版本",
+     "adapt_discarded": "预览已放弃。文本未更改。",
+     "adapt_discard": "放弃",
+-    "adapt_back": "返回上一版本"
++    "adapt_back": "返回上一版本",
++    "place_bookmark_temporary": "本次访问的书签暂存于：{snippet}",
++    "place_saved_device": "已在此设备上保存此阅读版本的内容。",
++    "place_saving": "正在保存到此设备…",
++    "place_preview_only": "仅在此预览保持打开时保留。",
++    "place_page_only": "仅在此页面保持打开时保留。重新加载页面会清除此内容。",
++    "place_save_failed": "无法保存到此设备。只要此页面保持打开，你的内容就仍保留在这里。重新加载页面可能会丢失这些更改。",
++    "place_save_ready": "可选。存储可用时，答案将保存在此设备上。",
++    "place_save_conflict": "此阅读已保存的内容在另一个标签页中发生了更改。你的草稿仍保留在这里。请先查看两个版本，再选择要使用的版本。",
++    "place_save_version_conflict": "已保存的内容属于另一篇文本。你的书签和答案尚未迁移。",
++    "place_save_corrupt": "无法读取部分已保存的阅读数据。现有的已保存数据未作更改。",
++    "place_save_large": "此内容过大，无法保存。请先复制答案，再缩短答案内容。",
++    "place_save_capacity": "阅读存储空间已满。现有书签和答案已保留。",
++    "place_save_coordination": "此浏览器无法安全地跨标签页保存阅读内容。请保持此页面打开，或复制你的答案。",
++    "place_retry": "重试保存",
++    "place_copy_answers": "复制你的答案",
++    "place_answers_to_copy": "可复制的答案",
++    "place_review_changed": "你的草稿或已保存的内容在此次查看后发生了更改。请重新查看两个版本后再选择。",
++    "place_recovery_bookmark": "书签",
++    "place_recovery_paragraph": "第 {number} 段",
++    "place_recovery_empty": "还没有书签或答案。",
++    "place_review_versions": "查看两个版本",
++    "place_review_title": "选择要使用的内容",
++    "place_review_retained": "被替换版本的副本将在下方保留，直到此页面关闭。",
++    "place_review_local": "此页面的草稿",
++    "place_review_saved": "已保存的内容",
++    "place_review_removed": "此阅读已没有保存的内容。",
++    "place_review_keep": "改为保存此页面的草稿",
++    "place_review_use": "使用已保存的内容",
++    "place_copy_work": "复制你的内容",
++    "place_work_to_copy": "可复制的内容",
++    "place_recovery_copies": "此页面的恢复副本",
++    "place_recovery_lifetime": "这些副本仅临时保留。请在关闭或重新加载此页面前，复制你需要的内容。",
++    "place_recovery_local": "你之前的草稿",
++    "place_recovery_saved": "之前保存的内容"
+   },
+   "outline": {
+     "title": "可视化组织器",
+===================================================================
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -4773,7 +4773,41 @@
+     "adapt_apply": "应用此版本",
+     "adapt_discarded": "预览已放弃。文本未更改。",
+     "adapt_discard": "放弃",
+-    "adapt_back": "返回上一版本"
++    "adapt_back": "返回上一版本",
++    "place_bookmark_temporary": "本次访问的书签暂存于：{snippet}",
++    "place_saved_device": "已在此设备上保存此阅读版本的内容。",
++    "place_saving": "正在保存到此设备…",
++    "place_preview_only": "仅在此预览保持打开时保留。",
++    "place_page_only": "仅在此页面保持打开时保留。重新加载页面会清除此内容。",
++    "place_save_failed": "无法保存到此设备。只要此页面保持打开，你的内容就仍保留在这里。重新加载页面可能会丢失这些更改。",
++    "place_save_ready": "可选。存储可用时，答案将保存在此设备上。",
++    "place_save_conflict": "此阅读已保存的内容在另一个标签页中发生了更改。你的草稿仍保留在这里。请先查看两个版本，再选择要使用的版本。",
++    "place_save_version_conflict": "已保存的内容属于另一篇文本。你的书签和答案尚未迁移。",
++    "place_save_corrupt": "无法读取部分已保存的阅读数据。现有的已保存数据未作更改。",
++    "place_save_large": "此内容过大，无法保存。请先复制答案，再缩短答案内容。",
++    "place_save_capacity": "阅读存储空间已满。现有书签和答案已保留。",
++    "place_save_coordination": "此浏览器无法安全地跨标签页保存阅读内容。请保持此页面打开，或复制你的答案。",
++    "place_retry": "重试保存",
++    "place_copy_answers": "复制你的答案",
++    "place_answers_to_copy": "可复制的答案",
++    "place_review_changed": "你的草稿或已保存的内容在此次查看后发生了更改。请重新查看两个版本后再选择。",
++    "place_recovery_bookmark": "书签",
++    "place_recovery_paragraph": "第 {number} 段",
++    "place_recovery_empty": "还没有书签或答案。",
++    "place_review_versions": "查看两个版本",
++    "place_review_title": "选择要使用的内容",
++    "place_review_retained": "被替换版本的副本将在下方保留，直到此页面关闭。",
++    "place_review_local": "此页面的草稿",
++    "place_review_saved": "已保存的内容",
++    "place_review_removed": "此阅读已没有保存的内容。",
++    "place_review_keep": "改为保存此页面的草稿",
++    "place_review_use": "使用已保存的内容",
++    "place_copy_work": "复制你的内容",
++    "place_work_to_copy": "可复制的内容",
++    "place_recovery_copies": "此页面的恢复副本",
++    "place_recovery_lifetime": "这些副本仅临时保留。请在关闭或重新加载此页面前，复制你需要的内容。",
++    "place_recovery_local": "你之前的草稿",
++    "place_recovery_saved": "之前保存的内容"
+   },
+   "outline": {
+     "title": "可视化组织器",
+===================================================================
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -5457,7 +5457,41 @@
+     "adapt_apply": "ใช้ฉบับนี้",
+     "adapt_discarded": "ยกเลิกตัวอย่างแล้ว ข้อความยังเหมือนเดิม",
+     "adapt_discard": "ยกเลิก",
+-    "adapt_back": "กลับไปยังฉบับก่อนหน้า"
++    "adapt_back": "กลับไปยังฉบับก่อนหน้า",
++    "place_bookmark_temporary": "เก็บบุ๊กมาร์กไว้สำหรับการเข้าชมครั้งนี้ที่: {snippet}",
++    "place_saved_device": "บันทึกไว้ในอุปกรณ์นี้สำหรับบทอ่านเวอร์ชันนี้แล้ว",
++    "place_saving": "กำลังบันทึกในอุปกรณ์นี้…",
++    "place_preview_only": "เก็บไว้เฉพาะขณะที่หน้าตัวอย่างนี้เปิดอยู่",
++    "place_page_only": "เก็บไว้เฉพาะขณะที่หน้านี้เปิดอยู่ การโหลดหน้าใหม่จะล้างงานนี้",
++    "place_save_failed": "บันทึกในอุปกรณ์นี้ไม่ได้ งานของคุณยังอยู่ที่นี่ตราบใดที่หน้านี้ยังเปิดอยู่ การโหลดหน้าใหม่อาจทำให้การเปลี่ยนแปลงเหล่านี้สูญหาย",
++    "place_save_ready": "ไม่บังคับ ระบบจะบันทึกคำตอบในอุปกรณ์นี้เมื่อสามารถใช้พื้นที่จัดเก็บได้",
++    "place_save_conflict": "งานที่บันทึกไว้สำหรับบทอ่านนี้มีการเปลี่ยนแปลงในอีกแท็บหนึ่ง ฉบับร่างของคุณยังอยู่ที่นี่ ตรวจสอบทั้งสองเวอร์ชันก่อนเลือกว่าจะใช้เวอร์ชันใด",
++    "place_save_version_conflict": "งานที่บันทึกไว้เป็นของข้อความอื่น ยังไม่ได้ย้ายบุ๊กมาร์กและคำตอบของคุณ",
++    "place_save_corrupt": "อ่านข้อมูลการอ่านที่บันทึกไว้บางส่วนไม่ได้ ข้อมูลเดิมที่บันทึกไว้ยังคงไม่เปลี่ยนแปลง",
++    "place_save_large": "งานนี้มีขนาดใหญ่เกินกว่าจะบันทึกได้ คัดลอกคำตอบของคุณก่อนย่อให้สั้นลง",
++    "place_save_capacity": "พื้นที่จัดเก็บการอ่านเต็มแล้ว บุ๊กมาร์กและคำตอบเดิมยังคงอยู่",
++    "place_save_coordination": "เบราว์เซอร์นี้ไม่สามารถบันทึกงานการอ่านข้ามแท็บได้อย่างปลอดภัย เปิดหน้านี้ค้างไว้หรือคัดลอกคำตอบของคุณ",
++    "place_retry": "ลองบันทึกอีกครั้ง",
++    "place_copy_answers": "คัดลอกคำตอบของคุณ",
++    "place_answers_to_copy": "คำตอบสำหรับคัดลอก",
++    "place_review_changed": "ฉบับร่างของคุณหรืองานที่บันทึกไว้เปลี่ยนแปลงหลังจากการตรวจสอบครั้งนี้ ตรวจสอบทั้งสองเวอร์ชันอีกครั้งก่อนเลือก",
++    "place_recovery_bookmark": "บุ๊กมาร์ก",
++    "place_recovery_paragraph": "ย่อหน้าที่ {number}",
++    "place_recovery_empty": "ยังไม่มีบุ๊กมาร์กหรือคำตอบ",
++    "place_review_versions": "ตรวจสอบทั้งสองเวอร์ชัน",
++    "place_review_title": "เลือกงานที่จะใช้",
++    "place_review_retained": "สำเนาของเวอร์ชันที่คุณแทนที่จะยังอยู่ด้านล่างตราบใดที่หน้านี้ยังเปิดอยู่",
++    "place_review_local": "ฉบับร่างในหน้านี้",
++    "place_review_saved": "งานที่บันทึกไว้",
++    "place_review_removed": "ไม่มีงานที่บันทึกไว้สำหรับบทอ่านนี้แล้ว",
++    "place_review_keep": "บันทึกฉบับร่างในหน้านี้แทน",
++    "place_review_use": "ใช้งานที่บันทึกไว้",
++    "place_copy_work": "คัดลอกงานของคุณ",
++    "place_work_to_copy": "งานสำหรับคัดลอก",
++    "place_recovery_copies": "สำเนาสำหรับกู้คืนในหน้านี้",
++    "place_recovery_lifetime": "สำเนาเหล่านี้เป็นข้อมูลชั่วคราว คัดลอกงานที่คุณต้องการเก็บไว้ก่อนปิดหรือโหลดหน้านี้ใหม่",
++    "place_recovery_local": "ฉบับร่างก่อนหน้าของคุณ",
++    "place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+===================================================================
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -5457,7 +5457,41 @@
+     "adapt_apply": "ใช้ฉบับนี้",
+     "adapt_discarded": "ยกเลิกตัวอย่างแล้ว ข้อความยังเหมือนเดิม",
+     "adapt_discard": "ยกเลิก",
+-    "adapt_back": "กลับไปยังฉบับก่อนหน้า"
++    "adapt_back": "กลับไปยังฉบับก่อนหน้า",
++    "place_bookmark_temporary": "เก็บบุ๊กมาร์กไว้สำหรับการเข้าชมครั้งนี้ที่: {snippet}",
++    "place_saved_device": "บันทึกไว้ในอุปกรณ์นี้สำหรับบทอ่านเวอร์ชันนี้แล้ว",
++    "place_saving": "กำลังบันทึกในอุปกรณ์นี้…",
++    "place_preview_only": "เก็บไว้เฉพาะขณะที่หน้าตัวอย่างนี้เปิดอยู่",
++    "place_page_only": "เก็บไว้เฉพาะขณะที่หน้านี้เปิดอยู่ การโหลดหน้าใหม่จะล้างงานนี้",
++    "place_save_failed": "บันทึกในอุปกรณ์นี้ไม่ได้ งานของคุณยังอยู่ที่นี่ตราบใดที่หน้านี้ยังเปิดอยู่ การโหลดหน้าใหม่อาจทำให้การเปลี่ยนแปลงเหล่านี้สูญหาย",
++    "place_save_ready": "ไม่บังคับ ระบบจะบันทึกคำตอบในอุปกรณ์นี้เมื่อสามารถใช้พื้นที่จัดเก็บได้",
++    "place_save_conflict": "งานที่บันทึกไว้สำหรับบทอ่านนี้มีการเปลี่ยนแปลงในอีกแท็บหนึ่ง ฉบับร่างของคุณยังอยู่ที่นี่ ตรวจสอบทั้งสองเวอร์ชันก่อนเลือกว่าจะใช้เวอร์ชันใด",
++    "place_save_version_conflict": "งานที่บันทึกไว้เป็นของข้อความอื่น ยังไม่ได้ย้ายบุ๊กมาร์กและคำตอบของคุณ",
++    "place_save_corrupt": "อ่านข้อมูลการอ่านที่บันทึกไว้บางส่วนไม่ได้ ข้อมูลเดิมที่บันทึกไว้ยังคงไม่เปลี่ยนแปลง",
++    "place_save_large": "งานนี้มีขนาดใหญ่เกินกว่าจะบันทึกได้ คัดลอกคำตอบของคุณก่อนย่อให้สั้นลง",
++    "place_save_capacity": "พื้นที่จัดเก็บการอ่านเต็มแล้ว บุ๊กมาร์กและคำตอบเดิมยังคงอยู่",
++    "place_save_coordination": "เบราว์เซอร์นี้ไม่สามารถบันทึกงานการอ่านข้ามแท็บได้อย่างปลอดภัย เปิดหน้านี้ค้างไว้หรือคัดลอกคำตอบของคุณ",
++    "place_retry": "ลองบันทึกอีกครั้ง",
++    "place_copy_answers": "คัดลอกคำตอบของคุณ",
++    "place_answers_to_copy": "คำตอบสำหรับคัดลอก",
++    "place_review_changed": "ฉบับร่างของคุณหรืองานที่บันทึกไว้เปลี่ยนแปลงหลังจากการตรวจสอบครั้งนี้ ตรวจสอบทั้งสองเวอร์ชันอีกครั้งก่อนเลือก",
++    "place_recovery_bookmark": "บุ๊กมาร์ก",
++    "place_recovery_paragraph": "ย่อหน้าที่ {number}",
++    "place_recovery_empty": "ยังไม่มีบุ๊กมาร์กหรือคำตอบ",
++    "place_review_versions": "ตรวจสอบทั้งสองเวอร์ชัน",
++    "place_review_title": "เลือกงานที่จะใช้",
++    "place_review_retained": "สำเนาของเวอร์ชันที่คุณแทนที่จะยังอยู่ด้านล่างตราบใดที่หน้านี้ยังเปิดอยู่",
++    "place_review_local": "ฉบับร่างในหน้านี้",
++    "place_review_saved": "งานที่บันทึกไว้",
++    "place_review_removed": "ไม่มีงานที่บันทึกไว้สำหรับบทอ่านนี้แล้ว",
++    "place_review_keep": "บันทึกฉบับร่างในหน้านี้แทน",
++    "place_review_use": "ใช้งานที่บันทึกไว้",
++    "place_copy_work": "คัดลอกงานของคุณ",
++    "place_work_to_copy": "งานสำหรับคัดลอก",
++    "place_recovery_copies": "สำเนาสำหรับกู้คืนในหน้านี้",
++    "place_recovery_lifetime": "สำเนาเหล่านี้เป็นข้อมูลชั่วคราว คัดลอกงานที่คุณต้องการเก็บไว้ก่อนปิดหรือโหลดหน้านี้ใหม่",
++    "place_recovery_local": "ฉบับร่างก่อนหน้าของคุณ",
++    "place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+===================================================================
+--- a/dev-tools/i18n/apply_reader_contract_locales.cjs
++++ b/dev-tools/i18n/apply_reader_contract_locales.cjs
+@@ -1,15 +1,15 @@
+ #!/usr/bin/env node
+-// Scoped, repeatable locale merge. English copy and unrelated pack keys are never written.
++// Scoped locale batches. English copy and unrelated pack keys are never written.
+ const fs = require('node:fs');
+ const path = require('node:path');
+ const ROOT = path.resolve(__dirname, '../..');
+-const PAYLOAD = path.join(ROOT, 'translations/reader-contract-locales.json');
++const BATCHES = { contract: { file: 'reader-contract-locales.json', keys: 66 }, recovery: { file: 'reader-recovery-locales.json', keys: 34 } };
+ const LOCALES = ['spanish_latin_america', 'spanish_castilian', 'arabic', 'chinese_simplified', 'thai'];
+ const lookup = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
+ const placeholders = value => [...String(value).matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort();
+-function validatePayload(payload, english) {
++function validatePayload(payload, english, expectedKeys = 66) {
+   const keys = Object.keys(payload.english || {});
+-  if (payload.schemaVersion !== 1 || keys.length !== 66) throw Error('Expected the frozen 66-key reader contract.');
++  if (payload.schemaVersion !== 1 || keys.length !== expectedKeys) throw Error('Expected the frozen ' + expectedKeys + '-key reader contract.');
+   if (JSON.stringify(Object.keys(payload.locales || {}).sort()) !== JSON.stringify([...LOCALES].sort())) throw Error('Unexpected locale set.');
+   for (const key of keys) {
+     if (!/^simplified\.[a-z_]+$/.test(key)) throw Error('Unexpected key: ' + key);
+@@ -35,32 +35,49 @@
+   }
+   return next;
+ }
+-function run(apply = false) {
+-  const payload = JSON.parse(fs.readFileSync(PAYLOAD, 'utf8'));
++function run(apply = false, batch = 'contract') {
++  const names = batch === 'all' ? Object.keys(BATCHES) : [batch];
++  if (names.some(name => !Object.hasOwn(BATCHES, name))) throw Error('Use --batch=contract, --batch=recovery or --batch=all.');
+   const english = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui_strings.js'), 'utf8'));
+-  const keys = validatePayload(payload, english);
+   const mirrorEnglish = JSON.parse(fs.readFileSync(path.join(ROOT, 'desktop/web-app/public/ui_strings.js'), 'utf8'));
+-  for (const key of keys) if (lookup(mirrorEnglish, key) !== payload.english[key]) throw Error('English mirror copy changed: ' + key);
++  const keys = [], values = Object.fromEntries(LOCALES.map(locale => [locale, {}]));
++  for (const name of names) {
++    const spec = BATCHES[name], payload = JSON.parse(fs.readFileSync(path.join(ROOT, 'translations', spec.file), 'utf8'));
++    const batchKeys = validatePayload(payload, english, spec.keys);
++    for (const key of batchKeys) {
++      if (keys.includes(key)) throw Error('Duplicate owned key across batches: ' + key);
++      if (lookup(mirrorEnglish, key) !== payload.english[key]) throw Error('English mirror copy changed: ' + key);
++      keys.push(key);
++    }
++    for (const locale of LOCALES) Object.assign(values[locale], payload.locales[locale]);
++  }
+   const changes = [];
+   for (const locale of LOCALES) for (const prefix of ['lang', 'desktop/web-app/public/lang']) {
+     const file = path.join(ROOT, prefix, locale + '.js');
+     const original = fs.readFileSync(file, 'utf8'), pack = JSON.parse(original);
+-    const next = mergePack(pack, payload.locales[locale]);
+-    const missing = keys.filter(key => lookup(pack, key) !== payload.locales[locale][key]);
++    const next = mergePack(pack, values[locale]);
++    const missing = keys.filter(key => lookup(pack, key) !== values[locale][key]);
+     if (missing.length) changes.push({ file, original, contents: JSON.stringify(next, null, 2) + (original.endsWith('\n') ? '\n' : '') });
+   }
+-  if (!apply && changes.length) throw Error(changes.length + ' packs need the scoped merge; run with --apply.');
+-  // Preflight every file before writing any; never copy one whole pack over another.
++  if (!apply && changes.length) throw Error(changes.length + ' packs need the scoped merge; run with --apply --batch=' + batch + '.');
++  // Validate every payload/pack before writing; recheck each target immediately before its atomic replacement.
++  for (const change of changes) if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Pack changed during merge: ' + change.file);
+   for (const change of changes) {
+     if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Pack changed during merge: ' + change.file);
+     const temporary = change.file + '.reader-locale-' + process.pid + '.tmp';
+     try { fs.writeFileSync(temporary, change.contents); fs.renameSync(temporary, change.file); }
+     finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
+   }
+-  return { keys: keys.length, locales: LOCALES.length, changedFiles: changes.length, mode: apply ? 'apply' : 'check' };
++  return { batches: names, keys: keys.length, locales: LOCALES.length, changedFiles: changes.length, mode: apply ? 'apply' : 'check' };
+ }
+-module.exports = { validatePayload, mergePack, placeholders, lookup, run };
+-if (require.main === module) {
+-  if (process.argv.slice(2).some(arg => !['--apply', '--check'].includes(arg))) throw Error('Use --check (default) or --apply.');
+-  console.log(JSON.stringify(run(process.argv.includes('--apply')), null, 2));
++function parseArgs(args) {
++  let apply = false, mode, batch = 'contract', seenBatch = false;
++  for (const arg of args) {
++    if (arg === '--apply' || arg === '--check') { if (mode) throw Error('Choose one of --check or --apply.'); mode = arg; apply = arg === '--apply'; }
++    else if (/^--batch=(contract|recovery|all)$/.test(arg) && !seenBatch) { batch = arg.slice(8); seenBatch = true; }
++    else throw Error('Use --check (default) or --apply, and --batch=contract|recovery|all.');
++  }
++  return { apply, batch };
+ }
++module.exports = { validatePayload, mergePack, placeholders, lookup, run, parseArgs };
++if (require.main === module) { const { apply, batch } = parseArgs(process.argv.slice(2)); console.log(JSON.stringify(run(apply, batch), null, 2)); }
+===================================================================
+--- a/docs/reader-localization-contract.md
++++ b/docs/reader-localization-contract.md
+@@ -1,3 +1,5 @@
++> This document records the original 66-key batch. The recovery follow-up, current coverage and final integration instructions are in `docs/reader-recovery-localization.md`.
++
+ # Track 17 — reader localization integration
+ 
+ ## Delivery and baseline
+===================================================================
+--- /dev/null
++++ b/translations/reader-recovery-locales.json
+@@ -0,0 +1,224 @@
++{
++  "schemaVersion": 1,
++  "sourceRevision": "fd4044c862ed9b345b340d69cb1411a19c09dafb",
++  "sourceState": "Current uncommitted persistence copy; exact English values below are the integration guard.",
++  "scope": "34 persistence and recovery messages, including the integrated conflict-review and readable-copy controls. AI-authored translations; native-speaker review remains outstanding.",
++  "english": {
++    "simplified.place_bookmark_temporary": "Bookmark kept for this visit at: {snippet}",
++    "simplified.place_saved_device": "Saved on this device for this version of the reading.",
++    "simplified.place_saving": "Saving on this device…",
++    "simplified.place_preview_only": "Kept only while this preview is open.",
++    "simplified.place_page_only": "Kept only while this page is open. Reloading will clear this work.",
++    "simplified.place_save_failed": "Couldn’t save on this device. Your work is still here while this page stays open. Reloading may lose these changes.",
++    "simplified.place_save_ready": "Optional. Answers will be saved on this device when storage is available.",
++    "simplified.place_save_conflict": "This reading’s saved work changed in another tab. Your draft is still here. Review both versions before choosing which to use.",
++    "simplified.place_save_version_conflict": "The saved work belongs to different text. Your bookmark and answers have not been moved.",
++    "simplified.place_save_corrupt": "Some saved reading data could not be read. Existing saved data has been left unchanged.",
++    "simplified.place_save_large": "This work is too large to save. Copy your answers before shortening them.",
++    "simplified.place_save_capacity": "Reading storage is full. Existing bookmarks and answers have been kept.",
++    "simplified.place_save_coordination": "This browser cannot safely save reading work across tabs. Keep this page open or copy your answers.",
++    "simplified.place_retry": "Retry saving",
++    "simplified.place_copy_answers": "Copy your answers",
++    "simplified.place_answers_to_copy": "Answers to copy",
++    "simplified.place_review_changed": "Your draft or the saved work changed after this review. Review both versions again before choosing.",
++    "simplified.place_recovery_bookmark": "Bookmark",
++    "simplified.place_recovery_paragraph": "Paragraph {number}",
++    "simplified.place_recovery_empty": "No bookmarks or answers yet.",
++    "simplified.place_review_versions": "Review both versions",
++    "simplified.place_review_title": "Choose which work to use",
++    "simplified.place_review_retained": "A copy of the version you replace stays available below while this page is open.",
++    "simplified.place_review_local": "This page’s draft",
++    "simplified.place_review_saved": "Saved work",
++    "simplified.place_review_removed": "No saved work remains for this reading.",
++    "simplified.place_review_keep": "Save this page’s draft instead",
++    "simplified.place_review_use": "Use the saved work",
++    "simplified.place_copy_work": "Copy your work",
++    "simplified.place_work_to_copy": "Work to copy",
++    "simplified.place_recovery_copies": "Recovery copies for this page",
++    "simplified.place_recovery_lifetime": "These copies are temporary. Copy any work you need before closing or reloading this page.",
++    "simplified.place_recovery_local": "Your earlier draft",
++    "simplified.place_recovery_saved": "Previously saved work"
++  },
++  "locales": {
++    "spanish_latin_america": {
++      "simplified.place_bookmark_temporary": "Marcador conservado durante esta visita en: {snippet}",
++      "simplified.place_saved_device": "Guardado en este dispositivo para esta versión de la lectura.",
++      "simplified.place_saving": "Guardando en este dispositivo…",
++      "simplified.place_preview_only": "Se conserva solo mientras esta vista previa esté abierta.",
++      "simplified.place_page_only": "Se conserva solo mientras esta página esté abierta. Al recargarla, se borrará este trabajo.",
++      "simplified.place_save_failed": "No se pudo guardar en este dispositivo. Tu trabajo sigue aquí mientras esta página permanezca abierta. Si la recargas, podrías perder estos cambios.",
++      "simplified.place_save_ready": "Opcional. Las respuestas se guardarán en este dispositivo cuando haya almacenamiento disponible.",
++      "simplified.place_save_conflict": "El trabajo guardado de esta lectura cambió en otra pestaña. Tu borrador sigue aquí. Revisa ambas versiones antes de elegir cuál usar.",
++      "simplified.place_save_version_conflict": "El trabajo guardado pertenece a otro texto. Tu marcador y tus respuestas no se han trasladado.",
++      "simplified.place_save_corrupt": "No se pudieron leer algunos datos guardados de la lectura. Los datos ya guardados no se han modificado.",
++      "simplified.place_save_large": "Este trabajo es demasiado grande para guardarlo. Copia tus respuestas antes de acortarlas.",
++      "simplified.place_save_capacity": "El almacenamiento de lecturas está lleno. Los marcadores y las respuestas existentes se han conservado.",
++      "simplified.place_save_coordination": "Este navegador no puede guardar de forma segura el trabajo de lectura entre pestañas. Mantén esta página abierta o copia tus respuestas.",
++      "simplified.place_retry": "Volver a intentar guardar",
++      "simplified.place_copy_answers": "Copiar tus respuestas",
++      "simplified.place_answers_to_copy": "Respuestas para copiar",
++      "simplified.place_review_changed": "Tu borrador o el trabajo guardado cambió después de esta revisión. Revisa ambas versiones de nuevo antes de elegir.",
++      "simplified.place_recovery_bookmark": "Marcador",
++      "simplified.place_recovery_paragraph": "Párrafo {number}",
++      "simplified.place_recovery_empty": "Todavía no hay marcadores ni respuestas.",
++      "simplified.place_review_versions": "Revisar ambas versiones",
++      "simplified.place_review_title": "Elige qué trabajo usar",
++      "simplified.place_review_retained": "Una copia de la versión que dejes de usar seguirá abajo mientras esta página esté abierta.",
++      "simplified.place_review_local": "Borrador de esta página",
++      "simplified.place_review_saved": "Trabajo guardado",
++      "simplified.place_review_removed": "Ya no queda trabajo guardado para esta lectura.",
++      "simplified.place_review_keep": "Guardar en su lugar el borrador de esta página",
++      "simplified.place_review_use": "Usar el trabajo guardado",
++      "simplified.place_copy_work": "Copiar tu trabajo",
++      "simplified.place_work_to_copy": "Trabajo para copiar",
++      "simplified.place_recovery_copies": "Copias de recuperación de esta página",
++      "simplified.place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
++      "simplified.place_recovery_local": "Tu borrador anterior",
++      "simplified.place_recovery_saved": "Trabajo guardado anteriormente"
++    },
++    "spanish_castilian": {
++      "simplified.place_bookmark_temporary": "Marcador conservado durante esta visita en: {snippet}",
++      "simplified.place_saved_device": "Guardado en este dispositivo para esta versión de la lectura.",
++      "simplified.place_saving": "Guardando en este dispositivo…",
++      "simplified.place_preview_only": "Se conserva solo mientras esta vista previa esté abierta.",
++      "simplified.place_page_only": "Se conserva solo mientras esta página esté abierta. Al recargarla, se borrará este trabajo.",
++      "simplified.place_save_failed": "No se pudo guardar en este dispositivo. Tu trabajo sigue aquí mientras esta página permanezca abierta. Si la recargas, podrías perder estos cambios.",
++      "simplified.place_save_ready": "Opcional. Las respuestas se guardarán en este dispositivo cuando haya almacenamiento disponible.",
++      "simplified.place_save_conflict": "El trabajo guardado de esta lectura cambió en otra pestaña. Tu borrador sigue aquí. Revisa ambas versiones antes de elegir cuál usar.",
++      "simplified.place_save_version_conflict": "El trabajo guardado pertenece a otro texto. Tu marcador y tus respuestas no se han trasladado.",
++      "simplified.place_save_corrupt": "No se pudieron leer algunos datos guardados de la lectura. Los datos ya guardados no se han modificado.",
++      "simplified.place_save_large": "Este trabajo es demasiado grande para guardarlo. Copia tus respuestas antes de acortarlas.",
++      "simplified.place_save_capacity": "El almacenamiento de lecturas está lleno. Los marcadores y las respuestas existentes se han conservado.",
++      "simplified.place_save_coordination": "Este navegador no puede guardar de forma segura el trabajo de lectura entre pestañas. Mantén esta página abierta o copia tus respuestas.",
++      "simplified.place_retry": "Volver a intentar guardar",
++      "simplified.place_copy_answers": "Copiar tus respuestas",
++      "simplified.place_answers_to_copy": "Respuestas para copiar",
++      "simplified.place_review_changed": "Tu borrador o el trabajo guardado cambió después de esta revisión. Revisa ambas versiones de nuevo antes de elegir.",
++      "simplified.place_recovery_bookmark": "Marcador",
++      "simplified.place_recovery_paragraph": "Párrafo {number}",
++      "simplified.place_recovery_empty": "Todavía no hay marcadores ni respuestas.",
++      "simplified.place_review_versions": "Revisar ambas versiones",
++      "simplified.place_review_title": "Elige qué trabajo usar",
++      "simplified.place_review_retained": "Una copia de la versión que dejes de usar seguirá abajo mientras esta página esté abierta.",
++      "simplified.place_review_local": "Borrador de esta página",
++      "simplified.place_review_saved": "Trabajo guardado",
++      "simplified.place_review_removed": "Ya no queda trabajo guardado para esta lectura.",
++      "simplified.place_review_keep": "Guardar en su lugar el borrador de esta página",
++      "simplified.place_review_use": "Usar el trabajo guardado",
++      "simplified.place_copy_work": "Copiar tu trabajo",
++      "simplified.place_work_to_copy": "Trabajo para copiar",
++      "simplified.place_recovery_copies": "Copias de recuperación de esta página",
++      "simplified.place_recovery_lifetime": "Estas copias son temporales. Copia el trabajo que necesites antes de cerrar o recargar esta página.",
++      "simplified.place_recovery_local": "Tu borrador anterior",
++      "simplified.place_recovery_saved": "Trabajo guardado anteriormente"
++    },
++    "arabic": {
++      "simplified.place_bookmark_temporary": "تم الاحتفاظ بالإشارة المرجعية لهذه الزيارة عند: {snippet}",
++      "simplified.place_saved_device": "تم الحفظ على هذا الجهاز لهذه النسخة من النص.",
++      "simplified.place_saving": "جارٍ الحفظ على هذا الجهاز…",
++      "simplified.place_preview_only": "يُحتفظ بالعمل فقط ما دامت هذه المعاينة مفتوحة.",
++      "simplified.place_page_only": "يُحتفظ بالعمل فقط ما دامت هذه الصفحة مفتوحة. ستؤدي إعادة تحميلها إلى مسح هذا العمل.",
++      "simplified.place_save_failed": "تعذّر الحفظ على هذا الجهاز. لا يزال عملك موجودًا هنا ما دامت هذه الصفحة مفتوحة. قد تفقد هذه التغييرات إذا أعدت تحميل الصفحة.",
++      "simplified.place_save_ready": "اختياري. ستُحفظ الإجابات على هذا الجهاز عندما تتوفر إمكانية التخزين.",
++      "simplified.place_save_conflict": "تغيّر العمل المحفوظ لهذا النص في علامة تبويب أخرى. لا تزال مسودتك هنا. راجع النسختين قبل اختيار أيهما تريد استخدامه.",
++      "simplified.place_save_version_conflict": "العمل المحفوظ يخص نصًا مختلفًا. لم تُنقل إشارتك المرجعية أو إجاباتك.",
++      "simplified.place_save_corrupt": "تعذّرت قراءة بعض بيانات القراءة المحفوظة. تُركت البيانات المحفوظة الحالية دون تغيير.",
++      "simplified.place_save_large": "هذا العمل أكبر من أن يُحفظ. انسخ إجاباتك قبل اختصارها.",
++      "simplified.place_save_capacity": "مساحة تخزين القراءات ممتلئة. تم الاحتفاظ بالإشارات المرجعية والإجابات الحالية.",
++      "simplified.place_save_coordination": "لا يستطيع هذا المتصفح حفظ عمل القراءة بأمان عبر علامات التبويب. أبقِ هذه الصفحة مفتوحة أو انسخ إجاباتك.",
++      "simplified.place_retry": "إعادة محاولة الحفظ",
++      "simplified.place_copy_answers": "نسخ إجاباتك",
++      "simplified.place_answers_to_copy": "إجابات لنسخها",
++      "simplified.place_review_changed": "تغيّرت مسودتك أو العمل المحفوظ بعد هذه المراجعة. راجع النسختين مجددًا قبل الاختيار.",
++      "simplified.place_recovery_bookmark": "إشارة مرجعية",
++      "simplified.place_recovery_paragraph": "الفقرة {number}",
++      "simplified.place_recovery_empty": "لا توجد إشارات مرجعية أو إجابات بعد.",
++      "simplified.place_review_versions": "مراجعة النسختين",
++      "simplified.place_review_title": "اختر العمل الذي تريد استخدامه",
++      "simplified.place_review_retained": "ستبقى نسخة من الإصدار الذي تستبدله متاحة أدناه ما دامت هذه الصفحة مفتوحة.",
++      "simplified.place_review_local": "مسودة هذه الصفحة",
++      "simplified.place_review_saved": "العمل المحفوظ",
++      "simplified.place_review_removed": "لم يعد هناك عمل محفوظ لهذا النص.",
++      "simplified.place_review_keep": "حفظ مسودة هذه الصفحة بدلًا منه",
++      "simplified.place_review_use": "استخدام العمل المحفوظ",
++      "simplified.place_copy_work": "نسخ عملك",
++      "simplified.place_work_to_copy": "عمل لنسخه",
++      "simplified.place_recovery_copies": "نسخ الاسترداد لهذه الصفحة",
++      "simplified.place_recovery_lifetime": "هذه النسخ مؤقتة. انسخ أي عمل تحتاج إليه قبل إغلاق هذه الصفحة أو إعادة تحميلها.",
++      "simplified.place_recovery_local": "مسودتك السابقة",
++      "simplified.place_recovery_saved": "العمل المحفوظ سابقًا"
++    },
++    "chinese_simplified": {
++      "simplified.place_bookmark_temporary": "本次访问的书签暂存于：{snippet}",
++      "simplified.place_saved_device": "已在此设备上保存此阅读版本的内容。",
++      "simplified.place_saving": "正在保存到此设备…",
++      "simplified.place_preview_only": "仅在此预览保持打开时保留。",
++      "simplified.place_page_only": "仅在此页面保持打开时保留。重新加载页面会清除此内容。",
++      "simplified.place_save_failed": "无法保存到此设备。只要此页面保持打开，你的内容就仍保留在这里。重新加载页面可能会丢失这些更改。",
++      "simplified.place_save_ready": "可选。存储可用时，答案将保存在此设备上。",
++      "simplified.place_save_conflict": "此阅读已保存的内容在另一个标签页中发生了更改。你的草稿仍保留在这里。请先查看两个版本，再选择要使用的版本。",
++      "simplified.place_save_version_conflict": "已保存的内容属于另一篇文本。你的书签和答案尚未迁移。",
++      "simplified.place_save_corrupt": "无法读取部分已保存的阅读数据。现有的已保存数据未作更改。",
++      "simplified.place_save_large": "此内容过大，无法保存。请先复制答案，再缩短答案内容。",
++      "simplified.place_save_capacity": "阅读存储空间已满。现有书签和答案已保留。",
++      "simplified.place_save_coordination": "此浏览器无法安全地跨标签页保存阅读内容。请保持此页面打开，或复制你的答案。",
++      "simplified.place_retry": "重试保存",
++      "simplified.place_copy_answers": "复制你的答案",
++      "simplified.place_answers_to_copy": "可复制的答案",
++      "simplified.place_review_changed": "你的草稿或已保存的内容在此次查看后发生了更改。请重新查看两个版本后再选择。",
++      "simplified.place_recovery_bookmark": "书签",
++      "simplified.place_recovery_paragraph": "第 {number} 段",
++      "simplified.place_recovery_empty": "还没有书签或答案。",
++      "simplified.place_review_versions": "查看两个版本",
++      "simplified.place_review_title": "选择要使用的内容",
++      "simplified.place_review_retained": "被替换版本的副本将在下方保留，直到此页面关闭。",
++      "simplified.place_review_local": "此页面的草稿",
++      "simplified.place_review_saved": "已保存的内容",
++      "simplified.place_review_removed": "此阅读已没有保存的内容。",
++      "simplified.place_review_keep": "改为保存此页面的草稿",
++      "simplified.place_review_use": "使用已保存的内容",
++      "simplified.place_copy_work": "复制你的内容",
++      "simplified.place_work_to_copy": "可复制的内容",
++      "simplified.place_recovery_copies": "此页面的恢复副本",
++      "simplified.place_recovery_lifetime": "这些副本仅临时保留。请在关闭或重新加载此页面前，复制你需要的内容。",
++      "simplified.place_recovery_local": "你之前的草稿",
++      "simplified.place_recovery_saved": "之前保存的内容"
++    },
++    "thai": {
++      "simplified.place_bookmark_temporary": "เก็บบุ๊กมาร์กไว้สำหรับการเข้าชมครั้งนี้ที่: {snippet}",
++      "simplified.place_saved_device": "บันทึกไว้ในอุปกรณ์นี้สำหรับบทอ่านเวอร์ชันนี้แล้ว",
++      "simplified.place_saving": "กำลังบันทึกในอุปกรณ์นี้…",
++      "simplified.place_preview_only": "เก็บไว้เฉพาะขณะที่หน้าตัวอย่างนี้เปิดอยู่",
++      "simplified.place_page_only": "เก็บไว้เฉพาะขณะที่หน้านี้เปิดอยู่ การโหลดหน้าใหม่จะล้างงานนี้",
++      "simplified.place_save_failed": "บันทึกในอุปกรณ์นี้ไม่ได้ งานของคุณยังอยู่ที่นี่ตราบใดที่หน้านี้ยังเปิดอยู่ การโหลดหน้าใหม่อาจทำให้การเปลี่ยนแปลงเหล่านี้สูญหาย",
++      "simplified.place_save_ready": "ไม่บังคับ ระบบจะบันทึกคำตอบในอุปกรณ์นี้เมื่อสามารถใช้พื้นที่จัดเก็บได้",
++      "simplified.place_save_conflict": "งานที่บันทึกไว้สำหรับบทอ่านนี้มีการเปลี่ยนแปลงในอีกแท็บหนึ่ง ฉบับร่างของคุณยังอยู่ที่นี่ ตรวจสอบทั้งสองเวอร์ชันก่อนเลือกว่าจะใช้เวอร์ชันใด",
++      "simplified.place_save_version_conflict": "งานที่บันทึกไว้เป็นของข้อความอื่น ยังไม่ได้ย้ายบุ๊กมาร์กและคำตอบของคุณ",
++      "simplified.place_save_corrupt": "อ่านข้อมูลการอ่านที่บันทึกไว้บางส่วนไม่ได้ ข้อมูลเดิมที่บันทึกไว้ยังคงไม่เปลี่ยนแปลง",
++      "simplified.place_save_large": "งานนี้มีขนาดใหญ่เกินกว่าจะบันทึกได้ คัดลอกคำตอบของคุณก่อนย่อให้สั้นลง",
++      "simplified.place_save_capacity": "พื้นที่จัดเก็บการอ่านเต็มแล้ว บุ๊กมาร์กและคำตอบเดิมยังคงอยู่",
++      "simplified.place_save_coordination": "เบราว์เซอร์นี้ไม่สามารถบันทึกงานการอ่านข้ามแท็บได้อย่างปลอดภัย เปิดหน้านี้ค้างไว้หรือคัดลอกคำตอบของคุณ",
++      "simplified.place_retry": "ลองบันทึกอีกครั้ง",
++      "simplified.place_copy_answers": "คัดลอกคำตอบของคุณ",
++      "simplified.place_answers_to_copy": "คำตอบสำหรับคัดลอก",
++      "simplified.place_review_changed": "ฉบับร่างของคุณหรืองานที่บันทึกไว้เปลี่ยนแปลงหลังจากการตรวจสอบครั้งนี้ ตรวจสอบทั้งสองเวอร์ชันอีกครั้งก่อนเลือก",
++      "simplified.place_recovery_bookmark": "บุ๊กมาร์ก",
++      "simplified.place_recovery_paragraph": "ย่อหน้าที่ {number}",
++      "simplified.place_recovery_empty": "ยังไม่มีบุ๊กมาร์กหรือคำตอบ",
++      "simplified.place_review_versions": "ตรวจสอบทั้งสองเวอร์ชัน",
++      "simplified.place_review_title": "เลือกงานที่จะใช้",
++      "simplified.place_review_retained": "สำเนาของเวอร์ชันที่คุณแทนที่จะยังอยู่ด้านล่างตราบใดที่หน้านี้ยังเปิดอยู่",
++      "simplified.place_review_local": "ฉบับร่างในหน้านี้",
++      "simplified.place_review_saved": "งานที่บันทึกไว้",
++      "simplified.place_review_removed": "ไม่มีงานที่บันทึกไว้สำหรับบทอ่านนี้แล้ว",
++      "simplified.place_review_keep": "บันทึกฉบับร่างในหน้านี้แทน",
++      "simplified.place_review_use": "ใช้งานที่บันทึกไว้",
++      "simplified.place_copy_work": "คัดลอกงานของคุณ",
++      "simplified.place_work_to_copy": "งานสำหรับคัดลอก",
++      "simplified.place_recovery_copies": "สำเนาสำหรับกู้คืนในหน้านี้",
++      "simplified.place_recovery_lifetime": "สำเนาเหล่านี้เป็นข้อมูลชั่วคราว คัดลอกงานที่คุณต้องการเก็บไว้ก่อนปิดหรือโหลดหน้านี้ใหม่",
++      "simplified.place_recovery_local": "ฉบับร่างก่อนหน้าของคุณ",
++      "simplified.place_recovery_saved": "งานที่บันทึกไว้ก่อนหน้านี้"
++    }
++  }
++}
+===================================================================
+--- /dev/null
++++ b/tests/fixtures/reader_recovery_locales.json
+@@ -0,0 +1,27 @@
++[
++  {
++    "id": "reader_en_contract_recovery_v1",
++    "baseFixture": "reader_en_contract_v1",
++    "answer": "The heron waits in the water. It catches a fish.\n<note> $& {draft} ١٢٣"
++  },
++  {
++    "id": "reader_es419_long_labels_recovery_v1",
++    "baseFixture": "reader_es419_long_labels_v1",
++    "answer": "La garza espera en el agua. Atrapa un pez.\n<note> $& {draft} ١٢٣"
++  },
++  {
++    "id": "reader_ar_rtl_mixed_recovery_v1",
++    "baseFixture": "reader_ar_rtl_mixed_v1",
++    "answer": "هل يحتاج إلى 2 L كل يوم؟\n<note> $& {draft} ١٢٣"
++  },
++  {
++    "id": "reader_zh_hans_unspaced_recovery_v1",
++    "baseFixture": "reader_zh_hans_unspaced_v1",
++    "answer": "水变成水蒸气。它升到空中。\n<note> $& {draft} ١٢٣"
++  },
++  {
++    "id": "reader_th_unspaced_recovery_v1",
++    "baseFixture": "reader_th_unspaced_v1",
++    "answer": "ฉันชอบอ่านหนังสือภาษาไทย\n<note> $& {draft} ١٢٣"
++  }
++]
+===================================================================
+--- /dev/null
++++ b/tests/helpers/reader_recovery_locale_harness.js
+@@ -0,0 +1,55 @@
++// Uses the current source and embedded store in memory; no generated production files are written.
++import { createRequire } from 'node:module';
++import { readFileSync } from 'node:fs';
++import { vi } from 'vitest';
++import { React, setupReader, fixtures as baseFixtures, mountReader, disposeReader, act, click } from './reader_locale_harness.js';
++export { mountReader, disposeReader, act, click };
++const require = createRequire(import.meta.url);
++export const storageKey = 'alloflow_reading_places_v1';
++export const recoveryFixtures = JSON.parse(readFileSync('tests/fixtures/reader_recovery_locales.json', 'utf8')).map(f => ({ ...baseFixtures.find(base => base.id === f.baseFixture), ...f }));
++let factory;
++export function setupRecoveryReader() {
++  setupReader();
++  const source = ['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx'].map(file => readFileSync(file, 'utf8')).join('\n');
++  const compiled = require('@babel/core').transformSync(source, { plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]], babelrc: false, configFile: false, parserOpts: { sourceType: 'script', plugins: ['jsx'] } }).code;
++  factory = new Function('React', 'Fragment', compiled + '\nreturn SimplifiedView;');
++}
++export function resetRecoveryReader() {
++  window.AlloModules.SimplifiedView = factory(React, React.Fragment);
++  setupReader(); // Updates the shared harness binding; module loading is cached by tests/setup.js.
++}
++export function prepareRecoveryCase() {
++  localStorage.clear();
++  resetRecoveryReader();
++  let queue = Promise.resolve();
++  Object.defineProperty(navigator, 'locks', { configurable: true, value: { request(_key, callback) { const next = queue.then(callback); queue = next.catch(() => {}); return next; } } });
++}
++export function cleanupRecoveryCase() { disposeReader(); vi.restoreAllMocks(); delete navigator.locks; }
++export async function typeAnswer(node, value) {
++  if (!node) throw Error('Expected the answer textarea');
++  await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); });
++}
++export async function openPrompts(view) { await click(view.host.querySelector('[data-section-prompts-toggle]')); return view.host.querySelector('[data-section-prompt="mainIdea"]'); }
++export function failWrites() {
++  const original = Storage.prototype.setItem;
++  return vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (key, value) { if (key === storageKey) throw new DOMException('Full', 'QuotaExceededError'); return original.call(this, key, value); });
++}
++export const reasonKeys = { conflict: 'place_save_conflict', 'version-conflict': 'place_save_version_conflict', 'corrupt-store': 'place_save_corrupt', 'too-large': 'place_save_large', capacity: 'place_save_capacity', 'coordination-unavailable': 'place_save_coordination' };
++export async function openRecoveryFailure(fixture, reason) {
++  if (reason === 'corrupt-store') localStorage.setItem(storageKey, '{invalid');
++  if (reason === 'coordination-unavailable') delete navigator.locks;
++  if (reason === 'capacity') localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(Array.from({ length: 80 }, (_, i) => ['another-learner|reading-' + i + '|version', { responses: { 0: { mainIdea: 'Protected answer ' + i } }, at: i }]))));
++  let view = mountReader(fixture), input = await openPrompts(view);
++  if (reason === 'conflict' || reason === 'version-conflict') {
++    await typeAnswer(input, 'Previously saved');
++    const rows = JSON.parse(localStorage.getItem(storageKey)), row = Object.values(rows)[0];
++    if (reason === 'conflict') row.responses[0].mainIdea = 'Other tab answer';
++    else row.sourceText = 'A different passage under the same record key';
++    localStorage.setItem(storageKey, JSON.stringify(rows));
++    if (reason === 'version-conflict') { disposeReader(); resetRecoveryReader(); view = mountReader(fixture); input = await openPrompts(view); }
++  }
++  const durableBefore = localStorage.getItem(storageKey);
++  const answer = reason === 'too-large' ? fixture.answer.repeat(Math.ceil(16001 / fixture.answer.length)) : fixture.answer;
++  await typeAnswer(input, answer);
++  return { ...view, answer, durableBefore };
++}
+===================================================================
+--- /dev/null
++++ b/tests/reader_recovery_locale_catalogs.test.js
+@@ -0,0 +1,70 @@
++import { afterEach, describe, expect, it } from 'vitest';
++import { createRequire } from 'node:module';
++import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, copyFileSync, rmSync } from 'node:fs';
++import { resolve, join, dirname, sep } from 'node:path';
++import { tmpdir } from 'node:os';
++import { spawnSync } from 'node:child_process';
++const require = createRequire(import.meta.url);
++const { validatePayload, placeholders, lookup, parseArgs, run } = require('../dev-tools/i18n/apply_reader_contract_locales.cjs');
++const payload = JSON.parse(readFileSync('translations/reader-recovery-locales.json', 'utf8'));
++const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++const temps = [];
++afterEach(() => { for (const dir of temps.splice(0)) { if (!dir.startsWith(resolve(tmpdir()) + sep + 'reader-recovery-locales-')) throw Error('Unexpected temporary path'); rmSync(dir, { recursive: true, force: true }); } });
++function sandbox() {
++  const root = mkdtempSync(join(tmpdir(), 'reader-recovery-locales-')); temps.push(root);
++  function write(file, data) { const target = join(root, file); mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, JSON.stringify(data, null, 2) + '\n'); }
++  mkdirSync(join(root, 'dev-tools/i18n'), { recursive: true });
++  copyFileSync('dev-tools/i18n/apply_reader_contract_locales.cjs', join(root, 'dev-tools/i18n/apply_reader_contract_locales.cjs'));
++  write('translations/reader-recovery-locales.json', payload);
++  const copy = { simplified: Object.fromEntries(Object.entries(payload.english).map(([key, value]) => [key.slice(11), value])) };
++  write('ui_strings.js', copy); write('desktop/web-app/public/ui_strings.js', copy);
++  const files = Object.keys(payload.locales).flatMap(locale => ['lang', 'desktop/web-app/public/lang'].map(prefix => prefix + '/' + locale + '.js'));
++  for (const file of files) write(file, { common: { unrelated: 'Keep ' + file }, simplified: { future_key: 'Another owner' } });
++  return { root, files, write, copy, read: file => readFileSync(join(root, file), 'utf8'), exec: (...args) => spawnSync(process.execPath, ['dev-tools/i18n/apply_reader_contract_locales.cjs', ...args], { cwd: root, encoding: 'utf8' }) };
++}
++describe('scoped recovery catalog gate', () => {
++  it('freezes 34 current messages across five locales independently of the first batch', () => { expect(validatePayload(payload, english, 34)).toHaveLength(34); expect(run(false, 'all')).toMatchObject({ keys: 100, changedFiles: 0 }); });
++  it('refuses changed English, missing placeholders, raw keys and incomplete locale coverage', () => {
++    const copy = structuredClone(english); copy.simplified.place_save_failed = 'Different wording';
++    expect(() => validatePayload(payload, copy, 34)).toThrow(/English copy changed/);
++    const broken = structuredClone(payload); broken.locales.arabic['simplified.place_bookmark_temporary'] = 'موضع مؤقت';
++    expect(() => validatePayload(broken, english, 34)).toThrow(/Placeholder mismatch/);
++    broken.locales.arabic['simplified.place_bookmark_temporary'] = 'simplified.place_bookmark_temporary';
++    expect(() => validatePayload(broken, english, 34)).toThrow(/Missing translation/);
++    delete broken.locales.arabic['simplified.place_bookmark_temporary'];
++    expect(() => validatePayload(broken, english, 34)).toThrow(/Key coverage differs/);
++  });
++  it('keeps the original check default and rejects ambiguous CLI modes', () => {
++    expect(parseArgs([])).toEqual({ apply: false, batch: 'contract' });
++    expect(parseArgs(['--check', '--batch=recovery'])).toEqual({ apply: false, batch: 'recovery' });
++    expect(() => parseArgs(['--check', '--apply'])).toThrow();
++    expect(() => parseArgs(['--batch=all', '--batch=recovery'])).toThrow();
++    expect(() => parseArgs(['--batch=unknown'])).toThrow();
++  });
++  for (const [locale, values] of Object.entries(payload.locales)) it(locale + ': meaningful mirrored recovery messages and exact placeholder sets', () => {
++    for (const prefix of ['lang', 'desktop/web-app/public/lang']) {
++      const pack = JSON.parse(readFileSync(prefix + '/' + locale + '.js', 'utf8'));
++      for (const [key, value] of Object.entries(values)) { expect(lookup(pack, key)).toBe(value); expect(value).not.toBe(payload.english[key]); expect(placeholders(value)).toEqual(placeholders(payload.english[key])); }
++    }
++  });
++  it('check is read-only; apply preserves unrelated values and is idempotent', () => {
++    const f = sandbox(), before = f.files.map(f.read);
++    expect(f.exec('--check', '--batch=recovery').status).not.toBe(0);
++    expect(f.files.map(f.read)).toEqual(before);
++    expect(f.exec('--apply', '--batch=recovery').status).toBe(0);
++    const applied = f.files.map(f.read);
++    for (const [i, file] of f.files.entries()) { const pack = JSON.parse(applied[i]); expect(pack.common.unrelated).toBe('Keep ' + file); expect(pack.simplified.future_key).toBe('Another owner'); expect(Object.keys(pack.simplified)).toHaveLength(35); }
++    expect(f.exec('--apply', '--batch=recovery').status).toBe(0);
++    expect(f.exec('--check', '--batch=recovery').status).toBe(0);
++    expect(f.files.map(f.read)).toEqual(applied);
++  });
++  it.each(['copy', 'mirror', 'ownership'])('rejects %s conflicts before changing any locale', kind => {
++    const f = sandbox();
++    if (kind === 'ownership') f.write(f.files.at(-1), { simplified: { place_retry: 'Competing translation' } });
++    else { f.copy.simplified.place_retry = 'New English copy'; f.write(kind === 'copy' ? 'ui_strings.js' : 'desktop/web-app/public/ui_strings.js', f.copy); }
++    const before = f.files.map(f.read), result = f.exec('--apply', '--batch=recovery');
++    expect(result.status).not.toBe(0);
++    expect(result.stderr).toMatch(/English copy changed|English mirror copy changed|Existing translation differs/);
++    expect(f.files.map(f.read)).toEqual(before);
++  });
++});
+===================================================================
+--- /dev/null
++++ b/tests/reader_recovery_locales.test.js
+@@ -0,0 +1,103 @@
++import { beforeAll, beforeEach, afterEach, describe, it, expect } from 'vitest';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase, recoveryFixtures, mountReader, openPrompts, typeAnswer, failWrites, storageKey, act, click, reasonKeys, openRecoveryFailure } from './helpers/reader_recovery_locale_harness.js';
++beforeAll(setupRecoveryReader);
++beforeEach(prepareRecoveryCase);
++afterEach(cleanupRecoveryCase);
++function expectReadable(panel) { expect(panel).not.toBeNull(); expect(panel.textContent).not.toMatch(/simplified\.[a-z_]+|\{snippet\}/); }
++describe('localized save and recovery contract', () => {
++  for (const fixture of recoveryFixtures) {
++    it(fixture.id + ': failed save, temporary bookmark, answer copy and successful retry', async () => {
++      const view = mountReader(fixture), { host, t } = view, input = await openPrompts(view);
++      expect(host.querySelector('[data-reading-persistence="ready"]').textContent).toContain(t('simplified.place_save_ready'));
++      await typeAnswer(input, 'Previously committed');
++      const durable = localStorage.getItem(storageKey), writes = failWrites();
++      await typeAnswer(input, fixture.answer);
++      const panel = host.querySelector('[data-reading-persistence="failed"]');
++      expectReadable(panel);
++      expect(panel.querySelector('[role="status"]').textContent).toBe(t('simplified.place_save_failed'));
++      expect(panel.querySelector('[data-reading-save-retry]').textContent).toBe(t('simplified.place_retry'));
++      expect(panel.querySelector('summary').textContent).toBe(t('simplified.place_copy_work'));
++      expect(panel.querySelector('label').textContent).toContain(t('simplified.place_work_to_copy'));
++      expect(panel.querySelector('[data-reading-work-copy]').value).toContain(fixture.answer);
++      expect(panel.querySelector('[data-reading-work-copy]').value).toContain(t('simplified.prompt_main_idea'));
++      expect(panel.querySelector('[data-reading-work-copy]').value).not.toMatch(/"mainIdea"\s*:/);
++      expect(input.value).toBe(fixture.answer);
++      expect(localStorage.getItem(storageKey)).toBe(durable);
++      await click(host.querySelector('[data-reading-outline-toggle]'));
++      await click(host.querySelector('[data-reading-bookmark]'));
++      const notice = host.querySelector('[data-reading-place-notice]');
++      expectReadable(notice);
++      expect(notice.textContent).toContain(t('simplified.place_bookmark_temporary', { snippet: '' }).trim());
++      writes.mockRestore();
++      await click(host.querySelector('[data-reading-save-retry]'));
++      expect(host.querySelector('[data-reading-persistence="saved"]').textContent).toContain(t('simplified.place_saved_device'));
++      expect(JSON.parse(localStorage.getItem(storageKey))[Object.keys(JSON.parse(localStorage.getItem(storageKey)))[0]].responses[0].mainIdea).toBe(fixture.answer);
++    });
++    it(fixture.id + ': pending write is described as saving', async () => {
++      let complete;
++      navigator.locks.request = (_key, callback) => new Promise(resolve => { complete = () => resolve(callback()); });
++      const view = mountReader(fixture), input = await openPrompts(view);
++      await typeAnswer(input, fixture.answer);
++      expect(view.host.querySelector('[data-reading-persistence="saving"]').textContent).toContain(view.t('simplified.place_saving'));
++      expect(localStorage.getItem(storageKey)).toBeNull();
++      await act(async () => complete());
++      expect(view.host.querySelector('[data-reading-persistence="saved"]').textContent).toContain(view.t('simplified.place_saved_device'));
++    });
++    it.each([false, true])(fixture.id + ': session-only scope, preview=%s', async preview => {
++      const view = mountReader(fixture, { readingLearnerKey: preview ? fixture.id : '', isStudentPreview: preview });
++      await typeAnswer(await openPrompts(view), fixture.answer);
++      const panel = view.host.querySelector('[data-reading-persistence="session-only"]');
++      expectReadable(panel);
++      expect(panel.textContent).toContain(view.t('simplified.' + (preview ? 'place_preview_only' : 'place_page_only')));
++      expect(localStorage.getItem(storageKey)).toBeNull();
++    });
++    it.each(['local', 'saved'])(fixture.id + ': localized conflict review and recovery copy, choose %s', async choice => {
++      const view = await openRecoveryFailure(fixture, 'conflict'), { host, t } = view;
++      await click(host.querySelector('[data-reading-conflict-review]'));
++      const panel = host.querySelector('[data-reading-conflict-panel]');
++      expectReadable(panel);
++      expect(panel.getAttribute('aria-label')).toBe(t('simplified.place_review_title'));
++      for (const key of ['place_review_retained', 'place_review_local', 'place_review_saved']) expect(panel.textContent).toContain(t('simplified.' + key));
++      expect(panel.querySelector('[data-reading-conflict-local]').value).toContain(fixture.answer);
++      expect(panel.querySelector('[data-reading-conflict-saved]').value).toContain('Other tab answer');
++      expect(panel.querySelector('[data-reading-conflict-keep]').textContent).toBe(t('simplified.place_review_keep'));
++      expect(panel.querySelector('[data-reading-conflict-use]').textContent).toBe(t('simplified.place_review_use'));
++      await click(panel.querySelector(choice === 'local' ? '[data-reading-conflict-keep]' : '[data-reading-conflict-use]'));
++      const copies = host.querySelector('[data-reading-recovery-copies]');
++      expectReadable(copies);
++      expect(copies.textContent).toContain(t('simplified.place_recovery_copies'));
++      expect(copies.textContent).toContain(t('simplified.place_recovery_lifetime'));
++      expect(copies.textContent).toContain(t('simplified.' + (choice === 'local' ? 'place_recovery_saved' : 'place_recovery_local')));
++      expect(copies.querySelector('[data-reading-recovery-copy]').value).toContain(choice === 'local' ? 'Other tab answer' : fixture.answer);
++    });
++    it(fixture.id + ': a changed review asks the reader to review again in the selected language', async () => {
++      const view = await openRecoveryFailure(fixture, 'conflict');
++      await click(view.host.querySelector('[data-reading-conflict-review]'));
++      const rows = JSON.parse(localStorage.getItem(storageKey)); Object.values(rows)[0].responses[0].mainIdea = 'A newer saved answer';
++      localStorage.setItem(storageKey, JSON.stringify(rows));
++      await click(view.host.querySelector('[data-reading-conflict-keep]'));
++      expect(view.host.querySelector('[data-reading-persistence="failed"]').textContent).toContain(view.t('simplified.place_review_changed'));
++      expect(view.host.querySelector('[data-reading-work-copy]').value).toContain(fixture.answer);
++    });
++    for (const [reason, key] of Object.entries(reasonKeys)) {
++      it(fixture.id + ': ' + reason + ' keeps its translated action and verbatim draft', async () => {
++        const view = await openRecoveryFailure(fixture, reason), panel = view.host.querySelector('[data-reading-persistence="failed"]');
++        expectReadable(panel);
++        expect(panel.querySelector('[role="status"]').textContent).toContain(view.t('simplified.' + key));
++        expect(panel.querySelector('[data-reading-work-copy]').value).toContain(view.answer);
++        expect(localStorage.getItem(storageKey)).toBe(view.durableBefore);
++      });
++    }
++  }
++  it.each(['missing', 'echoed'])('falls back honestly to English when the translator is %s', async kind => {
++    const t = kind === 'echoed' ? key => key : () => undefined;
++    const view = mountReader(recoveryFixtures[2], { t });
++    failWrites();
++    await typeAnswer(await openPrompts(view), recoveryFixtures[2].answer);
++    const panel = view.host.querySelector('[data-reading-persistence="failed"]');
++    expectReadable(panel);
++    expect(panel.textContent).toContain('Couldn’t save on this device.');
++    expect(panel.querySelector('[data-reading-save-retry]').textContent).toBe('Retry saving');
++    expect(panel.querySelector('summary').textContent).toBe('Copy your work');
++  });
++});
+===================================================================
+--- /dev/null
++++ b/tests/reader_recovery_locale_layout.test.js
+@@ -0,0 +1,51 @@
++// Scoped recovery layout: production reader markup, disposable Chromium, no app server or network.
++import { beforeAll, afterAll, beforeEach, afterEach, describe, it, expect } from 'vitest';
++import { createRequire } from 'node:module';
++import { mkdirSync, writeFileSync } from 'node:fs';
++import { resolve } from 'node:path';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase, recoveryFixtures, openRecoveryFailure, click } from './helpers/reader_recovery_locale_harness.js';
++const require = createRequire(import.meta.url), webRequire = createRequire(resolve('desktop/web-app/package.json'));
++const report = resolve('reports/reader-recovery-layout'), results = [];
++let browser, css;
++const enabled = process.env.ALLO_READER_RECOVERY_LAYOUT === '1';
++(enabled ? describe : describe.skip)('translated recovery messages in Chromium', () => {
++  beforeAll(async () => {
++    setupRecoveryReader();
++    const config = { ...require(resolve('desktop/web-app/tailwind.config.js')), content: [resolve('view_simplified_source.jsx')] };
++    css = (await webRequire('postcss')([webRequire('tailwindcss')(config)]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined })).css;
++    browser = await require('@playwright/test').chromium.launch({ headless: true });
++    mkdirSync(report, { recursive: true });
++  }, 60000);
++  beforeEach(prepareRecoveryCase);
++  afterEach(cleanupRecoveryCase);
++  afterAll(async () => { writeFileSync(resolve(report, 'results.json'), JSON.stringify(results, null, 2) + '\n'); await browser?.close(); }, 60000);
++  for (const locale of ['spanish_latin_america', 'arabic', 'chinese_simplified', 'thai']) for (const textScale of [1, 2]) {
++    it(locale + ': 320 CSS px, ' + textScale + 'x root text size', async () => {
++      const fixture = recoveryFixtures.find(f => f.locale === locale), view = await openRecoveryFailure(fixture, 'conflict');
++      await click(view.host.querySelector('[data-reading-conflict-review]'));
++      const page = await browser.newPage({ viewport: { width: 320, height: 900 } });
++      await page.route('**/*', route => route.abort());
++      try {
++        await page.setContent('<html lang="' + fixture.tag + '" dir="' + fixture.dir + '"><head><meta charset="utf-8"><style>' + css + '\nhtml{font-size:' + (16 * textScale) + 'px}</style></head><body>' + view.host.innerHTML + '</body></html>');
++        await page.locator('[data-reading-persistence] details').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
++        const panel = page.locator('[data-reading-persistence="failed"]').first();
++        expect(await panel.isVisible()).toBe(true);
++        expect(await panel.locator('[role="status"]').textContent()).toContain(view.t('simplified.place_save_conflict'));
++        await panel.locator('[data-reading-save-retry]').focus();
++        expect(await panel.locator('[data-reading-save-retry]').evaluate(node => document.activeElement === node)).toBe(true);
++        expect(await panel.locator('[data-reading-work-copy]').inputValue()).toContain(fixture.answer);
++        expect(await panel.locator('[data-reading-conflict-local]').inputValue()).toContain(fixture.answer);
++        expect(await panel.locator('[data-reading-work-copy]').inputValue()).not.toMatch(/"mainIdea"\s*:/);
++        const failures = await page.locator('[data-reading-persistence="failed"]').evaluateAll(panels => panels.flatMap(panel => [panel, ...panel.querySelectorAll('p,button,summary,label,textarea')]).filter(node => {
++          const rect = node.getBoundingClientRect();
++          return rect.width > 0 && (rect.left < -1 || rect.right > innerWidth + 1 || node.scrollWidth > node.clientWidth + 2);
++        }).map(node => ({ element: node.tagName, text: node.textContent.slice(0, 100), scrollWidth: node.scrollWidth, clientWidth: node.clientWidth })));
++        const screenshot = locale + '-' + textScale + 'x-text.png';
++        await page.screenshot({ path: resolve(report, screenshot), fullPage: true });
++        await panel.screenshot({ path: resolve(report, locale + '-' + textScale + 'x-panel.png') });
++        results.push({ fixture: fixture.id, viewportCssPx: 320, rootTextScale: textScale, nativeBrowserZoom: false, screenshot, failures });
++        expect(failures).toEqual([]);
++      } finally { await page.close(); }
++    }, 30000);
++  }
++});
+===================================================================
+--- /dev/null
++++ b/docs/reader-recovery-localization.md
+@@ -0,0 +1,79 @@
++# Reader recovery localization — final track 17 follow-up
++
++## Delivered scope
++
++This follow-up adds **34 recovery keys across five locale packs: 170 translations**, in both root/public mirrors. It covers saving, failed saves, temporary work, retry, version conflicts, review/choice controls, readable work copying and temporary recovery copies. The packs are Spanish Latin America, Spanish Castilian, Arabic, Simplified Chinese and Thai.
++
++The earlier 66-key batch remains intact. Together the batches cover **100 keys / 500 translations**. In the captured English catalog, each selected pack contains **214 of 490** `simplified` string leaves; **276 remain untranslated** and use English fallback. No full-reader or Lumen localization is claimed. The two older answer-copy labels remain translated for compatibility, although the integrated reader uses the new work-copy labels.
++
++Translations are AI-authored. Native-speaker review, screen-reader pronunciation review, native browser-menu zoom testing and deployed-release verification remain outstanding.
++
++## Baseline and copy assumptions
++
++- Local HEAD: `fd4044c862ed9b345b340d69cb1411a19c09dafb`; this is not a deployed-release assertion.
++- Isolated validation snapshot: `C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/.codex-artifacts/reader-localization-recovery-track17`.
++- Current uncommitted English catalogs, reader JSX, `reader_place_store.js` and `reader_support_drafts.js` were copied as validation inputs. JSX and both embedded helpers are compiled in memory. Shared source/helper/English files are excluded from the patches.
++- During work, integration replaced the raw-JSON copy box with readable text, added conflict-review controls and changed `place_save_conflict`. The English-copy guard caught the change. This final batch and its fixtures use that integrated contract; the earlier 16-key draft and earlier test counts are superseded.
++- Concurrent track 13 `share_collect` translations are outside this scope. They are preserved. The combined patch is reconstructed against original Git-verified locale blobs, never by replacing current files from the snapshot.
++- Exact source hashes, current-copy checks, concurrent locale deltas and test outcomes are in `reports/reader-localization-recovery-2026-09-26/files-and-validation.json`.
++- Managed worktree creation previously failed due to disk capacity. This is a small isolated snapshot, not a Git checkout. Existing installed dependencies are linked; ordinary test caches may be written there.
++- No shared runtime source edits, deployment, publication, push, commit, live-data changes or cross-session messages were performed by this follow-up.
++
++## Owned files
++
++- `translations/reader-recovery-locales.json`: 34 frozen English values and 170 translations.
++- `dev-tools/i18n/apply_reader_contract_locales.cjs`: scoped `--batch=contract|recovery|all`; the default remains the original 66-key contract.
++- Five `lang/*.js` packs and their five `desktop/web-app/public/lang/*.js` mirrors: exactly 34 additional keys per file relative to the first batch.
++- `tests/fixtures/reader_recovery_locales.json`.
++- `tests/helpers/reader_recovery_locale_harness.js`.
++- `tests/reader_recovery_locale_catalogs.test.js`.
++- `tests/reader_recovery_locales.test.js`.
++- `tests/reader_recovery_locale_layout.test.js`.
++- `docs/reader-recovery-localization.md`.
++
++`--check` is read-only. The updater checks exact English copy in both catalogs, key coverage, placeholders and competing translations before any pack writes. It preserves unrelated keys and rechecks each target before atomic replacement. It is not a transaction across every file.
++
++## Validation
++
++The final machine-readable test reports accompany this document. The focused gate comprises **88 unit/catalog checks** and **8 browser cases**, with no expected-failure tests in either set.
++
++The 67 real-reader cases exercise translated ready/saving/saved states, failed writes, temporary bookmarks, retry, preview/anonymous retention, all six original failure reasons, conflict-review choices, changed-review notices and retained recovery copies. Learner answers containing Unicode, markup-like text, literal dollar signs and placeholder-like characters remain unchanged. Missing/echoed keys fall back to readable English.
++
++Catalog/updater checks cover all five packs and their mirrors, unchanged unrelated values, idempotency, read-only checking and refusal to write any locale when English copy, mirror copy or existing translations conflict.
++
++Browser cases use Spanish, Arabic, Chinese and Thai at **320 CSS pixels**, with **16px and 32px root text sizes**. Conflict review is open, work-copy controls are expanded, retry receives keyboard focus, translated text fits the viewport width and copied answers remain intact. All network requests are blocked; there is no app server or live application state. Root text enlargement is not native browser-menu zoom.
++
++The browser fixture initially had an irrelevant button-type assumption, which was removed while retaining its focus check. After source integration, an actual Spanish retained-copy sentence overflowed by 10 pixels at doubled text size. Its wording was simplified without changing the meaning. Final test results supersede those earlier runs.
++
++The earlier visual raw-JSON finding is **resolved by the integrated reader owner's changes**, not by a production-code edit in this patch. New fixtures verify readable, localized question labels instead of internal field names and exact learner answer content.
++
++The three earlier bilingual language-target/generation regressions remain separate owner work. They were not rerun or claimed repaired by this recovery gate.
++
++## Integration handoff
++
++The first locale batch was integrated into the shared checkout during the final preflight. **Use `supplement.patch` for that checkout.**
++
++Use **`combined.patch`** only for a checkout where the first locale patch has not been applied; it supersedes the first standalone patch. Use **`supplement.patch`** only after the first patch is applied. Do not apply both alternatives. The manifest lists exact files and preflight results.
++
++The shared reader, place store and support-draft helper belong to their existing owners. Integration 01 should merge the selected locale patch after its source/helper integration, preserving track 13 delivery translations, then run:
++
++```powershell
++git apply --check reports/reader-localization-recovery-2026-09-26/supplement.patch
++# Apply the chosen patch after its preflight succeeds.
++node dev-tools/i18n/apply_reader_contract_locales.cjs --check --batch=all
++node node_modules/vitest/vitest.mjs run tests/reader_locale_catalogs.test.js tests/reader_recovery_locale_catalogs.test.js tests/reader_recovery_locales.test.js --maxWorkers=1 --testTimeout=30000
++$env:ALLO_READER_RECOVERY_LAYOUT='1'
++node node_modules/vitest/vitest.mjs run tests/reader_recovery_locale_layout.test.js --maxWorkers=1 --testTimeout=30000
++Remove-Item Env:ALLO_READER_RECOVERY_LAYOUT
++```
++
++These are focused integration-gate commands; repository-wide CI is unchanged. English keys must already be present from their owning integrations. Exact-copy checks should stop integration if wording changes again. Mirror equality does not establish deployed bytes or client cache freshness.
++
++## Remaining bounded work
++
++- Eight newer audio/layout-preview keys are outside this recovery batch: `review_audio_unavailable`, `review_audio_current_detail`, `layout_preview_open`, `layout_preview_title`, `layout_preview_note`, `layout_preview_limits`, `layout_preview_word_help`, `layout_preview_chart`. Translate them as a small follow-up after their owners freeze the contracts.
++- The locale reviewer should check natural wording, consistent bookmark/version terms, tab terminology and accurate device-versus-temporary storage claims. Preserve `{snippet}` and `{number}` literally; do not translate learner text. Review remains pending for all five packs.
++- 06/07/11 retain the earlier passage-target, adaptation-retention and English-to-Arabic generation fixes. Their expected-failure fixtures should become ordinary passing tests when those fixes land.
++- Reader owners retain Chinese/Thai snippet/diff bounds and localized vocabulary separators. Track 18 retains assistive-technology and actual browser-menu zoom checks on the assembled UI.
++
++Named fixtures: `reader_en_contract_recovery_v1`, `reader_es419_long_labels_recovery_v1`, `reader_ar_rtl_mixed_recovery_v1`, `reader_zh_hans_unspaced_recovery_v1`, `reader_th_unspaced_recovery_v1`.

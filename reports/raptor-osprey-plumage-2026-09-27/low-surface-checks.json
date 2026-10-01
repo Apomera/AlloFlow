@@ -1,0 +1,145 @@
+{
+  "structure": {
+    "torso": {
+      "top": 0.08228270709514618,
+      "bottom": 0.9559733271598816,
+      "vertices": 425
+    },
+    "meshes": [
+      {
+        "vertices": 77,
+        "finite": true,
+        "coords": 77,
+        "compiled": true,
+        "version": 0,
+        "pigmentVersion": 0,
+        "texture": "57D172BE-D6A4-4419-89FC-97F7203FE600",
+        "normal": ""
+      },
+      {
+        "vertices": 798,
+        "finite": true,
+        "coords": 798,
+        "compiled": true,
+        "version": 0,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 77,
+        "finite": true,
+        "coords": 77,
+        "compiled": true,
+        "version": 0,
+        "pigmentVersion": 0,
+        "texture": "57D172BE-D6A4-4419-89FC-97F7203FE600",
+        "normal": ""
+      },
+      {
+        "vertices": 798,
+        "finite": true,
+        "coords": 798,
+        "compiled": true,
+        "version": 0,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      },
+      {
+        "vertices": 18,
+        "finite": true,
+        "coords": 18,
+        "compiled": true,
+        "version": 1,
+        "pigmentVersion": 0,
+        "texture": "0B4E802F-FAB1-4764-9DFF-AFE5E4DBF2EF",
+        "normal": "FF5BBEA8-5E9F-41A2-B1E5-0A36E88230B4"
+      }
+    ]
+  },
+  "faces": [
+    {
+      "name": "raptor-left-wing",
+      "above": 0,
+      "below": 100218,
+      "sameDraws": true
+    },
+    {
+      "name": "raptor-right-wing",
+      "above": 0,
+      "below": 100218,
+      "sameDraws": true
+    }
+  ]
+}

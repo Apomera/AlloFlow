@@ -13,7 +13,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   React, ReactDOMClient, loadTool, makeCtx, resetStemLab,
-} from './helpers/stem_widgets_smoke_harness.js';
+} from './helpers/nuclear_lab_reference_harness.js';
 
 let act;
 let cfg;

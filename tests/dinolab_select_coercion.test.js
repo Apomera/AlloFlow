@@ -89,6 +89,12 @@ describe('every select fed by saved state is coerced', () => {
         if (/^dn\.id\b/.test(expr.trim())) return false;
         // selectedBodyPartId is React state with a '' fallback in its own line.
         if (/selectedBodyPartId/.test(expr)) return false;
+        // 66296cfd0: the section picker reads `tab`, reset to 'explore' unless it is a
+        // TABS id, and the evidence bench reads entry.sort, which evidenceWorkbenchState
+        // rebuilds from the three statement kinds. Exempt only while those guards exist.
+        if (expr.trim() === 'tab' && SRC.includes("if (!TABS.some(function (tb) { return tb.id === tab; })) tab = 'explore';")) return false;
+        if (expr.trim() === "entry.sort[s.id] || ''" && SRC.includes('entry.sort = choices(value.sort);')
+          && SRC.includes("if (['observation', 'inference', 'overreach'].indexOf(v[s.id]) >= 0) result[s.id] = v[s.id];")) return false;
         return true;
       })
       .map(({ n, line }) => `${n}: ${(line.match(/value: ([^,]{1,60})/) || [])[1]}`);

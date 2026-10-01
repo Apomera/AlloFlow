@@ -1,0 +1,56 @@
+[
+  {
+    "script": "_build_view_simplified_module.js",
+    "exit": 0,
+    "stdout": "Wrote view_simplified_module.js (498834 bytes)\n",
+    "stderr": "[BABEL] Note: The code generator has deoptimised the styling of undefined as it exceeds the max of 500KB.\n"
+  },
+  {
+    "script": "_build_content_engine_module.js",
+    "exit": 0,
+    "stdout": "[ContentEngine] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\content_engine_module.js (3243 lines)\n[ContentEngine] Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\content_engine_module.js\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_read_aloud_audio_service_module.js",
+    "exit": 0,
+    "stdout": "[ReadAloudAudioService] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\read_aloud_audio_service_module.js (1673 lines)\n[ReadAloudAudioService] Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\read_aloud_audio_service_module.js\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_read_aloud_artifact_audio_module.js",
+    "exit": 0,
+    "stdout": "[ReadAloudArtifactAudio] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\read_aloud_artifact_audio_module.js (447 lines)\n[ReadAloudArtifactAudio] Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\read_aloud_artifact_audio_module.js\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_generation_helpers_module.js",
+    "exit": 0,
+    "stdout": "[GenerationHelpers] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\generation_helpers_module.js (4857 lines)\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_text_pipeline_helpers_module.js",
+    "exit": 0,
+    "stdout": "[TextPipelineHelpers] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\text_pipeline_helpers_module.js (1638 lines)\n[TextPipelineHelpers] Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\text_pipeline_helpers_module.js\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_immersive_reader_module.js",
+    "exit": 0,
+    "stdout": "🔨 Compiling immersive_reader_source.jsx with esbuild...\n✅ Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\immersive_reader_module.js (2368 lines)\n✅ Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\immersive_reader_module.js\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_export_module.js",
+    "exit": 0,
+    "stdout": "[Export] Built and synchronized release-format modules\n",
+    "stderr": ""
+  },
+  {
+    "script": "_build_view_storybook_export_modal_module.js",
+    "exit": 0,
+    "stdout": "Compiling view_storybook_export_modal_source.jsx with esbuild...\nBuilt C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\view_storybook_export_modal_module.js (249 lines)\n",
+    "stderr": "\n  _tmp_storybook_export_modal_entry.jsx.compiled.js  11.6kb\n\nDone in 31ms\n"
+  }
+]

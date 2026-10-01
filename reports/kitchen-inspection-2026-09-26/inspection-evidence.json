@@ -1,0 +1,557 @@
+{
+  "title": "Kitchen Lab recipe evidence",
+  "version": 1,
+  "exportedAt": "2026-09-30T02:34:55.176Z",
+  "scope": "Illustrative recipe simulation; not a validated predictor of real cooking temperatures or times. Written explanations require human review.",
+  "cooks": [
+    {
+      "title": "Rescue a dry sauce",
+      "servings": 2,
+      "mode": "practice",
+      "simulatedSeconds": 0,
+      "status": "Rescue completed with coaching",
+      "criteria": [
+        {
+          "label": "Sauce adjusted to coat the pasta and mixed through",
+          "met": true
+        },
+        {
+          "label": "Pasta retains a slight bite",
+          "met": true
+        },
+        {
+          "label": "Dish checked after adjustment; both burners off",
+          "met": true
+        }
+      ],
+      "questionsCorrect": true,
+      "corrections": 0,
+      "hints": 0,
+      "scope": "Prepared starting dish supplied by the challenge. Only the following rescue actions belong to the learner.",
+      "rescue": {
+        "id": "dry",
+        "brief": "Golden mushroom pasta is already combined, but the sauce looks dry. Both burners are off; the pan is still warm. You have 200 mL of saved pasta water.",
+        "prediction": "Add a little saved water",
+        "startingMoisture": 8,
+        "finalMoisture": 58,
+        "startingReserve": 200,
+        "finalReserve": 150
+      },
+      "mixing": {
+        "count": 1,
+        "sweeps": 1,
+        "waterSinceMix": 0,
+        "juiceSinceMix": 0,
+        "liquidSinceMix": 0,
+        "lastMixedAt": 0,
+        "lastMethod": "button"
+      },
+      "panSurface": {
+        "enabled": true,
+        "sizeModel": true,
+        "pieces": [
+          {
+            "index": 0,
+            "x": 0.26228736571055344,
+            "z": 0.18331758723215402,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 0,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.61
+          },
+          {
+            "index": 1,
+            "x": -0.4560229200164599,
+            "z": 0.06035806838908475,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 0,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 0.87
+          },
+          {
+            "index": 2,
+            "x": 0.1156299583761746,
+            "z": -0.13794822480164118,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 1,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 1.1760000000000002,
+            "contact": 0.87
+          },
+          {
+            "index": 3,
+            "x": 0.014069585850693091,
+            "z": 0.3196905484276787,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 1,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.064,
+            "contact": 0.74
+          },
+          {
+            "index": 4,
+            "x": -0.32532640205327684,
+            "z": -0.3252118265485892,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 2,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.9520000000000002,
+            "contact": 0.87
+          },
+          {
+            "index": 5,
+            "x": 0.17982871007755702,
+            "z": 0.007850798165915456,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 2,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 6,
+            "x": -0.2451688636161661,
+            "z": 0.205650743526878,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 3,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 7,
+            "x": 0.060197431334140836,
+            "z": -0.45604415275362475,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 4,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 1
+          },
+          {
+            "index": 8,
+            "x": 0.10316810595646866,
+            "z": 0.14750031157036533,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 4,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.48
+          },
+          {
+            "index": 9,
+            "x": -0.31236718677724107,
+            "z": -0.06947474810945485,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 5,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 10,
+            "x": 0.39856877502045573,
+            "z": -0.22965829307624264,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 5,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.952,
+            "contact": 1
+          },
+          {
+            "index": 11,
+            "x": -0.05430380432471561,
+            "z": 0.1716132187095825,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 6,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": true,
+            "heat": 1.1760000000000002,
+            "contact": 0.61
+          },
+          {
+            "index": 12,
+            "x": -0.1348891137691881,
+            "z": -0.29018085220524636,
+            "crushed": 0,
+            "down": 0,
+            "width": 5,
+            "cutIndex": 6,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 1.064,
+            "contact": 0.87
+          },
+          {
+            "index": 13,
+            "x": 0.42474224509626907,
+            "z": 0.1766183037812925,
+            "crushed": 0,
+            "down": 1,
+            "width": 5,
+            "cutIndex": 7,
+            "top": 1,
+            "bottom": 1,
+            "soft": 0,
+            "damage": 0,
+            "topColor": "golden",
+            "bottomColor": "golden",
+            "crowded": false,
+            "heat": 0.9520000000000001,
+            "contact": 0.87
+          }
+        ],
+        "crowded": 5,
+        "scorched": 0,
+        "sizeSummary": "Prepared widths: 5 mm. Each representative piece keeps its width; smaller pieces brown or soften faster under matching conditions.",
+        "summary": "5 of 14 pieces are close together. Crowding reduces contact; the pan center runs hotter."
+      },
+      "panPosition": {
+        "site": "burner",
+        "x": 1.02,
+        "z": -0.45,
+        "heat": 0
+      },
+      "waterHandling": {
+        "capacity": 200,
+        "saved": 150,
+        "used": 50,
+        "remaining": 0,
+        "scoop": 0,
+        "drained": 0
+      },
+      "drying": {
+        "enabled": true,
+        "areas": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "remaining": 0,
+        "fraction": 0,
+        "cloth": 0,
+        "capacity": 8,
+        "surfaceWater": 0,
+        "clothWater": 0,
+        "complete": true
+      },
+      "pastaHandling": {
+        "enabled": true,
+        "groups": [],
+        "clumped": 0,
+        "separated": 0,
+        "summary": "Pasta drained. The strands are separated."
+      },
+      "tomatoHandling": {
+        "enabled": false,
+        "pieces": [],
+        "crushed": 0,
+        "split": 0,
+        "juiceRemaining": 0,
+        "juiceReleased": 0,
+        "fraction": 0,
+        "summary": "Choose a fresh tomato recipe to use the masher."
+      },
+      "garlicPreparation": {
+        "cloves": [
+          {
+            "index": 0,
+            "stage": 3,
+            "texture": "minced"
+          },
+          {
+            "index": 1,
+            "stage": 3,
+            "texture": "minced"
+          }
+        ],
+        "minced": 2,
+        "passes": 6,
+        "complete": true,
+        "summary": "Prepared garlic is in the sauce pan."
+      },
+      "serving": {
+        "total": 8,
+        "plates": [
+          4,
+          4
+        ],
+        "remaining": 0,
+        "served": 8,
+        "manual": false,
+        "started": false,
+        "balanced": true,
+        "ready": true,
+        "summary": "Plate 1: 4 of 4 spoonfuls · Plate 2: 4 of 4 spoonfuls. 0 left in the pan."
+      },
+      "inspections": [
+        {
+          "kind": "sauce",
+          "time": 0,
+          "type": "dry",
+          "label": "Dry and clinging",
+          "closureSeconds": 0,
+          "observation": "The spoon leaves a bare track that stays open. Sauce clings in thick patches."
+        },
+        {
+          "kind": "sauce",
+          "time": 0,
+          "type": "unmixed",
+          "label": "Water not folded through",
+          "closureSeconds": 0.3,
+          "observation": "Liquid pools around thicker sauce. Fold it through before judging the coating."
+        },
+        {
+          "kind": "sauce",
+          "time": 0,
+          "type": "coating",
+          "label": "Coating the spoon",
+          "closureSeconds": 1.8,
+          "observation": "The track closes gradually. A continuous layer stays on the spoon."
+        }
+      ],
+      "plan": "",
+      "reflection": "",
+      "explanations": [
+        {
+          "question": "Which change addresses the starting problem, and why?",
+          "answer": "A measured splash adds moisture; folding distributes it through the dish."
+        }
+      ],
+      "pastaTexture": "Tender with a slight bite",
+      "sauce": "Golden, glossy mushrooms",
+      "review": {
+        "findings": [
+          {
+            "label": "Sauce adjusted to coat the pasta and mixed through",
+            "met": true,
+            "observation": "8 mL starting moisture → 58 mL at finish. Golden, glossy mushrooms. 0 mL saved water added since the last mix.",
+            "nextPractice": "Keep observing after each adjustment."
+          },
+          {
+            "label": "Pasta retains a slight bite",
+            "met": true,
+            "observation": "Provided pasta began with a slight bite. Finished texture: Tender with a slight bite.",
+            "nextPractice": "Keep watching the pasta while adjusting the sauce."
+          },
+          {
+            "label": "Dish checked after adjustment; both burners off",
+            "met": true,
+            "observation": "The dish was checked after the last adjustment.",
+            "nextPractice": "Check the dish after the last change and turn both burners off."
+          }
+        ],
+        "timeline": [
+          {
+            "time": 0,
+            "event": "Check sauce consistency",
+            "observation": "Sauce check: Dry; needs a splash. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 0,
+            "event": "Pour a measured amount of saved water",
+            "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+          },
+          {
+            "time": 0,
+            "event": "Check sauce consistency",
+            "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 0,
+            "event": "Mix with a complete pan sweep",
+            "observation": "Pasta folded through the sauce. Observe the coating before deciding on another splash. Check the dish again before plating."
+          },
+          {
+            "time": 0,
+            "event": "Check sauce consistency",
+            "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 0,
+            "event": "Plate the finished dish",
+            "observation": "Dish plated. Review the texture, sauce, and choices you made."
+          }
+        ]
+      },
+      "actions": [
+        {
+          "action": "taste",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Sauce check: Dry; needs a splash. Pasta: Tender with a slight bite.",
+          "interaction": "sauce-trail",
+          "inspection": {
+            "kind": "sauce",
+            "time": 0,
+            "type": "dry",
+            "label": "Dry and clinging",
+            "closureSeconds": 0,
+            "observation": "The spoon leaves a bare track that stays open. Sauce clings in thick patches."
+          }
+        },
+        {
+          "action": "pour",
+          "value": 50,
+          "time": 0,
+          "accepted": true,
+          "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite.",
+          "interaction": "sauce-trail",
+          "inspection": {
+            "kind": "sauce",
+            "time": 0,
+            "type": "unmixed",
+            "label": "Water not folded through",
+            "closureSeconds": 0.3,
+            "observation": "Liquid pools around thicker sauce. Fold it through before judging the coating."
+          }
+        },
+        {
+          "action": "stirSweep",
+          "value": "button",
+          "time": 0,
+          "accepted": true,
+          "observation": "Pasta folded through the sauce. Observe the coating before deciding on another splash. Check the dish again before plating."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite.",
+          "interaction": "sauce-trail",
+          "inspection": {
+            "kind": "sauce",
+            "time": 0,
+            "type": "coating",
+            "label": "Coating the spoon",
+            "closureSeconds": 1.8,
+            "observation": "The track closes gradually. A continuous layer stays on the spoon."
+          }
+        },
+        {
+          "action": "plate",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Dish plated. Review the texture, sauce, and choices you made."
+        }
+      ]
+    }
+  ]
+}

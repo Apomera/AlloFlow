@@ -1,0 +1,51 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const desktop=new GlHarness({toolFile:'stem_lab/stem_tool_solarsystem.js',toolId:'solarSystem',width:1060,height:1000,appStyles:true});
+const phone=new GlHarness({toolFile:'stem_lab/stem_tool_solarsystem.js',toolId:'solarSystem',width:320,height:850,appStyles:true});
+test.beforeAll(async()=>{await desktop.start();await phone.start();});
+test.afterAll(async()=>{await desktop.stop();await phone.stop();});
+test.afterEach(async({page})=>desktop.destroy(page));
+test.describe.configure({timeout:120000});test.use({video:'off',trace:'off'});
+for(const compact of [false,true])test('rendezvous experiment on '+(compact?'phone':'desktop'),async({page},info)=>{
+  await page.setViewportSize({width:compact?320:1060,height:compact?850:1000});
+  await page.emulateMedia({reducedMotion:compact?'reduce':'no-preference'});
+  await (compact?phone:desktop).mount(page,{solarSystem:{tutorialDismissed:true,orreryMode:true,orr_tab:5,orr_trf:'earth',orr_trt:'mars',orr_paused:true}},undefined,{expectCanvas:false});
+  if(!compact)await page.evaluate(()=>{(window as any).__ctx.isDark=true;(window as any).__ctx.updateMulti('solarSystem',{orr_paused:true});});
+  const panel=page.getByRole('region',{name:'Transfer rendezvous experiment'});
+  const canvas=panel.locator('canvas');const reading=page.locator('#orrery-transfer-flight-reading');
+  await canvas.scrollIntoViewIfNeeded();
+  await expect(canvas).toHaveAttribute('data-transfer-progress','0.00000');
+  await expect(panel).toContainText('44.4° ahead');
+  await expect(page.locator('#orrery-transfer-evidence')).toContainText('speed up again');
+  await panel.getByRole('button',{name:'Show transfer midflight',exact:true}).click();
+  await expect(reading).toContainText('Coasting: engine off');
+  await canvas.scrollIntoViewIfNeeded();await expect(canvas).toHaveAttribute('data-transfer-progress','0.50000');
+  await canvas.screenshot({path:info.outputPath(compact?'transfer-phone-midflight.png':'transfer-desktop-midflight.png')});
+  await panel.getByRole('button',{name:'Show transfer arrival',exact:true}).click();
+  await expect(reading).toContainText('Rendezvous: positions meet');
+  await canvas.scrollIntoViewIfNeeded();await expect(canvas).toHaveAttribute('data-transfer-separation','0.00000000');
+  await page.getByLabel('Launch alignment offset:',{exact:false}).fill('30');
+  await expect(reading).toContainText('Miss:');await expect(reading).toContainText('0.789 AU');
+  await canvas.scrollIntoViewIfNeeded();await expect(canvas).toHaveAttribute('data-transfer-separation',/^0.788/);
+  await panel.screenshot({path:info.outputPath(compact?'transfer-phone-miss.png':'transfer-desktop-miss.png')});
+  await panel.getByRole('button',{name:'Align for rendezvous',exact:true}).click();await expect(reading).toContainText('Rendezvous: positions meet');
+  const slider=page.getByLabel('Flight progress',{exact:true});await slider.focus();await slider.press('Home');await expect(slider).toHaveValue('0');
+  if(compact){await expect(panel.getByRole('button',{name:'Play flight',exact:true})).toBeDisabled();}
+  else {
+    await page.evaluate(()=>{(window as any).__transferCanvas=document.querySelector('[data-transfer-flight] canvas');});
+    await panel.getByRole('button',{name:'Play flight',exact:true}).click();await canvas.scrollIntoViewIfNeeded();
+    await expect.poll(async()=>Number(await canvas.getAttribute('data-transfer-progress'))).toBeGreaterThan(0.02);
+    await panel.getByRole('button',{name:'Pause flight',exact:true}).click();
+    await canvas.scrollIntoViewIfNeeded();await expect(canvas).toHaveAttribute('data-transfer-playing','false');
+    const paused=await canvas.getAttribute('data-transfer-progress');await page.waitForTimeout(300);await expect(canvas).toHaveAttribute('data-transfer-progress',paused!);
+    expect(await page.evaluate(()=>(window as any).__transferCanvas===document.querySelector('[data-transfer-flight] canvas'))).toBe(true);
+  }
+  const bounds=await panel.evaluate(el=>{const box=el.getBoundingClientRect();return {left:box.left,right:box.right,overflow:el.scrollWidth>el.clientWidth+1};});
+  expect(bounds.left).toBeGreaterThanOrEqual(0);expect(bounds.right).toBeLessThanOrEqual(compact?320:1060);expect(bounds.overflow).toBe(false);
+  await page.getByRole('button',{name:/Swap/}).click();await expect(panel).toHaveAttribute('data-transfer-flight','mars-earth');
+  await expect(slider).toHaveValue('0');await expect(page.locator('#orrery-transfer-evidence')).toContainText('brake again');
+  await panel.getByRole('button',{name:'Show transfer arrival',exact:true}).click();await expect(reading).toContainText('Rendezvous: positions meet');
+  await page.evaluate(()=>(window as any).__ctx.updateMulti('solarSystem',{orr_trf:'earth',orr_trt:'earth'}));
+  await expect(reading).toContainText('Choose two different planets');await expect(slider).toBeDisabled();await expect(panel).toContainText('no transfer to simulate');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

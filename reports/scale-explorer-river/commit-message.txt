@@ -1,0 +1,7 @@
+Enhance Scale Explorer with immersive worlds and river journeys
+
+Add detailed planetary, microscopic, solar, nebular, galactic and canyon scenes with navigable landmarks, measured approaches and saved viewpoints.
+
+Let explorers travel along the illustrated canyon river using a distance map and keyboard controls. Preserve route position and camera direction in notebook observations, and base camera easing on elapsed time.
+
+Sync the desktop source and Scale Explorer translation keys. Validate with 125 unit tests and 67 browser scenarios: 65 passed in the full run, then all three solar cases passed after updating their frame-count and settling assertions.

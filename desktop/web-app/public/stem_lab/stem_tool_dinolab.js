@@ -4913,12 +4913,76 @@ window.StemLab = window.StemLab || {
   ];
 
   var KPG_EVIDENCE = [
-    { id: 'iridium', label: 'The iridium layer', text: 'A worldwide thin clay layer is rich in iridium, a metal rare in Earth’s crust but common in asteroids. Found by the Alvarez team in 1980.' },
-    { id: 'crater', label: 'The Chicxulub crater', text: 'A buried ~180 km crater off Mexico’s Yucatán dates to 66.04 million years ago, give or take about 40,000 — tight enough to tie it to the layer.' },
-    { id: 'spherules', label: 'Glass spherules and shocked quartz', text: 'Tiny melted-rock beads and quartz with shock fractures, made by an enormous impact, appear in the same layer.' },
-    { id: 'soot', label: 'Soot and a dark "impact winter"', text: 'Soot and dust would have blocked sunlight for months to years, cooling the planet and collapsing food chains.' },
-    { id: 'deccan', label: 'The Deccan Traps debate', text: 'Vast volcanic eruptions in India overlapped the impact. Most researchers see the asteroid as the main trigger, with volcanism as added stress.' }
+    { id: 'iridium', kind: 'rock', label: 'An unusual boundary layer', text: 'Many K-Pg boundary sites contain an iridium-rich layer. Iridium is scarce in Earth’s crust but more abundant in meteorites.', supports: 'A widespread chemical signal supports an extraterrestrial contribution when considered with other impact evidence.', limit: 'This chemical signal does not directly measure the duration of darkness or explain every extinction.', source: 'Schulte and colleagues (2010)', url: 'https://doi.org/10.1126/science.1177265', diagram: 'Schematic sediment layers with a highlighted boundary and scattered dots representing a chemical signal; not measured concentrations.' },
+    { id: 'crater', kind: 'rock', label: 'A crater with a matching age', text: 'A buried ~180 km crater near Mexico’s Yucatán is linked to an impact dated to 66.04 million years ago, with an uncertainty of about 40,000 years in a published estimate.', supports: 'Dating connects the Chicxulub impact with the extinction boundary within measurement uncertainty.', limit: 'An age estimate is not an exact timestamp. A crater by itself does not describe the global ecological effects.', source: 'Renne and colleagues (2013)', url: 'https://doi.org/10.1126/science.1230492', diagram: 'Schematic cross-section of a buried impact crater and overlying sediments; not a map, measurement, or reconstruction of its exact shape.' },
+    { id: 'spherules', kind: 'rock', label: 'Rock altered by impact', text: 'Boundary deposits include glass spherules and shocked quartz: melted droplets and minerals altered under extreme pressure.', supports: 'These materials, their distribution, and their geological context support a large impact.', limit: 'An impact marker does not directly reveal how a particular animal died.', source: 'Schulte and colleagues (2010)', url: 'https://doi.org/10.1126/science.1177265', diagram: 'Schematic glass beads beside a quartz grain with parallel shock features; not a microscope image.' },
+    { id: 'soot', kind: 'model', label: 'Testing an impact winter', text: 'Climate simulations informed by geological evidence test how dust, soot, and sulfur-bearing particles could reduce sunlight and cool the surface.', supports: 'Reduced light can limit photosynthesis, providing a mechanism for disrupting food webs far from the impact site.', limit: 'Models test mechanisms; they are not direct observations of ancient weather. Particle amounts and sizes affect the predicted severity and duration.', source: 'Senel and colleagues (2023)', url: 'https://doi.org/10.1038/s41561-023-01290-4', diagram: 'Schematic sunlight rays partly blocked by an atmospheric particle layer above plants; not a simulation output.' },
+    { id: 'deccan', kind: 'context', label: 'Volcanism in the background', text: 'The Deccan Traps in India record extensive volcanism around the end of the Cretaceous, adding another source of environmental change to investigate.', supports: 'A fuller explanation compares the timing and environmental effects of volcanism with those of the impact.', limit: 'Overlap alone does not measure each cause’s contribution. The impact is strongly supported as the main extinction trigger; volcanic contributions remain under study.', source: 'Natural History Museum · Extinction causes', url: 'https://www.nhm.ac.uk/discover/dinosaur-extinction.html', diagram: 'Schematic successive lava flows with a volcanic plume; not a map or a measured eruption history.' }
   ];
+
+  function kpgLinks(translate) {
+    var tx = typeof translate === 'function' ? translate : function (_, fallback) { return fallback; };
+    function kt(key, fallback) { return tx('stem.dinolab.kpg_' + key, fallback); }
+    return [
+      { id: 'sky', title: kt('link_sky_title', 'From impact to atmosphere'), prompt: kt('link_sky_prompt', 'What can connect a local impact to distant environments?'), answer: 'particles', options: [
+        { id: 'local', text: kt('sky_local', 'Only rocks touching the asteroid were affected.'), feedback: kt('sky_local_feedback', 'Direct damage is local, but material sent into the atmosphere can spread much farther. Revisit the impact-winter source.') },
+        { id: 'particles', text: kt('sky_particles', 'Particles spread through the atmosphere and reduce sunlight.'), feedback: kt('sky_particles_feedback', 'This connects the impact with a global environmental pathway. The amount and persistence of particles remain research questions.') },
+        { id: 'crater', text: kt('sky_crater', 'The crater itself covered every habitat.'), feedback: kt('sky_crater_feedback', 'The crater is regional. Explain how effects could travel beyond it rather than treating the crater as global.') }
+      ] },
+      { id: 'plants', title: kt('link_plants_title', 'From less light to producers'), prompt: kt('link_plants_prompt', 'Why would less sunlight matter to plants and photosynthetic plankton?'), answer: 'production', options: [
+        { id: 'production', text: kt('plants_production', 'It can reduce photosynthesis and new food production.'), feedback: kt('plants_production_feedback', 'Photosynthetic producers use light to make organic matter. Less light can restrict this input to food webs.') },
+        { id: 'all', text: kt('plants_all', 'Every plant must die immediately.'), feedback: kt('plants_all_feedback', 'Reduced production does not mean every plant dies at once. Survival and recovery vary among organisms and environments.') },
+        { id: 'growth', text: kt('plants_growth', 'Less sunlight always increases photosynthesis.'), feedback: kt('plants_growth_feedback', 'Photosynthesis requires light. Sustained loss of light can limit production, rather than guaranteeing faster growth.') }
+      ] },
+      { id: 'web', title: kt('link_web_title', 'From producers to food webs'), prompt: kt('link_web_prompt', 'How could reduced production affect animals beyond plant-eaters?'), answer: 'connections', options: [
+        { id: 'hunters', text: kt('web_hunters', 'Predators are unaffected because they do not eat plants.'), feedback: kt('web_hunters_feedback', 'Predators depend on prey that also need food. Trace the indirect connection back to producers.') },
+        { id: 'same', text: kt('web_same', 'Every species responds in exactly the same way.'), feedback: kt('web_same_feedback', 'Food webs differ, and some lineages survived. This pathway explains widespread stress, not identical fates for every organism.') },
+        { id: 'connections', text: kt('web_connections', 'Food shortages can spread through feeding relationships.'), feedback: kt('web_connections_feedback', 'Indirect links help explain distant effects. This simplified pathway does not include every impact effect or every route to survival.') }
+      ] }
+    ];
+  }
+  function kpgDraft(raw) {
+    raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var out = { citations: KPG_EVIDENCE.filter(function (item) { return Array.isArray(raw.citations) && raw.citations.indexOf(item.id) >= 0; }).map(function (item) { return item.id; }) };
+    ['claim', 'reasoning', 'limit'].forEach(function (key) { out[key] = typeof raw[key] === 'string' ? raw[key].slice(0, 1500) : ''; });
+    return out;
+  }
+  function kpgReady(entry) {
+    return !!(entry.claim.trim() && entry.reasoning.trim() && entry.limit.trim() && entry.citations.indexOf('soot') >= 0 && KPG_EVIDENCE.some(function (item) { return item.kind === 'rock' && entry.citations.indexOf(item.id) >= 0; }));
+  }
+  function kpgState(raw) {
+    raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var out = kpgDraft(raw), links = kpgLinks();
+    function choices(value) {
+      value = value && typeof value === 'object' && !Array.isArray(value) ? value : {}; var result = {};
+      links.forEach(function (link) { if (link.options.some(function (option) { return option.id === value[link.id]; })) result[link.id] = value[link.id]; });
+      return result;
+    }
+    out.step = raw.step === 1 || raw.step === 2 ? raw.step : 0;
+    out.source = KPG_EVIDENCE.some(function (item) { return item.id === raw.source; }) ? raw.source : 'iridium';
+    out.links = choices(raw.links);
+    out.checked = raw.checked === true && Object.keys(out.links).length === links.length;
+    var firstLinks = choices(raw.firstLinks); out.firstLinks = Object.keys(firstLinks).length === links.length ? firstLinks : null;
+    var first = kpgDraft(raw.first), record = kpgDraft(raw.record);
+    out.first = kpgReady(first) ? first : null; out.record = kpgReady(record) ? record : null;
+    return out;
+  }
+  function kpgHasWork(entry) { return !!(entry.claim || entry.reasoning || entry.limit || entry.citations.length || Object.keys(entry.links).length || entry.first || entry.record); }
+  function kpgNotebookText(raw) {
+    var state = kpgState(raw); if (!kpgHasWork(state)) return '';
+    var lines = ['', 'EXTINCTION INVESTIGATION | From impact to food webs', 'How could one impact affect life far from the crater?', 'Student writing is recorded without automatic assessment. The pathway is a simplified explanatory model, not a simulation.'];
+    function chain(label, values) { lines.push(label); kpgLinks().forEach(function (link) { var option = link.options.filter(function (o) { return o.id === values[link.id]; })[0]; lines.push(link.title + ': ' + (option ? option.text : '(not selected)')); }); }
+    if (state.firstLinks) chain('First checked pathway', state.firstLinks);
+    chain('Current pathway choices', state.links);
+    function writing(label, value) {
+      lines.push(label, 'Cited sources:'); value.citations.forEach(function (id) { var item = KPG_EVIDENCE.filter(function (item) { return item.id === id; })[0]; lines.push(item.label + ' [' + item.kind + '] | ' + item.source + ' | ' + item.url, item.text, 'Limit: ' + item.limit); });
+      lines.push('My explanation: ' + (value.claim || '(not recorded)'), 'How my sources connect: ' + (value.reasoning || '(not recorded)'), 'A limit or next question: ' + (value.limit || '(not recorded)'));
+    }
+    if (state.first) writing('First recorded explanation', state.first);
+    if (state.record && JSON.stringify(state.record) !== JSON.stringify(state.first)) writing('Latest recorded explanation', state.record);
+    if (!state.record || JSON.stringify(kpgDraft(state)) !== JSON.stringify(state.record)) writing('Current draft (not yet recorded)', state);
+    lines.push('---'); return lines.join('\n');
+  }
 
   // ── The dinosaur family tree (simplified cladogram) ──
   var CLADES = [
@@ -5115,7 +5179,7 @@ window.StemLab = window.StemLab || {
   // ── Quiz bank ──
   var QUIZ = [
     { id: 'q1', q: 'Which living animals are dinosaurs?', options: ['Crocodiles', 'Birds', 'Lizards', 'None, they all died out'], answer: 1, explain: 'Birds are living theropod dinosaurs, the branch that survived the K-Pg extinction.' },
-    { id: 'q2', q: 'What likely caused the end-Cretaceous extinction 66 million years ago?', options: ['An ice age', 'A giant asteroid impact (plus volcanism)', 'A disease', 'Plants dying out until the herbivores starved'], answer: 1, explain: 'A roughly 10 km asteroid struck near Chicxulub, Mexico. Huge Deccan volcanism added stress.' },
+    { id: 'q2', q: 'What likely caused the end-Cretaceous extinction 66 million years ago?', options: ['An ice age', 'A giant asteroid impact; volcanic effects are still studied', 'A disease', 'Plants dying out until the herbivores starved'], answer: 1, explain: 'Evidence strongly supports the Chicxulub asteroid impact as the main trigger. The timing and contribution of Deccan volcanism remain under study.' },
     { id: 'q3', q: 'Which "dinosaur" was NOT actually a dinosaur?', options: ['Triceratops', 'Stegosaurus', 'Pteranodon', 'Velociraptor'], answer: 2, explain: 'Pteranodon was a flying pterosaur, a close cousin but not a dinosaur.' },
     { id: 'q4', q: 'How big was the real Velociraptor?', options: ['About the size of a turkey', 'As tall as a person', 'A little bigger than a horse', 'As big as a bus'], answer: 0, explain: 'Velociraptor was turkey-sized and feathered. The movie version was based on the larger Deinonychus.' },
     { id: 'q5', q: 'Which group includes the long-necked giants?', options: ['Pachycephalosauria', 'Sauropodomorpha', 'Ornithopoda', 'Ceratopsia'], answer: 1, explain: 'Sauropodomorphs are the long-necked plant-eaters, including the largest land animals ever.' },
@@ -5411,6 +5475,403 @@ window.StemLab = window.StemLab || {
     }
     return profile;
   }
+  // A continuous, deterministic landscape outside the specimen's open clearing.
+  // No texture downloads or DOM state: shared geometry is disposed by scene traversal.
+  function dinoHabitatLandscape(THREE, habitat, len, groundWidth, groundDepth, seed) {
+    habitat = habitat || {};
+    len = Math.max(0.3, Number(len) || 1.8);
+    groundWidth = Math.max(26, Number(groundWidth) || len * 1.7);
+    groundDepth = Math.max(16, Number(groundDepth) || len * 0.95);
+    var root = new THREE.Group();
+    root.name = 'dinolab-habitat-landscape';
+    root.userData.dinoEnvironment = 'landscape';
+    root.userData.environmentRole = 'landscape';
+    var n = (Number(seed) || 701) >>> 0;
+    function rand() {
+      n = (Math.imul(n, 1664525) + 1013904223) >>> 0;
+      return n / 4294967296;
+    }
+    function mark(mesh, name, role) {
+      mesh.name = name;
+      mesh.userData.dinoEnvironment = role;
+      mesh.userData.environmentRole = role;
+      mesh.receiveShadow = true;
+      return mesh;
+    }
+    var M = THREE.MeshStandardMaterial || THREE.MeshPhongMaterial;
+    function material(color, extra) {
+      var options = { color: color, roughness: 1, metalness: 0, flatShading: true };
+      if (extra) for (var k in extra) options[k] = extra[k];
+      if (!THREE.MeshStandardMaterial) {
+        delete options.roughness;
+        delete options.metalness;
+        options.shininess = 0;
+      }
+      return new M(options);
+    }
+    // r128's material and vertex RGB values are linear; these profile hex colors
+    // are authored in sRGB, matching the explicit conversion used by the animal.
+    var baseColor = new THREE.Color(habitat.ground || '#6c7056').convertSRGBToLinear();
+    var tintColor = new THREE.Color(habitat.groundTint || '#a49a74').convertSRGBToLinear();
+    var fogColor = new THREE.Color(habitat.fog || '#8b9685').convertSRGBToLinear();
+    var leafColor = new THREE.Color(habitat.leaf || '#596345').convertSRGBToLinear();
+    var stemColor = new THREE.Color(habitat.stem || '#4a4d32').convertSRGBToLinear();
+    var arid = /arid|dry|warm-river/.test(habitat.id || '');
+    var lagoon = /lagoon/.test(habitat.id || '');
+    var humid = /humid|river-floodplain/.test(habitat.id || '');
+    var polar = /polar/.test(habitat.id || '');
+    var span = Math.max(16, len * 1.6, groundWidth * 0.78, groundDepth * 0.98);
+    var outer = Math.max(35, len * 3.8, span * 2.05);
+    var clearX = Math.max(5.4, len * 0.48);
+    var clearZ = Math.max(2.8, len * 0.22);
+    var sectors = 72;
+    var tau = Math.PI * 2;
+    var phases = [rand() * tau, rand() * tau, rand() * tau];
+    function ripple(a, offset) {
+      return Math.sin(a * 3 + phases[0] + offset) * 0.40 +
+        Math.sin(a * 7 + phases[1] - offset * 0.8) * 0.18 +
+        Math.sin(a * 13 + phases[2] + offset * 0.2) * 0.08;
+    }
+    function meshFrom(positions, colors, indices, mat, name, role) {
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      if (colors) geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      if (indices) geo.setIndex(indices);
+      geo.computeVertexNormals();
+      return mark(new THREE.Mesh(geo, mat), name, role);
+    }
+    // The first rings are coplanar with the scene floor. Only the distant apron rises.
+    var floorPositions = [0, -0.165, 0];
+    var floorColors = [baseColor.r, baseColor.g, baseColor.b];
+    var floorIndices = [];
+    var radii = [span * 0.35, span * 0.72, span * 1.05, span * 1.42, outer * 1.07];
+    var terrainHeights = [];
+    var color = new THREE.Color();
+    for (var ring = 0; ring < radii.length; ring++) {
+      terrainHeights[ring] = [];
+      for (var s = 0; s < sectors; s++) {
+        var a = s / sectors * tau;
+        var r = radii[ring];
+        var x = Math.cos(a) * r;
+        var z = Math.sin(a) * r;
+        var insideTile = Math.abs(x) < groundWidth * 0.75 && Math.abs(z) < groundDepth * 0.75;
+        var clearing = Math.abs(x) < clearX * 1.25 && Math.abs(z) < clearZ * 1.35;
+        var relief = ring < 2 || insideTile || clearing ? 0 :
+          Math.max(0, ripple(a, ring * 0.47) + 0.45) * span * (lagoon ? 0.010 : 0.022);
+        floorPositions.push(x, -0.165 + relief, z);
+        terrainHeights[ring].push(-0.165 + relief);
+        color.copy(baseColor).lerp(tintColor, 0.10 + Math.max(0, ripple(a, ring)) * 0.17);
+        color.lerp(fogColor, Math.min(0.28, ring * 0.055));
+        floorColors.push(color.r, color.g, color.b);
+      }
+    }
+    for (var s0 = 0; s0 < sectors; s0++) floorIndices.push(0, 1 + (s0 + 1) % sectors, 1 + s0);
+    for (var fr = 0; fr < radii.length - 1; fr++) {
+      for (var fs = 0; fs < sectors; fs++) {
+        var f0 = 1 + fr * sectors + fs;
+        var f1 = 1 + fr * sectors + (fs + 1) % sectors;
+        var f2 = f0 + sectors;
+        var f3 = f1 + sectors;
+        floorIndices.push(f0, f1, f2, f1, f3, f2);
+      }
+    }
+    root.add(meshFrom(floorPositions, floorColors, floorIndices,
+      material('#ffffff', { vertexColors: true, side: THREE.DoubleSide }),
+      'dino-expanded-terrain', 'continuous-ground'));
+
+    // Closed 360-degree ridge bands, with broad rolling peaks and smaller facets.
+    // Atmospheric color increases by layer so the horizon retains depth under fog.
+    var ridgeMaterial = material('#ffffff', { vertexColors: true, side: THREE.DoubleSide });
+    var ridgeRadii = [span * 1.14, span * 1.53, outer * 0.91];
+    var ridgeHeight = Math.max(2.3, len * 0.21) * (lagoon ? 0.58 : arid ? 1.08 : 1);
+    var ridgeHeights = [];
+    for (var layer = 0; layer < 3; layer++) {
+      ridgeHeights[layer] = [];
+      var ridgePositions = [];
+      var ridgeColors = [];
+      var ridgeIndices = [];
+      var ringR = ridgeRadii[layer];
+      var ridgeWidth = span * (0.22 + layer * 0.025);
+      for (var band = 0; band < 3; band++) {
+        for (var rs = 0; rs < sectors; rs++) {
+          var ra = rs / sectors * tau;
+          var rr = ringR + (band - 1) * ridgeWidth;
+          var shape = 0.64 + ripple(ra, layer * 0.83) * 0.72;
+          var crestHeight = Math.max(0.18, shape) * ridgeHeight * (1 + layer * 0.18);
+          // Keep the open foreground corridor almost level even when a large
+          // animal's camera sits outside the first ridge. The hills rise at its sides.
+          if (Math.sin(ra) > 0) {
+            var foregroundWeight = Math.min(1, Math.max(0, (Math.abs(Math.cos(ra)) - 0.40) / 0.24));
+            crestHeight = 0.12 + (crestHeight * 0.70 - 0.12) * foregroundWeight;
+          }
+          var yy = band === 1 ? crestHeight : -0.21;
+          if (band === 1) ridgeHeights[layer].push(yy);
+          ridgePositions.push(Math.cos(ra) * rr, yy, Math.sin(ra) * rr);
+          color.copy(arid ? tintColor : baseColor).lerp(leafColor, arid ? 0.03 : 0.16);
+          color.multiplyScalar(band === 1 ? 0.84 + (Math.cos(ra + 0.6) + 1) * 0.07 : 0.89);
+          color.lerp(fogColor, 0.22 + layer * 0.19);
+          ridgeColors.push(color.r, color.g, color.b);
+        }
+      }
+      for (var rb = 0; rb < 2; rb++) {
+        for (var ri = 0; ri < sectors; ri++) {
+          var r0 = rb * sectors + ri;
+          var r1 = rb * sectors + (ri + 1) % sectors;
+          ridgeIndices.push(r0, r1, r0 + sectors, r1, r1 + sectors, r0 + sectors);
+        }
+      }
+      root.add(meshFrom(ridgePositions, ridgeColors, ridgeIndices, ridgeMaterial,
+        'dino-distant-ridgeline-' + (layer + 1), 'layered-ridge'));
+    }
+
+    function angularHeight(values, angle) {
+      var cursor = ((angle / tau % 1) + 1) % 1 * sectors;
+      var index = Math.floor(cursor);
+      var mix = cursor - index;
+      return values[index] * (1 - mix) + values[(index + 1) % sectors] * mix;
+    }
+    function surfaceAt(angle, radius) {
+      var y = -0.165;
+      for (var tr = 0; tr < radii.length; tr++) {
+        if (radius <= radii[tr]) {
+          var innerRadius = tr === 0 ? 0 : radii[tr - 1];
+          var innerHeight = tr === 0 ? -0.165 : angularHeight(terrainHeights[tr - 1], angle);
+          var outerHeight = angularHeight(terrainHeights[tr], angle);
+          var fraction = (radius - innerRadius) / (radii[tr] - innerRadius);
+          y = innerHeight + (outerHeight - innerHeight) * fraction;
+          break;
+        }
+      }
+      for (var rl = 0; rl < 3; rl++) {
+        var rw = span * (0.22 + rl * 0.025);
+        var distance = Math.abs(radius - ridgeRadii[rl]);
+        if (distance < rw) {
+          var crest = angularHeight(ridgeHeights[rl], angle);
+          y = Math.max(y, -0.21 + (crest + 0.21) * (1 - distance / rw));
+        }
+      }
+      return y;
+    }
+
+    var trunkMaterial = material(stemColor.clone().lerp(fogColor, 0.18));
+    var crownDark = material(leafColor.clone().multiplyScalar(0.76).lerp(fogColor, 0.19));
+    var crownMid = material(leafColor.clone().lerp(fogColor, 0.15));
+    var crownLight = material(leafColor.clone().lerp(tintColor, 0.14).lerp(fogColor, 0.18));
+    var trunkGeometry = new THREE.CylinderGeometry(0.045, 0.07, 1, 6);
+    var crownGeometry = new THREE.ConeGeometry(1, 1, 7, 1);
+    // Short-trunk cycads have arching compound fronds. The paired leaflets distinguish
+    // these seed plants from a modern palm or a generic radial fan.
+    var cycadPositions = [];
+    function triangle(ax, ay, az, bx, by, bz, cx, cy, cz) {
+      cycadPositions.push(ax, ay, az, bx, by, bz, cx, cy, cz);
+    }
+    for (var cf = 0; cf < 9; cf++) {
+      var ca = cf / 9 * tau;
+      var dx = Math.cos(ca), dz = Math.sin(ca);
+      var px = -dz, pz = dx;
+      for (var leaf = 0; leaf < 6; leaf++) {
+        var u = (leaf + 0.7) / 6;
+        var reach = 0.21 + u * 0.87;
+        var cy = 0.88 + Math.sin(u * Math.PI * 0.88) * 0.27 - u * 0.23;
+        var leaflet = (0.08 + Math.sin(u * Math.PI) * 0.18) * (1 - u * 0.20);
+        var cx = dx * reach, cz = dz * reach;
+        for (var side = -1; side <= 1; side += 2) {
+          var ex = cx + px * leaflet * side + dx * 0.075;
+          var ez = cz + pz * leaflet * side + dz * 0.075;
+          triangle(cx - dx * 0.045, cy, cz - dz * 0.045,
+            ex, cy - 0.085, ez, cx + dx * 0.08, cy + 0.008, cz + dz * 0.08);
+        }
+      }
+      triangle(dx * 0.14, 0.89, dz * 0.14,
+        dx * 1.16 + px * 0.035, 0.79, dz * 1.16 + pz * 0.035,
+        dx * 1.16 - px * 0.035, 0.79, dz * 1.16 - pz * 0.035);
+    }
+    var cycadGeometry = new THREE.BufferGeometry();
+    cycadGeometry.setAttribute('position', new THREE.Float32BufferAttribute(cycadPositions, 3));
+    cycadGeometry.computeVertexNormals();
+    var cycadMaterial = material(leafColor.clone().lerp(fogColor, 0.15), { side: THREE.DoubleSide });
+    var treeCount = lagoon ? 8 : arid ? 11 : humid ? 28 : 23;
+    var actualTreeCount = 0;
+    var treeScale = Math.min(3.4, Math.max(1, len * 0.075));
+    for (var t = 0; t < treeCount; t++) {
+      var angle = (t + 0.2 + rand() * 0.58) / treeCount * tau;
+      var radius = span * (0.89 + rand() * 0.36);
+      var tx = Math.cos(angle) * radius;
+      var tz = Math.sin(angle) * radius;
+      // The positive-z view has a broad corridor without any foreground trunks.
+      if (tz > 0 && Math.abs(tx) < Math.max(5.4, len * 0.65)) continue;
+      var tree = new THREE.Group();
+      tree.name = 'dino-background-seed-plant-' + t;
+      tree.userData.dinoEnvironment = 'prehistoric-vegetation';
+      tree.userData.environmentRole = 'prehistoric-vegetation';
+      // Embed the roots slightly in the actual apron/ridge surface, including
+      // the trees on the near slopes, so trunks never float above a tile edge.
+      tree.position.set(tx, surfaceAt(angle, radius) - 0.035, tz);
+      tree.rotation.y = rand() * tau;
+      var isCycad = !polar && (arid || lagoon || rand() < 0.29);
+      var h = (isCycad ? 0.85 + rand() * 0.55 : 2.0 + rand() * 1.5) * treeScale;
+      if (isCycad) {
+        var cyTrunk = mark(new THREE.Mesh(trunkGeometry, trunkMaterial), 'dino-cycad-trunk-' + t, 'cycad-trunk');
+        cyTrunk.position.y = h * 0.38;
+        cyTrunk.scale.set(h * 2.15, h * 0.72, h * 2.15);
+        tree.add(cyTrunk);
+        var cyCrown = mark(new THREE.Mesh(cycadGeometry, cycadMaterial), 'dino-cycad-fronds-' + t, 'compound-cycad-fronds');
+        cyCrown.scale.setScalar(h);
+        tree.add(cyCrown);
+      } else {
+        var trunk = mark(new THREE.Mesh(trunkGeometry, trunkMaterial), 'dino-conifer-trunk-' + t, 'conifer-trunk');
+        trunk.position.y = h * 0.40;
+        trunk.scale.set(h, h * 0.80, h);
+        tree.add(trunk);
+        var crownMaterials = [crownDark, crownMid, crownLight];
+        for (var tier = 0; tier < 3; tier++) {
+          var crown = mark(new THREE.Mesh(crownGeometry, crownMaterials[tier]),
+            'dino-conifer-crown-' + t + '-' + tier, 'tiered-conifer-crown');
+          var width = h * (0.24 - tier * 0.042);
+          crown.scale.set(width, h * (0.52 - tier * 0.07), width);
+          crown.position.y = h * (0.46 + tier * 0.20);
+          crown.rotation.y = tier * 0.36;
+          tree.add(crown);
+        }
+      }
+      root.add(tree);
+      actualTreeCount++;
+    }
+    root.userData.seed = (Number(seed) || 701) >>> 0;
+    root.userData.treeCount = actualTreeCount;
+    root.userData.clearance = { x: clearX, z: clearZ };
+    root.userData.outerRadius = outer * 1.07;
+    return root;
+  }
+
+  // Interpretive habitat art: pinnate foliage and rippling water, not fossil data.
+  function dinoFernGeometry(THREE, height, seed, sparse) {
+    var random = mulberry32(seed >>> 0), positions = [], colors = [];
+    var fronds = sparse ? 5 : 7;
+    function triangle(a, b, c, shade) {
+      [a, b, c].forEach(function (p) { positions.push(p[0], p[1], p[2]); colors.push(shade, shade, shade); });
+    }
+    for (var frond = 0; frond < fronds; frond++) {
+      var angle = frond / fronds * Math.PI * 2 + random() * 0.22;
+      var reach = height * (0.58 + random() * 0.36), rise = height * (0.74 + random() * 0.26);
+      function point(t, across, forward) {
+        var radius = reach * t + (forward || 0);
+        return [Math.cos(angle) * radius - Math.sin(angle) * across, rise * Math.sin(t * Math.PI * 0.72) + height * 0.06, Math.sin(angle) * radius + Math.cos(angle) * across];
+      }
+      for (var segment = 0; segment < 12; segment++) {
+        var t = segment / 12, next = (segment + 1) / 12, vein = height * 0.008 * (1 - t * 0.8);
+        var a = point(t, -vein), b = point(t, vein), c = point(next, vein), e = point(next, -vein);
+        triangle(a, b, c, 0.72); triangle(a, c, e, 0.72);
+        if (segment < 1) continue;
+        var width = height * (sparse ? 0.12 : 0.19) * Math.sin(t * Math.PI) * (0.85 + random() * 0.15);
+        for (var side = -1; side <= 1; side += 2) {
+          var base = point(t, side * vein), tip = point(t + 0.055, side * width, height * 0.035);
+          var back = point(t + 0.065, side * vein), ridge = point(t + 0.05, side * width * 0.52);
+          ridge[1] += height * 0.025;
+          triangle(base, tip, ridge, 0.94); triangle(tip, back, ridge, 0.79); triangle(back, base, ridge, 0.87);
+        }
+      }
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.computeVertexNormals(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+
+  function dinoWaterNormalData(size) {
+    size = Math.max(8, Math.min(256, Math.round(Number(size) || 128)));
+    var pixels = new Uint8Array(size * size * 4), tau = Math.PI * 2;
+    for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+      var u = x / size * tau, v = y / size * tau;
+      // Integer spatial frequencies keep the repeating texture seamless.
+      var dx = Math.cos(u * 3 + v * 2) * 0.24 + Math.cos(u * 7 - v * 5) * 0.12;
+      var dy = Math.cos(u * 3 + v * 2) * 0.16 - Math.cos(u * 7 - v * 5) * 0.09 + Math.cos(v * 4) * 0.13;
+      var inv = 1 / Math.sqrt(dx * dx + dy * dy + 1), offset = (y * size + x) * 4;
+      pixels[offset] = Math.round((dx * inv * 0.5 + 0.5) * 255);
+      pixels[offset + 1] = Math.round((dy * inv * 0.5 + 0.5) * 255);
+      pixels[offset + 2] = Math.round((inv * 0.5 + 0.5) * 255);
+      pixels[offset + 3] = 255;
+    }
+    return { size: size, pixels: pixels };
+  }
+
+  function dinoHabitatClearingHeight(habitat, width, depth, x, z) {
+    var extent = Math.max(Math.abs(x) / (width * 0.5), Math.abs(z) / (depth * 0.5));
+    var edge = Math.min(1, Math.abs(x) / (width * 0.42) + Math.abs(z) / (depth * 0.58));
+    var height = (Math.sin(x * 0.47) + Math.cos(z * 0.61) + Math.sin((x - z) * 0.23)) * 0.075 * edge * edge;
+    var outerBlend = Math.max(0, Math.min(1, (extent - 1) / 0.35));
+    height = height * (1 - outerBlend) - 0.15 * outerBlend;
+    if (!habitat.water) return height;
+    var w = Math.max(6, width * habitat.waterWidth), d = Math.max(1.2, depth * habitat.waterDepth);
+    var cx = width * 0.27, cz = depth * 0.35, t = (x - cx) / w + 0.5, distance;
+    if (habitat.id === 'limestone-lagoon') distance = Math.sqrt(Math.pow((x - cx) / (w * 0.5), 2) + Math.pow((z - cz) / (d * 0.5), 2));
+    else if (t >= 0 && t <= 1) distance = Math.abs(z - cz - Math.sin(t * Math.PI * 2) * d * 0.12) / (d * (0.44 + Math.sin(t * Math.PI) * 0.08));
+    else return height;
+    var blend = Math.max(0, Math.min(1, (1.16 - distance) / 0.20));
+    return height * (1 - blend) + Math.min(height, -0.025) * blend;
+  }
+
+  function dinoHabitatWater(THREE, habitat, width, depth) {
+    var rig = new THREE.Group(); rig.name = 'dinolab-habitat-water';
+    rig.userData.dinoEnvironment = 'water';
+    var lagoon = habitat.id === 'limestone-lagoon';
+    var waterWidth = Math.max(6, width * habitat.waterWidth), waterDepth = Math.max(1.2, depth * habitat.waterDepth);
+    var centerX = width * 0.27, centerZ = depth * 0.35;
+    var positions = [], bankPositions = [], uv = [], indices = [], bankIndices = [], segments = 64;
+    if (lagoon) { positions.push(centerX, 0.082, centerZ); uv.push(0.5, 0.5); }
+    for (var i = 0; i <= segments; i++) {
+      var t = i / segments;
+      if (lagoon) {
+        var angle = t * Math.PI * 2, ripple = 1 + Math.sin(angle * 5) * 0.035;
+        var x = centerX + Math.cos(angle) * waterWidth * 0.5 * ripple;
+        var z = centerZ + Math.sin(angle) * waterDepth * 0.5 * ripple;
+        positions.push(x, 0.082, z);
+        uv.push(0.5 + Math.cos(angle) * 0.5, 0.5 + Math.sin(angle) * 0.5);
+        bankPositions.push(x, 0.06, z, centerX + (x - centerX) * 1.04, 0.018, centerZ + (z - centerZ) * 1.10);
+      } else {
+        var rx = centerX + (t - 0.5) * waterWidth;
+        var bend = Math.sin(t * Math.PI * 2) * waterDepth * 0.12;
+        var half = waterDepth * (0.44 + Math.sin(t * Math.PI) * 0.08);
+        positions.push(rx, 0.082, centerZ + bend - half, rx, 0.082, centerZ + bend + half);
+        uv.push(t, 0, t, 1);
+        // Two banks in one geometry, following the same meander as the water.
+        bankPositions.push(rx, 0.06, centerZ + bend - half, rx, 0.016, centerZ + bend - half - waterDepth * 0.12,
+          rx, 0.06, centerZ + bend + half, rx, 0.016, centerZ + bend + half + waterDepth * 0.12);
+      }
+      if (i) {
+        var k = i * 2;
+        if (lagoon) indices.push(0, i + 1, i);
+        else indices.push(k - 2, k - 1, k, k - 1, k + 1, k);
+        var stride = lagoon ? 2 : 4, b = i * stride;
+        for (var edge = 0; edge < stride; edge += 2) {
+          if (!lagoon && edge === 2) bankIndices.push(b - stride + edge, b - stride + edge + 1, b + edge, b - stride + edge + 1, b + edge + 1, b + edge);
+          else bankIndices.push(b - stride + edge, b + edge, b - stride + edge + 1, b - stride + edge + 1, b + edge, b + edge + 1);
+        }
+      }
+    }
+    function geometry(data, faces) {
+      var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(data, 3));
+      g.setIndex(faces); g.computeVertexNormals(); g.computeBoundingSphere(); return g;
+    }
+    var normalData = dinoWaterNormalData(128), normal = new THREE.DataTexture(normalData.pixels, normalData.size, normalData.size, THREE.RGBAFormat);
+    normal.wrapS = normal.wrapT = THREE.RepeatWrapping; normal.minFilter = normal.magFilter = THREE.LinearFilter;
+    normal.repeat.set(Math.max(2, waterWidth * 0.38), 2); normal.needsUpdate = true;
+    normal.userData = { dinoEnvironment: 'ripple-normal' };
+    var waterGeometry = geometry(positions, indices); waterGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    var waterMaterial = new THREE.MeshPhongMaterial({ color: habitat.waterColor, specular: '#c9e6dc', shininess: 95,
+      normalMap: normal, normalScale: new THREE.Vector2(0.58, 0.58), transparent: true, opacity: lagoon ? 0.64 : 0.72, depthWrite: false, side: THREE.DoubleSide });
+    waterMaterial.color.convertSRGBToLinear(); waterMaterial.specular.convertSRGBToLinear();
+    var surface = new THREE.Mesh(waterGeometry, waterMaterial); surface.name = 'dinolab-ripple-surface';
+    surface.userData.dinoEnvironment = 'rippling-water'; surface.renderOrder = 1; rig.add(surface);
+    var bankMaterial = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.groundTint, roughness: 1, side: THREE.DoubleSide }) : new THREE.MeshPhongMaterial({ color: habitat.groundTint, shininess: 2, side: THREE.DoubleSide });
+    bankMaterial.color.convertSRGBToLinear();
+    var bank = new THREE.Mesh(geometry(bankPositions, bankIndices), bankMaterial); bank.name = 'dinolab-water-bank';
+    bank.userData.dinoEnvironment = 'shoreline'; bank.receiveShadow = true; rig.add(bank);
+    rig.userData.waterBounds = { minX: centerX - waterWidth * 0.52, maxX: centerX + waterWidth * 0.52, minZ: centerZ - waterDepth * 0.72, maxZ: centerZ + waterDepth * 0.72 };
+    return { group: rig, normalMap: normal };
+  }
+
   function integumentEvidenceFor(dn) {
     var id = String((dn && dn.id) || '').toLowerCase();
     var evidence = {
@@ -6558,6 +7019,68 @@ window.StemLab = window.StemLab || {
   }
   // Close the back of the cranial loft inside the existing neck volume.
   // The added root leaves the forward face stations in place.
+  // Use the existing clade envelope at each muzzle station, preserving the orbit
+  // and cervical junction. These are visual soft-tissue proportions, not measurements.
+  function dinoTheropodCranialRadii(height, depth, junctionRadius, profile) {
+    profile = profile || {};
+    function factor(key) { var value = Number(profile[key]); return isFinite(value) && value > 0 ? value : 1; }
+    return [
+      [junctionRadius, junctionRadius], [height * 0.40, depth * 0.40], [height * 0.86, depth],
+      [height * 0.70 * factor('muzzleHeightScale'), depth * 0.72 * factor('muzzleDepthScale') * factor('muzzleBaseScale')],
+      [height * 0.48 * factor('muzzleHeightScale') * factor('muzzleTipScale'), depth * 0.60 * factor('muzzleDepthScale') * factor('muzzleTipScale')],
+      [height * 0.025, depth * 0.04]
+    ];
+  }
+
+  // Interpretive skin envelope. Shoulder and skull anchors retain their existing
+  // positions; these clade-level contours do not alter the fossil skeleton.
+  function dinoCervicalEnvelope(THREE, shoulder, head, bodyHeight, neckBaseRadius, neckTipRadius, postcranialSurface, isSauropod, clade) {
+    var profile = postcranialSurface || {};
+    var baseCurve = Number(profile.neckBaseCurve) || 0;
+    var midCurve = Number(profile.neckMidCurve) || 0;
+    if (!isSauropod) return {
+      points: [shoulder,
+        shoulder.clone().lerp(head, 0.34).add(new THREE.Vector3(0, bodyHeight * baseCurve, 0)),
+        shoulder.clone().lerp(head, 0.70).add(new THREE.Vector3(0, bodyHeight * midCurve, 0)), head],
+      radii: [neckBaseRadius, neckBaseRadius * 0.82, neckTipRadius * 1.22, neckTipRadius]
+    };
+
+    // A short graded shoulder transition leads into a slender cervical shaft.
+    // More stations prevent the broad proximal volume forming one long cone.
+    var fractions = [0, 0.14, 0.31, 0.50, 0.69, 0.86, 1];
+    var weights = /Diplodoc|Dicraeosaur|Rebbachisaur/i.test(clade || '')
+      ? [1, 0.70, 0.43, 0.255, 0.145, 0.07, 0]
+      : (/Brachiosaur|Camarasaur/i.test(clade || '')
+        ? [1, 0.78, 0.54, 0.34, 0.20, 0.09, 0]
+        : [1, 0.75, 0.50, 0.31, 0.18, 0.08, 0]);
+    baseCurve = Math.max(-0.22, Math.min(0.22, baseCurve));
+    midCurve = Math.max(-0.22, Math.min(0.22, midCurve));
+    function blend(a, b, t) { t = t * t * (3 - 2 * t); return a + (b - a) * t; }
+    function curveAt(t) {
+      if (t <= 0.34) return blend(0, baseCurve, t / 0.34);
+      if (t <= 0.70) return blend(baseCurve, midCurve, (t - 0.34) / 0.36);
+      return blend(midCurve, 0, (t - 0.70) / 0.30);
+    }
+    var points = fractions.map(function (t, index) {
+      if (index === 0) return shoulder;
+      if (index === fractions.length - 1) return head;
+      return shoulder.clone().lerp(head, t).add(new THREE.Vector3(0, bodyHeight * curveAt(t), 0));
+    });
+    var radii = weights.map(function (weight) { return neckTipRadius + (neckBaseRadius - neckTipRadius) * weight; });
+    // Keep the supplied terminal radii exact, including the existing skull clamp.
+    radii[0] = neckBaseRadius; radii[radii.length - 1] = neckTipRadius;
+    return { points: points, radii: radii };
+  }
+
+  // Cranial roots keep their specimen-space positions. A relative shoulder
+  // transform follows the cervical mesh without stretching the skull during breath.
+  function dinoConnectedCranialPose(THREE, rig, pivot, neck, restQuaternion) {
+    if (!rig || !neck || !pivot || !restQuaternion) return;
+    rig.quaternion.copy(neck.quaternion).multiply(restQuaternion.clone().invert());
+    rig.position.copy(pivot).sub(pivot.clone().applyQuaternion(rig.quaternion));
+    rig.updateMatrix();
+  }
+
   function dinoNeckJunction(THREE, points, radii, reach) {
     var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
     var length = curve.getLength(), distance = Math.min(Math.max(0, reach), length * 0.35);
@@ -7752,11 +8275,12 @@ window.StemLab = window.StemLab || {
         var css = 'body{font:13px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#0f172a;margin:0;padding:18px;max-width:760px}' +
           '.bar{margin-bottom:14px}.bar button{font:600 12px system-ui;padding:6px 12px;border-radius:7px;border:1px solid #94a3b8;background:#fff;cursor:pointer;margin-right:6px}' +
           'h1{font-size:18px;margin:0 0 4px}h2{font-size:15px;margin:0 0 10px;page-break-before:always}' +
+          '@media print{body.hide-key h2,body.hide-key .k{display:none}}' +
           '.meta{font-size:12px;color:#475569;margin-bottom:14px}.q{margin-bottom:12px;break-inside:avoid}.qt{font-weight:700}' +
           'ol.opts{margin:4px 0 0}ol.opts li{margin:2px 0}.k{margin-bottom:8px;font-size:12.5px}.k span{color:#475569}' +
           '@media print{.no-print{display:none}}';
         var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Dino Lab — quiz worksheet</title><style>' + css + '</style></head><body>' +
-          '<div class="bar no-print"><button onclick="window.print()">🖨️ Print</button><button onclick="window.close()">Close</button></div>' +
+          '<div class="bar no-print">' + '<button onclick="document.body.classList.add(&quot;hide-key&quot;);window.print();document.body.classList.remove(&quot;hide-key&quot;)">🖨️ Print worksheet only</button>' + '<button onclick="window.print()">🖨️ Print with answer key</button>' + '<button onclick="window.close()">Close</button></div>' +
           '<h1>Dino Lab quiz</h1><div class="meta">Name: ____________________&nbsp;&nbsp;&nbsp;Date: __________&nbsp;&nbsp;&nbsp;(' + QUIZ.length + ' questions)</div>' +
           qhtml + '<h2>Answer key</h2>' + khtml + '</body></html>';
         openPrint(html, 'Quiz worksheet and answer key opened for printing.', 'the quiz worksheet');
@@ -8150,7 +8674,7 @@ window.StemLab = window.StemLab || {
         return el('div', null,
           sectionTitle('🍎', 'Classroom resources', 'Printable activities for teachers and small groups. Each opens in a new window — allow pop-ups, then use your browser’s print.'),
           resCard('🃏', 'Species card deck', deckEmpty ? 'No species match your current Explore filters, so there is nothing to print yet. Clear a filter or change your search in Explore, then come back.' : ('Cut-out cards for a hands-on sorting activity: group them by period, diet, or family (a tactile version of the Classify tab). ' + (filtered ? ('Prints the ' + deckList.length + ' species your Explore filters select' + (list.length > CAP ? ' (the first ' + CAP + ' of ' + list.length + ').' : '.')) : ('No Explore filter is set, so this prints a ' + deckList.length + '-species starter set. Tip: set filters or a search in Explore to print exactly the set you want.'))), deckEmpty ? '🖨️ Nothing to print' : ('🖨️ Print ' + deckList.length + ' cards'), function () { printDeck(deckList, deckLabel); }, deckEmpty),
-          resCard('📝', 'Quiz worksheet', 'Prints all ' + QUIZ.length + ' questions as a numbered, fill-in worksheet, followed by a separate answer key with the explanations.', '🖨️ Print quiz + answer key', function () { printQuizSheet(); }),
+          resCard('📝', 'Quiz worksheet', 'Prints all ' + QUIZ.length + ' questions as a numbered, fill-in worksheet. Print the worksheet on its own for students, or print it with the answer key and explanations for yourself.', '🖨️ Print quiz + answer key', function () { printQuizSheet(); }),
           panel([el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.5 } }, 'Cards and answers carry the same facts and the “widely-cited estimate” caveats students see in the app.')], { marginTop: 4 })
         );
       }
@@ -8406,6 +8930,7 @@ window.StemLab = window.StemLab || {
               scene.background = new THREE.Color(habitat.clear);
             }
             scene.fog = new THREE.Fog(habitat.fog, Math.max(24, len * habitat.fogNear), Math.max(68, len * habitat.fogFar));
+            if (!studio) scene.fog.color.convertSRGBToLinear();
 
             camera = cameraRef.current;
             if (!camera) {
@@ -8453,6 +8978,8 @@ window.StemLab = window.StemLab || {
 
             var groundWidth = studio ? Math.max(40, len * 40) : Math.max(26, len * 1.7);
             var groundDepth = studio ? Math.max(40, len * 40) : Math.max(16, len * 0.95);
+            var texturedGroundWidth = studio ? groundWidth : Math.max(80, groundWidth * 3, len * 8.4);
+            var texturedGroundDepth = studio ? groundDepth : texturedGroundWidth;
             var groundCanvas = document.createElement('canvas');
             groundCanvas.width = 512;
             groundCanvas.height = 512;
@@ -8479,12 +9006,12 @@ window.StemLab = window.StemLab || {
               groundTexture = new THREE.CanvasTexture(groundCanvas);
               groundTexture.wrapS = THREE.RepeatWrapping;
               groundTexture.wrapT = THREE.RepeatWrapping;
-              groundTexture.repeat.set(Math.max(3, groundWidth / 7), Math.max(2, groundDepth / 6));
+              groundTexture.repeat.set(Math.max(3, texturedGroundWidth / 7), Math.max(2, texturedGroundDepth / 6));
               if (THREE.sRGBEncoding !== undefined) groundTexture.encoding = THREE.sRGBEncoding;
               if (THREE.SRGBColorSpace !== undefined) groundTexture.colorSpace = THREE.SRGBColorSpace;
               if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) groundTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
             }
-            var groundGeometry = new THREE.PlaneGeometry(groundWidth, groundDepth, 32, 20);
+            var groundGeometry = new THREE.PlaneGeometry(texturedGroundWidth, texturedGroundDepth, studio ? 32 : 96, studio ? 20 : 72);
             var groundPositions = groundGeometry.attributes && groundGeometry.attributes.position;
             if (groundPositions && groundPositions.setZ) {
               for (var groundVertex = 0; groundVertex < groundPositions.count; groundVertex++) {
@@ -8492,7 +9019,7 @@ window.StemLab = window.StemLab || {
                 var groundY = groundPositions.getY(groundVertex);
                 var edgeLift = Math.min(1, Math.abs(groundX) / (groundWidth * 0.42) + Math.abs(groundY) / (groundDepth * 0.58));
                 var groundLift = (Math.sin(groundX * 0.47) + Math.cos(groundY * 0.61) + Math.sin((groundX + groundY) * 0.23)) * 0.075 * edgeLift * edgeLift;
-                groundPositions.setZ(groundVertex, studio ? 0 : groundLift);
+                groundPositions.setZ(groundVertex, studio ? 0 : dinoHabitatClearingHeight(habitat, groundWidth, groundDepth, groundX, -groundY));
               }
               groundPositions.needsUpdate = true;
               groundGeometry.computeVertexNormals();
@@ -8505,14 +9032,28 @@ window.StemLab = window.StemLab || {
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
+            ground.name = 'dinolab-habitat-ground';
+            ground.userData.dinoEnvironment = studio ? 'studio-floor' : 'specimen-clearing';
+            var habitatPlants = [], waterScenery = null;
+            if (!studio) {
+              var landscape = dinoHabitatLandscape(THREE, habitat, len, groundWidth, groundDepth, String(dn.id).split('').reduce(function (seed, char) { return ((seed * 31) + char.charCodeAt(0)) >>> 0; }, 97));
+              var terrainApron = landscape.getObjectByName('dino-expanded-terrain');
+              // Use the clearing's world-aligned texture across its extended terrain.
+              // Matching texel scale and phase prevents a visible tile boundary.
+              if (terrainApron) {
+                var apronPositions = terrainApron.geometry.attributes.position, apronUV = [];
+                for (var vertex = 0; vertex < apronPositions.count; vertex++) apronUV.push(apronPositions.getX(vertex) / texturedGroundWidth + 0.5, 0.5 - apronPositions.getZ(vertex) / texturedGroundDepth);
+                terrainApron.geometry.setAttribute('uv', new THREE.Float32BufferAttribute(apronUV, 2));
+                terrainApron.material.dispose(); terrainApron.material = groundMaterial;
+              }
+              scene.add(landscape);
+            }
+            function habitatGroundHeight(x, z) {
+              return dinoHabitatClearingHeight(habitat, groundWidth, groundDepth, x, z);
+            }
             if (habitat.water) {
-              var waterMaterial = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.waterColor, transparent: true, opacity: habitat.waterOpacity, roughness: 0.22, metalness: 0.04, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: habitat.waterColor, transparent: true, opacity: habitat.waterOpacity, shininess: 70, depthWrite: false });
-              var water = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(6, groundWidth * habitat.waterWidth), Math.max(1.2, groundDepth * habitat.waterDepth), 18, 3), waterMaterial);
-              water.rotation.x = -Math.PI / 2;
-              water.position.set(groundWidth * 0.27, 0.058, groundDepth * 0.35);
-              water.receiveShadow = true;
-              water.renderOrder = 1;
-              scene.add(water);
+              waterScenery = dinoHabitatWater(THREE, habitat, groundWidth, groundDepth);
+              scene.add(waterScenery.group);
             }
             if (props.showEvidence && !studio) {
             var digPad = new THREE.Mesh(
@@ -8545,7 +9086,8 @@ window.StemLab = window.StemLab || {
 
             var scatterRng = mulberry32(String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 33) ^ char.charCodeAt(0)) >>> 0; }, 5381));
             var rockMaterials = habitat.rockColors.map(function (color) {
-              return THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: color, roughness: 0.96, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: color, shininess: 3 });
+              var rockMaterial = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: color, roughness: 0.96, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: color, shininess: 3 });
+              rockMaterial.color.convertSRGBToLinear(); return rockMaterial;
             });
             for (var rockIndex = 0; rockIndex < (studio ? 0 : 22); rockIndex++) {
               var rockAngle = scatterRng() * Math.PI * 2;
@@ -8555,36 +9097,51 @@ window.StemLab = window.StemLab || {
               if (Math.abs(rockX) < Math.max(5.4, len * 0.48) && Math.abs(rockZ) < Math.max(2.8, len * 0.22)) continue;
               var rockSize = 0.10 + scatterRng() * 0.42;
               var rock = new THREE.Mesh(new THREE.DodecahedronGeometry(rockSize, 0), rockMaterials[rockIndex % rockMaterials.length]);
-              rock.position.set(rockX, rockSize * 0.44, rockZ);
+              rock.position.set(rockX, habitatGroundHeight(rockX, rockZ) + rockSize * 0.44, rockZ);
               rock.scale.set(0.75 + scatterRng() * 0.80, 0.48 + scatterRng() * 0.58, 0.72 + scatterRng() * 0.75);
               rock.rotation.set(scatterRng() * 0.5, scatterRng() * Math.PI, scatterRng() * 0.35);
               rock.castShadow = true;
               rock.receiveShadow = true;
               scene.add(rock);
             }
-            var stemMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.stem, roughness: 1 }) : new THREE.MeshPhongMaterial({ color: habitat.stem, shininess: 2 });
-            var leafMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.leaf, roughness: 0.92, side: THREE.DoubleSide }) : new THREE.MeshPhongMaterial({ color: habitat.leaf, shininess: 3, side: THREE.DoubleSide });
-            for (var scrubIndex = 0; scrubIndex < habitat.scrubCount; scrubIndex++) {
-              var scrubSide = scrubIndex % 2 ? 1 : -1;
-              var scrubX = -groundWidth * 0.45 + scatterRng() * groundWidth * 0.90;
-              var scrubZ = scrubSide * (groundDepth * (0.33 + scatterRng() * 0.15));
-              var scrubHeight = habitat.scrubMin + scatterRng() * (habitat.scrubMax - habitat.scrubMin);
-              var scrubStem = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.026, scrubHeight, 6), stemMat);
-              scrubStem.position.set(scrubX, scrubHeight * 0.5, scrubZ);
-              scrubStem.castShadow = true;
-              scene.add(scrubStem);
-              for (var leafIndex = 0; leafIndex < habitat.leafCount; leafIndex++) {
-                var leaf = new THREE.Mesh(new THREE.ConeGeometry((0.08 + scrubHeight * 0.06) * habitat.leafScale, scrubHeight * 0.55 * habitat.leafScale, 5), leafMat);
-                leaf.position.set(scrubX, scrubHeight * (0.42 + leafIndex * 0.10), scrubZ);
-                leaf.rotation.z = Math.PI * 0.5;
-                leaf.rotation.y = leafIndex * Math.PI * 0.5 + scatterRng() * 0.35;
-                leaf.castShadow = true;
-                scene.add(leaf);
+            if (!studio) {
+              var sparseFoliage = /arid|dry-seasonal/.test(habitat.id);
+              var fernMaterial = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.leaf, roughness: 0.88, side: THREE.DoubleSide, vertexColors: true }) : new THREE.MeshPhongMaterial({ color: habitat.leaf, shininess: 5, side: THREE.DoubleSide, vertexColors: true });
+              fernMaterial.color.convertSRGBToLinear();
+              var fernGeometries = [dinoFernGeometry(THREE, 1, 71, sparseFoliage), dinoFernGeometry(THREE, 1, 193, sparseFoliage)];
+              for (var scrubIndex = 0; scrubIndex < habitat.scrubCount; scrubIndex++) {
+                var scrubSide = scrubIndex % 2 ? 1 : -1;
+                var scrubX = -groundWidth * 0.45 + scatterRng() * groundWidth * 0.90;
+                var scrubZ = scrubSide * (groundDepth * (0.33 + scatterRng() * 0.15));
+                var waterBounds = waterScenery && waterScenery.group.userData.waterBounds;
+                if (waterBounds && scrubX > waterBounds.minX && scrubX < waterBounds.maxX && scrubZ > waterBounds.minZ && scrubZ < waterBounds.maxZ) continue;
+                var scrubHeight = habitat.scrubMin + scatterRng() * (habitat.scrubMax - habitat.scrubMin);
+                var fern = new THREE.Mesh(fernGeometries[scrubIndex % 2], fernMaterial);
+                fern.name = 'dinolab-fern-' + scrubIndex; fern.userData.dinoEnvironment = 'fern';
+                fern.position.set(scrubX, habitatGroundHeight(scrubX, scrubZ), scrubZ);
+                fern.scale.setScalar(scrubHeight * habitat.leafScale); fern.rotation.y = scatterRng() * Math.PI * 2;
+                fern.castShadow = true; fern.receiveShadow = true; scene.add(fern);
+                habitatPlants.push({ mesh: fern, phase: scatterRng() * Math.PI * 2 });
               }
             }
 
             model = new THREE.Group();
             model.name = 'dinolab-specimen';
+              var cranialMotionParts = [], cranialEvidenceLinks = [];
+              var cranialMotionRig = null, cervicalRestQuaternion = null;
+              function registerCranialMotion(part) {
+                if (part && part.parent === model && cranialMotionParts.indexOf(part) < 0) {
+                  part.userData.dinoMotionParent = 'cranial';
+                  cranialMotionParts.push(part);
+                }
+                return part;
+              }
+              function captureCranialMotion(before) {
+                if (!before) return;
+                model.children.forEach(function (part) {
+                  if (before.indexOf(part) < 0) registerCranialMotion(part);
+                });
+              }
             scene.add(model);
 
             var inferenceOpacity = Math.max(10, Math.min(100, Number(bodyOpacityRef.current) || 28)) / 100;
@@ -9319,21 +9876,16 @@ window.StemLab = window.StemLab || {
             var neckBaseRadius = Math.max(0.035 * detailScale, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
             var neckTipRadius = Math.max(0.028 * detailScale, ht * (isTheropod ? 0.085 : 0.038)) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
             neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.66);
-            var neckMidA = new THREE.Vector3().copy(shoulder).lerp(head, 0.34).add(vec(0, surfaceBodyHeight * postcranialSurface.neckBaseCurve, 0));
-            var neckMidB = new THREE.Vector3().copy(shoulder).lerp(head, 0.70).add(vec(0, surfaceBodyHeight * postcranialSurface.neckMidCurve, 0));
-            var neckPoints = [shoulder, neckMidA, neckMidB, head];
-            var neckRadii = [neckBaseRadius, neckBaseRadius * 0.82, neckTipRadius * 1.22, neckTipRadius];
+            var cervicalEnvelope = dinoCervicalEnvelope(THREE, shoulder, head, surfaceBodyHeight, neckBaseRadius, neckTipRadius, postcranialSurface, isSauropod, cladeName);
+            var neckPoints = cervicalEnvelope.points;
+            var neckRadii = cervicalEnvelope.radii;
             var neckJunction = dinoNeckJunction(THREE, neckPoints, neckRadii, surfaceHeadLength * 1.10);
             var cranialShape = { center: head.clone().lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, 0)),
               length: surfaceHeadLength, height: surfaceHeadHeight, depth: surfaceHeadDepth, cheek: isSauropod ? 0 : cranialSurface.cheekScale };
             var headShell = isTheropod ? addSoftTissueChain([
               neckJunction.point, head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout, surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.28, 0, 0))
-            ], [
-              [neckJunction.radius, neckJunction.radius], [surfaceHeadHeight * 0.40, surfaceHeadDepth * 0.40], [surfaceHeadHeight * 0.86, surfaceHeadDepth],
-              [surfaceHeadHeight * 0.70, surfaceHeadDepth * 0.72], [surfaceHeadHeight * 0.48, surfaceHeadDepth * 0.60],
-              [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
-            ], headMat, cranialShape)[0] : addSoftTissueChain([
+            ], dinoTheropodCranialRadii(surfaceHeadHeight, surfaceHeadDepth, neckJunction.radius, cranialSurface), headMat, cranialShape)[0] : addSoftTissueChain([
               neckJunction.point, neckJunction.point.clone().lerp(head.clone().add(vec(surfaceHeadLength * 0.32, 0, 0)), 0.5),
               head.clone().add(vec(surfaceHeadLength * 0.32, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout,
@@ -9349,7 +9901,8 @@ window.StemLab = window.StemLab || {
               headShell.userData.dinoRegion = 'head'; headShell.name = 'continuous-cranial-surface';
               headShell.userData.dinoNeckJunction = { point: neckJunction.point.toArray(), radius: neckJunction.radius, t: neckJunction.t };
             }
-            var faceScale = reconstructionProfile.head;
+            registerCranialMotion(headShell);
+              var faceScale = reconstructionProfile.head;
             var eyeRadius = Math.min(Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.21);
             var eyeCenterX = head.x - surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale;
             // Seat surface details on the rendered head, including narrow and deep species profiles.
@@ -9364,7 +9917,7 @@ window.StemLab = window.StemLab || {
             var bodyContour = addBodyContour(bodyShell);
             if (bodyContour) idleMotion.bodyContour = bodyContour;
             idleMotion.breathingMeshes.forEach(function (breathingEntry) { breathingEntry.contour = addBodyContour(breathingEntry.mesh); });
-            addBodyContour(headShell);
+            registerCranialMotion(addBodyContour(headShell));
             if (props.showBody) {
               var tailBaseRadius = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.105 : 0.075)) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailBase * postcranialSurface.tailBaseFullness;
               var neckMeshes = addSoftTissueChain(neckPoints, neckRadii, bodyMat);
@@ -9441,15 +9994,15 @@ window.StemLab = window.StemLab || {
               [-1, 1].forEach(function (muscleSide) {
                 var temporalOrigin = head.clone().add(vec(Math.max(0.006 * detailScale, len * 0.002), Math.max(0.025 * detailScale, ht * 0.018), muscleSide * cranialSideDepth * 0.82));
                 var jawInsertion = head.clone().add(vec(-Math.max(0.012 * detailScale, len * 0.004), -Math.max(0.048 * detailScale, ht * 0.030), muscleSide * cranialSideDepth * 0.88));
-                addMuscleBelly(temporalOrigin, jawInsertion, jawMuscleRadius, 0.68);
+                registerCranialMotion(addMuscleBelly(temporalOrigin, jawInsertion, jawMuscleRadius, 0.68));
                 if (skeletalProfile.buccalTissue) {
                   var buccalStart = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.22).add(vec(0, -Math.max(0.020 * detailScale, ht * 0.012) * cranialSurface.jawHeightScale, muscleSide * cranialSideDepth * 0.78 * cranialSurface.cheekScale));
                   var buccalEnd = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.82).add(vec(0, -Math.max(0.025 * detailScale, ht * 0.015) * cranialSurface.jawHeightScale, muscleSide * cranialSideDepth * 0.68 * cranialSurface.cheekScale));
-                  addMuscleBelly(buccalStart, buccalEnd, jawMuscleRadius * 0.42, 0.46);
+                  registerCranialMotion(addMuscleBelly(buccalStart, buccalEnd, jawMuscleRadius * 0.42, 0.46));
                 }
                 var neckOrigin = shoulder.clone().add(vec(Math.max(0.010 * detailScale, len * 0.006), bodyHeight * 0.16, muscleSide * bodyDepth * 0.34));
                 var neckInsertion = head.clone().add(vec(Math.max(0.010 * detailScale, len * 0.004), Math.max(0.018 * detailScale, ht * 0.012), muscleSide * cranialSideDepth * 0.44));
-                addMuscleBelly(neckOrigin, neckInsertion, Math.max(0.045 * detailScale, bodyHeight * 0.20) * skeletalProfile.neckMuscleScale, 0.72);
+                registerCranialMotion(addMuscleBelly(neckOrigin, neckInsertion, Math.max(0.045 * detailScale, bodyHeight * 0.20) * skeletalProfile.neckMuscleScale, 0.72));
                 var pectoralOrigin = shoulder.clone().add(vec(-len * 0.010, -bodyHeight * 0.12, muscleSide * bodyDepth * 0.42));
                 var pectoralInsertion = bodyCenter.clone().lerp(shoulder, 0.72).add(vec(0, -bodyHeight * 0.34, muscleSide * bodyDepth * 0.34));
                 addMuscleBelly(pectoralOrigin, pectoralInsertion, Math.max(0.045 * detailScale, bodyHeight * 0.20) * skeletalProfile.chestMuscleScale, 0.78);
@@ -9465,6 +10018,7 @@ window.StemLab = window.StemLab || {
                     [surfaceHeadHeight * 0.25, surfaceHeadDepth * 0.42 * cranialSurface.muzzleTipScale],
                     [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.10]], keratinMat)[0];
                 if (keratinBeak) keratinBeak.userData.dinoFeature = 'keratin-beak';
+                registerCranialMotion(keratinBeak);
               }
 
               var integumentSeed = String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 43) + char.charCodeAt(0)) >>> 0; }, 211);
@@ -9576,10 +10130,16 @@ window.StemLab = window.StemLab || {
                 }
               }
 
-              var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale);
-              var lowerJawStart = head.clone().lerp(surfaceSnout, 0.12).add(vec(0, -surfaceHeadHeight * 0.44, 0));
-              var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.37, 0));
-              var jawProfile = dinoJawProfile(THREE, lowerJawStart, lowerJawEnd, surfaceHeadHeight, jawDepth, surfaceHeadLength);
+              var cranialFaceBefore = model.children.slice();
+              // Match the mandibular envelope to the existing clade muzzle
+              // proportions so a slender snout retains an enclosed jaw tip.
+              var jawHeightScale = isTheropod ? Math.min(1.12, cranialSurface.jawHeightScale) : 1;
+              var jawMuzzleDepth = isTheropod ? Math.min(1, cranialSurface.muzzleDepthScale * cranialSurface.muzzleBaseScale) : 1;
+              var jawMuzzleTip = isTheropod ? Math.min(1, cranialSurface.muzzleHeightScale * cranialSurface.muzzleTipScale) : 1;
+              var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale) * jawMuzzleDepth;
+              var lowerJawStart = head.clone().lerp(surfaceSnout, 0.12).add(vec(0, -surfaceHeadHeight * 0.44 * Math.min(1, jawHeightScale), 0));
+              var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.37 * jawMuzzleTip, 0));
+              var jawProfile = dinoJawProfile(THREE, lowerJawStart, lowerJawEnd, surfaceHeadHeight * jawHeightScale, jawDepth, surfaceHeadLength);
               var lowerJawShell = addSoftTissueChain(jawProfile.points, jawProfile.radii, headMat)[0];
               addBodyContour(lowerJawShell);
               if (lowerJawShell) {
@@ -9639,7 +10199,8 @@ window.StemLab = window.StemLab || {
                 nostril.position.copy(nostrilPos);
                 nostril.scale.set(1.25, 0.55, 0.42);
                 nostril.renderOrder = 10;
-                model.add(nostril);
+                nostril.userData.dinoFeature = 'nostril'; nostril.userData.side = faceSide;
+                  model.add(nostril);
                 var nostrilRim = new THREE.Mesh(new THREE.TorusGeometry(nostrilRadius * 1.18, nostrilRadius * 0.20, 7, 18), headMat);
                 nostrilRim.position.copy(nostrilPos).add(vec(0, 0, faceSide * nostrilRadius * 0.40));
                 nostrilRim.scale.set(1.25, 0.56, 1);
@@ -9652,7 +10213,9 @@ window.StemLab = window.StemLab || {
                   0, faceSide, mouthCreaseMat, 'mouth-crease');
               });
 
-              if (/Ceratops/i.test(cladeName)) {
+                              captureCranialMotion(cranialFaceBefore);
+if (/Ceratops/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 if (cranialSurface.frillScale > 0.08) {
                   addFrillSurface(anatomyAccentMat, 1);
                 }
@@ -9664,7 +10227,8 @@ window.StemLab = window.StemLab || {
                   var noseHornBase = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.58).add(vec(0, surfaceHeadHeight * 0.60, 0));
                   addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)), 'horn');
                 }
-              } else if (/Stegosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Stegosaur/i.test(cladeName)) {
                 addDorsalPlates(anatomyAccentMat, 1);
                 addTailSpikes(keratinMat, true);
               } else if (/Spinosaur/i.test(cladeName)) {
@@ -9689,6 +10253,7 @@ window.StemLab = window.StemLab || {
                 }
                 addEllipsoid(tail.clone(), vec(Math.max(0.18 * detailScale, len * 0.032), Math.max(0.10 * detailScale, ht * 0.040), Math.max(0.13 * detailScale, bodyDepth * 0.52)), anatomyAccentMat);
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 if (cranialSurface.crestMode !== 'none') {
                   var crestBase = head.clone().add(vec(len * 0.010, surfaceHeadHeight * 0.70, 0));
                   if (cranialSurface.crestMode === 'tube') {
@@ -9700,25 +10265,34 @@ window.StemLab = window.StemLab || {
                     addEllipsoid(crestBase.clone().add(vec(-len * 0.010, ht * 0.018, 0)), vec(Math.max(0.08 * detailScale, len * 0.018), Math.max(0.07 * detailScale, ht * 0.035), Math.max(0.06 * detailScale, surfaceHeadDepth * 0.48)), anatomyAccentMat);
                   }
                 }
-              } else if (/Pachycephalosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Pachycephalosaur/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 addEllipsoid(head.clone().add(vec(0, Math.max(0.03 * detailScale, ht * 0.055 * cranialSurface.domeScale), 0)), vec(Math.max(0.07 * detailScale, len * 0.035 * (0.48 + cranialSurface.domeScale * 0.52)), Math.max(0.035 * detailScale, ht * 0.050 * cranialSurface.domeScale), Math.max(0.07 * detailScale, bodyDepth * 0.62 * (0.55 + cranialSurface.domeScale * 0.45))), anatomyAccentMat);
-              } else if (/Tyrannosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Tyrannosaur/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 model.children.filter(function (part) { return part.userData.dinoFeature === 'eye'; }).forEach(function (eye) {
                   var browRadius = eye.geometry.parameters.radius;
                   var browPoint = eye.position.clone().add(vec(0, browRadius * 1.12, 0));
                   addEllipsoid(browPoint, vec(browRadius * 1.28, browRadius * 0.20, browRadius * 0.32), anatomyAccentMat);
                 });
-              } else if (/Abelisaur/i.test(cladeName) && /horn/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Abelisaur/i.test(cladeName) && /horn/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
+                  var cranialFeatureBefore = model.children.slice();
                 [-1, 1].forEach(function (side) {
                   var abelisaurHornBase = head.clone().add(vec(-len * 0.010, ht * 0.050, side * bodyDepth * 0.28));
                   addAccentCone(abelisaurHornBase, abelisaurHornBase.clone().add(vec(0, Math.max(0.10 * detailScale, ht * 0.065), side * bodyDepth * 0.08)), Math.max(0.030 * detailScale, ht * 0.012));
                 });
-              } else if (/Oviraptor/i.test(cladeName) && /crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Oviraptor/i.test(cladeName) && /crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
+                  var cranialFeatureBefore = model.children.slice();
                 var oviraptorCrestBase = head.clone().add(vec(len * 0.006, ht * 0.038, 0));
                 var oviraptorCrest = addAccentCone(oviraptorCrestBase, oviraptorCrestBase.clone().add(vec(len * 0.018, Math.max(0.18 * detailScale, ht * 0.13), 0)), Math.max(0.07 * detailScale, ht * 0.030));
                 if (oviraptorCrest) oviraptorCrest.scale.z = 0.46;
 
-              } else if (/Iguanodont/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Iguanodont/i.test(cladeName)) {
                 [-1, 1].forEach(function (side) {
                   var thumbBase = vec(shoulder.x - len * 0.035, Math.max(0.12 * detailScale, shoulder.y * 0.25), side * bodyDepth * 0.52);
                   addAccentCone(thumbBase, thumbBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.025), Math.max(0.10 * detailScale, ht * 0.050), side * bodyDepth * 0.08)), Math.max(0.020 * detailScale, ht * 0.008));
@@ -9729,6 +10303,7 @@ window.StemLab = window.StemLab || {
             if (props.showSkeleton) {
               addVertebralChain(shoulder, hip, isSauropod ? 10 : 9, Math.max(0.050 * detailScale, ht * 0.017), Math.max(0.055 * detailScale, ht * 0.019), 1.55, 'dorsal');
               addVertebralChain(hip, tail, isSauropod ? 18 : 14, Math.max(0.050 * detailScale, ht * 0.017), Math.max(0.014 * detailScale, ht * 0.0045), 1.20, 'caudal');
+              var cranialBoneBefore = model.children.slice();
               var skullLength = Math.max(0.20 * detailScale, len * (isSauropod ? 0.040 : 0.066)) * reconstructionProfile.head;
               var skullHeight = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.080 : 0.058)) * reconstructionProfile.head;
               var skullDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.073 : 0.058)) * reconstructionProfile.head;
@@ -9872,7 +10447,9 @@ window.StemLab = window.StemLab || {
                 }
               });
 
-              if (/Ceratops/i.test(cladeName)) {
+                              captureCranialMotion(cranialBoneBefore);
+if (/Ceratops/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 if (cranialSurface.frillScale > 0.08) {
                   addFrillSurface(boneMat, 0.95);
                 }
@@ -9881,9 +10458,10 @@ window.StemLab = window.StemLab || {
                   addSkeletonCone(hornCore, hornCore.clone().add(vec(-Math.max(0.10 * detailScale, len * 0.052 * cranialSurface.browHornScale), Math.max(0.05 * detailScale, ht * 0.048 * cranialSurface.browHornScale), hornSide * skullDepth * 0.08 * cranialSurface.browHornScale)), Math.max(0.016 * detailScale, ht * 0.010 * Math.sqrt(cranialSurface.browHornScale)), boneMat);
                 });
                 if (cranialSurface.noseHornScale > 0.08) addSkeletonCone(snout.clone().add(vec(0, skullHeight * 0.35, 0)), snout.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.022 * cranialSurface.noseHornScale), skullHeight * (0.35 + 0.41 * cranialSurface.noseHornScale), 0)), Math.max(0.014 * detailScale, ht * 0.008 * Math.sqrt(cranialSurface.noseHornScale)), boneMat);
-              } else if (/Spinosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Spinosaur/i.test(cladeName)) {
                 var spinosaurRostrum = new THREE.Vector3().copy(head).lerp(snout, 0.76);
-                addSkeletonEllipsoid(spinosaurRostrum, vec(skullLength * 0.92, skullHeight * 0.34, skullDepth * 0.46), boneMat);
+                registerCranialMotion(addSkeletonEllipsoid(spinosaurRostrum, vec(skullLength * 0.92, skullHeight * 0.34, skullDepth * 0.46), boneMat));
                 for (var neuralSpineIndex = 1; neuralSpineIndex < 9; neuralSpineIndex++) {
                   var neuralSpineT = neuralSpineIndex / 9;
                   var neuralSpineBase = new THREE.Vector3().copy(shoulder).lerp(hip, neuralSpineT);
@@ -9892,6 +10470,7 @@ window.StemLab = window.StemLab || {
                   if (sailSupport && hasHighSail) sailSupport.userData.dinoFeature = 'sail-support';
                 }
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 var duckBillCenter = snout.clone().add(vec(-skullLength * 0.20, -skullHeight * 0.04, 0));
                 addSkeletonEllipsoid(duckBillCenter, vec(skullLength * 0.34, skullHeight * 0.20, skullDepth * 0.92), boneMat);
                 if (cranialSurface.crestMode !== 'none') {
@@ -9903,7 +10482,9 @@ window.StemLab = window.StemLab || {
                     addSkeletonEllipsoid(crestBaseBone.clone().add(vec(skullLength * 0.08, skullHeight * 0.24, 0)), vec(skullLength * 0.34, skullHeight * (cranialSurface.crestMode === 'helmet' ? 0.48 : 0.24), skullDepth * 0.48), boneMat);
                   }
                 }
-              } else if (/Pachycephalosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Pachycephalosaur/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 addSkeletonEllipsoid(head.clone().add(vec(skullLength * 0.06, skullHeight * (0.32 + 0.30 * cranialSurface.domeScale), 0)), vec(skullLength * (0.30 + 0.22 * cranialSurface.domeScale), Math.max(skullHeight * 0.12, skullHeight * 0.54 * cranialSurface.domeScale), skullDepth * (0.62 + 0.28 * cranialSurface.domeScale)), boneMat);
                 [-1, 1].forEach(function (domeSide) {
                   for (var domeNode = 0; domeNode < 3; domeNode++) {
@@ -9911,7 +10492,9 @@ window.StemLab = window.StemLab || {
                     addSkeletonCone(domeBase, domeBase.clone().add(vec(skullLength * 0.04, skullHeight * (0.20 + domeNode * 0.05), domeSide * skullDepth * 0.09)), Math.max(0.010 * detailScale, ht * 0.004), boneMat);
                   }
                 });
-              } else if (/Oviraptor/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Oviraptor/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 var beakBone = addSkeletonCone(snout.clone().add(vec(skullLength * 0.05, 0, 0)), snout.clone().add(vec(-skullLength * 0.48, -skullHeight * 0.04, 0)), Math.max(0.040 * detailScale, skullDepth * 0.46), boneMat);
                 if (beakBone) beakBone.scale.z = 1.28;
                 if (/crest/i.test([dn.blurb, (dn.traits || []).join(' ')].join(' '))) {
@@ -9919,11 +10502,14 @@ window.StemLab = window.StemLab || {
                   var crestBone = addSkeletonCone(crestBoneBase, crestBoneBase.clone().add(vec(skullLength * 0.12, skullHeight * 0.84, 0)), Math.max(0.038 * detailScale, skullDepth * 0.32), boneMat);
                   if (crestBone) crestBone.scale.z = 0.40;
                 }
-              } else if (/Tyrannosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Tyrannosaur/i.test(cladeName)) {
+                  var cranialFeatureBefore = model.children.slice();
                 [-1, 1].forEach(function (browSide) {
                   addSkeletonEllipsoid(head.clone().add(vec(-skullLength * 0.20, skullHeight * 0.62, browSide * skullDepth * 0.64)), vec(skullLength * 0.18, skullHeight * 0.12, skullDepth * 0.18), boneMat);
                 });
-              } else if (/Stegosaur/i.test(cladeName)) {
+                captureCranialMotion(cranialFeatureBefore);
+                } else if (/Stegosaur/i.test(cladeName)) {
                 addDorsalPlates(boneMat, 0.92);
                 addTailSpikes(boneMat, false);
               } else if (/Ankylosaur/i.test(cladeName)) {
@@ -10183,7 +10769,9 @@ window.StemLab = window.StemLab || {
               }
               var calloutLift = Math.max(0.42 * detailScale, ht * 0.14);
               var tailCalloutPoint = new THREE.Vector3().copy(hip).lerp(tail, 0.58);
-              addAnatomyCallout('Skull', head, vec(-len * 0.025, calloutLift, bodyDepth * 0.72));
+              var cranialCalloutBefore = model.children.slice();
+                addAnatomyCallout('Skull', head, vec(-len * 0.025, calloutLift, bodyDepth * 0.72));
+                captureCranialMotion(cranialCalloutBefore);
               addAnatomyCallout('Spine', bodyCenter, vec(-len * 0.025, calloutLift * 1.15, -bodyDepth * 0.92));
               addAnatomyCallout('Pelvis', hip, vec(len * 0.018, calloutLift, bodyDepth * 0.88));
               addAnatomyCallout('Tail', tailCalloutPoint, vec(len * 0.035, calloutLift * 0.72, -bodyDepth * 0.76));
@@ -10582,8 +11170,8 @@ window.StemLab = window.StemLab || {
               });
             }
 
-            addBodyPartAnchor('head', head.clone().lerp(surfaceSnout, 0.35).add(vec(0, surfaceHeadHeight * 0.55, 0)));
-            addBodyPartAnchor('neck', shoulder.clone().lerp(head, 0.56));
+            addBodyPartAnchor('head', head.clone().lerp(surfaceSnout, 0.35).add(vec(0, surfaceHeadHeight * 0.55, 0)), headShell);
+            addBodyPartAnchor('neck', shoulder.clone().lerp(head, 0.56), idleMotion.neck);
             addBodyPartAnchor('trunk', bodyCenter.clone().add(vec(0, surfaceBodyHeight * 0.40, 0)), bodyShell);
             addBodyPartAnchor('tail', hip.clone().lerp(tail, 0.62), idleMotion.tail);
 
@@ -10841,6 +11429,7 @@ window.StemLab = window.StemLab || {
               ];
               if (assemblyPieces3d.some(function (piece) { return !assemblyPlaced[piece.id]; })) assemblyTray = createAssemblyTray(assemblyPieces3d);
               assemblyPieces3d.forEach(function (piece, idx) {
+                  var cranialAssemblyBefore = piece.id === 'skull' ? model.children.slice() : null;
                 var placed = !!assemblyPlaced[piece.id];
                 var active = piece.id === assemblyFocusId;
                 var claimEvidence = placed && piece.id === claimEvidenceId;
@@ -10854,7 +11443,8 @@ window.StemLab = window.StemLab || {
                   assemblyLabel.z -= Math.max(0.18 * detailScale, bodyDepth * 0.50) * evidenceAnnotationScale(piece.id);
                   addTextLabel((placed ? 'Placed ' : 'Assemble ') + piece.label, assemblyLabel, placed ? '#22c55e' : '#a78bfa');
                 }
-              });
+                captureCranialMotion(cranialAssemblyBefore);
+                });
             }
 
             if (props.showEvidence) {
@@ -10880,9 +11470,14 @@ window.StemLab = window.StemLab || {
                 var complete = !!loggedAnchors[segment.a] && !!loggedAnchors[segment.b];
                 var active = segment.a === scanTargetId || segment.b === scanTargetId;
                 var mat = complete ? loggedPathMat : (active ? activePathMat : evidencePathMat);
-                addModelCylinder(a, b, Math.max(0.018 * detailScale, ht * 0.006), mat, complete ? 21 : (active ? 18 : 7));
+                var evidenceLink = addModelCylinder(a, b, Math.max(0.018 * detailScale, ht * 0.006), mat, complete ? 21 : (active ? 18 : 7));
+                  if (evidenceLink && (segment.a === 'skull' || segment.b === 'skull')) cranialEvidenceLinks.push({
+                    mesh: evidenceLink, a: a.clone(), b: b.clone(), aMoves: segment.a === 'skull', bMoves: segment.b === 'skull',
+                    length: a.distanceTo(b), scale: evidenceLink.scale.clone()
+                  });
               });
               evidenceAnchors.forEach(function (anchor) {
+                  var cranialEvidenceBefore = anchor.id === 'skull' ? model.children.slice() : null;
                 var annotationScale = evidenceAnnotationScale(anchor.id);
                 var anchorLogged = !!loggedAnchors[anchor.id];
                 var mark = new THREE.Mesh(new THREE.SphereGeometry((Math.max(0.09 * detailScale, ht * 0.026) * annotationScale), 16, 10), anchorLogged ? loggedMarkerMat : markerMat);
@@ -10920,7 +11515,8 @@ window.StemLab = window.StemLab || {
                   beam.renderOrder = 24;
                   model.add(beam);
                 }
-              });
+                captureCranialMotion(cranialEvidenceBefore);
+                });
             }
             var evidenceDisplayParts = model.children.slice(evidenceDisplayStart).filter(function (part) { return part !== assemblyTray; });
             if (props.showHuman) {
@@ -11350,13 +11946,33 @@ window.StemLab = window.StemLab || {
                 frame = 0;
               }
             }
-            function animate() {
+            // Capture is explicit and complete before reparenting. Keeping root
+              // transforms in specimen coordinates preserves the rest pose and UV data.
+              if (idleMotion.neck && cranialMotionParts.length) {
+                cranialMotionRig = new THREE.Group();
+                cranialMotionRig.name = 'dinolab-connected-cranial-motion';
+                cranialMotionRig.userData.dinoMotion = 'connected-cranial';
+                cranialMotionRig.userData.pivot = shoulder.toArray();
+                cervicalRestQuaternion = idleMotion.neck.quaternion.clone();
+                cranialMotionParts.forEach(function (part) {
+                  if (part.parent === model) cranialMotionRig.add(part);
+                });
+                cranialMotionRig.userData.rootCount = cranialMotionRig.children.length;
+                model.add(cranialMotionRig);
+              }
+
+              function animate() {
               frame = 0;
               if (!alive || !renderer || !scene || !camera) return;
               if (model) {
                 var motionRunning = !motionPausedRef.current && !reducedMotionRef.current;
                 var motionDelta = dinoMotionStep(motionClockRef.current, performance.now(), motionRunning);
                 var idleTime = motionClockRef.current.elapsed;
+                if (waterScenery) waterScenery.normalMap.offset.set(idleTime * 0.008, idleTime * 0.004);
+                habitatPlants.forEach(function (plant) {
+                  plant.mesh.rotation.z = Math.sin(idleTime * 0.72 + plant.phase) * 0.014;
+                  plant.mesh.rotation.x = Math.cos(idleTime * 0.58 + plant.phase) * 0.008;
+                });
                 if (!dragging && motionRunning && autoRotateRef.current !== false && performance.now() >= interactionPauseUntil) yaw += motionDelta * 0.21;
                 if (props.showBody) {
                   var breathWave = Math.sin(idleTime * 1.28 + idleMotion.phase);
@@ -11371,11 +11987,26 @@ window.StemLab = window.StemLab || {
                     idleMotion.neck.scale.z = idleMotion.neckBaseScale.z * (1 + breathAmount * 0.014);
                     if (idleMotion.neckContour) idleMotion.neckContour.scale.copy(idleMotion.neck.scale);
                     if (idleMotion.neckBaseRotation) {
-                      var lookY = Math.sin(idleTime * 0.31 + idleMotion.phase * 1.3) * 0.085;
-                      var lookX = Math.sin(idleTime * 0.23 + idleMotion.phase * 0.6) * 0.045;
+                        // Neutral evidence and close-up poses stay aligned with their
+                        // fixed study boxes; the connected life pose moves as one unit.
+                        var connectedLook = !props.showSkeleton && cameraStudy === 'full' && !cameraTargetIsEvidence && !reducedMotionRef.current;
+                      var lookY = connectedLook ? Math.sin(idleTime * 0.31 + idleMotion.phase * 1.3) * 0.085 : 0;
+                      var lookX = connectedLook ? Math.sin(idleTime * 0.23 + idleMotion.phase * 0.6) * 0.045 : 0;
                       idleMotion.neck.rotation.y = idleMotion.neckBaseRotation.y + lookY;
                       idleMotion.neck.rotation.x = idleMotion.neckBaseRotation.x + lookX;
                       if (idleMotion.neckContour) idleMotion.neckContour.rotation.copy(idleMotion.neck.rotation);
+                        dinoConnectedCranialPose(THREE, cranialMotionRig, shoulder, idleMotion.neck, cervicalRestQuaternion);
+                        if (cranialMotionRig) cranialEvidenceLinks.forEach(function (link) {
+                          var a = link.a.clone(), b = link.b.clone();
+                          if (link.aMoves) a.applyMatrix4(cranialMotionRig.matrix);
+                          if (link.bMoves) b.applyMatrix4(cranialMotionRig.matrix);
+                          var direction = b.clone().sub(a), distance = direction.length();
+                          if (distance > 0 && link.length > 0) {
+                            link.mesh.position.copy(a).add(b).multiplyScalar(0.5);
+                            link.mesh.quaternion.setFromUnitVectors(vec(0, 1, 0), direction.normalize());
+                            link.mesh.scale.copy(link.scale); link.mesh.scale.y *= distance / link.length;
+                          }
+                        });
                     }
                   }
                   idleMotion.breathingMeshes.forEach(function (breathingEntry, breathingIndex) {
@@ -11472,11 +12103,12 @@ window.StemLab = window.StemLab || {
                 if (child.isLight && child.shadow && child.shadow.dispose) child.shadow.dispose();
                 if (child.geometry && child.geometry.dispose) child.geometry.dispose();
                 if (child.material) {
-                  if (Array.isArray(child.material)) child.material.forEach(function (mat) { if (mat && mat.dispose) mat.dispose(); });
-                  else {
-                    if (child.material.map && child.material.map.dispose) child.material.map.dispose();
-                    if (child.material.dispose) child.material.dispose();
-                  }
+                  var childMaterials = Array.isArray(child.material) ? child.material : [child.material];
+                  childMaterials.forEach(function (mat) {
+                    if (!mat) return;
+                    ['map', 'alphaMap', 'aoMap', 'bumpMap', 'displacementMap', 'emissiveMap', 'lightMap', 'metalnessMap', 'normalMap', 'roughnessMap'].forEach(function (key) { if (mat[key] && mat[key].dispose) mat[key].dispose(); });
+                    if (mat.dispose) mat.dispose();
+                  });
                 }
               });
             }
@@ -12895,21 +13527,96 @@ var evidenceRoute = [
         return el('div', null, sectionTitle('🌳', 'The dinosaur family tree', 'Two great branches split early: the "lizard-hipped" Saurischia and the "bird-hipped" Ornithischia.'), activity, panel(tree));
       }
 
+      function kpgArt(id, label) {
+        function p(shape, extra) { return el('path', Object.assign({ d: shape, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, extra || {})); }
+        var art;
+        if (id === 'iridium') art = el('g', null, p('M18 27H162V105H18Z', { fill: 'var(--dino-paper)' }), p('M18 47H162M18 70H162M18 90H162'), p('M18 61H162', { strokeWidth: 9, stroke: 'var(--dino-accent)' }), [0, 1, 2, 3, 4, 5].map(function (i) { return el('circle', { key: i, cx: 34 + i * 23, cy: 61, r: 2, fill: 'var(--dino-on-accent)' }); }));
+        else if (id === 'crater') art = el('g', null, p('M15 30H165M15 44H165', { opacity: .5 }), p('M15 58H45Q57 104 90 104Q123 104 137 58H165V113H15Z', { fill: 'var(--dino-fossil)' }), p('M45 58Q64 89 90 88Q116 89 137 58M15 80H42M138 80H165M15 97H57M126 97H165'));
+        else if (id === 'spherules') art = el('g', null, [[37, 48, 14], [64, 80, 18], [27, 96, 9]].map(function (c, i) { return el('circle', { key: i, cx: c[0], cy: c[1], r: c[2], fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 1.5 }); }), p('M108 28L151 41L160 85L122 106L94 79Z', { fill: 'var(--dino-paper)' }), p('M105 48L145 61M101 61L149 77M108 78L138 89'));
+        else if (id === 'soot') art = el('g', null, el('circle', { cx: 42, cy: 28, r: 13, fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 1.5 }), p('M67 21L96 47M53 42L64 54M37 47L42 55'), p('M18 57Q90 43 162 57Q173 59 168 69Q167 73 160 71Q90 57 20 71Q8 72 10 63Q11 58 18 57Z', { fill: 'var(--dino-fossil)', strokeWidth: 1.3 }), p('M58 78L65 96M101 78L108 96', { strokeDasharray: '3 5' }), p('M16 114H164M54 113V96Q33 83 32 102Q43 112 54 106M123 113V96Q145 83 146 102Q132 112 123 106'));
+        else if (id === 'deccan') art = el('g', null, p('M15 109H165V89H135V69H106V48H81V69H52V89H15Z', { fill: 'var(--dino-fossil)' }), p('M17 99H162M54 80H133M81 59H104'), p('M88 38Q64 25 83 15Q104 3 121 22Q139 9 151 26Q163 49 124 40', { fill: 'var(--dino-paper)' }));
+        else if (id === 'plants') art = el('g', null, p('M24 113H157M89 112V48M90 70Q32 76 37 35Q81 28 90 70M91 91Q141 100 149 54Q109 41 91 91', { fill: 'var(--dino-fossil)' }), p('M50 46L83 65M137 65L98 86'), el('circle', { cx: 130, cy: 22, r: 13, fill: 'var(--dino-paper)', stroke: 'currentColor', strokeWidth: 1.5 }));
+        else if (id === 'web') art = el('g', null, p('M39 80L82 45L129 76M89 51V92M48 94L80 102M100 101L132 92'), [[35, 88], [88, 33], [143, 86], [88, 108]].map(function (c, i) { return el('circle', { key: i, cx: c[0], cy: c[1], r: i === 3 ? 10 : 15, fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 2 }); }));
+        else art = el('g', null, p('M20 106Q88 75 165 106M104 28L131 56M90 26L116 52M116 16L143 44', { stroke: 'var(--dino-accent)', strokeWidth: 3 }), el('circle', { cx: 140, cy: 65, r: 17, fill: 'var(--dino-fossil)', stroke: 'currentColor', strokeWidth: 2 }), p('M126 88L119 104M152 88L162 101'));
+        return el('svg', { viewBox: '0 0 180 130', role: label ? 'img' : undefined, 'aria-label': label || undefined, 'aria-hidden': label ? undefined : 'true', focusable: 'false', className: 'dinolab-kpg-art' }, art);
+      }
+      function renderKpgInvestigation() {
+        function kt(key, fallback) { return t('stem.dinolab.kpg_' + key, fallback); }
+        function cardText(item, key) { return kt(item.id + '_' + key, item[key]); }
+        var state = kpgState(d.kpgInvestigation), links = kpgLinks(t);
+        var active = KPG_EVIDENCE.filter(function (item) { return item.id === state.source; })[0];
+        var kindLabels = { rock: kt('kind_rock', 'Rock record'), model: kt('kind_model', 'Model + mechanism'), context: kt('kind_context', 'Other environmental context') };
+        function change(patch) { upd('kpgInvestigation', Object.assign({}, state, patch)); }
+        function go(step) { change({ step: step }); focusSoon('dino-kpg-task'); }
+        function cite(id, checked) { var next = state.citations.filter(function (value) { return value !== id; }); if (checked) next.push(id); change({ citations: KPG_EVIDENCE.filter(function (item) { return next.indexOf(item.id) >= 0; }).map(function (item) { return item.id; }) }); }
+        function sourceLink(item) { return el('a', { href: item.url, target: '_blank', rel: 'noopener noreferrer' }, cardText(item, 'source')); }
+        var stages = [kt('step_sources', '1 · Inspect the sources'), kt('step_pathway', '2 · Connect the effects'), kt('step_explain', '3 · Explain and revise')];
+        var body;
+        if (state.step === 0) body = el('div', null,
+          el('h3', { id: 'dino-kpg-task', tabIndex: -1 }, kt('sources_title', 'Different sources answer different questions')),
+          el('p', null, kt('sources_intro', 'Rock evidence helps test whether an impact occurred. Models help test its consequences. Read both before explaining how a local event could have global effects.')),
+          el('div', { className: 'dinolab-kpg-sources' },
+            el('div', { className: 'dinolab-kpg-picker', role: 'group', 'aria-label': kt('choose_source', 'Choose an extinction source') }, KPG_EVIDENCE.map(function (item, index) { return el('button', { key: item.id, type: 'button', 'data-kpg-source': item.id, 'aria-pressed': item.id === active.id, 'aria-controls': 'dino-kpg-source-detail', onClick: function () { change({ source: item.id }); focusSoon('dino-kpg-source-heading'); } }, kpgArt(item.id), el('span', null, el('span', { className: 'dinolab-kpg-kicker' }, (index + 1) + ' / ' + kindLabels[item.kind]), el('strong', null, cardText(item, 'label')), state.citations.indexOf(item.id) >= 0 ? el('span', { className: 'dinolab-kpg-cited' }, kt('cited', 'Cited in my explanation')) : null)); })),
+            el('article', { id: 'dino-kpg-source-detail', className: 'dinolab-kpg-source-detail' },
+              el('figure', null, kpgArt(active.id, cardText(active, 'diagram')), el('figcaption', null, kt('schematic', 'Teaching schematic · not to scale'))),
+              el('p', { className: 'dinolab-kpg-kicker' }, kindLabels[active.kind]), el('h4', { id: 'dino-kpg-source-heading', tabIndex: -1 }, cardText(active, 'label')),
+              el('p', null, cardText(active, 'text')),
+              el('div', { className: 'dinolab-kpg-support' }, el('h5', null, kt('supports', 'What it supports')), el('p', null, cardText(active, 'supports'))),
+              el('div', { className: 'dinolab-kpg-limit' }, el('h5', null, kt('limits', 'Where it stops')), el('p', null, cardText(active, 'limit'))),
+              sourceLink(active),
+              el('label', { className: 'dinolab-kpg-citation' }, el('input', { type: 'checkbox', 'data-kpg-citation': active.id, checked: state.citations.indexOf(active.id) >= 0, onChange: function (event) { cite(active.id, event.target.checked); } }), kt('cite_source', 'Use this source in my explanation')))),
+          el('button', { type: 'button', className: 'dinolab-kpg-primary', onClick: function () { go(1); } }, kt('to_pathway', 'Connect cause and consequence →')));
+        else if (state.step === 1) body = el('div', null,
+          el('h3', { id: 'dino-kpg-task', tabIndex: -1 }, kt('pathway_title', 'How could the effects travel?')),
+          el('p', null, kt('pathway_intro', 'Explain each connection in this simplified pathway. It represents one major mechanism, not every effect of the impact or a prediction of exact timing.')),
+          el('ol', { className: 'dinolab-kpg-pathway', 'aria-label': kt('pathway_label', 'Impact-to-food-web pathway') }, [
+            ['impact', kt('node_impact', 'Impact')], ['soot', kt('node_light', 'Less sunlight')], ['plants', kt('node_producers', 'Reduced production')], ['web', kt('node_foodweb', 'Food-web disruption')]
+          ].map(function (node, index) { return el('li', { key: node[0] }, kpgArt(node[0]), el('span', null, (index + 1) + ' · ' + node[1]), index < 3 ? el('span', { className: 'dinolab-kpg-arrow', 'aria-hidden': 'true' }, '→') : null); })),
+          el('div', { className: 'dinolab-kpg-links' }, links.map(function (link, index) { var choice = link.options.filter(function (option) { return option.id === state.links[link.id]; })[0]; return el('section', { key: link.id, 'aria-labelledby': 'dino-kpg-link-title-' + link.id },
+            el('h4', { id: 'dino-kpg-link-title-' + link.id }, (index + 1) + ' → ' + (index + 2) + ' · ' + link.title),
+            el('fieldset', { className: 'dinolab-kpg-options', 'aria-describedby': state.checked ? 'dino-kpg-feedback-' + link.id : undefined }, el('legend', null, link.prompt), link.options.map(function (option) { return el('label', { key: option.id, className: state.links[link.id] === option.id ? 'is-picked' : undefined }, el('input', { type: 'radio', id: 'dino-kpg-link-' + link.id + '-' + option.id, name: 'dino-kpg-link-' + link.id, checked: state.links[link.id] === option.id, value: option.id, onChange: function () { var next = Object.assign({}, state.links); next[link.id] = option.id; change({ links: next, checked: false }); } }), el('span', null, option.text)); })),
+            state.checked && choice ? el('p', { id: 'dino-kpg-feedback-' + link.id, className: 'dinolab-kpg-feedback' }, el('strong', null, choice.id === link.answer ? kt('fits', 'Supported connection. ') : kt('reconsider', 'Reconsider this connection. ')), choice.feedback) : null); })),
+          el('div', { className: 'dinolab-kpg-actions' },
+            el('button', { type: 'button', className: 'dinolab-kpg-primary', disabled: Object.keys(state.links).length !== links.length, onClick: function () { change({ checked: true, firstLinks: state.firstLinks || Object.assign({}, state.links) }); focusSoon('dino-kpg-check-status'); } }, kt('check', 'Check my connections')),
+            el('button', { type: 'button', onClick: function () { change({ step: 0, source: 'soot' }); focusSoon('dino-kpg-source-heading'); } }, kt('review_model', 'Review the impact-winter source')),
+            el('button', { type: 'button', onClick: function () { go(2); } }, kt('to_writing', 'Write my explanation →'))),
+          el('p', { id: 'dino-kpg-check-status', role: 'status', tabIndex: -1 }, state.checked ? kt('check_status', 'Feedback is beside each connection. Your first checked pathway is kept in the notebook; you can revise your choices.') : kt('check_hint', 'Choose an explanation for all three connections to see feedback.')),
+          el('a', { href: 'https://doi.org/10.1038/s43017-022-00283-y', target: '_blank', rel: 'noopener noreferrer' }, kt('pathway_source', 'Morgan and colleagues (2022) · Environmental consequences')));
+        else {
+          var recorded = state.record && JSON.stringify(kpgDraft(state)) === JSON.stringify(state.record);
+          var fields = [{ id: 'claim', label: kt('claim_label', 'My explanation'), hint: kt('claim_hint', 'How could one impact affect life far from the crater?') }, { id: 'reasoning', label: kt('reasoning_label', 'How my sources connect'), hint: kt('reasoning_hint', 'Explain what a rock source supports and how a model helps connect that evidence to food webs.') }, { id: 'limit', label: kt('limit_label', 'A limit or next question'), hint: kt('limit_hint', 'What does your evidence leave open? What would help investigate it?') }];
+          body = el('div', null,
+            el('h3', { id: 'dino-kpg-task', tabIndex: -1 }, kt('writing_title', 'Make an explanation worth revisiting')),
+            el('p', null, kt('writing_intro', 'Cite at least one rock source and the impact-winter model. Use your own words to connect them; citing a source does not automatically make the explanation sound.')),
+            el('fieldset', { className: 'dinolab-kpg-citations' }, el('legend', null, kt('citations_legend', 'Sources I am using')), KPG_EVIDENCE.map(function (item) { return el('label', { key: item.id, className: state.citations.indexOf(item.id) >= 0 ? 'is-cited' : undefined }, el('input', { type: 'checkbox', 'data-kpg-citation': item.id, checked: state.citations.indexOf(item.id) >= 0, onChange: function (event) { cite(item.id, event.target.checked); } }), el('span', null, cardText(item, 'label'), el('small', null, kindLabels[item.kind]))); })),
+            el('div', { className: 'dinolab-kpg-writing' }, fields.map(function (field) { return el('div', { key: field.id }, el('label', { htmlFor: 'dino-kpg-' + field.id }, field.label), el('p', { id: 'dino-kpg-hint-' + field.id }, field.hint), el('textarea', { id: 'dino-kpg-' + field.id, value: state[field.id], rows: 3, maxLength: 1500, 'aria-describedby': 'dino-kpg-hint-' + field.id, onChange: function (event) { var patch = {}; patch[field.id] = event.target.value; change(patch); } })); })),
+            el('details', { className: 'dinolab-kpg-example' }, el('summary', null, kt('example_title', 'Sentence starters and a worked example')), el('p', null, kt('starters', '“The rock record supports… The model helps explain… Together they suggest… They do not tell us…”')), el('p', null, kt('example', 'The crater and boundary deposits support a major impact. Models show how material in the atmosphere could reduce light, limiting photosynthesis and disrupting feeding relationships. This connects a local event to distant effects, but it does not identify the fate of every organism or an exact duration of darkness.')), el('p', null, kt('example_scope', 'A worked example for comparison. It is not inserted into your writing.'))),
+            el('p', { id: 'dino-kpg-record-help' }, kt('record_help', 'To record, fill all three prompts and cite a rock source plus the impact-winter model. This checks completeness only; your reasoning is not automatically assessed.')),
+            el('div', { className: 'dinolab-kpg-actions' }, el('button', { type: 'button', className: 'dinolab-kpg-primary', disabled: !kpgReady(state) || !!recorded, 'aria-describedby': 'dino-kpg-record-help', onClick: function () { if (!kpgReady(state)) return; var draft = kpgDraft(state); change({ first: state.first || draft, record: draft }); focusSoon('dino-kpg-record-status'); } }, state.first ? kt('record_revision', 'Record my revision') : kt('record', 'Record my explanation')), el('button', { type: 'button', onClick: function () { upd('tab', 'notes'); focusSoon('dino-kpg-notebook'); } }, kt('view_notebook', 'View in my field notebook'))),
+            el('p', { id: 'dino-kpg-record-status', role: 'status', tabIndex: -1 }, recorded ? kt('recorded', 'Explanation recorded. Your first explanation stays available for comparison.') : state.record ? kt('revising', 'You have an unrecorded revision. Your draft is kept as you type.') : kt('draft', 'Draft kept in this activity. Download the field notebook for a separate copy.')),
+            state.first ? el('details', { className: 'dinolab-kpg-example' }, el('summary', null, kt('compare_first', 'Compare with my first explanation')), fields.map(function (field) { return el('div', { key: field.id }, el('h4', null, field.label), el('p', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, state.first[field.id])); })) : null);
+        }
+        return el('section', { className: 'dinolab-kpg', 'aria-labelledby': 'dino-kpg-heading', 'data-kpg-step': state.step },
+          el('header', { className: 'dinolab-kpg-header' }, el('div', null,
+            el('p', { className: 'dinolab-kpg-kicker' }, kt('eyebrow', 'CASE FILE / 66 MILLION YEARS AGO')),
+            el('h2', { id: 'dino-kpg-heading' }, kt('title', 'One impact. A world of consequences.')),
+            el('p', null, kt('intro', 'How could an impact in one place disrupt life across the planet? Follow the evidence from rocks to an explanation.'))), kpgArt('impact')),
+          el('div', { className: 'dinolab-kpg-steps', role: 'group', 'aria-label': kt('steps_label', 'Extinction investigation steps') }, stages.map(function (label, index) { return el('button', { key: index, type: 'button', 'aria-current': state.step === index ? 'step' : undefined, onClick: function () { go(index); } }, label); })),
+          el('div', { className: 'dinolab-kpg-task' }, body),
+          el('aside', { className: 'dinolab-kpg-survivors', 'aria-label': kt('survivors_label', 'Survival and uncertainty') }, el('h3', null, kt('survivors_title', 'Disruption did not mean the end of all life')), el('p', null, kt('survivors_text', 'Non-bird dinosaurs disappeared, but some bird lineages survived. Other groups also lost species while leaving descendants. Survival varied; this pathway does not explain every outcome.')), el('button', { type: 'button', onClick: function () { upd('tab', 'birds'); focusSoon('dinotab-birds'); } }, kt('birds', 'Explore the surviving dinosaur branch →'))));
+      }
       function renderExtinction() {
-        var openId = d.extOpen || 'ext_kpg';
+        var openId = d.extOpen === undefined ? 'ext_kpg' : d.extOpen;
         var rows = EXTINCTIONS.map(function (ev) {
           var open = openId === ev.id;
           return el('div', { key: ev.id, style: { marginBottom: 10 } },
             el('button', { onClick: function () { upd('extOpen', open ? null : ev.id); }, 'aria-expanded': open ? 'true' : 'false', style: { width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: 10, border: '1px solid ' + (ev.id === 'ext_kpg' ? 'rgba(239,68,68,0.45)' : T.border), background: T.panel, color: T.text, padding: 12 } },
               el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { fontWeight: 800, fontSize: 14 } }, (ev.id === 'ext_kpg' ? '☄️ ' : '') + ev.name), el('span', { style: { fontSize: 12, color: T.soft } }, ev.mya + ' million years ago')),
-              el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 } }, el('div', { style: { flex: 1, height: 10, borderRadius: 6, background: T.deeper, overflow: 'hidden' } }, el('div', { style: { height: '100%', width: ev.pctLost + '%', background: '#ef4444' } })), el('span', { style: { fontSize: 11.5, color: T.text, fontWeight: 700, minWidth: 92, textAlign: 'right' } }, '~' + ev.pctLost + '% species lost'))
             ),
             open ? panel([el('div', { key: 'c', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Cause: '), ev.cause), el('div', { key: 'e', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Effect: '), ev.effect), el('div', { key: 'n', style: { fontSize: 12, color: T.soft, fontStyle: 'italic' } }, __alloT('stem.dinolab.' + (ev.id) + '_note', ev.note))], { marginTop: 6 }) : null
           );
         });
-        var kpgEvidence = panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } }, '☄️ The K-Pg case, up close'), el('div', { key: 's', style: { fontSize: 12.5, color: T.soft, marginBottom: 8, lineHeight: 1.5 } }, 'Several independent lines of evidence point to the same moment.'), el('div', { key: 'e' }, KPG_EVIDENCE.map(function (ke) { return el('div', { key: ke.id, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, marginBottom: 6 } }, el('div', { style: { fontWeight: 700, fontSize: 12.5, marginBottom: 2 } }, ke.label), el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.5 } }, ke.text)); }))], { marginTop: 14, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)' });
-        var survived = panel([el('div', { key: 't', style: { fontWeight: 700, marginBottom: 4 } }, '🐦 What survived'), el('div', { key: 'b', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.55 } }, 'Birds, mammals, crocodiles, turtles, amphibians, and many insects and plants made it through. The dinosaur story did not end; it narrowed to the birds.')], { marginTop: 14 });
-        return el('div', null, sectionTitle('☄️', 'The five great extinctions', 'One of them cleared the way for dinosaurs; another ended their reign.'), panel(rows), kpgEvidence, survived);
+        return el('div', null, renderKpgInvestigation(), el('details', { className: 'dinolab-kpg-overview', style: { marginTop: 18, padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel } }, el('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, t('stem.dinolab.kpg_other_extinctions', 'Reference: the five major mass extinctions')), el('div', { style: { marginTop: 14 } }, rows)));
       }
 
       function renderEvidenceWorkbench() {
@@ -13383,6 +14090,7 @@ var evidenceRoute = [
 
       function renderNotes() {
         var inquiry = timeInquiryState(d.timeInquiry);
+        var kpg = kpgState(d.kpgInvestigation);
         var bench = evidenceWorkbenchState(d.evidenceWorkbench);
         var benchCases = evidenceCases(t).filter(function (c) { return evidenceHasWork(bench.cases[c.id]); });
         var dn = byId(d.notebookSpecies) || byId(selected) || DINOS[0];
@@ -13402,7 +14110,7 @@ var evidenceRoute = [
         function downloadNotebook() {
           var url = null;
           try {
-            url = URL.createObjectURL(new Blob([notebookText(notebook) + timeInquiryText(d.timeInquiry) + digReferenceText + evidenceWorkbenchText(d.evidenceWorkbench)], { type: 'text/plain;charset=utf-8' }));
+            url = URL.createObjectURL(new Blob([notebookText(notebook) + timeInquiryText(d.timeInquiry) + digReferenceText + evidenceWorkbenchText(d.evidenceWorkbench) + kpgNotebookText(d.kpgInvestigation)], { type: 'text/plain;charset=utf-8' }));
             var link = document.createElement('a'); link.href = url; link.download = 'dino-lab-field-notebook.txt';
             document.body.appendChild(link); link.click(); link.remove();
             window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
@@ -13436,7 +14144,7 @@ var evidenceRoute = [
               el('div', { style: { textAlign: 'right', fontSize: 10, color: T.soft } }, (entry[field.id] || '').length + ' / 2000'));
           }),
           el('p', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.notes_retained', 'Changes are kept in the activity as you type.')),
-          el('button', { type: 'button', disabled: !noteIds.length && !inquiry.started && !benchCases.length, style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
+          el('button', { type: 'button', disabled: !noteIds.length && !inquiry.started && !benchCases.length && !kpgHasWork(kpg), style: actionStyle, onClick: downloadNotebook }, __alloT('stem.dinolab.download_notebook', 'Download notebook')));
         var collection = el('aside', { 'aria-label': __alloT('stem.dinolab.notebook_entries', 'Notebook entries'), style: { minWidth: 0 } },
           panel([
             el('h3', { key: 'h', style: { margin: '0 0 5px', fontSize: 16 } }, __alloT('stem.dinolab.your_investigations', 'Your investigations')),
@@ -13454,6 +14162,12 @@ var evidenceRoute = [
           ])));
         var cards = MYTHS.map(function (m) { return panel([el('div', { key: 'm', style: { fontSize: 13.5, fontWeight: 800, color: T.text, marginBottom: 6 } }, '❌ Myth: ' + m.myth), el('div', { key: 'r', style: { fontSize: 13, marginBottom: 6, lineHeight: 1.5 } }, el('strong', { style: { color: T.text } }, '✅ Reality: '), m.reality), el('div', { key: 'w', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, m.why)], { key: m.id }); });
         return el('div', null,
+          kpgHasWork(kpg) ? el('section', { 'aria-labelledby': 'dino-kpg-notebook', className: 'dinolab-kpg-notebook', style: { padding: 18, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
+            el('h2', { id: 'dino-kpg-notebook', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 20 } }, t('stem.dinolab.kpg_notebook_title', 'My extinction investigation')),
+            el('p', { style: { fontSize: 13, lineHeight: 1.6 } }, t('stem.dinolab.kpg_notebook_intro', 'The download includes your sources, pathway choices, first explanation, latest recorded revision, and current draft. Your writing is not automatically assessed.')),
+            el('p', { style: { fontSize: 12, fontWeight: 700 } }, kpg.record && JSON.stringify(kpgDraft(kpg)) === JSON.stringify(kpg.record) ? t('stem.dinolab.kpg_notebook_recorded', 'Explanation recorded') : t('stem.dinolab.kpg_notebook_draft', 'Investigation in progress')),
+            kpg.claim ? el('blockquote', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: '12px 0', lineHeight: 1.7 } }, kpg.claim) : null,
+            el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: 'extinction', kpgInvestigation: Object.assign({}, kpg, { step: 2 }) }); focusSoon('dino-kpg-task'); } }, t('stem.dinolab.kpg_resume', 'Resume my extinction investigation'))) : null,
           benchCases.length ? el('section', { 'aria-labelledby': 'dino-bench-notebook', style: { padding: 16, border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, marginBottom: 16 } },
             el('h2', { id: 'dino-bench-notebook', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 19 } }, __alloT('stem.dinolab.bench_notebook_title', 'My evidence workbench')),
             el('p', { style: { fontSize: 13, color: T.soft, lineHeight: 1.6 } }, __alloT('stem.dinolab.bench_notebook_intro', 'Your drafts, cited sources, first explanations, and latest revisions are included in the notebook download. Writing is not automatically assessed.')),
@@ -13741,6 +14455,18 @@ var evidenceRoute = [
         '@media(max-width:900px){.dinolab-root .dinolab-atlas-layout{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-atlas-selector{grid-template-columns:repeat(4,minmax(0,1fr))}.dinolab-root .dinolab-atlas-preview svg{height:60px}}@media(max-width:560px){.dinolab-root .dinolab-atlas-selector{grid-template-columns:repeat(2,minmax(0,1fr))}.dinolab-root .dinolab-atlas-selector button{padding:9px}.dinolab-root .dinolab-atlas-preview svg{height:54px}.dinolab-root .dinolab-atlas-detail{padding:16px}.dinolab-root .dinolab-atlas-detail-top{grid-template-columns:minmax(0,1fr);gap:15px}.dinolab-root .dinolab-atlas-detail figure svg{max-height:155px}.dinolab-root .dinolab-atlas-routes{grid-template-columns:minmax(0,1fr);gap:10px}.dinolab-root .dinolab-atlas-routes svg{width:85px;height:60px;float:right;margin:0 0 8px 12px}.dinolab-root .dinolab-atlas-routes>div{display:flow-root}.dinolab-root .dinolab-atlas-layout{gap:16px}}',
         '.theme-contrast .dinolab-root .dinolab-atlas-selector button[aria-pressed=true]{outline:2px solid currentColor;outline-offset:-3px}.theme-contrast .dinolab-root .dinolab-atlas-preview{border:1px solid currentColor}@media(forced-colors:active){.dinolab-root .dinolab-atlas-selector button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.dinolab-root .dinolab-atlas-detail>button,.dinolab-root .dinolab-evidence-primary:not(:disabled){border:2px solid ButtonText!important;background:ButtonFace!important;color:ButtonText!important}.dinolab-root .dinolab-atlas-preview{border:1px solid CanvasText}}'
       ].join('');
+      accessibilityStyles += [
+        '.dinolab-root .dinolab-kpg,.dinolab-root .dinolab-kpg-overview{max-width:1180px;margin-inline:auto}.dinolab-root .dinolab-kpg{color:var(--dino-ink)}.dinolab-root .dinolab-kpg p{font-size:14px;line-height:1.7;margin:10px 0 16px}.dinolab-root .dinolab-kpg h2,.dinolab-root .dinolab-kpg h3{font-family:Georgia,Times,serif;line-height:1.2;margin:0 0 10px}.dinolab-root .dinolab-kpg h2{font-size:clamp(30px,3.6vw,43px);letter-spacing:-.025em;max-width:650px}.dinolab-root .dinolab-kpg h3{font-size:26px}.dinolab-root .dinolab-kpg h4{font-size:20px;line-height:1.4;margin:8px 0}.dinolab-root .dinolab-kpg h5{font-size:13px;margin:0}.dinolab-root .dinolab-kpg .dinolab-kpg-kicker{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;line-height:1.5;color:var(--dino-accent);margin:0 0 7px}.dinolab-root .dinolab-kpg button{font-family:inherit;font-size:13px;line-height:1.5;font-weight:700;min-height:44px;padding:10px 14px;border:1px solid var(--allo-stem-border,#334155);border-radius:9px;background:var(--allo-stem-canvas,#0f172a);color:var(--dino-ink);cursor:pointer;overflow-wrap:anywhere}.dinolab-root .dinolab-kpg a{color:var(--dino-ink);font-size:12px;line-height:1.6;text-decoration:underline;text-underline-offset:3px}.dinolab-root .dinolab-kpg-art{display:block;width:100%;height:auto;color:var(--dino-ink)}',
+        '.dinolab-root .dinolab-kpg-header{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:26px;align-items:center;padding:24px 28px;background:linear-gradient(120deg,var(--dino-paper),var(--dino-tint));border:1px solid var(--allo-stem-border,#334155);border-radius:16px}.dinolab-root .dinolab-kpg-header p:last-child{max-width:650px;margin-bottom:0}.dinolab-root .dinolab-kpg-header>svg{border:1px solid var(--allo-stem-border,#334155);border-radius:50%;background:var(--allo-stem-panel,#1e293b)}.dinolab-root .dinolab-kpg-steps{display:flex;gap:10px;margin:20px 0;border-bottom:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-kpg-steps>button{flex:1;padding:13px 8px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent}.dinolab-root .dinolab-kpg-steps>button[aria-current=step]{border-bottom-color:var(--dino-accent);color:var(--dino-accent)}.dinolab-root .dinolab-kpg-task{padding:22px;border:1px solid var(--allo-stem-border,#334155);border-radius:14px;background:var(--allo-stem-panel,#1e293b)}.dinolab-root .dinolab-kpg-task>div>p{max-width:850px}',
+        '.dinolab-root .dinolab-kpg-sources{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.5fr);gap:20px;margin:22px 0}.dinolab-root .dinolab-kpg-sources>*{min-width:0}.dinolab-root .dinolab-kpg-picker{display:flex;flex-direction:column;gap:10px}.dinolab-root .dinolab-kpg-picker>button{display:grid;grid-template-columns:76px minmax(0,1fr);gap:13px;text-align:left;align-items:center;padding:12px}.dinolab-root .dinolab-kpg-picker svg{background:var(--dino-paper);border-radius:7px}.dinolab-root .dinolab-kpg-picker strong{font-size:14px;line-height:1.5}.dinolab-root .dinolab-kpg-picker>button[aria-pressed=true]{border-color:var(--dino-accent);box-shadow:inset 0 0 0 1px var(--dino-accent);background:var(--dino-tint)}.dinolab-root .dinolab-kpg-picker>button[aria-pressed=true] strong{text-decoration:underline;text-underline-offset:4px}.dinolab-root .dinolab-kpg-cited{display:block;font-size:11px;margin-top:6px}.dinolab-root .dinolab-kpg-source-detail{padding:20px;border:1px solid var(--allo-stem-border,#334155);border-top:3px solid var(--dino-accent);border-radius:4px 4px 12px 12px;background:var(--allo-stem-canvas,#0f172a)}.dinolab-root .dinolab-kpg-source-detail figure{margin:0 0 18px;background:var(--dino-paper);border:1px solid var(--allo-stem-border,#334155);border-radius:9px;overflow:hidden}.dinolab-root .dinolab-kpg-source-detail figure svg{height:165px;padding:10px;box-sizing:border-box}.dinolab-root .dinolab-kpg figcaption{font-size:10px;padding:8px 12px;border-top:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-kpg-support,.dinolab-root .dinolab-kpg-limit{padding:12px 14px;border-left:3px solid var(--dino-accent);border-radius:0 8px 8px 0;background:var(--dino-tint);margin:12px 0}.dinolab-root .dinolab-kpg-limit{background:var(--dino-paper);border-left:4px double var(--dino-accent)}.dinolab-root .dinolab-kpg-support p,.dinolab-root .dinolab-kpg-limit p{margin:5px 0 0}.dinolab-root .dinolab-kpg-citation{display:flex;align-items:flex-start;gap:10px;margin-top:16px;font-size:13px;font-weight:700;line-height:1.6;padding:12px;border:1px solid var(--allo-stem-border,#334155);border-radius:8px}.dinolab-root .dinolab-kpg input{width:17px;height:17px;flex-shrink:0;accent-color:var(--dino-accent)}',
+        '.dinolab-root .dinolab-kpg-pathway{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;margin:22px 0}.dinolab-root .dinolab-kpg-pathway li{position:relative;padding:12px;background:var(--dino-paper);border:1px solid var(--allo-stem-border,#334155);border-radius:10px;font-size:12px;font-weight:800;text-align:center}.dinolab-root .dinolab-kpg-pathway svg{height:90px}.dinolab-root .dinolab-kpg-arrow{position:absolute;right:-24px;top:43%;font-size:22px;color:var(--dino-accent)}.dinolab-root .dinolab-kpg-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.dinolab-root .dinolab-kpg-links section{min-width:0;padding:16px;background:var(--allo-stem-canvas,#0f172a);border:1px solid var(--allo-stem-border,#334155);border-radius:10px}.dinolab-root .dinolab-kpg-links h4{font-size:15px;margin-top:0}.dinolab-root .dinolab-kpg-links label{display:block;font-size:13px;line-height:1.6;margin:12px 0 8px}.dinolab-root .dinolab-kpg select,.dinolab-root .dinolab-kpg textarea{width:100%;max-width:100%;box-sizing:border-box;font-family:inherit;font-size:14px;line-height:1.6;padding:10px;min-height:44px;color:var(--dino-ink);background:var(--allo-stem-panel,#1e293b);border:1px solid var(--allo-stem-border,#334155);border-radius:8px}.dinolab-root .dinolab-kpg select{font-size:12px}.dinolab-root .dinolab-kpg .dinolab-kpg-feedback{font-size:13px;padding-top:12px;border-top:2px solid var(--dino-accent);margin-bottom:0}.dinolab-root .dinolab-kpg-feedback strong{display:block}',
+        '.dinolab-root .dinolab-kpg-actions{display:flex;flex-wrap:wrap;gap:10px}.dinolab-root .dinolab-kpg-primary:not(:disabled){background:var(--dino-accent)!important;color:var(--dino-on-accent)!important;border-color:var(--dino-accent)!important}.dinolab-root .dinolab-kpg-citations{margin:18px 0;padding:0;border:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.dinolab-root .dinolab-kpg-citations legend{font-size:14px;font-weight:800;margin-bottom:10px}.dinolab-root .dinolab-kpg-citations label{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;padding:12px;background:var(--allo-stem-canvas,#0f172a);border:1px solid var(--allo-stem-border,#334155);border-radius:9px}.dinolab-root .dinolab-kpg-citations label.is-cited{border-color:var(--dino-accent);background:var(--dino-tint)}.dinolab-root .dinolab-kpg-citations small{display:block;font-size:11px}.dinolab-root .dinolab-kpg-writing>div{margin:20px 0}.dinolab-root .dinolab-kpg-writing label{font-size:15px;font-weight:800}.dinolab-root .dinolab-kpg-writing p{font-size:13px;margin:6px 0 8px}.dinolab-root .dinolab-kpg textarea{resize:vertical;background:var(--allo-stem-canvas,#0f172a)}.dinolab-root .dinolab-kpg-example{padding:14px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;margin:16px 0}.dinolab-root .dinolab-kpg summary{cursor:pointer;font-size:13px;font-weight:700}.dinolab-root .dinolab-kpg-survivors{margin-top:20px;padding:20px;border-left:3px solid var(--dino-accent);background:var(--dino-tint);border-radius:0 12px 12px 0}.dinolab-root .dinolab-kpg-survivors h3{font-size:22px}.dinolab-root .dinolab-kpg-survivors p{max-width:850px}',
+        '.dinolab-root .dinolab-kpg :is(button,a,summary,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--dino-accent)!important;outline-offset:3px;box-shadow:none!important}@media(hover:hover){.dinolab-root .dinolab-kpg-picker>button:hover{border-color:var(--dino-accent)}}',
+        '@media(max-width:800px){.dinolab-root .dinolab-kpg-sources{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-kpg-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.dinolab-root .dinolab-kpg-picker>button{grid-template-columns:53px minmax(0,1fr);padding:9px;gap:9px}.dinolab-root .dinolab-kpg-picker strong{font-size:12px}.dinolab-root .dinolab-kpg-links{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-kpg-header{grid-template-columns:minmax(0,1fr) 115px;gap:16px;padding:20px}.dinolab-root .dinolab-kpg-task{padding:16px}.dinolab-root .dinolab-kpg-pathway{gap:21px}.dinolab-root .dinolab-kpg-arrow{right:-20px}}',
+        '@media(max-width:480px){.dinolab-root .dinolab-kpg-header{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-kpg-header>svg{display:none}.dinolab-root .dinolab-kpg-steps{gap:0}.dinolab-root .dinolab-kpg-steps>button{font-size:11px;padding:10px 5px}.dinolab-root .dinolab-kpg-picker>button{grid-template-columns:minmax(0,1fr);gap:6px}.dinolab-root .dinolab-kpg-picker svg{height:55px}.dinolab-root .dinolab-kpg .dinolab-kpg-kicker{font-size:9px}.dinolab-root .dinolab-kpg-source-detail{padding:14px}.dinolab-root .dinolab-kpg-pathway{grid-template-columns:minmax(0,1fr);gap:22px}.dinolab-root .dinolab-kpg-pathway li{display:flex;align-items:center;gap:16px;text-align:left;padding:7px 12px}.dinolab-root .dinolab-kpg-pathway svg{height:60px;width:78px;flex-shrink:0}.dinolab-root .dinolab-kpg-arrow{right:calc(50% - 7px);top:auto;bottom:-24px;transform:rotate(90deg)}.dinolab-root .dinolab-kpg-citations{grid-template-columns:minmax(0,1fr)}.dinolab-root .dinolab-kpg-actions{flex-direction:column}.dinolab-root .dinolab-kpg-task h3{font-size:23px}}',
+        '.theme-contrast .dinolab-root .dinolab-kpg-header{background:var(--dino-paper)}.theme-contrast .dinolab-root .dinolab-kpg-picker>button[aria-pressed=true]{outline:2px solid currentColor;outline-offset:-3px}@media(forced-colors:active){.dinolab-root .dinolab-kpg-header{background:Canvas}.dinolab-root .dinolab-kpg-primary:not(:disabled){background:ButtonFace!important;color:ButtonText!important;border:2px solid ButtonText!important}.dinolab-root .dinolab-kpg-picker>button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.dinolab-root .dinolab-kpg-steps>button[aria-current=step]{border-bottom-color:Highlight}}'
+      ].join('');
+      accessibilityStyles += '.dinolab-root .dinolab-kpg-options{border:0;padding:0;margin:14px 0 0;min-width:0}.dinolab-root .dinolab-kpg-options legend{font-size:13px;line-height:1.6;margin-bottom:8px}.dinolab-root .dinolab-kpg-options label{display:flex;align-items:flex-start;gap:9px;padding:10px;margin:8px 0;border:1px solid var(--allo-stem-border,#334155);border-radius:8px;cursor:pointer;min-height:44px;box-sizing:border-box}.dinolab-root .dinolab-kpg-options label.is-picked{border-color:var(--dino-accent);background:var(--dino-tint)}.dinolab-root .dinolab-kpg-options input{margin:3px 0 0}.dinolab-root .dinolab-kpg-options span{min-width:0;overflow-wrap:anywhere}.dinolab-root .dinolab-kpg-links h4,.dinolab-root .dinolab-kpg h5{font-weight:800}';
       var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;
       return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }

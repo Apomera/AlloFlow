@@ -360,7 +360,8 @@ describe('curriculum audit report WCAG regressions', () => {
   it('keeps source and generated report localization plumbing aligned', () => {
     expect(reportSource).toContain('<ExecutiveSummary t={t}');
     expect(reportSource).toContain('lang={resolveAuditLanguageTag(comprehensive)}');
-    expect(reportSource).toContain('comprehensive.auditLanguageTag || comprehensive.auditLanguage');
+    // 2026-09-27 (B1): tagged with the report prose language, not auditLanguage (the student-content language).
+    expect(reportSource).toContain("comprehensive.reportLanguageTag || comprehensive.reportLanguage || 'en'");
     expect(reportSource).toContain('role="region" aria-labelledby="curriculum-audit-report-heading"');
     expect(reportSource).toContain('<h1 id="curriculum-audit-report-heading"');
     expect(reportSource).toContain('<time dateTime={generatedAt}>');

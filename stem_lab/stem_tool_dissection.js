@@ -23,6 +23,8 @@
   --diss-gold: #f6c65b;
   color: var(--diss-ink);
   min-width: 0;
+  width: 100%;
+  container: dissection / inline-size;
 }
 [data-dissection-root] *, [data-dissection-root] *::before, [data-dissection-root] *::after { box-sizing: border-box; }
 [data-dissection-root] button, [data-dissection-root] input, [data-dissection-root] summary { font: inherit; }
@@ -49,7 +51,7 @@
   transition-duration: .01ms !important;
   scroll-behavior: auto !important;
 }
-[data-dissection-root][data-text-size="large"] :where(button, input, textarea, summary, p, li, label, span) {
+[data-dissection-root][data-text-size="large"] :where(button, input, textarea, summary, p, li, label, span, strong, b, small, dt, dd, output) {
   font-size: max(1em, .9rem) !important;
   line-height: 1.5 !important;
 }
@@ -223,6 +225,36 @@
 
 .diss-directory-status { margin: -.1rem 0 .45rem; color: #475569; font-size: .68rem; font-weight: 800; }
 .diss-directory-empty { padding: .8rem; border: 1px dashed #94a3b8; border-radius: .6rem; background: #f8fafc; color: #334155; font-size: .75rem; line-height: 1.45; }
+/* Make exposure, recorded evidence, and search recovery easy to scan. */
+.diss-directory-search-label { display: block; margin: .4rem 0 .4rem; color: #173f4c; font-size: .95rem; font-weight: 800; }
+.diss-directory-browser .diss-directory-keyboard-help { margin: .2rem 0 .7rem; color: #405b6d; font-size: .875rem; line-height: 1.55; }
+.diss-directory-browser .diss-directory-filters { gap: .5rem; }
+.diss-directory-browser .diss-directory-filters button { min-height: 3rem !important; padding: .65rem; font-size: .875rem; line-height: 1.5; }
+.diss-directory-browser > .diss-directory-progress, .diss-directory-browser .diss-directory-status { margin: .6rem 0; font-size: .875rem; line-height: 1.55; }
+.diss-directory-browser .diss-directory-status { padding: .65rem; border: 1px solid #c0d1da; border-radius: .6rem; background: #f3f7fa; color: #29495e; }
+.diss-directory-browser .diss-directory-results { display: grid; gap: .55rem; max-height: min(32rem, 65vh); padding: .25rem; }
+[data-dissection-root] .diss-directory-browser .diss-directory-item { display: grid; grid-template-columns: 2rem minmax(0, 1fr); align-items: start; gap: .4rem .65rem; min-width: 0; min-height: 4.5rem !important; margin: 0 !important; padding: .75rem; border: 1px solid #b3c7d2; border-radius: .7rem; background: #fff; color: #203e52; }
+.diss-directory-browser .diss-directory-index { grid-row: 1 / span 2; width: 2rem; height: 2rem; font-size: .875rem; }
+.diss-directory-item__body { min-width: 0; }
+.diss-directory-item__name { display: block; font-size: .95rem; font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; }
+.diss-directory-browser .diss-directory-item .diss-directory-progress { margin-top: .2rem; color: #405b6d; font-size: .875rem; line-height: 1.5; }
+.diss-directory-item__state { grid-column: 2; justify-self: start; padding: .12rem .5rem; border: 1px solid #7eb8a9; border-radius: .4rem; background: #e0f2ed; color: #134e4a; font-size: .875rem; font-weight: 700; line-height: 1.5; }
+.diss-directory-item__state[data-tone="hidden"] { border-color: #d3a35c; background: #fff6df; color: #78350f; }
+.diss-directory-item__state[data-tone="prior"] { border-color: #9db8d4; background: #eaf2fb; color: #234b73; }
+[data-dissection-root][data-text-size="large"] .diss-directory-browser :is(.diss-directory-item__name, .diss-directory-search-label) { font-size: 1rem !important; }
+.diss-directory-browser .diss-directory-item[aria-disabled="true"] { background: #f8fafc; cursor: help; }
+.diss-directory-browser .diss-directory-item:hover { border-color: #1766d2; background: #eff6ff; }
+.diss-directory-browser .diss-directory-item:focus-visible { outline: 3px solid #1766d2; outline-offset: 1px; }
+.diss-directory-browser .diss-directory-empty { padding: .85rem; font-size: .875rem; line-height: 1.55; }
+.diss-directory-empty p { margin: 0; }
+.diss-directory-empty__actions { display: grid; gap: .5rem; margin-top: .75rem; }
+.diss-directory-empty__actions:empty { display: none; }
+.diss-directory-browser .diss-directory-empty__actions button { min-height: 3rem !important; padding: .6rem; border: 1px solid #0f766e; border-radius: .55rem; background: #e0f2ed; color: #134e4a; font-size: .875rem; font-weight: 800; line-height: 1.5; }
+[data-dissection-root][data-high-contrast="true"] .diss-directory-browser :is(.diss-directory-item, .diss-directory-item__state, .diss-directory-status, .diss-directory-empty__actions button) { border-color: #111827; background: #fff; color: #000; }
+@media (forced-colors: active) {
+  .diss-directory-browser :is(.diss-directory-item, .diss-directory-item__state, .diss-directory-status, .diss-directory-empty__actions button) { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .diss-directory-browser .diss-directory-item:focus-visible { outline-color: Highlight; }
+}
 .diss-directory-index { display: inline-grid; width: 1.6rem; height: 1.6rem; flex: 0 0 1.6rem; place-items: center; border: 2px solid #f8fafc; border-radius: 999px; background: #1e293b; color: #fff; box-shadow: 0 0 0 2px var(--diss-system-color, #64748b); font-size: .7rem; font-weight: 900; line-height: 1; }
 @media (max-width: 620px) { .diss-reset-confirm { grid-template-columns: 1fr 1fr; } .diss-reset-confirm p { grid-column: 1 / -1; } }
 .diss-sr-only {
@@ -391,13 +423,13 @@
   cursor: pointer;
 }
 .diss-specimen-tab[aria-selected="true"] { border-color: #1766d2; background: linear-gradient(135deg, #1766d2, #0b7a77); box-shadow: 0 7px 18px rgba(23,102,210,.2); color: #fff; }
-.diss-layer-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.25rem, 1fr)); gap: .45rem; }
+.diss-layer-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: .5rem; padding: .2rem; }
 .diss-layer-button {
-  min-height: 3rem !important;
+  min-height: 5rem !important;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: .45rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: .65rem;
   padding: .55rem .65rem;
   border: 1px solid #cbd5e1;
   border-radius: .75rem;
@@ -408,16 +440,69 @@
 }
 .diss-layer-button[data-state="current"] { border-color: #0f8f86; background: #ecfdf5; box-shadow: inset 0 0 0 1px #5eead4; color: #115e59; }
 .diss-layer-button[data-state="revealed"] { border-color: #bbd5f5; background: #eff6ff; color: #174d86; }
-.diss-layer-button:disabled { cursor: not-allowed; opacity: .5; }
-.diss-layer-index { display: grid; width: 1.4rem; height: 1.4rem; place-items: center; border-radius: 999px; background: #e2e8f0; color: #334155; font-size: .64rem; font-weight: 900; }
-.diss-layer-name { overflow: hidden; font-size: .7rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
-.diss-layer-state { color: #078174; font-size: .7rem; font-weight: 900; }
+.diss-layer-button:disabled { cursor: not-allowed; opacity: 1; }
+.diss-layer-button[data-state="locked"] { border-style: dashed; background: #f1f5f9; color: #475569; }
+.diss-layer-index { display: grid; width: 1.6rem; height: 1.6rem; place-items: center; border-radius: 999px; background: #e2e8f0; color: #334155; font-size: .875rem; font-weight: 900; }
+.diss-layer-body { display: grid; gap: .2rem; min-width: 0; max-width: 14rem; }
+.diss-layer-name { font-size: .95rem; font-weight: 850; line-height: 1.35; overflow-wrap: anywhere; white-space: normal; }
+.diss-layer-state { justify-self: start; color: #334155; font-size: .875rem; font-weight: 800; line-height: 1.35; }
+.diss-layer-button[data-state="current"] .diss-layer-state { border-bottom: 2px solid currentColor; color: #115e59; }
+.diss-layer-button[data-state="revealed"] .diss-layer-state { color: #174d86; }
+.diss-layer-detail { color: #475569; font-size: .875rem; line-height: 1.4; overflow-wrap: anywhere; }
+.diss-layer-stepper .diss-layer-summary { color: #475569; font-size: .875rem; line-height: 1.5; }
+.diss-layer-stepper .diss-section-heading h3 { font-size: 1rem; }
+.diss-layer-help { margin: .5rem .2rem 0; color: #475569; font-size: .875rem; line-height: 1.5; }
+.diss-layer-scroll-help { display: none; }
+.diss-layer-button:hover:not(:disabled) { border-color: #1766d2; background: #eff6ff; }
+.diss-layer-button:focus-visible, .diss-layer-list:focus-visible { outline: 3px solid #1766d2; outline-offset: -3px; }
+[data-dissection-root][data-text-size="large"] .diss-layer-stepper :is(.diss-layer-name, .diss-layer-state, .diss-layer-detail, .diss-layer-summary, .diss-layer-help) { font-size: 1rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-layer-button { border-color: #111827; background: #fff; color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-layer-stepper :is(.diss-layer-index, .diss-layer-name, .diss-layer-state, .diss-layer-detail, .diss-layer-summary, .diss-layer-help) { color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-layer-button[data-state="current"] { box-shadow: inset 0 0 0 1px #111827; }
+@container dissection (max-width: 640px) {
+  .diss-layer-stepper .diss-section-heading { align-items: start; flex-wrap: wrap; }
+  .diss-layer-list { display: flex; overflow-x: auto; scroll-snap-type: x proximity; }
+  .diss-layer-button { flex: 0 0 auto; min-width: 8.6rem; width: max-content; max-width: 100%; scroll-snap-align: start; }
+  .diss-layer-scroll-help { display: inline; }
+}
+@media (forced-colors: active) {
+  .diss-layer-button, .diss-layer-index { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .diss-layer-stepper :is(.diss-layer-name, .diss-layer-state, .diss-layer-detail, .diss-layer-summary, .diss-layer-help) { color: CanvasText !important; }
+  .diss-layer-button[data-state="current"] { border: 2px solid Highlight !important; box-shadow: none; }
+}
 .diss-toolbar { gap: .45rem !important; padding: .5rem !important; border-radius: 1rem !important; background: #f8fafc !important; }
 .diss-quiz-option:hover:not(:disabled) { border-color: #b45309; background: #fffbeb; }
 .diss-quiz-option:focus-visible { outline: 3px solid #b45309; outline-offset: 2px; }
 .diss-toolbar__label { padding-left: .35rem; color: #475569; font-size: .68rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .diss-toolbar > button, .diss-tool-panel > button { min-height: 2.75rem !important; }
 .diss-tool-panel { gap: .45rem !important; padding: .65rem !important; }
+/* Organize display settings into readable groups with visible toggle states. */
+#diss-view-tools.diss-view-controls { display: grid !important; grid-template-columns: minmax(0, 1fr); gap: .75rem !important; padding: .75rem !important; background: #f3f7fa; }
+.diss-view-group { min-width: 0; padding: .75rem; border: 1px solid #b3c8d0; border-radius: .8rem; background: #fff; }
+.diss-view-group__title { margin: 0 0 .65rem; padding-bottom: .55rem; border-bottom: 1px solid #d5e1e5; color: #173f4c; font-size: 1rem; font-weight: 850; line-height: 1.4; }
+.diss-view-control-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; }
+.diss-view-control-grid > :is(button, .diss-light-intensity) { width: 100%; min-width: 0; }
+[data-dissection-root] .diss-view-control-grid button { display: flex; align-items: center; justify-content: flex-start; min-height: 3rem !important; gap: .5rem; padding: .65rem .7rem; border: 1px solid #9fb8c8; background: #fff; color: #174d86; font-size: .875rem !important; font-weight: 750; line-height: 1.45 !important; text-align: start; white-space: normal; }
+.diss-view-control-grid button[aria-pressed]::after { content: ""; flex: 0 0 auto; width: .7em; height: .7em; margin-inline-start: auto; border: 2px solid currentColor; border-radius: 50%; }
+.diss-view-control-grid button[aria-pressed="true"] { border-color: #0f766e; background: #e0f2ed; color: #134e4a; box-shadow: inset 0 0 0 1px #0f766e; }
+.diss-view-control-grid button[aria-pressed="true"]::after { background: currentColor; }
+.diss-view-control-grid button:hover:not(:disabled) { border-color: #1766d2; background: #eff6ff; }
+.diss-view-control-grid button:focus-visible { outline: 3px solid #1766d2; outline-offset: 3px; box-shadow: 0 0 0 5px #fef08a; }
+.diss-view-control-grid button:disabled { opacity: 1; border-color: #cbd5e1; background: #f1f5f9; color: #475569; cursor: not-allowed; }
+.diss-view-control-grid .diss-light-intensity { padding: .65rem .7rem; }
+.diss-view-control-grid .diss-light-intensity :is(span, output) { font-size: .875rem; line-height: 1.45; }
+.diss-view-control-grid .diss-light-intensity input { min-width: 0; min-height: 2.75rem; }
+[data-dissection-root][data-text-size="large"] .diss-view-control-grid button { font-size: 1rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-view-group { border-color: #111827; }
+[data-dissection-root][data-high-contrast="true"] .diss-view-control-grid button { background: #fff; color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-view-control-grid button[aria-pressed="true"] { box-shadow: inset 0 0 0 1px #111827; }
+@container dissection (max-width: 980px) { .diss-view-control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container dissection (max-width: 430px) { .diss-view-control-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (forced-colors: active) {
+  .diss-view-group { border-color: CanvasText; background: Canvas; }
+  .diss-view-control-grid button[aria-pressed="true"] { border: 2px solid Highlight; background: Canvas; color: CanvasText; box-shadow: none; }
+  .diss-view-control-grid button:focus-visible { outline-color: Highlight; }
+}
 .diss-light-intensity { display: grid; min-width: min(100%, 15rem); min-height: 2.75rem; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .18rem .55rem; padding: .38rem .55rem; border: 1px solid #bfdbfe; border-radius: .55rem; background: #fff; color: #1e3a8a; font-size: .75rem; font-weight: 800; }
 .diss-light-intensity[data-tone="glare"], .diss-light-intensity[data-tone="dim"] { border-color: #d97706; background: #fffbeb; color: #78350f; }
 .diss-light-intensity input { grid-column: 1 / -1; width: 100%; min-height: 1.5rem; margin: 0; accent-color: #1766d2; cursor: pointer; }
@@ -1020,6 +1105,64 @@
 .diss-countercheck button:disabled { cursor: default; opacity: .68; }
 .diss-countercheck__status { margin: .45rem 0 0 !important; color: #5b21b6 !important; font-weight: 750; }
 @media (forced-colors: active) { .diss-confidence-scale__option[data-selected="true"] { border: 3px solid Highlight; background: Canvas; color: CanvasText; } }
+/* Give writing, confidence, and draft review distinct reading groups. */
+.diss-evidence-form { padding: .85rem; }
+.diss-evidence-form > label { color: #173f4c; font-size: .95rem; line-height: 1.4; }
+.diss-evidence-form > p { color: #40586c; font-size: .875rem; line-height: 1.55; }
+.diss-evidence-form .diss-evidence-starters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; margin-top: .65rem; }
+.diss-evidence-form .diss-evidence-starters button { min-width: 0; padding: .55rem .45rem; font-size: .875rem; line-height: 1.45; }
+.diss-evidence-form .diss-evidence-note { min-height: 8rem; margin-top: .65rem; padding: .75rem; border-color: #8199ad; color: #20394e; font-family: inherit; font-size: 1rem; line-height: 1.6; }
+.diss-evidence-form .diss-evidence-note::placeholder { color: #617189; opacity: 1; }
+.diss-evidence-form .diss-confidence-scale { margin-top: 1rem; padding-top: .85rem; border-top: 1px solid #c3d6d2; }
+.diss-evidence-form .diss-confidence-scale__label { color: #173f4c; font-size: .875rem; line-height: 1.5; }
+.diss-evidence-form .diss-confidence-scale__choices { display: grid; grid-template-columns: minmax(0, 1fr); gap: .45rem; margin-top: .55rem; }
+.diss-evidence-form .diss-confidence-scale__option { min-width: 0; min-height: 3.15rem !important; gap: .65rem; padding: .6rem .7rem; border-color: #a3b9c5; color: #25485e; font-size: .875rem; line-height: 1.5; }
+.diss-evidence-form .diss-confidence-scale__option input { flex: 0 0 auto; width: 1.15em; height: 1.15em; accent-color: #0f766e; }
+.diss-evidence-form .diss-confidence-scale__option:hover { border-color: #0f766e; background: #f0fdfa; }
+.diss-evidence-form .diss-confidence-scale__option[data-selected="true"] { border-color: #0f766e; background: #e0f2ed; color: #134e4a; box-shadow: inset 0 0 0 1px #0f766e; }
+.diss-evidence-form .diss-confidence-scale__option:focus-within { outline: 3px solid #1766d2; outline-offset: 3px; }
+.diss-evidence-form .diss-confidence-cue { margin-top: .65rem; font-size: .875rem; line-height: 1.55; }
+.diss-evidence-form .diss-evidence-coach { margin-top: .9rem; }
+.diss-evidence-form .diss-evidence-coach__head { color: #173f4c; font-size: .875rem; }
+.diss-evidence-form .diss-draft-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.diss-evidence-form .diss-draft-status li { min-width: 0; padding: .55rem; color: #27465b; font-size: .875rem; line-height: 1.5; }
+.diss-evidence-form .diss-evidence-coach__note { font-size: .875rem; line-height: 1.55; }
+.diss-evidence-form .diss-draft-review summary { font-size: .875rem; }
+.diss-evidence-form .diss-draft-review__steps li { min-width: 0; padding: .65rem; border: 1px solid #c6d5d9; border-radius: .55rem; background: #fff; font-size: .875rem; line-height: 1.55; }
+.diss-evidence-form .diss-draft-review__steps li > div { min-width: 0; }
+.diss-evidence-form .diss-draft-review__number { flex-basis: 1.8em; height: 1.8em; }
+.diss-evidence-form .diss-countercheck :is(summary, p, button) { font-size: .875rem; line-height: 1.5; }
+.diss-observe-first strong { font-size: .875rem; }
+.diss-observe-first p { font-size: .875rem; line-height: 1.55; }
+[data-dissection-root][data-high-contrast="true"] .diss-evidence-form :is(.diss-confidence-scale__option, .diss-draft-status li, .diss-draft-review__steps li) { border-color: #111827; background: #fff; color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-evidence-form .diss-confidence-scale__option[data-selected="true"] { box-shadow: inset 0 0 0 1px #111827; }
+[data-dissection-root][data-high-contrast="true"] .diss-evidence-form .diss-confidence-scale__option input { accent-color: #000; }
+@media (forced-colors: active) {
+  .diss-evidence-form .diss-confidence-scale__option[data-selected="true"] { border: 3px solid Highlight; background: Canvas; color: CanvasText; box-shadow: none; }
+  .diss-evidence-form .diss-confidence-scale__option:focus-within { outline-color: Highlight; }
+  .diss-evidence-form .diss-draft-review__steps li { border-color: CanvasText; background: Canvas; color: CanvasText; }
+}
+/* Keep inspecting, writing, and comparing within reach of the selected structure. */
+.diss-study-actions { margin: .75rem 0; }
+.diss-study-actions__steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .55rem; margin: 0; padding: 0; list-style: none; }
+.diss-study-actions__steps li { min-width: 0; }
+[data-dissection-root] .diss-study-actions button { display: grid; grid-template-columns: 2rem minmax(0, 1fr); align-items: start; gap: .65rem; width: 100%; min-width: 0; min-height: 4rem; height: 100%; padding: .75rem; border: 1px solid #94b4c0; border-radius: .7rem; background: #fff; color: #17495e; font-family: inherit; font-size: .875rem; line-height: 1.5; text-align: start; cursor: pointer; }
+.diss-study-actions__number { display: grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid #789dab; border-radius: 50%; background: #edf5f8; color: #17495e; font-weight: 850; }
+.diss-study-actions__body { min-width: 0; }
+.diss-study-actions__body strong { display: block; font-size: .875rem; line-height: 1.5; font-weight: 850; }
+.diss-study-actions__cue { display: block; margin-top: .2rem; color: #405b6d; font-size: .875rem; line-height: 1.5; }
+.diss-study-actions button[data-study-action="inspect"] { border-color: #26887b; background: #eefaf6; }
+.diss-study-actions button[data-study-action="inspect"] .diss-study-actions__number { border-color: #0f766e; background: #0f766e; color: #fff; }
+.diss-study-actions button:hover { border-color: #1766d2; background: #eff6ff; }
+.diss-study-actions button:focus-visible, .diss-study-return-note:focus-visible { outline: 3px solid #1766d2; outline-offset: 3px; }
+[data-dissection-root] .diss-study-return-note { width: 100%; min-height: 3rem; margin-top: .7rem; padding: .65rem .75rem; border: 1px solid #0f766e; border-radius: .6rem; background: #e0f2ed; color: #134e4a; font-family: inherit; font-size: .875rem; line-height: 1.5; font-weight: 800; cursor: pointer; }
+.diss-study-return-note:hover { background: #ccede3; }
+[data-dissection-root][data-high-contrast="true"] :is(.diss-study-actions button, .diss-study-actions__number, .diss-study-return-note) { border-color: #111827; background: #fff; color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-study-actions__cue { color: #172033; }
+@media (forced-colors: active) {
+  .diss-study-actions button, .diss-study-actions__number, .diss-study-return-note { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .diss-study-actions button:focus-visible, .diss-study-return-note:focus-visible { outline-color: Highlight; }
+}
 .diss-science-scope { margin: .55rem 0 0; padding: .55rem .65rem; border: 1px solid #bfdbfe; border-radius: .65rem; background: #eff6ff; color: #294f79; font-size: .75rem; line-height: 1.45; }
 .diss-structure-list button { min-height: 2.7rem !important; }
 .diss-recall { padding: 1rem; border: 1px solid #c4b5fd; border-radius: 1rem; background: linear-gradient(135deg, #f5f3ff, #eef2ff); color: #312e81; }
@@ -1174,6 +1317,188 @@
   overflow: visible;
   text-overflow: clip;
   white-space: normal;
+}
+
+/* Readable instrument choice and preparation feedback. */
+.diss-instrument-preparation { margin-top: .8rem; padding: .8rem; border: 1px solid #9bbdb7; border-radius: .85rem; background: #fff; min-width: 0; }
+.diss-instrument-preparation > h4 { margin: 0; color: #134e4a; font-size: 1rem; font-weight: 850; line-height: 1.4; }
+.diss-instrument-keyboard-help { margin: .35rem 0 .6rem; color: #475569; font-size: .875rem; line-height: 1.5; }
+.diss-instrument-preparation .diss-instruments { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .5rem; margin-top: 0; }
+.diss-instrument-preparation .diss-instrument { min-height: 6.5rem !important; align-items: start; justify-content: start; padding: .65rem; gap: .25rem; text-align: left; color: #234b46; font-size: .875rem; line-height: 1.4; }
+.diss-instrument-preparation .diss-instrument[aria-checked="true"] { background: #e0f2ed; color: #134e4a; box-shadow: inset 0 0 0 1px #0f766e; }
+.diss-instrument__markers { display: flex; flex-wrap: wrap; gap: .25rem; }
+.diss-instrument__markers:empty { display: none; }
+.diss-tool-marker { display: inline-block; padding: .08rem .35rem; border: 1px solid #b48e39; border-radius: .35rem; background: #fff5d6; color: #713f12; font-size: .875rem; font-weight: 800; line-height: 1.4; }
+.diss-tool-marker[data-tool-marker="selected"] { border-color: #0f766e; background: #0f766e; color: #fff; }
+.diss-instrument-preparation .diss-instrument__name { color: inherit; font-size: .95rem; line-height: 1.4; overflow-wrap: anywhere; }
+.diss-instrument__icon { display: inline; }
+.diss-instrument-preparation .diss-instrument__state { font-size: .875rem; line-height: 1.4; letter-spacing: normal; text-transform: none; overflow-wrap: anywhere; }
+.diss-instrument-preparation .diss-instrument__hint { color: #475569; font-size: .875rem; line-height: 1.4; font-weight: 600; letter-spacing: normal; text-transform: none; overflow-wrap: anywhere; }
+.diss-instrument-preparation .diss-instrument[aria-checked="true"] .diss-instrument__state { color: #134e4a; }
+.diss-instrument-preparation .diss-instrument[aria-checked="true"] .diss-instrument__hint { color: #475569; }
+.diss-instrument-preparation .diss-instrument:disabled .diss-instrument__hint { color: #881337; }
+.diss-instrument-preparation .diss-instrument:focus-visible { outline: 3px solid #1766d2; outline-offset: 2px; }
+.diss-instrument-preparation .diss-active-tool { grid-template-columns: auto minmax(0, 1fr); gap: .65rem; padding: .75rem; }
+.diss-instrument-preparation .diss-active-tool strong { font-size: .95rem; line-height: 1.4; }
+.diss-instrument-preparation #diss-active-tool-help { font-size: .875rem; line-height: 1.5; }
+.diss-instrument-preparation .diss-active-tool__badge { grid-column: 2; justify-self: start; max-width: 100%; margin-top: 0; font-size: .875rem; letter-spacing: normal; text-transform: none; white-space: normal; }
+.diss-preparation-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin-top: .5rem; }
+.diss-preparation-actions button { min-height: 3rem !important; padding: .55rem; border: 1px solid #0f766e; border-radius: .55rem; background: #f0fdfa; color: #134e4a; font-size: .875rem; font-weight: 800; line-height: 1.4; }
+.diss-instrument-preparation .diss-readiness { padding: .75rem; }
+.diss-instrument-preparation .diss-readiness__header strong { font-size: .95rem; line-height: 1.4; }
+.diss-instrument-preparation .diss-readiness__score { font-size: .875rem; }
+.diss-instrument-preparation .diss-readiness__checks { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .45rem; }
+.diss-instrument-preparation .diss-readiness__check { align-items: start; padding: .5rem; font-size: .875rem; line-height: 1.4; }
+.diss-instrument-preparation .diss-readiness__check span { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.diss-instrument-preparation .diss-readiness__cue { font-size: .875rem; line-height: 1.5; }
+.diss-instrument-preparation .diss-calibration { grid-template-columns: minmax(0, 1fr) auto; padding: .75rem; gap: .5rem; }
+.diss-instrument-preparation .diss-calibration__title { grid-column: 1 / -1; }
+.diss-instrument-preparation .diss-calibration__title strong { font-size: .95rem; line-height: 1.4; }
+.diss-instrument-preparation .diss-calibration__title span { font-size: .875rem; line-height: 1.5; }
+.diss-instrument-preparation .diss-calibration input[type="range"] { min-height: 3rem; }
+.diss-instrument-preparation .diss-calibration output { font-size: 1rem; line-height: 1.4; }
+.diss-instrument-preparation .diss-calibration__status { flex-wrap: wrap; align-items: start; font-size: .875rem; line-height: 1.5; }
+.diss-instrument-preparation .diss-calibration__status b { font-size: .875rem; line-height: 1.4; letter-spacing: normal; text-transform: none; white-space: normal; }
+.diss-instrument-preparation .diss-procedure__controls :is(span, button) { font-size: .875rem; }
+[data-dissection-root][data-text-size="large"] .diss-instrument-preparation :is(.diss-instrument__name, .diss-instrument__state, .diss-instrument__hint, .diss-tool-marker, .diss-active-tool strong, #diss-active-tool-help, .diss-active-tool__badge, .diss-readiness__header strong, .diss-readiness__score, .diss-readiness__check, .diss-readiness__cue, .diss-calibration__title strong, .diss-calibration__title span, .diss-calibration__status, .diss-calibration__status b, .diss-instrument-keyboard-help, .diss-preparation-actions button) { font-size: 1rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-instrument-preparation { border-color: #111827; background: #fff; }
+[data-dissection-root][data-high-contrast="true"] .diss-instrument-preparation :is(.diss-instrument, .diss-tool-marker, .diss-active-tool, .diss-active-tool__badge, .diss-preparation-actions button, .diss-readiness, .diss-calibration, .diss-calibration output, .diss-calibration__status b) { border-color: #111827; background: #fff; color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-instrument-preparation .diss-instrument[aria-checked="true"] { box-shadow: inset 0 0 0 1px #111827; }
+[data-dissection-root][data-high-contrast="true"] .diss-instrument-preparation :is(strong, span, p) { color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-instrument-preparation .diss-tool-marker[data-tool-marker="selected"] { text-decoration: underline; }
+@container dissection (max-width: 640px) {
+  .diss-instrument-preparation { padding: .6rem; }
+  .diss-instrument-preparation .diss-instruments { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diss-instrument-preparation .diss-readiness__checks { grid-template-columns: minmax(0, 1fr); }
+}
+@media (forced-colors: active) {
+  .diss-instrument-preparation, .diss-instrument-preparation :is(.diss-instrument, .diss-tool-marker, .diss-active-tool, .diss-active-tool__badge, .diss-preparation-actions button, .diss-readiness, .diss-calibration, .diss-calibration output, .diss-calibration__status b) { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .diss-instrument-preparation :is(strong, span, p) { color: CanvasText !important; }
+  .diss-instrument-preparation .diss-instrument[aria-checked="true"] { border: 2px solid Highlight !important; box-shadow: none; }
+}
+
+/* Learning checkpoints keep the decision, phase and response easy to scan. */
+.diss-learning-check { grid-template-columns: minmax(0, 1fr); gap: .85rem; padding: 1rem; }
+.diss-learning-check .diss-learning-check__eyebrow { font-size: .875rem; letter-spacing: .025em; text-transform: none; line-height: 1.4; }
+.diss-learning-check h3 { margin-top: .25rem; font-size: 1.15rem; line-height: 1.35; }
+.diss-learning-check .diss-learning-check__prompt { margin-top: .45rem; font-size: .95rem; line-height: 1.55; }
+.diss-learning-check .diss-learning-check__phases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; width: 100%; justify-content: start; }
+.diss-learning-check .diss-learning-check__phase { display: grid; min-width: 0; align-content: start; gap: .15rem; padding: .55rem .4rem; border-radius: .65rem; font-size: .875rem; line-height: 1.4; overflow-wrap: anywhere; }
+.diss-learning-check .diss-learning-check__phase-status { display: block; font-size: .875rem; font-weight: 600; line-height: 1.4; }
+.diss-learning-check .diss-learning-check__options { gap: .65rem; }
+.diss-learning-check .diss-learning-check__option { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; align-items: start; gap: .45rem .65rem; min-width: 0; min-height: 4rem !important; padding: .8rem; font-size: .95rem; font-weight: 650; line-height: 1.5; border-radius: .75rem; }
+.diss-learning-check .diss-learning-check__number { display: grid; flex: 0 0 auto; place-items: center; min-width: 1.85rem; height: 1.85rem; border: 1px solid #8ba7c4; border-radius: 50%; background: #eff6ff; color: #173f69; font-size: .875rem; font-weight: 900; line-height: 1; }
+.diss-learning-check .diss-learning-check__answer { min-width: 0; font-size: .95rem; font-weight: 500; overflow-wrap: anywhere; }
+.diss-learning-check .diss-learning-check__marker { grid-column: 2; justify-self: start; padding: .15rem .45rem; border: 1px solid currentColor; border-radius: .35rem; font-size: .875rem; font-weight: 850; line-height: 1.4; }
+.diss-learning-check .diss-learning-check__option[aria-pressed="true"] .diss-learning-check__number { border-color: currentColor; background: transparent; color: inherit; }
+.diss-learning-check .diss-learning-check__option:focus-visible, .diss-learning-check .diss-learning-check__action:focus-visible { outline: 3px solid #1766d2; outline-offset: 3px; }
+.diss-learning-check .diss-learning-check__keyboard-help { grid-column: 1 / -1; margin: 0; color: #334155; font-size: .875rem; line-height: 1.5; }
+.diss-learning-check .diss-learning-check__feedback { padding: .7rem .8rem; font-size: .875rem; line-height: 1.55; }
+.diss-learning-check .diss-learning-check__feedback[data-result="incorrect"] { border-color: #b45309; background: #fffbeb; color: #78350f; }
+.diss-learning-check .diss-learning-check__feedback[data-result="correct"] { border-color: #0f766e; background: #ecfdf5; color: #065f46; }
+.diss-learning-check .diss-learning-check__perform { align-items: start; padding: .75rem; font-size: .95rem; font-weight: 500; line-height: 1.55; }
+.diss-learning-check .diss-learning-check__perform::before { width: 1.85rem; height: 1.85rem; font-size: .875rem; }
+.diss-learning-check .diss-learning-check__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+.diss-learning-check .diss-learning-check__action { min-width: 0; min-height: 3rem !important; padding: .7rem .8rem; border: 1px solid #0f766e; border-radius: .65rem; background: #fff; color: #115e59; font-size: .95rem; font-weight: 800; line-height: 1.4; white-space: normal; cursor: pointer; }
+.diss-learning-check .diss-learning-check__action:hover { background: #ccfbf1; }
+[data-dissection-root][data-text-size="large"] .diss-learning-check :is(.diss-learning-check__eyebrow, .diss-learning-check__prompt, .diss-learning-check__phase, .diss-learning-check__phase-status, .diss-learning-check__number, .diss-learning-check__answer, .diss-learning-check__marker, .diss-learning-check__keyboard-help, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action) { font-size: 1rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-learning-check { border-color: #111827; background: #fff; color: #000; box-shadow: none; }
+[data-dissection-root][data-high-contrast="true"] .diss-learning-check :is(.diss-learning-check__phase, .diss-learning-check__option, .diss-learning-check__number, .diss-learning-check__marker, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action) { border-color: #111827; background: #fff; color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-learning-check .diss-learning-check__keyboard-help { color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-learning-check .diss-learning-check__phase[data-state="current"], [data-dissection-root][data-high-contrast="true"] .diss-learning-check .diss-learning-check__option[aria-pressed="true"] { box-shadow: inset 0 0 0 1px #111827; }
+@container dissection (max-width: 980px) {
+  .diss-learning-check .diss-learning-check__options { grid-template-columns: minmax(0, 1fr); }
+}
+@container dissection (max-width: 640px) {
+  .diss-learning-check { padding: .7rem; }
+  .diss-learning-check .diss-learning-check__phases { gap: .35rem; }
+  .diss-learning-check .diss-learning-check__actions { grid-template-columns: minmax(0, 1fr); }
+}
+@media (forced-colors: active) {
+  .diss-learning-check, .diss-learning-check :is(.diss-learning-check__phase, .diss-learning-check__option, .diss-learning-check__number, .diss-learning-check__marker, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action) { border-color: CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }
+  .diss-learning-check .diss-learning-check__keyboard-help { color: CanvasText; }
+  .diss-learning-check .diss-learning-check__phase[data-state="current"], .diss-learning-check .diss-learning-check__option[aria-pressed="true"] { border: 2px solid Highlight; box-shadow: none; }
+  .diss-learning-check .diss-learning-check__option:focus-visible, .diss-learning-check .diss-learning-check__action:focus-visible { outline-color: Highlight; }
+}
+
+/* Panels respond to the lab's available width, including a narrow embedded lab. */
+.diss-stage__telemetry-head { align-items: flex-start; flex-wrap: wrap; }
+.diss-stage__telemetry-head > div { flex: 1 1 auto; max-width: 100%; }
+.diss-stage__telemetry-head strong, .diss-stage__telemetry-phase,
+.diss-stage__telemetry-action, .diss-stage__telemetry-priority {
+  overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere;
+}
+.diss-stage__telemetry-phase { max-width: 100%; line-height: 1.45; }
+.diss-stage__telemetry-foot { flex-wrap: wrap; align-items: flex-start; gap: .5rem; }
+.diss-stage__telemetry-foot > span { min-width: 0; max-width: 100%; }
+.diss-stage__telemetry-action { flex: 1 1 12rem; }
+.diss-stage__telemetry-priority { flex: 1 1 10rem; line-height: 1.45; }
+.diss-stage__telemetry-prepare { min-height: 2.75rem; font-size: .75rem; }
+.diss-stage__telemetry-grid, .diss-field-readiness__checks, .diss-stage__telemetry-deltas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+}
+.diss-stage__telemetry-metric { padding: .5rem; }
+.diss-stage__telemetry-metric-head { flex-wrap: wrap; row-gap: .15rem; }
+.diss-stage__telemetry-metric-head b { margin-inline-start: auto; font-size: .82rem; }
+.diss-stage__telemetry-metric-note { opacity: 1; font-weight: 500; line-height: 1.5; }
+.diss-stage__telemetry-metric progress { height: .4rem; margin-block: .4rem; }
+.diss-stage__telemetry-delta > span, .diss-stage__telemetry-delta > strong, .diss-stage__telemetry-delta > small {
+  overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; line-height: 1.45;
+}
+.diss-field-monitor__summary { grid-template-columns: minmax(0, 1fr) auto; }
+.diss-field-monitor__summary small { grid-column: 1 / -1; white-space: normal; overflow: visible; font-size: .75rem; line-height: 1.45; }
+.diss-field-monitor__summary span { max-width: 100%; white-space: normal; text-align: end; }
+.diss-field-readiness__header { flex-wrap: wrap; }
+.diss-field-readiness__header strong { font-size: .82rem; }
+.diss-field-readiness__cue, .diss-field-readiness__check-detail { opacity: 1; line-height: 1.5; }
+.diss-field-readiness__check { padding: .5rem; }
+.diss-field-readiness__check-head { align-items: flex-start; }
+.diss-field-readiness__check-head b { width: 1.5em; height: 1.5em; font-size: .7rem; }
+.diss-field-readiness__actions { gap: .5rem; }
+.diss-field-readiness__action { min-height: 2.75rem; padding: .45rem .6rem; }
+.diss-protocol dt { font-size: .75rem; line-height: 1.45; }
+.diss-protocol dd { font-size: .82rem; line-height: 1.5; }
+.diss-protocol__align { min-height: 2.75rem !important; font-size: .75rem; }
+.diss-selection-header { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .55rem .75rem; margin-bottom: .5rem; }
+.diss-selection-header__name { flex: 1 1 9rem; min-width: 0; overflow-wrap: anywhere; }
+.diss-selection-nav { flex: 0 0 auto; margin-inline-start: auto; }
+.diss-selection-nav button { flex: 0 0 auto; }
+@container dissection (max-width: 980px) {
+  .diss-workspace { grid-template-columns: minmax(0, 1fr); }
+}
+@container dissection (max-width: 700px) {
+  .diss-next-action { position: static; grid-template-columns: auto minmax(0, 1fr); }
+  .diss-next-action__actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; min-width: 0; }
+  .diss-learning-check { grid-template-columns: minmax(0, 1fr); }
+  .diss-learning-check__phases { justify-content: flex-start; }
+  .diss-learning-check__options { grid-template-columns: minmax(0, 1fr); }
+  .diss-stage__telemetry-grid, .diss-field-readiness__checks, .diss-stage__telemetry-deltas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container dissection (max-width: 520px) {
+  .diss-calibration { grid-template-columns: minmax(0, 1fr) auto; }
+  .diss-calibration__title { grid-column: 1 / -1; }
+  .diss-calibration__status { flex-wrap: wrap; }
+  .diss-readiness__checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container dissection (max-width: 380px) {
+  .diss-next-action { grid-template-columns: minmax(0, 1fr); }
+  .diss-next-action__actions { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
+  .diss-stage__telemetry-grid, .diss-field-readiness__checks, .diss-stage__telemetry-deltas { grid-template-columns: minmax(0, 1fr); }
+}
+@container dissection (max-width: 640px) {
+  .diss-stage__telemetry-foot { flex-direction: column; align-items: stretch; }
+  .diss-stage__telemetry-foot > span { flex: 0 1 auto; width: 100%; }
+  .diss-stage__telemetry-prepare { align-self: flex-start; }
+  .diss-stage { padding: .55rem; }
+  .diss-stage__header, .diss-procedure__header { align-items: flex-start; flex-direction: column; }
+  .diss-stage__status { max-width: 100%; text-align: start; }
+  .diss-stage__telemetry-phase, .diss-stage__telemetry-priority { text-align: start; }
+  .diss-protocol, .diss-canvas-layout[data-split="true"], .diss-overlay-actions { grid-template-columns: minmax(0, 1fr); }
+  .diss-instruments, .diss-procedure__metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diss-procedure__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .diss-active-tool { grid-template-columns: auto minmax(0, 1fr); }
+  .diss-active-tool__badge { grid-column: 2; justify-self: start; max-width: 100%; white-space: normal; }
+  .diss-zoom-bar { flex-wrap: wrap; }
 }
 
 @media print {
@@ -4914,8 +5239,8 @@ var d = labToolData.dissection || {};
             updateProcedure({ learningChecks: checks }, entry[phase + 'Feedback'], null, isCorrect ? 'success' : 'caution');
             if (isCorrect) {
               setTimeout(function () {
-                var nextFocusId = phase === 'prediction' ? 'diss-canvas' : 'diss-next-action-title';
-                var focusTarget = dissectionNodeById(nextFocusId);
+                var nextFocusId = phase === 'prediction' ? 'diss-canvas' : 'diss-learning-check-title';
+                var focusTarget = dissectionNodeById(nextFocusId) || (phase === 'reflection' ? dissectionNodeById('diss-next-action-title') : null);
                 if (focusTarget && focusTarget.focus) focusTarget.focus();
               }, 0);
             }
@@ -4953,6 +5278,7 @@ var d = labToolData.dissection || {};
               awardStemXP('dissection', 10, 'Completed evidence-based guided investigation');
               if (addToast) addToast('Guided investigation complete!', 'success');
             }
+            setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);
             return true;
           }
           function procedureToolReadinessData(toolId, state) {
@@ -7369,9 +7695,12 @@ var d = labToolData.dissection || {};
               canvas._canvasHudScale = canvasHudScale;
               canvas._canvasUiScale = canvasUiScale;
               canvas._guidanceBoxes = [];
+              canvas._canvasHudBoxes = [];
+              canvas._scaleHudBox = null;
+              canvas._orientationHudBox = null;
               canvas._contactFeedbackBox = null;
-              // Keep the screen bounds of semantic cards so tool feedback can avoid them.
-              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
+              // One screen-space measurement serves anatomy captions and fixed panels.
+              function canvasScreenBox(x, y, width, height) {
                 if (!ctx.getTransform) return;
                 var matrix = ctx.getTransform();
                 if (!matrix || !isFinite(matrix.a)) return;
@@ -7382,9 +7711,46 @@ var d = labToolData.dissection || {};
                 });
                 var left = Math.min.apply(null, corners.map(function (point) { return point.x; }));
                 var top = Math.min.apply(null, corners.map(function (point) { return point.y; }));
-                canvas._guidanceBoxes.push({ x: left, y: top,
+                return { x: left, y: top,
                   width: Math.max.apply(null, corners.map(function (point) { return point.x; })) - left,
-                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top, priority: priority || 1 });
+                  height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top };
+              }
+              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
+                var box = canvasScreenBox(x, y, width, height);
+                if (box) { box.priority = priority || 1; canvas._guidanceBoxes.push(box); }
+              }
+              function rememberCanvasHudBox(id, x, y, width, height) {
+                var box = { id: id, x: x, y: y, width: width, height: height, priority: 9 };
+                canvas._canvasHudBoxes.push(box);
+                if (id === 'scale') canvas._scaleHudBox = box;
+                if (id === 'orientation') canvas._orientationHudBox = box;
+              }
+              function placeCanvasHudPanel(x, y, width, height, additionalBoxes) {
+                var obstacles = canvas._guidanceBoxes.concat(canvas._canvasHudBoxes, additionalBoxes || []);
+                var candidates = [[x, y], [14, 14], [W - width - 14, 14],
+                  [14, H - height - 14], [W - width - 14, H - height - 14]];
+                obstacles.forEach(function (box) {
+                  candidates.push([x, box.y - height - 8], [x, box.y + box.height + 8],
+                    [box.x - width - 8, y], [box.x + box.width + 8, y],
+                    [box.x - width - 8, box.y], [box.x + box.width + 8, box.y],
+                    [14, box.y - height - 8], [W - width - 14, box.y + box.height + 8]);
+                });
+                var placement = null;
+                candidates.forEach(function (candidate) {
+                  var left = Math.max(14, Math.min(W - width - 14, candidate[0]));
+                  var top = Math.max(14, Math.min(H - height - 14, candidate[1]));
+                  var score = Math.hypot(left - x, top - y) * 0.15;
+                  obstacles.forEach(function (box) {
+                    var overlapW = Math.min(left + width + 6, box.x + box.width) - Math.max(left - 6, box.x);
+                    var overlapH = Math.min(top + height + 6, box.y + box.height) - Math.max(top - 6, box.y);
+                    if (overlapW > 0 && overlapH > 0) {
+                      score += overlapW * overlapH * (box.priority || 1);
+                      if (box.priority >= 8) score += W * H * 100;
+                    }
+                  });
+                  if (!placement || score < placement.score) placement = { x: left, y: top, score: score };
+                });
+                return placement;
               }
 
               // Read ALL drawing state from canvas element (updated by canvasRef on each React render)
@@ -7475,14 +7841,14 @@ var d = labToolData.dissection || {};
               var hudCompassTitleWidth = 0;
               try {
                 ctx.save();
-                ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';
+                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
                 hudCompassTitleWidth = ctx.measureText('ANATOMICAL AXIS').width;
                 ctx.restore();
               } catch (e) { hudCompassTitleWidth = 0; }
               var hudCompassW = hudCompassAxis === 'horizontal'
-                ? Math.max(188, hudCompassTitleWidth + 30 * canvasHudScale)
-                : Math.max(126, hudCompassTitleWidth + 30 * canvasHudScale);
-              var hudCompassH = (hudCompassAxis === 'horizontal' ? 55 : 91) * canvasHudScale;
+                ? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)
+                : Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);
+              var hudCompassH = (hudCompassAxis === 'horizontal' ? 80 : 116) * canvasUiScale;
               var hudCompassBox = (sceneDetail && detailedCanvasHud && !d.quizMode) ? { x: 14, y: 14, w: hudCompassW, h: 82 + hudCompassH - 14 } : null;
               // The instrument bay is bench scenery painted early, and the scale card below it
               // lifts by 76 * canvasHudScale when the inspection lens is parked in that corner.
@@ -10728,11 +11094,13 @@ var d = labToolData.dissection || {};
                 cosine = Math.cos(profile.rotation); sine = Math.sin(profile.rotation);
                 return { x: centerX + localX * cosine - localY * sine, y: centerY + localX * sine + localY * cosine };
               }
-              function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility) {
+              function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility, callout) {
                 if (!selected && !hovered) return;
                 var profile = structureInspectionFootprint(org);
                 var footprintAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
                 var footprintAccent = footprintAccessible ? '#ffffff' : (selected ? '#fbbf24' : '#60a5fa');
+                var plannedCallout = callout && callout.fullLabel ? canvasScreenBox(callout.x, callout.y, callout.width, callout.height) : null;
+                if (plannedCallout) plannedCallout.priority = 8;
                 var footprintScale = selected ? 0.72 + focusEntryProgress * 0.28 : 1;
                 var backDash = visibility === 'visible' ? [] : (visibility === 'emerging' ? [5, 3] : (visibility === 'obscured' ? [2, 3] : [1, 4]));
                 ctx.save(); ctx.translate(x, y); ctx.scale(footprintScale, footprintScale); ctx.rotate(profile.rotation);
@@ -10768,8 +11136,30 @@ var d = labToolData.dissection || {};
                 ctx.scale(1 / (specimenScale.x * zoom * footprintScale), 1 / (specimenScale.y * zoom * footprintScale));
                 ctx.font = 'bold ' + (9 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 var footprintDepthLabel = profile.depth === 'surface' ? 'SURFACE' : (profile.depth === 'deep' ? 'DEEP' : 'MID');
-                var footprintCaption = footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel;
+                var footprintCaption = fitTextToWidth(footprintDepthLabel + ' \u00B7 ' + profile.morphologyLabel, W - 28 - 12 * canvasUiScale);
                 var footprintCaptionW = ctx.measureText(footprintCaption).width + 12 * canvasUiScale;
+                var captionBox = canvasScreenBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale);
+                if (captionBox && ctx.getTransform) {
+                  var captionLeft = Math.max(14, Math.min(W - captionBox.width - 14, captionBox.x));
+                  var captionTop = Math.max(82, Math.min(labelScreenBottom - captionBox.height, captionBox.y));
+                  var captionReservations = [
+                    { x: 0, y: 0, width: W, height: 74, priority: 9 },
+                    { x: 0, y: labelScreenBottom, width: W, height: H - labelScreenBottom, priority: 9 }
+                  ];
+                  if (plannedCallout) captionReservations.push(plannedCallout);
+                  var captionPlacement = placeCanvasHudPanel(captionLeft, captionTop, captionBox.width, captionBox.height, captionReservations);
+                  captionLeft = captionPlacement.x; captionTop = captionPlacement.y;
+                  var captionDX = captionLeft - captionBox.x, captionDY = captionTop - captionBox.y;
+                  var captionMatrix = ctx.getTransform(), captionDet = captionMatrix.a * captionMatrix.d - captionMatrix.b * captionMatrix.c;
+                  if (Math.abs(captionDet) > 0.0001 && (Math.abs(captionDX) > 0.01 || Math.abs(captionDY) > 0.01)) {
+                    var captionDensity = canvas._dpr || 1;
+                    var captionLocalX = captionDensity * (captionMatrix.d * captionDX - captionMatrix.c * captionDY) / captionDet;
+                    var captionLocalY = captionDensity * (-captionMatrix.b * captionDX + captionMatrix.a * captionDY) / captionDet;
+                    ctx.strokeStyle = footprintAccent; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(captionLocalX, captionLocalY + 8.5 * canvasUiScale); ctx.stroke(); ctx.setLineDash([]);
+                    ctx.translate(captionLocalX, captionLocalY);
+                  }
+                }
                 rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8);
                 ctx.fillStyle = footprintAccessible ? '#000000' : 'rgba(15,23,42,0.94)';
                 ctx.beginPath();
@@ -11052,7 +11442,7 @@ var d = labToolData.dissection || {};
                 var exposureMuted = layout.visibility !== 'visible';
                 ctx.save(); ctx.globalAlpha = focusMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.46 : 0.24) : (exposureMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.86 : 0.68) : 1);
                 var px = layout.pointX, py = layout.pointY;
-                drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility);
+                drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility, layout);
                 if (!isSel && (!exposureMuted || isHov)) drawDepthAtlasMarker(px, py, layout.depth, false, isHov, focusMuted);
                 var pulse = 1;
                 if (isSel) {
@@ -13802,6 +14192,7 @@ var d = labToolData.dissection || {};
               // The next-step card is 58 * canvasHudScale tall from y 10. At desktop scale that
               // ends at 68 and this panel cleared it by 6 at 74; once the card scaled, it did not.
               var legendPanelX = W - legendPanelW - 14, legendPanelY = Math.max(74, 10 + 58 * canvasHudScale + 6);
+              rememberCanvasHudBox('system-key', legendPanelX, legendPanelY, legendPanelW, legendPanelH);
 
               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)'; ctx.lineWidth = 1;
 
@@ -14180,6 +14571,7 @@ var d = labToolData.dissection || {};
                 var ecgY = H - 55;
                 var ecgW = Math.min(W * 0.46, W - 172);
                 var ecgX = 20;
+                rememberCanvasHudBox('heart-trace', ecgX - 5, ecgY - 20, ecgW + 10, 40);
                 var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 20);
                 ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
                 ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 40);
@@ -14213,6 +14605,7 @@ var d = labToolData.dissection || {};
                 var guidedScreenHeight = guidedMode && currentGuided ? Math.min(64, 34 * screenGuideScale) : 0;
                 var guidedScreenY = guidedScreenHeight ? H - guidedScreenHeight - 14 - screenPhysiologyHudReserve : H - 14 - screenPhysiologyHudReserve;
                 if (guidedScreenHeight) {
+                  rememberCanvasHudBox('guided-prompt', 14, guidedScreenY, W - 28, guidedScreenHeight);
                   ctx.save(); ctx.fillStyle = 'rgba(88,28,135,0.96)'; ctx.strokeStyle = 'rgba(216,180,254,0.76)'; ctx.lineWidth = 1;
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, guidedScreenY, W - 28, guidedScreenHeight, 8); ctx.fill(); ctx.stroke(); }
                   else { ctx.fillRect(14, guidedScreenY, W - 28, guidedScreenHeight); ctx.strokeRect(14, guidedScreenY, W - 28, guidedScreenHeight); }
@@ -14232,6 +14625,7 @@ var d = labToolData.dissection || {};
                   if (ctx.measureText(screenLayerLabel).width > layerPillLimit - 22 * screenGuideScale) screenLayerLabel = screenLayerDef.name;
                   screenLayerLabel = fitTextToWidth(screenLayerLabel, Math.max(30, layerPillLimit - 22 * screenGuideScale));
                   var layerPillWidth = Math.min(layerPillLimit, ctx.measureText(screenLayerLabel).width + 22 * screenGuideScale);
+                  rememberCanvasHudBox('layer', 14, layerPillY, layerPillWidth, layerPillHeight);
                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(148,163,184,0.52)';
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(14, layerPillY, layerPillWidth, layerPillHeight, 7); ctx.fill(); ctx.stroke(); }
                   else { ctx.fillRect(14, layerPillY, layerPillWidth, layerPillHeight); ctx.strokeRect(14, layerPillY, layerPillWidth, layerPillHeight); }
@@ -14254,6 +14648,7 @@ var d = labToolData.dissection || {};
                   var screenDeclutterText = fitTextToWidth(screenDeclutter, screenDeclutterSpan - 18 * screenGuideScale);
                   var screenDeclutterWidth = Math.min(screenDeclutterSpan, ctx.measureText(screenDeclutterText).width + 18 * screenGuideScale);
                   var screenDeclutterX = Math.max(14, Math.min((W - screenDeclutterWidth) / 2, screenDeclutterRightLimit - screenDeclutterWidth));
+                  rememberCanvasHudBox('compact-labels', screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight);
                   ctx.fillStyle = 'rgba(15,23,42,0.9)'; ctx.strokeStyle = 'rgba(45,212,191,0.64)';
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight, 7); ctx.fill(); ctx.stroke(); }
                   else { ctx.fillRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); ctx.strokeRect(screenDeclutterX, screenDeclutterY, screenDeclutterWidth, screenDeclutterHeight); }
@@ -14302,6 +14697,7 @@ var d = labToolData.dissection || {};
               var specimenHudWidth = Math.min(W - 236, Math.max(154 * specimenHudTypeScale, ctx.measureText(specimenHudLabel).width + 22 * specimenHudTypeScale));
               var macroLikelyOnLeft = inspectionLens && macroInset && Number(canvas._lensDisplayX) > W * 0.58;
               var specimenHudX = macroLikelyOnLeft ? W - specimenHudWidth - 14 : 14;
+              rememberCanvasHudBox('specimen', specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale);
               ctx.fillStyle = 'rgba(15,23,42,0.86)'; ctx.strokeStyle = 'rgba(148,163,184,0.34)'; ctx.lineWidth = 1;
               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale, 8 * specimenHudTypeScale); ctx.fill(); ctx.stroke(); }
               else { ctx.fillRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); ctx.strokeRect(specimenHudX, 13, specimenHudWidth, 30 * specimenHudTypeScale); }
@@ -14313,6 +14709,13 @@ var d = labToolData.dissection || {};
               // at the bay's own Y and covers it. I could not get the lift to fire in a harness
               // hover, so this removes the possibility rather than fixing an observed collision.
               if (lensNearCompass) compassY = Math.max(82, Math.max(hudInstrumentBayY + hudInstrumentBayH + 8, compassY - 76 * canvasHudScale));
+              var sharedHudReservations = [];
+              if (sceneDetail) sharedHudReservations.push({ x: W - 142, y: hudInstrumentBayY, width: 122, height: hudInstrumentBayH, priority: 9 });
+              if (labelPhysiologyReserve) sharedHudReservations.push({ x: 14, y: H - 84, width: W - 28, height: 70, priority: 9 });
+              if (detailedCanvasHud) sharedHudReservations.push({ x: W - 232, y: 10, width: 218, height: 58 * canvasHudScale, priority: 9 });
+              var scalePlacement = placeCanvasHudPanel(compassX, compassY, compassWidth, compassHeight, sharedHudReservations);
+              compassX = scalePlacement.x; compassY = scalePlacement.y;
+              rememberCanvasHudBox('scale', compassX, compassY, compassWidth, compassHeight);
               ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)';
               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(compassX, compassY, compassWidth, compassHeight, 8 * canvasHudScale); ctx.fill(); ctx.stroke(); }
               else { ctx.fillRect(compassX, compassY, compassWidth, compassHeight); ctx.strokeRect(compassX, compassY, compassWidth, compassHeight); }
@@ -14517,6 +14920,9 @@ var d = labToolData.dissection || {};
                 // Sized above, before the corridor label runs, so both agree on one box.
                 var compassW = hudCompassW;
                 var compassH = hudCompassH;
+                var orientationPlacement = placeCanvasHudPanel(compassX, compassY, compassW, compassH, sharedHudReservations);
+                compassX = orientationPlacement.x; compassY = orientationPlacement.y;
+                rememberCanvasHudBox('orientation', compassX, compassY, compassW, compassH);
                 var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase());
                 ctx.save();
                 ctx.fillStyle = compassAccessible ? '#000000' : 'rgba(15,23,42,0.88)';
@@ -14524,22 +14930,22 @@ var d = labToolData.dissection || {};
                 ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(compassX, compassY, compassW, compassH, 8); else ctx.rect(compassX, compassY, compassW, compassH);
                 ctx.fill(); ctx.stroke();
-                ctx.font = 'bold ' + (compassAccessible ? 9 : 8) * canvasHudScale + 'px Inter, system-ui';
+                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
                 ctx.fillStyle = compassAccessible ? '#ffffff' : '#e2e8f0';
-                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 13 * canvasHudScale);
-                ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
-                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 24 * canvasHudScale);
+                ctx.fillText('ANATOMICAL AXIS', compassX + 9 * canvasHudScale, compassY + 16 * canvasUiScale);
+                ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.fillStyle = compassAccent;
+                ctx.fillText(fitTextToWidth(compassStatus, compassW - 18 * canvasHudScale), compassX + 9 * canvasHudScale, compassY + 31 * canvasUiScale);
                 ctx.strokeStyle = compassAccent; ctx.fillStyle = compassAccent;
                 ctx.lineWidth = compassAccessible ? 2.2 : 1.5;
                 if (compass.axis === 'horizontal') {
-                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 35 * canvasHudScale;
+                  var axisLeftX = compassX + 15 * canvasHudScale, axisRightX = compassX + compassW - 15 * canvasHudScale, axisY = compassY + 45 * canvasUiScale;
                   var axisStartX = compass.mirrored ? axisRightX : axisLeftX;
                   var axisEndX = compass.mirrored ? axisLeftX : axisRightX;
                   ctx.beginPath(); ctx.moveTo(axisLeftX, axisY); ctx.lineTo(axisRightX, axisY); ctx.stroke();
                   ctx.beginPath(); ctx.arc(axisStartX, axisY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
                   var axisDiamond = 5 * canvasHudScale;
                   ctx.beginPath(); ctx.moveTo(axisEndX, axisY - axisDiamond); ctx.lineTo(axisEndX + axisDiamond, axisY); ctx.lineTo(axisEndX, axisY + axisDiamond); ctx.lineTo(axisEndX - axisDiamond, axisY); ctx.closePath(); ctx.fill();
-                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
+                  ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'center';
                   // Centred on the endpoint markers, ANTERIOR and POSTERIOR both ran off the
                   // panel: on the perch the first and last letters were cut by its own border.
                   // Keep the centre where it belongs unless doing so would cross the edge.
@@ -14550,15 +14956,15 @@ var d = labToolData.dissection || {};
                   };
                   var compassStartLabel = fitTextToWidth(compass.start, compassW - compassEndInset * 2);
                   var compassEndLabel = fitTextToWidth(compass.end, compassW - compassEndInset * 2);
-                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 50 * canvasHudScale);
-                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 50 * canvasHudScale);
+                  ctx.fillText(compassStartLabel, clampCompassEndLabel(compassStartLabel, axisStartX), compassY + 64 * canvasUiScale);
+                  ctx.fillText(compassEndLabel, clampCompassEndLabel(compassEndLabel, axisEndX), compassY + 64 * canvasUiScale);
                 } else {
-                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 31 * canvasHudScale, axisBottomY = compassY + compassH - 13 * canvasHudScale;
+                  var axisX = compassX + 18 * canvasHudScale, axisTopY = compassY + 45 * canvasUiScale, axisBottomY = compassY + compassH - 16 * canvasUiScale;
                   ctx.beginPath(); ctx.moveTo(axisX, axisTopY); ctx.lineTo(axisX, axisBottomY); ctx.stroke();
                   ctx.beginPath(); ctx.arc(axisX, axisTopY, (compassAccessible ? 4.5 : 3.7) * canvasHudScale, 0, Math.PI * 2); ctx.fill();
                   var axisVerticalDiamond = 5 * canvasHudScale;
                   ctx.beginPath(); ctx.moveTo(axisX, axisBottomY - axisVerticalDiamond); ctx.lineTo(axisX + axisVerticalDiamond, axisBottomY); ctx.lineTo(axisX, axisBottomY + axisVerticalDiamond); ctx.lineTo(axisX - axisVerticalDiamond, axisBottomY); ctx.closePath(); ctx.fill();
-                  ctx.font = 'bold ' + (7 * canvasHudScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
+                  ctx.font = 'bold ' + (10 * canvasUiScale) + 'px Inter, system-ui'; ctx.textAlign = 'left';
                   var compassVerticalWidth = compassX + compassW - 8 * canvasHudScale - (axisX + 10 * canvasHudScale);
                   ctx.fillText(fitTextToWidth(compass.start, compassVerticalWidth), axisX + 10 * canvasHudScale, axisTopY + 3 * canvasHudScale);
                   ctx.fillText(fitTextToWidth(compass.end, compassVerticalWidth), axisX + 10 * canvasHudScale, axisBottomY + 3 * canvasHudScale);
@@ -14995,12 +15401,9 @@ var d = labToolData.dissection || {};
                     var responseContextLines = wrapTextToWidth(contactContextLabel, responseTextWidth, 3);
                     var responseLineHeight = 13 * responseTypeScale;
                     var responsePanelH = (responseTitleLines.length + responseDetailLines.length + responseContextLines.length) * responseLineHeight + 14 * responseTypeScale;
-                    var feedbackObstacles = (canvas._guidanceBoxes || []).slice();
+                    var feedbackObstacles = (canvas._guidanceBoxes || []).concat(canvas._canvasHudBoxes || []);
                     feedbackObstacles.push({ x: pointerScreenX - 26 * responseTypeScale, y: pointerScreenY - 26 * responseTypeScale,
                       width: 52 * responseTypeScale, height: 52 * responseTypeScale, priority: 6 });
-                    feedbackObstacles.push({ x: specimenHudX, y: 13, width: specimenHudWidth, height: 30 * specimenHudTypeScale, priority: 4 });
-                    feedbackObstacles.push({ x: compassX, y: compassY, width: compassWidth, height: compassHeight, priority: 4 });
-                    if (hudCompassBox) feedbackObstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y, width: hudCompassBox.w, height: hudCompassBox.h, priority: 4 });
                     if (d.macroInset !== false && liveWorkspaceMode === 'advanced') {
                       var responseMacroW = liveVisualMode === 'accessible' ? 176 : 158;
                       feedbackObstacles.push({ x: pointerScreenX > W * 0.58 ? 12 : W - responseMacroW - 12, y: 12,
@@ -15033,7 +15436,7 @@ var d = labToolData.dissection || {};
                         var overlapH = Math.min(candidateY + responsePanelH + 6, box.y + box.height) - Math.max(candidateY - 6, box.y);
                         if (overlapW > 0 && overlapH > 0) {
                           score += overlapW * overlapH * box.priority;
-                          if (box.priority === 8) score += W * H * 100;
+                          if (box.priority >= 8) score += W * H * 100;
                         }
                       });
                       score += Math.hypot(candidateX + responsePanelW / 2 - pointerScreenX, candidateY + responsePanelH / 2 - pointerScreenY) * 0.1;
@@ -16873,6 +17276,42 @@ var d = labToolData.dissection || {};
             if (focusWhenRendered()) setTimeout(focusWhenRendered, 0);
             if (message) setProcedureFeedback(message, 'working');
           }
+          function focusDirectoryResult(root, index) {
+            var results = scopedDissectionQuery(root, '#diss-directory-results');
+            var rows = results ? results.querySelectorAll('button[data-exposure-state]') : [];
+            if (!rows.length) return false;
+            var target = rows[Math.max(0, Math.min(rows.length - 1, index))];
+            if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+            target.focus({ preventScroll: true });
+            return true;
+          }
+          function handleDirectorySearchKey(event) {
+            if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            var root = event.currentTarget.closest('[data-dissection-root]');
+            if (event.key === 'ArrowDown' && focusDirectoryResult(root, 0)) {
+              event.preventDefault(); event.stopPropagation();
+            } else if (event.key === 'Escape' && (d.organSearch || directoryFilter !== 'all')) {
+              event.preventDefault(); event.stopPropagation(); updMany({ organSearch: '', directoryFilter: 'all' });
+            }
+          }
+          function handleDirectoryNavigation(event) {
+            if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            var results = event.currentTarget;
+            var root = results.closest('[data-dissection-root]');
+            var rows = Array.prototype.slice.call(results.querySelectorAll('button[data-exposure-state]'));
+            var row = event.target.closest ? event.target.closest('button[data-exposure-state]') : null;
+            if (!row && event.target !== results) return;
+            var index = rows.indexOf(row);
+            if (event.key === 'Escape') {
+              event.preventDefault(); event.stopPropagation();
+              updMany({ organSearch: '', directoryFilter: 'all' }); focusDissectionTarget('diss-organ-search', null, root);
+            } else if (event.key === 'ArrowUp' && index <= 0) {
+              event.preventDefault(); event.stopPropagation(); focusDissectionTarget('diss-organ-search', null, root);
+            } else {
+              var nextIndex = event.key === 'ArrowDown' ? index + 1 : event.key === 'ArrowUp' ? index - 1 : event.key === 'Home' ? 0 : event.key === 'End' ? rows.length - 1 : null;
+              if (nextIndex !== null && focusDirectoryResult(root, nextIndex)) { event.preventDefault(); event.stopPropagation(); }
+            }
+          }
           function focusStructureDirectoryItem(organId) {
             var focusRoot = currentDissectionRootNode();
             var remainingAttempts = 2;
@@ -16973,6 +17412,40 @@ var d = labToolData.dissection || {};
             );
           }
 
+          function onLearningChoiceKeyDown(e) {
+            if (!e || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+            var key = e.key;
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(key) < 0) return;
+            var group = e.currentTarget;
+            var choice = e.target && e.target.closest ? e.target.closest('.diss-learning-check__option') : null;
+            var choices = group ? Array.prototype.slice.call(group.querySelectorAll('.diss-learning-check__option:not(:disabled)')) : [];
+            var index = choices.indexOf(choice);
+            if (index < 0) return;
+            var nextIndex = key === 'Home' ? 0 : (key === 'End' ? choices.length - 1 : (index + (key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1) + choices.length) % choices.length);
+            e.preventDefault();
+            e.stopPropagation();
+            choices[nextIndex].focus({ preventScroll: true });
+            if (choices[nextIndex].scrollIntoView) choices[nextIndex].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          }
+          function renderLearningPhase(id, label, state) {
+            return React.createElement("span", { key: id, className: "diss-learning-check__phase", "data-state": state, "aria-current": state === 'current' ? 'step' : undefined },
+              React.createElement("span", null, (state === 'complete' ? '\u2713 ' : '') + label),
+              React.createElement("span", { className: "diss-learning-check__phase-status" }, state === 'current' ? 'Current' : (state === 'complete' ? 'Done' : 'Upcoming'))
+            );
+          }
+          function renderLearningChoice(optionId, index, label, selected, correct, feedbackId, onClick) {
+            return React.createElement("button", {
+              type: "button", key: optionId, className: "diss-learning-check__option",
+              "aria-pressed": selected,
+              "aria-describedby": selected && feedbackId ? feedbackId : undefined,
+              "data-result": selected ? (correct ? "correct" : "incorrect") : undefined,
+              onClick: onClick
+            },
+              React.createElement("span", { className: "diss-learning-check__number", "aria-hidden": true }, index + 1),
+              React.createElement("span", { className: "diss-learning-check__answer" }, label),
+              selected && React.createElement("span", { className: "diss-learning-check__marker", "aria-hidden": true }, correct ? 'Confirmed' : 'Review choice')
+            );
+          }
           function renderProcedureLearningCheckpoint() {
             if (!procedureLearningCheckpointVisible()) return null;
             var learningAction = currentLearningGate.action;
@@ -16994,53 +17467,38 @@ var d = labToolData.dissection || {};
               { id: 'reflect', label: '3 Explain', state: entry.reflectionCorrect ? 'complete' : (phase === 'reflect' ? 'current' : 'upcoming') }
             ];
             return React.createElement("section", {
-              id: "diss-learning-checkpoint",
-              className: "diss-learning-check",
-              "data-phase": phase,
-              "data-learning-action": learningAction,
-              tabIndex: -1,
-              role: "region",
-              "aria-labelledby": "diss-learning-check-title"
+              id: "diss-learning-checkpoint", className: "diss-learning-check", "data-phase": phase,
+              "data-learning-action": learningAction, tabIndex: -1, role: "region", "aria-labelledby": "diss-learning-check-title"
             },
               React.createElement("div", { className: "diss-learning-check__head" },
                 React.createElement("p", { className: "diss-learning-check__eyebrow" }, phase === 'reflect' ? 'Reason from evidence' : (phase === 'perform' ? 'Plan confirmed' : 'Pause before contact')),
-                React.createElement("h3", { id: "diss-learning-check-title" }, phase === 'reflect' ? 'Explain what changed' : (phase === 'perform' ? 'Demonstrate your plan' : definition.title)),
+                React.createElement("h3", { id: "diss-learning-check-title", tabIndex: -1 }, phase === 'reflect' ? 'Explain what changed' : (phase === 'perform' ? 'Demonstrate your plan' : definition.title)),
                 React.createElement("p", { className: "diss-learning-check__prompt" },
-                  phase === 'reflect' ? definition.reflectionPrompt : (phase === 'perform' ? 'Use ' + actionTool.label + ' to ' + procedureNext.label.toLowerCase() + '. The simulation will score the action you perform; it will not execute the step from the Next card.' : definition.predictionPrompt)
+                  phase === 'reflect' ? definition.reflectionPrompt : (phase === 'perform' ? 'Use ' + actionTool.label + ' to ' + procedureNext.label.toLowerCase() + '. Perform the action on the specimen, then explain the result.' : definition.predictionPrompt)
                 )
               ),
               React.createElement("div", { className: "diss-learning-check__phases", "aria-label": __alloT('stem.dissection.a11y_learning_cycle_progress', 'Learning cycle progress') },
-                phaseStates.map(function (phaseState) {
-                  return React.createElement("span", { key: phaseState.id, className: "diss-learning-check__phase", "data-state": phaseState.state, "aria-current": phaseState.state === 'current' ? 'step' : undefined }, (phaseState.state === 'complete' ? '\u2713 ' : '') + phaseState.label);
-                })
+                phaseStates.map(function (phaseState) { return renderLearningPhase(phaseState.id, phaseState.label, phaseState.state); })
               ),
-              options.length ? React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": phase === 'reflect' ? "Choose the best evidence-based explanation" : "Choose the safest plan" },
-                options.map(function (option) {
-                  var isSelected = selectedChoice === option.id;
-                  return React.createElement("button", {
-                    type: "button",
-                    key: option.id,
-                    className: "diss-learning-check__option",
-                    "aria-pressed": isSelected,
-                    "data-result": isSelected ? (responseCorrect ? "correct" : "incorrect") : undefined,
-                    onClick: function () { recordProcedureLearningChoice(learningAction, responseKey, option.id); }
-                  }, option.label);
+              options.length ? React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": phase === 'reflect' ? "Choose the best evidence-based explanation" : "Choose the safest plan", "aria-describedby": "diss-learning-check-keyboard-help", onKeyDown: onLearningChoiceKeyDown },
+                options.map(function (option, index) {
+                  return renderLearningChoice(option.id, index, option.label, selectedChoice === option.id, responseCorrect, feedback ? 'diss-learning-check-feedback' : null, function () { recordProcedureLearningChoice(learningAction, responseKey, option.id); });
                 })
-              ) : React.createElement("div", { className: "diss-learning-check__perform" }, 'Make the contact yourself, then return here to explain the observed tissue response. A motor-neutral equivalent is available in Technique controls after all readiness checks pass.'),
-              feedback && React.createElement("p", { className: "diss-learning-check__feedback", "data-result": responseCorrect ? "correct" : "incorrect" }, feedback)
+              ) : React.createElement("div", { className: "diss-learning-check__perform" }, 'Technique controls also offer a motor-neutral action once readiness checks pass.'),
+              options.length > 0 && React.createElement("p", { id: "diss-learning-check-keyboard-help", className: "diss-learning-check__keyboard-help" }, 'Arrow keys browse choices. Enter or Space checks the focused choice.'),
+              phase === 'perform' && !d.quizMode && !d.practicalMode && React.createElement("div", { className: "diss-learning-check__actions" },
+                React.createElement("button", { type: "button", className: "diss-learning-check__action", onClick: prepareNextProcedureStep }, 'Prepare ' + actionTool.label),
+                React.createElement("button", { type: "button", className: "diss-learning-check__action", onClick: function () { focusDissectionTarget('diss-canvas', 'Interactive specimen focused.'); } }, 'Go to specimen')
+              ),
+              feedback && React.createElement("p", { id: "diss-learning-check-feedback", className: "diss-learning-check__feedback", "data-result": responseCorrect ? "correct" : "incorrect" }, feedback)
             );
           }
           function renderGuidedObservationCheck() {
             if (!guidedMode || !guidedObservationOrgan || !currentGuided) return null;
             var guidedFeedback = d.guidedObservationFeedback;
             return React.createElement("section", {
-              id: "diss-guided-observation-check",
-              className: "diss-learning-check",
-              "data-phase": "reflect",
-              "data-guided-observation": true,
-              tabIndex: -1,
-              role: "region",
-              "aria-labelledby": "diss-guided-observation-title"
+              id: "diss-guided-observation-check", className: "diss-learning-check", "data-phase": "reflect",
+              "data-guided-observation": true, tabIndex: -1, role: "region", "aria-labelledby": "diss-guided-observation-title"
             },
               React.createElement("div", { className: "diss-learning-check__head" },
                 React.createElement("p", { className: "diss-learning-check__eyebrow" }, 'Guided evidence check'),
@@ -17048,24 +17506,17 @@ var d = labToolData.dissection || {};
                 React.createElement("p", { className: "diss-learning-check__prompt" }, 'You located ' + guidedObservationOrgan.name + '. Choose the description that matches what this structure looks like or does. Locating alone does not advance the step.')
               ),
               React.createElement("div", { className: "diss-learning-check__phases", "aria-label": __alloT('stem.dissection.a11y_guided_evidence_progress', 'Guided evidence progress') },
-                React.createElement("span", { className: "diss-learning-check__phase", "data-state": "complete" }, '\u2713 Locate'),
-                React.createElement("span", { className: "diss-learning-check__phase", "data-state": "current", "aria-current": "step" }, 'Observe'),
-                React.createElement("span", { className: "diss-learning-check__phase", "data-state": "upcoming" }, 'Verify')
+                renderLearningPhase('locate', 'Locate', 'complete'),
+                renderLearningPhase('observe', 'Observe', 'current'),
+                renderLearningPhase('verify', 'Verify', 'upcoming')
               ),
-              React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": __alloT('stem.dissection.a11y_choose_the_matching_specimen_observation', 'Choose the matching specimen observation') },
-                guidedObservationOptions.map(function (option) {
-                  var isChosen = guidedFeedback && guidedFeedback.choiceId === option.id;
-                  return React.createElement("button", {
-                    type: "button",
-                    key: option.id,
-                    className: "diss-learning-check__option",
-                    "aria-pressed": !!isChosen,
-                    "data-result": isChosen ? (guidedFeedback.correct ? "correct" : "incorrect") : undefined,
-                    onClick: function () { recordGuidedObservationChoice(option.id); }
-                  }, String(option.fn || 'No observation available.').split('.')[0] + '.');
+              React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": __alloT('stem.dissection.a11y_choose_the_matching_specimen_observation', 'Choose the matching specimen observation'), "aria-describedby": "diss-guided-observation-keyboard-help", onKeyDown: onLearningChoiceKeyDown },
+                guidedObservationOptions.map(function (option, index) {
+                  return renderLearningChoice(option.id, index, String(option.fn || 'No observation available.').split('.')[0] + '.', !!(guidedFeedback && guidedFeedback.choiceId === option.id), !!(guidedFeedback && guidedFeedback.correct), guidedFeedback ? 'diss-guided-observation-feedback' : null, function () { recordGuidedObservationChoice(option.id); });
                 })
               ),
-              guidedFeedback && React.createElement("p", { className: "diss-learning-check__feedback", "data-result": guidedFeedback.correct ? "correct" : "incorrect" }, guidedFeedback.message)
+              React.createElement("p", { id: "diss-guided-observation-keyboard-help", className: "diss-learning-check__keyboard-help" }, 'Arrow keys browse choices. Enter or Space checks the focused choice.'),
+              guidedFeedback && React.createElement("p", { id: "diss-guided-observation-feedback", className: "diss-learning-check__feedback", "data-result": guidedFeedback.correct ? "correct" : "incorrect" }, guidedFeedback.message)
             );
           }
           function evidenceLayerLabel(evidence) {
@@ -17409,6 +17860,7 @@ var d = labToolData.dissection || {};
             return true;
           }
           function onInstrumentKeyDown(e, toolId) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
             var navigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
             if (navigationKeys.indexOf(e.key) < 0) return;
             var availableTools = PROCEDURE_INSTRUMENTS.filter(function (tool) {
@@ -17426,6 +17878,18 @@ var d = labToolData.dissection || {};
               var target = dissectionNodeById('diss-instrument-' + nextTool.id);
               if (target) target.focus();
             }, 0);
+          }
+
+          function onLayerNavigationKeyDown(e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) < 0) return;
+            var buttons = Array.prototype.slice.call(e.currentTarget.querySelectorAll('.diss-layer-button:not([disabled])'));
+            var currentIndex = buttons.indexOf(e.target);
+            if (currentIndex < 0 || !buttons.length) return;
+            var nextIndex = e.key === 'Home' ? 0 : (e.key === 'End' ? buttons.length - 1 : (currentIndex + (e.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length);
+            e.preventDefault();
+            buttons[nextIndex].focus({ preventScroll: true });
+            buttons[nextIndex].scrollIntoView({ block: 'nearest', inline: 'nearest' });
           }
 
           function onCompositeToolbarKeyDown(e) {
@@ -18099,8 +18563,8 @@ var d = labToolData.dissection || {};
 
             React.createElement("nav", { className: "diss-layer-stepper", "data-dissection-layer-stepper": true, "aria-labelledby": "diss-layer-heading" },
               React.createElement("div", { className: "diss-section-heading" },
-                React.createElement("h3", { id: "diss-layer-heading" }, 'Anatomical layers'),
-                React.createElement("p", null, revealedLayerCount + ' of ' + spec.layers.length + ' completed'),
+                React.createElement("h3", { id: "diss-layer-heading" }, __alloT('stem.dissection.layer_heading', 'Anatomical layers')),
+                React.createElement("p", { className: "diss-layer-summary" }, __alloT('stem.dissection.layer_revealed_count', '{revealed} of {total} layers revealed').replace('{revealed}', String(revealedLayerCount)).replace('{total}', String(spec.layers.length))),
                 // The secondary controls used to sit in their own full-width band below this
                 // stepper: 62px of a 1233px stack above the specimen, holding ONE visible button
                 // in the Essentials workspace. The section heading is already a flex row with
@@ -18126,12 +18590,18 @@ var d = labToolData.dissection || {};
 
                 )
               ),
-              React.createElement("div", { className: "diss-layer-list" },
+              React.createElement("div", { className: "diss-layer-list", onKeyDown: onLayerNavigationKeyDown,
+                tabIndex: d.quizMode ? 0 : undefined, role: d.quizMode ? "region" : undefined,
+                "aria-label": d.quizMode ? __alloT('stem.dissection.layer_access_region', 'Anatomical layer access') : undefined,
+                "aria-describedby": d.quizMode ? "diss-layer-help" : undefined
+              },
                 spec.layers.map(function (layer, layerIdx) {
                   var isCurrent = layer.id === activeLayer;
                   var isDone = !!revealedLayers[layer.id];
                   var isUnlocked = layerIdx <= unlockedLayerIdx;
                   var state = isCurrent ? 'current' : (isDone ? 'revealed' : (isUnlocked ? 'available' : 'locked'));
+                  var layerStatus = isCurrent ? __alloT('stem.dissection.layer_current', 'Current') : (isDone ? __alloT('stem.dissection.layer_revealed', 'Revealed') : (isUnlocked ? __alloT('stem.dissection.layer_available', 'Available') : __alloT('stem.dissection.layer_locked', 'Locked')));
+                  var layerDetail = d.quizMode ? __alloT('stem.dissection.layer_assessment_lock', 'Locked during assessment') : (isDone ? __alloT('stem.dissection.layer_can_revisit', 'Revisit structures') : (isCurrent ? __alloT('stem.dissection.layer_awaiting_reveal', 'Awaiting reveal') : (isUnlocked ? __alloT('stem.dissection.layer_select', 'Select to explore') : __alloT('stem.dissection.layer_prerequisite', 'Reveal {layer} first').replace('{layer}', spec.layers[Math.max(0, layerIdx - 1)].name))));
                   return React.createElement("button", {
                     type: "button",
                     key: layer.id,
@@ -18139,49 +18609,74 @@ var d = labToolData.dissection || {};
                     "data-state": state,
                     disabled: !isUnlocked || !!d.quizMode,
                     "aria-current": isCurrent ? "step" : undefined,
+                    "aria-describedby": 'diss-layer-detail-' + layer.id,
                     "aria-label": 'Layer ' + (layerIdx + 1) + ': ' + layer.name + (d.quizMode ? ', locked during assessment' : isCurrent ? ', current' : isDone ? ', revealed' : isUnlocked ? ', available' : ', locked'),
                     onClick: function () { selectLayer(layer.id); }
                   },
                     React.createElement("span", { className: "diss-layer-index", "aria-hidden": "true" }, String(layerIdx + 1)),
-                    React.createElement("span", { className: "diss-layer-name" }, layer.icon + ' ' + layer.name),
-                    React.createElement("span", { className: "diss-layer-state", "aria-hidden": "true" }, isCurrent ? '●' : isDone ? '✓' : isUnlocked ? '→' : '🔒')
+                    React.createElement("span", { className: "diss-layer-body" },
+                      React.createElement("span", { className: "diss-layer-name" }, layer.icon + ' ' + layer.name),
+                      React.createElement("span", { className: "diss-layer-state", "aria-hidden": "true" }, layerStatus),
+                      React.createElement("span", { className: "diss-layer-detail", id: 'diss-layer-detail-' + layer.id }, layerDetail)
+                    )
                   );
                 })
+              ),
+              React.createElement("p", { className: "diss-layer-help", id: "diss-layer-help" },
+                d.quizMode ? __alloT('stem.dissection.layer_assessment_help', 'Layer changes are locked during assessment.') : __alloT('stem.dissection.layer_keyboard_help', 'Use Left and Right to browse available layers; Enter selects.'),
+                React.createElement("span", { className: "diss-layer-scroll-help" }, ' ' + __alloT('stem.dissection.layer_scroll_help', 'Scroll to see all layers.'))
               )
             ),
 
 
             // ── View group expanded ──
-            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": __alloT('stem.dissection.a11y_view_and_accessibility_controls', 'View and accessibility controls') },
-              React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? "Organ name labels hidden during assessment" : "Toggle organ name labels", "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'hidden' ? 'show' : 'hidden'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels ' + (!d.quizMode && d.labelMode !== 'hidden' ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_high_contrast_mode', 'Toggle high contrast mode'), "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_additional_reduced_motion_operating_syst', 'Toggle additional reduced motion; operating system reduced motion settings are always honored'), "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_larger_interface_text', 'Toggle larger interface text'), "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_simplified_step_instructions', 'Toggle simplified step instructions'), "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_dissection_sound_effects', 'Toggle dissection sound effects'), "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_tactile_instrument_feedback', 'Toggle tactile instrument feedback'), "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off'),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
-              !d.quizMode && React.createElement(React.Fragment, null,
-              React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? "Anatomical view locked during timed practical" : "Anatomical view: cycle dorsal, ventral, lateral, and internal", onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_layer_cross_section', 'Toggle schematic layer map'), "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Layer map ' + (crossSectionMode ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_specimen_condition_cycle_standard_preserved_deh', 'Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen'), onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_curated_anatomical_relationships', 'Toggle curated anatomical relationships'), "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality),
-              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
-              !d.quizMode && React.createElement("button", { "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
-              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
-              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
-              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_responsive_tissue_relief_lighting_around', 'Toggle responsive tissue relief lighting around visible structures'), "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_animated_direction_markers_for_curated_a', 'Toggle animated direction markers for curated anatomical relationships'), "aria-pressed": relationshipMotion, onClick: function () { upd('relationshipMotion', !relationshipMotion); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMotion ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2192 Flow motion ' + (relationshipMotion ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_selected_structure_focus_isolation', 'Toggle selected-structure focus isolation'), "aria-pressed": focusMode, onClick: function () { upd('focusMode', !focusMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (focusMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25CE Focus mode ' + (focusMode ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_subtle_pointer_responsive_specimen_depth', 'Toggle subtle pointer-responsive specimen depth'), "aria-pressed": parallaxDepth, onClick: function () { upd('parallaxDepth', !parallaxDepth); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (parallaxDepth ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, 'Depth motion ' + (parallaxDepth ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_live_and_reference_split_comparison', 'Toggle live and reference split comparison'), "aria-pressed": splitComparison && !!referenceEvidence, disabled: !referenceEvidence, onClick: function () { upd('splitComparison', !splitComparison); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (splitComparison && referenceEvidence ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') + (!referenceEvidence ? ' opacity-50 cursor-not-allowed' : '') }, 'Split compare ' + (splitComparison && referenceEvidence ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_lab_light_cycle_neutral_warm_and_cool', 'Lab light: cycle neutral, warm, and cool'), onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
-              React.createElement("label", { className: "diss-light-intensity", "data-tone": currentIllumination.tone, htmlFor: "diss-light-intensity-range" },
+            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-view-controls diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": __alloT('stem.dissection.a11y_view_and_accessibility_controls', 'View and accessibility controls') },
+              React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "accessibility", role: "group", "aria-label": __alloT('stem.dissection.view_group_accessibility', 'Accessibility') },
+                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_accessibility', 'Accessibility')),
+                React.createElement("div", { className: "diss-view-control-grid" },
+                  React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? "Organ name labels hidden during assessment" : "Toggle organ name labels", "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'hidden' ? 'show' : 'hidden'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels ' + (!d.quizMode && d.labelMode !== 'hidden' ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_high_contrast_mode', 'Toggle high contrast mode'), "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_additional_reduced_motion_operating_syst', 'Toggle additional reduced motion; operating system reduced motion settings are always honored'), "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_larger_interface_text', 'Toggle larger interface text'), "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_simplified_step_instructions', 'Toggle simplified step instructions'), "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_dissection_sound_effects', 'Toggle dissection sound effects'), "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_tactile_instrument_feedback', 'Toggle tactile instrument feedback'), "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off')
+                )
+              ),
+              React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "specimen", role: "group", "aria-label": __alloT('stem.dissection.view_group_specimen', 'Specimen display') },
+                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_specimen', 'Specimen display')),
+                React.createElement("div", { className: "diss-view-control-grid" },
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
+                  !d.quizMode && React.createElement(React.Fragment, null,
+                  React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? "Anatomical view locked during timed practical" : "Anatomical view: cycle dorsal, ventral, lateral, and internal", onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_layer_cross_section', 'Toggle schematic layer map'), "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Layer map ' + (crossSectionMode ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_specimen_condition_cycle_standard_preserved_deh', 'Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen'), onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_curated_anatomical_relationships', 'Toggle curated anatomical relationships'), "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality),
+                  !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
+                  !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
+                  !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_responsive_tissue_relief_lighting_around', 'Toggle responsive tissue relief lighting around visible structures'), "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_animated_direction_markers_for_curated_a', 'Toggle animated direction markers for curated anatomical relationships'), "aria-pressed": relationshipMotion, onClick: function () { upd('relationshipMotion', !relationshipMotion); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMotion ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2192 Flow motion ' + (relationshipMotion ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_selected_structure_focus_isolation', 'Toggle selected-structure focus isolation'), "aria-pressed": focusMode, onClick: function () { upd('focusMode', !focusMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (focusMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25CE Focus mode ' + (focusMode ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_subtle_pointer_responsive_specimen_depth', 'Toggle subtle pointer-responsive specimen depth'), "aria-pressed": parallaxDepth, onClick: function () { upd('parallaxDepth', !parallaxDepth); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (parallaxDepth ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, 'Depth motion ' + (parallaxDepth ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_live_and_reference_split_comparison', 'Toggle live and reference split comparison'), "aria-pressed": splitComparison && !!referenceEvidence, disabled: !referenceEvidence, onClick: function () { upd('splitComparison', !splitComparison); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (splitComparison && referenceEvidence ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') + (!referenceEvidence ? ' opacity-50 cursor-not-allowed' : '') }, 'Split compare ' + (splitComparison && referenceEvidence ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_generate_another_deterministic_specimen_variati', 'Generate another deterministic specimen variation'), onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
+                  React.createElement("button", { "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Tissue: before' : '\u25B6 Tissue: after')
+                )
+                )
+              ),
+              React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "lighting", role: "group", "aria-label": __alloT('stem.dissection.view_group_lighting', 'Lighting and motion') },
+                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_lighting', 'Lighting and motion')),
+                React.createElement("div", { className: "diss-view-control-grid" },
+                  !d.quizMode && React.createElement(React.Fragment, null,
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_lab_light_cycle_neutral_warm_and_cool', 'Lab light: cycle neutral, warm, and cool'), onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
+                  React.createElement("label", { className: "diss-light-intensity", "data-tone": currentIllumination.tone, htmlFor: "diss-light-intensity-range" },
                 React.createElement("span", null, 'Illumination intensity · ' + currentIllumination.label),
                 React.createElement("output", { htmlFor: "diss-light-intensity-range" }, lightIntensity + '%'),
                 React.createElement("input", {
@@ -18191,13 +18686,18 @@ var d = labToolData.dissection || {};
                   onBlur: function () { var result = illuminationAssessmentData(currentProcedure, lightIntensity); setProcedureFeedback('Illumination ' + lightIntensity + ' percent: ' + result.label + '. ' + result.suggestion, result.score >= 72 ? 'success' : 'caution'); }
                 })
               ),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_laboratory_light_direction_cycle_overhead_left', 'Laboratory light direction: cycle overhead, left, right, and raking'), onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_generate_another_deterministic_specimen_variati', 'Generate another deterministic specimen variation'), onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
-              React.createElement("button", { "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Tissue: before' : '\u25B6 Tissue: after')
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_laboratory_light_direction_cycle_overhead_left', 'Laboratory light direction: cycle overhead, left, right, and raking'), onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection)
+                ),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_animation_speed_cycle_normal_slow_and_fast', 'Animation speed: cycle normal, slow, and fast'), onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal'))
+                )
               ),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_enter_fullscreen_specimen_mode_with_view_and_to', 'Enter fullscreen specimen mode with view and tool controls'), "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_animation_speed_cycle_normal_slow_and_fast', 'Animation speed: cycle normal, slow, and fast'), onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
-              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_print_clean_dissection_report', 'Print clean dissection report'), onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
+              React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "workspace", role: "group", "aria-label": __alloT('stem.dissection.view_group_workspace', 'Workspace actions') },
+                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_workspace', 'Workspace actions')),
+                React.createElement("div", { className: "diss-view-control-grid" },
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_enter_fullscreen_specimen_mode_with_view_and_to', 'Enter fullscreen specimen mode with view and tool controls'), "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_print_clean_dissection_report', 'Print clean dissection report'), onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
+                )
+              )
             ),
 
             // Tools group expanded
@@ -18951,33 +19451,10 @@ var d = labToolData.dissection || {};
                         React.createElement("dd", null, protectedLandmarkNames.join(', ') || 'Underlying anatomy')
                       )
                     ),
-                    React.createElement("div", { className: "diss-active-tool", "data-readiness": activeInstrumentState.readiness, "aria-label": __alloT('stem.dissection.a11y_active_instrument_status', 'Active instrument status') },
-                      React.createElement("span", { className: "diss-active-tool__icon", "aria-hidden": "true" }, (PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).icon || '\u2022'),
-                      React.createElement("div", null,
-                        React.createElement("strong", null, 'Active tool: ' + ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).label || activeInstrument)),
-                        React.createElement("span", { id: "diss-active-tool-help" }, activeInstrumentState.instruction)
-                      ),
-                      React.createElement("span", { className: "diss-active-tool__badge" }, activeInstrumentState.label)
-                    ),
-                    React.createElement("section", { className: "diss-readiness", "data-tone": currentToolReadiness.tone, role: "region", "aria-label": __alloT('stem.dissection.a11y_active_instrument_action_readiness', 'Active instrument action readiness') },
-                      React.createElement("div", { className: "diss-readiness__header" },
-                        React.createElement("strong", null, 'Action readiness \u00B7 ' + currentToolReadiness.label),
-                        React.createElement("span", { className: "diss-readiness__score" }, currentToolReadiness.score + '/100')
-                      ),
-                      React.createElement("div", { className: "diss-readiness__meter", role: "progressbar", "aria-label": "Action readiness for " + currentToolReadiness.tool.label, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentToolReadiness.score, "aria-valuetext": currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent' },
-                        React.createElement("span", { style: { width: currentToolReadiness.score + '%' } })
-                      ),
-                      React.createElement("div", { className: "diss-readiness__checks", role: "group", "aria-label": __alloT('stem.dissection.a11y_readiness_checks', 'Readiness checks') },
-                        currentToolReadiness.checks.map(function (check) {
-                          return React.createElement("div", { className: "diss-readiness__check", key: check.id },
-                            React.createElement("b", { "aria-hidden": "true" }, check.ready ? '\u2713' : '!'),
-                            React.createElement("span", null, check.label + ' \u00B7 ' + (check.ready ? 'ready' : 'needs attention'))
-                          );
-                        })
-                      ),
-                      React.createElement("p", { className: "diss-readiness__cue" }, currentToolReadiness.cue)
-                    ),
-                    React.createElement("div", { className: "diss-instruments", role: "radiogroup", "aria-label": __alloT('stem.dissection.a11y_dissection_instruments', 'Dissection instruments') },
+                    React.createElement("section", { className: "diss-instrument-preparation", "data-instrument-preparation": true, "aria-labelledby": "diss-instrument-heading" },
+                      React.createElement("h4", { id: "diss-instrument-heading" }, __alloT('stem.dissection.instrument_prepare', 'Prepare the instrument')),
+                      React.createElement("p", { className: "diss-instrument-keyboard-help", id: "diss-instrument-keyboard-help" }, __alloT('stem.dissection.instrument_keyboard_help', 'Use arrow keys to select a tool, then check its readiness and calibration.')),
+                    React.createElement("div", { className: "diss-instruments", role: "radiogroup", "aria-label": __alloT('stem.dissection.a11y_dissection_instruments', 'Dissection instruments'), "aria-describedby": "diss-instrument-keyboard-help" },
                       PROCEDURE_INSTRUMENTS.map(function (tool) {
                         var toolState = procedureInstrumentStatus(tool.id);
                         var toolIsNext = procedureNext.action !== 'complete' && tool.id === procedureNext.instrument;
@@ -18996,11 +19473,49 @@ var d = labToolData.dissection || {};
                           onKeyDown: function (e) { onInstrumentKeyDown(e, tool.id); },
                           onClick: function () { selectProcedureInstrument(tool.id, 'pointer or keyboard activation'); }
                         },
-                          React.createElement("span", null, tool.icon + ' ' + tool.label),
-                          React.createElement("span", { className: "diss-instrument__state" }, activeInstrument === tool.id ? 'Selected \u00B7 ' + toolState.label : (toolIsNext ? 'Next \u00B7 ' + toolState.label : toolState.label)),
+                          React.createElement("span", { className: "diss-instrument__markers", "aria-hidden": "true" },
+                            activeInstrument === tool.id && React.createElement("span", { className: "diss-tool-marker", "data-tool-marker": "selected" }, __alloT('stem.dissection.instrument_selected', 'Selected')),
+                            toolIsNext && React.createElement("span", { className: "diss-tool-marker", "data-tool-marker": "next" }, __alloT('stem.dissection.instrument_next', 'Next step'))
+                          ),
+                          React.createElement("strong", { className: "diss-instrument__name" }, React.createElement("span", { className: "diss-instrument__icon", "aria-hidden": "true" }, tool.icon), ' ' + tool.label),
+                          React.createElement("span", { className: "diss-instrument__state" }, toolState.label),
                           React.createElement("span", { className: "diss-instrument__hint" }, tool.inputHint || 'Canvas gesture')
                         );
                       })
+                    ),
+                    React.createElement("div", { className: "diss-active-tool", "data-readiness": activeInstrumentState.readiness, "aria-label": __alloT('stem.dissection.a11y_active_instrument_status', 'Active instrument status') },
+                      React.createElement("span", { className: "diss-active-tool__icon", "aria-hidden": "true" }, (PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).icon || '\u2022'),
+                      React.createElement("div", null,
+                        React.createElement("strong", null, 'Active tool: ' + ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).label || activeInstrument)),
+                        React.createElement("span", { id: "diss-active-tool-help" }, activeInstrumentState.instruction)
+                      ),
+                      React.createElement("span", { className: "diss-active-tool__badge" }, activeInstrumentState.label)
+                    ),
+                    !d.quizMode && !d.practicalMode && React.createElement("div", { className: "diss-preparation-actions", role: "group", "aria-label": __alloT('stem.dissection.instrument_shortcuts', 'Instrument preparation shortcuts') },
+                      activeCalibrationControl && React.createElement("button", { type: "button", "data-preparation-action": "calibrate", "aria-controls": "diss-calibration-range",
+                        onClick: function (event) { focusDissectionTarget('diss-calibration-range', null, event.currentTarget.closest('[data-dissection-root]')); }
+                      }, __alloT('stem.dissection.instrument_adjust', 'Adjust calibration')),
+                      React.createElement("button", { type: "button", "data-preparation-action": "specimen", "aria-controls": "diss-canvas",
+                        onClick: function (event) { focusDissectionTarget('diss-canvas', null, event.currentTarget.closest('[data-dissection-root]')); }
+                      }, __alloT('stem.dissection.go_specimen', 'Go to specimen'))
+                    ),
+                    React.createElement("section", { className: "diss-readiness", "data-tone": currentToolReadiness.tone, role: "region", "aria-label": __alloT('stem.dissection.a11y_active_instrument_action_readiness', 'Active instrument action readiness') },
+                      React.createElement("div", { className: "diss-readiness__header" },
+                        React.createElement("strong", null, 'Action readiness \u00B7 ' + currentToolReadiness.label),
+                        React.createElement("span", { className: "diss-readiness__score" }, currentToolReadiness.score + '/100')
+                      ),
+                      React.createElement("div", { className: "diss-readiness__meter", role: "progressbar", "aria-label": "Action readiness for " + currentToolReadiness.tool.label, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentToolReadiness.score, "aria-valuetext": currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent' },
+                        React.createElement("span", { style: { width: currentToolReadiness.score + '%' } })
+                      ),
+                      React.createElement("div", { className: "diss-readiness__checks", role: "group", "aria-label": __alloT('stem.dissection.a11y_readiness_checks', 'Readiness checks') },
+                        currentToolReadiness.checks.map(function (check) {
+                          return React.createElement("div", { className: "diss-readiness__check", key: check.id },
+                            React.createElement("b", { "aria-hidden": "true" }, check.ready ? '\u2713' : '!'),
+                            React.createElement("span", null, check.label + ' \u00B7 ' + (check.ready ? 'ready' : 'needs attention'))
+                          );
+                        })
+                      ),
+                      React.createElement("p", { className: "diss-readiness__cue" }, currentToolReadiness.cue)
                     ),
                     activeInstrument === 'scalpel' && React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_scalpel_depth', 'Scalpel depth') },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, 'Depth:'),
@@ -19039,6 +19554,7 @@ var d = labToolData.dissection || {};
                         React.createElement("b", null, activeCalibrationAssessment.label + ' ' + activeCalibrationAssessment.score + '%'),
                         React.createElement("span", null, activeCalibrationAssessment.detail)
                       )
+                    ),
                     ),
                     React.createElement("div", { className: "diss-procedure__steps", "aria-label": procedureStageIdx + ' of ' + PROCEDURE_STEPS.length + ' technique steps complete' },
                       PROCEDURE_STEPS.map(function (step, idx) {
@@ -19570,9 +20086,9 @@ var d = labToolData.dissection || {};
 
                 sel && React.createElement("section", { className: "diss-selection-card bg-white rounded-xl border p-4", "data-dissection-selection": true, role: "region", "aria-labelledby": "diss-selection-title" },
 
-                  React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                  React.createElement("div", { className: "diss-selection-header" },
 
-                    React.createElement("div", { className: "min-w-0" },
+                    React.createElement("div", { className: "diss-selection-header__name" },
                       React.createElement("h4", { id: "diss-selection-title", tabIndex: -1, className: "text-base font-black text-slate-800" }, sel.name),
                       React.createElement("span", {
                         className: "diss-selection-position", role: "status", "aria-live": "polite", "aria-atomic": "true",
@@ -19622,14 +20138,61 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { id: 'diss-observe-first-' + sel.id, className: "diss-observe-first", role: "note" },
                     React.createElement("strong", null, __alloT('stem.dissection.observe_first', 'Observe first')),
-                    React.createElement("p", null, __alloT('stem.dissection.observe_first_prompt', 'Record one visible feature and where it is in the evidence note below. Open the reference whenever you need support, then revise anything the comparison changes.'))
+                    React.createElement("p", null, __alloT('stem.dissection.observe_first_prompt', 'Describe a visible feature and its location. Compare with the reference, then revise your observation as needed.'))
                   ),
+                  !d.quizMode && !d.practicalMode && (function () {
+                    var studyVisible = structureExposureState(sel, currentProcedure) === 'visible';
+                    var studyNotePresent = String((d.organNotes || {})[specimen + '|' + sel.id] || '').trim().length > 0;
+                    return React.createElement("div", { className: "diss-study-actions", "data-diss-study-actions": true, role: "group", "aria-label": __alloT('stem.dissection.study_actions', 'Study actions') + ': ' + sel.name },
+                      React.createElement("ol", { className: "diss-study-actions__steps" },
+                        React.createElement("li", null,
+                          React.createElement("button", { type: "button", "data-study-action": "inspect", "aria-controls": "diss-canvas", "aria-labelledby": 'diss-study-inspect-label-' + sel.id, "aria-describedby": 'diss-study-inspect-' + sel.id,
+                            onClick: function (event) {
+                              var root = event.currentTarget.closest('[data-dissection-root]');
+                              if (studyVisible) frameSelectedStructure(event);
+                              focusDissectionTarget('diss-canvas', studyVisible ? null : __alloT('stem.dissection.study_hidden_structure', 'This structure is not visible in the current field. Change view or reveal the field before inspecting it again.'), root);
+                            }
+                          }, React.createElement("span", { className: "diss-study-actions__number", "aria-hidden": "true" }, '1'),
+                            React.createElement("span", { className: "diss-study-actions__body" },
+                              React.createElement("strong", { id: 'diss-study-inspect-label-' + sel.id }, studyVisible ? __alloT('stem.dissection.study_inspect', 'Inspect specimen') : __alloT('stem.dissection.study_return_specimen', 'Return to specimen')),
+                              React.createElement("span", { className: "diss-study-actions__cue", id: 'diss-study-inspect-' + sel.id }, studyVisible ? __alloT('stem.dissection.study_inspect_cue', 'Bring this structure into focus.') : __alloT('stem.dissection.study_hidden_cue', 'Change view or reveal the field to inspect again.'))
+                            )
+                          )
+                        ),
+                        React.createElement("li", null,
+                          React.createElement("button", { type: "button", "data-study-action": "write", "data-note-state": studyNotePresent ? "draft" : "empty", "aria-controls": 'diss-note-' + sel.id, "aria-labelledby": 'diss-study-write-label-' + sel.id, "aria-describedby": 'diss-study-write-' + sel.id,
+                            onClick: function (event) { focusDissectionTarget('diss-note-' + sel.id, null, event.currentTarget.closest('[data-dissection-root]')); }
+                          }, React.createElement("span", { className: "diss-study-actions__number", "aria-hidden": "true" }, '2'),
+                            React.createElement("span", { className: "diss-study-actions__body" },
+                              React.createElement("strong", { id: 'diss-study-write-label-' + sel.id }, __alloT('stem.dissection.study_write', 'Write observation')),
+                              React.createElement("span", { className: "diss-study-actions__cue", id: 'diss-study-write-' + sel.id }, studyNotePresent ? __alloT('stem.dissection.study_continue_draft', 'Continue your existing draft.') : __alloT('stem.dissection.study_write_cue', 'Describe a feature and its location.'))
+                            )
+                          )
+                        ),
+                        React.createElement("li", null,
+                          React.createElement("button", { type: "button", "data-study-action": "reference", "aria-controls": 'diss-reference-' + sel.id, "aria-labelledby": 'diss-study-reference-label-' + sel.id, "aria-describedby": 'diss-study-reference-' + sel.id,
+                            onClick: function (event) {
+                              var root = event.currentTarget.closest('[data-dissection-root]');
+                              var reference = scopedDissectionQuery(root, '#diss-reference-' + sel.id);
+                              if (reference) { reference.open = true; focusDissectionTarget('diss-reference-toggle-' + sel.id, null, root); }
+                            }
+                          }, React.createElement("span", { className: "diss-study-actions__number", "aria-hidden": "true" }, '3'),
+                            React.createElement("span", { className: "diss-study-actions__body" },
+                              React.createElement("strong", { id: 'diss-study-reference-label-' + sel.id }, __alloT('stem.dissection.study_reference', 'Check reference')),
+                              React.createElement("span", { className: "diss-study-actions__cue", id: 'diss-study-reference-' + sel.id }, __alloT('stem.dissection.study_reference_cue', 'Compare, then revise your note.'))
+                            )
+                          )
+                        )
+                      )
+                    );
+                  })(),
                   React.createElement("details", {
                     key: specimen + '|' + sel.id,
+                    id: 'diss-reference-' + sel.id,
                     className: "diss-selection-reference diss-disclosure",
                     "data-selection-reference": true
                   },
-                    React.createElement("summary", null, __alloT('stem.dissection.check_reference', 'Check reference and connections')),
+                    React.createElement("summary", { id: 'diss-reference-toggle-' + sel.id }, __alloT('stem.dissection.check_reference', 'Check reference and connections')),
                     React.createElement("div", { className: "diss-disclosure__body" },
                       React.createElement("p", { className: "diss-selection-reference__intro" }, __alloT('stem.dissection.reference_context_help', 'Reference context can extend your learning. Base the evidence note on features and anatomical relationships you can observe in this specimen.')),
                   React.createElement("div", { className: "diss-selection-summary" },
@@ -19675,7 +20238,10 @@ var d = labToolData.dissection || {};
                       );
                     }) : React.createElement("p", { className: "diss-directory-progress" }, __alloT('stem.dissection.connection_unmapped', 'No connection is mapped for this structure. Use its location and the specimen reference to propose one.')),
                     React.createElement("p", { className: "diss-directory-progress" }, DISSECTION_REFERENCE_CONTEXT[spec.bodyShape].prompt)
-                  )
+                  ),
+                  !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", className: "diss-study-return-note", "data-study-return-note": true, "aria-controls": 'diss-note-' + sel.id,
+                    onClick: function (event) { focusDissectionTarget('diss-note-' + sel.id, null, event.currentTarget.closest('[data-dissection-root]')); }
+                  }, __alloT('stem.dissection.study_return_note', 'Return to your observation'))
                     )
                   ),
 
@@ -19727,7 +20293,7 @@ var d = labToolData.dissection || {};
                         if (noteField) { noteField.focus(); noteField.setSelectionRange(noteField.value.length, noteField.value.length); }
                       });
                     }
-                    return React.createElement("div", { className: "mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3", "data-dissection-evidence": true },
+                    return React.createElement("div", { className: "diss-evidence-form mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3", "data-dissection-evidence": true },
                       React.createElement("label", { htmlFor: 'diss-note-' + sel.id, className: "block text-xs font-black text-blue-900" }, __alloT('stem.dissection.evidence_note', 'Evidence note')),
                       React.createElement("p", { id: evidenceHelpId, className: "text-xs text-blue-700 mt-1" }, __alloT('stem.dissection.evidence_note_help', 'Record what you observed, where it is located, and how that evidence supports your identification.')),
                       React.createElement("div", { className: "diss-evidence-starters", role: "group", "aria-label": __alloT('stem.dissection.evidence_sentence_starters', 'Evidence sentence starters') },
@@ -19852,10 +20418,11 @@ var d = labToolData.dissection || {};
 
                 // Organ list with search
 
-                !sel && !d.quizMode && React.createElement("section", { className: "diss-structure-list bg-white rounded-xl border p-3", "data-dissection-directory": true, "aria-labelledby": "diss-directory-title" },
+                !sel && !d.quizMode && React.createElement("section", { className: "diss-structure-list diss-directory-browser bg-white rounded-xl border p-3", "data-dissection-directory": true, "aria-labelledby": "diss-directory-title" },
 
                   React.createElement("h3", { id: "diss-directory-title", className: "text-sm font-black text-slate-800 mb-2" }, (spec.layers[currentLayerIdx] || {}).icon + ' ' + (spec.layers[currentLayerIdx] || {}).name + ' structures (' + organs.length + ')'),
 
+                  React.createElement("label", { className: "diss-directory-search-label", htmlFor: "diss-organ-search" }, __alloT('stem.dissection.find_structure', 'Find a structure')),
                   React.createElement("input", {
 
                     id: "diss-organ-search",
@@ -19864,18 +20431,19 @@ var d = labToolData.dissection || {};
 
                     placeholder: __alloT('stem.dissection.search_names_functions', 'Search names or functions…'),
 
-                    "aria-label": __alloT('stem.dissection.a11y_search_organs_in_this_layer', 'Search organs in this layer'),
+                    "aria-label": __alloT('stem.dissection.find_structure', 'Find a structure'),
                     "aria-controls": "diss-directory-results",
-                    "aria-describedby": "diss-directory-count",
+                    "aria-describedby": "diss-directory-count diss-directory-keyboard-help",
 
                     value: d.organSearch || '',
 
                     onChange: function (e) { upd('organSearch', e.target.value); },
-                    onKeyDown: function (e) { if (e.key === 'Escape' && (d.organSearch || directoryFilter !== 'all')) { e.preventDefault(); e.stopPropagation(); updMany({ organSearch: '', directoryFilter: 'all' }); } },
+                    onKeyDown: handleDirectorySearchKey,
 
                     className: "w-full min-h-11 px-3 py-2 rounded-lg border border-slate-400 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
 
                   }),
+                  React.createElement("p", { id: "diss-directory-keyboard-help", className: "diss-directory-keyboard-help" }, __alloT('stem.dissection.directory_keyboard_help', 'Down arrow moves to results. Use Up and Down to browse; Enter opens a result. Escape clears search and filters.')),
 
 
                   React.createElement("div", { className: "diss-directory-filters", role: "group", "aria-label": __alloT('stem.dissection.filter_directory', 'Filter structures by learning progress') },
@@ -19894,10 +20462,20 @@ var d = labToolData.dissection || {};
                     (otherLayerMatches.length ? ' ' + otherLayerMatches.length + ' reference matches in other layers.' : '')
 
                   ),
-                  React.createElement("div", { id: "diss-directory-results", className: "space-y-1 max-h-72 overflow-y-auto", "aria-busy": "false", tabIndex: 0, role: "region", "aria-label": __alloT('stem.dissection.a11y_directory_results', 'Directory results') },
+                  React.createElement("div", { id: "diss-directory-results", className: "diss-directory-results space-y-1 max-h-72 overflow-y-auto", "aria-busy": "false", tabIndex: 0, role: "region", "aria-label": __alloT('stem.dissection.a11y_directory_results', 'Directory results'), onKeyDown: handleDirectoryNavigation },
 
                     filteredOrgans.length === 0
-                      ? React.createElement("p", { className: "diss-directory-empty" }, directoryFilter !== 'all' && matchingLayerOrgans.length ? __alloT('stem.dissection.no_filter_matches', 'No structures match this progress filter. Choose All structures or clear the filters.') : (organSearchText ? 'No structures match “' + (d.organSearch || '') + '” in this layer. Try a name or function.' + (otherLayerMatches.length ? ' Check other layers below.' : '') : __alloT('stem.dissection.no_layer_structures', 'No structures are listed in this layer.')))
+                      ? React.createElement("div", { className: "diss-directory-empty" },
+                        React.createElement("p", null, directoryFilter !== 'all' && matchingLayerOrgans.length ? __alloT('stem.dissection.no_filter_matches', 'No structures match this progress filter. Choose All structures or clear the filters.') : (organSearchText ? 'No structures match “' + (d.organSearch || '') + '” in this layer. Try a name or function.' + (otherLayerMatches.length ? ' Check other layers below.' : '') : __alloT('stem.dissection.no_layer_structures', 'No structures are listed in this layer.'))),
+                        React.createElement("div", { className: "diss-directory-empty__actions" },
+                          directoryFilter !== 'all' && matchingLayerOrgans.length > 0 && React.createElement("button", { type: "button", "data-directory-recovery": "filter", onClick: function (event) {
+                            var root = event.currentTarget.closest('[data-dissection-root]'); upd('directoryFilter', 'all'); focusDissectionTarget('diss-organ-search', null, root);
+                          } }, __alloT('stem.dissection.show_layer_matches', 'Show matches in this layer')),
+                          organSearchText && React.createElement("button", { type: "button", "data-directory-recovery": "reset", onClick: function (event) {
+                            var root = event.currentTarget.closest('[data-dissection-root]'); updMany({ organSearch: '', directoryFilter: 'all' }); focusDissectionTarget('diss-organ-search', null, root);
+                          } }, __alloT('stem.dissection.show_all_layer_structures', 'Show all structures in this layer'))
+                        )
+                      )
                       : filteredOrgans.map(function (org) {
 
                       var orgSys = null;
@@ -19943,16 +20521,15 @@ var d = labToolData.dissection || {};
                         title: directoryVisible ? (isExplored ? 'Explored' : 'Visible and ready to inspect') : (isExplored ? 'Review previously recorded evidence; no new exploration credit.' : 'Not currently visible. Activate for a recovery cue.'),
                         onClick: function () { chooseOrganFromDirectory(org); },
 
-                        className: "w-full min-h-11 text-left px-3 py-2 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-2 active:scale-[0.99] " + (!directoryVisible ? 'bg-slate-50 text-slate-500 opacity-75 ' : '') + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-200 font-bold text-amber-800' : 'text-slate-700')
+                        className: "diss-directory-item " + ("w-full min-h-11 text-left px-3 py-2 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-2 active:scale-[0.99] " + (!directoryVisible ? 'bg-slate-50 text-slate-500 opacity-75 ' : '') + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-200 font-bold text-amber-800' : 'text-slate-700'))
 
                       },
 
                         React.createElement("span", { className: "diss-directory-index", style: { '--diss-system-color': dotColor }, "aria-hidden": "true" }, String(directoryMarkerNumber)),
 
-                        React.createElement("span", { className: "flex-1" }, org.name, React.createElement("span", { className: "diss-directory-progress", "data-structure-record": org.id, id: "diss-record-" + org.id }, structureRecordStatus(org))),
+                        React.createElement("span", { className: "diss-directory-item__body flex-1" }, React.createElement("span", { className: "diss-directory-item__name" }, org.name), React.createElement("span", { className: "diss-directory-progress", "data-structure-record": org.id, id: "diss-record-" + org.id }, structureRecordStatus(org))),
 
-                        !directoryVisible ? React.createElement("span", { className: "text-[11px] font-bold text-slate-500" }, isExplored ? 'Prior evidence' : 'Not visible')
-                          : isExplored && React.createElement("span", { className: "text-[11px] text-green-500" }, '\u2713')
+                        React.createElement("span", { className: "diss-directory-item__state", "data-tone": directoryVisible ? "visible" : isExplored ? "prior" : "hidden", "aria-hidden": "true" }, directoryVisible ? __alloT('stem.dissection.structure_visible', 'Visible') : isExplored ? __alloT('stem.dissection.prior_evidence', 'Prior evidence') : __alloT('stem.dissection.structure_not_visible', 'Not visible'))
 
                       );
 

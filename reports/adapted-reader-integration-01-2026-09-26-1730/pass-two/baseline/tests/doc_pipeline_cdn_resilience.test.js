@@ -1,0 +1,158 @@
+// Unit tests for the resilient CDN loader (_loadCdnScript / _waitForGlobal) in
+// doc_pipeline_source.jsx. The pipeline lazy-loads pdf.js / pako / Tesseract / fontkit from
+// a CDN; a single hard-coded URL means a blocked CDN (locked-down school networks) silently
+// kills a feature. _loadCdnScript tries a fallback chain and, on TOTAL failure, records the
+// outage on window.__alloflowCdnDown[label] so degradation is visible, not silent. These
+// pin: first-source success, fallback to a later source, total-failure flag, already-loaded
+// short-circuit, and per-label promise caching.
+//
+// Anti-drift: extracts the real _waitForGlobal + _loadCdnScript block from source at runtime
+// and evals it with a stubbed document/window/warnLog (no real network, no real DOM).
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const SRC = fs.readFileSync(path.resolve(__dirname, '../doc_pipeline_source.jsx'), 'utf8');
+
+// The two helpers + the _cdnLoadPromises cache are a contiguous block; slice from
+// _waitForGlobal's declaration through the close of _loadCdnScript and eval as a unit.
+function makeLoaderFactory() {
+  const start = SRC.indexOf('const _waitForGlobal = ');
+  const lcs = SRC.indexOf('const _loadCdnScript = ', start);
+  if (start < 0 || lcs < 0) throw new Error('CDN loader block not found in source');
+  const braceStart = SRC.indexOf('{', SRC.indexOf('=>', lcs));
+  let i = braceStart, depth = 0, end = -1;
+  for (; i < SRC.length; i++) { const c = SRC[i]; if (c === '{') depth++; else if (c === '}') { depth--; if (depth === 0) { end = i; break; } } }
+  if (end < 0) throw new Error('unbalanced braces in _loadCdnScript');
+  const block = SRC.slice(start, end + 1);
+  // eslint-disable-next-line no-eval
+  return new Function('document', 'window', 'warnLog', block + '\n; return { _loadCdnScript: _loadCdnScript, _waitForGlobal: _waitForGlobal };');
+}
+const makeLoader = makeLoaderFactory();
+
+// Build a fake browser env. `goodUrls` are the URLs that "succeed" (flip the global ready)
+// the instant their <script> src is set. `startLoaded` simulates an already-present global.
+// `badUrls` report a failed load through the script's error event (what a CSP-blocked or
+// 404ing mirror does in a browser) instead of silently never defining the global.
+// `hollowUrls` fire load WITHOUT defining the global: what an HTML page served as a script
+// does in Firefox/Safari (captive portal, SPA fallback on a missing path).
+function env(goodUrls, startLoaded, badUrls = [], hollowUrls = []) {
+  let loaded = !!startLoaded;
+  const win = {};
+  const counters = { injected: 0 }; // <script> tags created — proof of whether a chain was re-polled
+  const doc = {
+    querySelector: () => null,
+    querySelectorAll: () => [], // failure path removes dead <script> corpses via this
+    createElement: () => (counters.injected++, {
+      setAttribute() {},
+      _src: '',
+      set src(v) {
+        this._src = v;
+        if (goodUrls.includes(v)) loaded = true;
+        if (badUrls.includes(v)) setTimeout(() => { if (typeof this.onerror === 'function') this.onerror(new Error('blocked')); }, 0);
+        if (hollowUrls.includes(v)) setTimeout(() => { if (typeof this.onload === 'function') this.onload(); }, 0);
+      },
+      get src() { return this._src; },
+    }),
+    head: { appendChild() {} },
+  };
+  const api = makeLoader(doc, win, () => {});
+  return { win, isReady: () => loaded, load: api._loadCdnScript, counters };
+}
+
+const FAST = { timeout: 40 }; // keep bad-source waits short in tests
+
+describe('_loadCdnScript — resilient CDN loader', () => {
+  it('loads from the first (primary) source when it works', async () => {
+    const e = env(['https://primary/lib.js']);
+    const ok = await e.load('pdfjs', ['https://primary/lib.js', 'https://fallback/lib.js'], e.isReady, FAST);
+    expect(ok).toBe(true);
+    expect(e.win.__alloflowCdnDown).toBeUndefined();
+  });
+
+  it('falls back to a later source when earlier ones fail', async () => {
+    const e = env(['https://c/lib.js']); // only the 3rd url succeeds
+    const ok = await e.load('pako', ['https://a/lib.js', 'https://b/lib.js', 'https://c/lib.js'], e.isReady, FAST);
+    expect(ok).toBe(true);
+    expect(e.win.__alloflowCdnDown).toBeUndefined();
+  });
+
+  it('records an outage flag (not silent) when ALL sources fail', async () => {
+    const e = env([]); // nothing succeeds
+    const ok = await e.load('tesseract', ['https://a/lib.js', 'https://b/lib.js'], e.isReady, FAST);
+    expect(ok).toBe(false);
+    expect(e.win.__alloflowCdnDown).toBeTruthy();
+    // The flag is the failure time (2026-09-06): still truthy for "X unavailable" readers, and
+    // it lets the loader tell a chain that failed seconds ago from one that failed last hour.
+    expect(e.win.__alloflowCdnDown.tesseract).toBeTypeOf('number');
+    expect(Date.now() - e.win.__alloflowCdnDown.tesseract).toBeLessThan(5000);
+  });
+
+  it('retries after a total failure (does NOT memoize the failure for the session) and clears the flag on recovery', async () => {
+    const e = env(['https://good/lib.js']); // only this URL flips the global ready
+    const first = await e.load('pdfjs', ['https://bad/lib.js'], e.isReady, FAST); // all sources bad → fails
+    expect(first).toBe(false);
+    expect(e.win.__alloflowCdnDown.pdfjs).toBeTypeOf('number');
+    // A later call (network recovered) must RETRY — the old code returned the cached false forever.
+    // "Later" is past the short failure memo (see the next test): age the recorded failure.
+    e.win.__alloflowCdnDown.pdfjs = Date.now() - 60000;
+    const second = await e.load('pdfjs', ['https://good/lib.js'], e.isReady, FAST);
+    expect(second).toBe(true);
+    expect(e.win.__alloflowCdnDown.pdfjs).toBeFalsy(); // outage flag cleared on the successful retry
+  });
+
+  it('fails fast for 45s after a total failure instead of re-polling every mirror on every call', async () => {
+    // One audit asks for pdf.js three or four times. With every mirror blocked (Gemini Canvas
+    // CSP) each call re-ran the full 3 × 12s poll, so a 1 KB document sat ~2 minutes on the
+    // loading screen — a third of it after the scored result already existed (2026-09-06).
+    const e = env([]);
+    const first = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js'], e.isReady, FAST);
+    expect(first).toBe(false);
+    const injectedAfterFirst = e.counters.injected;
+    expect(injectedAfterFirst).toBe(2);
+    const second = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js'], e.isReady, FAST);
+    expect(second).toBe(false);
+    expect(e.counters.injected).toBe(injectedAfterFirst); // no new <script> tags: the chain was not re-polled
+    expect(e.win.__alloflowCdnDown.pdfjs).toBeTypeOf('number'); // the outage stays visible meanwhile
+  });
+
+  it('fails over the instant a mirror reports an error instead of polling out its timeout', async () => {
+    // A CSP-blocked mirror (Gemini Canvas) errors within milliseconds; the loader used to sit
+    // the full poll on it anyway — 12s × 3 mirrors on every pdf.js call (2026-09-06).
+    const e = env(['https://c/lib.js'], false, ['https://a/lib.js', 'https://b/lib.js']);
+    const started = Date.now();
+    const ok = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js', 'https://c/lib.js'], e.isReady, { timeout: 5000 });
+    expect(ok).toBe(true);
+    expect(e.counters.injected).toBe(3); // every mirror was tried, in order
+    expect(Date.now() - started).toBeLessThan(1500); // two blocked mirrors cost milliseconds, not 10s
+    expect(e.win.__alloflowCdnDown).toBeUndefined();
+  });
+
+  it('fails over a mirror that loads an HTML page (load fires, global never appears) within a beat', async () => {
+    // Observed live on 2026-09-06: the AlloFlow CDN answers a missing path with 200 + the app
+    // shell. Chrome refuses it as a script; Firefox/Safari fire load on it. The loader must not
+    // sit out its 12s poll on such a mirror.
+    const e = env(['https://c/lib.js'], false, [], ['https://a/lib.js', 'https://b/lib.js']);
+    const started = Date.now();
+    const ok = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js', 'https://c/lib.js'], e.isReady, { timeout: 5000 });
+    expect(ok).toBe(true);
+    expect(e.counters.injected).toBe(3);
+    expect(Date.now() - started).toBeLessThan(2000); // two hollow mirrors cost ~250ms each, not 10s
+  });
+
+  it('short-circuits when the global is already present (no injection needed)', async () => {
+    const e = env([], true); // startLoaded = true
+    const ok = await e.load('fontkit', ['https://never-used/lib.js'], e.isReady, FAST);
+    expect(ok).toBe(true);
+  });
+
+  it('caches per-label: concurrent calls share one in-flight load', async () => {
+    const e = env(['https://primary/lib.js']);
+    const [a, b] = await Promise.all([
+      e.load('pdfjs', ['https://primary/lib.js'], e.isReady, FAST),
+      e.load('pdfjs', ['https://primary/lib.js'], e.isReady, FAST),
+    ]);
+    expect(a).toBe(true);
+    expect(b).toBe(true);
+  });
+});

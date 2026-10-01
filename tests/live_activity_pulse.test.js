@@ -1,13 +1,16 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const appSource = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
-const pollingSource = fs.readFileSync(path.join(ROOT, 'live_polling_module.js'), 'utf8');
-const pictionarySource = fs.readFileSync(path.join(ROOT, 'concept_pictionary_source.jsx'), 'utf8');
+const appSource = readSourceFile(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const pollingSource = readSourceFile(path.join(ROOT, 'live_polling_module.js'), 'utf8');
+const pictionarySource = readSourceFile(path.join(ROOT, 'concept_pictionary_source.jsx'), 'utf8');
 let api;
 let hookState;
 let hookCursor;
@@ -63,7 +66,7 @@ beforeAll(() => {
   };
   const windowStub = { React };
   // eslint-disable-next-line no-new-func
-  new Function('window', fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_module.js'), 'utf8'))(windowStub);
+  new Function('window', readSourceFile(path.join(ROOT, 'view_live_lesson_run_module.js'), 'utf8'))(windowStub);
   api = windowStub.AlloModules.LiveLessonRun;
 });
 
@@ -367,7 +370,7 @@ describe('attention queue and activity timeline helpers', () => {
     expect(serialized).not.toContain('raw private prompt');
     expect(serialized).not.toContain('raw private answer');
 
-    const moduleSource = fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
+    const moduleSource = readSourceFile(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
     const helperStart = moduleSource.indexOf('function buildLiveAttentionCohorts');
     const helperEnd = moduleSource.indexOf('function liveAttentionReasonLabel', helperStart);
     const helperSource = moduleSource.slice(helperStart, helperEnd);
@@ -793,16 +796,21 @@ describe('existing activity owners emit the shared contract', () => {
     expect(appSource).toContain('"quizState.allResponses": {}');
     expect(appSource).toContain('"quizState.currentQuestionIndex": 0');
     expect(appSource).toContain('"quizState.activityId": `quiz:${activeSessionCode}:${startedAt.toString(36)}`');
-    const teacherSource = fs.readFileSync(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
-    expect(teacherSource).toContain('"quizState.phase": "closed"');
-    expect(teacherSource).toContain('"quizState.endedAt": Date.now()');
+    const teacherSource = readSourceFile(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
+    // ed897988b (09-07): the close goes through the shared writeQuiz guard (single-quoted patch keys); the success
+    // toast is gated on the awaited write, and a failed write sets the shared quiz error instead of a local toast.
+    expect(teacherSource).toContain("'quizState.phase': 'closed'");
+    expect(teacherSource).toContain("'quizState.endedAt': Date.now()");
     expect(appSource).toContain('quizClosedActivitySnapshotRef.current === snapshot.activityId');
     const endHandler = teacherSource.slice(
       teacherSource.indexOf('const handleEndQuiz = async () =>'),
       teacherSource.indexOf('const handleModeChange', teacherSource.indexOf('const handleEndQuiz = async () =>'))
     );
-    expect(endHandler.indexOf('await updateDoc')).toBeLessThan(endHandler.indexOf("addToast(t('quiz.session_ended_success')"));
-    expect(endHandler).toContain('Could not end the live quiz. Please try again.');
+    expect(endHandler.indexOf('if (await writeQuiz(sessionRef, {')).toBeGreaterThan(-1);
+    expect(endHandler.indexOf('if (await writeQuiz(sessionRef, {')).toBeLessThan(endHandler.indexOf("addToast?.(t('quiz.session_ended_success')"));
+    const writeQuiz = teacherSource.slice(teacherSource.indexOf('const writeQuiz = async (sessionRef, patch) => {'), teacherSource.indexOf('const [showLocalStats'));
+    expect(writeQuiz).toContain('try { await updateDoc(sessionRef, patch); completedWriteRef.current = key; return true; }');
+    expect(writeQuiz).toContain("setQuizError('The live quiz could not be updated. Check the connection and try again.'); return false;");
   });
 });
 

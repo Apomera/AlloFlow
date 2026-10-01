@@ -1,0 +1,22 @@
+[
+  {
+    "line": 43138,
+    "attributes": [
+      {
+        "name": "onMinimize",
+        "line": 43140,
+        "code": "onMinimize={() => { setWsGeneratorMinimized(true); setActiveView('output'); }}"
+      },
+      {
+        "name": "onExpand",
+        "line": 43141,
+        "code": "onExpand={() => { setWsGeneratorMinimized(false); setActiveView('word-sounds-generator'); }}"
+      },
+      {
+        "name": "onClose",
+        "line": 43270,
+        "code": "onClose={handleCloseDashboard}"
+      }
+    ]
+  }
+]

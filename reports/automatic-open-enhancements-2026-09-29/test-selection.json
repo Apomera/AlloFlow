@@ -1,0 +1,16 @@
+[
+  "tests/student_entry_recovery_race.test.js",
+  "tests/learning_web_resource_readiness.test.js",
+  "tests/student_assignment_restore_readiness.test.js",
+  "tests/history_resource_open_readiness.test.js",
+  "tests/saved_resource_restore_validation.test.js",
+  "tests/reading_support_draft_host.test.js",
+  "tests/reading_support_draft_transitions.test.js",
+  "tests/learning_web_host_bridge.test.js",
+  "tests/learning_web_navigation_host.test.js",
+  "tests/resource_restore_extraction.test.js",
+  "tests/history_resource_loading_ui.test.js",
+  "tests/history_panel_reorder_a11y.test.js",
+  "tests/history_panel_move_to_unit_a11y.test.js",
+  "tests/canvas_workspace_recovery.test.js"
+]

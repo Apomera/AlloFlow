@@ -1,0 +1,5 @@
+Improve anatomy Tutor and Tour continuity
+
+Move questions ahead of reference material, retain original anatomy context, and recover interrupted Tutor drafts. Preserve Guided Tour recap answers while reviewing clues and make return and restart actions clear.
+
+Validate focused regressions, browser interaction, responsive layouts, and accessibility.

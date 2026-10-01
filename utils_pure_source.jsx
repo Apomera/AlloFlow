@@ -118,6 +118,43 @@ const getQuizConceptLabels = (item) => {
     return out;
 };
 const _alloCriterionSlug = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+// The one key criteria are saved and looked up by. It must equal the quiz's
+// normalizeConceptId (quiz_live_aggregators.js), which the dispatcher applies to
+// every conceptLabel, or plan-first criteria like "SC1" never find their results.
+const successCriterionKey = (value) => {
+    const qla = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (qla && typeof qla.normalizeConceptId === 'function') return qla.normalizeConceptId(value);
+    if (value == null) return '';
+    let s = String(value).trim().toLowerCase();
+    if (!s) return '';
+    s = s.replace(/^["'`(\[]+|["'`)\]]+$/g, '');
+    while (/^(the |a |an )/.test(s)) s = s.replace(/^(the |a |an )/, '');
+    return s.replace(/\s+/g, ' ').replace(/[.,;:!?]+$/, '').trim();
+};
+// Which live results belong on this plan. Pre-check results never count as
+// meeting a criterion; a plan that recorded its quiz only takes that quiz's.
+const resolvePlanCriterionRollup = (planData, rollup) => {
+    const r = rollup && typeof rollup === 'object' && rollup.byConcept && typeof rollup.byConcept === 'object' ? rollup : null;
+    if (!r) return { status: 'none', byKey: {} };
+    const quizMode = String(r.quizMode || 'exit-ticket');
+    const info = { quizId: r.quizId == null ? null : String(r.quizId), quizTitle: typeof r.quizTitle === 'string' ? r.quizTitle.trim() : '', quizMode, sessionLabel: typeof r.sessionLabel === 'string' ? r.sessionLabel : '', sessionCode: typeof r.sessionCode === 'string' ? r.sessionCode : '' };
+    if (quizMode === 'pre-check') return { status: 'pre-check', byKey: {}, ...info };
+    const savedQuizId = planData && planData.successCriteriaQuizId != null && planData.successCriteriaQuizId !== '' ? String(planData.successCriteriaQuizId) : '';
+    if (savedQuizId && info.quizId !== savedQuizId) return { status: 'other-quiz', byKey: {}, ...info };
+    const byKey = {};
+    Object.keys(r.byConcept).forEach(label => {
+        const key = successCriterionKey(label);
+        const s = r.byConcept[label];
+        if (!key || !s || typeof s !== 'object') return;
+        const bucket = byKey[key] || (byKey[key] = { met: 0, partial: 0, total: 0 });
+        ['met', 'partial', 'total'].forEach(field => { bucket[field] += Number.isFinite(Number(s[field])) ? Number(s[field]) : 0; });
+    });
+    return { status: 'match', byKey, ...info };
+};
+const criterionRollupStat = (resolved, id) => {
+    const key = successCriterionKey(id);
+    return key && resolved && resolved.byKey && resolved.byKey[key] ? resolved.byKey[key] : null;
+};
 const normalizeSuccessCriteria = (raw, options = {}) => {
     const concepts = (Array.isArray(options.concepts) ? options.concepts : []).map(c => String(c || '').trim()).filter(Boolean);
     const objectives = Array.isArray(options.objectives) ? options.objectives : [];
@@ -136,6 +173,7 @@ const normalizeSuccessCriteria = (raw, options = {}) => {
             || concepts.find(c => _alloCriterionSlug(c) === _alloCriterionSlug(id) && id)
             || concepts.find(c => statement.toLowerCase().includes(c.toLowerCase()));
         if (match) id = match;
+        id = successCriterionKey(id);
         if (!id) id = _alloCriterionSlug(statement) || ('criterion-' + (i + 1));
         if (seen.has(id)) return;
         seen.add(id);
@@ -143,15 +181,16 @@ const normalizeSuccessCriteria = (raw, options = {}) => {
     });
     // Every quiz concept must be represented, or its results would have nowhere to land.
     concepts.forEach(c => {
-        if (seen.has(c)) return;
-        seen.add(c);
-        out.push({ id: c, statement: 'I can ' + c.replace(/^I can\s+/i, '').replace(/\.$/, '') + '.', source: 'quiz' });
+        const id = successCriterionKey(c) || c;
+        if (seen.has(id)) return;
+        seen.add(id);
+        out.push({ id, statement: 'I can ' + c.replace(/^I can\s+/i, '').replace(/\.$/, '') + '.', source: 'quiz' });
     });
     if (!out.length) {
         objectives.forEach((o, i) => {
             const s = text(o);
             if (!s) return;
-            const id = _alloCriterionSlug(s) || ('objective-' + (i + 1));
+            const id = successCriterionKey(_alloCriterionSlug(s)) || ('objective-' + (i + 1));
             if (seen.has(id)) return;
             seen.add(id);
             out.push({ id, statement: /^I can\b/i.test(s) ? s : 'I can ' + s.charAt(0).toLowerCase() + s.slice(1), source: 'objective' });
@@ -370,6 +409,8 @@ const _dsMirrorSet = (key, storedValue) => {
 // paint briefly so boot-time reads (theme, a11y) see restored values.
 if (_dsBridgeWanted && typeof window !== 'undefined') {
   let _prefsHydrationPromise = null;
+  let _lsSnapshotPromise = null;
+  let _lsSnapshotRequested = false;
   const _finishPrefsHydration = (applied, available, skippedExisting = 0, replacedExisting = false) => {
     window.__alloPrefsHydrated = true;
     window.__alloPrefsHydrationStatus = available ? 'ready' : 'unavailable';
@@ -379,7 +420,7 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
     if (_prefsHydrationPromise) return _prefsHydrationPromise;
     const replaceExisting = options?.replaceExisting === true;
     window.__alloPrefsHydrationStatus = 'pending';
-    _prefsHydrationPromise = _dsBridge().then((ds) => ds.get('ls_prefs', 'all')).then((snap) => {
+    _prefsHydrationPromise = Promise.resolve(_lsSnapshotPromise).then(() => _dsBridge()).then((ds) => ds.get('ls_prefs', 'all')).then((snap) => {
       let applied = 0;
       let skippedExisting = 0;
       let writeFailed = false;
@@ -413,18 +454,26 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
   // bridge when something actually changed since the last snapshot.
   let _lsLastSnapshotSig = null;
   const _lsSnapshot = () => {
-    try {
-      const dump = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k) dump[k] = localStorage.getItem(k);
+    if (_prefsHydrationPromise || window.__alloPrefsHydrationStatus !== 'ready') return;
+    _lsSnapshotRequested = true;
+    if (_lsSnapshotPromise) return _lsSnapshotPromise;
+    _lsSnapshotPromise = (async () => {
+      while (_lsSnapshotRequested && !_prefsHydrationPromise && window.__alloPrefsHydrationStatus === 'ready') {
+        _lsSnapshotRequested = false;
+        const ds = await _dsBridge();
+        if (_prefsHydrationPromise || window.__alloPrefsHydrationStatus !== 'ready') return;
+        const dump = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k) dump[k] = localStorage.getItem(k);
+        }
+        const sig = JSON.stringify(dump);
+        if (sig === _lsLastSnapshotSig) continue;
+        const result = await ds.set('ls_prefs', 'all', dump, { queue: false });
+        if (!result?.queued) _lsLastSnapshotSig = sig;
       }
-      const sig = JSON.stringify(dump);
-      if (sig === _lsLastSnapshotSig) return;
-      _dsBridge().then((ds) => ds.set('ls_prefs', 'all', dump))
-        .then(() => { _lsLastSnapshotSig = sig; })
-        .catch(() => {});
-    } catch (_) {}
+    })().catch(() => {}).finally(() => { _lsSnapshotPromise = null; });
+    return _lsSnapshotPromise;
   };
   setInterval(_lsSnapshot, 30000);
   window.addEventListener('pagehide', _lsSnapshot);
@@ -827,6 +876,10 @@ const isYouTubeUrl = (url) => {
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     if (!url || !url.trim()) return null;
     let targetUrl = url.trim();
+    const safeProviderDetail = (value) => {
+        const detail = String(value == null ? '' : value);
+        return apiKey ? detail.split(String(apiKey)).join('[redacted]') : detail;
+    };
     // ─────────────────────────────────────────────────────────────
     // Tier-2 fallback: Gemini URL Context tool
     // Called when Jina + raw-HTML extraction all fail or return garbage.
@@ -839,7 +892,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             return null;
         }
         console.log(`[URL Fetch] 🤖 Attempting Gemini URL Context fallback for ${targetUrl}`);
-        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
         const urlCtxPayload = {
             contents: [{
                 parts: [{
@@ -854,14 +907,14 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             const timeoutId = setTimeout(() => controller.abort(), 45000);
             const resp = await fetch(urlCtxEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(urlCtxPayload),
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
             if (!resp.ok) {
                 const errBody = await resp.text().catch(() => '');
-                console.warn(`[URL Fetch] ❌ Gemini URL Context HTTP ${resp.status}: ${errBody.substring(0, 300)}`);
+                console.warn(`[URL Fetch] ❌ Gemini URL Context HTTP ${resp.status}: ${safeProviderDetail(errBody).substring(0, 300)}`);
                 return null;
             }
             const data = await resp.json();
@@ -887,7 +940,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             console.log(`[URL Fetch] ✅ Gemini URL Context success: ${extracted.length} chars extracted`);
             return extracted.trim();
         } catch (e) {
-            console.warn('[URL Fetch] ❌ Gemini URL Context threw:', e?.message || e);
+            console.warn('[URL Fetch] ❌ Gemini URL Context threw:', safeProviderDetail(e?.message || e));
             return null;
         }
     };
@@ -895,7 +948,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
             if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
-            const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+            const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
             const ytPayload = {
                 contents: [{
                     parts: [
@@ -907,7 +960,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             };
             const ytResponse = await fetch(ytUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(ytPayload)
             });
             if (!ytResponse.ok) {
@@ -924,8 +977,9 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                 throw new Error("Transcript too short or empty.");
             }
         } catch (ytErr) {
-            warnLog("[YouTube Transcript] Gemini extraction failed, falling back to standard URL fetch:", ytErr.message);
-            if (toastCallback) toastCallback(`YouTube transcript failed (${ytErr.message}). Trying standard fetch...`, "warning");
+            const safeError = safeProviderDetail(ytErr.message);
+            warnLog("[YouTube Transcript] Gemini extraction failed, falling back to standard URL fetch:", safeError);
+            if (toastCallback) toastCallback(`YouTube transcript failed (${safeError}). Trying standard fetch...`, "warning");
         }
     }
     try {
@@ -1443,6 +1497,30 @@ const getPlanningInputStatus = (record, history) => {
   return { status, summaries, inventory };
 };
 
+// One branch classification for the static organizer, the interactive map and saved blueprints:
+// the generated role wins; English title words are only a fallback for legacy data.
+const organizerBranchRoles = (structureType, branches) => {
+  const list = Array.isArray(branches) ? branches : [];
+  const role = b => String(b && (b.role || b.semanticRole) || '').trim().toLowerCase();
+  const words = b => (String(b && b.title || '') + ' ' + String(b && b.title_en || '')).toLowerCase();
+  if (structureType === 'Problem Solution') {
+    let outcome = list.findIndex(b => ['outcome', 'result', 'evaluation'].includes(role(b)));
+    if (outcome < 0) outcome = list.findIndex(b => !role(b) && /outcome|result|evaluation/.test(words(b)));
+    return list.map((_, i) => i === outcome ? 'outcome' : 'solution');
+  }
+  if (structureType !== 'Cause and Effect') return list.map(() => null);
+  return list.map((b, i) => {
+    const r = role(b), w = words(b);
+    if (r === 'cause' || r === 'causes') return 'cause';
+    if (['effect', 'effects', 'consequence', 'consequences'].includes(r)) return 'effect';
+    if (r === 'chain' || r === 'sequence') return 'chain';
+    if (w.includes('cause')) return 'cause';
+    if (/effect|consequence/.test(w)) return 'effect';
+    if (/chain|sequence/.test(w)) return 'chain';
+    return i === 0 ? 'cause' : i === 1 ? 'effect' : 'chain';
+  });
+};
+
 // Logical source positions let saved diagrams retain their layout across static edits.
 const outlineNodeBlueprints = (data = {}) => {
   const nodes = [], links = [];
@@ -1458,7 +1536,8 @@ const outlineNodeBlueprints = (data = {}) => {
     add('node-start', 'start', 'Start', null, 'flow-start', 400, 50);
     add('node-main', 'main', data.main, data.main_en, 'flow-process', 400, 150, 'node-start');
   } else if (!venn) add('root', 'main', data.main, data.main_en, ce ? 'ce-main' : ps ? 'ps-problem' : kind === 'Structured Outline' ? 'outline-main' : 'main', 350, 50);
-  const outcomeIndex = ps ? branches.findIndex(b => /outcome|result|evaluation/i.test(String(b && b.title || ''))) : -1;
+  const roles = organizerBranchRoles(kind, branches);
+  const outcomeIndex = ps ? roles.indexOf('outcome') : -1;
   let solutionIndex = 0;
   branches.forEach((branch, b) => {
     if (!branch || typeof branch !== 'object') return;
@@ -1467,9 +1546,7 @@ const outlineNodeBlueprints = (data = {}) => {
     if (flow) { branchId = 'node-b-' + b; prefix = 'node-i-' + b + '-'; type = 'flow-note'; parent = branchId; }
     if (venn) { prefix = 'venn-' + b + '-'; type = 'venn-token'; parent = null; }
     if (ce) {
-      const title = String(branch.title || '').toLowerCase();
-      const isCause = /cause/.test(title), isEffect = /effect|consequence/.test(title), isChain = /chain|sequence/.test(title);
-      const role = isCause || (!isEffect && !isChain && b === 0) ? 'cause' : isEffect || (!isCause && !isChain) ? 'effect' : 'chain';
+      const role = roles[b];
       prefix = role + '-' + b + '-'; type = role + '-node'; parent = role === 'cause' ? 'root' : null;
     }
     if (ps) {
@@ -1592,6 +1669,9 @@ window.AlloModules.UtilsPure = {
   getAssetManifest,
   getQuizConceptLabels,
   normalizeSuccessCriteria,
+  successCriterionKey,
+  resolvePlanCriterionRollup,
+  criterionRollupStat,
   resolveUnitPathContext,
   capturePlanningInputs,
   consumePendingUnitPathNode,
@@ -1599,6 +1679,7 @@ window.AlloModules.UtilsPure = {
   ALLO_ALL_SELECTED_LANGUAGES,
   _ALLO_UNIT_PATH_STAMP_MAX_AGE_MS,
   getPlanningInputStatus,
+  organizerBranchRoles,
   outlineNodeBlueprints,
   synchronizeSavedOutline,
   chunkObject,

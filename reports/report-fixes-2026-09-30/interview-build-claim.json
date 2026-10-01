@@ -1,0 +1,42 @@
+{
+  "createdAt": "2026-10-01T00:08:13.232Z",
+  "source": "personas_source.jsx",
+  "output": "personas_module.js",
+  "before": {
+    "sourceSha256": "3610d127d94289d8df3967b31ef34a5518674ac8f94aec20c3e6876cd8385e29",
+    "outputSha256": "64d8d4d73c62fc6c6a48e2fcea262da724382b701e79a05967f04bdb40ea0927",
+    "rootPublicEqual": true,
+    "canonicalCompileExactlyEqual": true,
+    "baselineEvidence": "interview-validation-e288-worker-start-failure.json baseline reconciliation"
+  },
+  "after": {
+    "sourceSha256": "c8ef90bbccda1e8cee09f641dca8f3e8e3b9bfcff2ce0ab50e15d7336b98ace3",
+    "compiledCandidateSha256": "530da80f6f2f66c3ee6b598e2c54199832d3be34431229c2f041c55bf6929b33",
+    "canonicalCompileAndSyntaxPassed": true,
+    "generatedFilesUntouchedByWorker": true,
+    "sourceFrozen": true
+  },
+  "buildInputs": {
+    "builder": "_build_personas_module.js",
+    "builderSha256": "11c282ecaf424ff522ab29d8c0496f3318a0dc6e30b6dcf3dabacac426a23ba6",
+    "wrapper": "_build_simple_iife_module.js",
+    "wrapperSha256": "c7db9787c6e43b64a02a20481130ece19ea017f6260e6b59609e14834a3dfbc0",
+    "externalBuildData": []
+  },
+  "tests": {
+    "report": "interview-focused-tests.json",
+    "summary": "interview-focused-validation-summary.json",
+    "passed": 77,
+    "total": 77,
+    "failed": 0,
+    "exitCode": 0,
+    "inputStable": true,
+    "method": "owned source candidate, mock AI/search, serial one worker"
+  },
+  "ownership": "Worker owns personas_source.jsx and new Interview tests/reports; root alone owns generated root/public build. Shared hosts, registry and journal held.",
+  "remainingBlockers": [
+    "Translation registry integration is held; meaningful English fallbacks work.",
+    "No new deployed build or real Canvas web search round-trip was tested.",
+    "Earlier 167-pass source differs; later 113 assertions plus worker startup failures were incomplete and are preserved as separate evidence."
+  ]
+}

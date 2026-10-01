@@ -1,0 +1,123 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1481,8 +1481,10 @@
+   // host's window.__alloT; the English fallback shows until a key is translated.
+   function simplifiedText(key, fallback, params, translate) {
+     var value;
+-    try { value = (translate || (typeof window !== 'undefined' && window.__alloT) || (() => undefined))(key, params); } catch (_) {}
+-    var text = typeof value === 'string' && value && value !== key ? value : fallback;
++    // Resolve the catalog template before inserting values. A second interpolation
++    // would reinterpret literal braces in a learner's word or context.
++    try { value = (translate || (typeof window !== 'undefined' && window.__alloT) || (() => undefined))(key); } catch (_) {}
++    var text = typeof value === 'string' && value.trim() && value.trim() !== key ? value : fallback;
+     return params ? String(text).replace(/\{(\w+)\}/g, (match, name) => params[name] != null ? String(params[name]) : match) : text;
+   }
+   // A search box appears once the list is this long.
+@@ -1500,10 +1502,19 @@
+       source: ['mulberry', 'wikimedia'].includes(image.source) ? image.source : 'upload',
+       attribution: ['set', 'author', 'license', 'via', 'url', 'title', 'licenseUrl'].map(key => clean(credit[key], key === 'author' || key === 'title' ? 160 : key.toLowerCase().includes('url') ? 2000 : 120)) };
+   }
++  function ReadingDraftChangedNotice({ disabled, onChoose }) {
++    const template = simplifiedText('simplified.gloss_draft_passage_changed', 'The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.');
++    const parts = template.split('{chooseOccurrence}');
++    // Keep exactly one actionable slot. A malformed translation must not remove it
++    // or expose template tokens; React renders the surrounding copy as plain text.
++    const valid = parts.length === 2 && parts.every(part => !/[{}]/.test(part));
++    const [before, after] = valid ? parts : ['The passage changed. Your draft is retained. Review the word supports, then ', ' before saving.'];
++    const label = valid ? simplifiedText('simplified.gloss_draft_choose_occurrence', 'choose the occurrence in the current text') : 'choose the occurrence in the current text';
++    return <p role="status" className="break-words">{before}<button type="button" disabled={disabled} onClick={onChoose} className="underline [overflow-wrap:anywhere]">{label}</button>{after}</p>;
++  }
+   function ReadingGlossEditor({ item, supports, request, onUpdate, disabled, adapted, snapshot: adaptedSnapshot, embedded, draftSession, supportsStale }) {
+     // An adapted text's word help anchors to the adapted passage, never the original.
+     const snapshot = adapted ? adaptedSnapshot : getInstructionalContextApi()?.getSourceSnapshot?.(item);
+-    const passageName = adapted ? 'adapted text' : 'original';
+     const sourceText = snapshot?.text || '';
+     const sourceKey = String(item?.id || '') + ':' + (snapshot?.fingerprint || '');
+     const ownerKey = readingSupportDraftKey(item, adapted);
+@@ -1658,7 +1669,7 @@
+     const save = async () => {
+       if (disabled || busy || pickingPicture || preparingPicture) return false;
+       setNotice(''); setError('');
+-      if (staleDraft || supportsStale) { setError('The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.'); return false; }
++      if (staleDraft || supportsStale) { setError(simplifiedText('simplified.gloss_draft_passage_changed_error', 'The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.')); return false; }
+       if (!selected || !draft?.text.trim()) { setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.')); return false; }
+       if (draft.text.trim().length > 2400) { setError(simplifiedText('simplified.gloss_shorten_this_explanation_to_2_400', 'Shorten this explanation to 2,400 characters or fewer before saving.')); return false; }
+       // IDs can change during a refresh. The exact source occurrence owns the
+@@ -1669,12 +1680,12 @@
+       const baseId = id;
+       for (let suffix = 1; entries.some(entry => entry.id === id && !sameAnchor(entry, selected)); suffix++) id = baseId + '-' + suffix;
+       const annotation = { id, kind: current?.kind || 'gloss', ...anchorFor(selected), text: draft.text.trim(), priority: draft.priority, pinned: draft.pinned, image: draft.image || null };
+-      const saved = await mutate({ type: 'upsert', annotation }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
++      const saved = await mutate({ type: 'upsert', annotation }, simplifiedText('simplified.gloss_save_word_support_confirmed', 'Word support saved. Your wording will be kept when suggestions are refreshed.'));
+       // A matching anchor alone does not confirm the submitted values. Keep
+       // unaccepted edits dirty against the actual save result so retry is safe.
+       const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : adapted ? saved.adaptedReadingSupports : saved.readingSupports);
+       const accepted = savedSupports?.annotations?.find(entry => entry.id === id && sameAnchor(entry, selected));
+-      if (!accepted) { if (saved) { setNotice(''); setError('The save did not confirm this word support. Your draft is retained.'); } return false; }
++      if (!accepted) { if (saved) { setNotice(''); setError(simplifiedText('simplified.gloss_save_support_unconfirmed', 'The save did not confirm this word support. Your draft is retained.')); } return false; }
+       const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: annotation.text };
+       const confirmed = { ...next, text: accepted.definition || accepted.explanation || accepted.text || '',
+         priority: accepted.priority === 'essential' ? 'essential' : 'helpful', pinned: accepted.pinned === true, image: accepted.image || null };
+@@ -1690,7 +1701,7 @@
+     };
+     const saveAndContinue = async () => { const action = pendingRef.current; if (await save()) { if (mountedRef.current && action && pendingRef.current === action) performAction(action); } };
+     const pin = async (entry, pinned) => {
+-      const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? 'This support will stay visible in lighter view.' : 'This support now follows the lighter-view selection.');
++      const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? simplifiedText('simplified.gloss_pinned_notice', 'This support will stay visible in lighter view.') : simplifiedText('simplified.gloss_unpinned_notice', 'This support now follows the lighter-view selection.'));
+       if (saved && sameAnchor(draft?.anchor, entry)) {
+         setDraft(previous => previous && ({ ...previous, pinned }));
+         setBaseline(previous => previous ? JSON.stringify({ ...JSON.parse(previous), pinned }) : previous);
+@@ -1710,14 +1721,14 @@
+         <button ref={addRef} type="button" disabled={disabled || busy || !!pendingAction} onClick={() => requestAction({ type: 'add' })} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.gloss_add_a_word_or_phrase', 'Add a word or phrase')}</button>
+         {pendingAction && <div role="alertdialog" aria-labelledby={panelId + '-discard-title'} aria-describedby={panelId + '-discard-description'} className="space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-3" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); dismissPending(); } }}>
+           <p id={panelId + '-discard-title'} className="font-bold">{simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')}</p><p id={panelId + '-discard-description'}>{pickingPicture || preparingPicture ? simplifiedText('simplified.gloss_picture_selection_pending', 'Your picture selection is still open. Keep editing to finish choosing or cancel the picture search, or discard it to continue.') : simplifiedText('simplified.gloss_unsaved_choices', 'Save these changes before continuing, keep editing, or discard them.')}</p>
+-          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : 'Save and continue'}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
++          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_and_continue', 'Save and continue')}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
+         </div>}
+         {draft && <fieldset disabled={disabled || busy || !!pendingAction} data-gloss-draft aria-label={draft.anchor ? simplifiedText('simplified.gloss_edit_word_support', 'Edit word support') : simplifiedText('simplified.gloss_add_word_support', 'Add word support')} className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+-          {(staleDraft || supportsStale) && <p role="status">The passage changed. Your draft is retained. Review the word supports, then <button type="button" disabled={supportsStale} onClick={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} className="underline">choose the occurrence in the current text</button> before saving.</p>}
+-          <label className="block font-semibold">{simplifiedText('simplified.gloss_word_from', 'Word or phrase from the {passage}', { passage: passageName })}<input ref={termRef} type="text" maxLength={draft.anchor ? undefined : 160} value={draft.query} readOnly={!!draft.anchor} onChange={event => updateDraft({ query: event.target.value, start: '' })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          {(staleDraft || supportsStale) && <ReadingDraftChangedNotice disabled={supportsStale} onChoose={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} />}
++          <label className="block font-semibold">{adapted ? simplifiedText('simplified.gloss_word_from_adapted', 'Word or phrase from the adapted text') : simplifiedText('simplified.gloss_word_from_original', 'Word or phrase from the original')}<input ref={termRef} type="text" maxLength={draft.anchor ? undefined : 160} value={draft.query} readOnly={!!draft.anchor} onChange={event => updateDraft({ query: event.target.value, start: '' })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
+           {!draft.anchor && matches.length > 1 && <label className="block font-semibold">{simplifiedText('simplified.gloss_which_occurrence', 'Which occurrence?')}<select value={draft.start} onChange={event => updateDraft({ start: event.target.value })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"><option value="">{simplifiedText('simplified.gloss_choose_the_word_in_context', 'Choose the word in context')}</option>{matches.map((match, index) => <option key={match.start} value={String(match.start)}>{simplifiedText('simplified.gloss_occurrence_option', '{number}. Text position {start}–{end}: {context}', { number: index + 1, start: match.start + 1, end: match.end, context: match.context })}</option>)}</select></label>}
+           {matches.truncated && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_showing_the_first_200_matching_occurrenc', 'Showing the first 200 matching occurrences. Use a longer phrase to find a later occurrence.')}</p>}
+-          {!!draft.query.trim() && !matches.length && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_no_exact_match', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the {passage}.', { passage: passageName })}</p>}
++          {!!draft.query.trim() && !matches.length && <p role="status" className="text-amber-900">{adapted ? simplifiedText('simplified.gloss_no_exact_match_adapted', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.') : simplifiedText('simplified.gloss_no_exact_match_original', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.')}</p>}
+           {selected && (() => { const parts = readingGlossContext(sourceText, selected.start, selected.end); return <p data-gloss-context className="break-words text-slate-600"><span className="font-semibold">{simplifiedText('simplified.gloss_in_the_text', 'In the text:')}{' '}</span>{parts.before}<mark className="rounded bg-yellow-100 px-0.5 font-semibold text-slate-900">{parts.quote}</mark>{parts.after}</p>; })()}
+           <label className="block font-semibold">{simplifiedText('simplified.gloss_explanation', 'Explanation')}<span id={panelId + '-explain-hint'} className="block text-xs font-normal text-slate-600">{simplifiedText('simplified.gloss_what_the_word_means_in_this', 'What the word means in this sentence, in a few words.')}{' '}{adapted ? simplifiedText('simplified.gloss_students_see_it_in_the_word', 'Students see it in the word-help list after the passage.') : simplifiedText('simplified.gloss_students_see_it_in_brackets_after', 'Students see it in brackets after the word.')}</span><textarea ref={definitionRef} rows={3} aria-describedby={panelId + '-explain-hint'} placeholder={simplifiedText('simplified.gloss_e_g_turning_around_and_around', 'e.g. turning around and around')} maxLength={Math.max(2400, draft.originalTextLength || 0)} value={draft.text} onChange={event => updateDraft({ text: event.target.value })} className="mt-1 w-full min-w-0 rounded border border-slate-400 bg-white p-2 font-normal" /></label>
+           {/^\s*in (?:the )?(?:context|text)\s*:/i.test(draft.text) && <p role="status" data-gloss-context-warning className="text-amber-900">{simplifiedText('simplified.gloss_this_looks_like_the_sentence_around', 'This looks like the sentence around the word. Write what the word means here instead; the sentence already appears in the reading.')}</p>}
+diff --git a/AlloFlowANTI.txt b/AlloFlowANTI.txt
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -6560,9 +6560,12 @@
+           return undefined;
+       }
+       if (params) {
++          // Replace template tokens once; inserted learner text is always literal.
++          const replacements = Object.create(null);
+           Object.keys(params).forEach(key => {
+-              result = result.replace(`{${key}}`, params[key]);
++              replacements[`{${key}}`] = String(params[key]);
+           });
++          result = result.replace(/\{[^{}]+\}/g, token => Object.prototype.hasOwnProperty.call(replacements, token) ? replacements[token] : token);
+       }
+       return result;
+   }, [languagePack]);
+diff --git a/desktop/web-app/src/AlloFlowANTI.txt b/desktop/web-app/src/AlloFlowANTI.txt
+--- a/desktop/web-app/src/AlloFlowANTI.txt
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -6560,9 +6560,12 @@
+           return undefined;
+       }
+       if (params) {
++          // Replace template tokens once; inserted learner text is always literal.
++          const replacements = Object.create(null);
+           Object.keys(params).forEach(key => {
+-              result = result.replace(`{${key}}`, params[key]);
++              replacements[`{${key}}`] = String(params[key]);
+           });
++          result = result.replace(/\{[^{}]+\}/g, token => Object.prototype.hasOwnProperty.call(replacements, token) ? replacements[token] : token);
+       }
+       return result;
+   }, [languagePack]);

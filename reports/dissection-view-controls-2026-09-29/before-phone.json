@@ -1,0 +1,240 @@
+[
+  {
+    "tag": "BUTTON",
+    "name": "Anatomical view: cycle dorsal, ventral, lateral, and internal",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Animation speed: cycle normal, slow, and fast",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Cycle inspection focus depth: surface, structure, or deep",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Cycle inspection magnification: 2, 4, or 6 times",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "INPUT",
+    "name": "diss-light-intensity-range",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Enter fullscreen specimen mode with view and tool controls",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Generate another deterministic specimen variation",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Lab light: cycle neutral, warm, and cool",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Laboratory light direction: cycle overhead, left, right, and raking",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Pin inspection lens to selected structure or current pointer",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Print clean dissection report",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Rendering quality: cycle auto, high, and balanced",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Tissue: after technique. Activate to show the tissue before the technique.",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle anatomical depth atlas with shape-coded landmarks",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle animated direction markers for curated anatomical relationships",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle curated anatomical relationships",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle detailed pointer-following instrument visuals and contact response",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle dissection sound effects",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle docked macro inspection view",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle high contrast mode",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle larger interface text",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle live and reference split comparison",
+    "disabled": true,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle movable inspection lens",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle organ name labels",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle responsive tissue relief lighting around visible structures",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle schematic layer map",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle selected-structure focus isolation",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle simplified step instructions",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle specimen-specific surface and tray depth details",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle subtle pointer-responsive specimen depth",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle tactile instrument feedback",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Visual presentation: cycle guided, realistic, and accessible",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  }
+]

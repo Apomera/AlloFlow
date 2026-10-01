@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:38:01.238Z",
+  "label": "pass2-09-tests",
+  "patch": "04b343167cf460e8f8997bbce3c1ae14bef8558750572cb93103f6b2475f8718",
+  "plans": [
+    {
+      "target": "tests/reader_preview_isolation.test.js",
+      "targets": [
+        "tests/reader_preview_isolation.test.js"
+      ],
+      "before": "8590ca2d5f700e82f2a118e0c30828ad23f9ad11a5c13b5daf0ecbdbd2ac1e63",
+      "after": "ee88bc407e44abaa711d1ccac6a410259434cb9ca63edbe5bd4a45b398d32e1f",
+      "changed": true
+    }
+  ]
+}

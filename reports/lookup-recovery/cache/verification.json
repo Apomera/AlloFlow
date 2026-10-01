@@ -1,0 +1,59 @@
+{
+  "inspectedAt": "2026-09-27T06:23:59.809Z",
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "dictionary": {
+    "currentMatchesTestedSource": true,
+    "candidateMatchesRecordedHash": true,
+    "patchReproducesCandidate": true,
+    "patchApplies": true
+  },
+  "dependencies": {
+    "content_engine_source.jsx": {
+      "sha256": "ce52a114f9d842a0431f3e12819bab3af2f62395cffb50234e279fc61c695b4e",
+      "unchanged": true
+    },
+    "host_handlers_source.jsx": {
+      "sha256": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848",
+      "unchanged": true
+    },
+    "view_simplified_source.jsx": {
+      "sha256": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31",
+      "unchanged": true
+    },
+    "reader_place_store.js": {
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9",
+      "unchanged": true
+    },
+    "reports/lookup-recovery/media/content_engine_module.candidate.js": {
+      "sha256": "be9cd9cc7e1fcfeaa7babf9079367320beac166cd3abe5287b029843cdd31059",
+      "unchanged": true
+    },
+    "reports/lookup-recovery/media/view_simplified_module.candidate.js": {
+      "sha256": "2934919b4566089af5f55684fd339aa001262a986f46beea847919dc216837ff",
+      "unchanged": true
+    },
+    "reports/lookup-recovery/media/host.candidate.source.js": {
+      "sha256": "9c7b31074e0fff668e94aca55cb00824251e248d9a903e9ee4d18896081bde12",
+      "unchanged": true
+    }
+  },
+  "tests": {
+    "passed": 338,
+    "failed": 0,
+    "files": 12,
+    "success": true
+  },
+  "artifacts": {
+    "tests.json": "b6cd854cefa57461cea294b1dece2922d01dd1077b9f524384a802575aa03daa",
+    "source-reproduction.json": "1441ee0fe7c55b77760669947f6475b830775de4ae16d448ce44c3791cec44b7"
+  },
+  "sourceReproduction": {
+    "target": "Unchanged dictionary_loader.js",
+    "sourceSha256": "2f6cfa948fadef07d97c5705dc412e062bc070cf2a031bef9067169bf82bfd91",
+    "failedCases": [
+      "dictionary cache integrity and partial provider recovery bypasses a structurally invalid cached entry and repairs it from the provider",
+      "dictionary cache integrity and partial provider recovery retains useful provider records alongside malformed rows, meanings, and definitions"
+    ]
+  },
+  "verified": true
+}

@@ -1,0 +1,228 @@
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6903,7 +6903,14 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_draft_passage_changed": "The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.",
++    "gloss_draft_choose_occurrence": "choose the occurrence in the current text",
++    "gloss_draft_passage_changed_error": "The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.",
++    "gloss_save_and_continue": "Save and continue",
++    "gloss_save_word_support_confirmed": "Word support saved. Your wording will be kept when suggestions are refreshed.",
++    "gloss_save_support_unconfirmed": "The save did not confirm this word support. Your draft is retained.",
++    "gloss_save_changes_unconfirmed": "The save did not confirm all your changes. Your draft is retained. Try saving again."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/desktop/web-app/public/ui_strings.js b/desktop/web-app/public/ui_strings.js
+--- a/desktop/web-app/public/ui_strings.js
++++ b/desktop/web-app/public/ui_strings.js
+@@ -6903,7 +6903,14 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_draft_passage_changed": "The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.",
++    "gloss_draft_choose_occurrence": "choose the occurrence in the current text",
++    "gloss_draft_passage_changed_error": "The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.",
++    "gloss_save_and_continue": "Save and continue",
++    "gloss_save_word_support_confirmed": "Word support saved. Your wording will be kept when suggestions are refreshed.",
++    "gloss_save_support_unconfirmed": "The save did not confirm this word support. Your draft is retained.",
++    "gloss_save_changes_unconfirmed": "The save did not confirm all your changes. Your draft is retained. Try saving again."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4892,7 +4892,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario y luego {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se guardó la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se confirmó que esta ayuda de vocabulario se haya guardado. Se conservó tu borrador.",
++    "gloss_save_changes_unconfirmed": "No se confirmó que todos tus cambios se hayan guardado. Se conservó tu borrador. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_latin_america.js b/desktop/web-app/public/lang/spanish_latin_america.js
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -4892,7 +4892,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario y luego {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto cambió. Se conservó tu borrador. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se guardó la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se confirmó que esta ayuda de vocabulario se haya guardado. Se conservó tu borrador.",
++    "gloss_save_changes_unconfirmed": "No se confirmó que todos tus cambios se hayan guardado. Se conservó tu borrador. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4884,7 +4884,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario y, después, {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se ha guardado la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se ha confirmado que esta ayuda de vocabulario se haya guardado. Tu borrador se ha conservado.",
++    "gloss_save_changes_unconfirmed": "No se ha confirmado que todos tus cambios se hayan guardado. Tu borrador se ha conservado. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_castilian.js b/desktop/web-app/public/lang/spanish_castilian.js
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -4884,7 +4884,14 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_draft_passage_changed": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario y, después, {chooseOccurrence} antes de guardar.",
++    "gloss_draft_choose_occurrence": "elige la aparición en el texto actual",
++    "gloss_draft_passage_changed_error": "El texto ha cambiado. Tu borrador se ha conservado. Revisa las ayudas de vocabulario actuales y vuelve a elegir la aparición de la palabra antes de guardar.",
++    "gloss_save_and_continue": "Guardar y continuar",
++    "gloss_save_word_support_confirmed": "Se ha guardado la ayuda de vocabulario. Tu redacción se conservará cuando se actualicen las sugerencias.",
++    "gloss_save_support_unconfirmed": "No se ha confirmado que esta ayuda de vocabulario se haya guardado. Tu borrador se ha conservado.",
++    "gloss_save_changes_unconfirmed": "No se ha confirmado que todos tus cambios se hayan guardado. Tu borrador se ha conservado. Intenta guardar de nuevo."
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/arabic.js b/lang/arabic.js
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -4727,7 +4727,14 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_draft_passage_changed": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات، ثم {chooseOccurrence} قبل الحفظ.",
++    "gloss_draft_choose_occurrence": "اختر موضع الكلمة في النص الحالي",
++    "gloss_draft_passage_changed_error": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات الحالية واختر موضع الكلمة من جديد قبل الحفظ.",
++    "gloss_save_and_continue": "احفظ وتابع",
++    "gloss_save_word_support_confirmed": "تم حفظ شرح الكلمة. ستُحفظ صياغتك عند تحديث الاقتراحات.",
++    "gloss_save_support_unconfirmed": "لم يتم تأكيد حفظ شرح هذه الكلمة. تم الاحتفاظ بمسودتك.",
++    "gloss_save_changes_unconfirmed": "لم يتم تأكيد حفظ جميع تغييراتك. تم الاحتفاظ بمسودتك. حاول الحفظ مرة أخرى."
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/desktop/web-app/public/lang/arabic.js b/desktop/web-app/public/lang/arabic.js
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -4727,7 +4727,14 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_draft_passage_changed": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات، ثم {chooseOccurrence} قبل الحفظ.",
++    "gloss_draft_choose_occurrence": "اختر موضع الكلمة في النص الحالي",
++    "gloss_draft_passage_changed_error": "تغيّر النص. تم الاحتفاظ بمسودتك. راجع شروح الكلمات الحالية واختر موضع الكلمة من جديد قبل الحفظ.",
++    "gloss_save_and_continue": "احفظ وتابع",
++    "gloss_save_word_support_confirmed": "تم حفظ شرح الكلمة. ستُحفظ صياغتك عند تحديث الاقتراحات.",
++    "gloss_save_support_unconfirmed": "لم يتم تأكيد حفظ شرح هذه الكلمة. تم الاحتفاظ بمسودتك.",
++    "gloss_save_changes_unconfirmed": "لم يتم تأكيد حفظ جميع تغييراتك. تم الاحتفاظ بمسودتك. حاول الحفظ مرة أخرى."
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/lang/chinese_simplified.js b/lang/chinese_simplified.js
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -4894,7 +4894,14 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_draft_passage_changed": "文章已更改。你的草稿已保留。请检查词语解释，然后{chooseOccurrence}，再保存。",
++    "gloss_draft_choose_occurrence": "在当前文本中选择词语出现的位置",
++    "gloss_draft_passage_changed_error": "文章已更改。你的草稿已保留。请检查当前的词语解释，并重新选择词语出现的位置，然后再保存。",
++    "gloss_save_and_continue": "保存并继续",
++    "gloss_save_word_support_confirmed": "词语解释已保存。更新建议时会保留你的措辞。",
++    "gloss_save_support_unconfirmed": "尚未确认此词语解释已保存。你的草稿已保留。",
++    "gloss_save_changes_unconfirmed": "尚未确认你的所有更改已保存。你的草稿已保留。请再次尝试保存。"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/desktop/web-app/public/lang/chinese_simplified.js b/desktop/web-app/public/lang/chinese_simplified.js
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -4894,7 +4894,14 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_draft_passage_changed": "文章已更改。你的草稿已保留。请检查词语解释，然后{chooseOccurrence}，再保存。",
++    "gloss_draft_choose_occurrence": "在当前文本中选择词语出现的位置",
++    "gloss_draft_passage_changed_error": "文章已更改。你的草稿已保留。请检查当前的词语解释，并重新选择词语出现的位置，然后再保存。",
++    "gloss_save_and_continue": "保存并继续",
++    "gloss_save_word_support_confirmed": "词语解释已保存。更新建议时会保留你的措辞。",
++    "gloss_save_support_unconfirmed": "尚未确认此词语解释已保存。你的草稿已保留。",
++    "gloss_save_changes_unconfirmed": "尚未确认你的所有更改已保存。你的草稿已保留。请再次尝试保存。"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/lang/thai.js b/lang/thai.js
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -5578,7 +5578,14 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_draft_passage_changed": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำ แล้ว{chooseOccurrence}ก่อนบันทึก",
++    "gloss_draft_choose_occurrence": "เลือกตำแหน่งของคำในข้อความปัจจุบัน",
++    "gloss_draft_passage_changed_error": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำในปัจจุบันและเลือกตำแหน่งของคำอีกครั้งก่อนบันทึก",
++    "gloss_save_and_continue": "บันทึกและดำเนินการต่อ",
++    "gloss_save_word_support_confirmed": "บันทึกคำอธิบายคำแล้ว ระบบจะเก็บถ้อยคำของคุณไว้เมื่ออัปเดตคำแนะนำ",
++    "gloss_save_support_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกคำอธิบายคำนี้แล้ว ระบบเก็บฉบับร่างของคุณไว้",
++    "gloss_save_changes_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกการเปลี่ยนแปลงทั้งหมดของคุณแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดลองบันทึกอีกครั้ง"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/desktop/web-app/public/lang/thai.js b/desktop/web-app/public/lang/thai.js
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -5578,7 +5578,14 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_draft_passage_changed": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำ แล้ว{chooseOccurrence}ก่อนบันทึก",
++    "gloss_draft_choose_occurrence": "เลือกตำแหน่งของคำในข้อความปัจจุบัน",
++    "gloss_draft_passage_changed_error": "เนื้อเรื่องเปลี่ยนไปแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดตรวจสอบคำอธิบายคำในปัจจุบันและเลือกตำแหน่งของคำอีกครั้งก่อนบันทึก",
++    "gloss_save_and_continue": "บันทึกและดำเนินการต่อ",
++    "gloss_save_word_support_confirmed": "บันทึกคำอธิบายคำแล้ว ระบบจะเก็บถ้อยคำของคุณไว้เมื่ออัปเดตคำแนะนำ",
++    "gloss_save_support_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกคำอธิบายคำนี้แล้ว ระบบเก็บฉบับร่างของคุณไว้",
++    "gloss_save_changes_unconfirmed": "ยังไม่ได้รับการยืนยันว่าบันทึกการเปลี่ยนแปลงทั้งหมดของคุณแล้ว ระบบเก็บฉบับร่างของคุณไว้ โปรดลองบันทึกอีกครั้ง"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",

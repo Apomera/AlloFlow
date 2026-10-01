@@ -1,0 +1,138 @@
+{
+  "status": "passed",
+  "completedAt": "2026-09-30T02:07:55.949Z",
+  "section": "Sky Lab: Observe — Telescope optics lab",
+  "changes": [
+    "Refractor rays focus at an image plane and leave the eyepiece parallel for a relaxed eye",
+    "Newtonian rays reflect at a 45-degree secondary before reaching the side image plane",
+    "Three selectable light-path stages explain collection, image formation and eyepiece viewing",
+    "Exit-beam and 6 mm eye-pupil circles share a calculated size scale",
+    "Real lens and mirror telescope presets use published aperture, focal length and eyepiece dimensions",
+    "Native optical controls preserve independent values and keyboard focus",
+    "A setup preview copies instrument dimensions to the eyepiece field lab while preserving its target and sky settings",
+    "Phone layouts keep touch controls and diagram labels readable"
+  ],
+  "data": {
+    "instruments": [
+      {
+        "name": "Celestron AstroMaster 90EQ",
+        "design": "refractor",
+        "apertureMm": 90,
+        "focalLengthMm": 1000,
+        "eyepieceMm": 20,
+        "calculatedMagnification": 50,
+        "source": "https://www.celestron.com/products/astromaster-90eq-telescope"
+      },
+      {
+        "name": "Celestron AstroMaster 130EQ",
+        "design": "Newtonian reflector",
+        "apertureMm": 130,
+        "focalLengthMm": 650,
+        "eyepieceMm": 20,
+        "calculatedMagnification": 32.5,
+        "source": "https://www.celestron.com/products/astromaster-130eq-telescope"
+      }
+    ],
+    "raySource": "https://openstax.org/books/university-physics-volume-3/pages/2-8-microscopes-and-telescopes",
+    "designSource": "https://science.nasa.gov/universe/telescopes-101/",
+    "guidelineSource": "https://www.skywatcher.com/faq/",
+    "scope": "Rays illustrate one star on the optical axis, with enlarged schematic separations. Numeric optics and common pupil-circle scale are calculated independently. The 6 mm eye pupil is a fixed teaching reference. Gross aperture area omits secondary obstruction, optical losses and eye acceptance. The 2× aperture power guideline is approximate. Lens aberrations, detailed mirror curvature, diffraction and the 90EQ diagonal are omitted.",
+    "equations": {
+      "magnification": "objective focal length / eyepiece focal length",
+      "exitPupil": "aperture / magnification",
+      "grossAreaRatio": "(aperture / 6 mm)^2",
+      "dawes": "116 / aperture in mm (arcseconds)",
+      "secondary": "Mirror line y - x = axis - 120; reflected direction exchanges the incident x and y components"
+    }
+  },
+  "unit": {
+    "passed": 167,
+    "failed": 0,
+    "testTimeoutMs": 30000,
+    "hookTimeoutMs": 30000,
+    "files": [
+      {
+        "file": "astronomy_telescope_optics.test.js",
+        "passed": 28
+      },
+      {
+        "file": "astronomy_eyepiece_field.test.js",
+        "passed": 39
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "passed": 80
+      },
+      {
+        "file": "astronomy_functional_regressions.test.js",
+        "passed": 20
+      }
+    ],
+    "checks": [
+      "Published instrument dimensions",
+      "Magnification, exit pupil, aperture area and Dawes relations",
+      "Thin-lens collimation and common focus",
+      "Independent flat-mirror reflection law",
+      "Ray bounds at control extremes",
+      "Common pupil-circle scale",
+      "Malformed restoration and snapped controls",
+      "Stage selection preserves geometry",
+      "Model scope and reference links",
+      "Previous eyepiece and general UI behavior"
+    ],
+    "report": "unit-tests.json"
+  },
+  "browser": {
+    "passed": 8,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "project": "chromium",
+    "viewportWidths": [
+      1280,
+      320
+    ],
+    "themes": [
+      "dark",
+      "contrast"
+    ],
+    "suites": [
+      "astronomy-telescope-optics.spec.ts",
+      "astronomy-eyepiece-field.spec.ts"
+    ],
+    "checks": [
+      "Optical-design tabs and keyboard focus",
+      "Selectable light stages and synchronized descriptions",
+      "Instrument presets and independent controls",
+      "Exact setup transfer and target/sky preservation",
+      "High-power guidance, reset and saved stages",
+      "Malformed settings restore cleanly",
+      "Minimum 44px control height",
+      "Minimum 11px SVG label size and no clipping",
+      "No horizontal page overflow",
+      "No runtime errors or unhandled promise rejections in tested scenarios",
+      "Previous field comparisons and target selection"
+    ],
+    "report": "browser-tests.json"
+  },
+  "parity": {
+    "sourceAndPublicMatch": true,
+    "sha256": "13678959021483d4c11e0bde35fae50b7fd3405471f14593a3c562c778a21cf4",
+    "priorSourceSha256": "13a3601c705765f5554c6029457f278c6a889a1d14ea9f45f10ed1ffedbf939b",
+    "newEnglishLabels": 41,
+    "labelsMatchBothRegistries": true
+  },
+  "checks": {
+    "sourceAndMirrorSyntax": true,
+    "scopedDiffWhitespace": true
+  },
+  "visualReview": {
+    "status": "reviewed",
+    "images": [
+      "refractor-desktop.png",
+      "reflector-desktop.png",
+      "high-power-desktop.png",
+      "reflector-phone-contrast.png"
+    ]
+  }
+}

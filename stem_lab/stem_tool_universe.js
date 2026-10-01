@@ -150,6 +150,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       h('p',{className:'uf-chart-caption'},props.label('chart_frame','Stationary scene coordinates; one dimension is omitted.')));
   }
 
+  function UniverseFlightViewDraft(props) {
+    var h=props.React.createElement,label=props.label,prefix=props.prefix||'uf';
+    return h('div',{className:'uf-note-form'},
+      h('div',null,h('label',{htmlFor:prefix+'-view-name'},label('view_name','View name (optional)')),
+        h('input',{id:prefix+'-view-name',type:'text',maxLength:80,value:props.name,disabled:!props.ready,placeholder:label('name_placeholder','For example: Looking back at 90% c'),'aria-describedby':prefix+'-view-draft-help',onFocus:props.onPause,onChange:function(e){props.onName(e.target.value);}})),
+      h('div',null,h('label',{htmlFor:prefix+'-view-note'},label('view_note','What do you notice? (optional)')),
+        h('textarea',{id:prefix+'-view-note',rows:3,maxLength:1200,value:props.note,disabled:!props.ready,'aria-describedby':prefix+'-view-draft-help',onFocus:props.onPause,onChange:function(e){props.onNote(e.target.value);}})));
+  }
+
   function UniverseFlightSavedView(props) {
     var h=props.React.createElement, saved=props.saved, label=props.label;
     var editState=props.React.useState(null), edit=editState[0], setEdit=editState[1];
@@ -226,6 +235,189 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       h('p',{className:'uf-note'},label('comparison_science','Generated teaching scenery. Colors and brightness are illustrative; the images preserve the display settings shown above. Returning to a capture restores its position and settings and pauses travel.')));
   }
 
+  function UniverseFlightCompositionControls(props) {
+    var h=props.React.createElement, label=props.label, framing=props.framing||{}, name=props.targetName;
+    return h('div',{className:'uf-composition-controls'},
+      h(props.compact?'h4':'h3',null,label('compose_title','Compose your view')),
+      h('button',{type:'button',className:'uf-composition-toggle','aria-pressed':props.grid,disabled:!props.ready,onClick:props.onGrid},label('compose_grid','Composition grid')),
+      h('div',{className:'uf-frame-placements',role:'group','aria-label':label('compose_landmark','Frame the selected landmark')},
+        [['left',1/3,'Left third',' on left third','canLeft'],['center',0.5,'Center',' at center','canCenter'],['right',2/3,'Right third',' on right third','canRight']].map(function(item){return h('button',{
+          key:item[0],type:'button',disabled:!props.ready||!name||!framing[item[4]],'aria-pressed':framing.placement===item[0],
+          'aria-label':label('compose_frame_prefix','Frame ')+(name||label('compose_landmark_name','landmark'))+label('compose_at_'+item[0],item[3]),onClick:function(){props.onFrame(item[1]);}
+        },label('compose_'+item[0],item[2]));})),
+      h('button',{type:'button',className:'uf-frame-undo',disabled:!props.ready||!framing.canUndo,onClick:props.onUndo},label('compose_undo','Undo framing')),
+      h('p',{className:'uf-note'},name?label('compose_note','Framing pauses travel and ends a camera orbit. Your position, clocks, and lens stay fixed.'):label('compose_pick','Select a landmark to place it within the frame.')),
+      name&&props.coincident&&h('p',{className:'uf-note'},label('compose_coincident','Move away from the landmark center to frame it.')),
+      name&&!props.coincident&&(!framing.canLeft||!framing.canRight)&&h('p',{className:'uf-note'},label('compose_unavailable','Side framing is unavailable for this line of sight and lens.')));
+  }
+
+  function UniverseFlightMotionControls(props) {
+    var h=props.React.createElement, label=props.label, motion=props.motion||{};
+    var pace=Math.max(0,Number(motion.paceLyPerSecond)||0), target=Math.max(0,Number(motion.targetLyPerSecond)||0);
+    var status=!props.running?label('motion_paused','Paused'):!target?label('motion_stationary','Stationary'):motion.kind==='orbit'?label('motion_orbit','Camera orbit'):motion.kind==='approach'?label('motion_approach','Guided approach'):props.smoothTravel&&pace<target*0.98?label('motion_up','Easing up'):props.smoothTravel&&pace>target*1.02?label('motion_down','Easing down'):label('motion_cruise','Cruising');
+    return h('div',{className:'uf-motion-controls'},
+      h('button',{type:'button',className:'uf-motion-toggle','aria-pressed':props.smoothTravel,disabled:!props.ready,onClick:props.onToggle},label('motion_smooth','Smooth camera travel'),h('span',{'aria-hidden':'true'},props.smoothTravel?'ON':'OFF')),
+      h('div',{className:'uf-motion-readout'},h('span',null,label('motion_current','Current camera pace')),h('strong',null,props.number(pace)+' ly/s'),h('small',null,status)),
+      h('div',{className:'uf-motion-track','aria-hidden':'true'},h('i',{style:{width:(target?Math.max(0,Math.min(1,pace/target))*100:0)+'%'}})),
+      h('p',{className:'uf-note'},props.smoothTravel?label('motion_note','Free flight eases speed changes. Pause stops immediately. Guided approaches and camera orbits use their own pace.'):label('motion_direct_note','Free flight uses the selected pace directly. Pause stops immediately. Guided approaches and camera orbits use their own pace.')));
+  }
+
+  function UniverseFlightJourneyCheckpoint(props) {
+    var h=props.React.createElement,label=props.label,event=props.event,id=props.inView?'uf-inview-journey':'uf-stage-journey';
+    var boundary=event.kind==='boundary';
+    function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action,disabled:!props.ready},extra||{}),text);}
+    return h('section',{id:id,className:props.inView?'uf-journey-inline':'uf-inview-controls uf-journey-card','aria-labelledby':id+'-title'},
+      h('div',{className:'uf-inview-heading'},
+        h(props.inView?'h4':'h3',{id:id+'-title'},boundary?label('journey_boundary_title','Scene limit reached'):label('journey_arrival_title','Arrived at ')+event.targetName),
+        button('×',props.onDismiss,{'aria-label':label('journey_dismiss','Dismiss checkpoint'),title:label('journey_dismiss','Dismiss checkpoint')})),
+      h('div',{id:id+'-body',className:props.inView?'uf-journey-inline-body':'uf-inview-body'},
+        h('p',null,boundary?label('journey_boundary_help','Travel is paused at the limit of this generated scene.'):label('journey_arrival_help','Travel is paused at your chosen viewing distance. Look around or compose a view.')),
+        !boundary&&h('p',{className:'uf-journey-distance'},props.number(event.arrivalRadiusLy)+' ly '+label('inview_stop_distance','from destination at arrival')),
+        boundary&&props.mode==='relativity'&&h('p',{className:'uf-note'},label('journey_heading_help','Looking back does not change the light chase’s fixed travel direction. Reset position to start a fresh journey.')),
+        h('div',{className:'uf-journey-actions'},
+          boundary?button(label('journey_face_center','Look toward scene center'),props.onFaceCenter):button(label('journey_inspect','Inspect destination'),props.onInspect),
+          boundary?button(label('journey_reset','Reset scene position and counters'),props.onReset):button(label('orbit_destination','Orbit destination'),props.onOrbit),
+          !boundary&&button(label('journey_save','Save viewpoint'),props.onSave),
+          button(label('journey_explore','Explore destinations'),props.onExplore)),
+        boundary&&h('p',{className:'uf-note'},label('journey_model_help','Each scale has a finite viewing area. Reset starts a fresh, paused journey.'))));
+  }
+
+  function UniverseFlightInViewDestinations(props) {
+    var h=props.React.createElement,label=props.label,number=props.number;
+    var selected=props.selected,target=props.target,route=props.route;
+    function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action,disabled:!props.ready},extra||{}),text);}
+    return h('section',{className:'uf-inview-destinations','aria-labelledby':'uf-inview-destinations-title'},
+      h('h4',{id:'uf-inview-destinations-title'},label('inview_explore','Explore the scene')),
+      h(UniverseFlightScenicFlights,{React:props.React,label:label,ready:props.ready,compact:true,mode:props.mode,onLaunch:props.onScenicFlight}),
+      h('label',{htmlFor:'uf-inview-mode'},label('mode','Flight mode')),
+      h('select',{id:'uf-inview-mode',value:props.mode,disabled:!props.ready,onChange:function(e){props.onMode(e.target.value);}},
+        h('option',{value:'explore'},label('explore','Free exploration')),h('option',{value:'relativity'},label('relativity','Einstein’s light chase'))),
+      props.mode==='explore'&&h(props.React.Fragment,null,
+        h('label',{htmlFor:'uf-inview-region'},label('scale','Explore a scale')),
+        h('select',{id:'uf-inview-region',value:props.region,disabled:!props.ready,onChange:function(e){props.onRegion(e.target.value);}},
+          h('option',{value:'neighborhood'},label('neighborhood','Stellar neighborhood')),h('option',{value:'galaxy'},label('galaxy','Spiral galaxy')),h('option',{value:'cosmic'},label('cosmic','Galaxy groups')))),
+      props.mode==='relativity'&&h('p',{className:'uf-note'},label('inview_neighborhood','The light chase uses the stellar neighborhood and a fixed travel heading.')),
+      h('label',{htmlFor:'uf-inview-destination'},label('inview_destination','Destination')),
+      h('select',{id:'uf-inview-destination',value:props.targetId||'',disabled:!props.ready,onChange:function(e){props.onTarget(e.target.value);}},
+        h('option',{value:''},label('inview_pick_destination','Select a destination')),
+        props.destinations.map(function(item){return h('option',{key:item.id,value:item.id},item.name);})),
+      selected&&h(props.React.Fragment,null,
+        h('p',{className:'uf-note'},selected.description),
+        target&&h('dl',{className:'uf-inview-target-readouts'},
+          h('div',null,h('dt',null,label('target_distance','Distance from camera')),h('dd',null,number(target.distanceLy)+' ly')),
+          target.guide&&h('div',null,h('dt',null,label('target_from_view','From view center')),h('dd',null,Math.round(target.guide.angleDeg)+'°')),
+          props.mode==='relativity'&&!target.coincident&&h('div',null,h('dt',null,label('target_shift','This star’s frequency multiplier')),h('dd',null,number(target.doppler)+'×'))),
+        props.approach&&h(props.React.Fragment,null,
+          h('label',{htmlFor:'uf-inview-arrival'},label('viewing_distance','Viewing distance')),
+          h('select',{id:'uf-inview-arrival',value:props.arrivalScale,disabled:!props.ready||!!(route&&route.active),onChange:function(e){props.onArrival(Number(e.target.value));}},
+            h('option',{value:1},label('arrival_detail','Detail · nearest survey point')),h('option',{value:2},label('arrival_balanced','Balanced · twice as far')),h('option',{value:4},label('arrival_wide','Wide · four times as far'))),
+          h('p',{className:'uf-inview-plan'},number(props.approach.arrivalRadiusLy)+' ly '+label('inview_stop_distance','from destination at arrival'),h('br'),props.playbackTime(props.approach.estimatedSeconds)),
+          button(label('match_pace','Match pace to this trip'),props.onMatchPace,{disabled:!props.ready||props.approach.remainingLy===0||!!(route&&route.active)})),
+        h('div',{className:'uf-inview-destination-actions'},
+          button(label('center_destination','Center on destination'),props.onCenter,{disabled:!props.ready||!props.framing||!props.framing.canCenter}),
+          props.mode==='explore'&&button(label('fly_destination','Fly to destination'),props.onApproach,{disabled:!props.ready||!!(route&&route.active)}),
+          props.mode==='explore'&&button(props.orbit?label('end_orbit','End orbit'):label('orbit_destination','Orbit destination'),props.onOrbit,{'aria-pressed':props.orbit}),
+          route&&route.active&&button(label('end_approach','End guided approach'),props.onEndApproach)),
+        target&&target.coincident&&h('p',{className:'uf-note'},label('coincident_target','You are at this landmark’s center. Move away to give it a viewing direction.'))),
+      props.mode==='explore'&&h(props.React.Fragment,null,
+        h('label',{htmlFor:'uf-inview-vista'},label('inview_viewpoint','Scenic viewpoint')),
+        h('select',{id:'uf-inview-vista',value:'',disabled:!props.ready,onChange:function(e){if(e.target.value!=='')props.onVista(Number(e.target.value));}},
+          h('option',{value:''},label('inview_pick_viewpoint','Choose a paused viewpoint')),
+          props.vistas.map(function(item,index){return h('option',{key:item.title,value:String(index)},item.title);})),
+        h('p',{className:'uf-note'},label('vista_hint','Jump to a paused view · resets journey counters'))),
+      h('p',{className:'uf-note'},label('inview_selection_note','Changing mode or scene starts a fresh, paused journey. Selecting a destination pauses here.')),
+      h('section',{id:'uf-inview-saved-views',className:'uf-inview-saved-views','aria-labelledby':'uf-inview-saved-title'},
+        h('h4',{id:'uf-inview-saved-title'},label('saved_views_title','Saved viewpoints')+' · '+props.views.length+' / 12'),
+        h('label',{htmlFor:'uf-inview-saved-view'},label('inview_return_view','Return to saved view')),
+        h('select',{id:'uf-inview-saved-view',value:'',disabled:!props.ready||!props.views.length,'aria-describedby':'uf-inview-saved-help',onChange:function(e){if(e.target.value)props.onRestoreView(e.target.value);}},
+          h('option',{value:''},label('inview_pick_saved','Choose a paused saved view')),
+          props.views.map(function(saved){var s=saved.snapshot&&saved.snapshot.settings||{};var sceneName=s.mode==='relativity'?label('relativity','Einstein’s light chase'):s.region==='galaxy'?label('galaxy','Spiral galaxy'):s.region==='cosmic'?label('cosmic','Galaxy groups'):label('neighborhood','Stellar neighborhood');return h('option',{key:saved.id,value:saved.id},saved.title+' · '+sceneName);})),
+        h('p',{id:'uf-inview-saved-help',className:'uf-note'},props.views.length?label('inview_saved_help','Returns paused to the saved scene, position, lens, and clocks. Your current travel pace stays selected.'):label('inview_saved_empty','Save a viewpoint in Compose to return to it here.'))),
+      h('div',{className:'uf-inview-reset'},
+        button(label('journey_reset','Reset scene position and counters'),props.onResetJourney),
+        h('p',{className:'uf-note'},label('journey_reset_help','Returns to this scene’s initial position with travel paused and journey counters at zero.'))));
+  }
+
+  function UniverseFlightInViewControls(props) {
+    var h=props.React.createElement,label=props.label,number=props.number;
+    var body=props.React.useRef(null),sections=[['travel','Travel'],['explore','Explore'],['compose','Compose']];
+    props.React.useEffect(function(){if(body.current)body.current.scrollTop=0;},[props.section]);
+    function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),text);}
+    function tabKey(event,index) {
+      var next=event.key==='ArrowRight'?(index+1)%sections.length:event.key==='ArrowLeft'?(index+sections.length-1)%sections.length:event.key==='Home'?0:event.key==='End'?sections.length-1:null;
+      if(next===null)return;
+      event.preventDefault();var tab=document.getElementById('uf-inview-tab-'+sections[next][0]);if(tab)tab.focus({preventScroll:true});
+    }
+    function panelProps(id) {return {id:'uf-inview-panel-'+id,className:'uf-inview-panel',role:'tabpanel','aria-labelledby':'uf-inview-tab-'+id,hidden:props.section!==id,tabIndex:0};}
+    return h('section',{id:'uf-inview-controls',className:'uf-inview-controls','aria-labelledby':'uf-inview-title'},
+      h('div',{className:'uf-inview-heading'},h('h3',{id:'uf-inview-title'},label('inview_title','Flight controls')),button('×',props.onClose,{'aria-label':label('close_flight_controls','Close flight controls'),title:label('close_flight_controls','Close flight controls')})),
+      h('div',{className:'uf-inview-tabs',role:'tablist','aria-label':label('inview_sections','Fullscreen control sections')},sections.map(function(item,index){return button(label('inview_section_'+item[0],item[1]),function(){props.onSection(item[0]);},{
+        key:item[0],id:'uf-inview-tab-'+item[0],role:'tab','aria-selected':props.section===item[0],'aria-controls':'uf-inview-panel-'+item[0],tabIndex:props.section===item[0]?0:-1,
+        onFocus:function(){if(props.section!==item[0])props.onSection(item[0]);},onKeyDown:function(event){tabKey(event,index);}
+      });})),
+      h('div',{id:'uf-inview-body',className:'uf-inview-body',ref:body},
+      h('div',panelProps('travel'),props.mode==='explore'?h(props.React.Fragment,null,
+        h('label',{htmlFor:'uf-inview-speed'},label('inview_speed','Camera travel speed')),
+        h('output',{className:'uf-inview-value',htmlFor:'uf-inview-speed'},number(props.travelSpeed),h('small',null,label('speed_unit',' light-years / playback second'))),
+        h('input',{id:'uf-inview-speed',type:'range',min:0,max:100,step:1,value:props.speedLevel,disabled:!props.ready,'aria-valuetext':number(props.travelSpeed)+' light-years per playback second',onChange:function(e){props.onSpeed(Number(e.target.value));}}),
+        h('div',{className:'uf-inview-presets',role:'group','aria-label':label('inview_paces','Camera pace presets')},
+          [[25,'Survey pace'],[55,'Cruise pace'],[85,'Traversal pace']].map(function(item){return button(label('inview_pace_'+item[0],item[1]),function(){props.onSpeed(item[0]);},{key:item[0],'aria-pressed':props.speedLevel===item[0]});})),
+        h(UniverseFlightMotionControls,{React:props.React,label:label,number:number,ready:props.ready,running:props.running,smoothTravel:props.smoothTravel,motion:props.motion,onToggle:props.onSmooth}),
+        h('p',null,label('inview_camera_note','This pace moves the exploration camera through the scene. It has no relativistic optical effects.')),
+        props.orbit&&h('div',{className:'uf-inview-orbit'},
+          h('label',{htmlFor:'uf-inview-orbit-rate'},label('orbit_rate','Orbit pace')+' · '+props.orbitRate+'°/s'),
+          h('input',{id:'uf-inview-orbit-rate',type:'range',min:0.25,max:12,step:0.25,value:props.orbitRate,disabled:!props.ready,'aria-valuetext':props.orbitRate+' degrees per playback second',onChange:function(e){props.onOrbitRate(Number(e.target.value));}}),
+          button(label('reverse_orbit','Reverse orbit direction'),props.onReverseOrbit,{'aria-pressed':props.orbitDirection===-1}),
+          h('p',null,label('inview_orbit_note','The active camera orbit uses orbit pace. Camera travel speed applies when flying freely or approaching a destination.')))):
+        h(props.React.Fragment,null,
+          h('label',{htmlFor:'uf-inview-beta'},label('velocity','Traveler speed')),
+          h('output',{className:'uf-inview-value',htmlFor:'uf-inview-beta'},(props.beta*100).toFixed(2)+'%',h('small',null,label('of_light',' of light speed'))),
+          h('input',{id:'uf-inview-beta',type:'range',min:0,max:0.9999,step:0.0001,value:props.beta,disabled:!props.ready,'aria-valuetext':(props.beta*100).toFixed(2)+' percent of light speed',onChange:function(e){props.onBeta(Number(e.target.value));}}),
+          h('label',{htmlFor:'uf-inview-time'},label('time_scale','Playback time scale')),
+          h('select',{id:'uf-inview-time',value:props.timeScale,disabled:!props.ready,onChange:function(e){props.onTime(Number(e.target.value));}},[0.01,0.1,1,10].map(function(value){return h('option',{key:value,value:value},value+' '+label('years_per_second','universe years / playback second'));})),
+          button(label('compare','Unshifted sky comparison'),props.onCompare,{'aria-pressed':props.compareRest}),
+          h('p',null,label('inview_physics_note','Traveler speed changes the light and elapsed clocks. Playback time scale controls how quickly the modeled journey advances.')))),
+      h('div',panelProps('explore'),h(UniverseFlightInViewDestinations,props)),
+      h('div',panelProps('compose'),
+      h('div',{className:'uf-inview-display'},
+        h('h4',null,label('view_settings','View settings')),
+        h('label',{htmlFor:'uf-inview-fov'},label('fov','Field of view')+' · '+props.fov+'°'),
+        h('input',{id:'uf-inview-fov',type:'range',min:30,max:100,step:1,value:props.fov,disabled:!props.ready,'aria-valuetext':props.fov+' degrees',onChange:function(e){props.onFov(Number(e.target.value));}}),
+        h('label',{htmlFor:'uf-inview-exposure'},label('exposure','Display exposure')+' · '+number(props.exposure)+'×'),
+        h('input',{id:'uf-inview-exposure',type:'range',min:0.3,max:2,step:0.05,value:props.exposure,disabled:!props.ready,'aria-valuetext':number(props.exposure)+' times exposure',onChange:function(e){props.onExposure(Number(e.target.value));}}),
+        h('label',{htmlFor:'uf-inview-quality'},label('quality','Rendering quality')),
+        h('select',{id:'uf-inview-quality',value:props.quality,disabled:!props.ready,onChange:function(e){props.onQuality(e.target.value);}},
+          h('option',{value:'auto'},label('quality_auto','Balanced')),h('option',{value:'low'},label('quality_low','Lower resolution')),h('option',{value:'high'},label('quality_high','Sharper view'))),
+        h('p',{className:'uf-note'},label('camera_settings_note','Zoom and exposure change the display, not the travel speed or physics. Lower resolution can help on slower devices.')),
+        button(label('reset_camera','Reset view settings'),props.onResetDisplay,{disabled:!props.ready})),
+      h(UniverseFlightCompositionControls,{React:props.React,label:label,ready:props.ready,compact:true,targetName:props.targetName,coincident:props.coincident,framing:props.framing,grid:props.grid,onGrid:props.onGrid,onFrame:props.onFrame,onUndo:props.onUndoFrame}),
+      button(label('save_image','Save image'),props.onSaveImage,{disabled:!props.ready,className:'uf-inview-save'}),
+      h('section',{id:'uf-inview-field-notes',className:'uf-inview-field-notes','aria-labelledby':'uf-inview-notes-title'},
+        h('h4',{id:'uf-inview-notes-title'},label('save_viewpoint_title','Save a viewpoint')+' · '+props.views.length+' / 12'),
+        h('p',{id:'uf-inview-view-draft-help',className:'uf-note'},label('view_draft_help','Writing pauses travel. Save this position and its display settings with your observations.')),
+        h(UniverseFlightViewDraft,{React:props.React,label:label,prefix:'uf-inview',ready:props.ready,name:props.viewName,note:props.viewNote,onName:props.onViewName,onNote:props.onViewNote,onPause:props.onPause}),
+        button(label('save_view','Save current view'),props.onSaveView,{className:'uf-primary',disabled:!props.ready||props.views.length>=12,'aria-describedby':props.views.length>=12?'uf-inview-views-full':'uf-inview-view-draft-help'}),
+        props.views.length>=12&&h('p',{id:'uf-inview-views-full',className:'uf-note'},label('inview_views_full','Twelve views are saved. Remove a view in Saved views and field notes after leaving fullscreen to make room.')))),
+      props.route&&props.route.active&&h('p',{className:'uf-inview-route'},Math.floor(props.route.progress*100)+'% · '+number(props.route.remainingLy)+' ly '+label('remaining','remaining')),
+      props.checkpoint&&h(UniverseFlightJourneyCheckpoint,Object.assign({},props.journeyActions,{React:props.React,label:label,number:number,ready:props.ready,mode:props.mode,event:props.checkpoint,inView:true})),
+      props.notice&&(!props.checkpoint||props.notice!==props.checkpoint.message)&&h('p',{id:'uf-inview-notice',className:'uf-inview-notice',role:'status'},props.notice),
+      button(props.running?label('pause','Pause travel'):label('fly','Start travel'),props.onTravel,{className:'uf-primary','aria-pressed':props.running,disabled:!props.ready})));
+  }
+
+  function UniverseFlightScenicFlights(props) {
+    var h=props.React.createElement,label=props.label,id=props.compact?'uf-inview-scenic-flights':'uf-scenic-flights';
+    return h('section',{id:id,className:'uf-scenic-flights'+(props.compact?' uf-scenic-compact':''),'aria-labelledby':id+'-title'},
+      h('div',{className:'uf-scenic-intro'},h(props.compact?'h4':'h3',{id:id+'-title'},label('scenic_flights_title','Take a scenic flight')),
+        h('p',null,label('scenic_flights_help','About 20 seconds to an encounter, then an automatic pause. Starts a fresh camera journey; pause and look around any time.')+(props.mode==='relativity'?' '+label('scenic_switch_mode','Switches to Free exploration.'):''))),
+      h('div',{className:'uf-scenic-options'},[
+        ['galaxy','Dive toward the spiral','Arms, stars, and the central bulge'],
+        ['neighborhood','Drift between stars','Nearby clusters and glowing clouds'],
+        ['cosmic','Approach an island galaxy','A galaxy grows against the distant group']
+      ].map(function(item,index){return h('button',{key:item[0],type:'button','data-scenic-flight':item[0],className:index===0?'uf-primary':'',disabled:!props.ready,onClick:function(){props.onLaunch(item[0]);}},
+        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])));
+      })));
+  }
+
   function UniverseFlightExplorer(props) {
     var React = props.React, h = React.createElement;
     var useState = React.useState;
@@ -233,6 +425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var regionState = useState('neighborhood'), region = regionState[0], setRegion = regionState[1];
     var runState = useState(false), running = runState[0], setRunning = runState[1];
     var speedState = useState(55), speedLevel = speedState[0], setSpeedLevel = speedState[1];
+    var smoothState = useState(true), smoothTravel = smoothState[0], setSmoothTravel = smoothState[1];
     var betaState = useState(0.9), beta = betaState[0], setBeta = betaState[1];
     var timeState = useState(1), timeScale = timeState[0], setTimeScale = timeState[1];
     var compareState = useState(false), compareRest = compareState[0], setCompareRest = compareState[1];
@@ -240,7 +433,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var infoState = useState({distanceLy:0,universeYears:0,travelerYears:0,yaw:0,pitch:0}), info = infoState[0], setInfo = infoState[1];
     var retryState = useState(0), retry = retryState[0], setRetry = retryState[1];
     var noticeState = useState(''), notice = noticeState[0], setNotice = noticeState[1];
+    var journeyState=useState(null),journey=journeyState[0],setJourney=journeyState[1];
+    var overlayFocusState=useState(false),overlayFocus=overlayFocusState[0],setOverlayFocus=overlayFocusState[1];
     var fullState = useState(false), fullscreen = fullState[0], setFullscreen = fullState[1];
+    var inViewState=useState(false),showInViewControls=inViewState[0],setShowInViewControls=inViewState[1];
+    var inViewSectionState=useState('travel'),inViewSection=inViewSectionState[0],setInViewSection=inViewSectionState[1];
     var fovState = useState(65), fov = fovState[0], setFov = fovState[1];
     var exposureState = useState(1), exposure = exposureState[0], setExposure = exposureState[1];
     var qualityState = useState('auto'), quality = qualityState[0], setQuality = qualityState[1];
@@ -250,6 +447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var nameState = useState(''), viewName = nameState[0], setViewName = nameState[1];
     var noteState = useState(''), viewNote = noteState[0], setViewNote = noteState[1];
     var hudState = useState(true), showHud = hudState[0], setShowHud = hudState[1];
+    var gridState = useState(false), compositionGrid = gridState[0], setCompositionGrid = gridState[1];
     var orbitRateState = useState(3), orbitRate = orbitRateState[0], setOrbitRate = orbitRateState[1];
     var orbitDirectionState = useState(1), orbitDirection = orbitDirectionState[0], setOrbitDirection = orbitDirectionState[1];
     var chartPlaneState = useState('xz'), chartPlane=chartPlaneState[0], setChartPlane=chartPlaneState[1];
@@ -264,14 +462,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var scales = {neighborhood:[0.001,50],galaxy:[1,30000],cosmic:[1000,100000000]};
     var limits = scales[flightRegion], travelSpeed = limits[0] * Math.pow(limits[1]/limits[0], speedLevel/100);
     var cameraStep={neighborhood:[0.01,0.1,1],galaxy:[100,1000,10000],cosmic:[10000,100000,1000000]}[flightRegion][cameraStepLevel];
-    var settings = {mode:mode,region:flightRegion,speed:travelSpeed,beta:beta,timeScale:timeScale,running:running,compareRest:compareRest,fov:fov,exposure:exposure,quality:quality,orbitRate:orbitRate,orbitDirection:orbitDirection};
+    var settings = {mode:mode,region:flightRegion,speed:travelSpeed,smoothTravel:smoothTravel,beta:beta,timeScale:timeScale,running:running,compareRest:compareRest,fov:fov,exposure:exposure,quality:quality,orbitRate:orbitRate,orbitDirection:orbitDirection};
     var settingsRef = React.useRef(settings); settingsRef.current = settings;
     var gamma = 1/Math.sqrt(1-beta*beta), doppler = gamma*(1+beta);
     function label(key, fallback) { return __alloT('stem.universe.flight.' + key, fallback); }
     function number(value) { return Number(value || 0).toLocaleString(undefined, {maximumFractionDigits: value && Math.abs(value) < 0.01 ? 5 : 2}); }
     function stop() { setRunning(false); if (scene.current) scene.current.set({running:false}); }
-    function toggleTravel() { setNotice(''); if(running)stop();else setRunning(true); }
-    function changeMode(next) { if(mode===next)return; stop(); setNotice(''); setExperiment(''); setTargetId(''); setMode(next); setCompareRest(false); if (scene.current) scene.current.reset(); }
+    function toggleTravel() { setNotice('');setJourney(null);if(running)stop();else setRunning(true); }
+    function chooseSmoothTravel() { var next=!smoothTravel;settingsRef.current.smoothTravel=next;setSmoothTravel(next);if(scene.current)scene.current.set({smoothTravel:next}); }
+    function changeMode(next) { if(mode===next)return; stop();setJourney(null);setNotice(''); setExperiment(''); setTargetId(''); setMode(next); setCompareRest(false); if (scene.current) scene.current.reset(); }
+    function chooseRegion(next) { if(region===next)return;stop();setJourney(null);setNotice('');setTargetId('');setRegion(next); }
     function look(yaw, pitch) { if (scene.current) scene.current.look(yaw,pitch); }
     function view(direction) { if (scene.current) scene.current.view(direction); }
     function setLens(value) {
@@ -279,6 +479,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       settingsRef.current.fov=next;setFov(next);
       if(scene.current)scene.current.set({fov:next});
     }
+    function resetDisplay() { setLens(65);setExposure(1);setQuality('auto'); }
     function zoomBy(factor) { setLens(360/Math.PI*Math.atan(Math.tan(settingsRef.current.fov*Math.PI/360)/factor)); }
     function clearGesture() { pointers.current={};pinch.current=null;drag.current=null; }
     function rebaseGesture() {
@@ -311,8 +512,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
     }
     function nudge(direction) { if(scene.current && ready && mode==='explore')scene.current.nudge(direction,cameraStep); }
-    function undoNudge() { if(scene.current && ready)scene.current.undoNudge(); }
-    function reset() { stop(); setTour(null); setNotice(''); setExperiment(''); setTargetId(''); if (scene.current) scene.current.reset(); }
+    function undoNudge() { if(scene.current && ready&&scene.current.undoNudge())setJourney(null); }
+    function inspectScene() { setShowInViewControls(false);if(stage.current&&!fullscreen)stage.current.scrollIntoView({block:'center',behavior:'auto'});if(canvas.current)canvas.current.focus({preventScroll:true}); }
+    function revealInViewNotice() { window.requestAnimationFrame(function(){var message=document.getElementById('uf-inview-notice');if(message)message.scrollIntoView({block:'nearest'});}); }
+    function frameSelected(u,id) {
+      var destination=id||targetId;
+      if(!scene.current||!ready||!destination)return false;
+      if(scene.current.frameTarget&&scene.current.frameTarget(destination,u)){setTargetId(destination);setJourney(null);inspectScene();return true;}
+      setNotice(label('compose_failed','This placement is unavailable from the current camera position.'));if(fullscreen)revealInViewNotice();return false;
+    }
+    function undoFraming() { if(scene.current&&scene.current.undoFrame&&scene.current.undoFrame())inspectScene(); }
+    function reset() { stop();setJourney(null);setTour(null); setNotice(''); setExperiment(''); setTargetId(''); if (scene.current) scene.current.reset(); }
     function button(text, action, extra) { return h('button',Object.assign({type:'button',onClick:action},extra||{}),text); }
     var ready = status.state === 'ready';
     var api = window.UniverseFlight;
@@ -394,26 +604,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var views = Array.isArray(props.views) ? props.views : [];
     var vistas = {
       neighborhood:[{title:'The stellar sea',position:[0,0,0],aim:[0,-400,1000],fov:90},{title:'Beside the amber star',position:[-3.8,1.2,6.7],aim:[-3.1,1,8.5],fov:70}],
-      galaxy:[{title:'Spiral portrait',position:[0,0,-95000],aim:[0,0,0],fov:65},{title:'Above the arms',position:[0,60000,-105000],aim:[0,0,0],fov:60},{title:'Across the disk',position:[-68000,16000,5000],aim:[0,0,0],fov:80}],
+      galaxy:[{title:'Spiral portrait',position:[0,0,-95000],aim:[0,0,0],fov:65},{title:'Above the arms',position:[0,60000,-105000],aim:[0,0,0],fov:60},{title:'Across the disk',position:[-68000,16000,5000],aim:[0,0,0],fov:80},{title:'Halo star cluster',position:[25751.1723,463.6085,-22166.3513],aim:[23665.6180,436.3123,-21488.3260],fov:50,targetId:null}],
       cosmic:[{title:'Island universe',position:[0,0,-650000],aim:[0,0,0],fov:50},{title:'The companion',position:[-480000,190000,650000],aim:[-480000,190000,1300000],fov:50},{title:'Golden elliptical',position:[800000,550000,150000],aim:[800000,550000,850000],fov:45,targetId:'golden-elliptical'},{title:'The wider web',position:[0,5000000,-15000000],aim:[0,0,0],fov:85}]
     };
     function visitVista(item) {
-      if(!scene.current || !ready) return;
+      if(!scene.current || !ready) return false;
       var saved=scene.current.snapshot(), delta=item.aim.map(function(v,i){return v-item.position[i];});
       saved.settings.mode='explore'; saved.settings.fov=item.fov; saved.settings.exposure=1;
       saved.state={position:item.position.slice(),yaw:Math.atan2(delta[0],delta[2]),pitch:Math.asin(delta[1]/Math.hypot.apply(Math,delta)),distanceLy:0,universeYears:0,travelerYears:0};
-      saved.targetId=item.targetId||(flightRegion==='galaxy'?'galactic-center':flightRegion==='cosmic'?(item.title==='The companion'?'companion-galaxy':'near-galaxy'):item.title==='Beside the amber star'?'amber-star':null);
-      restoreView({title:item.title,snapshot:saved});
+      saved.targetId=Object.prototype.hasOwnProperty.call(item,'targetId')?item.targetId:(flightRegion==='galaxy'?'galactic-center':flightRegion==='cosmic'?(item.title==='The companion'?'companion-galaxy':'near-galaxy'):item.title==='Beside the amber star'?'amber-star':null);
+      if(!restoreView({title:item.title,snapshot:saved}))return false;
       setNotice(label('vista_ready','Viewpoint opened and paused. Journey counters reset. ')+item.title);
+      return true;
+    }
+    function launchScenicFlight(launchRegion) {
+      if(!scene.current||!ready||!api||!api.math.approachPlan)return false;
+      var flights={
+        neighborhood:{position:[0,0,0],targetId:'pale-star',fov:75},
+        galaxy:{position:[0,27000,-85000],targetId:'galactic-center',fov:65},
+        cosmic:{position:[0,0,-2200000],targetId:'near-galaxy',fov:60}
+      };
+      var flight=Object.prototype.hasOwnProperty.call(flights,launchRegion)&&flights[launchRegion];
+      if(!flight)return false;
+      var target=api.landmarks(launchRegion).filter(function(item){return item.id===flight.targetId;})[0];
+      if(!target)return false;
+      var delta=target.position.map(function(v,i){return v-flight.position[i];}),distance=Math.hypot.apply(Math,delta);
+      var launchLimits=scales[launchRegion],best=0,error=Infinity;
+      for(var level=0;level<=100;level++){
+        var candidateSpeed=launchLimits[0]*Math.pow(launchLimits[1]/launchLimits[0],level/100);
+        var candidate=api.math.approachPlan(distance,target.arrivalRadiusLy,1,candidateSpeed);
+        var difference=Math.abs(candidate.estimatedSeconds-20);
+        if(difference<error){best=level;error=difference;}
+      }
+      var speed=launchLimits[0]*Math.pow(launchLimits[1]/launchLimits[0],best/100),saved=scene.current.snapshot();
+      saved.settings.mode='explore';saved.settings.region=launchRegion;saved.settings.compareRest=false;saved.settings.fov=flight.fov;saved.settings.exposure=1;
+      saved.state={position:flight.position.slice(),yaw:Math.atan2(delta[0],delta[2]),pitch:Math.asin(delta[1]/distance),distanceLy:0,universeYears:0,travelerYears:0};
+      saved.targetId=target.id;
+      if(!restoreView({title:target.name,snapshot:saved})){if(fullscreen)revealInViewNotice();return false;}
+      setArrivalScale(1);setSpeedLevel(best);
+      // Restore the explicit scene before starting; the next React settings echo must preserve this route.
+      settingsRef.current=Object.assign({},settingsRef.current,saved.settings,{speed:speed,running:false});
+      scene.current.set(settingsRef.current);
+      if(!scene.current.navigateTo(target.id,1)){
+        stop();setNotice(label('scenic_flight_failed','The scenic flight could not start. Travel is paused; retry when the 3D view is ready.'));
+        if(fullscreen)revealInViewNotice();return false;
+      }
+      setRunning(true);setJourney(null);
+      setNotice(label('scenic_flight_active','Scenic camera flight. Travel will pause at ')+target.name+'. '+label('scenic_flight_pause','Pause any time to explore the surroundings.'));
+      inspectScene();
+      return true;
     }
     function captureView() {
-      if(!scene.current || !ready) return;
+      if(!scene.current || !ready) return false;
       try {
         var capture=scene.current.capture(); if(!capture) throw new Error('Capture unavailable');
         var a=document.createElement('a'); a.href=capture.dataUrl;
         a.download='universe-generated-'+flightRegion+'-'+new Date().toISOString().replace(/[:.]/g,'-')+'.png'; a.click();
         setNotice(label('image_saved','Image downloaded. This is a generated teaching scene; colors, sizes, and brightness are illustrative.'));
-      } catch(error) { setNotice(label('image_failed','The image could not be saved. Try again after the 3D view is ready.')); }
+        return true;
+      } catch(error) { setNotice(label('image_failed','The image could not be saved. Try again after the 3D view is ready.')); return false; }
     }
     function captureComparison(replace) {
       if(!scene.current||!ready)return;
@@ -429,6 +678,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     function backToScene() {
       if(canvas.current){stage.current.scrollIntoView({block:'center',behavior:'auto'});canvas.current.focus({preventScroll:true});}
     }
+    function closeInViewControls() {
+      setShowInViewControls(false);var toggle=document.getElementById('uf-flight-controls-toggle');if(toggle)toggle.focus({preventScroll:true});
+    }
     var experiments = [
       {id:'rest',title:'Start at rest',beta:0,view:'forward',prompt:'At rest, the frequency multiplier is 1 and both clocks advance at the same rate. Start travel to watch the clocks without moving.'},
       {id:'forward',title:'Meet the light',beta:0.9,view:'forward',prompt:'At 90% of light speed, look forward. Light from stars ahead arrives head-on and shifts to shorter wavelengths. Compare with the unshifted sky.'},
@@ -440,34 +692,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var spectrum = ready && api.math.viewSpectrum ? api.math.viewSpectrum(beta,info.yaw||0,info.pitch||0,wavelength) : null;
     var lightClock = ready && api.math.lightClock ? api.math.lightClock(beta,1) : null;
     function chooseBeta(value) { setExperiment(''); setBeta(value); }
-    function chooseTarget(id) { stop(); if(activeTour&&(!tourStop||tourStop.id!==id))setTour(null); setNotice(''); setTargetId(id); if(scene.current) { scene.current.cancelNavigation(); scene.current.selectTarget(id); } }
+    function chooseTarget(id) { stop();if(id!==targetId)setJourney(null);if(activeTour&&(!tourStop||tourStop.id!==id))setTour(null); setNotice(''); setTargetId(id); if(scene.current) { scene.current.cancelNavigation(); scene.current.selectTarget(id); } }
     function startApproach() {
-      if(!scene.current || !targetId) return;
+      if(!scene.current || !ready || !targetId) return false;
       setNotice(''); if(scene.current.navigateTo(targetId,arrivalScale)) {
+        setJourney(null);
         setRunning(true);
         if(stage.current)stage.current.scrollIntoView({block:'center',behavior:'auto'});
         if(canvas.current)canvas.current.focus({preventScroll:true});
+        return true;
       }
+      return false;
     }
-    function startOrbit() {
-      if(!scene.current || !targetId) return;
+    function startOrbit(id) {
+      var destination=typeof id==='string'?id:targetId;
+      if(!scene.current || !ready || !destination) return false;
       setNotice('');
-      if(scene.current.startOrbit(targetId)) {
+      if(scene.current.startOrbit(destination)) {
+        setJourney(null);setTargetId(destination);
         setRunning(true);
         if(stage.current)stage.current.scrollIntoView({block:'center',behavior:'auto'});
         if(canvas.current)canvas.current.focus({preventScroll:true});
+        return true;
       }
+      return false;
+    }
+    function endApproach() { stop();var ended=!!scene.current&&scene.current.cancelNavigation();setNotice(label('free_again','Guided approach ended. Free exploration follows where you look.'));return ended; }
+    function approachInView() { if(startApproach())inspectScene();else revealInViewNotice(); }
+    function orbitInView() { var success=info.orbit&&info.orbit.active?!!scene.current&&scene.current.endOrbit():startOrbit();if(success)inspectScene();else revealInViewNotice(); }
+    function vistaInView(index) { var item=vistas[flightRegion][index];if(item&&visitVista(item))inspectScene(); }
+    function captureInView() { if(captureView())inspectScene();else revealInViewNotice(); }
+    function saveInView() { if(saveView())revealInViewNotice(); }
+    function restoreInView(id) {
+      var saved=views.filter(function(item){return item.id===id;})[0];
+      if(!saved){stop();setNotice(label('missing_view','This saved view is no longer available. Choose another saved view.'));revealInViewNotice();return;}
+      if(restoreView(saved))inspectScene();else revealInViewNotice();
+    }
+    function openJourneySection(section,field,keepNotice) {
+      setJourney(null);if(!keepNotice)setNotice('');setInViewSection(section);setShowInViewControls(true);
+      window.requestAnimationFrame(function(){window.requestAnimationFrame(function(){
+        var control=document.getElementById(field||'uf-inview-tab-'+section);
+        if(control){control.focus({preventScroll:true});if(field)control.scrollIntoView({block:'nearest'});}
+        if(keepNotice)revealInViewNotice();
+      });});
+    }
+    function dismissJourney() {
+      setJourney(null);
+      var control=fullscreen&&showInViewControls?document.getElementById('uf-inview-tab-'+inViewSection):canvas.current;
+      if(control)control.focus({preventScroll:true});
+    }
+    function resetJourney() { reset();inspectScene(); }
+    function faceJourneyCenter() {
+      if(scene.current&&ready&&scene.current.faceSceneCenter&&scene.current.faceSceneCenter()){setJourney(null);inspectScene();return;}
+      setNotice(label('journey_center_failed','The scene center cannot be viewed from this position. Reset position or choose a destination.'));
+      openJourneySection('explore',null,true);
+    }
+    function inspectJourney() { if(!frameSelected(0.5,journey&&journey.targetId))openJourneySection('explore',null,true); }
+    function orbitJourney() { if(startOrbit(journey&&journey.targetId))inspectScene();else openJourneySection('explore',null,true); }
+    function trackOverlayFocus(event) {
+      var next=event.type==='blur'?event.relatedTarget:event.target;
+      setOverlayFocus(!!next&&!!next.closest&&!!stage.current&&stage.current.contains(next)&&!!next.closest('.uf-lens-controls,.uf-target-finder,.uf-target-marker'));
     }
     function runExperiment(item) {
-      stop(); setNotice(''); setBeta(item.beta); setCompareRest(false); setFov(65); setExperiment(item.id);
+      stop();setJourney(null);setNotice(''); setBeta(item.beta); setCompareRest(false); setFov(65); setExperiment(item.id);
       if(scene.current) scene.current.view(item.view);
     }
     function saveView() {
-      if(!scene.current || !ready || views.length>=12 || typeof props.onSaveView!=='function') return;
+      if(!scene.current || !ready || views.length>=12 || typeof props.onSaveView!=='function') return false;
+      stop();
       var snapshot = scene.current.snapshot();
       var title = viewName.trim() || (selected ? selected.name : mode==='relativity' ? 'Light chase at '+(beta*100).toFixed(2)+'%' : flightRegion==='galaxy' ? 'Spiral galaxy' : flightRegion==='cosmic' ? 'Galaxy groups' : 'Stellar neighborhood');
       props.onSaveView({id:'flight-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),title:title,note:viewNote.trim(),savedAt:new Date().toISOString(),snapshot:snapshot});
       setViewName(''); setViewNote(''); setNotice(label('saved','View saved. You can return to this position and settings from your field notes.'));
+      return true;
     }
     function saveObservation() {
       if(!scene.current||!ready||!tourStop||activeTour.statuses[activeTour.index]!=='visited'||views.length>=12||!observationDraft.trim()||typeof props.onSaveView!=='function')return;
@@ -477,13 +774,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       setNotice(label('observation_saved','Observation and paused view saved to your field notes.'));
     }
     function restoreView(saved) {
-      if(!scene.current || !ready) return;
+      if(!scene.current || !ready) return false;
       stop();
-      if(!scene.current.restore(saved.snapshot)) { setNotice(label('invalid_view','This saved view could not be restored. Its data may be incomplete.')); return; }
+      var savedSettings=saved.snapshot&&saved.snapshot.settings;
+      if((savedSettings&&savedSettings.mode==='relativity'&&savedSettings.region!=='neighborhood')||!scene.current.restore(saved.snapshot)) { setNotice(label('invalid_view','This saved view could not be restored. Its data may be incomplete.')); return false; }
+      setJourney(null);
       setTour(null);
       var restored = scene.current.snapshot(), s = restored.settings;
       setMode(s.mode); setRegion(s.region); setBeta(s.beta); setCompareRest(s.compareRest); setFov(s.fov); setExposure(s.exposure); setQuality(s.quality); setTargetId(restored.targetId||''); setExperiment('');
       setNotice(label('restored','Saved position restored and paused: ')+saved.title);
+      return true;
     }
     function downloadNotes() {
       var lines = ['UNIVERSE EXPLORER — FIELD NOTES','Generated 3D teaching scenes; sizes, colors, and brightness are illustrative.',''];
@@ -501,26 +801,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     React.useEffect(function() {
       if (!props.open) { stop(); return undefined; }
       var gone = false;
-      setNotice('');
+      setNotice('');setJourney(null);setOverlayFocus(false);
       setTargetId(''); setExperiment(''); clearGesture();
       setStatus({state:'loading',message:label('loading','Preparing the 3D star field…')});
       loadUniverseFlight().then(function(api) {
         if (gone || !canvas.current) return;
         scene.current = api.create(canvas.current, {
-          onStatus:function(value) { if (!gone) { setStatus(value); if (value.state === 'error') setRunning(false); } },
-          onPause:function(message) { if (!gone) { setRunning(false); setNotice(message); } },
-          onTelemetry:function(value) { if (!gone) setInfo(value); }
+          onStatus:function(value) { if (!gone) { setStatus(value); if (value.state === 'error'){setRunning(false);setJourney(null);} } },
+          onPause:function(message,detail) { if (!gone) { setRunning(false);setNotice(message);if(detail&&(detail.kind==='boundary'||detail.kind==='arrival'))setJourney(Object.assign({},detail,{message:message})); } },
+          onTelemetry:function(value) { if (!gone){setInfo(value);setJourney(function(current){return current&&Array.isArray(current.position)&&Array.isArray(value.position)&&value.position.some(function(v,i){return v!==current.position[i];})?null:current;});} }
         });
         scene.current.set(Object.assign({},settingsRef.current,{running:false}));
       }).catch(function(error) { if (!gone) setStatus({state:'error',message:error.message}); });
       return function() { gone=true; if (scene.current) scene.current.dispose(); scene.current=null; };
     }, [props.open,retry]);
-    React.useEffect(function() { if (scene.current) scene.current.set(settings); }, [mode,region,travelSpeed,beta,timeScale,running,compareRest,fov,exposure,quality,orbitRate,orbitDirection]);
+    React.useEffect(function() { if (scene.current) scene.current.set(settings); }, [mode,region,travelSpeed,smoothTravel,beta,timeScale,running,compareRest,fov,exposure,quality,orbitRate,orbitDirection]);
     React.useEffect(function(){
       if(!comparison[0])return;
       var panel=document.getElementById('uf-compare-views');if(panel){panel.scrollIntoView({block:'start',behavior:'auto'});panel.focus({preventScroll:true});}
     },[comparison]);
     React.useEffect(function(){clearGesture();},[mode,flightRegion]);
+    React.useEffect(function(){
+      if(!fullscreen||!showInViewControls)return;
+      var control=document.getElementById('uf-inview-tab-'+inViewSection);if(control)control.focus({preventScroll:true});
+    },[fullscreen,showInViewControls]);
+    React.useEffect(function(){
+      if(!overlayFocus)return;
+      var control=document.activeElement;
+      if(!control||!stage.current||!stage.current.contains(control)||!control.closest('.uf-lens-controls,.uf-target-finder,.uf-target-marker'))setOverlayFocus(false);
+    },[overlayFocus,info.target,fullscreen,showInViewControls]);
     React.useEffect(function(){
       var element=canvas.current;if(!props.open||!element||!ready)return;
       function wheel(event){
@@ -547,8 +856,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     },[info.navigation,flightRegion,mode]);
     // Pause on leaving the page. Returning always gives the learner a still view.
     React.useEffect(function() {
+      var wasFullscreen=false;
       function hidden() { if (document.hidden) {stop();clearGesture();} }
-      function fullChanged() { clearGesture();setFullscreen(document.fullscreenElement === stage.current); }
+      function fullChanged() {
+        var next=!!stage.current&&document.fullscreenElement===stage.current;
+        clearGesture();setShowInViewControls(false);setOverlayFocus(false);setFullscreen(next);
+        if(wasFullscreen&&!next&&canvas.current)canvas.current.focus({preventScroll:true});
+        wasFullscreen=next;
+      }
       document.addEventListener('visibilitychange',hidden);
       document.addEventListener('fullscreenchange',fullChanged);
       return function() { document.removeEventListener('visibilitychange',hidden); document.removeEventListener('fullscreenchange',fullChanged); };
@@ -572,6 +887,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       else if (event.key === 'Home') { event.preventDefault(); view('forward'); }
     }
     var heading = ((info.yaw||0)*180/Math.PI%360+360)%360;
+    var activeTarget = selected && info.target && info.target.id===selected.id ? info.target : null;
+    var targetGuide = activeTarget && activeTarget.guide;
+    var guideDirections = {right:'Look right',left:'Look left',up:'Look up',down:'Look down','upper-right':'Look upper right','upper-left':'Look upper left','lower-right':'Look lower right','lower-left':'Look lower left',behind:'Turn around'};
+    var guideDirection = targetGuide ? (targetGuide.behind ? label('target_behind','Behind you')+' · ' : '')+label('target_look_'+targetGuide.sector,guideDirections[targetGuide.sector]) : '';
+    var checkpoint=journey&&journey.region===flightRegion&&journey.mode===mode?journey:null;
+    var showJourney=!!(fullscreen&&ready&&checkpoint&&!showInViewControls&&!overlayFocus);
+    var journeyActions={onDismiss:dismissJourney,onFaceCenter:faceJourneyCenter,onReset:resetJourney,onInspect:inspectJourney,onOrbit:orbitJourney,onSave:function(){openJourneySection('compose','uf-inview-view-name');},onExplore:function(){openJourneySection('explore');}};
     return h('section',{id:'universe-flight',className:'uni-flight','aria-labelledby':'universe-flight-title'},
       h('style',null,UNIVERSE_FLIGHT_CSS),
       h('div',{className:'uf-intro'},
@@ -589,22 +911,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           h('div',{className:'uf-section-heading'},h('div',null,h('p',{className:'uf-eyebrow'},label('try_it','TRY A THOUGHT EXPERIMENT')),h('h3',null,label('light_lab','What happens to the light you see?'))),h('span',null,label('presets_pause','Every experiment starts paused'))),
           h('div',{className:'uf-experiments',role:'group','aria-label':label('guided_experiments','Guided relativity experiments')},experiments.map(function(item,index){return button(h(React.Fragment,null,h('span',{className:'uf-experiment-number','aria-hidden':'true'},String(index+1)),item.title),function(){runExperiment(item);},{key:item.id,'aria-pressed':experiment===item.id,disabled:!ready});})),
           activeExperiment&&h('p',{className:'uf-experiment-prompt',role:'status'},activeExperiment.prompt)),
+        mode==='explore'&&h(UniverseFlightScenicFlights,{React:React,label:label,ready:ready,mode:mode,onLaunch:launchScenicFlight}),
         h('div',{className:'uf-workspace'},
           h('div',{className:'uf-view-column'},
-            h('div',{className:'uf-stage'+(showHud?'':' uf-clean-view'),ref:stage},
+            h('div',{className:'uf-stage'+(showHud?'':' uf-clean-view')+(fullscreen&&showInViewControls?' uf-flight-controls-open':'')+(showJourney?' uf-journey-open':''),ref:stage,onFocusCapture:trackOverlayFocus,onBlurCapture:trackOverlayFocus},
+              h('p',{id:'uf-journey-announcement',className:'uf-journey-announcement',role:'status','aria-atomic':'true'},checkpoint?(checkpoint.kind==='boundary'?label('journey_boundary_title','Scene limit reached')+'. '+label('journey_boundary_help','Travel is paused at the limit of this generated scene.'):label('journey_arrival_title','Arrived at ')+checkpoint.targetName+'. '+label('journey_arrival_help','Travel is paused at your chosen viewing distance. Look around or compose a view.')):''),
               h('canvas',{ref:canvas,tabIndex:0,role:'img','aria-label':label('canvas','3D universe view. Drag to look around; pinch or Shift-scroll to zoom. Arrow keys turn. Plus and minus zoom; zero resets the lens. Space starts or pauses travel; Escape pauses; Home faces forward.'),'aria-describedby':'uf-scene-description',onKeyDown:keyDown,
                 onPointerDown:pointerDown,onPointerMove:pointerMove,onPointerUp:pointerEnd,onPointerCancel:pointerEnd,onLostPointerCapture:pointerEnd}),
+              compositionGrid&&h('svg',{className:'uf-composition-grid',viewBox:'0 0 300 300',preserveAspectRatio:'none','aria-hidden':'true',focusable:'false'},
+                [100,200].map(function(value){return h('line',{key:'v'+value,x1:value,y1:0,x2:value,y2:300});}),
+                [100,200].map(function(value){return h('line',{key:'h'+value,x1:0,y1:value,x2:300,y2:value});})),
               h('div',{className:'uf-lens-controls',role:'group','aria-label':label('lens_controls','View zoom')},
                 button('−',function(){zoomBy(1/1.15);},{disabled:!ready||fov>=100,'aria-label':label('widen_view','Widen view'),title:label('widen_view','Widen view')}),
                 button(fov+'°',function(){setLens(65);},{disabled:!ready,'aria-label':label('reset_lens','Reset field of view to 65 degrees'),title:label('reset_lens','Reset field of view to 65 degrees')}),
                 button('+',function(){zoomBy(1.15);},{disabled:!ready||fov<=30,'aria-label':label('narrow_view','Narrow view'),title:label('narrow_view','Narrow view')})),
-              h('div',{className:'uf-scene-top','aria-hidden':'true'},h('span',{className:'uf-chip'},running?(info.orbit&&info.orbit.active?'ORBITING · TARGET LOCKED':'IN FLIGHT'):'PAUSED · LOOK AROUND'),h('span',{className:'uf-chip'},flightRegion==='neighborhood'?'STELLAR NEIGHBORHOOD':flightRegion==='galaxy'?'SPIRAL GALAXY':'GALAXY GROUPS')),
+              h('div',{className:'uf-scene-top','aria-hidden':'true'},h('span',{className:'uf-chip'},running?(info.orbit&&info.orbit.active?'ORBITING · TARGET LOCKED':'IN FLIGHT'):checkpoint?(checkpoint.kind==='boundary'?'SCENE LIMIT · PAUSED':'ARRIVED · PAUSED'):'PAUSED · LOOK AROUND'),h('span',{className:'uf-chip'},flightRegion==='neighborhood'?'STELLAR NEIGHBORHOOD':flightRegion==='galaxy'?'SPIRAL GALAXY':'GALAXY GROUPS')),
               h('div',{className:'uf-reticle','aria-hidden':'true'},'+'),
-              selected && info.target && info.target.id===selected.id && info.target.inView && h('button',{
-                type:'button',className:'uf-target-marker',style:{left:(info.target.screen[0]*100)+'%',top:(info.target.screen[1]*100)+'%'},
+              activeTarget && activeTarget.inView && h('button',{
+                type:'button',className:'uf-target-marker',style:{left:(activeTarget.screen[0]*100)+'%',top:(activeTarget.screen[1]*100)+'%'},
                 'aria-label':label('center_target','Center view on ')+selected.name,onClick:function(){if(scene.current)scene.current.focusTarget(targetId);}
               },h('span',{'aria-hidden':'true'},'◇'),h('small',null,selected.name)),
-              selected && info.target && info.target.id===selected.id && !info.target.inView && button(label('find_target','Find target: ')+selected.name,function(){if(scene.current)scene.current.focusTarget(targetId);},{className:'uf-target-finder','aria-label':label('find_target','Find target: ')+selected.name}),
+              activeTarget && !activeTarget.inView && !activeTarget.coincident && button(h(React.Fragment,null,
+                h('span',{className:'uf-finder-name'},label('find_target','Find target: ')+selected.name),
+                targetGuide && h('span',{id:'uf-target-guide'},h('span',{className:'uf-finder-direction'},guideDirection),h('span',{className:'uf-finder-angle'},Math.round(targetGuide.angleDeg)+'° '+label('target_from_view','from view center')))
+              ),function(){if(scene.current)scene.current.focusTarget(targetId);},{className:'uf-target-finder','aria-label':label('find_target','Find target: ')+selected.name,'aria-describedby':targetGuide?'uf-target-guide':undefined}),
+              targetGuide && !activeTarget.inView && h('div',{className:'uf-target-bearing','aria-hidden':'true',style:{left:'clamp(28px, '+(targetGuide.edge[0]*100)+'%, calc(100% - 28px))',top:'clamp(var(--uf-bearing-top,104px), '+(targetGuide.edge[1]*100)+'%, calc(100% - 140px))'}},
+                h('svg',{viewBox:'0 0 24 24',focusable:'false',style:{transform:'rotate('+targetGuide.arrowDeg+'deg)'}},h('path',{d:'M5 12h14M13 6l6 6-6 6',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'}))),
+              activeTarget && activeTarget.coincident && h('div',{className:'uf-at-landmark'},h('strong',null,selected.name),h('span',null,label('at_landmark','At landmark center'))),
               h('div',{className:'uf-scene-bottom','aria-hidden':'true'},h('span',null,Math.round(heading)+'° heading · '+Math.round((info.pitch||0)*180/Math.PI)+'° pitch'),h('span',null,'3D MODEL')),
               route && route.active && h('div',{className:'uf-route-progress','aria-hidden':'true'},
                 h('span',null,(running?label('approaching','APPROACHING'):label('approach_paused','APPROACH PAUSED'))+' · '+Math.floor(route.progress*100)+'%'),
@@ -613,6 +946,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               status.state!=='ready' && h('div',{className:'uf-loading',role:'status'},h('p',null,status.message),status.state==='error'&&button(label('retry','Retry 3D view'),function(){stop();setRetry(retry+1);})),
               button(running?label('pause','Pause travel'):label('fly','Start travel'),toggleTravel,{className:'uf-fs-play','aria-pressed':running,disabled:status.state!=='ready'}),
               button(showHud?label('hide_overlay','Hide overlay'):label('show_overlay','Show overlay'),function(){setShowHud(!showHud);},{className:'uf-overlay-toggle','aria-pressed':!showHud}),
+              button(label('inview_title','Flight controls'),function(){if(showInViewControls)closeInViewControls();else setShowInViewControls(true);},{id:'uf-flight-controls-toggle',className:'uf-flight-controls-toggle','aria-expanded':showInViewControls,'aria-controls':'uf-inview-controls',disabled:!ready}),
+              showJourney&&h(UniverseFlightJourneyCheckpoint,Object.assign({},journeyActions,{React:React,label:label,number:number,ready:ready,mode:mode,event:checkpoint})),
+              fullscreen&&showInViewControls&&h(UniverseFlightInViewControls,{
+                React:React,label:label,number:number,ready:ready,mode:mode,region:flightRegion,section:inViewSection,onSection:setInViewSection,travelSpeed:travelSpeed,speedLevel:speedLevel,smoothTravel:smoothTravel,motion:info.motion,beta:beta,timeScale:timeScale,compareRest:compareRest,running:running,route:route,orbit:!!(info.orbit&&info.orbit.active),orbitRate:orbitRate,orbitDirection:orbitDirection,fov:fov,exposure:exposure,quality:quality,
+                destinations:destinations,targetId:targetId,selected:selected,target:activeTarget,approach:approach,arrivalScale:arrivalScale,vistas:vistas[flightRegion],playbackTime:playbackTime,notice:notice,
+                views:views,viewName:viewName,viewNote:viewNote,onViewName:setViewName,onViewNote:setViewNote,onPause:stop,onSaveView:saveInView,onRestoreView:restoreInView,
+                checkpoint:checkpoint,journeyActions:journeyActions,onResetJourney:resetJourney,onScenicFlight:launchScenicFlight,
+                targetName:selected&&selected.name,coincident:activeTarget&&activeTarget.coincident,framing:info.framing,grid:compositionGrid,onGrid:function(){setCompositionGrid(!compositionGrid);},onFrame:frameSelected,onUndoFrame:undoFraming,onClose:closeInViewControls,
+                onMode:changeMode,onRegion:chooseRegion,onTarget:chooseTarget,onArrival:function(value){setArrivalScale(value);setNotice('');},onMatchPace:matchTravelPace,onCenter:function(){frameSelected(0.5);},onApproach:approachInView,onOrbit:orbitInView,onEndApproach:function(){if(endApproach())inspectScene();},onVista:vistaInView,onSaveImage:captureInView,onFov:setLens,onExposure:setExposure,onQuality:setQuality,onResetDisplay:resetDisplay,
+                onSpeed:setSpeedLevel,onSmooth:chooseSmoothTravel,onBeta:chooseBeta,onTime:setTimeScale,onCompare:function(){setCompareRest(!compareRest);},onOrbitRate:setOrbitRate,onReverseOrbit:function(){setOrbitDirection(-orbitDirection);},onTravel:toggleTravel}),
               button(fullscreen?label('exit_fullscreen','Exit full screen'):label('fullscreen','Full screen'),function(){
                 var element=stage.current;
                 if(document.fullscreenElement){if(document.exitFullscreen)document.exitFullscreen().catch(function(){});}
@@ -625,11 +968,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               button(label('reset','Reset position'),reset),
               button(label('save_image','Save image'),captureView,{disabled:!ready}),
               button(comparison[0]?label('capture_second','Capture second view'):label('capture_reference','Capture reference view'),function(){captureComparison(false);},{disabled:!ready}),
-              h('span',{role:'status'},notice || (running ? info.orbit&&info.orbit.active ? label('orbit_active','Orbiting with the destination centered. Pause any time; looking manually ends the orbit.') : info.navigation&&info.navigation.active ? label('guided_active','Guided approach. You can look around while traveling toward the destination.') : label('travelling','Traveling. Pause any time.') : label('paused','Paused. You can still look in every direction.')))),
+              h('span',{role:'status','aria-live':checkpoint&&notice===checkpoint.message?'off':'polite'},notice || (running ? info.orbit&&info.orbit.active ? label('orbit_active','Orbiting with the destination centered. Pause any time; looking manually ends the orbit.') : info.navigation&&info.navigation.active ? label('guided_active','Guided approach. You can look around while traveling toward the destination.') : label('travelling','Traveling. Pause any time.') : label('paused','Paused. You can still look in every direction.')))),
             h('div',{className:'uf-look',role:'group','aria-label':label('look','Look around without moving')},
               h('span',null,label('look_label','Look')),
               [['left','Left'],['forward','Forward'],['right','Right'],['back','Behind'],['up','Above'],['down','Below']].map(function(item){return button(label('look_'+item[0],item[1]),function(){view(item[0]);},{key:item[0]});})),
             h('p',{id:'uf-scene-description',className:'uf-hint'},label('controls','Drag the view or use the direction buttons. With the view focused: arrow keys look, Space starts or pauses, Escape pauses. Free exploration follows your gaze; the light chase travels on a fixed heading.')),
+            h(UniverseFlightCompositionControls,{React:React,label:label,ready:ready,targetName:selected&&selected.name,coincident:activeTarget&&activeTarget.coincident,framing:info.framing,grid:compositionGrid,onGrid:function(){setCompositionGrid(!compositionGrid);},onFrame:frameSelected,onUndo:undoFraming}),
             mode==='explore'&&h('details',{className:'uf-precision'},
               h('summary',null,label('precision_title','Precision camera · frame your view')),
               h('div',{className:'uf-precision-body'},
@@ -676,7 +1020,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 h('h4',null,selected.name),h('p',null,selected.description),
                 info.target && info.target.id===selected.id && h('dl',{className:'uf-target-readouts'},
                   h('div',null,h('dt',null,label('target_distance','Distance from camera')),h('dd',null,number(info.target.distanceLy)+' ly')),
-                  mode==='relativity'&&h(React.Fragment,null,
+                  targetGuide&&h('div',null,h('dt',null,label('target_from_view','From view center')),h('dd',null,Math.round(targetGuide.angleDeg)+'°')),
+                  mode==='relativity'&&!info.target.coincident&&h(React.Fragment,null,
                     h('div',null,h('dt',null,label('rest_angle','Direction in stationary-star frame')),h('dd',null,number(info.target.restAngleDeg)+'°')),
                     h('div',null,h('dt',null,label('apparent_angle','Apparent direction aboard')),h('dd',null,number(info.target.apparentAngleDeg)+'°')),
                     h('div',null,h('dt',null,label('target_shift','This star’s frequency multiplier')),h('dd',null,number(info.target.doppler)+'×')))),
@@ -696,23 +1041,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   route&&route.completed&&route.arrivalRadiusLy===approach.arrivalRadiusLy&&h('p',{className:'uf-arrival-message'},route.alreadyWithin?label('arrival_inside','Already within this viewing distance. The camera stays here; choose a closer survey point to continue inward.'):label('arrival_complete','Viewing point reached. Choose an orbit, inspect the view, or plan another trip.')),
                   h('p',{className:'uf-note'},label('plan_note','The estimate includes slowdown near arrival. Match pace aims for about 45 seconds of playback; scene speed limits still apply. Travel pauses when the view is off screen.'))),
                 h('div',{className:'uf-target-actions'},
-                  button(label('center_destination','Center on destination'),function(){if(scene.current)scene.current.focusTarget(targetId);},{disabled:!ready}),
+                  button(label('center_destination','Center on destination'),function(){if(scene.current)scene.current.focusTarget(targetId);},{disabled:!ready||!!(activeTarget&&activeTarget.coincident)}),
                   mode==='explore'&&button(label('fly_destination','Fly to destination'),startApproach,{className:'uf-primary',disabled:!ready}),
                   mode==='explore'&&button(info.orbit&&info.orbit.active?label('end_orbit','End orbit'):label('orbit_destination','Orbit destination'),function(){if(info.orbit&&info.orbit.active){if(scene.current)scene.current.endOrbit();}else startOrbit();},{disabled:!ready,'aria-pressed':!!(info.orbit&&info.orbit.active)}),
-                  info.navigation && info.navigation.active && button(label('end_approach','End guided approach'),function(){stop();if(scene.current)scene.current.cancelNavigation();setNotice(label('free_again','Guided approach ended. Free exploration follows where you look.'));})),
+                  info.navigation && info.navigation.active && button(label('end_approach','End guided approach'),endApproach)),
                 mode==='explore'&&h('div',{className:'uf-orbit-controls'},
                   h('label',{htmlFor:'uf-orbit-rate'},label('orbit_rate','Orbit pace')+' · '+orbitRate+'°/s'),
                   h('input',{id:'uf-orbit-rate',type:'range',min:0.25,max:12,step:0.25,value:orbitRate,'aria-valuetext':orbitRate+' degrees per playback second',onChange:function(e){setOrbitRate(Number(e.target.value));}}),
                   button(label('reverse_orbit','Reverse orbit direction'),function(){setOrbitDirection(-orbitDirection);},{'aria-pressed':orbitDirection===-1}),
                   h('p',{className:'uf-note'},label('orbit_note','Orbit circles the destination at a fixed distance and height, keeping it centered. It uses this pace instead of travel speed. This is a camera move, not a gravitational orbit. Dragging or using Look ends the orbit and pauses.'))),
-                h('p',{className:'uf-note'},mode==='explore'?label('arrival_note','The approach uses your camera speed, slows near the destination, and stops at a viewing distance. Looking around does not steer a guided approach.'):label('target_note','Angles are measured from the fixed travel direction. The numerical readout uses the traveler’s selected speed even when the unshifted comparison is displayed.'))
+                activeTarget&&activeTarget.coincident&&h('p',{className:'uf-note'},label('coincident_target','You are at this landmark’s center. Move away to give it a viewing direction.')),
+                h('p',{className:'uf-note'},mode==='explore'?label('arrival_note','The approach uses your camera speed, slows near the destination, and stops at a viewing distance. Looking around does not steer a guided approach.'):label('target_note','The guide follows the displayed sky. Frame angles are measured from the fixed travel direction; their numerical readouts use the traveler’s selected speed even in the unshifted comparison.'))
               ) : h('p',{className:'uf-note'},label('pick_place','Choose a landmark to locate it, inspect its distance, and center your view.')))
           ),
           h('aside',{className:'uf-controls','aria-label':label('settings','Flight settings')},
             h('p',{className:'uf-eyebrow'},label('navigation','NAVIGATION')),
             mode==='explore' ? h(React.Fragment,null,
               h('label',{htmlFor:'uf-region'},label('scale','Explore a scale')),
-              h('select',{id:'uf-region',value:region,onChange:function(e){stop();setNotice('');setTargetId('');setRegion(e.target.value);}},
+              h('select',{id:'uf-region',value:region,onChange:function(e){chooseRegion(e.target.value);}},
                 h('option',{value:'neighborhood'},label('neighborhood','Stellar neighborhood')),
                 h('option',{value:'galaxy'},label('galaxy','Spiral galaxy')),
                 h('option',{value:'cosmic'},label('cosmic','Galaxy groups'))),
@@ -720,6 +1066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               h('output',{htmlFor:'uf-speed',className:'uf-value'},number(travelSpeed),h('small',null,label('speed_unit',' light-years / playback second'))),
               h('input',{id:'uf-speed',type:'range',min:0,max:100,step:1,value:speedLevel,'aria-valuetext':number(travelSpeed)+' light-years per playback second',onChange:function(e){setSpeedLevel(Number(e.target.value));}}),
               h('div',{className:'uf-scale-ends'},h('span',null,label('slow','Slow survey')),h('span',null,label('fast','Fast traversal'))),
+              h(UniverseFlightMotionControls,{React:React,label:label,number:number,ready:ready,running:running,smoothTravel:smoothTravel,motion:info.motion,onToggle:chooseSmoothTravel}),
               h('p',{className:'uf-note'},label('no_relativity','This speed moves the camera through the model. It does not represent a spacecraft’s velocity, so there is no relativistic distortion.'))
             ):h(React.Fragment,null,
               h('label',{htmlFor:'uf-beta'},label('velocity','Traveler speed')),
@@ -750,7 +1097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               h('label',{htmlFor:'uf-quality'},label('quality','Rendering quality')),
               h('select',{id:'uf-quality',value:quality,onChange:function(e){setQuality(e.target.value);}},h('option',{value:'auto'},label('quality_auto','Balanced')),h('option',{value:'low'},label('quality_low','Lower resolution')),h('option',{value:'high'},label('quality_high','Sharper view'))),
               h('p',{className:'uf-note'},label('camera_settings_note','Zoom and exposure change the display, not the travel speed or physics. Lower resolution can help on slower devices.')),
-              button(label('reset_camera','Reset view settings'),function(){setFov(65);setExposure(1);setQuality('auto');}))
+              button(label('reset_camera','Reset view settings'),resetDisplay))
           )
         ),
         comparison[0]&&h(UniverseFlightComparison,{React:React,pair:comparison,label:label,number:number,ready:ready,onRestore:function(item){restoreView(item);backToScene();},onCapture:captureComparison,onClear:function(){setComparison([null,null]);backToScene();},onBack:backToScene}),
@@ -773,9 +1120,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           lightClock&&h(UniverseFlightLightClock,{React:React,clock:lightClock})),
         h('details',{id:'uf-field-notes',className:'uf-field-notes'},h('summary',null,label('field_notes','Saved views and field notes'),' · ',views.length,' / 12'),
           h('p',null,label('field_notes_help','Save a position and its display settings with a short observation. Return to it later to compare what changes. Travel speed and playback time scale keep their current settings. Saved views travel with this tool’s learning data.')),
-          h('div',{className:'uf-note-form'},
-            h('div',null,h('label',{htmlFor:'uf-view-name'},label('view_name','View name (optional)')),h('input',{id:'uf-view-name',type:'text',maxLength:80,value:viewName,placeholder:label('name_placeholder','For example: Looking back at 90% c'),onChange:function(e){setViewName(e.target.value);}})),
-            h('div',null,h('label',{htmlFor:'uf-view-note'},label('view_note','What do you notice? (optional)')),h('textarea',{id:'uf-view-note',rows:2,maxLength:1200,value:viewNote,onChange:function(e){setViewNote(e.target.value);}}))),
+          h('p',{id:'uf-view-draft-help',className:'uf-note'},label('view_draft_help','Writing pauses travel. Save this position and its display settings with your observations.')),
+          h(UniverseFlightViewDraft,{React:React,label:label,ready:ready,name:viewName,note:viewNote,onName:setViewName,onNote:setViewNote,onPause:stop}),
           h('div',{className:'uf-target-actions'},button(label('save_view','Save current view'),saveView,{className:'uf-primary',disabled:!ready||views.length>=12}),button(label('download_notes','Download field notes'),downloadNotes,{disabled:!views.length})),
           views.length>=12&&h('p',{className:'uf-note'},label('views_full','Twelve views are saved. Remove a view to make room for another.')),
           h('div',{className:'uf-saved-views'},views.map(function(saved){return h(UniverseFlightSavedView,{key:saved.id,React:React,saved:saved,label:label,number:number,ready:ready,onRestore:restoreView,onUpdate:props.onUpdateView,onDelete:props.onDeleteView});}))),
@@ -792,6 +1138,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   }
 
   var UNIVERSE_FLIGHT_CSS = `
+  [data-universe-tool] .uf-composition-controls{margin:16px;padding:16px;border:1px solid #486a7c;border-radius:12px;background:linear-gradient(125deg,#112b3b,#112034);}
+  [data-universe-tool] .uf-composition-controls h3,[data-universe-tool] .uf-composition-controls h4{margin:0 0 12px;font-size:14px;color:#d8f5ed;}
+  [data-universe-tool] .uf-composition-controls button{font-size:11px;min-width:0;}
+  [data-universe-tool] .uf-composition-toggle{width:100%;}
+  [data-universe-tool] .uf-frame-placements{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0;}
+  [data-universe-tool] .uf-frame-placements button{padding:9px 6px;}
+  [data-universe-tool] .uf-frame-undo{width:100%;}
+  [data-universe-tool] .uf-composition-controls p.uf-note{font-size:11px;color:#c0d8e5;line-height:1.7;margin:12px 0 0;}
+  [data-universe-tool] .uf-inview-controls .uf-composition-controls{margin:16px 0;padding:12px;}
+  [data-universe-tool] .uf-composition-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.65;}
+  [data-universe-tool] .uf-composition-grid line{stroke:#c1dce2;stroke-width:.8;vector-effect:non-scaling-stroke;}
+  [data-universe-tool] .uf-clean-view .uf-composition-grid{display:none;}
+  [data-universe-tool] .uf-stage button.uf-flight-controls-toggle{display:none;position:absolute;bottom:94px;right:12px;background:#102d40f5;z-index:4;}
+  [data-universe-tool] .uf-stage:fullscreen button.uf-flight-controls-toggle{display:block;}
+  [data-universe-tool] .uf-inview-controls{position:absolute;bottom:150px;right:12px;width:min(320px,calc(100% - 24px));max-height:calc(100% - 210px);display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:16px;border:1px solid #7495a8;border-radius:12px;background:#0e2335;box-shadow:0 8px 30px #0009;z-index:4;}
+  [data-universe-tool] .uf-inview-heading{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:10px;min-height:44px;}
+  [data-universe-tool] .uf-inview-heading h3{margin:0;min-width:0;font-size:16px;color:#ddf7ee;}
+  [data-universe-tool] .uf-inview-heading button{flex:0 0 44px;min-width:44px;min-height:44px;font-size:24px;padding:4px;line-height:1;}
+  [data-universe-tool] .uf-inview-tabs{display:grid;flex-shrink:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  [data-universe-tool] .uf-inview-tabs button{min-width:0;min-height:44px;padding:7px 4px;font-size:12px;}
+  [data-universe-tool] .uf-inview-tabs button[aria-selected=true]{background:#1a4249;border-color:#a2e5d7;color:#ecfff9;}
+  [data-universe-tool] .uf-inview-body{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:2px;}
+  [data-universe-tool] .uf-inview-panel[hidden]{display:none;}
+  [data-universe-tool] .uf-inview-panel:focus-visible{outline:2px solid #b4eeda;outline-offset:-2px;}
+  [data-universe-tool] .uf-inview-display{padding:12px;border:1px solid #486d83;border-radius:10px;background:#102b3b;}
+  [data-universe-tool] .uf-inview-display h4{margin:0;color:#d5f7eb;font-size:14px;}
+  [data-universe-tool] .uf-inview-display>button{width:100%;margin-top:12px;}
+  [data-universe-tool] .uf-inview-field-notes,[data-universe-tool] .uf-inview-saved-views{margin-top:16px;padding:12px;border:1px solid #486d83;border-radius:10px;background:#102b3b;}
+  [data-universe-tool] .uf-inview-field-notes h4{margin:0;color:#d5f7eb;font-size:14px;}
+  [data-universe-tool] .uf-inview-field-notes .uf-note-form{grid-template-columns:minmax(0,1fr);gap:8px;margin:0;}
+  [data-universe-tool] .uf-inview-field-notes>button{width:100%;margin-top:12px;}
+  [data-universe-tool] .uf-journey-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  [data-universe-tool] .uf-journey-card .uf-inview-heading h3{line-height:1.3;overflow-wrap:anywhere;}
+  [data-universe-tool] .uf-journey-inline{margin-top:16px;padding:12px;border:1px solid #739891;border-radius:10px;background:#14333c;}
+  [data-universe-tool] .uf-journey-inline h4{margin:0;color:#e0fbef;font-size:14px;line-height:1.4;}
+  [data-universe-tool] .uf-journey-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:12px 0;}
+  [data-universe-tool] .uf-journey-actions>button{width:100%;margin:0;min-height:44px;}
+  [data-universe-tool] .uf-journey-distance{font-variant-numeric:tabular-nums;}
+  [data-universe-tool] .uf-inview-reset{margin-top:16px;padding-top:16px;border-top:1px solid #486d83;}
+  [data-universe-tool] .uf-inview-reset>button{width:100%;}
+  [data-universe-tool] .uf-journey-open .uf-lens-controls,[data-universe-tool] .uf-journey-open .uf-target-bearing,[data-universe-tool] .uf-journey-open .uf-at-landmark,[data-universe-tool] .uf-journey-open .uf-route-progress{display:none;}
+  [data-universe-tool] .uf-stage.uf-journey-open button.uf-target-finder,[data-universe-tool] .uf-stage.uf-journey-open button.uf-target-marker{display:none;}
+  [data-universe-tool] .uf-inview-controls label{display:block;color:#d3e7f3;font-size:12px;font-weight:650;margin:16px 0 8px;}
+  [data-universe-tool] .uf-inview-value{display:block;color:#efffff;font-size:24px;line-height:1.4;font-variant-numeric:tabular-nums;}
+  [data-universe-tool] .uf-inview-value small{display:block;font-size:11px;color:#c0d7e5;}
+  [data-universe-tool] .uf-inview-controls input[type=range]{display:block;width:100%;min-width:0;height:44px;margin:8px 0 0;accent-color:#ade9db;}
+  [data-universe-tool] .uf-inview-controls select{width:100%;min-height:44px;min-width:0;background:#15334a;color:#e9f7ff;border:1px solid #8199ab;border-radius:7px;padding:8px;font:inherit;font-size:12px;}
+  [data-universe-tool] .uf-inview-destinations{margin:0;padding:12px;border:1px solid #486d83;border-radius:10px;background:#102b3b;}
+  [data-universe-tool] .uf-inview-destinations h4{margin:0;color:#d5f7eb;font-size:14px;}
+  [data-universe-tool] .uf-inview-target-readouts{margin:12px 0;font-size:11px;}
+  [data-universe-tool] .uf-inview-target-readouts>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #39566d;}
+  [data-universe-tool] .uf-inview-target-readouts dt{color:#c0d8e5;min-width:0;}
+  [data-universe-tool] .uf-inview-target-readouts dd{margin:0;text-align:right;color:#e1faf1;font-variant-numeric:tabular-nums;}
+  [data-universe-tool] .uf-inview-destination-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:12px 0;}
+  [data-universe-tool] .uf-inview-controls .uf-inview-destination-actions>button{margin:0;}
+  [data-universe-tool] .uf-inview-destinations .uf-inview-plan{font-variant-numeric:tabular-nums;color:#d5f0e9;}
+  [data-universe-tool] .uf-inview-controls .uf-inview-notice{padding:12px;border:1px solid #628789;border-radius:8px;background:#16373c;color:#d4f5ea;overflow-wrap:anywhere;}
+  [data-universe-tool] .uf-inview-presets{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+  [data-universe-tool] .uf-inview-presets button{flex:1;padding:8px 6px;font-size:10px;}
+  [data-universe-tool] .uf-motion-controls{margin:16px 0;padding:12px;border:1px solid #466576;border-radius:10px;background:#10293a;}
+  [data-universe-tool] .uf-motion-controls button.uf-motion-toggle{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;padding:9px 10px;font-size:11px;text-align:left;}
+  [data-universe-tool] .uf-motion-toggle>span{font-size:10px;font-weight:750;letter-spacing:.06em;}
+  [data-universe-tool] .uf-motion-readout{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:5px 8px;margin-top:12px;font-variant-numeric:tabular-nums;}
+  [data-universe-tool] .uf-motion-readout>span{font-size:11px;color:#c1d7e5;}
+  [data-universe-tool] .uf-motion-readout strong{font-size:14px;color:#eafff8;overflow-wrap:anywhere;}
+  [data-universe-tool] .uf-motion-readout small{grid-column:1/-1;font-size:11px;color:#b1eddf;}
+  [data-universe-tool] .uf-motion-track{height:4px;margin:10px 0;background:#365268;border-radius:4px;overflow:hidden;}
+  [data-universe-tool] .uf-motion-track i{display:block;height:100%;background:#a6efdf;}
+  [data-universe-tool] .uf-motion-controls p.uf-note{font-size:11px;color:#c0d7e5;line-height:1.7;margin:10px 0 0;}
+  [data-universe-tool] .uf-inview-controls p{font-size:11px;color:#c3d8e7;line-height:1.7;margin:12px 0;}
+  [data-universe-tool] .uf-inview-body>button,[data-universe-tool] .uf-inview-save{width:100%;margin-top:12px;}
+  [data-universe-tool] .uf-inview-orbit{border-top:1px solid #45667b;margin-top:14px;}
+  [data-universe-tool] .uf-flight-controls-open .uf-route-progress,[data-universe-tool] .uf-stage.uf-flight-controls-open button.uf-target-finder,[data-universe-tool] .uf-flight-controls-open .uf-target-bearing,[data-universe-tool] .uf-flight-controls-open .uf-at-landmark{display:none;}
+  [data-universe-tool] .uf-flight-controls-open .uf-lens-controls{display:none;}
   [data-universe-tool] .uf-comparison-layout{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
   [data-universe-tool] .uf-sweep{margin-top:18px;}
   [data-universe-tool] .uf-sweep-images{position:relative;overflow:hidden;border:1px solid #688999;border-radius:12px;background:#02060b;touch-action:none;cursor:ew-resize;}
@@ -874,9 +1294,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-chart-key{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;font-size:10px;color:#bed5e7;margin:12px 0;}
   [data-universe-tool] .uf-chart-key b{color:#edce96;}
   [data-universe-tool] .uf-chart-caption{font-size:10px;color:#9eb9d0;line-height:1.6;}
-  [data-universe-tool] .uf-stage button.uf-target-finder{position:absolute;top:128px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);background:#152c40ed;color:#f5dcaa;border-color:#93794f;font-size:11px;}
+  [data-universe-tool] .uf-stage button.uf-target-finder{position:absolute;top:128px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 12px;background:#152c40ed;color:#f5dcaa;border-color:#93794f;font-size:11px;line-height:1.4;box-shadow:0 4px 20px #0006;}
+  [data-universe-tool] .uf-finder-name{font-weight:650;}
+  [data-universe-tool] #uf-target-guide{display:flex;flex-direction:column;gap:3px;}
+  [data-universe-tool] .uf-finder-direction{color:#fff2d5;font-size:12px;}
+  [data-universe-tool] .uf-finder-angle{color:#cbdce9;font-size:10px;font-variant-numeric:tabular-nums;}
+  [data-universe-tool] .uf-target-bearing{position:absolute;transform:translate(-50%,-50%);width:36px;height:36px;display:grid;place-items:center;pointer-events:none;border:1px solid #93794f;border-radius:50%;color:#ffe3af;background:#152c40ed;box-shadow:0 0 18px #edc47a30;}
+  [data-universe-tool] .uf-target-bearing svg{width:24px;height:24px;}
+  [data-universe-tool] .uf-at-landmark{position:absolute;top:128px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);display:flex;flex-direction:column;gap:4px;align-items:center;padding:9px 12px;border:1px solid #547e7d;border-radius:8px;color:#c9fff2;background:#07141de8;font-size:11px;text-align:center;}
+  [data-universe-tool] .uf-clean-view .uf-target-bearing,[data-universe-tool] .uf-clean-view .uf-at-landmark{display:none;}
   [data-universe-tool] .uf-clean-view .uf-target-finder{display:none;}
   [data-universe-tool] .uf-stage.uf-clean-view button.uf-target-marker,[data-universe-tool] .uf-stage.uf-clean-view button.uf-target-finder{display:none;}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen{--uf-bearing-top:114px;}[data-universe-tool] .uf-stage:fullscreen .uf-lens-controls{top:16px;}[data-universe-tool] .uf-stage:fullscreen .uf-inview-controls{bottom:144px;max-height:calc(100% - 156px);padding:8px;}[data-universe-tool] .uf-stage:fullscreen .uf-inview-tabs button{min-height:36px;font-size:11px;}[data-universe-tool] .uf-stage:fullscreen .uf-inview-body{padding:0;}[data-universe-tool] .uf-stage:fullscreen .uf-scene-top .uf-chip:nth-child(2){display:none;}[data-universe-tool] .uf-stage:fullscreen button.uf-target-finder,[data-universe-tool] .uf-stage:fullscreen .uf-at-landmark{top:16px;}[data-universe-tool] .uf-stage:fullscreen .uf-route-progress{width:96px;padding:8px;bottom:190px;}[data-universe-tool] .uf-stage:fullscreen .uf-route-progress small{display:none;}}
+  @media(max-height:480px) and (min-width:520px){
+    [data-universe-tool] .uf-stage:fullscreen .uf-inview-controls{display:grid;grid-template-columns:minmax(0,1fr) 44px;grid-template-rows:44px minmax(0,1fr);height:calc(100% - 156px);}
+    [data-universe-tool] .uf-stage:fullscreen .uf-inview-heading{grid-column:2;grid-row:1;gap:0;}
+    [data-universe-tool] .uf-stage:fullscreen .uf-inview-heading h3{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+    [data-universe-tool] .uf-stage:fullscreen .uf-inview-tabs{grid-column:1;grid-row:1;}
+    [data-universe-tool] .uf-stage:fullscreen .uf-inview-body{grid-column:1 / -1;grid-row:2;}
+    [data-universe-tool] .uf-stage:fullscreen .uf-journey-card{display:flex;}
+    [data-universe-tool] .uf-stage:fullscreen .uf-journey-card .uf-inview-heading{gap:10px;}
+    [data-universe-tool] .uf-stage:fullscreen .uf-journey-card .uf-inview-heading h3{position:static;width:auto;height:auto;margin:0;padding:0;overflow:visible;clip:auto;white-space:normal;}
+  }
   [data-universe-tool] .uf-orbit-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid #30465e;}
   [data-universe-tool] .uf-orbit-controls label,[data-universe-tool] .uf-orbit-controls p{grid-column:1/-1;}
   [data-universe-tool] .uf-orbit-controls input{width:100%;min-width:0;accent-color:#a6efdf;}
@@ -905,6 +1344,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uni-flight :focus-visible{outline:3px solid #b9f6e8;outline-offset:3px;}
   [data-universe-tool] .uf-modes{padding:12px 20px;border-top:1px solid #3d536c;display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
   [data-universe-tool] .uf-mode-note{font-size:11px;color:#b2c4d9;margin-inline-start:auto;}
+  [data-universe-tool] .uf-scenic-flights{padding:14px 20px 18px;border-top:1px solid #3d536c;background:linear-gradient(115deg,#112b3d,#0c192c);}
+  [data-universe-tool] .uf-scenic-intro h3,[data-universe-tool] .uf-scenic-intro h4{margin:0 0 5px;font-size:15px;color:#edf8ff;}
+  [data-universe-tool] .uf-scenic-intro p{margin:0 0 12px;font-size:11px;line-height:1.6;color:#b9cde1;max-width:750px;}
+  [data-universe-tool] .uf-scenic-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  [data-universe-tool] .uf-scenic-options button{text-align:start;display:flex;flex-direction:column;gap:4px;min-width:0;}
+  [data-universe-tool] .uf-scenic-options strong{font-size:12px;}
+  [data-universe-tool] .uf-scenic-options small{font-size:10px;font-weight:400;line-height:1.5;color:#c0d3e7;}
+  [data-universe-tool] .uf-scenic-options .uf-primary small{color:#204b50;}
+  [data-universe-tool] .uf-scenic-compact{padding:12px 0;background:none;border-bottom:1px solid #3d536c;margin-bottom:10px;}
+  [data-universe-tool] .uf-scenic-compact .uf-scenic-options{grid-template-columns:1fr;}
+  @media(max-width:600px){[data-universe-tool] .uf-scenic-flights{padding:12px;}[data-universe-tool] .uf-scenic-options{grid-template-columns:1fr;}[data-universe-tool] .uf-scenic-compact{padding:12px 0;}}
   [data-universe-tool] .uf-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;border-top:1px solid #3d536c;}
   [data-universe-tool] .uf-view-column{min-width:0;}
   [data-universe-tool] .uf-stage{position:relative;height:clamp(340px,55vh,650px);background:#01040a;overflow:hidden;}
@@ -992,8 +1442,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-field-notes summary{min-height:52px;padding:16px 0;color:#c8e9ef;font-size:13px;font-weight:650;cursor:pointer;}
   [data-universe-tool] .uf-field-notes>p{font-size:12px;color:#c1d3e6;}
   [data-universe-tool] .uf-note-form{display:grid;grid-template-columns:1fr 1.5fr;gap:16px;margin-top:14px;}
+  [data-universe-tool] .uf-note-form>div{min-width:0;}
   [data-universe-tool] .uf-note-form label{display:block;font-size:12px;font-weight:650;color:#d2e4f5;margin-bottom:7px;}
-  [data-universe-tool] .uf-note-form input,[data-universe-tool] .uf-note-form textarea{width:100%;border:1px solid #7d91aa;border-radius:7px;padding:10px 12px;background:#14293e;color:#f2f9ff;font:inherit;font-size:13px;min-height:44px;}
+  [data-universe-tool] .uf-note-form input,[data-universe-tool] .uf-note-form textarea{width:100%;min-width:0;max-width:100%;border:1px solid #7d91aa;border-radius:7px;padding:10px 12px;background:#14293e;color:#f2f9ff;font:inherit;font-size:13px;min-height:44px;line-height:1.6;}
   [data-universe-tool] .uf-note-form textarea{resize:vertical;}
   [data-universe-tool] .uf-note-form input::placeholder{color:#acbfd4;}
   [data-universe-tool] .uf-saved-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px 0;}

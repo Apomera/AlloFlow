@@ -1,0 +1,39 @@
+{
+  "baseline": "16e3ea214bea20953b79b0e86e41f6d0beef9deb",
+  "checkedAt": "2026-09-27T05:02:47.916Z",
+  "sharedInputCount": 14,
+  "sharedDrift": [],
+  "catalogGuard": {
+    "batches": [
+      "navigation",
+      "contract",
+      "recovery",
+      "terms",
+      "followup"
+    ],
+    "keys": 223,
+    "locales": 5,
+    "changedFiles": 0,
+    "mode": "check"
+  },
+  "patches": [
+    {
+      "file": "navigation.patch",
+      "sha256": "33d8318bace392bedda9b9ba2a43e6318852bfe51ad1f6b055225fc4fef1d1a1",
+      "strictApplyCheck": "passed"
+    },
+    {
+      "file": "layout.patch",
+      "sha256": "67ce47f0aca49e129bf9b990a2bc823dbca18b561cb65c8b5dadf3e0bc2ee62e",
+      "strictApplyCheck": "passed"
+    }
+  ],
+  "unit": {
+    "passed": 87,
+    "failed": 0
+  },
+  "browser": {
+    "passed": 12,
+    "failed": 0
+  }
+}

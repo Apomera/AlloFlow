@@ -1,0 +1,48 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0143171806167401,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "form": null,
+    "sliders": [
+      {
+        "name": "Temperature",
+        "value": 50,
+        "valueText": "Warm"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "form": null,
+    "sliders": [
+      {
+        "name": "Temperature",
+        "value": 50,
+        "valueText": "Warm"
+      }
+    ]
+  },
+  "candidate": {
+    "form": null,
+    "sliders": [
+      {
+        "name": "Temperature",
+        "value": 50,
+        "valueText": "Warm"
+      }
+    ]
+  }
+}

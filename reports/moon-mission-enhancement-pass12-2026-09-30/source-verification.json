@@ -1,0 +1,7 @@
+{
+  "baselineWorkingSha256": "31163a7c118d2f4c6df0c173c3e428ff4fad1b3f3a48582723b5057508b9b0f4",
+  "baselineCommittedSha256": "9769ac80fc9d7208439a5be7be7d40c14636f68816971aa4d867db81312c3432",
+  "workingSha256": "84225200f25589a6d7f4394e8f84b77fe70bfb87c6527d2a8e05d523d2491aed",
+  "candidateSha256": "e391b576f9352351f7ad2b0a47dfd2e8895c22a9048e8fa7e114d293b44e8bd1",
+  "excludedMoonwalkHunks": 34
+}

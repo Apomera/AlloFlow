@@ -1,0 +1,113 @@
+Index: dictionary_loader.js
+===================================================================
+--- dictionary_loader.js
++++ dictionary_loader.js
+@@ -56,6 +56,8 @@
+   function normalizeEntry(rows, word) {
+     if (!Array.isArray(rows) || !rows.length) return null;
+     var phonetic = '', audio = '', sourceUrl = '';
++    var pronunciations = [];
++    var addPronunciation = function (list, value) { if ((value.phonetic || value.audio) && !list.some(p => p.phonetic === value.phonetic && p.audio === value.audio)) list.push(value); };
+     var meanings = [];
+     var synSet = {};
+     rows.forEach(function (row) {
+@@ -65,23 +67,29 @@
+           return false;
+         });
+       }
+-      if (!phonetic && row.phonetic) phonetic = row.phonetic;
+-      (row.phonetics || []).forEach(function (p) {
+-        if (!phonetic && p && p.text) phonetic = p.text;
+-        if (!audio && p && p.audio) audio = p.audio;
++      var rowPronunciations = [];
++      (Array.isArray(row.phonetics) ? row.phonetics : []).forEach(function (p) {
++        if (!p || typeof p !== 'object') return;
++        addPronunciation(rowPronunciations, { phonetic: typeof p.text === 'string' ? p.text.trim() : '', audio: typeof p.audio === 'string' ? p.audio.trim() : '' });
+       });
++      if (typeof row.phonetic === 'string' && row.phonetic.trim() && !rowPronunciations.some(p => p.phonetic === row.phonetic.trim())) {
++        addPronunciation(rowPronunciations, { phonetic: row.phonetic.trim(), audio: '' });
++      }
++      rowPronunciations.forEach(p => addPronunciation(pronunciations, p));
+       (row.meanings || []).forEach(function (m) {
+         var defs = (m.definitions || []).slice(0, 3).map(function (d) {
+           return { definition: String(d.definition || '').trim(), example: (d.example ? String(d.example).trim() : '') };
+         }).filter(function (d) { return d.definition; });
+         (m.synonyms || []).forEach(function (s) { if (s) synSet[String(s).toLowerCase()] = 1; });
+         (m.definitions || []).forEach(function (d) { (d.synonyms || []).forEach(function (s) { if (s) synSet[String(s).toLowerCase()] = 1; }); });
+-        if (defs.length) meanings.push({ partOfSpeech: String(m.partOfSpeech || '').trim(), definitions: defs });
++        if (defs.length) meanings.push({ partOfSpeech: String(m.partOfSpeech || '').trim(), definitions: defs, pronunciations: rowPronunciations });
+       });
+     });
+     if (!meanings.length) return null;
++    var primary = pronunciations.find(p => p.phonetic && p.audio) || pronunciations[0] || {};
++    phonetic = primary.phonetic || ''; audio = primary.audio || '';
+     return {
+-      word: word, phonetic: phonetic, audio: audio, meanings: meanings.slice(0, 4),
++      word: word, phonetic: phonetic, audio: audio, pronunciations: pronunciations.slice(0, 12), meanings: meanings.slice(0, 4),
+       synonyms: Object.keys(synSet).slice(0, 8),
+       source: 'Wiktionary (via dictionaryapi.dev)',
+       sourceUrl: sourceUrl || ('https://en.wiktionary.org/wiki/' + encodeURIComponent(word))
+@@ -127,6 +135,25 @@
+     return bestScore > 0 ? best : null;
+   }
+ 
++  // A conservative suggestion, not a claim of semantic certainty. Ignore the
++  // queried word itself and decline ties instead of silently choosing by order.
++  function matchPassageSense(entry, contextText) {
++    var excluded = _tokens(entry?.word || '');
++    var context = _tokens(contextText).filter(token => !excluded.includes(token));
++    var senses = [];
++    (entry?.meanings || []).forEach(function (meaning, mi) {
++      (meaning.definitions || []).forEach(function (definition, di) {
++        if (typeof definition.definition !== 'string' || !definition.definition.trim()) return;
++        var tokens = _tokens(definition.definition).filter(token => !excluded.includes(token));
++        senses.push({ partOfSpeech: meaning.partOfSpeech || '', definition: definition.definition, example: definition.example || '', meaningIndex: mi, definitionIndex: di,
++          score: tokens.filter(token => context.includes(token)).length });
++      });
++    });
++    if (senses.length === 1) return senses[0];
++    senses.sort((a, b) => b.score - a.score);
++    return senses[0]?.score > 0 && senses[0].score > (senses[1]?.score || 0) ? senses[0] : null;
++  }
++
+   window.AlloDictionary = {
+     /** True if we have a cached (offline) entry for this word. */
+     hasOffline: function (word) { return readCache(normalizeWord(word)) !== undefined; },
+@@ -138,25 +165,32 @@
+     getCached: function (word) { return readCache(normalizeWord(word)); },
+     /** Sense-align an entry to a context definition (see pickSense above). */
+     pickSense: pickSense,
++    matchPassageSense: matchPassageSense,
+     /**
+      * Look up an authoritative dictionary entry. Resolves to the normalized
+      * entry, or NULL when not found / offline-uncached / any failure.
+      */
+-    lookup: function (word) {
++    lookup: function (word, options) {
++      options = options || {};
++      if (options.signal?.aborted) return Promise.resolve(null);
+       var w = normalizeWord(word);
+       if (!w || /\s/.test(w)) return Promise.resolve(null); // single words only
+       var cached = readCache(w);
+-      if (cached !== undefined) return Promise.resolve(cached); // hit (entry or cached-null)
++      if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return Promise.resolve(cached);
+       if (typeof fetch !== 'function') return Promise.resolve(null);
+-      return fetch(API + encodeURIComponent(w)).then(function (r) {
++      return Promise.resolve().then(function () {
++        if (options.signal?.aborted) return null;
++        return fetch(API + encodeURIComponent(w), { signal: options.signal });
++      }).then(function (r) {
++        if (!r || options.signal?.aborted) return null;
+         if (r.status === 404) { writeCache(w, null); return null; } // cache "not found" so we don't refetch
+         if (!r.ok) return null;
+         return r.json();
+       }).then(function (rows) {
+-        if (rows == null) return null;
++        if (rows == null || options.signal?.aborted) return null;
+         var entry = normalizeEntry(rows, w);
+         if (entry) writeCache(w, entry);
+-        else writeCache(w, null);
++        // Only a real 404 is a cached miss; malformed responses remain retryable.
+         return entry;
+       }).catch(function () { return null; });
+     },

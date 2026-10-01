@@ -1,0 +1,107 @@
+read_aloud_audio_service_source.jsx
+SHA256 1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7
+
+1063:     function reconcileSuppliedSentences(canonical, supplied, context, occurrence) {
+1064:         if (!Array.isArray(supplied)) return canonical;
+1065:         const availableByText = new Map();
+1066:         const availableByLocator = new Map();
+1067:         const claimed = new Set();
+1068:         const locatorKey = (descriptor) => descriptor && descriptor.segmentId
+1069:             ? String(descriptor.scopeId || 'main') + '\u0000' + String(descriptor.segmentId)
+1070:             : '';
+1071:         canonical.forEach((descriptor) => {
+1072:             if (!availableByText.has(descriptor.spokenText)) availableByText.set(descriptor.spokenText, []);
+1073:             availableByText.get(descriptor.spokenText).push(descriptor);
+1074:             const key = locatorKey(descriptor);
+1075:             if (key) {
+1076:                 if (!availableByLocator.has(key)) availableByLocator.set(key, []);
+1077:                 availableByLocator.get(key).push(descriptor);
+1078:             }
+1079:         });
+1080:         const mergeSupplied = (descriptor, suppliedDescriptor, index) => {
+1081:             claimed.add(descriptor);
+1082:             return Object.assign({}, descriptor, {
+1083:                 suppliedIndex: index,
+1084:                 occurrence: suppliedDescriptor.occurrence != null ? suppliedDescriptor.occurrence : descriptor.occurrence,
+1085:                 identity: suppliedDescriptor.identity != null ? suppliedDescriptor.identity : descriptor.identity,
+1086:                 synthesisProfile: suppliedDescriptor.synthesisProfile || descriptor.synthesisProfile,
+1087:             });
+1088:         };
+1089:         // A single-sentence request may target the caller's Nth occurrence of
+1090:         // a duplicated sentence. Without it, the first canonical twin absorbed
+1091:         // every duplicate's resolve/capture and the saved counter stayed short.
+1092:         const useOccurrence = supplied.length === 1 && Number.isInteger(occurrence) && occurrence >= 0;
+1093:         return supplied.map((value, index) => {
+1094:             const suppliedDescriptor = segmentDescriptor(value, index, context);
+1095:             const spokenText = suppliedDescriptor && suppliedDescriptor.spokenText;
+1096:             if (!spokenText) return null;
+1097: 
+1098:             // Explicit semantic identity wins over text. Glossaries may contain
+1099:             // duplicate terms and translations, so first-text-match is unsafe.
+1100:             const explicitKey = locatorKey(suppliedDescriptor);
+1101:             if (explicitKey) {
+1102:                 const exact = (availableByLocator.get(explicitKey) || [])
+1103:                     .find((descriptor) => !claimed.has(descriptor));
+1104:                 if (exact) {
+1105:                     if (typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.supports(context.resourceType) && exact.spokenText !== spokenText) return null;
+1106:                     return mergeSupplied(exact, suppliedDescriptor, index);
+1107:                 }
+1108:             }
+1109: 
+1110:             const matches = availableByText.get(spokenText);
+1111:             if (matches && matches.length) {
+1112:                 const explicitOccurrence = suppliedDescriptor && Number.isInteger(suppliedDescriptor.occurrence)
+1113:                     ? suppliedDescriptor.occurrence
+1114:                     : null;
+1115:                 const descriptor = useOccurrence
+1116:                     ? matches[occurrence]
+1117:                     : (explicitOccurrence != null
+1118:                         ? matches[explicitOccurrence]
+1119:                         : matches.find((candidate) => !claimed.has(candidate)));
+1120:                 if (!descriptor || claimed.has(descriptor)) return null;
+1121:                 return mergeSupplied(descriptor, suppliedDescriptor, index);
+1122:             }
+1123:             // A sentence that is genuinely outside the resource has no stable
+1124:             // semantic locator; retain the legacy text-derived fallback.
+1125:             if (typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud?.supports(context.resourceType)) return null;
+1126:             return Object.assign({}, suppliedDescriptor, { segmentId: 'text/' + textFingerprint(spokenText) });
+1127:         }).filter(Boolean);
+1128:     }
+
+1269:     }
+1270: 
+1271:     function inspect(sentence, lane, options) {
+1272:         if (!sentence) return null;
+1273:         if (lane && typeof lane === 'object') {
+1274:             options = lane;
+1275:             lane = options.lane;
+1276:         }
+1277:         options = options && typeof options === 'object' ? options : {};
+1278:         const binding = bindingFor([sentence], lane || options.lane || 'reference', options.occurrence);
+1279:         const segment = firstSegment(binding);
+1280:         if (!segment) return null;
+1281:         try {
+1282:             return binding.controller.inspect(segment, { profile: options.profile });
+1283:         } catch (_) { return null; }
+1284:     }
+1285: 
+1286:     async function regenerate(sentence, options = {}) {
+1287:         const binding = bindingFor([sentence], 'reference', options.occurrence);
+1288:         const segment = firstSegment(binding);
+1289:         if (!segment) return null;
+1290:         try {
+1291:             return await binding.controller.regenerate(segment, {
+1292:                 signal: options.signal,
+1293:                 reason: options.reason || 'regenerate',
+1294:                 priority: options.priority,
+1295:                 maxRetries: options.maxRetries,
+1296:                 profile: options.profile,
+1297:                 source: options.source,
+1298:                 metadata: options.metadata,
+1299:                 storeOptions: Object.assign({}, options.storeOptions || {}, { allowReplaceHuman: true }),
+1300:             });
+1301:         } catch (error) {
+1302:             notifyStatus(binding, segment.spokenText, 'error', failureDetail(error));
+1303:             return null;
+1304:         }
+1305:     }

@@ -6,7 +6,7 @@ const source = fs.readFileSync('view_faq_source.jsx', 'utf8');
 describe('FAQ keyboard and control semantics', () => {
   it('uses named native buttons for question and answer sentence audio', () => {
     expect(source.match(/<button type="button" key=\{sIdx\} id=\{`sentence-/g)?.length).toBe(2);
-    expect(source.match(/aria-label=\{`Read sentence: \$\{s\}`\}/g)?.length).toBe(2);
+    expect(source.match(/aria-label=\{label\('faq\.read_sentence', 'Read sentence: \{sentence\}'\)\.replace\('\{sentence\}', s\)\}/g)?.length).toBe(2);
     expect(source).not.toContain('return <span key={sIdx} id={`sentence-');
   });
 
@@ -35,11 +35,12 @@ describe('FAQ keyboard and control semantics', () => {
     expect(source).toContain("typeof phaseK.toSpokenText === 'function'");
     expect(source).toContain('return phaseK.toSpokenText(sentence);');
     expect(source).toContain("return String(sentence || '').replace(");
-    expect(source).toContain('st.getCompatible(sentence, {');
+    expect(source).toContain("window.__alloInspectReadAloudAudio?.(entry, 'reference'");
     expect(source).toContain('voice: selectedVoice');
     expect(source).toContain('language: effectiveLanguage');
-    expect(source).toContain("return compatible ? 'ready' : 'stale';");
-    expect(source).toContain('TTS {summary.ready}/{summary.total} ready');
+    expect(source).toContain('segment.segmentId === entry.segmentId');
+    expect(source).toContain('synthesisRate: audioSpeed');
+    expect(source).toContain("'TTS ' + summary.ready + '/' + summary.total");
     expect(source).not.toContain('summary.saved');
     expect(source).not.toContain('hasStoredReadAloudAudio');
   });

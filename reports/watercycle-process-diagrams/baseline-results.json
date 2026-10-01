@@ -1,0 +1,1408 @@
+{
+  "title": "Water Cycle process diagrams and scene orientation",
+  "startedAt": "2026-09-30T13:02:28.062Z",
+  "sourceSha256": "3b733011f6f4842a41572ac605e2db17b2b7791cbea724f9e81bf78c154e620b",
+  "publicSha256": "2ab8cb80d55de3063122677d50df18c4047ab1ad41fc198b86d5093ae9c83ccf",
+  "baselineCommit": "78e13faae",
+  "baselineSourceSha256": "3b733011f6f4842a41572ac605e2db17b2b7791cbea724f9e81bf78c154e620b",
+  "method": "Frozen runtime, owned ephemeral localhost server and isolated Chromium; native comparison controls and keyboard, real React journey fixtures, actual SVG geometry/text, scoped accessibility audits. No learner tabs, preview server, Git writes, or external publishing.",
+  "checks": [
+    {
+      "label": "No browser runtime errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "cases": [
+    {
+      "label": "baseline light-320 condensation|precipitation",
+      "cards": [
+        {
+          "id": "condensation",
+          "slot": "first",
+          "title": "Condensation",
+          "rect": {
+            "x": 36,
+            "y": 810.921875,
+            "w": 248,
+            "h": 470.375,
+            "right": 284,
+            "bottom": 1281.296875
+          },
+          "caveat": "This comparison shows vapor becoming liquid droplets. Ice forming directly from vapor is called deposition.",
+          "states": [
+            {
+              "phase": "Water vapor",
+              "label": "Before",
+              "rect": {
+                "x": 50,
+                "y": 869.921875,
+                "w": 93,
+                "h": 127.03125,
+                "right": 143,
+                "bottom": 996.953125
+              },
+              "textRect": {
+                "x": 58,
+                "y": 927.921875,
+                "w": 77,
+                "h": 35.09375,
+                "right": 135,
+                "bottom": 963.015625
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 76.5,
+                "y": 882.921875,
+                "w": 40,
+                "h": 40,
+                "right": 116.5,
+                "bottom": 922.921875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M12 32c-5-6 5-8 0-14M24 34c-5-7 5-10 0-17M36 32c-5-6 5-8 0-14",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round",
+                  "stroke-dasharray": "3 4"
+                },
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "10",
+                  "r": "2.5",
+                  "fill": "currentColor"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M12 32c-5-6 5-8 0-14M24 34c-5-7 5-10 0-17M36 32c-5-6 5-8 0-14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-dasharray=\"3 4\"></path><circle cx=\"24\" cy=\"10\" r=\"2.5\" fill=\"currentColor\"></circle></svg>"
+            },
+            {
+              "phase": "Liquid droplets",
+              "label": "After",
+              "rect": {
+                "x": 177,
+                "y": 869.921875,
+                "w": 93,
+                "h": 127.03125,
+                "right": 270,
+                "bottom": 996.953125
+              },
+              "textRect": {
+                "x": 185,
+                "y": 927.921875,
+                "w": 77,
+                "h": 35.09375,
+                "right": 262,
+                "bottom": 963.015625
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 203.5,
+                "y": 882.921875,
+                "w": 40,
+                "h": 40,
+                "right": 243.5,
+                "bottom": 922.921875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M18 29c0 5 3 7 6 7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M18 29c0 5 3 7 6 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            }
+          ]
+        },
+        {
+          "id": "precipitation",
+          "slot": "second",
+          "title": "Precipitation",
+          "rect": {
+            "x": 36,
+            "y": 1291.296875,
+            "w": 248,
+            "h": 508.71875,
+            "right": 284,
+            "bottom": 1800.015625
+          },
+          "caveat": "The fall does not require a state change. Falling water can also melt, freeze, or evaporate along its path.",
+          "states": [
+            {
+              "phase": "Cloud water or ice",
+              "label": "Before",
+              "rect": {
+                "x": 50,
+                "y": 1359.0625,
+                "w": 93,
+                "h": 127.03125,
+                "right": 143,
+                "bottom": 1486.09375
+              },
+              "textRect": {
+                "x": 58,
+                "y": 1417.0625,
+                "w": 77,
+                "h": 35.09375,
+                "right": 135,
+                "bottom": 1452.15625
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 76.5,
+                "y": 1372.0625,
+                "w": 40,
+                "h": 40,
+                "right": 116.5,
+                "bottom": 1412.0625
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M34 23v15M27 27l14 7M27 34l14-7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M34 23v15M27 27l14 7M27 34l14-7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            },
+            {
+              "phase": "Falling liquid or solid water",
+              "label": "After",
+              "rect": {
+                "x": 177,
+                "y": 1350.296875,
+                "w": 93,
+                "h": 144.578125,
+                "right": 270,
+                "bottom": 1494.875
+              },
+              "textRect": {
+                "x": 185,
+                "y": 1408.296875,
+                "w": 77,
+                "h": 52.640625,
+                "right": 262,
+                "bottom": 1460.9375
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 203.5,
+                "y": 1363.296875,
+                "w": 40,
+                "h": 40,
+                "right": 243.5,
+                "bottom": 1403.296875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M34 23v15M27 27l14 7M27 34l14-7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M34 23v15M27 27l14 7M27 34l14-7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            }
+          ]
+        }
+      ],
+      "overflow": [
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        },
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        }
+      ],
+      "panelRect": {
+        "x": 23,
+        "y": 312.578125,
+        "w": 274,
+        "h": 2441.875,
+        "right": 297,
+        "bottom": 2754.453125
+      },
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "pair": {
+        "first": "condensation",
+        "second": "precipitation",
+        "question": "phase",
+        "answer": "",
+        "checked": false,
+        "notes": {}
+      },
+      "outsideState": "{\"wcMode\":\"explore\",\"wcSection\":\"explore\",\"journeyView\":\"2d\",\"journeyActive\":true,\"journeyState\":\"river_runoff\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"collection\",\"journeyLoops\":2,\"journeyLastPath\":\"runoff\",\"journeyPaths\":{\"runoff\":2,\"infiltrate\":1,\"plant\":0},\"climTemp\":15,\"climSolar\":1,\"climWind\":1}",
+      "parcel": {
+        "state": "river_runoff",
+        "stage": "collection",
+        "paused": "true",
+        "progress": 0
+      },
+      "writing": "",
+      "xp": 0
+    },
+    {
+      "label": "baseline light-320 infiltration|collection",
+      "cards": [
+        {
+          "id": "infiltration",
+          "slot": "first",
+          "title": "Infiltration",
+          "rect": {
+            "x": 36,
+            "y": 751.921875,
+            "w": 248,
+            "h": 508.71875,
+            "right": 284,
+            "bottom": 1260.640625
+          },
+          "caveat": "Water can remain in shallow soil or move onward. Infiltration does not guarantee groundwater recharge.",
+          "states": [
+            {
+              "phase": "Liquid surface water",
+              "label": "Before",
+              "rect": {
+                "x": 50,
+                "y": 810.921875,
+                "w": 93,
+                "h": 144.578125,
+                "right": 143,
+                "bottom": 955.5
+              },
+              "textRect": {
+                "x": 58,
+                "y": 868.921875,
+                "w": 77,
+                "h": 52.640625,
+                "right": 135,
+                "bottom": 921.5625
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 76.5,
+                "y": 823.921875,
+                "w": 40,
+                "h": 40,
+                "right": 116.5,
+                "bottom": 863.921875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M18 29c0 5 3 7 6 7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M18 29c0 5 3 7 6 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            },
+            {
+              "phase": "Liquid soil pore water",
+              "label": "After",
+              "rect": {
+                "x": 177,
+                "y": 819.6875,
+                "w": 93,
+                "h": 127.03125,
+                "right": 270,
+                "bottom": 946.71875
+              },
+              "textRect": {
+                "x": 185,
+                "y": 877.6875,
+                "w": 77,
+                "h": 35.09375,
+                "right": 262,
+                "bottom": 912.78125
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 203.5,
+                "y": 832.6875,
+                "w": 40,
+                "h": 40,
+                "right": 243.5,
+                "bottom": 872.6875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "circle",
+                  "cx": "17",
+                  "cy": "27",
+                  "r": "2",
+                  "fill": "currentColor"
+                },
+                {
+                  "tag": "circle",
+                  "cx": "30",
+                  "cy": "35",
+                  "r": "2",
+                  "fill": "currentColor"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><circle cx=\"17\" cy=\"27\" r=\"2\" fill=\"currentColor\"></circle><circle cx=\"30\" cy=\"35\" r=\"2\" fill=\"currentColor\"></circle></svg>"
+            }
+          ]
+        },
+        {
+          "id": "collection",
+          "slot": "second",
+          "title": "Collection",
+          "rect": {
+            "x": 36,
+            "y": 1270.640625,
+            "w": 248,
+            "h": 529.515625,
+            "right": 284,
+            "bottom": 1800.15625
+          },
+          "caveat": "Storage can last different lengths of time. Freezing and melting are separate possible processes.",
+          "states": [
+            {
+              "phase": "Liquid or solid water",
+              "label": "Before",
+              "rect": {
+                "x": 50,
+                "y": 1338.40625,
+                "w": 93,
+                "h": 127.03125,
+                "right": 143,
+                "bottom": 1465.4375
+              },
+              "textRect": {
+                "x": 58,
+                "y": 1396.40625,
+                "w": 77,
+                "h": 35.09375,
+                "right": 135,
+                "bottom": 1431.5
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 76.5,
+                "y": 1351.40625,
+                "w": 40,
+                "h": 40,
+                "right": 116.5,
+                "bottom": 1391.40625
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M34 23v15M27 27l14 7M27 34l14-7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M34 23v15M27 27l14 7M27 34l14-7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            },
+            {
+              "phase": "Stored liquid water or ice",
+              "label": "After",
+              "rect": {
+                "x": 177,
+                "y": 1329.640625,
+                "w": 93,
+                "h": 144.578125,
+                "right": 270,
+                "bottom": 1474.21875
+              },
+              "textRect": {
+                "x": 185,
+                "y": 1387.640625,
+                "w": 77,
+                "h": 52.640625,
+                "right": 262,
+                "bottom": 1440.28125
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 203.5,
+                "y": 1342.640625,
+                "w": 40,
+                "h": 40,
+                "right": 243.5,
+                "bottom": 1382.640625
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M7 25c5-5 10 5 16 0s11 5 18 0M7 33c5-5 10 5 16 0s11 5 18 0M10 13v7M38 13v7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M7 25c5-5 10 5 16 0s11 5 18 0M7 33c5-5 10 5 16 0s11 5 18 0M10 13v7M38 13v7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            }
+          ]
+        }
+      ],
+      "overflow": [
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        },
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        }
+      ],
+      "panelRect": {
+        "x": 23,
+        "y": 253.578125,
+        "w": 274,
+        "h": 2501.015625,
+        "right": 297,
+        "bottom": 2754.59375
+      },
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "pair": {
+        "first": "infiltration",
+        "second": "collection",
+        "question": "phase",
+        "answer": "",
+        "checked": false,
+        "notes": {}
+      },
+      "outsideState": "{\"wcMode\":\"explore\",\"wcSection\":\"explore\",\"journeyView\":\"2d\",\"journeyActive\":true,\"journeyState\":\"river_runoff\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"collection\",\"journeyLoops\":2,\"journeyLastPath\":\"runoff\",\"journeyPaths\":{\"runoff\":2,\"infiltrate\":1,\"plant\":0},\"climTemp\":15,\"climSolar\":1,\"climWind\":1}",
+      "parcel": {
+        "state": "river_runoff",
+        "stage": "collection",
+        "paused": "true",
+        "progress": 0
+      },
+      "writing": "",
+      "xp": 0
+    },
+    {
+      "label": "baseline light-1280 condensation|precipitation",
+      "cards": [
+        {
+          "id": "condensation",
+          "slot": "first",
+          "title": "Condensation",
+          "rect": {
+            "x": 155,
+            "y": 1159.421875,
+            "w": 479,
+            "h": 453.75,
+            "right": 634,
+            "bottom": 1613.171875
+          },
+          "caveat": "This comparison shows vapor becoming liquid droplets. Ice forming directly from vapor is called deposition.",
+          "states": [
+            {
+              "phase": "Water vapor",
+              "label": "Before",
+              "rect": {
+                "x": 171,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 377.5,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 234.15625,
+                "y": 1285.671875,
+                "w": 80.171875,
+                "h": 17.546875,
+                "right": 314.328125,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 254.25,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 294.25,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M12 32c-5-6 5-8 0-14M24 34c-5-7 5-10 0-17M36 32c-5-6 5-8 0-14",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round",
+                  "stroke-dasharray": "3 4"
+                },
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "10",
+                  "r": "2.5",
+                  "fill": "currentColor"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M12 32c-5-6 5-8 0-14M24 34c-5-7 5-10 0-17M36 32c-5-6 5-8 0-14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-dasharray=\"3 4\"></path><circle cx=\"24\" cy=\"10\" r=\"2.5\" fill=\"currentColor\"></circle></svg>"
+            },
+            {
+              "phase": "Liquid droplets",
+              "label": "After",
+              "rect": {
+                "x": 411.5,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 618,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 466.203125,
+                "y": 1285.671875,
+                "w": 97.078125,
+                "h": 17.546875,
+                "right": 563.28125,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 494.75,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 534.75,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M18 29c0 5 3 7 6 7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M18 29c0 5 3 7 6 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            }
+          ]
+        },
+        {
+          "id": "precipitation",
+          "slot": "second",
+          "title": "Precipitation",
+          "rect": {
+            "x": 646,
+            "y": 1159.421875,
+            "w": 479,
+            "h": 453.75,
+            "right": 1125,
+            "bottom": 1613.171875
+          },
+          "caveat": "The fall does not require a state change. Falling water can also melt, freeze, or evaporate along its path.",
+          "states": [
+            {
+              "phase": "Cloud water or ice",
+              "label": "Before",
+              "rect": {
+                "x": 662,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 868.5,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 707.21875,
+                "y": 1285.671875,
+                "w": 116.046875,
+                "h": 17.546875,
+                "right": 823.265625,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 745.25,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 785.25,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M34 23v15M27 27l14 7M27 34l14-7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M34 23v15M27 27l14 7M27 34l14-7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            },
+            {
+              "phase": "Falling liquid or solid water",
+              "label": "After",
+              "rect": {
+                "x": 902.5,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 1109,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 917.96875,
+                "y": 1285.671875,
+                "w": 175.5625,
+                "h": 17.546875,
+                "right": 1093.53125,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 985.75,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 1025.75,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M34 23v15M27 27l14 7M27 34l14-7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M34 23v15M27 27l14 7M27 34l14-7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            }
+          ]
+        }
+      ],
+      "overflow": [
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        },
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        }
+      ],
+      "panelRect": {
+        "x": 137,
+        "y": 862.5625,
+        "w": 1006,
+        "h": 1385.484375,
+        "right": 1143,
+        "bottom": 2248.046875
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "pair": {
+        "first": "condensation",
+        "second": "precipitation",
+        "question": "phase",
+        "answer": "",
+        "checked": false,
+        "notes": {}
+      },
+      "outsideState": "{\"wcMode\":\"explore\",\"wcSection\":\"explore\",\"journeyView\":\"2d\",\"journeyActive\":true,\"journeyState\":\"river_runoff\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"collection\",\"journeyLoops\":2,\"journeyLastPath\":\"runoff\",\"journeyPaths\":{\"runoff\":2,\"infiltrate\":1,\"plant\":0},\"climTemp\":15,\"climSolar\":1,\"climWind\":1}",
+      "parcel": {
+        "state": "river_runoff",
+        "stage": "collection",
+        "paused": "true",
+        "progress": 0
+      },
+      "writing": "",
+      "xp": 0
+    },
+    {
+      "label": "baseline light-1280 infiltration|collection",
+      "cards": [
+        {
+          "id": "infiltration",
+          "slot": "first",
+          "title": "Infiltration",
+          "rect": {
+            "x": 155,
+            "y": 1159.421875,
+            "w": 479,
+            "h": 453.75,
+            "right": 634,
+            "bottom": 1613.171875
+          },
+          "caveat": "Water can remain in shallow soil or move onward. Infiltration does not guarantee groundwater recharge.",
+          "states": [
+            {
+              "phase": "Liquid surface water",
+              "label": "Before",
+              "rect": {
+                "x": 171,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 377.5,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 209.015625,
+                "y": 1285.671875,
+                "w": 130.453125,
+                "h": 17.546875,
+                "right": 339.46875,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 254.25,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 294.25,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M18 29c0 5 3 7 6 7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M24 8S12 22 12 29a12 12 0 0 0 24 0C36 22 24 8 24 8Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M18 29c0 5 3 7 6 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            },
+            {
+              "phase": "Liquid soil pore water",
+              "label": "After",
+              "rect": {
+                "x": 411.5,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 618,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 445.03125,
+                "y": 1285.671875,
+                "w": 139.4375,
+                "h": 17.546875,
+                "right": 584.46875,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 494.75,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 534.75,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "circle",
+                  "cx": "17",
+                  "cy": "27",
+                  "r": "2",
+                  "fill": "currentColor"
+                },
+                {
+                  "tag": "circle",
+                  "cx": "30",
+                  "cy": "35",
+                  "r": "2",
+                  "fill": "currentColor"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><circle cx=\"17\" cy=\"27\" r=\"2\" fill=\"currentColor\"></circle><circle cx=\"30\" cy=\"35\" r=\"2\" fill=\"currentColor\"></circle></svg>"
+            }
+          ]
+        },
+        {
+          "id": "collection",
+          "slot": "second",
+          "title": "Collection",
+          "rect": {
+            "x": 646,
+            "y": 1159.421875,
+            "w": 479,
+            "h": 453.75,
+            "right": 1125,
+            "bottom": 1613.171875
+          },
+          "caveat": "Storage can last different lengths of time. Freezing and melting are separate possible processes.",
+          "states": [
+            {
+              "phase": "Liquid or solid water",
+              "label": "Before",
+              "rect": {
+                "x": 662,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 868.5,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 699.171875,
+                "y": 1285.671875,
+                "w": 132.15625,
+                "h": 17.546875,
+                "right": 831.328125,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 745.25,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 785.25,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                {
+                  "tag": "path",
+                  "d": "M34 23v15M27 27l14 7M27 34l14-7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M16 10c0 0-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M34 23v15M27 27l14 7M27 34l14-7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            },
+            {
+              "phase": "Stored liquid water or ice",
+              "label": "After",
+              "rect": {
+                "x": 902.5,
+                "y": 1220.421875,
+                "w": 206.5,
+                "h": 124,
+                "right": 1109,
+                "bottom": 1344.421875
+              },
+              "textRect": {
+                "x": 924.765625,
+                "y": 1285.671875,
+                "w": 161.96875,
+                "h": 17.546875,
+                "right": 1086.734375,
+                "bottom": 1303.21875
+              },
+              "font": 13,
+              "lineHeight": "17.55px",
+              "svgRect": {
+                "x": 985.75,
+                "y": 1240.671875,
+                "w": 40,
+                "h": 40,
+                "right": 1025.75,
+                "bottom": 1280.671875
+              },
+              "viewBox": "0 0 48 48",
+              "svgHidden": "true",
+              "svgFocusable": "false",
+              "bounds": {
+                "x": 1,
+                "y": 1,
+                "w": 46,
+                "h": 46
+              },
+              "geometry": [
+                {
+                  "tag": "circle",
+                  "cx": "24",
+                  "cy": "24",
+                  "r": "23",
+                  "fill": "currentColor",
+                  "opacity": "0.07"
+                },
+                {
+                  "tag": "path",
+                  "d": "M7 25c5-5 10 5 16 0s11 5 18 0M7 33c5-5 10 5 16 0s11 5 18 0M10 13v7M38 13v7",
+                  "fill": "none",
+                  "stroke": "currentColor",
+                  "stroke-width": "2",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                }
+              ],
+              "markup": "<svg viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"24\" cy=\"24\" r=\"23\" fill=\"currentColor\" opacity=\"0.07\"></circle><path d=\"M7 25c5-5 10 5 16 0s11 5 18 0M7 33c5-5 10 5 16 0s11 5 18 0M10 13v7M38 13v7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+            }
+          ]
+        }
+      ],
+      "overflow": [
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        },
+        {
+          "class": "sr-only",
+          "tag": "SPAN",
+          "text": "to"
+        }
+      ],
+      "panelRect": {
+        "x": 137,
+        "y": 862.5625,
+        "w": 1006,
+        "h": 1385.484375,
+        "right": 1143,
+        "bottom": 2248.046875
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "pair": {
+        "first": "infiltration",
+        "second": "collection",
+        "question": "phase",
+        "answer": "",
+        "checked": false,
+        "notes": {}
+      },
+      "outsideState": "{\"wcMode\":\"explore\",\"wcSection\":\"explore\",\"journeyView\":\"2d\",\"journeyActive\":true,\"journeyState\":\"river_runoff\",\"journeyPaused\":true,\"wc2dPaused\":true,\"activeStage\":\"collection\",\"journeyLoops\":2,\"journeyLastPath\":\"runoff\",\"journeyPaths\":{\"runoff\":2,\"infiltrate\":1,\"plant\":0},\"climTemp\":15,\"climSolar\":1,\"climWind\":1}",
+      "parcel": {
+        "state": "river_runoff",
+        "stage": "collection",
+        "paused": "true",
+        "progress": 0
+      },
+      "writing": "",
+      "xp": 0
+    }
+  ],
+  "audits": [],
+  "failures": [],
+  "errors": [],
+  "browserClosed": true,
+  "serverClosed": true,
+  "finishedAt": "2026-09-30T13:02:40.062Z",
+  "passed": 1,
+  "failed": 0
+}

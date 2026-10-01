@@ -190,6 +190,16 @@
     }
     return '';
   }
+  // A label token counts as decorative when it is made only of symbol
+  // characters: emoji (surrogate pairs), arrows, and misc symbols. Built from
+  // code points rather than a literal class, because a literal emoji range in
+  // this source has been mangled by tooling before. Letters and digits never
+  // match, so a real word is never hidden from a screen reader.
+  var DECORATIVE_LEAD = (function () {
+    function r(a, b) { return String.fromCharCode(a) + '-' + String.fromCharCode(b); }
+    return new RegExp('^[' + r(0xD800, 0xDFFF) + r(0x2190, 0x21FF) + r(0x2300, 0x27BF) +
+      r(0x2B00, 0x2BFF) + String.fromCharCode(0xFE0F) + String.fromCharCode(0x200D) + ']+$');
+  })();
   var NO_TEXT_SENTINEL = 'NO_TEXT_FOUND';
   function isNoTextReply(text) {
     if (text == null) return false;
@@ -653,7 +663,26 @@
           color: (opts.pressed || opts.primary) ? '#ffffff' : C.text,
           opacity: opts.disabled ? 0.55 : 1
         }
-      }, label);
+      }, splitButtonLabel(label));
+    }
+
+    // Every button label was a flat string beginning with a decorative emoji,
+    // so a screen reader announced "speaker with three sound waves Read aloud"
+    // and "wastebasket Clear photo". The tab strip already hides its icons
+    // (aria-hidden on the icon span); the buttons did not. Splitting here fixes
+    // all of them at once, and leaves a label with no emoji untouched.
+    function splitButtonLabel(label) {
+      if (typeof label !== 'string') return label;
+      var space = label.indexOf(' ');
+      if (space <= 0) return label;
+      var lead = label.slice(0, space);
+      if (!DECORATIVE_LEAD.test(lead)) return label;
+      var rest = label.slice(space + 1);
+      if (!rest) return label;
+      return [
+        h('span', { key: 'i', 'aria-hidden': 'true' }, lead + ' '),
+        h('span', { key: 't' }, rest)
+      ];
     }
 
     function card(children, style) {
@@ -717,7 +746,7 @@
             key: 'file', type: 'button', className: 'accesslens-btn',
             onClick: function () { if (fileRef.current) fileRef.current.click(); },
             style: { padding: '10px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: 800, border: '1px solid ' + C.btnBg, background: C.btnBg, color: '#ffffff' }
-          }, '📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo')),
+          }, splitButtonLabel('📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo'))),
           btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
         ];
         if (camState === 'denied' && camReason !== 'none' && camReason !== 'unsupported') {
@@ -1058,5 +1087,6 @@
     window.AccessLensPure.isNoTextReply = isNoTextReply;
     window.AccessLensPure.announceCap = announceCap;
     window.AccessLensPure.resultAnnouncement = resultAnnouncement;
+    window.AccessLensPure.isDecorativeLead = function (t) { return DECORATIVE_LEAD.test(t); };
   }
 })();

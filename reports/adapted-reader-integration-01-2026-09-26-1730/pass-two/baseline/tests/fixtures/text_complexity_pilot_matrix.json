@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "text-complexity-pilot-matrix/v2",
+  "fixtureId": "alloflow-source-calibration-preregistered-core-v2",
+  "thresholdLock": "text-complexity-empirical-thresholds/v1",
+  "thresholdFingerprintLock": "txt-609e19bf-470",
+  "studyDesignFingerprintLock": "txt-84b3d2ad-720",
+  "matrixFingerprintLock": "txt-b8381b0f-3421",
+  "studyDesign": {
+    "grades": ["2nd Grade", "5th Grade", "8th Grade", "11th Grade"],
+    "scenarios": [
+      {
+        "id": "rainwater-watershed",
+        "topic": "How rainwater moves through a watershed",
+        "synthetic": true,
+        "targetWords": 300,
+        "wordTolerancePercent": 15,
+        "textAccessExpectation": "preserve-primary",
+        "standardsExpectation": ["sequence", "cause-effect", "use-evidence"]
+      },
+      {
+        "id": "town-road-or-park",
+        "topic": "How a town weighs road repair against park improvement",
+        "synthetic": true,
+        "targetWords": 900,
+        "wordTolerancePercent": 20,
+        "textAccessExpectation": "preserve-primary",
+        "standardsExpectation": ["compare-options", "use-facts", "analyze-tradeoffs"]
+      }
+    ],
+    "repetitions": 3,
+    "expectedCoreCellCount": 24,
+    "language": "English",
+    "citations": "off",
+    "textAccessExpectation": "preserve-primary"
+  },
+  "providerPolicy": {
+    "requireProviderModel": true,
+    "rejectMixedProviderModels": true
+  },
+  "thresholds": {
+    "version": "text-complexity-empirical-thresholds/v1",
+    "qualityMeasurement": "body",
+    "requiredMeasurements": ["body", "artifact"],
+    "bands": {
+      "expandedMargin": 1,
+      "severeMissDistance": 2,
+      "severeMissComparator": "greater-than"
+    },
+    "overall": {
+      "minimumExpandedBandRate": 0.8,
+      "maximumSevereMissRate": 0.05,
+      "maximumAbsoluteDistanceP90": 1.5
+    },
+    "perGrade": {
+      "maximumAbsoluteDistanceMedian": 0.5
+    },
+    "directionalCluster": {
+      "maximumSevereMissesSameDirection": 1
+    },
+    "wordLength": {
+      "minimumComplianceRate": 0.9
+    }
+  },
+  "researchExtension": {
+    "optional": true,
+    "pairedWithCoreBy": ["requestedGrade", "scenarioId", "repetition"],
+    "requireGroundingCapability": true,
+    "coreCitations": "off",
+    "researchCitations": "on"
+  },
+  "matrix": [
+    { "cellId": "g2-watershed-r1", "requestedGrade": "2nd Grade", "scenarioId": "rainwater-watershed", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g2-watershed-r2", "requestedGrade": "2nd Grade", "scenarioId": "rainwater-watershed", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g2-watershed-r3", "requestedGrade": "2nd Grade", "scenarioId": "rainwater-watershed", "repetition": 3, "condition": "core", "citations": "off" },
+    { "cellId": "g2-civic-r1", "requestedGrade": "2nd Grade", "scenarioId": "town-road-or-park", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g2-civic-r2", "requestedGrade": "2nd Grade", "scenarioId": "town-road-or-park", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g2-civic-r3", "requestedGrade": "2nd Grade", "scenarioId": "town-road-or-park", "repetition": 3, "condition": "core", "citations": "off" },
+
+    { "cellId": "g5-watershed-r1", "requestedGrade": "5th Grade", "scenarioId": "rainwater-watershed", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g5-watershed-r2", "requestedGrade": "5th Grade", "scenarioId": "rainwater-watershed", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g5-watershed-r3", "requestedGrade": "5th Grade", "scenarioId": "rainwater-watershed", "repetition": 3, "condition": "core", "citations": "off" },
+    { "cellId": "g5-civic-r1", "requestedGrade": "5th Grade", "scenarioId": "town-road-or-park", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g5-civic-r2", "requestedGrade": "5th Grade", "scenarioId": "town-road-or-park", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g5-civic-r3", "requestedGrade": "5th Grade", "scenarioId": "town-road-or-park", "repetition": 3, "condition": "core", "citations": "off" },
+
+    { "cellId": "g8-watershed-r1", "requestedGrade": "8th Grade", "scenarioId": "rainwater-watershed", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g8-watershed-r2", "requestedGrade": "8th Grade", "scenarioId": "rainwater-watershed", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g8-watershed-r3", "requestedGrade": "8th Grade", "scenarioId": "rainwater-watershed", "repetition": 3, "condition": "core", "citations": "off" },
+    { "cellId": "g8-civic-r1", "requestedGrade": "8th Grade", "scenarioId": "town-road-or-park", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g8-civic-r2", "requestedGrade": "8th Grade", "scenarioId": "town-road-or-park", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g8-civic-r3", "requestedGrade": "8th Grade", "scenarioId": "town-road-or-park", "repetition": 3, "condition": "core", "citations": "off" },
+
+    { "cellId": "g11-watershed-r1", "requestedGrade": "11th Grade", "scenarioId": "rainwater-watershed", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g11-watershed-r2", "requestedGrade": "11th Grade", "scenarioId": "rainwater-watershed", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g11-watershed-r3", "requestedGrade": "11th Grade", "scenarioId": "rainwater-watershed", "repetition": 3, "condition": "core", "citations": "off" },
+    { "cellId": "g11-civic-r1", "requestedGrade": "11th Grade", "scenarioId": "town-road-or-park", "repetition": 1, "condition": "core", "citations": "off" },
+    { "cellId": "g11-civic-r2", "requestedGrade": "11th Grade", "scenarioId": "town-road-or-park", "repetition": 2, "condition": "core", "citations": "off" },
+    { "cellId": "g11-civic-r3", "requestedGrade": "11th Grade", "scenarioId": "town-road-or-park", "repetition": 3, "condition": "core", "citations": "off" }
+  ],
+  "results": []
+}

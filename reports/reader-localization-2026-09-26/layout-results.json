@@ -1,0 +1,50 @@
+[
+  {
+    "fixture": "reader_es419_long_labels_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 1,
+    "failures": []
+  },
+  {
+    "fixture": "reader_es419_long_labels_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 2,
+    "failures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 1,
+    "failures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 2,
+    "failures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 1,
+    "failures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 2,
+    "failures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 1,
+    "failures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_v1",
+    "viewportCssPx": 320,
+    "deviceScaleFactor": 2,
+    "failures": []
+  }
+]

@@ -1,0 +1,44 @@
+{
+  "startedAt": "2026-09-30T22:49:56.543Z",
+  "before": {
+    "sourceSha256": "b8c0955104832226f08155338bb1d966f434cdc19e54f886e8186b4d630b40b0",
+    "rootOutputSha256": "3e87aae7ff4dd8d57d38333f21bbf4540e73221bec37273a647b6ef57d12bbf1",
+    "publicOutputSha256": "3e87aae7ff4dd8d57d38333f21bbf4540e73221bec37273a647b6ef57d12bbf1",
+    "builderSha256": "727d7d7ae408dd8a00361f60da96a6e8fe58957071a673ff06d031446da27b98",
+    "canonicalSourceGeneratedExactEqual": true,
+    "rootPublicExactEqual": true,
+    "sourceMtime": "2026-09-28T04:04:58.474Z",
+    "outputSha256": "3e87aae7ff4dd8d57d38333f21bbf4540e73221bec37273a647b6ef57d12bbf1"
+  },
+  "ownership": "Exclusive source request URL/header sites; root owns generated outputs. No active UtilsPure handoff claim found.",
+  "completedAt": "2026-09-30T22:53:30.466Z",
+  "after": {
+    "sourceSha256": "8708ca5e6bb39076f52471a04cf6f95e7453912e4d849ba66037c3ce062bba0e",
+    "testSha256": "58b9c33f2d2a77c95eb63c5df74c287080a51088c90cb8457c08e8d03cad91c4",
+    "rootOutputSha256": "3e87aae7ff4dd8d57d38333f21bbf4540e73221bec37273a647b6ef57d12bbf1",
+    "publicOutputSha256": "3e87aae7ff4dd8d57d38333f21bbf4540e73221bec37273a647b6ef57d12bbf1",
+    "syntaxChecked": true,
+    "generatedUntouched": true,
+    "sourceWhitespaceChecked": true,
+    "sourceStillFrozen": true
+  },
+  "tests": {
+    "report": "url-key-tests.json",
+    "success": true,
+    "passed": 13,
+    "failed": 0,
+    "total": 13,
+    "mutationVerifiedBothRoutes": true,
+    "method": "Canonical fetchAndCleanUrl source, mocked fetch, no external calls or credentials"
+  },
+  "harnessNote": "First invocation rejected unsupported --minWorkers before any test ran; corrected invocation used --pool=threads --maxWorkers=1.",
+  "buildInputs": {
+    "source": "utils_pure_source.jsx",
+    "builder": "_build_utils_pure_module.js",
+    "builderSha256": "727d7d7ae408dd8a00361f60da96a6e8fe58957071a673ff06d031446da27b98",
+    "builderUnchanged": true,
+    "transformation": "Literal IIFE wrapper; source interpolation without Babel/esbuild; node -c output syntax check",
+    "externalBuildData": [],
+    "nodeVersion": "v24.11.1"
+  }
+}

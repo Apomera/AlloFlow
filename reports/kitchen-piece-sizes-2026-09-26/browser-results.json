@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Prepared 5 mm and 35 mm pieces display different cooking outcomes. Mouse dragging pauses the clock; tap-to-turn and focused arrow/Space controls update the same pieces and retain their widths.",
+    "Out-of-pan release, Escape, workspace changes, lost focus, and a fresh cook cancel the preview without moving or turning food.",
+    "Saved widths, map actions and cooking surfaces restore exactly. Replay shows recorded positions and cannot change a finished attempt.",
+    "Legacy cooks retain their previous outcomes. Touch dragging works without WebGL; 320px layout, forced colors and automated accessibility checks pass."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop pan map",
+      "issues": []
+    },
+    {
+      "label": "320px pan map",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

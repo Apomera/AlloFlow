@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { readHostSource } from './helpers/host_source.js';
 
 const hostPaths = [
   'AlloFlowANTI.txt',
@@ -7,8 +8,9 @@ const hostPaths = [
   'desktop/web-app/src/App.jsx',
 ];
 
-const readHosts = () => hostPaths.map(path => [path, readFileSync(path, 'utf8')]);
-const rootHost = readFileSync('AlloFlowANTI.txt', 'utf8');
+// Math handlers moved to host_handlers_source.jsx (09-13); hosts are read with them inlined at their shims.
+const readHosts = () => hostPaths.map(path => [path, readHostSource(path)]);
+const rootHost = readHostSource('AlloFlowANTI.txt');
 
 describe('math resource state lifecycle', () => {
   it('resets draft assessment state when the active math resource changes', () => {
@@ -166,7 +168,8 @@ describe('math resource state lifecycle', () => {
     expect(rootHost.slice(canvasClearStart, canvasClearStart + 500)).toContain('resetAllMathRuntimeState()');
     expect(rootHost.slice(canvasRestoreStart, canvasRestoreStart + 1800)).toContain('resetAllMathRuntimeState()');
     expect(rootHost.slice(historyClearStart, historyClearStart + 500)).toContain('resetAllMathRuntimeState()');
-    expect(rootHost.slice(importCompleteStart, importCompleteStart + 500)).toContain('if (success) resetAllMathRuntimeState()');
+    // 14a2d9cfa (09-26) turned the one-liner into an `if (success) { ... }` block that also clears own-source picks.
+    expect(rootHost.slice(importCompleteStart, importCompleteStart + 500)).toMatch(/if \(success\) \{?\s*resetAllMathRuntimeState\(\)/);
   });
 
   it('keeps inline artifact updaters pure and applies one shared patch to active and history state', () => {

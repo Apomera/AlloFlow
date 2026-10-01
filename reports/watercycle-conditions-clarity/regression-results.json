@@ -1,0 +1,1570 @@
+{
+  "numTotalTestSuites": 22,
+  "numPassedTestSuites": 22,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 119,
+  "numPassedTests": 119,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790802541117,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle experiment baseline discovery"
+          ],
+          "fullName": "Water Cycle experiment baseline discovery captures the pre-change state before direct climate or land edits",
+          "status": "passed",
+          "title": "captures the pre-change state before direct climate or land edits",
+          "duration": 26.193900000000212,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle experiment baseline discovery"
+          ],
+          "fullName": "Water Cycle experiment baseline discovery explains the new baseline and points learners toward evidence",
+          "status": "passed",
+          "title": "explains the new baseline and points learners toward evidence",
+          "duration": 40.54199999999946,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802656361,
+      "endTime": 1790802656427.542,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_auto_baseline.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle baseline restore"
+          ],
+          "fullName": "Water Cycle baseline restore restores every saved climate and land control while clearing stale evidence state",
+          "status": "passed",
+          "title": "restores every saved climate and land control while clearing stale evidence state",
+          "duration": 64.22000000000116,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle baseline restore"
+          ],
+          "fullName": "Water Cycle baseline restore provides a disabled-aware, visible, and forced-colors-safe Restore control",
+          "status": "passed",
+          "title": "provides a disabled-aware, visible, and forced-colors-safe Restore control",
+          "duration": 62.21429999999964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802642431,
+      "endTime": 1790802642557.2144,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_baseline_restore.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity normalizes all eight inputs and excludes unrelated display and preset fields",
+          "status": "passed",
+          "title": "normalizes all eight inputs and excludes unrelated display and preset fields",
+          "duration": 2.946899999999914,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity produces a detached snapshot",
+          "status": "passed",
+          "title": "produces a detached snapshot",
+          "duration": 0.35020000000076834,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity uses defaults for invalid numbers without clamping finite teaching inputs",
+          "status": "passed",
+          "title": "uses defaults for invalid numbers without clamping finite teaching inputs",
+          "duration": 0.33219999999982974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity returns no comparison identity when either recorded setup is incomplete or invalid",
+          "status": "passed",
+          "title": "returns no comparison identity when either recorded setup is incomplete or invalid",
+          "duration": 0.5871999999999389,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes climSolar in both halves of the comparison",
+          "status": "passed",
+          "title": "includes climSolar in both halves of the comparison",
+          "duration": 0.5342000000000553,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes climTemp in both halves of the comparison",
+          "status": "passed",
+          "title": "includes climTemp in both halves of the comparison",
+          "duration": 0.41089999999985594,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes climWind in both halves of the comparison",
+          "status": "passed",
+          "title": "includes climWind in both halves of the comparison",
+          "duration": 0.6390000000001237,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landRainIntensity in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landRainIntensity in both halves of the comparison",
+          "duration": 0.515400000000227,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landSaturation in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landSaturation in both halves of the comparison",
+          "duration": 0.3194999999996071,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landPermeability in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landPermeability in both halves of the comparison",
+          "duration": 0.2984999999998763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landSlope in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landSlope in both halves of the comparison",
+          "duration": 0.1760999999996784,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity includes landCover in both halves of the comparison",
+          "status": "passed",
+          "title": "includes landCover in both halves of the comparison",
+          "duration": 0.18139999999948486,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity is independent of property order, preset names, and visual choices",
+          "status": "passed",
+          "title": "is independent of property order, preset names, and visual choices",
+          "duration": 0.19160000000010768,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity reports every changed modeled input without counting display choices",
+          "status": "passed",
+          "title": "reports every changed modeled input without counting display choices",
+          "duration": 1.0690999999997075,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook comparison identity"
+          ],
+          "fullName": "Explore evidence notebook comparison identity omits unrecorded inputs when listing legacy changes",
+          "status": "passed",
+          "title": "omits unrecorded inputs when listing legacy changes",
+          "duration": 0.4166000000004715,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records appends without mutating or replacing existing entries",
+          "status": "passed",
+          "title": "appends without mutating or replacing existing entries",
+          "duration": 1.1924000000008164,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records detects duplicate comparisons from snapshots despite stale or absent keys",
+          "status": "passed",
+          "title": "detects duplicate comparisons from snapshots despite stale or absent keys",
+          "duration": 0.3081999999994878,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records allows the same current scenario compared with a different baseline",
+          "status": "passed",
+          "title": "allows the same current scenario compared with a different baseline",
+          "duration": 0.2565999999997075,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records preserves legacy observations without a baseline and lets a complete comparison save",
+          "status": "passed",
+          "title": "preserves legacy observations without a baseline and lets a complete comparison save",
+          "duration": 0.2541000000001077,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records stops at four entries without deleting the oldest or changing any saved objects",
+          "status": "passed",
+          "title": "stops at four entries without deleting the oldest or changing any saved objects",
+          "duration": 0.9387000000006083,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records reports a duplicate at capacity instead of asking the learner to remove a record",
+          "status": "passed",
+          "title": "reports a duplicate at capacity instead of asking the learner to remove a record",
+          "duration": 0.2026000000005297,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records undo preserves original order and notes after removing current indices 0 then 2",
+          "status": "passed",
+          "title": "undo preserves original order and notes after removing current indices 0 then 2",
+          "duration": 3.3913000000002285,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records undo preserves original order and notes after removing current indices 2 then 0",
+          "status": "passed",
+          "title": "undo preserves original order and notes after removing current indices 2 then 0",
+          "duration": 2.3383999999996377,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore evidence notebook keeps learner records"
+          ],
+          "fullName": "Explore evidence notebook keeps learner records undo preserves original order and notes after removing current indices 1 then 0",
+          "status": "passed",
+          "title": "undo preserves original order and notes after removing current indices 1 then 0",
+          "duration": 2.324800000000323,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly can support runoff and infiltration independently in the same comparison",
+          "status": "passed",
+          "title": "can support runoff and infiltration independently in the same comparison",
+          "duration": 0.19880000000011933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly supports a direction-neutral evaporation change at -0.15x",
+          "status": "passed",
+          "title": "supports a direction-neutral evaporation change at -0.15x",
+          "duration": 0.08020000000033178,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly supports a direction-neutral evaporation change at 0.15x",
+          "status": "passed",
+          "title": "supports a direction-neutral evaporation change at 0.15x",
+          "duration": 0.05549999999948341,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly requires an actual crossing into colder below-freezing surface conditions",
+          "status": "passed",
+          "title": "requires an actual crossing into colder below-freezing surface conditions",
+          "duration": 0.15129999999953725,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly reserves mixed/small for changes below every threshold",
+          "status": "passed",
+          "title": "reserves mixed/small for changes below every threshold",
+          "duration": 0.21080000000074506,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore claims represent modeled evidence honestly"
+          ],
+          "fullName": "Explore claims represent modeled evidence honestly does not support unknown claims",
+          "status": "passed",
+          "title": "does not support unknown claims",
+          "duration": 0.07140000000072177,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore notebook readable report"
+          ],
+          "fullName": "Explore notebook readable report exports recorded learner notes, inputs, and evidence without recomputing the result",
+          "status": "passed",
+          "title": "exports recorded learner notes, inputs, and evidence without recomputing the result",
+          "duration": 1.1541999999999462,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Explore notebook readable report"
+          ],
+          "fullName": "Explore notebook readable report labels missing legacy information without inventing baseline values or notes",
+          "status": "passed",
+          "title": "labels missing legacy information without inventing baseline values or notes",
+          "duration": 0.3676000000004933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802622929,
+      "endTime": 1790802622952.3677,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_explore_notebook.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Storm-to-stream evidence (stem_lab/stem_tool_watercycle.js)"
+          ],
+          "fullName": "Storm-to-stream evidence (stem_lab/stem_tool_watercycle.js) compares cover while holding all other inputs constant",
+          "status": "passed",
+          "title": "compares cover while holding all other inputs constant",
+          "duration": 16.269500000000335,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm-to-stream evidence (stem_lab/stem_tool_watercycle.js)"
+          ],
+          "fullName": "Storm-to-stream evidence (stem_lab/stem_tool_watercycle.js) keeps saved evidence independent of later control changes",
+          "status": "passed",
+          "title": "keeps saved evidence independent of later control changes",
+          "duration": 1.8629000000000815,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm-to-stream evidence (stem_lab/stem_tool_watercycle.js)"
+          ],
+          "fullName": "Storm-to-stream evidence (stem_lab/stem_tool_watercycle.js) bounds independent indices and handles invalid numerical input",
+          "status": "passed",
+          "title": "bounds independent indices and handles invalid numerical input",
+          "duration": 42.09479999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm-to-stream evidence (desktop/web-app/public/stem_lab/stem_tool_watercycle.js)"
+          ],
+          "fullName": "Storm-to-stream evidence (desktop/web-app/public/stem_lab/stem_tool_watercycle.js) compares cover while holding all other inputs constant",
+          "status": "passed",
+          "title": "compares cover while holding all other inputs constant",
+          "duration": 2.135300000000825,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm-to-stream evidence (desktop/web-app/public/stem_lab/stem_tool_watercycle.js)"
+          ],
+          "fullName": "Storm-to-stream evidence (desktop/web-app/public/stem_lab/stem_tool_watercycle.js) keeps saved evidence independent of later control changes",
+          "status": "passed",
+          "title": "keeps saved evidence independent of later control changes",
+          "duration": 0.7309000000004744,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm-to-stream evidence (desktop/web-app/public/stem_lab/stem_tool_watercycle.js)"
+          ],
+          "fullName": "Storm-to-stream evidence (desktop/web-app/public/stem_lab/stem_tool_watercycle.js) bounds independent indices and handles invalid numerical input",
+          "status": "passed",
+          "title": "bounds independent indices and handles invalid numerical input",
+          "duration": 1.9416999999994005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802648565,
+      "endTime": 1790802648630.9417,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_investigation.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle Land-Surface Scenario Lab"
+          ],
+          "fullName": "Water Cycle Land-Surface Scenario Lab models the principal qualitative runoff and infiltration drivers",
+          "status": "passed",
+          "title": "models the principal qualitative runoff and infiltration drivers",
+          "duration": 60.798900000000685,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Land-Surface Scenario Lab"
+          ],
+          "fullName": "Water Cycle Land-Surface Scenario Lab keeps the model boundary scientifically explicit",
+          "status": "passed",
+          "title": "keeps the model boundary scientifically explicit",
+          "duration": 60.1262999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Land-Surface Scenario Lab"
+          ],
+          "fullName": "Water Cycle Land-Surface Scenario Lab provides accessible controls, reset behavior, and live results",
+          "status": "passed",
+          "title": "provides accessible controls, reset behavior, and live results",
+          "duration": 142.46390000000065,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Land-Surface Scenario Lab"
+          ],
+          "fullName": "Water Cycle Land-Surface Scenario Lab connects land conditions to journey decisions, 3D cues, and tutor context",
+          "status": "passed",
+          "title": "connects land conditions to journey decisions, 3D cues, and tutor context",
+          "duration": 136.97820000000047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802627668,
+      "endTime": 1790802628068.9783,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_land_surface.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices offers exactly the seven inputs with numerical comparison readings",
+          "status": "passed",
+          "title": "offers exactly the seven inputs with numerical comparison readings",
+          "duration": 3.744699999995646,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Sunlight' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Sunlight' targets its actual control and supported reading",
+          "duration": 0.4562999999980093,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Temperature' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Temperature' targets its actual control and supported reading",
+          "duration": 0.24970000000030268,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Rainfall intensity' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Rainfall intensity' targets its actual control and supported reading",
+          "duration": 0.2184999999954016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Soil saturation' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Soil saturation' targets its actual control and supported reading",
+          "duration": 0.23029999999562278,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Soil permeability' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Soil permeability' targets its actual control and supported reading",
+          "duration": 0.2066999999951804,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Slope' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Slope' targets its actual control and supported reading",
+          "duration": 0.31739999999990687,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices 'Land cover' targets its actual control and supported reading",
+          "status": "passed",
+          "title": "'Land cover' targets its actual control and supported reading",
+          "duration": 0.19129999999859137,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices maps climate inputs to evaporation and all land inputs to both land indices",
+          "status": "passed",
+          "title": "maps climate inputs to evaporation and all land inputs to both land indices",
+          "duration": 0.47950000000128057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case +0",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case +0",
+          "duration": 0.3713999999963562,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 1",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 1",
+          "duration": 0.1341000000029453,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 2",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 2",
+          "duration": 0.1157999999995809,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 3",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 3",
+          "duration": 0.16300000000046566,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 4",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 4",
+          "duration": 0.09629999999742722,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 5",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 5",
+          "duration": 0.08870000000024447,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 6",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 6",
+          "duration": 0.22119999999995343,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 7",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 7",
+          "duration": 0.07499999999708962,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 8",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 8",
+          "duration": 0.07419999999547144,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 9",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 9",
+          "duration": 0.0934999999954016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not invent a spec for invalid input case 10",
+          "status": "passed",
+          "title": "does not invent a spec for invalid input case 10",
+          "duration": 0.07560000000376021,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices does not allow a returned list or its specs to redefine supported inputs",
+          "status": "passed",
+          "title": "does not allow a returned list or its specs to redefine supported inputs",
+          "duration": 7.993999999998778,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: supported evidence choices"
+          ],
+          "fullName": "Water Cycle next experiment: supported evidence choices returns detached specs from get and select as well as inputs",
+          "status": "passed",
+          "title": "returns detached specs from get and select as well as inputs",
+          "duration": 10.108200000002398,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus \"atmosphere\" to climSolar",
+          "status": "passed",
+          "title": "defaults focus \"atmosphere\" to climSolar",
+          "duration": 0.34139999999752035,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus \"plant\" to climSolar",
+          "status": "passed",
+          "title": "defaults focus \"plant\" to climSolar",
+          "duration": 0.11149999999906868,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus \"surface\" to landRainIntensity",
+          "status": "passed",
+          "title": "defaults focus \"surface\" to landRainIntensity",
+          "duration": 0.12159999999857973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus \"soil\" to landPermeability",
+          "status": "passed",
+          "title": "defaults focus \"soil\" to landPermeability",
+          "duration": 0.0956000000005588,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus \"groundwater\" to landPermeability",
+          "status": "passed",
+          "title": "defaults focus \"groundwater\" to landPermeability",
+          "duration": 0.09439999999449356,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus \"unknown\" to landRainIntensity",
+          "status": "passed",
+          "title": "defaults focus \"unknown\" to landRainIntensity",
+          "duration": 0.08870000000024447,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus undefined to landRainIntensity",
+          "status": "passed",
+          "title": "defaults focus undefined to landRainIntensity",
+          "duration": 0.08219999999710126,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults defaults focus null to landRainIntensity",
+          "status": "passed",
+          "title": "defaults focus null to landRainIntensity",
+          "duration": 0.09169999999721767,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Sunlight' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Sunlight' across every scene focus",
+          "duration": 0.5149999999994179,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Temperature' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Temperature' across every scene focus",
+          "duration": 0.4489000000030501,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Rainfall intensity' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Rainfall intensity' across every scene focus",
+          "duration": 0.4723999999987427,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Soil saturation' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Soil saturation' across every scene focus",
+          "duration": 0.6138999999966472,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Soil permeability' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Soil permeability' across every scene focus",
+          "duration": 23.956500000000233,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Slope' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Slope' across every scene focus",
+          "duration": 0.5925000000061118,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults honors a selected 'Land cover' across every scene focus",
+          "status": "passed",
+          "title": "honors a selected 'Land cover' across every scene focus",
+          "duration": 0.5160000000032596,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus \"atmosphere\"",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus \"atmosphere\"",
+          "duration": 168.94640000000072,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus \"plant\"",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus \"plant\"",
+          "duration": 306.46199999999953,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus \"surface\"",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus \"surface\"",
+          "duration": 0.5127000000065891,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus \"soil\"",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus \"soil\"",
+          "duration": 0.4746000000013737,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus \"groundwater\"",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus \"groundwater\"",
+          "duration": 0.4309999999968568,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus \"unknown\"",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus \"unknown\"",
+          "duration": 0.42339999999967404,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus undefined",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus undefined",
+          "duration": 0.44210000000020955,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults recovers malformed requested choices for focus null",
+          "status": "passed",
+          "title": "recovers malformed requested choices for focus null",
+          "duration": 0.45099999999365536,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: learner choice and relevant defaults"
+          ],
+          "fullName": "Water Cycle next experiment: learner choice and relevant defaults uses the surface default for malformed or inherited-property focus keys",
+          "status": "passed",
+          "title": "uses the surface default for malformed or inherited-property focus keys",
+          "duration": 0.5210000000006403,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Sunlight' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Sunlight' opens only conditions and its own disclosure",
+          "duration": 4.479699999996228,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Temperature' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Temperature' opens only conditions and its own disclosure",
+          "duration": 3.497400000000198,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Rainfall intensity' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Rainfall intensity' opens only conditions and its own disclosure",
+          "duration": 3.0707000000038533,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Soil saturation' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Soil saturation' opens only conditions and its own disclosure",
+          "duration": 2.1181000000069616,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Soil permeability' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Soil permeability' opens only conditions and its own disclosure",
+          "duration": 2.251400000001013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Slope' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Slope' opens only conditions and its own disclosure",
+          "duration": 4.795400000002701,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey 'Land cover' opens only conditions and its own disclosure",
+          "status": "passed",
+          "title": "'Land cover' opens only conditions and its own disclosure",
+          "duration": 2.3919000000023516,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case +0",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case +0",
+          "duration": 4.128999999993539,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 1",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 1",
+          "duration": 0.2713999999978114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 2",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 2",
+          "duration": 0.10750000000552973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 3",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 3",
+          "duration": 0.1635999999998603,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 4",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 4",
+          "duration": 0.11260000000038417,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 5",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 5",
+          "duration": 0.09479999999894062,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 6",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 6",
+          "duration": 0.07549999999901047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 7",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 7",
+          "duration": 0.08310000000346918,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 8",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 8",
+          "duration": 0.0746999999973923,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 9",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 9",
+          "duration": 0.08659999999508727,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey falls back to sunlight navigation for invalid key case 10",
+          "status": "passed",
+          "title": "falls back to sunlight navigation for invalid key case 10",
+          "duration": 0.09580000000278233,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle next experiment: navigation preserves the experiment and paused journey"
+          ],
+          "fullName": "Water Cycle next experiment: navigation preserves the experiment and paused journey returns a fresh navigation patch that cannot poison later handoffs",
+          "status": "passed",
+          "title": "returns a fresh navigation patch that cannot poison later handoffs",
+          "duration": 0.3047000000005937,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802614979,
+      "endTime": 1790802615541.3047,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_next_experiment.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip stem_lab/stem_tool_watercycle.js never claims a weather outcome the model does not compute",
+          "status": "passed",
+          "title": "never claims a weather outcome the model does not compute",
+          "duration": 24.7479000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip stem_lab/stem_tool_watercycle.js labels the freezing point as cold, not balanced",
+          "status": "passed",
+          "title": "labels the freezing point as cold, not balanced",
+          "duration": 17.564300000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip stem_lab/stem_tool_watercycle.js covers the whole slider range with no fall-through holes",
+          "status": "passed",
+          "title": "covers the whole slider range with no fall-through holes",
+          "duration": 42.88839999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip stem_lab/stem_tool_watercycle.js still reports the night cycle when the sun is down",
+          "status": "passed",
+          "title": "still reports the night cycle when the sun is down",
+          "duration": 44.070099999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "desktop/web-app/public/stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip desktop/web-app/public/stem_lab/stem_tool_watercycle.js never claims a weather outcome the model does not compute",
+          "status": "passed",
+          "title": "never claims a weather outcome the model does not compute",
+          "duration": 62.21910000000025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "desktop/web-app/public/stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip desktop/web-app/public/stem_lab/stem_tool_watercycle.js labels the freezing point as cold, not balanced",
+          "status": "passed",
+          "title": "labels the freezing point as cold, not balanced",
+          "duration": 31.34559999999874,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "desktop/web-app/public/stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip desktop/web-app/public/stem_lab/stem_tool_watercycle.js covers the whole slider range with no fall-through holes",
+          "status": "passed",
+          "title": "covers the whole slider range with no fall-through holes",
+          "duration": 41.86149999999907,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "water cycle scenario chip",
+            "desktop/web-app/public/stem_lab/stem_tool_watercycle.js"
+          ],
+          "fullName": "water cycle scenario chip desktop/web-app/public/stem_lab/stem_tool_watercycle.js still reports the night cycle when the sun is down",
+          "status": "passed",
+          "title": "still reports the night cycle when the sun is down",
+          "duration": 42.58389999999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790802552824,
+      "endTime": 1790802553133.584,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_weather_label_bands.test.js"
+    }
+  ],
+  "waterCycleConditionsVerification": {
+    "recordedAt": "2026-09-30T21:16:14.338Z",
+    "sourcePath": "stem_lab/stem_tool_watercycle.js",
+    "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+    "sourceSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+    "publicSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+    "sourcePublicIdentical": true,
+    "testFiles": [
+      {
+        "path": "tests/watercycle_land_surface.test.js",
+        "sha256": "3b3ebcafb9632b05133e5b9a33a9d0b33c997c4c30358713151903917d03e00f"
+      },
+      {
+        "path": "tests/watercycle_weather_label_bands.test.js",
+        "sha256": "6840ce72db60fe4e9f91538c0853884632f40b686fb2451f1667a9afa55d166a"
+      },
+      {
+        "path": "tests/watercycle_next_experiment.test.js",
+        "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89"
+      },
+      {
+        "path": "tests/watercycle_auto_baseline.test.js",
+        "sha256": "99214d97e09a7ab8603bbcd3c3999cb1aed6210c1366c65346771f6f4609375e"
+      },
+      {
+        "path": "tests/watercycle_baseline_restore.test.js",
+        "sha256": "49dab5c2279fe08ca3ccb3ed718838e434463a6f74adbfaf64f7019c9e661078"
+      },
+      {
+        "path": "tests/watercycle_explore_notebook.test.js",
+        "sha256": "1141dd9331654f61ea7e5654542a93c1aac410425bdd93ad50af2f8abb4d483e"
+      },
+      {
+        "path": "tests/watercycle_investigation.test.js",
+        "sha256": "11d0211a3a404e0f1f7ea6c7c79ba4b7bf1bb13b347e4d75e7c1cf6b538ebec0"
+      }
+    ],
+    "command": "node node_modules/vitest/vitest.mjs run tests/watercycle_land_surface.test.js tests/watercycle_weather_label_bands.test.js tests/watercycle_next_experiment.test.js tests/watercycle_auto_baseline.test.js tests/watercycle_baseline_restore.test.js tests/watercycle_explore_notebook.test.js tests/watercycle_investigation.test.js --maxWorkers=1 --reporter=json --outputFile=reports/watercycle-conditions-clarity/regression-results.json",
+    "scope": "Final rerun of the seven affected regression suites after the panel-width and system-color corrections; prior diagnostic runs are excluded from totals."
+  }
+}

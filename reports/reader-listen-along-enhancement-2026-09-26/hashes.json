@@ -1,0 +1,9 @@
+{
+  "base/view_simplified_source.jsx": "069c3751a49d02356db0093c996266ed96ba1687501458afd9acee494f8aa595",
+  "base/reader_place_store.js": "8f48e622f3993371a43cff4ba21198e86269fefe6cb1d4fa2662c4d51bfb4334",
+  "base/reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+  "candidate/view_simplified_source.jsx": "f0d6126e9f5e7414988ced3ef8260bf6af128dd91a2f0c337d77c0a608b2d153",
+  "candidate/view_simplified_module.js": "2d256469cc9d2dca89dfa66485706f59c17b0c6f28884d1941689aa5baa98de8",
+  "candidate/tests/reader_listen_along_access.test.js": "4e0b4e6798267ac875433486c0d3405116e2fabbafe87e1282fb7dc487c59158",
+  "listen-along-source.patch": "3e43c9f6a5eff0eb3d0212820681c6d58ef6c23a3028a2e4b3e04c488a8b699d"
+}

@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:42:5 › a centered descent changes measured scale, keeps rendering with ambience paused, and arrives cleanly (6.0s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:72:5 › phone arrival controls fit and return keyboard focus while the route restores its origin (4.5s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:84:5 › Escape, a new destination and a change to reduced motion each settle an active approach (6.4s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:97:5 › reduced motion bypasses the descent and changing to the chart releases its overlays (5.0s)
+  ok 5 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:106:5 › continuing from a galaxy approach into the Sun preserves both return viewpoints (12.5s)
+
+  5 passed (35.3s)

@@ -1,0 +1,125 @@
+{
+  "status": "passed",
+  "completedAt": "2026-09-29T23:18:20.993Z",
+  "section": "Sky Lab: Stars — Stellar spectrum lab",
+  "changes": [
+    "Full spectrum and fixed 2.5nm close-up show the same selected hydrogen line",
+    "148× displacement scale makes radial Doppler motion visible",
+    "Rest, observed and signed wavelength shift readouts stay synchronized",
+    "Continuous spectra explain absent lines and disable measurement controls",
+    "Four selectable hydrogen references match the vacuum convention in the cosmic redshift lab",
+    "320px layouts enlarge SVG labels, preserve touch targets and avoid clipping",
+    "Keyboard controls, bounded restoration and saved settings remain coherent",
+    "Comparison links scroll to and focus the destination lab"
+  ],
+  "data": {
+    "wavelengths": [
+      {
+        "id": "ha",
+        "name": "H-alpha",
+        "vacuumNm": 656.4614,
+        "source": "https://sdss.org/dr20/tutorials/conversions/"
+      },
+      {
+        "id": "hb",
+        "name": "H-beta",
+        "vacuumNm": 486.2683,
+        "source": "https://sdss.org/dr20/tutorials/conversions/"
+      },
+      {
+        "id": "hg",
+        "name": "H-gamma",
+        "vacuumNm": 434.168,
+        "source": "https://classic.sdss.org/dr2/algorithms/speclinefits.php"
+      },
+      {
+        "id": "hd",
+        "name": "H-delta",
+        "vacuumNm": 410.289,
+        "source": "https://classic.sdss.org/dr2/algorithms/speclinefits.php"
+      }
+    ],
+    "relation": "Observed wavelength / rest wavelength = sqrt((1 + v/c) / (1 - v/c)); c = 299792.458 km/s",
+    "relationSource": "https://www.astro.ucla.edu/~wright/doppler.htm",
+    "explanation": "https://science.nasa.gov/asset/webb/absorption-and-emission-spectra-of-various-elements/",
+    "scope": "Published wavelength references are used. Velocity settings and line widths/strengths are teaching examples. The relation models motion directly along the line of sight; cosmological and gravitational shifts are separate.",
+    "overviewSpanNm": 370,
+    "closeupSpanNm": 2.5,
+    "displacementMagnification": 148
+  },
+  "unit": {
+    "passed": 152,
+    "failed": 0,
+    "files": [
+      {
+        "file": "astronomy_cosmic_redshift.test.js",
+        "passed": 25
+      },
+      {
+        "file": "astronomy_functional_regressions.test.js",
+        "passed": 20
+      },
+      {
+        "file": "astronomy_stellar_spectrum.test.js",
+        "passed": 27
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "passed": 80
+      }
+    ],
+    "report": "unit-tests.json"
+  },
+  "browser": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "suites": [
+      "astronomy-stellar-spectrum.spec.ts",
+      "astronomy-cosmic-redshift.spec.ts"
+    ],
+    "viewportWidths": [
+      1280,
+      320
+    ],
+    "themes": [
+      "dark",
+      "contrast"
+    ],
+    "checks": [
+      "Opposite motions agree with wavelength and marker direction",
+      "Line selection and mode changes preserve velocity and focus",
+      "Continuous mode removes lines and measurements and disables Doppler controls",
+      "Keyboard steps and endpoints stay bounded",
+      "Malformed state restores finite geometry",
+      "Cross-lab navigation brings the destination heading into view and focuses its section",
+      "Phone controls are at least 44px tall",
+      "SVG text renders at least 10.5px on a 320px viewport and stays inside chart bounds",
+      "No whole-page horizontal overflow",
+      "No runtime errors or unhandled promise rejections in tested scenarios",
+      "Cosmic redshift examples and comparisons remain coherent"
+    ],
+    "report": "browser-tests.json"
+  },
+  "parity": {
+    "sourceAndPublicMatch": true,
+    "sha256": "007045be8a90fa0afdff7753d14e7ee7d871929c45ee638478f5c555d08aae25",
+    "newEnglishLabels": 39,
+    "labelsMatchBothRegistries": true
+  },
+  "checks": {
+    "moduleSyntax": true,
+    "scopedDiffWhitespace": true
+  },
+  "visualReview": {
+    "status": "reviewed",
+    "images": [
+      "absorption-desktop.png",
+      "emission-desktop.png",
+      "absorption-phone-contrast.png",
+      "continuous-phone-contrast.png"
+    ]
+  }
+}

@@ -1,9 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readHostSource, readFileSync as readSourceFile } from './helpers/host_source.js';
 
-const read = file => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
-const host = read('AlloFlowANTI.txt');
+const read = file => readSourceFile(path.join(process.cwd(), file), 'utf8');
+// Organizer live handlers moved to host_handlers_source.jsx (09-13); read them inlined at their shims.
+const host = readHostSource('AlloFlowANTI.txt');
 // Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
 const liveDock = read('view_live_session_dock_source.jsx');
 const renderer = read('view_renderers_source.jsx');
@@ -13,9 +15,12 @@ const mailbox = read('apps_script/session_mailbox/Code.gs');
 describe('visual organizer live activity contract', () => {
   it('binds every arm to one activity and exact organizer resource', () => {
     expect(host).toContain('let interactiveOrganizer = type ? { type, activityId, resourceId, resourceRevision, structureType, armedAt } : null;');
-    expect(host).toContain("if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId)) return;");
-    expect(host).toContain("if (remote.structureType && String(generatedContent?.data?.structureType || '') !== String(remote.structureType)) return;");
-    expect(host).toContain("if (remote.resourceRevision && getLiveOrganizerResourceRevision(generatedContent) !== String(remote.resourceRevision)) return;");
+    // 1d424a800 (09-20) releases the stall watch (`&& _stallWatchOff()`) on every not-this-resource guard, and
+    // 75455e10f (09-17) compares the arm with the RENDERED (normalized) structure type.
+    expect(host).toContain("if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId) && _stallWatchOff()) return;");
+    expect(host).toContain("const renderedStructureType = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData?.(generatedContent?.data)?.structureType || generatedContent?.data?.structureType;");
+    expect(host).toContain("if (remote.structureType && String(renderedStructureType || '') !== String(remote.structureType) && _stallWatchOff()) return;");
+    expect(host).toContain("if (remote.resourceRevision && getLiveOrganizerResourceRevision(generatedContent) !== String(remote.resourceRevision) && _stallWatchOff()) return;");
     expect(host).toContain("const organizerResourceId = String(data.interactiveOrganizer?.resourceId || '');");
     expect(host).toContain('else if (data.mode === \'sync\' && data.currentResourceId)');
   });
@@ -33,7 +38,7 @@ describe('visual organizer live activity contract', () => {
   });
 
   it('keeps malformed arms retryable until their resource and game data are ready', () => {
-    const readinessAt = host.indexOf('if (!getLiveOrganizerReadiness(remote.type, generatedContent).ok) return;');
+    const readinessAt = host.indexOf('if (!getLiveOrganizerReadiness(remote.type, generatedContent).ok && _stallWatchOff()) return;');
     const vennReadyAt = host.indexOf('if (!isPlayableInteractiveVennData(syncedGameData)) return;', readinessAt);
     const consumedAt = host.indexOf('lastSeenInteractiveArmRef.current = remote.armedAt;', readinessAt);
     expect(readinessAt).toBeGreaterThan(0);
@@ -65,11 +70,12 @@ describe('visual organizer live activity contract', () => {
     const effectAt = host.indexOf('if (!remote || !remote.type) {', host.indexOf('writeInteractiveOrganizerLaunchStatus'));
     const alreadyOpenedAt = host.indexOf('if (remote.armedAt === lastSeenInteractiveArmRef.current && !isTargetedRetry) return;', effectAt);
     const loadingAt = host.indexOf("writeInteractiveOrganizerLaunchStatus('loading');", effectAt);
-    const resourceCheckAt = host.indexOf("if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId)) return;", effectAt);
+    const resourceCheckAt = host.indexOf("if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId) && _stallWatchOff()) return;", effectAt);
     expect(alreadyOpenedAt).toBeGreaterThan(effectAt);
     expect(loadingAt).toBeGreaterThan(alreadyOpenedAt);
     expect(resourceCheckAt).toBeGreaterThan(loadingAt);
-    expect(host.slice(loadingAt, resourceCheckAt)).toContain('timeout: setTimeout(() => handleInteractiveOrganizerFailed(), 16000)');
+    // 1d424a800: the deadline now names the activity it fails.
+    expect(host.slice(loadingAt, resourceCheckAt)).toContain('timeout: setTimeout(() => handleInteractiveOrganizerFailed(remote.activityId), 16000)');
   });
 
   it('uses the session envelope as the only teacher live-state authority', () => {
@@ -196,9 +202,11 @@ describe('visual organizer live activity contract', () => {
 
   it('uses the authoritative readiness contract in Memory Palace and both 3D Concept Space launches', () => {
     expect(host).toContain('getLiveOrganizerReadiness,\n        handleInteractiveOrganizerReady');
-    expect(renderer).toContain("liveRecallReadiness={_liveReadinessFor('palacerecall')}");
-    expect(renderer).toContain("challengeLiveReadiness={_liveReadinessFor('strandchallenge3d')}");
-    expect(renderer).toContain("recallLiveReadiness={_liveReadinessFor('conceptrecall3d')}");
+    // 75455e10f (09-17): launches read readiness through _readinessFor, bound to the resolved organizer resource.
+    expect(renderer).toContain('const _readinessFor = (activityType) => _liveReadinessFor(activityType, organizerResource);');
+    expect(renderer).toContain("liveRecallReadiness={_readinessFor('palacerecall')}");
+    expect(renderer).toContain("challengeLiveReadiness={_readinessFor('strandchallenge3d')}");
+    expect(renderer).toContain("recallLiveReadiness={_readinessFor('conceptrecall3d')}");
     expect(renderer).toContain('challengeLiveReadiness?.ok === false');
     expect(renderer).toContain('recallLiveReadiness?.ok === false');
     expect(renderer).toContain('liveRecallReadiness?.ok === false');
@@ -209,10 +217,12 @@ describe('visual organizer live activity contract', () => {
 
   it('uses the authoritative readiness contract for every 2D organizer launch control', () => {
     expect(renderer).toContain('const activityTypeByStructure = {');
-    expect(renderer).toContain('const organizerLaunchReadiness = organizerActivityType ? _liveReadinessFor(organizerActivityType) : { ok: true };');
-    expect(renderer).toContain('const _startOrganizerGame = (activityType, startLocal, activityConfig = null) => {');
+    expect(renderer).toContain('const organizerLaunchReadiness = organizerActivityType ? _readinessFor(organizerActivityType) : { ok: true };');
+    // f5b045fc9 (09-20): the launch awaits the live broadcast (preview opens only after delivery succeeds) and two
+    // more controls (local practice + one more launch button) share the readiness gate: 11 -> 13.
+    expect(renderer).toContain('const _startOrganizerGame = async (activityType, startLocal, activityConfig = null) => {');
     expect(renderer).toContain('id="game-btn-readiness" role="status"');
-    expect(renderer.match(/disabled=\{!organizerLaunchReadiness\.ok\}/g)).toHaveLength(11);
+    expect(renderer.match(/disabled=\{!organizerLaunchReadiness\.ok\}/g)).toHaveLength(13);
     for (const type of ['pipeline', 'tchart', 'fishbone', 'problemsolution', 'conceptmap', 'frayer', 'seethinkwonder', 'storymap', 'outline']) {
       expect(renderer).toContain(`_startOrganizerGame('${type}'`);
       expect(renderer).not.toContain(`_broadcastInteractiveOrganizer('${type}')`);

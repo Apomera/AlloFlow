@@ -1,0 +1,103 @@
+
+Running 5 tests using 1 worker
+
+
+
+[1A[2K(node:37592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:37592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime 
+
+    [31mTearing down "context" exceeded the test timeout of 120000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-real--df441--journal-and-scene-lifetime-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-real--df441--journal-and-scene-lifetime-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-real--df441--journal-and-scene-lifetime-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-real--df441--journal-and-scene-lifetime-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-real--df441--journal-and-scene-lifetime-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K(node:27180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[1A[2K(node:27180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K  2) [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('[data-island-scene]')
+    Expected: [32m"ready"[39m
+    Received: [31m"fallback"[39m
+    Timeout:  15000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-island-scene]')[22m
+    [2m    21 × locator resolved to <div role="group" class="ei-scene" data-island-scene="fallback" aria-label="Living Island habitat. Use the organism selector below to inspect any creature.">…</div>[22m
+    [2m       - unexpected value "fallback"[22m
+
+
+      687 |   await page.setViewportSize({ width: 1440, height: 1100 });
+      688 |   await harness.mount(page, { evoLab: { view: 'livingIsland', islandStudy: { seed: 2026, introDismissed: true } } });
+    > 689 |   await expect(page.locator('[data-island-scene]')).toHaveAttribute('data-island-scene', 'ready');
+          |                                                     ^
+      690 |   await page.getByRole('button', { name: 'Next generation', exact: false }).click();
+      691 |   const world = await page.evaluate(() => JSON.parse(localStorage.getItem('evoLab.island.v1')!));
+      692 |   await page.selectOption('#ei-organism', String(world.history[1].population[0].id));
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:689:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\highlights-browser-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+[1A[2K(node:21080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:21080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[3/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1199:5 › expedition highlights revisit recorded evidence, collect moments, trace births and persist independently
+[1A[2K[4/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1265:5 › expedition highlights on a phone enforce collection capacity and preserve a six-moment journal
+[1A[2K[5/5] [chromium] › tests\e2e\evolab-living-island.spec.ts:1297:5 › expedition highlights without WebGL wait for real evidence and revisit a survivor after extinction
+[1A[2K  2 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:12:5 › real 3D expedition: inheritance, family, prediction, rewind, journal and scene lifetime 
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged 
+  3 passed (8.0m)

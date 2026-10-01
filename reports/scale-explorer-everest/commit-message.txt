@@ -1,0 +1,7 @@
+Add geographic Everest terrain and alpine exploration
+
+Build a locally bundled elevation model from attributed Mapzen terrain tiles, with summit and valley viewpoints, directional lighting, an Earth entry, and a sea-level reference. Preserve sampled elevations and measured comparison scale.
+
+Recover failed terrain loads and fix the canvas staying suspended after batched visibility changes.
+
+Validation: 130 unit tests and 13 real-browser scenarios passed. The visibility regression failed before the fix and passed afterward.

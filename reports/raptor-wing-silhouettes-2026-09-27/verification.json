@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-27",
+  "scope": "Continuous pointed falcon and rounded owl wing outlines, extended feather coverage, species-specific wing observation prompts",
+  "runs": [
+    {
+      "suites": ["raptor-wing-silhouettes.spec.ts"],
+      "output": "initial-browser-results",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 4,
+      "retries": 0,
+      "note": "WebGL context was lost during startup before the scene ready hook. No shape assertions ran."
+    },
+    {
+      "suites": ["raptor-wing-silhouettes.spec.ts"],
+      "output": "second-browser-results",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "1.5 minutes",
+      "note": "Fresh browser, unchanged source and geometry assertions. Before the two observation prompts were added."
+    },
+    {
+      "suites": [
+        "raptor-wing-silhouettes.spec.ts",
+        "raptor-feather-depth.spec.ts",
+        "raptor-study-anatomy.spec.ts",
+        "raptor-flight-continuity.spec.ts"
+      ],
+      "output": "final-browser-results",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "6.7 minutes",
+      "note": "All scenarios passed against the final source, including flying and perched prompt assertions."
+    }
+  ],
+  "uniqueScenariosValidated": 14,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "cpuSurfacePositionsAndNormals": "finite positions and unit normals for low/high falcon and owl meshes",
+    "visualInspection": "pass",
+    "extraWingVertices": 0,
+    "extraWingMeshes": 0,
+    "extraWingMaterials": 0
+  },
+  "sourceFiles": [
+    {
+      "path": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "75a3c43b0ee86102d5ffb276088c85deffa40aa6c9edac409d66751c3fcf034f"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "75a3c43b0ee86102d5ffb276088c85deffa40aa6c9edac409d66751c3fcf034f"
+    }
+  ],
+  "newTranslationKeys": 2,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "environment": "Local Chromium/WebGL harness, low and high quality, phone viewport and reduced motion. No physical-device frame-rate benchmark.",
+  "deployment": "Not deployed; no commit or push"
+}

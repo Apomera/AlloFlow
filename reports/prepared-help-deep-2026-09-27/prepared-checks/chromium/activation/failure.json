@@ -1,0 +1,7 @@
+{
+  "browser": "chromium",
+  "completed": [],
+  "errors": [],
+  "error": "A newly activated explanation starts at its beginning\n\n190 !== 0\n",
+  "stack": "AssertionError [ERR_ASSERTION]: A newly activated explanation starts at its beginning\n\n190 !== 0\n\n    at module.exports (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\reader-prepared-help\\activation-check.cjs:28:12)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\reader-prepared-help\\browser-check.cjs:112:7"
+}

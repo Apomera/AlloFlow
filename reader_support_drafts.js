@@ -2,7 +2,7 @@
   'use strict';
   function createSession() {
     const records = new Map();
-    let active = null, pending = null, running = false;
+    let active = null, pending = null, running = false, replaying = null;
     const session = {
       records,
       register(controller) {
@@ -11,11 +11,20 @@
       },
       blocked() { return !running && !!active && active.hasChanges(); },
       hasChanges() { return (!!active && active.hasChanges()) || [...records.values()].some(record => record.dirty); },
-      request(run) {
+      // The item on screen when a step was queued. A step replayed after
+      // "Save and continue" wrote from that copy; writers use this to keep
+      // the word help saved in between (see _alloCarrySavedSupports).
+      replayBase() { return replaying; },
+      request(run, base) {
         if (!session.blocked()) return run();
+        const step = () => {
+          const outer = replaying;
+          replaying = base || null;
+          try { run(); } finally { replaying = outer; }
+        };
         // Setters in one host action form one transition, not competing dialogs.
-        if (pending) { if (pending.collecting) pending.steps.push(run); return false; }
-        const request = { steps: [run], collecting: true };
+        if (pending) { if (pending.collecting) pending.steps.push(step); return false; }
+        const request = { steps: [step], collecting: true };
         pending = request;
         queueMicrotask(() => { request.collecting = false; });
         active.defer({

@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "shape": "circle",
+      "rule": "multiply",
+      "meanChannelDifference": 0.4418447257646541,
+      "ink": 44715,
+      "liveProgress": 0,
+      "paths": 60,
+      "pins": 60,
+      "labels": 30,
+      "rows": 60
+    },
+    {
+      "shape": "square",
+      "rule": "skip",
+      "meanChannelDifference": 0.46197263430925783,
+      "ink": 21763,
+      "liveProgress": 0,
+      "paths": 60,
+      "pins": 60,
+      "labels": 30,
+      "rows": 60
+    },
+    {
+      "shape": "triangle",
+      "rule": "multiply",
+      "meanChannelDifference": 0.5473512936261746,
+      "ink": 24970,
+      "liveProgress": 0,
+      "paths": 60,
+      "pins": 60,
+      "labels": 30,
+      "rows": 60
+    },
+    {
+      "shape": "star",
+      "rule": "multiply",
+      "meanChannelDifference": 0.5088186077043112,
+      "ink": 29896,
+      "liveProgress": 0,
+      "paths": 60,
+      "pins": 60,
+      "labels": 30,
+      "rows": 60
+    },
+    {
+      "desktopPreview": 760,
+      "phonePreview": 374,
+      "phonePreviewFirst": true,
+      "phoneTouchTargets": true,
+      "csvMatchesGuide": true,
+      "connections": 79
+    },
+    {
+      "pauseResume": true,
+      "speedPreservesCanvas": true,
+      "finish": true,
+      "tabRoundTripRestoresProgress": true
+    }
+  ],
+  "errors": []
+}

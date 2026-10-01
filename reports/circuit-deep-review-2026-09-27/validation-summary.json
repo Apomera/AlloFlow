@@ -1,0 +1,27 @@
+{
+  "initial": {
+    "files": 53,
+    "total": 846,
+    "passed": 837,
+    "failed": 9
+  },
+  "retry": {
+    "files": 9,
+    "total": 182,
+    "passed": 182,
+    "failed": 0
+  },
+  "allInitialFailuresPassedOnRetry": true,
+  "sourceModified": false,
+  "browser": {
+    "workspaces": 4,
+    "widths": [
+      1280,
+      390,
+      320
+    ],
+    "pageErrors": 0,
+    "axeViolationsInDefaultStates": 0,
+    "pageWideOverflow": false
+  }
+}

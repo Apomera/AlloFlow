@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-26T22:50:44.025Z",
+  "label": "track18-narration",
+  "patch": "9285327fa61e34f80280df50b7cb85012183fb599223634bfbf84aaa8425acf6",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "196af641244f28955ee0741c0fec22d2edb38e9acfa4d0e581f4d1d05b34ff1a",
+      "after": "a2c00d6f1fa708e27ff18e878efdcdd69e96b27449ced47dda6d5d238b60f8a4",
+      "changed": true
+    },
+    {
+      "target": "tests/edit_audio_ui.test.js",
+      "targets": [
+        "tests/edit_audio_ui.test.js"
+      ],
+      "before": "53ea411dfe48dadaee5a43a8120f9684125602867278cd23ab2be2e6680dd53b",
+      "after": "a23ffe4887a3a73e20049ac715dc7351ffe75bcbed087bd3be1e7eec8002cdf7",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_narration_access.test.js",
+      "targets": [
+        "tests/reader_narration_access.test.js"
+      ],
+      "before": null,
+      "after": "6a5b917b7d2507dfee7afd9f9b57f482ac969fd26bab59b4ad0a2e03f0125fe4",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader_narration_browser.cjs",
+      "targets": [
+        "dev-tools/reader_narration_browser.cjs"
+      ],
+      "before": null,
+      "after": "e504694e7c2621e672a0aaf66d0b895cbfec7ac191f2ea385c2b5f4c03d92fa8",
+      "changed": true
+    }
+  ]
+}

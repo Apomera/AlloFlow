@@ -381,6 +381,13 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(thrust.getAttribute('data-control-active')).toBe('false');
     expect(host.querySelector('[data-flight-maneuver="action"]').textContent).toBe('Glide');
 
+    // Since 0bb48eb97 the canvas ribbon belongs to the DETAILED HUD (the clear HUD shows the same
+    // three checkpoints in the DOM route panel, asserted above), so switch the HUD before drawing.
+    const hudToggle = host.querySelector('[data-flight-hud-toggle]');
+    expect(hudToggle).toBeTruthy();
+    fillText.mockClear();
+    await act(async () => { hudToggle.click(); await Promise.resolve(); });
+    await act(async () => { frameCallback(flightStart + 1400); await Promise.resolve(); });
     const labels = fillText.mock.calls.map((call) => String(call[0]));
     expect(labels.some((label) => label.includes('TAKE OFF'))).toBe(true);
     expect(labels.some((label) => label.includes('REACH DCA'))).toBe(true);

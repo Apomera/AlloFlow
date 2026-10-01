@@ -75,10 +75,12 @@ function cupRows(animal) {
 // Pass sixteen excludes only the four approved nautilus eye subtrees; other species and anatomy remain protected.
 function insideNautilusEye(o){let eye=false;for(let p=o;p;p=p.parent){if(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight'].includes(p.name))eye=true;if(p.userData.species==='nautilus')return eye;}return false;}
 function insideNautilusShell(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
+// Pass twenty-three excludes only Humboldt's intentionally replaced siphon subtree.
+function insideSquidSiphon(o){let siphon=false;for(let p=o;p;p=p.parent){if(p.name==='cl-siphon')siphon=true;if(p.userData.species==='humboldtSquid')return siphon;}return false;}
 function geometrySnapshot(animal) {
   const records = [];
   animal.root.traverse(object => {
-    if (!object.isMesh || insideNautilusShell(object) || insideNautilusEye(object)) return;
+    if (!object.isMesh || insideNautilusShell(object) || insideNautilusEye(object) || insideSquidSiphon(object)) return;
     const geometry = object.geometry;
     records.push([object.name, Array.from(geometry.attributes.position.array), geometry.attributes.normal ? Array.from(geometry.attributes.normal.array) : null, geometry.index ? Array.from(geometry.index.array) : null, object.position.toArray(), object.quaternion.toArray(), object.scale.toArray(), object.isInstancedMesh ? Array.from(object.instanceMatrix.array) : null]);
   });
@@ -225,7 +227,7 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
       "bobtailSquid": "3b849ae9de6904e9ab90c84ed63dd1c1b1e7647860cb2cebb15e3238406fc0fe",
       "dumboOcto": "9870cb8c0d0aeb3ba2797e9d4628cecc55d8a612a9082998f24539497f212f51",
       "vampireSquid": "7a32994fd9d8f79ce0543c3c37973b2b5ad2b8cc1e991950a145a071ef58efe8",
-      "humboldtSquid": "a1fc46156f2eec1b05486dc63d34714b0427355bd96dac1db2683c0f2d4c3a33",
+      "humboldtSquid": "fa8831b05afb87b61ce7b1036c44c61aa1d799c5441ae057c96b3d436bf4d81c",
       "blueRinged": "de3bfb228c4e0049b5287d92e0f2457404765dfbca9fc2fc66e359e43bf49132",
       "giantPacific": "3386c40d039355f386ac81e555e0537887e2d7be62e8be62bd19d9cf25af99da",
       "mimicOcto": "2dc598544f08432585302351e17cb6c6ff9fe10551ee98b06fdc4dbb8537f9f8",

@@ -56,6 +56,7 @@ function FullPackRunView(props) {
     handleOpenGenerationErrorLog,
     handlePlanFullPack,
     handleRemoveFullPackPlanResource,
+    handleReadOriginal,
     handleRetryFailedFullPack,
     handleSetFullPackPlanAdaptedTextPolicy,
     handleStopFullPack,
@@ -790,7 +791,7 @@ function FullPackRunView(props) {
       })), fullPackRun.status === 'ready' && /*#__PURE__*/React.createElement("details", {
         "data-testid": "full-pack-text-access-summary",
         "data-group-id": sectionGroupId || '',
-        open: !sectionHasPrimary || sectionAdaptedTextPolicy === 'prohibited',
+        open: !sectionHasPrimary || sectionAdaptedTextPolicy === 'prohibited' || sectionPrimaryTextAccess === 'required',
         className: "group/text-access mt-2 rounded-xl border border-slate-200 text-xs leading-relaxed text-slate-700"
       }, /*#__PURE__*/React.createElement("summary", {
         className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
@@ -834,14 +835,36 @@ function FullPackRunView(props) {
         "aria-label": (t('fullpack.adapted_policy') || 'Adapted-text plan policy') + (section.groupName ? `: ${section.groupName}` : '')
       }, /*#__PURE__*/React.createElement("option", {
         value: "include"
-      }, t('fullpack.policy_include_adapted') || 'Include supplemental Adapted Text (recommended)'), /*#__PURE__*/React.createElement("option", {
+      }, sectionPrimaryTextAccess === 'required' ? t('fullpack.include_companion_for_preview') || 'Include an adapted companion for background and preview' : t('fullpack.policy_include_adapted') || 'Include supplemental Adapted Text (recommended)'), /*#__PURE__*/React.createElement("option", {
         value: "omit",
         disabled: rows.length > 0 && sectionAdaptedCount === rows.length
       }, t('fullpack.policy_omit_adapted') || 'Omit Adapted Text'), sectionAdaptedTextPolicy === 'prohibited' && /*#__PURE__*/React.createElement("option", {
         value: "prohibited"
       }, t('fullpack.policy_adapted_prohibited') || 'Adaptation prohibited by sourced standard')), rows.length > 0 && sectionAdaptedCount === rows.length && /*#__PURE__*/React.createElement("span", {
         className: "mt-1 block normal-case font-medium tracking-normal"
-      }, t('fullpack.keep_non_adapted_first') || 'Add a non-adapted resource before turning this off.'))))), fullPackRun.status === 'ready' && /*#__PURE__*/React.createElement("details", {
+      }, t('fullpack.keep_non_adapted_first') || 'Add a non-adapted resource before turning this off.'))))), !isRunActive && sectionPrimaryTextAccess === 'required' && /*#__PURE__*/React.createElement("div", {
+        "data-testid": "full-pack-grade-level-reading",
+        "data-group-id": sectionGroupId || '',
+        className: "mt-2 rounded-xl border border-emerald-300 bg-emerald-50 px-2.5 py-2 text-xs leading-relaxed text-emerald-950"
+      }, /*#__PURE__*/React.createElement("p", {
+        className: "font-bold"
+      }, t('fullpack.grade_level_main_reading') || 'Main reading: the original with word supports'), /*#__PURE__*/React.createElement("p", {
+        className: "mt-0.5"
+      }, t('fullpack.grade_level_main_reading_help') || 'This standard asks students to read grade-level text, so the original stays the main reading. Word supports explain hard words beside the original words and do not change them.'), typeof handleReadOriginal === 'function' && /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-testid": "full-pack-open-supported-original",
+        onClick: () => handleReadOriginal(),
+        disabled: isProcessing || !hasSourceOrAnalysis,
+        className: "mt-2 min-h-10 rounded-lg border border-emerald-700 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+      }, t('fullpack.open_supported_original') || 'Open the original with supports'), fullPackRun.status === 'ready' && sectionAdaptedTextPolicy === 'omit' && /*#__PURE__*/React.createElement("div", {
+        className: "mt-2 border-t border-emerald-200 pt-2"
+      }, /*#__PURE__*/React.createElement("p", null, t('fullpack.no_companion_for_grade_level') || 'No adapted text is planned. You can add a companion to activate background knowledge, build context, and preview key concepts before students read the original.'), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-testid": "full-pack-include-companion",
+        "data-group-id": sectionGroupId || '',
+        onClick: () => handleSetFullPackPlanAdaptedTextPolicy('include', sectionGroupId),
+        className: "mt-2 min-h-10 rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+      }, t('fullpack.include_companion_for_preview') || 'Include an adapted companion for background and preview'))), fullPackRun.status === 'ready' && /*#__PURE__*/React.createElement("details", {
         "data-testid": "full-pack-add-options",
         className: "group/add mt-2 rounded-xl border border-slate-200 text-slate-700"
       }, /*#__PURE__*/React.createElement("summary", {

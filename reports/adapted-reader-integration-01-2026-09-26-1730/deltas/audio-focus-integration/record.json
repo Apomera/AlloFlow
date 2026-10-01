@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T22:52:59.540Z",
+  "label": "audio-focus-integration",
+  "patch": "d733e1c61faab61a3db53d1f365d17660808df9506103a62d868fa3ee43c4b45",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "f4c30a1be891016bc6c443e89d943bd4419fd685581a00ed29acdab1c3740b7c",
+      "after": "948b82ea22995c57a05f556b111e9137b6b350d8bd6d0bae757c1f73db1db31d",
+      "changed": true
+    }
+  ]
+}

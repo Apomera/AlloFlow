@@ -43,8 +43,16 @@ function runGate() {
   }
 }
 
+// desktop/app-build/ and desktop/web-app/build/ are gitignored build outputs, so a fresh checkout
+// (CI) has neither and every file there read as "missing from this copy". A build mirror is
+// compared only once it has been built; until then its test below is reported as skipped. The
+// source and the committed public mirror are always required.
+const BUILD_MIRRORS = ['desktop/app-build/sel_hub', 'desktop/web-app/build/sel_hub'];
+const isBuilt = (dir) => existsSync(resolve(process.cwd(), dir));
+
 describe('SEL four-copy parity', () => {
   const report = JSON.parse(runGate().out);
+  const detail = (findings) => findings.map((f) => `${f.mirror}/${f.file} — ${f.why}`).join('\n');
 
   it('knows about all three mirrors, not just the public one', () => {
     expect(report.mirrors).toContain('desktop/web-app/public/sel_hub');
@@ -57,19 +65,25 @@ describe('SEL four-copy parity', () => {
     expect(report.compared).toBeGreaterThan(60);
   });
 
-  it('finds no drift between any of the four copies', () => {
-    const detail = report.findings
-      .map((f) => `${f.mirror}/${f.file} — ${f.why}`)
-      .join('\n');
-    expect(report.findings, detail).toHaveLength(0);
+  it('finds no drift between the source and the committed public copy', () => {
+    const findings = report.findings.filter((f) => !BUILD_MIRRORS.includes(f.mirror));
+    expect(findings, detail(findings)).toHaveLength(0);
   });
+
+  for (const mirror of BUILD_MIRRORS) {
+    const unbuilt = !isBuilt(mirror);
+    it.skipIf(unbuilt)(`finds no drift in ${mirror}` + (unbuilt ? ' (skipped: gitignored build output not present)' : ''), () => {
+      const findings = report.findings.filter((f) => f.mirror === mirror);
+      expect(findings, detail(findings)).toHaveLength(0);
+    });
+  }
 
   it('the mirrors carry the crash-recovery panel', () => {
     // A spot check with teeth: this string was added to sel_hub_module.js on
     // 2026-09-15 and must have reached every copy, or a desktop student hits a
     // blank screen where a web student gets a way back.
     const NEEDLE = 'Your saved work has not been deleted';
-    for (const dir of ['sel_hub', ...report.mirrors]) {
+    for (const dir of ['sel_hub', ...report.mirrors.filter((m) => !BUILD_MIRRORS.includes(m) || isBuilt(m))]) {
       const p = resolve(process.cwd(), dir, 'sel_hub_module.js');
       expect(existsSync(p), `${dir}/sel_hub_module.js missing`).toBe(true);
       // eslint-disable-next-line global-require

@@ -941,6 +941,29 @@ function adventureEpisodeDepleted(state) {
   const energy = state.energy == null || state.energy === '' ? NaN : Number(state.energy);
   return Number.isFinite(energy) && energy <= 0 && !state.canStartSequel;
 }
+
+// The storybook setting counts XP EARNED in the adventure, but state.xp restarts at
+// each level-up (adventure_session_handlers: the first level takes 100, each next
+// one 1.5 times the last). Add the finished levels back. The host's Mission Report
+// card uses the same numbers through window.AlloModules.AdventureStorybookGate.
+function adventureXpEarned(state) {
+  var xp = Number.isFinite(Number(state && state.xp)) ? Math.max(0, Number(state.xp)) : 0;
+  var level = Math.max(1, Math.min(100, Math.floor(Number(state && state.level) || 1)));
+  for (var i = 1, need = 100; i < level; i++) {
+    xp += need;
+    need = Math.floor(need * 1.5);
+  }
+  return xp;
+}
+function adventureStorybookXpNeeded(state, minimumXP) {
+  var threshold = Number.isFinite(Number(minimumXP)) ? Math.max(0, Number(minimumXP)) : 0;
+  return Math.max(0, threshold - adventureXpEarned(state));
+}
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.AdventureStorybookGate = {
+  xpEarned: adventureXpEarned,
+  xpNeeded: adventureStorybookXpNeeded
+};
 function AdventureEpisodeRecap({
   state,
   t,
@@ -959,7 +982,7 @@ function AdventureEpisodeRecap({
   const _isDefeat = adventureEpisodeDepleted(state);
   const completed = adventureDecisionCount(state);
   const level = Number(state.level);
-  const xp = Number.isFinite(Number(state.xp)) ? Math.max(0, Number(state.xp)) : 0;
+  const xp = adventureXpEarned(state);
   const threshold = Number.isFinite(Number(minimumXP)) ? Math.max(0, Number(minimumXP)) : 0;
   const concepts = Array.from(new Map((Array.isArray(state.stats?.conceptsFound) ? state.stats.conceptsFound : []).filter(value => typeof value === 'string' && value.trim()).map(value => [value.trim().toLocaleLowerCase(), value.trim()])).values());
   const profile = mode === 'system' ? 'systems' : mode === 'debate' ? 'debate' : social ? 'social' : 'guided';
@@ -2180,6 +2203,31 @@ function AdventureView(props) {
   var isDebateSetup = adventureInputMode === 'debate' && adventureState.debatePhase === 'setup';
   var hasDebatePositions = isDebateSetup && Array.isArray(adventureState.currentScene?.options) && adventureState.currentScene.options.length > 0;
   var usesWrittenResponse = adventureFreeResponseEnabled && !hasDebatePositions;
+  // A restored finished choice story has no options; offer its ending instead of an empty choice area.
+  var sceneHasNoChoices = !!adventureState.currentScene && !adventureState.isGameOver && !adventureState.isLoading && !usesWrittenResponse && !(Array.isArray(adventureState.currentScene.options) && adventureState.currentScene.options.length);
+  var renderStoryEndedActions = function () {
+    return /*#__PURE__*/React.createElement("div", {
+      "data-adventure-story-ended": true,
+      className: "flex flex-col items-center gap-3 p-4 text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm font-semibold text-[var(--av-ink)]"
+    }, adventureSettingsText(t, 'story_ended_notice', 'This story has reached its ending.')), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap justify-center gap-2"
+    }, typeof setAdventureState === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => setAdventureState(prev => ({
+        ...prev,
+        isGameOver: true,
+        isLoading: false
+      })),
+      className: "min-h-11 px-4 py-2 rounded-xl font-bold text-sm border-2 border-[var(--av-accent)] bg-[var(--av-wash)] text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2"
+    }, adventureSettingsText(t, 'show_ending', 'Show the ending and recap')), typeof handleStartAdventure === 'function' && !(!isTeacherMode && activeSessionCode) && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleStartAdventure,
+      disabled: isProcessing,
+      className: "min-h-11 px-4 py-2 rounded-xl font-bold text-sm border border-[var(--av-control)] bg-[var(--av-surface)] text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 disabled:opacity-50"
+    }, adventureSettingsText(t, 'restart_confirm_button', 'Open new adventure setup'))));
+  };
   var renderDebateSetupGuide = function () {
     if (!isDebateSetup) return null;
     return /*#__PURE__*/React.createElement("p", {
@@ -2280,6 +2328,10 @@ function AdventureView(props) {
   var adventureThemeSeed = activeSessionCode ? 'session:' + String(activeSessionCode) : 'solo:' + String(adventureThemeAnchor && adventureThemeAnchor.text || adventureState.currentScene && adventureState.currentScene.text || adventureInputMode || 'adventure');
   var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
   var democracyActive = !!(sessionData && sessionData.democracy && sessionData.democracy.isActive);
+  // A live student with class voting off cannot choose (the handler only shows a
+  // toast), so the choices are disabled and say why instead of looking live.
+  var liveStudentWaiting = !isTeacherMode && !!activeSessionCode && !democracyActive;
+  var storybookXpNeeded = adventureStorybookXpNeeded(adventureState, studentProjectSettings && studentProjectSettings.adventureMinXP);
   var democracyVotes = democracyActive && sessionData.democracy.votes && typeof sessionData.democracy.votes === 'object' ? sessionData.democracy.votes : {};
   var democracyTotalVotes = Object.keys(democracyVotes).length;
   var democracyRosterTotal = sessionData && sessionData.roster && typeof sessionData.roster === 'object' ? Object.keys(sessionData.roster).length : 0;
@@ -2289,6 +2341,17 @@ function AdventureView(props) {
     return String(typeof option === 'object' && option && option.action ? option.action : option).trim();
   };
   var renderDemocracyStatus = function (isDark) {
+    if (!democracyActive && liveStudentWaiting) {
+      return /*#__PURE__*/React.createElement("div", {
+        role: "status",
+        "data-adventure-live-wait": true,
+        className: (isDark ? 'md:col-span-2 bg-indigo-950/80 border-indigo-300 text-indigo-100' : 'sm:col-span-2 bg-indigo-50 border-indigo-300 text-indigo-950') + ' rounded-xl border px-3 py-2 text-xs'
+      }, /*#__PURE__*/React.createElement("strong", {
+        className: "block"
+      }, t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'), /*#__PURE__*/React.createElement("span", {
+        className: "mt-0.5 block"
+      }, t('adventure.wait_for_class_vote') || 'When your teacher opens class voting, you can choose here.'));
+    }
     if (!democracyActive) return null;
     var message = isTeacherMode ? democracyAudienceTotal > 0 ? democracyTotalVotes + ' of ' + democracyAudienceTotal + ' students voted' : democracyTotalVotes + ' student votes received' : currentUserVote ? 'Vote submitted. Choose another option to change it.' : 'Choose one option. You can change your vote until the teacher continues.';
     return /*#__PURE__*/React.createElement("div", {
@@ -2480,14 +2543,19 @@ function AdventureView(props) {
     className: "bg-slate-50 p-4 rounded-xl border border-slate-400 text-sm text-slate-700 leading-relaxed max-h-[50vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, adventureState.narrativeLedger || t('adventure.ledger_empty')), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 flex flex-col gap-2"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, storybookXpNeeded > 0 && /*#__PURE__*/React.createElement("p", {
+    "data-ledger-storybook-locked": true,
+    className: "text-xs text-slate-700"
+  }, t('adventure.storybook_locked', {
+    needed: storybookXpNeeded
+  })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('adventure.storybook'),
     onClick: () => {
       setShowLedger(false);
       setShowStorybookExportModal(true);
     },
-    disabled: isProcessing || adventureState.history.length === 0,
+    disabled: isProcessing || adventureState.history.length === 0 || storybookXpNeeded > 0,
     "aria-busy": isProcessing,
     className: "min-h-11 w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -2783,7 +2851,7 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
-  }, t('adventure.view_button'))), /*#__PURE__*/React.createElement("button", {
+  }, t('adventure.view_button'))), !(!isTeacherMode && activeSessionCode) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "adventure_start_btn",
     onClick: handleStartAdventure,
@@ -3403,7 +3471,7 @@ function AdventureView(props) {
     immersive: true,
     loading: adventureState.isLoading,
     onRetry: handleRetryAdventureTurn
-  }) : adventureState.currentScene && (usesWrittenResponse ? /*#__PURE__*/React.createElement("div", {
+  }) : adventureState.currentScene && (sceneHasNoChoices ? renderStoryEndedActions() : usesWrittenResponse ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, !isTeacherMode && activeSessionCode ? /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -3447,7 +3515,7 @@ function AdventureView(props) {
         type: "button",
         "data-help-key": "adventure_choice_btn",
         onClick: () => handleAdventureChoice(opt),
-        disabled: adventureState.isLoading,
+        disabled: adventureState.isLoading || liveStudentWaiting,
         "aria-pressed": isDemocracy && !isTeacherMode ? isMyVote : undefined,
         className: "min-h-11 min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-3 rounded-xl text-left text-sm leading-relaxed font-semibold hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed"
       }, /*#__PURE__*/React.createElement("span", {
@@ -3631,7 +3699,7 @@ function AdventureView(props) {
     type: "button",
     onClick: handleSetIsEditingOptionsToFalse,
     className: "min-h-11 px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-500 hover:bg-slate-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
-  }, t('common.cancel')))) : !usesWrittenResponse ? /*#__PURE__*/React.createElement("div", {
+  }, t('common.cancel')))) : sceneHasNoChoices ? renderStoryEndedActions() : !usesWrittenResponse ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, renderDemocracyStatus(false), (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);
@@ -3656,7 +3724,7 @@ function AdventureView(props) {
         type: "button",
         "data-help-key": "adventure_choice_btn",
         onClick: () => handleAdventureChoice(opt),
-        disabled: adventureState.isLoading,
+        disabled: adventureState.isLoading || liveStudentWaiting,
         "aria-pressed": isDemocracy && !isTeacherMode ? isMyVote : undefined,
         className: "min-h-11 min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-3 rounded-xl text-left text-sm leading-relaxed font-semibold hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed"
       }, /*#__PURE__*/React.createElement("span", {
@@ -3669,7 +3737,15 @@ function AdventureView(props) {
         className: "min-w-0 pt-0.5 [overflow-wrap:anywhere]"
       }, typeof opt === 'object' && opt?.action ? opt.action : opt)), renderAdventureChoiceListen(opt, idx)), renderAdventureChoiceStatus(isDemocracy, isMyVote, voteCount, percent, isReadingThisOption));
     });
-  })()) : renderAdventureComposer(false), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
+  })()) : !isTeacherMode && activeSessionCode ? /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "data-adventure-live-wait": true,
+    className: "rounded-xl border border-indigo-300 bg-indigo-50 p-4 text-sm text-indigo-950"
+  }, /*#__PURE__*/React.createElement("strong", {
+    className: "block"
+  }, t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'), /*#__PURE__*/React.createElement("span", {
+    className: "mt-1 block"
+  }, t('adventure.wait_for_action_round') || 'When a class-action round opens, submit your idea in the private live prompt. Free responses and votes are sent peer to peer.')) : renderAdventureComposer(false), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-2 flex flex-col gap-2"
   }, renderStrategyHintCard(false), renderStrategyHintButton(false)), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center"

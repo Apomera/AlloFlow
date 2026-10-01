@@ -19,7 +19,7 @@ const pdfUaVerdict = (ltv) => {
   let label = null, fail = false, indep = false;
   if (_v && !_v.error) {
     indep = true; fail = _v.compliant === false;
-    label = fail ? ((_v.failedRules ? _v.failedRules.length : 0) + ' rule(s) fail') : 'conformant';
+    label = fail ? ((_v.failedRules ? _v.failedRules.length : 0) + ' rule(s) fail') : 'veraPDF automated checks pass';
   } else if (_pev) {
     fail = (_pev.fail || 0) > 0;
     label = (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0));
@@ -32,9 +32,14 @@ const pdfUaVerdict = (ltv) => {
 };
 
 describe('PDF/UA verdict derivation — prefers the independent veraPDF result', () => {
-  it('veraPDF compliant → ✅ conformant, marked independent', () => {
+  it('veraPDF compliant → ✅ automated checks pass (never "conformant"), marked independent', () => {
     expect(pdfUaVerdict({ veraPdf: { compliant: true, failedRules: [] } }))
-      .toEqual({ label: 'conformant', fail: false, indep: true });
+      .toEqual({ label: 'veraPDF automated checks pass', fail: false, indep: true });
+  });
+  it('anti-drift: the view badge uses the same honest label as this mirror', () => {
+    // 2026-09-28 (G1): a veraPDF pass covers the machine-checkable PDF/UA-1 rules only.
+    expect(viewSrc).toContain("' rule(s) fail') : 'veraPDF automated checks pass'; }");
+    expect(viewSrc).not.toContain("' rule(s) fail') : 'conformant'");
   });
   it('veraPDF non-compliant → ❌ with the failing rule count, independent', () => {
     expect(pdfUaVerdict({ veraPdf: { compliant: false, failedRules: [1, 2, 3] } }))

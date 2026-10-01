@@ -24,6 +24,7 @@ function makeWheelContext() {
     closePath: vi.fn(),
     drawImage: vi.fn(),
     fill: vi.fn(),
+    fillRect: vi.fn(),
     fillText: vi.fn(),
     moveTo: vi.fn(),
     stroke: vi.fn(),
@@ -99,7 +100,8 @@ describe('Art Studio color wheel accessibility', () => {
       artStudio: { tab: 'colorWheel', hue: 120, sat: 80, lit: 40, harmony: 'triadic' },
     });
 
-    expect(html).toContain('flex flex-col lg:flex-row gap-4');
+    expect(html).toContain('data-artstudio-wheel-layout="true"');
+    expect(html).toContain('[data-artstudio-wheel-preview]{grid-row:1}');
     expect(html).toContain('aria-label="Interactive color wheel. Hue 120 degrees, saturation 80 percent, lightness 40 percent."');
     expect(html).toContain('aria-describedby="artstudio-color-wheel-help"');
     expect(html).toContain('Shift+ArrowUp');

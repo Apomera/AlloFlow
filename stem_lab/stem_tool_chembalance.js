@@ -6426,7 +6426,7 @@
                     h('select', {
                       id: 'buf-acid', value: String(buf.idx),
                       onChange: function(e) { setBuf({ idx: parseInt(e.target.value, 10) }); },
-                      className: 'w-full min-h-[44px] text-xs border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                      className: 'w-full min-h-[44px] text-xs border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                       'aria-label': __alloT('stem.chembalance.choose_weak_acid', 'Choose a weak acid')
                     }, acids.map(function(a, i) {
                       return h('option', { key: i, value: String(i) }, a.name + ' (pKa ' + a.pKa + ')');
@@ -6571,7 +6571,7 @@
                   h('label', { htmlFor: id, className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' }, label),
                   h('select', {
                     id: id, value: value, onChange: onChange,
-                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': label
                   }, keys.map(function(k) {
                     return h('option', { key: k, value: k }, k + '  (' + sv(STANDARD_REDUCTION[k].e) + ' V)');
@@ -6914,7 +6914,7 @@
                   h('select', {
                     id: 'gibbs-preset', value: th.preset,
                     onChange: function(e) { setTh({ preset: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-xs border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-xs border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.chembalance.choose_reaction', 'Choose a reaction')
                   }, Object.keys(GIBBS_PRESETS).map(function(k) {
                     return h('option', { key: k, value: k }, GIBBS_PRESETS[k].label);
@@ -7292,7 +7292,7 @@
                   h('input', {
                     id: id, type: 'number', value: value, step: step, min: min,
                     onChange: onChange,
-                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': label + (unit ? ' in ' + unit : '')
                   })
                 );
@@ -7477,7 +7477,7 @@
                     id: 'nuc-isotope',
                     value: nuc.isotope,
                     onChange: function(e) { setNuc({ isotope: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.chembalance.choose_isotope', 'Choose an isotope')
                   }, isoNames.map(function(nm) {
                     return h('option', { key: nm, value: nm }, nm + ' — ' + humanYears(HALF_LIFE_YEARS[nm]));

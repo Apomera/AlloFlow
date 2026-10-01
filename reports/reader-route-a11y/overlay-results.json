@@ -1,0 +1,94 @@
+{
+  "browser": "148.0.7778.96",
+  "checks": [
+    {
+      "name": "touch-selection-close",
+      "passed": true
+    },
+    {
+      "name": "visual-viewport-keyboard-and-pan",
+      "passed": true
+    },
+    {
+      "name": "focus-keyboard-loop",
+      "passed": true
+    },
+    {
+      "name": "focus-short",
+      "passed": true
+    },
+    {
+      "name": "focus-double-text",
+      "passed": true
+    },
+    {
+      "name": "focus-forced-colors",
+      "passed": true
+    },
+    {
+      "name": "focus-dark",
+      "passed": true
+    },
+    {
+      "name": "focus-sepia",
+      "passed": true
+    },
+    {
+      "name": "crawl-keyboard-loop",
+      "passed": true
+    },
+    {
+      "name": "crawl-short",
+      "passed": true
+    },
+    {
+      "name": "crawl-double-text",
+      "passed": true
+    },
+    {
+      "name": "crawl-forced-colors",
+      "passed": true
+    },
+    {
+      "name": "karaoke-keyboard-loop",
+      "passed": true
+    },
+    {
+      "name": "karaoke-short",
+      "passed": true
+    },
+    {
+      "name": "karaoke-double-text",
+      "passed": true
+    },
+    {
+      "name": "karaoke-forced-colors",
+      "passed": true
+    },
+    {
+      "name": "karaoke-dark",
+      "passed": true
+    },
+    {
+      "name": "karaoke-sepia",
+      "passed": true
+    },
+    {
+      "name": "immersive-short",
+      "passed": true
+    },
+    {
+      "name": "immersive-double-text",
+      "passed": true
+    },
+    {
+      "name": "chunk-short",
+      "passed": true
+    },
+    {
+      "name": "chunk-double-text",
+      "passed": true
+    }
+  ],
+  "limits": "Synthetic viewport events, simulated doubled text and Chromium only; no real mobile keyboard or screen-reader verification."
+}

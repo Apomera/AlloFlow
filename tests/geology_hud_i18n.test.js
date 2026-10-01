@@ -176,11 +176,13 @@ describe('the engine writes the HUD through the host translator', () => {
   it('each writer passes the engine translator to its builder', () => {
     const src = (name) => source.slice(fnBody(name).start, fnBody(name).end);
     expect(src('fpUpdatePlayerStatus')).toMatch(/fpStatusLine\(\{[\s\S]*\}, geoT\)/);
-    expect((src('fpUpdateTargetLabel').match(/fpTargetLabelText\([^;]*, geoT\)/g) || []).length).toBe(4);
+    // four branches, plus the language probe in the label's cache key
+    expect((src('fpUpdateTargetLabel').match(/fpTargetLabelText\([^;]*, geoT\)/g) || []).length).toBe(5);
     expect(src('fpUpdateTargetLabel')).toContain('specimenSign(sign, geoT)');
     expect(src('fpUpdateDrillHud')).toContain('fpDrillReadoutText(fp.drillHeat, fp.drillOverheated, geoT)');
     expect(src('updateHoverCard3d')).toContain('fpHoverMetaText(f.depthKm, f.tempC, geoT)');
     expect(src('updateHoverCard3d')).toContain('rockTypeText(R.type, geoT)');
+    expect(src('updateHoverCard3d')).toContain("geoTE(row.label) + ' ' + geoTE(row.value)");   // measurement labels, like the info panel
     expect(source).toContain('opts.onFlash(fpProfileReasonText(profile.label, geoT))');
     expect(source).toContain('opts.onSpecimenSign({ sign: specimenSign(hiddenSpecimen.info.kind, geoT) })');
     expect(source).toContain('sign: specimenSign(nearest.info.kind, geoT) }');
@@ -430,5 +432,174 @@ describe('spoken readouts and the walk card follow the language', () => {
       const data = JSON.parse(fs.readFileSync(path.join(root, 'lang', pack + '.js'), 'utf8'));
       expect(P.geoSpokenTexts().filter((en) => typeof get(data, P.geoTextKey(en)) !== 'string'), pack).toEqual([]);
     }
+  });
+});
+
+// Round 17: the quiz, the lesson/assessment tables, the mission text, the panels and the engine's
+// messages follow the language too. Quiz notes stay keyed by the ENGLISH option (a translated
+// option maps back by position); mission text takes its existing mission.<id>.* keys.
+describe('quiz, lessons, panels and engine messages follow the language', () => {
+  const reg = JSON.parse(fs.readFileSync(path.join(root, 'ui_strings.js'), 'utf8'));
+  const get = (o, k) => k.split('.').reduce((x, p) => (x && typeof x === 'object' ? x[p] : undefined), o);
+  const PACKS = ['spanish_latin_america', 'french', 'portuguese_angola', 'arabic', 'ukrainian'];
+  const textLeak = (s) => String(s).replace(/km|°C|\bmin\b|\bm\b/g, '').match(/[A-Za-z]+/g) || [];
+  afterEach(() => { P.localizeGeologyText(null); P.localizeGeologyNames(null); });
+
+  const quizStrings = () => {
+    const out = [];
+    for (const bank of Object.values(P.quizBanks())) for (const q of bank.items) out.push(q.q, q.why, ...q.opts);
+    for (const scene of Object.keys(P.quizBanks())) P.quizBanks()[scene].items.forEach((_, i) => { const r = P.quizRemediation(scene, i); out.push(r.misconception, r.remedy); });
+    return out;
+  };
+  const listAndMapStrings = () => {
+    const out = [], lists = new Set(P.geoTextLists());
+    const walk = (n) => {
+      if (!n || typeof n !== 'object') return;
+      if (Array.isArray(n)) return n.forEach(walk);
+      for (const [k, v] of Object.entries(n)) {
+        if (lists.has(k) && Array.isArray(v)) v.forEach((x) => { if (typeof x === 'string') out.push(x); });
+        else if (v && typeof v === 'object') walk(v);
+      }
+    };
+    P.geoTextRoots().forEach(walk);
+    for (const map of P.geoValueMaps()) for (const v of Object.values(map)) out.push(v);
+    return out.filter((s) => /[A-Za-z]/.test(s));
+  };
+
+  it('with no translator the quiz is the English it always was, and the notes find their option', () => {
+    const before = quizStrings();
+    expect(before.length).toBeGreaterThan(200);
+    P.localizeGeologyText((k, fb) => fb);
+    expect(quizStrings()).toEqual(before);
+    expect(P.quizOptionNote('crust', 0, 'Sandstone')).toMatch(/sits above the limestone/);
+  });
+
+  it('with a translator no English survives in the quiz, and a translated option still gets its note', () => {
+    // Fullwidth letters: no ASCII left, yet distinct options stay distinct ('ẍ' for every letter would
+    // make "Limestone" and "Sandstone" one string; real packs are checked for distinct options).
+    const wide = (k, fb, vars) => fill(String(fb).replace(/\{[a-z_0-9]+\}|[A-Za-z]/gi, (m) => (m.length > 1 ? m : String.fromCharCode(m.charCodeAt(0) + 0xFEE0))), vars);
+    P.localizeGeologyText(wide);
+    for (const s of quizStrings()) expect(textLeak(s), s).toEqual([]);
+    for (const [scene, bank] of Object.entries(P.quizBanks())) {
+      bank.items.forEach((item, i) => item.opts.forEach((opt, o) => {
+        if (o === item.correct) return;
+        const note = P.quizOptionNote(scene, i, opt);
+        expect(note, scene + ':' + i + ':' + o).toBeTruthy();                 // found through the translated option
+        expect(textLeak(note), note).toEqual([]);                             // and it is the translated note
+      }));
+    }
+    expect(Object.keys(P.quizOptionNotes().crust[0])).toContain('Sandstone');   // the lookup keys stay English
+  });
+
+  it('lists, value maps and missions translate; mission text uses its own mission keys', () => {
+    P.localizeGeologyAll(pseudo);
+    for (const s of listAndMapStrings()) expect(textLeak(s), s).toEqual([]);
+    P.localizeGeologyAll(null);
+    const seen = [];
+    P.localizeGeologyAll((k, fb) => { seen.push(k); return fb; });
+    for (const id of Object.keys(P.missions())) {
+      for (const f of ['eyebrow', 'subtitle', 'question', 'evidence']) expect(seen, id + '.' + f).toContain('stem.geology.mission.' + id + '.' + f);
+      P.missions()[id].checklist.forEach((c) => expect(seen).toContain('stem.geology.mission.' + id + '.check.' + c.id));
+    }
+    expect(P.missions().crust.question).toBe('How can rock layers reveal a sequence of events?');
+  });
+
+  it('every list and value-map string is registered and in the five packs', () => {
+    const strings = listAndMapStrings();
+    expect(strings.length).toBeGreaterThan(80);
+    expect(strings.filter((en) => get(reg, P.geoTextKey(en)) !== en)).toEqual([]);
+    for (const pack of PACKS) {
+      const data = JSON.parse(fs.readFileSync(path.join(root, 'lang', pack + '.js'), 'utf8'));
+      expect(strings.filter((en) => typeof get(data, P.geoTextKey(en)) !== 'string'), pack).toEqual([]);
+    }
+  });
+
+  it('the helpers that build sentences are English with no translator and lose it with one', () => {
+    const layers = [{ name: '#1#', depthKm: 1.2, key: 'sandstone' }, { name: '#2#', depthKm: 3, key: 'shale' }];
+    const hintContext = { identifiedCount: 0, hasKeys: () => false };
+    expect([
+      P.mohsLine('quartzVein').text, P.mohsLine('pumice').text, P.digLogSummary(layers, 'crust'),
+      P.cutawayReadout(0, 14).label, P.cutawayReadout(13, 14).label, P.coreRigStopLabel('fluid'),
+      P.coreRigCertificationGuidance({ attempts: 1, lastScore: 10, lastIntegrity: 50 }),
+      P.nextMissionHint(P.missions().crust, hintContext, 'crust').text
+    ]).toEqual([
+      'Quartz: hardness 7 (Mohs), harder than steel: it would scratch your pick.',
+      'Glass walls: hardness 5–6 (Mohs), about as hard as steel. It crumbles because it is full of gas holes, not because it is soft.',
+      '#1# (≈ 1.2 km) → #2# (≈ 3 km). Deeper layers formed first, so the rock got older as you dug (superposition).',
+      'Full block', '93% cut away from front · final section', 'water boundary',
+      'Need Grade C · Need 85% integrity · Recover 75% and finish at target or protected boundary',
+      'Select any three materials so you can compare their depth, type, and formation story.'
+    ]);
+    P.localizeGeologyText(pseudo);
+    const translated = [
+      P.mohsLine('quartzVein', pseudo).text, P.digLogSummary(layers, 'crust', pseudo),
+      P.cutawayReadout(13, 14, pseudo).label, P.coreRigStopLabel('hazard', pseudo),
+      P.coreRigCertificationGuidance({ attempts: 1, lastScore: 10, lastIntegrity: 50 }, pseudo),
+      P.coreRigTrajectorySummary({ recoverable: 6, requestedDepth: 9, variability: 'volatile', riskLevel: 'caution', transitions: 5, loadCounts: { preserve: 0, cruise: 3, torque: 0 } }, pseudo),
+      P.nextMissionHint(P.missions().crust, hintContext, 'crust', pseudo).text
+    ];
+    for (const s of translated) expect(textLeak(s.replace(/#\d#/g, '')), s).toEqual([]);
+    const cer = P.evaluateCER(P.missions().crust, { evidence: [1, 2], missionComplete: true }, { claim: 'x', explanation: '' }, pseudo);
+    for (const c of cer.criteria) { expect(textLeak(c.label), c.label).toEqual([]); expect(textLeak(c.feedback), c.feedback).toEqual([]); }
+  });
+
+  it("the reasoning check hears the student's own language, and a short connector must stand alone", () => {
+    const mission = P.missions().crust, ctx = { evidence: [1, 2], missionComplete: true };
+    const reasoning = (explanation, t) => P.evaluateCER(mission, ctx, { claim: 'The layers formed in order', explanation }, t).criteria.find((c) => c.id === 'reasoning').met;
+    const es = (k, fb) => (k === 'stem.geology.cer.causal_words' ? 'porque, por lo tanto, así que' : fb);
+    const spanish = 'Las capas de abajo son más antiguas porque se depositaron primero.';
+    expect(reasoning(spanish)).toBe(false);                       // "so" inside "son" is not a connector
+    expect(reasoning(spanish, es)).toBe(true);                    // "porque", in the student's language
+    expect(reasoning('The bottom layer is oldest because it was deposited first of all.')).toBe(true);
+    expect(reasoning('The bottom layer was laid first, so it is the oldest one here.')).toBe(true);
+    expect(reasoning('The layers also look different at the bottom of the core sample.')).toBe(false);
+    expect(reasoning('The bottom layer is oldest because it was deposited first of all.', es)).toBe(true);   // English still counts
+  });
+
+  it('every key the tool names (panels t/tf, engine geoT) is registered, one English per key', () => {
+    const unq = (s) => s.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+    const lit = /(?<![\w$.])(t|tf|geoT)\(\s*'(stem\.geology\.[A-Za-z0-9_.]+)'\s*,\s*'((?:[^'\\]|\\.)*)'/g;
+    const seen = {}; let m;
+    while ((m = lit.exec(source))) (seen[m[2]] = seen[m[2]] || new Set()).add(unq(m[3]));
+    expect(Object.keys(seen).length).toBeGreaterThan(900);
+    const bad = [];
+    for (const [k, ens] of Object.entries(seen)) {
+      if (typeof get(reg, k) !== 'string') bad.push('unregistered ' + k);
+      if (ens.size > 1) bad.push('one key, two Englishes: ' + k + ' ' + JSON.stringify([...ens]));
+    }
+    expect(bad, bad.slice(0, 8).join('\n')).toEqual([]);
+  });
+
+  it('the round-17 keys are in all five packs', () => {
+    const OLD_RIG = new Set(['scanning', 'cooling', 'drilling', 'stabilizing', 'start_bore', 'adjust_trajectory', 'end_bore', 'relocate', 'pack']);
+    const keys = [];
+    const walk = (o, p) => { for (const [k, v] of Object.entries(o)) { const q = p + '.' + k; if (v && typeof v === 'object') walk(v, q); else keys.push(q); } };
+    for (const g of ['ui', 'eng', 'cer', 'mohs', 'compass']) walk(reg.stem.geology[g], 'stem.geology.' + g);
+    walk(reg.stem.geology.rig, 'stem.geology.rig');
+    const wanted = keys.filter((k) => !(k.startsWith('stem.geology.rig.') && OLD_RIG.has(k.split('.').pop())));
+    expect(wanted.length).toBeGreaterThan(450);
+    for (const pack of PACKS) {
+      const data = JSON.parse(fs.readFileSync(path.join(root, 'lang', pack + '.js'), 'utf8'));
+      expect(wanted.filter((k) => typeof get(data, k) !== 'string'), pack).toEqual([]);
+    }
+  });
+
+  it('the host and engine pass their translator to every helper that builds a sentence', () => {
+    for (const call of ['mohsLine(found.kind, t)', 'sceneSpecimenCatalog(scene, t)', 'digLogSummary(entry.layers, sceneId, t)', 'cutawayReadout(slice, NZ, t)',
+      'nextMissionHint(mission, context, SCENE.id, t)', 'evidenceMapDraft(mission, evidence, mapAssignments, t)', 'coreRigTrajectorySummary(rigTrajectory, t)',
+      'coreRigCompareReports(previousCoreLog, latestCoreLog, t)', 'coreRigNextExperiment(cleanReport, certification.entry, t)', 'coreRigCertificationGuidance(selectedCoreProgram, t)',
+      'coreRigIntervalFeedback(sample3d.name, intervalIntegrity3d, coreRigState3d.pristineStreak, geoT)', 'layerCauseText(landing.cause, geoT)', 'layerCauseText(cause, t)']) {
+      expect(source, call).toContain(call);
+    }
+    expect((source.match(/evaluateCER\(mission, Object\.assign\([^;]*?, t\)/g) || []).length).toBe(2);
+    expect(source).toContain("var geoTE = function (en) { return typeof en === 'string' && en ? geoT(geoTextKey(en), en) : en; };");
+  });
+
+  it('the compass letters and the reticle label follow the language (and the tool)', () => {
+    expect(source).toContain("var compassLetters = [t('stem.geology.compass.n', 'N')");
+    expect(source).toContain('label = compassLetters[point]');
+    expect(source).not.toMatch(/\['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'\]/);
+    const body = source.slice(source.indexOf('function fpUpdateTargetLabel('), source.indexOf('function fpPropRayDistance('));
+    expect(body).toContain("key += '|' + fp.tool + '|' + fpTargetLabelText({}, geoT);");
   });
 });

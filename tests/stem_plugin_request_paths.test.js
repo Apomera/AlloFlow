@@ -15,15 +15,18 @@
 // no test can execute, so the pin is that each setter is preceded by a request.
 
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import { describe, it, expect, beforeAll } from 'vitest';
 
 const ANTI = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
-const handlers = fs.readFileSync('misc_handlers_source.jsx', 'utf8');
+const handlers = readSourceFile('misc_handlers_source.jsx', 'utf8');
 const MODULE = 'stem_lab/stem_lab_module.js';
 let sources;
 
 beforeAll(() => {
-  sources = ANTI.map((p) => ({ path: p, text: fs.readFileSync(p, 'utf8') }));
+  sources = ANTI.map((p) => ({ path: p, text: readSourceFile(p, 'utf8') }));
 });
 
 describe('STEM tool entry points request their plugin', () => {
@@ -60,6 +63,8 @@ describe('STEM tool entry points request their plugin', () => {
         if (!m) return;
         // destructuring/prop-passing mentions are not calls that activate a tool
         if (/setStemLabTool[,}]/.test(line) || /setStemLabTool=\{/.test(line)) return;
+        // nor is the host's __alloHostDeps getter row (`get setStemLabTool() { return setStemLabTool; }`, wave 3)
+        if (/\bget setStemLabTool\(\) \{ return setStemLabTool; \}/.test(line)) return;
         const window5 = lines.slice(Math.max(0, i - 5), i + 1).join('\n');
         if (!/_alloRequestStemPlugin\(/.test(window5)) offenders.push((i + 1) + ': ' + line.trim().slice(0, 90));
       });
@@ -70,13 +75,13 @@ describe('STEM tool entry points request their plugin', () => {
 
 describe('host self-heals if a future entry point forgets', () => {
   it('requests the plugin when the skeleton renders with no load state', () => {
-    const mod = fs.readFileSync(MODULE, 'utf8');
+    const mod = readSourceFile(MODULE, 'utf8');
     // an empty status is the only state that never resolves on its own
     expect(mod).toMatch(/if \(!_pluginStatus\) \{[\s\S]{0,220}__alloEnsureStemPluginLoaded/);
   });
 
   it('keeps the error card for statuses that did resolve', () => {
-    const mod = fs.readFileSync(MODULE, 'utf8');
+    const mod = readSourceFile(MODULE, 'utf8');
     expect(mod).toContain("if (['error', 'loaded'].indexOf(_pluginStatus) !== -1) {");
   });
 });

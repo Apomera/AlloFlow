@@ -1,0 +1,28 @@
+import {afterEach,beforeAll,describe,it,expect} from 'vitest';
+import {React,ReactDOMClient,loadTool,makeCtx,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+globalThis.IS_REACT_ACT_ENVIRONMENT=true;let cfg,mounted;
+const box=extra=>({shape:'box',size:[1,2,.5],position:[1,.5,-1],rotation:[0,0,0],color:'#60a5fa',group:'Pair',...extra});
+beforeAll(()=>{resetStemLab();cfg=loadTool('stem_lab/stem_tool_geosandbox.js','geoSandbox');});
+afterEach(()=>{if(mounted){React.act(()=>mounted.root.unmount());mounted.container.remove();mounted=null;}});
+function mount(parts=[box()],bucket={}){const container=document.createElement('div');document.body.appendChild(container);const v={container,root:ReactDOMClient.createRoot(container)};function Host(){const[data,setData]=React.useState({_threeLoaded:true,geoSandbox:{mode:'sculpt',sculptRecipe:{parts},...bucket}});v.state=data.geoSandbox;return cfg.render(makeCtx({toolData:data,setToolData:setData}));}mounted=v;React.act(()=>v.root.render(React.createElement(Host)));click(container.querySelector('#geo-sculpt-tab-edit'));return v;}
+function click(el){expect(el).toBeTruthy();React.act(()=>el.click());}
+function field(label){const el=mounted.container.querySelector('[aria-label="'+label+'"]');expect(el).toBeTruthy();return el;}
+function value(el,v,blur=false){React.act(()=>{const proto=el.tagName==='SELECT'?window.HTMLSelectElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(el,String(v));el.dispatchEvent(new window.Event('input',{bubbles:true}));el.dispatchEvent(new window.Event('change',{bubbles:true}));if(blur)el.dispatchEvent(new window.FocusEvent('focusout',{bubbles:true}));});}
+function history(name){click([...mounted.container.querySelectorAll('button')].find(el=>el.textContent.trim()===name));}
+
+
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');let P3D;
+beforeAll(()=>{new Function(readFileSync('prim3d_module.js','utf8'))();P3D=window.AlloModules.Prim3D;});
+function mesh(shape,quality){return P3D.buildObject(THREE,{parts:[{shape,size:[.6,.16,.8],position:[0,.76,0],rotation:[0,0,0],color:'#3e91b5',finish:'gloss'}]},{surfaceQuality:quality}).children[0];}
+describe('Sculpt curve quality',()=>{
+ it.each(['sphere','cylinder','cone','torus'])('increases %s detail while preserving its defining dimensions',shape=>{const light=mesh(shape,'light'),smooth=mesh(shape,'smooth'),fine=mesh(shape,'fine');expect(smooth.geometry.attributes.position.count).toBeGreaterThan(light.geometry.attributes.position.count);expect(fine.geometry.attributes.position.count).toBeGreaterThan(smooth.geometry.attributes.position.count);const strip=p=>Object.fromEntries(Object.entries(p).filter(([key])=>!key.toLowerCase().includes('segments')));expect(strip(smooth.geometry.parameters)).toEqual(strip(light.geometry.parameters));expect(strip(fine.geometry.parameters)).toEqual(strip(light.geometry.parameters));expect(fine.position.toArray()).toEqual(light.position.toArray());expect(fine.material.roughness).toBe(light.material.roughness);expect(fine.material.color.getHexString()).toBe('3e91b5');});
+ it('retains legacy detail for other callers and unknown options',()=>{for(const shape of ['sphere','cylinder','cone','torus']){expect(mesh(shape).geometry.parameters).toEqual(mesh(shape,'light').geometry.parameters);expect(mesh(shape,'unknown').geometry.parameters).toEqual(mesh(shape,'light').geometry.parameters);}});
+ it('does not subdivide flat boxes when quality increases',()=>{expect(mesh('box','fine').geometry.parameters).toEqual(mesh('box','light').geometry.parameters);});
+ it('leaves recipe data and analytic measurements unchanged',()=>{const recipe={parts:[box({shape:'torus',size:[.6,.16,.4]})]},before=JSON.stringify(recipe),measure=window.StemLab.geoPure.geoSculptMeasure(recipe,2.6);P3D.buildObject(THREE,recipe,{surfaceQuality:'fine'});expect(JSON.stringify(recipe)).toBe(before);expect(window.StemLab.geoPure.geoSculptMeasure(recipe,2.6)).toEqual(measure);});
+ it('defaults the sculpt setting to Smooth and changes only the workspace preference',()=>{const v=mount(),before=JSON.stringify(v.state.sculptRecipe);expect(field('Curve quality').value).toBe('smooth');value(field('Curve quality'),'fine');expect(v.state.sculptSurfaceQuality).toBe('fine');expect(JSON.stringify(v.state.sculptRecipe)).toBe(before);expect([...v.container.querySelectorAll('button')].find(b=>b.textContent==='↶ Undo').disabled).toBe(true);});
+ it('restores Lightweight and preserves redo when quality changes',()=>{const v=mount(undefined,{sculptSurfaceQuality:'light'});expect(field('Curve quality').value).toBe('light');value(field('Width (u)'),3,true);history('↶ Undo');const before=JSON.stringify(v.state.sculptRecipe);value(field('Curve quality'),'fine');expect(JSON.stringify(v.state.sculptRecipe)).toBe(before);expect([...v.container.querySelectorAll('button')].find(b=>b.textContent==='Redo').disabled).toBe(false);});
+ it('restores Smooth with display reset without changing the sculpture',()=>{const v=mount(undefined,{sculptSurfaceQuality:'fine'}),before=JSON.stringify(v.state.sculptRecipe);click([...v.container.querySelectorAll('button')].find(b=>b.textContent==='Reset display settings'));expect(field('Curve quality').value).toBe('smooth');expect(v.state.sculptSurfaceQuality).toBe('smooth');expect(JSON.stringify(v.state.sculptRecipe)).toBe(before);});
+ it('uses Smooth for an invalid saved preference',()=>{mount(undefined,{sculptSurfaceQuality:'invalid'});expect(field('Curve quality').value).toBe('smooth');});
+});

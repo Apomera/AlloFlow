@@ -1,0 +1,634 @@
+===================================================================
+--- a/resource_read_aloud_module.js
++++ b/resource_read_aloud_module.js
+@@ -297,7 +297,125 @@
+         canPrepare && e('button', { type: 'button', className: buttonClass, disabled: busy || !allowRuntimeAi, onClick: () => prepare(segment), 'aria-label': tr('regenerate', 'Regenerate clip') + ': ' + segment.text }, tr('regenerate', 'Regenerate clip') + ' · ' + tr(states[index].status, states[index].status)),
+         states[index].status === 'ready' && e('a', { className: 'inline-flex min-h-11 items-center rounded-lg px-3 text-sm underline focus-visible:ring-2 focus-visible:ring-teal-600', href: states[index].url || states[index].storedUrl, download: 'read-aloud-' + (index + 1) + clipExtension(resource, segment) }, tr('download', 'Download clip'))))));
+   }
++  // Device persistence is a separate operation from generating or attaching clips.
++  // Only the host's current-resource readback can establish the saved count.
++  function DeviceSaveStatus({ resourceId, contextKey, entries = [], profile, payload, refreshToken, activePlayback = false, t }) {
++    const React = window.React, e = React.createElement;
++    const tr = (key, fallback) => { const value = typeof t === 'function' ? t('audio_device.' + key) : null; return value && value !== 'audio_device.' + key ? value : fallback; };
++    const key = JSON.stringify([resourceId, contextKey, entries, profile]);
++    const current = React.useRef(null), readRequest = React.useRef(null), saveRequest = React.useRef(null);
++    const [snapshot, setSnapshot] = React.useState(null), [saving, setSaving] = React.useState(null), [notice, setNotice] = React.useState(null), [reading, setReading] = React.useState(null);
++    const [, tick] = React.useState(0);
++    const store = window.AlloModules?.KaraokeAudioStore?.current;
++    const revision = store?.getRevision?.();
++    current.current = { key, payload, store, revision, activePlayback };
++    const owns = request => request && current.current.key === request.key && current.current.payload === request.payload && current.current.store === request.store && current.current.revision === request.revision;
++    const value = owns(snapshot) ? snapshot.value : null;
++    const busy = saving === key;
++    const retryAvailable = typeof window.__alloRetryReadAloudPersistence === 'function';
++    const message = notice?.key === key ? notice.text : '';
++    const count = n => Number.isInteger(n) && n >= 0;
++    const valid = result => result && result.scope === 'device-audio' && String(result.resourceId) === String(resourceId) &&
++      count(result.total) && result.total === entries.length && count(result.ready) && result.ready <= result.total &&
++      count(result.durableReady) && result.durableReady <= result.ready;
++    const refresh = React.useRef(null);
++    const bounded = (operation, request) => {
++      const timeout = new Promise((_, reject) => {
++        request.timer = setTimeout(() => { request.controller?.abort(); reject(new Error('Device storage timed out')); }, 15000);
++      });
++      // Invoke against the host selected by this event, before navigation can
++      // replace its resource-scoped API during a queued microtask.
++      let work;
++      try { work = operation(); } catch (error) { work = Promise.reject(error); }
++      return Promise.race([work, timeout]).finally(() => clearTimeout(request.timer));
++    };
++    refresh.current = async (explicit = false) => {
++      const request = { ...current.current, explicit };
++      clearTimeout(readRequest.current?.timer);
++      readRequest.current = request;
++      setSnapshot(null);
++      setReading({ key, explicit });
++      let result = null;
++      try {
++        if (resourceId != null && entries.length && typeof window.__alloGetReadAloudReadiness === 'function') {
++          result = await bounded(() => window.__alloGetReadAloudReadiness(entries.map(entry => entry.text), 'reference', { entries, profile }), request);
++        }
++      } catch (_) {}
++      if (readRequest.current !== request || !owns(request)) return;
++      setSnapshot({ ...request, value: valid(result) ? result : null });
++      setReading(null);
++    };
++    React.useEffect(() => {
++      const update = event => {
++        if (event?.detail?.resourceId != null && String(event.detail.resourceId) !== String(resourceId)) return;
++        if (event?.type === 'visibilitychange' && document.visibilityState === 'hidden') return;
++        // Read the revision at event time, including mutations without a parent render.
++        const live = window.AlloModules?.KaraokeAudioStore?.current;
++        current.current = { ...current.current, store: live, revision: live?.getRevision?.() };
++        tick(n => n + 1);
++        refresh.current();
++      };
++      const events = ['alloflow:offline-media-persistence', 'alloflow:karaoke-audio-updated', 'alloflow:karaoke-audio-capture', 'alloflow:read-aloud-reconciled', 'alloflow:module-registry-changed', 'focus', 'pageshow'];
++      events.forEach(name => window.addEventListener(name, update));
++      document.addEventListener('visibilitychange', update);
++      const unsubscribe = store?.subscribe?.(update);
++      refresh.current();
++      return () => {
++        events.forEach(name => window.removeEventListener(name, update));
++        document.removeEventListener('visibilitychange', update);
++        if (typeof unsubscribe === 'function') unsubscribe();
++        clearTimeout(readRequest.current?.timer); readRequest.current = null;
++      };
++    }, [key, payload, refreshToken, store]);
++    React.useEffect(() => {
++      setSaving(null); setNotice(null);
++      return () => {
++        const request = saveRequest.current;
++        saveRequest.current = null;
++        clearTimeout(request?.timer);
++        request?.controller.abort();
++      };
++    }, [key]);
++    const retry = async () => {
++      if (saveRequest.current || !value?.ready || typeof window.__alloRetryReadAloudPersistence !== 'function') return;
++      const request = { key, controller: new AbortController() };
++      saveRequest.current = request;
++      setSaving(key); setNotice(null);
++      const isCurrent = () => saveRequest.current === request && current.current.key === key;
++      try {
++        const result = await bounded(() => window.__alloRetryReadAloudPersistence('reference', { signal: request.controller.signal }), request);
++        if (!isCurrent()) return;
++        if (!result || result.status === 'failed') throw new Error('Device save did not complete');
++        // A write receipt alone must never promote attached clips to saved.
++        await refresh.current(true);
++      } catch (_) {
++        if (isCurrent()) {
++          setNotice({ key, text: tr('retry_failed', 'Device save could not be completed. Check the saved count and try again.') });
++          refresh.current();
++        }
++      } finally {
++        if (isCurrent()) { saveRequest.current = null; setSaving(null); }
++      }
++    };
++    const verified = value && typeof value.verifiedAt === 'string' && Number.isFinite(Date.parse(value.verifiedAt));
++    const checking = reading?.key === key;
++    const status = checking ? tr('checking', 'Checking device save…') : value
++      ? value.ready + '/' + value.total + ' ' + tr('ready', 'clips ready to play') + '. ' +
++        (verified ? value.durableReady + '/' + value.total + ' ' + tr('saved', 'saved on this device') + '.' : tr('unverified', 'Device save not verified.'))
++      : tr('unverified', 'Device save not verified.');
++    const actionClass = 'min-h-11 min-w-11 max-w-full rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
++    // Both actions stay mounted so a background result cannot remove focus.
++    return e('section', { 'data-device-audio-status': true, 'aria-label': tr('label', 'Read-aloud device storage'), className: 'w-full min-w-0 max-w-full rounded-xl border p-3 text-sm', style: { overflowWrap: 'anywhere' } },
++      e('p', { role: 'status', 'aria-live': activePlayback && !(checking ? reading.explicit : snapshot?.explicit) ? 'off' : 'polite', 'aria-atomic': 'true', 'data-device-audio-count': true }, status),
++      e('p', { className: 'my-2' }, tr('scope', 'This check covers reference read-aloud audio on this device. Sharing, downloads and personal recordings need their own checks.')),
++      e('div', { className: 'flex min-w-0 flex-wrap gap-2' },
++        e('button', { type: 'button', className: actionClass, onClick: () => { setNotice(null); refresh.current(true); }, 'data-device-audio-check': true }, tr('check', 'Check device save')),
++        e('button', { type: 'button', className: actionClass, onClick: retry, 'data-device-audio-retry': true, 'aria-disabled': busy || !value?.ready || !retryAvailable, 'aria-busy': busy }, tr('retry', 'Retry device save'))),
++      e('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mt-2' }, busy ? tr('saving', 'Saving existing clips on this device…') : message),
++      !retryAvailable && e('p', { className: 'mt-2' }, tr('tools_loading', 'Device save tools are still loading. Check again shortly.')),
++      !value?.ready && e('p', { className: 'mt-2' }, tr('prepare_first', 'Prepare audio, then check again. Retrying device save uses existing clips; it does not generate speech.')));
++  }
+   window.AlloModules = window.AlloModules || {};
+-  window.AlloModules.ResourceReadAloud = { register, supports: type => adapters.has(type), enumerate, portableAudio, deliveryLimits, sharingReview, SharingCheck, Controls, CueControls, LocalText };
++  window.AlloModules.ResourceReadAloud = { register, supports: type => adapters.has(type), enumerate, portableAudio, deliveryLimits, sharingReview, SharingCheck, Controls, CueControls, LocalText, DeviceSaveStatus };
+   window.AlloModules.ResourceReadAloudModule = true;
+ })();
+===================================================================
+--- a/view_faq_source.jsx
++++ b/view_faq_source.jsx
+@@ -72,11 +72,12 @@
+     var regenAudioKey_state = React.useState(null);
+     var regenAudioKey = regenAudioKey_state[0];
+     var setRegenAudioKey = regenAudioKey_state[1];
+-    var setAudioStatusTick = React.useState(0)[1];
++    var audioStatusState = React.useState(0);
++    var audioStatusTick = audioStatusState[0], setAudioStatusTick = audioStatusState[1];
+     var audioNoticeState = React.useState('');
+     var audioNotice = audioNoticeState[0], setAudioNotice = audioNoticeState[1];
+     var audioRequestRef = React.useRef(null);
+-    var audioContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.data, selectedVoice, effectiveLanguage]);
++    var audioContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.data, selectedVoice, effectiveLanguage, voiceSpeed]);
+     var audioContextRef = React.useRef(audioContext);
+     audioContextRef.current = audioContext;
+     React.useEffect(function () {
+@@ -99,7 +100,8 @@
+       if (typeof window === 'undefined') return;
+       var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
+       window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+-      return function () { window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate); };
++      window.addEventListener('alloflow:module-registry-changed', onAudioUpdate);
++      return function () { window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate); window.removeEventListener('alloflow:module-registry-changed', onAudioUpdate); };
+     }, []);
+     var cleanSentenceForAudio = function (sentence) {
+       try {
+@@ -175,7 +177,9 @@
+         } else if (result && result.remaining) {
+           setAudioNotice(label('faq.audio_save_incomplete', 'Some audio clips are still missing. Save TTS again to retry.'));
+         } else if (result && result.ok) {
+-          setAudioNotice(label('faq.audio_saved', 'Audio is saved for all FAQ sentences.'));
++          setAudioNotice(label('faq.audio_prepared', 'Audio prepared. Check device save to confirm storage.'));
++        } else {
++          setAudioNotice(label('faq.audio_prepare_unconfirmed', 'Audio preparation was not confirmed. Try Save TTS again.'));
+         }
+         setAudioStatusTick(function (n) { return n + 1; });
+       } catch (_) {
+@@ -205,7 +209,7 @@
+         if (!url) throw new Error('No audio returned');
+         if (isCurrentAudioRequest(request)) {
+           setAudioStatusTick(function (n) { return n + 1; });
+-          setAudioNotice(label('faq.audio_sentence_saved', 'Sentence audio saved.'));
++          setAudioNotice(label('faq.audio_sentence_prepared', 'Sentence audio ready. Check device save to confirm storage.'));
+         }
+       } catch (_) {
+         if (isCurrentAudioRequest(request)) setAudioNotice(label('faq.audio_sentence_failed', 'Sentence audio could not be generated. Please try again.'));
+@@ -228,7 +232,16 @@
+         return <button key={key} type="button" onClick={() => handleRegenerateFaqAudioSentence(sentence, key)} disabled={!!regenAudioKey || prepState.busy} className={`min-h-11 min-w-11 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none ${audioStatus === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : audioStatus === 'stale' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`} title={`${audioStatus === 'ready' ? 'TTS ready' : audioStatus === 'stale' ? 'TTS saved with different settings' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${audioStatus === 'ready' ? 'Ready TTS' : audioStatus === 'stale' ? 'Stale TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : audioStatus === 'ready' ? <CheckCircle2 size={12} /> : audioStatus === 'stale' ? <RefreshCw size={12} /> : <Volume2 size={12} />}<span>{sIdx + 1}</span></button>;
+       })}</div>;
+     };
+-    return <div className="space-y-6">{audioNotice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
++    var DeviceSaveStatus = window.AlloModules?.ResourceReadAloud?.DeviceSaveStatus;
++    var faqAudioOccurrences = new Map();
++    var faqAudioEntries = getFaqAudioSentences().map(function (text) {
++      var occurrence = faqAudioOccurrences.get(text) || 0;
++      faqAudioOccurrences.set(text, occurrence + 1);
++      return { text: text, occurrence: occurrence, language: effectiveLanguage };
++    });
++    return <div className="space-y-6">{isTeacherMode && (DeviceSaveStatus
++      ? <DeviceSaveStatus resourceId={generatedContent?.id || generatedContent?.resourceId} contextKey={audioContext} entries={faqAudioEntries} profile={{voice: selectedVoice, language: effectiveLanguage, speed: voiceSpeed, synthesisRate: voiceSpeed, voiceResolverVersion: 2}} payload={generatedContent?.karaokeAudio} refreshToken={audioStatusTick} activePlayback={isPlaying && playingContentId === 'faq-active'} t={t} />
++      : <p role="status">{label('faq.device_unverified', 'Device save not verified. Audio tools are still loading.')}</p>)} {audioNotice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
+             e.stopPropagation();
+             audioRef.current?.pause();
+             playbackSessionRef.current = null;
+===================================================================
+--- a/immersive_reader_source.jsx
++++ b/immersive_reader_source.jsx
+@@ -1090,7 +1090,7 @@
+ // falls back to the device voice and the next Play starts FRESH. 20s: real
+ // generation lands in 2–8s; nobody in a classroom waits 45.
+ const KARAOKE_RESOLVE_WATCHDOG_MS = 20000;
+-const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenceLanguages, onClose, isOpen, getAudioUrl, isTeacher, playbackOnly = false, captureOn: captureOnProp, onCaptureChange }) => {
++const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenceLanguages, onClose, isOpen, getAudioUrl, isTeacher, playbackOnly = false, captureOn: captureOnProp, onCaptureChange, resourceId, audioSaveContext, audioProfile, audioPayload }) => {
+     const { t } = useContext(LanguageContext);
+     const dialogRef = useOverlayDialogFocus(isOpen);
+     const [sentences, setSentences] = useState([]);
+@@ -1104,6 +1104,23 @@
+     // globals; the player picks up the new audio through the shared store.
+     const [regenBusy, setRegenBusy] = useState(false);
+     const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
++    const prepareRequestRef = useRef(null);
++    const saveScope = JSON.stringify([isOpen, resourceId, audioSaveContext, sentenceList, text]);
++    const saveScopeRef = useRef(saveScope);
++    saveScopeRef.current = saveScope;
++    const captureOwnerRef = useRef({ scope: saveScope });
++    if (captureOwnerRef.current.scope !== saveScope) captureOwnerRef.current = { scope: saveScope };
++    useEffect(() => () => { captureOwnerRef.current = { scope: null }; }, []);
++    const [deviceSaveTick, setDeviceSaveTick] = useState(0);
++    useEffect(() => {
++        setPrepState(null);
++        return () => { const request = prepareRequestRef.current; prepareRequestRef.current = null; request?.controller.abort(); };
++    }, [saveScope]);
++    useEffect(() => {
++        const update = () => setDeviceSaveTick(n => n + 1);
++        window.addEventListener('alloflow:module-registry-changed', update);
++        return () => window.removeEventListener('alloflow:module-registry-changed', update);
++    }, []);
+     const [localCaptureOn, setLocalCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
+     const captureOn = !playbackOnly && (typeof captureOnProp === 'boolean' ? captureOnProp : localCaptureOn);
+     const captureOnRef = useRef(captureOn);
+@@ -1204,6 +1221,14 @@
+     const captureIssueRef = useRef({ limit: false, message: '' });
+     const [captureSaveState, setCaptureSaveState] = useState({ pending: 0, failed: 0, limit: false, message: '' });
+     const [captureRetrying, setCaptureRetrying] = useState(false);
++    const captureRetryOwnerRef = useRef(null);
++    useEffect(() => {
++        setCaptureRetrying(false);
++        captureRetryRef.current.clear(); capturePendingRef.current.clear();
++        captureIssueRef.current = { limit: false, message: '' };
++        setCaptureSaveState({ pending: 0, failed: 0, limit: false, message: '' });
++        return () => { const request = captureRetryOwnerRef.current; captureRetryOwnerRef.current = null; request?.controller.abort(); };
++    }, [saveScope]);
+     const refreshCaptureSaveState = useCallback(() => {
+         setCaptureSaveState({
+             pending: capturePendingRef.current.size,
+@@ -1315,6 +1340,7 @@
+         // Duplicated sentences are distinct segments: key pending/retry state
+         // per occurrence so twin captures never collapse into one entry.
+         const occ = Number.isInteger(occurrence) && occurrence >= 0 ? occurrence : 0;
++        const scope = captureOwnerRef.current;
+         const key = captureKeyFor(sentenceText) + '::occ' + occ;
+         capturePendingRef.current.add(key);
+         refreshCaptureSaveState();
+@@ -1328,10 +1354,10 @@
+             request = Promise.resolve(false);
+         }
+         return request.then((saved) => {
++            if (captureOwnerRef.current !== scope) return false;
+             let stored = false;
+             try {
+-                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+-                stored = !!(st && st.has(sentenceText));
++                stored = window.__alloInspectReadAloudAudio?.(sentenceText, 'reference', { occurrence: occ })?.status === 'ready';
+             } catch (e) {}
+             capturePendingRef.current.delete(key);
+             if (saved || stored) {
+@@ -1345,6 +1371,7 @@
+             refreshCaptureSaveState();
+             return !!(saved || stored);
+         }).catch(() => {
++            if (captureOwnerRef.current !== scope) return false;
+             capturePendingRef.current.delete(key);
+             captureRetryRef.current.set(key, { sentence: sentenceText, url, occurrence: occ });
+             captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
+@@ -1358,6 +1385,7 @@
+         if (!isOpen || typeof window === 'undefined') return;
+         const onCaptureStatus = (event) => {
+             const detail = event && event.detail ? event.detail : {};
++            if (detail.resourceId != null && resourceId != null && String(detail.resourceId) !== String(resourceId)) return;
+             if (detail.status !== 'error' && detail.status !== 'limit') return;
+             const key = captureKeyFor(detail.sentence);
+             if (!key || !sentences.some(sentence => captureKeyFor(sentence) === key)) return;
+@@ -1369,14 +1397,18 @@
+         };
+         window.addEventListener('alloflow:karaoke-audio-capture', onCaptureStatus);
+         return () => window.removeEventListener('alloflow:karaoke-audio-capture', onCaptureStatus);
+-    }, [isOpen, sentences, captureKeyFor, refreshCaptureSaveState]);
++    }, [isOpen, resourceId, sentences, captureKeyFor, refreshCaptureSaveState]);
+ 
+     const retryFailedCaptures = useCallback(async () => {
+-        if (captureRetrying || captureRetryRef.current.size === 0 || captureIssueRef.current.limit) return;
++        if (captureRetryOwnerRef.current || captureRetryRef.current.size === 0 || captureIssueRef.current.limit) return;
++        const request = { scope: captureOwnerRef.current, controller: new AbortController() };
++        captureRetryOwnerRef.current = request;
++        const current = () => captureRetryOwnerRef.current === request && captureOwnerRef.current === request.scope;
+         setCaptureRetrying(true);
+         const failed = Array.from(captureRetryRef.current.values());
+         const resolver = getAudioUrlRef.current;
+         for (let i = 0; i < failed.length; i++) {
++            if (!current()) return;
+             const item = failed[i];
+             let retryUrl = item.url;
+             try {
+@@ -1384,11 +1416,15 @@
+                     retryUrl = (await resolver(item.sentence, {
+                         reason: 'karaoke-capture-retry',
+                         occurrence: item.occurrence,
++                        signal: request.controller.signal,
+                     })) || retryUrl;
+                 }
+             } catch (e) {}
++            if (!current()) return;
+             if (retryUrl) await scheduleCaptureForStorage(item.sentence, retryUrl, item.occurrence);
+         }
++        if (!current()) return;
++        captureRetryOwnerRef.current = null;
+         setCaptureRetrying(false);
+         refreshCaptureSaveState();
+     }, [captureRetrying, scheduleCaptureForStorage, refreshCaptureSaveState]);
+@@ -1946,10 +1982,14 @@
+     }, [regenBusy, sentences, sentenceIdx, hardStop, occurrenceForIndex]);
+     // Generate audio for every not-yet-vetted sentence and persist the set.
+     const prepareAll = useCallback(async () => {
+-        if ((prepState && prepState.busy) || !sentences.length || typeof window.__alloPrepareReadAloud !== 'function') return;
++        if (prepareRequestRef.current || !sentences.length || typeof window.__alloPrepareReadAloud !== 'function') return;
++        const request = { scope: saveScope, controller: new AbortController() };
++        prepareRequestRef.current = request;
++        const current = () => prepareRequestRef.current === request && saveScopeRef.current === request.scope;
+         setPrepState({ busy: true, done: 0, total: sentences.length });
+         try {
+-            const res = await window.__alloPrepareReadAloud(sentences, function (done, total) { setPrepState({ busy: true, done: done, total: total }); });
++            const res = await window.__alloPrepareReadAloud(sentences, function (done, total) { if (current()) setPrepState({ busy: true, done: done, total: total }); }, { signal: request.controller.signal });
++            if (!current()) return;
+             setPrepState({
+                 busy: false,
+                 done: (res && res.generated) || 0,
+@@ -1957,10 +1997,12 @@
+                 failed: (res && res.failed) || 0,
+                 remaining: (res && res.remaining) || 0,
+                 bytes: (res && res.bytes) || 0,
+-                failure: res && res.failure
++                failure: res && res.failure,
++                notice: request.controller.signal.aborted ? safeT(t, 'immersive.audio_prepare_stopped', 'Audio preparation stopped. Prepared clips are kept.') : res?.ok && !res?.remaining ? safeT(t, 'immersive.audio_prepared', 'Audio prepared. Check device save to confirm storage.') : safeT(t, 'immersive.audio_prepare_incomplete', 'Audio preparation incomplete. Try preparing again.')
+             });
+-        } catch (e) { setPrepState(null); }
+-    }, [prepState, sentences]);
++        } catch (e) { if (current()) setPrepState({ busy: false, notice: safeT(t, 'immersive.audio_prepare_failed', 'Audio preparation did not finish. Try preparing again.') }); }
++        finally { if (current()) { prepareRequestRef.current = null; setDeviceSaveTick(n => n + 1); } }
++    }, [saveScope, sentences, t]);
+     // Record the teacher’s own voice for the CURRENT sentence, sentence by
+     // sentence. The store is voice-source-agnostic, so the recording plays
+     // through karaoke like any clip; tagged human-teacher for honest
+@@ -2273,13 +2315,13 @@
+                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
+                     {isTeacher && !playbackOnly && (
+                         <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
+-                            <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.save_readaloud_tip', 'Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.')}>
++                            <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.capture_readaloud_tip', 'Add played audio to this resource. Check device save before relying on offline playback. Sharing needs a separate check.') }>
+                                 <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
+                                 <span>{'💾'} {safeT(t, 'immersive.save_readaloud', 'Save read-aloud')}</span>
+                             </label>
+                             {captureSaveState.pending > 0 && (
+                                 <span role="status" aria-live="polite" style={{ color: c.sweep }}>
+-                                    {safeT(t, 'immersive.saving_readaloud', 'Saving')} {captureSaveState.pending}
++                                    {safeT(t, 'immersive.attaching_readaloud', 'Adding audio')} {captureSaveState.pending}
+                                 </span>
+                             )}
+                             {captureSaveState.failed > 0 && captureSaveState.limit && (
+@@ -2292,11 +2334,11 @@
+                                     type="button"
+                                     onClick={retryFailedCaptures}
+                                     disabled={captureRetrying}
+-                                    title={captureSaveState.message || safeT(t, 'immersive.retry_readaloud_tip', 'Retry audio that could not be saved.')}
++                                    title={captureSaveState.message || safeT(t, 'immersive.retry_capture_tip', 'Try adding the played clips again. This may regenerate unavailable audio.')}
+                                     className="px-2.5 py-1 rounded-full transition-all"
+                                     style={{ background: 'transparent', color: '#b91c1c', border: '1px solid #fca5a5', opacity: captureRetrying ? 0.65 : 1 }}
+                                 >
+-                                    {captureRetrying ? '…' : '↻'} {safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · {captureSaveState.failed}
++                                    {captureRetrying ? '…' : '↻'} {safeT(t, 'immersive.retry_capture', 'Retry adding played audio')} · {captureSaveState.failed}
+                                 </button>
+                             )}
+                             <button type="button"
+@@ -2317,19 +2359,19 @@
+                                 {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_sentence', 'Record my voice')}`}
+                             </button>
+                             <button type="button"
+-                                onClick={() => { if (prepState && prepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } prepareAll(); }}
++                                onClick={() => { if (prepState && prepState.busy) { prepareRequestRef.current?.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } prepareAll(); }}
+                                 title={prepState && prepState.busy
+-                                    ? safeT(t, 'immersive.prepare_readaloud_stop', 'Stop after the current sentence (already-saved audio is kept).')
+-                                    : safeT(t, 'immersive.prepare_readaloud_tip', 'Generate audio for every sentence and save it into this resource so students hear it instantly on any device.')}
++                                    ? safeT(t, 'immersive.prepare_audio_stop', 'Stop preparing audio. Prepared clips are kept; check device save for storage status.')
++                                    : safeT(t, 'immersive.prepare_device_tip', 'Prepare audio for every sentence, then check device save before relying on offline playback.')}
+                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
+                                 style={{ background: (prepState && !prepState.busy) ? c.accent : 'transparent', color: c.ink, border: `1px solid ${c.dim}55`, opacity: (prepState && prepState.busy) ? 0.7 : 1 }}
+                             >
+                                 {prepState && prepState.busy
+                                     ? `… ${prepState.done}/${prepState.total} ✕`
+                                     : (prepState && !prepState.busy && prepState.remaining)
+-                                        ? `↻ ${safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · ${prepState.remaining}`
++                                        ? `↻ ${safeT(t, 'immersive.retry_prepare', 'Retry preparing audio')} · ${prepState.remaining}`
+                                         : (prepState && !prepState.busy)
+-                                            ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
++                                            ? safeT(t, 'immersive.prepare_again', 'Prepare audio again')
+                                             : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}
+                             </button>
+                         </div>
+@@ -2415,6 +2457,15 @@
+                     </button>
+                 </div>
+             </div>
++            {!playbackOnly && <div className="w-full min-w-0 shrink-0 px-4 py-2">
++                {prepState?.notice && <p role="status" aria-live="polite" aria-atomic="true" className="mb-2">{prepState.notice}</p>}
++                {window.AlloModules?.ResourceReadAloud?.DeviceSaveStatus
++                    ? React.createElement(window.AlloModules.ResourceReadAloud.DeviceSaveStatus, {
++                        resourceId, contextKey: saveScope, entries: sentences.map((text, index) => ({ text, occurrence: occurrenceForIndex(index), language: sentenceLanguages?.[index] || language })),
++                        profile: audioProfile, payload: audioPayload, refreshToken: deviceSaveTick, activePlayback: isPlaying, t
++                    })
++                    : <p role="status">{safeT(t, 'immersive.device_unverified', 'Device save not verified. Audio tools are still loading.')}</p>}
++            </div>}
+             <div className="flex-1 min-h-48 min-w-0 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: reducedMotion ? 'auto' : 'smooth' }}>
+                 <div className="max-w-3xl mx-auto" style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2.25rem)', lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
+                     {!sentences.length && <p role="status">{safeT(t, "immersive.no_text", "No text to read. Close the reader and choose a passage.")}</p>}
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -5293,7 +5293,7 @@
+               window.speechSynthesis && window.speechSynthesis.cancel();
+             } catch (e) {}
+           }
+-        }} totalSentences={immersiveSentences.length || 1} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay language={leveledTextLanguage} isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={simplifiedDisplayBody.replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none" style={{
++        }} totalSentences={immersiveSentences.length || 1} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay language={leveledTextLanguage} isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={simplifiedDisplayBody.replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} resourceId={generatedContent?.id || generatedContent?.resourceId} audioSaveContext={ttsPrepContext} audioProfile={getReadAloudIdentityOptions().profile} audioPayload={generatedContent?.karaokeAudio} language={leveledTextLanguage} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(immersiveFresh ? generatedContent.immersiveData.filter(w => w.pos !== 'newline').map(w => w.text).join(' ') : simplifiedDisplayBody).replace(/<\/?[a-zA-Z][^<>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none" style={{
+             top: immersiveToolbarBottom + 'px',
+             height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5 - immersiveToolbarBottom) + 'px'
+           }} /><div className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out motion-reduce:transition-none" style={{
+===================================================================
+--- /dev/null
++++ b/tests/device_save_status.test.js
+@@ -0,0 +1,119 @@
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++let React, act, createRoot, host, root, Component;
++const entries = [{ text: 'Again.', occurrence: 0, language: 'English' }, { text: 'Again.', occurrence: 1, language: 'English' }];
++const props = overrides => ({ resourceId: 'one', contextKey: 'context', entries, profile: {voice:'Kore',speed:1,synthesisRate:1}, ...overrides });
++const result = overrides => ({ resourceId:'one', scope:'device-audio', total:2, ready:2, durableReady:0, sessionOnly:2, verifiedAt:'2026-09-27T00:00:00Z', ...overrides });
++const deferred = () => { let resolve; const promise = new Promise(r => resolve = r); return {promise,resolve}; };
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({act} = require(resolve('desktop/web-app/node_modules/react-dom/test-utils')));
++  ({createRoot} = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  global.React = window.React = React; global.IS_REACT_ACT_ENVIRONMENT = true;
++  loadAlloModule('resource_read_aloud_module.js'); Component = window.AlloModules.ResourceReadAloud.DeviceSaveStatus;
++});
++beforeEach(() => {
++  window.__alloGetReadAloudReadiness = vi.fn(async () => result());
++  window.__alloRetryReadAloudPersistence = vi.fn(async () => true);
++  window.__alloPrepareReadAloud = vi.fn(); window.__alloRegenerateSentenceAudio = vi.fn(); window.__alloCaptureKaraokeAudio = vi.fn();
++});
++afterEach(async () => {
++  if (root) await act(async () => root.unmount()); root = null; host?.remove(); host = null;
++  delete window.AlloModules.KaraokeAudioStore;
++  for (const key of ['__alloGetReadAloudReadiness','__alloRetryReadAloudPersistence','__alloPrepareReadAloud','__alloRegenerateSentenceAudio','__alloCaptureKaraokeAudio']) delete window[key];
++  vi.useRealTimers();
++});
++async function render(input = props()) {
++  if (!root) { host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host); }
++  await act(async () => root.render(React.createElement(Component,input)));
++}
++const status = () => host.querySelector('[data-device-audio-count]');
++const retry = () => host.querySelector('[data-device-audio-retry]');
++const check = () => host.querySelector('[data-device-audio-check]');
++const click = async button => act(async () => button.click());
++const dispatch = async (type,detail={}) => act(async () => window.dispatchEvent(new CustomEvent(type,{detail})));
++describe('device readback and persistence-only retry', () => {
++  it('keeps playable and saved counts separate with duplicate identities and synthesis settings', async () => {
++    await render(); expect(status().textContent).toBe('2/2 clips ready to play. 0/2 saved on this device.');
++    expect(window.__alloGetReadAloudReadiness).toHaveBeenCalledWith(['Again.','Again.'],'reference',{entries,profile:props().profile});
++  });
++  it('requires a verified readback timestamp before claiming any saved count', async () => {
++    window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2,verifiedAt:null})); await render();
++    expect(status().textContent).toContain('Device save not verified.'); expect(status().textContent).not.toContain('saved on this device');
++  });
++  it.each([
++    {resourceId:'other'}, {scope:'package'}, {total:3}, {ready:3}, {durableReady:3}, {durableReady:-1}
++  ])('rejects a mismatched or invalid result %j', async invalid => {
++    window.__alloGetReadAloudReadiness.mockResolvedValue(result(invalid)); await render();
++    expect(status().textContent).toBe('Device save not verified.');
++  });
++  it('does not promote a successful write receipt when readback still lacks the clips', async () => {
++    window.__alloRetryReadAloudPersistence.mockResolvedValue({status:'saved',verified:true}); await render(); await click(retry());
++    expect(status().textContent).toContain('0/2 saved'); expect(window.__alloPrepareReadAloud).not.toHaveBeenCalled();
++    expect(window.__alloRegenerateSentenceAudio).not.toHaveBeenCalled(); expect(window.__alloCaptureKaraokeAudio).not.toHaveBeenCalled();
++  });
++  it('updates verified counts after retry without removing the focused button', async () => {
++    await render(); const button = retry(); button.focus();
++    window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2})); await click(button);
++    expect(status().textContent).toContain('2/2 saved'); expect(retry()).toBe(button); expect(document.activeElement).toBe(button);
++  });
++  it('invokes the resource-scoped writer before a host navigation replaces it', async () => {
++    await render(); const original=window.__alloRetryReadAloudPersistence, foreign=vi.fn(async()=>true);
++    await act(async()=>{retry().click();window.__alloRetryReadAloudPersistence=foreign;});
++    expect(original).toHaveBeenCalledTimes(1);expect(foreign).not.toHaveBeenCalled();
++  });
++  it.each([false, undefined, {status:'failed'}])('reports an unsuccessful write result %j', async answer => {
++    await render(); window.__alloRetryReadAloudPersistence.mockResolvedValue(answer); await click(retry());
++    expect(host.textContent).toContain('Device save could not be completed'); expect(retry().getAttribute('aria-busy')).toBe('false');
++  });
++  it('reports a rejected write and permits another retry', async () => {
++    await render(); window.__alloRetryReadAloudPersistence.mockRejectedValue(new Error('quota')); await click(retry());
++    expect(host.textContent).toContain('Device save could not be completed'); await click(retry()); expect(window.__alloRetryReadAloudPersistence).toHaveBeenCalledTimes(2);
++  });
++  it('guards duplicate activation synchronously and ignores a write finishing after resource change', async () => {
++    const pending=deferred(); window.__alloRetryReadAloudPersistence.mockReturnValue(pending.promise); await render();
++    await act(async()=>{retry().click();retry().click();}); expect(window.__alloRetryReadAloudPersistence).toHaveBeenCalledTimes(1);
++    const signal=window.__alloRetryReadAloudPersistence.mock.calls[0][1].signal;
++    window.__alloGetReadAloudReadiness.mockResolvedValue(result({resourceId:'two',ready:0,durableReady:0})); await render(props({resourceId:'two'}));
++    expect(signal.aborted).toBe(true); await act(async()=>pending.resolve(true)); expect(status().textContent).toContain('0/2 clips ready');
++    expect(retry().getAttribute('aria-busy')).toBe('false');
++  });
++  it('ignores out-of-order reads and foreign-resource events', async () => {
++    const old=deferred(); window.__alloGetReadAloudReadiness.mockReturnValueOnce(old.promise); await render();
++    await dispatch('alloflow:karaoke-audio-updated',{resourceId:'foreign'}); expect(window.__alloGetReadAloudReadiness).toHaveBeenCalledTimes(1);
++    await click(check()); await act(async()=>old.resolve(result({durableReady:2})));
++    expect(status().textContent).toContain('0/2 saved');
++  });
++  it('invalidates readback when audio bytes change while a check is pending', async () => {
++    const pending=deferred(); window.__alloGetReadAloudReadiness.mockReturnValueOnce(pending.promise); await render(props({payload:{v:1}}));
++    await render(props({payload:{v:2}})); await act(async()=>pending.resolve(result({durableReady:2}))); expect(status().textContent).toContain('0/2 saved');
++  });
++  it('rechecks store mutations and clears its subscription on unmount', async () => {
++    let revision=0, listener; const unsubscribe=vi.fn(); window.AlloModules.KaraokeAudioStore={current:{getRevision:()=>revision,subscribe:fn=>{listener=fn;return unsubscribe;}}};
++    await render(); window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:1})); await act(async()=>{revision++;listener();});
++    expect(status().textContent).toContain('1/2 saved'); await act(async()=>root.unmount()); root=null; expect(unsubscribe).toHaveBeenCalled();
++  });
++  it('refreshes on return to the page and notices evicted persisted audio', async () => {
++    window.__alloGetReadAloudReadiness.mockResolvedValue(result({durableReady:2})); await render();
++    window.__alloGetReadAloudReadiness.mockResolvedValue(result()); await dispatch('pageshow'); expect(status().textContent).toContain('0/2 saved');
++  });
++  it('is explicit about missing APIs and recovers when the registry loads', async () => {
++    delete window.__alloGetReadAloudReadiness; await render(); expect(status().textContent).toContain('not verified');
++    window.__alloGetReadAloudReadiness=vi.fn(async()=>result()); await dispatch('alloflow:module-registry-changed'); expect(status().textContent).toContain('0/2 saved');
++  });
++  it('keeps routine status quiet during playback, but announces an explicit check', async () => {
++    await render(props({activePlayback:true})); expect(status().getAttribute('aria-live')).toBe('off'); await click(check());
++    expect(status().getAttribute('aria-live')).toBe('polite'); expect(status().getAttribute('aria-atomic')).toBe('true');
++    expect(host.querySelector('p[role=status] button')).toBe(null);
++  });
++  it('bounds a hung read and a hung write, aborting the latter', async () => {
++    vi.useFakeTimers(); window.__alloGetReadAloudReadiness.mockReturnValueOnce(new Promise(()=>{})); await render();
++    await act(async()=>vi.advanceTimersByTimeAsync(15001)); expect(status().textContent).toBe('Device save not verified.');
++    await click(check()); window.__alloRetryReadAloudPersistence.mockReturnValue(new Promise(()=>{})); await click(retry());
++    const signal=window.__alloRetryReadAloudPersistence.mock.calls[0][1].signal; await act(async()=>vi.advanceTimersByTimeAsync(15001));
++    expect(signal.aborted).toBe(true); expect(host.textContent).toContain('Device save could not be completed'); expect(retry().getAttribute('aria-busy')).toBe('false');
++  });
++});
+===================================================================
+--- /dev/null
++++ b/tests/faq_overlay_device_save.test.js
+@@ -0,0 +1,49 @@
++import {afterEach,beforeAll,beforeEach,describe,expect,it,vi} from 'vitest';
++import {createRequire} from 'node:module';
++import {resolve} from 'node:path';
++import {loadAlloModule} from './setup.js';
++const require=createRequire(import.meta.url); let React,act,createRoot,host,root,FAQ,Overlay;
++const noop=()=>{}, t=k=>k, split=text=>String(text||'').match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(x=>x.trim())||[];
++const faqProps=overrides=>({t,generatedContent:{id:'one',type:'faq',data:[{question:'Again.',answer:'Again.'}]},isTeacherMode:true,isEditingFaq:false,isPlaying:false,voiceSpeed:1,selectedVoice:'Kore',effectiveLanguage:'English',playbackState:{currentIdx:-1},audioRef:{current:null},playbackSessionRef:{current:null},setVoiceSpeed:noop,setIsPlaying:noop,setPlayingContentId:noop,handleToggleIsEditingFaq:noop,handleFaqChange:noop,handleSpeak:noop,getRows:()=>1,splitTextToSentences:split,formatInteractiveText:x=>x,...overrides});
++const overlayProps=overrides=>({text:'Again.',sentenceList:['Again.'],resourceId:'one',audioSaveContext:'voice-one',language:'English',isOpen:true,isTeacher:true,captureOn:false,onClose:noop,getAudioUrl:async()=>null,...overrides});
++const defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
++beforeAll(()=>{
++ React=require(resolve('desktop/web-app/node_modules/react'));({act}=require(resolve('desktop/web-app/node_modules/react-dom/test-utils')));({createRoot}=require(resolve('desktop/web-app/node_modules/react-dom/client')));
++ global.React=window.React=React;global.IS_REACT_ACT_ENVIRONMENT=true;window.AlloLanguageContext=React.createContext({t});window.matchMedia=()=>({matches:true});global.requestAnimationFrame=window.requestAnimationFrame=()=>0;global.cancelAnimationFrame=window.cancelAnimationFrame=noop;
++ loadAlloModule('resource_read_aloud_module.js');loadAlloModule('view_faq_module.js');loadAlloModule('immersive_reader_module.js');FAQ=window.AlloModules.FaqView;Overlay=window.AlloModules.KaraokeReaderOverlay;
++});
++beforeEach(()=>{window.__alloGetReadAloudReadiness=vi.fn(async texts=>({resourceId:'one',scope:'device-audio',total:texts.length,ready:texts.length,durableReady:0,verifiedAt:'2026-09-27T00:00:00Z'}));window.__alloRetryReadAloudPersistence=vi.fn(async()=>true);window.__alloPrepareReadAloud=vi.fn(async()=>({ok:true,remaining:0}));});
++afterEach(async()=>{if(root)await act(async()=>root.unmount());root=null;host?.remove();host=null;for(const name of ['__alloGetReadAloudReadiness','__alloRetryReadAloudPersistence','__alloPrepareReadAloud','__alloRegenerateSentenceAudio','__alloCaptureKaraokeAudio','__alloInspectReadAloudAudio'])delete window[name];delete window.AlloModules.KaraokeAudioStore;vi.unstubAllGlobals();});
++async function render(Component,props){if(!root){host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);}await act(async()=>root.render(React.createElement(Component,props)));}
++const button=text=>[...host.querySelectorAll('button')].find(el=>el.textContent.includes(text));
++const click=async el=>act(async()=>el.click());
++describe('FAQ/overlay device-save boundaries',()=>{
++ it('FAQ preparation success does not claim durable storage',async()=>{await render(FAQ,faqProps());await click(button('Save TTS'));expect(host.textContent).not.toContain('Audio is saved for all FAQ sentences');expect(host.textContent).toContain('Audio prepared. Check device save');expect(host.textContent).toContain('0/2 saved on this device');});
++ it('FAQ regeneration success stays distinct from persistence',async()=>{window.__alloRegenerateSentenceAudio=vi.fn(async()=> 'blob:clip');await render(FAQ,faqProps({isEditingFaq:true}));await click(host.querySelector('button[aria-label*="Regenerate audio"]'));expect(host.textContent).not.toContain('Sentence audio saved.');expect(host.textContent).toContain('Sentence audio ready.');});
++ it('FAQ readiness includes duplicate occurrences and full requested voice speed',async()=>{await render(FAQ,faqProps({voiceSpeed:1.3}));expect(window.__alloGetReadAloudReadiness).toHaveBeenLastCalledWith(['Again.','Again.'],'reference',expect.objectContaining({entries:[{text:'Again.',occurrence:0,language:'English'},{text:'Again.',occurrence:1,language:'English'}],profile:expect.objectContaining({speed:1.3,synthesisRate:1.3})}));});
++ it('FAQ invalidates preparation when synthesis speed changes',async()=>{const pending=defer();window.__alloPrepareReadAloud.mockReturnValue(pending.promise);await render(FAQ,faqProps());await click(button('Save TTS'));const signal=window.__alloPrepareReadAloud.mock.calls[0][2].signal;await render(FAQ,faqProps({voiceSpeed:1.5}));expect(signal.aborted).toBe(true);await act(async()=>pending.resolve({ok:true}));expect(host.textContent).not.toContain('Audio prepared.');});
++ it.each([false,undefined])('FAQ gives feedback for unconfirmed prepare %j',async answer=>{window.__alloPrepareReadAloud.mockResolvedValue(answer);await render(FAQ,faqProps());await click(button('Save TTS'));expect(host.textContent).toContain('Audio preparation was not confirmed');});
++ it('overlay preparation success does not turn its button into Saved',async()=>{await render(Overlay,overlayProps());await click(button('Prepare read-aloud'));expect(host.textContent).not.toMatch(/✓\s*Saved/);expect(host.textContent).toContain('Audio prepared. Check device save');expect(host.textContent).toContain('0/1 saved on this device');});
++ it.each([false,undefined,{ok:false,failed:1}])('overlay handles failed/empty prepare %j',async answer=>{window.__alloPrepareReadAloud.mockResolvedValue(answer);await render(Overlay,overlayProps());await click(button('Prepare read-aloud'));expect(host.textContent).not.toMatch(/✓\s*Saved/);expect(host.textContent).toContain('Audio preparation incomplete');});
++ it('overlay ignores late prepare after closing and reopening',async()=>{const pending=defer();window.__alloPrepareReadAloud.mockReturnValue(pending.promise);const input=overlayProps();await render(Overlay,input);await click(button('Prepare read-aloud'));const signal=window.__alloPrepareReadAloud.mock.calls[0][2].signal;await render(Overlay,{...input,isOpen:false});expect(signal.aborted).toBe(true);await render(Overlay,input);await act(async()=>pending.resolve({ok:true}));expect(host.textContent).not.toContain('Audio prepared.');});
++ it('overlay cannot clear capture errors with raw store presence',async()=>{
++   class FakeAudio {constructor(src){this.src=src;this.duration=1;this.currentTime=0;}play(){return Promise.resolve();}pause(){}addEventListener(){}}
++   vi.stubGlobal('Audio',FakeAudio);window.AlloModules.KaraokeAudioStore={current:{has:()=>true}};window.__alloCaptureKaraokeAudio=vi.fn(async()=>false);window.__alloInspectReadAloudAudio=vi.fn(()=>({status:'stale'}));
++   const input=overlayProps({captureOn:true,getAudioUrl:async()=> 'blob:played'});await render(Overlay,input);await click(host.querySelector('button[aria-label="Play"]'));
++   expect(button('Retry adding played audio') || button('Retry failed saves')).toBeTruthy();expect(window.__alloInspectReadAloudAudio).toHaveBeenCalledWith('Again.','reference',{occurrence:0});
++ });
++ it('overlay ignores a capture finishing after close and reopen',async()=>{
++   class FakeAudio {constructor(src){this.src=src;this.duration=1;this.currentTime=0;}play(){return Promise.resolve();}pause(){}addEventListener(){}}
++   vi.stubGlobal('Audio',FakeAudio);const pending=defer();window.__alloCaptureKaraokeAudio=vi.fn(()=>pending.promise);
++   const input=overlayProps({captureOn:true,getAudioUrl:async()=> 'blob:played'});await render(Overlay,input);await click(host.querySelector('button[aria-label="Play"]'));
++   await render(Overlay,{...input,isOpen:false});await render(Overlay,input);await act(async()=>pending.resolve(false));expect(button('Retry adding played audio')||button('Retry failed saves')).toBeFalsy();
++ });
++ it('overlay cancels an in-flight capture retry before changing resource',async()=>{
++   class FakeAudio {constructor(src){this.src=src;this.duration=1;this.currentTime=0;}play(){return Promise.resolve();}pause(){}addEventListener(){}}
++   vi.stubGlobal('Audio',FakeAudio);const pending=defer();const resolver=vi.fn().mockResolvedValueOnce('blob:first').mockReturnValue(pending.promise);window.__alloCaptureKaraokeAudio=vi.fn(async()=>false);
++   const input=overlayProps({captureOn:true,getAudioUrl:resolver});await render(Overlay,input);await click(host.querySelector('button[aria-label="Play"]'));await click(host.querySelector('button[aria-label="Pause"]'));
++   const retryButton=button('Retry adding played audio')||button('Retry failed saves');await act(async()=>{retryButton.click();retryButton.click();});expect(resolver).toHaveBeenCalledTimes(2);
++   const signal=resolver.mock.calls[1][1].signal;await render(Overlay,{...input,resourceId:'two'});expect(signal.aborted).toBe(true);await act(async()=>pending.resolve('blob:late'));expect(window.__alloCaptureKaraokeAudio).toHaveBeenCalledTimes(1);
++ });
++ it('comparison playback-only overlay exposes no save or retry actions',async()=>{await render(Overlay,overlayProps({playbackOnly:true}));expect(host.querySelector('[data-device-audio-status]')).toBe(null);expect(button('Prepare read-aloud')).toBeFalsy();expect(window.__alloGetReadAloudReadiness).not.toHaveBeenCalled();});
++});
+===================================================================
+--- a/tests/karaoke_tts_regressions.test.js
++++ b/tests/karaoke_tts_regressions.test.js
+@@ -445,7 +445,7 @@
+     });
+ 
+     const retryButton = Array.from(host.querySelectorAll('button')).find((candidate) =>
+-      candidate.textContent.includes('Retry failed saves'));
++      candidate.textContent.includes('Retry adding played audio'));
+     expect(retryButton).toBeTruthy();
+ 
+     await act(async () => {
+@@ -458,7 +458,7 @@
+     expect(capture).toHaveBeenCalledTimes(2);
+     expect(getAudioUrl).toHaveBeenCalledTimes(2);
+     expect(Array.from(host.querySelectorAll('button')).some((candidate) =>
+-      candidate.textContent.includes('Retry failed saves'))).toBe(false);
++      candidate.textContent.includes('Retry adding played audio'))).toBe(false);
+   });
+   it('plays a serialized and rehydrated clip without invoking TTS generation', async () => {
+     audioInstances = [];

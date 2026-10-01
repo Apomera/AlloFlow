@@ -1,0 +1,317 @@
+// Unit tests for the pure routing helpers exported by live_polling_module.js
+// (window.AlloModules.LivePolling): matchesPredicate, evaluateRoutingRules,
+// isAbilityTieredName.
+//
+// evaluateRoutingRules decides which differentiated group a student is auto-
+// routed into based on their poll response — a wrong predicate would mis-sort
+// students. isAbilityTieredName backs the equity guardrail that warns teachers
+// off ability-tracking group names. Both are pure (no Firebase/React needed).
+
+import { describe, it, expect, beforeAll } from 'vitest';
+import { loadAlloModule } from './setup.js';
+
+let LP;
+beforeAll(() => {
+  loadAlloModule('live_polling_module.js');
+  LP = window.AlloModules.LivePolling;
+  if (!LP) throw new Error('LivePolling failed to register');
+});
+
+describe('matchesPredicate', () => {
+  it('eq compares strictly', () => {
+    expect(LP.matchesPredicate({ predicate: 'eq', value: 'x' }, 'x')).toBe(true);
+    expect(LP.matchesPredicate({ predicate: 'eq', value: 'x' }, 'y')).toBe(false);
+  });
+  it('lte / gte require a numeric response and value', () => {
+    expect(LP.matchesPredicate({ predicate: 'lte', value: 3 }, 2)).toBe(true);
+    expect(LP.matchesPredicate({ predicate: 'lte', value: 3 }, 4)).toBe(false);
+    expect(LP.matchesPredicate({ predicate: 'lte', value: 3 }, 'two')).toBe(false);
+    expect(LP.matchesPredicate({ predicate: 'gte', value: 3 }, 5)).toBe(true);
+  });
+  it('between is inclusive and array-bounded', () => {
+    expect(LP.matchesPredicate({ predicate: 'between', value: [2, 4] }, 3)).toBe(true);
+    expect(LP.matchesPredicate({ predicate: 'between', value: [2, 4] }, 2)).toBe(true);
+    expect(LP.matchesPredicate({ predicate: 'between', value: [2, 4] }, 5)).toBe(false);
+  });
+  it('in checks array membership', () => {
+    expect(LP.matchesPredicate({ predicate: 'in', value: ['a', 'b'] }, 'b')).toBe(true);
+    expect(LP.matchesPredicate({ predicate: 'in', value: ['a', 'b'] }, 'c')).toBe(false);
+  });
+  it('returns false for missing or unknown predicate', () => {
+    expect(LP.matchesPredicate(null, 1)).toBe(false);
+    expect(LP.matchesPredicate({}, 1)).toBe(false);
+    expect(LP.matchesPredicate({ predicate: 'zzz', value: 1 }, 1)).toBe(false);
+  });
+});
+
+describe('evaluateRoutingRules', () => {
+  it("returns the first matching rule's groupId", () => {
+    const rules = [
+      { when: { predicate: 'lte', value: 2 }, then: { groupId: 'support' } },
+      { when: { predicate: 'gte', value: 8 }, then: { groupId: 'extension' } },
+    ];
+    expect(LP.evaluateRoutingRules(rules, 1)).toBe('support');
+    expect(LP.evaluateRoutingRules(rules, 9)).toBe('extension');
+  });
+  it('returns null when nothing matches or rules are empty/invalid', () => {
+    expect(LP.evaluateRoutingRules([{ when: { predicate: 'gte', value: 4 }, then: { groupId: 'x' } }], 1)).toBeNull();
+    expect(LP.evaluateRoutingRules([], 3)).toBeNull();
+    expect(LP.evaluateRoutingRules(null, 3)).toBeNull();
+  });
+  it('first match wins when multiple rules match', () => {
+    const rules = [
+      { when: { predicate: 'lte', value: 10 }, then: { groupId: 'first' } },
+      { when: { predicate: 'lte', value: 10 }, then: { groupId: 'second' } },
+    ];
+    expect(LP.evaluateRoutingRules(rules, 5)).toBe('first');
+  });
+  it('ignores malformed rules (missing then.groupId)', () => {
+    expect(LP.evaluateRoutingRules([{ when: { predicate: 'eq', value: 1 }, then: {} }], 1)).toBeNull();
+  });
+});
+
+describe('existing session-group reuse', () => {
+  it('merges canonical session groups with newly created groups without duplicates', () => {
+    const sessionGroups = Object.create(null);
+    sessionGroups.readers = { name: 'Readers' };
+    sessionGroups.explorers = { name: 'Explorers' };
+    sessionGroups.constructor = { name: 'blocked' };
+
+    expect(LP.mergeLivePollingGroups(sessionGroups, [
+      { id: 'explorers', name: 'Duplicate local name' },
+      { id: 'new-group', name: 'New group' },
+      { id: '__proto__', name: 'blocked' },
+    ])).toEqual([
+      { id: 'readers', name: 'Readers' },
+      { id: 'explorers', name: 'Explorers' },
+      { id: 'new-group', name: 'New group' },
+    ]);
+  });
+
+  it('keeps only rules that target a currently selectable canonical or newly created group', () => {
+    const groups = LP.mergeLivePollingGroups({
+      support: { name: 'Workshop' },
+      extension: { name: 'Extension Studio' },
+    }, []);
+    const rules = LP.selectLivePollingRoutingRules([
+      { id: 'support-rule', when: { predicate: 'lte', value: 2 }, then: { groupId: 'support' } },
+      { id: 'stale-rule', when: { predicate: 'gte', value: 4 }, then: { groupId: 'deleted-group' } },
+    ], groups);
+
+    expect(rules).toHaveLength(1);
+    expect(rules[0].then.groupId).toBe('support');
+    expect(LP.evaluateRoutingRules(rules, 2)).toBe('support');
+    expect(LP.evaluateRoutingRules(rules, 5)).toBeNull();
+  });
+});
+
+describe('isAbilityTieredName (equity guardrail)', () => {
+  it('flags ability-tracking group names', () => {
+    expect(LP.isAbilityTieredName('Struggling Readers')).toBe(true);
+    expect(LP.isAbilityTieredName('gifted group')).toBe(true);
+    expect(LP.isAbilityTieredName('Tier 2')).toBe(true);
+    expect(LP.isAbilityTieredName('remedial')).toBe(true);
+    expect(LP.isAbilityTieredName('Advanced')).toBe(true);
+  });
+  it('passes choice-themed names', () => {
+    expect(LP.isAbilityTieredName('Pirate Crew')).toBe(false);
+    expect(LP.isAbilityTieredName('Space Explorers')).toBe(false);
+  });
+  it('returns false for non-strings', () => {
+    expect(LP.isAbilityTieredName(null)).toBe(false);
+    expect(LP.isAbilityTieredName(42)).toBe(false);
+  });
+});
+
+describe('custom rating scales + anonymous result sharing', () => {
+  it('builds a bounded custom rating scale with labels', () => {
+    const scale = LP.buildRatingScale(0, 3, '0 = Not yet\n1 = A little\n2 = Mostly\n3 = Got it');
+    expect(scale.min).toBe(0);
+    expect(scale.max).toBe(3);
+    expect(scale.labels['0']).toBe('Not yet');
+    expect(scale.labels['3']).toBe('Got it');
+  });
+
+  it('summarizes rating responses without codenames or per-student rows', () => {
+    const poll = { id: 'p1', type: 'rating', prompt: 'How ready?', scale: LP.buildRatingScale(1, 4, '1 = Not ready\n4 = Ready') };
+    const summary = LP.buildPollResultsSummary(poll, [
+      { uid: 'u1', codename: 'Daring Sloth', response: 4 },
+      { uid: 'u2', codename: 'Quiet Star', response: 2 },
+      { uid: 'u3', codename: 'Blue Fox', response: 4 },
+    ], 5);
+    expect(summary.totalResponses).toBe(3);
+    expect(summary.guestCount).toBe(5);
+    expect(summary.items.find((item) => item.value === 4)).toMatchObject({ count: 2, percent: 67, label: 'Ready' });
+    expect(JSON.stringify(summary)).not.toContain('Daring Sloth');
+    expect(JSON.stringify(summary)).not.toContain('u1');
+  });
+
+  it('suppresses free-text content when sharing results', () => {
+    const summary = LP.buildPollResultsSummary({ id: 'p2', type: 'freetext', prompt: 'What do you need?' }, [
+      { codename: 'A', response: 'I need help with step 2.' },
+    ], 1);
+    expect(summary.freeTextSuppressed).toBe(true);
+    expect(summary.items).toEqual([{ value: 'responses', label: 'Free-text responses received', count: 1, percent: 100 }]);
+    expect(JSON.stringify(summary)).not.toContain('step 2');
+  });
+
+  it('host broadcasts shared results over open data channels', () => {
+    const host = LP.createHost({ sessionCode: 'ABCD' });
+    const sent = [];
+    host.peers.set('u1', { dc: { readyState: 'open', send: (msg) => sent.push(JSON.parse(msg)) } });
+    host.peers.set('u2', { dc: { readyState: 'closed', send: () => { throw new Error('should not send'); } } });
+    host.broadcastPollResults('p3', { prompt: 'Ready?', items: [] });
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatchObject({ type: 'pollResults', payload: { pollId: 'p3', prompt: 'Ready?', items: [] } });
+  });
+});
+describe('live polling reliability helpers', () => {
+  it('keeps one connected row per student after reconnect', () => {
+    const guests = LP.upsertLiveGuest([{ uid: 'u1', codename: 'First Name' }], 'u1', 'Fresh Name');
+    expect(guests).toEqual([{ uid: 'u1', codename: 'Fresh Name' }]);
+  });
+
+  it('keeps the latest response per student instead of inflating response counts', () => {
+    const responses = LP.upsertPollResponse([
+      { uid: 'u1', codename: 'Learner', response: 2, timestamp: 1 },
+      { uid: 'u2', codename: 'Partner', response: 4, timestamp: 1 },
+    ], { uid: 'u1', codename: 'Learner', response: 5, timestamp: 2 });
+    expect(responses).toHaveLength(2);
+    expect(responses.find((r) => r.uid === 'u1')).toMatchObject({ response: 5, timestamp: 2 });
+  });
+
+  it('deduplicates repeat submissions before building anonymous aggregates', () => {
+    const poll = { id: 'p4', type: 'rating', prompt: 'Ready?', scale: LP.buildRatingScale(1, 5, '5 = Ready') };
+    const summary = LP.buildPollResultsSummary(poll, [
+      { uid: 'u1', codename: 'Learner', response: 1, timestamp: 1 },
+      { uid: 'u1', codename: 'Learner', response: 5, timestamp: 2 },
+      { uid: 'u2', codename: 'Partner', response: 5, timestamp: 1 },
+    ], 2);
+    expect(summary.totalResponses).toBe(2);
+    expect(summary.items.find((item) => item.value === 1)).toMatchObject({ count: 0, percent: 0 });
+    expect(summary.items.find((item) => item.value === 5)).toMatchObject({ count: 2, percent: 100 });
+  });
+
+  it('ignores stale poll-close messages once a newer poll is active', () => {
+    expect(LP.shouldApplyPollClose({ id: 'poll-new' }, { pollId: 'poll-old' })).toBe(false);
+    expect(LP.shouldApplyPollClose({ id: 'poll-new' }, { pollId: 'poll-new' })).toBe(true);
+    expect(LP.shouldApplyPollClose({ id: 'poll-new' }, {})).toBe(true);
+  });
+});
+
+describe('private teacher check-ins', () => {
+  it('bounds check-in packets and accepts only explicit learner statuses', () => {
+    expect(LP.normalizeLiveCheckInPacket({ id: 'c1', activityId: 'p1', sentAt: 10 })).toEqual({ id: 'c1', activityId: 'p1', sentAt: 10 });
+    expect(LP.normalizeLiveCheckInPacket({ id: '', activityId: 'p1' })).toBeNull();
+    expect(LP.normalizeLiveCheckInAckPacket({ checkInId: 'c1', activityId: 'p1', status: 'help', acknowledgedAt: 20 })).toEqual({ checkInId: 'c1', activityId: 'p1', status: 'help', acknowledgedAt: 20 });
+    expect(LP.normalizeLiveCheckInAckPacket({ checkInId: 'c1', activityId: 'p1', status: 'response text' })).toBeNull();
+    expect(LP.LIVE_CHECK_IN_ACK_STATUSES).toEqual(['working', 'help']);
+  });
+
+  it('targets the active audience and rejects stale or mismatched acknowledgements', () => {
+    const acknowledgements = [];
+    const sent = [];
+    const host = LP.createHost({ sessionCode: 'ABCD', onCheckInAck: (uid, codename, ack) => acknowledgements.push({ uid, codename, ack }) });
+    host.peers.set('u1', { dc: { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) } });
+    host.peers.set('u2', { dc: { readyState: 'open', send: () => {} } });
+    host.broadcastPoll({ id: 'poll-check', type: 'rating', prompt: 'Ready?' }, ['u1']);
+
+    const packet = host.sendCheckIn('u1', 'poll-check');
+    expect(packet).toMatchObject({ activityId: 'poll-check' });
+    expect(sent.at(-1)).toMatchObject({ type: 'checkIn', payload: { id: packet.id, activityId: 'poll-check' } });
+    expect(host.sendCheckIn('u2', 'poll-check')).toBeNull();
+    expect(host._receiveCheckInAck('u1', 'Blue Fox', { checkInId: 'wrong', activityId: 'poll-check', status: 'help' })).toBe(false);
+    expect(host._receiveCheckInAck('u1', 'Blue Fox', { checkInId: packet.id, activityId: 'poll-check', status: 'help', acknowledgedAt: 30 })).toBe(true);
+    expect(acknowledgements).toEqual([{ uid: 'u1', codename: 'Blue Fox', ack: { checkInId: packet.id, activityId: 'poll-check', status: 'help', acknowledgedAt: 30 } }]);
+  });
+
+  it('sends a bounded learner acknowledgement over the existing peer channel', () => {
+    const sent = [];
+    const guest = LP.createGuest({ sessionCode: 'ABCD', userUid: 'u1', codename: 'Blue Fox' });
+    guest.dc = { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) };
+    expect(guest.sendCheckInAck('c1', 'p1', 'working')).toBe(true);
+    expect(sent[0]).toMatchObject({ type: 'checkInAck', payload: { checkInId: 'c1', activityId: 'p1', status: 'working' } });
+    expect(guest.sendCheckInAck('c1', 'p1', 'private response text')).toBe(false);
+  });
+
+  it('lets an active-audience learner request and cancel help without sending response text', () => {
+    const requests = [];
+    const host = LP.createHost({ sessionCode: 'ABCD', onHelpRequest: (uid, codename, packet) => requests.push({ uid, codename, packet }) });
+    host.broadcastPoll({ id: 'poll-help', type: 'freetext', prompt: 'Explain' }, ['u1']);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId: 'poll-help', status: 'help', requestedAt: 40 })).toBe(true);
+    expect(host._receiveHelpRequest('u2', 'Other', { activityId: 'poll-help', status: 'help' })).toBe(false);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId: 'old-poll', status: 'help' })).toBe(false);
+    expect(requests).toEqual([{ uid: 'u1', codename: 'Blue Fox', packet: { activityId: 'poll-help', status: 'help', requestedAt: 40 } }]);
+
+    const sent = [];
+    const guest = LP.createGuest({ sessionCode: 'ABCD', userUid: 'u1', codename: 'Blue Fox' });
+    guest.dc = { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) };
+    expect(guest.sendHelpRequest('poll-help', true)).toBe(true);
+    expect(guest.sendHelpRequest('poll-help', false)).toBe(true);
+    expect(sent.map((message) => message.payload.status)).toEqual(['help', 'cleared']);
+    expect(JSON.stringify(sent)).not.toContain('Explain');
+    expect(LP.normalizeLiveHelpRequestPacket({ activityId: 'poll-help', status: 'response text' })).toBeNull();
+    expect(LP.LIVE_HELP_REQUEST_STATUSES).toEqual(['help', 'cleared']);
+  });
+
+  it('keeps private help and check-ins available between polls', () => {
+    const acknowledgements = [];
+    const requests = [];
+    const sent = [];
+    const host = LP.createHost({
+      sessionCode: 'ABCD',
+      allowedUids: ['u1'],
+      onCheckInAck: (uid, codename, ack) => acknowledgements.push({ uid, codename, ack }),
+      onHelpRequest: (uid, codename, packet) => requests.push({ uid, codename, packet }),
+    });
+    host.peers.set('u1', { dc: { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) } });
+    const activityId = LP.buildLiveSessionSupportActivityId('ABCD');
+    expect(activityId).toBe('session-support-ABCD');
+
+    const checkIn = host.sendCheckIn('u1', activityId);
+    expect(checkIn).toMatchObject({ activityId });
+    expect(sent.at(-1)).toMatchObject({ type: 'checkIn', payload: { activityId } });
+    expect(host._receiveCheckInAck('u1', 'Blue Fox', { checkInId: checkIn.id, activityId, status: 'working', acknowledgedAt: 50 })).toBe(true);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId, status: 'help', requestedAt: 60 })).toBe(true);
+    expect(host._receiveHelpRequest('u2', 'Unknown', { activityId, status: 'help' })).toBe(false);
+    expect(host._receiveHelpRequest('u1', 'Blue Fox', { activityId: 'session-support-other', status: 'help' })).toBe(false);
+    expect(acknowledgements).toHaveLength(1);
+    expect(requests).toEqual([{ uid: 'u1', codename: 'Blue Fox', packet: { activityId, status: 'help', requestedAt: 60 } }]);
+  });
+});
+
+describe('session-only live response drafts', () => {
+  const createStorage = () => {
+    const values = new Map();
+    return {
+      getItem: (key) => values.has(key) ? values.get(key) : null,
+      setItem: (key, value) => values.set(key, String(value)),
+      removeItem: (key) => values.delete(key),
+    };
+  };
+
+  it('restores, bounds, and clears a draft scoped to one session, student, and poll', () => {
+    const storage = createStorage();
+    const poll = { id: 'poll-draft', type: 'freetext' };
+    expect(LP.writeLivePollDraft('ABCD', 'u1', poll, 'x'.repeat(LP.LIVE_POLL_DRAFT_MAX_CHARS + 20), storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toMatchObject({
+      pollId: poll.id,
+      type: 'freetext',
+      value: 'x'.repeat(LP.LIVE_POLL_DRAFT_MAX_CHARS),
+    });
+    expect(LP.readLivePollDraft('ABCD', 'u2', poll.id, storage)).toBeNull();
+    expect(LP.clearLivePollDraft('ABCD', 'u1', poll.id, storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toBeNull();
+  });
+
+  it('removes empty drafts and ignores malformed storage values', () => {
+    const storage = createStorage();
+    const poll = { id: 'poll-rating', type: 'rating' };
+    expect(LP.writeLivePollDraft('ABCD', 'u1', poll, 4, storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toMatchObject({ value: 4, type: 'rating' });
+    expect(LP.writeLivePollDraft('ABCD', 'u1', poll, '', storage)).toBe(true);
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toBeNull();
+    storage.setItem(LP.livePollDraftStorageKey('ABCD', 'u1', poll.id), '{not-json');
+    expect(LP.readLivePollDraft('ABCD', 'u1', poll.id, storage)).toBeNull();
+  });
+});

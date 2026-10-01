@@ -1,0 +1,89 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "choices": [
+    {
+      "height": 64,
+      "scrollWidth": 364,
+      "clientWidth": 364
+    },
+    {
+      "height": 73.1875,
+      "scrollWidth": 364,
+      "clientWidth": 364
+    },
+    {
+      "height": 64,
+      "scrollWidth": 364,
+      "clientWidth": 364
+    }
+  ],
+  "text": [
+    {
+      "text": "Guided evidence check",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "What observation supports this identification?",
+      "size": 18.4,
+      "clipped": false
+    },
+    {
+      "text": "You located Ventral Skin. Choose the description that matches what this structure looks like or does. Locating alone does not advance the step.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "✓ LocateDone",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Done",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "ObserveCurrent",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Current",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "VerifyUpcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Upcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Lighter, thinner ventral surface.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Transparent third eyelid protecting eye underwater.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "External eardrum behind eye.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Arrow keys browse choices. Enter or Space checks the focused choice.",
+      "size": 14,
+      "clipped": false
+    }
+  ]
+}

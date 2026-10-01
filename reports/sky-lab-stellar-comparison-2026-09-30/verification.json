@@ -1,0 +1,83 @@
+{
+  "enhancement": "Published stellar inputs and accurate radius comparison",
+  "unitTests": {
+    "total": 194,
+    "passed": 194,
+    "failed": 0
+  },
+  "browserScenarios": {
+    "total": 7,
+    "passed": 7,
+    "cases": [
+      {
+        "title": "published inputs link exact controls, plot, radius and luminosity explanation while keeping notes",
+        "outcome": "expected",
+        "status": "passed"
+      },
+      {
+        "title": "true scale stays proportional at both extremes and mode changes preserve the investigation",
+        "outcome": "expected",
+        "status": "passed"
+      },
+      {
+        "title": "phone contrast labels remain readable and contained for the source examples and extreme disks",
+        "outcome": "expected",
+        "status": "passed"
+      },
+      {
+        "title": "saved scale choices survive restore and malformed choices recover without losing notes",
+        "outcome": "expected",
+        "status": "passed"
+      },
+      {
+        "title": "diagram touch and keyboard edits update custom inputs without changing the selected size mode",
+        "outcome": "expected",
+        "status": "passed"
+      },
+      {
+        "title": "HR explorer links presets, log slider, keyboard and saved observations to the visible diagram",
+        "outcome": "expected",
+        "status": "passed"
+      },
+      {
+        "title": "HR diagram responds to pointer input and stays usable on a 320px contrast screen",
+        "outcome": "expected",
+        "status": "passed"
+      }
+    ]
+  },
+  "build": {
+    "scopeReconstruction": true,
+    "existingBrowserTestScope": true,
+    "mirrorEqual": true,
+    "syntaxValid": true,
+    "englishLabels": 28,
+    "sourceSHA256": "a5912625afcce2392786213cb14f7dda20642301c75c219fec2a19af63be30db"
+  },
+  "whitespaceCheckPassed": true,
+  "visualReview": {
+    "desktop": true,
+    "phone320Contrast": true,
+    "minimumSVGLabelPixels": 11,
+    "temperatureLabelsSeparated": true,
+    "minimumButtonHeightPixels": 44
+  },
+  "scientificReferences": [
+    {
+      "url": "https://arxiv.org/abs/1703.10625",
+      "used": "Sirius A and B adopted effective temperatures, bolometric luminosities, dynamical masses and quoted errors; fixed 2017 inputs."
+    },
+    {
+      "url": "https://arxiv.org/abs/1510.07674",
+      "used": "IAU nominal 5772 K solar reference."
+    }
+  ],
+  "modelLimits": "Stefan–Boltzmann radius inference with independent temperature, luminosity and mass controls. No uncertainty propagation or stellar evolution model. Plot regions, colors and spacing are illustrative.",
+  "resolvedDuringVerification": [
+    "Enlarged phone luminosity heading moved inside SVG bounds.",
+    "Temperature axis given more vertical space and fewer phone ticks.",
+    "Hidden SVG text excluded from displayed-label spacing measurements.",
+    "Independent reported Sirius radii checked within quoted observational errors."
+  ],
+  "commitCreated": false
+}

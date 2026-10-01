@@ -1,0 +1,62 @@
+--- a/stem_lab/stem_tool_anatomy.js
++++ b/stem_lab/stem_tool_anatomy.js
+@@ -6148,6 +6148,10 @@
+         var pathwayIds = PATHWAYS.map(function(pathway) { return pathway.id; });
+         var pathwaysCompleted = safeFlagMap(d._pathwaysCompleted, pathwayIds);
+         function pathwayById(id) { return PATHWAYS.find(function(pathway) { return pathway.id === id; }) || null; }
++        function normalizedPathwayStep(state, pw) {
++          var position = Number(state._pathwayStep);
++          return pw && Number.isFinite(position) ? Math.max(0,Math.min(Math.floor(position),pw.steps.length-1)) : 0;
++        }
+         function pathwayQuestions(pw) { return pw ? PATHWAY_CONCEPT_CHECKS[pw.id] || [] : []; }
+         function pathwayCheckContext(pw) {
+           if (!pw) return '';
+@@ -6197,7 +6201,7 @@
+         function checkpointPathway(state, routes, pw, fallbackToken) {
+           var next = Object.assign({},routes);
+           if (!pw || state._activePathway !== pw.id) return next;
+-          var position = Number(state._pathwayStep), step = Number.isFinite(position) ? Math.max(0,Math.min(Math.floor(position),pw.steps.length-1)) : 0;
++          var step = normalizedPathwayStep(state,pw);
+           var recap = validPathwayRecap(state._pathwayRecap,pw,true);
+           if (recap) {
+             recap.context = pathwayCheckContext(pw); recap.token = recap.token || fallbackToken;
+@@ -6209,8 +6213,7 @@
+         var activePathwayId = typeof d._activePathway === 'string' ? d._activePathway : null;
+         var activePathway = pathwayById(activePathwayId);
+         if (!activePathway) activePathwayId = null;
+-        var rawPathwayStepIdx = Number(d._pathwayStep);
+-        var pathwayStepIdx = activePathway && Number.isFinite(rawPathwayStepIdx) ? Math.max(0,Math.min(Math.floor(rawPathwayStepIdx),activePathway.steps.length-1)) : 0;
++        var pathwayStepIdx = normalizedPathwayStep(d,activePathway);
+         var rawPathwayRecap = d._pathwayRecap && typeof d._pathwayRecap === 'object' && !Array.isArray(d._pathwayRecap) ? d._pathwayRecap : {};
+         var currentPathwayRecap = validPathwayRecap(rawPathwayRecap,activePathway,true);
+         var pathwayRecapActive = !!currentPathwayRecap && currentPathwayRecap.active === true;
+@@ -6313,9 +6316,9 @@
+           var pw = activePathway, accepted = false, token = newPathwayToken(); if (!pw || getPathwayRecapQuestions().length < 2) return;
+           setLabToolData(function(previous) {
+             var state = previous.anatomy || {}, recap = validPathwayRecap(state._pathwayRecap,pw,true);
+-            if (!samePathwayAttempt(state,pw) || (restart && (!recap || recap.active !== true)) || (!restart && ((recap && recap.active === true) || Number(state._pathwayStep || 0) !== pathwayStepIdx))) return previous;
++            if (!samePathwayAttempt(state,pw) || (restart && (!recap || recap.active !== true)) || (!restart && ((recap && recap.active === true) || normalizedPathwayStep(state,pw) !== pathwayStepIdx))) return previous;
+             accepted = true;
+-            return Object.assign({},previous,{anatomy:Object.assign({},state,{_pathwayRecap:{active:true,version:2,pathwayId:pw.id,context:pathwayCheckContext(pw),token:token,answers:{}},_pathwayRecapReturn:null})});
++            return Object.assign({},previous,{anatomy:Object.assign({},state,{_pathwayStep:normalizedPathwayStep(state,pw),_pathwayRecap:{active:true,version:2,pathwayId:pw.id,context:pathwayCheckContext(pw),token:token,answers:{}},_pathwayRecapReturn:null})});
+           });
+           finishPathwayUpdate(function(){return accepted;},function(){playSound('pathwayStep');focusPathwayCheck(pw,null,false,token);if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.route_check_announce', 'Pathway check: choose explanations for two situations.'));});
+         }
+@@ -6325,7 +6328,7 @@
+           var accepted = false;
+           setLabToolData(function(previous) {
+             var state = previous.anatomy || {};
+-            if (!samePathwayAttempt(state,pw) || Number(state._pathwayStep || 0) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
++            if (!samePathwayAttempt(state,pw) || normalizedPathwayStep(state,pw) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
+             accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,structureFocusPatch(pw.steps[index].structure,{system:state.system,_pathwayStep:index}))});
+           });
+           finishPathwayUpdate(function(){return accepted;},function(){announceStructure(pw.steps[index].structure);if(sound)playSound('pathwayStep');focusPathwayStep(pw,index);});
+@@ -6364,7 +6367,7 @@
+           var pw = activePathway, accepted = false; if (!pw || !pw.steps[pathwayStepIdx] || pw.steps[pathwayStepIdx].structure !== step.structure) return;
+           setLabToolData(function(previous) {
+             var state = previous.anatomy || {};
+-            if (!samePathwayAttempt(state,pw) || Number(state._pathwayStep || 0) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
++            if (!samePathwayAttempt(state,pw) || normalizedPathwayStep(state,pw) !== pathwayStepIdx || (state._pathwayRecap || {}).active === true) return previous;
+             accepted = true; return Object.assign({},previous,{anatomy:Object.assign({},state,structureFocusPatch(step.structure,{system:state.system,_pathwayStep:pathwayStepIdx}))});
+           });
+           finishPathwayUpdate(function(){return accepted;},function(){announceStructure(step.structure);setTimeout(function(){var root=document.querySelector('[data-anatomy-pathway-panel]');if(!root||root.getAttribute('data-anatomy-pathway-id')!==pw.id)return;var panel=document.querySelector('[data-anatomy-model-shell]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);});

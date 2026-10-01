@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Detailed cookware, cabinet edges, cloth, and raw produce render without changing the cook.",
+    "mushroom: textured food still responds to a real pan-piece turn.",
+    "tomato: textured food still responds to a real pan-piece turn.",
+    "Both cooked recipes, plated food, compact expanded view, and graphics-loss fallback render correctly."
+  ],
+  "errors": [],
+  "screenshots": [
+    "detailed-bench.png",
+    "cookware-and-cloth.png",
+    "mushroom-prep.png",
+    "hollow-pasta-on-scale.png",
+    "mushroom-browned-pan.png",
+    "mushroom-sauced-pasta.png",
+    "mushroom-food-closeup.png",
+    "mushroom-plated-dish.png",
+    "mushroom-plated-closeup.png",
+    "tomato-browned-pan.png",
+    "tomato-sauced-pasta.png",
+    "tomato-food-closeup.png",
+    "tomato-plated-dish.png",
+    "tomato-plated-closeup.png",
+    "compact-expanded-kitchen.png"
+  ],
+  "pass": true
+}

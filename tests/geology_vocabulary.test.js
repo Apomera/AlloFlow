@@ -42,6 +42,16 @@ describe('Geology Explorer vocabulary bridge', () => {
     expect(crust[1].cue).toContain('granite pluton');
   });
 
+  // The quiz, its remediation and the story all teach that the geode's hollow began as a gas bubble
+  // in lava; the vocabulary card and the scene-comparison row once said groundwater dissolved it.
+  it('tells one story about the geode cavity: a gas bubble in lava, not a dissolved void', () => {
+    const cavity = P.vocabulary().geode.find((entry) => entry.term === 'Cavity');
+    expect(cavity.definition).toMatch(/gas bubble/i);
+    expect(cavity.definition).not.toMatch(/dissolv/i);
+    expect(P.sceneComparisons().geode.outcome).not.toMatch(/dissolv/i);
+    expect(P.sceneComparisons().geode.outcome).toMatch(/gas bubble/i);
+  });
+
   it('keeps both app mirrors identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(fs.readFileSync(sourcePath, 'utf8'));
   });

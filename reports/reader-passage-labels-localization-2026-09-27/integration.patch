@@ -1,0 +1,832 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1481,8 +1481,10 @@
+   // host's window.__alloT; the English fallback shows until a key is translated.
+   function simplifiedText(key, fallback, params, translate) {
+     var value;
+-    try { value = (translate || (typeof window !== 'undefined' && window.__alloT) || (() => undefined))(key, params); } catch (_) {}
+-    var text = typeof value === 'string' && value && value !== key ? value : fallback;
++    // Resolve the catalog template before inserting values. A second interpolation
++    // would reinterpret literal braces in a learner's word or context.
++    try { value = (translate || (typeof window !== 'undefined' && window.__alloT) || (() => undefined))(key); } catch (_) {}
++    var text = typeof value === 'string' && value.trim() && value.trim() !== key ? value : fallback;
+     return params ? String(text).replace(/\{(\w+)\}/g, (match, name) => params[name] != null ? String(params[name]) : match) : text;
+   }
+   // A search box appears once the list is this long.
+@@ -1500,10 +1502,19 @@
+       source: ['mulberry', 'wikimedia'].includes(image.source) ? image.source : 'upload',
+       attribution: ['set', 'author', 'license', 'via', 'url', 'title', 'licenseUrl'].map(key => clean(credit[key], key === 'author' || key === 'title' ? 160 : key.toLowerCase().includes('url') ? 2000 : 120)) };
+   }
++  function ReadingDraftChangedNotice({ disabled, onChoose }) {
++    const template = simplifiedText('simplified.gloss_draft_passage_changed', 'The passage changed. Your draft is retained. Review the word supports, then {chooseOccurrence} before saving.');
++    const parts = template.split('{chooseOccurrence}');
++    // Keep exactly one actionable slot. A malformed translation must not remove it
++    // or expose template tokens; React renders the surrounding copy as plain text.
++    const valid = parts.length === 2 && parts.every(part => !/[{}]/.test(part));
++    const [before, after] = valid ? parts : ['The passage changed. Your draft is retained. Review the word supports, then ', ' before saving.'];
++    const label = valid ? simplifiedText('simplified.gloss_draft_choose_occurrence', 'choose the occurrence in the current text') : 'choose the occurrence in the current text';
++    return <p role="status" className="break-words">{before}<button type="button" disabled={disabled} onClick={onChoose} className="underline [overflow-wrap:anywhere]">{label}</button>{after}</p>;
++  }
+   function ReadingGlossEditor({ item, supports, request, onUpdate, disabled, adapted, snapshot: adaptedSnapshot, embedded, draftSession, supportsStale }) {
+     // An adapted text's word help anchors to the adapted passage, never the original.
+     const snapshot = adapted ? adaptedSnapshot : getInstructionalContextApi()?.getSourceSnapshot?.(item);
+-    const passageName = adapted ? 'adapted text' : 'original';
+     const sourceText = snapshot?.text || '';
+     const sourceKey = String(item?.id || '') + ':' + (snapshot?.fingerprint || '');
+     const ownerKey = readingSupportDraftKey(item, adapted);
+@@ -1658,7 +1669,7 @@
+     const save = async () => {
+       if (disabled || busy || pickingPicture || preparingPicture) return false;
+       setNotice(''); setError('');
+-      if (staleDraft || supportsStale) { setError('The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.'); return false; }
++      if (staleDraft || supportsStale) { setError(simplifiedText('simplified.gloss_draft_passage_changed_error', 'The passage changed. Your draft is retained. Review the current word supports and choose its occurrence again before saving.')); return false; }
+       if (!selected || !draft?.text.trim()) { setError(simplifiedText('simplified.gloss_choose_the_exact_word_or_phrase', 'Choose the exact word or phrase and enter its explanation.')); return false; }
+       if (draft.text.trim().length > 2400) { setError(simplifiedText('simplified.gloss_shorten_this_explanation_to_2_400', 'Shorten this explanation to 2,400 characters or fewer before saving.')); return false; }
+       // IDs can change during a refresh. The exact source occurrence owns the
+@@ -1669,12 +1680,12 @@
+       const baseId = id;
+       for (let suffix = 1; entries.some(entry => entry.id === id && !sameAnchor(entry, selected)); suffix++) id = baseId + '-' + suffix;
+       const annotation = { id, kind: current?.kind || 'gloss', ...anchorFor(selected), text: draft.text.trim(), priority: draft.priority, pinned: draft.pinned, image: draft.image || null };
+-      const saved = await mutate({ type: 'upsert', annotation }, 'Word support saved. Your wording will be kept when suggestions are refreshed.');
++      const saved = await mutate({ type: 'upsert', annotation }, simplifiedText('simplified.gloss_save_word_support_confirmed', 'Word support saved. Your wording will be kept when suggestions are refreshed.'));
+       // A matching anchor alone does not confirm the submitted values. Keep
+       // unaccepted edits dirty against the actual save result so retry is safe.
+       const savedSupports = saved && (Array.isArray(saved.annotations) ? saved : adapted ? saved.adaptedReadingSupports : saved.readingSupports);
+       const accepted = savedSupports?.annotations?.find(entry => entry.id === id && sameAnchor(entry, selected));
+-      if (!accepted) { if (saved) { setNotice(''); setError('The save did not confirm this word support. Your draft is retained.'); } return false; }
++      if (!accepted) { if (saved) { setNotice(''); setError(simplifiedText('simplified.gloss_save_support_unconfirmed', 'The save did not confirm this word support. Your draft is retained.')); } return false; }
+       const next = { ...draft, id, anchor: anchorFor(selected), start: String(selected.start), text: annotation.text };
+       const confirmed = { ...next, text: accepted.definition || accepted.explanation || accepted.text || '',
+         priority: accepted.priority === 'essential' ? 'essential' : 'helpful', pinned: accepted.pinned === true, image: accepted.image || null };
+@@ -1690,7 +1701,7 @@
+     };
+     const saveAndContinue = async () => { const action = pendingRef.current; if (await save()) { if (mountedRef.current && action && pendingRef.current === action) performAction(action); } };
+     const pin = async (entry, pinned) => {
+-      const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? 'This support will stay visible in lighter view.' : 'This support now follows the lighter-view selection.');
++      const saved = await mutate({ type: 'pin', id: entry.id, pinned }, pinned ? simplifiedText('simplified.gloss_pinned_notice', 'This support will stay visible in lighter view.') : simplifiedText('simplified.gloss_unpinned_notice', 'This support now follows the lighter-view selection.'));
+       if (saved && sameAnchor(draft?.anchor, entry)) {
+         setDraft(previous => previous && ({ ...previous, pinned }));
+         setBaseline(previous => previous ? JSON.stringify({ ...JSON.parse(previous), pinned }) : previous);
+@@ -1710,14 +1721,14 @@
+         <button ref={addRef} type="button" disabled={disabled || busy || !!pendingAction} onClick={() => requestAction({ type: 'add' })} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900 disabled:opacity-50">{simplifiedText('simplified.gloss_add_a_word_or_phrase', 'Add a word or phrase')}</button>
+         {pendingAction && <div role="alertdialog" aria-labelledby={panelId + '-discard-title'} aria-describedby={panelId + '-discard-description'} className="space-y-2 rounded-lg border border-amber-400 bg-amber-50 p-3" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); dismissPending(); } }}>
+           <p id={panelId + '-discard-title'} className="font-bold">{simplifiedText('simplified.gloss_discard_unsaved_word_support_changes', 'Discard unsaved word support changes?')}</p><p id={panelId + '-discard-description'}>{pickingPicture || preparingPicture ? simplifiedText('simplified.gloss_picture_selection_pending', 'Your picture selection is still open. Keep editing to finish choosing or cancel the picture search, or discard it to continue.') : simplifiedText('simplified.gloss_unsaved_choices', 'Save these changes before continuing, keep editing, or discard them.')}</p>
+-          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : 'Save and continue'}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
++          <div className="flex flex-wrap gap-2"><button ref={keepRef} type="button" className="min-h-11 rounded border border-indigo-300 px-3" onClick={dismissPending}>{simplifiedText('simplified.gloss_keep_editing', 'Keep editing')}</button><button type="button" disabled={disabled || busy || pickingPicture || preparingPicture || staleDraft || supportsStale} className="min-h-11 rounded border border-indigo-700 px-3 disabled:opacity-50" onClick={saveAndContinue}>{busy ? simplifiedText('common.saving', 'Saving…') : simplifiedText('simplified.gloss_save_and_continue', 'Save and continue')}</button><button type="button" disabled={busy} className="min-h-11 rounded border border-amber-700 px-3 disabled:opacity-50" onClick={() => { const action = pendingAction; cancelPicture(); setDraft(null); setBaseline(''); performAction(action); }}>{simplifiedText('simplified.gloss_discard_changes', 'Discard changes')}</button></div>
+         </div>}
+         {draft && <fieldset disabled={disabled || busy || !!pendingAction} data-gloss-draft aria-label={draft.anchor ? simplifiedText('simplified.gloss_edit_word_support', 'Edit word support') : simplifiedText('simplified.gloss_add_word_support', 'Add word support')} className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+-          {(staleDraft || supportsStale) && <p role="status">The passage changed. Your draft is retained. Review the word supports, then <button type="button" disabled={supportsStale} onClick={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} className="underline">choose the occurrence in the current text</button> before saving.</p>}
+-          <label className="block font-semibold">{simplifiedText('simplified.gloss_word_from', 'Word or phrase from the {passage}', { passage: passageName })}<input ref={termRef} type="text" maxLength={draft.anchor ? undefined : 160} value={draft.query} readOnly={!!draft.anchor} onChange={event => updateDraft({ query: event.target.value, start: '' })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          {(staleDraft || supportsStale) && <ReadingDraftChangedNotice disabled={supportsStale} onChoose={() => { cancelPicture(); setDraftSource(sourceText); updateDraft({ anchor: null, start: '' }); }} />}
++          <label className="block font-semibold">{adapted ? simplifiedText('simplified.gloss_word_from_adapted', 'Word or phrase from the adapted text') : simplifiedText('simplified.gloss_word_from_original', 'Word or phrase from the original')}<input ref={termRef} type="text" maxLength={draft.anchor ? undefined : 160} value={draft.query} readOnly={!!draft.anchor} onChange={event => updateDraft({ query: event.target.value, start: '' })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
+           {!draft.anchor && matches.length > 1 && <label className="block font-semibold">{simplifiedText('simplified.gloss_which_occurrence', 'Which occurrence?')}<select value={draft.start} onChange={event => updateDraft({ start: event.target.value })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal"><option value="">{simplifiedText('simplified.gloss_choose_the_word_in_context', 'Choose the word in context')}</option>{matches.map((match, index) => <option key={match.start} value={String(match.start)}>{simplifiedText('simplified.gloss_occurrence_option', '{number}. Text position {start}–{end}: {context}', { number: index + 1, start: match.start + 1, end: match.end, context: match.context })}</option>)}</select></label>}
+           {matches.truncated && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_showing_the_first_200_matching_occurrenc', 'Showing the first 200 matching occurrences. Use a longer phrase to find a later occurrence.')}</p>}
+-          {!!draft.query.trim() && !matches.length && <p role="status" className="text-amber-900">{simplifiedText('simplified.gloss_no_exact_match', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the {passage}.', { passage: passageName })}</p>}
++          {!!draft.query.trim() && !matches.length && <p role="status" className="text-amber-900">{adapted ? simplifiedText('simplified.gloss_no_exact_match_adapted', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.') : simplifiedText('simplified.gloss_no_exact_match_original', 'No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.')}</p>}
+           {selected && (() => { const parts = readingGlossContext(sourceText, selected.start, selected.end); return <p data-gloss-context className="break-words text-slate-600"><span className="font-semibold">{simplifiedText('simplified.gloss_in_the_text', 'In the text:')}{' '}</span>{parts.before}<mark className="rounded bg-yellow-100 px-0.5 font-semibold text-slate-900">{parts.quote}</mark>{parts.after}</p>; })()}
+           <label className="block font-semibold">{simplifiedText('simplified.gloss_explanation', 'Explanation')}<span id={panelId + '-explain-hint'} className="block text-xs font-normal text-slate-600">{simplifiedText('simplified.gloss_what_the_word_means_in_this', 'What the word means in this sentence, in a few words.')}{' '}{adapted ? simplifiedText('simplified.gloss_students_see_it_in_the_word', 'Students see it in the word-help list after the passage.') : simplifiedText('simplified.gloss_students_see_it_in_brackets_after', 'Students see it in brackets after the word.')}</span><textarea ref={definitionRef} rows={3} aria-describedby={panelId + '-explain-hint'} placeholder={simplifiedText('simplified.gloss_e_g_turning_around_and_around', 'e.g. turning around and around')} maxLength={Math.max(2400, draft.originalTextLength || 0)} value={draft.text} onChange={event => updateDraft({ text: event.target.value })} className="mt-1 w-full min-w-0 rounded border border-slate-400 bg-white p-2 font-normal" /></label>
+           {/^\s*in (?:the )?(?:context|text)\s*:/i.test(draft.text) && <p role="status" data-gloss-context-warning className="text-amber-900">{simplifiedText('simplified.gloss_this_looks_like_the_sentence_around', 'This looks like the sentence around the word. Write what the word means here instead; the sentence already appears in the reading.')}</p>}
+diff --git a/AlloFlowANTI.txt b/AlloFlowANTI.txt
+--- a/AlloFlowANTI.txt
++++ b/AlloFlowANTI.txt
+@@ -6560,9 +6560,12 @@
+           return undefined;
+       }
+       if (params) {
++          // Replace template tokens once; inserted learner text is always literal.
++          const replacements = Object.create(null);
+           Object.keys(params).forEach(key => {
+-              result = result.replace(`{${key}}`, params[key]);
++              replacements[`{${key}}`] = String(params[key]);
+           });
++          result = result.replace(/\{[^{}]+\}/g, token => Object.prototype.hasOwnProperty.call(replacements, token) ? replacements[token] : token);
+       }
+       return result;
+   }, [languagePack]);
+diff --git a/desktop/web-app/src/AlloFlowANTI.txt b/desktop/web-app/src/AlloFlowANTI.txt
+--- a/desktop/web-app/src/AlloFlowANTI.txt
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -6560,9 +6560,12 @@
+           return undefined;
+       }
+       if (params) {
++          // Replace template tokens once; inserted learner text is always literal.
++          const replacements = Object.create(null);
+           Object.keys(params).forEach(key => {
+-              result = result.replace(`{${key}}`, params[key]);
++              replacements[`{${key}}`] = String(params[key]);
+           });
++          result = result.replace(/\{[^{}]+\}/g, token => Object.prototype.hasOwnProperty.call(replacements, token) ? replacements[token] : token);
+       }
+       return result;
+   }, [languagePack]);
+diff --git a/ui_strings.js b/ui_strings.js
+--- a/ui_strings.js
++++ b/ui_strings.js
+@@ -6907,7 +6907,13 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_word_from_original": "Word or phrase from the original",
++    "gloss_word_from_adapted": "Word or phrase from the adapted text",
++    "gloss_no_exact_match_original": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.",
++    "gloss_no_exact_match_adapted": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.",
++    "gloss_pinned_notice": "This support will stay visible in lighter view.",
++    "gloss_unpinned_notice": "This support now follows the lighter-view selection."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/desktop/web-app/public/ui_strings.js b/desktop/web-app/public/ui_strings.js
+--- a/desktop/web-app/public/ui_strings.js
++++ b/desktop/web-app/public/ui_strings.js
+@@ -6907,7 +6907,13 @@
+     "offline_audio_retry_save": "Retry saving audio",
+     "offline_audio_check_again": "Check device save",
+     "offline_audio_review_recordings": "Review recordings",
+-    "lookup_hear_passage": "Hear in passage"
++    "lookup_hear_passage": "Hear in passage",
++    "gloss_word_from_original": "Word or phrase from the original",
++    "gloss_word_from_adapted": "Word or phrase from the adapted text",
++    "gloss_no_exact_match_original": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.",
++    "gloss_no_exact_match_adapted": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.",
++    "gloss_pinned_notice": "This support will stay visible in lighter view.",
++    "gloss_unpinned_notice": "This support now follows the lighter-view selection."
+   },
+   "quiz": {
+     "concept_quest_live": "Concept Quest with class",
+diff --git a/lang/spanish_latin_america.js b/lang/spanish_latin_america.js
+--- a/lang/spanish_latin_america.js
++++ b/lang/spanish_latin_america.js
+@@ -4892,7 +4892,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_latin_america.js b/desktop/web-app/public/lang/spanish_latin_america.js
+--- a/desktop/web-app/public/lang/spanish_latin_america.js
++++ b/desktop/web-app/public/lang/spanish_latin_america.js
+@@ -4892,7 +4892,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/spanish_castilian.js b/lang/spanish_castilian.js
+--- a/lang/spanish_castilian.js
++++ b/lang/spanish_castilian.js
+@@ -4884,7 +4884,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/desktop/web-app/public/lang/spanish_castilian.js b/desktop/web-app/public/lang/spanish_castilian.js
+--- a/desktop/web-app/public/lang/spanish_castilian.js
++++ b/desktop/web-app/public/lang/spanish_castilian.js
+@@ -4884,7 +4884,15 @@
+     "place_copy_restored": "La copia de recuperación se restauró en esta página. Revísala y luego elige Guardar trabajo restaurado. Al recargar, se perderán los cambios sin guardar.",
+     "place_copy_save": "Guardar trabajo restaurado",
+     "place_copy_review_action": "Revisar copia {number}",
+-    "save_audio_stop": "Detener guardado de audio"
++    "save_audio_stop": "Detener guardado de audio",
++    "gloss_word_from_original": "Palabra o frase del texto original",
++    "gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++    "gloss_no_exact_match_original": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto original.",
++    "gloss_no_exact_match_adapted": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++    "gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++    "gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++    "gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++    "gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
+   },
+   "outline": {
+     "title": "Organizador Visual",
+diff --git a/lang/arabic.js b/lang/arabic.js
+--- a/lang/arabic.js
++++ b/lang/arabic.js
+@@ -4727,7 +4727,15 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_word_from_original": "كلمة أو عبارة من النص الأصلي",
++    "gloss_word_from_adapted": "كلمة أو عبارة من النص المعدّل",
++    "gloss_no_exact_match_original": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص الأصلي.",
++    "gloss_no_exact_match_adapted": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص المعدّل.",
++    "gloss_pinned_notice": "سيبقى هذا الشرح ظاهرًا في العرض المخفف.",
++    "gloss_unpinned_notice": "أصبح ظهور هذا الشرح تابعًا لاختيار الشروح في العرض المخفف.",
++    "gloss_pin_for": "إظهار دائمًا في العرض المخفف: {item}",
++    "gloss_always_show_in_lighter_view": "إظهار دائمًا في العرض المخفف"
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/desktop/web-app/public/lang/arabic.js b/desktop/web-app/public/lang/arabic.js
+--- a/desktop/web-app/public/lang/arabic.js
++++ b/desktop/web-app/public/lang/arabic.js
+@@ -4727,7 +4727,15 @@
+     "place_copy_restored": "تمت استعادة نسخة الاسترداد على هذه الصفحة. راجعها ثم اختر «حفظ العمل المستعاد». ستؤدي إعادة تحميل الصفحة إلى فقدان التغييرات غير المحفوظة.",
+     "place_copy_save": "حفظ العمل المستعاد",
+     "place_copy_review_action": "مراجعة النسخة {number}",
+-    "save_audio_stop": "إيقاف حفظ الصوت"
++    "save_audio_stop": "إيقاف حفظ الصوت",
++    "gloss_word_from_original": "كلمة أو عبارة من النص الأصلي",
++    "gloss_word_from_adapted": "كلمة أو عبارة من النص المعدّل",
++    "gloss_no_exact_match_original": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص الأصلي.",
++    "gloss_no_exact_match_adapted": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص المعدّل.",
++    "gloss_pinned_notice": "سيبقى هذا الشرح ظاهرًا في العرض المخفف.",
++    "gloss_unpinned_notice": "أصبح ظهور هذا الشرح تابعًا لاختيار الشروح في العرض المخفف.",
++    "gloss_pin_for": "إظهار دائمًا في العرض المخفف: {item}",
++    "gloss_always_show_in_lighter_view": "إظهار دائمًا في العرض المخفف"
+   },
+   "outline": {
+     "title": "منظِّم بصري",
+diff --git a/lang/chinese_simplified.js b/lang/chinese_simplified.js
+--- a/lang/chinese_simplified.js
++++ b/lang/chinese_simplified.js
+@@ -4894,7 +4894,15 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_word_from_original": "原文中的词或短语",
++    "gloss_word_from_adapted": "改写文本中的词或短语",
++    "gloss_no_exact_match_original": "没有找到完全匹配的完整词语或短语。请按原文中的写法复制该词或短语。",
++    "gloss_no_exact_match_adapted": "没有找到完全匹配的完整词语或短语。请按改写文本中的写法复制该词或短语。",
++    "gloss_pinned_notice": "此解释将始终在精简视图中显示。",
++    "gloss_unpinned_notice": "此解释现在将根据精简视图的筛选结果显示。",
++    "gloss_pin_for": "始终在精简视图中显示：{item}",
++    "gloss_always_show_in_lighter_view": "始终在精简视图中显示"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/desktop/web-app/public/lang/chinese_simplified.js b/desktop/web-app/public/lang/chinese_simplified.js
+--- a/desktop/web-app/public/lang/chinese_simplified.js
++++ b/desktop/web-app/public/lang/chinese_simplified.js
+@@ -4894,7 +4894,15 @@
+     "place_copy_restored": "恢复副本已在本页恢复。请查看后选择“保存恢复的作业”。重新加载会丢弃未保存的更改。",
+     "place_copy_save": "保存恢复的作业",
+     "place_copy_review_action": "查看副本 {number}",
+-    "save_audio_stop": "停止保存音频"
++    "save_audio_stop": "停止保存音频",
++    "gloss_word_from_original": "原文中的词或短语",
++    "gloss_word_from_adapted": "改写文本中的词或短语",
++    "gloss_no_exact_match_original": "没有找到完全匹配的完整词语或短语。请按原文中的写法复制该词或短语。",
++    "gloss_no_exact_match_adapted": "没有找到完全匹配的完整词语或短语。请按改写文本中的写法复制该词或短语。",
++    "gloss_pinned_notice": "此解释将始终在精简视图中显示。",
++    "gloss_unpinned_notice": "此解释现在将根据精简视图的筛选结果显示。",
++    "gloss_pin_for": "始终在精简视图中显示：{item}",
++    "gloss_always_show_in_lighter_view": "始终在精简视图中显示"
+   },
+   "outline": {
+     "title": "可视化组织器",
+diff --git a/lang/thai.js b/lang/thai.js
+--- a/lang/thai.js
++++ b/lang/thai.js
+@@ -5578,7 +5578,15 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_word_from_original": "คำหรือวลีจากต้นฉบับ",
++    "gloss_word_from_adapted": "คำหรือวลีจากข้อความที่ปรับแล้ว",
++    "gloss_no_exact_match_original": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในต้นฉบับ",
++    "gloss_no_exact_match_adapted": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในข้อความที่ปรับแล้ว",
++    "gloss_pinned_notice": "คำอธิบายนี้จะแสดงอยู่เสมอในมุมมองแบบเรียบง่าย",
++    "gloss_unpinned_notice": "ตอนนี้คำอธิบายนี้จะแสดงตามการคัดเลือกของมุมมองแบบเรียบง่าย",
++    "gloss_pin_for": "แสดงเสมอในมุมมองแบบเรียบง่าย: {item}",
++    "gloss_always_show_in_lighter_view": "แสดงเสมอในมุมมองแบบเรียบง่าย"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/desktop/web-app/public/lang/thai.js b/desktop/web-app/public/lang/thai.js
+--- a/desktop/web-app/public/lang/thai.js
++++ b/desktop/web-app/public/lang/thai.js
+@@ -5578,7 +5578,15 @@
+     "place_copy_restored": "กู้คืนสำเนาในหน้านี้แล้ว ตรวจทานแล้วเลือกบันทึกงานที่กู้คืน การโหลดหน้าใหม่จะทำให้การเปลี่ยนแปลงที่ยังไม่บันทึกสูญหาย",
+     "place_copy_save": "บันทึกงานที่กู้คืน",
+     "place_copy_review_action": "ตรวจทานสำเนาที่ {number}",
+-    "save_audio_stop": "หยุดบันทึกเสียง"
++    "save_audio_stop": "หยุดบันทึกเสียง",
++    "gloss_word_from_original": "คำหรือวลีจากต้นฉบับ",
++    "gloss_word_from_adapted": "คำหรือวลีจากข้อความที่ปรับแล้ว",
++    "gloss_no_exact_match_original": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในต้นฉบับ",
++    "gloss_no_exact_match_adapted": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในข้อความที่ปรับแล้ว",
++    "gloss_pinned_notice": "คำอธิบายนี้จะแสดงอยู่เสมอในมุมมองแบบเรียบง่าย",
++    "gloss_unpinned_notice": "ตอนนี้คำอธิบายนี้จะแสดงตามการคัดเลือกของมุมมองแบบเรียบง่าย",
++    "gloss_pin_for": "แสดงเสมอในมุมมองแบบเรียบง่าย: {item}",
++    "gloss_always_show_in_lighter_view": "แสดงเสมอในมุมมองแบบเรียบง่าย"
+   },
+   "bridge": {
+     "prompt_header": "พรอมต์สำหรับ Gemini Canvas",
+diff --git a/translations/reader-passage-label-locales.json b/translations/reader-passage-label-locales.json
+new file mode 100644
+--- /dev/null
++++ b/translations/reader-passage-label-locales.json
+@@ -0,0 +1,65 @@
++{
++  "schemaVersion": 1,
++  "english": {
++    "simplified.gloss_word_from_original": "Word or phrase from the original",
++    "simplified.gloss_word_from_adapted": "Word or phrase from the adapted text",
++    "simplified.gloss_no_exact_match_original": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.",
++    "simplified.gloss_no_exact_match_adapted": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.",
++    "simplified.gloss_pinned_notice": "This support will stay visible in lighter view.",
++    "simplified.gloss_unpinned_notice": "This support now follows the lighter-view selection.",
++    "simplified.gloss_pin_for": "Always show in lighter view: {item}",
++    "simplified.gloss_always_show_in_lighter_view": "Always show in lighter view"
++  },
++  "locales": {
++    "spanish_latin_america": {
++      "simplified.gloss_word_from_original": "Palabra o frase del texto original",
++      "simplified.gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++      "simplified.gloss_no_exact_match_original": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto original.",
++      "simplified.gloss_no_exact_match_adapted": "No se encontró una coincidencia exacta de la palabra completa o la frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++      "simplified.gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++      "simplified.gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++      "simplified.gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++      "simplified.gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
++    },
++    "spanish_castilian": {
++      "simplified.gloss_word_from_original": "Palabra o frase del texto original",
++      "simplified.gloss_word_from_adapted": "Palabra o frase del texto adaptado",
++      "simplified.gloss_no_exact_match_original": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto original.",
++      "simplified.gloss_no_exact_match_adapted": "No hay ninguna coincidencia exacta de palabra completa o frase. Copia la palabra o frase tal como aparece en el texto adaptado.",
++      "simplified.gloss_pinned_notice": "Esta ayuda permanecerá visible en la vista ligera.",
++      "simplified.gloss_unpinned_notice": "Esta ayuda ahora se muestra según la selección de la vista ligera.",
++      "simplified.gloss_pin_for": "Mostrar siempre en la vista ligera: {item}",
++      "simplified.gloss_always_show_in_lighter_view": "Mostrar siempre en la vista ligera"
++    },
++    "arabic": {
++      "simplified.gloss_word_from_original": "كلمة أو عبارة من النص الأصلي",
++      "simplified.gloss_word_from_adapted": "كلمة أو عبارة من النص المعدّل",
++      "simplified.gloss_no_exact_match_original": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص الأصلي.",
++      "simplified.gloss_no_exact_match_adapted": "لم يتم العثور على تطابق تام لكلمة كاملة أو عبارة. انسخ الكلمة أو العبارة كما تظهر في النص المعدّل.",
++      "simplified.gloss_pinned_notice": "سيبقى هذا الشرح ظاهرًا في العرض المخفف.",
++      "simplified.gloss_unpinned_notice": "أصبح ظهور هذا الشرح تابعًا لاختيار الشروح في العرض المخفف.",
++      "simplified.gloss_pin_for": "إظهار دائمًا في العرض المخفف: {item}",
++      "simplified.gloss_always_show_in_lighter_view": "إظهار دائمًا في العرض المخفف"
++    },
++    "chinese_simplified": {
++      "simplified.gloss_word_from_original": "原文中的词或短语",
++      "simplified.gloss_word_from_adapted": "改写文本中的词或短语",
++      "simplified.gloss_no_exact_match_original": "没有找到完全匹配的完整词语或短语。请按原文中的写法复制该词或短语。",
++      "simplified.gloss_no_exact_match_adapted": "没有找到完全匹配的完整词语或短语。请按改写文本中的写法复制该词或短语。",
++      "simplified.gloss_pinned_notice": "此解释将始终在精简视图中显示。",
++      "simplified.gloss_unpinned_notice": "此解释现在将根据精简视图的筛选结果显示。",
++      "simplified.gloss_pin_for": "始终在精简视图中显示：{item}",
++      "simplified.gloss_always_show_in_lighter_view": "始终在精简视图中显示"
++    },
++    "thai": {
++      "simplified.gloss_word_from_original": "คำหรือวลีจากต้นฉบับ",
++      "simplified.gloss_word_from_adapted": "คำหรือวลีจากข้อความที่ปรับแล้ว",
++      "simplified.gloss_no_exact_match_original": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในต้นฉบับ",
++      "simplified.gloss_no_exact_match_adapted": "ไม่พบคำเต็มหรือวลีที่ตรงกันทุกตัวอักษร โปรดคัดลอกคำหรือวลีตามที่ปรากฏในข้อความที่ปรับแล้ว",
++      "simplified.gloss_pinned_notice": "คำอธิบายนี้จะแสดงอยู่เสมอในมุมมองแบบเรียบง่าย",
++      "simplified.gloss_unpinned_notice": "ตอนนี้คำอธิบายนี้จะแสดงตามการคัดเลือกของมุมมองแบบเรียบง่าย",
++      "simplified.gloss_pin_for": "แสดงเสมอในมุมมองแบบเรียบง่าย: {item}",
++      "simplified.gloss_always_show_in_lighter_view": "แสดงเสมอในมุมมองแบบเรียบง่าย"
++    }
++  }
++}
+diff --git a/dev-tools/i18n/apply_reader_passage_label_locales.cjs b/dev-tools/i18n/apply_reader_passage_label_locales.cjs
+new file mode 100644
+--- /dev/null
++++ b/dev-tools/i18n/apply_reader_passage_label_locales.cjs
+@@ -0,0 +1,77 @@
++#!/usr/bin/env node
++// Only the frozen eight-message passage-label batch is writable; other catalog values are preserved.
++const fs = require('node:fs');
++const path = require('node:path');
++const ROOT = path.resolve(__dirname, '../..');
++const LOCALES = ['spanish_latin_america', 'spanish_castilian', 'arabic', 'chinese_simplified', 'thai'];
++const COPY = Object.freeze({
++  "simplified.gloss_word_from_original": "Word or phrase from the original",
++  "simplified.gloss_word_from_adapted": "Word or phrase from the adapted text",
++  "simplified.gloss_no_exact_match_original": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the original.",
++  "simplified.gloss_no_exact_match_adapted": "No exact whole-word or phrase match. Copy the word or phrase as it appears in the adapted text.",
++  "simplified.gloss_pinned_notice": "This support will stay visible in lighter view.",
++  "simplified.gloss_unpinned_notice": "This support now follows the lighter-view selection.",
++  "simplified.gloss_pin_for": "Always show in lighter view: {item}",
++  "simplified.gloss_always_show_in_lighter_view": "Always show in lighter view"
++});
++const KEYS = Object.keys(COPY);
++const lookup = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
++const placeholders = text => [...text.matchAll(/\{([^{}]+)\}/g)].map(match => match[1]).sort();
++const sameKeys = (object, keys) => object && JSON.stringify(Object.keys(object).sort()) === JSON.stringify([...keys].sort());
++function validatePayload(payload) {
++  if (payload?.schemaVersion !== 1 || !sameKeys(payload.english, KEYS) || !sameKeys(payload.locales, LOCALES)) throw Error('Expected the frozen eight-message reader-passage-label contract and five locales.');
++  for (const key of KEYS) if (payload.english[key] !== COPY[key]) throw Error('English copy changed; review before translating: ' + key);
++  for (const locale of LOCALES) {
++    const values = payload.locales[locale];
++    if (!sameKeys(values, KEYS)) throw Error('Key coverage differs: ' + locale);
++    for (const key of KEYS) {
++      const value = values[key];
++      if (typeof value !== 'string' || !value.trim() || value.includes('simplified.') || value === COPY[key]) throw Error('Missing translation: ' + locale + ' ' + key);
++      if (JSON.stringify(placeholders(value)) !== JSON.stringify(placeholders(COPY[key]))) throw Error('Placeholder mismatch: ' + locale + ' ' + key);
++      if (/[{}]/.test(value.replace(/\{[^{}]+\}/g, ''))) throw Error('Malformed placeholder: ' + locale + ' ' + key);
++    }
++  }
++  return KEYS;
++}
++function mergePack(pack, values) {
++  if (!sameKeys(values, KEYS)) throw Error('Unexpected merge keys.');
++  const next = { ...pack, simplified: { ...pack.simplified } };
++  for (const key of KEYS) {
++    const leaf = key.slice('simplified.'.length), existing = next.simplified[leaf];
++    if (existing !== undefined && existing !== values[key]) throw Error('Existing catalog value differs; resolve ownership first: ' + key);
++    next.simplified[leaf] = values[key];
++  }
++  return next;
++}
++function plan(root = ROOT) {
++  const payload = JSON.parse(fs.readFileSync(path.join(root, 'translations/reader-passage-label-locales.json'), 'utf8'));
++  validatePayload(payload);
++  const targets = [['ui_strings.js', payload.english], ['desktop/web-app/public/ui_strings.js', payload.english]];
++  for (const locale of LOCALES) for (const prefix of ['lang', 'desktop/web-app/public/lang']) targets.push([prefix + '/' + locale + '.js', payload.locales[locale]]);
++  const changes = [];
++  for (const [relative, values] of targets) {
++    const file = path.join(root, relative), original = fs.readFileSync(file, 'utf8'), pack = JSON.parse(original), next = mergePack(pack, values);
++    if (KEYS.some(key => lookup(pack, key) !== values[key])) changes.push({ file, original, contents: JSON.stringify(next, null, 2) + (original.endsWith('\n') ? '\n' : '') });
++  }
++  return changes;
++}
++function run(apply = false, root = ROOT) {
++  const changes = plan(root);
++  if (!apply && changes.length) throw Error(changes.length + ' catalogs need the scoped merge; run with --apply.');
++  // Validate all targets before any write; preserve concurrent edits and use per-file atomic replacement.
++  for (const change of changes) if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Catalog changed during merge: ' + change.file);
++  for (const change of changes) {
++    if (fs.readFileSync(change.file, 'utf8') !== change.original) throw Error('Catalog changed during merge: ' + change.file);
++    const temporary = change.file + '.reader-passage-label-locale-' + process.pid + '.tmp';
++    try { fs.writeFileSync(temporary, change.contents); fs.renameSync(temporary, change.file); }
++    finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
++  }
++  return { keys: KEYS.length, locales: LOCALES.length, changedFiles: changes.length, mode: apply ? 'apply' : 'check' };
++}
++function parseArgs(args) {
++  if (!args.length || args.length === 1 && args[0] === '--check') return false;
++  if (args.length === 1 && args[0] === '--apply') return true;
++  throw Error('Use --check (default) or --apply.');
++}
++module.exports = { COPY, KEYS, LOCALES, lookup, placeholders, validatePayload, mergePack, plan, run, parseArgs };
++if (require.main === module) console.log(JSON.stringify(run(parseArgs(process.argv.slice(2))), null, 2));
+diff --git a/tests/fixtures/reader_passage_label_locales.json b/tests/fixtures/reader_passage_label_locales.json
+new file mode 100644
+--- /dev/null
++++ b/tests/fixtures/reader_passage_label_locales.json
+@@ -0,0 +1,56 @@
++[
++  {
++    "id": "passage_labels_en_v1",
++    "locale": "English",
++    "tag": "en",
++    "direction": "ltr",
++    "word": "heron",
++    "passage": "The heron walked through the water.",
++    "changed": "A heron stood in a pond."
++  },
++  {
++    "id": "passage_labels_es419_v1",
++    "locale": "spanish_latin_america",
++    "tag": "es-419",
++    "direction": "ltr",
++    "word": "garza",
++    "passage": "La garza caminaba por el agua.",
++    "changed": "Una garza estaba en el estanque."
++  },
++  {
++    "id": "passage_labels_esES_v1",
++    "locale": "spanish_castilian",
++    "tag": "es-ES",
++    "direction": "ltr",
++    "word": "garza",
++    "passage": "La garza caminaba por el agua.",
++    "changed": "Una garza estaba en el estanque."
++  },
++  {
++    "id": "passage_labels_ar_rtl_v1",
++    "locale": "arabic",
++    "tag": "ar",
++    "direction": "rtl",
++    "word": "الماء",
++    "passage": "يتدفق الماء في الحديقة.",
++    "changed": "هذا الماء صافٍ."
++  },
++  {
++    "id": "passage_labels_zh_unspaced_v1",
++    "locale": "chinese_simplified",
++    "tag": "zh-Hans",
++    "direction": "ltr",
++    "word": "河水",
++    "passage": "河水清澈。",
++    "changed": "花园里的河水很清澈。"
++  },
++  {
++    "id": "passage_labels_th_unspaced_v1",
++    "locale": "thai",
++    "tag": "th",
++    "direction": "ltr",
++    "word": "หนังสือ",
++    "passage": "หนังสือเล่มนี้น่าอ่าน",
++    "changed": "ฉันอ่านหนังสือทุกวัน"
++  }
++]
+diff --git a/tests/helpers/reader_passage_label_harness.js b/tests/helpers/reader_passage_label_harness.js
+new file mode 100644
+--- /dev/null
++++ b/tests/helpers/reader_passage_label_harness.js
+@@ -0,0 +1,65 @@
++import { createRequire } from 'node:module';
++import { readFileSync } from 'node:fs';
++import { resolve } from 'node:path';
++import { vi } from 'vitest';
++import { loadAlloModule } from '../setup.js';
++const require = createRequire(import.meta.url);
++export const React = require(resolve('desktop/web-app/node_modules/react'));
++const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
++export const act = React.act;
++export const fixtures = JSON.parse(readFileSync('tests/fixtures/reader_passage_label_locales.json', 'utf8'));
++export const payload = JSON.parse(readFileSync('translations/reader-passage-label-locales.json', 'utf8'));
++export const english = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++const packs = new Map(fixtures.map(f => [f.locale, f.locale === 'English' ? {} : JSON.parse(readFileSync('lang/' + f.locale + '.js', 'utf8'))]));
++const hostSource = readFileSync(process.env.ALLO_PASSAGE_HOST_SOURCE || 'AlloFlowANTI.txt', 'utf8');
++const callbacks = [...hostSource.matchAll(/const t = useCallback\((\(keyString, params = \{\}\) => \{[\s\S]+?\}), \[languagePack\]\);/g)];
++if (callbacks.length !== 1) throw Error('Host translator extraction needs review.');
++const translate = new Function('languagePack', 'UI_STRINGS', 'WORD_SOUNDS_STRINGS', 'return (' + callbacks[0][1] + ');');
++export function translator(fixture, overrides = {}) {
++  const pack = packs.get(fixture.locale);
++  return translate({ ...pack, simplified: { ...pack.simplified, ...overrides } }, english, {});
++}
++export function copy(fixture, leaf) { return (payload.locales[fixture.locale] || payload.english)['simplified.' + leaf]; }
++let View, contract, root, host;
++export function setupDraftReader() {
++  globalThis.React = window.React = React; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  for (const file of ['instructional_context_module.js','alt_text_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','view_simplified_module.js']) loadAlloModule(file);
++  contract = window.AlloModules.InstructionalContext;
++  const files = ['reader_place_store.js','reader_support_drafts.js',process.env.ALLO_PASSAGE_LABEL_SOURCE || 'view_simplified_source.jsx'];
++  const compiled = require('@babel/core').transformSync(files.map(f => readFileSync(f, 'utf8')).join('\n'), { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false, parserOpts: { sourceType: 'script', plugins: ['jsx'] } }).code;
++  View = new Function('React', 'Fragment', compiled + '\nreturn SimplifiedView;')(React, React.Fragment);
++}
++export function cleanupDraftReader() { if (root) act(() => root.unmount()); root = null; host?.remove(); host = null; delete window.__alloT; vi.restoreAllMocks(); }
++export const click = async node => { if (!node) throw Error('Missing control'); await act(async () => node.click()); };
++export const type = (node, value) => act(() => { Object.getOwnPropertyDescriptor(node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); });
++export function mountDraft(fixture, { adapted = true, translate: t = translator(fixture), outcome = 'complete', pending } = {}) {
++  window.__alloT = t;
++  const id = fixture.id + (adapted ? '-adapted' : '-original');
++  const makeItem = text => adapted ? { id, _artifactInstanceId: id, type: 'simplified', data: text, config: { language: fixture.tag }, instructionalText: { form: 'adapted', role: 'supplemental' } } : contract.createSupportedReading(contract.createSourceSnapshot(text, { language: fixture.tag }), { id });
++  let item = makeItem(fixture.passage), supports, stale = false;
++  const upsert = (owner, existing, annotation) => adapted ? contract.upsertAdaptedReadingSupport(owner, existing, annotation) : contract.upsertReadingSupport(owner, existing, annotation);
++  const annotationFor = text => { const start = text.indexOf(fixture.word); return { id: 'word-' + start, start, end: start + fixture.word.length, quote: fixture.word, text: 'Prepared explanation.', origin: 'educator', kind: 'gloss', priority: 'essential' }; };
++  supports = upsert(item, undefined, annotationFor(fixture.passage));
++  if (supports?.annotations?.length !== 1) throw Error('Fixture support rejected: ' + fixture.id);
++  const session = window.AlloModules.ReaderSupportDrafts.createSession();
++  const onUpdate = vi.fn(async (owner, action) => {
++    if (pending) await pending;
++    if (outcome === 'reject') throw Error('Fixture pin save failed.');
++    const saved = action.type === 'pin' ? contract.setReadingSupportPinned(owner, supports, action.id, action.pinned === true) : upsert(owner, supports, action.annotation);
++    supports = saved; render(); return saved;
++  });
++  host = document.createElement('div'); host.dir = fixture.direction; host.lang = fixture.tag; document.body.append(host); root = createRoot(host);
++  function render() { root.render(React.createElement(View.ReadingGlossEditor, { item, supports, onUpdate, adapted, snapshot: adapted ? contract.createSourceSnapshot(item.data, { language: fixture.tag }) : undefined, embedded: true, disabled: false, supportsStale: stale, draftSession: session })); }
++  act(render);
++  const button = text => [...host.querySelectorAll('button')].find(n => n.textContent.trim() === text);
++  const input = () => host.querySelector('[data-gloss-draft] textarea');
++  return { host, onUpdate, session, button, input, t,
++    edit: async value => { await click([...host.querySelectorAll('button')].find(n => n.getAttribute('aria-label')?.startsWith('Edit gloss for'))); type(input(), value); },
++    change: (unreviewed = false) => act(() => { item = makeItem(fixture.changed); stale = unreviewed; if (!unreviewed) supports = upsert(item, undefined, annotationFor(fixture.changed)); render(); }),
++    saved: () => supports,
++    current: () => item,
++    saveButton: () => button(t('simplified.gloss_save_word_support')),
++    requestAdd: async () => click(button(t('simplified.gloss_add_a_word_or_phrase'))),
++  };
++}
+diff --git a/tests/reader_passage_label_locales.test.js b/tests/reader_passage_label_locales.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_passage_label_locales.test.js
+@@ -0,0 +1,69 @@
++import { readFileSync } from 'node:fs';
++import { afterEach, beforeAll, describe, expect, it } from 'vitest';
++import { act, fixtures, payload, copy, translator, setupDraftReader, cleanupDraftReader, mountDraft, click, type } from './helpers/reader_passage_label_harness.js';
++beforeAll(setupDraftReader); afterEach(cleanupDraftReader);
++const usable = text => { expect(text.trim()).not.toBe(''); expect(text).not.toMatch(/simplified\.gloss_|\{(?:passage|item)\}/); };
++const wordInput = h => h.host.querySelector('[data-gloss-draft] input[type=text]');
++const pinBox = h => h.host.querySelector('li input[type=checkbox]');
++const matchMessage = h => [...h.host.querySelectorAll('[data-gloss-draft] [role=status]')].find(n => n.textContent.trim());
++describe.each(fixtures)('$id', f => {
++  it.each([false, true])('uses complete passage-kind sentences without English noun fragments (adapted=%s)', async adapted => {
++    const h = mountDraft(f, { adapted }), before = JSON.stringify(h.current()); await h.requestAdd();
++    const suffix = adapted ? 'adapted' : 'original', label = wordInput(h).closest('label');
++    expect(label.textContent).toBe(copy(f, 'gloss_word_from_' + suffix)); usable(label.textContent);
++    type(wordInput(h), 'no-match-12345');
++    expect(matchMessage(h)?.textContent).toBe(copy(f, 'gloss_no_exact_match_' + suffix)); usable(matchMessage(h).textContent);
++    expect(h.saveButton().disabled).toBe(true); expect(h.onUpdate).not.toHaveBeenCalled(); expect(JSON.stringify(h.current())).toBe(before);
++  });
++  it('localizes the visible and accessible pin label, then announces both confirmed states', async () => {
++    const h = mountDraft(f, { adapted: false }), checkbox = pinBox(h), before = JSON.stringify(h.current());
++    const start = f.passage.indexOf(f.word), context = f.word + ', text position ' + (start + 1) + '–' + (start + f.word.length) + ': ' + f.passage;
++    expect(checkbox.closest('label').textContent).toBe(copy(f, 'gloss_always_show_in_lighter_view'));
++    expect(checkbox.getAttribute('aria-label')).toBe(copy(f, 'gloss_pin_for').replace('{item}', () => context)); usable(checkbox.getAttribute('aria-label'));
++    expect(checkbox.checked).toBe(false); await click(checkbox);
++    expect(pinBox(h).checked).toBe(true); expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe(copy(f, 'gloss_pinned_notice'));
++    expect(h.saved().annotations[0]).toMatchObject({ pinned: true, quote: f.word, start });
++    await click(pinBox(h)); expect(pinBox(h).checked).toBe(false);
++    expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe(copy(f, 'gloss_unpinned_notice')); expect(h.saved().annotations[0].pinned).toBe(false);
++    expect(h.onUpdate.mock.calls.map(([,action])=>({type:action.type,pinned:action.pinned}))).toEqual([{type:'pin',pinned:true},{type:'pin',pinned:false}]);
++    expect(JSON.stringify(h.current())).toBe(before);
++  });
++  it('does not announce a successful pin when persistence fails', async () => {
++    const h = mountDraft(f, { adapted: false, outcome: 'reject' }); await click(pinBox(h));
++    expect(h.onUpdate).toHaveBeenCalledTimes(1); expect(pinBox(h).checked).toBe(false); expect(h.saved().annotations[0].pinned).toBe(false);
++    expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe(''); expect(h.host.querySelector('[role=alert]').textContent).toBe('Fixture pin save failed.');
++  });
++  it('waits for pin confirmation and disables duplicate changes', async () => {
++    let confirm; const pending = new Promise(resolve => { confirm = resolve; }), h = mountDraft(f, { adapted: false, pending });
++    await click(pinBox(h)); expect(pinBox(h).disabled).toBe(true); expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe('');
++    await click(pinBox(h)); expect(h.onUpdate).toHaveBeenCalledTimes(1);
++    await act(async () => { confirm(); await pending; }); expect(pinBox(h).disabled).toBe(false); expect(pinBox(h).checked).toBe(true);
++    expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe(copy(f, 'gloss_pinned_notice'));
++  });
++  it('does not expose original-only pin controls for an adapted passage', async () => {
++    const h = mountDraft(f); expect(pinBox(h)).toBeNull(); await h.requestAdd(); expect(h.host.querySelector('input[type=checkbox]')).toBeNull();
++  });
++});
++const arabic = fixtures.find(f => f.locale === 'arabic');
++describe.each(['missing','echo','padded echo','blank','throws','object'])('owned message fallback: %s', mode => {
++  function fallbackTranslator(f) { const base = translator(f); return (key, params) => Object.hasOwn(payload.english, key) ? mode === 'missing' ? undefined : mode === 'echo' ? key : mode === 'padded echo' ? ' ' + key + ' ' : mode === 'blank' ? ' ' : mode === 'object' ? {} : (() => { throw Error('Lookup failed'); })() : base(key, params); }
++  it.each([false,true])('retains complete English labels and validation messages (adapted=%s)', async adapted => {
++    const h = mountDraft(arabic, { adapted, translate: fallbackTranslator(arabic) }), suffix = adapted ? 'adapted' : 'original'; await h.requestAdd();
++    expect(wordInput(h).closest('label').textContent).toBe(payload.english['simplified.gloss_word_from_' + suffix]);
++    type(wordInput(h), 'no-match-12345'); expect(matchMessage(h).textContent).toBe(payload.english['simplified.gloss_no_exact_match_' + suffix]); usable(matchMessage(h).textContent);
++  });
++  it('retains readable English pin labels and notices without raw keys', async () => {
++    const h = mountDraft(arabic, { adapted: false, translate: fallbackTranslator(arabic) });
++    expect(pinBox(h).closest('label').textContent).toBe(payload.english['simplified.gloss_always_show_in_lighter_view']); usable(pinBox(h).getAttribute('aria-label'));
++    await click(pinBox(h)); expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe(payload.english['simplified.gloss_pinned_notice']);
++    await click(pinBox(h)); expect(h.host.querySelector('[data-gloss-notice]').textContent).toBe(payload.english['simplified.gloss_unpinned_notice']);
++  });
++});
++
++it('preserves spacing in a meaningful translation and in inserted learner text', () => {
++  const source = readFileSync(process.env.ALLO_PASSAGE_LABEL_SOURCE || 'view_simplified_source.jsx', 'utf8');
++  const body = source.match(/function simplifiedText\(key, fallback, params, translate\) \{[\s\S]*?\n  \}/)?.[0];
++  expect(body).toBeTruthy(); const text = new Function(body + '; return simplifiedText;')();
++  expect(text('label', 'English', undefined, () => '  Etiqueta  ')).toBe('  Etiqueta  ');
++  expect(text('label', 'English {word}', { word: '  الماء  ' }, () => '  ترجمة {word}  ')).toBe('  ترجمة   الماء    ');
++});
+diff --git a/tests/reader_passage_label_catalogs.test.js b/tests/reader_passage_label_catalogs.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_passage_label_catalogs.test.js
+@@ -0,0 +1,46 @@
++import { describe, expect, it } from 'vitest';
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++const require = createRequire(import.meta.url);
++const guard = require('../dev-tools/i18n/apply_reader_passage_label_locales.cjs');
++const payload = JSON.parse(readFileSync('translations/reader-passage-label-locales.json', 'utf8'));
++const clone = () => JSON.parse(JSON.stringify(payload));
++const read = file => JSON.parse(readFileSync(file, 'utf8'));
++it('freezes exactly eight English messages and five locale batches', () => {
++  expect(guard.validatePayload(payload)).toHaveLength(8); expect(guard.LOCALES).toHaveLength(5);
++  expect(guard.run(false)).toEqual({ keys: 8, locales: 5, changedFiles: 0, mode: 'check' });
++});
++it('registers each owned fallback verbatim at a literal reader lookup', () => {
++  const parser = require('@babel/parser'), traverse = require('@babel/traverse').default;
++  const source = readFileSync('view_simplified_source.jsx', 'utf8'), calls = new Map();
++  traverse(parser.parse(source, { sourceType: 'script', plugins: ['jsx'] }), { CallExpression(p) {
++    const n = p.node; if (n.callee.name === 'simplifiedText' && guard.KEYS.includes(n.arguments[0]?.value)) calls.set(n.arguments[0].value, n.arguments[1]?.value);
++  } });
++  expect(Object.fromEntries(calls)).toEqual(payload.english);
++});
++it.each(['English', ...guard.LOCALES])('ships the bounded keys and an exact public mirror for %s', locale => {
++  const file = locale === 'English' ? 'ui_strings.js' : 'lang/' + locale + '.js';
++  const pack = read(file), values = locale === 'English' ? payload.english : payload.locales[locale];
++  for (const key of guard.KEYS) { expect(guard.lookup(pack, key)).toBe(values[key]); expect(guard.placeholders(values[key])).toEqual(guard.placeholders(payload.english[key])); }
++  expect(readFileSync('desktop/web-app/public/' + file, 'utf8')).toBe(readFileSync(file, 'utf8'));
++});
++it.each(['missing','duplicate','renamed','extra'])('rejects %s pin label slots before writing', mode => {
++  const p = clone(), key = 'simplified.gloss_pin_for';
++  p.locales.arabic[key] = mode === 'missing' ? 'No action.' : mode === 'duplicate' ? '{item}{item}' : mode === 'renamed' ? '{choose}' : '{item}{other}';
++  expect(() => guard.validatePayload(p)).toThrow('Placeholder mismatch');
++});
++it('rejects frozen English changes and conflicting owner translations', () => {
++  const p = clone(); p.english['simplified.gloss_pinned_notice'] += '!'; expect(() => guard.validatePayload(p)).toThrow('English copy changed');
++  expect(() => guard.mergePack({ simplified: { gloss_pinned_notice: 'Other owner wording' } }, payload.locales.arabic)).toThrow('Existing catalog value differs');
++});
++it('preserves other catalog values and refuses extra keys or untranslated copy', () => {
++  const old = { common: { save: 'Keep' }, simplified: { other: 'Keep too' } }, before = JSON.stringify(old);
++  const merged = guard.mergePack(old, payload.locales.arabic); expect(JSON.stringify(old)).toBe(before); expect(merged.common).toEqual(old.common); expect(merged.simplified.other).toBe('Keep too');
++  const extra = clone(); extra.locales.arabic.extra = 'No'; expect(() => guard.validatePayload(extra)).toThrow('Key coverage');
++  const untranslated = clone(); untranslated.locales.arabic['simplified.gloss_pinned_notice'] = untranslated.english['simplified.gloss_pinned_notice']; expect(() => guard.validatePayload(untranslated)).toThrow('Missing translation');
++});
++
++it.each(['{', '}'])('rejects stray %s braces even when the item token survives', brace => {
++  const p = clone(); p.locales.arabic['simplified.gloss_pin_for'] += brace;
++  expect(() => guard.validatePayload(p)).toThrow('Malformed placeholder');
++});
+diff --git a/tests/reader_passage_literal_labels.test.js b/tests/reader_passage_literal_labels.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_passage_literal_labels.test.js
+@@ -0,0 +1,14 @@
++import { beforeAll, afterEach, describe, expect, it } from 'vitest';
++import { fixtures, copy, setupDraftReader, cleanupDraftReader, mountDraft } from './helpers/reader_passage_label_harness.js';
++beforeAll(setupDraftReader); afterEach(cleanupDraftReader);
++// Run against the assembled reader and host literal-placeholder fix.
++describe.each(fixtures)('$id literal learner text in the localized pin label', f => {
++  it.each(['$&','$$','{start}','{item}'])('preserves the exact learner suffix %s', suffix => {
++    const word = f.word + suffix, passage = '«' + word + '»';
++    const h = mountDraft({ ...f, word, passage }, { adapted: false });
++    const checkbox = h.host.querySelector('li input[type=checkbox]');
++    const occurrence = word + ', text position 2–' + (1 + word.length) + ': ' + passage;
++    expect(checkbox.getAttribute('aria-label')).toBe(copy(f, 'gloss_pin_for').replace('{item}', () => occurrence));
++    expect(h.saved().annotations[0].quote).toBe(word); expect(h.current().sourceSnapshot.text).toBe(passage); expect(h.onUpdate).not.toHaveBeenCalled();
++  });
++});
+diff --git a/tests/reader_passage_label_layout.test.js b/tests/reader_passage_label_layout.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_passage_label_layout.test.js
+@@ -0,0 +1,41 @@
++import { beforeAll, afterEach, afterAll, describe, it, expect } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { mkdirSync, writeFileSync } from 'node:fs';
++import { fixtures, copy, setupDraftReader, cleanupDraftReader, mountDraft, click, type } from './helpers/reader_passage_label_harness.js';
++const require = createRequire(import.meta.url), webRequire = createRequire(resolve('desktop/web-app/package.json'));
++const report = resolve('reports/passage-label-layout'), results = [];
++let browser, css;
++(process.env.ALLO_PASSAGE_LABEL_LAYOUT === '1' ? describe : describe.skip)('translated passage form and pin control reflow', () => {
++  beforeAll(async () => {
++    setupDraftReader();
++    const config = { ...require(resolve('desktop/web-app/tailwind.config.js')), content: [resolve(process.env.ALLO_PASSAGE_LABEL_SOURCE || 'view_simplified_source.jsx')] };
++    css = (await webRequire('postcss')([webRequire('tailwindcss')(config)]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined })).css;
++    browser = await require('@playwright/test').chromium.launch({ headless: true }); mkdirSync(report, { recursive: true });
++  }, 60000);
++  afterEach(cleanupDraftReader);
++  afterAll(async () => { await browser?.close(); writeFileSync(resolve(report, 'results.json'), JSON.stringify(results, null, 2) + '\n'); });
++  for (const f of fixtures) for (const adapted of [false,true]) for (const scale of [1,2]) it(f.id + ' adapted=' + adapted + ' at 320px/' + scale + 'x', async () => {
++    const h = mountDraft(f, { adapted });
++    if (!adapted) await click(h.host.querySelector('li input[type=checkbox]'));
++    await h.requestAdd(); type(h.host.querySelector('[data-gloss-draft] input[type=text]'), 'no-match-12345');
++    const page = await browser.newPage({ viewport: { width: 320, height: 900 } }), errors = []; page.on('pageerror', e => errors.push(e.message)); await page.route('**/*', route => route.abort());
++    try {
++      await page.setContent('<!doctype html><html lang="' + f.tag + '" dir="' + f.direction + '"><head><meta charset="utf-8"><style>' + css + '\nhtml{font-size:' + 16 * scale + 'px}</style></head><body>' + h.host.outerHTML + '</body></html>');
++      const label = copy(f, 'gloss_word_from_' + (adapted ? 'adapted' : 'original'));
++      await page.getByText(label, { exact: true }).click();
++      const input = page.getByRole('textbox', { name: label, exact: true }); expect(await input.evaluate(n => document.activeElement === n)).toBe(true);
++      const geometry = await page.evaluate(() => {
++        const input = document.querySelector('[data-gloss-draft] input[type=text]'), label = input.closest('label'), notice = [...document.querySelectorAll('[data-gloss-draft] [role=status]')].find(n => n.textContent.trim()), pin = document.querySelector('li input[type=checkbox]');
++        const measure = n => n && ({ client: n.clientWidth, scroll: n.scrollWidth, left: n.getBoundingClientRect().left, right: n.getBoundingClientRect().right, direction: getComputedStyle(n).direction });
++        return { documentWidth: document.documentElement.scrollWidth, label: measure(label), notice: measure(notice), pin: measure(pin), pinLabel: measure(pin?.closest('label')) };
++      });
++      expect(geometry.documentWidth).toBe(320);
++      for (const g of [geometry.label,geometry.notice,geometry.pinLabel].filter(Boolean)) { expect(g.scroll).toBeLessThanOrEqual(g.client + 1); expect(g.left).toBeGreaterThanOrEqual(-1); expect(g.right).toBeLessThanOrEqual(321); expect(g.direction).toBe(f.direction); }
++      if (adapted) expect(geometry.pin).toBeNull();
++      else { expect(geometry.pin.client).toBeGreaterThanOrEqual(10); await page.locator('li input[type=checkbox]').focus(); expect(await page.locator('li input[type=checkbox]').evaluate(n => document.activeElement === n)).toBe(true); }
++      expect(errors).toEqual([]); await page.screenshot({ path: resolve(report, f.id + '-' + (adapted ? 'adapted' : 'original') + '-' + scale + 'x.png'), fullPage: true });
++      results.push({ fixture:f.id, adapted, viewportCssPx:320, rootTextScale:scale, nativeZoom:false, scope:'actual editor markup, not full app', geometry, errors });
++    } finally { await page.close(); }
++  }, 30000);
++});

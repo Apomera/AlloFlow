@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "desktopCanvasWidth": 760,
+      "backingWidth": 900,
+      "focusPreservesCanvas": true
+    },
+    {
+      "mouseDragOneUndo": true,
+      "redoRestoresExactPng": true
+    },
+    {
+      "exactHex": true,
+      "invalidDraftPreservesCanvas": true
+    },
+    {
+      "threadKitPalette": true,
+      "pngExactDownload": true,
+      "svgCorrectPalette": true,
+      "tabRoundTrip": true
+    },
+    {
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets": true
+    },
+    {
+      "touchDragOneUndo": true
+    },
+    {
+      "keyboardHueWrap": true,
+      "watercolorTransfer": true
+    }
+  ],
+  "errors": []
+}

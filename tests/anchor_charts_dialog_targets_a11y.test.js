@@ -62,8 +62,8 @@ describe('Anchor Charts dialog and target accessibility', () => {
     expect(source).toContain('className="mt-2 min-h-6');
     expect(source.match(/className="min-h-6 text-\[11px\]/g)).toHaveLength(2);
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
-    expect(source).toContain('role="alert">Couldn\'t reach the AI grader');
-    expect(source).toContain('alt="" role="presentation"');
+    expect(source).toContain('role="alert">{tx(\'anchor_chart.grading_error\'');
+    expect(source).toContain("alt={iconAlt} role={iconAlt ? undefined : 'presentation'}");
   });
 
   it('moves focus into the rubric dialog, wraps it, closes with Escape, and restores the opener', async () => {

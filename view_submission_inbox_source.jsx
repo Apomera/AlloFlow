@@ -90,8 +90,21 @@ function siWorkEvidence(payload) {
   var notebook = (stats.notebook && typeof stats.notebook === 'object' && !Array.isArray(stats.notebook))
     ? stats.notebook : {};
 
+  // Interview Mode reflections/summaries carry the learner's own words; show them as text.
+  var interviews = (Array.isArray(p.content) ? p.content : [])
+    .filter(function (item) { return item && (item.type === 'persona-reflection' || item.type === 'persona-summary'); })
+    .slice(0, 10)
+    .map(function (item) {
+      var d = item.data;
+      var body = typeof d === 'string' ? d : (d && typeof d === 'object' ? [d.overview].concat((Array.isArray(d.keyInsights) ? d.keyInsights : []).map(function (k) { return k && (k.insight || k); })).filter(function (s) { return typeof s === 'string' && s; }).join('\n\n') : '');
+      body = String(body || '').replace(/\*\*/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').slice(0, 20000);
+      return { type: item.type, title: String(item.title || item.type).slice(0, 120), body: body };
+    })
+    .filter(function (entry) { return entry.body.trim(); });
+
   var evidence = {
     activities: activities,
+    interviews: interviews,
     games: games,
     totalXP: num(stats.totalXP),
     quizzesTaken: num(stats.quizzesTaken),
@@ -247,6 +260,177 @@ function siResponseEntryModels(payload) {
     model.aiGradable = answered && !model.requiresManualReview;
     return model;
   });
+}
+
+// ── Quiz responses scored against the teacher's own copy (2026-09-28) ──────
+// The student quiz view records answers for Submit Work as an
+// "alloflow-assessment-responses" snapshot under the quiz's resource id. A
+// graded quiz reaches students without its key, so the only place to check it
+// is here: match the resource id to this project's quiz and score each answer
+// with the live-quiz grader. The snapshot is untrusted input; every field is
+// bounded, and a missing or ambiguous teacher copy is said plainly.
+var SI_ASSESSMENT_KIND = 'alloflow-assessment-responses';
+var SI_ASSESSMENT_REVIEW_TYPES = ['short-answer', 'self-explanation'];
+
+function siAssessmentSnapshot(value) {
+  var v = value;
+  if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return null; } }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  if (v.kind === SI_ASSESSMENT_KIND) return v;
+  var submitted = v.assessmentSubmitted && typeof v.assessmentSubmitted === 'object' && v.assessmentSubmitted.kind === SI_ASSESSMENT_KIND ? v.assessmentSubmitted : null;
+  var draft = v.assessmentDraft && typeof v.assessmentDraft === 'object' && v.assessmentDraft.kind === SI_ASSESSMENT_KIND ? v.assessmentDraft : null;
+  return submitted || draft;
+}
+
+function siAssessmentComparable(value) {
+  return siResponseText(value, 500).replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+// Only the learner's own choice travels to the grader: option TEXT for choice
+// items (robust to a reordered copy), indices only where the item has no text.
+function siAssessmentAnswerForGrading(type, row) {
+  var a = row && row.answer && typeof row.answer === 'object' && !Array.isArray(row.answer) ? row.answer : null;
+  var response = siResponseText(row && row.response, 4000);
+  if (type === 'mcq') {
+    var optionText = a && typeof a.optionText === 'string' && a.optionText ? a.optionText : response;
+    return optionText ? { optionText: optionText } : null;
+  }
+  if (type === 'multi-select') {
+    var picked = a && Array.isArray(a.selectedOptions) ? a.selectedOptions : response ? response.split('; ') : [];
+    picked = picked.map(function (entry) { return siResponseText(entry, 500); }).filter(Boolean);
+    return picked.length ? { selectedTexts: picked } : null;
+  }
+  if (type === 'answer-evidence') {
+    return a && (a.answerText || a.evidenceText) ? { answerText: siResponseText(a.answerText, 500), evidenceText: siResponseText(a.evidenceText, 500) } : null;
+  }
+  if (type === 'numeric-response') {
+    if (a && (a.numericValue != null || a.text)) return { text: siResponseText(a.text, 200), numericValue: typeof a.numericValue === 'number' ? a.numericValue : null, unit: siResponseText(a.unit, 80) };
+    return response ? { text: response } : null;
+  }
+  if (type === 'fill-blank') {
+    var fill = a && typeof a.text === 'string' ? a.text : response;
+    return fill ? { text: fill } : null;
+  }
+  if (type === 'sequence-sense' || type === 'relation-mismatch') return a;
+  return null;
+}
+
+function siAssessmentGrade(question, row, policy) {
+  var type = question && question.type || 'mcq';
+  var grader = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+  var scorable = SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) < 0 && !!grader && typeof grader.gradePresentationResponse === 'function'
+    && (typeof grader.presentationQuestionIsGameScorable !== 'function' || grader.presentationQuestionIsGameScorable(question) === true);
+  if (!row.answered) return { verdict: 'unanswered', scorable: scorable, fraction: scorable ? 0 : null };
+  if (!scorable) return { verdict: 'review', scorable: false };
+  var answer = siAssessmentAnswerForGrading(type, row);
+  if (!answer) return { verdict: 'review', scorable: false };
+  var grade = null;
+  try { grade = grader.gradePresentationResponse({ answer: answer }, question, policy); } catch (e) { grade = null; }
+  if (!grade || grade.evaluable !== true) return { verdict: 'review', scorable: false };
+  var fraction = typeof grade.scoreFraction === 'number' && isFinite(grade.scoreFraction)
+    ? Math.max(0, Math.min(1, grade.scoreFraction)) : grade.status === 'correct' ? 1 : 0;
+  return { verdict: grade.status === 'correct' ? 'correct' : grade.status === 'partially-correct' ? 'partial' : 'incorrect', scorable: true, fraction: fraction };
+}
+
+function siAssessmentReport(value, resourceId, history, content) {
+  var snap = siAssessmentSnapshot(value);
+  if (!snap) return null;
+  var id = String(resourceId == null ? '' : resourceId);
+  var matches = (Array.isArray(history) ? history : []).filter(function (item) { return item && item.type === 'quiz' && String(item.id) === id; });
+  var teacherQuiz = matches.length === 1 ? matches[0] : null;
+  var data = teacherQuiz && teacherQuiz.data && typeof teacherQuiz.data === 'object' ? teacherQuiz.data : null;
+  var questions = data && Array.isArray(data.questions) && data.answerKeysWithheld !== true ? data.questions : null;
+  var copyStatus = questions ? 'found' : matches.length > 1 ? 'ambiguous' : teacherQuiz ? 'no-key' : 'missing';
+  var studentCopy = (Array.isArray(content) ? content : []).find(function (item) { return item && String(item.id) === id; });
+  var title = siResponseText((teacherQuiz && teacherQuiz.title) || (studentCopy && studentCopy.title) || '', 160);
+  var items = (Array.isArray(snap.items) ? snap.items : []).slice(0, 300).map(function (raw, index) {
+    var row = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var number = Number.isInteger(row.number) && row.number > 0 ? row.number : index + 1;
+    var questionText = siResponseText(row.question, 500);
+    var answered = row.answered === true;
+    var question = questions ? questions[number - 1] : null;
+    var changed = false;
+    if (questions && (!question || siAssessmentComparable(question.question || question.contextSentence) !== siAssessmentComparable(questionText))) {
+      var byText = questions.filter(function (candidate) { return candidate && siAssessmentComparable(candidate.question || candidate.contextSentence) === siAssessmentComparable(questionText); });
+      question = byText.length === 1 ? byText[0] : null;
+      changed = !question;
+    }
+    var type = siResponseText((question && question.type) || row.type || 'mcq', 60);
+    var result = question ? siAssessmentGrade(question, { answered: answered, answer: row.answer, response: row.response }, data.scoringPolicy) : { verdict: answered ? 'review' : 'unanswered', scorable: false };
+    var reference = question && SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) >= 0
+      ? siResponseText(question.expectedAnswer || question.rubric || question.sampleAnswer || '', 800) : '';
+    return {
+      number: number, question: questionText, type: type, answered: answered,
+      response: answered ? siResponseText(row.response, 4000) : '',
+      verdict: result.verdict, scorable: result.scorable === true, fraction: typeof result.fraction === 'number' ? result.fraction : null,
+      reference: reference, changed: changed
+    };
+  });
+  var scoredItems = items.filter(function (item) { return item.scorable; });
+  var points = scoredItems.reduce(function (sum, item) { return sum + (item.fraction || 0); }, 0);
+  var reflections = (Array.isArray(snap.reflections) ? snap.reflections : []).slice(0, 20).map(function (entry) {
+    return { prompt: siResponseText(entry && entry.prompt, 500), response: siResponseText(entry && entry.response, 4000) };
+  }).filter(function (entry) { return entry.prompt || entry.response; });
+  return {
+    resourceId: id, title: title, status: snap.status === 'submitted' ? 'submitted' : 'in-progress', copyStatus: copyStatus,
+    items: items, reflections: reflections,
+    points: Math.round(points * 100) / 100, possible: scoredItems.length,
+    percent: scoredItems.length ? Math.round((points / scoredItems.length) * 100) : null,
+    needsReview: items.filter(function (item) { return item.answered && item.verdict === 'review'; }).length,
+    answered: items.filter(function (item) { return item.answered; }).length, total: items.length
+  };
+}
+
+var SI_ASSESSMENT_VERDICT_STYLE = {
+  correct: { label: 'Correct', bg: '#dcfce7', color: '#14532d', border: '#86efac' },
+  incorrect: { label: 'Incorrect', bg: '#fee2e2', color: '#7f1d1d', border: '#fca5a5' },
+  partial: { label: 'Partly correct', bg: '#fef3c7', color: '#78350f', border: '#fcd34d' },
+  review: { label: 'Needs your review', bg: '#e0f2fe', color: '#0c4a6e', border: '#7dd3fc' },
+  unanswered: { label: 'No answer', bg: '#f1f5f9', color: '#334155', border: '#cbd5e1' }
+};
+
+function SiAssessmentReport(p) {
+  var report = p.report;
+  var h = React.createElement;
+  var copyNote = report.copyStatus === 'missing'
+    ? tr('Your copy of this quiz is not in this project, so answers cannot be checked here. Responses are shown as the student submitted them.')
+    : report.copyStatus === 'ambiguous'
+      ? tr('More than one quiz in this project has this id, so answers cannot be checked here. Responses are shown as the student submitted them.')
+      : report.copyStatus === 'no-key'
+        ? tr('The quiz with this id in this project has no answer key, so answers cannot be checked here.')
+        : '';
+  var summary = report.possible > 0
+    ? tr('Score: {points} of {possible} automatically checked ({percent}%)', { points: report.points, possible: report.possible, percent: report.percent })
+    : tr('No automatically checked questions');
+  return h('section', { 'data-assessment-report': report.resourceId, 'aria-label': tr('Quiz responses') + (report.title ? ': ' + report.title : ''), style: { marginTop: 4, padding: '8px 10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: 8 } },
+    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline' } },
+      h('strong', { style: { color: '#0f172a' } }, report.title || tr('Quiz')),
+      h('span', { style: { color: '#334155', fontSize: '0.78rem' } }, report.status === 'submitted' ? tr('Submitted attempt') : tr('In progress (not yet submitted)')),
+      h('span', { 'data-assessment-score': true, style: { color: '#0f172a', fontWeight: 700, fontSize: '0.82rem' } }, summary),
+      report.needsReview > 0 && h('span', { style: { color: '#0c4a6e', fontSize: '0.78rem' } }, tr('{n} need your review', { n: report.needsReview }))
+    ),
+    copyNote && h('p', { role: 'note', 'data-assessment-copy-status': report.copyStatus, style: { margin: '6px 0 0', color: '#7c2d12', fontSize: '0.8rem' } }, copyNote),
+    h('ol', { style: { margin: '8px 0 0', paddingLeft: 22 } },
+      report.items.map(function (item) {
+        var style = SI_ASSESSMENT_VERDICT_STYLE[item.verdict] || SI_ASSESSMENT_VERDICT_STYLE.review;
+        return h('li', { key: 'q-' + item.number, value: item.number, 'data-assessment-item': item.verdict, style: { marginBottom: 6, fontSize: '0.82rem', color: '#1e293b' } },
+          h('div', { style: { fontWeight: 600 } }, item.question || tr('Question {n}', { n: item.number })),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline', marginTop: 2 } },
+            h('span', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, item.answered ? item.response : tr('No answer submitted')),
+            h('span', { style: { padding: '1px 7px', borderRadius: 999, background: style.bg, color: style.color, border: '1px solid ' + style.border, fontWeight: 700, fontSize: '0.7rem' } }, tr(style.label))
+          ),
+          item.reference && h('div', { style: { marginTop: 2, color: '#475569', fontSize: '0.76rem' } }, tr('Reference from your copy:') + ' ' + item.reference),
+          item.changed && h('div', { style: { marginTop: 2, color: '#7c2d12', fontSize: '0.74rem' } }, tr('This question no longer matches your copy, so it was not checked.'))
+        );
+      })
+    ),
+    report.reflections.length > 0 && h('div', { style: { marginTop: 6, fontSize: '0.8rem', color: '#1e293b' } },
+      h('div', { style: { fontWeight: 700, color: '#475569' } }, tr('Reflections')),
+      report.reflections.map(function (entry, index) {
+        return h('div', { key: 'r-' + index, style: { marginTop: 3 } }, h('span', { style: { fontWeight: 600 } }, entry.prompt), entry.prompt ? ' ' : '', h('span', { style: { whiteSpace: 'pre-wrap' } }, entry.response || tr('No answer submitted')));
+      })
+    )
+  );
 }
 
 
@@ -1042,7 +1226,7 @@ function SubmissionInbox(props) {
   return props.isOpen ? React.createElement(SubmissionInboxOpen, props) : null;
 }
 
-function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet, onOpenInStudio }) {
+function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet, onOpenInStudio, history }) {
 
   // ── UI localization state (drives tr() above) ──
   var _llCtx = React.useContext(LANG_CTX);
@@ -3502,15 +3686,24 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                              real studio workspace from this student's typing. */
                           (function () {
                             var studio = window.AlloModules && window.AlloModules.AppliedChallenge;
-                            var resp = row.payload && row.payload.responses && typeof row.payload.responses === 'object' ? row.payload.responses : null;
-                            var resourceId = studio && resp && typeof studio.submissionResourceId === 'function' ? studio.submissionResourceId(resp) : '';
-                            if (!resourceId || typeof onOpenInStudio !== 'function') return null;
-                            return /*#__PURE__*/React.createElement('button', {
-                              type: 'button',
-                              onClick: function () { onOpenInStudio({ resourceId: resourceId, responses: resp, nickname: row.payload.nickname || row.payload.studentName || '' }); },
-                              title: tr('Rebuild this student\'s typed workspace inside Applied Challenge Studio so you can coach, comment, and export it'),
-                              style: { marginBottom: 10, padding: '6px 12px', background: '#c2410c', color: 'white', border: '1px solid #9a3412', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
-                            }, tr('Open in Applied Challenge Studio'));
+                            var resp = row.payload && row.payload.responses && typeof row.payload.responses === 'object' && !Array.isArray(row.payload.responses) ? row.payload.responses : {};
+                            // content carries the typed studio work (sources, checks, links, ratings).
+                            var content = row.payload && Array.isArray(row.payload.content) ? row.payload.content : [];
+                            var resourceIds = !studio ? [] : typeof studio.submissionResourceIds === 'function' ? studio.submissionResourceIds(resp, content)
+                              : (typeof studio.submissionResourceId === 'function' && studio.submissionResourceId(resp) ? [studio.submissionResourceId(resp)] : []);
+                            if (!resourceIds.length || typeof onOpenInStudio !== 'function') return null;
+                            return resourceIds.map(function (resourceId, index) {
+                              var entry = content.find(function (item) { return item && item.id === resourceId && item.type === 'applied-challenge'; });
+                              var title = entry && typeof entry.title === 'string' ? entry.title.trim().slice(0, 120) : '';
+                              var label = tr('Open in Applied Challenge Studio');
+                              return /*#__PURE__*/React.createElement('button', {
+                                key: 'open-studio-' + resourceId,
+                                type: 'button',
+                                onClick: function () { onOpenInStudio({ resourceId: resourceId, responses: resp, content: content, nickname: row.payload.nickname || row.payload.studentName || '' }); },
+                                title: tr('Rebuild this student\'s typed workspace inside Applied Challenge Studio so you can coach, comment, and export it'),
+                                style: { marginBottom: 10, marginRight: 6, padding: '6px 12px', background: '#c2410c', color: 'white', border: '1px solid #9a3412', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
+                              }, resourceIds.length > 1 ? label + ': ' + (title || String(index + 1)) : label);
+                            });
                           })(),
                           /* Work Story (process provenance). Renders only when the
                              student chose to include it; absence is never surfaced
@@ -3523,6 +3716,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                             : siResponseEntryModels(row.payload).map((entry, i) => {
                                 const k = entry.key;
                                 const v = entry.rawText;
+                                const assessmentReport = siAssessmentReport(row.payload.responses && typeof row.payload.responses === 'object' ? row.payload.responses[k] : null, k, history, row.payload.content);
                                 const g = (grades[idx] || {})[k];
                                 const sc = g ? scoreColor(g.score) : null;
                                 const isAnchored = isResponseAnchored(idx, k);
@@ -3530,13 +3724,15 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: isAnchored ? '#fef3c7' : (g ? 'white' : 'transparent'), border: isAnchored ? '1.5px solid #f59e0b' : (g ? '1px solid #e2e8f0' : 'none') } },
                                   /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.85rem', marginBottom: g || isAnchored ? 4 : 0 } },
                                     /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
-                                      /*#__PURE__*/React.createElement('div', { style: { color: '#0f172a', fontWeight: 700, lineHeight: 1.35 } }, entry.question),
+                                      /*#__PURE__*/React.createElement('div', { style: { color: '#0f172a', fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr('Quiz responses') : entry.question),
                                       entry.partLabel && /*#__PURE__*/React.createElement('div', { style: { color: '#475569', fontSize: '0.74rem', fontWeight: 600, marginTop: 2 } },
                                         entry.partLabel + (entry.responseType ? ' · ' + entry.responseType.replace(/-/g, ' ') : '')
                                       ),
                                       entry.metadataUnverified && /*#__PURE__*/React.createElement('span', { title: tr('This descriptive label came from the student file. Verify it against the original resource when needed.'), style: { display: 'inline-block', marginTop: 3, padding: '1px 5px', borderRadius: 999, background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', fontSize: '0.64rem', fontWeight: 600 } }, tr('student-file label')),
-                                      /*#__PURE__*/React.createElement('div', { style: { color: '#1e293b', marginTop: 4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
-                                        entry.answered
+                                      /*#__PURE__*/React.createElement('div', { style: { color: '#1e293b', marginTop: 4, whiteSpace: assessmentReport ? 'normal' : 'pre-wrap', overflowWrap: 'anywhere' } },
+                                        assessmentReport
+                                          ? /*#__PURE__*/React.createElement(SiAssessmentReport, { report: assessmentReport })
+                                          : entry.answered
                                           ? String(entry.displayValue).slice(0, 12000)
                                           : /*#__PURE__*/React.createElement('em', { style: { color: '#9a3412', fontWeight: 700 } }, tr('No answer submitted'))
                                       ),
@@ -3599,6 +3795,15 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                   }),
                                   moreActivities > 0 && /*#__PURE__*/React.createElement('span', { key: 'act-more', style: Object.assign({}, chip, { color: '#64748b' }) }, tr('+{n} more', { n: moreActivities }))
                                 )
+                              ),
+                              ev.interviews.length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginBottom: 8 } },
+                                /*#__PURE__*/React.createElement('div', { style: subheading }, tr('Interview reflections ({n})', { n: ev.interviews.length })),
+                                ev.interviews.map(function (entry, i) {
+                                  return /*#__PURE__*/React.createElement('details', { key: 'interview-' + i, style: { marginBottom: 4, background: 'white', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 8px' } },
+                                    /*#__PURE__*/React.createElement('summary', { style: { cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' } }, entry.title),
+                                    /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.8rem', color: '#1e293b', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 360, overflowY: 'auto' } }, entry.body)
+                                  );
+                                })
                               ),
                               ev.games.length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginBottom: 8 } },
                                 /*#__PURE__*/React.createElement('div', { style: subheading }, tr('Practice games completed')),

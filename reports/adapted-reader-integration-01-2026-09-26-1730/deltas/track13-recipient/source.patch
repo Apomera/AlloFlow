@@ -1,0 +1,127 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt
++++ AlloFlowANTI.txt
+@@ -11515,8 +11515,12 @@
+     removeArtifactInstanceFromList,
+   };
+ }
+ // END ALLO_ARTIFACT_INSTANCE_IDENTITY
++function ReceivedReadingDeliveryStatus(props) {
++  const View = _alloSharedActivityModule()?.ReceivedReadingDelivery;
++  return View ? <View {...props} /> : null;
++}
+ function MailboxImageDeliveryMonitor(props) {
+   const Real = _alloLiveAacModule()?.MailboxImageDeliveryMonitor;
+   return Real ? React.createElement(Real, props) : null;
+ }
+@@ -18427,8 +18431,11 @@
+   const studentSaveVoiceInProgressRef = useRef(false);
+   const [saveEncryptPassword, setSaveEncryptPassword] = useState(''); // optional educator-save encryption password (transient, never persisted)
+   const [saveType, setSaveType] = useState(null);
+   const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
++  // Evidence is restricted to received bundles, never broader device History.
++  const [receivedDeliveryResources, setReceivedDeliveryResources] = useState([]);
++  useEffect(() => { setReceivedDeliveryResources([]); }, [activeSessionAppId, activeSessionCode]);
+   const [showNewGameSetup, setShowNewGameSetup] = useState(false);
+   const [resourceCount, setResourceCount] = useState('Auto');
+   const [fullPackTargetGroup, setFullPackTargetGroup] = useState('none');
+   const [bridgeMessage, setBridgeMessage] = useState(null);
+@@ -22384,8 +22391,9 @@
+                               lastPackRefRef.current = null;
+                               hydratedHistoryRef.current = hydrated;
+                               resourcesToRender = hydrated;
+                               setHistory(hydrated);
++                              setReceivedDeliveryResources(hydrated);
+                               if (liveResourceHydrationRetryTimerRef.current) clearTimeout(liveResourceHydrationRetryTimerRef.current);
+                               liveResourceHydrationRetryTimerRef.current = null;
+                               setLiveResourceLoadState({ status: 'ready', attempt });
+                               _alloSessionSyncTrace('sync:resources-hydrated', { count: hydrated.length, attempt });
+@@ -22432,8 +22440,9 @@
+                               lastResourcesStringRef.current = null;
+                               hydratedHistoryRef.current = merged;
+                               resourcesToRender = merged;
+                               setHistory(merged);
++                              setReceivedDeliveryResources(merged);
+                               clearHydrationRetry();
+                               setLiveResourceLoadState({ status: 'ready', attempt });
+                               _alloSessionSyncTrace('sync:mailbox-pack-hydrated', { count: merged.length, attempt });
+                           } catch (packErr) {
+@@ -25393,8 +25402,9 @@
+           addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+           return;
+       }
+       if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
++          setReceivedDeliveryResources(prev => prev.filter(item => !v.ids.includes(item.id)));
+           setHistory(prev => {
+               const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
+               hydratedHistoryRef.current = next;
+               return next;
+@@ -25412,8 +25422,9 @@
+               // that this message actually delivered and requested to open.
+               resource = _alloStudentSafeResources([resource]).find(item => item.id === receivedResourceId);
+               if (!resource) throw new Error('The transferred resource is not a valid student resource');
+               if (mbChunkStoreRef.current !== store) return;
++              setReceivedDeliveryResources(prev => [...prev.filter(item => item.id !== resource.id), resource]);
+               setHistory(prev => {
+                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                   const next = [...rest, resource];
+                   // The pack IS the mailbox session's resource pool: keep the ref
+@@ -36263,8 +36274,9 @@
+                       throw new Error('Assignment resource assets are unavailable');
+                   }
+                   if (cancelled) return;
+                   setHistory(restoredResources);
++                  setReceivedDeliveryResources(restoredResources);
+                   const firstId = packet.currentResourceId || restoredResources[0]?.id;
+                   // Directions v2 delivery rule: the assignment brief is the front page at every
+                   // student consumption point — a DELIVERY rule, not a storage reorder, so the
+                   // teacher's history/hand-ordering stays untouched. (Shelf open does the same.)
+@@ -36326,8 +36338,9 @@
+                   : [];
+               if (!rawResources.length) throw new Error('Pack has no resources');
+               if (cancelled) return;
+               setHistory(rawResources);
++              setReceivedDeliveryResources(rawResources);
+               const firstId = packet.currentResourceId || rawResources[0]?.id;
+               const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
+               setPendingQrAssignmentResource(firstResource);
+               addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
+@@ -36731,8 +36744,9 @@
+                   activity: normalizedSharedActivity,
+                   mailbox: { url: entry.u, id: entry.id, secret: String(entry.k) },
+               } : null);
+               setHistory(rawResources);
++              setReceivedDeliveryResources(rawResources);
+               const firstId = packet.currentResourceId || rawResources[0]?.id;
+               const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
+               setPendingQrAssignmentResource(firstResource || null);
+               if (!rawResources.length) setShowSharedHostedActivity(true);
+@@ -40349,9 +40363,16 @@
+       {/* Homework-mode strip moved into the header (2026-09-14): HeaderBar's
+           liveStatus prop carries mode: 'homework' for the assignment entry
+           types, so the codename and AI status sit behind a header button
+           instead of a fixed strip over the page. */}
++      <ReceivedReadingDeliveryStatus
++          enabled={!isTeacherMode && (!!activeSessionCode || !!mbStudent || isStudentLinkMode)}
++          resources={receivedDeliveryResources}
++          currentResourceId={generatedContent?.id}
++          t={t}
++      />
+       <MailboxImageDeliveryMonitor
++          revisionReceipts={true}
+           enabled={!isTeacherMode && !!mbStudent && !!activeSessionCode}
+           resource={generatedContent}
+           sessionKey={String(activeSessionAppId || appId) + '|' + String(activeSessionCode || '')}
+           assignmentAt={resolveLiveStudentResourceTarget({ entry: sessionData?.roster?.[user?.uid], groups: sessionData?.groups, currentResourceId: sessionData?.currentResourceId, sessionMode: sessionData?.mode })?.resourceAt}
+@@ -42994,9 +43015,9 @@
+         handleSetStudentsResource, handleUpdateHavenRecognitionConfig, havenConfigBusy, havenRecognitionConfig, havenRewardAmount, havenRewardBusy, havenRewardDraftsRef, havenRewardReasonId,
+         havenRewardReceipt, history, interactiveOrganizerRetrying, interactiveOrganizerSync, isStudyTimerRunning, launchPreparedLiveInteraction, liveActivitySnapshots, liveAudioStatusNow,
+         liveDockPanelRef, liveOrganizer, liveOrganizerSummary, livePresenterCuesByResourceId, liveSessionQaEnabled, normalizeClassGoal, normalizeClassGoals, normalizeLiveOrganizerProgress,
+         openChecklistGoalId, openLiveActivityDashboard, recentHavenRecognition, resolveClassGoalTeamUids, resolveLiveStudentResourceTarget, resolveWordSoundsAudioDeliveryState, retryInteractiveOrganizerStudents, retryableLiveOrganizerUids,
+-        retryMailboxImagesForStudent, mailboxImageVersion: Number(mbConfig?.v || 0), rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
++        retryMailboxImagesForStudent, getPreparedMailboxResource: item => mbPreparedImagesRef.current.get(item)?.resource || null, mailboxImageVersion: Number(mbConfig?.v || 0), rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
+         setIsWordSoundsMode, setLivePollPreset, setLiveSessionQaEnabled, setOpenChecklistGoalId, setPictionaryInitialMode, setPictionaryPreparedInteraction, setRosterKey, setShowHavenRewardAudit,
+         setShowLiveDock, setShowLivePollingPanel, setShowPictionaryHost, setShowSessionModal, setWordSoundsAutoReview, showHavenRewardAudit, signalMeta, studyTimeLeft,
+         t, toggleSessionMode, units, updateLivePresenterCue, requestEndLiveSession
+         }}

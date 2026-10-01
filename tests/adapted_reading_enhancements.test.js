@@ -14,6 +14,7 @@ beforeAll(() => {
   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js'); loadAlloModule('view_simplified_module.js');
   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
 });
+const setWidth = (slider, value) => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(slider, value); slider.dispatchEvent(new Event('input', { bubbles: true })); };
 afterEach(() => { localStorage.removeItem('alloflow_reading_width'); localStorage.removeItem('alloflow_reading_show_changes'); if (root) act(() => root.unmount()); host?.remove(); root = null; });
 const splitParts = text => {
   const parts = String(text).split('--- ENGLISH TRANSLATION ---');
@@ -59,7 +60,7 @@ describe('Adapted reading structure and content retention', () => {
   it('changes reading width without changing content', () => {
     const { body } = mount(); const before = body.querySelector('section').textContent;
     // Reading width lives in the Display (Aa) panel above the passage (2026-09-24).
-    const select = host.querySelector('select[aria-label="Reading width"]'); act(() => { select.value = '40'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    const select = host.querySelector('input[aria-label="Reading width"]'); act(() => { setWidth(select, '40'); });
     expect(body.style.maxWidth).toContain('40ch'); expect(body.querySelector('section').textContent).toBe(before);
   });
 });
@@ -240,8 +241,8 @@ describe('Adapted reader theme selection', () => {
   it('preserves reading content, width, practice, and open help when only the theme changes', () => {
     const { props } = mount({ isZenMode: false, readingTheme: 'warm', definitionData: { word: 'water', text: 'A liquid.', x: 10, y: 10 } });
     const passage = host.querySelector('[data-reading-passage]');
-    const width = host.querySelector('select[aria-label="Reading width"]');
-    act(() => { width.value = '40'; width.dispatchEvent(new Event('change', { bubbles: true })); host.querySelector('[aria-controls^="simplified-practice-tools-"]').click(); });
+    const width = host.querySelector('input[aria-label="Reading width"]');
+    act(() => { setWidth(width, '40'); host.querySelector('[aria-controls^="simplified-practice-tools-"]').click(); });
     act(() => root.render(React.createElement(View, { ...props, theme: 'dark', readingTheme: 'dim' })));
     expect(host.querySelector('[data-reading-passage]')).toBe(passage);
     expect(width.value).toBe('40');
@@ -260,11 +261,11 @@ describe('Discoverable Focus view', () => {
     const { props } = mount({ isTeacherMode, isZenMode: false, onFocusViewChange, readingTheme: 'warm', isPlaying: true, playingContentId: 'simplified-main' });
     const toggle = host.querySelector('[data-reader-focus-view]');
     const passage = host.querySelector('[data-reading-passage]');
-    const width = host.querySelector('select[aria-label="Reading width"]');
+    const width = host.querySelector('input[aria-label="Reading width"]');
     expect(toggle.textContent).toBe('Focus view');
     expect(toggle.getAttribute('aria-pressed')).toBe('false');
     expect(document.getElementById(toggle.getAttribute('aria-describedby')).textContent).toContain('header and sidebar');
-    act(() => { width.value = '40'; width.dispatchEvent(new Event('change', { bubbles: true })); toggle.focus(); toggle.click(); });
+    act(() => { setWidth(width, '40'); toggle.focus(); toggle.click(); });
     expect(onFocusViewChange).toHaveBeenLastCalledWith(true);
     act(() => root.render(React.createElement(View, { ...props, isZenMode: true })));
     expect(host.querySelector('[data-reader-focus-view]')).toBe(toggle);
@@ -398,7 +399,8 @@ describe('Paired reader playback and supported original continuity', () => {
   });
   it('provides a Stop action in the original-only reader', () => {
     const { original } = pair();
-    const { props } = mount({ generatedContent: original, isPlaying: true, playingContentId: 'reading-original-original' });
+    // The original plays through the sentence player; a remounted reader knows its own playback.
+    const { props } = mount({ generatedContent: original, isPlaying: true, playingContentId: 'simplified-main', playbackState: { currentIdx: 0, sentences: pure.splitTextToSentences(original.data, {}) } });
     expect(host.querySelector('[data-reader-listen]').textContent).toBe('Stop original');
     act(() => host.querySelector('[data-reader-listen]').click());
     expect(props.stopPlayback).toHaveBeenCalledTimes(1);
@@ -460,23 +462,23 @@ it('original reader describes its actual listen control and does not offer in-pl
 describe('Remembered reading width', () => {
   it('restores the last width when reopening the reader without changing text or playback', () => {
     const { props } = mount();const passage = host.querySelector('[data-reading-passage]');const text = passage.textContent;
-    const select = host.querySelector('select[aria-label="Reading width"]');
-    act(() => { select.value = '40';select.dispatchEvent(new Event('change', { bubbles: true })); });
+    const select = host.querySelector('input[aria-label="Reading width"]');
+    act(() => { setWidth(select, '40'); });
     expect(localStorage.getItem('alloflow_reading_width')).toBe('40');expect(passage.textContent).toBe(text);expect(props.stopPlayback).not.toHaveBeenCalled();
     act(() => root.unmount());host.remove();root = null;mount();
-    expect(host.querySelector('select[aria-label="Reading width"]').value).toBe('40');
+    expect(host.querySelector('input[aria-label="Reading width"]').value).toBe('40');
     expect(host.querySelector('[data-simplified-reading-body]').style.maxWidth).toContain('40ch');
   });
   it('falls back to a valid width if saved settings are damaged', () => {
     localStorage.setItem('alloflow_reading_width', 'unexpected');mount();
-    expect(host.querySelector('select[aria-label="Reading width"]').value).toBe('72');
+    expect(host.querySelector('input[aria-label="Reading width"]').value).toBe('72');
   });
   it('allows changing width when browser storage is blocked', () => {
     const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Blocked'); });
     const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Blocked'); });
     try {
-      mount();const select = host.querySelector('select[aria-label="Reading width"]');
-      expect(select.value).toBe('72');act(() => { select.value = '56';select.dispatchEvent(new Event('change', { bubbles: true })); });
+      mount();const select = host.querySelector('input[aria-label="Reading width"]');
+      expect(select.value).toBe('72');act(() => { setWidth(select, '56'); });
       expect(select.value).toBe('56');expect(host.querySelector('[data-simplified-reading-body]').style.maxWidth).toContain('56ch');
     } finally { getItem.mockRestore();setItem.mockRestore(); }
   });

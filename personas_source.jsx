@@ -101,8 +101,10 @@ const createPersonas = (deps) => {
         timeoutError.name = 'TimeoutError';
         const timeoutPromise = new Promise((_, reject) => {
             timeoutId = setTimeout(() => {
-                abortModelRequest(request);
                 reject(timeoutError);
+                // An abort-aware provider may reject synchronously. Settle the
+                // timeout first so its reason survives cancellation of the work.
+                abortModelRequest(request);
             }, timeoutMs);
         });
         try {
@@ -137,6 +139,81 @@ const createPersonas = (deps) => {
             return current;
         }
         return current;
+    };
+
+    // A failed search must never be presented as a successful, sourced interview.
+    // Error text is inspected only for classification; provider details remain in
+    // warnLog and are not copied into the student/teacher recovery message.
+    const getPersonaCandidateRecovery = (error) => {
+        const code = String(error && error.code || '');
+        const kind = String(error && error.classification && error.classification.kind || '');
+        const status = Number(error && (error.httpStatus || error.status || error.statusCode)) || 0;
+        const message = String(error && error.message || '');
+        if (kind === 'refusal' || code === 'allo/persona-content-refused') {
+            return ['persona.candidates_refused', 'The AI provider blocked this response for content safety. Review the lesson source and instructions, then try Find Interview Candidates again. No new interview candidates were created.'];
+        }
+        if (code === 'allo/search-no-attribution' || /no attributable sources?/i.test(message)) {
+            return ['persona.candidates_no_sources', 'No new interview candidates were created because search returned no attributable sources. Use a more specific lesson source or topic, then try Find Interview Candidates again. Sources will not be invented.'];
+        }
+        if ((error && error.name === 'TimeoutError') || kind === 'timeout' || /timeout|timed out|etimedout/i.test(message)) {
+            return ['persona.candidates_timeout', 'The interview search or AI request took too long. Check the connection, then try Find Interview Candidates again.'];
+        }
+        if (kind === 'auth' || status === 401 || status === 403 || code === 'allo/no-api-key' || /\b(?:401|403|UNAUTHENTICATED|PERMISSION_DENIED)\b|invalid (?:api )?key|authentication|access denied/i.test(message)) {
+            return ['persona.candidates_access', 'The AI or search connection was rejected. Check AI Backend Settings and approved access, then try Find Interview Candidates again.'];
+        }
+        if (kind === 'quota' || (error && error.isQuota) || /quota|resource_exhausted|usage (?:limit|allowance)|daily limit/i.test(message)) {
+            return ['persona.candidates_quota', 'The AI or search provider reported a usage limit. Check its usage allowance, then retry when it is available.'];
+        }
+        if (status === 429 || kind === 'rate_limit' || /rate limit|too many requests|throttl/i.test(message)) {
+            return ['persona.candidates_rate_limit', 'The AI or search provider is receiving too many requests. Wait briefly, then try Find Interview Candidates again.'];
+        }
+        if (code === 'allo/search-unavailable') {
+            return ['persona.candidates_search_unavailable', 'Interview web search is unavailable. Check the connection, then retry when search is available.'];
+        }
+        if (kind === 'network' || kind === 'transient' || status >= 500 || /failed to fetch|network|connection|offline/i.test(message)) {
+            return ['persona.candidates_connection', 'The AI or search connection failed. Check the connection, then try Find Interview Candidates again.'];
+        }
+        if (code === 'allo/persona-response-invalid' || (error && error.name === 'SyntaxError')) {
+            return ['persona.candidates_response_invalid', 'The AI response did not contain usable interview candidates. Try Find Interview Candidates again.'];
+        }
+        return ['persona.candidates_generate_failed', 'Interview candidates could not be created. Try Find Interview Candidates again; if the problem continues, inspect the diagnostic details.'];
+    };
+    const candidateRecoveryText = (t, key, fallback) => {
+        const translated = typeof t === 'function' ? t(key) : '';
+        return typeof translated === 'string' && translated.trim() && translated !== key ? translated : fallback;
+    };
+    const getExplicitCandidateSearchGrounding = (result) => {
+        const values = [];
+        let current = result;
+        // Follow the same bounded .data/.content path as unwrapModelResult.
+        // Every source used here belongs to this request's response envelope.
+        for (let depth = 0; depth < 4; depth++) {
+            if (!current || typeof current !== 'object' || Array.isArray(current)) break;
+            for (const envelope of [current, current.candidates && current.candidates[0]]) {
+                if (!envelope || typeof envelope !== 'object') continue;
+                for (const key of ['groundingMetadata', 'grounding']) {
+                    if (Object.prototype.hasOwnProperty.call(envelope, key)) values.push(envelope[key]);
+                }
+            }
+            if (typeof current.text === 'string') break;
+            if (Object.prototype.hasOwnProperty.call(current, 'data')) current = current.data;
+            else if (Object.prototype.hasOwnProperty.call(current, 'content')) current = current.content;
+            else break;
+        }
+        return values.length ? { value: values.find(hasAttributableCandidateSearchSource) || null } : null;
+    };
+    const hasAttributableCandidateSearchSource = (grounding) => {
+        const queue = [grounding];
+        const seen = new Set();
+        for (let visited = 0; queue.length && visited < 1500; visited += 1) {
+            const current = queue.shift();
+            if (!current || typeof current !== 'object' || seen.has(current)) continue;
+            seen.add(current);
+            const uri = current.uri || current.url || current.link || current.sourceUrl;
+            if (typeof uri === 'string' && /^https?:\/\/[^\s]+$/i.test(uri.trim())) return true;
+            Object.values(current).forEach(child => { if (child && typeof child === 'object') queue.push(child); });
+        }
+        return false;
     };
 
     const clampInteger = (value, min, max, fallback = 0) => {
@@ -420,6 +497,36 @@ const createPersonas = (deps) => {
             candidate && typeof candidate.name === 'string' && candidate.name.trim().slice(0, 120) === requestedName
         )) || null;
     };
+    // Rapport, quests, XP, reflections and panel scores belong to one learner
+    // (the scoped device snapshot), never to the shared resource. Older
+    // resources may still carry a previous learner's values: ignore them.
+    const PERSONA_LEARNER_PROGRESS_KEYS = ['rapport', 'accumulatedXP', 'reflectionText', 'panelPartner', 'panelHarmonyScore', 'panelEarnedBadges', 'lastInterviewDate'];
+    const withoutLearnerProgress = (candidate) => {
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return candidate;
+        const clean = { ...candidate };
+        PERSONA_LEARNER_PROGRESS_KEYS.forEach(key => { delete clean[key]; });
+        clean.rapport = clampInteger(candidate.initialRapport, 0, 100, 10);
+        clean.accumulatedXP = 0;
+        if (Array.isArray(candidate.quests)) {
+            clean.quests = candidate.quests.map(quest => (
+                quest && typeof quest === 'object' && !Array.isArray(quest) ? { ...quest, isCompleted: false } : quest
+            ));
+        }
+        return clean;
+    };
+    // Reply text from common off-contract shapes ({reply}, {message}, arrays).
+    const PERSONA_REPLY_KEYS = ['response', 'reply', 'answer', 'message', 'text', 'content', 'dialogue', 'output'];
+    const extractPersonaReplyText = (value, depth = 0) => {
+        if (value == null || depth > 3) return '';
+        if (typeof value === 'string') return value.trim();
+        if (Array.isArray(value)) return value.map(item => extractPersonaReplyText(item, depth + 1)).filter(Boolean).join('\n\n').trim();
+        if (typeof value !== 'object') return '';
+        for (const key of PERSONA_REPLY_KEYS) {
+            const text = extractPersonaReplyText(value[key], depth + 1);
+            if (text) return text;
+        }
+        return value.data && typeof value.data === 'object' ? extractPersonaReplyText(value.data, depth + 1) : '';
+    };
     const resourceContainsPersonaParticipants = (resource, participantNames) => (
         Boolean(getPersonaResourceId(resource))
         && Array.isArray(participantNames)
@@ -669,6 +776,8 @@ const createPersonas = (deps) => {
         const { setGeneratedContent, setHistory } = liveRef.current;
         const sanitizeCandidate = candidate => {
             const { chatHistory: _chatHistory, savedDialogue: _savedDialogue, ...safeCandidate } = candidate || {};
+            PERSONA_LEARNER_PROGRESS_KEYS.forEach(key => { delete safeCandidate[key]; });
+            if (Array.isArray(safeCandidate.quests)) safeCandidate.quests = safeCandidate.quests.map(quest => (quest && typeof quest === 'object' && quest.isCompleted ? { ...quest, isCompleted: false } : quest));
             return safeCandidate;
         };
         const updateResource = (item) => {
@@ -923,14 +1032,25 @@ const createPersonas = (deps) => {
             `;
             const result = await callPersonaModel(prompt, false, true, generationRequest, PERSONA_MODEL_TIMEOUTS.candidates);
             if (!isFreshGeneration()) return;
+            // A current search envelope that explicitly lacks source URLs must
+            // refuse publication. Earlier lesson-analysis sources cannot prove
+            // this new search succeeded. Legacy passage-based response shapes
+            // remain supported and make no new web-verification claim.
+            const explicitSearchGrounding = getExplicitCandidateSearchGrounding(result);
             const generationPayload = unwrapModelResult(result);
+            if (typeof generationPayload === 'string' && generationPayload.trim() === 'Definition unavailable due to content safety filters.') {
+                const refused = new Error('Interview response blocked by provider content safety filters.');
+                refused.code = 'allo/persona-content-refused';
+                throw refused;
+            }
             let parsedOptions = Array.isArray(generationPayload) ? generationPayload : [];
             if (!Array.isArray(generationPayload)) {
                 const textToParse = String(generationPayload || "");
                 if (!textToParse.includes('[') && !textToParse.includes('{')) {
                     warnLog("Persona Gen: No JSON found in response.");
-                    addToast(t('toasts.character_data_not_found'), "warning");
-                    return;
+                    const invalid = new Error('Interview response did not contain candidate JSON.');
+                    invalid.code = 'allo/persona-response-invalid';
+                    throw invalid;
                 }
                 try {
                     parsedOptions = JSON.parse(cleanJson(textToParse));
@@ -941,10 +1061,13 @@ const createPersonas = (deps) => {
             }
             parsedOptions = normalizePersonaCandidates(parsedOptions);
             if (parsedOptions.length > 0) {
+                if (explicitSearchGrounding && !hasAttributableCandidateSearchSource(explicitSearchGrounding.value)) {
+                    const unavailable = new Error('Interview search returned no attributable sources.');
+                    unavailable.code = 'allo/search-no-attribution';
+                    throw unavailable;
+                }
                 if (!isFreshGeneration()) return;
-                const sourceGrounding = result && typeof result === 'object'
-                    ? (result.groundingMetadata || result.grounding || result.candidates?.[0]?.groundingMetadata || null)
-                    : null;
+                const sourceGrounding = explicitSearchGrounding ? explicitSearchGrounding.value : null;
                 const analysisGrounding = latestAnalysis && latestAnalysis.data
                     ? (latestAnalysis.data.groundingMetadata || latestAnalysis.data.grounding || latestAnalysis.data.sources || null)
                     : null;
@@ -978,11 +1101,21 @@ const createPersonas = (deps) => {
                 return;
             } else {
                 warnLog("Persona Gen: Parsed data was not a valid array.");
-                addToast(t('toasts.ai_format_error'), "error");
+                const invalid = new Error('Interview response did not contain usable candidates.');
+                invalid.code = 'allo/persona-response-invalid';
+                throw invalid;
             }
         } catch (err) {
             warnLog("Persona Generation Error:", err);
-            if (isFreshGeneration()) addToast(t('toasts.character_generate_failed'), "error");
+            if (isFreshGeneration()) {
+                const [key, fallback] = getPersonaCandidateRecovery(err);
+                let recovery = candidateRecoveryText(t, key, fallback);
+                const retainedResource = liveRef.current.generatedContent;
+                if (retainedResource && retainedResource.type === 'persona' && Array.isArray(retainedResource.data) && retainedResource.data.length > 0) {
+                    recovery += ' ' + candidateRecoveryText(t, 'persona.candidates_previous_kept', 'Your previous interview candidates are kept.');
+                }
+                addToast(recovery, "error");
+            }
         } finally {
             if (activePersonaGenerationRequest === generationRequest) {
                 activePersonaGenerationRequest = null;
@@ -1501,8 +1634,8 @@ const createPersonas = (deps) => {
         if (activePanelStartRequest) return;
         const resourceId = getPersonaResourceId(generatedContent);
         const participantNames = personaState.selectedCharacters.map(character => String(character.name || '').slice(0, 120));
-        const charA = getCanonicalPersonaCandidate(generatedContent, personaState.selectedCharacters[0]);
-        const charB = getCanonicalPersonaCandidate(generatedContent, personaState.selectedCharacters[1]);
+        const charA = withoutLearnerProgress(getCanonicalPersonaCandidate(generatedContent, personaState.selectedCharacters[0]));
+        const charB = withoutLearnerProgress(getCanonicalPersonaCandidate(generatedContent, personaState.selectedCharacters[1]));
         if (!resourceId || !charA || !charB || charA.name === charB.name) return;
         const requestToken = ++personaSessionToken;
         const panelStartRequest = { token: requestToken };
@@ -1649,31 +1782,17 @@ const createPersonas = (deps) => {
             const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length === 2;
             if (isPanelMode) {
                 const [charA, charB] = personaState.selectedCharacters;
-                [charA, charB].forEach((liveCharacter, index) => {
-                    const partner = index === 0 ? charB : charA;
+                [charA, charB].forEach((liveCharacter) => {
                     updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
                         ...candidate,
-                        avatarUrl: liveCharacter.avatarUrl || candidate.avatarUrl || null,
-                        rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
-                        quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : (candidate.quests || []),
-                        accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
-                        reflectionText: personaState.reflectionText || candidate.reflectionText || '',
-                        panelPartner: partner?.name || null,
-                        panelHarmonyScore: clampInteger(personaState.harmonyScore, 0, 100, 10),
-                        panelEarnedBadges: [...(personaState.earnedBadges || [])],
-                        lastInterviewDate: new Date().toISOString()
+                        avatarUrl: liveCharacter.avatarUrl || candidate.avatarUrl || null
                     }));
                 });
             } else if (personaState.selectedCharacter) {
                 const liveCharacter = personaState.selectedCharacter;
                 updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
                     ...candidate,
-                    avatarUrl: liveCharacter.avatarUrl || personaState.avatarUrl || candidate.avatarUrl || null,
-                    rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
-                    quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : (candidate.quests || []),
-                    accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
-                    reflectionText: personaState.reflectionText || candidate.reflectionText || '',
-                    lastInterviewDate: new Date().toISOString()
+                    avatarUrl: liveCharacter.avatarUrl || personaState.avatarUrl || candidate.avatarUrl || null
                 }));
             }
         }
@@ -1717,7 +1836,7 @@ const createPersonas = (deps) => {
         const resourceId = getPersonaResourceId(generatedContent);
         const canonicalCharacter = getCanonicalPersonaCandidate(generatedContent, character);
         if (!resourceId || !canonicalCharacter) return;
-        character = canonicalCharacter;
+        character = withoutLearnerProgress(canonicalCharacter);
         const characterName = character.name.trim().slice(0, 120);
         if (
             activePersonaSelectionRequest
@@ -2472,8 +2591,8 @@ const createPersonas = (deps) => {
             if (!isFreshTurn()) return;
             const resultPayload = unwrapModelResult(resultRaw);
             let resultParsed = null;
-            const resultText = typeof resultPayload === 'string' ? resultPayload : String(resultPayload || '');
-            if (resultPayload && typeof resultPayload === 'object' && !Array.isArray(resultPayload) && typeof resultPayload.response === 'string') {
+            const resultText = typeof resultPayload === 'string' ? resultPayload : '';
+            if (resultPayload && typeof resultPayload === 'object') {
                 resultParsed = resultPayload;
             } else {
                 try {
@@ -2482,12 +2601,19 @@ const createPersonas = (deps) => {
                     try { resultParsed = safeJsonParse(resultText); } catch (_) {}
                 }
             }
+            if (Array.isArray(resultParsed) && resultParsed.length === 1 && resultParsed[0] && typeof resultParsed[0] === 'object' && !Array.isArray(resultParsed[0])) resultParsed = resultParsed[0];
+            if (resultParsed != null && !(typeof resultParsed === 'object' && !Array.isArray(resultParsed) && typeof resultParsed.response === 'string' && resultParsed.response.trim())) {
+                const recoveredReply = extractPersonaReplyText(resultParsed);
+                resultParsed = recoveredReply
+                    ? { ...(typeof resultParsed === 'object' && !Array.isArray(resultParsed) ? resultParsed : {}), response: recoveredReply }
+                    : null;
+            }
             if (!resultParsed || typeof resultParsed !== 'object' || Array.isArray(resultParsed) || typeof resultParsed.response !== 'string' || !resultParsed.response.trim()) {
-                // Model drifted from the JSON contract — salvage the reply as
-                // plain text (no rapport/quest updates) rather than dropping
-                // the whole turn with a "figure went silent" error.
+                // Plain-text drift is salvaged as the reply (no rapport/quest
+                // updates). Unreadable JSON is never shown, spoken or saved as
+                // the reply: it takes the retry path instead.
                 const salvaged = resultText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim().slice(0, 12000);
-                if (!salvaged) throw new Error('Empty persona response');
+                if (!salvaged || /^[\[{]\s*["{\[\]}]/.test(salvaged)) throw new Error('Unreadable persona response');
                 resultParsed = { response: salvaged, rapportChange: 0, completedQuestId: null };
             }
             const responseText = resultParsed.response.trim().slice(0, 12000);
@@ -2623,11 +2749,7 @@ const createPersonas = (deps) => {
             if (resourceId) {
                 updateStoredPersona(resourceId, personaState.selectedCharacter.name, candidate => ({
                     ...candidate,
-                    avatarUrl: personaState.avatarUrl || personaState.selectedCharacter.avatarUrl || candidate.avatarUrl || null,
-                    rapport: newRapportPreview,
-                    quests: (candidate.quests || []).map(q => completedQuestId === q.id ? { ...q, isCompleted: true } : q),
-                    accumulatedXP: Math.min(PERSONA_XP_CAP, (candidate.accumulatedXP || 0) + totalReward),
-                    lastInterviewDate: new Date().toISOString()
+                    avatarUrl: personaState.avatarUrl || personaState.selectedCharacter.avatarUrl || candidate.avatarUrl || null
                 }));
             }
         } catch (e) {
@@ -3013,6 +3135,7 @@ const createPersonas = (deps) => {
         handlePanelChatSubmit,
         handlePersonaChatSubmit,
         handleGeneratePersonaSummary,
+        normalizePersonaCandidates,
     };
 };
 
@@ -3021,6 +3144,8 @@ if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.PersonaEvidence = PersonaEvidence;
     window.AlloModules.createPersonas = createPersonas;
+    // Full Pack / guided generation share the interview normalizer (quests, voice, guardrails).
+    window.AlloModules.normalizePersonaCandidates = (items) => createPersonas({ liveRef: { current: {} } }).normalizePersonaCandidates(items);
     window.AlloModules.Personas = true;
     console.log('[Personas] Factory registered');
     if (typeof window._upgradePersonas === 'function') {

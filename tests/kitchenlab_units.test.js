@@ -355,11 +355,16 @@ describe('Stale-cook guard and danger clock render', () => {
     const html = renderTool('kitchenLab', { kitchenLab: { activeSection: 'recipe', recipeActiveId: 'scrambledEggs', recipePhase: 'paused', recipeAutoPaused: true, recipePausedAt: 1000, recipeStartedAt: 0, recipeItemsInPan: [] } });
     expect(strip(html)).toContain('Paused while you were away');
   });
-  it('renders the danger-zone clock over the limit at 98°F for 2 hours', () => {
-    const html = renderTool('kitchenLab', { kitchenLab: { activeSection: 'safety', safetyTemp: 98, safetyHours: 2 } });
+  it('renders the danger-zone clock over the limit at 98°F for 2 hours in a room over 90°F', () => {
+    const html = renderTool('kitchenLab', { kitchenLab: { activeSection: 'safety', safetyTemp: 98, safetyHours: 2, safetyHotRoom: true } });
     expect(html).toContain('data-kl-danger-clock="over"');
     expect(html).toContain('data-kl-danger-mult="64"');
+    expect(html).toContain('data-kl-hot-room="on"');
     expect(strip(html)).toContain('Past the limit');
+    // the same food in a normal kitchen is still inside the 2-hour limit
+    const normal = renderTool('kitchenLab', { kitchenLab: { activeSection: 'safety', safetyTemp: 98, safetyHours: 2 } });
+    expect(normal).toContain('data-kl-danger-clock="within"');
+    expect(normal).toContain('data-kl-hot-room="off"');
   });
 });
 

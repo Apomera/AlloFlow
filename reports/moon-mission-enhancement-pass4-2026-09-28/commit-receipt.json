@@ -1,0 +1,19 @@
+{
+  "commit": "59b1de80faa44b0d33576c0d0177c0c5eb771d04",
+  "parent": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "scope": [
+    "stem_lab/stem_tool_moonmission.js",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+    "tests/moonmission_launch_physics.test.js",
+    "tests/moonmission_launch_playback.test.js",
+    "tests/moonmission_orbit_playback.test.js",
+    "tests/moonmission_science_numbers.test.js",
+    "tests/moonmission_moon_and_splash.test.js",
+    "tests/moonmission_proceed_gates.test.js",
+    "tests/moonmission_saturn_v.test.js",
+    "tests/e2e/21-moon-mission-gl.spec.ts",
+    "tests/e2e/moon-mission-launch-orbit.spec.ts",
+    "reports/moon-mission-enhancement-pass4-2026-09-28/README.md"
+  ],
+  "remainingSourceDiff": "349\t92\tdesktop/web-app/public/stem_lab/stem_tool_moonmission.js\n349\t92\tstem_lab/stem_tool_moonmission.js\n"
+}

@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:37:58.485Z",
+  "label": "pass2-11-engine",
+  "patch": "fd942135973328041cb7f5e245d20d3e25f6953d008198c88cabf5bc5e76e125",
+  "plans": [
+    {
+      "target": "content_engine_source.jsx",
+      "targets": [
+        "content_engine_source.jsx"
+      ],
+      "before": "ca17992bf053f75c327dae4889c693bfae29f3e246cb045a3a019fb53c43b219",
+      "after": "b541b4d6e29c097f8955314acb87f82344e62f6ce2c4418879ddc4275d6edee8",
+      "changed": true
+    }
+  ]
+}

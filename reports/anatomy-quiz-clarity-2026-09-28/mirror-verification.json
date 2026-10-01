@@ -1,0 +1,22 @@
+[
+  {
+    "path": "stem_lab/stem_tool_anatomy.js",
+    "sha256": "494dc9f55397cc1b30bc2074658157c67cfcbdbbb70932b866210c67f26e0557",
+    "identical": true
+  },
+  {
+    "path": "lang/french.js",
+    "sha256": "bcb70fed3dc720003213366b7a2fe8e183769c5854a9b0c1ab577a484dc94df9",
+    "identical": true
+  },
+  {
+    "path": "lang/spanish_latin_america.js",
+    "sha256": "d4b5ef3cde0d34de3b5b1f72ae187ee37d236b0e4400ed59102844be7b8530d3",
+    "identical": true
+  },
+  {
+    "path": "lang/arabic.js",
+    "sha256": "d36b1154082cf49fd6817ce397e1d52e890c2f56405e8a02f64870c8e0f11d56",
+    "identical": true
+  }
+]

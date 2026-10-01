@@ -1,0 +1,121 @@
+{
+  "results": [
+    {
+      "name": "acknowledged overwrite and keyboard Apply",
+      "status": "passed"
+    },
+    {
+      "name": "acknowledged new version retains original",
+      "status": "passed"
+    },
+    {
+      "name": "declined save has no success or history entry",
+      "status": "passed"
+    },
+    {
+      "name": "declined unchanged text is not mistaken for a committed rewrite",
+      "status": "passed"
+    },
+    {
+      "name": "Apply revalidation returns focus to preserved terms",
+      "status": "passed"
+    },
+    {
+      "name": "obsolete in-flight preview cannot restore Apply",
+      "status": "passed"
+    },
+    {
+      "name": "bilingual candidate reports the missing translation term",
+      "status": "passed"
+    },
+    {
+      "name": "supported inline markup matches the shared visible-text projection",
+      "status": "passed"
+    },
+    {
+      "name": "emoji extensions do not satisfy preserved symbols",
+      "status": "passed"
+    },
+    {
+      "name": "partial emoji source terms fail before a model call",
+      "status": "passed"
+    },
+    {
+      "name": "changing readings during primary generation prevents the translation call",
+      "status": "passed"
+    },
+    {
+      "name": "Discard restores keyboard focus",
+      "status": "passed"
+    },
+    {
+      "name": "readiness shows each pane, duplicates and remaining capacity before Preview",
+      "status": "passed"
+    },
+    {
+      "name": "readiness rejects case changes and recovers when corrected",
+      "status": "passed"
+    },
+    {
+      "name": "readiness invalidates immediately when the reading changes",
+      "status": "passed"
+    },
+    {
+      "name": "formatting feedback identifies the source pane before generation",
+      "status": "passed"
+    },
+    {
+      "name": "candidate formatting failure retains source and offers retry",
+      "status": "passed"
+    },
+    {
+      "name": "failure notice stays cleared after switching readings and returning",
+      "status": "passed"
+    },
+    {
+      "name": "editing adaptation options clears obsolete feedback",
+      "status": "passed"
+    },
+    {
+      "name": "English primary and saved Spanish translation survive Preview and Apply",
+      "status": "passed"
+    },
+    {
+      "name": "saved Arabic translation receives RTL and Arabic metadata",
+      "status": "passed"
+    },
+    {
+      "name": "Spanish readiness strings interpolate terms and counts",
+      "status": "passed"
+    },
+    {
+      "name": "Undo retains its confirmation after the reading changes back",
+      "status": "passed"
+    },
+    {
+      "name": "required translation cannot disappear behind primary-only preserved terms",
+      "status": "passed"
+    },
+    {
+      "name": "empty candidate is rejected without preserved terms",
+      "status": "passed"
+    },
+    {
+      "name": "hidden-only translation is rejected without preserved terms",
+      "status": "passed"
+    },
+    {
+      "name": "Apply rechecks complete panes after preview data is changed",
+      "status": "passed"
+    },
+    {
+      "name": "blank primary provider output never starts translation",
+      "status": "passed"
+    },
+    {
+      "name": "complexity reset after Apply preserves its confirmation",
+      "status": "passed"
+    }
+  ],
+  "errors": []
+}

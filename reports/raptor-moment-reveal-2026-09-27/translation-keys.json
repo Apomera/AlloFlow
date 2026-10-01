@@ -1,0 +1,16 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    { "key": "stem.raptorhunt.study_reveal_value", "fallback": "{a}% moment A · {b}% moment B" },
+    { "key": "stem.raptorhunt.study_reveal_close", "fallback": "Close image comparison" },
+    { "key": "stem.raptorhunt.study_reveal_open", "fallback": "Compare images with a slider" },
+    { "key": "stem.raptorhunt.study_reveal_title", "fallback": "Look closely: A and B" },
+    { "key": "stem.raptorhunt.study_reveal_help", "fallback": "Drag across the images or use the slider. Trace a wing edge, feather, or tail shape, then describe what you notice in the observations below." },
+    { "key": "stem.raptorhunt.study_reveal_unavailable", "fallback": "These images could not be loaded. The saved readings and observations are available below." },
+    { "key": "stem.raptorhunt.study_reveal_label", "fallback": "Reveal moment A" },
+    { "key": "stem.raptorhunt.study_reveal_a", "fallback": "Show A" },
+    { "key": "stem.raptorhunt.study_reveal_split", "fallback": "Split view" },
+    { "key": "stem.raptorhunt.study_reveal_b", "fallback": "Show B" },
+    { "key": "stem.raptorhunt.study_reveal_limits", "fallback": "Each image keeps its original framing. Matching camera settings does not guarantee identical size or alignment, especially across different species or poses." }
+  ]
+}

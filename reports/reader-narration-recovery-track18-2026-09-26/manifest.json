@@ -1,0 +1,28 @@
+{
+  "created": "2026-09-26T23:05:23.150Z",
+  "head": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "kind": "working-tree delta, includes pre-existing uncommitted integration in basis",
+  "entries": [
+    {
+      "file": "view_simplified_source.jsx",
+      "basisSha256": "948b82ea22995c57a05f556b111e9137b6b350d8bd6d0bae757c1f73db1db31d",
+      "candidateSha256": "94c76ad2a27e18e929233c309ddba74625ea441bb516212c1484e0d1a2341c20"
+    },
+    {
+      "file": "tests/reader_narration_recovery.test.js",
+      "basisSha256": null,
+      "candidateSha256": "f73dd47127915cf13ed2c2b1c4ef7ac6bdcad61632a3b627d59b94f50816ffa8"
+    },
+    {
+      "file": "dev-tools/reader_narration_recovery_browser.cjs",
+      "basisSha256": null,
+      "candidateSha256": "7dda52735901f3e126b51eef49123618b476a782ab1f65662feb38722894f9a0"
+    }
+  ],
+  "patchSha256": "f739bb2ce3010a2c769bc9cce8988912806fac447049e767046e92bd43445f90",
+  "generatedReaderSha256": "7a68fe4c1e08da7a5eb51543927e487795893ad3c3eeb8b9be524e1e2c4b8be7",
+  "patchReconstructionVerified": true,
+  "generatedMirrorsMatch": true,
+  "focusedTestsPassed": 60,
+  "browserScenariosPassed": 12
+}

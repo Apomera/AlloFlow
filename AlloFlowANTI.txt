@@ -1055,7 +1055,7 @@ let estimateJsonBytes = (value) => {
     try { return JSON.stringify(value == null ? null : value).length; } catch (e) { return Infinity; }
 };
 let prepareSessionResourcesForWrite = (resources, options) => {
-    const source = Array.isArray(resources) ? resources : [];
+    const source = (Array.isArray(resources) ? resources : []).map(item => item && typeof item === 'object' && item.adaptedReadingSupports ? (({ adaptedReadingSupports, ...rest }) => rest)(item) : item);
     return {
         resources: source,
         originalCount: source.length,
@@ -1828,6 +1828,9 @@ function _alloFinishResChunk(store, rid, success) {
         Object.defineProperty(failures, rid, { value: { count: previous + 1, at: Date.now() }, enumerable: true, configurable: true });
     }
     _alloPruneResChunks(store);
+}
+function _alloModuleWatchdogShouldWait(armedAt, now, hidden, rearmed) {
+    return !rearmed && (!!hidden || (typeof armedAt === 'number' && now - armedAt > 35000));
 }
 function _alloMbStallTracker(now = Date.now) {
     let lastOkAt = now();
@@ -3408,7 +3411,9 @@ const _alloProjectStudentActivityResource = (item) => {
     const view = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.BrainstormView;
     return view && typeof view.projectStudentActivityResource === 'function' ? view.projectStudentActivityResource(item) : null;
 };
+const _alloWithoutTeacherReviewCopies = (items) => (Array.isArray(items) ? items : []).filter(item => !(item && item.data && item.data.submissionCopy));
 const _alloStudentSafeResources = (items) => {
+    items = _alloWithoutTeacherReviewCopies(items);
     const ST = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
     if (ST && typeof ST.studentSafeResources === 'function') return ST.studentSafeResources(items, TEACHER_ONLY_TYPES, _alloProjectStudentActivityResource);
     const readingItems = window.AlloModules?.InstructionalContext?.ensureReadingSourcePairs?.(items) || items;
@@ -4101,6 +4106,7 @@ function _alloBuildDirectionsResultAdapter(options) {
             done: goal.done === true,
             progressText: clamp(goal.progressText, 80),
             resourceRef: validId(sourceGoal.resourceRef),
+            missing: goal.done !== true && !!sourceGoal.resourceRef && !stationById.has(validId(sourceGoal.resourceRef)),
         });
         return views;
     }, []);
@@ -6953,6 +6959,7 @@ const getBilingualPromptInstruction = (targetLang, policy) => {
 const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, translationPolicy) => {
     const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (_m && typeof _m.generateBilingualText === 'function') return _m.generateBilingualText(basePrompt, targetLang, callGeminiFn, translationPolicy);
+    if (!_m) return _alloAwaitModules([['TextPipelineHelpersModule', 'TextPipelineHelpers']], 'this tool').then(() => generateBilingualText(basePrompt, targetLang, callGeminiFn, translationPolicy));
     throw new Error('[generateBilingualText] TextPipelineHelpers module not loaded — reload the page');
 };
 
@@ -11470,6 +11477,18 @@ const _alloArtifactMatchesInstanceId = (artifact, instanceId) => {
   const canonical = getArtifactInstanceId(artifact);
   return canonical ? canonical === instanceId : getArtifactPublicId(artifact) === _alloSafeArtifactPublicIdValue(instanceId);
 };
+const _alloCarrySavedSupports = (base, current, next) => {
+  const same = (left, right) => left === right || JSON.stringify(left) === JSON.stringify(right);
+  if (!base || !current || !next || typeof next !== 'object' || next.id !== base.id || current.id !== base.id
+      || getArtifactInstanceId(current) !== getArtifactInstanceId(base)) return next;
+  let carried = next;
+  for (const key of ['readingSupports', 'adaptedReadingSupports']) {
+    if (!same(next[key], base[key]) || same(current[key], base[key])) continue;
+    carried = carried === next ? { ...next } : carried;
+    if (current[key] === undefined) delete carried[key]; else carried[key] = current[key];
+  }
+  return carried;
+};
 const findArtifactInstanceIndex = (items, instanceId, fallbackPublicId) => {
   try { if (!Array.isArray(items)) return -1; } catch (_) { return -1; }
   const safeFallbackId = _alloSafeArtifactPublicIdValue(fallbackPublicId);
@@ -11554,7 +11573,7 @@ const AlloFlowContent = () => {
     get _alloAlignmentAuditSummary() { return _alloAlignmentAuditSummary; }, get _alloAlignmentExportFromRegistryEntry() { return _alloAlignmentExportFromRegistryEntry; }, get _alloAlignmentExportSchema() { return _alloAlignmentExportSchema; }, get _alloApplyCanvasSelAuthoringState() { return _alloApplyCanvasSelAuthoringState; },
     get _alloArtifactListLength() { return _alloArtifactListLength; }, get _alloArtifactMatchesInstanceId() { return _alloArtifactMatchesInstanceId; }, get _alloBeginGlossaryTask() { return _alloBeginGlossaryTask; }, get _alloBoundLearningWebGraphForExplorer() { return _alloBoundLearningWebGraphForExplorer; },
     get _alloBuildAssignmentCenterCsv() { return _alloBuildAssignmentCenterCsv; }, get _alloCheckpointArtifact() { return _alloCheckpointArtifact; }, get _alloCheckpointRecordsRef() { return _alloCheckpointRecordsRef; }, get _alloCheckpointSaltRef() { return _alloCheckpointSaltRef; },
-    get _alloCheckpointSupports() { return _alloCheckpointSupports; }, get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloResolveHostedShareMailbox() { return _alloResolveHostedShareMailbox; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; },
+    get _alloCheckpointSupports() { return _alloCheckpointSupports; }, get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloRequestStemPlugin() { return _alloRequestStemPlugin; }, get _alloResolveHostedShareMailbox() { return _alloResolveHostedShareMailbox; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; },
     get _alloCmdCtx() { return _alloCmdCtx; }, get _alloCmdCtxRef() { return _alloCmdCtxRef; }, get _alloCreateDefaultStudentProjectSettings() { return _alloCreateDefaultStudentProjectSettings; }, get _alloDiagnosticBoundedInt() { return _alloDiagnosticBoundedInt; },
     get _alloDiagnosticReason() { return _alloDiagnosticReason; }, get _alloDiagnosticResourceType() { return _alloDiagnosticResourceType; }, get _alloDiagnosticRunId() { return _alloDiagnosticRunId; }, get _alloDiagnosticTimestamp() { return _alloDiagnosticTimestamp; },
     get _alloDirectionsGoalResources() { return _alloDirectionsGoalResources; }, get _alloEnsureLedger() { return _alloEnsureLedger; }, get _alloFollowResourceLive() { return _alloFollowResourceLive; }, get _alloGenerationHelpersDeps() { return _alloGenerationHelpersDeps; },
@@ -11578,7 +11597,7 @@ const AlloFlowContent = () => {
     get _stripForImmersive() { return _stripForImmersive; }, get _textDomainLabel() { return _textDomainLabel; }, get _textUndoLiveRef() { return _textUndoLiveRef; }, get _unpackBuilderProjectDraft() { return _unpackBuilderProjectDraft; },
     get _updatePanelInPlan() { return _updatePanelInPlan; }, get _voiceEditableFieldSelectionRef() { return _voiceEditableFieldSelectionRef; }, get _waitForReadThisPageResume() { return _waitForReadThisPageResume; }, get aacPlaybackRef() { return aacPlaybackRef; },
     get activeBlueprint() { return activeBlueprint; }, get activeChallengeMode() { return activeChallengeMode; }, get activeInteractiveOrganizerTypeRef() { return activeInteractiveOrganizerTypeRef; }, get activeResolvedStandardsContext() { return activeResolvedStandardsContext; },
-    get activeSessionAppId() { return activeSessionAppId; }, get activeSessionCode() { return activeSessionCode; }, get activeSidebarTab() { return activeSidebarTab; }, get activeUnitId() { return activeUnitId; },
+    get activeSessionAppId() { return activeSessionAppId; }, get activeSessionCode() { return activeSessionCode; }, get activeSidebarTab() { return activeSidebarTab; }, get activeUnitId() { return activeUnitId; }, get activeView() { return activeView; },
     get addToast() { return addToast; }, get addToastRef() { return addToastRef; }, get addXp() { return addXp; }, get adventureCustomInstructions() { return adventureCustomInstructions; },
     get adventureImageDB() { return adventureImageDB; }, get adventureState() { return adventureState; }, get alloBotRef() { return alloBotRef; }, get alloMailboxConfigExportPayload() { return alloMailboxConfigExportPayload; },
     get alloNormalizeLearnerReadingPreference() { return alloNormalizeLearnerReadingPreference; }, get alloNormalizeReadingTheme() { return alloNormalizeReadingTheme; }, get alloPersistMailboxConfig() { return alloPersistMailboxConfig; }, get alloReadMailboxConfigCache() { return alloReadMailboxConfigCache; },
@@ -11599,7 +11618,7 @@ const AlloFlowContent = () => {
     get conceptMapNodes() { return conceptMapNodes; }, get conceptSortAutoRemoveWords() { return conceptSortAutoRemoveWords; }, get connectingSourceId() { return connectingSourceId; }, get contentAreaRef() { return contentAreaRef; },
     get contentEngineStateRef() { return contentEngineStateRef; }, get contentRef() { return contentRef; }, get copyToClipboard() { return copyToClipboard; }, get csAsyncRunIsCurrent() { return csAsyncRunIsCurrent; },
     get csBeginAsyncRun() { return csBeginAsyncRun; }, get csGeneratedItemBudgetRef() { return csGeneratedItemBudgetRef; }, get csLiveDocumentIdRef() { return csLiveDocumentIdRef; }, get csRefinementInputs() { return csRefinementInputs; },
-    get csUpdateData() { return csUpdateData; }, get currentUiLanguage() { return currentUiLanguage; }, get db() { return db; }, get debugLog() { return debugLog; },
+    get csUpdateData() { return csUpdateData; }, get currentUiLanguage() { return currentUiLanguage; }, get db() { return db; }, get debugLog() { return debugLog; }, get definitionData() { return definitionData; },
     get deleteDoc() { return deleteDoc; }, get describeSavedFollowUpLiveFailure() { return describeSavedFollowUpLiveFailure; }, get differentiationRange() { return differentiationRange; }, get directionsDeriving() { return directionsDeriving; },
     get doc() { return doc; }, get dokLevel() { return dokLevel; }, get downloadSubmissionBackup() { return downloadSubmissionBackup; }, get draggedTimelineIndex() { return draggedTimelineIndex; },
     get editingOptionsBuffer() { return editingOptionsBuffer; }, get educatorAccessState() { return educatorAccessState; }, get emptyCanvasRecoveryVaultView() { return emptyCanvasRecoveryVaultView; }, get encodeFramesToGif() { return encodeFramesToGif; },
@@ -11798,33 +11817,45 @@ const AlloFlowContent = () => {
     get wordSoundsActivity() { return wordSoundsActivity; }, get wordSoundsAudioDeliveryAt() { return wordSoundsAudioDeliveryAt; }, get wordSoundsScore() { return wordSoundsScore; }, get wordSoundsSessionConfig() { return wordSoundsSessionConfig; },
     get wordSoundsSessionGoal() { return wordSoundsSessionGoal; }, get workspacePane() { return workspacePane; }, get writeToSession() { return writeToSession; },
   };
+  // A click that lands before its module waits for it (promoted past the parked
+  // queue) instead of throwing; a failed or timed-out wait says so, nothing changed.
+  // [registry name, AlloModules key, soft]: a soft module that failed does not block.
+  const _alloAwaitModules = (mods, label) => {
+    const settled = m => !!(window.AlloModules && window.AlloModules[m[1]]) || (m[2] && window.__alloModuleRegistry?.[m[0]]?.status === 'failed');
+    const missing = mods.filter(m => !settled(m));
+    if (!missing.length) return Promise.resolve();
+    const waits = window.__alloModuleWaitToasts || (window.__alloModuleWaitToasts = {});
+    const done = () => { delete waits[label]; };
+    const fail = error => {
+      done();
+      const message = 'Could not finish loading ' + label + '. Nothing was changed. Check the connection, then try again.';
+      try { addToast(message, 'error'); } catch (_) {}
+      throw Object.assign(new Error(message), { code: error && error.code, cause: error });
+    };
+    const ensure = window.__alloEnsureLazyModule;
+    if (typeof ensure !== 'function') return Promise.reject(new Error('Module loader unavailable')).catch(fail);
+    if (!waits[label]) { waits[label] = true; try { addToast('Getting ' + label + ' ready…', 'info'); } catch (_) {} }
+    return Promise.all(missing.map(m => ensure(m[0], () => window.__alloPromoteModule && window.__alloPromoteModule(m[0]), m[1])
+      .catch(error => { if (!m[2]) throw error; }))).then(done, fail);
+  };
   let __alloHostHandlersCache = null;
+  // React nulls a synthetic event's currentTarget after dispatch; keep it for a delayed call.
+  const _alloKeepEvent = a => (a && a.nativeEvent && a.currentTarget) ? Object.assign(Object.create(a), { currentTarget: a.currentTarget, target: a.target }) : a;
+  const _alloHostHandlersPending = new Proxy({}, { get: (_, key) => (...args) => {
+    const kept = args.map(_alloKeepEvent);
+    return _alloAwaitModules([['HostHandlers', 'HostHandlers']], 'this tool').then(() => _alloHostHandlers()[key](...kept));
+  } });
   const _alloHostHandlers = () => {
     if (__alloHostHandlersCache) return __alloHostHandlersCache;
     const create = window.AlloModules && window.AlloModules.HostHandlers;
-    if (typeof create !== 'function') {
-      try { if (window.__alloModuleRegistry && window.__alloModuleRegistry.HostHandlers && window.__alloModuleRegistry.HostHandlers.status === 'failed' && typeof window.__alloRetryModule === 'function') window.__alloRetryModule('HostHandlers'); } catch (_) {}
-      throw new Error('[HostHandlers] module not loaded - reload the page');
-    }
+    if (typeof create !== 'function') return _alloHostHandlersPending;
     __alloHostHandlersCache = create(__alloHostDeps);
     return __alloHostHandlersCache;
   };
-  // Non-fatal variant for HOUSEKEEPING calls.
-  //
-  // A student on a slow phone crashed with "[HostHandlers] module not loaded"
-  // while joining a live session: a workspace reset ran before the module had
-  // registered on window, the accessor above threw, and the throw escaped to
-  // the ErrorBoundary — a blank fatal screen instead of a lesson. The module
-  // itself was fine (the loader retries and it was registered by the time the
-  // report was written); the call simply landed inside the load window.
-  //
-  // Throwing is right for a handler the user explicitly invoked: failing loudly
-  // beats a dead button. It is wrong for cleanup the user never asked for, where
-  // the only honest outcome is "skip it". So this returns null instead, and the
-  // housekeeping callers below no-op rather than take the app down. It does NOT
-  // suppress the load failure: the retry the accessor kicks off still runs, and
-  // a genuinely missing module still throws at the first real handler call.
+  // Non-fatal variant for housekeeping the user never asked for: skip (null) until
+  // the module lands, so a reset inside the load window cannot take the app down.
   const _alloHostHandlersOptional = () => {
+    if (typeof (window.AlloModules && window.AlloModules.HostHandlers) !== 'function') { try { window.__alloPromoteModule?.('HostHandlers'); } catch (_) {} return null; }
     try { return _alloHostHandlers(); } catch (_) { return null; }
   };
     const lastHandleSpeakRef = useRef(null);
@@ -11946,12 +11977,14 @@ const AlloFlowContent = () => {
   useEffect(() => {
     let cancelled = false;
     let initInFlight = null;
+    // The /app/ web shell has no vendor/ copy yet; the site root serves these files.
+    const _vendorUrl = url => (url.startsWith('./vendor/') && /^\/app\//.test(window.location.pathname) && !/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) ? url.slice(1) : url;
     const loadScriptSequence = async (urls, globalCheck) => {
         if (typeof window !== 'undefined' && window[globalCheck]) return window[globalCheck];
         for (const url of urls) {
             try {
                 const loaded = await _alloLoadScriptGlobal(
-                    url,
+                    _vendorUrl(url),
                     () => window[globalCheck],
                     {
                       cacheKey: globalCheck,
@@ -11978,17 +12011,21 @@ const AlloFlowContent = () => {
                 await Promise.all([
                     loadScriptSequence([
                         "./vendor/lz-string-1.4.4.min.js",
+                        "https://alloflow-cdn.pages.dev/vendor/lz-string-1.4.4.min.js",
                         "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
                         "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
                         "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js"
                     ], "LZString"),
                     loadScriptSequence([
                         "./vendor/idb-keyval-6.2.0.umd.min.js",
+                        "https://alloflow-cdn.pages.dev/vendor/idb-keyval-6.2.0.umd.min.js",
                         "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.0/umd.min.js",
                         "https://cdn.jsdelivr.net/npm/idb-keyval@6.2.0/dist/umd.js",
                         "https://unpkg.com/idb-keyval@6.2.0/dist/umd.js"
                     ], "idbKeyval")
                 ]);
+                if (cancelled) return false;
+                await _alloAwaitModules([['UtilsPure', 'UtilsPure']], 'saved work storage');
                 if (cancelled) return false;
                 setLzLoaded(true);
                 setIsStorageDisabled(false);
@@ -12267,7 +12304,7 @@ const AlloFlowContent = () => {
   const setStandardDeckLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'standardDeckLang', value: v });
   const setTargetTranslationLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'targetTranslationLang', value: v });
   const supportDraftSessionRef = useRef(null);
-  const requestReadingSupportTransition = run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run) : run();
+  const requestReadingSupportTransition = run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run, generationDisplayStateRef.current?.resource || null) : run();
   useEffect(() => {
       const protect = event => supportDraftSessionRef.current?.protectUnload(event);
       window.addEventListener('beforeunload', protect);
@@ -13093,11 +13130,13 @@ const AlloFlowContent = () => {
   const handleWizardStandardLookup = async (grade, goal, region) => {
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleWizardStandardLookup === "function") return _m.handleWizardStandardLookup(grade, goal, region, _alloPhaseOHandlersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => handleWizardStandardLookup(grade, goal, region));
     throw new Error("[handleWizardStandardLookup] PhaseOHandlers module not loaded - reload the page");
   };
   const handleWizardComplete = (data) => {
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleWizardComplete === "function") return _m.handleWizardComplete(data, _alloPhaseOHandlersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'Quick Start').then(() => handleWizardComplete(data), () => {});
     throw new Error("[handleWizardComplete] PhaseOHandlers module not loaded - reload the page");
   };
   const [showDice, setShowDice] = useState(false);
@@ -13216,6 +13255,8 @@ const AlloFlowContent = () => {
   generationDisplayStateRef.current.resource = generatedContent;
   const setGeneratedContent = useCallback((nextContent, generationOwner = null) => {
       if (generationOwner && generationOwner !== generationViewOwnerRef.current) return;
+      const replayBase = supportDraftSessionRef.current?.replayBase?.() || null;
+      if (replayBase && nextContent && typeof nextContent === 'object') return setGeneratedContent(current => _alloCarrySavedSupports(replayBase, current, nextContent), generationOwner);
       const displayed = generationDisplayStateRef.current.resource;
       if (typeof nextContent !== 'function' && supportDraftSessionRef.current?.blocked()
           && (nextContent?.id !== displayed?.id || nextContent?._artifactInstanceId !== displayed?._artifactInstanceId || nextContent?.type !== displayed?.type || nextContent?.data !== displayed?.data)) {
@@ -13356,6 +13397,7 @@ const AlloFlowContent = () => {
         warnLog,
         handleScoreUpdate,
       });
+    if (!_m) return _alloAwaitModules([['MathHelpersModule', 'MathHelpers']], 'this tool').then(() => handleCheckMathWork(resourceId, problemIdx, question, correctAnswer, steps, studentWork));
     throw new Error("[handleCheckMathWork] MathHelpers module not loaded - reload the page");
   };
   const handleResetMathCheck = (resourceId, problemIdx) => {
@@ -13381,6 +13423,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       callGemini,
       warnLog,
     });
+  if (!_m) return _alloAwaitModules([['MathHelpersModule', 'MathHelpers']], 'this tool').then(() => handleGetMathHint(resourceId, problemIdx, question, correctAnswer, steps));
   throw new Error("[handleGetMathHint] MathHelpers module not loaded - reload the page");
 };
   const handleResetScaffolds = (...__a) => _alloHostHandlers().handleResetScaffolds(...__a);
@@ -14116,8 +14159,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // A stalled script request fires neither load nor error in some embedded
       // browsers. Bound that state so the registry can expose Retry instead of
       // leaving upload/audit UI pending forever.
-      var expireModuleLoad = function() {
+      var watchdogRearmed = false;
+      var expireModuleLoad = function(armedAt) {
         if (entry.loadGeneration === loadGeneration && entry.status === 'pending' && !(window.AlloModules && window.AlloModules[name])) {
+          if (_alloModuleWatchdogShouldWait(armedAt, Date.now(), typeof document !== 'undefined' && document.hidden, watchdogRearmed)) {
+            watchdogRearmed = true;
+            moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000, Date.now());
+            return;
+          }
           console.error('[CDN-TIMEOUT] ' + name + ' did not settle within 30 seconds');
           cleanupModuleListener();
           try { s.onload = null; s.onerror = null; s.remove(); } catch (_) {}
@@ -14129,7 +14178,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           __alloSetModuleStatus(name, 'failed');
         }
       };
-      var moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000);
+      var moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000, Date.now());
       var clearModuleLoadWatchdog = function() {
         if (moduleLoadWatchdog) { clearTimeout(moduleLoadWatchdog); moduleLoadWatchdog = null; }
       };
@@ -14139,7 +14188,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         if (entry.loadGeneration !== loadGeneration || entry.fallbackGeneration === loadGeneration) return;
         entry.fallbackGeneration = loadGeneration;
         clearModuleLoadWatchdog();
-        moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000);
+        moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000, Date.now());
         var fb = moduleFallbackUrl(originalUrl, url);
         console.log('[CDN-FALLBACK] URL:', fb);
         var s2 = document.createElement('script'); s2.src = fb;
@@ -14217,6 +14266,35 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         return retried + (window.__alloRetryModule(name) ? 1 : 0);
       }, 0);
     };
+    // A click promotes a queued module past the parked pump, or retries a failed one.
+    window.__alloPromoteModule = function(name) {
+      if (__alloModuleRegistered(name)) return true;
+      var queued = __alloDeferredModuleNames[name];
+      if (queued) { loadModule(name, queued.url); return true; }
+      var entry = __alloModuleRegistry[name];
+      return entry && entry.status === 'failed' ? window.__alloRetryModule(name) : !!entry;
+    };
+    // A #sel-hub/<tool> link clicked before the SEL Hub lands would open a blank tab
+    // (target=_blank); hold it, promote the module, then replay it through its handler.
+    var pendingSelLink = null;
+    var replaySelLink = function() {
+      var links = window.SelHub && window.SelHub.toolLinks;
+      if (!links || !pendingSelLink) return;
+      window.removeEventListener('alloflow:module-registry-changed', replaySelLink);
+      var link = pendingSelLink;
+      pendingSelLink = null;
+      var id = links.parse(link.href);
+      if (id !== null) links.open(id, link.label, links.station(link.href) || '');
+    };
+    document.addEventListener('click', function(event) {
+      var a = event.target && event.target.closest ? event.target.closest('a[href^="#sel-hub"]') : null;
+      if (!a || (window.SelHub && window.SelHub.toolLinks)) return;
+      event.preventDefault();
+      if (!pendingSelLink) window.addEventListener('alloflow:module-registry-changed', replaySelLink);
+      pendingSelLink = { href: a.getAttribute('href'), label: (a.textContent || '').trim().slice(0, 80) };
+      try { addToastRef.current && addToastRef.current('Opening ' + (pendingSelLink.label || 'the SEL Hub') + '…', 'info'); } catch (_) {}
+      window.__alloPromoteModule('SelHub');
+    }, true);
     // ── Error Reporter — loads FIRST so it can capture errors from every other
     //    module's load + runtime. Surfaces a hidden-by-default red badge that
     //    only appears after an error is captured, then opens a panel with a
@@ -14289,7 +14367,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=1300a2da3');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=1300a2da3');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=f71bd7eb');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=ddcd2d68');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=1300a2da3');
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=1300a2da3');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=1300a2da3');
@@ -14297,8 +14375,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=1300a2da3');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=1300a2da3');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=47162871');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a3fb7ab7');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6e491279');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=64d8d4d7');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=56921863');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=1300a2da3');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=1300a2da3');
     loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=1300a2da3');
@@ -14404,7 +14482,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=1300a2da3');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=1300a2da3');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=3958c542');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=3a2c2b4c');
     window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=1300a2da3'); };
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=1300a2da3');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=1300a2da3');
@@ -14472,7 +14550,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           finish(error);
         }, 65000);
         try {
-          var loader = window[loaderName];
+          var loader = typeof loaderName === 'function' ? loaderName : window[loaderName];
           if (typeof loader !== 'function') throw new Error('Lazy loader ' + loaderName + ' is unavailable.');
           loader();
           check();
@@ -14511,9 +14589,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=1300a2da3'); }; })();
     window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=1300a2da3'); }; })();
     window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=1300a2da3'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=6d8b3d86'); }; })();
-    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=c7e326f0'); }; })();
-    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=341e486b'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=5248c674'); }; })();
+    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=0beef268'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=fd2a2df6'); }; })();
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=5f13b334'); }; })();
     window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=2ce0737b'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
@@ -14712,20 +14790,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=1300a2da3');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=1300a2da3');
     loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=1300a2da3');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=78fd1c76');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=f62ec641');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=1300a2da3');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=1300a2da3');
     loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=1300a2da3');
     loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=1300a2da3');
     loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=1300a2da3');
     loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=1300a2da3');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=83d72094');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=d8e4227b');
     loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=1300a2da3');
     loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=1300a2da3');
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=1300a2da3');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=1300a2da3');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=1300a2da3');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0614d6ba'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=86029309'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=1300a2da3');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=1300a2da3');
@@ -14733,7 +14811,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=1300a2da3');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=1300a2da3');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=1300a2da3');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=043e2b05'); }; })();
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=8178e750'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=1300a2da3');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=1300a2da3');
@@ -14741,7 +14819,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=50d53486');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=d2ca5eb2');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=1300a2da3');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=1300a2da3');
@@ -16579,7 +16657,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       try { safeSetItem('allo_word_sounds_confusion', JSON.stringify(wordSoundsConfusionPatterns)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [wordSoundsConfusionPatterns, lzLoaded]);
   const handleScoreUpdate = useCallback((currentScore, activityName = "General Activity", resourceId = null) => {
-      if (currentScore <= 0) return;
+      if (currentScore <= 0) return 0;
       let pointsToAward = currentScore;
       let newMaxScore = currentScore;
       if (resourceId) {
@@ -16597,8 +16675,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'puff', confetti: true } })); } catch (_) {}
               }
           } else {
-              pointsToAward = 0;
-              return;
+              return 0;
           }
       }
       if (pointsToAward > 0) {
@@ -16613,6 +16690,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
              addToast(t('toasts.xp_gain', { score: pointsToAward }), "success");
           }
       }
+      return pointsToAward > 0 ? pointsToAward : 0;
   }, [completedActivities, t]);
   const recordGameCompletion = useCallback((...__a) => _alloHostHandlers().recordGameCompletion(...__a), []);
   const closeBingo = useCallback(() => setIsBingoGame(false), []);
@@ -16630,6 +16708,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
   const [sessionData, setSessionData] = useState(null);
+  useEffect(() => { const r = typeof window !== 'undefined' ? window.__alloCriterionRollup : null; if (!r || (activeSessionCode && r.sessionCode === String(activeSessionCode))) return; window.__alloCriterionRollup = null; try { window.dispatchEvent(new CustomEvent('alloflow:criterion-rollup')); } catch (_) {} }, [activeSessionCode]);
   const requestSessionManagementModule = useCallback(() => {
     try {
       const entry = window.__alloModuleRegistry && window.__alloModuleRegistry.SessionModal;
@@ -17045,6 +17124,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isTimelineGame, setIsTimelineGame] = useState(false);
   const [isSyntaxGame, setIsSyntaxGame] = useState(false);
   const [isEditingLessonPlan, setIsEditingLessonPlan] = useState(false);
+  // Edit mode is per plan.
+  React.useEffect(() => { setIsEditingLessonPlan(false); }, [generatedContent?.id]);
   const [outlineTranslationMode, setOutlineTranslationMode] = useState('bilingual');
   const [stickers, setStickers] = useState([]);
 
@@ -19045,7 +19126,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       factionResourceMode,
                       // Stamps the lesson this story belongs to, so a later lesson
                       // does not offer it back as "Resume Adventure".
-                      lessonKey: adventureLessonKeyRef.current
+                      lessonKey: adventureLessonKeyRef.current,
+                      learnerKey: _alloAdventureLessonKey([], studentNickname)
                   }
               };
               if (Array.isArray(sanitizedState.inventory)) {
@@ -19063,6 +19145,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               try {
                   await storageDB.set('allo_adventure_save', sanitizedState);
                   setHasSavedAdventure(true);
+                  setSavedAdventureLessonKey(String(sanitizedState._adventureConfig.lessonKey || ''));
               } catch (e) {
                   warnLog("Adventure Save Error", e);
               }
@@ -19074,7 +19157,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       adventureChanceMode, adventureFreeResponseEnabled, adventureTypingPaceEnabled, adventureFluencyEnabled, adventureConsistentCharacters, adventureProtagonistAge,
       isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle,
       adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode,
-      isTeacherMode, showStudentEntry, activeSessionCode]);
+      isTeacherMode, showStudentEntry, activeSessionCode, studentNickname]);
   const [isGateOpen, setIsGateOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState(null);
   const onGateUnlock = () => {
@@ -21023,7 +21106,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                    hasAutoLayoutRunRef.current = true;
               }
           } else {
-              if (savedEdges && Array.isArray(savedEdges) && savedEdges.length > 0) {
+              if (Array.isArray(savedEdges) && (savedEdges.length > 0 || Array.isArray(savedNodes))) {
                   setConceptMapEdges(savedEdges);
               } else {
                   setConceptMapEdges(standardEdges);
@@ -21035,9 +21118,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           }
       }
   }, [organizerHydrationKey]);
+  const organizerLayoutPendingRef = useRef({ editedId: null, timer: null, write: null });
+  const markOrganizerLayoutEdited = () => { if (isTeacherMode && generatedContent?.type === 'outline') organizerLayoutPendingRef.current.editedId = generatedContent.id; };
+  useEffect(() => {
+      const pending = organizerLayoutPendingRef.current, id = pending.editedId;
+      if (draggedNodeId) { clearTimeout(pending.timer); return; }
+      if (id == null || !isTeacherMode || !isInteractiveMap || isChallengeActive || String(generatedContent?.id) !== String(id)) return;
+      const nodes = conceptMapNodes, edges = conceptMapEdges;
+      clearTimeout(pending.timer);
+      pending.write = () => {
+          pending.write = null; pending.editedId = null;
+          onUpdateResource(id, item => !item?.data || item.data.challenge || !Array.isArray(nodes) || !nodes.length || JSON.stringify([item.data.nodes, item.data.edges]) === JSON.stringify([nodes, edges]) ? item : { ...item, data: { ...item.data, nodes, edges } });
+      };
+      pending.timer = setTimeout(() => pending.write && pending.write(), 600);
+  }, [conceptMapNodes, conceptMapEdges, draggedNodeId, isTeacherMode, isInteractiveMap, isChallengeActive, generatedContent?.id]);
+  useEffect(() => () => { const pending = organizerLayoutPendingRef.current; clearTimeout(pending.timer); if (pending.write) pending.write(); pending.editedId = null; }, [generatedContent?.id, isInteractiveMap, isTeacherMode]);
   const handleNodeMouseDown = (e, nodeId) => {
       e.stopPropagation();
       e.preventDefault();
+      markOrganizerLayoutEdited();
       const node = conceptMapNodes.find(n => n.id === nodeId);
       if (!node) return;
       setDragOffset({
@@ -21079,9 +21178,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setDraggedNodeId(null);
   }, [draggedNodeId]);
-  const handleNodeClick = (...__a) => _alloHostHandlers().handleNodeClick(...__a);
+  const handleNodeClick = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleNodeClick(...__a); };
   const handleDeleteNode = (nodeId) => {
       setConfirmDialog({ message: t('concept_map.confirm_delete_node') || 'Delete this node?', onConfirm: () => {
+          markOrganizerLayoutEdited();
           setConceptMapNodes(prev => prev.filter(n => n.id !== nodeId));
           setConceptMapEdges(prev => prev.filter(e => e.fromId !== nodeId && e.toId !== nodeId));
           if (connectingSourceId === nodeId) setConnectingSourceId(null);
@@ -21089,14 +21189,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       } });
   };
   const [nodeInputText, setNodeInputText] = useState('');
-  const handleAddManualNode = (...__a) => _alloHostHandlers().handleAddManualNode(...__a);
+  const handleAddManualNode = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleAddManualNode(...__a); };
   const handleDeleteEdge = (edgeId) => {
+      markOrganizerLayoutEdited();
       setConceptMapEdges(prev => prev.filter(e => e.id !== edgeId));
       if (playSound) playSound('click');
   };
   const handleClearEdges = () => {
       if (conceptMapEdges.length === 0) return;
       setConfirmDialog({ message: t('concept_map.confirm_clear_edges') || 'Clear all connections?', onConfirm: () => {
+          markOrganizerLayoutEdited();
           setConceptMapEdges([]);
           addToast(t('toasts.connections_cleared') || "Connections cleared.", "info");
       } });
@@ -21136,7 +21238,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           [category]: prev[category].filter((_, i) => i !== index)
       }));
   };
-  const handleResetLayout = (...__a) => _alloHostHandlers().handleResetLayout(...__a);
+  const handleResetLayout = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleResetLayout(...__a); };
   const parseFlowChartData = (...__a) => _alloHostHandlers().parseFlowChartData(...__a);
 
 
@@ -21263,7 +21365,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       mapContainerRef,
       addToast,
       handleAddManualNode,
-      handleAutoLayout,
+      handleAutoLayout: (...__a) => { markOrganizerLayoutEdited(); return handleAutoLayout(...__a); },
       handleCheckChallengeRouter,
       handleClearEdges,
       handleCreateChallenge,
@@ -21278,6 +21380,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       handleToggleIsMapLocked,
       setConceptMapNodes,
       handleConceptSpacePersist,
+      organizerLearnerWork: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.organizerWork || null),
       t,
       sanitizeTruncatedCitations,
       warnLog,
@@ -21517,6 +21620,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       : '';
   const canvasRecoveryCurrentIdRef = useRef(_alloStoredLearningWebWorkspaceId || ALLO_WORKSPACE_RECOVERY.newId());
   const canvasRecoveryBootCheckedRef = useRef(false);
+  const studentEntryRecoveryProtectedRef = useRef(false);
   useEffect(() => {
       if (!isCanvas) safeSetItem(_alloLearningWebWorkspaceKey, canvasRecoveryCurrentIdRef.current);
   }, [isCanvas]);
@@ -23147,8 +23251,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
     return () => { unsubscribe(); if (authRetryTimer) clearTimeout(authRetryTimer); };
   }, []);
+  const bootHistoryHydrationRef = useRef(null);
   useEffect(() => {
-    const onFirestoreSyncUpgraded = () => setHistory(prev => _alloRehydrateShimHistory(prev));
+    const onFirestoreSyncUpgraded = () => _setHistory(prev => {
+        const hydrated = normalizeArtifactInstanceIds(_alloRehydrateShimHistory(prev));
+        if (hydrated !== prev) bootHistoryHydrationRef.current = { previous: prev, current: hydrated };
+        return hydrated;
+    });
     window.addEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
     return () => window.removeEventListener('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded);
   }, []);
@@ -23158,6 +23267,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const isCanvasStudentEntry = () => _alloHasAnyStudentEntry()
         || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
     const protectCanvasStudentEntry = () => {
+        if (studentEntryRecoveryProtectedRef.current) { setIsHistoryLoaded(true); return; }
+        studentEntryRecoveryProtectedRef.current = true;
         canvasRecoveryBootCheckedRef.current = true;
         isStudentWorkLoaded.current = false;
         setGlobalPoints(0);
@@ -23167,7 +23278,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         canvasRecoveryPendingSaveCountRef.current = 0;
         canvasRecoveryStoreRef.current = ALLO_WORKSPACE_RECOVERY.emptyStore();
         canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
-        clearCanvasWorkspaceState();
+        if (!Array.isArray(receivedDeliveryResources) || !receivedDeliveryResources.length) clearCanvasWorkspaceState();
         setCanvasRecoveryStore(ALLO_WORKSPACE_RECOVERY.emptyStore());
         setCanvasRecoveryStoreAuthoritative(false);
         setCanvasRecoveryDecisionMade(true);
@@ -23712,12 +23823,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [standardMode, setStandardMode] = useState('ai');
   const [checkAccuracyWithSearch, setCheckAccuracyWithSearch] = useState(true);
   const [selectedDiscrepancies, setSelectedDiscrepancies] = useState(new Set());
+  const discrepancySelectionRef = useRef({ id: null, list: [] });
   useEffect(() => {
-    if (activeView === 'analysis' && generatedContent?.type === 'analysis' && generatedContent?.data?.accuracy?.discrepancies) {
-        const indices = generatedContent?.data.accuracy.discrepancies.map((_, i) => i);
-        setSelectedDiscrepancies(new Set(indices));
+    if (activeView === 'analysis' && generatedContent?.type === 'analysis' && Array.isArray(generatedContent?.data?.accuracy?.discrepancies)) {
+        const list = generatedContent.data.accuracy.discrepancies;
+        const prior = discrepancySelectionRef.current;
+        const sameResource = prior.id === generatedContent.id;
+        discrepancySelectionRef.current = { id: generatedContent.id, list };
+        setSelectedDiscrepancies(prev => new Set(list.map((_, i) => i).filter(i => !sameResource || prior.list[i] !== list[i] || prev.has(i))));
     }
-  }, [generatedContent, activeView]);
+  }, [generatedContent?.id, generatedContent?.data?.accuracy?.discrepancies, activeView]);
   const toggleDiscrepancySelection = (index) => {
     setSelectedDiscrepancies(prev => {
         const next = new Set(prev);
@@ -23730,9 +23845,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     });
   };
   const [selectedGrammarErrors, setSelectedGrammarErrors] = useState(new Set());
+  const grammarSelectionRef = useRef({ id: null, notes: [] });
   useEffect(() => {
     if (activeView !== 'analysis' || generatedContent?.type !== 'analysis') return;
     const notes = Array.isArray(generatedContent.data?.grammar) ? generatedContent.data.grammar : [];
+    const prior = grammarSelectionRef.current;
+    const sameResource = prior.id === generatedContent.id;
+    grammarSelectionRef.current = { id: generatedContent.id, notes };
     const indices = [];
     notes.forEach((note, index) => {
       if (typeof note !== 'string' || !note.trim() || /^✓ (FIXED|DISMISSED):/.test(note)) return;
@@ -23741,7 +23860,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           || /^(none|no errors|no issues|no grammar|no spelling|none detected)/i.test(clean)) return;
       indices.push(index);
     });
-    setSelectedGrammarErrors(new Set(indices));
+    setSelectedGrammarErrors(prev => new Set(indices.filter(index => !sameResource || prior.notes[index] !== notes[index] || prev.has(index))));
   }, [generatedContent?.id, generatedContent?.data?.grammar, activeView]);
   const toggleGrammarErrorSelection = (index) => {
     setSelectedGrammarErrors(prev => {
@@ -23993,6 +24112,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleFixGrammarErrors = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.handleFixGrammarErrors === "function") return _m.handleFixGrammarErrors(_alloPhaseKHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => handleFixGrammarErrors());
     throw new Error("[handleFixGrammarErrors] PhaseKHelpers module not loaded - reload the page");
   };
   const [aiStandardRegion, setAiStandardRegion] = useState('');
@@ -24304,7 +24424,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showDirectionsComposer, setShowDirectionsComposer] = useState(false);
   const directionsPreviewHtml = useMemo(() => sanitizeHtml(_alloParsePreviewMarkdown((mbDirectionsDraft?.due ? '**Due:** ' + mbDirectionsDraft.due + '\n\n' : '') + (mbDirectionsDraft?.body || ''))), [mbDirectionsDraft?.body, mbDirectionsDraft?.due]);
   const [showDirectionsChoicePreview, setShowDirectionsChoicePreview] = useState(false);
-  const [directionsChoiceSelection, setDirectionsChoiceSelection] = useState({});
   const [directionsChoiceOrigin, setDirectionsChoiceOrigin] = useState(null);
   useEffect(() => {
       if (!showDirectionsComposer) setShowDirectionsChoicePreview(false);
@@ -24486,6 +24605,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const mbStudentCursorRef = useRef(0);
   const mbStudentConnectedRef = useRef(false);
   const [mbStudentStalled, setMbStudentStalled] = useState(false);
+  const [studentQuizCovering, setStudentQuizCovering] = useState(false);
+  const studentConnectionActionRef = useRef(null);
+  const studentConnectionAction = useRef((action) => { if (typeof studentConnectionActionRef.current === 'function') studentConnectionActionRef.current(action); }).current;
+  studentConnectionActionRef.current = (action) => {
+      if (action === 'dismiss') { setDismissedLiveHostWarningKey(liveHostWarningKey); return; }
+      if (['retrying', 'failed', 'access-required'].includes(liveSessionConnectionState.status)) retryLiveSessionConnection();
+      else if (mbStudentStalled) mbPollNowRef.current?.();
+  };
   // Phase 2 return path (student side): when connected to a session, report homework-goal
   // progress for every directions item this device has STARTED — once per snapshot
   // (re-sends only when doneCount changes; the marker persists in the progress map).
@@ -24505,11 +24632,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   const prog = directionsProgress[it.id];
                   if (!prog || !prog.startedAt) continue; // never started here — nothing honest to report
                   const norm = _alloNormalizeDirectionsData(it.data);
-                  if (!norm.objectives.length) continue;
+                  const chosen = norm.choiceBoard && prog.choice ? norm.choiceBoard.choices.find(c => c.resourceRef === prog.choice) : null;
+                  if (!norm.objectives.length && !chosen) continue;
                   const evald = _alloEvaluateObjectives(norm.objectives, _alloObjectiveSignals, prog);
                   const doneCount = evald.filter(o => o.done).length;
                   const sent = prog.evidenceSent || {};
-                  if (sent.code === mbStudent.code && sent.doneCount === doneCount) continue;
+                  if (sent.code === mbStudent.code && sent.doneCount === doneCount && (sent.choice || '') === (chosen ? chosen.resourceRef : '')) continue;
                   const payload = {
                       kind: 'hw-evidence',
                       uid: mbStudent.uid,
@@ -24523,6 +24651,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       // from the student's own checkbox. Both are formative; only one is
                       // the student's word, and the teacher panel should not blur them.
                       objectives: evald.map(o => ({ label: String(o.label).slice(0, 80), kind: o.kind, done: o.done, confirmed: !!o.confirmed })),
+                      ...(chosen ? { choice: { resourceId: chosen.resourceRef, label: String(chosen.label).slice(0, 120) } } : {}),
                       reportedAt: new Date().toISOString(),
                   };
                   const dc = mbRtcRef.current?.dc;
@@ -24533,7 +24662,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   if (!delivered) {
                       await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: payload });
                   }
-                  setDirectionsProgress(prev => ({ ...prev, [it.id]: { ...(prev[it.id] || {}), evidenceSent: { code: mbStudent.code, doneCount } } }));
+                  setDirectionsProgress(prev => ({ ...prev, [it.id]: { ...(prev[it.id] || {}), evidenceSent: { code: mbStudent.code, doneCount, choice: chosen ? chosen.resourceRef : '' } } }));
               }
           } catch (e) { warnLog('Homework evidence report failed (will retry on next change)', e); }
       }, 1500);
@@ -24919,7 +25048,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       onPackRefError: (prefErr) => warnLog('packRef publish failed:', prefErr?.message),
                       trace: traceSession,
                   });
-                  return transport.publishResources(history);
+                  return transport.publishResources(_alloWithoutTeacherReviewCopies(history));
               }
               traceSession('sync:transport-unavailable', { channel: 'mailbox' });
               throw new Error('SessionTransport module is not loaded yet');
@@ -24961,6 +25090,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   // students' devices send no flag at all; treat that as unconfirmed
                   // rather than silently promoting it to device-observed.
                   objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done), confirmed: !!(o && o.confirmed) })),
+                  ...(v.choice && typeof v.choice === 'object' && v.choice.label ? { choice: { resourceId: String(v.choice.resourceId || '').slice(0, 120), label: String(v.choice.label).slice(0, 120) } } : {}),
                   at: Date.now(),
               },
           }));
@@ -25117,16 +25247,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           // silently substitute a surviving subset after History has changed.
           if (requestedIds.some(id => !resourcesById.has(id))) return [];
           const selected = requestedIds.map(id => resourcesById.get(id));
+          const directionRefs = new Set();
+          selected.filter(item => item.type === 'directions').forEach(item => {
+              const directions = _alloNormalizeDirectionsData(item.data);
+              directions.objectives.concat(directions.choiceBoard ? directions.choiceBoard.choices : []).forEach(entry => { if (entry && entry.resourceRef) directionRefs.add(String(entry.resourceRef)); });
+          });
+          const withDirectionRefs = selected.concat(Array.from(directionRefs).filter(id => resourcesById.has(id) && !requestedIds.includes(id)).map(id => resourcesById.get(id)));
           // Pair after explicit selection so its matching original and curated
           // word help travel too. Search only the student-safe lesson resources.
           const readingContract = window.AlloModules?.InstructionalContext;
           const paired = readingContract?.ensureReadingSourcePairs
-              ? readingContract.ensureReadingSourcePairs(selected, { history: resourceCandidates }) : selected;
+              ? readingContract.ensureReadingSourcePairs(withDirectionRefs, { history: resourceCandidates }) : withDirectionRefs;
           const selectedIds = new Set(selected.map(item => String(item.id)));
-          // Keep the requested resource first for the assignment title/opening.
-          return selected.concat(paired.filter(item => !selectedIds.has(String(item.id))));
+          // Teacher's order, except a preserved original opens before its adapted companion.
+          const ordered = selected.concat(paired.filter(item => !selectedIds.has(String(item.id))));
+          return readingContract?.orderOriginalsBeforeCompanions ? readingContract.orderOriginalsBeforeCompanions(ordered) : ordered;
       }
-      return resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+      const all = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+      return window.AlloModules?.InstructionalContext?.orderOriginalsBeforeCompanions?.(all) || all;
   }, [generatedContent, history]);
   // Shared packet builder for full packs and explicitly selected follow-up resources.
   // Packet shaping is CDN-owned; the privacy-sensitive resource serializer
@@ -29510,6 +29648,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleBatchGenerateForRoster = async (resourceTypes = ['simplified']) => {
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
     if (_m && typeof _m.handleBatchGenerateForRoster === "function") return _m.handleBatchGenerateForRoster(resourceTypes, _alloCmapHandlersDeps());
+    if (!_m) return _alloAwaitModules([['CmapHandlersModule', 'CmapHandlers']], 'this tool').then(() => handleBatchGenerateForRoster(resourceTypes));
     throw new Error("[handleBatchGenerateForRoster] CmapHandlers module not loaded - reload the page");
   };
   const handleSyncRosterToSession = async (...__a) => _alloHostHandlers().handleSyncRosterToSession(...__a);
@@ -30053,6 +30192,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
     if (_m && typeof _m.handleGenerateMath === "function") return _m.handleGenerateMath(inputOverride, switchView, modeOverride, _alloGenerationHelpersDeps());
+    if (!_m) return _alloAwaitModules([['GenerationHelpersModule', 'GenerationHelpers']], 'this tool').then(() => handleGenerateMath(inputOverride, switchView, modeOverride));
     throw new Error("[handleGenerateMath] GenerationHelpers module not loaded - reload the page");
   };
   const handleMathEdit = async (editInstruction, viewResourceId = null) => {
@@ -30086,6 +30226,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           clearMathResourceState(resourceId, clearActiveAssessment, getMathStoredProblemKeys(generatedContent));
         },
       });
+    if (!_m) return _alloAwaitModules([['MathHelpersModule', 'MathHelpers']], 'this tool').then(() => handleMathEdit(editInstruction, viewResourceId));
     throw new Error("[handleMathEdit] MathHelpers module not loaded - reload the page");
   };
   const handleGenerateSimilar = async () => {
@@ -30100,6 +30241,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         warnLog,
         handleGenerateMath,
       });
+    if (!_m) return _alloAwaitModules([['MathHelpersModule', 'MathHelpers']], 'this tool').then(() => handleGenerateSimilar());
     throw new Error("[handleGenerateSimilar] MathHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -30228,9 +30370,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Export and audio libraries are intentionally loaded at the first related
   // interaction. Keeping them off the cold path avoids startup parsing and
   // network contention without changing any export or playback capability.
+  const _findRelatedHistoryItem = (list, type, active) => {
+    const unitOf = item => { const unit = item && (item.unitId || item.config?.unitId); return unit && unit !== 'all' && unit !== 'uncategorized' ? unit : null; };
+    const familyOf = item => (item && (item.sourceFamilyId || item.config?.sourceFamilyId)) || null;
+    const items = (Array.isArray(list) ? list : []).filter(item => item && item.type === type).reverse();
+    if (!active) return items[0] || null;
+    const same = items.find(item => item.id != null && item.id === active.id);
+    if (same) return same;
+    const unit = unitOf(active), family = familyOf(active);
+    const inUnit = items.filter(item => unitOf(item) === unit);
+    return (family && (inUnit.find(item => familyOf(item) === family) || items.find(item => familyOf(item) === family))) || inUnit[0] || items[0] || null;
+  };
   const latestGlossary = React.useMemo(() => {
     if (!Array.isArray(history)) return [];
-    const item = history.slice().reverse().find(item => item && item.type === 'glossary');
+    const item = _findRelatedHistoryItem(history, 'glossary', generatedContent);
     if (!item) return [];
     if (Array.isArray(item.data)) return item.data;
     if (typeof item.data === 'string') {
@@ -30242,7 +30395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }
     }
     return [];
-  }, [history]);
+  }, [history, generatedContent?.id, generatedContent?.unitId, generatedContent?.sourceFamilyId, generatedContent?.config?.unitId, generatedContent?.config?.sourceFamilyId]);
   const isClozeComplete = React.useMemo(() => {
       if (!Array.isArray(latestGlossary)) return false;
       const activeTerms = latestGlossary.filter(item => item.isSelected !== false);
@@ -30784,6 +30937,7 @@ const parseTaggedContent = (text) => {
   const toggleFluencyRecording = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.toggleFluencyRecording === "function") return _m.toggleFluencyRecording(_alloPhaseKHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => toggleFluencyRecording());
     throw new Error("[toggleFluencyRecording] PhaseKHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -31038,7 +31192,7 @@ const parseTaggedContent = (text) => {
           glossaryHealthCheckTimerRef.current = null;
           if (!active || glossaryHealthCheckIdRef.current === key) return;
           const state = glossaryLiveRef.current;
-          const sourceText = [...state.history].reverse().find(item => item?.type === 'analysis')?.data?.originalText || state.inputText || '';
+          const sourceText = _findRelatedHistoryItem(state.history, 'analysis', state.resource)?.data?.originalText || state.inputText || '';
           const report = await runGlossaryHealthCheck(state.resource.data, sourceText);
           if (!active || !report?.summary || report.error) return;
           glossaryHealthFollowUpTimerRef.current = setTimeout(() => {
@@ -31080,6 +31234,7 @@ const parseTaggedContent = (text) => {
   const translateResourceItem = async (item, targetLanguage) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.translateResourceItem === "function") return _m.translateResourceItem(item, targetLanguage, _alloPhaseKHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => translateResourceItem(item, targetLanguage));
     throw new Error("[translateResourceItem] PhaseKHelpers module not loaded - reload the page");
   };
   const handleTranslateAction = async (...__a) => _alloHostHandlers().handleTranslateAction(...__a);
@@ -31729,12 +31884,14 @@ const parseTaggedContent = (text) => {
   const repairGeneratedText = async (originalText, issue, targetLength, context, preserveCitations = false) => {
     const _m = window.AlloModules && window.AlloModules.TextUtilityHelpers;
     if (_m && typeof _m.repairGeneratedText === "function") return _m.repairGeneratedText(originalText, issue, targetLength, context, preserveCitations, _alloTextUtilityHelpersDeps());
+    if (!_m) return _alloAwaitModules([['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'this tool').then(() => repairGeneratedText(originalText, issue, targetLength, context, preserveCitations));
     throw new Error("[repairGeneratedText] TextUtilityHelpers module not loaded - reload the page");
   };
   const applyGlobalCitations = (...__a) => _alloHostHandlers().applyGlobalCitations(...__a);
   const performDeepVerification = async (fullText) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.performDeepVerification === "function") return _m.performDeepVerification(fullText, _alloPhaseKHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => performDeepVerification(fullText));
     throw new Error("[performDeepVerification] PhaseKHelpers module not loaded - reload the page");
   };
     const ensureTitleHeading = (...__a) => _alloHostHandlers().ensureTitleHeading(...__a);
@@ -31769,22 +31926,24 @@ const parseTaggedContent = (text) => {
   const handleRefinePanel = async (panelIdx, editInstruction) => {
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
     if (_m && typeof _m.handleRefinePanel === "function") return _m.handleRefinePanel(panelIdx, editInstruction, _alloCmapHandlersDeps());
+    if (!_m) return _alloAwaitModules([['CmapHandlersModule', 'CmapHandlers']], 'this tool').then(() => handleRefinePanel(panelIdx, editInstruction));
     throw new Error("[handleRefinePanel] CmapHandlers module not loaded - reload the page");
   };
   // Per-panel field patch (alt text, provenance, decorative flag) for the shared
   // ImageAltField inside VisualPanelGrid. Mirrors handleUpdateVisualLabel.
-  const handleUpdateVisualPanel = (panelIdx, patch) => {
-      if (!generatedContent?.data?.visualPlan || !patch || typeof patch !== 'object') return;
-      const plan = generatedContent.data.visualPlan;
-      const updatedPanels = [...plan.panels];
-      updatedPanels[panelIdx] = { ...updatedPanels[panelIdx], ...patch };
-      const updatedPlan = { ...plan, panels: updatedPanels };
-      const first = panelIdx === 0 && Object.prototype.hasOwnProperty.call(patch, 'alt')
-          ? { altText: patch.alt, altSource: patch.altSource, altHash: patch.altHash }
-          : {};
-      const updatedContent = { ...generatedContent, data: { ...generatedContent.data, ...first, visualPlan: updatedPlan } };
-      setGeneratedContent(updatedContent);
-      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+  const handleUpdateVisualPanel = (panelIdx, patch, expect) => {
+      if (!generatedContent?.id || !patch || typeof patch !== 'object') return false;
+      return onUpdateResource(expect && expect.resourceId != null ? expect.resourceId : generatedContent.id, item => {
+          const plan = item?.data?.visualPlan;
+          const current = plan && Array.isArray(plan.panels) ? plan.panels[panelIdx] : null;
+          if (!current || (expect && typeof expect.accept === 'function' && !expect.accept(current))) return item;
+          const updatedPanels = [...plan.panels];
+          updatedPanels[panelIdx] = { ...current, ...patch };
+          const first = panelIdx === 0 && Object.prototype.hasOwnProperty.call(patch, 'alt')
+              ? { altText: patch.alt, altSource: patch.altSource, altHash: patch.altHash }
+              : {};
+          return { ...item, data: { ...item.data, ...first, visualPlan: { ...plan, panels: updatedPanels } } };
+      });
   };
   const handleUpdateVisualLabel = (...__a) => _alloHostHandlers().handleUpdateVisualLabel(...__a);
   
@@ -31939,11 +32098,13 @@ const parseTaggedContent = (text) => {
     const contentId = typeof depsOrContentId === 'string' ? depsOrContentId : maybeContentId;
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.playSequence === "function") return _m.playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, preloadedAudio, retryCount, speakerName, _alloPhaseKHelpersDeps(), contentId);
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, preloadedAudio, retryCount, speakerName, depsOrContentId, maybeContentId));
     throw new Error("[playSequence] PhaseKHelpers module not loaded - reload the page");
   };
   const handleSpeak = async (text, contentId, startIndex = 0, forceRestart = false, languageOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.handleSpeak === "function") return _m.handleSpeak(text, contentId, startIndex, languageOverride ? { ..._alloPhaseKHelpersDeps(), leveledTextLanguage: languageOverride } : _alloPhaseKHelpersDeps(), forceRestart);
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => handleSpeak(text, contentId, startIndex, forceRestart, languageOverride));
     throw new Error("[handleSpeak] PhaseKHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -31986,6 +32147,7 @@ const parseTaggedContent = (text) => {
         pcmToMp3,
         pcmToWav,
       });
+    if (!_m) return _alloAwaitModules([['AudioHelpersModule', 'AudioHelpers']], 'this tool').then(() => handleDownloadAudio(rawText, filename, contentId));
     throw new Error("[handleDownloadAudio] AudioHelpers module not loaded - reload the page");
   };
   // ── Read-aloud audio: teacher-vettable per-sentence generation (2026-07-06) ──
@@ -33376,7 +33538,17 @@ const parseTaggedContent = (text) => {
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
   const saveProjectToFileRef = React.useRef(null);
 
+  const autoFixLoadRequestRef = useRef(0);
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
+    const request = ++autoFixLoadRequestRef.current;
+    const generation = window.__alloPdfRunGen || 0;
+    const result = pdfFixResultRef.current;
+    const revision = pdfHtmlRevisionRef.current;
+    const wasStopped = pdfAutoContinueAbortRef.current;
+    await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers']], 'document auto-continue');
+    if (request !== autoFixLoadRequestRef.current) return { started: false, reason: 'superseded' };
+    if ((window.__alloPdfRunGen || 0) !== generation || pdfFixResultRef.current !== result || pdfHtmlRevisionRef.current !== revision) return { started: false, reason: 'document-changed' };
+    if (!wasStopped && pdfAutoContinueAbortRef.current) return { started: false, reason: 'user-stopped' };
     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
     if (_m && typeof _m.runAutoFixLoop === 'function') return _m.runAutoFixLoop(maxRounds, {
         pdfAutoContinueAbortCtrlRef,
@@ -34257,6 +34429,7 @@ const parseTaggedContent = (text) => {
       if (result === true) completeGuidedDelivery('liveStarted');
       return result;
     }
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => startClassSession());
     throw new Error("[startClassSession] PhaseOHandlers module not loaded - reload the page");
   };
   const toggleSessionMode = async () => {
@@ -34298,7 +34471,7 @@ const parseTaggedContent = (text) => {
                               policy: () => ({ studentAi: studentAiPolicyForShare }),
                               onTrimmed: () => addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info'),
                           });
-                          const result = await transport.publishResources(historySnapshot);
+                          const result = await transport.publishResources(_alloWithoutTeacherReviewCopies(historySnapshot));
                           if (firebasePublishedResourcesRef.current.sessionKey === publishSessionKey) {
                               firebasePublishedResourcesRef.current = {
                                   sessionKey: publishSessionKey,
@@ -35920,10 +36093,40 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   }, [generatedContent, studentResponses]);
   const downloadSubmissionBackup = (...__a) => _alloHostHandlers().downloadSubmissionBackup(...__a);
   const handleSubmitAssignment = async (...__a) => _alloHostHandlers().handleSubmitAssignment(...__a);
-  const executeSaveFile = (interactionOptions) => {
-    const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
-    if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile(_alloPhaseKHelpersDeps(), interactionOptions || {});
-    throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
+  const projectSaveRequestRef = useRef(0);
+  const projectSaveBusyRef = useRef(false);
+  const projectSaveContextRef = useRef(null);
+  const [isProjectSaving, setIsProjectSaving] = useState(false);
+  const projectSaveContext = [showSaveModal, saveType, saveFileName, saveEncryptPassword, inputText, history, generatedContent, studentNickname, studentProjectSettings, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
+  if (!projectSaveContextRef.current || !projectSaveContextRef.current.values.every((value, index) => value === projectSaveContext[index])) {
+    projectSaveContextRef.current = { values: projectSaveContext };
+  }
+  projectSaveContextRef.current.getDeps = _alloPhaseKHelpersDeps;
+  useEffect(() => () => { ++projectSaveRequestRef.current; projectSaveContextRef.current = null; }, []);
+  const executeSaveFile = async (interactionOptions) => {
+    if (projectSaveBusyRef.current) return { ok: false, reason: 'save-in-progress', narration: 'A project save is already in progress.' };
+    const context = projectSaveContextRef.current;
+    const request = ++projectSaveRequestRef.current;
+    const isCurrent = () => request === projectSaveRequestRef.current && context === projectSaveContextRef.current && context.values[0];
+    const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
+    if (!context || !isCurrent()) return cancelled;
+    projectSaveBusyRef.current = true;
+    setIsProjectSaving(true);
+    try {
+      const modules = [['PhaseKHelpersModule', 'PhaseKHelpers']];
+      if (context.values[3]) modules.push(['AlloCrypto', 'AlloCrypto']);
+      await _alloAwaitModules(modules, 'project save');
+      if (!isCurrent()) return cancelled;
+      const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
+      if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
+      return await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
+    } catch (error) {
+      warnLog('Project save failed:', error);
+      return { ok: false, reason: 'save-failed', narration: 'The project file was not saved. Check the connection, then try again.' };
+    } finally {
+      projectSaveBusyRef.current = false;
+      if (request === projectSaveRequestRef.current) setIsProjectSaving(false);
+    }
   };
   const _studentSavePrivateFilenameTokens = [studentNickname, studentProjectSettings && studentProjectSettings.nickname]
     .map((value) => String(value || '').trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase())
@@ -35935,7 +36138,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     filenameReady: !!String(saveFileName || '').trim(),
     filename: String(saveFileName || ''),
     filenameContainsPrivateCodename: _saveFilenameContainsPrivateCodename,
-    saving: studentSaveVoiceInProgressRef.current,
+    saving: studentSaveVoiceInProgressRef.current || isProjectSaving,
     startSaving: () => { if (studentSaveVoiceInProgressRef.current) return false; studentSaveVoiceInProgressRef.current = true; return true; },
     finishSaving: () => { studentSaveVoiceInProgressRef.current = false; },
     setFilename: (value) => setSaveFileName(String(value || '').trim().slice(0, 160)),
@@ -36069,7 +36272,16 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   };
   const handleLoadProject = (e) => {
     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
-    if (_m && typeof _m.handleLoadProject === "function") return _m.handleLoadProject(e, {
+    // Clear the input either way so choosing the same file again fires change.
+    const _input = e && e.target, _file = _input && _input.files && _input.files[0];
+    const _clearInput = () => { try { if (_input && _file && _input.value) _input.value = ''; } catch (_) {} };
+    if (!_m) {
+      _clearInput();
+      if (!_file) return;
+      return _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['AlloCrypto', 'AlloCrypto', true]], 'Load Project')
+        .then(() => handleLoadProject({ target: { files: [_file] }, currentTarget: { files: [_file] } }), () => {});
+    }
+    try { return _m.handleLoadProject(e, {
         restoreBuilderDraft: _restoreBuilderDraftFromProject,
         setStudentProgressLog,
         setGuidedStep,
@@ -36206,8 +36418,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
             canvasRecoveryMutationInProgressRef.current = false;
             setCanvasRecoveryBusyId(null);
         },
-      });
-    throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
+      }); } finally { _clearInput(); }
   };
   // Bridge for the Community Catalog: synthesizes a fake file-input event
   // from a parsed lesson JSON so the existing handleLoadProject flow runs
@@ -36242,6 +36453,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);
   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
   const pendingQrAssignmentOpenGenerationRef = useRef(0);
+  const savedResourceOpenModules = [['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']];
   const handleRestoreView = (item, options = {}) => {
       if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleRestoreView(item, options));
       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
@@ -36262,7 +36474,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
   };
   // BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE
-  learningWebRestoreViewRef.current = handleRestoreView;
+  learningWebRestoreViewRef.current = (...args) => handleOpenHistoryResource(...args);
   learningWebOpenContextRef.current = {
       current: generatedContent || null,
       history: (Array.isArray(history) ? history : []).slice(-160),
@@ -36280,20 +36492,120 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       }
   }, []);
   // END LEARNING_WEB_RESOURCE_OPEN_BRIDGE
+  const historyOpenRequestRef = useRef(0);
+  const historyOpenWorkspaceVersionRef = useRef(0);
+  const historyOpenTransitionRef = useRef(null);
+  const historyOpenContextRef = useRef(null);
+  const [pendingHistoryResource, setPendingHistoryResource] = useState(null);
+  const historyOpenContext = [inputText, history, generatedContent, activeView, activeSidebarTab, workspacePane, isTeacherMode, isParentMode, isIndependentMode, activeSessionCode, activeSessionAppId];
+  if (!historyOpenContextRef.current || !historyOpenContextRef.current.values.every((value, index) => value === historyOpenContext[index])) {
+      if (historyOpenContextRef.current?.values.some((value, index) => index !== 1 && index !== 2 && value !== historyOpenContext[index])) historyOpenWorkspaceVersionRef.current += 1;
+      historyOpenContextRef.current = { values: historyOpenContext };
+  }
+  historyOpenContextRef.current.restore = handleRestoreView;
+  historyOpenContextRef.current.failedLabel = () => {
+      const value = t('history.open_failed');
+      return typeof value === 'string' && value.trim() && value !== 'history.open_failed' ? value : 'Could not open this saved resource. Check the connection and try again.';
+  };
+  useEffect(() => () => { ++historyOpenRequestRef.current; historyOpenContextRef.current = null; historyOpenTransitionRef.current = null; }, []);
+  const handleOpenHistoryResource = async (item, options = {}) => {
+      const context = historyOpenContextRef.current;
+      if (!context) return false;
+      const request = ++historyOpenRequestRef.current;
+      const workspaceVersion = historyOpenWorkspaceVersionRef.current;
+      if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
+      const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
+      const isCurrent = () => request === historyOpenRequestRef.current && workspaceVersion === historyOpenWorkspaceVersionRef.current && openGeneration === pendingQrAssignmentOpenGenerationRef.current && !!historyOpenContextRef.current;
+      const reportFailure = error => {
+          if (!isCurrent()) return false;
+          warnLog('Saved resource could not open:', error);
+          if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(historyOpenContextRef.current.failedLabel(), 'error');
+          return false;
+      };
+      const finishOpen = (afterDraftConfirmation = false) => {
+          if (!isCurrent()) return false;
+          const current = historyOpenContextRef.current;
+          if (!afterDraftConfirmation && context !== current) return false;
+          const sameResource = (left, right) => left === right || !!left && !!right && !!left.id && left.id === right.id && left.type === right.type && left._artifactInstanceId === right._artifactInstanceId;
+          let target = item;
+          if (afterDraftConfirmation) {
+              const previousReading = context.values[2], currentReading = current.values[2];
+              if (!sameResource(previousReading, currentReading) || previousReading?.data !== currentReading?.data) return false;
+              const savedItems = value => [value.values[2]].concat(Array.isArray(value.values[1]) ? value.values[1] : []);
+              const wasSaved = savedItems(context).some(saved => sameResource(saved, item));
+              const latest = savedItems(current).find(saved => sameResource(saved, item));
+              if (wasSaved && !latest) return false;
+              if (latest) target = latest;
+          }
+          try {
+              if (supportDraftSessionRef.current?.blocked()) {
+                  historyOpenTransitionRef.current = () => finishOpen(true);
+                  return requestReadingSupportTransition(() => {
+                      const resume = historyOpenTransitionRef.current;
+                      historyOpenTransitionRef.current = null;
+                      return resume ? resume() : false;
+                  });
+              }
+              return current.restore(target, options);
+          } catch (error) {
+              return reportFailure(error);
+          }
+      };
+      setPendingHistoryResource(item);
+      try {
+          await _alloAwaitModules(savedResourceOpenModules, 'saved resource');
+          return finishOpen();
+      } catch (error) {
+          if (context !== historyOpenContextRef.current) return false;
+          return reportFailure(error);
+      } finally {
+          if (request === historyOpenRequestRef.current) setPendingHistoryResource(null);
+      }
+  };
   useEffect(() => {
       if (!pendingQrAssignmentResource || isTeacherMode) return;
       const resource = pendingQrAssignmentResource;
+      const openContext = historyOpenContextRef.current;
       let cancelled = false;
       const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
       const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
+      const isContextCurrent = () => {
+          if (!isCurrent()) return false;
+          const current = historyOpenContextRef.current;
+          if (openContext === current) return true;
+          const hydration = bootHistoryHydrationRef.current;
+          return !!hydration && openContext?.values?.[1] === hydration.previous
+              && current?.values?.[1] === hydration.current
+              && openContext.values.every((value, index) => index === 1 || value === current.values[index]);
+      };
       let opened = false;
       let restoreFailed = false;
-      const openWhenReady = () => {
-          if (!isCurrent() || opened || restoreFailed) return false;
+      let transitionPending = false;
+      const openWhenReady = (afterDraftConfirmation = false) => {
+          if (!isCurrent() || opened || restoreFailed || transitionPending) return false;
+          if (!afterDraftConfirmation && !isContextCurrent()) return false;
+          if (savedResourceOpenModules.some(([, key]) => !window.AlloModules?.[key])) return false;
           const api = window.AlloModules?.MiscHandlers;
           if (typeof api?.handleRestoreView !== 'function') return false;
+          if (supportDraftSessionRef.current?.blocked()) {
+              transitionPending = true;
+              requestReadingSupportTransition(() => {
+                  transitionPending = false;
+                  return openWhenReady(true);
+              });
+              return false;
+          }
           try {
-              const result = handleRestoreView(resource, { suppressLiveFollow: true, preservePendingAssignment: true });
+              const hydration = bootHistoryHydrationRef.current;
+              const deliveryIndex = receivedDeliveryResources.indexOf(resource);
+              const previousIndex = hydration?.previous.indexOf(resource) ?? -1;
+              const sourceIndex = previousIndex >= 0 ? previousIndex
+                  : deliveryIndex >= 0 && hydration?.previous[deliveryIndex]?.id === resource.id
+                      && hydration?.previous[deliveryIndex]?.type === resource.type ? deliveryIndex : -1;
+              const hydratedIndex = hydration && hydration.previous === openContext?.values?.[1]
+                  && hydration.current === historyOpenContextRef.current?.values?.[1] ? sourceIndex : -1;
+              const target = hydratedIndex >= 0 ? hydration.current[hydratedIndex] : resource;
+              const result = handleRestoreView(target, { suppressLiveFollow: true, preservePendingAssignment: true });
               if (result === false) throw new Error('Homework resource was rejected by the opener');
               opened = true;
               setPendingQrAssignmentResource(current => current === resource ? null : current);
@@ -36305,25 +36617,31 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               return false;
           }
       };
-      if (openWhenReady() || restoreFailed) return;
-      // Fragment packs can decode before the deferred resource opener loads.
-      // Promote that one dependency and keep the packet intact through retries.
+      if (openWhenReady() || restoreFailed || transitionPending) return () => { cancelled = true; };
       addToast('Opening homework tools…', 'info');
-      const onModuleChange = () => { openWhenReady(); };
+      const onModuleChange = () => {
+          if (!isContextCurrent()) {
+              window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+              return;
+          }
+          openWhenReady();
+      };
       window.addEventListener('alloflow:module-registry-changed', onModuleChange);
       Promise.resolve().then(() => {
-          if (!isCurrent() || opened) return;
+          if (!isContextCurrent() || opened) return;
           if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('Homework loader is not ready');
-          return window.__alloEnsureLazyModule('MiscHandlersModule', '__alloLazyFileIntake', 'MiscHandlers');
+          return Promise.all(savedResourceOpenModules.map(([name, key]) => {
+              if (window.AlloModules?.[key]) return undefined;
+              const promote = name === 'MiscHandlersModule' ? '__alloLazyFileIntake' : () => window.__alloPromoteModule?.(name);
+              return window.__alloEnsureLazyModule(name, promote, key);
+          }));
       }).then(() => {
-          if (isCurrent() && !opened && !restoreFailed && !openWhenReady()) throw new Error('Homework opener is not ready');
+          if (isContextCurrent() && !opened && !restoreFailed && !transitionPending && !openWhenReady()) throw new Error('Homework opener is not ready');
       }).catch(error => {
-          if (!isCurrent() || opened || restoreFailed) return;
+          if (!isContextCurrent() || opened || restoreFailed || transitionPending) return;
           warnLog('Homework tools are not ready:', error);
           addToast('Homework is still available in History. Use Retry in the loading notice when available, or reload this homework link.', 'warning');
       });
-      // The bounded loader stops waiting on failure/timeout. Keep this listener
-      // so the existing Retry control can finish the same pending open later.
       return () => {
           cancelled = true;
           window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
@@ -36996,6 +37314,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
     setAlloGenerationType('lesson-plan');
     if (_m && typeof _m.handleGenerateLessonPlan === "function") return _m.handleGenerateLessonPlan(switchView, _alloCmapHandlersDeps());
+    if (!_m) return _alloAwaitModules([['CmapHandlersModule', 'CmapHandlers']], 'this tool').then(() => handleGenerateLessonPlan(switchView));
     throw new Error("[handleGenerateLessonPlan] CmapHandlers module not loaded - reload the page");
   };
   const _extensionGuideRequests = useRef(new Map());
@@ -37042,6 +37361,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const generateHelpfulHint = async (type, text, shouldSpeak = false) => {
     const _m = window.AlloModules && window.AlloModules.TextUtilityHelpers;
     if (_m && typeof _m.generateHelpfulHint === "function") return _m.generateHelpfulHint(type, text, shouldSpeak, _alloTextUtilityHelpersDeps());
+    if (!_m) return _alloAwaitModules([['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'this tool').then(() => generateHelpfulHint(type, text, shouldSpeak));
     throw new Error("[generateHelpfulHint] TextUtilityHelpers module not loaded - reload the page");
   };
   const handleGenerateLessonIdeas = async (...__a) => _alloHostHandlers().handleGenerateLessonIdeas(...__a);
@@ -37365,22 +37685,40 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const generateAdventureImage = async (sceneText, targetTurn) => {
     const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
     if (_m && typeof _m.generateAdventureImage === "function") return _m.generateAdventureImage(sceneText, targetTurn, _alloAdventureSessionHandlersDeps());
+    if (!_m) return _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'this tool').then(() => generateAdventureImage(sceneText, targetTurn));
     throw new Error("[generateAdventureImage] AdventureSessionHandlers module not loaded - reload the page");
   };
   // AdventureView owns scene/recap scrolling in its shared reading flow.
   const generateNarrativeLedger = async (currentHistory) => {
     const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
     if (_m && typeof _m.generateNarrativeLedger === "function") return _m.generateNarrativeLedger(currentHistory, _alloAdventureSessionHandlersDeps());
+    if (!_m) return _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'this tool').then(() => generateNarrativeLedger(currentHistory));
     throw new Error("[generateNarrativeLedger] AdventureSessionHandlers module not loaded - reload the page");
   };
-  const handleDiceRollComplete = () => {
-    const _m = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
-    if (_m && typeof _m.handleDiceRollComplete === "function") return _m.handleDiceRollComplete(_alloAdventureSessionHandlersDeps());
-    throw new Error("[handleDiceRollComplete] AdventureSessionHandlers module not loaded - reload the page");
+  const diceCompleteRequestRef = useRef(0);
+  const diceCompleteContextRef = useRef(null);
+  const diceCompleteContext = [pendingAdventureUpdate, adventureState.currentScene, adventureState.turnCount, activeView, showDice, activeSessionCode, activeSessionAppId, isTeacherMode, adventureChanceMode, adventureDifficulty, adventureInputMode, adventureFreeResponseEnabled];
+  if (!diceCompleteContextRef.current || !diceCompleteContextRef.current.values.every((value, index) => value === diceCompleteContext[index])) {
+    diceCompleteContextRef.current = { values: diceCompleteContext };
+  }
+  diceCompleteContextRef.current.getDeps = _alloAdventureSessionHandlersDeps;
+  useEffect(() => () => { ++diceCompleteRequestRef.current; diceCompleteContextRef.current = null; }, []);
+  const handleDiceRollComplete = async () => {
+    const request = ++diceCompleteRequestRef.current;
+    const context = diceCompleteContextRef.current;
+    if (!context) return false;
+    try {
+      await _alloAwaitModules([['AdventureSessionHandlersModule', 'AdventureSessionHandlers']], 'adventure turn');
+      if (request !== diceCompleteRequestRef.current || context !== diceCompleteContextRef.current) return false;
+      const api = window.AlloModules && window.AlloModules.AdventureSessionHandlers;
+      if (typeof api?.handleDiceRollComplete !== 'function') throw new Error('Adventure turn is unavailable');
+      return api.handleDiceRollComplete(context.getDeps());
+    } catch (error) { warnLog('Adventure turn could not finish:', error); return false; }
   };
   const detectClimaxArchetype = async (text, instructions) => {
     const _m = window.AlloModules && window.AlloModules.MiscHandlers;
     if (_m && typeof _m.detectClimaxArchetype === "function") return _m.detectClimaxArchetype(text, instructions, _alloMiscHandlersDeps());
+    if (!_m) return _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers']], 'this tool').then(() => detectClimaxArchetype(text, instructions));
     throw new Error("[detectClimaxArchetype] MiscHandlers module not loaded - reload the page");
   };
   const handleStartSequel = (...__a) => _alloHostHandlers().handleStartSequel(...__a);
@@ -37429,6 +37767,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       NARRATIVE_GUARDRAILS,
       adventureChanceMode,
       history,
+      studentNickname,
       studentInterests,
       isIndependentMode,
       isTeacherMode,
@@ -37513,11 +37852,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleGuidingHand = async (item) => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
     if (_m && typeof _m.handleGuidingHand === "function") return _m.handleGuidingHand(item, { ..._alloAdventureHandlersDeps(), isAdventureStoryMode, isSocialStoryMode, socialStoryFocus });
+    if (!_m) return _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'this tool').then(() => handleGuidingHand(item));
     throw new Error("[handleGuidingHand] AdventureHandlers module not loaded - reload the page");
   };
   const executeStartAdventure = async (contextOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
     if (_m && typeof _m.executeStartAdventure === "function") return _m.executeStartAdventure(contextOverride, _alloAdventureHandlersDeps());
+    if (!_m) return _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'this tool').then(() => executeStartAdventure(contextOverride));
     throw new Error("[executeStartAdventure] AdventureHandlers module not loaded - reload the page");
   };
   const handleToggleAdventureImmersive = () => {
@@ -37535,14 +37876,34 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(value) || 20) }));
   };
   const saveAdventureFluencyResult = useCallback(async (...__a) => _alloHostHandlers().saveAdventureFluencyResult(...__a), [addToast, t]);
-  const handleStartAdventure = () => {
-    const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
-    if (_m && typeof _m.handleStartAdventure === "function") return _m.handleStartAdventure(_alloAdventureHandlersDeps());
-    throw new Error("[handleStartAdventure] AdventureHandlers module not loaded - reload the page");
+  const adventureStartRequestRef = useRef(0);
+  const adventureStartBusyRef = useRef(false);
+  const adventureStartContextRef = useRef(null);
+  const adventureStartContext = [activeView, inputText, history, generatedContent, adventureState, showNewGameSetup, isProcessing, isTeacherMode, isIndependentMode, activeSessionCode, activeSessionAppId];
+  if (!adventureStartContextRef.current || !adventureStartContextRef.current.values.every((value, index) => value === adventureStartContext[index])) {
+    adventureStartContextRef.current = { values: adventureStartContext };
+  }
+  adventureStartContextRef.current.getDeps = _alloAdventureHandlersDeps;
+  useEffect(() => () => { ++adventureStartRequestRef.current; adventureStartContextRef.current = null; }, []);
+  const handleStartAdventure = async () => {
+    if (adventureStartBusyRef.current) return false;
+    const request = ++adventureStartRequestRef.current;
+    const context = adventureStartContextRef.current;
+    if (!context) return false;
+    adventureStartBusyRef.current = true;
+    try {
+      await _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'adventure setup');
+      if (request !== adventureStartRequestRef.current || context !== adventureStartContextRef.current) return false;
+      const api = window.AlloModules && window.AlloModules.AdventureHandlers;
+      if (typeof api?.handleStartAdventure !== 'function') throw new Error('Adventure setup is unavailable');
+      return await api.handleStartAdventure({ ...context.getDeps(), isAdventureStartCurrent: () => request === adventureStartRequestRef.current && context === adventureStartContextRef.current });
+    } catch (error) { warnLog('Adventure setup could not open:', error); return false; }
+    finally { adventureStartBusyRef.current = false; }
   };
   const handleResumeAdventure = async () => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
     if (_m && typeof _m.handleResumeAdventure === "function") return _m.handleResumeAdventure(_alloAdventureHandlersDeps());
+    if (!_m) return _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'this tool').then(() => handleResumeAdventure());
     throw new Error("[handleResumeAdventure] AdventureHandlers module not loaded - reload the page");
   };
   const handleShopPurchase = (...__a) => _alloHostHandlers().handleShopPurchase(...__a);
@@ -37576,11 +37937,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleAdventureTextSubmit = async (overrideInput = null) => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
     if (_m && typeof _m.handleAdventureTextSubmit === "function") return _m.handleAdventureTextSubmit(overrideInput, _alloAdventureHandlersDeps());
+    if (!_m) return _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'this tool').then(() => handleAdventureTextSubmit(overrideInput));
     throw new Error("[handleAdventureTextSubmit] AdventureHandlers module not loaded - reload the page");
   };
   const handleAdventureChoice = async (choice) => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
     if (_m && typeof _m.handleAdventureChoice === "function") return _m.handleAdventureChoice(choice, _alloAdventureHandlersDeps());
+    if (!_m) return _alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'this tool').then(() => handleAdventureChoice(choice));
     throw new Error("[handleAdventureChoice] AdventureHandlers module not loaded - reload the page");
   };
   const handleDragStart = (e, itemInstanceId) => {
@@ -37622,6 +37985,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleRefineImage = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleRefineImage === "function") return _m.handleRefineImage(_alloPhaseOHandlersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => handleRefineImage());
     throw new Error("[handleRefineImage] PhaseOHandlers module not loaded - reload the page");
   };
   const handleGenerateWorksheet = async (...__a) => _alloHostHandlers().handleGenerateWorksheet(...__a);
@@ -38178,11 +38542,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
         history,
         t,
     });
+    if (!_m) return _alloAwaitModules([['UdlChatModule', 'UdlChat']], 'this tool').then(() => handleSendUDLMessage(manualText));
     throw new Error('[handleSendUDLMessage] UdlChat module not loaded - reload the page');
   };
   const handleSocraticSubmit = async (inputOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.handleSocraticSubmit === "function") return _m.handleSocraticSubmit(inputOverride, _alloPhaseKHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => handleSocraticSubmit(inputOverride));
     throw new Error("[handleSocraticSubmit] PhaseKHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -38366,6 +38732,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleSaveReflection = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.handleSaveReflection === "function") return _m.handleSaveReflection(_alloPhaseKHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => handleSaveReflection());
     throw new Error("[handleSaveReflection] PhaseKHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -38432,6 +38799,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const autoConfigureSettings = async (text, grade, standards, language, customInput, existingResources = [], targetCount = 'Auto', signal = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.autoConfigureSettings === "function") { setIsUniversalSettingsOpen(true); return _m.autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, { ..._alloPhaseKHelpersDeps(), generationSignal: signal }); }
+    if (!_m) return _alloAwaitModules([['PhaseKHelpersModule', 'PhaseKHelpers']], 'this tool').then(() => autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, signal));
     throw new Error("[autoConfigureSettings] PhaseKHelpers module not loaded - reload the page");
   };
   const applyDetailedAutoConfig = (...__a) => _alloHostHandlers().applyDetailedAutoConfig(...__a);
@@ -38465,6 +38833,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     const _executionBlueprint = _prepared.legacyConfig;
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleExecuteBlueprint === "function") return _m.handleExecuteBlueprint({ ..._alloPhaseOHandlersDeps(), activeBlueprint: _executionBlueprint });
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => handleExecuteBlueprint());
     throw new Error("[handleExecuteBlueprint] PhaseOHandlers module not loaded - reload the page");
   };
   // Stage 5 — rebuild a single plan row, addressed by its Stage 2 uiId.
@@ -38476,6 +38845,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     if (_m && typeof _m.handleRebuildBlueprintStep === "function") {
       return _m.handleRebuildBlueprintStep({ ..._alloPhaseOHandlersDeps(), activeBlueprint, blueprintExecutionResult }, uiId, options);
     }
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => handleRebuildBlueprintStep(uiId, options));
     throw new Error("[handleRebuildBlueprintStep] PhaseOHandlers module not loaded - reload the page");
   };
   const buildSanitizedBlueprintDiagnostic = (...__a) => _alloHostHandlers().buildSanitizedBlueprintDiagnostic(...__a);
@@ -38565,7 +38935,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   useEffect(() => {
     const id = generatedContent && generatedContent.id;
     const embedded = generatedContent && generatedContent.data && generatedContent.data.escapeRoomConfig;
-    if (!id || !embedded) {
+    if (!isTeacherMode || !id || !embedded) {
       _embeddedEscapeRoomLoadedFor.current = null;
       return;
     }
@@ -38575,13 +38945,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       const ok = loadEscapeRoomFromConfig(embedded, { silent: true });
       if (ok) _embeddedEscapeRoomLoadedFor.current = id;
     }
-  }, [generatedContent && generatedContent.id]);
+  }, [generatedContent && generatedContent.id, isTeacherMode]);
   useEffect(() => {
     const clock = window.AlloModules && window.AlloModules.startEscapeRoomClock;
     if (clock) return clock({ isEscapeTimerRunning, escapeTimeLeft, escapeRoomState,
       setEscapeTimeLeft, setIsEscapeTimerRunning, setEscapeRoomState, t, addToast });
   }, [isEscapeTimerRunning, escapeTimeLeft, escapeRoomState.isActive, escapeRoomState.isEscaped, escapeRoomState.isGameOver, escapeRoomState.timerEnabled, t, addToast]);
-  const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
+  const _alloRunGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
     if (switchView && supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, generationDepsOverride));
     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
     const viewOwner = {};
@@ -38819,6 +39189,10 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       }, generationDepsOverride || {}));
     throw new Error("[handleGenerate] GenDispatcher module not loaded - reload the page");
   };
+  // Generation reaches these helpers synchronously; only the dispatcher is required.
+  const handleGenerate = (...args) => _alloAwaitModules([['GenDispatcherModule', 'GenDispatcher']].concat(
+    ['TextPipelineHelpers', 'TextUtilityHelpers', 'PhaseKHelpers', 'PromptsLibrary', 'GenerationHelpers', 'CmapHandlers', 'MiscHandlers', 'PureHelpers'].map(k => [k + 'Module', k, true])
+  ), 'the generator').then(() => _alloRunGenerate(...args), () => {});
   const GUIDED_RETRY_TYPES = {
     analysis: 'analysis', glossary: 'glossary', simplified: 'simplified', outline: 'outline', 'anchor-chart': 'anchor-chart', 'memory-aid': 'memory-aid', 'applied-challenge': 'applied-challenge', image: 'image', faq: 'faq', 'sentence-frames': 'sentence-frames', 'note-taking': 'note-taking', brainstorm: 'brainstorm', persona: 'persona', timeline: 'timeline', 'concept-sort': 'concept-sort', dbq: 'dbq', adventure: 'adventure', quiz: 'quiz', alignment: 'alignment-report', 'lesson-plan': 'lesson-plan'
   };
@@ -38860,6 +39234,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     setAlloGenerationType('full-pack');
     setGenerationBatchType('full-pack');
     if (_m && typeof _m.handleGenerateFullPack === "function") return _m.handleGenerateFullPack(chatContextOverride, _alloGenerationHelpersDeps());
+    if (!_m) return _alloAwaitModules([['GenerationHelpersModule', 'GenerationHelpers']], 'this tool').then(() => handleGenerateFullPack(chatContextOverride));
     throw new Error("[handleGenerateFullPack] GenerationHelpers module not loaded - reload the page");
   };
   const handlePlanFullPack = async () => {
@@ -38932,6 +39307,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   const handleAutoCorrectSource = async () => {
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
     if (_m && typeof _m.handleAutoCorrectSource === "function") return _m.handleAutoCorrectSource(_alloCmapHandlersDeps());
+    if (!_m) return _alloAwaitModules([['CmapHandlersModule', 'CmapHandlers']], 'this tool').then(() => handleAutoCorrectSource());
     throw new Error("[handleAutoCorrectSource] CmapHandlers module not loaded - reload the page");
   };
   const handleAddToMapList = (...__a) => _alloHostHandlers().handleAddToMapList(...__a);
@@ -38951,6 +39327,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
         warnLog,
         handleAddToMapList,
       });
+    if (!_m) return _alloAwaitModules([['MathHelpersModule', 'MathHelpers']], 'this tool').then(() => handleGenerateOutcome());
     throw new Error("[handleGenerateOutcome] MathHelpers module not loaded - reload the page");
   };
   const handleTimelineDragStart = (e, index) => {
@@ -39117,6 +39494,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         handleRemoveFrayerImage,
         addToast,
         handleConceptSpacePersist,
+        organizerLearnerWork: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.organizerWork || null),
         callImagen,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
@@ -39150,7 +39528,17 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           setTimeout(() => setFlashcardIndex(prev => prev - 1), 150);
       }
   };
+  const cardAudioLoadRequestRef = useRef(0);
+  const cardAudioContextRef = useRef(null);
+  cardAudioContextRef.current = [generatedContent, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, selectedVoice, activeView, isInteractiveFlashcards];
+  React.useEffect(() => () => { ++cardAudioLoadRequestRef.current; ++autoFixLoadRequestRef.current; }, []);
   const handleCardAudioSequence = async (e) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    const request = ++cardAudioLoadRequestRef.current;
+    const context = cardAudioContextRef.current;
+    const session = playbackSessionRef.current;
+    await _alloAwaitModules([['AudioHelpersModule', 'AudioHelpers']], 'flashcard audio');
+    if (request !== cardAudioLoadRequestRef.current || playbackSessionRef.current !== session || !context.every((value, index) => value === cardAudioContextRef.current[index])) return;
     const _m = window.AlloModules && window.AlloModules.AudioHelpers;
     if (_m && typeof _m.handleCardAudioSequence === "function") return _m.handleCardAudioSequence(e, {
         generatedContent,
@@ -39189,11 +39577,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   const handleAddGlossaryTerm = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseNHelpers;
     if (_m && typeof _m.handleAddGlossaryTerm === "function") return _m.handleAddGlossaryTerm(_alloGlossaryImageDeps());
+    if (!_m) return _alloAwaitModules([['PhaseNHelpersModule', 'PhaseNHelpers']], 'this tool').then(() => handleAddGlossaryTerm());
     throw new Error("[handleAddGlossaryTerm] PhaseNHelpers module not loaded - reload the page");
   };
   const handleQuickAddGlossary = async (rawWord, skipTip = false) => {
     const _m = window.AlloModules && window.AlloModules.PhaseNHelpers;
     if (_m && typeof _m.handleQuickAddGlossary === "function") return _m.handleQuickAddGlossary(rawWord, skipTip, _alloGlossaryImageDeps());
+    if (!_m) return _alloAwaitModules([['PhaseNHelpersModule', 'PhaseNHelpers']], 'this tool').then(() => handleQuickAddGlossary(rawWord, skipTip));
     throw new Error("[handleQuickAddGlossary] PhaseNHelpers module not loaded - reload the page");
   };
   const handleDeleteGlossaryItem = (...__a) => _alloHostHandlers().handleDeleteGlossaryItem(...__a);
@@ -39237,6 +39627,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         addToast,
         t,
       });
+    if (!_m) return _alloAwaitModules([['GlossaryHelpersModule', 'GlossaryHelpers']], 'this tool').then(() => handleGenerateTermEtymology(index, term));
     throw new Error("[handleGenerateTermEtymology] GlossaryHelpers module not loaded - reload the page");
   };
   const csDocumentId = generatedContent
@@ -39348,12 +39739,14 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   const _getFreshTextComplexityEvidence = (...__a) => _alloHostHandlers()._getFreshTextComplexityEvidence(...__a);
   const _applySimplifiedTextMutation = (...__a) => _alloHostHandlers()._applySimplifiedTextMutation(...__a);
   const handleSimplifiedTextChange = (value) => {
+    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleSimplifiedTextChange(value));
     if (!generatedContent || generatedContent.type !== 'simplified') return;
     if (generatedContent.instructionalText?.form === 'same-text-supported') { addToast('The original stays unchanged. Create an adapted companion to change its wording.', 'info'); return; }
     _recordTextChange('simplified', generatedContent.id, typeof generatedContent.data === 'string' ? generatedContent.data : '', value);
-    const updatedContent = _applySimplifiedTextMutation(generatedContent, value);
-    setGeneratedContent(updatedContent);
-    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    const changedId = generatedContent.id, changedInstance = getArtifactInstanceId(generatedContent);
+    const changeLiveText = item => item && item.id === changedId && (!changedInstance || _alloArtifactMatchesInstanceId(item, changedInstance)) ? _applySimplifiedTextMutation(item, value) : item;
+    setGeneratedContent(current => changeLiveText(current));
+    setHistory(prev => prev.map(changeLiveText));
   };
   const handleSelectReadingSource = (item) => {
     if (!isTeacherMode || !item?.id) return;
@@ -39444,7 +39837,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           else throw new Error('Choose a word-help action and try again.');
           return { ...current, adaptedReadingSupports: savedHelp };
         } catch (error) { helpFailure = error; return current; }
-      });
+      }, { instanceId: getArtifactInstanceId(item) });
       if (!appliedHelp) throw helpFailure || new Error('The adapted reading changed before this word help was saved. Reopen it and try again.');
       return savedHelp;
     }
@@ -39462,7 +39855,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         else throw new Error('Choose a word-support action and try again.');
         return { ...current, readingSupports: saved };
       } catch (error) { failure = error; return current; }
-    });
+    }, { instanceId: getArtifactInstanceId(item) });
     if (!applied) throw failure || new Error('The reading changed before this support could be saved. Reopen it and try again.');
     return saved;
   };
@@ -39483,7 +39876,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         if (!live || live.fingerprint !== helpSnapshot.fingerprint) return current;
         mergedHelp = contract.mergeAdaptedReadingSupports(current, current.adaptedReadingSupports, helpResult);
         return { ...current, adaptedReadingSupports: mergedHelp };
-      });
+      }, { instanceId: getArtifactInstanceId(item) });
       if (!appliedHelp) throw new Error('The adapted reading changed before word help finished. Nothing was changed.');
       return mergedHelp;
     }
@@ -39496,7 +39889,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       if (!_resourceMutationStateRef.current.isTeacherMode || !contract.isSupportedOriginal(current) || !contract.sameReadingFamily(current, item) || liveSnapshot?.fingerprint !== snapshot.fingerprint || liveSnapshot.text !== snapshot.text) return current;
       merged = contract.mergeReadingSupports(current, current.readingSupports, result);
       return { ...current, readingSupports: merged };
-    });
+    }, { instanceId: getArtifactInstanceId(item) });
     if (!applied) throw new Error('The reading or editing mode changed before supports finished. The original was not changed.');
     return merged;
   };
@@ -39632,11 +40025,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     const handleCheckLevel = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseNHelpers;
     if (_m && typeof _m.handleCheckLevel === "function") return _m.handleCheckLevel(_alloPhaseNHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseNHelpersModule', 'PhaseNHelpers']], 'this tool').then(() => handleCheckLevel());
     throw new Error("[handleCheckLevel] PhaseNHelpers module not loaded - reload the page");
   };
   const handleFindStandards = async (gradeContext = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleFindStandards === "function") return _m.handleFindStandards(gradeContext, _alloPhaseOHandlersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseOHandlersModule', 'PhaseOHandlers']], 'this tool').then(() => handleFindStandards(gradeContext));
     throw new Error("[handleFindStandards] PhaseOHandlers module not loaded - reload the page");
   };
   // Alignment and rigor regeneration live with the only surface that invokes
@@ -39763,11 +40158,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   const handleGeneratePOSData = async () => {
     const _m = window.AlloModules && window.AlloModules.PhaseNHelpers;
     if (_m && typeof _m.handleGeneratePOSData === "function") return _m.handleGeneratePOSData(_alloPhaseNHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseNHelpersModule', 'PhaseNHelpers']], 'this tool').then(() => handleGeneratePOSData());
     throw new Error("[handleGeneratePOSData] PhaseNHelpers module not loaded - reload the page");
   };
   const handleMasteryGrading = async (text, rubric, topic, draftCount = 1) => {
     const _m = window.AlloModules && window.AlloModules.PhaseNHelpers;
     if (_m && typeof _m.handleMasteryGrading === "function") return _m.handleMasteryGrading(text, rubric, topic, draftCount, _alloPhaseNHelpersDeps());
+    if (!_m) return _alloAwaitModules([['PhaseNHelpersModule', 'PhaseNHelpers']], 'this tool').then(() => handleMasteryGrading(text, rubric, topic, draftCount));
     throw new Error("[handleMasteryGrading] PhaseNHelpers module not loaded - reload the page");
   };
   const launchGradingSession = (...__a) => _alloHostHandlers().launchGradingSession(...__a);
@@ -39777,7 +40174,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   const handleComplexityAdjustment = async (plan) => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
     const adaptationPlan = plan && (plan.preview || plan.apply || plan.options) ? plan : null;
-    if (_m && typeof _m.handleComplexityAdjustment === "function") return _m.handleComplexityAdjustment({ ..._alloGenerationHelpersDeps(), adaptationPlan });
+    if (_m && typeof _m.handleComplexityAdjustment === "function") {
+      const result = await _m.handleComplexityAdjustment({ ..._alloGenerationHelpersDeps(), adaptationPlan });
+      // An applied rewrite is its own undo step; else Ctrl+Z skipped it and the edit before.
+      if (result?.status === 'applied' && result.newId === result.previousId && typeof result.previousData === 'string' && typeof result.data === 'string') { textUndoRef.current.lastKey = null; _recordTextChange('simplified', result.previousId, result.previousData, result.data); }
+      return result;
+    }
+    if (!_m) return _alloAwaitModules([['GenerationHelpersModule', 'GenerationHelpers']], 'this tool').then(() => handleComplexityAdjustment(plan));
     throw new Error("[handleComplexityAdjustment] GenerationHelpers module not loaded - reload the page");
   };
   const handlePresentationOptionClick = (...__a) => _alloHostHandlers().handlePresentationOptionClick(...__a);
@@ -39965,17 +40368,19 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           try {
               const record = await storageDB.get('allo_adventure_save');
               if (cancelled) return;
-              setSavedAdventureLessonKey(String((record && record._adventureConfig && record._adventureConfig.lessonKey) || ''));
+              const savedAdventureConfig = (record && record._adventureConfig) || {};
+              const otherLearner = typeof savedAdventureConfig.learnerKey === 'string' && savedAdventureConfig.learnerKey !== _alloAdventureLessonKey([], studentNickname);
+              setSavedAdventureLessonKey(otherLearner ? 'learner:other' : String(savedAdventureConfig.lessonKey || ''));
           } catch (e) {
               if (!cancelled) setSavedAdventureLessonKey('');
           }
       })();
       return () => { cancelled = true; };
-  }, [hasSavedAdventure, adventureLessonKey]);
+  }, [hasSavedAdventure, adventureLessonKey, studentNickname]);
   // A save with no lessonKey predates this stamp. Those are still offered rather
   // than stranded: refusing them would throw away a story a student is part way
   // through. A save that names a different lesson is not offered.
-  const hasSavedAdventureForLesson = hasSavedAdventure
+  const hasSavedAdventureForLesson = hasSavedAdventure && savedAdventureLessonKey !== 'learner:other'
       && (!savedAdventureLessonKey || !adventureLessonKey || savedAdventureLessonKey === adventureLessonKey);
   // Adventure appears when the lesson can actually carry one: the teacher left it
   // on for this assignment, and there is either source content to build from or a
@@ -40408,19 +40813,19 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       />
         </div>
       )}
-      {showLiveHostWarning && !mbStudentStalled && liveSessionConnectionState.status === 'connected' && (
+      {showLiveHostWarning && !mbStudentStalled && !studentQuizCovering && liveSessionConnectionState.status === 'connected' && (
         <div role={liveHostConnectionState === 'stale' ? 'alert' : 'status'} aria-live="polite" className={
           'fixed top-20 left-1/2 -translate-x-1/2 z-[10050] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border px-4 py-3 text-center text-sm font-semibold shadow-xl backdrop-blur no-print ' +
           (liveHostConnectionState === 'stale' ? 'border-rose-300 bg-rose-50/95 text-rose-900' : 'border-amber-300 bg-amber-50/95 text-amber-900')
         }>
           <span>{liveHostConnectionState === 'stale'
-            ? 'Teacher status check is stale - the live session may still be connected. Your work stays on this device.'
-            : 'Teacher connection paused — keeping your place while AlloFlow reconnects.'}</span>
+            ? (t('live_connection.host_stale') || 'Teacher status check is stale - the live session may still be connected. Your work stays on this device.')
+            : (t('live_connection.host_paused') || 'Teacher connection paused — keeping your place while AlloFlow reconnects.')}</span>
           {liveHostConnectionState === 'stale' && <button type="button" onClick={leaveLiveSession} className="rounded-lg border border-rose-400 bg-white px-3 py-1.5 text-xs font-bold text-rose-900 hover:bg-rose-100">{t('mailbox.leave_session') || 'Leave session'}</button>}
-          <button type="button" onClick={() => setDismissedLiveHostWarningKey(liveHostWarningKey)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2" aria-label="Dismiss teacher status warning">Dismiss</button>
+          <button type="button" onClick={() => setDismissedLiveHostWarningKey(liveHostWarningKey)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2" aria-label={t('live_connection.dismiss_aria') || 'Dismiss teacher status warning'}>{t('live_connection.dismiss') || 'Dismiss'}</button>
         </div>
       )}
-      {!isTeacherMode && activeSessionCode && ['connecting', 'retrying', 'failed', 'access-required'].includes(liveSessionConnectionState.status) && (
+      {!isTeacherMode && activeSessionCode && !studentQuizCovering && ['connecting', 'retrying', 'failed', 'access-required'].includes(liveSessionConnectionState.status) && (
         <div role="status" aria-live="polite" className="fixed top-20 left-1/2 -translate-x-1/2 z-[10050] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-center text-sm font-semibold text-amber-950 shadow-xl backdrop-blur no-print">
           <span>{liveSessionConnectionState.status === 'access-required'
             ? (liveSessionConnectionState.code === 'unauthenticated' ? t('live_connection.sign_in') : t('live_connection.access'))
@@ -40428,7 +40833,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           {liveSessionConnectionState.status !== 'connecting' && <button type="button" onClick={retryLiveSessionConnection} className="min-h-[44px] rounded-lg bg-amber-900 px-3 py-2 text-sm font-bold text-white hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2">{t('live_connection.reconnect')}</button>}
         </div>
       )}
-      {!isTeacherMode && activeSessionCode && mbStudentStalled && !['connecting', 'retrying', 'failed', 'access-required'].includes(liveSessionConnectionState.status) && (
+      {!isTeacherMode && activeSessionCode && mbStudentStalled && !studentQuizCovering && !['connecting', 'retrying', 'failed', 'access-required'].includes(liveSessionConnectionState.status) && (
         <div role="status" aria-live="polite" data-live-mailbox-stalled="true" className="fixed top-20 left-1/2 -translate-x-1/2 z-[10050] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-center text-sm font-semibold text-amber-950 shadow-xl backdrop-blur no-print">
           <span>{t('live_connection.retrying')}</span>
           <button type="button" onClick={() => mbPollNowRef.current?.()} className="min-h-[44px] rounded-lg bg-amber-900 px-3 py-2 text-sm font-bold text-white hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2">{t('live_connection.reconnect')}</button>
@@ -40613,17 +41018,18 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               adventureState={adventureState}
               globalLevel={globalLevel}
               isProcessing={isProcessing}
+              storybookXpNeeded={window.AlloModules?.AdventureStorybookGate?.xpNeeded?.(adventureState, studentProjectSettings?.adventureMinXP) || 0}
               onExport={handleOpenStorybookExport}
               onClose={() => {
                   setAdventureState(prev => ({ ...prev, missionReportDismissed: true }));
               }}
-              onContinue={() => {
+              onContinue={!isTeacherMode && activeSessionCode ? undefined : () => {
                   setAdventureState(prev => ({ ...prev, missionReportDismissed: true }));
                   handleStartSequel();
               }}
-              onNewGame={() => {
+              onNewGame={!isTeacherMode && activeSessionCode ? undefined : () => {
                   setAdventureState(prev => ({ ...prev, missionReportDismissed: true }));
-                  setShowNewGameSetup(true);
+                  handleStartAdventure();
               }}
           />
       )}
@@ -40654,6 +41060,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 user={user}
                 activeSessionCode={activeSessionCode}
                 targetAppId={activeSessionAppId}
+                connectionStatus={['connecting', 'retrying', 'failed'].includes(liveSessionConnectionState.status) ? liveSessionConnectionState.status
+                    : liveSessionConnectionState.status === 'access-required' ? (liveSessionConnectionState.code === 'unauthenticated' ? 'sign_in' : 'access')
+                    : mbStudentStalled ? 'mailbox-stalled'
+                    : (showLiveHostWarning && liveSessionConnectionState.status === 'connected') ? (liveHostConnectionState === 'stale' ? 'host-stale' : 'host-paused')
+                    : ''}
+                onConnectionAction={studentConnectionAction}
+                onCoverChange={setStudentQuizCovering}
             />
           </ErrorBoundary>
       )}
@@ -40749,6 +41162,74 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           ? { flexDirection: isWide ? 'row' : 'column' }
           : { height: `calc(100vh - ${mainTopOffset}px)`, minHeight: '480px', flexDirection: isWide ? 'row' : 'column' }}
       >
+        <div hidden={!(activeView === 'dashboard' && (!isTeacherMode || isIndependentMode || isParentMode))} className="w-full min-h-0 overflow-y-auto custom-scrollbar">
+      {activeView === 'dashboard' && (!isTeacherMode || isIndependentMode || isParentMode) && (
+          <LearnerProgressView
+              globalPoints={globalPoints}
+              globalLevel={globalLevel}
+              globalProgress={globalProgress}
+              currentLevelXP={currentLevelXP}
+              globalXPNext={globalXPNext}
+              history={history}
+              wordSoundsHistory={wordSoundsHistory}
+              phonemeMastery={phonemeMastery}
+              studentProgressLog={studentProgressLog}
+              pointHistory={pointHistory}
+              wordSoundsBadges={wordSoundsBadges}
+              gameCompletions={gameCompletions}
+              fluencyAssessments={fluencyAssessments}
+              labelChallengeResults={labelChallengeResults}
+              wordSoundsScore={wordSoundsScore}
+              isParentMode={isParentMode}
+              isIndependentMode={isIndependentMode}
+              isTeacherMode={isTeacherMode}
+              rosterKey={rosterKey}
+              setRosterKey={setRosterKey}
+              t={t}
+              onClose={handleCloseDashboard}
+              onShareWithTeacher={() => {
+                  const report = {
+                      type: 'parent_progress_share',
+                      timestamp: new Date().toISOString(),
+                      student: studentNickname || 'Learner',
+                      xp: globalPoints,
+                      level: globalLevel,
+                      quizzes: history.filter(h => h.type === 'quiz').length,
+                      wordsAttempted: wordSoundsHistory.length,
+                      wordsCorrect: wordSoundsHistory.filter(h => h.correct).length,
+                      phonemesMastered: Object.entries(phonemeMastery).filter(([_, v]) => {
+                          const independentAttempts = Number(v?.independentAttempts) || 0;
+                          const independentAccuracy = Number(v?.independentAccuracy);
+                          return independentAttempts >= 5 &&
+                              Number.isFinite(independentAccuracy) &&
+                              independentAccuracy >= 80;
+                      }).length,
+                      sessionCount: studentProgressLog.length,
+                      progressLog: studentProgressLog,
+                      focusData: {
+                          engagedMinutes: focusData.engagedMinutes || 0,
+                          idleMinutes: focusData.idleMinutes || 0,
+                          focusRatio: getFocusRatio(),
+                          longestStreak: focusData.longestStreak || 0
+                      },
+                      pasteEventCount: pasteEvents.length,
+                      pasteEventResponseCount: pasteEvents.filter(e => e && e.isResponseField).length
+                  };
+                  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `progress_report_${(studentNickname || 'learner').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  addToast(t('toasts.progress_report_exported'), 'success');
+              }}
+          />
+      )}
+        </div>
+        {(activeView !== 'dashboard' || (isTeacherMode && !isIndependentMode && !isParentMode)) && (<>
         {/* The header holds the page h1; Focus view hides it. */}
         {isZenMode && <h1 className="sr-only">AlloFlow</h1>}
         {theme !== 'contrast' && (
@@ -41098,7 +41579,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               </div>
             )}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleOpenHistoryResource} pendingHistoryResource={pendingHistoryResource} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
           </div>
         </div>
         {isWide && !isFullscreen && !isZenMode && (
@@ -41175,7 +41656,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             </>;
           })()}
           {/* End Reading Ruler viewport bands. */}
-          {isPlaying && (playingContentId === 'simplified-main' || playingContentId === 'adventure-active' || (playingContentId && playingContentId.startsWith('persona-message-'))) && (
+          {isPlaying && (playingContentId === 'simplified-main' || playingContentId === 'simplified-source' || playingContentId === 'adventure-active' || (playingContentId && playingContentId.startsWith('persona-message-'))) && (
             <div className={`
                 left-1/2 transform -translate-x-1/2 animate-in slide-in-from-bottom-6 fade-in duration-300 w-full max-w-md flex justify-center pointer-events-none
                 ${(playingContentId && playingContentId.startsWith('persona-message-')) ? 'fixed bottom-32 z-[400]' : 'absolute bottom-8 z-[220]'}
@@ -41229,7 +41710,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 activeView === 'sentence-frames' ? <><Quote className="text-rose-500" size={20} /> {t('scaffolds.title') || 'Scaffolds'}</> :
                 activeView === 'adventure' ? <><MapIcon className="text-purple-500" size={20} /> {t('adventure_title') || 'Adventure'}</> :
                 activeView === 'alignment-report' ? <><ShieldCheck className="text-emerald-600" size={20} /> {t('common.standard_audit') || 'Standard Audit'}</> :
-                activeView === 'lesson-plan' ? <><ClipboardList className="text-cyan-600" size={20} /> {isIndependentMode ? t('common.study_guide') : (isParentMode ? t('lesson_plan.family_guide') : t('lesson_plan.title'))}</> :
+                activeView === 'lesson-plan' ? <><ClipboardList className="text-cyan-600" size={20} /> {(m => m === 'study' ? t('common.study_guide') : m === 'family' ? t('lesson_plan.family_guide') : m === 'teacher' ? t('lesson_plan.title') : isIndependentMode ? t('common.study_guide') : (isParentMode ? t('lesson_plan.family_guide') : t('lesson_plan.title')))(generatedContent?.config?.generationInputs?.mode)}</> :
                 activeView === 'persona' ? <><History className="text-yellow-600" size={20} /> {t('persona.title')}</> :
                 activeView === 'concept-sort' ? <><Filter className="text-amber-600" size={20} /> {t('concept_sort.title')}</> :
                 activeView === 'timeline' ? <><ListOrdered className="text-rose-600" size={20} /> {t('timeline.title')}</> :
@@ -41371,8 +41852,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 if (!_directionOrigin) return null;
                 return (
                     <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900">
-                        <span className="font-semibold">You chose {directionsChoiceOrigin.label}.</span>
-                        <button type="button" onClick={() => { setDirectionsChoiceOrigin(null); handleRestoreView(_directionOrigin); }} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Back to directions</button>
+                        <span className="font-semibold">{t('directions.you_chose', { label: directionsChoiceOrigin.label }) || ('You chose ' + directionsChoiceOrigin.label + '.')}</span>
+                        <button type="button" onClick={() => { setDirectionsChoiceOrigin(null); handleRestoreView(_directionOrigin); }} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{t('directions.back_to_directions') || 'Back to directions'}</button>
                     </div>
                 );
             })()}
@@ -41971,7 +42452,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                         history,
                         progress: directionsProgress,
                         signals: _alloObjectiveSignals,
-                        selectedChoiceRef: directionsChoiceSelection[generatedContent.id] || '',
+                        selectedChoiceRef: (directionsProgress[generatedContent.id] && directionsProgress[generatedContent.id].choice) || '',
                         showQuestMap,
                         parseMarkdownToHTML: _alloParsePreviewMarkdown,
                         t,
@@ -41993,7 +42474,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                             const choice = adapter.choiceById.get(resolveDirectionsId(value));
                             if (!choice) return;
                             const resourceId = String(choice.resource.id);
-                            setDirectionsChoiceSelection(previous => ({ ...previous, [generatedContent.id]: resourceId }));
+                            setDirectionsProgress(previous => ({ ...previous, [generatedContent.id]: { ...(previous[generatedContent.id] || {}), choice: resourceId } }));
                             setDirectionsChoiceOrigin({
                                 directionId: generatedContent.id,
                                 resourceId,
@@ -42014,7 +42495,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
                     studentInterests, standardsInput, sourceTopic,
                     isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,
-                    readingLearnerKey: isTeacherMode === false && !selectedProfileId && !studentNickname ? '' : readingProfileScope,
+                    readingLearnerKey: isTeacherMode === false && !selectedProfileId && !studentNickname ? '' : readingProfileScope, readingLearnerSession: JSON.stringify([selectedProfileId || '', studentNickname || '', activeSessionCode || '', !!showStudentEntry]),
                     interactionMode, isCompareMode, isFluencyMode, isEditingLeveledText,
                     isImmersiveReaderActive, immersiveSettings, immersiveRulerY,
                     isFocusReaderActive, isChunkReaderActive, chunkReaderIdx,
@@ -42072,7 +42553,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleInitializeVenn, handleInitializeMap, broadcastInteractiveOrganizer,
                     handleAddToMapList, handleRemoveFromMapList,
                     renderInteractiveMap, renderOutlineContent,
-                    addToast, handleConceptSpacePersist
+                    addToast, handleConceptSpacePersist,
+                    organizerLearnerWork: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.organizerWork || null)
                 })}
                 {activeView === 'quiz' && window.AlloModules && window.AlloModules.QuizView && React.createElement(window.AlloModules.QuizView, {
                     t, user, isTeacherMode, isParentMode, isIndependentMode, studentProjectSettings,
@@ -42130,6 +42612,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     // attempt receipt is namespaced by content hash, so directions
                     // goals cannot find it. This reports by resourceId instead.
                     onResourceComplete: recordResourceCompletion,
+                    onRecordQuizResponses: (resourceId, key, value) => setStudentResponses(prev => ({ ...prev, [resourceId]: { ...(prev[resourceId] || {}), [key]: value } })),
                     onClose: handleSetActiveViewToDashboard,
                     isPresentationMode, isReviewGame, isEditingQuiz,
                     escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,
@@ -42417,7 +42900,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleRestoreImage, handleRefineImage, handleDownloadImage,
                     handleAnimatePanel, handleRegeneratePanelFrame, handleDeletePanelFrame,
                     handleDuplicatePanelFrame, handleReorderPanelFrame, handleSetPanelFps,
-                    callGemini, addToast, VisualPanelGrid
+                    callGemini, addToast, VisualPanelGrid,
+                    learnerAnnotations: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.visualAnnotations || null),
+                    onLearnerAnnotationsChange: (id, annotations) => { if (id != null) setStudentResponses(prev => ({ ...prev, [id]: { ...(prev[id] || {}), visualAnnotations: annotations } })); }
                 })}
                 {activeView === 'alignment-report' && isTeacherMode && (
                   (Array.isArray(generatedContent?.data?.reports) && generatedContent.data.reports.length > 0) ||
@@ -42428,7 +42913,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     // timestamp against current history and offers a one-click re-run.
                     history,
                     isProcessing,
-                    onRerunAudit: () => { if (!isProcessing) handleGenerate('alignment-report'); },
+                    onRerunAudit: (scope) => { if (!isProcessing) handleGenerate('alignment-report', null, false, null, scope && typeof scope === 'object' ? scope : {}); },
                     onConfirmAttribution: handleConfirmAlignmentAttribution,
                     onExportAlignmentGraph: handleExportAlignmentGraph,
                     onApplyFixes: () => setIsAuditRemediatorOpen(true),
@@ -42574,13 +43059,13 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 })}
                 {activeView === 'gemini-bridge' && generatedContent && (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pe-2 pb-10">
-                        <div className="bg-slate-900 text-slate-600 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
+                        <div className="bg-slate-900 text-slate-100 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-                                <div className="flex items-center gap-2 text-green-700 font-bold">
+                                <div className="flex items-center gap-2 text-green-300 font-bold">
                                     <Terminal size={18} />
                                     <span>{t('bridge.prompt_header')}</span>
                                 </div>
-                                <div className="text-xs text-slate-600 font-sans">
+                                <div className="text-xs text-slate-300 font-sans">
                                     {Array.isArray(generatedContent?.data) ? t('bridge.steps_count_label', { count: generatedContent?.data.length }) : t('bridge.single_prompt_label')}
                                 </div>
                             </div>
@@ -42591,7 +43076,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                                             {idx + 1}
                                         </div>
                                         <div className="bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors">
-                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600 overflow-x-auto font-mono mb-2">
+                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100 overflow-x-auto font-mono mb-2">
                                                 {promptStep}
                                             </pre>
                                             <div className="flex justify-end pt-2 border-t border-slate-700/50">
@@ -42606,7 +43091,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-8 pt-4 border-t border-slate-700 text-xs text-slate-600 flex items-center gap-2 justify-center">
+                            <div className="mt-8 pt-4 border-t border-slate-700 text-xs text-slate-300 flex items-center gap-2 justify-center">
                                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                                 {t('bridge.next_step')}
                             </div>
@@ -42799,6 +43284,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               }}
           />
       )}
+        </>)}
       </main>
       {isSpotlightMode && tourRect && spotlightMessage && window.AlloModules && window.AlloModules.SpotlightTourView && React.createElement(window.AlloModules.SpotlightTourView, {
           t, debugLog, tourRect, spotlightMessage, spotlightOpenTimeRef, setIsSpotlightMode
@@ -42887,19 +43373,21 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               mode="settings"
               escapeRoomState={escapeRoomState}
               setEscapeRoomState={setEscapeRoomState}
-              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
+              handlers={{...(_getEscapeRoomEngine() || {}), openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
               hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
-      {escapeRoomState.isPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
+      {isTeacherMode && escapeRoomState.isPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
           <window.AlloModules.EscapeRoomDialogs
               mode="preview"
               escapeRoomState={escapeRoomState}
               setEscapeRoomState={setEscapeRoomState}
-              handlers={{openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
+              handlers={{...(_getEscapeRoomEngine() || {}), openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
               hasSourceOrAnalysis={hasSourceOrAnalysis}
+              liveSession={!!(isTeacherMode && activeSessionCode)}
+              liveBusy={!!(sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive)}
           />
       )}
       {showSocraticChat && !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && <SocraticChat chatStyles={chatStyles} handleSetShowSocraticChatToFalse={handleSetShowSocraticChatToFalse} handleSocraticSubmit={handleSocraticSubmit} handleToggleIsSocraticExpanded={handleToggleIsSocraticExpanded} handleToggleSocraticAutoRead={handleToggleSocraticAutoRead} handleToggleSocraticAutoSend={handleToggleSocraticAutoSend} isSocraticDictating={isSocraticDictating} isSocraticDragging={isSocraticDragging} isSocraticExpanded={isSocraticExpanded} isSocraticThinking={isSocraticThinking} recognitionRef={recognitionRef} renderFormattedText={renderFormattedText} setIsSocraticDictating={setIsSocraticDictating} setIsSocraticDragging={setIsSocraticDragging} setSocraticInput={setSocraticInput} socraticAutoRead={socraticAutoRead} socraticAutoSend={socraticAutoSend} socraticChatRef={socraticChatRef} socraticDragOffset={socraticDragOffset} socraticInput={socraticInput} socraticLivePos={socraticLivePos} socraticMessages={socraticMessages} socraticPosition={socraticPosition} socraticScrollRef={socraticScrollRef} t={t} warnLog={warnLog} />}
@@ -42958,7 +43446,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       {/* Independent Learner runs with isTeacherMode true but gets the learner
           progress view: the grading dashboard is a drop zone for other people's
           student files, which means nothing to someone studying alone. */}
-      {activeView === 'dashboard' && isTeacherMode && !isIndependentMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">
+      {activeView === 'dashboard' && isTeacherMode && !isIndependentMode && !isParentMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">
           <TeacherDashboard
               onClose={handleCloseDashboard}
               dashboardData={dashboardData}
@@ -42973,71 +43461,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               callGemini={callGemini}
           />
       </ErrorBoundary>
-      )}
-      {activeView === 'dashboard' && (!isTeacherMode || isIndependentMode) && (
-          <LearnerProgressView
-              globalPoints={globalPoints}
-              globalLevel={globalLevel}
-              globalProgress={globalProgress}
-              currentLevelXP={currentLevelXP}
-              globalXPNext={globalXPNext}
-              history={history}
-              wordSoundsHistory={wordSoundsHistory}
-              phonemeMastery={phonemeMastery}
-              studentProgressLog={studentProgressLog}
-              pointHistory={pointHistory}
-              wordSoundsBadges={wordSoundsBadges}
-              gameCompletions={gameCompletions}
-              fluencyAssessments={fluencyAssessments}
-              labelChallengeResults={labelChallengeResults}
-              wordSoundsScore={wordSoundsScore}
-              isParentMode={isParentMode}
-              isIndependentMode={isIndependentMode}
-              isTeacherMode={isTeacherMode}
-              rosterKey={rosterKey}
-              setRosterKey={setRosterKey}
-              t={t}
-              onClose={handleCloseDashboard}
-              onShareWithTeacher={() => {
-                  const report = {
-                      type: 'parent_progress_share',
-                      timestamp: new Date().toISOString(),
-                      student: studentNickname || 'Learner',
-                      xp: globalPoints,
-                      level: globalLevel,
-                      quizzes: history.filter(h => h.type === 'quiz').length,
-                      wordsAttempted: wordSoundsHistory.length,
-                      wordsCorrect: wordSoundsHistory.filter(h => h.correct).length,
-                      phonemesMastered: Object.entries(phonemeMastery).filter(([_, v]) => {
-                          const independentAttempts = Number(v?.independentAttempts) || 0;
-                          const independentAccuracy = Number(v?.independentAccuracy);
-                          return independentAttempts >= 5 &&
-                              Number.isFinite(independentAccuracy) &&
-                              independentAccuracy >= 80;
-                      }).length,
-                      sessionCount: studentProgressLog.length,
-                      progressLog: studentProgressLog,
-                      focusData: {
-                          engagedMinutes: focusData.engagedMinutes || 0,
-                          idleMinutes: focusData.idleMinutes || 0,
-                          focusRatio: getFocusRatio(),
-                          longestStreak: focusData.longestStreak || 0
-                      },
-                      pasteEventCount: pasteEvents.length,
-                      pasteEventResponseCount: pasteEvents.filter(e => e && e.isResponseField).length
-                  };
-                  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `progress_report_${(studentNickname || 'learner').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                  addToast(t('toasts.progress_report_exported'), 'success');
-              }}
-          />
       )}
       <TeacherGate
         isOpen={isGateOpen}
@@ -43423,6 +43846,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             rosterKey={rosterKey}
             t={t}
             addToast={addToast}
+            history={history}
             onOpenInStudio={(submission) => {
               // Rebuild a student's exported Applied Challenge workspace as a new
               // history item next to the original, then open it in the studio.
@@ -43433,7 +43857,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 addToast(t('applied_challenge.import.missing_source') || 'The original challenge for this submission is not in this project, so it cannot be opened in the studio.', 'error');
                 return;
               }
-              const imported = studio.fromSubmission(base.data, { ...submission.responses, [resourceId]: { studio: submission.content?.find(item => item.id === resourceId && item.type === 'applied-challenge')?.data } }, resourceId);
+              const typedEntry = (Array.isArray(submission.content) ? submission.content : []).find(item => item && item.id === resourceId && item.type === 'applied-challenge');
+              const imported = studio.fromSubmission(base.data, { ...(submission.responses && typeof submission.responses === 'object' ? submission.responses : {}), [resourceId]: { studio: typedEntry && typedEntry.data && typeof typedEntry.data === 'object' ? typedEntry.data : undefined } }, resourceId, { nickname: submission.nickname });
               if (!imported.matched) {
                 addToast(t('applied_challenge.import.nothing_typed') || 'This submission has no typed workspace text to import.', 'info');
                 return;
@@ -43695,7 +44120,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                         placeholder={t('modals.save_project.placeholder')}
                         className="w-full text-lg p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700 font-bold"
                         autoFocus
-                        onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); executeSaveFile(); } }}
                     />
                     <p className="text-xs text-slate-600 mt-2 italic text-end">{t('modals.save_project.extension_note')}</p>
                 </div>
@@ -43725,10 +44150,11 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     <button
                         aria-label={t('common.save')}
                         onClick={executeSaveFile}
-                        disabled={!saveFileName.trim()}
+                        disabled={!saveFileName.trim() || isProjectSaving}
+                        aria-busy={isProjectSaving}
                         className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
                     >
-                        <Save size={18} /> {t('modals.save_project.save_btn')}
+                        {isProjectSaving ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Save size={18} />} {isProjectSaving ? t('common.saving') : t('modals.save_project.save_btn')}
                     </button>
                 </div>
             </div>
@@ -44017,7 +44443,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           })}</div>
         )}
       {showStudyTimerModal && <StudyTimerModal ConfettiExplosion={ConfettiExplosion} customTimerMinutes={customTimerMinutes} formatTime={formatTime} handleSetShowStudyTimerModalToFalse={handleSetShowStudyTimerModalToFalse} isStudyTimerRunning={isStudyTimerRunning} setCustomTimerMinutes={setCustomTimerMinutes} setIsStudyTimerRunning={setIsStudyTimerRunning} setStudyDuration={setStudyDuration} setStudyTaskLabel={setStudyTaskLabel} setStudyTimeLeft={setStudyTimeLeft} showStudyTimerModal={showStudyTimerModal} showTimerConfetti={showTimerConfetti} studyDuration={studyDuration} studyTaskLabel={studyTaskLabel} studyTimeLeft={studyTimeLeft} studyTimerRef={studyTimerRef} t={t} />}
-      {showVisualSupports && <div ref={visualSupportsModalRef}><VisualSupportsModal setShowVisualSupports={setShowVisualSupports} setVsTab={setVsTab} showVisualSupports={showVisualSupports} vsTab={vsTab} /></div>}
+      {showVisualSupports && <div ref={visualSupportsModalRef}><VisualSupportsModal setShowVisualSupports={setShowVisualSupports} setVsTab={setVsTab} showVisualSupports={showVisualSupports} vsTab={vsTab} t={t} /></div>}
       {stemArtworkHandoff && (() => {
         const boards = _alloReadVisualSupportCollection('alloSymbolBoards');
         const schedules = _alloReadVisualSupportCollection('alloSchedules');
@@ -44064,7 +44490,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           </div>
         );
       })()}
-      {isTeacherMode && (<ErrorBoundary fallbackMessage="Student analytics encountered an error. Please close and reopen.">
+      {isTeacherMode && !isParentMode && (<ErrorBoundary fallbackMessage="Student analytics encountered an error. Please close and reopen.">
           <StudentAnalyticsPanel
               isOpen={showClassAnalytics || isResearchSuiteOpen}
               researchSuiteOnly={isResearchSuiteOpen && !showClassAnalytics}
@@ -44828,7 +45254,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             Note: DA's internal state resets when the module closes, so
             re-opening starts at the home screen — the resource itself
             still lives in history and can be re-attached if needed. */}
-        {generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen && (
+        {generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen && !isParentMode && (
             <button
                 onClick={() => setIsDynamicAssessmentOpen(true)}
                 title={t('dynamic_assessment.return_title') || 'This resource was generated by Dynamic Assessment. Click to reopen the DA module.'}
@@ -44881,7 +45307,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             </button>
             </div>
         )}
-        <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🩺" displayName="Dynamic Assessment Studio" t={t}>
+        <CDNModuleGate moduleKey="DynamicAssessment" isOpen={isDynamicAssessmentOpen && !isParentMode} onClose={() => setIsDynamicAssessmentOpen(false)} icon="🩺" displayName="Dynamic Assessment Studio" t={t}>
             {(DA) => {
                 const DynamicAssessmentHostAdapter = DA && DA.HostAdapter;
                 if (typeof DynamicAssessmentHostAdapter !== 'function') {
@@ -45462,7 +45888,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     }
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="BehaviorLens" isOpen={showBehaviorLens} onClose={() => setShowBehaviorLens(false)} icon="🔭" displayName="BehaviorLens" t={t}>
+        <CDNModuleGate moduleKey="BehaviorLens" isOpen={showBehaviorLens && !isParentMode} onClose={() => setShowBehaviorLens(false)} icon="🔭" displayName="BehaviorLens" t={t}>
             {(BehaviorLens) => React.createElement(BehaviorLens, {
                 onClose: () => setShowBehaviorLens(false),
                     callGemini,

@@ -1,0 +1,12 @@
+*.log
+*.json
+!validation-summary.json
+!visual-fixtures.json
+*.generated.cjs
+*.patch
+*.first-attempt
+apply-*.cjs
+refine-*.cjs
+*-artifacts/
+initial-*.png
+intermediate-*.png

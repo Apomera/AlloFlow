@@ -1,0 +1,106 @@
+{
+  "head": "af3c6b82ab76dad40a5d44f785bf828d1adea86c",
+  "snapshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.codex-artifacts\\source-generation-locales-track17",
+  "capturedAt": "2026-09-27T14:48:45.411Z",
+  "inputs": [
+    {
+      "file": "AGENT_HANDOFF.md",
+      "sha256": "11d29f38dcdbc01961533390792abe816ea17e62c1bf920a2238bb00bb26d2ec"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "a4462e3f7c7aa7a18fc0a70134ad1829eb578dd6dd3f8324a253fc7ac01cba95"
+    },
+    {
+      "file": "content_engine_source.jsx",
+      "sha256": "de3cb4c3030a40b0af8fbf21112379bfca7033d202c5d3738f78ffcadbeb99cc"
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48"
+    },
+    {
+      "file": "own_sources_module.js",
+      "sha256": "1c5dc26a858ecf69f0e44dc28e0198d770816a27d44c9fa6ddcecc21b06db96a"
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "file": "tests/setup.js",
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    {
+      "file": "tests/source_generation_preservation.test.js",
+      "sha256": "bde0ea8a83cb64692d80b167b7360f15c47241110150053f65acd3eaae40891f"
+    },
+    {
+      "file": "vitest.config.js",
+      "sha256": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+    },
+    {
+      "file": "package.json",
+      "sha256": "ed145399195f3bca18adcb900e76ad8785abf2048d2457333b6dedf1f08c675e"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "reports/source-generation-preservation-2026-09-27/catalog-handoff.json",
+      "sha256": "02a2ad63af1dfaae1cfef9181c3dd56c2b14e3476d58ba42d8769776e9d23dbd"
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "sha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "sha256": "4649a67dec9ad6e9f2b45c9d15d9139a3daf84b13bf8ba59089097262fb06379"
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "sha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "sha256": "dc9f44627a5f9bd50fec8d439b0b1b9df1bb5715ca61ab6cc76d7929bf6da996"
+    },
+    {
+      "file": "lang/arabic.js",
+      "sha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436"
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "sha256": "72d7b5cdd5718e46d564a276aa6b3003509a5cbae936f360a857c4c052c54436"
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "sha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b"
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "sha256": "cdaa1a7436e530b0b6e007f4926c557491564982f995e7bfac6ecbfff733c58b"
+    },
+    {
+      "file": "lang/thai.js",
+      "sha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d"
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "sha256": "7e46e871a3e0e2f14a7da85c5f53ee2ec4a5d8482af6f378f23d215c92b8f35d"
+    }
+  ],
+  "refreshes": [
+    {
+      "file": "content_engine_source.jsx",
+      "previousSha256": "2ff3b99d8b5a9180c247d222ef3a6a9ae33989d471baff6b5f8db4711b5c0f06",
+      "refreshedAt": "2026-09-27T14:55:06.747Z"
+    }
+  ]
+}

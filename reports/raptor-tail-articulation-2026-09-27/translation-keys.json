@@ -1,0 +1,6 @@
+{
+  "status": "English fallback implemented; shared language-pack integration pending",
+  "keys": [
+    { "key": "stem.raptorhunt.study_tail_fan_copy", "fallback": "Follow one feather from its base to its rounded tip. Keep this view, then resume and pull up or dive. Match the saved view to compare how the feathers fan apart or overlap." }
+  ]
+}

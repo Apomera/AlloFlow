@@ -1,0 +1,16 @@
+{
+  "before": [
+    "2 m²"
+  ],
+  "proposed": [
+    "2 m2"
+  ],
+  "repaired": [
+    "2 m²"
+  ],
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:1"
+  }
+}

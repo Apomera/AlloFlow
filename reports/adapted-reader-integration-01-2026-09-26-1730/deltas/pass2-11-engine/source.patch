@@ -1,0 +1,119 @@
+Index: content_engine_source.jsx
+===================================================================
+--- content_engine_source.jsx
++++ content_engine_source.jsx
+@@ -2943,13 +2943,13 @@
+           preparedText: context.preparedText || '',
+           audioPlayback: options.audioPlayback
+       });
+-      let attempt = 0, audio = null, audioUrl = null, dictionaryAttempt = null;
++      let attempt = 0, audio = null, audioUrl = null, dictionaryAttempt = null, aiAttempt = null;
+       const releaseAudio = () => {
+           if (audio) { audio.pause(); audio = null; }
+           if (audioUrl?.startsWith('blob:') && !window.__alloTtsCacheOwnsUrl?.(audioUrl)) URL.revokeObjectURL(audioUrl);
+           audioUrl = null;
+       };
+-      const session = { cancel: () => { ++attempt; dictionaryAttempt?.cancel(); releaseAudio(); } };
++      const session = { cancel: () => { ++attempt; aiAttempt?.cancel(); dictionaryAttempt?.cancel(); releaseAudio(); } };
+       owner.current = session;
+       const isCurrent = () => {
+           const state = _s();
+@@ -2973,24 +2973,27 @@
+               job.cancel = () => { controller?.abort(); resolve({ cancelled: true }); };
+           });
+           const deadline = new Promise(resolve => {
+-              timer = setTimeout(() => { controller?.abort(); resolve({ entry: null }); }, 10000);
++              timer = setTimeout(() => { controller?.abort(); resolve({ entry: null, reason: 'timeout' }); }, 10000);
+           });
+-          update({ dictionaryStatus: 'loading' });
++          update({ dictionaryStatus: 'loading', dictionaryReason: null });
+           try {
+               const work = (async () => {
+-                  if (!window.AlloDictionary?.lookup && window.__alloLoadPlugin) await window.__alloLoadPlugin('dictionary_loader.js');
++                  if (!window.AlloDictionary?.lookupDetailed && !window.AlloDictionary?.lookup && window.__alloLoadPlugin) await window.__alloLoadPlugin('dictionary_loader.js');
+                   if (!isCurrent() || dictionaryAttempt !== job || controller?.signal.aborted) return { cancelled: true };
+-                  const entry = await window.AlloDictionary?.lookup?.(word, { signal: controller?.signal, bypassMissingCache: retry });
+-                  return { entry };
++                  const options = { signal: controller?.signal, bypassMissingCache: retry };
++                  if (typeof window.AlloDictionary?.lookupDetailed === 'function') return await window.AlloDictionary.lookupDetailed(word, options);
++                  if (typeof window.AlloDictionary?.lookup !== 'function') return { entry: null, reason: 'not_available' };
++                  const entry = await window.AlloDictionary?.lookup?.(word, options);
++                  return { entry, reason: entry ? null : 'unavailable' };
+               })();
+               const result = await Promise.race([work, deadline, cancelled]);
+               if (!result.cancelled && dictionaryAttempt === job) {
+                   const entry = result.entry;
+-                  update(entry ? { dictionary: entry, dictionaryStatus: 'ready' }
+-                      : { dictionaryStatus: 'unavailable', dictionaryRetryAvailable: true });
++                  update(entry ? { dictionary: entry, dictionaryStatus: 'ready', dictionaryReason: null }
++                      : { dictionaryStatus: 'unavailable', dictionaryReason: result.reason || 'unavailable', dictionaryRetryAvailable: true });
+               }
+           } catch (_) {
+-              if (dictionaryAttempt === job) update({ dictionaryStatus: 'unavailable', dictionaryRetryAvailable: true });
++              if (dictionaryAttempt === job) update({ dictionaryStatus: 'unavailable', dictionaryReason: 'request_failed', dictionaryRetryAvailable: true });
+           } finally {
+               clearTimeout(timer);
+               if (dictionaryAttempt === job) dictionaryAttempt = null;
+@@ -2999,9 +3002,10 @@
+       const run = async () => {
+           if (!isCurrent()) return;
+           const currentAttempt = ++attempt;
++          aiAttempt?.cancel();
+           releaseAudio();
+           if (lookupAiDisabled()) { update({ aiStatus: 'disabled', isLoading: false }); return; }
+-          update({ aiStatus: 'loading', isLoading: true });
++          update({ aiStatus: 'loading', aiErrorReason: null, isLoading: true });
+           const prompt = kind === 'definition' ? [
+               'Define the word or phrase "' + word + '" for a ' + request.grade + ' student.',
+               lookupContextPrompt(request),
+@@ -3015,9 +3019,28 @@
+               'Use the pronunciation of this occurrence and phonology appropriate to ' + request.language + '.',
+               'Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling a ' + request.language + ' reader would understand", "syllables": ["syl", "la", "bles"] }.'
+           ].join('\n');
++          const controller = typeof AbortController === 'function' ? new AbortController() : null;
++          const configuredMs = Number(window.AlloFlowConfig?.timeouts?.readingLookupMs);
++          const timeoutMs = Number.isFinite(configuredMs) && configuredMs > 0 ? Math.min(180000, Math.max(1000, configuredMs)) : 45000;
++          let timer, timedOut = false;
++          const job = { cancel: null };
++          aiAttempt = job;
++          const cancelled = new Promise(resolve => { job.cancel = () => { controller?.abort(); resolve({ cancelled: true }); }; });
++          const deadline = new Promise((_, reject) => { timer = setTimeout(() => {
++              timedOut = true; controller?.abort(); reject(new Error('Reading lookup timed out'));
++          }, timeoutMs); });
+           try {
+-              const result = kind === 'definition' ? await callGemini(prompt) : await callGemini(prompt, true);
++              const response = await Promise.race([
++                  Promise.resolve(callGemini(prompt, kind === 'phonics', false, null, null, controller?.signal || null)).then(value => ({ value })),
++                  cancelled, deadline
++              ]);
++              // The deadline covers text analysis, not optional legacy audio.
++              clearTimeout(timer);
++              if (aiAttempt === job) aiAttempt = null;
++              if (response.cancelled) return;
++              const result = response.value;
+               if (!isCurrent() || currentAttempt !== attempt) return;
++              if (lookupAiDisabled()) { update({ aiStatus: 'disabled', isLoading: false }); return; }
+               if (kind === 'definition') {
+                   if (typeof result !== 'string' || !result.trim()) throw new Error('Empty definition');
+                   update({ text: result, aiStatus: 'ready', isLoading: false });
+@@ -3050,13 +3073,19 @@
+                   if (isCurrent() && currentAttempt === attempt) { releaseAudio(); update({ audioError: true }); }
+               }
+           } catch (_) {
+-              if (isCurrent() && currentAttempt === attempt) update({ aiStatus: 'error', isLoading: false, aiRetryAvailable: true });
++              if (isCurrent() && currentAttempt === attempt) update(lookupAiDisabled()
++                  ? { aiStatus: 'disabled', isLoading: false }
++                  : { aiStatus: 'error', aiErrorReason: timedOut ? 'timeout' : 'failed', isLoading: false, aiRetryAvailable: true });
++          } finally {
++              clearTimeout(timer);
++              if (aiAttempt === job) aiAttempt = null;
+           }
+       };
+       setter({
+           word, text: null, data: null, language: request.language, grade: request.grade,
+           lookupRequest: request, preparedText: request.preparedText,
+           aiStatus: 'loading', dictionaryStatus: dictionarySupported ? 'loading' : 'unsupported',
++          dictionaryReason: dictionarySupported ? null : request.language !== 'English' ? 'unsupported_language' : 'unsupported_word',
+           isLoading: true, retry: run, retryDictionary: dictionarySupported ? () => lookupDictionary(true) : undefined,
+           x: event?.clientX || context.x || rect?.left || 0,
+           y: event?.clientY || context.y || rect?.bottom || 0

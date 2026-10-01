@@ -1,0 +1,18 @@
+{
+  "probe": "Chromium with SwiftShader, a light text paragraph on a dark author background, then forced-color emulation",
+  "normal": {
+    "computedForeground": "rgb(241, 245, 249)",
+    "computedBackground": "rgb(18, 40, 59)",
+    "axeColorContrastFailures": 0
+  },
+  "forcedColors": {
+    "computedForeground": "rgb(0, 0, 0)",
+    "computedBackground": "rgb(255, 255, 255)",
+    "renderedContrastRatio": 21,
+    "axeForeground": "#f1f5f9",
+    "axeBackground": "#ffffff",
+    "axeReportedContrastRatio": 1.09,
+    "axeColorContrastFailures": 1
+  },
+  "testApproach": "Keep all axe rules for normal rendering. In forced-color mode, use axe semantic checks and independently check computed foreground/background contrast for prediction legends, option labels, evidence buttons, and the reflection text area. Inspect the forced-color screenshot visually."
+}

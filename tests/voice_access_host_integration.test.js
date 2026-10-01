@@ -1,7 +1,10 @@
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import { describe, expect, it } from 'vitest';
 
-const source = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+const source = readSourceFile('AlloFlowANTI.txt', 'utf8');
 
 describe('main-app Voice Access host integration', () => {
   it('uses the singleton coordinator for honest onboarding status', () => {

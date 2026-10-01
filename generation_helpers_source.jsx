@@ -829,23 +829,58 @@ const _getInstructionalContextModule = () => {
       : null;
   } catch (_) { return null; }
 };
-const _fullPackStandardsPreserveTextComplexity = (standardsContext, standardsInput = '') => {
-  const context = standardsContext && typeof standardsContext === 'object' ? standardsContext : {};
-  const constraints = context.instructionalConstraints && typeof context.instructionalConstraints === 'object'
-    ? context.instructionalConstraints : {};
-  if (constraints.textAccessExpectation === 'preserve-primary') return true;
+// Module-missing fallback. Mirrors InstructionalContext.deriveTextAccessPlan:
+// a grade-level text standard defaults to NO adapted companion (source
+// 'standard'); an educator's include/omit is kept; a default the workflow or a
+// standard made earlier is derived again. Parity: tests/text_access_parity.test.js.
+const _fullPackTextAccessFallback = (raw, standardsContext, standardsInput = '') => {
+  const isObj = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  const source = isObj(raw) ? raw : {};
+  const clean = (value, limit) => value === undefined || value === null ? '' : String(value).replace(/\s+/g, ' ').trim().slice(0, limit);
+  const context = isObj(standardsContext) ? standardsContext : {};
   const entries = Array.isArray(context.standards) ? context.standards : [];
-  const searchable = [
-    standardsInput,
-    context.inputText,
-    context.promptText,
-    ...entries.flatMap(entry => entry && typeof entry === 'object'
-      ? [entry.code, entry.label, entry.text, entry.statement, entry.description]
-      : [entry]),
-  ].filter(Boolean).join(' ');
-  if (!searchable) return false;
-  return /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+  const named = value => isObj(value) && clean(value.textAccessExpectation, 80) !== 'unspecified';
+  const entry = entries.find(item => item && named(item.instructionalConstraints));
+  const constraints = (named(context.instructionalConstraints) && context.instructionalConstraints)
+    || (entry && entry.instructionalConstraints)
+    || (isObj(context.instructionalConstraints) ? context.instructionalConstraints : {});
+  const expectation = clean(constraints.textAccessExpectation, 80) || 'unspecified';
+  const sourced = constraints.sourced === true
+    || !!clean(constraints.basis || constraints.authority || constraints.sourceUrl || constraints.url, 600);
+  const searchable = [standardsInput, context.inputText, context.promptText]
+    .concat(...entries.map(item => isObj(item)
+      ? [item.code, item.label, item.text, item.statement, item.description] : [item]))
+    .map(value => clean(value, 3600)).filter(Boolean).join(' ');
+  const complexity = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
     || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+  const requiresPrimary = expectation === 'preserve-primary' || expectation === 'adaptation-prohibited' || complexity;
+  const prohibition = sourced && expectation === 'adaptation-prohibited';
+  const requested = clean(source.adaptedTextPolicy, 40);
+  const priorSource = clean(source.adaptedTextPolicySource, 40);
+  const derivedEarlier = (priorSource === 'workflow-default' && requested === 'include')
+    || (priorSource === 'standard' && requested === 'omit');
+  const explicit = derivedEarlier ? '' : requested;
+  const valid = ['include', 'omit', 'prohibited'].includes(explicit);
+  const standardOmit = requiresPrimary && !valid;
+  let policy = valid ? explicit : (standardOmit ? 'omit' : 'include');
+  if (policy === 'prohibited' && !prohibition) policy = 'omit';
+  if (prohibition) policy = 'prohibited';
+  let decision = derivedEarlier ? '' : priorSource;
+  if (prohibition || standardOmit) decision = 'standard';
+  else if (explicit === 'prohibited') decision = 'educator';
+  else if (!['educator', 'standard', 'workflow-default'].includes(decision)) decision = explicit ? 'educator' : 'workflow-default';
+  const explicitAccess = clean(source.primaryTextAccess, 40);
+  return {
+    primaryTextAccess: requiresPrimary ? 'required' : (['required', 'available'].includes(explicitAccess) ? explicitAccess : 'available'),
+    adaptedTextPolicy: policy,
+    adaptedTextPolicySource: decision,
+    textAccessReason: prohibition ? 'sourced-adaptation-prohibition'
+      : (expectation === 'preserve-primary' && sourced ? 'sourced-primary-text-requirement'
+        : (complexity ? 'standard-text-complexity-requirement'
+          : (explicit ? 'educator-choice' : (standardOmit ? 'standard-primary-text-requirement' : 'default-access-companion')))),
+    standardRequiresPrimary: requiresPrimary,
+    sourcedAdaptationProhibition: prohibition,
+  };
 };
 const _normalizeFullPackInstructionalContext = (raw, options = {}) => {
   const source = raw && typeof raw === 'object' ? raw : {};
@@ -858,36 +893,55 @@ const _normalizeFullPackInstructionalContext = (raw, options = {}) => {
     });
   }
   const standardsContext = _cloneFullPackValue(source.standardsContext || options.standardsContext || null);
-  const constraints = standardsContext && standardsContext.instructionalConstraints || {};
-  const sourcedProhibition = constraints.textAccessExpectation === 'adaptation-prohibited'
-    && (constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl));
-  const requestedAdaptedPolicy = ['include', 'omit', 'prohibited'].includes(source.adaptedTextPolicy)
-    ? source.adaptedTextPolicy : '';
-  const adaptedTextPolicy = sourcedProhibition
-    ? 'prohibited'
-    : (requestedAdaptedPolicy === 'prohibited' ? 'omit' : (requestedAdaptedPolicy || 'include'));
-  const standardRequiresPrimary = _fullPackStandardsPreserveTextComplexity(
-    standardsContext, options.standardsInput || ''
-  ) || sourcedProhibition;
+  const textAccess = _fullPackTextAccessFallback(source, standardsContext, options.standardsInput || '');
   return {
     schemaVersion: 1,
     instructionalGrade: String(source.instructionalGrade || options.gradeLevel || ''),
     primaryTextPolicy: source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
-    primaryTextAccess: standardRequiresPrimary ? 'required' : (source.primaryTextAccess === 'required' ? 'required' : 'available'),
-    adaptedTextPolicy,
-    adaptedTextPolicySource: sourcedProhibition
-      ? 'standard'
-      : (requestedAdaptedPolicy === 'prohibited' ? 'educator'
-        : (['educator', 'standard', 'workflow-default'].includes(source.adaptedTextPolicySource)
-          ? source.adaptedTextPolicySource
-          : (requestedAdaptedPolicy ? 'educator' : 'workflow-default'))),
-    textAccessReason: sourcedProhibition
-      ? 'sourced-adaptation-prohibition'
-      : (standardRequiresPrimary ? 'standard-text-complexity-requirement'
-          : (requestedAdaptedPolicy ? 'educator-choice' : 'default-access-companion')),
+    primaryTextAccess: textAccess.primaryTextAccess,
+    adaptedTextPolicy: textAccess.adaptedTextPolicy,
+    adaptedTextPolicySource: textAccess.adaptedTextPolicySource,
+    textAccessReason: textAccess.textAccessReason,
     standardsContext,
     standardsFingerprint: String(source.standardsFingerprint || _fullPackFingerprint(JSON.stringify(standardsContext || null))),
   };
+};
+// A required grade-level text makes the original with word supports the main
+// reading. Once a pack's Analysis lands, add that supported original (role
+// primary) the way the host's "Open the original with supports" does, so it
+// exists without the teacher's click. One already saved for the same text is kept.
+const _ensureFullPackSupportedOriginal = (analysisItem, options = {}) => {
+  const api = _getInstructionalContextModule();
+  const setHistory = options.setHistory;
+  if (!api || typeof setHistory !== 'function' || !analysisItem || analysisItem.type !== 'analysis') return null;
+  if (['createSourceSnapshot', 'createSupportedReading', 'getSourceSnapshot', 'getInstructionalText',
+    'isSupportedOriginal', 'sameReadingSourceFamily'].some(name => typeof api[name] !== 'function')) return null;
+  const text = analysisItem.data && analysisItem.data.originalText;
+  if (typeof text !== 'string' || !text.trim() || api.getInstructionalText(analysisItem).form === 'adapted') return null;
+  let snapshot = api.getSourceSnapshot(analysisItem);
+  if (!snapshot || snapshot.text !== text) {
+    snapshot = api.createSourceSnapshot(text, {
+      sourceArtifactId: analysisItem.id || null,
+      language: (analysisItem.config && analysisItem.config.language) || options.language || 'English',
+      format: 'plain-text', selection: 'saved-analysis',
+    });
+  }
+  const sameOriginal = existing => api.isSupportedOriginal(existing)
+    && api.sameReadingSourceFamily(existing, analysisItem) && existing.data === snapshot.text;
+  if ((Array.isArray(options.history) ? options.history : []).some(sameOriginal)) return null;
+  const item = api.createSupportedReading(snapshot, {
+    id: 'original-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+    title: (analysisItem.title || options.sourceTopic || 'Source text') + ' — Original with supports',
+    config: { grade: (analysisItem.config && analysisItem.config.grade) || options.gradeLevel || '', language: snapshot.language },
+    sourceItem: analysisItem,
+  });
+  if (!item) return null;
+  item.timestamp = new Date();
+  setHistory(previous => {
+    const list = Array.isArray(previous) ? previous : [];
+    return list.some(sameOriginal) ? list : list.concat(item);
+  });
+  return item;
 };
 const _fullPackInstructionalText = (type, raw, options = {}) => {
   const isAdapted = type === 'simplified';
@@ -1647,10 +1701,6 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           if (typeof setGenerationStage === 'function') setGenerationStage('analyze');
           setGenerationStep(_safeMathGenerationTranslation(t, 'status.solving', 'Solving...'));
           setError(null);
-          if (switchView) {
-              setGeneratedContent(null);
-              setActiveView('math');
-          }
           setShowMathAnswers(false);
           if (!isCurrentMathGeneration()) return;
           let prompt = "";
@@ -1850,6 +1900,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           // history (and previously left MathView without its subject meta).
           if (!isCurrentMathGeneration()) return;
           setGeneratedContent(newItem);
+          if (switchView && isCurrentMathGeneration()) setActiveView('math');
           if (!isCurrentMathGeneration()) return;
           setHistory(prev => [...prev, newItem]);
           if (!isCurrentMathGeneration()) return;
@@ -2010,10 +2061,31 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     // Primary-text preservation and adapted-companion inclusion are separate
     // decisions. The common path includes both regardless of whether an
     // Analysis artifact already exists; the Generation Matrix will reuse that
-    // analysis at zero calls. Only an explicit omit or sourced prohibition
-    // suppresses Adapted Text.
+    // analysis at zero calls. An omit (educator, or the default under a
+    // grade-level text standard) or a sourced prohibition suppresses Adapted Text.
     const _defaultToAnalyzedAndAdaptedText = !_planSourceRun
         && _activeInstructionalContext.adaptedTextPolicy === 'include';
+    // A required grade-level text keeps its Analysis (primary text) row at every
+    // pack size, even with no companion. A sourced prohibition plans only what
+    // was asked for, as before.
+    const _defaultToAnalyzedText = _defaultToAnalyzedAndAdaptedText || (!_planSourceRun
+        && _activeInstructionalContext.primaryTextAccess === 'required'
+        && _activeInstructionalContext.adaptedTextPolicy === 'omit');
+    // With a required grade-level text, the original with word supports is the
+    // main reading: add it once this run's Analysis lands.
+    let _supportedOriginalChecked = false;
+    const _addSupportedOriginalOnce = (analysisItem, knownHistory) => {
+        if (_supportedOriginalChecked || _preflightOnly
+            || _activeInstructionalContext.primaryTextAccess !== 'required') return;
+        _supportedOriginalChecked = true;
+        const added = _ensureFullPackSupportedOriginal(analysisItem, {
+            setHistory: deps && deps.setHistory, history: knownHistory,
+            sourceTopic, gradeLevel, language: leveledTextLanguage,
+        });
+        if (added && !fullPackGroupId) {
+            try { addToast('Added the original with word supports as the main reading.', 'info'); } catch (_) {}
+        }
+    };
     const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
     const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
@@ -2551,10 +2623,11 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 resourcesToGen.push(...planItems);
             }
         }
+        if (_defaultToAnalyzedText && !_approvedRun && !_retryRun
+            && !resourcesToGen.some(item => item && item.type === 'analysis')) {
+            resourcesToGen.unshift({ type: 'analysis', directive: 'Analyze the primary source before building its companion resources.' });
+        }
         if (_defaultToAnalyzedAndAdaptedText && !_approvedRun && !_retryRun) {
-            if (!resourcesToGen.some(item => item && item.type === 'analysis')) {
-                resourcesToGen.unshift({ type: 'analysis', directive: 'Analyze the primary source before building its companion resources.' });
-            }
             if (!resourcesToGen.some(item => item && item.type === 'simplified')) {
                 const analysisIndex = resourcesToGen.findIndex(item => item && item.type === 'analysis');
                 resourcesToGen.splice(Math.max(0, analysisIndex + 1), 0, {
@@ -2572,7 +2645,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 uiId: item.uiId || null,
                 reason: _activeInstructionalContext.adaptedTextPolicy === 'prohibited'
                     ? 'Adapted Text is contraindicated by a sourced standards constraint.'
-                    : 'Adapted Text was omitted by educator choice.'
+                    : (_activeInstructionalContext.adaptedTextPolicySource === 'standard'
+                        ? 'Adapted Text was left out because the standard asks students to read grade-level text. To add a companion for background or a preview, choose "Include an adapted companion for background and preview" in the plan.'
+                        : 'Adapted Text was omitted by educator choice.')
             }));
         }
         const fullPackFailures = [];
@@ -2801,6 +2876,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
                         lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
                     }
+                    _addSupportedOriginalOnce(resultItem, currentSessionHistory);
                 }
                 if (type === 'glossary' && Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
                     lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(term => term.term).filter(Boolean);
@@ -3338,6 +3414,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
                             lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
                         }
+                        _addSupportedOriginalOnce(resultItem, currentSessionHistory);
                     }
                     if (type === 'glossary') {
                         if (Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
@@ -4038,11 +4115,35 @@ const _preservedVocabulary = (() => {
             return { text, boundaries };
         })]));
     };
+    // Word breaking keeps "l'atmosphère", "Newton's" and Arabic/Hebrew words
+    // with attached prefixes whole, so a term inside them is still the term:
+    // after a short elided prefix, before a possessive, after known clitics.
+    // "selfish" still does not contain "fish".
+    const unmarked = value => value.replace(/\p{M}/gu, '');
+    const cliticPrefix = (prefix, first) => {
+        const bare = unmarked(prefix);
+        if (/^\p{L}{1,5}['’]$/u.test(bare)) return true;
+        if (/\p{Script=Arabic}/u.test(first)) return /^(?:[وف]?[بكل]?(?:ال)?|[وف]?لل)$/u.test(bare) && bare !== '';
+        if (/\p{Script=Hebrew}/u.test(first)) return /^[והבכלמש]{1,4}$/u.test(bare);
+        return false;
+    };
+    const startsTerm = (text, boundaries, offset, term) => {
+        if (boundaries[offset]) return true;
+        let start = offset;
+        while (start > 0 && !boundaries[start]) start--;
+        return cliticPrefix(text.slice(start, offset), term[0]);
+    };
+    const endsTerm = (text, boundaries, end) => {
+        if (boundaries[end]) return true;
+        let stop = end;
+        while (stop < text.length && !boundaries[stop]) stop++;
+        return /^['’][sS]?$/.test(text.slice(end, stop));
+    };
     const count = (regions, term) => (regions || []).reduce((total, { text, boundaries }) => {
         let offset = 0, hits = 0;
         while ((offset = text.indexOf(term, offset)) >= 0) {
             const end = offset + term.length;
-            if (boundaries[offset] && boundaries[end]) hits++;
+            if (startsTerm(text, boundaries, offset, term) && endsTerm(text, boundaries, end)) hits++;
             offset = end;
         }
         return total + hits;

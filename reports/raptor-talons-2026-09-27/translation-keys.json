@@ -1,0 +1,17 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    {
+      "key": "stem.raptorhunt.study_owl_toes",
+      "fallback": "This owl is shown with two toes forward and two back. Its outer toe can move. Trace the curved talons, then compare the feet before and after takeoff."
+    },
+    {
+      "key": "stem.raptorhunt.study_osprey_toes",
+      "fallback": "This osprey is shown with two toes forward and two back. Its outer toe can reverse. Trace the curved talons, then compare the feet before and after takeoff."
+    },
+    {
+      "key": "stem.raptorhunt.study_opposing_toes",
+      "fallback": "Find the three forward toes and the rear toe, called the hallux. Trace the curved talons, then compare the feet before and after takeoff."
+    }
+  ]
+}

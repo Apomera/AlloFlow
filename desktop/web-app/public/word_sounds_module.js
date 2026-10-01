@@ -627,7 +627,37 @@ function createWordSoundsCore() {
     const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
     return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
   };
-  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  const CURATED_MANIPULATIONS = {
+    cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["it", "on", "up", "an", "in"] },
+    hat: { type: "substitution", instruction: "Say 'hat'. Now change the /t/ sound to /m/.", targetPhoneme: "t", answer: "ham", distractors: ["had", "hen", "jam", "ram", "map"] },
+    dog: { type: "substitution", instruction: "Say 'dog'. Now change the /g/ sound to /t/.", targetPhoneme: "g", answer: "dot", distractors: ["dock", "dab", "dig", "den", "dim"] },
+    stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop", "cop", "shop"] },
+    clap: { type: "substitution", instruction: "Say 'clap'. Now change the /a/ sound to /i/.", targetPhoneme: "a", answer: "clip", distractors: ["club", "clay", "clam", "crab", "grip"] },
+    train: { type: "deletion", instruction: "Say 'train'. Now say it again, but leave out the /t/ sound.", targetPhoneme: "t", answer: "rain", distractors: ["main", "gain", "pain", "chain", "brain"] },
+    plane: { type: "deletion", instruction: "Say 'plane'. Now say it again, but leave out the /p/ sound.", targetPhoneme: "p", answer: "lane", distractors: ["cane", "bane", "mane", "vane", "crane"] },
+    smile: { type: "deletion", instruction: "Say 'smile'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "mile", distractors: ["file", "pile", "tile", "mild", "wild"] },
+    black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack", "rack", "sack"] },
+    flat: { type: "substitution", instruction: "Say 'flat'. Now change the /t/ sound to /g/.", targetPhoneme: "t", answer: "flag", distractors: ["flap", "flask", "flame", "flop", "flip"] },
+  };
+
+  // Curated examples are local content, not automatic phoneme validation.
+  const resolveManipulationTask = (word, supplied, language) => {
+    const target = normalize(word);
+    const english = !language || /^en(?:[-_]|$)/i.test(String(language));
+    const curated = english && Object.prototype.hasOwnProperty.call(CURATED_MANIPULATIONS, target) && CURATED_MANIPULATIONS[target];
+    const matching = !supplied || (curated &&
+      ['type', 'instruction', 'targetPhoneme', 'answer'].every(key => supplied[key] === curated[key]) &&
+      Array.isArray(supplied.distractors) && supplied.distractors.length >= 2 &&
+      supplied.distractors.every(value => curated.distractors.includes(value)) &&
+      new Set(supplied.distractors).size === supplied.distractors.length);
+    if (curated && matching) return {...curated, distractors: [...curated.distractors], contentStatus: 'curated', targetWord: target};
+    return {type: 'review', contentStatus: 'teacher_review_required', targetWord: target,
+      instruction: 'Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.',
+      answer: '', distractors: []};
+  };
+  const manipulationReady = task => !!task && task.contentStatus === 'curated' &&
+    resolveManipulationTask(task.targetWord, task, 'en').contentStatus === 'curated';
+  return {resolveManipulationTask,manipulationReady,VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -2112,6 +2142,10 @@ const WS_CORE = createWordSoundsCore();
               ts("word_sounds.building_swap_task") || "Building your Sound Swap task\u2026",
             ),
           );
+        }
+        if (data && !WS_CORE.manipulationReady(data)) {
+          return React.createElement('p', {role: 'status', className: 'text-center text-slate-700 text-sm py-6'},
+            'Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.');
         }
         if (!data || !data.instruction) {
           return /*#__PURE__*/ React.createElement(
@@ -4006,8 +4040,9 @@ const WS_CORE = createWordSoundsCore();
           targetSound: aiSortData?.phoneme, teacherEdited: !!aiSortData?.teacherEdited });
       };
       // Word Families: resolve the rime the SAME way for the instruction audio
-      // and the on-screen game (AI rime first, then RIME_FAMILIES, then -at), and
-      // prime it once per word so the two never disagree.
+      // and the on-screen game (AI rime first, then RIME_FAMILIES; no family is
+      // reported unavailable, never borrowed), and prime it once per word so
+      // the two never disagree.
       const wordFamilyRimeRef = React.useRef(null);
       const resolveWordFamilyRime = (targetWordRaw, aiRimeData, preparedBoard) => {
         const targetWord = (targetWordRaw || '').toLowerCase();
@@ -4024,11 +4059,14 @@ const WS_CORE = createWordSoundsCore();
           if (prepared && prepared.rime === editedRime &&
               JSON.stringify(prepared.options) === JSON.stringify([...new Set(editedWords(aiRimeData.words))]) &&
               JSON.stringify(prepared.distractors) === JSON.stringify([...new Set(editedWords(aiRimeData.distractors))])) return usePrepared();
+          const editedMembers = (aiRimeData.words || []).filter(
+            (w) => w != null && String(w).toLowerCase() !== targetWord,
+          );
+          const editedIssue = wordFamilyBoardIssue(targetWord, editedMembers.slice(0, 8), (aiRimeData.distractors || []).filter((w) => w != null).slice(0, 8));
           return {
             rime: editedRime,
-            members: (aiRimeData.words || []).filter(
-              (w) => w != null && String(w).toLowerCase() !== targetWord,
-            ),
+            members: editedMembers,
+            ...(editedIssue ? { unavailable: editedIssue } : {}),
           };
         }
         if (prepared) return usePrepared();
@@ -4091,15 +4129,122 @@ const WS_CORE = createWordSoundsCore();
             }
           }
         }
-        if (!targetRime) {
-          targetRime = 'at';
-          familyMembers = (RIME_FAMILIES['at'] || []).filter((w) => w !== targetWord);
-        }
+        if (!targetRime) return { rime: null, members: [], unavailable: "no_family" };
         return { rime: targetRime, members: familyMembers };
+      };
+      // Final play-boundary check for any family board (prepared, teacher-
+      // edited or runtime): it must have a findable member, and no label may
+      // be scored on both sides or contradict the target word.
+      const wordFamilyBoardIssue = (targetWordRaw, members, distractors) => {
+        const clean = (values) => (Array.isArray(values) ? values : []).map((v) => String(v ?? "").toLowerCase().trim()).filter(Boolean);
+        const target = String(targetWordRaw || "").toLowerCase().trim();
+        const yes = clean(members);
+        const no = clean(distractors);
+        if (!yes.length) return "no_members";
+        return yes.some((w) => no.includes(w)) || no.includes(target) ? "conflict" : null;
+      };
+      // The exact board the player shows for a word, and why it cannot be
+      // played (issue: null when it can). One builder serves the board, the
+      // learner skip and the teacher's skipped-word list, so they agree.
+      const buildWordFamilyBoard = (targetWordRaw, wordData) => {
+        const targetWord = String(targetWordRaw || "").toLowerCase();
+        const aiRimeData = wordData?.rimeFamilyMembers;
+        const _wfPre = wordFamilyRimeRef.current;
+        const _wf = (_wfPre && _wfPre.word === targetWord) ? _wfPre : resolveWordFamilyRime(targetWord, aiRimeData, wordData?.activityItems?.word_families);
+        if (!_wf.rime) return { wf: _wf, issue: _wf.unavailable || "no_family" };
+            let targetRime = _wf.rime;
+            let familyMembers = (_wf.members || []).slice();
+            const rimeWordLen = targetWord.length;
+            const rimeDifficulty =
+              rimeWordLen <= 3 ? "easy" : rimeWordLen <= 4 ? "medium" : "hard";
+            const rimeMemberLimit =
+              rimeDifficulty === "easy"
+                ? 3
+                : rimeDifficulty === "medium"
+                  ? 4
+                  : 5;
+            const rimeDistractorLimit =
+              rimeDifficulty === "easy"
+                ? 2
+                : rimeDifficulty === "medium"
+                  ? 3
+                  : 4;
+            const wfSeed =
+              targetWord
+                .split("")
+                .reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17;
+            const wfRng = ((s) => {
+              let x = s;
+              return () => {
+                x = Math.sin(x) * 10000;
+                return x - Math.floor(x);
+              };
+            })(wfSeed);
+            const wfShuffle = (arr) => [...arr].sort(() => wfRng() - 0.5);
+            // Teacher-edited board: use the lists verbatim — no reshuffle, no
+            // slicing, no adjacent-family distractor pool.
+            const _wfTeacher = !!(aiRimeData && aiRimeData.teacherEdited);
+            const selectedMembers = _wf.prepared ? familyMembers : _wfTeacher
+              ? familyMembers.slice(0, 8)
+              : wfShuffle(familyMembers).slice(0, rimeMemberLimit);
+            const rimeKeys = Object.keys(RIME_FAMILIES);
+            const currentRimeIdx = rimeKeys.indexOf(targetRime);
+            const adjacentRimes = rimeKeys.filter(
+              (r) =>
+                r !== targetRime &&
+                (r[0] === targetRime[0] ||
+                  Math.abs(rimeKeys.indexOf(r) - currentRimeIdx) <= 3),
+            );
+            let distractorPool = [];
+            for (const adjRime of wfShuffle(adjacentRimes).slice(0, 4)) {
+              const adjMembers = RIME_FAMILIES[adjRime] || [];
+              distractorPool.push(...adjMembers.slice(0, 3));
+            }
+            distractorPool = distractorPool.filter(
+              (w) => !w.endsWith(targetRime),
+            );
+            const selectedDistractors = _wf.prepared ? _wf.distractors.slice() : _wfTeacher
+              ? (aiRimeData.distractors || []).filter((w) => w != null).slice(0, 8)
+              : wfShuffle(distractorPool).slice(0, rimeDistractorLimit);
+        return { wf: _wf, targetRime, rimeDifficulty, selectedMembers, selectedDistractors,
+          issue: wordFamilyBoardIssue(targetWord, selectedMembers, selectedDistractors) };
       };
       const includeOrthographic = orthoSessionGoal > 0;
       const latestRequestedWord = React.useRef(null);
       const [isEditing, setIsEditing] = React.useState(false);
+      // Learner play skips a Word Families item whose board cannot be played:
+      // no notice, attempt, score or audio. Teachers keep the notice.
+      const wordFamilySkipMode = !isTeacherMode && !isEditing;
+      const wordFamilySkippedRef = React.useRef(new Set());
+      const wordFamilyDataFor = (word) => {
+        const key = String(word || "").trim().toLowerCase();
+        return (wsPreloadedWords || []).find((pw) => pw && [pw.word, pw.targetWord, pw.displayWord].some((v) => String(v || "").trim().toLowerCase() === key)) || null;
+      };
+      // A word with pack data is judged by its board; one without (glossary
+      // pool) only once the player has seen and skipped it.
+      const wordFamilyEntrySkipped = (word) => {
+        const data = wordFamilyDataFor(word);
+        return data ? !!buildWordFamilyBoard(word, data).issue : wordFamilySkippedRef.current.has(String(word || "").trim().toLowerCase());
+      };
+      const wordFamilyNonePlayable = () => {
+        const pack = wsPreloadedWords || [];
+        const pool = pack.length > 0 ? pack : (wordPool || []);
+        const words = pool.map((w) => w && (w.displayWord || w.word || w.targetWord)).filter(Boolean);
+        return words.length > 0 && words.every(wordFamilyEntrySkipped);
+      };
+      // Pack words students skip in Word Families, for the teacher's review.
+      const wordFamilySkippedWords = () => (wsPreloadedWords || [])
+        .map((pw) => pw && [pw, pw.displayWord || pw.word || pw.targetWord])
+        .filter((e) => e && e[1] && buildWordFamilyBoard(e[1], e[0]).issue)
+        .map((e) => e[1]);
+      // The current item is skipped (judged only on this word's own data).
+      const wordFamilyItemSkipped = (word, data) => {
+        if (!wordFamilySkipMode || !word || !data) return false;
+        const key = String(word).trim().toLowerCase();
+        const own = Array.isArray(data) ? [] : [data.word, data.targetWord, data.displayWord, data.term].filter(Boolean).map((v) => String(v).trim().toLowerCase());
+        if (own.length && !own.includes(key)) return false;
+        return !!buildWordFamilyBoard(key, data).issue;
+      };
       const [isMinimized, setIsMinimized] = React.useState(false);
       React.useEffect(() => {
         if (typeof loadProbeBanks === "function") {
@@ -4966,18 +5111,6 @@ const WS_CORE = createWordSoundsCore();
       // experience even without Gemini available.
       // Mix of positions (initial deletion, final & medial substitution) so the
       // manipulated sound is not always at the start; 5 distractors each -> 6 options.
-      const MANIPULATION_FALLBACKS = {
-        cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["it", "on", "up", "an", "in"] },
-        hat: { type: "substitution", instruction: "Say 'hat'. Now change the /t/ sound to /m/.", targetPhoneme: "t", answer: "ham", distractors: ["had", "hen", "jam", "ram", "map"] },
-        dog: { type: "substitution", instruction: "Say 'dog'. Now change the /g/ sound to /t/.", targetPhoneme: "g", answer: "dot", distractors: ["dock", "dab", "dig", "den", "dim"] },
-        stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop", "cop", "shop"] },
-        clap: { type: "substitution", instruction: "Say 'clap'. Now change the /a/ sound to /i/.", targetPhoneme: "a", answer: "clip", distractors: ["club", "clay", "clam", "crab", "grip"] },
-        train: { type: "deletion", instruction: "Say 'train'. Now say it again, but leave out the /t/ sound.", targetPhoneme: "t", answer: "rain", distractors: ["main", "gain", "pain", "chain", "brain"] },
-        plane: { type: "deletion", instruction: "Say 'plane'. Now say it again, but leave out the /p/ sound.", targetPhoneme: "p", answer: "lane", distractors: ["cane", "bane", "mane", "vane", "crane"] },
-        smile: { type: "deletion", instruction: "Say 'smile'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "mile", distractors: ["file", "pile", "tile", "mild", "wild"] },
-        black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack", "rack", "sack"] },
-        flat: { type: "substitution", instruction: "Say 'flat'. Now change the /t/ sound to /g/.", targetPhoneme: "t", answer: "flag", distractors: ["flap", "flask", "flame", "flop", "flip"] },
-      };
       // Top up an option set to 6 with generic short words (reliable 6 choices).
       const MANIP_FILL = ["sit", "map", "bed", "pin", "mud", "fan", "log", "cup"];
       const padManipOpts = (arr) => {
@@ -4993,61 +5126,10 @@ const WS_CORE = createWordSoundsCore();
         for (const f of fill) { if (out.length >= 6) break; if (out.indexOf(f) === -1) out.push(f); }
         return out;
       };
-      // Pure helper: generates a manipulation task without touching React state.
-      // Used by fetchWordData (setup preload) AND the in-activity effect via the
-      // stateful wrapper below. Three-layer fallback: static table → Gemini → algorithmic.
-      // Never throws; returns a valid task object or a minimal algorithmic fallback.
+      // Schema-valid AI tasks are drafts; only the local examples can be graded.
       const generateManipulationTask = React.useCallback(
-        async (word, phonemes) => {
-          if (!word) return null;
-          const fallbackKey = word.toLowerCase();
-          if (MANIPULATION_FALLBACKS[fallbackKey]) {
-            return { ...MANIPULATION_FALLBACKS[fallbackKey] };
-          }
-          let result = null;
-          // Content language for word choice: answers/distractors must be
-          // real words of the SESSION language, never English fillers.
-          const _manipIsEnglish =
-            !wordSoundsLanguage ||
-            String(wordSoundsLanguage).toLowerCase().indexOf("en") === 0;
-          const _manipLangLabel = _manipIsEnglish
-            ? "English"
-            : `the language with code "${wordSoundsLanguage}"`;
-          if (typeof callGemini === "function") {
-            const phonemeStr = (phonemes || []).join(", ") || "unknown";
-            const prompt =
-              `You are a speech-language pathology educator creating a phoneme manipulation exercise.\n` +
-              `Word: "${word}"\nPhonemes: ${phonemeStr}\n\n` +
-              `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common word in ${_manipLangLabel}.\n` +
-              `IMPORTANT: Vary WHICH phoneme you manipulate - do NOT always pick the first sound. Prefer a MIDDLE (vowel) or FINAL sound when it yields a common word, so the exercise is not always about the beginning of the word.\n` +
-              `Return ONLY valid JSON — no markdown, no explanation:\n` +
-              `{"type":"substitution","instruction":"Say 'cap'. Now change the /a/ sound to /u/.","targetPhoneme":"a","answer":"cup","distractors":["cop","cab","can","cat","map"]}\n\n` +
-              `Rules: answer and all FIVE distractors must be real common words in ${_manipLangLabel}, all different from the answer; the instruction sentence stays in English (it is read by the teacher) but quotes the ${_manipLangLabel} words; targetPhoneme in plain text without slashes. Provide exactly 5 distractors.`;
-            try {
-              const raw = await callGemini(prompt);
-              const jsonMatch = (raw || "").match(/\{[\s\S]*?\}/);
-              if (jsonMatch) result = JSON.parse(jsonMatch[0]);
-            } catch (geminiErr) {
-              warnLog("[Manipulation] Gemini failed:", geminiErr?.message);
-            }
-          }
-          if (!result || !result.answer || !result.distractors) {
-            const answer = word.slice(1);
-            result = {
-              type: "deletion",
-              instruction: `Say '${word}'. Now say it again, but leave out the first sound.`,
-              targetPhoneme: phonemes?.[0] || word[0],
-              answer,
-              // English fillers only on English boards; other languages pad
-              // from the caller's own words via padManipOpts.
-              distractors: (_manipIsEnglish ? ["at", "on", "in", "up", "it", "an"] : [])
-                .filter((d) => d !== answer)
-                .slice(0, 5),
-            };
-          }
-          return result;
-        },
-        [callGemini, wordSoundsLanguage],
+        async (word) => word ? WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage) : null,
+        [wordSoundsLanguage],
       );
       // Stateful wrapper: calls the pure helper and pushes the result into
       // React state so the activity view re-renders with the new task.
@@ -5067,7 +5149,8 @@ const WS_CORE = createWordSoundsCore();
               lastWordForManipulation.current !== word
             )
               return;
-            const opts = fisherYatesShuffle(padManipOpts([result.answer, ...(result.distractors || []).slice(0, 5)]));
+            const opts = WS_CORE.manipulationReady(result)
+              ? fisherYatesShuffle(padManipOpts([result.answer, ...(result.distractors || []).slice(0, 5)])) : [];
             setManipulationState(result);
             manipulationStateRef.current = result;
             setManipulationOptions(opts);
@@ -5247,20 +5330,11 @@ const WS_CORE = createWordSoundsCore();
           return;
         lastWordForManipulation.current = currentWord;
         const preparedManipulation = wordSoundsPhonemes?.activityItems?.manipulation;
-        const preloadedTask = preparedManipulation?.task || wordSoundsPhonemes?.manipulationTask;
-        if (
-          preloadedTask &&
-          preloadedTask.answer &&
-          Array.isArray(preloadedTask.distractors) &&
-          preloadedTask.distractors.length > 0
-        ) {
-          // Prepared options must carry the task's answer — a board without
-          // it is unwinnable, so fall back to the local shuffle.
-          const opts = Array.isArray(preparedManipulation?.options) &&
-            preparedManipulation.options.length > 1 &&
-            preparedManipulation.options.includes(preloadedTask.answer)
-            ? [...preparedManipulation.options]
-            : fisherYatesShuffle(padManipOpts([preloadedTask.answer, ...preloadedTask.distractors.slice(0, 5)]));
+        const suppliedTask = wordSoundsPhonemes?.manipulationTask || preparedManipulation?.task;
+        const preloadedTask = WS_CORE.resolveManipulationTask(currentWord, suppliedTask, wordSoundsLanguage);
+        if (preloadedTask) {
+          const opts = WS_CORE.manipulationReady(preloadedTask)
+            ? fisherYatesShuffle(padManipOpts([preloadedTask.answer, ...preloadedTask.distractors])) : [];
           setManipulationState(preloadedTask);
           manipulationStateRef.current = preloadedTask;
           setManipulationOptions(opts);
@@ -7962,6 +8036,16 @@ const WS_CORE = createWordSoundsCore();
       const [segmentationErrors, setSegmentationErrors] = React.useState([]);
       const [playingOptionIndex, setPlayingOptionIndex] = React.useState(null);
       const [showWordText, setShowWordText] = React.useState(false);
+      // Supports shown while the current item is live. Hiding them again
+      // cannot undo what they revealed; post-answer reveals (lock held) and
+      // other items (key mismatch) are excluded.
+      const supportSeenRef = React.useRef({});
+      React.useEffect(() => {
+        if (submissionLockRef.current || (!showWordText && !showLetterHints)) return;
+        const key = `${advanceEpochRef.current}|${wordSoundsActivity}|${currentWordSoundsWord}`;
+        const prev = supportSeenRef.current.key === key ? supportSeenRef.current : {};
+        supportSeenRef.current = { key, showWordText: !!(prev.showWordText || showWordText), showLetterHints: !!(prev.showLetterHints || showLetterHints) };
+      }, [showWordText, showLetterHints]);
       const [draggedItem, setDraggedItem] = React.useState(null);
       const sessionQueueRef = React.useRef({});
       // Reset only run-local evidence. Longitudinal history, badges, phoneme
@@ -8208,6 +8292,10 @@ const WS_CORE = createWordSoundsCore();
               (a.word || "").localeCompare(b.word || ""),
             );
           }
+          // Learner play: unplayable Word Families items never enter the queue.
+          if (activityId === "word_families" && wordFamilySkipMode) {
+            selection = selection.filter((entry) => !wordFamilyEntrySkipped(entry.displayWord || entry.word));
+          }
           const queue = selection
             .slice(0, isFixedForm ? probeItemGoal : SESSION_LENGTH)
             .map((entry) => ({
@@ -8234,6 +8322,7 @@ const WS_CORE = createWordSoundsCore();
           isSequentialMode,
           isFixedForm,
           probeItemGoal,
+          wordFamilySkipMode,
         ],
       );
       const generateSoundChips = React.useCallback((phonemes) => {
@@ -9331,21 +9420,7 @@ const WS_CORE = createWordSoundsCore();
           });
           return;
         }
-        const seed = target
-          .split("")
-          .reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-        const frame = READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length];
-        const shown = currentWordSoundsWord || target;
-        const sentence = `${frame.before} ${shown}${/^[.,!?]/.test(frame.after) ? "" : " "}${frame.after}`.trim();
-        setReadSentenceBoard({
-          sentence,
-          before: frame.before,
-          after: frame.after,
-          options: fisherYatesShuffle([
-            shown,
-            ...buildDecodingDistractors(target),
-          ]),
-        });
+        setReadSentenceBoard({contentStatus: 'teacher_review_required'});
       }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes,
         // startActivity clears the board + word guard; watching the state
         // re-runs the rebuild (the guard above prevents any loop).
@@ -9394,25 +9469,7 @@ const WS_CORE = createWordSoundsCore();
           });
           return;
         }
-        const seed = target
-          .split("")
-          .reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-        const shown = currentWordSoundsWord || target;
-        const parts = [0, 1, 2].map((offset) => {
-          const frame = READ_SENTENCE_FRAMES[(seed + offset) % READ_SENTENCE_FRAMES.length];
-          return { before: frame.before, after: frame.after };
-        });
-        const story = parts
-          .map((p) => `${p.before} ${shown}${/^[.,!?]/.test(p.after) ? "" : " "}${p.after}`.trim())
-          .join(" ");
-        setReadPassageBoard({
-          story,
-          parts,
-          options: fisherYatesShuffle([
-            shown,
-            ...buildDecodingDistractors(target),
-          ]),
-        });
+        setReadPassageBoard({contentStatus: 'teacher_review_required'});
       }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes,
         // Same clear-then-rebuild contract as the boards above.
         readPassageBoard]);
@@ -9460,29 +9517,15 @@ const WS_CORE = createWordSoundsCore();
             extras: (prepared.extras || []).map((w) => String(w || "").toLowerCase()),
           };
         } else {
-          const packMates = [...new Set((preloadedWords || [])
-            .map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase())
-            .filter((w) => w && w !== target))];
-          if (packMates.length >= 1) {
-            const seed = target.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-            const frame = SENTENCE_MATCH_FRAMES[seed % SENTENCE_MATCH_FRAMES.length];
-            const partner = packMates[seed % packMates.length];
-            const first = seed % 3 === 0 ? partner : target;
-            const second = first === target ? partner : target;
-            board = {
-              sentence: `${frame.before} ${first} ${frame.mid} ${second}${frame.after}`,
-              sequence: [first, second],
-              extras: fisherYatesShuffle(packMates.filter((w) => w !== partner)).slice(0, 2),
-            };
-          }
+          board = {contentStatus: 'teacher_review_required'};
         }
         // Tile order is shuffled ONCE per board — shuffling at render time
         // would reshuffle the tray on every state change mid-item.
-        if (board) board.tiles = fisherYatesShuffle([...board.sequence, ...board.extras]);
+        if (board?.sequence) board.tiles = fisherYatesShuffle([...board.sequence, ...board.extras]);
         setSentenceMatchBoard(board);
-        setSentenceMatchSlots(board ? board.sequence.map(() => null) : []);
+        setSentenceMatchSlots(board?.sequence ? board.sequence.map(() => null) : []);
         setSentenceMatchMarks(null);
-        if (!board) return;
+        if (!board?.sequence) return;
         // Backfill any tile without a packed picture (teacher devices only —
         // the student boundary nulls callImagen).
         const tiles = [...board.sequence, ...board.extras];
@@ -11980,6 +12023,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       }, [currentWordSoundsWord, isolationState?.word, wordSoundsActivity]);
       React.useEffect(() => {
         if (playInstructions) return;
+        if (wordSoundsActivity === "word_families" && wordFamilyItemSkipped(currentWordSoundsWord, wordSoundsPhonemes)) return;
         if (currentWordSoundsWord && !isLoadingPhonemes) {
           const playKey = `${currentWordSoundsWord}-${wordSoundsActivity}`;
           if (lastPlayedWord.current === playKey) return;
@@ -12150,6 +12194,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
             activityId = redirect;
           }
+          // Learner play: Word Families with no playable board for any word is
+          // passed over like an unavailable activity. The next activity in the
+          // sequence starts, or the session ends when it was the last one.
+          let wordFamiliesEnded = false;
+          if (activityId === "word_families" && !forceWord && wordFamilySkipMode && wordFamilyNonePlayable()) {
+            const seq = [...new Set(activitySequence || [])];
+            const at = seq.indexOf("word_families");
+            const next = at >= 0 ? seq.slice(at + 1).find((a) => wsActivityAvailableForLang(a)) : null;
+            if (next) activityId = next;
+            else wordFamiliesEnded = true;
+          }
           // === Stop all ongoing audio immediately on activity switch ===
           audioCancelledRef.current = true;
           audioRunIdRef.current++;
@@ -12182,6 +12237,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }, 50);
           // === End audio cleanup ===
           advanceEpochRef.current++;
+          if (wordFamiliesEnded) {
+            setShowSessionComplete(true);
+            return;
+          }
           setWordSoundsActivity(activityId);
           setWordSoundsFeedback?.(null);
           setUserAnswer("");
@@ -12446,6 +12505,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           activitySequence,
           ACTIVITIES,
           studentPreparedAudioBlocked,
+          wordFamilySkipMode,
         ],
       );
       // Recovery for the "Loading your words… ⏳" dead end. startActivity arms
@@ -12624,6 +12684,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         getEffectiveDifficulty,
         startActivity,
       ]);
+      // Learner play: an unplayable Word Families item that still becomes
+      // current (a host-set word, or a word without pack data) is skipped at
+      // once, with no attempt or score. The next playable queue word follows;
+      // with none left, startActivity ends the activity.
+      React.useEffect(() => {
+        if (wordSoundsActivity !== "word_families" || isLoadingPhonemes || showReviewPanel || showSessionComplete) return;
+        if (!wordFamilyItemSkipped(currentWordSoundsWord, wordSoundsPhonemes)) return;
+        const word = String(currentWordSoundsWord).trim().toLowerCase();
+        wordFamilySkippedRef.current.add(word);
+        const queue = sessionQueueRef.current.word_families || [];
+        const at = queue.findIndex((entry) => {
+          const w = String((typeof entry === "string" ? entry : entry && (entry.singleWord || entry.fullTerm || entry.word)) || "").trim().toLowerCase();
+          return w && w !== word && !wordFamilyEntrySkipped(w);
+        });
+        if (at >= 0) {
+          sessionQueueRef.current.word_families = queue.slice(at + 1);
+          startActivity("word_families", queue[at]);
+        } else {
+          startActivity("word_families");
+        }
+      }, [wordFamilySkipMode, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, isLoadingPhonemes, showReviewPanel, showSessionComplete, startActivity]);
       React.useEffect(() => {
         if (typeof window !== "undefined" && window.speechSynthesis) {
           window.speechSynthesis.cancel();
@@ -12652,6 +12733,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       React.useEffect(() => {
         if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
         if (showReviewPanel) return;
+        // A skipped Word Families item is never spoken.
+        if (wordSoundsActivity === "word_families" && wordFamilyItemSkipped(currentWordSoundsWord, wordSoundsPhonemes)) return;
         // orthography now gets instructions like all other activities
         let cancelled = false;
         // Run-id: answering bumps audioRunIdRef, but the option-play loops
@@ -12895,7 +12978,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const family = (_wfPre && _wfPre.word === targetWord) ? _wfPre
                 : resolveWordFamilyRime(targetWord, wordSoundsPhonemes?.rimeFamilyMembers, wordSoundsPhonemes?.activityItems?.word_families);
               const targetRime = family.rime;
-              if (family.prepared) {
+              // The board shows a review notice instead; never name a family.
+              if (!targetRime || family.unavailable) {
+              } else if (family.prepared) {
                 await handleAudio(WS_CORE.wordFamilyInstruction(targetRime));
               } else if (
                 typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
@@ -13069,7 +13154,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // Wait for Gemini generation (up to 6s)
               if (
                 !manipulationStateRef.current ||
-                !manipulationOptionsRef.current?.length
+                (WS_CORE.manipulationReady(manipulationStateRef.current) && !manipulationOptionsRef.current?.length)
               ) {
                 for (let mWait = 0; mWait < 30; mWait++) {
                   await new Promise((r) => setTimeout(r, 200));
@@ -13255,6 +13340,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       };
       const checkAnswer = React.useCallback(
         (answer, expectedAnswer, opts) => {
+          if (wordSoundsActivity === 'manipulation' && !WS_CORE.manipulationReady(manipulationStateRef.current)) return;
           debugLog("TeacherCheck: checkAnswer called", {
             answer,
             expectedAnswer,
@@ -13589,8 +13675,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // Missed words are tracked via updateMasteryStats → revisitQueue (deferred review).
             // Legacy immediate re-queue was removed to prevent infinite-loop word cycling.
             // The student gets max 2 attempts per presentation, then progresses.
+            const _seen = supportSeenRef.current.key === `${advanceEpochRef.current}|${wordSoundsActivity}|${currentWordSoundsWord}` ? supportSeenRef.current : {};
+            supportSeenRef.current = {};
             const _responseEvidence = WS_CORE.responseEvidence({
-              showWordText, showLetterHints,
+              showWordText: !!(showWordText || _seen.showWordText),
+              showLetterHints: !!(showLetterHints || _seen.showLetterHints),
               alwaysShowText: getEffectiveTextMode() === "alwaysOn",
               taskEvidence: opts?.taskEvidence,
             });
@@ -13715,6 +13804,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 autoDirectorCooldown.current = true;
                 setTimeout(() => {
                   if (!isMountedRef.current) return;
+                  // A manual activity change during the delay owns the screen.
+                  if (advanceEpochRef.current !== _advanceEpoch) { autoDirectorCooldown.current = false; return; }
                   startActivity(nextActivity);
                   setTimeout(() => {
                     autoDirectorCooldown.current = false;
@@ -13734,6 +13825,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     autoDirectorCooldown.current = true;
                     setTimeout(() => {
                       if (!isMountedRef.current) return;
+                      if (advanceEpochRef.current !== _advanceEpoch) { autoDirectorCooldown.current = false; return; }
                       startActivity(firstRevisit.activityId, firstRevisit.word);
                       setRevisitQueue((prev) => prev.slice(1));
                       setTimeout(() => {
@@ -13747,7 +13839,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     message: ts("word_sounds.lesson_practice_complete") || "Lesson complete! You practiced every activity.",
                   });
                   setTimeout(() => {
-                    if (isMountedRef.current) setShowSessionComplete(true);
+                    if (isMountedRef.current && advanceEpochRef.current === _advanceEpoch) setShowSessionComplete(true);
                   }, 2500);
                 }
               }
@@ -13823,6 +13915,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   debugLog("Auto-director cooldown STARTED for:", nextActivity);
                   setTimeout(() => {
                     if (!isMountedRef.current || isProbeMode) return;
+                    // A manual activity change during the delay owns the screen.
+                    if (advanceEpochRef.current !== _advanceEpoch) { autoDirectorCooldown.current = false; return; }
                     // startActivity is the single capability-gated transition
                     // path and fully prepares the next activity's first item.
                     startActivity(nextActivity);
@@ -13859,6 +13953,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   isolationStateRef.current?.correctSound ||
                   isolationState?.correctSound;
                 if (_isoSound) updatePhonemeMastery([_isoSound], isCorrect, _masteryEvidence);
+              } else if (wordSoundsActivity === "sound_sort") {
+                // A sort tests ONE edge sound; credit only the word's own unit
+                // at the board's tested edge (none if the board is unknown).
+                const _ssBoard = soundSortPreloadRef.current;
+                const _ssPh = wordSoundsPhonemes.phonemes;
+                const _ssMode = _ssBoard && _ssBoard.word === String(currentWordSoundsWord || "").toLowerCase() ? _ssBoard.item?.mode : null;
+                const _ssEdge = Array.isArray(_ssPh) && _ssPh.length && (_ssMode === "first" || _ssMode === "last") ? _ssPh[_ssMode === "first" ? 0 : _ssPh.length - 1] : null;
+                if (_ssEdge) updatePhonemeMastery([_ssEdge], isCorrect, _masteryEvidence);
               } else if (!_wordLevelActs.includes(wordSoundsActivity)) {
                 updatePhonemeMastery(wordSoundsPhonemes.phonemes, isCorrect, _masteryEvidence);
               }
@@ -15400,8 +15502,22 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         [currentWordSoundsWord, wordSoundsPhonemes],
       );
       const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
+      // A prepared Missing Letter board is used only as a whole, and only when
+      // its position exists in the displayed word, holds the stated letter,
+      // and the choices offer that letter exactly once. Otherwise the board is
+      // derived from the displayed word below.
+      const preparedMissingLetter = React.useMemo(() => {
+        const ml = packForCurrentWord?.missing_letter;
+        const word = String(currentWordSoundsWord || "").toLowerCase();
+        const letter = String(ml?.correctLetter ?? "").toLowerCase();
+        const choices = Array.isArray(ml?.options) ? ml.options.map((o) => (typeof o === "string" ? o.toLowerCase() : "")) : [];
+        const usable = !!ml && Number.isInteger(ml.hiddenIndex) && ml.hiddenIndex >= 0 && ml.hiddenIndex < word.length &&
+          !!letter && word[ml.hiddenIndex] === letter && choices.length >= 2 && choices.every(Boolean) &&
+          new Set(choices).size === choices.length && choices.includes(letter);
+        return usable ? { hiddenIndex: ml.hiddenIndex, correctLetter: letter, options: choices } : null;
+      }, [currentWordSoundsWord, wordSoundsPhonemes]);
       const hiddenIndex = React.useMemo(() => {
-        if (Number.isInteger(packForCurrentWord?.missing_letter?.hiddenIndex)) return packForCurrentWord.missing_letter.hiddenIndex;
+        if (preparedMissingLetter) return preparedMissingLetter.hiddenIndex;
         if (!currentWordSoundsWord || currentWordSoundsWord.length <= 1)
           return 0;
         const seed = currentWordSoundsWord
@@ -15409,9 +15525,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           .reduce((a, c) => a + c.charCodeAt(0), 0);
         return seed % currentWordSoundsWord.length;
       }, [currentWordSoundsWord, wordSoundsPhonemes]);
-      const correctLetter = packForCurrentWord?.missing_letter?.correctLetter || currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
+      const correctLetter = preparedMissingLetter ? preparedMissingLetter.correctLetter : currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
       const letterOptions = React.useMemo(() => {
-        if (Array.isArray(packForCurrentWord?.missing_letter?.options)) return [...packForCurrentWord.missing_letter.options];
+        if (preparedMissingLetter) return [...preparedMissingLetter.options];
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
         const options = [correctLetter];
         const seed = (currentWordSoundsWord || "")
@@ -15486,6 +15602,32 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ts("word_sounds.select_activity"),
             ),
           );
+        }
+        const reviewRequired = wordSoundsActivity === 'manipulation'
+          ? manipulationState && !WS_CORE.manipulationReady(manipulationState)
+          : wordSoundsActivity === 'read_sentence' ? readSentenceBoard?.contentStatus === 'teacher_review_required'
+          : wordSoundsActivity === 'read_passage' ? readPassageBoard?.contentStatus === 'teacher_review_required'
+          : wordSoundsActivity === 'sentence_match' ? sentenceMatchBoard?.contentStatus === 'teacher_review_required' : false;
+        if (reviewRequired) {
+          const nextIndex = (activitySequence || []).indexOf(wordSoundsActivity) + 1;
+          const nextActivity = nextIndex > 0
+            ? (activitySequence || []).slice(nextIndex).find(id => wsActivityAvailableForLang(id)) : null;
+          return React.createElement('div', {className: 'flex flex-col items-center gap-4 p-6'},
+            React.createElement('p', {role: 'status', className: 'text-slate-700 text-sm text-center'},
+              wordSoundsActivity === 'manipulation'
+                ? 'Sound Swap needs a teacher to verify a one-sound change for this word. This item will not be scored.'
+                : 'A teacher needs to provide and review this reading example. This item will not be scored.'),
+            React.createElement('button', {
+              type: 'button', className: 'px-4 py-2 rounded-lg bg-violet-700 text-white font-semibold focus:ring-2 focus:ring-violet-400',
+              onClick: () => {
+                if (nextActivity) {
+                  setSequenceIndex((activitySequence || []).indexOf(nextActivity));
+                  startActivity(nextActivity);
+                } else {
+                  setWordSoundsActivity(null);
+                }
+              }
+            }, nextActivity ? 'Skip unscored item and continue' : 'Choose another activity'));
         }
         switch (wordSoundsActivity) {
           case "isolation": {
@@ -16155,8 +16297,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   type: "correct",
                   message: "🎉 Perfect!" + streakBonus,
                 });
+                const _scoreEpoch = advanceEpochRef.current;
                 setTimeout(() => {
-                  if (!isMountedRef.current) return;
+                  if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
                   setUserAnswer("");
                   checkAnswer("correct", "correct");
                 }, 1500);
@@ -16372,8 +16515,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   message:
                     ts("word_sounds.scramble_correct") || "🎉 Unscrambled!",
                 });
+                const _scoreEpoch = advanceEpochRef.current;
                 setTimeout(() => {
-                  if (!isMountedRef.current) return;
+                  if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
                   setUserAnswer("");
                   setUsedScrambleIndices([]);
                   checkAnswer("correct", "correct");
@@ -16546,8 +16690,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   message:
                     ts("word_sounds.ml_correct") || "🎉 Correct letter!",
                 });
+                const _scoreEpoch = advanceEpochRef.current;
                 setTimeout(() => {
-                  if (!isMountedRef.current) return;
+                  if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
                   setUserAnswer("");
                   checkAnswer("correct", "correct");
                 }, 1500);
@@ -16701,6 +16846,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 isAudioBusy: isPlayingAudio,
                 optionImages: aacMode ? optionImages : null,
                 onCheckAnswer: (ans) => {
+                  if (!WS_CORE.manipulationReady(manipulationState)) return;
                   const isCorrect =
                     ans?.toLowerCase() ===
                     manipulationState?.answer?.toLowerCase();
@@ -17116,8 +17262,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           window.__ALLO_INSTRUCTION_AUDIO["fb_amazing"],
                         );
                       }
+                      const _scoreEpoch = advanceEpochRef.current;
                       setTimeout(() => {
-                        if (!isMountedRef.current) return;
+                        if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
                         setTracingPhase("upper");
                         checkAnswer("correct", "correct", { formationScore });
                       }, 1000);
@@ -17259,63 +17406,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           case "word_families": {
             const targetWord = currentWordSoundsWord?.toLowerCase() || "";
-            const aiRimeData = wordSoundsPhonemes?.rimeFamilyMembers;
-            const _wfPre = wordFamilyRimeRef.current;
-            const _wf = (_wfPre && _wfPre.word === targetWord) ? _wfPre : resolveWordFamilyRime(targetWord, aiRimeData, wordSoundsPhonemes?.activityItems?.word_families);
-            let targetRime = _wf.rime;
-            let familyMembers = (_wf.members || []).slice();
-            const rimeWordLen = targetWord.length;
-            const rimeDifficulty =
-              rimeWordLen <= 3 ? "easy" : rimeWordLen <= 4 ? "medium" : "hard";
-            const rimeMemberLimit =
-              rimeDifficulty === "easy"
-                ? 3
-                : rimeDifficulty === "medium"
-                  ? 4
-                  : 5;
-            const rimeDistractorLimit =
-              rimeDifficulty === "easy"
-                ? 2
-                : rimeDifficulty === "medium"
-                  ? 3
-                  : 4;
-            const wfSeed =
-              targetWord
-                .split("")
-                .reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17;
-            const wfRng = ((s) => {
-              let x = s;
-              return () => {
-                x = Math.sin(x) * 10000;
-                return x - Math.floor(x);
-              };
-            })(wfSeed);
-            const wfShuffle = (arr) => [...arr].sort(() => wfRng() - 0.5);
-            // Teacher-edited board: use the lists verbatim — no reshuffle, no
-            // slicing, no adjacent-family distractor pool.
-            const _wfTeacher = !!(aiRimeData && aiRimeData.teacherEdited);
-            const selectedMembers = _wf.prepared ? familyMembers : _wfTeacher
-              ? familyMembers.slice(0, 8)
-              : wfShuffle(familyMembers).slice(0, rimeMemberLimit);
-            const rimeKeys = Object.keys(RIME_FAMILIES);
-            const currentRimeIdx = rimeKeys.indexOf(targetRime);
-            const adjacentRimes = rimeKeys.filter(
-              (r) =>
-                r !== targetRime &&
-                (r[0] === targetRime[0] ||
-                  Math.abs(rimeKeys.indexOf(r) - currentRimeIdx) <= 3),
-            );
-            let distractorPool = [];
-            for (const adjRime of wfShuffle(adjacentRimes).slice(0, 4)) {
-              const adjMembers = RIME_FAMILIES[adjRime] || [];
-              distractorPool.push(...adjMembers.slice(0, 3));
-            }
-            distractorPool = distractorPool.filter(
-              (w) => !w.endsWith(targetRime),
-            );
-            const selectedDistractors = _wf.prepared ? _wf.distractors.slice() : _wfTeacher
-              ? (aiRimeData.distractors || []).filter((w) => w != null).slice(0, 8)
-              : wfShuffle(distractorPool).slice(0, rimeDistractorLimit);
+            const _wfBoard = buildWordFamilyBoard(targetWord, wordSoundsPhonemes);
+            const _wf = _wfBoard.wf;
+            // Learners never see the notice: the skip effect moves them on.
+            const _wfReviewNeeded = () => wordFamilySkipMode
+              ? React.createElement("div", { className: "p-4", "aria-busy": "true" })
+              : React.createElement("div", { role: "status", className: "p-4 text-slate-700" }, ts("word_sounds.word_families_review_needed") || "This word needs a reviewed word family. Choose another activity or return to setup.");
+            if (!_wf.rime) return _wfReviewNeeded();
+            const { targetRime, rimeDifficulty, selectedMembers, selectedDistractors } = _wfBoard;
+            // Teachers still get the editor so a conflicting board can be fixed.
+            if (!isEditing && _wfBoard.issue) return _wfReviewNeeded();
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-4" },
@@ -17475,7 +17575,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     /*#__PURE__*/ React.createElement("span", { className: "px-4 py-1.5 rounded-2xl border-2 border-violet-200 bg-violet-50 text-2xl font-black text-violet-700 lowercase" }, rsWord),
                   )),
               !rsReady
-                ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
+                ? /*#__PURE__*/ React.createElement("p", { role: 'status', className: "text-slate-700 text-sm font-semibold italic" }, readSentenceBoard?.contentStatus === 'teacher_review_required'
+                    ? 'A teacher needs to provide and review a sentence for this word. Choose another activity.'
+                    : ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement(
                       "div",
@@ -17580,7 +17682,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     /*#__PURE__*/ React.createElement("span", { className: "px-4 py-1.5 rounded-2xl border-2 border-violet-200 bg-violet-50 text-2xl font-black text-violet-700 lowercase" }, rpWord),
                   )),
               !rpReady
-                ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
+                ? /*#__PURE__*/ React.createElement("p", { role: 'status', className: "text-slate-700 text-sm font-semibold italic" }, readPassageBoard?.contentStatus === 'teacher_review_required'
+                    ? 'A teacher needs to provide and review a story for this word. Choose another activity.'
+                    : ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement(
                       "div",
@@ -17674,7 +17778,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" },
                     (sentenceMatchBoard === null && (preloadedWords || []).length < 2)
                       ? (ts("word_sounds.sentence_match_needs_words") || "Picture the Sentence needs at least two words in this pack.")
-                      : (ts("word_sounds.read_sentence_preparing") || "Preparing your sentence..."))
+                      : (sentenceMatchBoard?.contentStatus === 'teacher_review_required'
+                        ? 'A teacher needs to provide and review a sentence for this word. Choose another activity.'
+                        : (ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")))
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement("p", { className: "max-w-xl text-center text-3xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-4" }, smBoard.sentence),
                     smBoard.sequence.length > 1 && /*#__PURE__*/ React.createElement("p", { className: "text-xs text-slate-500 font-semibold" }, ts("word_sounds.sentence_match_order_hint") || "Place the pictures in the order they appear"),
@@ -18269,6 +18375,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           onRefineImage: handleRefineWordImage,
           activitySequence: activitySequence,
           setActivitySequence: setActivitySequence,
+          // Words students skip in Word Families (board cannot be played).
+          wordFamilySkips: wsActivityAvailableForLang("word_families") && (!activitySequence.length || activitySequence.includes("word_families"))
+            ? wordFamilySkippedWords() : [],
           isStudentLocked: isStudentLocked,
           setIsStudentLocked: setIsStudentLocked,
           generatingImageIndex: generatingImageIndex,

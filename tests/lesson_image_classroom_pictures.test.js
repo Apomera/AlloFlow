@@ -60,10 +60,14 @@ describe('Regenerate and AI edits on a picked picture', () => {
     expect('imageCreditBand' in out.data).toBe(false);
   });
 
-  it('leaves the fields of an AI picture alone', async () => {
+  // 2026-09-27 (I3): the old AI description described the OLD picture, so it goes; an
+  // author's own description stays (its hash marks it stale). Source and credit fields stay.
+  it('keeps the source fields of an AI picture but drops its AI description', async () => {
     const out = await regenerate(original);
-    expect(out.data).toMatchObject({ imageUrl: 'data:image/png;base64,TkVXX0FJ', altText: original.data.altText, altSource: original.data.altSource });
-    expect('imageSource' in out.data).toBe('imageSource' in original.data);
+    expect(out.data).toMatchObject({ imageUrl: 'data:image/png;base64,TkVXX0FJ', altText: '', altSource: '', altHash: '' });
+    expect(out.data.imageSource).toBe(original.data.imageSource);
+    const authored = await regenerate({ ...original, data: { ...original.data, altText: 'Written by the teacher', altSource: 'author' } });
+    expect(authored.data).toMatchObject({ altText: 'Written by the teacher', altSource: 'author' });
   });
 
   it('an AI edit takes the credit band off first and draws a fresh "edited" credit after', async () => {

@@ -1,0 +1,98 @@
+# Track 18 — FAQ and karaoke overlay device-save verification
+
+This is an isolated, tested integration candidate. Shared application source, host, catalogs, generated output, Git and deployed/saved application state were not changed by this work. No other chat was contacted. It does not establish that every karaoke resource saves reliably.
+
+## Baseline and delivery
+
+- Snapshot and final HEAD: `13ebcc73f5784436643adc7c12ff8d83d5b29028`. The older `d2351f…` and the preceding audit's `3752fe4…` are not this candidate's basis. HEAD alone is insufficient: this is a snapshot of the local working files, including any changes already present.
+- No applicable AGENTS.md was found in the inspected workspace/ancestry and target directories.
+- The local checkout was not identified as the deployed release. Production behavior was not exercised.
+- Shared `view_simplified_source.jsx` changed during the investigation: start SHA256 `4fdd4c1c0013146b89072f09b72e5ffa588484861d3cb3f37aae588a10790265`; packaging SHA256 `765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f`. FAQ, immersive-reader and resource-module source hashes still matched the snapshot. The manifest records all hashes.
+- Apply the small source changes to the current assembled checkout. The reader change only passes resource identity, synthesis context/profile, payload and language into the standard karaoke overlay. Do not replace the current reader with this full snapshot.
+- Deliverables: [source-and-tests.patch](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/source-and-tests.patch), [manifest.json](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/manifest.json), normalized `basis/`, changed `candidate/`, browser fixture, validation JSON and screenshot. Seven patch-file round trips were verified in memory. Candidate root/desktop copies match for all four modules.
+
+## Ranked evidence and minimal changes
+
+Line references below point to frozen source snapshots, so subsequent workspace changes cannot silently change their meaning.
+
+| Priority | Evidence and classification | Candidate change |
+| --- | --- | --- |
+| P1 | **Source gap; reproduced in DOM fixture.** FAQ claims all audio is saved after `result.ok`, and regenerated audio is saved after receiving a URL. Neither is a device-storage readback. [FAQ:178](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/view_faq_source.jsx:178), [FAQ:208](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/view_faq_source.jsx:208). | Say audio was prepared and direct users to the verified device count. Add explicit feedback for false/undefined preparation results. |
+| P1 | **Source gap; reproduced in DOM fixture.** Overlay treats every completed preparation without a truthy `remaining` field as `✓ Saved`, including false, undefined and a failed result. [Overlay:1948](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/immersive_reader_source.jsx:1948), [Overlay:2332](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/immersive_reader_source.jsx:2332). | Keep the preparation button actionable, announce preparation outcomes separately, and count saved clips only through the device readback API. |
+| P1 | **Source gap; reproduced in DOM fixture.** A failed capture is hidden if the legacy store has matching text, regardless of occurrence or compatibility. [Overlay:1334](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/immersive_reader_source.jsx:1334). | Use the shared occurrence-aware inspection for playback readiness. Preserve the failure/retry when only stale raw audio exists. Capture success still does not count as durable storage. |
+| P1 | **Source gap; reproduced in DOM fixture.** Overlay preparation lacks an abort signal/current-request guard; capture results survive close/reopen; same-tick retry clicks can start multiple resolvers. [Overlay:1312](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/immersive_reader_source.jsx:1312), [Overlay:1375](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/immersive_reader_source.jsx:1375), [Overlay:1948](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/immersive_reader_source.jsx:1948). FAQ preparation context omits speed at [FAQ:79](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/basis/view_faq_source.jsx:79). | Scope requests to resource/text/profile/open state, abort owned preparation/retries, ignore late completions, use synchronous ownership guards, and include FAQ synthesis speed. |
+| P1 verification | **Not a reproduced storage failure.** No real IndexedDB restart/eviction/quota run or deployed-service test was performed. The host already exposes readback and persistence-only retry; attached audio and durable audio have different contracts. Recorded exact evidence: `AlloFlowANTI.txt:32197`, `:32679`, `:32922`, `:32947`; `read_aloud_audio_service_source.jsx:466`, `:562`, `:1408`. See [host excerpts](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/evidence/AlloFlowANTI.txt.txt) and [service excerpts](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/evidence/read_aloud_audio_service_source.jsx.txt). | Reuse these APIs. Do not introduce another cache, infer durability from a URL, or equate sharing/downloads with this device check. Run the storage acceptance cases below after integration. |
+
+The reusable [DeviceSaveStatus component:302](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/candidate/resource_read_aloud_module.js:302) checks the current resource, entry count, synthesis profile, payload, store and revision. It rejects mismatched/malformed results and requires a valid readback timestamp for a saved count. A write receipt by itself never changes that count. Missing APIs/read errors are explicitly unverified. Checks refresh after relevant media events, store mutations, module registration and return to the page.
+
+`Retry device save` calls only the existing persistence API, with an owned abort signal. It never invokes generation, capture or the playback resolver. Duplicate activation is guarded synchronously; read/write waits are bounded at 15 seconds. The host API is invoked immediately before a navigation can replace its resource-scoped function. A timeout reports an unconfirmed operation, and subsequent readback remains authoritative even if storage completes later.
+
+The existing overlay capture retry is separately labeled `Retry adding played audio`, with help that it may regenerate unavailable audio. It must not be confused with the persistence-only retry.
+
+## Existing safeguards and nonfindings
+
+- The shared readiness service already compares the actual selected clip bytes and compatible synthesis identity against a separately hydrated persisted store. This candidate consumes that contract; it does not alter persistence formats or clip identity.
+- The shared host already loads ResourceReadAloudModule. The candidate adds an export there and handles late registry arrival without a new host loader.
+- FAQ already has native disclosure/sentence controls, request ownership for whole-FAQ preparation, an abort path and compatible/stale distinctions in edit controls. The new device count does not replace those controls.
+- The overlay already contains modal focus and restores the opener. The new status uses native sibling buttons, has no nested controls, and leaves both buttons mounted when results change. `aria-disabled` keeps focus stable while handlers enforce availability.
+- Routine count announcements are quiet during playback; explicit checks and save failures have polite, atomic status feedback. Controls are outside live regions. Actual assistive-technology behavior still needs manual verification.
+- Comparison `playbackOnly` overlays still expose no save, recording or device-retry actions. The new status is explicitly for reference read-aloud audio; student recordings have a separate storage lane.
+- New actions have 44px minimum dimensions as a usability choice. This does not imply that every smaller inline word target violates WCAG. WCAG 2.2 AA target-size rules include inline/equivalent/spacing exceptions.
+
+## Verification performed
+
+**125 distinct tests passed across 12 suites.** The 124-test combined run passed with one worker; after the final synchronous API-ownership guard, all 38 focused device/FAQ/overlay cases passed, including the additional same-event host-replacement case. The 87 unaffected regression cases passed in the combined run. No earlier candidate's counts are included.
+
+- Existing suites: FAQ audio parity, control accessibility and disclosure; immersive dialog/render/lifecycle; reader keyboard, sentence links, dialog and source accessibility checks.
+- New cases: independent ready/saved counts, duplicate occurrences/profile propagation, missing APIs, malformed/wrong-resource responses, failed reads/writes, timeout, eviction-like readback, byte/payload/store changes, out-of-order reads, same-tick activation, close/reopen, navigation and focus retention.
+- **Baseline reproduction:** 14 of 15 route acceptance cases failed on the frozen prior source; playback-only remained a passing safeguard. These are acceptance-case failures, not 14 distinct defects and not production reproductions.
+- The first regression run had one assertion expecting the old capture-retry label; that assertion was updated to the intentional distinction. A later parallel run hit 5-second timing limits and cascading render failures; the affected suites passed on a bounded serial rerun, and the complete 124-test serial run passed. The failed-run JSON is retained.
+- Builds: FAQ and reader used their existing Babel builders. The isolated immersive builder used the already-installed esbuild executable directly in place of `npx`, avoiding any package fetch. No dependencies were installed. The temporary builder adjustment is excluded from the integration patch.
+
+**Nine Chromium scenarios passed with no page errors.** Real compiled components, React and Tailwind styles ran in an intercepted local fixture with mocked storage/TTS APIs and no application server. Six route/layout combinations cover FAQ and overlay at 320×640 CSS pixels in normal layout, user spacing overrides and doubled computed fonts. Three more check the overlay's warm/dark/sepia status contrast and touch-emulated checks. All layouts retained horizontal fit; keyboard activation performed exactly one persistence write and zero generation calls. Focus remained on retry, Close stayed reachable, modal tab containment and Escape return worked, and no invalid nested controls appeared.
+
+The browser runs exercised the same rendered markup as the final candidate; the final additional change only made API invocation synchronous and was covered by the focused tests. [Browser results](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/validation/device-save-browser.json), [combined tests](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/validation/device-save-final.json), [final focused tests](C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/reader-device-save-track18-2026-09-27/validation/device-save-final-api-scope.json).
+
+These checks do **not** prove screen-reader announcements, hardware touch behavior, real text-only resizing, real 400% browser zoom, storage durability, production provider behavior, or assembled nested/sticky overlays. No axe/jsdom result is offered as such proof.
+
+## Focused acceptance and manual verification
+
+| Route/task | Required result |
+| --- | --- |
+| FAQ, teacher, Save TTS and regenerate a sentence | Preparation success is distinct from device storage. A false/undefined result gives actionable feedback. The teacher can still reach Edit, Done editing, sentence actions and Save TTS with keyboard only. |
+| FAQ repeated text and speed/voice changes | Whole-resource readback includes both occurrences and the selected synthesis profile. Changing context cancels owned preparation and drops its late notice. Separately audit legacy per-sentence FAQ regeneration's occurrence identity before declaring parity. |
+| Standard karaoke overlay from Original and Adapted views | Correct resource id, narration text, language, synthesis profile and payload reach the status component. Reader controls and Close remain reachable at all target widths. Current compiled-reader regression tests pass; the assembled launch-to-overlay flow still needs integration verification for both forms. |
+| Check device save | Focus stays on Check; status announces the resulting ready/saved counts without moving focus. A stale response for another resource cannot announce success. Missing storage/read errors say unverified rather than saved. |
+| Retry device save | Focus stays on Retry through busy/failure/success; Enter and Space invoke one persistence write using existing clips. No generation/provider request occurs. On success the UI reads storage again; the readback count controls the result. |
+| Close, navigation, text edits or profile changes during a request | Close and route navigation remain usable. Owned writes/preparation/resolver retries receive abort signals; old completions cannot change the new resource's UI or attach retry audio into it. |
+| Playback, background capture and storage events | Routine counters do not speak over every sentence. Explicit save failures and user-triggered checks remain announced. On a stale/failed capture, a raw same-text entry cannot hide the retry. |
+| Restart, offline replay, eviction and quota | After a real save, fully close/reopen the app/browser and replay offline without new TTS. Delete/evict the saved test fixture or inject quota failure: refresh/check must show the reduced saved count or unverified state, with usable retry. Verify the actual selected replacement bytes, not only an older matching-text clip. Use disposable test resources. |
+| 320 CSS px, true 200% text resize, true 400% browser zoom, text spacing | No lost text/control or horizontal scrolling for these interfaces. Test line-height 1.5, paragraph spacing 2em, letter spacing .12em and word spacing .16em together. Scroll/focus must expose the entire focused control; Save, Retry, Edit and Close must remain reachable. Doubled-font fixture results are supplementary only. |
+| NVDA/Chrome and Firefox; VoiceOver/Safari; mobile VoiceOver/TalkBack | Check names, roles, counts, busy/error announcements, no repeated routine announcements during narration, logical focus order, dialog containment, Escape/close return and touch exploration. Use actual AT/device tests. |
+| Themes, forced colors, reduced motion, sticky/nested overlays after 04/09/10 assembly | Verify visible focus and contrast, no sticky header covering focused actions, no trap between parent/child overlays, and a usable close/save path. Fixture verified only new status text contrast in three overlay themes and reduced-motion layout. |
+| Comparison playback-only, personal recordings, shared/downloaded copies | Comparison has no persistence controls. Reference readback must never certify student recordings or another device/download. Verify these independently using their intended storage contracts. |
+
+The acceptance criteria follow W3C guidance for [status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html), [reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html) and [target-size minimum](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html). These sources support the criteria; they do not certify this implementation.
+
+## Ownership, dependencies and integration order
+
+| File/area | Owner/dependency and requested integration |
+| --- | --- |
+| `resource_read_aloud_module.js` and desktop mirror | Shared resource/read-aloud owner: review the additive DeviceSaveStatus export and its consumption of 02/15 readiness/persistence contracts. No change to existing studio Controls or CueControls. |
+| `view_faq_source.jsx` | FAQ/reader owner: merge the status, preparation wording and context invalidation. Rebuild its module and desktop mirror. |
+| `immersive_reader_source.jsx` | Reader owner: merge scoped preparation/capture retry and status UI, preserving current overlay fixes. Rebuild with the canonical builder. |
+| `view_simplified_source.jsx` | Reader/01 plus active integrations: merge only the standard overlay context/profile/payload/language props into the current source. This snapshot predates later shared edits; do not overwrite them. Preserve earlier track-18 candidates already integrated or pending. |
+| Host/persistence | 02/15 own the API/storage contract. Existing host readback must remain resource-scoped, compare selected bytes and fail honestly. This candidate requires no host edit; assembled loader/pins/integrity outputs remain the release owner's responsibility. |
+| Catalogs | New `audio_device.*`, `faq.audio_prepared`, `faq.audio_sentence_prepared`, `faq.audio_prepare_unconfirmed`, `faq.device_unverified` and overlay preparation/capture/device keys currently have safe English fallbacks. Catalog owner should add translations before localized release. Existing misleading translated success keys are not reused for the corrected messages. |
+| Accessibility verification | Track 18 + reader owner, with assembled 04/09/10 before final nested/sticky/reflow/AT checks. |
+
+Integrate source deltas into the current assembled baseline, regenerate only affected modules/mirrors and release metadata through the normal owner workflow, then rerun the delivered focused suites and browser fixture. Run the real-storage and AT matrix before claiming durable all-resource coverage. This report requests no deployment, push or merge by itself.
+
+## Remaining improvements in this lane
+
+1. **FAQ sentence identity:** edit badges/regeneration still use legacy sentence-text lookup in the baseline. The new whole-resource check carries occurrences; the individual second occurrence must get the same identity treatment before claiming exact parity.
+2. **Other karaoke routes:** glossary and studio memory-aid/applied-challenge controls should consume the same honest readiness contract. Story Forge and script resources use different serialized/project persistence paths and need restart/offline/share tests for those paths.
+3. **Coverage decisions:** translated Bridge and in-view podcast/script playback, plus transient live experiences, should have explicit save eligibility and user-facing scope. Presence of a karaoke sweep alone is not evidence that an audio-save path exists.
+4. **Original/analyzed text:** preserve access to narration management from both Original and Adapted routes. Expand save coverage through the shared identity/persistence service where a stable resource artifact exists, with editing accessible from Adapted as already planned. Avoid adding a separate cache solely for the source-text view.
+
+These are follow-on tasks, not claims that those resources have been repaired or verified by this candidate.

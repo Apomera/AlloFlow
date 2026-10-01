@@ -1,0 +1,16 @@
+{
+  "place_copy_changed": "The draft or recovery copy changed. Review it again before continuing.",
+  "place_copy_empty": "This recovery copy has no readable answers or bookmark to restore.",
+  "place_copy_review_title": "Review a recovery copy",
+  "place_copy_restore_help": "Restoring replaces this page’s answers and bookmark with the copy below. Your current work is kept in another recovery copy. Review the restored draft before saving it.",
+  "place_copy_selected": "Selected recovery copy",
+  "place_copy_no_readable_work": "This copy has no readable answers or bookmark to restore. Its original record is still available in the recovery download.",
+  "place_copy_restore": "Restore as a draft",
+  "place_copy_remove_help": "Removing this copy only removes it from this page. It does not change your current answers, bookmark, or saved work.",
+  "place_copy_remove_confirm": "I have kept this copy or no longer need it.",
+  "place_copy_remove": "Remove this recovery copy",
+  "place_copy_restored": "Recovery copy restored on this page. Review it, then choose Save restored work. Reloading will discard unsaved changes.",
+  "place_copy_save": "Save restored work",
+  "place_copy_work": "Copy your work",
+  "place_copy_review_action": "Review copy {number}"
+}

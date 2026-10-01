@@ -1,0 +1,79 @@
+{
+  "uncommitted": true,
+  "unitChecks": 920,
+  "unitSuites": 15,
+  "newBehaviorChecks": 106,
+  "newLocalizationChecks": 15,
+  "browserJourneys": 3,
+  "accessibilityScans": 54,
+  "newAccessibilityScans": 24,
+  "accessibilityScanScope": "Motion prediction/reflection, saved Homeostasis writing, and study-sheet components exercised by the three journeys",
+  "accessibilityViolations": 0,
+  "browserErrors": [],
+  "noHorizontalOverflow": true,
+  "minimumLargerTextPx": 17,
+  "writingLimit": 1200,
+  "printChecks": [
+    {
+      "theme": "light",
+      "visibleTextNodes": 33,
+      "whiteSurfaces": 18,
+      "blackTextOnWhitePaper": true,
+      "controlsHidden": true
+    },
+    {
+      "theme": "dark",
+      "visibleTextNodes": 33,
+      "whiteSurfaces": 18,
+      "blackTextOnWhitePaper": true,
+      "controlsHidden": true
+    },
+    {
+      "theme": "contrast",
+      "visibleTextNodes": 33,
+      "whiteSurfaces": 18,
+      "blackTextOnWhitePaper": true,
+      "controlsHidden": true
+    }
+  ],
+  "sourceMirrorsMatch": true,
+  "sourceSha256": "3b726d0088eb8a3af535a7bf1223747f3ca29aa86a8b404eefde3d77e4ad565f",
+  "sourceHashLineEndings": "LF",
+  "localeMirrorsMatch": true,
+  "translatedLabelsPerCatalog": 3,
+  "localeKeys": [
+    "motion_writing_limit",
+    "feedback_saved_explanation_title",
+    "feedback_saved_explanation_help"
+  ],
+  "localeLanguages": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "screenshots": [
+    "activity-phone.png",
+    "activity-dark.png",
+    "saved-writing-phone.png",
+    "activity-arabic.png"
+  ],
+  "unitFiles": [
+    "anatomy_study_record_refinements.test.js",
+    "anatomy_study_record_localization.test.js",
+    "anatomy_study_portfolio.test.js",
+    "anatomy_study_clarity.test.js",
+    "anatomy_study_localization.test.js",
+    "anatomy_learning_continuity.test.js",
+    "anatomy_comparison_navigation.test.js",
+    "anatomy_search_continuity.test.js",
+    "anatomy_tutor_draft_continuity.test.js",
+    "anatomy_lab_science.test.js",
+    "anatomy_reflection_continuity.test.js",
+    "anatomy_reflection_localization.test.js",
+    "anatomy_homeostasis_flow.test.js",
+    "anatomy_motion_editor_continuity.test.js",
+    "anatomy_activity_writing_localization.test.js"
+  ],
+  "testTimeoutMs": 30000,
+  "hookTimeoutMs": 30000
+}

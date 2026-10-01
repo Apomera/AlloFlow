@@ -1,0 +1,1013 @@
+import { test, expect } from '@playwright/test';
+import { createServer, Server } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { extname, join, normalize } from 'node:path';
+
+/**
+ * Geometry World — REAL WebGL smoke.
+ *
+ * Everything else covering this tool runs in jsdom, which has no WebGL, so the
+ * whole voxel engine — initEngine, the block meshes, the crosshair raycast, the
+ * camera — has only ever been verified by hand. Headless Chromium rasterises
+ * WebGL 2.0 through SwiftShader, so this drives the actual engine.
+ *
+ * It serves the WORKING TREE on an ephemeral port, so it tests the code as it is
+ * right now. React and three.js are served from the tree too (React UMD out of
+ * desktop/web-app/node_modules, three r128 out of vendor/), so the spec needs no
+ * network at all.
+ *
+ * These pin the four things that were broken and could only be confirmed in a
+ * browser:
+ *   1. Starting a lesson left the viewport blank — an inline callback ref made
+ *      React destroy and rebuild the engine on every re-render, and the dead
+ *      canvas was never detached, so the fresh one stacked below the fold.
+ *   2. The lesson that loaded was the DEFAULT one, not the lesson picked.
+ *   3. Q / R (block shape and rotation) did nothing: the logging wrappers had
+ *      redeclared a shorter signature over placeBlock and dropped both.
+ *   4. A keyboard-only student could not build at all.
+ *
+ * Pattern (and the two traps — destroy every scene in afterEach, and raise the
+ * timeout because SwiftShader readback is slow) follows
+ * tests/e2e/17-memory-palace-gl.spec.ts.
+ */
+
+const ROOT = process.cwd();
+const MIME: Record<string, string> = {
+  '.js': 'text/javascript; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+};
+
+const HARNESS = `<!doctype html>
+<html><head><meta charset="utf-8"><title>geometry world harness</title>
+<style>html,body{margin:0;height:100%;background:#0f172a}
+#wrap{width:100vw;height:100vh;height:100dvh;position:relative;display:flex;overflow:hidden}
+#wrap>*{flex:1 1 auto;min-width:0;min-height:0}</style></head>
+<body><div id="wrap"></div>
+<script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
+<script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+<script src="/vendor/three-r128/three.min.js"></script>
+<script>
+  window.__events = { toasts: [], errors: [] };
+  window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
+
+  // Minimal StemLab registry — the tool IIFE returns early without it.
+  window.StemLab = {
+    _registry: {},
+    registerTool: function (id, cfg) { cfg.id = id; this._registry[id] = cfg; },
+    isRegistered: function (id) { return !!this._registry[id]; },
+    loadScriptResilient: function () { return new Promise(function () {}); },
+    ensureThree: function () { return Promise.resolve(window.THREE); },
+    getRegisteredTools: function () { return Object.values(this._registry); }
+  };
+  window.__alloStemFS = function (el) {
+    var request = el && (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen);
+    return request ? request.call(el) : Promise.resolve();
+  };
+</script>
+<script src="/printable_model_module.js"></script>
+<script src="/stem_lab/stem_tool_geometryworld.js"></script>
+<script src="/stem_lab/stem_tool_geometryworld_builder.js"></script>
+<script>
+  var e = React.createElement;
+
+  // Stateful ctx mirroring the host bridge: update/updateMulti write into
+  // toolData and re-render, which is exactly the loop the ref bug rode on.
+  window.__mount = function (bucket) {
+    var cfg = window.StemLab._registry.geometryWorld;
+    if (!cfg) return false;
+    var toolData = { _threeLoaded: true, geometryWorld: Object.assign({}, bucket || {}) };
+    window.__toolData = toolData;
+    var bump = null;
+    var ctx = {
+      React: React,
+      toolData: toolData,
+      update: function (b, k, v) {
+        toolData[b] = Object.assign({}, toolData[b]); toolData[b][k] = v; if (bump) bump();
+      },
+      updateMulti: function (b, patch) {
+        toolData[b] = Object.assign({}, toolData[b], patch); if (bump) bump();
+      },
+      setToolData: function () {}, setStemLabTool: function () {}, setStemLabTab: function () {},
+      addToast: function (m, k) { window.__events.toasts.push({ message: String(m), kind: k }); },
+      awardXP: function () {}, getXP: function () { return 0; },
+      announceToSR: function () {}, celebrate: function () {}, beep: function () {},
+      callGemini: null, callTTS: null, callImagen: null,
+      gradeLevel: '5th Grade', toolSnapshots: [], props: {},
+      t: function (k, fb) { return fb || k; },
+      icons: new Proxy({}, { get: function () { return function () { return e('span'); }; } }),
+      a11yClick: function (fn) { return { onClick: fn, role: 'button', tabIndex: 0 }; },
+      srOnly: {},
+      activeSessionCode: null, studentNickname: 'Tester', isTeacherMode: false
+    };
+    function Comp() {
+      var st = React.useState(0);
+      bump = function () { st[1](function (n) { return n + 1; }); };
+      return cfg.render(ctx);
+    }
+    window.__root = ReactDOM.createRoot(document.getElementById('wrap'));
+    window.__root.render(e(Comp));
+    return true;
+  };
+
+  // ── Probes ──
+  window.__eng = function () { return window.__geoWorldEngine || null; };
+
+  window.__glCanvas = function () {
+    var cs = document.querySelectorAll('#geoworld-fs-wrap canvas');
+    for (var i = 0; i < cs.length; i++) {
+      try {
+        var gl = cs[i].getContext('webgl2') || cs[i].getContext('webgl');
+        if (gl) return { el: cs[i], gl: gl };
+      } catch (e) {}
+    }
+    return null;
+  };
+
+  window.__glLive = function () {
+    var cs = document.querySelectorAll('#geoworld-fs-wrap canvas');
+    var hit = window.__glCanvas();
+    if (!hit) return null;
+    var c = hit.el, p = c.parentElement;
+    var cr = c.getBoundingClientRect();
+    var pr = p ? p.getBoundingClientRect() : cr;
+    return {
+      canvasCount: cs.length,
+      lost: hit.gl.isContextLost(),
+      w: c.clientWidth, h: c.clientHeight,
+      box: { w: Math.round(cr.width), h: Math.round(cr.height) },
+      parentBox: { w: Math.round(pr.width), h: Math.round(pr.height) }
+    };
+  };
+
+  window.__worldState = function () {
+    var en = window.__geoWorldEngine;
+    if (!en) return null;
+    var shapes = {};
+    var studentBlocks = 0;
+    Object.keys(en.blocks).forEach(function (k) {
+      var u = en.blocks[k].userData || {};
+      if (!u._lessonBlock) {
+        studentBlocks++;
+        var s = u.shape || 'cube';
+        shapes[s] = (shapes[s] || 0) + 1;
+      }
+    });
+    return {
+      lessonTitle: en._currentLesson ? en._currentLesson.title : null,
+      totalBlocks: Object.keys(en.blocks).length,
+      studentBlocks: studentBlocks,
+      studentShapes: shapes,
+      npcCount: en.npcs.length,
+      camera: { x: en.camera.position.x, y: en.camera.position.y, z: en.camera.position.z },
+      yaw: en.camera.rotation.y
+    };
+  };
+
+  // Aim the camera at a known block so the crosshair raycast has a target,
+  // mirroring what a student does by walking up to a structure.
+  window.__aimAt = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    if (!en) return false;
+    en.camera.position.set(x + 0.5, y + 3.2, z + 3.5);
+    en.camera.lookAt(x + 0.5, y + 0.5, z + 0.5);
+    // Raycasts read matrixWorld, which only the next rendered frame refreshes: under load B
+    // and clicks used the camera from BEFORE the aim (a block landed at 3,1,7 for an aim at 2,0,2).
+    en.camera.updateMatrixWorld(true);
+    en.euler.setFromQuaternion(en.camera.quaternion);
+    return true;
+  };
+
+  // World-space bounds of the mesh at a grid cell, so a test can assert the block
+  // actually occupies the cell it was placed in.
+  window.__blockBounds = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    var m = en && en.blocks[x + ',' + y + ',' + z];
+    if (!m) return null;
+    var box = new THREE.Box3().setFromObject(m);
+    var r = function (v) { return Math.round(v * 1000) / 1000; };
+    return { min: [r(box.min.x), r(box.min.y), r(box.min.z)], max: [r(box.max.x), r(box.max.y), r(box.max.z)],
+             shape: m.userData.shape, rotation: m.userData.rotation };
+  };
+
+  window.__placeShaped = function (x, y, z, shape, rotation) {
+    var en = window.__geoWorldEngine;
+    if (!en) return false;
+    en.placeBlock(x, y, z, 'stone', shape, rotation);
+    return !!en.blocks[x + ',' + y + ',' + z];
+  };
+
+  // Enclosed volume of a placed block's mesh, by the divergence theorem
+  // (sum of signed tetrahedron volumes over its triangles). This is what a slicer
+  // would print, so it is the honest check that the model matches the lesson.
+  window.__meshVolume = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    var m = en && en.blocks[x + ',' + y + ',' + z];
+    if (!m) return null;
+    m.updateMatrixWorld(true);
+    var g = m.geometry, pos = g.attributes.position;
+    var idx = g.index ? g.index.array : null;
+    var count = idx ? idx.length : pos.count;
+    var v = new THREE.Vector3();
+    var get = function (i) { v.set(pos.getX(i), pos.getY(i), pos.getZ(i)).applyMatrix4(m.matrixWorld); return v.clone(); };
+    var vol = 0;
+    for (var i = 0; i + 2 < count; i += 3) {
+      var a = get(idx ? idx[i] : i), b = get(idx ? idx[i + 1] : i + 1), c = get(idx ? idx[i + 2] : i + 2);
+      vol += a.dot(new THREE.Vector3().crossVectors(b, c)) / 6;
+    }
+    // Signed on purpose: an inside-out mesh has the right magnitude and the wrong
+    // sign, and abs() hid exactly that for the two hand-authored wedges.
+    return { volume: Math.round(vol * 10000) / 10000, shape: m.userData.shape, claimed: m.userData.volume };
+  };
+
+  // Signed volume of what the Print Lab exporter actually writes for one cell.
+  window.__stlSignedVolume = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    var pure = window.StemLab.geometryWorldBuilderPure;
+    if (!en || !pure) return null;
+    var bundle = pure.buildGeometryWorldStl(en, [{ x: x, y: y, z: z }], { title: 'probe' });
+    var dv = new DataView(bundle.buffer), n = dv.getUint32(80, true), off = 84, vol = 0;
+    for (var i = 0; i < n; i++) {
+      off += 12;
+      var v = [];
+      for (var k = 0; k < 3; k++) { v.push([dv.getFloat32(off, true), dv.getFloat32(off + 4, true), dv.getFloat32(off + 8, true)]); off += 12; }
+      off += 2;
+      var a = v[0], b = v[1], c = v[2];
+      vol += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6;
+    }
+    return { triangles: n, volume: Math.round(vol * 10000) / 10000 };
+  };
+
+  // Print Lab's own preflight (printable_model_module.js) on the bytes the
+  // exporter writes for the given cells, at 5 mm per block.
+  window.__preflightCells = function (cells) {
+    var en = window.__geoWorldEngine;
+    var pure = window.StemLab.geometryWorldBuilderPure;
+    var Printable = window.AlloModules && window.AlloModules.PrintableModel;
+    if (!en || !pure || !Printable) return null;
+    var bundle = pure.buildGeometryWorldStl(en, cells.map(function (c) { return { x: c[0], y: c[1], z: c[2] }; }), { title: 'probe' });
+    var r = Printable.inspectStl(new Uint8Array(bundle.buffer), 5, Printable.normalizeProfile({}));
+    return { triangles: bundle.triangleCount, status: r.status, openEdges: r.openEdges, nonManifoldEdges: r.nonManifoldEdges,
+      windingInconsistencies: r.windingInconsistencies, components: r.connectedComponents, enclosedVolumeMm3: r.enclosedVolumeMm3,
+      issues: (r.issues || []).map(function (i) { return i.code; }) };
+  };
+
+  window.__logHistogram = function () {
+    var en = window.__geoWorldEngine, h = {};
+    if (!en) return null;
+    en.sessionLog.forEach(function (e) { h[e.type] = (h[e.type] || 0) + 1; });
+    return h;
+  };
+
+  window.__spriteCensus = function () {
+    var en = window.__geoWorldEngine, sprites = 0;
+    if (!en) return null;
+    en.scene.traverse(function (o) { if (o.isSprite) sprites++; });
+    return { sprites: sprites, npcs: en.npcs.length };
+  };
+
+  window.__liveRegion = function () {
+    var el = document.getElementById('allo-live-geometryworld');
+    return el ? el.textContent : null;
+  };
+
+  window.__placeNpc = function (idx, x, y, z) {
+    var en = window.__geoWorldEngine;
+    if (!en || !en.npcs[idx]) return null;
+    // data.position is authoritative: the animation loop rewrites body.position
+    // (and head.position) from it on EVERY frame for bob, sway and idle patrol,
+    // so writing body.position alone was erased before the next assertion ran.
+    // The loop renders at data.position + 0.5 on x/z, so subtract that here to
+    // land the NPC exactly where the caller asked.
+    var npc = en.npcs[idx];
+    npc.data.position = [x - 0.5, y, z - 0.5];
+    npc.body.position.set(x, y, z);
+    if (npc.head) npc.head.position.set(x, y + 0.95, z);
+    return npc.data.name;
+  };
+
+  window.__camPos = function () {
+    var en = window.__geoWorldEngine;
+    return en ? { x: en.camera.position.x, y: en.camera.position.y, z: en.camera.position.z } : null;
+  };
+
+  window.__setCam = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    if (!en) return false;
+    en.camera.position.set(x, y, z);
+    en.velocity.set(0, 0, 0);
+    return true;
+  };
+
+  window.__destroy = function () {
+    try { if (window.__root) window.__root.unmount(); } catch (err) {}
+    // Hand the GL context back explicitly — Chromium caps live contexts per PROCESS
+    // and kills the oldest silently, so without this the earliest suite in a
+    // multi-spec run starts failing for reasons unrelated to itself.
+    try {
+      var cs = document.querySelectorAll('canvas');
+      for (var i = 0; i < cs.length; i++) {
+        var g = null;
+        try { g = cs[i].getContext('webgl2') || cs[i].getContext('webgl'); } catch (e) {}
+        if (!g || g.isContextLost()) continue;
+        var ext = g.getExtension('WEBGL_lose_context');
+        if (ext) ext.loseContext();
+      }
+    } catch (err) {}
+  };
+</script></body></html>`;
+
+let server: Server;
+let base: string;
+
+test.beforeAll(async () => {
+  server = createServer(async (req, res) => {
+    const url = (req.url || '/').split('?')[0];
+    if (url === '/__harness') {
+      res.writeHead(200, { 'content-type': MIME['.html'] });
+      res.end(HARNESS);
+      return;
+    }
+    try {
+      const rel = normalize(decodeURIComponent(url)).replace(/^([/\\])+/, '');
+      const file = join(ROOT, rel);
+      if (!file.startsWith(ROOT)) { res.writeHead(403); res.end('no'); return; }
+      const body = await readFile(file);
+      res.writeHead(200, { 'content-type': MIME[extname(file)] || 'application/octet-stream' });
+      res.end(body);
+    } catch {
+      res.writeHead(404);
+      res.end('not found');
+    }
+  });
+  await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+  const addr = server.address();
+  base = `http://127.0.0.1:${typeof addr === 'object' && addr ? addr.port : 0}`;
+});
+
+test.afterAll(async () => {
+  await new Promise<void>((r) => server.close(() => r()));
+});
+
+type Pg = import('@playwright/test').Page;
+
+/** Mount the tool and wait for initEngine (fired ~100ms after the ref attaches). */
+async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.geometryWorld);
+  // The Free Build home chooser ("What would you like to do?") opens on EVERY
+  // mount and blocks world input, so B/X, walking and the HUD probes all went
+  // dead here when it landed. The tool's own documented bypass is a pending
+  // build handoff; use it so these specs drive the world directly. Specs that
+  // need the chooser itself opt back in with { homeChooser: true }.
+  if (!bucket.homeChooser) {
+    await page.evaluate(() => { (window as any).__alloGeometryWorldPendingBuild = { __e2e: true }; });
+  }
+  await page.evaluate((b) => (window as any).__mount(b), bucket);
+  await page.waitForSelector('#geoworld-fs-wrap canvas', { timeout: 30000 });
+  await page.waitForFunction(() => !!(window as any).__geoWorldEngine, null, { timeout: 30000 });
+  await page.waitForTimeout(700);   // let the engine settle a few frames
+}
+
+/** Mount a responsive profile without spawning a trace-heavy custom context. */
+async function mountResponsive(page: Pg, bucket: Record<string, unknown>, mobile: boolean, tablet: boolean) {
+  await page.goto(base + '/__harness');
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.geometryWorld);
+  await page.evaluate(({ b, isMobile, isTablet }) => {
+    // Same bypass as mount(): the Free Build home chooser opens on every mount
+    // and its full-screen backdrop (.gwe-home-backdrop, inset:0, z-index:240)
+    // covers the viewport controls, so the fullscreen button could not be clicked.
+    (window as any).__alloGeometryWorldPendingBuild = { __e2e: true };
+    if (isMobile) {
+      const ua = isTablet
+        ? 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'
+        : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148';
+      Object.defineProperty(navigator, 'userAgent', { configurable: true, get: () => ua });
+      Object.defineProperty(window, 'ontouchstart', { configurable: true, value: null });
+    }
+    (window as any).__mount(b);
+  }, { b: bucket, isMobile: mobile, isTablet: tablet });
+  await page.waitForSelector('#geoworld-fs-wrap canvas', { timeout: 30000 });
+  await page.waitForFunction(() => !!(window as any).__geoWorldEngine, null, { timeout: 30000 });
+  await page.waitForTimeout(700);
+}
+
+/** Keyboard shortcuts go to <body> unless the world surface is focused first. */
+async function focusWorld(page: Pg) {
+  await page.evaluate(() => (document.getElementById('geoworld-fs-wrap') as HTMLElement).focus());
+}
+
+// SwiftShader is a software rasteriser and canvas.screenshot() triggers a slow
+// pixel readback ("GPU stall due to ReadPixels"); a mount plus screenshots does
+// not fit in the default 30s budget.
+test.describe.configure({ timeout: 150_000 });
+
+test.describe('Geometry World — real WebGL', () => {
+  // Chromium caps live WebGL contexts per process and silently kills the oldest
+  // past the limit; the symptom is not an error but the whole suite crawling.
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+
+  test('mounts one live GL canvas and builds the default world', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+
+    const gl = await page.evaluate(() => (window as any).__glLive());
+    expect(gl).not.toBeNull();
+    expect(gl.lost).toBe(false);
+    expect(gl.box.w).toBeGreaterThanOrEqual(gl.parentBox.w - 2);
+    expect(gl.box.h).toBeGreaterThanOrEqual(gl.parentBox.h - 2);
+    const harnessFill = await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!.getBoundingClientRect();
+      const root = document.getElementById('geoworld-fs-workspace')!.getBoundingClientRect();
+      return { width: root.width, height: root.height, wrapWidth: wrap.width, wrapHeight: wrap.height };
+    });
+    expect(harnessFill.width).toBeGreaterThanOrEqual(harnessFill.wrapWidth - 2);
+    expect(harnessFill.height).toBeGreaterThanOrEqual(harnessFill.wrapHeight - 2);
+
+    const world = await page.evaluate(() => (window as any).__worldState());
+    expect(world.totalBlocks).toBeGreaterThan(0);
+    expect(world.npcCount).toBeGreaterThan(0);
+    // 'ResizeObserver loop completed...' is a Chromium artifact that can surface
+    // even for a well-behaved observer, so it is filtered here; the loop that used
+    // to fire it 28x per mount is asserted separately below.
+    const errs = (await page.evaluate(() => (window as any).__events.errors))
+      .filter((m: string) => !/ResizeObserver loop/.test(m));
+    expect(errs).toEqual([]);
+
+    // renderer.setSize writes explicit pixels onto the canvas, which perturbs
+    // layout and re-triggers the observer. Unguarded, it fed itself: 28 of these
+    // on a single mount, reallocating renderer buffers each time and leaving the
+    // layout never quite still (which also made Playwright's stability check for
+    // a click on the intro time out).
+    const roNoise = (await page.evaluate(() => (window as any).__events.errors))
+      .filter((m: string) => /ResizeObserver loop/.test(m));
+    expect(roNoise.length).toBeLessThan(3);
+  });
+
+  test('starting a lesson leaves ONE canvas and the picked lesson loaded', async ({ page }) => {
+    // The reported bug. Start Lesson calls upd(), which re-rendered; the inline ref
+    // tore the engine down and rebuilt it with the default world, and the disposed
+    // canvas stayed in the container with the live one stacked below the fold.
+    await mount(page, { _introShownOnce: true, showLessonIntro: true, activeLesson: 'geometryGarden' });
+
+    const engineBefore = await page.evaluate(() => (window as any).__eng() && (window as any).__eng().sessionStart);
+
+    await page.evaluate(() => {
+      const b = Array.from(document.querySelectorAll('button'))
+        .find((el) => /Start Lesson/i.test(el.textContent || ''));
+      (b as HTMLButtonElement).click();
+    });
+    await page.waitForTimeout(1200);
+
+    const gl = await page.evaluate(() => (window as any).__glLive());
+    expect(gl.canvasCount).toBe(1);            // no stacked dead canvas
+    expect(gl.lost).toBe(false);
+
+    const world = await page.evaluate(() => (window as any).__worldState());
+    expect(world.lessonTitle).toMatch(/Garden/i);   // the lesson PICKED, not the default
+    expect(world.totalBlocks).toBeGreaterThan(0);
+
+    // Same engine instance throughout — it was never torn down.
+    const engineAfter = await page.evaluate(() => (window as any).__eng().sessionStart);
+    expect(engineAfter).toBe(engineBefore);
+  });
+
+  test('survives repeated state updates without losing the world', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    const before = await page.evaluate(() => (window as any).__worldState());
+
+    // Every upd() used to destroy and rebuild the engine.
+    await page.evaluate(() => {
+      for (let i = 0; i < 5; i += 1) (window as any).__toolData.geometryWorld.selectedBlock = i % 3;
+    });
+    await focusWorld(page);
+    for (const key of ['Digit2', 'Digit3', 'KeyG', 'KeyG']) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(120);
+    }
+
+    const after = await page.evaluate(() => (window as any).__worldState());
+    expect(after).not.toBeNull();
+    expect(after.totalBlocks).toBe(before.totalBlocks);
+    expect((await page.evaluate(() => (window as any).__glLive())).canvasCount).toBe(1);
+  });
+
+  test('B builds and X breaks with no mouse at all', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    await focusWorld(page);
+    await page.evaluate(() => (window as any).__aimAt(2, 0, 2));
+    await page.waitForTimeout(200);
+
+    const before = await page.evaluate(() => (window as any).__worldState());
+
+    await page.keyboard.press('KeyB');
+    await page.waitForTimeout(300);
+    const built = await page.evaluate(() => (window as any).__worldState());
+    expect(built.studentBlocks).toBe(before.studentBlocks + 1);
+
+    await page.keyboard.press('KeyX');
+    await page.waitForTimeout(300);
+    const broken = await page.evaluate(() => (window as any).__worldState());
+    expect(broken.studentBlocks).toBe(before.studentBlocks);
+  });
+
+  test('Q actually changes the shape of the block that gets placed', async ({ page }) => {
+    // The headline dead feature: the logging wrapper redeclared
+    // placeBlock(x,y,z,type) over placeBlock(x,y,z,type,shape,rotation), so every
+    // block placed as a cube no matter what Q was set to.
+    await mount(page, { _introShownOnce: true });
+    await focusWorld(page);
+    await page.evaluate(() => (window as any).__aimAt(6, 0, 6));
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press('KeyQ');          // cube -> next shape
+    await page.waitForTimeout(200);
+    await page.keyboard.press('KeyB');
+    await page.waitForTimeout(300);
+
+    const world = await page.evaluate(() => (window as any).__worldState());
+    const shapes = Object.keys(world.studentShapes);
+    expect(shapes.length).toBeGreaterThan(0);
+    // At least one student block is NOT a plain cube.
+    expect(shapes.some((s) => s !== 'cube')).toBe(true);
+  });
+
+  test('arrow keys turn the camera and the scene re-renders', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    await focusWorld(page);
+
+    const canvas = page.locator('#geoworld-fs-wrap canvas').last();
+    const before = await canvas.screenshot({ timeout: 60000 });
+    const yawBefore = await page.evaluate(() => (window as any).__worldState().yaw);
+
+    await page.keyboard.down('ArrowLeft');
+    await page.waitForTimeout(700);
+    await page.keyboard.up('ArrowLeft');
+    await page.waitForTimeout(400);
+
+    const yawAfter = await page.evaluate(() => (window as any).__worldState().yaw);
+    expect(yawAfter).not.toBe(yawBefore);
+
+    // Two different camera angles must rasterise to different pixels — proves the
+    // scene actually renders, not just that a number changed.
+    const after = await canvas.screenshot({ timeout: 60000 });
+    expect(Buffer.compare(before, after)).not.toBe(0);
+  });
+
+  test('W walks the player forward', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    await focusWorld(page);
+
+    const before = await page.evaluate(() => (window as any).__worldState().camera);
+    await page.keyboard.down('KeyW');
+    await page.waitForTimeout(700);
+    await page.keyboard.up('KeyW');
+    await page.waitForTimeout(300);
+    const after = await page.evaluate(() => (window as any).__worldState().camera);
+
+    const moved = Math.hypot(after.x - before.x, after.z - before.z);
+    expect(moved).toBeGreaterThan(0.3);
+  });
+
+  test('L says "right" for a character that is actually to the player\'s right', async ({ page }) => {
+    // The pure helper's left/right convention is unit-tested, but that proves
+    // nothing about the bearing the ENGINE computes. This ties the spoken word to
+    // the physical meaning of right — the direction D actually strafes you — so it
+    // cannot be circular. Telling a blind student "left" for something on their
+    // right is worse than saying nothing.
+    await mount(page, { _introShownOnce: true });
+    await focusWorld(page);
+
+    const start = await page.evaluate(() => (window as any).__camPos());
+
+    // Measure which way "right" physically is, by strafing.
+    await page.keyboard.down('KeyD');
+    await page.waitForTimeout(500);
+    await page.keyboard.up('KeyD');
+    await page.waitForTimeout(250);
+    const after = await page.evaluate(() => (window as any).__camPos());
+
+    const dx = after.x - start.x, dz = after.z - start.z;
+    const len = Math.hypot(dx, dz);
+    expect(len).toBeGreaterThan(0.2);            // it really did strafe
+
+    // Put a character 6 units along that same physical direction, from where the
+    // player started, and put the player back there.
+    const npcName = await page.evaluate(([sx, sy, sz, ux, uz]) => {
+      (window as any).__setCam(sx, sy, sz);
+      return (window as any).__placeNpc(0, sx + ux * 6, sy - 1, sz + uz * 6);
+    }, [start.x, start.y, start.z, dx / len, dz / len] as number[]);
+    expect(npcName).toBeTruthy();
+
+    await page.waitForTimeout(150);
+    await page.keyboard.press('KeyL');
+    await page.waitForTimeout(300);              // announceToSR swaps text on a 30ms tick
+
+    const spoken = await page.evaluate(() => (window as any).__liveRegion());
+    expect(spoken).toBeTruthy();
+    expect(spoken).toContain(npcName);
+    // The nearest character is the one we just placed, so the first bearing spoken
+    // is its own.
+    const firstClause = spoken.slice(spoken.indexOf(npcName));
+    expect(firstClause).toMatch(/right/);
+    expect(firstClause.slice(0, firstClause.indexOf('.'))).not.toMatch(/left/);
+  });
+
+  test('every block shape occupies the cell it was placed in', async ({ page }) => {
+    // cube and halfB use BoxGeometry (origin-centred); halfA and quarter use custom
+    // vertices authored 0..1. They share one placement position, so the un-centred
+    // pair sat in [x+0.5, x+1.5] — half a block off-grid diagonally, with Y-rotation
+    // pivoting about a corner. Invisible until the shape system was revived, because
+    // nothing could place a non-cube block.
+    await mount(page, { _introShownOnce: true });
+
+    const cells = [
+      { shape: 'cube', at: [14, 5, 14] },
+      { shape: 'halfB', at: [16, 5, 14] },
+      { shape: 'halfA', at: [18, 5, 14] },
+      { shape: 'quarter', at: [20, 5, 14] },
+    ];
+
+    for (const c of cells) {
+      const ok = await page.evaluate(([x, y, z, s]) => (window as any).__placeShaped(x, y, z, s, 0),
+        [...c.at, c.shape] as [number, number, number, string]);
+      expect(ok, c.shape + ' failed to place').toBe(true);
+
+      const b = await page.evaluate(([x, y, z]) => (window as any).__blockBounds(x, y, z),
+        c.at as [number, number, number]);
+      const [x, y, z] = c.at;
+
+      // Horizontal footprint must sit inside the cell, whatever the shape.
+      expect(b.min[0], c.shape + ' minX').toBeGreaterThanOrEqual(x - 0.001);
+      expect(b.max[0], c.shape + ' maxX').toBeLessThanOrEqual(x + 1.001);
+      expect(b.min[2], c.shape + ' minZ').toBeGreaterThanOrEqual(z - 0.001);
+      expect(b.max[2], c.shape + ' maxZ').toBeLessThanOrEqual(z + 1.001);
+      // And it rests on the cell floor rather than floating or sinking.
+      expect(b.min[1], c.shape + ' minY').toBeGreaterThanOrEqual(y - 0.001);
+      expect(b.max[1], c.shape + ' maxY').toBeLessThanOrEqual(y + 1.001);
+    }
+  });
+
+  test('rotating a wedge keeps it in its own cell', async ({ page }) => {
+    // Y-rotation about an un-centred origin swings the shape out of its cell
+    // entirely; about the centre it stays put.
+    await mount(page, { _introShownOnce: true });
+
+    for (const rot of [0, 1, 2, 3]) {
+      const at: [number, number, number] = [10 + rot * 2, 6, 10];
+      await page.evaluate(([x, y, z, r]) => (window as any).__placeShaped(x, y, z, 'halfA', r),
+        [...at, rot] as [number, number, number, number]);
+      const b = await page.evaluate(([x, y, z]) => (window as any).__blockBounds(x, y, z), at);
+      const [x, , z] = at;
+      expect(b.min[0], 'rot ' + rot + ' minX').toBeGreaterThanOrEqual(x - 0.001);
+      expect(b.max[0], 'rot ' + rot + ' maxX').toBeLessThanOrEqual(x + 1.001);
+      expect(b.min[2], 'rot ' + rot + ' minZ').toBeGreaterThanOrEqual(z - 0.001);
+      expect(b.max[2], 'rot ' + rot + ' maxZ').toBeLessThanOrEqual(z + 1.001);
+    }
+  });
+
+  test('a printed block encloses the volume the lesson teaches', async ({ page }) => {
+    // The STL exporter now derives its triangles from these very meshes, so if the
+    // mesh encloses the right volume the print does too. Before, every block exported
+    // as a unit cube: a student could measure 12 cubic units on screen and hold 24 in
+    // their hand — in a tool that exists to teach volume.
+    await mount(page, { _introShownOnce: true });
+
+    const expected = [
+      { shape: 'cube', volume: 1 },
+      { shape: 'halfB', volume: 0.5 },
+      { shape: 'halfA', volume: 0.5 },
+      { shape: 'quarter', volume: 0.25 },
+    ];
+
+    for (let i = 0; i < expected.length; i += 1) {
+      const at: [number, number, number] = [24 + i * 2, 7, 24];
+      const placed = await page.evaluate(([x, y, z, s]) => (window as any).__placeShaped(x, y, z, s, 0),
+        [...at, expected[i].shape] as [number, number, number, string]);
+      expect(placed, expected[i].shape).toBe(true);
+
+      const r = await page.evaluate(([x, y, z]) => (window as any).__meshVolume(x, y, z), at);
+      // The geometry must enclose what BLOCK_SHAPES claims, or the manipulative
+      // contradicts the arithmetic the student just did.
+      expect(r.claimed, expected[i].shape + ' metadata').toBeCloseTo(expected[i].volume, 6);
+      expect(r.volume, expected[i].shape + ' actual enclosed volume').toBeCloseTo(expected[i].volume, 3);
+    }
+  });
+
+  test('the STL a slicer receives is outward-wound for every shape', async ({ page }) => {
+    // __meshVolume above is signed now, so the volume test already fails on an
+    // inside-out mesh. This goes one step further and reads the bytes the Print
+    // Lab exporter writes: a negative signed volume is what a slicer reports as
+    // flipped normals, and it is how a 12-block build summed to 8.25 units.
+    await mount(page, { _introShownOnce: true });
+    const shapes = [['cube', 1], ['halfB', 0.5], ['halfA', 0.5], ['quarter', 0.25]] as const;
+    for (let i = 0; i < shapes.length; i += 1) {
+      for (let rot = 0; rot < 4; rot += 1) {
+        const at: [number, number, number] = [30 + i * 2, 7, 30 + rot * 2];
+        await page.evaluate(([x, y, z, s, r]) => (window as any).__placeShaped(x, y, z, s, r),
+          [...at, shapes[i][0], rot] as [number, number, number, string, number]);
+        const r = await page.evaluate(([x, y, z]) => (window as any).__stlSignedVolume(x, y, z), at);
+        expect(r.volume, shapes[i][0] + ' rot ' + rot).toBeCloseTo(shapes[i][1], 3);
+      }
+    }
+  });
+
+  test('a slab or wedge standing on a cube passes Print Lab preflight as one closed solid', async ({ page }) => {
+    // Every block is its own closed shell, so neighbours used to keep a coincident
+    // pair of faces between them and Print Lab counted each shared edge as
+    // non-manifold: 4 for a slab on a cube, 17 for a mixed build, and no enclosed
+    // volume reported. The exporter now drops a face wherever both sides present
+    // the same polygon on the shared boundary, so these stacks are watertight and
+    // the preflight reports the volume the lesson taught.
+    await mount(page, { _introShownOnce: true });
+    const stacks: Array<[string, number, number]> = [['halfB', 0, 0.5], ['halfA', 2, 0.5], ['quarter', 1, 0.25]];
+    for (let i = 0; i < stacks.length; i += 1) {
+      const [shape, rot, top] = stacks[i];
+      const x = 30 + i * 3;
+      await page.evaluate(([x, s, r]) => { (window as any).__placeShaped(x, 7, 30, 'cube', 0); (window as any).__placeShaped(x, 8, 30, s, r); }, [x, shape, rot] as [number, string, number]);
+      const r = await page.evaluate(([x]) => (window as any).__preflightCells([[x, 7, 30], [x, 8, 30]]), [x]);
+      expect(r, shape).not.toBeNull();
+      expect(r.openEdges, shape + ' open edges').toBe(0);
+      expect(r.nonManifoldEdges, shape + ' non-manifold edges').toBe(0);
+      expect(r.windingInconsistencies, shape + ' winding').toBe(0);
+      expect(r.components, shape + ' shells').toBe(1);
+      expect(r.status, shape + ' status').toBe('PASS');
+      // 1 cube + the shape on top, at 5 mm per block: 125 mm³ per cubic unit.
+      expect(r.enclosedVolumeMm3, shape + ' enclosed mm³').toBeCloseTo((1 + top) * 125, 2);
+    }
+  });
+
+  test('loading a lesson logs no block placements', async ({ page }) => {
+    // The ground and every lesson structure arrive through placeBlock, and the
+    // logging wrapper counted them: 1,646 block_place events before the student
+    // had touched anything, so 'Master Builder' (100 blocks) unlocked on load and
+    // the MTSS report counted scenery as student work.
+    await mount(page, { _introShownOnce: true });
+    const world = await page.evaluate(() => (window as any).__worldState());
+    expect(world.totalBlocks).toBeGreaterThan(100);
+    const before = await page.evaluate(() => (window as any).__logHistogram());
+    expect(before.block_place || 0).toBe(0);
+    await page.evaluate(() => (window as any).__placeShaped(2, 1, 2, 'cube', 0));
+    const after = await page.evaluate(() => (window as any).__logHistogram());
+    expect(after.block_place).toBe(1);
+  });
+
+  test('switching lessons leaves no character sprites behind', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    const withNpcs = await page.evaluate(() => (window as any).__spriteCensus());
+    expect(withNpcs.npcs).toBeGreaterThan(0);
+    // Each character owns a name label, a Press-E prompt, a ? marker when it has a
+    // question, and a speech bubble once the loop has created one. The old
+    // teardown removed only the first two, so the ? and the bubble stayed in the
+    // sky of whatever lesson came next, the blank sandbox included.
+    await page.waitForTimeout(600);
+    await page.evaluate(() => {
+      const en = (window as any).__geoWorldEngine;
+      en.loadLesson((window as any).StemLab.geometryWorldBuilderPure.FREE_BUILD_LESSON);
+    });
+    await page.waitForTimeout(300);
+    const census = await page.evaluate(() => (window as any).__spriteCensus());
+    expect(census.npcs).toBe(0);
+    // The sun and the moon are the only sprites a character-free world should
+    // carry (the moon joined the sky in the 2026-09-07 visual pass; it is a
+    // permanent sky sprite, not a character leftover).
+    expect(census.sprites).toBe(2);
+  });
+
+  test('keeps HUD presets playable across desktop, tablet, phone, landscape, and fullscreen', async ({ page }) => {
+    test.setTimeout(420_000);
+    const scenarios = [
+      { name: 'desktop', viewport: { width: 1440, height: 900 }, mobile: false, touch: false, tutorial: false },
+      { name: 'tablet', viewport: { width: 768, height: 1024 }, mobile: true, touch: true, tutorial: false },
+      { name: 'phone', viewport: { width: 390, height: 844 }, mobile: true, touch: true, tutorial: true },
+      { name: 'landscape', viewport: { width: 844, height: 390 }, mobile: true, touch: true, tutorial: true },
+      { name: 'boundary-721', viewport: { width: 721, height: 720 }, mobile: false, touch: false, tutorial: false }
+    ];
+    const earnedBadges = {
+      first_measure: true, first_correct: true, lesson_complete: true, builder_10: true,
+      builder_100: true, perfect_lesson: true, npc_chatter: true, world_creator: true,
+      printer_3d: true, world_sharer: true, peer_learner: true, persistence: true, five_lessons: true
+    };
+
+    for (const scenario of scenarios) {
+      await test.step(scenario.name, async () => {
+        await page.setViewportSize(scenario.viewport);
+        try {
+          await mountResponsive(page, {
+            _introShownOnce: true,
+            _mobileDismissed: true,
+            worldActive: true,
+            tutorialDismissed: !scenario.tutorial,
+            hudPreset: 'learning',
+            earnedBadges
+          }, scenario.mobile, scenario.name === 'tablet');
+
+          const initial = await page.evaluate(() => {
+            function rect(selector: string) {
+              const el = document.querySelector(selector) as HTMLElement | null;
+              if (!el || getComputedStyle(el).display === 'none') return null;
+              const r = el.getBoundingClientRect();
+              return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+            }
+            function overlaps(a: any, b: any) {
+              return !!a && !!b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+            }
+            const root = document.getElementById('geoworld-fs-workspace') as HTMLElement;
+            const toolbar = document.querySelector('.gw-toolbar') as HTMLElement;
+            const viewport = document.getElementById('geoworld-fs-wrap') as HTMLElement;
+            const rootRect = root.getBoundingClientRect();
+            const toolbarRect = toolbar.getBoundingClientRect();
+            const viewportRect = viewport.getBoundingClientRect();
+            const brand = rect('.gw-brand-lockup');
+            const status = rect('.gw-status-cluster');
+            const actions = rect('.gw-touch-actions');
+            const tutorial = rect('.gw-tutorial-shell');
+            const look = rect('.gw-touch-look-panel');
+            const optional = ['#gw-progress-hud', '#gw-minimap', '#gw-history-panel', '#gw-inventory-panel', '#gw-transform-panel', '#gw-scene-map']
+              .filter((selector) => { const el = document.querySelector(selector) as HTMLElement | null; return !!el && getComputedStyle(el).display !== 'none'; });
+            return {
+              rootOverflowX: root.scrollWidth - root.clientWidth,
+              rootOverflowY: root.scrollHeight - root.clientHeight,
+              toolbarOverflow: toolbar.scrollWidth - toolbar.clientWidth,
+              toolbarHeight: toolbarRect.height,
+              viewportRatio: viewportRect.height / Math.max(1, rootRect.height),
+              brandStatusOverlap: overlaps(brand, status),
+              tutorialActionsOverlap: overlaps(tutorial, actions),
+              lookHeight: look ? look.height : 0,
+              touchActive: root.getAttribute('data-touch-active'),
+              optionalCount: optional.length
+            };
+          });
+
+          expect(initial.rootOverflowX, scenario.name + ' root horizontal overflow').toBeLessThanOrEqual(1);
+          expect(initial.rootOverflowY, scenario.name + ' root vertical overflow').toBeLessThanOrEqual(1);
+          expect(initial.toolbarOverflow, scenario.name + ' toolbar overflow').toBeLessThanOrEqual(1);
+          expect(initial.toolbarHeight, scenario.name + ' toolbar height').toBeLessThanOrEqual(scenario.viewport.width <= 800 ? 59 : 65);
+          expect(initial.viewportRatio, scenario.name + ' viewport share').toBeGreaterThan(0.7);
+          expect(initial.brandStatusOverlap, scenario.name + ' brand/status overlap').toBe(false);
+          expect(initial.tutorialActionsOverlap, scenario.name + ' tutorial/action overlap').toBe(false);
+          expect(initial.lookHeight, scenario.name + ' look settings height').toBeLessThanOrEqual(90);
+          expect(initial.touchActive).toBe(scenario.touch ? 'true' : 'false');
+          // At most one dockable side panel may be open at a time (the anti-clutter
+          // rule). Zero is also correct: entering the world directly, rather than
+          // through the home chooser, opens none of them.
+          expect(initial.optionalCount, scenario.name + ' initial HUD count').toBeLessThanOrEqual(1);
+
+          await page.evaluate(() => (document.querySelector('.gw-toolbar [data-geometry-settings-trigger="true"]') as HTMLButtonElement).click());
+          const dialogBounds = await page.locator('#gw-settings-dialog').boundingBox();
+          expect(dialogBounds).not.toBeNull();
+          expect(dialogBounds!.x).toBeGreaterThanOrEqual(-1);
+          expect(dialogBounds!.y).toBeGreaterThanOrEqual(-1);
+          expect(dialogBounds!.x + dialogBounds!.width).toBeLessThanOrEqual(scenario.viewport.width + 1);
+          expect(dialogBounds!.y + dialogBounds!.height).toBeLessThanOrEqual(scenario.viewport.height + 1);
+          await page.evaluate(() => (document.querySelector('[data-geometry-hud-preset="builder"]') as HTMLButtonElement).click());
+          await page.waitForSelector('#gw-inventory-panel');
+
+          const builderLayout = await page.evaluate(() => {
+            function box(selector: string) {
+              const el = document.querySelector(selector) as HTMLElement | null;
+              if (!el) return null;
+              const r = el.getBoundingClientRect();
+              return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+            }
+            const inventory = box('#gw-inventory-panel');
+            const actions = box('.gw-touch-actions');
+            const overlap = !!inventory && !!actions && inventory.left < actions.right && inventory.right > actions.left && inventory.top < actions.bottom && inventory.bottom > actions.top;
+            const root = document.getElementById('geoworld-fs-workspace') as HTMLElement;
+            const optional = ['#gw-progress-hud', '#gw-minimap', '#gw-history-panel', '#gw-inventory-panel', '#gw-transform-panel', '#gw-scene-map']
+              .filter((selector) => !!document.querySelector(selector));
+            return { overlap, optionalCount: optional.length, overflowX: root.scrollWidth - root.clientWidth };
+          });
+          expect(builderLayout.overlap, scenario.name + ' inventory/action overlap').toBe(false);
+          expect(builderLayout.optionalCount, scenario.name + ' builder HUD count').toBe(1);
+          expect(builderLayout.overflowX, scenario.name + ' builder overflow').toBeLessThanOrEqual(1);
+
+          if (scenario.name === 'desktop') {
+            await page.getByRole('button', { name: 'Enter fullscreen for the Geometry World workspace' }).click();
+            await page.waitForFunction(() => document.getElementById('geoworld-fs-workspace')?.getAttribute('data-fullscreen') === 'true', null, { timeout: 10_000 });
+            const fullscreen = await page.evaluate(() => {
+              const root = document.getElementById('geoworld-fs-workspace')!.getBoundingClientRect();
+              const viewport = document.getElementById('geoworld-fs-wrap')!.getBoundingClientRect();
+              return {
+                toolbarDisplay: getComputedStyle(document.querySelector('.gw-toolbar')!).display,
+                quickbarDisplay: getComputedStyle(document.querySelector('.gw-fullscreen-quickbar')!).display,
+                topGap: Math.abs(viewport.top - root.top),
+                leftGap: Math.abs(viewport.left - root.left),
+                widthGap: Math.abs(viewport.width - root.width),
+                heightGap: Math.abs(viewport.height - root.height)
+              };
+            });
+            expect(fullscreen.toolbarDisplay).toBe('none');
+            expect(fullscreen.quickbarDisplay).toBe('flex');
+            expect(fullscreen.topGap).toBeLessThanOrEqual(1);
+            expect(fullscreen.leftGap).toBeLessThanOrEqual(1);
+            expect(fullscreen.widthGap).toBeLessThanOrEqual(2);
+            expect(fullscreen.heightGap).toBeLessThanOrEqual(2);
+            await page.getByRole('button', { name: 'Exit fullscreen for the Geometry World workspace' }).click();
+            await page.waitForFunction(() => document.getElementById('geoworld-fs-workspace')?.getAttribute('data-fullscreen') === 'false', null, { timeout: 10_000 });
+          }
+        } finally {
+          await page.evaluate(() => { try { (window as any).__destroy(); } catch {} }).catch(() => {});
+        }
+      });
+    }
+  });
+  // Room for the world (2026-09-24). Before: walking a lesson, the interface covered 15% of a
+  // Chromebook world and 43% of an upright phone's; a character dialog covered 80-100% of the
+  // centre of the view. Measured here the way a student sees it: points on a grid over the
+  // canvas, covered when they fall under a visible interface box.
+  test('leaves the world visible: little interface in a lesson, the dialog beside the view, U hides it all', async ({ page }) => {
+    test.setTimeout(300_000);
+    const coverage = () => page.evaluate(() => {
+      const wrap = document.getElementById('geoworld-fs-wrap') as HTMLElement;
+      const canvas = Array.from(wrap.querySelectorAll('canvas')).sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+      const cr = canvas.getBoundingClientRect();
+      const root = document.getElementById('geoworld-fs-workspace') as HTMLElement;
+      const boxes: DOMRect[] = [];
+      const visible = (el: Element) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) >= 0.05 && r.width > 2 && r.height > 2; };
+      const painted = (s: CSSStyleDeclaration) => { const m = s.backgroundColor.match(/rgba?\(([^)]+)\)/); const a = m ? (m[1].split(',')[3] === undefined ? 1 : Number(m[1].split(',')[3])) : 0; return a > 0.08 || s.backgroundImage !== 'none' || (s.backdropFilter && s.backdropFilter !== 'none') || (parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== 'none'); };
+      const collect = (el: Element) => {
+        if (el === canvas) return;
+        if (el.contains(canvas)) { Array.from(el.children).forEach(collect); return; }
+        if (!visible(el)) return;
+        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+        if (s.pointerEvents === 'none' && r.width * r.height > 0.5 * cr.width * cr.height) { Array.from(el.children).forEach(collect); return; }
+        const text = Array.from(el.childNodes).some((n) => n.nodeType === 3 && (n.textContent || '').trim());
+        if (painted(s) || /^(BUTTON|INPUT|SELECT|TEXTAREA|IMG|SVG|LABEL)$/i.test(el.tagName) || text) { boxes.push(r); return; }
+        Array.from(el.children).forEach(collect);
+      };
+      collect(root);
+      const under = (x: number, y: number) => boxes.some((b) => x >= b.left && x < b.right && y >= b.top && y < b.bottom);
+      let total = 0, covered = 0, ct = 0, cc = 0;
+      for (let y = cr.top + 3; y < cr.bottom; y += 6) for (let x = cr.left + 3; x < cr.right; x += 6) {
+        total++; const hit = under(x, y); if (hit) covered++;
+        if (x > cr.left + cr.width * 0.2 && x < cr.left + cr.width * 0.8 && y > cr.top + cr.height * 0.2 && y < cr.top + cr.height * 0.8) { ct++; if (hit) cc++; }
+      }
+      const dialog = document.querySelector('.gw-dialog--npc');
+      const d = dialog ? dialog.getBoundingClientRect() : null;
+      const cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+      return { covered: 100 * covered / total, centre: 100 * cc / ct, dialogOpen: !!dialog, dialogOverCentre: !!d && cx >= d.left && cx < d.right && cy >= d.top && cy < d.bottom };
+    });
+    const startLesson = async () => {
+      await page.evaluate(() => (window as any).__geoWorldEngine.startHomeLesson('volumeExplorer'));
+      await page.waitForFunction(() => !document.querySelector('.gwe-home') && /Volume Explorer/.test(((window as any).__geoWorldEngine._currentLesson || {}).title || ''), null, { timeout: 30000 });
+      await page.waitForTimeout(1500);
+      await page.evaluate(() => { const en = (window as any).__geoWorldEngine; en._entryAnim = null; en.flyMode = true; const c = en.camera; c.position.set(7, 5, -6); c.lookAt(10, 1.5, 6); c.updateMatrixWorld(true); en.euler.setFromQuaternion(c.quaternion); });
+      await page.waitForTimeout(500);
+    };
+    const bucket = { _introShownOnce: true, _mobileDismissed: true, worldActive: true, tutorialDismissed: true };
+
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await mount(page, bucket);
+    await startLesson();
+    const walking = await coverage();
+    expect(walking.covered, 'lesson, Chromebook').toBeLessThan(8);
+    expect(walking.centre, 'centre of the view').toBeLessThan(2);
+
+    await page.evaluate(async () => {
+      const en = (window as any).__geoWorldEngine, wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      const idx = en.npcs.findIndex((n: any) => n.data && n.data.name === 'Builder Bot'), b = en.npcs[idx].body.position;
+      for (let t = 0; t < 6 && !document.querySelector('.gw-dialog--npc'); t++) {
+        const c = en.camera; c.position.set(b.x, b.y + 0.5, b.z - 2.2); c.lookAt(b.x, b.y + 0.3, b.z); c.updateMatrixWorld(true); en.euler.setFromQuaternion(c.quaternion);
+        await wait(200); (document.getElementById('geoworld-fs-wrap') as HTMLElement).focus();
+        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE', key: 'e', bubbles: true })); await wait(900);
+      }
+    });
+    const talking = await coverage();
+    expect(talking.dialogOpen).toBe(true);
+    expect(talking.dialogOverCentre, 'the dialog sits beside the view').toBe(false);
+    expect(talking.covered).toBeLessThan(30);
+    await page.click('.gw-dialog-close');
+    await page.waitForTimeout(300);
+
+    await focusWorld(page);
+    await page.keyboard.press('u');
+    await page.waitForTimeout(400);
+    const hidden = await coverage();
+    expect(hidden.covered, 'U leaves only the Show controls button').toBeLessThan(2);
+    await page.keyboard.press('u');
+    await page.waitForTimeout(300);
+    expect((await coverage()).covered).toBeGreaterThan(hidden.covered);
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mountResponsive(page, bucket, true, false);
+    await startLesson();
+    const phone = await coverage();
+    expect(phone.covered, 'lesson, upright phone').toBeLessThan(25);
+  });
+
+  test('tears the engine down cleanly on unmount', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    expect(await page.evaluate(() => !!(window as any).__eng())).toBe(true);
+
+    await page.evaluate(() => (window as any).__destroy());
+    await page.waitForTimeout(400);
+
+    // destroyEngine deletes the global AND detaches the canvas — the dead canvas
+    // left behind was half of the blank-viewport bug.
+    expect(await page.evaluate(() => !!(window as any).__eng())).toBe(false);
+    expect(await page.evaluate(() => document.querySelectorAll('#geoworld-fs-wrap canvas').length)).toBe(0);
+  });
+});

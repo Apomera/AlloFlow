@@ -1,0 +1,46 @@
+{
+  "verifiedAtUtc": "2026-09-27T17:56:42.7365622Z",
+  "headBefore": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "headAfter": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "applicabilityChecks": [
+    {
+      "patch": "passage-labels.patch",
+      "exitCode": 0,
+      "output": [],
+      "sha256": "1f9cec8ead4629e8196c9af6f9ec81229ccab694d945fb253a03924a27afe550"
+    },
+    {
+      "patch": "runtime-combined.patch",
+      "exitCode": 0,
+      "output": [],
+      "sha256": "89c74a3af4b3077ad5a3ce3df6831d77374fd7d9e54f017ebf9c6e90ce2c2ce3"
+    },
+    {
+      "patch": "integration.patch",
+      "exitCode": 0,
+      "output": [],
+      "sha256": "0998530d5d06fe1e42b76af99ebd0aee8668862bc85b3e395b84e626466ce7b0"
+    }
+  ],
+  "refreshedEnglishCatalogs": [
+    {
+      "file": "ui_strings.js",
+      "candidateSha256": "2549af4de6d192f727c31a12285413f63a1e34625c67eb5dc1d0b0b30dc5ff12",
+      "packagedAfterSha256": "2549af4de6d192f727c31a12285413f63a1e34625c67eb5dc1d0b0b30dc5ff12",
+      "matchesPackagedCandidate": true,
+      "refreshedRerunPassed": 130
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "candidateSha256": "2549af4de6d192f727c31a12285413f63a1e34625c67eb5dc1d0b0b30dc5ff12",
+      "packagedAfterSha256": "2549af4de6d192f727c31a12285413f63a1e34625c67eb5dc1d0b0b30dc5ff12",
+      "matchesPackagedCandidate": true,
+      "refreshedRerunPassed": 130
+    }
+  ],
+  "sharedApplicationWrites": false,
+  "gitMutation": false,
+  "deployedReleaseVerified": false,
+  "distinctPassingChecks": 291,
+  "note": "Read-only patch applicability against a moving shared checkout. Prior snapshot tests do not certify the latest whole application or deployed release."
+}

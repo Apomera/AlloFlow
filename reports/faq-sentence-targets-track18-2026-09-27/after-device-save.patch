@@ -1,0 +1,540 @@
+===================================================================
+--- a/view_faq_source.jsx
++++ b/view_faq_source.jsx
+@@ -77,7 +77,12 @@
+     var audioNoticeState = React.useState('');
+     var audioNotice = audioNoticeState[0], setAudioNotice = audioNoticeState[1];
+     var audioRequestRef = React.useRef(null);
+-    var audioContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.data, selectedVoice, effectiveLanguage, voiceSpeed]);
++    var audioResourceId = String(generatedContent?.id || generatedContent?.resourceId || generatedContent?.__alloUnsavedTtsToken || 'unsaved');
++    var audioSpeed = typeof voiceSpeed === 'number' && Number.isFinite(voiceSpeed) && voiceSpeed > 0 ? voiceSpeed : 1;
++    var audioProfile = { voice: selectedVoice || window.__alloSelectedVoice || 'Kore', language: effectiveLanguage, speed: audioSpeed, synthesisRate: audioSpeed, voiceResolverVersion: 2 };
++    var audioContext = JSON.stringify([audioResourceId, generatedContent?.data, audioProfile, window.__alloReadAloudProfileRevision]);
++    var audioEditingRef = React.useRef(false);
++    audioEditingRef.current = !!isTeacherMode && !!isEditingFaq;
+     var audioContextRef = React.useRef(audioContext);
+     audioContextRef.current = audioContext;
+     React.useEffect(function () {
+@@ -94,15 +99,32 @@
+       };
+     }, [audioContext]);
+     var isCurrentAudioRequest = function (request) {
+-      return audioRequestRef.current === request && audioContextRef.current === request.context;
++      return audioRequestRef.current === request && audioContextRef.current === request.context && (request.kind !== 'sentence' || audioEditingRef.current);
+     };
+     React.useEffect(function () {
+-      if (typeof window === 'undefined') return;
+-      var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
+-      window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+-      window.addEventListener('alloflow:module-registry-changed', onAudioUpdate);
+-      return function () { window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate); window.removeEventListener('alloflow:module-registry-changed', onAudioUpdate); };
+-    }, []);
++      if (audioEditingRef.current) return;
++      var request = audioRequestRef.current;
++      if (request?.kind === 'sentence') {
++        audioRequestRef.current = null;
++        request.controller?.abort();
++        setRegenAudioKey(null);
++        setAudioNotice('');
++      }
++    }, [isTeacherMode, isEditingFaq]);
++    var audioStore = window.AlloModules?.KaraokeAudioStore?.current;
++    React.useEffect(function () {
++      var onAudioUpdate = function (event) {
++        if (event?.detail?.resourceId != null && String(event.detail.resourceId) !== audioResourceId) return;
++        setAudioStatusTick(function (n) { return n + 1; });
++      };
++      var events = ['alloflow:karaoke-audio-updated', 'alloflow:read-aloud-reconciled', 'alloflow:module-registry-changed'];
++      events.forEach(function (name) { window.addEventListener(name, onAudioUpdate); });
++      var unsubscribe = audioStore?.subscribe?.(onAudioUpdate);
++      return function () {
++        events.forEach(function (name) { window.removeEventListener(name, onAudioUpdate); });
++        if (typeof unsubscribe === 'function') unsubscribe();
++      };
++    }, [audioResourceId, audioStore]);
+     var cleanSentenceForAudio = function (sentence) {
+       try {
+         var phaseK = window.AlloModules && window.AlloModules.PhaseKHelpers;
+@@ -115,46 +137,43 @@
+       // present in one place but not the other orphans that sentence's audio.
+       return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
+     };
+-    var getReadAloudStore = function () {
+-      try {
+-        return window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+-      } catch (_) {
+-        return null;
+-      }
+-    };
+-    var getReadAloudAudioStatus = function (sentence) {
+-      var st = getReadAloudStore();
+-      if (!st) return 'missing';
+-      try {
+-        var stored = !!st.has(sentence);
+-        if (!stored) return 'missing';
+-        if (typeof st.getCompatible !== 'function') return 'ready';
+-        var compatible = st.getCompatible(sentence, {
+-          voice: selectedVoice,
+-          language: effectiveLanguage
++    // Match the host's canonical question/answer locators and splitter. The
++    // occurrence count spans the entire FAQ, after spoken-text normalization.
++    var getFaqAudioEntries = function () {
++      var entries = [], occurrences = new Map();
++      var data = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
++      data.forEach(function (faq, faqIndex) {
++        if (!faq) return;
++        ['question', 'answer'].forEach(function (field) {
++          var part = faq[field];
++          if (!part || String(part).trim().startsWith('|') || String(part).includes('\n|')) return;
++          var KS = window.AlloModules?.KaraokeAudioStore;
++          var sentences;
++          try { if (typeof KS?.splitSentences === 'function') sentences = KS.splitSentences(part); } catch (_) {}
++          if (!Array.isArray(sentences)) sentences = splitTextToSentences(String(part));
++          sentences.forEach(function (sentence, sentenceIndex) {
++            var text = cleanSentenceForAudio(sentence);
++            if (!text) return;
++            var occurrence = occurrences.get(text) || 0;
++            occurrences.set(text, occurrence + 1);
++            entries.push({ text: text, occurrence: occurrence, segmentId: 'faq/' + faqIndex + '/' + field + '/' + sentenceIndex, scopeId: 'main', language: effectiveLanguage, faqIndex: faqIndex, field: field, sentenceIndex: sentenceIndex });
++          });
+         });
+-        return compatible ? 'ready' : 'stale';
+-      } catch (_) {
+-        return 'missing';
+-      }
+-    };
+-    var getReadAloudAudioSummary = function (sentences) {
+-      var list = Array.isArray(sentences) ? sentences : [];
+-      return list.reduce(function (summary, sentence) {
+-        var status = getReadAloudAudioStatus(sentence);
+-        summary[status] += 1;
+-        return summary;
+-      }, { ready: 0, stale: 0, missing: 0, total: list.length });
+-    };
+-    var getFaqAudioSentences = function () {
+-      var data = generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data : [];
+-      var list = [];
+-      data.forEach(function (faq) {
+-        if (faq && faq.question) list.push.apply(list, splitTextToSentences(faq.question));
+-        if (faq && faq.answer) list.push.apply(list, splitTextToSentences(faq.answer));
+       });
+-      return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
++      return entries;
+     };
++    var faqAudioEntries = getFaqAudioEntries();
++    var inspectFaqAudioEntry = function (entry) {
++      try {
++        var inspected = window.__alloInspectReadAloudAudio?.(entry, 'reference', { occurrence: entry.occurrence, profile: audioProfile });
++        var segment = inspected?.segment;
++        // A text-only/old-host result cannot certify the intended occurrence.
++        if (segment && String(segment.resourceId) === audioResourceId && segment.segmentId === entry.segmentId && segment.spokenText === entry.text &&
++            ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)) return inspected;
++      } catch (_) {}
++      return { status: 'unverified', source: null };
++    };
++    var getFaqAudioSentences = function () { return faqAudioEntries.map(function (entry) { return entry.text; }); };
+     var handlePrepareFaqAudio = async function () {
+       if (audioRequestRef.current) return;
+       if (typeof window.__alloPrepareReadAloud !== 'function') {
+@@ -170,7 +189,7 @@
+       try {
+         var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
+           if (isCurrentAudioRequest(request)) setPrepState({ busy: true, done: done, total: total || sentences.length });
+-        }, { signal: request.controller && request.controller.signal });
++        }, { signal: request.controller && request.controller.signal, entries: faqAudioEntries, profile: audioProfile });
+         if (!isCurrentAudioRequest(request)) return;
+         if (request.controller && request.controller.signal.aborted) {
+           setAudioNotice(label('faq.audio_save_stopped', 'Audio saving stopped. Save TTS again to finish any missing clips.'));
+@@ -194,18 +213,18 @@
+         }
+       }
+     };
+-    var handleRegenerateFaqAudioSentence = async function (sentence, key) {
+-      if (!sentence || audioRequestRef.current) return;
+-      if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
++    var handleRegenerateFaqAudioSentence = async function (entry) {
++      if (!entry || audioRequestRef.current || !audioEditingRef.current) return;
++      if (typeof window.__alloRegenerateSentenceAudio !== 'function' || inspectFaqAudioEntry(entry).status === 'unverified') {
+         setAudioNotice(label('faq.audio_tools_loading', 'Audio tools are still loading. Please try again.'));
+         return;
+       }
+-      var request = { context: audioContext };
++      var request = { context: audioContext, kind: 'sentence', controller: new AbortController() };
+       audioRequestRef.current = request;
+-      setRegenAudioKey(key);
++      setRegenAudioKey(entry.segmentId);
+       setAudioNotice('');
+       try {
+-        var url = await window.__alloRegenerateSentenceAudio(cleanSentenceForAudio(sentence));
++        var url = await window.__alloRegenerateSentenceAudio(entry, { occurrence: entry.occurrence, profile: audioProfile, signal: request.controller.signal });
+         if (!url) throw new Error('No audio returned');
+         if (isCurrentAudioRequest(request)) {
+           setAudioStatusTick(function (n) { return n + 1; });
+@@ -220,27 +239,35 @@
+         }
+       }
+     };
+-    var renderFaqEditAudioTools = function (text, keyPrefix) {
++    var renderFaqEditAudioTools = function (faqIndex, field) {
+       if (!isTeacherMode || !isEditingFaq) return null;
+-      var sentences = splitTextToSentences(text).map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
+-      if (!sentences.length) return null;
+-      var summary = getReadAloudAudioSummary(sentences);
+-      return <div className="flex flex-wrap gap-1.5 pt-1"><div className="w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-cyan-700"><span>TTS {summary.ready}/{summary.total} ready{summary.stale > 0 ? `; ${summary.stale} stale` : ''}</span><span className="text-slate-500 normal-case font-semibold">Click to regenerate</span></div>{sentences.map(function (sentence, sIdx) {
+-        var key = keyPrefix + '-' + sIdx;
+-        var busy = regenAudioKey === key;
+-        var audioStatus = getReadAloudAudioStatus(sentence);
+-        return <button key={key} type="button" onClick={() => handleRegenerateFaqAudioSentence(sentence, key)} disabled={!!regenAudioKey || prepState.busy} className={`min-h-11 min-w-11 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none ${audioStatus === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : audioStatus === 'stale' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`} title={`${audioStatus === 'ready' ? 'TTS ready' : audioStatus === 'stale' ? 'TTS saved with different settings' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${audioStatus === 'ready' ? 'Ready TTS' : audioStatus === 'stale' ? 'Stale TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : audioStatus === 'ready' ? <CheckCircle2 size={12} /> : audioStatus === 'stale' ? <RefreshCw size={12} /> : <Volume2 size={12} />}<span>{sIdx + 1}</span></button>;
+-      })}</div>;
++      var entries = faqAudioEntries.filter(function (entry) { return entry.faqIndex === faqIndex && entry.field === field; });
++      if (!entries.length) return null;
++      var rows = entries.map(function (entry) { return { entry: entry, inspection: inspectFaqAudioEntry(entry) }; });
++      var summary = rows.reduce(function (result, row) { result[row.inspection.status] += 1; return result; }, { total: rows.length, ready: 0, stale: 0, missing: 0, corrupt: 0, unverified: 0 });
++      var fieldName = label('faq.audio_' + field, field === 'question' ? 'question' : 'answer');
++      var groupName = label('faq.audio_item', 'FAQ') + ' ' + (faqIndex + 1) + ', ' + fieldName;
++      var summaryText = summary.unverified ? label('faq.audio_unverified', 'Playback readiness not verified') :
++        'TTS ' + summary.ready + '/' + summary.total + ' ' + label('faq.audio_ready', 'ready to play') +
++        (summary.stale ? '; ' + summary.stale + ' ' + label('faq.audio_stale', 'settings changed') : '') +
++        (summary.corrupt ? '; ' + summary.corrupt + ' ' + label('faq.audio_corrupt', 'need repair') : '');
++      return <div role="group" aria-label={groupName + ' ' + label('faq.audio_group', 'audio')} data-faq-audio-group={faqIndex + '/' + field} className="flex min-w-0 max-w-full flex-wrap gap-1.5 pt-1">
++        <div className="w-full min-w-0 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-cyan-700"><span>{summaryText}</span><span className="text-slate-600 font-semibold">{label('faq.audio_regenerate_hint', 'Select a sentence to regenerate audio')}</span></div>
++        {rows.map(function (row) {
++          var entry = row.entry, status = row.inspection.status;
++          var busy = regenAudioKey === entry.segmentId;
++          var unavailable = !!regenAudioKey || prepState.busy || status === 'unverified' || typeof window.__alloRegenerateSentenceAudio !== 'function';
++          var statusText = status === 'ready' ? label('faq.audio_ready', 'ready to play') : status === 'stale' ? label('faq.audio_settings_changed', 'stored audio; settings changed') : status === 'corrupt' ? label('faq.audio_repair', 'audio needs repair') : status === 'missing' ? label('faq.audio_missing', 'audio missing') : label('faq.audio_unverified', 'playback readiness not verified');
++          var actionText = String(row.inspection.source || '').startsWith('human') ? label('faq.audio_replace_recording', 'Replace recording with generated audio') : label('faq.audio_regenerate', 'Regenerate audio');
++          var name = groupName + ', ' + label('faq.audio_sentence', 'sentence') + ' ' + (entry.sentenceIndex + 1) + '. ' + statusText + '. ' + actionText + '.';
++          return <button key={entry.segmentId} type="button" data-faq-audio-entry={entry.segmentId} data-audio-status={status} onClick={() => { if (!unavailable) handleRegenerateFaqAudioSentence(entry); }} aria-disabled={unavailable} aria-busy={busy} className={'min-h-11 min-w-11 max-w-full inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border aria-disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors motion-reduce:transition-none ' + (status === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : status === 'stale' || status === 'corrupt' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100')} title={name + ' ' + entry.text.slice(0, 90)} aria-label={name}>{busy ? <RefreshCw size={12} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : status === 'ready' ? <CheckCircle2 size={12} aria-hidden="true" /> : status === 'stale' || status === 'corrupt' ? <RefreshCw size={12} aria-hidden="true" /> : <Volume2 size={12} aria-hidden="true" />}<span>{entry.sentenceIndex + 1}</span></button>;
++        })}
++        {(summary.unverified > 0 || typeof window.__alloRegenerateSentenceAudio !== 'function') && <p className="w-full text-xs text-slate-600">{label('faq.audio_identity_loading', 'Sentence audio tools are not ready. Try again after they finish loading.')}</p>}
++      </div>;
+     };
+     var DeviceSaveStatus = window.AlloModules?.ResourceReadAloud?.DeviceSaveStatus;
+-    var faqAudioOccurrences = new Map();
+-    var faqAudioEntries = getFaqAudioSentences().map(function (text) {
+-      var occurrence = faqAudioOccurrences.get(text) || 0;
+-      faqAudioOccurrences.set(text, occurrence + 1);
+-      return { text: text, occurrence: occurrence, language: effectiveLanguage };
+-    });
+-    return <div className="space-y-6">{isTeacherMode && (DeviceSaveStatus
+-      ? <DeviceSaveStatus resourceId={generatedContent?.id || generatedContent?.resourceId} contextKey={audioContext} entries={faqAudioEntries} profile={{voice: selectedVoice, language: effectiveLanguage, speed: voiceSpeed, synthesisRate: voiceSpeed, voiceResolverVersion: 2}} payload={generatedContent?.karaokeAudio} refreshToken={audioStatusTick} activePlayback={isPlaying && playingContentId === 'faq-active'} t={t} />
++    return <div data-faq-view className="space-y-6"><style>{"[data-faq-view] p, [data-faq-view] button, [data-faq-view] textarea, [data-faq-view] [data-faq-audio-group] { line-height: 1.5; }"}</style>{isTeacherMode && (DeviceSaveStatus
++      ? <DeviceSaveStatus resourceId={generatedContent?.id || generatedContent?.resourceId} contextKey={audioContext} entries={faqAudioEntries} profile={audioProfile} payload={generatedContent?.karaokeAudio} refreshToken={audioStatusTick} activePlayback={isPlaying && playingContentId === 'faq-active'} t={t} />
+       : <p role="status">{label('faq.device_unverified', 'Device save not verified. Audio tools are still loading.')}</p>)} {audioNotice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
+             e.stopPropagation();
+             audioRef.current?.pause();
+@@ -301,7 +328,7 @@
+             });
+             var qBase = rangeStart[idx] || 0;
+             var aBase = qBase + qSentencesForCount.length;
+-            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(faq.question, 'faq-' + idx + '-question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(faq.answer, 'faq-' + idx + '-answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
++            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(idx, 'question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(idx, 'answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
+                         const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
+                         return qSentences.map((s, sIdx) => {
+                           const currentGlobalIdx = qBase + sIdx;
+===================================================================
+--- /dev/null
++++ b/tests/faq_sentence_targets.test.js
+@@ -0,0 +1,125 @@
++import {afterEach,beforeAll,beforeEach,describe,expect,it,vi} from 'vitest';
++import {createRequire} from 'node:module';
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {loadAlloModule} from './setup.js';
++import {validAudioBase64} from './lib/audio_fixtures.js';
++const require=createRequire(import.meta.url),noop=()=>{};
++let React,createRoot,act,FAQ,KS,host,root,currentProps,store,bridge,synthesize,persist,inspect,regenerate,blobId=0;
++const hostSource=readFileSync('AlloFlowANTI.txt','utf8');
++const enumeration=hostSource.slice(hostSource.indexOf('  const _enumerateReadAloudResourceSegments ='),hostSource.indexOf('  const _encodeReadAloudBridgeAudio ='));
++const hostEnumerator=new Function('window','splitTextToSentences','leveledTextLanguage','currentUiLanguage',enumeration+';return _enumerateReadAloudResourceSegments;');
++const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
++const resource=(data=[{question:'Echo.',answer:'Echo.'},{question:'Echo.',answer:'Other.'}],id='faq-one')=>({id,type:'faq',data});
++const props=overrides=>({t:k=>k,generatedContent:resource(),isTeacherMode:true,isEditingFaq:true,isPlaying:false,voiceSpeed:1,selectedVoice:'Kore',effectiveLanguage:'English',leveledTextLanguage:'English',playbackState:{currentIdx:-1},audioRef:{current:null},playbackSessionRef:{current:null},setVoiceSpeed:noop,setIsPlaying:noop,setPlayingContentId:noop,handleToggleIsEditingFaq:noop,handleFaqChange:noop,handleSpeak:noop,getRows:()=>2,splitTextToSentences:x=>KS.splitSentences(x),formatInteractiveText:x=>x,...overrides});
++const profile=()=>({voice:currentProps.selectedVoice||'Kore',language:currentProps.effectiveLanguage||'English',speed:currentProps.voiceSpeed||1,synthesisRate:currentProps.voiceSpeed||1,voiceResolverVersion:2,provider:'gemini'});
++const enumerate=resource=>hostEnumerator(window,x=>KS.splitSentences(x),currentProps.effectiveLanguage,'English')(resource);
++const entries=()=>enumerate(currentProps.generatedContent).map(entry=>({...entry,text:window.AlloModules.PhaseKHelpers.toSpokenText(entry.text)})).filter(entry=>entry.text);
++const serialized=()=>Object.values(store.serialize()?.entries||{});
++const click=async element=>act(async()=>element.click());
++const actions=()=>[...host.querySelectorAll('button')].filter(el=>el.getAttribute('aria-label')?.includes('Regenerate audio.')||el.getAttribute('aria-label')?.includes('Replace recording with generated audio.'));
++const button=index=>actions()[index];
++beforeAll(()=>{
++ React=require(resolve('desktop/web-app/node_modules/react'));({createRoot}=require(resolve('desktop/web-app/node_modules/react-dom/client')));({act}=require(resolve('desktop/web-app/node_modules/react-dom/test-utils')));
++ global.React=window.React=React;global.IS_REACT_ACT_ENVIRONMENT=true;
++ loadAlloModule('karaoke_audio_store_module.js');loadAlloModule('phase_k_helpers_module.js');loadAlloModule('read_aloud_audio_service_source.jsx');loadAlloModule('resource_read_aloud_module.js');loadAlloModule('view_faq_module.js');
++ KS=window.AlloModules.KaraokeAudioStore;FAQ=window.AlloModules.FaqView;
++ Object.defineProperty(URL,'createObjectURL',{configurable:true,value:()=> 'blob:test-'+(++blobId)});Object.defineProperty(URL,'revokeObjectURL',{configurable:true,value:noop});
++});
++beforeEach(()=>{
++ currentProps=props();store=KS.createStore();KS.current=store;
++ synthesize=vi.fn(async request=>({b64:validAudioBase64(256,65+synthesize.mock.calls.length),mime:'audio/wav'}));persist=vi.fn(async()=>({status:'attached'}));
++ bridge=window.AlloModules.createReadAloudLegacyBridge({getResource:()=>currentProps.generatedContent,getStore:()=>store,getProfile:profile,enumerateResourceSegments:enumerate,normalize:window.AlloModules.PhaseKHelpers.toSpokenText,synthesize,persist});
++ window.__alloInspectReadAloudAudio=inspect=vi.fn((...args)=>bridge.inspect(...args));window.__alloRegenerateSentenceAudio=regenerate=vi.fn((...args)=>bridge.regenerate(...args));
++ window.__alloPrepareReadAloud=vi.fn((...args)=>bridge.prepare(...args));
++ window.__alloGetReadAloudReadiness=vi.fn(async(texts,lane,options)=>({resourceId:currentProps.generatedContent.id,...bridge.readiness(texts,lane,options)}));
++ window.__alloRetryReadAloudPersistence=vi.fn(async()=>true);
++});
++afterEach(async()=>{
++ if(root)await act(async()=>root.unmount());root=null;host?.remove();host=null;store?.clear();KS.current=null;
++ for(const name of ['__alloInspectReadAloudAudio','__alloRegenerateSentenceAudio','__alloPrepareReadAloud','__alloGetReadAloudReadiness','__alloRetryReadAloudPersistence','__alloReadAloudProfileRevision'])delete window[name];
++ vi.restoreAllMocks();
++});
++async function render(input=currentProps){currentProps=input;if(!root){host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);}await act(async()=>root.render(React.createElement(FAQ,input)));}
++async function seed(){await bridge.prepare(undefined,noop,{profile:profile()});synthesize.mockClear();persist.mockClear();}
++describe('FAQ sentence targeting through the real bridge and store',()=>{
++ it('regenerates the second FAQ question without changing its same-text peers',async()=>{
++  await seed();const before=serialized();await render();await click(button(2));
++  expect(synthesize).toHaveBeenCalledTimes(1);expect(synthesize.mock.calls[0][0].segment.segmentId).toBe('faq/1/question/0');
++  const after=serialized();for(const entry of before){const next=after.find(value=>value.identity.segmentId===entry.identity.segmentId);expect(next.audio===entry.audio).toBe(entry.identity.segmentId!=='faq/1/question/0');}
++  expect(regenerate.mock.calls[0][0]).toMatchObject({text:'Echo.',segmentId:'faq/1/question/0',scopeId:'main',occurrence:2});
++ });
++ it('assigns occurrences across questions and answers after spoken-text cleanup',async()=>{
++  currentProps=props({generatedContent:resource([{question:'**Echo.**',answer:'[Echo.](https://example.test)'},{question:'Echo. Echo.',answer:'Different.'}])});await render();await click(button(3));
++  expect(regenerate.mock.calls[0][0]).toMatchObject({segmentId:'faq/1/question/1',text:'Echo.',occurrence:3});
++  expect(synthesize.mock.calls[0][0].segment.segmentId).toBe('faq/1/question/1');
++ });
++ it('uses the host splitter for audio even if the displayed-text splitter differs',async()=>{
++  await render(props({generatedContent:resource([{question:'First. Second.',answer:'Third.'}]),splitTextToSentences:text=>[text]}));
++  expect(actions()).toHaveLength(3);await click(button(1));expect(synthesize.mock.calls[0][0].segment.segmentId).toBe('faq/0/question/1');
++ });
++ it('keeps raw split indices when non-spoken citations are skipped',async()=>{
++  const original=KS.splitSentences;vi.spyOn(KS,'splitSentences').mockImplementation(text=>text==='citation fixture'?['[Source 1]','Echo.']:original(text));
++  await render(props({generatedContent:resource([{question:'citation fixture',answer:'Echo.'}])}));await click(button(0));
++  expect(regenerate.mock.calls[0][0]).toMatchObject({segmentId:'faq/0/question/1',occurrence:0});expect(serialized()[0].identity.segmentId).toBe('faq/0/question/1');
++ });
++ it('does not expose audio actions for table fields excluded by the host',async()=>{
++  await render(props({generatedContent:resource([{question:'| Header |',answer:'Narration.'}])}));expect(actions()).toHaveLength(1);await click(button(0));expect(synthesize.mock.calls[0][0].segment.segmentId).toBe('faq/0/answer/0');
++ });
++ it.each([{selectedVoice:'Puck'},{voiceSpeed:1.4},{effectiveLanguage:'Spanish'}])('rechecks readiness under changed synthesis settings %j',async change=>{
++  await seed();await render();expect(button(0).getAttribute('data-audio-status')).toBe('ready');await render({...currentProps,...change});expect(button(0).getAttribute('data-audio-status')).toBe('stale');await click(button(0));
++  expect(synthesize.mock.calls[0][0].profile).toMatchObject({voice:currentProps.selectedVoice,language:currentProps.effectiveLanguage,speed:currentProps.voiceSpeed,synthesisRate:currentProps.voiceSpeed,voiceResolverVersion:2});
++ });
++ it('marks edited spoken text stale at its canonical location and leaves other clips alone',async()=>{
++  await seed();await render();await render({...currentProps,generatedContent:resource([{question:'Changed.',answer:'Echo.'},{question:'Echo.',answer:'Other.'}])});
++  expect(button(0).getAttribute('data-audio-status')).toBe('stale');expect(button(1).getAttribute('data-audio-status')).toBe('ready');await click(button(0));expect(serialized().find(x=>x.identity.segmentId==='faq/0/question/0').identity.spokenText).toBe('Changed.');
++ });
++ it('keeps a human recording ready across voice changes and names explicit replacement',async()=>{
++  await bridge.saveRecording(entries()[0],{b64:validAudioBase64(),mime:'audio/wav'},'human-teacher');await render({...currentProps,selectedVoice:'Puck',voiceSpeed:1.4});
++  expect(button(0).getAttribute('data-audio-status')).toBe('ready');expect(button(0).getAttribute('aria-label')).toContain('Replace recording with generated audio');expect(synthesize).not.toHaveBeenCalled();
++ });
++ it('refreshes row status on real-store quarantine and removal notifications',async()=>{
++  await seed();await render();await act(async()=>bridge.quarantine(entries()[0],{code:'decode-failed'}));expect(button(0).getAttribute('data-audio-status')).toBe('corrupt');
++  await act(async()=>bridge.remove(entries()[1]));expect(button(1).getAttribute('data-audio-status')).toBe('missing');
++ });
++ it('passes the same complete descriptors and profile to whole-FAQ preparation and device checks',async()=>{
++  await render({...currentProps,voiceSpeed:1.25});await click([...host.querySelectorAll('button')].find(el=>el.textContent==='Save TTS'));
++  const [, ,options]=window.__alloPrepareReadAloud.mock.calls[0];expect(options.entries.map(x=>[x.segmentId,x.occurrence])).toEqual([['faq/0/question/0',0],['faq/0/answer/0',1],['faq/1/question/0',2],['faq/1/answer/0',0]]);expect(options.profile).toMatchObject({speed:1.25,synthesisRate:1.25});
++  expect(window.__alloGetReadAloudReadiness.mock.calls.at(-1)[2]).toMatchObject({entries:options.entries,profile:options.profile});expect(host.textContent).not.toContain('4/4 saved on this device');
++ });
++ it('round-trips selected clips through serialization without collapsing duplicates',async()=>{
++  await seed();const payload=JSON.parse(JSON.stringify(store.serialize()));store.clear();store=KS.createStore();store.hydrate(payload);KS.current=store;await render();
++  expect(actions().every(el=>el.getAttribute('data-audio-status')==='ready')).toBe(true);await click(button(2));expect(serialized()).toHaveLength(4);expect(synthesize.mock.calls[0][0].segment.segmentId).toBe('faq/1/question/0');
++ });
++});
++describe('FAQ request ownership and accessible controls',()=>{
++ it('names the FAQ number, field and sentence distinctly for duplicate text',async()=>{await render();const names=actions().map(el=>el.getAttribute('aria-label'));expect(new Set(names).size).toBe(4);expect(names[2]).toContain('FAQ 2, question, sentence 1');expect(host.querySelectorAll('button button,button input,[role=status] button')).toHaveLength(0);});
++ it('retains focus and guards duplicate activation while a generation is pending',async()=>{
++  const pending=deferred();synthesize.mockReturnValue(pending.promise);await render();const action=button(2);action.focus();await act(async()=>{action.click();action.click();});expect(synthesize).toHaveBeenCalledTimes(1);expect(action.disabled).toBe(false);expect(action.getAttribute('aria-disabled')).toBe('true');expect(action.getAttribute('aria-busy')).toBe('true');
++  await act(async()=>pending.resolve({b64:validAudioBase64(),mime:'audio/wav'}));expect(button(2)).toBe(action);expect(document.activeElement).toBe(action);expect(action.getAttribute('aria-busy')).toBe('false');
++ });
++ it.each(['resource','text','voice','speed','language','provider','leave-edit','leave-teacher','unmount'])('aborts pending generation on %s and ignores its late completion',async change=>{
++  const pending=deferred();synthesize.mockReturnValue(pending.promise);await render();await click(button(2));const signal=synthesize.mock.calls[0][0].signal;
++  let next={...currentProps};if(change==='resource')next.generatedContent={...next.generatedContent,id:'faq-two'};if(change==='text')next.generatedContent=resource([{question:'New.',answer:'Text.'}]);if(change==='voice')next.selectedVoice='Puck';if(change==='speed')next.voiceSpeed=1.5;if(change==='language')next.effectiveLanguage='Spanish';if(change==='provider')window.__alloReadAloudProfileRevision='new-provider';if(change==='leave-edit')next.isEditingFaq=false;if(change==='leave-teacher')next.isTeacherMode=false;
++  if(change==='unmount'){await act(async()=>root.unmount());root=null;}else await render(next);
++  expect(signal?.aborted).toBe(true);await act(async()=>pending.resolve({b64:validAudioBase64(),mime:'audio/wav'}));expect(persist).not.toHaveBeenCalled();expect(serialized()).toHaveLength(0);expect(host.textContent).not.toContain('Sentence audio ready.');
++ });
++ it('reports a failed request without removing the focused control and permits retry',async()=>{
++  synthesize.mockRejectedValueOnce(new Error('provider unavailable'));await render();const action=button(0);action.focus();await click(action);expect(document.activeElement).toBe(action);expect(host.textContent).toContain('Sentence audio could not be generated');await click(action);expect(synthesize).toHaveBeenCalledTimes(2);
++ });
++ it('ignores foreign events and refreshes when a missing inspector becomes available',async()=>{
++  delete window.__alloInspectReadAloudAudio;await render();expect(host.textContent).toContain('Playback readiness not verified');expect(button(0).getAttribute('aria-disabled')).toBe('true');await click(button(0));expect(regenerate).not.toHaveBeenCalled();
++  window.__alloInspectReadAloudAudio=inspect;await act(async()=>window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated',{detail:{resourceId:'other'}})));expect(inspect).not.toHaveBeenCalled();
++  await act(async()=>window.dispatchEvent(new Event('alloflow:module-registry-changed')));expect(button(0).getAttribute('data-audio-status')).toBe('missing');expect(button(0).getAttribute('aria-disabled')).toBe('false');
++ });
++ it.each(['foreign-resource','foreign-segment','wrong-text','missing-segment','invalid-status'])('rejects an inspector result for %s',async kind=>{
++  inspect.mockImplementation(entry=>({status:kind==='invalid-status'?'saved':'ready',segment:kind==='missing-segment'?null:{resourceId:kind==='foreign-resource'?'other':'faq-one',segmentId:kind==='foreign-segment'?'wrong':entry.segmentId,spokenText:kind==='wrong-text'?'Wrong.':entry.text}}));
++  await render();expect(button(0).getAttribute('data-audio-status')).toBe('unverified');await click(button(0));expect(regenerate).not.toHaveBeenCalled();
++ });
++ it('rechecks identity on activation if the host changed after the previous render',async()=>{
++  await render();inspect.mockImplementation(entry=>({status:'missing',segment:{resourceId:'another-resource',segmentId:entry.segmentId,spokenText:entry.text}}));await click(button(0));expect(regenerate).not.toHaveBeenCalled();expect(host.textContent).toContain('Audio tools are still loading');
++ });
++ it('explains unavailable generation even when inspection is available',async()=>{
++  delete window.__alloRegenerateSentenceAudio;await render();expect(button(0).getAttribute('aria-disabled')).toBe('true');expect(host.textContent).toContain('Sentence audio tools are not ready');await click(button(0));expect(synthesize).not.toHaveBeenCalled();
++ });
++});
+===================================================================
+--- a/tests/faq_audio_parity.test.js
++++ b/tests/faq_audio_parity.test.js
+@@ -36,6 +36,7 @@
+     host = null;
+   }
+   vi.restoreAllMocks();
++  delete window.__alloInspectReadAloudAudio;
+   if (window.AlloModules) {
+     delete window.AlloModules.KaraokeAudioStore;
+     delete window.AlloModules.PhaseKHelpers;
+@@ -99,38 +100,31 @@
+   it('counts only compatible clips as ready and labels stale and missing clips', () => {
+     const toSpokenText = vi.fn((sentence) =>
+       String(sentence || '').replace(/^#{1,6}\s+/gm, '').trim());
+-    const getCompatible = vi.fn((sentence, options) =>
+-      sentence === 'Ready sentence.' &&
+-      options.voice === 'Kore' &&
+-      options.language === 'Spanish'
+-        ? 'blob:ready'
+-        : null);
+-    const stored = new Set(['Ready sentence.', 'Stale sentence.']);
++    const inspect = vi.fn((entry, lane, options) => ({
++      status: entry.text === 'Missing sentence.' ? 'missing' :
++        entry.text === 'Ready sentence.' && options.profile.voice === 'Kore' &&
++        options.profile.language === 'Spanish' && options.profile.synthesisRate === 1 ? 'ready' : 'stale',
++      segment: { resourceId: 'faq-audio-parity', segmentId: entry.segmentId, spokenText: entry.text },
++    }));
+ 
+     window.AlloModules.PhaseKHelpers = { toSpokenText };
+-    window.AlloModules.KaraokeAudioStore = {
+-      current: {
+-        has: (sentence) => stored.has(sentence),
+-        getCompatible,
+-      },
+-    };
++    window.__alloInspectReadAloudAudio = inspect;
+ 
+     const props = baseProps();
+     const view = mount(props);
+ 
+     expect(toSpokenText).toHaveBeenCalledWith('## Ready sentence.');
+-    expect(getCompatible).toHaveBeenCalledWith('Ready sentence.', {
+-      voice: 'Kore',
+-      language: 'Spanish',
++    expect(inspect).toHaveBeenCalledWith(expect.objectContaining({text:'Ready sentence.', segmentId:'faq/0/question/0'}), 'reference', {
++      occurrence: 0, profile: {voice: 'Kore', language: 'Spanish', speed: 1, synthesisRate: 1, voiceResolverVersion: 2},
+     });
+-    expect(host.textContent).toContain('TTS 1/1 ready');
+-    expect(host.textContent).toContain('TTS 0/2 ready; 1 stale');
+-    expect(host.querySelector('button[aria-label^="Ready TTS for FAQ sentence 1."]')).toBeTruthy();
+-    expect(host.querySelector('button[aria-label^="Stale TTS for FAQ sentence 1."]')).toBeTruthy();
+-    expect(host.querySelector('button[aria-label^="Missing TTS for FAQ sentence 2."]')).toBeTruthy();
++    expect(host.textContent).toContain('TTS 1/1 ready to play');
++    expect(host.textContent).toContain('TTS 0/2 ready to play; 1 settings changed');
++    expect(host.querySelector('button[data-faq-audio-entry="faq/0/question/0"]').getAttribute('data-audio-status')).toBe('ready');
++    expect(host.querySelector('button[data-faq-audio-entry="faq/0/answer/0"]').getAttribute('data-audio-status')).toBe('stale');
++    expect(host.querySelector('button[data-faq-audio-entry="faq/0/answer/1"]').getAttribute('data-audio-status')).toBe('missing');
+ 
+     view.render({ ...props, selectedVoice: 'Puck' });
+-    expect(host.textContent).toContain('TTS 0/1 ready; 1 stale');
++    expect(host.textContent).toContain('TTS 0/1 ready to play; 1 settings changed');
+   });
+ 
+   it('shows an accessible playback-loading spinner independently of Save TTS progress', () => {
+===================================================================
+--- a/tests/faq_controls_a11y.test.js
++++ b/tests/faq_controls_a11y.test.js
+@@ -35,11 +35,12 @@
+     expect(source).toContain("typeof phaseK.toSpokenText === 'function'");
+     expect(source).toContain('return phaseK.toSpokenText(sentence);');
+     expect(source).toContain("return String(sentence || '').replace(");
+-    expect(source).toContain('st.getCompatible(sentence, {');
++    expect(source).toContain("window.__alloInspectReadAloudAudio?.(entry, 'reference'");
+     expect(source).toContain('voice: selectedVoice');
+     expect(source).toContain('language: effectiveLanguage');
+-    expect(source).toContain("return compatible ? 'ready' : 'stale';");
+-    expect(source).toContain('TTS {summary.ready}/{summary.total} ready');
++    expect(source).toContain('segment.segmentId === entry.segmentId');
++    expect(source).toContain('synthesisRate: audioSpeed');
++    expect(source).toContain("'TTS ' + summary.ready + '/' + summary.total");
+     expect(source).not.toContain('summary.saved');
+     expect(source).not.toContain('hasStoredReadAloudAudio');
+   });
+===================================================================
+--- a/tests/faq_overlay_device_save.test.js
++++ b/tests/faq_overlay_device_save.test.js
+@@ -12,7 +12,7 @@
+  global.React=window.React=React;global.IS_REACT_ACT_ENVIRONMENT=true;window.AlloLanguageContext=React.createContext({t});window.matchMedia=()=>({matches:true});global.requestAnimationFrame=window.requestAnimationFrame=()=>0;global.cancelAnimationFrame=window.cancelAnimationFrame=noop;
+  loadAlloModule('resource_read_aloud_module.js');loadAlloModule('view_faq_module.js');loadAlloModule('immersive_reader_module.js');FAQ=window.AlloModules.FaqView;Overlay=window.AlloModules.KaraokeReaderOverlay;
+ });
+-beforeEach(()=>{window.__alloGetReadAloudReadiness=vi.fn(async texts=>({resourceId:'one',scope:'device-audio',total:texts.length,ready:texts.length,durableReady:0,verifiedAt:'2026-09-27T00:00:00Z'}));window.__alloRetryReadAloudPersistence=vi.fn(async()=>true);window.__alloPrepareReadAloud=vi.fn(async()=>({ok:true,remaining:0}));});
++beforeEach(()=>{window.__alloInspectReadAloudAudio=vi.fn(entry=>({status:'missing',segment:{resourceId:'one',segmentId:entry.segmentId,spokenText:entry.text}}));window.__alloGetReadAloudReadiness=vi.fn(async texts=>({resourceId:'one',scope:'device-audio',total:texts.length,ready:texts.length,durableReady:0,verifiedAt:'2026-09-27T00:00:00Z'}));window.__alloRetryReadAloudPersistence=vi.fn(async()=>true);window.__alloPrepareReadAloud=vi.fn(async()=>({ok:true,remaining:0}));});
+ afterEach(async()=>{if(root)await act(async()=>root.unmount());root=null;host?.remove();host=null;for(const name of ['__alloGetReadAloudReadiness','__alloRetryReadAloudPersistence','__alloPrepareReadAloud','__alloRegenerateSentenceAudio','__alloCaptureKaraokeAudio','__alloInspectReadAloudAudio'])delete window[name];delete window.AlloModules.KaraokeAudioStore;vi.unstubAllGlobals();});
+ async function render(Component,props){if(!root){host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);}await act(async()=>root.render(React.createElement(Component,props)));}
+ const button=text=>[...host.querySelectorAll('button')].find(el=>el.textContent.includes(text));
+@@ -20,7 +20,7 @@
+ describe('FAQ/overlay device-save boundaries',()=>{
+  it('FAQ preparation success does not claim durable storage',async()=>{await render(FAQ,faqProps());await click(button('Save TTS'));expect(host.textContent).not.toContain('Audio is saved for all FAQ sentences');expect(host.textContent).toContain('Audio prepared. Check device save');expect(host.textContent).toContain('0/2 saved on this device');});
+  it('FAQ regeneration success stays distinct from persistence',async()=>{window.__alloRegenerateSentenceAudio=vi.fn(async()=> 'blob:clip');await render(FAQ,faqProps({isEditingFaq:true}));await click(host.querySelector('button[aria-label*="Regenerate audio"]'));expect(host.textContent).not.toContain('Sentence audio saved.');expect(host.textContent).toContain('Sentence audio ready.');});
+- it('FAQ readiness includes duplicate occurrences and full requested voice speed',async()=>{await render(FAQ,faqProps({voiceSpeed:1.3}));expect(window.__alloGetReadAloudReadiness).toHaveBeenLastCalledWith(['Again.','Again.'],'reference',expect.objectContaining({entries:[{text:'Again.',occurrence:0,language:'English'},{text:'Again.',occurrence:1,language:'English'}],profile:expect.objectContaining({speed:1.3,synthesisRate:1.3})}));});
++ it('FAQ readiness includes duplicate occurrences and full requested voice speed',async()=>{await render(FAQ,faqProps({voiceSpeed:1.3}));expect(window.__alloGetReadAloudReadiness).toHaveBeenLastCalledWith(['Again.','Again.'],'reference',expect.objectContaining({entries:[expect.objectContaining({text:'Again.',occurrence:0,language:'English',segmentId:'faq/0/question/0'}),expect.objectContaining({text:'Again.',occurrence:1,language:'English',segmentId:'faq/0/answer/0'})],profile:expect.objectContaining({speed:1.3,synthesisRate:1.3})}));});
+  it('FAQ invalidates preparation when synthesis speed changes',async()=>{const pending=defer();window.__alloPrepareReadAloud.mockReturnValue(pending.promise);await render(FAQ,faqProps());await click(button('Save TTS'));const signal=window.__alloPrepareReadAloud.mock.calls[0][2].signal;await render(FAQ,faqProps({voiceSpeed:1.5}));expect(signal.aborted).toBe(true);await act(async()=>pending.resolve({ok:true}));expect(host.textContent).not.toContain('Audio prepared.');});
+  it.each([false,undefined])('FAQ gives feedback for unconfirmed prepare %j',async answer=>{window.__alloPrepareReadAloud.mockResolvedValue(answer);await render(FAQ,faqProps());await click(button('Save TTS'));expect(host.textContent).toContain('Audio preparation was not confirmed');});
+  it('overlay preparation success does not turn its button into Saved',async()=>{await render(Overlay,overlayProps());await click(button('Prepare read-aloud'));expect(host.textContent).not.toMatch(/✓\s*Saved/);expect(host.textContent).toContain('Audio prepared. Check device save');expect(host.textContent).toContain('0/1 saved on this device');});
+===================================================================
+--- /dev/null
++++ b/dev-tools/faq_sentence_browser.cjs
+@@ -0,0 +1,67 @@
++// Uses real React, FAQ, audio store, bridge, sanitizer and host enumerator.
++// Synthesis returns fixture bytes and persistence is memory-only. No app server.
++const fs=require('fs'),path=require('path'),{createRequire}=require('module');
++const root=path.resolve(__dirname,'..'),req=createRequire(path.join(root,'package.json')),web=createRequire(path.join(root,'desktop/web-app/package.json'));
++const {chromium}=req('playwright'),esbuild=req('esbuild');
++const host=fs.readFileSync(path.join(root,'AlloFlowANTI.txt'),'utf8');
++const enumerateSource=host.slice(host.indexOf('  const _enumerateReadAloudResourceSegments ='),host.indexOf('  const _encodeReadAloudBridgeAudio ='));
++const audio=Buffer.alloc(256,70);audio.write('RIFF');audio.writeUInt32LE(248,4);audio.write('WAVE',8);audio.write('fmt ',12);audio.writeUInt32LE(16,16);audio.writeUInt16LE(1,20);audio.writeUInt16LE(1,22);audio.writeUInt32LE(8000,24);audio.writeUInt32LE(8000,28);audio.writeUInt16LE(1,32);audio.writeUInt16LE(8,34);audio.write('data',36);audio.writeUInt32LE(212,40);
++const fixture=String.raw`
++const h=React.createElement,noop=()=>{},KS=AlloModules.KaraokeAudioStore;
++const resource={id:'faq-browser',type:'faq',data:[{question:'Echo.',answer:'Echo.'},{question:'Echo.',answer:'A different answer.'}]};
++window.speed=1;window.calls=[];window.pending=null;window.failNext=false;
++const profile=()=>({voice:'Kore',language:'English',speed,synthesisRate:speed,voiceResolverVersion:2,provider:'gemini'});
++const enumerate=resource=>hostEnumerator(window,text=>KS.splitSentences(text),'English','English')(resource);
++window.store=KS.createStore();KS.current=store;
++const bridge=AlloModules.createReadAloudLegacyBridge({getResource:()=>resource,getStore:()=>store,getProfile:profile,enumerateResourceSegments:enumerate,normalize:AlloModules.PhaseKHelpers.toSpokenText,
++ synthesize:request=>{calls.push({segmentId:request.segment.segmentId,profile:request.profile,signal:request.signal});if(failNext){failNext=false;return Promise.reject(Error('Fixture provider unavailable'));}return new Promise(resolve=>pending=()=>resolve({b64:fixtureAudio,mime:'audio/wav'}));},persist:async()=>({status:'attached'})});
++window.__alloInspectReadAloudAudio=(...args)=>bridge.inspect(...args);window.__alloRegenerateSentenceAudio=(...args)=>bridge.regenerate(...args);
++window.__alloPrepareReadAloud=(...args)=>bridge.prepare(...args);
++window.__alloGetReadAloudReadiness=async(texts,lane,options)=>({resourceId:resource.id,...bridge.readiness(texts,lane,options)});
++window.__alloRetryReadAloudPersistence=async()=>true;
++function Harness(){const[editing,setEditing]=React.useState(false),[rate,setRate]=React.useState(1);window.updateSpeed=setRate;window.speed=rate;
++return h(AlloModules.FaqView,{t,generatedContent:resource,isTeacherMode:true,isEditingFaq:editing,isPlaying:false,voiceSpeed:rate,selectedVoice:'Kore',effectiveLanguage:'English',leveledTextLanguage:'English',playbackState:{currentIdx:-1},audioRef:{current:null},playbackSessionRef:{current:null},setVoiceSpeed:setRate,setIsPlaying:noop,setPlayingContentId:noop,handleToggleIsEditingFaq:()=>setEditing(x=>!x),handleFaqChange:noop,handleSpeak:noop,getRows:()=>2,splitTextToSentences:text=>KS.splitSentences(text),formatInteractiveText:text=>text});}
++window.renderFixture=()=>{window.fixtureRoot?.unmount();store.clear();KS.current=store;calls=[];pending=null;failNext=false;speed=1;window.fixtureRoot=createRoot(document.querySelector('#mount'));fixtureRoot.render(h(Harness));};
++`;
++(async()=>{
++ const css=(await web('postcss')([web('tailwindcss')({...web('./tailwind.config.js'),content:['view_faq_source.jsx','resource_read_aloud_module.js'].map(file=>path.join(root,file))})]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ const runtime=esbuild.buildSync({stdin:{contents:"import React from 'react';import {createRoot} from 'react-dom/client';import * as icons from 'lucide-react';window.React=React;window.createRoot=createRoot;window.AlloIcons=icons;",resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,format:'iife',define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:320,height:640},hasTouch:true,reducedMotion:'reduce'}),results=[],errors=[];page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
++ const assert=(ok,msg)=>{if(!ok)throw Error(msg);};
++ try{
++  await page.route('**/*',route=>route.request().url()==='http://faq-targets-fixture.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main id="mount"></main></body></html>'}):route.abort());
++  await page.goto('http://faq-targets-fixture.test/');await page.addStyleTag({content:css});await page.addScriptTag({content:runtime});
++  const strings=JSON.parse(fs.readFileSync(path.join(root,'ui_strings.js'),'utf8'));
++  await page.addScriptTag({content:'window.translations='+JSON.stringify(strings)+';window.t=key=>{const value=key.split(".").reduce((o,k)=>o&&o[k],translations);return typeof value==="string"?value:key;};window.AlloModules={};window.hostEnumerator=new Function("window","splitTextToSentences","leveledTextLanguage","currentUiLanguage",'+JSON.stringify(enumerateSource+';return _enumerateReadAloudResourceSegments;')+');window.fixtureAudio='+JSON.stringify(audio.toString('base64'))+';'});
++  for(const file of ['karaoke_audio_store_module.js','phase_k_helpers_module.js','read_aloud_audio_service_source.jsx','resource_read_aloud_module.js','view_faq_module.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
++  await page.addScriptTag({content:fixture});
++  const edit=()=>page.locator('[data-help-key=faq_edit_toggle]'),target=()=>page.locator('[data-faq-audio-entry="faq/1/question/0"]');
++  const visibleFocus=locator=>locator.evaluate(el=>{const b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return el===document.activeElement&&el.matches(':focus-visible')&&b.top>=0&&b.bottom<=innerHeight+1&&b.left>=0&&b.right<=innerWidth+1&&(hit===el||el.contains(hit));});
++  async function start(){await page.evaluate(()=>renderFixture());await edit().waitFor();await edit().focus();await page.keyboard.press('Enter');await target().waitFor();}
++  for(const mode of ['wide','narrow','spacing','200-text']){
++   console.log('Checking '+mode);await page.setViewportSize({width:mode==='wide'?1280:320,height:640});await start();
++   if(mode==='spacing')await page.evaluate(()=>document.querySelectorAll('#mount *').forEach(el=>{el.style.lineHeight='1.5';el.style.letterSpacing='.12em';el.style.wordSpacing='.16em';if(el.tagName==='P')el.style.marginBottom='2em';}));
++   if(mode==='200-text')await page.evaluate(()=>{const sizes=[...document.querySelectorAll('#mount *')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);sizes.forEach(([el,size])=>el.style.fontSize=(size*2)+'px');});
++   const geometry=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert(geometry.scrollWidth<=geometry.viewport+2,'Edit layout overflows '+mode+': '+JSON.stringify(geometry));
++   const compressed=await page.locator('[data-faq-view] p, [data-faq-view] button, [data-faq-view] textarea, [data-faq-audio-group] div, [data-faq-audio-group] span').evaluateAll(nodes=>nodes.filter(el=>{const css=getComputedStyle(el);return el.getClientRects().length&&parseFloat(css.lineHeight)<parseFloat(css.fontSize)*1.3;}).map(el=>({tag:el.tagName,text:el.textContent.slice(0,70),font:getComputedStyle(el).fontSize,lineHeight:getComputedStyle(el).lineHeight})));
++   assert(!compressed.length,'Text line boxes overlap under '+mode+': '+JSON.stringify(compressed));
++   const names=await page.locator('[data-faq-audio-entry]').evaluateAll(nodes=>nodes.map(el=>el.getAttribute('aria-label')));assert(new Set(names).size===4,'repeated sentence labels ambiguous');
++   await target().focus();assert(await visibleFocus(target()),'target focus hidden');await page.keyboard.press('Space');await page.waitForFunction(()=>calls.length===1);assert(await target().getAttribute('aria-busy')==='true','busy feedback missing');assert(await visibleFocus(target()),'focus lost while busy');
++   await page.keyboard.press('Enter');assert(await page.evaluate(()=>calls.length===1),'duplicate keyboard generation');
++   await page.evaluate(()=>pending());await page.waitForFunction(()=>document.querySelector('[data-faq-audio-entry="faq/1/question/0"]')?.getAttribute('data-audio-status')==='ready');
++   assert(await visibleFocus(target()),'focus lost on completion');assert(await page.evaluate(()=>Object.values(store.serialize().entries).length===1&&Object.values(store.serialize().entries)[0].identity.segmentId==='faq/1/question/0'),'generated into wrong repeated sentence');
++   assert((await page.locator('[data-device-audio-count]').textContent()).includes('Device save not verified'),'generation implied device durability');
++   assert(await target().evaluate(el=>{const b=el.getBoundingClientRect();return b.width>=44&&b.height>=44;}),'new action too small');
++   await page.keyboard.press('Tab');assert(await page.evaluate(()=>document.activeElement?.tagName==='TEXTAREA'),'next field is not reachable');
++   if(mode==='narrow'||mode==='200-text')await page.screenshot({path:path.join(root,'validation/faq-editor-'+mode+'.png'),fullPage:true});
++   await edit().focus();assert(await visibleFocus(edit()),'Done editing hidden');await page.keyboard.press('Enter');await target().waitFor({state:'detached'});assert(await edit().evaluate(el=>el===document.activeElement),'Done editing lost focus');
++   assert(await page.evaluate(()=>document.querySelectorAll('button button,button input,button a,[role=status] button').length===0),'nested interactive controls');results.push({mode,...geometry,exactSentence:true,keyboard:true,focusPreserved:true});
++  }
++  console.log('Checking settings change and touch');await start();await target().tap();await page.evaluate(()=>pending());await page.waitForFunction(()=>document.querySelector('[data-faq-audio-entry="faq/1/question/0"]')?.getAttribute('data-audio-status')==='ready');
++  await page.evaluate(()=>updateSpeed(1.4));await page.waitForFunction(()=>document.querySelector('[data-faq-audio-entry="faq/1/question/0"]')?.getAttribute('data-audio-status')==='stale');await target().tap();assert(await page.evaluate(()=>calls.at(-1).profile.synthesisRate===1.4&&calls.at(-1).segmentId==='faq/1/question/0'),'touch/settings targeted wrong audio');await page.evaluate(()=>pending());results.push({mode:'touch-and-speed',exactSentence:true,profileForwarded:true});
++  console.log('Checking failure focus');await start();await page.evaluate(()=>failNext=true);await target().focus();await page.keyboard.press('Enter');await page.getByRole('status').filter({hasText:'Sentence audio could not be generated'}).waitFor();assert(await visibleFocus(target()),'failure lost focus');await page.keyboard.press('Space');await page.evaluate(()=>pending());results.push({mode:'failure-retry',focusPreserved:true});
++  console.log('Checking leave-edit cancellation');await start();await target().focus();await page.keyboard.press('Enter');await edit().focus();await page.keyboard.press('Enter');assert(await page.evaluate(()=>calls[0].signal.aborted),'Done editing did not abort generation');await page.evaluate(()=>pending());assert(await page.evaluate(()=>!Object.values(store.serialize()?.entries||{}).length),'late result changed audio');results.push({mode:'leave-edit',aborted:true,noLateStoreWrite:true});
++  assert(!errors.length,errors.join(';'));await page.screenshot({path:path.join(root,'validation/faq-targets-browser.png'),fullPage:true});
++  fs.writeFileSync(path.join(root,'validation/faq-targets-browser.json'),JSON.stringify({browser:'Chromium',results,errors,simulatedTouch:true,reducedMotion:true,limitations:['Fixture audio and memory-only persistence; no provider, microphone, saved application state or real device durability tested','DOM focus/live-region assertions are not screen-reader verification','Doubled computed fonts are not actual 200% text resizing or 400% browser zoom','No real mobile hardware, Firefox/WebKit, sticky/nested assembled-shell verification']},null,2));console.log(JSON.stringify({passed:results.length,errors}));
++ }catch(error){await page.screenshot({path:path.join(root,'validation/faq-targets-browser-failure.png'),fullPage:true});throw error;}finally{await browser.close();}
++})().catch(error=>{console.error(error);process.exitCode=1;});

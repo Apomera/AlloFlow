@@ -1,0 +1,459 @@
+import { test, expect, Page } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { bootAlloFlow } from './helpers';
+
+// The lightweight local app server intentionally omits the CSS build. Render the
+// current view with the app's base stylesheet and freshly compiled view utilities.
+async function prepareFullPackReview(page: Page) {
+  if (!page.url().includes('127.0.0.1')) return;
+  const requireFromApp = createRequire(path.resolve('desktop/web-app/package.json'));
+  const cssDir = path.resolve('desktop/web-app/public/app/static/css');
+  const baseCss = fs.readdirSync(cssDir).find(file => /^main.*\.css$/.test(file));
+  if (baseCss) await page.addStyleTag({ path: path.join(cssDir, baseCss) });
+  const css = await requireFromApp('postcss')([requireFromApp('tailwindcss')({
+    content: [{ raw: fs.readFileSync('view_full_pack_run_source.jsx', 'utf8'), extension: 'jsx' }],
+    corePlugins: { preflight: false },
+  })]).process('@tailwind utilities;', { from: undefined });
+  await page.addStyleTag({ content: css.css });
+  // Restored panels can render while the app's remaining modules are still loading.
+  // Await the real generation code before exercising edits or diagnostic exports.
+  for (const [key, file] of [['GenerationMatrix', 'generation_matrix_module.js'], ['GenerationHelpers', 'generation_helpers_module.js']]) {
+    if (!await page.evaluate(key => Boolean((window as any).AlloModules?.[key]), key)) {
+      await page.addScriptTag({ url: '/' + file });
+    }
+  }
+}
+
+const STORE_KEY = 'alloflow-full-pack-run-v1';
+const BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1';
+const capacity = { aiCalls: 4, textCalls: 3, imageCalls: 1, estimatedMinutes: 2, provider: 'gemini', model: 'gemini-test', imageProvider: 'auto', isLocal: false, requestConcurrency: 1, estimateBasis: 'provider-defaults', observedSamples: { text: 0, image: 0 }, warningCodes: [], warnings: [] };
+const preflight = {
+  createdAt: new Date().toISOString(), sourceTextChars: 321, sourceFingerprint: 'SENTINEL_SOURCE_FINGERPRINT',
+  selected: [
+    { type: 'quiz', index: 0, uiId: 'SENTINEL_UI_ID_QUIZ', directive: 'SENTINEL_DIRECTIVE_QUIZ', generationAction: 'mixed', generationVariants: [
+      { generationIdentity: 'gm-sentinel-quiz-en', action: 'reuse', grade: '5th Grade', language: 'English', existingArtifactId: 'SENTINEL_RESOURCE_ID' },
+      { generationIdentity: 'gm-sentinel-quiz-es', action: 'generate', grade: '5th Grade', language: 'Spanish' },
+    ] },
+    { type: 'image', index: 1, uiId: 'SENTINEL_UI_ID_IMAGE', directive: 'SENTINEL_DIRECTIVE_IMAGE', generationAction: 'generate', generationVariants: [
+      { generationIdentity: 'gm-sentinel-image-en', action: 'generate', grade: '5th Grade', language: 'English' },
+    ] },
+  ],
+  skipped: [], differentiation: { range: 'None', types: ['simplified'], levelCount: 1 }, estimatedResourceGenerations: 4,
+  generationMatrix: { summary: { rowCount: 2, variantCount: 3, expectedCalls: 2, actions: { reuse: 1, generate: 2, variant: 0, refresh: 0 } } },
+  planSchemaVersion: 2, capabilityFingerprint: 'full-pack-plan-v2', capacity,
+};
+const readyEnvelope = () => ({
+  v: 2, capabilityFingerprint: 'full-pack-plan-v2', savedAt: new Date().toISOString(),
+  run: {
+    runId: 'full-pack-browser-ready', targetMode: 'all-groups', status: 'ready', startedAt: new Date().toISOString(),
+    settingsSnapshot: { gradeLevel: '5th Grade', leveledTextLanguage: 'English', studentInterests: ['SENTINEL_STUDENT_INTEREST'], rosterSignature: 'SENTINEL_ROSTER_SIGNATURE', differentiationRange: 'None', differentiationTypes: ['simplified'], resourceCount: '5', isAutoConfigEnabled: true, fullPackTargetGroup: 'all' },
+    preflight, planPayload: { batchConfig: {}, lessonDNA: {} }, resources: {},
+    groups: {
+      SENTINEL_GROUP_ID: {
+        groupId: 'SENTINEL_GROUP_ID', groupName: 'SENTINEL_STUDENT_NAME', status: 'ready',
+        settingsSnapshot: { gradeLevel: '5th Grade', leveledTextLanguage: 'English', studentInterests: ['SENTINEL_STUDENT_INTEREST'] },
+        preflight, planPayload: { batchConfig: {}, lessonDNA: {} },
+        resources: {
+          quiz: { key: 'SENTINEL_RESOURCE_KEY_QUIZ', type: 'quiz', index: 0, directive: 'SENTINEL_DIRECTIVE_QUIZ', status: 'landed', resourceId: 'SENTINEL_RESOURCE_ID', elapsedMs: 1300 },
+          image: { key: 'SENTINEL_RESOURCE_KEY_IMAGE', type: 'image', index: 1, directive: 'SENTINEL_DIRECTIVE_IMAGE', status: 'failed', reason: 'Bearer SENTINEL_API_KEY rejected for SENTINEL_STUDENT_NAME', failureCategory: 'configuration', retryable: false, elapsedMs: 900 },
+        },
+      },
+    },
+  },
+});
+
+const blueprintEnvelope = () => {
+  const uiId = 'SENTINEL_BLUEPRINT_UI_ID';
+  return {
+    v: 2,
+    capabilityFingerprint: 'blueprint-execution-v2',
+    savedAt: new Date().toISOString(),
+    plan: {
+      resourcePlan: [{ tool: 'quiz', directive: 'SENTINEL_BLUEPRINT_DIRECTIVE', uiId }],
+      recommendedResources: ['quiz'],
+      toolDirectives: { quiz: 'SENTINEL_BLUEPRINT_DIRECTIVE' },
+    },
+    run: {
+      runId: 'blueprint-' + Date.now() + '-browser',
+      status: 'partial',
+      done: true,
+      rows: {
+        [uiId]: {
+          uiId,
+          tool: 'quiz',
+          status: 'failed',
+          failReason: 'threw: Bearer SENTINEL_BLUEPRINT_API_KEY rejected for SENTINEL_BLUEPRINT_STUDENT',
+          elapsedMs: 875,
+        },
+      },
+    },
+  };
+};
+
+async function seedEnvelope(page: Page, envelope: any, forceQuota = false) {
+  await page.addInitScript(({ key, value, quota }) => {
+    const original = Storage.prototype.setItem;
+    original.call(localStorage, key, JSON.stringify(value));
+    if (quota) Storage.prototype.setItem = function (storageKey: string, storageValue: string) {
+      if (storageKey === key) {
+        let compact = false;
+        try { compact = JSON.parse(String(storageValue)).compactFallback === true; } catch (_) {}
+        if (!compact) throw new DOMException('Synthetic Full Pack quota limit', 'QuotaExceededError');
+      }
+      return original.call(this, storageKey, storageValue);
+    };
+  }, { key: STORE_KEY, value: envelope, quota: forceQuota });
+}
+
+async function seedBlueprintEnvelope(page: Page, envelope: any, forceQuota = false) {
+  await page.addInitScript(({ key, value, quota }) => {
+    const original = Storage.prototype.setItem;
+    original.call(localStorage, key, JSON.stringify(value));
+    if (quota) Storage.prototype.setItem = function (storageKey: string, storageValue: string) {
+      if (storageKey === key) {
+        let compact = false;
+        try { compact = JSON.parse(String(storageValue)).compactFallback === true; } catch (_) {}
+        if (!compact) throw new DOMException('Synthetic Blueprint quota limit', 'QuotaExceededError');
+      }
+      return original.call(this, storageKey, storageValue);
+    };
+  }, { key: BLUEPRINT_STORE_KEY, value: envelope, quota: forceQuota });
+}async function captureDiagnosticCopy(page: Page, testId: string): Promise<string> {
+  await page.evaluate(() => {
+    (window as any).__copiedGenerationDiagnostic = null;
+    (window as any).alloCopyText = async (text: string) => {
+      (window as any).__copiedGenerationDiagnostic = text;
+      return true;
+    };
+  });
+  await page.getByTestId(testId).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__copiedGenerationDiagnostic)).not.toBeNull();
+  return page.evaluate(() => (window as any).__copiedGenerationDiagnostic);
+}
+
+async function openErrorLog(page: Page, testId: string) {
+  await page.getByTestId(testId).click();
+  const diagnostics = page.locator('#allo-err-panel');
+  await expect(diagnostics).toBeVisible();
+  await expect(page.locator('#aer-tab-errors')).toHaveAttribute('aria-selected', 'true');
+  await page.locator('#aer-close').click();
+  await expect(diagnostics).toHaveCount(0);
+}
+
+const expectPrivateDiagnostic = (serialized: string, secrets: string[]) => {
+  for (const secret of secrets) expect(serialized).not.toContain(secret);
+};
+
+test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and exports privately', async ({ page }, testInfo) => {
+  await seedEnvelope(page, readyEnvelope());
+  await bootAlloFlow(page, 'full');
+  const panel = page.getByTestId('full-pack-review-panel');
+  await expect(panel).toBeVisible({ timeout: 120000 });
+  await prepareFullPackReview(page);
+  const capacityDetails = page.getByTestId('full-pack-capacity');
+  const supportDetails = page.getByTestId('full-pack-troubleshooting');
+  await expect(capacityDetails).not.toHaveAttribute('open');
+  await expect(supportDetails).not.toHaveAttribute('open');
+  await expect(page.getByTestId('full-pack-options')).not.toHaveAttribute('open');
+  await expect(page.getByTestId('full-pack-copy-diagnostics')).toBeHidden();
+  await expect(capacityDetails.locator('summary')).toContainText('~2 minutes');
+  await expect(panel.getByText('Included resources', { exact: true })).toBeVisible();
+  await capacityDetails.locator('summary').focus();
+  await capacityDetails.locator('summary').press('Enter');
+  await expect(capacityDetails).toHaveAttribute('open');
+  await expect(capacityDetails).toContainText('gemini · gemini-test');
+  await expect(page.getByTestId('full-pack-capacity')).toContainText('provider defaults');
+  await expect(page.getByTestId('full-pack-sticky-actions')).toBeVisible();
+  const toggle = page.getByTestId('full-pack-toggle-completed');
+  await toggle.focus();
+  await expect(toggle).toBeFocused();
+  await toggle.press('Enter');
+  await expect(toggle).toContainText('Show completed');
+  await expect(panel.getByText(/^Complete\b/)).toHaveCount(0);
+  await toggle.press('Enter');
+  await expect(toggle).toContainText('Hide completed');
+  await expect(panel.getByText(/^Complete\b/)).toHaveCount(1);
+  expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 2)).toBe(true);
+
+  await expect(page.getByTestId('full-pack-open-error-log')).toBeVisible();
+  await openErrorLog(page, 'full-pack-open-error-log');
+
+  const secrets = ['SENTINEL_SOURCE_FINGERPRINT', 'SENTINEL_UI_ID', 'SENTINEL_DIRECTIVE', 'SENTINEL_STUDENT_INTEREST', 'SENTINEL_ROSTER_SIGNATURE', 'SENTINEL_GROUP_ID', 'SENTINEL_STUDENT_NAME', 'SENTINEL_RESOURCE_KEY', 'SENTINEL_RESOURCE_ID', 'SENTINEL_API_KEY'];
+  await expect.poll(() => page.evaluate(key => localStorage.getItem(key) || '', STORE_KEY)).not.toContain('SENTINEL_API_KEY');
+
+  await supportDetails.locator('summary').focus();
+  await supportDetails.locator('summary').press('Space');
+  await expect(supportDetails).toHaveAttribute('open');
+  const copiedReport = await captureDiagnosticCopy(page, 'full-pack-copy-diagnostics');
+  expectPrivateDiagnostic(copiedReport, secrets);
+  expect(JSON.parse(copiedReport)).toMatchObject({ reportVersion: 2, status: 'ready' });
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByTestId('full-pack-download-diagnostics').click();
+  const download = await downloadPromise;
+  const downloadedPath = await download.path();
+  const report = fs.readFileSync(downloadedPath!, 'utf8');
+  expectPrivateDiagnostic(report, secrets);
+  expect(JSON.parse(report)).toMatchObject({ reportVersion: 2, status: 'ready' });
+  await capacityDetails.locator('summary').click();
+  await supportDetails.locator('summary').click();
+  await panel.screenshot({ path: testInfo.outputPath('full-pack-overview.png') });
+  // Exercise the sidebar itself at a phone-sized width without changing the app's navigation mode.
+  await page.locator('#tour-tool-fullpack').evaluate(element => { element.style.width = '300px'; element.style.maxWidth = '100%'; });
+  expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 2)).toBe(true);
+  await page.getByTestId('full-pack-text-access-summary').locator('summary').click();
+  await expect(page.getByTestId('full-pack-adapted-policy')).toBeVisible();
+  expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 2)).toBe(true);
+  await panel.screenshot({ path: testInfo.outputPath('full-pack-narrow-expanded.png') });
+});
+
+test.describe('local unreleased Full Pack editor', () => {
+  test('actual Full Pack review lets the educator edit and persist the exact ready plan', async ({ page }, testInfo) => {
+  test.skip(!String(testInfo.project.use.baseURL || '').includes('127.0.0.1'), 'Run with the local Full Pack Playwright config.');
+  const envelope: any = readyEnvelope();
+  envelope.run.targetMode = 'current-settings';
+  envelope.run.groups = {};
+  envelope.run.resources = {};
+  envelope.run.settingsSnapshot.instructionalContext = {
+    schemaVersion: 1,
+    instructionalGrade: '5th Grade',
+    primaryTextPolicy: 'preserve-primary',
+    standardsFingerprint: 'reviewed-standard',
+  };
+  envelope.run.planPayload.instructionalContext = envelope.run.settingsSnapshot.instructionalContext;
+  await seedEnvelope(page, envelope);
+  await bootAlloFlow(page, 'full');
+
+  const panel = page.getByTestId('full-pack-review-panel');
+  await expect(panel).toBeVisible({ timeout: 120000 });
+  await prepareFullPackReview(page);
+  const textAccess = panel.getByTestId('full-pack-text-access-summary');
+  await expect(textAccess).not.toHaveAttribute('open');
+  await textAccess.locator('summary').click();
+  await expect(textAccess).toContainText('The source text remains available');
+  const exactCells = panel.getByTestId('full-pack-generation-cells').first();
+  await expect(exactCells).toContainText('5th Grade · English');
+  await expect(exactCells).toContainText('Reuse');
+  await expect(exactCells).toContainText('5th Grade · Spanish');
+  await expect(exactCells).toContainText('Generate');
+  await expect(panel.getByRole('progressbar')).toHaveCount(0);
+  await expect(panel.getByTestId('full-pack-row-generation-impact').first()).not.toHaveAttribute('aria-live');
+
+  const policy = panel.getByTestId('full-pack-adapted-policy');
+  await policy.focus();
+  await expect(policy).toBeFocused();
+  await policy.selectOption('include');
+  await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(3);
+  await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('1 supplemental Adapted Text companion');
+
+  const quizDirective = panel.locator('[data-testid="full-pack-resource-directive"][data-resource-key="SENTINEL_UI_ID_QUIZ"]');
+  await quizDirective.locator('xpath=ancestor::details[1]').locator('summary').click();
+  await expect(quizDirective).toBeVisible();
+  await quizDirective.fill('Use evidence from two different paragraphs.');
+  await panel.locator('[data-testid="full-pack-move-down"][data-resource-key="SENTINEL_UI_ID_QUIZ"]').click();
+
+  await panel.getByTestId('full-pack-add-options').locator('summary').click();
+  await panel.getByTestId('full-pack-add-resource-select').selectOption('glossary');
+  await panel.getByTestId('full-pack-add-resource').click();
+  await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(4);
+  const addedResourceType = panel.getByTestId('full-pack-resource-type').last();
+  await addedResourceType.locator('xpath=ancestor::details[1]').locator('summary').click();
+  await expect(addedResourceType).toBeVisible();
+  await addedResourceType.selectOption('outline');
+
+  await expect.poll(async () => page.evaluate(key => {
+    const value = JSON.parse(localStorage.getItem(key) || 'null');
+    return value?.run?.preflight?.selected?.map((row: any) => ({ type: row.type, directive: row.directive })) || [];
+  }, STORE_KEY)).toEqual([
+    { type: 'image', directive: 'SENTINEL_DIRECTIVE_IMAGE' },
+    { type: 'quiz', directive: 'Use evidence from two different paragraphs.' },
+    { type: 'simplified', directive: 'Create a supplemental Adapted Text while keeping the analyzed primary text available.' },
+    { type: 'outline', directive: '' },
+  ]);
+  });
+});
+
+test('actual Full Pack sidebar survives quota fallback and exposes the warning', async ({ page }) => {
+  await seedEnvelope(page, readyEnvelope(), true);
+  await bootAlloFlow(page, 'full');
+  await expect(page.getByTestId('full-pack-review-panel')).toBeVisible({ timeout: 120000 });
+  await expect(page.getByTestId('full-pack-storage-warning')).toContainText('Browser storage was full');
+  await expect.poll(async () => page.evaluate(key => {
+    const value = JSON.parse(localStorage.getItem(key) || 'null');
+    return Boolean(value?.compactFallback && value?.run?.persistenceWarning);
+  }, STORE_KEY)).toBe(true);
+  const persisted = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || 'null'), STORE_KEY);
+  expect(persisted).toMatchObject({ v: 2, compactFallback: true, run: { status: 'interrupted' } });
+  expect(persisted.run.planPayload).toBeNull();
+  expectPrivateDiagnostic(JSON.stringify(persisted), [
+    'SENTINEL_SOURCE_FINGERPRINT', 'SENTINEL_UI_ID', 'SENTINEL_DIRECTIVE',
+    'SENTINEL_STUDENT_INTEREST', 'SENTINEL_ROSTER_SIGNATURE', 'SENTINEL_GROUP_ID',
+    'SENTINEL_STUDENT_NAME', 'SENTINEL_RESOURCE_KEY', 'SENTINEL_RESOURCE_ID', 'SENTINEL_API_KEY',
+  ]);
+  expect(Object.keys(persisted.run.groups)).toEqual(['group-1']);
+  expect(Object.keys(persisted.run.groups['group-1'].resources)).toEqual(['resource-1', 'resource-2']);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow-generation-metrics-v1') || 'null')?.storageFallbacks?.fullPack || 0)).toBe(1);
+});
+
+test('actual Full Pack sidebar migrates v1 and demotes running and retrying work after reload', async ({ page }) => {
+  const envelope: any = readyEnvelope();
+  envelope.v = 1;
+  envelope.capabilityFingerprint = 'full-pack-plan-v1';
+  envelope.run.targetMode = 'current-settings';
+  envelope.run.status = 'running';
+  envelope.run.groups = {};
+  envelope.run.resources = {
+    quiz: { key: 'quiz', type: 'quiz', index: 0, status: 'running', directive: '', reason: 'Network connection failed while calling the provider' },
+    image: { key: 'image', type: 'image', index: 1, status: 'retrying', directive: '' },
+    done: { key: 'done', type: 'outline', index: 2, status: 'landed', directive: '' },
+  };
+  envelope.run.preflight = { ...preflight, selected: [
+    { type: 'quiz', index: 0, uiId: 'quiz', directive: '' },
+    { type: 'image', index: 1, uiId: 'image', directive: '' },
+    { type: 'outline', index: 2, uiId: 'done', directive: '' },
+  ] };
+  await seedEnvelope(page, envelope);
+  await bootAlloFlow(page, 'full');
+  const panel = page.getByTestId('full-pack-review-panel');
+  await expect(panel).toBeVisible({ timeout: 120000 });
+  await prepareFullPackReview(page);
+  await expect(panel.getByText('Interrupted', { exact: true }).first()).toBeVisible();
+  const safeFailure = panel.getByTestId('full-pack-failure-reason').first();
+  await expect(safeFailure).toContainText('Transient provider or network failure');
+  await expect(safeFailure).toHaveAttribute('data-failure-code', 'network');
+  await expect(safeFailure).toHaveClass(/break-words/);
+  await expect(safeFailure).not.toHaveClass(/truncate/);
+  await expect(panel.getByText('Retrying', { exact: true })).toHaveCount(0);
+  const persisted = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || 'null'), STORE_KEY);
+  expect(persisted.v).toBe(2);
+  expect(persisted.capabilityFingerprint).toBe('full-pack-plan-v2');
+  expect(persisted.run.status).toBe('interrupted');
+  expect(persisted.run.resources.quiz.status).toBe('interrupted');
+  expect(persisted.run.resources.image.status).toBe('interrupted');
+  expect(persisted.run.resources.done.status).toBe('landed');
+});
+test('actual Blueprint restore explains failures safely and copies and downloads private diagnostics', async ({ page }) => {
+  await seedBlueprintEnvelope(page, blueprintEnvelope());
+  await bootAlloFlow(page, 'full');
+  await page.getByRole('button', { name: /Message|AI Guide & Assistant/i }).first().click();
+
+  const card = page.locator('[data-help-key="blueprint_card_panel"]').first();
+  await expect(card).toBeVisible({ timeout: 120000 });
+  const failure = card.getByTestId('bp-fail-reason');
+  await expect(failure).toContainText('Authentication or permission failure');
+  await expect(failure).toHaveAttribute('data-failure-code', 'authentication');
+  await expect(failure).not.toContainText('SENTINEL_BLUEPRINT_API_KEY');
+  await expect(failure).not.toContainText('SENTINEL_BLUEPRINT_STUDENT');
+  await expect(card.locator('[title*="SENTINEL_BLUEPRINT_API_KEY"]')).toHaveCount(0);
+  await openErrorLog(page, 'bp-open-error-log');
+  await expect.poll(() => page.evaluate(key => localStorage.getItem(key) || '', BLUEPRINT_STORE_KEY)).not.toContain('SENTINEL_BLUEPRINT_API_KEY');
+
+  const secrets = ['SENTINEL_BLUEPRINT_API_KEY', 'SENTINEL_BLUEPRINT_STUDENT', 'SENTINEL_BLUEPRINT_UI_ID', 'SENTINEL_BLUEPRINT_DIRECTIVE'];
+  const support = card.getByTestId('bp-troubleshooting');
+  await expect(support).not.toHaveAttribute('open');
+  await expect(card.getByTestId('bp-copy-diagnostics')).toBeHidden();
+  await expect(card.getByTestId('bp-generation-matrix-summary')).not.toHaveAttribute('open');
+  await expect(card.getByTestId('bp-row-details').first()).not.toHaveAttribute('open');
+  await support.locator('summary').focus();
+  await support.locator('summary').press('Enter');
+  const copiedReport = await captureDiagnosticCopy(page, 'bp-copy-diagnostics');
+  expectPrivateDiagnostic(copiedReport, secrets);
+  expect(JSON.parse(copiedReport)).toMatchObject({
+    reportVersion: 2,
+    generatorCapability: 'blueprint-execution-v2',
+    rows: [{ tool: 'quiz', status: 'failed', failureCode: 'authentication' }],
+  });
+
+  const downloadPromise = page.waitForEvent('download');
+  await card.getByTestId('bp-download-diagnostics').click();
+  const download = await downloadPromise;
+  const downloadedPath = await download.path();
+  const downloadedReport = fs.readFileSync(downloadedPath!, 'utf8');
+  expectPrivateDiagnostic(downloadedReport, secrets);
+  expect(JSON.parse(downloadedReport)).toMatchObject({ reportVersion: 2, done: true });
+});
+test('actual Blueprint restore distinguishes an available variant from a pruned sibling', async ({ page }) => {
+  await bootAlloFlow(page, 'full');
+  const uiId = 'SENTINEL_BLUEPRINT_PARTIAL_UI_ID';
+  const liveArtifactId = 'SENTINEL_BLUEPRINT_LIVE_ARTIFACT';
+  const missingArtifactId = 'SENTINEL_BLUEPRINT_MISSING_ARTIFACT';
+  const envelope: any = blueprintEnvelope();
+  envelope.plan.resourcePlan = [{
+    tool: 'quiz', directive: 'Compare two audiences.', uiId,
+    generationVariants: [
+      { generationIdentity: 'gm-blueprint-live', action: 'generate', grade: '5th Grade', language: 'English' },
+      { generationIdentity: 'gm-blueprint-missing', action: 'generate', grade: '5th Grade', language: 'Spanish' },
+    ],
+  }];
+  envelope.run.rows = {
+    [uiId]: {
+      uiId, tool: 'quiz', status: 'partial', resourceId: liveArtifactId,
+      resourceIds: [liveArtifactId, missingArtifactId],
+      missingResourceIds: [missingArtifactId], resourcePartiallyMissing: true,
+      variantResults: [
+        { generationIdentity: 'gm-blueprint-live', action: 'generate', status: 'landed', grade: '5th Grade', language: 'English', resourceId: liveArtifactId, artifactId: liveArtifactId },
+        { generationIdentity: 'gm-blueprint-missing', action: 'generate', status: 'landed', grade: '5th Grade', language: 'Spanish', resourceId: missingArtifactId, artifactId: missingArtifactId },
+      ],
+    },
+  };
+
+  await page.evaluate(async ({ key, value, artifactId }) => {
+    const storage = (window as any).AlloModules?.UtilsPure?.storageDB;
+    if (!storage) throw new Error('UtilsPure storageDB was not available');
+    await storage.set('allo_offline_history', { items: [{
+      id: artifactId, type: 'quiz', title: 'Available English quiz',
+      timestamp: new Date().toISOString(), data: { questions: [] },
+    }] });
+    localStorage.setItem(key, JSON.stringify(value));
+  }, { key: BLUEPRINT_STORE_KEY, value: envelope, artifactId: liveArtifactId });
+  await page.reload();
+  await page.getByRole('button', { name: /Message|AI Guide & Assistant/i }).first().click({ timeout: 120000 });
+
+  const card = page.locator('[data-help-key="blueprint_card_panel"]').first();
+  await expect(card).toBeVisible({ timeout: 120000 });
+  await expect(card.getByTestId('bp-variant-result')).toHaveCount(2);
+  await expect(card.locator('[data-testid="bp-variant-result"][data-variant-status="landed"]')).toHaveCount(1);
+  await expect(card.locator('[data-testid="bp-variant-result"][data-variant-status="missing"]')).toHaveCount(1);
+  await expect(card.getByTestId('bp-preview-variant-btn')).toHaveCount(1);
+  await expect(card.locator('[data-artifact-id="' + missingArtifactId + '"]')).toContainText('Resource gone');
+});
+test('actual Blueprint quota fallback stays visible and persists only pseudonymized diagnostics', async ({ page }) => {
+  await seedBlueprintEnvelope(page, blueprintEnvelope(), true);
+  await bootAlloFlow(page, 'full');
+  await expect.poll(async () => page.evaluate(key => {
+    const value = JSON.parse(localStorage.getItem(key) || 'null');
+    return Boolean(value?.compactFallback && value?.run?.persistenceWarning);
+  }, BLUEPRINT_STORE_KEY)).toBe(true);
+  await page.getByRole('button', { name: /Message|AI Guide & Assistant/i }).first().click();
+
+  const card = page.locator('[data-help-key="blueprint_card_panel"]').first();
+  await expect(card).toBeVisible({ timeout: 120000 });
+  await expect(card.getByTestId('bp-storage-warning')).toContainText('Browser storage was full');
+  const persisted = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || 'null'), BLUEPRINT_STORE_KEY);
+  expect(persisted).toMatchObject({ v: 2, compactFallback: true, plan: null, run: { status: 'partial' } });
+  expect(Object.keys(persisted.run.rows)).toEqual(['row-1']);
+  expectPrivateDiagnostic(JSON.stringify(persisted), [
+    'SENTINEL_BLUEPRINT_API_KEY', 'SENTINEL_BLUEPRINT_STUDENT',
+    'SENTINEL_BLUEPRINT_UI_ID', 'SENTINEL_BLUEPRINT_DIRECTIVE',
+  ]);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow-generation-metrics-v1') || 'null')?.storageFallbacks?.blueprint || 0)).toBe(1);
+});
+test('actual app purges malformed Full Pack state and expired Blueprint state on boot', async ({ page }) => {
+  const expiredBlueprint = blueprintEnvelope();
+  expiredBlueprint.savedAt = '2026-01-01T00:00:00.000Z';
+  await page.addInitScript(({ fullPackKey, blueprintKey, blueprintValue }) => {
+    localStorage.setItem(fullPackKey, JSON.stringify({ v: 2, run: [] }));
+    localStorage.setItem(blueprintKey, JSON.stringify(blueprintValue));
+  }, { fullPackKey: STORE_KEY, blueprintKey: BLUEPRINT_STORE_KEY, blueprintValue: expiredBlueprint });
+
+  await bootAlloFlow(page, 'full');
+  await expect.poll(() => page.evaluate(({ fullPackKey, blueprintKey }) => ({
+    fullPack: localStorage.getItem(fullPackKey),
+    blueprint: localStorage.getItem(blueprintKey),
+  }), { fullPackKey: STORE_KEY, blueprintKey: BLUEPRINT_STORE_KEY })).toEqual({
+    fullPack: null,
+    blueprint: null,
+  });
+});

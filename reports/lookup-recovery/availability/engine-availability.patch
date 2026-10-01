@@ -1,0 +1,65 @@
+Index: content_engine_source.jsx
+===================================================================
+--- content_engine_source.jsx
++++ content_engine_source.jsx
+@@ -3273,10 +3273,17 @@
+           occurrence: request.occurrence
+       }) : '';
+   };
+-  const lookupAiDisabled = () => {
+-      const fn = _currentCallGemini();
+-      return typeof fn !== 'function' || fn._alloQrBlocked === true || window.__alloStudentAiDisabled === true;
++  const lookupAiAvailability = () => {
++      const fn = _currentCallGemini(), state = _s();
++      if (fn?._alloQrBlocked === true || window.__alloStudentAiDisabled === true
++          || (!state.isTeacherMode && state.studentAiFeaturesHidden === true)) return 'disabled';
++      return typeof fn === 'function' ? 'ready' : 'unavailable';
+   };
++  const lookupAiUnavailableState = availability => ({
++      aiStatus: availability === 'disabled' ? 'disabled' : 'error',
++      aiErrorReason: availability === 'unavailable' ? 'not_available' : null,
++      aiRetryAvailable: true, isLoading: false
++  });
+   const startReadingLookup = async (kind, word, event, context = {}, options = {}) => {
+       const setter = kind === 'definition' ? setDefinitionData : setPhonicsData;
+       const owner = lookupOwner(setter);
+@@ -3353,7 +3360,8 @@
+           const currentAttempt = ++attempt;
+           aiAttempt?.cancel();
+           releaseAudio();
+-          if (lookupAiDisabled()) { update({ aiStatus: 'disabled', isLoading: false }); return; }
++          const availability = lookupAiAvailability();
++          if (availability !== 'ready') { update(lookupAiUnavailableState(availability)); return; }
+           update({ aiStatus: 'loading', aiErrorReason: null, isLoading: true });
+           const prompt = kind === 'definition' ? [
+               'Define the word or phrase "' + word + '" for a ' + request.grade + ' student.',
+@@ -3389,7 +3397,8 @@
+               if (response.cancelled) return;
+               const result = response.value;
+               if (!isCurrent() || currentAttempt !== attempt) return;
+-              if (lookupAiDisabled()) { update({ aiStatus: 'disabled', isLoading: false }); return; }
++              const availability = lookupAiAvailability();
++              if (availability !== 'ready') { update(lookupAiUnavailableState(availability)); return; }
+               if (kind === 'definition') {
+                   if (typeof result !== 'string' || !result.trim()) throw new Error('Empty definition');
+                   update({ text: result, aiStatus: 'ready', isLoading: false });
+@@ -3422,8 +3431,9 @@
+                   if (isCurrent() && currentAttempt === attempt) { releaseAudio(); update({ audioError: true }); }
+               }
+           } catch (_) {
+-              if (isCurrent() && currentAttempt === attempt) update(lookupAiDisabled()
+-                  ? { aiStatus: 'disabled', isLoading: false }
++              const availability = lookupAiAvailability();
++              if (isCurrent() && currentAttempt === attempt) update(availability !== 'ready'
++                  ? lookupAiUnavailableState(availability)
+                   : { aiStatus: 'error', aiErrorReason: timedOut ? 'timeout' : 'failed', isLoading: false, aiRetryAvailable: true });
+           } finally {
+               clearTimeout(timer);
+@@ -3433,6 +3443,7 @@
+       setter({
+           word, text: null, data: null, language: request.language, grade: request.grade,
+           lookupRequest: request, preparedText: request.preparedText,
++          getAiAvailability: lookupAiAvailability,
+           aiStatus: 'loading', dictionaryStatus: dictionarySupported ? 'loading' : 'unsupported',
+           dictionaryReason: dictionarySupported ? null : request.language !== 'English' ? 'unsupported_language' : 'unsupported_word',
+           isLoading: true, retry: run, retryDictionary: dictionarySupported ? () => lookupDictionary(true) : undefined,

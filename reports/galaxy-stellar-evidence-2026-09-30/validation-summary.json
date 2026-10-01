@@ -1,0 +1,109 @@
+{
+  "passed": 453,
+  "failed": 0,
+  "success": true,
+  "testReports": [
+    "galaxy-tests.json",
+    "remaining-tests.json"
+  ],
+  "initialRunnerExitCode": 1,
+  "remainingRunnerExitCode": 0,
+  "initialOmittedFiles": [
+    "galaxy_black_hole_physics.test.js",
+    "galaxy_fullscreen_fallback.test.js",
+    "galaxy_morphology_lod_runtime.test.js"
+  ],
+  "sourceSHA256": "d011ad05aacc18e3ad46e2d25a5a816cdcf514144c3e16091951fdf388f45d70",
+  "sourceMirrorParity": true,
+  "galaxyLabelParity": true,
+  "chemistryLabelParity": true,
+  "chemistryLabels": 63,
+  "previewSourceParity": true,
+  "sourceMtime": "2026-09-30T21:53:15.627Z",
+  "testStarts": [
+    "2026-09-30T21:54:13.849Z",
+    "2026-09-30T22:11:10.342Z"
+  ],
+  "suites": [
+    {
+      "file": "galaxy_animated_selection_runtime.test.js",
+      "passed": 6,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_black_hole_optics.test.js",
+      "passed": 12,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_canvas_lifecycle.test.js",
+      "passed": 106,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_connected_workflows.test.js",
+      "passed": 17,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_modes_smoke.test.js",
+      "passed": 6,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_observe_labels.test.js",
+      "passed": 4,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_readability_contracts.test.js",
+      "passed": 20,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_real_sky_workflow.test.js",
+      "passed": 43,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_review_fixes.test.js",
+      "passed": 110,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_scene_build.test.js",
+      "passed": 28,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_stellar_evidence.test.js",
+      "passed": 18,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_visual_layout.test.js",
+      "passed": 10,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_wcag_a11y.test.js",
+      "passed": 8,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_black_hole_physics.test.js",
+      "passed": 49,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_fullscreen_fallback.test.js",
+      "passed": 11,
+      "status": "passed"
+    },
+    {
+      "file": "galaxy_morphology_lod_runtime.test.js",
+      "passed": 5,
+      "status": "passed"
+    }
+  ]
+}

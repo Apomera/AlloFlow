@@ -24,7 +24,7 @@ describe('Water Cycle prediction-and-evidence loop', () => {
       expect(source).toContain('Choose a claim');
       expect(source).toContain('Which effect will you investigate?');
       expect(source).toContain('Choose a claim and check the signed changes. Several effects can change together. This is evidence-reading practice, not a score.');
-      expect(source).toContain('onClick: function() { recordWcPrediction(predictionId); }');
+      expect(source).toMatch(/onClick: function\(\) \{ recordWcPrediction\(predictionId\);(?: focusWcComparisonTarget\("wcPredictionFeedback"\);)? \}/);
 
       expect(source.includes('wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {')).toBe(false);
       expect(source).toContain('className: "wc-compare-bars"');
@@ -61,7 +61,7 @@ describe('Water Cycle prediction-and-evidence loop', () => {
 
       expect(source).toContain("wcScenarioPreset: 'custom', wcPrediction: ''");
       expect(source).toContain("var resetWcPrediction = function()");
-      expect(source).toMatch(/"aria-label": __alloT\('stem\.watercycle\.a11y_choose_a_(?:different|new)_evidence_claim', 'Choose a (?:different|new) evidence claim'\)/);
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.inquiry_choose_again_name', 'Choose again: select a different evidence claim')`);
       expect(source).toContain('wcPrediction: \'\'');
       expect(source).toContain("updMulti({ wcScenarioBaseline: null, wcPrediction: '', wcReplayedObservation: '' });");
     });

@@ -9,14 +9,19 @@
 // ── Helpers ─────────────────────────────────────────────────────────────
 const _genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
-// Loose comparison for Guided Notes self-check: case/space/punctuation-insensitive
-// so "Mitochondria." matches "mitochondria". Deliberately forgiving — the point
-// is recall of the concept, not exact spelling/punctuation.
+// Loose comparison for Guided Notes self-check: case/space/punctuation/accent-insensitive
+// so "Mitochondria." matches "mitochondria" and "celula" matches "célula". Deliberately
+// forgiving — the point is recall of the concept, not exact spelling/punctuation.
+// Only Latin/Greek/Cyrillic accents are dropped; marks that change letters in other scripts stay.
 const _normalizeBlank = (s) => String(s == null ? '' : s)
-  .trim()
   .toLowerCase()
+  .normalize('NFKD')
+  .replace(/([\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, '$1')
+  .normalize('NFC')
+  .replace(/[\p{Pd}\p{Pc}]+/gu, ' ')
+  .replace(/[\p{P}`]+/gu, '')
   .replace(/\s+/g, ' ')
-  .replace(/[.,;:!?'"()]/g, '');
+  .trim();
 
 const _CardSection = ({ title, hint, color = 'indigo', children }) => {
   const colors = {
@@ -320,7 +325,7 @@ function _normalizeNotesFeedback(value) {
 // Inline panel that displays the feedback after the AI returns. Strengths-
 // first design: green strength block (top), amber growth nudge (middle), soft
 // source-alignment note (bottom, only if non-empty), small XP toast.
-const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
+const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t, earlierDraft }) => {
   if (!feedback) return null;
   return (
     <div className="max-w-3xl mx-auto px-4 pb-6">
@@ -336,6 +341,11 @@ const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
             aria-label={t('notes_feedback.dismiss_aria') || 'Dismiss feedback'}
           >✕</button>
         </div>
+        {earlierDraft ? (
+          <p role="status" data-notes-feedback-earlier-draft="true" className="mb-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-950">
+            {_noteText(t, 'notes_feedback.earlier_draft', 'Feedback on an earlier draft of your notes. Keep it in view while you revise, or ask for new feedback.')}
+          </p>
+        ) : null}
         <div className="space-y-3">
           <div className="bg-emerald-100/70 border-l-4 border-emerald-500 rounded-r-md p-3">
             <div className="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">{t('notes_feedback.strength_label') || 'What you did well'}</div>
@@ -375,6 +385,10 @@ function _notesDraftFingerprint(templateType, data) {
   for(let i=0;i<text.length;i++) hash=Math.imul(hash ^ text.charCodeAt(i),16777619);
   return 'notes-v1:'+(hash>>>0).toString(16);
 }
+// Feedback stays while the learner revises. It is about an earlier draft once the
+// notes differ from the draft it was written for, or when that draft is unknown.
+function _notesFeedbackIsEarlier(feedback, draft) { return !!feedback && (!feedback.draftFingerprint || feedback.draftFingerprint !== draft); }
+if (typeof window !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.NoteTakingDraftFingerprint = data => _notesDraftFingerprint((data && data.templateType) || 'cornell-notes', data || {}); }
 function _noteText(t,key,fallback) { const value=typeof t==='function'?t(key):null; return value && value!==key ? value : fallback; }
 function _useNotesFeedback(props, templateType) {
   const feedback = props.generatedContent?.data?.feedback || null;
@@ -413,6 +427,8 @@ function _useNotesFeedback(props, templateType) {
     }
     if (isLoading) return;
     const request = { ...current.current, serial: ++feedbackRequest.current };
+    // New feedback replaces the kept one, but asking again about the same draft earns no XP.
+    const sameDraft = !!data.feedback && data.feedback.draftFingerprint === request.draft;
     const requestIsCurrent = () => mounted.current && feedbackRequest.current === request.serial && current.current.id === request.id && current.current.draft === request.draft && current.current.allowed;
     setIsLoading(true);
     addToast(t('notes_feedback.thinking') || 'Reading your notes...', 'info');
@@ -437,7 +453,7 @@ function _useNotesFeedback(props, templateType) {
         'guided-notes': 'Guided Notes Feedback',
         'q-and-a': 'Q&A Study Notes Feedback',
       })[templateType] || 'Notes Feedback';
-      if (typeof handleScoreUpdate === 'function' && resourceId) {
+      if (typeof handleScoreUpdate === 'function' && resourceId && !sameDraft) {
         // handleScoreUpdate returns void; we compute the actual delta by
         // tracking the previous max ourselves for the UI display only.
         const prevMax = (generatedContent && generatedContent.data && generatedContent.data.prevFeedbackScore) || 0;
@@ -468,7 +484,7 @@ function _useNotesFeedback(props, templateType) {
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
 
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function' };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function', isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft) };
 }
 
 // Optional elaboration scaffold shared across templates that don't already
@@ -640,7 +656,7 @@ const CornellNotesView = React.memo((props) => {
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} t={t} />
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
       <div className="text-[11px] text-slate-500 italic text-center">Cornell Notes: cues on the left, notes on the right, summary below. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -791,7 +807,7 @@ const LabReportView = React.memo((props) => {
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint="Optional — how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too." t={t} />
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="sky" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
       <div className="text-[11px] text-slate-500 italic text-center">Return to this Lab Report to keep adding observations across days. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -911,7 +927,7 @@ const ReadingResponseView = React.memo((props) => {
         />
       </_CardSection>
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="violet" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
       <div className="text-[11px] text-slate-500 italic text-center">Browse your Reading Responses to build a record of your reading life. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1012,7 +1028,7 @@ const DoubleEntryView = React.memo((props) => {
         >+ Add entry</button>
       </div>
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="rose" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
       <div className="text-[11px] text-slate-500 italic text-center">Double-Entry Journal: quotes on the left, your thinking on the right. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1072,27 +1088,33 @@ const GuidedNotesView = React.memo((props) => {
               const inputBorder = showState
                 ? (isCorrect ? 'border-emerald-500 bg-emerald-50' : 'border-rose-400 bg-rose-50')
                 : 'border-slate-300 focus:ring-2 focus:ring-emerald-300';
+              const sentenceId = 'nt-gn-' + String((generatedContent && generatedContent.id) || 'notes').replace(/[^A-Za-z0-9_-]/g, '-') + '-' + idx;
               return (
                 <li key={b.id || idx} className="text-sm text-slate-700 leading-relaxed">
                   <span className="text-slate-500 text-xs font-bold mr-1">{idx + 1}.</span>
-                  <span>{b.before || ''}</span>
+                  <span id={sentenceId + '-before'}>{b.before || ''}</span>
                   <input
+                    aria-describedby={sentenceId + '-before ' + sentenceId + '-after'}
                     type="text"
                     value={studentAnswer}
                     onChange={(e) => updateBlank(idx, e.target.value)}
+                    readOnly={!!props.learnerReadOnly}
                     placeholder="________"
                     className={`inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 align-baseline ${inputBorder}`}
                     aria-label={`Blank ${idx + 1}`}
                     style={{ width: Math.max(110, ((b.answer || '').length + 4) * 9) + 'px' }}
                   />
-                  <span>{b.after || ''}</span>
+                  <span id={sentenceId + '-after'}>{b.after || ''}</span>
                   {revealed && studentAnswer.trim() && isCorrect ? (
                     <span role="img" className="ml-1 text-xs font-black text-emerald-700" aria-label="Correct">✓</span>
                   ) : null}
-                  {revealed && !isCorrect ? (
+                  {revealed && studentAnswer.trim() && !isCorrect ? (
                     <span className="ml-2 text-xs font-bold text-emerald-700">
-                      {studentAnswer.trim() ? <span role="img" className="text-rose-700" aria-label="Incorrect">✗ </span> : null}→ {b.answer}
+                      <span role="img" className="text-rose-700" aria-label="Incorrect">✗ </span>→ {b.answer}
                     </span>
+                  ) : null}
+                  {revealed && !studentAnswer.trim() ? (
+                    <span className="ml-2 text-xs italic text-slate-600">{_noteText(t, 'notes_feedback.blank_not_tried','Try this blank first to check it.')}</span>
                   ) : null}
                 </li>
               );
@@ -1125,7 +1147,7 @@ const GuidedNotesView = React.memo((props) => {
         />
       </_CardSection>
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
       <div className="text-[11px] text-slate-500 italic text-center">The blanks are the key terms — revisit them to study. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1250,7 +1272,7 @@ const QAndAView = React.memo((props) => {
       )}
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint="Optional — connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer." t={t} />
       <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="cyan" />
-      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} />
+      <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} />
       <div className="text-[11px] text-slate-500 italic text-center">Switch to Quiz me to self-test with active recall. {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
   );
@@ -1445,6 +1467,26 @@ Generate 2-4 patterns. Quality over quantity — one really specific pattern is 
 `.trim();
 }
 
+// Model replies are untrusted: keep only strings so one odd shape cannot crash the app.
+function _normalizeNoteInsights(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const text = (input, max) => typeof input === 'string' ? input.trim().slice(0, max) : '';
+  const patterns = (Array.isArray(value.patterns) ? value.patterns : []).slice(0, 6)
+    .map(p => typeof p === 'string' ? { title: '', observation: text(p, 800), tryNext: '' }
+      : p && typeof p === 'object' && !Array.isArray(p) ? { title: text(p.title, 160), observation: text(p.observation, 800), tryNext: text(p.tryNext, 600) } : null)
+    .filter(p => p && (p.title || p.observation || p.tryNext));
+  const out = { summary: text(value.summary, 1000), patterns, celebration: text(value.celebration, 600) };
+  return out.summary || patterns.length || out.celebration ? out : null;
+}
+
+const _NoteInsightsBoundary = typeof React.Component !== 'function' ? (props) => props.children : class extends React.Component {
+  constructor(props) { super(props); this.state = { failed: false }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(error) { console.warn('[NoteInsights] render failed', error); if (typeof this.props.onError === 'function') this.props.onError(); }
+  componentDidUpdate(prev) { if (this.state.failed && prev.insights !== this.props.insights) this.setState({ failed: false }); }
+  render() { return this.state.failed ? null : this.props.children; }
+};
+
 function _useNoteDialogFocus(isOpen, dialogRef, onClose) {
   const closeRef = React.useRef(onClose);
   closeRef.current = onClose;
@@ -1509,11 +1551,13 @@ const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
               ) : null}
               {Array.isArray(insights.patterns) && insights.patterns.map((p, i) => (
                 <div key={i} className="bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm">
-                  <div className="text-sm font-black text-violet-800 mb-1">{p.title}</div>
-                  <div className="text-sm text-slate-700 leading-relaxed mb-2">{p.observation}</div>
-                  <div className="text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900">
-                    <span className="font-bold">{t('note_insights.try_next_label') || 'Try next:'}</span> {p.tryNext}
-                  </div>
+                  {p.title ? <div className="text-sm font-black text-violet-800 mb-1">{p.title}</div> : null}
+                  {p.observation ? <div className="text-sm text-slate-700 leading-relaxed mb-2">{p.observation}</div> : null}
+                  {p.tryNext ? (
+                    <div className="text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900">
+                      <span className="font-bold">{t('note_insights.try_next_label') || 'Try next:'}</span> {p.tryNext}
+                    </div>
+                  ) : null}
                 </div>
               ))}
               {insights.celebration ? (
@@ -1565,7 +1609,8 @@ const NotebookOverlay = React.memo((props) => {
     try {
       const prompt = _buildNoteInsightsPrompt(noteEntries);
       const raw = await callGemini(prompt, true);
-      const parsed = JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
+      const parsed = _normalizeNoteInsights(JSON.parse((window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw)));
+      if (!parsed) throw new Error('Insights reply had no usable text');
       setInsights(parsed);
     } catch (e) {
       console.warn('[NoteInsights] failed', e);
@@ -1580,11 +1625,19 @@ const NotebookOverlay = React.memo((props) => {
   if (!isOpen) return null;
 
   const notebookEntries = history.filter(h => h && _entryKind(h));
-  const sortedEntries = notebookEntries.slice().sort((a, b) => {
-    const aTime = a.id || 0;
-    const bTime = b.id || 0;
-    return bTime - aTime;
-  });
+  // Newest first. IDs are strings (Date.now() + suffix), so compare real times; ties keep later history first.
+  const _entryTime = (entry) => {
+    const stamps = [entry.data && entry.data.lessonRef && entry.data.lessonRef.generatedAt, entry.timestamp, entry.createdAt];
+    for (const stamp of stamps) {
+      const time = stamp instanceof Date ? stamp.getTime() : typeof stamp === 'number' ? stamp : typeof stamp === 'string' && stamp ? (/^\d+$/.test(stamp) ? Number(stamp) : Date.parse(stamp)) : NaN;
+      if (Number.isFinite(time)) return time;
+    }
+    const lead = /^\d{12,14}/.exec(String(entry.id || ''));
+    return lead ? Number(lead[0]) : 0;
+  };
+  const sortedEntries = notebookEntries.map((entry, index) => ({ entry, index, time: _entryTime(entry) }))
+    .sort((a, b) => (b.time - a.time) || (b.index - a.index))
+    .map(row => row.entry);
   const filtered = activeFilter === 'all'
     ? sortedEntries
     : sortedEntries.filter(e => _entryKind(e) === activeFilter);
@@ -1605,6 +1658,15 @@ const NotebookOverlay = React.memo((props) => {
       // Expand note textareas to full content height before printing — a browser
       // prints a <textarea> at its on-screen height, so longer notes would clip.
       document.querySelectorAll('.nt-autogrow').forEach(function (root) { _autoGrowAll(root); });
+      // Print the notebook list itself, not the page behind the overlay (which carries nt-no-print).
+      if (!document.getElementById('nt-notebook-print-style')) {
+        const style = document.createElement('style');
+        style.id = 'nt-notebook-print-style';
+        style.textContent = '@media print { body.nt-print-notebook *:not(:has(.nt-notebook-print)):not(.nt-notebook-print):not(.nt-notebook-print *) { display: none !important; } body.nt-print-notebook *:has(.nt-notebook-print) { display: block !important; position: static !important; overflow: visible !important; height: auto !important; max-height: none !important; transform: none !important; padding: 0 !important; background: none !important; } body.nt-print-notebook .nt-notebook-print, body.nt-print-notebook .nt-notebook-print * { overflow: visible !important; max-height: none !important; box-shadow: none !important; } body.nt-print-notebook .nt-notebook-print { position: static !important; width: 100% !important; max-width: none !important; border: 0 !important; } }';
+        document.head.appendChild(style);
+      }
+      document.body.classList.add('nt-print-notebook');
+      window.addEventListener('afterprint', function () { document.body.classList.remove('nt-print-notebook'); }, { once: true });
       window.print();
     } catch (_) {}
   };
@@ -1630,7 +1692,7 @@ const NotebookOverlay = React.memo((props) => {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div ref={notebookDialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500" role="dialog" aria-modal="true" aria-labelledby="notebook-dialog-title" aria-describedby="notebook-dialog-description" inert={insightsOpen ? true : undefined} aria-hidden={insightsOpen ? 'true' : undefined}>
+      <div ref={notebookDialogRef} tabIndex={-1} className="nt-notebook-print relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500" role="dialog" aria-modal="true" aria-labelledby="notebook-dialog-title" aria-describedby="notebook-dialog-description" inert={insightsOpen ? true : undefined} aria-hidden={insightsOpen ? 'true' : undefined}>
         <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50">
           <div>
             <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">My Notebook</div>
@@ -1639,12 +1701,12 @@ const NotebookOverlay = React.memo((props) => {
           </div>
           <button type="button"
             onClick={onClose}
-            className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100"
+            className="nt-no-print text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100"
             aria-label="Close notebook"
             title="Close (Esc)"
           >✕</button>
         </div>
-        <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-slate-100 bg-white">
+        <div className="nt-no-print flex flex-wrap items-center gap-2 px-5 py-3 border-b border-slate-100 bg-white">
           {filters.map((f) => {
             const isActive = activeFilter === f.id;
             const count = counts[f.id] || 0;
@@ -1700,11 +1762,9 @@ const NotebookOverlay = React.memo((props) => {
                 const title = _entryTitle(entry);
                 const preview = _entryPreview(entry);
                 const previewTruncated = preview && preview.length > 140 ? preview.slice(0, 137) + '…' : preview;
-                const ts = entry.data && entry.data.lessonRef && entry.data.lessonRef.generatedAt
-                  ? entry.data.lessonRef.generatedAt
-                  : (entry.timestamp || entry.id);
+                const ts = _entryTime(entry);
                 let when = '';
-                try { when = new Date(ts).toLocaleString(); } catch (_) { when = ''; }
+                try { when = ts ? new Date(ts).toLocaleString() : ''; } catch (_) { when = ''; }
                 return (
                   <li key={entry.id}>
                     <button type="button"
@@ -1741,13 +1801,15 @@ const NotebookOverlay = React.memo((props) => {
           <span className="font-mono">{sortedEntries.length} total</span>
         </div>
       </div>
-      <_NoteInsightsModal
-        isOpen={insightsOpen}
-        onClose={() => setInsightsOpen(false)}
-        insights={insights}
-        isLoading={insightsLoading}
-        t={t}
-      />
+      <_NoteInsightsBoundary insights={insights} onError={() => { setInsightsOpen(false); setInsights(null); addToast(t('note_insights.error') || 'Could not generate insights right now. Try again in a moment.', 'error'); }}>
+        <_NoteInsightsModal
+          isOpen={insightsOpen}
+          onClose={() => setInsightsOpen(false)}
+          insights={insights}
+          isLoading={insightsLoading}
+          t={t}
+        />
+      </_NoteInsightsBoundary>
     </div>
   );
 });

@@ -181,6 +181,15 @@ function attachLiveQuizConfidence(response, question, questionIndex, confidence)
     timestamp: Date.now()
   };
 }
+
+// Fills {name} placeholders in a translated string or its English fallback.
+const fillLiveCopy = (text, params) => {
+  let out = String(text || '');
+  Object.keys(params || {}).forEach(name => {
+    out = out.split('{' + name + '}').join(String(params[name]));
+  });
+  return out;
+};
 const LiveAdvancedQuizResponse = React.memo(({
   question,
   questionType,
@@ -190,6 +199,9 @@ const LiveAdvancedQuizResponse = React.memo(({
   hasAnswered,
   onSubmit
 }) => {
+  const {
+    t
+  } = useContext(LanguageContext);
   const [draft, setDraft] = useState({
     text: '',
     unit: '',
@@ -259,8 +271,9 @@ const LiveAdvancedQuizResponse = React.memo(({
     }, /*#__PURE__*/React.createElement("label", {
       htmlFor: "live-quiz-written-response",
       className: "mb-2 block text-sm font-bold text-white"
-    }, isFillBlank ? 'Type the missing word or phrase' : questionType === 'self-explanation' ? 'Explain your thinking' : 'Write your response'), isFillBlank ? /*#__PURE__*/React.createElement("input", {
+    }, isFillBlank ? t('quiz.live_student.type_missing') || 'Type the missing word or phrase' : questionType === 'self-explanation' ? t('quiz.live_student.explain_thinking') || 'Explain your thinking' : t('quiz.live_student.write_response') || 'Write your response'), isFillBlank ? /*#__PURE__*/React.createElement("input", {
       id: "live-quiz-written-response",
+      "data-autofocus": "true",
       type: "text",
       value: draft.text,
       maxLength: maxLength,
@@ -277,6 +290,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: "min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
     }) : /*#__PURE__*/React.createElement("textarea", {
       id: "live-quiz-written-response",
+      "data-autofocus": "true",
       value: draft.text,
       maxLength: maxLength,
       rows: questionType === 'self-explanation' ? 6 : 4,
@@ -292,7 +306,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       onClick: submitText,
       disabled: isDisabled || !draft.text.trim(),
       className: submitButtonClass
-    }, "Submit response")));
+    }, t('quiz.live_student.submit_response') || 'Submit response')));
   }
   if (questionType === 'numeric-response') {
     const submitNumeric = () => {
@@ -330,7 +344,8 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: "grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
     }, /*#__PURE__*/React.createElement("label", {
       className: "block text-sm font-bold text-white"
-    }, "Numeric answer", /*#__PURE__*/React.createElement("input", {
+    }, t('quiz.live_student.numeric_answer') || 'Numeric answer', /*#__PURE__*/React.createElement("input", {
+      "data-autofocus": "true",
       type: "number",
       step: "any",
       inputMode: "decimal",
@@ -348,7 +363,11 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: "mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
     })), /*#__PURE__*/React.createElement("label", {
       className: "block text-sm font-bold text-white"
-    }, "Unit", question?.unit ? ` (${boundedLiveQuizText(question.unit, 80)})` : ' (optional)', /*#__PURE__*/React.createElement("input", {
+    }, question?.unit ? fillLiveCopy(t('quiz.live_student.unit_named', {
+      unit: boundedLiveQuizText(question.unit, 80)
+    }) || 'Unit ({unit})', {
+      unit: boundedLiveQuizText(question.unit, 80)
+    }) : t('quiz.live_student.unit_optional') || 'Unit (optional)', /*#__PURE__*/React.createElement("input", {
       type: "text",
       value: draft.unit,
       maxLength: "80",
@@ -364,7 +383,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       onClick: submitNumeric,
       disabled: isDisabled || !draft.text || !Number.isFinite(Number(draft.text)),
       className: submitButtonClass
-    }, "Submit numeric answer")));
+    }, t('quiz.live_student.submit_numeric') || 'Submit numeric answer')));
   }
   if (questionType === 'multi-select') {
     const options = boundedLiveQuizStrings(question?.options);
@@ -399,7 +418,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       "data-live-response-type": questionType
     }, /*#__PURE__*/React.createElement("div", {
       role: "group",
-      "aria-label": "Select every answer that applies",
+      "aria-label": t('quiz.live_student.select_all_apply') || 'Select every answer that applies',
       className: "grid grid-cols-1 gap-3 sm:grid-cols-2"
     }, options.map((option, index) => {
       const active = selected.includes(index);
@@ -407,6 +426,7 @@ const LiveAdvancedQuizResponse = React.memo(({
         key: index,
         type: "button",
         "aria-pressed": active,
+        "data-autofocus": index === 0 ? 'true' : undefined,
         disabled: isDisabled,
         onClick: () => toggle(index),
         className: `${sharedButtonClass} ${active ? 'border-yellow-300 bg-yellow-300 text-indigo-950 ring-4 ring-yellow-200/30' : 'border-white/30 bg-white text-slate-900 hover:border-indigo-300'}`
@@ -419,7 +439,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       onClick: submitMultiSelect,
       disabled: isDisabled || selected.length === 0,
       className: `${submitButtonClass} mt-4`
-    }, "Submit selections"));
+    }, t('quiz.live_student.submit_selections') || 'Submit selections'));
   }
   if (questionType === 'answer-evidence') {
     const answerOptions = boundedLiveQuizStrings(question?.answerOptions);
@@ -450,12 +470,13 @@ const LiveAdvancedQuizResponse = React.memo(({
         status
       });
     };
-    const renderChoiceGrid = (items, selectedIndex, field) => /*#__PURE__*/React.createElement("div", {
+    const renderChoiceGrid = (items, selectedIndex, field, autofocusFirst) => /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 gap-2 sm:grid-cols-2"
     }, items.map((option, index) => /*#__PURE__*/React.createElement("button", {
       key: index,
       type: "button",
       "aria-pressed": selectedIndex === index,
+      "data-autofocus": autofocusFirst && index === 0 ? 'true' : undefined,
       disabled: isDisabled,
       onClick: () => patchDraft({
         [field]: index
@@ -467,14 +488,18 @@ const LiveAdvancedQuizResponse = React.memo(({
       "data-live-response-type": questionType
     }, /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
-    }, "Part 1 — Choose the best answer"), renderChoiceGrid(answerOptions, draft.answerIdx, 'answerIdx')), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
+    }, t('quiz.live_student.part1') || 'Part 1 — Choose the best answer'), renderChoiceGrid(answerOptions, draft.answerIdx, 'answerIdx', true)), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
-    }, "Part 2 — ", boundedLiveQuizText(question?.evidencePrompt || 'Choose the best supporting evidence.', 500)), renderChoiceGrid(evidenceOptions, draft.evidenceIdx, 'evidenceIdx')), /*#__PURE__*/React.createElement("button", {
+    }, fillLiveCopy(t('quiz.live_student.part2', {
+      prompt: boundedLiveQuizText(question?.evidencePrompt || t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.', 500)
+    }) || 'Part 2 — {prompt}', {
+      prompt: boundedLiveQuizText(question?.evidencePrompt || t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.', 500)
+    })), renderChoiceGrid(evidenceOptions, draft.evidenceIdx, 'evidenceIdx')), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: submitAnswerEvidence,
       disabled: isDisabled || !Number.isInteger(draft.answerIdx) || !Number.isInteger(draft.evidenceIdx),
       className: submitButtonClass
-    }, "Submit answer and evidence"));
+    }, t('quiz.live_student.submit_answer_evidence') || 'Submit answer and evidence'));
   }
   if (questionType === 'sequence-sense') {
     const items = boundedLiveQuizStrings(question?.items);
@@ -516,6 +541,13 @@ const LiveAdvancedQuizResponse = React.memo(({
     };
     const principleOptions = boundedLiveQuizStrings(question?.principleOptions, 12);
     const principles = principleOptions.length >= 2 ? principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+    const principleLabels = principleOptions.length >= 2 ? {} : {
+      chronological: t('quiz.live_student.principle_chronological') || 'chronological',
+      'cause-effect': t('quiz.live_student.principle_cause_effect') || 'cause-effect',
+      process: t('quiz.live_student.principle_process') || 'process',
+      size: t('quiz.live_student.principle_size') || 'size',
+      hierarchy: t('quiz.live_student.principle_hierarchy') || 'hierarchy'
+    };
     const chooseVerification = answer => patchDraft({
       verifyAnswer: answer,
       sequenceStep: answer === 'no' ? 2 : 3
@@ -566,27 +598,28 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
-    }, "Is this order correct?"), /*#__PURE__*/React.createElement("div", {
+    }, t('quiz.live_student.order_check') || 'Is this order correct?'), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
+      "data-autofocus": "true",
       disabled: isDisabled,
       onClick: () => chooseVerification('yes'),
       className: submitButtonClass
-    }, "Yes, it is correct"), /*#__PURE__*/React.createElement("button", {
+    }, t('quiz.live_student.order_yes') || 'Yes, it is correct'), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: isDisabled,
       onClick: () => chooseVerification('no'),
       className: submitButtonClass
-    }, "No, something is misplaced"))), draft.sequenceStep === 2 && /*#__PURE__*/React.createElement("p", {
+    }, t('quiz.live_student.order_no') || 'No, something is misplaced'))), draft.sequenceStep === 2 && /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-sm font-bold text-white"
-    }, "Select a misplaced item above."), draft.sequenceStep === 3 && /*#__PURE__*/React.createElement("fieldset", {
+    }, t('quiz.live_student.select_misplaced') || 'Select a misplaced item above.'), draft.sequenceStep === 3 && /*#__PURE__*/React.createElement("fieldset", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
-    }, "Put the items in the correct order. If they are already right, leave them."), /*#__PURE__*/React.createElement("ol", {
+    }, t('quiz.live_student.arrange_instructions') || 'Put the items in the correct order. If they are already right, leave them.'), /*#__PURE__*/React.createElement("ol", {
       className: "space-y-2",
-      "aria-label": "Your order",
+      "aria-label": t('quiz.live_student.your_order') || 'Your order',
       "data-live-sequence-arrange": "true"
     }, orderAnswer.map((canonicalIndex, position) => /*#__PURE__*/React.createElement("li", {
       key: canonicalIndex,
@@ -598,13 +631,21 @@ const LiveAdvancedQuizResponse = React.memo(({
     }, items[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: isDisabled || position === 0,
-      "aria-label": `Move up: ${items[canonicalIndex]}`,
+      "aria-label": fillLiveCopy(t('quiz.live_student.move_up', {
+        item: items[canonicalIndex]
+      }) || 'Move up: {item}', {
+        item: items[canonicalIndex]
+      }),
       onClick: () => moveItem(position, -1),
       className: "rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"
     }, "▲"), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: isDisabled || position === orderAnswer.length - 1,
-      "aria-label": `Move down: ${items[canonicalIndex]}`,
+      "aria-label": fillLiveCopy(t('quiz.live_student.move_down', {
+        item: items[canonicalIndex]
+      }) || 'Move down: {item}', {
+        item: items[canonicalIndex]
+      }),
       onClick: () => moveItem(position, 1),
       className: "rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"
     }, "▼")))), /*#__PURE__*/React.createElement("button", {
@@ -612,11 +653,11 @@ const LiveAdvancedQuizResponse = React.memo(({
       disabled: isDisabled,
       onClick: finishArrange,
       className: `${submitButtonClass} mt-3`
-    }, "Done arranging")), draft.sequenceStep === 4 && /*#__PURE__*/React.createElement("fieldset", {
+    }, t('quiz.live_student.done_arranging') || 'Done arranging')), draft.sequenceStep === 4 && /*#__PURE__*/React.createElement("fieldset", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
-    }, "What is the ordering principle?"), /*#__PURE__*/React.createElement("div", {
+    }, t('quiz.live_student.principle_question') || 'What is the ordering principle?'), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3"
     }, principles.map(principle => /*#__PURE__*/React.createElement("button", {
       key: principle,
@@ -624,7 +665,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       disabled: isDisabled,
       onClick: () => submitPrinciple(principle),
       className: `${sharedButtonClass} border-white/30 bg-white text-slate-900`
-    }, principle)))));
+    }, principleLabels[principle] || principle)))));
   }
   if (questionType === 'relation-mismatch') {
     const pairs = (Array.isArray(question?.pairs) ? question.pairs : []).slice(0, 30).map(pair => ({
@@ -664,22 +705,23 @@ const LiveAdvancedQuizResponse = React.memo(({
       "data-live-response-type": questionType
     }, /*#__PURE__*/React.createElement("div", {
       role: "group",
-      "aria-label": "Find the mismatched pair",
+      "aria-label": t('quiz.live_student.find_mismatch') || 'Find the mismatched pair',
       className: "space-y-2"
     }, pairs.map((pair, index) => /*#__PURE__*/React.createElement("button", {
       key: index,
       type: "button",
       "aria-pressed": draft.clickedPairIdx === index,
+      "data-autofocus": index === 0 ? 'true' : undefined,
       disabled: isDisabled || draft.relationStep !== 1,
       onClick: () => choosePair(index),
       className: `${sharedButtonClass} grid w-full grid-cols-2 gap-4 ${draft.clickedPairIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
     }, /*#__PURE__*/React.createElement("span", null, pair.left), /*#__PURE__*/React.createElement("span", null, "↔ ", pair.right)))), draft.relationStep === 1 && /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-sm font-bold text-white"
-    }, "Choose the pair that does not belong."), draft.relationStep === 2 && /*#__PURE__*/React.createElement("div", {
+    }, t('quiz.live_student.choose_mismatch') || 'Choose the pair that does not belong.'), draft.relationStep === 2 && /*#__PURE__*/React.createElement("div", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("p", {
       className: "mb-2 text-sm font-black text-white"
-    }, "What should the selected item be paired with?"), candidates.length >= 2 ? /*#__PURE__*/React.createElement("div", {
+    }, t('quiz.live_student.pair_with_question') || 'What should the selected item be paired with?'), candidates.length >= 2 ? /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 gap-2 sm:grid-cols-2"
     }, candidates.map(candidate => /*#__PURE__*/React.createElement("button", {
       key: candidate,
@@ -691,7 +733,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: "flex flex-col gap-2 sm:flex-row"
     }, /*#__PURE__*/React.createElement("label", {
       className: "flex-1 text-sm font-bold text-white"
-    }, "Replacement partner", /*#__PURE__*/React.createElement("input", {
+    }, t('quiz.live_student.replacement_partner') || 'Replacement partner', /*#__PURE__*/React.createElement("input", {
       type: "text",
       value: draft.partnerAnswer,
       maxLength: "500",
@@ -705,7 +747,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       disabled: isDisabled || !draft.partnerAnswer.trim(),
       onClick: () => submitPartner(draft.partnerAnswer),
       className: `${submitButtonClass} self-end`
-    }, "Submit replacement"))));
+    }, t('quiz.live_student.submit_replacement') || 'Submit replacement'))));
   }
   return null;
 });
@@ -714,7 +756,10 @@ const StudentQuizOverlay = React.memo(({
   generatedContent,
   user,
   activeSessionCode,
-  targetAppId
+  targetAppId,
+  connectionStatus,
+  onConnectionAction,
+  onCoverChange
 }) => {
   const {
     t
@@ -731,6 +776,21 @@ const StudentQuizOverlay = React.memo(({
     scoringPolicy
   } = quizState;
   const currentQuestion = generatedContent?.data?.questions?.[currentQuestionIndex];
+  // A teacher-revealed fact check is never shown when it disputes the key.
+  const liveExplanation = (() => {
+    if (!currentQuestion?.factCheck) return '';
+    const keyQuality = window.AlloModules?.QuizView?.keyQuality;
+    if (keyQuality && typeof keyQuality.studentExplanation === 'function') {
+      try {
+        return String(keyQuality.studentExplanation(currentQuestion, true) || '');
+      } catch (_) {
+        return '';
+      }
+    }
+    const text = String(currentQuestion.factCheck);
+    if (currentQuestion.keyCheck?.status === 'disputed' || /\[\[\s*KEY\s*:\s*DISPUTED|CORRECTION\s*\/\s*WARNING/i.test(text)) return '';
+    return text.replace(/\[\[\s*KEY\s*:[^\]\n]*\]\]\s*/gi, '');
+  })();
   const questionType = normalizeLiveQuizItemType(currentQuestion);
   const liveOptions = boundedLiveQuizStrings(currentQuestion?.options);
   const isAdvancedLiveQuestion = LIVE_QUIZ_ADVANCED_TYPES.has(questionType);
@@ -791,6 +851,33 @@ const StudentQuizOverlay = React.memo(({
       window.removeEventListener('resize', measure);
     };
   }, [isQuizOpen, isLocallyDismissed]);
+  // While this covers the screen the host shows its connection notice in
+  // here, inside the focus trap, where the keyboard can reach Reconnect.
+  const coversScreen = isQuizOpen && !isLocallyDismissed;
+  useEffect(() => {
+    if (typeof onCoverChange !== 'function') return undefined;
+    onCoverChange(coversScreen);
+    return () => onCoverChange(false);
+  }, [coversScreen, onCoverChange]);
+  // Answering disables the chosen button, which drops focus to <body>. When the
+  // next question opens, hand focus back to its first control, but never pull
+  // it away from something the student is using inside the quiz.
+  useEffect(() => {
+    if (!coversScreen || phase !== 'answering') return undefined;
+    const timer = setTimeout(() => {
+      const root = quizRef.current;
+      if (!root) return;
+      const active = document.activeElement;
+      if (active && active !== document.body && root.contains(active) && !active.disabled) return;
+      const target = root.querySelector('[data-autofocus]');
+      if (target && !target.disabled) {
+        try {
+          target.focus();
+        } catch (_) {}
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [coversScreen, phase, responseAttemptKey]);
   useEffect(() => {
     setSubmitError('');
     if (user && responses && responses[user.uid] !== undefined) {
@@ -905,7 +992,7 @@ const StudentQuizOverlay = React.memo(({
     } catch (error) {
       if (latestAttemptRef.current !== responseAttemptKey) return;
       setDeliveryStatus('receipt');
-      setSubmitError('Your answer could not be sent. Your participation is still recorded; try again when connected.');
+      setSubmitError(t('quiz.live_student.retry_failed') || 'Your answer could not be sent. Your participation is still recorded; try again when connected.');
     } finally {
       if (sendingRef.current === responseAttemptKey) sendingRef.current = '';
     }
@@ -968,7 +1055,7 @@ const StudentQuizOverlay = React.memo(({
       onClick: () => setIsLocallyDismissed(false),
       className: "fixed bottom-4 right-4 z-[1000] min-h-11 rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white shadow-2xl",
       "data-allo-ui-modal": "student-quiz-return"
-    }, "Return to live quiz");
+    }, t('quiz.live_student.return_to_quiz') || 'Return to live quiz');
   }
   const styles = getModeStyles();
   const getTeamBadgeColor = color => {
@@ -989,6 +1076,26 @@ const StudentQuizOverlay = React.memo(({
   const battleEnded = mode === 'boss-battle' && ['boss-defeated', 'class-defeated', 'battle-complete'].includes(phase);
   const correctAnswerIndex = isUnscoredLiveQuestion ? -1 : resolveLiveQuizCorrectOptionIndex(currentQuestion, liveOptions);
   const isCorrect = isRevealed && hasAnswered && correctAnswerIndex >= 0 && selectedOptionIndex === correctAnswerIndex;
+  // A receipt-only answer never reached the teacher, so it is never scored. For
+  // single-answer choice items the student may still compare the choice kept on
+  // this device with the revealed key; the wording says it was not recorded.
+  const receiptSelfCheck = (() => {
+    if (!isRevealed || !hasAnswered || deliveryStatus !== 'receipt' || isAdvancedLiveQuestion || isUnscoredLiveQuestion) return null;
+    if (correctAnswerIndex < 0 || !Number.isInteger(selectedOptionIndex) || selectedOptionIndex < 0 || selectedOptionIndex >= liveOptions.length) return null;
+    if (selectedOptionIndex === correctAnswerIndex) return {
+      matched: true,
+      text: t('quiz.live_student.self_check_matched') || 'Your answer matched the correct answer. It was not recorded because it did not reach your teacher.'
+    };
+    const optionLabel = idx => String.fromCharCode(65 + idx) + ' (' + liveOptions[idx] + ')';
+    const params = {
+      answer: optionLabel(correctAnswerIndex),
+      choice: optionLabel(selectedOptionIndex)
+    };
+    return {
+      matched: false,
+      text: fillLiveCopy(t('quiz.live_student.self_check_different', params) || 'The correct answer was {answer}. You chose {choice}. This was not recorded.', params)
+    };
+  })();
   const submittedAdvancedAnswer = getLiveQuizSubmittedAnswer(submittedResponse);
   const advancedStatus = submittedAdvancedAnswer && typeof submittedAdvancedAnswer.status === 'string' ? submittedAdvancedAnswer.status : hasAnswered ? 'submitted' : 'no-response';
   const normalizedBossPhase = String(bossStats?.phaseName || 'watchful').trim().toLowerCase().replace(/\s+/g, '_');
@@ -1049,20 +1156,49 @@ const StudentQuizOverlay = React.memo(({
     type: "button",
     onClick: () => setIsLocallyDismissed(true),
     className: "shrink-0 min-h-11 rounded-lg border-2 border-white/70 bg-slate-950/90 px-3 py-2 text-sm font-bold text-white shadow-lg",
-    "aria-label": "Leave live quiz view"
-  }, "Minimize")), /*#__PURE__*/React.createElement("div", {
+    "aria-label": t('quiz.live_student.minimize_aria') || 'Leave live quiz view'
+  }, t('quiz.live_student.minimize') || 'Minimize')), connectionStatus && (() => {
+    const noticeText = {
+      connecting: t('live_connection.connecting'),
+      retrying: t('live_connection.retrying'),
+      failed: t('live_connection.failed'),
+      access: t('live_connection.access'),
+      sign_in: t('live_connection.sign_in'),
+      'mailbox-stalled': t('live_connection.retrying'),
+      'host-paused': t('live_connection.host_paused') || 'Teacher connection paused — keeping your place while AlloFlow reconnects.',
+      'host-stale': t('live_connection.host_stale') || 'Teacher status check is stale - the live session may still be connected. Your work stays on this device.'
+    }[connectionStatus];
+    if (!noticeText) return null;
+    const canReconnect = ['retrying', 'failed', 'access', 'sign_in', 'mailbox-stalled'].includes(connectionStatus);
+    const isHostNotice = connectionStatus === 'host-paused' || connectionStatus === 'host-stale';
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
+      "data-quiz-connection-notice": connectionStatus,
+      className: "shrink-0 flex flex-wrap items-center justify-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm font-semibold text-amber-950"
+    }, /*#__PURE__*/React.createElement("span", null, noticeText), canReconnect && typeof onConnectionAction === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => onConnectionAction('reconnect'),
+      className: "min-h-11 rounded-lg bg-amber-900 px-3 py-2 text-sm font-bold text-white hover:bg-amber-950"
+    }, t('live_connection.reconnect') || 'Reconnect'), isHostNotice && typeof onConnectionAction === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => onConnectionAction('dismiss'),
+      "aria-label": t('live_connection.dismiss_aria') || 'Dismiss teacher status warning',
+      className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100"
+    }, t('live_connection.dismiss') || 'Dismiss'));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow min-h-0 flex flex-col items-center justify-start p-4 sm:p-6 text-center overflow-y-auto"
   }, battleEnded && /*#__PURE__*/React.createElement("section", {
-    "aria-label": "Battle result",
+    "aria-label": t('quiz.live_student.battle_result') || 'Battle result',
     className: "mb-5 w-full max-w-3xl shrink-0 rounded-2xl border border-indigo-300 bg-indigo-950 p-5 text-left"
   }, /*#__PURE__*/React.createElement("h3", {
     role: "status",
     className: "text-2xl font-black text-white"
-  }, phase === 'boss-defeated' ? 'Class victory!' : phase === 'battle-complete' ? 'Battle complete' : 'A chance to regroup'), /*#__PURE__*/React.createElement("p", {
+  }, phase === 'boss-defeated' ? t('quiz.live_student.class_victory') || 'Class victory!' : phase === 'battle-complete' ? t('quiz.live_student.battle_complete') || 'Battle complete' : t('quiz.live_student.regroup') || 'A chance to regroup'), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm leading-relaxed text-indigo-100"
-  }, bossStats?.endReason === 'no-scored-items' ? 'These questions were for discussion or teacher review. No battle score was assigned.' : bossStats?.endReason === 'questions-complete' ? 'All questions are complete. The result compares the percentage of health remaining; ties favor the class.' : phase === 'boss-defeated' ? 'Your class defeated the monster together.' : 'Use the explanation below to plan your next attempt together.'), /*#__PURE__*/React.createElement("p", {
+  }, bossStats?.endReason === 'no-scored-items' ? t('quiz.live_student.end_no_scored') || 'These questions were for discussion or teacher review. No battle score was assigned.' : bossStats?.endReason === 'questions-complete' ? t('quiz.live_student.end_questions_complete') || 'All questions are complete. The result compares the percentage of health remaining; ties favor the class.' : phase === 'boss-defeated' ? t('quiz.live_student.end_victory') || 'Your class defeated the monster together.' : t('quiz.live_student.end_regroup') || 'Use the explanation below to plan your next attempt together.'), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm text-indigo-100"
-  }, "Review the last question below. Your teacher can restart the battle.")), mode === 'boss-battle' && bossStats && /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.live_student.end_review_last') || 'Review the last question below. Your teacher can restart the battle.')), mode === 'boss-battle' && bossStats && /*#__PURE__*/React.createElement("div", {
     className: "mb-5 w-full max-w-lg shrink-0 flex flex-col items-center animate-in fade-in zoom-in duration-700 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: `relative mb-6 ${isRevealed && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`
@@ -1102,11 +1238,19 @@ const StudentQuizOverlay = React.memo(({
     bonus: bossStats.lastComboBonus
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"
-  }, /*#__PURE__*/React.createElement("span", null, bossStats.name || "Boss", " HP"), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, fillLiveCopy(t('quiz.live_student.boss_hp', {
+    name: bossStats.name || t('quiz.live_student.boss_default_name') || 'Boss'
+  }) || '{name} HP', {
+    name: bossStats.name || t('quiz.live_student.boss_default_name') || 'Boss'
+  })), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
-    "aria-label": `${bossStats.name || "Boss"} health`,
+    "aria-label": fillLiveCopy(t('quiz.live_student.boss_health', {
+      name: bossStats.name || t('quiz.live_student.boss_default_name') || 'Boss'
+    }) || '{name} health', {
+      name: bossStats.name || t('quiz.live_student.boss_default_name') || 'Boss'
+    }),
     "aria-valuemin": "0",
     "aria-valuemax": bossStats.maxHP || 1,
     "aria-valuenow": Math.min(bossStats.maxHP || 1, Math.max(0, Math.round(bossStats.currentHP || 0))),
@@ -1145,7 +1289,7 @@ const StudentQuizOverlay = React.memo(({
     className: "mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer font-bold"
-  }, bossStats.roundFeedback.scoringPaused ? 'Battle scoring paused' : t('concept_quest.boss_round_recap', {
+  }, bossStats.roundFeedback.scoringPaused ? t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused' : t('concept_quest.boss_round_recap', {
     accuracy: bossStats.roundFeedback.accuracy
   })), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
@@ -1196,9 +1340,16 @@ const StudentQuizOverlay = React.memo(({
     return /*#__PURE__*/React.createElement("button", {
       key: idx,
       "data-help-key": "quiz_student_likert_tick",
+      "data-autofocus": idx === 0 && !isDisabled ? 'true' : undefined,
       onClick: () => submitQuizResponse(idx),
       disabled: isDisabled,
-      "aria-label": `${tickLabel} of ${liveOptions.length}`,
+      "aria-label": fillLiveCopy(t('quiz.live_student.tick_of', {
+        value: tickLabel,
+        total: liveOptions.length
+      }) || '{value} of {total}', {
+        value: tickLabel,
+        total: liveOptions.length
+      }),
       className: `relative p-4 md:p-6 rounded-2xl font-black text-2xl md:text-3xl transition-all transform duration-200 shadow-xl border-b-4 active:border-b-0 active:translate-y-1 ${btnClass}`
     }, tickLabel);
   })), /*#__PURE__*/React.createElement("p", {
@@ -1241,6 +1392,7 @@ const StudentQuizOverlay = React.memo(({
     return /*#__PURE__*/React.createElement("button", {
       key: idx,
       "data-help-key": "quiz_student_answer_option",
+      "data-autofocus": idx === 0 && !isDisabled ? 'true' : undefined,
       onClick: () => submitQuizResponse(idx),
       disabled: isDisabled,
       "aria-label": String(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + currentQuestion.options_en[idx] : ''),
@@ -1290,9 +1442,9 @@ const StudentQuizOverlay = React.memo(({
     "data-live-confidence-policy": "true"
   }, /*#__PURE__*/React.createElement("legend", {
     className: "px-2 text-sm font-black text-white"
-  }, "How sure were you?"), /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.live_student.confidence_legend') || 'How sure were you?'), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-2 sm:grid-cols-3"
-  }, [['knew', 'I knew this'], ['guessed', 'I made an informed guess'], ['no-idea', 'I was not sure']].map(([value, label]) => /*#__PURE__*/React.createElement("button", {
+  }, [['knew', t('quiz.live_student.confidence_knew') || 'I knew this'], ['guessed', t('quiz.live_student.confidence_guessed') || 'I made an informed guess'], ['no-idea', t('quiz.live_student.confidence_unsure') || 'I was not sure']].map(([value, label]) => /*#__PURE__*/React.createElement("button", {
     key: value,
     type: "button",
     "aria-pressed": selectedConfidence === value,
@@ -1300,14 +1452,14 @@ const StudentQuizOverlay = React.memo(({
     className: `min-h-11 rounded-xl border px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none ${selectedConfidence === value ? 'border-cyan-200 bg-cyan-300 text-slate-950' : 'border-white/30 bg-white text-slate-900 hover:border-cyan-300'}`
   }, label))), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[11px] text-cyan-100"
-  }, "This helps your teacher spot secure knowledge and misconceptions. It never changes correctness or points.")), deliveryStatus === 'receipt' && phase === 'answering' && /*#__PURE__*/React.createElement("button", {
+  }, t('quiz.live_student.confidence_help') || 'This helps your teacher spot secure knowledge and misconceptions. It never changes correctness or points.')), deliveryStatus === 'receipt' && phase === 'answering' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: retryQuizResponse,
     className: "mt-4 min-h-11 rounded-xl border border-cyan-200 bg-cyan-900 px-4 py-2 font-bold text-white"
-  }, "Retry sending answer"), ['idle', 'lobby'].includes(phase) && /*#__PURE__*/React.createElement("p", {
+  }, t('quiz.live_student.retry_send') || 'Retry sending answer'), ['idle', 'lobby'].includes(phase) && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-6 rounded-xl bg-white/10 p-4 font-bold text-white"
-  }, "Waiting for your teacher to start this question."), /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.live_student.waiting_for_teacher') || 'Waiting for your teacher to start this question.'), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 min-h-16 shrink-0 flex flex-col items-center justify-center gap-4 w-full mb-8"
   }, phase === 'answering' && (hasAnswered ? /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -1321,9 +1473,9 @@ const StudentQuizOverlay = React.memo(({
     className: "animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 motion-reduce:animate-none"
   }), /*#__PURE__*/React.createElement("span", {
     className: "relative inline-flex rounded-full h-3 w-3 bg-green-500"
-  })), deliveryStatus === 'sending' ? 'Sending your response…' : deliveryStatus === 'receipt' ? 'Participation recorded. Your answer has not reached the teacher for scoring.' : t('quiz.status.answer_sent')) : /*#__PURE__*/React.createElement("div", {
+  })), deliveryStatus === 'sending' ? t('quiz.live_student.sending') || 'Sending your response…' : deliveryStatus === 'receipt' ? t('quiz.live_student.receipt_only') || 'Participation recorded. Your answer has not reached the teacher for scoring.' : t('quiz.status.answer_sent')) : /*#__PURE__*/React.createElement("div", {
     className: "text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse motion-reduce:animate-none"
-  }, isAdvancedLiveQuestion ? 'Complete and submit your response' : t('quiz.status.choose_option'))), isRevealed && isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("div", {
+  }, isAdvancedLiveQuestion ? t('quiz.live_student.complete_and_submit') || 'Complete and submit your response' : t('quiz.status.choose_option'))), isRevealed && isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -1332,26 +1484,20 @@ const StudentQuizOverlay = React.memo(({
     className: "w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, hasAnswered ? t('quiz.poll_completed') || 'Thanks for sharing your take.' : 'This opinion prompt has closed.'))), isRevealed && (!hasAnswered || deliveryStatus === 'receipt') && /*#__PURE__*/React.createElement("p", {
+  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, hasAnswered ? t('quiz.poll_completed') || 'Thanks for sharing your take.' : t('quiz.live_student.poll_closed') || 'This opinion prompt has closed.'))), isRevealed && (!hasAnswered || deliveryStatus === 'receipt') && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mb-4 rounded-xl border border-slate-400 bg-slate-800 p-4 text-slate-100"
-  }, deliveryStatus === 'receipt' ? 'Your teacher received participation only. This answer was not scored.' : 'No answer was submitted for this question. Review it with your class.'), isRevealed && !isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("section", {
-    "aria-label": "Answer review",
-    className: "mb-4 w-full max-w-2xl rounded-xl border border-indigo-300 bg-indigo-950 p-4 text-left text-indigo-100"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-bold text-white"
-  }, "Review the answer"), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-sm"
-  }, window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {}) || 'Discuss the response with your teacher.'), (currentQuestion?.explanation || currentQuestion?.rationale) && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed"
-  }, currentQuestion.explanation || currentQuestion.rationale)), isRevealed && isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
+  }, deliveryStatus === 'receipt' ? t('quiz.live_student.receipt_not_scored') || 'Your teacher received participation only. This answer was not scored.' : t('quiz.live_student.no_answer_submitted') || 'No answer was submitted for this question. Review it with your class.', receiptSelfCheck && /*#__PURE__*/React.createElement("span", {
+    "data-live-quiz-self-check": receiptSelfCheck.matched ? 'matched' : 'different',
+    className: "mt-2 block font-semibold"
+  }, receiptSelfCheck.text)), isRevealed && isAdvancedLiveQuestion && deliveryStatus !== 'receipt' && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "flex w-full max-w-2xl items-center justify-center px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: `w-full rounded-3xl border-2 px-8 py-6 text-center text-lg font-bold shadow-xl ${advancedStatus === 'correct' ? 'border-green-300 bg-green-50 text-green-900' : advancedStatus === 'partially-correct' ? 'border-amber-300 bg-amber-50 text-amber-950' : advancedStatus === 'incorrect' ? 'border-red-300 bg-red-50 text-red-900' : 'border-indigo-300 bg-indigo-50 text-indigo-950'}`
-  }, advancedStatus === 'correct' ? 'Correct response.' : advancedStatus === 'partially-correct' ? 'Partially correct response.' : advancedStatus === 'incorrect' ? 'This response needs another look.' : advancedStatus === 'no-response' ? 'No response was submitted.' : 'Response submitted for review.')), isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
+  }, advancedStatus === 'correct' ? t('quiz.live_student.response_correct') || 'Correct response.' : advancedStatus === 'partially-correct' ? t('quiz.live_student.response_partial') || 'Partially correct response.' : advancedStatus === 'incorrect' ? t('quiz.live_student.response_incorrect') || 'This response needs another look.' : advancedStatus === 'no-response' ? t('quiz.live_student.response_none') || 'No response was submitted.' : t('quiz.live_student.response_submitted') || 'Response submitted for review.')), isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -1375,8 +1521,19 @@ const StudentQuizOverlay = React.memo(({
     damage: bossStats?.lastDamage || 0
   }) : t('quiz.status.result_miss', {
     hp: bossStats?.lastClassDamage || 0
-  }) : mode === 'team-showdown' ? isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect') : isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect'))), currentQuestion.factCheck && /*#__PURE__*/React.createElement("div", {
-    className: "bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full text-left relative overflow-hidden z-20"
+  }) : mode === 'team-showdown' ? isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect') : isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect')))), isRevealed && !isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("section", {
+    "aria-label": t('quiz.live_student.answer_review') || 'Answer review',
+    "data-quiz-answer-review": "true",
+    className: "w-full max-w-2xl rounded-xl border border-indigo-300 bg-indigo-950 p-4 text-left text-indigo-100"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-white"
+  }, t('quiz.live_student.review_answer') || 'Review the answer'), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm"
+  }, window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {}) || t('quiz.live_student.discuss_with_teacher') || 'Discuss the response with your teacher.'), (currentQuestion?.explanation || currentQuestion?.rationale) && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed"
+  }, currentQuestion.explanation || currentQuestion.rationale)), isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && liveExplanation && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full max-w-2xl text-left relative overflow-hidden",
+    "data-quiz-explanation": "true"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
   }), /*#__PURE__*/React.createElement("h4", {
@@ -1384,16 +1541,16 @@ const StudentQuizOverlay = React.memo(({
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     className: "fill-yellow-400 text-yellow-500"
-  }), " Explanation"), /*#__PURE__*/React.createElement("div", {
+  }), " ", t('quiz.live_student.explanation') || 'Explanation'), /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap",
     dangerouslySetInnerHTML: {
-      __html: String(currentQuestion.factCheck).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
+      __html: liveExplanation.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
     }
   }), showTranslated && currentQuestion.factCheck_en && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 italic whitespace-pre-wrap"
-  }, currentQuestion.factCheck_en)))))));
+  }, currentQuestion.factCheck_en))))));
 });
 const TeacherGate = React.memo(({
   isOpen,

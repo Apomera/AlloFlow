@@ -1,0 +1,41 @@
+{
+  "checks": [
+    "An unfinished dish exposes the preparation requirement and cannot record a sauce check.",
+    "Tapping or releasing an incomplete spoon stroke records no observation or cooking change.",
+    "Escape, sideways motion and pointer cancellation restore the spoon and leave saved evidence unchanged.",
+    "A complete draw and release records one canonical inspection. A dry sauce leaves an open native track and thick spoon patches without adding time or moisture.",
+    "Native observations survive reload. The close-up focuses the equivalent keyboard check and records the same sauce evidence.",
+    "Loose sauce shows a quickly closing track and a thin coating; reduced motion immediately presents the final observation.",
+    "After a splash, the check reveals unmixed liquid. Folding marks the old check stale; a fresh check keeps the previous reading for comparison.",
+    "A four-serving tomato dish in a wide pan on the trivet animates gradual closure at its actual position. Animation never advances cooking or alters evidence.",
+    "Picking up the checking spoon pauses a running kitchen throughout the stroke.",
+    "Real touch draws and records one sauce check. The scene and observation card fit a 390px phone and pass accessibility checks.",
+    "Serving locks sauce changes until all spoonfuls have returned to the pan.",
+    "Replay reconstructs the native sauce observation and keeps inspection controls read-only.",
+    "Compact and forced-color layouts pass. Graphics loss cancels a draft stroke and leaves the keyboard inspection usable."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop native sauce check",
+      "violations": []
+    },
+    {
+      "name": "390px touch sauce check",
+      "violations": []
+    },
+    {
+      "name": "320px sauce check",
+      "violations": []
+    },
+    {
+      "name": "Forced-color sauce check",
+      "violations": []
+    },
+    {
+      "name": "Graphics-loss sauce check",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

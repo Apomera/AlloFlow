@@ -1,0 +1,193 @@
+{
+  "at": "2026-09-30T21:18:01.862Z",
+  "scope": "report-fix working files, not a clean repository or deployment",
+  "startHead": "ea9138e5d74fe2ec7c166c19ed0dabb056869cc5",
+  "endHead": "ea9138e5d74fe2ec7c166c19ed0dabb056869cc5",
+  "originMain": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "ahead": 78,
+  "dirtyPaths": 3239,
+  "trackedChangedPaths": 1123,
+  "untrackedPaths": 2116,
+  "files": {
+    "AlloFlowANTI.txt": {
+      "bytes": 2834456,
+      "sha256": "484cc4ef35df943523671cc328eced89d8a59848bc52304a0f6c3b3e8f620f2a"
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "bytes": 2834456,
+      "sha256": "484cc4ef35df943523671cc328eced89d8a59848bc52304a0f6c3b3e8f620f2a"
+    },
+    "desktop/web-app/src/App.jsx": {
+      "bytes": 2834456,
+      "sha256": "484cc4ef35df943523671cc328eced89d8a59848bc52304a0f6c3b3e8f620f2a"
+    },
+    "view_simplified_source.jsx": {
+      "bytes": 601772,
+      "sha256": "c85096b0b6f81330f41dd6f37de9ced5dcf86c7744e34274a32372457deaa2ac"
+    },
+    "text_utility_helpers_source.jsx": {
+      "bytes": 34696,
+      "sha256": "f7edee0bf6826f8bd4d8a9ccc1897229241ed2b1547134acf5be272afeaa4bba"
+    },
+    "generate_dispatcher_source.jsx": {
+      "bytes": 635572,
+      "sha256": "151cba59b5aa17ba0ecada62adba62e1aafb6878405a656a8cd7272d7358888e"
+    },
+    "generation_helpers_source.jsx": {
+      "bytes": 310298,
+      "sha256": "70ddbe144a95fcca69f27410dc25d6458137c513de97bda112dd96d49bfc94e4"
+    },
+    "tts_source.jsx": {
+      "bytes": 114606,
+      "sha256": "1084d5e7fa9fe22596587e3fd796692e7dbd3e76e346ccb904921727f8e1019e"
+    },
+    "audio_helpers_source.jsx": {
+      "bytes": 31641,
+      "sha256": "049bb81bb67feeeba57fd97e9f55cfe858dae6bd1343dcf618ac94896478589d"
+    },
+    "read_aloud_audio_service_source.jsx": {
+      "bytes": 82530,
+      "sha256": "1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7"
+    },
+    "read_aloud_artifact_audio_source.jsx": {
+      "bytes": 24479,
+      "sha256": "999355fb1f136c6ef71afd3097cd931a46258304f9a545c91a29253b1cad3008"
+    },
+    "gemini_api_source.jsx": {
+      "bytes": 72058,
+      "sha256": "7f9b20c5accf84b40962dcc4228b60beb5c002d637ac6e00002c35071133e239"
+    },
+    "guided_mode_config_source.jsx": {
+      "bytes": 22750,
+      "sha256": "77dc9de77728f25b6e868be4bf72649828b4a681df4f5f8f1ec15285314cd80a"
+    },
+    "host_handlers_source.jsx": {
+      "bytes": 648275,
+      "sha256": "8c13feb8093aca77589e450011a3f88917939e751e4f9814aa3358ccc7f10888"
+    },
+    "error_reporter_module.js": {
+      "bytes": 56044,
+      "sha256": "cf87a08307ab4a976e6830cbaa0d91e2c1bafe84687b87401debfdbcece2488f"
+    },
+    "tts-server/edge_tts_server.py": {
+      "bytes": 6755,
+      "sha256": "be0c3870be6cd0ae14df314d11b945b7d12f2751091cbc029d213a52257cb619"
+    },
+    "tts-server/piper_server.py": {
+      "bytes": 9123,
+      "sha256": "09c96bad64d7c13ca26fb9f117e609988da4491649db798bab460291d0d3661d"
+    },
+    "docker/edge-tts-server/server.py": {
+      "bytes": 3458,
+      "sha256": "8d67a15d71399051e48868fac92310e116943284652f389edcae680a809100fc"
+    },
+    "reflective_journal.md": {
+      "bytes": 468659,
+      "sha256": "2155d77b79337c0f2f78220bbdf7e78faa239bca3426cbf2edea117de125810a"
+    },
+    "AGENT_HANDOFF.md": {
+      "bytes": 689827,
+      "sha256": "015c3f328b74344f815d9670993792099240fe9cd322876767c2b82ccfaa6097"
+    },
+    "view_simplified_module.js": {
+      "bytes": 576911,
+      "sha256": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2"
+    },
+    "text_utility_helpers_module.js": {
+      "bytes": 28361,
+      "sha256": "e685d686af7ddda9b67043a351bc254f9fb62de32c116d4dc3d5727eaf6badc5"
+    },
+    "generate_dispatcher_module.js": {
+      "bytes": 635857,
+      "sha256": "f6d0344c1dabcac8715e7c34aed9895d7654a8c6e686077d796167b2bbb26d8f"
+    },
+    "generation_helpers_module.js": {
+      "bytes": 310669,
+      "sha256": "5cc5bed0eb40ba4967ed647e2706eb0626c0fa187665a5893c0724a457f11f80"
+    },
+    "tts_module.js": {
+      "bytes": 103817,
+      "sha256": "47162871af726c77c46f90ab32a3f1ee7e1b7a67d85d7df077562f9be7086991"
+    },
+    "audio_helpers_module.js": {
+      "bytes": 31965,
+      "sha256": "d650da0c15522519ba2fce312180aa2641d8b189d6c67c0b61477eca805e968e"
+    },
+    "read_aloud_audio_service_module.js": {
+      "bytes": 82717,
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047"
+    },
+    "read_aloud_artifact_audio_module.js": {
+      "bytes": 24668,
+      "sha256": "dda3cff2cae7f0a03364ff953e4e5592198107d45eb744b3c220bd72d4a14e6a"
+    },
+    "gemini_api_module.js": {
+      "bytes": 72103,
+      "sha256": "c31781fb75fec8167f0e6cc83a72d7bfd969bff852da0ae5eeaa070ed57a3ed4"
+    },
+    "guided_mode_config_module.js": {
+      "bytes": 22969,
+      "sha256": "a4fb306da9240ef2dd470f14e8afe004b355ef03c6cd6769f643683343d0bf1f"
+    },
+    "host_handlers_module.js": {
+      "bytes": 513291,
+      "sha256": "d2ca5eb27227c62611044e91a5ace3b628c8ee31a80c29f5188ae4000b7e99b1"
+    },
+    "desktop/web-app/public/error_reporter_module.js": {
+      "bytes": 56044,
+      "sha256": "cf87a08307ab4a976e6830cbaa0d91e2c1bafe84687b87401debfdbcece2488f"
+    },
+    ".github/workflows/verify.yml": {
+      "bytes": 23773,
+      "sha256": "93b638c5ae04408b00c2b0e514f1af53b8b6104ce6a4ce77646b6a2e57f9ac9d"
+    },
+    "deploy.sh": {
+      "bytes": 44810,
+      "sha256": "41c7db5876fa97f6b62da82a1b2366356c51b5f87ef7bc3c07fb7cff54e7bbec"
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "bytes": 576911,
+      "sha256": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2"
+    },
+    "desktop/web-app/public/text_utility_helpers_module.js": {
+      "bytes": 28361,
+      "sha256": "e685d686af7ddda9b67043a351bc254f9fb62de32c116d4dc3d5727eaf6badc5"
+    },
+    "desktop/web-app/public/generate_dispatcher_module.js": {
+      "bytes": 635857,
+      "sha256": "f6d0344c1dabcac8715e7c34aed9895d7654a8c6e686077d796167b2bbb26d8f"
+    },
+    "desktop/web-app/public/generation_helpers_module.js": {
+      "bytes": 310669,
+      "sha256": "5cc5bed0eb40ba4967ed647e2706eb0626c0fa187665a5893c0724a457f11f80"
+    },
+    "desktop/web-app/public/tts_module.js": {
+      "bytes": 103817,
+      "sha256": "47162871af726c77c46f90ab32a3f1ee7e1b7a67d85d7df077562f9be7086991"
+    },
+    "desktop/web-app/public/audio_helpers_module.js": {
+      "bytes": 31965,
+      "sha256": "d650da0c15522519ba2fce312180aa2641d8b189d6c67c0b61477eca805e968e"
+    },
+    "desktop/web-app/public/read_aloud_audio_service_module.js": {
+      "bytes": 82717,
+      "sha256": "961229e6ff3b2f0b330153520935616dac4b7a36f119011f29c1fbc92f34c047"
+    },
+    "desktop/web-app/public/read_aloud_artifact_audio_module.js": {
+      "bytes": 24668,
+      "sha256": "dda3cff2cae7f0a03364ff953e4e5592198107d45eb744b3c220bd72d4a14e6a"
+    },
+    "desktop/web-app/public/gemini_api_module.js": {
+      "bytes": 72103,
+      "sha256": "c31781fb75fec8167f0e6cc83a72d7bfd969bff852da0ae5eeaa070ed57a3ed4"
+    },
+    "desktop/web-app/public/guided_mode_config_module.js": {
+      "bytes": 22969,
+      "sha256": "a4fb306da9240ef2dd470f14e8afe004b355ef03c6cd6769f643683343d0bf1f"
+    },
+    "desktop/web-app/public/host_handlers_module.js": {
+      "bytes": 513291,
+      "sha256": "d2ca5eb27227c62611044e91a5ace3b628c8ee31a80c29f5188ae4000b7e99b1"
+    }
+  }
+}

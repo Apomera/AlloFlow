@@ -1,0 +1,38 @@
+[
+  {
+    "name": "ReadingGlossEditor",
+    "unchanged": true,
+    "capturedSha256": "816abed6499ff43aafa014cc2b10655a648fb4162c186582ff16733df704b803",
+    "currentSha256": "816abed6499ff43aafa014cc2b10655a648fb4162c186582ff16733df704b803"
+  },
+  {
+    "name": "simplifiedText",
+    "unchanged": true,
+    "capturedSha256": "1b85a7b1d43ee55f5f0b67d52e4ee85f17b21c4c969f428b27905f44158dd421",
+    "currentSha256": "1b85a7b1d43ee55f5f0b67d52e4ee85f17b21c4c969f428b27905f44158dd421"
+  },
+  {
+    "name": "findReadingGlossOccurrences",
+    "unchanged": true,
+    "capturedSha256": "6c7c22715b6a7e14728491c775bd3e4733a0b0dd24453cdd6c9e9c9eac0f0591",
+    "currentSha256": "6c7c22715b6a7e14728491c775bd3e4733a0b0dd24453cdd6c9e9c9eac0f0591"
+  },
+  {
+    "name": "readingGlossContext",
+    "unchanged": true,
+    "capturedSha256": "a3dc0cf5413eaf2c2ac5931211e9d2441889593e418f886fd7f825e88cccb498",
+    "currentSha256": "a3dc0cf5413eaf2c2ac5931211e9d2441889593e418f886fd7f825e88cccb498"
+  },
+  {
+    "name": "AlloFlowANTI.txt translator",
+    "unchanged": true,
+    "capturedSha256": "50e259f1861be1de61e047c9cf4aff18c6407c3e3b282a27cfc835fd9b1afb45",
+    "currentSha256": "50e259f1861be1de61e047c9cf4aff18c6407c3e3b282a27cfc835fd9b1afb45"
+  },
+  {
+    "name": "desktop/web-app/src/AlloFlowANTI.txt translator",
+    "unchanged": true,
+    "capturedSha256": "50e259f1861be1de61e047c9cf4aff18c6407c3e3b282a27cfc835fd9b1afb45",
+    "currentSha256": "50e259f1861be1de61e047c9cf4aff18c6407c3e3b282a27cfc835fd9b1afb45"
+  }
+]

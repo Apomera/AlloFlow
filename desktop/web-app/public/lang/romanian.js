@@ -1,4 +1,1165 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Zonele emoțiilor",
+          "desc": "Identifică-ți zona (albastră, verde, galbenă, roșie) și explorează strategii de autoreglare."
+        },
+        "emotions": {
+          "label": "Exploratorul emoțiilor",
+          "desc": "Construiește-ți vocabularul emoțional — identifică, numește și evaluează intensitatea emoțiilor."
+        },
+        "strengths": {
+          "label": "Descoperitorul de puncte forte",
+          "desc": "Descoperă-ți punctele forte, talentele și zonele în care poți crește și reflectează asupra lor."
+        },
+        "viaStrengths": {
+          "label": "Punctele forte VIA",
+          "desc": "O autosortare simplificată a celor 24 de puncte forte de caracter VIA (Peterson și Seligman, 2004), cu 6 virtuți și identificarea punctelor forte definitorii. Pentru chestionarul oficial gratuit, mergi pe viacharacter.org. Practică reflexivă, nu instrument psihometric."
+        },
+        "wheelOfLife": {
+          "label": "Roata vieții",
+          "desc": "Diagramă radar cu 8 domenii ale vieții, fiecare evaluat de la 1 la 10. Un autoportret care arată unde viața ta este plină acum și unde este săracă. Din tradiția coachingului (Meyer, anii 1960; Co-Active Coaching). Instrument euristic; nu este un test psihometric validat."
+        },
+        "perma": {
+          "label": "Bunăstarea PERMA",
+          "desc": "Autoverificare pe cele cinci domenii PERMA, plus o reflecție despre sănătate: emoții pozitive, implicare, relații, sens, realizări și sănătate. 24 de itemi, rezultat sub formă de grafic cu bare, reflecție pe fiecare domeniu. De la Seligman; se potrivește cu Punctele forte VIA."
+        },
+        "coping": {
+          "label": "Trusa de strategii de adaptare",
+          "desc": "Explorează și exersează strategii de adaptare — respirație, ancorare, mișcare și altele."
+        },
+        "windowOfTolerance": {
+          "label": "Fereastra de toleranță",
+          "desc": "Instrument vizual de conștientizare de sine, informat despre traumă. Trei zone de activare (hiperactivare, fereastra, hipoactivare). Notează-ți semnele personale pentru fiecare zonă, factorii declanșatori și practicile care te aduc înapoi. Bazat pe Siegel (1999); standard în școlile informate despre traumă."
+        },
+        "stressBucket": {
+          "label": "Găleata stresului",
+          "desc": "Un instrument vizual al capacității. Factorii de stres se varsă înăuntru; practicile de adaptare îi scurg afară. Vezi dacă ce intră și ce iese sunt în echilibru. Instrument din tradiția CBT (Brabban și Turkington, 2002), folosit în NHS IAPT și de Mind UK. Onest în privința factorilor de stres structurali."
+        },
+        "tipp": {
+          "desc": "Patru abilități DBT de supraviețuire în criză (temperatură, exercițiu intens, respirație ritmată, relaxare musculară asociată cu respirația) pentru suferința ACUTĂ. Calmează corpul în 30 de secunde până la 10 minute, înainte să încerci să găsești o ieșire gândind. Abilitate fundamentală de toleranță la suferință din DBT (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Trusa pentru anxietate",
+          "desc": "Abilități bazate pe CBT pentru lucrul cu anxietatea: psihoeducație, arborele îngrijorărilor (îngrijorare productivă vs. neproductivă), timp programat pentru îngrijorare, decatastrofizare, tehnici de ancorare și un inventar al tiparelor personale. De la Beck Institute, AACAP, ADAA. Se potrivește cu Fereastra de toleranță și Găleata stresului."
+        },
+        "sleep": {
+          "label": "Somn și odihnă",
+          "desc": "Somnul adolescenților este o criză de sănătate publică. Cele 8-10 ore recomandate de AAP sunt rareori atinse. Psihoeducație, autoverificare, 8 obstacole frecvente + ce funcționează pentru fiecare și un jurnal de somn. De la AAP, CDC, NSF și cercetările lui Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Reglare senzorială",
+          "desc": "Instrument care afirmă neurodiversitatea, pentru a-ți înțelege propria procesare senzorială în cele 8 sisteme senzoriale. Construiește-ți un profil personal, planifică o dietă senzorială, identifică adaptări școlare. Limbaj centrat pe identitate; construit pe lucrările lui Ayres / Dunn și pe cercetări conduse de persoane autiste."
+        },
+        "bigFeelings": {
+          "label": "Emoții mari (Furia)",
+          "desc": "Psihoeducație și dezvoltarea abilităților, specific pentru furie. Furia ca informație, nu ca problemă; agresivitatea reactivă este capcana. Construit pe tradiția Coping Power a lui Lochman + baza de dovezi CBT pentru furie. Jurnal al neplăcerilor, inventar al factorilor declanșatori, momentul alegerii, metode personalizate de calmare."
+        },
+        "substancePsychoed": {
+          "label": "Consumul de substanțe",
+          "desc": "Psihoeducație despre substanțe din perspectiva reducerii riscurilor (alcool, canabis, nicotină, opioide, stimulente, benzodiazepine, halucinogene). Riscuri pentru creierul adolescentului. Informații despre naloxonă. NU este un instrument de screening, NU se bazează doar pe abstinență. Trimitere clară către SAMHSA. Spațiu de reflecție aliniat cu interviul motivațional (MI)."
+        },
+        "behavioralActivation": {
+          "label": "Activare comportamentală",
+          "desc": "Planifică activități mici, fă-le și evaluează-le pentru stăpânire (te-ai simțit în stare) și plăcere (ți-a plăcut). Observă ce ți se potrivește și alege un pas următor ușor de făcut. Această activitate de planificare se inspiră din activarea comportamentală; nu oferă și nu evaluează un tratament terapeutic."
+        },
+        "mindfulness": {
+          "label": "Colțul de mindfulness",
+          "desc": "Exerciții ghidate de respirație, scanări corporale și activități de mindfulness."
+        },
+        "quietQuestions": {
+          "label": "Întrebări liniștite",
+          "desc": "Practică săptămânală de explorare interioară. Rămâi cu o singură întrebare deschisă o săptămână întreagă. 20 de întrebări care se rotesc, despre atenție, dor, dificultate, conexiune și devenire. Inspirat din tradiția întrebărilor quakere; laic și fără prescripții."
+        },
+        "orientations": {
+          "label": "Orientări",
+          "desc": "Moduri de a trăi, comparate. Opt tradiții filozofice (daoismul, zen, stoicismul, existențialismul, etica confucianistă, Ubuntu, relaționalitatea indigenă, etica grijii) comparate pe marile întrebări ale vieții. Fără prescripții; fiecare tradiție are un panou onest „ce nu poate face bine”."
+        },
+        "thoughtRecord": {
+          "label": "Fișa gândurilor CBT",
+          "desc": "Fișa de înregistrare a gândurilor cu 7 coloane din terapia cognitiv-comportamentală. Parcurge un moment greu: situația, emoția, gândul automat, dovezile pro și contra, gândul echilibrat, reevaluarea emoției. Salvează înregistrările în timp. De la Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Grila cost-beneficiu",
+          "desc": "O grilă de decizie 2x2 din terapia dialectic-comportamentală. Avantajele și dezavantajele unei decizii, pe termen scurt și lung, una lângă alta. Utilă când emoția te împinge spre o singură opțiune. De la Linehan."
+        },
+        "sfbt": {
+          "label": "Centrat pe soluții",
+          "desc": "Terapia scurtă centrată pe soluții: Întrebarea miracol, scalarea, căutarea excepțiilor și complimentele. Privește înainte, nu înapoi, și întreabă ce funcționează deja. Cea mai folosită tehnică în consilierea școlară din SUA. De la de Shazer și Berg."
+        },
+        "careConstellations": {
+          "label": "Constelații de grijă",
+          "desc": "O hartă a relațiilor: cine are grijă de tine și de cine ai tu grijă. Respinge cadrul individualist sau consumerist al „autoîngrijirii”. Include o perspectivă filozofică substanțială despre grija de sine vs. autoîngrijire (Foucault, grecescul epimeleia heautou, Audre Lorde, eudaimonic vs. hedonic)."
+        },
+        "ecomap": {
+          "label": "Ecoharta",
+          "desc": "Hartă a relațiilor persoanei cu mediul ei. Tu în centru; cele 12 sisteme majore ale vieții în jurul tău. Fiecare legătură evaluată după putere, stres și direcția energiei. Instrument standard în asistența socială de la Hartman (1978); folosit în IEP-uri, în evaluarea familiei și pentru inventarul personal al vieții."
+        },
+        "circlesOfSupport": {
+          "label": "Cercuri de sprijin",
+          "desc": "Patru cercuri concentrice de relații: intimitate, prietenie, participare, schimb (plătit). Arată cine este cu adevărat aproape, inclusiv când persoane plătite ocupă cercurile interioare. De la Forest și Snow, Inclusion Press."
+        },
+        "genogram": {
+          "label": "Genograma",
+          "desc": "Hartă a familiei pe trei generații, cu simbolurile standard ale sistemelor familiale. Doar pentru înțelegerea de sine (NU este o evaluare clinică). Bazată pe teoria sistemelor familiale a lui Bowen și pe notația McGoldrick-Gerson-Petry. Include îndrumări vizibile pentru o abordare sigură."
+        },
+        "griefLoss": {
+          "label": "Doliu și pierdere",
+          "desc": "Un însoțitor ghidat pentru doliu. Moartea unei persoane sau a unui animal de companie, schimbări în familie, pierderea unor prieteni, pierderi de identitate, pierderi ambigue — toate contează. Parcurge cele patru sarcini ale doliului descrise de Worden, scrie o scrisoare, planifică ritualuri. Cadru clar de siguranță care trimite la Însoțitor în criză / 988 pentru doliu sever sau complicat."
+        },
+        "traumaPsychoed": {
+          "label": "Înțelegerea traumei",
+          "desc": "Doar psihoeducație (NU este un instrument de screening). Ce este și ce nu este trauma, neurobiologia pe înțelesul tuturor, reacții frecvente reinterpretate ca adaptări, cele 6 principii SAMHSA, tratamente bazate pe dovezi. Pentru elevi și educatori. Include un cadru vizibil de siguranță care explică de ce screeningul fără urmărire ulterioară nu este sigur."
+        },
+        "bodyStory": {
+          "label": "Povestea corpului",
+          "desc": "Instrument de acceptare a corpului și de conectare cu el. NU se concentrează pe greutate, NU are legătură cu dietele, NU este un instrument de screening. Construit pe aprecierea corpului (Tylka), principiile alimentației intuitive și educația media. Include toate corpurile, toate genurile, toate mărimile. Trimitere clară către NEDA pentru tulburările de alimentație."
+        },
+        "sourcesOfStrength": {
+          "label": "Surse de putere",
+          "desc": "Notează-ți cei 8 factori de protecție. Explorează sprijinul protector inspirat de programul Sources of Strength. Această hartă autoghidată este o adaptare, nu implementarea programului școlar evaluat."
+        },
+        "crisiscompanion": {
+          "label": "Însoțitor în criză",
+          "desc": "Sprijin între colegi și abilități de prevenire a suicidului: ce să faci dacă tu sau un prieten sunteți deprimați, în criză sau vă gândiți să vă faceți rău — cum recunoști semnele, ce să spui (și ce să nu spui), cum spui unui adult de încredere, plus 988 și un plan personal de siguranță. Acces după un avertisment de conținut. Aliniat cu NEDA, AFSP, Sources of Strength și 988. Completarea pentru sprijin acut a instrumentului Surse de putere."
+        },
+        "identitySupport": {
+          "label": "Sprijin pentru identitate",
+          "desc": "Spațiu incluziv și afirmativ pentru identitatea de gen, orientarea sexuală, orientarea romantică și întrebări mai largi despre identitate. Vocabular, dezvoltarea identității, găsirea comunității, siguranța tinerilor trans, îndrumări pentru aliați. Construit pe Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Vocile dizabilității",
+          "desc": "Susținători reali, autiști și cu dizabilități, a căror muncă a modelat și a criticat practica din domeniul dizabilității. Citate, context și o listă de lecturi atent selectată. Construit astfel încât oamenii asupra cărora domeniul a fost „aplicat” să fie în centru, nu mutați într-o bară laterală a unui instrument de științe comportamentale. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Planificatorul de obiective",
+          "desc": "Stabilește obiective SMART, urmărește-ți progresul și sărbătorește etapele atinse."
+        },
+        "howlTracker": {
+          "label": "Monitorul HOWL",
+          "desc": "Autoevaluare a Obiceiurilor de muncă și învățare (HOWL) pentru timpul Crew. Verificări săptămânale, obiective trimestriale, grafic de evoluție, întrebări pentru discuțiile Crew. Aliniat cu cadrul HOWL al EL Education."
+        },
+        "onePageProfile": {
+          "label": "Profil pe o pagină",
+          "desc": "Profil portabil, care se poate tipări și încape pe o pagină. Trei secțiuni: ce plac și admiră oamenii la mine, ce este important pentru mine, cum mă pot sprijini cel mai bine. Document de planificare centrată pe persoană pentru ședințe IEP, tranziții, profesori suplinitori sau Crew. Bazat pe formatul Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Elaborarea planurilor de acțiune). Opt întrebări în ordine (Povestea mea, Visul, Coșmarul, Cine sunt, Darurile, Nevoile, Planul de acțiune, Primii pași). Instrument vizual centrat pe persoană, de la Pearpoint, O'Brien și Forest, Inclusion Press; folosit pe scară largă pentru planificarea tranzițiilor."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Planificarea unor viitoruri alternative cu speranță). Instrument vizual de planificare a viitorului: opt etape, de la Steaua Polară pe termen lung înapoi la primii pași din următoarele două săptămâni. Pearpoint, O'Brien și Forest, Inclusion Press; se potrivește cu MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Valori și acțiune",
+          "desc": "Sortează ce contează, numește-ți valorile principale și transformă-le pe fiecare într-o acțiune mică și concretă în această săptămână. Din terapia prin acceptare și angajament (Hayes); cadrul DNA-V pentru adolescenți. Distincția ACT dintre valori (direcții) și obiective (destinații)."
+        },
+        "careerCompass": {
+          "label": "Busola carierei",
+          "desc": "Explorează cariere pornind de la interesele tale. Autoverificarea RIASEC cu 36 de itemi îți dă un cod Holland din primele trei litere; răsfoiește cariere, cele 16 grupe federale de cariere (Career Clusters) și pași concreți următori (zile de observare la locul de muncă, interviuri informative, CTE, ucenicii). Construit pe cadrul lui Holland; trimite la instrumentul oficial O*NET Interest Profiler de pe mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studioul de autoreprezentare",
+          "desc": "Construiește un plan concret de sprijin școlar pentru întrebări legate de IEP sau 504, adaptări, alegeri privind dezvăluirea și cererea de ajutor de la adulți de încredere."
+        },
+        "perspective": {
+          "label": "Lentila perspectivei",
+          "desc": "Vezi situațiile din puncte de vedere diferite — exersează empatia și asumarea perspectivei celuilalt."
+        },
+        "community": {
+          "label": "Comunitate și cultură",
+          "desc": "Explorează diversitatea, conștientizarea culturală și apartenența la comunitate."
+        },
+        "conflict": {
+          "label": "Rezolvarea conflictelor",
+          "desc": "Exersează un conflict cu miză mică sau ipotetic, cu asumarea perspectivei celuilalt, mesaje la persoana I, dezamorsare și opțiuni de reparare. Dacă cineva nu este în siguranță, implică un adult în loc să negociezi singur."
+        },
+        "social": {
+          "label": "Laboratorul de abilități sociale",
+          "desc": "Exersează abilitățile de conversație, ascultarea activă, limbajul corpului și cooperarea."
+        },
+        "teamwork": {
+          "label": "Atelierul de lucru în echipă",
+          "desc": "Provocări de colaborare și explorarea rolurilor în echipă."
+        },
+        "dearMan": {
+          "desc": "Construiește un scenariu pentru o cerere dificilă în șapte pași: Descrie (Describe), Exprimă (Express), Afirmă (Assert), Întărește (Reinforce), Fii prezent (Mindful), Arată încredere (Appear confident), Negociază (Negotiate). Din eficiența interpersonală DBT (Linehan); cel mai folosit scenariu de comunicare asertivă în consilierea școlară. Se potrivește cu Studioul de autoreprezentare."
+        },
+        "motivationalInterviewing": {
+          "label": "Interviul motivațional",
+          "desc": "Un cadru de conversație pentru a ajuta pe cineva (sau pe tine) să se gândească la o schimbare. Învață abilitățile OARS (întrebări deschise, afirmări, reflecții, rezumate), cele trei rigle și discursul despre schimbare. De la Miller și Rollnick; fundamentul consilierii școlare și al sprijinului între colegi."
+        },
+        "crewProtocols": {
+          "label": "Protocoale Crew",
+          "desc": "O bibliotecă de formate structurate de grup pentru timpul Crew, ora de dirigenție sau ora de clasă: activități de construire a comunității, deschideri, încheieri, cercuri restaurative, protocoale de reflecție, formate de celebrare și ghiduri pentru conversații dificile. Plus o colecție cu toate întrebările Crew din întregul SEL Hub. Construit pe EL Education Crew, practicile restaurative, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Relații sănătoase",
+          "desc": "Spectrul (sănătos / nesănătos / abuziv) pe 8 dimensiuni ale oricărei relații apropiate. Consimțământul în detaliu, prevenirea violenței în relațiile de cuplu, siguranță + linii de ajutor. Construit pe cadrul Loveisrespect / NDVH. Include persoanele queer, neurodivergente și cu dizabilități."
+        },
+        "decisions": {
+          "label": "Laboratorul deciziilor",
+          "desc": "Lucrează pe scenarii din viața reală folosind cadre de tip stop-gândește-acționează."
+        },
+        "journal": {
+          "label": "Jurnalul emoțiilor",
+          "desc": "Jurnal zilnic de verificare — notează în timp stările, factorii declanșatori și reflecțiile."
+        },
+        "safety": {
+          "label": "Siguranță și limite",
+          "desc": "Învață despre limitele personale, adulții de încredere și situațiile sigure vs. nesigure."
+        },
+        "landPlace": {
+          "label": "Pământ și loc",
+          "desc": "Atelier de ocrotire pentru o relație continuă cu pământul pe care trăiești. Trei fire (istorie, ecologie, prezent), reflecție critică asupra recunoașterii pământului ca practică, nu ca spectacol, organizații conduse de Wabanaki ca voci de autoritate și un jurnal privat de reflecție."
+        },
+        "somaticReset": {
+          "label": "Resetare prin corp și respirație",
+          "desc": "Alege o zonă a corpului și urmează o resetare scurtă, potrivită pentru scaun, prin nemișcare, respirație sau mișcare blândă, cu o verificare privată înainte și după."
+        },
+        "restorativeCircle": {
+          "label": "Cercul restaurativ",
+          "desc": "Facilitează cercuri restaurative și de construire a comunității, cu norme stabilite, îndrumarea unui adult și grijă față de rădăcinile culturale. Nu pentru dezvăluiri forțate sau risc activ de siguranță."
+        },
+        "compassion": {
+          "label": "Compasiune și dialog interior",
+          "desc": "Exersează autocompasiunea, reformulează vocea criticului interior și construiește o voce interioară mai blândă."
+        },
+        "friendship": {
+          "label": "Constructorul de prietenii",
+          "desc": "Explorează stiluri de prietenie, strategii de reparare și tipare de relații sănătoase."
+        },
+        "transitions": {
+          "label": "Tranziții de viață",
+          "desc": "Treci prin schimbări precum mutarea, o școală nouă și maturizarea."
+        },
+        "upstander": {
+          "label": "Antrenament pentru martorul activ",
+          "desc": "Învață să iei apărarea altora în siguranță — abilități pentru a trece de la martor pasiv la martor activ."
+        },
+        "growthmindset": {
+          "label": "Mentalitatea de creștere",
+          "desc": "Știința creierului, reformularea provocărilor și construirea rezilienței."
+        },
+        "execfunction": {
+          "label": "Funcții executive",
+          "desc": "Strategii pentru părțile mai grele ale ducerii lucrurilor la capăt: începerea sarcinilor, menținerea concentrării, planificarea din timp și urmărirea timpului."
+        },
+        "advocacy": {
+          "label": "Exersarea exprimării nevoilor",
+          "desc": "Repetă scenarii generale pentru a-ți exprima nevoile, a cere sprijin și a lua cuvântul în situații de zi cu zi."
+        },
+        "civicAction": {
+          "label": "Acțiune civică și speranță",
+          "desc": "Procesează emoțiile grele legate de nedreptate, dezvoltă-ți puterea de acțiune civică și cultivă speranța prin acțiune."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratorul de raționament etic",
+          "desc": "Explorează dileme etice contemporane prin mai multe cadre și prin dialog socratic cu IA."
+        },
+        "cultureExplorer": {
+          "label": "Exploratorul culturilor",
+          "desc": "Explorează în profunzime, cu ajutorul IA, culturile lumii, cu ilustrații și audio."
+        },
+        "voicedetective": {
+          "label": "Detectivul vocilor",
+          "desc": "Ascultă voci și identifică emoțiile după ton."
+        },
+        "practiceJourneys": {
+          "label": "Călătorii de exersare (Pilot)",
+          "desc": "Exersează cererea de sprijin prin patru întâlniri legate între ele. Răspunde prin opțiuni, prin propriile cuvinte sau prin ambele. Ține un jurnal și încearcă un alt drum."
+        },
+        "sociallab": {
+          "label": "Joc de rol pentru abilități sociale",
+          "desc": "Exersează scenarii sociale și joc de rol cu colegi IA, cu dialog ramificat."
+        },
+        "peersupport": {
+          "label": "Antrenorul de sprijin între colegi",
+          "desc": "Învață abilitățile de ascultare OARS și când să ceri ajutorul unui adult."
+        },
+        "conflicttheater": {
+          "label": "Teatrul conflictelor",
+          "desc": "Exersează un conflict fictiv cu două personaje IA într-o scenă imersivă. Doar joc de rol în versiune beta; nu-l folosi pentru a media o situație de vătămare activă."
+        },
+        "digitalWellbeing": {
+          "label": "Studioul de bunăstare digitală",
+          "desc": "Verifică-ți relația cu rețelele sociale și cu chatboții IA, construiește obiceiuri mai sănătoase legate de telefon, refă-te după hărțuirea online, recunoaște manipularea din feed, gestionează în siguranță relațiile cu chatboții și găsește ajutor când ai nevoie."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Conștientizarea de sine",
+          "desc": "Recunoașterea emoțiilor, a punctelor forte și a zonelor de creștere"
+        },
+        "self-regulation": {
+          "label": "Autoreglare",
+          "desc": "Reglarea emoțiilor, a activării și a atenției; exersarea strategiilor de adaptare"
+        },
+        "self-direction": {
+          "label": "Autodirecționare",
+          "desc": "Stabilirea obiectivelor, puterea de acțiune, funcțiile executive, mentalitatea de creștere"
+        },
+        "inner-work": {
+          "label": "Lucru interior",
+          "desc": "Practici contemplative și reflexive"
+        },
+        "care-of-self": {
+          "label": "Grija de sine",
+          "desc": "Autocompasiune, autoîngrijire relațională"
+        },
+        "social-awareness": {
+          "label": "Conștientizare socială",
+          "desc": "Empatie, asumarea perspectivei celuilalt și aprecierea diversității"
+        },
+        "relationship-skills": {
+          "label": "Abilități relaționale",
+          "desc": "Comunicare, lucru în echipă și rezolvarea conflictelor"
+        },
+        "responsible-decision-making": {
+          "label": "Luarea responsabilă a deciziilor",
+          "desc": "Alegeri etice, evaluarea consecințelor și rezolvarea problemelor"
+        },
+        "stewardship": {
+          "label": "Ocrotire",
+          "desc": "Grija față de comunitate, dreptate, pământ și viitor"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Numește-ți zona actuală și alege o strategie de reglare potrivită.",
+          "next": "Verifică-ți zona, alege o strategie, apoi salvează dacă vrei să revii la ea."
+        },
+        "coping": {
+          "purpose": "Alege o strategie de adaptare și exerseaz-o o dată, cu un moment clar de oprire.",
+          "next": "Alege o strategie bazată pe corp sau de ancorare, încearc-o, apoi observă dacă te-a ajutat."
+        },
+        "journal": {
+          "purpose": "Scrie o reflecție privată și observă tiparele pe care ai vrea să le păstrezi.",
+          "next": "Alege o întrebare, scrie sincer și salvează sau exportă înainte să închizi."
+        },
+        "emotions": {
+          "purpose": "Construiește-ți vocabularul emoțional și numește mai precis ce simți.",
+          "next": "Alege o emoție, evaluează-i intensitatea, apoi alege cuvântul care se potrivește cel mai bine."
+        },
+        "mindfulness": {
+          "purpose": "Fă o pauză, respiră și exersează atenția fără să fie nevoie să scrii ceva.",
+          "next": "Alege o practică scurtă, urmeaz-o până la capăt, apoi observă ce s-a schimbat."
+        },
+        "somaticReset": {
+          "purpose": "Folosește o verificare privată a zonelor corpului ca să alegi o resetare scurtă, potrivită pentru scaun.",
+          "next": "Alege o zonă a corpului, încearcă o variantă de nemișcare, respirație sau mișcare blândă, apoi observă ce s-a schimbat."
+        },
+        "thoughtRecord": {
+          "purpose": "Încetinește un gând dificil și caută o perspectivă mai echilibrată.",
+          "next": "Numește situația, evaluează emoția, apoi pune gândul la încercare cu dovezi."
+        },
+        "anxietyToolkit": {
+          "purpose": "Sortează îngrijorările, redu intensitatea anxietății și alege un pas următor practic.",
+          "next": "Alege îngrijorarea cea mai puternică, încearcă o strategie, apoi salvează planul dacă te ajută."
+        },
+        "sleep": {
+          "purpose": "Observă obstacolele din calea somnului și alege un obicei de odihnă pe care să-l încerci.",
+          "next": "Verifică ce te împiedică, alege o schimbare mică, apoi revino mai târziu."
+        },
+        "goals": {
+          "purpose": "Transformă o intenție într-o acțiune următoare concretă și realistă.",
+          "next": "Scrie un obiectiv, alege un prim pas și salvează planul înainte să închizi."
+        },
+        "friendship": {
+          "purpose": "Gândește-te la nevoile tale în prietenie, la apartenență și la alegerile legate de colegi.",
+          "next": "Alege o situație de prietenie și identifică un pas următor plin de bunătate."
+        },
+        "conflict": {
+          "purpose": "Înțelege un conflict și pregătește un răspuns centrat pe reparare.",
+          "next": "Numește ce s-a întâmplat, gândește-te la ambele părți, apoi alege o acțiune de reparare."
+        },
+        "safety": {
+          "purpose": "Creează un plan practic de siguranță și identifică persoane de sprijin de încredere.",
+          "next": "Adaugă semnele de avertizare, pașii de adaptare și persoanele de contactat; salvează înainte să închizi."
+        },
+        "crisiscompanion": {
+          "purpose": "Folosește o cale structurată de sprijin când emoțiile par urgente sau nesigure.",
+          "next": "Alege cea mai apropiată opțiune de sprijin și implică un adult de încredere sau un serviciu de criză când este nevoie."
+        },
+        "conflicttheater": {
+          "purpose": "Exersează o scenă de conflict fictivă și testează un limbaj restaurativ, fără să tratezi instrumentul ca pe o mediere.",
+          "next": "Alege o scenă fictivă, încearcă un răspuns și discută apoi ce ar avea nevoie de sprijinul unui adult în viața reală."
+        },
+        "restorativeCircle": {
+          "purpose": "Planifică sau facilitează un proces restaurativ de grup, cu norme clare și îndrumarea unui adult.",
+          "next": "Stabilește mai întâi acordurile cercului, apoi alege o întrebare; nu cere niciodată dezvăluiri publice."
+        },
+        "strengths": {
+          "next": "Alege punctele forte care te reprezintă, apoi găsește pentru fiecare un moment real din acest trimestru care îl arată."
+        },
+        "viaStrengths": {
+          "purpose": "Folosește o autosortare inspirată de VIA ca activitate de reflecție, nu ca evaluare formală.",
+          "next": "Sortează punctele forte, observă tiparele și scrie un exemplu care ancorează rezultatul în realitate."
+        },
+        "perma": {
+          "purpose": "Fă o imagine de ansamblu reflexivă a bunăstării tale în domeniile PERMA, plus sănătatea.",
+          "next": "Folosește imaginea de ansamblu ca să alegi o conversație sau un mic experiment, nu ca să-ți pui o etichetă."
+        },
+        "advocacy": {
+          "purpose": "Exersează un limbaj de zi cu zi pentru a-ți exprima nevoile și a cere sprijin.",
+          "next": "Alege o situație, schițează o cerere scurtă și decide cine te-ar putea ajuta."
+        },
+        "selfAdvocacy": {
+          "purpose": "Construiește un plan concret de sprijin școlar pentru IEP, 504, adaptări sau alegeri privind dezvăluirea.",
+          "next": "Alege o nevoie de sprijin, adună-ți întrebările și identifică un adult de încredere pe care să-l implici."
+        },
+        "crewProtocols": {
+          "next": "Răsfoiește după scop, alege un protocol pentru azi, apoi notează în Planul meu Crew când îl vei desfășura."
+        },
+        "perspective": {
+          "next": "Alege o situație, adoptă mai întâi punctul de vedere al celuilalt, apoi spune ce ai face diferit."
+        },
+        "windowOfTolerance": {
+          "next": "Adaugă câte un semn în fiecare dintre cele trei zone ale tale, apoi folosește „Verificare” ca să plasezi ziua de azi."
+        },
+        "sensoryRegulation": {
+          "next": "Începe cu „Ce înseamnă senzorial?”, apoi marchează sistemele care sunt intense sau estompate pentru tine."
+        },
+        "execfunction": {
+          "next": "Mergi la „Începe” și alege o mișcare de pornire pentru azi, apoi la „Menține” ca să-ți alegi locul unde notezi lucrurile."
+        },
+        "growthmindset": {
+          "next": "Deschide „Reformulează”, scrie gândul fix și transformă-l într-unul concret și realizabil."
+        },
+        "dearMan": {
+          "next": "Scrie cererea ta într-o propoziție, schițează cei șapte pași, apoi repet-o o dată."
+        },
+        "howlTracker": {
+          "next": "Înregistrează un Puls, apoi fă Verificarea săptămânală: evaluează fiecare HOWL și adaugă un exemplu concret."
+        },
+        "peersupport": {
+          "next": "Alege două întrebări deschise pe care le-ai putea pune unui prieten, apoi încearcă una într-o situație fictivă în fila de exersare."
+        },
+        "upstander": {
+          "next": "Citește scara curajului din „Mișcări” și alege cele mai mici două mișcări pe care le-ai putea face cu adevărat săptămâna aceasta."
+        },
+        "digitalWellbeing": {
+          "next": "Fă sincer Autoverificarea, apoi alege un obicei din Trusă și o limită pe care o stabilești dinainte."
+        },
+        "teamwork": {
+          "next": "Uită-te la Roluri, apoi scrie un Plan de comunicare pentru un grup real: cine ce face, unde și până când."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Începe aici",
+        "name_it": "Numește ce simți",
+        "calm_now": "Calmează-te acum",
+        "body_reset": "Resetare corporală",
+        "make_a_plan": "Fă un plan",
+        "understand_patterns": "Înțelege tiparele",
+        "practice_repair": "Exersează repararea",
+        "role_play": "Joc de rol",
+        "facilitated_group": "Grup facilitat",
+        "reflect": "Reflectează",
+        "practice_speaking_up": "Exersează să iei cuvântul",
+        "make_a_support_plan": "Fă un plan de sprijin",
+        "urgent_support": "Sprijin urgent",
+        "get_support": "Cere sprijin",
+        "move_gently": "Mergi cu blândețe",
+        "learn_not_diagnose": "Învață, nu diagnostica",
+        "learn_and_get_support": "Învață și cere sprijin",
+        "check_boundaries": "Verifică limitele",
+        "explore_identity": "Explorează identitatea",
+        "practice_body_respect": "Exersează respectul pentru corp",
+        "map_carefully": "Cartografiază cu grijă",
+        "understand_needs": "Înțelege nevoile"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Numește ce se întâmplă înainte să alegi o strategie."
+        },
+        "emotions": {
+          "note": "Construiește cuvinte precise pentru emoții și observă intensitatea."
+        },
+        "coping": {
+          "note": "Încearcă o strategie bazată pe corp sau de ancorare, apoi observă ce s-a schimbat."
+        },
+        "mindfulness": {
+          "note": "O pauză cu puțin scris, pentru respirație, atenție sau conștientizarea corpului."
+        },
+        "somaticReset": {
+          "note": "Alege o zonă a corpului, apoi încearcă o practică scurtă de nemișcare, respirație sau mișcare blândă. Un selector compact, accesibil de la tastatură, păstrează fiecare element vizual ușor de folosit pe ecrane mici. Elementele vizuale includ un Val curgător, care asociază INSPIR · RIDICARE cu o linie continuă și un marcaj rotund, EXPIR · AȘEZARE cu o linie punctată și un marcaj în formă de romb, iar PAUZĂ cu bare de pauză; o Floare de petale, care asociază INSPIR · DESCHIDERE cu contururi continue ale petalelor și un centru rotund, EXPIR · RELAXARE cu contururi punctate și un centru în formă de romb, iar PAUZĂ cu bare de pauză în centru; un Orizont de ancorare, care asociază INSPIR · RIDICARE cu un contur continuu al soarelui și un centru circular, EXPIR · AȘEZARE cu un contur punctat al soarelui și un centru în formă de romb, iar PAUZĂ cu bare de pauză pe soare; un traseu liniar previzibil, cu direcția marcată, cu etichete directe INSPIR și EXPIR, ținte rotunde pentru INSPIR și în formă de romb pentru EXPIR, o urmă de la punctul de plecare activ și următoarea destinație conturată; și o Orbită a respirației în două părți, cu arce de fază continue și punctate care devin mai groase cât sunt active, un inel central cu același model al fazei, etichete directe INSPIR și EXPIR, un simbol central pentru starea de pauză, următorul punct de trecere conturat, un marcaj în sensul acelor de ceasornic cu forma fazei, o hartă a ritmului codificată prin forme și indicii de fază pentru cititorul de ecran. Elevii pot încerca o respirație cu mișcare înainte să pornească cronometrul, apoi pot mări ghidul, îi pot opri mișcarea sau îl pot dezactiva. În Vizualizarea liniștită, elementul vizual mărit devine un buton de pornire/pauză care se poate folosi cu tastatura și prin atingere. Numărătoarea inversă poate fi ascunsă; cuvintele de ghidare pot fi complete, doar pentru fază sau ascunse; iar numărarea respirațiilor și evaluările numerice sunt opționale.",
+          "boundary": "Acesta nu este un tratament sau un diagnostic. Păstrează mișcările mici și fără durere; oprește-te dacă simți durere, amețeală sau amorțeală și spune unui adult de încredere sau unui profesionist din domeniul sănătății."
+        },
+        "anxietyToolkit": {
+          "note": "Separă îngrijorarea de acțiune și alege un pas următor practic."
+        },
+        "windowOfTolerance": {
+          "note": "Notează în timp semnele de activare și sprijinul; nu este un diagnostic."
+        },
+        "stressBucket": {
+          "note": "Privește presiunile și sprijinul împreună, inclusiv presiunile pe care nu le poți controla."
+        },
+        "bigFeelings": {
+          "note": "Folosește furia ca informație și planifică o pauză mai sigură sau o reparare."
+        },
+        "conflict": {
+          "note": "Cel mai potrivit pentru exersarea unor conflicte cu miză mică sau ipotetice.",
+          "boundary": "Dacă există amenințări, constrângere, bullying, abuz sau o diferență de putere nesigură, oprește-te și implică un adult de încredere în loc să negociezi singur."
+        },
+        "conflicttheater": {
+          "note": "Exersare imersivă în versiune beta, cu personaje fictive; nu o folosi pentru a media o situație de vătămare activă.",
+          "boundary": "Amenințările reale, abuzul sau bullyingul au nevoie de sprijinul unui adult și de un răspuns de siguranță, nu de un exercițiu de joc de rol."
+        },
+        "restorativeCircle": {
+          "note": "Folosește-l cu norme de cerc stabilite și cu un adult ca facilitator.",
+          "boundary": "Nu folosi un cerc pentru a presa pe cineva să facă dezvăluiri publice sau pentru a gestiona un risc activ de siguranță."
+        },
+        "strengths": {
+          "note": "Reflecție deschisă despre punctele forte, fără scor, clasament sau diagnostic."
+        },
+        "viaStrengths": {
+          "note": "O autosortare pentru reflecție, nu chestionarul oficial VIA sau un rezultat psihometric."
+        },
+        "perma": {
+          "note": "O imagine de ansamblu a bunăstării care să deschidă o conversație, nu o evaluare a sănătății mintale."
+        },
+        "advocacy": {
+          "note": "Scenarii generale și repetiții pentru a-ți exprima nevoile și a cere sprijin."
+        },
+        "selfAdvocacy": {
+          "note": "Folosește-l pentru planificarea concretă legată de IEP, 504, adaptări, dezvăluire sau sprijin școlar."
+        },
+        "crisiscompanion": {
+          "note": "Un ghid de sprijin pentru tine sau pentru un prieten; nu este un instrument de screening pentru criză și nu înlocuiește un adult.",
+          "boundary": "Dacă cineva ar putea fi în pericol imediat sau ar putea trece la fapte din cauza gândurilor de autovătămare, oprește-te aici și contactează acum un adult de încredere sau un serviciu de urgență/criză."
+        },
+        "safety": {
+          "note": "Învață despre limite și despre pașii prin care apelezi la un adult de încredere; acesta nu este un test care arată dacă o situație este sigură.",
+          "boundary": "Dacă ești în pericol imediat sau cineva îți face rău, oprește-te și contactează acum un adult de încredere sau un serviciu de urgență."
+        },
+        "griefLoss": {
+          "note": "Un însoțitor privat pentru doliu și pierdere; sari peste orice ți se pare prea mult.",
+          "boundary": "Dacă doliul pare de nesuportat, nu te simți în siguranță sau altcineva este în pericol, implică un adult de încredere sau un serviciu de sprijin în criză."
+        },
+        "traumaPsychoed": {
+          "note": "Psihoeducație despre reacțiile la traumă; nu este un instrument de screening sau un tratament.",
+          "boundary": "Nu trebuie să dezvălui aici nicio traumă. Fă o pauză și caută un adult de încredere sau un consilier dacă un conținut scoate la suprafață ceva nesigur."
+        },
+        "substancePsychoed": {
+          "note": "Informații și reflecție din perspectiva reducerii riscurilor; nu este un instrument de screening și nici o permisiune de a consuma substanțe.",
+          "boundary": "Nu folosi acest instrument în caz de supradoză sau într-o situație medicală urgentă; contactează serviciile de urgență sau un adult de încredere."
+        },
+        "healthyRelationships": {
+          "note": "Explorează consimțământul și tiparele din relații fără să pui etichete unei persoane sau unei relații.",
+          "boundary": "Dacă o relație include amenințări, constrângere sau violență, cere ajutorul unui adult; nu confrunta pe nimeni de unul singur."
+        },
+        "identitySupport": {
+          "note": "Reflecție afirmativă și sprijin din partea comunității; împărtășirea este opțională.",
+          "boundary": "Păstrează informațiile personale private și implică un adult de încredere dacă nu te simți în siguranță."
+        },
+        "bodyStory": {
+          "note": "Aprecierea corpului și educație media; nu este o evaluare pentru slăbit sau pentru tulburări de alimentație.",
+          "boundary": "Dacă mâncarea, imaginea corporală sau exercițiile fizice par nesigure sau te consumă, vorbește cu un adult de încredere sau cu un profesionist din domeniul sănătății."
+        },
+        "genogram": {
+          "note": "Reflecție personală despre familie; nu este o evaluare clinică, iar împărtășirea este opțională.",
+          "boundary": "Sari peste detaliile de familie care par nesigure sau private; cere sprijin unui adult de încredere."
+        },
+        "sensoryRegulation": {
+          "note": "Construiește un profil senzorial și adaptări; nu este un diagnostic.",
+          "boundary": "Alege forme de sprijin care par sigure; împărtășește adaptările doar când vrei tu."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Verificarea de dimineață",
+          "desc": "Începe ziua cu o verificare a stării, respirație și stabilirea obiectivelor"
+        },
+        "calm_down": {
+          "name": "Colțul de liniștire",
+          "desc": "Strategii de reglare pentru momentele în care emoțiile sunt puternice"
+        },
+        "conflict_unit": {
+          "name": "Unitatea de rezolvare a conflictelor",
+          "desc": "Exersează rezolvarea neînțelegerilor și dezvoltă abilități de reparare"
+        },
+        "empathy_week": {
+          "name": "Săptămâna empatiei și a perspectivei",
+          "desc": "Construiește empatia prin asumarea perspectivei celuilalt și conștientizare culturală"
+        },
+        "decision_making": {
+          "name": "Luarea deciziilor în profunzime",
+          "desc": "Exersează raționamentul etic și alegerile responsabile"
+        },
+        "self_discovery": {
+          "name": "Călătoria autodescoperirii",
+          "desc": "Explorează cine ești — puncte forte, emoții și mentalitatea de creștere"
+        },
+        "friendship": {
+          "name": "Prietenie și abilități sociale",
+          "desc": "Construiește prietenii sănătoase și abilități de comunicare"
+        },
+        "transitions": {
+          "name": "Cum faci față schimbărilor",
+          "desc": "Sprijină elevii prin tranzițiile vieții și prin experiențele noi"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Observă de ce ai nevoie și alege un pas următor ușor de făcut.",
+          "model": "Simt neliniște în corp. Pot încerca să mă întind, apoi să aleg prima parte a sarcinii mele.",
+          "practice": "Numește o emoție, arată o opțiune sau observă în liniște. Încearcă o formă de sprijin și alege un obiectiv mic.",
+          "reflect": "Ce ai observat? Ce ai păstra sau ce ai schimba?",
+          "transfer": "Când începe lecția următoare, pot încerca ____. Dacă am nevoie de ajutor, pot apela la ____."
+        },
+        "calm_down": {
+          "goal": "Explorează o formă de sprijin potrivită pentru corpul tău și pentru acest moment.",
+          "model": "Exercițiile de respirație nu mă ajută azi. Pot încerca să mă uit prin cameră sau pot cere să stea cineva cu mine.",
+          "practice": "Alege o singură strategie confortabilă. Să stai jos, să privești sau să iei o pauză sunt opțiuni valide.",
+          "reflect": "Te-a ajutat, a fost la fel sau a fost neplăcut? Poți să te oprești sau să alegi altă cale.",
+          "transfer": "Când observ ____, pot încerca ____ sau pot cere sprijin de la ____."
+        },
+        "conflict_unit": {
+          "goal": "Ia în considerare mai multe perspective și repetă un răspuns respectuos la o neînțelegere de zi cu zi.",
+          "model": "Amândoi vrem același material. Pot să te întreb de ce ai nevoie, să-ți explic de ce am eu nevoie și să propun să-l folosim pe rând.",
+          "practice": "Folosește o neînțelegere inventată, cu miză mică. Repetă o întrebare de ascultare și un posibil pas următor.",
+          "reflect": "Nevoile cui le-a luat în seamă răspunsul? Ce ar putea trebui schimbat?",
+          "transfer": "Într-o neînțelegere sigură, pot ____. Pentru amenințări, bullying sau constrângere, pot cere ajutorul unui adult de încredere."
+        },
+        "empathy_week": {
+          "goal": "Explorează o altă perspectivă fără să presupui că știi ce simte cineva.",
+          "model": "Persoana aceea e tăcută. Poate e obosită sau se gândește la ceva; pot să întreb în loc să decid eu în locul ei.",
+          "practice": "Folosește un exemplu fictiv. Numește două perspective posibile și o întrebare respectuoasă pe care ai putea-o pune.",
+          "reflect": "Ce știi și ce ghicești? Cum ai putea verifica?",
+          "transfer": "Înainte să fac o presupunere săptămâna aceasta, pot întreba ____."
+        },
+        "decision_making": {
+          "goal": "Compară opțiunile după efectele lor asupra ta și asupra altora.",
+          "model": "Înainte să postez o fotografie de grup, pot cere permisiunea și mă pot gândi cine ar putea s-o vadă.",
+          "practice": "Alege o decizie inventată. Compară două opțiuni, efectele posibile și pe cineva care te-ar putea ajuta.",
+          "reflect": "Ce informații lipsesc? Există o opțiune mai sigură sau mai corectă?",
+          "transfer": "Înainte să decid în privința ____, pot să fac o pauză ca să verific ____."
+        },
+        "self_discovery": {
+          "goal": "Recunoaște un punct forte și alege un mod de a-l folosi, cu sprijin.",
+          "model": "Pun întrebări utile. Pot folosi acest punct forte când o sarcină nu e clară și pot cere un exemplu.",
+          "practice": "Alege un punct forte care ți se potrivește sau unul al unui personaj fictiv. Dă un exemplu al lui în acțiune.",
+          "reflect": "Ce a ajutat acest punct forte să iasă la iveală? Ce sprijin ar face posibil pasul următor?",
+          "transfer": "Pot folosi ____ când ____. O persoană sau o resursă care m-ar putea ajuta este ____."
+        },
+        "friendship": {
+          "goal": "Exersează o comunicare care respectă nevoile tale și limitele celorlalți.",
+          "model": "Pot invita pe cineva să ni se alăture și pot accepta alegerea persoanei dacă spune nu.",
+          "practice": "Repetă o invitație, o întrebare de ascultare sau o limită respectuoasă. Vorbitul, scrisul sau CAA contează toate.",
+          "reflect": "A avut fiecare persoană o alegere reală? Ce ar putea face interacțiunea mai primitoare?",
+          "transfer": "Într-o interacțiune sigură săptămâna aceasta, pot încerca ____ și pot observa ____."
+        },
+        "transitions": {
+          "goal": "Identifică ce se schimbă, ce poate rămâne stabil și o sursă de sprijin.",
+          "model": "O oră nouă mi se pare plină de necunoscute. Pot găsi sala dinainte și pot întreba cine mă poate ajuta.",
+          "practice": "Alege o schimbare reală sau fictivă. Numește o incertitudine, un sprijin stabil și un pas următor mic.",
+          "reflect": "Ce parte depinde de tine? Ce ajutor sau ce adaptare ar fi utilă?",
+          "transfer": "Înainte de schimbare, pot ____. Dacă planul trebuie să se schimbe, pot ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Individual sau în grup",
+          "cue": "O primă verificare utilă înainte de orice împărtășire."
+        },
+        "emotions": {
+          "format": "Individual sau în perechi",
+          "cue": "Bună încălzire pentru vocabular."
+        },
+        "coping": {
+          "format": "Individual sau în grup",
+          "cue": "Cel mai potrivit pentru o resetare prin reglare."
+        },
+        "mindfulness": {
+          "format": "Toată clasa",
+          "cue": "Opțiune de reglare cu puțin scris."
+        },
+        "somaticReset": {
+          "format": "Individual sau toată clasa",
+          "cue": "Selectorul vizual compact păstrează fiecare ghid disponibil, fără o grilă densă de butoane. Orbita respirației asociază arce continue și punctate cu o fază activă mai groasă, un inel central continuu sau punctat pe potrivă și etichete directe INSPIR și EXPIR; centrul ei trece de la un punct la bare de pauză când este în pauză, iar rombul sau inelul conturat indică următoarea trecere de fază, în timp ce marcajul rotund sau în formă de romb care se mișcă în sensul acelor de ceasornic, rombul de trecere, inelul de întoarcere, barele scurte de inspirație și punctele goale de expirație păstrează faza și numărătoarea opțională lizibile fără culoare. Lasă elevii să încerce o respirație cu mișcare înainte de cronometru sau să aleagă Nemișcat. Oferă cuvinte de ghidare complete, doar pentru fază sau ascunse. Vizualizarea liniștită transformă elementul vizual mărit într-un buton direct de pornire/pauză. Valul curgător folosește INSPIR · RIDICARE cu o linie continuă și un marcaj rotund, EXPIR · AȘEZARE cu o linie punctată și un marcaj în formă de romb și bare de pauză pentru o sesiune pusă pe pauză. Floarea de petale folosește INSPIR · DESCHIDERE cu contururi continue ale petalelor și un centru rotund, EXPIR · RELAXARE cu contururi punctate și un centru în formă de romb și bare de pauză în centru pentru o sesiune pusă pe pauză. Orizontul de ancorare folosește INSPIR · RIDICARE cu un contur continuu al soarelui și un centru circular, EXPIR · AȘEZARE cu un contur punctat al soarelui și un centru în formă de romb și bare de pauză pe soare când este în pauză. Traseul respirației folosește o țintă rotundă pentru INSPIR, o țintă în formă de romb pentru EXPIR, o urmă de la punctul de plecare activ și următoarea destinație conturată, astfel încât direcția să nu depindă de culoare. Oferă indicii de fază pentru cititorul de ecran, plus opțiuni cu numărătoare inversă ascunsă, ghidare ascunsă, fără mișcare, fără element vizual, cu respirație naturală și fără numere; nu cere niciodată evaluări sau explicații ale senzațiilor corporale."
+        },
+        "journal": {
+          "format": "Individual",
+          "cue": "Reflecție privată. Împărtășirea ar trebui să fie opțională."
+        },
+        "goals": {
+          "format": "Individual sau la dirigenție",
+          "cue": "Un pas bun de încheiere după reflecție."
+        },
+        "conflict": {
+          "format": "În perechi sau în grup mic",
+          "cue": "Prezintă normele înainte de jocul de rol."
+        },
+        "restorativeCircle": {
+          "format": "Cerc",
+          "cue": "Folosește-l cu norme de cerc stabilite."
+        },
+        "peersupport": {
+          "format": "Exersare în perechi",
+          "cue": "Foarte potrivit pentru repetarea abilităților de ascultare."
+        },
+        "perspective": {
+          "format": "În perechi sau în grup",
+          "cue": "O punte bună spre empatie înainte de discuție."
+        },
+        "digitalWellbeing": {
+          "format": "Individual sau la dirigenție",
+          "cue": "Util înainte de stabilirea regulilor pentru telefon sau IA."
+        },
+        "sleep": {
+          "format": "Individual",
+          "cue": "Bun pentru unitățile despre sănătate de la dirigenție."
+        },
+        "safety": {
+          "format": "Individual",
+          "cue": "Previzualizează mai întâi; evită dezvăluirile forțate."
+        },
+        "crisiscompanion": {
+          "format": "Individual",
+          "cue": "Pentru abilități de sprijin urgent, nu ca temă pentru clasă."
+        },
+        "griefLoss": {
+          "format": "Individual",
+          "cue": "Previzualizează mai întâi; oferă alternative pentru cine alege să nu participe."
+        },
+        "identitySupport": {
+          "format": "Individual",
+          "cue": "Folosește-l cu grijă pentru confidențialitate și cu posibilitatea de a nu participa."
+        },
+        "traumaPsychoed": {
+          "format": "Individual sau ghidat de educator",
+          "cue": "Doar psihoeducație; oferă posibilitatea de a nu participa și o cale către un adult de încredere."
+        },
+        "substancePsychoed": {
+          "format": "Individual sau lecție de sănătate",
+          "cue": "Previzualizează cadrul de reducere a riscurilor și oferă sprijin din partea adulților/sprijin medical."
+        },
+        "healthyRelationships": {
+          "format": "Individual sau lecție de sănătate",
+          "cue": "Previzualizează limbajul despre consimțământ și siguranță; nu cere niciodată dezvăluiri personale."
+        },
+        "bodyStory": {
+          "format": "Individual",
+          "cue": "Cadru de respect pentru corp; oferă posibilitatea de a nu participa și evită discuțiile centrate pe greutate."
+        },
+        "genogram": {
+          "format": "Individual",
+          "cue": "Doar reflecție despre familie; împărtășirea ar trebui să fie opțională."
+        },
+        "sensoryRegulation": {
+          "format": "Individual sau planificarea sprijinului",
+          "cue": "Folosește un limbaj care afirmă identitatea și lasă elevii să aleagă ce împărtășesc."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Verificare de dimineață la dirigenție",
+          "format": "Toată clasa",
+          "focus": "Stare, respirație, un pas următor",
+          "studentView": "Elevii își verifică în privat zona, încearcă o opțiune de reglare, apoi aleg o nevoie pentru ziua respectivă sau sar peste.",
+          "teacherMove": "Arată mai întâi, ca model, opțiunea de a sări peste. Invită la împărtășirea unui singur cuvânt sau a unei culori doar după exersarea în privat.",
+          "privacyBoundary": "Nu se colectează text din jurnal; elevii decid mai târziu dacă vreun punct de salvare intră într-un Pachet de partajare.",
+          "note": "Începe cu o verificare privată a zonei, apoi oferă respirație sau stabilirea obiectivelor. Elevii pot spune un cuvânt, o culoare sau pot sări peste."
+        },
+        "calm_reset": {
+          "name": "Resetare de calmare în cinci minute",
+          "format": "Toată clasa sau colțul de calm",
+          "focus": "Reglarea corpului",
+          "studentView": "Elevii observă starea actuală a corpului și aleg o practică de calmare a corpului.",
+          "teacherMove": "Păstrează rutina cu puțină vorbă și într-un timp limitat. Oferă alternative de mișcare, respirație sau liniște.",
+          "privacyBoundary": "Elevii pot crea un punct de salvare doar pentru ei; nimeni nu trebuie să explice de ce a avut nevoie de o resetare.",
+          "note": "Păstrează activitatea cu puțină vorbă. Elevii aleg o practică de reglare și observă ce s-a schimbat."
+        },
+        "repair_routine": {
+          "name": "Rutină de reparare după un conflict",
+          "format": "Grup mic sau dirigenție",
+          "focus": "Perspectivă, reparare, acțiunea următoare",
+          "studentView": "Elevii pot folosi un scenariu real, ipotetic sau oferit de profesor pentru a exersa limbajul reparării.",
+          "teacherMove": "Stabilește mai întâi normele de reparare și evită mărturisirile publice. Oprește activitatea dacă situația are nevoie de medierea unui adult.",
+          "privacyBoundary": "Elevii aleg ce împărtășesc; reflecțiile private despre conflicte nu ar trebui să devină dovezi pentru clasă.",
+          "note": "Folosește-o după stabilirea normelor. Menține accentul pe limbajul reparării, nu pe mărturisirile publice."
+        },
+        "digital_reset": {
+          "name": "Mini-lecție despre bunăstarea digitală",
+          "format": "Dirigenție sau sănătate",
+          "focus": "Telefon, somn, IA și limite",
+          "studentView": "Elevii își analizează obiceiurile, aleg o limită de testat și păstrează motivul privat dacă vor.",
+          "teacherMove": "Prezint-o ca pe o proiectare de obiceiuri, nu ca pe un control al telefonului. Evită să le ceri elevilor să arate capturi de ecran sau date de utilizare.",
+          "privacyBoundary": "Elevii pot împărtăși un obiectiv legat de o limită, dar detaliile personale despre somn, telefon sau IA rămân opționale.",
+          "note": "Prezint-o ca pe o proiectare de obiceiuri, nu ca pe un control al telefonului. Elevii aleg o limită de încercat."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Abordare informată de cercetare",
+          "title": "Cercetarea se referă la abordarea de bază; această adaptare digitală nu a fost evaluată aici"
+        },
+        "emerging": {
+          "label": "Dovezi limitate pentru abordare",
+          "title": "Promițătoare, dar cu dovezi limitate sau mixte"
+        },
+        "contested": {
+          "label": "Model contestat",
+          "title": "Popular, dar contestat științific; se folosește cel mai bine ca metaforă, nu ca mecanism"
+        },
+        "practice": {
+          "label": "Practică reflexivă",
+          "title": "O practică structurată sau un instrument euristic, nu o afirmație empirică despre eficacitate"
+        }
+      },
+      "ui": {
+        "sel_practice": "Practică SEL",
+        "default_purpose": "Exersează cu grijă o abilitate SEL.",
+        "default_next": "Fă un pas mic, apoi decide dacă salvezi.",
+        "private_checkpoint": "Punct de salvare privat",
+        "share_packet_eligible": "Eligibil pentru Pachetul de partajare",
+        "saving_preparing": "Se pregătește salvarea lucrului tău SEL...",
+        "save_requested": "S-a cerut salvarea pentru {title}",
+        "returned_to_grid": "Te-ai întors la grila de instrumente",
+        "back_to_sel_tools": "Înapoi la instrumentele SEL",
+        "export_now_aria": "Exportă acum fișierul proiectului SEL",
+        "export_now": "Exportă acum",
+        "purpose": "Scop",
+        "next_step": "Pasul următor",
+        "saved_work": "Lucru salvat",
+        "checkpoints_private": "Punctele de salvare ale instrumentelor rămân private aici, dacă nu le alegi pentru un Pachet de partajare.",
+        "use_with_care_label": "Folosește cu grijă:",
+        "tool_open_failed_title": "Acest instrument nu s-a putut deschide",
+        "tool_open_failed_body": "Ceva din informațiile salvate pentru această activitate nu s-a încărcat. Nu este ceva ce ai greșit tu.",
+        "saved_work_kept": "Lucrul tău salvat nu a fost șters.",
+        "back_to_hub": "Înapoi la SEL Hub",
+        "tell_teacher": "Dacă se tot întâmplă, spune-i profesorului despre ce activitate a fost vorba.",
+        "load_did_not_start": "Instrumentul s-a descărcat, dar nu a pornit.",
+        "load_too_long": "Încărcarea instrumentului a durat prea mult.",
+        "this_sel_tool": "Acest instrument SEL",
+        "tool_opening": "{name} se deschide...",
+        "tool_open_retry": "{name} nu a putut fi deschis. Încearcă din nou sau alege alt instrument.",
+        "station_link_missing": "Acest link indică o stație care nu există în acest proiect. Încarcă pachetul care o conține sau pornește una din Stațiile SEL din panoul Istoric.",
+        "started_station": "Ai pornit stația {name}",
+        "tool_could_not_open": "{name} nu s-a putut deschide.",
+        "tool_not_available": "{name} nu este disponibil în acest SEL Hub.",
+        "try_again": "Încearcă din nou",
+        "dismiss": "Închide",
+        "back_to_tools": "Înapoi la instrumente",
+        "band_elementary": "Ciclul primar",
+        "band_middle": "Gimnaziu",
+        "band_high": "Liceu",
+        "unsaved_aria": "Ai modificări nesalvate",
+        "unsaved_title": "Modificări nesalvate",
+        "unsaved": "Nesalvat",
+        "unsaved_hint": "Ai modificări nesalvate — atinge Exportă acum ca să le salvezi",
+        "educators_opened": "Ghidul Pentru educatori s-a deschis",
+        "educators_aria": "Pentru educatori: cum să folosești acest Hub în mod responsabil",
+        "for_educators": "Pentru educatori",
+        "theme_aria": "Schimbă tema (luminoasă / întunecată / contrast ridicat)",
+        "theme_contrast": "Contrast ridicat",
+        "theme_dark": "Mod întunecat",
+        "theme_light": "Mod luminos",
+        "theme_contrast_short": "Contrast",
+        "theme_dark_short": "Întunecat",
+        "theme_light_short": "Luminos",
+        "xp_aria": "{count} puncte de experiență SEL",
+        "close_hub": "Închide SEL Hub",
+        "keep_share_title": "Alege ce păstrezi și ce împărtășești",
+        "keep_share_body": "Unele activități salvează lucrul pe acest dispozitiv; alt lucru rămâne doar în această filă. Închiderea filei nu șterge totul. Exportă un fișier ca să păstrezi o copie. Pe un dispozitiv comun, citește secțiunea Date și confidențialitate din Pentru educatori. Funcțiile IA și de partajare folosesc serviciile configurate.",
+        "got_it_aria": "Am înțeles, începe să folosești SEL Hub",
+        "got_it": "Am înțeles",
+        "practice_support": "Sprijin pentru exersare",
+        "learning_guide": "Ghid de învățare și moduri de a exersa",
+        "what_you_can_explore": "Ce poți explora",
+        "worked_example": "Un exemplu rezolvat",
+        "try_one_step": "Încearcă un pas",
+        "reflect_transfer": "Reflectează și folosește în altă parte",
+        "look_closer": "Privește mai atent",
+        "next_use": "O posibilă utilizare următoare",
+        "adapt_together": "Adaptați practica împreună",
+        "adapt_smaller": "Începe cu mai puțin: arată ca model o propoziție sau o alegere, folosește o imagine sau un obiect concret și lasă timp de gândire.",
+        "adapt_deeper": "Mergi mai în profunzime: compară două răspunsuri, identifică informațiile care lipsesc și explică ce ți-ar putea schimba alegerea.",
+        "adapt_context": "Schimbă contextul: folosește o situație fictivă potrivită cu limba, interesele, cultura și nevoile de acces ale celui care învață.",
+        "adapt_check": "Verifică înțelegerea printr-un exemplu sau o explicație aleasă, nu printr-o poveste personală obligatorie, o schimbare emoțională sau un scor.",
+        "optional_prompts": "Aceste întrebări opționale nu trimit răspunsuri, nu marchează activitatea ca finalizată și nu înlocuiesc instrucțiunile și informațiile de siguranță ale activității.",
+        "returned_to_activities": "Te-ai întors la activități. Această acțiune nu a înregistrat nicio exersare finalizată.",
+        "return_to_activities": "Întoarce-te la activități",
+        "chooser_first_reset_coping": "Alege o opțiune de ancorare confortabilă. Observă dacă ți se potrivește; ai voie să te oprești.",
+        "chooser_first_reset_journal": "Scrie un lucru care ar face următoarele câteva minute mai ușor de gestionat. Nu e nevoie de o poveste personală.",
+        "chooser_first_feelings_zones": "Arată o emoție sau observ-o în liniște. Alege o formă de sprijin; nu există o zonă corectă la care trebuie să ajungi.",
+        "chooser_first_feelings_emotions": "Explorează două cuvinte pentru emoțiile unui personaj fictiv. Se pot potrivi mai multe răspunsuri.",
+        "chooser_first_feelings_journal": "Scrie un cuvânt sau o reflecție scurtă despre o situație fictivă sau de zi cu zi.",
+        "chooser_first_conversation_advocacy": "Folosește o situație fictivă ca să repeți o cerere cu voce tare, cu CAA sau în gând, fără formular.",
+        "chooser_first_conversation_journal": "Schițează o cerere respectuoasă pentru o situație sigură, de zi cu zi; nu trebuie s-o trimiți.",
+        "chooser_first_decision_decisions": "Gândește-te la două opțiuni într-o situație fictivă și la un efect posibil al fiecăreia.",
+        "chooser_first_decision_goals": "Schițează un pas următor realist și o formă de sprijin pe care ai putea-o cere.",
+        "try_a_reset": "Încearcă o resetare",
+        "need_feeling": "Înțelege o emoție",
+        "need_conversation": "Pregătește o conversație",
+        "need_decision": "Alege un pas următor",
+        "help_choose": "Ajută-mă să aleg o activitate",
+        "help_choose_intro": "Alege ce vrei să încerci. Sugestiile folosesc doar aceste alegeri; nu îți evaluează emoțiile. Duratele descriu un prim pas, nu întreaga activitate.",
+        "what_would_help": "Ce te-ar ajuta?",
+        "time_first_step": "Timp pentru un prim pas",
+        "n_minutes": "{count} min",
+        "how_respond": "Cum ai vrea să răspunzi?",
+        "respond_any": "Oricum",
+        "respond_offline": "Gândește, vorbește, desenează sau folosește CAA",
+        "respond_write": "Scrie un răspuns scurt",
+        "options_one": "{count} opțiune de pornire pentru alegerile tale.",
+        "options_many": "Opțiuni de pornire pentru alegerile tale: {count}.",
+        "options_none": "Încă nu se potrivește nicio opțiune de pornire. Încearcă mai mult timp sau alt format de răspuns; întregul catalog este în continuare disponibil.",
+        "why_option_write": "De ce această opțiune: {need}, cu un prim pas sugerat de {minutes} min și un răspuns scurt în scris.",
+        "why_option_offline": "De ce această opțiune: {need}, cu un prim pas sugerat de {minutes} min și un mod de a exersa fără să tastezi.",
+        "open_named": "Deschide {name}",
+        "open_named_unavailable": "Deschide {name} (indisponibil)",
+        "pathway_guide": "Ghid de exersare pentru parcurs",
+        "pathway_opened": "{opened} din {total} instrumente deschise. Deschiderea unui instrument nu înseamnă că ai exersat abilitatea.",
+        "exit_pathway_aria": "Ieși din modul parcurs",
+        "pathway_cleared": "Parcurs închis",
+        "exit_pathway": "Ieși din parcurs",
+        "practice_goal": "Obiectivul exersării:",
+        "pathway_intro": "Alege o activitate sau urmează ordinea sugerată. Poți sări peste, poți folosi un exemplu fictiv sau poți răspunde vorbind, desenând, scriind sau cu CAA. Împărtășirea este opțională.",
+        "model_practice_reflect": "Model, exersare și reflecție",
+        "an_example": "Un exemplu",
+        "notice_adjust": "Observă și ajustează",
+        "take_with_you": "Ia-o cu tine",
+        "self_check_aria": "Autoverificare opțională a exersării",
+        "self_check_intro": "După ce încerci un pas, alege ce se potrivește. Este opțional și fără notă; rămâne în această sesiune a parcursului.",
+        "i_tried": "Am încercat un pas",
+        "another_way": "Am nevoie de altă cale",
+        "pass_for_now": "Sar peste deocamdată",
+        "tried_feedback": "Observă ce a ajutat, ce nu și unde ai putea încerca din nou abilitatea.",
+        "adapt_feedback": "Încearcă un pas mai mic, alt mod de a răspunde, alt instrument sau sprijin de la cineva în care ai încredere.",
+        "pass_feedback": "Să sari peste este o alegere validă. Poți reveni mai târziu sau poți cere sprijin.",
+        "next_option": "Opțiunea următoare: {name}",
+        "open_next": "Deschide următorul: {name}",
+        "view_pathway_tools": "Vezi instrumentele parcursului",
+        "revisit_any": "Poți reveni la orice activitate. Alege o idee de încercat și în afara hubului; nu este obligatoriu să termini fiecare instrument.",
+        "station_activities": "Activitățile stației",
+        "active_station": "Stația SEL activă: {name}",
+        "steps_recorded_passed": "{done} din {total} pași înregistrați · {passed} săriți deocamdată. Aceasta este o evidență a exersării, nu o notă.",
+        "steps_recorded": "{done} din {total} pași înregistrați. Aceasta este o evidență a exersării, nu o notă.",
+        "active_minutes_done": "{mins} din {goal} minute active aici. Pas înregistrat.",
+        "active_minutes_counting": "{mins} din {goal} minute active aici. Se numără cât timp această filă este vizibilă și o folosești.",
+        "exit_station_aria": "Ieși din modul stație",
+        "station_cleared": "Stație închisă",
+        "exit_station": "Ieși din stație",
+        "station_tools_steps": "Instrumentele, pașii și reflecția stației",
+        "station_steps": "Pașii și reflecția stației",
+        "station_privacy": "Pașii și notițele sunt salvate pe acest dispozitiv și pot fi incluse în fișierele proiectului. Folosește exemple fictive sau lasă deoparte detaliile personale. Alege ce împărtășești.",
+        "step_passed": "Sărit deocamdată. Poți reveni când vrei.",
+        "step_marked": "Ai marcat acest pas ca finalizat.",
+        "step_target": "Ținta activității a fost înregistrată; aceasta nu măsoară abilitatea sau bunăstarea.",
+        "step_ready": "Când ești gata.",
+        "open_step_activity": "Deschide activitatea pentru acest pas",
+        "xp_progress": "{xp} / {target} XP SEL în total. Include activitatea anterioară; nu este un scor al abilităților.",
+        "time_progress": "{mins} / {target} minute active. Timpul nu este o dovadă a învățării.",
+        "default_reflect": "Ce ai observat? Ce ai păstra sau ce ai schimba?",
+        "self_check_ways": "Gândește, desenează, vorbește, folosește limbajul semnelor sau CAA. O notiță scrisă este opțională. Marchează tu pasul ca finalizat sau sari peste deocamdată.",
+        "length_target": "Acest pas salvat folosește o țintă de lungime: {count} / {target} caractere. Lungimea nu măsoară calitatea reflecției. Notița ta rămâne editabilă.",
+        "reflection_for": "Reflecție pentru {name}",
+        "optional_note": "Notiță opțională: ce te-a ajutat sau ce ai putea încerca în continuare...",
+        "write_reflection": "Scrie o reflecție...",
+        "mark_complete_aria": "Marchează „{name}” ca finalizat",
+        "step_reopened": "Pas redeschis: {name}",
+        "step_marked_named": "Ai marcat acest pas ca finalizat: {name}",
+        "mark_complete": "Marchează ca finalizat",
+        "step_passed_named": "Sărit deocamdată: {name}",
+        "filter_pathway": "parcurs: {name}",
+        "filter_station": "stație: {name}",
+        "no_tools_match": "Niciun instrument nu corespunde criteriilor {filters}",
+        "results_one": "Instrumente care corespund criteriilor {filters}: {count} din {total}",
+        "results_many": "Instrumente care corespund criteriilor {filters}: {count} din {total}",
+        "showing_all": "Se afișează toate instrumentele ({total})",
+        "crisis_elementary": "Dacă nu găsești imediat un adult, continuă să întrebi până te ascultă cineva. Meriți să primești ajutor.",
+        "crisis_call_or_text": "Sună sau trimite un SMS la",
+        "crisis_988": "linia 988 Suicide & Crisis Lifeline (gratuită, confidențială, 24/7).",
+        "crisis_text": "Trimite un SMS la",
+        "crisis_text_line": "linia Crisis Text Line (gratuită, confidențială, 24/7).",
+        "tool_selection": "Selectarea instrumentelor din SEL Hub",
+        "jumped_to_list": "Ai sărit la lista de instrumente. {summary}.",
+        "skip_to_list": "Sari la lista de instrumente",
+        "start_here": "Începe aici",
+        "quick_route": "Alege o rută rapidă sau răsfoiește mai jos.",
+        "browsing_all": "Răsfoiești toate instrumentele SEL",
+        "continue": "Continuă",
+        "continue_desc": "Reia ultimul instrument SEL pe care l-ai deschis.",
+        "starting_idea": "Idee de început",
+        "starting_idea_desc": "{name}: o activitate sugerată pentru acest nivel de clasă, cu exemple pe care le poți adapta.",
+        "starting_idea_none": "Deschide un punct de plecare potrivit pentru clasa ta.",
+        "try_a_reset_desc": "Explorează o strategie confortabilă; nu e obligatoriu să ajungi la calm.",
+        "journal": "Jurnal",
+        "journal_desc": "Scrie o reflecție; verifică opțiunile de salvare și de partajare.",
+        "browse_all": "Răsfoiește tot",
+        "browse_all_desc": "Caută sau filtrează întregul catalog.",
+        "need_chip_calm": "Să-mi calmez corpul",
+        "need_chip_feelings": "Să-mi numesc emoțiile",
+        "need_chip_stress": "Stres sau îngrijorare",
+        "need_chip_friend": "Conflict cu un prieten",
+        "need_chip_write": "Să scriu despre asta",
+        "need_chip_decision": "Să iau o decizie",
+        "need_chip_sleep": "Somn sau oboseală",
+        "need_chip_crisis": "Pericol sau criză",
+        "need_chip_relationshipsafety": "Siguranța în relații",
+        "need_chip_schoolsupport": "Sprijin la școală",
+        "need_chip_grief": "Doliu sau pierdere",
+        "storage_notice": "O parte din lucrul SEL este stocată pe acest dispozitiv. Funcțiile IA folosesc serviciul configurat. Alege ce salvezi sau ce împărtășești, mai ales pe un dispozitiv comun.",
+        "save_now_aria": "Salvează sau exportă acum lucrul SEL",
+        "save_now": "Salvează acum",
+        "recent_work": "Lucru SEL recent",
+        "saved_here": "Salvat aici. Exportă ca să-l păstrezi după închidere.",
+        "create_packet_aria": "Creează un Pachet de partajare SEL din punctele de salvare",
+        "review_packets_aria": "Verifică Pachetele de partajare SEL salvate",
+        "create_packet": "Creează un Pachet de partajare",
+        "review_packets": "Verifică Pachetele de partajare",
+        "open_related": "Deschide instrumentul asociat.",
+        "related_unavailable": "Instrumentul asociat nu este disponibil în acest SEL Hub.",
+        "streak_aria": "Serie SEL de {count} zile. Cea mai lungă: {longest} zile.",
+        "streak": "Serie de {count} zile",
+        "streak_best": "record {count}",
+        "find_activity": "Găsește o activitate",
+        "search_placeholder": "Caută emoții, prieteni, stres, obiective...",
+        "search_aria": "Caută instrumente SEL",
+        "support_options": "Opțiuni de sprijin",
+        "crisis_hard_moment": "Se pare că acesta ar putea fi un moment greu.",
+        "crisis_tell_adult": "Nu trebuie să rezolvi asta fără ajutor și nu trebuie să găsești mai întâi instrumentul potrivit. Te rog să spui acum unui adult de încredere — un consilier școlar, un profesor, un părinte sau alt adult în care ai încredere. Căutarea de aici nu anunță pe nimeni; o persoană află doar dacă îi spui tu.",
+        "open_crisis_companion": "Deschide Însoțitor în criză",
+        "find_by_need": "Găsește instrumente SEL după nevoie",
+        "i_need": "Am nevoie de...",
+        "cleared_search": "Căutarea SEL a fost ștearsă",
+        "clear_search_aria": "Șterge căutarea SEL",
+        "clear": "Șterge",
+        "cleared_need": "Filtrul de nevoie SEL a fost șters",
+        "showing_for": "Se afișează instrumentele SEL pentru {name}",
+        "clear_need_aria": "Șterge filtrul de nevoie: {name}",
+        "find_for_aria": "Găsește instrumente pentru: {name}",
+        "browse_by_area": "Răsfoiește după domeniul de abilități",
+        "filter_by_category": "Filtrează instrumentele SEL după categorie",
+        "showing_all_categories": "Se afișează toate categoriile",
+        "show_all_categories_aria": "Afișează toate categoriile (instrumente: {count})",
+        "all": "Toate",
+        "filtered_to": "Filtrat după {name}",
+        "filter_chip_aria": "Filtru: {name} (instrumente: {count})",
+        "pathways_heading": "Parcursuri SEL — secvențe de învățare selectate",
+        "started_pathway": "Ai pornit parcursul: {name}",
+        "pathway_started": "Parcursul {name} a pornit!",
+        "n_activities": "{count} activități",
+        "grades_range": "clasele {range}",
+        "use_with_care": "Folosește cu grijă",
+        "visits_many": "Vizite: {count}",
+        "visits_one": "{count} vizită",
+        "best_for": "Cel mai potrivit pentru: {mode}.",
+        "teacher_cue": "Indicație pentru profesor: {time}, {format}. {cue}",
+        "preview_first": "Previzualizează mai întâi",
+        "evidence_tradition": "Tradiția dovezilor: {tag}",
+        "approach_context": "Contextul abordării: {label}. {title}. Această insignă nu stabilește eficacitatea pentru această aplicație sau pentru un anumit elev.",
+        "step_opened": "Pasul {n} · Deschis",
+        "step_not_opened": "Pasul {n} · Nedeschis",
+        "suggested_grades": "Clase sugerate {range}",
+        "no_tools_current_view": "Niciun instrument nu corespunde vizualizării curente",
+        "empty_try": "Încearcă: calm, emoții, stres, prieten, scris, decizie sau somn.",
+        "filters_cleared": "Filtrele au fost șterse. Se afișează toate instrumentele ({total}).",
+        "show_all_tools": "Afișează toate instrumentele ({total})",
+        "error_loading": "Eroare la încărcarea instrumentului {name}",
+        "unknown_error": "Eroare necunoscută",
+        "back_to_tools_error": "Înapoi la instrumente",
+        "tool_load_failed": "Acest instrument nu s-a putut încărca.",
+        "loading_tool": "Se încarcă instrumentul...",
+        "file_not_arrived": "Fișierul nu a sosit.",
+        "check_connection": "Verifică conexiunea, apoi încearcă din nou.",
+        "plugin_fetching": "Fișierul pluginului încă se descarcă.",
+        "research_about": "Despre etichetele de cercetare",
+        "research_summary": "Ce înseamnă etichetele de cercetare",
+        "research_context": "Contextul abordării: {label}.",
+        "research_not_app": "Cercetarea despre o terapie, o programă sau un cadru nu stabilește că această activitate digitală are aceleași efecte. Etichetele descriu abordarea; ele nu evaluează această aplicație sau un elev.",
+        "research_check": "Înainte să alegi o activitate, verifică sursele citate, vârstele și contextele studiate, sprijinul necesar și rezultatele măsurate. Potrivirea cu populația și eficacitatea acestei adaptări nu sunt stabilite de aceste etichete.",
+        "research_casel_link": "CASEL: cum alegi și evaluezi un program SEL",
+        "project_save_failed": "Cererea de salvare a proiectului nu a reușit. Lasă acest hub deschis și încearcă Salvează / Exportă în aplicația principală.",
+        "project_save_requested": "S-a cerut salvarea proiectului. Finalizează salvarea în aplicația principală; aici nu s-a confirmat încă un fișier salvat.",
+        "saving_aria": "Salvare și partajare SEL",
+        "saving_failed_alert": "Unele modificări SEL nu au putut fi salvate pe acest dispozitiv. Lasă acest hub deschis și salvează o copie a proiectului; ciornele de stații trebuie salvate ca stații ca să fie incluse în acea copie.",
+        "saving_attention": "Salvarea necesită atenție",
+        "saving_title": "Salvare și partajare",
+        "saving_failed_body": "Lucrul curent rămâne disponibil în acest hub deschis. O salvare locală eșuată poate lăsa o copie mai veche pe acest dispozitiv.",
+        "saving_ok_body": "Stațiile salvate, notițele stațiilor și punctele de salvare ale hubului sunt stocate pe acest dispozitiv. Activitățile individuale au propriile comenzi de salvare; acest status nu confirmă că toate datele introduse în activități au fost salvate.",
+        "saving_drafts": "Ciornele de stații rămân pe acest dispozitiv pentru recuperare. Salvarea unei stații o adaugă la datele proiectului disponibile pentru Salvează / Exportă; cererea de salvare a proiectului nu confirmă că a fost scris un fișier.",
+        "saving_live": "O sesiune live este conectată. Poate trimite gazdei semnale de progres sau de siguranță. IA opțională trimite textul activității către serviciul configurat. Verifică un Pachet de partajare înainte să alegi să-l partajezi.",
+        "saving_ai": "IA opțională trimite textul activității către serviciul configurat. Un Pachet de partajare conține elementele și nivelurile de detaliu pe care le selectezi; verifică previzualizarea înainte de partajare.",
+        "saving_retry": "Reîncearcă salvarea locală",
+        "saving_request": "Cere salvarea proiectului",
+        "removed_stations": "Stații eliminate",
+        "removed_body": "Anulează eliminarea stației cât timp acest hub este deschis. Evidențele de exersare existente se păstrează.",
+        "station_restored": "Stație restaurată: {name}",
+        "undo_removal": "Anulează eliminarea: {name}",
+        "launch_routines_aria": "Rutine de lansare pentru profesori",
+        "launch_title": "Lansare pentru profesori",
+        "launch_note": "Păstrează exersarea fără note și împărtășirea opțională. Explică stocarea pe dispozitiv, funcțiile IA configurate și partajarea înainte de a începe. Folosește exemple fictive; invită elevii să ceară ajutor sau să sară peste.",
+        "launch_guardrails_aria": "Reguli de siguranță pentru lansarea de către profesor",
+        "launch_step_boundary": "Stabilește limita",
+        "launch_step_boundary_body": "Spune ce este privat, ce este opțional și cum pot elevii să sară peste.",
+        "launch_step_run": "Desfășoară rutina",
+        "launch_step_run_body": "Folosește instrumentele ca exersare. Păstrează reflecția formativă și fără note.",
+        "launch_step_close": "Încheie cu posibilitatea de a alege",
+        "launch_step_close_body": "Elevii decid mai târziu dacă salvează, exportă sau includ un punct de salvare.",
+        "launch_student_sees": "Ce vede elevul",
+        "launch_student_sees_default": "Elevii parcurg o rutină SEL privată și aleg ce împărtășesc.",
+        "launch_teacher_move": "Acțiunea profesorului",
+        "launch_teacher_move_default": "Prezintă activitatea ca exersare, nu ca evaluare.",
+        "launch_sharing_boundary": "Limita de împărtășire",
+        "launch_sharing_boundary_default": "Împărtășirea rămâne sub controlul elevului.",
+        "launch_tools_loading": "Se încarcă instrumentele...",
+        "launch_still_loading": "Încă se încarcă: {tools}",
+        "launch_preview_sensitive": "Previzualizează mai întâi instrumentele sensibile: {tools}",
+        "launch_load_aria": "Încarcă planul de lansare pentru profesor: {name}",
+        "launch_finish_draft": "Termină sau renunță mai întâi la ciorna curentă",
+        "launch_waiting": "Se așteaptă instrumentele",
+        "launch_loading": "Se încarcă",
+        "launch_load": "Încarcă în Constructorul de stații",
+        "builder_note_student": "Ce vede elevul: {text}",
+        "builder_note_teacher": "Acțiunea profesorului: {text}",
+        "builder_note_sharing": "Limita de împărtășire: {text}",
+        "builder_note_note": "Notița profesorului: {text}",
+        "launch_finish_existing": "Termină sau renunță mai întâi la ciorna de stație existentă.",
+        "launch_tools_still_loading": "Instrumentele de lansare pentru profesori încă se încarcă. Încearcă din nou peste un moment.",
+        "launch_tools_still_loading_sr": "Instrumentele de lansare pentru profesori încă se încarcă.",
+        "launch_default_name": "Rutină SEL pentru clasă",
+        "launch_default_short": "Rutină SEL",
+        "launch_loaded_sr": "Planul de lansare pentru profesor a fost încărcat în constructorul de stații: {name}",
+        "launch_loaded_toast": "Planul de lansare pentru profesor a fost încărcat în Constructorul de stații.",
+        "stations_summary": "Stații SEL personalizate — seturi create de profesori",
+        "station_delete_aria": "Șterge stația {name}",
+        "station_removed_sr": "Stația a fost eliminată. Poți anula până se închide acest hub.",
+        "station_removed": "Stația a fost eliminată",
+        "station_tools_count": "{count} instrumente",
+        "station_quests_count": "{count} misiuni",
+        "station_activated_sr": "Stația SEL activată: {name}",
+        "station_started": "{name} a pornit!",
+        "station_activate_aria": "Activează stația {name}",
+        "station_start": "Pornește stația",
+        "station_adapt_aria": "Adaptează o copie a stației {name}",
+        "station_adapt": "Adaptează o copie",
+        "draft_aria": "Ciornă de stație recuperabilă",
+        "draft_untitled": "Stație fără titlu",
+        "draft_body": "O ciornă de stație neterminată este salvată pe acest dispozitiv: {name}. Reia-o sau renunță la ea înainte să începi alta.",
+        "draft_resume": "Reia ciorna stației",
+        "draft_discard": "Renunță la ciorna stației",
+        "builder_opened": "Constructorul de stații s-a deschis",
+        "build_station_aria": "Construiește o nouă Stație SEL personalizată",
+        "build_station": "+ Construiește o stație personalizată"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Conexiunea profesorului este în pauză – îți păstrăm locul cât timp AlloFlow se reconectează.",
+    "host_stale": "Verificarea stării profesorului nu mai este actuală – sesiunea live poate fi încă conectată. Munca ta rămâne pe acest dispozitiv.",
+    "dismiss": "Închide",
+    "dismiss_aria": "Închide avertismentul despre starea profesorului",
+    "connecting": "Se conectează la clasă…",
+    "retrying": "Actualizările clasei sunt în pauză. Reconectare automată…",
+    "failed": "Actualizările clasei sunt deconectate. Verifică-ți conexiunea și încearcă să te reconectezi.",
+    "access": "Accesul la clasă a fost refuzat. Roagă-l pe profesor să verifice accesul, apoi reconectează-te.",
+    "sign_in": "Autentifică-te din nou pentru a recăpăta accesul la clasă, apoi reconectează-te.",
+    "reconnect": "Reconectează-te"
+  },
   "_version": "20260526223455T1779834895740",
   "tour": {
     "input_panel_title": "intrare panou",
@@ -5283,9 +6444,98 @@
     "measured_on_target": "Potrivit pentru {grade}",
     "measured_above": "Peste nivelul {grade}",
     "measured_below": "Sub nivelul {grade}",
-    "measured_note": "Flesch-Kincaid, măsurat pe acest text. Folosește Verifică nivelul pentru o verificare mai completă."
+    "measured_note": "Flesch-Kincaid, măsurat pe acest text. Folosește Verifică nivelul pentru o verificare mai completă.",
+    "listen_along": "Ascultă și urmărește",
+    "compare_listen_here": "Ascultă aici",
+    "compare_listen_here_original": "Ascultă aici textul original",
+    "compare_listen_here_adapted": "Ascultă aici textul adaptat",
+    "compare_stop_reading_original": "Oprește citirea textului original",
+    "compare_stop_reading_adapted": "Oprește citirea textului adaptat",
+    "compare_scroll_together": "Derulare împreună",
+    "reading_width": "Lățimea textului",
+    "width_narrow": "Îngustă",
+    "width_medium": "Medie",
+    "width_wide": "Lată",
+    "width_extra_wide": "Foarte lată",
+    "reading_width_characters": "aproximativ {count} de caractere pe rând",
+    "original_support_spoken": "Ajutor pentru cuvântul „{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Scrie cuvântul sau expresia care lipsește",
+      "explain_thinking": "Explică cum ai gândit",
+      "write_response": "Scrie răspunsul tău",
+      "submit_response": "Trimite răspunsul",
+      "numeric_answer": "Răspuns numeric",
+      "unit_named": "Unitate ({unit})",
+      "unit_optional": "Unitate (opțional)",
+      "submit_numeric": "Trimite răspunsul numeric",
+      "select_all_apply": "Selectează toate răspunsurile potrivite",
+      "submit_selections": "Trimite selecțiile",
+      "part1": "Partea 1 – Alege cel mai bun răspuns",
+      "part2": "Partea 2 – {prompt}",
+      "default_evidence_prompt": "Alege dovada care susține cel mai bine răspunsul.",
+      "submit_answer_evidence": "Trimite răspunsul și dovada",
+      "order_check": "Este corectă această ordine?",
+      "order_yes": "Da, este corectă",
+      "order_no": "Nu, ceva nu este la locul lui",
+      "select_misplaced": "Selectează mai sus un element care nu este la locul lui.",
+      "arrange_instructions": "Pune elementele în ordinea corectă. Dacă sunt deja bine așezate, lasă-le așa.",
+      "your_order": "Ordinea ta",
+      "move_up": "Mută în sus: {item}",
+      "move_down": "Mută în jos: {item}",
+      "done_arranging": "Am terminat de aranjat",
+      "principle_question": "După ce criteriu sunt ordonate?",
+      "principle_chronological": "ordine cronologică",
+      "principle_cause_effect": "cauză și efect",
+      "principle_process": "etapele unui proces",
+      "principle_size": "mărime",
+      "principle_hierarchy": "ierarhie",
+      "find_mismatch": "Găsește perechea care nu se potrivește",
+      "choose_mismatch": "Alege perechea care nu își are locul aici.",
+      "pair_with_question": "Cu ce ar trebui pus în pereche elementul selectat?",
+      "replacement_partner": "Noul partener din pereche",
+      "submit_replacement": "Trimite înlocuirea",
+      "retry_failed": "Răspunsul tău nu a putut fi trimis. Participarea ta este totuși înregistrată; încearcă din nou când ai conexiune.",
+      "return_to_quiz": "Revino la quizul live",
+      "minimize": "Minimizează",
+      "minimize_aria": "Ieși din ecranul quizului live",
+      "battle_result": "Rezultatul bătăliei",
+      "class_victory": "Victoria clasei!",
+      "battle_complete": "Bătălie încheiată",
+      "regroup": "O șansă de regrupare",
+      "end_no_scored": "Aceste întrebări au fost pentru discuție sau pentru evaluarea profesorului. Nu s-a acordat niciun scor de bătălie.",
+      "end_questions_complete": "Toate întrebările sunt finalizate. Rezultatul compară procentul de viață rămasă; la egalitate câștigă clasa.",
+      "end_victory": "Clasa ta a învins monstrul împreună.",
+      "end_regroup": "Folosiți explicația de mai jos ca să plănuiți împreună următoarea încercare.",
+      "end_review_last": "Revizuiește ultima întrebare de mai jos. Profesorul poate reporni bătălia.",
+      "boss_hp": "HP: {name}",
+      "boss_health": "Viață: {name}",
+      "battle_scoring_paused": "Punctajul bătăliei este în pauză",
+      "tick_of": "{value} din {total}",
+      "confidence_legend": "Cât de bine știai răspunsul?",
+      "confidence_knew": "Știam asta",
+      "confidence_guessed": "Am ghicit pe baza a ce știam",
+      "confidence_unsure": "Nu știam sigur",
+      "confidence_help": "Asta îl ajută pe profesor să vadă ce știi sigur și ce idei greșite ai. Nu schimbă niciodată corectitudinea răspunsului sau punctele.",
+      "retry_send": "Încearcă din nou să trimiți răspunsul",
+      "waiting_for_teacher": "Așteptăm ca profesorul să înceapă această întrebare.",
+      "sending": "Se trimite răspunsul…",
+      "receipt_only": "Participare înregistrată. Răspunsul tău nu a ajuns la profesor pentru evaluare.",
+      "complete_and_submit": "Completează și trimite răspunsul",
+      "poll_closed": "Această întrebare de opinie s-a închis.",
+      "receipt_not_scored": "Profesorul a primit doar participarea ta. Acest răspuns nu a fost punctat.",
+      "no_answer_submitted": "Nu s-a trimis niciun răspuns la această întrebare. Revizuiește-o împreună cu clasa.",
+      "answer_review": "Revizuirea răspunsului",
+      "review_answer": "Revizuiește răspunsul",
+      "discuss_with_teacher": "Discută răspunsul cu profesorul.",
+      "response_correct": "Răspuns corect.",
+      "response_partial": "Răspuns parțial corect.",
+      "response_incorrect": "Acest răspuns merită verificat din nou.",
+      "response_none": "Nu s-a trimis niciun răspuns.",
+      "response_submitted": "Răspuns trimis spre evaluare.",
+      "explanation": "Explicație"
+    },
     "title": "Evaluează",
     "mcq_count": "MCQ Numără",
     "reflections": "Reflecțies",

@@ -858,7 +858,7 @@
     '.rh-flight-species-profile-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}',
     '.rh-flight-species-profile-value{display:block;margin-top:3px;color:#fff;font:900 12px/1.15 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.rh-flight-telemetry-strip{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);display:flex;max-width:calc(100% - 20px);overflow:hidden;border:1px solid rgba(103,232,249,.72);border-radius:11px;background:rgba(2,6,23,.86);box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(6px);pointer-events:none;}',
-    '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"],.rh-flight-state[data-flight-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before,.rh-flight-state[data-flight-state="thermal"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="thermal"]::after{content:" · LIFT";font-size:8px;letter-spacing:.06em;color:#86efac;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}.rh-flight-state[data-flight-state="stunned"]::before{width:10px;height:10px;flex:0 0 10px;background:conic-gradient(#fdba74 var(--rh-recovery-progress,0%),rgba(251,146,60,.2) 0);mask:radial-gradient(farthest-side,transparent 55%,#000 60%);box-shadow:none;}@media(forced-colors:active){.rh-flight-state[data-flight-state="stunned"]::before{background:CanvasText;mask:none;}}',
+    '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"],.rh-flight-state[data-flight-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before,.rh-flight-state[data-flight-state="thermal"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="thermal"]::after{content:" · LIFT";font-size:8px;letter-spacing:.06em;color:#86efac;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}.rh-flight-state[data-flight-state="stunned"]::before{width:10px;height:10px;flex:0 0 10px;background:conic-gradient(#fdba74 var(--rh-recovery-progress,0%),rgba(251,146,60,.2) 0);mask:radial-gradient(farthest-side,transparent 55%,#000 60%);box-shadow:none;}.rh-flight-state[data-flight-state="focus"]{border-color:rgba(165,243,252,.9);color:#ecfeff;}.rh-flight-state[data-flight-state="focus"]::before{background:#a5f3fc;}@media(forced-colors:active){.rh-flight-state[data-flight-state="stunned"]::before{background:CanvasText;mask:none;}}',
     '.rh-flight-wind{position:absolute;z-index:13;top:94px;left:10px;display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:4px 7px;border:1px solid rgba(103,232,249,.48);border-radius:7px;background:rgba(2,6,23,.72);color:#bae6fd;font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none;}.rh-flight-wind::before{content:"↑";display:inline-block;flex:0 0 11px;width:11px;text-align:center;color:#67e8f9;font-size:11px;transform:rotate(var(--rh-wind-angle,0deg));}.rh-flight-wind[data-wind-flow="calm"]::before{content:"·";transform:none;}.rh-flight-wind[data-wind-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-wind[data-wind-state="thermal"]::before{color:#4ade80;}',
     '.rh-flight-altitude-gauge{position:absolute;z-index:13;top:50%;right:10px;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%);pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8));}.rh-flight-altitude-label{color:#bae6fd;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.12em;}.rh-flight-altitude-track{position:relative;width:8px;height:112px;border:1px solid rgba(148,163,184,.72);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-flight-altitude-track::before,.rh-flight-altitude-track::after{content:"";position:absolute;left:12px;width:5px;border-top:1px solid rgba(148,163,184,.62);}.rh-flight-altitude-track::before{top:25%;}.rh-flight-altitude-track::after{top:50%;}.rh-flight-altitude-fill{position:absolute;right:0;bottom:0;left:0;height:0;border-radius:inherit;background:linear-gradient(0deg,#f97316,#fbbf24 48%,#67e8f9);transition:height .18s linear,background .18s linear;}.rh-flight-altitude-marker{position:absolute;left:50%;bottom:0;width:16px;height:3px;transform:translate(-50%,50%);border-radius:99px;background:#fff7ed;box-shadow:0 0 8px rgba(251,191,36,.85);transition:bottom .18s linear,background .18s linear;}.rh-flight-altitude-value{min-width:36px;color:#f8fafc;font:800 9px/1 ui-monospace,Menlo,monospace;text-align:center;white-space:nowrap;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-track{border-color:rgba(248,113,113,.92);}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-fill{background:#f87171;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-marker{background:#fecaca;box-shadow:0 0 10px rgba(248,113,113,.9);}.rh-flight-altitude-gauge[data-altitude-state="high"] .rh-flight-altitude-track{border-color:rgba(103,232,249,.82);}',
     '.rh-talon-ratio-panel{display:grid;gap:10px;padding:11px 12px;border:1px solid rgba(251,146,60,.42);border-radius:11px;background:linear-gradient(110deg,rgba(67,20,7,.5),rgba(15,23,42,.78));}.rh-talon-ratio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#fed7aa;font:800 10px/1.25 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;}.rh-talon-ratio-head strong{color:#fef3c7;font:800 9px/1.25 ui-monospace,Menlo,monospace;letter-spacing:0;text-transform:none;}',
@@ -1040,6 +1040,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     if (fraction < 0.08) return 0;
     return Math.min(0.92, fraction);
   }
+  // Raptor focus slows the flight on a committed final approach, a stand-in for fast raptor
+  // vision: peregrines resolve flicker at 129 Hz or more (Potier et al. 2020, J Exp Biol).
+  var RAPTOR_FOCUS_SCALE = 0.4;
+  var RAPTOR_FOCUS_MAX_MS = 3000;   // real time per approach, so circling cannot hold it
+  // Pressing Strike throws the talons forward for this long (flight time) and the catch
+  // lands when prey comes within reach during it. A strike used to need the key on the
+  // exact frames the prey sat inside 5-7 m, about 0.2 s in a stoop.
+  var RAPTOR_TALON_THROW_MS = 450;
+  // Focus starts when the bird is heading for prey within 40 m and will close the last
+  // gap to reach in under 0.9 s at its closing speed.
+  function raptorFocusWanted(target, closingSpeed) {
+    if (!target || !(target.dot >= 0.55) || !(target.distance < 40) || !(closingSpeed > 2)) return false;
+    return Math.max(0, target.distance - target.reach) / closingSpeed < 0.9;
+  }
+  // Eases the flight clock toward the wanted rate over about a fifth of a second of real time.
+  function raptorEaseTimeScale(current, wanted, realDt) {
+    return wanted + (current - wanted) * Math.exp(-Math.max(0, realDt) / 0.18);
+  }
+  // With no pitch input the nose keeps the attitude the player set and eases toward level
+  // slowly; a climb eases back sooner, and a descent within 1.6 s of the ground flares into
+  // a skim. The old 0.4 s return swung the nose up whenever a key was released, which read
+  // as a bird that wanted to climb.
+  function raptorSettlePitch(pitch, speed, clearance, dt) {
+    var sink = -Math.sin(pitch) * Math.max(0, speed);
+    var rate = pitch > 0 ? 1.2 : sink > 0.5 && clearance < sink * 1.6 ? 3 : 0.35;
+    return pitch - pitch * (1 - Math.exp(-rate * dt));
+  }
+  // Binding to prey is an inelastic collision: the pair keeps the bird's momentum.
+  function raptorSpeedAfterCatch(speed, birdKg, preyKg) {
+    return speed * birdKg / Math.max(1e-6, birdKg + Math.max(0, preyKg));
+  }
   var RAPTOR_ACTION_KEYS = {
     turnLeft: 'a', turnRight: 'd', pitchUp: 'w', pitchDown: 's',
     altDown: 'q', altUp: 'e', dive: 'shift', pullUp: ' ', strike: 'f'
@@ -1091,6 +1122,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     });
     if (!Object.keys(clean).length) clean = Object.assign({}, RAPTOR_CONTROL_SCHEMES.classic.keys);
     return { id: 'custom', label: 'Custom', keys: clean };
+  }
+  // Invert pitch swaps the nose-up and nose-down keys, flight-sim style (push forward to
+  // dive). Every label reads the swapped map, so the key guide and cues name the right key.
+  function raptorSwappedPitchAction(action) {
+    return action === 'pitchUp' ? 'pitchDown' : action === 'pitchDown' ? 'pitchUp' : action;
+  }
+  function raptorInvertPitchScheme(scheme, invert) {
+    if (!invert) return scheme;
+    var keys = {};
+    Object.keys(scheme.keys).forEach(function(key) { keys[key] = raptorSwappedPitchAction(scheme.keys[key]); });
+    return { id: scheme.id, label: scheme.label + ', pitch inverted', keys: keys, invertPitch: true };
   }
   function raptorKeysForAction(schemeId, action) {
     var keys = raptorControlScheme(schemeId).keys;
@@ -9099,8 +9141,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var flightSession = rh.flightSession || null;
       var controlScheme = RAPTOR_CONTROL_SCHEMES[rh.controlScheme] || rh.controlScheme === 'custom' ? rh.controlScheme : 'classic';
       var customControlKeys = raptorCustomScheme(rh.customControlKeys).keys;
-      var activeScheme = controlScheme === 'custom' ? raptorCustomScheme(customControlKeys) : raptorControlScheme(controlScheme);
+      var invertPitch = rh.invertPitch === true;
+      var baseScheme = controlScheme === 'custom' ? raptorCustomScheme(customControlKeys) : raptorControlScheme(controlScheme);
+      var activeScheme = raptorInvertPitchScheme(baseScheme, invertPitch);
       var keyGuideEnabled = rh.keyGuideEnabled !== false;
+      var focusSlowmoEnabled = rh.focusSlowmo !== false;
       var rebindState = React.useState(null);
       var rebindAction = rebindState[0];
       var setRebindAction = rebindState[1];
@@ -9116,18 +9161,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var raw = String(event.key || '').toLowerCase();
           if (raw === 'escape') { setRebindAction(null); rhAnnounce(__alloT('stem.raptorhunt.sr_rebinding_cancelled', 'Rebinding cancelled')); return; }
           if (!raw || raw === 'tab' || raw.length > 12) return;
+          var storedAction = invertPitch ? raptorSwappedPitchAction(rebindAction) : rebindAction;
           var next = {};
           Object.keys(customControlKeys).forEach(function(key) {
-            if (customControlKeys[key] !== rebindAction && key !== raw) next[key] = customControlKeys[key];
+            if (customControlKeys[key] !== storedAction && key !== raw) next[key] = customControlKeys[key];
           });
-          next[raw] = rebindAction;
+          next[raw] = storedAction;
           setRH({ customControlKeys: next, controlScheme: 'custom' });
           setRebindAction(null);
           rhAnnounce(RAPTOR_ACTION_LABELS[rebindAction] + ' is now ' + raptorKeyName(raw));
         }
         window.addEventListener('keydown', onRebindKey, true);
         return function() { window.removeEventListener('keydown', onRebindKey, true); };
-      }, [rebindAction, customControlKeys]);
+      }, [rebindAction, customControlKeys, invertPitch]);
       // Actions a flight cannot proceed without. A custom map that drops one is still
       // saved, but the panel says so rather than leaving the learner stuck mid-air.
       var RAPTOR_REQUIRED_ACTIONS = ['turnLeft', 'turnRight', 'dive', 'pullUp', 'strike', 'pause'];
@@ -9195,7 +9241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { signal: 'altitude', title: 'Manage altitude', copy: 'Hold ' + controlLabel('dive') + ' to dive or ' + controlLabel('pullUp') + ' to pull up.' + (controlPair('altUp', 'altDown') ? ' ' + controlPair('altUp', 'altDown') + ' trims altitude precisely.' : '') },
         { signal: 'acuity', title: 'Look with raptor eyes', copy: 'Prey are small at 100 m, as they are for a real raptor. Press ' + (controlLabel('zoom') || 'Zoom') + ' for acuity zoom: the view narrows to a raptor\'s central fovea.' },
         { signal: 'target', title: 'Acquire prey', copy: 'Turn until the target assist brackets prey. Follow the text cue above.' },
-        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance and press ' + controlLabel('strike') + ' (Strike) when the cue says Strike ready.' }
+        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance, then press ' + controlLabel('strike') + ' (Strike) or click the prey when the cue says Strike ready. A moment early still counts: the talons stay out for about half a second.' }
       ];
       function finishHuntTutorial(message) {
         setTutorialStep(-1);
@@ -9227,11 +9273,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
       }
       useEffect(function() {
-        sendHuntCommand('controls', { scheme: controlScheme, keys: customControlKeys });
-      }, [controlScheme, JSON.stringify(customControlKeys), flightSession && flightSession.speciesId]);
+        sendHuntCommand('controls', { scheme: controlScheme, keys: customControlKeys, invertPitch: invertPitch });
+      }, [controlScheme, JSON.stringify(customControlKeys), invertPitch, flightSession && flightSession.speciesId]);
       useEffect(function() {
         sendHuntCommand('keyGuide', { enabled: keyGuideEnabled });
       }, [keyGuideEnabled, flightSession && flightSession.speciesId]);
+      useEffect(function() {
+        sendHuntCommand('focusSlowmo', { enabled: focusSlowmoEnabled });
+      }, [focusSlowmoEnabled, flightSession && flightSession.speciesId]);
       useEffect(function() {
         var step = tutorialStep >= 0 && HUNT_TUTORIAL[tutorialStep];
         sendHuntCommand('tutorialSignal', { signal: step ? step.signal : '' });
@@ -11336,9 +11385,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var readoutRange = Math.round(Math.max(0, Math.min(1, Number(simUI.targetRange) || 0)) * 100);
         var flightResolved = simUI.missionState === 'success' || simUI.missionState === 'failed';
         var flightGrounded = simUI.flightState === 'perched' || simUI.flightState === 'landed';
-        var strikeButtonState = flightResolved ? 'Flight ended' : simUI.paused ? 'Paused' : simUI.flightState === 'stunned' ? 'Recovering' : flightGrounded ? 'Launch first' : simUI.strikeReady === false ? 'Recovering' : '';
-        var strikeHelp = flightResolved ? 'Start another flight to strike' : simUI.paused ? 'Resume flight to strike' : simUI.flightState === 'stunned' ? 'Wait for recovery, then Take off' : flightGrounded ? 'Hold Take off' + (controlLabel('pullUp') ? ' (' + controlLabel('pullUp') + ')' : '') + ' before striking' : simUI.strikeReady === false ? 'Wait for the talons to reset' : '';
-        var strikeButtonLabel = strikeButtonState === 'Launch first' ? 'Strike unavailable until takeoff' : strikeButtonState ? 'Strike ' + strikeButtonState.toLowerCase() : 'Strike target' + (controlLabel('strike') ? ' - keyboard ' + controlLabel('strike') : '');
+        var strikeButtonState = flightResolved ? 'Flight ended' : simUI.paused ? 'Paused' : simUI.flightState === 'stunned' ? 'Recovering' : flightGrounded ? 'Launch first' : simUI.talonsOut ? 'Talons out' : simUI.strikeReady === false ? 'Recovering' : '';
+        var strikeHelp = flightResolved ? 'Start another flight to strike' : simUI.paused ? 'Resume flight to strike' : simUI.flightState === 'stunned' ? 'Wait for recovery, then Take off' : flightGrounded ? 'Hold Take off' + (controlLabel('pullUp') ? ' (' + controlLabel('pullUp') + ')' : '') + ' before striking' : simUI.talonsOut ? 'Talons out: the catch lands if prey comes within reach' : simUI.strikeReady === false ? 'Wait for the talons to reset' : '';
+        var strikeButtonLabel = strikeButtonState === 'Launch first' ? 'Strike unavailable until takeoff' : strikeButtonState === 'Talons out' ? 'Strike in progress, talons out' : strikeButtonState ? 'Strike ' + strikeButtonState.toLowerCase() : 'Strike target' + (controlLabel('strike') ? ' - keyboard ' + controlLabel('strike') : '');
         var readoutState = flightResolved ? simUI.missionState : simUI.paused ? 'paused' : readoutTargetState;
         var readoutStateLabel = flightResolved ? (simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended') : simUI.paused ? 'Paused' : readoutTargetLabel;
         var readoutCards = [
@@ -11594,6 +11643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { id: 'rh-flight-instructions', className: 'mt-2 leading-relaxed' },
                   h('div', { className: 'font-mono text-amber-200 mb-1' }, raptorSchemeBindings(activeScheme).slice(0, 6).map(function(row) { return row.keys.join('/') + ' ' + row.label.toLowerCase(); }).join(' - ')),
                   h('div', { className: 'font-mono text-amber-200 mb-2' }, raptorSchemeBindings(activeScheme).slice(6).map(function(row) { return row.keys[0] + ' ' + row.label.toLowerCase(); }).join(' - ') + ' - change presets in Settings'),
+                  h('div', { className: 'text-slate-300 mb-1', 'data-raptor-click-strike-hint': 'true' }, 'Click or tap prey within reach to strike. Pressing Strike a moment early still counts: the talons stay out for about half a second.'),
                   h('div', { className: 'text-slate-300' }, mission.pedagogy)
                 )
               )
@@ -11692,6 +11742,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       'data-raptor-control-scheme': controlScheme,
                       'data-raptor-control-keys': controlScheme === 'custom' ? JSON.stringify(customControlKeys) : undefined,
                       'data-raptor-key-guide': keyGuideEnabled ? 'true' : 'false',
+                      'data-raptor-focus-slowmo': focusSlowmoEnabled ? 'true' : 'false',
+                      'data-raptor-invert-pitch': invertPitch ? 'true' : 'false',
                       'data-raptor-tutorial-signal': (tutorialStep >= 0 && HUNT_TUTORIAL[tutorialStep] && HUNT_TUTORIAL[tutorialStep].signal) || undefined,
                       tabIndex: 0,
                       style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' }
@@ -11998,6 +12050,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             rhAnnounce(!keyGuideEnabled ? 'Key guide on. The keys for the current phase show at the bottom of the flight view.' : 'Key guide off');
                           }
                         }, keyGuideEnabled ? 'Key guide on' : 'Key guide off'),
+                        !thermalFlight && h('button', {
+                          type: 'button',
+                          className: 'rh-flight-btn',
+                          'data-raptor-focus-toggle': 'true',
+                          'aria-pressed': focusSlowmoEnabled ? 'true' : 'false',
+                          title: 'Time slows on a close approach to prey, a stand-in for fast raptor vision: peregrine falcons see flicker at 129 Hz or more (Potier et al. 2020).',
+                          onClick: function() {
+                            setRH({ focusSlowmo: !focusSlowmoEnabled });
+                            rhAnnounce(!focusSlowmoEnabled ? 'Raptor focus on. Time slows on a close approach to prey.' : 'Raptor focus off');
+                          }
+                        }, focusSlowmoEnabled ? 'Raptor focus on' : 'Raptor focus off'),
                         h('label', { className: 'rh-flight-quality' },
                           h('span', null, 'Controls'),
                           h('select', {
@@ -12017,6 +12080,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             h('option', { value: 'custom' }, 'Custom (rebind each key)')
                           )
                         ),
+                        h('button', {
+                          type: 'button',
+                          className: 'rh-flight-btn',
+                          'data-raptor-invert-pitch-toggle': 'true',
+                          'aria-pressed': invertPitch ? 'true' : 'false',
+                          title: 'Swap the nose-up and nose-down keys and reverse vertical drag, as in a flight simulator: push forward to dive.',
+                          onClick: function() {
+                            var nextInvert = !invertPitch;
+                            var downKey = raptorKeyLabel(raptorInvertPitchScheme(baseScheme, nextInvert), 'pitchDown');
+                            setRebindAction(null);
+                            setRH({ invertPitch: nextInvert });
+                            rhAnnounce((nextInvert ? 'Pitch inverted. ' : 'Pitch normal. ') + (downKey ? downKey + ' tips the nose down; ' : '') + 'drag ' + (nextInvert ? 'up' : 'down') + ' to tip the nose down.');
+                          }
+                        }, invertPitch ? 'Invert pitch on' : 'Invert pitch off'),
                         controlScheme === 'custom' && h('div', { className: 'rh-flight-rebind', 'data-raptor-rebind': 'true', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_custom_key_bindings', 'Custom key bindings') },
                           h('div', { className: 'rh-flight-rebind-seed' },
                             h('span', null, 'Start from'),
@@ -12115,7 +12192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         disabled: !!strikeButtonState,
                         'data-raptor-cue': strikeButtonState ? undefined : (simUI.controlCues || {}).strike || undefined,
                         'aria-label': strikeButtonLabel,
-                        title: strikeHelp || 'Strike when prey is within reach and aligned',
+                        title: strikeHelp || 'Strike when prey is within reach and aligned, or click the prey',
                         'aria-keyshortcuts': raptorActionShortcuts(activeScheme, 'strike')
                       }, strikeButtonState || 'Strike' + (controlLabel('strike') ? ' (' + controlLabel('strike') + ')' : ''))
                     )
@@ -16758,6 +16835,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var runMaxAltitude = Math.max(0, startY - terrainHeightAt(raptor.x, raptor.z));
         var strikeRecoveryUntil = 0;
         var strikeReady = true;
+        var talonThrow = { active: false, until: 0, preferred: null, closest: null };
+        var catchPullOutUntil = 0;
+        var focusTimeScale = 1, focusEdgeShown = 0, focusFlagShown = '';
+        var focusEpisode = { active: false, prey: null, spentMs: 0, explained: false };
+        var focusSlowmoEnabled = !(canvasEl.dataset && canvasEl.dataset.raptorFocusSlowmo === 'false');
         var lastSpawn = motionNow;
         // NEW v0.29: Track recent flight state for energy burn
         var energyEventLog = [];  // pulse events for HUD ("+120 kcal Pigeon", "-5 cal flapping")
@@ -16988,13 +17070,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Update control highlights only on input transitions, never on animation frames or key repeats.
           if (changed && !disposed) notifyUI({ heldKeys: Object.assign({}, keys) });
         }
-        var controlScheme = (function() {
+        var invertPitch = !!(canvasEl.dataset && canvasEl.dataset.raptorInvertPitch === 'true');
+        var controlScheme = raptorInvertPitchScheme((function() {
           var id = canvasEl.dataset ? canvasEl.dataset.raptorControlScheme : '';
           if (id === 'custom' && canvasEl.dataset.raptorControlKeys) {
             try { return raptorCustomScheme(JSON.parse(canvasEl.dataset.raptorControlKeys)); } catch (error) { /* fall through to the preset */ }
           }
           return raptorControlScheme(id);
-        })();
+        })(), invertPitch);
         var keyGuideEnabled = !(canvasEl.dataset && canvasEl.dataset.raptorKeyGuide === 'false');
         var keyGuide = null;
         var keyGuideState = '';
@@ -17079,14 +17162,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             zoom: zoomActive,
             assist: targetLockOn,
             sound: soundEnabled,
-            strikeReady: strikeReady
+            strikeReady: strikeReady,
+            talonsOut: !!(talonThrow && talonThrow.active)
           });
         }
         function updateFlightState(nextState) {
           if (!flightStateEl) return;
           var stateChanged = nextState !== lastFlightState || flightStateEl.dataset.flightState !== nextState;
           if (!stateChanged && nextState !== 'stunned') return;
-          var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', perched: 'Perched', landed: 'Landed', stunned: 'Stunned', paused: 'Paused' };
+          var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', perched: 'Perched', landed: 'Landed', stunned: 'Stunned', paused: 'Paused', focus: 'Focus · slowed' };
           var stateLabel = labels[nextState] || nextState;
           if (nextState === 'stunned' && missionOutcome === 'active') {
             var recoveryRemaining = Math.max(0, raptor.crashTimer || 0);
@@ -17140,8 +17224,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function controlKeyLabel(action) { return raptorKeyLabel(controlScheme, action); }
         function takeoffControlHint() { return 'Hold ' + (controlKeyLabel('pullUp') || 'Take off') + ' to launch'; }
-        function setControlScheme(schemeId, customKeys) {
-          controlScheme = schemeId === 'custom' ? raptorCustomScheme(customKeys) : raptorControlScheme(schemeId);
+        function setControlScheme(schemeId, customKeys, invert) {
+          invertPitch = !!invert;
+          controlScheme = raptorInvertPitchScheme(schemeId === 'custom' ? raptorCustomScheme(customKeys) : raptorControlScheme(schemeId), invertPitch);
           clearHeldInputs();
           // A paused flight has no HUD tick; refresh instructions without progressing the simulation.
           updateTargetFeedback(motionNow, false);
@@ -17368,21 +17453,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           dragState.lastY = event.clientY;
           dragState.pointerId = event.pointerId;
           canvasEl.style.cursor = 'grabbing';
+          tapGesture = studyActive ? null : { at: performance.now(), travel: 0, pointerId: event.pointerId };
           if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(event.pointerId);
           event.preventDefault();
         }
         function onPointerMove(event) {
-          if (!dragState.active || event.pointerId !== dragState.pointerId || (simPaused && !studyActive)) return;
+          if (!dragState.active) {
+            if (event.pointerType === 'mouse' && !simPaused && !studyActive) updatePreyHover(event.clientX, event.clientY);
+            return;
+          }
+          if (event.pointerId !== dragState.pointerId || (simPaused && !studyActive)) return;
           var dx = event.clientX - dragState.lastX;
           var dy = event.clientY - dragState.lastY;
           dragState.lastX = event.clientX;
           dragState.lastY = event.clientY;
+          if (tapGesture) tapGesture.travel += Math.abs(dx) + Math.abs(dy);
           if (studyActive) {
             studyAzimuth -= dx * 0.008; studyElevation += dy * 0.006; studyPreset = '';
             repaintPausedFlight(false); event.preventDefault(); return;
           }
           pendingPointerYaw=Math.max(-0.75,Math.min(0.75,pendingPointerYaw+dx*touchYawSensitivity));
-          pendingPointerPitch=Math.max(-0.45,Math.min(0.45,pendingPointerPitch-dy*touchPitchSensitivity));
+          pendingPointerPitch=Math.max(-0.45,Math.min(0.45,pendingPointerPitch+(invertPitch?dy:-dy)*touchPitchSensitivity));
           if (!touchHintDismissed && Math.abs(dx) + Math.abs(dy) > 4) {
             touchHintDismissed = true;
             notifyUI({ touchHint: false });
@@ -17393,6 +17484,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function onPointerUp(event) {
           if (!dragState.active || event.pointerId !== dragState.pointerId) return;
+          var tap = event.type === 'pointerup' && tapGesture && tapGesture.pointerId === event.pointerId &&
+            tapGesture.travel < 10 && performance.now() - tapGesture.at < 450;
+          tapGesture = null;
           if (event.type === 'pointercancel' || event.type === 'lostpointercapture') pendingPointerYaw = pendingPointerPitch = 0;
           var pointerId = dragState.pointerId;
           dragState.active = false;
@@ -17402,6 +17496,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (canvasEl.hasPointerCapture && canvasEl.hasPointerCapture(pointerId)) {
             canvasEl.releasePointerCapture(pointerId);
           }
+          if (tap) strikeAtScreenPoint(event.clientX, event.clientY);
+        }
+        // Click or tap an animal to strike at it; the Strike key and button do the same. A
+        // press that barely moves is a tap, anything longer stays a steering drag.
+        var tapGesture = null, hoverPrey = null, lastHoverCheck = 0;
+        var tapProbe = new THREE.Vector3();
+        function preyAtScreenPoint(clientX, clientY) {
+          var rect = canvasEl.getBoundingClientRect();
+          if (!rect.width || !rect.height) return null;
+          // Pick radius: the animal's size on screen, never under a 26 px touch target.
+          var focal = rect.height / 2 / Math.tan(camera.fov * Math.PI / 360);
+          var best = null, bestGap = Infinity;
+          for (var index = 0; index < preyMeshes.length; index++) {
+            var prey = preyMeshes[index];
+            tapProbe.copy(prey.mesh.position).project(camera);
+            if (tapProbe.z < -1 || tapProbe.z > 1) continue;
+            var gap = Math.hypot(clientX - (rect.left + (tapProbe.x + 1) / 2 * rect.width),
+              clientY - (rect.top + (1 - tapProbe.y) / 2 * rect.height));
+            var radius = Math.max(26, Math.min(90, (Number(prey.data.sizeM) || 0.4) * focal /
+              Math.max(0.5, camera.position.distanceTo(prey.mesh.position))));
+            if (gap <= radius && gap < bestGap) { best = prey; bestGap = gap; }
+          }
+          return best;
+        }
+        function strikeAtScreenPoint(clientX, clientY) {
+          if (simPaused || studyActive || missionOutcome !== 'active' || mission.id === 'thermalKettle') return;
+          var prey = preyAtScreenPoint(clientX, clientY);
+          if (!prey) return;
+          var info = evaluatePreyTarget(prey, preyMeshes.indexOf(prey));
+          attendedPrey = prey;
+          // Inside the distance the talons can close during one throw, a click strikes;
+          // farther out it picks the animal and says how close to get.
+          var throwReach = talonThrowReach(info);
+          if (!raptor.landed && !raptor.crashed && !activePerch && info.distance <= throwReach) {
+            strike(prey);
+            return;
+          }
+          var advice = raptor.landed || raptor.crashed || activePerch ? 'take off first' : 'too far, get closer and click again';
+          energyEventLog.push({ msg: '🎯 ' + prey.data.label + ' - ' + advice, t: motionNow, color: '#fde68a' });
+          rhAnnounce(prey.data.label + ' selected: ' + advice + '.');
+          updateTargetFeedback(motionNow, false);
+        }
+        function updatePreyHover(clientX, clientY) {
+          var nowMs = performance.now();
+          if (nowMs - lastHoverCheck < 60) return;
+          lastHoverCheck = nowMs;
+          var prey = mission.id === 'thermalKettle' ? null : preyAtScreenPoint(clientX, clientY);
+          if (prey === hoverPrey) return;
+          hoverPrey = prey;
+          canvasEl.style.cursor = prey ? 'pointer' : 'crosshair';
         }
 
         var hudParent2 = canvasEl.parentElement;
@@ -18349,9 +18493,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             weather.gustPhase = 0;
             updateEnvironmentalLight(dayPhase);
           } else if (action === 'controls' && value) {
-            setControlScheme(value.scheme, value.keys);
+            setControlScheme(value.scheme, value.keys, value.invertPitch);
           } else if (action === 'keyGuide' && value) {
             setKeyGuideEnabled(value.enabled);
+          } else if (action === 'focusSlowmo' && value) {
+            focusSlowmoEnabled = !!value.enabled;
           } else if (action === 'tutorialSignal') {
             tutorialSignal = value && value.signal ? String(value.signal) : '';
             refreshKeyGuide(true);
@@ -18404,6 +18550,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             motionTimeMs: motionNow,
             strikeReady: strikeReady,
             strikeRecoveryMs: Math.max(0, strikeRecoveryUntil - motionNow),
+            talonThrowActive: talonThrow.active,
+            talonThrowMs: talonThrow.active ? Math.max(0, talonThrow.until - motionNow) : 0,
+            catchPullOutMs: Math.max(0, catchPullOutUntil - motionNow),
+            focusTimeScale: Math.round(focusTimeScale * 1000) / 1000,
+            focusActive: focusEpisode.active,
+            focusSlowmoEnabled: focusSlowmoEnabled,
+            invertPitch: invertPitch,
             strikeFeedbackKind: strikeFeedback.kind,
             strikeFeedbackAgeMs: strikeFeedback.kind === 'idle' ? 0 : Math.max(0, motionNow - strikeFeedback.startedAt),
             pendingHuntActions: pendingFlightActions.length,
@@ -18414,6 +18567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             calories: raptor.calories, stamina: raptor.stamina, missionCatches: missionCatches,
             targetCanStrike: !!(snapshotTarget && snapshotTarget.canStrike),
             targetState: lastTargetState,
+            targetCorrection: lastTargetCorrection,
             landed: !!raptor.landed,
             crashed: !!raptor.crashed,
             wingAngle: wingPose.angle,
@@ -18900,112 +19054,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var lastCatchPreyMassKg = 0;
         var lastCatchCalories = 0;
         var lastCatchCapped = false;
-        function strike() {
+        function strike(preferredPrey) {
           if(simPaused || raptor.landed || raptor.crashed || activePerch)return;
           markTutorialSignal('strike');
           if (!strikeReady) return;
-          var now = motionNow;
-          strikeRecoveryUntil = now + 400;
           strikeReady = false;
+          talonThrow.active = true;
+          talonThrow.until = motionNow + RAPTOR_TALON_THROW_MS;
+          talonThrow.preferred = preferredPrey || null;
+          talonThrow.closest = null;
           publishControlState();
+          resolveTalonThrow(true);
+        }
+        // The bird's speed toward the prey, less the prey's speed away from it.
+        function preyClosingSpeed(target) {
+          if (!target || !(target.distance > 0.001)) return 0;
+          var position = target.prey.mesh.position;
+          return raptor.speed * target.dot - ((target.prey.vx || 0) * (position.x - raptor.x) +
+            (target.prey.vz || 0) * (position.z - raptor.z)) / target.distance;
+        }
+        // How far off prey can be when the talons go out and still be caught during the throw.
+        function talonThrowReach(target) {
+          return target.reach + Math.max(0, preyClosingSpeed(target)) * RAPTOR_TALON_THROW_MS / 1000;
+        }
+        // Each frame the talons are out: take the first prey inside reach (the clicked one
+        // first), or when the throw ends report the miss from the closest approach.
+        function resolveTalonThrow(firstFrame) {
+          if (!talonThrow.active) return;
+          var now = motionNow, hit = null, preferred = talonThrow.preferred;
+          var preferredIndex = preferred ? preyMeshes.indexOf(preferred) : -1;
+          var aimed = preferredIndex !== -1 ? evaluatePreyTarget(preferred, preferredIndex) : acquireTarget();
+          if (aimed && (!talonThrow.closest || aimed.distance < talonThrow.closest.distance)) talonThrow.closest = aimed;
+          for (var index = 0; index < preyMeshes.length; index++) {
+            var candidate = evaluatePreyTarget(preyMeshes[index], index);
+            // Only prey the HUD would call READY; the throw adds time, not a wider angle.
+            if (!candidate.canStrike) continue;
+            if (!hit || candidate.prey === preferred || (hit.prey !== preferred && candidate.distance < hit.distance)) hit = candidate;
+          }
+          // The throw only waits for prey that is ahead and not yet close enough (a press a
+          // moment early). Nothing in view, prey off to the side, or prey beyond what one throw
+          // can close misses at once, with the same coaching as before.
+          var hopeless = firstFrame && (!aimed || aimed.dot < 0.7 || aimed.distance > talonThrowReach(aimed));
+          if (hit) {
+            endTalonThrow();
+            catchPrey(hit.index, now);
+          } else if (hopeless || now >= talonThrow.until || raptor.landed || raptor.crashed) {
+            var closest = talonThrow.closest;
+            endTalonThrow();
+            missStrike(closest, now);
+          }
+        }
+        // Raptor focus: time eases down while the bird closes on prey it is heading for, once
+        // per approach and for at most RAPTOR_FOCUS_MAX_MS of real time, so circling cannot
+        // hold it. It re-arms when the bird opens past 45 m or turns to another animal.
+        function updateRaptorFocus(targetInfo, realDt) {
+          var candidate = null;
+          if (focusSlowmoEnabled && missionOutcome === 'active' && !raptor.landed && !raptor.crashed && !activePerch &&
+              !practiceTrail.active && mission.id !== 'thermalKettle') candidate = targetInfo || acquireTarget();
+          if (!focusEpisode.active && focusEpisode.prey &&
+              (!candidate || candidate.prey !== focusEpisode.prey || candidate.distance > 45)) {
+            focusEpisode.prey = null;
+            focusEpisode.spentMs = 0;
+          }
+          var want = (!!candidate && raptorFocusWanted(candidate, preyClosingSpeed(candidate)) &&
+            !(candidate.prey === focusEpisode.prey && focusEpisode.spentMs >= RAPTOR_FOCUS_MAX_MS)) ||
+            (focusEpisode.active && talonThrow.active);
+          if (want && !focusEpisode.active) {
+            focusEpisode.active = true;
+            if (candidate) focusEpisode.prey = candidate.prey;
+            if (!focusEpisode.explained) {
+              focusEpisode.explained = true;
+              energyEventLog.push({ msg: '👁 Raptor focus: time slows near prey', t: motionNow, color: '#a5f3fc' });
+              rhAnnounce('Raptor focus: time slows near prey. Strike when it is in reach.');
+            }
+          } else if (!want && focusEpisode.active) {
+            focusEpisode.active = false;
+          }
+          if (focusEpisode.active) focusEpisode.spentMs += realDt * 1000;
+          focusTimeScale = raptorEaseTimeScale(focusTimeScale, focusEpisode.active ? RAPTOR_FOCUS_SCALE : 1, realDt);
+          var edge = Math.max(0, Math.min(1, (1 - focusTimeScale) / (1 - RAPTOR_FOCUS_SCALE)));
+          if (edge < 0.005) edge = 0;
+          if (Math.abs(edge - focusEdgeShown) > 0.01 || (edge === 0 && focusEdgeShown !== 0)) {
+            focusEdgeShown = edge;
+            focusVig.style.opacity = String(Math.round(edge * 90) / 100);
+          }
+          var focusFlag = focusEpisode.active ? 'true' : 'false';
+          if (focusFlag !== focusFlagShown) {
+            focusFlagShown = focusFlag;
+            setRaptorCanvasData('raptorFocus', focusFlag);
+          }
+        }
+        function endTalonThrow() {
+          talonThrow.active = false;
+          talonThrow.preferred = talonThrow.closest = null;
+          strikeRecoveryUntil = motionNow + 400;
           queueFlightAction(function() {
             strikeReady = true;
             publishControlState();
           }, 400);
-          var targetInfo = acquireTarget();
-          var hitIdx = targetInfo && targetInfo.canStrike ? targetInfo.index : -1;
-          if (hitIdx >= 0) {
-            var caught = preyMeshes[hitIdx];
-            spawnCatchFx(caught.mesh.position.x, caught.mesh.position.y, caught.mesh.position.z, caught.data.color || 0xfde047, caught.surfaceMode);
-            scene.remove(caught.mesh);
-            caught.mesh.traverse(function(object) {
-              if (object.geometry) object.geometry.dispose();
-              if (object.material) {
-                if (Array.isArray(object.material)) object.material.forEach(function(material) { material.dispose(); });
-                else object.material.dispose();
-              }
-            });
-            preyMeshes.splice(hitIdx, 1);
-            runCatches++;
-            missionCatches += 1;
-
-            // Prey energy from its rendered size. This tool carries THREE inconsistent
-            // accounts of what a prey animal is worth:
-            //   1. here, sizeM^2.5 * 4, then treated as kilograms of meat;
-            //   2. the prey species reference table, which gives body masses
-            //      (cottontail 800-1500 g, mallard 0.7-1.5 kg, meadow vole 40-60 g);
-            //   3. the maths problems, which use round figures (vole 30 kcal,
-            //      songbird 30 kcal, "1 prey item = 50 kcal avg").
-            // All three disagree, but they agree on the DIRECTION: (1) was far too low,
-            // 4x to 13x below the reference table on every one of the eight prey the
-            // table actually gives a mass for. The student sees that as the "+N kcal"
-            // on every catch.
-            //
-            // Calibrated to (2), the most systematic of the three: fitting in log space
-            // over those eight leaves the exponent where it was (2.596 fitted against
-            // 2.5 shipped, R-squared 0.91) and moves the coefficient to 27.3, which puts
-            // six of the eight inside the table's own stated ranges where none were
-            // before. That coefficient yields BODY mass, so the edible fraction is now
-            // explicit rather than folded into a constant: a raptor eats muscle and
-            // leaves bone, fur and feather, so roughly two thirds of the carcass.
-            // Residual disagreement with the round figures in (3) is a subject-matter
-            // question about what "a songbird" weighs, not something a coefficient fixes.
-            var preyBodyMassKg = Math.max(0.01, Math.pow(caught.data.sizeM, 2.5) * 27.3);
-            var preyMassKg = preyBodyMassKg * 0.65;
-            var caloriesGained = Math.min(preyMassKg * 1300, species.massKg * 0.3 * 1300);
-            missionCalories += caloriesGained;
-            raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
-            raptor.starving = false;
-            lastCatchPreyBodyKg = Math.round(preyBodyMassKg * 1000) / 1000;
-            lastCatchPreyMassKg = Math.round(preyMassKg * 1000) / 1000;
-            lastCatchCalories = Math.round(caloriesGained);
-            lastCatchCapped = (preyMassKg * 1300) > (species.massKg * 0.3 * 1300);
-            var catchFeedback = 'CATCH - ' + caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal';
-            recordFlightEvent('catch', 'Catch secured', caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal');
-            beginStrikeFeedback('hit', catchFeedback, now, mission.id === 'highStoop' && !highStoopQualifyingDive() ? 'Catch counted, but High Stoop needs a catch while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster. Build another approach.' : 'Glide to conserve energy, then scan for the next target.');
-            rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_strike', 'Strike! {value1}'), { value1: catchFeedback }));
-            playSpeciesCall('strike');
-            queueFlightAction(function() { playSpeciesCall('screech'); }, 200);
-            if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
-            setRH(function(prev) {
-              var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
-              var nextStats = { catches: stats.catches + 1, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
-              var allStats = Object.assign({}, prev.huntStats || {});
-              allStats[species.id] = nextStats;
-              return Object.assign({}, prev, { huntStats: allStats });
-            });
-            queueFlightAction(function() {
-              var newPrey = spawnPrey();
-              if (newPrey) preyMeshes.push(newPrey);
-            }, 1500);
-            // Talon and particle feedback must not teleport the flight body.
-            if (mission.id === 'highStoop' && highStoopQualifyingDive()) {
-              finishMission(true, mission.successText);
+          publishControlState();
+        }
+        function catchPrey(hitIdx, now) {
+          var caught = preyMeshes[hitIdx];
+          spawnCatchFx(caught.mesh.position.x, caught.mesh.position.y, caught.mesh.position.z, caught.data.color || 0xfde047, caught.surfaceMode);
+          scene.remove(caught.mesh);
+          caught.mesh.traverse(function(object) {
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) {
+              if (Array.isArray(object.material)) object.material.forEach(function(material) { material.dispose(); });
+              else object.material.dispose();
             }
-            evaluateMission();
-          } else {
-            var missFeedback = strikeMissReason(targetInfo);
-            var missMessage = missFeedback.code + ' - ' + missFeedback.detail;
-            var strikeTip = {
-              'NO TARGET': 'Try a slow turn to bring prey into view before striking.',
-              'TOO FAR': 'Close the gap before striking. The range meter fills as you approach.',
-              'TURN LEFT': 'Turn gently left, then steady your heading when the target is ready.',
-              'TURN RIGHT': 'Turn gently right, then steady your heading when the target is ready.',
-              'PITCH UP': 'Raise the bird’s flight angle gently, then steady your approach.',
-              'PITCH DOWN': 'Lower the bird’s flight angle gently, then steady your approach.',
-              'ALIGN': 'Use small steering corrections to keep prey directly ahead.'
-            }[missFeedback.code];
-            beginStrikeFeedback('miss', missMessage, now, strikeTip);
-            recordFlightEvent('miss', 'Strike missed', missMessage);
-            rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_miss', 'Miss. {value1}'), { value1: missMessage }));
-            setRH(function(prev) {
-              var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
-              var nextStats = { catches: stats.catches, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
-              var allStats = Object.assign({}, prev.huntStats || {});
-              allStats[species.id] = nextStats;
-              return Object.assign({}, prev, { huntStats: allStats });
-            });
+          });
+          preyMeshes.splice(hitIdx, 1);
+          runCatches++;
+          missionCatches += 1;
+
+          // Prey energy from its rendered size. This tool carries THREE inconsistent
+          // accounts of what a prey animal is worth:
+          //   1. here, sizeM^2.5 * 4, then treated as kilograms of meat;
+          //   2. the prey species reference table, which gives body masses
+          //      (cottontail 800-1500 g, mallard 0.7-1.5 kg, meadow vole 40-60 g);
+          //   3. the maths problems, which use round figures (vole 30 kcal,
+          //      songbird 30 kcal, "1 prey item = 50 kcal avg").
+          // All three disagree, but they agree on the DIRECTION: (1) was far too low,
+          // 4x to 13x below the reference table on every one of the eight prey the
+          // table actually gives a mass for. The student sees that as the "+N kcal"
+          // on every catch.
+          //
+          // Calibrated to (2), the most systematic of the three: fitting in log space
+          // over those eight leaves the exponent where it was (2.596 fitted against
+          // 2.5 shipped, R-squared 0.91) and moves the coefficient to 27.3, which puts
+          // six of the eight inside the table's own stated ranges where none were
+          // before. That coefficient yields BODY mass, so the edible fraction is now
+          // explicit rather than folded into a constant: a raptor eats muscle and
+          // leaves bone, fur and feather, so roughly two thirds of the carcass.
+          // Residual disagreement with the round figures in (3) is a subject-matter
+          // question about what "a songbird" weighs, not something a coefficient fixes.
+          var preyBodyMassKg = Math.max(0.01, Math.pow(caught.data.sizeM, 2.5) * 27.3);
+          var preyMassKg = preyBodyMassKg * 0.65;
+          var caloriesGained = Math.min(preyMassKg * 1300, species.massKg * 0.3 * 1300);
+          missionCalories += caloriesGained;
+          raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
+          raptor.starving = false;
+          lastCatchPreyBodyKg = Math.round(preyBodyMassKg * 1000) / 1000;
+          lastCatchPreyMassKg = Math.round(preyMassKg * 1000) / 1000;
+          lastCatchCalories = Math.round(caloriesGained);
+          lastCatchCapped = (preyMassKg * 1300) > (species.massKg * 0.3 * 1300);
+          var catchFeedback = 'CATCH - ' + caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal';
+          recordFlightEvent('catch', 'Catch secured', caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal');
+          beginStrikeFeedback('hit', catchFeedback, now, mission.id === 'highStoop' && !highStoopQualifyingDive() ? 'Catch counted, but High Stoop needs a catch while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster. Build another approach.' : 'Glide to conserve energy, then scan for the next target.');
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_strike', 'Strike! {value1}'), { value1: catchFeedback }));
+          playSpeciesCall('strike');
+          queueFlightAction(function() { playSpeciesCall('screech'); }, 200);
+          if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
+          setRH(function(prev) {
+            var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
+            var nextStats = { catches: stats.catches + 1, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
+            var allStats = Object.assign({}, prev.huntStats || {});
+            allStats[species.id] = nextStats;
+            return Object.assign({}, prev, { huntStats: allStats });
+          });
+          queueFlightAction(function() {
+            var newPrey = spawnPrey();
+            if (newPrey) preyMeshes.push(newPrey);
+          }, 1500);
+          // Talon and particle feedback must not teleport the flight body.
+          if (mission.id === 'highStoop' && highStoopQualifyingDive()) {
+            finishMission(true, mission.successText);
           }
+          evaluateMission();
+          // Binding to prey is an inelastic collision, so the pair keeps the bird's momentum and
+          // slows by bird / (bird + prey); then the bird pulls out with its catch. A catch just
+          // above the ground used to fly on at stoop speed into a crash that cleared the run.
+          raptor.speed = raptorSpeedAfterCatch(raptor.speed, species.massKg, preyBodyMassKg);
+          catchPullOutUntil = now + 900;
+        }
+        function missStrike(targetInfo, now) {
+          var missFeedback = strikeMissReason(targetInfo);
+          var missMessage = missFeedback.code + ' - ' + missFeedback.detail;
+          var strikeTip = {
+            'NO TARGET': 'Try a slow turn to bring prey into view before striking.',
+            'TOO FAR': 'Close the gap before striking. The range meter fills as you approach, and a press a moment early still counts.',
+            'TURN LEFT': 'Turn gently left, then steady your heading when the target is ready.',
+            'TURN RIGHT': 'Turn gently right, then steady your heading when the target is ready.',
+            'PITCH UP': 'Raise the bird’s flight angle gently, then steady your approach.',
+            'PITCH DOWN': 'Lower the bird’s flight angle gently, then steady your approach.',
+            'ALIGN': 'Use small steering corrections to keep prey directly ahead.'
+          }[missFeedback.code];
+          beginStrikeFeedback('miss', missMessage, now, strikeTip);
+          recordFlightEvent('miss', 'Strike missed', missMessage);
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_miss', 'Miss. {value1}'), { value1: missMessage }));
+          setRH(function(prev) {
+            var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
+            var nextStats = { catches: stats.catches, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
+            var allStats = Object.assign({}, prev.huntStats || {});
+            allStats[species.id] = nextStats;
+            return Object.assign({}, prev, { huntStats: allStats });
+          });
         }
 
         // HUD overlay. Telemetry is deliberately non-live; only discrete events
@@ -19081,6 +19326,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var diveVig = document.createElement('div');
         diveVig.style.cssText = 'position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(6,10,22,0.62) 100%);';
         hudParent.appendChild(diveVig);
+        // Raptor focus: a cool edge while the flight clock runs slow.
+        var focusVig = document.createElement('div');
+        focusVig.setAttribute('aria-hidden', 'true');
+        focusVig.dataset.raptorFocusEdge = 'true';
+        focusVig.style.cssText = 'position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center, rgba(8,47,73,0) 55%, rgba(8,47,73,0.55) 100%);box-shadow:inset 0 0 0 2px rgba(103,232,249,0.6);';
+        hudParent.appendChild(focusVig);
         // Target frame and a viewport-safe caption follow the same projected animal.
         var reticle = document.createElement('div');
         reticle.className = 'rh-target-tracker';
@@ -19954,6 +20205,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             return;
           }
           animId = requestAnimationFrame(loop);
+          // Raptor focus slows the flight clock; the controls answer in close to real time,
+          // so the approach can be refined while the world slows.
+          var realDt = dt;
+          dt *= focusTimeScale;
+          var steerDt = realDt * Math.sqrt(Math.min(1, focusTimeScale));
           motionNow += dt * 1000;
           runFlightActions();
           renderFrameCount++;
@@ -19975,9 +20231,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // D/right adds. Holding both cancels cleanly.
           var turnInput = (keys['d'] ? 1 : 0) - (keys['a'] ? 1 : 0);
           if(keys['a'] && keys['d']) turnAxis.value=0;
-          smoothFlightAxis(turnAxis,turnInput,turnInput===0?26:18,dt);
+          smoothFlightAxis(turnAxis,turnInput,turnInput===0?26:18,steerDt);
           raptor.yaw += turnAxis.integral * 1.5;
-          var pointerBlend=dampingAlpha(22,dt),pointerYawStep=pendingPointerYaw*pointerBlend,pointerPitchStep=pendingPointerPitch*pointerBlend;
+          var pointerBlend=dampingAlpha(22,realDt),pointerYawStep=pendingPointerYaw*pointerBlend,pointerPitchStep=pendingPointerPitch*pointerBlend;
           pendingPointerYaw-=pointerYawStep;pendingPointerPitch-=pointerPitchStep;
           raptor.yaw+=pointerYawStep;
           raptor.pitch=Math.max(-0.8,Math.min(0.8,raptor.pitch+pointerPitchStep));
@@ -20000,13 +20256,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           raptor.yaw += worldEdgeSteerRate * dt;
           var pitchInput=(keys['w']?1:0)-(keys['s']?1:0);
           if(keys['w'] && keys['s']) pitchAxis.value=0;
-          smoothFlightAxis(pitchAxis,pitchInput,pitchInput===0?26:18,dt);
+          smoothFlightAxis(pitchAxis,pitchInput,pitchInput===0?26:18,steerDt);
           raptor.pitch=Math.max(-0.8,Math.min(0.8,raptor.pitch+pitchAxis.integral*0.8));
           if (keys['q']) raptor.y -= 8 * dt;
           if (keys['e'] && mission.id !== 'thermalKettle') raptor.y += 8 * dt;
 
           var restScanPitch=raptor.pitch;
-          var diveKey = !!keys['shift'] && !wasLanded && !wasCrashed;
+          var diveKey = !!keys['shift'] && !wasLanded && !wasCrashed && motionNow >= catchPullOutUntil;
           var pullUpKey = !!keys[' '];
           if (mission.id === 'thermalKettle' && pullUpKey) {
             finishMission(false, 'Pull-up flapping is not allowed in this mission. Turn into the rings and glide to climb.');
@@ -20018,7 +20274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var targetSpeed;
           if (diveKey) {
             targetSpeed = raptor.stoopMax;
-            raptor.pitch = Math.max(raptor.pitch - 1.2 * dt, -1.0);
+            raptor.pitch = Math.max(raptor.pitch - 1.2 * steerDt, -1.0);
           } else if (pullUpKey) {
             targetSpeed = Math.max(8, raptor.maxLevel * 0.5);
             // Pulling out of a dive is limited by the load the bird can carry, not by a
@@ -20035,8 +20291,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           } else {
             targetSpeed = raptor.maxLevel * 0.7;
             if (!keys['w'] && !keys['s']) {
-              raptor.pitch += (0 - raptor.pitch) * (1 - Math.exp(-2.5 * dt));
+              raptor.pitch = raptorSettlePitch(raptor.pitch, raptor.speed, raptor.y - terrainHeightAt(raptor.x, raptor.z) - 1.5, dt);
             }
+          }
+          if (motionNow < catchPullOutUntil && !wasLanded && !wasCrashed && raptor.pitch < 0.15) {
+            // Carrying prey, the bird pulls out at its own G limit, as in the pull-up above.
+            raptor.pitch = Math.min(0.15, raptor.pitch + Math.min(1.5, (Math.max(1.5, Math.min(30, raptor.maxG || 5)) * 9.81) / Math.max(8, raptor.speed)) * dt);
           }
           var accel = diveKey ? 12 : pullUpKey ? 8 : 4;
           if (raptor.exhausted) {
@@ -20423,7 +20683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var strikeEnvelope = strikeFeedbackActive ? Math.sin(Math.min(1, strikeAge / 420) * Math.PI) : 0;
           // The guidance banner presents strike results; retain the shared clock for physical feedback.
           if (!strikeFeedbackActive) strikeFeedback.kind = 'idle';
-          var talonStrikeAmount = !_rmFX && !raptor.landed && !raptor.crashed && strikeFeedbackActive ? Math.max(0, 1 - strikeAge / 360) : 0;
+          var talonStrikeAmount = _rmFX || raptor.landed || raptor.crashed ? 0 : talonThrow.active ? 1 : strikeFeedbackActive ? Math.max(0, 1 - strikeAge / 360) : 0;
           strikeFootExtension+=(talonStrikeAmount-strikeFootExtension)*dampingAlpha(20,dt);
           var footExtension=wingPose.fold+(1-wingPose.fold)*strikeFootExtension;
           raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=footExtension;});
@@ -20752,6 +21012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           updateWaterWakes(now,dt);
           updatePreyContacts();
+          resolveTalonThrow();
 
           // Maintain spawn count
           if (preyMeshes.length < 10 && motionNow - lastSpawn > 2500) {
@@ -20764,6 +21025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // all describe the same prey positions that this frame will render.
           var targetInfo = updateTargetFeedback(now, true);
           var lockTarget = targetInfo ? targetInfo.prey : null;
+          updateRaptorFocus(targetInfo, realDt);
           // Resolve gaze in the bird's actual local frame, including pitch and banking.
           raptorGroup.updateWorldMatrix(true,false);
           gazeOrigin.copy(headGroup.position).applyMatrix4(raptorGroup.matrixWorld);
@@ -20810,7 +21072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               if (mission.id === 'thermalKettle') refreshKeyGuide();
               recordFlightEvent('thermal', thermalActive ? FLIGHT_EVENT_ENTERED_THERMAL : 'Left thermal', thermalActive ? 'Circle to trade lift for altitude' : 'Search for the next lift column');
             }
-            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? (activePerch?'perched':'landed') : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e && mission.id !== 'thermalKettle' ? 'climb' : keys.q ? 'descent' : 'glide';
+            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? (activePerch?'perched':'landed') : focusEpisode.active ? 'focus' : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e && mission.id !== 'thermalKettle' ? 'climb' : keys.q ? 'descent' : 'glide';
             updateFlightState(nextFlightState);
             updateMissionHud();
             var mph = (raptor.speed * 2.237).toFixed(0);

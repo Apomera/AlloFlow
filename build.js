@@ -59,6 +59,9 @@ const STUDENT_SHELL_ENTRIES = [
     'ai_backend_module.js',
     'alloflow_desktop_bridge.js',
     'static',
+    // The shell asks for ./vendor/ scripts and ./fonts/; without these Pages answers with HTML.
+    'vendor',
+    'fonts',
 ];
 const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024;
 

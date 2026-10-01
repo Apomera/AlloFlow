@@ -21,6 +21,7 @@ afterEach(() => opened.splice(0).forEach(app => app.dom.window.close()));
 // The QR each coupon carries must be exactly what AlloFlow's qrcode.js draws for that coupon's link.
 const reference = {}; runInNewContext(readFileSync('qrcode.js', 'utf8') + ';this.qrcode = qrcode;', reference);
 function referenceSvg(text) { const qr = reference.qrcode(0, 'M'); qr.addData(text); qr.make(); return qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); }
+const formatCode = code => code.slice(0, 4) + '-' + code.slice(4);
 function referencePath(text) { return referenceSvg(text).match(/ d="([^"]+)"/)[1]; }
 
 async function open(repository, email, options = {}) {
@@ -85,15 +86,15 @@ describe('staff coupon sheet', () => {
     expect(app.$('#claim-coupons').closest('.panel')).toBeNull();
     const coupons = app.$$('#claim-coupons .coupon');
     expect(coupons).toHaveLength(3);
-    const tokens = h.rows('ClaimTokens').slice(1).map(r => r[0]);
+    const rows = h.rows('ClaimTokens').slice(1);
     coupons.forEach((coupon, i) => {
       expect(coupon.querySelector('.coupon-title').textContent).toBe('Room 5A Reading');
       expect(coupon.querySelector('.coupon-points').textContent).toBe('+20');
       expect(coupon.querySelector('.coupon-reason').textContent).toBe('Read 20 minutes at home');
       expect(coupon.querySelector('.coupon-message').textContent).toBe('Great job! Scan this with your school account.');
-      const link = coupon.querySelector('.coupon-code').textContent;
-      expect(link).toBe(WEB_APP + '?claim=' + tokens[i]);
-      expect(coupon.querySelector('.coupon-qr svg path').getAttribute('d')).toBe(referencePath(link));
+      expect(coupon.querySelector('.coupon-short strong').textContent).toBe(formatCode(rows[i][13]));
+      expect(coupon.querySelector('.coupon-code')).toBeNull();
+      expect(coupon.querySelector('.coupon-qr svg path').getAttribute('d')).toBe(referencePath(WEB_APP + '?claim=' + rows[i][0]));
     });
     // The receipt print path is untouched: the sheet hides again after printing.
     app.dom.window.dispatchEvent(new app.dom.window.Event('afterprint'));
@@ -135,9 +136,10 @@ describe('staff coupon sheet', () => {
     // No web app URL saved: the coupon carries the bare code and the note says so.
     expect(app.$('#claim-mint-note').textContent).toMatch(/no web app URL is saved/);
     await app.click('#claim-print');
-    expect(app.$('#claim-coupons .coupon-code').textContent).toBe(h.rows('ClaimTokens')[1][0]);
+    expect(app.$('#claim-coupons .coupon-short strong').textContent).toBe(formatCode(h.rows('ClaimTokens')[1][13]));
+    expect(app.$$('#claim-coupons .coupon-qr')).toHaveLength(0);
     expect(app.$('#claim-coupons .coupon-title').textContent).toBe('Pilot School Rewards');
-    expect(app.$('#claim-coupons .coupon-message').textContent).toBe('Scan with your school account to add these points.');
+    expect(app.$('#claim-coupons .coupon-message').textContent).toBe('Scan with your school account, or type the code on your School Rewards page.');
     await app.click('#claim-void');
     expect(app.rpcCount('voidSchoolRewardsClaimBatch')).toBe(1);
     expect(app.$$('#claim-coupons .coupon')).toHaveLength(0);
@@ -176,8 +178,16 @@ describe('minting safety', () => {
   it('prints the expiry on each coupon and in the preview, and keeps it on a reprint', async () => {
     const h = harness(); setup(h); withWebAppUrl(h);
     const app = await open(h, STAFF, {});
+    const due = new Date(); due.setDate(due.getDate() + 30);
+    const pad = n => String(n).padStart(2, '0');
+    expect(app.$('#claim-form #claim-expires').value).toBe(due.getFullYear() + '-' + pad(due.getMonth() + 1) + '-' + pad(due.getDate()) + 'T23:59');
+    expect(app.$('#claim-art-preview .coupon-expiry').textContent).toMatch(/^Valid until /);
+    expect(app.$('#claim-expires-note').hidden).toBe(true);
+    app.set('#claim-form #claim-expires', '');
     expect(app.$('#claim-art-preview .coupon-expiry')).toBeNull();
+    expect(app.$('#claim-expires-note').hidden).toBe(false);
     app.set('#claim-form #claim-expires', '2099-06-01T15:30');
+    expect(app.$('#claim-expires-note').hidden).toBe(true);
     expect(app.$('#claim-art-preview .coupon-expiry').textContent).toMatch(/^Valid until .*2099/);
     await app.mint(2);
     await app.click('#claim-print');
@@ -186,6 +196,66 @@ describe('minting safety', () => {
     expect(expiry[0].textContent).toMatch(/^Valid until .*2099/);
     app.$('#claim-batches [data-claim-reprint]').click(); await app.settle();
     expect(app.$$('#claim-coupons .coupon-expiry')).toHaveLength(2);
+  });
+});
+
+describe('typed codes, one per student, and the year close', () => {
+  it('a student types a code from a coupon, however it is spaced or cased', async () => {
+    const h = harness(); setup(h);
+    h.setActive(STAFF);
+    const tokens = h.call('mintSchoolRewardsClaimTokens', { count: 2, points: 20, categoryId: seededCategory(h).id, reason: 'Read 20 minutes at home' }).tokens;
+    const app = await open(h, STUDENT, {});
+    expect(app.$('#claim-entry-card').hidden).toBe(false);
+    // Malformed input never reaches the server.
+    app.set('#claim-entry-code', 'ABC'); await app.$('#claim-entry-form').onsubmit({ preventDefault() {} }); await app.settle();
+    expect(app.rpcCount('claimSchoolRewardsToken')).toBe(0);
+    expect(app.$('#notice').textContent).toBe('Type the 8-character code printed on the coupon, for example K7Q2-M9XD.');
+    // A wrong code keeps what the student typed so it can be corrected.
+    const wrong = tokens[0].shortCode === 'ZZZZZZZZ' ? 'yyyy yyyy' : 'zzzz zzzz';
+    app.set('#claim-entry-code', wrong); await app.$('#claim-entry-form').onsubmit({ preventDefault() {} }); await app.settle();
+    expect(app.$('#claim-title').textContent).toBe('This code is not valid.');
+    expect(app.$('#claim-entry-code').value).toBe(wrong);
+    const typed = ' ' + tokens[0].shortCode.slice(0, 4).toLowerCase() + ' - ' + tokens[0].shortCode.slice(4).toLowerCase() + ' ';
+    app.set('#claim-entry-code', typed); await app.$('#claim-entry-form').onsubmit({ preventDefault() {} }); await app.settle();
+    expect(app.calls.filter(c => c.method === 'claimSchoolRewardsToken').pop().payload).toEqual({ code: tokens[0].shortCode });
+    expect(app.$('#claim-title').textContent).toBe('Points added to your balance');
+    expect(app.$('#claim-metric').textContent).toBe('+20');
+    expect(app.$('#claim-balance-value').textContent).toBe('20');
+    expect(app.$('#claim-entry-code').value).toBe('');
+    expect(h.rows('Ledger').slice(1).filter(r => r[5] === 'claim_token')).toHaveLength(1);
+    // Staff never see the box; neither do students on a repository without claim codes.
+    expect((await open(h, STAFF, {})).$('#claim-entry-card').hidden).toBe(true);
+    const old = harness(); setup(old); old.simulateV6Claims();
+    expect((await open(old, STUDENT, {})).$('#claim-entry-card').hidden).toBe(true);
+  });
+
+  it('prints and lists the one-per-student rule, and sends it with the sheet', async () => {
+    const h = harness(); setup(h); withWebAppUrl(h);
+    const app = await open(h, STAFF, {});
+    expect(app.$('#claim-art-preview .coupon-limit')).toBeNull();
+    const box = app.$('#claim-form #claim-one-per-student');
+    box.checked = true; box.dispatchEvent(new app.dom.window.Event('change', { bubbles: true }));
+    expect(app.$('#claim-art-preview .coupon-limit').textContent).toBe('One per student');
+    await app.mint(2);
+    expect(app.calls.find(c => c.method === 'mintSchoolRewardsClaimTokens').payload.onePerStudent).toBe(true);
+    expect(h.rows('ClaimTokens').slice(1).map(r => r[12])).toEqual([1, 1]);
+    await app.click('#claim-print');
+    expect(app.$$('#claim-coupons .coupon-limit').map(n => n.textContent)).toEqual(['One per student', 'One per student']);
+    expect(app.$('#claim-batches [data-claim-rule]').textContent).toMatch(/One per student/);
+  });
+
+  it('the year close says how many codes are still out and how many it cancelled', async () => {
+    const h = harness(); setup(h);
+    h.setActive(STAFF);
+    h.call('mintSchoolRewardsClaimTokens', { count: 3, points: 5, categoryId: seededCategory(h).id, reason: 'Helped a classmate' });
+    const app = await open(h, ADMIN, {});
+    await app.click('#year-check');
+    expect(app.$('#year-preview').textContent).toMatch(/3 unused claim code\(s\) are still out\. Resetting balances also cancels them/);
+    app.set('#year-next', '2099-00'); app.set('#year-carry', 'none');
+    await app.click('#year-start');
+    expect(app.calls.find(c => c.method === 'startSchoolRewardsAcademicYear').payload).toMatchObject({ carryOver: 'none', confirm: true });
+    expect(app.$('#year-preview').textContent).toMatch(/3 unused claim code\(s\) cancelled\./);
+    expect(h.rows('ClaimTokens').slice(1).map(r => r[5])).toEqual(['void', 'void', 'void']);
   });
 });
 
@@ -215,12 +285,13 @@ describe('coupon art', () => {
     await app.click('#claim-print');
     const coupons = app.$$('#claim-coupons .coupon');
     expect(coupons).toHaveLength(2);
-    for (const coupon of coupons) {
+    const artRows = h.rows('ClaimTokens').slice(1);
+    coupons.forEach((coupon, i) => {
       expect([...coupon.classList].sort()).toEqual(['coupon', 'has-art', 'ink-light', 'layout-bottom']);
       expect(coupon.querySelector('img.coupon-art').getAttribute('src')).toBe(REENCODED);
       expect(coupon.querySelector('img.coupon-art').getAttribute('alt')).toBe('');
-      expect(coupon.querySelector('.coupon-qr svg path').getAttribute('d')).toBe(referencePath(coupon.querySelector('.coupon-code').textContent));
-    }
+      expect(coupon.querySelector('.coupon-qr svg path').getAttribute('d')).toBe(referencePath(WEB_APP + '?claim=' + artRows[i][0]));
+    });
     const saved = JSON.parse(app.dom.window.localStorage.getItem(ART_KEY));
     expect(saved).toEqual({ art: REENCODED, layout: 'bottom', ink: 'light' });
     const again = await open(h, STAFF, { localStorage: { [ART_KEY]: JSON.stringify(saved) } });
@@ -296,7 +367,8 @@ describe('recent batches', () => {
     first.querySelector('[data-claim-reprint]').click(); await app.settle();
     const coupons = app.$$('#claim-coupons .coupon');
     expect(coupons).toHaveLength(2);
-    expect(coupons.map(c => c.querySelector('.coupon-code').textContent).sort()).toEqual([tokens[1], tokens[2]].map(t => WEB_APP + '?claim=' + t).sort());
+    const codeOf = id => formatCode(h.rows('ClaimTokens').slice(1).find(r => r[0] === id)[13]);
+    expect(coupons.map(c => c.querySelector('.coupon-short strong').textContent).sort()).toEqual([tokens[1], tokens[2]].map(codeOf).sort());
     first.querySelector('[data-claim-cancel]').click(); await app.settle();
     expect(h.rows('ClaimTokens').slice(1).map(r => r[5])).toEqual(['used', 'void', 'void', 'unused']);
     const after = app.$$('#claim-batches .item').find(n => n.querySelector('[data-claim-count="used"]').textContent === '1');

@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1A[2K(node:17632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K(node:17632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[1/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1589:5 › life story replays an individual across a climate shift and follows any real offspring without rerolling
+[1A[2K[2/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1647:5 › life story on a phone keeps an unwritten fate unknown and updates after one watched generation
+[1A[2K[3/3] [chromium] › tests\e2e\evolab-living-island.spec.ts:1679:5 › life story without WebGL separates a lone survivor from the organism that died
+[1A[2K  3 passed (4.0m)

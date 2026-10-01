@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-26T19:02:31.034Z",
+  "generatedAt": "2026-09-28T23:53:37.896Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430245,
+      "renderedBytes": 430338,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143415,
+          "renderedBytes": 143446,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143415,
+          "renderedBytes": 143446,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143415,
+          "renderedBytes": 143446,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -64,7 +64,7 @@
     {
       "id": "anxietyToolkit",
       "label": "Anxiety Toolkit",
-      "renderedBytes": 24249,
+      "renderedBytes": 24330,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -72,7 +72,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8083,
+          "renderedBytes": 8110,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -81,7 +81,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8083,
+          "renderedBytes": 8110,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -90,7 +90,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8083,
+          "renderedBytes": 8110,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -103,7 +103,7 @@
     {
       "id": "behavioralActivation",
       "label": "Behavioral Activation",
-      "renderedBytes": 25251,
+      "renderedBytes": 25332,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -111,7 +111,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8416,
+          "renderedBytes": 8443,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -120,7 +120,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8416,
+          "renderedBytes": 8443,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -129,7 +129,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8419,
+          "renderedBytes": 8446,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -142,7 +142,7 @@
     {
       "id": "bigFeelings",
       "label": "Big Feelings (Anger)",
-      "renderedBytes": 35094,
+      "renderedBytes": 35175,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -150,7 +150,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 11698,
+          "renderedBytes": 11725,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -159,7 +159,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 11698,
+          "renderedBytes": 11725,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -168,7 +168,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 11698,
+          "renderedBytes": 11725,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -181,7 +181,7 @@
     {
       "id": "bodyStory",
       "label": "Body Story",
-      "renderedBytes": 40920,
+      "renderedBytes": 41001,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -189,7 +189,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13640,
+          "renderedBytes": 13667,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -198,7 +198,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13640,
+          "renderedBytes": 13667,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -207,7 +207,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13640,
+          "renderedBytes": 13667,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -220,7 +220,7 @@
     {
       "id": "careConstellations",
       "label": "Care Constellations",
-      "renderedBytes": 36978,
+      "renderedBytes": 37059,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -228,7 +228,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12323,
+          "renderedBytes": 12350,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -237,7 +237,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12323,
+          "renderedBytes": 12350,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -246,7 +246,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12332,
+          "renderedBytes": 12359,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -259,7 +259,7 @@
     {
       "id": "careerCompass",
       "label": "Career Compass",
-      "renderedBytes": 34440,
+      "renderedBytes": 34521,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -267,7 +267,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 11480,
+          "renderedBytes": 11507,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -276,7 +276,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 11480,
+          "renderedBytes": 11507,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -285,7 +285,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 11480,
+          "renderedBytes": 11507,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -298,7 +298,7 @@
     {
       "id": "circlesOfSupport",
       "label": "Circles of Support",
-      "renderedBytes": 19254,
+      "renderedBytes": 19335,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -306,7 +306,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 6417,
+          "renderedBytes": 6444,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -315,7 +315,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 6417,
+          "renderedBytes": 6444,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -324,7 +324,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 6420,
+          "renderedBytes": 6447,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -337,7 +337,7 @@
     {
       "id": "civicAction",
       "label": "Civic Action & Hope",
-      "renderedBytes": 52170,
+      "renderedBytes": 52251,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -345,7 +345,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17390,
+          "renderedBytes": 17417,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -354,7 +354,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17390,
+          "renderedBytes": 17417,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -363,7 +363,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17390,
+          "renderedBytes": 17417,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -376,7 +376,7 @@
     {
       "id": "community",
       "label": "Community & Culture",
-      "renderedBytes": 74505,
+      "renderedBytes": 74586,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -384,7 +384,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 24835,
+          "renderedBytes": 24862,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -393,7 +393,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 24835,
+          "renderedBytes": 24862,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -402,7 +402,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 24835,
+          "renderedBytes": 24862,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -415,7 +415,7 @@
     {
       "id": "compassion",
       "label": "Self-Compassion",
-      "renderedBytes": 46758,
+      "renderedBytes": 46839,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -423,7 +423,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 15586,
+          "renderedBytes": 15613,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -432,7 +432,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 15586,
+          "renderedBytes": 15613,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -441,7 +441,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 15586,
+          "renderedBytes": 15613,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -454,7 +454,7 @@
     {
       "id": "conflict",
       "label": "Conflict Resolution Lab",
-      "renderedBytes": 71487,
+      "renderedBytes": 71568,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -462,7 +462,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 23829,
+          "renderedBytes": 23856,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -471,7 +471,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 23829,
+          "renderedBytes": 23856,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -480,7 +480,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 23829,
+          "renderedBytes": 23856,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -493,7 +493,7 @@
     {
       "id": "conflicttheater",
       "label": "Conflict Theater (Beta)",
-      "renderedBytes": 39174,
+      "renderedBytes": 39255,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -501,7 +501,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13058,
+          "renderedBytes": 13085,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -510,7 +510,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13058,
+          "renderedBytes": 13085,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -519,7 +519,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13058,
+          "renderedBytes": 13085,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -532,7 +532,7 @@
     {
       "id": "coping",
       "label": "Coping Toolkit",
-      "renderedBytes": 944928,
+      "renderedBytes": 945009,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -540,7 +540,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 314975,
+          "renderedBytes": 315002,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -549,7 +549,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 314975,
+          "renderedBytes": 315002,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -558,7 +558,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 314978,
+          "renderedBytes": 315005,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -571,7 +571,7 @@
     {
       "id": "costBenefit",
       "label": "Cost-Benefit Grid",
-      "renderedBytes": 19170,
+      "renderedBytes": 19251,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -579,7 +579,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 6389,
+          "renderedBytes": 6416,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -588,7 +588,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 6389,
+          "renderedBytes": 6416,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -597,7 +597,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 6392,
+          "renderedBytes": 6419,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -610,7 +610,7 @@
     {
       "id": "crewProtocols",
       "label": "Crew Protocols",
-      "renderedBytes": 34332,
+      "renderedBytes": 34413,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -618,7 +618,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 11444,
+          "renderedBytes": 11471,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -627,7 +627,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 11444,
+          "renderedBytes": 11471,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -636,7 +636,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 11444,
+          "renderedBytes": 11471,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -649,7 +649,7 @@
     {
       "id": "crisiscompanion",
       "label": "Crisis Companion",
-      "renderedBytes": 19509,
+      "renderedBytes": 19590,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -657,7 +657,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 6503,
+          "renderedBytes": 6530,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -666,7 +666,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 6503,
+          "renderedBytes": 6530,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -675,7 +675,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 6503,
+          "renderedBytes": 6530,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -688,7 +688,7 @@
     {
       "id": "cultureExplorer",
       "label": "Culture Explorer",
-      "renderedBytes": 100995,
+      "renderedBytes": 101076,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -696,7 +696,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 33665,
+          "renderedBytes": 33692,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -705,7 +705,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 33665,
+          "renderedBytes": 33692,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -714,7 +714,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 33665,
+          "renderedBytes": 33692,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -727,7 +727,7 @@
     {
       "id": "dearMan",
       "label": "DEAR MAN",
-      "renderedBytes": 54495,
+      "renderedBytes": 54576,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -735,7 +735,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 18164,
+          "renderedBytes": 18191,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -744,7 +744,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 18164,
+          "renderedBytes": 18191,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -753,7 +753,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 18167,
+          "renderedBytes": 18194,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -766,7 +766,7 @@
     {
       "id": "decisions",
       "label": "Decision Workshop",
-      "renderedBytes": 67437,
+      "renderedBytes": 67518,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -774,7 +774,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 22479,
+          "renderedBytes": 22506,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -783,7 +783,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 22479,
+          "renderedBytes": 22506,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -792,7 +792,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 22479,
+          "renderedBytes": 22506,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -805,7 +805,7 @@
     {
       "id": "digitalWellbeing",
       "label": "Digital Wellbeing Studio",
-      "renderedBytes": 48579,
+      "renderedBytes": 48660,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -813,7 +813,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 16193,
+          "renderedBytes": 16220,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -822,7 +822,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 16193,
+          "renderedBytes": 16220,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -831,7 +831,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 16193,
+          "renderedBytes": 16220,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -844,7 +844,7 @@
     {
       "id": "disabilityVoices",
       "label": "Disability Voices",
-      "renderedBytes": 83199,
+      "renderedBytes": 83280,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -852,7 +852,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 27733,
+          "renderedBytes": 27760,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -861,7 +861,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 27733,
+          "renderedBytes": 27760,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -870,7 +870,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 27733,
+          "renderedBytes": 27760,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -883,7 +883,7 @@
     {
       "id": "ecomap",
       "label": "Ecomap",
-      "renderedBytes": 18909,
+      "renderedBytes": 18990,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -891,7 +891,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 6302,
+          "renderedBytes": 6329,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -900,7 +900,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 6302,
+          "renderedBytes": 6329,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -909,7 +909,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 6305,
+          "renderedBytes": 6332,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -922,7 +922,7 @@
     {
       "id": "emotions",
       "label": "Emotions Explorer",
-      "renderedBytes": 78783,
+      "renderedBytes": 78864,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -930,7 +930,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 26261,
+          "renderedBytes": 26288,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -939,7 +939,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 26261,
+          "renderedBytes": 26288,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -948,7 +948,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 26261,
+          "renderedBytes": 26288,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -961,7 +961,7 @@
     {
       "id": "ethicalReasoning",
       "label": "Ethical Reasoning Lab",
-      "renderedBytes": 51081,
+      "renderedBytes": 51162,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -969,7 +969,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17027,
+          "renderedBytes": 17054,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -978,7 +978,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17027,
+          "renderedBytes": 17054,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -987,7 +987,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17027,
+          "renderedBytes": 17054,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1000,7 +1000,7 @@
     {
       "id": "execfunction",
       "label": "Executive Function",
-      "renderedBytes": 85410,
+      "renderedBytes": 85491,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1008,7 +1008,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 28470,
+          "renderedBytes": 28497,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1017,7 +1017,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 28470,
+          "renderedBytes": 28497,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1026,7 +1026,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 28470,
+          "renderedBytes": 28497,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1039,7 +1039,7 @@
     {
       "id": "friendship",
       "label": "Friendship Workshop",
-      "renderedBytes": 73956,
+      "renderedBytes": 74037,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1047,7 +1047,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 24652,
+          "renderedBytes": 24679,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1056,7 +1056,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 24652,
+          "renderedBytes": 24679,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1065,7 +1065,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 24652,
+          "renderedBytes": 24679,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1078,7 +1078,7 @@
     {
       "id": "genogram",
       "label": "Genogram",
-      "renderedBytes": 21993,
+      "renderedBytes": 22074,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1086,7 +1086,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 7330,
+          "renderedBytes": 7357,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1095,7 +1095,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 7330,
+          "renderedBytes": 7357,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1104,7 +1104,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 7333,
+          "renderedBytes": 7360,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1117,7 +1117,7 @@
     {
       "id": "goals",
       "label": "Goal Setter",
-      "renderedBytes": 40812,
+      "renderedBytes": 40893,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1125,7 +1125,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13603,
+          "renderedBytes": 13630,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1134,7 +1134,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13603,
+          "renderedBytes": 13630,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1143,7 +1143,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13606,
+          "renderedBytes": 13633,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1156,7 +1156,7 @@
     {
       "id": "griefLoss",
       "label": "Grief & Loss",
-      "renderedBytes": 45576,
+      "renderedBytes": 45657,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1164,7 +1164,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 15192,
+          "renderedBytes": 15219,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1173,7 +1173,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 15192,
+          "renderedBytes": 15219,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1182,7 +1182,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 15192,
+          "renderedBytes": 15219,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1195,7 +1195,7 @@
     {
       "id": "growthmindset",
       "label": "Growth Mindset Workshop",
-      "renderedBytes": 63573,
+      "renderedBytes": 63654,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1203,7 +1203,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 21191,
+          "renderedBytes": 21218,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1212,7 +1212,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 21191,
+          "renderedBytes": 21218,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1221,7 +1221,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 21191,
+          "renderedBytes": 21218,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1234,7 +1234,7 @@
     {
       "id": "healthyRelationships",
       "label": "Healthy Relationships",
-      "renderedBytes": 60081,
+      "renderedBytes": 60162,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1242,7 +1242,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 20027,
+          "renderedBytes": 20054,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1251,7 +1251,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 20027,
+          "renderedBytes": 20054,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1260,7 +1260,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 20027,
+          "renderedBytes": 20054,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1273,7 +1273,7 @@
     {
       "id": "howlTracker",
       "label": "HOWL Tracker",
-      "renderedBytes": 73503,
+      "renderedBytes": 73584,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1281,7 +1281,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 24498,
+          "renderedBytes": 24525,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1290,7 +1290,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 24498,
+          "renderedBytes": 24525,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1299,7 +1299,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 24507,
+          "renderedBytes": 24534,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1312,7 +1312,7 @@
     {
       "id": "identitySupport",
       "label": "Identity Support",
-      "renderedBytes": 36306,
+      "renderedBytes": 36387,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1320,7 +1320,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12102,
+          "renderedBytes": 12129,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1329,7 +1329,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12102,
+          "renderedBytes": 12129,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1338,7 +1338,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12102,
+          "renderedBytes": 12129,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1351,7 +1351,7 @@
     {
       "id": "journal",
       "label": "Feelings Journal",
-      "renderedBytes": 71211,
+      "renderedBytes": 71292,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1359,7 +1359,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 23737,
+          "renderedBytes": 23764,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1368,7 +1368,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 23737,
+          "renderedBytes": 23764,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1377,7 +1377,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 23737,
+          "renderedBytes": 23764,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1390,7 +1390,7 @@
     {
       "id": "landPlace",
       "label": "Land & Place",
-      "renderedBytes": 52338,
+      "renderedBytes": 52419,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1398,7 +1398,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17446,
+          "renderedBytes": 17473,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1407,7 +1407,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17446,
+          "renderedBytes": 17473,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1416,7 +1416,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17446,
+          "renderedBytes": 17473,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1429,7 +1429,7 @@
     {
       "id": "maps",
       "label": "MAPS",
-      "renderedBytes": 33381,
+      "renderedBytes": 33462,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1437,7 +1437,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 11126,
+          "renderedBytes": 11153,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1446,7 +1446,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 11126,
+          "renderedBytes": 11153,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1455,7 +1455,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 11129,
+          "renderedBytes": 11156,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1468,7 +1468,7 @@
     {
       "id": "mindfulness",
       "label": "Mindfulness Corner",
-      "renderedBytes": 113853,
+      "renderedBytes": 113934,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1476,7 +1476,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 37949,
+          "renderedBytes": 37976,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1485,7 +1485,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 37949,
+          "renderedBytes": 37976,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1494,7 +1494,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 37955,
+          "renderedBytes": 37982,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1507,7 +1507,7 @@
     {
       "id": "motivationalInterviewing",
       "label": "Motivational Interviewing",
-      "renderedBytes": 29733,
+      "renderedBytes": 29814,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1515,7 +1515,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 9911,
+          "renderedBytes": 9938,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1524,7 +1524,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 9911,
+          "renderedBytes": 9938,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1533,7 +1533,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 9911,
+          "renderedBytes": 9938,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1546,7 +1546,7 @@
     {
       "id": "onePageProfile",
       "label": "One-Page Profile",
-      "renderedBytes": 18477,
+      "renderedBytes": 18558,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1554,7 +1554,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 6158,
+          "renderedBytes": 6185,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1563,7 +1563,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 6158,
+          "renderedBytes": 6185,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1572,7 +1572,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 6161,
+          "renderedBytes": 6188,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1585,7 +1585,7 @@
     {
       "id": "orientations",
       "label": "Orientations",
-      "renderedBytes": 30825,
+      "renderedBytes": 30906,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1593,7 +1593,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 10275,
+          "renderedBytes": 10302,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1602,7 +1602,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 10275,
+          "renderedBytes": 10302,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1611,7 +1611,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 10275,
+          "renderedBytes": 10302,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1624,7 +1624,7 @@
     {
       "id": "path",
       "label": "PATH",
-      "renderedBytes": 38367,
+      "renderedBytes": 38448,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1632,7 +1632,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12788,
+          "renderedBytes": 12815,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1641,7 +1641,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12788,
+          "renderedBytes": 12815,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1650,7 +1650,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12791,
+          "renderedBytes": 12818,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1663,7 +1663,7 @@
     {
       "id": "peersupport",
       "label": "Peer Support Coach",
-      "renderedBytes": 45597,
+      "renderedBytes": 45678,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1671,7 +1671,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 15199,
+          "renderedBytes": 15226,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1680,7 +1680,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 15199,
+          "renderedBytes": 15226,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1689,7 +1689,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 15199,
+          "renderedBytes": 15226,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1702,7 +1702,7 @@
     {
       "id": "perma",
       "label": "PERMA Wellbeing",
-      "renderedBytes": 24135,
+      "renderedBytes": 24216,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1710,7 +1710,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8044,
+          "renderedBytes": 8071,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1719,7 +1719,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8044,
+          "renderedBytes": 8071,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1728,7 +1728,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8047,
+          "renderedBytes": 8074,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1741,7 +1741,7 @@
     {
       "id": "perspective",
       "label": "Perspective-Taking Lab",
-      "renderedBytes": 71193,
+      "renderedBytes": 71274,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1749,7 +1749,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 23730,
+          "renderedBytes": 23757,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1758,7 +1758,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 23730,
+          "renderedBytes": 23757,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1767,7 +1767,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 23733,
+          "renderedBytes": 23760,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1780,7 +1780,7 @@
     {
       "id": "practiceJourneys",
       "label": "Practice Journeys (Pilot)",
-      "renderedBytes": 9284,
+      "renderedBytes": 9365,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1788,7 +1788,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 3094,
+          "renderedBytes": 3121,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1797,7 +1797,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 3093,
+          "renderedBytes": 3120,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1806,7 +1806,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 3097,
+          "renderedBytes": 3124,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1819,7 +1819,7 @@
     {
       "id": "quietQuestions",
       "label": "Quiet Questions",
-      "renderedBytes": 25314,
+      "renderedBytes": 25395,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1827,7 +1827,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8436,
+          "renderedBytes": 8463,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1836,7 +1836,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8436,
+          "renderedBytes": 8463,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1845,7 +1845,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8442,
+          "renderedBytes": 8469,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1858,7 +1858,7 @@
     {
       "id": "restorativeCircle",
       "label": "Restorative Circle",
-      "renderedBytes": 53190,
+      "renderedBytes": 53271,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1866,7 +1866,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17730,
+          "renderedBytes": 17757,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1875,7 +1875,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17730,
+          "renderedBytes": 17757,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1884,7 +1884,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17730,
+          "renderedBytes": 17757,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1897,7 +1897,7 @@
     {
       "id": "safety",
       "label": "Safety & Boundaries",
-      "renderedBytes": 86322,
+      "renderedBytes": 86403,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1905,7 +1905,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 28774,
+          "renderedBytes": 28801,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1914,7 +1914,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 28774,
+          "renderedBytes": 28801,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1923,7 +1923,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 28774,
+          "renderedBytes": 28801,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1936,7 +1936,7 @@
     {
       "id": "selfAdvocacy",
       "label": "Self-Advocacy Studio",
-      "renderedBytes": 110907,
+      "renderedBytes": 110988,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1944,7 +1944,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 36969,
+          "renderedBytes": 36996,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1953,7 +1953,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 36969,
+          "renderedBytes": 36996,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1962,7 +1962,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 36969,
+          "renderedBytes": 36996,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1975,7 +1975,7 @@
     {
       "id": "sensoryRegulation",
       "label": "Sensory Regulation",
-      "renderedBytes": 64013,
+      "renderedBytes": 64094,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1983,7 +1983,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 21372,
+          "renderedBytes": 21399,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1992,7 +1992,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 21372,
+          "renderedBytes": 21399,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2001,7 +2001,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 21269,
+          "renderedBytes": 21296,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2014,7 +2014,7 @@
     {
       "id": "sfbt",
       "label": "Solution-Focused",
-      "renderedBytes": 28248,
+      "renderedBytes": 28329,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2022,7 +2022,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 9416,
+          "renderedBytes": 9443,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2031,7 +2031,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 9416,
+          "renderedBytes": 9443,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2040,7 +2040,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 9416,
+          "renderedBytes": 9443,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2053,7 +2053,7 @@
     {
       "id": "sleep",
       "label": "Sleep & Rest",
-      "renderedBytes": 30237,
+      "renderedBytes": 30318,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2061,7 +2061,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 10079,
+          "renderedBytes": 10106,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2070,7 +2070,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 10079,
+          "renderedBytes": 10106,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2079,7 +2079,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 10079,
+          "renderedBytes": 10106,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2092,7 +2092,7 @@
     {
       "id": "social",
       "label": "Social Skills Lab",
-      "renderedBytes": 35709,
+      "renderedBytes": 35790,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2100,7 +2100,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 11901,
+          "renderedBytes": 11928,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2109,7 +2109,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 11901,
+          "renderedBytes": 11928,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2118,7 +2118,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 11907,
+          "renderedBytes": 11934,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2131,7 +2131,7 @@
     {
       "id": "sociallab",
       "label": "Social Skills Roleplay",
-      "renderedBytes": 41346,
+      "renderedBytes": 41427,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2139,7 +2139,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13782,
+          "renderedBytes": 13809,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2148,7 +2148,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13782,
+          "renderedBytes": 13809,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2157,7 +2157,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13782,
+          "renderedBytes": 13809,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2170,7 +2170,7 @@
     {
       "id": "somaticReset",
       "label": "Body & Breath Reset",
-      "renderedBytes": 34882,
+      "renderedBytes": 34963,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2178,7 +2178,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 11646,
+          "renderedBytes": 11673,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2187,7 +2187,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 11642,
+          "renderedBytes": 11669,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2196,7 +2196,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 11594,
+          "renderedBytes": 11621,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2209,7 +2209,7 @@
     {
       "id": "sourcesOfStrength",
       "label": "Sources of Strength",
-      "renderedBytes": 36912,
+      "renderedBytes": 36993,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2217,7 +2217,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12303,
+          "renderedBytes": 12330,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2226,7 +2226,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12303,
+          "renderedBytes": 12330,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2235,7 +2235,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12306,
+          "renderedBytes": 12333,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2248,7 +2248,7 @@
     {
       "id": "strengths",
       "label": "Strengths Finder",
-      "renderedBytes": 79281,
+      "renderedBytes": 79362,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2256,7 +2256,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 26427,
+          "renderedBytes": 26454,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2265,7 +2265,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 26427,
+          "renderedBytes": 26454,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2274,7 +2274,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 26427,
+          "renderedBytes": 26454,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2287,7 +2287,7 @@
     {
       "id": "stressBucket",
       "label": "Stress Bucket",
-      "renderedBytes": 21573,
+      "renderedBytes": 21654,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2295,7 +2295,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 7190,
+          "renderedBytes": 7217,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2304,7 +2304,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 7190,
+          "renderedBytes": 7217,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2313,7 +2313,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 7193,
+          "renderedBytes": 7220,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2326,7 +2326,7 @@
     {
       "id": "substancePsychoed",
       "label": "Substance Use",
-      "renderedBytes": 38649,
+      "renderedBytes": 38730,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2334,7 +2334,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12883,
+          "renderedBytes": 12910,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2343,7 +2343,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12883,
+          "renderedBytes": 12910,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2352,7 +2352,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12883,
+          "renderedBytes": 12910,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2365,7 +2365,7 @@
     {
       "id": "teamwork",
       "label": "Teamwork Builder",
-      "renderedBytes": 58353,
+      "renderedBytes": 58434,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2373,7 +2373,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 19451,
+          "renderedBytes": 19478,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2382,7 +2382,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 19451,
+          "renderedBytes": 19478,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2391,7 +2391,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 19451,
+          "renderedBytes": 19478,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2404,7 +2404,7 @@
     {
       "id": "thoughtRecord",
       "label": "CBT Thought Record",
-      "renderedBytes": 67941,
+      "renderedBytes": 68022,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2412,7 +2412,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 22646,
+          "renderedBytes": 22673,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2421,7 +2421,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 22646,
+          "renderedBytes": 22673,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2430,7 +2430,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 22649,
+          "renderedBytes": 22676,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2443,7 +2443,7 @@
     {
       "id": "tipp",
       "label": "TIPP",
-      "renderedBytes": 36771,
+      "renderedBytes": 36852,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2451,7 +2451,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12257,
+          "renderedBytes": 12284,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2460,7 +2460,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12257,
+          "renderedBytes": 12284,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2469,7 +2469,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12257,
+          "renderedBytes": 12284,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2482,7 +2482,7 @@
     {
       "id": "transitions",
       "label": "Transitions & Change",
-      "renderedBytes": 48783,
+      "renderedBytes": 48864,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2490,7 +2490,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 16261,
+          "renderedBytes": 16288,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2499,7 +2499,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 16261,
+          "renderedBytes": 16288,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2508,7 +2508,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 16261,
+          "renderedBytes": 16288,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2521,7 +2521,7 @@
     {
       "id": "traumaPsychoed",
       "label": "Understanding Trauma",
-      "renderedBytes": 38154,
+      "renderedBytes": 38235,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2529,7 +2529,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12718,
+          "renderedBytes": 12745,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2538,7 +2538,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12718,
+          "renderedBytes": 12745,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2547,7 +2547,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12718,
+          "renderedBytes": 12745,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2560,7 +2560,7 @@
     {
       "id": "upstander",
       "label": "Upstander Workshop",
-      "renderedBytes": 205548,
+      "renderedBytes": 205629,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2568,7 +2568,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 68516,
+          "renderedBytes": 68543,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2577,7 +2577,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 68516,
+          "renderedBytes": 68543,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2586,7 +2586,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 68516,
+          "renderedBytes": 68543,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2599,7 +2599,7 @@
     {
       "id": "valuesCommittedAction",
       "label": "Values & Action",
-      "renderedBytes": 37176,
+      "renderedBytes": 37257,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2607,7 +2607,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 12392,
+          "renderedBytes": 12419,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2616,7 +2616,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 12392,
+          "renderedBytes": 12419,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2625,7 +2625,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 12392,
+          "renderedBytes": 12419,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2638,7 +2638,7 @@
     {
       "id": "viaStrengths",
       "label": "VIA Strengths",
-      "renderedBytes": 45867,
+      "renderedBytes": 45948,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2646,7 +2646,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 15288,
+          "renderedBytes": 15315,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2655,7 +2655,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 15288,
+          "renderedBytes": 15315,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2664,7 +2664,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 15291,
+          "renderedBytes": 15318,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2677,7 +2677,7 @@
     {
       "id": "voicedetective",
       "label": "Voice Detective",
-      "renderedBytes": 40185,
+      "renderedBytes": 40266,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2685,7 +2685,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13395,
+          "renderedBytes": 13422,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2694,7 +2694,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13395,
+          "renderedBytes": 13422,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2703,7 +2703,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13395,
+          "renderedBytes": 13422,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2716,7 +2716,7 @@
     {
       "id": "wheelOfLife",
       "label": "Wheel of Life",
-      "renderedBytes": 18825,
+      "renderedBytes": 18906,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2724,7 +2724,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 6274,
+          "renderedBytes": 6301,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2733,7 +2733,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 6274,
+          "renderedBytes": 6301,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2742,7 +2742,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 6277,
+          "renderedBytes": 6304,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2755,7 +2755,7 @@
     {
       "id": "windowOfTolerance",
       "label": "Window of Tolerance",
-      "renderedBytes": 28884,
+      "renderedBytes": 28965,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2763,7 +2763,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 9627,
+          "renderedBytes": 9654,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2772,7 +2772,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 9627,
+          "renderedBytes": 9654,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2781,7 +2781,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 9630,
+          "renderedBytes": 9657,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2794,7 +2794,7 @@
     {
       "id": "zones",
       "label": "Emotion Zones",
-      "renderedBytes": 95046,
+      "renderedBytes": 95127,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2802,7 +2802,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 31634,
+          "renderedBytes": 31661,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2811,7 +2811,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 31634,
+          "renderedBytes": 31661,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2820,7 +2820,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 31778,
+          "renderedBytes": 31805,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:33:5 › worlds respond to hover and direct selection, while dragging and empty space keep the view (4.2s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:47:5 › nested journeys restore each camera and landmark without writing notebook observations (6.1s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:73:5 › phone touch targets and keyboard return preserve an orbital view through a detailed world (4.2s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:85:5 › pinch and cancelled touches never select a world, and explicit destinations clear the route (5.6s)
+
+  4 passed (21.1s)

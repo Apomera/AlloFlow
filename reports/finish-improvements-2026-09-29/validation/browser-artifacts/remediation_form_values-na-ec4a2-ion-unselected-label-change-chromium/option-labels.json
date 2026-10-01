@@ -1,0 +1,19 @@
+{
+  "before": [
+    "Warm",
+    "Cool"
+  ],
+  "proposed": [
+    "Warm",
+    "Hot"
+  ],
+  "repaired": [
+    "Warm",
+    "Cool"
+  ],
+  "decision": {
+    "accepted": false,
+    "reason": "form-state-changed",
+    "sourceLocation": "control:1"
+  }
+}

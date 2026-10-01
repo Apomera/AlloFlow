@@ -1,0 +1,235 @@
+{
+  "recordedAt": "2026-09-29T02:10:11.026Z",
+  "mainHead": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "tylerHead": "d7bb1b940d2c96c91517f50f204ba76cfaf73035",
+  "reviewHead": "d7bb1b940d2c96c91517f50f204ba76cfaf73035",
+  "mergeBase": "efed3b8d6fee9d7d72a4fbe8919bb0835d2ead16",
+  "uniqueCommitCounts": "60\t10",
+  "reviewFiles": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 2798316,
+      "sha256": "335badb4378d22e6c828d694e50f979bda555bd3048c8e6954d5267936ed99f1"
+    },
+    {
+      "path": "classroom-import.html",
+      "bytes": 6133,
+      "sha256": "58d983a1e9e72eafb290c9a0a0314e18249930b9990351e2c0d658be4e11fdc0"
+    },
+    {
+      "path": "classroom_import_app.js",
+      "bytes": 20797,
+      "sha256": "44ca678336f570a44aaf35ebb0a6f6ae489e8cc82a5d940c218cc0243ae10dde"
+    },
+    {
+      "path": "desktop/web-app/public/classroom-import.html",
+      "bytes": 6133,
+      "sha256": "58d983a1e9e72eafb290c9a0a0314e18249930b9990351e2c0d658be4e11fdc0"
+    },
+    {
+      "path": "desktop/web-app/public/classroom_import_app.js",
+      "bytes": 20797,
+      "sha256": "44ca678336f570a44aaf35ebb0a6f6ae489e8cc82a5d940c218cc0243ae10dde"
+    },
+    {
+      "path": "desktop/web-app/public/docs/google_classroom_import.md",
+      "bytes": 23312,
+      "sha256": "8a49343e24f398f2f60f191011bb1230a8a6b8a504b3bd8c4d29a43415cc12ea"
+    },
+    {
+      "path": "desktop/web-app/public/docs/google_classroom_oauth_verification.md",
+      "bytes": 11124,
+      "sha256": "e7441f4fbecbb45fd8318fed3442e076efeb73a7827f30de6c81dd5f4ff70c2b"
+    },
+    {
+      "path": "desktop/web-app/public/docs/google_workspace_connections.md",
+      "bytes": 6516,
+      "sha256": "ba7f52cac17b7af0cb36ff7419541428f1613dd4be08ff76f3503380e537600a"
+    },
+    {
+      "path": "desktop/web-app/public/help_strings.js",
+      "bytes": 1156695,
+      "sha256": "9711f2f8febea2d399b46dae6cd0e962dadd47a2d6b75f4635af973018323790"
+    },
+    {
+      "path": "desktop/web-app/public/teacher_module.js",
+      "bytes": 630214,
+      "sha256": "9cfb02f5109895796fee2a71c1ffa6c88b19d66a69936e91354148a23dbd2df3"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "bytes": 9757527,
+      "sha256": "dd0b9b753c2d2e2b94da2e9c487799ff6949cd49d461d1a037b5b66fd7598088"
+    },
+    {
+      "path": "desktop/web-app/public/view_fab_stack_module.js",
+      "bytes": 27828,
+      "sha256": "d0398e81a33774799968ab2338dde53f13bf3bcfbe97b5ab82792eefe0e98833"
+    },
+    {
+      "path": "desktop/web-app/public/view_guided_mode_banner_module.js",
+      "bytes": 332498,
+      "sha256": "6a003966846f2984f97256aeabe702dc278d463a70323f1ff01ca68bc801a0ea"
+    },
+    {
+      "path": "desktop/web-app/public/view_header_module.js",
+      "bytes": 138069,
+      "sha256": "2ac78354489329c0c7557d745e51d645092cd04b026ee3f84eff82dad73a9474"
+    },
+    {
+      "path": "desktop/web-app/public/view_launch_pad_module.js",
+      "bytes": 79753,
+      "sha256": "7c0aa0c508ef5a92ef96ec0808cfb86aab6a51b7dc2a6a1190e089e35bf49f9b"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 2798316,
+      "sha256": "335badb4378d22e6c828d694e50f979bda555bd3048c8e6954d5267936ed99f1"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 2798316,
+      "sha256": "335badb4378d22e6c828d694e50f979bda555bd3048c8e6954d5267936ed99f1"
+    },
+    {
+      "path": "docs/CREW_LAUNCH_TEACHER_GUIDE.md",
+      "bytes": 39041,
+      "sha256": "ad6442088ed1362746b375db99ac02a8875760d17af884263d97e9d456cd83a1"
+    },
+    {
+      "path": "docs/google_classroom_import.md",
+      "bytes": 23312,
+      "sha256": "8a49343e24f398f2f60f191011bb1230a8a6b8a504b3bd8c4d29a43415cc12ea"
+    },
+    {
+      "path": "docs/google_classroom_oauth_verification.md",
+      "bytes": 11124,
+      "sha256": "e7441f4fbecbb45fd8318fed3442e076efeb73a7827f30de6c81dd5f4ff70c2b"
+    },
+    {
+      "path": "docs/google_workspace_connections.md",
+      "bytes": 6516,
+      "sha256": "ba7f52cac17b7af0cb36ff7419541428f1613dd4be08ff76f3503380e537600a"
+    },
+    {
+      "path": "help_strings.js",
+      "bytes": 1156695,
+      "sha256": "9711f2f8febea2d399b46dae6cd0e962dadd47a2d6b75f4635af973018323790"
+    },
+    {
+      "path": "teacher_module.js",
+      "bytes": 630214,
+      "sha256": "9cfb02f5109895796fee2a71c1ffa6c88b19d66a69936e91354148a23dbd2df3"
+    },
+    {
+      "path": "teacher_source.jsx",
+      "bytes": 675588,
+      "sha256": "2df74ce9835fec661a8b1e18547888cd9a4552b9021d4b165b834e66cd79f4d7"
+    },
+    {
+      "path": "tests/classroom_import_app.test.js",
+      "bytes": 34724,
+      "sha256": "857f24a88bea8c52f765c0f374c34d9ac6fc93660d6e4bf5e4fe1c37d8aa6ee7"
+    },
+    {
+      "path": "tests/classroom_linked_sync.test.js",
+      "bytes": 28798,
+      "sha256": "58aadbbba06817f0f0783ddf5267e2d574a45f168cf2237ec423ef02fb813661"
+    },
+    {
+      "path": "tests/guided_default_path.test.js",
+      "bytes": 11548,
+      "sha256": "1c212da26076c3a7b0410e1bf711d5911e29563770e8bd4708bf6b8a79cbfec2"
+    },
+    {
+      "path": "tests/guided_host_wiring.test.js",
+      "bytes": 23819,
+      "sha256": "a3f65755be938ea4227e2869b18bdb218b834e0b2dfecfede60d2bce71e5c415"
+    },
+    {
+      "path": "tests/independent_mode_surfaces.test.js",
+      "bytes": 5207,
+      "sha256": "6e7f1841a4c0ed2a9d18c0bdc881a2cf64510b5345d8c3f093d6f9fc9de7b4fb"
+    },
+    {
+      "path": "tests/launch_pad_cards_a11y.test.js",
+      "bytes": 12293,
+      "sha256": "464a935fdf86713d5140c6c888f5aa276279476e565c7255f5b6aef2f10f2e02"
+    },
+    {
+      "path": "tests/roster_panel_compact_toolbar.test.js",
+      "bytes": 3851,
+      "sha256": "9184d5d99864ab10c778fa435b7800d62893510ff6b1ee8ec9d2c1a0902068b0"
+    },
+    {
+      "path": "tests/teacher_private_labels_and_classroom_handoff.test.js",
+      "bytes": 32422,
+      "sha256": "9fbdc5a6c5a129137681f5c046879fc9f94f5418cd7fd0975791bc3823e19b2e"
+    },
+    {
+      "path": "tests/tool_labels_by_role.test.js",
+      "bytes": 6217,
+      "sha256": "29a0ac6c5db666a625dd26f455a3360265eacec94ab2f97145ef49603c27b6a3"
+    },
+    {
+      "path": "ui_strings.js",
+      "bytes": 9757527,
+      "sha256": "dd0b9b753c2d2e2b94da2e9c487799ff6949cd49d461d1a037b5b66fd7598088"
+    },
+    {
+      "path": "view_fab_stack_module.js",
+      "bytes": 27828,
+      "sha256": "d0398e81a33774799968ab2338dde53f13bf3bcfbe97b5ab82792eefe0e98833"
+    },
+    {
+      "path": "view_fab_stack_source.jsx",
+      "bytes": 27834,
+      "sha256": "9af0938ae0b47b80eb2ed65825109cbc41ea33e91c2a337587aa9e5984d6f49c"
+    },
+    {
+      "path": "view_guided_mode_banner_module.js",
+      "bytes": 332498,
+      "sha256": "6a003966846f2984f97256aeabe702dc278d463a70323f1ff01ca68bc801a0ea"
+    },
+    {
+      "path": "view_guided_mode_banner_source.jsx",
+      "bytes": 315432,
+      "sha256": "b8bffe8b4547298654f4ab2109c874732ffa44173d782d83775a1a0585afea21"
+    },
+    {
+      "path": "view_header_module.js",
+      "bytes": 138069,
+      "sha256": "2ac78354489329c0c7557d745e51d645092cd04b026ee3f84eff82dad73a9474"
+    },
+    {
+      "path": "view_header_source.jsx",
+      "bytes": 179893,
+      "sha256": "18de58f146ae5dced2e4f5710385ad1f06b2e8c12a74e4e6a415c31129d585f7"
+    },
+    {
+      "path": "view_launch_pad_module.js",
+      "bytes": 79753,
+      "sha256": "7c0aa0c508ef5a92ef96ec0808cfb86aab6a51b7dc2a6a1190e089e35bf49f9b"
+    },
+    {
+      "path": "view_launch_pad_source.jsx",
+      "bytes": 74884,
+      "sha256": "a9283f4769c16620a97109774c5284ddba119ce7e9a46e2e27ab568bbd58dfcd"
+    },
+    {
+      "path": "tests/onboarding_review_fixes.test.js",
+      "bytes": 20017,
+      "sha256": "75f9791a3284834335b3ba72e9e7b9ca244596eda169ad75d2a34e194d3f3fd6"
+    },
+    {
+      "path": "REVIEW_CONTINUATION.md",
+      "bytes": 5318,
+      "sha256": "0303ffdf42f373db8ee9cd29ec895664100268a10b4a1d5f6294da5566a99567"
+    },
+    {
+      "path": "roster-continuation-tests.json",
+      "bytes": 66674,
+      "sha256": "c87dc9d725c889df50cf2dea1b806ef16d3ed995ae7b2930af9ae7ae45357cd6"
+    }
+  ]
+}

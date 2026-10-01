@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:81:5 › phone, reduced motion, all destinations, height, comparisons, and context loss (27.3s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:125:5 › unavailable model and texture assets retain an interactive scene (7.3s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:50:5 › the shared 3D scene preserves dimensions through orbit, swaps, inspection and same-item comparisons (16.8s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:84:5 › subpixel locators, exact bridge navigation, notebook protection and recorded heights work together (18.6s)
+  ok 5 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:126:5 › the phone diagram retains extreme ratios without WebGL and labels distance evidence (6.5s)
+
+  5 passed (2.0m)

@@ -1,0 +1,257 @@
+diff --git a/content_engine_source.jsx b/content_engine_source.jsx
+index d14e61c..56b90d0 100644
+--- a/content_engine_source.jsx
++++ b/content_engine_source.jsx
+@@ -2717,10 +2717,21 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source
+                    const candidate = _revisionCandidate(snapshot, edits);
+                    if (candidate == null) throw new Error('Pair validation failed');
+                    const restoredPrimary = edits[0].new;
+-                   _pendingRevision = { requestId, snapshot, edits, candidate, result: restoredPrimary };
++                   // The teacher reviews this exact pair. Keep it separate from
++                   // legacy mutable replacement metadata and bind it to Apply.
++                   const bilingualReview = Object.freeze({
++                       version: 1, requestId, resourceId: snapshot.id, resourceVersion: snapshot.version,
++                       selectedPaneId: anchor.paneId,
++                       edits: Object.freeze(['src', 'tgt'].map(paneId => {
++                           const edit = edits.find(item => item.paneId === paneId);
++                           return Object.freeze({ paneId, language: paneId === 'src' ? revisionLanguage : 'English', original: edit.original, new: edit.new });
++                       }))
++                   });
++                   _pendingRevision = { requestId, snapshot, edits, candidate, result: restoredPrimary, bilingualReview };
+                    updateRequest(prev => ({
+                        ...prev,
+                        result: restoredPrimary,
++                       bilingualReview,
+                        replacements: edits.map(edit => ({ ...edit }))
+                    }));
+                    return;
+@@ -3114,6 +3125,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source
+       }
+       if (pending.requestId !== _revisionReqId || revisionData.requestId !== pending.requestId
+           || revisionData.resourceVersion !== pending.snapshot.version || revisionData.result !== pending.result
++          || revisionData.bilingualReview !== pending.bilingualReview
+           || !_revisionSnapshotIsCurrent(pending.snapshot)) {
+           _rejectRevision('This revision belongs to an older version. Nothing changed. Select the passage again and retry.');
+           return;
+
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index fa98569..be358dc 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2207,6 +2207,20 @@
+     var definitionData = props.definitionData;
+     var phonicsData = props.phonicsData;
+     var revisionData = isTeacherMode || props.revisionData?.type === 'explain' ? props.revisionData : null;
++    var revisionNeedsPairReview = !!revisionData && ['simplify', 'custom'].includes(revisionData.type)
++      && typeof generatedContent?.data === 'string' && generatedContent.data.includes('--- ENGLISH TRANSLATION ---');
++    var bilingualRevisionReview = (function () {
++      var review = revisionData?.bilingualReview;
++      if (!revisionNeedsPairReview || !review || review.version !== 1
++        || review.requestId !== revisionData.requestId || review.resourceId !== generatedContent?.id
++        || review.resourceVersion !== revisionData.resourceVersion || revisionData.resourceText !== generatedContent?.data
++        || !['src', 'tgt'].includes(review.selectedPaneId) || !Array.isArray(review.edits) || review.edits.length !== 2) return null;
++      if (!['src', 'tgt'].every(pane => review.edits.filter(edit => edit?.paneId === pane).length === 1)
++        || review.edits.some(edit => typeof edit.original !== 'string' || typeof edit.new !== 'string' || typeof edit.language !== 'string')) return null;
++      return review.edits.find(edit => edit.paneId === review.selectedPaneId).new === revisionData.result ? review : null;
++    })();
++    var selectedRevisionLanguage = bilingualRevisionReview?.edits.find(edit => edit.paneId === bilingualRevisionReview.selectedPaneId)?.language;
++    var revisionPopupWidth = revisionNeedsPairReview ? 36 : 18;
+     var selectionMenu = interactionMode === props.interactionMode ? props.selectionMenu : null;
+     var isCustomReviseOpen = isTeacherMode && props.isCustomReviseOpen;
+     var customReviseInstruction = props.customReviseInstruction;
+@@ -3611,6 +3625,17 @@
+       var active = !!isPlaying && playingContentId === contentId;
+       return <button type="button" data-simplified-popup-speaker={contentId} onClick={function () { stopHelpAudio(); if (language) handleSpeak(text, contentId, 0, false, language); else handleSpeak(text, contentId, 0); }} aria-label={active ? simplifiedPopupStopLabel : label || simplifiedPopupListenLabel} title={active ? simplifiedPopupStopReadingLabel : label || simplifiedPopupReadAloudLabel} className={`min-h-11 flex items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${active ? 'bg-indigo-700 text-white hover:bg-indigo-800' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}>{active ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}<span>{active ? simplifiedPopupStopLabel : label || simplifiedPopupListenLabel}</span></button>;
+     };
++    function renderBilingualRevisionReview() {
++      if (!bilingualRevisionReview) return <p role="status" data-bilingual-revision-unavailable className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{viewText('simplified.revision.pair_unavailable', 'Both language changes are not ready to review. Close this preview and try again. Nothing has changed.')}</p>;
++      return <div data-bilingual-revision-review className="mb-3 space-y-3">
++        <p className="text-sm text-slate-700">{viewText('simplified.revision.review_pair', 'Review both language changes. Apply updates both together.')}</p>
++        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{bilingualRevisionReview.edits.map(edit => <section key={edit.paneId} data-revision-pane={edit.paneId} className="min-w-0 space-y-2 rounded-lg border border-slate-300 bg-white p-3">
++          <h6 className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900"><span>{edit.language}</span><span className="rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-900">{edit.paneId === bilingualRevisionReview.selectedPaneId ? viewText('simplified.revision.selected_passage', 'Selected passage') : viewText('simplified.revision.matching_passage', 'Matching passage')}</span></h6>
++          <div className="rounded border border-slate-200 bg-slate-50 p-2"><p className="mb-1 text-xs font-bold text-slate-700">{viewText('th.before', 'Before')}</p><div data-revision-before lang={simplifiedLanguageTag(edit.language)} dir={getContentDirection(edit.language)} className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-900">{renderFormattedText(edit.original, false)}</div></div>
++          <div className="rounded border border-indigo-200 bg-indigo-50 p-2"><p className="mb-1 text-xs font-bold text-indigo-900">{viewText('th.after', 'After')}</p><div data-revision-after lang={simplifiedLanguageTag(edit.language)} dir={getContentDirection(edit.language)} className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-900">{renderFormattedText(edit.new, false)}</div></div>
++        </section>)}</div>
++      </div>;
++    }
+     // Closing a popup should not leave its audio running with nothing on
+     // screen to stop it. The ref carries the live id into the effect cleanup.
+     var simplifiedPlayingContentIdRef = React.useRef(null);
+@@ -4020,7 +4045,7 @@
+     useSimplifiedPopupViewport(definitionDialogRef, definitionData, 16);
+     useSimplifiedPopupViewport(phonicsDialogRef, phonicsData, 18);
+     useSimplifiedPopupViewport(selectionDialogRef, selectionMenu, 20);
+-    useSimplifiedPopupViewport(revisionDialogRef, revisionData, 18);
++    useSimplifiedPopupViewport(revisionDialogRef, revisionData, revisionPopupWidth);
+     React.useEffect(() => () => { stopPreparedCardAudio(wordHelpOwnerRef.current); }, []);
+     React.useEffect(function () { if (wordHelpCard && wordHelpCardRef.current) wordHelpCardRef.current.focus(); }, [wordHelpCard && wordHelpCard.entry.id, wordHelpCard && wordHelpCard.x, wordHelpCard && wordHelpCard.y]);
+     function stopPreparedCardAudio(owner) {
+@@ -5448,7 +5473,7 @@
+               }} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Plus size={12} className="text-green-700" /> {t('text_tools.add_term')}</button>}</>}</div><div className="w-2 h-2 bg-slate-800 rotate-45" /></div>}{selectionMenu && <div className={`fixed inset-0 ${_popupBackdropZ} bg-transparent`} onMouseDown={e => {
+           setSelectionMenu(null);
+           setIsCustomReviseOpen(false);
+-        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'Working…')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} /></div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
++        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, revisionPopupWidth)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'Working…')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result && (!revisionNeedsPairReview || bilingualRevisionReview) ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result, selectedRevisionLanguage, bilingualRevisionReview ? viewText('simplified.revision.listen_selected', 'Listen to selected change') : undefined) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <>{revisionNeedsPairReview ? renderBilingualRevisionReview() : <div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>}{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" data-revision-apply disabled={revisionNeedsPairReview && !bilingualRevisionReview} onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {revisionNeedsPairReview ? viewText('simplified.revision.apply_both', 'Apply both changes') : t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} /></div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
+   }
+   SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
+   SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;
+
+diff --git a/tests/reader_bilingual_revision_review.test.js b/tests/reader_bilingual_revision_review.test.js
+new file mode 100644
+--- /dev/null
++++ b/tests/reader_bilingual_revision_review.test.js
+@@ -0,0 +1,154 @@
++import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++const DELIMITER = '\n\n--- ENGLISH TRANSLATION ---\n\n';
++let React, createRoot, act, View, pure, phase, root, host;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  act = React.act; global.React = window.React = React; global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  window.__alloUtils = { cleanJson: value => value };
++  for (const name of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'text_pipeline_helpers_module.js']) loadAlloModule(name);
++  loadAlloModule(process.env.ALLO_CE_CANDIDATE || 'content_engine_module.js');
++  loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
++  View = window.AlloModules.SimplifiedView; pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers;
++});
++afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; host = null; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
++function fixture({ source = 'Agua.', translation = 'Water.', after = 'Líquido.', afterTranslation = 'Liquid.', selected = 'src', language = 'Spanish', response, monolingual = false } = {}) {
++  const state = {
++    generatedContent: { id: 'reading', type: 'simplified', data: monolingual ? source : source + DELIMITER + translation, config: { language, grade: '4' }, instructionalText: { form: 'adapted', complexity: { language, requestedGrade: '4' } } },
++    revisionData: null, selectionMenu: null, interactionMode: 'read', leveledTextLanguage: language, gradeLevel: '4',
++    isTeacherMode: true, isZenMode: false, isCompareMode: false, isEditingLeveledText: false,
++    setIsCustomReviseOpen: vi.fn(), setCustomReviseInstruction: vi.fn(), setInteractionMode: vi.fn(), setIsCompareMode: vi.fn(),
++    setSelectionMenu: value => { state.selectionMenu = value; render(); },
++    setRevisionData: value => { state.revisionData = typeof value === 'function' ? value(state.revisionData) : value; render(); }
++  };
++  state.handleSimplifiedTextChange = vi.fn(data => { state.generatedContent = { ...state.generatedContent, data }; render(); });
++  const replacements = [{ paneId: 'src', original: source, new: after }, { paneId: 'tgt', original: translation, new: afterTranslation }];
++  const callGemini = vi.fn(async () => response ?? JSON.stringify({ primaryRevision: selected === 'src' ? after : afterTranslation, replacements }));
++  const addToast = vi.fn();
++  const engine = window.AlloModules.createContentEngine({ getState: () => state, callGemini, addToast, t: key => key });
++  const common = {
++    t: key => key, ComplexityGauge: () => null, textEditorRef: React.createRef(), history: [],
++    splitTextToSentences: text => pure.splitTextToSentences(text, {}), getSideBySideContent: () => null,
++    getContentDirection: lang => lang === 'Arabic' ? 'rtl' : 'ltr', isRtlLang: lang => lang === 'Arabic',
++    renderFormattedText: text => React.createElement('span', null, text),
++    formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: value => value, latestGlossary: [], MathSymbol: () => null }),
++    SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: text => text, latestGlossary: [], cursorStyles: {},
++    handleSpeak: vi.fn(), stopPlayback: vi.fn(), handleWordClick: vi.fn(), handlePhonicsClick: vi.fn(),
++    handleQuickAddGlossary: vi.fn(), handleTextMouseUp: vi.fn(), setFocusedParagraphIndex: vi.fn(), setReadingTheme: vi.fn(),
++    closeRevision: () => engine.closeRevision(), applyTextRevision: () => engine.applyTextRevision(),
++    handleToggleIsTeacherToolbarExpanded: vi.fn(), handleFormatText: vi.fn(), selectedVoice: 'Kore', voiceSpeed: 1
++  };
++  function render() { if (root) root.render(React.createElement(View, { ...common, ...state })); }
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host); act(render);
++  return { state, engine, common, callGemini, addToast, render: () => act(render), prepare: async (action = 'simplify') => {
++    state.selectionMenu = { text: selected === 'src' ? source : translation, paneId: monolingual ? 'mono' : selected, language: selected === 'src' ? language : 'English', occurrence: 0, x: 300, y: 50 };
++    await act(async () => { await engine.handleReviseSelection(action, 'Make the wording clearer.'); });
++  } };
++}
++const find = selector => host.querySelector(selector);
++const click = async node => { await act(async () => { node.click(); }); };
++describe('validated bilingual review', () => {
++  it.each(['src', 'tgt'])('shows both exact changes before atomically applying the selected %s revision', async selected => {
++    const f = fixture({ selected }); await f.prepare();
++    expect(host.querySelectorAll('[data-revision-pane]')).toHaveLength(2);
++    const source = find('[data-revision-pane="src"]'), translation = find('[data-revision-pane="tgt"]');
++    expect(source.querySelector('[data-revision-before]').textContent).toBe('Agua.');
++    expect(source.querySelector('[data-revision-after]').textContent).toBe('Líquido.');
++    expect(translation.querySelector('[data-revision-before]').textContent).toBe('Water.');
++    expect(translation.querySelector('[data-revision-after]').textContent).toBe('Liquid.');
++    expect(find(`[data-revision-pane="${selected}"]`).textContent).toContain('Selected passage');
++    expect(source.querySelector('[data-revision-after]').lang).toBe('es');
++    expect(translation.querySelector('[data-revision-after]').lang).toBe('en');
++    expect(f.state.handleSimplifiedTextChange).not.toHaveBeenCalled();
++    expect(find('[data-revision-apply]').textContent).toContain('Apply both changes');
++    await click(find('[data-revision-apply]'));
++    expect(f.state.generatedContent.data).toBe('Líquido.' + DELIMITER + 'Liquid.');
++    expect(f.state.handleSimplifiedTextChange).toHaveBeenCalledOnce(); expect(f.callGemini).toHaveBeenCalledOnce();
++    expect(find('[data-bilingual-revision-review]')).toBeNull();
++  });
++  it('freezes the displayed pair and ignores mutable legacy replacement metadata', async () => {
++    const f = fixture(); await f.prepare(); const review = f.state.revisionData.bilingualReview;
++    expect(Object.isFrozen(review)).toBe(true); expect(Object.isFrozen(review.edits)).toBe(true);
++    expect(review.edits.every(Object.isFrozen)).toBe(true);
++    expect(() => { review.edits[1].new = 'Injected.'; }).toThrow(TypeError);
++    f.state.revisionData.replacements[1].new = 'Injected.'; f.render();
++    expect(find('[data-revision-pane="tgt"] [data-revision-after]').textContent).toBe('Liquid.');
++    await click(find('[data-revision-apply]')); expect(f.state.generatedContent.data).toBe('Líquido.' + DELIMITER + 'Liquid.');
++  });
++  it('rejects Apply after the public review object is replaced', async () => {
++    const f = fixture(); await f.prepare(); const before = f.state.generatedContent.data;
++    const review = f.state.revisionData.bilingualReview;
++    f.state.revisionData.bilingualReview = { ...review, edits: review.edits.map(edit => ({ ...edit, new: edit.paneId === 'tgt' ? 'Unreviewed.' : edit.new })) };
++    f.render(); await click(find('[data-revision-apply]'));
++    expect(f.state.generatedContent.data).toBe(before); expect(f.state.handleSimplifiedTextChange).not.toHaveBeenCalled();
++    expect(f.addToast).toHaveBeenCalledWith(expect.stringContaining('Nothing changed'), 'warning');
++  });
++  it.each(['missing', 'partial', 'wrong-request'])('withholds Apply when pair review is %s', async kind => {
++    const f = fixture(); await f.prepare(); const review = f.state.revisionData.bilingualReview;
++    if (kind === 'missing') delete f.state.revisionData.bilingualReview;
++    if (kind === 'partial') f.state.revisionData.bilingualReview = { ...review, edits: review.edits.slice(0, 1) };
++    if (kind === 'wrong-request') f.state.revisionData.bilingualReview = { ...review, requestId: review.requestId + 1 };
++    f.render(); expect(find('[data-bilingual-revision-unavailable]').textContent).toContain('Close this preview and try again');
++    expect(find('[data-revision-apply]').disabled).toBe(true); await click(find('[data-revision-apply]'));
++    expect(f.state.handleSimplifiedTextChange).not.toHaveBeenCalled();
++    await act(async () => { await f.engine.applyTextRevision(); });
++    expect(f.state.handleSimplifiedTextChange).not.toHaveBeenCalled();
++  });
++  it('dismisses the preview when the reading changes and rejects a late Apply', async () => {
++    const f = fixture(); await f.prepare();
++    const changed = 'Changed.\n' + f.state.generatedContent.data;
++    f.state.generatedContent = { ...f.state.generatedContent, data: changed }; f.render();
++    expect(find('[data-bilingual-revision-review]')).toBeNull(); expect(find('[data-revision-apply]')).toBeNull();
++    await act(async () => { await f.engine.applyTextRevision(); });
++    expect(f.state.generatedContent.data).toBe(changed); expect(f.state.handleSimplifiedTextChange).not.toHaveBeenCalled();
++  });
++  it('uses recorded language after the ambient generation language changes', async () => {
++    const f = fixture(); f.state.leveledTextLanguage = 'French'; await f.prepare();
++    expect(find('[data-revision-pane="src"] [data-revision-after]').lang).toBe('es');
++    await click(find('[data-simplified-popup-speaker="simplified-revision-popup"]'));
++    expect(f.common.handleSpeak).toHaveBeenCalledWith('Líquido.', 'simplified-revision-popup', 0, false, 'Spanish');
++  });
++  it('preserves citation markers and literal replacement characters in each preview and commit', async () => {
++    const citation = ' [⁽¹⁾](https://example.org/a_(b))';
++    const after = 'Líquido $& $$.' + citation, afterTranslation = 'Liquid $& $$.' + citation;
++    const f = fixture({ source: 'Agua.' + citation, translation: 'Water.' + citation, after, afterTranslation }); await f.prepare();
++    expect(find('[data-revision-pane="src"] [data-revision-after]').textContent).toBe(after);
++    expect(find('[data-revision-pane="tgt"] [data-revision-after]').textContent).toBe(afterTranslation);
++    await click(find('[data-revision-apply]')); expect(f.state.generatedContent.data).toBe(after + DELIMITER + afterTranslation);
++  });
++  it('fits a narrow viewport and marks right-to-left text separately from English', async () => {
++    vi.stubGlobal('innerWidth', 320);
++    const f = fixture({ source: 'الماء.', after: 'سائل.', language: 'Arabic' }); await f.prepare();
++    const dialog = find('[data-bilingual-revision-review]').closest('[role="dialog"]');
++    expect(parseFloat(dialog.style.width)).toBeLessThanOrEqual(304);
++    expect(parseFloat(dialog.style.left)).toBeGreaterThanOrEqual(8);
++    expect(find('[data-revision-pane="src"] [data-revision-after]').dir).toBe('rtl');
++    expect(find('[data-revision-pane="src"] [data-revision-after]').lang).toBe('ar');
++    expect(find('[data-revision-pane="tgt"] [data-revision-after]').dir).toBe('ltr');
++  });
++  it.each(['src', 'tgt'])('reads the selected %s change with its recorded language', async selected => {
++    const f = fixture({ selected }); await f.prepare();
++    const button = find('[data-simplified-popup-speaker="simplified-revision-popup"]');
++    expect(button.getAttribute('aria-label')).toBe('Listen to selected change'); await click(button);
++    expect(f.common.handleSpeak).toHaveBeenCalledWith(selected === 'src' ? 'Líquido.' : 'Liquid.', 'simplified-revision-popup', 0, false, selected === 'src' ? 'Spanish' : 'English');
++  });
++  it('keeps explanations single-pane even when the reading is bilingual', async () => {
++    const f = fixture({ response: 'Water is a liquid.' }); await f.prepare('explain');
++    expect(find('[data-bilingual-revision-review]')).toBeNull(); expect(find('[data-revision-apply]')).toBeNull();
++    expect(host.textContent).toContain('Water is a liquid.');
++  });
++  it('keeps single-language revisions on their existing Apply path', async () => {
++    const f = fixture({ monolingual: true, response: 'Líquido.' }); await f.prepare();
++    expect(find('[data-bilingual-revision-review]')).toBeNull(); expect(find('[data-revision-apply]').disabled).toBe(false);
++    await click(find('[data-revision-apply]')); expect(f.state.generatedContent.data).toBe('Líquido.');
++  });
++  it('does not expose teacher revision controls in student view', async () => {
++    const f = fixture(); await f.prepare(); f.state.isTeacherMode = false; f.render();
++    expect(find('[data-bilingual-revision-review]')).toBeNull(); expect(find('[data-revision-apply]')).toBeNull();
++  });
++});

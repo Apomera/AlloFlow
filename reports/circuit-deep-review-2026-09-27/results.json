@@ -1,0 +1,94 @@
+{
+  "source": "stem_lab/stem_tool_circuit.js",
+  "sourceSha256": "ba8cd6415628c2d51dca9f14aecdf95f6bac6c0c88b9e5b7f400d6d7293c3959",
+  "quiz": {
+    "generatorLine": 3507,
+    "distractorRepairLine": 3579,
+    "gradingLine": 5607,
+    "randomSequence": [
+      0,
+      0,
+      0.999,
+      0,
+      0,
+      0
+    ],
+    "remainingRandomValue": 0.6,
+    "question": {
+      "text": "A 3V battery drives current through a 500Ω resistor. What is the current?",
+      "answer": 0.006,
+      "unit": "A",
+      "formula": "I = V/R = 3/500 = 0.006A",
+      "opts": [
+        0.006,
+        0.02,
+        0.007,
+        0.007
+      ],
+      "answered": false
+    },
+    "gradingExpression": "Math.abs(opt - ohmQuiz.answer) < 0.01",
+    "gradedOptions": [
+      {
+        "value": 0.006,
+        "markedCorrect": true
+      },
+      {
+        "value": 0.02,
+        "markedCorrect": false
+      },
+      {
+        "value": 0.007,
+        "markedCorrect": true
+      },
+      {
+        "value": 0.007,
+        "markedCorrect": true
+      }
+    ],
+    "distinctOptionCount": 3,
+    "wrongOptionsMarkedCorrect": 2
+  },
+  "comparisonPrecision": {
+    "formatterLine": 4921,
+    "before": {
+      "mode": "series",
+      "voltage": 1,
+      "components": [
+        {
+          "id": 1,
+          "type": "resistor",
+          "value": 10000
+        }
+      ]
+    },
+    "after": {
+      "mode": "series",
+      "voltage": 2,
+      "components": [
+        {
+          "id": 1,
+          "type": "resistor",
+          "value": 10000
+        }
+      ]
+    },
+    "currentAmps": {
+      "before": 0.0001,
+      "after": 0.0002,
+      "delta": 0.0001
+    },
+    "displayed": {
+      "before": "0.000 A",
+      "after": "0.000 A",
+      "delta": "+0.000 A"
+    },
+    "comparison": {
+      "changes": [
+        "supply: 1 V → 2 V"
+      ],
+      "controlled": true,
+      "unchanged": false
+    }
+  }
+}

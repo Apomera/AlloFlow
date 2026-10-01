@@ -1,0 +1,87 @@
+Index: view_simplified_source.jsx
+===================================================================
+--- view_simplified_source.jsx
++++ view_simplified_source.jsx
+@@ -3489,6 +3489,8 @@
+     var stopHelpAudio = function (reset) {
+       helpAudioTokenRef.current += 1;
+       var current = helpAudioRef.current;helpAudioRef.current = null;
++      clearTimeout(current?.timer);
++      current?.cancel?.();
+       if (current?.audio) { current.audio.onended = null;current.audio.onerror = null;current.audio.pause(); }
+       if (current?.ownedUrl) releaseHelpUrl(current.ownedUrl);
+       if (reset !== false) setHelpAudioState({ key: null, status: 'idle' });
+@@ -3498,25 +3500,33 @@
+       stopHelpAudio();
+       if (typeof stopPlayback === 'function') stopPlayback();
+       var token = helpAudioTokenRef.current;
+-      var current = { key: key, audio: null, ownedUrl: null };helpAudioRef.current = current;
++      var current = { key: key, audio: null, ownedUrl: null, timer: null, cancel: null };helpAudioRef.current = current;
++      var cancelled = new Promise(resolve => { current.cancel = resolve; });
++      var configuredMs = Number(window.AlloFlowConfig?.timeouts?.readingAudioStartupMs);
++      var timeoutMs = Number.isFinite(configuredMs) && configuredMs > 0 ? Math.min(120000, Math.max(1000, configuredMs)) : 30000;
++      var fail = function (reason) {
++        if (token !== helpAudioTokenRef.current) return;
++        stopHelpAudio(false);setHelpAudioState({ key: key, status: 'error', reason: reason });
++      };
+       setHelpAudioState({ key: key, status: 'loading' });
++      current.timer = setTimeout(() => fail('timeout'), timeoutMs);
+       try {
+-        var url = recordingUrl || await callTTS(word, selectedVoice, voiceSpeed || 1, 2, language || generatedContent?.config?.language || leveledTextLanguage || 'English');
+-        if (token !== helpAudioTokenRef.current) { if (!recordingUrl) releaseHelpUrl(url);return; }
+-        if (!url) throw new Error(viewText('simplified.word_audio_no_pronunciation_audio', 'No pronunciation audio'));
+-        if (!recordingUrl) current.ownedUrl = url;
+-        var audio = new Audio(url);current.audio = audio;audio.playbackRate = voiceSpeed || 1;
+-        var fail = function () {
+-          if (token !== helpAudioTokenRef.current) return;
+-          stopHelpAudio(false);setHelpAudioState({ key: key, status: 'error' });
+-        };
+-        audio.onended = function () { if (token === helpAudioTokenRef.current) stopHelpAudio(); };
+-        audio.onerror = fail;
+-        await audio.play();
+-        if (token === helpAudioTokenRef.current) setHelpAudioState({ key: key, status: 'playing' });
+-      } catch (_) {
+-        if (token === helpAudioTokenRef.current) { stopHelpAudio(false);setHelpAudioState({ key: key, status: 'error' }); }
+-      }
++        // Keep the shared TTS cache/API contract. Only this popup's wait is cancelled.
++        var work = (async function () {
++          var url = recordingUrl || await callTTS(word, selectedVoice, voiceSpeed || 1, 2, language || generatedContent?.config?.language || leveledTextLanguage || 'English');
++          if (token !== helpAudioTokenRef.current) { if (!recordingUrl) releaseHelpUrl(url);return; }
++          if (!url) throw new Error(viewText('simplified.word_audio_no_pronunciation_audio', 'No pronunciation audio'));
++          if (!recordingUrl) current.ownedUrl = url;
++          var audio = new Audio(url);current.audio = audio;audio.playbackRate = voiceSpeed || 1;
++          audio.onended = function () { if (token === helpAudioTokenRef.current) stopHelpAudio(); };
++          audio.onerror = function () { fail('playback'); };
++          await audio.play();
++          if (token !== helpAudioTokenRef.current) { audio.pause();return; }
++          clearTimeout(current.timer);current.timer = null;
++          setHelpAudioState({ key: key, status: 'playing' });
++        })();
++        await Promise.race([work, cancelled]);
++      } catch (_) { fail('failed'); }
+     };
+     React.useEffect(function () {
+       setHelpAudioState({ key: null, status: 'idle' });
+@@ -3529,11 +3539,11 @@
+       var active = current && (helpAudioState.status === 'loading' || helpAudioState.status === 'playing');
+       var label = active ? helpText('simplified.word_audio_stop', 'Stop audio') : current && helpAudioState.status === 'error' ? helpText('simplified.word_audio_retry', 'Try audio again') : recordingUrl ? helpText('simplified.word_recording', 'Hear recording') : helpText('simplified.word_audio_listen', 'Hear word');
+       if (idleLabel && !active && !(current && helpAudioState.status === 'error')) label = idleLabel;
+-      return <button key={key} type="button" data-word-help-audio={key} aria-label={label} onClick={() => playHelpAudio(key, recordingUrl, word, language)} className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{active ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}<span>{label}</span></button>;
++      return <button key={key} type="button" data-word-help-audio={key} aria-busy={current && helpAudioState.status === 'loading'} aria-label={label} onClick={() => playHelpAudio(key, recordingUrl, word, language)} className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{active ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}<span>{label}</span></button>;
+     };
+     var renderHelpAudioNotice = function (prefix) {
+       if (!helpAudioState.key?.startsWith(prefix) || !['loading', 'error'].includes(helpAudioState.status)) return null;
+-      return <p role="status" className="mb-3 text-sm text-slate-700">{helpAudioState.status === 'loading' ? helpText('simplified.word_audio_loading', 'Preparing audio…') : helpText('simplified.word_audio_error', 'Audio could not play. Try again when you are ready.')}</p>;
++      return <p role="status" className="mb-3 text-sm text-slate-700">{helpAudioState.status === 'loading' ? helpText('simplified.word_audio_loading', 'Preparing audio…') : helpAudioState.reason === 'timeout' ? helpText('simplified.word_audio_timeout', 'Audio took too long to start. You can try again.') : helpText('simplified.word_audio_error', 'Audio could not play. Try again when you are ready.')}</p>;
+     };
+     // Read-aloud for the Define and Explain popups. Both go through the host's
+     // handleSpeak, the same path the sentence reader, the immersive word
+@@ -3581,7 +3591,7 @@
+         : helpText('glossary.popups.show_picture', 'Show picture');
+       return <div data-lookup-picture>
+         {ready && <img src={data.imageUrl} alt={data.word} className="h-32 w-full rounded-lg border border-slate-400 object-contain" />}
+-        <p role="status" className="my-1 text-xs text-slate-700">{ready ? helpText('simplified.lookup_picture_ready', 'Picture ready') : busy ? helpText('simplified.lookup_picture_loading', 'Preparing picture…') : blocked ? helpText('simplified.lookup_picture_disabled', 'New AI pictures are off.') : data.imageError ? helpText('glossary.popups.image_error', 'Could not load picture.') : ''}</p>
++        <p role="status" className="my-1 text-xs text-slate-700">{ready ? helpText('simplified.lookup_picture_ready', 'Picture ready') : busy ? helpText('simplified.lookup_picture_loading', 'Preparing picture…') : blocked ? helpText('simplified.lookup_picture_disabled', 'New AI pictures are off.') : data.imageError ? data.imageErrorReason === 'timeout' ? helpText('simplified.lookup_picture_timeout', 'The picture took too long to load. You can try again.') : helpText('glossary.popups.image_error', 'Could not load picture.') : ''}</p>
+         {!blocked && typeof handleFetchWordImage === 'function' && <button type="button" data-lookup-picture-retry aria-disabled={busy || ready} aria-busy={busy} onClick={() => { if (!busy && !ready) handleFetchWordImage(data.word); }} className="min-h-11 w-full rounded-lg border border-indigo-300 px-3 py-2 text-sm text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label}</button>}
+       </div>;
+     };

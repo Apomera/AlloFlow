@@ -1,0 +1,22 @@
+[
+  {
+    "file": "view_simplified_source.jsx",
+    "existed": true,
+    "conflicts": 2
+  },
+  {
+    "file": "tests/edit_audio_ui.test.js",
+    "existed": true,
+    "conflicts": 0
+  },
+  {
+    "file": "tests/reader_narration_access.test.js",
+    "existed": false,
+    "conflicts": 0
+  },
+  {
+    "file": "dev-tools/reader_narration_browser.cjs",
+    "existed": false,
+    "conflicts": 0
+  }
+]

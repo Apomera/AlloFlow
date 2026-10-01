@@ -1,0 +1,52 @@
+{
+  "at": "2026-09-26T22:32:36.430Z",
+  "label": "track18-viewport",
+  "patch": "a084dbd22dfb3f55572e088687be7321150e2093954ae964d3977496e765f4df",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "5a3009fbb1281d94cf5e5bfcf994f5d2d59d4e8dc7432ce8e358aaeea455b106",
+      "after": "6b261d2b828b3f9aff2de7099ab85a49f176918607104be925684080f37168b1",
+      "changed": true
+    },
+    {
+      "target": "immersive_reader_source.jsx",
+      "targets": [
+        "immersive_reader_source.jsx"
+      ],
+      "before": "25b256eaa5b76ceee60323d82440456bde5fb40a8f4ec22f2777ea63328c10a4",
+      "after": "86391ccb93f73e93648ead76ceed55e72c8e25a5a26f437f2e769382dab3e57b",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_route_a11y.test.js",
+      "targets": [
+        "tests/reader_route_a11y.test.js"
+      ],
+      "before": "9a4462e6a3a5e09d3a8333aabafdd217489408645bbfe1a4ce7626489b735d6b",
+      "after": "10621a5011d61257c4b041bc0b64a0125c2cd5efd25b27ae29dd383108d411a2",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader_route_browser.cjs",
+      "targets": [
+        "dev-tools/reader_route_browser.cjs"
+      ],
+      "before": "c827fcd2f7d23d6f115e42e5275832d0e547161aa772b029ed3309e44ba25f6c",
+      "after": "a6c14b2b31b1a7d2ed674ac8cdffc57c2974689bf482c8db37ecf4f0a1475d8a",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/reader_overlay_browser.cjs",
+      "targets": [
+        "dev-tools/reader_overlay_browser.cjs"
+      ],
+      "before": null,
+      "after": "6180709e3c6e08b35cd9a3c6020e4fcb5ca294dad7250221779e22915ef27707",
+      "changed": true
+    }
+  ]
+}

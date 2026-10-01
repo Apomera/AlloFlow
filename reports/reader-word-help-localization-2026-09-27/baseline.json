@@ -1,0 +1,116 @@
+{
+  "base": "16e3ea214bea20953b79b0e86e41f6d0beef9deb",
+  "snapshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.codex-artifacts\\reader-word-help-track17",
+  "files": [
+    "dev-tools/i18n/apply_reader_contract_locales.cjs",
+    "lang/spanish_latin_america.js",
+    "desktop/web-app/public/lang/spanish_latin_america.js",
+    "lang/spanish_castilian.js",
+    "desktop/web-app/public/lang/spanish_castilian.js",
+    "lang/arabic.js",
+    "desktop/web-app/public/lang/arabic.js",
+    "lang/chinese_simplified.js",
+    "desktop/web-app/public/lang/chinese_simplified.js",
+    "lang/thai.js",
+    "desktop/web-app/public/lang/thai.js",
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "inputs": [
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "dd5f57089b3e9beb79922c8afbd494f7bca56b33607094abcebfa55edaa29a31"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce"
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "bb06f8ddaf2c86fba6bb6be58ccee888c24ecda4714ff6de61a12dfb2ee8c412"
+    },
+    {
+      "file": "pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "file": "phase_n_misc_helpers_module.js",
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    {
+      "file": "module_scope_extras_module.js",
+      "sha256": "a3fc2aa9f8e61772e29281811ff1d9413de8700900508384c9afcacd3769157d"
+    },
+    {
+      "file": "tests/setup.js",
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    {
+      "file": "desktop/web-app/tailwind.config.js",
+      "sha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+    }
+  ],
+  "keys": [
+    "simplified.skip_passage",
+    "simplified.your_reading",
+    "simplified.word_meaning",
+    "simplified.word_sounds",
+    "simplified.practice_tools",
+    "simplified.display_menu",
+    "simplified.word_arrows_hint",
+    "simplified.reader_reading_passage_when_line_focus_is",
+    "simplified.word_help_card_prepared",
+    "simplified.word_help_card_hear_word",
+    "simplified.word_help_card_listen",
+    "simplified.word_help_card_more",
+    "simplified.word_help_card_all",
+    "simplified.word_help_summary_needs_review",
+    "simplified.word_help_summary_none",
+    "simplified.word_help_summary_one",
+    "simplified.word_help_summary_count",
+    "simplified.word_help_summary_shown",
+    "simplified.word_help_summary_hidden",
+    "simplified.word_help_tip_select",
+    "simplified.word_help_show_word_in_text",
+    "simplified.word_help_highlighted_in_text",
+    "simplified.word_help_not_found_in_text",
+    "simplified.word_help_word_help",
+    "simplified.define_hint",
+    "simplified.define_hint_prepared",
+    "simplified.phonics_hint",
+    "simplified.read_hint",
+    "simplified.define_hint_prepared_no_marks",
+    "simplified.word_help_open_help",
+    "simplified.word_help_show_in_text",
+    "simplified.word_help_prepared_for",
+    "simplified.word_help_tip_no_marks",
+    "simplified.word_help_located_in_text",
+    "simplified.word_help_listen_to_word_help",
+    "simplified.word_help_stop_word_help"
+  ],
+  "previousBase": "452e7cd230b62f4e192f055826817653d5b997f4"
+}

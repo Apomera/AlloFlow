@@ -1,0 +1,56 @@
+{
+  "status": "fixture-smoke-only",
+  "baseline": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "environment": {
+    "platform": "win32",
+    "arch": "arm64",
+    "node": "v24.11.1",
+    "os": "10.0.26200",
+    "cpu": "Snapdragon(R) X 10-core X1P64100 @ 3.40 GHz",
+    "logicalCPUs": 10
+  },
+  "harnessHashes": {
+    "fixtures.cjs": "cf578256464ca57111629fe5c73eb3550f36e69ac58508f0f02ee139a5235627",
+    "harness.jsx": "6022c562bbf67e00ef21e1e2d5327f471881e760ac091e2151a3b3f1ee118829",
+    "instrumentation.js": "abc25b94e0b6e6238a73e7a76a3f4b5c8af3db7e3fa2129e15674fe4a67891ca",
+    "run.cjs": "b3665d049252c40aceb47547efe6631891932d93f25c8be9d281bad1edfc17ba"
+  },
+  "browser": "154.0.4258.37",
+  "sourceMode": "working-tree",
+  "instrumented": false,
+  "sourceHashes": {
+    "view_simplified_source.jsx": "afe7ba74c50f3ce9663855883c43289dd8f4e9e7b05d331be80284687dae4995",
+    "immersive_reader_source.jsx": "86391ccb93f73e93648ead76ceed55e72c8e25a5a26f437f2e769382dab3e57b",
+    "instructional_context_module.js": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c",
+    "text_pipeline_helpers_module.js": "6c04401f5fc47e150bab9218eb5d71b988a77d74e61e42d42af285f4f2e12cb8",
+    "reader_place_store.js": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc",
+    "reader_support_drafts.js": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+  },
+  "css": {
+    "file": "main.a3936f42.css",
+    "sha256": "085322ac2a036e5a93c4e1223cd5733663030779884b11dbe80be13daf7e7719"
+  },
+  "limitations": [
+    "Not the integrated host or deployed release.",
+    "Synthetic sweep updates, local audio route, and disposable browser storage; icon components are stubbed.",
+    "Timing budgets are unset until repeated baseline runs establish noise and device constraints.",
+    "DOM counters identify retention trends; detached-node retaining paths require a heap snapshot follow-up."
+  ],
+  "results": [
+    {
+      "name": "smoke",
+      "status": "smoke-only",
+      "inventory": {
+        "requestedSentences": 30,
+        "supports": 6,
+        "utf16Chars": 1868,
+        "words": 300,
+        "paragraphs": 10,
+        "acceptedSupports": 6,
+        "canonicalSentences": 30
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "The actual 3D ladle must visit the pot before the jug. Direct drops and cancelled carries do not create water; a completed carry conserves 50 mL.",
+    "The pot station supports dip-and-carry gestures and a two-step keyboard alternative. The recipe allowance stops further scooping.",
+    "Holding an upright pot does not drain. Tilting starts partial flow; pointer and keyboard release stop it immediately without changing cooking time or saved jug water.",
+    "Closing the station or starting a fresh cook stops flow. Drainage finishes with pasta in the colander, preserves the jug, disables further handling, and survives reload.",
+    "A full recipe using ladles and partial drainage completes, exports transferred amounts, and exposes locked historical water levels during replay.",
+    "Real touch carries and draining work without WebGL; cancellation stops flow. Desktop, narrow layouts, and forced colors pass automated accessibility checks."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop water tools",
+      "issues": []
+    },
+    {
+      "label": "320px water tools",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

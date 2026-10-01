@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:36:5 › eight orbital radii keep their measured ratios through deep inspection (5.4s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:56:5 › phone keyboard exploration restores deep observations and enters a detailed world (4.9s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:72:5 › orbital system comparisons preserve physical dimensions after close inspection (4.0s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:81:5 › the orbital scene works in WebGL 1 without shader errors (3.3s)
+  ok 5 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:88:5 › deep approaches remain smooth with ambience paused and stop drawing when settled (5.5s)
+
+  5 passed (24.3s)

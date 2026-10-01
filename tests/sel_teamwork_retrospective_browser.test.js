@@ -4,7 +4,7 @@ import { beforeAll, afterAll, describe, it, expect } from 'vitest';
 import { chromium } from 'playwright';
 
 const root = process.cwd();
-const source = fs.readFileSync(path.join(root, 'sel_hub/sel_tool_teamwork.js'), 'utf8');
+const source = fs.readFileSync(process.env.TEAMWORK_TEST_SOURCE || path.join(root, 'sel_hub/sel_tool_teamwork.js'), 'utf8');
 const cases = JSON.parse(source.match(/var RETRO_PRACTICE = (\[[\s\S]*?\n\]);/)[1]);
 const examples = ['elementary','middle','high'].flatMap(band => cases.map(item => ({band,item})));
 const reports = path.join(root, 'reports/sel-teamwork-retrospective');
@@ -102,19 +102,22 @@ describe('Team retrospective practice', () => {
     await mount('elementary','light',1100,{retroSelections:[],retroDrafts:[]});await openNotes();await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('With help');expect((await draft('elementary:turns')).evidence).toBe('With help');expect(errors).toEqual([]);
   },120000);
 
-  it.each(['success','false','reject','throw','native-success','unavailable'])('copy reports %s honestly, retains selectable text and never awards completion',async mode=>{
+  // 'hub-missing': the Clipboard API works but SelHub.copyText is absent. The tool must not bypass the hub helper
+  // (tests/sel_copy_text.test.js: Canvas blocks the API, and the helper already tries it), so it reports failure.
+  it.each(['success','false','reject','throw','hub-missing','unavailable'])('copy reports %s honestly, retains selectable text and never awards completion',async mode=>{
     await mount();await openNotes();await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('Specific observation');await open('Review or copy my notes');
     await page.evaluate(mode=>{
       window.copiedReview=[];
-      if(mode==='native-success'||mode==='unavailable'){
+      if(mode==='hub-missing'||mode==='unavailable'){
         delete window.SelHub.copyText;Object.defineProperty(navigator,'clipboard',{configurable:true,value:mode==='unavailable'?undefined:{writeText:text=>{window.copiedReview.push(text);return Promise.resolve();}}});
       }else window.SelHub.copyText=text=>{window.copiedReview.push(text);if(mode==='throw')throw new Error('Denied');return mode==='reject'?Promise.reject(new Error('Denied')):Promise.resolve(mode==='success');};
     },mode);
     const preview=map().getByLabel('Review text to copy',{exact:true});expect(await preview.getAttribute('readonly')).not.toBeNull();await preview.focus();expect(await preview.evaluate(node=>node===document.activeElement)).toBe(true);
     await map().getByRole('button',{name:'Copy review text',exact:true}).click();
-    const success=['success','native-success'].includes(mode);await page.waitForFunction(()=>window.depthAnnouncements.length>0);
+    const success=mode==='success';await page.waitForFunction(()=>window.depthAnnouncements.length>0);
     const message=await page.evaluate(()=>window.depthAnnouncements.at(-1));expect(message).toBe(success?'Retrospective notes copied.':'Copy unavailable. Select the review text and copy it manually.');
-    if(mode!=='unavailable')expect(await page.evaluate(()=>window.copiedReview[0])).toBe(await preview.inputValue());
+    if(mode==='hub-missing')expect(await page.evaluate(()=>window.copiedReview)).toEqual([]);
+    else if(mode!=='unavailable')expect(await page.evaluate(()=>window.copiedReview[0])).toBe(await preview.inputValue());
     expect(await preview.inputValue()).toContain('Specific observation');expect(await page.evaluate(()=>window.depthXP)).toEqual([]);expect(await page.evaluate(()=>window.depthSnapshot.teamwork.earnedBadges)).toBeUndefined();expect(await page.evaluate(()=>window.depthSnapshot.teamwork.retroSaved)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 

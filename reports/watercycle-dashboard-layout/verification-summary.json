@@ -1,0 +1,29 @@
+{
+  "sourceSha256": "d43969e8c5824b6f2b94b2b7e29b51ef33a24833495059c79cad6e9551951061",
+  "publicSha256": "d43969e8c5824b6f2b94b2b7e29b51ef33a24833495059c79cad6e9551951061",
+  "baselineSha256": "78d924001e4e1de6167aae3804405f976ade6d4809f4d9d06cd47816a6a967e8",
+  "uniqueTests": 150,
+  "browserChecks": 597,
+  "browserCases": 81,
+  "layoutMeasurements": 23,
+  "cleanScopedAudits": 18,
+  "browserCompleted": true,
+  "ownedResourcesClosed": true,
+  "scopedIndexEmpty": true,
+  "whitespaceClean": true,
+  "teachingSignalDerivationsUnchanged": true,
+  "desktop": {
+    "beforeEmptyHeight": 747.65625,
+    "afterEmptyHeight": 59.515625,
+    "beforePanelHeight": 1133.09375,
+    "afterPanelHeight": 1036.78125,
+    "gridWidth": 980,
+    "valuesCardWidth": 980
+  },
+  "reportSha256": {
+    "unit": "ead9c2926c7ee2154e90d14e9213ac33d42d3b76d32c71d0c3d3f49efc88b905",
+    "regression": "f71752bcd2b86c9f50f74ff77b28d13e44a199476c5580115c95004f067ced63",
+    "browser": "471959c9c81297d18763684a6363f59ab580211b5a4c255bdaa521c568d45605",
+    "browserHarness": "3d84821242eb2b18d5c3222b45f8ec8ce26b71952e1e734ff96169ee236ef49e"
+  }
+}

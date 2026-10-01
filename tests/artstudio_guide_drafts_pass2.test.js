@@ -114,12 +114,13 @@ describe('Art Studio guide and draft refinements', () => {
 
   it('provides translated simple prompts and vocabulary in all eighteen labs', () => {
     const tabs = ['artistExplorer','colorWheel','mixer','watercolor','pixel','symmetry','spirograph','generative','spinArt','stringArt','opArt','tessellation','fractal','gradient','stereogram','sculpt3d','contrast','harmonyHunt'];
-    const t = (key,fallback) => key.startsWith('stem.artstudio.guide_simple_') ? 'TRANSLATED_' + key.split('.').at(-1) : fallback;
+    const t = (key,fallback) => key.startsWith('stem.artstudio.guide_simple_') || key.startsWith('stem.artstudio.hh_simple_') ? 'TRANSLATED_' + key.split('.').at(-1) : fallback;
     for (const tab of tabs) {
       const html = renderTool('artStudio',{artStudio:{tab,studioHome:false,showTour:true,studioGuideWording:'simple'}},{t});
       expect(html,tab).toContain('data-artstudio-guide-prompts="simple"');
-      expect(html,tab).toContain('TRANSLATED_guide_simple_' + tab + '_try');
-      expect(html,tab).toContain('TRANSLATED_guide_simple_' + tab + '_definition');
+      const prefix = tab === 'harmonyHunt' ? 'hh_simple_' : 'guide_simple_' + tab + '_';
+      expect(html,tab).toContain('TRANSLATED_' + prefix + 'try');
+      expect(html,tab).toContain('TRANSLATED_' + prefix + 'definition');
     }
   });
 });

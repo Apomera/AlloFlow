@@ -1,0 +1,3721 @@
+{
+  "status": "all required checks passed across the full run and focused recovery",
+  "distinctChecks": 528,
+  "fileCount": 58,
+  "rawReports": [
+    "unit-final-threads.json",
+    "unit-recovery-final.json",
+    "unit-two-cases-final.json"
+  ],
+  "assertionsChanged": false,
+  "timeoutsChanged": false,
+  "execution": {
+    "pool": "threads",
+    "maxWorkers": 1,
+    "twoCaseProcessPriority": "AboveNormal, task-owned process only"
+  },
+  "initialFullRun": {
+    "representedChecks": 515,
+    "passed": 508,
+    "testTimeouts": 7,
+    "workerStartFailures": 2
+  },
+  "evidence": [
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse adds bounded ballistic dust and keeps geology an on-foot activity",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse adds deterministic world-space microdetail and a curving, unshadowed far field",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse adds vacuum-authentic console and reduced-motion-safe path composition with guarded hooks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse builds normalized, positive-determinant track bases with the rover forward/right signs",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse cleans sixth-pass instance resources and stable datasets",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse collects the exact mission specimen through existing F semantics without masking ordinary rocks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse couples existing audio nodes to drive state and mutes only its master across gates",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse derives dt-stable rover impacts from armed exact contact targets without idle false positives",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse disposes the generated surface profile and clears impact hooks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse grounds all four wheels with one exact-terrain right-handed contact mesh",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse integrates static/rolling resistance without slope creep across 20-120 Hz",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse keeps astronaut EVA as the default and exposes explicit accessible board and exit controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse keeps ballistic dust seeded, signed, bounded, pooled, and terrain-retired",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse keeps drive sonification opt-in, gesture-created, stateful, and honest about lunar vacuum",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse keeps free roam default while exposing an accessible optional traverse panel",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse keeps local -Z forward, local +X right, exit side, and roll aligned with Three rotation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse keeps the traverse specimen hidden and ineligible until the authored sample step",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse orbits the chase camera independently and does not let an occupied rover mask landmarks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse preserves slope/yaw signs, brake-before-reverse, and one smoothed slip state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse provides throttled stable telemetry and a concise replayable debrief",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse records the audited technical-design provenance without claiming copied source",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse removes added DOM, input listeners, and GPU resources at EVA teardown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse reports mode, speed, odometer, signed terrain, and non-color-only grip in the HUD",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse selects a deterministic bounded exact-terrain geology site from captured parking",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse terrain-follows with independent wheel suspension and a damped chase camera",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses a bounded one-draw exact-terrain bootprint ring with distance-based density",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses a bounded one-draw-call paired track ring with exact terrain and no emit allocation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses a monotonic single-transition state machine with parked dt dwell and VR pause",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses a shared analytic vertex generator and exact allocation-free mesh interpolation for hot probes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses active-time fixed steps, exact signed slope probes, lunar grade force, and traction-limited drive",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses bounded visual four-wheel Ackermann articulation without changing drive physics",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses right-handed exact-terrain beacon/contact bases and reduced-motion-safe low-cost rendering",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moon_mission_lrv_traverse.test.js",
+      "test": "Moon Mission optional LRV traverse uses the actual airborne landing transition and event-only impact telemetry",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces agrees with an independent Cartesian midpoint integration",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces conserves coast energy and angular momentum with an empty engine",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces does not award an impulse larger than a tiny remaining propellant supply",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces ignores invalid clocks and integrates independently of rendering",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces integrates the 600 second plan to the measured 300 m boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces integrates the 720 second plan to the measured 300 m boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces integrates the 900 second plan to the measured 300 m boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces longer flight spends fuel while the short plan reaches the thrust ceiling",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces position derivatives match the physical radial and sideways velocities",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces returns immutable cached profiles and detached inspected samples",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_physics.test.js",
+      "test": "powered lunar approach forces spends propellant according to measured force and torque changes angular momentum",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence archives approach evidence and clears planner/playback on replay",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence recomputes every result field and resets corrupt terminal completions",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence rejects wrong versions, non-finite clocks and different duration claims",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence reports only computed approach evidence and identifies the reserve reset",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence restores valid review and detaches all mutable saved objects",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence retains valid completion when reviewing an earlier physical time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_saved_state.test.js",
+      "test": "powered approach saved evidence starts paused and validates playback controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_approach_visuals.test.js",
+      "test": "physical lunar approach drawing camera, resized viewport and thrust glyph preserve measured state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_visuals.test.js",
+      "test": "physical lunar approach drawing local camera has equal axes and a physically curved lunar limb",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_approach_visuals.test.js",
+      "test": "physical lunar approach drawing whole camera has equal axes and a physically curved lunar limb",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_model.test.js",
+      "test": "scripted ascent and rendezvous state closes continuously through ascent and rendezvous, with zero range only at docking",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_model.test.js",
+      "test": "scripted ascent and rendezvous state gains on the command module while lower, then climbs at the end",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_model.test.js",
+      "test": "scripted ascent and rendezvous state keeps range consistent with altitude and along-track separation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_model.test.js",
+      "test": "scripted ascent and rendezvous state states the numerical ascent and separate docking assumptions beside the live simulation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent accounts for thrust work and ideal delta-v without gravity creating energy",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent conserves mass with finite propellant and rocket-equation exhaust flow",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent converges when the integration step is halved and is independent of paint rate",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent cuts off into a computed low lunar ellipse with an Apollo-like burn time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent distinguishes a surface-clearing orbit below target from a suborbital failure",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent integrates altitude, downrange and speed from the same force history",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent keeps cached trajectories immutable, validates times and returns detached samples",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent keeps the initial climb vertical before pitching the entire ascent stage",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent rejects a tall vertical trajectory as orbit despite its total speed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent reports a fuel-starved failure without manufacturing an orbital endpoint",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_physics.test.js",
+      "test": "Moon Mission physical lunar ascent starts with Apollo-like fixed APS thrust and the ascent stage mass only",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "ascent completion, archive and report an unresolved mission event blocks TEI even after valid docking",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "ascent completion, archive and report archives the completed measurements and clears all replay, docking and reward state for another mission",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "ascent completion, archive and report records measured insertion and separate docking results in a readable report",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "ascent completion, archive and report requires insertion and valid docking, then pays the TEI reward only once",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved final approach playback derives the compact docking result from validated contact and ignores a claimed result by itself",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved final approach playback rejects malformed, future and physically unsafe completed docking saves",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved lunar ascent playback bounds replay time and requires genuine boolean pause and reward flags",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved lunar ascent playback cannot turn malformed or unversioned saves into a measured insertion",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved lunar ascent playback does not unlock TEI from a legacy docked flag, invalid record or insertion alone",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved lunar ascent playback malformed ascent and docking state still renders every mission phase",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_playback.test.js",
+      "test": "saved lunar ascent playback preserves a measured insertion while reviewing an earlier time without sharing mutable data",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_visuals.test.js",
+      "test": "lunar ascent physical visual contract draws a finite insertion ellipse in narrow and wide orbit views without changing the flight state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-two-cases-final.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_visuals.test.js",
+      "test": "lunar ascent physical visual contract draws deterministic snapshots with thrust only during the measured powered flight",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_ascent_visuals.test.js",
+      "test": "lunar ascent physical visual contract keeps docking coordinates equally scaled and meets at the ports instead of craft centers",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_audio_glossary.test.js",
+      "test": "Moon Mission audio and glossary the glossary carries its own dark ground on every phase that shows it",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_audio_glossary.test.js",
+      "test": "Moon Mission audio and glossary the launch rumble stops once the tool leaves the page, and not before",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state briefing carries the organizer, the burn legend and the glossary; debrief repeats the glossary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state every phase says what the student should do now",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state exactly one progress bar, and it carries the phase count",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state flight record lists the graded calls in the order they were flown, correction included",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state header controls are named by what they show, keep that name when toggled, and are 44px tall",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state header: no stray 0, no literal \\uXXXX label, animation toggle present",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-two-cases-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state lunar insertion requires a measured safe capture before announcing readiness",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state phase 10 reads as Mission Complete, not as phase 11 of a 10-phase mission",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state the glossary follows the student: exactly one on every phase",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_dashboard_state.test.js",
+      "test": "Moon Mission dashboard state the rocket-equation lab has touch-sized controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "debrief notes and the report Copy flight report puts that text on the clipboard",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "debrief notes and the report both prompts are labelled textareas that write to the flight",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "debrief notes and the report the physical entry card names the computed terminal event and measurements",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "debrief notes and the report the report carries every graded call, the events and the chain",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "what caused what a flight with nothing graded shows no chain",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "what caused what explains a lateral-only crash without blaming a safe vertical speed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "what caused what names both limits for a combined crash, including equality at the limits",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "what caused what reports legacy timing and correction decisions without inventing a landing penalty",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "what caused what the timing exercise identifies outbound navigation as a separate preset",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "your flights Fly Another Mission keeps the flight it replaces (the last five)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "your flights Fly Another Mission retains compact physical entry measurements in flight history",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "your flights no history, no table; a malformed history renders dashes, never a crash",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_debrief_flights.test.js",
+      "test": "your flights the table compares this flight with the last one",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure agrees with a refined full profile at cutoff and the finite coast boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure bounds controls, clamps invalid clocks and keeps cached profiles immutable",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure carries only independently validated insertion propellant and rejects fabricated reserves",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure changes outgoing direction by orbital timing without changing fuel or energy",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure conserves coast energy and angular momentum, while gravity reduces speed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure handles zero burn and empty fuel without inventing an escape",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure integrates changing mass and agrees with an independent midpoint solution at cutoff",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure places the outgoing asymptote at the physical impact parameter",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure separates bound and escaping burns using energy and checks zero-energy crossing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure starts from the circular docking reference with no LM mass and no preburn fuel use",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_physics.test.js",
+      "test": "finite SPS lunar departure stops exactly at fuel exhaustion and never thrusts afterward",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence does not gate or award the Earth-return exercise and leaves entry evidence intact",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence includes measured departure in debrief, report and archive and resets replay",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence leaves unused optional state independent of insertion calculations",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence opens and closes the optional lab with no reward or fuel mutation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence rejects each forged numeric, string, null and boolean summary field",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence rejects invalid saved clocks and cleans playback controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence requires the same fuel origin, reserve, model and burn plan",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_saved_state.test.js",
+      "test": "optional lunar departure evidence restores valid completion after rewind, with independent result data",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_visuals.test.js",
+      "test": "departure diagram draws engine flame only during the computed burn and outgoing direction only after cutoff",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_visuals.test.js",
+      "test": "departure diagram fits the greatest reached radius of a complete bound ellipse",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_visuals.test.js",
+      "test": "departure diagram keeps equal axes and finite geometry at 260 pixels in both views",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_visuals.test.js",
+      "test": "departure diagram keeps equal axes and finite geometry at 650 pixels in both views",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_visuals.test.js",
+      "test": "departure diagram omits an outgoing escape direction for a short bound burn",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_departure_visuals.test.js",
+      "test": "departure diagram stops an obstructed radio ray on the physical Moon and exposes clear coast contact",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_descent_geometry.test.js",
+      "test": "descent lander contact geometry preserves altitude clearance above tilted pads on local relief at bank -0.4",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_descent_geometry.test.js",
+      "test": "descent lander contact geometry preserves altitude clearance above tilted pads on local relief at bank 0",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_descent_geometry.test.js",
+      "test": "descent lander contact geometry preserves altitude clearance above tilted pads on local relief at bank 0.4",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_descent_geometry.test.js",
+      "test": "descent lander contact geometry samples all four actual pad rims and keeps a level touchdown at its existing height",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_descent_geometry.test.js",
+      "test": "descent lander contact geometry supports the lowest foot at a -0.35 radian bank without changing bank",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_descent_geometry.test.js",
+      "test": "descent lander contact geometry supports the lowest foot at a 0.35 radian bank without changing bank",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_descent_model.test.js",
+      "test": "Moon Mission descent model a careful pilot lands; doing nothing crashes quickly",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_descent_model.test.js",
+      "test": "Moon Mission descent model altitude changes at the speed the HUD shows",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_descent_model.test.js",
+      "test": "Moon Mission descent model cancelling additional descent drift consumes fuel through the tilted burns",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_descent_model.test.js",
+      "test": "Moon Mission descent model every mode flies the same Moon",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_descent_model.test.js",
+      "test": "Moon Mission descent model the landing score breakdown is the score",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_descent_model.test.js",
+      "test": "Moon Mission descent model there is no free sideways control and no drag on the Moon",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics converges across different rendering rates without changing the contact grade",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics grades contact speed, lateral speed and physical radial clearance",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics guides the nominal 120 m approach to a real slow, aligned port crossing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics keeps terminal contacts fixed and returns a new state without mutating input",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics matches the analytic Hill solution during free coast and preserves both invariants",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics reproduces the rocket-equation impulse after removing Hill coupling",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics retains relative momentum when input is released and keeps moving without fuel",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics spends fuel per thruster axis and clamps controls to the precision pulse duty",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics splits the final pulse at fuel exhaustion then coasts for the rest of the step",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_docking_physics.test.js",
+      "test": "Moon Mission final-approach docking dynamics uses a lunar orbital frame and carries its fuel within the ascent mass",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth clouds sit on the visible face, foreshortened toward the limb, never stretched",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth clouds turn with the Earth: the same sky after one full turn, a different one half a turn on",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth globe exposes the projection as a pure helper",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth globe keeps every coastline point on or inside the disc",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth globe keeps the atmosphere halo inside the 1.45r the moonwalk texture was sized for",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth globe never draws a chord across the disc",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth globe sets land behind the limb half a turn later",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth globe turns eastward, so land crosses the view from left to right",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth light keeps the atmosphere glow off the disc, so the night side can be dark",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth light lights a sphere at a phase: the lit share of the disc is the lit fraction, whatever the Sun angle",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_earth_globe.test.js",
+      "test": "Moon Mission Earth light uses the measured orbital position and fixed Sun for Earth phase and angular radius",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry converges when the numerical step is halved",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry ends an actual skip at the upward interface crossing without deploying chutes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry finishes every selectable angle with finite bounded data and a physical terminal event",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry gets stronger peak loads and heating from steeper trajectories",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry inflates each parachute gradually and uses that same fraction for drag",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry keeps cached profiles immutable and samples detached, with bounded cache retention",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry starts from the selected angle and predicts a complete nominal entry",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry ties altitude, speed, deceleration and heat to the same physical trajectory",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_physics.test.js",
+      "test": "Moon Mission numerical atmospheric entry uses a continuous standard lower atmosphere with explicit SI outputs",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model begins a fresh unrecorded run once, clears the former result and preserves attempts without XP",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model lets the slider choose only finite angles in its displayed range",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model reference preset predicts the profile metrics at -6.5 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model refuses to launch while a mission event is pending: {\"activeEvent\":{\"id\":\"waiting\",\"title\":\"Waiting\",\"options\":[]}}",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model refuses to launch while a mission event is pending: {\"eventOutcome\":{\"label\":\"Pending outcome\",\"outcome\":\"Waiting\"}}",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model shallow preset predicts the profile metrics at -5 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model steep preset predicts the profile metrics at -9 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_planner.test.js",
+      "test": "entry planner uses the trajectory model uses the same bounded default for preview and launched saved-angle values",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves bounds resumable clocks, history and XP while treating booleans and rate choices strictly",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves keeps finite physical measurements without retaining unknown or bulky saved data",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves keeps valid backward review while refusing mismatched or orphaned completion flags",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves rejects nonfinite or contradictory measurements instead of advertising a completed physical result",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves reports physical units and keeps skip-outs and incomplete runs distinct from splashdown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves retains legacy attempts and the exact legacy summary shape without inventing physical metrics",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_entry_saved_state.test.js",
+      "test": "compact physical entry saves saves actual profiles throughout the supported angle range without truncating their measurements",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time allows the next sample after one second at 12 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time allows the next sample after one second at 144 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time allows the next sample after one second at 60 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 12 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 144 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 30 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time gives the same 90-second oxygen budget at 60 fps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time keeps a suspended browser from charging an entire absence when visibility events are missed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time pauses reserve and interaction timers while hidden and resumes without a catch-up charge",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time records hop airtime from the same active clock, including a takeoff at time zero",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time stops exactly at an empty reserve and never produces a negative cooldown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_eva_resources.test.js",
+      "test": "EVA consumables use active elapsed time uses the clock in the live loop for oxygen and both sample and instrument interactions",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs a rough site costs up to 20 points, never below zero, and the parts still add up",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs adds up the costs, ignores entries without effects, and survives hostile ones",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs flying past the boulders is recorded with its fuel cost and said on the outcome card",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs the debrief chain names the costly call and totals what the landing started short",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs the descent briefing lists what the events cost before you take the controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs the landing starts from those costs (the hinges in the flight loop)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_event_costs.test.js",
+      "test": "Moon Mission descent events have costs trusting the 1202 alarm is free, and the card says that too",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "bounded descent recording copies measurements so later live-state changes cannot rewrite the recorded flight",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "bounded descent recording preserves transient peaks between samples and excludes pauses from burn duration",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "bounded descent recording records a final endpoint between regular samples and replaces repeated final writes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "bounded descent recording retains the start and exact touchdown through repeated thinning of a long approach",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "flight summaries and numeric CSV derives duration, fuel use, and signed displacement from recorded endpoints",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "flight summaries and numeric CSV exports signed velocities, throttle percent, and tilt degrees with explicit units",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "flight summaries and numeric CSV keeps compact approach evidence in the mission summary and readable report",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "saved recorder validation bounds restored burn duration while retaining finite measured speed peaks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "saved recorder validation caps restored traces and clones accepted points without arbitrary saved properties",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "saved recorder validation drops malformed, non-finite, duplicate, and out-of-order points before chart math",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_flight_recorder.test.js",
+      "test": "saved recorder validation rejects unsupported schemas and traces without two valid measurements",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission focus management Fly Another Mission puts focus on the briefing heading",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission focus management a mission event takes focus, then its outcome, then the next phase",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission focus management after splashdown, focus lands on the debrief heading, not on <body>",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission focus management never takes focus from a canvas the student has already moved to",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission sample bag a save that banked the same four rocks twice shows 4 / 8 and no complete collection",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission sample bag counts distinct rock types: a re-collected rock and the traverse specimen do not count",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission sample bag seven rock types plus the traverse specimen is 7 / 8 everywhere, not a complete set",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_focus_samples.test.js",
+      "test": "Moon Mission sample bag the moonwalk scene leaves banked rocks collected and never banks one twice",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_form_controls_a11y.test.js",
+      "test": "Moon Mission inquiry form accessibility keeps source and public mirrors identical",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_form_controls_a11y.test.js",
+      "test": "Moon Mission inquiry form accessibility provides accessible names for delta-v reflection fields",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_label_in_name.test.js",
+      "test": "Moon Mission label in name no control is named something other than what it shows",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration carries the previously earned legacy landing reward into a retry without awarding XP again",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration keeps legacy grade and percent fuel without inventing recorded flight measurements or new rewards",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration leaves the A-grade reward available after retrying a lower-scoring landing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration preserves a seconds-based grade when rounded saved fuel crosses a scoring boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration preserves the only legacy result when retry starts with history undefined",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration preserves the only legacy result when retry starts with history undefined",
+      "occurrence": 1,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_landing_restore.test.js",
+      "test": "completed landing restoration restores recorded endpoint telemetry without recalculating the saved score",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent bounds computation and protects the cached trajectory from caller edits",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent conserves vehicle mass through propellant flow and instantaneous jettisons",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent converges when the integration step is halved instead of depending on frame rate",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent cuts off only into a bound parking orbit and retains an honest orbital summary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent derives Mach and Max Q from atmosphere-relative speed, including sampled instants",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent derives motion and felt load from the same forces, with a numerical energy balance",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent keeps stage events causal with ballistic ignition gaps and continuous velocity",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent starts at liftoff with co-rotating air and a fueled, thrusting vehicle",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_physics.test.js",
+      "test": "Moon Mission coupled Saturn V ascent uses pressure-dependent thrust and rocket-equation mass flow, with center-engine shutdowns",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_playback.test.js",
+      "test": "launch and orbit saved playback bounds replay clocks and accepts only supported playback speeds and boolean pause flags",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_playback.test.js",
+      "test": "launch and orbit saved playback cannot turn a malformed or unversioned save into a completed launch",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_playback.test.js",
+      "test": "launch and orbit saved playback keeps legacy and unfinished flights from claiming a measured launch",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_playback.test.js",
+      "test": "launch and orbit saved playback preserves a completed flight while reviewing an earlier time without sharing mutable data",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_launch_playback.test.js",
+      "test": "launch and orbit saved playback records the measured launch outcome in the flight archive and readable report",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture accounts for propellant, thrust work and rocket-equation delta-v together",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture cannot capture an unpowered flyby and conserves orbital energy and momentum",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture changes the orbit when the same delta-v is applied at the wrong encounter time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture constructs a hyperbolic arrival from excess energy and unpowered perilune",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture converges with finer integration and samples curved coast without frame-rate drift",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture derives Earth radio occultation from Moon-centered geometry independently of view size",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture distinguishes weak capture outside the corridor from a useful lunar orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture follows an overburn into a real surface crossing instead of snapping to orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture normalizes plans, isolates profiles and returns detached replay samples",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture reaches a computed capture ellipse and coasts around it with the engine off",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture starts and ends the finite fixed-thrust burn at the selected times",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_physics.test.js",
+      "test": "Moon Mission finite-burn lunar capture stops an exhausted engine at the fuel boundary and preserves ballistic coast",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback a recorded flyby or impact remains reviewable but cannot unlock descent",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback archives LOI measurements and resets the next flight planner, recorder and reward",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback bounds clocks and plan inputs and requires boolean playback and reward flags",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback does not reuse the result from a different burn plan",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback hostile LOI records render safely in every phase",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback legacy ready flags and unrecorded capture cannot unlock descent",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback recorded safe capture permits descent and rewards it once",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback rejects malformed or future outcomes and requires a versioned recorded run",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback reports measured capture and flyby outcomes without inventing a closed orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback retains the measured outcome while reviewing an earlier time without sharing mutable state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_playback.test.js",
+      "test": "saved lunar orbit insertion playback unresolved mission events still block descent after a valid capture",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_visuals.test.js",
+      "test": "lunar orbit insertion visual contract keeps equal distance axes and truncates a blocked Earth ray at the physical lunar limb",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_visuals.test.js",
+      "test": "lunar orbit insertion visual contract keeps the near-side atlas separate and positions Tranquility Base using geographic coordinates",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_visuals.test.js",
+      "test": "lunar orbit insertion visual contract renders the measured capture, flyby and impact profiles without altering their state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_loi_visuals.test.js",
+      "test": "lunar orbit insertion visual contract repaints identical powered snapshots and removes the SPS plume when thrust stops",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics agrees with an independent Cartesian integration",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics agrees with independent solar-disc ray tracing during partial eclipse",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics begins at the actual integrated LOI endpoint and closes exactly one orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics computes velocity as the derivative of the elliptical position",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics conserves specific energy, angular momentum, mass and fuel over the whole coast",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics distinguishes far-side radio loss from darkness and moves only Sun geometry with its preset",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics finds radio and four solar contacts within the one-orbit interval at 135 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics finds radio and four solar contacts within the one-orbit interval at 45 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics finds radio and four solar contacts within the one-orbit interval at 90 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics handles finite-distance limb geometry and misses beyond the segment endpoint",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics has deterministic cached immutable profiles and detached sampled records",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics rejects invalid geometry and invalid clocks without producing NaNs",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics uses achieved plan-dependent orbits and rejects flyby and hazardous plans",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_physics.test.js",
+      "test": "achieved lunar orbit and environment physics uses the nearest Earth surface for light time and blocks signals at the physical Moon limb",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records includes verified evidence in reports and the archive, then clears replay controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records is optional and leaves insertion progression and points unchanged",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records keeps a captured insertion handoff single after the one-second lock expires",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records opens and closes the view without changing the measured orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records rejects every forged summary field and restarts unverified terminal saves",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records rejects invalid clocks and versions and cleans options",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records requires valid insertion evidence and the same LOI plan and Sun direction",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_saved_state.test.js",
+      "test": "linked optional lunar environment records restores a valid result without sharing mutable save data and preserves review while rewinding",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_visuals.test.js",
+      "test": "lunar environment geometry ends the blocked radio line on the physical lunar limb",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_visuals.test.js",
+      "test": "lunar environment geometry keeps equal physical axes and finite geometry at 260 pixels",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_environment_visuals.test.js",
+      "test": "lunar environment geometry keeps equal physical axes and finite geometry at 650 pixels",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "suit locomotion in one-sixth gravity gets going and stops at the grip friction allows, not instantly",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "suit locomotion in one-sixth gravity holds its arc in the air: no pushing off nothing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "suit locomotion in one-sixth gravity is frame-rate independent",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "suit locomotion in one-sixth gravity is gentler in comfort mode",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "suit locomotion in one-sixth gravity slides on a slope too steep for a boot to hold, and not on a gentle one",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "suit locomotion in one-sixth gravity slows you uphill and speeds you a little downhill",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the lunar surface field drops the far field below the horizon with the Moon's curvature",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the lunar surface field is seeded: two builds agree everywhere, whatever Math.random does",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the lunar surface field keeps the landing site and the spawn smooth enough to stand and hop on",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the lunar surface field shapes craters with continuous rims and real depth-to-diameter ratios",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the lunar surface field throws boulders out of the fresh crater, not across the landing site",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the moonwalk loop wiring keeps you out of the LM, the big boulders and the parked rover",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the moonwalk loop wiring moves the suit through mmEvaFootVelocity on real elapsed time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the moonwalk loop wiring sails you off a crest the ground curves away from faster than 1/6 g",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the moonwalk loop wiring shades the ground with lunar photometry and the baked terrain shadow",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the sun-clearance bake lets a solid above the ground cast into the bake",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the sun-clearance bake lights open ground and shadows the down-sun side of a fresh crater's floor",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_lunar_surface.test.js",
+      "test": "the sun-clearance bake sees less sky from a crater floor than from the open plain",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops Earth orbit: a sunrise every orbit, and the TLI window opens on the same clock at any frame rate",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops Earth orbit: the globe fits the new diagram and physical illumination is independent of viewport size",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops Fly Another Mission clears what revealed the coast and launch cards",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops a restored entry without an outcome uses the default angle to calculate peak g",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops ascent altitude and velocity stay identical across narrow and wide views",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops entry: 30x playback advances in real time at different frame rates and preserves a paused playhead",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops entry: splashdown follows the model duration, then recovery finishes while repaint stays available",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops entry: the canvas heat flux, shield-first attitude and chute timing follow its physical playhead",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops entry: the compatibility helper samples physical heating and motion without forcing a saved outcome",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops launch: Max Q is asked in the briefing and answered by the flight, at the height the HUD shows",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops launch: on a narrow canvas the Mach / Max Q banner sits clear of both HUD boxes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops launch: the air-push gauge uses air-relative speed, and \"now\" gives way to \"passed\" after the peak",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops launch: the loop paints the sky for the height on the HUD, sinks the horizon by the dip angle, and swells the plume",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops lights the Moon as on landing day: sunrise just west of the site, a six-day crescent from Earth",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops lunar ascent inserts below Columbia and the prediction waits for a validated docking exercise",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops lunar ascent reaches computed insertion without claiming a docking or Earthrise",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops marks Tranquility Base at the coordinates printed under the lunar-orbit view",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops names the seas and every Apollo site only when the student asks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops splashes down in the water, not above it, and is righted after capsizing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops the live coast uses the same measured trajectory at every viewport and scale",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops trans-Earth crew window follows measured distance and the fixed Sun preset",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops trans-Earth geometry follows the selected interface angle in the same orbital model",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops trans-lunar coast: fast off Earth, slowest where the Moon takes over, faster again after",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon Mission loops trans-lunar prediction waits for a recorded nominal trajectory and uses its measured speed minimum",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon map draws every sea on the near side, inside the disc",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "Moon map puts each Apollo landing on the terrain it really landed on",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "canvas text alternatives describe what is drawn now, and never state an answer a prediction is still waiting for",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "launch sky darkens with the air overhead: blue at the pad, black by 50 km, the horizon never darker than the zenith",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "one scope, many models declares no variable twice in one function scope",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moon_and_splash.test.js",
+      "test": "one scope, many models the trans-Earth coast keeps its calibrated start speed separate from the outbound model",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "bootprints are Apollo prints: a 33 x 14 cm depression, a ribbed floor, a rim of pushed-up soil",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "bootprints share the ground's lunar shading and regolith, so there is no seam, and take shadows",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "dust in a vacuum a rolling wheel throws a rooster tail: steep grains, still moving forward, about a metre high at 11 km/h",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "dust in a vacuum a toe-off kicks a fan ahead; a landing splashes low and all round",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "dust in a vacuum every grain flies until it lands, and the pool outlasts the spray at top speed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "moonwalk gait pushes off and brakes no harder than boot-on-regolith friction allows",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "moonwalk gait tells weight from mass on the cuff, and names the gait from the switch speed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "moonwalk gait walks under the Froude walk-run switch and lopes well above it",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "samples on the ground are rocks (and a core tube), one look per sample, none of them glowing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "the Apollo 11 horizon has no mountains: the distant relief barely lifts the skyline",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "the ground at your feet filters the relief with a cubic B-spline from four bilinear taps",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "the ground at your feet so its slope does not jump at texel edges, where bilinear facets did",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "the sky of a sunlit moonwalk blooms only what glares, and hides the stars until the eye is off the ground",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "the sky of a sunlit moonwalk draws the Sun as a hard disc under a degree across, not a glow",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "your own shadow gathers a tight glow round the helmet: the opposition effect's narrow core",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_moonwalk_realism.test.js",
+      "test": "your own shadow is the whole suited figure, helmet and backpack included, not a pair of legs",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "orbit playback and manual TLI advance reaches GO while paused, without burning or awarding points; the burn reads live state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "orbit playback and manual TLI does not accept a stale GO snapshot after the live craft leaves the window",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "orbit playback and manual TLI does not catch up hidden-tab time or lose the exact pause checkpoint",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "orbit playback and manual TLI exposes readable instruments and labels the enlarged diagram and teaching window",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "orbit playback and manual TLI makes model time independent of display frame rate",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "orbit playback and manual TLI restores time and freezes both model and window while repainting a paused resize",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "parking-orbit reference model advances to an eligible teaching window and computes light and sunrise state from time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_orbit_playback.test.js",
+      "test": "parking-orbit reference model links circular speed, period and gravitational acceleration at 185 km",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission coast trajectories moves continuously between return samples instead of waiting for the next minute",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission coast trajectories outbound position, speed and model clock agree near both bodies and between them",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission coast trajectories return closing speed equals the derivative of distance and follows energy conservation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model applies the same controls consistently across frame rates and long updates",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model burns mass at thrust / exhaust velocity and gets lighter as fuel is used",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model cannot create more impulse than the remaining propellant supplies",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model ignores invalid elapsed time and opposite steering commands cancel",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model locates ground contact and retains impact speed without using time after impact",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model shows tilt costs, engine response and insufficient braking fuel in guidance",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_physics_realism.test.js",
+      "test": "Moon Mission physical descent model uses inverse-square lunar gravity and conserves vacuum coast energy",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first a choice is saved, and the card says what to watch for until the window opens",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first a new flight starts with fresh predictions; hostile saved values never crash",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first asks before the flight shows anything, and keeps the explanation shut",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first once the window opens it says whether the flight agreed, and why",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first the debrief and the report count predictions against the flight",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first the landing question opens after touchdown; the hop question after a timed hop",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_predictions.test.js",
+      "test": "predict first the moonwalk loop times each hop from take-off to touchdown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates Continue after an event only ever moves forward, and clears its target",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates a double click pays once and advances once",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates a paused student can show the launch result before proceeding, without claiming orbit on the pad",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates a pending event disables the phase button, and its handler refuses too",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates a pending event or its outcome blocks entry completion even after physical splashdown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates a terminal skip cannot complete the mission or collect splashdown XP",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates an outcome card on screen blocks the phase button as well",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates arrival requires a measured encounter regardless of earlier timing or correction choices",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates entry completion advances and pays its 50 XP only once",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates entry completion requires the recorded physical splashdown, including when animation is paused",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates reviewing an earlier entry moment preserves an already recorded splashdown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates the launch cannot be skipped: Proceed to Orbit waits for orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_proceed_gates.test.js",
+      "test": "Moon Mission proceed gates the moonwalk waits for a landing attempt",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff automatically slows the final approach without losing the exact separation event",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff cannot recreate arrival immediately from a corrupt completed save at the terminal time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff discloses the conic preset and links the historical separation timeline",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff freezes hidden-page clocks and resumes without accumulated wall time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff keeps a recorded arrival while scrubbing, and invalidates it only when the angle changes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff keeps the completed interface view visible through resizing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff paints the full endpoint and follows separation through the slowed final approach",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff reaches the entry preset at 122 km and 11030 m/s",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff repaints after a paused resize while holding all physical readouts",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_handoff.test.js",
+      "test": "return coast entry handoff separates the Service Module 833 model seconds before interface, independent of view progress",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit agrees with an independent forward RK4 integration of Earth gravity",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit bounds inputs, clamps sampling and retains a bounded immutable profile cache",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit conserves energy and angular momentum throughout the same drawn trajectory",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit distinguishes decreasing altitude from the longer curved path length",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit gets Cartesian velocity and gravity from derivatives of position at physical time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit keeps all selectable angles finite and gives each angle a different momentum and arrival time",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit locates separation at an exact elapsed time without changing the orbit",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit matches entry position, total speed and angle at -4 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit matches entry position, total speed and angle at -6.5 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit matches entry position, total speed and angle at -9 degrees",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_orbit.test.js",
+      "test": "conserved trans-Earth orbit uses actual position for Earth angular radius and a consistent illumination preset",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression archives the measured coast and clears the run and view settings on replay",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression clamps finite clocks and supported controls without treating strings as flags",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression hands the selected physical angle to entry exactly once without awarding points",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression includes only measured return evidence in the archived flight summary and report",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression recomputes each result field and rejects stale, future and unrecorded claims",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression remains reviewable in old later-phase saves without rewriting archived entry evidence",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression requires a recorded interface before beginning entry, including legacy and malformed saves",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression restores earlier review without sharing mutable run or summary objects",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_saved_state.test.js",
+      "test": "measured return save and progression retains completion on the same preset and clears it for changed planner controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_visuals.test.js",
+      "test": "measured return visuals approach view has one physical scale on both axes at phone and desktop sizes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_visuals.test.js",
+      "test": "measured return visuals draws a velocity-aligned coasting spacecraft and switches to CM without an engine plume",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_visuals.test.js",
+      "test": "measured return visuals holds the physical state across camera changes and renders Earth angular size from distance",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_return_visuals.test.js",
+      "test": "measured return visuals system view has one physical scale on both axes at phone and desktop sizes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics carries fractional steps and admits a bounded one-second visible stall",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics detects real wheel contacts at the same terrain locations at low and high frame rates",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics dissipates suspension spring energy at the same rate after an impulse",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics drives the same path at 8\u2013144 fps, including terrain contact, springs and wheel spin",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics holds shallow grades at rest and rolls downhill with the correct sign on steeper terrain",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics limits tractive acceleration on loaded slopes and braking stops before reversing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics places multiple track samples along a slow frame path without stacking them at the final pose",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_rover_physics.test.js",
+      "test": "Moon Mission rover production physics respects forward/reverse steering and prevents distance from accumulating against the boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Moon Mission launch loop calls Mach 1 and Max Q where the displayed ascent puts them, not on a timer",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Moon Mission launch loop counts down five seconds and reaches orbit on the same clock at 30, 60 or 120 frames a second",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Moon Mission launch loop flies the stack in pieces, burns kerosene only on the first stage, and names each separation long enough to read",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Saturn V model draws a spent stage on its own, engines and all",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Saturn V model drops the escape tower without moving the command module",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Saturn V model is drawn about 11 times taller than it is wide",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Saturn V model sheds stages from the bottom and keeps the spacecraft where it was",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saturn_v.test.js",
+      "test": "Saturn V model stands as tall as the fact card says it did",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_saved_state.test.js",
+      "test": "Moon Mission saved state Tourist is selectable: the stored choice is the one checked",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_saved_state.test.js",
+      "test": "Moon Mission saved state a malformed record is dropped, a valid one still shows in the debrief",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_saved_state.test.js",
+      "test": "Moon Mission saved state answering with the FIRST option is recorded, not read as unanswered",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_saved_state.test.js",
+      "test": "Moon Mission saved state renders every phase under every malformed value without throwing",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-recovery-final.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim 0.043 MHz (the Apollo Guidance Computer clock was 1.024 MHz)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim Apollo 10 famously logged one (the Apollo 10 incident was not a vent failure)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim Boyle\\'s Law (heating a sealed tank is Gay-Lussac, not Boyle)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim By rotating Orion (this mission flies Apollo, not Orion)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim Ionized plasma at 2,760 (2,760 C is the heat shield, not the plasma)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim fuel cells also generate your oxygen (fuel cells consume oxygen)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "factual corrections stay corrected does not claim with the keys in it (the rover had no keys)",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "launch readouts follow an Apollo-like ascent maps elapsed launch progress to the same trajectory, including real staging load drops",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "launch readouts follow an Apollo-like ascent shows the numerical parking orbit at about 7.8 km/s and then near-zero felt g",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "re-entry and the rocket-equation lab entry loads come from the numerical trajectory and have the Apollo scale",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "re-entry and the rocket-equation lab the best single-stage setting reaches orbit but not the Moon, and the lab says why",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "the return coast is one model, not three distance, speed and clock agree: the speed shown covers the distance shown",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "the return coast is one model, not three takes about two and a half days and arrives at about 39,700 km/h",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_science_numbers.test.js",
+      "test": "the return coast is one model, not three the coast canvas reads the model rather than its own formulas",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics agrees with an independent polar midpoint integration",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics conserves energy and angular momentum during an independent coast",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics keeps profiles immutable, inspected samples detached and invalid times inert",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics links position derivatives, thrust work and angular momentum changes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics measures the 300 second cutoff as insufficient",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics measures the 342 second cutoff as lunar-distance",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics measures the 350 second cutoff as escape",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics separates engine impulse from the change in inertial speed and shows increasing acceleration",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics spends a tiny supply without passing the reserve or inventing engine impulse",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_physics.test.js",
+      "test": "finite S-IVB injection physics uses the launch reserve and the circular parking state with the same J-2 engine",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression blocks unfinished, forged, short-burn and pending-event transitions in the handler",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression derives timing from the recorded ignition checkpoint rather than a claimed grade",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression ignition records timing without advancing the phase or awarding points",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression keeps legacy later-phase saves reviewable without fabricating injection evidence",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression proceeds once after measured review and does not repay an already awarded save",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression recomputes every completion field and restarts corrupt terminal claims",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression records computed evidence in reports and archives, then clears replay controls",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression rejects bad run clocks, versions, matching-plan claims and orbit checkpoints",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression restores valid review without sharing mutable saved objects",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_saved_state.test.js",
+      "test": "finite injection saved evidence and progression retains a valid result while rewinding and bounds inspected clocks",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_visuals.test.js",
+      "test": "computed injection views rotation of the ignition checkpoint changes the forecast orientation but preserves physical values",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_visuals.test.js",
+      "test": "computed injection views uses equal axes and finite projected geometry in burn view",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_visuals.test.js",
+      "test": "computed injection views uses equal axes and finite projected geometry in orbit view",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_window.test.js",
+      "test": "TLI burn window burns on the far side of Earth from the Moon",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_window.test.js",
+      "test": "TLI burn window the debrief says LATE for a late burn and EARLY for an early one",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_tli_window.test.js",
+      "test": "TLI burn window the live region names the state; the changing numbers sit outside it",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast closes the mass, rocket-equation and thrust-work balances through the correction",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast conserves the rotating-frame Jacobi integral throughout the unpowered coast",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast constructs the stated departure and a dynamically consistent circular Moon",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast converges with tighter integration and replays independently of frame rate",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast detects a grazing surface crossing before closest approach",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast distinguishes a low pass from an integrated lunar collision",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast ends fuel-limited burns at the available SPS propellant boundary",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast freezes the commanded radial/transverse basis at ignition",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast measures the speed minimum from the trajectory in the stated Earth frame",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast normalizes controls, bounds its cache and protects recorded state from mutation",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast resolves ignition and cutoff without state jumps or flames during coast",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast turns departure error into a real miss and a finite correction into a safe encounter",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_physics.test.js",
+      "test": "Moon Mission moving-Moon outbound coast uses direct and indirect lunar acceleration in its Earth-centered frame",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback archives navigation measurements and resets the next flight clock, planner and reward",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback bounds clocks and controls, accepts supported rates and requires boolean flags",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback failed navigation is reviewable but cannot claim arrival",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback hostile saved navigation renders safely in every phase",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback invalidates measured arrival when the departure or correction plan changes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback legacy correction choices, old minima and unrecorded results cannot unlock arrival",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback recorded encounter permits arrival and rewards the mission once",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback reports measured navigation with its separate insertion and descent presets",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback retains a measured arrival during earlier review without sharing mutable state",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback unresolved mission events block arrival even after a measured encounter",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_playback.test.js",
+      "test": "saved outbound navigation playback validates every recomputed summary field and rejects future or unrecorded runs",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_visuals.test.js",
+      "test": "trans-lunar coast physical visual contract keeps body centers and craft position fixed when the body-size exaggeration changes",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_visuals.test.js",
+      "test": "trans-lunar coast physical visual contract only reveals closest approach once observed or explicitly previewed",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_visuals.test.js",
+      "test": "trans-lunar coast physical visual contract points the nozzle opposite actual MCC thrust and draws no plume during coasting",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    },
+    {
+      "file": "tests/moonmission_transit_visuals.test.js",
+      "test": "trans-lunar coast physical visual contract uses the simultaneous lunar position for every point in the Moon-relative history",
+      "occurrence": 0,
+      "status": "passed",
+      "report": "unit-final-threads.json"
+    }
+  ]
+}

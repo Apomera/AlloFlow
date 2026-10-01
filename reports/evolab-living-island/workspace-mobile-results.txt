@@ -1,0 +1,63 @@
+
+Running 4 tests using 1 worker
+
+
+
+[1A[2K(node:30372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:30372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:484:5 › first discovery brings the island forward and follows a real family without changing history
+[1A[2K[2/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:536:5 › phone family journey stays usable across long histories and reports a lost lineage
+[1A[2K[3/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged
+[1A[2K  1) [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m0[39m
+    Received:    [31m-266.015625[39m
+
+      707 |   const canvas = await page.locator('.ei-scene').boundingBox();
+      708 |   const transport = await page.getByRole('button', { name: 'Next generation', exact: false }).boundingBox();
+    > 709 |   expect(canvas!.y).toBeGreaterThanOrEqual(0); expect(canvas!.y + canvas!.height).toBeLessThan(1100);
+          |                     ^
+      710 |   expect(transport!.y).toBeGreaterThanOrEqual(0); expect(transport!.y + transport!.height).toBeLessThan(1100);
+      711 |   expect((await harness.glContexts(page)).filter(r => r.connected && !r.lost).map(r => r.id)).toEqual([renderer]);
+      712 |   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('evoLab.island.v1')!))).toEqual(world);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\evolab-living-island.spec.ts:709:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-mobile-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-mobile-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\evolab-living-island\workspace-mobile-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\error-context.md
+
+    Error Context: reports\evolab-living-island\workspace-mobile-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\evolab-living-island\workspace-mobile-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\evolab-living-island\workspace-mobile-artifacts\evolab-living-island-field-90d47--leaves-evolution-unchanged-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+[1A[2K(node:16844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:16844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[4/4] [chromium] › tests\e2e\evolab-living-island.spec.ts:769:5 › phone inheritance is self paced, accessible and does not overflow with reduced motion
+[1A[2K  1 failed
+    [chromium] › tests\e2e\evolab-living-island.spec.ts:684:5 › field desk keeps one island renderer, supports keyboard tabs and leaves evolution unchanged 
+  3 passed (1.8m)

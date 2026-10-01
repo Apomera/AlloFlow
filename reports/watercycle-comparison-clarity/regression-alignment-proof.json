@@ -1,0 +1,20 @@
+{
+  "recordedAt": "2026-09-30T22:27:17.234Z",
+  "baselineSourceSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+  "comparedSourceSha256": "942198fca1f8aae4c530764920afa5ed2fbd10c29b4fee68d7e4be560814d776",
+  "originalReplayTest": "tests/watercycle_replay_indicator.test.js",
+  "originalLiteral": "updMulti({ wcExperimentLog: [], wcReplayedObservation: '' });",
+  "originalLiteralPresentInBaseline": false,
+  "originalAssertionFailure": {
+    "name": "AssertionError",
+    "message": "Original replay test expects the exact two-field update literal",
+    "actual": false,
+    "expected": true
+  },
+  "clearHandlerUnchanged": true,
+  "clearHandlerSha256": "744277f97c93832b88fdd13e222ec811f84973b4016dbfac4ff07baf26ddd09e",
+  "clearHandler": "var clearWcExperimentLog = function() {\n            updMulti({ wcExperimentLog: [], wcReplayedObservation: '', wcExperimentUndo: collectWcRemovedEntries(wcExperimentLog.map(function(_, index) { return index; })) });\n            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.inquiry_cleared', 'Trail cleared. Undo removal is available until the next observation is saved.'));\n            focusWcNotebookHeading();\n          };",
+  "alignedAssertionPassesBaseline": true,
+  "alignedAssertionPassesCurrent": true,
+  "diagnostic": "The replay failure predates this comparison change. Its exact two-field updMulti literal omitted the already existing wcExperimentUndo field. The aligned assertion stays inside the clear-trail handler and requires cleared observations plus an empty replay label, allowing other state fields. Undo behavior and runtime code are unchanged. The experiment-trail assertion only follows the accessible Save observation name, which now contains the visible button label."
+}

@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-30T21:20:52.806Z",
+  "preview": "http://127.0.0.1:8770/",
+  "pageStatus": 200,
+  "runtimeStatus": 200,
+  "runtimeSha256": "239edf53b437848623cec592f72644ee69e6eb000b887e113175e09740b16003",
+  "successful": true,
+  "restoredByThisPass": true,
+  "processId": 56336,
+  "method": "The previous server was unavailable and port 8770 had no listener. Started the existing localhost-only serve entry point in a hidden background process and checked HTTP plus the exact served runtime hash. No learner browser tabs were operated."
+}

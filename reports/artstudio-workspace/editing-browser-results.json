@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "name": "pixel-selection",
+      "previewExcludedFromExport": true,
+      "overlapMove": true,
+      "copyPaste": true,
+      "transparentHoles": true,
+      "undo": true
+    },
+    {
+      "name": "pixel-selection-transforms",
+      "rotatedBounds": {
+        "x": 11,
+        "y": 5,
+        "w": 5,
+        "h": 3
+      },
+      "unselectedPaintRetained": true,
+      "transparentDestinationRetained": true,
+      "flips": true,
+      "undo": true,
+      "gridPx": 854
+    },
+    {
+      "name": "pixel-selection-phone",
+      "viewportWidth": 390,
+      "transformTouchTargets": true,
+      "noHorizontalOverflow": true,
+      "escape": true,
+      "toolbarContrast": [
+        {
+          "label": "Undo",
+          "ratio": 10.35474573184942,
+          "background": "rgb(255, 255, 255)",
+          "enabled": true
+        },
+        {
+          "label": "Grid lines",
+          "ratio": 4.596590808200417,
+          "background": "rgb(219, 39, 119)",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "name": "watercolor-stroke-gallery",
+      "angleWrapStrayPigment": 0,
+      "exportPx": 1024
+    }
+  ],
+  "errors": []
+}

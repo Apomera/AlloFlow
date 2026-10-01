@@ -1,0 +1,91 @@
+Index: dictionary_loader.js
+===================================================================
+--- dictionary_loader.js
++++ dictionary_loader.js
+@@ -184,8 +184,15 @@
+     if (!w || /\s/.test(w)) return result(null, 'unsupported_word');
+     const cached = readCache(w);
+     if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return result(cached, cached ? null : 'not_found');
+     if (typeof fetch !== 'function') return result(null, 'not_available');
++    // Another request can save useful help while this one is awaiting the provider.
++    // Revalidate that same-word entry on failure; cancellation must still win.
++    const recoverFailure = reason => {
++      if (options.signal?.aborted) return result(null, 'cancelled');
++      const recovered = readCache(w);
++      return result(recovered || null, recovered ? null : reason);
++    };
+     try {
+       const response = await fetch(API + encodeURIComponent(w), { signal: options.signal });
+       if (options.signal?.aborted) return result(null, 'cancelled');
+       // A concurrent caller may have cached a usable entry while this request waited.
+@@ -194,19 +201,19 @@
+         const recovered = readCache(w);
+         if (recovered) return result(recovered);
+         writeCache(w, null); return result(null, 'not_found');
+       }
+-      if (!response.ok) return result(null, 'request_failed');
++      if (!response.ok) return recoverFailure('request_failed');
+       let rows;
+       try { rows = await response.json(); }
+-      catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'invalid_response'); }
++      catch (_) { return recoverFailure('invalid_response'); }
+       if (options.signal?.aborted) return result(null, 'cancelled');
+       let entry;
+-      try { entry = normalizeEntry(rows, w); } catch (_) { return result(null, 'invalid_response'); }
+-      if (!entry) return result(null, 'invalid_response');
++      try { entry = normalizeEntry(rows, w); } catch (_) { return recoverFailure('invalid_response'); }
++      if (!entry) return recoverFailure('invalid_response');
+       writeCache(w, entry);
+       return result(entry);
+-    } catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'request_failed'); }
++    } catch (_) { return recoverFailure('request_failed'); }
+   }
+ 
+   window.AlloDictionary = {
+     /** True if we have a cached (offline) entry for this word. */
+
+Index: desktop/web-app/public/dictionary_loader.js
+===================================================================
+--- desktop/web-app/public/dictionary_loader.js
++++ desktop/web-app/public/dictionary_loader.js
+@@ -184,8 +184,15 @@
+     if (!w || /\s/.test(w)) return result(null, 'unsupported_word');
+     const cached = readCache(w);
+     if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return result(cached, cached ? null : 'not_found');
+     if (typeof fetch !== 'function') return result(null, 'not_available');
++    // Another request can save useful help while this one is awaiting the provider.
++    // Revalidate that same-word entry on failure; cancellation must still win.
++    const recoverFailure = reason => {
++      if (options.signal?.aborted) return result(null, 'cancelled');
++      const recovered = readCache(w);
++      return result(recovered || null, recovered ? null : reason);
++    };
+     try {
+       const response = await fetch(API + encodeURIComponent(w), { signal: options.signal });
+       if (options.signal?.aborted) return result(null, 'cancelled');
+       // A concurrent caller may have cached a usable entry while this request waited.
+@@ -194,19 +201,19 @@
+         const recovered = readCache(w);
+         if (recovered) return result(recovered);
+         writeCache(w, null); return result(null, 'not_found');
+       }
+-      if (!response.ok) return result(null, 'request_failed');
++      if (!response.ok) return recoverFailure('request_failed');
+       let rows;
+       try { rows = await response.json(); }
+-      catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'invalid_response'); }
++      catch (_) { return recoverFailure('invalid_response'); }
+       if (options.signal?.aborted) return result(null, 'cancelled');
+       let entry;
+-      try { entry = normalizeEntry(rows, w); } catch (_) { return result(null, 'invalid_response'); }
+-      if (!entry) return result(null, 'invalid_response');
++      try { entry = normalizeEntry(rows, w); } catch (_) { return recoverFailure('invalid_response'); }
++      if (!entry) return recoverFailure('invalid_response');
+       writeCache(w, entry);
+       return result(entry);
+-    } catch (_) { return result(null, options.signal?.aborted ? 'cancelled' : 'request_failed'); }
++    } catch (_) { return recoverFailure('request_failed'); }
+   }
+ 
+   window.AlloDictionary = {
+     /** True if we have a cached (offline) entry for this word. */

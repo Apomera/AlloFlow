@@ -1,0 +1,31 @@
+{
+  "baseline": [
+    {
+      "line": 1716,
+      "text": "The passage changed. Your draft is retained. Review the word supports, then"
+    },
+    {
+      "line": 1716,
+      "text": "choose the occurrence in the current text"
+    },
+    {
+      "line": 1716,
+      "text": "before saving."
+    }
+  ],
+  "candidate": [
+    {
+      "line": 1718,
+      "text": "The passage changed. Your draft is retained. Review the word supports, then"
+    },
+    {
+      "line": 1718,
+      "text": "choose the occurrence in the current text"
+    },
+    {
+      "line": 1718,
+      "text": "before saving."
+    }
+  ],
+  "sameText": true
+}

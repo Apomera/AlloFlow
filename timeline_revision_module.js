@@ -222,6 +222,41 @@ var createTimelineRevision = function(deps) {
     }
   }
 
+  // After a manual edit: a verdict about old text is dropped; a moved item
+  // keeps only a factual flag (its position verdict is stale, and a stale
+  // "Verified" must not survive). Structural issues are recomputed.
+  // opts: { changed: [index], moved: [index] } in the NEW item order.
+  function reconcileManualTimelineEdit(data, opts) {
+    if (!data || Array.isArray(data) || !Array.isArray(data.items)) {
+      var arr = Array.isArray(data) ? data : null;
+      return arr ? reconcileItems(arr, opts) : data;
+    }
+    var next = Object.assign({}, data, { items: reconcileItems(data.items, opts) });
+    var result = validateSequenceStructure(next, next.mode);
+    if (result.ok) delete next.validationIssues; else next.validationIssues = result.issues;
+    return next;
+  }
+  function reconcileItems(items, opts) {
+    var changed = new Set((opts && opts.changed) || []);
+    var moved = new Set((opts && opts.moved) || []);
+    return items.map(function (it, i) {
+      if (!it || !it.verification || (!changed.has(i) && !moved.has(i))) return it;
+      var copy = Object.assign({}, it);
+      if (!changed.has(i) && it.verification.factual === false) {
+        copy.verification = { factual: false, concern: it.verification.concern || '', rationale: it.verification.rationale || '' };
+      } else {
+        delete copy.verification;
+      }
+      return copy;
+    });
+  }
+  function stripVerification(it) {
+    if (!it || typeof it !== 'object' || !('verification' in it)) return it;
+    var copy = Object.assign({}, it);
+    delete copy.verification;
+    return copy;
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   // Phase 2: stateful handlers. Each takes a ctx object with live state +
   // setters + utilities. Callers in AlloFlowANTI.txt declare wrapper closures
@@ -293,7 +328,8 @@ var createTimelineRevision = function(deps) {
       var revisedItemsRaw = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
       var revisedItems = revisedItemsRaw.map(function(it) {
         var rest = {};
-        Object.keys(it).forEach(function(k) { if (k !== 'image') rest[k] = it[k]; });
+        // Rewritten text: an echoed accuracy verdict would describe the old item.
+        Object.keys(it).forEach(function(k) { if (k !== 'image' && k !== 'verification') rest[k] = it[k]; });
         return rest;
       });
       var labelChanged = parsed.progressionLabel && parsed.progressionLabel !== currentProgressionLabel;
@@ -313,6 +349,8 @@ var createTimelineRevision = function(deps) {
         mode: revisedMode,
         autoDetected: revisedAutoDetected
       };
+      var revisedCheck = validateSequenceStructure(revisedData, revisedMode);
+      if (!revisedCheck.ok) revisedData.validationIssues = revisedCheck.issues;
       updateTimelineResource(ctx, currentData, function () { return revisedData; }, isCurrent);
       addToast((t && t('timeline.revision_success')) || 'Sequence revised successfully!', 'success');
       setTimelineRevisionInput(function (currentInput) { return currentInput === input ? '' : currentInput; });
@@ -399,7 +437,9 @@ var createTimelineRevision = function(deps) {
       var newItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : data.items;
       var merged = newItems.map(function(it, i) {
         var original = data.items[i];
-        return original && original.image ? Object.assign({}, it, { image: original.image }) : it;
+        var out = original && original.image ? Object.assign({}, it, { image: original.image }) : it;
+        var same = original && ['date', 'event', 'date_en', 'event_en'].every(function (k) { return String((out && out[k]) || '') === String(original[k] || ''); });
+        return same ? out : stripVerification(out);
       });
       var newData = Object.assign({}, data, { items: merged });
       var revalid = validateSequenceStructure(newData, data.mode);
@@ -576,6 +616,7 @@ var createTimelineRevision = function(deps) {
 
   return {
     validateSequenceStructure: validateSequenceStructure,
+    reconcileManualTimelineEdit: reconcileManualTimelineEdit,
     handleExplainTimelineItem: handleExplainTimelineItem,
     handleTimelineRevision: handleTimelineRevision,
     handleAutoFixTimeline: handleAutoFixTimeline,

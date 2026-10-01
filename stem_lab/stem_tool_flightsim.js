@@ -18,7 +18,7 @@
   if (document.getElementById('allo-flightsim-ui-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-flightsim-ui-css';
-  st.textContent = ".skyschool-range{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer}.skyschool-range::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:rgba(148,163,184,0.28);border:1px solid rgba(148,163,184,0.18)}.skyschool-range::-moz-range-track{height:6px;border-radius:999px;background:rgba(148,163,184,0.28);border:1px solid rgba(148,163,184,0.18)}.skyschool-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;background:#38bdf8;border:2px solid #0b1220;box-shadow:0 0 0 1px rgba(56,189,248,0.55),0 2px 6px rgba(2,6,23,0.55)}.skyschool-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#38bdf8;border:2px solid #0b1220;box-shadow:0 0 0 1px rgba(56,189,248,0.55)}.skyschool-range:hover::-webkit-slider-thumb{background:#7dd3fc}.skyschool-range:focus-visible{outline:3px solid #f8fafc;outline-offset:2px;border-radius:999px}.skyschool-check{-webkit-appearance:none;appearance:none;width:18px;height:18px;flex-shrink:0;margin:0;border-radius:5px;border:1.5px solid rgba(148,163,184,0.55);background:rgba(2,6,23,0.65);cursor:pointer;display:inline-grid;place-content:center;transition:background .12s ease,border-color .12s ease}.skyschool-check:hover{border-color:rgba(125,211,252,0.85)}.skyschool-check:checked{background:#16a34a;border-color:#22c55e}.skyschool-check:checked::after{content:'';width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}.skyschool-check:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.skyschool-textarea{width:100%;background:rgba(2,6,23,0.72);color:#e2e8f0;border:1px solid rgba(125,211,252,0.24);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55;font-family:inherit}.skyschool-textarea::placeholder{color:#64748b}.skyschool-textarea:focus-visible{outline:3px solid #f8fafc;outline-offset:2px;border-color:rgba(125,211,252,0.5)}[data-flightsim-touch-legend]{display:none}[data-tk-touch]{display:none}@media (hover:none) and (pointer:coarse){[data-tk-keys]{display:none}[data-tk-touch]{display:block}}@media (hover:none) and (pointer:coarse){[data-flightsim-key-legend]{display:none}[data-flightsim-touch-legend]{display:block}}";
+  st.textContent = ".skyschool-range{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer}.skyschool-range::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:rgba(148,163,184,0.28);border:1px solid rgba(148,163,184,0.18)}.skyschool-range::-moz-range-track{height:6px;border-radius:999px;background:rgba(148,163,184,0.28);border:1px solid rgba(148,163,184,0.18)}.skyschool-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;background:#38bdf8;border:2px solid #0b1220;box-shadow:0 0 0 1px rgba(56,189,248,0.55),0 2px 6px rgba(2,6,23,0.55)}.skyschool-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#38bdf8;border:2px solid #0b1220;box-shadow:0 0 0 1px rgba(56,189,248,0.55)}.skyschool-range:hover::-webkit-slider-thumb{background:#7dd3fc}.skyschool-range:focus-visible{outline:3px solid #f8fafc;outline-offset:2px;border-radius:999px}.skyschool-check{-webkit-appearance:none;appearance:none;width:18px;height:18px;flex-shrink:0;margin:0;border-radius:5px;border:1.5px solid rgba(148,163,184,0.55);background:rgba(2,6,23,0.65);cursor:pointer;display:inline-grid;place-content:center;transition:background .12s ease,border-color .12s ease}.skyschool-check:hover{border-color:rgba(125,211,252,0.85)}.skyschool-check:checked{background:#16a34a;border-color:#22c55e}.skyschool-check:checked::after{content:'';width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}.skyschool-check:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.skyschool-textarea{width:100%;background:rgba(2,6,23,0.72);color:#e2e8f0;border:1px solid rgba(125,211,252,0.24);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55;font-family:inherit}.skyschool-textarea::placeholder{color:#64748b}.skyschool-textarea:focus-visible{outline:3px solid #f8fafc;outline-offset:2px;border-color:rgba(125,211,252,0.5)}[data-flightsim-touch-legend]{display:none}.skyschool-science>summary::-webkit-details-marker{display:none}.skyschool-science>summary::marker{content:''}.skyschool-science[open]>summary .skyschool-science-tri{transform:rotate(90deg)}.skyschool-science>summary:focus-visible{outline:3px solid #f8fafc;outline-offset:2px;border-radius:4px}@supports (height:100dvh){#skyschool-flight-container{height:calc(100dvh - 80px)!important;max-height:calc(100dvh - 80px)!important}}[data-tk-touch]{display:none}@media (hover:none) and (pointer:coarse){[data-tk-keys]{display:none}[data-tk-touch]{display:block}}@media (hover:none) and (pointer:coarse){[data-flightsim-key-legend]{display:none}[data-flightsim-touch-legend]{display:block}}";
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -224,8 +224,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'americas', name: '🌎 Americas Sprint', desc: 'Fly from Canada to Argentina — name every capital!', places: ['Ottawa','Washington D.C.','Havana','Mexico City','Bogotá','Lima','Brasília','Buenos Aires'], speed: 2000 },
     { id: 'europe', name: '🌍 Europe Express', desc: 'Blast through 8 European capitals — beat the clock!', places: ['Reykjavik','London','Paris','Madrid','Rome','Berlin','Athens','Moscow'], speed: 2500 },
     { id: 'asia', name: '🌏 Asia Dash', desc: 'From the Middle East to the Pacific — how many can you name?', places: ['Jerusalem','Dubai','New Delhi','Bangkok','Beijing','Seoul','Tokyo','Sydney'], speed: 2200 },
-    { id: 'world', name: '🌐 Around the World', desc: 'The ultimate challenge — 12 cities across every continent!', places: ['London','Cairo','Nairobi','New Delhi','Beijing','Tokyo','Sydney','Buenos Aires','Lima','Mexico City','New York City','Reykjavik'], speed: 3000 },
-    { id: 'capitals', name: '🏛️ Capital Challenge', desc: 'Capitals only — can you get all 20?', places: ['Washington D.C.','Ottawa','Mexico City','Havana','Bogotá','Lima','Brasília','Buenos Aires','London','Paris','Berlin','Rome','Madrid','Moscow','Athens','Cairo','Nairobi','Addis Ababa','New Delhi','Tokyo'], speed: 2800 },
+    { id: 'world', name: '🌐 Around the World', desc: 'The ultimate challenge — 12 cities across six continents!', places: ['London','Cairo','Nairobi','New Delhi','Beijing','Tokyo','Sydney','Buenos Aires','Lima','Mexico City','New York City','Reykjavik'], speed: 3000 },
+    { id: 'capitals', name: '🏛️ Capital Challenge', desc: 'Capitals only — 20 stops, 19 questions. Can you name them all?', places: ['Washington D.C.','Ottawa','Mexico City','Havana','Bogotá','Lima','Brasília','Buenos Aires','London','Paris','Berlin','Rome','Madrid','Moscow','Athens','Cairo','Nairobi','Addis Ababa','New Delhi','Tokyo'], speed: 2800 },
     { id: 'landmarks', name: '🗺️ Landmark Tour', desc: 'Fly over the world\'s most famous natural wonders!', places: ['Grand Canyon','Amazon Rainforest','Sahara Desert','Himalayas','Great Barrier Reef','North Pole'], speed: 3500 },
   ];
 
@@ -2781,10 +2781,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     {
       phase: 'Documents',
       items: [
-        { check: 'Pilot certificate in possession', why: 'Required by FAR' },
-        { check: 'Pilot medical (or BasicMed) current', why: 'Required by FAR' },
-        { check: 'Aircraft registration on board', why: 'Required by FAR' },
-        { check: 'Aircraft airworthiness certificate on board', why: 'Required by FAR' },
+        { check: 'Pilot certificate in possession', why: 'FAR 61.3 \u2014 on your person, not at home' },
+        { check: 'Pilot medical (or BasicMed) current', why: 'FAR 61.23 \u2014 expired means not a pilot today' },
+        { check: 'Aircraft registration on board', why: 'FAR 91.203 \u2014 proves who owns this aircraft' },
+        { check: 'Aircraft airworthiness certificate on board', why: 'FAR 91.203 \u2014 displayed where passengers can see it' },
         { check: 'Insurance documentation accessible', why: 'Best practice' },
         { check: 'Up-to-date charts for route', why: 'Required for IFR' },
       ],
@@ -2797,7 +2797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         { check: 'Winds aloft', why: 'Affects fuel burn and time' },
         { check: 'NOTAMs reviewed', why: 'Notice to Airmen — closures, hazards' },
         { check: 'Route filed (if IFR)', why: 'Required for IFR; recommended for VFR cross-country' },
-        { check: 'Fuel + 30 min reserve (VFR day) / 45 min (VFR night) / 45 min + alternate fuel (IFR)', why: 'Required by FAR' },
+        { check: 'Fuel + 30 min reserve (VFR day) / 45 min (VFR night) / 45 min + alternate fuel (IFR)', why: 'FAR 91.151 \u2014 reserve is measured at cruise power, not idle' },
       ],
     },
     {
@@ -2820,12 +2820,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       phase: 'Cockpit setup',
       items: [
         { check: 'Brakes set', why: 'Don\'t roll while you\'re working' },
-        { check: 'Seatbelts adjusted', why: 'Required by FAR' },
+        { check: 'Seatbelts adjusted', why: 'FAR 91.107 \u2014 briefed and fastened before you move' },
         { check: 'Flight controls — full and free movement', why: 'Verify control freedom' },
         { check: 'Engine instruments in green', why: 'Verify gauges working' },
         { check: 'Altimeter set to local barometric pressure', why: 'Reads wrong otherwise' },
         { check: 'Heading indicator aligned with magnetic compass', why: 'Gyro can drift on the ground' },
-        { check: 'Transponder set to 1200 (VFR) or assigned code', why: 'ATC sees your altitude' },
+        { check: 'Transponder set to 1200 (VFR) or assigned code', why: 'The code is how ATC tells you apart from everyone else' },
         { check: 'Avionics set up for departure', why: 'Don\'t fumble after takeoff' },
         { check: 'Trim set for takeoff', why: 'Improper trim = unexpected pitch on takeoff' },
         // Was "usually 10°", which is the SHORT/SOFT-field setting. A normal
@@ -2858,8 +2858,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         { check: 'Carburetor heat check (RPM drop expected)', why: 'Verify carb heat works' },
         { check: 'Engine instruments green', why: 'Last chance check' },
         { check: 'Controls full + free', why: 'Final verification' },
-        { check: 'Trim set for takeoff', why: 'Confirmation' },
-        { check: 'Flaps set for takeoff', why: 'Confirmation' },
+        { check: 'Trim set for takeoff', why: 'Mistrimmed, the aircraft fights you at the worst moment' },
+        { check: 'Flaps set for takeoff', why: 'Wrong setting costs you runway you may not have' },
         { check: 'Doors and windows latched', why: 'Don\'t lose a door on takeoff' },
         { check: 'Seatbelts on', why: 'Required' },
       ],
@@ -17787,7 +17787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var question, correct, options;
 
         if (qType === 'capital' && closest.type === 'capital') {
-          question = 'What country is ' + closest.name + ' the capital of?';
+          question = __alloT('stem.flightsim.geoq_capital_of_what', "What country is {city} the capital of?").replace('{city}', closest.name);
           correct = closest.country;
           var others = GEO_PLACES.filter(function(p) { return p.type === 'capital' && p.country !== closest.country && isRealCountry(p.country); });
           options = [correct];
@@ -18620,7 +18620,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // ── Airport sign (showing the airport code) ──
         if (groundFactor > 0.5 && aglAlt < 30) {
-          var signX = W * 0.12;
+          // Clear of the ATIS strip (x 10, width 190), which draws over this
+          // whenever the aircraft is parked at an airport — i.e. every flight
+          // start. Kept in sync with atisX/atisW2 below.
+          var signX = Math.max(W * 0.12, 10 + 190 + 16);
           var signY = horizonY + (H - horizonY) * 0.55;
           gfx.fillStyle = '#1e3a8a';
           gfx.fillRect(signX, signY, 80, 20);
@@ -19776,7 +19779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var qType = qTypes[Math.floor(Math.random() * qTypes.length)];
 
           if (qType === 'name_capital' || qType === 'capital_of') {
-            sp.question = 'What is the capital of ' + withArticle(targetPlace.country) + '?';
+            sp.question = __alloT('stem.flightsim.geoq_capital_of', "What is the capital of {country}?").replace('{country}', withArticle(targetPlace.country));
             sp.correctAnswer = targetPlace.name;
             var pool = GEO_PLACES.filter(function(p) { return p.type === 'capital' && p.name !== targetPlace.name; });
             sp.options = [targetPlace.name];
@@ -19785,7 +19788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               if (sp.options.indexOf(pick.name) < 0) sp.options.push(pick.name);
             }
           } else if (qType === 'what_country') {
-            sp.question = 'Which country is ' + targetPlace.name + ' in?';
+            sp.question = __alloT('stem.flightsim.geoq_which_country', "Which country is {place} in?").replace('{place}', targetPlace.name);
             sp.correctAnswer = targetPlace.country;
             var pool2 = GEO_PLACES.filter(function(p) { return p.country !== targetPlace.country; });
             sp.options = [targetPlace.country];
@@ -19944,7 +19947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillText((r.correct ? '✅' : '❌') + ' ' + r.place, cx - 190, ry + 14);
             if (!r.correct) {
               gfx.fillStyle = '#94a3b8'; gfx.textAlign = 'right';
-              gfx.fillText(r.answer === 'SKIPPED' ? 'Skipped' : 'You said: ' + r.answer + ' → ' + r.expected, cx + 190, ry + 14);
+              gfx.fillText(r.answer === 'SKIPPED' ? __alloT('stem.flightsim.geoq_skipped', "Skipped") : __alloT('stem.flightsim.geoq_you_said', "You said: {answer} \\u2192 {expected}").replace('{answer}', r.answer).replace('{expected}', r.expected), cx + 190, ry + 14);
             }
           });
 
@@ -23628,7 +23631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (target && typeof target.focus === 'function') target.focus({ preventScroll: true });
         };
 
-        return h('div', { id: 'skyschool-menu', 'data-flightsim-visual-menu': 'true', style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 16% 0%, #164e63 0%, #0c2239 32%, #07111f 100%)' /* NOT var(--allo-stem-canvas, <gradient>): that variable IS defined (#ffffff in light), so the defined value always beat the fallback and the gradient was dead code. In light theme the whole SkySchool shell went plain WHITE while all 66 #94a3b8 labels and 79 white-alpha glass panels kept the dark palette they were drawn for -- 21 AA failures, none of them in dark. Every sibling branch of this render is unconditionally dark; this one now matches. */, borderRadius: '16px', overflow: 'auto', position: 'relative', scrollbarColor: '#38bdf8 #0f172a' } },
+        return h('div', { id: 'skyschool-menu', 'data-flightsim-visual-menu': 'true', style: { minHeight: '500px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 16% 0%, #164e63 0%, #0c2239 32%, #07111f 100%)' /* NOT var(--allo-stem-canvas, <gradient>): that variable IS defined (#ffffff in light), so the defined value always beat the fallback and the gradient was dead code. In light theme the whole SkySchool shell went plain WHITE while all 66 #94a3b8 labels and 79 white-alpha glass panels kept the dark palette they were drawn for -- 21 AA failures, none of them in dark. Every sibling branch of this render is unconditionally dark; this one now matches. */, borderRadius: '16px', overflow: 'auto', position: 'relative', scrollbarColor: '#38bdf8 #0f172a' } },
           h('style', null, '#skyschool-menu button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-menu button:hover{transform:translateY(-1px);filter:brightness(1.07)}#skyschool-menu button:focus-visible,#skyschool-menu select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}'),
           // FAA Part 107 Drone Briefing Modal (gates drone_survey mission)
           d.droneBriefing && h('div', {
@@ -23924,8 +23927,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     // Each code is pushed away from the other end of the leg, so
                     // the labels cannot land on the track or on each other.
                     var lab = function(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); };
-                    var depLabY = lab(y1 + (y1 >= y2 ? 21 : -11), 20, 146);
-                    var destLabY = lab(y2 + (y2 > y1 ? 21 : -11), 20, 146);
+                    // ...but being pushed away from the other END is not enough: the
+                    // frame also holds two FIXED items the labels were never checked
+                    // against, and the clamps push labels straight into them. On 19
+                    // of the 90 selectable airport pairs (21%) a code landed on the
+                    // heading/ETE readout or on the north rose — including every
+                    // route to or from LHR and HND, the two long-haul legs most
+                    // likely to be chosen. JFK->LHR printed "JFK" on top of
+                    // "051° / 1471 min" and clipped "LHR" against the north arrow.
+                    // Reserve both zones and flip a colliding label to its free side.
+                    var HDG_BOX = { x0: 8, x1: 104, y0: 128, y1: 152 };   // readout, bottom-left
+                    var ROSE_BOX = { x0: 318, x1: 350, y0: 14, y1: 52 };  // arrow + N, top-right
+                    var hitsBox = function(cx, cy, code, box) {
+                      var hw = code.length * 4.4 + 3;
+                      return (cx - hw) < box.x1 && box.x0 < (cx + hw)
+                        && (cy - 11) < box.y1 && box.y0 < (cy + 4);
+                    };
+                    // Try the natural side first, then the opposite one, then a
+                    // horizontal nudge clear of the box. Whichever is free wins.
+                    var place = function(x, y, below, code) {
+                      var cands = [
+                        { x: lab(x, 26, 334), y: lab(y + (below ? 21 : -11), 20, 146) },
+                        { x: lab(x, 26, 334), y: lab(y + (below ? -11 : 21), 20, 146) },
+                        { x: lab(x, 118, 334), y: lab(y + (below ? 21 : -11), 20, 146) },
+                        { x: lab(x, 26, 306), y: lab(y + (below ? 21 : -11), 20, 146) },
+                        // A dot parked directly under the rose (GRU on GRU->SYD sits
+                        // at x=314) stays inside it under every clamp above, because
+                        // none of them moves the label far enough sideways. Push it
+                        // fully clear of the rose's left edge instead.
+                        // Clearing the rose depends on the label's OWN width: a
+                        // fixed offset still left GRU (half-width 16) overlapping
+                        // by 2px. Subtract the half-width the hit test uses.
+                        { x: lab(x, 26, ROSE_BOX.x0 - (code.length * 4.4 + 3) - 2), y: lab(y + (below ? 21 : -11), 20, 146) },
+                        { x: lab(x, 26, ROSE_BOX.x0 - (code.length * 4.4 + 3) - 2), y: lab(y + (below ? -11 : 21), 20, 146) }
+                      ];
+                      for (var ci = 0; ci < cands.length; ci++) {
+                        var c = cands[ci];
+                        if (!hitsBox(c.x, c.y, code, HDG_BOX) && !hitsBox(c.x, c.y, code, ROSE_BOX)) return c;
+                      }
+                      return cands[0];
+                    };
+                    var depPos = place(x1, y1, y1 >= y2, depWp.code);
+                    var destPos = place(x2, y2, y2 > y1, destWp.code);
+                    var depLabY = depPos.y;
+                    var destLabY = destPos.y;
                     return h('svg', { viewBox: '0 0 360 158', preserveAspectRatio: 'xMidYMid meet', style: { width: '100%', height: 'auto', display: 'block' }, 'aria-hidden': 'true' },
                       h('defs', null,
                         // userSpaceOnUse, anchored to the real endpoints. The old
@@ -23948,8 +23993,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                       h('path', { d: 'M-12 -7 l24 7 -24 7 6 -7 z', fill: '#f8fafc', opacity: '0.92', transform: 'translate(' + mx.toFixed(1) + ',' + my.toFixed(1) + ') rotate(' + ang.toFixed(1) + ')' }),
                       h('circle', { cx: x1.toFixed(1), cy: y1.toFixed(1), r: '8', fill: '#38bdf8' }),
                       h('circle', { cx: x2.toFixed(1), cy: y2.toFixed(1), r: '8', fill: '#4ade80' }),
-                      h('text', { x: lab(x1, 26, 334), y: depLabY, textAnchor: 'middle', fontSize: '12', fill: '#e0f2fe', fontWeight: '700' }, depWp.code),
-                      h('text', { x: lab(x2, 26, 334), y: destLabY, textAnchor: 'middle', fontSize: '12', fill: '#dcfce7', fontWeight: '700' }, destWp.code),
+                      h('text', { x: depPos.x, y: depLabY, textAnchor: 'middle', fontSize: '12', fill: '#e0f2fe', fontWeight: '700' }, depWp.code),
+                      h('text', { x: destPos.x, y: destLabY, textAnchor: 'middle', fontSize: '12', fill: '#dcfce7', fontWeight: '700' }, destWp.code),
                       h('text', { x: '16', y: '144', textAnchor: 'start', fontSize: '11', fill: '#fef3c7', fontWeight: '700' }, String(hdg).padStart(3, '0') + '° / ' + estMin + ' min')
                     );
                   })(),
@@ -24105,7 +24150,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 h('span', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 800, color: '#fff' } }, acSilhouette(h, currentAC.id, 22, currentAC.accent || '#7dd3fc'), currentAC.name),
                 h('span', { style: { fontSize: '9px', color: '#94a3b8', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
               ),
-              h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
+              h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } },
+                __alloT('stem.flightsim.' + currentAC.id + '_acdesc', currentAC.desc)),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: '6px', marginBottom: '6px' } },
                 // The 5th field says what a FULL bar means. Without it the bar is
                 // a fraction of an unstated whole — "84%" of nothing named.
@@ -24243,7 +24289,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   h('div', { style: { fontSize: '24px', shrink: 0 } }, isRescue ? '🚁' : (isPowerline ? '🔌' : (isDroneMission ? '🛸' : '🎯'))),
                   h('div', null,
-                    h('div', { style: { fontSize: '12px', fontWeight: 700 } }, ch.name),
+                    h('div', { style: { fontSize: '12px', fontWeight: 700 } },
+                      __alloT('stem.flightsim.' + ch.id + '_name', ch.name)),
                     h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '2px' } }, __alloT('stem.flightsim.' + (ch.id) + '_desc', ch.desc))
                   )
                 );
@@ -24259,7 +24306,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 return h('button', { key: route.id, onClick: function() { startSprint(route.id); },
                   style: { padding: '10px', borderRadius: '8px', border: '1px solid #334155', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', color: '#fff', cursor: 'pointer', textAlign: 'left' }
                 },
-                  h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '2px' } }, route.name),
+                  h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '2px' } },
+                      __alloT('stem.flightsim.' + route.id + '_name', route.name)),
                   h('div', { style: { fontSize: '10px', color: '#a78bfa' } }, __alloT('stem.flightsim.' + (route.id) + '_desc', route.desc)),
                   h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '4px' } }, route.places.length + ' stops · ' + Math.round(route.speed * 0.59) + ' kts')
                 );
@@ -24279,8 +24327,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   h('div', { 'aria-hidden': 'true', style: { fontSize: '14px', lineHeight: 1.1, filter: earned ? 'none' : 'grayscale(1)', opacity: earned ? 1 : 0.55 } }, earned ? ach.icon : '🔒'),
                   h('div', null,
-                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fbbf24' : '#cbd5e1', lineHeight: 1.2 } }, ach.name),
-                    h('div', { style: { fontSize: '9px', color: '#cbd5e1', marginTop: '2px', lineHeight: 1.35 } }, ach.desc)
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fbbf24' : '#cbd5e1', lineHeight: 1.2 } },
+                      __alloT('stem.flightsim.' + ach.id + '_name', ach.name)),
+                    h('div', { style: { fontSize: '9px', color: '#cbd5e1', marginTop: '2px', lineHeight: 1.35 } },
+                      __alloT('stem.flightsim.' + ach.id + '_desc', ach.desc))
                   )
                 );
               })
@@ -24307,7 +24357,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var lessonNavStyle = function(enabled) {
           return { flex: '1 1 0', padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + (enabled ? 'rgba(125,211,252,0.35)' : 'rgba(71,85,105,0.5)'), background: enabled ? 'rgba(14,165,233,0.12)' : 'rgba(15,23,42,0.4)', color: enabled ? '#e0f2fe' : '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: enabled ? 'pointer' : 'default', textAlign: 'left', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
         };
-        return h('div', { style: { padding: '24px', maxWidth: '720px', margin: '0 auto' } },
+        return h('div', { 'data-flightsim-lesson': 'true', style: {
+          minHeight: '600px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', overflowY: 'auto',
+          background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)',
+          borderRadius: '14px', border: '1px solid rgba(125,211,252,0.18)'
+        } },
+          h('div', { style: { padding: '24px', maxWidth: '720px', margin: '0 auto' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' } },
             // padding 0 made this 99x20 — under the 24x24 WCAG 2.5.8 target
             // minimum, and it is the only way out of the lesson view.
@@ -24370,11 +24425,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             })(),
             // Previous / next, so the sequence reads as a course.
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
-              h('button', { onClick: function() { if (prevLessonId) upd('selectedLesson', prevLessonId); }, disabled: !prevLessonId, style: lessonNavStyle(!!prevLessonId) },
-                prevLessonId ? '\u2190 ' + LESSONS[prevLessonId].title : '\u2190 ' + __alloT('stem.flightsim.first_lesson', 'First lesson')),
+              // Not rendered on lesson 1: a greyed-out dead control reads as a
+              // broken button, not as the start of the sequence.
+              prevLessonId ? h('button', { onClick: function() { upd('selectedLesson', prevLessonId); }, style: lessonNavStyle(true) },
+                '\u2190 ' + LESSONS[prevLessonId].title) : null,
               h('button', { onClick: function() { if (nextLessonId) upd('selectedLesson', nextLessonId); else upd('view', 'menu'); }, style: Object.assign(lessonNavStyle(true), { textAlign: 'right' }) },
                 nextLessonId ? LESSONS[nextLessonId].title + ' \u2192' : __alloT('stem.flightsim.back_to_menu_arrow', 'Back to menu \u2192'))
             )
+          )
           )
         );
       }
@@ -24394,7 +24452,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var tkVr = hudRef.current.vrKts || null;
         var activeWeather = (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]);
         var activeWorldEnv = hudRef.current.worldEnvironment || getWorldEnvironment(flightRef.current.lat, flightRef.current.lon, 0, false);
-        return h('div', { id: 'skyschool-flight-container', 'data-flightsim-flight-deck': 'true', 'data-flight-state': pausedUi ? 'paused' : 'active', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 28%, #172554 0%, #071426 48%, #020617 100%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(125,211,252,0.3)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -80px 100px rgba(2,6,23,0.32), 0 24px 60px rgba(2,6,23,0.42)' } },
+        return h('div', { id: 'skyschool-flight-container', 'data-flightsim-flight-deck': 'true', 'data-flight-state': pausedUi ? 'paused' : 'active', style: { position: 'relative', width: '100%',
+          // NOT height:'100%' — the shell's wrapper only sets minHeight, so a
+          // percentage resolves to auto and the 500px floor became the actual
+          // height: a 498px canvas in an 800px window.
+          height: 'calc(100vh - 80px)', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 28%, #172554 0%, #071426 48%, #020617 100%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(125,211,252,0.3)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -80px 100px rgba(2,6,23,0.32), 0 24px 60px rgba(2,6,23,0.42)' } },
           h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}#skyschool-flight-container canvas[role="application"]:focus-visible{outline:3px solid #f8fafc;outline-offset:-3px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-hud-dock{top:62px!important;left:8px!important;right:8px!important;width:auto!important}.skyschool-command-rail{width:auto!important;max-width:none!important;align-self:stretch!important;grid-template-columns:repeat(auto-fit,minmax(104px,1fr))!important}.skyschool-rail-collapsed{grid-template-columns:1fr!important;align-self:flex-start!important}.skyschool-command-rail .skyschool-rail-label{grid-column:1/-1}.skyschool-command-rail button{justify-content:center}.skyschool-status-rail{flex-direction:row!important;flex-wrap:wrap!important;column-gap:14px!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;width:auto!important;max-width:none!important;max-height:46vh!important;overflow:auto!important}}'),
           threeLoaded && h('canvas', {
             ref: webglCanvasRef,
@@ -24722,8 +24784,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 __alloT('stem.flightsim.tk_t_fixed_4', "Hold the nose up ~5–10° to maintain a steady climb. Don't over-rotate or you'll stall.")
               )
             ),
-            h('div', { style: { padding: '10px', background: 'rgba(56,189,248,0.1)', borderRadius: '6px', borderLeft: '3px solid #38bdf8', fontSize: '11px' } },
-              h('div', { style: { fontWeight: 800, color: '#38bdf8', marginBottom: '4px' } }, __alloT('stem.flightsim.the_science_2', '🔬 The Science')),
+            // Collapsed by default: the card covered 60% of the canvas at 1280x800
+            // and 49% on a phone, hiding the runway the steps describe.
+            h('details', { className: 'skyschool-science', style: { padding: '10px', background: 'rgba(56,189,248,0.1)', borderRadius: '6px', borderLeft: '3px solid #38bdf8', fontSize: '11px' } },
+              h('summary', { style: { fontWeight: 800, color: '#38bdf8', cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '6px', minHeight: '24px' } },
+                h('span', { 'aria-hidden': 'true', className: 'skyschool-science-tri', style: { fontSize: '9px', transition: 'transform .15s ease' } }, '\u25B6'),
+                __alloT('stem.flightsim.the_science_2', '🔬 The Science')),
               h('div', { style: { color: '#cbd5e1' } },
                 tkRotor ? __alloT('stem.flightsim.rotor_science', 'A rotor blade is a wing that the engine spins. It makes lift the same way (½ × air density × velocity² × blade area × C') : __alloT('stem.flightsim.lift_air_density_velocity_wing_area_c', 'Lift = ½ × air density × velocity² × wing area × C'),
                 h('sub', null, 'L'),
@@ -24792,7 +24858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         else if (landed && db.bestLanding < 100) tip ='\uD83E\uDDC8 Butter landing! (' + db.bestLanding + ' fpm) — you\u2019re a natural. Try a crosswind landing next time!';
         else tip = '\uD83D\uDCA1 Great flying! Try using the Flight Planner on the menu to plan a route between two airports.';
 
-        return h('div', { id: 'skyschool-debrief', 'data-flightsim-debrief': 'true', style: { minHeight: '400px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 12% 0%, rgba(14,116,144,0.5), transparent 34%), linear-gradient(145deg, #07111f 0%, #10263d 55%, #071827 100%)', borderRadius: '16px', padding: 'clamp(16px, 3vw, 28px)', color: '#fff', overflow: 'auto', scrollbarColor: '#38bdf8 #0f172a' } },
+        return h('div', { id: 'skyschool-debrief', 'data-flightsim-debrief': 'true', style: { minHeight: '400px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 12% 0%, rgba(14,116,144,0.5), transparent 34%), linear-gradient(145deg, #07111f 0%, #10263d 55%, #071827 100%)', borderRadius: '16px', padding: 'clamp(16px, 3vw, 28px)', color: '#fff', overflow: 'auto', scrollbarColor: '#38bdf8 #0f172a' } },
           h('style', null, '#skyschool-debrief button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-debrief button:hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-debrief button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:560px){#skyschool-debrief .skyschool-debrief-actions{display:grid!important;grid-template-columns:1fr!important}#skyschool-debrief .skyschool-debrief-actions button{width:100%}}'),
           // Grade card header
           h('section', { 'aria-labelledby': 'skyschool-debrief-title', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', alignItems: 'center', gap: '18px', marginBottom: '16px', padding: '18px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(8,47,73,0.68))', border: '1px solid ' + gradeColor + '55', boxShadow: '0 18px 40px rgba(2,6,23,0.34)' } },
@@ -25032,8 +25098,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               db.maxAlt > 10000 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, __alloT('stem.flightsim.debrief_learned_altitude', "🌌 You flew above 10,000 ft, where the air is about three quarters as dense as at sea level. Above 12,500 ft the crew needs supplemental oxygen for any stretch longer than 30 minutes, and above 14,000 ft for the whole flight (FAR 91.211).")) : null,
               db.maxSpeed > 400 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, __alloT('stem.flightsim.you_exceeded_400_kts_at_these_speeds_c', '💨 You exceeded 400 kts! At these speeds, compressibility effects start to matter — air can no longer be treated as incompressible.')) : null,
-              db.airports > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, __alloT('stem.flightsim.debrief_learned_airports', "✈️ You visited {n} airport(s). Real pilots plan routes using airways — highways in the sky defined by radio beacons.").replace('{n}', db.airports)) : null,
-              db.discovered > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #f97316' } }, __alloT('stem.flightsim.debrief_learned_places', "📍 You discovered {n} geographic locations. Professional pilots use sectional charts that show terrain, airspace, and obstacles.").replace('{n}', db.discovered)) : null,
+              db.airports > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, (db.airports === 1
+                  ? __alloT('stem.flightsim.debrief_learned_airport_one', "✈️ You visited 1 airport. Real pilots plan routes using airways — highways in the sky defined by radio beacons.")
+                  : __alloT('stem.flightsim.debrief_learned_airports', "✈️ You visited {n} airports. Real pilots plan routes using airways — highways in the sky defined by radio beacons.")).replace('{n}', db.airports)) : null,
+              db.discovered > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #f97316' } }, (db.discovered === 1
+                  ? __alloT('stem.flightsim.debrief_learned_place_one', "📍 You discovered 1 geographic location. Professional pilots use sectional charts that show terrain, airspace, and obstacles.")
+                  : __alloT('stem.flightsim.debrief_learned_places', "📍 You discovered {n} geographic locations. Professional pilots use sectional charts that show terrain, airspace, and obstacles.")).replace('{n}', db.discovered)) : null,
               landed && db.bestLanding < LANDING_GRADE_FPM.smooth ? h('div',{ style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #ec4899' } }, __alloT('stem.flightsim.debrief_learned_landing', "🧈 Great landing at {fpm} fpm! This sim counts anything under {smooth} fpm as smooth, and under {butter} fpm as butter. The technique is called “flaring” — pitching up gently at 20 ft above the runway.").replace('{fpm}', db.bestLanding).replace('{smooth}', LANDING_GRADE_FPM.smooth).replace('{butter}', LANDING_GRADE_FPM.butter)) : null,
               db.flightTime > 300 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #8b5cf6' } },
                 (dbAc && dbAc.fuelBurn > 0
@@ -25247,9 +25317,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         return h('div', {
           id: 'skyschool-learn', 'data-flightsim-learn-library': 'true',
-          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 8% 0%, rgba(37,99,235,0.38), transparent 30%), linear-gradient(145deg, #07111f, #10263d 58%, #071827)', borderRadius: '16px', padding: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', color: '#fff' }
+          style: { minHeight: '600px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 8% 0%, rgba(37,99,235,0.38), transparent 30%), linear-gradient(145deg, #07111f, #10263d 58%, #071827)', borderRadius: '16px', padding: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', color: '#fff' }
         },
-          h('style', null, '#skyschool-learn button,#skyschool-learn input{transition:border-color .15s ease,background .15s ease,transform .15s ease}#skyschool-learn button:focus-visible,#skyschool-learn input:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.skyschool-learn-card{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}.skyschool-learn-card:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.35)!important;box-shadow:0 12px 28px rgba(2,6,23,.25)!important}@media(max-width:820px){.skyschool-learn-header{flex-wrap:wrap}.skyschool-learn-search{order:3;width:100%!important}.skyschool-learn-split{flex-direction:column!important}.skyschool-learn-topics{width:auto!important;max-height:190px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:3px}.skyschool-learn-content{min-height:320px}}'),
+          h('style', null, '#skyschool-learn button,#skyschool-learn input{transition:border-color .15s ease,background .15s ease,transform .15s ease}#skyschool-learn button:focus-visible,#skyschool-learn input:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.skyschool-learn-card{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}.skyschool-learn-card:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.35)!important;box-shadow:0 12px 28px rgba(2,6,23,.25)!important}@media(max-width:820px){.skyschool-learn-header{flex-wrap:wrap}.skyschool-learn-header h2{font-size:16px!important;flex:1 1 100%!important;order:2}.skyschool-learn-search{order:3;width:100%!important}.skyschool-learn-split{flex-direction:column!important}.skyschool-learn-topics{width:auto!important;max-height:190px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:3px}.skyschool-learn-content{min-height:320px}}'),
           // Header
           h('div', { className: 'skyschool-learn-header', style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexShrink: 0 } },
             h('button', {
@@ -25300,7 +25370,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   // how a student judges how much is behind each topic.
                   h('span', { style: { marginLeft: 'auto', fontSize: '9px', color: isActive ? '#fff' : '#94a3b8' } }, (Array.isArray(t.data) ? t.data.length : '') + '')
                 );
-              })
+              }),
+              // Sticky inside the scroll container: the list slides under it,
+              // so the count and the "scroll or search" cue stay visible at
+              // every scroll position. Only rendered when the list actually
+              // overflows, so a filtered result of three topics says nothing.
+              visibleLearnTopics.length > 8 && h('div', {
+                style: {
+                  position: 'sticky', bottom: '-8px', marginTop: '4px',
+                  // Span the full width: the mobile layout is a 2-column grid,
+                  // where this otherwise takes a cell and hides a topic.
+                  gridColumn: '1 / -1',
+                  padding: '7px 10px', borderTop: '1px solid rgba(125,211,252,0.18)',
+                  background: '#0d1728', color: '#94a3b8',
+                  fontSize: '10px', fontWeight: 700, textAlign: 'center',
+                  letterSpacing: '0.02em'
+                }
+              }, (visibleLearnTopics.length === 1
+                    ? __alloT('stem.flightsim.learn_scroll_hint_one', "↕ 1 topic — scroll, or search above")
+                    : __alloT('stem.flightsim.learn_scroll_hint', "↕ {n} topics — scroll, or search above")).replace('{n}', visibleLearnTopics.length))
             ),
 
             // Content
@@ -25378,7 +25466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         return h('div', {
           id: 'skyschool-quiz', 'data-flightsim-quiz-deck': 'true',
-          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 85% 0%, rgba(124,58,237,0.36), transparent 30%), linear-gradient(145deg, #07111f, #172554 58%, #0c1630)', borderRadius: '16px', padding: 'clamp(16px, 3vw, 24px)', overflow: 'auto', color: '#fff', scrollbarColor: '#8b5cf6 #0f172a' }
+          style: { minHeight: '600px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 85% 0%, rgba(124,58,237,0.36), transparent 30%), linear-gradient(145deg, #07111f, #172554 58%, #0c1630)', borderRadius: '16px', padding: 'clamp(16px, 3vw, 24px)', overflow: 'auto', color: '#fff', scrollbarColor: '#8b5cf6 #0f172a' }
         },
           h('style', null, '#skyschool-quiz button{transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}#skyschool-quiz button:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-quiz button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:620px){.skyschool-quiz-nav{display:grid!important;grid-template-columns:1fr!important}.skyschool-quiz-nav>div{display:grid!important;grid-template-columns:1fr 1fr}.skyschool-quiz-nav button{width:100%}}'),
           // Header
@@ -25542,7 +25630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         };
 
         return h('div', {
-          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
+          style: { minHeight: '600px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
         },
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' } },
@@ -25697,7 +25785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
 
         return h('div', {
-          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
+          style: { minHeight: '600px', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
         },
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' } },

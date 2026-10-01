@@ -1,0 +1,806 @@
+[
+  {
+    "fixture": "passage_labels_en_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 13,
+        "right": 26,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 190,
+        "scroll": 190,
+        "left": 13,
+        "right": 202.640625,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_en_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 25,
+        "right": 38,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_en_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_en_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_es419_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 13,
+        "right": 26,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 226,
+        "scroll": 226,
+        "left": 13,
+        "right": 238.625,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_es419_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 25,
+        "right": 38,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_es419_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_es419_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_esES_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 13,
+        "right": 26,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 226,
+        "scroll": 226,
+        "left": 13,
+        "right": 238.625,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_esES_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 25,
+        "right": 38,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_esES_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_esES_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_ar_rtl_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "rtl"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "rtl"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 294,
+        "right": 307,
+        "direction": "rtl"
+      },
+      "pinLabel": {
+        "client": 199,
+        "scroll": 199,
+        "left": 108.15625,
+        "right": 307,
+        "direction": "rtl"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_ar_rtl_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "rtl"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "rtl"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 282,
+        "right": 295,
+        "direction": "rtl"
+      },
+      "pinLabel": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "rtl"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_ar_rtl_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "rtl"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "rtl"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_ar_rtl_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "rtl"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "rtl"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_zh_unspaced_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 137,
+        "right": 150,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 161,
+        "scroll": 161,
+        "left": 137,
+        "right": 298,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_zh_unspaced_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 25,
+        "right": 38,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_zh_unspaced_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_zh_unspaced_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_th_unspaced_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 13,
+        "right": 26,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 214,
+        "scroll": 214,
+        "left": 13,
+        "right": 226.609375,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_th_unspaced_v1",
+    "adapted": false,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": {
+        "client": 13,
+        "scroll": 13,
+        "left": 25,
+        "right": 38,
+        "direction": "ltr"
+      },
+      "pinLabel": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      }
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_th_unspaced_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 294,
+        "scroll": 294,
+        "left": 13,
+        "right": 307,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  },
+  {
+    "fixture": "passage_labels_th_unspaced_v1",
+    "adapted": true,
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeZoom": false,
+    "scope": "actual editor markup, not full app",
+    "geometry": {
+      "documentWidth": 320,
+      "label": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "notice": {
+        "client": 270,
+        "scroll": 270,
+        "left": 25,
+        "right": 295,
+        "direction": "ltr"
+      },
+      "pin": null
+    },
+    "errors": []
+  }
+]

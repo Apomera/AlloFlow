@@ -3,10 +3,10 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function body(name){const start=source.indexOf('function '+name+'(');let end=source.indexOf('{',start),depth=1;while(depth){end++;if(source[end]==='{')depth++;if(source[end]==='}')depth--;}return source.slice(start,end+1);}
 function fixture(){
-  const bird={x:0,y:12,z:0,diving:false,crashed:false};const prey=[];
-  const api=Function('raptor','preyMeshes',`var activePerch=null,attendedPrey=null,mission={id:'open'},lockConeDot=0.1,flightForward={};
+  const bird={x:0,y:12,z:0,yaw:0,pitch:0,diving:false,crashed:false};const prey=[];
+  const api=Function('raptor','preyMeshes',`var activePerch=null,attendedPrey=null,mission={id:'open'},lockConeDot=0.1,flightForward={},lastTargetCorrection=null;
     function flightForwardVector(){return {x:0,y:0,z:-1};}function terrainHeightAt(x,z){return z < -18 && z > -30 ? 8 : 0;}
-    ${['evaluatePreyTarget','terrainSightClear','chooseAttendedTarget','acquireTarget'].map(body).join('\n')}
+    ${['targetSteeringCorrection','evaluatePreyTarget','terrainSightClear','chooseAttendedTarget','acquireTarget'].map(body).join('\n')}
     return {select:acquireTarget,current:()=>attendedPrey};`)(bird,prey);
   const add=(distance,y=12)=>{const p={mesh:{position:{x:0,y,z:-distance}}};prey.push(p);return p;};return {bird,prey,add,...api};
 }

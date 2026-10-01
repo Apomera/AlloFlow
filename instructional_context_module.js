@@ -434,6 +434,24 @@
     return output;
   }
 
+  // Students open the original first (Novak, 2026-09-27): a preserved original
+  // moves just ahead of the first adapted companion of the same reading.
+  // Nothing else changes order, and nothing is added or removed.
+  function orderOriginalsBeforeCompanions(items) {
+    var list = Array.isArray(items) ? items.slice() : [];
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      var snapshot = isObject(item) && ['analysis', 'simplified'].indexOf(item.type) !== -1 && getInstructionalText(item).form === 'adapted' ? getSourceSnapshot(item) : null;
+      if (!snapshot) continue;
+      var at = -1;
+      for (var j = i + 1; j < list.length; j++) {
+        if (isSupportedOriginal(list[j]) && sameReadingSourceFamily(list[j], item) && list[j].data === snapshot.text) { at = j; break; }
+      }
+      if (at > i) { list.splice(i, 0, list.splice(at, 1)[0]); i++; }
+    }
+    return list;
+  }
+
   function readableArtifactText(item) {
     if (!isObject(item)) return '';
     if (item.type === 'analysis') return typeof (item.data && item.data.originalText) === 'string' ? item.data.originalText : '';
@@ -851,6 +869,14 @@
         status: isObject(supports) ? 'stale' : 'unavailable', passageLength: 0, shown: false };
     }
     return adaptedEnvelope(validateReadingSupports(state.snapshot, state.supports || {}), state.snapshot, isObject(supports) && supports.shown === true);
+  }
+  // What a student device may receive: word help the teacher has shown, still
+  // anchored to this passage. Hidden or stale help and removals stay behind.
+  function studentAdaptedReadingSupports(item, supports) {
+    if (!isObject(supports) || supports.shown !== true) return null;
+    var valid = validateAdaptedReadingSupports(item, supports);
+    if (valid.shown !== true || valid.status === 'stale' || valid.status === 'unavailable' || !valid.annotations.length) return null;
+    return Object.assign({}, valid, { suppressedAnnotations: [] });
   }
   function requireAdaptedState(item, supports) {
     if (!isAdaptedReading(item)) throw new Error('Open an adapted reading to edit its word help.');
@@ -1395,9 +1421,12 @@
   /**
    * Resolve the two independent text-access decisions used by planning:
    * whether students must retain the primary text, and whether an adapted
-   * companion should be included. A grade-level/complex-text requirement
-   * affects only the former. Suppressing adaptation requires either an
-   * educator choice or an explicit, sourced prohibition.
+   * companion should be included. When a standard requires the grade-level
+   * text, the DEFAULT is no adapted companion (source 'standard'); an educator
+   * can still include one, and that choice is kept. A default that the
+   * workflow or a standard made earlier is derived again, so a stale 'include'
+   * or 'omit' does not outlive the standard it came from. Only a sourced
+   * prohibition makes adaptation unavailable.
    */
   function deriveTextAccessPlan(raw, options) {
     var source = isObject(raw) ? raw : {};
@@ -1415,14 +1444,19 @@
       || textComplexityRequirement;
     var sourcedProhibition = sourced && expectation === 'adaptation-prohibited';
 
-    var explicitAdaptedPolicy = cleanText(source.adaptedTextPolicy || opts.adaptedTextPolicy, 40);
+    var requestedAdaptedPolicy = cleanText(source.adaptedTextPolicy || opts.adaptedTextPolicy, 40);
+    var priorDecisionSource = cleanText(source.adaptedTextPolicySource || opts.adaptedTextPolicySource, 40);
+    var derivedEarlier = (priorDecisionSource === 'workflow-default' && requestedAdaptedPolicy === 'include')
+      || (priorDecisionSource === 'standard' && requestedAdaptedPolicy === 'omit');
+    var explicitAdaptedPolicy = derivedEarlier ? '' : requestedAdaptedPolicy;
+    var standardDefaultOmit = standardRequiresPrimary && ADAPTED_TEXT_POLICIES.indexOf(explicitAdaptedPolicy) === -1;
     var adaptedTextPolicy = ADAPTED_TEXT_POLICIES.indexOf(explicitAdaptedPolicy) !== -1
-      ? explicitAdaptedPolicy : 'include';
+      ? explicitAdaptedPolicy : (standardDefaultOmit ? 'omit' : 'include');
     if (adaptedTextPolicy === 'prohibited' && !sourcedProhibition) adaptedTextPolicy = 'omit';
     if (sourcedProhibition) adaptedTextPolicy = 'prohibited';
 
-    var decisionSource = cleanText(source.adaptedTextPolicySource || opts.adaptedTextPolicySource, 40);
-    if (sourcedProhibition) decisionSource = 'standard';
+    var decisionSource = derivedEarlier ? '' : priorDecisionSource;
+    if (sourcedProhibition || standardDefaultOmit) decisionSource = 'standard';
     else if (explicitAdaptedPolicy === 'prohibited') decisionSource = 'educator';
     else if (TEXT_ACCESS_DECISION_SOURCES.indexOf(decisionSource) === -1) {
       decisionSource = explicitAdaptedPolicy ? 'educator' : 'workflow-default';
@@ -1439,7 +1473,8 @@
           ? 'sourced-primary-text-requirement'
           : (textComplexityRequirement
               ? 'standard-text-complexity-requirement'
-              : (explicitAdaptedPolicy ? 'educator-choice' : 'default-access-companion')));
+              : (explicitAdaptedPolicy ? 'educator-choice'
+                  : (standardDefaultOmit ? 'standard-primary-text-requirement' : 'default-access-companion'))));
     return {
       primaryTextAccess: primaryTextAccess,
       adaptedTextPolicy: adaptedTextPolicy,
@@ -1526,13 +1561,16 @@
     isSupportedOriginal: isSupportedOriginal,
     getReadingArtifactLabel: getReadingArtifactLabel,
     ensureReadingSourcePairs: ensureReadingSourcePairs,
+    orderOriginalsBeforeCompanions: orderOriginalsBeforeCompanions,
     validateReadingSupports: validateReadingSupports,
     upsertReadingSupport: upsertReadingSupport,
     readingSupportPictureBudget: readingSupportPictureBudget,
+    normalizeSupportImage: normalizeSupportImage,
     isAdaptedReading: isAdaptedReading,
     getAdaptedSupportSnapshot: getAdaptedSupportSnapshot,
     adaptedGenerationSnapshot: adaptedGenerationSnapshot,
     validateAdaptedReadingSupports: validateAdaptedReadingSupports,
+    studentAdaptedReadingSupports: studentAdaptedReadingSupports,
     upsertAdaptedReadingSupport: upsertAdaptedReadingSupport,
     removeAdaptedReadingSupport: removeAdaptedReadingSupport,
     setAdaptedReadingSupportPinned: setAdaptedReadingSupportPinned,

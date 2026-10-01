@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-27",
+  "scope": "Raptor Lab 3D Studio/Habitat presentation",
+  "runs": [
+    {
+      "suite": "raptor-study-studio.spec.ts",
+      "output": "initial-test-results",
+      "passed": 0,
+      "failed": 1,
+      "skipped": 2,
+      "note": "Test probe assumed Texture.userData existed in the bundled Three.js. Corrected the probe; no product change for this failure."
+    },
+    {
+      "suite": "raptor-study-studio.spec.ts",
+      "output": "refined-test-results",
+      "passed": 3,
+      "failed": 0,
+      "retries": 0,
+      "durationSeconds": 46.2
+    },
+    {
+      "suites": [
+        "raptor-study-anatomy.spec.ts",
+        "raptor-study-mode.spec.ts",
+        "raptor-study-observations.spec.ts",
+        "raptor-study-report.spec.ts"
+      ],
+      "output": "regression-test-results",
+      "passed": 12,
+      "failed": 0,
+      "retries": 0
+    }
+  ],
+  "uniqueScenariosPassed": 15,
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "scopedAxeViolations": 0,
+    "visualInspection": "pass"
+  },
+  "sourceFiles": [
+    {
+      "path": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "4ecbff81a282b5c130e823c032abc8a654ad0539d160ec2f477d0054dafffcd2"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "4ecbff81a282b5c130e823c032abc8a654ad0539d160ec2f477d0054dafffcd2"
+    }
+  ],
+  "localization": {
+    "newKeys": 8,
+    "englishFallbacks": true,
+    "sharedLanguagePackIntegration": "pending"
+  },
+  "environment": "Local Chromium/WebGL harness, low graphics quality; no physical-device benchmark",
+  "deployment": "Not deployed; no commit or push"
+}

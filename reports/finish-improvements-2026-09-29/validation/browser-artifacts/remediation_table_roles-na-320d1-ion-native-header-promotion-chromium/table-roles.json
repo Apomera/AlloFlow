@@ -1,0 +1,45 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0128479657387581,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "source": {
+    "row": {
+      "role": "row",
+      "name": "",
+      "ignored": false
+    },
+    "datum": {
+      "role": "cell",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "candidate": {
+    "row": {
+      "role": "row",
+      "name": "",
+      "ignored": false
+    },
+    "datum": {
+      "role": "rowheader",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "repaired": {
+    "row": {
+      "role": "row",
+      "name": "",
+      "ignored": false
+    },
+    "datum": {
+      "role": "rowheader",
+      "name": "95",
+      "ignored": false
+    }
+  }
+}

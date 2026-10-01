@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-09-29T04:01:56.167Z",
+  "scope": "local-reader-source-output-and-hosts",
+  "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "startHead": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "endHead": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "compiler": {
+    "babelVersion": "7.29.7",
+    "jsxPluginVersion": "7.28.6"
+  },
+  "expectedModuleSha256": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2",
+  "files": {
+    "reader_place_store.js": {
+      "bytes": 27122,
+      "sha256": "c5aa39b82eab0eb98f215db2e338dc169b5e0a102b933e1e69a245fcbda7a7c3"
+    },
+    "reader_support_drafts.js": {
+      "bytes": 2224,
+      "sha256": "daf73f9b4eebf918804fcaf24fea9c46db32316bd07664ca9b95af0c7c14cace"
+    },
+    "view_simplified_source.jsx": {
+      "bytes": 601772,
+      "sha256": "c85096b0b6f81330f41dd6f37de9ced5dcf86c7744e34274a32372457deaa2ac"
+    },
+    "view_simplified_module.js": {
+      "bytes": 576911,
+      "sha256": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2"
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "bytes": 576911,
+      "sha256": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2"
+    },
+    "AlloFlowANTI.txt": {
+      "bytes": 2819931,
+      "sha256": "31cb9d270f861c3c66a1ac9810c3c388edec7ccb6fab970e277b4a7cb9075c97"
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "bytes": 2819931,
+      "sha256": "31cb9d270f861c3c66a1ac9810c3c388edec7ccb6fab970e277b4a7cb9075c97"
+    },
+    "desktop/web-app/src/App.jsx": {
+      "bytes": 2819931,
+      "sha256": "31cb9d270f861c3c66a1ac9810c3c388edec7ccb6fab970e277b4a7cb9075c97"
+    },
+    "_build_view_simplified_module.js": {
+      "bytes": 1975,
+      "sha256": "48eb897aca9572b99df1c1e0bd95231bbcb7503ad0001240fb0edfe8b27857df"
+    },
+    "dev-tools/lib/reader_compiler.cjs": {
+      "bytes": 2234,
+      "sha256": "841513185ccf65337a8eed7b69a951937eb581700345f39381560d81399d345a"
+    },
+    "dev-tools/check_reader_release.cjs": {
+      "bytes": 7873,
+      "sha256": "76c7da24d28af2616ee8a4412f4e9a4ae851dc73b7369e3e8b74c4a6b02820ab"
+    }
+  },
+  "mirrorsMatch": true,
+  "hostsMatch": true,
+  "pins": {
+    "AlloFlowANTI.txt": [
+      {
+        "line": 14804,
+        "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=86029309"
+      }
+    ],
+    "desktop/web-app/src/AlloFlowANTI.txt": [
+      {
+        "line": 14804,
+        "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=86029309"
+      }
+    ],
+    "desktop/web-app/src/App.jsx": [
+      {
+        "line": 14804,
+        "url": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=86029309"
+      }
+    ]
+  },
+  "changedDuringCheck": [],
+  "ok": true,
+  "errors": [],
+  "limits": [
+    "Does not verify app-shell builds, every module, locales, runtime behavior or deployed bytes.",
+    "HEAD identifies Git history; file hashes identify this working snapshot. No clean-working-tree claim.",
+    "Concurrent edits after this check require revalidation."
+  ]
+}

@@ -2866,7 +2866,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                                   // instrumenting the year showed income was never the problem.
                                   // Consumption was 7x life and varroa grew 4x too fast; those two
                                   // were what made honey impossible.
-    pollenPerForager: 0.00008,    // lbs pollen per forager per day (base)
+    pollenPerForager: 0.00025,    // lbs pollen per forager per day (base). Was 0.00008: stores ran
+                                  // dry by ~day 14 and the pollen gate held the colony near 16k all
+                                  // year (the Outlook read "critical" on ~94% of days). Scaled with
+                                  // the seasonal pollenMult curve below.
+    // Seasons (0 spring .. 3 winter) each random hive event can happen in. Events used to be drawn
+    // uniformly, so a late spring frost struck in autumn, a nectar flow arrived in winter and a
+    // swarm could pour out of a winter cluster. Swarms now come ONLY from crowding (the Add Super
+    // lesson); winter has no random events, so it is the colony's own survival test.
+    eventSeasons: { varroa_spike: [1, 2], swarm: [], nectar_flow: [0, 1], pesticide_drift: [0, 1], bear_visit: [0, 1, 2], good_queen: [0, 1], robbing: [1, 2], heatwave: [1], drought: [1], late_frost: [0], flood: [0, 1, 2] },
+    // A queen ages: laying (and her pheromone) declines about 7 points a model year, faster under a
+    // heavy mite load or pesticide. Before, only formic acid ever lowered queen health, so Requeen was
+    // almost never worth it and a spotty brood pattern could not happen on its own.
+    queenAgingEveryDays: 12,      // lose 1 point every 12 brood-season days (~7.5 a year); queen health is
+                                  // stored as a whole number, so a fractional daily loss rounded away
+    queenStressVarroa: 40,        // above this mite load the queen declines faster (viruses, poor care)
+    supersedureBelow: 35,         // a failing queen this weak may be replaced by the colony itself
+    supersedureChance: 0.05,      // per spring/summer day while she is that weak
+    beesPerCapacityUnit: 250,     // crowding: workers / (capacity x this) > 1 drives swarm pressure.
+                                  // Was 350, a 28k threshold no colony in this 120-day year reached,
+                                  // so "Add Super" never mattered. At 250 an unsupered managed colony
+                                  // crowds near its peak and a super prevents it (simulated).
     honeyConsumePerWorker: 0.00002, // lbs honey per worker per day. Was 0.00015 = 7.2 lb/day at
                                   // 40k workers, roughly 7x life; now ~0.96 lb/day.
     pollenConsumePerBrood: 0.0001,  // lbs pollen consumed per brood per day
@@ -2926,9 +2946,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // colony over a year or two, with autumn as the crisis point. These values put 0 to 100 at
     // roughly 300 days of brood rearing, so treatment is a season-long judgement rather than a
     // forced move in week three.
-    varroaGrowthBase: 0.12,
-    varroaGrowthPerBrood: 20000,  // scale factor for brood-driven varroa growth
-    varroaDecayNoBrood: -0.5,
+    // Mites multiply in proportion to the mites already there (they reproduce in capped brood), so
+    // the load compounds: a colony at 20 gains mites twice as fast as one at 10, which is why
+    // treating EARLY pays. The old additive +0.12-0.3/day made the timing of a treatment irrelevant.
+    varroaGrowthRate: 0.015,      // per mite per day at the reference brood level (~46-day doubling)
+    varroaBroodRef: 12000,        // brood at which growth runs at the base rate (capped at 1.4x)
+    varroaImmigration: 0.02,      // mites drifting in from other colonies each foraging day
+    varroaBroodBreak: 1500,       // below this much brood, mites cannot breed and slowly die off
+    varroaBroodlessDecay: 0.01,   // fraction of mites lost per broodless day
     pesticideChronicDivisor: 1000,
     pesticideVarroaBoost: 0.2,
     pesticideDecayPerDay: 0.3,
@@ -3579,7 +3604,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
   // Reproducibility contract for the daily Beekeeper model. Bump the version
   // whenever equations, event ordering, or the PRNG algorithm change.
-  var BEEHIVE_COLONY_MODEL_VERSION = 'colony-daily-1.0';
+  // 1.1 (2026-09-28): exponential varroa, seasonal pollen and events, queen aging + supersedure, syrup kept
+  // apart from honey, pesticide risk. Runs saved under 1.0 compare as a different model.
+  var BEEHIVE_COLONY_MODEL_VERSION = 'colony-daily-1.1';
   var BEEHIVE_DEFAULT_SEED = 0x0BEE2026;
 
   function bhNormalizeSeed(value) {
@@ -3622,12 +3649,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   }
 
   // Frozen classroom evidence: never infer causation or mix separate simulation runs.
-  function bhThermoEstimate(iq) { return iq.outsideC + iq.broodCount * 0.0008 - iq.beesFanning * 0.04; }
+  // Heater bees shiver their flight muscles to warm the brood nest; fanners cool it. (Brood makes little
+  // heat itself: the old estimate warmed the hive by brood count, so only cooling was the bees' doing.)
+  var BH_THERMO_DEFAULTS = { outsideC: 20, beesFanning: 30, heaterBees: 1200 };
+  function bhThermoEstimate(iq) {
+    var heaters = typeof iq.heaterBees === 'number' ? iq.heaterBees : BH_THERMO_DEFAULTS.heaterBees;
+    return iq.outsideC + heaters * 0.009 - iq.beesFanning * 0.04;
+  }
   function bhWaggleReading(value) {
     var v = value || {};
     var dance = Number.isFinite(v.dance) ? Math.max(-180, Math.min(180, v.dance)) : 45;
     var sun = Number.isFinite(v.sun) ? ((v.sun % 360) + 360) % 360 : 90;
     return { dance: dance, sun: sun, food: ((sun + dance) % 360 + 360) % 360 };
+  }
+  // One source for BOTH waggle diagram panels: the comb dance and the overhead map read the same
+  // sun bearing, dance angle and run duration, so they cannot disagree. (They did: the map put the
+  // flower ~90 degrees from the sun whatever angle the comb showed.) seconds = animation clock;
+  // lab = the student's waggle-lab dials, when they have set them.
+  var BH_WAGGLE_DEMO_SITES = [{ food: 60, distM: 1200 }, { food: 300, distM: 2600 }, { food: 160, distM: 700 }, { food: 230, distM: 3500 }];
+  var BH_WAGGLE_RETURN_SEC = 1.2;
+  function bhWaggleDemoState(seconds, lab) {
+    var t = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+    var site = BH_WAGGLE_DEMO_SITES[Math.floor(t / 14) % BH_WAGGLE_DEMO_SITES.length];
+    var sun, dance, source;
+    if (lab && (Number.isFinite(lab.dance) || Number.isFinite(lab.sun))) {
+      var r = bhWaggleReading(lab);
+      sun = r.sun; dance = r.dance; source = 'lab';
+    } else {
+      // The sun crosses the southern sky (east 90 -> south 180 -> west 270) over about two minutes.
+      sun = Math.round(180 + 80 * Math.sin(t * 0.05));
+      dance = ((site.food - sun) % 360 + 540) % 360 - 180;
+      source = 'demo';
+    }
+    var runSec = Math.max(0.4, Math.min(4.5, site.distM / 1000)); // ~1 s of waggle per km
+    var cycle = runSec + BH_WAGGLE_RETURN_SEC;
+    var within = t % 14;
+    var k = Math.floor(within / cycle);
+    var into = within - k * cycle;
+    var running = into < runSec;
+    return {
+      source: source, sun: sun, dance: dance, food: ((sun + dance) % 360 + 360) % 360,
+      distM: site.distM, runSec: runSec, returnSec: BH_WAGGLE_RETURN_SEC,
+      phase: running ? 'run' : 'return', progress: running ? into / runSec : (into - runSec) / BH_WAGGLE_RETURN_SEC,
+      side: k % 2 === 0 ? 1 : -1
+    };
   }
   function bhDiscoveryComparison(before, after) {
     function valid(s) {
@@ -3655,7 +3720,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     if (!comparison || comparison.error || !Array.isArray(comparison.rows)) return '';
     return comparison.beforeLabel + ' → ' + comparison.afterLabel + '. ' + comparison.rows.map(function(row) {
       return row.label + ': ' + row.before + ' → ' + row.after + ' ' + row.unit + ' (' + (row.delta > 0 ? '+' : '') + row.delta + ' ' + (row.deltaUnit || row.unit) + (row.angle ? ', shortest turn' : '') + ')';
-    }).join('; ') + '. These readings show a change, not its cause.';
+    }).join('; ') + (comparison.unchanged ? '. No measured change in this trial. A null result alone does not establish its cause.' : '. These readings show a change, not its cause.');
+  }
+
+  // An observation from a previous run is not evidence from the active run.
+  // A deliberately captured null result is still evidence: changing a condition
+  // need not change the measured outcome.
+  function bhDiscoveryEvidenceReadiness(record, currentSnapshot) {
+    record = record || {};
+    if (!record.observation || bhDiscoveryComparison(record.snapshot, record.snapshot).error) return { ready: false, reason: 'capture', comparison: null };
+    var current = bhDiscoveryComparison(record.snapshot, currentSnapshot);
+    if (current.error) return { ready: false, reason: current.error, comparison: null };
+    var captured = record.comparison;
+    var capturedValid = captured && !captured.error && captured.beforeLabel === record.snapshot.label && typeof captured.afterLabel === 'string' && Array.isArray(captured.rows) && captured.rows.length === record.snapshot.metrics.length &&
+      captured.rows.every(function(row) {
+        if (!row || typeof row !== 'object') return false;
+        var metric = record.snapshot.metrics.find(function(item) { return item.id === row.id; });
+        if (!metric || row.label !== metric.label || row.before !== metric.value || row.unit !== metric.unit || !!row.angle !== !!metric.angle || !Number.isFinite(row.after) || !Number.isFinite(row.delta)) return false;
+        var delta = row.after - row.before;
+        if (metric.angle) delta = ((delta + 180) % 360 + 360) % 360 - 180;
+        return row.delta === Math.round(delta * 1000) / 1000;
+      }) && new Set(captured.rows.map(function(row) { return row.id; })).size === captured.rows.length && captured.unchanged === captured.rows.every(function(row) { return row.delta === 0; });
+    var ready = !!capturedValid || currentSnapshot.clock > record.snapshot.clock;
+    return { ready: ready, reason: ready ? 'ready' : 'compare', captured: !!capturedValid, comparison: capturedValid ? captured : current };
+  }
+
+  function bhDiscoveryFoodTrend(historyValue, currentDay, currentHoney) {
+    var byDay = new Map();
+    (Array.isArray(historyValue) ? historyValue : []).forEach(function(sample) {
+      if (!sample || typeof sample !== 'object') return;
+      var dayValue = Number.isFinite(sample.day) ? sample.day : sample.d;
+      var honeyValue = Number.isFinite(sample.honey) ? sample.honey : sample.h;
+      if (Number.isFinite(dayValue) && dayValue >= 0 && dayValue < currentDay && Number.isFinite(honeyValue) && honeyValue >= 0) byDay.set(dayValue, { day: dayValue, honey: honeyValue });
+    });
+    return Array.from(byDay.values()).sort(function(a, b) { return a.day - b.day; }).slice(-11).concat([{ day: currentDay, honey: currentHoney }]);
   }
 
 
@@ -3669,7 +3767,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var currentDay = Math.floor(bhBoundedNumber(s.day, 0, 0, 10000000));
     var adoptedDay = Math.floor(bhBoundedNumber(s.seededFromDay, currentDay, 0, currentDay));
     return {
-      modelVersion: BEEHIVE_COLONY_MODEL_VERSION,
+      // Keep the version that actually produced the saved colony. Merely
+      // opening an older run must not label its past outcomes with new rules.
+      modelVersion: bhExperimentText(s.modelVersion, BEEHIVE_COLONY_MODEL_VERSION, 64),
       simulationSeed: seed,
       randomState: bhNormalizeSeed(s.randomState == null ? seed : s.randomState),
       runSerial: bhExperimentRunSerial(s.experimentRunSerial),
@@ -3686,7 +3786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100,
       modelVersion: BEEHIVE_COLONY_MODEL_VERSION, simulationSeed: normalizedSeed,
       randomState: normalizedSeed, experimentRunSerial: bhExperimentRunSerial(runSerial), seededFromDay: 0,
-      honey: 20, pollen: 15, wax: 5, varroaLevel: 5, diseaseRisk: 0,
+      honey: 20, syrup: 0, pollen: 15, wax: 5, varroaLevel: 5, diseaseRisk: 0,
       morale: 80, foragingEfficiency: 70, pesticideExposure: 0, habitat: 50,
       capacity: 80, winterized: false, score: 0, colonySurvived: true,
       actionPoints: 3, totalHoney: 0, totalHarvested: 0, totalFlowerVisits: 0,
@@ -3694,9 +3794,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       eventsHandled: 0, weatherEventsHandled: 0, varroaTreats: 0,
       hygieneActions: 0, conservationsDone: 0, splitsMade: 0, supersAdded: 0,
       varietals: {}, treatmentsUsed: {}, conservationCounts: {},
-      eventLog: [], history: [], journal: [], yearReviewsSeen: [],
+      eventLog: [], history: [], journal: [], yearReviewsSeen: [], yearLedger: {},
       activeEvent: null, lastAdvance: null, lastManagement: null,
-      managementTrail: [], pendingTreatment: null, showTreatModal: false,
+      managementTrail: [], managementHistory: { schemaVersion: 1, retainedCount: 0, omittedCount: 0, complete: true }, pendingTreatment: null, showTreatModal: false,
       seasonGoals: null, quizOpen: false, quizIdx: 0, quizScore: 0,
       quizAnswered: 0, quizFeedback: null, quizQuestions: null,
       inDearth: false, starving: false, lowStores: false,
@@ -3827,6 +3927,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return Math.round(bounded * scale) / scale;
   }
 
+  // A bounded trail is useful for review, but cannot establish a full-run
+  // one-change comparison after older choices have been discarded.
+  function bhManagementHistory(value, trailValue) {
+    var source = value && typeof value === 'object' && !Array.isArray(value) && value.schemaVersion === 1 ? value : null;
+    var trail = Array.isArray(trailValue) ? trailValue : [];
+    var dropped = Math.max(0, trail.length - 24);
+    var omitted;
+    if (source) {
+      omitted = typeof source.omittedCount === 'number' && Number.isFinite(source.omittedCount) && source.omittedCount >= 0
+        ? Math.floor(bhBoundedNumber(source.omittedCount, 0, 0, 10000000)) + dropped
+        : null;
+    } else {
+      // A legacy save at the old cap may already have lost any number of
+      // earlier actions. A longer supplied trail has a known truncation.
+      omitted = trail.length === 24 ? null : dropped;
+    }
+    return {
+      schemaVersion: 1,
+      retainedCount: Math.min(trail.length, 24),
+      omittedCount: omitted,
+      complete: omitted === 0 && (source ? source.complete === true : trail.length < 24)
+    };
+  }
+
+  function bhAppendManagementAction(state, action) {
+    var s = state || {};
+    var trail = Array.isArray(s.managementTrail) ? s.managementTrail : [];
+    var history = bhManagementHistory(s.managementHistory, trail);
+    var nextTrail = trail.slice(-24).concat([action]);
+    s.managementHistory = bhManagementHistory(history, nextTrail);
+    s.managementTrail = nextTrail.slice(-24);
+    return s;
+  }
+
+  function bhManagementHistoryDetail(management) {
+    function describe(history, label) {
+      if (history.complete) return label + ': all choices retained';
+      return label + ': ' + (history.omittedCount == null
+        ? 'earlier choice history unverified'
+        : history.omittedCount + ' earlier choice' + (history.omittedCount === 1 ? '' : 's') + ' omitted');
+    }
+    return describe(management.baselineHistory, 'Run A') + '; ' + describe(management.currentHistory, 'Run B') + '. Only retained choices can be compared; earlier differences cannot be ruled out.';
+  }
+
   function bhCreateExperimentSnapshot(state) {
     var s = state || {};
     var provenance = bhExperimentProvenance(s);
@@ -3860,13 +4004,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         totalHarvested: bhExperimentNumber(s.totalHarvested, 0, 0, 100000000, 1),
         eventsHandled: Math.floor(bhBoundedNumber(s.eventsHandled, 0, 0, 10000000))
       },
+      managementHistory: bhManagementHistory(s.managementHistory, trail),
       managementTrail: trail.slice(-24).map(function(entry) {
         var item = entry && typeof entry === 'object' ? entry : {};
         return {
           day: Math.floor(bhBoundedNumber(item.day, 0, 0, capturedDay)),
           label: bhExperimentText(item.label, 'Management action', 80),
           cost: bhExperimentText(item.cost, '', 32),
-          choiceId: bhManagementActionPlanId(item),
+          choiceId: bhExperimentText(item.choiceId, '', 80).toLowerCase(),
           summary: bhExperimentText(item.summary, '', 220)
         };
       })
@@ -3902,7 +4047,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       totalHoney: totals.totalHoney,
       totalHarvested: totals.totalHarvested,
       eventsHandled: totals.eventsHandled,
-      managementTrail: value.managementTrail
+      managementTrail: value.managementTrail,
+      managementHistory: value.managementHistory
     });
     // Be conservative with imported or older checkpoints: only an explicit
     // true may claim that repeatable tracking began at Day 0.
@@ -3918,17 +4064,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         day: Math.floor(bhBoundedNumber(item.day, 0, 0, 10000000)),
         label: bhExperimentText(item.label, 'Management action', 80),
         cost: bhExperimentText(item.cost, '', 32),
-        choiceId: bhManagementActionPlanId(item)
+        choiceId: bhExperimentText(item.choiceId, '', 80).toLowerCase()
       };
     });
   }
 
   // Finds the smallest recorded action-sequence difference. One edit represents
   // an added, omitted, retimed, or replaced management choice.
-  function bhCompareManagementTrails(baselineValue, currentValue) {
+  function bhCompareManagementTrails(baselineValue, currentValue, baselineHistoryValue, currentHistoryValue) {
     var baseline = bhNormalizeManagementTrail(baselineValue);
     var current = bhNormalizeManagementTrail(currentValue);
-    function token(action) { return action.day + '|' + action.label.toLowerCase(); }
+    var baselineHistory = bhManagementHistory(baselineHistoryValue, baselineValue);
+    var currentHistory = bhManagementHistory(currentHistoryValue, currentValue);
+    var historyComplete = baselineHistory.complete && currentHistory.complete;
+    function sameAction(a, b) {
+      if (a.day !== b.day || a.cost.toLowerCase().replace(/\s+/g, ' ') !== b.cost.toLowerCase().replace(/\s+/g, ' ')) return false;
+      if (a.choiceId && b.choiceId) {
+        if (a.choiceId !== b.choiceId) return false;
+        // These IDs identify a category, not the treatment or honey variety.
+        if (a.choiceId !== 'varroa_treatment' && a.choiceId !== 'harvest_honey') return true;
+      }
+      return a.label.toLowerCase() === b.label.toLowerCase();
+    }
     var rows = [];
     var i;
     var j;
@@ -3939,7 +4096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     for (j = 0; j <= current.length; j += 1) rows[0][j] = j;
     for (i = 1; i <= baseline.length; i += 1) {
       for (j = 1; j <= current.length; j += 1) {
-        var substitution = rows[i - 1][j - 1] + (token(baseline[i - 1]) === token(current[j - 1]) ? 0 : 1);
+        var substitution = rows[i - 1][j - 1] + (sameAction(baseline[i - 1], current[j - 1]) ? 0 : 1);
         rows[i][j] = Math.min(substitution, rows[i - 1][j] + 1, rows[i][j - 1] + 1);
       }
     }
@@ -3947,7 +4104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     i = baseline.length;
     j = current.length;
     while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && token(baseline[i - 1]) === token(current[j - 1]) && rows[i][j] === rows[i - 1][j - 1]) {
+      if (i > 0 && j > 0 && sameAction(baseline[i - 1], current[j - 1]) && rows[i][j] === rows[i - 1][j - 1]) {
         i -= 1;
         j -= 1;
       } else if (i > 0 && j > 0 && rows[i][j] === rows[i - 1][j - 1] + 1) {
@@ -3965,7 +4122,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     differences.reverse();
     var differenceCount = differences.length;
     return {
-      status: differenceCount === 0 ? 'identical' : differenceCount === 1 ? 'one-change' : 'multiple-changes',
+      status: !historyComplete ? 'incomplete-history' : differenceCount === 0 ? 'identical' : differenceCount === 1 ? 'one-change' : 'multiple-changes',
+      retainedStatus: differenceCount === 0 ? 'identical' : differenceCount === 1 ? 'one-change' : 'multiple-changes',
+      historyComplete: historyComplete,
+      baselineHistory: baselineHistory,
+      currentHistory: currentHistory,
       differenceCount: differenceCount,
       baselineCount: baseline.length,
       currentCount: current.length,
@@ -4025,7 +4186,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var sharedManagementDay = Math.min(baseline.capturedDay, current.capturedDay);
     var management = bhCompareManagementTrails(
       baseline.managementTrail.filter(function(action) { return action.day <= sharedManagementDay; }),
-      current.managementTrail.filter(function(action) { return action.day <= sharedManagementDay; })
+      current.managementTrail.filter(function(action) { return action.day <= sharedManagementDay; }),
+      baseline.managementHistory,
+      current.managementHistory
     );
     management.comparedThroughDay = sharedManagementDay;
     management.checkpointAligned = dayCheck.matched;
@@ -4185,6 +4348,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return normalized;
   }
 
+  // A navigation guide uses the same readiness flags as the evidence audit.
+  // Its actions open or focus controls; they never change a run or its evidence.
+  function bhExperimentNextStep(notebookValue, comparisonValue, dayValue) {
+    var notebook = bhNormalizeExperimentNotebook(notebookValue);
+    var comparison = comparisonValue && typeof comparisonValue === 'object' ? comparisonValue : null;
+    var missing = bhExperimentPlanMissing(notebook);
+    function step(id, title, detail, action, target) {
+      return { id: id, title: title, detail: detail, action: action, target: target };
+    }
+    function fieldTarget(id) {
+      if (id === 'plannedActionId') return '[data-experiment-planned-action]';
+      if (id === 'predictedMetricId') return '[data-experiment-prediction-metric]';
+      if (id === 'predictedDirection') return '[data-experiment-prediction-direction]';
+      return '[data-experiment-notebook-field="' + id + '"]';
+    }
+    if (missing.length) return step('plan', 'Complete your plan', 'Still needed: ' + missing.map(function(field) { return field.label; }).join(', ') + '. Record your intention before Run B begins.', 'Open the next planning item', fieldTarget(missing[0].id));
+    if (!comparison) return Number(dayValue) > 0
+      ? step('baseline', 'Save the Run A checkpoint', 'Save the outcome you want to compare. The plan and Run A stay available when you restart.', 'Go to Save Run A', '[data-experiment-baseline-save="save"]')
+      : step('baseline', 'Observe Run A first', 'Advance the colony at least one day, then save a checkpoint for the repeat trial.', 'Go to time controls', '#beehive-next-day');
+    if (!comparison.distinctRuns) return step('repeat', 'Start your separate Run B', 'Your plan is complete. The restart records it and keeps Run A for comparison.', 'Review Start Run B', '[data-experiment-start-run-b]');
+    if (!comparison.controlledSetup) return step('controls', 'Review the unmatched controls', 'A different model, seed, stock, site, or incomplete tracking can explain the outcome. Review the first unmatched check before continuing.', 'Go to the unmatched check', '[data-experiment-check][data-experiment-check-result="different"]');
+    if (!comparison.planRegistration || comparison.planRegistration.status !== 'matched') return step('registration', 'Record this plan before a new Run B', 'Your current plan was not protected before this Run B. Review the restart control to repeat with the complete current plan.', 'Review Run B restart', '[data-experiment-restart-run-b]');
+    var targetDay = comparison.baseline.capturedDay;
+    var currentDay = comparison.current.capturedDay;
+    if (currentDay > targetDay) return step('overshot', 'Run B passed the checkpoint', 'Run B is at Day ' + currentDay + '; Run A is saved at Day ' + targetDay + '. Restart Run B and stop at the saved day for a fair comparison.', 'Review Run B restart', '[data-experiment-restart-run-b]');
+    if (currentDay < targetDay) return step('checkpoint', 'Continue Run B to Day ' + targetDay, 'There are ' + (targetDay - currentDay) + ' days left. Follow the planned change and keep every other management choice aligned; check events before advancing.', 'Go to time controls', '#beehive-next-day');
+    if (comparison.management && comparison.management.status === 'incomplete-history') return step('history', 'Review the incomplete action history', 'The retained actions cannot establish that only one choice changed. Review the missing-history notice and preserve that limitation with your observations.', 'Go to the management audit', '[data-experiment-management-audit]');
+    if (!comparison.interpretationReady) return step('choice', 'Review the recorded management difference', 'The checkpoint is reached, but the recorded choices do not yet support the protected one-change comparison. Review the action audit before interpreting the metrics.', 'Go to the management audit', '[data-experiment-management-audit]');
+    var explanationMissing = ['observations', 'alternativeExplanation', 'conclusion'].filter(function(id) { return !String(notebook[id] || '').trim(); });
+    if (explanationMissing.length) return step('explain', 'Explain your matched result', 'Cite Run A and Run B values, consider an alternative explanation, and connect the result to your prediction. Either prediction outcome is useful evidence.', 'Open the next explanation item', fieldTarget(explanationMissing[0]));
+    var reviewMissing = ['singleVariable', 'numericEvidence', 'uncertainty'].filter(function(id) { return notebook.review[id] !== true; });
+    if (reviewMissing.length) return step('review', 'Review the evidence before sharing', 'Read the self-review checks against your written evidence. A checked box records your review; it does not prove cause.', 'Open the next self-review check', '[data-experiment-notebook-review-check="' + reviewMissing[0] + '"]');
+    return step('share', 'Your evidence record is ready to share', 'The protected comparison and written explanation are ready. Keep the model limits and alternative explanation with the record.', 'Go to Copy experiment record', '[data-beehive-copy-experiment]');
+  }
+
   function bhBuildExperimentEvidenceRecord(notebookValue, baselineValue, currentState) {
     var notebook = bhNormalizeExperimentNotebook(notebookValue);
     var comparison = bhCompareExperiments(baselineValue, currentState, notebook.plannedActionId, notebook);
@@ -4241,7 +4439,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       return lines.join('\n');
     }
     var statusLabel;
-    if (comparison.status === 'matched') {
+    if (comparison.management.status === 'incomplete-history') {
+      statusLabel = 'Management history incomplete - retained choices only';
+    } else if (comparison.status === 'matched') {
       if (comparison.management.status === 'one-change') {
         if (comparison.plannedChoice.status === 'matched') {
           statusLabel = comparison.planRegistration.status === 'matched'
@@ -4290,7 +4490,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     lines.push('- **Recovery:** ' + (comparison.planRegistration.status === 'matched' ? 'No timing repair needed.' : 'Complete the current plan and restart Run B to create a new protected copy.'));
     lines.push('');
     lines.push('### Management-choice audit');
-    lines.push('- **Recorded-choice result:** ' + (comparison.management.status === 'one-change' ? 'One difference' : comparison.management.status === 'identical' ? 'No differences' : comparison.management.differenceCount + ' differences'));
+    lines.push('- **Recorded-choice result:** ' + (comparison.management.status === 'incomplete-history' ? 'Incomplete history; ' + comparison.management.differenceCount + ' retained differences' : comparison.management.status === 'one-change' ? 'One difference' : comparison.management.status === 'identical' ? 'No differences' : comparison.management.differenceCount + ' differences'));
+    if (!comparison.management.historyComplete) lines.push('- **History coverage:** ' + bhManagementHistoryDetail(comparison.management));
     lines.push('- **Planned management choice:** ' + comparison.plannedChoice.plannedActionLabel);
     lines.push('- **Plan alignment:** ' + (comparison.plannedChoice.status === 'matched' ? 'Recorded change matches the plan' : comparison.plannedChoice.status === 'mismatched' ? 'Recorded change does not match the plan (' + comparison.plannedChoice.observedActionLabel + ')' : comparison.plannedChoice.status === 'unplanned' ? 'No structured planned choice selected' : 'Waiting for exactly one recorded difference'));
     lines.push('- **Audit scope:** ' + (comparison.matchedCheckpoint ? 'Final at the matched Day ' + comparison.management.comparedThroughDay + ' checkpoint' : 'Provisional through shared Day ' + comparison.management.comparedThroughDay));
@@ -4538,6 +4739,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return Math.max(min, Math.min(max, n));
   }
 
+  // Colony Network runs one bee year per match: 40 cycles, 10 each of spring, summer, autumn, winter.
+  var BH_QUEEN_SEASON_CYCLES = 10;
+  var BH_QUEEN_YEAR_CYCLES = BH_QUEEN_SEASON_CYCLES * 4;
+  function bhQueenSeason(cycle) { var c = Math.max(1, Math.floor(Number(cycle) || 0)); return Math.floor(((c - 1) % BH_QUEEN_YEAR_CYCLES) / BH_QUEEN_SEASON_CYCLES); }
+  // ── Year ledger: the year card's numbers are for ONE 120-day year, not lifetime totals ──
+  function bhYearTotals(b) {
+    b = b || {};
+    var v = {};
+    Object.keys(b.varietals || {}).forEach(function(id) { v[id] = (b.varietals[id] && b.varietals[id].lbs) || 0; });
+    return { harvested: b.totalHarvested || 0, varietalLbs: v, conservations: b.conservationsDone || 0, splits: b.splitsMade || 0,
+      totalHoney: b.totalHoney || 0, flowerVisits: b.totalFlowerVisits || 0 };
+  }
+  // Year k = days 120(k-1)+1 .. 120k. Start = the ledger's snapshot (year 1 starts at zero); end = next year's
+  // snapshot if the player has moved on, else now. Peaks and winter stores also read the day-by-day history.
+  function bhYearReport(d, k, P) {
+    d = d || {};
+    var led = d.yearLedger || {};
+    var entry = led[k] || null;
+    var yearStartDay = (k - 1) * 120;
+    var start = k === 1 ? bhYearTotals({}) : (entry && entry.start) || null;
+    var fromDay = k === 1 ? 0 : entry ? (typeof entry.fromDay === 'number' ? entry.fromDay : yearStartDay) : null;
+    var exact = !!start && fromDay === yearStartDay;
+    var base = start || bhYearTotals({});
+    var end = (led[k + 1] && led[k + 1].start) || bhYearTotals(d);
+    var hist = (d.history || []).filter(function(e) { return e && e.d > yearStartDay && e.d <= k * 120; });
+    var peakVarroa = Math.max(entry ? entry.peakVarroa || 0 : 0, hist.reduce(function(a, e) { return Math.max(a, typeof e.v === 'number' ? e.v : 0); }, 0));
+    var peakWorkers = Math.max(entry ? entry.peakWorkers || 0 : 0, hist.reduce(function(a, e) { return Math.max(a, e.w || 0); }, 0));
+    var winterHoney = entry && typeof entry.winterHoney === 'number' ? entry.winterHoney : null;
+    if (winterHoney === null) { var wh = hist.filter(function(e) { return e.d === yearStartDay + 90; })[0]; if (wh && typeof wh.h === 'number') winterHoney = wh.h; }
+    var r1 = function(x) { return Math.round(x * 10) / 10; };
+    return {
+      year: k, exact: exact, fromDay: exact ? yearStartDay : (fromDay === null ? 0 : fromDay),
+      harvested: r1(Math.max(0, end.harvested - base.harvested)),
+      varietals: Object.keys(end.varietalLbs).filter(function(id) { return end.varietalLbs[id] > (base.varietalLbs[id] || 0); }).length,
+      conservations: Math.max(0, end.conservations - base.conservations),
+      splits: Math.max(0, end.splits - base.splits),
+      totalHoney: r1(Math.max(0, end.totalHoney - base.totalHoney)),
+      flowerVisits: Math.max(0, end.flowerVisits - base.flowerVisits),
+      peakVarroa: Math.round(peakVarroa), peakWorkers: peakWorkers,
+      winterHoney: winterHoney === null ? null : r1(winterHoney),
+      winterNeed: ((P && P.seasonReserve) || [18, 25, 60, 45])[3]
+    };
+  }
   function bhStepColony(s, cfg) {
     var P = cfg.params, sub = cfg.subMods, site = cfg.siteMods, garden = cfg.gardenBonus || 0;
     var rand = cfg.rand || Math.random;
@@ -4571,14 +4815,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // barely covers its own consumption. That shape lets a good summer day genuinely add
     // several pounds while the year still totals what a real hive totals.
     var sf = [
-      { broodRate: 1.1, forageMult: 0.45, consumeRate: 0.9, mortMult: 1.0 },
-      { broodRate: 1.2, forageMult: 1.3, consumeRate: 1.0, mortMult: 1.15 },
+      // pollenMult is separate from forageMult: spring is pollen-rich (willow, maple, dandelion)
+      // even while nectar is thin, and that pollen is what fuels the spring buildup.
+      { broodRate: 1.1, forageMult: 0.45, pollenMult: 1.0, consumeRate: 0.9, mortMult: 1.0 },
+      { broodRate: 1.2, forageMult: 1.3, pollenMult: 1.2, consumeRate: 1.0, mortMult: 1.15 },
       // Autumn: the queen winds down hard, not gently. A real colony's population peaks around
       // midsummer and falls through autumn as summer bees die faster than they are replaced;
       // at broodRate 0.45 the sim peaked in AUTUMN instead, which inverts the year a beekeeper
       // is being taught to plan around.
-      { broodRate: 0.22, forageMult: 0.25, consumeRate: 0.8, mortMult: 0.9 },
-      { broodRate: 0.0, forageMult: 0.0, consumeRate: 0.45, mortMult: 0.35 }
+      { broodRate: 0.22, forageMult: 0.25, pollenMult: 0.35, consumeRate: 0.8, mortMult: 0.9 },
+      { broodRate: 0.0, forageMult: 0.0, pollenMult: 0, consumeRate: 0.45, mortMult: 0.35 }
     ][season];
 
     // The dearth overlays the seasonal shape: same calendar, but the flow genuinely stops for a
@@ -4588,11 +4834,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var inDearth = P.dearthStartDay !== undefined
       && dayOfYear >= P.dearthStartDay && dayOfYear < P.dearthEndDay;
     var forageMult = inDearth ? Math.min(sf.forageMult, P.dearthForageMult) : sf.forageMult;
+    // Site forage calendars: coastal blueberry barrens give a massive but brief early-summer flow
+    // (thinner forage the rest of the year); a mountain valley's season ends early.
+    if (site.summerFlow && season === 1) forageMult *= dayOfYear < 45 ? site.summerFlow : 0.85;
+    if (site.shortSeason && season === 2) forageMult *= site.shortSeason;
 
     var eff = (fe + garden) / 100;
     var foragers = Math.round(workers * P.foragerRatio);
     var nectarIn = foragers * P.nectarPerForager * forageMult * eff * sub.honey * site.forage;
-    var pollenIn = foragers * P.pollenPerForager * forageMult * eff * site.forage;
+    var pollenForage = inDearth ? Math.min(sf.pollenMult, P.dearthForageMult) : sf.pollenMult;
+    var pollenIn = foragers * P.pollenPerForager * pollenForage * eff * site.forage;
     // A wrapped, insulated hive with a mouse guard burns less honey holding the cluster at
     // temperature and loses fewer bees to cold — which is the margin between 60 lbs of stores
     // being enough and not. Only applies in the cold half of the year; wrapping in June would
@@ -4618,7 +4869,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var dying = Math.round(workers * P.baseWorkerMortality * sf.mortMult * winterMod
       * (winterized ? P.winterizedMortalityMult : 1) * (1 + varroa / P.varroaMortalityDivisor));
     var dyingD = season === 2 ? Math.round(drones * P.droneEvictionRate) : Math.round(drones * P.droneBaseMortality);
-    var vGrow = brood > 0 ? P.varroaGrowthBase * (1 + brood / P.varroaGrowthPerBrood) * sub.varroa : P.varroaDecayNoBrood;
+    var vGrow = brood >= P.varroaBroodBreak
+      ? varroa * P.varroaGrowthRate * Math.min(1.4, brood / P.varroaBroodRef) * sub.varroa * (site.varroa || 1) + (season < 3 ? P.varroaImmigration : 0)
+      : -varroa * P.varroaBroodlessDecay; // a brood break (winter, a split, a requeen gap) starves the mites
     var nv = Math.max(0, Math.min(100, varroa + vGrow));
     if (pest > 20) { dying += Math.round(workers * pest / P.pesticideChronicDivisor); nv = Math.min(100, nv + P.pesticideVarroaBoost); }
     if (habitat > P.habitatBoostThreshold) { nectarIn *= P.habitatBoostMult; pollenIn *= P.habitatBoostMult; }
@@ -4647,17 +4900,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
     if (day > 3 && !s.activeEvent) {
       // Crowding-driven swarm: supers raise capacity, which lowers this risk —
-      // the mechanic the "Add Super" button/tutorial promise. ~350 bees per
-      // capacity unit; crowded colonies want to reproduce (swarm).
-      var crowdRatio = workers / Math.max(1, capacity * 350);
+      // the mechanic the "Add Super" button/tutorial promise. Crowded colonies
+      // want to reproduce (swarm). One constant shared with the forecast and
+      // the 3D bay's queen cells.
+      var crowdRatio = workers / Math.max(1, capacity * P.beesPerCapacityUnit);
       var swarmDef = null;
       for (var hi = 0; hi < cfg.hiveEvents.length; hi++) { if (cfg.hiveEvents[hi].id === 'swarm') { swarmDef = cfg.hiveEvents[hi]; break; } }
-      if (crowdRatio > 1 && swarmDef && rand() < Math.min(0.45, (crowdRatio - 1) * 0.5 + 0.06)) {
+      // Some stocks swarm more readily (Carniolan, Russian) and some were bred not to (Buckfast).
+      if (crowdRatio > 1 && swarmDef && rand() < Math.min(0.6, ((crowdRatio - 1) * 0.5 + 0.06) * (sub.swarm || 1))) {
         firedEvent = swarmDef;
       } else if (newDisease > 45 && rand() < 0.12) {
         firedEvent = cfg.diseaseEvents[Math.floor(rand() * cfg.diseaseEvents.length)];
       } else if (rand() < P.randomEventChance) {
-        firedEvent = cfg.hiveEvents[Math.floor(rand() * cfg.hiveEvents.length)];
+        var seasonTable = P.eventSeasons || {};
+        var seasonalPool = cfg.hiveEvents.filter(function(ev) { var allowed = seasonTable[ev.id]; return !allowed || allowed.indexOf(season) >= 0; });
+        var eventPick = rand(); // drawn even when the pool is empty, so the random stream stays aligned
+        // A forest-edge apiary gets more bear visits (the site card warns about them).
+        if (site.bear > 1) seasonalPool.filter(function(ev) { return ev.id === 'bear_visit'; }).forEach(function(ev) { for (var bi = 1; bi < site.bear; bi++) seasonalPool.push(ev); });
+        if (seasonalPool.length) firedEvent = seasonalPool[Math.floor(eventPick * seasonalPool.length)];
       }
       if (firedEvent && firedEvent.effect) {
         var e = firedEvent.effect;
@@ -4672,6 +4932,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         if (typeof e.queenHealth === 'number') wQH = Math.max(0, Math.min(100, wQH + e.queenHealth));
         if (typeof e.diseaseRisk === 'number') newDisease = Math.max(0, Math.min(100, newDisease + e.diseaseRisk));
         if (typeof e.pesticideExposure === 'number') pest = Math.max(0, Math.min(100, pest + e.pesticideExposure));
+      }
+    }
+
+    // ── Queen aging, and supersedure (the colony replacing a failing queen) ──
+    if (season < 3) {
+      if (day % P.queenAgingEveryDays === 0) wQH = Math.max(0, wQH - 1 - (varroa > P.queenStressVarroa ? 1 : 0) - (pest > 20 ? 1 : 0));
+      if (!firedEvent && season <= 1 && wQH < P.supersedureBelow && rand() < P.supersedureChance) {
+        // Workers raise a new queen from a young larva: a gap in laying while she emerges and
+        // mates, then a healthy queen. It is how a colony survives a failing queen.
+        firedEvent = { id: 'supersedure', emoji: '👑', label: 'Supersedure: a new queen', desc: 'The workers replaced your failing queen. They raised a new queen from a young larva, so brood rearing paused while she emerged and mated. Requeening yourself avoids the gap.', effect: {} };
+        wQH = 85;
+        wBrood = Math.round(wBrood * 0.6);
       }
     }
 
@@ -4725,7 +4997,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       // rounding, which is why this never showed up before.
       varroaLevel: Math.round(nv * 10) / 10,
       morale: Math.round(Math.max(0, Math.min(100, morale + md))),
-      foragingEfficiency: Math.round(wFE),
+      // Weather and poison damage to foraging fades (+1/day back toward 70). It used to be
+      // permanent, so most surviving colonies ended the year foraging at 0 efficiency.
+      foragingEfficiency: Math.round(wFE < 70 && !(firedEvent && firedEvent.effect && typeof firedEvent.effect.foragingEfficiency === 'number') ? Math.min(70, wFE + 1) : wFE),
       queenHealth: Math.round(wQH),
       pesticideExposure: Math.round(Math.max(0, Math.min(100, pest - P.pesticideDecayPerDay)) * 10) / 10,
       diseaseRisk: Math.round(newDisease * 10) / 10,
@@ -4776,7 +5050,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         pollen: result.next.pollen,
         varroaLevel: result.next.varroaLevel,
         diseaseRisk: result.next.diseaseRisk,
-        morale: result.next.morale
+        morale: result.next.morale,
+        pollenBroodReduced: result.next.pollenBroodReduced || 0
       });
       if (result.next.workers < 500 && result.next.day > 30) break;
     }
@@ -4828,6 +5103,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         'Stores move from ' + (start.honey || 0) + ' to ' + end.honey + ' lb.',
         'Watch the seasonal forage-to-consumption balance.');
     }
+    // Exposure above 20 kills workers x exposure / 1000 every day and fades 0.3 a day, so one
+    // drift event bleeds a colony for weeks. It was the leading cause of death in managed runs,
+    // yet it appeared only in the post-mortem, after the colony was gone.
+    var pestP = cfg.params || {};
+    var pestNow = Number(start.pesticideExposure) || 0;
+    if (pestNow > 20) {
+      var pestDailyPct = Math.round(pestNow / (pestP.pesticideChronicDivisor || 1000) * 1000) / 10;
+      var pestDays = Math.ceil((pestNow - 20) / (pestP.pesticideDecayPerDay || 0.3));
+      addRisk('pesticide', pestNow >= 30 ? 'critical' : 'watch', 'Pesticide poisoning',
+        'Exposure ' + Math.round(pestNow) + ' kills about ' + pestDailyPct + '% of the workers every day, for about '
+          + pestDays + ' more days until it falls below 20.',
+        'Advocate a no-spray zone (Conservation actions) to cut exposure now.');
+    }
     if (end.varroaLevel >= 35) {
       addRisk('varroa', 'critical', 'High varroa pressure',
         'Mite pressure reaches ' + end.varroaLevel + ' / 100, increasing mortality and virus transmission.',
@@ -4847,16 +5135,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         'Use hive hygiene and advance in shorter steps.');
     }
     var capacity = typeof s.capacity === 'number' ? s.capacity : 80;
-    var crowdRatio = end.workers / Math.max(1, capacity * 350);
+    var crowdRatio = end.workers / Math.max(1, capacity * ((cfg.params && cfg.params.beesPerCapacityUnit) || 250));
     if (crowdRatio > 1) {
       addRisk('crowding', crowdRatio >= 1.2 ? 'critical' : 'watch', 'Swarm pressure',
         'Projected workers exceed the current comb-capacity guideline.',
         'Add a honey super before the colony becomes crowded.');
     }
-    if (end.pollen < 5) {
-      addRisk('pollen', end.pollen < 2 ? 'critical' : 'watch', 'Low pollen stores',
-        'Pollen falls to ' + end.pollen + ' lb, limiting brood nutrition.',
-        'Improve diverse forage and avoid a long fast-forward.');
+    // Judge pollen by the HARM it does (eggs the nurses cannot feed), not by the store level. A
+    // growing colony spends pollen as fast as it arrives, so "stores under 2 lb" was true almost
+    // every day and the Outlook read "critical" on ~90% of days, which taught students to ignore it.
+    var pollenCutPerDay = timeline.length ? Math.round(timeline.reduce(function(sum, t) { return sum + (t.pollenBroodReduced || 0); }, 0) / timeline.length) : 0;
+    if (pollenCutPerDay >= 200) {
+      addRisk('pollen', pollenCutPerDay >= 600 ? 'critical' : 'watch', 'Pollen shortage',
+        'Nurses cannot feed about ' + pollenCutPerDay + ' eggs a day, so the brood nest shrinks (pollen is brood protein).',
+        'Improve diverse forage (plant a garden, protect habitat) and avoid a long fast-forward.');
     }
 
     risks.sort(function(a, b) {
@@ -5051,6 +5343,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // different silhouettes at this size, where 12 vs 14 sides would not.
   var BH_QUEEN_MARK_SIDES = [3, 4, 5, 6, 20];
   var BH_QUEEN_MARK_SHAPES = ['triangular', 'square', 'pentagonal', 'hexagonal', 'round'];
+  // Science view -> the Field Guide topic that goes deeper (the guide had no way in from the views).
+  var BH_VIEW_GUIDE_TOPIC = { anatomy: 'anatomy', physics: 'superpowers', lifecycle: 'roles', honey: 'honey', waggle: 'waggle', thermo: 'seasonal', castes: 'roles', pheromones: 'roles', threats: 'threats', pollination: 'pollination', equipment: 'tools', native: 'species', cognition: 'superpowers', vision: 'superpowers', propolis: 'honey', stingers: 'anatomy', buzz: 'superpowers' };
+  var BH_VISUALLY_HIDDEN = { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 };
+  var BH_QUEEN_SIGNAL_IDS = ['emit_qmp', 'alarm_signal', 'nasonov_call']; // the free signals: once per cycle each
   function bhQueenMarkIndex(year) {
     var y = typeof year === 'number' && isFinite(year) ? Math.floor(year) : 2026;
     return ((y % 10) % 5 + 5) % 5;
@@ -5810,7 +6106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var s = bhQueenMapStudy(raw), v = view || {}, selection = bhQueenMapInspection(v.patchId, v.colony);
     if (!s.patchId || !s.prediction) return 'Choose a study patch and make a prediction first.';
     if (!v.ready) return 'The 3D map must be ready before recording a visible route.';
-    if (Math.floor(((v.cycle || 0) % 120) / 30) === 3) return 'The game’s winter calendar hides routes. Keep these notes and return when routes are visible.';
+    if (bhQueenSeason((v.cycle || 0) + 1) === 3) return 'The game’s winter calendar hides routes. Keep these notes and return when routes are visible.';
     if (v.routes === false) return 'Turn on Forager routes to record a visible path.';
     if (!selection.patch || selection.patch.id !== s.patchId) return 'Show the study patch before recording.';
     if (selection.colony === 'both') return 'Show one colony at a time to compare their routes.';
@@ -6413,23 +6709,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // by concatenation ('bg-' + c + '-400') hides them from a content-scanning
         // Tailwind build, so the rarely-used 'sky' shade could purge and render a
         // colorless bar. A lookup to full literals is purge-safe.
-        var TRAIT_BAR_COLORS = { amber: 'bg-amber-400', green: 'bg-green-400', sky: 'bg-sky-400', red: 'bg-red-400' };
+        var TRAIT_BAR_COLORS = { amber: 'bg-amber-400', green: 'bg-green-400', sky: 'bg-sky-400', red: 'bg-red-400', violet: 'bg-violet-400' };
         var traitBarColor = function(c) { return TRAIT_BAR_COLORS[c] || 'bg-amber-400'; };
 
         // ── Bee Subspecies (real honeybee genetic stocks with authentic trade-offs) ──
         var SUBSPECIES = [
           { id: 'italian', name: __alloT('stem.beehive.italian', 'Italian'), sci: 'A. m. ligustica', emoji: '🟡', origin: 'Mediterranean Italy',
-            note: __alloT('stem.beehive.gold_striped_the_stock_honeybee_in_nor', 'Gold-striped. The "stock" honeybee in North America — what 90% of US keepers have. Gentle, prolific, great honey producers. Weaker winter hardiness; prone to robbing during dearth.'),
+            note: __alloT('stem.beehive.gold_striped_the_stock_honeybee_in_nor_v2', 'Gold-striped. The "stock" honeybee in North America — what 90% of US keepers have. Gentle, prolific, great honey producers. Weaker winter hardiness, and when nectar runs short they tend to rob other hives.'),
             mods: { honey: 1.10, spring: 1.00, winter: 0.92, varroa: 1.00 } },
           { id: 'carniolan', name: __alloT('stem.beehive.carniolan', 'Carniolan'), sci: 'A. m. carnica', emoji: '⚫', origin: 'Slovenia / Austrian Alps',
             note: __alloT('stem.beehive.dark_gray_the_sweetheart_bee_exception', 'Dark gray, "the sweetheart bee". Exceptional winter hardiness — clusters tight, consumes less honey. Explosive spring buildup. Swarms more when the hive gets crowded.'),
-            mods: { honey: 1.00, spring: 1.15, winter: 1.15, varroa: 1.00 } },
+            mods: { honey: 1.00, spring: 1.15, winter: 1.15, varroa: 1.00, swarm: 1.5 } },
           { id: 'russian', name: __alloT('stem.beehive.russian', 'Russian'), sci: 'Primorsky line', emoji: '🛡️', origin: 'Far East Russia',
             note: __alloT('stem.beehive.usda_bred_from_primorsky_region_bees_c', 'USDA-bred from Primorsky region bees. Co-evolved with varroa for 150 years — strong hygienic behavior. Slower buildup and lower peak honey. Ideal for hands-off IPM.'),
-            mods: { honey: 0.88, spring: 0.85, winter: 1.10, varroa: 0.60 } },
+            mods: { honey: 0.88, spring: 0.85, winter: 1.10, varroa: 0.60, swarm: 1.3 } },
           { id: 'buckfast', name: __alloT('stem.beehive.buckfast', 'Buckfast'), sci: 'hybrid', emoji: '✨', origin: 'Buckfast Abbey, England',
             note: __alloT('stem.beehive.brother_adam_s_century_long_hybrid_pro', 'Brother Adam\'s century-long hybrid program. Balanced everything: gentle, low-swarm, disease-resistant, productive. No trait is top-tier but none are weak.'),
-            mods: { honey: 1.05, spring: 1.05, winter: 1.05, varroa: 0.90 } },
+            mods: { honey: 1.05, spring: 1.05, winter: 1.05, varroa: 0.90, swarm: 0.6 } },
           { id: 'saskatraz', name: __alloT('stem.beehive.saskatraz', 'Saskatraz'), sci: 'hybrid', emoji: '❄️', origin: 'Saskatchewan, Canada',
             note: __alloT('stem.beehive.bred_for_prairie_canada_cold_tolerance', 'Bred for prairie Canada: cold tolerance + varroa/tracheal mite resistance. Excellent for cold-climate beekeeping (Maine, Minnesota, Scandinavia).'),
             mods: { honey: 0.95, spring: 1.00, winter: 1.20, varroa: 0.70 } }
@@ -6447,16 +6743,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             mods: { forage: 1.00, disease: 1.00 } },
           { id: 'forest_edge', name: __alloT('stem.beehive.forest_edge', 'Forest Edge'), emoji: '🌳',
             note: __alloT('stem.beehive.dappled_shade_with_strong_basswood_lin', 'Dappled shade with strong basswood/linden flow in July. Cooler mornings delay first foraging each day. Bears occasionally investigate — consider electric fencing.'),
-            mods: { forage: 0.92, disease: 0.90 } },
+            mods: { forage: 0.92, disease: 0.90, bear: 3 } },
           { id: 'urban', name: __alloT('stem.beehive.urban_rooftop', 'Urban Rooftop'), emoji: '🏙️',
             note: __alloT('stem.beehive.park_flowers_ornamental_gardens_no_far', 'Park flowers + ornamental gardens + NO farm spray. Heat island makes varroa reproduce faster and crowding raises disease risk. Urban bees actually thrive despite expectations.'),
-            mods: { forage: 0.88, disease: 1.10 } },
+            mods: { forage: 0.88, disease: 1.10, varroa: 1.25 } },
           { id: 'coastal', name: __alloT('stem.beehive.coastal_blueberry_barrens', 'Coastal Blueberry Barrens'), emoji: '🌊',
             note: __alloT('stem.beehive.wild_blueberry_barrens_yield_a_massive', 'Wild blueberry barrens yield a massive but brief July flow. Salt spray stresses wings; coastal wind cuts foraging on rough days. Year-round mild climate = gentler winters.'),
-            mods: { forage: 1.05, disease: 0.85 } },
+            mods: { forage: 1.05, disease: 0.85, summerFlow: 1.8 } },
           { id: 'mountain', name: __alloT('stem.beehive.mountain_valley', 'Mountain Valley'), emoji: '🏔️',
             note: __alloT('stem.beehive.alpine_meadows_bursting_with_wildflowe', 'Alpine meadows bursting with wildflowers. Cold nights suppress both disease and varroa. Shorter forage season — build fast or go hungry. Prized for varietal honeys.'),
-            mods: { forage: 0.95, disease: 0.70 } }
+            mods: { forage: 0.95, disease: 0.70, varroa: 0.8, shortSeason: 0.6 } }
         ];
         var activeSite = (function() {
           var wanted = d.apiarySite || 'meadow';
@@ -6705,7 +7001,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // ── Climate / Weather ──
           { q: 'Below what air temperature can honeybees no longer fly?', opts: ['~0°C (32°F)', '~10°C (50°F)', '~20°C (68°F)', '~25°C (77°F)'], ans: 1, explain: 'Below ~10°C, a honeybee\'s flight muscles can\'t generate enough heat to operate — she\'s grounded. A late spring frost after bloom can kill foragers caught out on warm afternoons, a leading cause of spring colony loss.' },
           // ── Pollination / Economics ──
-          { q: 'Approximately how many flower visits are needed to make one pound of honey?', opts: ['~20,000', '~200,000', '~2 million', '~20 million'], ans: 2, explain: 'About 2 million flower visits, flown by roughly 556 foragers over 55,000 cumulative miles, produce a single pound of honey. One worker bee produces ~1/12 teaspoon of honey in her entire 6-week life.' }
+          { q: 'Approximately how many flower visits are needed to make one pound of honey?', opts: ['~20,000', '~200,000', '~2 million', '~20 million'], ans: 2, explain: 'About 2 million flower visits, flown by roughly 780 foragers over 55,000 cumulative miles, produce a single pound of honey. One worker bee produces ~1/12 teaspoon of honey in her entire 6-week life.' }
         ];
 
         // ── Garden Bridge: Read pollinator plants from companion planting ──
@@ -6770,7 +7066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // Seasonal goals — what the student should aim for each season
         var SEASON_GOALS = [
-          { season: 'Spring', goals: ['Build workforce to 20,000+ workers', 'Keep varroa below 15%', 'Maintain at least ' + reserveTargets[0] + ' lbs honey'], emoji: '🌱' },
+          { season: 'Spring', goals: ['Build workforce to 20,000+ workers', 'Keep mite pressure under 15 points', 'Maintain at least ' + reserveTargets[0] + ' lbs honey'], emoji: '🌱' },
           { season: 'Summer', goals: ['Harvest only surplus; leave ' + reserveTargets[1] + ' lbs', 'Prevent swarming (add supers)', 'Maximize foraging (plant garden!)'], emoji: '☀️' },
           { season: 'Autumn', goals: ['Build ' + reserveTargets[2] + '+ lbs winter honey stores', 'Treat varroa before winter', 'Ensure queen health above 70%'], emoji: '🍂' },
           { season: 'Winter', goals: ['Colony survives with 10,000+ workers', 'Keep at least ' + reserveTargets[3] + ' lbs in reserve', 'Plan habitat improvements'], emoji: '❄️' }
@@ -6946,39 +7242,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var _beeGuideScrollRef = React.useRef(null);
         function renderFieldGuide() {
           if (!d.showGuide) return null;
-          var secId = d.guideSection || GUIDE_SECTIONS[0].id;
+          // Lesson plans, standards and answer-bearing math sit behind a toggle unless the host is in
+          // teacher mode (they were listed in the students' own topic menu).
+          var guideTeacher = !!(ctx && ctx.isTeacherMode) || !!d.guideShowTeacher;
+          var visibleSections = GUIDE_SECTIONS.filter(function(item) { return guideTeacher || !item.teacher; });
+          var teacherCount = GUIDE_SECTIONS.length - GUIDE_SECTIONS.filter(function(item) { return !item.teacher; }).length;
+          var secId = d.guideSection || visibleSections[0].id;
           var sec = null;
-          for (var i = 0; i < GUIDE_SECTIONS.length; i++) { if (GUIDE_SECTIONS[i].id === secId) { sec = GUIDE_SECTIONS[i]; break; } }
-          if (!sec) sec = GUIDE_SECTIONS[0];
+          for (var i = 0; i < visibleSections.length; i++) { if (visibleSections[i].id === secId) { sec = visibleSections[i]; break; } }
+          if (!sec) sec = visibleSections[0];
+          // Search across every visible section (the guide had 32 tabs and no way to find a word).
+          var guideQuery = String(d.guideQuery || '').trim().toLowerCase();
+          var guideHits = guideQuery.length >= 2 ? visibleSections.reduce(function(all, section) { (section.data || []).forEach(function(item, idx) { try { if (JSON.stringify(item).toLowerCase().indexOf(guideQuery) >= 0) all.push({ section: section, item: item, idx: idx }); } catch (e) {} }); return all; }, []) : null;
           var items = Array.isArray(sec.data) ? sec.data : [];
           function selectGuideSection(nextId) {
-            var nextSection = GUIDE_SECTIONS.filter(function(item) { return item.id === nextId; })[0] || GUIDE_SECTIONS[0];
+            var nextSection = visibleSections.filter(function(item) { return item.id === nextId; })[0] || visibleSections[0];
             upd('guideSection', nextSection.id);
             announceBee('Opened ' + nextSection.title + ', ' + nextSection.data.length + ' entries.', false);
             setTimeout(function() { if (_beeGuideScrollRef.current) _beeGuideScrollRef.current.scrollTop = 0; }, 0);
           }
           return h('section', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), id: 'beehive-field-guide', 'data-beehive-focus-panel': 'guide', tabIndex: -1, role: 'region', 'aria-labelledby': 'beehive-guide-title' },
             h('div', { className: 'flex items-center justify-between' },
-              h('h2', { id: 'beehive-guide-title', className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '📖 Field Guide · ' + GUIDE_SECTIONS.length + ' topics'),
+              h('h2', { id: 'beehive-guide-title', tabIndex: -1, className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '📖 Field Guide · ' + visibleSections.length + ' topics'),
               h('button', { type: 'button', onClick: function() { upd('showGuide', false); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[0.6875rem] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_field_guide', 'Close field guide') }, '✕')),
             h('div', { className: 'grid gap-1 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center' },
               h('label', { htmlFor: 'beehive-guide-topic-select', className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, 'Jump to a topic'),
               h('select', { id: 'beehive-guide-topic-select', value: sec.id, onChange: function(event) { selectGuideSection(event.target.value); }, 'aria-controls': 'beehive-guide-panel', className: 'min-h-[44px] w-full rounded-lg border px-3 py-2 text-sm font-bold ' + (dk ? 'border-slate-600 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900') },
                 h('optgroup', { label: 'Learning topics' }, GUIDE_SECTIONS.filter(function(item) { return !item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
-                h('optgroup', { label: 'Teacher resources' }, GUIDE_SECTIONS.filter(function(item) { return item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title + ' (teacher resource)'); })))),
+                guideTeacher && h('optgroup', { label: 'Teacher resources' }, GUIDE_SECTIONS.filter(function(item) { return item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title + ' (teacher resource)'); })))),
+            h('label', { className: 'block text-[0.6875rem] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, 'Search the field guide',
+              h('input', { type: 'search', value: d.guideQuery || '', 'data-beehive-guide-search': 'true', placeholder: 'e.g. propolis, varroa, waggle', onChange: function(event) { upd('guideQuery', String(event.target.value || '').slice(0, 60)); }, className: 'mt-1 block w-full min-h-[44px] rounded-lg border px-3 py-2 text-sm font-normal ' + (dk ? 'border-slate-600 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900') })),
             h('p', { id: 'beehive-guide-navigation-help', className: 'text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Choose a topic directly, or use the arrow keys in the scrollable topic tabs below.'),
             h('div', { className: 'flex gap-1.5 overflow-x-auto overscroll-x-contain pb-2', role: 'tablist', 'aria-label': __alloT('stem.beehive.field_guide_topics', 'Field guide topics') },
-              GUIDE_SECTIONS.map(function(s) {
+              visibleSections.map(function(s) {
                 var active = s.id === sec.id;
                 return h('button', { key: s.id, id: 'beehive-guide-tab-' + s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'aria-controls': 'beehive-guide-panel', 'data-beehive-guide-tab': s.id,
                   onClick: function() { selectGuideSection(s.id); },
-                  onKeyDown: function(event) { handleBeeTabKey(event, GUIDE_SECTIONS.map(function(item) { return item.id; }), s.id, 'data-beehive-guide-tab', function(nextId) { selectGuideSection(nextId); }); },
+                  onKeyDown: function(event) { handleBeeTabKey(event, visibleSections.map(function(item) { return item.id; }), s.id, 'data-beehive-guide-tab', function(nextId) { selectGuideSection(nextId); }); },
                   className: 'min-h-[44px] shrink-0 px-2.5 py-2 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (active ? (dk ? 'bg-amber-700 text-white' : 'bg-amber-700 text-white') : (dk ? 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'bg-white text-slate-600 hover:text-slate-800 border border-slate-200')),
                   title: s.title + (s.teacher ? ' (teacher resource)' : '') },
                   h('span', { 'aria-hidden': 'true' }, s.icon), ' ', s.title);
               })),
-            h('div', { id: 'beehive-guide-panel', role: 'tabpanel', 'aria-labelledby': 'beehive-guide-tab-' + sec.id, className: 'space-y-2' },
+            !(ctx && ctx.isTeacherMode) && h('button', { type: 'button', 'data-beehive-guide-teacher-toggle': 'true', 'aria-pressed': guideTeacher ? 'true' : 'false', onClick: function() { upd('guideShowTeacher', !guideTeacher); }, className: 'min-h-[44px] rounded-lg border px-3 py-1.5 text-[0.6875rem] font-bold ' + (dk ? 'border-slate-600 text-slate-200' : 'border-slate-300 text-slate-700') }, (guideTeacher ? 'Hide' : 'Show') + ' teacher resources (' + teacherCount + ')'),
+            guideHits && h('div', { 'data-beehive-guide-results': 'true', role: 'region', 'aria-live': 'polite', 'aria-label': 'Field guide search results', className: 'space-y-2' },
+              h('p', { className: 'text-xs font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, guideHits.length + (guideHits.length === 1 ? ' match' : ' matches') + ' for \u201c' + guideQuery + '\u201d' + (guideHits.length > 20 ? ' (showing 20)' : '')),
+              guideHits.slice(0, 20).map(function(hit, n) { return h('div', { key: hit.section.id + '-' + hit.idx }, h('div', { className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, hit.section.icon + ' ' + hit.section.title), renderGuideEntry(hit.item, hit.idx, hit.section.id)); })),
+            !guideHits && h('div', { id: 'beehive-guide-panel', role: 'tabpanel', 'aria-labelledby': 'beehive-guide-tab-' + sec.id, className: 'space-y-2' },
               h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
               h('span', { className: 'text-lg', 'aria-hidden': 'true' }, sec.icon),
               h('h3', { id: 'beehive-guide-section-title', className: 'text-base font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, sec.title),
@@ -7210,15 +7520,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var savedProvenance = bhExperimentProvenance(b);
             var seededRandom = bhCreateSeededRandom(savedProvenance.randomState);
             var seededCfg = bhCfg(seededRandom.rand);
-            b.modelVersion = savedProvenance.modelVersion;
+            // Resuming under changed equations starts a new tracked segment.
+            // Keep the next random draw and run identity, but do not claim the
+            // mixed-model history can be replayed from a fresh current colony.
+            b.modelVersion = BEEHIVE_COLONY_MODEL_VERSION;
             b.simulationSeed = savedProvenance.simulationSeed;
-            b.seededFromDay = savedProvenance.seededFromDay;
+            b.seededFromDay = savedProvenance.modelVersion === BEEHIVE_COLONY_MODEL_VERSION
+              ? savedProvenance.seededFromDay
+              : Math.floor(bhBoundedNumber(b.day, 0, 0, 10000000));
             var daysAdvanced = 0;
             var stoppedForEvent = false;
             for (var step = 0; step < n; step++) {
               var bWorkersChk = typeof b.workers === 'number' ? b.workers : 10000;
               var bDayChk = b.day || 0;
               if (bWorkersChk < 500 && bDayChk > 30) break; // colony dead
+              // Year ledger: snapshot the totals as each 120-day year begins (year 1 starts at zero).
+              var _ly = Math.floor(bDayChk / 120) + 1;
+              if (!b.yearLedger || !b.yearLedger[_ly]) {
+                b.yearLedger = Object.assign({}, b.yearLedger || {});
+                b.yearLedger[_ly] = { start: bhYearTotals(_ly === 1 ? {} : b), fromDay: _ly === 1 ? 0 : bDayChk, peakVarroa: 0, peakWorkers: 0, winterHoney: null };
+              }
               // Same canonical stepper the single-day path uses — no divergent copy.
               var _bs = {
                 day: bDayChk,
@@ -7246,6 +7567,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               b.brood = bnx.brood;
               b.drones = bnx.drones;
               b.honey = bnx.honey;
+              // Fed sugar syrup is part of the stores but is not honey: the colony eats it first
+              // (~5%/day here) and it can never exceed what is left in the hive.
+              if (b.syrup > 0) b.syrup = Math.max(0, Math.min(Math.round(b.syrup * 0.95 * 10) / 10, b.honey));
               b.pollen = bnx.pollen;
               b.wax = bnx.wax;
               b.varroaLevel = bnx.varroaLevel;
@@ -7263,6 +7587,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               b.totalHoney = Math.round(((b.totalHoney || 0) + bnx.honeyGrossIn) * 10) / 10;
               b.inDearth = !!bnx.inDearth;
               b.totalFlowerVisits = (b.totalFlowerVisits || 0) + bnx.flowerVisits;
+              var _led = Object.assign({}, b.yearLedger[_ly]);
+              _led.peakVarroa = Math.max(_led.peakVarroa || 0, b.varroaLevel || 0);
+              _led.peakWorkers = Math.max(_led.peakWorkers || 0, b.workers || 0);
+              if (b.day % 120 === 90) _led.winterHoney = b.honey; // first day of winter
+              b.yearLedger = Object.assign({}, b.yearLedger); b.yearLedger[_ly] = _led;
               daysAdvanced++;
               if (_br.event) { b.activeEvent = _br.event; stoppedForEvent = true; } // sticky until resolved
               // Push history so batch advance keeps sparkline continuous
@@ -7365,7 +7694,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (modeledSeason === 3 || modeledSeason === 0) { reduction = Math.round(reduction * 0.3); contextNote = ' (few drones being produced - weak effect)'; fitLabel = 'Poor fit: little drone brood is available'; fitTone = 'warning'; }
             else if (modeledSeason === 1) { reduction = Math.round(reduction * 1.2); contextNote = ' (peak drone brood - very effective)'; fitLabel = 'Ideal fit: peak drone-brood production'; fitTone = 'success'; }
           }
-          return { reduction: reduction, moraleHit: moraleHit, queenHit: queenHit, contextNote: contextNote, fitLabel: fitLabel, fitTone: fitTone };
+          // A treatment kills a SHARE of the mites. With growth proportional to the load, the load a
+          // month later is the same whenever a given share is killed; what early treatment saves is
+          // the weeks of high load in between (mites raise worker deaths). x2.5, capped at 95%.
+          var killPct = Math.min(95, Math.round(reduction * 2.5));
+          return { reduction: reduction, killPct: killPct, moraleHit: moraleHit, queenHit: queenHit, contextNote: contextNote, fitLabel: fitLabel, fitTone: fitTone };
         }
 
         function applyTreatment(treatmentId) {
@@ -7383,7 +7716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!apAction(treatment.ap, treatment.label, function(b, outcome) {
             var forecast = previewTreatmentOutcome(treatment, b.brood, b.season);
             var beforeVarroa = typeof b.varroaLevel === 'number' ? b.varroaLevel : 5;
-            b.varroaLevel = Math.max(0, beforeVarroa - forecast.reduction);
+            b.varroaLevel = Math.max(0, Math.round(beforeVarroa * (1 - forecast.killPct / 100) * 10) / 10);
             b.morale = Math.max(0, (typeof b.morale === 'number' ? b.morale : 80) - forecast.moraleHit);
             b.queenHealth = Math.max(0, (typeof b.queenHealth === 'number' ? b.queenHealth : 100) - forecast.queenHit);
             b.varroaTreats = (b.varroaTreats || 0) + 1;
@@ -7393,8 +7726,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             b.showTreatModal = false;
             outcome.varroaBefore = beforeVarroa;
             outcome.varroaAfter = b.varroaLevel;
-            outcome.reduction = beforeVarroa - b.varroaLevel;
-            outcome.treatmentStrength = forecast.reduction;
+            outcome.reduction = Math.round((beforeVarroa - b.varroaLevel) * 10) / 10;
+            outcome.treatmentStrength = forecast.killPct;
             outcome.contextNote = forecast.contextNote;
           }, {
             choiceId: 'varroa_treatment',
@@ -7488,7 +7821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           previewRecord.transactionId = txId;
           previewRecord.outcome = previewOutcome;
           preview.lastManagement = previewRecord;
-          preview.managementTrail = (Array.isArray(snapshot.managementTrail) ? snapshot.managementTrail : []).concat([previewRecord]).slice(-24);
+          bhAppendManagementAction(preview, previewRecord);
           _beeStateRef.current = preview;
           _actionPointsRef.current = preview.actionPoints;
 
@@ -7513,7 +7846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             record.transactionId = txId;
             record.outcome = outcome;
             next.lastManagement = record;
-            next.managementTrail = (Array.isArray(b.managementTrail) ? b.managementTrail : []).concat([record]).slice(-24);
+            bhAppendManagementAction(next, record);
             Object.assign(b, next);
           });
           return true;
@@ -7578,17 +7911,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // <= reserve, not < reserve: at exactly the floor (reachable — honey is stored rounded
           // to 0.1) harvested was 0, yet it still logged a varietal and a phantom "0 lb / 1 jar"
           // harvest with a misleading toast.
-          if (honey <= reserve) {
+          // Fed syrup is not honey: feed-then-harvest used to farm score every day.
+          var syrupHeld = Math.max(0, Math.min(Number(d.syrup) || 0, honey));
+          if (honey - syrupHeld <= reserve) {
             playSfx(sfxBeeWaggle);
-            if (addToast) addToast('⚠️ No surplus to take. The colony needs about ' + reserve + ' lbs for ' + reserveWhy + ' and has ' + honey + ' lbs.', 'info');
+            if (addToast) addToast(syrupHeld > 0 && honey > reserve
+              ? '⚠️ No honey surplus. ' + syrupHeld + ' lbs of these stores is sugar syrup you fed, and syrup is not honey. The colony needs about ' + reserve + ' lbs for ' + reserveWhy + '.'
+              : '⚠️ No surplus to take. The colony needs about ' + reserve + ' lbs for ' + reserveWhy + ' and has ' + honey + ' lbs.', 'info');
             return;
           }
           if (actionPoints < 1) { if (addToast) addToast('Need 1 action point to harvest. Advance a day for more.', 'info'); return; }
           var varietal = identifyVarietal();
           if (!apAction(1, 'Harvest ' + varietal.name, function(b, outcome) {
             var bHoney = typeof b.honey === 'number' ? b.honey : 20;
-            if (bHoney <= reserve) return false; // same seasonal floor, rechecked in preview and live state
-            var got = Math.round((bHoney - reserve) * 10) / 10;
+            var bSyrup = Math.max(0, Math.min(Number(b.syrup) || 0, bHoney));
+            if (bHoney - bSyrup <= reserve) return false; // same seasonal floor (syrup excluded), rechecked in preview and live state
+            var got = Math.round((bHoney - bSyrup - reserve) * 10) / 10;
             var newVarietals = Object.assign({}, b.varietals || {});
             var existing = newVarietals[varietal.id];
             var entry = existing ? Object.assign({}, existing)
@@ -7597,7 +7935,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             entry.jars = (entry.jars || 0) + Math.max(1, Math.round(got));
             entry.lastDay = b.day || 0;
             newVarietals[varietal.id] = entry;
-            b.honey = reserve;
+            b.honey = Math.round((reserve + bSyrup) * 10) / 10; // the syrup stays in the brood box
+            b.syrup = bSyrup;
             b.score = (b.score || 0) + Math.round(got * 20);
             b.totalHarvested = Math.round(((b.totalHarvested || 0) + got) * 10) / 10;
             b.varietals = newVarietals;
@@ -7648,7 +7987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             b.workers = Math.round(bw * 0.58);   // the parent keeps rather more than half
             b.brood = Math.round(bb * 0.6);
             b.varroaLevel = Math.max(0, Math.round((typeof b.varroaLevel === 'number' ? b.varroaLevel : 5) * 0.65 * 10) / 10);
-            b.queenHealth = 100;                 // the split raises a new queen; parent keeps the old
+            b.queenHealth = 90;                  // the old queen goes with the split; this parent raises a new one (a real requeen)
             b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 4);
             b.splitsMade = (b.splitsMade || 0) + 1;
           }, { onCommit: function() {
@@ -7688,6 +8027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function feedBees() {
           if (!apAction(1, 'Feed Bees', function(b) {
             b.honey = Math.round(((typeof b.honey === 'number' ? b.honey : 20) + 5) * 10) / 10;
+            b.syrup = Math.round(((b.syrup || 0) + 5) * 10) / 10; // tracked so Harvest cannot sell syrup as honey
             b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 5);
           }, { onCommit: function() {
             playSfx(sfxSuccess); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
@@ -7848,7 +8188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // ── v3.2: AI tutor for the current inspection layer ──
             (function () {
               var LAYER_LABELS = {
-                roles: 'bee roles and temporal polyethism',
+                roles: 'why bees change jobs as they age',
                 honey_chem: 'honey chemistry and enzymatic conversion',
                 lifecycle: 'the bee life cycle (egg → larva → pupa → adult)',
                 waggle: 'the waggle dance as a symbolic communication system',
@@ -8005,7 +8345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'text-xl mb-1' }, '📏'),
                     h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.beehive.distance', 'Distance')),
                     h('p', { className: 'text-[0.6875rem] text-amber-100/70' }, __alloT('stem.beehive.the_duration_of_the_waggle_run_encodes', 'The duration of the waggle run encodes distance. ~1 second of waggling ≈ 1 kilometer. A 2-second waggle run means the nectar is about 2km away. Closer sources use a simpler "round dance" (no direction info needed).')))),
-                h('p', { className: 'text-[0.6875rem] text-amber-400 italic' }, __alloT('stem.beehive.karl_von_frisch_decoded_this_in_the_19', 'Karl von Frisch decoded the waggle dance in the 1940s-60s and shared the 1973 Nobel Prize in Physiology or Medicine. It is a landmark example of symbolic referential communication in an invertebrate.')))),
+                h('p', { className: 'text-[0.6875rem] text-amber-400 italic' }, __alloT('stem.beehive.karl_von_frisch_decoded_this_in_the_19_v2', 'Karl von Frisch decoded the waggle dance in the 1940s-60s and shared the 1973 Nobel Prize in Physiology or Medicine. It is a landmark example of an insect using symbols: dance moves that stand for real distances and directions.')))),
 
             // ── THERMOREGULATION VIEW ──
             inspectLayer === 'temperature' && h('div', inspectionLayerPanel('temperature', 'space-y-3'),
@@ -8423,7 +8763,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // Store live colony state in a ref so the animation loop always reads fresh values
         var _liveState = React.useRef({});
-        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView, bkAnim: d.bkAnim, motionPaused: beekeeperMotionPaused };
+        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, year: year, brood: brood, drones: drones, pollen: pollen, varroaLevel: varroaLevel, currentReserve: currentReserve, diseaseRisk: diseaseRisk, foragingEfficiency: foragingEfficiency, pesticideExposure: pesticideExposure, activeEvent: d.activeEvent || null, waggleLab: d.waggleLab || null, thermHunt: d.thermHunt || null, colonyName: d.colonyName || '', syrup: d.syrup || 0, supersAdded: d.supersAdded || 0, winterized: !!d.winterized, harvestedThisYear: d.lastHarvestYear === year, calmScene: typeof d.calmScene === 'boolean' ? d.calmScene : !!prefersReducedMotion, beeView: beeView, bkAnim: d.bkAnim, motionPaused: beekeeperMotionPaused };
+        // The frame function of the running scene, so a paused scene can still draw one fresh frame.
+        var _beeFrameRef = React.useRef(null);
 
         // ── Test hook (no overhead unless a harness pre-sets window.__testHooks) ──
         // Publishes the live sim refs so the Playwright visual harness can drive
@@ -8741,7 +9083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { lx: hdX - bee(50), ly: hdY + bee(75), tx: 40, ty: 220, t: '⑤ Proboscis (nectar tube)' },
               { lx: thX, ly: thY, tx: W - 260, ty: 100, t: '⑥ Thorax (flight muscles)' },
               { lx: thX - bee(80), ly: cY - bee(170), tx: W - 260, ty: 130, t: '⑦ Forewings + hindwings' },
-              { lx: abX, ly: abY, tx: W - 260, ty: 160, t: '⑧ Abdomen (5 segments, honey sac)' },
+              { lx: abX, ly: abY, tx: W - 260, ty: 160, t: '⑧ Abdomen (6 visible segments, honey sac)' },
               { lx: abX + bee(210), ly: abY, tx: W - 260, ty: 190, t: '⑨ Stinger (modified ovipositor)' },
               { lx: thX + bee(90), ly: legBase + bee(60), tx: W - 260, ty: 220, t: '⑩ Pollen basket (corbicula)' }
             ];
@@ -10749,7 +11091,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.font = 'bold 18px Georgia, serif';
             c.fillText('🚨 Threats to Honeybees · The Four Horsemen of Colony Loss', W / 2, 28);
             c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#991b1b';
-            c.fillText('US beekeepers lose 30–50% of colonies annually since 2006. Understanding WHY lets us help.', W / 2, 46);
+            // Your colony now: which of these threats is pressing on it today.
+            (function() {
+              var _yc = (_liveState.current || {});
+              var _ycText = 'Your colony now: mites ' + Math.round(_yc.varroaLevel || 0) + '/100 (' + ((_yc.varroaLevel || 0) >= 20 ? 'danger' : (_yc.varroaLevel || 0) >= 10 ? 'watch' : 'healthy') + ') \u00b7 pesticide ' + Math.round(_yc.pesticideExposure || 0) + ' \u00b7 habitat ' + Math.round(_yc.habitat || 0) + '%';
+              var _ycBad = (_yc.varroaLevel || 0) >= 20 || (_yc.pesticideExposure || 0) > 20 || (_yc.habitat || 0) < 35;
+              c.font = 'bold 11px system-ui'; var _ycW = c.measureText(_ycText).width + 22;
+              c.fillStyle = _ycBad ? 'rgba(185,28,28,0.9)' : 'rgba(4,120,87,0.92)';
+              c.beginPath(); if (c.roundRect) c.roundRect(W / 2 - _ycW / 2, 34, _ycW, 18, 9); else c.rect(W / 2 - _ycW / 2, 34, _ycW, 18); c.fill();
+              c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.fillText(_ycText, W / 2, 47);
+            })();
 
             // 2×2 grid of threat panels
             var gridW = W / 2 - 15;
@@ -10786,8 +11137,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 facts: [
                   '· Modern farms = 1000s of acres of ONE crop',
                   '· Corn / soy fields are "food deserts" for bees',
-                  '· 70% of wildflowers lost to development',
-                  '· Bees need 6–8 month continuous bloom'
+                  '· Farms, lawns and paving replace meadows',
+                  '· Bees need flowers from spring to fall'
                 ],
                 help: '✓ Plant native wildflowers · reduce lawn area'
               },
@@ -10900,7 +11251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText(helpLine[0], W / 2, stripY + 42);
             c.fillText(helpLine[1], W / 2, stripY + 58);
             c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#86efac';
-            c.fillText('⅓ of every bite you eat depends on pollinators. They can\'t survive without us — or we them.', W / 2, stripY + 76);
+            c.fillText('⅓ of every bite you eat depends on pollinators. Protecting them protects our food too.', W / 2, stripY + 76);
           }
 
           // ═══ PHEROMONES DIAGRAM (the chemical language of the hive) ═══
@@ -11035,7 +11386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             c.fillText(deepLine, W / 2, deepY);
             c.font = '9px system-ui'; c.fillStyle = '#c4b5fd';
-            c.fillText('Rotating spotlight · hover any card for effect · 50+ pheromones known in honeybees', W / 2, stripY + 78);
+            c.fillText('Rotating spotlight · one pheromone at a time · dozens of pheromone compounds known in honeybees', W / 2, stripY + 78);
           }
 
           // ═══ CASTES DIAGRAM (three bee types: queen, worker, drone) ═══
@@ -11050,7 +11401,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.font = 'bold 18px Georgia, serif';
             c.fillText('👑 The Three Castes · Queen · Workers · Drones', W / 2, 28);
             c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
-            c.fillText('A honeybee colony is a superorganism — each caste plays one irreplaceable role', W / 2, 46);
+            // Your colony now: the live head-count of each caste.
+            (function() {
+              var _yc = (_liveState.current || {});
+              var _ycText = 'Your colony now: 1 queen (' + Math.round(_yc.queenHealth || 0) + '% laying) \u00b7 ' + Math.round(_yc.workers || 0).toLocaleString() + ' workers \u00b7 ' + Math.round(_yc.drones || 0).toLocaleString() + ' drones \u00b7 ' + Math.round(_yc.brood || 0).toLocaleString() + ' brood';
+              var _ycBad = (_yc.queenHealth || 0) < 55;
+              c.font = 'bold 11px system-ui'; var _ycW = c.measureText(_ycText).width + 22;
+              c.fillStyle = _ycBad ? 'rgba(185,28,28,0.9)' : 'rgba(4,120,87,0.92)';
+              c.beginPath(); if (c.roundRect) c.roundRect(W / 2 - _ycW / 2, 34, _ycW, 18, 9); else c.rect(W / 2 - _ycW / 2, 34, _ycW, 18); c.fill();
+              c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.fillText(_ycText, W / 2, 47);
+            })();
 
             // Three panels side-by-side
             var panelW = W / 3;
@@ -11176,7 +11536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText('· Largest, longest body — twice a worker\'s abdomen', pX + 22, sY + 102);
               c.font = 'italic 9px Georgia, serif'; c.fillStyle = '#581c87'; c.textAlign = 'center';
               c.fillText('If the queen dies, the colony dies —', pX + pW2 / 2, pY + pH2 - 30);
-              c.fillText('unless workers can raise a new queen in 3 days.', pX + pW2 / 2, pY + pH2 - 18);
+              c.fillText('unless workers raise a new one from a larva under 3 days old.', pX + pW2 / 2, pY + pH2 - 18);
               c.restore();
             })();
 
@@ -11300,7 +11660,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.font = 'bold 18px Georgia, serif';
             c.fillText('🌡️ Thermoregulation · The Warm-Blooded Hive', W / 2, 28);
             c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
-            c.fillText('Brood area usually ~34–36°C (93–97°F) — colony-level regulation by ectothermic workers', W / 2, 46);
+            // The diagram reports the student's OWN temperature trial when there is one (it used to
+            // show fixed temperatures beside the lab controls, so the two could disagree).
+            var trial = (_liveState.current || {}).thermHunt;
+            if (trial && typeof trial.outsideC === 'number') {
+              var trialC = Math.round(bhThermoEstimate(trial) * 10) / 10;
+              var trialOk = trialC >= 34 && trialC <= 36;
+              var trialText = 'Your trial: ' + trial.outsideC + '°C outside, ' + trial.beesFanning + ' bees fanning, ' + (typeof trial.heaterBees === 'number' ? trial.heaterBees : BH_THERMO_DEFAULTS.heaterBees).toLocaleString() + ' heater bees  →  brood area ≈ ' + trialC + '°C (' + (trialOk ? 'in the typical range' : trialC > 36 ? 'too hot' : 'too cool') + ')';
+              c.font = 'bold 11px system-ui'; var trialW = c.measureText(trialText).width + 22;
+              c.fillStyle = trialOk ? 'rgba(4,120,87,0.92)' : 'rgba(185,28,28,0.9)';
+              c.beginPath(); if (c.roundRect) c.roundRect(W / 2 - trialW / 2, 34, trialW, 18, 9); else c.rect(W / 2 - trialW / 2, 34, trialW, 18); c.fill();
+              c.fillStyle = '#ffffff'; c.fillText(trialText, W / 2, 47);
+            } else {
+              c.fillText('Brood area usually ~34–36°C (93–97°F) — colony-level regulation by ectothermic workers', W / 2, 46);
+            }
 
             // ═══ LEFT PANEL: SUMMER COOLING ═══
             (function() {
@@ -11653,7 +12026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
             // Caption
             c.font = 'italic 9px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'center';
-            c.fillText(__alloT('stem.beehive.bees_only_insects_warm_year_round', 'Bees are the only insects that stay warm year-round. Solo they\'re cold-blooded — together they\'re collectively warm-blooded.'), W / 2, stripY + 72);
+            c.fillText(__alloT('stem.beehive.honeybees_few_insects_warm_winter', 'Honeybees are one of the few insects that keep their nest warm all winter. One bee is cold-blooded; a cluster acts warm-blooded.'), W / 2, stripY + 72);
           }
 
           // ═══ WAGGLE DANCE DIAGRAM (Karl von Frisch's symbolic-language decoding) ═══
@@ -11668,7 +12041,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.font = 'bold 18px Georgia, serif';
             c.fillText('💃 The Waggle Dance · Bee Symbolic Language', W / 2, 28);
             c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
-            c.fillText('Karl von Frisch decoded this, 1920s–60s · Nobel Prize 1973 · Only symbolic language in non-human animals', W / 2, 46);
+            c.fillText('Karl von Frisch decoded this, 1920s–60s · Nobel Prize 1973 · One of the few symbolic codes known in animals', W / 2, 46);
+
+            // ONE shared reading for both panels (see bhWaggleDemoState): the comb angle theta, the
+            // sun bearing on the map and the flower bearing always satisfy flower = sun + theta.
+            var ws = bhWaggleDemoState(t2 / 60, (_liveState.current || {}).waggleLab);
+            var wsTheta = ws.dance * Math.PI / 180; // + = clockwise from straight up the comb
 
             // ═══ LEFT PANEL: vertical comb with dancing bee + followers ═══
             var pL_W = W * 0.45;
@@ -11718,107 +12096,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.font = 'italic 8px system-ui';
               c.fillText('(vertical)', combX + combW + 14, combY + 36);
 
-              // Sun direction indicator at the top (represents the sun's current direction)
-              var sunAng = Math.sin(t2 * 0.003) * 0.5; // slowly changing
+              // "Up" on the vertical comb stands for the sun's direction outside.
               var sunIconX = combX + combW / 2, sunIconY = combY - 20;
               c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 10;
               c.fillStyle = '#fbbf24';
               c.beginPath(); c.arc(sunIconX, sunIconY, 8, 0, 6.28); c.fill();
               c.restore();
               c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillStyle = '#78350f';
-              c.fillText('☀ sun direction (virtual)', sunIconX, sunIconY - 12);
+              c.fillText('☀ up the comb = toward the sun', sunIconX, sunIconY - 12);
 
-              // ── The dancing bee — figure-8 waggle run angled RELATIVE TO VERTICAL by sunAng ──
+              // The dance, drawn in a frame turned by theta: a STRAIGHT waggle run "up" this frame,
+              // then a semicircle back to its start, alternating right and left (the real figure-8).
+              // The old drawing put the bee on a sideways lemniscate that never ran along theta.
               var dnCenterX = combX + combW / 2, dnCenterY = combY + combH / 2;
-              var dnT = t2 * 0.05;
-              var dnPhase = dnT % (Math.PI * 2);
               var dnScale = Math.min(combW, combH) * 0.25;
-              // Rotate frame by sunAng (the decoded direction)
+              var runHalf = dnScale * 0.55;
               c.save();
               c.translate(dnCenterX, dnCenterY);
-              c.rotate(sunAng);
-
-              // Draw the lemniscate path (faint yellow)
-              c.strokeStyle = 'rgba(251,191,36,0.3)'; c.lineWidth = 1;
-              c.beginPath();
-              for (var lem = 0; lem <= 80; lem++) {
-                var lemA = (lem / 80) * Math.PI * 2;
-                var lx = dnScale * Math.cos(lemA) / (1 + Math.sin(lemA) * Math.sin(lemA));
-                var ly = dnScale * 0.4 * Math.sin(lemA) * Math.cos(lemA) / (1 + Math.sin(lemA) * Math.sin(lemA));
-                lem === 0 ? c.moveTo(lx, ly) : c.lineTo(lx, ly);
-              }
-              c.stroke();
-
-              // Emphasize the STRAIGHT "waggle run" section (vertical through center)
+              c.rotate(wsTheta);
+              c.strokeStyle = 'rgba(146,64,14,0.35)'; c.lineWidth = 1.2; c.setLineDash([3, 4]);
+              c.beginPath(); c.arc(0, 0, runHalf, -Math.PI / 2, Math.PI / 2, false); c.stroke();
+              c.beginPath(); c.arc(0, 0, runHalf, -Math.PI / 2, Math.PI / 2, true); c.stroke();
+              c.setLineDash([]);
               c.strokeStyle = '#dc2626'; c.lineWidth = 2.5;
-              c.beginPath(); c.moveTo(0, -dnScale * 0.3); c.lineTo(0, dnScale * 0.3); c.stroke();
-              // Arrow at top of waggle run (pointing up = sun direction)
+              c.beginPath(); c.moveTo(0, runHalf); c.lineTo(0, -runHalf); c.stroke();
               c.fillStyle = '#dc2626';
-              c.beginPath(); c.moveTo(0, -dnScale * 0.32); c.lineTo(-4, -dnScale * 0.22); c.lineTo(4, -dnScale * 0.22); c.closePath(); c.fill();
+              c.beginPath(); c.moveTo(0, -runHalf - 7); c.lineTo(-5, -runHalf + 3); c.lineTo(5, -runHalf + 3); c.closePath(); c.fill();
 
-              // Dancing bee on the path
-              var inStraightRun = Math.abs(Math.sin(dnPhase)) < 0.3;
-              var dancerX = dnScale * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
-              var dancerY = dnScale * 0.4 * Math.sin(dnPhase) * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
-              // The side-to-side waggle. A real bee wags ~13 times a second; at 60 fps that is
-              // 4.6 samples per cycle, so t2 * 1.2 did not render as a wag at all - the abdomen
-              // flicked to random offsets each frame. Unlike the wings, this motion is the thing
-              // being TAUGHT, so it must stay legible rather than become a smear: slowed to
-              // ~4 Hz (15 samples/cycle), which a student can actually follow.
-              //
-              // This does NOT touch the taught tempo. Distance encoding lives in dnPhase (the
-              // straight-run duration, standardised at ~1 km/sec to match the field guide and the
-              // worked math problems); only the wag's visual frequency changes here.
-              var dancerWag = inStraightRun ? Math.sin(t2 * 0.42) * 3 : 0;
+              var dancerX, dancerY, dancerHeading;
+              if (ws.phase === 'run') {
+                dancerX = 0; dancerY = runHalf - ws.progress * 2 * runHalf; dancerHeading = -Math.PI / 2;
+              } else {
+                var arcA = -Math.PI / 2 + ws.progress * Math.PI; // top of the run -> back to its start
+                dancerX = ws.side * runHalf * Math.cos(arcA); dancerY = runHalf * Math.sin(arcA);
+                dancerHeading = Math.atan2(Math.cos(arcA), -ws.side * Math.sin(arcA));
+              }
+              // The side-to-side waggle happens only on the straight run (slowed to ~4 Hz so it reads).
+              var dancerWag = ws.phase === 'run' ? Math.sin(t2 * 0.42) * 3 : 0;
               c.save();
-              c.translate(dancerX, dancerY);
-              // Orient bee along tangent (roughly upward in straight-run)
-              c.rotate(-0.3);
+              c.translate(dancerX + dancerWag, dancerY);
+              c.rotate(dancerHeading);
               c.shadowColor = '#fbbf24'; c.shadowBlur = 6;
               c.fillStyle = '#fbbf24';
-              c.beginPath(); c.ellipse(dancerWag, 0, 7, 4.5, 0, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(0, 0, 7, 4.5, 0, 0, 6.28); c.fill();
               c.shadowBlur = 0;
               c.fillStyle = '#292524';
-              c.fillRect(dancerWag - 1.2, -4, 1.6, 8);
-              c.fillRect(dancerWag + 1.5, -3.5, 1.2, 7);
+              c.fillRect(-2.5, -4, 1.6, 8); c.fillRect(0.6, -3.8, 1.3, 7.6);
+              c.beginPath(); c.arc(7.5, 0, 2.6, 0, 6.28); c.fill();
               c.globalAlpha = 0.4; c.fillStyle = '#e0f2fe';
-              var dWB = Math.sin(t2 * 0.5) * 2.5;
-              c.beginPath(); c.ellipse(dancerWag, -3 + dWB, 8, 2, 0, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(-1, -4.5 + Math.sin(t2 * 0.5) * 1.5, 6, 2, -0.3, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(-1, 4.5 - Math.sin(t2 * 0.5) * 1.5, 6, 2, 0.3, 0, 6.28); c.fill();
               c.globalAlpha = 1;
               c.restore();
 
-              // Follower bees arranged around the dancer (static, watching)
-              var followers = [[-dnScale * 0.9, 0], [dnScale * 0.9, 0], [-dnScale * 0.6, dnScale * 0.5], [dnScale * 0.6, dnScale * 0.5], [-dnScale * 0.3, -dnScale * 0.55], [dnScale * 0.3, -dnScale * 0.55]];
-              followers.forEach(function(f) {
+              // Followers crowd around the run and face the dancer (in the dark they read it by touch).
+              [[-runHalf * 1.7, -runHalf * 0.3], [runHalf * 1.7, -runHalf * 0.3], [-runHalf * 1.25, runHalf * 1.0], [runHalf * 1.25, runHalf * 1.0], [-runHalf * 0.9, -runHalf * 1.25], [runHalf * 0.9, -runHalf * 1.25]].forEach(function(f) {
                 c.save(); c.translate(f[0], f[1]);
-                // Face toward dancer
-                var fAng = Math.atan2(dancerY - f[1], dancerX - f[0]);
-                c.rotate(fAng);
+                c.rotate(Math.atan2(dancerY - f[1], dancerX - f[0]));
                 c.fillStyle = '#fbbf24';
                 c.beginPath(); c.ellipse(0, 0, 5, 3, 0, 0, 6.28); c.fill();
                 c.fillStyle = '#292524';
-                c.fillRect(-0.8, -2.5, 1, 5);
-                c.fillRect(1, -2, 0.8, 4);
-                // Subtle head/antenna
-                c.fillStyle = '#1c1917';
-                c.beginPath(); c.arc(-4, 0, 1.2, 0, 6.28); c.fill();
+                c.fillRect(-1.8, -2.5, 1, 5); c.fillRect(0.2, -2.2, 0.8, 4.4);
+                c.beginPath(); c.arc(5.2, 0, 1.6, 0, 6.28); c.fill();
                 c.restore();
               });
+              c.restore(); // end of the theta-rotated frame
 
-              c.restore(); // end bee-frame rotation
-
-              // Label the waggle angle (θ) with an arc
+              // theta: from straight up (the sun) to the run
               c.save();
               c.translate(dnCenterX, dnCenterY);
-              c.strokeStyle = '#7c3aed'; c.lineWidth = 1;
-              c.beginPath(); c.arc(0, 0, dnScale * 0.2, -Math.PI / 2, -Math.PI / 2 + sunAng, sunAng < 0); c.stroke();
-              c.font = 'bold 11px Georgia, serif'; c.fillStyle = '#6d28d9'; c.textAlign = 'center';
-              c.fillText('θ', Math.sin(sunAng / 2) * dnScale * 0.35, -Math.cos(sunAng / 2) * dnScale * 0.35);
-              // Vertical reference line (dashed)
-              c.strokeStyle = 'rgba(100,100,100,0.4)'; c.setLineDash([3, 3]); c.lineWidth = 0.8;
-              c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -dnScale * 0.4); c.stroke();
+              c.strokeStyle = 'rgba(100,100,100,0.45)'; c.setLineDash([3, 3]); c.lineWidth = 0.8;
+              c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -runHalf - 18); c.stroke();
               c.setLineDash([]);
+              c.strokeStyle = '#7c3aed'; c.lineWidth = 1.4;
+              c.beginPath(); c.arc(0, 0, runHalf * 0.45, -Math.PI / 2, -Math.PI / 2 + wsTheta, wsTheta < 0); c.stroke();
+              c.font = 'bold 11px Georgia, serif'; c.fillStyle = '#6d28d9'; c.textAlign = 'center';
+              c.fillText('θ', Math.sin(wsTheta / 2) * runHalf * 0.7, -Math.cos(wsTheta / 2) * runHalf * 0.7 + 4);
               c.restore();
+              c.font = 'bold 11px system-ui'; c.textAlign = 'left'; c.fillStyle = '#6d28d9';
+              c.fillText('θ = ' + Math.abs(ws.dance) + '° ' + (ws.dance === 0 ? '(straight up)' : ws.dance > 0 ? 'right of up' : 'left of up'), combX + 6, combY + 16);
+              c.fillStyle = '#7c2d12'; c.font = '10px system-ui';
+              c.fillText('waggle run ' + ws.runSec.toFixed(1) + ' s' + (ws.source === 'lab' ? ' · your dial settings' : ''), combX + 6, combY + 30);
 
               // Caption inside comb panel
               c.font = 'italic 10px system-ui'; c.fillStyle = '#7c2d12'; c.textAlign = 'center';
@@ -11845,80 +12203,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillRect(gdX, gdY, gdW, gdH);
 
               // Hive in center
-              var hvX = gdX + gdW / 2, hvY = gdY + gdH * 0.6;
+              var hvX = gdX + gdW / 2, hvY = gdY + gdH * 0.5;
               c.fillStyle = '#8a6508'; c.strokeStyle = '#3c2a10'; c.lineWidth = 1.5;
               c.fillRect(hvX - 12, hvY - 10, 24, 20);
               c.strokeRect(hvX - 12, hvY - 10, 24, 20);
               c.font = 'bold 8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#fff';
               c.fillText('HIVE', hvX, hvY + 2);
 
-              // Sun (top-right of panel)
-              var vSunAng = Math.sin(t2 * 0.003) * 0.5;
-              var sunVX = hvX + Math.sin(-vSunAng) * (gdW * 0.35);
-              var sunVY = gdY + 20;
-              c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 10;
-              c.fillStyle = '#fbbf24';
-              c.beginPath(); c.arc(sunVX, sunVY, 8, 0, 6.28); c.fill();
-              c.restore();
-              c.font = 'bold 9px system-ui'; c.fillStyle = '#78350f';
-              c.fillText('☀', sunVX, sunVY + 3);
-              c.font = '9px system-ui';
-              c.fillText('sun', sunVX, sunVY + 18);
+              // North is up on this map; bearings run clockwise from north.
+              var mapR = Math.min(gdW, gdH) * 0.4;
+              function bearingPt(deg, r) { var a = deg * Math.PI / 180; return { x: hvX + Math.sin(a) * r, y: hvY - Math.cos(a) * r }; }
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'center';
+              c.fillText('N ↑', gdX + 14, gdY + 12);
 
-              // Flower (at angle θ from sun, distance d from hive)
-              var _waggleDurSec = 1.5 + (Math.sin(t2 * 0.008) + 1) * 1.25; // 1.5..4s cycles
-              var flowerDist = _waggleDurSec * 35; // meters (scaled: 1s ≈ 1km in real bees, scaled for display)
-              var flowerAng = -Math.PI / 2 + vSunAng; // θ from vertical
-              var flX = hvX + Math.sin(flowerAng + Math.PI) * Math.min(flowerDist, gdW * 0.35);
-              var flY = hvY + Math.cos(flowerAng + Math.PI) * Math.min(flowerDist, gdH * 0.4);
-              // Line from hive to flower
-              c.strokeStyle = 'rgba(220,38,38,0.6)'; c.lineWidth = 2;
-              c.setLineDash([4, 3]);
-              c.beginPath(); c.moveTo(hvX, hvY); c.lineTo(flX, flY); c.stroke();
+              // The sun on its real bearing, and the flower at sun + theta (the same theta as the comb).
+              var sunP = bearingPt(ws.sun, mapR);
+              var flP = bearingPt(ws.food, mapR * (0.45 + 0.55 * Math.min(1, ws.distM / 3500))); // far enough out that a short route does not bury the hive label
+              c.strokeStyle = 'rgba(220,38,38,0.65)'; c.lineWidth = 2; c.setLineDash([4, 3]);
+              c.beginPath(); c.moveTo(hvX, hvY); c.lineTo(flP.x, flP.y); c.stroke();
+              c.strokeStyle = 'rgba(217,119,6,0.7)'; c.lineWidth = 1.5; c.setLineDash([3, 3]);
+              c.beginPath(); c.moveTo(hvX, hvY); c.lineTo(sunP.x, sunP.y); c.stroke();
               c.setLineDash([]);
-              // Line from hive to sun
-              c.strokeStyle = 'rgba(251,191,36,0.6)'; c.lineWidth = 1.5;
-              c.setLineDash([3, 3]);
-              c.beginPath(); c.moveTo(hvX, hvY); c.lineTo(sunVX, sunVY); c.stroke();
-              c.setLineDash([]);
-              // Angle arc between them
-              c.strokeStyle = '#7c3aed'; c.lineWidth = 1.2;
-              var hiveSunAng = Math.atan2(sunVY - hvY, sunVX - hvX);
-              var hiveFlowerAng = Math.atan2(flY - hvY, flX - hvX);
-              c.beginPath(); c.arc(hvX, hvY, 22, hiveSunAng, hiveFlowerAng, hiveFlowerAng < hiveSunAng); c.stroke();
+              var aSun = (ws.sun - 90) * Math.PI / 180;
+              c.strokeStyle = '#7c3aed'; c.lineWidth = 1.4;
+              c.beginPath(); c.arc(hvX, hvY, 24, aSun, aSun + wsTheta, wsTheta < 0); c.stroke();
               c.font = 'bold 12px Georgia, serif'; c.fillStyle = '#6d28d9'; c.textAlign = 'center';
-              var midAng = (hiveSunAng + hiveFlowerAng) / 2;
-              c.fillText('θ', hvX + Math.cos(midAng) * 30, hvY + Math.sin(midAng) * 30);
-
-              // Flower at the end
-              c.save(); c.translate(flX, flY);
-              c.fillStyle = '#f472b6';
-              for (var fp = 0; fp < 6; fp++) {
-                var fpa = fp * 1.047;
-                c.beginPath(); c.ellipse(Math.cos(fpa) * 6, Math.sin(fpa) * 6, 4, 2.5, fpa, 0, 6.28); c.fill();
-              }
+              c.fillText('θ', hvX + Math.cos(aSun + wsTheta / 2) * 34, hvY + Math.sin(aSun + wsTheta / 2) * 34 + 4);
+              c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 10; c.fillStyle = '#fbbf24';
+              c.beginPath(); c.arc(sunP.x, sunP.y, 8, 0, 6.28); c.fill(); c.restore();
+              c.font = '9px system-ui'; c.fillStyle = '#78350f';
+              c.fillText('sun ' + ws.sun + '°', sunP.x, sunP.y > hvY ? sunP.y - 12 : sunP.y + 18);
+              c.save(); c.translate(flP.x, flP.y); c.fillStyle = '#f472b6';
+              for (var fp = 0; fp < 6; fp++) { var fpa = fp * 1.047; c.beginPath(); c.ellipse(Math.cos(fpa) * 6, Math.sin(fpa) * 6, 4, 2.5, fpa, 0, 6.28); c.fill(); }
               c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(0, 0, 3, 0, 6.28); c.fill();
               c.restore();
-              c.font = 'bold 8px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'center';
-              c.fillText('FLOWER', flX, flY + 18);
-
-              // Distance label on the dashed line
-              var distM = Math.round(_waggleDurSec * 1000); // real-world meters
+              c.font = 'bold 8px system-ui'; c.fillStyle = '#065f46';
+              c.fillText('FLOWER ' + ws.food + '°', flP.x, flP.y > hvY ? flP.y + 18 : flP.y - 12);
               c.font = 'bold 10px system-ui'; c.fillStyle = '#dc2626';
-              c.fillText(distM + ' m', (hvX + flX) / 2 + 12, (hvY + flY) / 2);
+              var flDx = flP.x - hvX, flDy = flP.y - hvY, flLen = Math.max(1, Math.sqrt(flDx * flDx + flDy * flDy));
+              c.fillText(ws.distM + ' m', hvX + flDx * 0.62 - flDy / flLen * 12, hvY + flDy * 0.62 + flDx / flLen * 12 + 3); // beside the route line, not on it
 
-              // ── DISTANCE CODE: waggle duration bar ──
+              // DISTANCE CODE: waggle-run duration (~1 s per km)
               var wdBarY = pY + gdH + 60;
               c.font = 'bold 11px system-ui'; c.textAlign = 'left'; c.fillStyle = '#065f46';
               c.fillText('DISTANCE ENCODING (waggle duration → kilometers)', gdX, wdBarY);
-              // Bar background
               c.fillStyle = 'rgba(0,0,0,0.1)';
               c.fillRect(gdX, wdBarY + 6, gdW, 16);
-              // Current waggle duration fill
-              var wBarFill = Math.min(1, _waggleDurSec / 5) * gdW;
+              var wBarFill = Math.min(1, ws.runSec / 5) * gdW;
               c.fillStyle = '#059669';
               c.fillRect(gdX, wdBarY + 6, wBarFill, 16);
-              // Tick marks every 1 second
               c.strokeStyle = '#064e3b'; c.lineWidth = 1;
               c.font = '9px monospace'; c.fillStyle = '#064e3b'; c.textAlign = 'center';
               for (var tk = 0; tk <= 5; tk++) {
@@ -11927,9 +12260,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillText(tk + 's', tkX, wdBarY + 38);
                 c.fillText((tk * 1000) + 'm', tkX, wdBarY + 50);
               }
-              // Current value label
-              c.font = 'bold 10px monospace'; c.fillStyle = '#dc2626'; c.textAlign = 'center';
-              c.fillText(_waggleDurSec.toFixed(1) + 's = ' + distM + 'm', gdX + wBarFill, wdBarY - 6);
+              c.font = 'bold 10px monospace'; c.fillStyle = '#dc2626'; c.textAlign = 'right';
+              c.fillText('this dance: ' + ws.runSec.toFixed(1) + 's ≈ ' + ws.distM + 'm', gdX + gdW, wdBarY + 36 + 28); // below the scale, clear of the title
 
               c.restore();
             })();
@@ -12286,11 +12618,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = 'rgba(120,53,15,0.92)';
             c.fillRect(0, stripY, W, 52);
             c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillStyle = '#fef3c7';
-            c.fillText('Input: ~10,000 flower visits per tablespoon of honey', W / 2, stripY + 20);
+            c.fillText('Input: ~90,000 flower visits per tablespoon of honey', W / 2, stripY + 20); // 2 million per lb / 21.6 tbsp per lb
             c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#fcd34d';
             var honeyFacts = [
               'A single worker bee produces ~1/12 teaspoon of honey in her entire 6-week lifetime.',
-              'Honey is the ONLY food produced by an insect that humans regularly consume.',
+              'Honey is by far the most widely eaten food that insects make.',
               'Raw honey contains ~200 substances including enzymes, antioxidants, and trace vitamins.',
               '1 lb of honey = 2 million flowers visited + 55,000 miles flown by foragers.',
               'Low water activity + acidity + antimicrobial compounds make sealed, dry honey highly shelf-stable.'
@@ -12488,6 +12820,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // (the flight-sim dt lesson). Fractional t2 is harmless — the
           // Math.floor(t2/420) fact cyclers still land on whole indices.
           var _lastSceneTime = 0;
+          var _floodSeenDay = -99; // last sim day a flood event was on screen (drives the rainbow after it)
+          var _swarmSeenDay = -99; // last sim day a swarm event was on screen (drives the bivouac cluster)
 
           function scheduleBeeFrame() {
             if ((_liveState.current || {}).motionPaused) return;
@@ -12504,7 +12838,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               gardenPollinators = ls.gardenPollinators || 0;
               gardenBonus = ls.gardenBonus || 0;
               colonyHealth = typeof ls.colonyHealth === 'number' ? ls.colonyHealth : 50;
-              var _snow = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              // Every colony value the scene draws comes from the live ref. The loop's closure
+              // belongs to the render that started it, so a bare `varroaLevel` or `day` here was
+              // the value at mount: mite haze, the QMP ribbon and the chalkboard never changed.
+              workers = safeWorkers; honey = safeHoney;
+              if (typeof ls.day === 'number') { day = ls.day; year = typeof ls.year === 'number' ? ls.year : year; }
+              if (typeof ls.queenHealth === 'number') queenHealth = ls.queenHealth;
+              if (typeof ls.varroaLevel === 'number') varroaLevel = ls.varroaLevel;
+              if (typeof ls.morale === 'number') morale = ls.morale;
+              if (typeof ls.brood === 'number') brood = ls.brood;
+              if (typeof ls.drones === 'number') drones = ls.drones;
+              if (typeof ls.pollen === 'number') pollen = ls.pollen;
+              if (typeof ls.currentReserve === 'number') currentReserve = ls.currentReserve;
+              var _snow =(typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
               if (!_lastSceneTime) _lastSceneTime = _snow;
               var _sscale = Math.max(0.25, Math.min(2.5, (_snow - _lastSceneTime) / 1000 * 60));
               _lastSceneTime = _snow;
@@ -12616,6 +12962,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   });
                 }
                 _bees.current = ba;
+              } else {
+                // The pool follows the colony: one bee per frame joins (emerging at the entrance)
+                // or leaves, so a shrinking colony visibly thins instead of keeping 90 foragers.
+                var _beeTarget = Math.max(14, Math.min(90, Math.floor(safeWorkers / 250)));
+                if (_bees.current.length > _beeTarget) _bees.current.pop();
+                else if (_bees.current.length < _beeTarget) _bees.current.push({ x: W * 0.17, y: H * 0.62, vx: Math.random() * 1.5, vy: -Math.random(), sz: 2.5 + Math.random() * 2, ph: Math.random() * 6.28, carry: false, toFlower: true, wp: Math.random() * 6.28, bumble: false });
               }
               if (!_flowers.current || _flowers.current.length === 0) {
                 // Richer meadow — 2 rows of flowers, more species variety.
@@ -12639,6 +12991,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var bkScale = Math.max(5.5, H / 90); // beekeeper size multiplier — bumped so beekeeper reads as ~1.3× hive height per real-world proportions noted above
               c.clearRect(0, 0, W, H);
 
+              // Calm scene: the meadow keeps its sky, weather, forage plants, water, hive and bees and
+              // drops the homestead cameos (about 80% of this loop), which competed with the hive for
+              // attention and cost frame time on school Chromebooks. Off by default except with reduced motion.
+              var _calmScene = !!ls.calmScene;
               // ── Sky (seasonal gradient + atmosphere) ──
               // Each season has a 3-stop vertical gradient (zenith / horizon
               // / ground tint). We smoothly LERP between the current season
@@ -12673,28 +13029,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var sg = c.createLinearGradient(0, 0, 0, H);
               sg.addColorStop(0, sk0); sg.addColorStop(0.55, sk1); sg.addColorStop(1, sk2);
               c.fillStyle = sg; c.fillRect(0, 0, W, H);
+              // A modelled flood greys the sky and hides the sun: the scene must not show
+              // sunshine through the rain the event card describes.
+              var _stormNow = !!(ls.activeEvent && ls.activeEvent.id === 'flood');
+              if (_stormNow) { c.fillStyle = 'rgba(55,65,81,0.42)'; c.fillRect(0, 0, W, H); }
 
               // Sun / Moon — moves in an arc across the sky following the _tod cycle
               var sunR = season === 1 ? 24 : season === 3 ? 14 : 18;
               // Arc position: sun rises east (left), peaks at noon (center-high), sets west (right)
               var _sunCycle = ((t2 * 0.0004) % 2); // 0..2 (one full day each 2 units)
-              var _sunT_arc = _sunCycle < 1 ? _sunCycle : (2 - _sunCycle); // 0..1..0 ping-pong
+              // Night is the second half of the cycle. The sun used to ping-pong back west to east across
+              // the night sky; now it sets, and the phased moon (drawn after the night overlay) crosses.
+              var _sunDown = _sunCycle >= 1;
+              var _sunT_arc = _sunDown ? _sunCycle - 1 : _sunCycle; // 0..1 east to west
+              var _sunDay = _sunDown ? 0 : Math.max(0, Math.sin(_sunT_arc * Math.PI)); // sun height; 0 all night
+              var _sunVis = _sunDown ? 0 : Math.min(1, _sunCycle / 0.05, (1 - _sunCycle) / 0.05); // rise / set fade
               var sunX = W * (0.12 + _sunT_arc * 0.76);
               // Y follows an arc: highest at noon (_sunT_arc = 0.5)
               var sunArcY = H * 0.30 - Math.sin(_sunT_arc * Math.PI) * (H * 0.20);
               var sunY = sunArcY + Math.sin(t2 * 0.002) * 3;
               c.save();
-              c.shadowColor = season === 3 ? 'rgba(180,200,220,0.3)' : 'rgba(255,200,80,0.5)';
-              c.shadowBlur = season === 3 ? 10 : 20;
-              c.fillStyle = season === 3 ? '#d0dae8' : '#ffe066';
-              c.beginPath(); c.arc(sunX, sunY, sunR, 0, 6.28); c.fill();
+              c.globalAlpha = (_stormNow ? 0.18 : 1) * _sunVis; // pale behind storm clouds; gone at night
+              if (_sunVis > 0) {
+                c.shadowColor = season === 3 ? 'rgba(180,200,220,0.3)' : 'rgba(255,200,80,0.5)';
+                c.shadowBlur = season === 3 ? 10 : 20;
+                c.fillStyle = season === 3 ? '#d0dae8' : '#ffe066';
+                c.beginPath(); c.arc(sunX, sunY, sunR, 0, 6.28); c.fill();
+              }
               c.restore();
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── 22° sun halo in cold air (winter optical phenomenon) ──
               // Real atmospheric optics: light refracts through hexagonal ice
               // crystals in cirrus clouds to form a faint ring at exactly 22°
               // around the sun. Most visible on cold clear winter days. The
               // ring has a subtle red-inner / blue-outer color separation.
-              if (season === 3 && _sunT_arc > 0.15 && _sunT_arc < 0.85) {
+              if (season === 3 && !_sunDown && _sunT_arc > 0.15 && _sunT_arc < 0.85) {
                 var _haloIntensity = Math.min(1, (_sunT_arc - 0.15) / 0.15) * Math.min(1, (0.85 - _sunT_arc) / 0.15);
                 var _haloR = sunR * 3.5;
                 c.save();
@@ -12713,8 +13082,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
-              // Sun rays (not winter) — short radiating spikes
-              if (season !== 3) {
+              // Sun rays (not winter, not in a storm) — short radiating spikes
+              if (season !== 3 && !_stormNow && !_sunDown) {
                 c.strokeStyle = 'rgba(255,220,100,0.15)'; c.lineWidth = 1;
                 for (var ri = 0; ri < 8; ri++) {
                   var ra = ri * 0.785 + t2 * 0.003;
@@ -12748,8 +13117,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Pollen dust motes drifting in the god rays (magical atmosphere) ──
-              if (season !== 3) {
+              if (season !== 3 && !_stormNow && !_sunDown) {
                 c.fillStyle = 'rgba(255,240,180,0.55)';
                 for (var dm = 0; dm < 18; dm++) {
                   var dmSrcX = sunX, dmSrcY = sunY;
@@ -12766,6 +13137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.globalAlpha = 1;
               }
 
+              } // end calm-scene gate
               // ── Time-of-day warm breath (gentle hourly tint to break up flat seasonal sky) ──
               var _tod = Math.sin(t2 * 0.00025); // slow cycle, -1..1
               if (_tod > 0 && season !== 3) {
@@ -12777,29 +13149,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(0, 0, W, H * 0.55);
               }
 
-              // ── Periodic weather cycle: clear → rain → rainbow → clear ──
-              // 240s cycle independent of the sim's activeEvent system. The
-              // rain phase darkens clouds, animates falling drops + ground
-              // splashes, and is followed by a brief rainbow as the sun
-              // returns. Real bee biology: bees can't fly in rain (droplets
-              // hit their wings with hurricane force at their scale), so the
-              // weather cycle is also a felt-cue for "no foraging right now."
-              // Suppressed in winter (where snow already covers the system).
-              var _wxPeriod = 240000; // 4 minutes
-              var _wxPhase = (Date.now() % _wxPeriod) / _wxPeriod; // 0..1
-              // Rain phase: 0.60..0.80 (~48s)
-              // Rainbow: 0.80..0.92 (~29s, while sun returns)
+              // ── Weather from the model: rain, heat, frost ──
+              // Rain darkens clouds, animates drops + ground splashes, and is followed by a
+              // rainbow. Bees can't fly in rain (drops hit their wings with hurricane force at
+              // their scale), so rain also grounds the foragers drawn below.
               var _wxRain = 0;
               var _wxRainbow = 0;
-              if (season !== 3 && _sunCycle < 1.0) {
-                if (_wxPhase >= 0.60 && _wxPhase < 0.80) {
-                  var _wxRainT = (_wxPhase - 0.60) / 0.20; // 0..1
-                  _wxRain = Math.sin(_wxRainT * Math.PI); // ramp-in/out bell
-                } else if (_wxPhase >= 0.80 && _wxPhase < 0.92) {
-                  var _wxRbT = (_wxPhase - 0.80) / 0.12;
-                  _wxRainbow = Math.sin(_wxRbT * Math.PI); // bell ramp
-                }
-              }
+              // The sky now reports the MODEL's weather. The wall-clock cycle above rained while
+              // the model foraged normally and shone through a modelled flood, so it taught the
+              // wrong link. Rain comes only from a flood event; a rainbow follows for two days.
+              var _wxEventId = ls.activeEvent && ls.activeEvent.id;
+              if (_wxEventId === 'flood') { _wxRain = 0.85 + 0.15 * Math.sin(t2 * 0.01); _floodSeenDay = day; }
+              else if (season !== 3 && day - _floodSeenDay >= 0 && day - _floodSeenDay <= 2 && _sunCycle < 1.0) _wxRainbow = 0.8;
+              var _wxHeat = (_wxEventId === 'heatwave' || _wxEventId === 'drought') ? 1 : 0;
+              var _wxFrost = _wxEventId === 'late_frost' ? 1 : 0;
+              // Foragers stay home in rain and in winter; the bee loop below reads this.
+              var _foragersGrounded = _wxRain > 0.3 ? 'rain' : season === 3 ? 'winter' : _wxFrost ? 'frost'
+                : (_sunCycle >= 1.05 && _sunCycle < 1.92) ? 'night' : ''; // no foraging after dark
               // Clouds (parallax, layered) — darken during rain
               var _cloudAlpha = 0.25 + _wxRain * 0.40;
               var _cloudFill = _wxRain > 0.1 ?
@@ -12819,14 +13185,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // ── Rain shower (falling streaks + ground splashes) ──
               if (_wxRain > 0.08) {
                 c.save();
-                c.strokeStyle = 'rgba(160,190,220,' + (0.6 * _wxRain).toFixed(3) + ')';
-                c.lineWidth = 0.5;
-                for (var rd = 0; rd < 80; rd++) {
+                // Heavy enough to read at a glance (the old 0.5px x 4px drops were invisible).
+                c.strokeStyle = 'rgba(190,210,235,' + (0.55 * _wxRain).toFixed(3) + ')';
+                c.lineWidth = 1.1;
+                for (var rd = 0; rd < 140; rd++) {
                   var _rdX = ((rd * 31 + 7) % W) + Math.sin(rd) * 5;
-                  var _rdY = ((rd * 41 + t2 * 6) % H);
+                  var _rdY = ((rd * 41 + t2 * 7) % H);
                   c.beginPath();
                   c.moveTo(_rdX, _rdY);
-                  c.lineTo(_rdX - 1.2, _rdY + 4);
+                  c.lineTo(_rdX - 2.5, _rdY + 11);
                   c.stroke();
                 }
                 // Ground splashes — tiny ellipses along H*0.80
@@ -12900,12 +13267,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // ── Wet-ground puddle lingering after rain (post-rain wetness) ──
               // The ground darkens for ~60s after the rain ends, with two soft
               // puddles in low spots that catch a thin reflective sheen.
-              var _wxWet = 0;
-              if (_wxPhase >= 0.80 && _wxPhase < 0.95) {
-                _wxWet = Math.max(0, 1 - (_wxPhase - 0.80) / 0.15);
-              } else if (_wxRain > 0) {
-                _wxWet = _wxRain;
-              }
+              // Driven by the model like the rain: wet during a flood and the day after it.
+              var _wxWet = _wxRain > 0 ? _wxRain : (day - _floodSeenDay >= 0 && day - _floodSeenDay <= 1 ? 0.6 : 0);
               if (_wxWet > 0.08) {
                 c.save();
                 // Two puddles in the meadow
@@ -12951,6 +13314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
               // Tiny silhouettes in the upper sky add scale and the felt sense
               // of a real ecosystem above the apiary. Fully suppressed in winter.
@@ -13039,6 +13403,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Small flock of sheep grazing in the back pasture (spring/summer/fall) ──
               // Real Maine farm scene: a few sheep scattered across the pasture,
               // bodies down to graze. White fluffy bodies, dark faces + legs.
@@ -13084,6 +13450,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Horse silhouette grazing in the back pasture (Maine farm detail) ──
               // Distant horse silhouette near the farmhouse — a calm sentinel
               // grazing in the back pasture. Head goes down to graze, lifts
@@ -13146,6 +13514,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(_hrHeadX - 0.3, _hrHeadY - 0.3, 0.2, 0, 6.28); c.fill();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Red barn next to the farmhouse (classic rural pairing) ──
               if (season !== 3) {
                 var bnX = W * 0.80, bnY = H * 0.70;
@@ -13172,6 +13542,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(bnX - 2, bnY - 4, 4, 3);
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Distant farmhouse silhouette (beyond the mountains — adds rural scale) ──
               if (season !== 3) {
                 var fhX = W * 0.72, fhY = H * 0.68;
@@ -13222,6 +13594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(fhX - 4, fhY - 14, 8, 1);
               }
 
+              } // end calm-scene gate
               // ── Atmospheric haze band on the horizon (air-perspective depth) ──
               // A soft horizontal band of color between sky and mountains
               // softens the far edge of the world and gives the scene real
@@ -13347,13 +13720,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }
                 }
               }
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Cloud shadows drifting across the meadow ──
               // Soft dark patches on the ground that drift in sync with the
               // overhead clouds. Fades out at dawn/dusk (low sun = no shadow)
               // and is suppressed in winter. Gives kids a visceral, no-words
               // cue of cloud motion they can track on the ground.
               if (season !== 3) {
-                var _csDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                var _csDay = _sunDay;
                 c.save();
                 c.fillStyle = '#1f2937';
                 for (var csi = 0; csi < 4; csi++) {
@@ -13397,6 +13771,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Cherry-blossom petals drifting (spring) ──
               // Soft pink ovals tumbling down with horizontal sway — reads
               // immediately as "spring" without needing a label. Each petal
@@ -13422,6 +13798,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Falling maple leaves (fall) ──
               // Larger than petals, with a stem and an irregular notched
               // outline; they tumble with both translation drift and a slow
@@ -13463,6 +13841,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Summer pollen drift (golden particles riding the wind) ──
               // A wave of pollen carried on the L→R wind that already moves the
               // grass and flowers. Different from the existing pollination-feed
@@ -13471,7 +13851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // is literally yellow at midday. Suppressed at dusk/dawn (the
               // wind dies and the bees stop kicking pollen into the air).
               if (season === 1) {
-                var _pdDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                var _pdDay = _sunDay;
                 if (_pdDay > 0.1) {
                   c.save();
                   for (var pd = 0; pd < 26; pd++) {
@@ -13488,12 +13868,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Summer heat shimmer over the ground (subtle band that wavers) ──
               // Just above the meadow line in peak summer, the air ripples.
               // Pure visual — no text, no measurement — but kids notice it.
-              if (season === 1) {
+              // A modelled heatwave or drought makes the shimmer strong in any warm season.
+              if (season === 1 || (_wxHeat && season !== 3)) {
                 c.save();
-                c.globalAlpha = 0.10;
+                c.globalAlpha = _wxHeat ? 0.22 : 0.10;
                 c.fillStyle = '#fef3c7';
                 for (var hs = 0; hs < 8; hs++) {
                   var _hsy = H * 0.76 - 8 + hs * 1.2;
@@ -13512,6 +13894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
               // (Distant birds handled earlier — hawk circling in spring/summer, V-formation in fall)
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Spider web in the upper-left corner (year-round naturalist detail) ──
               // Anchored to the top + left edges of the canvas frame as if spun
               // overnight between the apiary's posts. 8 radial spokes from a
@@ -13574,6 +13957,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Mushroom cluster in autumn shade (decomposer story) ──
               // Three small mushrooms tucked at the base of the apple-tree
               // shadow in fall only — completes the seasonal-decomposer arc
@@ -13611,6 +13996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Ground flora: clover + dandelions scattered in grass ──
               if (season === 0 || season === 1) {
                 // White clover (small triple dots)
@@ -13633,6 +14019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Autumn: mushroom cluster at apple tree base ──
               if (season === 2 && hiveX > 40) {
                 var mshBase = hiveX * 0.55;
@@ -13658,6 +14045,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Autumn: pumpkin near the fence (right side, close to viewer) ──
               if (season === 2) {
                 var pmX = W * 0.89, pmY = H * 0.80;
@@ -13682,6 +14071,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(pmX + 2.5, pmY - 8, 3, 1.2, 0.5, 0, 6.28); c.fill();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Autumn falling leaves ──
               if (season === 2) {
                 var leafColors = ['#c2410c', '#ea580c', '#eab308', '#a16207', '#7c2d12'];
@@ -13698,6 +14089,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Spring rainbow arc (appears briefly AFTER spring rain fades — poetic touch) ──
               if (season === 0) {
                 var rbPhase = Math.sin(t2 * 0.0009 - 1.5); // offset from rain phase
@@ -13720,6 +14113,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Spring light rain (season 0, periodic) ──
               if (season === 0 && Math.sin(t2 * 0.0009) > 0.6) {
                 c.strokeStyle = 'rgba(180,210,255,0.35)'; c.lineWidth = 0.8;
@@ -13730,6 +14125,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Dragonfly hovering near birdbath (eats mosquitoes, loves water sources) ──
               if ((season === 0 || season === 1) && Math.sin(t2 * 0.01) > 0) {
                 var dfX = W * 0.42 + Math.sin(t2 * 0.015) * 30;
@@ -13760,6 +14157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              } // end calm-scene gate
               // ── Birdbath / bee water source (bees need ~1 cup of water per day) ──
               if (season !== 3) {
                 var bbX = W * 0.42, bbY = H * 0.74;
@@ -13829,7 +14227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var _helX = sunX - sfx;
                   var _helY = sunY - sfTopY;
                   var _helD = Math.hypot(_helX, _helY);
-                  var _isNight = _tdT >= 1.05 && _tdT <= 1.95;
+                  var _isNight = _sunCycle >= 1.05 && _sunCycle <= 1.95;
                   var helioX, helioY;
                   if (_isNight) {
                     // East-facing memory (slight leftward lean, slight upward)
@@ -13871,6 +14269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Vegetable garden plot (raised bed with rows of crops) ──
               if (season !== 3) {
                 var vgX = W * 0.08, vgY = H * 0.81, vgW = 55, vgH = 12;
@@ -13919,6 +14318,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Scarecrow in the far meadow (decorative guardian) ──
               if (season !== 3) {
                 var scX = W * 0.68, scY = H * 0.76;
@@ -13955,6 +14356,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Squirrel running along the top of the fence (year-round cameo) ──
               // Real biology: gray squirrels stay active all winter (no
               // hibernation), unlike groundhogs and chipmunks. They cache
@@ -14027,6 +14430,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Dragonfly zigzagging over the meadow (summer only) ──
               // Distinct flight pattern from bees/butterflies/hummingbirds —
               // straight darts with sudden 90° direction changes. Real biology:
@@ -14093,6 +14498,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Young white-tailed deer at the meadow edge (spring + fall, dawn/dusk) ──
               // Real Maine wildlife: white-tailed deer are most active at dawn
               // and dusk, browsing on early greens in spring and apple windfalls
@@ -14172,6 +14579,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Red fox cameo crossing the meadow at dusk (fall + winter) ──
               // Real biology: red foxes are crepuscular hunters most active
               // at dawn and dusk in colder months. Sleek body, bushy tail,
@@ -14244,6 +14653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Daisy patch at the lower meadow (spring/summer) ──
               // 8 daisies with white petals + golden centers, clustered in
               // a low spot near the meadow edge. Each daisy sways with the
@@ -14288,6 +14698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden walking stick leaning against the Adirondack chair ──
               // Beloved Maine homestead detail. The keeper's walking stick
               // rests against the right side of the chair. Slight knot in the
@@ -14332,6 +14743,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(_wsBottomX, _wsBottomY, 0.55, 0, 6.28); c.fill();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Barn cat lounging in the sun (year-round homestead detail) ──
               // Sits curled up near the Adirondack chair, occasionally
               // twitching its tail. Black-and-white tuxedo coat, eyes
@@ -14417,6 +14830,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(_bcX + 7 + _bcTailFlick, _bcY + 1.5, 0.5, 0, 6.28); c.fill();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Traditional woven straw bee skep (historical bee artifact) ──
               // Bee skeps are coiled-straw domed beehives, used by beekeepers
               // for 2000+ years before modern Langstroth frames replaced them
@@ -14476,6 +14891,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.textAlign = 'start';
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Basket of fresh-picked apples beside the tree (fall harvest) ──
               // Woven wicker basket with apples piled inside — late summer
               // and fall only. Real Maine homestead detail.
@@ -14533,6 +14950,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Rabbit hopping across the meadow (periodic cameo, every ~20s) ──
               if (season !== 3) {
                 var rbCycle = (t2 % 1200) / 1200; // 0..1 over ~20s
@@ -14568,6 +14987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Lavender bushes along the fence (major honeybee forage plant) ──
               if (season === 0 || season === 1 || season === 2) {
                 var lavSpots = [W * 0.18, W * 0.37, W * 0.65, W * 0.88];
@@ -14595,6 +15015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Stone wall segment along the back meadow (classic New England) ──
               // Real Maine homestead detail: most farms in the Northeast have
               // a section of dry-stacked stone wall — left behind from when
@@ -14655,6 +15076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
               // ── Wooden garden fence along the ground ──
               c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
               var fenceBaseY = H * 0.775;
@@ -14674,6 +15096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Beekeeper footprints in the snow (winter, gate → hive) ──
               // Real homestead storytelling: the keeper checks the hive every
               // few days even in winter. Two parallel rows of boot prints from
@@ -14698,6 +15121,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Mailbox on a post at the meadow path edge (rural homestead) ──
               // Standard US-rural mailbox: domed steel body with a red flag, on
               // a wooden post stuck in the ground at the very right edge.
@@ -14766,6 +15191,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Bumblebee burrow at the meadow edge (real biology) ──
               // Real biology: bumblebees nest in abandoned mouse holes or
               // small ground cavities, NOT in hives like honeybees. They form
@@ -14814,6 +15241,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Bear paw prints in winter snow (rare biology cameo) ──
               // Real beekeeping risk noted in the forest habitat: "Bears
               // occasionally investigate — consider electric fencing." In
@@ -14862,6 +15291,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(_bpEndX - 2, H * 0.85, 5, 1.2, 0, 0, 6.28); c.fill();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Crow on a fence post in winter daytime (year-round bird coverage) ──
               // Counterpart to the songbird (spring/summer/fall day) and the
               // owl (deep night): a crow takes the day shift in winter when
@@ -14935,6 +15366,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Small vegetable garden patch (seasonal crops, real bee-companion biology) ──
               // A 4-row raised-bed plot in the foreground — tomatoes/beans
               // depend on pollination. Crops shift with season: bare brown
@@ -15055,6 +15488,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Compost pile beside the vegetable garden (decomposer biology) ──
               // Real biology: microbial decomposition releases heat — a working
               // compost pile can hold 130-160°F at its core, visible as steam
@@ -15132,6 +15567,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Grasshopper hopping across the meadow (summer cameo) ──
               // Real biology: green grasshoppers are a major sound of a summer
               // meadow. Slim long-legged silhouette, bouncing flight pattern,
@@ -15191,6 +15628,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Clothesline with laundry (wind-driven, spring/summer/fall) ──
               // Strung between two posts in the meadow background — three items
               // hang and SWAY with the same coherent wind wave that already
@@ -15286,6 +15725,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden ladder leaning against the apple tree (year-round) ──
               // Real beekeepers + orchardists keep a small ladder out for
               // pruning + harvest. Leans against the apple-tree trunk on the
@@ -15329,6 +15770,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Bird feeder hanging from a fence post (year-round, chickadee cameo) ──
               // Small wooden hopper feeder with seed inside. A chickadee
               // (or junco in winter) periodically flies in to grab a seed.
@@ -15427,6 +15870,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden trellis with morning glory vines (year-round structure, seasonal vines) ──
               // A traditional pyramid trellis (3 angled stakes meeting at a top
               // collar) with morning glory vines climbing in spring + summer,
@@ -15541,12 +15986,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden crate of HONEY jars (late summer + fall — harvest aftermath) ──
               // Sits to the left of the honey extractor. Appears from day 22
               // of summer (peak harvest week) through fall. 6 jars in a 3x2
               // grid inside a slatted wooden crate; jars have amber gradient
               // contents and small white "HONEY" labels.
-              if ((season === 1 && (day % 30) >= 22) || season === 2) {
+              if (ls.harvestedThisYear && (season === 1 || season === 2)) { // only after a real harvest this year
                 var _hcX = W * 0.74, _hcY = H * 0.86;
                 var _hcW = 12, _hcH = 7;
                 // Shadow
@@ -15610,6 +16057,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Honey-extractor barrel near the keeper home (beekeeping equipment) ──
               // Real beekeeping: an extractor is a metal drum that spins frames
               // to fling honey out by centrifugal force. Hobbyist extractors
@@ -15682,6 +16131,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.textAlign = 'start';
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Dew-laden spider webs strung between fence posts at dawn ──
               // Two small webs in the gaps between fence posts, only visible
               // during the dawn window. Each shows a small grid pattern of
@@ -15740,6 +16191,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Snowman in the winter meadow ──
               // A small classic three-ball snowman with carrot nose, twig
               // arms, coal eyes, and a red scarf that flutters with the
@@ -15866,6 +16319,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Fairy mushroom ring in fall meadow (folklore + real biology) ──
               // Real biology: "fairy rings" form when a single mushroom mycelium
               // grows outward in a circle through soil, fruiting bodies emerging
@@ -15905,6 +16360,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(_frCx, _frCy, _frR, _frR * 0.55, 0, 0, 6.28); c.stroke();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Small wooden picnic table beside the Adirondack chair w/ honey jar ──
               // A folding side table where the keeper can set tea + a HONEY
               // jar to taste-test the season's batch. Year-round but stripped
@@ -15963,6 +16420,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Small pumpkin patch beside the vegetable garden (fall only) ──
               // 4 pumpkins clustered together in varying sizes — homestead
               // staple right before Halloween. Real bee biology: pumpkin
@@ -16014,6 +16473,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Mason jar lantern hanging from the apple-tree branch (lit at night) ──
               // A glass mason jar with a candle inside, suspended from a wire
               // hook. Glows warm amber at night, transparent during day.
@@ -16081,6 +16542,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Old wagon wheel propped against the fence (rustic decor) ──
               // Classic New England farmhouse decoration — a retired wooden
               // wheel leaning against a fence post. Real homestead detail.
@@ -16133,6 +16596,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(_wwX, _wwY + _wwR + 1, _wwR, 0.6, 0, 0, 6.28); c.fill();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wheelbarrow with tools (homestead realism, year-round) ──
               // Tipped slightly to one side as if just set down. A coiled
               // garden hose loops over the rim. Reads as "lived-in apiary."
@@ -16223,6 +16688,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Chopping log w/ axe stuck in it (beside firewood, year-round) ──
               // Real Maine homestead: the wood-splitting block where logs get
               // halved before being stacked. Always has the axe stuck in the
@@ -16290,6 +16757,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(_clX + 5, _clY + 2, 0.35, 0.15, 0, 0, 6.28); c.fill();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Stacked firewood pile (right edge, winter survival prep) ──
               // Roundhouse-cut wood logs stacked in a 3-row pile. Spring is
               // the smallest stack (used through winter), fall is the tallest
@@ -16338,6 +16807,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Sugar-syrup feeder jar at hive entrance (summer dearth biology) ──
               // Real beekeeping: between spring tree bloom (~day 5-15) and the
               // late-summer goldenrod flow (~day 18+ of summer + all of fall),
@@ -16345,7 +16816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Workers may rob other hives unless fed. Beekeepers invert a
               // mason jar with tiny holes in the lid at the entrance so syrup
               // drips down for the colony. Visible day 22-28 of season 1.
-              if (season === 1 && (day % 30) >= 22 && (day % 30) <= 28) {
+              if ((ls.syrup || 0) > 0.5) { // shown while fed syrup is still in the hive
                 var _fjX = hiveX + hiveW * 0.5 - 4;
                 var _fjY = hiveY + hiveH - 4;
                 // Inverted jar shadow
@@ -16397,6 +16868,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Spare Langstroth super box stacked beside the hive (equipment realism) ──
               // Beekeepers always have spare supers ready for honey flow — this
               // empty box sits to the right of the working hive, half-tucked
@@ -16440,6 +16913,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.textAlign = 'start';
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden "Bees Quiet Please" sign stuck in the ground (year-round) ──
               // Real beekeeping etiquette + visual cue. A hand-painted wooden
               // sign on a stake stuck into the ground between the meadow path
@@ -16487,6 +16962,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Pair of garden boots upside-down on a fence post (drying after use) ──
               // Whimsical homestead detail: gardeners flip muddy boots upside
               // down on fence posts to drain + dry. Mounted on the 2nd-to-last
@@ -16531,6 +17008,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden swing hanging from an apple-tree branch ──
               // Real homestead childhood touch. A simple plank seat on two
               // ropes hanging from a strong tree branch. The whole assembly
@@ -16579,6 +17058,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(_swBranchX + 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Beekeeper tool rack mounted on a fence post (year-round) ──
               // Real beekeeping kit hanging from a wall-mounted rack: hive
               // tool, bee brush, smoker fuel can. Mounted on the 3rd post
@@ -16635,6 +17116,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.textAlign = 'start';
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Worn watering can beside the vegetable garden (spring/summer) ──
               // Tilted galvanized-metal can with the spout pointing into the
               // garden. Drips a tiny water bead at dawn when the keeper
@@ -16702,6 +17185,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Mason bee hotel mounted on a fence post (year-round fixture) ──
               // Real beekeeping accessory: a wooden block drilled with 4-8 mm
               // holes where solitary mason bees lay eggs. Closes the "honeybees
@@ -16766,6 +17251,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.stroke();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Barred owl on a fence post at night (winter especially) ──
               // Counter to the dawn-chorus songbird — at deep night a silent
               // hunter takes the perch. Real biology: barred owls are common in
@@ -16862,6 +17349,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Solar string lights strung along the fence (charge by day, glow at night) ──
               // Real homestead touch — those Edison-bulb-style outdoor strings.
               // Visible all year, but the bulbs only GLOW after dusk. They
@@ -16912,6 +17401,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Adirondack chair beside the apiary (weathered Maine homestead detail) ──
               // The beekeeper's favorite resting spot — angled-back wooden chair
               // visible just to the right of the BEES sign, tucked partly into
@@ -16996,6 +17487,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Rose-covered wooden archway above the gate ──
               // Classic New England touch — a curved wooden arbor straddling
               // the gate, with climbing pink roses in spring/summer, hips +
@@ -17103,6 +17596,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden gate in the fence (homestead detail) ──
               // Breaks up the long horizontal fence with a hinged gate.
               // Placed off-center on the right side so it doesn't conflict with
@@ -17153,6 +17648,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(_gtX, fenceBaseY + 5, _gtW * 0.6, 1.2, 0, 0, 6.28); c.fill();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Rooster crowing on a fence post at dawn (year-round) ──
               // Real Maine farm: roosters crow at dawn from a high perch.
               // Visible all year, prominent at dawn — head tilted up + open
@@ -17263,6 +17760,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Songbird perched on a fence post (spring/summer/fall day) ──
               // Tiny robin-style silhouette with seasonal plumage. Sits on the
               // top of a fence post and occasionally tilts its head; during
@@ -17340,6 +17839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Morning mist (low horizontal fog band, tied to time-of-day "warm" phase) ──
               if (season !== 3 && _tod > 0.2) {
                 var mistAlpha = (_tod - 0.2) * 0.22;
@@ -17351,6 +17851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(0, H * 0.70, W, H * 0.12);
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Spider web on fence corner (decorative micro-detail, lower-right) ──
               if (season !== 3) {
                 var webX = W * 0.95, webY = H * 0.78;
@@ -17364,12 +17865,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Beekeeper sprite (moved further down the render order) ──
               // Was previously drawn here, but meadow flowers / apple tree / tree
               // line / hummingbird all paint AFTER this point and were partially
               // hiding the beekeeper. Moved to just before the hive (after
               // ladybugs) so the keeper layers above foliage and reads cleanly.
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Hornet predator (rare — flies fast across scene every ~45s, adds drama) ──
               var hnCycle = (t2 % 2700) / 2700;
               if (season !== 3 && hnCycle > 0.3 && hnCycle < 0.55) {
@@ -17406,6 +17909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Bee waterer (shallow bowl + rocks — real beekeepers always keep water nearby) ──
               // Placed on the ground between hive and apiary sign. Rocks let bees land without drowning.
               if (season !== 3) {
@@ -17451,7 +17955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // ── Sun rays (midday only, _tod > 0.4 — diagonal god-rays from top-right) ──
-              if (season !== 3 && _tod > 0.4) {
+              if (season !== 3 && _tod > 0.4 && !_stormNow && !_sunDown) {
                 c.save();
                 c.globalAlpha = (_tod - 0.4) * 0.18;
                 c.fillStyle = '#fef9c3';
@@ -17471,6 +17975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Butterfly visitor (spring/summer — flutters in a lazy arc through flower area) ──
               // Biodiversity signal; connects to the Native Bees / Pollination tabs.
               if ((season === 0 || season === 1) && hiveX > 40) {
@@ -17522,6 +18027,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Evening fireflies (dusk/night phase of _tod only) ──
               if (season !== 3 && _tod < -0.15) {
                 c.save();
@@ -17538,6 +18045,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wind chime hanging from apple tree (when apple tree visible) ──
               if (hiveX > 40 && season !== 3) {
                 var wcRootX = hiveX * 0.55 + 16;
@@ -17561,6 +18070,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Garden pinwheel (charming motion detail) ──
               if (season !== 3) {
                 var pwX = W * 0.26, pwY = H * 0.74, pwAng = t2 * 0.12;
@@ -17585,6 +18096,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Apiary sign mounted on fence (right side) ──
               var signX = W * 0.58;
               var signY = H * 0.72;
@@ -17602,6 +18115,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#4b5563';
               c.beginPath(); c.arc(signX - 20, signY - 6, 0.7, 0, 6.28); c.fill();
               c.beginPath(); c.arc(signX + 24, signY - 6, 0.7, 0, 6.28); c.fill();
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Analog thermometer mounted on the apiary post (seasonal mercury level) ──
               // Real homestead detail: a wall thermometer near the apiary so
               // the keeper can spot-check temperature before opening the hive.
@@ -17648,6 +18163,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.textAlign = 'start';
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wooden birdhouse mounted on the apple tree trunk (year-round) ──
               // Small pitched-roof birdhouse with a circular entrance hole and
               // a perch beneath. Occasional bird (blue/orange flash) visits.
@@ -17715,6 +18232,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Rabbit tracks in winter snow (week 1+ of winter) ──
               // Real biology: rabbits leave a distinctive print pattern —
               // two large back-feet prints AHEAD of two smaller front-feet
@@ -17746,6 +18265,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Bee-shaped weathervane on a tall pole (wind direction indicator) ──
               // Rotates to point into the wind. Uses the same coherent wind
               // wave as the rest of the meadow so it always "agrees" with the
@@ -17817,6 +18338,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               })();
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Small chalkboard with daily hive notes (mounted beside apiary sign) ──
               // Real beekeeping practice: keepers chalk inspection observations
               // on a slate at the apiary. Shows current day count + honey
@@ -17862,6 +18385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.textAlign = 'start';
               })();
 
+              } // end calm-scene gate
               // ── Yarrow flower patch (medicinal herb, real beekeeping plant) ──
               // Real biology: yarrow (Achillea millefolium) is a major nectar
               // source AND has propolis-like antibiotic compounds bees collect
@@ -17906,6 +18430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Wind chime hanging off the apiary post (visual wind indicator) ──
               // Suspended from a small bracket on the right of the post,
               // beneath the sign. The chime swings in the same coherent wind
@@ -17955,6 +18480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               })();
 
+              } // end calm-scene gate
               // ── Apple tree near the hive (classic beekeeping companion plant) ──
               if (hiveX > 40) {
                 var atX = hiveX * 0.55;
@@ -18108,7 +18634,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // a nearby branch for 1-3 days while scout bees waggle-dance
                 // candidate nest sites until quorum is reached. This is a
                 // healthy reproductive event, not a failure.
-                if (season === 0 && (day % 30) >= 18 && (day % 30) <= 25) {
+                if (ls.activeEvent && ls.activeEvent.id === 'swarm') _swarmSeenDay = day;
+                if (day - _swarmSeenDay >= 0 && day - _swarmSeenDay <= 2 && season !== 3) {
                   var _swCx = atX + 16;
                   var _swCy = canopyY + 8;
                   var _swSway = Math.sin(t2 * 0.012) * 1.2;
@@ -18156,6 +18683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Native ground-bee nesting holes (real biology) ──
               // 70% of native bees nest in bare soil, not in hives. Show a
               // small cluster of darker pinhole openings in the meadow with
@@ -18196,6 +18724,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Bumblebee cameo (spring + summer, distinct from honeybees) ──
               // Real biology: bumblebees (Bombus spp.) are larger, fuzzier, can
               // forage at lower temperatures than honeybees, and "buzz-pollinate"
@@ -18265,6 +18795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Tree line (mid-ground, adds scale) ──
               for (var tr = 0; tr < 8; tr++) {
                 var trX = 20 + tr * (W / 9) + (tr % 2 === 0 ? 0 : W * 0.5);
@@ -18284,6 +18815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Hummingbird (spring/summer, flits between flowers, zips between hover points) ──
               if ((season === 0 || season === 1) && flowers && flowers.length > 0) {
                 if (!_hummingbird) _initHummingbird();
@@ -18327,6 +18859,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Butterflies (non-bee pollinators, spring/summer only) ──
               if (season === 0 || season === 1) {
                 if (!_butterflies) _initButterflies();
@@ -18350,6 +18884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
               // ── Flowers (enhanced with depth) ──
               // Sway = coherent wind wave (same speed/direction as the grass
               // blades, sweeps L→R across the meadow) + a smaller per-flower
@@ -18514,6 +19049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Drone eviction cameo (late fall biology) ──
               // In late fall, female workers literally drag the now-useless
               // drones (male bees) out of the hive and let them die — a stark
@@ -18555,6 +19091,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Hummingbird darting at flowers (spring + summer) ──
               // Real biology: hummingbirds visit similar nectar sources as bees
               // and are an important non-bee pollinator. Their motion is very
@@ -18631,6 +19169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Frozen birdbath in winter (ice + frost rim) ──
               // Closes the seasonal arc for the water station: the bath doesn't
               // disappear when winter hits, it freezes. Hexagonal frost cracks
@@ -18765,6 +19304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Dappled sunlight under the apple tree (spring + summer day) ──
               // Sub-canopy leaf-shadow play: real-world phenomenon where
               // sunlight filtering through leaves creates moving bright spots
@@ -18773,7 +19313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // and gated to high sun (no spots at dawn/dusk).
               if ((season === 0 || season === 1) && hiveX > 40) {
                 var _dpAtX = hiveX * 0.55;
-                var _dpDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                var _dpDay = _sunDay;
                 if (_dpDay > 0.15) {
                   var _dpSpots = [
                     { dx: -10, dy: 3,  r: 2.6 },
@@ -18806,6 +19346,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Jack-o'-lantern in the fall meadow (day = pumpkin, night = lit) ──
               // Maine autumn touch. During day it's just a carved orange pumpkin
               // sitting on the meadow. At night the carved face glows warm
@@ -18896,6 +19438,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Coiled garden hose near the birdbath (homestead detail) ──
               // Real bee-keeping: water IS the apiary's most critical resource
               // in summer. The hose stays coiled out for refilling the bath.
@@ -18934,11 +19478,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.stroke();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Roadside "FRESH HONEY $12" sandwich-board sign (harvest season) ──
               // Hobbyist beekeepers' classic — a folding wooden A-frame at the
               // gate during harvest with the price chalked on. Late summer +
               // fall only (matches the honey crate availability).
-              if ((season === 1 && (day % 30) >= 22) || season === 2) {
+              if (ls.harvestedThisYear && (season === 1 || season === 2)) { // only after a real harvest this year
                 var _hsX = W * 0.42 + 14;
                 var _hsY = H * 0.88;
                 // A-frame back/front board (visible front)
@@ -18995,6 +19541,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(_hsX, _hsY + 1.3, 7.5, 0.7, 0, 0, 6.28); c.fill();
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Outdoor picnic table with red-checkered cloth (spring/summer/fall) ──
               // Classic wooden picnic table with attached benches and a red-
               // and-white checkered cloth. Bigger than the side table — this
@@ -19083,11 +19631,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Garter snake slithering between stepping stones (spring/summer) ──
               // Real biology: garter snakes are the most common Maine snakes —
               // harmless, beneficial (they eat slugs that munch garden plants),
               // and active during warm daylight hours. S-curve body silhouette.
-              if ((season === 0 || season === 1) && _sunT_arc > 0.3) {
+              if ((season === 0 || season === 1) && !_sunDown && _sunT_arc > 0.3) {
                 var _gsT = (t2 % 3600) / 3600;
                 if (_gsT > 0.4 && _gsT < 0.65) {
                   var _gsProg = (_gsT - 0.4) / 0.25;
@@ -19135,6 +19685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
               // ── Stepping stones path leading from meadow to the hive ──
               var stepCount = 7;
               for (var sp = 0; sp < stepCount; sp++) {
@@ -19185,14 +19736,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.strokeRect(_hsclLcdX - 4, _hsclLcdY - 2, 8, 4);
                 // Compute weight (kg) from live state — brood + honey + workers + drones
                 // Rough conversion: honey lbs to kg ≈ 0.45, workers ~ 0.1g each
-                var _hsclWt = (honey || 0) * 0.45 + (brood || 0) * 0.0005 + ((workers || 0) + (drones || 0)) * 0.0001;
-                _hsclWt = Math.min(99.9, Math.max(0, _hsclWt));
-                var _hsclStr = _hsclWt.toFixed(1) + 'kg';
+                // Gross weight, like a real hive scale: ~22 kg of wood, frames and comb (the old readout left
+                // them out) plus stores, brood and bees. Beekeepers read the CHANGE: a flow adds kilos a week.
+                var _hsclWt = 22 + Math.min(2, ls.supersAdded || 0) * 5 + (honey || 0) * 0.45 + (brood || 0) * 0.0005 + ((workers || 0) + (drones || 0)) * 0.0001;
+                _hsclWt = Math.min(199.9, Math.max(0, _hsclWt));
+                var _hsclStr = '\u2696 ' + _hsclWt.toFixed(1) + ' kg';
+                // Readable tag (the LCD digits were drawn at 2.6 px).
+                c.font = 'bold 10px system-ui';
+                var _hsclTagW = c.measureText(_hsclStr).width + 10;
+                c.fillStyle = 'rgba(15,23,42,0.82)';
+                c.beginPath(); if (c.roundRect) c.roundRect(_hsclLcdX + 6, _hsclLcdY - 8, _hsclTagW, 15, 7); else c.rect(_hsclLcdX + 6, _hsclLcdY - 8, _hsclTagW, 15); c.fill();
                 c.fillStyle = '#4ade80';
-                c.font = 'bold 2.6px monospace';
-                c.textAlign = 'center';
+                c.textAlign = 'left';
                 c.textBaseline = 'middle';
-                c.fillText(_hsclStr, _hsclLcdX, _hsclLcdY);
+                c.fillText(_hsclStr, _hsclLcdX + 11, _hsclLcdY);
                 c.textAlign = 'start';
                 c.textBaseline = 'alphabetic';
                 // Tiny solar panel above the LCD (wireless scales are solar-powered in real life)
@@ -19230,6 +19787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = 'rgba(255,255,255,0.15)';
               c.fillRect(standX + 2, standY + 2, standW - 4, 1);
 
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Butterflies fluttering over the meadow (spring/summer) ──
               // Slow erratic wandering, distinctly different motion from bees so
               // it reads as a separate species. Wings beat slowly (vs. bee blur).
@@ -19279,6 +19837,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              } // end calm-scene gate
+              if (!_calmScene) { // homestead detail: hidden when the scene is calm
               // ── Ladybugs on flowers (spring/summer, static on 2 flowers) ──
               if ((season === 0 || season === 1) && flowers.length > 3) {
                 [0, 5].forEach(function(flIdx) {
@@ -19302,6 +19862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              } // end calm-scene gate
               // ── Beekeeper sprite (depth-sorted in front of meadow foliage) ──
               // Always visible outside winter — previously a 50% cameo window
               // made the keeper appear/disappear unpredictably and felt buggy.
@@ -19735,9 +20296,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(grX, hiveY + 4, 0.6, hiveH - 8);
               }
               c.globalAlpha = 1;
-              // Peaked roof with asphalt shingles (above the hive body)
+              // Honey supers the student added sit on the brood box, under the roof (they were never drawn).
+              var _supers = Math.min(2, ls.supersAdded || 0);
+              var _superBoxH = Math.round(hiveH * 0.16);
+              var _superH = _supers * _superBoxH;
+              for (var su = 0; su < _supers; su++) {
+                var suY = hiveY - (su + 1) * _superBoxH;
+                c.fillStyle = su % 2 ? '#d9a441' : '#e4b552'; // pale pine boxes, newer than the brood box
+                c.fillRect(hiveX, suY, hiveW, _superBoxH - 1);
+                c.strokeStyle = '#8a5a14'; c.lineWidth = 0.8; c.strokeRect(hiveX + 0.4, suY + 0.4, hiveW - 0.8, _superBoxH - 1.8);
+                c.fillStyle = 'rgba(90,55,10,0.55)'; c.fillRect(hiveX + hiveW * 0.38, suY + _superBoxH * 0.38, hiveW * 0.24, 2); // hand hold
+                // Honey shows along the bottom of a super as stores climb past the brood box's share.
+                var suFill = Math.max(0, Math.min(1, (safeHoney - 20 - su * 15) / 15));
+                if (suFill > 0) { c.fillStyle = 'rgba(245,158,11,' + (0.35 + 0.45 * suFill).toFixed(2) + ')'; c.fillRect(hiveX + 3, suY + _superBoxH - 4.5, (hiveW - 6) * suFill, 2.5); }
+              }
+              // Peaked roof with asphalt shingles (above the hive body and any supers)
               var roofH = 10;
               c.save();
+              c.translate(0, -_superH);
               // Roof base (dark gray slate)
               c.fillStyle = '#3f3a36';
               c.beginPath();
@@ -19819,12 +20395,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
               c.restore();
+              // Winterized: tar-paper wrap along the box edges (the comb cutaway stays visible) and a
+              // mouse guard across the entrance; mice move into hives in autumn.
+              if (ls.winterized && season >= 2) {
+                c.save();
+                c.fillStyle = 'rgba(31,41,55,0.82)';
+                c.fillRect(hiveX - 1.5, hiveY - _superH, 5, hiveH + _superH);
+                c.fillRect(hiveX + hiveW - 3.5, hiveY - _superH, 5, hiveH + _superH);
+                c.fillRect(hiveX - 1.5, hiveY - _superH - 1, hiveW + 3, 3);
+                c.fillStyle = '#9ca3af';
+                c.fillRect(hiveX + hiveW * 0.25, hiveY + hiveH - 6, hiveW * 0.5, 4);
+                c.fillStyle = '#374151';
+                for (var mg = 0; mg < 5; mg++) { c.beginPath(); c.arc(hiveX + hiveW * (0.3 + mg * 0.1), hiveY + hiveH - 4, 0.9, 0, 6.28); c.fill(); }
+                c.restore();
+              }
               // Painted hive number/name plaque (top-left of hive body)
               c.save();
               c.fillStyle = 'rgba(50,30,10,0.5)';
               c.beginPath(); c.roundRect(hiveX + 3, hiveY + 3, 24, 9, 2); c.fill();
               c.font = 'bold 7px Georgia, serif'; c.fillStyle = '#fef3c7'; c.textAlign = 'center';
-              c.fillText('HIVE #1', hiveX + 15, hiveY + 10);
+              c.fillText(ls.colonyName ? String(ls.colonyName).slice(0, 14).toUpperCase() : 'HIVE #1', hiveX + 15, hiveY + 10);
               c.restore();
 
               // Honeycomb grid (larger, more visible)
@@ -19835,7 +20425,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 for (var hx = 0; hx < 5; hx++) {
                   var cx2 = hiveX + 12 + hx * (csz * 2.2) + (hy2 % 2) * csz * 1.1;
                   var cy2 = hiveY + 16 + hy2 * (csz * 1.8);
-                  var ct = (hy2 < 2) ? (hx / 5 < hpct ? 'honey' : 'empty') : (hy2 < 5) ? (hx / 5 < bpct ? 'brood' : 'empty') : (hx / 5 < hpct * 0.7 ? 'pollen' : 'empty');
+                  // A real frame: honey arch on top, a pollen band under it, brood below (pollen used to
+                  // sit at the bottom and was drawn from the HONEY fraction, so it never showed pollen).
+                  var ct = (hy2 < 2) ? (hx / 5 < hpct ? 'honey' : 'empty') : (hy2 === 2) ? (hx / 5 < Math.min(1, (pollen || 0) / 10) ? 'pollen' : 'empty') : (hx / 5 < bpct ? 'brood' : 'empty');
                   c.fillStyle = ct === 'honey' ? '#f59e0b' : ct === 'brood' ? '#fdba74' : ct === 'pollen' ? '#facc15' : '#e8d5a0';
                   c.globalAlpha = ct === 'empty' ? 0.35 : 0.85;
                   c.beginPath();
@@ -20017,11 +20609,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // Varroa mites (pulsing red dots)
-              if (varroaLevel > 15) {
+              if (varroaLevel >= 10) { // from the Watch band up
                 var miteAlpha = 0.4 + Math.sin(t2 * 0.06) * 0.3;
                 c.fillStyle = '#dc2626'; c.globalAlpha = miteAlpha;
                 for (var mi = 0; mi < Math.min(10, Math.floor(varroaLevel / 8)); mi++) {
-                  c.beginPath(); c.arc(hiveX + 10 + Math.random() * (hiveW - 20), hiveY + 10 + Math.random() * (hiveH - 20), 1.8, 0, 6.28); c.fill();
+                  // Fixed spots (golden-ratio spread): random positions every frame made the mites strobe.
+                  c.beginPath(); c.arc(hiveX + 10 + ((mi * 0.618 + 0.2) % 1) * (hiveW - 20), hiveY + 10 + ((mi * 0.382 + 0.5) % 1) * (hiveH - 20), 1.8, 0, 6.28); c.fill();
                 }
                 c.globalAlpha = 1;
               }
@@ -20216,6 +20809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // ── Bee shadows on ground (render BEFORE bees for proper layering) ──
               c.fillStyle = 'rgba(0,0,0,0.18)';
               bees.forEach(function(b) {
+                if (b.home) return; // grounded inside the hive
                 var altitude = Math.max(0, H * 0.76 - b.y);  // how high above ground
                 if (altitude > 4 && altitude < 260) {
                   var shadowScale = Math.max(0.3, 1 - altitude / 280);
@@ -20226,21 +20820,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               });
 
               // ── Flying bees (physics-based, with waggle dance trail) ──
-              bees.forEach(function(b) {
+              bees.forEach(function(b, bIdx) {
+                // Grounded foragers (rain, frost, winter) head for the entrance and stay inside.
+                // In winter a few bees make short cleansing flights beside the hive.
+                var _cleansing = _foragersGrounded === 'winter' && bIdx % 12 === 0;
+                if (_foragersGrounded && !_cleansing) {
+                  if (b.home || ls.motionPaused) { b.home = true; return; }
+                  b.toFlower = false;
+                } else if (b.home) {
+                  b.home = false; b.x = hiveX + hiveW * 0.5; b.y = hiveY + hiveH - 4; b.toFlower = true;
+                }
                 var tX = b.toFlower ? (W * 0.6 + Math.sin(b.ph) * W * 0.15) : (hiveX + hiveW * 0.5);
                 var tY = b.toFlower ? (H * 0.55 + Math.cos(b.ph * 0.7) * 18) : (hiveY + hiveH - 4);
+                if (_cleansing) { tX = hiveX + hiveW * (0.5 + Math.sin(b.ph + t2 * 0.01) * 1.2); tY = hiveY - 20 + Math.cos(b.ph) * 15; }
+                if (_foragersGrounded && !_cleansing && Math.abs(b.x - tX) < 14 && Math.abs(b.y - tY) < 14) { b.home = true; return; }
                 // Slower, gentler physics: reduced seek force + jitter + more damping.
                 // Bumblebees move even slower (heavier) — 60% seek, 70% jitter.
-                var _seek = b.bumble ? 0.0012 : 0.002;
+                var _homeRush = _foragersGrounded && !_cleansing; // caught out: fly straight home
+                var _seek = (b.bumble ? 0.0012 : 0.002) * (_homeRush ? 4 : 1);
                 var _jit = b.bumble ? 0.08 : 0.12;
                 b.vx += (tX - b.x) * _seek + (Math.random() - 0.5) * _jit;
                 b.vy += (tY - b.y) * _seek + (Math.random() - 0.5) * (_jit * 0.75);
                 b.vx *= 0.93; b.vy *= 0.93;
                 // Cap top speed (lower for bumbles).
-                var _cap = b.bumble ? 0.95 : 1.4;
+                var _cap = (b.bumble ? 0.95 : 1.4) * (_homeRush ? 2.4 : 1);
                 var _sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
                 if (_sp > _cap) { b.vx *= _cap / _sp; b.vy *= _cap / _sp; }
-                b.x += b.vx; b.y += b.vy;
+                var _stepScale = _homeRush ? _sscale : 1; // the rush home takes seconds, not frames, on slow devices
+                b.x += b.vx * _stepScale; b.y += b.vy * _stepScale;
                 if (Math.abs(b.x - tX) < 12 && Math.abs(b.y - tY) < 12) {
                   // Set a brief landing-flash pulse when the bee reaches a
                   // target — strong burst when reaching a flower (pollination
@@ -20377,7 +20984,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
               // ── Bees at entrance (entering/exiting animation) ──
               var entrX = hiveX + hiveW * 0.5, entrY = hiveY + hiveH + 2;
-              for (var ei = 0; ei < Math.min(8, Math.floor(safeWorkers / 2000)); ei++) {
+              // Entrance traffic reads the model: workers x foraging efficiency, and almost none
+              // while foragers are grounded, so a busy entrance means a working colony.
+              var _trafficN = _foragersGrounded ? (_foragersGrounded === 'winter' ? 1 : _foragersGrounded === 'night' ? 2 : 0)
+                : Math.min(8, Math.floor(safeWorkers / 2000 * Math.max(0.2, (typeof ls.foragingEfficiency === 'number' ? ls.foragingEfficiency : 70) / 70)));
+              if (_wxRain > 0.3) { // foreground rain over the meadow props drawn after the sky
+                c.save(); c.strokeStyle = 'rgba(205,218,236,0.38)'; c.lineWidth = 1;
+                for (var fr = 0; fr < 90; fr++) { var _frX = (fr * 53 + 11) % W, _frY = (fr * 29 + t2 * 9) % H; c.beginPath(); c.moveTo(_frX, _frY); c.lineTo(_frX - 3, _frY + 14); c.stroke(); }
+                c.restore();
+              }
+              if (_foragersGrounded) {
+                var _gLabel =_foragersGrounded === 'rain' ? '🌧 Rain: foragers stay home' : _foragersGrounded === 'frost' ? '🥶 Frost: foragers stay home'
+                  : _foragersGrounded === 'night' ? __alloT('stem.beehive.night_foragers_home', '🌙 Night: foragers are home; fanners dry nectar into honey')
+                  : '❄ Winter: the colony clusters inside';
+                c.save(); c.font = 'bold 11px system-ui'; c.textAlign = 'center';
+                var _gW = c.measureText(_gLabel).width + 16, _gX = Math.max(_gW / 2 + 4, Math.min(W - _gW / 2 - 4, hiveX + hiveW / 2)), _gY = hiveY - 34 - (_superH || 0); // kept on screen
+                c.fillStyle = 'rgba(15,23,42,0.78)';
+                c.beginPath(); if (c.roundRect) c.roundRect(_gX - _gW / 2, _gY - 13, _gW, 19, 9); else c.rect(_gX - _gW / 2, _gY - 13, _gW, 19); c.fill();
+                c.fillStyle = '#f8fafc'; c.fillText(_gLabel, _gX, _gY + 1);
+                c.restore();
+              }
+              for (var ei = 0; ei < _trafficN; ei++) {
                 var ePhase = (t2 * 0.02 + ei * 1.3) % 6.28;
                 var eDist = Math.sin(ePhase) * 18;
                 var eDir = Math.cos(ePhase) > 0 ? 1 : -1;
@@ -20695,14 +21322,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // workers, and 3 zone-colored stat chips at the bottom.
               // Border tints red when ANY stat is in danger so a glance
               // reads colony state instantly.
-              var hudW = 174, hudH = 66, hudX = W - hudW - 6, hudY = 4;
+              // hudY clears the DOM button row (motion, fullscreen, lenses) that overlays this corner;
+              // at 4 the "Pause motion" button covered the card's first line.
+              var hudW = 196, hudH = 66, hudX = W - hudW - 6, hudY = 58; // 196: named chips at 3 digits ("Morale 100%")
               var _clockT = (((t2 * 0.0004) % 2) + 2) % 2;
               var _clockHr = (6 + _clockT * 12) % 24;
               var _clockH = Math.floor(_clockHr);
               var _clockM = Math.floor((_clockHr - _clockH) * 60);
               var _clockIcon = (_clockH < 6 || _clockH >= 19) ? '\uD83C\uDF19' : (_clockH < 9 ? '\uD83C\uDF05' : (_clockH < 17 ? '\u2600\uFE0F' : '\uD83C\uDF07'));
               var _clockStr = _clockH + ':' + (_clockM < 10 ? '0' + _clockM : _clockM);
-              var hudDanger = (varroaLevel >= 25) || (morale < 30) || (queenHealth < 40) || (season === 3 && honey < 20);
+              var hudDanger = (varroaLevel >= 20) || (morale < 30) || (queenHealth < 40) || (season === 3 && honey < 20);
               c.save();
               c.fillStyle = 'rgba(15,23,42,0.72)';
               c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.fill();
@@ -20731,8 +21360,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               var chipX = hudX + 8;
               chipX = _drawHudChip(chipX, '\uD83C\uDF6F', Math.round(safeHoney), 'lb', safeHoney < currentReserve * 0.6 ? 'high' : (safeHoney < currentReserve ? 'warn' : 'ok'));
-              chipX = _drawHudChip(chipX, '\u2764\uFE0F', (morale || 0), '%', morale < 30 ? 'high' : (morale < 50 ? 'warn' : 'ok'));
-              chipX = _drawHudChip(chipX, '\uD83E\uDDA0', (varroaLevel || 0), '%', varroaLevel >= 25 ? 'high' : (varroaLevel >= 15 ? 'warn' : 'ok'));
+              // Named chips: a heart here read as a second "health" beside Colony health; mites are not a
+              // microbe or a percent, and their bands match the Varroa meter (watch 10, Danger 20).
+              chipX = _drawHudChip(chipX, __alloT('stem.beehive.hud_morale', 'Morale'), Math.round(morale || 0), '%', morale < 30 ? 'high' : (morale < 50 ? 'warn' : 'ok'));
+              chipX = _drawHudChip(chipX, __alloT('stem.beehive.hud_mites', 'Mites'), Math.round(varroaLevel || 0), '', varroaLevel >= 20 ? 'high' : (varroaLevel >= 10 ? 'warn' : 'ok'));
               c.restore();
 
               // Garden bonus badge
@@ -20750,6 +21381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           _loopRunning.current = true;
           if (_animId.current) cancelAnimationFrame(_animId.current);
           BEEHIVE_DEBUG && console.log('[Beehive DEBUG] Starting frame loop. canvas size=' + cv.width + 'x' + cv.height + ', W=' + W + ' H=' + H);
+          _beeFrameRef.current = frame;
           frame();
           // Log first frame completion after a short delay
           setTimeout(function() {
@@ -20758,6 +21390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           return function() {
             _loopRunning.current = false;
+            _beeFrameRef.current = null;
             if (_animId.current) cancelAnimationFrame(_animId.current);
             if (resizeObs) resizeObs.disconnect();
           };
@@ -20768,6 +21401,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (teardownFn) teardownFn();
           };
         }, [viewMode, beekeeperMotionPaused, focusLayout]);
+
+        // A paused scene (the reduced-motion default) stops its loop, so without this it kept
+        // showing the colony, day and science view it had when motion stopped. One frame per
+        // change keeps it truthful without restarting motion.
+        var _pausedDrawKey = React.useRef('');
+        React.useEffect(function() {
+          if (viewMode !== 'beekeeper' || !beekeeperMotionPaused) { _pausedDrawKey.current = ''; return; }
+          var drawKey = [beeView, day, workers, honey, varroaLevel, morale, queenHealth, brood, season, d.activeEvent ? (d.activeEvent.id || d.activeEvent.label || 'event') : '', d.waggleLab ? d.waggleLab.dance + ',' + d.waggleLab.sun : '', d.calmScene, d.thermHunt ? d.thermHunt.outsideC + ',' + d.thermHunt.beesFanning + ',' + d.thermHunt.heaterBees : '', d.supersAdded || 0, d.winterized ? 1 : 0].join('|');
+          // The loop's own setup already drew the state motion stopped on; draw only on a change.
+          if (!_pausedDrawKey.current || drawKey === _pausedDrawKey.current) { _pausedDrawKey.current = drawKey; return; }
+          _pausedDrawKey.current = drawKey;
+          var pausedFrameId = requestAnimationFrame(function() { if (_beeFrameRef.current) _beeFrameRef.current(); });
+          return function() { cancelAnimationFrame(pausedFrameId); };
+        }, [viewMode, beekeeperMotionPaused, beeView, day, workers, honey, varroaLevel, morale, queenHealth, brood, season, d.activeEvent, d.waggleLab, d.calmScene, d.thermHunt, d.supersAdded, d.winterized]);
 
         // ── Keyboard shortcuts (scoped + ref-based to read latest state) ──
         var _keyState = React.useRef({});
@@ -20954,6 +21601,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var boostGap = Math.max(0, (run.routeMarkerGoal || run.nectarGoal || 10) - (run.routeMarkers || run.nectar || 0));
           var diagnosis;
           if (run.success && run.energyLeft >= 30 && hazardConflicts === 0) diagnosis = { id: 'repeatable-success', title: 'Repeatable intercept', summary: 'The route combined a healthy reserve, full separation, and queen acquisition.', planId: 'balanced', next: 'Repeat the route with fewer corrections and compare arrival energy.', criterion: 'Intercept again with at least ' + Math.round(run.energyLeft) + '% energy and zero conflicts.' };
+          // A caught queen is a success first: the failure diagnoses below used to tell a
+          // successful low-energy flight it "ended with too little reserve to finish the route".
+          else if (run.success) diagnosis = { id: 'intercept-refine', title: 'Queen intercepted: now make it repeatable', summary: (run.energyLeft || 0) < 30 ? 'You reached the queen with ' + Math.round(run.energyLeft || 0) + '% energy left, a thin margin for a drone that must also fly home.' : hazardConflicts + ' conflict' + (hazardConflicts === 1 ? '' : 's') + ' cost energy on the way to the queen.', planId: (run.energyLeft || 0) < 30 ? 'thermal-first' : 'balanced', next: 'Fly the same course again and aim to arrive with at least 30% energy and no conflicts.' };
           else if ((run.energyLeft || 0) <= 10) diagnosis = { id: 'energy-budget', title: 'Energy was the limiting factor', summary: 'The flight ended with too little preflight reserve to finish the route reliably.', planId: 'thermal-first', next: 'Use the opening updraft, then coast between short thrust pulses. Route markers do not restore energy.', criterion: 'Reach the DCA with at least 25% energy remaining.' };
           else if (!run.reachedDca && (run.maxAlt || 0) < DRONE_FLIGHT_PARAMS.dcaMinFt) diagnosis = { id: 'altitude-gate', title: 'Altitude gate not reached', summary: 'The route never established the DCA altitude band.', planId: 'thermal-first', next: 'Use the first thermal for altitude, then trade climb for forward glide.', criterion: 'Enter the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft band before ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' m while keeping energy above 30%.' };
           else if (!run.reachedDca) diagnosis = { id: 'range-gate', title: 'Range gate not reached', summary: 'Altitude was available, but forward progress did not reach the congregation area.', planId: 'balanced', next: 'Hold a steadier heading and reduce lateral corrections after the climb.', criterion: 'Travel 600 m with no more than one traffic conflict.' };
@@ -21105,7 +21755,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var obstacle = state.nearestObstacle || droneNearestObstacle(state);
           var traffic = state.nearestTraffic || droneNearestTraffic(state);
           var dcaStatus = droneDcaStatus(state);
-          var dca = vectorTo(0, 140, -600);
+          // Aim at the middle of the DCA band (115 ft). At 140 the cue said 'Climb' inside the band.
+          var dca = vectorTo(0, DRONE_FLIGHT_PARAMS.dcaMarkerFt, -DRONE_FLIGHT_PARAMS.dcaDistanceM);
           var obstacleCue = obstacle && obstacle.obstacle ? vectorTo(obstacle.obstacle.x, obstacle.targetY, obstacle.obstacle.z) : null;
           var trafficCue = traffic && traffic.drone ? vectorTo(traffic.drone.x, traffic.drone.y, traffic.drone.z) : null;
           var obstacleText = obstacleCue ? (obstacle.clearance < 0 ? 'Collision risk · ' : '') + obstacleCue.text : 'No obstacle in the generated route field';
@@ -21122,12 +21773,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             : spatialState === 'warning'
               ? 'Drone traffic is nearby: ' + trafficText + '. Preserve separation before correcting course.'
               : 'DCA perspective: ' + dcaText + '. Use the depth relationship before your next correction.';
-          var routeProgress = Math.max(0, Math.min(100, Math.round((1 - Math.min(1200, dcaStatus.planarDistance) / 1200) * 100)));
+          // Progress from the launch pad (DCA distance away): the old 1200 m scale read 50% 'Mid-route' before takeoff.
+          var routeProgress = Math.max(0, Math.min(100, Math.round((1 - Math.min(DRONE_FLIGHT_PARAMS.dcaDistanceM, dcaStatus.planarDistance) / DRONE_FLIGHT_PARAMS.dcaDistanceM) * 100)));
           var routeBand = routeProgress >= 85 ? 'Near DCA' : routeProgress >= 45 ? 'Mid-route' : 'Far field';
           return { state: spatialState, primary: primary, maneuver: maneuver, obstacleText: obstacleText, trafficText: trafficText, dcaText: dcaText, routeProgress: routeProgress, routeBand: routeBand, camera: _droneCameraMode.current === 'chase' ? 'Chase' : 'Cockpit' };
         }
         function droneReplayChart(samples, dark) {
-          samples = Array.isArray(samples) ? samples.slice(-90) : [];
+          samples = Array.isArray(samples) ? samples.slice(-300) : [];
           if (!samples.length) return h('p', { className: 'mt-2 text-[0.625rem] ' + (dark ? 'text-slate-400' : 'text-slate-600') }, 'No telemetry was recorded for this run.');
           var chartW = 640, chartH = 208, left = 76, right = 16, top = 16, bottom = 28, innerW = chartW - left - right;
           var laneH = 46, laneGap = 8;
@@ -21249,7 +21901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var altitude = Math.max(0, Math.round(state.y || 0));
           var energyState = energyPct < 22 ? 'danger' : energyPct < 45 ? 'caution' : 'good';
           var speedState = speed < 1.5 || speed > 9 ? 'caution' : 'good';
-          var altitudeState = altitude > 220 ? 'caution' : 'good';
+          var altitudeState = altitude > DRONE_FLIGHT_PARAMS.dcaMaxFt ? 'caution' : 'good'; // 'Too high' was drawn green
           var target = null;
           if (state.phase === 'congregation') {
             (state.nearQueens || []).some(function(queen) { if (!queen.caught) { target = queen; return true; } return false; });
@@ -21759,6 +22411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         function renderDroneScienceBoundary() {
           return h('details', { 'data-flight-model-boundary': 'true' }, h('summary', null, 'Real bee biology and game simplifications'),
+            h('p', { 'data-flight-time-scale': 'true' }, __alloT('stem.beehive.drone_flight_budget_scale', 'This game uses a compressed flight budget. The base starting countdown is 75 to 150 seconds by difficulty; a 30-minute reference flight is 12 to 24 times longer. Energy use and nectar pickups can change your time in the game. Movement uses its own game scale, so displayed speeds are not measurements of real bee flight.')),
             h('p', null, 'Real honey bees use flapping wings and can hover. This game uses simplified thrust, drag, and flapping-lift controls; it does not solve wing-scale aerodynamics. Its “glide” and updraft controls are teaching devices, not evidence that drones normally soar like gliders.'),
             h('p', null, 'Real drones make orientation and mating flights; tracked drones can visit multiple congregation areas and return to the hive. This course has one fixed DCA target and a generous queen-intercept radius. Reaching that radius ends the game; it does not simulate mating mechanics or measure mating probability.'),
             h('p', null, 'Beacons, route gates, the map, and heading assistance are human learning aids. Flight time, energy losses, obstacle sizes, and displayed distances/altitudes are model scales, not calibrated biological measurements. Bee bodies, flowers, and wing motion are enlarged or slowed for legibility. Drones do not forage; markers and updrafts never refill energy. Unsuccessful flights are not necessarily fatal in nature.'),
@@ -23312,6 +23965,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var physicsClock = ds.simulationClock * 1000;
               ds.timer -= dt;
               if (ds.timer <= 0) { ds.phase = 'end'; ds.timer = 0; }
+              // The catch is the climax: end once its flash has played. Live flights used to
+              // drift on for the rest of the timer, still losing points, and End Flight then
+              // discarded the successful run without a debrief.
+              if (ds.phase === 'mating' && ds.matingFlashAt != null && now - ds.matingFlashAt >= 1600) ds.phase = 'end';
 
               // Controls are smoothed into aerodynamic intent. This gives the bee
               // inertia without making keyboard taps feel delayed.
@@ -23381,8 +24038,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ds.distance += ds.speed * frameScale;
               ds.maxAlt = Math.max(ds.maxAlt, ds.y);
 
-              // Energy drain
-              var energyDrain = activeThrust ? 0.95 : 0.22;
+              // Energy drain. Muscle power pays for thrust, for climbing (pitching up) and for slow,
+              // hovering flight; steady cruising is cheapest, and an updraft lifts the bee so less
+              // pitch is needed. Before, only W cost energy: climbing was free and the
+              // "Updraft-first" plan had no payoff.
+              var climbCost = Math.max(0, ds.controlPitch || 0) * 0.6;
+              var slowFlightCost = ds.phase !== 'launch' && ds.y > 8 ? (1 - liftRatio) * 0.2 : 0;
+              var energyDrain = (activeThrust ? 0.95 : 0.22) + climbCost + slowFlightCost;
+              ds.energyDrainNow = Math.round(energyDrain * 100) / 100;
               ds.energy = Math.max(0, ds.energy - energyDrain * dt);
               if (ds.energy <= 0) ds.phase = 'end';
 
@@ -23508,6 +24171,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 ds.score += 5;
               }
 
+              // The queen is a flying bee, not a parked waypoint: once the drone reaches the
+              // congregation area she sweeps a wide, slow circle, so the catch is a chase. She stays
+              // well below the drone's speed, so a steady pursuit always closes the gap.
+              if (ds.reachedDca) (ds.nearQueens || []).forEach(function(q) {
+                if (q.caught) return;
+                if (q.homeX == null) { q.homeX = q.x; q.homeY = q.y; q.homeZ = q.z; q.orbit = 0; }
+                q.orbit += dt * 0.35;
+                q.x = q.homeX + Math.sin(q.orbit) * 70;
+                q.z = q.homeZ + (Math.cos(q.orbit) - 1) * 70;
+                q.y = q.homeY + Math.sin(q.orbit * 2) * 12;
+              });
+
               // Check queen proximity for mating
               if (ds.phase === 'congregation') {
                 ds.nearQueens.forEach(function(q) {
@@ -23576,7 +24251,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var replayWind = ds.windNow || ds.wind || { x: 0, z: 0 };
                 var replayObstacle = ds.nearestObstacle || droneNearestObstacle(ds);
                 var replaySample = { t: Math.round((ds.flightElapsed || 0) * 10) / 10, x: Math.round(ds.x * 10) / 10, z: Math.round(ds.z * 10) / 10, altitude: Math.round(ds.y || 0), energy: Math.round(Math.max(0, ds.energy || 0) / Math.max(1, droneMaxEnergy(ds.difficulty)) * 100), wind: Math.round(Math.sqrt((replayWind.x || 0) * (replayWind.x || 0) + (replayWind.z || 0) * (replayWind.z || 0)) * 10) / 10, clearance: replayObstacle ? Math.round(replayObstacle.clearance) : 160, hazard: !!(ds.hitFlash > 0), phase: ds.phase, action: ds.lastManeuver && ds.lastManeuver.action ? ds.lastManeuver.action : 'Glide', impact: ds.lastManeuver && ds.lastManeuver.impact ? ds.lastManeuver.impact : '' };
-                ds.telemetry = (ds.telemetry || []).concat(replaySample).slice(-90);
+                // 300 samples x 0.5 s covers the longest (150 s) flight; at 90 the replay lost the launch
+                // and the DCA entry on any flight over 45 s.
+                ds.telemetry = (ds.telemetry || []).concat(replaySample).slice(-300);
                 ds.telemetryAccumulator = 0;
                 if (ds.phase === 'end') ds._telemetryFinalLogged = true;
               }
@@ -24496,7 +25173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (!ds._summarySaved) {
                 ds._summarySaved = true;
                 var flightSucceeded = (ds.nearQueens || []).some(function(q) { return q.caught; });
-                var runSummary = { pacing: ds.pacing || 'live', courseSeed: ds.courseSeed, navigationAssists: ds.navigationAssists || 0, decisionLog: (ds.decisionLog || []).slice(), score: Math.round(ds.score || 0), success: flightSucceeded, maxAlt: Math.round(ds.maxAlt || 0), distance: Math.round(ds.distance || 0), routeMarkers: Math.floor((ds.routeMarkersPassed != null ? ds.routeMarkersPassed : ds.nectarCollected) || 0), routeMarkerGoal: ds.routeMarkerGoal || ds.nectarGoal || 10, nectar: Math.floor((ds.nectarCollected != null ? ds.nectarCollected : ds.pollenCollected) || 0), nectarGoal: ds.nectarGoal || ds.pollenGoal || 10, energyLeft: Math.round(Math.max(0, ds.energy || 0) / maxDroneEnergy * 100), energyUnits: 'percent-of-difficulty-reserve', flightModelVersion: 'drone-flight-2', facts: (ds.facts || []).length, obstacleHits: ds.obstacleHits || 0, trafficHits: ds.trafficHits || 0, routePlan: ds.routePlan || droneRoutePlan, difficulty: ds.difficulty || droneDifficulty, scenario: ds.scenario || droneScenario, carryover: ds.carryover || 'Baseline launch condition', reachedDca: !!ds.reachedDca, timeRemaining: Math.round(ds.timer || 0), telemetry: (ds.telemetry || []).slice(-90) };
+                var runSummary = { pacing: ds.pacing || 'live', courseSeed: ds.courseSeed, navigationAssists: ds.navigationAssists || 0, decisionLog: (ds.decisionLog || []).slice(), score: Math.round(ds.score || 0), success: flightSucceeded, maxAlt: Math.round(ds.maxAlt || 0), distance: Math.round(ds.distance || 0), routeMarkers: Math.floor((ds.routeMarkersPassed != null ? ds.routeMarkersPassed : ds.nectarCollected) || 0), routeMarkerGoal: ds.routeMarkerGoal || ds.nectarGoal || 10, nectar: Math.floor((ds.nectarCollected != null ? ds.nectarCollected : ds.pollenCollected) || 0), nectarGoal: ds.nectarGoal || ds.pollenGoal || 10, energyLeft: Math.round(Math.max(0, ds.energy || 0) / maxDroneEnergy * 100), energyUnits: 'percent-of-difficulty-reserve', flightModelVersion: 'drone-flight-2', facts: (ds.facts || []).length, obstacleHits: ds.obstacleHits || 0, trafficHits: ds.trafficHits || 0, routePlan: ds.routePlan || droneRoutePlan, difficulty: ds.difficulty || droneDifficulty, scenario: ds.scenario || droneScenario, carryover: ds.carryover || 'Baseline launch condition', reachedDca: !!ds.reachedDca, timeRemaining: Math.round(ds.timer || 0), telemetry: (function(all) { if (all.length <= 120) return all.slice(); return Array.from({ length: 120 }, function(_, i) { return all[Math.round(i * (all.length - 1) / 119)]; }); })(ds.telemetry || []) }; // the WHOLE flight, evenly thinned, so launch and DCA entry survive
                 var difficultyRank = { easy: 1, normal: 2, hard: 3 };
                 var priorBestDifficulty = droneData.bestDifficulty || null;
                 var nextBestDifficulty = flightSucceeded && (!priorBestDifficulty || difficultyRank[runSummary.difficulty] > difficultyRank[priorBestDifficulty]) ? runSummary.difficulty : priorBestDifficulty;
@@ -24966,21 +25643,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // from the queen, while alarm and Nasonov pheromones come from workers.
         var QUEEN_ACTIONS = [
           { id: 'lay_workers', icon: '👷', label: __alloT('stem.beehive.lay_worker_eggs', 'Lay Worker Eggs'), desc: __alloT('stem.beehive.fertilized_eggs_workers_in_21_days', 'Fertilized eggs → workers in 21 days'), cost: { royalJelly: 1 }, pheromone: 'qmp' },
-          { id: 'lay_drones', icon: '♂️', label: __alloT('stem.beehive.lay_drone_eggs', 'Lay Drone Eggs'), desc: __alloT('stem.beehive.unfertilized_eggs_drones_for_mating', 'Unfertilized eggs → drones for mating'), cost: { royalJelly: 1 }, pheromone: 'qmp' },
+          { id: 'lay_drones', icon: '♂️', label: __alloT('stem.beehive.lay_drone_eggs', 'Lay Drone Eggs'), desc: __alloT('stem.beehive.drones_carry_genes_to_other_queens', 'Unfertilized eggs → drones. In spring and summer they mate with queens from OTHER colonies and spread the genes of this colony (score). They eat nectar and never forage.'), cost: { royalJelly: 1 }, pheromone: 'qmp' },
           { id: 'emit_qmp', icon: '💜', label: __alloT('stem.beehive.emit_qmp', 'Emit QMP'), desc: __alloT('stem.beehive.release_queen_mandibular_pheromone_sup', 'Model stronger QMP circulation — signal queen presence and influence worker reproduction'), cost: {}, pheromone: 'qmp' },
           { id: 'alarm_signal', icon: '🚨', label: __alloT('stem.beehive.worker_alarm_response', 'Worker Alarm Response'), desc: __alloT('stem.beehive.worker_alarm_response_desc', 'Threatened workers release alarm pheromone, recruiting guard workers to the danger'), cost: {}, pheromone: 'alarm' },
           { id: 'nasonov_call', icon: '🏠', label: __alloT('stem.beehive.worker_nasonov_relay', 'Worker Nasonov Relay'), desc: __alloT('stem.beehive.worker_nasonov_relay_desc', 'Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient'), cost: {}, pheromone: 'nasonov' },
-          { id: 'build_comb', icon: '🏗️', label: __alloT('stem.beehive.order_comb', 'Recruit Builders'), desc: __alloT('stem.beehive.direct_builders_to_construct_new_comb_', 'Shift workers into wax production and comb-building support'), cost: { wax: 5 }, pheromone: 'qmp' }
+          { id: 'build_comb', icon: '🏗️', label: __alloT('stem.beehive.order_comb', 'Recruit Builders'), desc: __alloT('stem.beehive.builders_turn_nectar_into_wax', 'House bees eat nectar to secrete wax: turn 8 nectar into 3 wax for building'), cost: { nectar: 8 }, pheromone: 'qmp' }
         ];
 
         // Preserve internal command IDs for saved-state and selector compatibility; learner copy names signals, responses, and strategy choices.
         var queenCombCommand = QUEEN_ACTIONS.find(function(a) { return a.id === 'build_comb'; });
         if (queenCombCommand) {
           queenCombCommand.label = 'Recruit Builders';
-          queenCombCommand.desc = 'Shift workers into wax production and construction support';
+          queenCombCommand.desc = 'House bees eat nectar to secrete wax: turn 8 nectar into 3 wax for building';
         }
         QUEEN_ACTIONS.push(
-          { id: 'scout_rival', icon: '\uD83D\uDD2D', label: 'Scout Rival', desc: 'Reveal rival strength and push the forage boundary', cost: { nectar: 3 }, pheromone: 'nasonov' },
+          { id: 'scout_rival', icon: '\uD83D\uDD2D', label: 'Scout Rival', desc: 'Reveal rival strength and find more of the shared forage', cost: { nectar: 3 }, pheromone: 'nasonov' },
           { id: 'raid_rival', icon: '\u2694\uFE0F', label: 'Launch Raid', desc: 'Send guards and scouts to damage the rival hive', cost: { nectar: 10, pollen: 3 }, pheromone: 'alarm' }
         );
         function recordQueenOutcome(nextResult, cycle, matchScore) {
@@ -25024,10 +25701,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ? { label: 'Stressed field report', nectar: -5, pollen: -3, wax: -1, rivalPressure: 6, hiveHealth: -8 }
               : { label: 'Watch-list field report', nectar: 0, pollen: 0, wax: 0, rivalPressure: 2, hiveHealth: 0 };
           updAll({ queen: {
-            active: true, discoveryRunSerial: bhExperimentRunSerial(queenData.discoveryRunSerial) + 1, paused: false, speed: 1, day: 0, score: 0, phase: 'build', difficulty: chosenDifficulty, opening: chosenOpening, scenario: chosenScenario, carryover: { source: 'beekeeper', readiness: fieldReadiness, label: fieldCarryover.label },
+            // Starts paused: the clock used to run from the first second, while the student was
+            // still reading ~2,000 words of briefing. The first move is made at the student's pace.
+            active: true, discoveryRunSerial: bhExperimentRunSerial(queenData.discoveryRunSerial) + 1, paused: true, speed: 1, day: 0, score: 0, phase: 'build', difficulty: chosenDifficulty, opening: chosenOpening, scenario: chosenScenario, carryover: { source: 'beekeeper', readiness: fieldReadiness, label: fieldCarryover.label },
             hiveHealth: Math.max(35, Math.min(100, scenario.hiveHealth + fieldCarryover.hiveHealth)), territory: 50, result: null, resultRecorded: false, buildMode: null, career: queenCareer,
             feedback: { tone: 'info', text: setup.label.toUpperCase() + ' / ' + opening.label.toUpperCase() + ' / ' + scenario.label.toUpperCase() + ': ' + fieldCarryover.label + ' carried into the colony network map. ' + scenario.desc },
-            rival: { name: setup.rivalName, health: 100, strength: setup.strength + scenario.rivalStrength, stores: setup.stores, structures: setup.structures, pressure: Math.max(0, setup.pressure + opening.pressureOffset + scenario.rivalPressure + fieldCarryover.rivalPressure), intel: 0, doctrine: setup.doctrine, posture: 'forage', lastMove: 'Establishing forage lanes', telegraph: 'Stores and map pressure are rising', counter: QUEEN_RIVAL_DOCTRINES[setup.doctrine].counter },
+            // A fresh doctrine each match: when difficulty fixed it, "scouting identifies the doctrine" told a student nothing new.
+            rival: { name: setup.rivalName, doctrine: Object.keys(QUEEN_RIVAL_DOCTRINES)[Math.floor(Math.random() * Object.keys(QUEEN_RIVAL_DOCTRINES).length)], health: 100, strength: setup.strength + scenario.rivalStrength, stores: setup.stores, structures: setup.structures, pressure: Math.max(0, setup.pressure + opening.pressureOffset + scenario.rivalPressure + fieldCarryover.rivalPressure), intel: 0, doctrine: setup.doctrine, posture: 'forage', lastMove: 'Establishing forage lanes', telegraph: 'Stores and map pressure are rising', counter: QUEEN_RIVAL_DOCTRINES[setup.doctrine].counter },
             pheromones: { qmp: 100, alarm: 0, nasonov: 50, brood: 40 },
             resources: { nectar: Math.max(4, 30 + scenario.nectar + fieldCarryover.nectar), pollen: Math.max(4, 20 + scenario.pollen + fieldCarryover.pollen), wax: Math.max(2, setup.startWax + opening.waxBonus + fieldCarryover.wax), royalJelly: 5 },
             population: { nurses: 200 + opening.nurses, builders: 100 + opening.builders, guards: Math.max(10, 50 + opening.guards), foragers: Math.max(40, 300 + opening.foragers), scouts: Math.max(8, 30 + opening.scouts), drones: 40 },
@@ -25039,7 +25719,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ],
             threats: [], events: [], selectedAction: null, lastImpact: null
           }});
-          announceBee(setup.label + ' Colony Network started against ' + setup.rivalName + ' in the ' + scenario.label + ' scenario. ' + fieldCarryover.label + ' applied.', false);
+          announceBee(setup.label + ' Colony Network started against ' + setup.rivalName + ' in the ' + scenario.label + ' scenario. ' + fieldCarryover.label + ' applied. The clock is paused: make your first move, then resume.', false);
+          if (addToast) addToast('⏸ The clock is paused. Make your first move, then press Resume.', 'info');
         }
 
         React.useEffect(function() {
@@ -25052,10 +25733,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return function() { clearTimeout(queenFocusTimer); };
         }, [viewMode, queenGameActive]);
 
+        function queenColdGrounded(actionId) { return (actionId === 'raid_rival' || actionId === 'scout_rival') && bhQueenSeason(queenDay + 1) === 3; }
+        // Nectar the cluster eats through winter (the same burn as the cycle step), plus a small margin.
+        function queenWinterNeed() {
+          var p = queenPopulation;
+          return Math.ceil(((p.nurses || 0) + (p.builders || 0) + (p.guards || 0) + (p.foragers || 0) + (p.scouts || 0) + (p.drones || 0)) * 0.004 * 0.7 * BH_QUEEN_SEASON_CYCLES + 5);
+        }
         function queenAction(actionId) {
           if (queenResult) return;
           var action = QUEEN_ACTIONS.find(function(a) { return a.id === actionId; });
           if (!action) return;
+          if (queenColdGrounded(actionId)) {
+            var coldText = __alloT('stem.beehive.too_cold_to_fly', 'Too cold to fly: in winter bees stay in the cluster, so there are no raids or scouting until spring.');
+            if (addToast) addToast(coldText, 'info'); announceBee(coldText, false); return;
+          }
+          // Free signals once per cycle each. Unlimited free signals won every difficulty in about
+          // 12 seconds by spamming them on turn 1, so no other strategy mattered.
+          var signalUsed = queenData.signalUsed || {};
+          if (BH_QUEEN_SIGNAL_IDS.indexOf(actionId) >= 0 && signalUsed[actionId] === queenDay) {
+            var repeatText = action.label + ' is already spreading this cycle. Workers respond to it again next cycle.';
+            if (addToast) addToast(repeatText, 'info'); announceBee(repeatText, false); return;
+          }
           var res = Object.assign({}, queenResources);
           var canAfford = Object.keys(action.cost || {}).every(function(k) { return (res[k] || 0) >= action.cost[k]; });
           if (!canAfford) { if (addToast) addToast('Not enough resources for ' + action.label, 'info'); announceBee('Not enough resources for ' + action.label + '.', false); return; }
@@ -25075,9 +25773,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (actionId === 'lay_workers') { productionQueue.push({ id: 'worker-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'workers', label: 'Worker brood', icon: '\uD83D\uDC23', amount: 20, remaining: 2 }); sc += 10; ph.brood = Math.min(100, ph.brood + 5); feedback.text = 'Worker brood queued; 20 nurses mature in 2 cycles.'; playSfx(sfxBeeCollect); }
           else if (actionId === 'lay_drones') { productionQueue.push({ id: 'drone-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'drones', label: 'Drone brood', icon: '\u2642\uFE0F', amount: 40, remaining: 3 }); sc += 5; feedback.text = 'Drone brood queued; mating capacity matures in 3 cycles.'; playSfx(sfxBeeCollect); }
           else if (actionId === 'emit_qmp') { ph.qmp = Math.min(100, ph.qmp + 30); sc += 5; feedback.text = 'QMP restored colony cohesion and reduced swarm risk.'; playSfx(sfxBeeWaggle); }
-          else if (actionId === 'alarm_signal') { ph.alarm = Math.min(100, ph.alarm + 50); pop.guards += 20; sc += 5; feedback.text = 'Threatened workers released sting-alarm pheromone, recruiting 20 guards. Defense is temporarily amplified.'; playSfx(sfxAlert); }
-          else if (actionId === 'nasonov_call') { ph.nasonov = Math.min(100, ph.nasonov + 30); pop.foragers += 15; sc += 5; feedback.text = 'Scenting workers fanned Nasonov pheromone, helping 15 displaced foragers orient to the colony.'; playSfx(sfxBeeWaggle); }
-          else if (actionId === 'build_comb') { pop.builders += 12; sc += 15; feedback.text = 'Builders reinforced the comb workforce. Choose a structure to place next.'; playSfx(sfxBeeBuzz); }
+          // Signals move EXISTING workers between jobs; they do not create bees. (They used to add
+          // 20 guards or 15 foragers from nowhere, which contradicted this mode's own lesson that
+          // defending means fewer workers for other tasks.)
+          else if (actionId === 'alarm_signal') { var toGuard = Math.min(20, pop.foragers); ph.alarm = Math.min(100, ph.alarm + 50); pop.foragers -= toGuard; pop.guards += toGuard; sc += 5; feedback.text = 'Threatened workers released sting-alarm pheromone: ' + toGuard + ' foragers switched to guarding. Defense rises, but less food comes in.'; playSfx(sfxAlert); }
+          else if (actionId === 'nasonov_call') { var toForage = Math.min(15, pop.nurses); ph.nasonov = Math.min(100, ph.nasonov + 30); pop.nurses -= toForage; pop.foragers += toForage; sc += 5; feedback.text = 'Scenting workers fanned Nasonov pheromone, guiding ' + toForage + ' older house bees out to forage and home again. More food comes in, but fewer nurses tend brood.'; playSfx(sfxBeeWaggle); }
+          else if (actionId === 'build_comb') { res.wax = Math.round(((res.wax || 0) + 3) * 10) / 10; pop.builders += 6; sc += 15; feedback.text = 'House bees ate 8 nectar and secreted 3 wax (bees use roughly 6 to 8 lb of honey for each lb of wax). Choose a structure to place next.'; playSfx(sfxBeeBuzz); }
           else if (actionId === 'scout_rival') {
             var reveal = Math.round(rival.strength);
             var scoutedDoctrine = queenRivalDoctrine(rival);
@@ -25089,23 +25790,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             territory = Math.min(80, territory + 2);
             pop.scouts = Math.max(5, pop.scouts - 2);
             sc += 12;
-            feedback = { tone: 'info', text: 'Scouts report rival power ' + reveal + ' and identify ' + scoutedDoctrine.label + ': ' + rival.posture + ' posture, ' + rival.structures + ' structures. Telegraph: ' + rival.telegraph + '. Forage boundary +2%.' };
+            feedback = { tone: 'info', text: 'Scouts report rival power ' + reveal + ' and identify ' + scoutedDoctrine.label + ': ' + rival.posture + ' posture, ' + rival.structures + ' structures. Telegraph: ' + rival.telegraph + '. RTS advantage +2.' };
             evts.push({ type: 'intel', text: '🔭 Cycle ' + queenDay + ': ' + rival.name + ' doctrine identified as ' + scoutedDoctrine.label + '; posture ' + rival.posture + '.' });
           }
           else if (actionId === 'raid_rival') {
             var attack = pop.guards * 0.24 + pop.scouts * 0.7 + ph.alarm * 0.18;
             var damage = Math.max(4, Math.min(28, Math.round(attack / 8 - rival.strength / 120)));
             rival.health = Math.max(0, rival.health - damage);
+            var robbed = Math.min(Math.floor(rival.stores || 0), Math.round(6 + damage));
+            rival.stores = Math.max(0, Math.round(((rival.stores || 0) - robbed) * 10) / 10);
+            res.nectar = Math.round(((res.nectar || 0) + robbed) * 10) / 10;
             rival.strength = Math.max(40, rival.strength - damage * 1.2);
             pop.guards = Math.max(10, pop.guards - Math.ceil(damage * 0.35));
             territory = Math.min(85, territory + Math.max(2, Math.round(damage / 5)));
             sc += damage * 4;
-            feedback = { tone: damage >= 12 ? 'success' : 'warning', text: 'Raid dealt ' + damage + ' rival-hive damage. Some guards were lost in the attack.' };
+            feedback = { tone: damage >= 12 ? 'success' : 'warning', text: 'Raid dealt ' + damage + ' rival-hive damage and robbed ' + robbed + ' nectar from its stores. Some guards were lost in the attack.' };
             evts.push({ type: 'raid', text: '\u2694\uFE0F Cycle ' + queenDay + ': your raid dealt ' + damage + ' damage to ' + rival.name + '.' });
             playSfx(sfxAlert);
             if (rival.health <= 0) {
               result = 'victory'; paused = true;
-              feedback = { tone: 'success', text: 'VICTORY: the rival queen retreated and your colony controls the forage range.' };
+              // Colonies share flower patches; nobody "controls" a forage range (the map study teaches this).
+              feedback = { tone: 'success', text: 'GAME VICTORY: the rival health index reached zero. In real landscapes both colonies would keep sharing the flowers.' };
               evts.push({ type: 'victory', text: '\uD83C\uDFC6 Rival hive defeated. Your colony wins the apiary.' });
             }
           }
@@ -25131,10 +25836,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           ].filter(Boolean);
           var commandImpact = { kind: 'command', cycle: queenDay, title: action.label, summary: feedback.text, changes: actionImpactChanges, events: evts.length > queenEvents.length ? [evts[evts.length - 1].text] : [] };
           var queenOutcomeMeta = recordQueenOutcome(result, queenDay, sc);
+          var nextSignalUsed = BH_QUEEN_SIGNAL_IDS.indexOf(actionId) >= 0 ? Object.assign({}, signalUsed, (function() { var o = {}; o[actionId] = queenDay; return o; })()) : signalUsed;
           updAll({ queen: Object.assign({}, queenData, { resources: res, pheromones: ph, population: pop,
             rival: rival, territory: territory, score: sc, selectedAction: actionId, productionQueue: productionQueue,
             feedback: feedback, events: evts, result: result, paused: paused, lastImpact: commandImpact,
-            career: queenOutcomeMeta.career, resultRecorded: queenOutcomeMeta.recorded }) });
+            career: queenOutcomeMeta.career, resultRecorded: queenOutcomeMeta.recorded, signalUsed: nextSignalUsed }) });
           if (addToast) addToast(action.icon + ' ' + feedback.text, feedback.tone === 'warning' ? 'info' : 'success');
           announceBee(feedback.text, feedback.tone === 'danger');
         }
@@ -25174,7 +25880,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           };
 
           // ── Seasonal modifiers (30-day seasons) ──
-          var qSeason = Math.floor((newDay % 120) / 30); // 0=spring 1=summer 2=autumn 3=winter
+          var qSeason = bhQueenSeason(newDay); // 0=spring 1=summer 2=autumn 3=winter
+          var qWinter = qSeason === 3;
           var qSeasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
           var forageMult = [0.8, 1.4, 0.5, 0.0][qSeason];
           var broodMult = [1.2, 1.5, 0.4, 0.0][qSeason];
@@ -25191,7 +25898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Structure production bonuses
           structs.forEach(function(st) {
             if (st.type === 'brood') { pop.nurses += Math.round(5 * st.level * broodMult); pop.foragers += Math.round(3 * st.level * broodMult); }
-            else if (st.type === 'honey') { res.nectar += 0.5 * st.level; } // better storage = less waste
+            else if (st.type === 'honey') { if (!qWinter) res.nectar += 0.5 * st.level; } // storage, not forage: nothing comes in during winter // better storage = less waste
             else if (st.type === 'pollen') { res.pollen += 0.3 * st.level; }
             else if (st.type === 'guard') { pop.guards += 2 * st.level; }
             else if (st.type === 'nursery') { res.royalJelly += 0.2 * st.level; }
@@ -25224,12 +25931,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // Build phase: days 1-10, low threat frequency
           // Defend phase: days 11-25, higher threat frequency, bigger threats
           // Swarm phase: day 25+, must manage swarming impulse or colony splits
-          if (newDay >= 25 && newPhase !== 'swarm') {
-            newPhase = 'swarm';
-            evts.push({ type: 'phase', text: __alloT('stem.beehive.swarm_phase_colony_is_crowded_manage_p', '🐝 SWARM PHASE — Colony is crowded! Manage pheromones carefully or half the workers leave with a new queen.') });
-          } else if (newDay >= 10 && newPhase === 'build') {
-            newPhase = 'defend';
-            evts.push({ type: 'phase', text: __alloT('stem.beehive.defend_phase_threats_are_increasing_bu', '⚔️ DEFEND PHASE — Threats are increasing. Build guard posts and keep alarm pheromone ready.') });
+          // Phases follow the seasons: build in spring, swarm season in summer, robbing season in autumn,
+          // and the winter cluster. (They were cycle thresholds that ignored the calendar.)
+          var seasonPhase = ['build', 'swarm', 'defend', 'winter'][qSeason];
+          if (seasonPhase !== newPhase) {
+            newPhase = seasonPhase;
+            if (newPhase === 'swarm') {
+              evts.push({ type: 'phase', text: __alloT('stem.beehive.swarm_phase_colony_is_crowded_manage_p', '🐝 SWARM PHASE — Colony is crowded! Manage pheromones carefully or half the workers leave with a new queen.') });
+            } else if (newPhase === 'defend') {
+              evts.push({ type: 'phase', text: __alloT('stem.beehive.defend_phase_threats_are_increasing_bu', '⚔️ DEFEND PHASE — Threats are increasing. Build guard posts and keep alarm pheromone ready.') });
+            } else if (newPhase === 'winter') {
+              evts.push({ type: 'phase', text: __alloT('stem.beehive.winter_phase_cluster', '❄️ WINTER CLUSTER — No bees fly in the cold, so no raids either way. Both colonies live on their stores until the spring census.') });
+            }
           }
 
           // Low QMP = worker rebellion risk (worse in swarm phase)
@@ -25242,7 +25955,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Swarming impulse (swarm phase only)
           if (newPhase === 'swarm' && totalPop > 800 && ph.qmp < 40 && Math.random() < 0.2) {
-            evts.push({ type: 'swarm', text: __alloT('stem.beehive.swarm_qmp_couldn_t_hold_them_half_your', '🐝🐝🐝 SWARM! QMP couldn\'t hold them — half your workers left with a rebel queen! Rebuild with stronger pheromones.') });
+            // In a real prime swarm the OLD queen leaves with about half the workers; a daughter
+            // queen takes over the nest. Swarming is how colonies reproduce, not a revolt.
+            evts.push({ type: 'swarm', text: __alloT('stem.beehive.swarm_old_queen_left_with_half', '🐝🐝🐝 SWARM! The crowded colony reproduced: the old queen left with about half the workers to start a new nest, and a daughter queen takes over here. Rebuild the workforce.') });
             pop.foragers = Math.round(pop.foragers * 0.5);
             pop.nurses = Math.round(pop.nurses * 0.5);
             pop.builders = Math.round(pop.builders * 0.5);
@@ -25250,18 +25965,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             playSfx(sfxAlert);
           }
 
-          // Supersedure remains a defeat condition, but the battlefield stays visible for review.
+          // Supersedure is how a colony SURVIVES a failing queen, so it is not a defeat: workers
+          // raise a replacement, brood care stalls while she emerges and mates, then QMP recovers.
           if (ph.qmp < 5 && queenDay > 15 && Math.random() < 0.15) {
-            result = 'defeat'; newPaused = true; hiveHealth = 0;
-            feedback = { tone: 'danger', text: 'DEFEAT: workers superseded you after QMP collapsed.' };
-            evts.push({ type: 'supersedure', text: '\uD83D\uDC51 Supersedure: the rival wins while your colony raises a replacement queen.' });
+            pop.nurses = Math.max(0, Math.round(pop.nurses * 0.7));
+            ph.qmp = 55;
+            feedback = { tone: 'warning', text: 'Supersedure: workers raised a replacement queen. Brood care stalled while she mated; her QMP now holds the colony together again.' };
+            evts.push({ type: 'supersedure', text: '\uD83D\uDC51 Supersedure: the colony replaced its failing queen. Fewer nurses this cycle, and QMP is back to 55.' });
           }
 
           // Random threats (frequency increases by phase)
           var threatChance = (newPhase === 'defend' ? 0.15 : newPhase === 'swarm' ? 0.12 : 0.06) * queenDifficultyCfg.threatMult;
           if (Math.random() < threatChance && queenDay > 2) {
             var threatTypes = [
-              { type: 'wasp', icon: '🐝', label: __alloT('stem.beehive.wasp_raider', 'Wasp Raider'), strength: 30, desc: __alloT('stem.beehive.a_hornet_is_probing_the_entrance', 'A hornet is probing the entrance!') },
+              { type: 'wasp', icon: '🐝', label: __alloT('stem.beehive.wasp_raider', 'Wasp Raider'), strength: 30, desc: __alloT('stem.beehive.a_yellowjacket_is_probing_the_entrance', 'A yellowjacket wasp is probing the entrance!') },
               { type: 'robber', icon: '⚔️', label: __alloT('stem.beehive.robber_bees', 'Robber Bees'), strength: 50, desc: __alloT('stem.beehive.foreign_bees_are_trying_to_steal_honey', 'Foreign bees are trying to steal honey!') },
               { type: 'mouse', icon: '🐭', label: __alloT('stem.beehive.mouse_intruder', 'Mouse Intruder'), strength: 40, desc: __alloT('stem.beehive.a_mouse_is_trying_to_nest_inside_the_h', 'A mouse is trying to nest inside the hive!') },
               { type: 'mites', icon: '🦟', label: __alloT('stem.beehive.varroa_spike', 'Varroa Spike'), strength: 60, desc: __alloT('stem.beehive.varroa_mites_are_multiplying_on_brood', 'Varroa mites are multiplying on brood!') },
@@ -25269,22 +25986,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ];
             // Harder threats in later phases
             if (newPhase === 'defend' || newPhase === 'swarm') {
-              threatTypes.push({ type: 'hornet', icon: '🐻', label: __alloT('stem.beehive.giant_hornet', 'Giant Hornet'), strength: 80, desc: __alloT('stem.beehive.a_giant_hornet_one_can_kill_40_bees_pe', 'A giant hornet — one can kill 40 bees per minute!') });
+              // Was a "Giant Hornet" drawn with a bear icon. A black bear is the real big-animal
+              // threat to hives in the tool's Maine setting (the Forest Edge site warns about them).
+              threatTypes.push({ type: 'bear', icon: '🐻', label: __alloT('stem.beehive.black_bear', 'Black Bear'), strength: 80, desc: __alloT('stem.beehive.a_black_bear_is_tearing_into_the_hive', 'A black bear is tearing into the hive for brood and honey!') });
             }
+            if (qWinter) threatTypes = threatTypes.filter(function(t) { return t.type === 'mouse' || t.type === 'mites'; }); // wasps, robbers, beetles and bears are out of the picture in winter
             var nt = threatTypes[Math.floor(Math.random() * threatTypes.length)];
-            threats.push(Object.assign({}, nt, { hp: nt.strength, maxHp: nt.strength }));
+            threats.push(Object.assign({}, nt, { hp: nt.strength, maxHp: nt.strength, bornDay: newDay }));
             evts.push({ type: 'threat', text: nt.icon + ' ' + nt.label + ': ' + nt.desc });
             playSfx(sfxAlert);
           }
 
-          // Guards auto-fight threats (alarm pheromone doubles effectiveness)
-          threats.forEach(function(th) {
-            th.hp -= pop.guards * 0.5 * (ph.alarm > 30 ? 2.5 : 1);
+          // Guards fight intruders (alarm pheromone amplifies them). Mites are different: guards
+          // cannot fight a parasite sealed in brood cells, but hygienic nurses uncap and remove
+          // infested brood, so nurses wear mite outbreaks down. Threat objects are copied so this
+          // never mutates the previous cycle's state.
+          threats = threats.map(function(th) {
+            // A threat gets one cycle on screen before the colony engages it, so the student sees
+            // it and can respond (guards used to wipe most threats out the cycle they appeared).
+            if (th.bornDay === newDay) return Object.assign({}, th);
+            var hit =th.type === 'mites' ? pop.nurses * 0.3 : pop.guards * 0.5 * (ph.alarm > 30 ? 2.5 : 1);
+            return Object.assign({}, th, { hp: th.hp - hit });
           });
           var defeatedThreats = threats.filter(function(th) { return th.hp <= 0; });
           threats = threats.filter(function(th) { return th.hp > 0; });
           defeatedThreats.forEach(function(th) {
-            evts.push({ type: 'victory', text: '✅ ' + th.label + ' defeated! Guards held the line.' });
+            evts.push({ type: 'victory', text: '✅ ' + th.label + (th.type === 'mites' ? ' contained: hygienic nurses removed infested brood.' : ' driven off! Guards held the line.') });
           });
           // Undefended threats cause damage
           threats.forEach(function(th) {
@@ -25298,7 +26025,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var priorRivalPosture = rival.posture || 'forage';
           var playerDefenseEstimate = pop.guards * 0.45 + guardPosts * 18 + (ph.alarm > 30 ? 38 : 0);
           var rivalPosture = 'forage';
-          if ((rival.health || 100) <= 35 || (rival.stores || 0) < 10) rivalPosture = 'recover';
+          if (qWinter) rivalPosture = 'cluster';
+          else if ((rival.health || 100) <= 35 || (rival.stores || 0) < 10) rivalPosture = 'recover';
           else if (newDay > 0 && newDay % queenDifficultyCfg.structureEvery === 0) rivalPosture = 'expand';
           else if ((rival.pressure || 0) >= 52 || (playerDefenseEstimate < (rival.strength || 0) * 0.13 && newDay % 4 >= 2)) rivalPosture = 'assault';
           else if (territory >= 58) rivalPosture = 'contest';
@@ -25307,7 +26035,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             forage: { store: 1.25, growth: 0.9, pressure: 0.8, move: 'Foragers are filling reserve comb', telegraph: 'Stores will fund a later expansion or raid', counter: 'Take RTS advantage now or scout before the reserve converts into pressure.' },
             expand: { store: 0.8, growth: 1.15, pressure: 0.72, move: 'Builders are completing a production structure', telegraph: 'Power will compound after this cycle', counter: 'Raid during construction or match the economy with a productive structure.' },
             assault: { store: 0.62, growth: 1.05, pressure: 1.38, move: 'Guards and scouts are massing near your forage boundary', telegraph: 'A raid window is approaching', counter: 'Raise alarm, add guards, or counter-raid before pressure reaches 60%.' },
-            contest: { store: 0.9, growth: 1, pressure: 1.08, move: 'Scouts are contesting your outer forage lanes', telegraph: 'Map control will drift toward the rival', counter: 'Use Nasonov, scouts, or a raid to protect the forage boundary.' },
+            contest: { store: 0.9, growth: 1, pressure: 1.08, move: 'Scouts are contesting your outer forage lanes', telegraph: 'The RTS advantage will drift toward the rival', counter: 'Use Nasonov, scouts, or a raid to hold your RTS advantage.' },
+            cluster: { store: 0, growth: 0, pressure: -1.4, move: 'The rival colony has clustered for winter', telegraph: 'No raids until spring; it lives on its stores', counter: 'Keep your own cluster fed. A rival that was robbed in autumn may starve before spring.' },
             recover: { store: 1.35, growth: rivalDoctrine.recoveryMult, pressure: -0.55, move: 'The rival has pulled workers back to repair and refill stores', telegraph: 'Raid tempo is temporarily reduced', counter: 'Convert the opening into RTS advantage or finish the weakened hive.' }
           };
           var postureRule = rivalPostures[rivalPosture];
@@ -25317,8 +26046,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           rival.telegraph = postureRule.telegraph;
           rival.counter = postureRule.counter;
           rival.intel = Math.max(0, (rival.intel || 0) - 4);
-          rival.stores = Math.max(0, Math.round(((rival.stores || 0) + 1.2 * queenDifficultyCfg.raidScale * rivalDoctrine.storeMult * postureRule.store + (rival.structures || 0) * 0.18) * 10) / 10);
-          rival.strength = Math.min(1400, Math.round((rival.strength || queenDifficultyCfg.strength) + queenDifficultyCfg.growth * rivalDoctrine.growthMult * postureRule.growth + (rival.structures || 0) * 0.7));
+          // Rival income follows the season and its share of the forage (your RTS advantage takes the rest);
+          // in winter it forages nothing and its cluster eats from stores.
+          var rivalForage = [0.8, 1.4, 0.5, 0][qSeason] * Math.max(0.3, (100 - territory) / 50);
+          var rivalBurn = qWinter ? (rival.strength || 0) * 0.012 : 0;
+          rival.stores = Math.max(0, Math.round(((rival.stores || 0) + (1.2 * queenDifficultyCfg.raidScale * rivalDoctrine.storeMult * postureRule.store + (rival.structures || 0) * 0.18) * rivalForage - rivalBurn) * 10) / 10);
+          rival.strength = Math.min(1400, Math.round((rival.strength || queenDifficultyCfg.strength) + (queenDifficultyCfg.growth * rivalDoctrine.growthMult * postureRule.growth + (rival.structures || 0) * 0.7) * [1, 1.1, 0.5, 0][qSeason]));
+          if (qWinter) {
+            rival.strength = Math.round(rival.strength * 0.985); // no brood: winter bees slowly die off
+            if (rival.stores <= 0) {
+              rival.health = Math.max(0, (rival.health || 0) - 5);
+              evts.push({ type: 'rival_starve', text: __alloFill(__alloT('stem.beehive.rival_starving', '🥶 {value1} has run out of stores and is starving in its cluster.'), { value1: rival.name }) });
+            }
+          }
           if (postureRule.pressure < 0) rival.pressure = Math.max(0, (rival.pressure || 0) - Math.round(queenDifficultyCfg.pressureGain * Math.abs(postureRule.pressure)));
           else rival.pressure = Math.min(100, (rival.pressure || 0) + queenDifficultyCfg.pressureGain * rivalDoctrine.pressureMult * postureRule.pressure + (newPhase === 'defend' ? 3 : newPhase === 'swarm' ? 5 : 0));
           if (rivalPosture !== priorRivalPosture) {
@@ -25337,7 +26077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var rivalMapPower = rival.strength * 0.22 + rival.structures * 9;
           territory = Math.max(15, Math.min(85, territory + Math.max(-3, Math.min(3, (playerMapPower - rivalMapPower) / 120))));
 
-          if (!result && (rival.pressure >= 60 || newDay % 4 === 0)) {
+          if (!result && !qWinter && (rival.pressure >= 60 || newDay % 4 === 0)) { // winter truce: nothing flies
             var raidDamage = Math.max(2, Math.min(28, Math.round((5 + (rival.strength - defensePower) / 80) * queenDifficultyCfg.raidScale)));
             var stolen = Math.min(res.nectar, Math.max(1, Math.round(raidDamage * 0.45)));
             hiveHealth = Math.max(0, hiveHealth - raidDamage);
@@ -25352,9 +26092,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             evts.push({ type: 'rival_raid', text: '\uD83D\uDEA8 Cycle ' + newDay + ': ' + rival.name + ' raid dealt ' + raidDamage + ' hive damage and stole ' + stolen + ' nectar.' });
             feedback = { tone: raidDamage >= 10 ? 'danger' : 'warning', text: 'RIVAL RAID: -' + raidDamage + ' hive health, -' + stolen + ' nectar. Alarm pheromone and guard posts reduce the next strike.' };
             playSfx(sfxAlert);
+          } else if (!result && res.nectar > 20 && hiveHealth < 100) {
+            // In a quiet, well-fed cycle nurses and builders repair comb and rear brood. Neither hive
+            // ever healed before, so there was no comeback and defending only delayed defeat. With
+            // this, following the Decision Window wins ~58% of Standard matches in simulation
+            // (was 0%), Guided stays easy and Expert still needs active play.
+            hiveHealth = Math.min(100, hiveHealth + 1);
           }
 
-          if (hiveHealth <= 0 && !result) {
+          if (!result && hiveHealth > 0 && (rival.health || 0) > 0 && newDay >= BH_QUEEN_YEAR_CYCLES) {
+            // Spring census: both colonies came through the year; the healthier one leads into spring.
+            var youLead = hiveHealth > (rival.health || 0);
+            result = youLead ? 'victory' : 'defeat'; newPaused = true;
+            feedback = { tone: youLead ? 'success' : 'danger', text: __alloFill(__alloT('stem.beehive.spring_census', 'SPRING CENSUS: your brood core came through the year at {value1}%, {value2} at {value3}%. {value4}'), { value1: Math.round(hiveHealth), value2: rival.name, value3: Math.round(rival.health || 0), value4: youLead ? __alloT('stem.beehive.census_lead', 'Your colony leads into spring.') : __alloT('stem.beehive.census_behind', 'The rival leads into spring. Rob its stores in autumn and keep your cluster fed.') }) };
+            evts.push({ type: youLead ? 'victory' : 'defeat', text: '\uD83C\uDF31 Spring census: you ' + Math.round(hiveHealth) + '%, ' + rival.name + ' ' + Math.round(rival.health || 0) + '%.' });
+          } else if (hiveHealth <= 0 && !result) {
             result = 'defeat'; newPaused = true;
             feedback = { tone: 'danger', text: 'DEFEAT: the rival breached the brood core. Review the event log and restart.' };
             evts.push({ type: 'defeat', text: '\u274C Your brood core fell to the rival colony.' });
@@ -25363,8 +26115,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             feedback = { tone: 'success', text: 'GAME VICTORY: the rival health index reached zero. This is a fictional win condition, not evidence of land ownership.' };
           }
           // Season transition announcement
-          if (newDay > 0 && newDay % 30 === 0) {
-            evts.push({ type: 'season', text: qSeasonNames[qSeason] + ' has arrived! Adjust your strategy for the new season.' });
+          if (newDay > 0 && newDay % BH_QUEEN_SEASON_CYCLES === 0 && newDay < BH_QUEEN_YEAR_CYCLES) {
+            var upcomingSeason = bhQueenSeason(newDay + 1);
+            evts.push({ type: 'season', text: qSeasonNames[upcomingSeason] + ' begins next cycle. ' + [
+              '',
+              __alloT('stem.beehive.season_summer_rts', 'The big nectar flow, and swarm season: keep QMP up.'),
+              __alloT('stem.beehive.season_autumn_rts', 'The flow ends and robbing peaks. Stock up for winter.'),
+              __alloT('stem.beehive.season_winter_rts', 'No bee flies in winter, so no raids. Stores must last until the spring census.')][upcomingSeason] });
           }
 
           // Nasonov bonus: high nasonov attracts more foragers
@@ -25379,6 +26136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Starvation check
           if (res.nectar <= 0) {
+            if (qWinter) hiveHealth = Math.max(0, hiveHealth - 4); // an unfed cluster cannot keep the brood core warm
             evts.push({ type: 'starve', text: __alloT('stem.beehive.starvation_no_nectar_workers_are_dying', '🚨 STARVATION — No nectar! Workers are dying.') });
             pop.foragers = Math.max(0, pop.foragers - 20);
             pop.nurses = Math.max(0, pop.nurses - 10);
@@ -25412,7 +26170,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           playSfx(sfxDayChime);
           updAll({ queen: Object.assign({}, queenData, {
             day: newDay, resources: res, pheromones: ph, population: pop,
-            threats: threats, events: evts, score: queenScore + 10,
+            // Drones are the colony's other way to reproduce: in the mating season they carry its
+            // genes to other colonies' queens (they used to cost nectar and do nothing).
+            threats: threats, events: evts, score: queenScore + 10 + (qSeason <= 1 ? Math.floor((pop.drones || 0) / 20) : 0),
             phase: newPhase, structures: structs, rival: rival, productionQueue: productionQueue,
             hiveHealth: hiveHealth, territory: roundedTerritory,
             feedback: feedback, result: result, paused: newPaused, lastImpact: cycleImpact,
@@ -25421,9 +26181,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         // Continuous simulation clock. One cycle is 2.4s at 1x or 1.2s at 2x.
+        // The timer calls the LATEST advanceQueenDay through a ref. Calling the closure the
+        // effect captured rebuilt the cycle from pre-move state, so every build, raid or
+        // signal made while the clock ran was erased at the next tick.
+        var _queenAdvanceRef = React.useRef(null);
+        _queenAdvanceRef.current = advanceQueenDay;
         React.useEffect(function() {
           if (viewMode !== 'queen' || !queenGameActive || queenPaused || queenResult) return;
-          var cycleTimer = setInterval(function() { advanceQueenDay(); }, queenSpeed === 2 ? 1200 : 2400);
+          var cycleTimer = setInterval(function() { if (_queenAdvanceRef.current) _queenAdvanceRef.current(); }, queenSpeed === 2 ? 1200 : 2400);
           return function() { clearInterval(cycleTimer); };
         }, [viewMode, queenGameActive, queenPaused, queenSpeed, queenDay, queenResult]);
 
@@ -25479,6 +26244,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var timing = raidIn <= 1 ? 'Before the next cycle' : 'Within ' + raidIn + ' cycles';
           var empty = { key: 'observe', tone: 'info', badge: 'PLAN AHEAD', title: 'Build for the next phase', detail: 'No immediate raid response is required. Use the next safe cycle to strengthen the economy or place a structure before pressure compounds.', timing: timing, actionId: null, action: null, ready: false, gap: '' };
           if (queenResult) return { key: 'review', tone: queenResult === 'victory' ? 'success' : 'danger', badge: 'REVIEW', title: queenResult === 'victory' ? 'Map control secured' : 'Brood core lost', detail: 'The clock is stopped. Review the impact report and name the strategy choice or automatic event that changed the outcome.', timing: 'Review the debrief', actionId: null, action: null, ready: false, gap: '' };
+          var upcomingSeason = bhQueenSeason(queenDay + 1);
+          if (upcomingSeason === 3 && queenThreats.length === 0) {
+            var qmpW = QUEEN_ACTIONS.find(function(action) { return action.id === 'emit_qmp'; });
+            var needQmp = (queenPheromones.qmp || 0) < 50;
+            return { key: 'winter', tone: 'info', badge: 'WINTER TRUCE', title: 'Cluster and wait for spring', detail: 'No bee flies in the cold, so there are no raids either way. Keep QMP up; your stores must feed the cluster until the spring census at cycle ' + BH_QUEEN_YEAR_CYCLES + '.', timing: 'Census in ' + Math.max(0, BH_QUEEN_YEAR_CYCLES - queenDay) + ' cycles', actionId: needQmp && qmpW ? qmpW.id : null, action: needQmp ? qmpW : null, ready: needQmp, gap: '' };
+          }
           if (queenThreats.length > 0 || pressure >= 60) {
             var alarm = QUEEN_ACTIONS.find(function(action) { return action.id === 'alarm_signal'; });
             return { key: 'defend', tone: 'danger', badge: 'ACT NOW', title: 'Defend before the raid lands', detail: queenThreats.length > 0 ? 'An active threat is already inside the decision window. Alarm pheromone mobilizes guards immediately; add a Guard Post after stabilizing.' : 'Raid pressure has reached the 60% threshold. Alarm pheromone buys time while you reinforce the entrance.', timing: 'This cycle', actionId: alarm ? alarm.id : null, action: alarm, ready: true, gap: '' };
@@ -25494,9 +26265,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           var attack = queenPopulation.guards * 0.24 + queenPopulation.scouts * 0.7 + queenPheromones.alarm * 0.18;
           var estimate = Math.max(4, Math.min(28, Math.round(attack / 8 - queenRival.strength / 120)));
+          var robEstimate = Math.min(Math.floor(queenRival.stores || 0), Math.round(6 + estimate));
+          if (upcomingSeason === 2 && (queenResources.nectar || 0) < queenWinterNeed() + 10) {
+            // Autumn: winter decides the census. Raid only when the robbery pays for itself.
+            var robRaid = QUEEN_ACTIONS.find(function(action) { return action.id === 'raid_rival'; });
+            var robPays = robEstimate >= 10 && hasQueenResources({ nectar: 10, pollen: 3 });
+            return { key: 'stockup', tone: 'warning', badge: 'STOCK UP', title: 'Stock up for winter', detail: 'Winter starts at cycle ' + (BH_QUEEN_SEASON_CYCLES * 3 + 1) + '. Your cluster will eat about ' + queenWinterNeed() + ' nectar before spring; you have ' + Math.floor(queenResources.nectar || 0) + '. ' + (robPays ? 'A raid now robs about ' + robEstimate + ' nectar for a 10-nectar cost.' : 'Hold nectar: a raid now would rob less than it costs.'), timing: timing, actionId: robPays && robRaid ? robRaid.id : null, action: robPays ? robRaid : null, ready: robPays, gap: '' };
+          }
+          if (upcomingSeason <= 1 && (queenResources.royalJelly || 0) >= 2 && (upcomingSeason === 0 || (queenResources.nectar || 0) >= queenWinterNeed())) {
+            // Royal jelly piled up unspent. More bees forage more, but every bee also eats all winter, so in
+            // summer grow only while stores already cover the winter need.
+            var lay = QUEEN_ACTIONS.find(function(action) { return action.id === 'lay_workers'; });
+            return { key: 'grow', tone: 'info', badge: 'GROW', title: 'Lay worker eggs', detail: 'Royal jelly is available. Each clutch adds 20 nurses in 2 cycles; a bigger colony forages more in summer and rides out winter.', timing: timing, actionId: lay ? lay.id : null, action: lay, ready: !!lay, gap: '' };
+          }
           if (estimate >= 12 && hasQueenResources({ nectar: 10, pollen: 3 })) {
             var raid = QUEEN_ACTIONS.find(function(action) { return action.id === 'raid_rival'; });
             return { key: 'raid', tone: 'success', badge: 'FAVORABLE', title: 'Convert the advantage', detail: 'Your current guard, scout, and alarm signals project about ' + estimate + ' rival damage. Strike before the next rival structure compounds its power.', timing: timing, actionId: raid ? raid.id : null, action: raid, ready: true, gap: '' };
+          }
+          // Steady pressure. The only raid advice used to wait for a 12-damage estimate that
+          // almost never comes (raids mostly deal the 4-point floor), so following this panel lost
+          // every Standard and Expert match in simulation. Raid while a nectar reserve remains.
+          if (hasQueenResources({ nectar: 20, pollen: 3 }) && (upcomingSeason === 0 || (queenResources.nectar || 0) >= 30)) {
+            var steadyRaid = QUEEN_ACTIONS.find(function(action) { return action.id === 'raid_rival'; });
+            return { key: 'raid', tone: 'success', badge: 'KEEP PRESSURE', title: 'Keep steady pressure on the rival', detail: 'A raid now projects about ' + estimate + ' rival damage and still leaves a nectar reserve. Steady raids wear the rival down; a perfect strike rarely comes.', timing: timing, actionId: steadyRaid ? steadyRaid.id : null, action: steadyRaid, ready: true, gap: '' };
           }
           if ((queenResources.wax || 0) < 5) return { key: 'economy', tone: 'info', badge: 'GROW', title: 'Grow the wax economy', detail: 'Your next structure needs wax. Recruit builders or protect foragers so infrastructure can replace short-lived pheromone bursts.', timing: timing, actionId: null, action: null, ready: false, gap: 'Need 5 wax to recruit builders' };
           return empty;
@@ -25620,7 +26411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // The SAME crowding ratio the colony stepper uses to fire a swarm event,
         // so the queen cells on the frame and the event in the log never
         // disagree about whether this colony is about to swarm.
-        var hive3dSwarmPressure = workers / Math.max(1, hive3dCapacity * 350);
+        var hive3dSwarmPressure = workers / Math.max(1, hive3dCapacity * SIMULATION_PARAMS.beesPerCapacityUnit);
         // Which frame the learner is holding. Six frames, 0 at the box wall.
         var HIVE_3D_FRAME_COUNT = 6;
         var hive3dFrame = Math.max(0, Math.min(HIVE_3D_FRAME_COUNT - 1, Math.round(bhBoundedNumber(d.hive3dFrame, 0, 0, HIVE_3D_FRAME_COUNT - 1))));
@@ -25694,7 +26485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               rivalHealth: queen3dRival, forageRate: queen3dForage,
               structures: queen3dStructures, qmp: queen3dQmp,
               alarm: queen3dAlarm, nasonov: queen3dNasonov,
-              raidPressure: queen3dRaid, paused: queenPaused || !!queenResult, season: Math.floor((queenDay % 120) / 30), showRoutes: d.queen3dRoutes !== false, showSignals: d.queen3dSignals === true, showGamePieces: d.queen3dGamePieces === true, patchId: queenInspection.patch && queenInspection.patch.id, colonyView: queenInspection.colony
+              raidPressure: queen3dRaid, paused: queenPaused || !!queenResult, season: bhQueenSeason(queenDay + 1), showRoutes: d.queen3dRoutes !== false, showSignals: d.queen3dSignals === true, showGamePieces: d.queen3dGamePieces === true, patchId: queenInspection.patch && queenInspection.patch.id, colonyView: queenInspection.colony
             },
             onPick: function(id) {
               if (bhQueenMapInspection(id).patch) selectQueenMapPatch(id); else upd('queen3dPart', id);
@@ -25864,7 +26655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function renderQueenPatchExplorer() {
           var study = bhQueenMapStudy(d.queenMapStudy), studyCount = Object.keys(study.captures).length;
           var studyReason = bhQueenMapStudyReady(study, queenStudyView(d));
-          var patch = queenInspection.patch, winter = Math.floor((queenDay % 120) / 30) === 3;
+          var patch = queenInspection.patch, winter = bhQueenSeason(queenDay + 1) === 3;
           var routesVisible = d.queen3dRoutes !== false && !winter;
           var count = routesVisible ? (patch ? 1 : QUEEN_LANDSCAPE_PATCHES.length) * (queenInspection.colony === 'both' ? 2 : 1) : 0;
           return h('div', { className: 'bee-rts-explorer', 'data-rts-patch-explorer': patch ? patch.id : 'all' },
@@ -26036,7 +26827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.clearRect(0, 0, W, H);
 
             // ── Seasonal background tint ──
-            var qSeason2 = Math.floor(((qs.queenDay || 0) % 120) / 30);
+            var qSeason2 = bhQueenSeason((qs.queenDay || 0) + 1);
             var combBase = ['#c9b040', '#d4aa40', '#b89030', '#a0a0b0'][qSeason2] || '#d4aa40';
             var combCell = ['#c0a530', '#c9a030', '#a87820', '#8090a0'][qSeason2] || '#c9a030';
             var combStroke = ['#7a5a08', '#8a6508', '#6a4a00', '#606878'][qSeason2] || '#8a6508';
@@ -26191,10 +26982,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // ── Worker bee particles ──
             var totalW = qs.queenPopulation.nurses + qs.queenPopulation.builders + qs.queenPopulation.guards + qs.queenPopulation.foragers;
             var numDots = Math.min(100, Math.floor(totalW / 10));
+            // Winter: no one flies. The workers form a tight ball on the brood core and shiver their
+            // flight muscles to heat it, so the core glows warm while the edge of the ball is cold.
+            var qCluster = qSeason2 === 3;
+            if (qCluster) {
+              var qCore = c.createRadialGradient(qx, qy, 4, qx, qy, 46);
+              qCore.addColorStop(0, 'rgba(251,146,60,0.55)'); qCore.addColorStop(0.6, 'rgba(251,191,36,0.18)'); qCore.addColorStop(1, 'rgba(251,191,36,0)');
+              c.fillStyle = qCore; c.beginPath(); c.arc(qx, qy, 46, 0, 6.28); c.fill();
+            }
             c.fillStyle = '#fbbf24';
             for (var bi = 0; bi < numDots; bi++) {
-              var bAngle = (bi / numDots) * 6.28 + Date.now() * 0.0005;
-              var bRadius = 35 + Math.sin(bi * 2.3 + Date.now() * 0.001) * 30 + Math.random() * 20;
+              var bAngle = (bi / numDots) * 6.28 + Date.now() * (qCluster ? 0.00008 : 0.0005);
+              var bRadius = qCluster
+                ? 12 + (bi % 8) * 3.2 + Math.sin(bi * 1.7 + Date.now() * 0.0006) * 1.5
+                : 35 + Math.sin(bi * 2.3 + Date.now() * 0.001) * 30 + Math.sin(bi * 5.1 + Date.now() * 0.004) * 10; // was Math.random() every frame: flicker
               var bx = qx + Math.cos(bAngle) * bRadius;
               var by = qy + Math.sin(bAngle) * bRadius * 0.7;
               c.globalAlpha = 0.6;
@@ -26218,11 +27019,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // ── HUD overlay ──
             var qSeasonLabel = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][qSeason2] || '';
-            var phaseLabel2 = qs.queenPhase === 'swarm' ? '🐝 SWARM' : qs.queenPhase === 'defend' ? '⚔️ DEFEND' : '🏗️ BUILD';
+            var phaseLabel2 = qs.queenPhase === 'swarm' ? '🐝 SWARM' : qs.queenPhase === 'defend' ? '⚔️ DEFEND' : qs.queenPhase === 'winter' ? '❄️ WINTER' : '🏗️ BUILD';
             c.fillStyle = 'rgba(15,23,42,0.75)';
             c.beginPath(); if (c.roundRect) c.roundRect(6, 6, 180, 72, 8); else c.rect(6, 6, 180, 72); c.fill();
             c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
-            c.fillText('👑 COLONY NETWORK · Day ' + qs.queenDay, 14, 22);
+            c.fillText('👑 COLONY NETWORK · Cycle ' + qs.queenDay + ' / ' + BH_QUEEN_YEAR_CYCLES, 14, 22);
             c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
             var totalPop2 = qs.queenPopulation.nurses + qs.queenPopulation.builders + qs.queenPopulation.guards + qs.queenPopulation.foragers + qs.queenPopulation.scouts;
             c.fillText('🐝 ' + totalPop2 + ' bees · 🏆 ' + qs.queenScore + ' pts', 14, 36);
@@ -26294,7 +27095,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function queenNextCycleEconomy() {
           var nextDay = (Number(queenDay) || 0) + 1;
-          var seasonIndex = Math.floor((nextDay % 120) / 30);
+          var seasonIndex = bhQueenSeason(nextDay);
           var seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
           var forageMult = [0.8, 1.4, 0.5, 0.0][seasonIndex];
           var consumeMult = [0.9, 1.1, 0.8, 0.7][seasonIndex];
@@ -26307,7 +27108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (st.type === 'brood') {
               nextPop.nurses += Math.round(5 * level * ([1.2, 1.5, 0.4, 0.0][seasonIndex]));
               nextPop.foragers += Math.round(3 * level * ([1.2, 1.5, 0.4, 0.0][seasonIndex]));
-            } else if (st.type === 'honey') honeyStores += level;
+            } else if (st.type === 'honey') { if (seasonIndex !== 3) honeyStores += level; }
             else if (st.type === 'pollen') pollenVaults += level;
             else if (st.type === 'nursery') nurseries += level;
           });
@@ -26593,10 +27394,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'mt-0.5 text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Issue the essential response here; the full strategy deck remains below.')),
               h('div', { className: 'grid grid-cols-3 gap-1.5 sm:min-w-[360px]', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_essential_colony_network_responses', 'Essential Colony Network responses') },
                 shortcuts.map(function(action) {
-                  var ready = hasQueenResources(action.cost) && !queenResult;
+                  var signalSpent = BH_QUEEN_SIGNAL_IDS.indexOf(action.id) >= 0 && (queenData.signalUsed || {})[action.id] === queenDay;
+                  var coldGrounded = queenColdGrounded(action.id);
+                  var ready = hasQueenResources(action.cost) && !queenResult && !signalSpent && !coldGrounded;
                   var cost = queenCostText(action.cost);
                   var preview = queenActionPreview(action);
-                  var unavailableReason = queenResult ? 'Scenario complete' : queenResourceGapText(action.cost);
+                  var unavailableReason = queenResult ? 'Scenario complete' : coldGrounded ? 'Too cold to fly in winter' : signalSpent ? 'Already spreading this cycle' : queenResourceGapText(action.cost);
                   return h('button', { key: action.id, type: 'button', onClick: function() { if (!ready) { explainBeeUnavailable(action.label, unavailableReason); return; } queenAction(action.id); }, 'aria-disabled': ready ? undefined : 'true', 'data-unavailable-reason': ready ? undefined : unavailableReason, 'data-quick-command': action.id, 'data-command-ready': ready ? 'true' : 'false', 'aria-label': action.label + '. ' + action.desc + '. Effect: ' + preview + '. Cost: ' + cost + '. ' + (ready ? 'Ready' : 'Unavailable. ' + unavailableReason), className: 'min-h-[64px] rounded-lg border px-2 py-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (ready ? (dk ? 'border-purple-700 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-200 bg-white text-purple-900 hover:bg-purple-100') : (dk ? 'border-slate-700 bg-slate-900/50 text-slate-500 opacity-60' : 'border-slate-200 bg-slate-50 text-slate-600 opacity-70')) },
                     h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, action.icon),
                     h('span', { className: 'mt-1 block text-[0.625rem] font-black leading-tight' }, action.label),
@@ -26641,8 +27444,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               : { label: 'Intent partially hidden', detail: queenRival.name + ' is growing power, but its posture and counter remain unconfirmed. Scout Rival to reveal them.', tone: 'info' };
           var forecast = [
             { id: 'next-cycle', label: 'Cycle ' + nextCycle, timing: queenPaused ? 'Clock paused' : (queenSpeed === 2 ? '1.2 seconds' : '2.4 seconds'), detail: 'Economy resolves, QMP trends to ' + nextQmp + '%, and rival power grows.' },
-            { id: 'raid', label: 'Rival raid window', timing: raidIn <= 1 ? 'Next cycle' : raidIn + ' cycles', detail: 'A raid triggers from pressure or the four-cycle attack cadence.' },
-            { id: 'rival-build', label: 'Rival structure', timing: buildIn <= 1 ? 'Next cycle' : buildIn + ' cycles', detail: queenRival.name + ' gains production and combat power when it completes.' }
+            bhQueenSeason(nextCycle) === 3
+              ? { id: 'raid', label: 'Winter truce', timing: 'Until spring', detail: 'No raids fly in winter. Stores decide who is strongest at the spring census (cycle ' + BH_QUEEN_YEAR_CYCLES + ').' }
+              : { id: 'raid', label: 'Rival raid window', timing: raidIn <= 1 ? 'Next cycle' : raidIn + ' cycles', detail: 'A raid triggers from pressure or the four-cycle attack cadence.' },
+            bhQueenSeason(nextCycle) === 3
+              ? { id: 'rival-build', label: 'Spring census', timing: Math.max(0, BH_QUEEN_YEAR_CYCLES - queenDay) + ' cycles', detail: 'The healthier brood core leads into spring. A rival that runs out of stores starves.' }
+              : { id: 'rival-build', label: 'Rival structure', timing: buildIn <= 1 ? 'Next cycle' : buildIn + ' cycles', detail: queenRival.name + ' gains production and combat power when it completes.' }
           ];
           var whyText = queenImpact && queenImpact.kind === 'structure'
             ? 'The build cost was paid immediately. Its production or defense bonus begins on automatic cycles.'
@@ -26701,8 +27508,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 : h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'No brood orders are active. Queue worker or drone brood when royal jelly is available.')),
             h('div', { 'data-rts-rival-intent': 'true', role: 'note', className: 'mt-3 flex flex-col gap-1 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (rivalIntent.tone === 'danger' ? (dk ? 'border-rose-700/50 bg-rose-950/30' : 'border-rose-200 bg-rose-50') : rivalIntent.tone === 'warning' ? (dk ? 'border-amber-700/50 bg-amber-950/30' : 'border-amber-200 bg-amber-50') : (dk ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-white')) }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Rival intent'), h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, rivalIntent.label), h('p', { className: 'text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, rivalIntent.detail)),
             h('section', { 'data-rts-rival-doctrine': 'true', 'data-rival-posture': queenRival.posture || 'unknown', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_rival_hive_intelligence', 'Rival hive intelligence'), className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-rose-800/45 bg-rose-950/15' : 'border-rose-200 bg-rose-50/55') },
-              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-rose-300' : 'text-rose-800') }, 'Competitor intelligence'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenRival.name + ' - ' + rivalDoctrineProfile.label)), h('span', { className: 'rounded-full px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide ' + (rivalIntelKnown ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, rivalIntelKnown ? Math.round(queenRival.intel || 0) + '% intel' : 'Unscouted')),
-              h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, rivalDoctrineProfile.signature),
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-rose-300' : 'text-rose-800') }, 'Competitor intelligence'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, queenRival.name + ' - ' + (rivalIntelKnown ? rivalDoctrineProfile.label : 'doctrine unknown'))), h('span', { className: 'rounded-full px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide ' + (rivalIntelKnown ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, rivalIntelKnown ? Math.round(queenRival.intel || 0) + '% intel' : 'Unscouted')),
+              h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, rivalIntelKnown ? rivalDoctrineProfile.signature : 'Every rival plays one of three styles. Scout to find out which, before you commit guards or raids.'),
               h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_rival_posture_telegraph_and_counterplay', 'Rival posture, telegraph, and counterplay') }, [
                 { label: 'Current posture', value: rivalIntelKnown ? (queenRival.posture || 'forage') : 'Unconfirmed', detail: rivalIntelKnown ? (queenRival.lastMove || 'No move logged') : 'Scout to reveal current worker allocation.' },
                 { label: 'Telegraph', value: rivalIntelKnown ? (queenRival.telegraph || 'No clear signal') : 'Hidden', detail: rivalIntelKnown ? 'What the rival is likely to do next.' : 'Pressure still reveals the raid threshold.' },
@@ -26762,11 +27569,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             metric('sun', 'Sun bearing', waggleReading.sun, '°', 0, true);
             metric('food', 'Food bearing', waggleReading.food, '°', 0, true);
           } else if (viewMode === 'beekeeper' && discoveryLesson.id === 'thermo') {
-            var iq = Object.assign({ outsideC: 20, beesFanning: 30, broodCount: 5000 }, d.thermHunt || {});
+            var iq = Object.assign({}, BH_THERMO_DEFAULTS, d.thermHunt || {});
             snapshot.clock = 0; snapshot.label = 'Temperature trial';
             metric('outside', 'Outside temperature', iq.outsideC, '°C', 1);
             metric('fanning', 'Fanning bees', iq.beesFanning, 'bees');
-            metric('brood', 'Brood count', iq.broodCount, 'brood');
+            metric('heaters', 'Heater bees', iq.heaterBees, 'bees');
             metric('temperature', 'Estimated hive temperature', bhThermoEstimate(iq), '°C', 1);
           } else if (viewMode === 'beekeeper') {
             snapshot.clock = day; snapshot.label = 'Day ' + day;
@@ -26780,6 +27587,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           } else if (viewMode === 'queen') {
             snapshot.runKey = 'queen:' + (queenData.discoveryRunSerial || 0);
             snapshot.clock = queenDay; snapshot.label = 'Cycle ' + queenDay;
+            metric('nectar', 'Nectar budget', queenResources.nectar, 'model units', 1);
+            metric('pollen', 'Pollen budget', queenResources.pollen, 'model units', 1);
+            metric('wax', 'Wax budget', queenResources.wax, 'model units', 1);
+            metric('jelly', 'Royal jelly budget', queenResources.royalJelly, 'model units', 1);
             metric('core', 'Brood core index', queenHiveHealth, '/100');
             metric('territory', 'RTS advantage', queenTerritory, '/100');
           } else {
@@ -26802,10 +27613,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             updateDiscovery({ comparisonNotice: message, comparison: null, saved: false }); announceBee(message, false); return;
           }
           updateDiscovery({ comparison: comparison, comparisonNotice: '', saved: false });
-          announceBee(comparison.unchanged ? 'No measured change. Adjust a condition or advance the simulation, then compare again.' : 'Comparison captured. Before, after, and change readings are ready.', false);
+          announceBee(comparison.unchanged ? 'Comparison captured with no measured change. You can explain and save this result, or test another condition.' : 'Comparison captured. Before, after, and change readings are ready.', false);
         }
         function renderDiscoveryComparison() {
-          var comparison = discoveryRecord.comparison;
+          var readiness = bhDiscoveryEvidenceReadiness(discoveryRecord, discoverySnapshot());
+          var comparison = readiness.captured ? readiness.comparison : null;
           if (!comparison || comparison.error || !Array.isArray(comparison.rows)) return null;
           return h('section', { className: 'bee-discovery-comparison', 'data-discovery-comparison': 'true', 'aria-label': __alloT('stem.beehive.before_and_after_evidence','Before and after evidence') },
             h('h5', null, discoveryText('ui', 'what_changed', 'What changed?')),
@@ -26815,7 +27627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('dt', null, row.label),
                 h('dd', null, h('span', null, row.before + ' → ' + row.after + ' ' + row.unit), h('strong', null, row.delta === 0 ? 'No change' : (row.delta > 0 ? '+' : '') + row.delta + ' ' + (row.deltaUnit || row.unit) + (row.angle ? ' turn' : ''))));
             })),
-            h('p', null, comparison.unchanged ? 'No measured change yet. Try a new condition or advance the simulation.' : 'Which conditions changed? These readings show a change, not its cause.'),
+            h('p', null, comparison.unchanged ? 'No measured change in this trial. Explain what stayed fixed and whether these readings could detect the change you expected.' : 'Which conditions changed? These readings show a change, not its cause.'),
             comparison.rows.some(function(row) { return row.angle; }) && h('p', null, 'Angle changes use the shortest turn around the circle.'));
         }
         function focusDiscoveryTarget(id) {
@@ -26862,7 +27674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         function renderDiscoveryTrend() {
           if (viewMode !== 'beekeeper') return null;
-          var samples = (Array.isArray(history) ? history : []).filter(function(sample) { return sample && Number.isFinite(sample.honey) && Number.isFinite(sample.day) && sample.day < day; }).slice(-11).concat([{ day: day, honey: honey }]);
+          var samples = bhDiscoveryFoodTrend(history, day, honey);
           var last = d.lastAdvance, change = last && Number.isFinite(last.honey) ? last.honey : null;
           var lo = Math.min.apply(null, samples.map(function(sample) { return sample.honey; })), hi = Math.max.apply(null, samples.map(function(sample) { return sample.honey; }));
           var span = Math.max(1, hi - lo), days = Math.max(1, day - samples[0].day);
@@ -26885,6 +27697,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var saved = discoveryRecord.saved === true;
           var observed = !!discoveryRecord.observation;
           var hasLiveEvidence = viewMode === 'beekeeper' || (viewMode === 'queen' ? queenGameActive : droneFlightActive && !!_droneState.current);
+          // Validate run identity and chronology before revealing or saving an explanation.
+          // Comparing unchanged readings is useful evidence, too.
+          var evidenceStatus = bhDiscoveryEvidenceReadiness(discoveryRecord, discoverySnapshot());
+          var evidenceReady = observed && evidenceStatus.ready;
+          var needsFreshEvidence = evidenceStatus.reason === 'different-run' || evidenceStatus.reason === 'earlier-moment' || evidenceStatus.reason === 'invalid-evidence' || (observed && evidenceStatus.reason === 'capture');
           return h('aside', { key: 'discovery-card', className: 'bee-discovery-card', 'data-beehive-discovery': discoveryLesson.id, 'aria-labelledby': 'bee-discovery-title' },
             h('header', null,
               h('div', { className: 'bee-discovery-progress', role: 'group', 'aria-label': discoveryLessons.filter(function(item) { return discoveryRecords[item.id] && discoveryRecords[item.id].saved; }).length + ' of 6 discoveries saved' }, discoveryLessons.map(function(item) { return h('span', { key: item.id, 'aria-hidden': 'true', 'data-saved': String(!!(discoveryRecords[item.id] && discoveryRecords[item.id].saved)) }); }), h('small', null, discoveryLessons.filter(function(item) { return discoveryRecords[item.id] && discoveryRecords[item.id].saved; }).length + '/6 ' + discoveryText('ui', 'discoveries_saved', 'discoveries saved'))),
@@ -26899,10 +27716,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('fieldset', null,
                 h('legend', null, discoveryText(discoveryLesson.id, 'prompt', discoveryLesson.prompt)),
                 discoveryLesson.options.map(function(option, i) { return h('label', { key: i, className: 'bee-discovery-option' }, h('input', { type: 'radio', name: 'bee-discovery-prediction', value: i, checked: discoveryRecord.prediction === i, onChange: function() { updateDiscovery({ prediction: i, checked: false, saved: false }); } }), discoveryText(discoveryLesson.id, 'option_' + i, option)); })),
-              h('button', { type: 'button', className: 'bee-discovery-button', disabled: !selected, onClick: function() { updateDiscovery({ checked: true, saved: false }); announceBee(discoveryText('ui', 'feedback_ready', 'Prediction feedback is ready. Compare the explanation with your observation.'), false); } }, discoveryText('ui', 'check', 'Check my thinking')),
-              checked && h('div', { className: 'bee-discovery-feedback', 'data-discovery-feedback': discoveryRecord.prediction === discoveryLesson.answer ? 'supported' : 'revise', role: 'status' },
+              h('button', { type: 'button', className: 'bee-discovery-button', disabled: !selected, onClick: function() { updateDiscovery({ checked: true, saved: false }); announceBee(evidenceReady ? discoveryText('ui', 'feedback_ready', 'Prediction feedback is ready. Compare the explanation with your observation.') : discoveryText('ui', 'prediction_recorded', 'Prediction recorded. Capture and compare an observation to review your thinking.'), false); } }, discoveryText('ui', 'check', 'Check my thinking')),
+              checked && evidenceReady && h('div', { className: 'bee-discovery-feedback', 'data-discovery-feedback': discoveryRecord.prediction === discoveryLesson.answer ? 'supported' : 'revise', role: 'status' },
                 h('strong', null, discoveryRecord.prediction === discoveryLesson.answer ? discoveryText('ui', 'supported', 'That fits the mechanism.') : discoveryText('ui', 'revise', 'A useful prediction to revise.')),
                 h('p', null, discoveryText(discoveryLesson.id, 'explanation', discoveryLesson.explanation))),
+              checked && !evidenceReady && h('div', { className: 'bee-discovery-feedback', 'data-discovery-feedback': 'pending', role: 'status' },
+                h('strong', null, discoveryText('ui', 'prediction_locked', 'Prediction locked in.')),
+                h('p', null, needsFreshEvidence
+                  ? discoveryText('ui', 'pending_fresh', 'Capture a fresh observation in this run. Your earlier evidence stays in the notebook until you save a new discovery.')
+                  : observed
+                  ? discoveryText('ui', 'pending_change', 'Now advance time or change a condition, then compare. The explanation opens when your evidence is in.')
+                  : discoveryText('ui', 'pending_capture', 'Capture an observation below, then advance time or change a condition. The explanation opens when your evidence is in.'))),
               h('div', { className: 'bee-discovery-evidence' },
                 h('div', { className: 'bee-discovery-kicker' }, discoveryText('ui', 'evidence', 'Evidence from your simulation')),
                 h('p', null, discoveryRecord.observation || discoveryText('ui', 'capture_hint', 'Capture a moment, then explain what it shows.')),
@@ -26913,11 +27737,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 renderDiscoveryComparison(),
                 !hasLiveEvidence && h('p', null, discoveryText('ui', 'launch_first', 'Start the simulation to capture an observation.'))),
               checked && h('label', { className: 'bee-discovery-note' }, discoveryText('ui', 'explain_prompt', 'I noticed… This could happen because…'), h('textarea', { rows: 2, maxLength: 1200, value: discoveryRecord.note || '', onChange: function(e) { updateDiscovery({ note: e.target.value, saved: false }); } })),
-              checked && h('button', { type: 'button', className: 'bee-discovery-button', disabled: !observed || !String(discoveryRecord.note || '').trim(), onClick: function() {
+              checked && h('button', { type: 'button', className: 'bee-discovery-button', disabled: !evidenceReady || !String(discoveryRecord.note || '').trim(), onClick: function() {
                 // Use the current record at commit time; do not overwrite the main claim.
+                var currentSnapshot = discoverySnapshot();
                 updFn(function(b) {
                   var records = Object.assign({}, b.discoveryRecords || {}), record = Object.assign({}, records[discoveryLesson.id] || {});
-                  if (!record.checked || !record.observation || !String(record.note || '').trim()) return;
+                  var readiness = bhDiscoveryEvidenceReadiness(record, currentSnapshot);
+                  if (!record.checked || !Number.isInteger(record.prediction) || record.prediction < 0 || record.prediction >= discoveryLesson.options.length || !readiness.ready || !String(record.note || '').trim()) return;
+                  // Advancing time may open feedback without clicking Compare now. Freeze that
+                  // same before/after evidence when saving, so the notebook preserves the result.
+                  record.comparison = readiness.comparison;
                   record.saved = true; records[discoveryLesson.id] = record; b.discoveryRecords = records;
                   var notebook = Object.assign({}, b.notebook || {}), discoveries = Object.assign({}, notebook.discoveries || {});
                   discoveries[discoveryLesson.id] = { title: discoveryLesson.title, prediction: discoveryLesson.options[record.prediction], observation: record.observation, explanation: record.note, capturedAt: record.observedAt, evidence: record.snapshot || null, comparison: bhDiscoveryComparisonText(record.comparison), comparisonEvidence: record.comparison || null };
@@ -26935,9 +27764,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var nav = take('data-beehive-flow-nav'), scales = take('data-beehive-model-scales'), motion = take('data-beehive-motion-notice');
           var coach = take('data-beehive-play-coach'), stage = take('data-beehive-stage') || take('data-beehive-simulation-body');
           var explorer = take('data-beehive-topic-explorer');
-          var handsOn = viewMode === 'beekeeper' && discoveryLesson.id === 'waggle' ? renderWaggleLab() : null;
+          // Things the student must act on NOW sit with the scene, not ~2,400px below it: the
+          // waiting event, the first-visit tutorial, and the day-0 stock and site choices.
+          function takeWhere(test) { var index = nodes.findIndex(function(node) { return node.props && test(node.props); }); return index < 0 ? null : nodes.splice(index, 1)[0]; }
+          var eventCard = takeWhere(function(p) { return p.id === 'beehive-active-event'; });
+          var tutorialCard = takeWhere(function(p) { return p['data-beehive-tutorial'] != null; });
+          var stockPicker = takeWhere(function(p) { return p.id === 'beehive-stock-picker'; });
+          var sitePicker = takeWhere(function(p) { return p.id === 'beehive-apiary-site-picker'; });
+          // The day's moves (action budget, Next Day, Feed/Treat/Super/Harvest...) sat ~30 panels
+          // below the hive they act on; the coach's "Recommended: Feed" was nowhere near Feed.
+          var interventions = takeWhere(function(p) { return p.id === 'beehive-colony-interventions'; });
+          var namingCard = takeWhere(function(p) { return p.id === 'beehive-naming'; });
+          var seasonReport = takeWhere(function(p) { return p.id === 'beehive-season-report'; });
+          // The Science Notebook the discoveries save into sits with the scene, after the day's moves.
+          var notebookPanel = take('data-beehive-notebook');
+          var handsOn =viewMode === 'beekeeper' && discoveryLesson.id === 'waggle' ? renderWaggleLab() : null;
           if (viewMode === 'beekeeper' && discoveryLesson.id === 'thermo') {
-            var thermo = renderThermoInquiry();
+            var thermo = renderThermoInquiry(true);
             handsOn = h('div', { key: 'temperature-lab', id: 'bee-discovery-hands-on', tabIndex: -1 }, thermo, h('div', { className: 'bee-discovery-actions' }, h('button', { type: 'button', className: 'bee-discovery-button', onClick: function() { focusDiscoveryTarget('bee-discovery-title'); } }, 'Record your discovery →')));
           }
           if (viewMode === 'beekeeper' && beeView === 'scene' && stage && d.discoveryRoutes !== false) {
@@ -26956,16 +27799,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { key: 'discovery-scene', className: 'bee-discovery-scene' },
                 h('div', { className: 'bee-discovery-bar' },
                   h('span', { className: 'bee-discovery-kicker' }, discoveryText('ui', 'living_laboratory', 'A living laboratory')),
-                  viewMode === 'beekeeper' && colonySurvived && h('button', { type: 'button', className: 'bee-discovery-button', 'data-discovery-advance': 'true', onClick: advanceDay }, discoveryText('ui', 'observe_next', 'Observe next day') + ' →'),
+                  viewMode === 'beekeeper' && colonySurvived && (activeEvent
+                    ? h('button', { type: 'button', className: 'bee-discovery-button', 'data-discovery-advance': 'event', onClick: function() { var card = document.getElementById('beehive-active-event'); if (!card) return; card.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' }); card.focus(); } }, discoveryText('ui', 'decision_waiting', 'Decision waiting') + ' ↓')
+                    : h('button', { type: 'button', className: 'bee-discovery-button', 'data-discovery-advance': 'true', onClick: advanceDay }, discoveryText('ui', 'observe_next', 'Observe next day') + ' →')),
                   viewMode === 'beekeeper' && beeView === 'scene' && h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', 'aria-pressed': d.discoveryRoutes !== false, onClick: function() { upd('discoveryRoutes', d.discoveryRoutes === false); } }, discoveryText('ui', 'worker_routes', 'Worker routes')),
+                  // Homestead details on/off: the animals, farm props and calendar cameos around the hive.
+                  viewMode === 'beekeeper' && beeView === 'scene' && (function() { var calm = typeof d.calmScene === 'boolean' ? d.calmScene : !!prefersReducedMotion; return h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', 'data-beehive-homestead-toggle': 'true', 'aria-pressed': !calm, title: discoveryText('ui', 'homestead_hint', 'Show or hide the farm animals and props, so the hive and its bees stand out'), onClick: function() { upd('calmScene', !calm); } }, discoveryText('ui', 'homestead_details', 'Homestead details')); })(),
+                  viewMode === 'beekeeper' && BH_VIEW_GUIDE_TOPIC[beeView] && h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', 'data-beehive-learn-more': BH_VIEW_GUIDE_TOPIC[beeView], onClick: function() { updAll({ showGuide: true, guideSection: BH_VIEW_GUIDE_TOPIC[beeView], guideQuery: '' }); setTimeout(function() { focusDiscoveryTarget('beehive-guide-title'); }, 60); } }, '📖 ' + discoveryText('ui', 'learn_more', 'Learn more')),
                   viewMode === 'beekeeper' && h('label', null, discoveryText('ui', 'scene', 'Explore'), h('select', { value: beeView, onChange: function(e) { selectBeeView(e.target.value); } }, BEE_VIEWS.map(function(view) { return h('option', { key: view.id, value: view.id }, view.label); })))),
-                handsOn, stage, renderDiscoveryMap(), coach),
+                handsOn, stage, eventCard, seasonReport, tutorialCard, renderDiscoveryMap(), coach, namingCard, stockPicker, sitePicker, interventions, notebookPanel),
               renderDiscoveryCard()),
             explorer && h('details', { key: 'discovery-explorer', className: 'bee-discovery-drawer' }, h('summary', null, discoveryText('ui', 'all_topics', 'Explore all 18 science views') + ' · ' + exploredBeeViewIds.length + ' / ' + BEE_VIEWS.length), h('div', null, explorer)),
             h('details', { key: 'discovery-guide', className: 'bee-discovery-drawer', 'data-discovery-settings': 'true' }, h('summary', null, discoveryText('ui', 'guide', 'Learning guide, model notes & display options')), h('div', null, nav, scales, motion)),
             nodes);
         }
 
+
+        // Guided inspection: the 3D hive is the real inspection, so it gets the real inspection
+        // questions. The student reads the frames, finds the queen, then JUDGES the brood and the
+        // queen cells before the readout gives its verdict (it used to announce the answer).
+        function renderGuidedInspection() {
+          var framesSeen = (d.hive3dFramesSeen || []).length;
+          var foundQueen = !!d.hive3dFoundQueen;
+          var record = d.lastInspection && d.lastInspection.day === day ? d.lastInspection : null;
+          var broodTruth = queenHealth >= 85 ? 'solid' : 'spotty';
+          var cellsTruth = hive3dSwarmPressure > 0.55 && season !== 3 ? 'yes' : 'no';
+          var draft = d.inspectionDraft || {};
+          var tone = dk ? 'border-amber-700/40 bg-slate-900/70 text-slate-200' : 'border-amber-200 bg-amber-50/60 text-slate-800';
+          function choose(key, value) { var next = Object.assign({}, draft); next[key] = value; upd('inspectionDraft', next); }
+          function recordInspection() {
+            var rec = { day: day, framesRead: framesSeen, queenFound: foundQueen, brood: draft.brood, cells: draft.cells, broodCorrect: draft.brood === broodTruth, cellsCorrect: draft.cells === cellsTruth };
+            updAll({ lastInspection: rec, inspectionDraft: {}, inspectionsDone: (d.inspectionsDone || 0) + 1 });
+            announceBee('Inspection recorded. Brood: ' + (rec.broodCorrect ? 'your reading matches the frames.' : 'look again at the gaps.') + ' Queen cells: ' + (rec.cellsCorrect ? 'your reading matches.' : 'look again at the bottom bars.'), false);
+            if (awardStemXP) awardStemXP('beehive', 6 + (rec.broodCorrect ? 4 : 0) + (rec.cellsCorrect ? 4 : 0), 'Guided hive inspection');
+          }
+          function choice(key, value, label) {
+            var on = draft[key] === value;
+            return h('button', { key: value, type: 'button', role: 'radio', 'aria-checked': on ? 'true' : 'false', 'data-inspection-choice': key + ':' + value, onClick: function() { choose(key, value); },
+              className: 'min-h-[44px] rounded-lg border px-3 py-1.5 text-xs font-bold ' + (on ? 'border-amber-600 bg-amber-600 text-white' : (dk ? 'border-slate-600 bg-slate-800 text-slate-100' : 'border-slate-300 bg-white text-slate-800')) }, label);
+          }
+          if (season === 3) return h('section', { 'data-beehive-guided-inspection': 'winter', role: 'region', 'aria-label': 'Guided inspection', className: 'rounded-xl border p-3 text-xs ' + tone },
+            h('strong', null, 'Guided inspection: winter'), ' Keep the hive closed. Opening it chills the cluster, so a beekeeper only heft-tests the weight and checks the entrance.');
+          return h('section', { 'data-beehive-guided-inspection': record ? 'recorded' : 'open', role: 'region', 'aria-labelledby': 'beehive-guided-inspection-title', className: 'space-y-2 rounded-xl border p-3 ' + tone },
+            h('h3', { id: 'beehive-guided-inspection-title', className: 'text-sm font-black' }, 'Guided inspection' + (d.colonyName ? ' \u00b7 ' + String(d.colonyName) : '')),
+            h('ol', { className: 'grid gap-1 text-xs sm:grid-cols-2' },
+              h('li', { 'data-inspection-step': 'frames', 'data-done': framesSeen >= 6 ? 'true' : 'false' }, (framesSeen >= 6 ? '\u2713 ' : '1. ') + 'Read all six frames (' + Math.min(6, framesSeen) + '/6): step with \u25c0 \u25b6'),
+              h('li', { 'data-inspection-step': 'queen', 'data-done': foundQueen ? 'true' : 'false' }, (foundQueen ? '\u2713 ' : '2. ') + 'Find the queen (the long bee with the paint dot)')),
+            h('div', { role: 'radiogroup', 'aria-label': 'Brood pattern', className: 'flex flex-wrap items-center gap-2 text-xs' }, h('span', { className: 'font-bold' }, '3. The brood pattern is'), choice('brood', 'solid', 'Solid, wall to wall'), choice('brood', 'spotty', 'Spotty, with gaps')),
+            h('div', { role: 'radiogroup', 'aria-label': 'Queen cells', className: 'flex flex-wrap items-center gap-2 text-xs' }, h('span', { className: 'font-bold' }, '4. Queen cells on the bottom bars?'), choice('cells', 'yes', 'Yes'), choice('cells', 'no', 'No')),
+            h('button', { type: 'button', 'data-inspection-record': 'true', disabled: !draft.brood || !draft.cells, onClick: recordInspection,
+              className: 'min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-50 ' + (dk ? 'bg-amber-700' : 'bg-amber-700') }, 'Record inspection'),
+            record && h('div', { role: 'status', 'data-inspection-feedback': 'true', className: 'space-y-1 text-xs' },
+              h('p', null, (record.broodCorrect ? '\u2713 ' : '\u2717 ') + (broodTruth === 'solid' ? 'The brood is solid: a well-laying queen.' : 'The brood is spotty: the first sign of a failing queen. Consider requeening.')),
+              h('p', null, (record.cellsCorrect ? '\u2713 ' : '\u2717 ') + (cellsTruth === 'yes' ? 'Queen cells are hanging off the bottom bars: the colony is crowded and preparing to swarm. Add a super.' : 'No queen cells: the colony is not preparing to swarm.'))));
+        }
 
         function renderBeePulseStrip() {
           var items;
@@ -27203,8 +28090,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             metrics = [[colonyHealth + '%', 'Colony health', colonyHealth >= 70], [Math.round(workers / 1000) + 'k', 'Workers', workers >= 10000], [honey + ' lb', 'Honey stores', honey >= currentReserve], [varroaLevel + ' / 100', 'Varroa', varroaLevel < 20]];
             if (!colonySurvived) { mission = { icon: '\uD83D\uDCD3', title: 'Review the collapse evidence', body: 'Trace which linked system failed first, then restart with a new management hypothesis.' }; inquiryStep = 3; }
             else if (activeEvent) { mission = { icon: activeEvent.emoji || '\u26A0\uFE0F', title: 'Respond to the colony event', body: 'Read the biological mechanism before choosing a response.' }; inquiryStep = 1; }
-            else if (varroaLevel >= 20) { mission = { icon: '\uD83D\uDEE1\uFE0F', title: 'Interrupt the parasite-virus pathway', body: 'Varroa pressure is the most urgent threat to brood and adult longevity.' }; inquiryStep = 2; }
-            else if (honey < currentReserve) { mission = { icon: '\uD83C\uDF38', title: 'Restore the forage-to-food pathway', body: 'Improve forage or feed before low stores destabilize the colony.' }; inquiryStep = 2; }
+            else if (varroaLevel >= 20) { mission = { icon: '\uD83D\uDEE1\uFE0F', title: 'Mites are making the bees sick: stop them', body: 'Varroa pressure is the most urgent threat to brood and adult longevity.' }; inquiryStep = 2; }
+            else if (honey < currentReserve) { mission = { icon: '\uD83C\uDF38', title: 'The bees are eating food faster than they find it', body: 'Improve forage or feed before low stores destabilize the colony.' }; inquiryStep = 2; }
             else { mission = { icon: '\uD83D\uDD2C', title: 'Inspect, predict, then advance', body: 'Use the evidence in each system before moving the seasonal clock.' }; inquiryStep = day > 0 ? 1 : 0; }
             evidenceGoals = (seasonGoal.goals || []).slice(0, 3);
             footer = 'Queen ' + queenHealth + '% \u00B7 Disease risk ' + diseaseRisk + ' / 100 \u00B7 Habitat ' + habitat + '%';
@@ -27374,6 +28261,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderBeeNotebook() {
           var entry = currentBeeNotebookEntry();
+          // This role's saved discoveries, so their findings can go into the claim instead of being retyped.
+          var discoveryFindings = discoveryLessons.filter(function(lesson) { return viewMode === 'beekeeper' ? !lesson.mode : lesson.mode === viewMode; }).map(function(lesson) {
+            var rec = (((d.notebook && typeof d.notebook === 'object') ? d.notebook : {}).discoveries || {})[lesson.id];
+            return rec && String(rec.observation || '').trim() ? discoveryText(lesson.id, 'title', lesson.title) + ': ' + String(rec.observation).trim() + (rec.comparison ? ' (' + String(rec.comparison) + ')' : '') : null;
+          }).filter(Boolean);
+          function addDiscoveryFindings() {
+            var cur = String(entry.evidence || '').trim();
+            var fresh = discoveryFindings.filter(function(line) { return cur.indexOf(line) === -1; });
+            if (!fresh.length) { announceBee(__alloT('stem.beehive.discoveries_already_added', 'Your discovery findings are already in the evidence box.'), false); return; }
+            updateBeeNotebookField('evidence', ((cur ? cur + '\n' : '') + fresh.join('\n')).slice(0, 1200));
+            announceBee(__alloFill(__alloT('stem.beehive.discoveries_added', '{value1} discovery findings added to the evidence box.'), { value1: fresh.length }), false);
+          }
           var fields = ['prediction', 'evidence', 'explanation'];
           var completed = fields.filter(function(field) { return String(entry[field] || '').trim().length > 0; }).length;
           var reviewState = entry.review && typeof entry.review === 'object' ? entry.review : {};
@@ -27439,7 +28338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           } : {
             prediction: 'Write a testable prediction that names the expected direction of change. ',
             evidence: 'Use at least two specific measurements or observations. ',
-            explanation: 'Build a CER link from the intervention to a biological mechanism and outcome. ',
+            explanation: 'Say what you did, what changed, and why it happened (claim, evidence, reasoning). ',
             placeholders: { prediction: 'I predict... because...', evidence: 'The evidence shows... and...', explanation: 'This happened because...' }
           };
           prompts = {
@@ -27448,9 +28347,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             explanation: notebookScaffold.explanation + prompts.explanation
           };
           var fieldMeta = [
-            { id: 'prediction', label: '1. Prediction', prompt: prompts.prediction, placeholder: notebookScaffold.placeholders.prediction },
-            { id: 'evidence', label: '2. Evidence', prompt: prompts.evidence, placeholder: notebookScaffold.placeholders.evidence },
-            { id: 'explanation', label: '3. Explanation', prompt: prompts.explanation, placeholder: notebookScaffold.placeholders.explanation }
+            { id: 'prediction', label: __alloT('stem.beehive.notebook_step_predict', '1. Predict'), prompt: prompts.prediction, placeholder: notebookScaffold.placeholders.prediction },
+            { id: 'evidence', label: __alloT('stem.beehive.notebook_step_observe', '2. Observe (evidence)'), prompt: prompts.evidence, placeholder: notebookScaffold.placeholders.evidence },
+            { id: 'explanation', label: __alloT('stem.beehive.notebook_step_explain', '3. Explain'), prompt: prompts.explanation, placeholder: notebookScaffold.placeholders.explanation }
           ];
           var notebookHandoffCue = viewMode === 'drone' && droneLastRun ? {
             title: droneLastRun.success ? 'Use the successful flight as evidence' : 'Use the revised route as evidence',
@@ -27472,7 +28371,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Build a claim from simulation evidence'),
                   h('p', { className: 'mt-0.5 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Write a prediction, capture or record evidence, then explain the mechanism. Entries are saved separately for each role.')),
-                h('button', { type: 'button', 'data-beehive-capture-evidence': viewMode, onClick: captureBeeNotebookEvidence, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-sky-700 px-3 py-2 text-[0.625rem] font-black text-white shadow-sm transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_capture_current_metrics_as_notebook_evidence', 'Capture current {value1} metrics as notebook evidence'), { value1: roleName })}, h('span', { 'aria-hidden': 'true' }, '\u2295'), 'Capture current evidence')),
+                h('div', { className: 'flex shrink-0 flex-wrap gap-2' },
+                discoveryFindings.length > 0 && h('button', { type: 'button', 'data-beehive-add-discoveries': viewMode, onClick: addDiscoveryFindings, className: 'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border px-3 py-2 text-[0.625rem] font-black shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ' + (dk ? 'border-sky-400 bg-slate-900 text-sky-200' : 'border-sky-700 bg-white text-sky-800') },
+                  __alloFill(__alloT('stem.beehive.add_discovery_findings', 'Add my discovery findings ({value1})'), { value1: discoveryFindings.length })),
+                h('button', { type: 'button', 'data-beehive-capture-evidence': viewMode, onClick: captureBeeNotebookEvidence, className: 'inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg bg-sky-700 px-3 py-2 text-[0.625rem] font-black text-white shadow-sm transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_capture_current_metrics_as_notebook_evidence', 'Capture current {value1} metrics as notebook evidence'), { value1: roleName })}, h('span', { 'aria-hidden': 'true' }, '\u2295'), 'Capture current evidence'))),
               notebookHandoffCue && h('section', { 'data-beehive-notebook-handoff': 'true', role: 'note', className: 'mt-4 rounded-xl border p-3 ' + (droneLastRun.success ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/75') : (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/75')), 'aria-label': __alloT('stem.beehive.a11y_drone_flight_evidence_carried_into_the_science', 'Drone Flight evidence carried into the Science Notebook') },
                 h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (droneLastRun.success ? (dk ? 'text-emerald-300' : 'text-emerald-800') : (dk ? 'text-amber-300' : 'text-amber-800')) }, 'Flight evidence → Notebook synthesis'),
                 h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, notebookHandoffCue.title),
@@ -27507,7 +28409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('section', { 'data-beehive-cer-review': viewMode, 'data-review-complete': reviewCompleted === 3 ? 'true' : 'false', className: 'mt-4 rounded-xl border p-3 sm:p-4 ' + (reviewCompleted === 3 ? (dk ? 'border-emerald-700/70 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/70') : (dk ? 'border-indigo-800/70 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/55')), 'aria-labelledby': 'beehive-cer-review-title' },
                 h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
                   h('div', null,
-                    h('div', { id: 'beehive-cer-review-title', className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'CER revision check'),
+                    h('div', { id: 'beehive-cer-review-title', className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Check your claim, evidence and reasoning'),
                     h('p', { className: 'mt-0.5 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Use the checklist after writing. It supports self-review; it does not grade your ideas.')),
                   h('span', { className: 'self-start rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (reviewCompleted === 3 ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700')) }, reviewCompleted + ' / 3 ready')),
                 h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': reviewCompleted + ' of 3 CER self-review checks ready', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': reviewCompleted },
@@ -28158,11 +29060,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('textarea', { 'data-experiment-notebook-field': field.id, value: experimentNotebook[field.id] || '', onChange: function(event) { updateExperimentNotebookField(field.id, event.target.value); }, rows: field.maxLength > 800 ? 4 : 3, maxLength: field.maxLength, spellCheck: true, 'aria-describedby': promptId, placeholder: prompt.placeholder, className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-sky-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600') }));
             }
             return h('details', { 'data-beehive-experiment-notebook': 'true', 'data-experiment-notebook-complete': completed === notebookItemTotal && reviewCompleted === reviewItems.length ? 'true' : 'false', open: notebookOpen, onToggle: function(event) { var nextOpen = event.currentTarget.open; if (nextOpen !== (d.experimentNotebookOpen === true)) upd('experimentNotebookOpen', nextOpen); }, className: 'group mt-3 overflow-hidden rounded-xl border ' + (dk ? 'border-indigo-700/45 bg-slate-950/30' : 'border-indigo-200 bg-indigo-50/45') },
-              h('summary', { 'data-experiment-notebook-summary': 'true', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500', style: { listStyle: 'none' }, 'aria-label': (notebookOpen ? 'Collapse' : 'Expand') + ' guided experiment notebook. ' + completed + ' of ' + notebookItemTotal + ' planning and writing items complete.' },
+              h('summary', { 'data-experiment-notebook-summary': 'true', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500', style: { listStyle: 'none' }, 'aria-label': (notebookOpen ? 'Collapse' : 'Expand') + ' fair-test planner. ' + completed + ' of ' + notebookItemTotal + ' planning and writing items complete.' },
                 h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-700 text-white', 'aria-hidden': 'true' }, '\u270E'),
                 h('span', { className: 'min-w-0 flex-1' },
-                  h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Guided experiment notebook'),
-                  h('span', { className: 'mt-0.5 block text-[0.625rem] font-semibold ' + bodyTone }, 'Plan, observe, explain, and export the evidence chain.'),
+                  h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, __alloT('stem.beehive.fair_test_planner', 'Fair-test planner: Run A vs Run B')),
+                  h('span', { className: 'mt-0.5 block text-[0.625rem] font-semibold ' + bodyTone }, __alloT('stem.beehive.fair_test_planner_sub', 'Plan one change for Run B, compare it with Run A, then explain and export the evidence.')),
                   h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': completed + ' of ' + notebookItemTotal + ' experiment planning and writing items complete', 'aria-valuemin': 0, 'aria-valuemax': notebookItemTotal, 'aria-valuenow': completed }, h('span', { className: 'block h-full rounded-full bg-indigo-600', style: { width: (completed / notebookItemTotal * 100) + '%' } }))),
                 h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 text-indigo-800') }, completed + '/' + notebookItemTotal),
                 h('span', { className: 'text-lg transition-transform group-open:rotate-180 motion-reduce:transition-none', 'aria-hidden': 'true' }, '\u2304')),
@@ -28211,14 +29113,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('button', { type: 'button', 'data-beehive-copy-experiment': 'true', onClick: copyExperimentEvidenceRecord, className: 'inline-flex min-h-[44px] items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-[0.625rem] font-black text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': __alloT('stem.beehive.a11y_copy_guided_experiment_evidence_record', 'Copy guided experiment evidence record') }, 'Copy experiment record'))));
           }
 
+          function focusExperimentGuideTarget(selector, event) {
+            var root = event.currentTarget.closest('[data-beehive-root="true"]');
+            var target = root && root.querySelector(selector);
+            if (!target) return;
+            var ancestor = target.parentElement;
+            while (ancestor && ancestor !== root) {
+              if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+              ancestor = ancestor.parentElement;
+            }
+            setTimeout(function() {
+              var currentTarget = root.querySelector(selector);
+              if (!currentTarget) return;
+              currentTarget.focus({ preventScroll: true });
+              currentTarget.scrollIntoView({ block: 'center', behavior: 'auto' });
+            }, 0);
+          }
+
           function renderExperimentProtocol() {
+            var nextStep = bhExperimentNextStep(experimentNotebook, experimentComparison, day);
             var planReady = !!bhExperimentPlanAction(experimentNotebook.plannedActionId) && !!bhExperimentPredictionMetric(experimentNotebook.predictedMetricId) && !!bhExperimentPredictionDirection(experimentNotebook.predictedDirection) && ['question', 'hypothesis', 'changedVariable', 'prediction'].every(function(fieldId) { return String(experimentNotebook[fieldId] || '').trim(); });
             var explanationReady = ['observations', 'alternativeExplanation', 'conclusion'].every(function(fieldId) { return String(experimentNotebook[fieldId] || '').trim(); });
             var protocolSteps = [
               { id: 'plan', label: 'Plan the test', detail: 'Select the management choice, outcome metric, and expected direction; then explain the question, change, and prediction.', complete: planReady },
               { id: 'baseline', label: 'Save Run A', detail: 'Capture the first colony checkpoint before starting the repeat.', complete: !!experimentBaseline },
               { id: 'repeat', label: 'Start a separate Run B', detail: 'Restart with the same event recipe. Run A and notebook entries stay saved.', complete: !!(experimentComparison && experimentComparison.distinctRuns) },
-              { id: 'registration', label: 'Protect the plan', detail: 'Verify that the complete current plan matches the version recorded before Run B began.', complete: !!(experimentComparison && experimentComparison.planRegistration.status === 'matched') },
+              { id: 'registration', label: 'Protect the plan', detail: 'Check that your plan is the one you locked in before Run B began.', complete: !!(experimentComparison && experimentComparison.planRegistration.status === 'matched') },
               { id: 'checkpoint', label: 'Match the checkpoint', detail: 'Hold seed, stock, site, and timing steady before interpreting differences.', complete: !!(experimentComparison && experimentComparison.matchedCheckpoint) },
               { id: 'choice', label: 'Verify the planned change', detail: 'Confirm exactly one recorded difference and make sure it matches the selected management choice.', complete: !!(experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'matched') },
               { id: 'prediction', label: 'Check the prediction', detail: 'Compare the selected metric direction with the matched result. Alignment is not proof of cause.', complete: !!(experimentComparison && (experimentComparison.prediction.status === 'aligned' || experimentComparison.prediction.status === 'not-aligned')) },
@@ -28229,6 +29149,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('h5', { id: 'beehive-experiment-protocol-title', className: 'text-[0.6875rem] font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Fair-test path'),
                 h('span', { className: 'text-[0.625rem] font-bold ' + bodyTone }, protocolSteps.filter(function(step) { return step.complete; }).length + ' of ' + protocolSteps.length + ' steps ready')),
+              h('div', { 'data-experiment-next-step': nextStep.id, className: 'mt-2 flex flex-col items-start gap-3 sm:flex-row sm:justify-between' },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-xs font-black ' + (dk ? 'text-indigo-100' : 'text-indigo-950') }, 'Next: ' + nextStep.title),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed ' + bodyTone }, nextStep.detail)),
+                h('button', { type: 'button', 'data-experiment-next-action': nextStep.id, style: { maxWidth: '100%' }, onClick: function(event) { focusExperimentGuideTarget(nextStep.target, event); }, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400' }, nextStep.action)),
+              h('details', { 'data-experiment-protocol-checklist': 'true', className: 'mt-2' },
+              h('summary', { className: 'min-h-[44px] cursor-pointer py-2 text-xs font-bold ' + bodyTone }, 'Review all fair-test steps'),
               h('ol', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, protocolSteps.map(function(step, index) {
                 var state = step.complete ? 'complete' : index === currentIndex ? 'current' : 'upcoming';
                 var tone = state === 'complete'
@@ -28241,18 +29168,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', { className: 'text-[0.625rem] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, (index + 1) + '. ' + step.label),
                     h('span', { className: 'rounded-full px-1.5 py-0.5 text-[0.5625rem] font-black ' + (state === 'complete' ? (dk ? 'bg-emerald-900 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : state === 'current' ? (dk ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-800') : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, state === 'complete' ? 'Done' : state === 'current' ? 'Now' : 'Later')),
                   h('p', { className: 'mt-1 text-[0.5625rem] leading-relaxed ' + bodyTone }, step.detail));
-              })));
+              }))));
           }
 
           function renderManagementChoiceAudit() {
             var audit = experimentComparison.management;
             var plannedChoice = experimentComparison.plannedChoice;
-            var finalAudit = experimentComparison.matchedCheckpoint;
+            var finalAudit = experimentComparison.matchedCheckpoint && audit.historyComplete;
             var waitingForRun = !experimentComparison.distinctRuns;
             var badgeLabel;
             var detail;
             var tone;
-            if (waitingForRun) {
+            if (!audit.historyComplete) {
+              badgeLabel = 'Management history incomplete';
+              detail = bhManagementHistoryDetail(audit);
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            } else if (waitingForRun) {
               badgeLabel = 'Available in Run B';
               detail = 'Start a separate Run B before comparing recorded management choices.';
               tone = dk ? 'border-violet-800/50 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60';
@@ -28301,7 +29232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               : plannedChoice.status === 'mismatched'
                 ? (dk ? 'border-rose-700/40 bg-rose-950/25' : 'border-rose-200 bg-white/70')
                 : (dk ? 'border-amber-700/40 bg-amber-950/20' : 'border-amber-200 bg-white/70');
-            return h('section', { 'data-experiment-management-audit': 'true', 'data-management-audit-status': audit.status, 'data-management-audit-final': finalAudit ? 'true' : 'false', className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-management-audit-title' },
+            return h('section', { 'data-experiment-management-audit': 'true', tabIndex: -1, 'data-management-audit-status': audit.status, 'data-management-audit-final': finalAudit ? 'true' : 'false', className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-management-audit-title' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                 h('div', null,
                   h('h5', { id: 'beehive-management-audit-title', className: 'text-[0.6875rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Management-choice audit'),
@@ -28454,14 +29385,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                   h('div', null,
                     h('h4', { id: 'beehive-experiment-compare-title', className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Experiment compare'),
-                    h('p', { id: 'beehive-experiment-compare-description', className: 'mt-1 text-[0.625rem] leading-relaxed ' + bodyTone }, 'Save a compact Run A checkpoint, start a separate Run B, and compare both colonies at the same day. This is evidence for reasoning, not an undo point.')),
+                    h('p', { id: 'beehive-experiment-compare-description', className: 'mt-1 text-[0.625rem] leading-relaxed ' + bodyTone }, 'Save this colony as Run A, start a second colony as Run B, change one thing, and compare both on the same day. It is evidence for your reasoning, not an undo button.')),
                   day > 0 && h('button', { type: 'button', 'data-experiment-baseline-save': 'save', onClick: saveExperimentBaseline, className: 'min-h-[44px] rounded-lg bg-sky-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, 'Save current as Run A')),
                 day === 0 && h('p', { className: 'mt-2 rounded-lg border p-2 text-[0.625rem] font-bold ' + (dk ? 'border-sky-700/40 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, 'Advance at least one day before saving Run A so there is an outcome to compare.'),
                 renderExperimentProtocol(),
                 renderExperimentNotebook());
             }
             var comparisonStatus;
-            if (experimentComparison.status === 'matched') {
+            if (!experimentComparison.management.historyComplete) {
+              comparisonStatus = { label: 'Management history incomplete', detail: bhManagementHistoryDetail(experimentComparison.management), tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
+            } else if (experimentComparison.status === 'matched') {
               if (experimentComparison.management.status === 'one-change') {
                 if (experimentComparison.plannedChoice.status === 'matched') {
                   comparisonStatus = experimentComparison.planRegistration.status === 'matched'
@@ -28484,7 +29417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             } else if (experimentComparison.status === 'same-run') {
               comparisonStatus = { label: 'Restart to create Run B', detail: 'Run A is saved, but both checkpoints still refer to Colony Run ' + experimentComparison.current.runSerial + '. Start a separate Run B before interpreting differences.', tone: dk ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-800' };
             } else if (experimentComparison.status === 'checkpoint') {
-              comparisonStatus = { label: 'Match the checkpoint', detail: 'The setup and separate runs match, but the timing does not. Advance Run B to Day ' + experimentComparison.baseline.capturedDay + ' before interpreting differences.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
+              comparisonStatus = { label: 'Match the checkpoint', detail: 'The setup and separate runs match, but the timing does not. ' + (experimentComparison.current.capturedDay > experimentComparison.baseline.capturedDay ? 'Run B has passed Day ' + experimentComparison.baseline.capturedDay + '; restart Run B and stop at that checkpoint.' : 'Advance Run B to Day ' + experimentComparison.baseline.capturedDay + ' before interpreting differences.'), tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
             } else {
               comparisonStatus = { label: 'Exploratory comparison', detail: 'One or more controls differ. Notice patterns, but do not treat the differences as proof that a management choice caused them.', tone: dk ? 'bg-sky-900/60 text-sky-200' : 'bg-sky-100 text-sky-800' };
             }
@@ -28523,7 +29456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'mt-2 text-[0.625rem] font-semibold leading-relaxed ' + bodyTone }, comparisonStatus.detail),
               renderExperimentProtocol(),
               h('ul', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3', 'aria-label': __alloT('stem.beehive.a11y_fair_comparison_checks', 'Fair-comparison checks') }, experimentComparison.checks.map(function(check) {
-                return h('li', { key: check.id, 'data-experiment-check': check.id, 'data-experiment-check-result': check.matched ? 'matched' : 'different', className: 'rounded-lg border p-2 ' + (check.matched ? (dk ? 'border-emerald-700/35 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : (dk ? 'border-amber-700/35 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60')) },
+                return h('li', { key: check.id, tabIndex: -1, 'data-experiment-check': check.id, 'data-experiment-check-result': check.matched ? 'matched' : 'different', className: 'rounded-lg border p-2 ' + (check.matched ? (dk ? 'border-emerald-700/35 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : (dk ? 'border-amber-700/35 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60')) },
                   h('div', { className: 'flex items-center justify-between gap-2 text-[0.625rem] font-black' },
                     h('span', null, check.label),
                     h('span', { className: check.matched ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-amber-300' : 'text-amber-800') }, check.matched ? 'Matched' : 'Different')),
@@ -28563,7 +29496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { id: 'beehive-experiment-evidence-prompt', 'data-experiment-evidence-prompt': 'true', className: 'mt-3 rounded-lg border p-2 text-[0.625rem] font-bold leading-relaxed ' + (dk ? 'border-sky-700/35 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, evidencePrompt),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
                 experimentComparison.status === 'same-run' && h('button', { type: 'button', 'data-experiment-start-run-b': 'true', onClick: startExperimentRunB, className: 'min-h-[44px] rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400', 'aria-label': __alloT('stem.beehive.a11y_reset_the_colony_and_start_a_separate_run_b_wit', 'Reset the colony and start a separate Run B with the same seed') }, 'Start separate Run B'),
-                experimentComparison.distinctRuns && experimentComparison.planRegistration.status !== 'matched' && bhExperimentPlanMissing(experimentNotebook).length === 0 && h('button', { type: 'button', 'data-experiment-restart-run-b-plan': 'true', onClick: startExperimentRunB, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400', 'aria-label': __alloT('stem.beehive.a11y_restart_run_b_and_record_the_complete_current_p', 'Restart Run B and record the complete current plan before the new run begins') }, 'Restart Run B with current plan'),
+                experimentComparison.distinctRuns && (experimentComparison.planRegistration.status !== 'matched' || experimentComparison.current.capturedDay > experimentComparison.baseline.capturedDay) && bhExperimentPlanMissing(experimentNotebook).length === 0 && h('button', { type: 'button', 'data-experiment-restart-run-b': 'true', 'data-experiment-restart-run-b-plan': 'true', onClick: startExperimentRunB, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400', 'aria-label': __alloT('stem.beehive.a11y_restart_run_b_and_record_the_complete_current_p', 'Restart Run B and record the complete current plan before the new run begins') }, 'Restart Run B with current plan'),
                 day > 0 && h('button', { type: 'button', 'data-experiment-baseline-save': 'replace', onClick: saveExperimentBaseline, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 text-sky-200 hover:bg-sky-950/40' : 'border-sky-300 text-sky-800 hover:bg-sky-50') }, 'Replace Run A with current'),
                 h('button', { type: 'button', 'data-experiment-baseline-clear': 'true', onClick: clearExperimentBaseline, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-300 text-slate-700 hover:bg-slate-100') }, 'Clear Run A')),
               renderExperimentNotebook());
@@ -28580,6 +29513,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (target.scrollIntoView) target.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
             setTimeout(function() { if (target.focus) target.focus(); }, prefersReducedMotion ? 0 : 180);
             announceBee('Intervention controls are ready below the forecast for ' + risk.label + '.', false);
+          }
+          // Younger learners (K-2, 3-5) get the colony outlook without research-methods jargon: the
+          // fair-test machinery (seeds, Run A/B, plan audits) folds into one closed drawer. Grades 6-12
+          // see it open, as before.
+          function bhExperimentWrap(setup, comparison) {
+            if (beeGradeBand !== 'K–2' && beeGradeBand !== '3–5') return h('div', { 'data-beehive-experiment-tools': 'open' }, setup, comparison);
+            return h('details', { 'data-beehive-experiment-tools': 'drawer', className: 'mt-3 rounded-xl border p-3 ' + cardTone },
+              h('summary', { className: 'min-h-[44px] cursor-pointer py-2 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, __alloT('stem.beehive.experiment_tools_drawer', 'Fair-test experiment tools (seeds, Run A and Run B)')),
+              setup, comparison);
           }
           var startSeason = Math.floor(((day || 0) % 120) / 30);
           var endSeason = Math.floor(((forecast.end.day || 0) % 120) / 30);
@@ -28600,13 +29542,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       (active ? 'bg-amber-700 text-white' : (dk ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-100'))
                   }, daysOption + ' days');
                 }))),
-            h('fieldset', { 'data-beehive-experiment-provenance': 'true', className: 'mt-3 rounded-xl border p-3 ' + cardTone, 'aria-describedby': 'beehive-seed-intro beehive-seed-help beehive-fair-comparison' },
+            bhExperimentWrap(h('fieldset', { 'data-beehive-experiment-provenance': 'true', className: 'mt-3 rounded-xl border p-3 ' + cardTone, 'aria-describedby': 'beehive-seed-intro beehive-seed-help beehive-fair-comparison' },
               h('legend', { className: 'px-1 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Repeatable experiment setup'),
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('span', { 'data-beehive-seed-status': day === 0 ? 'setup' : 'locked', className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black ' + (day === 0 ? (dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700')) }, 'Colony Run ' + experimentProvenance.runSerial + ' - ' + (day === 0 ? 'setup open' : 'in progress')),
                 h('details', { className: 'text-[0.625rem] ' + bodyTone },
                   h('summary', { className: 'min-h-[44px] cursor-pointer py-3 font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, 'Technical details'),
-                  h('p', { className: 'pb-1 leading-relaxed' }, 'Daily model ' + experimentProvenance.modelVersion + '. The planning forecast is event-free; Queen and Drone real-time scenes use separate live simulations.'))),
+                  h('p', { className: 'pb-1 leading-relaxed' }, 'Recorded daily model ' + experimentProvenance.modelVersion + '. Forecasts and new days use ' + BEEHIVE_COLONY_MODEL_VERSION + '. The planning forecast is event-free; Queen and Drone real-time scenes use separate live simulations.'))),
               h('p', { id: 'beehive-seed-intro', className: 'mt-2 text-[0.6875rem] leading-relaxed ' + bodyTone },
                 "A seed is the recipe for the simulation's random draws. The same seed, starting colony, and choices produce the same daily outcome."),
               h('div', { className: 'mt-3 flex flex-col gap-2 sm:flex-row sm:items-end' },
@@ -28635,11 +29577,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 day === 0
                   ? 'Set the number yourself or choose “Use a different seed,” then advance to Day 1.'
                   : ('The recipe is read-only after Day 1 so this run stays traceable. Repeatable tracking began on Day ' + experimentProvenance.seededFromDay + '.')),
+              experimentProvenance.modelVersion !== BEEHIVE_COLONY_MODEL_VERSION && h('p', { 'data-beehive-model-migration-note': 'true', className: 'mt-2 rounded-lg border p-2 text-[0.625rem] font-bold ' + (dk ? 'border-amber-700/40 bg-amber-950/25 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800') },
+                'This colony was saved under an earlier model. Its next day uses the current rules, with repeatable tracking starting from Day ' + day + '. Start a fresh colony for a comparison tracked from Day 0.'),
               !experimentProvenance.exactFromStart && h('p', { 'data-beehive-seed-migration-note': 'true', className: 'mt-2 rounded-lg border p-2 text-[0.625rem] font-bold ' + (dk ? 'border-amber-700/40 bg-amber-950/25 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800') },
                 'This older run became repeatable on Day ' + experimentProvenance.seededFromDay + '; days before that point cannot be replayed exactly.'),
               h('p', { id: 'beehive-fair-comparison', 'data-beehive-fair-comparison': 'true', className: 'mt-2 text-[0.625rem] leading-relaxed ' + bodyTone },
                 h('strong', null, 'Fair-comparison tip: '), 'Keep the seed, bee stock, site, and timing the same; change one management choice. Choices alter colony conditions, so later eligible events may still diverge.')),
-            renderExperimentComparison(),
+            renderExperimentComparison()),
             h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': forecastDays + '-day projected colony metrics' },
               metrics.map(function(metric) {
                 return h('div', { key: metric.label, className: 'rounded-xl border p-3 ' + cardTone, role: 'listitem' },
@@ -28684,8 +29628,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
         if (honeyFocusState.active) return h('div', { 'data-beehive-root': 'true', 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-active-mode': 'investigation', style: { width: '100%', minWidth: 0 } }, renderHoneyLab());
-        function renderThermoInquiry() {
-            var iq = d.thermHunt || { outsideC: 20, beesFanning: 30, broodCount: 5000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        // In the Stage-first layout the lab is the thermoregulation discovery's apparatus; elsewhere on the
+        // page it is a one-line way in, not a second copy with its own writing boxes.
+        function renderThermoLauncher() {
+          return h('section', { 'data-beehive-thermo-launcher': 'true', 'aria-labelledby': 'beehive-thermo-launch-title', className: 'mt-3 flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/40 bg-slate-900/60 text-slate-200' : 'border-amber-300 bg-white text-slate-700') },
+            h('div', null,
+              h('h3', { id: 'beehive-thermo-launch-title', className: 'text-sm font-black ' + (dk ? 'text-amber-300' : 'text-amber-700') }, __alloT('stem.beehive.hive_thermoregulation_discovery', '🐝 Hive thermoregulation discovery')),
+              h('p', { className: 'text-[0.6875rem]' }, __alloT('stem.beehive.thermo_launcher_text', 'How does a colony keep its brood at 34–36 °C in any weather? Set the weather, heater bees and fanners, and log trials.'))),
+            h('button', { type: 'button', 'data-beehive-open-thermo': 'true', onClick: function() {
+              var lesson = discoveryLessons.find(function(item) { return item.id === 'thermo'; });
+              if (!lesson) return;
+              upd('discoveryLesson', 'thermo'); selectBeeView(lesson.view);
+              setTimeout(function() { focusDiscoveryTarget('bee-discovery-hands-on'); }, 80);
+            }, className: 'min-h-[44px] shrink-0 rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white' }, __alloT('stem.beehive.thermo_launcher_open', 'Open the lab')));
+        }
+        function renderThermoInquiry(asDiscovery) {
+            var iq = Object.assign({ hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, BH_THERMO_DEFAULTS, d.thermHunt || {});
+            if (typeof iq.heaterBees !== 'number') iq.heaterBees = BH_THERMO_DEFAULTS.heaterBees; // saves from the brood-count model
             function setIQ(patch) { upd('thermHunt', Object.assign({}, iq, patch)); }
             var hiveTempC = bhThermoEstimate(iq);
             var deviation = Math.abs(hiveTempC - 35);
@@ -28705,15 +29664,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return stateId === 'optimal' ? 'Typical brood range' : stateId === 'overheating' ? 'Above typical brood range' : stateId === 'chilled' ? 'Below 32 degrees Celsius' : 'Near the typical brood range';
             }
             function logThermoTrial() {
-              var entry = { o: iq.outsideC, f: iq.beesFanning, b: iq.broodCount, t: hiveTempC.toFixed(1), st: state };
+              var entry = { o: iq.outsideC, f: iq.beesFanning, hb: iq.heaterBees, t: hiveTempC.toFixed(1), st: state };
               var nextLog = thermoLog.concat([entry]).slice(-8);
-              var message = 'Trial logged: outside ' + entry.o + ' degrees Celsius, ' + entry.f + ' fanning bees, ' + entry.b + ' brood, estimated ' + entry.t + ' degrees Celsius, ' + thermoStateLabel(entry.st) + '.';
+              var message = 'Trial logged: outside ' + entry.o + ' degrees Celsius, ' + entry.f + ' fanning bees, ' + entry.hb + ' heater bees, estimated ' + entry.t + ' degrees Celsius, ' + thermoStateLabel(entry.st) + '.';
               setIQ({ log: nextLog, notice: message });
               announceBee(message, false);
             }
             function resetThermoConditions() {
-              var message = 'Conditions reset to 20 degrees Celsius, 30 fanning bees, and 5,000 brood. Your log and writing were kept.';
-              setIQ({ outsideC: 20, beesFanning: 30, broodCount: 5000, notice: message });
+              var message = 'Conditions reset to 20 degrees Celsius, 30 fanning bees, and 1,200 heater bees. Your log and writing were kept.';
+              setIQ(Object.assign({}, BH_THERMO_DEFAULTS, { notice: message }));
               announceBee(message, false);
             }
             return h('section', { 'data-beehive-thermoregulation': 'true', 'aria-labelledby': 'beehive-thermo-title', className: 'mt-3 p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
@@ -28729,8 +29688,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'grid grid-cols-1 gap-3 sm:grid-cols-3' },
                   [{ k: 'outsideC', l: 'Outside temperature', mn: -10, mx: 45, st: 1 },
                    { k: 'beesFanning', l: 'Fanning bees', mn: 0, mx: 500, st: 10 },
-                   { k: 'broodCount', l: 'Brood count', mn: 0, mx: 20000, st: 500 }].map(function(s) {
-                    var unitText = s.k === 'outsideC' ? iq[s.k] + ' degrees Celsius' : s.k === 'beesFanning' ? iq[s.k] + ' fanning bees' : iq[s.k].toLocaleString() + ' brood';
+                   { k: 'heaterBees', l: 'Heater bees (shivering)', mn: 0, mx: 5000, st: 100 }].map(function(s) {
+                    var unitText = s.k === 'outsideC' ? iq[s.k] + ' degrees Celsius' : s.k === 'beesFanning' ? iq[s.k] + ' fanning bees' : iq[s.k].toLocaleString() + ' heater bees';
                     return h('div', { key: s.k },
                       h('label', { htmlFor: 'th-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
                       h('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
@@ -28749,25 +29708,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   ? h('ol', { className: 'mt-2 grid gap-2', 'aria-label': __alloT('stem.beehive.a11y_logged_thermoregulation_trials', 'Logged thermoregulation trials') }, thermoLog.map(function(entry, index) {
                       return h('li', { key: index, className: 'rounded-lg border border-slate-200 bg-white p-2 text-[0.6875rem] text-slate-700' },
                         h('strong', { className: 'text-slate-900' }, 'Trial ' + (index + 1) + ': '),
-                        entry.o + ' \u00b0C outside; ' + entry.f + ' fanning bees; ' + Number(entry.b).toLocaleString() + ' brood; estimated ' + entry.t + ' \u00b0C; ' + thermoStateLabel(entry.st) + '.');
+                        entry.o + ' \u00b0C outside; ' + entry.f + ' fanning bees; ' + (entry.hb !== undefined ? Number(entry.hb).toLocaleString() + ' heater bees' : Number(entry.b).toLocaleString() + ' brood (older model)') + '; estimated ' + entry.t + ' \u00b0C; ' + thermoStateLabel(entry.st) + '.');
                     }))
                   : h('p', { className: 'mt-2 text-[0.6875rem] text-slate-600' }, 'No trials logged yet. Adjust the conditions, then log a result to compare it with later trials.')),
-              h('label', { htmlFor: 'beehive-thermo-hypothesis', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Your hypothesis'),
-              h('textarea', { id: 'beehive-thermo-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.beehive.hypothesis_at_40_c_outside_how_many_fa', 'Hypothesis: At 40°C outside, how many fanning bees keep the brood area near 34–36°C?'),
+              !asDiscovery && h('label', { htmlFor: 'beehive-thermo-hypothesis', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Your hypothesis'),
+              !asDiscovery && h('textarea', { id: 'beehive-thermo-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.beehive.hypothesis_at_40_c_outside_how_many_fa', 'Hypothesis: At 40°C outside, how many fanning bees keep the brood area near 34–36°C?'),
                 className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.beehive.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
                   h('li', null, __alloT('stem.beehive.brood_tolerance_is_35_0_5_c_investigat', 'Healthy brood generally develops near 34–36°C. Investigate how bees limit temperature swings.')),
-                  h('li', null, __alloT('stem.beehive.what_is_the_cost_of_constant_fanning', 'What is the cost of constant fanning?')))),
-              h('label', { className: 'flex min-h-[44px] items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
+                  h('li', null, __alloT('stem.beehive.what_is_the_cost_of_constant_fanning', 'What is the cost of constant fanning?')),
+                  h('li', null, __alloT('stem.beehive.heater_bees_burn_honey', 'Heater bees shiver their flight muscles without moving their wings. That burns honey: why does a colony need big stores to get through winter?')))),
+              !asDiscovery && h('label', { className: 'flex min-h-[44px] items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 __alloT('stem.beehive.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-              iq.understood && h(React.Fragment, null,
+              !asDiscovery && iq.understood && h(React.Fragment, null,
                 h('label', { htmlFor: 'beehive-thermo-explanation', className: 'block text-[0.6875rem] font-bold text-emerald-800' }, 'Explain in your own words'),
                 h('textarea', { id: 'beehive-thermo-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.beehive.explain_how_the_colony_as_a_superorgan', 'Explain how the colony as a superorganism thermoregulates.'),
                 className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, 'Model note: this simplified estimate groups results into four temperature bands. It is a learning aid, not a prediction for a real hive.')
+              asDiscovery && h('p', { 'data-thermo-writes-to': 'discovery', className: 'rounded-lg border p-2 text-[0.6875rem]', style: { background: 'var(--bd-tint, #ecfdf5)', color: 'var(--bd-ink, #064e3b)', borderColor: 'var(--bd-line, #a7f3d0)' } }, __alloT('stem.beehive.thermo_write_in_discovery', 'Write your prediction and explanation in the discovery steps (Predict, Observe, Explain). They save to your Science Notebook.')),
+              // Notes written in the lab's own boxes before the merge stay visible.
+              asDiscovery && (String(iq.hypothesis || '').trim() || String(iq.explanation || '').trim()) && h('div', { 'data-thermo-earlier-notes': 'true', className: 'rounded-lg border p-2 text-[0.6875rem]', style: { background: 'var(--bd-tint, #f8fafc)', color: 'var(--bd-ink, #334155)', borderColor: 'var(--bd-line, #e2e8f0)' } },
+                h('strong', { className: 'block' }, __alloT('stem.beehive.thermo_earlier_notes', 'Your earlier notes')),
+                String(iq.hypothesis || '').trim() && h('p', { className: 'mt-1' }, __alloT('stem.beehive.thermo_earlier_hypothesis', 'Hypothesis: ') + String(iq.hypothesis).trim()),
+                String(iq.explanation || '').trim() && h('p', { className: 'mt-1' }, __alloT('stem.beehive.thermo_earlier_explanation', 'Explanation: ') + String(iq.explanation).trim())),
+              h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, __alloT('stem.beehive.thermo_model_note_v2', 'Model note: hive temperature = outside + 0.009 °C per heater bee − 0.04 °C per fanning bee, grouped into four bands. Brood makes little heat of its own; the warmth comes from worker bees. It is a learning aid, not a prediction for a real hive.'))
             );
         }
 
@@ -28785,7 +29751,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     viewMode === 'queen' ? 'Colony network' : viewMode === 'drone' ? 'Drone flight' : 'Apiary view',
                     h('span', { className: 'hidden max-w-[18rem] truncate font-semibold normal-case tracking-normal opacity-70 sm:inline' }, '· ' + simCardStatus(viewMode)))),
                 h('h3', { className: 'text-xl font-black tracking-tight sm:text-2xl ' + (dk ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.beehive.beehive_colony_simulator', '🐝 Beehive Colony Simulator')),
-                h('p', { className: 'mt-0.5 text-xs font-medium sm:text-sm ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.manage_a_living_superorganism_50_000_m', 'Manage a living superorganism — 50,000 minds, one purpose')))),
+                h('p', { className: 'mt-0.5 text-xs font-medium sm:text-sm ' + (dk ? 'text-slate-200' : 'text-slate-600') }, (viewMode === 'queen' ? __alloT('stem.beehive.tagline_network', 'A strategy game: balance workers, comb and chemical signals to out-compete a rival colony')
+                  : viewMode === 'drone' ? __alloT('stem.beehive.tagline_drone', 'Fly a drone bee to the congregation area and reach a queen before his energy runs out')
+                  : d.colonyName ? String(d.colonyName) + (d.queenName ? ' · Queen ' + String(d.queenName) : '') + ' · ' + __alloT('stem.beehive.tagline_named', 'keep your colony alive for a whole year') : __alloT('stem.beehive.tagline_year', 'Keep a honeybee colony alive for a whole year: 10,000 workers and one queen to start'))))),
             // Header action buttons
             h('div', { className: 'flex flex-wrap items-center gap-1 rounded-xl border p-1 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70 shadow-sm') },
               viewMode === 'beekeeper' && h('button', { type: 'button', 'data-open-honey-lab': 'true', onClick: openHoneyLab, className: 'min-h-[44px] rounded-lg border border-amber-700 bg-amber-700 px-3 py-2 text-sm font-bold text-white' }, d.honeyInvestigation ? 'Resume investigation' : 'Investigate falling stores'),
@@ -28847,7 +29815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           renderBeeFlowNav(),
 
           h('aside', { 'data-beehive-model-scales': 'true', role: 'note', className: 'rounded-xl border p-3 text-sm leading-relaxed ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-200' : 'border-slate-300 bg-white text-slate-700') },
-            h('strong', null, 'Reading the model: '), 'Varroa pressure, disease pressure, and colony stability use 0–100 indices. They are not sampled infestation rates, disease probabilities, or measured bee emotions. Thresholds describe this simulation. Food stores combine nectar income and supplemental feed in honey-equivalent pounds; feed is not newly made honey.'),
+            h('strong', null, 'Reading the model: '), 'Mite pressure, disease pressure and colony stability are 0–100 game meters, not real mite counts, disease odds or bee feelings. Thresholds describe this simulation. Food stores combine nectar income and supplemental feed in honey-equivalent pounds; feed is not newly made honey.'),
           !focusLayout && renderBeePulseStrip(),
 
           renderBeePlayCoach(),
@@ -29138,17 +30106,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             readout: h('p', { className: 'text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') },
               'Showing now: super ' + Math.round(hive3dHoneyFill * 100) + '% capped (' + honey + ' lb) · brood pattern ' + Math.round(hive3dBroodFill * 100) + '% (' + brood + ' cells) · mite load ' + Math.round(hive3dVarroa * 100) + '% · entrance traffic ' + Math.round(hive3dTraffic * 100) + '%' + (season === 3 ? ' (winter cluster — bees stay in)' : '') + '. '
               + hive3dSuperCount + (hive3dSuperCount === 1 ? ' super' : ' supers') + ' on the stack. '
-              + (queenHealth >= 85
+              + (!(d.lastInspection && d.lastInspection.day === day) ? 'Judge the brood pattern and look for queen cells in the guided inspection below. '
+                : queenHealth >= 85
                 ? 'The brood is wall-to-wall, which is what a laying queen looks like.'
                 : queenHealth >= 55
                   ? 'Gaps are opening in the brood — a spotty pattern is the first sign a queen is failing.'
                   : 'The pattern is badly broken. Check for a queen before anything else.')
               + ' Frame ' + (hive3dFrame + 1) + ' of ' + HIVE_3D_FRAME_COUNT + ': ' + hive3dFrameReading
               + ' The nest is a rough sphere through the box, so step toward the middle and the brood widens.'
-              + (hive3dSwarmPressure > 0.55 && season !== 3
+              + (hive3dSwarmPressure > 0.55 && season !== 3 && d.lastInspection && d.lastInspection.day === day
                 ? ' Queen cells are hanging off the bottom bar: this colony is crowded and preparing to swarm. Add a super before it leaves.'
                 : ''))
           }),
+          viewMode === 'beekeeper' && show3dHive && renderGuidedInspection(),
 
           // ═══ EDUCATIONAL VIEW SELECTOR (beekeeper only) ═══
           // Maps the canonical BEE_VIEWS registry (all 18 built diagrams). The
@@ -29261,8 +30231,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-flight-hud': droneData.detailedHud === true ? 'detailed' : 'clear', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', 'data-flight-inspection-active': droneInspectionView !== 'flight' ? 'true' : 'false', 'data-flight-height-inspection': droneInspectionView === 'height' ? 'true' : 'false', 'data-flight-bird-inspection': droneInspectionView === 'bird' ? 'true' : 'false', 'data-flight-butterfly-inspection': droneInspectionView === 'butterfly' ? 'true' : 'false', 'data-flight-plant-inspection': ['shrub','grass','reed'].indexOf(droneInspectionView)>=0 ? 'true' : 'false', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(440px, 56vw, 620px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
                   renderDroneDirector(),renderDroneButterflyToolbar(),
                   h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
-                  h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
-                  h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: { position: 'absolute', top: '58px', left: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
+                  h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: droneData.detailedHud === true ? { position: 'absolute', top: '58px', right: '8px', zIndex: 20 } : BH_VISUALLY_HIDDEN, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
+                  h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: droneData.detailedHud === true ? { position: 'absolute', top: '58px', left: '8px', zIndex: 20 } : BH_VISUALLY_HIDDEN, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
                   (function() { var cue = droneTrainingStatus(_droneState.current); return h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none', position: 'absolute', top: '82px', left: '50%', zIndex: 20, width: 'min(360px,calc(100% - 24px))', transform: 'translateX(-50%)', pointerEvents: 'none' }, className: 'rounded-xl border border-cyan-300/35 bg-slate-950/88 px-3 py-2 text-left text-white shadow-xl backdrop-blur-md' },
                     h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[0.625rem] font-black text-amber-200' }, cue.label)),
                     h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[0.625rem] font-semibold leading-snug text-white' }, cue.instruction),
@@ -29525,9 +30495,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { role: 'group', 'aria-label': __alloT('stem.beehive.a11y_colony_network_phase_and_cycle_status', 'Colony Network phase and cycle status'), className: 'flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold ' +
                     (queenPhase === 'swarm' ? (dk ? 'bg-purple-900/40 text-purple-300 border border-purple-600/40' : 'bg-purple-50 text-purple-800 border border-purple-300') :
                      queenPhase === 'defend' ? (dk ? 'bg-red-900/30 text-red-300 border border-red-600/40' : 'bg-red-50 text-red-800 border border-red-300') :
+                     queenPhase === 'winter' ? (dk ? 'bg-sky-900/40 text-sky-200 border border-sky-600/40' : 'bg-sky-50 text-sky-900 border border-sky-300') :
                      (dk ? 'bg-amber-900/30 text-amber-300 border border-amber-600/40' : 'bg-amber-50 text-amber-800 border border-amber-300')) },
-                    h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM PHASE' : queenPhase === 'defend' ? '⚔️ DEFEND PHASE' : '🏗️ BUILD PHASE') + ' · Cycle ' + queenDay),
-                    h('span', null, ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][Math.floor(((queenDay || 0) % 120) / 30)] || ''),
+                    h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM SEASON' : queenPhase === 'defend' ? '⚔️ ROBBING SEASON' : queenPhase === 'winter' ? '❄️ WINTER CLUSTER' : '🏗️ BUILD PHASE') + ' · Cycle ' + queenDay + ' / ' + BH_QUEEN_YEAR_CYCLES),
+                    h('span', null, (['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][bhQueenSeason(queenDay + 1)] || '') + ' · ' + __alloFill(__alloT('stem.beehive.census_in', 'census in {value1}'), { value1: Math.max(0, BH_QUEEN_YEAR_CYCLES - queenDay) })),
                     queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
                   focusLayout && renderQueen3dMap(),
                   focusLayout && renderQueenBattlefield(),
@@ -29554,7 +30525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { className: 'text-base font-black ' + (metric[2] ? 'text-emerald-500' : 'text-rose-500') }, metric[0]),
                           h('div', { className: 'text-[0.625rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, metric[1]));
                       })),
-                    h('div', { className: 'mt-3 flex h-3 overflow-hidden rounded-full bg-rose-800', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(queenTerritory), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_your_colony_controls_percent_of_the_forage_rang', 'Your colony controls {value1} percent of the forage range'), { value1: Math.round(queenTerritory) })},
+                    h('div', { className: 'mt-3 flex h-3 overflow-hidden rounded-full bg-rose-800', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(queenTerritory), 'aria-label': __alloFill(__alloT('stem.beehive.a11y_rts_advantage_value', 'RTS advantage {value1} of 100 (a game score, not land or flowers owned)'), { value1: Math.round(queenTerritory) })},
                       h('div', { className: 'h-full bg-gradient-to-r from-purple-700 to-amber-500 transition-all', style: { width: queenTerritory + '%' } })),
                     h('p', { className: 'mt-2 text-[0.6875rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') },
                       (queenRival.intel || 0) > 0
@@ -29650,9 +30621,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Signals')), h('p', { className: 'mt-0.5 text-[0.625rem] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Modeled chemical signals that influence worker responses; effects are simplified')), h('span', { className: 'rounded-full bg-purple-600 px-2 py-1 text-[0.625rem] font-black text-white' }, (queenResult ? 0 : QUEEN_ACTIONS.filter(function(action) { return hasQueenResources(action.cost); }).length) + '/' + QUEEN_ACTIONS.length + ' ready')),
                     h('div', { 'data-mobile-rail': 'pheromone-commands', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       QUEEN_ACTIONS.map(function(qa) {
-                        var affordable = !queenResult && hasQueenResources(qa.cost);
+                        var qaSignalSpent = BH_QUEEN_SIGNAL_IDS.indexOf(qa.id) >= 0 && (queenData.signalUsed || {})[qa.id] === queenDay;
+                        var affordable = !queenResult && hasQueenResources(qa.cost) && !qaSignalSpent;
                         var costText = queenCostText(qa.cost);
-                        var actionUnavailable = queenResult ? 'Scenario complete' : queenResourceGapText(qa.cost);
+                        var actionUnavailable = queenResult ? 'Scenario complete' : qaSignalSpent ? 'Already spreading this cycle' : queenResourceGapText(qa.cost);
                         return h('button', { key: qa.id, type: 'button', onClick: function() { if (!affordable) { explainBeeUnavailable(qa.label, actionUnavailable); return; } queenAction(qa.id); }, 'aria-disabled': affordable ? undefined : 'true', 'data-unavailable-reason': affordable ? undefined : actionUnavailable, title: qa.desc + ' (Cost: ' + costText + ')' + (affordable ? '' : ' — ' + actionUnavailable),
                           'aria-label': qa.label + ': ' + qa.desc + '. Cost: ' + costText + (affordable ? '. Ready.' : '. Unavailable. ' + actionUnavailable + '.'),
                           'data-command-ready': affordable ? 'true' : 'false', className: 'group min-h-[96px] snap-center text-left p-3 rounded-xl border sm:snap-none transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (affordable ? (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-400 text-slate-600 cursor-not-allowed opacity-70')) },
@@ -29712,6 +30684,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         return h('div', { key: ei, className: 'text-[0.6875rem] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 ' : 'border-slate-100 ') + evColor }, ev.text);
                       }))))),
 
+          // ═══ NAME YOUR COLONY (day 0) ═══
+          // Ownership: the colony, not "the simulation". The names ride on the hive, the header and the reports.
+          viewMode === 'beekeeper' && day === 0 && colonySurvived && h('section', { id: 'beehive-naming', role: 'region', 'aria-labelledby': 'beehive-naming-title', className: 'rounded-2xl border-2 p-4 space-y-2 ' + (dk ? 'bg-slate-900/60 border-amber-500/50' : 'bg-white border-amber-300') },
+            h('h2', { id: 'beehive-naming-title', className: 'text-sm font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, __alloT('stem.beehive.name_your_colony', '🐝 Name your colony')),
+            h('p', { className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.name_your_colony_hint', 'Beekeepers name their hives and paint a dot on the queen so they can find her.') + ' ' + __alloFill(__alloT('stem.beehive.queen_mark_this_year', 'A queen raised this year gets a {value1} dot.'), { value1: BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(new Date().getFullYear())] })),
+            h('div', { className: 'grid gap-2 sm:grid-cols-2' },
+              h('label', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.beehive.colony_name_label', 'Colony name'),
+                h('input', { type: 'text', maxLength: 24, value: d.colonyName || '', placeholder: __alloT('stem.beehive.colony_name_placeholder', 'e.g. Clover Hill'), 'data-beehive-colony-name': 'true', onChange: function(e) { upd('colonyName', String(e.target.value || '').slice(0, 24)); }, className: 'mt-1 block w-full min-h-[44px] rounded-lg border px-2 py-1.5 text-sm font-normal ' + (dk ? 'border-slate-600 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900') })),
+              h('label', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.beehive.queen_name_label', 'Queen name'),
+                h('input', { type: 'text', maxLength: 24, value: d.queenName || '', placeholder: __alloT('stem.beehive.queen_name_placeholder', 'e.g. Marigold'), 'data-beehive-queen-name': 'true', onChange: function(e) { upd('queenName', String(e.target.value || '').slice(0, 24)); }, className: 'mt-1 block w-full min-h-[44px] rounded-lg border px-2 py-1.5 text-sm font-normal ' + (dk ? 'border-slate-600 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900') })))),
+
           // ═══ SUBSPECIES PICKER (day 0 only, before first Next Day click) ═══
           // Collapsible: shows compact summary once student has picked; expand to change.
           focusLayout && renderBeePulseStrip(),
@@ -29745,6 +30728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('h2', { id: 'beehive-stock-heading', className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, __alloT('stem.beehive.choose_your_bee_stock', '🧬 Choose Your Bee Stock')),
                   h('p', { id: 'beehive-stock-description', className: 'text-[0.6875rem] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_honeybees_come_in_distinct_geneti', 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.')),
+                  h('p', { 'data-beehive-trait-legend': 'true', className: 'text-[0.6875rem] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.trait_legend', 'Longer bar = better for the beekeeper. Numbers are the model\u2019s multipliers: ×1.00 is average, and "mites ×0.60" means mites multiply at 60% of the usual rate.')),
                   h('p', { id: 'beehive-stock-current', role: 'status', className: 'text-[0.6875rem] mt-0.5 italic ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
                 d.subspecies && h('button', { type: 'button', onClick: function () { setStockPickerOpen(false); }, 'aria-label': __alloT('stem.beehive.collapse_stock_picker', 'Collapse stock picker'), 'aria-expanded': 'true', 'aria-controls': 'beehive-stock-picker', className: 'min-h-[44px] px-3 py-2 rounded text-[0.6875rem] font-bold ' + (dk ? 'transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700' : 'transition-colors bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, __alloT('stem.beehive.collapse', '▲ Collapse'))),
             h('div', { className: 'grid grid-cols-1 gap-2', role: 'radiogroup', 'aria-labelledby': 'beehive-stock-heading', 'aria-describedby': 'beehive-stock-description' },
@@ -29773,12 +30757,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         active && h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-amber-500 text-slate-900' : 'bg-amber-700 text-white') }, __alloT('stem.beehive.selected', '✓ Selected'))),
                       h('p', { id: stockDetailId, className: 'text-[0.6875rem] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
                       // Trait bars
-                      h('div', { id: stockTraitsId, className: 'grid grid-cols-2 gap-1.5 mt-2 sm:grid-cols-4' },
+                      h('div', { id: stockTraitsId, className: 'grid grid-cols-2 gap-1.5 mt-2 sm:grid-cols-5' },
                         [
-                          { k: 'Honey', v: s.mods.honey, c: 'amber' },
-                          { k: 'Spring', v: s.mods.spring, c: 'green' },
-                          { k: 'Winter', v: s.mods.winter, c: 'sky' },
-                          { k: 'Varroa ✓', v: 2 - s.mods.varroa, c: 'red' } // invert: lower varroa growth = better = show as higher
+                          // v fills the bar (longer = better for the beekeeper); txt is the model's own multiplier.
+                          { k: __alloT('stem.beehive.trait_honey', 'Honey'), v: s.mods.honey, txt: '×' + s.mods.honey.toFixed(2), c: 'amber' },
+                          { k: __alloT('stem.beehive.trait_spring', 'Spring build-up'), v: s.mods.spring, txt: '×' + s.mods.spring.toFixed(2), c: 'green' },
+                          { k: __alloT('stem.beehive.trait_winter', 'Winter hardiness'), v: s.mods.winter, txt: '×' + s.mods.winter.toFixed(2), c: 'sky' },
+                          { k: __alloT('stem.beehive.trait_mite_resistance', 'Mite resistance'), v: 2 - s.mods.varroa, txt: __alloFill(__alloT('stem.beehive.trait_mites_grow', 'mites ×{value1}'), { value1: s.mods.varroa.toFixed(2) }), c: 'red' },
+                          { k: __alloT('stem.beehive.trait_stays_put', 'Stays put'), v: 2 - (s.mods.swarm || 1), txt: __alloFill(__alloT('stem.beehive.trait_swarms', 'swarms ×{value1}'), { value1: (s.mods.swarm || 1).toFixed(2) }), c: 'violet' }
                         ].map(function(t, ti) {
                           // Bar fill and label now describe the SAME trait multiplier
                           // on a 0.5×–1.5× scale (baseline 1.0 = half-full). The old
@@ -29789,9 +30775,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           return h('div', { key: ti },
                             h('div', { className: 'flex justify-between text-[0.625rem] mb-0.5' },
                               h('span', { className: dk ? 'text-slate-400' : 'text-slate-600' }, t.k),
-                              h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, '×' + t.v.toFixed(2))),
+                              h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, t.txt)),
                             h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
-                              h('div', { style: { width: pct + '%' }, className: 'h-full bg-' + traitBarColor(t.c) + ' rounded-full' })));
+                              h('div', { style: { width: pct + '%' }, className: 'h-full ' + traitBarColor(t.c) + ' rounded-full' }))); // was 'bg-' + 'bg-amber-400' = no fill at all
                         })))));
               })));
           })(),
@@ -29828,7 +30814,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-600') },
                           '🌸 Forage ' + Math.round(s.mods.forage * 100) + '%'),
                         h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-600') },
-                          '🦠 Disease ' + Math.round(s.mods.disease * 100) + '%')))));
+                          '🦠 Disease ' + Math.round(s.mods.disease * 100) + '%'),
+                        // Site traits the note describes, now modelled (2026-09-28).
+                        s.mods.varroa && h('span', { className: s.mods.varroa > 1 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-green-400' : 'text-green-700') }, '🦟 Mites ' + Math.round(s.mods.varroa * 100) + '%'),
+                        s.mods.summerFlow && h('span', { className: (dk ? 'text-green-400' : 'text-green-700') }, '🍯 Big early-summer flow'),
+                        s.mods.shortSeason && h('span', { className: (dk ? 'text-amber-400' : 'text-amber-700') }, '🍂 Short autumn'),
+                        s.mods.bear && h('span', { className: (dk ? 'text-amber-400' : 'text-amber-700') }, '🐻 Bears ×' + s.mods.bear)))));
               }))),
 
           // ═══ TUTORIAL OVERLAY ═══
@@ -29861,44 +30852,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (completedYears <= 0) return null;
             var seen = d.yearReviewsSeen || [];
             if (seen.indexOf(completedYears) !== -1) return null;
-            // Grade calculation from the current year's performance
-            var harvested = d.totalHarvested || 0;
-            var varietalCount = Object.keys(d.varietals || {}).length;
-            var conservations = d.conservationsDone || 0;
-            var eventsHandled = d.eventsHandled || 0;
-            // Peak workforce from history
-            var peakWorkers = history.reduce(function(a, e) { return Math.max(a, e.w || 0); }, workers);
-            var lowestVarroa = history.reduce(function(a, e) { return Math.min(a, e.v || 100); }, varroaLevel);
-            // Grading: points for various things
-            var grade = 0;
-            if (colonyHealth >= 80) grade += 2; else if (colonyHealth >= 55) grade += 1;
-            if (harvested >= 40) grade += 2; else if (harvested >= 15) grade += 1;
-            if (varietalCount >= 3) grade += 1;
-            if (conservations >= 3) grade += 1;
-            if (eventsHandled >= 3) grade += 1;
-            if (peakWorkers >= 30000) grade += 1;
-            if (lowestVarroa <= 20) grade += 1;
+            // Graded on THIS year only (the ledger), not lifetime totals.
+            var yr = bhYearReport(d, completedYears, SIMULATION_PARAMS);
+            var harvested = yr.harvested;
+            var varietalCount = yr.varietals;
+            var conservations = yr.conservations;
+            var peakWorkers = yr.peakWorkers;
+            var peakVarroa = yr.peakVarroa;
+            var winterOk = typeof yr.winterHoney === 'number' && yr.winterHoney >= yr.winterNeed;
+            // Each point is something the beekeeper controls. (Lowest varroa <= 20 was free: mites start at 5.
+            // Events handled counted clicks on OK, so a run of bad luck scored.)
+            var scoreRows = [
+              { pts: colonyHealth >= 80 ? 2 : colonyHealth >= 55 ? 1 : 0, max: 2, text: __alloFill(__alloT('stem.beehive.score_health', 'Colony health {value1}% (55% = 1 point, 80% = 2)'), { value1: Math.round(colonyHealth) }) },
+              { pts: harvested >= 25 ? 2 : harvested >= 10 ? 1 : 0, max: 2, text: __alloFill(__alloT('stem.beehive.score_harvest', 'Harvested {value1} lb (1 point at 10+ lb, 2 at 25+ lb; a first-year colony rarely spares more)'), { value1: harvested }) },
+              { pts: varietalCount >= 3 ? 1 : 0, max: 1, text: __alloFill(__alloT('stem.beehive.score_varietals', '{value1} honey varietals harvested (3 = 1 point)'), { value1: varietalCount }) },
+              { pts: conservations >= 3 ? 1 : 0, max: 1, text: __alloFill(__alloT('stem.beehive.score_conservation', '{value1} conservation actions (3 = 1 point)'), { value1: conservations }) },
+              { pts: winterOk ? 1 : 0, max: 1, text: __alloFill(__alloT('stem.beehive.score_winter', '{value1} lb of stores on the first day of winter (needs {value2}; feed syrup after a big harvest)'), { value1: yr.winterHoney === null ? '?' : yr.winterHoney, value2: yr.winterNeed }) },
+              { pts: peakWorkers >= 24500 ? 1 : 0, max: 1, text: __alloFill(__alloT('stem.beehive.score_workforce', 'Peak workforce {value1} (24,500 = 1 point; treating mites early helps)'), { value1: fmtPop(peakWorkers) }) },
+              { pts: peakVarroa < 20 ? 1 : 0, max: 1, text: __alloFill(__alloT('stem.beehive.score_mites', 'Mites peaked at {value1} (staying under 20, the Danger band = 1 point)'), { value1: peakVarroa }) },
+              { pts: yr.splits >= 1 ? 1 : 0, max: 1, text: __alloFill(__alloT('stem.beehive.score_split', '{value1} splits made (1 = 1 point)'), { value1: yr.splits }) }
+            ];
+            var grade = scoreRows.reduce(function(a, r) { return a + r.pts; }, 0);
             var letter = grade >= 8 ? 'A+' : grade >= 6 ? 'A' : grade >= 5 ? 'B' : grade >= 3 ? 'C' : grade >= 2 ? 'D' : 'F';
             var letterColor = grade >= 6 ? (dk ? 'text-amber-400' : 'text-amber-600') : grade >= 3 ? (dk ? 'text-green-400' : 'text-green-600') : (dk ? 'text-red-400' : 'text-red-600');
             return h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-400' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_year_retrospective', 'Year {value1} retrospective'), { value1: completedYears }), style: { boxShadow: '0 0 24px rgba(251,191,36,0.25)' } },
               h('div', { className: 'flex items-start justify-between' },
                 h('div', null,
                   h('div', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 Year ' + completedYears + ' Retrospective'),
-                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, 'Your colony survived ' + (completedYears * 120) + ' days!')),
+                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, 'Your colony survived ' + (completedYears * 120) + ' days!'),
+                  h('p', { className: 'text-[0.6875rem] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, yr.exact
+                    ? __alloFill(__alloT('stem.beehive.year_scored_on_this_year', 'Scored on year {value1} only (days {value2} to {value3}).'), { value1: completedYears, value2: (completedYears - 1) * 120 + 1, value3: completedYears * 120 })
+                    : __alloFill(__alloT('stem.beehive.year_scored_partial', 'Totals since day {value1}: this save began before year-by-year records.'), { value1: yr.fromDay }))),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-5xl font-black ' + letterColor, style: { fontFamily: 'Georgia, serif' } }, letter),
-                  h('div', { className: 'text-[0.625rem] ' + (dk ? 'text-amber-400' : 'text-amber-600') }, grade + '/9 points'))),
+                  h('div', { className: 'text-[0.625rem] ' + (dk ? 'text-amber-400' : 'text-amber-600') }, grade + '/10 points'))),
               // Highlight stats
               h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-4' },
                 [
-                  { emoji: '🍯', val: Math.round(harvested * 10) / 10 + ' lbs', label: __alloT('stem.beehive.honey_harvested', 'Honey harvested') },
+                  { emoji: '🍯', val: harvested + ' lbs', label: __alloT('stem.beehive.honey_harvested_this_year', 'Honey harvested this year') },
                   { emoji: '🌸', val: varietalCount + '', label: __alloT('stem.beehive.varietals_produced', 'Varietals produced') },
                   { emoji: '👷', val: fmtPop(peakWorkers) + '', label: __alloT('stem.beehive.peak_workforce', 'Peak workforce') },
-                  { emoji: '🦟', val: lowestVarroa + '%', label: __alloT('stem.beehive.min_varroa', 'Min. varroa') },
+                  { emoji: '🦟', val: peakVarroa + ' / 100', label: __alloT('stem.beehive.peak_mites_danger_20', 'Peak mites (Danger at 20)') },
                   { emoji: '🌍', val: conservations + '', label: __alloT('stem.beehive.conservations', 'Conservations') },
-                  { emoji: '⚡', val: eventsHandled + '', label: __alloT('stem.beehive.events_handled', 'Events handled') },
-                  { emoji: '🍯', val: (Math.round((d.totalHoney || 0) * 10) / 10) + ' lbs', label: __alloT('stem.beehive.total_nectar_honey', 'Total nectar → honey') },
-                  { emoji: '🌻', val: ((d.totalFlowerVisits || 0) > 1e6 ? Math.round((d.totalFlowerVisits || 0) / 1e5) / 10 + 'M' : ((d.totalFlowerVisits || 0).toLocaleString())), label: __alloT('stem.beehive.flower_visits', 'Flower visits') }
+                  { emoji: '🧰', val: yr.splits + '', label: __alloT('stem.beehive.new_colonies_splits', 'New colonies (splits)') },
+                  { emoji: '❄️', val: (yr.winterHoney === null ? '?' : yr.winterHoney) + ' lbs', label: __alloT('stem.beehive.stores_first_day_winter', 'Stores on day 1 of winter') },
+                  { emoji: '🍯', val: yr.totalHoney + ' lbs', label: __alloT('stem.beehive.total_nectar_honey', 'Total nectar → honey') },
+                  { emoji: '🌻', val: (yr.flowerVisits > 1e6 ? Math.round(yr.flowerVisits / 1e5) / 10 + 'M' : yr.flowerVisits.toLocaleString()), label: __alloT('stem.beehive.flower_visits', 'Flower visits') }
                 ].map(function(s, i) {
                   return h('div', { key: i, className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-amber-700/30' : 'bg-white border-amber-200') },
                     h('div', { className: 'flex items-center gap-1.5' },
@@ -29906,6 +30905,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('span', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800'), style: { fontFamily: 'monospace' } }, s.val)),
                     h('div', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, s.label));
                 })),
+              // How the points were earned: what to change next year.
+              h('details', { open: true, 'data-beehive-year-score': 'checklist', className: 'rounded-lg p-3 border text-xs ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-300' : 'bg-white border-amber-200 text-slate-700') },
+                h('summary', { className: 'cursor-pointer font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.how_this_year_scored', 'How this year scored')),
+                h('ul', { className: 'mt-2 space-y-1' }, scoreRows.map(function(r, ri) {
+                  return h('li', { key: ri, className: 'flex items-start gap-2' },
+                    h('span', { 'aria-hidden': 'true', className: r.pts > 0 ? (dk ? 'text-green-400' : 'text-green-700') : (dk ? 'text-slate-500' : 'text-slate-500') }, r.pts > 0 ? '✓' : '○'),
+                    h('span', { className: 'flex-1' }, r.text),
+                    h('span', { className: 'font-bold whitespace-nowrap' }, r.pts + '/' + r.max));
+                }))),
               // Highlight paragraph
               h('div', { className: 'rounded-lg p-3 border text-xs ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-300' : 'bg-white border-amber-200 text-slate-700') },
                 h('strong', { className: dk ? 'text-amber-300' : 'text-amber-800' },
@@ -29925,6 +30933,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 },
                 className: 'w-full py-2.5 rounded-xl font-bold text-sm text-white shadow-md transition-all hover:shadow-lg ' + (dk ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500' : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600')
               }, '✓ Begin Year ' + (completedYears + 1) + ' →'));
+          })(),
+
+          // ═══ SEASON REPORT (end of spring, summer and autumn) ═══
+          // The only report used to arrive after 120 days. A short one each season gives the year a
+          // rhythm: what changed, the one thing to watch, and what the next season asks for.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            var doneSeasons = Math.floor(day / 30);
+            if (doneSeasons <= 0 || doneSeasons % 4 === 0) return null;
+            var seenSeasons = d.seasonReviewsSeen || [];
+            if (seenSeasons.indexOf(doneSeasons) !== -1) return null;
+            var srNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
+            var endedSeason = (doneSeasons - 1) % 4;
+            var startDay = (doneSeasons - 1) * 30;
+            var from = null;
+            history.forEach(function(e) { if (e && typeof e.d === 'number' && e.d <= startDay && (!from || e.d > from.d)) from = e; });
+            if (!from) from = history[0] || { w: workers, h: honey, v: varroaLevel };
+            function signed(n, unit) { var v = Math.round(n * 10) / 10; return (v > 0 ? '+' : v < 0 ? '−' : '') + (unit === 'pop' ? fmtPop(Math.abs(Math.round(v))) : Math.abs(v) + (unit || '')); }
+            var rows = [
+              { label: __alloT('stem.beehive.report_workers', 'Workers'), value: signed(workers - (from.w || 0), 'pop'), good: workers >= (from.w || 0) },
+              { label: __alloT('stem.beehive.report_honey', 'Honey'), value: signed(honey - (from.h || 0), ' lb'), good: honey >= (from.h || 0) },
+              { label: __alloT('stem.beehive.report_mites', 'Mites'), value: signed(varroaLevel - (from.v || 0)), good: varroaLevel <= (from.v || 0) + 2 }
+            ];
+            var concern = varroaLevel >= 20 ? 'Mites are in the danger band (' + varroaLevel + ' / 100). Treat before the load builds further.'
+              : pesticideExposure > 20 ? 'Pesticide exposure is still killing workers every day. A no-spray zone cuts it.'
+              : honey < currentReserve ? 'Stores (' + honey + ' lb) are below what ' + srNames[season].toLowerCase() + ' needs (about ' + currentReserve + ' lb).'
+              : workers < 10000 ? 'The workforce is small (' + fmtPop(workers) + '). Protect the queen and the brood.' : null;
+            var nextTip = ['', 'Summer brings the big nectar flow and the swarm season: add a super before the hive crowds, and harvest only honey above the reserve.', 'Autumn is when winter is won: build 60+ lb of stores and bring mites down before the winter bees are raised.', 'Winter: no foraging. The cluster lives on its stores, so wrap the hive and leave it closed.'][season];
+            return h('section', { id: 'beehive-season-report', role: 'region', 'aria-labelledby': 'beehive-season-report-title', className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-slate-900/70 border-emerald-500/50' : 'bg-emerald-50/70 border-emerald-300') },
+              h('h3', { id: 'beehive-season-report-title', className: 'text-sm font-black ' + (dk ? 'text-emerald-200' : 'text-emerald-900') }, (d.colonyName ? String(d.colonyName) + ' · ' : '') + srNames[endedSeason] + ' ' + __alloT('stem.beehive.report_title_suffix', 'report')),
+              h('div', { className: 'grid grid-cols-3 gap-2' }, rows.map(function(r) {
+                return h('div', { key: r.label, className: 'rounded-lg border px-2 py-1.5 ' + (dk ? 'border-slate-700 bg-slate-800' : 'border-emerald-200 bg-white') },
+                  h('div', { className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, r.label),
+                  h('div', { className: 'text-sm font-black ' + (r.good ? (dk ? 'text-emerald-300' : 'text-emerald-800') : (dk ? 'text-rose-300' : 'text-rose-700')) }, r.value));
+              })),
+              concern && h('p', { className: 'text-xs font-semibold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, '⚠ ' + concern),
+              nextTip && h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-700') }, '➡ ' + nextTip),
+              h('button', { type: 'button', 'data-beehive-season-report-continue': 'true', onClick: function() {
+                  updAll({ seasonReviewsSeen: seenSeasons.concat([doneSeasons]) });
+                  if (awardStemXP) awardStemXP('beehive', 10, srNames[endedSeason] + ' report');
+                  playSfx(sfxSuccess);
+                }, className: 'min-h-[44px] w-full rounded-xl px-4 py-2 text-sm font-bold text-white ' + (dk ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-700 hover:bg-emerald-800') }, __alloT('stem.beehive.report_continue', 'Start') + ' ' + srNames[season] + ' →'));
           })(),
 
           // ═══ EXPORT REPORT FALLBACK MODAL (when clipboard API unavailable) ═══
@@ -30053,13 +31102,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               IPM_TREATMENTS.map(function(t) {
                 var treatmentPreview = previewTreatmentOutcome(t, brood, season);
                 var currentVarroa = Math.round(varroaLevel * 10) / 10;
-                var projectedVarroa = Math.max(0, Math.round((currentVarroa - treatmentPreview.reduction) * 10) / 10);
+                var projectedVarroa = Math.max(0, Math.round(currentVarroa * (1 - treatmentPreview.killPct / 100) * 10) / 10);
                 var affordable = actionPoints >= t.ap;
                 var treatmentUnavailable = 'Need ' + t.ap + ' action point' + (t.ap === 1 ? '' : 's') + '; have ' + actionPoints;
                 var usedCount = (d.treatmentsUsed || {})[t.id] || 0;
                 var treatmentDescriptionId = 'beehive-treatment-description-' + t.id;
-                var treatmentDescription = 'Forecast for current colony: Varroa ' + currentVarroa + ' to ' + projectedVarroa + ' percent. ' +
-                  'Modeled treatment strength: ' + treatmentPreview.reduction + ' percentage points before the zero floor. ' + treatmentPreview.fitLabel + '. ' +
+                var treatmentDescription = 'Forecast for current colony: Varroa ' + currentVarroa + ' to ' + projectedVarroa + ' out of 100. ' +
+                  'Modeled treatment strength: kills about ' + treatmentPreview.killPct + '% of the mites. Mites multiply in proportion to their numbers, so every week at a high load weakens brood and the bees that must survive winter; treat before the load builds. ' + treatmentPreview.fitLabel + '. ' +
                   (treatmentPreview.moraleHit > 0 ? 'Modeled colony stress: minus ' + treatmentPreview.moraleHit + ' morale. ' : 'No modeled morale cost. ') +
                   (treatmentPreview.queenHit > 0 ? 'Modeled queen health cost: minus ' + treatmentPreview.queenHit + '. ' : 'No modeled queen health cost. ') +
                   'Cost: ' + t.ap + ' action point' + (t.ap === 1 ? '. ' : 's. ') +
@@ -30085,8 +31134,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, t.label),
-                        h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-red-900/50 text-red-200' : 'bg-red-100 text-red-800') }, currentVarroa + '% to ' + projectedVarroa + '% Varroa'),
-                        h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded ' + (dk ? 'bg-sky-900/50 text-sky-200' : 'bg-sky-100 text-sky-800') }, 'Strength -' + treatmentPreview.reduction + ' points'),
+                        h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-red-900/50 text-red-200' : 'bg-red-100 text-red-800') }, 'Varroa ' + currentVarroa + ' → ' + projectedVarroa + ' / 100'),
+                        h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded ' + (dk ? 'bg-sky-900/50 text-sky-200' : 'bg-sky-100 text-sky-800') }, 'Kills ~' + treatmentPreview.killPct + '%'),
                         treatmentPreview.moraleHit > 0 && h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/50 text-amber-200' : 'bg-amber-100 text-amber-800') }, '-' + treatmentPreview.moraleHit + ' morale'),
                         treatmentPreview.queenHit > 0 && h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded ' + (dk ? 'bg-rose-900/50 text-rose-200' : 'bg-rose-100 text-rose-800') }, '-' + treatmentPreview.queenHit + ' queen health'),
                         h('span', { className: 'text-[0.6875rem] px-1.5 py-0.5 rounded ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, affordable ? t.ap + ' AP' : 'Need ' + t.ap + ' AP · have ' + actionPoints),
@@ -30098,7 +31147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Legend
             h('div', { className: 'text-[0.6875rem] p-2 rounded ' + (dk ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-600') },
               h('strong', null, __alloT('stem.beehive.monitoring_threshold', 'Monitoring threshold: ')),
-              __alloT('stem.beehive.treat_when_mite_count_exceeds_2_of_bee', 'Treat when the mite count exceeds about 3 mites per 100 bees — the 3% threshold used elsewhere in this tool (roughly 15–20% on the Varroa meter here). Below that, a colony with good hygienic behaviour can usually hold the mites in check.'))),
+              __alloT('stem.beehive.treat_when_mites_reach_danger_band', 'In real hives, beekeepers treat at about 3 mites per 100 bees (3%). In this model that point is the Danger band: 20+ on the Varroa meter. Below it, a colony with good hygienic behaviour can usually hold the mites in check.'))),
 
           // Event popup (beekeeper mode only)
           viewMode === 'beekeeper' && activeEvent && h('div', { id: 'beehive-active-event', tabIndex: -1, 'data-beehive-focus-panel': 'event', role: 'region', 'aria-labelledby': 'beehive-active-event-title', className: 'rounded-xl border-2 p-4 space-y-2 ' + (activeEvent.effect && activeEvent.effect.morale > 0 ? (dk ? 'bg-amber-900/30 border-amber-600/50' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
@@ -30114,7 +31163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Status bar (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'group', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_colony_status_day_lbs_honey_workers', 'Colony status: {value1}, Day {value2}, {value3} lbs honey, {value4} workers'), { value1: seasonNames[season], value2: ((day % 30) + 1), value3: honey, value4: fmtPop(workers) })},
-            h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-800') }, seasonNames[season] + ' Day ' + ((day % 30) + 1)),
+            h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-sky-900/40 text-sky-300' : 'bg-sky-100 text-sky-800') }, seasonNames[season] + ' · Day ' + day), // same day number as the header and scene
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-800') }, '🍯 ' + honey + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-yellow-900/40 text-yellow-300' : 'bg-yellow-100 text-yellow-800') }, '🌼 ' + pollen + ' lbs'),
             h('span', { className: 'px-3 py-1 rounded-full ' + (dk ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-100 text-purple-800') }, '⭐ ' + score + ' pts'),
@@ -30180,6 +31229,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               } else {
                 sentence = 'Critical: ' + weakest.weak + ' AND ' + weakest2.weak + '. Risk of collapse — fix the most-urgent item the coach card flags first.';
               }
+              // Poisoning is not one of the five scored dimensions, so it used to go unnamed while it
+              // killed workers every day (a poisoned colony was told to "smoke, feed, or check the queen").
+              if (pesticideExposure > 20) sentence = 'Pesticide poisoning is killing workers every day (exposure ' + Math.round(pesticideExposure) + ' of 100). A no-spray zone cuts it. ' + sentence;
               return h('p', {
                 className: 'text-[0.6875rem] leading-relaxed mb-3 ' + (dk ? 'text-slate-200' : 'text-slate-600'),
                 role: 'status'
@@ -30315,15 +31367,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 meterRow('varroa',
                   dk ? 'text-red-400' : 'text-red-700', '🦟', 'Varroa Pressure',
                   varroaLevel + ' / 100',
-                  varroaLevel > 30 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  varroaLevel >= 20 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'),
                   'bg-gradient-to-r from-red-500 to-red-400',
                   varroaLevel,
                   {
                     cardCls: dk ? 'bg-red-900/15 border-red-500' : 'bg-red-50/70 border-red-300',
                     what: 'A 0–100 model index of mite pressure, not mites per 100 sampled bees. Varroa feed on bee fat-body tissue and can transmit damaging viruses. Rising model pressure increases simulated mortality.',
-                    healthy: '1–5 points',
-                    watch: '6–24 points',
-                    danger: '25+ points',
+                    // One scale everywhere: Treat unlocks at 10, and the coach, tutorial and
+                    // missions all call 20+ urgent. The meter used to call 6-24 "watch".
+                    healthy: '0–9 points',
+                    watch: '10–19 points',
+                    danger: '20+ points',
                     action: 'Compare the model treatment forecasts, brood context, and timing before choosing an intervention. Model thresholds are not real-world sampling thresholds.'
                   }
                 ),
@@ -30470,7 +31524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // ── Seasonal
               { id: 'spring_buildup', when: function() { return season === 0 && day > 5; },
                 q: 'In early spring, the queen lays ~1,500 eggs a day — but the population doesn\'t double every day. Where does the loss go, and what does that tell you about a worker\'s life expectancy?',
-                think: 'Summer-bee lifespan is ~6 weeks. Workers die at the same rate while new ones emerge — population is the integral of (birth rate − death rate).' },
+                think: 'Summer-bee lifespan is ~6 weeks. Workers die at the same rate while new ones emerge — the colony grows only while births outpace deaths.' },
               { id: 'summer_swarm',   when: function() { return season === 1 && workers >= 30000; },
                 q: 'When a colony gets crowded in early summer, it often swarms — half the workers leave with the old queen to start a new hive. Why is swarming the colony\'s "default" success path, not a failure?',
                 think: 'Reproduction at the superorganism level. The colony IS the unit of evolution — splitting into two viable colonies is how bees reproduce as a species, not how individuals reproduce.' },
@@ -30671,8 +31725,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 honey < 5 ? 'Starvation \u2014 the colony ran out of honey stores (' + honey + ' lbs remaining). In nature, a colony needs 60+ lbs of honey to survive winter. Supplemental feeding during dearth periods is critical.' :
                 'Multiple stressors combined \u2014 varroa (' + varroaLevel + ' / 100), nutrition (' + honey + ' lbs), and habitat (' + habitat + '%) created a "death spiral" where each problem amplified the others. This is the reality of Colony Collapse Disorder.')
               )
-            ),
-            // What to try differently
+            ,
+            // What to try differently (inside the collapse panel: a healthy colony must never see the reset buttons)
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
               h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.next_time_try', '\uD83D\uDCA1 Next time, try:')),
               h('ul', { className: 'space-y-0.5 pl-4 list-disc ' + (dk ? 'text-slate-200' : 'text-slate-600') },
@@ -30722,6 +31776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   className: 'min-h-[48px] rounded-xl border px-4 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 bg-slate-900 text-sky-200 hover:bg-slate-800' : 'border-sky-300 bg-white text-sky-900 hover:bg-sky-100')
                 }, 'Use a new seed', h('span', { className: 'mt-1 block text-[0.625rem] font-semibold opacity-80' }, 'Begin a different event scenario')))
             )
+          )
           ,
 
           // Seasonal goals — live checklist with ✓ / ⏳ markers
@@ -30905,11 +31960,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // condition and the move it calls for. role=status so it is announced, not just seen.
             (function() {
               var dearthNow = !!d.inDearth;
-              var light = honey > 0 && honey < (SIMULATION_PARAMS.lowStoreThreshold || 8);
+              // `honey > 0 &&` hid the warning at exactly 0 lb, the one moment it matters most.
+              var light = honey < (SIMULATION_PARAMS.lowStoreThreshold || 8);
               if (!dearthNow && !light) return null;
               var msg = dearthNow
                 ? 'Dearth: the spring flow is over and goldenrod has not started. Almost nothing is coming in, and the colony is at its hungriest. Stores will fall — feed if they get light, and do not harvest now.'
-                : 'Stores are light. The colony has ' + honey + ' lbs. Feed before it runs out; a starving colony abandons brood first.';
+                : honey <= 0
+                  ? 'Stores are EMPTY. The colony is starving and abandoning its brood right now. Feed today.'
+                  : 'Stores are light. The colony has ' + honey + ' lbs. Feed before it runs out; a starving colony abandons brood first.';
               return h('div', {
                 role: 'status', 'aria-live': 'polite', 'data-beehive-forage-banner': dearthNow ? 'dearth' : 'light',
                 className: 'flex items-start gap-2 rounded-xl border px-3 py-2 text-[0.6875rem] leading-relaxed font-semibold '
@@ -30948,7 +32006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }, icon: '\uD83E\uDDFD', label: __alloT('stem.beehive.hygiene', 'Hygiene'), tip: __alloT('stem.beehive.clean_comb_remove_dead_bees_improve_ve', 'Clean comb, remove dead bees, improve ventilation (−disease risk)'), disabled: actionPoints < 1 || diseaseRisk < 5, locked: actionPoints < 1 ? 'Need 1 AP' : 'Disease risk is low', effect: '-18 disease / +2 morale', costLabel: '1 AP', color: 'purple' },
                 { onClick: addSuper, icon: '\uD83D\uDCE6', label: __alloT('stem.beehive.super', 'Super'), tip: __alloT('stem.beehive.add_honey_super_10_morale_2_wax', 'Add honey super (+capacity, +morale, lower swarm risk) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+40 capacity / +10 morale', costLabel: '1 AP', color: 'blue' },
                 { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: __alloT('stem.beehive.harvest', 'Harvest'), tip: 'Harvest only honey above the ' + currentReserve + ' lb reserve for ' + currentReserveWhy + ' — 1 AP', disabled: honey <= currentReserve || actionPoints < 1, locked: honey <= currentReserve ? 'Need more than ' + currentReserve + ' lb' : 'Need 1 AP', effect: 'Collect surplus / leave ' + currentReserve + ' lb', costLabel: '1 AP', color: 'amber' },
-                { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: __alloT('stem.beehive.feed_sugar_syrup_5_lbs_honey_5_morale', 'Add supplemental feed (+5 lb modeled food stores, +5 stability points) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+5 food stores / +5 stability', costLabel: '1 AP', color: 'slate' },
+                { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: __alloT('stem.beehive.feed_sugar_syrup_v2', 'Feed sugar syrup: +5 lb of stores the bees eat first (it is not honey, so Harvest leaves it) and +5 morale — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: __alloT('stem.beehive.feed_effect_v2', '+5 lb syrup / +5 morale'), costLabel: '1 AP', color: 'slate' },
                 { onClick: requeenColony, icon: '\uD83D\uDC51', label: __alloT('stem.beehive.requeen', 'Requeen'), tip: __alloT('stem.beehive.install_a_new_queen_restores_queenheal', 'Install a new queen — restores queenHealth to 100 (2 AP)'), disabled: actionPoints < 2, locked: 'Need 2 AP', effect: 'Queen to 100% / -5 morale', costLabel: '2 AP', color: 'purple' },
                 // Split and Winterize (2026-07-30). Both were missing responses to mechanics the
                 // sim already had: crowding could only be answered with a super or a swarm, and
@@ -31112,7 +32170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && !showInspect &&
           h('div', { className: 'grid grid-cols-2 gap-3', role: 'region', 'aria-label': __alloT('stem.beehive.bee_science_quick_reference_cards', 'Bee science quick reference cards') },
             [
-              { title: __alloT('stem.beehive.the_waggle_dance', '💃 The Waggle Dance'), text: __alloT('stem.beehive.when_a_forager_finds_nectar_she_perfor', 'When a forager finds nectar, she performs a figure-8 dance on the comb. The waggle-run angle encodes direction relative to the sun, and its duration encodes distance. Karl von Frisch shared the 1973 Nobel Prize for decoding this landmark example of symbolic referential communication in an invertebrate.') },
+              { title: __alloT('stem.beehive.the_waggle_dance', '💃 The Waggle Dance'), text: __alloT('stem.beehive.when_a_forager_finds_nectar_she_perfor_v2', 'When a forager finds nectar, she performs a figure-8 dance on the comb. The waggle-run angle encodes direction relative to the sun, and its duration encodes distance. Karl von Frisch shared the 1973 Nobel Prize for decoding this landmark example of an insect using symbols: dance moves that stand for real distances and directions.') },
               { title: __alloT('stem.beehive.the_superorganism', '🧠 The Superorganism'), text: __alloT('stem.beehive.a_honeybee_colony_is_a_superorganism_5', 'A honeybee colony is a superorganism — thousands of individuals coordinating as one system. The queen is the reproductive system; workers collectively provide many digestive, defensive, and information-processing functions; drones carry a reproductive role. The brood area is usually kept near 34–36°C (93–97°F) through heating, fanning, water evaporation, clustering, and worker movement.') },
               { title: __alloT('stem.beehive.from_nectar_to_honey', '🍯 From Nectar to Honey'), text: __alloT('stem.beehive.nectar_is_80_water_bees_convert_it_to_', 'Nectar is mostly water. Bees turn it into honey through enzymatic processing and evaporative concentration, then cap cells when moisture is low enough. Properly ripened honey stored sealed and dry can remain stable for a very long time, but absorbed moisture can allow osmophilic yeasts to ferment it.') },
               { title: __alloT('stem.beehive.colony_collapse_disorder_2', '⚠️ Colony Collapse Disorder'), text: __alloT('stem.beehive.since_2006_beekeepers_have_reported_lo', 'Colony Collapse Disorder (CCD) describes a specific syndrome in which most adult workers disappear while the queen, brood, and food remain. It is not a label for every colony loss. Honey bee health reflects interacting pressures including Varroa and viruses, nutrition and forage, pesticide exposure, weather, queen problems, and management conditions.') }
@@ -31122,7 +32180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-600') }, sc.text));
             })),
           // === H7b'' inquiry widget: hive thermoregulation ===
-          !(focusLayout && viewMode === 'beekeeper' && discoveryLesson.id === 'thermo') && renderThermoInquiry()
+          viewMode === 'beekeeper' && (!focusLayout ? renderThermoInquiry(false) : discoveryLesson.id !== 'thermo' ? renderThermoLauncher() : null)
         ));
         return composeDiscoveryWorkspace(beeWorkspace);
       })();
@@ -31142,7 +32200,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhQueenFieldObjective: bhQueenFieldObjective,
       bhQueenMapInspection: bhQueenMapInspection, QUEEN_LANDSCAPE_PATCHES: QUEEN_LANDSCAPE_PATCHES,
       bhQueenMapStudy: bhQueenMapStudy, bhQueenMapStudyReady: bhQueenMapStudyReady, bhQueenMapStudyCapture: bhQueenMapStudyCapture, bhQueenMapStudyText: bhQueenMapStudyText,
-      bhWaggleReading: bhWaggleReading, bhDiscoveryComparison: bhDiscoveryComparison, bhDiscoveryComparisonText: bhDiscoveryComparisonText,
+      bhYearReport: bhYearReport, bhYearTotals: bhYearTotals, bhQueenSeason: bhQueenSeason, BH_QUEEN_YEAR_CYCLES: BH_QUEEN_YEAR_CYCLES, bhThermoEstimate: bhThermoEstimate, BH_THERMO_DEFAULTS: BH_THERMO_DEFAULTS,
+      bhWaggleReading: bhWaggleReading, bhWaggleDemoState: bhWaggleDemoState, bhDiscoveryComparison: bhDiscoveryComparison, bhDiscoveryComparisonText: bhDiscoveryComparisonText, bhDiscoveryEvidenceReadiness: bhDiscoveryEvidenceReadiness, bhDiscoveryFoodTrend: bhDiscoveryFoodTrend,
       SIMULATION_PARAMS: SIMULATION_PARAMS,
       DRONE_FLIGHT_PARAMS: DRONE_FLIGHT_PARAMS,
       bhCreateNewColonyState: bhCreateNewColonyState,
@@ -31159,6 +32218,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhCreateExperimentSnapshot: bhCreateExperimentSnapshot,
       bhNormalizeExperimentSnapshot: bhNormalizeExperimentSnapshot,
       bhCompareManagementTrails: bhCompareManagementTrails,
+      bhManagementHistory: bhManagementHistory,
+      bhAppendManagementAction: bhAppendManagementAction,
       bhComparePlannedManagementChoice: bhComparePlannedManagementChoice,
       bhManagementActionPlanId: bhManagementActionPlanId,
       bhCompareExperiments: bhCompareExperiments,
@@ -31178,6 +32239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhEvaluateExperimentPrediction: bhEvaluateExperimentPrediction,
       BEEHIVE_EXPERIMENT_PLAN_ACTIONS: BEEHIVE_EXPERIMENT_PLAN_ACTIONS,
       bhNormalizeExperimentNotebook: bhNormalizeExperimentNotebook,
+      bhExperimentNextStep: bhExperimentNextStep,
       bhBuildExperimentEvidenceRecord: bhBuildExperimentEvidenceRecord,
       BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION: BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION,
       BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS: BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS,

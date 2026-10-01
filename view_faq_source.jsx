@@ -76,7 +76,12 @@ var _lazyIcon = function (name) {
     var audioNoticeState = React.useState('');
     var audioNotice = audioNoticeState[0], setAudioNotice = audioNoticeState[1];
     var audioRequestRef = React.useRef(null);
-    var audioContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.data, selectedVoice, effectiveLanguage]);
+    var audioResourceId = String(generatedContent?.id || generatedContent?.resourceId || generatedContent?.__alloUnsavedTtsToken || 'unsaved');
+    var audioSpeed = typeof voiceSpeed === 'number' && Number.isFinite(voiceSpeed) && voiceSpeed > 0 ? voiceSpeed : 1;
+    var audioProfile = { voice: selectedVoice || window.__alloSelectedVoice || 'Kore', language: effectiveLanguage, speed: audioSpeed, synthesisRate: audioSpeed, voiceResolverVersion: 2 };
+    var audioContext = JSON.stringify([audioResourceId, generatedContent?.data, audioProfile, window.__alloReadAloudProfileRevision]);
+    var audioEditingRef = React.useRef(false);
+    audioEditingRef.current = !!isTeacherMode && !!isEditingFaq;
     var audioContextRef = React.useRef(audioContext);
     audioContextRef.current = audioContext;
     React.useEffect(function () {
@@ -93,14 +98,32 @@ var _lazyIcon = function (name) {
       };
     }, [audioContext]);
     var isCurrentAudioRequest = function (request) {
-      return audioRequestRef.current === request && audioContextRef.current === request.context;
+      return audioRequestRef.current === request && audioContextRef.current === request.context && (request.kind !== 'sentence' || audioEditingRef.current);
     };
     React.useEffect(function () {
-      if (typeof window === 'undefined') return;
-      var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
-      window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
-      return function () { window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate); };
-    }, []);
+      if (audioEditingRef.current) return;
+      var request = audioRequestRef.current;
+      if (request?.kind === 'sentence') {
+        audioRequestRef.current = null;
+        request.controller?.abort();
+        setRegenAudioKey(null);
+        setAudioNotice('');
+      }
+    }, [isTeacherMode, isEditingFaq]);
+    var audioStore = window.AlloModules?.KaraokeAudioStore?.current;
+    React.useEffect(function () {
+      var onAudioUpdate = function (event) {
+        if (event?.detail?.resourceId != null && String(event.detail.resourceId) !== audioResourceId) return;
+        setAudioStatusTick(function (n) { return n + 1; });
+      };
+      var events = ['alloflow:karaoke-audio-updated', 'alloflow:read-aloud-reconciled', 'alloflow:module-registry-changed'];
+      events.forEach(function (name) { window.addEventListener(name, onAudioUpdate); });
+      var unsubscribe = audioStore?.subscribe?.(onAudioUpdate);
+      return function () {
+        events.forEach(function (name) { window.removeEventListener(name, onAudioUpdate); });
+        if (typeof unsubscribe === 'function') unsubscribe();
+      };
+    }, [audioResourceId, audioStore]);
     var cleanSentenceForAudio = function (sentence) {
       try {
         var phaseK = window.AlloModules && window.AlloModules.PhaseKHelpers;
@@ -113,46 +136,43 @@ var _lazyIcon = function (name) {
       // present in one place but not the other orphans that sentence's audio.
       return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
     };
-    var getReadAloudStore = function () {
-      try {
-        return window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-      } catch (_) {
-        return null;
-      }
-    };
-    var getReadAloudAudioStatus = function (sentence) {
-      var st = getReadAloudStore();
-      if (!st) return 'missing';
-      try {
-        var stored = !!st.has(sentence);
-        if (!stored) return 'missing';
-        if (typeof st.getCompatible !== 'function') return 'ready';
-        var compatible = st.getCompatible(sentence, {
-          voice: selectedVoice,
-          language: effectiveLanguage
+    // Match the host's canonical question/answer locators and splitter. The
+    // occurrence count spans the entire FAQ, after spoken-text normalization.
+    var getFaqAudioEntries = function () {
+      var entries = [], occurrences = new Map();
+      var data = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+      data.forEach(function (faq, faqIndex) {
+        if (!faq) return;
+        ['question', 'answer'].forEach(function (field) {
+          var part = faq[field];
+          if (!part || String(part).trim().startsWith('|') || String(part).includes('\n|')) return;
+          var KS = window.AlloModules?.KaraokeAudioStore;
+          var sentences;
+          try { if (typeof KS?.splitSentences === 'function') sentences = KS.splitSentences(part); } catch (_) {}
+          if (!Array.isArray(sentences)) sentences = splitTextToSentences(String(part));
+          sentences.forEach(function (sentence, sentenceIndex) {
+            var text = cleanSentenceForAudio(sentence);
+            if (!text) return;
+            var occurrence = occurrences.get(text) || 0;
+            occurrences.set(text, occurrence + 1);
+            entries.push({ text: text, occurrence: occurrence, segmentId: 'faq/' + faqIndex + '/' + field + '/' + sentenceIndex, scopeId: 'main', language: effectiveLanguage, faqIndex: faqIndex, field: field, sentenceIndex: sentenceIndex });
+          });
         });
-        return compatible ? 'ready' : 'stale';
-      } catch (_) {
-        return 'missing';
-      }
-    };
-    var getReadAloudAudioSummary = function (sentences) {
-      var list = Array.isArray(sentences) ? sentences : [];
-      return list.reduce(function (summary, sentence) {
-        var status = getReadAloudAudioStatus(sentence);
-        summary[status] += 1;
-        return summary;
-      }, { ready: 0, stale: 0, missing: 0, total: list.length });
-    };
-    var getFaqAudioSentences = function () {
-      var data = generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data : [];
-      var list = [];
-      data.forEach(function (faq) {
-        if (faq && faq.question) list.push.apply(list, splitTextToSentences(faq.question));
-        if (faq && faq.answer) list.push.apply(list, splitTextToSentences(faq.answer));
       });
-      return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
+      return entries;
     };
+    var faqAudioEntries = getFaqAudioEntries();
+    var inspectFaqAudioEntry = function (entry) {
+      try {
+        var inspected = window.__alloInspectReadAloudAudio?.(entry, 'reference', { occurrence: entry.occurrence, profile: audioProfile });
+        var segment = inspected?.segment;
+        // A text-only/old-host result cannot certify the intended occurrence.
+        if (segment && String(segment.resourceId) === audioResourceId && segment.segmentId === entry.segmentId && segment.spokenText === entry.text &&
+            ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)) return inspected;
+      } catch (_) {}
+      return { status: 'unverified', source: null };
+    };
+    var getFaqAudioSentences = function () { return faqAudioEntries.map(function (entry) { return entry.text; }); };
     var handlePrepareFaqAudio = async function () {
       if (audioRequestRef.current) return;
       if (typeof window.__alloPrepareReadAloud !== 'function') {
@@ -168,7 +188,7 @@ var _lazyIcon = function (name) {
       try {
         var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
           if (isCurrentAudioRequest(request)) setPrepState({ busy: true, done: done, total: total || sentences.length });
-        }, { signal: request.controller && request.controller.signal });
+        }, { signal: request.controller && request.controller.signal, entries: faqAudioEntries, profile: audioProfile });
         if (!isCurrentAudioRequest(request)) return;
         if (request.controller && request.controller.signal.aborted) {
           setAudioNotice(label('faq.audio_save_stopped', 'Audio saving stopped. Save TTS again to finish any missing clips.'));
@@ -190,18 +210,18 @@ var _lazyIcon = function (name) {
         }
       }
     };
-    var handleRegenerateFaqAudioSentence = async function (sentence, key) {
-      if (!sentence || audioRequestRef.current) return;
-      if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
+    var handleRegenerateFaqAudioSentence = async function (entry) {
+      if (!entry || audioRequestRef.current || !audioEditingRef.current) return;
+      if (typeof window.__alloRegenerateSentenceAudio !== 'function' || inspectFaqAudioEntry(entry).status === 'unverified') {
         setAudioNotice(label('faq.audio_tools_loading', 'Audio tools are still loading. Please try again.'));
         return;
       }
-      var request = { context: audioContext };
+      var request = { context: audioContext, kind: 'sentence', controller: new AbortController() };
       audioRequestRef.current = request;
-      setRegenAudioKey(key);
+      setRegenAudioKey(entry.segmentId);
       setAudioNotice('');
       try {
-        var url = await window.__alloRegenerateSentenceAudio(cleanSentenceForAudio(sentence));
+        var url = await window.__alloRegenerateSentenceAudio(entry, { occurrence: entry.occurrence, profile: audioProfile, signal: request.controller.signal });
         if (!url) throw new Error('No audio returned');
         if (isCurrentAudioRequest(request)) {
           setAudioStatusTick(function (n) { return n + 1; });
@@ -216,32 +236,47 @@ var _lazyIcon = function (name) {
         }
       }
     };
-    var renderFaqEditAudioTools = function (text, keyPrefix) {
+    var renderFaqEditAudioTools = function (faqIndex, field) {
       if (!isTeacherMode || !isEditingFaq) return null;
-      var sentences = splitTextToSentences(text).map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
-      if (!sentences.length) return null;
-      var summary = getReadAloudAudioSummary(sentences);
-      return <div className="flex flex-wrap gap-1.5 pt-1"><div className="w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-cyan-700"><span>TTS {summary.ready}/{summary.total} ready{summary.stale > 0 ? `; ${summary.stale} stale` : ''}</span><span className="text-slate-500 normal-case font-semibold">Click to regenerate</span></div>{sentences.map(function (sentence, sIdx) {
-        var key = keyPrefix + '-' + sIdx;
-        var busy = regenAudioKey === key;
-        var audioStatus = getReadAloudAudioStatus(sentence);
-        return <button key={key} type="button" onClick={() => handleRegenerateFaqAudioSentence(sentence, key)} disabled={!!regenAudioKey || prepState.busy} className={`min-h-11 min-w-11 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none ${audioStatus === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : audioStatus === 'stale' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`} title={`${audioStatus === 'ready' ? 'TTS ready' : audioStatus === 'stale' ? 'TTS saved with different settings' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${audioStatus === 'ready' ? 'Ready TTS' : audioStatus === 'stale' ? 'Stale TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : audioStatus === 'ready' ? <CheckCircle2 size={12} /> : audioStatus === 'stale' ? <RefreshCw size={12} /> : <Volume2 size={12} />}<span>{sIdx + 1}</span></button>;
-      })}</div>;
+      var entries = faqAudioEntries.filter(function (entry) { return entry.faqIndex === faqIndex && entry.field === field; });
+      if (!entries.length) return null;
+      var rows = entries.map(function (entry) { return { entry: entry, inspection: inspectFaqAudioEntry(entry) }; });
+      var summary = rows.reduce(function (result, row) { result[row.inspection.status] += 1; return result; }, { total: rows.length, ready: 0, stale: 0, missing: 0, corrupt: 0, unverified: 0 });
+      var fieldName = label('faq.audio_' + field, field === 'question' ? 'question' : 'answer');
+      var groupName = label('faq.audio_item', 'FAQ') + ' ' + (faqIndex + 1) + ', ' + fieldName;
+      var summaryText = summary.unverified ? label('faq.audio_unverified', 'Playback readiness not verified') :
+        'TTS ' + summary.ready + '/' + summary.total + ' ' + label('faq.audio_ready', 'ready to play') +
+        (summary.stale ? '; ' + summary.stale + ' ' + label('faq.audio_stale', 'settings changed') : '') +
+        (summary.corrupt ? '; ' + summary.corrupt + ' ' + label('faq.audio_corrupt', 'need repair') : '');
+      return <div role="group" aria-label={groupName + ' ' + label('faq.audio_group', 'audio')} data-faq-audio-group={faqIndex + '/' + field} className="flex min-w-0 max-w-full flex-wrap gap-1.5 pt-1">
+        <div className="w-full min-w-0 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-cyan-700"><span>{summaryText}</span><span className="text-slate-600 font-semibold">{label('faq.audio_regenerate_hint', 'Select a sentence to regenerate audio')}</span></div>
+        {rows.map(function (row) {
+          var entry = row.entry, status = row.inspection.status;
+          var busy = regenAudioKey === entry.segmentId;
+          var unavailable = !!regenAudioKey || prepState.busy || status === 'unverified' || typeof window.__alloRegenerateSentenceAudio !== 'function';
+          var statusText = status === 'ready' ? label('faq.audio_ready', 'ready to play') : status === 'stale' ? label('faq.audio_settings_changed', 'stored audio; settings changed') : status === 'corrupt' ? label('faq.audio_repair', 'audio needs repair') : status === 'missing' ? label('faq.audio_missing', 'audio missing') : label('faq.audio_unverified', 'playback readiness not verified');
+          var actionText = String(row.inspection.source || '').startsWith('human') ? label('faq.audio_replace_recording', 'Replace recording with generated audio') : label('faq.audio_regenerate', 'Regenerate audio');
+          var name = groupName + ', ' + label('faq.audio_sentence', 'sentence') + ' ' + (entry.sentenceIndex + 1) + '. ' + statusText + '. ' + actionText + '.';
+          return <button key={entry.segmentId} type="button" data-faq-audio-entry={entry.segmentId} data-audio-status={status} onClick={() => { if (!unavailable) handleRegenerateFaqAudioSentence(entry); }} aria-disabled={unavailable} aria-busy={busy} className={'min-h-11 min-w-11 max-w-full inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border aria-disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors motion-reduce:transition-none ' + (status === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : status === 'stale' || status === 'corrupt' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100')} title={name + ' ' + entry.text.slice(0, 90)} aria-label={name}>{busy ? <RefreshCw size={12} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : status === 'ready' ? <CheckCircle2 size={12} aria-hidden="true" /> : status === 'stale' || status === 'corrupt' ? <RefreshCw size={12} aria-hidden="true" /> : <Volume2 size={12} aria-hidden="true" />}<span>{entry.sentenceIndex + 1}</span></button>;
+        })}
+        {(summary.unverified > 0 || typeof window.__alloRegenerateSentenceAudio !== 'function') && <p className="w-full text-xs text-slate-600">{label('faq.audio_identity_loading', 'Sentence audio tools are not ready. Try again after they finish loading.')}</p>}
+      </div>;
     };
-    return <div className="space-y-6">{audioNotice && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
+    var faqItems = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+    return <div data-faq-view className="space-y-6"><style>{"[data-faq-view] p, [data-faq-view] button, [data-faq-view] textarea, [data-faq-view] [data-faq-audio-group] { line-height: 1.5; }"}</style>{audioNotice &&<p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
             e.stopPropagation();
             audioRef.current?.pause();
             playbackSessionRef.current = null;
             if (window.speechSynthesis) window.speechSynthesis.cancel();
             setIsPlaying(false);
             setPlayingContentId(null);
-          }} className="p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">{label('common.stop', 'Stop')}</span></button></div></div>}{isTeacherMode && <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>UDL Goal:</strong> Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.</p>{isTeacherMode && <div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={function () { if (prepState.busy) { var request = audioRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareFaqAudio(); }} disabled={!!regenAudioKey} aria-busy={prepState.busy} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm" title={prepState.busy ? (t('common.stop') || 'Stop') : (t('immersive.prepare_all') || 'Save TTS')} aria-label={prepState.busy ? (t('common.stop') || 'Stop saving TTS') : (t('immersive.prepare_all') || 'Save TTS')}>{prepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'}</button><button onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button></div>}</div>}{
+          }} className="p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">{label('common.stop', 'Stop')}</span></button></div></div>}{isTeacherMode && <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>{label('faq.udl_goal_label', 'UDL Goal:')}</strong> {label('faq.udl_goal_desc', 'Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.')}</p>{isTeacherMode && <div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={function () { if (prepState.busy) { var request = audioRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareFaqAudio(); }} disabled={!!regenAudioKey} aria-busy={prepState.busy} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm" title={prepState.busy ? label('common.stop', 'Stop') : label('faq.save_tts', 'Save TTS')} aria-label={prepState.busy ? label('faq.stop_saving_tts', 'Stop saving TTS') : label('faq.save_tts', 'Save TTS')}>{prepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : label('faq.save_tts', 'Save TTS')}</button><button onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button></div>}</div>}{
       // Show all / Hide all controls (only when not editing — teacher needs everything visible to edit)
-      !isEditingFaq && generatedContent?.data?.length > 0 && <div className="flex items-center gap-2 mb-2">{/* One toggle: Hide all once every answer is open. */}{generatedContent.data.every(function (_, i) { return expandedSet.has(i); }) ? <button type="button" data-faq-toggle-all onClick={collapseAll} className="px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"><span aria-hidden="true">&#x25B8; </span>{label('faq.hide_all', 'Hide all')}</button> : <button type="button" data-faq-toggle-all onClick={expandAll} className="px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors"><span aria-hidden="true">&#x25BE; </span>{label('faq.show_all', 'Show all')}</button>}<span className="text-[11px] text-slate-500 italic ml-1">{label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.')}</span></div>}<div className="space-y-4">{(() => {
+      !isEditingFaq && faqItems.length > 0 && <div className="flex items-center gap-2 mb-2">{/* One toggle: Hide all once every answer is open. */}{faqItems.every(function (_, i) { return expandedSet.has(i); }) ? <button type="button" data-faq-toggle-all onClick={collapseAll} className="px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"><span aria-hidden="true">&#x25B8; </span>{label('faq.hide_all', 'Hide all')}</button> : <button type="button" data-faq-toggle-all onClick={expandAll} className="px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors"><span aria-hidden="true">&#x25BE; </span>{label('faq.show_all', 'Show all')}</button>}<span className="text-[11px] text-slate-500 italic ml-1">{label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.')}</span></div>}{faqItems.length === 0 && <div role="status" data-faq-empty className="rounded-lg border border-slate-300 bg-slate-50 p-4 text-sm text-slate-700"><p className="font-semibold">{label('faq.empty', 'No questions are available yet.')}</p>{isTeacherMode && <p className="mt-1">{label('faq.empty_teacher_hint', 'Generate the FAQ again to create questions.')}</p>}</div>}<div className="space-y-4">{(() => {
           // PASS 1: precompute sentence index ranges per FAQ so we can derive
           // which FAQ contains the currently-playing TTS sentence (used to
           // auto-expand the matching item).
-          var data = generatedContent && generatedContent.data || [];
+          var data = faqItems;
           var rangeStart = [];
           var rangeEnd = [];
           var _sCount = 0;
@@ -281,19 +316,19 @@ var _lazyIcon = function (name) {
           }, [currentlyReadingFaqIdx]);
           // PASS 2: actual render. Sentence indices come from rangeStart[idx] so
           // they stay stable regardless of which FAQs are expanded/collapsed.
-          return generatedContent?.data.map((faq, idx) => {
+          return data.map((faq, idx) => {
             var isExpanded = isEditingFaq || expandedSet.has(idx) || idx === currentlyReadingFaqIdx;
             var qSentencesForCount = splitTextToSentences(faq.question).filter(function (s) {
               return s && s.trim().length > 0;
             });
             var qBase = rangeStart[idx] || 0;
             var aBase = qBase + qSentencesForCount.length;
-            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(faq.question, 'faq-' + idx + '-question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(faq.answer, 'faq-' + idx + '-answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
+            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(idx, 'question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(idx, 'answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
                         const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
                         return qSentences.map((s, sIdx) => {
                           const currentGlobalIdx = qBase + sIdx;
                           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`} onClick={e => {
+                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={label('faq.read_sentence', 'Read sentence: {sentence}').replace('{sentence}', s)} className={`bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`} onClick={e => {
                             e.stopPropagation();
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
                           }}>{formatInteractiveText(s, false)} </button>;
@@ -303,7 +338,7 @@ var _lazyIcon = function (name) {
                         return aSentences.map((s, sIdx) => {
                           const currentGlobalIdx = aBase + sIdx;
                           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`} onClick={e => {
+                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={label('faq.read_sentence', 'Read sentence: {sentence}').replace('{sentence}', s)} className={`bg-transparent border-0 font-inherit text-inherit text-start transition-colors motion-reduce:transition-none duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`} onClick={e => {
                             e.stopPropagation();
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
                           }}>{formatInteractiveText(s, false)} </button>;

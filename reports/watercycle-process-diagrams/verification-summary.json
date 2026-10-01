@@ -1,0 +1,33 @@
+{
+  "verifiedAt": "2026-09-30T13:21:03.489Z",
+  "runtimeSha256": "2ab8cb80d55de3063122677d50df18c4047ab1ad41fc198b86d5093ae9c83ccf",
+  "sourceAndPublicMatch": true,
+  "unitTests": {
+    "passed": 132,
+    "failed": 0,
+    "distinctSuites": 5
+  },
+  "browser": {
+    "completed": true,
+    "successful": true,
+    "passed": 232,
+    "failed": 0,
+    "renderedCases": 90,
+    "cleanAudits": 18,
+    "runtimeErrors": 0,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "baseline": {
+    "commit": "78e13faae",
+    "sourceSha256": "3b733011f6f4842a41572ac605e2db17b2b7791cbea724f9e81bf78c154e620b"
+  },
+  "stagedFilesInScope": [],
+  "disposition": "Uncommitted; no staging, commits, or publishing performed in this pass.",
+  "reports": [
+    "regression-results.json",
+    "scene-context-unit-results.json",
+    "results.json",
+    "baseline-results.json"
+  ]
+}

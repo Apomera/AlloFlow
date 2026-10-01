@@ -1,0 +1,62 @@
+
+Running 15 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:25:5 › layered terrain retains river length when vertical relief and the camera change (20.4s)
+  ok  2 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:39:5 › Earth leads into the canyon and returns to the same globe viewpoint on a phone (24.3s)
+  ok  3 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:53:5 › notebook restores the relief and follows the repositioned landmark, while comparisons use actual proportions (9.0s)
+  ok  4 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:65:5 › terrain remains interactive in WebGL 1 and blocked Earth imagery cannot offer geographic entry (5.8s)
+  ok  5 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:75:5 › animated Earth entry and relief inspection settle while ambience is paused (14.0s)
+  ok  6 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:36:5 › eight orbital radii keep their measured ratios through deep inspection (6.1s)
+  ok  7 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:56:5 › phone keyboard exploration restores deep observations and enters a detailed world (5.8s)
+  ok  8 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:72:5 › orbital system comparisons preserve physical dimensions after close inspection (5.0s)
+  ok  9 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:81:5 › the orbital scene works in WebGL 1 without shader errors (3.9s)
+  ok 10 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:88:5 › deep approaches remain smooth with ambience paused and stop drawing when settled (6.3s)
+  ok 11 [chromium] › tests\e2e\scale-explorer-river.spec.ts:29:5 › river distance guides the camera through bends without changing the measured terrain (9.4s)
+  ok 12 [chromium] › tests\e2e\scale-explorer-river.spec.ts:45:5 › phone keyboard controls stay reachable and preserve position when leaving the journey (6.3s)
+  x  13 [chromium] › tests\e2e\scale-explorer-river.spec.ts:57:5 › notebook restores river position, relief and manual camera direction and exports the route context (22.9s)
+  -  14 [chromium] › tests\e2e\scale-explorer-river.spec.ts:70:5 › animated travel follows the river and becomes idle with ambience paused
+  -  15 [chromium] › tests\e2e\scale-explorer-river.spec.ts:90:5 › WebGL 1 renders the route marker and scene after a river journey
+
+
+  1) [chromium] › tests\e2e\scale-explorer-river.spec.ts:57:5 › notebook restores river position, relief and manual camera direction and exports the route context 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [33m@@ -10,8 +10,8 @@[39m
+    [2m      0.03627683794621025,[22m
+    [2m    ],[22m
+    [2m    "relief": 7,[22m
+    [2m    "scale": 3,[22m
+    [2m    "visible": true,[22m
+    [32m-   "yaw": "-1.6209",[39m
+    [31m+   "yaw": "-1.5009",[39m
+    [2m    "zoom": "8.00",[22m
+    [2m  }[22m
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      64 |  await book.locator('[data-observation="grand-canyon:river-journey"]').getByRole('button',{name:/^Return to/}).click();
+      65 |  await expect(canvas(page)).toHaveAttribute('data-atlas-river-km','250');await expect(slider(page)).toHaveValue('250');
+    > 66 |  await expect.poll(()=>position(page)).toEqual(saved);
+         |                                        ^
+      67 |  const download=page.waitForEvent('download');await book.getByRole('button',{name:'Download notes',exact:true}).click();
+      68 |  const text=readFileSync((await(await download).path())!,'utf8');expect(text).toContain('River journey: 250 km');expect(text).toContain('Vertical relief: 7×');expect(text).toContain('not a geographic coordinate');
+      69 | });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\scale-explorer-river.spec.ts:66:40
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\scale-explorer-river\refined-results\scale-explorer-river-noteb-0c525-d-exports-the-route-context-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\scale-explorer-river\refined-results\scale-explorer-river-noteb-0c525-d-exports-the-route-context-chromium\error-context.md
+
+    Error Context: reports\scale-explorer-river\refined-results\scale-explorer-river-noteb-0c525-d-exports-the-route-context-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\scale-explorer-river.spec.ts:57:5 › notebook restores river position, relief and manual camera direction and exports the route context 
+  2 did not run
+  12 passed (2.8m)

@@ -1,0 +1,1005 @@
+{
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "phone finder",
+      "violations": []
+    },
+    {
+      "name": "fullscreen finder",
+      "violations": []
+    },
+    {
+      "name": "fullscreen controls",
+      "violations": []
+    },
+    {
+      "name": "fullscreen centered",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen right approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen upper-right approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen up approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen upper-left approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen left approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen lower-left approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen down approach",
+      "violations": []
+    },
+    {
+      "name": "short fullscreen lower-right approach",
+      "violations": []
+    }
+  ],
+  "directions": [
+    {
+      "name": "right",
+      "text": "Look right\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "right",
+          "arrowDeg": 0,
+          "edge": [
+            0.9,
+            0.5
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "left",
+      "text": "Look left\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "left",
+          "arrowDeg": -180,
+          "edge": [
+            0.09999999999999998,
+            0.5
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "up",
+      "text": "Look up\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "up",
+          "arrowDeg": -90,
+          "edge": [
+            0.5,
+            0.09999999999999998
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "down",
+      "text": "Look down\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "down",
+          "arrowDeg": 90,
+          "edge": [
+            0.5,
+            0.9
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "upper right",
+      "text": "Look upper right\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "upper-right",
+          "arrowDeg": -45,
+          "edge": [
+            0.7000000000000001,
+            0.09999999999999998
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "upper left",
+      "text": "Look upper left\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "upper-left",
+          "arrowDeg": -135,
+          "edge": [
+            0.3,
+            0.09999999999999998
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "lower right",
+      "text": "Look lower right\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10.000000000000002,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "lower-right",
+          "arrowDeg": 45,
+          "edge": [
+            0.7,
+            0.9
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    },
+    {
+      "name": "lower left",
+      "text": "Look lower left\n90° from view center",
+      "angle": 90,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 10,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            null,
+            null
+          ],
+          "inView": false,
+          "angleDeg": 90,
+          "behind": false,
+          "sector": "lower-left",
+          "arrowDeg": 135,
+          "edge": [
+            0.30000000000000004,
+            0.9
+          ]
+        },
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "doppler": 1,
+        "restAngleDeg": 90,
+        "apparentAngleDeg": 90
+      }
+    }
+  ],
+  "rear": {
+    "name": "direct rear",
+    "text": "Behind you · Turn around\n180° from view center",
+    "angle": 180,
+    "target": {
+      "id": "amber-star",
+      "name": "Amber star",
+      "distanceLy": 10,
+      "coincident": false,
+      "guide": {
+        "screen": [
+          null,
+          null
+        ],
+        "inView": false,
+        "angleDeg": 180,
+        "behind": true,
+        "sector": "behind",
+        "arrowDeg": 0,
+        "edge": [
+          0.9,
+          0.5
+        ]
+      },
+      "screen": [
+        null,
+        null
+      ],
+      "inView": false,
+      "doppler": 1,
+      "restAngleDeg": 180,
+      "apparentAngleDeg": 180
+    }
+  },
+  "relativistic": {
+    "name": "relativistic apparent bearing",
+    "text": "Look right\n69° from view center",
+    "angle": 69,
+    "target": {
+      "id": "amber-star",
+      "name": "Amber star",
+      "distanceLy": 10,
+      "coincident": false,
+      "guide": {
+        "screen": [
+          1.526315120568269,
+          0.5
+        ],
+        "inView": false,
+        "angleDeg": 69.07516757236168,
+        "behind": false,
+        "sector": "right",
+        "arrowDeg": 0,
+        "edge": [
+          0.9,
+          0.5
+        ]
+      },
+      "screen": [
+        1.526315120568269,
+        0.5
+      ],
+      "inView": false,
+      "doppler": 0.6423640548375729,
+      "restAngleDeg": 143.13010235415598,
+      "apparentAngleDeg": 69.07516757236168
+    }
+  },
+  "comparison": {
+    "id": "amber-star",
+    "name": "Amber star",
+    "distanceLy": 10,
+    "coincident": false,
+    "guide": {
+      "screen": [
+        null,
+        null
+      ],
+      "inView": false,
+      "angleDeg": 143.13010235415598,
+      "behind": true,
+      "sector": "right",
+      "arrowDeg": 0,
+      "edge": [
+        0.9,
+        0.5
+      ]
+    },
+    "screen": [
+      null,
+      null
+    ],
+    "inView": false,
+    "doppler": 0.6423640548375729,
+    "restAngleDeg": 143.13010235415598,
+    "apparentAngleDeg": 69.07516757236168
+  },
+  "coincident": {
+    "id": "amber-star",
+    "name": "Amber star",
+    "distanceLy": 0,
+    "coincident": true,
+    "guide": null,
+    "screen": [
+      null,
+      null
+    ],
+    "inView": false,
+    "doppler": null,
+    "restAngleDeg": null,
+    "apparentAngleDeg": null
+  },
+  "desktop": {
+    "stage": {
+      "left": 40,
+      "top": -1109.765625,
+      "right": 1140,
+      "bottom": -559.765625
+    },
+    "boxes": [
+      {
+        "class": "uf-target-finder",
+        "left": 516.3828125,
+        "top": -981.765625,
+        "right": 663.6171875,
+        "bottom": -907.578125
+      },
+      {
+        "class": "uf-target-bearing",
+        "left": 1012,
+        "top": -852.765625,
+        "right": 1048,
+        "bottom": -816.765625
+      }
+    ],
+    "overflow": false
+  },
+  "phone": {
+    "stage": {
+      "left": 30,
+      "top": 400.265625,
+      "right": 290,
+      "bottom": 800.265625
+    },
+    "boxes": [
+      {
+        "class": "uf-target-finder",
+        "left": 95,
+        "top": 528.265625,
+        "right": 225,
+        "bottom": 617.84375
+      },
+      {
+        "class": "uf-target-bearing",
+        "left": 244,
+        "top": 582.265625,
+        "right": 280,
+        "bottom": 618.265625
+      }
+    ],
+    "overflow": false
+  },
+  "fullscreen": {
+    "stage": {
+      "left": 0,
+      "top": 0,
+      "right": 320,
+      "bottom": 800
+    },
+    "boxes": [
+      {
+        "class": "uf-target-finder",
+        "left": 86.3828125,
+        "top": 128,
+        "right": 233.6171875,
+        "bottom": 202.1875
+      },
+      {
+        "class": "uf-target-bearing",
+        "left": 270,
+        "top": 382,
+        "right": 306,
+        "bottom": 418
+      }
+    ],
+    "overflow": false
+  },
+  "landscape": [
+    {
+      "name": "right",
+      "guideText": "Look right\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 493.1875,
+            "top": 142,
+            "right": 529.1875,
+            "bottom": 178
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 493.1875,
+          "y": 142,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "upper-right",
+      "guideText": "Look upper right\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 394,
+            "top": 96,
+            "right": 430,
+            "bottom": 132
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 394,
+          "y": 96,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "up",
+      "guideText": "Look up\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 266,
+            "top": 96,
+            "right": 302,
+            "bottom": 132
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 266,
+          "y": 96,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "upper-left",
+      "guideText": "Look upper left\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 138,
+            "top": 96,
+            "right": 174,
+            "bottom": 132
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 138,
+          "y": 96,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "left",
+      "guideText": "Look left\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 38.796875,
+            "top": 142,
+            "right": 74.796875,
+            "bottom": 178
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 38.796875,
+          "y": 142,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "lower-left",
+      "guideText": "Look lower left\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 138,
+            "top": 162,
+            "right": 174,
+            "bottom": 198
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 138,
+          "y": 162,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "down",
+      "guideText": "Look down\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 266,
+            "top": 162,
+            "right": 302,
+            "bottom": 198
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 266,
+          "y": 162,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "name": "lower-right",
+      "guideText": "Look lower right\n90° from view center",
+      "layout": {
+        "stage": {
+          "left": 0,
+          "top": 0,
+          "right": 568,
+          "bottom": 320
+        },
+        "boxes": [
+          {
+            "class": "uf-target-finder",
+            "left": 210.3828125,
+            "top": 16,
+            "right": 357.6171875,
+            "bottom": 90.1875
+          },
+          {
+            "class": "uf-target-bearing",
+            "left": 394,
+            "top": 162,
+            "right": 430,
+            "bottom": 198
+          }
+        ],
+        "overflow": false
+      },
+      "boxes": [
+        {
+          "name": "finder",
+          "x": 210.3828125,
+          "y": 16,
+          "width": 147.234375,
+          "height": 74.1875
+        },
+        {
+          "name": "lens",
+          "x": 414,
+          "y": 16,
+          "width": 142,
+          "height": 54
+        },
+        {
+          "name": "route HUD",
+          "x": 16,
+          "y": 59,
+          "width": 96,
+          "height": 71
+        },
+        {
+          "name": "bearing",
+          "x": 394,
+          "y": 162,
+          "width": 36,
+          "height": 36
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "eight look directions",
+    "rear turn-around guidance",
+    "described angular separation",
+    "decorative edge pointer",
+    "finder preserves position and clocks",
+    "finder centers the displayed target",
+    "relativity and unshifted sky agreement",
+    "coincident destination status",
+    "320px fitting",
+    "fullscreen fitting",
+    "568px by 320px fullscreen paused approach with all eight bearings",
+    "finder, lens, route HUD, and bearing remain disjoint",
+    "clean overlay suppression",
+    "flight controls popover suppression",
+    "scoped stage accessibility"
+  ]
+}

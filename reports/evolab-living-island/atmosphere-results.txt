@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+
+
+[1A[2K(node:42640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:42640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:551:5 › generation field reports reveal actual shifts and mutated offspring without rewriting evidence
+[1A[2K[2/2] [chromium] › tests\e2e\evolab-living-island.spec.ts:594:5 › seasonal atmosphere reuses buffers, freezes with pause and reduced motion, and leaves biology unchanged
+[1A[2K  2 passed (49.1s)

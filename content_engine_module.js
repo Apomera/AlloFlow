@@ -3528,10 +3528,11 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       _pendingRevision = null;
       _revisionSelection = null;
       ++_revisionReqId;
-      if (candidate !== pending.snapshot.text) handleSimplifiedTextChange(candidate);
+      // false: the change waits behind unsaved word help (Save and continue decides).
+      const waiting = candidate !== pending.snapshot.text && handleSimplifiedTextChange(candidate) === false;
       setRevisionData(null);
       window.getSelection()?.removeAllRanges();
-      if (candidate !== pending.snapshot.text) addToast(t('toasts.text_updated'), 'success');
+      if (candidate !== pending.snapshot.text && !waiting) addToast(t('toasts.text_updated'), 'success');
   };
   const closeRevision = () => {
       ++_revisionReqId;

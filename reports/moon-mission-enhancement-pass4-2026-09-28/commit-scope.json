@@ -1,0 +1,19 @@
+{
+  "head": "42188dba9a920270b4a88c039bee8d7f2933e996",
+  "scope": [
+    "stem_lab/stem_tool_moonmission.js",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+    "tests/moonmission_launch_physics.test.js",
+    "tests/moonmission_launch_playback.test.js",
+    "tests/moonmission_orbit_playback.test.js",
+    "tests/moonmission_science_numbers.test.js",
+    "tests/moonmission_moon_and_splash.test.js",
+    "tests/moonmission_proceed_gates.test.js",
+    "tests/moonmission_saturn_v.test.js",
+    "tests/e2e/21-moon-mission-gl.spec.ts",
+    "tests/e2e/moon-mission-launch-orbit.spec.ts",
+    "reports/moon-mission-enhancement-pass4-2026-09-28/README.md"
+  ],
+  "sharedEntries": "100644 744dda8c0be83bd26f718ce0e1d0847fc3c176ef 0\tdesktop/web-app/public/stem_lab/stem_tool_moonmission.js\n100644 744dda8c0be83bd26f718ce0e1d0847fc3c176ef 0\tstem_lab/stem_tool_moonmission.js\n100644 e99b9612448ea737fb33df1fbb4b66311a6f3b73 0\ttests/e2e/21-moon-mission-gl.spec.ts\n100644 2c3a3275cd7241f1d7f2b03909f6ab7e4430ff78 0\ttests/moonmission_moon_and_splash.test.js\n100644 1da00f1a7c93b53a69578c0828195f5443d235a7 0\ttests/moonmission_proceed_gates.test.js\n100644 70d0a46330858e717e43337497caa90ca696ff70 0\ttests/moonmission_saturn_v.test.js\n100644 9c5deae54b465c507487cac31855c88c670a0bbf 0\ttests/moonmission_science_numbers.test.js\n",
+  "index": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\commit-cached-11232.index"
+}

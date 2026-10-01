@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-01T00:25:27.328Z",
+  "frozen": {
+    "word_sounds_core.js": "bbd734af219f59ad4c4b43c52db32666167e278365f8f3bc3c9c26a5e8fb9b16",
+    "word_sounds_setup_source.jsx": "606c11fe7e5b2705d2684b7428157b9d34b80eee5edd1e6eff957c63c6dccbd8",
+    "word_sounds_module.js": "799d09a60e53c7e05de264df0e2e4613722705b3c724c7fa6b8330336a235db0"
+  },
+  "outputBefore": {
+    "word_sounds_setup_module.js": "c5493be0eee0c2c16613878f9ab2e94b68b67bb0a4a469b21cfcad045f13ff4d",
+    "desktop/web-app/public/word_sounds_setup_module.js": "c5493be0eee0c2c16613878f9ab2e94b68b67bb0a4a469b21cfcad045f13ff4d",
+    "desktop/web-app/public/word_sounds_module.js": "799d09a60e53c7e05de264df0e2e4613722705b3c724c7fa6b8330336a235db0"
+  },
+  "syncSha256": "0e0fd7f6f0d796935e9a7fefb6e657eae3d47db5c308a0b18630f921688f367f",
+  "preEditCoreEmbeddingVerified": true,
+  "preEditCoreSha256": "a4934a1757716141c754a260bcdf5620798eed89da11b298a634b9f7833aeb54",
+  "followUp": "Only the inherited object-property guard in canonical core plus its regression and one obsolete language-pool assertion; original 80/81 failure retained in word-sounds-before-own-property.",
+  "tests": {
+    "result": "word-sounds-own-property-tests.json",
+    "passed": 34,
+    "failed": 0,
+    "inputHashes": {
+      "tests/report_word_sounds_content_guard.test.js": "1fa2b348d01030910aea18a23679003964c52ad81c3c4b138b1061ca4da4f0b9",
+      "tests/word_sounds_language_gating.test.js": "abb937e775d2bb81b62b3dae99e3e055a3c22e4bf336239c10e40b456178c617",
+      "tests/helpers/word_sounds_core.js": "a2e215dc46625a6efdfd2226147609547b0a205f03c979925ea6f095a48a8cd0",
+      "tests/helpers/word_sounds_pack_fixture.js": "a56fe72a7a521efde697db1d167933cfcd5b251f1f71d34ad20cf8d8f32be960",
+      "tests/helpers/word_sounds_harness.js": "12b971d9ee55a5d5c11b25dba9391c669639c3a87c65eec06a39989d1356c89d"
+    },
+    "playerExecution": "Actual player with current canonical core embedded in memory; generated mirrors still await root guarded resync."
+  },
+  "hostNavigation": {
+    "proposalOnly": true,
+    "fixApplied": false
+  },
+  "limits": [
+    "Only existing exact matching English curated tasks are graded; other task drafts require content review.",
+    "Generated connected text grammar/science is not certified.",
+    "No deployed timing, keyboard, screen reader, or full CI claim."
+  ]
+}

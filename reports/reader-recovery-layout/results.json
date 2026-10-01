@@ -1,0 +1,66 @@
+[
+  {
+    "fixture": "reader_es419_long_labels_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "screenshot": "spanish_latin_america-1x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_es419_long_labels_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "screenshot": "spanish_latin_america-2x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "screenshot": "arabic-1x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_ar_rtl_mixed_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "screenshot": "arabic-2x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "screenshot": "chinese_simplified-1x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_zh_hans_unspaced_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "screenshot": "chinese_simplified-2x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 1,
+    "nativeBrowserZoom": false,
+    "screenshot": "thai-1x-text.png",
+    "failures": []
+  },
+  {
+    "fixture": "reader_th_unspaced_recovery_v1",
+    "viewportCssPx": 320,
+    "rootTextScale": 2,
+    "nativeBrowserZoom": false,
+    "screenshot": "thai-2x-text.png",
+    "failures": []
+  }
+]

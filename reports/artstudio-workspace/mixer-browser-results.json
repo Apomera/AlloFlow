@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "desktopCanvasWidth": 1108,
+      "pigmentReference": "#3d933e",
+      "focusPreservesCanvas": true
+    },
+    {
+      "rgbAverage": "#808080",
+      "linearLightAverage": "#bcbcbc",
+      "pureEndpoints": true,
+      "hexEntry": true,
+      "invalidHexPreservesPaint": true
+    },
+    {
+      "swapPreservesResult": true,
+      "actualSliderDragOneUndo": true,
+      "redoRestoresExactPng": true
+    },
+    {
+      "threadKitSevenColors": true,
+      "tabRoundTrip": true,
+      "actualPngDownloadMatchesCanvas": true
+    },
+    {
+      "phonePreviewFirst": true,
+      "phoneNoOverflow": true,
+      "phoneTouchTargets": true
+    },
+    {
+      "watercolorTransfer": true
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "tag": "BUTTON",
+    "name": "Animation speed: cycle normal, slow, and fast",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Enter fullscreen specimen mode with view and tool controls",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Organ name labels hidden during assessment",
+    "disabled": true,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Print clean dissection report",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle dissection sound effects",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle high contrast mode",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle larger interface text",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle simplified step instructions",
+    "disabled": false,
+    "pressed": "false",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Toggle tactile instrument feedback",
+    "disabled": false,
+    "pressed": "true",
+    "visible": true
+  },
+  {
+    "tag": "BUTTON",
+    "name": "Visual presentation: cycle guided, realistic, and accessible",
+    "disabled": false,
+    "pressed": null,
+    "visible": true
+  }
+]

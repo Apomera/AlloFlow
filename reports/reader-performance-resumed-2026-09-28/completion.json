@@ -1,0 +1,16 @@
+{
+  "completedAt": "2026-09-29T04:19:40.781Z",
+  "status": "integrated-locally",
+  "tests": 167,
+  "files": 11,
+  "browserScenarios": 5,
+  "pairedCases": 3,
+  "moduleSha256": "86029309318d2656ddb5aeccf955da79101c901c854c5e3842e0e1a10201f3c2",
+  "earlierRunIssues": [
+    "A language-pack parity check exceeded the default five-second timeout while reading 63 large files.",
+    "Some fork workers failed to start; the unchanged outstanding suites passed with one thread and a 120-second execution allowance."
+  ],
+  "deployment": false,
+  "committed": false,
+  "reasonUncommitted": "Shared reader and hosts already contained extensive concurrent uncommitted work; source, mirrors, narrow patch and evidence are preserved without changing the shared index."
+}

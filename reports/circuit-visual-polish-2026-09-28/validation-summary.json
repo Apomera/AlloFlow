@@ -1,0 +1,34 @@
+{
+  "verifiedAt": "2026-09-29T04:20:06.774Z",
+  "source": {
+    "path": "stem_lab/stem_tool_circuit.js",
+    "sha256": "774fdf587b0bb6233ef12eb62a1df5eb07bd6ebfde14cb92b8fce050d5589f3f",
+    "mirror": "desktop/web-app/public/stem_lab/stem_tool_circuit.js",
+    "mirrorMatches": true
+  },
+  "regression": {
+    "files": 9,
+    "passed": 57,
+    "failed": 0,
+    "note": "Behavior and accessibility suites passed. Final CSS-only refinements were followed by the complete visual audit."
+  },
+  "browser": {
+    "workflows": 4,
+    "axeScans": 15,
+    "violations": 0,
+    "layoutChecks": 15,
+    "keyboardFocusChecks": 15,
+    "primaryActionChecks": 129,
+    "screenshots": 21,
+    "visualIssues": 0,
+    "pageErrors": 0,
+    "viewportWidths": [
+      1280,
+      390,
+      320
+    ],
+    "reducedMotion": "Primary action transition durations are at most the shared 0.01ms reset."
+  },
+  "syntaxCheck": "passed",
+  "patchWhitespaceCheck": "passed"
+}

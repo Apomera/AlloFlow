@@ -1,0 +1,178 @@
+{
+  "at": "2026-09-26T22:41:57.164Z",
+  "label": "track17-recovery",
+  "patch": "6dda8fa024d021896f0b93be532eec9eb255ecb6881be2d3086dc55743841e04",
+  "plans": [
+    {
+      "target": "lang/spanish_latin_america.js",
+      "targets": [
+        "lang/spanish_latin_america.js"
+      ],
+      "before": "840cabead0578d50f65297b332c2d73d40618f5c9edd04f72b2e5a89e22b8066",
+      "after": "69067bd807154f8e4a3d288e7667574ff0075cec435187e3588dacf1d866ae54",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "targets": [
+        "desktop/web-app/public/lang/spanish_latin_america.js"
+      ],
+      "before": "840cabead0578d50f65297b332c2d73d40618f5c9edd04f72b2e5a89e22b8066",
+      "after": "69067bd807154f8e4a3d288e7667574ff0075cec435187e3588dacf1d866ae54",
+      "changed": true
+    },
+    {
+      "target": "lang/spanish_castilian.js",
+      "targets": [
+        "lang/spanish_castilian.js"
+      ],
+      "before": "56d488e7f99d606eed3e783f100ac0dd98e6798c219e543ecd66c3a71985036f",
+      "after": "088f0388f75d01e24d6b8d5aa52a90972750642b96f2a6c2275fb3cf5d837019",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/spanish_castilian.js",
+      "targets": [
+        "desktop/web-app/public/lang/spanish_castilian.js"
+      ],
+      "before": "56d488e7f99d606eed3e783f100ac0dd98e6798c219e543ecd66c3a71985036f",
+      "after": "088f0388f75d01e24d6b8d5aa52a90972750642b96f2a6c2275fb3cf5d837019",
+      "changed": true
+    },
+    {
+      "target": "lang/arabic.js",
+      "targets": [
+        "lang/arabic.js"
+      ],
+      "before": "701414b72359a6ea5613fb0fe91472fe2cf2d14f91958b223032bb99b0563e8a",
+      "after": "ad3517b8d82a6f5646db6142f0d7172910d8d5f041f8ae4b231ad8844a78eb87",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/arabic.js",
+      "targets": [
+        "desktop/web-app/public/lang/arabic.js"
+      ],
+      "before": "701414b72359a6ea5613fb0fe91472fe2cf2d14f91958b223032bb99b0563e8a",
+      "after": "ad3517b8d82a6f5646db6142f0d7172910d8d5f041f8ae4b231ad8844a78eb87",
+      "changed": true
+    },
+    {
+      "target": "lang/chinese_simplified.js",
+      "targets": [
+        "lang/chinese_simplified.js"
+      ],
+      "before": "6e9d4b672481560c8db2f15a7f31fcd329edeec286abf5917719d6d48a771ae6",
+      "after": "a9d42f709cd7b7bcfb4fb1ddca49310f95e2e344449ce23d926f890530e46b0e",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/chinese_simplified.js",
+      "targets": [
+        "desktop/web-app/public/lang/chinese_simplified.js"
+      ],
+      "before": "6e9d4b672481560c8db2f15a7f31fcd329edeec286abf5917719d6d48a771ae6",
+      "after": "a9d42f709cd7b7bcfb4fb1ddca49310f95e2e344449ce23d926f890530e46b0e",
+      "changed": true
+    },
+    {
+      "target": "lang/thai.js",
+      "targets": [
+        "lang/thai.js"
+      ],
+      "before": "723cd71d5b85a7906f06d95dcdb5e5fa9fa906c6a8298c0325e80b3baf7156ee",
+      "after": "65d20008dad47dffdc873b3a105c7e84e2c38e40c8f04c44e477a87064deed5d",
+      "changed": true
+    },
+    {
+      "target": "desktop/web-app/public/lang/thai.js",
+      "targets": [
+        "desktop/web-app/public/lang/thai.js"
+      ],
+      "before": "723cd71d5b85a7906f06d95dcdb5e5fa9fa906c6a8298c0325e80b3baf7156ee",
+      "after": "65d20008dad47dffdc873b3a105c7e84e2c38e40c8f04c44e477a87064deed5d",
+      "changed": true
+    },
+    {
+      "target": "dev-tools/i18n/apply_reader_contract_locales.cjs",
+      "targets": [
+        "dev-tools/i18n/apply_reader_contract_locales.cjs"
+      ],
+      "before": "5e0c2e41ee670f89e67caaf90ec1bf66a2863b3452cdb364522c69113ea45139",
+      "after": "ad127e708c760997571a7a527357800a2c94a7d8cf2ec341b85d83d945a8f484",
+      "changed": true
+    },
+    {
+      "target": "docs/reader-localization-contract.md",
+      "targets": [
+        "docs/reader-localization-contract.md"
+      ],
+      "before": "3b53e44b83b03de8a31e589ed341a09efefca99b45c82ca980bb16a3a3b0cacd",
+      "after": "9304d6f04e4502ab3845047498b84851f858c933d962c20988783772ad585ea9",
+      "changed": true
+    },
+    {
+      "target": "translations/reader-recovery-locales.json",
+      "targets": [
+        "translations/reader-recovery-locales.json"
+      ],
+      "before": null,
+      "after": "dafecce920e126a98030efd2986236d1ae56d4b1ec6c72f3c94e47f49db8b9ef",
+      "changed": true
+    },
+    {
+      "target": "tests/fixtures/reader_recovery_locales.json",
+      "targets": [
+        "tests/fixtures/reader_recovery_locales.json"
+      ],
+      "before": null,
+      "after": "dd25cc95c143e90ddd8c8ad807f0509f9f3fbe6c442c5c217ef27fceed3e2f74",
+      "changed": true
+    },
+    {
+      "target": "tests/helpers/reader_recovery_locale_harness.js",
+      "targets": [
+        "tests/helpers/reader_recovery_locale_harness.js"
+      ],
+      "before": null,
+      "after": "53868f8d890315ec840b7249e0c02ea145c12a557e740b151f9e225ffc42674e",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_recovery_locale_catalogs.test.js",
+      "targets": [
+        "tests/reader_recovery_locale_catalogs.test.js"
+      ],
+      "before": null,
+      "after": "afc4b6ddf45bbaeb331d50861a8c59a3bc6fb09dfdd1bbfd65d236ce526c17db",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_recovery_locales.test.js",
+      "targets": [
+        "tests/reader_recovery_locales.test.js"
+      ],
+      "before": null,
+      "after": "67f048a1b2dc312f6b32c1963a4596e1f22870dad99f8b836fcd9f184611af72",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_recovery_locale_layout.test.js",
+      "targets": [
+        "tests/reader_recovery_locale_layout.test.js"
+      ],
+      "before": null,
+      "after": "1e856153deef92b6cff93c1752e0c64cd3715389226bfa613d794317c2c93607",
+      "changed": true
+    },
+    {
+      "target": "docs/reader-recovery-localization.md",
+      "targets": [
+        "docs/reader-recovery-localization.md"
+      ],
+      "before": null,
+      "after": "d818fac2d36e279e547c3de4457a23465b10c8574abe090a45f3ad8d2a3b2099",
+      "changed": true
+    }
+  ]
+}

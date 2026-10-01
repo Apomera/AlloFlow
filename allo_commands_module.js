@@ -1094,7 +1094,13 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.jump_to_lesson_plan_done", "Latest lesson plan opened.");
     } },
     { id: "open_block_suggestions", icon: "\u{1F4A1}", roles: ["teacher", "parent", "independent"], when: (c) => typeof c.openExportPreview === "function", label: t("cmd.open_block_suggestions", "Get document block suggestions"), aliases: ["block suggestions", "suggest blocks", "what should i add to this document", "document suggestions"], hint: t("cmd.open_block_suggestions_hint", "Open the Document Builder, where suggestions sit at the top"), run: (c) => {
+      if (typeof window !== "undefined") window.__alloOpenBlockSuggestions = true;
       c.openExportPreview();
+      const panel = typeof document !== "undefined" ? document.querySelector('details[data-help-key="doc_builder_block_suggestions"]') : null;
+      if (panel) {
+        panel.open = true;
+        window.__alloOpenBlockSuggestions = false;
+      }
       return t("cmd.open_block_suggestions_done", "Document Builder opened. Block suggestions are in the highlighted panel near the top.");
     } },
     { id: "open_history", icon: "\u{1F558}", roles: "all", label: t("cmd.open_history", "Open history"), aliases: ["history", "my history", "saved work", "previous work", "recent lessons", "projects"], hint: t("cmd.open_history_hint", "Browse saved lessons and projects"), run: (c) => {

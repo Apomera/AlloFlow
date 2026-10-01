@@ -313,7 +313,7 @@
       } catch (err) { setMessage(err.message); }
     }
     function button(label, fn, extra) { return h('button', Object.assign({ type: 'button', className: 'min-h-[44px] px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm font-bold', onClick: fn }, extra || {}), label); }
-    function field(label, name) { return h('label', { className: 'block mt-3 text-sm font-bold' }, label, h('textarea', { value: draft[name] || '', rows: 2, maxLength: 4000, onChange: function (ev) { change(name, ev.target.value); }, className: 'mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2 text-slate-900 font-normal' })); }
+    function field(label, name) { return h('label', { className: 'block mt-3 text-sm font-bold' }, label, h('textarea', { value: draft[name] || '', rows: 2, maxLength: 4000, onChange: function (ev) { change(name, ev.target.value); }, className: 'mt-1 block w-full rounded-lg border border-slate-500 bg-white p-2 text-slate-900 font-normal' })); }
     function options(items) { return items.map(function (item) { return h('option', { key: item[0], value: item[0] }, item[1]); }); }
     function returnTo(citation) { if (ctx.onReturnToReading) ctx.onReturnToReading(citation); }
     var notes = project.artifacts.filter(function (a) { return filter === 'all' || (filter === 'revisit' ? a.understanding === 'reread' || a.understanding === 'unsure' : a.type === filter); });

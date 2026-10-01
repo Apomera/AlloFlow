@@ -1316,8 +1316,8 @@
             h('button', {
               type: 'button',
               onClick: function() {
+                // Only the tool closes: the Lab has one tab ('explore'), and 'tools' blanked it.
                 if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null);
-                if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('tools');
               },
               className: 'rounded-lg px-3 py-2 text-sm font-bold shrink-0',
               style: { background: soft, color: text, border: '1px solid ' + border },

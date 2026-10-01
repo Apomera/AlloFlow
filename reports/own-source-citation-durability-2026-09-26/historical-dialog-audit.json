@@ -1,0 +1,31 @@
+{
+  "helperHash": "45a610136690bed52c6b06e2be7d98180e2bf4a5de2143341050d42fef17a05a",
+  "initial": {
+    "bounds": {
+      "x": 24,
+      "y": 256.828125,
+      "width": 342,
+      "height": 330.34375,
+      "top": 256.828125,
+      "right": 366,
+      "bottom": 587.171875,
+      "left": 24
+    },
+    "width": 390,
+    "clientWidth": 342,
+    "scrollWidth": 9073,
+    "clientHeight": 330,
+    "scrollHeight": 330,
+    "scrollTop": 0,
+    "activeTag": "BUTTON",
+    "activeText": "Close passage"
+  },
+  "afterPageUp": 0,
+  "afterTab": {
+    "tag": "BUTTON",
+    "text": "Close passage"
+  },
+  "programmaticFocusEscapesModal": true,
+  "pageErrors": [],
+  "note": "Historical pre-fix audit, not a final validation."
+}

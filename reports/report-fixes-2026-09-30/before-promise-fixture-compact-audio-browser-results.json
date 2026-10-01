@@ -1,0 +1,87 @@
+{
+  "started": "2026-10-01T00:29:27.356Z",
+  "inputHashes": {
+    "text_pipeline_helpers_module.js": "850e17edde0b2433393e35183c07942b246e48e6e6adf57a936c3389d1ad18d4",
+    "instructional_context_module.js": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "phase_n_misc_helpers_module.js": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019",
+    "text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "view_simplified_source.jsx": "9237d2815e76a2e881e616fcf187904c7885e758d02114798b6985fed3aa024b",
+    "text_utility_helpers_source.jsx": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee",
+    "desktop/web-app/public/view_simplified_module.js": "d42810ca49d6f75f40c4da39fdc189fc50c7243660e382ef6eec6c19ee625f83",
+    "desktop/web-app/public/text_utility_helpers_module.js": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9",
+    "ui_strings.js": "3b81a56ee8b91f016c7b3018800842b3e8603f8f636d14390a2c1529449c05d4",
+    "tests/report_compact_audio_ui.test.js": "691d45c3c9a65cf073351688e0ebc63369246cd613577ec3ef23f9681deadb49",
+    "reports/report-fixes-2026-09-30/compact-audio-browser.cjs": "3b085082a7dea5b752d775a79170e31417fbf4dfc93b6eabe0bf8b0813f26098"
+  },
+  "status": "failed",
+  "checks": [
+    {
+      "name": "Default detail collapsed; clip availability and confirmed saves shown",
+      "passed": true
+    },
+    {
+      "name": "Compact status/actions fit320 CSSpx",
+      "passed": true,
+      "evidence": {
+        "x": 38,
+        "y": 988,
+        "width": 248,
+        "height": 184
+      }
+    },
+    {
+      "name": "Every compact action fits320 CSSpx",
+      "passed": true
+    },
+    {
+      "name": "Enter expands audio details",
+      "passed": true
+    },
+    {
+      "name": "Expanded copy separates model, synthesis, playback and confirmed storage",
+      "passed": true
+    },
+    {
+      "name": "Escape collapses detail and returns focus",
+      "passed": true
+    },
+    {
+      "name": "Space expands the native detail button",
+      "passed": true
+    },
+    {
+      "name": "Escape from the details toggle closes details and retains focus",
+      "passed": true
+    },
+    {
+      "name": "Cold local voice preparation is separate from ready session clips",
+      "passed": true
+    },
+    {
+      "name": "Model progress updates without repeated live announcements",
+      "passed": true
+    },
+    {
+      "name": "Attempt progress is not a ready/persisted clip count",
+      "passed": true
+    },
+    {
+      "name": "Stop uses owned abort/cancel hooks and preserves partial clips",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "servedJavaScriptSHA256": "42a4459c13c4b9c6c823b679c98848761ae57ce82a83723876b76c6a0dc7e0b9",
+  "servedCssSHA256": "0b9c596d019e912b11343754142f9c3324cd6750f836e4fef8826a0193546044",
+  "lastStage": "Stop uses owned abort/cancel hooks and preserves partial clips",
+  "lastStageAt": "2026-10-01T00:29:30.711Z",
+  "harnessDeadlineReached": true,
+  "error": "page.evaluate: Target page, context or browser has been closed\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\report-fixes-2026-09-30\\compact-audio-browser.cjs:70:16",
+  "changedInputs": [],
+  "completed": "2026-10-01T00:31:28.605Z",
+  "scope": "Local generated reader, real React/CSS, fixture service statuses and owned real reader handlers; no cloud synthesis, actual storage reload or manual screen reader."
+}

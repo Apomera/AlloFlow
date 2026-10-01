@@ -1,0 +1,343 @@
+// Step-vs-Pack chooser buttons + deterministic routing (udl_chat).
+//
+// Bug being pinned: at the guided-flow "Step or Pack" question, the reply was
+// free text. When the flow flags (isAutoFillMode / isFlowActive) had been
+// dropped — or the detectWorkflowIntent LLM pass misread the reply — a "pack"
+// answer fell through to the generic parseUserIntent parser, whose vocabulary
+// includes the 'export' module, so AlloBot opened the .allopack Export menu
+// instead of generating a full pack.
+//
+// Fix under test: the chooser is now a `type: 'choices'` message (rendered as
+// buttons by UDLGuideModal). handleSendUDLMessage routes a reply that names a
+// pending on-screen choice straight into the guided flow — reactivating the
+// flow flags if needed and skipping the LLM intent pass entirely.
+
+import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+loadAlloModule('agent_core_contracts_module.js');
+loadAlloModule('agent_core_blueprint_service_module.js');
+loadAlloModule('agent_core_ui_adapter_module.js');
+loadAlloModule('udl_chat_module.js');
+const handleSendUDLMessage = window.AlloModules.UdlChat.handleSendUDLMessage;
+
+const stepPackChoicesMsg = (stage = 'initial_choice') => ({
+  role: 'model', type: 'choices', stage,
+  text: 'How would you like to proceed?',
+  choices: [
+    { label: 'Step-by-Step', value: 'step', keywords: ['step'] },
+    { label: 'Full Pack', value: 'pack', keywords: ['pack', 'full', 'auto'] },
+  ],
+});
+
+// Minimal deps harness. State setters apply functional updates against a
+// store; udlMessages stays immutable per call (mirrors React props). The two
+// LLM helpers are poisoned so the test fails loudly if either is consulted:
+// detectWorkflowIntent returns STOP (would kill the flow), parseUserIntent
+// returns OPEN_MODULE export (the reported misroute).
+const makeDeps = ({ messages, guidedFlowState, isAutoFillMode }) => {
+  const store = {
+    messages: [...messages],
+    guidedFlowState: { ...guidedFlowState },
+    isAutoFillMode,
+    activeBlueprint: null,
+  };
+  const apply = (prev, next) => (typeof next === 'function' ? next(prev) : next);
+  const deps = {
+    guidedFlowState,
+    isAutoFillMode,
+    udlMessages: messages,
+    udlInput: '',
+    inputText: 'Photosynthesis source text',
+    sourceTopic: 'Photosynthesis',
+    gradeLevel: '5th Grade',
+    standardsInput: '',
+    leveledTextLanguage: 'English',
+    history: [],
+    isBotVisible: false,
+    isShowMeMode: false,
+    alloBotRef: { current: null },
+    uiDispatch: vi.fn(),
+    setUdlMessages: (next) => { store.messages = apply(store.messages, next); },
+    setGuidedFlowState: (next) => { store.guidedFlowState = apply(store.guidedFlowState, next); },
+    setIsAutoFillMode: vi.fn((v) => { store.isAutoFillMode = v; }),
+    setUdlInput: () => {},
+    setIsChatProcessing: () => {},
+    setActiveBlueprint: vi.fn((cfg) => { store.activeBlueprint = cfg; }),
+    // Installing a new plan must also clear the previous run record — uiIds are
+    // minted per-plan from a row index, so they repeat across plans and a stale
+    // record badges plan B's rows with plan A's results.
+    setBlueprintExecutionResult: vi.fn((v) => { store.blueprintExecutionResult = apply(store.blueprintExecutionResult, v); }),
+    setActiveView: () => {},
+    setShowStemLab: () => {},
+    addToast: vi.fn(),
+    t: (key) => key,
+    warnLog: () => {},
+    detectWorkflowIntent: vi.fn(async () => ({ intent: 'STOP', modification: null })),
+    parseUserIntent: vi.fn(async () => ({ intent: 'OPEN_MODULE', target: 'export' })),
+    autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'glossary', directive: '' }] })),
+    generateStandardChatResponse: vi.fn(async () => {}),
+    captureIntentSnapshot: () => {},
+    flyToElement: () => {},
+    getStageElementId: () => 'x',
+    performHighlight: () => {},
+  };
+  return { deps, store };
+};
+
+describe('Step/Pack chooser routing (handleSendUDLMessage)', () => {
+  it("routes a 'pack' button click to pack count selection without any LLM pass", async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: true, currentStage: 'initial_choice' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('pack', deps);
+    expect(store.guidedFlowState.currentStage).toBe('pack_count_selection');
+    expect(store.guidedFlowState.pendingBlueprintContext).toBe('');
+    expect(deps.detectWorkflowIntent).not.toHaveBeenCalled();
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+    expect(deps.uiDispatch).not.toHaveBeenCalled();
+    const last = store.messages[store.messages.length - 1];
+    expect(last.text).toBe('chat_guide.pack.count_selection');
+  });
+
+  it("still routes 'pack' into the flow when the flow flags were dropped (export-misroute bug)", async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: false, currentStage: null },
+      isAutoFillMode: false,
+    });
+    await handleSendUDLMessage('pack', deps);
+    expect(deps.setIsAutoFillMode).toHaveBeenCalledWith(true);
+    expect(store.guidedFlowState.isFlowActive).toBe(true);
+    expect(store.guidedFlowState.currentStage).toBe('pack_count_selection');
+    // The whole point: the generic parser (which reads "pack" as the
+    // .allopack export) must never see this reply.
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+    expect(deps.uiDispatch).not.toHaveBeenCalled();
+  });
+
+  it('keeps a richer keyword reply as blueprint guidance context', async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: true, currentStage: 'initial_choice' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('full pack focused on vocabulary', deps);
+    expect(store.guidedFlowState.currentStage).toBe('pack_count_selection');
+    expect(store.guidedFlowState.pendingBlueprintContext).toBe('full pack focused on vocabulary');
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+  });
+
+  it("routes a 'step' button click to blueprint generation with empty context", async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: true, currentStage: 'initial_choice' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('step', deps);
+    // generateBlueprint is fire-and-forget inside the handler; wait for it.
+    await vi.waitFor(() => {
+      expect(store.guidedFlowState.currentStage).toBe('blueprint_review');
+    });
+    expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(1);
+    expect(deps.autoConfigureSettings.mock.calls[0][4]).toBe(''); // context arg
+    expect(deps.setActiveBlueprint).toHaveBeenCalled();
+    // A new plan never inherits the previous run's record.
+    expect(deps.setBlueprintExecutionResult).toHaveBeenCalledWith(null);
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+    expect(deps.detectWorkflowIntent).not.toHaveBeenCalled();
+  });
+
+  it('carries inferred source settings and recent lesson guidance into the reviewed Blueprint', async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: {
+        isFlowActive: true,
+        currentStage: 'initial_choice',
+        conversationHandoff: 'Teacher: Use retrieval practice and a brief exit ticket.',
+        pendingBlueprintContext: 'Use retrieval practice and a brief exit ticket.',
+        pendingSourceConfig: {
+          topic: 'Fractions',
+          language: 'Spanish',
+          grade: '6th Grade',
+          tone: 'Persuasive',
+          length: '500',
+          dok: 'Level 3',
+          standards: ['CCSS.MATH.CONTENT.6.RP.A.3'],
+          vocabulary: 'ratio, equivalent',
+          customInstructions: 'Use a sports-data example.',
+          includeCitations: true,
+          blueprintGuidance: 'Use retrieval practice and a brief exit ticket.',
+        },
+      },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('step', deps);
+    await vi.waitFor(() => expect(store.guidedFlowState.currentStage).toBe('blueprint_review'));
+    const args = deps.autoConfigureSettings.mock.calls[0];
+    expect(args[1]).toBe('6th Grade');
+    expect(args[2]).toContain('CCSS.MATH.CONTENT.6.RP.A.3');
+    expect(args[3]).toBe('Spanish');
+    expect(args[4]).toBe('Use retrieval practice and a brief exit ticket.');
+    expect(store.activeBlueprint.globalSettings).toMatchObject({
+      gradeLevel: '6th Grade',
+      tone: 'Persuasive',
+      dokLevel: 'Level 3',
+      targetStandards: ['CCSS.MATH.CONTENT.6.RP.A.3'],
+    });
+  });
+
+  it("handles the post-analysis chooser ('pack' after analysis) the same way", async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg('post_analysis_route')],
+      guidedFlowState: { isFlowActive: false, currentStage: null },
+      isAutoFillMode: false,
+    });
+    await handleSendUDLMessage('pack', deps);
+    expect(store.guidedFlowState.currentStage).toBe('pack_count_selection');
+    expect(store.guidedFlowState.pendingBlueprintContext).toBe('');
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+  });
+
+  // ── Every guided-flow question is a chooser, not just the first one ──
+  // Reported UX bug: step 1 (Step/Pack) rendered pills, step 2 ("how
+  // extensive?") rendered a bare bubble, so the teacher had to guess that
+  // 'auto'/'all'/a number were the magic words.
+  it('posts the pack-count question as its own chooser (pills, not a bare bubble)', async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: true, currentStage: 'initial_choice' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('pack', deps);
+    const last = store.messages[store.messages.length - 1];
+    expect(last.type).toBe('choices');
+    expect(last.stage).toBe('pack_count_selection');
+    expect(last.choices.map(c => c.value)).toEqual(['auto', 'all', '5', '10', 'custom']);
+    // The free-value answer parks the cursor in the input instead of sending
+    // a placeholder word — the modal handles it, the flow never sees it.
+    expect(last.choices.find(c => c.value === 'custom').action).toBe('focus-input');
+  });
+
+  it('routes an "all" pill click into a comprehensive blueprint', async () => {
+    const { deps, store } = makeDeps({
+      messages: [{
+        role: 'model', type: 'choices', stage: 'pack_count_selection', text: 'How extensive?',
+        choices: [{ label: 'All', value: 'all' }],
+      }],
+      guidedFlowState: {
+        isFlowActive: true,
+        currentStage: 'pack_count_selection',
+        pendingSourceConfig: { language: 'French' },
+      },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('all', deps);
+    expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(1);
+    expect(deps.autoConfigureSettings.mock.calls[0][3]).toBe('French');
+    expect(deps.autoConfigureSettings.mock.calls[0][6]).toBe('All'); // targetCount
+    expect(store.guidedFlowState.currentStage).toBe('blueprint_review');
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+  });
+
+  // A Skip pill must land in the stage's NEGATIVE branch. Choice replies skip
+  // the LLM intent pass entirely, so without an intent field on the chip every
+  // pill would read as CONFIRM and "Skip" would generate the resource instead.
+  it('routes a Skip pill to the negative branch without an LLM pass', async () => {
+    const { deps, store } = makeDeps({
+      messages: [{
+        role: 'model', type: 'choices', stage: 'analysis', text: 'Analyze the text?',
+        choices: [
+          { label: 'Yes', value: 'yes', intent: 'CONFIRM' },
+          { label: 'Skip', value: 'skip', intent: 'SKIP' },
+        ],
+      }],
+      guidedFlowState: { isFlowActive: true, currentStage: 'analysis' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('skip', deps);
+    expect(store.guidedFlowState.currentStage).toBe('glossary');
+    expect(deps.detectWorkflowIntent).not.toHaveBeenCalled();
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+    // …and the next question carries its own pills.
+    const last = store.messages[store.messages.length - 1];
+    expect(last.type).toBe('choices');
+    expect(last.stage).toBe('glossary');
+  });
+
+  it('does NOT hijack an unrelated reply when the flow is inactive', async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: false, currentStage: null },
+      isAutoFillMode: false,
+    });
+    await handleSendUDLMessage('where is the font settings', deps);
+    // Falls through to the generic intent path (existing behavior).
+    expect(deps.parseUserIntent).toHaveBeenCalledTimes(1);
+    expect(store.guidedFlowState.currentStage).toBe(null);
+  });
+});
+
+// ── Copy-sync guardrails (repo pattern: every hand-patched copy must carry
+// the fix; a recompile or partial patch that drops one copy fails here). ──
+const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
+
+const chatFiles = [
+  'udl_chat_source.jsx',
+  'udl_chat_module.js',
+  'desktop/web-app/public/udl_chat_module.js',
+];
+const modalFiles = [
+  'view_misc_modals_source.jsx',
+  'view_misc_modals_module.js',
+  'desktop/web-app/public/view_misc_modals_module.js',
+];
+// The auto-fill chooser moved out of the shell into host_handlers during the
+// ANTI extraction work, so pinning it in AlloFlowANTI.txt and App.jsx was
+// asserting against files that no longer own it. Read the extracted SOURCE
+// rather than host_handlers_module.js, which is minified: the built module
+// collapses "type: 'choices', stage: 'initial_choice'" to a spaceless form and
+// an exact-string pin would then fail on formatting instead of on substance.
+const hostFiles = [
+  'host_handlers_source.jsx',
+];
+
+describe('Step/Pack chooser copy-sync guardrails', () => {
+  it.each(chatFiles)('%s carries deterministic chooser routing', (file) => {
+    const src = read(file);
+    expect(src).toContain('const buildStepPackChoices');
+    expect(src).toContain('_pendingChoiceMsg');
+    expect(src).toContain('switch (_effectiveStage)');
+    expect(src).toContain("buildStepPackChoices(msg, 'initial_choice')");
+    expect(src).toContain("'post_analysis_route')]");
+    expect(src).not.toContain("(Type 'Step' or 'Pack')");
+    // Every stage question is a chooser, and a Skip pill keeps its SKIP intent.
+    expect(src).toContain('const askStage');
+    expect(src).toContain('buildPackCountChoices');
+    expect(src).toContain("_choiceHit.intent || 'CONFIRM'");
+    // The old bare-bubble count question must not come back.
+    expect(src).not.toContain("sendBotMsg(t('chat_guide.pack.count_selection'))");
+  });
+
+  it.each(modalFiles)('%s renders choices messages as buttons', (file) => {
+    const src = read(file);
+    expect(src).toMatch(/msg\.type === ['"]choices['"]/);
+    expect(src).toContain('handleSendUDLMessage(choice.value)');
+    expect(src).toContain('idx !== udlMessages.length - 1');
+    // Free-value pills focus the input instead of sending a placeholder word.
+    expect(src).toMatch(/choice\.action === ['"]focus-input['"]/);
+    // The standards panels collapse so the transcript gets the room.
+    expect(src).toContain('standardToolsOpen');
+  });
+
+  it.each(hostFiles)('%s posts the auto-fill chooser as a choices message', (file) => {
+    const src = read(file);
+    expect(src).toContain("type: 'choices', stage: 'initial_choice'");
+    expect(src).toContain("value: 'step'");
+    expect(src).toContain("value: 'pack'");
+  });
+});

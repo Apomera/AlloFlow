@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 
-const read = (file) => fs.readFileSync(file, 'utf8');
+const read = (file) => readSourceFile(file, 'utf8');
 const viewSource = read('view_adventure_source.jsx');
 const viewModule = read('view_adventure_module.js');
 const appSource = read('AlloFlowANTI.txt');

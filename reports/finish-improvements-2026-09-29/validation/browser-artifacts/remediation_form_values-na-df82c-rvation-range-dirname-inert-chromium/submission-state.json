@@ -1,0 +1,61 @@
+{
+  "browserName": "chromium",
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 0.9766407119021134,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "source": {
+    "payload": [
+      [
+        "answer",
+        "50"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "50",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "candidate": {
+    "payload": [
+      [
+        "answer",
+        "50"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "50",
+        "dirname": "",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "repaired": {
+    "payload": [
+      [
+        "answer",
+        "50"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "50",
+        "dirname": "",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  }
+}

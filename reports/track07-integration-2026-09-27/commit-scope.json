@@ -1,0 +1,39 @@
+{
+  "full": [
+    "generation_helpers_source.jsx",
+    "text_pipeline_helpers_source.jsx",
+    "view_simplified_source.jsx",
+    "generation_helpers_module.js",
+    "text_pipeline_helpers_module.js",
+    "view_simplified_module.js",
+    "desktop/web-app/public/generation_helpers_module.js",
+    "desktop/web-app/public/text_pipeline_helpers_module.js",
+    "desktop/web-app/public/view_simplified_module.js",
+    "reader_place_store.js",
+    "tests/preserved_vocabulary_completeness.test.js",
+    "tests/preserved_vocabulary_languages.test.js",
+    "tests/text_complexity_freshness.test.js",
+    "tests/reader_place_review_adapt.test.js",
+    "tests/track07-browser-fixture.js",
+    "tests/track07-browser-acceptance.cjs",
+    "tests/prepared_word_help_regressions.test.js",
+    "tests/reader_place_retention.test.js",
+    "tests/reading_support_draft_transitions.test.js"
+  ],
+  "catalogPatch": "track07-pending-localization.patch",
+  "catalogMirrors": [
+    "desktop/web-app/public/ui_strings.js",
+    "desktop/web-app/public/lang/spanish_castilian.js",
+    "desktop/web-app/public/lang/spanish_latin_america.js"
+  ],
+  "hosts": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "pins": {
+    "generation_helpers_module.js": "d308e94c",
+    "text_pipeline_helpers_module.js": "50f47633",
+    "view_simplified_module.js": "b8f7f57e"
+  }
+}

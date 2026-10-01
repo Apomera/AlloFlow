@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "expandedGrid": {
+        "x": 174,
+        "y": 79,
+        "width": 854,
+        "height": 854
+      }
+    },
+    {
+      "recoloredCells": 72,
+      "undoRedo": true,
+      "legacyNamedColors": true
+    },
+    {
+      "tile": {
+        "width": 48,
+        "height": 48,
+        "clear": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "a": [
+          224,
+          79,
+          117,
+          255
+        ],
+        "b": [
+          224,
+          79,
+          117,
+          255
+        ],
+        "c": [
+          224,
+          79,
+          117,
+          255
+        ],
+        "partial": [
+          255,
+          0,
+          0,
+          128
+        ]
+      },
+      "transparentExportUnchanged": true
+    },
+    {
+      "actualSize": {
+        "x": 1306,
+        "y": 312,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "Exact brush color reuse leaves artwork untouched",
+    "Shape previews stay out of clean previews and exports",
+    {
+      "phoneTargets": 12,
+      "minHeight": 44,
+      "noHorizontalOverflow": true
+    },
+    "All 65 colors reachable through 24-swatch pages; stale draft reset on new artwork"
+  ],
+  "errors": []
+}

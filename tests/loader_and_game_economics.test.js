@@ -4,14 +4,17 @@
 // recoveries earn reduced credit — guess-cycling cannot farm XP.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
+// Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
+// allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
+import { readFileSync as readSourceFile } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const anti = readSourceFile(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 // The mailbox/live-session card was extracted from ANTI into the share/session surfaces view module.
-const shareSurfaces = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
-const games = fs.readFileSync(path.join(ROOT, 'games_module.js'), 'utf8');
+const shareSurfaces = readSourceFile(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
+const games = readSourceFile(path.join(ROOT, 'games_module.js'), 'utf8');
 
 describe('sort-game scoring economics', () => {
     const start = games.indexOf('const makeSortScoreTracker');
@@ -74,7 +77,8 @@ describe('module readiness loader', () => {
         // A comment explaining why the count is aria-hidden now sits between the label and the count.
         expect(anti).toMatch(/t\('mailbox\.loading_tools'\)[\s\S]{0,400}moduleLoadInfo\.pending\.length/);
         expect(anti).toMatch(/moduleLoadInfo\.failed\.length[\s\S]{0,80}t\('mailbox\.failed_retry'\)/);
-        expect(anti).toMatch(/isAppReady && \(moduleLoadInfo\.pending\.length > 0 \|\| moduleLoadInfo\.failed\.length > 0\)/);
+        // 8a233bfc6 (09-07) counts modules still QUEUED for load as pending too.
+        expect(anti).toMatch(/isAppReady && \(moduleLoadInfo\.pending\.length(?: \+ \(moduleLoadInfo\.queued \|\| \[\]\)\.length)? > 0 \|\| moduleLoadInfo\.failed\.length > 0\)/);
         expect(anti).toMatch(/window\.__alloRetryFailedModules\?\.\(\)/);
     });
 });

@@ -4353,7 +4353,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       onChange: (e) => updateElementFilters({ elementSearch: e.target.value }),
                       placeholder: "Name, symbol, number, group, period, or block",
                       "aria-label": __alloT('stem.molecule.a11y_search_elements_by_name_symbol_atomic_number_gr', 'Search elements by name, symbol, atomic number, group, period, or block'),
-                      className: "w-full px-3 py-2 rounded-lg border border-slate-400 bg-white text-xs text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className: "w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-xs text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     })
                   ),
                   React.createElement("label", { className: "block min-w-0", style: { flex: '1 1 130px' }, htmlFor: "molecule-element-category" },
@@ -4363,7 +4363,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       value: elementCategoryFilter,
                       onChange: (e) => updateElementFilters({ elementCategory: e.target.value }),
                       "aria-label": __alloT('stem.molecule.a11y_filter_elements_by_category', 'Filter elements by category'),
-                      className: "w-full px-3 py-2 rounded-lg border border-slate-400 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className: "w-full px-3 py-2 rounded-lg border border-slate-500 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     }, elementFilterOptions.map(function (option) {
                       return React.createElement("option", { key: option[0], value: option[0] }, option[1]);
                     }))
@@ -4375,7 +4375,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       value: elementPeriodFilter,
                       onChange: (e) => updateElementFilters({ elementPeriod: e.target.value }),
                       "aria-label": __alloT('stem.molecule.a11y_filter_elements_by_period', 'Filter elements by period'),
-                      className: "w-full px-3 py-2 rounded-lg border border-slate-400 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className: "w-full px-3 py-2 rounded-lg border border-slate-500 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     }, elementPeriodOptions.map(function (option) {
                       return React.createElement("option", { key: option[0], value: option[0] }, option[1]);
                     }))
@@ -4387,7 +4387,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       value: elementBlockFilter,
                       onChange: (e) => updateElementFilters({ elementBlock: e.target.value }),
                       "aria-label": __alloT('stem.molecule.a11y_filter_elements_by_block', 'Filter elements by block'),
-                      className: "w-full px-3 py-2 rounded-lg border border-slate-400 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className: "w-full px-3 py-2 rounded-lg border border-slate-500 text-xs text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     }, elementBlockOptions.map(function (option) {
                       return React.createElement("option", { key: option[0], value: option[0] }, option[1]);
                     }))
@@ -4563,7 +4563,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                           id: "molecule-element-compare-a",
                           value: comparisonA.s,
                           onChange: (e) => upd('elementCompareA', e.target.value),
-                          className: "w-full px-3 py-2 rounded-lg border border-slate-400 bg-white text-xs text-slate-900"
+                          className: "w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-xs text-slate-900"
                         }, ELEMENTS.map(function(el) {
                           return React.createElement("option", { key: 'compare-a-' + el.s, value: el.s }, el.n + '. ' + el.name + ' (' + el.s + ')');
                         }))
@@ -4580,7 +4580,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                           id: "molecule-element-compare-b",
                           value: comparisonB.s,
                           onChange: (e) => upd('elementCompareB', e.target.value),
-                          className: "w-full px-3 py-2 rounded-lg border border-slate-400 bg-white text-xs text-slate-900"
+                          className: "w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-xs text-slate-900"
                         }, ELEMENTS.map(function(el) {
                           return React.createElement("option", { key: 'compare-b-' + el.s, value: el.s }, el.n + '. ' + el.name + ' (' + el.s + ')');
                         }))
@@ -5586,7 +5586,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     React.createElement("label", { htmlFor: "molecule-element-quiz-scope", className: "block min-w-0 text-[0.6875rem] font-bold text-slate-600", style: { flex: '1 1 230px' } },
                       React.createElement("span", { className: "mb-1 block" }, "Question pool"),
-                      React.createElement("select", { id: "molecule-element-quiz-scope", value: elQuizScope, onChange: function (e) { updMulti({ elQuizScope: e.target.value, elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "w-full min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200", style: { maxWidth: '100%' } },
+                      React.createElement("select", { id: "molecule-element-quiz-scope", value: elQuizScope, onChange: function (e) { updMulti({ elQuizScope: e.target.value, elQuiz: null, elScore: 0, elAttempts: 0, elStreak: 0 }); }, className: "w-full min-w-0 rounded-md border border-slate-500 bg-white px-2 py-1 text-xs text-slate-700 focus:border-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-200", style: { maxWidth: '100%' } },
                         React.createElement("option", { value: "all" }, "All 118 elements"),
                         React.createElement("option", { value: "filtered", disabled: filteredElements.length === 0 }, "Current filtered results (" + filteredElements.length + ")")
                       )
@@ -6199,7 +6199,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 value: referenceQuery,
                 onChange: function(event) { setExp({ referenceLibraryQuery: event.target.value, referenceLibraryOpen: true }); },
                 placeholder: __alloT('stem.molecule.reference_search_placeholder', 'Try “solubility”, “bonds”, or “safety”'),
-                className: 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
               })
             ),
             normalizedReferenceQuery && React.createElement('button', {
@@ -6219,7 +6219,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               value: activeReferenceGroup,
               onChange: function(event) { setExp({ referenceLibraryGroup: event.target.value, referenceLibraryQuery: '' }); },
               'data-reference-domain-select': 'true',
-              className: 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+              className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
             },
               TAB_GROUPS.map(function(group) {
                 return React.createElement('option', { key: group.id, value: group.id }, group.label + ' (' + group.tabs.length + ')');
@@ -6680,7 +6680,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('select', {
                     id: 'ka-acid', value: pick,
                     onChange: function (e) { setExp({ kaAcid: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.molecule.choose_acid', 'Choose an acid')
                   }, keys.map(function (k) {
                     return React.createElement('option', { key: k, value: k }, ACID_KA[k].label);
@@ -6691,7 +6691,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('input', {
                     id: 'ka-conc', type: 'number', value: molarity, step: 0.05, min: 0.01, max: 1,
                     onChange: function (e) { setExp({ kaConc: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.molecule.concentration_m_aria', 'Concentration in moles per litre'),
                     'aria-valuetext': molarity + ' molar, pH ' + f(pH)
                   }))),
@@ -6731,7 +6731,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('select', {
                   id: 'ka-compare', value: compare,
                   onChange: function (e) { setExp({ kaCompare: e.target.value }); },
-                  className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                  className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                   'aria-label': __alloT('stem.molecule.choose_compare_acid', 'Choose an acid to compare with')
                 }, keys.map(function (k) {
                   return React.createElement('option', { key: k, value: k }, ACID_KA[k].label);
@@ -9172,7 +9172,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('select', {
                     id: 'cg-solute', value: soluteKey,
                     onChange: function(e) { setExp({ cgSolute: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.molecule.choose_solute', 'Choose a solute')
                   }, Object.keys(COLLIG_SOLUTES).map(function(k) {
                     return React.createElement('option', { key: k, value: k }, COLLIG_SOLUTES[k].label + ' (i = ' + COLLIG_SOLUTES[k].i + ')');
@@ -9183,7 +9183,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('select', {
                     id: 'cg-solvent', value: solventKey,
                     onChange: function(e) { setExp({ cgSolvent: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.molecule.choose_solvent', 'Choose a solvent')
                   }, Object.keys(COLLIG_SOLVENTS).map(function(k) {
                     return React.createElement('option', { key: k, value: k }, COLLIG_SOLVENTS[k].label);
@@ -9510,7 +9510,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('select', {
                   id: 'pack-lattice', value: pick,
                   onChange: function (e) { setExp({ packLattice: e.target.value }); },
-                  className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                  className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                   'aria-label': __alloT('stem.molecule.choose_lattice', 'Choose a crystal structure')
                 }, keys.map(function (k) {
                   return React.createElement('option', { key: k, value: k }, PACKING_LATTICES[k].label);
@@ -10408,7 +10408,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('select', {
                     id: 'phase-sub', value: pick,
                     onChange: function (e) { setExp({ phaseSub: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.molecule.choose_substance', 'Choose a substance')
                   }, keys.map(function (k) {
                     return React.createElement('option', { key: k, value: k },
@@ -10420,7 +10420,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement('input', {
                     id: 'phase-temp', type: 'number', value: tempC, step: 10, min: -273, max: 6000,
                     onChange: function (e) { setExp({ phaseTemp: e.target.value }); },
-                    className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-500 rounded-lg px-2 bg-white text-slate-900',
                     'aria-label': __alloT('stem.molecule.temperature_c_aria', 'Temperature in degrees Celsius'),
                     'aria-valuetext': tempC + ' degrees Celsius, ' + sub.label + ' is ' + state.label
                   }))),

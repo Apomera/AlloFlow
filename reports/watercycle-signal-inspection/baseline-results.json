@@ -1,0 +1,1700 @@
+{
+  "sourceSha256": "2ab8cb80d55de3063122677d50df18c4047ab1ad41fc198b86d5093ae9c83ccf",
+  "startedAt": "2026-09-30T13:49:37.310Z",
+  "method": "Frozen runtime, owned ephemeral server and isolated headless Chromium. No learner tabs or runtime edits.",
+  "cases": [
+    {
+      "label": "light-320",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 23,
+        "y": 3767.171875,
+        "w": 274,
+        "h": 736.8125,
+        "right": 297,
+        "bottom": 4503.984375
+      },
+      "chartRect": {
+        "x": 36,
+        "y": 4068.390625,
+        "w": 248,
+        "h": 159.09375,
+        "right": 284,
+        "bottom": 4227.484375
+      },
+      "svgRect": {
+        "x": 45,
+        "y": 4076.390625,
+        "w": 230,
+        "h": 93.09375,
+        "right": 275,
+        "bottom": 4169.484375
+      },
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(245, 158, 11)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(14, 165, 233)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(16, 185, 129)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(245, 158, 11)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(14, 165, 233)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(16, 185, 129)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 55.06930160522461,
+            "y": 4146.69873046875,
+            "w": 6,
+            "h": 10,
+            "right": 61.06930160522461,
+            "bottom": 4156.69873046875
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 51.80367660522461,
+            "y": 4112.19921875,
+            "w": 9.259750366210938,
+            "h": 10,
+            "right": 61.06342697143555,
+            "bottom": 4122.19921875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 48.36617660522461,
+            "y": 4077.699951171875,
+            "w": 12.696701049804688,
+            "h": 10,
+            "right": 61.0628776550293,
+            "bottom": 4087.699951171875
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 42.47793960571289,
+            "y": 4085.6376953125,
+            "w": 10,
+            "h": 76.15234375,
+            "right": 52.47793960571289,
+            "bottom": 4161.7900390625
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 6.023809523809524,
+          "rect": {
+            "x": 51.53464889526367,
+            "y": 4076.414306640625,
+            "w": 23.788944244384766,
+            "h": 8,
+            "right": 75.32359313964844,
+            "bottom": 4084.414306640625
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 52.05808639526367,
+            "y": 4156.00830078125,
+            "w": 23.39969253540039,
+            "h": 10,
+            "right": 75.45777893066406,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 109.43152618408203,
+            "y": 4156.00830078125,
+            "w": 10.308021545410156,
+            "h": 10,
+            "right": 119.73954772949219,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 156.76589965820312,
+            "y": 4156.00830078125,
+            "w": 18.515609741210938,
+            "h": 10,
+            "right": 175.28150939941406,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 209.63153076171875,
+            "y": 4156.00830078125,
+            "w": 15.1875,
+            "h": 10,
+            "right": 224.81903076171875,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 258.07525634765625,
+            "y": 4156.00830078125,
+            "w": 20.703125,
+            "h": 10,
+            "right": 278.77838134765625,
+            "bottom": 4166.00830078125
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "light-1280",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 137,
+        "y": 2300.5,
+        "w": 1006,
+        "h": 432.796875,
+        "right": 1143,
+        "bottom": 2733.296875
+      },
+      "chartRect": {
+        "x": 557.6875,
+        "y": 2437.4375,
+        "w": 572.3125,
+        "h": 259.859375,
+        "right": 1130,
+        "bottom": 2697.296875
+      },
+      "svgRect": {
+        "x": 566.6875,
+        "y": 2445.4375,
+        "w": 554.3125,
+        "h": 224.359375,
+        "right": 1121,
+        "bottom": 2669.796875
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(245, 158, 11)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(14, 165, 233)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(16, 185, 129)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(245, 158, 11)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(14, 165, 233)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(16, 185, 129)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 593.365966796875,
+            "y": 2615.163330078125,
+            "w": 10.28125,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2638.163330078125
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.084716796875,
+            "y": 2532.018310546875,
+            "w": 20.5625,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2555.018310546875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 574.803466796875,
+            "y": 2448.87353515625,
+            "w": 28.84375,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2471.87353515625
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 560.8915405273438,
+            "y": 2468.69970703125,
+            "w": 23,
+            "h": 180.2138671875,
+            "right": 583.8915405273438,
+            "bottom": 2648.91357421875
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 14.517708333333333,
+          "rect": {
+            "x": 584.8548583984375,
+            "y": 2443.954833984375,
+            "w": 54.28704833984375,
+            "h": 20,
+            "right": 639.1419067382812,
+            "bottom": 2463.954833984375
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.6829833984375,
+            "y": 2637.599365234375,
+            "w": 55.79400634765625,
+            "h": 23,
+            "right": 639.4769897460938,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 723.3696899414062,
+            "y": 2637.599365234375,
+            "w": 23.215576171875,
+            "h": 23,
+            "right": 746.5852661132812,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 836.040771484375,
+            "y": 2637.599365234375,
+            "w": 44.640625,
+            "h": 23,
+            "right": 880.681396484375,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 963.4541015625,
+            "y": 2637.599365234375,
+            "w": 36.609375,
+            "h": 23,
+            "right": 1000.0634765625,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 1080.195556640625,
+            "y": 2637.599365234375,
+            "w": 49.921875,
+            "h": 23,
+            "right": 1130.117431640625,
+            "bottom": 2660.599365234375
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "native-selection-evaporation",
+      "focusState": "evaporation",
+      "focusKey": "atmosphere",
+      "focusChip": "Focus · Evaporation",
+      "driver": "WHAT MATTERS MOST NOW\nSolar energy + warmth\n50/100\nSunlight supplies the energy that lets liquid water become water vapor. Temperature changes molecular motion and helps determine whether water is liquid, ice, or vapor.",
+      "stageIndex": "1",
+      "activeSeries": "energy",
+      "markerLabel": "Air",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Air.",
+      "panelRect": {
+        "x": 137,
+        "y": 847.109375,
+        "w": 1006,
+        "h": 450.34375,
+        "right": 1143,
+        "bottom": 1297.453125
+      },
+      "chartRect": {
+        "x": 557.6875,
+        "y": 1001.59375,
+        "w": 572.3125,
+        "h": 259.859375,
+        "right": 1130,
+        "bottom": 1261.453125
+      },
+      "svgRect": {
+        "x": 566.6875,
+        "y": 1009.59375,
+        "w": 554.3125,
+        "h": 224.359375,
+        "right": 1121,
+        "bottom": 1233.953125
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(245, 158, 11)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(14, 165, 233)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(16, 185, 129)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(245, 158, 11)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(14, 165, 233)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(16, 185, 129)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 593.365966796875,
+            "y": 1179.319580078125,
+            "w": 10.28125,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 1202.319580078125
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.084716796875,
+            "y": 1096.1746826171875,
+            "w": 20.5625,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 1119.1746826171875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 574.803466796875,
+            "y": 1013.0296630859375,
+            "w": 28.84375,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 1036.0296630859375
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 560.8915405273438,
+            "y": 1032.85595703125,
+            "w": 23,
+            "h": 180.2138671875,
+            "right": 583.8915405273438,
+            "bottom": 1213.06982421875
+          }
+        },
+        {
+          "text": "Air",
+          "font": 11,
+          "renderedFont": 14.517708333333333,
+          "rect": {
+            "x": 723.1196899414062,
+            "y": 1008.1111450195312,
+            "w": 23.35308837890625,
+            "h": 19.99993896484375,
+            "right": 746.4727783203125,
+            "bottom": 1028.111083984375
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.6829833984375,
+            "y": 1201.7554931640625,
+            "w": 55.79400634765625,
+            "h": 23,
+            "right": 639.4769897460938,
+            "bottom": 1224.7554931640625
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 723.3696899414062,
+            "y": 1201.7554931640625,
+            "w": 23.215576171875,
+            "h": 23,
+            "right": 746.5852661132812,
+            "bottom": 1224.7554931640625
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 836.040771484375,
+            "y": 1201.7554931640625,
+            "w": 44.640625,
+            "h": 23,
+            "right": 880.681396484375,
+            "bottom": 1224.7554931640625
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 963.4541015625,
+            "y": 1201.7554931640625,
+            "w": 36.609375,
+            "h": 23,
+            "right": 1000.0634765625,
+            "bottom": 1224.7554931640625
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 1080.195556640625,
+            "y": 1201.7554931640625,
+            "w": 49.921875,
+            "h": 23,
+            "right": 1130.117431640625,
+            "bottom": 1224.7554931640625
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "native-selection-infiltration",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 137,
+        "y": 881.5,
+        "w": 1006,
+        "h": 432.796875,
+        "right": 1143,
+        "bottom": 1314.296875
+      },
+      "chartRect": {
+        "x": 557.6875,
+        "y": 1018.4375,
+        "w": 572.3125,
+        "h": 259.859375,
+        "right": 1130,
+        "bottom": 1278.296875
+      },
+      "svgRect": {
+        "x": 566.6875,
+        "y": 1026.4375,
+        "w": 554.3125,
+        "h": 224.359375,
+        "right": 1121,
+        "bottom": 1250.796875
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(245, 158, 11)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(14, 165, 233)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(16, 185, 129)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(245, 158, 11)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(14, 165, 233)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(16, 185, 129)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 593.365966796875,
+            "y": 1196.163330078125,
+            "w": 10.28125,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 1219.163330078125
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.084716796875,
+            "y": 1113.0184326171875,
+            "w": 20.5625,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 1136.0184326171875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 574.803466796875,
+            "y": 1029.8734130859375,
+            "w": 28.84375,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 1052.8734130859375
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 560.8915405273438,
+            "y": 1049.69970703125,
+            "w": 23,
+            "h": 180.2138671875,
+            "right": 583.8915405273438,
+            "bottom": 1229.91357421875
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 14.517708333333333,
+          "rect": {
+            "x": 584.8548583984375,
+            "y": 1024.954833984375,
+            "w": 54.28704833984375,
+            "h": 20,
+            "right": 639.1419067382812,
+            "bottom": 1044.954833984375
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.6829833984375,
+            "y": 1218.5992431640625,
+            "w": 55.79400634765625,
+            "h": 23,
+            "right": 639.4769897460938,
+            "bottom": 1241.5992431640625
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 723.3696899414062,
+            "y": 1218.5992431640625,
+            "w": 23.215576171875,
+            "h": 23,
+            "right": 746.5852661132812,
+            "bottom": 1241.5992431640625
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 836.040771484375,
+            "y": 1218.5992431640625,
+            "w": 44.640625,
+            "h": 23,
+            "right": 880.681396484375,
+            "bottom": 1241.5992431640625
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 963.4541015625,
+            "y": 1218.5992431640625,
+            "w": 36.609375,
+            "h": 23,
+            "right": 1000.0634765625,
+            "bottom": 1241.5992431640625
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 1080.195556640625,
+            "y": 1218.5992431640625,
+            "w": 49.921875,
+            "h": 23,
+            "right": 1130.117431640625,
+            "bottom": 1241.5992431640625
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "dark-320",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 23,
+        "y": 3767.171875,
+        "w": 274,
+        "h": 736.8125,
+        "right": 297,
+        "bottom": 4503.984375
+      },
+      "chartRect": {
+        "x": 36,
+        "y": 4068.390625,
+        "w": 248,
+        "h": 159.09375,
+        "right": 284,
+        "bottom": 4227.484375
+      },
+      "svgRect": {
+        "x": 45,
+        "y": 4076.390625,
+        "w": 230,
+        "h": 93.09375,
+        "right": 275,
+        "bottom": 4169.484375
+      },
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(245, 158, 11)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(14, 165, 233)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(16, 185, 129)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(245, 158, 11)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(14, 165, 233)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(16, 185, 129)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 55.06930160522461,
+            "y": 4146.69873046875,
+            "w": 6,
+            "h": 10,
+            "right": 61.06930160522461,
+            "bottom": 4156.69873046875
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 51.80367660522461,
+            "y": 4112.19921875,
+            "w": 9.259750366210938,
+            "h": 10,
+            "right": 61.06342697143555,
+            "bottom": 4122.19921875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 48.36617660522461,
+            "y": 4077.699951171875,
+            "w": 12.696701049804688,
+            "h": 10,
+            "right": 61.0628776550293,
+            "bottom": 4087.699951171875
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 42.47793960571289,
+            "y": 4085.6376953125,
+            "w": 10,
+            "h": 76.15234375,
+            "right": 52.47793960571289,
+            "bottom": 4161.7900390625
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 6.023809523809524,
+          "rect": {
+            "x": 51.53464889526367,
+            "y": 4076.414306640625,
+            "w": 23.788944244384766,
+            "h": 8,
+            "right": 75.32359313964844,
+            "bottom": 4084.414306640625
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 52.05808639526367,
+            "y": 4156.00830078125,
+            "w": 23.39969253540039,
+            "h": 10,
+            "right": 75.45777893066406,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 109.43152618408203,
+            "y": 4156.00830078125,
+            "w": 10.308021545410156,
+            "h": 10,
+            "right": 119.73954772949219,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 156.76589965820312,
+            "y": 4156.00830078125,
+            "w": 18.515609741210938,
+            "h": 10,
+            "right": 175.28150939941406,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 209.63153076171875,
+            "y": 4156.00830078125,
+            "w": 15.1875,
+            "h": 10,
+            "right": 224.81903076171875,
+            "bottom": 4166.00830078125
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 258.07525634765625,
+            "y": 4156.00830078125,
+            "w": 20.703125,
+            "h": 10,
+            "right": 278.77838134765625,
+            "bottom": 4166.00830078125
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "dark-1280",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 137,
+        "y": 2300.5,
+        "w": 1006,
+        "h": 432.796875,
+        "right": 1143,
+        "bottom": 2733.296875
+      },
+      "chartRect": {
+        "x": 557.6875,
+        "y": 2437.4375,
+        "w": 572.3125,
+        "h": 259.859375,
+        "right": 1130,
+        "bottom": 2697.296875
+      },
+      "svgRect": {
+        "x": 566.6875,
+        "y": 2445.4375,
+        "w": 554.3125,
+        "h": 224.359375,
+        "right": 1121,
+        "bottom": 2669.796875
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(245, 158, 11)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(14, 165, 233)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "0.34",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(16, 185, 129)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(245, 158, 11)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(14, 165, 233)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(16, 185, 129)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 593.365966796875,
+            "y": 2615.163330078125,
+            "w": 10.28125,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2638.163330078125
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.084716796875,
+            "y": 2532.018310546875,
+            "w": 20.5625,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2555.018310546875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 574.803466796875,
+            "y": 2448.87353515625,
+            "w": 28.84375,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2471.87353515625
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 560.8915405273438,
+            "y": 2468.69970703125,
+            "w": 23,
+            "h": 180.2138671875,
+            "right": 583.8915405273438,
+            "bottom": 2648.91357421875
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 14.517708333333333,
+          "rect": {
+            "x": 584.8548583984375,
+            "y": 2443.954833984375,
+            "w": 54.28704833984375,
+            "h": 20,
+            "right": 639.1419067382812,
+            "bottom": 2463.954833984375
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.6829833984375,
+            "y": 2637.599365234375,
+            "w": 55.79400634765625,
+            "h": 23,
+            "right": 639.4769897460938,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 723.3696899414062,
+            "y": 2637.599365234375,
+            "w": 23.215576171875,
+            "h": 23,
+            "right": 746.5852661132812,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 836.040771484375,
+            "y": 2637.599365234375,
+            "w": 44.640625,
+            "h": 23,
+            "right": 880.681396484375,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 963.4541015625,
+            "y": 2637.599365234375,
+            "w": 36.609375,
+            "h": 23,
+            "right": 1000.0634765625,
+            "bottom": 2660.599365234375
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 1080.195556640625,
+            "y": 2637.599365234375,
+            "w": 49.921875,
+            "h": 23,
+            "right": 1130.117431640625,
+            "bottom": 2660.599365234375
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "forced-colors-320",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 23,
+        "y": 3775.171875,
+        "w": 274,
+        "h": 736.8125,
+        "right": 297,
+        "bottom": 4511.984375
+      },
+      "chartRect": {
+        "x": 36,
+        "y": 4076.390625,
+        "w": 248,
+        "h": 159.09375,
+        "right": 284,
+        "bottom": 4235.484375
+      },
+      "svgRect": {
+        "x": 45,
+        "y": 4084.390625,
+        "w": 230,
+        "h": 93.09375,
+        "right": 275,
+        "bottom": 4177.484375
+      },
+      "viewportWidth": 320,
+      "scrollWidth": 320,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(0, 0, 0)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "1",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(0, 0, 0)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "1",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(0, 0, 0)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(55, 0, 110)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(55, 0, 110)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(55, 0, 110)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 55.06930160522461,
+            "y": 4154.69873046875,
+            "w": 6,
+            "h": 10,
+            "right": 61.06930160522461,
+            "bottom": 4164.69873046875
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 51.80367660522461,
+            "y": 4120.19921875,
+            "w": 9.259750366210938,
+            "h": 10,
+            "right": 61.06342697143555,
+            "bottom": 4130.19921875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 48.36617660522461,
+            "y": 4085.699951171875,
+            "w": 12.696701049804688,
+            "h": 10,
+            "right": 61.0628776550293,
+            "bottom": 4095.699951171875
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 42.47793960571289,
+            "y": 4093.6376953125,
+            "w": 10,
+            "h": 76.15234375,
+            "right": 52.47793960571289,
+            "bottom": 4169.7900390625
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 6.023809523809524,
+          "rect": {
+            "x": 51.53464889526367,
+            "y": 4084.414306640625,
+            "w": 23.788944244384766,
+            "h": 8,
+            "right": 75.32359313964844,
+            "bottom": 4092.414306640625
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 52.05808639526367,
+            "y": 4164.00830078125,
+            "w": 23.39969253540039,
+            "h": 10,
+            "right": 75.45777893066406,
+            "bottom": 4174.00830078125
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 109.43152618408203,
+            "y": 4164.00830078125,
+            "w": 10.308021545410156,
+            "h": 10,
+            "right": 119.73954772949219,
+            "bottom": 4174.00830078125
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 156.76589965820312,
+            "y": 4164.00830078125,
+            "w": 18.515609741210938,
+            "h": 10,
+            "right": 175.28150939941406,
+            "bottom": 4174.00830078125
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 209.63153076171875,
+            "y": 4164.00830078125,
+            "w": 15.1875,
+            "h": 10,
+            "right": 224.81903076171875,
+            "bottom": 4174.00830078125
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 7.119047619047619,
+          "rect": {
+            "x": 258.07525634765625,
+            "y": 4164.00830078125,
+            "w": 20.703125,
+            "h": 10,
+            "right": 278.77838134765625,
+            "bottom": 4174.00830078125
+          }
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "label": "forced-colors-1280",
+      "focusState": "infiltration",
+      "focusKey": "soil",
+      "focusChip": "Focus · Infiltration",
+      "driver": "WHAT MATTERS MOST NOW\nPermeability + pore space\n55/100\nPermeable, less-saturated ground gives water more opportunity to enter soil pore spaces.",
+      "stageIndex": "0",
+      "activeSeries": "storage",
+      "markerLabel": "Surface",
+      "description": "Three teaching comparisons show energy, surface flow, and storage from surface water through the atmosphere and land back toward return flow. The vertical marker identifies the current modeled stage: Surface.",
+      "panelRect": {
+        "x": 137,
+        "y": 2304.5,
+        "w": 1006,
+        "h": 432.796875,
+        "right": 1143,
+        "bottom": 2737.296875
+      },
+      "chartRect": {
+        "x": 557.6875,
+        "y": 2441.4375,
+        "w": 572.3125,
+        "h": 259.859375,
+        "right": 1130,
+        "bottom": 2701.296875
+      },
+      "svgRect": {
+        "x": 566.6875,
+        "y": 2449.4375,
+        "w": 554.3125,
+        "h": 224.359375,
+        "right": 1121,
+        "bottom": 2673.796875
+      },
+      "viewportWidth": 1280,
+      "scrollWidth": 1280,
+      "focusableCount": 0,
+      "series": [
+        {
+          "key": "energy",
+          "stroke": "rgb(0, 0, 0)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "1",
+          "path": "M 34.0 74.5 L 127.5 82.0 L 221.0 69.4 L 314.5 87.1 L 408.0 97.2"
+        },
+        {
+          "key": "flow",
+          "stroke": "rgb(0, 0, 0)",
+          "dash": "none",
+          "width": "3px",
+          "opacity": "1",
+          "path": "M 34.0 75.7 L 127.5 80.8 L 221.0 56.8 L 314.5 44.2 L 408.0 68.2"
+        },
+        {
+          "key": "storage",
+          "stroke": "rgb(0, 0, 0)",
+          "dash": "none",
+          "width": "4.5px",
+          "opacity": "1",
+          "path": "M 34.0 50.5 L 127.5 74.5 L 221.0 58.1 L 314.5 46.8 L 408.0 69.4"
+        }
+      ],
+      "legend": [
+        {
+          "text": "Energy",
+          "swatch": "rgb(55, 0, 110)"
+        },
+        {
+          "text": "Surface flow",
+          "swatch": "rgb(55, 0, 110)"
+        },
+        {
+          "text": "Storage",
+          "swatch": "rgb(55, 0, 110)"
+        }
+      ],
+      "svgText": [
+        {
+          "text": "0",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 593.365966796875,
+            "y": 2619.163330078125,
+            "w": 10.28125,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2642.163330078125
+          }
+        },
+        {
+          "text": "50",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.084716796875,
+            "y": 2536.018310546875,
+            "w": 20.5625,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2559.018310546875
+          }
+        },
+        {
+          "text": "100",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 574.803466796875,
+            "y": 2452.87353515625,
+            "w": 28.84375,
+            "h": 23,
+            "right": 603.647216796875,
+            "bottom": 2475.87353515625
+          }
+        },
+        {
+          "text": "Teaching comparison",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 560.8915405273438,
+            "y": 2472.69970703125,
+            "w": 23,
+            "h": 180.2138671875,
+            "right": 583.8915405273438,
+            "bottom": 2652.91357421875
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 11,
+          "renderedFont": 14.517708333333333,
+          "rect": {
+            "x": 584.8548583984375,
+            "y": 2447.954833984375,
+            "w": 54.28704833984375,
+            "h": 20,
+            "right": 639.1419067382812,
+            "bottom": 2467.954833984375
+          }
+        },
+        {
+          "text": "Surface",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 583.6829833984375,
+            "y": 2641.599365234375,
+            "w": 55.79400634765625,
+            "h": 23,
+            "right": 639.4769897460938,
+            "bottom": 2664.599365234375
+          }
+        },
+        {
+          "text": "Air",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 723.3696899414062,
+            "y": 2641.599365234375,
+            "w": 23.215576171875,
+            "h": 23,
+            "right": 746.5852661132812,
+            "bottom": 2664.599365234375
+          }
+        },
+        {
+          "text": "Cloud",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 836.040771484375,
+            "y": 2641.599365234375,
+            "w": 44.640625,
+            "h": 23,
+            "right": 880.681396484375,
+            "bottom": 2664.599365234375
+          }
+        },
+        {
+          "text": "Land",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 963.4541015625,
+            "y": 2641.599365234375,
+            "w": 36.609375,
+            "h": 23,
+            "right": 1000.0634765625,
+            "bottom": 2664.599365234375
+          }
+        },
+        {
+          "text": "Return",
+          "font": 13,
+          "renderedFont": 17.157291666666666,
+          "rect": {
+            "x": 1080.195556640625,
+            "y": 2641.599365234375,
+            "w": 49.921875,
+            "h": 23,
+            "right": 1130.117431640625,
+            "bottom": 2664.599365234375
+          }
+        }
+      ],
+      "overflow": []
+    }
+  ],
+  "errors": [],
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finishedAt": "2026-09-30T13:49:57.900Z"
+}

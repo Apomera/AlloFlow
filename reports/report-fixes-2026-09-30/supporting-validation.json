@@ -1,0 +1,697 @@
+{
+  "startedAt": "2026-09-30T22:26:27.389Z",
+  "scope": "Read-only supporting validation of the frozen candidate. No runtime or existing test writes.",
+  "infrastructureErrors": [
+    {
+      "name": "guided-flow-source-and-built-contract",
+      "error": "Installed Vitest rejected --minWorkers before discovering tests. The flow-only retry removes that unsupported option."
+    }
+  ],
+  "sourceHashesBefore": {
+    "view_simplified_source.jsx": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "desktop/web-app/public/view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "text_utility_helpers_source.jsx": "6f1e7ab89f762a2ad9de339eefe620b6984eb33ce5b6490fb0164964f39c126b",
+    "text_utility_helpers_module.js": "1e6f6b5ce979ec2b4e597a8f876b5369da6d0cb7c0306b84a1476abec487b173",
+    "desktop/web-app/public/text_utility_helpers_module.js": "1e6f6b5ce979ec2b4e597a8f876b5369da6d0cb7c0306b84a1476abec487b173",
+    "generate_dispatcher_source.jsx": "189b2d246636c394d7dde7086a3e77797525458d2f94be79e0bab5155fd9195b",
+    "generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "desktop/web-app/public/generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "generation_helpers_source.jsx": "375ef69704a9e0d2ca9956bad30703089f9180328ad2cfc09da4d5cd0434a6c5",
+    "generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "desktop/web-app/public/generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "tts_source.jsx": "fb28894c66e247437026c95b4a7dd5473faee1e483a090d2d47e5c47f8d866a2",
+    "tts_module.js": "531e3a9c1982c41553ee6b0c330307184e4ae1f0345c600966f941245a359ded",
+    "desktop/web-app/public/tts_module.js": "531e3a9c1982c41553ee6b0c330307184e4ae1f0345c600966f941245a359ded",
+    "view_kokoro_offer_modal_source.jsx": "04d3dee251dcc4a00d8f819daec48d3b7a95904fc9fcd0c53fa61f05fd95fca6",
+    "view_kokoro_offer_modal_module.js": "6c50e8ad76839ad76352fe0ec8dae5a84ad256c238170159d296f94ec4939fe7",
+    "desktop/web-app/public/view_kokoro_offer_modal_module.js": "6c50e8ad76839ad76352fe0ec8dae5a84ad256c238170159d296f94ec4939fe7",
+    "gemini_api_source.jsx": "66e3100c9a7ceffa24b5cdac325ee07f65bc8913f6ae56b0ba3c382a3600f4b9",
+    "gemini_api_module.js": "ca2fcf3e44e2d6ae575be4d22ec208d4ade8001fa17b687701029b0bb0ba3213",
+    "desktop/web-app/public/gemini_api_module.js": "ca2fcf3e44e2d6ae575be4d22ec208d4ade8001fa17b687701029b0bb0ba3213",
+    "guided_mode_config_source.jsx": "db9ce27cfa4c69a090dd66f2a8f8d187216350755a69e132a29045995e9e03f5",
+    "guided_mode_config_module.js": "580a8cfa661a80ce2f81fd7a7f61886265dcd13403d682f546d8df28c2baefb8",
+    "desktop/web-app/public/guided_mode_config_module.js": "580a8cfa661a80ce2f81fd7a7f61886265dcd13403d682f546d8df28c2baefb8",
+    "error_reporter_module.js": "7ef1e9083e16a0e761aab9046911e8768cfe0d2fa2ecfe37c9e10c471f96570d",
+    "desktop/web-app/public/error_reporter_module.js": "7ef1e9083e16a0e761aab9046911e8768cfe0d2fa2ecfe37c9e10c471f96570d",
+    "tts-server/edge_tts_server.py": "7ab8d7903474a114be740f67e0ab80268d686e9f894665acb42e512692546074",
+    "tts-server/piper_server.py": "97d0fbb3524d71acb2d232167924cb940983fd2e904df0c10ce0bb58cb95b6cf",
+    "docker/edge-tts-server/server.py": "b92aed9cc7674f7068992ca29b0791c5babba2884626bccfc6d8d626fefcb0a8",
+    "tests/report_audio_kokoro_offer.test.js": "8cde42bd694ce996933e08fadb576ac601c5dbef16b22d8fb10594b7687bf221",
+    "tests/report_audio_partial_recovery.test.js": "c119e2790cd81b2506dfe85333ca580597305417be8c5fdf8b93dc53a8ae85ff",
+    "tests/report_audio_tts_consistency.test.js": "56e01b83a4ac734a17d2fb2546735708e14b85c2d821a1fc7756b4348b834c64",
+    "tests/report_error_feedback_api.test.js": "41102de835a0adfe3d95477169fbd6ac3523096fe91d92d04bc5ee4df957ac36",
+    "tests/report_error_feedback_reporter.test.js": "0c1c848db9258ab6279c815cd73b92d708e786a3f3e79caeadd6b5d2c3357edd",
+    "tests/report_flow_metadata.test.js": "34279960c8531fe0edaacad2f958cf46105da1b6d47c90174ca7360095fcbb3d",
+    "tests/report_generation_recovery.test.js": "01f119ce79863d0069a9e91a2722290e1e83d9f30d19ceacff12266593731f27",
+    "tests/report_reader_glossary_parity.test.js": "9ca6a731e3d479091d931a9f3dc2e0980df28a6db8ac320166edeeabeb8a235c",
+    "tests/report_writer_background_refresh.test.js": "99b7ed1476de35dd305cd535226cf3ad1f18ebcd788a120a2de7160ba870cff8",
+    "tests/report_writer_case_documents.test.js": "f4a8ca288095017d337e02ef2c4638ccc3a4bb45a1ab23dad20826d372d8056b",
+    "tests/report_writer_citation_integrity.test.js": "dd67e62537081aebdc4b74a33852be50863863225a78ebd63332a9dbc574ac57",
+    "tests/report_writer_close_guard.test.js": "e7e770c078f5827d3838df228777a90308b7e46050def710355faaa972f737a9",
+    "tests/report_writer_corrections.test.js": "99df753b1a96e9b28baae05f8c524a2f02a6f9e5b7c81c163e09ca23286571a5",
+    "tests/report_writer_draft_selection.test.js": "7f5f4fdca15f21ec757fa1f958be3061cdb34704fd29b69721ead8655edc5191",
+    "tests/report_writer_eligibility_language.test.js": "265e98250b01770e6a1a3b9d0c0edda8132a03156c2d4f65c7d540bcd33a7204",
+    "tests/report_writer_export_quality.test.js": "102a2f907ae51eac3f212024ae3068cea063146d523c5cadee29956ae2ff3045",
+    "tests/report_writer_i18n.test.js": "f90e84d79020bca6df1927a4fe170e5e849232de0d74a12f756cc3702f05e3dd",
+    "tests/report_writer_percentiles.test.js": "782732bec0ce9336dc220d66fdd9de81cae270829ce27e9e2b6fd82326ed8b6f",
+    "tests/report_writer_prior_scores.test.js": "4eabd24a534e52ad75f5d5cf64f03ec08d10eb751e7e24db9fc0c518494d9ad9",
+    "tests/report_writer_psycheck.test.js": "57f4f43ff40c543b4f99349aeeb20f22599886f81936133b68b8ec9f8949d962",
+    "tests/report_writer_quote_check.test.js": "30884d2f5c907ac748d5ef62d8d749b40d4367c219f3226b3b7a4e011f7dd60c",
+    "tests/report_writer_reference_import.test.js": "759054973c881856a70983f606e175d76786f0d694c5ce0dfb30641544106a2b",
+    "tests/report_writer_reference_retrieval.test.js": "c12e6959072fac6ea293bddfac1d82955f31f333f2b25556016a9d7374853226",
+    "tests/report_writer_report_values.test.js": "480e3fa0b44c4688a5daeac46df7bbe9c3132c58d46884b983b21deb04bff40e",
+    "tests/report_writer_score_classification.test.js": "db8424a1fed400e780233b33a8a6648fd87a4de653422dde85662bea06fec1fb",
+    "tests/report_writer_score_entry.test.js": "b5d6d444d47892f7fd78fece986fbf70a2cab6ce589ebc070a762aa45232eca3",
+    "tests/report_writer_score_entry_ui.test.js": "2bcd0b72b0fad2a0549e3cfe27a90a8470efd911e2eddb272cf208f7219e548a",
+    "tests/report_writer_score_paste.test.js": "156aa82211663226e662b4df60fcee53556d7a95c23b677d85c0acdd4120cf9d",
+    "tests/report_writer_score_table.test.js": "c68dcebd21ae557bda620cfeb1b7cf1c7fba957de4e784d4b7b8491257b1ab89",
+    "tests/report_writer_significance.test.js": "cf5588403788b809f9560b2f8458d2d082b1d26268fd2e39ee307d1fdd9e79cf",
+    "tests/report_writer_stale_facts.test.js": "57daf73a87ee9b1db3ff1eec48f5d12afd649a97836c6427e8e43c000168e84e",
+    "tests/report_writer_step_a11y.test.js": "17652655a12bcd52122adb15a29bfc58b53d37f61b301d2dff8a665a40a2a49d",
+    "tests/report_writer_stop_runs.test.js": "e56b8306f46242c2e39dd4eb2800bb7780ddfde5565809c77b43f55658219a53",
+    "tests/report_writer_style_and_identity.test.js": "267c3ef8144c4a64cb814bb01d279aaa3572a6d1b88e19aafeb7718a87a75a9b",
+    "tests/report_writer_ui.test.js": "466f9f11e3a35961087ec8ba1b5568f4339e82452784fb2868c3c862a75065ec",
+    "tests/report_writer_verifier_coverage.test.js": "c118394cdee5abd0f091fe0e1b2856c7a309ede3a544bebd9372487ac9e1b0d9",
+    "tests/report_writer_work_safety.test.js": "f9797800de121e4717f16bbc1af8961de57b364790c572e956b1f653a817da38",
+    "tests/test_local_tts_origin_policy.py": "634e2bd0d377059775c1b27d909b2409dfa3ec6b6bdbcb5faafe76944b437d59",
+    "tests/test_edge_tts_language_review.py": "8cdcedf2b9cc65b667f4ff75d2436e70e4ec02a82187a7072cea639bda425571",
+    "tests/tts_pipeline_source_resilience.test.js": "bf3aa959becd42b5302f790a77adca698134d41e27b3fb33c11694ae437cef45",
+    "tests/gemini_auth_debounce.test.js": "63d7d560a34173d90af14f60dc48d45fe62caf82a04b8efdec6acb43c0cac6e0",
+    "tests/gemini_error_taxonomy_contract.test.js": "669ec6685dfb007624ccecb2bc5c1a1d832159c1b338e4150c4d8f176d11ef0c",
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "reflective_journal.md": "2155d77b79337c0f2f78220bbdf7e78faa239bca3426cbf2edea117de125810a"
+  },
+  "commands": [
+    {
+      "name": "local-tts-origin-policy",
+      "command": "python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_local_tts_origin_policy.py",
+        "-v"
+      ],
+      "startedAt": "2026-09-30T22:26:33.394Z",
+      "finishedAt": "2026-09-30T22:27:13.178Z",
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "[Piper TTS] Generated 46 bytes for voice=en_US-amy-medium\r\n[Piper TTS] Generated 46 bytes for voice=en_US-amy-medium\r\n",
+      "stderr": "test_docker_audio_preflight_and_failure_keep_exact_cors (test_local_tts_origin_policy.LocalOriginPolicy.test_docker_audio_preflight_and_failure_keep_exact_cors) ... ok\r\ntest_docker_routes_reject_untrusted_origins_before_provider_call (test_local_tts_origin_policy.LocalOriginPolicy.test_docker_routes_reject_untrusted_origins_before_provider_call) ... ok\r\ntest_native_loopback_and_shipped_web_app_are_supported (test_local_tts_origin_policy.LocalOriginPolicy.test_native_loopback_and_shipped_web_app_are_supported) ... ok\r\ntest_school_origins_require_an_exact_explicit_value (test_local_tts_origin_policy.LocalOriginPolicy.test_school_origins_require_an_exact_explicit_value) ... ok\r\ntest_standalone_allowed_audio_native_and_preflight_responses (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_allowed_audio_native_and_preflight_responses) ... ok\r\ntest_standalone_blocks_every_browser_route_before_synthesis (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_blocks_every_browser_route_before_synthesis) ... ok\r\ntest_standalone_edge_defaults_to_loopback (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_edge_defaults_to_loopback) ... ok\r\ntest_standalone_error_remains_readable_for_allowed_origin (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_error_remains_readable_for_allowed_origin) ... ok\r\ntest_untrusted_null_malformed_and_confusable_origins_are_rejected (test_local_tts_origin_policy.LocalOriginPolicy.test_untrusted_null_malformed_and_confusable_origins_are_rejected) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 9 tests in 1.387s\r\n\r\nOK\r\n",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "testCases": [
+        {
+          "name": "test_docker_audio_preflight_and_failure_keep_exact_cors (test_local_tts_origin_policy.LocalOriginPolicy.test_docker_audio_preflight_and_failure_keep_exact_cors)",
+          "result": "ok"
+        },
+        {
+          "name": "test_docker_routes_reject_untrusted_origins_before_provider_call (test_local_tts_origin_policy.LocalOriginPolicy.test_docker_routes_reject_untrusted_origins_before_provider_call)",
+          "result": "ok"
+        },
+        {
+          "name": "test_native_loopback_and_shipped_web_app_are_supported (test_local_tts_origin_policy.LocalOriginPolicy.test_native_loopback_and_shipped_web_app_are_supported)",
+          "result": "ok"
+        },
+        {
+          "name": "test_school_origins_require_an_exact_explicit_value (test_local_tts_origin_policy.LocalOriginPolicy.test_school_origins_require_an_exact_explicit_value)",
+          "result": "ok"
+        },
+        {
+          "name": "test_standalone_allowed_audio_native_and_preflight_responses (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_allowed_audio_native_and_preflight_responses)",
+          "result": "ok"
+        },
+        {
+          "name": "test_standalone_blocks_every_browser_route_before_synthesis (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_blocks_every_browser_route_before_synthesis)",
+          "result": "ok"
+        },
+        {
+          "name": "test_standalone_edge_defaults_to_loopback (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_edge_defaults_to_loopback)",
+          "result": "ok"
+        },
+        {
+          "name": "test_standalone_error_remains_readable_for_allowed_origin (test_local_tts_origin_policy.LocalOriginPolicy.test_standalone_error_remains_readable_for_allowed_origin)",
+          "result": "ok"
+        },
+        {
+          "name": "test_untrusted_null_malformed_and_confusable_origins_are_rejected (test_local_tts_origin_policy.LocalOriginPolicy.test_untrusted_null_malformed_and_confusable_origins_are_rejected)",
+          "result": "ok"
+        }
+      ]
+    },
+    {
+      "name": "edge-tts-language-review",
+      "command": "python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_edge_tts_language_review.py",
+        "-v"
+      ],
+      "startedAt": "2026-09-30T22:27:13.182Z",
+      "finishedAt": "2026-09-30T22:27:20.734Z",
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "test_english_and_unknown_languages_keep_existing_fallback (test_edge_tts_language_review.EdgeLanguageReview.test_english_and_unknown_languages_keep_existing_fallback) ... ok\r\ntest_explicit_language_voice_takes_priority (test_edge_tts_language_review.EdgeLanguageReview.test_explicit_language_voice_takes_priority) ... ok\r\ntest_explicit_native_voice_is_preserved_case_insensitively (test_edge_tts_language_review.EdgeLanguageReview.test_explicit_native_voice_is_preserved_case_insensitively) ... ok\r\ntest_synthesis_uses_resolved_language_and_natural_speed (test_edge_tts_language_review.EdgeLanguageReview.test_synthesis_uses_resolved_language_and_natural_speed) ... ok\r\ntest_unknown_gemini_voice_uses_passage_language (test_edge_tts_language_review.EdgeLanguageReview.test_unknown_gemini_voice_uses_passage_language) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 5 tests in 0.128s\r\n\r\nOK\r\n",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "testCases": [
+        {
+          "name": "test_english_and_unknown_languages_keep_existing_fallback (test_edge_tts_language_review.EdgeLanguageReview.test_english_and_unknown_languages_keep_existing_fallback)",
+          "result": "ok"
+        },
+        {
+          "name": "test_explicit_language_voice_takes_priority (test_edge_tts_language_review.EdgeLanguageReview.test_explicit_language_voice_takes_priority)",
+          "result": "ok"
+        },
+        {
+          "name": "test_explicit_native_voice_is_preserved_case_insensitively (test_edge_tts_language_review.EdgeLanguageReview.test_explicit_native_voice_is_preserved_case_insensitively)",
+          "result": "ok"
+        },
+        {
+          "name": "test_synthesis_uses_resolved_language_and_natural_speed (test_edge_tts_language_review.EdgeLanguageReview.test_synthesis_uses_resolved_language_and_natural_speed)",
+          "result": "ok"
+        },
+        {
+          "name": "test_unknown_gemini_voice_uses_passage_language (test_edge_tts_language_review.EdgeLanguageReview.test_unknown_gemini_voice_uses_passage_language)",
+          "result": "ok"
+        }
+      ]
+    },
+    {
+      "name": "guided-flow-source-and-built-contract",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/report_flow_metadata.test.js",
+        "tests/guided_mode_config_extraction_contract.test.js",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--minWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json"
+      ],
+      "startedAt": "2026-09-30T22:27:20.739Z",
+      "finishedAt": "2026-09-30T22:27:23.584Z",
+      "exitCode": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:406\r\n          throw new CACError(`Unknown option \\`${name.length > 1 ? `--${name}` : `-${name}`}\\``);\r\n                ^\r\n\r\nCACError: Unknown option `--minWorkers`\r\n    at Command.checkUnknownOptions (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:406:17)\r\n    at CAC.runMatchedCommand (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:606:13)\r\n    at CAC.parse (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:547:12)\r\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/cli.js:11:13\r\n    at ModuleJob.run (node:internal/modules/esm/module_job:377:25)\r\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:671:26)\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\r\n\r\nNode.js v24.11.1\r\n",
+      "resultParseError": "SyntaxError: Unexpected end of JSON input",
+      "category": "test-runner-startup-error"
+    },
+    {
+      "name": "scoped-git-diff-check",
+      "command": "git",
+      "args": [
+        "diff",
+        "--check",
+        "--",
+        "view_simplified_source.jsx",
+        "view_simplified_module.js",
+        "desktop/web-app/public/view_simplified_module.js",
+        "text_utility_helpers_source.jsx",
+        "text_utility_helpers_module.js",
+        "desktop/web-app/public/text_utility_helpers_module.js",
+        "generate_dispatcher_source.jsx",
+        "generate_dispatcher_module.js",
+        "desktop/web-app/public/generate_dispatcher_module.js",
+        "generation_helpers_source.jsx",
+        "generation_helpers_module.js",
+        "desktop/web-app/public/generation_helpers_module.js",
+        "tts_source.jsx",
+        "tts_module.js",
+        "desktop/web-app/public/tts_module.js",
+        "view_kokoro_offer_modal_source.jsx",
+        "view_kokoro_offer_modal_module.js",
+        "desktop/web-app/public/view_kokoro_offer_modal_module.js",
+        "gemini_api_source.jsx",
+        "gemini_api_module.js",
+        "desktop/web-app/public/gemini_api_module.js",
+        "guided_mode_config_source.jsx",
+        "guided_mode_config_module.js",
+        "desktop/web-app/public/guided_mode_config_module.js",
+        "error_reporter_module.js",
+        "desktop/web-app/public/error_reporter_module.js",
+        "tts-server/edge_tts_server.py",
+        "tts-server/piper_server.py",
+        "docker/edge-tts-server/server.py",
+        "tests/report_audio_kokoro_offer.test.js",
+        "tests/report_audio_partial_recovery.test.js",
+        "tests/report_audio_tts_consistency.test.js",
+        "tests/report_error_feedback_api.test.js",
+        "tests/report_error_feedback_reporter.test.js",
+        "tests/report_flow_metadata.test.js",
+        "tests/report_generation_recovery.test.js",
+        "tests/report_reader_glossary_parity.test.js",
+        "tests/report_writer_background_refresh.test.js",
+        "tests/report_writer_case_documents.test.js",
+        "tests/report_writer_citation_integrity.test.js",
+        "tests/report_writer_close_guard.test.js",
+        "tests/report_writer_corrections.test.js",
+        "tests/report_writer_draft_selection.test.js",
+        "tests/report_writer_eligibility_language.test.js",
+        "tests/report_writer_export_quality.test.js",
+        "tests/report_writer_i18n.test.js",
+        "tests/report_writer_percentiles.test.js",
+        "tests/report_writer_prior_scores.test.js",
+        "tests/report_writer_psycheck.test.js",
+        "tests/report_writer_quote_check.test.js",
+        "tests/report_writer_reference_import.test.js",
+        "tests/report_writer_reference_retrieval.test.js",
+        "tests/report_writer_report_values.test.js",
+        "tests/report_writer_score_classification.test.js",
+        "tests/report_writer_score_entry.test.js",
+        "tests/report_writer_score_entry_ui.test.js",
+        "tests/report_writer_score_paste.test.js",
+        "tests/report_writer_score_table.test.js",
+        "tests/report_writer_significance.test.js",
+        "tests/report_writer_stale_facts.test.js",
+        "tests/report_writer_step_a11y.test.js",
+        "tests/report_writer_stop_runs.test.js",
+        "tests/report_writer_style_and_identity.test.js",
+        "tests/report_writer_ui.test.js",
+        "tests/report_writer_verifier_coverage.test.js",
+        "tests/report_writer_work_safety.test.js",
+        "tests/test_local_tts_origin_policy.py",
+        "tests/test_edge_tts_language_review.py",
+        "tests/tts_pipeline_source_resilience.test.js",
+        "tests/gemini_auth_debounce.test.js",
+        "tests/gemini_error_taxonomy_contract.test.js"
+      ],
+      "startedAt": "2026-09-30T22:27:23.587Z",
+      "finishedAt": "2026-09-30T22:27:26.887Z",
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "guided-flow-source-and-built-contract",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/report_flow_metadata.test.js",
+        "tests/guided_mode_config_extraction_contract.test.js",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--testTimeout=60000",
+        "--reporter=json"
+      ],
+      "startedAt": "2026-09-30T22:29:28.532Z",
+      "finishedAt": "2026-09-30T22:29:38.112Z",
+      "exitCode": 0,
+      "signal": null,
+      "stdout": "{\"numTotalTestSuites\":6,\"numPassedTestSuites\":6,\"numFailedTestSuites\":0,\"numPendingTestSuites\":0,\"numTotalTests\":20,\"numPassedTests\":20,\"numFailedTests\":0,\"numPendingTests\":0,\"numTodoTests\":0,\"snapshot\":{\"added\":0,\"failure\":false,\"filesAdded\":0,\"filesRemoved\":0,\"filesRemovedList\":[],\"filesUnmatched\":0,\"filesUpdated\":0,\"matched\":0,\"total\":0,\"unchecked\":0,\"uncheckedKeysByFile\":[],\"unmatched\":0,\"updated\":0,\"didUpdate\":false},\"startTime\":1790807370173,\"success\":true,\"testResults\":[{\"assertionResults\":[{\"ancestorTitles\":[\"GuidedModeConfig extraction contract\"],\"fullName\":\"GuidedModeConfig extraction contract registers the complete declarative and normalization API\",\"status\":\"passed\",\"title\":\"registers the complete declarative and normalization API\",\"duration\":4.505400000000009,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"GuidedModeConfig extraction contract\"],\"fullName\":\"GuidedModeConfig extraction contract runs AI planning only through injected dependencies and retains the local fallback\",\"status\":\"passed\",\"title\":\"runs AI planning only through injected dependencies and retains the local fallback\",\"duration\":104.59660000000076,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"GuidedModeConfig extraction contract\"],\"fullName\":\"GuidedModeConfig extraction contract keeps catalog IDs, phases, presets, and tour anchors internally aligned\",\"status\":\"passed\",\"title\":\"keeps catalog IDs, phases, presets, and tour anchors internally aligned\",\"duration\":50.9362000000001,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"GuidedModeConfig extraction contract\"],\"fullName\":\"GuidedModeConfig extraction contract keeps synchronous cold-start sanitizers behaviorally aligned with the module\",\"status\":\"passed\",\"title\":\"keeps synchronous cold-start sanitizers behaviorally aligned with the module\",\"duration\":9.065699999999197,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"GuidedModeConfig extraction contract\"],\"fullName\":\"GuidedModeConfig extraction contract keeps only a resilient bridge, synchronous sanitizer fallback, and recovery UI in every shell\",\"status\":\"passed\",\"title\":\"keeps only a resilient bridge, synchronous sanitizer fallback, and recovery UI in every shell\",\"duration\":515.0625,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"GuidedModeConfig extraction contract\"],\"fullName\":\"GuidedModeConfig extraction contract is build-managed and keeps root/public module bytes identical\",\"status\":\"passed\",\"title\":\"is build-managed and keeps root/public module bytes identical\",\"duration\":2.4488000000001193,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Focused reading path and saved-progress compatibility\"],\"fullName\":\"Focused reading path and saved-progress compatibility keeps reading essentials and delivery while leaving extra tools available\",\"status\":\"passed\",\"title\":\"keeps reading essentials and delivery while leaving extra tools available\",\"duration\":3.2127000000000407,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Focused reading path and saved-progress compatibility\"],\"fullName\":\"Focused reading path and saved-progress compatibility resumes an existing longer reading path without resetting or removing work\",\"status\":\"passed\",\"title\":\"resumes an existing longer reading path without resetting or removing work\",\"duration\":3.283799999999246,\"failureMessages\":[],\"meta\":{},\"tags\":[]}],\"startTime\":1790807377314,\"endTime\":1790807378008.2837,\"status\":\"passed\",\"message\":\"\",\"name\":\"C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/guided_mode_config_extraction_contract.test.js\"},{\"assertionResults\":[{\"ancestorTitles\":[\"report follow-up: focused reading uses the existing original-support action\"],\"fullName\":\"report follow-up: focused reading uses the existing original-support action keeps the seven saved reading steps and each existing tool anchor\",\"status\":\"passed\",\"title\":\"keeps the seven saved reading steps and each existing tool anchor\",\"duration\":5.604499999999462,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: focused reading uses the existing original-support action\"],\"fullName\":\"report follow-up: focused reading uses the existing original-support action opens a supported original from the exact source without generating an adaptation\",\"status\":\"passed\",\"title\":\"opens a supported original from the exact source without generating an adaptation\",\"duration\":34.34029999999984,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: focused reading uses the existing original-support action\"],\"fullName\":\"report follow-up: focused reading uses the existing original-support action uses the selected saved source and reopens it without duplicate history\",\"status\":\"passed\",\"title\":\"uses the selected saved source and reopens it without duplicate history\",\"duration\":72.8780999999999,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: focused reading uses the existing original-support action\"],\"fullName\":\"report follow-up: focused reading uses the existing original-support action keeps history intact when no source can be opened\",\"status\":\"passed\",\"title\":\"keeps history intact when no source can be opened\",\"duration\":21.098500000000058,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: focused reading uses the existing original-support action\"],\"fullName\":\"report follow-up: focused reading uses the existing original-support action resumes older complete reading choices with their work and delivery evidence\",\"status\":\"passed\",\"title\":\"resumes older complete reading choices with their work and delivery evidence\",\"duration\":1.8732999999992899,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices makes an offline reading fallback with only the three reading essentials\",\"status\":\"passed\",\"title\":\"makes an offline reading fallback with only the three reading essentials\",\"duration\":88.26580000000013,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices adds explicitly requested visual and writing supports to a reading goal\",\"status\":\"passed\",\"title\":\"adds explicitly requested visual and writing supports to a reading goal\",\"duration\":2.2788000000000466,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices keeps assessment and engagement journeys distinct from reading\",\"status\":\"passed\",\"title\":\"keeps assessment and engagement journeys distinct from reading\",\"duration\":14.302200000000084,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices does not mistake cell for an English-language-learner reading request\",\"status\":\"passed\",\"title\":\"does not mistake cell for an English-language-learner reading request\",\"duration\":4.464799999999741,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices does not re-add vocabulary or assessment after an explicit removal\",\"status\":\"passed\",\"title\":\"does not re-add vocabulary or assessment after an explicit removal\",\"duration\":4.2929000000003725,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices preserves a reviewed AI activity order while removing unsupported and duplicate IDs\",\"status\":\"passed\",\"title\":\"preserves a reviewed AI activity order while removing unsupported and duplicate IDs\",\"duration\":3.3005999999995765,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"report follow-up: goal plans keep purposeful journeys and explicit choices\"],\"fullName\":\"report follow-up: goal plans keep purposeful journeys and explicit choices self-checks that the focused-plan assertion rejects the old forced extra-tools behavior\",\"status\":\"passed\",\"title\":\"self-checks that the focused-plan assertion rejects the old forced extra-tools behavior\",\"duration\":14.737299999999777,\"failureMessages\":[],\"meta\":{},\"tags\":[]}],\"startTime\":1790807373638,\"endTime\":1790807373906.7373,\"status\":\"passed\",\"message\":\"\",\"name\":\"C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/report_flow_metadata.test.js\"}]}\n",
+      "stderr": "",
+      "total": 20,
+      "passed": 20,
+      "failed": 0,
+      "success": true,
+      "testResults": [
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "GuidedModeConfig extraction contract"
+              ],
+              "fullName": "GuidedModeConfig extraction contract registers the complete declarative and normalization API",
+              "status": "passed",
+              "title": "registers the complete declarative and normalization API",
+              "duration": 4.505400000000009,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "GuidedModeConfig extraction contract"
+              ],
+              "fullName": "GuidedModeConfig extraction contract runs AI planning only through injected dependencies and retains the local fallback",
+              "status": "passed",
+              "title": "runs AI planning only through injected dependencies and retains the local fallback",
+              "duration": 104.59660000000076,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "GuidedModeConfig extraction contract"
+              ],
+              "fullName": "GuidedModeConfig extraction contract keeps catalog IDs, phases, presets, and tour anchors internally aligned",
+              "status": "passed",
+              "title": "keeps catalog IDs, phases, presets, and tour anchors internally aligned",
+              "duration": 50.9362000000001,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "GuidedModeConfig extraction contract"
+              ],
+              "fullName": "GuidedModeConfig extraction contract keeps synchronous cold-start sanitizers behaviorally aligned with the module",
+              "status": "passed",
+              "title": "keeps synchronous cold-start sanitizers behaviorally aligned with the module",
+              "duration": 9.065699999999197,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "GuidedModeConfig extraction contract"
+              ],
+              "fullName": "GuidedModeConfig extraction contract keeps only a resilient bridge, synchronous sanitizer fallback, and recovery UI in every shell",
+              "status": "passed",
+              "title": "keeps only a resilient bridge, synchronous sanitizer fallback, and recovery UI in every shell",
+              "duration": 515.0625,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "GuidedModeConfig extraction contract"
+              ],
+              "fullName": "GuidedModeConfig extraction contract is build-managed and keeps root/public module bytes identical",
+              "status": "passed",
+              "title": "is build-managed and keeps root/public module bytes identical",
+              "duration": 2.4488000000001193,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "Focused reading path and saved-progress compatibility"
+              ],
+              "fullName": "Focused reading path and saved-progress compatibility keeps reading essentials and delivery while leaving extra tools available",
+              "status": "passed",
+              "title": "keeps reading essentials and delivery while leaving extra tools available",
+              "duration": 3.2127000000000407,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "Focused reading path and saved-progress compatibility"
+              ],
+              "fullName": "Focused reading path and saved-progress compatibility resumes an existing longer reading path without resetting or removing work",
+              "status": "passed",
+              "title": "resumes an existing longer reading path without resetting or removing work",
+              "duration": 3.283799999999246,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            }
+          ],
+          "startTime": 1790807377314,
+          "endTime": 1790807378008.2837,
+          "status": "passed",
+          "message": "",
+          "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/guided_mode_config_extraction_contract.test.js"
+        },
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "report follow-up: focused reading uses the existing original-support action"
+              ],
+              "fullName": "report follow-up: focused reading uses the existing original-support action keeps the seven saved reading steps and each existing tool anchor",
+              "status": "passed",
+              "title": "keeps the seven saved reading steps and each existing tool anchor",
+              "duration": 5.604499999999462,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: focused reading uses the existing original-support action"
+              ],
+              "fullName": "report follow-up: focused reading uses the existing original-support action opens a supported original from the exact source without generating an adaptation",
+              "status": "passed",
+              "title": "opens a supported original from the exact source without generating an adaptation",
+              "duration": 34.34029999999984,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: focused reading uses the existing original-support action"
+              ],
+              "fullName": "report follow-up: focused reading uses the existing original-support action uses the selected saved source and reopens it without duplicate history",
+              "status": "passed",
+              "title": "uses the selected saved source and reopens it without duplicate history",
+              "duration": 72.8780999999999,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: focused reading uses the existing original-support action"
+              ],
+              "fullName": "report follow-up: focused reading uses the existing original-support action keeps history intact when no source can be opened",
+              "status": "passed",
+              "title": "keeps history intact when no source can be opened",
+              "duration": 21.098500000000058,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: focused reading uses the existing original-support action"
+              ],
+              "fullName": "report follow-up: focused reading uses the existing original-support action resumes older complete reading choices with their work and delivery evidence",
+              "status": "passed",
+              "title": "resumes older complete reading choices with their work and delivery evidence",
+              "duration": 1.8732999999992899,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices makes an offline reading fallback with only the three reading essentials",
+              "status": "passed",
+              "title": "makes an offline reading fallback with only the three reading essentials",
+              "duration": 88.26580000000013,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices adds explicitly requested visual and writing supports to a reading goal",
+              "status": "passed",
+              "title": "adds explicitly requested visual and writing supports to a reading goal",
+              "duration": 2.2788000000000466,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices keeps assessment and engagement journeys distinct from reading",
+              "status": "passed",
+              "title": "keeps assessment and engagement journeys distinct from reading",
+              "duration": 14.302200000000084,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices does not mistake cell for an English-language-learner reading request",
+              "status": "passed",
+              "title": "does not mistake cell for an English-language-learner reading request",
+              "duration": 4.464799999999741,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices does not re-add vocabulary or assessment after an explicit removal",
+              "status": "passed",
+              "title": "does not re-add vocabulary or assessment after an explicit removal",
+              "duration": 4.2929000000003725,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices preserves a reviewed AI activity order while removing unsupported and duplicate IDs",
+              "status": "passed",
+              "title": "preserves a reviewed AI activity order while removing unsupported and duplicate IDs",
+              "duration": 3.3005999999995765,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "report follow-up: goal plans keep purposeful journeys and explicit choices"
+              ],
+              "fullName": "report follow-up: goal plans keep purposeful journeys and explicit choices self-checks that the focused-plan assertion rejects the old forced extra-tools behavior",
+              "status": "passed",
+              "title": "self-checks that the focused-plan assertion rejects the old forced extra-tools behavior",
+              "duration": 14.737299999999777,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            }
+          ],
+          "startTime": 1790807373638,
+          "endTime": 1790807373906.7373,
+          "status": "passed",
+          "message": "",
+          "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/report_flow_metadata.test.js"
+        }
+      ]
+    }
+  ],
+  "expectedHashChecks": {
+    "guided_mode_config_source.jsx": {
+      "expected": "db9ce27cfa4c69a090dd66f2a8f8d187216350755a69e132a29045995e9e03f5",
+      "actual": "db9ce27cfa4c69a090dd66f2a8f8d187216350755a69e132a29045995e9e03f5",
+      "matches": true
+    },
+    "tts-server/edge_tts_server.py": {
+      "expected": "7ab8d7903474a114be740f67e0ab80268d686e9f894665acb42e512692546074",
+      "actual": "7ab8d7903474a114be740f67e0ab80268d686e9f894665acb42e512692546074",
+      "matches": true
+    },
+    "tts-server/piper_server.py": {
+      "expected": "97d0fbb3524d71acb2d232167924cb940983fd2e904df0c10ce0bb58cb95b6cf",
+      "actual": "97d0fbb3524d71acb2d232167924cb940983fd2e904df0c10ce0bb58cb95b6cf",
+      "matches": true
+    },
+    "docker/edge-tts-server/server.py": {
+      "expected": "b92aed9cc7674f7068992ca29b0791c5babba2884626bccfc6d8d626fefcb0a8",
+      "actual": "b92aed9cc7674f7068992ca29b0791c5babba2884626bccfc6d8d626fefcb0a8",
+      "matches": true
+    }
+  },
+  "sourceHashesAfter": {
+    "view_simplified_source.jsx": "ef0f05dd0b6df7f14e1ac643d9914b8b995012c80a910baf9da035a3a4ed8c05",
+    "view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "desktop/web-app/public/view_simplified_module.js": "f4aab895849f2a9bcab426f219b6f3f9e6088fce92f203bc2156ac5374bb9b89",
+    "text_utility_helpers_source.jsx": "6f1e7ab89f762a2ad9de339eefe620b6984eb33ce5b6490fb0164964f39c126b",
+    "text_utility_helpers_module.js": "1e6f6b5ce979ec2b4e597a8f876b5369da6d0cb7c0306b84a1476abec487b173",
+    "desktop/web-app/public/text_utility_helpers_module.js": "1e6f6b5ce979ec2b4e597a8f876b5369da6d0cb7c0306b84a1476abec487b173",
+    "generate_dispatcher_source.jsx": "189b2d246636c394d7dde7086a3e77797525458d2f94be79e0bab5155fd9195b",
+    "generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "desktop/web-app/public/generate_dispatcher_module.js": "ee298cd9cf4c6772c4b78ab2e9fa9642938ffe70ada50a605a74f089c9662c77",
+    "generation_helpers_source.jsx": "375ef69704a9e0d2ca9956bad30703089f9180328ad2cfc09da4d5cd0434a6c5",
+    "generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "desktop/web-app/public/generation_helpers_module.js": "b02271bfd72ac31d9a2e1b8ceee09d50706a9c48f80d17a4fb11761f2585aaaf",
+    "tts_source.jsx": "fb28894c66e247437026c95b4a7dd5473faee1e483a090d2d47e5c47f8d866a2",
+    "tts_module.js": "531e3a9c1982c41553ee6b0c330307184e4ae1f0345c600966f941245a359ded",
+    "desktop/web-app/public/tts_module.js": "531e3a9c1982c41553ee6b0c330307184e4ae1f0345c600966f941245a359ded",
+    "view_kokoro_offer_modal_source.jsx": "04d3dee251dcc4a00d8f819daec48d3b7a95904fc9fcd0c53fa61f05fd95fca6",
+    "view_kokoro_offer_modal_module.js": "6c50e8ad76839ad76352fe0ec8dae5a84ad256c238170159d296f94ec4939fe7",
+    "desktop/web-app/public/view_kokoro_offer_modal_module.js": "6c50e8ad76839ad76352fe0ec8dae5a84ad256c238170159d296f94ec4939fe7",
+    "gemini_api_source.jsx": "66e3100c9a7ceffa24b5cdac325ee07f65bc8913f6ae56b0ba3c382a3600f4b9",
+    "gemini_api_module.js": "ca2fcf3e44e2d6ae575be4d22ec208d4ade8001fa17b687701029b0bb0ba3213",
+    "desktop/web-app/public/gemini_api_module.js": "ca2fcf3e44e2d6ae575be4d22ec208d4ade8001fa17b687701029b0bb0ba3213",
+    "guided_mode_config_source.jsx": "db9ce27cfa4c69a090dd66f2a8f8d187216350755a69e132a29045995e9e03f5",
+    "guided_mode_config_module.js": "580a8cfa661a80ce2f81fd7a7f61886265dcd13403d682f546d8df28c2baefb8",
+    "desktop/web-app/public/guided_mode_config_module.js": "580a8cfa661a80ce2f81fd7a7f61886265dcd13403d682f546d8df28c2baefb8",
+    "error_reporter_module.js": "7ef1e9083e16a0e761aab9046911e8768cfe0d2fa2ecfe37c9e10c471f96570d",
+    "desktop/web-app/public/error_reporter_module.js": "7ef1e9083e16a0e761aab9046911e8768cfe0d2fa2ecfe37c9e10c471f96570d",
+    "tts-server/edge_tts_server.py": "7ab8d7903474a114be740f67e0ab80268d686e9f894665acb42e512692546074",
+    "tts-server/piper_server.py": "97d0fbb3524d71acb2d232167924cb940983fd2e904df0c10ce0bb58cb95b6cf",
+    "docker/edge-tts-server/server.py": "b92aed9cc7674f7068992ca29b0791c5babba2884626bccfc6d8d626fefcb0a8",
+    "tests/report_audio_kokoro_offer.test.js": "8cde42bd694ce996933e08fadb576ac601c5dbef16b22d8fb10594b7687bf221",
+    "tests/report_audio_partial_recovery.test.js": "c119e2790cd81b2506dfe85333ca580597305417be8c5fdf8b93dc53a8ae85ff",
+    "tests/report_audio_tts_consistency.test.js": "56e01b83a4ac734a17d2fb2546735708e14b85c2d821a1fc7756b4348b834c64",
+    "tests/report_error_feedback_api.test.js": "41102de835a0adfe3d95477169fbd6ac3523096fe91d92d04bc5ee4df957ac36",
+    "tests/report_error_feedback_reporter.test.js": "0c1c848db9258ab6279c815cd73b92d708e786a3f3e79caeadd6b5d2c3357edd",
+    "tests/report_flow_metadata.test.js": "34279960c8531fe0edaacad2f958cf46105da1b6d47c90174ca7360095fcbb3d",
+    "tests/report_generation_recovery.test.js": "01f119ce79863d0069a9e91a2722290e1e83d9f30d19ceacff12266593731f27",
+    "tests/report_reader_glossary_parity.test.js": "ff9699ac36ac96deea54f1bda7af87581244b05721da83b5408b1ed80c096072",
+    "tests/report_storage_ack_recovery.test.js": "2fb89c66bf642dc8581bb7fd0efe71e92879e73c32f27e1b821e5e0c745961ff",
+    "tests/report_writer_background_refresh.test.js": "99b7ed1476de35dd305cd535226cf3ad1f18ebcd788a120a2de7160ba870cff8",
+    "tests/report_writer_case_documents.test.js": "f4a8ca288095017d337e02ef2c4638ccc3a4bb45a1ab23dad20826d372d8056b",
+    "tests/report_writer_citation_integrity.test.js": "dd67e62537081aebdc4b74a33852be50863863225a78ebd63332a9dbc574ac57",
+    "tests/report_writer_close_guard.test.js": "e7e770c078f5827d3838df228777a90308b7e46050def710355faaa972f737a9",
+    "tests/report_writer_corrections.test.js": "99df753b1a96e9b28baae05f8c524a2f02a6f9e5b7c81c163e09ca23286571a5",
+    "tests/report_writer_draft_selection.test.js": "7f5f4fdca15f21ec757fa1f958be3061cdb34704fd29b69721ead8655edc5191",
+    "tests/report_writer_eligibility_language.test.js": "265e98250b01770e6a1a3b9d0c0edda8132a03156c2d4f65c7d540bcd33a7204",
+    "tests/report_writer_export_quality.test.js": "102a2f907ae51eac3f212024ae3068cea063146d523c5cadee29956ae2ff3045",
+    "tests/report_writer_i18n.test.js": "f90e84d79020bca6df1927a4fe170e5e849232de0d74a12f756cc3702f05e3dd",
+    "tests/report_writer_percentiles.test.js": "782732bec0ce9336dc220d66fdd9de81cae270829ce27e9e2b6fd82326ed8b6f",
+    "tests/report_writer_prior_scores.test.js": "4eabd24a534e52ad75f5d5cf64f03ec08d10eb751e7e24db9fc0c518494d9ad9",
+    "tests/report_writer_psycheck.test.js": "57f4f43ff40c543b4f99349aeeb20f22599886f81936133b68b8ec9f8949d962",
+    "tests/report_writer_quote_check.test.js": "30884d2f5c907ac748d5ef62d8d749b40d4367c219f3226b3b7a4e011f7dd60c",
+    "tests/report_writer_reference_import.test.js": "759054973c881856a70983f606e175d76786f0d694c5ce0dfb30641544106a2b",
+    "tests/report_writer_reference_retrieval.test.js": "c12e6959072fac6ea293bddfac1d82955f31f333f2b25556016a9d7374853226",
+    "tests/report_writer_report_values.test.js": "480e3fa0b44c4688a5daeac46df7bbe9c3132c58d46884b983b21deb04bff40e",
+    "tests/report_writer_score_classification.test.js": "db8424a1fed400e780233b33a8a6648fd87a4de653422dde85662bea06fec1fb",
+    "tests/report_writer_score_entry.test.js": "b5d6d444d47892f7fd78fece986fbf70a2cab6ce589ebc070a762aa45232eca3",
+    "tests/report_writer_score_entry_ui.test.js": "2bcd0b72b0fad2a0549e3cfe27a90a8470efd911e2eddb272cf208f7219e548a",
+    "tests/report_writer_score_paste.test.js": "156aa82211663226e662b4df60fcee53556d7a95c23b677d85c0acdd4120cf9d",
+    "tests/report_writer_score_table.test.js": "c68dcebd21ae557bda620cfeb1b7cf1c7fba957de4e784d4b7b8491257b1ab89",
+    "tests/report_writer_significance.test.js": "cf5588403788b809f9560b2f8458d2d082b1d26268fd2e39ee307d1fdd9e79cf",
+    "tests/report_writer_stale_facts.test.js": "57daf73a87ee9b1db3ff1eec48f5d12afd649a97836c6427e8e43c000168e84e",
+    "tests/report_writer_step_a11y.test.js": "17652655a12bcd52122adb15a29bfc58b53d37f61b301d2dff8a665a40a2a49d",
+    "tests/report_writer_stop_runs.test.js": "e56b8306f46242c2e39dd4eb2800bb7780ddfde5565809c77b43f55658219a53",
+    "tests/report_writer_style_and_identity.test.js": "267c3ef8144c4a64cb814bb01d279aaa3572a6d1b88e19aafeb7718a87a75a9b",
+    "tests/report_writer_ui.test.js": "466f9f11e3a35961087ec8ba1b5568f4339e82452784fb2868c3c862a75065ec",
+    "tests/report_writer_verifier_coverage.test.js": "c118394cdee5abd0f091fe0e1b2856c7a309ede3a544bebd9372487ac9e1b0d9",
+    "tests/report_writer_work_safety.test.js": "f9797800de121e4717f16bbc1af8961de57b364790c572e956b1f653a817da38",
+    "tests/test_local_tts_origin_policy.py": "634e2bd0d377059775c1b27d909b2409dfa3ec6b6bdbcb5faafe76944b437d59",
+    "tests/test_edge_tts_language_review.py": "8cdcedf2b9cc65b667f4ff75d2436e70e4ec02a82187a7072cea639bda425571",
+    "tests/tts_pipeline_source_resilience.test.js": "bf3aa959becd42b5302f790a77adca698134d41e27b3fb33c11694ae437cef45",
+    "tests/gemini_auth_debounce.test.js": "63d7d560a34173d90af14f60dc48d45fe62caf82a04b8efdec6acb43c0cac6e0",
+    "tests/gemini_error_taxonomy_contract.test.js": "669ec6685dfb007624ccecb2bc5c1a1d832159c1b338e4150c4d8f176d11ef0c",
+    "AlloFlowANTI.txt": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+    "reflective_journal.md": "2155d77b79337c0f2f78220bbdf7e78faa239bca3426cbf2edea117de125810a"
+  },
+  "changedDuringValidation": [
+    "tests/report_reader_glossary_parity.test.js",
+    "tests/report_storage_ack_recovery.test.js"
+  ],
+  "finishedAt": "2026-09-30T22:29:38.189Z",
+  "passed": false,
+  "limitations": [
+    "git diff --check checks tracked changes only; new untracked tests are preserved and exercised by the targeted suites.",
+    "No full repository, cloud, browser, screen reader, or release validation is asserted by this supporting run."
+  ],
+  "retryStartedAt": "2026-09-30T22:29:28.528Z",
+  "runtimeHashesPreserved": true,
+  "targetedValidationPassed": true
+}

@@ -1,0 +1,57 @@
+{
+  "date": "2026-09-30",
+  "enhancement": "Native pan gathering and inward pasta folding",
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20260930-folding",
+  "unitTests": {
+    "passed": 40,
+    "suites": 4,
+    "newFoldingTests": 10,
+    "command": "npx vitest run kitchen_recipe_folding kitchen_recipe_gesture_guide kitchen_recipe_workspace kitchen_recipe_hands --pool=forks --maxWorkers=1 --testTimeout=30000",
+    "durationSeconds": 62.62
+  },
+  "browserChecks": {
+    "passed": 20,
+    "runs": [
+      {
+        "file": "fold-results.json",
+        "checks": 12,
+        "accessibilityScans": 5
+      },
+      {
+        "file": "wide-pan/fold-results.json",
+        "checks": 2,
+        "accessibilityScans": 1
+      },
+      {
+        "file": "quest-regression/quest-results.json",
+        "checks": 6,
+        "accessibilityScans": 3
+      }
+    ],
+    "pageErrors": 0
+  },
+  "accessibility": {
+    "scans": 9,
+    "violations": 0
+  },
+  "runtime": {
+    "files": 41,
+    "syntax": "pass",
+    "desktopMirrors": "byte-for-byte match",
+    "localPreview": "HTTP 200, no-store, matches source"
+  },
+  "review": {
+    "whitespace": "pass",
+    "commit": "none",
+    "staging": "none"
+  },
+  "covered": [
+    "Gather in either direction, draw inward and release",
+    "Taps, unfinished movements, Escape, out-of-pan gestures, pointer cancellation and tool switching",
+    "Actual phone touch, expanded kitchen, 320px layout, forced colors and reduced motion",
+    "Keyboard equivalence and graphics-loss fallback",
+    "Saved mixing receipts, replay and completion locks",
+    "Scaled wide pan on the trivet, finite tomato juice and external cooking changes",
+    "Sauce scientist quest progress"
+  ]
+}

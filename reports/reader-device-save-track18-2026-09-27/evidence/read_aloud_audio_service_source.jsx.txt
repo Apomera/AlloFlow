@@ -1,0 +1,91 @@
+read_aloud_audio_service_source.jsx
+SHA256 1f134bd24efe5d971c8c0175dd055eff8d75083f4721b7d679c80b8089d45bf7
+
+466:         function readiness(options = {}) {
+467:             const memory = summary(options);
+468:             const currentStore = liveStore({ operation: 'readiness' });
+469:             const receipt = options.receipt;
+470:             const durableStore = receipt?.verified === true ? options.durableStore : null;
+471:             const payload = serializeStore(currentStore);
+472:             const saved = serializeStore(durableStore);
+473:             const storeApi = typeof window !== 'undefined' && window.AlloModules?.KaraokeAudioStore;
+474:             const clip = (value, key) => {
+475:                 if (!value || !storeApi) return null;
+476:                 const identityKey = typeof key === 'object' ? storeApi.portableKeyForIdentity(key) : null;
+477:                 const entry = identityKey && value.entries?.[identityKey];
+478:                 if (entry) return JSON.stringify([entry.audio, entry.mime, entry.source, entry.synthesisProfile]);
+479:                 const legacy = value.version === 4 ? value.legacy : value;
+480:                 const textKey = storeApi.keyFor(typeof key === 'object' ? key.spokenText : key);
+481:                 if (!legacy?.sentences?.[textKey]) return null;
+482:                 return JSON.stringify([legacy.sentences[textKey], legacy.mimes?.[textKey] || 'audio/mpeg',
+483:                     legacy.sources?.[textKey] || 'ai', storeApi.normalizeSynthesisProfile(legacy.metadata?.[textKey])]);
+484:             };
+485:             let durableReady = 0, protectedRecordings = 0;
+486:             for (const segment of segments()) {
+487:                 const profile = profileFor(segment, 'readiness', options.profile);
+488:                 const current = inspectDescriptor(segment, currentStore, profile);
+489:                 if (current.status !== 'ready' && String(current.source || '').startsWith('human')) protectedRecordings++;
+490:                 if (current.status !== 'ready' ||
+491:                     inspectDescriptor(segment, durableStore, profile).status !== 'ready') continue;
+492:                 // The selected take matters, even when an older take has the
+493:                 // same text and voice. Never count unsaved replacement bytes.
+494:                 const currentClip = clip(payload, segment.storageKey);
+495:                 if (currentClip && currentClip === clip(saved, segment.storageKey)) durableReady++;
+496:             }
+497:             const sessionOnly = Math.max(0, memory.ready - durableReady);
+498:             const remaining = memory.missing + memory.stale + memory.corrupt;
+499:             const state = options.preparing || preparation ? 'preparing'
+500:                 : memory.total > 0 && durableReady === memory.total ? 'ready'
+501:                     : sessionOnly > 0 ? 'session-only'
+502:                         : options.failure && memory.ready === 0 ? 'failed' : 'partial';
+503:             return { scope: 'device-audio', state, ...memory, durableReady, sessionOnly, remaining, protectedRecordings,
+504:                 verifiedAt: receipt?.verified === true ? receipt.verifiedAt || null : null,
+505:                 nextActions: [sessionOnly > 0 && 'retry-save', remaining > protectedRecordings && 'prepare-missing',
+506:                     protectedRecordings > 0 && 'review-recordings',
+507:                     receipt?.verified !== true && 'verify-device-save'].filter(Boolean) };
+508:         }
+509: 
+
+562:         async function persistStore(reason, segment, store, signal) {
+563:             if (!persist || !shouldPersist(reason, segment)) return false;
+564:             throwIfAborted(signal);
+565:             const resource = liveResource({ segment, operation: 'persist', reason });
+566:             const payload = serializeStore(store);
+567:             const receipt = await persist({
+568:                 resource,
+569:                 resourceId,
+570:                 resourceType,
+571:                 lane,
+572:                 adapter,
+573:                 persistencePolicy,
+574:                 reason,
+575:                 segment,
+576:                 payload,
+577:                 signal,
+578:             });
+579:             // Legacy hosts attach bytes to React state. Only an explicit receipt
+580:             // acknowledges durable storage; undefined is an attachment, not a save.
+581:             if (receipt === false || receipt?.status === 'failed') {
+582:                 throw serviceError('persistence-failed', 'Audio is available for this session but could not be saved.', receipt);
+
+1408:         };
+1409:     }
+1410: 
+1411:     async function capturePlayed(sentence, url, options = {}) {
+1412:         if (!sentence || !url) return false;
+1413:         const provenance = readAloudProvenanceForUrl(url);
+1414:         const hasOccurrence = Number.isInteger(options.occurrence) && options.occurrence >= 0;
+1415:         const binding = bindingFor([sentence], 'reference', options.occurrence);
+1416:         if (!binding) return false;
+1417:         let segment = null;
+1418:         if (!hasOccurrence && provenance && provenance.segmentId != null) {
+1419:             // No explicit occurrence: trust the URL's own resolution record
+1420:             // over first-text-match so a duplicated sentence still captures
+1421:             // into the segment that actually requested this clip.
+1422:             try {
+1423:                 segment = binding.controller.segments().find((candidate) => (
+1424:                     String(candidate.segmentId) === String(provenance.segmentId)
+1425:                 )) || null;
+1426:             } catch (_) { segment = null; }
+1427:         }
+1428:         if (!segment) segment = firstSegment(binding);

@@ -1,0 +1,42 @@
+diff --git a/immersive_reader_source.jsx b/immersive_reader_source.jsx
+index d7da35bd7..1da62043d 100644
+--- a/immersive_reader_source.jsx
++++ b/immersive_reader_source.jsx
+@@ -743,6 +743,12 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
+ // Text starts at the bottom, scrolls up, tilts away from the reader as it
+ // travels into the distance. Dramatic long-form reading mode.
+ // ============================================================================
++// Read storage at the write boundary so remounts and StrictMode replay do not
++// rewrite the same preference. No in-memory copy can outlive another writer.
++function writeCrawlPreference(key, value) {
++    try { if (localStorage.getItem(key) !== value) localStorage.setItem(key, value); } catch (_) {}
++}
++
+ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
+     const { t } = useContext(LanguageContext);
+     const dialogRef = useOverlayDialogFocus(isOpen);
+@@ -752,13 +758,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
+     const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
+         try { const v = parseInt(localStorage.getItem('allo_crawl_speed'), 10); return (v >= 10 && v <= 140) ? v : 70; } catch { return 70; }
+     });
+-    useEffect(() => { try { localStorage.setItem('allo_crawl_speed', String(speedPxPerSec)); } catch {} }, [speedPxPerSec]);
++    useEffect(() => { writeCrawlPreference('allo_crawl_speed', String(speedPxPerSec)); }, [speedPxPerSec]);
+     const [isPlaying, setIsPlaying] = useState(() => !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
+     const [palette, setPalette] = useState(() => {
+         try { const v = localStorage.getItem('allo_crawl_palette'); return ['gold', 'teal', 'paper'].includes(v) ? v : 'gold'; } catch { return 'gold'; }
+     }); // 'gold' | 'teal' | 'paper'
+-    useEffect(() => { try { localStorage.setItem('allo_crawl_palette', palette); } catch {} }, [palette]);
++    useEffect(() => { writeCrawlPreference('allo_crawl_palette', palette); }, [palette]);
+     const [finished, setFinished] = useState(false);
+     // Ambient pad defaults OFF — clicking "Cinematic Crawl" counts as a user
+     // gesture, so the AudioContext would otherwise start playing immediately and
+@@ -767,7 +773,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
+     const [ambientOn, setAmbientOn] = useState(() => {
+         try { return localStorage.getItem('allo_crawl_ambient') === '1'; } catch { return false; }
+     });
+-    useEffect(() => { try { localStorage.setItem('allo_crawl_ambient', ambientOn ? '1' : '0'); } catch {} }, [ambientOn]);
++    useEffect(() => { writeCrawlPreference('allo_crawl_ambient', ambientOn ? '1' : '0'); }, [ambientOn]);
+     const [progressPct, setProgressPct] = useState(0);
+     const palettes = {
+         gold: { bg: '#000000', text: '#fde047', accent: '#facc15' },

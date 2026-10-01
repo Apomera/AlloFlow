@@ -723,7 +723,7 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(source).toContain("'data-geology-core-brief-summary': rigBrief.metCount");
     expect(source).toContain("'data-geology-core-brief-badge': latestCoreLog.boreBrief.metCount");
     expect(source).toContain('cleanReport.boreBrief = coreRigBoreBrief(');
-    expect(source).toContain("' · Brief ' + cleanReport.boreBrief.metCount + '/3'");
+    expect(source).toContain("' · ' + tf('stem.geology.ui.brief_met', 'Brief {met}/3', { met: cleanReport.boreBrief.metCount })");
 
     const briefMarker = source.indexOf("'data-geology-core-brief-summary': rigBrief.metCount");
     const briefSnippet = source.slice(briefMarker - 180, briefMarker + 120);
@@ -832,8 +832,8 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(correlationBody).toContain('sharedFormations.slice(0, 24)');
     expect(correlationBody).toContain("String(comparison.interpretation ||");
     expect(correlationBody).toContain('.slice(0, 180)');
-    expect(correlationBody).toContain("coreStrip('reference', 'Reference bore', comparison.previousCore)");
-    expect(correlationBody).toContain("coreStrip('candidate', 'Candidate bore', comparison.nextCore)");
+    expect(correlationBody).toContain("coreStrip('reference', t('stem.geology.ui.reference_bore', 'Reference bore'), comparison.previousCore)");
+    expect(correlationBody).toContain("coreStrip('candidate', t('stem.geology.ui.candidate_bore', 'Candidate bore'), comparison.nextCore)");
     expect(correlationBody).toContain("'Shared'");
     expect(correlationBody).toContain("'New'");
     expect(correlationBody).toContain("'Not repeated'");
@@ -857,8 +857,8 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(railBody).toContain('Outcome unknown');
     expect(railBody).toContain("'data-geology-core-variable': variable.id");
     expect(railBody).toContain("'data-state': changed ? 'changed' : 'held'");
-    expect(railBody).toContain('Δ Changed');
-    expect(railBody).toContain('= Held');
+    expect(railBody).toContain("'Δ ' + t('stem.geology.ui.variable_changed', 'Changed')");
+    expect(railBody).toContain("'= ' + t('stem.geology.ui.variable_held', 'Held')");
     expect(railBody).not.toContain("'aria-live'");
 
     const journalBody = functionSlice('fieldJournalPanel', 'coreRigConsole');
@@ -881,7 +881,7 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(consoleBody).toContain("'Bore Brief'");
     expect(markerLead(consoleBody, "'data-geology-core-debrief': rigStage")).toMatch(/\brigFinished\b\s*\?/);
     expect(consoleBody).toContain("className: (rigFinished ? 'hidden ' : '') + 'mt-2 grid grid-cols-2 gap-2'");
-    expect(consoleBody).toContain("rigFinished ? 'Surface barrel' : 'Core cassette'");
+    expect(consoleBody).toContain("rigFinished ? t('stem.geology.ui.surface_barrel', 'Surface barrel') : t('stem.geology.ui.core_cassette', 'Core cassette')");
     expect(consoleBody).toContain("!rigFinished ? h('button', { key: 'start'");
     expect(consoleBody).toContain("(rigFinished ? 'grid-cols-1' : 'grid-cols-2')");
   });
@@ -898,10 +898,10 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(consoleBody).toContain("'data-geology-core-phase-surface': 'debrief'");
     expect(consoleBody).toContain("'data-state': phaseState");
     expect(consoleBody).toContain("'aria-current': phaseState === 'current' ? 'step' : undefined");
-    expect(consoleBody).toContain("['setup', 'Setup'], ['bore', 'Bore'], ['debrief', 'Debrief']");
+    expect(consoleBody).toContain("[['setup', t('stem.geology.ui.phase_setup', 'Setup')], ['bore', t('stem.geology.ui.bore', 'Bore')], ['debrief', t('stem.geology.ui.phase_debrief', 'Debrief')]]");
     expect(consoleBody).toContain("phaseState === 'complete' ? '✓ '");
     expect(consoleBody).toContain("phaseState === 'current' ? '● ' : '○ '");
-    expect(consoleBody).toContain("phaseState === 'complete' ? 'Complete' : (phaseState === 'current' ? 'Current' : 'Upcoming')");
+    expect(consoleBody).toContain("phaseState === 'complete' ? t('stem.geology.ui.complete', 'Complete') : (phaseState === 'current' ? t('stem.geology.ui.current', 'Current') : t('stem.geology.ui.upcoming', 'Upcoming'))");
     expect(consoleBody).toContain("h('header'");
     expect(consoleBody).toContain('relative sticky top-0');
     expect(consoleBody).toContain('absolute inset-x-0 top-0 h-1');

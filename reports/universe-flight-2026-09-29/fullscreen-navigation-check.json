@@ -1,0 +1,571 @@
+{
+  "errors": [],
+  "checks": [
+    "fullscreen mode, scale, and destination selectors",
+    "catalog matches generated landmarks",
+    "paused destination selection preserves camera",
+    "center action closes panel and focuses canvas",
+    "fullscreen viewing distance shares approach state",
+    "pace matching remains paused and synchronized",
+    "fullscreen PNG export preserves paused geometry and clocks",
+    "running fullscreen PNG export retains travel",
+    "destination selection pauses free travel",
+    "fullscreen approach starts without translation",
+    "ending approach pauses and returns to scene",
+    "destination changes clear mismatched routes",
+    "fullscreen orbit starts without translation",
+    "ending orbit pauses and returns to scene",
+    "destination changes end mismatched orbits",
+    "coincident destination disables centering",
+    "rejected orbit retains panel and camera",
+    "already-within-range approach retains panel and camera",
+    "all three fullscreen scene scales",
+    "nine scenic viewpoints stay fullscreen",
+    "scenic jumps restore exact positions and lens",
+    "scenic jumps reset counters and clear motion",
+    "fullscreen mode switching pauses and resets scene",
+    "relativity has fixed scene and safe action set",
+    "fullscreen beta and time controls remain synchronized",
+    "center follows relativistic and unshifted skies",
+    "exploration scale restored after light chase",
+    "clean view retains navigation",
+    "320px selectors and center action",
+    "native selector keyboard changes mode",
+    "320px scenic action is reachable",
+    "568x320 navigation scrolls without overflow",
+    "568x320 destination and scenic actions are reachable",
+    "mode changes keep fullscreen active",
+    "scoped fullscreen accessibility"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop navigation controls",
+      "violations": []
+    },
+    {
+      "name": "clean fullscreen navigation",
+      "violations": []
+    },
+    {
+      "name": "320px fullscreen navigation",
+      "violations": []
+    },
+    {
+      "name": "320px relativity navigation",
+      "violations": []
+    },
+    {
+      "name": "568x320 navigation controls",
+      "violations": []
+    },
+    {
+      "name": "568x320 relativity navigation",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "bounds": {
+        "x": 1108,
+        "y": 165.109375,
+        "width": 320,
+        "height": 684.890625
+      },
+      "dimensions": {
+        "width": 286,
+        "scrollWidth": 286,
+        "height": 547,
+        "scrollHeight": 547
+      }
+    },
+    {
+      "name": "phone",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "bounds": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 590
+      },
+      "dimensions": {
+        "width": 262,
+        "scrollWidth": 262,
+        "height": 452,
+        "scrollHeight": 1011
+      }
+    },
+    {
+      "name": "landscape",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "bounds": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "dimensions": {
+        "width": 302,
+        "scrollWidth": 302,
+        "height": 94,
+        "scrollHeight": 1071
+      }
+    },
+    {
+      "name": "landscape-relativity",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "bounds": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      },
+      "dimensions": {
+        "width": 302,
+        "scrollWidth": 302,
+        "height": 94,
+        "scrollHeight": 388
+      }
+    }
+  ],
+  "scenic": [
+    {
+      "region": "neighborhood",
+      "title": "The stellar sea",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 90,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "pitch": -0.3805063771123648,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    },
+    {
+      "region": "neighborhood",
+      "title": "Beside the amber star",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 70,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.8,
+            1.2,
+            6.7
+          ],
+          "yaw": 0.3708912888126621,
+          "pitch": -0.10318826470056551,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "region": "galaxy",
+      "title": "Spiral portrait",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -95000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "region": "galaxy",
+      "title": "Above the arms",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            60000,
+            -105000
+          ],
+          "yaw": 0,
+          "pitch": -0.5191461142465229,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "region": "galaxy",
+      "title": "Across the disk",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 80,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -68000,
+            16000,
+            5000
+          ],
+          "yaw": 1.644193652696508,
+          "pitch": -0.2304903153263344,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "region": "cosmic",
+      "title": "Island universe",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 50,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            -650000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "region": "cosmic",
+      "title": "The companion",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 50,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -480000,
+            190000,
+            650000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "companion-galaxy"
+      }
+    },
+    {
+      "region": "cosmic",
+      "title": "Golden elliptical",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 45,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            800000,
+            550000,
+            150000
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "region": "cosmic",
+      "title": "The wider web",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 85,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            5000000,
+            -15000000
+          ],
+          "yaw": 0,
+          "pitch": -0.32175055439664213,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    }
+  ],
+  "exports": [
+    {
+      "name": "universe-generated-neighborhood-2026-09-30T01-06-05-890Z.png",
+      "bytes": 332252,
+      "action": {
+        "name": "capture",
+        "args": [],
+        "before": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "yaw": 5.933470016813079,
+            "pitch": 0.11007912727557927,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "amber-star"
+        },
+        "after": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "yaw": 5.933470016813079,
+            "pitch": 0.11007912727557927,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "amber-star"
+        },
+        "beforeRunning": false,
+        "afterRunning": false,
+        "result": {
+          "valid": true,
+          "dataUrlLength": 443026
+        }
+      }
+    },
+    {
+      "name": "universe-generated-neighborhood-2026-09-30T01-06-06-947Z.png",
+      "bytes": 332094,
+      "action": {
+        "name": "capture",
+        "args": [],
+        "before": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -0.0023923643490165454,
+              0.0007717304351666275,
+              0.006559708698916334
+            ],
+            "yaw": 5.933470016813079,
+            "pitch": 0.11007912727557927,
+            "distanceLy": 0.007024866778640464,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "amber-star"
+        },
+        "after": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 65,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              -0.0023923643490165454,
+              0.0007717304351666275,
+              0.006559708698916334
+            ],
+            "yaw": 5.933470016813079,
+            "pitch": 0.11007912727557927,
+            "distanceLy": 0.007024866778640464,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": "amber-star"
+        },
+        "beforeRunning": true,
+        "afterRunning": true,
+        "result": {
+          "valid": true,
+          "dataUrlLength": 442814
+        }
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "coincident orbit",
+      "text": "Move away from the destination’s vertical axis before starting an orbit.",
+      "notice": {
+        "left": 1127,
+        "right": 1409,
+        "top": 769.296875,
+        "bottom": 832.671875
+      },
+      "panel": {
+        "left": 1108,
+        "right": 1428,
+        "top": 60,
+        "bottom": 850
+      }
+    },
+    {
+      "name": "already-within-range approach",
+      "text": "Already within the viewing distance of Blue star. Travel is paused so you can look around.",
+      "notice": {
+        "left": 1127,
+        "right": 1409,
+        "top": 769.296875,
+        "bottom": 832.671875
+      },
+      "panel": {
+        "left": 1108,
+        "right": 1428,
+        "top": 60,
+        "bottom": 850
+      }
+    }
+  ]
+}

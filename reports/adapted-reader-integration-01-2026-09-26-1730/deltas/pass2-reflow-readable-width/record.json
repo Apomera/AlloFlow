@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-26T23:54:49.492Z",
+  "label": "pass2-reflow-readable-width",
+  "patch": "64b1219a3014a6463a91de3f42eb2e466746ed5af46a30b412a1d36eac0c2761",
+  "plans": [
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "9cacc36529da0568318c3aff2f008dfa46686b7c62d18d3507db71fcae3286ad",
+      "after": "817c30b553f3150b11c6f1ee41e655e5c20a43ddd3129942d2961acd6e5b09cd",
+      "changed": true
+    },
+    {
+      "target": "tests/reader_preview_locale_layout.test.js",
+      "targets": [
+        "tests/reader_preview_locale_layout.test.js"
+      ],
+      "before": "58f007c95a8532adcd589b970962d28777f5272740762e57669ff20b40d3d2e8",
+      "after": "76cc7e25e9b8d30b9b5ca0c7b9938f95aa650e3ab874259786571993903db335",
+      "changed": true
+    }
+  ]
+}

@@ -827,7 +827,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     "aria-label": t('common.delete'),
     onClick: () => handleDelete(idx),
-    className: "mt-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors",
+    className: "mt-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors",
     title: t('blueprint.remove_step_tooltip')
   }, /*#__PURE__*/React.createElement(Trash2, {
     size: 14

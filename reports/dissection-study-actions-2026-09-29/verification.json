@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-29",
+  "browserScenarios": 22,
+  "fullRunPassed": 21,
+  "fullRunContextTeardownTimeouts": 1,
+  "focusedRerunPassed": 1,
+  "studyActionScenarios": 9,
+  "studyActionAccessibilityChecks": 5,
+  "notebookScenarios": 5,
+  "existingEvidenceScenarios": 2,
+  "responsiveWorkspaceScenarios": 6,
+  "baselineLayouts": 5,
+  "focusedRegressionChecks": 109,
+  "rendererCopiesMatch": true,
+  "javascriptSyntaxValid": true,
+  "scopedWhitespaceClean": true,
+  "rendererSha256": "e465bf22bb2641a5e55fce94b4ac4c4e16b86d642ad5efb7f1c1cd78d8c7f9b5",
+  "committed": false
+}

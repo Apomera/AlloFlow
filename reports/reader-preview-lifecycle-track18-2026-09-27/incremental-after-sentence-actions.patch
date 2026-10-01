@@ -1,0 +1,476 @@
+===================================================================
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -2600,10 +2600,13 @@
+     var setEditAudioNotice = editAudioNotice_state[1];
+     var editAudioPlayerRef = React.useRef(null);
+     var editAudioPlayTokenRef = React.useRef(0);
++    var editAudioPlayRequestRef = React.useRef(null);
+     var editAudioRecordingRequestRef = React.useRef(null);
+     var editAudioRecordingContext = JSON.stringify([generatedContent?.id, simplifiedReadAloudText, leveledTextLanguage]);
+     var editAudioRecordingLiveRef = React.useRef(null);
+     editAudioRecordingLiveRef.current = { context: editAudioRecordingContext, allowed: canManageNarration };
++    var editAudioPreviewLiveRef = React.useRef(null);
++    editAudioPreviewLiveRef.current = { context: editAudioRecordingContext, allowed: canManageNarration && editAudioOpen };
+     var editAudioMutationRef = React.useRef(null);
+     var editAudioMutationFocusRef = React.useRef(null);
+     var editAudioMutationLiveRef = React.useRef(null);
+@@ -2695,6 +2698,7 @@
+     var revisionCloseRef = React.useRef(null);
+     var stopEditAudioPlayback = function () {
+       editAudioPlayTokenRef.current += 1;
++      editAudioPlayRequestRef.current = null;
+       try {
+         if (editAudioPlayerRef.current) {
+           editAudioPlayerRef.current.onended = null;
+@@ -2706,6 +2710,34 @@
+       setEditAudioPlayingKey(null);
+       setEditAudioLoadingKey(null);
+     };
++    function ownsEditAudioPreview(request, checkUrl) {
++      var live = editAudioPreviewLiveRef.current;
++      return !!request && editAudioPlayRequestRef.current === request && editAudioPlayerRef.current === request.audio && editAudioPlayTokenRef.current === request.token && live.allowed && live.context === request.context && (checkUrl === false || getStoredReadAloudAudioUrl(request.sentence, request.identityOptions) === request.url);
++    }
++    function retireEditAudioPreview(request) {
++      if (editAudioPlayRequestRef.current === request) { stopEditAudioPlayback(); return; }
++      // A stale attempt may share its element with a newer resume. Leave that
++      // element alone; only stop an element that no longer belongs to the view.
++      if (request?.audio && editAudioPlayerRef.current !== request.audio) {
++        request.audio.onended = null;
++        request.audio.onerror = null;
++        try { request.audio.pause(); } catch (_) {}
++      }
++    }
++    function failEditAudioPreview(request, error) {
++      if (!ownsEditAudioPreview(request)) { retireEditAudioPreview(request); return; }
++      // Invalidate before reporting: an error event and rejected play promise
++      // can describe the same failure and must not quarantine the clip twice.
++      stopEditAudioPlayback();
++      if (error?.name === 'AbortError' || (!error?.name && error?.code === 1)) setEditAudioNotice(viewText('simplified.audio_preview_interrupted', 'Audio preview was interrupted. Press Play again.'));
++      else reportEditAudioPlaybackFailure(request.sentence, request.sentenceNumber, error, request.identityOptions, request.url);
++    }
++    React.useLayoutEffect(function () {
++      var active = document.activeElement;
++      // Progress text can grow above the nested sentence list. Keep the
++      // already-focused preview control visible without moving focus.
++      if (active?.hasAttribute('data-preview-sentence')) active.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
++    }, [editAudioLoadingKey, editAudioPlayingKey, editAudioNotice]);
+     var getReadAloudAudioKey = function (sentence, identityOptions) {
+       var baseKey = '';
+       try {
+@@ -2845,6 +2877,7 @@
+       setEditAudioNotice('');
+       return function () {
+         editAudioPlayTokenRef.current += 1;
++        editAudioPlayRequestRef.current = null;
+         try {
+           if (editAudioPlayerRef.current) {
+             editAudioPlayerRef.current.onended = null;
+@@ -2913,6 +2946,19 @@
+         return null;
+       }
+     };
++    React.useEffect(function () {
++      var request = editAudioPlayRequestRef.current;
++      if (!request) return;
++      if (!ownsEditAudioPreview(request, false)) { stopEditAudioPlayback(); return; }
++      if (getStoredReadAloudAudioUrl(request.sentence, request.identityOptions) !== request.url) {
++        if (!hasStoredReadAloudAudio(request.sentence, request.identityOptions) && document.activeElement?.getAttribute('data-preview-sentence') === request.key) {
++          var replacementControl = document.activeElement.closest('[data-audio-sentence-index]')?.querySelector('[data-generate-sentence]');
++          (replacementControl || editAudioToggleRef.current)?.focus();
++        }
++        stopEditAudioPlayback();
++        setEditAudioNotice(viewText('simplified.audio_preview_changed', 'Audio preview stopped because this sentence’s audio changed.'));
++      }
++    }, [editAudioRecordingContext, canManageNarration, editAudioOpen, audioStatusTick, readAloudStoreRevision, generatedContent?.karaokeAudio]);
+     // The host can refresh callTTS while modules finish loading. Keep the
+     // resolver identity tied only to the actual voice profile so capture-status
+     // renders do not repeatedly invalidate karaoke's warm cache.
+@@ -3270,78 +3316,55 @@
+       }
+     };
+     var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
+-      if (!sentence || editAudioLoadingKey) return;
++      if (!canManageNarration || !editAudioOpen || !sentence || editAudioPlayRequestRef.current?.phase === 'starting' || editAudioMutationRef.current || editAudioRecordingRequestRef.current) return;
+       var current = editAudioPlayerRef.current;
+       var storedUrl = getStoredReadAloudAudioUrl(sentence, identityOptions);
+-      // A store replacement/deletion must not replay the old decoded element.
+-      // Blob URLs are immutable: a changed URL means a different artifact.
+-      if (current && current._alloSentenceKey === key && storedUrl && current._alloStoredUrl === storedUrl) {
+-        if (!current.paused) {
+-          try { current.pause(); } catch (_) {}
+-          setEditAudioPlayingKey(null);
+-          setEditAudioNotice('Paused sentence ' + sentenceNumber + '.');
+-          return;
+-        }
+-        try {
+-          if (isFinite(current.duration) && current.currentTime >= current.duration) current.currentTime = 0;
+-          await current.play();
+-          updateEditAudioPlaybackIssue(sentence, null, identityOptions);
+-          setEditAudioPlayingKey(key);
+-          setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
+-        } catch (error) {
+-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions, current._alloStoredUrl);
+-        }
++      var reusable = current && current._alloSentenceKey === key && storedUrl && current._alloStoredUrl === storedUrl;
++      if (reusable && !current.paused) {
++        try { current.pause(); } catch (_) {}
++        if (editAudioPlayRequestRef.current) editAudioPlayRequestRef.current.phase = 'paused';
++        setEditAudioPlayingKey(null);
++        setEditAudioNotice('Paused sentence ' + sentenceNumber + '.');
+         return;
+       }
+-      if (current) stopEditAudioPlayback();
+-      if (!hasStoredReadAloudAudio(sentence, identityOptions)) {
++      if (!reusable) stopEditAudioPlayback();
++      if (!storedUrl || !hasStoredReadAloudAudio(sentence, identityOptions)) {
+         setEditAudioNotice('Generate or record audio for sentence ' + sentenceNumber + ' before playing it.');
+         return;
+       }
+-      stopEditAudioPlayback();
+-      var token = ++editAudioPlayTokenRef.current;
++      var request = { token: ++editAudioPlayTokenRef.current, context: editAudioRecordingContext, key, sentence, sentenceNumber, identityOptions, url: storedUrl, audio: reusable ? current : null, phase: 'starting' };
++      editAudioPlayRequestRef.current = request;
+       setEditAudioLoadingKey(key);
+       setEditAudioNotice('Loading sentence ' + sentenceNumber + ' audio...');
+       try {
+-        var url = getStoredReadAloudAudioUrl(sentence, identityOptions);
+-        if (token !== editAudioPlayTokenRef.current) return;
+-        if (!url) throw new Error(viewText('simplified.audio_no_saved_audio_url', 'No saved audio URL'));
+-        var audio = new Audio(url);
++        var audio = request.audio || new Audio(storedUrl);
++        request.audio = audio;
+         audio._alloSentenceKey = key;
+-        audio._alloStoredUrl = url;
++        audio._alloStoredUrl = storedUrl;
+         audio.preload = 'auto';
+-        // Preview the stored artifact exactly as students receive it.
++        // Preview the stored artifact at its recorded/synthesized speed.
+         audio.playbackRate = 1;
++        if (isFinite(audio.duration) && audio.currentTime >= audio.duration) audio.currentTime = 0;
+         audio.onended = function () {
+-          if (editAudioPlayerRef.current === audio) {
+-            setEditAudioPlayingKey(null);
+-            setEditAudioNotice('Finished sentence ' + sentenceNumber + '.');
+-          }
++          if (!ownsEditAudioPreview(request)) { retireEditAudioPreview(request); return; }
++          request.phase = 'ended';
++          setEditAudioPlayingKey(null);
++          setEditAudioLoadingKey(null);
++          setEditAudioNotice('Finished sentence ' + sentenceNumber + '.');
+         };
+-        audio.onerror = function () {
+-          if (editAudioPlayerRef.current === audio) {
+-            editAudioPlayerRef.current = null;
+-            setEditAudioPlayingKey(null);
+-            reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error, identityOptions, audio._alloStoredUrl);
+-          }
+-        };
++        audio.onerror = function () { failEditAudioPreview(request, audio.error); };
+         editAudioPlayerRef.current = audio;
+         await audio.play();
+-        if (token !== editAudioPlayTokenRef.current) {
+-          try { audio.pause(); } catch (_) {}
+-          return;
+-        }
++        if (!ownsEditAudioPreview(request)) { retireEditAudioPreview(request); return; }
++        if (request.phase !== 'starting') return;
++        request.phase = 'playing';
+         updateEditAudioPlaybackIssue(sentence, null, identityOptions);
+         setEditAudioPlayingKey(key);
+         setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
+       } catch (error) {
+-        if (token === editAudioPlayTokenRef.current) {
+-          editAudioPlayerRef.current = null;
+-          setEditAudioPlayingKey(null);
+-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions, url);
+-        }
++        failEditAudioPreview(request, error);
+       } finally {
+-        if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
++        if (ownsEditAudioPreview(request, false)) setEditAudioLoadingKey(null);
+       }
+     };
+     function restoreEditAudioRecoveryFocus() {
+@@ -3520,7 +3543,9 @@
+     var handleToggleEditAudioPanel = function () {
+       var next = !editAudioOpen;
+       if (!next) {
++        var hadPreview = !!editAudioPlayRequestRef.current;
+         stopEditAudioPlayback();
++        if (hadPreview) setEditAudioNotice(viewText('simplified.audio_preview_stopped', 'Audio preview stopped.'));
+         var request = editAudioRecordingRequestRef.current;
+         if (request?.phase === 'permission') {
+           cancelEditAudioRecording(true);
+@@ -3835,11 +3860,13 @@
+         var statusLabel = isMicRequest ? simplifiedAudioEditLabel + ': ' + simplifiedAudioRecordLabel : isRecording ? simplifiedAudioRecordLabel : isRecordingSave ? simplifiedAudioSaveLabel : isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : isRemoving ? simplifiedAudioRemoveLabel : isSaving ? simplifiedAudioSaveLabel : captureIssue ? (captureIssue.status === 'limit' ? simplifiedAudioStorageLimitLabel : simplifiedAudioErrorLabel) : playbackIssue ? simplifiedAudioSavedLabel + ' · ' + simplifiedAudioErrorLabel : provenance.stale ? simplifiedAudioSavedLabel + ' · ' + simplifiedAudioSettingsChangedLabel : isSaved ? simplifiedAudioSavedLabel : simplifiedAudioMissingLabel;
+         var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : captureIssue ? (captureIssue.status === 'limit' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-red-50 text-red-700 border-red-200') : playbackIssue ? 'bg-red-50 text-red-700 border-red-200' : provenance.stale ? 'bg-amber-50 text-amber-800 border-amber-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
+         var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
++        var isPreviewTarget = editAudioPlayerRef.current?._alloSentenceKey === key;
++        var playDisabled = !isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading);
+         var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
+         var generateDisabled = !!regenAudioKey || !!removeAudioKey || isSaving || anyRecordingWork || ttsPrepState.busy;
+         var removeDisabled = !!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy;
+         var actionClass = 'aria-disabled:opacity-45 min-h-11 inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
+-        return <div key={key} data-audio-sentence-index={i} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" style={{ overflowWrap: 'anywhere' }} className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div role="group" className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`} title={!isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel}</span></button><button type="button" data-generate-sentence={key} onClick={function () { if (!generateDisabled) handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={generateDisabled && !isGenerating} aria-disabled={generateDisabled} aria-busy={isGenerating} aria-label={`${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`} title={isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel}</span></button><button type="button" data-record-sentence={key} onClick={function () { if (!recordDisabled) handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled && !(isMicRequest || isRecordingSave || editAudioFailedTake?.key === key)} aria-disabled={recordDisabled} aria-describedby={editAudioFailedTake?.key === key ? panelId + '-take-recovery' : undefined} aria-pressed={isRecording} aria-label={`${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`} title={isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} className={`${actionClass} aria-disabled:opacity-50 ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel}</span></button>{(isSaved || isRemoving) && <button type="button" data-remove-sentence={key} onClick={function () { if (!removeDisabled) handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={removeDisabled && !isRemoving} aria-disabled={removeDisabled} aria-busy={isRemoving} aria-label={`${simplifiedAudioRemoveLabel} ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel}</span></button>}</div></div>;
++        return <div key={key} data-audio-sentence-index={i} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" style={{ overflowWrap: 'anywhere' }} className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div role="group" className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`${simplifiedAudioEditLabel} ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" data-preview-sentence={key} onClick={function () { if (!playDisabled) handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={playDisabled && !isLoading && !isPreviewTarget} aria-disabled={playDisabled} aria-busy={isLoading} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`} title={!isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel}</span></button><button type="button" data-generate-sentence={key} onClick={function () { if (!generateDisabled) handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={generateDisabled && !isGenerating} aria-disabled={generateDisabled} aria-busy={isGenerating} aria-label={`${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`} title={isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel) : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel}</span></button><button type="button" data-record-sentence={key} onClick={function () { if (!recordDisabled) handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled && !(isMicRequest || isRecordingSave || editAudioFailedTake?.key === key)} aria-disabled={recordDisabled} aria-describedby={editAudioFailedTake?.key === key ? panelId + '-take-recovery' : undefined} aria-pressed={isRecording} aria-label={`${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`} title={isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} className={`${actionClass} aria-disabled:opacity-50 ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel}</span></button>{(isSaved || isRemoving) && <button type="button" data-remove-sentence={key} onClick={function () { if (!removeDisabled) handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={removeDisabled && !isRemoving} aria-disabled={removeDisabled} aria-busy={isRemoving} aria-label={`${simplifiedAudioRemoveLabel} ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel}</span></button>}</div></div>;
+       })}</div><button type="button" data-close-narration onClick={closeNarrationPanel} className="mt-3 min-h-11 rounded-lg border border-orange-300 bg-white px-3 py-2 text-sm font-semibold text-orange-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.close_narration', 'Close narration')}</button></div>}</div>;
+     };
+     var instructionalTextProfile = getSimplifiedInstructionalText(generatedContent);
+===================================================================
+--- /dev/null
++++ b/tests/reader_audio_preview_lifecycle.test.js
+@@ -0,0 +1,109 @@
++// Recording ownership, cancellation, and visible completion through route changes.
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { readFileSync } from 'node:fs';
++import { loadAlloModule } from './setup.js';
++const require = createRequire(import.meta.url);
++let React, createRoot, act, View, root, host, pure, phase;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  act = React.act;
++  global.React = window.React = React;
++  global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
++  loadAlloModule('view_simplified_module.js');
++  pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
++});
++beforeEach(() => { localStorage.clear(); });
++afterEach(() => {
++  if (root) act(() => root.unmount()); host?.remove(); root = null; host = null;
++  vi.restoreAllMocks(); vi.unstubAllGlobals();
++  for (const key of ['__alloRegenerateSentenceAudio', '__alloStoreRecordedSentenceAudio', '__alloRemoveSentenceAudio', '__alloGetReadAloudAudioSummary', '__alloInspectReadAloudAudio', '__alloPrepareReadAloud', '__alloQuarantineReadAloudAudio', '__alloReadAloudProfileRevision']) delete window[key];
++  if (window.AlloModules.KaraokeAudioStore) window.AlloModules.KaraokeAudioStore.current = null;
++});
++const TEXT = 'Plants need light. Roots take in water.';
++function mount(extra = {}) {
++  const noop = () => {};
++  let props = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'audio-1', type: 'simplified', data: TEXT, config: { language: 'English' }, instructionalText: { form: 'adapted', role: 'supplemental' } }, selectedVoice: 'Kore', voiceSpeed: 1, leveledTextLanguage: 'English', isTeacherMode: true, isZenMode: false, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }), SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: x => x, latestGlossary: [], setFocusedParagraphIndex: noop, setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, handleToggleIsEditingLeveledText: noop, handleSimplifiedTextChange: noop, handleFormatText: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, setSelectionMenu: noop, ...extra };
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  const render = next => { props = { ...props, ...next }; act(() => root.render(React.createElement(View, props))); };
++  render({}); return { render, get props() { return props; } };
++}
++let players,url;
++const toggle=()=>host.querySelector('[data-manage-narration]');
++const open=()=>act(()=>toggle().click());
++const play=()=>host.querySelector('[data-audio-sentence-index="0"] button');
++const notice=()=>host.querySelector('[data-edit-audio-status]');
++const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
++const mediaError=(name='NotSupportedError')=>Object.assign(new Error('Fixture media failure'),{name});
++const refresh=()=>act(()=>window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated',{detail:{resourceId:'audio-1'}})));
++const paused=async()=>{const view=mount();open();await act(async()=>play().click());await act(async()=>play().click());expect(players[0].paused).toBe(true);return view;};
++const resumeLater=async()=>{const pending=deferred(),audio=players[0];audio.play.mockImplementationOnce(()=>pending.promise);await act(async()=>play().click());return pending;};
++beforeEach(()=>{
++ players=[];url='blob:fixture';
++ window.__alloInspectReadAloudAudio=()=>({status:url?'ready':'missing',storedUrl:url,url,source:'human-teacher'});
++ window.__alloGetReadAloudAudioSummary=()=>({ready:url?2:0,missing:url?0:2,total:2});
++ window.__alloQuarantineReadAloudAudio=vi.fn(async()=>true);
++ vi.stubGlobal('Audio',class{
++  constructor(src){this.src=src;this.paused=true;this.duration=5;this.currentTime=0;this.play=vi.fn(async()=>{this.paused=false;});this.pause=vi.fn(()=>{this.paused=true;});players.push(this);}
++ });
++});
++describe('stored audio preview lifecycle',()=>{
++ it.each(['resolve','reject'])('ignores delayed resume %s after Close',async outcome=>{
++  await paused();const pending=await resumeLater();const audio=players[0];act(()=>host.querySelector('[data-close-narration]').click());const before=notice().textContent;expect(before).toContain('Audio preview stopped');
++  await act(async()=>{if(outcome==='resolve'){audio.paused=false;pending.resolve();}else pending.reject(mediaError());});
++  expect(audio.paused).toBe(true);expect(notice().textContent).toBe(before);expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();expect(document.activeElement).toBe(toggle());
++ });
++ it('ignores an old same-URL rejection after navigation and new playback',async()=>{
++  const view=await paused(),pending=await resumeLater();view.render({generatedContent:{...view.props.generatedContent,id:'audio-2'}});open();await act(async()=>play().click());
++  await act(async()=>pending.reject(mediaError()));expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();expect(players[1].paused).toBe(false);expect(play().getAttribute('aria-pressed')).toBe('true');expect(notice().textContent).toContain('Playing sentence');
++ });
++ it('guards duplicate initial Play before busy state renders',async()=>{
++  const pending=deferred();const RealAudio=window.Audio;vi.stubGlobal('Audio',class extends RealAudio{constructor(src){super(src);this.play.mockImplementation(()=>pending.promise);}});
++  mount();open();play().focus();await act(async()=>{play().click();play().click();});expect(players).toHaveLength(1);expect(players[0].play).toHaveBeenCalledOnce();expect(document.activeElement).toBe(play());
++  await act(async()=>{players[0].paused=false;pending.resolve();});
++ });
++ it('guards duplicate resume and preserves its focused busy control',async()=>{
++  await paused();const pending=deferred(),audio=players[0];audio.play.mockImplementation(()=>pending.promise);play().focus();await act(async()=>{play().click();play().click();});
++  expect(audio.play).toHaveBeenCalledTimes(2);expect(play().getAttribute('aria-busy')).toBe('true');expect(document.activeElement).toBe(play());await act(async()=>{audio.paused=false;pending.resolve();});
++ });
++ it.each(['text','language'])('stops a preview when the same reading changes %s',async changed=>{
++  const view=mount();open();await act(async()=>play().click());view.render({generatedContent:{...view.props.generatedContent,...(changed==='text'?{data:'Changed text.'}:{config:{language:'Spanish'}})}});
++  expect(players[0].paused).toBe(true);expect(play().getAttribute('aria-pressed')).toBe('false');
++ });
++ it('keeps the stored-artifact preview when only AI voice changes',async()=>{
++  const view=mount();open();await act(async()=>play().click());view.render({selectedVoice:'Puck'});expect(players[0].paused).toBe(false);expect(play().getAttribute('aria-pressed')).toBe('true');
++ });
++ it('reports one decoder failure when both error event and play rejection fire',async()=>{
++  const pending=deferred();const RealAudio=window.Audio;vi.stubGlobal('Audio',class extends RealAudio{constructor(src){super(src);this.play.mockImplementation(()=>pending.promise);}});
++  mount();open();await act(async()=>play().click());const audio=players[0];await act(async()=>{audio.error=mediaError();audio.onerror();pending.reject(mediaError());});
++  expect(window.__alloQuarantineReadAloudAudio).toHaveBeenCalledOnce();expect(play().getAttribute('aria-pressed')).toBe('false');
++ });
++ it('does not report Playing if the clip ended before play settled',async()=>{
++  await paused();const pending=await resumeLater(),audio=players[0];act(()=>audio.onended());await act(async()=>pending.resolve());expect(play().getAttribute('aria-pressed')).toBe('false');expect(notice().textContent).toContain('Finished');
++ });
++ it.each(['onended','onerror'])('ignores an obsolete %s callback on a reused element',async callback=>{
++  mount();open();await act(async()=>play().click());const audio=players[0],old=audio[callback];await act(async()=>play().click());await act(async()=>play().click());
++  await act(async()=>{audio.error=mediaError();old();});expect(audio.paused).toBe(false);expect(play().getAttribute('aria-pressed')).toBe('true');expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();
++ });
++ it.each(['playing','paused'])('stops a %s preview and moves focus to Generate when its clip disappears',async phase=>{
++  mount();open();await act(async()=>play().click());if(phase==='paused')await act(async()=>play().click());play().focus();url=null;refresh();
++  expect(players[0].paused).toBe(true);expect(document.activeElement).toBe(host.querySelector('[data-generate-sentence="simplified-0"]'));expect(notice().textContent).toContain('audio changed');
++ });
++ it('stops a replaced clip and loads its replacement on the next Play',async()=>{
++  mount();open();await act(async()=>play().click());url='blob:replacement';refresh();expect(players[0].paused).toBe(true);await act(async()=>play().click());expect(players[1].src).toBe(url);
++ });
++ it.each(['NotAllowedError','AbortError'])('makes %s retryable without quarantine',async name=>{
++  await paused();players[0].play.mockRejectedValueOnce(mediaError(name));play().focus();await act(async()=>play().click());
++  expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();expect(notice().textContent).toContain('Press Play again');expect(play().getAttribute('aria-busy')).toBe('false');expect(document.activeElement).toBe(play());await act(async()=>play().click());expect(play().getAttribute('aria-pressed')).toBe('true');
++ });
++ it('stops a delayed resume after unmount without quarantining it',async()=>{
++  await paused();const pending=await resumeLater(),audio=players[0];act(()=>root.unmount());root=null;await act(async()=>{audio.paused=false;pending.resolve();});expect(audio.paused).toBe(true);expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();
++ });
++ it('treats a native MEDIA_ERR_ABORTED event as interruption rather than damage',async()=>{
++  mount();open();await act(async()=>play().click());await act(async()=>{players[0].error={code:1,message:'Aborted'};players[0].onerror();});expect(window.__alloQuarantineReadAloudAudio).not.toHaveBeenCalled();expect(notice().textContent).toContain('Press Play again');
++ });
++});
+===================================================================
+--- /dev/null
++++ b/dev-tools/reader_audio_preview_lifecycle_browser.cjs
+@@ -0,0 +1,140 @@
++// Isolated fixture only: no app server, credentials, saved data, or TTS calls.
++const fs = require('fs'), path = require('path'), { createRequire } = require('module');
++const root = path.resolve(__dirname, '..'), req = createRequire(path.join(root, 'package.json'));
++const web = createRequire(path.join(root, 'desktop/web-app/package.json'));
++const { chromium } = req('playwright'), esbuild = req('esbuild');
++const out = path.join(root, 'validation');
++const fixture = String.raw`
++const h = React.createElement, noop = () => {};
++const text = 'Plants need light. Roots take in water. '+ 'Longword'.repeat(14) + '.';
++const original = AlloModules.InstructionalContext.createSupportedReading(text, {id:'original',config:{language:'English'}});
++const adapted = {id:'adapted',type:'simplified',data:text,config:{language:'English',grade:'5'},sourceSnapshot:original.sourceSnapshot,instructionalText:{form:'adapted',role:'supplemental'}};
++window.saveCalls=0; window.savedClips=0; window.activeReadingId='adapted'; window.__alloGetReadAloudAudioSummary = () => ({ready:3,missing:0,total:3});
++window.__alloGetReadAloudReadiness = async () => ({resourceId:activeReadingId,scope:'device-audio',state:savedClips===3?'ready':'session-only',ready:3,total:3,remaining:0,durableReady:savedClips,sessionOnly:3-savedClips,nextActions:savedClips===3?[]:['retry-save']});
++window.__alloRetryReadAloudPersistence = (lane,options)=>{window.saveCalls++;window.saveSignal=options?.signal;return new Promise((resolve,reject)=>{window.finishSave=resolve;window.failSave=reject;});};
++window.__alloPrepareReadAloud = async () => ({ok:false,remaining:3,failure:{reason:'Fixture: narration could not be saved. Try again.'}});
++
++window.recordingSaves=[];window.syntheticStreams=[];window.nativeRecorders=[];window.recordingSaveMode='success';
++const NativeMediaRecorder=window.MediaRecorder;
++window.MediaRecorder=class extends NativeMediaRecorder {
++ constructor(...args){super(...args);this.fixtureBytes=0;this.addEventListener('dataavailable',event=>this.fixtureBytes+=event.data.size);window.nativeRecorders.push(this);}
++};
++const AudioContextCtor=window.AudioContext||window.webkitAudioContext;
++window.syntheticMicrophone = async ()=>{
++ const context=new AudioContextCtor(),destination=context.createMediaStreamDestination(),oscillator=context.createOscillator();
++ oscillator.frequency.value=220;oscillator.connect(destination);oscillator.start();await context.resume();
++ const stream=destination.stream;window.syntheticStreams.push(stream);
++ stream.getTracks().forEach(track=>{const stop=track.stop.bind(track);track.stop=()=>{stop();try{oscillator.stop();}catch(_){}oscillator.disconnect();context.close().catch(()=>{});};});
++ return stream;
++};
++Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:()=>window.syntheticMicrophone()}});
++
++window.savedByResource={original:true,adapted:true};window.actionCalls=[];
++window.__alloInspectReadAloudAudio=()=>({status:savedByResource[activeReadingId]?'ready':'missing',url:savedByResource[activeReadingId]?'blob:fixture':null});
++window.__alloGetReadAloudAudioSummary=()=>({ready:savedByResource[activeReadingId]?3:0,missing:savedByResource[activeReadingId]?0:3,total:3});
++for(const [kind,name] of [['generate','__alloRegenerateSentenceAudio'],['remove','__alloRemoveSentenceAudio']]){
++ window[name]=(sentence,options)=>{
++  const resourceId=activeReadingId;window.actionCalls.push({kind,resourceId,sentence,signal:options?.signal});
++  return new Promise((resolve,reject)=>{
++   window.stageAction=()=>{savedByResource[resourceId]=kind==='generate';window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated',{detail:{resourceId}}));};
++   const stage=window.stageAction;
++   window.finishAction=value=>{if(value)stage();resolve(value);};window.failAction=reject;
++  });
++ };
++}
++
++// Real, muted HTMLAudioElements and a local silent WAV. No microphone or network audio.
++const samples=8000*120,buffer=new ArrayBuffer(44+samples*2),wav=new DataView(buffer);
++const ascii=(offset,value)=>{for(let i=0;i<value.length;i++)wav.setUint8(offset+i,value.charCodeAt(i));};
++ascii(0,'RIFF');wav.setUint32(4,36+samples*2,true);ascii(8,'WAVE');ascii(12,'fmt ');wav.setUint32(16,16,true);wav.setUint16(20,1,true);wav.setUint16(22,1,true);wav.setUint32(24,8000,true);wav.setUint32(28,16000,true);wav.setUint16(32,2,true);wav.setUint16(34,16,true);ascii(36,'data');wav.setUint32(40,samples*2,true);
++window.silentUrl=URL.createObjectURL(new Blob([buffer],{type:'audio/wav'}));window.replacementUrl=URL.createObjectURL(new Blob([buffer],{type:'audio/wav'}));window.brokenUrl=URL.createObjectURL(new Blob(['invalid WAV fixture'],{type:'audio/wav'}));
++window.previewUrl=silentUrl;window.previewPlayers=[];window.previewMode='normal';window.nativeStarts=0;window.quarantineCount=0;
++window.__alloInspectReadAloudAudio=()=>({status:previewUrl?'ready':'missing',storedUrl:previewUrl,url:previewUrl,source:'human-teacher'});
++window.__alloGetReadAloudAudioSummary=()=>({ready:previewUrl?3:0,missing:previewUrl?0:3,total:3});
++window.__alloQuarantineReadAloudAudio=async()=>{quarantineCount++;return true;};
++const NativeAudio=window.Audio;
++window.Audio=function(url){
++ const audio=new NativeAudio(url);audio.muted=true;audio.fixturePlayCalls=0;const nativePlay=audio.play.bind(audio);
++ audio.play=()=>{
++  audio.fixturePlayCalls++;
++  if(previewMode==='deny')return Promise.reject(new DOMException('Fixture autoplay denial','NotAllowedError'));
++  let gate=null;if(previewMode==='pending')gate=new Promise((resolve,reject)=>{window.finishPreview=resolve;window.failPreview=reject;});
++  return nativePlay().then(()=>{window.nativeStarts++;return gate||undefined;});
++ };
++ previewPlayers.push(audio);return audio;
++};
++
++function Harness({options}) {
++ const [editing,setEditing]=React.useState(false), [compare,setCompare]=React.useState(!!options.compare), [originalRoute,setOriginalRoute]=React.useState(!!options.original);window.switchReading=()=>setOriginalRoute(x=>!x);window.activeReadingId=originalRoute?'original':'adapted';window.__alloStoreRecordedSentenceAudio=((resourceId)=>async(sentence,blob,source,options)=>{window.recordingSaves.push({blob,resourceId,sentence,bytes:blob.size,mime:blob.type,source,signal:options?.signal});if(window.recordingSaveMode==='pending')return new Promise(resolve=>window.finishRecordingSave=resolve);return window.recordingSaveMode==='success';})(window.activeReadingId);
++ const props={t,generatedContent:originalRoute?original:adapted,gradeLevel:'5',leveledTextLanguage:'English',selectedVoice:'Kore',voiceSpeed:1,studentInterests:[],history:[original,adapted],
++ isTeacherMode:options.teacher!==false,isZenMode:false,isEditingLeveledText:editing,isProcessing:false,isPlaying:false,isCompareMode:compare,interactionMode:'read',textEditorRef:React.useRef(null),
++ cursorStyles:{},latestGlossary:[],playbackState:{currentIdx:-1},getSideBySideContent:()=>null,getContentDirection:()=> 'ltr',isRtlLang:()=>false,highlightGlossaryTerms:x=>x,
++ splitTextToSentences:x=>AlloModules.PureHelpers.splitTextToSentences(x,{}),formatInteractiveText:(x,c)=>AlloModules.PhaseNHelpers.formatInteractiveText(x,c,false,{highlightGlossaryTerms:x=>x,latestGlossary:[],MathSymbol:({text})=>text}),renderFormattedText:x=>x,
++ SourceReferencesPanel:()=>null,ComplexityGauge:()=>null,handleSpeak:noop,handleWordClick:noop,handlePhonicsClick:noop,handleQuickAddGlossary:noop,handleTextMouseUp:noop,
++ setFocusedParagraphIndex:noop,stopPlayback:noop,setComplexityLevel:noop,setSaveOriginalOnAdjust:noop,setReadingTheme:noop,setInteractionMode:noop,setIsCompareMode:setCompare,setIsFluencyMode:noop,handleToggleIsTeacherToolbarExpanded:noop,handleToggleIsEditingLeveledText:()=>setEditing(x=>!x),handleSimplifiedTextChange:noop,handleFormatText:noop,setSelectionMenu:noop};
++ return h('div',{className:'theme-'+(options.shell||'light')},h('div',{className:'allo-docsuite'},h(AlloModules.AppStyles.AppStyles),h('div',{'data-reading-theme':options.theme||'default'},h(AlloModules.SimplifiedView,props))));
++}
++window.renderFixture=options=>{if(window.fixtureRoot)fixtureRoot.unmount();document.querySelector('#mount').textContent='';window.fixtureRoot=createRoot(document.querySelector('#mount'));fixtureRoot.render(h(Harness,{options}));};
++`;
++(async () => {
++ fs.mkdirSync(out,{recursive:true});
++ const css=(await web('postcss')([web('tailwindcss')({...web('./tailwind.config.js'),content:[path.join(root,'view_simplified_source.jsx')]})]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ const runtime=esbuild.buildSync({stdin:{contents:"import React from 'react';import {createRoot} from 'react-dom/client';import * as icons from 'lucide-react';window.React=React;window.createRoot=createRoot;window.AlloIcons=icons;",resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,format:'iife',define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const strings=JSON.parse(fs.readFileSync(path.join(root,'ui_strings.js'),'utf8'));
++ const browser=await chromium.launch({headless:true});
++ const page=await browser.newPage({viewport:{width:320,height:640},hasTouch:true,reducedMotion:'reduce'}), results=[], errors=[];
++ page.setDefaultTimeout(15000);
++ page.on('pageerror',e=>errors.push(e.message));
++ await page.route('**/*',route=>route.request().url()==='http://narration-fixture.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main id="mount"></main></body></html>'}):route.abort());
++ const check=(ok,label)=>{if(!ok)throw Error(label);};
++ try {
++  await page.goto('http://narration-fixture.test/');await page.addStyleTag({content:css});await page.addScriptTag({content:runtime});
++  await page.addScriptTag({content:'window.translations='+JSON.stringify(strings)+';window.t=(key)=>{const value=key.split(".").reduce((o,k)=>o&&o[k],translations);return typeof value==="string"?value:key;};window.AlloLanguageContext=React.createContext({t});window.AlloModules={};'});
++  for(const file of ['app_styles_module.js','instructional_context_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','view_simplified_module.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
++  await page.addScriptTag({content:fixture});
++  const render=async options=>{await page.evaluate(o=>{window.savedClips=0;window.saveCalls=0;window.recordingSaves=[];window.syntheticStreams=[];window.recordingSaveMode='success';window.actionCalls=[];window.savedByResource={original:true,adapted:true};window.previewUrl=window.silentUrl;window.previewMode='normal';window.previewPlayers=[];window.nativeStarts=0;window.quarantineCount=0;renderFixture(o);},options);await page.locator('[data-adapted-reader]').waitFor();await page.locator('[data-review-action=audio-retry-save]').waitFor();};
++  const manage=()=>page.locator('[data-manage-narration]');
++  const record=()=>page.locator('[data-audio-sentence-index="0"]').getByRole('button').nth(2);
++  const close=()=>page.getByRole('button',{name:'Close narration',exact:true});
++  const status=()=>page.locator('[data-edit-audio-status]');
++  const focusVisible=async locator=>locator.evaluate(el=>{const b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return b.top>=0&&b.bottom<=innerHeight+1&&(hit===el||el.contains(hit));});
++  const open=async()=>{await manage().focus();await page.keyboard.press('Enter');await record().waitFor();};
++  const start=async()=>{await record().focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>document.querySelector('[data-audio-sentence-index="0"] button[aria-pressed="true"]'));await page.waitForFunction(()=>nativeRecorders.at(-1)?.fixtureBytes>0);};
++  const play=()=>page.locator('[data-preview-sentence="simplified-0"]');
++  const generate=()=>page.locator('[data-generate-sentence="simplified-0"]');
++  const pressPlay=async()=>{await play().focus();await page.keyboard.press('Enter');};
++  for(const route of ['adapted','original','both'])for(const mode of ['normal','spacing','200-text']){
++   console.log('Checking preview '+route+' / '+mode);await render({original:route==='original',compare:route==='both'});await open();
++   if(mode==='spacing')await page.evaluate(()=>{document.querySelectorAll('#mount *').forEach(el=>{el.style.lineHeight='1.5';el.style.letterSpacing='.12em';el.style.wordSpacing='.16em';if(el.tagName==='P')el.style.marginBottom='2em';});});
++   if(mode==='200-text')await page.evaluate(()=>{const values=[...document.querySelectorAll('#mount *')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);values.forEach(([el,size])=>el.style.fontSize=(size*2)+'px');});
++   await page.evaluate(()=>window.previewMode='pending');await pressPlay();await page.waitForFunction(()=>nativeStarts===1);
++   check(await play().getAttribute('aria-busy')==='true'&&await play().evaluate(el=>el===document.activeElement),'busy Play focus/semantics');check(await focusVisible(play()),'Play focus obscured');
++   await page.keyboard.press('Enter');check(await page.evaluate(()=>previewPlayers.length===1&&previewPlayers[0].fixturePlayCalls===1),'duplicate initial Play');
++   await page.evaluate(()=>finishPreview());await page.waitForFunction(()=>document.querySelector('[data-preview-sentence]')?.getAttribute('aria-pressed')==='true');
++   await page.keyboard.press('Enter');check(await page.evaluate(()=>previewPlayers[0].paused),'Pause did not pause native audio');
++   if(route==='both'&&mode==='normal')await play().tap();else await page.keyboard.press('Enter');await page.waitForFunction(()=>nativeStarts===2);
++   await page.keyboard.press('Enter');check(await page.evaluate(()=>previewPlayers[0].fixturePlayCalls===2),'duplicate resume');
++   await page.keyboard.press('Escape');check(await manage().evaluate(el=>el===document.activeElement),'Escape lost focus');check(await focusVisible(manage()),'Manage focus obscured');
++   await page.evaluate(()=>finishPreview());await page.waitForFunction(()=>previewPlayers[0].paused);
++   check((await status().textContent()).includes('Audio preview stopped')&&await status().isVisible(),'late resume replaced stopped result');
++   const geometry=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));check(geometry.scrollWidth<=geometry.width+2,'preview reflow overflow');
++   check(await status().getAttribute('aria-live')==='polite'&&await status().getAttribute('aria-atomic')==='true','preview status semantics');
++   results.push({route,mode,...geometry,nativePlayback:true,muted:true,busyFocusPreserved:true,closeStopsPreview:true});
++  }
++  console.log('Checking delayed resume across navigation');await render({});await open();await pressPlay();await page.waitForFunction(()=>nativeStarts===1);await pressPlay();await page.evaluate(()=>window.previewMode='pending');await pressPlay();await page.waitForFunction(()=>nativeStarts===2);
++  await page.evaluate(()=>{window.oldFail=failPreview;window.oldPlayer=previewPlayers[0];window.previewMode='normal';switchReading();});await page.waitForFunction(()=>activeReadingId==='original');await open();await pressPlay();await page.waitForFunction(()=>nativeStarts===3);
++  await page.evaluate(()=>oldFail(new DOMException('Old decode rejection','NotSupportedError')));
++  check(await page.evaluate(()=>oldPlayer.paused&&!previewPlayers[1].paused&&quarantineCount===0),'old resume affected the new reading');check((await status().textContent()).includes('Playing sentence'),'old error leaked into status');results.push({route:'navigate-during-resume',newPlaybackPreserved:true,noWrongQuarantine:true});
++  console.log('Checking clip replacement');await render({});await open();await pressPlay();await page.waitForFunction(()=>nativeStarts===1);
++  await page.evaluate(()=>{previewUrl=replacementUrl;window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated',{detail:{resourceId:activeReadingId}}));});await page.waitForFunction(()=>previewPlayers[0].paused);await pressPlay();await page.waitForFunction(()=>nativeStarts===2);check(await page.evaluate(()=>previewPlayers[1].src===replacementUrl),'old clip reused');results.push({route:'replacement',oldAudioStopped:true,newAudioLoaded:true});
++  console.log('Checking removed paused clip');await render({});await open();await pressPlay();await page.waitForFunction(()=>nativeStarts===1);await pressPlay();await page.evaluate(()=>{previewUrl=null;window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated',{detail:{resourceId:activeReadingId}}));});
++  await page.waitForFunction(()=>document.activeElement?.hasAttribute('data-generate-sentence'));check(await focusVisible(generate()),'removed clip recovery focus obscured');results.push({route:'removed-paused-clip',generateFocused:true});
++  console.log('Checking autoplay denial');await render({});await open();await page.evaluate(()=>window.previewMode='deny');await pressPlay();await page.waitForFunction(()=>document.querySelector('[data-edit-audio-status]')?.textContent.includes('blocked'));
++  check(await page.evaluate(()=>quarantineCount===0)&&await play().evaluate(el=>el===document.activeElement),'denial damaged clip or lost focus');await page.evaluate(()=>window.previewMode='normal');await pressPlay();await page.waitForFunction(()=>nativeStarts===1);results.push({route:'injected-autoplay-denial',retryWorks:true,noQuarantine:true});
++  console.log('Checking native invalid media');await render({});await open();await page.evaluate(()=>previewUrl=brokenUrl);await pressPlay();await page.waitForFunction(()=>quarantineCount===1&&document.querySelector('[data-edit-audio-status]')?.textContent.includes('could not be played'));await page.waitForTimeout(100);
++  check(await page.evaluate(()=>quarantineCount===1),'native media error reported twice');check(await play().getAttribute('aria-pressed')==='false','invalid media reported Playing');results.push({route:'native-invalid-media',oneQuarantine:true});
++  check(errors.length===0,'browser errors: '+errors.join(';'));
++  fs.writeFileSync(path.join(out,'preview-browser.json'),JSON.stringify({browser:'Chromium',viewport:{width:320,height:640},simulatedTouch:true,reducedMotion:true,nativeMutedAudio:true,results,errors,limitations:['Silent local WAV and invalid local media; no real user audio or storage writes','Play acknowledgements are gated for deterministic races; autoplay denial is injected','DOM semantics are not actual screen-reader announcement verification','200% computed-font simulation is not actual text-only zoom or 400% browser zoom','No mobile hardware, Firefox or WebKit verification']},null,2));console.log(JSON.stringify({passed:results.length,errors}));
++ }catch(error){console.error(JSON.stringify(await page.evaluate(()=>({notice:document.querySelector('[data-edit-audio-status]')?.textContent,active:document.activeElement?.outerHTML.slice(0,400),quarantineCount,players:previewPlayers.map(p=>({paused:p.paused,playCalls:p.fixturePlayCalls,error:p.error?.code}))}))));throw error;
++ }finally{await browser.close();}
++})().catch(error=>{console.error(error);process.exitCode=1;});

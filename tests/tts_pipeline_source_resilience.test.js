@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const { transformSync } = require(resolve(modulesDir, '@babel/core'));
 const transformReactJsx = require(resolve(modulesDir, '@babel/plugin-transform-react-jsx'));
+const { parse } = require(resolve(modulesDir, '@babel/parser'));
 
 const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 
@@ -449,7 +450,51 @@ describe('source resilience contracts', () => {
     const view = read('view_simplified_source.jsx');
     expect(view).toContain('window.__alloCancelAudioDownload?.()');
     expect(view).toContain("role=\"status\" aria-live=\"polite\"");
-    expect(view.match(/aria-current=\{isActive \? \"true\" : undefined\}/g) || []).toHaveLength(3);
+    // The exact renderer is shared by Original and Both, while Adapted uses
+    // two actionable sentence wrappers and a noninteractive glossary wrapper.
+    // Exercise their predicates without depending on
+    // an identifier name or whether JSX strings use single/double quotes.
+    const sentenceControls = [], adaptedPredicates = [];
+    const walk = node => {
+      if (!node || typeof node !== 'object') return;
+      if (node.type === 'JSXOpeningElement') {
+        const marker = node.attributes.find(attribute => attribute.type === 'JSXAttribute' &&
+          ['data-reading-sentence', 'data-exact-sentence-stop'].includes(attribute.name.name));
+        if (marker) sentenceControls.push({ marker: marker.name.name,
+          hasReadingAction: node.attributes.some(attribute => attribute.type === 'JSXAttribute' && attribute.name.name === 'onClick'),
+          current: node.attributes.find(attribute => attribute.type === 'JSXAttribute' && attribute.name.name === 'aria-current') });
+      }
+      if (node.type === 'VariableDeclarator' && node.id?.name === 'active' && node.init &&
+          ['playingContentId', 'playbackState.currentIdx', 'currentGlobalIdx'].every(part =>
+            view.slice(node.init.start, node.init.end).includes(part))) adaptedPredicates.push(node.init);
+      Object.values(node).forEach(child => {
+        if (Array.isArray(child)) child.forEach(walk);
+        else if (child && typeof child === 'object') walk(child);
+      });
+    };
+    walk(parse(view, { sourceType: 'script', plugins: ['jsx'] }));
+    expect(sentenceControls.filter(control => control.marker === 'data-reading-sentence' && control.hasReadingAction)).toHaveLength(2);
+    expect(sentenceControls.filter(control => control.marker === 'data-exact-sentence-stop')).toHaveLength(1);
+    sentenceControls.filter(control => control.hasReadingAction).forEach(control => {
+      expect(control.current?.value?.type).toBe('JSXExpressionContainer');
+      const expression = control.current.value.expression;
+      const current = new Function('active', 'now', 'sentence', 'return (' + view.slice(expression.start, expression.end) + ');');
+      if (control.marker === 'data-reading-sentence') {
+        expect(current(false, { start: 4 }, { start: 4 })).toBeUndefined();
+        expect(current(true, null, { start: 4 })).toBe('true');
+      } else {
+        expect(current(true, null, { start: 4 })).toBeUndefined();
+        expect(current(false, { start: 4 }, { start: 4 })).toBe('true');
+        expect(current(true, { start: 5 }, { start: 4 })).toBeUndefined();
+      }
+    });
+    expect(adaptedPredicates).toHaveLength(1);
+    const predicate = adaptedPredicates[0];
+    const active = new Function('playingContentId', 'playbackState', 'currentGlobalIdx',
+      'return (' + view.slice(predicate.start, predicate.end) + ');');
+    expect(active('simplified-main', { currentIdx: 4 }, 4)).toBe(true);
+    expect(active('other-reading', { currentIdx: 4 }, 4)).toBe(false);
+    expect(active('simplified-main', { currentIdx: 5 }, 4)).toBe(false);
     expect(view).toContain('EDIT_AUDIO_MAX_RECORDING_MS = 120000');
     expect(view).toContain('{ durationMs: durationMs }');
     expect(view).toContain('occurrence: entry && Number.isInteger');

@@ -1,0 +1,75 @@
+
+Running 43 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:27:5 › real 3D models, scale travel, orbit, chart switching and clean teardown (1.3m)
+  ok  2 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:81:5 › phone, reduced motion, all destinations, height, comparisons, and context loss (22.8s)
+  ok  3 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:125:5 › unavailable model and texture assets retain an interactive scene (5.3s)
+  ok  4 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:50:5 › the shared 3D scene preserves dimensions through orbit, swaps, inspection and same-item comparisons (9.7s)
+  ok  5 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:84:5 › subpixel locators, exact bridge navigation, notebook protection and recorded heights work together (13.1s)
+  ok  6 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:126:5 › the phone diagram retains extreme ratios without WebGL and labels distance evidence (2.7s)
+  ok  7 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:42:5 › a centered descent changes measured scale, keeps rendering with ambience paused, and arrives cleanly (14.8s)
+  ok  8 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:72:5 › phone arrival controls fit and return keyboard focus while the route restores its origin (9.2s)
+  ok  9 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:84:5 › Escape, a new destination and a change to reduced motion each settle an active approach (10.1s)
+  ok 10 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:97:5 › reduced motion bypasses the descent and changing to the chart releases its overlays (7.2s)
+  ok 11 [chromium] › tests\e2e\scale-explorer-descent.spec.ts:106:5 › continuing from a galaxy approach into the Sun preserves both return viewpoints (16.9s)
+  ok 12 [chromium] › tests\e2e\scale-explorer-galaxy.spec.ts:32:5 › a volumetric barred galaxy renders distinct face-on and edge-on views at one measured diameter (13.3s)
+  ok 13 [chromium] › tests\e2e\scale-explorer-galaxy.spec.ts:54:5 › galaxy and nebula comparisons retain the catalog ratio and both volume projections (5.4s)
+  ok 14 [chromium] › tests\e2e\scale-explorer-galaxy.spec.ts:62:5 › phone keyboard landmarks save their viewpoint and lead into the Solar System (6.4s)
+  ok 15 [chromium] › tests\e2e\scale-explorer-galaxy.spec.ts:74:5 › the galactic volume remains visible in WebGL 1 without shader errors (4.2s)
+  ok 16 [chromium] › tests\e2e\scale-explorer-inspection.spec.ts:36:5 › distinct specimens and inspection preserve measured scale (9.1s)
+  ok 17 [chromium] › tests\e2e\scale-explorer-inspection.spec.ts:71:5 › two-finger inspection on a phone does not travel to another scale (5.0s)
+  ok 18 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:33:5 › worlds respond to hover and direct selection, while dragging and empty space keep the view (4.3s)
+  ok 19 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:47:5 › nested journeys restore each camera and landmark without writing notebook observations (6.9s)
+  ok 20 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:73:5 › phone touch targets and keyboard return preserve an orbital view through a detailed world (4.8s)
+  ok 21 [chromium] › tests\e2e\scale-explorer-journeys.spec.ts:85:5 › pinch and cancelled touches never select a world, and explicit destinations clear the route (6.5s)
+  ok 22 [chromium] › tests\e2e\scale-explorer-landmarks.spec.ts:34:5 › landmark cameras follow anatomy and retain physical dimensions (15.1s)
+  ok 23 [chromium] › tests\e2e\scale-explorer-landmarks.spec.ts:83:5 › phone keyboard selection frames the feature while ambience is paused (13.4s)
+  ok 24 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:25:5 › layered terrain retains river length when vertical relief and the camera change (9.1s)
+  ok 25 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:39:5 › Earth leads into the canyon and returns to the same globe viewpoint on a phone (7.4s)
+  ok 26 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:53:5 › notebook restores the relief and follows the repositioned landmark, while comparisons use actual proportions (10.7s)
+  ok 27 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:65:5 › terrain remains interactive in WebGL 1 and blocked Earth imagery cannot offer geographic entry (6.8s)
+  ok 28 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:75:5 › animated Earth entry and relief inspection settle while ambience is paused (30.4s)
+  ok 29 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:26:5 › landmark navigation cycles features, reads sources and returns to the whole specimen without scale travel (7.9s)
+  ok 30 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:48:5 › phone controls stay separate from the model, and fullscreen and chart switching remain usable (12.9s)
+  ok 31 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:69:5 › dust fades smoothly with ambience paused, settles without an idle render loop, and snaps for reduced motion (14.4s)
+  ok 32 [chromium] › tests\e2e\scale-explorer-navigation.spec.ts:84:5 › unavailable planetary textures cannot be entered through the navigator (5.5s)
+  ok 33 [chromium] › tests\e2e\scale-explorer-notebook.spec.ts:34:5 › saved landmarks restore the camera and export measured observations (13.4s)
+  ok 34 [chromium] › tests\e2e\scale-explorer-notebook.spec.ts:85:5 › phone chart notes and per-feature drafts survive reopening, with recorded personal height (3.9s)
+  ok 35 [chromium] › tests\e2e\scale-explorer-notebook.spec.ts:124:5 › a full notebook protects existing notes and allows updates (2.7s)
+  ok 36 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:36:5 › eight orbital radii keep their measured ratios through deep inspection (6.6s)
+  ok 37 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:56:5 › phone keyboard exploration restores deep observations and enters a detailed world (7.6s)
+  ok 38 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:72:5 › orbital system comparisons preserve physical dimensions after close inspection (5.6s)
+  ok 39 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:81:5 › the orbital scene works in WebGL 1 without shader errors (4.5s)
+  x  40 [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:88:5 › deep approaches remain smooth with ambience paused and stop drawing when settled (7.7s)
+  ok 41 [chromium] › tests\e2e\scale-explorer-planets.spec.ts:40:5 › sunlight renders real phases without changing dimensions and landmarks face the observer (13.8s)
+  ok 42 [chromium] › tests\e2e\scale-explorer-planets.spec.ts:73:5 › phone controls and notebook restore lighting, viewpoint and landmark together (6.8s)
+  ok 43 [chromium] › tests\e2e\scale-explorer-planets.spec.ts:92:5 › missing imagery keeps lighting usable and prevents misleading geographic markers (4.2s)
+
+
+  1) [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:88:5 › deep approaches remain smooth with ambience paused and stop drawing when settled 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m68[39m
+    Received: [31m69[39m
+
+       97 |   expect(frames.filter(v=>v>1&&v<23.99).length).toBeGreaterThan(8);
+       98 |   for(let i=1;i<frames.length;i++)expect(frames[i]).toBeGreaterThanOrEqual(frames[i-1]);
+    >  99 |   const count=frames.length;await page.waitForTimeout(300);expect(await page.evaluate(()=>(window as any).__orbitFrames.length)).toBe(count);
+          |                                                                                                                                  ^
+      100 |   await page.getByRole('region',{name:'Explore the planetary system',exact:true}).getByRole('button',{name:'Whole system',exact:true}).click();
+      101 |   await expect(canvas).toHaveAttribute('data-atlas-zoom','1.00');
+      102 | });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\scale-explorer-orbits.spec.ts:99:130
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\scale-explorer-landscape\regression-results\scale-explorer-orbits-deep-c0031-d-stop-drawing-when-settled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\scale-explorer-landscape\regression-results\scale-explorer-orbits-deep-c0031-d-stop-drawing-when-settled-chromium\error-context.md
+
+    Error Context: reports\scale-explorer-landscape\regression-results\scale-explorer-orbits-deep-c0031-d-stop-drawing-when-settled-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\scale-explorer-orbits.spec.ts:88:5 › deep approaches remain smooth with ambience paused and stop drawing when settled 
+  42 passed (7.9m)

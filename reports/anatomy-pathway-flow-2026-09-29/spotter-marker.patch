@@ -1,0 +1,40 @@
+diff --git a/stem_lab/stem_tool_anatomy.js b/stem_lab/stem_tool_anatomy.js
+--- a/stem_lab/stem_tool_anatomy.js
++++ b/stem_lab/stem_tool_anatomy.js
+@@ -4166,7 +4166,19 @@
+         var sysKey = SYSTEMS[d.system] ? d.system : 'skeletal';
+         var sys = SYSTEMS[sysKey];
+         var view = d.view === 'posterior' ? 'posterior' : 'anterior';
+-        var bodyView3d = d._bodyView3d === true;
++        // Spotter draws its crosshair in the 2D atlas. Keep the requested view
++        // so ending a restored or newly started round returns to that view.
++        var spotterUsesAtlas = activeTab === 'spotter' && d._spotterActive === true;
++        var bodyView3d = d._bodyView3d === true && !spotterUsesAtlas;
++        function setAnatomyViewDimension(use3d) {
++          setLabToolData(function(previous) {
++            var state = previous.anatomy || {};
++            if (state._activeTab === 'spotter' && state._spotterActive === true) return previous;
++            var patch = { _bodyView3d: use3d === true };
++            if (use3d !== true && bodyView3d && body3dStyle === 'clinical') patch = Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), patch);
++            return Object.assign({}, previous, { anatomy: Object.assign({}, state, patch) });
++          });
++        }
+         var registeredClinicalAtlasPacks = (typeof window.StemLab.getAnatomyAtlasPacks === 'function' ? window.StemLab.getAnatomyAtlasPacks() : [])
+           .map(normalizeAnatomyAtlasPack).filter(Boolean);
+         var systemClinicalAtlasPacks = registeredClinicalAtlasPacks.filter(function(pack) {
+@@ -14172,10 +14184,11 @@
+                     h('div', { className: 'anatomy-view-control-row' },
+                       h('span', { id: 'anatomy-view-dimension-label', className: 'anatomy-view-control-label' }, 'View'),
+                       h('div', { className: 'anatomy-view-toggle anatomy-view-switcher', role: 'group', 'aria-labelledby': 'anatomy-view-dimension-label', 'data-anatomy-view-switcher': 'true' },
+-                        h('button', { type: 'button', 'data-anatomy-view-dimension': '2d', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { bodyView3d && body3dStyle === 'clinical' ? updMulti(Object.assign(clinicalAtlasIdentityPatch(selectedClinicalConceptId), { _bodyView3d: false })) : upd('_bodyView3d', false); } }, '2D'),
+-                        h('button', { type: 'button', 'data-anatomy-view-dimension': '3d', 'aria-pressed': bodyView3d ? 'true' : 'false', title: 'Interactive three-dimensional anatomy', onClick: function() { upd('_bodyView3d', true); } }, '3D')
+-                      )
+-                    ),
++                        h('button', { type: 'button', 'data-anatomy-view-dimension': '2d', 'data-anatomy-view-option': '2d', 'aria-pressed': bodyView3d ? 'false' : 'true', title: 'Detailed labeled atlas', onClick: function() { setAnatomyViewDimension(false); } }, '2D'),
++                        h('button', { type: 'button', 'data-anatomy-view-dimension': '3d', 'aria-pressed': bodyView3d ? 'true' : 'false', disabled: spotterUsesAtlas, 'aria-describedby': spotterUsesAtlas ? 'anatomy-spotter-view-help' : undefined, title: 'Interactive three-dimensional anatomy', onClick: function() { setAnatomyViewDimension(true); } }, '3D')
++                      )
++                    ),
++                    spotterUsesAtlas && h('p', { id: 'anatomy-spotter-view-help', 'data-anatomy-spotter-view-help': true, dir: 'auto', style: { fontSize: '13px', lineHeight: 1.5 } }, t('stem.anatomy.spotter_flow_2d', 'Spotter uses the 2D atlas for its crosshair. End the test to return to your chosen view.')),
+                     bodyView3d && h('div', { className: 'anatomy-view-control-row' },
+                       h('span', { id: 'anatomy-model-style-label', className: 'anatomy-view-control-label' }, 'Model'),
+                       h('div', { className: 'anatomy-view-toggle anatomy-model-switcher', role: 'group', 'aria-labelledby': 'anatomy-model-style-label', 'data-anatomy-model-switcher': 'true', 'data-has-clinical-atlas': clinicalAtlasAvailable ? 'true' : 'false' },

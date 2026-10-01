@@ -1,0 +1,608 @@
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\AlloFlowANTI.txt" b/AlloFlowANTI.txt
+index 341858023..c2d9bdf90 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\AlloFlowANTI.txt"
++++ b/AlloFlowANTI.txt
+@@ -36481,6 +36481,37 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       }
+   }, []);
+   // END LEARNING_WEB_RESOURCE_OPEN_BRIDGE
++  const historyOpenRequestRef = useRef(0);
++  const historyOpenContextRef = useRef(null);
++  const [pendingHistoryResource, setPendingHistoryResource] = useState(null);
++  const historyOpenContext = [inputText, history, generatedContent, activeView, activeSidebarTab, workspacePane, isTeacherMode, isParentMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!historyOpenContextRef.current || !historyOpenContextRef.current.values.every((value, index) => value === historyOpenContext[index])) {
++      historyOpenContextRef.current = { values: historyOpenContext };
++  }
++  historyOpenContextRef.current.restore = handleRestoreView;
++  historyOpenContextRef.current.failedLabel = () => {
++      const value = t('history.open_failed');
++      return typeof value === 'string' && value.trim() && value !== 'history.open_failed' ? value : 'Could not open this saved resource. Check the connection and try again.';
++  };
++  useEffect(() => () => { ++historyOpenRequestRef.current; historyOpenContextRef.current = null; }, []);
++  const handleOpenHistoryResource = async (item, options = {}) => {
++      const context = historyOpenContextRef.current;
++      if (!context) return false;
++      const request = ++historyOpenRequestRef.current;
++      if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
++      setPendingHistoryResource(item);
++      try {
++          await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++          if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
++          return context.restore(item, options);
++      } catch (error) {
++          warnLog('Saved resource could not open:', error);
++          if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(context.failedLabel(), 'error');
++          return false;
++      } finally {
++          if (request === historyOpenRequestRef.current) setPendingHistoryResource(null);
++      }
++  };
+   useEffect(() => {
+       if (!pendingQrAssignmentResource || isTeacherMode) return;
+       const resource = pendingQrAssignmentResource;
+@@ -41462,7 +41493,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+               </div>
+             )}
+             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
+-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
++            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleOpenHistoryResource} pendingHistoryResource={pendingHistoryResource} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+           </div>
+         </div>
+         {isWide && !isFullscreen && !isZenMode && (
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt" b/desktop/web-app/src/AlloFlowANTI.txt
+index 341858023..c2d9bdf90 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt"
++++ b/desktop/web-app/src/AlloFlowANTI.txt
+@@ -36481,6 +36481,37 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       }
+   }, []);
+   // END LEARNING_WEB_RESOURCE_OPEN_BRIDGE
++  const historyOpenRequestRef = useRef(0);
++  const historyOpenContextRef = useRef(null);
++  const [pendingHistoryResource, setPendingHistoryResource] = useState(null);
++  const historyOpenContext = [inputText, history, generatedContent, activeView, activeSidebarTab, workspacePane, isTeacherMode, isParentMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!historyOpenContextRef.current || !historyOpenContextRef.current.values.every((value, index) => value === historyOpenContext[index])) {
++      historyOpenContextRef.current = { values: historyOpenContext };
++  }
++  historyOpenContextRef.current.restore = handleRestoreView;
++  historyOpenContextRef.current.failedLabel = () => {
++      const value = t('history.open_failed');
++      return typeof value === 'string' && value.trim() && value !== 'history.open_failed' ? value : 'Could not open this saved resource. Check the connection and try again.';
++  };
++  useEffect(() => () => { ++historyOpenRequestRef.current; historyOpenContextRef.current = null; }, []);
++  const handleOpenHistoryResource = async (item, options = {}) => {
++      const context = historyOpenContextRef.current;
++      if (!context) return false;
++      const request = ++historyOpenRequestRef.current;
++      if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
++      setPendingHistoryResource(item);
++      try {
++          await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++          if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
++          return context.restore(item, options);
++      } catch (error) {
++          warnLog('Saved resource could not open:', error);
++          if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(context.failedLabel(), 'error');
++          return false;
++      } finally {
++          if (request === historyOpenRequestRef.current) setPendingHistoryResource(null);
++      }
++  };
+   useEffect(() => {
+       if (!pendingQrAssignmentResource || isTeacherMode) return;
+       const resource = pendingQrAssignmentResource;
+@@ -41462,7 +41493,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+               </div>
+             )}
+             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
+-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
++            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleOpenHistoryResource} pendingHistoryResource={pendingHistoryResource} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+           </div>
+         </div>
+         {isWide && !isFullscreen && !isZenMode && (
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx" b/desktop/web-app/src/App.jsx
+index 341858023..c2d9bdf90 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\src\\App.jsx"
++++ b/desktop/web-app/src/App.jsx
+@@ -36481,6 +36481,37 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
+       }
+   }, []);
+   // END LEARNING_WEB_RESOURCE_OPEN_BRIDGE
++  const historyOpenRequestRef = useRef(0);
++  const historyOpenContextRef = useRef(null);
++  const [pendingHistoryResource, setPendingHistoryResource] = useState(null);
++  const historyOpenContext = [inputText, history, generatedContent, activeView, activeSidebarTab, workspacePane, isTeacherMode, isParentMode, isIndependentMode, activeSessionCode, activeSessionAppId];
++  if (!historyOpenContextRef.current || !historyOpenContextRef.current.values.every((value, index) => value === historyOpenContext[index])) {
++      historyOpenContextRef.current = { values: historyOpenContext };
++  }
++  historyOpenContextRef.current.restore = handleRestoreView;
++  historyOpenContextRef.current.failedLabel = () => {
++      const value = t('history.open_failed');
++      return typeof value === 'string' && value.trim() && value !== 'history.open_failed' ? value : 'Could not open this saved resource. Check the connection and try again.';
++  };
++  useEffect(() => () => { ++historyOpenRequestRef.current; historyOpenContextRef.current = null; }, []);
++  const handleOpenHistoryResource = async (item, options = {}) => {
++      const context = historyOpenContextRef.current;
++      if (!context) return false;
++      const request = ++historyOpenRequestRef.current;
++      if (options?.preservePendingAssignment !== true) pendingQrAssignmentOpenGenerationRef.current += 1;
++      setPendingHistoryResource(item);
++      try {
++          await _alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']], 'saved resource');
++          if (request !== historyOpenRequestRef.current || context !== historyOpenContextRef.current) return false;
++          return context.restore(item, options);
++      } catch (error) {
++          warnLog('Saved resource could not open:', error);
++          if (!String(error?.message || '').startsWith('Could not finish loading ')) addToast(context.failedLabel(), 'error');
++          return false;
++      } finally {
++          if (request === historyOpenRequestRef.current) setPendingHistoryResource(null);
++      }
++  };
+   useEffect(() => {
+       if (!pendingQrAssignmentResource || isTeacherMode) return;
+       const resource = pendingQrAssignmentResource;
+@@ -41462,7 +41493,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
+               </div>
+             )}
+             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
+-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
++            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleOpenHistoryResource} pendingHistoryResource={pendingHistoryResource} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+           </div>
+         </div>
+         {isWide && !isFullscreen && !isZenMode && (
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\misc_handlers_source.jsx" b/misc_handlers_source.jsx
+index 0f622455d..cd12aa413 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\misc_handlers_source.jsx"
++++ b/misc_handlers_source.jsx
+@@ -1237,6 +1237,25 @@ function handleRestoreView(item, options = {}, deps = {}) {
+     visualSupportsDismissedIdsRef,
+     visualSupportsLastTimestampRef,
+   } = deps || {};
++    const rejectIncompleteResource = () => {
++        const key = 'history.resource_incomplete';
++        const value = typeof t === 'function' ? t(key) : null;
++        if (typeof addToast === 'function') addToast(typeof value === 'string' && value.trim() && value !== key ? value : 'This saved resource is incomplete and could not be opened. Your current work is still available.', 'error');
++        return false;
++    };
++    let restoredTranscript = '';
++    let restoredTranscriptTitle = 'Video transcript';
++    try {
++        if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.type !== 'string' || !item.type.trim()) return rejectIncompleteResource();
++        if (item.type === 'readingBook' && (typeof item.data?.slug !== 'string' || !item.data.slug.trim())) return rejectIncompleteResource();
++        if (item.type === 'readingSet' && (!Array.isArray(item.data?.books) || !item.data.books.length)) return rejectIncompleteResource();
++        if (item.type === 'manipulative-resource' && (typeof item.toolId !== 'string' || !item.toolId.trim())) return rejectIncompleteResource();
++        if (item.type === 'video-transcript') {
++            restoredTranscript = ([item.text, item.content, item.data?.transcript].find(value => typeof value === 'string' && value.trim()) || '').trim();
++            if (!restoredTranscript) return rejectIncompleteResource();
++            restoredTranscriptTitle = ([item.data?.title, item.title].find(value => typeof value === 'string' && value.trim()) || 'Video transcript').trim();
++        }
++    } catch (_) { return rejectIncompleteResource(); }
+     // True route prewarm: request the presentation module before the state
+     // swap renders its recoverable in-place shell. Directions is deliberately
+     // not part of CORE_BOOT_MODULES, so unrelated cold starts stay lean.
+@@ -1299,9 +1318,8 @@ function handleRestoreView(item, options = {}, deps = {}) {
+         return;
+     }
+     if (item && item.type === 'video-transcript') {
+-        const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
+-        if (transcript) setInputText(transcript);
+-        setSourceTopic(String(item.data?.title || item.title || 'Video transcript').replace(/\s+transcript$/i, '').slice(0, 120));
++        setInputText(restoredTranscript);
++        setSourceTopic(restoredTranscriptTitle.replace(/\s+transcript$/i, '').slice(0, 120));
+         setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
+         setActiveSidebarTab('create');
+         if (!isWide) setWorkspacePane('create');
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\misc_handlers_module.js" b/misc_handlers_module.js
+index 73ef724d5..65fe82960 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\misc_handlers_module.js"
++++ b/misc_handlers_module.js
+@@ -1240,6 +1240,25 @@ function handleRestoreView(item, options = {}, deps = {}) {
+     visualSupportsDismissedIdsRef,
+     visualSupportsLastTimestampRef,
+   } = deps || {};
++    const rejectIncompleteResource = () => {
++        const key = 'history.resource_incomplete';
++        const value = typeof t === 'function' ? t(key) : null;
++        if (typeof addToast === 'function') addToast(typeof value === 'string' && value.trim() && value !== key ? value : 'This saved resource is incomplete and could not be opened. Your current work is still available.', 'error');
++        return false;
++    };
++    let restoredTranscript = '';
++    let restoredTranscriptTitle = 'Video transcript';
++    try {
++        if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.type !== 'string' || !item.type.trim()) return rejectIncompleteResource();
++        if (item.type === 'readingBook' && (typeof item.data?.slug !== 'string' || !item.data.slug.trim())) return rejectIncompleteResource();
++        if (item.type === 'readingSet' && (!Array.isArray(item.data?.books) || !item.data.books.length)) return rejectIncompleteResource();
++        if (item.type === 'manipulative-resource' && (typeof item.toolId !== 'string' || !item.toolId.trim())) return rejectIncompleteResource();
++        if (item.type === 'video-transcript') {
++            restoredTranscript = ([item.text, item.content, item.data?.transcript].find(value => typeof value === 'string' && value.trim()) || '').trim();
++            if (!restoredTranscript) return rejectIncompleteResource();
++            restoredTranscriptTitle = ([item.data?.title, item.title].find(value => typeof value === 'string' && value.trim()) || 'Video transcript').trim();
++        }
++    } catch (_) { return rejectIncompleteResource(); }
+     // True route prewarm: request the presentation module before the state
+     // swap renders its recoverable in-place shell. Directions is deliberately
+     // not part of CORE_BOOT_MODULES, so unrelated cold starts stay lean.
+@@ -1302,9 +1321,8 @@ function handleRestoreView(item, options = {}, deps = {}) {
+         return;
+     }
+     if (item && item.type === 'video-transcript') {
+-        const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
+-        if (transcript) setInputText(transcript);
+-        setSourceTopic(String(item.data?.title || item.title || 'Video transcript').replace(/\s+transcript$/i, '').slice(0, 120));
++        setInputText(restoredTranscript);
++        setSourceTopic(restoredTranscriptTitle.replace(/\s+transcript$/i, '').slice(0, 120));
+         setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
+         setActiveSidebarTab('create');
+         if (!isWide) setWorkspacePane('create');
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\misc_handlers_module.js" b/desktop/web-app/public/misc_handlers_module.js
+index 73ef724d5..65fe82960 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\misc_handlers_module.js"
++++ b/desktop/web-app/public/misc_handlers_module.js
+@@ -1240,6 +1240,25 @@ function handleRestoreView(item, options = {}, deps = {}) {
+     visualSupportsDismissedIdsRef,
+     visualSupportsLastTimestampRef,
+   } = deps || {};
++    const rejectIncompleteResource = () => {
++        const key = 'history.resource_incomplete';
++        const value = typeof t === 'function' ? t(key) : null;
++        if (typeof addToast === 'function') addToast(typeof value === 'string' && value.trim() && value !== key ? value : 'This saved resource is incomplete and could not be opened. Your current work is still available.', 'error');
++        return false;
++    };
++    let restoredTranscript = '';
++    let restoredTranscriptTitle = 'Video transcript';
++    try {
++        if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.type !== 'string' || !item.type.trim()) return rejectIncompleteResource();
++        if (item.type === 'readingBook' && (typeof item.data?.slug !== 'string' || !item.data.slug.trim())) return rejectIncompleteResource();
++        if (item.type === 'readingSet' && (!Array.isArray(item.data?.books) || !item.data.books.length)) return rejectIncompleteResource();
++        if (item.type === 'manipulative-resource' && (typeof item.toolId !== 'string' || !item.toolId.trim())) return rejectIncompleteResource();
++        if (item.type === 'video-transcript') {
++            restoredTranscript = ([item.text, item.content, item.data?.transcript].find(value => typeof value === 'string' && value.trim()) || '').trim();
++            if (!restoredTranscript) return rejectIncompleteResource();
++            restoredTranscriptTitle = ([item.data?.title, item.title].find(value => typeof value === 'string' && value.trim()) || 'Video transcript').trim();
++        }
++    } catch (_) { return rejectIncompleteResource(); }
+     // True route prewarm: request the presentation module before the state
+     // swap renders its recoverable in-place shell. Directions is deliberately
+     // not part of CORE_BOOT_MODULES, so unrelated cold starts stay lean.
+@@ -1302,9 +1321,8 @@ function handleRestoreView(item, options = {}, deps = {}) {
+         return;
+     }
+     if (item && item.type === 'video-transcript') {
+-        const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
+-        if (transcript) setInputText(transcript);
+-        setSourceTopic(String(item.data?.title || item.title || 'Video transcript').replace(/\s+transcript$/i, '').slice(0, 120));
++        setInputText(restoredTranscript);
++        setSourceTopic(restoredTranscriptTitle.replace(/\s+transcript$/i, '').slice(0, 120));
+         setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
+         setActiveSidebarTab('create');
+         if (!isWide) setWorkspacePane('create');
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\view_history_panel_source.jsx" b/view_history_panel_source.jsx
+index 925bddf15..8e44ce403 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\view_history_panel_source.jsx"
++++ b/view_history_panel_source.jsx
+@@ -331,6 +331,7 @@ function HistoryPanel(props) {
+   const {
+     activeSidebarTab, activeStation, activeUnitId, addToast, cloudSyncStatus, editTitle,
+     editingId, generatedContent, getDefaultTitle, getFilteredHistory, getIconForType,
++    pendingHistoryResource = null,
+     handleCancelEdit, handleClearHistory, handleCreateUnit, handleDeleteHistoryItem,
+     handleDeleteUnit, handleDragEnd, handleDragEnter, handleDragStart, handleLoadProject,
+     handleMoveToUnit, handleRestoreView, handleSaveEdit,
+@@ -1446,6 +1447,7 @@ function HistoryPanel(props) {
+                                 && publicHistoryIdCounts.get(itemPublicId) === 1
+                                 && getSafePublicArtifactId(generatedContent) === itemPublicId)
+                         );
++                        const isOpening = item === pendingHistoryResource;
+                         const openLabel = t('common.open') || 'Open';
+                         const currentLabel = t('launch_pad.current_language') || 'Current';
+                         /* Reuse component's filteredHistory snapshot; keep nested callbacks consistent throughout this render. */
+@@ -1513,7 +1515,7 @@ function HistoryPanel(props) {
+                                             type="button"
+                                             onClick={(e) => {
+                                                 e.stopPropagation();
+-                                                if (isCurrent) return;
++                                                if (isCurrent || isOpening) return;
+                                                 if (isSyncMode) {
+                                                     addToast(t('session.teacher_control_warning'), "info");
+                                                     return;
+@@ -1524,9 +1526,11 @@ function HistoryPanel(props) {
+                                             className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
+                                             aria-label={isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`}
+                                             aria-current={isCurrent ? 'page' : undefined}
++                                            aria-busy={isOpening || undefined}
+                                             aria-disabled={isSyncMode || isCurrent}
+                                         >
+                                             <div className="min-w-0 w-full">
++                                                {isOpening && <span role="status" className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700"><RefreshCw size={12} className="animate-spin" aria-hidden="true" />{t('common.loading')}</span>}
+                                                 <div data-history-resource-title className="text-sm font-bold leading-snug" style={{ overflowWrap: 'anywhere' }} title={itemTitle}>
+                                                     {itemTitle}
+                                                 </div>
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\view_history_panel_module.js" b/view_history_panel_module.js
+index fa4d30d42..bccf58e61 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\view_history_panel_module.js"
++++ b/view_history_panel_module.js
+@@ -334,6 +334,7 @@ function HistoryPanel(props) {
+     getDefaultTitle,
+     getFilteredHistory,
+     getIconForType,
++    pendingHistoryResource = null,
+     handleCancelEdit,
+     handleClearHistory,
+     handleCreateUnit,
+@@ -1311,6 +1312,7 @@ function HistoryPanel(props) {
+         500
+       );
+       const isCurrent = !!generatedContent && (generatedContent === item || generatedArtifactInstanceId && persistedItemInstanceId && generatedArtifactInstanceId === persistedItemInstanceId || !generatedArtifactInstanceId && !persistedItemInstanceId && generatedArtifactData && generatedArtifactData === itemData || !generatedArtifactInstanceId && !persistedItemInstanceId && itemPublicId && publicHistoryIdCounts.get(itemPublicId) === 1 && getSafePublicArtifactId(generatedContent) === itemPublicId);
++      const isOpening = item === pendingHistoryResource;
+       const openLabel = t("common.open") || "Open";
+       const currentLabel = t("launch_pad.current_language") || "Current";
+       return /* @__PURE__ */ React.createElement(
+@@ -1370,7 +1372,7 @@ function HistoryPanel(props) {
+             type: "button",
+             onClick: (e) => {
+               e.stopPropagation();
+-              if (isCurrent) return;
++              if (isCurrent || isOpening) return;
+               if (isSyncMode) {
+                 addToast(t("session.teacher_control_warning"), "info");
+                 return;
+@@ -1381,9 +1383,10 @@ function HistoryPanel(props) {
+             className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
+             "aria-label": isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`,
+             "aria-current": isCurrent ? "page" : void 0,
++            "aria-busy": isOpening || void 0,
+             "aria-disabled": isSyncMode || isCurrent
+           },
+-          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
++          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, isOpening && /* @__PURE__ */ React.createElement("span", { role: "status", className: "inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), t("common.loading")), /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
+             "span",
+             {
+               className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\view_history_panel_module.js" b/desktop/web-app/public/view_history_panel_module.js
+index fa4d30d42..bccf58e61 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\view_history_panel_module.js"
++++ b/desktop/web-app/public/view_history_panel_module.js
+@@ -334,6 +334,7 @@ function HistoryPanel(props) {
+     getDefaultTitle,
+     getFilteredHistory,
+     getIconForType,
++    pendingHistoryResource = null,
+     handleCancelEdit,
+     handleClearHistory,
+     handleCreateUnit,
+@@ -1311,6 +1312,7 @@ function HistoryPanel(props) {
+         500
+       );
+       const isCurrent = !!generatedContent && (generatedContent === item || generatedArtifactInstanceId && persistedItemInstanceId && generatedArtifactInstanceId === persistedItemInstanceId || !generatedArtifactInstanceId && !persistedItemInstanceId && generatedArtifactData && generatedArtifactData === itemData || !generatedArtifactInstanceId && !persistedItemInstanceId && itemPublicId && publicHistoryIdCounts.get(itemPublicId) === 1 && getSafePublicArtifactId(generatedContent) === itemPublicId);
++      const isOpening = item === pendingHistoryResource;
+       const openLabel = t("common.open") || "Open";
+       const currentLabel = t("launch_pad.current_language") || "Current";
+       return /* @__PURE__ */ React.createElement(
+@@ -1370,7 +1372,7 @@ function HistoryPanel(props) {
+             type: "button",
+             onClick: (e) => {
+               e.stopPropagation();
+-              if (isCurrent) return;
++              if (isCurrent || isOpening) return;
+               if (isSyncMode) {
+                 addToast(t("session.teacher_control_warning"), "info");
+                 return;
+@@ -1381,9 +1383,10 @@ function HistoryPanel(props) {
+             className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
+             "aria-label": isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`,
+             "aria-current": isCurrent ? "page" : void 0,
++            "aria-busy": isOpening || void 0,
+             "aria-disabled": isSyncMode || isCurrent
+           },
+-          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
++          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, isOpening && /* @__PURE__ */ React.createElement("span", { role: "status", className: "inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), t("common.loading")), /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
+             "span",
+             {
+               className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json" b/dev-tools/remediation_validation.json
+index 530ac3d8f..02a67a4e8 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\dev-tools\\remediation_validation.json"
++++ b/dev-tools/remediation_validation.json
+@@ -48,7 +48,10 @@
+     "tests/dashboard_close_routing.test.js",
+     "tests/learner_progress_scope_browser.test.js",
+     "tests/k5_save_adventure_readiness.test.js",
+-    "tests/project_save_cancellation_encryption.test.js"
++    "tests/project_save_cancellation_encryption.test.js",
++    "tests/history_resource_open_readiness.test.js",
++    "tests/saved_resource_restore_validation.test.js",
++    "tests/history_resource_loading_ui.test.js"
+   ],
+   "browser": [
+     "tests/e2e/document_dependency_parity.spec.ts",
+@@ -156,6 +159,29 @@
+     "tests/k5_save_adventure_readiness.test.js",
+     "tests/project_save_cancellation_encryption.test.js",
+     "allo_crypto_module.js",
+-    "desktop/web-app/public/allo_crypto_module.js"
++    "desktop/web-app/public/allo_crypto_module.js",
++    "misc_handlers_source.jsx",
++    "misc_handlers_module.js",
++    "desktop/web-app/public/misc_handlers_module.js",
++    "_build_misc_handlers_module.js",
++    "view_history_panel_source.jsx",
++    "view_history_panel_module.js",
++    "desktop/web-app/public/view_history_panel_module.js",
++    "_build_view_history_panel_module.js",
++    "tests/history_resource_open_readiness.test.js",
++    "tests/saved_resource_restore_validation.test.js",
++    "tests/history_resource_loading_ui.test.js",
++    "pure_helpers_source.jsx",
++    "pure_helpers_module.js",
++    "desktop/web-app/public/pure_helpers_module.js",
++    "_build_pure_helpers_module.js",
++    "phase_n_misc_helpers_source.jsx",
++    "phase_n_misc_helpers_module.js",
++    "desktop/web-app/public/phase_n_misc_helpers_module.js",
++    "_build_phase_n_misc_helpers_module.js",
++    "text_utility_helpers_source.jsx",
++    "text_utility_helpers_module.js",
++    "desktop/web-app/public/text_utility_helpers_module.js",
++    "_build_text_utility_helpers_module.js"
+   ]
+ }
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\ui_strings.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\ui_strings.js"
+index 7f39f850c..7406f0c06 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\ui_strings.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\ui_strings.js"
+@@ -3929,6 +3929,9 @@
+     "tool_applied_challenge": "Applied Challenge Studio"
+   },
+   "history": {
++    "resource_incomplete": "This saved resource is incomplete and could not be opened. Your current work is still available.",
++    "open_failed": "Could not open this saved resource. Check the connection and try again.",
++
+     "load_project": "Load Project",
+     "save_teacher": "Save Project (Teacher Full Backup)",
+     "save_student": "Save as Student Project (Locked View)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\ui_strings.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\ui_strings.js"
+index 527024a02..8c452a377 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\ui_strings.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\ui_strings.js"
+@@ -3929,6 +3929,9 @@
+     "tool_applied_challenge": "Applied Challenge Studio"
+   },
+   "history": {
++    "resource_incomplete": "This saved resource is incomplete and could not be opened. Your current work is still available.",
++    "open_failed": "Could not open this saved resource. Check the connection and try again.",
++
+     "load_project": "Load Project",
+     "save_teacher": "Save Project (Teacher Full Backup)",
+     "save_student": "Save as Student Project (Locked View)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\french.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\lang\\french.js"
+index 8d5bf2f96..44ec3638f 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\french.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\lang\\french.js"
+@@ -4305,6 +4305,9 @@
+     "tool_applied_challenge": "Applied Challenge Studio"
+   },
+   "history": {
++    "resource_incomplete": "Cette ressource enregistrée est incomplète et n’a pas pu être ouverte. Votre travail actuel reste disponible.",
++    "open_failed": "Impossible d’ouvrir cette ressource enregistrée. Vérifiez la connexion et réessayez.",
++
+     "load_project": "Charger un projet",
+     "save_teacher": "Enregistrer le projet (sauvegarde complète de l'enseignant)",
+     "save_student": "Enregistrer comme projet élève (vue verrouillée)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\french.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\lang\\french.js"
+index 8d5bf2f96..44ec3638f 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\french.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\lang\\french.js"
+@@ -4305,6 +4305,9 @@
+     "tool_applied_challenge": "Applied Challenge Studio"
+   },
+   "history": {
++    "resource_incomplete": "Cette ressource enregistrée est incomplète et n’a pas pu être ouverte. Votre travail actuel reste disponible.",
++    "open_failed": "Impossible d’ouvrir cette ressource enregistrée. Vérifiez la connexion et réessayez.",
++
+     "load_project": "Charger un projet",
+     "save_teacher": "Enregistrer le projet (sauvegarde complète de l'enseignant)",
+     "save_student": "Enregistrer comme projet élève (vue verrouillée)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\spanish_latin_america.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\lang\\spanish_latin_america.js"
+index 9ce865c5d..c10e4f09f 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\spanish_latin_america.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\lang\\spanish_latin_america.js"
+@@ -6779,6 +6779,9 @@
+     "response_sent_confirmation": "Respuesta enviada ✓"
+   },
+   "history": {
++    "resource_incomplete": "Este recurso guardado está incompleto y no se pudo abrir. Tu trabajo actual sigue disponible.",
++    "open_failed": "No se pudo abrir este recurso guardado. Revisa la conexión e inténtalo de nuevo.",
++
+     "load_project": "Cargar Proyecto",
+     "save_teacher": "Guardar Proyecto (Respaldo Completo del Docente)",
+     "save_student": "Guardar como Proyecto del Estudiante (Vista Bloqueada)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\spanish_latin_america.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\lang\\spanish_latin_america.js"
+index 9ce865c5d..c10e4f09f 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\spanish_latin_america.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\lang\\spanish_latin_america.js"
+@@ -6779,6 +6779,9 @@
+     "response_sent_confirmation": "Respuesta enviada ✓"
+   },
+   "history": {
++    "resource_incomplete": "Este recurso guardado está incompleto y no se pudo abrir. Tu trabajo actual sigue disponible.",
++    "open_failed": "No se pudo abrir este recurso guardado. Revisa la conexión e inténtalo de nuevo.",
++
+     "load_project": "Cargar Proyecto",
+     "save_teacher": "Guardar Proyecto (Respaldo Completo del Docente)",
+     "save_student": "Guardar como Proyecto del Estudiante (Vista Bloqueada)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\arabic.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\lang\\arabic.js"
+index 7e2405a3b..89361fc7b 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\lang\\arabic.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\lang\\arabic.js"
+@@ -7823,6 +7823,9 @@
+     "response_sent_confirmation": "تم إرسال الرد ✓"
+   },
+   "history": {
++    "resource_incomplete": "هذا المورد المحفوظ غير مكتمل وتعذّر فتحه. لا يزال عملك الحالي متاحًا.",
++    "open_failed": "تعذّر فتح هذا المورد المحفوظ. تحقّق من الاتصال وحاول مرة أخرى.",
++
+     "load_project": "تحميل المشروع",
+     "save_teacher": "حفظ المشروع (نسخة احتياطية كاملة للمعلم)",
+     "save_student": "حفظ كمشروع طالب (عرض مقفل)",
+diff --git "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\arabic.js" "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\lang\\arabic.js"
+index 7e2405a3b..89361fc7b 100644
+--- "a/reports\\history-recovery-enhancements-2026-09-29\\before\\desktop\\web-app\\public\\lang\\arabic.js"
++++ "b/reports\\history-recovery-enhancements-2026-09-29\\owned-after\\desktop\\web-app\\public\\lang\\arabic.js"
+@@ -7823,6 +7823,9 @@
+     "response_sent_confirmation": "تم إرسال الرد ✓"
+   },
+   "history": {
++    "resource_incomplete": "هذا المورد المحفوظ غير مكتمل وتعذّر فتحه. لا يزال عملك الحالي متاحًا.",
++    "open_failed": "تعذّر فتح هذا المورد المحفوظ. تحقّق من الاتصال وحاول مرة أخرى.",
++
+     "load_project": "تحميل المشروع",
+     "save_teacher": "حفظ المشروع (نسخة احتياطية كاملة للمعلم)",
+     "save_student": "حفظ كمشروع طالب (عرض مقفل)",
+diff --git a/dev-tools/remediation_validation.json b/dev-tools/remediation_validation.json
+index 530ac3d8f..02a67a4e8 100644
+--- a/dev-tools/remediation_validation.json
++++ b/dev-tools/remediation_validation.json
+@@ -48,7 +48,10 @@
+     "tests/dashboard_close_routing.test.js",
+     "tests/learner_progress_scope_browser.test.js",
+     "tests/k5_save_adventure_readiness.test.js",
+-    "tests/project_save_cancellation_encryption.test.js"
++    "tests/project_save_cancellation_encryption.test.js",
++    "tests/history_resource_open_readiness.test.js",
++    "tests/saved_resource_restore_validation.test.js",
++    "tests/history_resource_loading_ui.test.js"
+   ],
+   "browser": [
+     "tests/e2e/document_dependency_parity.spec.ts",
+@@ -156,6 +159,29 @@
+     "tests/k5_save_adventure_readiness.test.js",
+     "tests/project_save_cancellation_encryption.test.js",
+     "allo_crypto_module.js",
+-    "desktop/web-app/public/allo_crypto_module.js"
++    "desktop/web-app/public/allo_crypto_module.js",
++    "misc_handlers_source.jsx",
++    "misc_handlers_module.js",
++    "desktop/web-app/public/misc_handlers_module.js",
++    "_build_misc_handlers_module.js",
++    "view_history_panel_source.jsx",
++    "view_history_panel_module.js",
++    "desktop/web-app/public/view_history_panel_module.js",
++    "_build_view_history_panel_module.js",
++    "tests/history_resource_open_readiness.test.js",
++    "tests/saved_resource_restore_validation.test.js",
++    "tests/history_resource_loading_ui.test.js",
++    "pure_helpers_source.jsx",
++    "pure_helpers_module.js",
++    "desktop/web-app/public/pure_helpers_module.js",
++    "_build_pure_helpers_module.js",
++    "phase_n_misc_helpers_source.jsx",
++    "phase_n_misc_helpers_module.js",
++    "desktop/web-app/public/phase_n_misc_helpers_module.js",
++    "_build_phase_n_misc_helpers_module.js",
++    "text_utility_helpers_source.jsx",
++    "text_utility_helpers_module.js",
++    "desktop/web-app/public/text_utility_helpers_module.js",
++    "_build_text_utility_helpers_module.js"
+   ]
+ }

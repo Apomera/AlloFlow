@@ -1057,7 +1057,7 @@
         // save it as a file instead (Geometry World polls for this marker).
         if (slot && !pendingHandoff) {
           window.__alloPrintLabRejectedHandoff = { id: slot.id };
-          announce('The model sent to Print Lab could not be opened here. A Geometry World build downloads as an STL file instead.');
+          announce(__alloT('stem.printlab.sr_the_model_sent_to_print_lab_could_not_be_opened_h', 'The model sent to Print Lab could not be opened here. A Geometry World build downloads as an STL file instead.'));
           return;
         }
         if (geometryGone) persist({ gwProjectId: '', printStage: 'Design', unitMm: initialUnitMm });
@@ -1201,7 +1201,7 @@
         var source = sourceContext && sourceContext.sourceModel;
         if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce(__alloT('stem.printlab.sr_no_editable_geometry_world_source_is_available_in', 'No editable Geometry World source is available in this session.')); return; }
         var editable=editableGeometrySource(source);
-        if(!editable){announce('This build exceeds editable sandbox file limits. Keep its STL and the source recipe in a print package.');return;}
+        if(!editable){announce(__alloT('stem.printlab.sr_this_build_exceeds_editable_sandbox_file_limits_k', 'This build exceeds editable sandbox file limits. Keep its STL and the source recipe in a print package.'));return;}
         downloadBlob(new Blob([JSON.stringify(editable, null, 2)], { type: 'application/json' }), 'geometry-world-editable-build.json');
         announce(__alloT('stem.printlab.sr_downloaded_the_editable_geometry_world_block_reci', 'Downloaded the editable Geometry World block recipe. It contains shapes and rotations, not the physical print settings.'));
       }
@@ -1534,7 +1534,7 @@
             zip.file('READ-ME.txt','Geometry World print package\n\nOpen model.stl in the school slicer. Units are millimeters: import at 100% scale. The chosen '+unitMm+' mm per block is already applied.\nDimensions (width x depth x height): '+inspection.dimensionsMm.width+' x '+inspection.dimensionsMm.depth+' x '+inspection.dimensionsMm.height+' mm.\n'+(editable?'To edit the selected creation, open editable-world.json with Geometry World > Open editable world.':'The selection exceeds editable sandbox file limits; block-source.json preserves its source recipe for recovery.')+'\nmanifest.json records the STL hash, dimensions, material, printer profile and advisory checks. Review orientation, supports and the sliced layers before staff approval. This package does not start a printer.\n'+(safeText(studentNote,300)?'\nDesign note from the student: '+safeText(studentNote,300)+'\n':''));
             return zip.generateAsync({type:'blob',compression:'DEFLATE'});
           });
-        }).then(function(blob){if(blob && operationIsCurrent('export',token,startedRevision)){downloadBlob(blob,Printable.safeFilename(title||'geometry-world')+'-print-package.zip');announce('Downloaded one print package with a millimeter STL, source, and review manifest.');}})
+        }).then(function(blob){if(blob && operationIsCurrent('export',token,startedRevision)){downloadBlob(blob,Printable.safeFilename(title||'geometry-world')+'-print-package.zip');announce(__alloT('stem.printlab.sr_downloaded_one_print_package_with_a_millimeter_st', 'Downloaded one print package with a millimeter STL, source, and review manifest.'));}})
           .catch(function(error){if(operationIsCurrent('export',token,startedRevision))announce(error.message||'The print package could not be created.');});
       }
       function exportStl() {

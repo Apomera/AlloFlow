@@ -1,0 +1,52 @@
+{
+  "sourceSha256": "018c96b2abb967318bd68e69757607496f875b5090ddbe778558eff5f16f165d",
+  "question": {
+    "text": "A 3V battery drives current through a 500Ω resistor. What is the current?",
+    "answer": 0.006,
+    "unit": "A",
+    "formula": "I = V/R = 3/500 = 0.006A",
+    "opts": [
+      0.006,
+      0.008,
+      0.009,
+      0.001
+    ],
+    "answered": false
+  },
+  "gradingExpression": "opt === ohmQuiz.answer",
+  "gradedChoices": [
+    {
+      "value": 0.006,
+      "correct": true
+    },
+    {
+      "value": 0.008,
+      "correct": false
+    },
+    {
+      "value": 0.009,
+      "correct": false
+    },
+    {
+      "value": 0.001,
+      "correct": false
+    }
+  ],
+  "legacyChoice": {
+    "answer": 0.006,
+    "chosen": 0.007,
+    "correct": false
+  },
+  "comparison": {
+    "actualAmps": [
+      0.0001,
+      0.0002,
+      0.0001
+    ],
+    "displayed": [
+      "100 µA",
+      "200 µA",
+      "+100 µA"
+    ]
+  }
+}

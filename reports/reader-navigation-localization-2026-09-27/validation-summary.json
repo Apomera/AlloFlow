@@ -1,0 +1,96 @@
+{
+  "localHead": "16e3ea214bea20953b79b0e86e41f6d0beef9deb",
+  "baseHead": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "unit": {
+    "passed": 47,
+    "failed": 0,
+    "pending": 0
+  },
+  "scopedBrowser": {
+    "passed": 8,
+    "failed": 0
+  },
+  "temporaryCssProposal": {
+    "passed": 8,
+    "failed": 0,
+    "sourceApplied": false
+  },
+  "fullDocumentOverflowCases": 4,
+  "coverage": [
+    {
+      "locale": "spanish_latin_america",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "spanish_castilian",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "arabic",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "chinese_simplified",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    },
+    {
+      "locale": "thai",
+      "added": 29,
+      "before": 301,
+      "after": 330,
+      "englishLeaves": 592,
+      "preservedFollowupKeys": 70,
+      "preservedDeliveryKeys": 173
+    }
+  ],
+  "patches": {
+    "navigation": {
+      "files": 19,
+      "sha256": "0bc303c255b5c1026cd855ab70a82bb2ffff697f22c14e1726adf4ebe94edb3b"
+    },
+    "layoutProposal": {
+      "source": "view_simplified_source.jsx",
+      "sourceSha256": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22",
+      "patchSha256": "036a90ce7d35086d03e1b2207ccbf70191b33d5f780330888d7412a97e1088f4",
+      "appliedToSource": false,
+      "method": "Equivalent temporary CSS injected into disposable Chromium after baseline measurements.",
+      "browserCasesPassed": 8,
+      "rootTextSizes": [
+        16,
+        32
+      ],
+      "viewportCssPx": 320,
+      "proposalSelectors": [
+        "[data-adapted-word-help-entry]",
+        "[data-adapted-word-help-text]"
+      ]
+    }
+  },
+  "guards": {
+    "ownedKeys": 29,
+    "allBatchKeys": 216,
+    "preservedFollowupKeysPerLocale": 70,
+    "preservedDeliveryKeysPerLocale": 173,
+    "strictPatchChecks": "Both passed without applying either patch."
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "at": "2026-09-30T21:53:39.756Z",
+  "method": "Isolated candidates; shared production files never mutated; intended assertion failures required.",
+  "proofs": [
+    {
+      "name": "latest-confirmation",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "opens the latest selection behind",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "15a86aa557f657d37282f54c9459994f5e98311c26da969eb3de701e8dfb7230",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session opens the latest selection behind an existing confirmation instead of losing it",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'B', …(4) }, {}, Any<Object> ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:166:26\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "workspace-cancellation",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "departure and return to the original workspace",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "94e29e842f30bc809a96dddff5f56688267cc8b3da15531ef722cae9c5120cd7",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session cancels a confirmed open after departure and return to the original workspace",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"B body\",\n        \"id\": \"B\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"text\": \"B support\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"text\": \"B source\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {},\n      Object {\n        \"marker\": \"original\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:189:30\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "unmount-cancellation",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "does not run a deferred manual open after unmount",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "0df21c8fadc38451898da0aeeecb6257308bf23d981488f68d4d454b0ccf2708",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session does not run a deferred manual open after unmount",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"B body\",\n        \"id\": \"B\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"text\": \"B support\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"text\": \"B source\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {},\n      Object {\n        \"marker\": \"original\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:194:30\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "synchronous-supersession",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "lets a successful synchronous open supersede",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "35960a4d3ec8bae9e2807841ce13cb84345dd9afc53565e416da3ffa8c8331bf",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session lets a successful synchronous open supersede the old confirmation",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'B', …(4) }, {}, Any<Object> ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -13,7 +13,9 @@\n        \"text\": \"B source\",\n      },\n      \"type\": \"simplified\",\n    },\n    {},\n-   Any<Object>,\n+   {\n+     \"marker\": \"original\",\n+   },\n  ]\n\n  2nd vi.fn() call:\n\n  [\n    {\n-     \"data\": \"B body\",\n-     \"id\": \"B\",\n+     \"data\": \"A body\",\n+     \"id\": \"A\",\n      \"readingSupports\": {\n        \"annotations\": [\n          {\n-           \"text\": \"B support\",\n+           \"text\": \"A support\",\n          },\n        ],\n      },\n      \"sourceSnapshot\": {\n-       \"text\": \"B source\",\n+       \"text\": \"A source\",\n      },\n      \"type\": \"simplified\",\n    },\n    {},\n-   Any<Object>,\n+   {\n+     \"marker\": \"original\",\n+   },\n  ]\n\n\nNumber of calls: 2\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:200:26\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "saved-support-payload",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "uses the saved support payload when",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "6694914b7de52d085abf501f3bdf9aca3816b0f0980279c9e752bd2bfcaee452",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session uses the saved support payload when Save and continue updates the selected reading",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'A', …(4) }, {}, Any<Object> ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -3,17 +3,19 @@\n      \"data\": \"A body\",\n      \"id\": \"A\",\n      \"readingSupports\": {\n        \"annotations\": [\n          {\n-           \"text\": \"Saved word help\",\n+           \"text\": \"A support\",\n          },\n        ],\n      },\n      \"sourceSnapshot\": {\n        \"text\": \"A source\",\n      },\n      \"type\": \"simplified\",\n    },\n    {},\n-   Any<Object>,\n+   {\n+     \"marker\": \"original\",\n+   },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:208:26\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "confirmed-save-context",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "allows Save and continue to update the current reading",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "ec7e9e88a61558a8a82c42475ee3deeaa4764ce39f4881f39cc20d9ff0035a62",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session allows Save and continue to update the current reading before opening another saved resource",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ { id: 'B', …(4) }, {}, Any<Object> ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:216:57\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "current-reading-identity",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "current reading changes its id before confirmation",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "1a9195c5adfdd56147175d58859f9afffe47cf41fc746ab98eec4c452e550d10",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session cancels when the current reading changes its id before confirmation",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"B body\",\n        \"id\": \"B\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"text\": \"B support\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"text\": \"B source\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {},\n      Object {\n        \"marker\": \"original\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:221:61\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "deleted-saved-resource",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "does not reopen a saved resource that disappeared",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "d08c1c30a214a82cbf669ddda1faa52f758831bd9a77556f827f58ac69106efb",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session does not reopen a saved resource that disappeared while confirmation was pending",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      Object {\n        \"data\": \"B body\",\n        \"id\": \"B\",\n        \"readingSupports\": Object {\n          \"annotations\": Array [\n            Object {\n              \"text\": \"B support\",\n            },\n          ],\n        },\n        \"sourceSnapshot\": Object {\n          \"text\": \"B source\",\n        },\n        \"type\": \"simplified\",\n      },\n      Object {},\n      Object {\n        \"marker\": \"original\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:225:61\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "deferred-error-containment",
+      "test": "tests/history_resource_open_readiness.test.js",
+      "pattern": "contains a restore failure inside a deferred confirmation",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "f3acf37219e9da989a761d025daeb96262879adbf3cfe7807198317c93658700",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "manual resource opening through the real unsaved-support session contains a restore failure inside a deferred confirmation and supports a fresh retry",
+          "messages": [
+            "AssertionError: expected [Function] to not throw an error but 'Error: Opener failed' was thrown\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/history_resource_open_readiness.test.js:229:42\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "storage-adapter-readiness",
+      "test": "tests/storage_adapter_bootstrap_readiness.test.js",
+      "pattern": "keeps local hydration and saving blocked",
+      "baselineSha256": "2b9cf47c2c3aec735721f2b09066aa1234c33e2863c466790fbfdeef66dc168b",
+      "candidateSha256": "3551ae9691b89e3343047d300c3d362d68d48f6a3d32e1a50b40d78a9c4a9d04",
+      "exitCode": 1,
+      "failures": [
+        {
+          "name": "storage bootstrap waits for the actual saved-work adapter keeps local hydration and saving blocked until the adapter replaces its placeholder",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/storage_adapter_bootstrap_readiness.test.js:37:37\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

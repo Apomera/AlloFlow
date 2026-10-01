@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-const { buildFixtureSuite, renderPdf } = require('../../dev-tools/build_document_at_fixture_suite.cjs');
+const { buildFixtureSuite, renderPdf, FIXTURE_SUITE_TIMEOUT_MS } = require('../../dev-tools/build_document_at_fixture_suite.cjs');
 const { runAcceptance, inspectPdf, manualTemplate } = require('../../dev-tools/document_export_at_acceptance.cjs');
 
 test.describe.configure({ mode: 'serial' });
@@ -9,7 +9,7 @@ test.setTimeout(180000);
 let manifestPath: string;
 let manifest: any;
 test.beforeAll(async ({}, testInfo) => {
-  testInfo.setTimeout(360000);
+  testInfo.setTimeout(FIXTURE_SUITE_TIMEOUT_MS);
   manifestPath = process.env.ALLOFLOW_AT_MANIFEST || await buildFixtureSuite(path.resolve('reports', 'at-fixtures-' + process.pid + '-' + Date.now()));
   manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 });

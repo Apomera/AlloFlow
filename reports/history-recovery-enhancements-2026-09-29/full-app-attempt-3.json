@@ -1,0 +1,403 @@
+{
+  "at": "2026-09-30T02:38:09.672Z",
+  "preview": {
+    "at": "2026-09-30T02:35:23.753Z",
+    "hostSha256": "bb4ca565456ba9915b530c35160d9d7b9cc22c0649ba777daaa95e48b1c0bd7f",
+    "shellSha256": "8e5018132c562987fd97965fd1b88bcb2b775ea33bd5f6f7d3bf4c7f3ebb5fbf",
+    "js": "main.ec8697e8.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "fixture": "Actual offline-history hydrate path, actual full local host, real built view and handler modules; network delay and failure injected by Playwright; service workers blocked.",
+  "results": [
+    {
+      "scenario": "latest",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>)",
+        "ErrorBoundary caught an error: Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>) {componentStack: \n    at SimplifiedView (http://127.0.0.1:3193/app/…p/static/js/main.ec8697e8.js:369:15684)\n    at p$}",
+        "Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>)",
+        "ErrorBoundary caught an error: Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>) {componentStack: \n    at SimplifiedView (http://127.0.0.1:3193/app/…p/static/js/main.ec8697e8.js:369:15684)\n    at p$}"
+      ],
+      "requests": 1,
+      "failure": "TimeoutError: page.waitForFunction: Timeout 45000ms exceeded.",
+      "buttons": [
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Learn",
+          "label": "Learning Tools",
+          "help": "header_learning_hub"
+        },
+        {
+          "text": "Tools",
+          "label": "Educator Tools",
+          "help": "header_educator_hub"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "Start & setup",
+          "label": null,
+          "help": "header_rerun_wizard"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": " Create",
+          "label": null,
+          "help": "sidebar_tab_create"
+        },
+        {
+          "text": " History",
+          "label": null,
+          "help": "sidebar_tab_history"
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "",
+          "label": "Class Roster Key",
+          "help": "roster_manage_button"
+        },
+        {
+          "text": "Create one",
+          "label": null
+        },
+        {
+          "text": "More ",
+          "label": "More resource pack actions"
+        },
+        {
+          "text": "",
+          "label": "Create New Unit Folder",
+          "help": "history_create_unit_btn"
+        },
+        {
+          "text": "Organize",
+          "label": null
+        },
+        {
+          "text": "Lesson AText Adaptation & EngagementAdapted text · Not designatedOpen",
+          "label": "Open: Lesson A"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Lesson A"
+        },
+        {
+          "text": "Lesson BText Adaptation & EngagementAdapted text · Not designatedCurrent",
+          "label": "Lesson B. Current"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Lesson B"
+        },
+        {
+          "text": "Incomplete bookIllustrated storyOpen",
+          "label": "Open: Incomplete book"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Incomplete book"
+        },
+        {
+          "text": "Empty transcriptVideo TranscriptOpen",
+          "label": "Open: Empty transcript"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Empty transcript"
+        },
+        {
+          "text": "Annotate",
+          "label": null
+        },
+        {
+          "text": "📋 List",
+          "label": "Toggle annotation list"
+        },
+        {
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "text": " Try Again",
+          "label": null
+        },
+        {
+          "text": " Back",
+          "label": null
+        },
+        {
+          "text": "Next ",
+          "label": null
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        },
+        {
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "text": "🚀Use AlloFlow inside Gemini CanvasNo setupThe easiest way to get AI: open AlloFlow inside",
+          "label": null,
+          "help": "ai_backend_guided_card_canvas"
+        },
+        {
+          "text": "✨Google GeminiRecommendedBest quality and speed. Runs in Google's cloud with a free key — ",
+          "label": null,
+          "help": "ai_backend_guided_card_gemini"
+        },
+        {
+          "text": "🔒Private AI on this computerMost privateEverything stays on this computer — no account, n",
+          "label": null,
+          "help": "ai_backend_guided_card_private"
+        },
+        {
+          "text": "🔌An AI app I already runAlready use LM Studio, Ollama, or LocalAI on this computer? Conne",
+          "label": null,
+          "help": "ai_backend_guided_card_connect"
+        },
+        {
+          "text": "Open saved work",
+          "label": null,
+          "help": "ai_backend_guided_storage_btn"
+        },
+        {
+          "text": "▼Advanced settings",
+          "label": null,
+          "help": "ai_backend_advanced_toggle"
+        },
+        {
+          "text": "⚠ 4 errors",
+          "label": "View captured errors and report a bug"
+        }
+      ]
+    },
+    {
+      "scenario": "navigation",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "failed-retry",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FAIL] MiscHandlersModule network error, trying GitHub raw fallback: Event",
+        "Failed to load resource: net::ERR_FAILED",
+        "[CDN-FALLBACK-FAIL] MiscHandlersModule fallback also unreachable",
+        "Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>)",
+        "ErrorBoundary caught an error: Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>) {componentStack: \n    at SimplifiedView (http://127.0.0.1:3193/app/…p/static/js/main.ec8697e8.js:369:15684)\n    at p$}",
+        "Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>)",
+        "ErrorBoundary caught an error: Error: [formatInteractiveText] PhaseNHelpers module not loaded - reload the page\n    at H2 (http://127.0.0.1:3193/app/static/js/main.ec8697e8.js:300:4119)\n    at renderReadingInline (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:2310)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:3133\n    at Array.map (<anonymous>)\n    at renderBlock (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:550:3020)\n    at materialize (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:2629)\n    at Array.map (<anonymous>)\n    at simplifiedNestLists (http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:205:3143)\n    at http://127.0.0.1:3193/app/view_simplified_module.js?v=86029309:557:4463\n    at Array.map (<anonymous>) {componentStack: \n    at SimplifiedView (http://127.0.0.1:3193/app/…p/static/js/main.ec8697e8.js:369:15684)\n    at p$}"
+      ],
+      "requests": 3,
+      "loadingError": true,
+      "failure": "TimeoutError: page.waitForFunction: Timeout 45000ms exceeded.",
+      "buttons": [
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Learn",
+          "label": "Learning Tools",
+          "help": "header_learning_hub"
+        },
+        {
+          "text": "Tools",
+          "label": "Educator Tools",
+          "help": "header_educator_hub"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "Start & setup",
+          "label": null,
+          "help": "header_rerun_wizard"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": " Create",
+          "label": null,
+          "help": "sidebar_tab_create"
+        },
+        {
+          "text": " History",
+          "label": null,
+          "help": "sidebar_tab_history"
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "",
+          "label": "Class Roster Key",
+          "help": "roster_manage_button"
+        },
+        {
+          "text": "Create one",
+          "label": null
+        },
+        {
+          "text": "More ",
+          "label": "More resource pack actions"
+        },
+        {
+          "text": "",
+          "label": "Create New Unit Folder",
+          "help": "history_create_unit_btn"
+        },
+        {
+          "text": "Organize",
+          "label": null
+        },
+        {
+          "text": "Lesson AText Adaptation & EngagementAdapted text · Not designatedCurrent",
+          "label": "Lesson A. Current"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Lesson A"
+        },
+        {
+          "text": "Lesson BText Adaptation & EngagementAdapted text · Not designatedOpen",
+          "label": "Open: Lesson B"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Lesson B"
+        },
+        {
+          "text": "Incomplete bookIllustrated storyOpen",
+          "label": "Open: Incomplete book"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Incomplete book"
+        },
+        {
+          "text": "Empty transcriptVideo TranscriptOpen",
+          "label": "Open: Empty transcript"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Empty transcript"
+        },
+        {
+          "text": "Annotate",
+          "label": null
+        },
+        {
+          "text": "📋 List",
+          "label": "Toggle annotation list"
+        },
+        {
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "text": " Try Again",
+          "label": null
+        },
+        {
+          "text": " Back",
+          "label": null
+        },
+        {
+          "text": "Next ",
+          "label": null
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        },
+        {
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "text": "🚀Use AlloFlow inside Gemini CanvasNo setupThe easiest way to get AI: open AlloFlow inside",
+          "label": null,
+          "help": "ai_backend_guided_card_canvas"
+        },
+        {
+          "text": "✨Google GeminiRecommendedBest quality and speed. Runs in Google's cloud with a free key — ",
+          "label": null,
+          "help": "ai_backend_guided_card_gemini"
+        },
+        {
+          "text": "🔒Private AI on this computerMost privateEverything stays on this computer — no account, n",
+          "label": null,
+          "help": "ai_backend_guided_card_private"
+        },
+        {
+          "text": "🔌An AI app I already runAlready use LM Studio, Ollama, or LocalAI on this computer? Conne",
+          "label": null,
+          "help": "ai_backend_guided_card_connect"
+        },
+        {
+          "text": "Open saved work",
+          "label": null,
+          "help": "ai_backend_guided_storage_btn"
+        },
+        {
+          "text": "▼Advanced settings",
+          "label": null,
+          "help": "ai_backend_advanced_toggle"
+        },
+        {
+          "text": "⚠ 6 errors",
+          "label": "View captured errors and report a bug"
+        }
+      ]
+    },
+    {
+      "scenario": "incomplete",
+      "errors": [],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "requests": 1,
+      "unhandled": [],
+      "passed": true
+    }
+  ]
+}

@@ -90,10 +90,6 @@
   "stem_tool_heatlab.js": [
     "about 25 times"
   ],
-  "stem_tool_microbiology.js": [
-    "1000x less",
-    "10x smaller"
-  ],
   "stem_tool_migration.js": [
     "10x more"
   ],
@@ -132,11 +128,14 @@
     "about 6 times"
   ],
   "stem_tool_platetectonics.js": [
-    "100,000x more",
     "10x larger",
     "10x more",
-    "32x more",
-    "3x more"
+    "3x more",
+    "about 1,000 times",
+    "about 10 times",
+    "about 32 times",
+    "roughly 1,000 times",
+    "roughly 32 times"
   ],
   "stem_tool_printingpress.js": [
     "14x larger",

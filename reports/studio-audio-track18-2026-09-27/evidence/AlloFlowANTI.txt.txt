@@ -1,0 +1,123 @@
+AlloFlowANTI.txt:32615:         const mp3Blob = await _encodeKaraokeMp3(container.pcm, container.sampleRate, 64);
+AlloFlowANTI.txt:32616:         return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
+AlloFlowANTI.txt:32617:       } catch (_) {}
+AlloFlowANTI.txt:32618:     }
+AlloFlowANTI.txt:32619:     const blob = new Blob([buffer], { type: container.mime });
+AlloFlowANTI.txt:32620:     // Complex WAV (stereo, float, extensible) needs a real decoder/downmix;
+AlloFlowANTI.txt:32621:     // retaining its original bytes is the safe fallback when none is available.
+AlloFlowANTI.txt:32622:     if (container.mime === 'audio/wav') return _normalizeRecordedAudioForStore(blob);
+AlloFlowANTI.txt:32623:     return { b64: await _blobToBase64(blob), mime: blob.type };
+AlloFlowANTI.txt:32624:   };
+AlloFlowANTI.txt:32625:   window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider, _aiConfig.backend, _aiConfig.models?.tts, GEMINI_MODELS.tts]);
+AlloFlowANTI.txt:32626:   const _getReadAloudBridge = () => {
+AlloFlowANTI.txt:32627:     const createBridge = window.AlloModules && window.AlloModules.createReadAloudLegacyBridge;
+AlloFlowANTI.txt:32628:     if (typeof createBridge !== 'function') return null;
+AlloFlowANTI.txt:32629:     _ensureKaraokeStore('reference');
+AlloFlowANTI.txt:32630:     _ensureKaraokeStore('student');
+AlloFlowANTI.txt:32631:     return createBridge({
+AlloFlowANTI.txt:32632:       getResource: () => {
+AlloFlowANTI.txt:32633:         const resource = generatedContent;
+AlloFlowANTI.txt:32634:         return resource && String(resource.type || '').toLowerCase() === 'glossary'
+AlloFlowANTI.txt:32635:           ? _ensureGlossaryReadAloudEntryIds()
+AlloFlowANTI.txt:32636:           : resource;
+AlloFlowANTI.txt:32637:       },
+AlloFlowANTI.txt:32638:       getStore: (lane) => _ensureKaraokeStore(lane === 'student' ? 'student' : 'reference'),
+AlloFlowANTI.txt:32639:       getProfile: () => {
+AlloFlowANTI.txt:32640:         const rate = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
+AlloFlowANTI.txt:32641:         const profile = {
+AlloFlowANTI.txt:32642:           voice: selectedVoice || window.__alloSelectedVoice || 'Kore',
+AlloFlowANTI.txt:32643:           language: leveledTextLanguage || currentUiLanguage || 'English',
+AlloFlowANTI.txt:32644:           speed: rate,
+AlloFlowANTI.txt:32645:           synthesisRate: rate,
+AlloFlowANTI.txt:32646:           voiceResolverVersion: 2,
+AlloFlowANTI.txt:32647:         };
+AlloFlowANTI.txt:32648:         const provider = String(_aiConfig.ttsProvider || 'auto').toLowerCase();
+AlloFlowANTI.txt:32649:         profile.requestedProvider = provider === 'auto' ? 'auto:' + (_aiConfig.backend || 'gemini') : provider;
+AlloFlowANTI.txt:32650:         if ((provider === 'auto' || provider === 'gemini') && !/^(af_|am_|bf_|bm_)/i.test(profile.voice)) {
+AlloFlowANTI.txt:32651:           profile.requestedModel = String((_aiConfig.models && _aiConfig.models.tts) || GEMINI_MODELS.tts || '');
+AlloFlowANTI.txt:32652:         }
+AlloFlowANTI.txt:32653:         return profile;
+AlloFlowANTI.txt:32654:       },
+AlloFlowANTI.txt:32655:       synthesize: async ({ text, profile, signal, reason, operation, priority, maxRetries, force }) => {
+AlloFlowANTI.txt:32656:         if (operation === 'resolve') {
+AlloFlowANTI.txt:32657:           const liveProfile = profile || {};
+AlloFlowANTI.txt:32658:           const voice = liveProfile.voice || selectedVoice || window.__alloSelectedVoice || 'Kore';
+AlloFlowANTI.txt:32659:           const speed = (typeof liveProfile.speed === 'number' && liveProfile.speed > 0)
+AlloFlowANTI.txt:32660:             ? liveProfile.speed
+
+AlloFlowANTI.txt:32890:     return bridge
+AlloFlowANTI.txt:32891:       ? bridge.saveRecording(sentence, blob, request)
+AlloFlowANTI.txt:32892:       : _legacyReadAloudApi.saveRecording(sentence, blob, request.source);
+AlloFlowANTI.txt:32893:   };
+AlloFlowANTI.txt:32894:   window.__alloRemoveSentenceAudio = async (sentence, options) => {
+AlloFlowANTI.txt:32895:     const bridge = _getReadAloudBridge();
+AlloFlowANTI.txt:32896:     return bridge
+AlloFlowANTI.txt:32897:       ? bridge.remove(sentence, (options && options.lane) || 'reference', options || {})
+AlloFlowANTI.txt:32898:       : _legacyReadAloudApi.remove(sentence);
+AlloFlowANTI.txt:32899:   };
+AlloFlowANTI.txt:32900:   window.__alloQuarantineReadAloudAudio = async (sentence, detail, options) => {
+AlloFlowANTI.txt:32901:     const bridge = _getReadAloudBridge();
+AlloFlowANTI.txt:32902:     return bridge && typeof bridge.quarantine === 'function'
+AlloFlowANTI.txt:32903:       ? bridge.quarantine(sentence, detail, options || {})
+AlloFlowANTI.txt:32904:       : false;
+AlloFlowANTI.txt:32905:   };
+AlloFlowANTI.txt:32906:   window.__alloReconcileReadAloudAudio = async (lane, options) => {
+AlloFlowANTI.txt:32907:     const bridge = _getReadAloudBridge();
+AlloFlowANTI.txt:32908:     return bridge && typeof bridge.reconcile === 'function'
+AlloFlowANTI.txt:32909:       ? bridge.reconcile(lane || 'reference', options || {})
+AlloFlowANTI.txt:32910:       : null;
+AlloFlowANTI.txt:32911:   };
+AlloFlowANTI.txt:32912:   // Provider/model changes also affect stored compatibility, even when reader
+AlloFlowANTI.txt:32913:   // text, voice, and speed props remain the same.
+AlloFlowANTI.txt:32914:   window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider || 'auto', _aiConfig.backend || 'gemini', (_aiConfig.models && _aiConfig.models.tts) || GEMINI_MODELS.tts || '']);
+AlloFlowANTI.txt:32915:   window.__alloGetReadAloudAudioSummary = (sentences, lane, summaryOptions) => {
+AlloFlowANTI.txt:32916:     const bridge = _getReadAloudBridge();
+AlloFlowANTI.txt:32917:     return bridge ? bridge.summary(sentences, lane || 'reference', summaryOptions || {}) : null;
+AlloFlowANTI.txt:32918:   };
+AlloFlowANTI.txt:32919:   // Track 02 can present these device-scoped counts alongside its current
+AlloFlowANTI.txt:32920:   // identity summary. Reading IndexedDB again detects eviction and text-only
+AlloFlowANTI.txt:32921:   // autosave; this never infers package or reader-shell portability.
+AlloFlowANTI.txt:32922:   window.__alloGetReadAloudReadiness = async (sentences, lane = 'reference', options = {}) => {
+AlloFlowANTI.txt:32923:     const requestOwner = window.__alloGetReadAloudReadiness;
+AlloFlowANTI.txt:32924:     const bridge = _getReadAloudBridge();
+AlloFlowANTI.txt:32925:     if (!bridge?.readiness) return null;
+AlloFlowANTI.txt:32926:     const resourceId = generatedContent?.id || generatedContent?.resourceId;
+AlloFlowANTI.txt:32927:     const KS = window.AlloModules?.KaraokeAudioStore;
+AlloFlowANTI.txt:32928:     const durableStore = KS?.createStore();
+AlloFlowANTI.txt:32929:     try {
+AlloFlowANTI.txt:32930:       const snapshot = await storageDB.get('allo_offline_history', { throwOnError: true, localOnly: true });
+AlloFlowANTI.txt:32931:       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+AlloFlowANTI.txt:32932:       const saved = snapshot?.items?.find(item => String(item.id || item.resourceId) === String(resourceId));
+AlloFlowANTI.txt:32933:       if (saved && durableStore) durableStore.hydrate(saved[lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio']);
+AlloFlowANTI.txt:32934:       return { resourceId, ...bridge.readiness(sentences, lane, {
+AlloFlowANTI.txt:32935:         entries: options.entries, profile: options.profile, failure: options.failure,
+AlloFlowANTI.txt:32936:         durableStore, receipt: { verified: true, verifiedAt: new Date().toISOString() },
+AlloFlowANTI.txt:32937:         preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+AlloFlowANTI.txt:32938:       }), pictureOmissions: saved?.offlineMediaOmissions || [] };
+AlloFlowANTI.txt:32939:     } catch (error) {
+AlloFlowANTI.txt:32940:       if (window.__alloGetReadAloudReadiness !== requestOwner) return null;
+AlloFlowANTI.txt:32941:       return { resourceId, ...bridge.readiness(sentences, lane, {
+AlloFlowANTI.txt:32942:         entries: options.entries, profile: options.profile,
+AlloFlowANTI.txt:32943:         failure: error, preparing: !!window.__alloPrepareReadAloudController && !window.__alloPrepareReadAloudController.signal.aborted
+AlloFlowANTI.txt:32944:       }), code: error?.code || error?.name || 'storage-failed' };
+AlloFlowANTI.txt:32945:     } finally { durableStore?.clear(); }
+AlloFlowANTI.txt:32946:   };
+AlloFlowANTI.txt:32947:   window.__alloRetryReadAloudPersistence = (lane = 'reference', options = {}) => _getReadAloudBridge()?.retryPersistence(lane, options);
+AlloFlowANTI.txt:32948:   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
+AlloFlowANTI.txt:32949:     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
+AlloFlowANTI.txt:32950:     highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
+AlloFlowANTI.txt:32951:     matchOriginal: { name: 'Match Original', emoji: '📎', wcagLevel: 'AA', cssVars: null },
+AlloFlowANTI.txt:32952:   };
+AlloFlowANTI.txt:32953:   const EXPORT_THEMES = Object.fromEntries(
+AlloFlowANTI.txt:32954:     Object.entries(STYLE_SEEDS)
+AlloFlowANTI.txt:32955:       .filter(([, s]) => s.cssVars)
+AlloFlowANTI.txt:32956:       .map(([id, s]) => [id, { name: s.name, emoji: s.emoji, ...s.cssVars }])
+AlloFlowANTI.txt:32957:   );
+AlloFlowANTI.txt:32958:   const [exportTheme, setExportTheme] = useState('professional');
+AlloFlowANTI.txt:32959:   const _docPipelineHostStateRef = React.useRef(null);
+AlloFlowANTI.txt:32960:   window.__docPipelineState = {
+AlloFlowANTI.txt:32961:     exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
+AlloFlowANTI.txt:32962:     selectedFont, responses: studentResponses, history, inputText, gradeLevel,
+AlloFlowANTI.txt:32963:     studentNickname, isTeacherMode, generatedContent,
+AlloFlowANTI.txt:32964:     currentUiLanguage, isIndependentMode, isParentMode,
+AlloFlowANTI.txt:32965:     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,

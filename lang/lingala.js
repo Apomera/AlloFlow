@@ -5283,7 +5283,21 @@
     "measured_on_target": "Ekokani na {grade}",
     "measured_above": "Likolo ya nivo {grade}",
     "measured_below": "Na se ya nivo {grade}",
-    "measured_note": "Flesch-Kincaid, emekami na makomi oyo. Salela Check niveau mpo na botali ya mobimba."
+    "measured_note": "Flesch-Kincaid, emekami na makomi oyo. Salela Check niveau mpo na botali ya mobimba.",
+    "listen_along": "Yoká elongo",
+    "compare_listen_here": "Yoká awa",
+    "compare_listen_here_original": "Yoká awa: makomi ya ebandeli",
+    "compare_listen_here_adapted": "Yoká awa: makomi oyo ebongisami",
+    "compare_stop_reading_original": "Tikalá: kotánga makomi ya ebandeli",
+    "compare_stop_reading_adapted": "Tikalá: kotánga makomi oyo ebongisami",
+    "compare_scroll_together": "Kokita elongo",
+    "reading_width": "Bonene ya kotánga",
+    "width_narrow": "Moke",
+    "width_medium": "Ya katikati",
+    "width_wide": "Monene",
+    "width_extra_wide": "Monene mingi",
+    "reading_width_characters": "pene na bilembo {count} na molɔngɔ",
+    "original_support_spoken": "Lisalisi mpo na liloba “{word}”: {support}"
   },
   "quiz": {
     "title": "Talela",

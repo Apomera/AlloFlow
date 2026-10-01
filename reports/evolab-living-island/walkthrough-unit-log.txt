@@ -1,0 +1,7 @@
+npm error code ENOSPC
+npm error syscall write
+npm error errno -4055
+npm error nospc ENOSPC: no space left on device, write
+npm error nospc There appears to be insufficient space on your system to finish.
+npm error nospc Clear up some disk space and try again.
+npm error A complete log of this run can be found in: C:\Users\cabba\AppData\Local\npm-cache\_logs\2026-09-27T18_20_13_754Z-debug-0.log

@@ -1,0 +1,774 @@
+diff --git a/view_simplified_source.jsx b/view_simplified_source.jsx
+index 20a64b4..21d2347 100644
+--- a/view_simplified_source.jsx
++++ b/view_simplified_source.jsx
+@@ -1741,7 +1741,18 @@
+     return <>{list}{panel}</>;
+   }
+ 
++  function SimplifiedPopupStatus({ message }) {
++    const [announcement, setAnnouncement] = React.useState('');
++    React.useEffect(function () {
++      const timer = setTimeout(function () { setAnnouncement(message); }, 0);
++      return function () { clearTimeout(timer); };
++    }, [message]);
++    return <p role="status" aria-live="polite" aria-atomic="true" data-reader-popup-status className="sr-only">{announcement}</p>;
++  }
++
+   function SimplifiedView(props) {
++    const readerInstanceId = React.useId().replace(/:/g, '');
++    const readerId = name => name + '-' + readerInstanceId;
+     var viewText = (key, fallback, params) => simplifiedText(key, fallback, params, props.t);
+     // State reads
+     var t = props.t;
+@@ -2947,7 +2958,7 @@
+       var text = simplifiedPopupSpokenText(spokenText);
+       if (!text) return null;
+       var active = !!isPlaying && playingContentId === contentId;
+-      return <button type="button" data-simplified-popup-speaker={contentId} onClick={function () { stopHelpAudio(); handleSpeak(text, contentId, 0); }} aria-label={active ? simplifiedPopupStopReadingLabel : simplifiedPopupReadAloudLabel} title={active ? simplifiedPopupStopReadingLabel : simplifiedPopupReadAloudLabel} className={`min-h-11 flex items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${active ? 'bg-indigo-700 text-white hover:bg-indigo-800' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}>{active ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}<span>{active ? simplifiedPopupStopLabel : simplifiedPopupListenLabel}</span></button>;
++      return <button type="button" data-simplified-popup-speaker={contentId} onClick={function () { stopHelpAudio(); handleSpeak(text, contentId, 0); }} aria-label={active ? simplifiedPopupStopLabel : simplifiedPopupListenLabel} title={active ? simplifiedPopupStopReadingLabel : simplifiedPopupReadAloudLabel} className={`min-h-11 flex items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${active ? 'bg-indigo-700 text-white hover:bg-indigo-800' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}>{active ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}<span>{active ? simplifiedPopupStopLabel : simplifiedPopupListenLabel}</span></button>;
+     };
+     // Closing a popup should not leave its audio running with nothing on
+     // screen to stop it. The ref carries the live id into the effect cleanup.
+@@ -3458,8 +3469,8 @@
+       var sentences = (typeof splitTextToSentences === 'function' ? splitTextToSentences(plain) : [plain]).map(sentence => String(sentence).trim()).filter(Boolean);
+       var field = 'mt-1 min-h-11 w-full min-w-0 rounded-lg border border-slate-400 bg-white px-2 font-normal';
+       var sentencePicker = (name, value) => <select value={value || ''} onChange={event => saveSectionResponse(section, name, event.target.value)} className={field}><option value="">{viewText('simplified.prompt_choose_sentence', 'Choose a sentence')}</option>{sentences.map((sentence, index) => <option key={index} value={sentence}>{sentence.length > 140 ? sentence.slice(0, 140) + '…' : sentence}</option>)}{value && !sentences.includes(value) ? <option value={value}>{value}</option> : null}</select>;
+-      return <section id="simplified-section-prompts" data-section-prompts aria-labelledby="simplified-section-prompts-title" className="mt-3 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-base text-slate-900">
+-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 id="simplified-section-prompts-title" className="text-lg font-bold text-indigo-950">{viewText('simplified.prompt_title', 'Think about a section')}</h3><button type="button" onClick={event => { var toggle = event.currentTarget.closest('[data-section-prompts-area]')?.querySelector('[data-section-prompts-toggle]'); setPromptsOpen(false); toggle?.focus(); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm">{viewText('common.close', 'Close')}</button></div>
++      return <section id={readerId("simplified-section-prompts")} data-section-prompts aria-labelledby={readerId("simplified-section-prompts-title")} className="mt-3 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-base text-slate-900">
++        <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={readerId("simplified-section-prompts-title")} className="text-lg font-bold text-indigo-950">{viewText('simplified.prompt_title', 'Think about a section')}</h3><button type="button" onClick={event => { var toggle = event.currentTarget.closest('[data-section-prompts-area]')?.querySelector('[data-section-prompts-toggle]'); setPromptsOpen(false); toggle?.focus(); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm">{viewText('common.close', 'Close')}</button></div>
+         <p className="text-sm text-slate-700">{placeLearner && !placePreview ? viewText('simplified.prompt_saved_here', 'Optional. Your answers stay with this version of the reading on this device.') : viewText('simplified.prompt_saved_visit', 'Optional. Your answers stay with this reading while this page is open.')}</p>
+         <label className="block font-semibold">{viewText('simplified.prompt_section', 'Section')}<select data-section-prompts-section value={section.index} onChange={event => setPromptSection(Number(event.target.value))} className={field}>{outlineSections.map(entry => <option key={entry.index} value={entry.index}>{entry.label}</option>)}</select></label>
+         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => goToReadingParagraph(section.first)} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900">{viewText('simplified.prompt_go_to_section', 'Go to this section')}</button><button type="button" onClick={() => speakExactPassage(plain, 'section-' + section.first, readingLanguage)} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900">{isExactPassagePlaying('section-' + section.first) ? viewText('common.stop', 'Stop') : viewText('simplified.prompt_listen_section', 'Listen to this section')}</button></div>
+@@ -3473,7 +3484,7 @@
+       if (!placeAvailable || interactionMode === 'cloze') return null;
+       var button = 'min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+       return <>
+-        {outlineSections.length >= 3 && <button type="button" data-reading-outline-toggle aria-expanded={outlineOpen} aria-controls="simplified-reading-outline" onClick={() => setOutlineOpen(!outlineOpen)} className={button}>{viewText('simplified.outline_toggle', 'Sections & bookmark')}{outlineOpen ? <ChevronUp size={14} className="inline ml-1" aria-hidden="true" /> : <ChevronDown size={14} className="inline ml-1" aria-hidden="true" />}</button>}
++        {outlineSections.length >= 3 && <button type="button" data-reading-outline-toggle aria-expanded={outlineOpen} aria-controls={outlineOpen ? readerId("simplified-reading-outline") : undefined} onClick={() => setOutlineOpen(!outlineOpen)} className={button}>{viewText('simplified.outline_toggle', 'Sections & bookmark')}{outlineOpen ? <ChevronUp size={14} className="inline ml-1" aria-hidden="true" /> : <ChevronDown size={14} className="inline ml-1" aria-hidden="true" />}</button>}
+       </>;
+     }
+     function renderReadingPlacePanels() {
+@@ -3484,7 +3495,7 @@
+         {placeOffer && placeOffer.kind === 'continue' && <div data-reading-continue className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-base text-indigo-950"><p className="min-w-0 flex-1">{viewText('simplified.place_continue', 'Continue where you left off: {snippet}', { snippet: placeOffer.snippet })}</p><button type="button" data-reading-continue-go onClick={() => { var target = placeOffer.paragraph; setPlaceOffer(null); if (goToReadingParagraph(target)) setPlaceNotice(viewText('simplified.place_continuing', 'Continuing where you left off.')); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white">{viewText('simplified.place_continue_button', 'Continue')}</button><button type="button" data-reading-continue-restart onClick={() => { setPlaceOffer(null); storeReadingPlace({ paragraph: 0, snippet: paragraphSnippet(0) }); }} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900">{viewText('simplified.place_start_over', 'Start from the beginning')}</button></div>}
+         {placeOffer && placeOffer.kind === 'revised' && <div data-reading-revised className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-base text-amber-950"><p className="min-w-0 flex-1">{viewText('simplified.place_revised', 'This reading was changed since you last read it, so it starts at the beginning. Earlier bookmarks and answers belong to the old version.')}</p><button type="button" onClick={() => setPlaceOffer(null)} className="min-h-11 rounded-lg border border-amber-700 bg-white px-3">{viewText('simplified.place_ok', 'OK')}</button></div>}
+         <p role="status" data-reading-place-notice className={placeNotice ? 'mb-3 text-sm text-indigo-900' : 'sr-only'}>{placeNotice}</p>
+-        {outlineOpen && outlineSections.length >= 3 && <nav id="simplified-reading-outline" data-reading-outline aria-label={viewText('simplified.outline_label', 'Sections of this reading')} className="mb-4 space-y-2 rounded-xl border border-indigo-100 bg-white p-2 text-base">
++        {outlineOpen && outlineSections.length >= 3 && <nav id={readerId("simplified-reading-outline")} data-reading-outline aria-label={viewText('simplified.outline_label', 'Sections of this reading')} className="mb-4 space-y-2 rounded-xl border border-indigo-100 bg-white p-2 text-base">
+           {<ol className="space-y-1">{outlineSections.map(section => <li key={section.index}><button type="button" aria-current={current && current.index === section.index ? 'location' : undefined} onClick={() => goToReadingParagraph(section.first)} className={'min-h-11 w-full rounded-lg px-3 py-2 text-left hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (current && current.index === section.index ? 'font-bold text-indigo-950' : 'text-slate-800')}>{section.label}</button></li>)}</ol>}
+           <div className="flex flex-wrap gap-2 px-1 pb-1">
+             <button type="button" data-reading-bookmark onClick={saveBookmark} className={small}>{readingPlace && readingPlace.bookmark ? viewText('simplified.place_move_bookmark', 'Move bookmark here') : viewText('simplified.place_bookmark', 'Bookmark this spot')}</button>
+@@ -3497,7 +3508,7 @@
+     function renderSectionPromptsArea() {
+       if (!placeAvailable || interactionMode === 'cloze' || !outlineSections.length) return null;
+       return <div data-section-prompts-area className="mt-6">
+-        <button type="button" data-section-prompts-toggle aria-expanded={promptsOpen} aria-controls="simplified-section-prompts" onClick={() => promptsOpen ? setPromptsOpen(false) : openSectionPrompts()} className="min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-base text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.prompt_title', 'Think about a section')}</button>
++        <button type="button" data-section-prompts-toggle aria-expanded={promptsOpen} aria-controls={promptsOpen ? readerId("simplified-section-prompts") : undefined} onClick={() => promptsOpen ? setPromptsOpen(false) : openSectionPrompts()} className="min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-base text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.prompt_title', 'Think about a section')}</button>
+         {promptsOpen && renderSectionPrompts()}
+       </div>;
+     }
+@@ -3559,8 +3570,8 @@
+           actions: [reviewAudio.saved < reviewAudio.total && typeof handlePrepareReadAloudAudio === 'function' && !ttsPrepState.busy && ['audio', viewText('simplified.save_audio', 'Save audio'), () => handlePrepareReadAloudAudio()]] }
+       ].filter(Boolean);
+       var tones = { ok: 'border-emerald-300 bg-emerald-50 text-emerald-900', attention: 'border-amber-400 bg-amber-50 text-amber-950', neutral: 'border-slate-300 bg-slate-50 text-slate-800' };
+-      return <section data-teacher-review-summary aria-labelledby="simplified-review-summary-title" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-3 text-left text-sm text-slate-800">
+-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 id="simplified-review-summary-title" className="text-base font-bold text-slate-900">{viewText('simplified.review_title', 'Before you share')}</h3><button type="button" data-student-preview-open onClick={event => { studentPreviewOpener.current = event.currentTarget; setStudentPreview({ mode: 'read', compare: false }); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{viewText('simplified.review_preview', 'Preview as a student')}</button></div>
++      return <section data-teacher-review-summary aria-labelledby={readerId("simplified-review-summary-title")} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white p-3 text-left text-sm text-slate-800">
++        <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={readerId("simplified-review-summary-title")} className="text-base font-bold text-slate-900">{viewText('simplified.review_title', 'Before you share')}</h3><button type="button" data-student-preview-open onClick={event => { studentPreviewOpener.current = event.currentTarget; setStudentPreview({ mode: 'read', compare: false }); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{viewText('simplified.review_preview', 'Preview as a student')}</button></div>
+         <ul className="mt-2 grid gap-2 sm:grid-cols-3">{rows.map(row => <li key={row.key} data-review-state={row.key} data-review-tone={row.tone} className={'rounded-xl border p-2 ' + tones[row.tone]}><p className="font-bold">{row.label}</p><p className="mt-0.5 text-xs">{row.detail}</p><div className="mt-1 flex flex-wrap gap-x-3">{row.actions.filter(Boolean).map(([key, label, run]) => <button key={key} type="button" data-review-action={key} onClick={run} className="min-h-11 rounded px-1 text-sm font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label}</button>)}</div></li>)}</ul>
+       </section>;
+     }
+@@ -3580,9 +3591,9 @@
+         definitionData: null, phonicsData: null, revisionData: null, selectionMenu: null, isCustomReviseOpen: false,
+         onFocusViewChange: undefined, onReadReflect: undefined, onReadOriginal: undefined
+       });
+-      return <div ref={studentPreviewRef} role="dialog" aria-modal="true" aria-labelledby="simplified-student-preview-title" data-student-preview onKeyDown={event => containSimplifiedModalFocus(event, studentPreviewRef.current, closeStudentPreview)} className="fixed inset-0 z-[150] overflow-y-auto bg-slate-900/60 p-2 sm:p-6">
++      return <div ref={studentPreviewRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-student-preview-title")} data-student-preview onKeyDown={event => containSimplifiedModalFocus(event, studentPreviewRef.current, closeStudentPreview)} className="fixed inset-0 z-[150] overflow-y-auto bg-slate-900/60 p-2 sm:p-6">
+         <div className="mx-auto w-full max-w-4xl rounded-2xl bg-white shadow-2xl">
+-          <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-slate-200 bg-white p-3"><div className="min-w-0"><h2 id="simplified-student-preview-title" className="text-lg font-bold text-slate-900">{viewText('simplified.preview_title', 'Student preview')}</h2><p className="text-sm text-slate-700">{viewText('simplified.preview_note', 'This is what students see. Nothing here is saved, and word meanings, word sounds and other AI help do not run.')}</p></div><button ref={studentPreviewCloseRef} type="button" data-student-preview-close onClick={closeStudentPreview} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.preview_close', 'Close preview')}</button></div>
++          <div className="flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-slate-200 bg-white p-3"><div className="min-w-0"><h2 id={readerId("simplified-student-preview-title")} className="text-lg font-bold text-slate-900">{viewText('simplified.preview_title', 'Student preview')}</h2><p className="text-sm text-slate-700">{viewText('simplified.preview_note', 'This is what students see. Nothing here is saved, and word meanings, word sounds and other AI help do not run.')}</p></div><button ref={studentPreviewCloseRef} type="button" data-student-preview-close onClick={closeStudentPreview} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.preview_close', 'Close preview')}</button></div>
+           <div className="p-2 sm:p-4">{React.createElement(SimplifiedView, previewProps)}</div>
+         </div>
+       </div>;
+@@ -3594,7 +3605,26 @@
+     var [adaptUndo, setAdaptUndo] = React.useState(null);
+     var [adaptNotice, setAdaptNotice] = React.useState('');
+     var adaptPreviewRef = React.useRef(null);
+-    React.useEffect(function () { setAdaptPreview(null); }, [generatedContent?.id, generatedContent?.data]);
++    var adaptPreviewTriggerRef = React.useRef(null), adaptUndoButtonRef = React.useRef(null), adaptFocusRecoveryRef = React.useRef(null), adaptApplyInFlightRef = React.useRef(false);
++    function dismissAdaptationPreview(destination) {
++      if (adaptPreviewRef.current?.contains(document.activeElement)) adaptFocusRecoveryRef.current = destination || adaptFocusRecoveryRef.current || 'preview';
++      setAdaptPreview(null);
++    }
++    function restoreAdaptationFocus() {
++      if (!adaptFocusRecoveryRef.current || adaptPreviewRef.current || isProcessing || adaptApplyInFlightRef.current) return;
++      // Do not move focus back if the user has already moved to another control.
++      var active = document.activeElement;
++      if (active && active !== document.body && active.isConnected && active !== adaptPreviewTriggerRef.current && active !== adaptUndoButtonRef.current) {
++        adaptFocusRecoveryRef.current = null;
++        return;
++      }
++      var target = adaptFocusRecoveryRef.current === 'undo' ? adaptUndoButtonRef.current : adaptPreviewTriggerRef.current;
++      if (!target || target.disabled || !target.isConnected) target = readingStartRef.current || readerSurfaceRef.current?.querySelector('[data-reader-skip]');
++      adaptFocusRecoveryRef.current = null;
++      target?.focus();
++    }
++    React.useLayoutEffect(restoreAdaptationFocus);
++    React.useEffect(function () { dismissAdaptationPreview(); }, [generatedContent?.id, generatedContent?.data]);
+     React.useEffect(function () { if (adaptPreview && adaptPreviewRef.current) adaptPreviewRef.current.focus(); }, [!!adaptPreview]);
+     var adaptTerms = adaptOptions.keepTerms.split(/[,;\n]/).map(term => term.trim()).filter(Boolean);
+     var adaptHasOptions = adaptOptions.shorterSentences || adaptOptions.explainVocabulary || adaptTerms.length > 0;
+@@ -3610,16 +3640,28 @@
+     }
+     async function applyAdaptation() {
+       var previousData = generatedContent.data;
+-      var result = await handleComplexityAdjustment({ apply: adaptPreview });
+-      if (result && result.status === 'applied') {
+-        setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data == null ? null : result.data });
+-        setAdaptPreview(null);
+-        setAdaptNotice(viewText('simplified.adapt_applied', 'Change applied. You can go back to the previous version.'));
+-      } else if (result && result.status === 'stale') setAdaptPreview(null);
++      if (adaptPreviewRef.current?.contains(document.activeElement)) adaptFocusRecoveryRef.current = 'undo';
++      adaptApplyInFlightRef.current = true;
++      try {
++        var result = await handleComplexityAdjustment({ apply: adaptPreview });
++        if (result && result.status === 'applied') {
++          setAdaptUndo({ previousId: result.previousId, previousData, newId: result.newId, keptOriginal: result.newId !== result.previousId, appliedData: result.data == null ? null : result.data });
++          dismissAdaptationPreview('undo');
++          setAdaptNotice(viewText('simplified.adapt_applied', 'Change applied. You can go back to the previous version.'));
++        } else if (result && result.status === 'stale') {
++          if (adaptFocusRecoveryRef.current) adaptFocusRecoveryRef.current = 'preview';
++          dismissAdaptationPreview();
++        }
++      } finally {
++        adaptApplyInFlightRef.current = false;
++        if (adaptFocusRecoveryRef.current && (!result || !['applied', 'stale'].includes(result.status))) adaptFocusRecoveryRef.current = adaptPreviewRef.current ? null : 'preview';
++        if (!result || result.status !== 'applied') restoreAdaptationFocus();
++      }
+     }
+     function undoAdaptation() {
+       var undo = adaptUndo;
+       if (!undo) return;
++      if (document.activeElement === adaptUndoButtonRef.current) adaptFocusRecoveryRef.current = 'preview';
+       if (undo.keptOriginal) {
+         var previous = (props.history || []).find(item => item && item.id === undo.previousId);
+         if (previous && typeof setGeneratedContent === 'function') setGeneratedContent(previous);
+@@ -3634,18 +3676,18 @@
+         <fieldset className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold uppercase tracking-wide text-indigo-700">{viewText('simplified.adapt_also', 'Also change')}</legend>
+           {check('shorterSentences', viewText('simplified.adapt_shorter', 'Shorter sentences'))}
+           {check('explainVocabulary', viewText('simplified.adapt_explain_vocab', 'Explain unfamiliar vocabulary'))}
+-          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id="simplified-adapt-terms-hint" className="block text-xs font-normal text-slate-600">{viewText('simplified.adapt_keep_terms_hint', 'Separate terms with commas. They stay exactly as written.')}</span><input type="text" data-adapt-keep-terms aria-describedby="simplified-adapt-terms-hint" value={adaptOptions.keepTerms} disabled={isProcessing} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
++          <label className="mt-1 block text-sm font-semibold text-slate-800">{viewText('simplified.adapt_keep_terms', 'Preserve these essential terms')}<span id={readerId("simplified-adapt-terms-hint")} className="block text-xs font-normal text-slate-600">{viewText('simplified.adapt_keep_terms_hint', 'Separate terms with commas. They stay exactly as written.')}</span><input type="text" data-adapt-keep-terms aria-describedby={readerId("simplified-adapt-terms-hint")} value={adaptOptions.keepTerms} disabled={isProcessing} onChange={event => setAdaptOptions(current => ({ ...current, keepTerms: event.target.value }))} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 font-normal" /></label>
+         </fieldset>
+-        <div className="text-center"><button type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
+-        {adaptPreview && <section ref={adaptPreviewRef} tabIndex={-1} data-adaptation-preview aria-labelledby="simplified-adapt-preview-title" className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+-          <h4 id="simplified-adapt-preview-title" className="font-bold text-indigo-950">{viewText('simplified.adapt_preview_title', 'Preview of the change')}</h4>
++        <div className="text-center"><button ref={adaptPreviewTriggerRef} type="button" data-apply-complexity onClick={prepareAdaptation} disabled={isProcessing || (Number(complexityLevel) === 5 && !adaptHasOptions)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : viewText('simplified.adapt_preview', 'Preview change')}</button></div>
++        {adaptPreview && <section ref={adaptPreviewRef} tabIndex={-1} data-adaptation-preview aria-labelledby={readerId("simplified-adapt-preview-title")} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
++          <h4 id={readerId("simplified-adapt-preview-title")} className="font-bold text-indigo-950">{viewText('simplified.adapt_preview_title', 'Preview of the change')}</h4>
+           <p className="text-xs text-slate-700">{diff ? viewText('simplified.adapt_preview_hint', 'Removed words are struck through and new words are underlined. Nothing changes until you apply it.') : viewText('simplified.adapt_preview_plain', 'The proposed text is shown below. Nothing changes until you apply it.')}</p>
+           <div role="region" tabIndex={0} aria-label={viewText('simplified.adapt_proposed', 'Proposed text')} data-adaptation-diff className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded border border-indigo-100 bg-white p-3 text-base leading-relaxed text-slate-900" style={{ overflowWrap: 'anywhere' }}>{diff ? diff.map((part, index) => part.type === 'same' ? <React.Fragment key={index}>{part.value}</React.Fragment> : part.type === 'del' ? <del key={index} className="bg-red-100 text-red-900">{part.value}</del> : <ins key={index} className="bg-green-100 text-green-900">{part.value}</ins>) : String(adaptPreview.data || '')}</div>
+           <p className="text-xs text-slate-700">{saveOriginalOnAdjust ? viewText('simplified.adapt_apply_keeps', 'Applying saves this as a new version and keeps the current one.') : viewText('simplified.adapt_apply_replaces', 'Applying replaces the current text. You can go back afterward.')}</p>
+-          <div className="flex flex-wrap justify-center gap-2"><button type="button" data-adaptation-apply onClick={applyAdaptation} disabled={isProcessing} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white disabled:opacity-50">{viewText('simplified.adapt_apply', 'Apply this version')}</button><button type="button" data-adaptation-discard onClick={() => { setAdaptPreview(null); setAdaptNotice(viewText('simplified.adapt_discarded', 'Preview discarded. The text is unchanged.')); }} disabled={isProcessing} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3">{viewText('simplified.adapt_discard', 'Discard')}</button></div>
++          <div className="flex flex-wrap justify-center gap-2"><button type="button" data-adaptation-apply onClick={applyAdaptation} disabled={isProcessing} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white disabled:opacity-50">{viewText('simplified.adapt_apply', 'Apply this version')}</button><button type="button" data-adaptation-discard onClick={() => { dismissAdaptationPreview(); setAdaptNotice(viewText('simplified.adapt_discarded', 'Preview discarded. The text is unchanged.')); }} disabled={isProcessing} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3">{viewText('simplified.adapt_discard', 'Discard')}</button></div>
+         </section>}
+         <p role="status" data-adaptation-notice className={adaptNotice ? 'text-center text-sm text-indigo-900' : 'sr-only'}>{adaptNotice}</p>
+-        {adaptUndoAvailable && <div className="text-center"><button type="button" data-adaptation-undo onClick={undoAdaptation} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900">{viewText('simplified.adapt_back', 'Back to previous version')}</button></div>}
++        {adaptUndoAvailable && <div className="text-center"><button ref={adaptUndoButtonRef} type="button" data-adaptation-undo onClick={undoAdaptation} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900">{viewText('simplified.adapt_back', 'Back to previous version')}</button></div>}
+       </div>;
+     }
+     var [showComparisonChanges, setShowComparisonChanges] = React.useState(function () { try { return localStorage.getItem('alloflow_reading_show_changes') === 'on'; } catch (_) { return false; } });
+@@ -3782,8 +3824,18 @@
+         var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : 'span';
+         var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : undefined;
+         var isRelated = !!relatedRange && relatedRange.end > lineStart && relatedRange.start < lineStart + line.length;
+-        const explain = event => { if (interactionMode !== 'explain') return; const selected = window.getSelection?.().toString().trim(); const rect = event.currentTarget.getBoundingClientRect(); setSelectionMenu({ text: selected || (formatted ? simplifiedPlainInline(block.text) : line), language, x: rect.left, y: rect.bottom }); };
+-        return <React.Fragment key={lineIndex}><Tag style={markdownStyle} data-reading-offset-start={lineStart} data-reading-offset-end={lineStart + line.length} data-related-original={isRelated ? "true" : undefined} data-reading-language={language} data-reading-paragraph={pane + '-' + lineIndex} lang={simplifiedLanguageTag(language)} dir={getContentDirection(language)} role={interactionMode === 'explain' ? 'button' : undefined} tabIndex={interactionMode === 'explain' || isLineFocusMode ? 0 : undefined} onClick={explain} onKeyDown={event => { if (interactionMode === 'explain' && ['Enter', ' '].includes(event.key)) { event.preventDefault(); explain(event); } }} onFocus={() => { if (isLineFocusMode && typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(pane + '-' + lineIndex); }} className={isRelated ? 'bg-indigo-100 outline outline-2 outline-indigo-500 text-slate-950' : isLineFocusMode ? (focusedParagraphIndex === pane + '-' + lineIndex || focusedParagraphIndex == null && lineIndex === 0 ? 'bg-yellow-100 text-slate-950' : 'opacity-50') : ''}>{content}</Tag>{block.type === 'heading' || block.type === 'quote' ? null : block.separator}</React.Fragment>;
++        const explanationText = formatted ? simplifiedPlainInline(block.text) : line;
++        const explain = event => {
++          if (interactionMode !== 'explain') return;
++          const control = event.target.closest('a, button, input, select, textarea, [role="button"]');
++          if (control && control !== event.currentTarget) return;
++          event.stopPropagation();
++          const selected = window.getSelection?.().toString().trim();
++          const rect = event.currentTarget.getBoundingClientRect();
++          setSelectionMenu({ text: selected || explanationText, language, x: rect.left, y: rect.bottom });
++        };
++        const explainButton = interactionMode === 'explain' ? <button type="button" data-exact-explain aria-label={viewText('simplified.explain_mode', 'Explain') + ': ' + explanationText} onClick={explain} className="mx-1 inline-flex min-h-11 items-center rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('simplified.explain_mode', 'Explain')}</button> : null;
++        return <React.Fragment key={lineIndex}><Tag style={markdownStyle} data-reading-offset-start={lineStart} data-reading-offset-end={lineStart + line.length} data-related-original={isRelated ? "true" : undefined} data-reading-language={language} data-reading-paragraph={pane + '-' + lineIndex} lang={simplifiedLanguageTag(language)} dir={getContentDirection(language)} tabIndex={isLineFocusMode ? 0 : undefined} onClick={explain} onFocus={() => { if (isLineFocusMode && typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(pane + '-' + lineIndex); }} className={isRelated ? 'bg-indigo-100 outline outline-2 outline-indigo-500 text-slate-950' : isLineFocusMode ? (focusedParagraphIndex === pane + '-' + lineIndex || focusedParagraphIndex == null && lineIndex === 0 ? 'bg-yellow-100 text-slate-950' : 'opacity-50') : ''}>{content}</Tag>{explainButton}{block.type === 'heading' || block.type === 'quote' ? null : block.separator}</React.Fragment>;
+       };
+       return formatted ? simplifiedNestLists(blocks, renderBlock) : blocks.map(renderBlock);
+     }
+@@ -3923,8 +3975,8 @@
+               var sentenceTitle = interactionMode === 'explain' || interactionMode === 'revise' ? sentenceAction : t('common.click_read_from_here');
+               var sentenceLabel = sentenceAction + ': ' + simplifiedPlainInline(cleanText);
+               var stopProps = { 'data-sentence-stop': true, tabIndex: order === 0 ? 0 : -1, onFocus: function (event) { claimRovingStop(event, '[data-sentence-stop]'); } };
+-              if (innerLink) return <span key={index} id={firstPart ? 'sentence-' + currentGlobalIdx : undefined} data-reading-sentence={currentGlobalIdx} aria-current={active ? 'true' : undefined} onClick={speakSentence} className={sentenceClass} title={sentenceTitle}>{formatInteractiveText(cleanText, false, !!isLineFocusMode)}<button type="button" data-sentence-read {...stopProps} aria-label={sentenceLabel} onClick={speakSentence} onKeyDown={event => moveRovingStop(event, '[data-sentence-stop]')} className="sr-only focus:not-sr-only focus:ms-1 focus:rounded focus:bg-indigo-700 focus:px-2 focus:py-0.5 focus:text-sm focus:font-bold focus:text-white">{sentenceAction}</button> </span>;
+-              var sentenceButton = <span key={index} id={firstPart ? 'sentence-' + currentGlobalIdx : undefined} data-reading-sentence={currentGlobalIdx} role="button" {...stopProps} aria-current={active ? 'true' : undefined} aria-label={trailingLinks ? sentenceAction + ': ' + simplifiedPlainInline(sentenceText) : sentenceLabel} onClick={speakSentence} onKeyDown={function (event) {
++              if (innerLink) return <span key={index} id={firstPart ? (props.isStudentPreview ? readerId('sentence-' + currentGlobalIdx) : 'sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx} aria-current={active ? 'true' : undefined} onClick={speakSentence} className={sentenceClass} title={sentenceTitle}>{formatInteractiveText(cleanText, false, !!isLineFocusMode)}<button type="button" data-sentence-read {...stopProps} aria-label={sentenceLabel} onClick={speakSentence} onKeyDown={event => moveRovingStop(event, '[data-sentence-stop]')} className="sr-only focus:not-sr-only focus:ms-1 focus:rounded focus:bg-indigo-700 focus:px-2 focus:py-0.5 focus:text-sm focus:font-bold focus:text-white">{sentenceAction}</button> </span>;
++              var sentenceButton = <span key={index} id={firstPart ? (props.isStudentPreview ? readerId('sentence-' + currentGlobalIdx) : 'sentence-' + currentGlobalIdx) : undefined} data-reading-sentence={currentGlobalIdx} role="button" {...stopProps} aria-current={active ? 'true' : undefined} aria-label={trailingLinks ? sentenceAction + ': ' + simplifiedPlainInline(sentenceText) : sentenceLabel} onClick={speakSentence} onKeyDown={function (event) {
+                 if (event.target !== event.currentTarget) return;
+                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); speakSentence(event); return; }
+                 moveRovingStop(event, '[data-sentence-stop]');
+@@ -4140,16 +4192,16 @@
+                 ['phonics', 'simplified.word_sounds', 'Word sounds', Ear],
+                 ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]),
+               ].map(renderReadingModeButton)}
+-              <button type="button" aria-expanded={practiceOpen} aria-controls="simplified-practice-tools" onClick={() => setPracticeOpen(!practiceOpen)} className="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{readerText('simplified.practice_tools', 'Practice')}{practiceOpen ? <ChevronUp size={14} className="inline ml-1" /> : <ChevronDown size={14} className="inline ml-1" />}</button>
+-              {typeof props.onFocusViewChange === 'function' && <button ref={focusViewButtonRef} type="button" data-reader-focus-view aria-pressed={!!isZenMode} aria-describedby="simplified-focus-view-hint" onClick={() => props.onFocusViewChange(!isZenMode)} className="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{isZenMode ? readerText('simplified.exit_focus_view', 'Exit focus view') : readerText('simplified.focus_view', 'Focus view')}</button>}
+-              <button ref={displayToggleRef} type="button" data-reader-display aria-expanded={displayOpen} aria-controls="simplified-display-panel" onClick={() => setDisplayOpen(!displayOpen)} className="min-h-11 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><span aria-hidden="true" className="font-serif text-base leading-none">Aa</span>{viewText('simplified.display_menu', 'Display')}{displayOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}</button>
++              <button type="button" aria-expanded={practiceOpen} aria-controls={readerId("simplified-practice-tools")} onClick={() => setPracticeOpen(!practiceOpen)} className="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{readerText('simplified.practice_tools', 'Practice')}{practiceOpen ? <ChevronUp size={14} className="inline ml-1" /> : <ChevronDown size={14} className="inline ml-1" />}</button>
++              {typeof props.onFocusViewChange === 'function' && <button ref={focusViewButtonRef} type="button" data-reader-focus-view aria-pressed={!!isZenMode} aria-describedby={readerId("simplified-focus-view-hint")} onClick={() => props.onFocusViewChange(!isZenMode)} className="min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{isZenMode ? readerText('simplified.exit_focus_view', 'Exit focus view') : readerText('simplified.focus_view', 'Focus view')}</button>}
++              <button ref={displayToggleRef} type="button" data-reader-display aria-expanded={displayOpen} aria-controls={readerId("simplified-display-panel")} onClick={() => setDisplayOpen(!displayOpen)} className="min-h-11 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><span aria-hidden="true" className="font-serif text-base leading-none">Aa</span>{viewText('simplified.display_menu', 'Display')}{displayOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}</button>
+             </div>
+-            <div id="simplified-practice-tools" hidden={!practiceOpen} style={{ display: practiceOpen ? undefined : 'none' }} className="flex flex-wrap justify-center gap-2 py-2">
++            <div id={readerId("simplified-practice-tools")} hidden={!practiceOpen} style={{ display: practiceOpen ? undefined : 'none' }} className="flex flex-wrap justify-center gap-2 py-2">
+               <button type="button" data-help-key="simplified_read_along" aria-pressed={!!isFluencyMode} onClick={() => chooseReadingMode('fluency')} className="min-h-11 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-900">{readerText('simplified.record_my_reading', 'Record my reading')}</button>
+               {!protectedOriginal && !isCompareMode && hasClozeTerms && <button type="button" data-help-key="simplified_cloze_mode" aria-pressed={interactionMode === 'cloze'} onClick={() => chooseReadingMode('cloze')} className="min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-indigo-900">{readerText('simplified.practice_blanks', 'Fill in the blanks')}</button>}
+               <button type="button" data-help-key="simplified_scramble_game" onClick={handleSetIsSyntaxGameToTrue} className="min-h-11 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm font-semibold text-orange-900">{readerText('simplified.practice_sentences', 'Sentence scramble')}</button>
+             </div>
+-            <div id="simplified-display-panel" data-reader-display-panel role="group" aria-label={viewText('simplified.display_menu', 'Display')} hidden={!displayOpen} style={{ display: displayOpen ? undefined : 'none' }} onKeyDown={event => { if (event.key !== 'Escape') return; event.stopPropagation(); setDisplayOpen(false); displayToggleRef.current?.focus(); }} className="mt-2 flex w-full flex-wrap items-center justify-center gap-3 rounded-xl border border-indigo-100 bg-white/70 p-3 text-sm"><button type="button" aria-label={readerText('simplified.immersive_reader', 'Immersive Reader')} data-help-key="simplified_immersive_reader" onClick={() => {
++            <div id={readerId("simplified-display-panel")} data-reader-display-panel role="group" aria-label={viewText('simplified.display_menu', 'Display')} hidden={!displayOpen} style={{ display: displayOpen ? undefined : 'none' }} onKeyDown={event => { if (event.key !== 'Escape') return; event.stopPropagation(); setDisplayOpen(false); displayToggleRef.current?.focus(); }} className="mt-2 flex w-full flex-wrap items-center justify-center gap-3 rounded-xl border border-indigo-100 bg-white/70 p-3 text-sm"><button type="button" aria-label={readerText('simplified.immersive_reader', 'Immersive Reader')} data-help-key="simplified_immersive_reader" onClick={() => {
+                 if (generatedContent.immersiveData) {
+                   setIsImmersiveReaderActive(true);
+                 } else {
+@@ -4159,7 +4211,7 @@
+             {(() => {
+               var status = readingModeStatus();
+               return <p role="status" data-reading-mode-status={status.mode} className={'my-2 text-center text-sm ' + (status.label ? 'mx-auto w-fit max-w-full rounded-xl border-2 border-indigo-700 bg-indigo-50 px-3 py-2 text-indigo-950' : 'text-slate-700')}>{status.label && <strong className="font-bold">{status.label}{' · '}</strong>}{status.hint}</p>;
+-            })()}{isTeacherMode && (teacherReadingModes.length > 0 || !isZenMode) && <div role="group" aria-labelledby="simplified-teacher-editing-label" data-teacher-editing-tools className="mt-1 flex w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-2"><span id="simplified-teacher-editing-label" className="px-1 text-xs font-bold uppercase tracking-wide text-slate-600">{viewText('simplified.teacher_editing', 'Teacher editing')}</span>{teacherReadingModes.map(renderReadingModeButton)}{isTeacherMode && !isZenMode && <button type="button" data-help-key="simplified_teacher_tools" aria-expanded={!!isTeacherToolbarExpanded} aria-controls="simplified-teacher-tools-panel" onClick={handleToggleIsTeacherToolbarExpanded} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`} title={t('simplified.teacher_tools_tooltip')}><Settings size={14} /><span>{readerText('simplified.teacher_actions', 'Teacher tools')}</span>{isTeacherToolbarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}</button>}{isTeacherMode && !protectedOriginal && !isZenMode && <button type="button" onClick={handleToggleIsEditingLeveledText} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`} data-help-key="simplified_edit">{isEditingLeveledText ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingLeveledText ? t('common.done_editing') : t('common.edit')}</button>}</div>}{renderTeacherReviewSummary()}{isTeacherMode && !isZenMode && <div id="simplified-teacher-tools-panel" hidden={!isTeacherToolbarExpanded} style={{ display: isTeacherToolbarExpanded ? undefined : 'none' }} className="mt-2 w-full rounded-xl border border-indigo-200 bg-white p-3"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" onClick={handleDuplicateResource} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_duplicate_btn')} data-help-key="simplified_duplicate"><Copy size={14} /> {t('common.duplicate')}</button><button type="button" onClick={handleCheckLevel} disabled={isCheckingLevel} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" title={t('simplified.tip_check_level_btn')} data-help-key="simplified_check_level">{isCheckingLevel ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Search size={14} />}{isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')}</button><button type="button" onClick={handleCheckAlignment} disabled={isCheckingAlignment || !standardsInput} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`} title={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} data-help-key="simplified_rigor_report">{isCheckingAlignment ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <ShieldCheck size={14} />}{isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')}</button><button type="button" onClick={() => copyToClipboard(generatedContent?.data)} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_copy_btn')} aria-label={t('simplified.tip_copy_btn')} data-help-key="simplified_copy_text"><Copy size={14} /> {t('common.copy_text')}</button><button type="button" onClick={() => { if (isSimplifiedAudioDownloading) { try { window.__alloCancelAudioDownload?.(); } catch (_) {} return; } handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'); }} title={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : (t('simplified.tip_download_audio') || t('common.download_audio'))} aria-label={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : t('common.download_audio')} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{isSimplifiedAudioDownloading ? <StopCircle size={14} /> : <Download size={14} />}{isSimplifiedAudioDownloading ? (t('common.stop') || simplifiedAudioStopLabel) : t('common.download_audio')}</button><button type="button" onClick={function () { if (ttsPrepState.busy) { var request = ttsPrepRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareReadAloudAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={ttsPrepState.busy ? readerText('simplified.save_audio_stop', 'Stop saving audio') : readerText('simplified.save_audio_tip', 'Save read-aloud audio for every sentence, so it plays without waiting')} data-help-key="simplified_save_tts">{ttsPrepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{ttsPrepState.busy ? `${simplifiedAudioStopLabel || viewText('common.stop', 'Stop')} · ${ttsPrepState.done}/${ttsPrepState.total || '...'}` : readerText('simplified.save_audio', 'Save audio')}</button></div><details data-teacher-reading-review className="my-4 rounded-xl border border-indigo-200 bg-white p-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{readerText('simplified.review_adjust', 'Review & adjust text')}</summary>{isTeacherMode && !protectedOriginal && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && <div className="bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1" data-help-key="simplified_complexity_slider"><label className="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2 text-center">{generatedContent.type === 'quiz' ? t('simplified.complexity_controls.adjust_difficulty') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.adjust_scaffolding') : generatedContent.type === 'glossary' ? t('simplified.complexity_controls.adjust_definition') : t('simplified.complexity_controls.adjust_relative')}</label><div className="flex items-center gap-3"><span className="text-xs font-bold text-slate-600 uppercase w-20 text-right">{generatedContent.type === 'quiz' ? t('simplified.complexity_controls.easier') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.more_support') : t('simplified.complexity_controls.simpler')}</span><div className="relative flex-grow h-6 flex items-center"><div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 transform -translate-x-1/2" /><input aria-label={readerText('simplified.adjust_complexity', 'Adjust text complexity')} type="range" min="1" max="9" step="1" value={complexityLevel} onChange={e => setComplexityLevel(parseInt(e.target.value))} aria-valuetext={complexityLevel < 5 ? readerText('simplified.simpler_setting', 'Simpler') + ' ' + complexityLevel : complexityLevel > 5 ? readerText('simplified.complex_setting', 'More complex') + ' ' + complexityLevel : readerText('simplified.unchanged_setting', 'Current version')} disabled={isProcessing} aria-busy={isProcessing} className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative" /></div><span className="text-xs font-bold text-slate-600 uppercase w-20">{generatedContent.type === 'quiz' ? t('simplified.complexity_controls.harder') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.less_support') : t('simplified.complexity_controls.complex')}</span></div><div className="px-2 sm:px-16"><ComplexityGauge level={complexityLevel} /></div><div className="mt-3 text-center"><p className="text-xs text-slate-600 mb-2">{readerText('simplified.adjust_hint', 'Choose a change, then apply it. Review the new version before sharing.')}</p>{generatedContent.type === 'simplified' ? renderAdaptationControls() : <button type="button" data-apply-complexity onClick={handleComplexityAdjustment} disabled={isProcessing || Number(complexityLevel) === 5} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : readerText('simplified.apply_complexity', 'Apply text change')}</button>}</div><div className="flex items-center justify-center mt-4 pt-3 border-t border-slate-100"><label className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full cursor-pointer select-none transition-all border ${saveOriginalOnAdjust ? 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-2 ring-indigo-500 ring-offset-1 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-700'}`} title={t('common.choose_overwrite_version')} data-help-key="simplified_overwrite_toggle"><input type="checkbox" checked={saveOriginalOnAdjust} onChange={e => setSaveOriginalOnAdjust(e.target.checked)} className="h-4 w-4 accent-indigo-600" />{saveOriginalOnAdjust ? <CheckCircle2 size={16} /> : <Copy size={16} />}<span>{t('common.keep_original')}</span></label></div></div>}{/* Measured level (C1, 2026-08-16). The generator now computes Flesch-Kincaid
++            })()}{isTeacherMode && (teacherReadingModes.length > 0 || !isZenMode) && <div role="group" aria-labelledby={readerId("simplified-teacher-editing-label")} data-teacher-editing-tools className="mt-1 flex w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-2"><span id={readerId("simplified-teacher-editing-label")} className="px-1 text-xs font-bold uppercase tracking-wide text-slate-600">{viewText('simplified.teacher_editing', 'Teacher editing')}</span>{teacherReadingModes.map(renderReadingModeButton)}{isTeacherMode && !isZenMode && <button type="button" data-help-key="simplified_teacher_tools" aria-expanded={!!isTeacherToolbarExpanded} aria-controls={readerId("simplified-teacher-tools-panel")} onClick={handleToggleIsTeacherToolbarExpanded} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`} title={t('simplified.teacher_tools_tooltip')}><Settings size={14} /><span>{readerText('simplified.teacher_actions', 'Teacher tools')}</span>{isTeacherToolbarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}</button>}{isTeacherMode && !protectedOriginal && !isZenMode && <button type="button" onClick={handleToggleIsEditingLeveledText} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`} data-help-key="simplified_edit">{isEditingLeveledText ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingLeveledText ? t('common.done_editing') : t('common.edit')}</button>}</div>}{renderTeacherReviewSummary()}{isTeacherMode && !isZenMode && <div id={readerId("simplified-teacher-tools-panel")} hidden={!isTeacherToolbarExpanded} style={{ display: isTeacherToolbarExpanded ? undefined : 'none' }} className="mt-2 w-full rounded-xl border border-indigo-200 bg-white p-3"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" onClick={handleDuplicateResource} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_duplicate_btn')} data-help-key="simplified_duplicate"><Copy size={14} /> {t('common.duplicate')}</button><button type="button" onClick={handleCheckLevel} disabled={isCheckingLevel} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" title={t('simplified.tip_check_level_btn')} data-help-key="simplified_check_level">{isCheckingLevel ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Search size={14} />}{isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')}</button><button type="button" onClick={handleCheckAlignment} disabled={isCheckingAlignment || !standardsInput} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`} title={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} data-help-key="simplified_rigor_report">{isCheckingAlignment ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <ShieldCheck size={14} />}{isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')}</button><button type="button" onClick={() => copyToClipboard(generatedContent?.data)} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_copy_btn')} aria-label={t('simplified.tip_copy_btn')} data-help-key="simplified_copy_text"><Copy size={14} /> {t('common.copy_text')}</button><button type="button" onClick={() => { if (isSimplifiedAudioDownloading) { try { window.__alloCancelAudioDownload?.(); } catch (_) {} return; } handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'); }} title={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : (t('simplified.tip_download_audio') || t('common.download_audio'))} aria-label={isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : t('common.download_audio')} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{isSimplifiedAudioDownloading ? <StopCircle size={14} /> : <Download size={14} />}{isSimplifiedAudioDownloading ? (t('common.stop') || simplifiedAudioStopLabel) : t('common.download_audio')}</button><button type="button" onClick={function () { if (ttsPrepState.busy) { var request = ttsPrepRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareReadAloudAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={ttsPrepState.busy ? readerText('simplified.save_audio_stop', 'Stop saving audio') : readerText('simplified.save_audio_tip', 'Save read-aloud audio for every sentence, so it plays without waiting')} data-help-key="simplified_save_tts">{ttsPrepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{ttsPrepState.busy ? `${simplifiedAudioStopLabel || viewText('common.stop', 'Stop')} · ${ttsPrepState.done}/${ttsPrepState.total || '...'}` : readerText('simplified.save_audio', 'Save audio')}</button></div><details data-teacher-reading-review className="my-4 rounded-xl border border-indigo-200 bg-white p-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{readerText('simplified.review_adjust', 'Review & adjust text')}</summary>{isTeacherMode && !protectedOriginal && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && <div className="bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1" data-help-key="simplified_complexity_slider"><label className="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2 text-center">{generatedContent.type === 'quiz' ? t('simplified.complexity_controls.adjust_difficulty') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.adjust_scaffolding') : generatedContent.type === 'glossary' ? t('simplified.complexity_controls.adjust_definition') : t('simplified.complexity_controls.adjust_relative')}</label><div className="flex items-center gap-3"><span className="text-xs font-bold text-slate-600 uppercase w-20 text-right">{generatedContent.type === 'quiz' ? t('simplified.complexity_controls.easier') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.more_support') : t('simplified.complexity_controls.simpler')}</span><div className="relative flex-grow h-6 flex items-center"><div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 transform -translate-x-1/2" /><input aria-label={readerText('simplified.adjust_complexity', 'Adjust text complexity')} type="range" min="1" max="9" step="1" value={complexityLevel} onChange={e => setComplexityLevel(parseInt(e.target.value))} aria-valuetext={complexityLevel < 5 ? readerText('simplified.simpler_setting', 'Simpler') + ' ' + complexityLevel : complexityLevel > 5 ? readerText('simplified.complex_setting', 'More complex') + ' ' + complexityLevel : readerText('simplified.unchanged_setting', 'Current version')} disabled={isProcessing} aria-busy={isProcessing} className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative" /></div><span className="text-xs font-bold text-slate-600 uppercase w-20">{generatedContent.type === 'quiz' ? t('simplified.complexity_controls.harder') : generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.less_support') : t('simplified.complexity_controls.complex')}</span></div><div className="px-2 sm:px-16"><ComplexityGauge level={complexityLevel} /></div><div className="mt-3 text-center"><p className="text-xs text-slate-600 mb-2">{readerText('simplified.adjust_hint', 'Choose a change, then apply it. Review the new version before sharing.')}</p>{generatedContent.type === 'simplified' ? renderAdaptationControls() : <button type="button" data-apply-complexity onClick={handleComplexityAdjustment} disabled={isProcessing || Number(complexityLevel) === 5} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{isProcessing ? readerText('simplified.applying_change', 'Updating text…') : readerText('simplified.apply_complexity', 'Apply text change')}</button>}</div><div className="flex items-center justify-center mt-4 pt-3 border-t border-slate-100"><label className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full cursor-pointer select-none transition-all border ${saveOriginalOnAdjust ? 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-2 ring-indigo-500 ring-offset-1 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-700'}`} title={t('common.choose_overwrite_version')} data-help-key="simplified_overwrite_toggle"><input type="checkbox" checked={saveOriginalOnAdjust} onChange={e => setSaveOriginalOnAdjust(e.target.checked)} className="h-4 w-4 accent-indigo-600" />{saveOriginalOnAdjust ? <CheckCircle2 size={16} /> : <Copy size={16} />}<span>{t('common.keep_original')}</span></label></div></div>}{/* Measured level (C1, 2026-08-16). The generator now computes Flesch-Kincaid
+              locally on the finished English passage and stores it on the item. It used
+              to be computed only for the Analysis resource, so the one place a target
+              grade actually matters reported nothing unless the teacher spent two model
+@@ -4245,15 +4297,15 @@
+               };
+               delete updated.alignmentCheck;
+               setGeneratedContent(updated);
+-            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id="simplified-focus-view-hint" className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{renderStudentPreview()}{wordHelpCard && (() => {
++            }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}</details></div>}{typeof props.onFocusViewChange === 'function' && <p id={readerId("simplified-focus-view-hint")} className={isZenMode ? 'mt-2 text-center text-xs text-slate-600' : 'sr-only'}>{isZenMode ? readerText('simplified.focus_view_active', 'Focus view is on. Exit any time to bring back the header and sidebar.') : readerText('simplified.focus_view_hint', 'Focus view hides the header and sidebar so you can concentrate on reading.')}</p>}</div></div><p role="status" aria-live="polite" aria-atomic="true" data-tts-prep-status className={ttsPrepNotice ? 'rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900' : 'sr-only'}>{ttsPrepNotice}</p>{renderStudentPreview()}{wordHelpCard && (() => {
+           var entry = wordHelpCard.entry, cardLanguage = wordHelpCard.language || readingLanguage, explanation = entry.definition || entry.explanation || entry.text || '';
+           var cardDirection = typeof getContentDirection === 'function' ? getContentDirection(cardLanguage) : undefined;
+           var cardButton = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm font-semibold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+           var cardLink = 'min-h-11 rounded px-1 text-sm text-indigo-800 underline underline-offset-2 hover:text-indigo-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
+           var moreHelp = () => { var card = wordHelpCard, opener = wordHelpCardOpener.current; closeWordHelpCard(false); if (typeof handleWordClick === 'function') handleWordClick(card.entry.quote, { stopPropagation: () => {}, currentTarget: opener, clientX: card.x, clientY: card.y }, { language: card.language }); };
+           var showAll = () => { var list = (readerSurfaceRef.current || document).querySelector('[data-adapted-word-help]'); closeWordHelpCard(!list); if (!list) return; if (!list.hasAttribute('tabindex')) list.setAttribute('tabindex', '-1'); if (typeof list.scrollIntoView === 'function') list.scrollIntoView({ block: 'start' }); list.focus(); };
+-          return <div ref={wordHelpCardRef} role="dialog" aria-labelledby="simplified-word-help-card-title" tabIndex={-1} data-word-help-card onKeyDown={e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); closeWordHelpCard(); }} className={`fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`} style={simplifiedPopupStyle(wordHelpCard, 20)}>
+-            <div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><h5 id="simplified-word-help-card-title" lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-lg font-bold text-indigo-900">{entry.quote}</h5><p className="text-xs font-semibold text-indigo-700">{viewText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p></div><button type="button" onClick={() => closeWordHelpCard()} aria-label={viewText('common.close', 'Close')} className="min-h-11 min-w-11 shrink-0 rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><X size={14} /></button></div>
++          return <div ref={wordHelpCardRef} role="dialog" aria-labelledby={readerId("simplified-word-help-card-title")} tabIndex={-1} data-word-help-card onKeyDown={e => { if (e.key !== 'Escape') return; e.preventDefault(); e.stopPropagation(); closeWordHelpCard(); }} className={`fixed ${_popupZ} rounded-xl border-2 border-indigo-200 bg-white p-4 text-slate-900 shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600`} style={simplifiedPopupStyle(wordHelpCard, 20)}>
++            <div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><h5 id={readerId("simplified-word-help-card-title")} lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-lg font-bold text-indigo-900">{entry.quote}</h5><p className="text-xs font-semibold text-indigo-700">{viewText('simplified.word_help_card_prepared', 'Word help from your teacher')}</p></div><button type="button" onClick={() => closeWordHelpCard()} aria-label={viewText('common.close', 'Close')} className="min-h-11 min-w-11 shrink-0 rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><X size={14} /></button></div>
+             {entry.image && <img src={entry.image.src} alt={entry.image.alt || ''} data-word-help-card-picture className="mb-2 h-24 w-full rounded-lg bg-white object-contain" />}
+             <p data-word-help-card-text lang={simplifiedLanguageTag(cardLanguage)} dir={cardDirection} className="break-words text-base leading-relaxed">{explanation}</p>
+             <div className="mt-3 flex flex-wrap gap-2">
+@@ -4266,16 +4318,16 @@
+             </div>
+             {renderPictureCredits([entry])}
+           </div>;
+-        })()}{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(definitionData, 16)}><div className="flex justify-between items-start mb-2"><h5 id="simplified-definition-title" className="font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><div className="flex items-center gap-1">{definitionData.text ? renderSimplifiedPopupSpeaker(SIMPLIFIED_DEFINE_AUDIO_ID, [definitionData.word, definitionData.text]) : null}<button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{renderHelpAudioNotice('definition-')}{definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : <div className="flex items-center gap-2 text-xs text-indigo-500"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.popups.finding')}</div>}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t, renderHelpAudioButton)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{definitionData.imageUrl ? <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" /> : definitionData.imageLoading ? <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('common.loading') || 'Loading picture...'}</div> : definitionData.imageError ? <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div> : <button type="button" onClick={() => handleFetchWordImage(definitionData.word)} className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors" aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}><ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}</button>}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby="phonics-popup-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(phonicsData, 18)}><div className="flex justify-between items-start mb-3"><h5 id="phonics-popup-title" className="min-w-0 break-words font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="min-h-11 min-w-11 shrink-0 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.close')}><X size={14} /></button></div>{renderHelpAudioNotice('phonics-')}{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-700"><RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div>{renderHelpAudioButton('phonics-word', null, phonicsData.word, phonicsData.language)}</div>{renderPhonicsDictRow(phonicsData, t, renderHelpAudioButton)}<div className="space-y-3"><div className="bg-slate-50 p-3 rounded border border-slate-100"><div className="text-xs font-bold text-slate-600 mb-2">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-1">{Array.isArray(phonicsData.data.syllables) && phonicsData.data.syllables.some(syl => typeof syl === 'string' && syl.trim()) ? phonicsData.data.syllables.filter(syl => typeof syl === 'string' && syl.trim()).map((syl, i) => <React.Fragment key={i}>{i > 0 && <span className="text-emerald-700 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></React.Fragment>) : <span className="text-sm text-slate-700">{helpText('simplified.word_parts_unavailable', 'Word parts are unavailable. You can still listen to the word.')}</span>}</div></div>{phonicsData.data.ipa && <details className="bg-slate-50 p-3 rounded border border-slate-100"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{helpText('simplified.word_ipa_details', 'Pronunciation symbols (IPA)')}</summary><p className="mt-2 font-mono text-sm text-slate-700">{phonicsData.data.ipa}</p></details>}</div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div ref={selectionDialogRef} role="dialog" aria-modal="true" aria-label={readerText('simplified.selected_passage', 'Selected passage')} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, selectionDialogRef.current, () => { setSelectionMenu(null); setIsCustomReviseOpen(false); })} className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-200`} style={simplifiedPopupStyle(selectionMenu, 20)}><div className="bg-slate-900/90 text-white text-[11px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap shadow-sm max-w-[150px] truncate border border-slate-700">"{selectionMenu.text.length > 20 ? selectionMenu.text.substring(0, 20) + '...' : selectionMenu.text}"</div><div className="bg-slate-800 text-white rounded-full shadow-xl p-1 flex items-center gap-1">{isCustomReviseOpen ? <div className="flex items-center gap-1 px-1 animate-in motion-reduce:animate-none slide-in-from-right-2 duration-200"><input aria-label={t('common.enter_custom_revise_instruction')} autoFocus={true} type="text" value={customReviseInstruction} onChange={e => setCustomReviseInstruction(e.target.value)} onKeyDown={e => {
++        })()}{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-definition-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(definitionData, 16)}><SimplifiedPopupStatus message={definitionData.text ? viewText('common.ready', 'Ready') : viewText('glossary.popups.finding', 'Finding a definition…')} /><div className="flex flex-wrap justify-between items-start gap-2 mb-2"><h5 id={readerId("simplified-definition-title")} className="min-w-0 break-words font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><div className="flex items-center gap-1">{definitionData.text ? renderSimplifiedPopupSpeaker(SIMPLIFIED_DEFINE_AUDIO_ID, [definitionData.word, definitionData.text]) : null}<button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{renderHelpAudioNotice('definition-')}{definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : <div className="flex items-center gap-2 text-xs text-indigo-500"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.popups.finding')}</div>}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t, renderHelpAudioButton)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{definitionData.imageUrl ? <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" /> : definitionData.imageLoading ? <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('common.loading') || 'Loading picture...'}</div> : definitionData.imageError ? <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div> : <button type="button" onClick={() => handleFetchWordImage(definitionData.word)} className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors" aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}><ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}</button>}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("phonics-popup-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(phonicsData, 18)}><SimplifiedPopupStatus message={phonicsData.isLoading ? viewText('glossary.popups.analyzing', 'Analyzing…') : phonicsData.data ? viewText('common.ready', 'Ready') : viewText('glossary.popups.failed', 'Unable to load word sounds.')} /><div className="flex justify-between items-start mb-3"><h5 id={readerId("phonics-popup-title")} className="min-w-0 break-words font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="min-h-11 min-w-11 shrink-0 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.close')}><X size={14} /></button></div>{renderHelpAudioNotice('phonics-')}{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-700"><RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div>{renderHelpAudioButton('phonics-word', null, phonicsData.word, phonicsData.language)}</div>{renderPhonicsDictRow(phonicsData, t, renderHelpAudioButton)}<div className="space-y-3"><div className="bg-slate-50 p-3 rounded border border-slate-100"><div className="text-xs font-bold text-slate-600 mb-2">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-1">{Array.isArray(phonicsData.data.syllables) && phonicsData.data.syllables.some(syl => typeof syl === 'string' && syl.trim()) ? phonicsData.data.syllables.filter(syl => typeof syl === 'string' && syl.trim()).map((syl, i) => <React.Fragment key={i}>{i > 0 && <span className="text-emerald-700 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></React.Fragment>) : <span className="text-sm text-slate-700">{helpText('simplified.word_parts_unavailable', 'Word parts are unavailable. You can still listen to the word.')}</span>}</div></div>{phonicsData.data.ipa && <details className="bg-slate-50 p-3 rounded border border-slate-100"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{helpText('simplified.word_ipa_details', 'Pronunciation symbols (IPA)')}</summary><p className="mt-2 font-mono text-sm text-slate-700">{phonicsData.data.ipa}</p></details>}</div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div ref={selectionDialogRef} role="dialog" aria-modal="true" aria-label={readerText('simplified.selected_passage', 'Selected passage')} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, selectionDialogRef.current, () => { setSelectionMenu(null); setIsCustomReviseOpen(false); })} className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-200`} style={simplifiedPopupStyle(selectionMenu, 20)}><button type="button" data-selection-close onClick={() => { setSelectionMenu(null); setIsCustomReviseOpen(false); }} className="min-h-11 self-end rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{viewText('common.close', 'Close')}</button><div className="bg-slate-900/90 text-white text-[11px] px-2 py-0.5 rounded-full mb-1 whitespace-nowrap shadow-sm max-w-[150px] truncate border border-slate-700">"{selectionMenu.text.length > 20 ? selectionMenu.text.substring(0, 20) + '...' : selectionMenu.text}"</div><div className="max-w-full bg-slate-800 text-white rounded-2xl shadow-xl p-1 flex flex-wrap items-center justify-center gap-1">{isCustomReviseOpen ? <div className="flex w-full min-w-0 flex-wrap items-center gap-1 px-1 animate-in motion-reduce:animate-none slide-in-from-right-2 duration-200"><input aria-label={t('common.enter_custom_revise_instruction')} autoFocus={true} type="text" value={customReviseInstruction} onChange={e => setCustomReviseInstruction(e.target.value)} onKeyDown={e => {
+                 if (e.key === 'Enter') handleReviseSelection('custom', customReviseInstruction);
+-                if (e.key === 'Escape') setIsCustomReviseOpen(false);
+-              }} placeholder={t('text_tools.menu_placeholder')} className="text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 outline-none text-white w-48 placeholder:text-slate-600" /><button type="button" aria-label={t('common.continue')} onClick={() => handleReviseSelection('custom', customReviseInstruction)} className="p-1.5 bg-indigo-600 hover:bg-indigo-600 rounded-full text-white transition-colors" disabled={!customReviseInstruction.trim()}><ArrowRight size={12} /></button><button type="button" aria-label={t('common.close_revision_panel')} onClick={handleSetIsCustomReviseOpenToFalse} className="p-1.5 text-slate-600 hover:text-white rounded-full transition-colors"><X size={12} /></button></div> : <>{interactionMode === 'explain' && <button ref={selectionActionRef} type="button" aria-label={readerText('simplified.explain_mode', 'Explain')} onClick={() => handleReviseSelection('explain')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><HelpCircle size={12} className="text-teal-700" /> {t('text_tools.explain')}</button>}{interactionMode === 'revise' && <><button type="button" onClick={() => handleReviseSelection('simplify')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Sparkles size={12} className="text-yellow-700" /> {t('text_tools.simplify')}</button><div className="w-px h-3 bg-slate-600" /><button type="button" onClick={() => handleReviseSelection('custom-input')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><PenTool size={12} className="text-indigo-600" /> {t('text_tools.custom')}</button></>}{interactionMode === 'define' && <button type="button" onClick={handleDefineSelection} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Search size={12} className="text-yellow-700" /> {t('text_tools.define')}</button>}{interactionMode === 'add-glossary' && <button type="button" onClick={() => {
++                if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setIsCustomReviseOpen(false); selectionDialogRef.current?.querySelector('[data-selection-close]')?.focus(); }
++              }} placeholder={t('text_tools.menu_placeholder')} className="text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 outline-none text-white w-full min-w-0 placeholder:text-slate-300" /><button type="button" aria-label={t('common.continue')} onClick={() => handleReviseSelection('custom', customReviseInstruction)} className="p-1.5 bg-indigo-600 hover:bg-indigo-600 rounded-full text-white transition-colors" disabled={!customReviseInstruction.trim()}><ArrowRight size={12} /></button><button type="button" aria-label={t('common.close_revision_panel')} onClick={() => { handleSetIsCustomReviseOpenToFalse(); selectionDialogRef.current?.querySelector('[data-selection-close]')?.focus(); }} className="p-1.5 text-slate-600 hover:text-white rounded-full transition-colors"><X size={12} /></button></div> : <>{interactionMode === 'explain' && <button ref={selectionActionRef} type="button" aria-label={readerText('simplified.explain_mode', 'Explain')} onClick={() => handleReviseSelection('explain')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><HelpCircle size={12} className="text-teal-700" /> {t('text_tools.explain')}</button>}{interactionMode === 'revise' && <><button type="button" onClick={() => handleReviseSelection('simplify')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Sparkles size={12} className="text-yellow-700" /> {t('text_tools.simplify')}</button><div className="w-px h-3 bg-slate-600" /><button type="button" onClick={() => handleReviseSelection('custom-input')} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><PenTool size={12} className="text-indigo-600" /> {t('text_tools.custom')}</button></>}{interactionMode === 'define' && <button type="button" onClick={handleDefineSelection} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Search size={12} className="text-yellow-700" /> {t('text_tools.define')}</button>}{interactionMode === 'add-glossary' && <button type="button" onClick={() => {
+                 handleQuickAddGlossary(selectionMenu.text, true);
+                 setSelectionMenu(null);
+               }} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Plus size={12} className="text-green-700" /> {t('text_tools.add_term')}</button>}</>}</div><div className="w-2 h-2 bg-slate-800 rotate-45" /></div>}{selectionMenu && <div className={`fixed inset-0 ${_popupBackdropZ} bg-transparent`} onMouseDown={e => {
+           setSelectionMenu(null);
+           setIsCustomReviseOpen(false);
+-        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-revision-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100"><h5 id="simplified-revision-title" className="font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp key={generatedContent?.id} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div>;
++        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'Working…')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{instructionalRoleControl}{versionControls}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} />{renderEditAudioSentenceTools()}</div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp key={generatedContent?.id} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div>;
+   }
+   SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
+   SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;
+diff --git a/tests/reader_route_a11y.test.js b/tests/reader_route_a11y.test.js
+new file mode 100644
+index e69de29..30f4874 100644
+--- /dev/null
++++ b/tests/reader_route_a11y.test.js
+@@ -0,0 +1,175 @@
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { readFileSync } from 'node:fs';
++import { loadAlloModule } from './setup.js';
++
++const require = createRequire(import.meta.url);
++const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
++const t = key => key.split('.').reduce((value, part) => value?.[part], strings) || key;
++let React, createRoot, act, View, contract, pure, phase, root, host;
++beforeAll(() => {
++  React = require(resolve('desktop/web-app/node_modules/react'));
++  ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
++  act = React.act;
++  global.React = window.React = React;
++  global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloIcons = new Proxy({}, { get: () => () => null });
++  for (const file of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js', 'view_simplified_module.js']) loadAlloModule(file);
++  View = window.AlloModules.SimplifiedView;
++  contract = window.AlloModules.InstructionalContext;
++  pure = window.AlloModules.PureHelpers;
++  phase = window.AlloModules.PhaseNHelpers;
++});
++beforeEach(() => localStorage.clear());
++afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; vi.restoreAllMocks(); });
++const adapted = text => ({ id: 'adapted', type: 'simplified', data: text, config: { language: 'English', grade: '5' }, instructionalText: { form: 'adapted', role: 'supplemental' } });
++function mount(extra = {}) {
++  const noop = () => {};
++  let props = {
++    t, generatedContent: adapted('Plants grow. Bees visit flowers.'), inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], history: [],
++    isTeacherMode: false, isZenMode: true, isCompareMode: false, isEditingLeveledText: false, isProcessing: false, isPlaying: false, interactionMode: 'read',
++    textEditorRef: React.createRef(), playbackState: { currentIdx: -1 }, cursorStyles: {}, latestGlossary: [],
++    splitTextToSentences: text => pure.splitTextToSentences(text, {}), getSideBySideContent: () => null,
++    getContentDirection: () => 'ltr', isRtlLang: () => false, highlightGlossaryTerms: text => text,
++    renderFormattedText: text => text, formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }),
++    SourceReferencesPanel: () => null, ComplexityGauge: () => null,
++    handleSpeak: vi.fn(), handleWordClick: vi.fn(), handlePhonicsClick: vi.fn(), handleTextMouseUp: vi.fn(), handleQuickAddGlossary: vi.fn(),
++    closeDefinition: noop, closePhonics: noop, closeRevision: noop, stopPlayback: noop, setFocusedParagraphIndex: noop,
++    setSelectionMenu: vi.fn(), setIsCustomReviseOpen: vi.fn(), setComplexityLevel: noop, setSaveOriginalOnAdjust: noop, setReadingTheme: noop,
++    setInteractionMode: noop, setIsCompareMode: noop, setIsFluencyMode: noop, handleToggleIsTeacherToolbarExpanded: noop,
++    handleToggleIsEditingLeveledText: noop, handleFormatText: noop, handleSimplifiedTextChange: vi.fn(), callTTS: noop,
++    ...extra,
++  };
++  host = document.createElement('div'); document.body.append(host); root = createRoot(host);
++  const render = next => { props = { ...props, ...next }; root.render(React.createElement(View, props)); };
++  act(() => render({}));
++  return { props, update: next => act(() => render(next)) };
++}
++const $ = selector => host.querySelector(selector);
++const click = async node => act(async () => { node.focus(); node.click(); });
++const key = (node, value, shiftKey = false) => act(() => node.dispatchEvent(new KeyboardEvent('keydown', { key: value, shiftKey, bubbles: true, cancelable: true })));
++const tick = () => act(async () => { await new Promise(done => setTimeout(done, 5)); });
++
++describe('Original and Both Explain routes', () => {
++  it.each(['original', 'both'])('%s keeps headings, links and gloss edits outside Explain buttons', async route => {
++    const text = '# Plants\n\nSee [the guide](https://example.org/guide) for details.';
++    const original = contract.createSupportedReading(text, { id: 'original' });
++    const start = text.indexOf('details');
++    original.readingSupports = contract.validateReadingSupports(original.sourceSnapshot, [{ id: 'details', start, end: start + 7, quote: 'details', text: 'More information.' }]);
++    const other = { ...adapted('Read the guide for details.'), sourceSnapshot: original.sourceSnapshot };
++    const view = mount({ generatedContent: route === 'original' ? original : other, history: [original, other], isCompareMode: route === 'both', isTeacherMode: true, interactionMode: 'explain', onUpdateReadingSupports: vi.fn() });
++    const scope = route === 'original' ? $('[data-original-source]') : $('[data-compare-version="source"]');
++    expect(scope.querySelector('h2').getAttribute('role')).toBeNull();
++    expect(scope.querySelectorAll('[role="button"] a, [role="button"] button, button a, button button')).toHaveLength(0);
++    const link = scope.querySelector('a');
++    link.addEventListener('click', event => event.preventDefault());
++    key(link, 'Enter');
++    await click(link);
++    expect(view.props.setSelectionMenu).not.toHaveBeenCalled();
++    const edit = scope.querySelector('[data-reading-gloss] button');
++    expect(edit).not.toBeNull();
++    key(edit, ' ');
++    await click(edit);
++    expect(view.props.setSelectionMenu).not.toHaveBeenCalled();
++    const explain = [...scope.querySelectorAll('[data-exact-explain]')].find(button => button.getAttribute('aria-label').includes('See the guide'));
++    await click(explain);
++    expect(view.props.setSelectionMenu).toHaveBeenCalledWith(expect.objectContaining({ text: 'See the guide for details.' }));
++  });
++});
++
++describe('adaptation preview focus recovery', () => {
++  it.each(['discard', 'apply', 'stale'])('keeps focus on a surviving destination after %s', async outcome => {
++    const item = adapted('Plants need sunlight.');
++    const preview = { status: 'preview', data: 'Plants need light.', resourceId: item.id, baseData: item.data };
++    let view;
++    const handler = vi.fn(async plan => {
++      if (plan.preview) return preview;
++      if (outcome === 'stale') return { status: 'stale' };
++      view.update({ generatedContent: { ...item, data: preview.data } });
++      return { status: 'applied', previousId: item.id, newId: item.id, data: preview.data };
++    });
++    view = mount({ generatedContent: item, isTeacherMode: true, isZenMode: false, isTeacherToolbarExpanded: true, complexityLevel: 3, handleComplexityAdjustment: handler });
++    const opener = $('[data-apply-complexity]');
++    await click(opener);
++    expect(document.activeElement).toBe($('[data-adaptation-preview]'));
++    await click($('[data-adaptation-' + (outcome === 'discard' ? 'discard' : 'apply') + ']'));
++    expect($('[data-adaptation-preview]')).toBeNull();
++    expect(document.activeElement).toBe(outcome === 'apply' ? $('[data-adaptation-undo]') : opener);
++    if (outcome === 'apply') {
++      await click($('[data-adaptation-undo]'));
++      expect(document.activeElement).toBe(opener);
++    }
++  });
++  it('recovers focus when a different version removes an open preview', async () => {
++    const item = adapted('Plants need sunlight.');
++    const view = mount({ generatedContent: item, isTeacherMode: true, isZenMode: false, isTeacherToolbarExpanded: true, complexityLevel: 3,
++      handleComplexityAdjustment: async () => ({ status: 'preview', data: 'Plants need light.', resourceId: item.id, baseData: item.data }) });
++    await click($('[data-apply-complexity]'));
++    expect(document.activeElement).toBe($('[data-adaptation-preview]'));
++    view.update({ generatedContent: { ...item, data: 'Plants changed.' } });
++    expect($('[data-adaptation-preview]')).toBeNull();
++    expect(document.activeElement).toBe($('[data-apply-complexity]'));
++  });
++});
++
++it('student preview has unique IDs and disclosure targets inside its own reader', async () => {
++  mount({ isTeacherMode: true, isZenMode: false });
++  await click($('[data-student-preview-open]'));
++  const preview = $('[data-student-preview]');
++  const ids = [...host.querySelectorAll('[id]')].map(node => node.id);
++  expect(new Set(ids).size).toBe(ids.length);
++  for (const button of preview.querySelectorAll('[aria-controls]')) {
++    const target = document.getElementById(button.getAttribute('aria-controls'));
++    expect(target, button.outerHTML).not.toBeNull();
++    expect(preview.contains(target)).toBe(true);
++  }
++});
++
++it('the selection dialog always offers Close and Escape from Custom closes only that subview', async () => {
++  const view = mount({ isTeacherMode: true, interactionMode: 'revise', selectionMenu: { text: 'Plants grow.', x: 200, y: 200 }, customReviseInstruction: '', handleReviseSelection: vi.fn(), handleSetIsCustomReviseOpenToFalse: vi.fn() });
++  await click($('[data-selection-close]'));
++  expect(view.props.setSelectionMenu).toHaveBeenCalledWith(null);
++  view.update({ isCustomReviseOpen: true });
++  view.props.setSelectionMenu.mockClear();
++  const input = $('input[autofocus]') || $('input[type="text"]');
++  key(input, 'Escape');
++  expect(view.props.setIsCustomReviseOpen).toHaveBeenCalledWith(false);
++  expect(view.props.setSelectionMenu).not.toHaveBeenCalled();
++  expect(document.activeElement).toBe($('[data-selection-close]'));
++  await click($('button[aria-label="' + t('common.close_revision_panel') + '"]'));
++  expect(view.props.handleSetIsCustomReviseOpenToFalse).toHaveBeenCalledOnce();
++  expect(document.activeElement).toBe($('[data-selection-close]'));
++});
++
++describe('popup names, focus loops and persistent statuses', () => {
++  it.each(['definition', 'phonics', 'revision'])('%s status node survives loading and completion', async kind => {
++    const pending = kind === 'definition' ? { word: 'plants', text: null } : kind === 'phonics' ? { word: 'plants', isLoading: true } : { type: 'explain', result: null };
++    const ready = kind === 'definition' ? { ...pending, text: 'Living things.' } : kind === 'phonics' ? { ...pending, isLoading: false, data: { syllables: ['plants'] } } : { ...pending, result: 'Plants are living things.' };
++    const view = mount({ [kind + 'Data']: { ...pending, x: 200, y: 200 } });
++    const status = $('[data-reader-popup-status]');
++    expect(status.textContent).toBe('');
++    await tick();
++    expect(status.textContent).not.toBe('');
++    view.update({ [kind + 'Data']: { ...ready, x: 200, y: 200 } });
++    await tick();
++    expect($('[data-reader-popup-status]')).toBe(status);
++    expect(status.textContent).toBe('Ready');
++    const dialog = $('[role="dialog"][aria-modal="true"]');
++    const buttons = [...dialog.querySelectorAll('button')];
++    act(() => buttons[buttons.length - 1].focus());
++    key(document.activeElement, 'Tab');
++    expect(document.activeElement).toBe(buttons[0]);
++    key(document.activeElement, 'Tab', true);
++    expect(document.activeElement).toBe(buttons[buttons.length - 1]);
++  });
++  it('Listen remains in its accessible name before and during playback', () => {
++    const view = mount({ definitionData: { word: 'plant', text: 'A living thing.', x: 100, y: 100 } });
++    const speaker = $('[data-simplified-popup-speaker]');
++    expect(speaker.getAttribute('aria-label')).toBe(speaker.textContent.trim());
++    expect(speaker.textContent.trim()).toBe('Listen');
++    view.update({ isPlaying: true, playingContentId: 'simplified-define-popup' });
++    expect(speaker.getAttribute('aria-label')).toBe(speaker.textContent.trim());
++    expect(speaker.textContent.trim()).toBe('Stop');
++  });
++});
+diff --git a/tests/reader_display_menu.test.js b/tests/reader_display_menu.test.js
+index 893ffd5..2652071 100644
+--- a/tests/reader_display_menu.test.js
++++ b/tests/reader_display_menu.test.js
+@@ -40,7 +40,7 @@ function mount(extra = {}) {
+   act(() => root.render(React.createElement(View, props)));
+   return props;
+ }
+-const panel = () => host.querySelector('#simplified-display-panel');
++const panel = () => host.querySelector('[data-reader-display-panel]');
+ const toggle = () => host.querySelector('[data-reader-display]');
+ const shown = el => !el.closest('[hidden]') && !/\bsr-only\b/.test(el.className || '');
+ 
+@@ -48,7 +48,7 @@ describe('the Display (Aa) panel', () => {
+   it('holds Immersive Reader, the reading theme and the reading width, closed at first', () => {
+     mount();
+     expect(toggle().getAttribute('aria-expanded')).toBe('false');
+-    expect(toggle().getAttribute('aria-controls')).toBe('simplified-display-panel');
++    expect(toggle().getAttribute('aria-controls')).toBe(panel().id);
+     expect(panel().hidden).toBe(true);
+     expect(panel().style.display).toBe('none');
+     expect(panel().querySelector('[data-help-key="simplified_immersive_reader"]')).not.toBeNull();
+@@ -105,23 +105,23 @@ describe('the skip link', () => {
+ describe('the teacher drawer', () => {
+   it('holds the teacher actions and Review & adjust, and opens as one', () => {
+     mount({ isTeacherMode: true });
+-    const drawer = host.querySelector('#simplified-teacher-tools-panel');
++    const drawer = host.querySelector('[id^="simplified-teacher-tools-panel-"]');
+     expect(drawer.hidden).toBe(true);
+     expect(drawer.querySelector('details[data-teacher-reading-review]')).not.toBeNull();
+     expect(drawer.querySelector('[data-help-key="simplified_check_level"]')).not.toBeNull();
+     act(() => root.unmount()); host.remove(); root = null;
+     mount({ isTeacherMode: true, isTeacherToolbarExpanded: true });
+-    expect(host.querySelector('#simplified-teacher-tools-panel').hidden).toBe(false);
++    expect(host.querySelector('[id^="simplified-teacher-tools-panel-"]').hidden).toBe(false);
+   });
+   it('keeps Edit in reach outside the drawer', () => {
+     mount({ isTeacherMode: true });
+     const edit = host.querySelector('[data-help-key="simplified_edit"]');
+     expect(edit).not.toBeNull();
+-    expect(host.querySelector('#simplified-teacher-tools-panel').contains(edit)).toBe(false);
++    expect(host.querySelector('[id^="simplified-teacher-tools-panel-"]').contains(edit)).toBe(false);
+   });
+   it('is not there for students', () => {
+     mount();
+-    expect(host.querySelector('#simplified-teacher-tools-panel')).toBeNull();
++    expect(host.querySelector('[id^="simplified-teacher-tools-panel-"]')).toBeNull();
+     expect(host.querySelector('details[data-teacher-reading-review]')).toBeNull();
+   });
+ });
+diff --git a/tests/reader_layout_quick_wins.test.js b/tests/reader_layout_quick_wins.test.js
+index eaca60f..ca5d481 100644
+--- a/tests/reader_layout_quick_wins.test.js
++++ b/tests/reader_layout_quick_wins.test.js
+@@ -118,7 +118,7 @@ describe('a simpler reading toolbar', () => {
+     expect(modes).toEqual(['read', 'define', 'phonics', 'explain']);
+     expect(readingTools().querySelector('[data-reader-display]')).not.toBeNull();
+     expect(readingTools().querySelector('[data-reader-focus-view]')).not.toBeNull();
+-    expect(readingTools().querySelector('[aria-controls="simplified-practice-tools"]')).not.toBeNull();
++    expect(readingTools().querySelector('[aria-controls^="simplified-practice-tools-"]')).not.toBeNull();
+     expect(teacherTools()).toBeNull();
+   });
+   it('groups Add term, Revise, Edit and Teacher tools apart from reading', () => {
+diff --git a/tests/adapted_reading_enhancements.test.js b/tests/adapted_reading_enhancements.test.js
+index fa0f43f..f96d5ab 100644
+--- a/tests/adapted_reading_enhancements.test.js
++++ b/tests/adapted_reading_enhancements.test.js
+@@ -175,12 +175,12 @@ describe('Student reading workflow and teacher boundaries', () => {
+     expect(host.querySelector('[data-reading-sentence][aria-current]')).toBeNull();
+   });
+   it('keeps practice collapsed and exposes its expanded state', () => {
+-    mount(); const button = host.querySelector('[aria-controls="simplified-practice-tools"]');
++    mount(); const button = host.querySelector('[aria-controls^="simplified-practice-tools-"]');
+     expect(button.getAttribute('aria-expanded')).toBe('false');
+-    expect(host.querySelector('#simplified-practice-tools').hidden).toBe(true);
++    expect(host.querySelector('[id^="simplified-practice-tools-"]').hidden).toBe(true);
+     act(() => button.click());
+     expect(button.getAttribute('aria-expanded')).toBe('true');
+-    expect(host.querySelector('#simplified-practice-tools').hidden).toBe(false);
++    expect(host.querySelector('[id^="simplified-practice-tools-"]').hidden).toBe(false);
+   });
+   it('clears old help, comparison and editing when choosing a reading mode', () => {
+     const { props } = mount({ isTeacherMode: true, isEditingLeveledText: true });
+@@ -241,12 +241,12 @@ describe('Adapted reader theme selection', () => {
+     const { props } = mount({ isZenMode: false, readingTheme: 'warm', definitionData: { word: 'water', text: 'A liquid.', x: 10, y: 10 } });
+     const passage = host.querySelector('[data-reading-passage]');
+     const width = host.querySelector('select[aria-label="Reading width"]');
+-    act(() => { width.value = '40'; width.dispatchEvent(new Event('change', { bubbles: true })); host.querySelector('[aria-controls="simplified-practice-tools"]').click(); });
++    act(() => { width.value = '40'; width.dispatchEvent(new Event('change', { bubbles: true })); host.querySelector('[aria-controls^="simplified-practice-tools-"]').click(); });
+     act(() => root.render(React.createElement(View, { ...props, theme: 'dark', readingTheme: 'dim' })));
+     expect(host.querySelector('[data-reading-passage]')).toBe(passage);
+     expect(width.value).toBe('40');
+     expect(host.querySelector('[data-adapted-theme-picker]').value).toBe('dim');
+-    expect(host.querySelector('[aria-controls="simplified-practice-tools"]').getAttribute('aria-expanded')).toBe('true');
++    expect(host.querySelector('[aria-controls^="simplified-practice-tools-"]').getAttribute('aria-expanded')).toBe('true');
+     expect(host.querySelector('[role="dialog"]')).not.toBeNull();
+     expect(props.closeDefinition).not.toHaveBeenCalled();
+     expect(props.stopPlayback).not.toHaveBeenCalled();
+diff --git a/tests/view_simplified_dialog_a11y.test.js b/tests/view_simplified_dialog_a11y.test.js
+index 8d9e8b6..bb55590 100644
+--- a/tests/view_simplified_dialog_a11y.test.js
++++ b/tests/view_simplified_dialog_a11y.test.js
+@@ -28,11 +28,11 @@ describe('Simplified View layered accessibility', () => {
+   });
+ 
+   it('focus-manages definition and revision dialogs without fake keyboard backdrops', () => {
+-    expect(source).toContain('ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title"');
++    expect(source).toContain('ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-definition-title")}');
+     expect(source).toContain('containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)');
+     expect(source).toContain('ref={definitionCloseRef} type="button"');
+     expect(source).toContain('if (definitionCloseRef.current) definitionCloseRef.current.focus()');
+-    expect(source).toContain('ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-revision-title"');
++    expect(source).toContain('ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")}');
+     expect(source).toContain('containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)');
+     expect(source).toContain('ref={revisionCloseRef} type="button"');
+     expect(source).toContain('if (revisionCloseRef.current) revisionCloseRef.current.focus()');
+diff --git a/tests/adapted_reading_popup_read_aloud.test.js b/tests/adapted_reading_popup_read_aloud.test.js
+index 35ce2e0..df7b7c6 100644
+--- a/tests/adapted_reading_popup_read_aloud.test.js
++++ b/tests/adapted_reading_popup_read_aloud.test.js
+@@ -48,7 +48,7 @@ describe('Adapted reading Define popup read-aloud', () => {
+     const button = speaker(DEFINE_ID);
+     expect(button).not.toBeNull();
+     expect(button.getAttribute('type')).toBe('button');
+-    expect(button.getAttribute('aria-label')).toBe('common.read_aloud');
++    expect(button.getAttribute('aria-label')).toBe('common.listen');
+     expect(button.textContent).toContain('common.listen');
+     click(button);
+     expect(props.handleSpeak).toHaveBeenCalledTimes(1);
+@@ -63,11 +63,11 @@ describe('Adapted reading Define popup read-aloud', () => {
+   it('turns into a stop control while its own audio is playing, and not for other audio', () => {
+     mount({ definitionData: definition, isPlaying: true, playingContentId: DEFINE_ID });
+     const active = speaker(DEFINE_ID);
+-    expect(active.getAttribute('aria-label')).toBe('common.stop_reading');
++    expect(active.getAttribute('aria-label')).toBe('common.stop');
+     expect(active.textContent).toContain('common.stop');
+     act(() => root.unmount()); host.remove(); root = null;
+     mount({ definitionData: definition, isPlaying: true, playingContentId: 'simplified-main' });
+-    expect(speaker(DEFINE_ID).getAttribute('aria-label')).toBe('common.read_aloud');
++    expect(speaker(DEFINE_ID).getAttribute('aria-label')).toBe('common.listen');
+   });
+ 
+   it('stops its own audio when the popup closes, and leaves other audio alone', () => {
+@@ -86,7 +86,7 @@ describe('Adapted reading Explain popup read-aloud', () => {
+     const props = mount({ revisionData: explanation });
+     const button = speaker(EXPLAIN_ID);
+     expect(button).not.toBeNull();
+-    expect(button.getAttribute('aria-label')).toBe('common.read_aloud');
++    expect(button.getAttribute('aria-label')).toBe('common.listen');
+     click(button);
+     expect(props.handleSpeak).toHaveBeenCalledWith('It means the water goes up into the air.', EXPLAIN_ID, 0);
+   });
+@@ -187,7 +187,7 @@ describe('Student word-help audio controls', () => {
+   });
+   it('keeps incomplete syllable data readable instead of crashing', () => {
+     mount({ phonicsData: { ...phonics, data: { ipa: 'aɣwa' } } });
+-    expect(host.querySelector('#phonics-popup-title').textContent).toBe('agua');
++    expect(host.querySelector('[id^="phonics-popup-title-"]').textContent).toBe('agua');
+     expect(audioButton('phonics-word')).not.toBeNull();
+   });
+ });
+@@ -196,14 +196,14 @@ describe('Word-help keyboard boundaries', () => {
+   it('handles Escape once without triggering the workspace shortcut', () => {
+     const globalEscape = vi.fn();window.addEventListener('keydown', globalEscape);
+     const closePhonics = vi.fn();mount({ phonicsData: phonics, closePhonics });
+-    const dialog = host.querySelector('[aria-labelledby="phonics-popup-title"]');
++    const dialog = host.querySelector('[aria-labelledby^="phonics-popup-title-"]');
+     act(() => dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+     expect(closePhonics).toHaveBeenCalledOnce();expect(globalEscape).not.toHaveBeenCalled();
+     window.removeEventListener('keydown', globalEscape);
+   });
+   it('wraps through the pronunciation disclosure and ignores hidden controls', () => {
+     mount({ phonicsData: phonics });
+-    const dialog = host.querySelector('[aria-labelledby="phonics-popup-title"]');
++    const dialog = host.querySelector('[aria-labelledby^="phonics-popup-title-"]');
+     const close = dialog.querySelector('button');const summary = dialog.querySelector('summary');
+     const hidden = document.createElement('div');hidden.style.display = 'none';hidden.innerHTML = '<button>Hidden action</button>';dialog.append(hidden);
+     const collapsedButton = document.createElement('button');collapsedButton.textContent = 'Collapsed action';summary.parentElement.append(collapsedButton);
+diff --git a/dev-tools/reader_route_browser.cjs b/dev-tools/reader_route_browser.cjs
+new file mode 100644
+index e69de29..9b8a47c 100644
+--- /dev/null
++++ b/dev-tools/reader_route_browser.cjs
+@@ -0,0 +1,125 @@
++// Disposable browser fixture: production React, Tailwind and reader modules;
++// no application server, model calls, or saved user data.
++const fs = require('fs'), path = require('path');
++const { createRequire } = require('module');
++const root = path.resolve(process.argv[2] || path.join(__dirname, '..'));
++const req = createRequire(path.join(root, 'package.json'));
++const web = createRequire(path.join(root, 'desktop/web-app/package.json'));
++const { chromium } = req('playwright'), esbuild = req('esbuild');
++const out = path.join(root, 'reports/reader-route-a11y');
++const fixture = String.raw`
++const h=React.createElement, noop=()=>{};
++const text='# Plants\n\nSee [the garden guide](https://example.org/guide) for details. Plants grow in sunlight.\n\n## Flowers\n\nBees carry pollen.\n\n## Roots\n\nRoots take up water.';
++const original=AlloModules.InstructionalContext.createSupportedReading(text,{id:'original'});
++const adapted={id:'adapted',type:'simplified',data:text,config:{language:'English',grade:'5'},sourceSnapshot:original.sourceSnapshot,instructionalText:{form:'adapted',role:'supplemental'}};
++function Harness({options}) {
++ const [selection,setSelection]=React.useState(options.selectionMenu||null),[custom,setCustom]=React.useState(!!options.isCustomReviseOpen),[instruction,setInstruction]=React.useState('');
++ const [definition,setDefinition]=React.useState(options.definitionData||null),[phonics,setPhonics]=React.useState(options.phonicsData||null),[revision,setRevision]=React.useState(options.revisionData||null);
++ const [immersive,setImmersive]=React.useState(!!options.immersive),[focus,setFocus]=React.useState(false),[crawl,setCrawl]=React.useState(false),[karaoke,setKaraoke]=React.useState(false);
++ const [settings,setSettings]=React.useState({textSize:24,lineFocus:false,bgColor:'#fff',fontColor:'#1e293b'}),[ruler,setRuler]=React.useState(0);
++ const item=options.original?original:adapted;
++ const props={t,generatedContent:{...item,immersiveData:AlloModules.TextPipelineHelpers.parseTaggedContent(item.data)},inputText:'',gradeLevel:'5',leveledTextLanguage:'English',studentInterests:[],history:[original,adapted],
++ isTeacherMode:!!options.teacher,isZenMode:!options.teacher,isEditingLeveledText:false,isProcessing:false,isPlaying:false,isCompareMode:!!options.compare,interactionMode:options.mode||'read',textEditorRef:React.useRef(null),
++ cursorStyles:{},latestGlossary:[],playbackState:{currentIdx:-1},getSideBySideContent:()=>null,getContentDirection:()=> 'ltr',isRtlLang:()=>false,highlightGlossaryTerms:x=>x,
++ splitTextToSentences:x=>AlloModules.PureHelpers.splitTextToSentences(x,{}),formatInteractiveText:(x,c)=>AlloModules.PhaseNHelpers.formatInteractiveText(x,c,false,{highlightGlossaryTerms:x=>x,latestGlossary:[],MathSymbol:({text})=>text}),renderFormattedText:x=>x,
++ SourceReferencesPanel:()=>null,ComplexityGauge:()=>null,handleSpeak:noop,handleWordClick:(word,event)=>setDefinition({word,text:'A word explained.',x:event.clientX,y:event.clientY}),handlePhonicsClick:noop,handleQuickAddGlossary:noop,handleTextMouseUp:noop,
++ setFocusedParagraphIndex:noop,stopPlayback:noop,setComplexityLevel:noop,setSaveOriginalOnAdjust:noop,setReadingTheme:noop,setInteractionMode:noop,setIsCompareMode:noop,setIsFluencyMode:noop,handleToggleIsTeacherToolbarExpanded:noop,handleToggleIsEditingLeveledText:noop,
++ selectionMenu:selection,setSelectionMenu:setSelection,isCustomReviseOpen:custom,setIsCustomReviseOpen:setCustom,customReviseInstruction:instruction,setCustomReviseInstruction:setInstruction,handleSetIsCustomReviseOpenToFalse:()=>setCustom(false),handleReviseSelection:()=>{setSelection(null);setRevision({type:'explain',result:'A useful explanation.',x:160,y:100});},
++ definitionData:definition,closeDefinition:()=>setDefinition(null),phonicsData:phonics,closePhonics:()=>setPhonics(null),revisionData:revision,closeRevision:()=>setRevision(null),applyTextRevision:noop,
++ immersiveSettings:settings,setImmersiveSettings:setSettings,immersiveRulerY:ruler,setImmersiveRulerY:setRuler,isImmersiveReaderActive:immersive,handleCloseImmersiveReader:()=>setImmersive(false),
++ isFocusReaderActive:focus,setIsFocusReaderActive:setFocus,handleCloseSpeedReader:()=>setFocus(false),isCrawlReaderActive:crawl,setIsCrawlReaderActive:setCrawl,isKaraokeOverlayActive:karaoke,setIsKaraokeOverlayActive:setKaraoke,
++ setIsChunkReaderActive:noop,setChunkReaderIdx:noop,setChunkReaderAutoPlay:noop,setChunkReaderSpeed:noop,setChunkReaderMood:noop,chunkReaderIdx:0,chunkReaderSpeed:3500,chunkReaderMood:'calm',playbackRate:1,setPlaybackRate:noop,lineHeight:1.5,setLineHeight:noop,letterSpacing:0,setLetterSpacing:noop,handleGeneratePOSData:noop,
++ ImmersiveToolbar:AlloModules.ImmersiveToolbar,ImmersiveWord:AlloModules.ImmersiveWord,FocusReaderOverlay:AlloModules.FocusReaderOverlay,PerspectiveCrawlOverlay:AlloModules.PerspectiveCrawlOverlay,KaraokeReaderOverlay:AlloModules.KaraokeReaderOverlay,ErrorBoundary:({children})=>children};
++ return h('div',{className:'theme-'+(options.shell||'light')+' allo-docsuite'},h(AlloModules.AppStyles.AppStyles),h('div',{'data-reading-theme':options.theme||'default','data-allo-anno-host':'true'},h(AlloModules.SimplifiedView,props)));
++}
++let serial=0;
++window.renderFixture=options=>{if(window.fixtureRoot)fixtureRoot.unmount();document.querySelector('#mount').textContent='';window.fixtureRoot=createRoot(document.querySelector('#mount'));fixtureRoot.render(h(Harness,{key:++serial,options:options||{}}));};
++`;
++(async()=>{
++ fs.mkdirSync(out,{recursive:true});
++ const config={...web('./tailwind.config.js'),content:['view_simplified_source.jsx','immersive_reader_source.jsx'].map(f=>path.join(root,f))};
++ const css=(await web('postcss')([web('tailwindcss')(config)]).process('@tailwind base;@tailwind components;@tailwind utilities;',{from:undefined})).css;
++ const runtime=esbuild.buildSync({stdin:{contents:"import React from 'react';import {createRoot} from 'react-dom/client';import * as icons from 'lucide-react';window.React=React;window.createRoot=createRoot;window.AlloIcons=icons;",resolveDir:path.join(root,'desktop/web-app')},bundle:true,write:false,format:'iife',define:{'process.env.NODE_ENV':'"production"'}}).outputFiles[0].text;
++ const strings=JSON.parse(fs.readFileSync(path.join(root,'ui_strings.js'),'utf8'));
++ const browser=await chromium.launch({headless:true});
++ const page=await browser.newPage({viewport:{width:320,height:640},reducedMotion:'reduce'}), errors=[], results=[];
++ page.on('pageerror',e=>errors.push(e.message));
++ await page.route('**/*',route=>route.request().url()==='http://reader-fixture.test/'?route.fulfill({contentType:'text/html',body:'<!doctype html><html id="reader-fixture" lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main id="mount"></main></body></html>'}):route.abort());
++ try {
++  await page.goto('http://reader-fixture.test/');
++  await page.addStyleTag({content:css}); await page.addScriptTag({content:runtime});
++  await page.addScriptTag({content:'window.translations='+JSON.stringify(strings)+';window.t=(key,vars={})=>{const value=key.split(".").reduce((o,k)=>o&&o[k],translations);return typeof value==="string"?value.replace(/\\{(\\w+)\\}/g,(m,k)=>vars[k]??m):key;};window.AlloLanguageContext=React.createContext({t});window.AlloModules={};'});
++  for(const file of ['app_styles_module.js','instructional_context_module.js','pure_helpers_module.js','phase_n_misc_helpers_module.js','text_pipeline_helpers_module.js','immersive_reader_module.js','view_simplified_module.js']) await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
++  await page.addScriptTag({content:fixture});
++  const render=async options=>{await page.evaluate(options=>renderFixture(options),options);await page.locator('[data-adapted-reader]').first().waitFor();};
++  const inspect=async name=>{
++   const geometry=await page.evaluate(()=>({viewport:{width:innerWidth,height:innerHeight},width:document.documentElement.scrollWidth,dialogs:[...document.querySelectorAll('[role=dialog]')].map(el=>({width:el.clientWidth,scrollWidth:el.scrollWidth,height:el.clientHeight,scrollHeight:el.scrollHeight}))}));
++   results.push({name,...geometry});
++   if(geometry.width>geometry.viewport.width+2||geometry.dialogs.some(d=>d.scrollWidth>d.width+2))throw Error(name+' horizontal overflow: '+JSON.stringify(geometry));
++  };
++  for(const spacing of [false,true]){
++   await page.evaluate(spacing=>{document.querySelector('#spacing')?.remove();if(spacing){const style=document.createElement('style');style.id='spacing';style.textContent='#reader-fixture .allo-docsuite [data-adapted-reader] *:not(svg,svg *){line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}#reader-fixture .allo-docsuite [data-adapted-reader] p{margin-bottom:2em!important}';document.head.append(style);}},spacing);
++   for(const [name,options] of [
++    ['definition',{definitionData:{word:'Pneumonoultramicroscopicsilicovolcanoconiosis',text:'A long explanation. '.repeat(40),x:315,y:620}}],
++    ['revision',{teacher:true,revisionData:{type:'custom',result:'Revised text. '.repeat(50),x:315,y:620}}],
++    ['selection',{teacher:true,mode:'revise',selectionMenu:{text:'Plants grow in sunlight.',x:315,y:620},isCustomReviseOpen:true}],
++    ['comparison',{compare:true,mode:'explain'}],
++   ]){
++    await render(options);await inspect(name+(spacing?'-spacing':''));
++    const close=page.locator('[data-selection-close], [role=dialog] button[aria-label="Close"]').first();
++    if(await close.count()){await close.focus();const box=await close.boundingBox();if(!box||box.x<0||box.x+box.width>322||box.y<0||box.y+box.height>642)throw Error(name+' close is out of view');}
++    if(name==='revision') {
++     const save=page.locator('[role=dialog] button').last(); await save.focus();
++     const box=await save.boundingBox();
++     if(!box||box.x<0||box.x+box.width>322||box.y<0||box.y+box.height>642)throw Error('Revision Replace is out of view');
++    }
++   }
++  }
++  await page.evaluate(()=>document.querySelector('#spacing')?.remove());
++  await render({original:true,mode:'explain',teacher:true});
++  if(await page.locator('[data-original-source] [role=button] a, [data-original-source] [role=button] button').count())throw Error('Nested interactive original');
++  await page.locator('[data-exact-explain]').last().focus();await page.keyboard.press('Enter');
++  await page.locator('[data-selection-close]').waitFor();await page.keyboard.press('Escape');
++  if(!await page.locator('[data-exact-explain]').last().evaluate(el=>el===document.activeElement))throw Error('Explain did not restore focus');
++  await render({teacher:true});await page.locator('[data-student-preview-open]').click();
++  const duplicateIds=await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(el=>el.id);return ids.filter((id,i)=>ids.indexOf(id)!==i);});
++  if(duplicateIds.length)throw Error('Duplicate IDs: '+duplicateIds);
++  await inspect('student-preview');await page.screenshot({path:path.join(out,'student-preview-320.png')});
++  await page.keyboard.press('Escape');if(!await page.locator('[data-student-preview-open]').evaluate(el=>el===document.activeElement))throw Error('Preview did not restore focus');
++  await render({immersive:true});await page.locator('[data-immersive-toolbar]').waitFor();
++  if (await page.locator('[aria-controls="immersive-reader-settings"]').getAttribute("aria-expanded") !== "true") await page.locator('[aria-controls="immersive-reader-settings"]').click();
++  await page.locator('[data-help-key="immersive_focus_mode"]').click();
++  await page.locator('#focus-reader-dialog-title').waitFor();await page.keyboard.press('Escape');
++  await page.locator('#focus-reader-dialog-title').waitFor({state:'detached'});
++  if(await page.locator('[data-immersive-toolbar]').count()!==1)throw Error('Nested Escape closed immersive reader');
++  if(!await page.locator('[data-help-key="immersive_focus_mode"]').evaluate(el=>el===document.activeElement))throw Error('Nested Escape did not return focus to its opener');
++  results.push({name:'nested-escape',passed:true});
++  for (const doubled of [false, true]) {
++   await page.setViewportSize({width:320,height:256});
++   await render({teacher:true}); await page.locator('[data-student-preview-open]').click();
++   if (doubled) await page.evaluate(()=>{
++    const sizes=[...document.querySelectorAll('[data-student-preview] *')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);
++    for(const [el,size] of sizes) el.style.setProperty('font-size',size*2+'px','important');
++   });
++   await inspect('short-preview'+(doubled?'-200-percent-text':''));
++   await page.locator('[data-student-preview-close]').focus();
++   for(let n=0;n<20;n++) {
++    await page.keyboard.press('Tab');
++    const state=await page.evaluate(()=>{
++     const el=document.activeElement;
++     const visible=[...el.getClientRects()].some(r=>{
++      if(r.bottom<=0||r.top>=innerHeight||r.right<=0||r.left>=innerWidth) return false;
++      const x=(Math.max(0,r.left)+Math.min(innerWidth-1,r.right))/2, y=(Math.max(0,r.top)+Math.min(innerHeight-1,r.bottom))/2;
++      const hit=document.elementFromPoint(x,y);
++      return el===hit||el.contains(hit);
++     });
++     return {name:el.textContent.trim().slice(0,80),visible};
++    });
++    if(!state.visible){await page.screenshot({path:path.join(out,'obscured-focus.png')});throw Error('Preview focus obscured ('+doubled+'): '+JSON.stringify(state));}
++   }
++  }
++  if(errors.length)throw Error(errors.join('\n'));
++  fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({baseline:'fd4044c862ed9b345b340d69cb1411a19c09dafb',browser:browser.version(),results,errors,limits:'Automated Chromium fixtures; not real assistive technology, mobile hardware, or browser zoom acceptance.'},null,2));
++  console.log('Passed '+results.length+' reader route checks in Chromium '+browser.version());
++ } finally {await browser.close();}
++})().catch(error=>{console.error(error);process.exitCode=1;});

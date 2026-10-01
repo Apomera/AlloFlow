@@ -16,6 +16,7 @@ function makeCanvasContext() {
     arc: vi.fn(),
     beginPath: vi.fn(),
     clearRect: vi.fn(),
+    clip: vi.fn(),
     fill: vi.fn(),
     fillRect: vi.fn(),
     lineTo: vi.fn(),
@@ -75,7 +76,7 @@ const touchCases = [
     groupLabel: 'Spin art touch interaction',
     activeLabel: 'Drip paint',
     initial: { tab: 'spinArt', spinRPM: 120, spinBrush: 6, spinPaused: true },
-    interactionStarted: (canvas, random) => !!canvas._spinPointerDown && random.mock.calls.length === 0,
+    interactionStarted: (canvas, random) => !!canvas._spinPointerDown && random.mock.calls.length > 0,
   },
 ];
 

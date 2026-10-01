@@ -1,0 +1,72 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt
++++ AlloFlowANTI.txt
+@@ -25350,9 +25350,12 @@
+           const assembled = _alloCollectResChunk(store, v);
+           if (!assembled) return;
+           try {
+               let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+-              resource = _alloStudentSafeResources([resource])[0];
++              const receivedResourceId = resource && resource.id;
++              // Pair expansion can prepend an original. Preserve the identity
++              // that this message actually delivered and requested to open.
++              resource = _alloStudentSafeResources([resource]).find(item => item.id === receivedResourceId);
+               if (!resource) throw new Error('The transferred resource is not a valid student resource');
+               if (mbChunkStoreRef.current !== store) return;
+               setHistory(prev => {
+                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+@@ -25451,8 +25454,15 @@
+           if (!resources.length || studentResources.some(item => !resources.some(resource => String(resource.id) === String(item.id)))) {
+               addToast('Some selected resources cannot be shared with students. Choose different resources in History before creating a link.', 'info');
+               return null;
+           }
++          // Describe the uploaded bodies, not their compact reference entries.
++          // A failed read falls through to the existing full-pack fallback.
++          const deliveryResources = await hydrateSessionAssets(appId, resources);
++          if (!Array.isArray(deliveryResources) || deliveryResources.some(item => !item || item.__alloResourceRef || item.__alloResourcesManifestRef)) {
++              throw new Error('Assignment resource assets are unavailable');
++          }
++          const deliverySummary = _alloSharedActivityModule()?.describeAssignmentDelivery?.(deliveryResources, resources[0]?.id, selectedResourceIds);
+           const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
+           await setDoc(assignmentRef, stripUndefined({
+               kind: 'assignment',
+               assignmentId,
+@@ -25465,8 +25475,9 @@
+               mode: 'assignment',
+               isActive: false,
+               currentResourceId: resources[0]?.id || resourcesToAssign[0]?.id || null,
+               resources,
++              deliverySummary,
+               aiPolicy: {
+                   studentAi: studentAiPolicyForShare,
+                   workStory: studentProjectSettings.workStoryEnabled === true,
+                   defaultStudentAi: 'off',
+@@ -25475,9 +25486,9 @@
+               roster: {},
+               version: 1,
+           }));
+           copyToClipboard(shareUrl);
+-          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), deliverySummary: _alloSharedActivityModule()?.describeAssignmentDelivery?.(resources, resources[0]?.id, selectedResourceIds), createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
++          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), deliverySummary, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
+           addToast(studentAiPolicyForShare === 'student-byok' ? 'Homework QR ready. Students may connect their own tested AI provider.' : 'Homework QR ready. Student AI stays off.', 'success');
+           return shareUrl;
+       } catch (e) {
+           warnLog('Homework QR creation failed:', e);
+@@ -36121,13 +36132,11 @@
+                   _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment', assignmentId, hostAppId: hostId, workStory: packet && packet.workStory === true });
+                   if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
+                   const rawResources = Array.isArray(packet.resources) ? packet.resources : [];
+                   if (!rawResources.length) throw new Error('Assignment has no resources');
+-                  let restoredResources = rawResources;
+-                  try {
+-                      restoredResources = await hydrateSessionAssets(hostId, rawResources);
+-                  } catch (hydrateErr) {
+-                      warnLog('Assignment asset hydration failed:', hydrateErr);
++                  const restoredResources = await hydrateSessionAssets(hostId, rawResources);
++                  if (!Array.isArray(restoredResources) || restoredResources.some(item => !item || item.__alloResourceRef || item.__alloResourcesManifestRef)) {
++                      throw new Error('Assignment resource assets are unavailable');
+                   }
+                   if (cancelled) return;
+                   setHistory(restoredResources);
+                   const firstId = packet.currentResourceId || restoredResources[0]?.id;

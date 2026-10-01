@@ -1,0 +1,14 @@
+===================================================================
+--- a/tests/leveled_text_karaoke_persistence_e2e.test.js
++++ b/tests/leveled_text_karaoke_persistence_e2e.test.js
+@@ -109,9 +109,9 @@
+     isEditingLeveledText: true,
+     isImmersiveReaderActive: false,
+     isCompareMode: false,
+     isSideBySide: false,
+-    isZenMode: true,
++    isZenMode: false, // Narration management is intentionally hidden in Zen mode.
+     isProcessing: false,
+     isPlaying: false,
+     interactionMode: 'read',
+     history: [],

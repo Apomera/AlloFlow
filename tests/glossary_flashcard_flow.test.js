@@ -14,7 +14,8 @@ const effectEnd = shell.indexOf('}, [isInteractiveFlashcards, isFlashcardQuizMod
 const shellChoicesEffect = new Function('useEffect', 'isInteractiveFlashcards', 'isFlashcardQuizMode', 'generatedContent', 'flashcardIndex', 'flashcardMode', 'flashcardLang', 'flashcardCorrectAnswer', 'fisherYatesShuffle', 'FLASHCARD_NO_ANSWER', 'setFlashcardOptions', 'setFlashcardFeedback', 'setQuizSelectedOption', shell.slice(effectStart, shell.indexOf(';', effectEnd) + 1));
 
 let unmount;
-beforeAll(() => { window.React = React; loadAlloModule('view_glossary_module.js'); loadAlloModule('host_handlers_module.js'); loadAlloModule('export_module.js'); });
+// Mutation runs load a scratch export copy so a mutant never reaches the shared file.
+beforeAll(() => { window.React = React; loadAlloModule('view_glossary_module.js'); loadAlloModule('host_handlers_module.js'); if (process.env.FLASHCARD_EXPORT) new Function(readFileSync(process.env.FLASHCARD_EXPORT, 'utf8'))(); else loadAlloModule('export_module.js'); });
 afterEach(() => { unmount?.(); unmount = null; vi.useRealTimers(); vi.restoreAllMocks(); });
 function mount(extra = {}) {
   const base = glossaryMediaProps();
@@ -105,5 +106,38 @@ describe('standalone flashcard pictures', () => {
     expect(doc.querySelectorAll('.card-container')).toHaveLength(4); expect(doc.querySelectorAll('img')).toHaveLength(2);
     expect(doc.querySelector('img').alt).toBe(desc); expect(doc.querySelectorAll('img')[1].alt).toBe(''); expect(doc.querySelectorAll('img')[1].getAttribute('role')).toBe('presentation');
     expect(doc.querySelector('figcaption').textContent).toContain('CC BY-SA 4.0'); expect(doc.querySelector('veins')).toBeNull(); expect(html).not.toContain('javascript:');
+  });
+
+  // 2026-09-28: the caption had set, author and licence only. CC BY/BY-SA also ask
+  // for the title, the licence and source addresses, and that a change is said.
+  it('puts a short credit on each card and every full credit, once, on a closing page', async () => {
+    loadAlloModule('alt_text_module.js');
+    let captured; vi.spyOn(URL, 'createObjectURL').mockImplementation(blob => { captured = blob; return 'blob:download'; });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const base = glossaryMediaProps().generatedContent.data[0];
+    const photo = { set: 'Wikimedia Commons', title: 'Oak leaf', author: 'Kim', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0', via: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Oak.jpg', modified: true };
+    const symbol = { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'javascript:alert(1)' };
+    const data = [{ ...base, imageAttribution: photo }, { ...base, imageAttribution: symbol }, { ...base, imageAttribution: symbol }, { ...base, image: null, imageAttribution: photo }];
+    const labels = { 'flashcards.picture_credits': 'Picture credits', 'flashcards.credit_license': 'License', 'flashcards.credit_source': 'Source' };
+    window.AlloModules.createExport({ liveRef: { current: { generatedContent: { type: 'glossary', data }, t: key => labels[key] || key } }, escapeXml: value => String(value) }).handleExportFlashcards('standard');
+    const html = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsText(captured); });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    expect([...doc.querySelectorAll('figcaption')].map(node => node.textContent)).toEqual([
+      '"Oak leaf" by Kim, CC BY 2.0, via Wikimedia Commons, edited', 'Mulberry Symbols by Steve Lee, CC BY-SA 4.0', 'Mulberry Symbols by Steve Lee, CC BY-SA 4.0']);
+    const page = doc.querySelector('[data-picture-credits]');
+    expect(page.querySelector('h2').textContent).toBe('Picture credits');
+    expect([...page.querySelectorAll('li')].map(node => node.textContent)).toEqual([
+      '"Oak leaf" by Kim, CC BY 2.0, via Wikimedia Commons, edited (License: https://creativecommons.org/licenses/by/2.0; Source: https://commons.wikimedia.org/wiki/File:Oak.jpg)',
+      'Mulberry Symbols by Steve Lee, CC BY-SA 4.0']);
+    expect(html).not.toContain('javascript:');
+  });
+
+  it('adds no credits page when no picture has a credit', async () => {
+    let captured; vi.spyOn(URL, 'createObjectURL').mockImplementation(blob => { captured = blob; return 'blob:download'; });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const base = glossaryMediaProps().generatedContent.data[0];
+    window.AlloModules.createExport({ liveRef: { current: { generatedContent: { type: 'glossary', data: [{ ...base, imageAttribution: null }] }, t: key => key } }, escapeXml: value => String(value) }).handleExportFlashcards('standard');
+    const html = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsText(captured); });
+    expect(new DOMParser().parseFromString(html, 'text/html').querySelector('[data-picture-credits]')).toBeNull();
   });
 });

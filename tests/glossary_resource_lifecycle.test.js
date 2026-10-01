@@ -35,18 +35,25 @@ function fixture(resource = glossary()) {
   return { state, deps };
 }
 const host = readFileSync('AlloFlowANTI.txt', 'utf8');
-function handler(name, nextName, deps) {
-  const start = host.indexOf('  const ' + name + ' =');
-  const end = host.indexOf('  const ' + nextName + ' =', start);
-  expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
-  return new Function('deps', 'with (deps) { ' + host.slice(start, end) + '; return ' + name + '; }')(deps);
+// Since wave 3 (c7514f5a5, 2026-09-13) ANTI keeps only a one-line shim for the image handlers;
+// the bodies live in host_handlers_source.jsx inside createHostHandlers(__d), reading every host
+// binding as __d.<name>. Run that real factory with the fixture deps as __d (the invocation-time
+// render values, as the host passes them). FIX0927_HOST_HANDLERS_SOURCE swaps in a scratch copy
+// for mutation checks.
+const hostHandlersFile = process.env.FIX0927_HOST_HANDLERS_SOURCE || 'host_handlers_source.jsx';
+const createHostHandlers = new Function(readFileSync(hostHandlersFile, 'utf8') + '\nreturn createHostHandlers;')();
+function handler(name, deps) {
+  expect(host).toContain('const ' + name + ' = async (...__a) => _alloHostHandlers().' + name + '(...__a);');
+  const run = createHostHandlers(deps)[name];
+  expect(typeof run).toBe('function');
+  return run;
 }
 
 describe('resource-bound glossary updates', () => {
   it('finishes an image for A in history without changing visible glossary B with the same term', async () => {
     const { state, deps } = fixture(), image = deferred();
     deps.callImagen.mockReturnValue(image.promise);
-    const run = handler('handleGenerateTermImage', 'handleGenerateTermEtymology', deps)(0, 'Bank');
+    const run = handler('handleGenerateTermImage', deps)(0, 'Bank');
     const other = glossary('b'); state.resource = other; state.history.push(other);
     image.resolve('new-river-image'); await run;
     expect(state.resource).toBe(other);
@@ -56,7 +63,7 @@ describe('resource-bound glossary updates', () => {
   });
   it('tracks an entry through reordering and preserves an unrelated edit', async () => {
     const { state, deps } = fixture(), image = deferred(); deps.callImagen.mockReturnValue(image.promise);
-    const run = handler('handleGenerateTermImage', 'handleGenerateTermEtymology', deps)(0, 'Bank');
+    const run = handler('handleGenerateTermImage', deps)(0, 'Bank');
     state.resource = { ...state.resource, title: 'My revised glossary', data: [state.resource.data[1], { ...state.resource.data[0], tier: 'Academic' }] };
     state.history[0] = state.resource;
     image.resolve('river-final'); await run;
@@ -66,7 +73,7 @@ describe('resource-bound glossary updates', () => {
   });
   it.each(['deleted entry', 'edited definition', 'replaced image', 'deleted resource'])('discards an obsolete image after %s', async change => {
     const { state, deps } = fixture(), image = deferred(); deps.callImagen.mockReturnValue(image.promise);
-    const run = handler('handleGenerateTermImage', 'handleGenerateTermEtymology', deps)(0, 'Bank');
+    const run = handler('handleGenerateTermImage', deps)(0, 'Bank');
     if (change === 'deleted resource') { state.resource = null; state.history = []; }
     else {
       const data = state.resource.data.slice();
@@ -82,7 +89,7 @@ describe('resource-bound glossary updates', () => {
   it('a newer image request wins even if the old provider ignores cancellation', async () => {
     const { state, deps } = fixture(), first = deferred(), second = deferred();
     deps.callImagen.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
-    const generate = handler('handleGenerateTermImage', 'handleGenerateTermEtymology', deps);
+    const generate = handler('handleGenerateTermImage', deps);
     const old = generate(0, 'Bank'), latest = generate(0, 'Bank');
     expect(deps.callImagen.mock.calls[0][3].signal.aborted).toBe(true);
     second.resolve('latest-image'); await latest;
@@ -91,7 +98,7 @@ describe('resource-bound glossary updates', () => {
   });
   it('image refinement does not restore the old resource or overwrite later text edits', async () => {
     const { state, deps } = fixture(), image = deferred(); deps.callGeminiImageEdit.mockReturnValue(image.promise);
-    const run = handler('handleRefineGlossaryImage', 'handleRefineImage', deps)(0);
+    const run = handler('handleRefineGlossaryImage', deps)(0);
     state.resource = { ...state.resource, data: state.resource.data.map((entry, index) => index ? { ...entry, def: 'My improved financial definition.' } : entry) };
     state.history[0] = state.resource;
     image.resolve('refined-river'); await run;
@@ -119,7 +126,7 @@ describe('adding terms while navigating', () => {
   it('uses legacy IDs consistently for the refinement draft and busy state', async () => {
     const resource = glossary(); resource.data[0] = { ...resource.data[0], id: 'legacy' }; delete resource.data[0].entryId;
     const { state, deps } = fixture(resource); deps.glossaryRefinementInputs = { 'id:legacy': 'Wider river' }; deps.callGeminiImageEdit.mockResolvedValue('refined');
-    await handler('handleRefineGlossaryImage', 'handleRefineImage', deps)(0);
+    await handler('handleRefineGlossaryImage', deps)(0);
     expect(state.resource.data[0].image).toBe('refined');
     expect(deps.setIsGeneratingTermImage.mock.calls[0][0]({})).toEqual({ 'id:legacy': true });
   });

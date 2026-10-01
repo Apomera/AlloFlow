@@ -1,0 +1,84 @@
+{
+  "base": "452e7cd230b62f4e192f055826817653d5b997f4",
+  "snapshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.codex-artifacts\\reader-navigation-track17",
+  "files": [
+    "dev-tools/i18n/apply_reader_contract_locales.cjs",
+    "lang/spanish_latin_america.js",
+    "desktop/web-app/public/lang/spanish_latin_america.js",
+    "lang/spanish_castilian.js",
+    "desktop/web-app/public/lang/spanish_castilian.js",
+    "lang/arabic.js",
+    "desktop/web-app/public/lang/arabic.js",
+    "lang/chinese_simplified.js",
+    "desktop/web-app/public/lang/chinese_simplified.js",
+    "lang/thai.js",
+    "desktop/web-app/public/lang/thai.js",
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "inputs": [
+    {
+      "file": "view_simplified_source.jsx",
+      "sha256": "d953f735f98b5904d52203d0b028bf2a1968e6213df0be37b41e30baebb29b22"
+    },
+    {
+      "file": "reader_place_store.js",
+      "sha256": "ddb623826527a05cc38648d602edd749932f9b1ee7724d407f5f082facce2de9"
+    },
+    {
+      "file": "reader_support_drafts.js",
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "5ab1359f6d9edbf4a5bb51d509b6b923009160bb51fc16f3e245ecb3604f93b2"
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "sha256": "7e9a1a5c8a5ed327f38aa597190d75894e317fa72ca70c5fdf4104a682240fce"
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "sha256": "4e7ccd0d1ab0ece3750471cdb82e29ce79906760d2012d6c2672369056de9a48"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "2ade3502bb840c8f02e4996f6fb9589063b0515edc0c8841e7efcad30181bef2"
+    }
+  ],
+  "keys": [
+    "simplified.skip_passage",
+    "simplified.your_reading",
+    "simplified.word_meaning",
+    "simplified.word_sounds",
+    "simplified.practice_tools",
+    "simplified.display_menu",
+    "simplified.word_arrows_hint",
+    "simplified.reader_reading_passage_when_line_focus_is",
+    "simplified.word_help_card_prepared",
+    "simplified.word_help_card_hear_word",
+    "simplified.word_help_card_listen",
+    "simplified.word_help_card_more",
+    "simplified.word_help_card_all",
+    "simplified.word_help_summary_needs_review",
+    "simplified.word_help_summary_none",
+    "simplified.word_help_summary_one",
+    "simplified.word_help_summary_count",
+    "simplified.word_help_summary_shown",
+    "simplified.word_help_summary_hidden",
+    "simplified.word_help_tip_select",
+    "simplified.word_help_show_word_in_text",
+    "simplified.word_help_highlighted_in_text",
+    "simplified.word_help_not_found_in_text",
+    "simplified.word_help_word_help",
+    "simplified.define_hint",
+    "simplified.define_hint_prepared",
+    "simplified.phonics_hint",
+    "simplified.read_hint",
+    "simplified.define_hint_prepared_no_marks"
+  ]
+}

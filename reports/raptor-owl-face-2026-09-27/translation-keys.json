@@ -1,0 +1,7 @@
+{
+  "status": "English fallbacks implemented; shared language-pack integration pending",
+  "keys": [
+    { "key": "stem.raptorhunt.study_horned_face_detail", "fallback": "Trace the fine feathers around the eyes and the darker rim of the face. Try Side light, then compare front and side views. The tufts are feathers, not ears." },
+    { "key": "stem.raptorhunt.study_snowy_face_detail", "fallback": "Look for the yellow eyes in the white facial feathers. Try Side light to reveal the feather texture, then compare the face from the front and side." }
+  ]
+}

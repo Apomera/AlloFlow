@@ -1,0 +1,37 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "ringWidth": 43.99999999999999,
+      "speed": 0.6118250352803148
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "ringWidth": 43.99999999999998,
+      "speed": 0.6118250352803148
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "ringWidth": 43.99999999999998,
+      "speed": 0.6118250352803148
+    }
+  ],
+  "tangentDot": 0.9999999999891434,
+  "zoomWidths": [
+    43.99999999999999,
+    44.00000000000007,
+    44.00000000000001
+  ],
+  "localSpeed": true,
+  "movingClock": true,
+  "captureHidden": true,
+  "pausedRefresh": true,
+  "viewPreserved": true,
+  "rewind": true,
+  "preferencePreserved": true,
+  "cleanup": true
+}

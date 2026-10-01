@@ -179,13 +179,16 @@ test.describe('First Response — body position on real WebGL', () => {
 
     await page.evaluate(async () => {
       const intervalMs = 60_000 / 110;
-      const startedAt = performance.now();
+      let nextTapAt = performance.now();
       for (let i = 0; i < 30; i += 1) {
-        const delay = startedAt + i * intervalMs - performance.now();
+        const delay = nextTapAt - performance.now();
         if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
         const button = document.querySelector('button[aria-label^="Press and release compression"]') as HTMLButtonElement | null;
         if (!button) throw new Error('press/release control disappeared before count 30');
         button.click();
+        // Software rendering can delay a tap. Keep subsequent inputs spaced
+        // instead of catching up with a burst that the double-click guard rejects.
+        nextTapAt = performance.now() + intervalMs;
       }
     });
 

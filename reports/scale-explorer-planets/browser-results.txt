@@ -1,0 +1,21 @@
+
+Running 16 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:27:5 › real 3D models, scale travel, orbit, chart switching and clean teardown (3.0m)
+  ok  2 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:81:5 › phone, reduced motion, all destinations, height, comparisons, and context loss (17.4s)
+  ok  3 [chromium] › tests\e2e\scale-explorer-atlas.spec.ts:125:5 › unavailable model and texture assets retain an interactive scene (4.3s)
+  ok  4 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:50:5 › the shared 3D scene preserves dimensions through orbit, swaps, inspection and same-item comparisons (6.5s)
+  ok  5 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:84:5 › subpixel locators, exact bridge navigation, notebook protection and recorded heights work together (8.6s)
+  ok  6 [chromium] › tests\e2e\scale-explorer-comparison.spec.ts:126:5 › the phone diagram retains extreme ratios without WebGL and labels distance evidence (2.4s)
+  ok  7 [chromium] › tests\e2e\scale-explorer-inspection.spec.ts:36:5 › distinct specimens and inspection preserve measured scale (10.1s)
+  ok  8 [chromium] › tests\e2e\scale-explorer-inspection.spec.ts:71:5 › two-finger inspection on a phone does not travel to another scale (5.0s)
+  ok  9 [chromium] › tests\e2e\scale-explorer-landmarks.spec.ts:34:5 › landmark cameras follow anatomy and retain physical dimensions (16.3s)
+  ok 10 [chromium] › tests\e2e\scale-explorer-landmarks.spec.ts:83:5 › phone keyboard selection frames the feature while ambience is paused (10.2s)
+  ok 11 [chromium] › tests\e2e\scale-explorer-notebook.spec.ts:34:5 › saved landmarks restore the camera and export measured observations (10.9s)
+  ok 12 [chromium] › tests\e2e\scale-explorer-notebook.spec.ts:85:5 › phone chart notes and per-feature drafts survive reopening, with recorded personal height (3.5s)
+  ok 13 [chromium] › tests\e2e\scale-explorer-notebook.spec.ts:124:5 › a full notebook protects existing notes and allows updates (2.5s)
+  ok 14 [chromium] › tests\e2e\scale-explorer-planets.spec.ts:40:5 › sunlight renders real phases without changing dimensions and landmarks face the observer (10.2s)
+  ok 15 [chromium] › tests\e2e\scale-explorer-planets.spec.ts:73:5 › phone controls and notebook restore lighting, viewpoint and landmark together (4.5s)
+  ok 16 [chromium] › tests\e2e\scale-explorer-planets.spec.ts:92:5 › missing imagery keeps lighting usable and prevents misleading geographic markers (3.0s)
+
+  16 passed (5.2m)

@@ -1,0 +1,141 @@
+{
+  "at": "2026-09-30T02:46:18.982Z",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "sha256": "764fdf524f4e731405842b3ef9690092bd283c15664d67e8aae98f2f4e1ebb35"
+    },
+    {
+      "path": "misc_handlers_source.jsx",
+      "sha256": "24adfc99058e692fa79a64fee49ca7d3530439798b14b5cf3880b9d29e129762"
+    },
+    {
+      "path": "misc_handlers_module.js",
+      "sha256": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d"
+    },
+    {
+      "path": "desktop/web-app/public/misc_handlers_module.js",
+      "sha256": "c3d24c2eed5ab516e4c9d5d5474d5ce633c82f6ff5c45cdbeeeb95d3232ee55d"
+    },
+    {
+      "path": "view_history_panel_source.jsx",
+      "sha256": "93e1edbaf1e8a37baaf3797f154da845dcf0e9a0cda64b85e0ff33facf988dd8"
+    },
+    {
+      "path": "view_history_panel_module.js",
+      "sha256": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    {
+      "path": "desktop/web-app/public/view_history_panel_module.js",
+      "sha256": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "3fda3bd7fbb6e1b7ae88ac5dee69f816cb6017f1aef3067d8d7c4c49b99f5b39"
+    },
+    {
+      "path": "ui_strings.js",
+      "sha256": "66d5510fc09583113436c9195bc7e8162cdd462a96d040f8518136fb230eff72"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "sha256": "5ccb74a163a42efdce3e698afd1248433dce9f294fba0f67feb134174e3d981a"
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "c95309cac9fb0559e9b56d192c8b89b3ecfc2b55e292c00d69868124aa3334ff"
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "sha256": "c95309cac9fb0559e9b56d192c8b89b3ecfc2b55e292c00d69868124aa3334ff"
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "84b19c14ddd59932fc6510ccc6b7f10f3aca1c5415ce34466ff361ddbd940b67"
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "sha256": "84b19c14ddd59932fc6510ccc6b7f10f3aca1c5415ce34466ff361ddbd940b67"
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "c36752508594c0f44bebbf158906c5140a5894b65478ee4064a066d03db9a165"
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "sha256": "c36752508594c0f44bebbf158906c5140a5894b65478ee4064a066d03db9a165"
+    },
+    {
+      "path": "dev-tools/remediation_validation.json",
+      "sha256": "3fda3bd7fbb6e1b7ae88ac5dee69f816cb6017f1aef3067d8d7c4c49b99f5b39"
+    },
+    {
+      "path": "tests/history_resource_open_readiness.test.js",
+      "sha256": "9871ac3eae7dcf91b7675e25179158b556e3093c1785e6cd958c3eb04c71a4fd"
+    },
+    {
+      "path": "tests/saved_resource_restore_validation.test.js",
+      "sha256": "efb4f2671535745e173a4bd7ead8c8c0f11107d9c7ee2a080863454e0f81490c"
+    },
+    {
+      "path": "tests/history_resource_loading_ui.test.js",
+      "sha256": "e320c1113de3909a6d498cd9739c30a97b366d7fb43b4f6bc08962a44176f0ed"
+    },
+    {
+      "path": "pure_helpers_source.jsx",
+      "sha256": "48d854fe019ac81e47b5c0b86cd1d64bf041f7c1d7d7723791d7c648c980a82e"
+    },
+    {
+      "path": "pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "path": "desktop/web-app/public/pure_helpers_module.js",
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    {
+      "path": "_build_pure_helpers_module.js",
+      "sha256": "d0641d7df423ba7b3b03098acee7f4bafa540aaece68d8433a99c64e44b37e78"
+    },
+    {
+      "path": "phase_n_misc_helpers_source.jsx",
+      "sha256": "c2d03e5ac545163494b5dfd473b7a499ea585d784b485dcbf807d9eaeb8fd0e0"
+    },
+    {
+      "path": "phase_n_misc_helpers_module.js",
+      "sha256": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019"
+    },
+    {
+      "path": "desktop/web-app/public/phase_n_misc_helpers_module.js",
+      "sha256": "64872b334cc1cbf7985322b5042f5f71c056a3cd6dc9e8e053389f06530f1019"
+    },
+    {
+      "path": "_build_phase_n_misc_helpers_module.js",
+      "sha256": "f8a5f735ee4b2bff7685666f7a5bc606e396f5329158b72527e9964315a579d9"
+    },
+    {
+      "path": "text_utility_helpers_source.jsx",
+      "sha256": "f7edee0bf6826f8bd4d8a9ccc1897229241ed2b1547134acf5be272afeaa4bba"
+    },
+    {
+      "path": "text_utility_helpers_module.js",
+      "sha256": "e685d686af7ddda9b67043a351bc254f9fb62de32c116d4dc3d5727eaf6badc5"
+    },
+    {
+      "path": "desktop/web-app/public/text_utility_helpers_module.js",
+      "sha256": "e685d686af7ddda9b67043a351bc254f9fb62de32c116d4dc3d5727eaf6badc5"
+    },
+    {
+      "path": "_build_text_utility_helpers_module.js",
+      "sha256": "907cb79d4acd06350eeb53cb01f73a10bd43fac4eb763fe540da46981be15d21"
+    }
+  ]
+}

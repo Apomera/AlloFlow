@@ -1,0 +1,57 @@
+{
+  "readerBase": "765383768168dec45902855ce4e18eeee66f0e0df0830f92c53e16f4ed8b388f",
+  "ownCandidate": "f6f46acdaf48fc26091b39df283db8d268c2f9ee7b97c8d78b212418a4ca8b73",
+  "composedReader": "4ff2acfdecd483db2b49b6238229b67058b76f3de5dde68d0b8de0e4c83b9fb1",
+  "readerOperations": [
+    {
+      "label": "prior draft notice and save messages",
+      "kind": "insert",
+      "anchorSha256": "f1c1f88b9c5588d4d3c5a1887aa3243110e853b3b8c4937a4534f3e8fabb906c",
+      "after": "ea7e84c87ac6aeda8afe946f9226c1f7fef03dc0efd733cb16df8b2cc6328da6"
+    },
+    {
+      "label": "prior draft notice and save messages",
+      "kind": "replace",
+      "before": "5bad06ad5c774216e3eaa710bd86dfdd2a4d539c3c540f961bbf24933d7907a5",
+      "after": "900840710a991cf85ea3cc567893fd5e112ea83645e9d23c0c490a069654d04f"
+    },
+    {
+      "label": "prior draft notice and save messages",
+      "kind": "replace",
+      "before": "47fe0c1e982279458e6c4d7fc31b510f63d327c697710a2ef704ad6a7d9c23e4",
+      "after": "1c3898d47f56df747c7ae835f7934cb758af3340c12535cd12f9e90087a6d61f"
+    },
+    {
+      "label": "prior draft notice and save messages",
+      "kind": "replace",
+      "before": "37c186cdab463576e54f34ecb60fb04ac50a1961f7247a4a8d03223e32d7358e",
+      "after": "b6516542ac7a5f2fd5535bace9fae1f7510be268deafa314d90071cc8636966a"
+    },
+    {
+      "label": "prior draft notice and save messages",
+      "kind": "replace",
+      "before": "91760cf68dd5e2884ee12a627fcc844606322dca6ae1ca0af22298e2db0e3043",
+      "after": "8e8cfc970dd206c90179797a5049a529fe1afd93375c890fe7d01235946baa75"
+    },
+    {
+      "label": "prior draft notice and save messages",
+      "kind": "replace",
+      "before": "b494f638aa4e7d648392f844c7672a5d1b9ee5333663407d0e49bc601671cb28",
+      "after": "f552c08a3a0e464053870ec7f4022f132498faaea6d493313c9c19cc9f6c3906"
+    }
+  ],
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforeSha256": "2ee7db230ff15684a70d8e61440de0c42b594b517388344410efa17338a5d64f",
+      "afterSha256": "925b8430b2348d40bfc5eb3869987ca86c3995f66028261432cd8c9e342cc792"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforeSha256": "2ee7db230ff15684a70d8e61440de0c42b594b517388344410efa17338a5d64f",
+      "afterSha256": "925b8430b2348d40bfc5eb3869987ca86c3995f66028261432cd8c9e342cc792"
+    }
+  ],
+  "normalization": "LF; exact changed blocks and unique insertion context only, no fuzzy patch application",
+  "includes": "Prior reader draft patch, prior literal helper/host patch, new passage/pin messages and whitespace fallback. Catalog batch remains independent."
+}

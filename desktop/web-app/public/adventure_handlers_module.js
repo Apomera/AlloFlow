@@ -670,6 +670,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
 
 let adventureRestartPromptPending = false;
 const handleStartAdventure = async (deps) => {
+  if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true || adventureRestartPromptPending) return false;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
@@ -695,6 +696,7 @@ const handleStartAdventure = async (deps) => {
               return false;
           } finally { adventureRestartPromptPending = false; }
       }
+      if (typeof deps.isAdventureStartCurrent === 'function' && !deps.isAdventureStartCurrent()) return false;
       if (alloBotRef.current) {
           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
       }
@@ -734,6 +736,14 @@ const handleResumeAdventure = async (deps) => {
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleResumeAdventure fired"); } catch(_) {}
       setIsResumingAdventure(true);
       try {
+          // A story already open in this session (a loaded work file, or play in progress)
+          // is this learner's own; the device save may belong to someone else.
+          if (adventureState && adventureState.currentScene && Number(adventureState.turnCount) > 0) {
+              setAdventureState(prev => ({ ...prev, isLoading: false, isImageLoading: false }));
+              setActiveView('adventure');
+              addToast(`Resumed Adventure (Level ${adventureState.level || 1})`, "success");
+              return;
+          }
           window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
           const savedRecord = await storageDB.get('allo_adventure_save');
           if (!savedRecord) {
@@ -752,6 +762,13 @@ const handleResumeAdventure = async (deps) => {
           const currentLessonKey = typeof _lessonKeyOf === 'function' ? _lessonKeyOf(history, inputText) : '';
           if (savedLessonKey && currentLessonKey && savedLessonKey !== currentLessonKey) {
               addToast(t('toasts.adventure_other_lesson'), "error");
+              setHasSavedAdventure(false);
+              return;
+          }
+          // Saves stamped with a learner key open only for that learner (shared devices).
+          if (typeof savedConfig.learnerKey === 'string' && typeof _lessonKeyOf === 'function'
+              && savedConfig.learnerKey !== _lessonKeyOf([], deps.studentNickname)) {
+              addToast(t('toasts.adventure_other_learner') || 'This saved adventure belongs to another learner on this device.', "error");
               setHasSavedAdventure(false);
               return;
           }
@@ -987,14 +1004,14 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
             - Moderate (Score 10-13): +5 (Valid point)
             - Weak/Neutral (Score 6-9): -5 (Unconvincing or stalled)
             - Failure (Score 1-5): -15 (Major fallacy or poor argument)
-            Note: If the Student's Argument is "I give up" or similar, set "resetDebate": true.
+            Note: Set "resetDebate": true ONLY if the student explicitly asks to stop this debate (e.g. "I give up"). A concession or a change of position backed by evidence is not giving up. Set "newTopic" to a specific new debate question only when "resetDebate" is true; otherwise set it to null.
             ${NARRATIVE_GUARDRAILS}
             Return ONLY JSON:
             {
                 ${outcomeJsonFields}
                 "debateMomentumChange": number (e.g. 10, -5, 15),
                 "resetDebate": boolean,
-                "newTopic": "String",
+                "newTopic": null,
                 "evaluation": "Feedback...",
                 "xpAwarded": number,
                 "energyChange": -5,
@@ -1159,21 +1176,8 @@ Do NOT force all characters into every scene — let the narrative decide natura
               data = await resilientJsonParse(result);
           } catch (finalErr) {
               warnLog("Critical Adventure Failure (Auto-Repair failed):", finalErr);
-              data = {
-                  evaluation: "System anomaly detected.",
-                  scene: {
-                      text: "The simulation encountered a data stream error (Time distortion detected). You shake it off and prepare to move forward...",
-                      options: ["Continue", "Check Inventory", "Look Around", "Wait"]
-                  },
-                  feedback: "System anomaly detected and bypassed.",
-                  xpAwarded: 0,
-                  energyChange: 0,
-                  goldAwarded: 0,
-                  rollDetails: { total: 10, d20: 10, outcomeType: "neutral" },
-                  inventoryUpdate: null,
-                  voices: {}
-              };
-              addToast(t('toasts.auto_repair_fallback'), "warning");
+              // Never invent a scene: the turn, energy and XP stay as they were and a retry is offered.
+              throw Object.assign(new Error('Unreadable adventure reply'), { adventureUnreadable: true });
           }
           if (!data.scene || typeof data.scene !== 'object') {
               data.scene = { text: t('adventure.status_messages.continue') || 'The adventure continues.', options: [] };
@@ -1200,7 +1204,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
       setShowDice(true);
     } catch (error) {
       warnLog("Adventure Text Error:", error);
-      addToast(t('toasts.connection_failed'), "error");
+      addToast(error && error.adventureUnreadable ? (t('toasts.adventure_reply_unreadable') || 'The story reply could not be read, so nothing changed. Try again.') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'text', payload: currentInput });
       const snapshot = lastTurnSnapshot.current;
       setAdventureState(prev => snapshot ? { ...snapshot, isLoading: false, isImageLoading: false } : { ...prev, isLoading: false });
@@ -1429,7 +1433,8 @@ const handleAdventureChoice = async (choice, deps) => {
         - Valid/Moderate Point: +5
         - Weak/Neutral/Stall: -5
         - Poor Argument/Fallacy: -10 to -15
-        - "Give Up" or "Concede": Set "resetDebate": true.
+        - Set "resetDebate": true ONLY if the choice explicitly stops the debate (e.g. "Give Up"). A concession or evidence-based change of position is not giving up.
+        - "newTopic": a specific new debate question only when "resetDebate" is true; otherwise null.
         ` : ''}
         Tasks: Calculate Energy/Gold/XP. Generate Next Scene.
         ${turnsSinceLastDrop >= 6 ? '- KEY ITEM OPPORTUNITY: If Score High, award Key Item.' : ''}
@@ -1445,7 +1450,7 @@ const handleAdventureChoice = async (choice, deps) => {
           "climaxResult": "One of: 'victory', 'failure', or null. REQUIRED if a Climax Scene is currently active. Return 'victory' if choice resolves conflict. Return 'failure' if choice fails crisis.",
           "masteryScore": 50,
           "xpAwarded": number, "energyChange": number, "goldAwarded": number,
-          ${adventureInputMode === 'debate' ? '"debateMomentumChange": number, "resetDebate": boolean, "newTopic": "String",' : ''}
+          ${adventureInputMode === 'debate' ? '"debateMomentumChange": number, "resetDebate": boolean, "newTopic": null,' : ''}
           ${adventureInputMode === 'system' ? '"systemStateUpdate": { "add": [{ "name": "Variable", "icon": "emoji", "quantity": 5, "type": "strategic|consumable|currency" }], "remove": [{ "name": "Variable", "quantity": 2 }] } OR null,' : ''}
           "rollDetails": { "strategyRating": number, "d20": ${chanceRoll || "Score_1_to_20"}, "total": number, "outcomeType": "String" },
           "inventoryUpdate": { "add": { "name": "Item", "type": "permanent" } } OR null,
@@ -1466,23 +1471,7 @@ const handleAdventureChoice = async (choice, deps) => {
           data = await resilientJsonParse(result);
       } catch (finalErr) {
           warnLog("Critical Adventure Failure (Auto-Repair failed):", finalErr);
-          data = {
-              feedback: "System anomaly detected and bypassed.",
-              outcomeType: "neutral",
-              conceptsUsed: [],
-              xpAwarded: 0,
-              energyChange: 0,
-              goldAwarded: 0,
-              rollDetails: { total: 10, d20: 10, outcomeType: "neutral" },
-              inventoryUpdate: null,
-              voices: {},
-              scene: {
-                  text: "The simulation encountered a data stream error (Time distortion detected). You shake it off and prepare to move forward...",
-                  options: ["Continue", "Check Inventory", "Look Around", "Wait"]
-              },
-              soundParams: { atmosphere: "Tense", element: "Silence" }
-          };
-          addToast(t('toasts.auto_repair_fallback'), "warning");
+          throw Object.assign(new Error('Unreadable adventure reply'), { adventureUnreadable: true });
       }
        if (!data.scene || typeof data.scene !== 'object') {
            data.scene = { text: t('adventure.status_messages.continue') || 'The adventure continues.', options: [] };
@@ -1528,7 +1517,7 @@ const handleAdventureChoice = async (choice, deps) => {
       }
     } catch (error) {
       warnLog("Adventure Turn Error:", error);
-      addToast(t('toasts.connection_failed'), "error");
+      addToast(error && error.adventureUnreadable ? (t('toasts.adventure_reply_unreadable') || 'The story reply could not be read, so nothing changed. Try again.') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'choice', payload: normalizedChoice });
       setAdventureState(prev => {
           return {

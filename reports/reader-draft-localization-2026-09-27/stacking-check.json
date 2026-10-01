@@ -1,0 +1,136 @@
+{
+  "literalReaderAppliesInBothOrders": true,
+  "semanticCatalogComposition": [
+    {
+      "file": "ui_strings.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        5,
+        2
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        5,
+        2
+      ]
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_castilian.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "lang/arabic.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/lang/chinese_simplified.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "lang/thai.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    },
+    {
+      "file": "desktop/web-app/public/lang/thai.js",
+      "orderCount": 6,
+      "equalValues": true,
+      "keyCounts": [
+        7,
+        36,
+        2
+      ]
+    }
+  ],
+  "rawCatalogPatchComposition": [
+    {
+      "name": "navigation",
+      "rawPatchComposition": "Not assumed; use the bounded updaters if catalog insertion contexts overlap."
+    },
+    {
+      "name": "source-generation",
+      "rawPatchComposition": "Not assumed; use the bounded updaters if catalog insertion contexts overlap."
+    }
+  ],
+  "note": "If raw catalog hunks overlap, integrate source/tools/tests separately and run scoped catalog updaters after their ownership release. Semantic value equality does not imply identical JSON insertion order."
+}

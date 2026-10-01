@@ -102,7 +102,7 @@ if (stagedOnly) {
   let out = '';
   try {
     out = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR'],
-      { cwd: ROOT, encoding: 'utf8' });
+      { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   } catch {
     out = ''; // not a repo / no index — fall through to an empty set
   }

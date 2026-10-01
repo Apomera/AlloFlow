@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { loadTool, resetStemLab, renderTool } from './helpers/stem_widgets_smoke_harness.js';
 
 /**
  * WCAG 2.5.8 (Target Size, Minimum) asks for 24x24 CSS pixels. Two families of
@@ -40,9 +41,14 @@ describe('Art Studio touch-target floor', () => {
     expect(short, 'mini buttons without a >=24px floor').toEqual([]);
   });
 
-  it('keeps a 24px floor on the harmony understanding checkbox', () => {
-    const line = source.split('\n').find((l) => l.includes("id: 'hh-und'"));
-    expect(line, 'the harmony checkbox should still exist').toBeTruthy();
-    expect(line).toMatch(/min-h-\[24px\]/);
+  it('keeps a 44px target on the harmony understanding checkbox', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_artstudio.js','artStudio');
+    const rendered = document.createElement('div');
+    rendered.innerHTML = renderTool('artStudio',{artStudio:{tab:'harmonyHunt',studioHome:false,studioStarted:true}});
+    const checkbox = rendered.querySelector('#hh-und');
+    expect(checkbox, 'the harmony checkbox should still exist').toBeTruthy();
+    expect(Number.parseFloat(checkbox.style.width)).toBeGreaterThanOrEqual(44);
+    expect(Number.parseFloat(checkbox.style.height)).toBeGreaterThanOrEqual(44);
   });
 });

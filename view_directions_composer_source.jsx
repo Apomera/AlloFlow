@@ -34,6 +34,9 @@ function DirectionsComposerView({
   const fallbackGoalState = React.useRef({ resource: legacyGoalRes || '', text: legacyGoalText || '' });
   const goalState = directionsGoalEditorState || fallbackGoalState;
   const previewLabel = t('common.preview');
+  const tx = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
+  const boardTitleDefault = tx('directions.choice_board_title', 'Choose an activity');
+  const boardPromptDefault = tx('directions.choice_board_prompt', 'Pick one activity to work on first. You can return here and choose another later.');
   const [mbDirectionsGoalRes, updateGoalRes] = React.useState(() => goalState.current.resource);
   const [mbDirectionsGoalText, updateGoalText] = React.useState(() => goalState.current.text);
   const setMbDirectionsGoalRes = value => {
@@ -78,8 +81,8 @@ function DirectionsComposerView({
                       }
                       next.choiceBoard = {
                         enabled: true,
-                        title: next.choiceBoard?.title || 'Choose an activity',
-                        prompt: next.choiceBoard?.prompt || 'Pick one activity to work on first. You can return here and choose another later.',
+                        title: next.choiceBoard?.title || boardTitleDefault,
+                        prompt: next.choiceBoard?.prompt || boardPromptDefault,
                         choices: Array.isArray(next.choiceBoard?.choices) ? next.choiceBoard.choices : []
                       };
                       return next;
@@ -96,14 +99,14 @@ function DirectionsComposerView({
                       value={mbDirectionsDraft.choiceBoard.title || ''}
                       onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), choiceBoard: { ...(p?.choiceBoard || {}), enabled: true, title: e.target.value } }))}
                       aria-label="Activity choice board title"
-                      placeholder="Choose an activity"
+                      placeholder={boardTitleDefault}
                       className="w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
                     />
                     <textarea
                       value={mbDirectionsDraft.choiceBoard.prompt || ''}
                       onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), choiceBoard: { ...(p?.choiceBoard || {}), enabled: true, prompt: e.target.value } }))}
                       aria-label="Activity choice board instructions"
-                      placeholder="Pick one activity to work on first."
+                      placeholder={boardPromptDefault}
                       rows={2}
                       className="w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
                     />
@@ -191,8 +194,8 @@ function DirectionsComposerView({
                           <div className="mb-3 flex items-start gap-3">
                             <div className="min-w-0 flex-1">
                               <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-600">Student preview</p>
-                              <h3 id="directions-choice-preview-title" className="text-base font-black text-slate-900">{mbDirectionsDraft.choiceBoard.title || 'Choose an activity'}</h3>
-                              <p className="mt-1 text-xs text-slate-600">{mbDirectionsDraft.choiceBoard.prompt || 'Pick one activity to work on first.'}</p>
+                              <h3 id="directions-choice-preview-title" className="text-base font-black text-slate-900">{mbDirectionsDraft.choiceBoard.title || boardTitleDefault}</h3>
+                              <p className="mt-1 text-xs text-slate-600">{mbDirectionsDraft.choiceBoard.prompt || boardPromptDefault}</p>
                             </div>
                             <button type="button" onClick={() => setShowDirectionsChoicePreview(false)} aria-label="Close student choice board preview" className="min-h-10 min-w-10 rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100"><X size={16} aria-hidden="true" /></button>
                           </div>

@@ -3,11 +3,14 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const THREE=createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');const start=source.indexOf('function createRaptorFootGeometry('),end=source.indexOf('        var talonGroup =',start);
-const make=Function('THREE','return ('+source.slice(start,end).trim()+')')(THREE);
+// 66296cfd0: tube detail follows the graphics-quality setting, an initHuntSim closure
+// variable, and a third `opposed` argument gives ospreys the owls' two-forward/two-back toes.
+const build=quality=>Function('THREE','graphicsQuality','return ('+source.slice(start,end).trim()+')')(THREE,quality);
 describe('Raptor feet geometry',()=>{
-  for(const owl of [false,true])it('builds mirrored four-toed feet with finite closed surfaces: '+(owl?'owl':'hawk'),()=>{
-    const left=make(-1,owl),right=make(1,owl),open=right.attributes.position,extended=right.morphAttributes.position[0];
-    expect(right.userData.toeCount).toBe(4);expect(right.userData.forwardToes).toBe(owl?2:3);expect(right.userData.rearToes).toBe(owl?2:1);expect(open.count).toBe(234);
+  // Nine closed tubes (leg, four toes, four claws): (3*subdivisions+1) rings x segments + 2 caps each.
+  for(const [quality,count] of [['low',9*(10*8+2)],['balanced',9*(13*12+2)]])for(const [label,owl,opposed] of [['hawk',false,false],['owl',true,true],['osprey',false,true]])it('builds mirrored four-toed feet with finite closed surfaces: '+label+' ('+quality+')',()=>{
+    const make=build(quality),left=make(-1,owl,opposed),right=make(1,owl,opposed),open=right.attributes.position,extended=right.morphAttributes.position[0];
+    expect(right.userData.toeCount).toBe(4);expect(right.userData.forwardToes).toBe(opposed?2:3);expect(right.userData.rearToes).toBe(opposed?2:1);expect(open.count).toBe(count);
     for(const attr of [open,extended,right.attributes.normal,right.morphAttributes.normal[0],right.attributes.color])expect(Array.from(attr.array).every(Number.isFinite)).toBe(true);
     // Ring orientation may change with the mirrored curve; compare the complete vertex sets.
     const points=(attr,mirror=false)=>Array.from({length:attr.count},(_,i)=>[(mirror?-1:1)*attr.getX(i),attr.getY(i),attr.getZ(i)].map(v=>Math.round(v*1e6)).join(',')).sort();

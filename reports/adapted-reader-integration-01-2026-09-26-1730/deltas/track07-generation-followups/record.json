@@ -1,0 +1,43 @@
+{
+  "at": "2026-09-26T22:41:57.310Z",
+  "label": "track07-generation-followups",
+  "patch": "b046bdba176de76390d922bcb3b87486ed124f154aa1575f1e37e5ab8cf06de6",
+  "plans": [
+    {
+      "target": "generation_helpers_source.jsx",
+      "targets": [
+        "generation_helpers_source.jsx"
+      ],
+      "before": "8117ce3031982837ed931f0d952039d0998621acf5561900a3dedbb3d3aaf89e",
+      "after": "85fb09f8f8d57c2df6383f59c280b3400d10f6565411e27e2da13301cbb16d7e",
+      "changed": true
+    },
+    {
+      "target": "text_pipeline_helpers_source.jsx",
+      "targets": [
+        "text_pipeline_helpers_source.jsx"
+      ],
+      "before": "369399fd8716db03fc70b27f3ba47d5a8f84b0ddd657350616ed1b1ee266ad6f",
+      "after": "6bf563615db856f65a4d3218f1af2288e1ec6ab609671e1ea7ed9e520752c08f",
+      "changed": true
+    },
+    {
+      "target": "tests/preserved_vocabulary.test.js",
+      "targets": [
+        "tests/preserved_vocabulary.test.js"
+      ],
+      "before": "fb97947fc71515716cb84c85674e0c890045dcf3aeeaaa13117f2b0493d73b42",
+      "after": "197e1882df6b96c8c2abe9c3551359e6a31705575e54fa716ac496d1838e90c9",
+      "changed": true
+    },
+    {
+      "target": "tests/text_complexity_freshness.test.js",
+      "targets": [
+        "tests/text_complexity_freshness.test.js"
+      ],
+      "before": "96f85bda8de535099e19ce32589330ccb42b6a296bf40676b6c51b7a3a702247",
+      "after": "96f85bda8de535099e19ce32589330ccb42b6a296bf40676b6c51b7a3a702247",
+      "changed": false
+    }
+  ]
+}

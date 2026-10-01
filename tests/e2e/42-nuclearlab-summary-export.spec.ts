@@ -41,7 +41,7 @@ const WORKED = {
 };
 
 async function mount(page: any, state: Record<string, unknown>, ctx?: any) {
-  await harness.mount(page, { _nuclearLab: state }, undefined, { expectCanvas: false, ...(ctx || {}) });
+  await harness.mount(page, { _nuclearLab: { nkView: 'reference', ...state } }, undefined, { expectCanvas: false, ...(ctx || {}) });
   await page.evaluate(() => {
     const wrap = document.getElementById('wrap')!;
     wrap.style.display = 'block';

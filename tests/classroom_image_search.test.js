@@ -101,6 +101,18 @@ describe('licence and metadata gates', () => {
     expect(found.blockedByMetadata).toBe(1);
   });
 
+  it('credits the attribution wording a file asks for, and screens it like any author name', async () => {
+    const asked = commonsPage(3, 1, { title: 'Apple', artist: 'Ann' });
+    asked.imageinfo[0].extmetadata.Attribution = { value: 'Photo: <b>Ann Lee</b> for Kent Nature Trust' };
+    expect(A.normalizeCommonsPage(asked).attribution.author).toBe('Photo: Ann Lee for Kent Nature Trust');
+    const blocked = commonsPage(4, 1, { title: 'Heron', artist: 'Ann' });
+    blocked.imageinfo[0].extmetadata.Attribution = { value: 'porn heron shots' };
+    const fetchImpl = commonsFetch([blocked, commonsPage(5, 2, { title: 'Heron', artist: 'Bo' })]);
+    const found = await A.searchOpenImages('heron', { fetchImpl });
+    expect(found.candidates.map(c => c.attribution.author)).toEqual(['Bo']);
+    expect(decodeURIComponent(fetchImpl.calls[0])).toMatch(/iiextmetadatafilter=[^&]*\bAttribution\b/);
+  });
+
   it('credits an unknown author rather than the Commons source field', () => {
     const page = commonsPage(9, 1, { title: 'Apple', artist: '' });
     page.imageinfo[0].extmetadata.Credit = { value: 'Own work' };
@@ -424,6 +436,22 @@ describe('Classroom image picker', () => {
     await act(async () => { host.querySelector('button[aria-label="Use photo: A red apple."]').click(); });
     await until(() => /did not pass the classroom check/.test(host.querySelector('[role="status"]').textContent));
     expect(host.querySelector('[role="status"]').textContent).toMatch(/did not pass the classroom check/);
+    expect(onChoose).not.toHaveBeenCalled();
+    expect(host.querySelector('button[aria-label="Use photo: A red apple."]').disabled).toBe(false);
+  });
+
+  it('stops adding a picture that takes too long, says so, and adds nothing', async () => {
+    const onChoose = vi.fn();
+    const listing = commonsFetch([commonsPage(1, 1, { title: 'Red Apple' })]);
+    // The larger copy never arrives; only the time limit ends the wait.
+    const fetchImpl = vi.fn((url, init) => String(url).includes('960px')
+      ? new Promise((_, reject) => init && init.signal && init.signal.addEventListener('abort', () => reject(Object.assign(new Error('stopped'), { name: 'AbortError' }))))
+      : listing(url, init));
+    await mount({ sources: ['photos'], fetchImpl, callGeminiVision: perPicture(() => ({ safe: true, alt: 'A red apple.' })), onChoose, chooseTimeoutMs: 60 });
+    await search('apple');
+    await act(async () => { host.querySelector('button[aria-label="Use photo: A red apple."]').click(); });
+    await until(() => /took too long/.test(host.querySelector('[role="status"]').textContent));
+    expect(host.querySelector('[role="status"]').textContent).toContain('That picture took too long to download and check. Try again, or choose another one.');
     expect(onChoose).not.toHaveBeenCalled();
     expect(host.querySelector('button[aria-label="Use photo: A red apple."]').disabled).toBe(false);
   });

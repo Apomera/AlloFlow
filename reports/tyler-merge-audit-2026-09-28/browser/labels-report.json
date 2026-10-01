@@ -1,0 +1,45 @@
+{
+  "at": "2026-09-29T04:32:07.952Z",
+  "kind": "actual generated teacher_module.js in a minimal React host with fictional roster",
+  "candidate": "C:\\tmp\\tyler_integration_candidate",
+  "checks": [
+    {
+      "name": "refused save shows error, retains draft, and does not claim durable save",
+      "passed": true
+    },
+    {
+      "name": "retry persists label and clears error",
+      "passed": true
+    },
+    {
+      "name": "refused clear leaves prior label visibly saved and reports failure",
+      "passed": true
+    },
+    {
+      "name": "refused label deletion stops learner deletion",
+      "passed": true
+    },
+    {
+      "name": "reload agrees with failed clear and retains stored label",
+      "passed": true
+    },
+    {
+      "name": "successful clear stays cleared after reload",
+      "passed": true
+    },
+    {
+      "name": "learner-ID replacement discards obsolete draft instead of transferring it",
+      "passed": true
+    }
+  ],
+  "served": {
+    "teacher_module.js": {
+      "sha256": "b9a8adf0f9d708fb74a1a5fb33474d2ca1b931b0af7620d9dcb4ea90654f00fb",
+      "size": 634065
+    }
+  },
+  "blocked": [],
+  "errors": [],
+  "hostHash": "69dbbfe8ea38fbcecc2c1039a0d08be75313f60a7639fb3b34d34fbf0b5baaad",
+  "origin": "http://127.0.0.1:58645"
+}

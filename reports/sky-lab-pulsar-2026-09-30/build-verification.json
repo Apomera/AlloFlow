@@ -1,0 +1,11 @@
+{
+  "sourceHash": "880c46c9e5411392fb6994336c0f7be16c0a8d56f82762d1e3566cb9b804a768",
+  "mirrorIdentical": true,
+  "syntaxValid": true,
+  "labelsAdded": 55,
+  "labelParity": {
+    "ui_strings.js": true,
+    "desktop/web-app/public/ui_strings.js": true
+  },
+  "sourceChangesLimitedToPulsarExplorer": true
+}

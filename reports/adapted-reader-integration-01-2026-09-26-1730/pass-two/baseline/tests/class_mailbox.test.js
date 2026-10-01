@@ -1,0 +1,1205 @@
+// Class Mailbox (teacher-owned Apps Script rendezvous) — protocol + client.
+// The server test evaluates the REAL apps_script/session_mailbox/Code.gs with
+// mocked Google services and drives full flows: claim → open → send/recv →
+// end, and chunked putpack → getpack. Client tests exercise the real ANTI
+// helpers. Pins guard the no-Firebase invariant of the student entries.
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { randomBytes } from 'node:crypto';
+import { Blob as NodeBlob } from 'node:buffer';
+import { CompressionStream as NodeCS, DecompressionStream as NodeDS } from 'node:stream/web';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const liveAacSource = fs.readFileSync(path.join(ROOT, 'live_aac_source.jsx'), 'utf8');
+const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
+const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
+const shareSessionSurfacesSource = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
+const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
+
+function loadStudentPackSerializer(win) {
+    const start = liveAacSource.indexOf('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
+    const end = liveAacSource.indexOf('const LiveAacBoardDialog =', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const raw = new Function(
+        'window',
+        liveAacSource.slice(start, end) + '\nreturn _alloSerializeResourceForStudentPack;'
+    )(win);
+    return item => raw(item, {
+        sanitizeHistoryForCloud: win.sanitizeHistoryForCloud,
+        stripUndefined: win.stripUndefined,
+    });
+}
+
+function makeGsSandbox() {
+    const cacheStore = new Map();
+    const props = new Map();
+    const driveFiles = new Map();
+    let uuidCounter = 0;
+    const cache = {
+        get: k => (cacheStore.has(k) ? cacheStore.get(k) : null),
+        put: (k, v) => { cacheStore.set(k, String(v)); },
+        getAll: keys => { const o = {}; keys.forEach(k => { if (cacheStore.has(k)) o[k] = cacheStore.get(k); }); return o; },
+        remove: k => { cacheStore.delete(k); },
+    };
+    const fileObj = name => ({
+        setContent: c => { driveFiles.set(name, String(c)); },
+        getBlob: () => ({ getDataAsString: () => driveFiles.get(name) }),
+        setTrashed: () => { driveFiles.delete(name); },
+    });
+    const folder = {
+        getFilesByName: name => {
+            let used = false;
+            return { hasNext: () => driveFiles.has(name) && !used, next: () => { used = true; return fileObj(name); } };
+        },
+        createFile: (name, content) => { driveFiles.set(name, String(content)); return fileObj(name); },
+    };
+    const services = {
+        CacheService: { getScriptCache: () => cache },
+        PropertiesService: { getScriptProperties: () => ({
+            getProperty: k => (props.has(k) ? props.get(k) : null),
+            setProperty: (k, v) => props.set(k, String(v)),
+            deleteProperty: k => { props.delete(k); },
+            getProperties: () => Object.fromEntries(props),
+        }) },
+        LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
+        ContentService: (() => {
+            const svc = { MimeType: { JSON: 'json' } };
+            svc.createTextOutput = s => { const o = { _c: s, setMimeType: () => o, getContent: () => o._c }; return o; };
+            return svc;
+        })(),
+        DriveApp: { getFoldersByName: () => ({ hasNext: () => true, next: () => folder }), createFolder: () => folder },
+        Utilities: {
+            getUuid: () => 'aaaaaaaa-bbbb-cccc-dddd-' + String(uuidCounter++).padStart(12, '0'),
+            computeHmacSha256Signature: (value, key) => Array.from(Buffer.from((String(key) + '|' + String(value)).repeat(8)).subarray(0, 32)),
+            base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
+        },
+    };
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, doGet: doGet, doPost: doPost };');
+    const gs = factory(...Object.values(services));
+    return { call: p => JSON.parse(gs.handle(p).getContent()), gs, driveFiles, cacheStore, props };
+}
+
+describe('Code.gs protocol (real source, mocked Google services)', () => {
+    it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
+        const { call } = makeGsSandbox();
+        const K = 'k_secret_k_secret_20';
+        expect(call({ a: 'hello' }).v).toBe(24);
+        const claim = call({ a: 'claim' });
+        expect(claim.ok).toBe(true);
+        expect(claim.admin.length).toBeGreaterThanOrEqual(32);
+        expect(call({ a: 'claim' }).e).toBe('claimed');
+        expect(call({ a: 'open', c: 'ABC23', k: K }).e).toBe('not-admin');
+        expect(call({ a: 'open', admin: claim.admin, c: 'ABC23', k: K }).ok).toBe(true);
+
+        const joined = call({ a: 'join', c: 'ABC23', k: K });
+        expect(joined).toMatchObject({ ok: true });
+        expect(joined.uid).toMatch(/^mb-/);
+        expect(joined.pt.length).toBeGreaterThan(20);
+        const participant = { uid: joined.uid, pt: joined.pt };
+
+        const sent = call({ a: 'send', ...participant, c: 'ABC23', box: 'up', v: { kind: 'student', uid: 'forged', name: 'Ada', hand: true } });
+        expect(sent.i).toBe(1);
+        const recv = call({ a: 'recv', admin: claim.admin, c: 'ABC23', box: 'up', since: '0' });
+        expect(recv.b.up.m.length).toBe(1);
+        expect(recv.b.up.m[0][1].f).toBe(joined.uid);
+        expect(recv.b.up.m[0][1].v.name).toBe('Ada');
+        expect(call({ a: 'recv', admin: claim.admin, c: 'ABC23', box: 'up', since: String(recv.b.up.n) }).b.up.m.length).toBe(0);
+
+        expect(call({ a: 'send', ...participant, c: 'ABC23', box: 'down', v: { kind: 'end' } }).e).toBe('denied');
+        expect(call({ a: 'recv', ...participant, c: 'ABC23', box: 'up', since: '0' }).e).toBe('denied');
+        expect(call({ a: 'end', ...participant, c: 'ABC23' }).e).toBe('not-admin');
+        expect(call({ a: 'send', uid: joined.uid, pt: 'wrong_wrong_wrong_wrong', c: 'ABC23', box: 'up', v: 1 }).e).toBe('denied');
+        expect(call({ a: 'recv', admin: claim.admin, c: 'ZZZ99', box: 'up', since: '0' }).e).toBe('no-session');
+
+        expect(call({ a: 'end', admin: claim.admin, c: 'ABC23' }).ok).toBe(true);
+        expect(call({ a: 'recv', admin: claim.admin, c: 'ABC23', box: 'up', since: '0' }).e).toBe('no-session');
+    });
+    it('assembles chunked pack uploads and serves sliced downloads behind the pack secret', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const id = 'PK-12345678-1234-1234-1234-123456789012';
+        const PK = 'p_secret_p_secret_20';
+        expect(call({ a: 'putpack', id, k: PK, part: 1, of: 2, data: 'AAA' }).e).toBe('not-admin');
+        expect(call({ a: 'putpack', admin, id, k: PK, part: 1, of: 2, data: 'AAA' }).ok).toBe(true);
+        const fin = call({ a: 'putpack', admin, id, k: PK, part: 2, of: 2, data: 'BBB', title: 'Cells unit' });
+        expect(fin.ok).toBe(true);
+        expect(fin.chars).toBe(6);
+        expect(driveFiles.has('pack-' + id + '.json')).toBe(true);
+        expect(JSON.parse(driveFiles.get('pack-' + id + '.json')).data).toBeUndefined();
+        expect(driveFiles.has('pack-' + id + '-1.txt')).toBe(true);
+        const got = call({ a: 'getpack', id, k: PK, part: 1 });
+        expect(got.data).toBe('AAABBB');
+        expect(got.of).toBe(1);
+        expect(got.title).toBe('Cells unit');
+        const extendedAt = new Date(Date.now() + 2 * 86400000).toISOString();
+        expect(call({ a: 'extendpack', id, expiresAt: extendedAt }).e).toBe('not-admin');
+        expect(call({ a: 'extendpack', admin, id, expiresAt: extendedAt })).toMatchObject({ ok: true, id, activities: 0 });
+        expect(JSON.parse(driveFiles.get('pack-' + id + '.json')).expiresAt).toBe(extendedAt);
+        expect(call({ a: 'extendpack', admin, id, expiresAt: new Date(Date.now() + 1000).toISOString() }).e).toBe('not-extension');
+        const expiredId = 'PK-22345678-1234-1234-1234-123456789012';
+        expect(call({ a: 'putpack', admin, id: expiredId, k: PK, part: 1, of: 1, data: 'OLD', title: 'Old unit', expiresAt: new Date(Date.now() - 1000).toISOString() }).ok).toBe(true);
+        expect(call({ a: 'getpack', id: expiredId, k: PK, part: 1 }).e).toBe('expired');
+        expect(call({ a: 'extendpack', admin, id: expiredId, expiresAt: extendedAt }).e).toBe('expired');
+        const cloneId = 'PK-32345678-1234-1234-1234-123456789012';
+        const cloneSecret = 'clone_secret_clone_20';
+        const cloneExpiry = new Date(Date.now() + 7 * 86400000).toISOString();
+        expect(call({ a: 'clonepack', sourceId: expiredId, id: cloneId, k: cloneSecret, expiresAt: cloneExpiry }).e).toBe('not-admin');
+        expect(call({ a: 'clonepack', admin, sourceId: expiredId, id: cloneId, k: cloneSecret, expiresAt: cloneExpiry })).toMatchObject({ ok: true, id: cloneId, chars: 3 });
+        expect(call({ a: 'getpack', id: cloneId, k: cloneSecret, part: 1 })).toMatchObject({ ok: true, data: 'OLD', title: 'Old unit' });
+        expect(call({ a: 'getpack', id, k: 'wrong_wrong_wrong_20', part: 1 }).e).toBe('denied');
+        expect(call({ a: 'getpack', id: 'PK-00000000-0000-0000-0000-000000000000', k: PK }).e).toBe('no-pack');
+        expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
+        expect(call({ a: 'getpack', id, k: PK }).e).toBe('no-pack');
+    });
+    it('stores chunked live and hosted-homework submissions in the teacher Drive behind scoped capabilities', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const sessionSecret = 'k_secret_k_secret_20';
+        expect(call({ a: 'open', admin, c: 'ABC23', k: sessionSecret }).ok).toBe(true);
+        const joined = call({ a: 'join', c: 'ABC23', k: sessionSecret });
+        const livePayload = JSON.stringify({ studentName: 'Brave Fox', answers: { q1: 'A' }, content: [] });
+        const liveSid = 'SUB-12345678-1234-1234-1234-123456789012';
+        expect(call({ a: 'putsubmission', c: 'ABC23', uid: joined.uid, pt: 'wrong_wrong_wrong_wrong', sid: liveSid, part: 1, of: 1, data: livePayload }).e).toBe('denied');
+        const liveReceipt = call({ a: 'putsubmission', c: 'ABC23', uid: joined.uid, pt: joined.pt, sid: liveSid, part: 1, of: 1, data: livePayload });
+        expect(liveReceipt).toMatchObject({ ok: true, sourceKind: 'live' });
+        const liveFile = [...driveFiles.keys()].find(name => name.startsWith('submission-Brave_Fox-'));
+        expect(liveFile).toBeTruthy();
+        expect(JSON.parse(driveFiles.get(liveFile)).mailboxReceipt).toMatchObject({ sourceKind: 'live', sourceId: 'ABC23' });
+        const liveFileCount = [...driveFiles.keys()].filter(name => name.startsWith('submission-')).length;
+        const repeatedReceipt = call({ a: 'putsubmission', c: 'ABC23', uid: joined.uid, pt: joined.pt, sid: liveSid, part: 1, of: 1, data: livePayload });
+        expect(repeatedReceipt.filename).toBe(liveReceipt.filename);
+        expect([...driveFiles.keys()].filter(name => name.startsWith('submission-')).length).toBe(liveFileCount);
+
+        const packId = 'PK-12345678-1234-1234-1234-123456789012';
+        const packSecret = 'p_secret_p_secret_20';
+        expect(call({ a: 'putpack', admin, id: packId, k: packSecret, part: 1, of: 1, data: 'PACK', title: 'Cells' }).ok).toBe(true);
+        const hostedPayload = JSON.stringify({ studentName: 'Calm Otter', responses: { q2: 'B' }, content: [] });
+        const hostedSid = 'SUB-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+        expect(call({ a: 'putsubmission', id: packId, k: 'wrong_wrong_wrong_20', sid: hostedSid, part: 1, of: 1, data: hostedPayload }).e).toBe('denied');
+        const firstHalf = hostedPayload.slice(0, Math.ceil(hostedPayload.length / 2));
+        const secondHalf = hostedPayload.slice(firstHalf.length);
+        expect(call({ a: 'putsubmission', id: packId, k: packSecret, sid: hostedSid, part: 1, of: 2, data: firstHalf }).ok).toBe(true);
+        const hostedReceipt = call({ a: 'putsubmission', id: packId, k: packSecret, sid: hostedSid, part: 2, of: 2, data: secondHalf });
+        expect(hostedReceipt).toMatchObject({ ok: true, sourceKind: 'homework' });
+        const hostedFile = [...driveFiles.keys()].find(name => name.startsWith('submission-Calm_Otter-'));
+        expect(JSON.parse(driveFiles.get(hostedFile)).mailboxReceipt).toMatchObject({ sourceKind: 'homework', sourceId: packId });
+        expect([...driveFiles.keys()].some(name => name.includes('wrong'))).toBe(false);
+    });
+    it('hosts plural asynchronous Word Clouds, selects by activity id, and deletes every sidecar', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const id = 'PK-92345678-1234-1234-1234-123456789012';
+        const aid = 'AC-82345678-1234-1234-1234-123456789012';
+        const secondAid = 'AC-72345678-1234-1234-1234-123456789012';
+        const secret = 'p_secret_p_secret_20';
+        const expiresAt = new Date(Date.now() + 86400000).toISOString();
+        const activity = {
+            activityId: aid,
+            type: 'word_cloud',
+            delivery: 'shared_async',
+            prompt: 'What idea stayed with you?',
+            revealPolicy: 'auto_publish',
+            minParticipants: 3,
+        };
+        const secondActivity = {
+            ...activity,
+            activityId: secondAid,
+            prompt: 'What question do you still have?',
+            revealPolicy: 'teacher_review',
+            minParticipants: 5,
+        };
+
+        const hosted = call({
+            a: 'putpack', admin, id, k: secret, part: 1, of: 1, data: 'PACK',
+            title: 'Reflection', expiresAt, activities: [activity, secondActivity],
+        });
+        expect(hosted).toMatchObject({ ok: true, activities: 2 });
+        const manifest = JSON.parse(driveFiles.get(`pack-${id}.json`));
+        expect(manifest).toMatchObject({ v: 3 });
+        expect(manifest.activity).toBeUndefined();
+        expect(manifest.activities).toHaveLength(2);
+        expect(manifest.activities.map(candidate => candidate.activityId)).toEqual([aid, secondAid]);
+        expect(manifest.activities.every(candidate => candidate.expiresAt === expiresAt)).toBe(true);
+        const extendedAt = new Date(Date.now() + 2 * 86400000).toISOString();
+        expect(call({ a: 'extendpack', admin, id, expiresAt: extendedAt })).toMatchObject({ ok: true, activities: 2 });
+        const extendedManifest = JSON.parse(driveFiles.get(`pack-${id}.json`));
+        expect(extendedManifest.expiresAt).toBe(extendedAt);
+        expect(extendedManifest.activities.every(candidate => candidate.expiresAt === extendedAt)).toBe(true);
+
+        const activityFile = `activity-${id}-${aid}.json`;
+        const secondActivityFile = `activity-${id}-${secondAid}.json`;
+        expect(driveFiles.has(activityFile)).toBe(true);
+        expect(driveFiles.has(secondActivityFile)).toBe(true);
+        expect(call({ a: 'joinactivity', id, aid, k: 'wrong_wrong_wrong_20' }).e).toBe('denied');
+        expect(call({ a: 'joinactivity', id, aid: 'AC-62345678-1234-1234-1234-123456789012', k: secret }).e).toBe('no-activity');
+        const secondJoin = call({ a: 'joinactivity', id, aid: secondAid, k: secret });
+        expect(secondJoin.activity).toMatchObject({
+            activityId: secondAid,
+            prompt: 'What question do you still have?',
+            revealPolicy: 'teacher_review',
+            minParticipants: 5,
+        });
+
+        const students = Array.from({ length: 4 }, () => call({ a: 'joinactivity', id, aid, k: secret }));
+        students.forEach(student => {
+            expect(student.ok).toBe(true);
+            expect(student.uid).toMatch(/^ma-/);
+            expect(student.pt.length).toBeGreaterThan(20);
+        });
+        const actor = student => ({ id, aid, uid: student.uid, pt: student.pt });
+        expect(call({ a: 'getactivitysummary', ...actor(students[0]), pt: 'wrong_wrong_wrong_wrong' }).e).toBe('denied');
+
+        const first = call({ a: 'activityupsert', ...actor(students[0]), term: 'Photosynthesis' });
+        expect(first).toMatchObject({ ok: true, participantCount: 1, revealed: false });
+        expect(first.terms).toEqual([]);
+        expect(call({ a: 'activityupsert', ...actor(students[1]), term: 'photosynthesis' }).revealed).toBe(false);
+        const threshold = call({ a: 'activityupsert', ...actor(students[2]), term: 'Light' });
+        expect(threshold.revealed).toBe(true);
+        expect(threshold.terms.find(term => term.value === 'photosynthesis')).toMatchObject({ count: 2 });
+
+        const multilingual = call({ a: 'activityupsert', ...actor(students[3]), term: '\u5b66\u3073' });
+        expect(multilingual.own).toMatchObject({ text: '\u5b66\u3073', status: 'approved' });
+        expect(multilingual.terms.some(term => term.label === '\u5b66\u3073')).toBe(true);
+
+        const held = call({ a: 'activityupsert', ...actor(students[0]), term: 'student@example.com' });
+        const heldSecond = call({ a: 'activityupsert', ...actor(students[1]), term: 'https://example.com' });
+        const heldThird = call({ a: 'activityupsert', ...actor(students[2]), term: '5551234567' });
+        expect(held.own.status).toBe('pending');
+        expect(heldSecond.own.status).toBe('pending');
+        expect(heldThird.own.status).toBe('pending');
+        const protectedSummary = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(protectedSummary).toMatchObject({ participantCount: 1, revealed: false });
+        expect(protectedSummary.terms).toEqual([]);
+        expect(call({ a: 'getactivityadmin', id, aid }).e).toBe('not-admin');
+        const queue = call({ a: 'getactivityadmin', admin, id, aid });
+        expect(queue.responses.find(row => row.uid === students[0].uid)).toMatchObject({ status: 'pending', text: 'student@example.com' });
+        expect(call({ a: 'moderateactivity', ...actor(students[0]), status: 'approved' }).e).toBe('not-admin');
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'approved' }).ok).toBe(true);
+        const belowThreshold = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(belowThreshold).toMatchObject({ participantCount: 2, revealed: false });
+        expect(belowThreshold.terms).toEqual([]);
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[1].uid, status: 'approved' }).ok).toBe(true);
+        const approved = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(approved).toMatchObject({ participantCount: 3, revealed: true });
+        expect(approved.terms.some(term => term.label === 'student@example.com')).toBe(true);
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'hidden' }).ok).toBe(true);
+        const hidden = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(hidden).toMatchObject({ participantCount: 2, revealed: false });
+        expect(hidden.terms).toEqual([]);
+
+        expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
+        expect(driveFiles.has(activityFile)).toBe(false);
+        expect(driveFiles.has(secondActivityFile)).toBe(false);
+        expect(call({ a: 'getactivitysummary', ...actor(students[1]) }).e).toBe('no-pack');
+    });
+
+    it('runs an aggregate-only asynchronous rating with bounded integer values and one row per actor', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const id = 'PK-13345678-1234-1234-1234-123456789012';
+        const aid = 'AC-13345678-1234-1234-1234-123456789012';
+        const secret = 'p_secret_p_secret_20';
+        const expiresAt = new Date(Date.now() + 86400000).toISOString();
+        const rating = {
+            activityId: aid,
+            type: 'rating',
+            delivery: 'shared_async',
+            prompt: 'How confident are you?',
+            minParticipants: 3,
+            minValue: 2,
+            maxValue: 10,
+            labels: ['Need help', '', '', '', '', '', '', '', 'Ready'],
+        };
+
+        expect(call({
+            a: 'putpack', admin, id, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activities: [rating],
+        })).toMatchObject({ ok: true, activities: 1 });
+        const manifest = JSON.parse(driveFiles.get(`pack-${id}.json`));
+        expect(manifest.activities[0]).toMatchObject({
+            type: 'rating',
+            minValue: 2,
+            maxValue: 10,
+            responseLimit: 1,
+            labels: ['Need help', '', '', '', '', '', '', '', 'Ready'],
+        });
+        expect(manifest.activities[0].revealPolicy).toBeUndefined();
+
+        const students = Array.from({ length: 3 }, () => call({ a: 'joinactivity', id, aid, k: secret }));
+        const actor = student => ({ id, aid, uid: student.uid, pt: student.pt });
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: '2' }).e).toBe('bad-rating');
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: 2.5 }).e).toBe('bad-rating');
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: 1 }).e).toBe('bad-rating');
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: 11 }).e).toBe('bad-rating');
+
+        const first = call({ a: 'activityupsert', ...actor(students[0]), value: 2 });
+        expect(first).toMatchObject({
+            ok: true,
+            type: 'rating',
+            participantCount: 1,
+            revealed: false,
+            distribution: [],
+            own: { value: 2, status: 'recorded' },
+        });
+        const retry = call({ a: 'activityupsert', ...actor(students[0]), value: 10 });
+        expect(retry).toMatchObject({ participantCount: 1, own: { value: 10, status: 'recorded' } });
+        expect(call({ a: 'activityupsert', ...actor(students[1]), value: 5 }).revealed).toBe(false);
+        const threshold = call({ a: 'activityupsert', ...actor(students[2]), value: 10 });
+        expect(threshold).toMatchObject({ participantCount: 3, revealed: true });
+        expect(threshold.distribution.find(row => row.value === 2)).toMatchObject({ label: 'Need help', count: 0, percent: 0 });
+        expect(threshold.distribution.find(row => row.value === 5)).toMatchObject({ label: '5', count: 1, percent: 33 });
+        expect(threshold.distribution.find(row => row.value === 10)).toMatchObject({ label: 'Ready', count: 2, percent: 67 });
+        expect(JSON.stringify(threshold)).not.toMatch(/correct|score/i);
+
+        const teacher = call({ a: 'getactivityadmin', admin, id, aid });
+        expect(teacher.responses).toEqual([]);
+        expect(teacher.distribution).toEqual(threshold.distribution);
+        expect(JSON.stringify(teacher)).not.toContain(students[0].uid);
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'hidden' }).e).toBe('no-moderation');
+
+        const defaultId = 'PK-03345678-1234-1234-1234-123456789012';
+        const defaultAid = 'AC-03345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: defaultId, k: secret, part: 1, of: 1, data: 'PACK',
+            expiresAt, activities: [{ ...rating, activityId: defaultAid, minValue: undefined, maxValue: undefined, labels: undefined }],
+        }).ok).toBe(true);
+        expect(JSON.parse(driveFiles.get(`pack-${defaultId}.json`)).activities[0]).toMatchObject({ minValue: 1, maxValue: 5, labels: ['', '', '', '', ''] });
+
+        const invalidId = 'PK-f3345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: invalidId, k: secret, part: 1, of: 1, data: 'PACK',
+            expiresAt, activities: [{ ...rating, minValue: 0, maxValue: 11 }],
+        }).e).toBe('bad-activity');
+
+        const activityFile = `activity-${id}-${aid}.json`;
+        expect(driveFiles.has(activityFile)).toBe(true);
+        expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
+        expect(driveFiles.has(activityFile)).toBe(false);
+    });
+
+    it('accepts legacy singular activity requests and manifests while enforcing bounded unique plural ids', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const secret = 'p_secret_p_secret_20';
+        const expiresAt = new Date(Date.now() + 86400000).toISOString();
+        const activity = {
+            activityId: 'AC-52345678-1234-1234-1234-123456789012',
+            type: 'word_cloud',
+            delivery: 'shared_async',
+            prompt: 'Legacy prompt',
+            revealPolicy: 'auto_publish',
+            minParticipants: 3,
+        };
+
+        const singularRequestId = 'PK-52345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: singularRequestId, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activity,
+        })).toMatchObject({ ok: true, activities: 1 });
+        const normalizedManifest = JSON.parse(driveFiles.get(`pack-${singularRequestId}.json`));
+        expect(normalizedManifest.activity).toBeUndefined();
+        expect(normalizedManifest.activities).toHaveLength(1);
+        expect(call({ a: 'joinactivity', id: singularRequestId, aid: activity.activityId, k: secret }).ok).toBe(true);
+
+        const legacyManifestId = 'PK-42345678-1234-1234-1234-123456789012';
+        driveFiles.set(`pack-${legacyManifestId}.json`, JSON.stringify({
+            v: 2, k: secret, title: 'Legacy', expiresAt, of: 1, activity,
+        }));
+        driveFiles.set(`pack-${legacyManifestId}-1.txt`, 'PACK');
+        const legacyJoin = call({ a: 'joinactivity', id: legacyManifestId, aid: activity.activityId, k: secret });
+        expect(legacyJoin).toMatchObject({ ok: true, activity: { activityId: activity.activityId } });
+        expect(call({
+            a: 'activityupsert',
+            id: legacyManifestId,
+            aid: activity.activityId,
+            uid: legacyJoin.uid,
+            pt: legacyJoin.pt,
+            term: 'Compatible',
+        }).ok).toBe(true);
+        const legacySidecar = `activity-${legacyManifestId}-${activity.activityId}.json`;
+        expect(driveFiles.has(legacySidecar)).toBe(true);
+        expect(call({ a: 'delpack', admin, id: legacyManifestId }).ok).toBe(true);
+        expect(driveFiles.has(legacySidecar)).toBe(false);
+
+        const duplicateId = 'PK-32345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: duplicateId, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activities: [activity, { ...activity }],
+        }).e).toBe('bad-activity');
+
+        const tooManyId = 'PK-22345678-1234-1234-1234-123456789013';
+        const tooMany = Array.from({ length: 9 }, (_, index) => ({
+            ...activity,
+            activityId: `AC-${String(index + 1).padStart(8, '0')}-1234-1234-1234-123456789012`,
+        }));
+        expect(call({
+            a: 'putpack', admin, id: tooManyId, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activities: tooMany,
+        }).e).toBe('bad-activity');
+    });
+});
+
+function sliceBetween(startMarker, endMarker) {
+    const start = anti.indexOf(startMarker);
+    const end = anti.indexOf(endMarker, start);
+    if (start === -1 || end === -1) throw new Error(`markers not found: ${startMarker} .. ${endMarker}`);
+    return anti.slice(start, end);
+}
+
+const helperSource = sliceBetween('function _alloBase64UrlEncode(value)', 'function _alloValidFirebaseConfig(config)');
+
+function buildClientHelpers({ windowObj, fetchImpl, configuredBase = 'https://alloflow-cdn.pages.dev/app/' } = {}) {
+    const factory = new Function(
+        'window', 'fetch', '_alloGetConfiguredStudentBaseUrl', '_alloShareHostIsNotStudentReachable',
+        helperSource + `;
+        return { _alloCleanMailboxUrl, _alloMailboxCall, _alloSplitPackChunks, _alloReadMailboxEntryParam,
+                 _buildAlloMailboxEntryUrl, _alloRandomToken, _alloBase64UrlEncode,
+                 _alloMailboxCallWithRetry, _alloNextPollDelay, _alloCollectResChunk, _alloFinishResChunk, _alloPruneResChunks, _alloWaitIceComplete };`
+    );
+
+    return factory(windowObj, fetchImpl, () => configuredBase, () => false);
+}
+
+describe('ANTI mailbox client helpers', () => {
+    it('accepts only https Apps Script hosts', () => {
+        const H = buildClientHelpers({});
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC/exec')).toContain('script.google.com');
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC/dev')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC/exec?x=1')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://script.googleusercontent.com/macros/s/ABC/exec')).toContain('script.googleusercontent.com');
+        expect(H._alloCleanMailboxUrl('http://script.google.com/macros/s/ABC/exec')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://evil.example.com/exec')).toBe('');
+        expect(H._alloCleanMailboxUrl('')).toBe('');
+    });
+
+    it('round-trips the join handoff through build + read', () => {
+        const H = buildClientHelpers({ windowObj: { location: { href: 'https://x.test/', search: '', hash: '' } } });
+        const url = H._buildAlloMailboxEntryUrl('allo_mb', { u: 'https://script.google.com/macros/s/ABC/exec', c: 'ABC23', k: 'k_secret_k_secret_20' });
+        expect(url.startsWith('https://alloflow-cdn.pages.dev/app/?')).toBe(true);
+        expect(url).toContain('allo_ai=off');
+        const search = new URL(url).search;
+        const reader = buildClientHelpers({ windowObj: { location: { href: url, search, hash: '' } } });
+        const entry = reader._alloReadMailboxEntryParam('allo_mb');
+        expect(entry.c).toBe('ABC23');
+        expect(entry.k).toBe('k_secret_k_secret_20');
+        expect(entry.u).toContain('script.google.com');
+        expect(entry.aiPolicy).toBeUndefined();
+
+        const byokUrl = H._buildAlloMailboxEntryUrl('allo_mb', {
+            u: 'https://script.google.com/macros/s/ABC/exec',
+            c: 'ABC23',
+            k: 'k_secret_k_secret_20',
+            aiPolicy: 'student-byok',
+        });
+        expect(new URL(byokUrl).searchParams.get('allo_ai')).toBe('byok');
+        const encodedHandoff = new URL(byokUrl).searchParams.get('allo_mb');
+        const decodedHandoff = JSON.parse(Buffer.from(encodedHandoff, 'base64url').toString('utf8'));
+        expect(decodedHandoff.aiPolicy).toBeUndefined();
+    });
+
+    it('_alloMailboxCall posts preflight-free text/plain and surfaces server error codes', async () => {
+        const calls = [];
+        const okFetch = async (url, opts) => { calls.push({ url, opts }); return { status: 200, text: async () => JSON.stringify({ ok: true, i: 7 }) }; };
+        const H = buildClientHelpers({ fetchImpl: okFetch });
+        const res = await H._alloMailboxCall('https://script.google.com/macros/s/A/exec', { a: 'send' });
+        expect(res.i).toBe(7);
+        expect(calls[0].opts.method).toBe('POST');
+        expect(calls[0].opts.headers['Content-Type']).toContain('text/plain');
+        expect(Object.keys(calls[0].opts.headers)).toEqual(['Content-Type']);
+        const errFetch = async () => ({ status: 200, text: async () => JSON.stringify({ ok: false, e: 'no-session' }) });
+        const H2 = buildClientHelpers({ fetchImpl: errFetch });
+        await expect(H2._alloMailboxCall('https://script.google.com/macros/s/A/exec', { a: 'recv' })).rejects.toMatchObject({ code: 'allo/mailbox-no-session' });
+    });
+
+    it('splits and rejoins chunks losslessly', () => {
+        const H = buildClientHelpers({});
+        const text = 'x'.repeat(150000) + 'END';
+        const parts = H._alloSplitPackChunks(text, 60000);
+        expect(parts.length).toBe(3);
+        expect(parts.join('')).toBe(text);
+    });
+});
+
+describe('Code.gs hardening (v2)', () => {
+    it("'auth' verifies admin tokens without protocol side effects", () => {
+        const { call } = makeGsSandbox();
+        expect(call({ a: 'auth', admin: 'whatever' })).toMatchObject({ ok: true, admin: false, claimed: false });
+        const claim = call({ a: 'claim' });
+        expect(call({ a: 'auth', admin: 'wrong-token' })).toMatchObject({ ok: true, admin: false, claimed: true });
+        expect(call({ a: 'auth', admin: claim.admin })).toMatchObject({ ok: true, admin: true, claimed: true });
+    });
+
+    it('backs the admin token up as a Drive note at claim and refreshes it on auth (v3)', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const noteName = 'ADMIN-TOKEN (do not share).txt';
+        const claim = call({ a: 'claim' });
+        expect(driveFiles.has(noteName)).toBe(true);
+        expect(driveFiles.get(noteName)).toContain(claim.admin);
+        // Wrong token must NOT rewrite the note; valid auth refreshes it.
+        driveFiles.delete(noteName);
+        call({ a: 'auth', admin: 'wrong-token' });
+        expect(driveFiles.has(noteName)).toBe(false);
+        call({ a: 'auth', admin: claim.admin });
+        expect(driveFiles.get(noteName)).toContain(claim.admin);
+    });
+
+    it('survives cache eviction of the session marker via the durable Properties fallback (v4)', () => {
+        const { call, gs, driveFiles, ...rest } = makeGsSandbox();
+        const K = 'k_secret_k_secret_20';
+        const admin = call({ a: 'claim' }).admin;
+        expect(call({ a: 'open', admin, c: 'EVICT', k: K }).ok).toBe(true);
+        const joined = call({ a: 'join', c: 'EVICT', k: K });
+        expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'EVICT', box: 'up', v: { kind: 'student', name: 'A' } }).ok).toBe(true);
+        // Simulate CacheService eviction of the marker mid-class.
+        gs.handle({ a: 'noop' }); // no-op to keep shape; eviction below
+        rest.cacheStore.delete('s:EVICT');
+        expect(call({ a: 'recv', admin, c: 'EVICT', box: 'up', since: '0' }).ok).toBe(true);
+        // Rewarmed: marker is back in cache.
+        expect(rest.cacheStore.has('s:EVICT')).toBe(true);
+        // 'end' clears the durable copy too — session stays dead.
+        expect(call({ a: 'end', admin, c: 'EVICT' }).ok).toBe(true);
+        rest.cacheStore.delete('s:EVICT');
+        expect(call({ a: 'recv', admin, c: 'EVICT', box: 'up', since: '0' }).e).toBe('no-session');
+    });
+
+    it("'mysessions' returns the admin's open sessions for server-side resume (v5)", () => {
+        const { call } = makeGsSandbox();
+        const K1 = 'k_one_k_one_k_one_20';
+        const K2 = 'k_two_k_two_k_two_20';
+        expect(call({ a: 'mysessions', admin: 'nope' }).e).toBe('not-admin');
+        const admin = call({ a: 'claim' }).admin;
+        expect(call({ a: 'mysessions', admin }).sessions).toEqual([]);
+        call({ a: 'open', admin, c: 'ROOM1', k: K1 });
+        call({ a: 'open', admin, c: 'ROOM2', k: K2 });
+        const mine = call({ a: 'mysessions', admin });
+        expect(mine.ok).toBe(true);
+        const codes = mine.sessions.map(s => s.c).sort();
+        expect(codes).toEqual(['ROOM1', 'ROOM2']);
+        // Secrets are returned (caller proved admin) so the client can resume.
+        expect(mine.sessions.find(s => s.c === 'ROOM1').k).toBe(K1);
+        // Ended sessions drop off the list.
+        call({ a: 'end', admin, c: 'ROOM1' });
+        expect(call({ a: 'mysessions', admin }).sessions.map(s => s.c)).toEqual(['ROOM2']);
+    });
+
+    it('purges replay messages when a code is ended and later reused', () => {
+        const { call } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const secret = 'reused_secret_reused_20';
+        call({ a: 'open', admin, c: 'REUSE', k: secret });
+        call({ a: 'send', admin, c: 'REUSE', box: 'down', v: { kind: 'end', stale: true } });
+        call({ a: 'end', admin, c: 'REUSE' });
+        call({ a: 'open', admin, c: 'REUSE', k: secret });
+        const joined = call({ a: 'join', c: 'REUSE', k: secret });
+        const fresh = call({ a: 'recv', uid: joined.uid, pt: joined.pt, c: 'REUSE', box: 'down', since: '0' });
+        expect(fresh.b.down.m).toEqual([]);
+        expect(fresh.b.down.latest).toBe(0);
+    });
+    it('rotates the admin token safely and closes active sessions only with explicit force', () => {
+        const { call } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        call({ a: 'open', admin, c: 'ROTAT', k: 'rotate_secret_rotate_20' });
+        expect(call({ a: 'rotateadmin', admin }).e).toBe('sessions-active');
+        const rotated = call({ a: 'rotateadmin', admin, force: true });
+        expect(rotated.ok).toBe(true);
+        expect(rotated.admin).not.toBe(admin);
+        expect(call({ a: 'auth', admin })).toMatchObject({ ok: true, admin: false });
+        expect(call({ a: 'auth', admin: rotated.admin })).toMatchObject({ ok: true, admin: true });
+        expect(call({ a: 'join', c: 'ROTAT', k: 'rotate_secret_rotate_20' }).e).toBe('no-session');
+    });
+    it('caps participant writes independently and bounds message cache slots', () => {
+        const { call, cacheStore } = makeGsSandbox();
+        const K = 'k_secret_k_secret_20';
+        const admin = call({ a: 'claim' }).admin;
+        expect(call({ a: 'open', admin, c: 'FLOOD', k: K }).ok).toBe(true);
+        const joined = call({ a: 'join', c: 'FLOOD', k: K });
+        for (let i = 0; i < 120; i += 1) {
+            expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'FLOOD', box: 'up', v: { kind: 'student', name: 'A' } }).ok).toBe(true);
+        }
+        expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'FLOOD', box: 'up', v: { kind: 'student', name: 'A' } }).e).toBe('rate-limited');
+        for (let i = 0; i < 300; i += 1) {
+            expect(call({ a: 'send', admin, c: 'FLOOD', box: 'down', v: i }).ok).toBe(true);
+        }
+        const slots = [...cacheStore.keys()].filter(k => k.startsWith('m:FLOOD:down:'));
+        expect(slots.length).toBeLessThanOrEqual(240);
+    });
+});
+
+describe('resilience helpers', () => {
+    it('retry wrapper retries transient failures and never retries protocol denials', async () => {
+        let flaky = 0;
+        const flakyFetch = async () => {
+            flaky += 1;
+            if (flaky < 3) return { status: 200, text: async () => JSON.stringify({ ok: false, e: 'busy' }) };
+            return { status: 200, text: async () => JSON.stringify({ ok: true, i: 1 }) };
+        };
+        const H = buildClientHelpers({ fetchImpl: flakyFetch });
+        const res = await H._alloMailboxCallWithRetry('https://script.google.com/macros/s/A/exec', { a: 'send' }, 3, 1);
+        expect(res.i).toBe(1);
+        expect(flaky).toBe(3);
+        let denialCalls = 0;
+        const denialFetch = async () => { denialCalls += 1; return { status: 200, text: async () => JSON.stringify({ ok: false, e: 'denied' }) }; };
+        const H2 = buildClientHelpers({ fetchImpl: denialFetch });
+        await expect(H2._alloMailboxCallWithRetry('https://script.google.com/macros/s/A/exec', { a: 'send' }, 3, 1)).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+        expect(denialCalls).toBe(1);
+    });
+
+    it('poll-delay policy: hidden parks, errors back off capped, idle stretches, jitter bounded', () => {
+        const H = buildClientHelpers({});
+        expect(H._alloNextPollDelay({ hidden: true })).toBe(5000);
+        expect(H._alloNextPollDelay({ errorCount: 1 })).toBe(5000);
+        expect(H._alloNextPollDelay({ errorCount: 3 })).toBe(15000);
+        expect(H._alloNextPollDelay({ errorCount: 9 })).toBe(15000);
+        for (let i = 0; i < 20; i += 1) {
+            const active = H._alloNextPollDelay({});
+            expect(active).toBeGreaterThanOrEqual(2250);
+            expect(active).toBeLessThanOrEqual(2750);
+            const idle = H._alloNextPollDelay({ idleMs: 300000 });
+            expect(idle).toBeGreaterThanOrEqual(3600);
+            expect(idle).toBeLessThanOrEqual(4400);
+        }
+    });
+
+    it('chunk fold assembles once and dedups replayed rids across transports', () => {
+        const H = buildClientHelpers({});
+        const store = { parts: {}, applied: new Set() };
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 1, of: 2, data: 'AA' })).toBe(null);
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 2, of: 2, data: 'BB' })).toBe('AABB');
+        expect(store.applied.has('r1')).toBe(false);
+        H._alloFinishResChunk(store, 'r1', true);
+        // Mailbox replay of the same rid after the channel already delivered it.
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 1, of: 2, data: 'AA' })).toBe(null);
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 2, of: 2, data: 'BB' })).toBe(null);
+        expect(H._alloCollectResChunk(store, { kind: 'student' })).toBe(null);
+    });
+
+    it('rejects malformed and conflicting resource chunks without losing the valid stream', () => {
+        const H = buildClientHelpers({}), store = { parts: {}, applied: new Set() };
+        const chunk = (part, of, data, rid = 'r1') => ({kind: 'res', rid, part, of, data});
+        expect(H._alloCollectResChunk(store, chunk(2, 2, 'BB'))).toBeNull();
+        for (const invalid of [chunk(99, 2, 'BAD'), chunk(1.5, 2, 'BAD'), chunk('1', 2, 'BAD'), chunk(1, 3, 'BAD'), chunk(2, 2, 'CHANGED'), chunk(1, 2, {})]) expect(H._alloCollectResChunk(store, invalid)).toBeNull();
+        expect(store.applied.size).toBe(0);
+        expect(H._alloCollectResChunk(store, chunk(1, 2, 'AA'))).toBe('AABB');
+        expect(H._alloCollectResChunk(store, chunk(1, 1, 'SAFE', '__proto__'))).toBe('SAFE');
+        expect(Object.prototype.got).toBeUndefined();
+    });
+
+    it('ICE-complete wait resolves on completion and on timeout', async () => {
+        const H = buildClientHelpers({});
+        let listener = null;
+        const pc = {
+            iceGatheringState: 'gathering',
+            addEventListener: (_, cb) => { listener = cb; },
+            removeEventListener: () => {},
+        };
+        const done = H._alloWaitIceComplete(pc, 5000);
+        pc.iceGatheringState = 'complete';
+        listener();
+        await expect(done).resolves.toBeUndefined();
+        const stuck = { iceGatheringState: 'gathering', addEventListener: () => {}, removeEventListener: () => {} };
+        await expect(H._alloWaitIceComplete(stuck, 30)).resolves.toBeUndefined();
+    });
+});
+
+describe('ANTI wiring pins', () => {
+    it('student mailbox entries never touch Firebase', () => {
+        const live = sliceBetween('// Mailbox live-session student entry', '// Mailbox-hosted homework entry');
+        expect(live).toMatch(/_alloSetQrStudentAiPolicy/);
+        expect(live).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
+        const hosted = sliceBetween('// Mailbox-hosted homework entry', "if (activeView === 'adventure'");
+        expect(hosted).toMatch(/getpack/);
+        expect(hosted).toMatch(/setPendingQrAssignmentResource\(firstResource\)/);
+        expect(hosted).toMatch(/_alloSetQrStudentAiPolicy/);
+        expect(hosted).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
+    });
+
+    it('live-session transport chooser, hosted-QR button, and hand-raise are wired', () => {
+        expect(anti).toMatch(/Teach live/);
+        expect(anti).toMatch(/Standard live session/);
+        expect(anti).toMatch(/Class Mailbox QR session/);
+        expect(anti).toContain("const ClassMailboxSetupView = _alloCreateFirstWaveCdnView('ClassMailboxSetupView'");
+        expect(shareSessionSurfacesSource).toMatch(/Connect & self-test/);
+        expect(anti).not.toMatch(/Push current resource to class/);
+        expect(shareSessionSurfacesSource).toMatch(/Host on Class Mailbox \(small QR, images OK\)/);
+        expect(anti).toMatch(/aria-label=\{mbHandUp \? 'Lower hand' : 'Raise hand'\}/);
+        // Hosted variant renders without QR suppression and with the Drive note.
+        expect(anti).toMatch(/assignment-pack-hosted/);
+        expect(shareSessionSurfacesSource).toMatch(/AlloFlow Class Mailbox" Drive folder/);
+        expect(anti).toMatch(/isMailboxSession=\{!!mbLive\}/);
+        expect(anti).toMatch(/mailboxJoinUrl=\{mbLive\?\.joinUrl \|\| ''\}/);
+        expect(anti).toMatch(/onRequestEndSession=\{requestEndLiveSession\}/);
+        expect(shareSessionSurfacesSource).toContain('Why might Google say “unverified app” or “unsafe”?');
+        expect(shareSessionSurfacesSource).toContain('A Google account alone does not make a workflow FERPA-compliant.');
+        expect(shareSessionSurfacesSource).toContain('What is stored, where, and for how long?');
+        expect(shareSessionSurfacesSource).toContain('How do student saving and submissions work in each mode?');
+        expect(shareSessionSurfacesSource).toContain('complete portfolio is not retained as a permanent Firebase record');
+        expect(anti).toContain("a: 'putsubmission'");
+        expect(anti).toContain('setMbHostedAssignment({ url: entry.u');
+        expect(anti).toContain('Mailbox submission upload failed; downloading a backup instead');
+    });
+
+    it('keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks', () => {
+        expect(sharedActivitySource).toContain('setTerm(current => current || result.own.text)');
+        expect(sharedActivitySource).toContain('[activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
+        expect(sharedActivitySource).toContain('const requestSequence = ++requestSequenceRef.current;');
+        expect(sharedActivitySource).toContain('_alloNextSharedActivitySummaryOrder');
+        expect(sharedActivitySource).not.toContain('mailboxUrl, packId, term]);');
+        expect(sharedActivitySource).toContain('item.count > 1 ? ` x${item.count}`');
+        expect(sharedActivitySource).toContain("shortLabel: 'WC', title: 'Class word cloud'");
+        expect(sharedActivitySource).not.toContain('<span aria-hidden="true">??</span> Class word cloud');
+        expect(sharedActivitySource).toContain('const refreshed = await refresh({ quiet: true })');
+        expect(sharedActivitySource).toContain('That change saved, but the moderation list could not refresh.');
+        expect(sharedActivitySource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
+        expect(anti).toContain('activities: built.sharedActivities');
+        expect(anti).toContain('sharedActivity: built.sharedActivities[0] || null');
+        // Surveys need the v13 script; gating HERE means a too-old mailbox is
+        // named before anything uploads, instead of bouncing as bad-activity.
+        expect(anti).toContain("const requiredMailboxVersion = (sharedAssignmentActivity.enabled && sharedAssignmentActivity.type === 'survey') ? 13");
+        expect(anti).toContain(': sharedAssignmentActivity.enabled ? 11 : 9;');
+        expect(anti).not.toContain('activity: built.sharedActivity');
+    });
+
+    it('normalizes and labels shared ratings at runtime and keeps them in the existing activity surface', () => {
+        const start = sharedActivitySource.indexOf('function _alloNormalizeSharedRatingActivity(value)');
+        const end = sharedActivitySource.indexOf('const SharedAssignmentActivityPanel', start);
+        expect(start).toBeGreaterThan(-1);
+        expect(end).toBeGreaterThan(start);
+        const helpers = new Function(
+            sharedActivitySource.slice(start, end) + '\nreturn { normalize: _alloNormalizeSharedRatingActivity, meta: _alloSharedActivityUiMeta };'
+        )();
+        expect(helpers.normalize({
+            type: 'rating',
+            minValue: 2,
+            maxValue: 10,
+            labels: [' Need help ', '', '', '', '', '', '', '', 'Ready'],
+        })).toMatchObject({
+            type: 'rating',
+            minValue: 2,
+            maxValue: 10,
+            labels: ['Need help', '', '', '', '', '', '', '', 'Ready'],
+        });
+        expect(helpers.normalize({ type: 'rating', minValue: 99, maxValue: -1 })).toMatchObject({
+            minValue: 1,
+            maxValue: 5,
+            labels: ['', '', '', '', ''],
+        });
+        expect(helpers.normalize({ type: 'word_cloud' })).toBe(null);
+        expect(helpers.meta({ type: 'rating' })).toMatchObject({ shortLabel: 'RT', title: 'Class rating' });
+        expect(helpers.meta({ type: 'word_cloud' })).toMatchObject({ shortLabel: 'WC', title: 'Class word cloud' });
+
+        expect(sharedActivitySource).toContain("callStudentUpdate({ value: ratingValue })");
+        // The hosted-pack ingest filter now admits every mailbox activity type
+        // (surveys landed with v13; availability/signup never passed the old
+        // two-type filter, so no student could reach them from a hosted pack).
+        expect(anti).toContain("['word_cloud', 'rating', 'availability', 'signup', 'survey'].indexOf(candidate.type) >= 0");
+        expect(sharedActivitySource).toContain('Anonymous aggregate only · not scored');
+        expect(sharedActivitySource).toContain("SharedAssignmentActivityPanel");
+        // The activity editor moved from the header's Documents dropdown into
+        // the Share & Collect dialog (ANTI, @afc130a59) and its rating controls
+        // were simplified to defaults; these pins follow the surface that
+        // actually ships rather than the one that was removed.
+        // Re-anchored 2026-08-17 (X8): the option label was extracted to
+        // t('share_collect.type_rating') during the wave-2 i18n sweep; the
+        // rating option itself is what this pin guards.
+        expect(assignmentCenterSource).toContain('<option value="rating">{tx(\'share_collect.type_rating\', \'Rating scale (not scored)\')}</option>');
+        expect(sharedActivitySource).toContain('const ratingMin = Math.max(1, Math.min(9,');
+        expect(sharedActivitySource).toContain('const ratingMax = Math.max(ratingMin + 1, Math.min(10,');
+    });
+
+    it('open/putpack are admin-gated in Code.gs and boxes are restricted to up/down', () => {
+        expect(gsSource).toMatch(/a === 'open'[\s\S]{0,80}not-admin/);
+        expect(gsSource).toMatch(/a === 'putpack'[\s\S]{0,120}not-admin/);
+        expect(gsSource).toMatch(/b === 'up' \|\| b === 'down'/);
+    });
+
+    it('backend-free boot: empty-env shell falls back to a valid-shaped placeholder config', () => {
+        // Root cause pin: getFirestore() throws at module scope when projectId
+        // is empty, freezing the whole app for #allo_pack / ?allo_mb /
+        // ?allo_mbp / bare-landing entries (the only ones without allo_fb).
+        expect(anti).toMatch(/ALLO_FIREBASE_PLACEHOLDER_CONFIG = Object\.freeze/);
+        expect(anti).toMatch(/_alloValidFirebaseConfig\(_alloEnvFirebaseConfig\) \? _alloEnvFirebaseConfig : ALLO_FIREBASE_PLACEHOLDER_CONFIG/);
+        // Anything that actually needs Firebase reports a precise code…
+        expect(anti).toMatch(/allo\/no-backend-configured/);
+        // …and auth/data-provider bootstraps are skipped, not error-spammed.
+        expect(anti).toMatch(/!_alloQrFirebaseHandoffRequiredButMissing && !_alloFirebaseIsPlaceholder\) _initAlloData\(\)/);
+        expect(anti).toMatch(/Firebase auth skipped: no backend configured/);
+        // The placeholder must satisfy the same shape check the handoff uses.
+        const start = anti.indexOf('const ALLO_FIREBASE_PLACEHOLDER_CONFIG');
+        const block = anti.slice(start, anti.indexOf('});', start));
+        expect(block).toMatch(/apiKey: '[^']+'/);
+        expect(block).toMatch(/projectId: '[^']+'/);
+        expect(block).toMatch(/appId: '[^']+'/);
+    });
+
+    it('hardening + real-time wiring is present on both sides', () => {
+        // Teacher: token UX, RTC answerer, dual-path push, staleness UI.
+        expect(shareSessionSurfacesSource).toMatch(/Admin token — save it like a password/);
+        expect(shareSessionSurfacesSource).toMatch(/Admin token \(only when reconnecting from a new device\)/);
+        expect(anti).toMatch(/answerRtcOffer/);
+        expect(anti).toMatch(/ondatachannel/);
+        expect(anti).toMatch(/instant, ' \+ Math\.max\(0, total - rtcCount\) \+ ' via mailbox/);
+        expect(shareSessionSurfacesSource).toMatch(/· away\?/);
+        expect(shareSessionSurfacesSource).toMatch(/real-time ⚡/);
+        // Student: heartbeat, visibility handling, RTC offerer with retry cap,
+        // channel-first presence, shared dedup store.
+        expect(anti).toMatch(/Date\.now\(\) - lastAnnounce > 60000/);
+        const visibilityCount = (anti.match(/visibilitychange/g) || []).length;
+        expect(visibilityCount).toBeGreaterThanOrEqual(4); // add+remove on both loops
+        expect(anti).toMatch(/pc\.createDataChannel\('allo'\)/);
+        // v4: capped-backoff retry-forever replaced the old 4-try cap.
+        expect(anti).toMatch(/Math\.min\(15000 \* Math\.pow\(2/);
+        expect(anti).toMatch(/applyMbDownPayload/);
+        expect(anti).toMatch(/_alloCollectResChunk\(store, v\)/);
+        // Poll cadence: slower base while the channel is open.
+        expect(anti).toMatch(/rtcOpen \? 8000 : ALLO_MB_POLL_MS/);
+    });
+
+    it('live sessions host a durable pack + advertise packRef, and students getpack-heal it', () => {
+        // Teacher publishes a tiny pointer to a putpack-hosted full pack (the
+        // durable data.resources analogue that makes the mailbox self-healing).
+        // Stage 3: the packRef write is the injected publishPackRef op; the
+        // cycle algorithm (incl. WHEN to publish) lives in SessionTransport.
+        expect(anti).toContain('await updateDoc(sessionRef, { packRef: { id: ref.id, k: ref.k, n: ref.n, t: ref.t } });');
+        expect(anti).toContain("a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i]");
+        // Student self-heal branch reassembles the full set from packRef via getpack.
+        expect(anti).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
+        // Parts are fetched by the shared concurrent helper, which appends `part`
+        // per request; the base params below are what the call site still supplies.
+        expect(anti).toContain("{ a: 'getpack', id: data.packRef.id, k: data.packRef.k }");
+        expect(anti).toContain('await _alloFetchMailboxPackParts(');
+        // Large homework packs route to the mailbox host instead of dead-ending.
+        expect(anti).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;');
+        // The offline-history loader no longer clobbers a joining live student
+        // (current guard form @41cc1dd52: entry-param based, two lines).
+        expect(anti).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()');
+        expect(anti).toContain("|| _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp'))) {");
+    });
+});
+
+describe('teacher-only resource gating', () => {
+    it("allows 'analysis' (Analyze Source Material) in student lanes", () => {
+        // Analyze Source Material is a normal shareable resource. Teachers can
+        // present it through Firebase, Mailbox, QR/pack, and student history.
+        // Other private planning artifacts remain type-gated.
+        const teacherSource = fs.readFileSync(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
+        const teacherOnlyBlock = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES'), anti.indexOf('];', anti.indexOf('const TEACHER_ONLY_TYPES')));
+        expect(teacherOnlyBlock).not.toContain("'analysis'");
+        expect(teacherOnlyBlock).toContain("'lesson-plan'");
+        expect(teacherSource).toContain("!['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type)");
+        expect(teacherSource).not.toContain("!['udl-advice', 'brainstorm', 'alignment-report', 'analysis'].includes(item.type)");
+    });
+});
+
+describe('student-pack serialization (full-fidelity)', () => {
+    it('no pack channel narrows resources to the five-field allowlist any more', () => {
+        // The {id,type,title,meta,data} narrowing silently stripped top-level
+        // fields resources need to WORK (word-sounds lessonPlanSequence/probe
+        // flags, games gameData). Every pack site must use the serializer.
+        expect(anti).not.toContain('meta: item.meta, data: item.data');
+        expect(anti).not.toContain('meta: it.meta, data: it.data');
+        const uses = anti.split('_alloSerializeResourceForStudentPack').length - 1;
+        expect(uses).toBeGreaterThanOrEqual(7); // 1 definition + 6 call sites
+        const wrapperStart = anti.indexOf("const _alloSerializeResourceForStudentPack = (item, audioChannel = 'live') => {");
+        const wrapperEnd = anti.indexOf('const describeSavedFollowUpLiveFailure', wrapperStart);
+        const wrapper = anti.slice(wrapperStart, wrapperEnd);
+        expect(wrapper).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel })');
+        expect(wrapper).not.toContain('safePortableTtsAssets');
+        const calls = [];
+        const serialize = new Function('_alloLiveAacModule', 'sanitizeHistoryForCloud', 'stripUndefined', 'mbPreparedImagesRef', wrapper + '; return _alloSerializeResourceForStudentPack;')(
+            () => ({ serializeResourceForStudentPack: (item, deps) => { calls.push(deps); return item; } }), value => value, value => value, { current: new WeakMap() });
+        const item = { id: 'channel-check' };
+        expect(serialize(item)).toBe(item);
+        expect(serialize(item, 'qr')).toBe(item);
+        expect(calls.map(deps => deps.audioChannel)).toEqual(['live', 'qr']);
+        expect(liveAacSource).toContain('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
+        expect(liveAacSource).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
+    });
+
+    it.each([
+        ['image', { imageUrl: 'IMAGE', altText: 'A labelled leaf' }],
+        ['glossary', [{ word: 'leaf', image: 'IMAGE', alt: 'A green leaf' }]],
+        ['timeline', { items: [{ event: 'A seed sprouts', image: 'IMAGE', alt: 'A seedling' }] }],
+        ['timeline', [{ event: 'A seed sprouts', image: 'IMAGE' }]],
+        ['image', { visualPlan: { panels: [{ imageUrl: 'IMAGE', caption: 'A seed grows', frames: ['IMAGE', 'IMAGE'] }] } }],
+        ['lesson-plan', { resources: [{ id: 'picture', type: 'image', data: { imageUrl: 'IMAGE' } }] }],
+    ])('preserves %s instructional images without changing the teacher original', (type, data) => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const image = 'data:image/png;base64,' + 'A'.repeat(2048);
+        const source = { id: 'illustrated', type, data: JSON.parse(JSON.stringify(data).replaceAll('IMAGE', image)) };
+        const before = JSON.stringify(source);
+        expect(loadStudentPackSerializer(win)(source)).toEqual(source);
+        expect(JSON.stringify(source)).toBe(before);
+        expect(JSON.stringify(win.sanitizeSessionValue(source, 'resource'))).not.toContain(image);
+    });
+
+    it('restores HTTPS pictures but rejects unsafe or device-local sources and keeps removed parents private', () => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const helper = loadStudentPackSerializer(win);
+        const image = 'data:image/png;base64,' + 'A'.repeat(1024);
+        const bad = ['blob:https://teacher.example/id', 'javascript:alert(1)', 'data:image/svg+xml;base64,PHN2Zz4=', 'data:text/html;base64,QQ==', 'http://example.edu/image.png', '/teacher-only.png', 'data:image/png;base64,invalid!'];
+        const packed = helper({ id: 'safe', type: 'image', data: {
+            imageUrl: 'https://images.example.edu/leaf.png',
+            originalImage: { imageUrl: image },
+            audioRecording: { imageUrl: image, base64: 'PRIVATE' },
+            visualPlan: { panels: bad.map(imageUrl => ({ imageUrl })) },
+        }, karaokeStudentAudio: { entries: { student: { imageUrl: image } } } });
+        expect(packed.data.imageUrl).toBe('https://images.example.edu/leaf.png');
+        expect(packed.data.originalImage).toBeNull();
+        expect(packed.data.audioRecording).toBeNull();
+        expect(packed.data.visualPlan.panels.map(panel => panel.imageUrl)).toEqual(bad.map(() => null));
+        expect(packed).not.toHaveProperty('karaokeStudentAudio');
+        expect(helper({ id: 'private', type: 'persona-transcript', data: { imageUrl: image } })).toBeNull();
+    });
+
+    it('shares one image budget across nested images, frames and quiz choices', () => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const image = 'data:image/png;base64,' + 'A'.repeat(3 * 1024 * 1024);
+        const source = { id: 'budget', type: 'image', data: { imageUrl: image, frames: [image], questions: [{ optionImageUrls: [image] }] } };
+        const packed = loadStudentPackSerializer(win)(source);
+        expect(packed.data.imageUrl).toBe(image);
+        expect(packed.data.frames).toEqual([null]);
+        expect(packed.data.questions[0].optionImageUrls).toEqual([null]);
+        expect(source.data.frames).toEqual([image]);
+        expect(loadStudentPackSerializer(win)({ id: 'oversize', type: 'image', data: { imageUrl: 'data:image/png;base64,' + 'A'.repeat(5 * 1024 * 1024) } }).data.imageUrl).toBeNull();
+    });
+
+    it.each([false, true])('round-trips a multi-chunk picture through the real live sender, mailbox and late-join pack (RTC: %s)', async (rtc) => {
+        const win = {};
+        new Function('window', fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8'))(win);
+        const serialize = loadStudentPackSerializer(win);
+        const H = buildClientHelpers({});
+        const codec = new Function('Blob', 'Response', 'CompressionStream', 'DecompressionStream', helperSource + '; return { encode: _alloEncodeAlloPack, decode: _alloDecodeAlloPack };')(NodeBlob, globalThis.Response, NodeCS, NodeDS);
+        const { call } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const code = 'ABC23', secret = 'k_secret_k_secret_20';
+        expect(call({ a: 'open', admin, c: code, k: secret }).ok).toBe(true);
+        const joined = call({ a: 'join', c: code, k: secret });
+        const resource = { id: 'large-picture', type: 'image', title: 'Leaf diagram', data: { imageUrl: 'data:image/png;base64,' + randomBytes(150000).toString('base64'), altText: 'Parts of a leaf' } };
+        const instant = [], mailbox = [];
+        const deps = {
+            useCallback: fn => fn, mbLive: { code }, mbConfig: { url: 'test-mailbox', admin },
+            mbPeersRef: { current: rtc ? { student: { dc: { readyState: 'open' } } } : {} },
+            prepareMailboxResourceImages: async item => serialize(item), _alloEncodeAlloPack: codec.encode,
+            _alloSplitPackChunks: H._alloSplitPackChunks,
+            _alloDcSendDrained: async (_, text) => { instant.push(JSON.parse(text)); },
+            _alloMailboxCallWithRetry: async (_, payload) => { mailbox.push(payload.v); const result = call(payload); expect(result.ok).toBe(true); return result; },
+            warnLog: () => {},
+        };
+        const push = new Function(...Object.keys(deps), sliceBetween('const _mbPushOneResource = useCallback(', 'const pushResourceToMailbox = useCallback(') + '; return _mbPushOneResource;')(...Object.values(deps));
+        expect(await push(resource, { open: false, quiet: true })).toEqual({ rtcCount: rtc ? 1 : 0 });
+        expect(mailbox.length).toBeGreaterThan(1);
+        expect(mailbox.every(part => part.open === false && part.quiet === true && JSON.stringify(part).length < 90 * 1024)).toBe(true);
+        const received = call({ a: 'recv', c: code, uid: joined.uid, pt: joined.pt, box: 'down', since: '0' });
+        expect(received.ok).toBe(true);
+        const replay = received.b.down.m.map(([, message]) => message.v);
+        const store = { parts: {}, applied: new Set() };
+        const assembled = [...instant, ...replay].map(part => H._alloCollectResChunk(store, part)).filter(Boolean);
+        expect(assembled).toHaveLength(1);
+        expect(assembled[0].startsWith('1.')).toBe(true);
+        expect(JSON.parse(await codec.decode(assembled[0]))).toEqual(resource);
+
+        // Durable hosted packs are the fallback for late joiners after the
+        // transient replay ring has expired. Exercise the same bytes there.
+        const id = 'PK-12345678-1234-1234-1234-123456789012';
+        const packet = { v: 1, kind: 'assignment', resources: [serialize(resource)] };
+        const parts = H._alloSplitPackChunks(await codec.encode(JSON.stringify(packet)));
+        parts.forEach((data, i) => expect(call({ a: 'putpack', admin, id, k: secret, part: i + 1, of: parts.length, title: 'Live pack', data }).ok).toBe(true));
+        let downloaded = '', count = 1;
+        for (let part = 1; part <= count; part += 1) {
+            const result = call({ a: 'getpack', id, k: secret, part });
+            expect(result.ok).toBe(true);
+            downloaded += result.data;
+            count = result.of;
+        }
+        expect(JSON.parse(await codec.decode(downloaded)).resources[0]).toEqual(resource);
+    });
+
+    it('keeps lesson-plan/probe/game fields, strips student audio, nulls binary payloads', () => {
+        // Run the REAL helper (extracted from ANTI) against the REAL
+        // firestore_sync sanitizers.
+        const win = {};
+        const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
+        new Function('window', syncSrc)(win);
+        expect(typeof win.sanitizeHistoryForCloud).toBe('function');
+        expect(typeof win.sanitizeSessionValue).toBe('function');
+        expect(typeof win.stripUndefined).toBe('function');
+
+        const helper = loadStudentPackSerializer(win);
+
+        const packed = helper({
+            id: 'ws-1', type: 'word-sounds', title: 'Word Sounds (3 words)',
+            data: [{
+                word: 'cat',
+                _ttsAssets: {
+                    cat: { mime: 'audio/mpeg', base64: 'QUJDRA==' },
+                    unsafe: { mime: 'text/html', base64: 'PHNjcmlwdD4=' },
+                },
+            }, { word: 'dog' }, { word: 'sun' }],
+            lessonPlanSequence: ['counting', 'blending'],
+            lessonPlanConfig: { focus: 'short vowels' },
+            configSummary: 'Planned practice',
+            isProbeMode: true,
+            probeActivity: 'blending',
+            gameData: { board: [1, 2, 3] },
+            karaokeAudio: { version: 4, entries: {} },
+            karaokeStudentAudio: { version: 4, entries: { x: { audio: 'base64' } } },
+        });
+
+        // The fields the student device needs to run the assignment SURVIVE:
+        expect(packed.lessonPlanSequence).toEqual(['counting', 'blending']);
+        expect(packed.lessonPlanConfig).toEqual({ focus: 'short vowels' });
+        expect(packed.isProbeMode).toBe(true);
+        expect(packed.probeActivity).toBe('blending');
+        expect(packed.gameData).toEqual({ board: [1, 2, 3] });
+        expect(packed.data).toHaveLength(3);
+        // Teacher-prepared Word Sounds speech survives the chunked pack even
+        // though the generic session sanitizer strips nested base64 fields.
+        expect(packed.data[0]._ttsAssets).toEqual({
+            cat: { mime: 'audio/mpeg', base64: 'QUJDRA==' },
+        });
+        expect(packed.data[0]._ttsAssets).not.toHaveProperty('unsafe');
+        // A child's recorded voice never travels in a pack:
+        expect(packed).not.toHaveProperty('karaokeStudentAudio');
+        // Binary/audio payloads are nulled exactly like the Firebase path:
+        expect(packed.karaokeAudio == null).toBe(true);
+        // Malformed/private inputs fail closed:
+        expect(helper(null)).toBe(null);
+        expect(helper({ type: 'word-sounds' })).toBe(null);
+    });
+
+    it('recursively strips legacy Memory Aid evidence from student packs and fails closed without the cloud helper', () => {
+        const win = {};
+        const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
+        new Function('window', syncSrc)(win);
+        const helper = loadStudentPackSerializer(win);
+        const source = {
+            id: 'memory-pack-1',
+            type: 'memory-aid',
+            title: 'Cell division',
+            data: {
+                teacherDirections: 'Explain why your cue works.',
+                cards: [{
+                    id: 'pmat',
+                    target: 'Mitosis phases',
+                    finalMnemonic: 'Please Make Another Taco',
+                    practiceAttempts: [{ response: 'private student recall' }],
+                    revision: {
+                        retrievalAttempts: [{ response: 'older private recall' }],
+                        reason: 'The first letters match.',
+                    },
+                }],
+            },
+        };
+
+        const packed = helper(source);
+        expect(JSON.stringify(packed)).not.toContain('Attempts');
+        expect(packed.data.cards[0]).toMatchObject({
+            id: 'pmat',
+            target: 'Mitosis phases',
+            finalMnemonic: 'Please Make Another Taco',
+            revision: { reason: 'The first letters match.' },
+        });
+        expect(source.data.cards[0].practiceAttempts).toHaveLength(1);
+
+        const fallbackHelper = loadStudentPackSerializer({
+            sanitizeHistoryForCloud: items => items,
+            sanitizeMemoryAidResourceForBoundary: value => value,
+            stripUndefined: value => value,
+        });
+        expect(JSON.stringify(fallbackHelper(source))).not.toContain('Attempts');
+
+        const unrelated = {
+            id: 'research-1',
+            type: 'research-log',
+            data: { practiceAttempts: 4, nested: { retrievalAttempts: 'keep' } },
+        };
+        expect(fallbackHelper(unrelated)).toEqual(unrelated);
+    });
+
+    it('sanitizes Memory Aids nested in lesson packs while preserving unrelated sibling evidence fields', () => {
+        const fallbackHelper = loadStudentPackSerializer({
+            sanitizeHistoryForCloud: items => items,
+            sanitizeMemoryAidResourceForBoundary: value => value,
+            stripUndefined: value => value,
+        });
+        const source = {
+            id: 'lesson-pack-with-memory-aids',
+            type: 'lesson',
+            practiceAttempts: [{ phase: 'teacher practice metadata' }],
+            data: {
+                resources: [{
+                    id: 'nested-pack-memory-type',
+                    type: 'memory-aid',
+                    data: {
+                        cue: 'Please Excuse My Dear Aunt Sally',
+                        practiceAttempts: [{ response: 'private pack recall' }],
+                    },
+                }, {
+                    id: 'nested-pack-memory-artifact',
+                    artifactType: 'memory_aid',
+                    data: {
+                        cue: 'HOMES',
+                        nested: { retrievalAttempts: [{ response: 'private older pack recall' }] },
+                    },
+                }, {
+                    id: 'unrelated-pack-resource',
+                    type: 'research-log',
+                    practiceAttempts: 6,
+                    data: { retrievalAttempts: 'valid research terminology' },
+                }],
+            },
+        };
+
+        const packed = fallbackHelper(source);
+        expect(packed.practiceAttempts).toEqual([{ phase: 'teacher practice metadata' }]);
+        expect(packed.data.resources[0].data).toEqual({ cue: 'Please Excuse My Dear Aunt Sally' });
+        expect(packed.data.resources[1].data).toEqual({ cue: 'HOMES', nested: {} });
+        expect(packed.data.resources[2]).toMatchObject({
+            practiceAttempts: 6,
+            data: { retrievalAttempts: 'valid research terminology' },
+        });
+        expect(source.data.resources[0].data.practiceAttempts).toHaveLength(1);
+        expect(source.data.resources[1].data.nested.retrievalAttempts).toHaveLength(1);
+    });
+
+    it('preserves only safe, budgeted visual-quiz media in the existing chunked pack transport', () => {
+        const win = {};
+        const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
+        new Function('window', syncSrc)(win);
+        const helper = loadStudentPackSerializer(win);
+        const questionImage = 'data:image/png;base64,' + 'A'.repeat(512);
+        const optionImage = 'data:image/webp;base64,' + 'B'.repeat(256);
+        const remoteImage = 'https://images.example.edu/choice.png';
+        const packed = helper({
+            id: 'visual-quiz-1',
+            type: 'quiz',
+            title: 'Visual quiz',
+            data: {
+                questions: [{
+                    question: 'Which diagram is balanced?',
+                    imageUrl: questionImage,
+                    options: ['A', 'B', 'C', 'D'],
+                    optionImageUrls: [optionImage, remoteImage, 'data:image/svg+xml;base64,PHN2Zz4=', 'javascript:alert(1)'],
+                    correctAnswer: 'A',
+                }],
+            },
+        });
+
+        expect(packed.data.questions[0].imageUrl).toBe(questionImage);
+        expect(packed.data.questions[0].optionImageUrls).toEqual([optionImage, remoteImage, null, null]);
+        expect(JSON.stringify(packed)).not.toContain('javascript:');
+        expect(JSON.stringify(packed)).not.toContain('image/svg+xml');
+        // The conservative shared Firestore sanitizer remains unchanged; this
+        // exception is scoped to the already chunked student-pack serializer.
+        expect(win.sanitizeSessionValue({ imageUrl: questionImage }, 'resource').imageUrl).toBe(null);
+    });
+});

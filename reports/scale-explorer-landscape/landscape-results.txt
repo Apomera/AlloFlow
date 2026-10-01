@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:25:5 › layered terrain retains river length when vertical relief and the camera change (5.4s)
+  ok 2 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:39:5 › Earth leads into the canyon and returns to the same globe viewpoint on a phone (4.8s)
+  ok 3 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:53:5 › notebook restores the relief and follows the repositioned landmark, while comparisons use actual proportions (6.6s)
+  ok 4 [chromium] › tests\e2e\scale-explorer-landscape.spec.ts:65:5 › terrain remains interactive in WebGL 1 and blocked Earth imagery cannot offer geographic entry (4.5s)
+
+  4 passed (22.5s)

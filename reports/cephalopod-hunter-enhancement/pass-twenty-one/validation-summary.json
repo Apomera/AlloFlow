@@ -1,0 +1,478 @@
+{
+  "pass": 21,
+  "status": "validated; unstaged and uncommitted by explicit user request",
+  "result": "Continuous conch shell and deeply recessed barrel sponge geometry; actionable species-aware shelter guidance",
+  "source": {
+    "runtime": [
+      {
+        "file": "stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a7c1436b7f06482e070246541d2ccbae11b572f2137fda80c7f3b76fe4ab6573"
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a7c1436b7f06482e070246541d2ccbae11b572f2137fda80c7f3b76fe4ab6573"
+      },
+      {
+        "file": "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a7c1436b7f06482e070246541d2ccbae11b572f2137fda80c7f3b76fe4ab6573"
+      },
+      {
+        "file": "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js",
+        "sha256": "a7c1436b7f06482e070246541d2ccbae11b572f2137fda80c7f3b76fe4ab6573"
+      }
+    ],
+    "head": "56b65930d599c5d2622a01744da4e2b85f712c5e",
+    "initialHead": "56b65930d599c5d2622a01744da4e2b85f712c5e",
+    "indexSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "noCommitOrStaging": true,
+    "preservedWrappersPerTrackedRuntime": 12,
+    "scope": "Four exact guarded candidate stages with reverse-byte proofs; all unrelated source, accepted models, shelter action predicates, AI/ink/mission rules and RNG order preserved"
+  },
+  "guards": {
+    "sponge": {
+      "source": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857",
+      "candidate": "7eb95c346aaea00668e913e2114f976744fdfdb3b8ecd4d38651d26a5542467f",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\sponge-candidate.generated.cjs",
+      "author": {
+        "guard": "exact sponge visual constructor; reverse-byte proof",
+        "source": "ce9e6375932acd8c72a06c26059a790c4feb40f92e0c401fbbede04418724857",
+        "candidate": "7eb95c346aaea00668e913e2114f976744fdfdb3b8ecd4d38651d26a5542467f",
+        "constructionBefore": "3ff393e07d208291b760a1cdc98f3677ecc3b2e17a48f19f4c7b1d288b9bca6d",
+        "constructionAfter": "304290f5cb66a304b8f8a82fb567153fe900b83f63d08288cd646be722574bc8",
+        "protectedOutside": true,
+        "diveRandomLinesExact": true,
+        "contract": {
+          "initialActors": 3,
+          "meshesPerActor": 1,
+          "independentMaterialsPerActor": 1,
+          "vertexCeiling": 1700,
+          "triangleCeiling": 2600,
+          "expectedVertices": 1002,
+          "expectedTriangles": 1920,
+          "geometryStatic": true,
+          "newShaderOrTexture": false
+        },
+        "mode": "candidate",
+        "target": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\sponge-candidate.generated.cjs"
+      }
+    },
+    "experience": {
+      "source": "7eb95c346aaea00668e913e2114f976744fdfdb3b8ecd4d38651d26a5542467f",
+      "candidate": "62c0aaa4ee0389778cb6c7da3039aec0cae3e75fc69bd7de829c1f5d39fc3d5d",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\experience-candidate.generated.cjs",
+      "author": {
+        "source": "7eb95c346aaea00668e913e2114f976744fdfdb3b8ecd4d38651d26a5542467f",
+        "candidate": "62c0aaa4ee0389778cb6c7da3039aec0cae3e75fc69bd7de829c1f5d39fc3d5d",
+        "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\experience-candidate.generated.cjs",
+        "reverseBytesExact": true,
+        "actualShelterGameplayExact": true,
+        "scope": "Feedback helpers, carried/placed shelter status and action prompt parity/tradeoffs only",
+        "mode": "candidate"
+      }
+    },
+    "conch": {
+      "source": "62c0aaa4ee0389778cb6c7da3039aec0cae3e75fc69bd7de829c1f5d39fc3d5d",
+      "candidate": "141c7699952d4a9133eff6d7350fc4487ad0edc938e52842915435ce39808c15",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\conch-candidate.generated.cjs",
+      "author": {
+        "mode": "candidate",
+        "guard": "one exact conch constructor replacement plus adjacent static geometry helper; reverse restores every original byte",
+        "sourceSHA": "62c0aaa4ee0389778cb6c7da3039aec0cae3e75fc69bd7de829c1f5d39fc3d5d",
+        "candidateSHA": "141c7699952d4a9133eff6d7350fc4487ad0edc938e52842915435ce39808c15",
+        "outsideRegionUnchanged": true,
+        "meshes": 1,
+        "materials": 1,
+        "vertices": 1682,
+        "triangles": 3360,
+        "bytes": 80712,
+        "minArea": 0.000011830695972219954,
+        "maxNormalError": 4.58509006318053e-8,
+        "minFaceNormalDot": 0.849304353827175,
+        "bounds": {
+          "min": [
+            -0.2520849108695984,
+            -0.3141409456729889,
+            -0.29378315806388855
+          ],
+          "max": [
+            0.3696896433830261,
+            0.6702243089675903,
+            0.21019059419631958
+          ]
+        },
+        "parts": [
+          {
+            "name": "spire-outer",
+            "vertexStart": 0,
+            "vertexCount": 813,
+            "indexStart": 0,
+            "indexCount": 4788,
+            "triangleStart": 0,
+            "triangleCount": 1596
+          },
+          {
+            "name": "body-whorl",
+            "vertexStart": 813,
+            "vertexCount": 588,
+            "indexStart": 4788,
+            "indexCount": 3528,
+            "triangleStart": 1596,
+            "triangleCount": 1176
+          },
+          {
+            "name": "flared-lip",
+            "vertexStart": 1401,
+            "vertexCount": 168,
+            "indexStart": 8316,
+            "indexCount": 1008,
+            "triangleStart": 2772,
+            "triangleCount": 336
+          },
+          {
+            "name": "aperture-recess",
+            "vertexStart": 1569,
+            "vertexCount": 113,
+            "indexStart": 9324,
+            "indexCount": 756,
+            "triangleStart": 3108,
+            "triangleCount": 252
+          }
+        ],
+        "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\conch-candidate.generated.cjs"
+      }
+    },
+    "experienceRefinement": {
+      "source": "141c7699952d4a9133eff6d7350fc4487ad0edc938e52842915435ce39808c15",
+      "candidate": "a7c1436b7f06482e070246541d2ccbae11b572f2137fda80c7f3b76fe4ab6573",
+      "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-twenty-one\\experience-refined-candidate.generated.cjs",
+      "reverseBytesExact": true,
+      "scope": "Actual species carrying costs in feedback; clear stale hidden prompt text"
+    }
+  },
+  "units": {
+    "passed": 84,
+    "failed": 0,
+    "pending": 0,
+    "files": [
+      {
+        "file": "cephalopodlab_canvas_focus_a11y.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_clam_geometry.test.js",
+        "passed": 5
+      },
+      {
+        "file": "cephalopodlab_conch_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_crab_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_den_geometry.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_grouper_geometry.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_kelp_fronds.test.js",
+        "passed": 3
+      },
+      {
+        "file": "cephalopodlab_moon_jelly.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_moray_geometry.test.js",
+        "passed": 7
+      },
+      {
+        "file": "cephalopodlab_nautilus_eyes.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_fish.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_prey_memory.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_reef_placement.test.js",
+        "passed": 6
+      },
+      {
+        "file": "cephalopodlab_shelter_feedback.test.js",
+        "passed": 4
+      },
+      {
+        "file": "cephalopodlab_sponge_geometry.test.js",
+        "passed": 5
+      },
+      {
+        "file": "cephalopodlab_streamed_den.test.js",
+        "passed": 4
+      }
+    ],
+    "evidence": "unit-results.json",
+    "actualExit": 0
+  },
+  "browser": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "trace": "off",
+    "actualExits": [
+      0,
+      0,
+      0
+    ],
+    "evidence": [
+      "browser-results.json",
+      "browser-mission-results.json",
+      "browser-predator-results.json"
+    ],
+    "cases": [
+      {
+        "title": "accepted same-frame ink prevents a real grouper bite after a positive damage control",
+        "durationMs": 14930,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "the real moray keeps the same accepted-ink protection as the grouper",
+        "durationMs": 15083,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "ink freezes in pause and inspection then expires before a bite on the first expired frame",
+        "durationMs": 35120,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "a non-inking vampire squid cannot cancel a real bite by pressing I",
+        "durationMs": 12636,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "concealed player movement cannot redirect an alarmed school, while renewed sight refreshes its escape",
+        "durationMs": 9274,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "target feedback follows wary, fleeing and settling prey, with memory frozen during inspection and cleared when calm",
+        "durationMs": 20030,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "shelter and pearl hints agree with actual vertical pickup reach",
+        "durationMs": 20556,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "low conch and sponge surfaces render and preserve actual shelter lifecycle",
+        "durationMs": 36317,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "balanced conch and sponge surfaces render and preserve actual shelter lifecycle",
+        "durationMs": 50062,
+        "evidence": "browser-results.json"
+      },
+      {
+        "title": "target selection never catches a different nearby animal, and repeated catches persist",
+        "durationMs": 12048,
+        "evidence": "browser-mission-results.json"
+      },
+      {
+        "title": "reef mission requires both foods and a return home, then writes one debrief",
+        "durationMs": 14123,
+        "evidence": "browser-mission-results.json"
+      },
+      {
+        "title": "cover freezes the remembered prey position, then bounded search disengages",
+        "durationMs": 16903,
+        "evidence": "browser-predator-results.json"
+      },
+      {
+        "title": "search pauses with the dive and reacquires only after the player becomes visible",
+        "durationMs": 14358,
+        "evidence": "browser-predator-results.json"
+      },
+      {
+        "title": "a predator cannot bite through nearby rock cover or an active ink cloud",
+        "durationMs": 11977,
+        "evidence": "browser-predator-results.json"
+      }
+    ],
+    "scope": "Selected actual conch/sponge native GPU bindings and all five shelter resource ownership; carry/drop/aura/den/expiry/pause/inspection/reduced-motion/phone/cleanup; preserved prey/predator/cover/ink/target/mission checks"
+  },
+  "initialDefects": {
+    "visibleHeightHints": {
+      "evidence": "browser-initial-visible-feedback.json",
+      "actualExit": 1,
+      "expectedSoftFailures": 2,
+      "positiveControlsPassed": true,
+      "scope": "Both prompts were actually visible at opacity1 above real pickup height while G correctly rejected; later descent/pickup/collection controls succeeded"
+    },
+    "conchGeometry": [
+      {
+        "triangle": 61,
+        "part": "spire-outer",
+        "cause": "Early vertical sweep curvature",
+        "correction": "Smooth finite-pitch quadratic centerline"
+      },
+      {
+        "triangle": 2885,
+        "part": "flared-lip",
+        "cause": "Abrupt lip-to-inner-wall normal turn",
+        "correction": "Three physical intermediate lip cross-sections"
+      }
+    ],
+    "fixtureCorrection": "Earlier post-fix hint test read transparent retained text. Corrected to inspect actual displayed opacity, reran saved baseline to retain both real failures, and retained all positive/negative gameplay controls. Hidden production prompts also clear stale text."
+  },
+  "visuals": {
+    "acceptedByRoot": true,
+    "independentConchAccepted": true,
+    "independentSpongeAccepted": true,
+    "count": 12,
+    "evidence": [
+      "conch-oblique.png",
+      "conch-aperture.png",
+      "conch-side.png",
+      "conch-crown.png",
+      "sponge-oblique.png",
+      "sponge-top.png",
+      "sponge-sand.png",
+      "sponge-reef.png",
+      "sponge-shelf.png",
+      "sponge-shelf-base.png",
+      "conch-phone.png",
+      "sponge-phone.png"
+    ],
+    "fixture": "visual-fixtures.json",
+    "actualExit": 0,
+    "errors": [],
+    "warnings": [
+      "[.WebGL-0x1f54001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1f54001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1f54001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1f54001a8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ],
+    "scope": "Exact actual actor transforms/state/wobble, other actor phases, fixed cameras and counted paused-time fixtures. First conch/first sponge views plus natural third-sponge shelf pair; no scene actors moved/hidden; native lighting/fog and390px phone"
+  },
+  "resources": {
+    "baseline": {
+      "coconut": {
+        "meshes": 9,
+        "slots": 9,
+        "geometries": 9,
+        "materials": 8,
+        "vertices": 629,
+        "triangles": 916,
+        "attributeAndIndexBytes": 25624,
+        "pncAndIndexBytes": 20592
+      },
+      "bottle": {
+        "meshes": 3,
+        "slots": 3,
+        "geometries": 3,
+        "materials": 2,
+        "vertices": 204,
+        "triangles": 128,
+        "attributeAndIndexBytes": 7296,
+        "pncAndIndexBytes": 5664
+      },
+      "conch": {
+        "meshes": 10,
+        "slots": 10,
+        "geometries": 10,
+        "materials": 6,
+        "vertices": 552,
+        "triangles": 684,
+        "attributeAndIndexBytes": 21768,
+        "pncAndIndexBytes": 17352
+      },
+      "sponge": {
+        "meshes": 13,
+        "slots": 13,
+        "geometries": 13,
+        "materials": 13,
+        "vertices": 390,
+        "triangles": 324,
+        "attributeAndIndexBytes": 14424,
+        "pncAndIndexBytes": 11304
+      }
+    },
+    "current": {
+      "coconut": {
+        "meshes": 9,
+        "slots": 9,
+        "geometries": 9,
+        "materials": 8,
+        "vertices": 629,
+        "triangles": 916,
+        "attributeAndIndexBytes": 25624,
+        "pncAndIndexBytes": 20592
+      },
+      "bottle": {
+        "meshes": 3,
+        "slots": 3,
+        "geometries": 3,
+        "materials": 2,
+        "vertices": 204,
+        "triangles": 128,
+        "attributeAndIndexBytes": 7296,
+        "pncAndIndexBytes": 5664
+      },
+      "conch": {
+        "meshes": 1,
+        "slots": 1,
+        "geometries": 1,
+        "materials": 1,
+        "vertices": 1682,
+        "triangles": 3360,
+        "attributeAndIndexBytes": 80712,
+        "pncAndIndexBytes": 80712
+      },
+      "sponge": {
+        "meshes": 1,
+        "slots": 1,
+        "geometries": 1,
+        "materials": 1,
+        "vertices": 1002,
+        "triangles": 1920,
+        "attributeAndIndexBytes": 47592,
+        "pncAndIndexBytes": 47592
+      }
+    },
+    "spawnFixtureExact": true,
+    "spawnFixtureDraws": 36,
+    "initialFiveActorMeshSlots": 59,
+    "finalFiveActorMeshSlots": 5,
+    "initialFiveActorBytes": 86808,
+    "finalFiveActorBytes": 304200,
+    "scope": "Actual complete shelter construction with rejection-free ordered fixture; static allocated counts, not an FPS benchmark"
+  },
+  "preview": {
+    "url": "http://127.0.0.1:54925/__harness?species=commonOcto&mode=observe&pass=21",
+    "httpStatus": 200,
+    "servedSHA256": "a7c1436b7f06482e070246541d2ccbae11b572f2137fda80c7f3b76fe4ab6573",
+    "openInCodex": "queued"
+  },
+  "limits": [
+    "Illustrative conch with rounded loose upper spire and subtle weathering; shallow recess is not a full internal spiral",
+    "Broad sponge flutes and baked tones do not reproduce microscopic pores",
+    "Existing steep drop-off placement does not conform the entire sponge base to terrain; paired natural shelf views clarify the base",
+    "Phone controls and nearby coral obscure part of first sponge base",
+    "Static allocation counts; no FPS or physical-material claim"
+  ]
+}

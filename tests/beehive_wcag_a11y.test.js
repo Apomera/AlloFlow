@@ -999,8 +999,9 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(treatment.textContent).toMatch(/Need \d AP · have 0/);
     expect(treatment.getAttribute('aria-label')).toMatch(/^Apply .+ treatment$/);
     const treatmentDescription = document.getElementById(treatment.getAttribute('aria-describedby'))?.textContent || '';
-    expect(treatmentDescription).toMatch(/Forecast for current colony: Varroa \d+ to \d+ percent/);
-    expect(treatmentDescription).toMatch(/Modeled treatment strength: \d+ percentage points before the zero floor/);
+    // Treatments kill a share of the mites (2026-09-28), reported on the one 0-100 mite scale.
+    expect(treatmentDescription).toMatch(/Forecast for current colony: Varroa [\d.]+ to [\d.]+ out of 100/);
+    expect(treatmentDescription).toMatch(/Modeled treatment strength: kills about \d+% of the mites/);
     expect(treatmentDescription).toMatch(/Modeled colony stress|No modeled morale cost/);
     expect(treatmentDescription).toMatch(/Modeled queen health cost|No modeled queen health cost/);
     expect(treatmentDescription).toContain('Cost:');
@@ -1033,24 +1034,25 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(document.getElementById('beehive-treatment-intro').textContent).toMatch(/current brood and season/i);
 
     const oxalic = host.querySelector('[data-treatment-id="oxalic"]');
-    expect(oxalic.getAttribute('data-treatment-forecast')).toBe('8-to-0');
-    expect(oxalic.textContent).toMatch(/8% to 0% Varroa/);
-    expect(oxalic.textContent).toMatch(/Strength -12 points/);
+    // Oxalic with sealed brood: strength 12 -> kills 30% (treatments kill a share since 2026-09-28).
+    expect(oxalic.getAttribute('data-treatment-forecast')).toBe('8-to-5.6');
+    expect(oxalic.textContent).toMatch(/Varroa 8 → 5\.6 \/ 100/);
+    expect(oxalic.textContent).toMatch(/Kills ~30%/);
     expect(oxalic.textContent).toMatch(/Reduced fit: mites are protected in sealed brood/);
     const description = document.getElementById(oxalic.getAttribute('aria-describedby')).textContent;
-    expect(description).toContain('Forecast for current colony: Varroa 8 to 0 percent');
-    expect(description).toContain('Modeled treatment strength: 12 percentage points before the zero floor');
+    expect(description).toContain('Forecast for current colony: Varroa 8 to 5.6 out of 100');
+    expect(description).toContain('Modeled treatment strength: kills about 30% of the mites');
 
     await act(async () => { oxalic.click(); await Promise.resolve(); await Promise.resolve(); });
-    expect(latest.beehive.varroaLevel).toBe(0);
+    expect(latest.beehive.varroaLevel).toBe(5.6);
     expect(latest.beehive.morale).toBe(77);
     expect(latest.beehive.queenHealth).toBe(100);
     expect(latest.beehive.actionPoints).toBe(1);
     expect(latest.beehive.showTreatModal).toBe(false);
     expect(latest.beehive.lastManagement.outcome).toMatchObject({
-      varroaBefore: 8, varroaAfter: 0, reduction: 8, treatmentStrength: 12,
+      varroaBefore: 8, varroaAfter: 5.6, reduction: 2.4, treatmentStrength: 30,
     });
-    expect(latest.beehive.lastManagement.summary).toContain('Varroa 8 / 100 to 0 / 100');
+    expect(latest.beehive.lastManagement.summary).toContain('Varroa 8 / 100 to 5.6 / 100');
   });
   it('keeps locked Colony Network decisions keyboard-discoverable without applying them', async () => {
     await mount({
@@ -1631,7 +1633,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   });
 
   it('makes the Field Guide directly navigable, semantically structured, and scroll-focusable', async () => {
-    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, showGuide: true });
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, showGuide: true, guideShowTeacher: true }); // teacher resources opened on purpose (2026-09-28)
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
     const guide = host.querySelector('#beehive-field-guide');
     expect(guide.tagName).toBe('SECTION');
@@ -1683,8 +1685,9 @@ describe('Beehive WCAG 2.2 accessibility', () => {
       { outsideC: 33, state: 'compensating' },
       { outsideC: 20, state: 'chilled' },
     ]) {
-      await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true,
-        thermHunt: { outsideC: sample.outsideC, beesFanning: 0, broodCount: 0, hypothesis: '', explanation: '', log: [] } });
+      // Overview layout: the lab keeps its own writing boxes there (Stage-first puts them in the discovery).
+      await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, focusLayout: false,
+        thermHunt: { outsideC: sample.outsideC, beesFanning: 0, heaterBees: 0, hypothesis: '', explanation: '', log: [] } });
       const output = host.querySelector('#beehive-thermo-output');
       expect(output.getAttribute('data-thermo-state')).toBe(sample.state);
       const outputStyle = getComputedStyle(output);
@@ -1692,11 +1695,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
       expect(contrastRatio(labelStyle.color, outputStyle.backgroundColor)).toBeGreaterThanOrEqual(4.5);
     }
 
-    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true,
-      thermHunt: { outsideC: 35, beesFanning: 0, broodCount: 0, hypothesis: 'Keep this hypothesis', understood: true, explanation: 'Keep this explanation', log: [] } });
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, focusLayout: false,
+      thermHunt: { outsideC: 35, beesFanning: 0, heaterBees: 0, hypothesis: 'Keep this hypothesis', understood: true, explanation: 'Keep this explanation', log: [] } });
     const outside = host.querySelector('#th-outsideC');
     expect(outside.getAttribute('aria-valuetext')).toBe('35 degrees Celsius');
-    expect(host.querySelector('#th-broodCount').getAttribute('aria-valuetext')).toBe('0 brood');
+    expect(host.querySelector('#th-heaterBees').getAttribute('aria-valuetext')).toBe('0 heater bees');
 
     const logButton = Array.from(host.querySelectorAll('[data-beehive-thermoregulation] button'))
       .find((button) => button.textContent === 'Log current trial');
@@ -1710,7 +1713,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await act(async () => { reset.click(); await Promise.resolve(); });
     expect(latest.beehive.thermHunt.outsideC).toBe(20);
     expect(latest.beehive.thermHunt.beesFanning).toBe(30);
-    expect(latest.beehive.thermHunt.broodCount).toBe(5000);
+    expect(latest.beehive.thermHunt.heaterBees).toBe(1200);
     expect(latest.beehive.thermHunt.log).toHaveLength(1);
     expect(latest.beehive.thermHunt.hypothesis).toBe('Keep this hypothesis');
     expect(latest.beehive.thermHunt.explanation).toBe('Keep this explanation');
@@ -1771,7 +1774,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   });
 
   it('provides persistent labels, semantic progress, reflow, and announced quiz feedback', async () => {
-    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, exportedReport: 'Colony report text', exportedReportTitle: 'Colony Report', thermHunt: { outsideC: 20, beesFanning: 30, broodCount: 5000, hypothesis: '', understood: true, explanation: '', log: [] } });
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, focusLayout: false, exportedReport: 'Colony report text', exportedReportTitle: 'Colony Report', thermHunt: { outsideC: 20, beesFanning: 30, heaterBees: 1200, hypothesis: '', understood: true, explanation: '', log: [] } });
     const report = host.querySelector('#beehive-export-report');
     expect(host.querySelector('label[for="beehive-export-report"]').control).toBe(report);
     const hypothesis = host.querySelector('#beehive-thermo-hypothesis');

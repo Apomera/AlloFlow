@@ -615,7 +615,35 @@ function createWordSoundsCore() {
     const unknown = unique(String(text || "").normalize("NFC").match(/[\p{L}\p{M}]+/gu) || []).filter((w) => !canRead(w));
     return { status: unknown.length ? "review" : "within_taught_spellings", untaughtWords: unknown };
   };
-  return { VERSION, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
+  const CURATED_MANIPULATIONS = {
+    cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["it", "on", "up", "an", "in"] },
+    hat: { type: "substitution", instruction: "Say 'hat'. Now change the /t/ sound to /m/.", targetPhoneme: "t", answer: "ham", distractors: ["had", "hen", "jam", "ram", "map"] },
+    dog: { type: "substitution", instruction: "Say 'dog'. Now change the /g/ sound to /t/.", targetPhoneme: "g", answer: "dot", distractors: ["dock", "dab", "dig", "den", "dim"] },
+    stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop", "cop", "shop"] },
+    clap: { type: "substitution", instruction: "Say 'clap'. Now change the /a/ sound to /i/.", targetPhoneme: "a", answer: "clip", distractors: ["club", "clay", "clam", "crab", "grip"] },
+    train: { type: "deletion", instruction: "Say 'train'. Now say it again, but leave out the /t/ sound.", targetPhoneme: "t", answer: "rain", distractors: ["main", "gain", "pain", "chain", "brain"] },
+    plane: { type: "deletion", instruction: "Say 'plane'. Now say it again, but leave out the /p/ sound.", targetPhoneme: "p", answer: "lane", distractors: ["cane", "bane", "mane", "vane", "crane"] },
+    smile: { type: "deletion", instruction: "Say 'smile'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "mile", distractors: ["file", "pile", "tile", "mild", "wild"] },
+    black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack", "rack", "sack"] },
+    flat: { type: "substitution", instruction: "Say 'flat'. Now change the /t/ sound to /g/.", targetPhoneme: "t", answer: "flag", distractors: ["flap", "flask", "flame", "flop", "flip"] }
+  };
+  const resolveManipulationTask = (word, supplied, language) => {
+    const target = normalize(word);
+    const english = !language || /^en(?:[-_]|$)/i.test(String(language));
+    const curated = english && Object.prototype.hasOwnProperty.call(CURATED_MANIPULATIONS, target) && CURATED_MANIPULATIONS[target];
+    const matching = !supplied || curated && ["type", "instruction", "targetPhoneme", "answer"].every((key) => supplied[key] === curated[key]) && Array.isArray(supplied.distractors) && supplied.distractors.length >= 2 && supplied.distractors.every((value) => curated.distractors.includes(value)) && new Set(supplied.distractors).size === supplied.distractors.length;
+    if (curated && matching) return { ...curated, distractors: [...curated.distractors], contentStatus: "curated", targetWord: target };
+    return {
+      type: "review",
+      contentStatus: "teacher_review_required",
+      targetWord: target,
+      instruction: "Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.",
+      answer: "",
+      distractors: []
+    };
+  };
+  const manipulationReady = (task) => !!task && task.contentStatus === "curated" && resolveManipulationTask(task.targetWord, task, "en").contentStatus === "curated";
+  return { resolveManipulationTask, manipulationReady, VERSION, soundKey, edgeSound, validSoundBoard, buildSoundSort, validWordFamilyBoard, wordFamilyInstruction, difficultyDecision, textEvidence, phonemeLabels, responseEvidence, profileCheck, knownWords: Object.keys(EDGES) };
 }
 const WS_CORE = createWordSoundsCore();
 const WORD_FAMILY_PRESETS = new Proxy({}, {
@@ -2056,25 +2084,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     return result;
   };
   const packIsEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith("en");
-  const makePackManipulationFallback = (word, phonemes) => {
-    const source = normalizePackKey(word);
-    const firstEntry = (phonemes || [])[0];
-    const suppliedGrapheme = normalizePackKey(
-      firstEntry && typeof firstEntry === "object" ? firstEntry.grapheme : firstEntry
-    );
-    const estimatedGrapheme = normalizePackKey(estimatePackPhonemes(source)[0]);
-    const removableGrapheme = [suppliedGrapheme, estimatedGrapheme, source[0]].find((candidate) => candidate && source.startsWith(candidate)) || "";
-    const answer = removableGrapheme && source.length > removableGrapheme.length ? source.slice(removableGrapheme.length) : source;
-    return {
-      type: "deletion",
-      instruction: `Say '${source}'. Now say it again, but leave out the first sound.`,
-      targetPhoneme: flatPackPhoneme((phonemes || [])[0]) || estimatePackPhonemes(source)[0] || "",
-      answer,
-      // English fillers only on English packs; non-English boards pad
-      // from the pack's own words at compile time.
-      distractors: (packIsEnglish ? ["at", "on", "in", "up", "it", "an", "sit", "map"] : []).filter((w) => w !== answer).slice(0, 5)
-    };
-  };
+  const makePackManipulationFallback = (word) => WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage);
   const packTtsSource = async (src) => {
     if (!src || typeof src !== "string") return null;
     if (/^data:audio\//i.test(src)) {
@@ -2142,10 +2152,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         }),
         4
       ) : [];
-      const task = item.manipulationTask || makePackManipulationFallback(word, phonemes);
-      item.manipulationTask = task;
+      const task = WS_CORE.resolveManipulationTask(word, item.manipulationTask, wordSoundsLanguage);
+      if (!item.manipulationTask) item.manipulationTask = task;
       const manipulationFill = packIsEnglish ? ["sit", "map", "bed", "pin", "mud", "fan"] : otherWords;
-      const manipulation = boardWithAnswer(task.answer, [...task.distractors || [], ...manipulationFill], 5);
+      const manipulation = WS_CORE.manipulationReady(task) ? boardWithAnswer(task.answer, [...task.distractors || [], ...manipulationFill], 5) : [];
       const syllables = Array.isArray(item.syllables) && item.syllables.length ? item.syllables : estimatePackSyllables(word);
       item.syllables = syllables;
       const syllableOptions = boardWithAnswer(word, [...item.syllableBlendingOptions || [], ...otherWords], 3);
@@ -2185,11 +2195,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       const decodingChoices = boardWithAnswer(word, [...itemWords, ...commonWords].filter((value) => value !== word), 3);
       let readSentence = null;
       if (packIsEnglish) {
-        const rsText = packSentenceIsUsable(item.sentence, word, rsSessionWords) ? String(item.sentence).trim() : joinPackSentence(
-          READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
-          word,
-          READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after
-        );
+        const rsText = packSentenceIsUsable(item.sentence, word, rsSessionWords) ? String(item.sentence).trim() : "";
         const rsSplit = splitPackSentence(rsText, word);
         if (rsSplit) {
           const rsUsed = new Set(packSentenceWords(rsText));
@@ -2204,10 +2210,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       }
       let readPassage = null;
       if (packIsEnglish) {
-        const rpSentences = packStoryIsUsable(item.story, word, rsSessionWords) ? item.story.map((s) => String(s).trim()) : [0, 1, 2].map((offset) => {
-          const f = READ_SENTENCE_FRAMES[(seed + offset) % READ_SENTENCE_FRAMES.length];
-          return joinPackSentence(f.before, word, f.after);
-        });
+        const rpSentences = packStoryIsUsable(item.story, word, rsSessionWords) ? item.story.map((s) => String(s).trim()) : [];
         const rpParts = rpSentences.map((s) => {
           const split = splitPackSentence(s, word);
           return split ? { before: split.before, after: split.after } : { text: s };
@@ -2228,31 +2231,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       if (packIsEnglish) {
         const smOthers = itemWords.filter((v) => v !== word);
         if (smOthers.length >= 1) {
-          if (seed % 2 === 0) {
-            const partner = smOthers[seed % smOthers.length];
-            const f = SENTENCE_MATCH_FRAMES[seed % SENTENCE_MATCH_FRAMES.length];
-            const first = seed % 3 === 0 ? partner : word;
-            const second = first === word ? partner : word;
-            const smSentence = joinPackPairSentence(f, first, second);
-            sentenceMatch = {
-              sentence: smSentence,
-              sequence: [first, second],
-              extras: shuffleForPack(smOthers.filter((v) => v !== partner)).slice(0, 2)
-            };
-          } else {
-            const smText = packSentenceIsUsable(item.sentence, word, rsSessionWords) ? String(item.sentence).trim() : joinPackSentence(
-              READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].before,
-              word,
-              READ_SENTENCE_FRAMES[seed % READ_SENTENCE_FRAMES.length].after
-            );
+          const smText = packSentenceIsUsable(item.sentence, word, rsSessionWords) ? String(item.sentence).trim() : "";
+          if (smText) {
             const smUsed = new Set(packSentenceWords(smText));
             sentenceMatch = {
               sentence: smText,
               sequence: [word],
-              extras: shuffleForPack(smOthers.filter((v) => !smUsed.has(v))).slice(0, 3)
+              extras: shuffleForPack(smOthers.filter((v) => !smUsed.has(v))).slice(0, 2)
             };
           }
-          if (sentenceMatch.sequence.length + sentenceMatch.extras.length < 2) sentenceMatch = null;
+          if (sentenceMatch && sentenceMatch.sequence.length + sentenceMatch.extras.length < 2) sentenceMatch = null;
         }
       }
       item.activityItems = {
@@ -2695,7 +2683,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           ...boards.read_sentence?.options || [],
           ...boards.read_passage?.options || []
         ].forEach((value) => value && tasks.add(String(value)));
-        addInstructionParts(tasks, boards.manipulation?.task?.instruction);
+        if (WS_CORE.manipulationReady(boards.manipulation?.task)) addInstructionParts(tasks, boards.manipulation.task.instruction);
         if (boards.read_sentence?.sentence) {
           tasks.add(boards.read_sentence.sentence);
           tasks.add("Read the sentence. Which word finishes it?");

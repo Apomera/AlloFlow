@@ -1,0 +1,56 @@
+{
+  "verifiedAt": "2026-09-30T20:53:15.412Z",
+  "sourceSha256": "efaaaf51be31d65b391d45a22d08620ff886fe2c699c6c3310c8240c4aa54c54",
+  "desktopMirrorMatches": true,
+  "features": [
+    "Distance-based river navigation with a route map and scene locator",
+    "Camera travel follows the winding river with elapsed-time easing",
+    "Keyboard entry and Escape return; phone controls",
+    "Notebook restores and exports river distance, relief and manual camera direction"
+  ],
+  "checks": {
+    "unit": {
+      "passed": 125,
+      "failed": 0
+    },
+    "browser": {
+      "uniqueScenariosVerified": 67,
+      "fullRun": {
+        "passed": 65,
+        "failed": 1,
+        "notRun": 1
+      },
+      "solarRecheck": {
+        "passed": 3,
+        "failed": 0
+      },
+      "note": "Updated the solar test to check progressive motion instead of a minimum frame count, and to wait for actual render quiescence. Application source was unchanged for the recheck."
+    },
+    "syntax": "passed",
+    "stagedWhitespace": "passed",
+    "previewMatchesSource": true
+  },
+  "commit": "ea9138e5d74fe2ec7c166c19ed0dabb056869cc5",
+  "files": [
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/ui_strings.js",
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "tests/e2e/scale-explorer-descent.spec.ts",
+    "tests/e2e/scale-explorer-galaxy.spec.ts",
+    "tests/e2e/scale-explorer-journeys.spec.ts",
+    "tests/e2e/scale-explorer-landmarks.spec.ts",
+    "tests/e2e/scale-explorer-landscape.spec.ts",
+    "tests/e2e/scale-explorer-microbiology.spec.ts",
+    "tests/e2e/scale-explorer-navigation.spec.ts",
+    "tests/e2e/scale-explorer-nebula.spec.ts",
+    "tests/e2e/scale-explorer-orbits.spec.ts",
+    "tests/e2e/scale-explorer-planets.spec.ts",
+    "tests/e2e/scale-explorer-river.spec.ts",
+    "tests/e2e/scale-explorer-solar.spec.ts",
+    "tests/scale_explorer.test.js",
+    "tests/scale_explorer_notebook.test.js",
+    "tests/scale_explorer_river.test.js",
+    "ui_strings.js"
+  ],
+  "commitScopeVerified": true
+}

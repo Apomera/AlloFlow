@@ -1,0 +1,55 @@
+{
+  "commit": "d0334c99df2a328959e8ddffb4d8036c624bf01e",
+  "parent": "a63e347b7d193cbc95b5fc3a9fec844322f1f455",
+  "latestHead": "cbdace49bcacebd6d1693dced3d5d3fd75e9f36e",
+  "laterCommitPreservesScope": true,
+  "files": 13,
+  "normalHooks": true,
+  "committedTreeMatchesReviewed": true,
+  "checks": [
+    {
+      "file": "generation_helpers_source.jsx",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "text_pipeline_helpers_source.jsx",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "tests/preserved_vocabulary_literal_text.test.js",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "tests/track07-literal-browser.cjs",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "text_pipeline_helpers_module.js",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "desktop/web-app/public/generation_helpers_module.js",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    },
+    {
+      "file": "desktop/web-app/public/text_pipeline_helpers_module.js",
+      "committedMatchesValidated": true,
+      "workingMatchesCommitted": true
+    }
+  ],
+  "helperMirrorAndPinChecks": true,
+  "preservedConcurrentStaging": [],
+  "remainingStaged": [],
+  "completed": "2026-09-27T18:17:53.545Z"
+}

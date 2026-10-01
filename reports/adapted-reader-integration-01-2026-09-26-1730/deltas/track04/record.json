@@ -1,0 +1,72 @@
+{
+  "at": "2026-09-26T22:12:22.654Z",
+  "label": "track04",
+  "patch": "01b9389fa02f63baa6f4289c1ec30f91d3939880b25da26779a61170a3904dd8",
+  "plans": [
+    {
+      "target": "AlloFlowANTI.txt",
+      "targets": [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      "before": "cb6c02c3f3b5213ef81b8a454f56573841699f808ee4022aaa39125eb1fa69ff",
+      "after": "ed421db9f2006d27210450b5fb6329eb6e8feef5ea21c16f2111bdd9f228ae1f",
+      "changed": true
+    },
+    {
+      "target": "_build_view_simplified_module.js",
+      "targets": [
+        "_build_view_simplified_module.js"
+      ],
+      "before": "d87314d82985997d64b5da8f1ae966ce0e5a4ace83411555ed6e24b086b10553",
+      "after": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f",
+      "changed": true
+    },
+    {
+      "target": "tests/glossary_resource_lifecycle.test.js",
+      "targets": [
+        "tests/glossary_resource_lifecycle.test.js"
+      ],
+      "before": "0c6bcedb204f8d614b80e0927aca4f5eef0fad6792d22050ac0bf4e1201a3311",
+      "after": "8bbc79aadf081b9e0b17a4ed3d106b48e0ac99366040e6478c688858bd05a01d",
+      "changed": true
+    },
+    {
+      "target": "view_simplified_source.jsx",
+      "targets": [
+        "view_simplified_source.jsx"
+      ],
+      "before": "cbfb31548a68bf0127ffc72a856b16dffbacda6327b9ced3065b0596b94f0123",
+      "after": "81698f13afb1646174693fb63dc7f6921b694dfd6bb433737cc0474938b0f296",
+      "changed": true
+    },
+    {
+      "target": "reader_support_drafts.js",
+      "targets": [
+        "reader_support_drafts.js"
+      ],
+      "before": null,
+      "after": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5",
+      "changed": true
+    },
+    {
+      "target": "tests/reading_support_draft_transitions.test.js",
+      "targets": [
+        "tests/reading_support_draft_transitions.test.js"
+      ],
+      "before": null,
+      "after": "280efc96d566dfe9aef8bb195184d62dc6d17176432209cede0d00978b4ff960",
+      "changed": true
+    },
+    {
+      "target": "tests/reading_support_draft_host.test.js",
+      "targets": [
+        "tests/reading_support_draft_host.test.js"
+      ],
+      "before": null,
+      "after": "9e8bc993aa148b974c526bcf7ecca722447fb195f24ea3f1024f6b54f9570770",
+      "changed": true
+    }
+  ]
+}

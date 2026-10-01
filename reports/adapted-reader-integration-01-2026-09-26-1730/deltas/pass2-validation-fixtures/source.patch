@@ -1,0 +1,412 @@
+===================================================================
+--- a/tests/prepared_word_help_regressions.test.js
++++ b/tests/prepared_word_help_regressions.test.js
+@@ -13,12 +13,14 @@
+   act = React.act;
+   global.React = window.React = React;
+   global.IS_REACT_ACT_ENVIRONMENT = true;
+   window.AlloIcons = new Proxy({}, { get: () => () => null });
+-  for (const file of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js']) loadAlloModule(file);
++  const sourceRoot = process.env.PREPARED_HELP_SOURCE_DIR || process.cwd();
++  for (const file of ['instructional_context_module.js', 'pure_helpers_module.js', 'phase_n_misc_helpers_module.js']) loadAlloModule(resolve(sourceRoot, file));
+   ({ InstructionalContext: contract, PureHelpers: pure, PhaseNHelpers: phase } = window.AlloModules);
+-  // Track 04 embeds this helper on newer integration baselines.
+-  const source = (existsSync('reader_place_store.js') ? readFileSync('reader_place_store.js', 'utf8') + '\n' : '') + readFileSync('view_simplified_source.jsx', 'utf8');
++  // Newer integration baselines embed both the place and support-draft helpers.
++  const source = ['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx']
++    .map(file => resolve(sourceRoot, file)).filter(file => existsSync(file)).map(file => readFileSync(file, 'utf8')).join('\n');
+   const compiled = require('@babel/core').transformSync(source, {
+     plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
+     babelrc: false, configFile: false, parserOpts: { sourceType: 'script', plugins: ['jsx'] },
+   }).code;
+@@ -28,8 +30,9 @@
+ afterEach(() => {
+   if (root) act(() => root.unmount());
+   host?.remove(); root = null; host = null;
+   vi.restoreAllMocks(); vi.unstubAllGlobals();
++  vi.useRealTimers();
+ });
+ 
+ function itemWithHelp(data, quote, start = data.indexOf(quote), language = 'English') {
+   const snapshot = contract.createSourceSnapshot('An original reading about ' + quote + '.', { language });
+@@ -171,8 +174,43 @@
+   });
+ });
+ 
+ describe('Prepared help lifecycle regressions', () => {
++  it('does not expose the old card during a render that hides its supports', () => {
++    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
++    let observedCard;
++    function ObservedReader({ current }) {
++      React.useLayoutEffect(() => { observedCard = !!host.querySelector('[data-word-help-card]'); });
++      return React.createElement(View, { ...view.props, generatedContent: current });
++    }
++    act(() => root.render(React.createElement(ObservedReader, { current: item })));
++    click(words('heron')[0]); expect(card()).not.toBeNull();
++    const hidden = { ...item, adaptedReadingSupports: { ...item.adaptedReadingSupports, shown: false } };
++    act(() => root.render(React.createElement(ObservedReader, { current: hidden })));
++    expect(observedCard).toBe(false);
++  });
++
++  it('only references an existing popup and labels both activation paths', () => {
++    mount(itemWithHelp('The heron rests.', 'heron'));
++    const word = words('heron')[0], listed = host.querySelector('[data-prepared-help-open]');
++    expect(word.hasAttribute('aria-controls')).toBe(false);
++    expect(listed.getAttribute('aria-haspopup')).toBe('dialog');
++    click(listed);
++    expect(listed.getAttribute('aria-expanded')).toBe('true');
++    expect(document.getElementById(listed.getAttribute('aria-controls'))).toBe(card());
++    key(card(), 'Escape');
++    expect(listed.getAttribute('aria-expanded')).toBe('false');
++    expect(listed.hasAttribute('aria-controls')).toBe(false);
++  });
++
++  it('stops its pending speech even before isPlaying becomes true', () => {
++    const view = mount(itemWithHelp('The heron rests.', 'heron'));
++    click(words('heron')[0]); click(card().querySelector('[data-word-help-card-hear]'));
++    view.update({ isPlaying: false, playingContentId: view.props.handleSpeak.mock.calls.at(-1)[1] });
++    view.props.stopPlayback.mockClear(); key(card(), 'Escape');
++    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
++  });
++
+   it('dismisses an open card when comparison switches to Show changes', () => {
+     mount(itemWithHelp('The heron rests.', 'heron'), { isCompareMode: true });
+     click(words('heron', '[data-compare-version="adapted"]')[0]);
+     expect(card()).not.toBeNull();
+@@ -230,4 +268,71 @@
+     click(card().querySelector('[data-word-help-card-hear]'));
+     expect(view.props.handleSpeak.mock.calls.at(-1)[1]).not.toBe(firstId);
+   });
+ });
++
++describe('Prepared help with multiple readers', () => {
++  function pair() {
++    const registry = new Map();
++    vi.stubGlobal('CSS', { highlights: registry });
++    vi.stubGlobal('Highlight', class extends Set { constructor(...ranges) { super(ranges); } });
++    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
++    const render = (first = true, playback = {}) => act(() => root.render(React.createElement(React.Fragment, null,
++      first && React.createElement(View, { ...view.props, ...playback, key: 'first' }),
++      React.createElement(View, { ...view.props, ...playback, key: 'second' }))));
++    render();
++    return { registry, render, props: view.props, readers: () => [...host.querySelectorAll('[data-adapted-reader]')] };
++  }
++
++  it('gives same-item lists distinct accessible heading references', () => {
++    pair();
++    const lists = [...host.querySelectorAll('[data-adapted-word-help]')];
++    expect(lists).toHaveLength(2);
++    expect(new Set(lists.map(list => list.getAttribute('aria-labelledby'))).size).toBe(2);
++    for (const list of lists) expect(list.contains(document.getElementById(list.getAttribute('aria-labelledby')))).toBe(true);
++  });
++
++  it.each(['timeout', 'unmount'])('an older reader cannot erase a newer reader spotlight on %s', action => {
++    vi.useFakeTimers();
++    const view = pair(), readers = view.readers();
++    click(readers[0].querySelector('[data-adapted-word-help-spot]'));
++    act(() => vi.advanceTimersByTime(1000));
++    click(readers[1].querySelector('[data-adapted-word-help-spot]'));
++    const newest = view.registry.get('allo-word-help-focus');
++    if (action === 'timeout') act(() => vi.advanceTimersByTime(3000));
++    else view.render(false);
++    expect(view.registry.get('allo-word-help-focus')).toBe(newest);
++    expect([...newest][0].startContainer.parentElement.closest('[data-adapted-reader]')).toBe(readers[1]);
++    act(() => vi.advanceTimersByTime(action === 'timeout' ? 1000 : 4000));
++    expect(view.registry.has('allo-word-help-focus')).toBe(false);
++  });
++
++  it('removes its spotlight when supports become hidden', () => {
++    const registry = new Map();
++    vi.stubGlobal('CSS', { highlights: registry });
++    vi.stubGlobal('Highlight', class extends Set { constructor(...ranges) { super(ranges); } });
++    const item = itemWithHelp('The heron rests.', 'heron'), view = mount(item);
++    click(host.querySelector('[data-adapted-word-help-spot]'));
++    expect(registry.has('allo-word-help-focus')).toBe(true);
++    view.update({ generatedContent: { ...item, adaptedReadingSupports: { ...item.adaptedReadingSupports, shown: false } } });
++    expect(registry.has('allo-word-help-focus')).toBe(false);
++  });
++
++  it('closing the first card leaves the second reader audio and focus intact', () => {
++    const view = pair(), readers = view.readers();
++    readers.forEach(reader => click(reader.querySelector('[data-prepared-help-open]')));
++    const cards = [...host.querySelectorAll('[data-word-help-card]')];
++    expect(new Set(cards.map(node => node.id)).size).toBe(2);
++    click(cards[0].querySelector('[data-word-help-card-hear]'));
++    const firstId = view.props.handleSpeak.mock.calls.at(-1)[1];
++    click(cards[1].querySelector('[data-word-help-card-hear]'));
++    const secondId = view.props.handleSpeak.mock.calls.at(-1)[1];
++    expect(firstId).not.toBe(secondId);
++    view.render(true, { isPlaying: true, playingContentId: secondId });
++    view.props.stopPlayback.mockClear();
++    key(cards[0], 'Escape');
++    expect(view.props.stopPlayback).not.toHaveBeenCalled();
++    expect(readers[1].querySelector('[data-word-help-card]')).toBe(cards[1]);
++    click(cards[1].querySelector('[data-word-help-card-all]'));
++    expect(document.activeElement).toBe(readers[1].querySelector('[data-adapted-word-help]'));
++  });
++});
+===================================================================
+--- /dev/null
++++ b/tests/immersive_preference_persistence.test.js
+@@ -0,0 +1,78 @@
++import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
++import { createRequire } from 'node:module';
++import { resolve } from 'node:path';
++import { loadAlloModule } from './setup.js';
++
++const require = createRequire(import.meta.url), modulesDir = resolve('desktop/web-app/node_modules');
++let React, createRoot, act, Crawl, root, host, write;
++const keys = ['allo_crawl_speed', 'allo_crawl_palette', 'allo_crawl_ambient'];
++beforeAll(() => {
++  React = require(resolve(modulesDir, 'react'));
++  ({ createRoot } = require(resolve(modulesDir, 'react-dom/client')));
++  act = React.act;
++  global.React = window.React = React;
++  global.IS_REACT_ACT_ENVIRONMENT = true;
++  window.AlloLanguageContext = React.createContext({ t: key => key });
++  loadAlloModule('immersive_reader_module.js');
++  Crawl = window.AlloModules.PerspectiveCrawlOverlay;
++});
++beforeEach(() => {
++  localStorage.clear();
++  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addListener() {}, removeListener() {} })));
++  vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
++  vi.stubGlobal('cancelAnimationFrame', vi.fn());
++});
++function unmount() {
++  if (root) act(() => root.unmount());
++  root = null; host?.remove(); host = null;
++}
++afterEach(() => { unmount(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
++function render(strict = false) {
++  host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
++  const node = React.createElement(Crawl, { text: 'A short reading.', isOpen: true, onClose() {} });
++  act(() => root.render(strict ? React.createElement(React.StrictMode, null, node) : node));
++}
++function seed(values) { keys.forEach((key, i) => localStorage.setItem(key, values[i])); }
++function track() { write = vi.spyOn(Storage.prototype, 'setItem'); return write; }
++function change(selector, value) {
++  const node = host.querySelector(selector);
++  const prototype = node.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
++  Object.getOwnPropertyDescriptor(prototype, 'value').set.call(node, value);
++  act(() => node.dispatchEvent(new Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })));
++}
++
++describe('crawl preference write budget', () => {
++  it('initializes missing defaults once, including StrictMode effect replay', () => {
++    track(); render(true);
++    expect(write.mock.calls).toEqual(keys.map((key, i) => [key, ['70', 'gold', '0'][i]]));
++  });
++  it('does not rewrite valid preferences across repeated remounts', () => {
++    seed(['95', 'teal', '1']); track();
++    for (let i = 0; i < 10; i++) { render(); unmount(); }
++    expect(write).not.toHaveBeenCalled();
++    expect(keys.map(key => localStorage.getItem(key))).toEqual(['95', 'teal', '1']);
++  });
++  it('saves genuine changes once and reads the latest stored values on remount', () => {
++    seed(['70', 'gold', '0']); track(); render();
++    change('input[type="range"]', '80');
++    change('select', 'paper');
++    act(() => host.querySelector('[data-help-key="perspective_crawl_ambient_toggle"]').click());
++    expect(write.mock.calls).toEqual([[keys[0], '80'], [keys[1], 'paper'], [keys[2], '1']]);
++    unmount();
++    seed(['110', 'teal', '0']); write.mockClear(); render();
++    expect(host.querySelector('input[type="range"]').value).toBe('110');
++    expect(host.querySelector('select').value).toBe('teal');
++    expect(host.querySelector('[data-help-key="perspective_crawl_ambient_toggle"]').getAttribute('aria-pressed')).toBe('false');
++    expect(write).not.toHaveBeenCalled();
++  });
++  it('normalizes invalid stored values, then stops rewriting them', () => {
++    seed(['invalid', 'invalid', 'invalid']); track(); render(); unmount(); render();
++    expect(write.mock.calls).toEqual(keys.map((key, i) => [key, ['70', 'gold', '0'][i]]));
++  });
++  it.each(['getItem', 'setItem'])('keeps controls usable when storage %s fails', method => {
++    vi.spyOn(Storage.prototype, method).mockImplementation(() => { throw new DOMException('Unavailable', method === 'getItem' ? 'SecurityError' : 'QuotaExceededError'); });
++    expect(() => render()).not.toThrow();
++    change('select', 'teal');
++    expect(host.querySelector('select').value).toBe('teal');
++  });
++});
+===================================================================
+--- a/dev-tools/reader-performance/fixtures.cjs
++++ b/dev-tools/reader-performance/fixtures.cjs
+@@ -48,8 +48,9 @@
+   { name: 'bilingual-panes', sentences: 300, supports: 200, bilingual: true, compare: true },
+   { name: 'large-text-phone', sentences: 300, supports: 30, width: 320, fontSize: 24 },
+   { name: 'preview-cycles', sentences: 300, supports: 30, teacher: true, lifecycle: 'preview' },
+   { name: 'navigation-cycles', sentences: 300, supports: 30, lifecycle: 'navigation' },
++  { name: 'unique-navigation', sentences: 300, supports: 30, teacher: true, immersive: true, lifecycle: 'navigation', cycles: 200, unique: true },
+   { name: 'overlay-cycles', sentences: 300, immersive: true, lifecycle: 'overlay' },
+   { name: 'live-audio', sentences: 30, immersive: true, audio: true },
+   { name: 'reading-place-scroll', sentences: 300, headings: true, learner: 'fixture-learner', storage: true }
+ ];
+===================================================================
+--- /dev/null
++++ b/tests/reader_preview_locale_layout.test.js
+@@ -0,0 +1,63 @@
++// Real reader markup and production utility CSS in disposable Chromium; no app server or network.
++import { beforeAll, afterAll, beforeEach, afterEach, describe, it, expect } from 'vitest';
++import { createRequire } from 'node:module';
++import { mkdirSync, writeFileSync } from 'node:fs';
++import { resolve } from 'node:path';
++import { setupPreviewLocales, preparePreviewLocale, cleanupPreviewLocale, previewFixtures, mountReader, click, act } from './helpers/reader_preview_locale_harness.js';
++const require = createRequire(import.meta.url), webRequire = createRequire(resolve('desktop/web-app/package.json'));
++const report = resolve('reports/reader-preview-locale-layout'), results = [];
++let browser, css;
++const enabled = process.env.ALLO_READER_PREVIEW_LOCALE_LAYOUT === '1';
++(enabled ? describe : describe.skip)('audio, preview and term labels in narrow Chromium layouts', () => {
++  beforeAll(async () => {
++    setupPreviewLocales();
++    const config = { ...require(resolve('desktop/web-app/tailwind.config.js')), content: [resolve('view_simplified_source.jsx')] };
++    css = (await webRequire('postcss')([webRequire('tailwindcss')(config)]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined })).css;
++    browser = await require('@playwright/test').chromium.launch({ headless: true });
++    mkdirSync(report, { recursive: true });
++  }, 60000);
++  beforeEach(preparePreviewLocale);
++  afterEach(cleanupPreviewLocale);
++  afterAll(async () => { writeFileSync(resolve(report, 'results.json'), JSON.stringify(results, null, 2) + '\n'); await browser?.close(); }, 60000);
++  for (const locale of ['spanish_latin_america', 'arabic', 'chinese_simplified', 'thai']) for (const textScale of [1, 2]) {
++    it(locale + ': 320 CSS px with ' + textScale + 'x root text size', async () => {
++      const fixture = previewFixtures.find(f => f.locale === locale);
++      window.__alloGetReadAloudAudioSummary = texts => ({ ready: 1, total: texts.length, stale: texts.length - 1 });
++      const view = mountReader(fixture), input = view.host.querySelector('[data-adapt-keep-terms]');
++      await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '"unclosed'); input.dispatchEvent(new Event('input', { bubbles: true })); });
++      const page = await browser.newPage({ viewport: { width: 320, height: 900 } });
++      await page.route('**/*', route => route.abort());
++      const html = () => '<html lang="' + fixture.tag + '" dir="' + fixture.dir + '"><head><meta charset="utf-8"><style>' + css + '\nhtml{font-size:' + (16 * textScale) + 'px}</style></head><body>' + view.host.innerHTML + '</body></html>';
++      const overflow = async selector => page.locator(selector).evaluateAll(nodes => nodes.filter(node => {
++        const rect = node.getBoundingClientRect();
++        // An unfocused sr-only skip link is intentionally clipped; focused links remain in scope.
++        if (node.classList.contains('sr-only') && rect.width <= 1 && rect.height <= 1) return false;
++        return rect.width > 0 && (rect.left < -1 || rect.right > innerWidth + 1 || node.scrollWidth > node.clientWidth + 2);
++      }).map(node => ({ element: node.tagName, text: node.textContent.slice(0, 100), scrollWidth: node.scrollWidth, clientWidth: node.clientWidth })));
++      try {
++        await page.setContent(html());
++        await page.locator('details').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
++        expect(await page.locator('[data-adaptation-controls] [role="alert"]').textContent()).toBe(view.t('simplified.adapt_terms_quote'));
++        await page.locator('[data-adapt-keep-terms]').focus();
++        expect(await page.locator('[data-adapt-keep-terms]').evaluate(node => document.activeElement === node)).toBe(true);
++        const termFailures = await overflow('[data-review-state="audio"], [data-adaptation-controls], [data-adaptation-controls] label, [data-adaptation-controls] label span, [data-adaptation-controls] [role="alert"]');
++        await page.locator('[data-adaptation-controls]').screenshot({ path: resolve(report, locale + '-' + textScale + 'x-terms.png') });
++        await click(view.host.querySelector('[data-student-preview-open]'));
++        await click(view.host.querySelector('[data-student-preview] [data-reading-mode="define"]'));
++        await page.setContent(html());
++        const preview = page.locator('[data-student-preview]');
++        expect(await preview.isVisible()).toBe(true);
++        expect(await preview.locator('h2[id^="simplified-student-preview-title-"]').textContent()).toBe(view.t('simplified.layout_preview_title'));
++        expect(await preview.locator('[data-reading-mode-status="define"]').textContent()).toContain(view.t('simplified.layout_preview_word_help'));
++        expect(await preview.locator('[data-reading-paragraph="1"]').getAttribute('dir')).toBe(fixture.dir);
++        expect(await preview.locator('[data-reading-paragraph="1"]').getAttribute('lang')).toBe(fixture.tag);
++        await preview.locator('[data-student-preview-close]').focus();
++        expect(await preview.locator('[data-student-preview-close]').evaluate(node => document.activeElement === node)).toBe(true);
++        const previewFailures = await overflow('[data-student-preview], [data-student-preview] h2, [data-student-preview] p, [data-student-preview] button, [data-student-preview] [data-reading-mode-status]');
++        await page.screenshot({ path: resolve(report, locale + '-' + textScale + 'x-preview.png') });
++        results.push({ fixture: fixture.id, viewportCssPx: 320, rootTextScale: textScale, nativeBrowserZoom: false, termFailures, previewFailures });
++        expect(previewFailures).toEqual([]); expect(termFailures).toEqual([]);
++      } finally { await page.close(); }
++    }, 30000);
++  }
++});
+===================================================================
+--- /dev/null
++++ b/tests/helpers/reader_preview_locale_harness.js
+@@ -0,0 +1,13 @@
++import { readFileSync } from 'node:fs';
++import { fixtures as baseFixtures, contentFor, translator } from './reader_locale_harness.js';
++import { setupRecoveryReader, prepareRecoveryCase, cleanupRecoveryCase, mountReader, disposeReader, act, click } from './reader_recovery_locale_harness.js';
++export { contentFor, translator, mountReader, disposeReader, act, click };
++export const setupPreviewLocales = setupRecoveryReader;
++export const preparePreviewLocale = prepareRecoveryCase;
++export const cleanupPreviewLocale = cleanupRecoveryCase;
++export const previewFixtures = JSON.parse(readFileSync('tests/fixtures/reader_preview_locales.json', 'utf8')).map(f => ({ ...baseFixtures.find(base => base.id === f.baseFixture), ...f }));
++export async function openLocalePreview(fixture, extra = {}) {
++  const view = mountReader(fixture, extra);
++  await click(view.host.querySelector('[data-student-preview-open]'));
++  return { ...view, preview: view.host.querySelector('[data-student-preview]') };
++}
+===================================================================
+--- /dev/null
++++ b/tests/fixtures/reader_preview_locales.json
+@@ -0,0 +1,27 @@
++[
++  {
++    "id": "reader_en_contract_audio_preview_v1",
++    "baseFixture": "reader_en_contract_v1"
++  },
++  {
++    "id": "reader_es419_long_labels_audio_preview_v1",
++    "baseFixture": "reader_es419_long_labels_v1"
++  },
++  {
++    "id": "reader_esES_ui_audio_preview_v1",
++    "baseFixture": "reader_es419_long_labels_v1",
++    "locale": "spanish_castilian"
++  },
++  {
++    "id": "reader_ar_rtl_mixed_audio_preview_v1",
++    "baseFixture": "reader_ar_rtl_mixed_v1"
++  },
++  {
++    "id": "reader_zh_hans_unspaced_audio_preview_v1",
++    "baseFixture": "reader_zh_hans_unspaced_v1"
++  },
++  {
++    "id": "reader_th_unspaced_audio_preview_v1",
++    "baseFixture": "reader_th_unspaced_v1"
++  }
++]
+===================================================================
+--- a/dev-tools/reader-performance/run.cjs
++++ b/dev-tools/reader-performance/run.cjs
+@@ -154,9 +154,9 @@
+           }, i);
+           if (i >= 5) latencies.push(elapsed);
+         }
+         const sweepMetrics = await page.evaluate(() => window.readerMetrics.snapshot());
+-        const cycles = spec.lifecycle === 'navigation' ? 100 : spec.lifecycle ? 50 : 0;
++        const cycles = spec.cycles || (spec.lifecycle === 'navigation' ? 100 : spec.lifecycle ? 50 : 0);
+         for (let i = 0; i < cycles; i++) {
+           if (spec.lifecycle === 'preview') {
+             await page.evaluate(() => { const button = document.querySelector('[data-student-preview-open]'); button.focus(); button.click(); });
+             await nextPaint(page);
+@@ -164,10 +164,21 @@
+             await nextPaint(page);
+           } else if (spec.lifecycle === 'overlay') {
+             await patch(page, { immersive: false }); await patch(page, { immersive: true });
+           } else {
+-            await patch(page, { resource: i % 2 ? 'fixture-a' : 'fixture-b', learner: 'fixture-learner-' + (i % 2),
+-              revision: i % 3, supportVersion: i % 4 });
++            const revision = spec.unique ? i + 1 : i % 3;
++            await patch(page, { resource: spec.unique ? 'fixture-resource-' + i : i % 2 ? 'fixture-a' : 'fixture-b',
++              learner: 'fixture-learner-' + (spec.unique ? i : i % 2), revision, supportVersion: spec.unique ? i + 1 : i % 4 });
++            if (spec.unique) {
++              const visible = await page.evaluate(() => ({
++                body: document.querySelector('[data-simplified-reading-body]')?.textContent.replace(/\s+/g, ''),
++                help: document.querySelector('[data-adapted-word-help]')?.textContent.replace(/\s+/g, ''),
++                resource: window.readerFixture.item.id, learner: window.readerFixture.state.learner
++              }));
++              assert.ok(visible.body?.includes('Thisreadingchanged' + revision + 'times.'), 'Stale reading after unique navigation');
++              assert.ok(visible.help?.includes('Version' + (i + 1)), 'Stale support after unique navigation');
++              assert.equal(visible.resource, 'fixture-resource-' + i); assert.equal(visible.learner, 'fixture-learner-' + i);
++            }
+           }
+           if ((i + 1) % 10 === 0) retained.push({ phase: 'cycle-' + (i + 1), ...await memory(cdp) });
+         }
+         if (spec.audio) {
+@@ -193,9 +204,9 @@
+         const afterClose = await page.evaluate(() => ({ ...window.readerMetrics.snapshot(),
+           highlightRanges: [...(CSS.highlights?.values() || [])].reduce((sum, mark) => sum + mark.size, 0) }));
+         assert.deepEqual(errors, []); assert.deepEqual(external, []);
+         results.push({ name: spec.name, inventory, updateToPaintMs: distribution(latencies),
+-          sweepMetrics, activityMetrics, retained, afterClose });
++          sweepMetrics, activityMetrics, retained, afterClose, lifecycle: { cycles, uniqueResources: spec.unique ? cycles : null, freshnessChecks: spec.unique ? cycles : 0 } });
+         console.log('Measured ' + spec.name);
+       } finally { await context.close(); }
+     }
+     assert.equal(head(), baseline, 'HEAD changed during the run');
+@@ -219,4 +230,5 @@
+ 
+ 
+ 
+ 
++

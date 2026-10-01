@@ -1,0 +1,58 @@
+[
+  {
+    "name": "orbit",
+    "shell": {
+      "top": 12,
+      "bottom": 176,
+      "left": 236,
+      "right": 556,
+      "height": 164
+    },
+    "body": {
+      "top": 73,
+      "bottom": 167,
+      "left": 245,
+      "right": 547,
+      "height": 94
+    },
+    "notice": {
+      "top": 104.046875,
+      "bottom": 167.421875,
+      "left": 245,
+      "right": 547,
+      "height": 63.375
+    },
+    "outerScroll": 0,
+    "bodyScroll": 940,
+    "text": "Move away from the destination’s vertical axis before starting an orbit.",
+    "ok": true
+  },
+  {
+    "name": "approach",
+    "shell": {
+      "top": 12,
+      "bottom": 176,
+      "left": 236,
+      "right": 556,
+      "height": 164
+    },
+    "body": {
+      "top": 73,
+      "bottom": 167,
+      "left": 245,
+      "right": 547,
+      "height": 94
+    },
+    "notice": {
+      "top": 104.046875,
+      "bottom": 167.421875,
+      "left": 245,
+      "right": 547,
+      "height": 63.375
+    },
+    "outerScroll": 0,
+    "bodyScroll": 940,
+    "text": "Already within the viewing distance of Amber star. Travel is paused so you can look around.",
+    "ok": true
+  }
+]

@@ -343,9 +343,12 @@ function EducatorHubModal(props) {
   // and Report Writer (clinical reports). Everything else — Document Hub,
   // Whiteboard, Page Designer, Lumen, Accessibility Lab and peers — is
   // genuinely useful to a home-schooling parent and stays (F1's spirit,
-  // MODE_AUDIT_2026-08-03.md). Dynamic Assessment and Polls & Sign-ups stay
-  // visible as the recorded reversible default; each is one line here.
+  // MODE_AUDIT_2026-08-03.md). Polls & Sign-ups stays visible as the recorded
+  // reversible default.
   const hideSchoolProfessional = Boolean(isParentMode || isIndependentMode);
+  // Assessment Center, Dynamic Assessment and BehaviorLens hold student records and
+  // clinical tools a family should not open (K5, 2026-09-28): hidden in family mode only.
+  const hideFromFamily = Boolean(isParentMode);
   const hubRolePreference = hubRoleOverride || userRole || 'educator';
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('clin') ? 'clinician' : (hubRoleRaw.includes('lead') || hubRoleRaw.includes('admin') || hubRoleRaw.includes('principal') || hubRoleRaw.includes('coach')) ? 'leader' : hubRoleRaw.includes('student') ? 'student' : hubRoleRaw.includes('family') ? 'family' : 'educator';
@@ -567,6 +570,7 @@ function EducatorHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls &amp; Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls &amp; Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
               </div>
+              {!hideFromFamily && (
               <div className="relative group" data-hub-id="assessment-center" data-hub-label="Assessment Center" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_assessment_center_card" onClick={() => { setShowEducatorHub(false); setShowClassAnalytics(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDDD2\uFE0F'}</span>
@@ -578,6 +582,8 @@ function EducatorHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('assessment-center')} aria-label={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Assessment Center' : tr('hub.add_favorite', 'Add to favorites') + ': Assessment Center'} title={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('assessment-center'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('assessment-center') ? '★' : '☆'}</button>
               </div>
+              )}
+              {!hideFromFamily && (
               <div className="relative group" data-hub-id="dynamic-assessment" data-hub-label="Dynamic Assessment" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDE7A'}</span>
@@ -589,6 +595,8 @@ function EducatorHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('dynamic-assessment')} aria-label={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Dynamic Assessment' : tr('hub.add_favorite', 'Add to favorites') + ': Dynamic Assessment'} title={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('dynamic-assessment'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('dynamic-assessment') ? '★' : '☆'}</button>
               </div>
+              )}
+              {!hideFromFamily && (
               <div className="relative group" data-hub-id="behavior-lens" data-hub-label="BehaviorLens" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDC41\uFE0F'}</span>
@@ -600,6 +608,7 @@ function EducatorHubModal(props) {
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('behavior-lens')} aria-label={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') + ': BehaviorLens' : tr('hub.add_favorite', 'Add to favorites') + ': BehaviorLens'} title={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('behavior-lens'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('behavior-lens') ? '★' : '☆'}</button>
               </div>
+              )}
               {!hideSchoolProfessional && (
               <div className="relative group" data-hub-id="report-writer" data-hub-label="Report Writer" data-hub-section="teach">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">

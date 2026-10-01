@@ -1,0 +1,848 @@
+{
+  "at": "2026-09-26T23:05:05.659Z",
+  "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "startHead": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "endHead": "6b63e76e862125e87422f02a54ed60beac68e8fb",
+  "files": {
+    "AlloFlowANTI.txt": {
+      "bytes": 2791472,
+      "sha256": "b7d2f7cd47f87c15324c0a6d1374e4fc879cb4ea5e0b65fdd3c8786f09f0776d"
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "bytes": 2791472,
+      "sha256": "b7d2f7cd47f87c15324c0a6d1374e4fc879cb4ea5e0b65fdd3c8786f09f0776d"
+    },
+    "desktop/web-app/src/App.jsx": {
+      "bytes": 2791472,
+      "sha256": "b7d2f7cd47f87c15324c0a6d1374e4fc879cb4ea5e0b65fdd3c8786f09f0776d"
+    },
+    "reader_place_store.js": {
+      "bytes": 20747,
+      "sha256": "b1861d25b5466d829b05e115cba776bd8d9cc419d12598d473ff1b6b20a9d2fc"
+    },
+    "reader_support_drafts.js": {
+      "bytes": 1768,
+      "sha256": "362075237ac900f150abed73f1e9eb578273a6ce4c5b2db2068341ef27a0c0e5"
+    },
+    "_build_view_simplified_module.js": {
+      "bytes": 2897,
+      "sha256": "6ce1d000f200ef5d446c330dd35d1b3a9adb240030ec114179fd5f016f00a21f"
+    },
+    "dev-tools/build_adapted_reader.cjs": {
+      "bytes": 2227,
+      "sha256": "10c48a4575a17f6666b4eca1362eb9b986bb65f5895183d3bdc1ede410db5ddf"
+    },
+    "desktop/web-app/src/content_engine_source.jsx": {
+      "bytes": 207694,
+      "sha256": "ca17992bf053f75c327dae4889c693bfae29f3e246cb045a3a019fb53c43b219"
+    },
+    "dev-tools/host_handlers_wave3_manifest.json": {
+      "bytes": 43836,
+      "sha256": "a79dc9178aa95bd5e3ef90521721b6325a8f80286a46da72af756413d8f0ce5e"
+    },
+    "view_simplified_source.jsx": {
+      "bytes": 497349,
+      "sha256": "afe7ba74c50f3ce9663855883c43289dd8f4e9e7b05d331be80284687dae4995"
+    },
+    "view_simplified_module.js": {
+      "bytes": 476963,
+      "sha256": "c8c1e78d39a9df02c6cdd2c4ec8b376e3ed24964a5907a3ee98e4842a9da0ea8"
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "bytes": 476963,
+      "sha256": "c8c1e78d39a9df02c6cdd2c4ec8b376e3ed24964a5907a3ee98e4842a9da0ea8"
+    },
+    "pure_helpers_source.jsx": {
+      "bytes": 30278,
+      "sha256": "48d854fe019ac81e47b5c0b86cd1d64bf041f7c1d7d7723791d7c648c980a82e"
+    },
+    "pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "desktop/web-app/public/pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "content_engine_source.jsx": {
+      "bytes": 207694,
+      "sha256": "ca17992bf053f75c327dae4889c693bfae29f3e246cb045a3a019fb53c43b219"
+    },
+    "content_engine_module.js": {
+      "bytes": 207864,
+      "sha256": "e3c56af9afabccfd745112b251dbad6702c7524ea53a3e5d77b983d3ce0352bc"
+    },
+    "desktop/web-app/public/content_engine_module.js": {
+      "bytes": 207864,
+      "sha256": "e3c56af9afabccfd745112b251dbad6702c7524ea53a3e5d77b983d3ce0352bc"
+    },
+    "app_styles_source.jsx": {
+      "bytes": 299339,
+      "sha256": "c923bc2f774b913fa1857e2cf41318fe38506b8aba88da749933a674ac9c3f1b"
+    },
+    "app_styles_module.js": {
+      "bytes": 298731,
+      "sha256": "d15f4e168c0d7d1f255232af89d1e2c66b085cac7dc2a868da30937af7d339ee"
+    },
+    "desktop/web-app/public/app_styles_module.js": {
+      "bytes": 298731,
+      "sha256": "d15f4e168c0d7d1f255232af89d1e2c66b085cac7dc2a868da30937af7d339ee"
+    },
+    "generation_helpers_source.jsx": {
+      "bytes": 295837,
+      "sha256": "85fb09f8f8d57c2df6383f59c280b3400d10f6565411e27e2da13301cbb16d7e"
+    },
+    "generation_helpers_module.js": {
+      "bytes": 296208,
+      "sha256": "3704119dc13a33c1d068648c82bad44f6bfd1774fbb0019cf48cc0efdf6e42e1"
+    },
+    "desktop/web-app/public/generation_helpers_module.js": {
+      "bytes": 296208,
+      "sha256": "3704119dc13a33c1d068648c82bad44f6bfd1774fbb0019cf48cc0efdf6e42e1"
+    },
+    "read_aloud_audio_service_source.jsx": {
+      "bytes": 80932,
+      "sha256": "520d6cf0661453c288e8935ec3a0f3209ce96e4f88b7fbdeb622b7610b0b9df7"
+    },
+    "read_aloud_audio_service_module.js": {
+      "bytes": 81119,
+      "sha256": "7e3af8f0f9065bcba082870006210978a8a47dc1e07f284051de66a3ad64825f"
+    },
+    "desktop/web-app/public/read_aloud_audio_service_module.js": {
+      "bytes": 81119,
+      "sha256": "7e3af8f0f9065bcba082870006210978a8a47dc1e07f284051de66a3ad64825f"
+    },
+    "live_aac_source.jsx": {
+      "bytes": 62977,
+      "sha256": "a1a26a9e23a447fd30c0bcaefd7a946426c1861f6b819ce0a9b9605d8757c537"
+    },
+    "live_aac_module.js": {
+      "bytes": 63572,
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    "desktop/web-app/public/live_aac_module.js": {
+      "bytes": 63572,
+      "sha256": "0ae0268ed505682f8b8f23117eb7b6c52945df29af9223a1fac3f0be4fe7a473"
+    },
+    "shared_activity_source.jsx": {
+      "bytes": 114494,
+      "sha256": "11afe5c929be9fe7f115bad6837a5405f442fbbe1de4b0a111c50c59e6b57487"
+    },
+    "shared_activity_module.js": {
+      "bytes": 110123,
+      "sha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7"
+    },
+    "desktop/web-app/public/shared_activity_module.js": {
+      "bytes": 110123,
+      "sha256": "43722e2bfcab1060f8f86a6489252f8c99ead2fda695f66bf3899edc638c43f7"
+    },
+    "view_share_session_surfaces_source.jsx": {
+      "bytes": 61294,
+      "sha256": "f7d706f56e502bfe885d1a6b2748a933083d2e7cf6bc094d057b8b84da8da806"
+    },
+    "view_share_session_surfaces_module.js": {
+      "bytes": 66128,
+      "sha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df"
+    },
+    "desktop/web-app/public/view_share_session_surfaces_module.js": {
+      "bytes": 66128,
+      "sha256": "341e486b775779ee9cee1c19c4a82c27936d646f6d806a72a4a422b849a934df"
+    },
+    "export_source.jsx": {
+      "bytes": 193543,
+      "sha256": "4d74b537e59dd1d7cfa7967ff9a1dfad2c216542429291df4f2ee1439147ed52"
+    },
+    "export_module.js": {
+      "bytes": 186364,
+      "sha256": "bb9ef80933bd833af3c0660bf65a2e3a9f7a7fb172c8813ac46400a7614ef784"
+    },
+    "desktop/web-app/public/export_module.js": {
+      "bytes": 186364,
+      "sha256": "bb9ef80933bd833af3c0660bf65a2e3a9f7a7fb172c8813ac46400a7614ef784"
+    },
+    "read_aloud_artifact_audio_source.jsx": {
+      "bytes": 20033,
+      "sha256": "81c27a4f2ef7fd9ca2af80d236f239ee9a953372bac7cee424440cef49cad1bd"
+    },
+    "read_aloud_artifact_audio_module.js": {
+      "bytes": 20222,
+      "sha256": "dae3f54932ed3794376e8cb662f0f088e4783b9f2a7761bcce41682e192aaee6"
+    },
+    "desktop/web-app/public/read_aloud_artifact_audio_module.js": {
+      "bytes": 20222,
+      "sha256": "dae3f54932ed3794376e8cb662f0f088e4783b9f2a7761bcce41682e192aaee6"
+    },
+    "utils_pure_source.jsx": {
+      "bytes": 91495,
+      "sha256": "92e64bf18f65f7b6476df70be5bf714e141572096345b2eab0a9b289ccc6de2e"
+    },
+    "utils_pure_module.js": {
+      "bytes": 91845,
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11"
+    },
+    "desktop/web-app/public/utils_pure_module.js": {
+      "bytes": 91845,
+      "sha256": "aa4eebe11a0fc0acf558d03212cecce6662402234d73a244e4f43933bbc4be11"
+    },
+    "immersive_reader_source.jsx": {
+      "bytes": 157747,
+      "sha256": "86391ccb93f73e93648ead76ceed55e72c8e25a5a26f437f2e769382dab3e57b"
+    },
+    "immersive_reader_module.js": {
+      "bytes": 129564,
+      "sha256": "4dd044c7ce14a5d09529a9fb9ec172aab85b5f46c6549275dc9f200916d2f865"
+    },
+    "desktop/web-app/public/immersive_reader_module.js": {
+      "bytes": 129564,
+      "sha256": "4dd044c7ce14a5d09529a9fb9ec172aab85b5f46c6549275dc9f200916d2f865"
+    },
+    "text_pipeline_helpers_source.jsx": {
+      "bytes": 82596,
+      "sha256": "6bf563615db856f65a4d3218f1af2288e1ec6ab609671e1ea7ed9e520752c08f"
+    },
+    "text_pipeline_helpers_module.js": {
+      "bytes": 83418,
+      "sha256": "6c04401f5fc47e150bab9218eb5d71b988a77d74e61e42d42af285f4f2e12cb8"
+    },
+    "desktop/web-app/public/text_pipeline_helpers_module.js": {
+      "bytes": 83418,
+      "sha256": "6c04401f5fc47e150bab9218eb5d71b988a77d74e61e42d42af285f4f2e12cb8"
+    },
+    "host_handlers_source.jsx": {
+      "bytes": 630666,
+      "sha256": "11d835c875612e986d08407a7aec22ec68640dc99879a719704786ebe0475848"
+    },
+    "host_handlers_module.js": {
+      "bytes": 498892,
+      "sha256": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132"
+    },
+    "desktop/web-app/public/host_handlers_module.js": {
+      "bytes": 498892,
+      "sha256": "fbda9fa8fe52b085a138bcb2f581ee127c34f1f8cec5991df8f44244237dd132"
+    },
+    "generate_dispatcher_source.jsx": {
+      "bytes": 612761,
+      "sha256": "6b70e1de0e99b6e8c245a30abfd18357d2422911a239de0d4dcc78fa3729b4ad"
+    },
+    "generate_dispatcher_module.js": {
+      "bytes": 613046,
+      "sha256": "2eb366e72cb494eb675b2c3276b9bf78a45991ecfb0f0cabb4f6ccf7436e1703"
+    },
+    "desktop/web-app/public/generate_dispatcher_module.js": {
+      "bytes": 613046,
+      "sha256": "2eb366e72cb494eb675b2c3276b9bf78a45991ecfb0f0cabb4f6ccf7436e1703"
+    },
+    "phase_n_misc_helpers_source.jsx": {
+      "bytes": 35332,
+      "sha256": "fdb97efea89bb7769f4df582f9d6a86066a677e1c850cdf6dea431c0faadaf02"
+    },
+    "phase_n_misc_helpers_module.js": {
+      "bytes": 32491,
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    "desktop/web-app/public/phase_n_misc_helpers_module.js": {
+      "bytes": 32491,
+      "sha256": "abda3c02f55e31ba7f2e929c449a036e8fe34ff628fdce66c8dc4ed763286f7c"
+    },
+    "phase_o_misc_handlers_source.jsx": {
+      "bytes": 161809,
+      "sha256": "ae97b8eb34bc80a80324865360d253299f1ae46297ec0f31e88b4c48229b5666"
+    },
+    "phase_o_misc_handlers_module.js": {
+      "bytes": 162085,
+      "sha256": "5e470d0bf0b505acf66fa011aed003267d1e783733369f78474f18323c2c84bf"
+    },
+    "desktop/web-app/public/phase_o_misc_handlers_module.js": {
+      "bytes": 162085,
+      "sha256": "5e470d0bf0b505acf66fa011aed003267d1e783733369f78474f18323c2c84bf"
+    },
+    "view_sidebar_panels_source.jsx": {
+      "bytes": 369073,
+      "sha256": "3dc25188b09460969db3d8e39a727fa7e97b9465f404b015383baf6426044645"
+    },
+    "view_sidebar_panels_module.js": {
+      "bytes": 377060,
+      "sha256": "d91a3b8a09edc1546be67bb383f992dfa6ada716982c0d726b1376273338cb8f"
+    },
+    "desktop/web-app/public/view_sidebar_panels_module.js": {
+      "bytes": 377060,
+      "sha256": "d91a3b8a09edc1546be67bb383f992dfa6ada716982c0d726b1376273338cb8f"
+    },
+    "view_live_session_dock_source.jsx": {
+      "bytes": 85694,
+      "sha256": "77f00a410ffa13f90e7292de0d08d8501fd2bf1e91c8f1c5060c72a9e588043d"
+    },
+    "view_live_session_dock_module.js": {
+      "bytes": 83640,
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f"
+    },
+    "desktop/web-app/public/view_live_session_dock_module.js": {
+      "bytes": 83640,
+      "sha256": "9987a5cb96b53c267ad98c155b4e4b865484b048d3c20b1dd7b0a2484d039a8f"
+    },
+    "view_storybook_export_modal_source.jsx": {
+      "bytes": 11627,
+      "sha256": "26b75e0505d89d077f4610597f31167e73073d7c917effbe57e7d0241ceb4f7c"
+    },
+    "view_storybook_export_modal_module.js": {
+      "bytes": 12454,
+      "sha256": "5ab329d3200c563c77bbc2b293b1fe8df646de1ee69dc684995a5c4de9517396"
+    },
+    "desktop/web-app/public/view_storybook_export_modal_module.js": {
+      "bytes": 12454,
+      "sha256": "5ab329d3200c563c77bbc2b293b1fe8df646de1ee69dc684995a5c4de9517396"
+    },
+    "own_sources_module.js": {
+      "bytes": 31440,
+      "sha256": "758e6d195dedb06fcd8664d0ccede86b5f9a81c0fb1ea79faeab6b67b089430e"
+    },
+    "desktop/web-app/public/own_sources_module.js": {
+      "bytes": 29814,
+      "sha256": "feb653e45ba1ca567ae2d7f9f7b960829b6b35c2e7c4350eb51fb5a45e9bd41c"
+    },
+    "quickstart_module.js": {
+      "bytes": 109327,
+      "sha256": "474212e1e6039e21e2126f13427076f4b79961dc4ff3acf1ca1c6357c1ef3b05"
+    },
+    "desktop/web-app/public/quickstart_module.js": {
+      "bytes": 109327,
+      "sha256": "474212e1e6039e21e2126f13427076f4b79961dc4ff3acf1ca1c6357c1ef3b05"
+    },
+    "view_misc_panels_module.js": {
+      "bytes": 210630,
+      "sha256": "3dcc2bb8fa0e1b8ec41824ce73ee8bd3b55a4bc51bb478bc308372e9beee41a9"
+    },
+    "desktop/web-app/public/view_misc_panels_module.js": {
+      "bytes": 210630,
+      "sha256": "3dcc2bb8fa0e1b8ec41824ce73ee8bd3b55a4bc51bb478bc308372e9beee41a9"
+    },
+    "ui_strings.js": {
+      "bytes": 9781728,
+      "sha256": "dec2d522cccae1e7bb5baf676d3dc8bdf780eda5730443f3e19c4e0d46dd71e3"
+    },
+    "desktop/web-app/public/ui_strings.js": {
+      "bytes": 9781728,
+      "sha256": "dec2d522cccae1e7bb5baf676d3dc8bdf780eda5730443f3e19c4e0d46dd71e3"
+    },
+    "stem_lab/stem_tool_cephalopodlab.js": {
+      "bytes": 2161904,
+      "sha256": "624ca3b736caf1c9a62eab4f3db358c1c517f691276469760d1af17fed2dfbce"
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js": {
+      "bytes": 2159031,
+      "sha256": "adc8be902c7a7b124f89b714b2c5f40cb378b5cd2b8b0cc9c76b3e16179e215b"
+    },
+    "stem_lab/stem_tool_raptorhunt.js": {
+      "bytes": 3688784,
+      "sha256": "e0761cca7f946f8354f850807fdf738a9bc3c68b0735daf5234005494078ac65"
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js": {
+      "bytes": 3668428,
+      "sha256": "748189b2ef1f1c4b68a8a1123e0a748b90dfdee13b9e73c8bd5c7af7231beeec"
+    },
+    "stem_lab/stem_tool_evolab.js": {
+      "bytes": 1427298,
+      "sha256": "1ea19254a662b0c5150d54e290ee6f2d8a0dc804f74640c335878865ab6c1e5d"
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_evolab.js": {
+      "bytes": 1404368,
+      "sha256": "06bf417e21d95439784f4b1ab07647dadc070915b5e316118aa6b475d707c044"
+    },
+    "stem_lab/kitchen_studio/recipe_lab.html": {
+      "bytes": 29315,
+      "sha256": "2cc9d68ce8cbfebf9d57a8952e6ac82c27cfd49c7502c7127668a12d54d5d395"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.html": {
+      "bytes": 29315,
+      "sha256": "2cc9d68ce8cbfebf9d57a8952e6ac82c27cfd49c7502c7127668a12d54d5d395"
+    },
+    "stem_lab/kitchen_studio/recipe_lab.js": {
+      "bytes": 76500,
+      "sha256": "e2af6ade8eb6ffcb53c06f23c24ffc8cae256176046d28fb27702f70915de8e2"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab.js": {
+      "bytes": 76500,
+      "sha256": "e2af6ade8eb6ffcb53c06f23c24ffc8cae256176046d28fb27702f70915de8e2"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_engine.js": {
+      "bytes": 39362,
+      "sha256": "c636ec88dfe354b8fe67d70f7454937ea96b88455d1198a7871972165a2d0269"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_engine.js": {
+      "bytes": 39362,
+      "sha256": "c636ec88dfe354b8fe67d70f7454937ea96b88455d1198a7871972165a2d0269"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_hands.js": {
+      "bytes": 2105,
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.js": {
+      "bytes": 2105,
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_hands.css": {
+      "bytes": 6622,
+      "sha256": "412bf442aa95f08daf8fafdb266eadd9035eb354400a3b568dd6bbfcaf79f623"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands.css": {
+      "bytes": 6622,
+      "sha256": "412bf442aa95f08daf8fafdb266eadd9035eb354400a3b568dd6bbfcaf79f623"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_hands_ui.js": {
+      "bytes": 20355,
+      "sha256": "b2e301ef90245faa0c4e7f14c3f44c2ffac6ddec22a7fe204b30cf5cfdb34b1e"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_hands_ui.js": {
+      "bytes": 20355,
+      "sha256": "b2e301ef90245faa0c4e7f14c3f44c2ffac6ddec22a7fe204b30cf5cfdb34b1e"
+    },
+    "dictionary_loader.js": {
+      "bytes": 11214,
+      "sha256": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9"
+    },
+    "desktop/web-app/public/dictionary_loader.js": {
+      "bytes": 11214,
+      "sha256": "2b3b3a961ad36bea638d7e1f6fd75bf97b8186075cbbe9d6b21c6a5a92dc8df9"
+    },
+    "karaoke_audio_store_module.js": {
+      "bytes": 53959,
+      "sha256": "5f7c36d96c3d9c713da7f34cc95ec96ac46b0c775cca6e35a0c1b65a3460316e"
+    },
+    "desktop/web-app/public/karaoke_audio_store_module.js": {
+      "bytes": 53959,
+      "sha256": "5f7c36d96c3d9c713da7f34cc95ec96ac46b0c775cca6e35a0c1b65a3460316e"
+    },
+    "ai_backend_module.js": {
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    "desktop/web-app/public/ai_backend_module.js": {
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    "stem_lab/kitchen_studio/recipe_lab_scene.js": {
+      "bytes": 14221,
+      "sha256": "0879d117b0b4c6ca781778c6bf09fe2db1fe4eea4a95a8fd8b03cd78d70e72f1"
+    },
+    "desktop/web-app/public/stem_lab/kitchen_studio/recipe_lab_scene.js": {
+      "bytes": 14221,
+      "sha256": "0879d117b0b4c6ca781778c6bf09fe2db1fe4eea4a95a8fd8b03cd78d70e72f1"
+    },
+    "lang/spanish_castilian.js": {
+      "bytes": 7759224,
+      "sha256": "622215bcdc6c3ba50a6f8440c46faa6deb041691a61ee4017179caa3a06c0f4e"
+    },
+    "desktop/web-app/public/lang/spanish_castilian.js": {
+      "bytes": 7759224,
+      "sha256": "622215bcdc6c3ba50a6f8440c46faa6deb041691a61ee4017179caa3a06c0f4e"
+    },
+    "lang/spanish_latin_america.js": {
+      "bytes": 8514037,
+      "sha256": "d1d1263e62a7486d065139da2a1cfdb1ef151856d17de0027abd5a443462b816"
+    },
+    "desktop/web-app/public/lang/spanish_latin_america.js": {
+      "bytes": 8514037,
+      "sha256": "d1d1263e62a7486d065139da2a1cfdb1ef151856d17de0027abd5a443462b816"
+    },
+    "lang/arabic.js": {
+      "bytes": 8668926,
+      "sha256": "dee1b5d6011df532c96fbf5c2f6c13b72246552d064ccfe38f902e01b22790dc"
+    },
+    "desktop/web-app/public/lang/arabic.js": {
+      "bytes": 8668926,
+      "sha256": "dee1b5d6011df532c96fbf5c2f6c13b72246552d064ccfe38f902e01b22790dc"
+    },
+    "lang/chinese_simplified.js": {
+      "bytes": 7256703,
+      "sha256": "5c00ee2c1239624aefa148eea1f9ab3950d2fbb1f5ffe4fac6dfead9e1d14841"
+    },
+    "desktop/web-app/public/lang/chinese_simplified.js": {
+      "bytes": 7256703,
+      "sha256": "5c00ee2c1239624aefa148eea1f9ab3950d2fbb1f5ffe4fac6dfead9e1d14841"
+    },
+    "lang/thai.js": {
+      "bytes": 9231836,
+      "sha256": "847cbea871e54a806af6971ddeb32f3076b74ce8ac8be684f4305a1947a904f4"
+    },
+    "desktop/web-app/public/lang/thai.js": {
+      "bytes": 9231836,
+      "sha256": "847cbea871e54a806af6971ddeb32f3076b74ce8ac8be684f4305a1947a904f4"
+    }
+  },
+  "mirrors": [
+    {
+      "module": "view_simplified",
+      "matches": true
+    },
+    {
+      "module": "pure_helpers",
+      "matches": true
+    },
+    {
+      "module": "content_engine",
+      "matches": true
+    },
+    {
+      "module": "app_styles",
+      "matches": true
+    },
+    {
+      "module": "generation_helpers",
+      "matches": true
+    },
+    {
+      "module": "read_aloud_audio_service",
+      "matches": true
+    },
+    {
+      "module": "live_aac",
+      "matches": true
+    },
+    {
+      "module": "shared_activity",
+      "matches": true
+    },
+    {
+      "module": "view_share_session_surfaces",
+      "matches": true
+    },
+    {
+      "module": "export",
+      "matches": true
+    },
+    {
+      "module": "read_aloud_artifact_audio",
+      "matches": true
+    },
+    {
+      "module": "utils_pure",
+      "matches": true
+    },
+    {
+      "module": "immersive_reader",
+      "matches": true
+    },
+    {
+      "module": "text_pipeline_helpers",
+      "matches": true
+    },
+    {
+      "module": "host_handlers",
+      "matches": true
+    },
+    {
+      "module": "generate_dispatcher",
+      "matches": true
+    },
+    {
+      "module": "phase_n_misc_helpers",
+      "matches": true
+    },
+    {
+      "module": "phase_o_misc_handlers",
+      "matches": true
+    },
+    {
+      "module": "view_sidebar_panels",
+      "matches": true
+    },
+    {
+      "module": "view_live_session_dock",
+      "matches": true
+    },
+    {
+      "module": "view_storybook_export_modal",
+      "matches": true
+    }
+  ],
+  "projectMirrors": [
+    {
+      "file": "own_sources_module.js",
+      "matches": false
+    },
+    {
+      "file": "quickstart_module.js",
+      "matches": true
+    },
+    {
+      "file": "view_misc_panels_module.js",
+      "matches": true
+    },
+    {
+      "file": "ui_strings.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/stem_tool_cephalopodlab.js",
+      "matches": false
+    },
+    {
+      "file": "stem_lab/stem_tool_raptorhunt.js",
+      "matches": false
+    },
+    {
+      "file": "stem_lab/stem_tool_evolab.js",
+      "matches": false
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab.html",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_engine.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands.css",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_hands_ui.js",
+      "matches": true
+    },
+    {
+      "file": "dictionary_loader.js",
+      "matches": true
+    },
+    {
+      "file": "karaoke_audio_store_module.js",
+      "matches": true
+    },
+    {
+      "file": "ai_backend_module.js",
+      "matches": true
+    },
+    {
+      "file": "stem_lab/kitchen_studio/recipe_lab_scene.js",
+      "matches": true
+    },
+    {
+      "file": "lang/spanish_castilian.js",
+      "matches": true
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "matches": true
+    },
+    {
+      "file": "lang/arabic.js",
+      "matches": true
+    },
+    {
+      "file": "lang/chinese_simplified.js",
+      "matches": true
+    },
+    {
+      "file": "lang/thai.js",
+      "matches": true
+    }
+  ],
+  "hostsMatch": true,
+  "contentSourceMatches": true,
+  "pins": {
+    "AlloFlowANTI.txt": {
+      "view_simplified": [
+        "c8c1e78d"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "e3c56af9"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "3704119d"
+      ],
+      "read_aloud_audio_service": [
+        "7e3af8f0"
+      ],
+      "live_aac": [
+        "0ae0268e"
+      ],
+      "shared_activity": [
+        "5ca1dfe5"
+      ],
+      "view_share_session_surfaces": [
+        "abc55e09"
+      ],
+      "export": [
+        "bb9ef809"
+      ],
+      "read_aloud_artifact_audio": [
+        "dae3f549"
+      ],
+      "utils_pure": [
+        "aa4eebe1"
+      ],
+      "immersive_reader": [
+        "4dd044c7"
+      ],
+      "text_pipeline_helpers": [
+        "6c04401f"
+      ],
+      "host_handlers": [
+        "fbda9fa8"
+      ],
+      "generate_dispatcher": [
+        "2eb366e7"
+      ],
+      "phase_n_misc_helpers": [
+        "abda3c02"
+      ],
+      "phase_o_misc_handlers": [
+        "5e470d0b"
+      ],
+      "view_sidebar_panels": [
+        "d91a3b8a"
+      ],
+      "view_live_session_dock": [
+        "9987a5cb"
+      ],
+      "view_storybook_export_modal": [
+        "5ab329d3"
+      ]
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "view_simplified": [
+        "c8c1e78d"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "e3c56af9"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "3704119d"
+      ],
+      "read_aloud_audio_service": [
+        "7e3af8f0"
+      ],
+      "live_aac": [
+        "0ae0268e"
+      ],
+      "shared_activity": [
+        "5ca1dfe5"
+      ],
+      "view_share_session_surfaces": [
+        "abc55e09"
+      ],
+      "export": [
+        "bb9ef809"
+      ],
+      "read_aloud_artifact_audio": [
+        "dae3f549"
+      ],
+      "utils_pure": [
+        "aa4eebe1"
+      ],
+      "immersive_reader": [
+        "4dd044c7"
+      ],
+      "text_pipeline_helpers": [
+        "6c04401f"
+      ],
+      "host_handlers": [
+        "fbda9fa8"
+      ],
+      "generate_dispatcher": [
+        "2eb366e7"
+      ],
+      "phase_n_misc_helpers": [
+        "abda3c02"
+      ],
+      "phase_o_misc_handlers": [
+        "5e470d0b"
+      ],
+      "view_sidebar_panels": [
+        "d91a3b8a"
+      ],
+      "view_live_session_dock": [
+        "9987a5cb"
+      ],
+      "view_storybook_export_modal": [
+        "5ab329d3"
+      ]
+    },
+    "desktop/web-app/src/App.jsx": {
+      "view_simplified": [
+        "c8c1e78d"
+      ],
+      "pure_helpers": [
+        "55e824a46"
+      ],
+      "content_engine": [
+        "e3c56af9"
+      ],
+      "app_styles": [
+        "55e824a46"
+      ],
+      "generation_helpers": [
+        "3704119d"
+      ],
+      "read_aloud_audio_service": [
+        "7e3af8f0"
+      ],
+      "live_aac": [
+        "0ae0268e"
+      ],
+      "shared_activity": [
+        "5ca1dfe5"
+      ],
+      "view_share_session_surfaces": [
+        "abc55e09"
+      ],
+      "export": [
+        "bb9ef809"
+      ],
+      "read_aloud_artifact_audio": [
+        "dae3f549"
+      ],
+      "utils_pure": [
+        "aa4eebe1"
+      ],
+      "immersive_reader": [
+        "4dd044c7"
+      ],
+      "text_pipeline_helpers": [
+        "6c04401f"
+      ],
+      "host_handlers": [
+        "fbda9fa8"
+      ],
+      "generate_dispatcher": [
+        "2eb366e7"
+      ],
+      "phase_n_misc_helpers": [
+        "abda3c02"
+      ],
+      "phase_o_misc_handlers": [
+        "5e470d0b"
+      ],
+      "view_sidebar_panels": [
+        "d91a3b8a"
+      ],
+      "view_live_session_dock": [
+        "9987a5cb"
+      ],
+      "view_storybook_export_modal": [
+        "5ab329d3"
+      ]
+    }
+  },
+  "errors": []
+}

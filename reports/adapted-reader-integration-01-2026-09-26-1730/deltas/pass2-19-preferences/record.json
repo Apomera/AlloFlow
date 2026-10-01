@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-26T23:39:52.671Z",
+  "label": "pass2-19-preferences",
+  "patch": "641a2afc055757ebf9fc8ccf2cf0408ca9c293fb8e90f70b1029d257c8f74c7c",
+  "plans": [
+    {
+      "target": "immersive_reader_source.jsx",
+      "targets": [
+        "immersive_reader_source.jsx"
+      ],
+      "before": "86391ccb93f73e93648ead76ceed55e72c8e25a5a26f437f2e769382dab3e57b",
+      "after": "a6f102900550ddbbe47671eaddbb1911a49f41fcecd76b9b211a0a163685a91c",
+      "changed": true
+    }
+  ]
+}

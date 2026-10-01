@@ -1,0 +1,83 @@
+{
+  "date": "2026-09-27",
+  "scope": "Smooth curved feet and talons, scale seams and talon sheen, opposed osprey toes, species-specific observation prompts",
+  "runs": [
+    {
+      "suites": ["raptor-talons.spec.ts"],
+      "output": "initial-browser-results",
+      "passed": 1,
+      "failed": 1,
+      "skipped": 1,
+      "retries": 0,
+      "durationSeconds": 36.8,
+      "note": "The test incorrectly assumed the osprey had lookout practice. Changed its setup to use normal assisted landing controls; no application change."
+    },
+    {
+      "suites": ["raptor-talons.spec.ts"],
+      "output": "second-browser-results",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "durationSeconds": 56.0
+    },
+    {
+      "suites": ["raptor-flight-continuity.spec.ts", "raptor-study-anatomy.spec.ts", "raptor-tail-rest.spec.ts"],
+      "output": "regression-browser-results",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "duration": "3.1 minutes"
+    },
+    {
+      "suites": ["raptor-talons.spec.ts --grep greatHorned"],
+      "output": "phone-review-results",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "durationSeconds": 17.7,
+      "note": "Repeated after the isolated-material comparison was changed to restore the default foot inspection angle rather than Above, so the phone artifact shows the feet. Application source unchanged."
+    }
+  ],
+  "uniqueScenariosValidated": 11,
+  "coverageNote": "All 11 distinct browser scenarios passed against the final application source. The phone capture was corrected and reviewed in a repeat of the owl scenario.",
+  "checks": {
+    "canonicalSyntax": "pass",
+    "desktopSyntax": "pass",
+    "scopedGitDiffWhitespace": "pass",
+    "mirrorParity": "pass",
+    "translationKeyAndFallbackManifest": "pass",
+    "scopedAxeViolations": 0,
+    "visualInspection": "pass",
+    "finiteGeometryAndUnitNormals": "pass",
+    "mirroredPosePositionsAndNormals": "pass",
+    "materialPixelContribution": "pass",
+    "standingGroundClearance": "pass",
+    "stableGeometryBuffersDuringTakeoff": "pass"
+  },
+  "geometry": {
+    "footMeshes": 2,
+    "sharedFootMaterials": 1,
+    "previousVerticesPerFoot": 234,
+    "lowVerticesPerFoot": 738,
+    "balancedAndHighVerticesPerFoot": 1422,
+    "extraTextures": 0,
+    "extraDrawCalls": 0
+  },
+  "sourceFiles": [
+    {
+      "path": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "f7ca6a0baaea4962d88cb896a739907d0d0fdd69458c2e07fb7857638b3fbebb"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "f7ca6a0baaea4962d88cb896a739907d0d0fdd69458c2e07fb7857638b3fbebb"
+    }
+  ],
+  "newTranslationKeys": 3,
+  "translationStatus": "English fallbacks implemented; shared language-pack integration pending",
+  "environment": "Local Chromium/WebGL, low and high graphics quality, phone viewport and reduced motion. No physical-device frame-rate benchmark.",
+  "deployment": "Local changes only; no commit, push, or deployment"
+}

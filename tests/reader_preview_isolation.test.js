@@ -36,7 +36,7 @@ function mount(extra = {}) {
 const click = el=>act(()=>el.click());
 const dialog=()=>host.querySelector('[data-student-preview]');
 const open=()=>click(host.querySelector('[data-student-preview-open]'));
-const change=(el,value)=>act(()=>{Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(el,value);el.dispatchEvent(new Event('change',{bubbles:true}));});
+const change=(el,value)=>act(()=>{Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el),'value').set.call(el,value);el.dispatchEvent(new Event(el.tagName==='INPUT'?'input':'change',{bubbles:true}));});
 function withHelp() {
   const reading=item(); const start=TEXT.indexOf('heron');
   const help=api.upsertAdaptedReadingSupport(reading,null,{id:'heron',start,end:start+5,quote:'heron',text:'A water bird.'});
@@ -61,7 +61,7 @@ describe('layout preview isolation',()=>{
   it('keeps width, Display, theme and comparison preferences in memory',()=>{
     mount(); open(); const storage=vi.spyOn(Storage.prototype,'setItem');
     click(dialog().querySelector('[data-reader-display]'));
-    change(dialog().querySelector('select[aria-label="Reading width"]'),'40');
+    change(dialog().querySelector('input[aria-label="Reading width"]'),'40');
     change(dialog().querySelector('[data-adapted-theme-picker]'),'dark');
     expect(dialog().querySelector('[data-adapted-theme-picker]').value).toBe('dark');
     key(dialog().querySelector('[data-adapted-theme-picker]'),'Escape');
@@ -236,10 +236,10 @@ describe('preview snapshot refresh',()=>{
   it('starts from the current appearance even when preference writes fail',()=>{
     mount({isCompareMode:true});
     const set=vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw Error('Storage unavailable');});
-    click(host.querySelector('[data-reader-display]'));change(host.querySelector('select[aria-label="Reading width"]'),'40');
+    click(host.querySelector('[data-reader-display]'));change(host.querySelector('input[aria-label="Reading width"]'),'40');
     click(host.querySelector('input[aria-label="Show changes"]'));set.mockClear();
     open();expect(dialog().querySelector('[data-reader-display]').getAttribute('aria-expanded')).toBe('true');
-    expect(dialog().querySelector('select[aria-label="Reading width"]').value).toBe('40');
+    expect(dialog().querySelector('input[aria-label="Reading width"]').value).toBe('40');
     click(dialog().querySelector('[data-reading-version="both"]'));expect(dialog().querySelector('input[aria-label="Show changes"]').checked).toBe(true);
     expect(set).not.toHaveBeenCalled();
   });
@@ -261,14 +261,14 @@ describe('preview snapshot refresh',()=>{
     } finally {window.removeEventListener('alloflow:reading-preview',listen);}
   });
   it('discards local answers, navigation and appearance on refresh without saving them',()=>{
-    mount();open();click(dialog().querySelector('[data-reader-display]'));change(dialog().querySelector('select[aria-label="Reading width"]'),'40');
+    mount();open();click(dialog().querySelector('[data-reader-display]'));change(dialog().querySelector('input[aria-label="Reading width"]'),'40');
     click(dialog().querySelector('[data-reading-outline-toggle]'));click(dialog().querySelector('[data-reading-bookmark]'));
     const prompt=()=>dialog().querySelector('[data-section-prompts-toggle]')||[...dialog().querySelectorAll('button')].find(el=>el.textContent==='Think about this section');
     click(prompt());const answer=dialog().querySelector('[data-section-prompt="mainIdea"]');
     act(()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(answer,'A temporary answer');answer.dispatchEvent(new Event('input',{bubbles:true}));});expect(answer.value).toBe('A temporary answer');
     const set=vi.spyOn(Storage.prototype,'setItem'),remove=vi.spyOn(Storage.prototype,'removeItem');
     expect(dialog().textContent).toContain('discarded when you refresh or close it');click(dialog().querySelector('[data-student-preview-refresh]'));
-    expect(dialog().querySelector('select[aria-label="Reading width"]').value).toBe('72');expect(dialog().querySelector('[data-reader-display]').getAttribute('aria-expanded')).toBe('false');
+    expect(dialog().querySelector('input[aria-label="Reading width"]').value).toBe('72');expect(dialog().querySelector('[data-reader-display]').getAttribute('aria-expanded')).toBe('false');
     click(dialog().querySelector('[data-reading-outline-toggle]'));click(prompt());expect(dialog().querySelector('[data-section-prompt="mainIdea"]').value).toBe('');
     expect(set).not.toHaveBeenCalled();expect(remove).not.toHaveBeenCalled();
   });

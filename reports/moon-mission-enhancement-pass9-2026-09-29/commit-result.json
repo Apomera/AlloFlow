@@ -1,0 +1,41 @@
+{
+  "commit": "5e2cffdfd525608ec631be6a8a78f4f36f0088e9",
+  "subject": "Improve Moon Mission powered descent approach",
+  "parent": "4e38e638fcd4d5222abaf2296f3a83318876d5fe",
+  "committedPaths": [
+    "stem_lab/stem_tool_moonmission.js",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+    "tests/moonmission_approach_physics.test.js",
+    "tests/moonmission_approach_saved_state.test.js",
+    "tests/moonmission_approach_visuals.test.js",
+    "tests/e2e/moon-mission-powered-approach.spec.ts",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/README.md",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/PHYSICS.md",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/verification.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/source-verification.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/candidate-tests.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/approach-tests-initial.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/approach-tests-verified.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/unit-initial.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/unit-final-run.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/unit-verified.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/dashboard-rerun.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser-initial.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser-verified.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/phone-axe.json",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/approach-whole-chromium.png",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/approach-local-chromium.png",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/approach-low-gate-chromium.png",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/approach-handover-chromium.png",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/approach-short-plan-chromium.png",
+    "reports/moon-mission-enhancement-pass9-2026-09-29/browser/approach-phone-320-chromium.png"
+  ],
+  "unrelatedIndexPreserved": true,
+  "source": {
+    "workingSHA256": "8716c8a903af6f2c59a07680129febbd6bc8100d0639a06e13ad9e39ab7c543e",
+    "candidateSHA256": "f93f0bef8568e3a45b5a0fe86102f0e0a7e524775fb2c4c8f68e2db84508f48e",
+    "publicMatchesWorking": true,
+    "preservedMoonwalkHunks": 34,
+    "syntaxPassed": true
+  }
+}

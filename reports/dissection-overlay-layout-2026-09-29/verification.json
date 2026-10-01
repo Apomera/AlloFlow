@@ -1,0 +1,9 @@
+{
+  "browserScenarios": 24,
+  "finalAffectedBrowserScenarios": 9,
+  "focusedRegressionChecks": 109,
+  "rendererCopiesMatch": true,
+  "javascriptSyntaxValid": true,
+  "scopedWhitespaceClean": true,
+  "rendererSha256": "c0eb0f733901def5a57d842efe39c3ad11badc8bbbaf0582816c0396e98e72b8"
+}

@@ -66,8 +66,9 @@ describe('reader place persistence contract', () => {
     expect(() => f.store.load(scope({ fingerprint: 'new' }))).not.toThrow();
   });
 
+  // The default limit is 400 rows; these pin the eviction rules at 80.
   it('protects bookmarks and answers when evicting the 81st record', async () => {
-    const f = fixture();
+    const f = fixture({ maxRecords: 80 });
     const rows = {};
     for (let i = 0; i < 80; i++) rows[key(scope({ itemId: String(i) }))] = i === 0 ? { bookmark: { paragraph: 2, snippet: 'Keep' }, at: 0 } : { paragraph: i, at: i };
     rows[key(scope({ itemId: '2' }))].responses = { 0: { mainIdea: 'Also keep' } };
@@ -81,7 +82,7 @@ describe('reader place persistence contract', () => {
   });
 
   it('reports capacity when all 80 records contain authored work, including another learner', async () => {
-    const f = fixture(), rows = {};
+    const f = fixture({ maxRecords: 80 }), rows = {};
     for (let i = 0; i < 80; i++) rows[key(scope({ learner: 'another learner', itemId: String(i) }))] = answer('Keep');
     f.seed(JSON.stringify(rows)); const raw = f.raw();
     expect(await f.store.save(scope(), answer('Draft'))).toMatchObject({ status: 'failed', reason: 'capacity', place: answer('Draft') });

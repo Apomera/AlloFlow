@@ -44,6 +44,13 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // Fallback-aware translator reachable from every call site in this tool.
+  var __alloCtx_semiconductor = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCtx_semiconductor && typeof __alloCtx_semiconductor.t === "function") ? __alloCtx_semiconductor.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
 
   // ── Audio + WCAG (auto-injected) ──
   var _semiAC = null;
@@ -610,7 +617,7 @@ window.StemLab = window.StemLab || {
       comparison&&h('p',null,'Amber dash-dot curve and square: reference gate. The white dot and cyan/lavender curve follow the current gate. When values match, their markers overlap.'),
       h('label',{className:'semi-mos-curve-control'},'Drain-bias magnitude',
         h('input',{type:'range',min:0,max:10,step:.01,value:Math.max(0,m.polarity*m.drain),disabled:!props.onExperiment,
-          'aria-label':'Drain-bias magnitude on the current–voltage curve','aria-valuetext':Math.max(0,m.polarity*m.drain).toFixed(2)+' volts magnitude; VDS '+m.drain.toFixed(2)+' volts',
+          'aria-label':__alloT('stem.semiconductor.a11y_drain_bias_magnitude_on_the_current_voltage_cur', 'Drain-bias magnitude on the current–voltage curve'),'aria-valuetext':Math.max(0,m.polarity*m.drain).toFixed(2)+' volts magnitude; VDS '+m.drain.toFixed(2)+' volts',
           onChange:function(e){props.onExperiment({drainVoltage:m.polarity*Number(e.target.value)});}})),
       h('p',{className:'semi-mos-curve-reading',role:'status'},reading),
       comparison&&h('section',{className:'semi-mos-comparison','aria-label':t('stem.semiconductor.gate_voltage_comparison','Gate-voltage comparison')},
@@ -1349,6 +1356,7 @@ window.StemLab = window.StemLab || {
     ready: true,
 
     render: function(ctx) {
+      try { __alloCtx_semiconductor = ctx; } catch (e) {}
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -3248,7 +3256,7 @@ window.StemLab = window.StemLab || {
         function next(){
           if(stage<7){goStage(stage+1);return;}
           if(visited.length<8){goStage(stages.findIndex(function(_,i){return visited.indexOf(i)<0;}));return;}
-          if(!complete){upd('fabCompleted',true);tryAwardXP('fab-complete',50,'Completed wafer process walkthrough');if(announceToSR)announceToSR('Wafer fabrication walkthrough complete');}
+          if(!complete){upd('fabCompleted',true);tryAwardXP('fab-complete',50,'Completed wafer process walkthrough');if(announceToSR)announceToSR(__alloT('stem.semiconductor.sr_wafer_fabrication_walkthrough_complete', 'Wafer fabrication walkthrough complete'));}
         }
         var description='Wafer fabrication stage '+(stage+1)+': '+current.name+'. '+current.result;
         if(stage>=2)description+=' Relative oxide growth index '+growth.index.toFixed(2)+'.';
@@ -4584,7 +4592,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'mt-1 text-sm text-slate-100 leading-relaxed' }, t('stem.semiconductor.open_one_card_then_test_the_idea', 'Open one card to build the idea, then test it in the simulator. Band gap energy is the key that connects materials, light, and temperature.')),
             btn('⚡ Try Band Gap simulator', function() {
               updMulti({ mode: 'explore', subtool: 'bandgap', aiExplain: null });
-              if (announceToSR) announceToSR('Opened Band Gap simulator from Learn');
+              if (announceToSR) announceToSR(__alloT('stem.semiconductor.sr_opened_band_gap_simulator_from_learn', 'Opened Band Gap simulator from Learn'));
             }, 'mt-2 bg-cyan-700 text-white hover:bg-cyan-800')
           ),
           TOPICS.map(function(item, topicIndex) {
@@ -4625,7 +4633,7 @@ window.StemLab = window.StemLab || {
       }
 
       var backBtn = h('button', Object.assign({
-        onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEAM Lab tools'); },
+        onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR(__alloT('stem.semiconductor.sr_returned_to_steam_lab_tools', 'Returned to STEAM Lab tools')); },
         className: 'semi-action flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/80 px-3 py-2 text-xs font-bold text-slate-100 hover:border-cyan-400 hover:bg-slate-800 hover:text-white transition-colors mb-3'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
         h(ArrowLeft, { size: 14 }), t('stem.semiconductor.back_to_stem_lab', ' Back to STEAM Lab')
@@ -4833,7 +4841,7 @@ window.StemLab = window.StemLab || {
             return snapshots.concat([entry]);
           });
           addToast('Snapshot and live values saved to your notebook.','success');
-          if(announceToSR)announceToSR('Snapshot saved');
+          if(announceToSR)announceToSR(__alloT('stem.semiconductor.sr_snapshot_saved', 'Snapshot saved'));
         },
         className: 'semi-snapshot mt-3 ml-auto px-5 py-2 text-xs font-black text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all',
         'aria-label': snapshotLabel + '. Save the current Semiconductor Lab state to your notebook.',
@@ -5162,7 +5170,7 @@ window.StemLab = window.StemLab || {
         upd('guidedObservationSaved', subtool);
         addToast('Observation saved to your lab notebook.', 'success');
         tryAwardXP('guided-explain-' + subtool, 5, 'Explained a ' + getSubtoolLabel(subtool) + ' observation');
-        if (announceToSR) announceToSR('Observation saved to your lab notebook. Guided experiment complete.');
+        if (announceToSR) announceToSR(__alloT('stem.semiconductor.sr_observation_saved_to_your_lab_notebook_guided_exp', 'Observation saved to your lab notebook. Guided experiment complete.'));
       }
       function guidedStepClass(done, active) {
         return 'semi-guided-step rounded-lg border p-2 text-sm ' + (done

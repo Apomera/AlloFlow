@@ -12,10 +12,11 @@ beforeAll(() => {
   // Mutation runs load scratch copies so a mutant never reaches the shared files.
   const load = (name, env) => process.env[env] ? new Function(readFileSync(process.env[env], 'utf8'))() : loadAlloModule(name);
   load('instructional_context_module.js', 'ADAPTED_HELP_CONTRACT');
-  loadAlloModule('firestore_sync_module.js');
+  load('firestore_sync_module.js', 'ADAPTED_HELP_FIRESTORE');
   // The app loads it (with React) at start-up; exports use its credit line.
   window.React = window.React || createRequire(import.meta.url)(resolve('desktop/web-app/node_modules/react'));
   loadAlloModule('alt_text_module.js');
+  load('shared_activity_module.js', 'ADAPTED_HELP_SHARED');
   load('doc_pipeline_module.js', 'ADAPTED_HELP_DOCS');
   contract = window.AlloModules.InstructionalContext;
   pipeline = window.AlloModules.createDocPipeline({
@@ -24,7 +25,9 @@ beforeAll(() => {
     getDefaultTitle: () => 'Reading', state: { leveledTextLanguage: 'English', exportConfig: {}, currentUiLanguage: 'English' }
   });
   const source = readFileSync(process.env.ADAPTED_HELP_PACK || 'live_aac_source.jsx', 'utf8');
-  const start = source.indexOf('const _alloSerializeResourceForStudentPack =');
+  // Start at the serializer, or at the teacher-only field filter it calls when that sits above it.
+  const start = Math.min(...['const _ALLO_TEACHER_ONLY_KEYS', 'const _alloSerializeResourceForStudentPack =']
+    .map(marker => source.indexOf(marker)).filter(index => index >= 0));
   const end = source.indexOf('const LiveAacBoardDialog =', start);
   serialize = new Function('window', source.slice(start, end) + '\nreturn _alloSerializeResourceForStudentPack;')(window);
 });
@@ -106,6 +109,46 @@ describe('adapted word help in student packs', () => {
     const { sourceSnapshot, ...item } = adapted(true, [['heron', 'A tall wading bird.', { src: 'data:image/png;base64,QUJD', alt: 'A heron.', source: 'mulberry' }]]);
     const packed = serialize(item, { sanitizeHistoryForCloud: window.sanitizeHistoryForCloud, stripUndefined: value => value });
     expect(contract.validateAdaptedReadingSupports(packed, packed.adaptedReadingSupports).annotations[0]).toMatchObject({ quote: 'heron', image: { alt: 'A heron.' } });
+  });
+
+  it('never sends hidden word help to students, and tells the sharing teacher why', () => {
+    const item = adapted(false, [['heron', 'UNREVIEWED AI TEXT']]);
+    const packed = serialize(item, { sanitizeHistoryForCloud: window.sanitizeHistoryForCloud, stripUndefined: value => value });
+    expect(packed.adaptedReadingSupports).toBeUndefined();
+    expect(JSON.stringify(packed)).not.toContain('UNREVIEWED AI TEXT');
+    expect(packed.readingDelivery.adaptedWordHelp).toBe('hidden');
+    const summary = window.AlloModules.SharedActivity.describeAssignmentDelivery([packed], packed.id);
+    expect(summary.readings[0].capabilities.adaptedSupports).toMatchObject({ inclusion: 'omitted', reason: 'not-shown', activeCount: 0 });
+  });
+
+  it('never sends word help for an edited passage, and keeps the teacher warning', () => {
+    const item = { ...adapted(true, [['heron', 'A tall wading bird.']]), data: 'An egret stood still in the reeds.' };
+    const packed = serialize(item, { sanitizeHistoryForCloud: window.sanitizeHistoryForCloud, stripUndefined: value => value });
+    expect(packed.adaptedReadingSupports).toBeUndefined();
+    expect(JSON.stringify(packed)).not.toContain('A tall wading bird.');
+    expect(packed.readingDelivery.adaptedWordHelp).toBe('stale');
+    const summary = window.AlloModules.SharedActivity.describeAssignmentDelivery([packed], packed.id);
+    expect(summary.readings[0].capabilities.adaptedSupports.reason).toBe('stale-identity');
+  });
+
+  it('sends a live session only word help the teacher has shown', () => {
+    const shown = adapted(true, [['heron', 'A tall wading bird.']]);
+    const hidden = { ...adapted(false, [['shallow', 'UNREVIEWED AI TEXT']]), id: 'adapted-2' };
+    const { resources } = window.prepareSessionResourcesForWrite([shown, hidden]);
+    const byId = Object.fromEntries(resources.map(resource => [resource.id, resource]));
+    expect(contract.validateAdaptedReadingSupports(byId['adapted-1'], byId['adapted-1'].adaptedReadingSupports)).toMatchObject({ shown: true, annotations: [{ quote: 'heron' }] });
+    expect(byId['adapted-2'].adaptedReadingSupports).toBeUndefined();
+    expect(JSON.stringify(resources)).not.toContain('UNREVIEWED AI TEXT');
+    // The teacher's own copy is untouched.
+    expect(hidden.adaptedReadingSupports.annotations[0].text).toBe('UNREVIEWED AI TEXT');
+  });
+
+  it('a missing entry in saved word help does not stop a pack from being made', () => {
+    const original = contract.createSupportedReading('The heron waded through the marsh.', { id: 'orig' });
+    original.readingSupports = contract.upsertReadingSupport(original, undefined, { id: 'h', start: 4, end: 9, quote: 'heron', text: 'A tall wading bird.' });
+    original.readingSupports = { ...original.readingSupports, annotations: [null, ...original.readingSupports.annotations] };
+    const packed = serialize(original, { sanitizeHistoryForCloud: window.sanitizeHistoryForCloud, stripUndefined: value => value });
+    expect(contract.validateReadingSupports(packed, packed.readingSupports).annotations.map(entry => entry.quote)).toEqual(['heron']);
   });
 
   it('keeps pictures on the original\'s word supports too', () => {

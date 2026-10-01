@@ -1,0 +1,17 @@
+{
+  "processes": [
+    {
+      "ProcessId": 55352,
+      "ParentProcessId": 47048,
+      "CreationDate": "2026-09-30T17:32:11.64056-04:00",
+      "CommandLine": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vitest/vitest.mjs run tests/moonmission_approach_physics.test.js tests/moonmission_approach_saved_state.test.js tests/moonmission_approach_visuals.test.js tests/moonmission_ascent_model.test.js tests/moonmission_ascent_physics.test.js tests/moonmission_ascent_playback.test.js tests/moonmission_ascent_visuals.test.js tests/moonmission_audio_glossary.test.js tests/moonmission_dashboard_state.test.js tests/moonmission_debrief_flights.test.js tests/moonmission_descent_geometry.test.js tests/moonmission_descent_model.test.js tests/moonmission_docking_physics.test.js tests/moonmission_earth_globe.test.js tests/moonmission_entry_physics.test.js tests/moonmission_entry_planner.test.js tests/moonmission_entry_saved_state.test.js tests/moonmission_eva_resources.test.js tests/moonmission_event_costs.test.js tests/moonmission_flight_recorder.test.js tests/moonmission_focus_samples.test.js tests/moonmission_form_controls_a11y.test.js tests/moonmission_label_in_name.test.js tests/moonmission_landing_restore.test.js tests/moonmission_launch_physics.test.js tests/moonmission_launch_playback.test.js tests/moonmission_loi_physics.test.js tests/moonmission_loi_playback.test.js tests/moonmission_loi_visuals.test.js tests/moonmission_lunar_environment_physics.test.js tests/moonmission_lunar_environment_saved_state.test.js tests/moonmission_lunar_environment_visuals.test.js tests/moonmission_lunar_surface.test.js tests/moonmission_moonwalk_realism.test.js tests/moonmission_moon_and_splash.test.js tests/moonmission_orbit_playback.test.js tests/moonmission_physics_realism.test.js tests/moonmission_predictions.test.js tests/moonmission_proceed_gates.test.js tests/moonmission_return_handoff.test.js tests/moonmission_return_orbit.test.js tests/moonmission_return_saved_state.test.js tests/moonmission_return_visuals.test.js tests/moonmission_rover_physics.test.js tests/moonmission_saturn_v.test.js tests/moonmission_saved_state.test.js tests/moonmission_science_numbers.test.js tests/moonmission_tli_physics.test.js tests/moonmission_tli_saved_state.test.js tests/moonmission_tli_visuals.test.js tests/moonmission_tli_window.test.js tests/moonmission_transit_physics.test.js tests/moonmission_transit_playback.test.js tests/moonmission_transit_visuals.test.js tests/moon_mission_lrv_traverse.test.js tests/moonmission_departure_physics.test.js tests/moonmission_departure_saved_state.test.js tests/moonmission_departure_visuals.test.js --maxWorkers=1 --reporter=default --reporter=json --outputFile=reports/moon-mission-enhancement-pass12-2026-09-30/unit-verified.json"
+    },
+    {
+      "ProcessId": 25860,
+      "ParentProcessId": 55352,
+      "CreationDate": "2026-09-30T17:44:06.3914-04:00",
+      "CommandLine": "\"C:\\Program Files\\nodejs\\node.exe\" --experimental-import-meta-resolve --require C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/suppress-warnings.cjs --conditions node --conditions development C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\dist\\workers\\forks.js"
+    }
+  ],
+  "reason": "Final declaration and coast-camera corrections pending; replace resource-heavy fork validation with isolated threads on the shared host"
+}

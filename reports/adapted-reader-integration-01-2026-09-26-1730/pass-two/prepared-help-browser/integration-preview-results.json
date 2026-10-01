@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "inputRoot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "readerSha256": "817c30b553f3150b11c6f1ee41e655e5c20a43ddd3129942d2961acd6e5b09cd",
+  "checks": [
+    "preview is outside the teacher reader",
+    "background is inert and aria-hidden",
+    "preview spotlight remains in preview",
+    "preview audio remains disabled",
+    "card Escape keeps preview open and returns focus",
+    "second Escape closes preview",
+    "teacher spotlight and All word help stay in teacher reader after preview closes"
+  ],
+  "errors": []
+}

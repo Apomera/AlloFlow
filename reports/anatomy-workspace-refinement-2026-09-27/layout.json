@@ -1,0 +1,263 @@
+[
+  {
+    "width": 1440,
+    "overflow": 0,
+    "modelTop": 364.390625,
+    "fonts": [
+      {
+        "text": "Body systemSkeletalMuscularCirculat",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "Learning levelK–56–89–12+",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "Search anatomy",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "More controls",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "View atlas",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "Browse structures",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "🦴 Skeletal",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "18px"
+      },
+      {
+        "text": "The skull has 22 bones. Most meet a",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "You have 12 pairs of ribs that form",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "The humerus is the long bone of the",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "The pelvis is a ring of bones at th",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "The femur is the long bone in your ",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": 0,
+    "modelTop": 569.96875,
+    "fonts": [
+      {
+        "text": "Body systemSkeletalMuscularCirculat",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "Learning levelK–56–89–12+",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "Search anatomy",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "More controls",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "View atlas",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "Browse structures",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "🦴 Skeletal",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "16px"
+      },
+      {
+        "text": "The skull has 22 bones. Most meet a",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "You have 12 pairs of ribs that form",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "The humerus is the long bone of the",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "The pelvis is a ring of bones at th",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "text": "The femur is the long bone in your ",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "size": "12px"
+      }
+    ]
+  },
+  [
+    {
+      "text": "← Previous",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "Next →",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "Skeletal / anterior",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Skull (Cranium)",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "23px"
+    },
+    {
+      "text": "🔊 Hear it",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Show on atlas",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "Compare",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "← Structures",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "Function🔊",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "🔊",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Protects the brain. The skull has 8 cranial b",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "13px"
+    },
+    {
+      "text": "🧠 Myth buster🔊",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "🔊",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Many people think: “The skull is one solid bo",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "13px"
+    },
+    {
+      "text": "Actually: The skull has 22 bones. Most meet a",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "13px"
+    },
+    {
+      "text": "Clinical context",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "13px"
+    },
+    {
+      "text": "🔊",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Fractures may cause epidural or subdural hema",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "13px"
+    },
+    {
+      "text": "Detail",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Houses meninges, brain, and cranial nerve for",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "13px"
+    },
+    {
+      "text": "System membership: Skeletal",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "These references support the system grouping ",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "12px"
+    },
+    {
+      "text": "Explore processes that involve this structure",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "Explore all links",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    },
+    {
+      "text": "No direct process link has been authored for ",
+      "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "size": "11px"
+    }
+  ]
+]

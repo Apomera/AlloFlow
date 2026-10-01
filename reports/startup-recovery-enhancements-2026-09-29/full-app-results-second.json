@@ -1,0 +1,338 @@
+{
+  "at": "2026-09-29T23:26:23.546Z",
+  "preview": {
+    "at": "2026-09-29T23:15:54.303Z",
+    "hostSha256": "05e355c901685edb11527b0ba2c5cd8a565e670bc133c010ea7449d700236fee",
+    "shellSha256": "707ef16f3b4a914f89fe08b497bea99b2b6d539882847bf3ecc4e9bd33d78145",
+    "js": "main.96c881a5.js",
+    "css": "main.fb282081.css",
+    "build": "esbuild production; existing compiled Tailwind plus current host CSS; verification output only"
+  },
+  "results": [
+    {
+      "scenario": "plain",
+      "errors": [],
+      "downloads": [
+        "Verified-plain.json"
+      ],
+      "cryptoRequests": 1,
+      "filename": "Verified-plain.json",
+      "unhandled": [],
+      "passed": true
+    },
+    {
+      "scenario": "cancel-encryption",
+      "errors": [],
+      "downloads": [],
+      "cryptoRequests": 1,
+      "failure": "TimeoutError: locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-help-key=\"history_save_teacher\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\" role=\"menuitem\" data-help-key=\"history_save_teacher\" class=\"flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 \">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    41 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    21 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-ai-backend-modal-overlay=\"true\" class=\"fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+      "buttons": [
+        {
+          "text": "Teacher Grading Dashboard",
+          "label": "Teacher Grading Dashboard",
+          "help": "header_dashboard"
+        },
+        {
+          "text": "Learn",
+          "label": "Learning Tools",
+          "help": "header_learning_hub"
+        },
+        {
+          "text": "Tools",
+          "label": "Educator Tools",
+          "help": "header_educator_hub"
+        },
+        {
+          "text": "Teach Live",
+          "label": "Teach Live",
+          "help": "header_session_start"
+        },
+        {
+          "text": "Start & setup",
+          "label": null,
+          "help": "header_rerun_wizard"
+        },
+        {
+          "text": "More information",
+          "label": null
+        },
+        {
+          "text": " Create",
+          "label": null,
+          "help": "sidebar_tab_create"
+        },
+        {
+          "text": " History",
+          "label": null,
+          "help": "sidebar_tab_history"
+        },
+        {
+          "text": "AI Guide & AssistantPedagogy, Navigation & Auto-Setup",
+          "label": null,
+          "help": "tool_udl"
+        },
+        {
+          "text": "",
+          "label": "Class Roster Key",
+          "help": "roster_manage_button"
+        },
+        {
+          "text": "Create one",
+          "label": null
+        },
+        {
+          "text": "More ",
+          "label": "More resource pack actions"
+        },
+        {
+          "text": "",
+          "label": "Close more resource pack actions"
+        },
+        {
+          "text": "Manage local storage and recovery",
+          "label": null,
+          "help": "history_device_storage"
+        },
+        {
+          "text": "Load Project",
+          "label": null,
+          "help": "history_load_project"
+        },
+        {
+          "text": "Maximize History",
+          "label": null,
+          "help": "history_max_toggle"
+        },
+        {
+          "text": "Save Project (Teacher Full Backup)",
+          "label": null,
+          "help": "history_save_teacher"
+        },
+        {
+          "text": "Save as Student Project (Locked View)",
+          "label": null,
+          "help": "history_save_student"
+        },
+        {
+          "text": "Share resource pack",
+          "label": null,
+          "help": "history_share_pack"
+        },
+        {
+          "text": "Project Settings",
+          "label": null,
+          "help": "history_settings"
+        },
+        {
+          "text": "Clear History",
+          "label": null,
+          "help": "history_clear_button"
+        },
+        {
+          "text": "",
+          "label": "Create New Unit Folder",
+          "help": "history_create_unit_btn"
+        },
+        {
+          "text": "Private water cycle lessonText Adaptation & EngagementAdapted text · Not designa",
+          "label": "Private water cycle lesson. Current"
+        },
+        {
+          "text": "Actions ▾",
+          "label": "Actions: Private water cycle lesson"
+        },
+        {
+          "text": "Annotate",
+          "label": null
+        },
+        {
+          "text": "📋 List",
+          "label": "Toggle annotation list"
+        },
+        {
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "text": "Skip reading controls",
+          "label": null
+        },
+        {
+          "text": "Read",
+          "label": null,
+          "help": "simplified_read_mode"
+        },
+        {
+          "text": "Word meaning",
+          "label": null,
+          "help": "simplified_define_mode"
+        },
+        {
+          "text": "Word sounds",
+          "label": null,
+          "help": "simplified_phonics_mode"
+        },
+        {
+          "text": "Explain",
+          "label": null,
+          "help": "simplified_explain_mode"
+        },
+        {
+          "text": "Practice",
+          "label": null
+        },
+        {
+          "text": "Focus view",
+          "label": null
+        },
+        {
+          "text": "AaDisplay",
+          "label": null
+        },
+        {
+          "text": "Add Term",
+          "label": null,
+          "help": "simplified_add_term"
+        },
+        {
+          "text": "Revise",
+          "label": null,
+          "help": "simplified_revise_mode"
+        },
+        {
+          "text": "Teacher tools",
+          "label": null,
+          "help": "simplified_teacher_tools"
+        },
+        {
+          "text": "Edit",
+          "label": null,
+          "help": "simplified_edit"
+        },
+        {
+          "text": "Preview reading layout",
+          "label": null
+        },
+        {
+          "text": "Manage narration 0/1 ready for playback · 0/12 MB",
+          "label": null
+        },
+        {
+          "text": "Use for activities",
+          "label": null
+        },
+        {
+          "text": "Original",
+          "label": null
+        },
+        {
+          "text": "Adapted",
+          "label": null
+        },
+        {
+          "text": "Both",
+          "label": null
+        },
+        {
+          "text": "Listen from the beginning",
+          "label": null
+        },
+        {
+          "text": "Read & reflect",
+          "label": null
+        },
+        {
+          "text": "Think about a section",
+          "label": null
+        },
+        {
+          "text": " Back",
+          "label": null
+        },
+        {
+          "text": "Next ",
+          "label": null
+        },
+        {
+          "text": "Student tools",
+          "label": "Open Student Tools",
+          "help": "fab_toggle"
+        },
+        {
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "text": "🚀Use AlloFlow inside Gemini CanvasNo setupThe easiest way to get AI: open AlloF",
+          "label": null,
+          "help": "ai_backend_guided_card_canvas"
+        },
+        {
+          "text": "✨Google GeminiRecommendedBest quality and speed. Runs in Google's cloud with a f",
+          "label": null,
+          "help": "ai_backend_guided_card_gemini"
+        },
+        {
+          "text": "🔒Private AI on this computerMost privateEverything stays on this computer — no ",
+          "label": null,
+          "help": "ai_backend_guided_card_private"
+        },
+        {
+          "text": "🔌An AI app I already runAlready use LM Studio, Ollama, or LocalAI on this compu",
+          "label": null,
+          "help": "ai_backend_guided_card_connect"
+        },
+        {
+          "text": "Open saved work",
+          "label": null,
+          "help": "ai_backend_guided_storage_btn"
+        },
+        {
+          "text": "▼Advanced settings",
+          "label": null,
+          "help": "ai_backend_advanced_toggle"
+        },
+        {
+          "text": "",
+          "label": "Hide AI Assistant",
+          "help": "bot_sleep_btn"
+        },
+        {
+          "text": "",
+          "label": "Open voice and TTS settings",
+          "help": "bot_settings_btn"
+        },
+        {
+          "text": "",
+          "label": "Mute Voice",
+          "help": "bot_mute_btn"
+        },
+        {
+          "text": "",
+          "label": "Voice Input",
+          "help": "bot_mic_btn"
+        },
+        {
+          "text": "",
+          "label": "Open voice and TTS settings"
+        },
+        {
+          "text": "⚠ 1 error",
+          "label": "View captured errors and report a bug"
+        }
+      ]
+    },
+    {
+      "scenario": "failed-encryption",
+      "errors": [],
+      "downloads": [
+        "Verified-failed-encryption.enc.json"
+      ],
+      "cryptoRequests": 5,
+      "filename": "Verified-failed-encryption.enc.json",
+      "decryptionVerified": true,
+      "unhandled": [],
+      "passed": true
+    }
+  ]
+}

@@ -1655,6 +1655,24 @@ const MEMORY_AID_VISUAL_CHECK_INPUTS = Object.freeze([
 ]);
 const MEMORY_AID_VISUAL_REVIEW_INPUTS = Object.freeze(MEMORY_AID_VISUAL_CHECK_INPUTS.concat(['visualAlt']));
 
+// Target/fact meaning, ignoring case and spacing.
+function _maMeaningHash(card) {
+  const fold = value => _maString(value, 1000).normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
+  return _maStableHash([fold(card && (card.target || card.concept))].concat(_maList(card && (card.essentialFacts || card.facts), 10, 600).map(fold)).join('\n'));
+}
+
+// What a target or fact edit clears (below). The editor keeps this copy so the
+// teacher can restore it instead of losing it on the first keystroke.
+function memoryAidDerivedSnapshot(card) {
+  const raw = card && typeof card === 'object' ? card : {};
+  const values = {
+    recallQuestion: _maString(raw.recallQuestion, 1600), applicationQuestion: _maString(raw.applicationQuestion, 1600), applicationGuidance: _maString(raw.applicationGuidance, 2000),
+    connections: Array.isArray(raw.connections) ? raw.connections.slice(0, 12) : [], hookFact: raw.hookFact || null,
+  };
+  const present = values.recallQuestion.trim() || values.applicationQuestion.trim() || values.applicationGuidance.trim() || values.connections.length || values.hookFact;
+  return present ? { basis: _maMeaningHash(raw), values } : null;
+}
+
 function applyMemoryAidCardPatch(card, patch) {
   const current = card && typeof card === 'object' ? card : {};
   const resolvedPatch = typeof patch === 'function' ? patch(current) : patch;
@@ -2249,7 +2267,7 @@ function MemoryAidPanel(props) {
       <label className="block text-sm font-bold text-slate-800">{tr('panel_authorship_pathway', 'Authorship pathway')}<select data-help-key="memory_aid_authorship" aria-label={tr('panel_authorship_pathway_aria', 'Memory aid authorship pathway')} value={authorship} onChange={e => setMemoryAidAuthorshipMode(e.target.value)} className={control}><option value="progressive">{tr('panel_progressive_option', 'See one → Build one → Create one')}</option>{Object.entries(MEMORY_AID_MODES).map(([id]) => <option key={id} value={id}>{trMeta('mode', id, 'label', MEMORY_AID_MODES)}</option>)}</select></label>
       <label className="block text-sm font-bold text-slate-800">{tr('panel_student_reasoning', 'Student reasoning')}<select data-help-key="memory_aid_reasoning" aria-label={tr('panel_student_reasoning_aria', 'Student reasoning level')} value={memoryAidReflectionLevel || 'quick'} onChange={e => {setMemoryAidReflectionLevel(e.target.value);if(e.target.value === 'none')setMemoryAidReasoningRequired(false);}} className={control}>{Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id]) => <option key={id} value={id}>{trMeta('reflection', id, 'label', MEMORY_AID_REFLECTION_LEVELS)}</option>)}</select></label>
       {(memoryAidReflectionLevel || 'quick') !== 'none' && <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={memoryAidReasoningRequired === true} onChange={e => setMemoryAidReasoningRequired(e.target.checked)} />{tr('panel_require_reasoning', 'Require reasoning before AI feedback')}</label>}
-      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={memoryAidIncludeHookFacts === true} onChange={e => setMemoryAidIncludeHookFacts(e.target.checked)} />{tr('panel_include_hook_facts', 'Add web-sourced fun facts')}</label>
+      <label data-help-key="memory_aid_hook_facts" className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={memoryAidIncludeHookFacts === true} onChange={e => setMemoryAidIncludeHookFacts(e.target.checked)} />{tr('panel_include_hook_facts', 'Add web-sourced fun facts')}</label>
     </div></details>
     <button type="button" onClick={previewTargets} disabled={!hasSourceOrAnalysis || isProcessing} className="min-h-11 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-teal-900 disabled:opacity-50">{tr('preview_targets', 'Preview and edit targets')}</button>
     <p role="status" className="text-sm text-slate-600">{previewMessage}</p>
@@ -2901,14 +2919,45 @@ function MemoryAidView(props) {
     });
   }, [embeddedPracticeFingerprint, handleNoteUpdate]);
 
+  // A target or fact edit clears derived content (applyMemoryAidCardPatch). Keep
+  // what the first such edit cleared so the teacher can restore it, and restore
+  // it automatically when the text returns to where it started (case and
+  // spacing ignored). Only empty fields are refilled, so newer writing stays.
+  const derivedSnapshotsRef = React.useRef({});
+  const [derivedSnapshots, setDerivedSnapshots] = React.useState({});
+  const setDerivedSnapshot = (cardId, snapshot) => {
+    const next = { ...derivedSnapshotsRef.current };
+    if (snapshot) next[cardId] = snapshot; else delete next[cardId];
+    derivedSnapshotsRef.current = next; setDerivedSnapshots(next);
+  };
+  const emptyDerived = (card, values) => Object.fromEntries(Object.entries(values).filter(([key]) => {
+    const value = card[key];
+    return value == null || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0);
+  }));
   const updateCard = React.useCallback((cardId, patch) => {
+    const meaningEdit = !!patch && typeof patch === 'object' && ['target', 'essentialFacts'].some(key => Object.prototype.hasOwnProperty.call(patch, key));
+    const before = meaningEdit ? cards.find(card => card.id === cardId) : null;
+    const saved = derivedSnapshotsRef.current[cardId];
+    const held = saved || (before ? memoryAidDerivedSnapshot(before) : null);
+    const restore = !!(held && before && _maMeaningHash(applyMemoryAidCardPatch(before, patch)) === held.basis);
+    if (restore && saved) setDerivedSnapshot(cardId, null);
+    else if (held && !saved && !restore) setDerivedSnapshot(cardId, held);
     commitField('cards', current => normalizeMemoryAidCards(
       Array.isArray(current) ? current : cards,
       data.authorshipMode
     ).map(normalized => {
-      return normalized.id === cardId ? applyMemoryAidCardPatch(normalized, patch) : normalized;
+      if (normalized.id !== cardId) return normalized;
+      const next = applyMemoryAidCardPatch(normalized, patch);
+      return restore ? applyMemoryAidCardPatch(next, emptyDerived(next, held.values)) : next;
     }));
   }, [cards, commitField, data.authorshipMode]);
+  const restoreDerived = (cardId) => {
+    const held = derivedSnapshotsRef.current[cardId];
+    setDerivedSnapshot(cardId, null);
+    if (!held) return;
+    commitField('cards', current => normalizeMemoryAidCards(Array.isArray(current) ? current : cards, data.authorshipMode)
+      .map(normalized => normalized.id === cardId ? applyMemoryAidCardPatch(normalized, emptyDerived(normalized, held.values)) : normalized));
+  };
 
   const finishEditing = () => {
     // Count from the CURRENT snapshot: the updater below runs later, inside the
@@ -3635,9 +3684,19 @@ function MemoryAidView(props) {
     commitField('cards', cards.concat(next));
   };
 
-  const removeCard = (cardId) => {
-    if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm(tr('confirm_remove_target', 'Remove this memory target?'))) return;
-    commitField('cards', cards.filter(card => card.id !== cardId));
+  // window.confirm returns false instantly in Gemini Canvas; AlloFlowUX.confirm is the in-app dialog.
+  const removeCard = async (cardId) => {
+    const message = tr('confirm_remove_target', 'Remove this memory target?');
+    let confirmed = false;
+    try {
+      const ux = typeof window !== 'undefined' ? window.AlloFlowUX : null;
+      confirmed = ux && typeof ux.confirm === 'function'
+        ? await ux.confirm(message, { confirmText: tr('card_remove', 'Remove target'), tone: 'danger' })
+        : typeof window !== 'undefined' && typeof window.confirm === 'function' && window.confirm(message);
+    } catch (_) { confirmed = false; }
+    if (!confirmed) return;
+    commitField('cards', current => normalizeMemoryAidCards(Array.isArray(current) ? current : cards, data.authorshipMode).filter(card => card.id !== cardId));
+    setTimeout(() => { const next = typeof document !== 'undefined' && document.getElementById('memory-aid-add-target'); if (next) next.focus(); }, 0);
   };
 
   const moveCard = (cardId, direction) => {
@@ -3698,7 +3757,7 @@ function MemoryAidView(props) {
           </div>
           <div hidden={practiceIsolationActive && !isTeacherMode} className="memory-aid-no-print flex flex-wrap gap-2">
             {isTeacherMode && <button type="button" aria-pressed={isEditing} onClick={() => { if (isEditing) finishEditing(); else setIsEditing(true); }} className="min-h-11 rounded-xl border border-teal-700 bg-white px-3 py-2 text-sm font-black text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{isEditing ? tr('done_editing', 'Done editing') : tr('edit_resource', 'Edit resource')}</button>}
-            {!practiceIsolationActive && <button type="button" onClick={printResource} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('preview_worksheet', 'Preview student worksheet')}</button>}
+            {!practiceIsolationActive && <button type="button" onClick={printResource} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{isTeacherMode ? tr('preview_worksheet', 'Preview student worksheet') : tr('print_practice_sheet', 'Print my practice sheet')}</button>}
             {isTeacherMode && !practiceIsolationActive && typeof onPrintProp === 'function' && <button type="button" onClick={() => onPrintProp(generatedContent, { worksheet: false, teacherKey: true })} className="min-h-11 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold">{tr('teacher_reference', 'Teacher reference')}</button>}
           </div>
         </div>
@@ -3870,6 +3929,7 @@ function MemoryAidView(props) {
                 <div hidden={isEditing || activity !== 'study'}><MemoryAidStudyCard card={!hostIsProcessing && ['queued', 'generating'].includes(card.visualStatus) ? { ...card, visualStatus: 'failed' } : card} attempts={practiceAttempts} busy={busy} isProcessing={isProcessing} isTeacherMode={isTeacherMode} canGenerate={canManageVisual && !!callImagen} onGenerate={() => requestVisual(card)} onPersonalize={() => navigateStudy(card.id, 'personalize')} onRecall={() => navigateStudy(card.id, 'recall', false)} onResume={!isTeacherMode && !previewMode && !learnerReadOnly ? () => resumeFollowUp(card) : null} tr={tr} /></div>
                 <div hidden={!isEditing && activity !== 'personalize'} className="memory-aid-personalize space-y-4">
                 {!isEditing && memoryAidPracticeCue(card) && <section className="rounded-xl border border-teal-200 bg-teal-50 p-4"><h3 className="text-sm font-bold text-teal-900">{tr('personalize_current', 'Current memory cue')}</h3><p className="mt-2 whitespace-pre-wrap text-lg font-bold text-slate-900">{memoryAidPracticeCue(card)}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => navigateStudy(card.id)} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">{tr('personalize_keep', 'Use this cue')}</button>{!card.studentDraft.trim() && <button type="button" onClick={() => { updateCard(card.id, { studentDraft: memoryAidPracticeCue(card), visualNeedsReview: card.visualNeedsReview }); const draft = document.getElementById(domIdBase + '-draft'); if (draft) draft.focus(); }} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-900">{tr('personalize_copy', 'Edit a copy')}</button>}</div><p className="mt-2 text-xs text-slate-600">{tr('personalize_choice', 'Keep this cue, edit a copy, or write your own below. Explaining your connection is optional unless your teacher requires it.')}</p></section>}
+                {isEditing && derivedSnapshots[card.id] && <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p>{tr('derived_cleared_note', 'Changing the target or facts cleared this card\'s recall question, application question, cue connections, or fun fact, because they may no longer match. Restore them to review and edit, or keep them cleared.')}</p><div className="mt-2 flex flex-wrap gap-2"><button type="button" onClick={() => restoreDerived(card.id)} className="min-h-11 rounded-xl border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-950">{tr('derived_restore', 'Restore for review')}</button><button type="button" onClick={() => setDerivedSnapshot(card.id, null)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700">{tr('derived_keep_cleared', 'Keep them cleared')}</button></div></div>}
                 {isEditing && <section className="rounded-xl border border-teal-200 p-3"><label className="block text-sm font-bold">{tr('recall_question_editor', 'Question for recall without hints')}<textarea aria-label={tr('recall_question_aria', 'Recall question for {target}', { target: card.target })} value={card.recallQuestion} rows={2} maxLength={1600} onChange={e => updateCard(card.id, { recallQuestion: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 p-2 font-normal" /></label><p className="mt-2 text-sm text-slate-600">{tr('recall_question_help', 'Identify the topic or situation without including the facts, mnemonic, or answer. This question also appears on the worksheet without hints.')}</p>{card.recallQuestion.trim() && !memoryAidRecallQuestion(card) && <p role="status" className="mt-2 text-sm text-amber-950">{tr('recall_question_copy', 'This question appears to copy an answer or cue. Rewrite it before using it in recall without hints.')}</p>}</section>}
                 {isEditing && <details className="rounded-xl border border-slate-200 p-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold">{tr('application_editor', 'Application question and guidance')}</summary><label className="mt-2 block text-sm font-bold">{tr('application_question', 'Application question')}<textarea aria-label={tr('application_question', 'Application question')} value={card.applicationQuestion} maxLength={1600} rows={2} onChange={e => updateCard(card.id, { applicationQuestion: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-2 font-normal" /></label><label className="mt-2 block text-sm font-bold">{tr('application_guidance', 'Check your reasoning')}<textarea aria-label={tr('application_guidance', 'Check your reasoning')} value={card.applicationGuidance} maxLength={2000} rows={2} onChange={e => updateCard(card.id, { applicationGuidance: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-2 font-normal" /></label></details>}
                 <section hidden={!isEditing} tabIndex={-1} data-studio-review="facts" className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4" aria-label={tr('facts_region_aria', 'Facts for target {n}: {target}', { n: index + 1, target: card.target })}>
@@ -4005,7 +4065,7 @@ function MemoryAidView(props) {
                   )}
                   {card.visualImage && (
                     <figure className="mt-3 overflow-hidden rounded-2xl border border-fuchsia-200 bg-white p-2">
-                      <img src={card.visualImage} alt={card.visualAlt || buildMemoryAidVisualAlt(card)} loading="lazy" className="mx-auto max-h-[26rem] w-auto max-w-full rounded-xl object-contain" />
+                      <img src={card.visualImage} alt={_maVisualAltIsTrustworthy(card) ? card.visualAlt : buildMemoryAidVisualAlt(card)} loading="lazy" className="mx-auto max-h-[26rem] w-auto max-w-full rounded-xl object-contain" />
                       <figcaption className="mt-2 text-center text-[11px] font-bold text-slate-600">{tr('visual_source_line', 'Source: {source}', { source: visualSourceLabel })}</figcaption>
                     </figure>
                   )}
@@ -4160,7 +4220,7 @@ function MemoryAidView(props) {
       </div>
 
       {cards.length === 0 && <p role="status" className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">{tr('no_targets', 'No memory targets yet.')}</p>}
-      {isTeacherMode && isEditing && cards.length < 8 && <button type="button" onClick={addCard} className="memory-aid-no-print mt-5 min-h-12 w-full rounded-2xl border-2 border-dashed border-teal-400 bg-teal-50 px-4 py-3 text-sm font-black text-teal-900 hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('add_target', 'Add a memory target')}</button>}
+      {isTeacherMode && isEditing && cards.length < 8 && <button id="memory-aid-add-target" type="button" onClick={addCard} className="memory-aid-no-print mt-5 min-h-12 w-full rounded-2xl border-2 border-dashed border-teal-400 bg-teal-50 px-4 py-3 text-sm font-black text-teal-900 hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('add_target', 'Add a memory target')}</button>}
       {!practiceIsolationActive && !isEditing && (!queue || queue.done) && <MemoryAidOverview cards={cards} attemptsByCard={isTeacherMode || previewMode ? {} : privatePracticeByCard} selectedId={selectedCardId} onSelect={id => navigateStudy(id)} onAdjustDate={adjustReviewDate} tr={tr} />}
       {!practiceIsolationActive && <details className="memory-aid-no-print mb-4 rounded-xl border border-slate-200 bg-white px-4 py-2"><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold text-teal-900">{tr('export_options', 'Print and export options')}</summary><div className="grid gap-3 py-3 sm:grid-cols-2"><label className="text-sm font-bold">{tr('export_format', 'Format')}<select aria-label={tr('export_format', 'Format')} value={exportPreset} onChange={e => setExportPreset(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 font-normal"><option value="study">{tr('export_study', 'Study cards')}</option><option value="recall">{tr('export_with_hints', 'Recall worksheet — with cue')}</option><option value="no-hints">{tr('export_no_hints', 'Recall worksheet — without hints')}</option>{isTeacherMode && <option value="teacher">{tr('export_teacher', 'Teacher answer key')}</option>}</select></label><label className="text-sm font-bold">{tr('export_targets', 'Include targets')}<select aria-label={tr('export_targets', 'Include targets')} value={exportScope} onChange={e => setExportScope(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-2 font-normal"><option value="all">{tr('export_all', 'All targets')}</option><option value="current">{tr('export_current', 'Current target')}</option></select></label></div><button type="button" onClick={printPreset} className="mb-3 min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">{tr('export_preview', 'Open export preview')}</button><p className="mb-3 text-xs text-slate-600">{tr('export_preview_note', 'Print the preview or choose Save as PDF in your browser. Private practice responses and review dates are excluded.')}</p></details>}
     </main>

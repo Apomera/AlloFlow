@@ -14,7 +14,7 @@
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/nuclear_lab_reference_harness.js';
 
 const require = createRequire(import.meta.url);
 let act;

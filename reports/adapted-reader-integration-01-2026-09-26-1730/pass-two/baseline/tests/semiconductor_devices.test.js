@@ -1,0 +1,30 @@
+import {beforeAll,describe,it,expect} from 'vitest';
+import {loadTool,renderTool,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+let c;beforeAll(()=>{resetStemLab();loadTool('stem_lab/stem_tool_semiconductor.js','semiconductor');c=window.__SemiconductorCore;});
+describe('Device experiments retain physical relationships',()=>{
+it('separates a formed channel from net current',()=>{const m=c.mosfet('mosfet-n',3,0);expect(m.channel).toBe(true);expect(m.currentA).toBe(0);expect(m.region).toBe('Zero drain bias');});
+it('responds to drain bias before saturation',()=>{expect(c.mosfet('mosfet-n',3,1).currentA).toBeGreaterThan(c.mosfet('mosfet-n',3,.5).currentA);expect(c.mosfet('mosfet-n',3,.5).region).toBe('Linear (triode)');});
+it('meets continuously at the saturation boundary',()=>{const a=c.mosfet('mosfet-n',3,1.5),b=c.mosfet('mosfet-n',3,1.5-1e-6);expect(a.region).toBe('Saturation');expect(a.currentA).toBeCloseTo(.001125,10);expect(b.currentA).toBeCloseTo(a.currentA,12);expect(c.mosfet('mosfet-n',3,5).currentA).toBe(a.currentA);});
+it('uses signed PMOS voltages and drain current',()=>{const m=c.mosfet('mosfet-p',-3,-.5);expect(m.region).toBe('Linear (triode)');expect(m.currentA).toBeLessThan(0);expect(c.mosfet('mosfet-p',0,-5).currentA).toBe(-0);expect(c.mosfet('mosfet-p',-3,5).currentA).toBeNull();});
+const mat={eff:.22,Voc:.72};const solar=(g=1000,t=298,a=100,r=100,o=false)=>c.solar(mat,g,t,a,r,o);
+it('calibrates reference power and maximum on the plotted curve',()=>{const m=solar();expect(m.Pmax).toBeCloseTo(2.2,10);expect(m.Imp).toBe(m.current(m.Vmp));expect(m.Pmax).toBeCloseTo(m.Vmp*m.Imp,12);expect(m.current(m.Vmp*.99)*m.Vmp*.99).toBeLessThan(m.Pmax);expect(m.current(m.Vmp*1.01)*m.Vmp*1.01).toBeLessThan(m.Pmax);});
+it('has zero power and photocurrent in darkness',()=>{const m=solar(0);for(const k of ['Pmax','Isc','Voc','loadPower','loadV','loadI','efficiency'])expect(m[k]).toBe(0);});
+it('scales photocurrent linearly with sunlight and area',()=>{const m=solar(),half=solar(500),large=solar(1000,298,200);expect(half.Isc/m.Isc).toBeCloseTo(.5,10);expect(half.Pmax/m.Pmax).toBeGreaterThan(.45);expect(half.Pmax/m.Pmax).toBeLessThan(.5);expect(large.Pmax/m.Pmax).toBeCloseTo(2,10);expect(large.Voc).toBe(m.Voc);});
+it('delivers no load power at open and short circuit',()=>{const sh=solar(1000,298,100,0),op=solar(1000,298,100,100,true);expect(sh.loadV).toBe(0);expect(sh.loadI).toBe(sh.Isc);expect(op.loadV).toBe(op.Voc);expect(op.loadI).toBe(0);expect(sh.loadPower+op.loadPower).toBe(0);});
+it('matches the resistive load line without exceeding available power',()=>{const m=solar(),match=solar(1000,298,100,m.Vmp/m.Imp);expect(match.loadPower).toBeCloseTo(m.Pmax,10);for(const r of [.01,.1,1,10,100,10000]){const s=solar(1000,298,100,r);expect(s.loadI).toBeCloseTo(s.current(s.loadV),9);expect(s.loadPower).toBeLessThanOrEqual(s.Pmax+1e-10);}});
+it('reduces solar open-circuit voltage on heating',()=>{expect(solar(1000,350).Voc).toBeLessThan(solar().Voc);});
+const amp=(vin=.01,f=1000,rd=10000,bias=2.5)=>c.amplifier(-10,vin,f,5,rd,bias,false);
+it('attenuates outside the amplifier passband',()=>{expect(amp(.01,10).magnitude).toBeLessThan(amp().magnitude);expect(amp(.01,100000).magnitude).toBeLessThan(amp().magnitude);});
+it('lets resistance change gain while the follower stays fixed',()=>{expect(amp(.01,1000,20000).magnitude).toBeGreaterThan(amp().magnitude);expect(c.amplifier(.9,.01,1000,5,1000,2.5,true).magnitude).toBe(c.amplifier(.9,.01,1000,5,100000,2.5,true).magnitude);});
+it('clips to actual rails and preserves a flat zero-input signal',()=>{const m=amp(.2,1000,100000);expect(m.clipped).toBe(true);const values=Array.from({length:100},(_,i)=>m.sample(i*Math.PI/50));expect(values.filter(v=>v===0).length).toBeGreaterThan(10);expect(values.filter(v=>v===5).length).toBeGreaterThan(10);const z=amp(0);expect(z.min).toBe(2.5);expect(z.max).toBe(2.5);expect(z.sample(1)).toBe(2.5);expect(z.clipped).toBe(false);});
+it('detects asymmetric clipping when bias moves toward a rail',()=>{expect(amp(.1,1000,10000,.2).clipped).toBe(true);expect(amp(.1).clipped).toBe(false);expect(amp().sample(Math.PI/2)).toBeLessThan(2.5);});
+it('keeps LED current continuous across the former threshold jump',()=>{const a=c.iv('led',1.4399,300),b=c.iv('led',1.4401,300);expect(a).toBeGreaterThan(0);expect(b).toBeGreaterThan(a);expect(b/a).toBeLessThan(1.01);});
+it('bounds forward currents by series resistance across temperature',()=>{for(const d of ['led','diode','zener'])for(const t of [200,300,400]){let last=0;for(let v=0;v<=5;v+=.05){const i=c.iv(d,v,t);expect(Number.isFinite(i)).toBe(true);expect(i).toBeGreaterThanOrEqual(last);expect(i).toBeLessThanOrEqual(v/(d==='led'?20:10));last=i;}}});
+it('preserves zero, reverse leakage, resistor and Zener behavior',()=>{expect(c.iv('diode',0,300)).toBe(0);expect(c.iv('diode',-2,300)).toBeCloseTo(-1e-12,15);expect(c.iv('resistor',-5,300)).toBe(-.005);expect(c.iv('zener',-5.6,300)).toBeCloseTo(-.025,10);expect(c.iv('diode',.5,350)).toBeGreaterThan(c.iv('diode',.5,300));});
+});
+describe('Device learning surfaces',()=>{
+it('offers a keyboard-operable 3D cutaway with a zero-current channel',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'transistor',deviceView:'3d',gateVoltage:3,drainVoltage:0}});expect(h).toContain('3D MOSFET cutaway');expect(h).toContain('zero drain bias gives zero net drain current');expect(h).toContain('Separate gate layers');expect(h).toContain('Arrow keys rotate');});
+it('uses a base voltage control for the qualitative BJT',()=>{const h=renderTool('semiconductor',{semiconductor:{subtool:'transistor',transistorType:'bjt-npn'}});expect(h).toContain('Base VBE');expect(h).toContain('max="0.9"');expect(h).not.toContain('3D device cutaway');});
+it('records amplifier outputs along with zero input',()=>{const h=renderTool('semiconductor',{semiconductor:{mode:'explore',subtool:'amplifier',guidedSetupSubtool:'amplifier',ampVin:0}});expect(h).toContain('Output maximum');expect(h).toContain('Gain magnitude');expect(h).toContain('0 V');});
+});
+

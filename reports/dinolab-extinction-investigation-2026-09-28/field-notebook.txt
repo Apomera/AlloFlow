@@ -1,0 +1,80 @@
+DINO LAB | FIELD NOTEBOOK
+Student observations and explanations
+Catalog measurements are estimates. Model observations are not direct observations of living extinct animals.
+
+Microraptor (Microraptor gui)
+Early Cretaceous | 125–120 mya | Asia (China)
+Catalog evidence: Many beautifully preserved specimens from China’s Jehol deposits.
+Catalog uncertainty: Exactly how it used four wings is still modeled.
+
+My question:
+Could it glide?
+
+Evidence I noticed:
+(not recorded)
+
+My explanation:
+(not recorded)
+
+What I still wonder:
+(not recorded)
+
+---
+
+EVIDENCE WORKBENCH | Velociraptor
+What can attachment marks on a forearm tell us?
+Source: Turner, Makovicky & Norell (2007) | https://doi.org/10.1126/science.1145076
+Illustration: schematic, not a fossil photograph or a measurement.
+Student writing is recorded without automatic assessment.
+Current draft (not yet recorded)
+Cited evidence:
+My claim: My existing feather idea.
+How the evidence supports it: (not recorded)
+A limit and a next question: (not recorded)
+Self-review: link=not checked; scope=not checked; question=not checked
+---
+EXTINCTION INVESTIGATION | From impact to food webs
+How could one impact affect life far from the crater?
+Student writing is recorded without automatic assessment. The pathway is a simplified explanatory model, not a simulation.
+First checked pathway
+From impact to atmosphere: Only rocks touching the asteroid were affected.
+From less light to producers: Every plant must die immediately.
+From producers to food webs: Predators are unaffected because they do not eat plants.
+Current pathway choices
+From impact to atmosphere: Particles spread through the atmosphere and reduce sunlight.
+From less light to producers: It can reduce photosynthesis and new food production.
+From producers to food webs: Food shortages can spread through feeding relationships.
+First recorded explanation
+Cited sources:
+A crater with a matching age [rock] | Renne and colleagues (2013) | https://doi.org/10.1126/science.1230492
+A buried ~180 km crater near Mexico’s Yucatán is linked to an impact dated to 66.04 million years ago, with an uncertainty of about 40,000 years in a published estimate.
+Limit: An age estimate is not an exact timestamp. A crater by itself does not describe the global ecological effects.
+Testing an impact winter [model] | Senel and colleagues (2023) | https://doi.org/10.1038/s41561-023-01290-4
+Climate simulations informed by geological evidence test how dust, soot, and sulfur-bearing particles could reduce sunlight and cool the surface.
+Limit: Models test mechanisms; they are not direct observations of ancient weather. Particle amounts and sizes affect the predicted severity and duration.
+My explanation: A local impact disrupted distant food webs.
+How my sources connect: The crater supports an impact. Models connect atmospheric particles to reduced light and food production.
+A limit or next question: This does not tell us exactly how long darkness lasted.
+Latest recorded explanation
+Cited sources:
+A crater with a matching age [rock] | Renne and colleagues (2013) | https://doi.org/10.1126/science.1230492
+A buried ~180 km crater near Mexico’s Yucatán is linked to an impact dated to 66.04 million years ago, with an uncertainty of about 40,000 years in a published estimate.
+Limit: An age estimate is not an exact timestamp. A crater by itself does not describe the global ecological effects.
+Testing an impact winter [model] | Senel and colleagues (2023) | https://doi.org/10.1038/s41561-023-01290-4
+Climate simulations informed by geological evidence test how dust, soot, and sulfur-bearing particles could reduce sunlight and cool the surface.
+Limit: Models test mechanisms; they are not direct observations of ancient weather. Particle amounts and sizes affect the predicted severity and duration.
+My explanation: A local impact could cause distant food-web disruption through reduced sunlight.
+How my sources connect: The crater supports an impact. Models connect atmospheric particles to reduced light and food production.
+A limit or next question: This does not tell us exactly how long darkness lasted.
+Current draft (not yet recorded)
+Cited sources:
+A crater with a matching age [rock] | Renne and colleagues (2013) | https://doi.org/10.1126/science.1230492
+A buried ~180 km crater near Mexico’s Yucatán is linked to an impact dated to 66.04 million years ago, with an uncertainty of about 40,000 years in a published estimate.
+Limit: An age estimate is not an exact timestamp. A crater by itself does not describe the global ecological effects.
+Testing an impact winter [model] | Senel and colleagues (2023) | https://doi.org/10.1038/s41561-023-01290-4
+Climate simulations informed by geological evidence test how dust, soot, and sulfur-bearing particles could reduce sunlight and cool the surface.
+Limit: Models test mechanisms; they are not direct observations of ancient weather. Particle amounts and sizes affect the predicted severity and duration.
+My explanation: A local impact could cause distant food-web disruption through reduced sunlight.
+How my sources connect: The crater supports an impact. Models connect atmospheric particles to reduced light and food production.
+A limit or next question: I am now asking why some lineages survived.
+---

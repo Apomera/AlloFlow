@@ -1,4 +1,2422 @@
 {
+  "sel": {
+    "tipp": {
+      "skills": {
+        "temperature": {
+          "label": "Temperaturo",
+          "headline": "Malvarma akvo sur la vizaĝo",
+          "steps": {
+            "0": "Plenigu bovlon per malvarma akvo (kun glacio, se vi havas).",
+            "1": "Retenu la spiron.",
+            "2": "Kliniĝu kaj subakvigu la vizaĝon de super la brovoj ĝis sub la vangostoj, dum 15-30 sekundoj. (Se vi ne povas subakvigi la vizaĝon, anstataŭe tenu malvarman kompreson aŭ malsekan vizaĝtukon sur la okuloj kaj la supraj vangoj.)",
+            "3": "Levu la kapon kaj spiru normale.",
+            "4": "Ripetu unufoje, se necese."
+          },
+          "why": "Malvarmo sur la vizaĝo ekigas la plonĝan reflekson de mamuloj: la korritmo malrapidiĝas, la sango fluas for de la membroj, kaj la parasimpata sistemo aktiviĝas. Ĝi funkcias en sekundoj. Ĉi tio estas la plej rapida fiziologia maniero interrompi ekstreman aflikton.",
+          "caution": "EVITU ĉi tion, se vi havas kormalsanon, manĝmalordon aŭ ian ajn staton, en kiu malrapidigo de la korritmo povus esti danĝera. Se vi ne certas, unue demandu kuraciston aŭ la lernejan flegiston. La akvo estu malvarma (~10-15°C aŭ 50-60°F), ne glacie malvarma."
+        },
+        "intense": {
+          "label": "Intensa ekzercado",
+          "headline": "Forbruligu la ekscitiĝon",
+          "steps": {
+            "0": "Dum 5 ĝis 10 minutoj faru ion fizike intensan.",
+            "1": "Ebloj: spurto, stelsaltoj, burpioj, kurado sur ŝtuparo, puŝlevoj ĝis elĉerpiĝo, rapida ŝnursaltado, energia dancado.",
+            "2": "Vi volas vere senspiriĝi kaj senti vian korritmon plialtiĝi.",
+            "3": "Poste malrapidiĝu ĝis piedirado kaj lasu la korpon trankviliĝi."
+          },
+          "why": "Kiam vi estas hiperekscitita (batali aŭ fuĝi), via korpo estas inundita de streshormonoj, kiuj estas destinitaj por esti uzataj. Intensa ekzercado forbruligas la adrenalinon kaj donas al la korpo la signalon „mi faris la aferon“. Sidi senmove dum hiperekscitiĝo tenas la motoron muĝanta.",
+          "caution": "Se vi havas malsanon, kiu limigas ekzercadon (kora, astmo, lastatempa vundo), uzu malpli intensan movadon aŭ elektu alian TIPP-kapablon. Ne ekzercu intense ĝis vundiĝo."
+        },
+        "paced": {
+          "label": "Ritma spirado",
+          "headline": "Elspiru pli longe ol vi enspiras",
+          "steps": {
+            "0": "Sidiĝu aŭ kuŝiĝu komforte.",
+            "1": "Enspiru tra la nazo, kalkulante ĝis 4.",
+            "2": "Malrapide elspiru tra la buŝo, kalkulante ĝis 6 aŭ 8 (pli longe ol via enspiro).",
+            "3": "Tenu ĉi tiun ritmon dum 1 ĝis 2 minutoj.",
+            "4": "Ne necesas puŝi aŭ streĉi vin; la PLILONGIGITA ELSPIRO estas la aktiva ingredienco."
+          },
+          "why": "Elspiro pli longa ol la enspiro movas la aŭtonomian nervosistemon al parasimpata superrego („ripozi kaj digesti“). Studoj pri ritma spirado trovas mezureblajn malaltiĝojn de stresaj indikiloj de korritma variebleco ene de 90 sekundoj. La celo ne estas malstreĉiĝo; temas pri biologio.",
+          "caution": "Se malrapida spirado igas vin PLI angora (kio okazas ĉe iuj homoj kun panika malordo aŭ traŭmato), provu alian TIPP-kapablon. Ne devigu ĝin."
+        },
+        "paired": {
+          "label": "Parigita muskola malstreĉo",
+          "headline": "Streĉu, poste malstreĉu, muskolon post muskolo",
+          "steps": {
+            "0": "Sidiĝu aŭ kuŝiĝu. Malrapide enspiru.",
+            "1": "Dum la enspiro forte streĉu unu muskolgrupon (kunpremu la pugnojn, levu kaj kuntiru la ŝultrojn, streĉu la vizaĝon).",
+            "2": "Tenu la streĉon dum 5 sekundoj.",
+            "3": "Dum la elspiro tute malstreĉu. Rimarku la diferencon inter streĉita kaj malstreĉita.",
+            "4": "Iru tra la tuta korpo: manoj, brakoj, ŝultroj, vizaĝo, kolo, brusto, ventro, kruroj, piedoj.",
+            "5": "La tuto daŭras ĉirkaŭ 5 minutojn."
+          },
+          "why": "Streĉi muskolon maksimume kaj poste malstreĉi ĝin donas pli profundan malstreĉiĝon ol simple provi malstreĉiĝi (esplorado de Jacobson pri Progresiva Muskola Malstreĉo, formaligita en la 1930-aj jaroj). Kunigi ĉiun malstreĉon kun elspiro kunmetas la du efikojn.",
+          "caution": "Se vi havas vundon, dolorsindromon aŭ hipermoviĝemon de la artikoj, preterlasu la muskolgrupojn, kiuj doloras. La streĉo estu forta, sed neniam dolora."
+        }
+      },
+      "ui": {
+        "four_dbt_crisis_survival_skills_temperature": "Kvar DBT-kapabloj por postvivi krizon (Temperaturo, Intensa ekzercado, Ritma spirado, Parigita muskola malstreĉo) por akuta aflikto. Faritaj por trankviligi la korpon en 30 sekundoj ĝis 10 minutoj, ANTAŬ ol vi provas elpensi elirvojon. Baza DBT-kapablo de Toleremo al aflikto (Linehan).",
+        "back_to_sel_hub": "Reen al la SEL Hub",
+        "back": "← Reen",
+        "four_dbt_crisis_survival_skills_for": "Kvar DBT-kapabloj por postvivi krizon, por akuta aflikto. Unue agu, poste pensu.",
+        "tipp_sections": "TIPP-sekcioj",
+        "tipp_is_for_acute_distress_not": "🆘 TIPP estas por AKUTA aflikto, ne por ĉiutaga streso. ",
+        "if_you_are_in_crisis_right": "Se vi estas en krizo ĝuste nun (vi pensas pri vundi vin mem aŭ estas en tuja danĝero), bonvolu uzi la Krizkunulon en ĉi tiu SEL Hub, telefoni al 988 (Suicide and Crisis Lifeline — helplinio pri memmortigo kaj krizo) aŭ sendi HOME al 741741 (Crisis Text Line). TIPP povas helpi vin tra la venontaj 5 minutoj; homo povas esti kun vi multe pli longe.",
+        "tipp_is_a_real_dbt_skill": "TIPP estas vera DBT-kapablo, sed ĝi ne estas terapio. Se vi rimarkas, ke vi ofte turnas vin al TIPP, tio estas grava informo; parolu pri ĝi kun konsilisto aŭ la lerneja psikologo.",
+        "tipp_quick_chooser": "Rapida TIPP-elektilo",
+        "body_first_chooser": "Elektilo: unue la korpo",
+        "match_the_skill_to_the_signal": "Kongruigu la kapablon kun la signalo, kiun via korpo donas ĝuste nun.",
+        "helped_logcount_helped": "Helpis: {helped}/{logCount}",
+        "no_sessions_logged": "Neniuj seancoj registritaj",
+        "start_label": "Komenci: {label}",
+        "choose": "Elekti",
+        "pick_one_do_it_notice_if": "Elektu unu. Faru ĝin. Rimarku, ĉu la skalo moviĝas.",
+        "you_do_not_need_to_do": "Vi ne bezonas fari ĉiujn kvar. Elektu tiun, kiu taŭgas por kie vi estas ĝuste nun. TIPP estas RAPIDA: de 30 sekundoj ĝis 10 minutoj.",
+        "duration_seconds": "~{duration} sekundoj",
+        "logged_glad_it_helped": "Registrite — bone, ke ĝi helpis.",
+        "logged_try_a_different_tipp_next": "Registrite — venontfoje provu alian TIPP-kapablon.",
+        "tipp_session_logged": "TIPP-seanco registrita.",
+        "active_letter": "Aktiva · {letter}",
+        "steps": "Paŝoj",
+        "why_this_works": "🧠 Kial ĉi tio funkcias",
+        "caution": "⚖️ Atentu: ",
+        "done_that_helped": "✓ Farite. Tio helpis.",
+        "done_try_a_different_one": "Farite. Mi provos alian.",
+        "try_a_different_one": "⤴ Provi alian",
+        "exit_without_logging": "Eliri sen registri",
+        "exit": "Eliri",
+        "no_tipp_sessions_logged_yet": "Ankoraŭ neniuj TIPP-seancoj registritaj.",
+        "after_you_do_a_tipp_skill": "Post kiam vi faras TIPP-kapablon, registru ĝin, por lerni, kiuj funkcias por vi.",
+        "total_sessions": "Seancoj entute",
+        "helped": "Helpis",
+        "by_skill": "Laŭ kapablo",
+        "recent_sessions": "Lastatempaj seancoj",
+        "unknown": "(nekonata)",
+        "helped_2": "✓ helpis",
+        "tried_another": "⤴ provis alian",
+        "read_this_first": "🆘 Unue legu ĉi tion",
+        "tipp_is_for_acute_distress_the": "TIPP estas por AKUTA aflikto: la momento, kiam vi estas faronta ion, kion vi bedaŭros, aŭ sentas, ke vi ne povas elteni la venontajn 5 minutojn. Ĝi NE estas por ĉiutaga streso, malalta humoro aŭ angoraj pensoj. TIPP estas rapida, ĝi estas korpa, kaj ĝia celo estas helpi vin tra la venontaj minutoj, por ke paroli, pripensi aŭ peti helpon denove eblu. Se vi estas en krizo, bonvolu uzi la Krizkunulon aŭ telefoni al 988 / sendi HOME al 741741.",
+        "what_tipp_is": "Kio estas TIPP",
+        "tipp_is_a_set_of_four": "TIPP estas aro de kvar DBT-kapabloj por postvivi krizon, kiuj agas rekte sur la korpon antaŭ ol sur la menson. La ideo estas, ke kiam vi estas hiperekscitita (la koro batas rapide, la pensoj kuras, vi pretas agi impulse), provi „elpensi elirvojon“ malofte funkcias, ĉar la pensanta cerbo estas malŝaltita. Unue la korpo devas reveni.",
+        "each_tipp_skill_uses_a_physiological": "Ĉiu TIPP-kapablo uzas fiziologian mekanismon, kiu interrompas la stresreagon: malvarmo sur la vizaĝo ekigas la plonĝan reflekson, intensa ekzercado forbruligas adrenalinon, ritma spirado ŝovas la aŭtonomian ekvilibron, kaj parigita muskola malstreĉo donas malstreĉiĝon post streĉo. Ili funkcias en 30 sekundoj ĝis 10 minutoj, ne en tagoj.",
+        "where_tipp_comes_from": "De kie venas TIPP",
+        "tipp_is_part_of_the_distress": "TIPP estas parto de la modulo Toleremo al aflikto de Dialektika Kondutterapio (DBT), kiun Marsha Linehan evoluigis ekde la 1980-aj jaroj. Linehan evoluigis DBT por homoj, kiuj spertas emociojn intense kaj reakcie, origine por pacientoj kun limstata personeca malordo kaj kronikaj memmortigaj pensoj. La kapabloj de Toleremo al aflikto estas faritaj por momentoj de „postvivado de krizo“, kiam la celo estas simple ne plimalbonigi la aferojn dum la venontaj kelkaj minutoj. Hodiaŭ TIPP estas vaste instruata en infana kaj adoleska mensa sano, en traŭmat-konsciaj lernejoj kaj en ambulatoriaj grupoj de DBT-kapabloj.",
+        "sources_and_learn_more": "📚 Fontoj kaj pliaj informoj",
+        "authoritative_resources_for_tipp_and_dbt": "Aŭtoritataj rimedoj pri TIPP kaj DBT.",
+        "the_standard_manual_tipp_is_in": "La norma manlibro; TIPP troviĝas en la modulo Toleremo al aflikto.",
+        "practical_worksheets_including_tipp_handouts": "Praktikaj laborfolioj, inkluzive de TIPP-disdonaĵoj.",
+        "linehan_founded_organization_for_dbt_training": "Organizaĵo fondita de Linehan por DBT-trejnado kaj atestado.",
+        "free_open_educational_resource_covers_tipp": "Senpaga malferma eduka rimedo; kovras TIPP kaj aliajn kapablojn de Toleremo al aflikto.",
+        "honest_limits": "⚖️ Honestaj limoj",
+        "tipp_is_a_survival_skill_not": "TIPP estas postviva kapablo, ne solvo. Ĝi helpas vin tra la venontaj 5 minutoj; ĝi ne traktas la kialon de via aflikto.",
+        "if_you_find_yourself_reaching_for": "Se vi turnas vin al TIPP ĉiutage, tio estas signo, ke io pli granda okazas en via vivo, kaj tio meritas konsiliston aŭ terapiiston apud vi.",
+        "tipp_works_on_hyperarousal_too_activated": "TIPP funkcias por hiperekscitiĝo (tro aktivigita). Ĝi NE funkcias por hipoekscitiĝo (malŝaltita, sensenta, disociita); por tio pli utilas alia DBT-kapablo (Self-Soothe — memtrankviligo, ACCEPTS) aŭ simple homa kontakto.",
+        "the_cautions_on_each_skill_are": "La avertoj ĉe ĉiu kapablo estas seriozaj. Temperaturo estas kontraŭindikita por kormalsanoj kaj iuj manĝmalordoj; intensa ekzercado estas kontraŭindikita por iuj malsanoj; se kapablo sentiĝas malĝusta, eliru el ĝi iom post iom.",
+        "tipp_is_best_learned_in_a": "TIPP estas plej bone LERNATA en nekriza momento, por ke la kapabloj estu ekzercitaj antaŭ ol vi bezonas ilin. Fari ilin unufoje dum trankvila periodo estas la plej bona preparo.",
+        "notes_for_educators": "📝 Notoj por edukistoj: ",
+        "tipp_is_most_useful_when_students": "TIPP estas plej utila, kiam lernantoj praktikis ĝin unu aŭ du fojojn dum Crew-tempo, ne kiam ili unuafoje renkontas ĝin en krizo. Simpla Crew-protokolo: kune trairu unu TIPP-kapablon (ritma spirado estas la plej facila en klasĉambro), nomu la aliajn tri, poste montru al la lernantoj ĉi tiun ilon. Kombinu kun la Krizkunulo por ĉiu lernanto, kiu montras ŝablonojn de akuta aflikto.",
+        "tipp_pocket_card": "🖨 TIPP-poŝkarto. ",
+        "print_and_fold_carry_in_a": "Presu kaj faldu; portu ĝin en poŝo, monujo aŭ agendo. La celo estas havi la kvar kapablojn kun vi ANTAŬ ol vi bezonas ilin. La poŝkarto presiĝas sur unu paĝo; la avertoj restas, ĉar ili gravas.",
+        "print_save_as_pdf": "🖨 Presi / Konservi kiel PDF",
+        "tipp_pocket_card_2": "TIPP · Poŝkarto",
+        "dbt_distress_tolerance_linehan": "DBT · Toleremo al aflikto · Linehan",
+        "when_to_use": "Kiam uzi: ",
+        "acute_distress_where_you_might_do": "akuta aflikto, kiam vi eble farus ion, kion vi bedaŭros. Unue faru la korpan parton; parolu poste. Se vi estas en krizo, telefonu al 988 aŭ sendu HOME al 741741.",
+        "caution_2": "Atentu: ",
+        "practice_tipp_once_in_a_calm": "Praktiku TIPP unufoje en trankvila momento, antaŭ ol vi bezonas ĝin. Presita el AlloFlow SEL Hub. Fonto: Linehan, DBT Skills Training Manual (2014).",
+        "tipp_crisis_survival_skills": "TIPP-kapabloj por postvivi krizon"
+      },
+      "tabs": {
+        "home": {
+          "label": "Mi bezonas ĉi tion nun"
+        },
+        "log": {
+          "label": "Mia protokolo"
+        },
+        "print": {
+          "label": "Poŝkarto"
+        },
+        "about": {
+          "label": "Pri TIPP"
+        }
+      },
+      "routes": {
+        "0": {
+          "signal": "Tro ekscitita aŭ impulsema",
+          "fit": "Plej rapida restarigo"
+        },
+        "1": {
+          "signal": "Alta adrenalino",
+          "fit": "Uzu la korpon"
+        },
+        "2": {
+          "signal": "La spiro povas gvidi",
+          "fit": "Plej trankvila opcio"
+        },
+        "3": {
+          "signal": "Kunpremita aŭ streĉita",
+          "fit": "Malstreĉu"
+        }
+      }
+    },
+    "crisiscompanion": {
+      "label_who": "Por kiu: ",
+      "label_what": "Kio: ",
+      "crisis_resources": {
+        "988": {
+          "contact": "Telefonu aŭ sendu mesaĝon al 988",
+          "script": "Vi povas diri: „Mi zorgas pri mia amiko.“ Tio sufiĉas. Ili gvidos la konversacion de tie."
+        },
+        "crisistext": {
+          "contact": "Sendu HOME al 741741",
+          "script": "Vi povas skribi: „Mia amiko parolas pri vundi sin mem, kaj mi ne scias, kion fari.“ Tio funkcias."
+        },
+        "trevor": {
+          "contact": "Telefonu al 1-866-488-7386 · Sendu START al 678-678",
+          "script": "Vi povas telefoni aŭ skribi: „Mi havas amikon, kiu estas LGBTQ+ kaj travivas vere malfacilan tempon.“"
+        },
+        "911": {
+          "label": "911 — Urĝa helpo",
+          "contact": "Telefonu al 911",
+          "script": "Vi povas diri: „Mia amiko estas en danĝero, kaj mi ne scias, kion fari.“ Ili helpos."
+        },
+        "211": {
+          "label": "211 — linio de komunumaj servoj",
+          "contact": "Telefonu al 211 · aŭ vizitu 211.org",
+          "script": "Vi povas diri: „Mi serĉas krizservojn pri mensa sano en mia regiono por amiko.“ Ili direktos vin al la ĝusta loka servo."
+        },
+        "namilocator": {
+          "label": "NAMI Affiliate Locator (landa katalogo)",
+          "contact": "Vizitu nami.org/findsupport",
+          "script": "En la retejo: enigu la poŝtkodon → „Find My Local NAMI“ → vidu kontaktinformojn, programojn kaj la helplinian numeron por via regiono."
+        },
+        "samhsa": {
+          "label": "SAMHSA FindTreatment.gov (federacia katalogo)",
+          "contact": "Vizitu findtreatment.gov · aŭ 1-800-662-HELP (4357)",
+          "script": "En la retejo: enigu la poŝtkodon → filtru por „Mental Health Services“ → malvastigu laŭ tio, kion vi povas pagi, aŭ laŭ asekuro. La telefona helplinio estas bona, se la retejo estas tro komplika."
+        },
+        "befrienders": {
+          "contact": "Vizitu befrienders.org",
+          "script": "En la retejo: elektu vian landon → vidu lokajn helpliniajn numerojn, malfermohorojn, subtenatajn lingvojn kaj kontaktmanierojn."
+        },
+        "iasp": {
+          "label": "IASP — International Association for Suicide Prevention (Internacia Asocio por Memmortigo-Preventado)",
+          "contact": "Vizitu iasp.info/resources/Crisis_Centres",
+          "script": "En la retejo: elektu vian landon → vidu krizliniojn kun kontaktmanieroj kaj horoj."
+        },
+        "mainecrisis": {
+          "contact": "Telefonu al 1-888-568-1112",
+          "script": "Se vi povas, diru vian distrikton aŭ urbon. Ili direktos vin al la ĝusta loka teamo."
+        },
+        "opportunityalliance": {
+          "label": "The Opportunity Alliance (Distrikto Cumberland + la tuta ŝtato)",
+          "contact": "Ĉefa numero: 207-553-5800 · Krizo: 1-888-568-1112",
+          "script": "Por amiko en aktiva krizo en Distrikto Cumberland: telefonu al 1-888-568-1112 kaj demandu, ĉu la movebla krizteamo povas veni al la loko de via amiko. Por nekriza subteno aŭ por konekti familion kun daŭraj servoj: telefonu al la ĉefa numero dum laborhoroj."
+        },
+        "namimaine": {
+          "contact": "Telefonu al 1-800-464-5767",
+          "script": "Bona por neurĝaj demandoj: „Kiel mi helpu mian amikon trovi terapiiston?“ aŭ „Kien familioj iras por subteno?“ Ankaŭ: „Ĉu nia lernejo gastigas Ending the Silence?“"
+        },
+        "school": {
+          "label": "Via lerneja konsilisto aŭ lerneja psikologo",
+          "contact": "Eniru, sendu noton aŭ petu iun ajn instruiston akompani vin",
+          "script": "Vi povas diri: „Mi zorgas pri mia amiko.“ Se vi ne povas diri ĝin laŭte, skribu ĝin sur glunoton kaj donu ĝin al la konsilisto."
+        }
+      },
+      "res_988_who": "Ĉiu ajn en Usono — inkluzive de junuloj, kiuj zorgas pri amiko",
+      "res_988_what": "Senpaga, konfidenca, 24/7. Trejnitaj krizkonsilistoj. Konektas al lokaj servoj, se necese.",
+      "res_crisistext_who": "Ĉiu ajn en Usono, Kanado, Britio aŭ Irlando (la kodoj varias laŭ lando) — nur-teksta kontakto estas bona, se vi ne volas paroli",
+      "res_crisistext_what": "Senpaga, konfidenca, 24/7. Vera homa konsilisto respondas per mesaĝo. Meza atendotempo: malpli ol 5 minutoj.",
+      "res_trevor_who": "LGBTQ+ junuloj kaj amikoj, kiuj subtenas ilin (Usono)",
+      "res_trevor_what": "Senpaga, konfidenca, 24/7. Speciale trejnita por krizoj de LGBTQ+ junuloj. LGBTQ+ junuloj pli ofte havas memmortigajn pensojn; ĉi tiu rimedo estas konstruita por tiu realo.",
+      "res_911_who": "Kiam iu estas en tuja fizika danĝero ĝuste nun (Usono)",
+      "res_911_what": "Por aktivaj urĝaj situacioj: iu vundas sin mem, prenis ion aŭ estas nesekura ĝuste nun. Sendas policon, fajrobrigadon kaj ambulancon.",
+      "res_211_who": "Ĉiu ajn en Usono aŭ Kanado — aŭtomate direktas al viaj lokaj servoj laŭ la regiona kodo",
+      "res_211_what": "Senpaga, konfidenca, 24/7. Konektas vin al lokaj krizservoj pri mensa sano, manĝhelpo, loĝado, familia subteno kaj centoj da aliaj komunumaj programoj. Funkciigata de United Way kaj lokaj neprofitcelaj organizaĵoj. Malsama ol 988 — 211 estas la pli vasta linio de komunumaj servoj.",
+      "res_namilocator_who": "Ĉiu ajn en Usono — tajpu vian poŝtkodon (zip code) kaj vidu vian lokan NAMI-filion",
+      "res_namilocator_what": "Ĉiu ŝtato havas almenaŭ unu NAMI-filion; multaj havas plurajn. Lokaj filioj proponas senpagajn familiajn subtengrupojn, resaniĝajn programojn gvidatajn de samuloj, edukajn kursojn (Family-to-Family, Ending the Silence en lernejoj) kaj „varmajn liniojn“ (warmlines). NAMI HelpLine: 1-800-950-6264.",
+      "res_samhsa_who": "Ĉiu ajn en Usono, kiu serĉas daŭran prizorgon pri mensa sano aŭ uzado de substancoj",
+      "res_samhsa_what": "Federacia datumbazo de ~13,000 (ĉirkaŭ dek tri mil) kuracejoj — terapio, psikiatrio, intensa ambulatoria prizorgo, loĝa kuracado, duobla diagnozo. Filtru laŭ poŝtkodo, laŭ via asekuro, laŭ lingvo, laŭ proponataj servoj. SAMHSA ankaŭ havas 24/7-an Nacian Helplinion (National Helpline, 1-800-662-4357), kiu donas senpagajn plusendojn.",
+      "res_befrienders_who": "Ĉiu ajn ekster Usono, kiu serĉas krizan subtenon en sia lando",
+      "res_befrienders_what": "Tutmonda reto de volontulaj centroj por emocia subteno en pli ol 30 landoj. Tajpu vian landon en la retejo, kaj vi ricevos la helpliniajn numerojn kaj babilejajn eblojn por via regiono. Plej multaj filioj estas senpagaj, konfidencaj kaj 24/7.",
+      "res_iasp_who": "Ĉiu ajn ekster Usono — ampleksa tutmonda katalogo de krizlinioj",
+      "res_iasp_what": "IASP prizorgas la plej kompletan internacian liston de krizlinioj por memmortigo-preventado. Serĉebla laŭ lando, kun telefonaj, tekstaj kaj retbabilaj ebloj. Ofte la plej bona komencpunkto, se Befrienders ne listigas vian landon.",
+      "res_mainecrisis_who": "Ĉiu ajn en Majno — konektas al tutŝtataj krizservoj",
+      "res_mainecrisis_what": "Senpaga, konfidenca, 24/7. Konsilistoj el Majno. Funkciigata de The Opportunity Alliance por suda Majno kaj de aliaj regionaj provizantoj tra la tuta ŝtato. Povas sendi lokajn moveblajn krizteamojn, kiam necese.",
+      "res_opportunityalliance_who": "Infanoj, adoleskantoj, familioj kaj plenkreskuloj en Distrikto Cumberland kaj tra la tuta Majno",
+      "res_opportunityalliance_what": "Gvidas la moveblan krizteamon de Distrikto Cumberland (Cumberland County Crisis Mobile Response) — la homojn, kiuj efektive venas al vi, kiam 1-888-568-1112 sendas helpon en Portlando kaj ĉirkaŭaj komunumoj. Ankaŭ provizas Children's Behavioral Health Services (kondutsanaj servoj por infanoj), hejman kondutsanan prizorgon, familian subtenon kaj la bazon de 211 Maine por suda Majno.",
+      "res_namimaine_who": "Ĉiu ajn en Majno, kiu serĉas informojn, subtenon aŭ plusendojn pri mensa sano",
+      "res_namimaine_what": "Ne krizlinio, sed bonega tagtempa rimedo por orientiĝi en sistemoj de mensa sano, samula subteno kaj lokaj programoj. Ankaŭ gvidas la lernejan programon Ending the Silence — junaj prezentantoj, proksimaj al la aĝo de lernantoj, instruas pri mensaj malsanoj rekte en klasĉambroj de mezlernejoj kaj gimnazioj.",
+      "res_school_who": "Ĉiu publika lernejo en Usono havas trejnitajn konsilistojn; plej multaj mezlernejoj kaj gimnazioj ankaŭ havas lernejan psikologon",
+      "res_school_what": "Ili estas trejnitaj por ĉi tio. Ili devas gardi konfidencon, krom se temas pri sekureco. Ili povas konekti al ekstera prizorgo, paroli kun gepatroj kune kun vi kaj resti kun vi dum la tuta procezo.",
+      "resource_groups": {
+        "national": {
+          "label": "Funkcias ĉie en Usono",
+          "desc": "Ĉi tiuj kvar estas la universala bazo. Parkerigu 988."
+        },
+        "lookup": {
+          "label": "Trovu lokan helpon (Usono)",
+          "desc": "Katalogaj serĉoj, kiuj direktas vin al la servoj de via specifa regiono. Utilaj por daŭra prizorgo post la krizvoko."
+        },
+        "international": {
+          "label": "Ekster Usono?",
+          "desc": "988, 211, Trevor kaj SAMHSA funkcias nur en Usono. Ĉi tiuj katalogoj kovras la reston de la mondo."
+        },
+        "maine": {
+          "label": "Partneroj en Majno (nomitaj lokaj servoj)",
+          "desc": "Specife nomitaj, ĉar King Middle kaj Portland Public Schools estas la pilota kunteksto de ĉi tiu ilo. Se vi estas aliloke, uzu la katalogajn serĉojn supre por trovi viajn ekvivalentojn."
+        },
+        "school": {
+          "label": "Lerneja helpo",
+          "desc": "Ofte la plej facile atingebla plenkreskulo dum la lerneja tago. Disponebla en ĉiu usona publika lernejo."
+        }
+      },
+      "depression_patterns": {
+        "mood": {
+          "label": "Daŭra malalta humoro",
+          "desc": "Malĝojo, malpleneco aŭ plata / sensenta sento, kiu daŭras la plejparton de la tago, preskaŭ ĉiutage, dum semajnoj. Malsama ol normalaj malĝojaj tagoj, kiuj venas kaj foriras."
+        },
+        "irritability": {
+          "label": "Pliigita incitiĝemo",
+          "desc": "Precipe ĉe adoleskantoj depresio ofte aperas pli kiel incitiĝemo aŭ kolero ol kiel malĝojo. Ekkoleri pro etaĵoj, senti sin ĉiam kiel nuda nervo."
+        },
+        "withdrawal": {
+          "label": "Retiriĝo de agadoj",
+          "desc": "Retiriĝas de ŝatokupoj, sportoj, amikoj kaj aferoj, kiujn la amiko antaŭe ĝuis. Ree kaj ree nuligas planojn. Pasigas multe pli da tempo sola ol antaŭe."
+        },
+        "sleep": {
+          "label": "Ŝanĝoj en dormo",
+          "desc": "Dormas multe pli ol kutime aŭ apenaŭ dormas. Malfacile ekdormas, vekiĝas elĉerpita, dormas dum la tago."
+        },
+        "appetite": {
+          "label": "Ŝanĝoj en apetito",
+          "desc": "Manĝas multe pli aŭ multe malpli ol kutime. Preterlasas manĝojn aŭ manĝas senĉese sen ĝuo. Rimarkindaj pezoŝanĝoj dum kelkaj semajnoj."
+        },
+        "energy": {
+          "label": "Malalta energio / laceco",
+          "desc": "Ĉio ŝajnas peza. Eĉ etaj taskoj ŝajnas neeblaj. La amiko eble diras, ke la laceco ne pasas, eĉ post dormo."
+        },
+        "school": {
+          "label": "Malpliiĝo de lerneja engaĝiĝo",
+          "desc": "Notoj malboniĝas, taskoj mankas, malantaŭiĝo en kursoj, kiuj antaŭe ne estis problemo. Ofte akompanata de forestoj el la lernejo."
+        },
+        "selfcare": {
+          "label": "Malpliiĝo de memzorgo",
+          "desc": "Malpli da atento al higieno, aspekto aŭ ĉiutagaj rutinoj, kiujn la amiko antaŭe tenis. Ne modoŝanĝo — sento, ke la amiko ĉesis zorgi pri si."
+        },
+        "hopeless": {
+          "label": "Senesperaj aŭ memkritikaj diroj",
+          "desc": "Oftaj komentoj kiel „kio estas la senco“, „nenio gravas“, „mi estas senvalora“, „mi estas ŝarĝo“. Ĉi tiuj lingvaj ŝablonoj meritas seriozan atenton, eĉ se dirataj senzorge."
+        }
+      },
+      "ui": {
+        "talk_what_they_re_saying": "PAROLO — kion la amiko diras",
+        "mood_what_you_re_seeing": "HUMORO — kion vi vidas",
+        "behavior_what_they_re_doing": "KONDUTO — kion la amiko faras",
+        "a_friend_opens_up_at_lunch": "Amikino malfermiĝas dum tagmanĝo",
+        "a_direct_disclosure_over_text": "Rekta malkaŝo per mesaĝo",
+        "the_aftermath_your_friend_is_now": "La postsekvo — via amiko nun ricevas prizorgon",
+        "help_is_available_right_now": "Helpo estas disponebla ĝuste nun",
+        "988_suicide_crisis_lifeline_call_or": "☎ 988 Suicide & Crisis Lifeline · telefonu aŭ sendu mesaĝon al 988",
+        "crisis_text_line_text_home_to": "✉ Crisis Text Line · sendu HOME al 741741",
+        "tell_a_school_counselor_teacher_parent": "🏫 Rakontu al lerneja konsilisto, instruisto, gepatro aŭ alia fidinda plenkreskulo",
+        "box_breathing_started_4_seconds_in": "Kvadrata spirado komenciĝis. 4 sekundoj enspiro, 4 reteno, 4 elspiro, 4 reteno.",
+        "box_breathing_paused": "Kvadrata spirado paŭzigita.",
+        "box_breathing_pacer": "🌬️ Ritmilo por kvadrata spirado",
+        "a_4_4_4_4_rhythm": "Ritmo 4-4-4-4: enspiru dum 4, retenu dum 4, elspiru dum 4, retenu dum 4. Uzata de klinikistoj kaj unuaj respondantoj por trankviligi la nervosistemon. La cirklo pligrandiĝas, kiam vi enspiras, kaj malpligrandiĝas, kiam vi elspiras.",
+        "phaselabel_cycle_cyclesdone": "{phaseLabel}, ciklo {cyclesDone}",
+        "breathing_pacer_ready": "Spira ritmilo preta",
+        "ready": "Preta",
+        "cycle_cyclesdone": "Ciklo {cyclesDone}",
+        "start_box_breathing_pacer": "Startigi la ritmilon por kvadrata spirado",
+        "start": "▶ Komenci",
+        "pause_box_breathing_pacer": "Paŭzigi la ritmilon por kvadrata spirado",
+        "pause": "⏸ Paŭzo",
+        "if_breathing_exercises_feel_uncomfortable_or": "Se spiraj ekzercoj estas malagrablaj aŭ igas vin pli angora, tio fakte estas ofta — ĉesu kaj provu surterigon anstataŭe. Agordoj pri reduktita movado tenos la cirklon senmova, kaj la faza etikedo montros la paŝon.",
+        "grounding_complete_you_ve_returned_to": "Surterigo finita. Vi revenis al la nuna momento.",
+        "grounding_reset": "Surterigo rekomencigita.",
+        "5_4_3_2_1_grounding": "👁️ Surterigo 5-4-3-2-1",
+        "a_sensory_anchor_when_your_thoughts": "Sensa ankro, kiam viaj pensoj kuras aŭ vi sentas vin malkonektita. Iru tra la sentumoj unu post la alia. Vi ne devas skribi ion ajn — nur rimarku.",
+        "you_ve_come_back_to_the": "Vi revenis al la nuno.",
+        "grounding_doesn_t_make_hard_feelings": "Surterigo ne forigas malfacilajn sentojn. Ĝi nur donas al ili pli malgrandan lokon por loĝi dum momento, por ke la ondo povu pasi.",
+        "do_it_again": "↻ Fari denove",
+        "step_stepidx_of_groundstepscount": "Paŝo {stepIdx} el {GROUNDSTEPSCount}",
+        "optional_jot_what_you_notice_private": "Laŭvole: notu, kion vi rimarkas (private, ne konservite).",
+        "notes_for_step_stepidx": "Notoj por paŝo {stepIdx}",
+        "reset_grounding_to_first_step": "Rekomencigi la surterigon al la unua paŝo",
+        "reset": "↻ Rekomencigi",
+        "next_step": "Sekva paŝo",
+        "finish_grounding_exercise": "Fini la surterigan ekzercon",
+        "next": "Sekva →",
+        "finish": "Fini ✓",
+        "this_device_would_not_save_it": "Ĉi tiu aparato ne povis konservi ĝin. Via laboro ankoraŭ estas sur la ekrano — uzu Eksporti aŭ Presi por konservi kopion, antaŭ ol vi fermos ĉi tiun paĝon.",
+        "added_to_your_toolkit": "Aldonita al via ilaro",
+        "removed_from_your_toolkit": "Forigita el via ilaro",
+        "my_coping_toolkit": "🧰 Mia ilaro por elteni",
+        "tap_any_strategy_to_add_it": "Tuŝetu iun ajn strategion por aldoni ĝin al via persona ilaro. Konservita nur en via aparato — nenio estas alŝutita. Kreu liston de 5-7 aferoj, kiuj vere funkciis por vi en la pasinteco, por ke, kiam venos malfacila momento, vi ne devu pensi de nulo.",
+        "my_toolkit_savedcount": "✓ Mia ilaro ({savedCount})",
+        "remove_label_from_toolkit": "Forigi „{label}“ el la ilaro",
+        "remove_from_toolkit": "Forigi el la ilaro: ",
+        "add_to_toolkit": "Aldoni al la ilaro: ",
+        "note_this_toolkit_is_a_complement": "Noto: ĉi tiu ilaro estas aldono al profesia subteno, ne anstataŭaĵo. Se vi estas en krizo, telefonu aŭ sendu mesaĝon al 988.",
+        "e_g_when_i_haven_t": "ekz. „Kiam mi ne dormis kaj estis sola la tutan semajnfinon“",
+        "e_g_listen_to_a_calming": "ekz. „Aŭskulti trankviligan ludliston, promeni, ŝprucigi malvarman akvon sur mian vizaĝon“",
+        "e_g_library_after_school_my": "ekz. „La biblioteko post la lernejo, mia amikino Maya, la kafejo“",
+        "e_g_mom_cell_aunt_liz": "ekz. „Panjo (poŝtelefono ____), onklino Liz (poŝtelefono ____), konsilisto s-ro K (ĉambro 204)“",
+        "e_g_988_lifeline_call_or": "ekz. „988 Lifeline (telefono aŭ mesaĝo), Crisis Text Line (sendu HOME al 741741), d-ro ____ ĉe kliniko ____, lerneja konsilisto“",
+        "e_g_give_my_medications_to": "ekz. „Doni miajn medikamentojn al panjo, por ke ŝi ŝlosu ilin. Resti for de la kelo. Tranokti kun iu, se estas vere malbone.“",
+        "could_not_open_print_window_your": "Ne eblis malfermi la presfenestron — via retumilo eble blokis ĝin.",
+        "print_preview_opened": "Presa antaŭvido malfermita.",
+        "print_could_not_be_opened": "Ne eblis malfermi la presadon.",
+        "my_safety_plan_stanley_brown": "📋 Mia sekurecplano (Stanley-Brown)",
+        "best_built_with_a_counselor_or": "Plej bone kreita KUN konsilisto aŭ terapiisto. ",
+        "a_safety_plan_is_most_effective": "Sekurecplano estas plej efika, kiam plenkreskulo, kiu konas vin, helpas vin plenigi ĝin — tiu pensas pri aferoj, kiujn vi preterlasus, kaj tiu estas persono, al kiu vi jam praktikis turni vin. Vi povas komenci ĝin ĉi tie, konservi ĝin kaj fini ĝin kune. Konservita nur en ĉi tiu aparato.",
+        "filledcount_stepscount_filled": "{filledCount} / {STEPSCount} plenigitaj",
+        "print_save_as_pdf": "🖨 Presi / konservi kiel PDF",
+        "clear_my_saved_safety_plan": "Forviŝi mian konservitan sekurecplanon",
+        "clear_plan": "✕ Forviŝi planon",
+        "stanley_brown_safety_planning_intervention_is": "La Stanley-Brown Safety Planning Intervention (sekurecplana interveno) estas aprobita de la Suicide Prevention Resource Center kaj estas unu el la plej studitaj pruvbazitaj sekurecplanoj. La plena klinika versio estas trairata kun trejnita profesiulo.",
+        "you_are_not_the_therapist": "Vi ne estas la terapiisto",
+        "your_job_ended_when_you_connected": "Via tasko finiĝis, kiam vi konektis vian amikon al plenkreskulo. De ĉi tie via rolo reiĝas pli malgranda — esti amiko — kaj tio estas la ĝusta grandeco. Kuracado, sekurecplanado, daŭra sekvado — tiuj estas taskoj por trejnitaj profesiuloj. Via tasko estas ĉeesto, amikeco kaj ne malaperi.",
+        "if_your_friend_goes_to_treatment": "Se via amiko ekricevas kuracadon, tio estas sukceso — ne forlaso",
+        "when_a_friend_gets_professional_help": "Kiam amiko ricevas profesian helpon — terapion, medikamentojn, intensajn programojn, foje enhospitaligon — povas ŝajni, ke la amikeco estas paŭzigita. Ĝi ne estas. La kuracado estas tio, kion vi helpis ebligi. Via amiko faras la malfacilan laboron, kiu tenas la amikon ĉi tie, kun ni. Sendu mesaĝon. Rezervu por la amiko lokon ĉe tagmanĝo. Estu tie, kiam la amiko revenos.",
+        "concrete_moves_that_help": "Konkretaj paŝoj, kiuj helpas",
+        "tell_another_adult_you_trust": "Rakontu al alia plenkreskulo, al kiu vi fidas. ",
+        "even_if_the_situation_has_been": "Eĉ se la situacio estis „solvita“, VI travivis ion. Gepatro, konsilisto aŭ terapiisto povas helpi vin prilabori ĝin.",
+        "pause_platforms_that_are_amplifying_it": "Paŭzigu platformojn, kiuj plifortigas ĝin. ",
+        "if_social_media_is_making_your": "Se sociaj retoj plimalbonigas vian zorgon, faru paŭzon. Silentigu, malabonu aŭ fermu la apon por unu tago.",
+        "keep_your_own_routines": "Tenu viajn proprajn rutinojn. ",
+        "sleep_food_school_hobbies_these_are": "Dormo, manĝo, lernejo, ŝatokupoj. Ĉi tiuj estas la plankotabuloj, kiuj tenas vin stabila — ne lasu ilin gliti, dum vi portas ĉi tion.",
+        "ask_for_breaks_when_you_need": "Petu paŭzojn, kiam vi bezonas ilin. ",
+        "you_are_allowed_to_not_text": "Vi rajtas ne respondi tuj. Vi rajtas esti neatingebla dum kelkaj horoj. La resaniĝo de via amiko ne postulas, ke vi estu ĉiam deĵoranta.",
+        "notice_your_own_feelings": "Rimarku viajn proprajn sentojn. ",
+        "sadness_anger_fear_exhaustion_are_normal": "Malĝojo, kolero, timo, elĉerpiĝo estas normalaj. Sensenteco ankaŭ estas normala. Se la sentoj restas pezaj dum pli ol kelkaj semajnoj, tio estas momento por paroli kun konsilisto.",
+        "keep_your_other_friendships": "Tenu viajn aliajn amikecojn. ",
+        "don_t_let_supporting_one_friend": "Ne lasu, ke subteni unu amikon izolu vin de ĉiuj aliaj. Via tuta socia teksaĵo estas tio, kio tenas vin.",
+        "when_supporting_a_friend_has_hit": "Kiam subteni amikon forte trafis VIN",
+        "if_you_re_losing_sleep_having": "Se vi perdas dormon, havas trudajn pensojn, sentas vin sensenta aŭ komencas havi proprajn pensojn pri memdamaĝo — tiuj estas signoj, ke ankaŭ vi bezonas subtenon. Telefonu al 988, sendu HOME al 741741 aŭ parolu kun lerneja konsilisto. Ankaŭ helpantoj bezonas helpon. Ne estas honto bezoni ĝin.",
+        "you_showed_up_you_noticed_you": "Vi venis. Vi rimarkis. Vi diris ion. Vi rakontis al iu. Tio sufiĉas. Tio estas ĉio.",
+        "today": "hodiaŭ",
+        "yesterday": "hieraŭ",
+        "value_days_ago": "antaŭ {value} tagoj",
+        "value_weeks_ago": "antaŭ {value} semajnoj",
+        "value_months_ago": "antaŭ {value} monatoj",
+        "if_you_are_in_crisis_right": "🚨 SE VI ESTAS EN KRIZO ĜUSTE NUN:",
+        "call_or_text": "Telefonu aŭ sendu mesaĝon al ",
+        "us_suicide_crisis_lifeline": " (usona Suicide + Crisis Lifeline). ",
+        "maine_mobile_crisis": "Movebla krizhelpo en Majno (Maine Mobile Crisis): ",
+        "text": "Sendu ",
+        "to": " al ",
+        "reach_a_real_person_24_7": "Atingu veran homon 24/7.",
+        "my_safety_plan": "Mia sekurecplano",
+        "stanley_brown_2012_strongest_evidence_interventi": "Stanley + Brown 2012 — la interveno kun la plej forta pruvbazo por redukti ripetajn provojn. Kreu VIAN planon, kiam vi estas trankvila.",
+        "why_this_works": "🎓 Kial ĉi tio funkcias: ",
+        "stanley_brown_2012_jama_psychiatry_the": "Stanley + Brown 2012, JAMA Psychiatry. Skribi ĉi tiun planon, kiam vi estas trankvila, igas ĝin alirebla dum krizo. Kundividu ĝin kun iu, al kiu vi fidas — konsilisto, gepatro, amiko.",
+        "need_a_sign": "Necesas signo.",
+        "my_warning_signs_log": "Mia protokolo de avertaj signoj",
+        "track_when_warning_signs_appear_so": "Notu, kiam avertaj signoj aperas, por ke la ŝablono fariĝu videbla. Koni vian ŝablonon = kapti ĝin pli frue.",
+        "what_sign_showed_up_e_g": "Kiu signo aperis? (ekz. „sentis min sensenta la tutan posttagmezon“, „volis malaperi“)",
+        "context_where_what_was_happening": "Kunteksto (kie, kio okazis)",
+        "intensity": "Intenso: ",
+        "what_helped_if_anything": "Kio helpis (se io)",
+        "log_it": "💾 Registri",
+        "helped_whathelped": "✓ Helpis: {whatHelped}",
+        "add_a_few_words_first_then": "Unue aldonu kelkajn vortojn, poste premu la butonon denove.",
+        "my_coping_arsenal": "Mia eltena arsenalo",
+        "strategies_that_have_actually_worked_for": "Strategioj, kiuj vere funkciis por MI. Tuŝetu „+1 uzita“, kiam unu helpas — spuru, kio funkcias.",
+        "a_strategy_that_worked_for_me": "Strategio, kiu funkciis por mi (ekz. „malvarma akvo sur la vizaĝo“, „telefoni al panjo“)",
+        "add_to_arsenal": "+ Aldoni al la arsenalo",
+        "used_value": "uzita: {value}",
+        "a_name_is_needed_before_this": "Nomo estas necesa, antaŭ ol ĉi tio povas esti konservita.",
+        "my_support_contacts": "Miaj subtenaj kontaktoj",
+        "quick_access_list_of_people_crisis": "Rapide alirebla listo de homoj + krizlinioj + kiam uzi ĉiun. Monujkarto.",
+        "name": "Nomo",
+        "role_mom_therapist_friend": "Rolo (panjo, terapiisto, amiko)",
+        "contact_phone_text": "Kontakto (telefono / mesaĝo)",
+        "when_to_reach_out_to_this": "Kiam kontakti ĜUSTE ĈI TIUN personon",
+        "add": "+ Aldoni",
+        "need_a_brief_description": "Necesas mallonga priskribo.",
+        "my_recovery_notes": "Miaj resaniĝaj notoj",
+        "after_a_hard_moment_log_what": "Post malfacila momento notu, kio helpis + kio ne. Konstruu memkonon laŭ la tempo.",
+        "what_happened_brief": "Kio okazis? (mallonge)",
+        "what_helped": "✓ Kio helpis",
+        "what_didn_t_help_or_made": "✗ Kio ne helpis (aŭ plimalbonigis)",
+        "what_i_want_future_me_to": "💌 Kion mi volas, ke la estonta mi memoru el ĉi tio",
+        "save": "💾 Konservi",
+        "helped": "✓ Helpis: ",
+        "didn_t": "✗ Ne helpis: ",
+        "write_something_first_then_press_add": "Unue skribu ion, poste premu Aldoni.",
+        "my_hope_list": "Mia listo de espero",
+        "reasons_to_keep_going_people_plans": "Kialoj por daŭrigi. Homoj, planoj, lokoj, io ajn. Legu ĉi tion, kiam estas malfacile.",
+        "one_of_your_reasons": "💛 Unu el viaj kialoj",
+        "a_reason_to_keep_going_small": "Kialo por daŭrigi (malgranda aŭ granda, io ajn)",
+        "my_safety_kit": "🛡 Mia sekureca ilaro",
+        "personal_crisis_support_tools": "Personaj iloj por kriza subteno",
+        "6_tools_to_build_your_safety": "6 iloj por konstrui VIAN sekurecplanon + eltenan arsenalon. Numeroj de krizlinioj ĉiam videblaj. Ĉiuj datumoj restas en via retumilo.",
+        "open": "Malfermi →",
+        "my_safety_kit_2": "← Mia sekureca ilaro",
+        "crisis_companion": "Krizkunulo",
+        "peer_support_and_suicide_prevention_skills": "Kapabloj por samula subteno kaj memmortigo-preventado. Kion fari, se amiko ŝajnas deprimita, estas en krizo aŭ pensas pri vundi sin mem. Rekoni signojn, kion diri (kaj ne diri), kiel rakonti al fidinda plenkreskulo. Konforma al NEDA + AFSP + Sources of Strength + 988. Protektita per enhavaverto.",
+        "safety_plan_cleared": "Sekurecplano forviŝita.",
+        "all_distress_readings_cleared": "Ĉiuj aflikto-mezuroj forviŝitaj.",
+        "clear_your_saved_safety_plan": "Ĉu forviŝi vian konservitan sekurecplanon?",
+        "clear_all_distress_readings": "Ĉu forviŝi ĉiujn aflikto-mezurojn?",
+        "this_permanently_removes_every_step_of": "Ĉi tio porĉiame forigas ĉiun paŝon de via konservita sekurecplano el ĉi tiu aparato. Ĉi tio ne estas malfarebla. Unue presu aŭ konservu kopion, se vi eble bezonos ĝin.",
+        "this_permanently_deletes_your_entire_distress": "Ĉi tio porĉiame forigas vian tutan historion de aflikto-mezuroj, inkluzive de notoj kaj tendencaj datumoj. Ĉi tio ne estas malfarebla.",
+        "cancel": "Nuligi",
+        "clear_safety_plan": "Forviŝi sekurecplanon",
+        "clear_all_readings": "Forviŝi ĉiujn mezurojn",
+        "now_viewing_label": "Nun videbla: {label}",
+        "content_note_before_you_continue": "Enhava averto antaŭ ol vi daŭrigas",
+        "this_module_is_about_what_to": "Ĉi tiu modulo temas pri tio, kion fari, se amiko estas deprimita, en krizo aŭ pensas pri vundi sin mem — inkluzive de memmortigo. Ĝi kovras:",
+        "recognizing_signs_of_depression_in_a": "Rekoni signojn de depresio ĉe amiko",
+        "crisis_warning_signs_at_a_general": "Avertaj signoj de krizo — je ĝenerala nivelo, ne detalaj instrukcioj",
+        "how_to_ask_listen_and_respond": "Kiel demandi, aŭskulti kaj respondi",
+        "how_and_when_to_tell_a": "Kiel kaj kiam rakonti al fidinda plenkreskulo",
+        "crisis_helplines_and_what_to_say": "Krizaj helplinioj kaj kion diri, kiam vi telefonas",
+        "how_to_take_care_of_yourself": "Kiel zorgi pri vi mem, kiam vi subtenis amikon",
+        "what_this_module_does_not_include": "Kion ĉi tiu modulo NE enhavas: ",
+        "specific_methods_of_self_harm_descriptions": "specifajn metodojn de memdamaĝo, priskribojn de memmortigaj provoj, rakontojn „antaŭ/post“ aŭ ajnan enhavon, kiu povus funkcii kiel instrukcio. La informoj estas intence ĝeneralaj — fokusitaj al konscio, subteno kaj konektado de homoj al helpo.",
+        "if_reading_about_these_topics_is": "Se legi pri ĉi tiuj temoj estas malfacile por vi nun, ",
+        "please_consider_one_of_these_instead": "bonvolu konsideri unu el ĉi tiuj anstataŭe:",
+        "talk_with_a_trusted_adult_before": "Parolu kun fidinda plenkreskulo antaŭ ol daŭrigi — lerneja konsilisto, gepatro aŭ instruisto",
+        "skip_this_module_and_explore_other": "Preterlasu ĉi tiun modulon kaj esploru aliajn ilojn de la SEL Hub",
+        "the_988_suicide_crisis_lifeline_free": " — la 988 Suicide & Crisis Lifeline (senpaga, konfidenca, 24/7)",
+        "home_to_741741": "HOME al 741741",
+        "crisis_text_line_free_confidential_24": " — Crisis Text Line (senpaga, konfidenca, 24/7)",
+        "continuing_into_crisis_companion": "Daŭrigante en la Krizkunulon",
+        "i_understand_the_content_note_and": "Mi komprenas la enhavaverton kaj volas daŭrigi en la Krizkunulon",
+        "i_understand_continue": "✓ Mi komprenas — daŭrigi",
+        "returning_to_sel_hub_menu": "Revenante al la menuo de la SEL Hub",
+        "take_me_back_to_the_menu": "← Reen al la menuo",
+        "visitedcount_sectionscount_sections_visited": "{visitedCount} / {SECTIONSCount} sekcioj vizititaj",
+        "crisis_companion_sections": "Sekcioj de la Krizkunulo",
+        "visited": " (vizitita)",
+        "next_label": "Sekva: {label} →",
+        "breath_pacer": "Spira ritmilo",
+        "a_visual_breathing_pacer_watch_the": "Vida spira ritmilo. Rigardu la cirklon pligrandiĝi kaj malpligrandiĝi; lasu vian spiron sekvi. Utila por momentoj de akuta streso antaŭ malfacila konversacio, post ĝi, aŭ kiam ajn la korpo estas antaŭ la menso. Ĉi tio estas ilo por UZI — ĝi ne anstataŭas iun ajn el la subtenoj en la resto de ĉi tiu modulo.",
+        "cycle_cycles": "Ciklo {cycles}",
+        "keep_going_as_long_as_feels": " · daŭrigu tiel longe, kiel estas agrable",
+        "press_start_when_you_re_ready": "Premu Komenci, kiam vi estos preta",
+        "stop": "■ Haltigi",
+        "restart": "↺ Rekomenci",
+        "when_to_use_which": "💡 Kiam uzi kiun: ",
+        "box_breathing_4_4_4_4": "Kvadrata spirado (4-4-4-4) por ĝenerala reguligo — soldatoj kaj unuaj respondantoj uzas ĝin. ",
+        "4_7_8_for_falling_asleep": "4-7-8 por ekdormi aŭ por rapida akuta trankviliĝo — la longa elspiro aktivigas la parasimpatan sistemon. ",
+        "equal_breath_6_6_for_sustainable": "Egala spiro (6-6) por daŭrigebla ĉiutaga uzo — sen retenoj, facile tenebla.",
+        "write_something_first_then_press_the": "Unue skribu ion, poste premu la butonon denove.",
+        "grounding_5_4_3_2_1": "Surterigo 5-4-3-2-1",
+        "when_your_mind_is_racing_or": "Kiam via menso kuras aŭ angoro kreskas, la tekniko 5-4-3-2-1 tiras la atenton reen al la korpo kaj al la nuna momento. Uzu iun ajn el la 5 sentumoj, eĉ se iuj ne estas alireblaj — nomu tion, kion vi memoras, kion vi imagas, kion vi dezirus flari. Ĝi tamen funkcias.",
+        "itemscount_of_count_added": "{itemsCount} el {count} aldonitaj",
+        "remove": "Forigi",
+        "finish_2": "✓ Fini",
+        "grounding_complete": "Surterigo finita",
+        "you_named_15_specific_things_in": "Vi nomis 15 specifajn aferojn en via nuna momento. Rimarku, kiel vi sentas vin nun kompare kun la komenco.",
+        "start_again": "↺ Komenci denove",
+        "distress_reading_saved": "Aflikto-mezuro konservita.",
+        "calm": "Trankvila",
+        "mild_stress": "Milda streso",
+        "notable_distress": "Rimarkinda aflikto",
+        "high_distress": "Alta aflikto",
+        "crisis_level_distress": "Kriznivela aflikto",
+        "distress_check": "Aflikta kontrolo",
+        "a_quick_way_to_track_how": "Rapida maniero spuri, kiel vi fartas laŭ la tempo. Taksu vian aflikton 0–10. Aldonu laŭvolan noton. La ŝablono dum semajno diras al vi ion, kion vortoj solaj ne diras. ",
+        "if_your_reading_is_8_or": "Se via mezuro estas 8 aŭ pli dum pli ol unu horo, bonvolu kontakti fidindan plenkreskulon aŭ sendi HOME al 741741.",
+        "right_now_i_m_feeling": "Ĝuste nun mi sentas:",
+        "0_calm": "0 · trankvila",
+        "10_crisis": "10 · krizo",
+        "optional_note_what_s_going_on": "Laŭvola noto (kio okazas?):",
+        "e_g_math_test_in_3rd": "ekz. matematika ekzameno en la 3-a leciono; apenaŭ dormis",
+        "log_this_reading": "💾 Registri ĉi tiun mezuron",
+        "this_is_a_hard_moment": "⚠ Ĉi tio estas malfacila momento.",
+        "you_re_in_real_distress_the": "Vi estas en vera aflikto. La Spira ritmilo (unu sekcion supre) kaj Surterigo 5-4-3-2-1 estas ambaŭ ĝuste ĉi tie. ",
+        "if_thoughts_of_self_harm_are": "Se ĉeestas pensoj pri memdamaĝo, sendu HOME al 741741 (Crisis Text Line) aŭ telefonu / sendu mesaĝon al 988 ĝuste nun.",
+        "above_average_distress": "Aflikto super la mezumo.",
+        "worth_pausing_for_try_the_breath": "Indas paŭzi pro tio. Provu la Spiran ritmilon aŭ la Surterigon. Se ĉi tiu nivelo daŭre revenas, rakonti al fidinda plenkreskulo estas bona paŝo.",
+        "your_pattern": "📊 Via ŝablono",
+        "7_day_avg_avg_sevendayreadingscount_readings": "7-taga mezumo: {avg} · {sevenDayReadingsCount} mezuroj",
+        "distress_over_time_chart": "Diagramo de aflikto laŭ la tempo",
+        "recent_readings_readingscount": "📋 Lastatempaj mezuroj ({readingsCount})",
+        "why_this_matters": "Kial tio gravas",
+        "you_don_t_have_to_be": "Vi ne devas esti konsilisto. Vi ne devas scii, kion diri. Vi ne devas ripari ion ajn.",
+        "you_have_to_be_a_person": "Vi devas esti homo, kiu rimarkas, ",
+        "and_a_person_who_tells_an": "kaj homo, kiu rakontas al plenkreskulo. Jen ĉio. Ambaŭ kapabloj estas lerneblaj, kaj ambaŭ savas vivojn.",
+        "friends_are_usually_the_first_to": "Amikoj kutime estas la unuaj, kiuj rimarkas, kiam io misas. Plenkreskuloj ofte maltrafas la fruajn signojn, ĉar adoleskantoj malfermiĝas pli al amikoj ol al gepatroj aŭ instruistoj. Tio ne estas problemo — tio estas la natura formo de amikeco en via aĝo. Ĝi nur signifas, ke via rolo gravas.",
+        "what_this_module_teaches": "Kion ĉi tiu modulo instruas",
+        "how_to_recognize_when_a_friend": "Kiel rekoni, kiam la humoro aŭ kondutŝablono de amiko moviĝas al depresio",
+        "how_to_recognize_warning_signs_of": "Kiel rekoni avertajn signojn de krizo — inkluzive de pensoj pri memmortigo",
+        "how_to_ask_listen_and_respond_2": "Kiel demandi, aŭskulti kaj respondi — inkluzive de la vortoj, kiuj helpas, kaj tiuj, kiuj ne helpas",
+        "how_to_tell_a_trusted_adult": "Kiel rakonti al fidinda plenkreskulo — kiam, al kiu kaj kiel",
+        "crisis_resources_you_can_call_or": "Krizaj rimedoj, al kiuj vi povas telefoni aŭ skribi iam ajn — por via amiko aŭ por vi mem",
+        "how_to_take_care_of_yourself_2": "Kiel zorgi pri vi mem, kiam vi subtenis amikon tra io peza",
+        "what_this_module_does_not_do": "Kion ĉi tiu modulo NE faras",
+        "it_does_not_turn_you_into": "Ĝi ne igas vin terapiisto. Via rolo estas ĉeesto kaj konekti la amikon al helpo.",
+        "it_does_not_require_you_to": "Ĝi ne postulas, ke vi gardu sekretojn. Se temas pri sekureco, rakonti al plenkreskulo estas lojaleco, ne perfido.",
+        "it_does_not_describe_specific_methods": "Ĝi ne priskribas specifajn metodojn de memdamaĝo. Ni estas intence ĝeneralaj pri avertaj kondutoj.",
+        "it_does_not_replace_professional_help": "Ĝi ne anstataŭas profesian helpon. Ĝi instruas vin esti ponto al profesia helpo.",
+        "sources_framework": "Fontoj kaj kadro",
+        "this_module_aligns_with_safe_messaging": "Ĉi tiu modulo konformas al la gvidlinioj pri sekura komunikado de AFSP (afsp.org), SAMHSA, la amaskomunikilaj gvidlinioj Reporting on Suicide (reportingonsuicide.org), Sources of Strength (sourcesofstrength.org), la QPR Institute, NIMH kaj la gvidado de AAP pri adoleska sano. Ĝi estis desegnita de lerneja psikologo por uzo kun lernantoj de mezlernejo kaj gimnazio, kun redakta kontrolo laŭ la gvidlinioj pri sekura komunikado.",
+        "recognizing_depression_in_a_friend": "Rekoni depresion ĉe amiko",
+        "every_kid_has_bad_days_every": "Ĉiu junulo havas malbonajn tagojn. Ĉiu junulo havas malfacilan semajnon de tempo al tempo. Tio estas esti homo, ne depresio.",
+        "depression_is_a_pattern": "Depresio estas ŜABLONO. ",
+        "it_s_a_cluster_of_changes": "Ĝi estas aro de ŝanĝoj, kiu daŭras semajnojn, ne unu malbona tago. La ĉi-subaj signoj meritas seriozan atenton, kiam PLURAJ el ili okazas kune KAJ kiam ili daŭris pli longe ol normala malfacila periodo.",
+        "a_useful_question_to_keep_in": "Utila demando por teni en la menso: „Ĉu ĉi tiu ŝablono de ŝanĝoj daŭras pli longe, plimalboniĝas aŭ malhelpas la ĉiutagan vivon de la amiko?“",
+        "patterns_to_notice_over_weeks_not": "Ŝablonoj por rimarki (dum semajnoj, ne tagoj)",
+        "important_nuance": "Grava nuanco",
+        "in_adolescents_especially_depression_often_shows": "Precipe ĉe adoleskantoj depresio ofte aperas kiel INCITIĜEMO prefere ol malĝojo. Amiko, kiu jam semajnojn estas kolerema, sentema pri etaĵoj aŭ ŝajnas bruli je malalta temperaturo, eble suferas pli ol iu, kiu estas videble malĝoja.",
+        "boys_athletes_kids_of_color_larger": "Knaboj, sportistoj, junuloj el rasaj kaj etnaj malplimultoj, junuloj kun pli granda korpo kaj elstaraj lernantoj ofte estas preteratentataj, ĉar ili ne kongruas kun la stereotipo de „deprimita adoleskanto“. Prenu la aron de ŝanĝoj serioze, kiel ajn la amiko aspektas.",
+        "what_to_do_if_you_re": "Kion fari, se vi vidas la ŝablonon",
+        "reach_out_send_a_text_sit": "Kontaktu. Sendu mesaĝon. Sidu apud la amiko dum tagmanĝo. La signalo, ke vi atentas, gravas.",
+        "ask_gently_and_specifically_i_ve": "Demandu milde kaj specife: „Mi rimarkis, ke vi ŝajnas vere laca kaj silenta lastatempe. Kiel vi vere fartas?“",
+        "listen_don_t_fix_most_people": "Aŭskultu. Ne riparu. Plej multaj homoj ne volas solvon; ili volas senti sin malpli solaj.",
+        "if_they_share_something_heavy_that": "Se la amiko rakontas ion pezan, tio estas momento por demandi la pli malfacilan demandon (sekva sekcio: avertaj signoj de krizo).",
+        "if_you_re_worried_about_them": "Se vi zorgas pri la amiko, rakontu al fidinda plenkreskulo. Vi ne bezonas certecon. Zorgo sufiĉas.",
+        "crisis_warning_signs": "Avertaj signoj de krizo",
+        "when_depression_deepens_into_crisis_including": "Kiam depresio profundiĝas en krizon — inkluzive de pensoj pri memmortigo — kutime estas avertaj signoj. La Usona Fondaĵo por Memmortigo-Preventado (AFSP) grupigas ilin en tri kategoriojn: ",
+        "talk": "PAROLO",
+        "mood": "HUMORO",
+        "and": ", kaj ",
+        "behavior": "KONDUTO",
+        "a_note_about_how_this_section": "Noto pri tio, kiel ĉi tiu sekcio estas verkita: ni intence NE listigas specifajn kondutojn, kiuj povus funkcii kiel instrukcia kontrollisto. La ĝeneralaj kategorioj sufiĉas, por ke amiko rekonu, ke io misas. Se vi vidas kelkajn el ĉi tiuj kune, tio estas la momento agi — ne la momento esplori plu memstare.",
+        "examples": "Ekzemploj",
+        "note": "Noto: ",
+        "if_you_see_any_of_these": "Se vi vidas IUN ajn el ĉi tiuj signoj, la sekvaj paŝoj estas:",
+        "stay_with_them_if_you_can": "Restu kun la amiko, se vi povas. ",
+        "don_t_leave_them_alone_if": "Ne lasu la amikon sola, se la amiko estas en tuja aflikto.",
+        "ask_directly": "Demandu rekte. ",
+        "are_you_thinking_about_hurting_yourself": "„Ĉu vi pensas pri vundi vin mem?“ Demandi NE plantas la ideon (la sekva sekcio klarigas la esploradon).",
+        "tell_a_trusted_adult_today": "Rakontu al fidinda plenkreskulo — hodiaŭ. ",
+        "not_next_week_today": "Ne venontsemajne. Hodiaŭ.",
+        "call_or_text_988": "Telefonu aŭ sendu mesaĝon al 988 ",
+        "if_you_re_unsure_what_to": "se vi ne certas, kion fari — ili gvidos VIN, kiel helpi vian amikon.",
+        "call_911": "Telefonu al 911 ",
+        "if_your_friend_is_in_immediate": "se via amiko estas en tuja fizika danĝero ĝuste nun.",
+        "question_persuade_refer": "Demandi · Persvadi · Plusendi",
+        "question_persuade_refer_2": "Question, Persuade, Refer — Demandi, Persvadi, Plusendi",
+        "is_the_most_widely_taught_suicide": ") estas la plej vaste instruata kadro por memmortigo-preventado por neprofesiuloj. Ĝi estas uzata en lernejoj, hospitaloj kaj komunumaj programoj tra la tuta mondo. La kadro estas intence simpla: tri paŝoj, kaj ĉiu el ili estas io, kion amiko povas fari.",
+        "you_re_not_the_therapist_you": "Vi ne estas la terapiisto. Vi estas la ligilo inter iu, kiu luktas, kaj la homoj trejnitaj por helpi. Ĝuste tiu ligilo savas vivojn.",
+        "question_ask_directly": "Demandi — demandu rekte",
+        "if_you_suspect_your_friend_is": "Se vi suspektas, ke via amiko pensas pri memmortigo, demandu. Rekte kaj milde. La precizaj vortoj gravas malpli ol la volo demandi.",
+        "examples_2": "Ekzemploj: ",
+        "are_you_thinking_about_hurting_yourself_2": "„Ĉu vi pensas pri vundi vin mem?“ · „Ĉu vi havas pensojn pri memmortigo?“ · „Ĉu vi pensas pri fini vian vivon?“",
+        "the_most_cited_barrier_to_asking": "🔬 La plej ofte citata baro al demandado estas malĝusta: ",
+        "asking_does_not_plant_the_idea": "Demandi NE plantas la ideon. Pluraj metaanalizoj (Dazzi et al., 2014, Psychological Medicine) kaj jardekoj da esplorado de AFSP, NIMH kaj QPR Institute konfirmas: rekte demandi estas protekte. Ofte ĝi venas kiel senpeziĝo — la homo atendis, ke iu rimarku.",
+        "persuade_listen_and_stay": "Persvadi — aŭskultu kaj restu",
+        "persuade_doesn_t_mean_talking_them": "„Persvadi“ ne signifas elparoli la amikon el siaj sentoj. Ĝi signifas plene aŭskulti, agnoski, ke tio estas malfacila, kaj helpi la amikon diri JES al helpo.",
+        "listen_without_judgment": "Aŭskultu sen juĝo. ",
+        "don_t_debate_don_t_minimize": "Ne diskutu. Ne malgravigu. Ne superu per via propra rakonto.",
+        "reflect": "Respegulu. ",
+        "it_sounds_like_you_ve_been": "„Ŝajnas, ke vi portas tiom multe, kaj vi estas elĉerpita.“ Lasi la amikon senti sin aŭdita estas la medikamento.",
+        "don_t_promise_secrecy": "Ne promesu sekretecon. ",
+        "you_can_say_i_care_about": "Vi povas diri: „Vi tro gravas al mi, por ke mi tenu ĉi tion por mi. Mi volas, ke ni parolu kun iu, kiu vere povas helpi.“",
+        "stay_with_them": "Restu kun la amiko. ",
+        "don_t_leave_them_alone_if_2": "Ne lasu la amikon sola, se la amiko estas en tuja aflikto. Sidu. Promenu. Simple ĉeestu.",
+        "skip_the_promise_me_trap": "⚠ Evitu la kaptilon „promesu al mi“: ",
+        "don_t_ask_them_to_promise": "Ne petu la amikon „promesi“, ke li aŭ ŝi faros nenion. Tio metas la amikon en la pozicion fari promeson, kiun eble ne eblos plenumi, kaj tio aldonas honton. Anstataŭe: „Mi volas, ke vi estu sekura. Ni trovu helpon ĝuste nun, kune.“",
+        "refer_connect_them_to_help": "Plusendi — konektu la amikon al helpo",
+        "refer_means_getting_them_to_someone": "„Plusendi“ signifas konduki la amikon al iu, kiu povas fari pli ol vi. Ĉi tiu estas la parto, kie ankaŭ VI ne estas sola.",
+        "best_walk_with_them_to_a": "Plej bone: iru kune kun la amiko al lerneja konsilisto, lerneja psikologo aŭ fidinda plenkreskulo. Ĝuste nun.",
+        "if_that_s_not_possible_call": "Se tio ne eblas: telefonu al 988 kune (aŭ sidu apud la amiko, dum tiu telefonas aŭ skribas). 988 estas por la persono en risko KAJ por la amiko, kiu helpas.",
+        "if_they_refuse_to_tell_anyone": "Se la amiko rifuzas rakonti al iu ajn: ",
+        "tell_an_adult_yourself": "rakontu mem al plenkreskulo. ",
+        "you_re_not_breaking_trust_you": "Vi ne rompas fidon — vi agas laŭ la lojaleco, kiun la krizo de via amiko meritas. Via amiko verŝajne sentos senpeziĝon poste.",
+        "if_immediate_physical_danger_911_not": "Se estas tuja fizika danĝero: 911. Ne venontsemajne. Nun.",
+        "the_whole_framework_in_one_sentence": "La tuta kadro en unu frazo: ",
+        "ask_directly_listen_fully_and_bring": "Demandu rekte, aŭskultu plene kaj implikigu plenkreskulon, kiu povas helpi.",
+        "what_to_say_and_what_not": "Kion diri (kaj kion ne diri)",
+        "you_don_t_need_a_perfect": "Vi ne bezonas perfektan skripton. Vi ne bezonas esti saĝa. Vi bezonas esti ĉeestanta, honesta kaj preta implikigi plenkreskulon. La ĉi-subaj vortumoj estas nur ekzemploj — via vera konversacio estos per viaj propraj vortoj.",
+        "a_useful_frame_would_what_i": "Utila kadro: ĉu tio, kion mi estas dironta, igos mian amikon senti PLI da sekureco por daŭre paroli, aŭ MALPLI?",
+        "these_help": "Ĉi tiuj helpas",
+        "why": "Kial: ",
+        "these_don_t_help_even_when": "Ĉi tiuj ne helpas (eĉ kiam bonintencaj)",
+        "if_you_said_one_of_the": "Se vi diris unu el la „ne“-aferoj en la pasinteco — ",
+        "that_s_ok_you_didn_t": "tio estas en ordo. Vi ne sciis. Neniu el ni naskiĝis sciante ĉi tion. Nun vi havas aliajn vortojn. La sekva konversacio povas esti alia.",
+        "telling_a_trusted_adult": "Rakonti al fidinda plenkreskulo",
+        "this_is_the_most_important_skill": "Ĉi tio estas la plej grava kapablo en la tuta modulo. ",
+        "telling_an_adult_is_what_turns": "Rakonti al plenkreskulo estas tio, kio igas vian zorgon helpo, kiu vere ŝanĝas la rezulton. Ĝi estas la ŝlosila paŝo — la momento, kiu permesas al profesiuloj fari tion, por kio ili estas trejnitaj.",
+        "loyalty_not_betrayal": "Lojaleco, ne perfido",
+        "a_friend_in_crisis_may_ask": "Amiko en krizo eble petos vin rakonti al neniu. Eble igos vin promesi. Eble la amiko timas, hontas aŭ estas konvinkita, ke tio plimalbonigos la aferojn.",
+        "tell_anyway": "Rakontu tamen. ",
+        "safety_overrides_secrecy_telling_an_adult": "Sekureco superas sekretecon. Rakonti al plenkreskulo, kiam la vivo aŭ bonfarto de amiko estas en risko, estas la plej lojala afero, kiun amiko povas fari. Plej multaj homoj, kiuj estas protektitaj tiel, estas DANKEMAJ poste — eĉ kiam ili estis ĉagrenitaj en la momento. La amikeco povas postvivi malfacilan konversacion; ĝi ne povas postvivi la perdon de la amiko.",
+        "when_to_tell_every_time": "Kiam rakonti — ĉiufoje",
+        "your_friend_mentioned_wanting_to_die": "Via amiko menciis deziron morti, vundi sin mem aŭ fini sian vivon — eĉ senzorge",
+        "you_re_seeing_a_cluster_of": "Vi vidas aron da avertaj signoj de krizo (PAROLO / HUMORO / KONDUTO)",
+        "your_friend_has_a_plan_a": "Via amiko havas planon, rimedon aŭ tempolimon — eĉ se malprecizan",
+        "your_friend_has_hurt_themselves_even": "Via amiko vundis sin mem, eĉ iomete",
+        "you_re_scared_and_you_don": "Vi timas kaj ne scias, kion fari — tio mem estas sufiĉa kialo por rakonti",
+        "who_to_tell_pick_whoever_you": "Al kiu rakonti — elektu kiun ajn vi povas atingi plej rapide",
+        "how": "Kiel: ",
+        "how_to_tell_practical_moves": "Kiel rakonti — praktikaj paŝoj",
+        "you_don_t_need_a_script": "Vi ne bezonas skripton. „Mi bezonas helpon pri io serioza pri amiko“ sufiĉas.",
+        "you_can_write_it_down_if": "Vi povas skribi ĝin, se vi ne povas diri ĝin laŭte. Noto, mesaĝo, retpoŝto — ĉio funkcias.",
+        "you_can_ask_another_friend_to": "Vi povas peti alian amikon veni kun vi al la oficejo de la konsilisto.",
+        "you_can_leave_class_to_do": "Vi povas forlasi la klason por fari ĉi tion. Diru al la instruisto: „Mi bezonas vidi la konsiliston — estas urĝe.“ Plej multaj instruistoj lasos vin iri sen demandoj.",
+        "if_the_first_adult_doesn_t": "Se la unua plenkreskulo ne prenas vin serioze — kaj tio ja okazas — provu alian. Daŭrigu, ĝis iu aŭskultos.",
+        "if_it_s_outside_school_hours": "Se estas ekster la lernejaj horoj, telefonu al 988. Ili helpos vin eltrovi, kion fari.",
+        "in_maine_schools": "🍎 En lernejoj de Majno",
+        "school_counselors_and_school_psychologists_are": "Lernejaj konsilistoj kaj lernejaj psikologoj estas devigataj raportantoj (mandated reporters) — ili estas laŭleĝe devigataj agi pri sekurecaj zorgoj. Ili NE nur diros al viaj gepatroj kaj foriros. Ili sekvos protokolon, kiu inkluzivas taksi vian amikon, sekure kontakti ties familion kaj konekti la amikon al daŭra prizorgo. Deviga raportado estas gardrelo, ne puno.",
+        "marked_as_myth_correct": "Markita kiel mito — ĝuste",
+        "marked_as_truth_but_research_says": "Markita kiel vero — sed la esplorado diras, ke tio estas mito",
+        "myths_debunked": "Mitoj malkonfirmitaj",
+        "six_of_the_most_cited_myths": "Ses el la plej ofte cititaj mitoj, kiuj malhelpas homojn helpi amikon en krizo. Por ĉiu decidu: ĉu la aserto estas MITO aŭ VERO? Poste legu la pruvbazitan respondon kun citaĵoj.",
+        "score_so_far_correctcount_totalanswered_answered": "Poentoj ĝis nun: {correctCount} / {totalAnswered} ĝuste responditaj.",
+        "myth_value_of_mythscount": "Mito {value} el {MYTHSCount}",
+        "this_is_a_myth": "Ĉi tio estas MITO",
+        "this_is_true": "Ĉi tio estas VERA",
+        "correct_this_is_a_myth": "✓ Ĝuste — ĉi tio estas mito.",
+        "common_misconception_this_is_actually_a": "⚠ Ofta miskompreno — ĉi tio fakte estas mito.",
+        "what_the_evidence_says": "Kion la pruvoj diras: ",
+        "sources_cite": "Fontoj: {cite}",
+        "what_to_say": "Kion diri: ",
+        "crisis_resources": "Krizaj rimedoj",
+        "every_resource_here_is_free_confidential": "Ĉiu rimedo ĉi tie estas senpaga, konfidenca kaj kun trejnitaj homoj. Vi povas telefoni POR via amiko, KUN via amiko aŭ por vi mem. Helplinioj ne estas nur por la persono en krizo — ili estas ankaŭ por la amiko, gepatro aŭ subtenanto, kiu provas eltrovi, kion fari.",
+        "below": "Sube: ",
+        "national": "Naciaj",
+        "works_anywhere_in_the_u_s": " (funkcias ĉie en Usono) → ",
+        "find_your_local_help": "Trovu lokan helpon",
+        "directory_lookups_by_zip": " (katalogaj serĉoj laŭ poŝtkodo) → ",
+        "outside_the_u_s": "Ekster Usono?",
+        "maine_partners": "Partneroj en Majno",
+        "named_local_agencies": " (nomitaj lokaj servoj) → ",
+        "school_based": "Lerneja helpo",
+        "you_don_t_need_to_know": "Vi ne bezonas scii, kion diri. Ili estas trejnitaj komenci la konversacion. Vi povas revoki. Vi povas fini la vokon. Vi ne povas fari ĝin malĝuste.",
+        "a_note_about_lgbtq_youth": "Noto pri LGBTQ+ junuloj",
+        "research_consistently_shows_lgbtq_youth_and": "Esplorado konstante montras, ke LGBTQ+ junuloj — kaj precipe transgenraj junuloj — havas signife pli altajn procentojn de memmortigaj pensoj kaj provoj ol iliaj ne-LGBTQ+ samaĝuloj. La kialoj estas bone dokumentitaj: familia malakcepto, lerneja ĉikanado, manko de akceptema prizorgo kaj minoritata streso. The Trevor Project (1-866-488-7386 / sendu START al 678-678) havas personaron speciale trejnitan por ĉi tiuj realaĵoj. Se via amiko estas LGBTQ+, ĉi tiu rimedo estas konstruita por via amiko.",
+        "self_care_sub_sections": "Memzorgaj subsekcioj",
+        "supporting_a_friend_through_a_mental": "Subteni amikon tra krizo de mensa sano estas peze. Ĝi ŝanĝas vin. Esploristoj nomas tion ",
+        "secondary_stress": "sekundara streso",
+        "the_way_that_being_close_to": " — la maniero, kiel esti proksima al la doloro de alia homo influas vian propran bonfarton. Ĝi estas reala, kaj ĝi meritas atenton.",
+        "taking_care_of_yourself_is_not": "Zorgi pri vi mem ne estas egoisme. Tiel vi restas kapabla daŭre ĉeesti.",
+        "interactive_tools_above": "🧰 Interagaj iloj supre",
+        "the_tabs_at_the_top_of": "La langetoj ĉe la supro de ĉi tiu sekcio havas praktikajn ilojn, kiujn vi povas uzi ĝuste nun: gvidata ",
+        "breathing_pacer": "spira ritmilo",
+        "a_sensory": ", sensa ",
+        "grounding_exercise": "surteriga ekzerco",
+        "a_personal": ", persona ",
+        "coping_toolkit": "ilaro por elteni",
+        "you_can_build_and_the_evidence": " (kiun vi povas konstrui) kaj la pruvbazita ",
+        "stanley_brown_safety_plan": "sekurecplano de Stanley-Brown",
+        "they_re_for_you_and_for": ". Ili estas por vi KAJ por kundividi kun amiko, kiu luktas.",
+        "caring_for_yourself_when_you_ve": "Zorgi pri vi mem, kiam vi subtenis amikon",
+        "helpful_response": "Helpema respondo",
+        "this_response_could_harm_see_explanation": "Ĉi tiu respondo povus damaĝi — vidu la klarigon",
+        "neutral_response_see_explanation": "Neŭtrala respondo — vidu la klarigon",
+        "practice_three_scenarios": "Praktiko — tri scenaroj",
+        "three_short_scenarios_drawn_from_typical": "Tri mallongaj scenaroj el tipa adoleska sperto. Por ĉiu elektu la respondon, kiu laŭ vi plej helpus. Ne ekzistas perfekta respondo — nur respondoj pli aŭ malpli helpaj en la kunteksto. Modelita laŭ la praktikaj protokoloj de Sources of Strength.",
+        "loaded_scenario_title": "Ŝargita scenaro: {title}",
+        "scenario_value": "Scenaro {value}",
+        "how_would_you_respond": "Kiel vi respondus?",
+        "helpful": "✓ Helpema — ",
+        "harmful": "× Damaĝa — ",
+        "neutral": "~ Neŭtrala — ",
+        "a_note_on_practice": "Noto pri praktiko: ",
+        "real_conversations_are_messier_than_scripted": "Veraj konversacioj estas pli ĥaosaj ol skriptitaj scenaroj. La celo de praktiko ne estas parkerigi frazojn — ĝi estas evoluigi la INSTINKTON demandi, aŭskulti, resti kaj rakonti. Kun praktiko tiu instinkto fariĝas pli rapida.",
+        "loading": "Ŝargante…"
+      },
+      "crisis_signs": {
+        "talk": {
+          "desc": "Rekta aŭ nerekta parolo pri deziro morti, ĉesigi doloron, esti ŝarĝo aŭ ne havi estontecon. Foje dirita senzorge aŭ kiel ŝerco. Prenu ĝin serioze, kiel ajn ĝi estas dirita.",
+          "examples": {
+            "0": "„Mi volas morti“ aŭ „Mi dezirus ne esti ĉi tie“",
+            "1": "„Ĉiuj fartus pli bone sen mi“",
+            "2": "„Mi ne plu povas“",
+            "3": "„Mi nur volas, ke ĉio ĉesu“",
+            "4": "„Baldaŭ vi ne plu devos zorgi pri mi“",
+            "5": "Adiaŭas en maniero, kiu sentiĝas fina, eĉ se subtile"
+          },
+          "note": "Amiko, kiu ŝercas pri deziro morti, tamen donas momenton por milde demandi, kiel li aŭ ŝi fartas. Plej multaj homoj, kiuj poste faras memmortigan provon, antaŭe diris tion al iu — foje senzorge aŭ ŝajne preterpase."
+        },
+        "mood": {
+          "desc": "Signifaj ŝanĝoj de humoro, precipe dum mallongaj periodoj. Subita trankvilo aŭ senpeziĝo POST periodo de aflikto povas esti serioza signo — foje homo en risko decidas pri plano kaj provizore sentas pacon pri ĝi.",
+          "examples": {
+            "0": "Daŭra depresio aŭ angoro, kiu ne malpliiĝas",
+            "1": "Subita sento de trankvilo aŭ „nun ĉio estas en ordo“ post longa malfacila periodo",
+            "2": "Senespero pri la estonteco",
+            "3": "Furiozo aŭ venĝema parolo",
+            "4": "Perdo de intereso pri aferoj, kiuj antaŭe gravis"
+          },
+          "note": "Subita pliboniĝo post longa malfacila tempo estas bona, kiam ĝi sekvas kuracadon, subtenon kaj ripozon. Ĝi estas averta signo, kiam ĝi sekvas nenion — kiam trankvilo aperas el nenie post semajnoj da lukto."
+        },
+        "behavior": {
+          "desc": "Ŝablonoj de agado, precipe ŝablonoj de preparado. Ni intence NE listigas ĉi tie detalojn, kiuj povus funkcii kiel instrukcio. La ĝeneralaj kategorioj sufiĉas, por ke amiko rekonu, ke io misas.",
+          "examples": {
+            "0": "Retiriĝas de amikoj, familio aŭ agadoj, kiujn la amiko antaŭe amis",
+            "1": "Pli da uzado de substancoj (alkoholo, kanabo, piloloj, vejpado pli ol kutime)",
+            "2": "Fordonas signifoplenajn posedaĵojn",
+            "3": "Adiaŭas homojn en maniero, kiu sentiĝas fina",
+            "4": "Agas malprudente, prenas riskojn, kiujn normale la amiko ne prenus",
+            "5": "Serĉas rete manierojn damaĝi sin mem (vi eble vidos ekrantempon kreski je strangaj horoj aŭ rimarkos kaŝitajn serĉojn)"
+          },
+          "note": "Vi ne devas esti certa. Se kelkaj el ĉi tiuj aperas kune, tio estas la momento milde demandi, kiel la amiko fartas, KAJ rakonti al fidinda plenkreskulo. Vi ne bezonas certecon — zorgo sufiĉas."
+        }
+      },
+      "say_do": {
+        "0": {
+          "say": "„Mi rimarkis, ke vi ŝajnas vere malĝoja lastatempe. Vi gravas al mi. Kiel vi vere fartas?“",
+          "why": "Specifa, zorgema, donas malfermon. „Vere fartas“ montras, ke vi volas aŭdi pli ol la kutiman „mi fartas bone“."
+        },
+        "1": {
+          "say": "„Ĉu vi pensas pri vundi vin mem? Ĉu vi pensas pri memmortigo?“",
+          "why": "Rekte demandi NE plantas la ideon — la esplorado estas klara pri tio. Ofte ĝi venas kiel senpeziĝo. La amiko verŝajne atendis, ke iu rimarku."
+        },
+        "2": {
+          "say": "„Mi ĝojas, ke vi diris tion al mi. Tio postulis kuraĝon.“",
+          "why": "Aprezas la malkaŝon. Ne saltu antaŭen al riparado — unue danku pro la fido."
+        },
+        "3": {
+          "say": "„Ĉi tio estas pli ol mi povas porti sola, kaj mi volas certigi, ke vi estas sekura. Ĉu ni povas rakonti al iu kune?“",
+          "why": "Honesta pri viaj limoj. Prezentas la rakontadon al plenkreskulo kiel agon de amo, ne perfidon. La vorto „kune“ gravas — vi ne forkuras."
+        },
+        "4": {
+          "say": "„Mi estas ĉi tie. Mi iras nenien. Ni povas sidi silente, se vi volas.“",
+          "why": "Ĉeesto estas la medikamento. Vi ne devas havi respondojn. Vi nur devas resti."
+        },
+        "5": {
+          "say": "„Ĉu estas iu, al kiu vi fidas, kun kiu mi povas helpi vin paroli ĝuste nun?“",
+          "why": "Nomas, ke plenkreskula helpo estas la sekva paŝo, sed lasas al la amiko la elekton, kiu ĝi estu."
+        },
+        "6": {
+          "say": "„Mi amas vin. Mi timas pro vi. Bonvolu lasi min helpi.“",
+          "why": "Rekta emocia honesteco. Diri „mi timas“ estas en ordo — tiel vi vere sentas, kaj tio montras, ke tio gravas al vi."
+        }
+      },
+      "say_dont": {
+        "0": {
+          "say": "„Vi ne devus senti tiel.“",
+          "why": "Diras, ke la sentoj de la amiko estas malĝustaj. Se la sentoj estas juĝataj, la amiko ĉesos rakonti al vi ion ajn."
+        },
+        "1": {
+          "say": "„Aliaj homoj havas pli malbonan situacion ol vi.“",
+          "why": "Doloro ne estas konkurso. Tio fermas la malkaŝon kaj aldonas honton."
+        },
+        "2": {
+          "say": "„Diru al neniu. Ankaŭ mi diros al neniu.“",
+          "why": "Promesi sekretecon en sekureca situacio estas la malo de helpo. Sekureco superas sekretecon. Lojaleco ĉi tie signifas rakonti."
+        },
+        "3": {
+          "say": "„Promesu al mi, ke vi faros nenion.“",
+          "why": "Petas promeson, kiun la amiko eble ne povas plenumi — kaj, se tio ne sukcesas, aldonas la senton, ke vi estis seniluziigita. Anstataŭe diru: „Mi volas, ke vi estu sekura. Ni trovu helpon kune.“"
+        },
+        "4": {
+          "say": "„Vi havas tiom multe por kio vivi.“",
+          "why": "Bonintence, sed en profunde malalta momento homo vere ne povas senti tion. Ĝi povas sonori kiel „vi devus esti dankema“ — kio aldonas honton al la doloro."
+        },
+        "5": {
+          "say": "„Simple ĉesu tion / gajiĝu / pli penu.“",
+          "why": "Depresio ne estas elekto. Diri al iu elekti alimaniere montras, ke vi ne komprenas, kion tiu homo travivas."
+        },
+        "6": {
+          "say": "„Kial vi pensus tion?“ (per frustrita tono)",
+          "why": "Frustriĝo legiĝas kiel juĝo. Se vi vere volas kompreni, demandu milde — „Ĉu vi povas helpi min kompreni, kion vi sentas ĝuste nun?“ — kaj restu malferma al kio ajn la amiko diras."
+        }
+      },
+      "trusted_adults": {
+        "0": {
+          "label": "Lerneja konsilisto aŭ lerneja psikologo",
+          "pro": "Trejnitaj por ĉi tio. Ofte la plej facile atingeblaj dum la lerneja tago. Devas gardi konfidencon, krom se temas pri sekureco. Povas helpi vin rakonti al gepatroj kaj konekti al ekstera prizorgo.",
+          "how": "Eniru. Sendu noton. Petu iun ajn instruiston akompani vin. Vi povas skribi ĝin, se vi ne povas diri ĝin."
+        },
+        "1": {
+          "label": "Instruisto, al kiu vi fidas",
+          "pro": "Vidas vin regule, konas vian amikaron. Laŭleĝe devas raporti pri sekurecaj riskoj (mandated reporter) — scias, kion fari.",
+          "how": "Post la leciono, dum konsultaj horoj aŭ per noto. „Mi bezonas paroli kun vi pri io serioza pri amiko.“"
+        },
+        "2": {
+          "label": "Lerneja flegisto",
+          "pro": "Konfidenca rimedo pri korpa kaj mensa sano en la lernejo. Ofte pli facile atingebla ol la konsilisto.",
+          "how": "Eniru la flegejon. Oni trovos tempon por vi."
+        },
+        "3": {
+          "label": "Gepatro, zorganto aŭ pli aĝa gefrato",
+          "pro": "Ili amas vin. Ili volas helpi. Eĉ se ili ne scias, kion fari, ili povas fari la sekvan paŝon kun vi.",
+          "how": "Elektu trankvilan momenton. Komencu per: „Mi bezonas helpon pri io serioza pri amiko.“ Demandu, ĉu vi povas sidiĝi kune."
+        },
+        "4": {
+          "label": "Familia kuracisto aŭ pediatro",
+          "pro": "Konfidenca medicina profesiulo. Povas plusendi al prizorgo pri mensa sano, paroli kun la familio de via amiko aŭ kunordigi kun la lernejo.",
+          "how": "Vi povas telefoni al la kabineto kaj diri, ke vi bezonas paroli kun la kuracisto. Multaj proponas konfidencon por adoleskantoj."
+        },
+        "5": {
+          "label": "Trejnisto aŭ gvidanto de klubo",
+          "pro": "Plenkreskuloj, kiuj jam konas vin kaj vian amikon per agadoj. Ofte havas kontaktojn kun lernejaj konsilistoj.",
+          "how": "Post trejnado aŭ kunveno. „Mi bezonas paroli kun vi pri io, kio zorgigas min.“"
+        },
+        "6": {
+          "label": "Religia gvidanto (se via familio apartenas al religia komunumo)",
+          "pro": "Por familioj, kie tio estas fidinda rilato, religiaj gvidantoj povas esti signifoplena unua paŝo.",
+          "how": "Plej multaj bonvenigas tiajn konversaciojn. Multaj havas traŭmat-konscian trejnadon."
+        },
+        "7": {
+          "label": "Terapiisto (via aŭ de via amiko, se unu el vi havas)",
+          "pro": "Jam trejnita por ĝuste ĉi tia konversacio. Se vi aŭ via amiko jam vizitas terapiiston, tio estas la plej rekta vojo.",
+          "how": "Telefonu al la kabineto. „Mi havas sekurecan zorgon, pri kiu mi bezonas paroli hodiaŭ.“"
+        }
+      },
+      "myths": {
+        "0": {
+          "claim": "Demandi iun, ĉu tiu pensas pri memmortigo, plantos la ideon.",
+          "truth": "Malvere. La esplorado estas konsekvenca kaj klara: demandi NE pliigas la riskon. Ofte ĝi venas kiel senpeziĝo — la homo atendis, ke iu rimarku. Demandi estas unu el la plej protektaj aferoj, kiujn amiko povas fari.",
+          "cite": "Dazzi et al., Psychological Medicine (2014), metaanalizo · AFSP · QPR Institute · NIMH"
+        },
+        "1": {
+          "claim": "Homoj, kiuj parolas pri memmortigo, nur serĉas atenton. Ili fakte farus nenion.",
+          "truth": "Danĝera mito. Plej multaj homoj, kiuj poste faras memmortigan provon, unue diris tion al iu — foje senzorge, foje kiel ŝercon. Ĉiu malkaŝo meritas veran respondon. „Serĉas atenton“ ofte signifas „estas en aflikto kaj ne havas alian manieron peti helpon“."
+        },
+        "2": {
+          "claim": "Se iu vere volus morti, tiu dirus al neniu.",
+          "truth": "Malvere. La malo estas vera. Multaj homoj, kiuj faras provon, donis rektajn aŭ nerektajn avertajn signojn al homoj ĉirkaŭ si. Rakonti al iu ofte estas signo de ambivalenco — parto de la homo volas vivi kaj etendas la manon.",
+          "cite": "Gvidlinioj Reporting on Suicide · AFSP · Sources of Strength"
+        },
+        "3": {
+          "claim": "Amiko povas fari nenion — nur kuracisto aŭ terapiisto povas helpi.",
+          "truth": "Samula ĉeesto estas dokumentita kiel protekta. Vi ne devas ripari ion ajn. Aŭskulti, preni ĝin serioze kaj helpi konekti la amikon al fidinda plenkreskulo estas vera helpo. Programoj kiel Sources of Strength estas konstruitaj sur la fakto, ke amikoj gravas.",
+          "cite": "Esplorado de Sources of Strength · Wyman et al., American Journal of Public Health (2010)"
+        },
+        "4": {
+          "claim": "Paroli pri memmortigo plimalbonigos la aferon.",
+          "truth": "Vere nur ĉe NESEKURA komunikado — gloriigado, priskribado de metodoj, sensaciigado. Paroli zorgeme, per sekurkomunika lingvaĵo, kaj konekti al helpo estas protekte. Ĉiu grava organizaĵo por memmortigo-preventado rekomendas honestan konversacion.",
+          "cite": "Gvidlinioj Reporting on Suicide (reportingonsuicide.org) · AFSP · MOS"
+        },
+        "5": {
+          "claim": "Memmortigo okazas sen averto.",
+          "truth": "Malvere. Esplorado konstante montras, ke avertaj signoj ĉeestas en la plimulto de la kazoj — kvankam foje ili estas evidentaj nur retrospektive. Tial samula subtena trejnado gravas: ĝi instruas vin, kion rimarki en reala tempo.",
+          "cite": "AFSP · CDC YRBSS · resumoj de NIMH-esplorado"
+        }
+      },
+      "practice_scenarios": {
+        "sc1": {
+          "setting": "Vi kaj Maya sidas kune dum tagmanĝo. Lastatempe ŝi estas pli silenta ol kutime. Ŝi pikas sian manĝaĵon kaj diras, preskaŭ senzorge: „Honeste, foje mi simple ne plu vidas la sencon de io ajn el ĉi tio.“",
+          "responses": {
+            "0": {
+              "text": "„Kion vi volas diri? Ne parolu tiel.“",
+              "why": "Tio fermas la malkaŝon. Diri „ne parolu tiel“ montras al ŝi, ke ŝiaj sentoj estas malĝustaj, KAJ ke kun vi ne estas sekure esti honesta. Ŝi verŝajne retiriĝos."
+            },
+            "1": {
+              "text": "„Tio sonas vere peza. Ĉu vi povas rakonti al mi pli pri tio, kio okazas? Vi gravas al mi.“",
+              "why": "Validigas la senton sen juĝo. Invitas pli sen devigi. „Vi gravas al mi“ igas daŭrigi la paroladon sekura. Tio malfermas la pordon al la pli malfacila demando, kiu venu poste: „Ĉu vi havas pensojn pri vundi vin mem?“"
+            },
+            "2": {
+              "text": "„Jes, la lernejo estas tiel streĉa nun.“",
+              "why": "Ne damaĝa, sed maltrafas tion, kion ŝi efektive diris. „Ne vidas la sencon de io ajn el ĉi tio“ estas pli ol lerneja streso. Neŭtrala respondo povas lasi ŝin sentiĝi neaŭdita. Faru unu plian demandon por certiĝi."
+            }
+          }
+        },
+        "sc2": {
+          "setting": "Estas la 11-a vespere, marde. Via amiko Jamie skribas: „Mi daŭre pensas pri tio, kiel ĉiuj fartus bone sen mi.“ Vi legas ĝin, kaj via koro haltas.",
+          "responses": {
+            "0": {
+              "text": "„Mi estas ĉi tie. Faru nenion. Mi vokas mian panjon ĝuste nun, por ke ŝi venu helpi.“",
+              "why": "Rekta, ĉeestanta, serioza, rapide implikanta plenkreskulon. „Mi vokas mian panjon“ nomas la paŝon. Se vi ankaŭ povas resti en mesaĝado aŭ telefoni dum la atendado, faru tion. Se vi povas sekure iri al la amiko persone, faru tion."
+            },
+            "1": {
+              "text": "„ho dio ĉu vi bone fartas?? vi havas tiom multe por kio vivi!!“",
+              "why": "Bona koro, sed malbone trafas. „Vi havas tiom multe por kio vivi“ povas senti kiel kulpigo en profunde malalta momento. Pli bone: nomu vian timon, diru, ke vi amas la amikon, kaj implikigu plenkreskulon."
+            },
+            "2": {
+              "text": "„Mi diros al neniu, sed bonvolu fari nenion ĉi-nokte, ĉu bone?“",
+              "why": "Promesi sekretecon en sekureca situacio plimalbonigas la aferojn. La plej lojala afero ĉi tie estas rakonti al plenkreskulo — eĉ se Jamie petas vin ne fari tion. Sekureco superas sekretecon. Ĉi-nokte vi rakontas al iu."
+            }
+          }
+        },
+        "sc3": {
+          "setting": "Pasintsemajne via amiko estis enhospitaligita post vere malfacila nokto. Vi estis tiu, kiu rakontis al plenkreskulo. Hodiaŭ la amiko revenis al la lernejo kaj aspektas elĉerpita. En la koridoro la amiko ne rigardas vin. Vi timas, ke la amiko koleras kontraŭ vi.",
+          "responses": {
+            "0": {
+              "text": "Vi alproksimiĝas: „Saluton. Mi pensis pri vi. Mi ĝojas, ke vi estas ĉi tie hodiaŭ. Kiam ajn vi volos paroli — pri io ajn el tio aŭ pri nenio — mi estas proksime.“",
+              "why": "Sciigas, ke vi ankoraŭ estas tie, sen fari la aferon pri vi. Postulas nenion. La vortoj „pri io ajn el tio aŭ pri nenio“ permesas al la amiko elekti la ritmon. Jen kiel lojaleco aspektas POST kiam vi rakontis."
+            },
+            "1": {
+              "text": "Vi evitas la amikon, por ke la amiko ne sentu sin strange, vidante vin.",
+              "why": "Komprenebla instinkto, sed foresto legiĝas kiel malakcepto — ĝuste la malo de tio, kion la amiko bezonas nun. Eĉ eta „Saluton, mi ĝojas, ke vi estas ĉi tie“ gravas. Vi ne devas scii, kion diri."
+            },
+            "2": {
+              "text": "Vi skribas poste: „Mi rakontis, ĉar mi amas vin kaj mi timis. Ĉu vi koleras kontraŭ mi?“",
+              "why": "Honeste, sed metas la amikon en la pozicion konsoli VIN pri via decido. Vi povas nomi tiujn sentojn poste, kun fidinda plenkreskulo aŭ terapiisto. Kun via amiko komencu per: „Mi ĝojas, ke vi estas ĉi tie. Mi estas proksime, kiam vi volos.“"
+            }
+          }
+        }
+      },
+      "value": {
+        "movement": "Movado",
+        "sensory": "Sensa",
+        "connection": "Konekto",
+        "creative": "Krea",
+        "cognitive": "Mensa",
+        "inhale": "Enspiro",
+        "exhale": "Elspiro",
+        "hold": "Reteno"
+      },
+      "coping_strategies": {
+        "walk_outside": {
+          "label": "Promenu ekstere dum 5 minutoj"
+        },
+        "stretch": {
+          "label": "Malrapidaj etendaj ekzercoj dum 5 minutoj"
+        },
+        "pushwall": {
+          "label": "Puŝu kontraŭ muron (por liberigi streĉon)"
+        },
+        "run_stairs": {
+          "label": "Kuru supren kaj malsupren laŭ la ŝtuparo unufoje"
+        },
+        "cold_water": {
+          "label": "Ŝprucigu malvarman akvon sur la vizaĝon aŭ la pojnojn"
+        },
+        "ice_cube": {
+          "label": "Tenu glacikubon en la mano"
+        },
+        "heavy_blanket": {
+          "label": "Volvu vin en pezan kovrilon"
+        },
+        "rain_sounds": {
+          "label": "Aŭskultu sonojn de pluvo aŭ oceano"
+        },
+        "safe_smell": {
+          "label": "Flaru ion, kion vi ŝatas (kremon, manĝaĵon, kandelon)"
+        },
+        "text_friend": {
+          "label": "Sendu al fidinda amiko mesaĝon „mi pensas pri vi“"
+        },
+        "hug_pet": {
+          "label": "Brakumu dorlotbeston aŭ pluŝaĵon"
+        },
+        "call_family": {
+          "label": "Telefonu al familiano, kun kiu vi sentas vin sekura"
+        },
+        "with_someone": {
+          "label": "Sidu kun sekura persono (ne necesas paroli)"
+        },
+        "playlist": {
+          "label": "Aŭskultu trankviligan ludliston, al kiu vi fidas"
+        },
+        "doodle": {
+          "label": "Desegnu aŭ skribaĉu (sen celo, sen reguloj)"
+        },
+        "journal": {
+          "label": "Skribu kio ajn estas en via kapo, eĉ unu frazon"
+        },
+        "make": {
+          "label": "Faru ion per viaj manoj (origamion, bakaĵon, konstruaĵon)"
+        },
+        "three_okay": {
+          "label": "Skribu 3 malgrandajn aferojn, kiuj estas en ordo ĝuste nun"
+        },
+        "five_breaths": {
+          "label": "Faru 5 malrapidajn spirojn (enspiru ĝis 4, elspiru ĝis 4)"
+        },
+        "will_pass": {
+          "label": "Memorigu vin: „ĉi tiu sento pasos“"
+        },
+        "one_step": {
+          "label": "Elektu unu malgrandan aferon por fari poste (nur unu)"
+        }
+      },
+      "phaselabel": {
+        "0": "Enspiru",
+        "1": "Retenu",
+        "2": "Elspiru"
+      },
+      "ground_steps": {
+        "0": {
+          "prompt": "Nomu 5 aferojn, kiujn vi VIDAS ĉirkaŭ vi ĝuste nun.",
+          "helper": "Ĉio validas. La lampo. La angulo de skribotablo. Nubo."
+        },
+        "1": {
+          "prompt": "Nomu 4 aferojn, kiujn vi SENTAS per la korpo.",
+          "helper": "Viaj piedoj sur la planko. La ŝtofo de via ĉemizo. Aero sur via haŭto."
+        },
+        "2": {
+          "prompt": "Nomu 3 aferojn, kiujn vi AŬDAS.",
+          "helper": "Horloĝo. Trafiko. Via propra spirado."
+        },
+        "3": {
+          "prompt": "Nomu 2 aferojn, kiujn vi FLARAS.",
+          "helper": "(Aŭ aferojn, kies odoron vi memoras, se nenio estas proksime.)"
+        },
+        "4": {
+          "prompt": "Nomu 1 aferon, kiun vi GUSTUMAS.",
+          "helper": "(Aŭ vian lastan gluton da akvo, aŭ ŝatatan manĝaĵon.)"
+        }
+      },
+      "steps": {
+        "warningSigns": {
+          "label": "1. Avertaj signoj",
+          "sub": "Kiuj pensoj, sentoj aŭ situacioj diras al mi, ke malfacila ondo alproksimiĝas?"
+        },
+        "internal": {
+          "label": "2. Aferoj, kiujn mi povas fari sola (interna eltenado)",
+          "sub": "Aferoj, kiuj helpis min senti min eĉ iomete pli bone kaj kiujn mi povas fari sen iu alia."
+        },
+        "distract": {
+          "label": "3. Homoj + lokoj, kiuj distras min (en bona maniero)",
+          "sub": "Amikoj, al kiuj skribi, lokoj, kie mi sentas min bone simple estante tie. NE por kriza subteno — nur por deturni miajn pensojn.",
+          "label_2": "3. Homoj + lokoj, kiuj helpas min distriĝi"
+        },
+        "helpers": {
+          "label": "4. Homoj, kiujn mi povas rekte peti pri helpo",
+          "sub": "Amikoj aŭ familianoj, kiuj scias, kio okazas, aŭ al kiuj mi fidas sufiĉe por rakonti. Listigu nomojn + kiel kontakti ilin.",
+          "label_2": "4. Homoj, kiujn mi povas peti pri helpo"
+        },
+        "professionals": {
+          "label": "5. Profesiuloj + krizlinioj",
+          "sub": "Mia terapiisto (se mi havas), psikiatro, kuracisto, lerneja konsilisto, plus 24/7-aj krizlinioj."
+        },
+        "environment": {
+          "label": "6. Igi mian ĉirkaŭaĵon pli sekura",
+          "sub": "Kion mi (aŭ iu, al kiu mi fidas) povas fari por meti distancon inter mi kaj ĉio, per kio mi povus vundi min? Ĉi tio estas la paŝo kun la plej forta pruvbazo."
+        },
+        "warning": {
+          "label": "1. Avertaj signoj (pensoj, sentoj, situacioj)"
+        },
+        "coping": {
+          "label": "2. Interna eltenado, kiun mi povas fari sola"
+        },
+        "pros": {
+          "label": "5. Profesiuloj + krizlinioj"
+        },
+        "safer": {
+          "label": "6. Igi mian ĉirkaŭaĵon pli sekura"
+        },
+        "0": {
+          "label": "5 aferoj, kiujn vi VIDAS",
+          "prompt": "Ĉirkaŭrigardu. Nomu 5 aferojn, kiujn vi vidas ĝuste nun. Estu specifa — „la angulo de libro“, ne „libro“."
+        },
+        "1": {
+          "label": "4 aferoj, kiujn vi povas TUŜI",
+          "prompt": "Etendu la manon kaj tuŝu 4 malsamajn aferojn. Rimarku la teksturon. Malvarma aŭ varma? Glata aŭ malglata?"
+        },
+        "2": {
+          "label": "3 aferoj, kiujn vi AŬDAS",
+          "prompt": "Aŭskultu. Nomu 3 malsamajn sonojn — ili povas esti proksimaj aŭ foraj, laŭtaj aŭ mallaŭtaj."
+        },
+        "3": {
+          "label": "2 aferoj, kiujn vi FLARAS",
+          "prompt": "Rimarku 2 odorojn. Se vi flaras nenion, nomu 2 odorojn, kiujn vi memoras kaj ŝatis."
+        },
+        "4": {
+          "label": "1 afero, kiun vi GUSTUMAS",
+          "prompt": "Rimarku 1 guston en via buŝo — kion via lasta trinkaĵo aŭ manĝaĵo lasis, aŭ nur la guston de la aero."
+        }
+      },
+      "cats": {
+        "body": {
+          "label": "🫀 Korpo"
+        },
+        "mind": {
+          "label": "🧠 Menso"
+        },
+        "distract": {
+          "label": "🎮 Distriĝi"
+        },
+        "connect": {
+          "label": "🤝 Konekti"
+        },
+        "creative": {
+          "label": "🎨 Krei"
+        },
+        "spirit": {
+          "label": "🌅 Spirita"
+        }
+      },
+      "tools": {
+        "plan": {
+          "label": "Mia sekurecplano",
+          "desc": "6-paŝa plano de Stanley + Brown",
+          "stat": "Plenigitaj paŝoj: {Count}"
+        },
+        "warning": {
+          "label": "Mia protokolo de avertaj signoj",
+          "desc": "Spuru signojn laŭ la tempo = ŝablono",
+          "stat": "Registritaj: {Count}"
+        },
+        "arsenal": {
+          "label": "Mia eltena arsenalo",
+          "desc": "Strategioj, kiuj funkcias por MI",
+          "stat": "Konservitaj: {Count}"
+        },
+        "contacts": {
+          "label": "Miaj subtenaj kontaktoj",
+          "desc": "Rapida aliro: kiun voki kaj kiam",
+          "stat": "Homoj: {Count}"
+        },
+        "recovery": {
+          "label": "Miaj resaniĝaj notoj",
+          "desc": "Post malfacilaj momentoj — kio funkciis",
+          "stat": "Notoj: {Count}"
+        },
+        "hope": {
+          "label": "Mia listo de espero",
+          "desc": "Kialoj por daŭrigi. Hazarda elekto.",
+          "stat": "Kialoj: {Count}"
+        }
+      },
+      "sections": {
+        "mykit": {
+          "label": "Mia sekureca ilaro"
+        },
+        "breath": {
+          "label": "Spira ritmilo"
+        },
+        "grounding": {
+          "label": "Surterigo 5-4-3-2-1"
+        },
+        "thermometer": {
+          "label": "Aflikta kontrolo"
+        },
+        "whyMatters": {
+          "label": "Kial tio gravas"
+        },
+        "recognizeDepression": {
+          "label": "Rekoni depresion"
+        },
+        "crisisSigns": {
+          "label": "Avertaj signoj de krizo"
+        },
+        "qpr": {
+          "label": "Demandi · Persvadi · Plusendi"
+        },
+        "whatToSay": {
+          "label": "Kion diri"
+        },
+        "tellingAdult": {
+          "label": "Rakonti al fidinda plenkreskulo"
+        },
+        "myths": {
+          "label": "Mitoj malkonfirmitaj"
+        },
+        "resources": {
+          "label": "Krizaj rimedoj"
+        },
+        "selfCare": {
+          "label": "Zorgi pri vi mem"
+        },
+        "practice": {
+          "label": "Praktiko"
+        }
+      },
+      "breath_modes": {
+        "box": {
+          "name": "Kvadrata spirado (4-4-4-4)"
+        },
+        "fourseven": {
+          "name": "Trankviliga spiro 4-7-8"
+        },
+        "equal": {
+          "name": "Egala spiro (6-6)"
+        }
+      },
+      "sub_tabs": {
+        "read": {
+          "label": "Legi"
+        },
+        "breath": {
+          "label": "Spira ritmilo"
+        },
+        "ground": {
+          "label": "Surterigo 5-4-3-2-1"
+        },
+        "toolkit": {
+          "label": "Mia ilaro"
+        },
+        "safety": {
+          "label": "Sekurecplano"
+        }
+      },
+      "print": {
+        "title": "Mia sekurecplano",
+        "intro": "Kreita per la Stanley-Brown Safety Planning Intervention. Plej utila, kiam trarigardita kun konsilisto aŭ terapiisto.",
+        "empty": "(ankoraŭ ne plenigita)",
+        "crisis_head": "Se vi estas en krizo ĝuste nun:",
+        "crisis_body": "Telefonu aŭ sendu mesaĝon al {call} (24/7). Sendu {text}. Rakontu al fidinda plenkreskulo.",
+        "created": "Kreita {date}"
+      }
+    },
+    "hub": {
+      "framework": {
+        "zones_of_regulation": "Zonoj de reguligo",
+        "positive_psychology": "Pozitiva psikologio",
+        "coaching_tradition": "Trejnada tradicio",
+        "trauma_informed": "Traŭmat-konscia",
+        "media_literacy": "Amaskomunikila klereco",
+        "contemplative": "Kontempla",
+        "trauma_informed_practice": "Traŭmat-konscia praktiko",
+        "philosophy_ethics": "Filozofio / etiko",
+        "social_work": "Socia laboro",
+        "person_centered_planning": "Persono-centrita planado",
+        "family_systems": "Familiaj sistemoj",
+        "self_determination_theory": "Teorio de memdeterminado",
+        "executive_function": "Plenumaj funkcioj",
+        "bystander_intervention": "Enpaŝado de ĉeestantoj",
+        "restorative_practices": "Restaŭrigaj praktikoj",
+        "motivational_interviewing": "Motiva intervjuado",
+        "place_based_education": "Lok-bazita edukado",
+        "harm_reduction": "Malpliigo de damaĝo",
+        "body_appreciation": "Korpa aprezo",
+        "occupational_therapy": "Okupacia terapio",
+        "grief_counseling": "Funebra konsilado",
+        "neurodiversity_paradigm": "Paradigmo de neŭrodiverseco",
+        "suicide_prevention": "Memmortigo-preventado"
+      },
+      "tool": {
+        "zones": {
+          "label": "Emociaj zonoj",
+          "desc": "Identigu vian zonon (bluan, verdan, flavan, ruĝan) kaj esploru strategiojn por memreguligo."
+        },
+        "emotions": {
+          "label": "Emocia esploranto",
+          "desc": "Konstruu emocian vortprovizon — rekonu, nomu kaj taksu la intensecon de sentoj."
+        },
+        "strengths": {
+          "label": "Trovilo de fortoj",
+          "desc": "Malkovru kaj pripensu viajn personajn fortojn, talentojn kaj kreskokampojn."
+        },
+        "viaStrengths": {
+          "label": "VIA-fortoj",
+          "desc": "Simpligita memordigo de la 24 VIA-karakterfortoj (Peterson kaj Seligman, 2004), kun 6 virtoj kaj identigo de viaj ĉefaj fortoj. Por la aŭtoritata senpaga enketo, iru al viacharacter.org. Pripensa praktiko, ne psikometrio."
+        },
+        "wheelOfLife": {
+          "label": "Rado de la vivo",
+          "desc": "Araneodiagramo de 8 vivkampoj, ĉiu taksita de 1 ĝis 10. Memportreto de kie la vivo nun estas plena kaj kie ĝi estas maldika. El la trejnada tradicio (Meyer, 1960-aj jaroj; Co-Active Coaching). Heŭristiko; ne validigita psikometria ilo."
+        },
+        "perma": {
+          "label": "PERMA-bonfarto",
+          "desc": "Memkontrolo pri la kvin PERMA-kampoj plus pripenso pri sano: pozitivaj emocioj, engaĝiĝo, rilatoj, signifo, atingoj kaj sano. 24 eroj, rezulto kiel stangodiagramo, pripenso por ĉiu kampo. Laŭ Seligman; kombiniĝas kun VIA-fortoj."
+        },
+        "coping": {
+          "label": "Ilaro por elteni",
+          "desc": "Esploru kaj praktiku eltenajn strategiojn — spiradon, surterigon, movadon kaj pli."
+        },
+        "windowOfTolerance": {
+          "label": "Fenestro de toleremo",
+          "desc": "Traŭmat-konscia vidaĵo por memkonscio. Tri ekscitiĝaj zonoj (hiperekscitiĝo, fenestro, hipoekscitiĝo). Mapu viajn personajn signojn de ĉiu zono, viajn ellasilojn kaj la praktikojn, kiuj revenigas vin. Bazita sur Siegel (1999); normo en traŭmat-konsciaj lernejoj."
+        },
+        "stressBucket": {
+          "label": "Sitelo de streso",
+          "desc": "Vidaĵo pri kapacito. Streĉiloj enfluas; eltenaj praktikoj elfluigas ilin. Vidu, ĉu via enfluo kaj elfluo estas ekvilibraj. Ilo el la CBT-tradicio (Brabban kaj Turkington 2002), uzata tra NHS IAPT kaj Mind UK. Honesta pri strukturaj streĉiloj."
+        },
+        "tipp": {
+          "desc": "Kvar DBT-kapabloj por postvivi krizon (Temperaturo, Intensa ekzercado, ritma spirado, Parigita muskola malstreĉo) por AKUTA aflikto. Trankviligas la korpon en 30 sekundoj ĝis 10 minutoj, antaŭ ol vi provas elpensi elirvojon. Baza DBT-kapablo de Toleremo al aflikto (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Ilaro kontraŭ angoro",
+          "desc": "CBT-bazitaj kapabloj por labori kun angoro: psikoedukado, la arbo de maltrankviloj (produktiva kontraŭ neproduktiva maltrankvilo), planita tempo por maltrankviloj, malkatastrofigo, surterigaj kapabloj kaj persona inventaro de ŝablonoj. El Beck Institute, AACAP, ADAA. Kombiniĝas kun Fenestro de toleremo kaj Sitelo de streso."
+        },
+        "sleep": {
+          "label": "Dormo kaj ripozo",
+          "desc": "Adoleska dormo estas krizo de publika sano. La 8-10 horoj rekomenditaj de AAP malofte estas atingataj. Psikoedukado, memkontrolo, 8 oftaj baroj + kio helpas por ĉiu, kaj dormotaglibro. El AAP, CDC, NSF kaj esploroj de Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Sensa reguligo",
+          "desc": "Neŭrodiverseco-aprobanta ilo por kompreni vian propran sensan prilaboradon tra la 8 sensaj sistemoj. Konstruu personan profilon, planu sensan dieton, identigu lernejajn adaptojn. Identeco-unua lingvaĵo; konstruita sur Ayres / Dunn / aŭtisme gvidata scienco."
+        },
+        "bigFeelings": {
+          "label": "Grandaj sentoj (kolero)",
+          "desc": "Kolero-specifa psikoedukado kaj kapablo-konstruado. Kolero kiel informo, ne la problemo; reaktiva agresemo kiel la kaptilo. Konstruita sur la tradicio Coping Power de Lochman + la pruvbazo de CBT por kolero. Ĝenotaglibro, inventaro de ellasiloj, la elekta punkto, personigitaj trankviliĝoj."
+        },
+        "substancePsychoed": {
+          "label": "Uzo de substancoj",
+          "desc": "Damaĝ-reduktanta psikoedukado pri substancoj (alkoholo, kanabo, nikotino, opioidoj, stimuliloj, benzodiazepinoj, halucinogenoj). Riskoj por la adoleska cerbo. Edukado pri naloksono. NE kribrilo, NE nur-abstinenca. Forta plusendo al SAMHSA. Pripensa spaco laŭ motiva intervjuado."
+        },
+        "behavioralActivation": {
+          "label": "Konduta aktivigo",
+          "desc": "Planu malgrandajn agadojn, faru ilin, taksu ilin laŭ majstreco (vi sentis vin kapabla) kaj plezuro (vi ĝuis). Rimarku, kio taŭgas, kaj elektu fareblan sekvan paŝon. Ĉi tiu plana agado baziĝas sur konduta aktivigo; ĝi ne liveras aŭ taksas terapian kurson."
+        },
+        "mindfulness": {
+          "label": "Angulo de plenatento",
+          "desc": "Gvidataj spiraj ekzercoj, korpo-skanadoj kaj plenatentaj agadoj."
+        },
+        "quietQuestions": {
+          "label": "Trankvilaj demandoj",
+          "desc": "Semajna praktiko de interna esplorado. Restu kun unu malferma demando dum tuta semajno. 20 rotaciantaj demandoj pri atento, sopiro, malfacilo, konekto kaj estiĝo. Inspirita de la kvakera demanda tradicio; sekulara kaj nepreskriba."
+        },
+        "orientations": {
+          "label": "Orientiĝoj",
+          "desc": "Vivmanieroj, komparitaj. Ok filozofiaj tradicioj (taoismo, zeno, stoikismo, ekzistencialismo, konfuceisma etiko, ubuntuo, indiĝena rilateco, etiko de zorgo) komparitaj pri grandaj vivdemandoj. Nepreskriba; ĉiu tradicio havas honestan panelon „kion ĝi ne povas fari bone“."
+        },
+        "thoughtRecord": {
+          "label": "CBT-pensoregistro",
+          "desc": "La 7-kolumna pensoregistro el kogna konduta terapio. Trairu malfacilan momenton: situacio, emocio, aŭtomata penso, pruvoj por kaj kontraŭ, ekvilibra penso, retakso de la emocio. Konservas enskribojn laŭlonge de la tempo. El Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Krado de kostoj kaj profitoj",
+          "desc": "2x2-decida krado el dialektika konduta terapio. Mallongdaŭraj kaj longdaŭraj avantaĝoj kaj malavantaĝoj de decido, flank-al-flanke. Utila kiam emocio puŝas al unu elekto. El Linehan."
+        },
+        "sfbt": {
+          "label": "Solvocentra",
+          "desc": "Solvocentra mallonga terapio: la Mirakla demando, Skalado, Serĉado de esceptoj kaj Komplimentoj. Rigardas antaŭen anstataŭ malantaŭen, demandas kio jam funkcias. La plej uzata tekniko en usona lerneja konsilado. El de Shazer kaj Berg."
+        },
+        "careConstellations": {
+          "label": "Konstelacioj de zorgo",
+          "desc": "Rilata mapo de kiu zorgas pri vi kaj pri kiu vi zorgas. Rifuzas la individuisman aŭ konsumisman kadron de „memzorgo“. Inkluzivas substancan filozofian vidpunkton pri Zorgo pri si kontraŭ Memzorgo (Foucault, greka epimeleia heautou, Audre Lorde, eŭdemonia kontraŭ hedona)."
+        },
+        "ecomap": {
+          "label": "Ekomapo",
+          "desc": "Mapo de rilatoj de persono en sia medio. Vi en la centro; la 12 ĉefaj vivsistemoj ĉirkaŭ vi. Ĉiu konekto taksita laŭ forto, streso kaj direkto de energio. Norma ilo de socia laboro ekde Hartman (1978); uzata en IEP-oj, familia taksado kaj persona vivinventaro."
+        },
+        "circlesOfSupport": {
+          "label": "Rondoj de subteno",
+          "desc": "Kvar samcentraj rondoj de rilatoj: Intimeco, Amikeco, Partopreno, Interŝanĝo (pagata). Videbligas kiu vere estas proksima, ankaŭ kiam pagataj homoj plenigas la internajn rondojn. El Forest kaj Snow ĉe Inclusion Press."
+        },
+        "genogram": {
+          "label": "Genogramo",
+          "desc": "Tri-generacia familia mapo kun normaj simboloj de familiaj sistemoj. Nur por persona memkompreno (NE klinika taksado). Bazita sur la teorio de familiaj sistemoj de Bowen kaj la notacio de McGoldrick-Gerson-Petry. Inkluzivas elstaran gvidon por sekura kadrigo."
+        },
+        "griefLoss": {
+          "label": "Funebro kaj perdo",
+          "desc": "Gvidata memkunulo por funebro. Morto de persono aŭ dorlotbesto, familiaj ŝanĝoj, perdoj de amikoj, perdoj de identeco, ambigua perdo — ĉio kalkuliĝas. Trairu la kvar taskojn de funebrado de Worden, skribu leteron, planu ritojn. Forta sekureca kadro montranta al Krizkunulo / 988 por severa aŭ komplika funebro."
+        },
+        "traumaPsychoed": {
+          "label": "Kompreni traŭmaton",
+          "desc": "Nur psikoedukado (NE kribrilo). Kio traŭmato estas kaj ne estas, neŭrobiologio per simpla lingvo, oftaj reagoj rekadrigitaj kiel adaptiĝoj, la 6 principoj de SAMHSA, pruvbazitaj kuracadoj. Por lernantoj kaj edukistoj. Inkluzivas elstaran sekurecan kadron pri kial kribrado sen daŭriga subteno estas nesekura."
+        },
+        "bodyStory": {
+          "label": "Korpa rakonto",
+          "desc": "Ilo por korpa akcepto kaj enkorpiĝo. NE pezo-centrita, NE dieto-rilata, NE kribrilo. Konstruita sur la korpa aprezo de Tylka, principoj de intuicia manĝado kaj amaskomunikila klereco. Inkluziva de ĉiuj korpoj, ĉiuj genroj, ĉiuj grandecoj. Forta plusendo al NEDA por manĝmalordoj."
+        },
+        "sourcesOfStrength": {
+          "label": "Fontoj de forto",
+          "desc": "Mapu viajn 8 protektajn faktorojn. Esploru protektajn subtenojn inspiritajn de la programo Sources of Strength. Ĉi tiu memgvidata mapo estas adapto, ne liverado de la taksita lerneja programo."
+        },
+        "crisiscompanion": {
+          "label": "Krizkunulo",
+          "desc": "Kapabloj por samula subteno kaj memmortigo-preventado: kion fari se vi aŭ amiko estas deprimita, en krizo aŭ pensas pri memdamaĝo — rekoni la signojn, kion diri (kaj ne diri), rakonti al fidinda plenkreskulo, plus 988 kaj persona sekurecplano. Protektita per enhavaverto. Konforma al NEDA, AFSP, Sources of Strength kaj 988. La akut-subtena kunparto de Fontoj de forto."
+        },
+        "identitySupport": {
+          "label": "Identeca subteno",
+          "desc": "Inkluziva, aprobanta spaco por demandoj pri genra identeco, seksa orientiĝo, romantika orientiĝo kaj pli larĝaj identecaj demandoj. Vortprovizo, identeca evoluo, trovi komunumon, sekureco por trans-junuloj, gvido por aliancanoj. Konstruita sur Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Voĉoj de handikapitaj homoj",
+          "desc": "Realaj aŭtismaj kaj handikapitaj aktivuloj, kies laboro formis kaj kritikis la praktikon pri handikapo. Citaĵoj, kunteksto kaj elektita legolisto. Konstruita por ke la homoj, AL kiuj la fako faris sian laboron, estu en la centro, ne forŝovitaj al flanka panelo en kondutscienca ilo. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Celfiksilo",
+          "desc": "Fiksu SMART-celojn, spuru progreson kaj festu etapojn."
+        },
+        "howlTracker": {
+          "label": "HOWL-spurilo",
+          "desc": "Memtaksado de Kutimoj de Laboro kaj Lernado (Habits of Work and Learning) por Crew-tempo. Semajnaj kontroloj, kvaronjaraj celoj, tendenca diagramo, demandoj por Crew-konversacio. Konforma al la HOWL-kadro de EL Education."
+        },
+        "onePageProfile": {
+          "label": "Unupaĝa profilo",
+          "desc": "Portebla, presebla profilo, kiu enhaviĝas en unu paĝo. Tri sekcioj: kion homoj ŝatas kaj admiras pri mi, kio gravas al mi, kiel plej bone subteni min. Person-centrita planada dokumento por IEP-kunvenoj, transiroj, anstataŭantoj aŭ Crew. Bazita sur la formato de Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Fari agoplanojn). Ok demandoj en sinsekvo (Mia rakonto, Revo, Koŝmaro, Kiu mi estas, Donacoj, Bezonoj, Agoplano, Unuaj paŝoj). Person-centrita vidaĵo de Pearpoint, O'Brien kaj Forest ĉe Inclusion Press; vaste uzata por transira planado."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Plani alternativajn morgaŭojn kun espero). Vidaĵo por estonteca planado: ok etapoj de via longhorizonta Norda Stelo malantaŭen ĝis la unuaj paŝoj en du semajnoj. Pearpoint, O'Brien kaj Forest ĉe Inclusion Press; kombiniĝas kun MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Valoroj kaj agado",
+          "desc": "Ordigu kio gravas, nomu viajn ĉefajn valorojn kaj turnu ĉiun en malgrandan konkretan agon ĉi-semajne. El Akcepta kaj Engaĝiĝa Terapio (Hayes); adoleska DNA-V-kadro. La ACT-distingo inter valoroj (direktoj) kaj celoj (cellokoj)."
+        },
+        "careerCompass": {
+          "label": "Kariera kompaso",
+          "desc": "Esploru karierojn per viaj interesoj. 36-era RIASEC-memkontrolo donas Holland-kodon el la tri ĉefaj literoj; foliumu karierojn, la 16 federaciajn Karierajn Aretojn kaj konkretajn sekvajn paŝojn (ombrotagoj, informaj intervjuoj, CTE, metilernadoj). Konstruita sur la kadro de Holland; montras al la aŭtoritata O*NET Interest Profiler ĉe mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Studio de mempledado",
+          "desc": "Konstruu konkretan planon de lerneja subteno por demandoj pri IEP aŭ 504, adaptoj, elektoj pri malkaŝo kaj petado de helpo de fidindaj plenkreskuloj."
+        },
+        "perspective": {
+          "label": "Perspektiva lenso",
+          "desc": "Vidu situaciojn el diversaj vidpunktoj — praktiku empation kaj alprenon de perspektivo."
+        },
+        "community": {
+          "label": "Komunumo kaj kulturo",
+          "desc": "Esploru diversecon, kulturan konscion kaj apartenon al komunumo."
+        },
+        "conflict": {
+          "label": "Solvado de konfliktoj",
+          "desc": "Praktiku malaltriskan aŭ hipotezan konflikton per alpreno de perspektivo, mi-frazoj, malpliigo de streĉiĝo kaj elektoj por riparo. Se iu ne estas sekura, implikigu plenkreskulon anstataŭ intertrakti sole."
+        },
+        "social": {
+          "label": "Laboratorio de sociaj kapabloj",
+          "desc": "Praktiku konversaciajn kapablojn, aktivan aŭskultadon, korpan lingvon kaj kunlaboradon."
+        },
+        "teamwork": {
+          "label": "Teamkonstruilo",
+          "desc": "Kunlaboraj defioj kaj esplorado de teamaj roloj."
+        },
+        "dearMan": {
+          "desc": "Konstruu skripton por malfacila peto en sep paŝoj: Describe (priskribu), Express (esprimu), Assert (asertu), Reinforce (plifortigu), Mindful (restu atenta), Appear confident (aspektu memfida), Negotiate (intertraktu). El DBT Interhoma efikeco (Linehan); la plej uzata skripto por asertiva komunikado en lerneja konsilado. Kombiniĝas kun Studio de mempledado."
+        },
+        "motivationalInterviewing": {
+          "label": "Motiva intervjuado",
+          "desc": "Konversacia kadro por helpi iun (aŭ vin mem) pripensi ŝanĝon. Lernu la OARS-kapablojn (malfermaj demandoj, aprezoj, reflektoj, resumoj), la tri mezurilojn kaj ŝanĝo-paroladon. El Miller kaj Rollnick; fundamento de lerneja konsilado kaj samula subteno."
+        },
+        "crewProtocols": {
+          "label": "Crew-protokoloj",
+          "desc": "Biblioteko de strukturitaj grupaj formatoj por Crew-tempo, tutora horo aŭ klashoro: komunumkonstruiloj, malfermoj, fermoj, restaŭrigaj rondoj, pripensaj protokoloj, festaj formatoj kaj gvidiloj por malfacilaj konversacioj. Plus kolekto de ĉiuj Crew-demandoj el la tuta SEL Hub. Konstruita sur EL Education Crew, Restaŭrigaj Praktikoj, Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Sanaj rilatoj",
+          "desc": "La spektro (sana / nesana / perforta) tra 8 dimensioj de ajna proksima rilato. Konsento detale, preventado de perforto en amrilatoj, sekureco + helplinioj. Konstruita sur la kadro Loveisrespect / NDVH. Inkluziva de kviraj, neŭrodiversaj kaj handikapitaj homoj."
+        },
+        "decisions": {
+          "label": "Decida laboratorio",
+          "desc": "Trairu realvivajn scenarojn per kadroj haltu-pensu-agu."
+        },
+        "journal": {
+          "label": "Taglibro de sentoj",
+          "desc": "Ĉiutaga kontrola taglibro — registru humorojn, ellasilojn kaj pripensojn laŭlonge de la tempo."
+        },
+        "safety": {
+          "label": "Sekureco kaj limoj",
+          "desc": "Lernu pri personaj limoj, fidindaj plenkreskuloj kaj sekuraj kontraŭ nesekuraj situacioj."
+        },
+        "landPlace": {
+          "label": "Tero kaj loko",
+          "desc": "Studio de prizorgado por daŭra rilato kun la tero, sur kiu vi loĝas. Tri fadenoj (historio, ekologio, nuntempo), kritika pripenso pri tera agnosko kiel praktiko prefere ol spektaklo, organizoj gvidataj de vabanakoj kiel aŭtoritataj voĉoj, kaj privata pripensa taglibro."
+        },
+        "somaticReset": {
+          "label": "Restarigo de korpo kaj spiro",
+          "desc": "Elektu korpozonon kaj sekvu mallongan, seĝ-amikan restarigon per senmoveco, spirado aŭ milda movado, kun privata kontrolo antaŭ kaj post."
+        },
+        "restorativeCircle": {
+          "label": "Restaŭriga rondo",
+          "desc": "Gvidu restaŭrigajn kaj komunumkonstruajn rondojn kun establitaj normoj, plenkreskula gvidado kaj zorgo pri kulturaj radikoj. Ne por devigita malkaŝo aŭ aktiva sekureca risko."
+        },
+        "compassion": {
+          "label": "Kompato kaj memparolado",
+          "desc": "Praktiku memkompaton, rekadrigu la internan kritikanton kaj konstruu pli afablan internan voĉon."
+        },
+        "friendship": {
+          "label": "Amikeco-konstruilo",
+          "desc": "Esploru amikecajn stilojn, riparajn strategiojn kaj sanajn rilatajn ŝablonojn."
+        },
+        "transitions": {
+          "label": "Vivaj transiroj",
+          "desc": "Navigu ŝanĝojn kiel translokiĝon, novajn lernejojn kaj plenkreskiĝon."
+        },
+        "upstander": {
+          "label": "Trejnado por enpaŝantoj",
+          "desc": "Lernu sekure defendi aliajn — kapabloj por fariĝi de preterstaranto enpaŝanto."
+        },
+        "growthmindset": {
+          "label": "Kreska pensmaniero",
+          "desc": "Cerbscienco, rekadrigo de defioj kaj konstruado de rezisteco."
+        },
+        "execfunction": {
+          "label": "Plenumaj funkcioj",
+          "desc": "Strategioj por la pli malfacilaj partoj de farado de aferoj: komenci taskojn, teni fokuson, plani antaŭe kaj spuri tempon."
+        },
+        "advocacy": {
+          "label": "Praktiko de pledado",
+          "desc": "Ekzercu ĝeneralajn skriptojn por esprimi bezonojn, peti subtenon kaj paroli en ĉiutagaj situacioj."
+        },
+        "civicAction": {
+          "label": "Civita agado kaj espero",
+          "desc": "Prilaboru malfacilajn sentojn pri maljusteco, konstruu civitan agokapablon kaj kultivu esperon per agado."
+        },
+        "ethicalReasoning": {
+          "label": "Laboratorio de etika rezonado",
+          "desc": "Esploru nuntempajn etikajn dilemojn per pluraj kadroj kaj sokrata dialogo kun AI."
+        },
+        "cultureExplorer": {
+          "label": "Kultura esploranto",
+          "desc": "Faru AI-subtenatajn profundajn esplorojn de mondaj kulturoj kun ilustraĵoj kaj sonaĵoj."
+        },
+        "voicedetective": {
+          "label": "Voĉa detektivo",
+          "desc": "Aŭskultu voĉojn kaj identigu emociojn laŭ la tono."
+        },
+        "practiceJourneys": {
+          "label": "Praktikaj vojaĝoj (pilota)",
+          "desc": "Praktiku peti subtenon tra kvar ligitaj renkontoj. Respondu per elektoj, viaj propraj vortoj aŭ ambaŭ. Tenu taglibron kaj provu alian vojon."
+        },
+        "sociallab": {
+          "label": "Rolludo de sociaj kapabloj",
+          "desc": "Praktiku sociajn scenarojn kaj rolludon kun AI-samulo per disbranĉiĝanta dialogo."
+        },
+        "peersupport": {
+          "label": "Trejnisto de samula subteno",
+          "desc": "Lernu la OARS-aŭskultajn kapablojn kaj kiam peti helpon de plenkreskulo."
+        },
+        "conflicttheater": {
+          "label": "Konflikta teatro",
+          "desc": "Praktiku fikcian konflikton kun du AI-roluloj en enmergiga sceno. Nur beta-rolludo; ne uzu ĝin por peri aktivan damaĝon."
+        },
+        "digitalWellbeing": {
+          "label": "Studio de cifereca bonfarto",
+          "desc": "Memkontrolu vian rilaton kun sociaj retoj kaj AI-babilrobotoj, konstruu pli sanajn telefonajn kutimojn, resaniĝu post ciberĉikanado, rimarku manipuladon en la fluo, sekure navigu rilatojn kun babilrobotoj kaj trovu helpon kiam vi bezonas ĝin."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Memkonscio",
+          "desc": "Rekoni emociojn, fortojn kaj kreskokampojn"
+        },
+        "self-regulation": {
+          "label": "Memreguligo",
+          "desc": "Reguligi emociojn, ekscitiĝon, atenton; eltena praktiko"
+        },
+        "self-direction": {
+          "label": "Memdirektado",
+          "desc": "Celfiksado, agokapablo, plenumaj funkcioj, kreska pensmaniero"
+        },
+        "inner-work": {
+          "label": "Interna laboro",
+          "desc": "Kontemplaj kaj pripensaj praktikoj"
+        },
+        "care-of-self": {
+          "label": "Zorgo pri si",
+          "desc": "Memkompato, rilata memzorgo"
+        },
+        "social-awareness": {
+          "label": "Socia konscio",
+          "desc": "Empatio, alpreno de perspektivo kaj aprezo de diverseco"
+        },
+        "relationship-skills": {
+          "label": "Rilataj kapabloj",
+          "desc": "Komunikado, teamlaboro kaj solvado de konfliktoj"
+        },
+        "responsible-decision-making": {
+          "label": "Respondeca decidado",
+          "desc": "Etikaj elektoj, taksado de konsekvencoj kaj problemsolvado"
+        },
+        "stewardship": {
+          "label": "Prizorgado",
+          "desc": "Zorgi pri komunumo, justeco, tero kaj la estonteco"
+        }
+      },
+      "shell": {
+        "zones": {
+          "purpose": "Nomu vian nunan zonon kaj elektu reguligan strategion, kiu taŭgas.",
+          "next": "Kontrolu vian zonon, elektu unu strategion, poste konservu, se vi volas reveni al ĝi."
+        },
+        "coping": {
+          "purpose": "Elektu eltenan strategion kaj praktiku ĝin unufoje kun klara haltopunkto.",
+          "next": "Elektu unu korpan aŭ surterigan strategion, provu ĝin, poste rimarku, ĉu ĝi helpis."
+        },
+        "journal": {
+          "purpose": "Skribu privatan pripenson kaj rimarku ŝablonojn, kiujn vi eble volas konservi.",
+          "next": "Elektu demandon, skribu honeste, kaj konservu aŭ eksportu antaŭ ol fermi."
+        },
+        "emotions": {
+          "purpose": "Konstruu emocian vortprovizon kaj nomu tion, kion vi sentas, pli precize.",
+          "next": "Elektu senton, taksu ĝian intensecon, poste elektu unu vorton, kiu plej bone taŭgas."
+        },
+        "mindfulness": {
+          "purpose": "Paŭzu, spiru kaj praktiku atenton sen bezono skribi ion ajn.",
+          "next": "Elektu unu mallongan praktikon, sekvu ĝin ĝis la fino, poste rimarku, kio ŝanĝiĝis."
+        },
+        "somaticReset": {
+          "purpose": "Uzu privatan korpozonan kontrolon por elekti mallongan, seĝ-amikan restarigon.",
+          "next": "Elektu korpoparton, provu unu opcion de senmoveco, spiro aŭ milda movado, poste rimarku, kio ŝanĝiĝis."
+        },
+        "thoughtRecord": {
+          "purpose": "Malrapidigu malfacilan penson kaj serĉu pli ekvilibran vidpunkton.",
+          "next": "Nomu la situacion, taksu la senton, poste testu la penson kontraŭ pruvoj."
+        },
+        "anxietyToolkit": {
+          "purpose": "Ordigu maltrankvilojn, malpliigu la intensecon de angoro kaj elektu praktikan sekvan paŝon.",
+          "next": "Elektu la plej laŭtan maltrankvilon, provu unu strategion, poste konservu la planon, se ĝi helpas."
+        },
+        "sleep": {
+          "purpose": "Rimarku barojn al dormo kaj elektu unu ripozan kutimon por provi.",
+          "next": "Kontrolu, kio malhelpas, elektu unu malgrandan ŝanĝon, poste revenu al ĝi pli poste."
+        },
+        "goals": {
+          "purpose": "Turnu intencon en konkretan, realisman sekvan agon.",
+          "next": "Skribu unu celon, elektu unuan paŝon kaj konservu la planon antaŭ ol fermi."
+        },
+        "friendship": {
+          "purpose": "Pripensu amikecajn bezonojn, apartenon kaj elektojn inter samuloj.",
+          "next": "Elektu unu amikecan situacion kaj identigu unu afablan sekvan paŝon."
+        },
+        "conflict": {
+          "purpose": "Komprenu konflikton kaj preparu riparcentran respondon.",
+          "next": "Nomu, kio okazis, konsideru ambaŭ flankojn, poste elektu unu riparan agon."
+        },
+        "safety": {
+          "purpose": "Kreu praktikan sekurecplanon kaj identigu fidindajn subtenojn.",
+          "next": "Aldonu avertsignojn, eltenajn paŝojn kaj homojn por kontakti; konservu antaŭ ol fermi."
+        },
+        "crisiscompanion": {
+          "purpose": "Uzu strukturitan subtenan vojon, kiam emocioj ŝajnas urĝaj aŭ nesekuraj.",
+          "next": "Elektu la plej proksiman subtenan opcion kaj implikigu fidindan plenkreskulon aŭ krizservon, kiam necese."
+        },
+        "conflicttheater": {
+          "purpose": "Praktiku fikcian konfliktan scenon kaj testu restaŭrigan lingvaĵon, sen trakti la ilon kiel peradon.",
+          "next": "Elektu fikcian scenon, provu unu respondon kaj pridiskutu, kio bezonus plenkreskulan subtenon en la reala vivo."
+        },
+        "restorativeCircle": {
+          "purpose": "Planu aŭ gvidu restaŭrigan grupan procezon kun klaraj normoj kaj plenkreskula gvidado.",
+          "next": "Unue starigu la interkonsentojn de la rondo, poste elektu demandon; neniam postulu publikan malkaŝon."
+        },
+        "strengths": {
+          "next": "Elektu la fortojn, kiuj sentiĝas kiel vi, poste trovu unu realan momenton el ĉi tiu trimestro, kiu montras ĉiun."
+        },
+        "viaStrengths": {
+          "purpose": "Uzu VIA-inspiritan memordigon kiel pripensan agadon, ne kiel formalan taksadon.",
+          "next": "Ordigu la fortojn, rimarku ŝablonojn kaj skribu unu ekzemplon, kiu surterigas la rezulton."
+        },
+        "perma": {
+          "purpose": "Faru pripensan momentfoton de bonfarto tra la PERMA-kampoj plus sano.",
+          "next": "Uzu la momentfoton por elekti konversacion aŭ malgrandan eksperimenton, ne por etikedi vin mem."
+        },
+        "advocacy": {
+          "purpose": "Praktiku ĉiutagan lingvaĵon por esprimi bezonojn kaj peti subtenon.",
+          "next": "Elektu situacion, skizu mallongan peton kaj decidu, kiu povus helpi."
+        },
+        "selfAdvocacy": {
+          "purpose": "Konstruu konkretan planon de lerneja subteno por IEP, 504, adaptoj aŭ elektoj pri malkaŝo.",
+          "next": "Elektu unu subtenan bezonon, kolektu viajn demandojn kaj identigu fidindan plenkreskulon por impliki."
+        },
+        "crewProtocols": {
+          "next": "Foliumu laŭ celo, elektu unu protokolon por hodiaŭ, poste notu en „Mia Crew-plano“, kiam vi faros ĝin."
+        },
+        "perspective": {
+          "next": "Elektu situacion, unue alprenu la alian vidpunkton, poste diru, kion vi farus alimaniere."
+        },
+        "windowOfTolerance": {
+          "next": "Aldonu unu signon al ĉiu el viaj tri zonoj, poste uzu „Kontrolo“ por loki la hodiaŭan tagon."
+        },
+        "sensoryRegulation": {
+          "next": "Komencu per „Kio estas sensa?“, poste marku la sistemojn, kiuj estas laŭtaj aŭ trankvilaj por vi."
+        },
+        "execfunction": {
+          "next": "Iru al „Komenco“ kaj elektu unu ekmovon por hodiaŭ, poste al „Teni“ por elekti vian notolokon."
+        },
+        "growthmindset": {
+          "next": "Malfermu „Rekadrigu ĝin“, skribu la fiksan penson kaj turnu ĝin en specifan, laboreblan penson."
+        },
+        "dearMan": {
+          "next": "Skribu vian peton en unu frazo, skizu la sep paŝojn, poste ekzercu ĝin unufoje."
+        },
+        "howlTracker": {
+          "next": "Registru „Pulso“, poste faru la „Semajnan kontrolon“: taksu ĉiun HOWL kaj aldonu unu specifan ekzemplon."
+        },
+        "peersupport": {
+          "next": "Elektu du malfermajn demandojn, kiujn vi povus demandi al amiko, poste provu unu en fikcia situacio en la praktika langeto."
+        },
+        "upstander": {
+          "next": "Legu la kuraĝoŝtupetaron en „Movoj“ kaj elektu la du plej malgrandajn movojn, kiujn vi vere povus fari ĉi-semajne."
+        },
+        "digitalWellbeing": {
+          "next": "Faru la „Memkontrolon“ honeste, poste elektu unu kutimon el la „Ilaro“ kaj unu limon, kiun vi starigas antaŭe."
+        },
+        "teamwork": {
+          "next": "Rigardu „Roloj“, poste skribu „Komunikan planon“ por reala grupo: kiu faras kion, kie kaj ĝis kiam."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Komenci ĉi tie",
+        "name_it": "Nomi ĝin",
+        "calm_now": "Trankviliĝi nun",
+        "body_reset": "Korpa restarigo",
+        "make_a_plan": "Fari planon",
+        "understand_patterns": "Kompreni ŝablonojn",
+        "practice_repair": "Praktiki riparon",
+        "role_play": "Rolludo",
+        "facilitated_group": "Gvidata grupo",
+        "reflect": "Pripensi",
+        "practice_speaking_up": "Praktiki ekparoli",
+        "make_a_support_plan": "Fari subtenan planon",
+        "urgent_support": "Urĝa subteno",
+        "get_support": "Ricevi subtenon",
+        "move_gently": "Moviĝi milde",
+        "learn_not_diagnose": "Lerni, ne diagnozi",
+        "learn_and_get_support": "Lerni kaj ricevi subtenon",
+        "check_boundaries": "Kontroli limojn",
+        "explore_identity": "Esplori identecon",
+        "practice_body_respect": "Praktiki korpan respekton",
+        "map_carefully": "Mapi zorge",
+        "understand_needs": "Kompreni bezonojn"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Nomu, kio okazas, antaŭ ol elekti strategion."
+        },
+        "emotions": {
+          "note": "Konstruu precizajn sentovortojn kaj rimarku intensecon."
+        },
+        "coping": {
+          "note": "Provu unu korpan aŭ surterigan strategion, poste rimarku, kio ŝanĝiĝis."
+        },
+        "mindfulness": {
+          "note": "Paŭzo kun malmulte da skribado por spirado, atento aŭ korpa konscio."
+        },
+        "somaticReset": {
+          "note": "Elektu korpoparton, poste provu mallongan praktikon de senmoveco, spirado aŭ milda movado. Kompakta klavar-alirebla elektilo tenas ĉiun vidaĵon mastrebla sur malgrandaj ekranoj. La vidaĵoj inkluzivas Fluantan ondon, kiu parigas EN · LEVIĜO kun plena linio kaj ronda marko, EL · TRANKVILIĜO kun punktita linio kaj rombforma marko, kaj PAŬZITA kun paŭzostrekoj; Petalan floradon, kiu parigas EN · MALFERMIĜO kun plenaj petalkonturoj kaj ronda centro, EL · MOLIĜO kun punktitaj konturoj kaj rombforma centro, kaj PAŬZITA kun centraj paŭzostrekoj; Surterigan horizonton, kiu parigas EN · LEVIĜO kun plena sunkonturo kaj ronda centro, EL · TRANKVILIĜO kun punktita sunkonturo kaj rombforma centro, kaj PAŬZITA kun sunaj paŭzostrekoj; antaŭvideblan, direkto-markitan linian vojon kun rektaj etikedoj EN kaj EL, rondaj EN- kaj rombformaj EL-celoj, spuro de la aktiva deirpunkto kaj konturita sekva celloko; kaj dupartan Spiran orbiton kun plenaj kaj punktitaj fazarkoj, kiuj fariĝas pli dikaj dum ili estas aktivaj, kongrua faz-ŝablona centra ringo, rektaj etikedoj EN kaj EL, centra simbolo por paŭzostato, konturita sekva transdona stacio, fazforma dekstruma marko, formkodita ritmomapo kaj fazindikoj por ekranlegiloj. Lernantoj povas provi unu spiron de movado antaŭ ol la tempumilo komenciĝas, poste pligrandigi, haltigi aŭ malŝalti la gvidilon. En Trankvila vido, la pligrandigita vidaĵo fariĝas klavar- kaj tuŝ-uzebla starto/paŭzo-regilo. La retronombrado povas esti kaŝita; gvidvortoj povas esti plenaj, nur-fazaj aŭ kaŝitaj; kaj spirnombroj kaj nombraj taksoj estas nedevigaj.",
+          "boundary": "Ĉi tio ne estas kuracado aŭ diagnozo. Tenu movadon malgranda kaj sendolora; haltu pro doloro, kapturniĝo aŭ sensentiĝo kaj diru al fidinda plenkreskulo aŭ sanprofesiulo."
+        },
+        "anxietyToolkit": {
+          "note": "Apartigu maltrankvilon de agado kaj elektu unu praktikan sekvan paŝon."
+        },
+        "windowOfTolerance": {
+          "note": "Mapu ekscitiĝajn signojn kaj subtenojn laŭlonge de la tempo; ĝi ne estas diagnozo."
+        },
+        "stressBucket": {
+          "note": "Rigardu premojn kaj subtenojn kune, inkluzive de premoj ekster via kontrolo."
+        },
+        "bigFeelings": {
+          "note": "Uzu koleron kiel informon kaj planu pli sekuran paŭzon aŭ riparon."
+        },
+        "conflict": {
+          "note": "Plej bone por praktikado de malaltriska aŭ hipoteza konflikto.",
+          "boundary": "Se estas minacoj, devigado, ĉikanado, misuzo aŭ nesekura potenca malegaleco, paŭzu kaj implikigu fidindan plenkreskulon anstataŭ intertrakti sole."
+        },
+        "conflicttheater": {
+          "note": "Beta-enmergiga praktiko kun fikciaj roluloj; ne uzu ĝin por peri aktivan damaĝon.",
+          "boundary": "Realaj minacoj, misuzo aŭ ĉikanado bezonas plenkreskulan subtenon kaj sekurecan respondon, ne rolludan ekzercon."
+        },
+        "restorativeCircle": {
+          "note": "Uzu kun establitaj rondonormoj kaj plenkreskula gvidanto.",
+          "boundary": "Ne uzu rondon por premi iun al publika malkaŝo aŭ por trakti aktivan sekurecan riskon."
+        },
+        "strengths": {
+          "note": "Malfermfina pripenso pri fortoj sen poentaro, rangigo aŭ diagnozo."
+        },
+        "viaStrengths": {
+          "note": "Memordigo por pripensado, ne la oficiala VIA-enketo nek psikometria rezulto."
+        },
+        "perma": {
+          "note": "Momentfoto de bonfarto por instigi konversacion, ne taksado de mensa sano."
+        },
+        "advocacy": {
+          "note": "Ĝeneralaj skriptoj kaj ekzercado por esprimi bezonojn kaj peti subtenon."
+        },
+        "selfAdvocacy": {
+          "note": "Uzu por konkreta planado pri IEP, 504, adaptoj, malkaŝo aŭ lerneja subteno."
+        },
+        "crisiscompanion": {
+          "note": "Subtena gvidilo por vi aŭ amiko; ĝi ne estas krizkribrilo nek anstataŭaĵo de plenkreskulo.",
+          "boundary": "Se iu ajn eble estas en tuja danĝero aŭ eble agos laŭ pensoj pri memdamaĝo, haltu ĉi tie kaj kontaktu fidindan plenkreskulon aŭ urĝan/krizan subtenon nun."
+        },
+        "safety": {
+          "note": "Lernu pri limoj kaj paŝoj al fidinda plenkreskulo; ĉi tio ne estas testo pri tio, ĉu situacio estas sekura.",
+          "boundary": "Se vi estas en tuja danĝero aŭ iu vundas vin, haltu kaj kontaktu fidindan plenkreskulon aŭ urĝan subtenon nun."
+        },
+        "griefLoss": {
+          "note": "Privata kunulo por funebro kaj perdo; preterlasu ĉion, kio ŝajnas tro multe.",
+          "boundary": "Se funebro ŝajnas neeltenebla, vi sentas vin nesekura aŭ iu alia estas en risko, implikigu fidindan plenkreskulon aŭ krizan subtenon."
+        },
+        "traumaPsychoed": {
+          "note": "Psikoedukado pri traŭmataj reagoj; ne kribrilo nek kuracado.",
+          "boundary": "Vi ne bezonas malkaŝi traŭmaton ĉi tie. Paŭzu kaj serĉu fidindan plenkreskulon aŭ konsiliston, se la enhavo vekas ion nesekuran."
+        },
+        "substancePsychoed": {
+          "note": "Damaĝ-reduktaj informoj kaj pripensado; ne kribrilo nek permeso uzi substancojn.",
+          "boundary": "Ne uzu ĉi tiun ilon por superdozo aŭ urĝa medicina situacio; kontaktu urĝan helpon aŭ fidindan plenkreskulon."
+        },
+        "healthyRelationships": {
+          "note": "Esploru konsenton kaj rilatajn ŝablonojn sen etikedi personon aŭ rilaton.",
+          "boundary": "Se rilato inkluzivas minacojn, devigadon aŭ perforton, serĉu plenkreskulan helpon; ne alfrontu iun sole."
+        },
+        "identitySupport": {
+          "note": "Aprobanta pripensado kaj komunuma subteno; kundividi estas nedevige.",
+          "boundary": "Tenu personajn informojn privataj kaj implikigu fidindan plenkreskulon, se vi sentas vin nesekura."
+        },
+        "bodyStory": {
+          "note": "Korpa aprezo kaj amaskomunikila klereco; ne malpeziĝo nek taksado de manĝmalordoj.",
+          "boundary": "Se manĝaĵo, korpa bildo aŭ ekzercado ŝajnas nesekura aŭ konsumanta, parolu kun fidinda plenkreskulo aŭ sanprofesiulo."
+        },
+        "genogram": {
+          "note": "Persona familia pripenso; ne klinika taksado, kaj kundividi estas nedevige.",
+          "boundary": "Preterlasu familiajn detalojn, kiuj ŝajnas nesekuraj aŭ privataj; petu subtenon de fidinda plenkreskulo."
+        },
+        "sensoryRegulation": {
+          "note": "Konstruu sensan profilon kaj adaptojn; ne diagnozo.",
+          "boundary": "Elektu subtenojn, kiuj ŝajnas sekuraj; kundividu adaptojn nur kiam vi volas."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Matena kontrolo",
+          "desc": "Komencu la tagon per humorkontrolo, spirado kaj celfiksado"
+        },
+        "calm_down": {
+          "name": "Angulo de trankviliĝo",
+          "desc": "Reguligaj strategioj por kiam emocioj altiĝas"
+        },
+        "conflict_unit": {
+          "name": "Unuo pri solvado de konfliktoj",
+          "desc": "Praktiku solvi malkonsentojn kaj konstrui riparajn kapablojn"
+        },
+        "empathy_week": {
+          "name": "Semajno de empatio kaj perspektivo",
+          "desc": "Konstruu empation per alpreno de perspektivo kaj kultura konscio"
+        },
+        "decision_making": {
+          "name": "Profunda esploro de decidado",
+          "desc": "Praktiku etikan rezonadon kaj respondecajn elektojn"
+        },
+        "self_discovery": {
+          "name": "Vojaĝo de memmalkovro",
+          "desc": "Esploru, kiu vi estas — fortoj, emocioj kaj kreska pensmaniero"
+        },
+        "friendship": {
+          "name": "Amikeco kaj sociaj kapabloj",
+          "desc": "Konstruu sanajn amikecojn kaj komunikajn kapablojn"
+        },
+        "transitions": {
+          "name": "Navigi ŝanĝojn",
+          "desc": "Subtenu lernantojn tra vivaj transiroj kaj novaj spertoj"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Rimarku, kion vi bezonas, kaj elektu unu fareblan sekvan paŝon.",
+          "model": "Mi sentas min malkvieta. Mi povas provi iom etendi la korpon, poste elekti la unuan parton de mia tasko.",
+          "practice": "Nomu senton, montru al elekto aŭ trankvile rimarku. Provu unu subtenon kaj elektu malgrandan celon.",
+          "reflect": "Kion vi rimarkis? Kion vi konservus aŭ ŝanĝus?",
+          "transfer": "Kiam la sekva leciono komenciĝos, mi povas provi ____. Se mi bezonos helpon, mi povas peti ____."
+        },
+        "calm_down": {
+          "goal": "Esploru subtenon, kiu taŭgas por via korpo kaj ĉi tiu momento.",
+          "model": "Spira praktiko ne ŝajnas helpema hodiaŭ. Mi povas provi ĉirkaŭrigardi la ĉambron aŭ peti kompanion.",
+          "practice": "Elektu nur unu komfortan strategion. Sidi, rigardi aŭ paŭzi estas validaj elektoj.",
+          "reflect": "Ĉu ĝi helpis, sentiĝis same aŭ sentiĝis malkomforte? Vi povas ĉesi aŭ elekti alian manieron.",
+          "transfer": "Kiam mi rimarkas ____, mi povas provi ____ aŭ peti subtenon de ____."
+        },
+        "conflict_unit": {
+          "goal": "Konsideru perspektivojn kaj ekzercu respekteman respondon al ĉiutaga malkonsento.",
+          "model": "Ni ambaŭ volas la saman materialon. Mi povas demandi, kion vi bezonas, klarigi mian bezonon kaj proponi alterni.",
+          "practice": "Uzu elpensitan, malaltriskan malkonsenton. Ekzercu unu aŭskultan demandon kaj unu eblan sekvan paŝon.",
+          "reflect": "Kies bezonojn la respondo traktis? Kio eble bezonas ŝanĝon?",
+          "transfer": "En sekura malkonsento, mi povas ____. Pri minacoj, ĉikanado aŭ devigado, mi povas peti helpon de fidinda plenkreskulo."
+        },
+        "empathy_week": {
+          "goal": "Esploru alian perspektivon sen supozi, ke vi scias, kiel iu sentas.",
+          "model": "Iu silentas. Eble pro laco aŭ pensado; mi povas demandi, anstataŭ mem decidi pri tiu persono.",
+          "practice": "Uzu fikcian ekzemplon. Nomu du eblajn perspektivojn kaj respekteman demandon, kiun vi povus demandi.",
+          "reflect": "Kion vi scias, kaj kion vi divenas? Kiel vi povus kontroli?",
+          "transfer": "Antaŭ ol supozi ion ĉi-semajne, mi povas demandi ____."
+        },
+        "decision_making": {
+          "goal": "Komparu elektojn laŭ iliaj efikoj al vi mem kaj al aliaj.",
+          "model": "Antaŭ ol afiŝi grupan foton, mi povas peti permeson kaj konsideri, kiu eble vidos ĝin.",
+          "practice": "Elektu elpensitan decidon. Komparu du opciojn, eblajn efikojn kaj iun, kiu povus helpi.",
+          "reflect": "Kiuj informoj mankas? Ĉu ekzistas pli sekura aŭ pli justa opcio?",
+          "transfer": "Antaŭ ol mi decidos pri ____, mi povas paŭzi por kontroli ____."
+        },
+        "self_discovery": {
+          "goal": "Rekonu forton kaj elektu manieron uzi ĝin kun subteno.",
+          "model": "Mi demandas utilajn demandojn. Mi povas uzi tiun forton, kiam tasko estas neklara, kaj peti ekzemplon.",
+          "practice": "Elektu forton, kiu taŭgas por vi aŭ por fikcia rolulo. Donu unu ekzemplon de ĝi en ago.",
+          "reflect": "Kio helpis tiun forton aperi? Kiu subteno ebligus la sekvan paŝon?",
+          "transfer": "Mi povas uzi ____, kiam ____. Persono aŭ rimedo, kiu povus helpi, estas ____."
+        },
+        "friendship": {
+          "goal": "Praktiku komunikadon, kiu respektas viajn bezonojn kaj la limojn de aliaj homoj.",
+          "model": "Mi povas inviti iun aliĝi al ni kaj akcepti ties elekton, se tiu diras ne.",
+          "practice": "Ekzercu inviton, aŭskultan demandon aŭ respekteman limon. Parolado, skribado aŭ alternativa komunikado ĉiuj validas.",
+          "reflect": "Ĉu ĉiu persono havis veran elekton? Kio povus igi la interagon pli bonveniga?",
+          "transfer": "En sekura interago ĉi-semajne, mi povas provi ____ kaj rimarki ____."
+        },
+        "transitions": {
+          "goal": "Identigu, kio ŝanĝiĝas, kio povas resti stabila, kaj unu fonton de subteno.",
+          "model": "Nova klaso ŝajnas necerta. Mi povas trovi la ĉambron antaŭe kaj demandi, kiu povas helpi.",
+          "practice": "Elektu realan aŭ fikcian ŝanĝon. Nomu unu necertecon, unu stabilan subtenon kaj unu malgrandan sekvan paŝon.",
+          "reflect": "Kiu parto estas en via kontrolo? Kiu helpo aŭ adapto estus utila?",
+          "transfer": "Antaŭ la ŝanĝo, mi povas ____. Se la plano devos ŝanĝiĝi, mi povas ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "format": "Sole aŭ grupe",
+          "cue": "Utila unua kontrolo antaŭ ajna kundividado."
+        },
+        "emotions": {
+          "format": "Sole aŭ duope",
+          "cue": "Bona vortproviza varmigo."
+        },
+        "coping": {
+          "format": "Sole aŭ grupe",
+          "cue": "Plej bona por reguliga restarigo."
+        },
+        "mindfulness": {
+          "format": "Tuta klaso",
+          "cue": "Reguliga opcio kun malmulte da skribado."
+        },
+        "somaticReset": {
+          "format": "Sole aŭ tuta klaso",
+          "cue": "La kompakta vidaĵa elektilo tenas ĉiun gvidilon disponebla sen densa butonkrado. La Spira orbito parigas plenajn kaj punktitajn arkojn kun pli dika aktiva fazo, kongruan plenan aŭ punktitan centran ringon kaj rektajn etikedojn EN kaj EL; ĝia centro ŝanĝiĝas de punkto al paŭzostrekoj dum paŭzo, kaj ĝia konturita rombo aŭ ringo identigas la sekvan faztransdonon, dum ĝia ronda aŭ rombforma dekstruma marko, transdona rombo, revena ringo, mallongaj enspiraj strekoj kaj kavaj elspiraj punktoj tenas la fazon kaj la nedevigan nombradon legeblaj sen koloro. Lasu lernantojn provi unu spiron de movado antaŭ la tempumilo, aŭ elekti Senmove. Proponu plenajn, nur-fazajn aŭ kaŝitajn gvidvortojn. Trankvila vido faras la pligrandigitan vidaĵon rekta starto/paŭzo-regilo. La Fluanta ondo uzas EN · LEVIĜO kun plena linio kaj ronda marko, EL · TRANKVILIĜO kun punktita linio kaj rombforma marko, kaj paŭzostrekojn por paŭzita seanco. La Petala florado uzas EN · MALFERMIĜO kun plenaj petalkonturoj kaj ronda centro, EL · MOLIĜO kun punktitaj konturoj kaj rombforma centro, kaj centrajn paŭzostrekojn por paŭzita seanco. La Surteriga horizonto uzas EN · LEVIĜO kun plena sunkonturo kaj ronda centro, EL · TRANKVILIĜO kun punktita sunkonturo kaj rombforma centro, kaj sunajn paŭzostrekojn dum paŭzo. La Spira vojo uzas rondan EN-celon, rombforman EL-celon, spuron de la aktiva deirpunkto kaj konturitan sekvan cellokon, por ke direkto ne dependu de koloro. Proponu fazindikojn por ekranlegiloj, plus elektojn por kaŝita retronombrado, kaŝitaj gvidvortoj, senmoveco, sen vidaĵo, natura spirado kaj sen nombroj; neniam postulu taksojn aŭ klarigojn de korpaj sensacoj."
+        },
+        "journal": {
+          "format": "Sole",
+          "cue": "Privata pripenso. Kundividado estu nedeviga."
+        },
+        "goals": {
+          "format": "Sole aŭ en tutora horo",
+          "cue": "Bona ferma paŝo post pripensado."
+        },
+        "conflict": {
+          "format": "Duope aŭ en malgranda grupo",
+          "cue": "Prezentu la normojn antaŭ la rolludo."
+        },
+        "restorativeCircle": {
+          "format": "Rondo",
+          "cue": "Uzu kun establitaj rondonormoj."
+        },
+        "peersupport": {
+          "format": "Praktiko duope",
+          "cue": "Forta por ekzercado de aŭskultaj kapabloj."
+        },
+        "perspective": {
+          "format": "Duope aŭ grupe",
+          "cue": "Bona empatia ponto antaŭ diskuto."
+        },
+        "digitalWellbeing": {
+          "format": "Sole aŭ en tutora horo",
+          "cue": "Utila antaŭ ol starigi normojn pri telefonoj aŭ AI."
+        },
+        "sleep": {
+          "format": "Sole",
+          "cue": "Bona por sanaj unuoj de tutora horo."
+        },
+        "safety": {
+          "format": "Sole",
+          "cue": "Unue antaŭrigardu; evitu devigitan malkaŝon."
+        },
+        "crisiscompanion": {
+          "format": "Sole",
+          "cue": "Por kapabloj de urĝa subteno, ne klasa tasko."
+        },
+        "griefLoss": {
+          "format": "Sole",
+          "cue": "Unue antaŭrigardu; uzu alternativojn kun eblo rifuzi."
+        },
+        "identitySupport": {
+          "format": "Sole",
+          "cue": "Uzu kun privateco kaj zorge pri la eblo rifuzi."
+        },
+        "traumaPsychoed": {
+          "format": "Sole aŭ gvidate de edukisto",
+          "cue": "Nur psikoedukado; proponu eblon rifuzi kaj vojon al fidinda plenkreskulo."
+        },
+        "substancePsychoed": {
+          "format": "Sole aŭ en sanleciono",
+          "cue": "Antaŭrigardu la damaĝ-reduktan kadron kaj provizu plenkreskulan/medicinan subtenon."
+        },
+        "healthyRelationships": {
+          "format": "Sole aŭ en sanleciono",
+          "cue": "Antaŭrigardu la lingvaĵon pri konsento kaj sekureco; neniam postulu personan malkaŝon."
+        },
+        "bodyStory": {
+          "format": "Sole",
+          "cue": "Korpo-respekta kadro; proponu eblon rifuzi kaj evitu pezo-centritan diskuton."
+        },
+        "genogram": {
+          "format": "Sole",
+          "cue": "Nur familia pripenso; kundividado estu nedeviga."
+        },
+        "sensoryRegulation": {
+          "format": "Sole aŭ por subtena planado",
+          "cue": "Uzu identeco-aprobantan lingvaĵon kaj lasu lernantojn elekti, kion kundividi."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Matena kontrolo en tutora horo",
+          "format": "Tuta klaso",
+          "focus": "Humoro, spiro, unu sekva paŝo",
+          "studentView": "Lernantoj private kontrolas sian zonon, provas reguligan opcion, poste elektas unu bezonon por la tago aŭ preterlasas.",
+          "teacherMove": "Unue modelu la opcion preterlasi. Invitu kundividi unu vorton aŭ koloron nur post privata praktiko.",
+          "privacyBoundary": "Neniu taglibra teksto estas kolektata; lernantoj poste decidas, ĉu iu kontrolpunkto eniras Kundividan pakon.",
+          "note": "Komencu per privata zonkontrolo, poste proponu spiradon aŭ celfiksadon. Lernantoj povas kundividi unu vorton, koloron aŭ preterlasi."
+        },
+        "calm_reset": {
+          "name": "Kvinminuta trankviliga restarigo",
+          "format": "Tuta klaso aŭ trankvila angulo",
+          "focus": "Korpa reguligo",
+          "studentView": "Lernantoj rimarkas sian nunan korpan staton kaj elektas unu praktikon por trankvila korpo.",
+          "teacherMove": "Tenu la rutinon malmultparola kaj tempolimigita. Proponu movadon, spiradon aŭ trankvilajn alternativojn.",
+          "privacyBoundary": "Lernantoj povas konservi kontrolpunkton por si mem; neniu devas klarigi, kial restarigo estis bezonata.",
+          "note": "Tenu ĉi tion malmultparola. Lernantoj elektas unu reguligan praktikon kaj rimarkas, kio ŝanĝiĝis."
+        },
+        "repair_routine": {
+          "name": "Post-konflikta ripara rutino",
+          "format": "Malgranda grupo aŭ tutora horo",
+          "focus": "Perspektivo, riparo, sekva ago",
+          "studentView": "Lernantoj povas uzi realan, hipotezan aŭ de la instruisto provizitan scenaron por praktiki riparan lingvaĵon.",
+          "teacherMove": "Unue starigu riparajn normojn kaj evitu publikan konfeson. Paŭzu, se la situacio bezonas plenkreskulan peradon.",
+          "privacyBoundary": "Lernantoj elektas, kion kundividi; privataj pripensoj pri konfliktoj ne fariĝu klasa pruvmaterialo.",
+          "note": "Uzu post kiam normoj estas starigitaj. Tenu la fokuson sur ripara lingvaĵo, ne sur publika konfeso."
+        },
+        "digital_reset": {
+          "name": "Minileciono pri cifereca bonfarto",
+          "format": "Tutora horo aŭ sanleciono",
+          "focus": "Telefono, dormo, AI kaj limoj",
+          "studentView": "Lernantoj trarigardas kutimojn, elektas unu limon por testi kaj tenas la kialon privata, se ili volas.",
+          "teacherMove": "Kadrigu kiel kutimo-dezajnon, ne telefonan revizion. Evitu peti lernantojn malkaŝi ekrankopiojn aŭ uzdatumojn.",
+          "privacyBoundary": "Lernantoj povas kundividi limcelon, sed personaj detaloj pri dormo, telefono aŭ AI restas nedevigaj.",
+          "note": "Kadrigu kiel kutimo-dezajnon, ne telefonan revizion. Lernantoj elektas unu limon por provi."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Esplor-informita aliro",
+          "title": "Esploroj rilatas al la baza aliro; ĉi tiu cifereca adapto ne estis taksita ĉi tie"
+        },
+        "emerging": {
+          "label": "Limigitaj pruvoj pri la aliro",
+          "title": "Promesplenaj sed limigitaj aŭ miksitaj pruvoj"
+        },
+        "contested": {
+          "label": "Pridisputata modelo",
+          "title": "Populara sed science pridisputata; plej bone uzata kiel metaforo, ne mekanismo"
+        },
+        "practice": {
+          "label": "Pripensa praktiko",
+          "title": "Strukturita praktiko aŭ heŭristiko, ne empiria aserto pri efikeco"
+        }
+      },
+      "ui": {
+        "sel_practice": "SEL-praktiko",
+        "default_purpose": "Praktiku unu SEL-kapablon zorge.",
+        "default_next": "Faru unu malgrandan paŝon, poste decidu, ĉu konservi.",
+        "private_checkpoint": "Privata kontrolpunkto",
+        "share_packet_eligible": "Taŭga por Kundivida pako",
+        "saving_preparing": "Pretigante konservi vian SEL-laboron...",
+        "save_requested": "Konservo petita por {title}",
+        "returned_to_grid": "Revenis al la krado de iloj",
+        "back_to_sel_tools": "Reen al SEL-iloj",
+        "export_now_aria": "Eksporti SEL-projektodosieron nun",
+        "export_now": "Eksporti nun",
+        "purpose": "Celo",
+        "next_step": "Sekva paŝo",
+        "saved_work": "Konservita laboro",
+        "checkpoints_private": "Ilaj kontrolpunktoj restas privataj ĉi tie, krom se vi elektas ilin por Kundivida pako.",
+        "use_with_care_label": "Uzu zorge:",
+        "tool_open_failed_title": "Ĉi tiu ilo ne povis malfermiĝi",
+        "tool_open_failed_body": "Io en la konservitaj informoj por ĉi tiu agado ne ŝargiĝis. Tio ne estas io, kion vi faris malĝuste.",
+        "saved_work_kept": "Via konservita laboro ne estis forigita.",
+        "back_to_hub": "Reen al la SEL Hub",
+        "tell_teacher": "Se tio daŭre okazas, diru al via instruisto, kiu agado ĝi estis.",
+        "load_did_not_start": "La ilo elŝutiĝis, sed ne ekfunkciis.",
+        "load_too_long": "La ilo bezonis tro longe por ŝargiĝi.",
+        "this_sel_tool": "Ĉi tiu SEL-ilo",
+        "tool_opening": "{name} malfermiĝas...",
+        "tool_open_retry": "{name} ne povis esti malfermita. Provu denove aŭ elektu alian ilon.",
+        "station_link_missing": "Ĉi tiu ligilo nomas stacion, kiu ne estas en ĉi tiu projekto. Ŝargu la aron, kiu enhavas ĝin, aŭ komencu unu el „SEL-stacioj“ en la panelo „Historio“.",
+        "started_station": "Stacio komencita: {name}",
+        "tool_could_not_open": "{name} ne povis malfermiĝi.",
+        "tool_not_available": "{name} ne disponeblas en ĉi tiu SEL Hub.",
+        "try_again": "Provi denove",
+        "dismiss": "Forigi",
+        "back_to_tools": "Reen al iloj",
+        "band_elementary": "Bazlernejo",
+        "band_middle": "Malsupra mezlernejo",
+        "band_high": "Supra mezlernejo",
+        "unsaved_aria": "Vi havas nekonservitajn ŝanĝojn",
+        "unsaved_title": "Nekonservitaj ŝanĝoj",
+        "unsaved": "Nekonservita",
+        "unsaved_hint": "Vi havas nekonservitajn ŝanĝojn — tuŝu „Eksporti nun“ por konservi ilin",
+        "educators_opened": "Gvidilo „Por edukistoj“ malfermita",
+        "educators_aria": "Por edukistoj: kiel respondece uzi ĉi tiun Hub",
+        "for_educators": "Por edukistoj",
+        "theme_aria": "Ŝanĝi etoson (hela / malhela / alta kontrasto)",
+        "theme_contrast": "Alta kontrasto",
+        "theme_dark": "Malhela reĝimo",
+        "theme_light": "Hela reĝimo",
+        "theme_contrast_short": "Kontrasto",
+        "theme_dark_short": "Malhela",
+        "theme_light_short": "Hela",
+        "xp_aria": "{count} SEL-spertpoentoj",
+        "close_hub": "Fermi SEL Hub",
+        "keep_share_title": "Elektu, kion konservi kaj kundividi",
+        "keep_share_body": "Iuj agadoj konservas laboron en ĉi tiu aparato; alia laboro restas nur en ĉi tiu langeto. Fermi la langeton ne forviŝas ĉion. Eksportu dosieron por konservi kopion. Sur komuna aparato, trarigardu „Datumoj kaj privateco“ en „Por edukistoj“. AI- kaj kundividaj funkcioj uzas viajn agorditajn servojn.",
+        "got_it_aria": "Komprenite, ekuzi la SEL Hub",
+        "got_it": "Komprenite",
+        "practice_support": "Praktika subteno",
+        "learning_guide": "Lerngvidilo kaj manieroj praktiki",
+        "what_you_can_explore": "Kion vi povas esplori",
+        "worked_example": "Ellaborita ekzemplo",
+        "try_one_step": "Provu unu paŝon",
+        "reflect_transfer": "Pripensu kaj uzu ĝin aliloke",
+        "look_closer": "Rigardu pli detale",
+        "next_use": "Ebla sekva uzo",
+        "adapt_together": "Adaptu la praktikon kune",
+        "adapt_smaller": "Komencu pli malgrande: modelu unu frazon aŭ elekton, uzu bildon aŭ konkretan objekton kaj donu tempon por pensi.",
+        "adapt_deeper": "Iru pli profunden: komparu du respondojn, identigu mankantajn informojn kaj klarigu, kio povus ŝanĝi vian elekton.",
+        "adapt_context": "Ŝanĝu la kuntekston: uzu fikcian situacion, kiu taŭgas por la lingvo, interesoj, kulturo kaj alireblecaj bezonoj de la lernanto.",
+        "adapt_check": "Kontrolu komprenon per elektita ekzemplo aŭ klarigo, ne per deviga persona rakonto, emocia ŝanĝo aŭ poentaro.",
+        "optional_prompts": "Ĉi tiuj nedevigaj demandoj ne sendas respondojn, ne donas kompletigon kaj ne anstataŭas la proprajn instrukciojn kaj sekurecajn informojn de la agado.",
+        "returned_to_activities": "Revenis al agadoj. Neniu praktika kompletigo estis registrita per ĉi tiu ago.",
+        "return_to_activities": "Reveni al agadoj",
+        "chooser_first_reset_coping": "Elektu unu komfortan surterigan opcion. Rimarku, ĉu ĝi taŭgas; ĉesi estas permesite.",
+        "chooser_first_reset_journal": "Skribu unu aferon, kiu farus la venontajn kelkajn minutojn pli mastreblaj. Neniu persona rakonto estas bezonata.",
+        "chooser_first_feelings_zones": "Montru al sento aŭ trankvile rimarku. Elektu unu subtenon; ne ekzistas ĝusta zono por atingi.",
+        "chooser_first_feelings_emotions": "Esploru du sentovortojn por fikcia rolulo. Pli ol unu respondo povas taŭgi.",
+        "chooser_first_feelings_journal": "Skribu vorton aŭ mallongan pripenson pri fikcia aŭ ĉiutaga situacio.",
+        "chooser_first_conversation_advocacy": "Uzu fikcian situacion por ekzerci unu peton laŭte, per alternativa komunikado aŭ silente, for de la formularo.",
+        "chooser_first_conversation_journal": "Skizu unu respekteman peton por sekura, ĉiutaga situacio; vi ne devas sendi ĝin.",
+        "chooser_first_decision_decisions": "Pripensu du elektojn en fikcia situacio kaj unu eblan efikon de ĉiu.",
+        "chooser_first_decision_goals": "Skizu unu realisman sekvan paŝon kaj subtenon, kiun vi povus peti.",
+        "try_a_reset": "Provi restarigon",
+        "need_feeling": "Kompreni senton",
+        "need_conversation": "Prepari konversacion",
+        "need_decision": "Elekti sekvan paŝon",
+        "help_choose": "Helpu min elekti agadon",
+        "help_choose_intro": "Elektu, kion vi volas provi. Sugestoj uzas nur ĉi tiujn elektojn; ili ne taksas viajn sentojn. Tempoj priskribas unuan paŝon, ne la tutan agadon.",
+        "what_would_help": "Kio helpus?",
+        "time_first_step": "Tempo por unua paŝo",
+        "n_minutes": "{count} min",
+        "how_respond": "Kiel vi ŝatus respondi?",
+        "respond_any": "Ajnamaniere",
+        "respond_offline": "Pensi, paroli, desegni aŭ alternativa komunikado",
+        "respond_write": "Skribi mallongan respondon",
+        "options_one": "{count} komenca opcio por viaj elektoj.",
+        "options_many": "{count} komencaj opcioj por viaj elektoj.",
+        "options_none": "Neniu komenca opcio ankoraŭ kongruas. Provu pli da tempo aŭ alian respondformaton; la plena katalogo restas disponebla.",
+        "why_option_write": "Kial ĉi tiu opcio: {need}, kun sugestita {minutes}-minuta unua paŝo kaj mallonga skribita respondo.",
+        "why_option_offline": "Kial ĉi tiu opcio: {need}, kun sugestita {minutes}-minuta unua paŝo kaj maniero praktiki sen tajpado.",
+        "open_named": "Malfermi {name}",
+        "open_named_unavailable": "Malfermi {name} (ne disponebla)",
+        "pathway_guide": "Gvidilo por itinera praktiko",
+        "pathway_opened": "{opened} el {total} iloj malfermitaj. Malfermi ilon ne signifas, ke vi praktikis la kapablon.",
+        "exit_pathway_aria": "Eliri el itinera reĝimo",
+        "pathway_cleared": "Itinero forigita",
+        "exit_pathway": "Eliri el itinero",
+        "practice_goal": "Praktika celo:",
+        "pathway_intro": "Elektu unu agadon aŭ sekvu la sugestitan ordon. Vi povas preterlasi, uzi fikcian ekzemplon aŭ respondi per parolado, desegnado, skribado aŭ alternativa komunikado. Kundividi estas nedevige.",
+        "model_practice_reflect": "Modeli, praktiki kaj pripensi",
+        "an_example": "Ekzemplo",
+        "notice_adjust": "Rimarku kaj alĝustigu",
+        "take_with_you": "Kunportu ĝin",
+        "self_check_aria": "Nedeviga praktika memkontrolo",
+        "self_check_intro": "Post kiam vi provis paŝon, elektu, kio taŭgas. Tio estas nedeviga kaj ne taksata; ĝi restas en ĉi tiu itinera seanco.",
+        "i_tried": "Mi provis paŝon",
+        "another_way": "Mi bezonas alian manieron",
+        "pass_for_now": "Preterlasi nun",
+        "tried_feedback": "Rimarku, kio helpis, kio ne, kaj kie vi povus provi la kapablon denove.",
+        "adapt_feedback": "Provu pli malgrandan paŝon, alian manieron respondi, alian ilon aŭ subtenon de iu, al kiu vi fidas.",
+        "pass_feedback": "Preterlasi estas valida elekto. Vi povas reveni poste aŭ peti subtenon.",
+        "next_option": "Sekva opcio: {name}",
+        "open_next": "Malfermi sekvan: {name}",
+        "view_pathway_tools": "Vidi itinerajn ilojn",
+        "revisit_any": "Vi povas reveni al ajna agado. Elektu unu ideon por provi ekster la SEL Hub; ne necesas fini ĉiun ilon.",
+        "station_activities": "Staciaj agadoj",
+        "active_station": "Aktiva SEL-stacio: {name}",
+        "steps_recorded_passed": "{done} el {total} paŝoj registritaj · {passed} preterlasitaj nun. Tio estas praktika registro, ne noto.",
+        "steps_recorded": "{done} el {total} paŝoj registritaj. Tio estas praktika registro, ne noto.",
+        "active_minutes_done": "{mins} el {goal} aktivaj minutoj ĉi tie. Paŝo registrita.",
+        "active_minutes_counting": "{mins} el {goal} aktivaj minutoj ĉi tie. Kalkuliĝas dum ĉi tiu langeto estas videbla kaj vi uzas ĝin.",
+        "exit_station_aria": "Eliri el stacia reĝimo",
+        "station_cleared": "Stacio forigita",
+        "exit_station": "Eliri el stacio",
+        "station_tools_steps": "Staciaj iloj, paŝoj kaj pripenso",
+        "station_steps": "Staciaj paŝoj kaj pripenso",
+        "station_privacy": "Paŝoj kaj notoj estas konservataj en ĉi tiu aparato kaj povas esti inkluzivitaj en projektodosieroj. Uzu fikciajn ekzemplojn aŭ ellasu personajn detalojn. Elektu, kion kundividi.",
+        "step_passed": "Preterlasita nun. Vi povas reveni, kiam vi pretas.",
+        "step_marked": "Vi markis ĉi tiun paŝon kompleta.",
+        "step_target": "Agada celo registrita; tio ne mezuras kapablon aŭ bonfarton.",
+        "step_ready": "Kiam ajn vi pretas.",
+        "open_step_activity": "Malfermi agadon por ĉi tiu paŝo",
+        "xp_progress": "{xp} / {target} entute SEL XP. Tio inkluzivas pli fruan agadon; ĝi ne estas kapablopoentaro.",
+        "time_progress": "{mins} / {target} aktivaj minutoj. Tempo ne estas pruvo de lernado.",
+        "default_reflect": "Kion vi rimarkis? Kion vi konservus aŭ ŝanĝus?",
+        "self_check_ways": "Pensu, desegnu, parolu, signu aŭ uzu alternativan komunikadon. Skribita noto estas nedeviga. Marku la paŝon kompleta mem, aŭ preterlasu nun.",
+        "length_target": "Ĉi tiu konservita paŝo uzas longocelon: {count} / {target} signoj. Longo ne mezuras la kvaliton de pripensado. Via noto restas redaktebla.",
+        "reflection_for": "Pripenso por {name}",
+        "optional_note": "Nedeviga noto: kio helpis, aŭ kion vi povus provi poste...",
+        "write_reflection": "Skribu pripenson...",
+        "mark_complete_aria": "Marki „{name}“ kompleta",
+        "step_reopened": "Paŝo remalfermita: {name}",
+        "step_marked_named": "Vi markis ĉi tiun paŝon kompleta: {name}",
+        "mark_complete": "Marki kompleta",
+        "step_passed_named": "Preterlasita nun: {name}",
+        "filter_pathway": "itinero: {name}",
+        "filter_station": "stacio: {name}",
+        "no_tools_match": "Neniuj iloj kongruas kun {filters}",
+        "results_one": "{count} ilo el {total} kongruas kun {filters}",
+        "results_many": "{count} iloj el {total} kongruas kun {filters}",
+        "showing_all": "Montrante ĉiujn {total} ilojn",
+        "crisis_elementary": "Se vi ne povas tuj trovi plenkreskulon, daŭre petu, ĝis iu aŭskultos. Vi meritas helpon.",
+        "crisis_call_or_text": "Telefonu aŭ sendu SMS-on al",
+        "crisis_988": "la linio 988 Suicide & Crisis Lifeline (senpaga, konfidenca, 24/7).",
+        "crisis_text": "Sendu SMS-on",
+        "crisis_text_line": "Crisis Text Line (senpaga, konfidenca, 24/7).",
+        "tool_selection": "Elekto de SEL Hub-iloj",
+        "jumped_to_list": "Saltis al la ilolisto. {summary}.",
+        "skip_to_list": "Salti al la ilolisto",
+        "start_here": "Komencu ĉi tie",
+        "quick_route": "Elektu rapidan vojon aŭ foliumu sube.",
+        "browsing_all": "Foliumante ĉiujn SEL-ilojn",
+        "continue": "Daŭrigi",
+        "continue_desc": "Rekomenci la lastan SEL-ilon, kiun vi malfermis.",
+        "starting_idea": "Komenca ideo",
+        "starting_idea_desc": "{name}: sugestita agado por ĉi tiu klasgrupo, kun ekzemploj, kiujn vi povas adapti.",
+        "starting_idea_none": "Malfermu komencpunkton taŭgan por la klaso.",
+        "try_a_reset_desc": "Esploru komfortan strategion; senti trankvilon ne estas postulata.",
+        "journal": "Taglibro",
+        "journal_desc": "Skribu pripenson; trarigardu elektojn pri konservado kaj kundividado.",
+        "browse_all": "Foliumi ĉion",
+        "browse_all_desc": "Serĉu aŭ filtru la plenan katalogon.",
+        "need_chip_calm": "Trankviligi mian korpon",
+        "need_chip_feelings": "Nomi sentojn",
+        "need_chip_stress": "Streso aŭ maltrankvilo",
+        "need_chip_friend": "Konflikto kun amiko",
+        "need_chip_write": "Elskribi ĝin",
+        "need_chip_decision": "Fari decidon",
+        "need_chip_sleep": "Dormo aŭ laco",
+        "need_chip_crisis": "Nesekure aŭ en krizo",
+        "need_chip_relationshipsafety": "Sekureco en rilatoj",
+        "need_chip_schoolsupport": "Lerneja subteno",
+        "need_chip_grief": "Funebro aŭ perdo",
+        "storage_notice": "Iom da SEL-laboro estas konservata en ĉi tiu aparato. AI-funkcioj uzas vian agorditan servon. Elektu, kion konservi aŭ kundividi, precipe sur komuna aparato.",
+        "save_now_aria": "Konservi aŭ eksporti SEL-laboron nun",
+        "save_now": "Konservi nun",
+        "recent_work": "Lastatempa SEL-laboro",
+        "saved_here": "Konservita ĉi tie. Eksportu por teni ĝin post fermo.",
+        "create_packet_aria": "Krei SEL-Kundividan pakon el konservitaj kontrolpunktoj",
+        "review_packets_aria": "Trarigardi konservitajn SEL-Kundividajn pakojn",
+        "create_packet": "Krei Kundividan pakon",
+        "review_packets": "Trarigardi Kundividajn pakojn",
+        "open_related": "Malfermi rilatan ilon.",
+        "related_unavailable": "Rilata ilo ne disponeblas en ĉi tiu SEL Hub.",
+        "streak_aria": "{count}-taga SEL-serio. Plej longa: {longest} tagoj.",
+        "streak": "{count}-taga serio",
+        "streak_best": "rekordo {count}",
+        "find_activity": "Trovi agadon",
+        "search_placeholder": "Serĉu sentojn, amikojn, streson, celojn...",
+        "search_aria": "Serĉi SEL-ilojn",
+        "support_options": "Subtenaj opcioj",
+        "crisis_hard_moment": "Ŝajnas, ke tio eble estas malfacila momento.",
+        "crisis_tell_adult": "Vi ne devas solvi tion sola, kaj vi ne devas unue trovi la ĝustan ilon. Bonvolu rakonti al fidinda plenkreskulo nun — lerneja konsilisto, instruisto, gepatro aŭ alia plenkreskulo, al kiu vi fidas. Serĉi ĉi tie sciigas neniun; iu ekscias nur se vi mem rakontas.",
+        "open_crisis_companion": "Malfermi Krizkunulon",
+        "find_by_need": "Trovi SEL-ilojn laŭ bezono",
+        "i_need": "Mi bezonas...",
+        "cleared_search": "SEL-serĉo forigita",
+        "clear_search_aria": "Forigi SEL-serĉon",
+        "clear": "Forigi",
+        "cleared_need": "SEL-bezona filtrilo forigita",
+        "showing_for": "Montrante SEL-ilojn por {name}",
+        "clear_need_aria": "Forigi bezonan filtrilon: {name}",
+        "find_for_aria": "Trovi ilojn por: {name}",
+        "browse_by_area": "Foliumi laŭ kapablokampo",
+        "filter_by_category": "Filtri SEL-ilojn laŭ kategorio",
+        "showing_all_categories": "Montrante ĉiujn kategoriojn",
+        "show_all_categories_aria": "Montri ĉiujn kategoriojn ({count} iloj)",
+        "all": "Ĉiuj",
+        "filtered_to": "Filtrita al {name}",
+        "filter_chip_aria": "Filtrilo: {name} ({count} iloj)",
+        "pathways_heading": "SEL-itineroj — elektitaj lernsekvencoj",
+        "started_pathway": "Itinero komencita: {name}",
+        "pathway_started": "Itinero {name} komencita!",
+        "n_activities": "{count} agadoj",
+        "grades_range": "klasoj {range}",
+        "use_with_care": "Uzu zorge",
+        "visits_many": "{count} vizitoj",
+        "visits_one": "{count} vizito",
+        "best_for": "Plej taŭga por: {mode}.",
+        "teacher_cue": "Instruista indiko: {time}, {format}. {cue}",
+        "preview_first": "Unue antaŭrigardu",
+        "evidence_tradition": "Pruva tradicio: {tag}",
+        "approach_context": "Kunteksto de la aliro: {label}. {title}. Ĉi tiu insigno ne pruvas efikecon por ĉi tiu aplikaĵo aŭ por aparta lernanto.",
+        "step_opened": "Paŝo {n} · Malfermita",
+        "step_not_opened": "Paŝo {n} · Ne malfermita",
+        "suggested_grades": "Sugestitaj klasoj {range}",
+        "no_tools_current_view": "Neniuj iloj kongruas kun la nuna vido",
+        "empty_try": "Provu: trankvilo, sentoj, streso, amiko, skribi, decido aŭ dormo.",
+        "filters_cleared": "Filtriloj forigitaj. Montrante ĉiujn {total} ilojn.",
+        "show_all_tools": "Montri ĉiujn {total} ilojn",
+        "error_loading": "Eraro dum ŝargado de {name}",
+        "unknown_error": "Nekonata eraro",
+        "back_to_tools_error": "Reen al iloj",
+        "tool_load_failed": "Ĉi tiu ilo ne povis ŝargiĝi.",
+        "loading_tool": "Ŝargante ilon...",
+        "file_not_arrived": "La dosiero ne alvenis.",
+        "check_connection": "Kontrolu la konekton, poste provu denove.",
+        "plugin_fetching": "La kromprograma dosiero ankoraŭ estas elŝutata.",
+        "research_about": "Pri esploraj etikedoj",
+        "research_summary": "Kion signifas la esploraj etikedoj",
+        "research_context": "Kunteksto de la aliro: {label}.",
+        "research_not_app": "Esploroj pri terapio, instruplano aŭ kadro ne pruvas, ke ĉi tiu cifereca agado havas la samajn efikojn. La etikedoj priskribas la aliron; ili ne taksas ĉi tiun aplikaĵon aŭ lernanton.",
+        "research_check": "Antaŭ ol elekti agadon, kontrolu ĝiajn cititajn fontojn, la aĝojn kaj mediojn studitajn, la bezonatan subtenon kaj la mezuritajn rezultojn. Ĉi tiuj etikedoj ne establis la taŭgecon por la populacio nek la efikecon de ĉi tiu adapto.",
+        "research_casel_link": "CASEL: elekti kaj taksi SEL-programon",
+        "project_save_failed": "La peto konservi la projekton malsukcesis. Tenu ĉi tiun Hub malfermita kaj provu „Konservi / Eksporti“ en la ĉefa aplikaĵo.",
+        "project_save_requested": "Projekta konservo petita. Kompletigu la konservadon en la ĉefa aplikaĵo; konservita dosiero ne estis konfirmita ĉi tie.",
+        "saving_aria": "SEL-konservado kaj kundividado",
+        "saving_failed_alert": "Iuj SEL-ŝanĝoj ne povis esti konservitaj en ĉi tiu aparato. Tenu ĉi tiun Hub malfermita kaj konservu projektokopion; staciaj malnetoj devas esti konservitaj kiel stacioj por aliĝi al tiu kopio.",
+        "saving_attention": "Konservado bezonas atenton",
+        "saving_title": "Konservado kaj kundividado",
+        "saving_failed_body": "La nuna laboro restas disponebla en ĉi tiu malfermita Hub. Malsukcesa loka konservo povas lasi pli malnovan kopion en ĉi tiu aparato.",
+        "saving_ok_body": "Konservitaj stacioj, staciaj notoj kaj Hub-kontrolpunktoj estas konservataj en ĉi tiu aparato. Unuopaj agadoj havas siajn proprajn konservajn regilojn; ĉi tiu stato ne konfirmas, ke ĉiu agada enigo estis konservita.",
+        "saving_drafts": "Staciaj malnetoj restas en ĉi tiu aparato por restarigo. Konservi stacion aldonas ĝin al la projektaj datumoj disponeblaj por „Konservi / Eksporti“; peti projektan konservon ne konfirmas, ke dosiero estis skribita.",
+        "saving_live": "Viva seanco estas konektita. Ĝi eble sendas progresajn aŭ sekurecajn signalojn al la gastiganto. Nedeviga AI sendas agadan tekston al la agordita servo. Trarigardu Kundividan pakon antaŭ ol elekti kundividi ĝin.",
+        "saving_ai": "Nedeviga AI sendas agadan tekston al la agordita servo. Kundivida pako enhavas la erojn kaj detalnivelojn, kiujn vi elektas; trarigardu ĝian antaŭvidon antaŭ ol kundividi.",
+        "saving_retry": "Reprovi lokan konservadon",
+        "saving_request": "Peti projektan konservon",
+        "removed_stations": "Forigitaj stacioj",
+        "removed_body": "Malfaru stacian forigon, dum ĉi tiu Hub estas malfermita. Ekzistantaj praktikaj registroj estas konservataj.",
+        "station_restored": "Stacio restarigita: {name}",
+        "undo_removal": "Malfari forigon: {name}",
+        "launch_routines_aria": "Instruistaj lanĉaj rutinoj",
+        "launch_title": "Instruista lanĉo",
+        "launch_note": "Tenu la praktikon netaksata kaj la kundividadon nedeviga. Klarigu aparatan konservadon, agorditajn AI-funkciojn kaj kundividadon antaŭ ol komenci. Uzu fikciajn ekzemplojn; invitu lernantojn peti helpon aŭ preterlasi.",
+        "launch_guardrails_aria": "Sekurecaj reguloj por instruista lanĉo",
+        "launch_step_boundary": "Starigu la limon",
+        "launch_step_boundary_body": "Diru, kio estas privata, kio estas nedeviga, kaj kiel lernantoj povas preterlasi.",
+        "launch_step_run": "Plenumu la rutinon",
+        "launch_step_run_body": "Uzu la ilojn kiel praktikon. Tenu pripensadon formativa kaj netaksata.",
+        "launch_step_close": "Fermu per elekto",
+        "launch_step_close_body": "Lernantoj decidas, ĉu konservi, eksporti aŭ inkluzivi kontrolpunkton poste.",
+        "launch_student_sees": "Lernanto vidas",
+        "launch_student_sees_default": "Lernantoj kompletigas privatan SEL-rutinon kaj elektas, kion kundividi.",
+        "launch_teacher_move": "Instruista ago",
+        "launch_teacher_move_default": "Kadrigu tion kiel praktikon, ne taksadon.",
+        "launch_sharing_boundary": "Kundivida limo",
+        "launch_sharing_boundary_default": "Kundividado restas sub la kontrolo de la lernanto.",
+        "launch_tools_loading": "Iloj ŝargiĝas...",
+        "launch_still_loading": "Ankoraŭ ŝargiĝas: {tools}",
+        "launch_preview_sensitive": "Unue antaŭrigardu sentemajn ilojn: {tools}",
+        "launch_load_aria": "Ŝargi instruistan lanĉplanon: {name}",
+        "launch_finish_draft": "Unue finu aŭ forĵetu la nunan malneton",
+        "launch_waiting": "Atendante ilojn",
+        "launch_loading": "Ŝargante",
+        "launch_load": "Ŝargi en Stacikonstruilon",
+        "builder_note_student": "Lernanta vido: {text}",
+        "builder_note_teacher": "Instruista ago: {text}",
+        "builder_note_sharing": "Kundivida limo: {text}",
+        "builder_note_note": "Instruista noto: {text}",
+        "launch_finish_existing": "Unue finu aŭ forĵetu vian ekzistantan stacian malneton.",
+        "launch_tools_still_loading": "Instruistaj lanĉiloj ankoraŭ ŝargiĝas. Provu denove post momento.",
+        "launch_tools_still_loading_sr": "Instruistaj lanĉiloj ankoraŭ ŝargiĝas.",
+        "launch_default_name": "SEL-klasĉambra rutino",
+        "launch_default_short": "SEL-rutino",
+        "launch_loaded_sr": "Instruista lanĉplano ŝargita en la stacikonstruilon: {name}",
+        "launch_loaded_toast": "Instruista lanĉplano ŝargita en Stacikonstruilon.",
+        "stations_summary": "Propraj SEL-stacioj — aroj kreitaj de instruistoj",
+        "station_delete_aria": "Forigi stacion {name}",
+        "station_removed_sr": "Stacio forigita. Malfaro disponeblas, ĝis ĉi tiu Hub fermiĝos.",
+        "station_removed": "Stacio forigita",
+        "station_tools_count": "{count} iloj",
+        "station_quests_count": "{count} taskoj",
+        "station_activated_sr": "Aktivigita SEL-stacio: {name}",
+        "station_started": "{name} komenciĝis!",
+        "station_activate_aria": "Aktivigi stacion {name}",
+        "station_start": "Komenci stacion",
+        "station_adapt_aria": "Adapti kopion de stacio {name}",
+        "station_adapt": "Adapti kopion",
+        "draft_aria": "Restarigebla stacia malneto",
+        "draft_untitled": "Sentitola stacio",
+        "draft_body": "Nefinita stacia malneto estas konservita en ĉi tiu aparato: {name}. Daŭrigu aŭ forĵetu ĝin antaŭ ol komenci alian.",
+        "draft_resume": "Daŭrigi stacian malneton",
+        "draft_discard": "Forĵeti stacian malneton",
+        "builder_opened": "Stacikonstruilo malfermita",
+        "build_station_aria": "Konstrui novan propran SEL-stacion",
+        "build_station": "+ Konstrui propran stacion"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "La konekto de la instruisto paŭzas — via loko restas konservita, dum AlloFlow rekonektiĝas.",
+    "host_stale": "La stato de la instruisto ne estas freŝe kontrolita - la viva seanco eble ankoraŭ estas konektita. Via laboro restas en ĉi tiu aparato.",
+    "dismiss": "Fermi",
+    "dismiss_aria": "Fermi la averton pri la stato de la instruisto",
+    "connecting": "Konektiĝante al la klaso…",
+    "retrying": "Klasaj ĝisdatigoj paŭzas. Aŭtomate rekonektiĝante…",
+    "failed": "Klasaj ĝisdatigoj estas malkonektitaj. Kontrolu vian konekton kaj provu rekonektiĝi.",
+    "access": "Aliro al la klaso estis rifuzita. Petu vian instruiston kontroli la aliron, poste rekonektiĝu.",
+    "sign_in": "Ensalutu denove por reakiri aliron al la klaso, poste rekonektiĝu.",
+    "reconnect": "Rekonektiĝi"
+  },
   "tour": {
     "input_panel_title": "Eniga Panelo",
     "input_panel_text": "Komencu per la teksero aŭ temo kiun vi volas instrui. Plej multaj rimedaj iloj uzas ĉi tiun fontan materialon.\n### Aldonu vian fonton\n• Algluu aŭ tajpu tekston, alŝutu subtenatan dosieron, importu URL-on aŭ uzu la ilojn por fontogenerado.\n• Kontrolu importitan aŭ generitan tekston pri kompleteco kaj precizeco antaŭ ol daŭrigi. Kelkaj retejoj limigas eltiradon.\n### Agordu la kuntekston\n• Malfermu Universalaj agordoj por revizii klason, lingvon kaj instruajn preferojn.\n• Elektu fokusitan vojon en Gvidata Reĝimo se vi volas unu paŝon samtempe. Kontrolu ĉiun rezulton kompare al la fonto kaj via lerna celo.",
@@ -5445,9 +7863,99 @@
     "measured_on_target": "Ĝusta por {grade}",
     "measured_above": "Super la nivelo de {grade}",
     "measured_below": "Sub la nivelo de {grade}",
-    "measured_note": "Flesch-Kincaid, mezurita sur ĉi tiu teksto. Uzu Kontroli nivelon por pli plena kontrolo."
+    "measured_note": "Flesch-Kincaid, mezurita sur ĉi tiu teksto. Uzu Kontroli nivelon por pli plena kontrolo.",
+    "listen_along": "Aŭskulti kune",
+    "compare_listen_here": "Aŭskulti ĉi tie",
+    "compare_listen_here_original": "Aŭskulti ĉi tie la originalon",
+    "compare_listen_here_adapted": "Aŭskulti ĉi tie la adaptitan tekston",
+    "compare_stop_reading_original": "Halti la legadon de la originalo",
+    "compare_stop_reading_adapted": "Halti la legadon de la adaptita teksto",
+    "compare_scroll_together": "Rulumi kune",
+    "reading_width": "Lega larĝo",
+    "width_narrow": "Mallarĝa",
+    "width_medium": "Meza",
+    "width_wide": "Larĝa",
+    "width_extra_wide": "Ekstra larĝa",
+    "reading_width_characters": "ĉirkaŭ {count} signoj por linio",
+    "original_support_spoken": "Vorthelpo por „{word}“: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Tajpu la mankantan vorton aŭ esprimon",
+      "explain_thinking": "Klarigu vian pensadon",
+      "write_response": "Skribu vian respondon",
+      "submit_response": "Sendi respondon",
+      "numeric_answer": "Nombra respondo",
+      "unit_named": "Unuo ({unit})",
+      "unit_optional": "Unuo (nedeviga)",
+      "submit_numeric": "Sendi nombran respondon",
+      "select_all_apply": "Elektu ĉiun respondon, kiu taŭgas",
+      "submit_selections": "Sendi elektojn",
+      "part1": "Parto 1 — Elektu la plej bonan respondon",
+      "part2": "Parto 2 — {prompt}",
+      "default_evidence_prompt": "Elektu la pruvon, kiu plej bone subtenas la respondon.",
+      "submit_answer_evidence": "Sendi respondon kaj pruvon",
+      "order_check": "Ĉu ĉi tiu ordo estas ĝusta?",
+      "order_yes": "Jes, ĝi estas ĝusta",
+      "order_no": "Ne, io estas en malĝusta loko",
+      "select_misplaced": "Elektu supre eron, kiu estas en malĝusta loko.",
+      "arrange_instructions": "Metu la erojn en la ĝustan ordon. Se ili jam estas ĝustaj, lasu ilin.",
+      "your_order": "Via ordo",
+      "move_up": "Movi supren: {item}",
+      "move_down": "Movi malsupren: {item}",
+      "done_arranging": "Mi finis ordigi",
+      "principle_question": "Laŭ kio la eroj estas ordigitaj?",
+      "principle_chronological": "kronologia",
+      "principle_cause_effect": "kaŭzo-efiko",
+      "principle_process": "procezo",
+      "principle_size": "grandeco",
+      "principle_hierarchy": "hierarkio",
+      "find_mismatch": "Trovu la paron, kiu ne kongruas",
+      "choose_mismatch": "Elektu la paron, kiu ne apartenas ĉi tien.",
+      "pair_with_question": "Kun kio oni parigu la elektitan eron?",
+      "replacement_partner": "Nova partnero",
+      "submit_replacement": "Sendi la novan partneron",
+      "retry_failed": "Via respondo ne povis esti sendita. Via partopreno tamen estas registrita; provu denove, kiam vi estos konektita.",
+      "return_to_quiz": "Reiri al la viva kvizo",
+      "minimize": "Minimumigi",
+      "minimize_aria": "Forlasi la vidon de la viva kvizo",
+      "battle_result": "Rezulto de la batalo",
+      "class_victory": "La klaso venkis!",
+      "battle_complete": "La batalo finiĝis",
+      "regroup": "Ŝanco regrupiĝi",
+      "end_no_scored": "Ĉi tiuj demandoj estis por diskuto aŭ por kontrolo de la instruisto. Neniu batala poentaro estis donita.",
+      "end_questions_complete": "Ĉiuj demandoj estas finitaj. La rezulto komparas, kiom da procentoj de sano restas; ĉe egaleco venkas la klaso.",
+      "end_victory": "Via klaso kune venkis la monstron.",
+      "end_regroup": "Uzu la klarigon sube por kune plani vian sekvan provon.",
+      "end_review_last": "Rigardu la lastan demandon sube. Via instruisto povas rekomenci la batalon.",
+      "boss_default_name": "Estro",
+      "boss_hp": "HP de {name}",
+      "boss_health": "Sano de {name}",
+      "battle_scoring_paused": "Batala poentado paŭzigita",
+      "tick_of": "{value} el {total}",
+      "confidence_legend": "Kiom certa vi estis?",
+      "confidence_knew": "Mi sciis tion",
+      "confidence_guessed": "Mi divenis post pripensado",
+      "confidence_unsure": "Mi ne estis certa",
+      "confidence_help": "Tio helpas vian instruiston rimarki, kion vi firme scias kaj kion vi miskomprenas. Ĝi neniam ŝanĝas, ĉu la respondo estas ĝusta, nek la poentojn.",
+      "retry_send": "Provi sendi la respondon denove",
+      "waiting_for_teacher": "Atendante, ke via instruisto komencu ĉi tiun demandon.",
+      "sending": "Sendante vian respondon…",
+      "receipt_only": "Partopreno registrita. Via respondo ne atingis la instruiston por poentado.",
+      "complete_and_submit": "Kompletigu kaj sendu vian respondon",
+      "poll_closed": "Ĉi tiu opinia demando estas fermita.",
+      "receipt_not_scored": "Via instruisto ricevis nur vian partoprenon. Ĉi tiu respondo ne estis poentita.",
+      "no_answer_submitted": "Neniu respondo estis sendita por ĉi tiu demando. Pritraktu ĝin kun via klaso.",
+      "answer_review": "Revizio de la respondo",
+      "review_answer": "Rigardu la respondon",
+      "discuss_with_teacher": "Diskutu la respondon kun via instruisto.",
+      "response_correct": "Ĝusta respondo.",
+      "response_partial": "Parte ĝusta respondo.",
+      "response_incorrect": "Ĉi tiun respondon indas rigardi denove.",
+      "response_none": "Neniu respondo estis sendita.",
+      "response_submitted": "Respondo sendita por kontrolo.",
+      "explanation": "Klarigo"
+    },
     "title": "Taksi",
     "mcq_count": "Nombro de Multelektaj Demandoj",
     "reflections": "Pripensoj",

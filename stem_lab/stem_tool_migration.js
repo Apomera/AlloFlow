@@ -2545,49 +2545,300 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             sunGlow.scale.setScalar(cfg.discScale);
           };
 
-          // ── Ground ──
-          // One flat quad read as a painted backdrop. Gentle relief plus
-          // per-vertex biome colour gives the corridor a floor with depth, while
-          // the flight lane itself stays level so the route ribbon and beacons
-          // are never buried.
-          var groundGeo = new THREE.PlaneGeometry(220, 400, 64, 116);
-          var gPos = groundGeo.attributes.position;
-          var gColors = new Float32Array(gPos.count * 3);
-          var gTint = new THREE.Color();
-          for (var gvi = 0; gvi < gPos.count; gvi++) {
-            var gx = gPos.getX(gvi);
-            var gy = gPos.getY(gvi);
-            var flank = clamp((Math.abs(gx) - 7) / 12, 0, 1);
-            var hgt3 = (Math.sin(gx * 0.075) * 1.35 + Math.cos(gy * 0.052) * 1.75 + Math.sin((gx + gy) * 0.031) * 1.05) * flank;
-            // Carve the river channel the water plane sits in
-            var riverD = Math.abs(gx - 31);
-            if (riverD < 13) hgt3 = lerp(hgt3, -1.15, Math.pow(1 - riverD / 13, 0.7));
-            gPos.setZ(gvi, hgt3);
-            // Field patchwork: a cheap hash per cell so the plain reads as
-            // farmland and woodlot rather than one flat green.
-            var cellSeed = Math.sin(Math.floor(gx / 11) * 12.9898 + Math.floor(gy / 13) * 78.233) * 43758.5453;
-            var patch = cellSeed - Math.floor(cellSeed);
-            var alt = clamp((hgt3 + 2.2) / 5.2, 0, 1);
-            if (riverD < 10) {
-              gTint.setHSL(0.53, 0.40, 0.30);
-            } else {
-              gTint.setHSL(0.28 - alt * 0.06 + patch * 0.055, 0.42 - alt * 0.13 + patch * 0.16, 0.17 + alt * 0.13 + patch * 0.08);
-            }
-            gColors[gvi * 3] = gTint.r;
-            gColors[gvi * 3 + 1] = gTint.g;
-            gColors[gvi * 3 + 2] = gTint.b;
-          }
-          groundGeo.setAttribute('color', new THREE.BufferAttribute(gColors, 3));
-          groundGeo.computeVertexNormals();
-          var ground = new THREE.Mesh(
-            groundGeo,
-            new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.97, metalness: 0 })
-          );
-          ground.rotation.x = -Math.PI / 2;
-          ground.position.set(0, -6, -125);
-          ground.receiveShadow = true;
-          scene.add(ground);
+          // ── Land belt ──
+          // The ground, river, woods and ridges used to stand still while only
+          // the clouds and beacons moved, so the flock looked parked over one
+          // field. The land is now LAND_N tiles laid out along the route (w is
+          // distance along it). Flying slides every tile toward the camera, and
+          // a tile that passes behind is rebuilt at the far end from the same
+          // terrain functions, so the country keeps changing and never repeats.
+          var LAND_T = 64;
+          var LAND_N = 8;
+          var LAND_W = 220;
+          var LAND_SX = 80;
+          var LAND_SZ = 20;
+          // A tile is recycled once it is wholly behind this z, which keeps the
+          // far end of the belt between z = -378 and -442, deep in the haze.
+          var LAND_FRONT = 70;
+          var TREE_CAP = 64;
+          var PEAK_CAP = 6;
+          engine.flown = 0;
+          engine.landSeason = '';
 
+          function landHash(a, b) {
+            var v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+            return v - Math.floor(v);
+          }
+          // The river meanders, so its bends sweep past as the land moves.
+          function landRiverX(w) {
+            return 32 + Math.sin(w * 0.0115) * 5.5 + Math.sin(w * 0.029 + 1.3) * 2.5;
+          }
+          function landHeight(x, w) {
+            // The flight lane (|x| < 7) stays level so the route ribbon and
+            // beacons are never buried.
+            var flank = clamp((Math.abs(x) - 7) / 12, 0, 1);
+            var hh = (Math.sin(x * 0.075) * 1.35 + Math.cos(w * 0.052) * 1.75 + Math.sin((x + w) * 0.031) * 1.05) * flank;
+            // Level floodplain, then the channel: the ground at the water's
+            // edge (7.5 out) is always above the water, so the sheet never
+            // hangs over a dip in the hills.
+            var rd = Math.abs(x - landRiverX(w));
+            var plain = clamp((rd - 7.5) / 12, 0, 1);
+            hh *= plain * plain * (3 - 2 * plain);
+            if (rd < 9) hh = lerp(hh, -1.15, Math.pow(1 - rd / 9, 0.7));
+            return hh;
+          }
+          function landWoodlot(x, w) {
+            return landHash(Math.floor(x / 24) + 311, Math.floor(w / 28)) > 0.6;
+          }
+          var landTint = new THREE.Color();
+          function landColor(x, w, hgt, fall) {
+            var rd = Math.abs(x - landRiverX(w));
+            // Field patchwork: a hash per cell, so the plain reads as farmland
+            // and woodlot rather than one flat green.
+            var patch = landHash(Math.floor(x / 11), Math.floor(w / 13));
+            var alt = clamp((hgt + 2.2) / 5.2, 0, 1);
+            if (rd < 5.5) landTint.setHSL(0.53, 0.40, 0.30);
+            else if (rd < 8.5) landTint.setHSL(0.31, 0.44, 0.19 + alt * 0.05);
+            else if (Math.abs(x) > 15 && landWoodlot(x, w)) landTint.setHSL(fall ? 0.19 : 0.31, 0.36, 0.13 + alt * 0.05);
+            // Fall: harvested stubble among the green. Spring: fresh ploughing.
+            else if (fall && patch > 0.74) landTint.setHSL(0.10 + patch * 0.02, 0.40, 0.24 + alt * 0.05);
+            else if (!fall && patch > 0.86) landTint.setHSL(0.07, 0.30, 0.21);
+            else landTint.setHSL((fall ? 0.25 : 0.28) - alt * 0.06 + patch * 0.055, (fall ? 0.36 : 0.44) - alt * 0.13 + patch * 0.16, 0.17 + alt * 0.13 + patch * 0.08);
+            return landTint;
+          }
+
+          var landIdx = [];
+          for (var liz = 0; liz < LAND_SZ; liz++) {
+            for (var lix = 0; lix < LAND_SX; lix++) {
+              var lia = liz * (LAND_SX + 1) + lix;
+              var lic = lia + LAND_SX + 1;
+              landIdx.push(lia, lia + 1, lic, lia + 1, lic + 1, lic);
+            }
+          }
+          var waterIdx = [];
+          for (var lwz = 0; lwz < LAND_SZ; lwz++) {
+            waterIdx.push(lwz * 2, lwz * 2 + 1, lwz * 2 + 2, lwz * 2 + 1, lwz * 2 + 3, lwz * 2 + 2);
+          }
+          var landMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.97, metalness: 0 });
+          // Deeper and rougher than before: the old water mirrored the rim
+          // light ahead of the flock straight at the camera, like glowing ice.
+          var waterMat = new THREE.MeshStandardMaterial({ color: 0x1b5f86, roughness: 0.88, metalness: 0, transparent: true, opacity: 0.9 });
+          var trunkGeo = new THREE.CylinderGeometry(0.22, 0.3, 1.5, 5);
+          var trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3423, roughness: 0.95 });
+          var coniferGeo = new THREE.ConeGeometry(1.5, 4.4, 6);
+          var broadleafGeo = new THREE.IcosahedronGeometry(1.45, 0);
+          // White, so each canopy's colour is its instance colour.
+          var canopyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.94, flatShading: true });
+          // Ridges: one unit cone, scaled per peak.
+          var peakGeo = new THREE.ConeGeometry(1, 1, 7);
+          var mountainMat = new THREE.MeshStandardMaterial({ color: 0x54606f, roughness: 0.94, flatShading: true });
+          var snowMat = new THREE.MeshStandardMaterial({ color: 0xeef4f8, roughness: 0.86, flatShading: true });
+          var lM = new THREE.Matrix4();
+          var lQ = new THREE.Quaternion();
+          var lP = new THREE.Vector3();
+          var lS = new THREE.Vector3();
+          var lUp = new THREE.Vector3(0, 1, 0);
+          var lCol = new THREE.Color();
+
+          function makeLandTile() {
+            var nv = (LAND_SX + 1) * (LAND_SZ + 1);
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+            geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+            geo.setIndex(landIdx);
+            var wGeo = new THREE.BufferGeometry();
+            wGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((LAND_SZ + 1) * 6), 3));
+            wGeo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array((LAND_SZ + 1) * 6), 3));
+            wGeo.setIndex(waterIdx);
+            var tile = {
+              c: -1,
+              group: new THREE.Group(),
+              ground: new THREE.Mesh(geo, landMat),
+              water: new THREE.Mesh(wGeo, waterMat),
+              trunks: new THREE.InstancedMesh(trunkGeo, trunkMat, TREE_CAP),
+              conifers: new THREE.InstancedMesh(coniferGeo, canopyMat, TREE_CAP),
+              broadleaf: new THREE.InstancedMesh(broadleafGeo, canopyMat, TREE_CAP),
+              peaks: new THREE.InstancedMesh(peakGeo, mountainMat, PEAK_CAP),
+              caps: new THREE.InstancedMesh(peakGeo, snowMat, PEAK_CAP)
+            };
+            tile.ground.receiveShadow = true;
+            tile.conifers.castShadow = true;
+            tile.broadleaf.castShadow = true;
+            tile.peaks.castShadow = true;
+            tile.peaks.receiveShadow = true;
+            // Give every slot an instance colour now: a mesh first drawn
+            // without one compiles a shader that ignores colours set later.
+            for (var cs = 0; cs < TREE_CAP; cs++) {
+              tile.conifers.setColorAt(cs, lCol.setHex(0xffffff));
+              tile.broadleaf.setColorAt(cs, lCol);
+            }
+            tile.group.add(tile.ground);
+            tile.group.add(tile.water);
+            // An InstancedMesh is culled by its GEOMETRY's bounds at the tile
+            // origin, which can leave the view while its trees are still in it.
+            [tile.trunks, tile.conifers, tile.broadleaf, tile.peaks, tile.caps].forEach(function(im) {
+              im.frustumCulled = false;
+              tile.group.add(im);
+            });
+            scene.add(tile.group);
+            return tile;
+          }
+
+          function buildLandTile(tile, c, fall) {
+            tile.c = c;
+            var w0 = c * LAND_T;
+            var pos = tile.ground.geometry.attributes.position;
+            var nor = tile.ground.geometry.attributes.normal;
+            var col = tile.ground.geometry.attributes.color;
+            var vi = 0;
+            for (var iz = 0; iz <= LAND_SZ; iz++) {
+              var lz = -iz * LAND_T / LAND_SZ;
+              var w = w0 - lz;
+              for (var ix = 0; ix <= LAND_SX; ix++) {
+                var x = -LAND_W / 2 + ix * LAND_W / LAND_SX;
+                var hgt = landHeight(x, w);
+                pos.setXYZ(vi, x, -6 + hgt, lz);
+                // Normals from the height field itself, so two tiles agree
+                // along their seam (computeVertexNormals would not). z runs
+                // opposite to w, hence +dh/dw in the z slot.
+                var hx = landHeight(x + 0.5, w) - landHeight(x - 0.5, w);
+                var hw = landHeight(x, w + 0.5) - landHeight(x, w - 0.5);
+                var nl = Math.sqrt(hx * hx + 1 + hw * hw);
+                nor.setXYZ(vi, -hx / nl, 1 / nl, hw / nl);
+                var tint = landColor(x, w, hgt, fall);
+                col.setXYZ(vi, tint.r, tint.g, tint.b);
+                vi++;
+              }
+            }
+            pos.needsUpdate = true;
+            nor.needsUpdate = true;
+            col.needsUpdate = true;
+            tile.ground.geometry.computeBoundingSphere();
+
+            var wp = tile.water.geometry.attributes.position;
+            var wn = tile.water.geometry.attributes.normal;
+            for (var rz = 0; rz <= LAND_SZ; rz++) {
+              var rlz = -rz * LAND_T / LAND_SZ;
+              var rcx = landRiverX(w0 - rlz);
+              wp.setXYZ(rz * 2, rcx - 7.5, -6.62, rlz);
+              wp.setXYZ(rz * 2 + 1, rcx + 7.5, -6.62, rlz);
+              wn.setXYZ(rz * 2, 0, 1, 0);
+              wn.setXYZ(rz * 2 + 1, 0, 1, 0);
+            }
+            wp.needsUpdate = true;
+            wn.needsUpdate = true;
+            tile.water.geometry.computeBoundingSphere();
+
+            // Seeded by the tile index, so a tile rebuilt for a season change
+            // keeps the same trees and ridges.
+            var rs = ((c + 1) * 7919) % 2147483647;
+            var rnd = function() { rs = (rs * 16807) % 2147483647; return (rs - 1) / 2147483646; };
+            rnd();
+            // ── Woods: clumped into woodlots, with a few lone trees ──
+            var nt = 0, nc = 0, nb = 0;
+            for (var ta = 0; ta < 130 && nt < TREE_CAP; ta++) {
+              var tx = (rnd() - 0.5) * 190;
+              var tw = w0 + rnd() * LAND_T;
+              var tKeep = rnd();
+              var tTurn = rnd();
+              var tSize = rnd();
+              var tHue = rnd();
+              if (Math.abs(tx) < 15 || Math.abs(tx - landRiverX(tw)) < 10) continue;
+              if (tKeep > (landWoodlot(tx, tw) ? 0.9 : 0.1)) continue;
+              var th = landHeight(tx, tw);
+              var tScale = 0.7 + tSize * 0.9;
+              var tlz = -(tw - w0);
+              lQ.setFromAxisAngle(lUp, tTurn * 6.283);
+              lS.set(tScale, tScale, tScale);
+              lP.set(tx, -6 + th + 0.75 * tScale, tlz);
+              lM.compose(lP, lQ, lS);
+              tile.trunks.setMatrixAt(nt++, lM);
+              if (tTurn < 0.42) {
+                lP.set(tx, -6 + th + 3.1 * tScale, tlz);
+                lM.compose(lP, lQ, lS);
+                tile.conifers.setMatrixAt(nc, lM);
+                tile.conifers.setColorAt(nc++, lCol.setHSL(0.36 + tSize * 0.03, 0.36, 0.17 + tKeep * 0.06));
+              } else {
+                lP.set(tx, -6 + th + 2.65 * tScale, tlz);
+                lS.set(tScale * 1.05, tScale * 0.9, tScale * 1.05);
+                lM.compose(lP, lQ, lS);
+                tile.broadleaf.setMatrixAt(nb, lM);
+                // Fall: gold, orange, rust and a few late greens. Spring:
+                // fresh greens with the odd tree in blossom.
+                if (fall) {
+                  if (tHue < 0.30) lCol.setHSL(0.10, 0.78, 0.36);
+                  else if (tHue < 0.55) lCol.setHSL(0.06, 0.80, 0.34);
+                  else if (tHue < 0.72) lCol.setHSL(0.01, 0.68, 0.28);
+                  else lCol.setHSL(0.20, 0.45, 0.22);
+                } else if (tHue < 0.08) {
+                  lCol.setHSL(0.93, 0.40, 0.62);
+                } else {
+                  lCol.setHSL(0.26 + tHue * 0.05, 0.55, 0.20 + tHue * 0.06);
+                }
+                tile.broadleaf.setColorAt(nb++, lCol);
+              }
+            }
+            tile.trunks.count = nt;
+            tile.conifers.count = nc;
+            tile.broadleaf.count = nb;
+            tile.trunks.instanceMatrix.needsUpdate = true;
+            tile.conifers.instanceMatrix.needsUpdate = true;
+            tile.broadleaf.instanceMatrix.needsUpdate = true;
+            tile.conifers.instanceColor.needsUpdate = true;
+            tile.broadleaf.instanceColor.needsUpdate = true;
+
+            // ── Ridges: pairs out past the river, based on the terrain ──
+            var np = 0, ncap = 0;
+            for (var mj = 0; mj < PEAK_CAP; mj++) {
+              var mSide = mj % 2 ? -1 : 1;
+              var mX = mSide * (44 + rnd() * 30);
+              var mW = w0 + (Math.floor(mj / 2) + rnd() * 0.85) * (LAND_T / 3);
+              var mH = 8 + rnd() * 14;
+              var mR = 5.5 + rnd() * 4;
+              var mTurn = rnd();
+              // Sit on the lowest ground under the cone so it never floats.
+              var mBase = -6.5 + Math.min(landHeight(mX, mW), landHeight(mX - mR, mW), landHeight(mX + mR, mW), landHeight(mX, mW - mR), landHeight(mX, mW + mR));
+              var mlz = -(mW - w0);
+              lQ.setFromAxisAngle(lUp, mTurn * 6.283);
+              lP.set(mX, mBase + mH / 2, mlz);
+              lS.set(mR, mH, mR);
+              lM.compose(lP, lQ, lS);
+              tile.peaks.setMatrixAt(np++, lM);
+              if (mH > 13) {
+                lP.set(mX, mBase + mH * 0.85, mlz);
+                lS.set(mR * 0.34, mH * 0.3, mR * 0.34);
+                lM.compose(lP, lQ, lS);
+                tile.caps.setMatrixAt(ncap++, lM);
+              }
+            }
+            tile.peaks.count = np;
+            tile.caps.count = ncap;
+            tile.peaks.instanceMatrix.needsUpdate = true;
+            tile.caps.instanceMatrix.needsUpdate = true;
+          }
+
+          var landTiles = [];
+          for (var lt0 = 0; lt0 < LAND_N; lt0++) {
+            var tileNew = makeLandTile();
+            tileNew.c = lt0;
+            landTiles.push(tileNew);
+          }
+          engine.landTiles = landTiles;
+          engine.paintLand = function(season) {
+            engine.landSeason = season;
+            for (var pl = 0; pl < landTiles.length; pl++) buildLandTile(landTiles[pl], landTiles[pl].c, season === 'fall');
+          };
+          engine.placeLand = function() {
+            for (var li = 0; li < landTiles.length; li++) {
+              var lt = landTiles[li];
+              while (engine.flown > (lt.c + 1) * LAND_T) buildLandTile(lt, lt.c + LAND_N, engine.landSeason === 'fall');
+              lt.group.position.z = LAND_FRONT + engine.flown - lt.c * LAND_T;
+            }
+          };
+
+          // The route ribbon is uniform along its length, so it stays put: it
+          // is the line the flock follows, not scenery.
           var routeRibbon = new THREE.Mesh(
             new THREE.PlaneGeometry(4.6, 310),
             new THREE.MeshStandardMaterial({
@@ -2603,99 +2854,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           routeRibbon.position.set(0, -5.88, -126);
           scene.add(routeRibbon);
           engine.routeRibbon = routeRibbon;
-
-          var river = new THREE.Mesh(
-            new THREE.PlaneGeometry(15, 300),
-            new THREE.MeshStandardMaterial({
-              color: 0x2f86b8,
-              roughness: 0.52,
-              metalness: 0.02,
-              transparent: true,
-              opacity: 0.88
-            })
-          );
-          river.rotation.x = -Math.PI / 2;
-          river.rotation.z = -0.08;
-          river.position.set(31, -6.62, -125);
-          scene.add(river);
-
-          // ── Ridges ──
-          // Pushed out past the river (they used to stand in it) and capped, so
-          // the ridge line reads as the terrain raptors ride rather than as grey
-          // cones scattered over the floor.
-          var mountainMat = new THREE.MeshStandardMaterial({ color: 0x54606f, roughness: 0.94, flatShading: true });
-          var snowMat = new THREE.MeshStandardMaterial({ color: 0xeef4f8, roughness: 0.86, flatShading: true });
-          for (var mi = 0; mi < 22; mi++) {
-            var height = 8 + (mi % 5) * 3.4;
-            var radius = 5.5 + (mi % 3) * 1.9;
-            var side = mi % 2 ? -1 : 1;
-            var mx = side * (44 + (mi % 4) * 9);
-            var mz = -25 - mi * 11;
-            var mountain = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 7), mountainMat);
-            mountain.position.set(mx, -6 + height / 2, mz);
-            mountain.rotation.y = mi * 0.61;
-            mountain.castShadow = true;
-            mountain.receiveShadow = true;
-            scene.add(mountain);
-            if (height > 13) {
-              var cap = new THREE.Mesh(new THREE.ConeGeometry(radius * 0.34, height * 0.3, 7), snowMat);
-              cap.position.set(mx, -6 + height - height * 0.15, mz);
-              cap.rotation.y = mi * 0.61;
-              scene.add(cap);
-            }
-          }
-
-          // ── Woodland ──
-          // Bare relief gave the eye nothing to measure forward motion against.
-          // Two InstancedMeshes (trunk + canopy) cost two draw calls for ~150
-          // trees, so this is affordable on the software rasteriser too.
-          var TREE_N = 150;
-          var trunkMesh = new THREE.InstancedMesh(
-            new THREE.CylinderGeometry(0.22, 0.3, 1.5, 5),
-            new THREE.MeshStandardMaterial({ color: 0x4a3423, roughness: 0.95 }),
-            TREE_N
-          );
-          var canopyMesh = new THREE.InstancedMesh(
-            new THREE.ConeGeometry(1.5, 4.4, 6),
-            new THREE.MeshStandardMaterial({ color: 0x27502f, roughness: 0.94, flatShading: true }),
-            TREE_N
-          );
-          var treeM = new THREE.Matrix4();
-          var treeQ = new THREE.Quaternion();
-          var treeP = new THREE.Vector3();
-          var treeS = new THREE.Vector3();
-          var placed = 0;
-          for (var ti3 = 0; ti3 < TREE_N * 3 && placed < TREE_N; ti3++) {
-            var tSeed = Math.sin(ti3 * 41.7) * 43758.5453;
-            tSeed = tSeed - Math.floor(tSeed);
-            var tSeed2 = Math.sin(ti3 * 97.3 + 11.1) * 24634.6345;
-            tSeed2 = tSeed2 - Math.floor(tSeed2);
-            var tx3 = (tSeed - 0.5) * 190;
-            var tz3 = -12 - tSeed2 * 300;
-            // Keep the flight lane and the river channel clear
-            if (Math.abs(tx3) < 11 || Math.abs(tx3 - 31) < 12) continue;
-            // Follow the same relief the ground vertices use
-            var tFlank = clamp((Math.abs(tx3) - 7) / 12, 0, 1);
-            var tGy = -(tz3 + 125);
-            var tH = (Math.sin(tx3 * 0.075) * 1.35 + Math.cos(tGy * 0.052) * 1.75 + Math.sin((tx3 + tGy) * 0.031) * 1.05) * tFlank;
-            var tScale = 0.7 + tSeed2 * 0.9;
-            treeP.set(tx3, -6 + tH + 0.75 * tScale, tz3);
-            treeQ.set(0, 0, 0, 1);
-            treeS.set(tScale, tScale, tScale);
-            treeM.compose(treeP, treeQ, treeS);
-            trunkMesh.setMatrixAt(placed, treeM);
-            treeP.set(tx3, -6 + tH + 3.1 * tScale, tz3);
-            treeM.compose(treeP, treeQ, treeS);
-            canopyMesh.setMatrixAt(placed, treeM);
-            placed++;
-          }
-          trunkMesh.count = placed;
-          canopyMesh.count = placed;
-          trunkMesh.instanceMatrix.needsUpdate = true;
-          canopyMesh.instanceMatrix.needsUpdate = true;
-          canopyMesh.castShadow = true;
-          scene.add(trunkMesh);
-          scene.add(canopyMesh);
 
           // ── Cloud decks ──
           // The old deck sat at y=4..14 with one cloud dead ahead at z=-18, so
@@ -2729,6 +2887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             );
             cloud.userData.baseZ = cloud.position.z;
             cloud.userData.drift = 0.32 + (ci % 4) * 0.08;
+            cloud.userData.onGround = false;
             scene.add(cloud);
             engine.movers.push(cloud);
           }
@@ -2744,6 +2903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             cirrus.position.set((xi % 2 ? -1 : 1) * (10 + (xi % 4) * 13), 34 + (xi % 3) * 5, -60 - xi * 34);
             cirrus.userData.baseZ = cirrus.position.z;
             cirrus.userData.drift = 0.12 + (xi % 3) * 0.03;
+            cirrus.userData.onGround = false;
             scene.add(cirrus);
             engine.movers.push(cirrus);
           }
@@ -2755,6 +2915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             beacon.position.set(0, -5.35, -20 - bi * 18);
             beacon.userData.baseZ = beacon.position.z;
             beacon.userData.drift = 1;
+            beacon.userData.onGround = true;
             scene.add(beacon);
             engine.movers.push(beacon);
           }
@@ -2791,6 +2952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             for (var fi = 0; fi < positions.length; fi++) {
               var flyer = createMigrationFlyer(THREE, species, fi);
               flyer.position.set(positions[fi][0], positions[fi][1], positions[fi][2]);
+              flyer.userData.baseY = positions[fi][1];
               flyer.rotation.y = 0;
               flockRoot.add(flyer);
               engine.flyers.push(flyer);
@@ -2799,6 +2961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             engine.formationMode = formationMode;
             engine.season = season;
             routeRibbon.material.color.setHex(season === 'spring' ? 0x4ade80 : 0x38bdf8);
+            if (engine.landSeason !== season) engine.paintLand(season);
           };
 
           engine.resizeHandler = function() {
@@ -2848,23 +3011,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           if (engineNow.applyTheme) engineNow.applyTheme(!!live.isDark);
 
           var moving = !live.flightPaused && !reducedMotionRef.current;
-          var visualSpeed = Math.max(4, species.speed + live.flightWind * 2.237) * 0.075;
+          // GROUND speed moves the land and the beacons on it; AIRSPEED moves
+          // the air (wind streaks, and clouds, which ride the wind with the
+          // flock). So a tailwind speeds the ground but not the air, and a
+          // headwind slows the ground while the air still streams past.
+          var groundRate = Math.max(4, species.speed + live.flightWind * 2.237) * 0.39;
+          var airRate = Math.max(4, species.speed) * 0.39;
           if (moving) {
             engineNow.time += delta;
+            engineNow.flown += groundRate * delta;
             for (var mv = 0; mv < engineNow.movers.length; mv++) {
               var mover = engineNow.movers[mv];
-              mover.position.z += visualSpeed * delta * 5.2 * mover.userData.drift;
+              mover.position.z += (mover.userData.onGround ? groundRate : airRate) * delta * mover.userData.drift;
               if (mover.position.z > 24) mover.position.z -= 176;
             }
             var streakPositions = engineNow.streaks.geometry.attributes.position.array;
             for (var pi = 0; pi < streakPositions.length; pi += 6) {
-              var nextZ = streakPositions[pi + 2] + visualSpeed * delta * 8.4;
+              var nextZ = streakPositions[pi + 2] + airRate * delta * 1.6;
               if (nextZ > 18) nextZ -= 160;
               streakPositions[pi + 2] = nextZ;
               streakPositions[pi + 5] = nextZ - 2.4;
             }
             engineNow.streaks.geometry.attributes.position.needsUpdate = true;
           }
+          if (engineNow.placeLand) engineNow.placeLand();
 
           for (var fl = 0; fl < engineNow.flyers.length; fl++) {
             var activeFlyer = engineNow.flyers[fl];
@@ -2872,7 +3042,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var flap = Math.sin(phase) * activeFlyer.userData.flapAmount;
             activeFlyer.userData.wings[0].rotation.z = flap;
             activeFlyer.userData.wings[1].rotation.z = -flap;
-            activeFlyer.position.y += (Math.sin(phase * 0.43) * 0.004);
+            // Bob about the formation height. This used to ADD a step every
+            // frame: while paused (or under reduced motion) the phase stops, the
+            // same step repeats, and the birds drifted steadily out of frame.
+            activeFlyer.position.y = activeFlyer.userData.baseY + Math.sin(phase * 0.43) * 0.12;
             activeFlyer.rotation.z = Math.sin(engineNow.time * 0.55 + fl) * 0.025;
           }
           engineNow.flockRoot.position.x = moving ? Math.sin(engineNow.time * 0.24) * 0.7 : 0;

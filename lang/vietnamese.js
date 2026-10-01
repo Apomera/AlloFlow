@@ -1,4 +1,1225 @@
 {
+  "sel": {
+    "hub": {
+      "tool": {
+        "zones": {
+          "label": "Vùng Cảm xúc",
+          "desc": "Xác định vùng của bạn (xanh dương, xanh lá, vàng, đỏ) và khám phá các chiến lược tự điều chỉnh."
+        },
+        "emotions": {
+          "label": "Khám phá Cảm xúc",
+          "desc": "Mở rộng vốn từ cảm xúc — nhận biết, gọi tên và đánh giá cường độ của cảm xúc."
+        },
+        "strengths": {
+          "label": "Tìm Điểm mạnh",
+          "desc": "Khám phá và suy ngẫm về điểm mạnh, tài năng và những điều bạn có thể phát triển."
+        },
+        "viaStrengths": {
+          "label": "Điểm mạnh VIA",
+          "desc": "Hoạt động tự phân loại đơn giản 24 Điểm mạnh Tính cách VIA (Peterson và Seligman, 2004), gồm 6 đức tính và xác định các điểm mạnh nổi bật của bạn. Để làm bảng khảo sát chính thức miễn phí, hãy vào viacharacter.org. Đây là hoạt động suy ngẫm, không phải trắc nghiệm tâm lý."
+        },
+        "wheelOfLife": {
+          "label": "Bánh xe Cuộc sống",
+          "desc": "Biểu đồ mạng nhện gồm 8 lĩnh vực cuộc sống, mỗi lĩnh vực chấm từ 1 đến 10. Một bức chân dung cho thấy lúc này cuộc sống của bạn đầy đặn ở đâu và còn mỏng ở đâu. Xuất phát từ truyền thống huấn luyện (Meyer những năm 1960; Co-Active Coaching). Mang tính gợi mở; không phải công cụ đo lường tâm lý đã được kiểm chứng."
+        },
+        "perma": {
+          "label": "Hạnh phúc PERMA",
+          "desc": "Tự đánh giá năm lĩnh vực PERMA cùng phần suy ngẫm về Sức khỏe: Cảm xúc tích cực (Positive emotion), Sự gắn kết (Engagement), Các mối quan hệ (Relationships), Ý nghĩa (Meaning), Thành tựu (Accomplishment) và Sức khỏe (Health). 24 câu, kết quả dạng biểu đồ cột, suy ngẫm theo từng lĩnh vực. Dựa trên Seligman; dùng kèm với Điểm mạnh VIA."
+        },
+        "coping": {
+          "label": "Bộ công cụ Ứng phó",
+          "desc": "Khám phá và luyện tập các chiến lược ứng phó — thở, neo giữ, vận động và nhiều hơn nữa."
+        },
+        "windowOfTolerance": {
+          "label": "Cửa sổ Dung nạp",
+          "desc": "Hình ảnh trực quan giúp tự nhận biết, có hiểu biết về sang chấn. Ba vùng kích thích (quá kích thích, cửa sổ, kích thích thấp). Ghi lại những dấu hiệu riêng của bạn ở mỗi vùng, các tác nhân khơi gợi và những cách giúp bạn quay trở lại. Dựa trên Siegel (1999); là tiêu chuẩn trong các trường học có hiểu biết về sang chấn."
+        },
+        "stressBucket": {
+          "label": "Xô Căng thẳng",
+          "desc": "Hình ảnh trực quan về sức chứa. Các tác nhân gây căng thẳng đổ vào; các cách ứng phó giúp xả bớt ra. Xem lượng vào và lượng ra của bạn có cân bằng không. Công cụ thuộc truyền thống CBT (Brabban và Turkington 2002), được dùng rộng rãi trong NHS IAPT và Mind UK. Thẳng thắn về những tác nhân căng thẳng mang tính cấu trúc."
+        },
+        "tipp": {
+          "desc": "Bốn kỹ năng DBT giúp vượt qua khủng hoảng: Nhiệt độ (Temperature), Vận động mạnh (Intense exercise), Thở theo nhịp (Paced breathing), Thả lỏng cơ kết hợp hơi thở (Paired muscle relaxation), dành cho lúc đau khổ CẤP TÍNH. Giúp cơ thể dịu xuống trong 30 giây đến 10 phút trước khi bạn cố suy nghĩ để tìm lối ra. Kỹ năng nền tảng về Chịu đựng Đau khổ trong DBT (Linehan)."
+        },
+        "anxietyToolkit": {
+          "label": "Bộ công cụ Lo âu",
+          "desc": "Các kỹ năng dựa trên CBT để làm việc với lo âu: giáo dục tâm lý, cây lo âu (lo âu có ích và lo âu không có ích), giờ lo âu theo lịch, giảm suy nghĩ thảm họa hóa, kỹ năng neo giữ và bảng kiểm kê các khuôn mẫu của riêng bạn. Dựa trên Beck Institute, AACAP, ADAA. Dùng kèm với Cửa sổ Dung nạp và Xô Căng thẳng."
+        },
+        "sleep": {
+          "label": "Ngủ & Nghỉ ngơi",
+          "desc": "Giấc ngủ của thanh thiếu niên là một cuộc khủng hoảng sức khỏe cộng đồng. Mức 8-10 giờ mà AAP khuyến nghị hiếm khi đạt được. Giáo dục tâm lý, tự đánh giá, 8 trở ngại thường gặp + điều gì hiệu quả với từng trở ngại, và nhật ký giấc ngủ. Dựa trên AAP, CDC, NSF và nghiên cứu của Carskadon."
+        },
+        "sensoryRegulation": {
+          "label": "Điều hòa Giác quan",
+          "desc": "Công cụ khẳng định sự đa dạng thần kinh, giúp bạn hiểu cách mình xử lý cảm giác qua 8 hệ giác quan. Xây dựng hồ sơ cá nhân, lập kế hoạch chế độ cảm giác, xác định các điều chỉnh hỗ trợ ở trường. Dùng ngôn ngữ đặt bản dạng lên trước; dựa trên Ayres / Dunn / nghiên cứu do người tự kỷ dẫn dắt."
+        },
+        "bigFeelings": {
+          "label": "Cảm xúc Lớn (Tức giận)",
+          "desc": "Giáo dục tâm lý và rèn luyện kỹ năng dành riêng cho cơn giận. Cơn giận là thông tin, không phải vấn đề; sự gây hấn phản ứng mới là cái bẫy. Dựa trên truyền thống Coping Power của Lochman + cơ sở bằng chứng CBT cho cơn giận. Nhật ký phiền toái, bảng kiểm kê tác nhân khơi gợi, điểm lựa chọn, các cách hạ nhiệt của riêng bạn."
+        },
+        "substancePsychoed": {
+          "label": "Sử dụng Chất gây nghiện",
+          "desc": "Giáo dục tâm lý giảm tác hại về các chất (rượu bia, cần sa, nicotine, opioid, chất kích thích, benzo, chất gây ảo giác). Rủi ro với não bộ thanh thiếu niên. Giáo dục về naloxone. KHÔNG phải công cụ sàng lọc, KHÔNG chỉ dạy kiêng hoàn toàn. Giới thiệu mạnh mẽ đến SAMHSA. Không gian suy ngẫm theo tinh thần MI."
+        },
+        "behavioralActivation": {
+          "label": "Kích hoạt Hành vi",
+          "desc": "Lập kế hoạch cho các hoạt động nhỏ, thực hiện chúng, rồi chấm điểm mức làm chủ (cảm thấy mình làm được) và niềm vui (thấy thích thú). Để ý điều gì phù hợp và chọn một bước tiếp theo vừa sức. Hoạt động lập kế hoạch này dựa trên kích hoạt hành vi; nó không cung cấp hay đánh giá một liệu trình trị liệu."
+        },
+        "mindfulness": {
+          "label": "Góc Chánh niệm",
+          "desc": "Bài tập thở có hướng dẫn, quét cơ thể và các hoạt động chánh niệm."
+        },
+        "quietQuestions": {
+          "label": "Câu hỏi Tĩnh lặng",
+          "desc": "Thực hành tự vấn nội tâm hằng tuần. Ở cùng một câu hỏi mở trong trọn một tuần. 20 câu hỏi luân phiên về sự chú ý, niềm khao khát, khó khăn, sự kết nối và quá trình trở thành. Lấy cảm hứng từ truyền thống câu hỏi của người Quaker; phi tôn giáo và không áp đặt."
+        },
+        "orientations": {
+          "label": "Định hướng Sống",
+          "desc": "Các Cách Sống, Đặt cạnh Nhau. Tám truyền thống triết học (Đạo giáo, Thiền, Chủ nghĩa Khắc kỷ, Chủ nghĩa Hiện sinh, đạo đức Nho giáo, Ubuntu, quan niệm quan hệ của người Bản địa, Đạo đức Chăm sóc) được so sánh qua những câu hỏi lớn của cuộc sống. Không áp đặt; mỗi truyền thống có một ô thẳng thắn về “điều nó không làm tốt”."
+        },
+        "thoughtRecord": {
+          "label": "Bảng ghi Suy nghĩ CBT",
+          "desc": "Bảng ghi suy nghĩ 7 cột từ Liệu pháp Nhận thức Hành vi. Đi qua một khoảnh khắc khó khăn: tình huống, cảm xúc, suy nghĩ tự động, bằng chứng ủng hộ và phản bác, suy nghĩ cân bằng, chấm lại cảm xúc. Lưu các lần ghi theo thời gian. Dựa trên Beck, Burns, Padesky."
+        },
+        "costBenefit": {
+          "label": "Bảng Lợi-Hại",
+          "desc": "Bảng ra quyết định 2x2 từ Liệu pháp Hành vi Biện chứng. Ưu và nhược điểm ngắn hạn và dài hạn của một quyết định, đặt cạnh nhau. Hữu ích khi cảm xúc đang thúc ép bạn chọn một phương án. Dựa trên Linehan."
+        },
+        "sfbt": {
+          "label": "Tập trung Giải pháp",
+          "desc": "Liệu pháp Ngắn hạn Tập trung vào Giải pháp: Câu hỏi Phép màu, Thang điểm, Tìm ngoại lệ và Lời khen. Nhìn về phía trước thay vì phía sau, hỏi xem điều gì đang hiệu quả. Kỹ thuật được dùng nhiều nhất trong tham vấn học đường ở Mỹ. Dựa trên de Shazer và Berg."
+        },
+        "careConstellations": {
+          "label": "Chòm sao Chăm sóc",
+          "desc": "Bản đồ quan hệ về những ai chăm sóc bạn và những ai bạn chăm sóc. Từ chối khung “tự chăm sóc” theo kiểu cá nhân chủ nghĩa hay tiêu dùng. Bao gồm một góc nhìn triết học sâu sắc về Chăm sóc Bản thân (Care of Self) và Tự chăm sóc (Self-Care) (Foucault, epimeleia heautou của Hy Lạp, Audre Lorde, hạnh phúc eudaimonic và hedonic)."
+        },
+        "ecomap": {
+          "label": "Biểu đồ Sinh thái",
+          "desc": "Bản đồ quan hệ con người trong môi trường. Bạn ở trung tâm; 12 hệ thống lớn trong cuộc sống bao quanh bạn. Mỗi mối liên kết được đánh giá về độ bền chặt, mức căng thẳng và hướng năng lượng. Công cụ tiêu chuẩn trong công tác xã hội từ Hartman (1978); được dùng trong IEP, đánh giá gia đình và tự kiểm kê cuộc sống."
+        },
+        "circlesOfSupport": {
+          "label": "Vòng tròn Hỗ trợ",
+          "desc": "Bốn vòng tròn đồng tâm của các mối quan hệ: Thân mật, Tình bạn, Tham gia, Trao đổi (được trả công). Cho thấy rõ ai thực sự gần gũi, kể cả khi những người được trả công lấp đầy các vòng bên trong. Của Forest và Snow tại Inclusion Press."
+        },
+        "genogram": {
+          "label": "Sơ đồ Phả hệ",
+          "desc": "Bản đồ gia đình ba thế hệ dùng các ký hiệu hệ thống gia đình tiêu chuẩn. Chỉ dành cho việc tự hiểu bản thân (KHÔNG phải đánh giá lâm sàng). Dựa trên lý thuyết hệ thống gia đình của Bowen và cách ký hiệu McGoldrick-Gerson-Petry. Có hướng dẫn nổi bật để tiếp cận an toàn."
+        },
+        "griefLoss": {
+          "label": "Đau buồn & Mất mát",
+          "desc": "Người bạn đồng hành tự hướng dẫn cho nỗi đau buồn. Sự ra đi của một người hay thú cưng, thay đổi trong gia đình, mất đi tình bạn, mất mát về bản sắc, mất mát mơ hồ — tất cả đều tính. Đi qua bốn nhiệm vụ của quá trình tang chế theo Worden, viết một lá thư, lên kế hoạch cho các nghi thức. Có hướng dẫn an toàn mạnh mẽ chỉ đến Đồng hành Khủng hoảng / 988 cho nỗi đau buồn nặng nề hoặc phức tạp."
+        },
+        "traumaPsychoed": {
+          "label": "Hiểu về Sang chấn",
+          "desc": "Chỉ là giáo dục tâm lý (KHÔNG phải công cụ sàng lọc). Sang chấn là gì và không là gì, thần kinh sinh học bằng ngôn ngữ dễ hiểu, những phản ứng thường gặp được nhìn lại như sự thích nghi, 6 nguyên tắc của SAMHSA, các phương pháp điều trị dựa trên bằng chứng. Dành cho học sinh và nhà giáo dục. Có hướng dẫn an toàn nổi bật về lý do sàng lọc mà không theo dõi tiếp là không an toàn."
+        },
+        "bodyStory": {
+          "label": "Câu chuyện Cơ thể",
+          "desc": "Công cụ về chấp nhận cơ thể và sống trọn trong cơ thể. KHÔNG tập trung vào cân nặng, KHÔNG liên quan đến ăn kiêng, KHÔNG phải công cụ sàng lọc. Dựa trên nghiên cứu của Tylka về trân trọng cơ thể, các nguyên tắc ăn uống trực giác và hiểu biết truyền thông. Bao hàm mọi cơ thể, mọi giới, mọi vóc dáng. Hướng dẫn mạnh mẽ đến NEDA đối với rối loạn ăn uống."
+        },
+        "sourcesOfStrength": {
+          "label": "Nguồn Sức mạnh",
+          "desc": "Vẽ bản đồ 8 yếu tố bảo vệ của bạn. Khám phá các nguồn hỗ trợ bảo vệ lấy cảm hứng từ chương trình Sources of Strength. Bản đồ tự hướng dẫn này là một phiên bản chuyển thể, không phải là việc triển khai chương trình trường học đã được đánh giá."
+        },
+        "crisiscompanion": {
+          "label": "Đồng hành Khủng hoảng",
+          "desc": "Kỹ năng hỗ trợ bạn bè và phòng ngừa tự tử: phải làm gì nếu bạn hoặc một người bạn đang trầm cảm, đang khủng hoảng hoặc đang nghĩ đến việc tự làm hại bản thân — nhận ra dấu hiệu, nên nói gì (và không nên nói gì), báo cho một người lớn đáng tin cậy, cùng với 988 và kế hoạch an toàn cá nhân. Có cảnh báo nội dung trước khi vào. Phù hợp với NEDA, AFSP, Sources of Strength và 988. Là phần hỗ trợ cấp thời đi cùng với Nguồn Sức mạnh."
+        },
+        "identitySupport": {
+          "label": "Hỗ trợ Bản dạng",
+          "desc": "Không gian hòa nhập, khẳng định dành cho bản dạng giới, xu hướng tính dục, xu hướng lãng mạn và những câu hỏi rộng hơn về bản dạng. Từ vựng, sự phát triển bản dạng, tìm cộng đồng, an toàn cho thanh thiếu niên chuyển giới, hướng dẫn cho người đồng minh. Dựa trên Trevor Project, GLSEN, PFLAG."
+        },
+        "disabilityVoices": {
+          "label": "Tiếng nói Người khuyết tật",
+          "desc": "Những người vận động tự kỷ và khuyết tật có thật, những người đã định hình và phê phán thực hành về khuyết tật. Trích dẫn, bối cảnh và danh sách đọc được tuyển chọn. Được xây dựng để những người mà lĩnh vực này từng chỉ coi là đối tượng được đặt vào trung tâm, chứ không bị đẩy ra một góc bên lề của một công cụ khoa học hành vi. Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne."
+        },
+        "goals": {
+          "label": "Đặt Mục tiêu",
+          "desc": "Đặt mục tiêu SMART, theo dõi tiến độ và ăn mừng các cột mốc."
+        },
+        "howlTracker": {
+          "label": "Theo dõi HOWL",
+          "desc": "Tự đánh giá Thói quen Làm việc và Học tập (HOWL) cho giờ Crew. Điểm danh hằng tuần, mục tiêu hằng quý, biểu đồ xu hướng, câu hỏi gợi ý cho trò chuyện trong Crew. Phù hợp với khung HOWL của EL Education."
+        },
+        "onePageProfile": {
+          "label": "Hồ sơ Một trang",
+          "desc": "Hồ sơ gọn nhẹ, có thể in, vừa trên một trang. Ba phần: điều mọi người thích và ngưỡng mộ ở tôi, điều quan trọng với tôi, cách hỗ trợ tôi tốt nhất. Tài liệu lập kế hoạch lấy con người làm trung tâm cho các cuộc họp IEP, giai đoạn chuyển tiếp, giáo viên dạy thay hoặc Crew. Dựa trên mẫu của Helen Sanderson Associates."
+        },
+        "maps": {
+          "desc": "Making Action Plans (Lập Kế hoạch Hành động). Tám câu hỏi gợi ý theo trình tự (Câu chuyện của tôi, Ước mơ, Ác mộng, Tôi là ai, Món quà, Nhu cầu, Kế hoạch hành động, Những bước đầu tiên). Hình ảnh trực quan lấy con người làm trung tâm của Pearpoint, O'Brien và Forest tại Inclusion Press; được dùng rộng rãi cho việc lập kế hoạch chuyển tiếp."
+        },
+        "path": {
+          "desc": "Planning Alternative Tomorrows with Hope (Lập kế hoạch cho những Ngày mai Khác với Hy vọng). Hình ảnh trực quan lập kế hoạch tương lai: tám giai đoạn từ Sao Bắc Đẩu xa xôi của bạn đi ngược về những bước đầu tiên trong hai tuần. Của Pearpoint, O'Brien và Forest tại Inclusion Press; dùng kèm với MAPS."
+        },
+        "valuesCommittedAction": {
+          "label": "Giá trị & Hành động",
+          "desc": "Sắp xếp điều quan trọng, gọi tên những giá trị hàng đầu của bạn và biến mỗi giá trị thành một hành động nhỏ, cụ thể trong tuần này. Từ Liệu pháp Chấp nhận và Cam kết (Hayes); khung DNA-V dành cho thanh thiếu niên. Sự phân biệt của ACT giữa giá trị (hướng đi) và mục tiêu (điểm đến)."
+        },
+        "careerCompass": {
+          "label": "La bàn Nghề nghiệp",
+          "desc": "Khám phá nghề nghiệp qua sở thích của bạn. Bài tự đánh giá RIASEC 36 câu cho ra mã Holland ba chữ cái hàng đầu; xem các nghề nghiệp, 16 Nhóm Nghề (Career Clusters) liên bang Mỹ và các bước tiếp theo cụ thể (ngày trải nghiệm nghề, phỏng vấn tìm hiểu thông tin, CTE, học nghề). Dựa trên khung lý thuyết của Holland; chỉ đến công cụ chính thức O*NET Interest Profiler tại mynextmove.org."
+        },
+        "selfAdvocacy": {
+          "label": "Xưởng Tự bênh vực",
+          "desc": "Xây dựng một kế hoạch hỗ trợ cụ thể ở trường cho các câu hỏi về IEP hoặc 504, các điều chỉnh hỗ trợ, lựa chọn về việc tiết lộ thông tin và cách nhờ người lớn đáng tin cậy giúp đỡ."
+        },
+        "perspective": {
+          "label": "Lăng kính Góc nhìn",
+          "desc": "Nhìn các tình huống từ những góc nhìn khác nhau — luyện tập sự thấu cảm và đặt mình vào vị trí người khác."
+        },
+        "community": {
+          "label": "Cộng đồng & Văn hóa",
+          "desc": "Khám phá sự đa dạng, nhận thức văn hóa và cảm giác thuộc về cộng đồng."
+        },
+        "conflict": {
+          "label": "Giải quyết Xung đột",
+          "desc": "Luyện tập với một xung đột ít rủi ro hoặc giả định bằng cách đặt mình vào vị trí người khác, dùng câu nói bắt đầu bằng “Tôi”, xoa dịu căng thẳng và chọn cách hàn gắn. Nếu ai đó không an toàn, hãy nhờ người lớn can thiệp thay vì tự mình thương lượng."
+        },
+        "social": {
+          "label": "Phòng thực hành Kỹ năng Xã hội",
+          "desc": "Luyện tập kỹ năng trò chuyện, lắng nghe tích cực, ngôn ngữ cơ thể và hợp tác."
+        },
+        "teamwork": {
+          "label": "Xây dựng Làm việc Nhóm",
+          "desc": "Các thử thách hợp tác và khám phá vai trò trong nhóm."
+        },
+        "dearMan": {
+          "desc": "Soạn kịch bản cho một lời đề nghị khó nói qua bảy bước: Mô tả (Describe), Bày tỏ (Express), Khẳng định (Assert), Củng cố (Reinforce), Chú tâm (Mindful), Tỏ ra tự tin (Appear confident), Thương lượng (Negotiate). Từ kỹ năng Hiệu quả Liên cá nhân của DBT (Linehan); kịch bản giao tiếp quyết đoán được dùng nhiều nhất trong tham vấn học đường. Dùng kèm với Xưởng Tự bênh vực."
+        },
+        "motivationalInterviewing": {
+          "label": "Phỏng vấn Tạo động lực",
+          "desc": "Một khung trò chuyện giúp ai đó (hoặc chính bạn) suy nghĩ thấu đáo về một sự thay đổi. Học các kỹ năng OARS: Câu hỏi mở (Open questions), Khẳng định (Affirmations), Phản ánh (Reflections), Tóm tắt (Summaries); ba thước đo và Lời nói Thay đổi. Dựa trên Miller và Rollnick; nền tảng của tham vấn học đường và hỗ trợ đồng đẳng."
+        },
+        "crewProtocols": {
+          "label": "Quy trình Crew",
+          "desc": "Thư viện các hình thức sinh hoạt nhóm có cấu trúc cho giờ Crew, tiết cố vấn hoặc giờ sinh hoạt lớp: hoạt động gắn kết cộng đồng, mở đầu, kết thúc, vòng tròn phục hồi, quy trình suy ngẫm, hình thức ăn mừng và hướng dẫn cho những cuộc trò chuyện khó. Cùng với bản tổng hợp tất cả câu hỏi gợi ý Crew từ khắp SEL Hub. Dựa trên EL Education Crew, Thực hành Phục hồi (Restorative Practices), Tribes, Responsive Classroom."
+        },
+        "healthyRelationships": {
+          "label": "Mối quan hệ Lành mạnh",
+          "desc": "Phổ (lành mạnh / không lành mạnh / bạo hành) trên 8 khía cạnh của bất kỳ mối quan hệ thân thiết nào. Sự đồng thuận một cách chi tiết, phòng ngừa bạo lực trong hẹn hò, an toàn + đường dây trợ giúp. Dựa trên khung Loveisrespect / NDVH. Bao hàm người queer, người đa dạng thần kinh và người khuyết tật."
+        },
+        "decisions": {
+          "label": "Phòng thực hành Ra quyết định",
+          "desc": "Giải quyết các tình huống đời thực bằng khung dừng lại-suy nghĩ-hành động."
+        },
+        "journal": {
+          "label": "Nhật ký Cảm xúc",
+          "desc": "Nhật ký điểm danh cảm xúc hằng ngày — ghi lại tâm trạng, tác nhân khơi gợi và suy ngẫm theo thời gian."
+        },
+        "safety": {
+          "label": "An toàn & Ranh giới",
+          "desc": "Tìm hiểu về ranh giới cá nhân, người lớn đáng tin cậy, và tình huống an toàn với không an toàn."
+        },
+        "landPlace": {
+          "label": "Đất & Nơi chốn",
+          "desc": "Xưởng Gìn giữ để xây dựng mối quan hệ lâu dài với vùng đất nơi bạn sống. Ba mạch (lịch sử, sinh thái, hiện tại), suy ngẫm phản biện về lời ghi nhận đất đai như một thực hành chứ không phải màn trình diễn, các tổ chức do người Wabanaki dẫn dắt là tiếng nói có thẩm quyền, và một nhật ký suy ngẫm riêng tư."
+        },
+        "somaticReset": {
+          "label": "Làm mới Cơ thể & Hơi thở",
+          "desc": "Chọn một vùng cơ thể và làm theo một bài làm mới ngắn, có thể ngồi ghế thực hiện: tĩnh lặng, thở hoặc vận động nhẹ nhàng, kèm phần điểm danh riêng tư trước và sau."
+        },
+        "restorativeCircle": {
+          "label": "Vòng tròn Phục hồi",
+          "desc": "Điều phối các vòng tròn phục hồi và gắn kết cộng đồng với những quy tắc đã được thiết lập, sự hướng dẫn của người lớn và sự tôn trọng cội nguồn văn hóa. Không dùng để ép buộc tiết lộ hoặc khi đang có rủi ro an toàn."
+        },
+        "compassion": {
+          "label": "Trắc ẩn & Lời tự nhủ",
+          "desc": "Luyện tập lòng tự trắc ẩn, nhìn lại tiếng nói phê phán bên trong và xây dựng một giọng nói nội tâm tử tế hơn."
+        },
+        "friendship": {
+          "label": "Xây dựng Tình bạn",
+          "desc": "Khám phá các kiểu tình bạn, chiến lược hàn gắn và các khuôn mẫu quan hệ lành mạnh."
+        },
+        "transitions": {
+          "label": "Chuyển tiếp trong Cuộc sống",
+          "desc": "Vượt qua những thay đổi như chuyển nhà, vào trường mới và lớn lên."
+        },
+        "upstander": {
+          "label": "Rèn luyện Người lên tiếng",
+          "desc": "Học cách đứng lên bảo vệ người khác một cách an toàn — kỹ năng từ người ngoài cuộc trở thành người lên tiếng."
+        },
+        "growthmindset": {
+          "label": "Tư duy Phát triển",
+          "desc": "Khoa học về não bộ, nhìn lại thử thách theo cách mới và xây dựng khả năng phục hồi."
+        },
+        "execfunction": {
+          "label": "Chức năng Điều hành",
+          "desc": "Chiến lược cho những phần khó hơn khi hoàn thành công việc: bắt đầu nhiệm vụ, duy trì tập trung, lập kế hoạch trước và theo dõi thời gian."
+        },
+        "advocacy": {
+          "label": "Thực hành Bày tỏ Nhu cầu",
+          "desc": "Tập các kịch bản chung để bày tỏ nhu cầu, xin hỗ trợ và lên tiếng trong các tình huống hằng ngày."
+        },
+        "civicAction": {
+          "label": "Hành động Công dân & Hy vọng",
+          "desc": "Xử lý những cảm xúc khó khăn về bất công, xây dựng năng lực công dân và nuôi dưỡng hy vọng qua hành động."
+        },
+        "ethicalReasoning": {
+          "label": "Phòng thực hành Lập luận Đạo đức",
+          "desc": "Khám phá các tình huống khó xử về đạo đức ngày nay qua nhiều khung lý thuyết và đối thoại kiểu Socrates với AI."
+        },
+        "cultureExplorer": {
+          "label": "Khám phá Văn hóa",
+          "desc": "Tìm hiểu sâu về các nền văn hóa thế giới với sự hỗ trợ của AI, kèm hình minh họa và âm thanh."
+        },
+        "voicedetective": {
+          "label": "Thám tử Giọng nói",
+          "desc": "Lắng nghe giọng nói và nhận ra cảm xúc qua ngữ điệu."
+        },
+        "practiceJourneys": {
+          "label": "Hành trình Luyện tập (Thử nghiệm)",
+          "desc": "Luyện tập cách xin hỗ trợ qua bốn cuộc gặp gỡ nối tiếp nhau. Trả lời bằng các lựa chọn, bằng lời của chính bạn, hoặc cả hai. Viết nhật ký và thử một con đường khác."
+        },
+        "sociallab": {
+          "label": "Nhập vai Kỹ năng Xã hội",
+          "desc": "Luyện tập các tình huống xã hội và nhập vai với bạn đồng trang lứa AI qua đoạn hội thoại rẽ nhánh."
+        },
+        "peersupport": {
+          "label": "Huấn luyện Hỗ trợ Bạn bè",
+          "desc": "Học kỹ năng lắng nghe OARS và biết khi nào cần nhờ người lớn giúp đỡ."
+        },
+        "conflicttheater": {
+          "label": "Sân khấu Xung đột",
+          "desc": "Luyện tập một xung đột hư cấu với hai nhân vật AI trong một cảnh nhập vai sống động. Chỉ là nhập vai bản beta; đừng dùng nó để hòa giải một tổn hại đang diễn ra."
+        },
+        "digitalWellbeing": {
+          "label": "Xưởng Sức khỏe Số",
+          "desc": "Tự đánh giá mối quan hệ của bạn với mạng xã hội và chatbot AI, xây dựng thói quen dùng điện thoại lành mạnh hơn, phục hồi sau bắt nạt trên mạng, nhận ra sự thao túng trên bảng tin, xử lý mối quan hệ với chatbot một cách an toàn và tìm sự giúp đỡ khi bạn cần."
+        }
+      },
+      "category_info": {
+        "self-awareness": {
+          "label": "Tự nhận thức",
+          "desc": "Nhận biết cảm xúc, điểm mạnh và những điều cần phát triển"
+        },
+        "self-regulation": {
+          "label": "Tự điều chỉnh",
+          "desc": "Điều chỉnh cảm xúc, mức kích thích, sự chú ý; luyện tập ứng phó"
+        },
+        "self-direction": {
+          "label": "Tự định hướng",
+          "desc": "Đặt mục tiêu, quyền chủ động, chức năng điều hành, tư duy phát triển"
+        },
+        "inner-work": {
+          "label": "Hành trình Nội tâm",
+          "desc": "Các thực hành chiêm nghiệm và suy ngẫm"
+        },
+        "care-of-self": {
+          "label": "Chăm sóc Bản thân",
+          "desc": "Tự trắc ẩn, tự chăm sóc trong các mối quan hệ"
+        },
+        "social-awareness": {
+          "label": "Nhận thức Xã hội",
+          "desc": "Thấu cảm, đặt mình vào vị trí người khác và trân trọng sự đa dạng"
+        },
+        "relationship-skills": {
+          "label": "Kỹ năng Quan hệ",
+          "desc": "Giao tiếp, làm việc nhóm và giải quyết xung đột"
+        },
+        "responsible-decision-making": {
+          "label": "Ra quyết định có Trách nhiệm",
+          "desc": "Lựa chọn có đạo đức, đánh giá hậu quả và giải quyết vấn đề"
+        },
+        "stewardship": {
+          "label": "Gìn giữ",
+          "desc": "Chăm lo cho cộng đồng, công lý, đất đai và tương lai"
+        }
+      },
+      "shell": {
+        "zones": {
+          "time": "5-8 phút",
+          "purpose": "Gọi tên vùng hiện tại của bạn và chọn một chiến lược điều chỉnh phù hợp.",
+          "next": "Kiểm tra vùng của bạn, chọn một chiến lược, rồi lưu lại nếu bạn muốn xem lại."
+        },
+        "coping": {
+          "time": "3-10 phút",
+          "purpose": "Chọn một chiến lược ứng phó và luyện tập một lần với điểm dừng rõ ràng.",
+          "next": "Chọn một chiến lược dựa vào cơ thể hoặc neo giữ, thử nó, rồi để ý xem nó có giúp ích không."
+        },
+        "journal": {
+          "time": "5-12 phút",
+          "purpose": "Viết một đoạn suy ngẫm riêng tư và để ý những khuôn mẫu bạn có thể muốn ghi nhớ.",
+          "next": "Chọn một câu hỏi gợi ý, viết thật lòng, rồi lưu hoặc xuất trước khi đóng."
+        },
+        "emotions": {
+          "time": "4-8 phút",
+          "purpose": "Mở rộng vốn từ cảm xúc và gọi tên điều bạn đang cảm thấy chính xác hơn.",
+          "next": "Chọn một cảm xúc, chấm điểm cường độ, rồi chọn một từ phù hợp nhất."
+        },
+        "mindfulness": {
+          "time": "2-10 phút",
+          "purpose": "Dừng lại, hít thở và luyện tập sự chú ý mà không cần viết gì cả.",
+          "next": "Chọn một bài tập ngắn, làm theo đến hết, rồi để ý xem điều gì đã thay đổi."
+        },
+        "somaticReset": {
+          "time": "3-8 phút",
+          "purpose": "Điểm danh riêng tư theo vùng cơ thể để chọn một bài làm mới ngắn, có thể ngồi ghế thực hiện.",
+          "next": "Chọn một vùng cơ thể, thử một lựa chọn tĩnh lặng, thở hoặc vận động nhẹ nhàng, rồi để ý xem điều gì đã thay đổi."
+        },
+        "thoughtRecord": {
+          "time": "8-15 phút",
+          "purpose": "Chậm lại với một suy nghĩ khó khăn và tìm một góc nhìn cân bằng hơn.",
+          "next": "Gọi tên tình huống, chấm điểm cảm xúc, rồi kiểm tra suy nghĩ đó bằng bằng chứng."
+        },
+        "anxietyToolkit": {
+          "time": "5-12 phút",
+          "purpose": "Phân loại nỗi lo, giảm cường độ lo âu và chọn một bước tiếp theo thiết thực.",
+          "next": "Chọn nỗi lo đang lớn tiếng nhất, thử một chiến lược, rồi lưu kế hoạch nếu nó giúp ích."
+        },
+        "sleep": {
+          "time": "4-10 phút",
+          "purpose": "Nhận ra những trở ngại cho giấc ngủ và chọn một thói quen nghỉ ngơi để thử tiếp theo.",
+          "next": "Kiểm tra điều gì đang cản trở, chọn một thay đổi nhỏ, rồi xem lại sau."
+        },
+        "goals": {
+          "time": "5-10 phút",
+          "purpose": "Biến một ý định thành một hành động tiếp theo cụ thể, thực tế.",
+          "next": "Viết một mục tiêu, chọn bước đầu tiên và lưu kế hoạch trước khi đóng."
+        },
+        "friendship": {
+          "time": "5-10 phút",
+          "purpose": "Suy nghĩ về nhu cầu trong tình bạn, cảm giác thuộc về và những lựa chọn với bạn bè.",
+          "next": "Chọn một tình huống trong tình bạn và xác định một bước tiếp theo tử tế."
+        },
+        "conflict": {
+          "time": "6-12 phút",
+          "purpose": "Hiểu một xung đột và chuẩn bị một cách phản hồi hướng đến hàn gắn.",
+          "next": "Gọi tên điều đã xảy ra, cân nhắc cả hai phía, rồi chọn một hành động hàn gắn."
+        },
+        "safety": {
+          "time": "8-15 phút",
+          "purpose": "Lập một kế hoạch an toàn thiết thực và xác định những nguồn hỗ trợ đáng tin cậy.",
+          "next": "Thêm dấu hiệu cảnh báo, các bước ứng phó và những người cần liên hệ; lưu trước khi đóng."
+        },
+        "crisiscompanion": {
+          "time": "3-10 phút",
+          "purpose": "Dùng một hướng hỗ trợ có cấu trúc khi cảm xúc trở nên gấp gáp hoặc không an toàn.",
+          "next": "Chọn phương án hỗ trợ gần nhất và nhờ đến người lớn đáng tin cậy hoặc dịch vụ hỗ trợ khủng hoảng khi cần."
+        },
+        "conflicttheater": {
+          "time": "8-15 phút",
+          "purpose": "Luyện tập một cảnh xung đột hư cấu và thử ngôn ngữ phục hồi mà không coi công cụ này là hòa giải.",
+          "next": "Chọn một cảnh hư cấu, thử một cách phản hồi, rồi cùng nhìn lại xem điều gì sẽ cần người lớn hỗ trợ trong đời thực."
+        },
+        "restorativeCircle": {
+          "time": "15-30 phút",
+          "purpose": "Lập kế hoạch hoặc điều phối một quá trình nhóm mang tính phục hồi với quy tắc rõ ràng và sự hướng dẫn của người lớn.",
+          "next": "Đặt các thỏa thuận của vòng tròn trước, rồi chọn câu hỏi gợi ý; không bao giờ yêu cầu tiết lộ trước mọi người."
+        },
+        "strengths": {
+          "time": "5-10 phút",
+          "next": "Chọn những điểm mạnh giống bạn nhất, rồi tìm một khoảnh khắc có thật trong học kỳ này thể hiện từng điểm mạnh."
+        },
+        "viaStrengths": {
+          "time": "8-15 phút",
+          "purpose": "Dùng hoạt động tự phân loại lấy cảm hứng từ VIA như một hoạt động suy ngẫm, không phải một bài đánh giá chính thức.",
+          "next": "Phân loại các điểm mạnh, để ý các khuôn mẫu và viết một ví dụ làm cơ sở cho kết quả."
+        },
+        "perma": {
+          "time": "8-15 phút",
+          "purpose": "Chụp nhanh một bức tranh suy ngẫm về hạnh phúc của bạn qua các lĩnh vực PERMA và Sức khỏe.",
+          "next": "Dùng bức tranh này để chọn một cuộc trò chuyện hoặc một thử nghiệm nhỏ, không phải để dán nhãn cho bản thân."
+        },
+        "advocacy": {
+          "time": "5-12 phút",
+          "purpose": "Luyện tập ngôn ngữ hằng ngày để bày tỏ nhu cầu và xin hỗ trợ.",
+          "next": "Chọn một tình huống, soạn một lời đề nghị ngắn và quyết định ai có thể giúp."
+        },
+        "selfAdvocacy": {
+          "time": "10-20 phút",
+          "purpose": "Xây dựng một kế hoạch hỗ trợ cụ thể ở trường cho IEP, 504, các điều chỉnh hỗ trợ hoặc lựa chọn về việc tiết lộ thông tin.",
+          "next": "Chọn một nhu cầu hỗ trợ, tập hợp các câu hỏi của bạn và xác định một người lớn đáng tin cậy để cùng tham gia."
+        },
+        "crewProtocols": {
+          "time": "10-20 phút",
+          "next": "Duyệt theo mục đích, chọn một quy trình cho hôm nay, rồi ghi vào Kế hoạch Crew của tôi khi nào bạn sẽ thực hiện."
+        },
+        "perspective": {
+          "time": "6-12 phút",
+          "next": "Chọn một tình huống, nhìn từ góc nhìn của người kia trước, rồi nói điều bạn sẽ làm khác đi."
+        },
+        "windowOfTolerance": {
+          "time": "8-12 phút",
+          "next": "Thêm một dấu hiệu vào mỗi vùng trong ba vùng của bạn, rồi dùng mục Điểm danh để xác định vị trí của bạn hôm nay."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 phút",
+          "next": "Bắt đầu với mục Cảm giác là gì?, rồi đánh dấu những hệ giác quan đang ồn ào hoặc yên ắng với bạn."
+        },
+        "execfunction": {
+          "time": "5-10 phút",
+          "next": "Vào mục Bắt đầu và chọn một cách khởi động cho hôm nay, rồi vào mục Duy trì để chọn nơi ghi lại."
+        },
+        "growthmindset": {
+          "time": "5-10 phút",
+          "next": "Mở mục Nhìn lại, viết suy nghĩ cố định, rồi biến nó thành một suy nghĩ cụ thể, khả thi."
+        },
+        "dearMan": {
+          "time": "8-12 phút",
+          "next": "Viết lời đề nghị của bạn trong một câu, soạn bảy bước, rồi tập nói một lần."
+        },
+        "howlTracker": {
+          "time": "5-10 phút",
+          "next": "Ghi một lần Kiểm tra nhanh, rồi làm phần Điểm danh hằng tuần: chấm điểm từng HOWL và thêm một ví dụ cụ thể."
+        },
+        "peersupport": {
+          "time": "5-10 phút",
+          "next": "Chọn hai câu hỏi mở bạn có thể hỏi một người bạn, rồi thử một câu với một tình huống hư cấu trong thẻ luyện tập."
+        },
+        "upstander": {
+          "time": "8-12 phút",
+          "next": "Đọc thang can đảm trong mục Hành động và chọn hai hành động nhỏ nhất bạn thực sự có thể làm trong tuần này."
+        },
+        "digitalWellbeing": {
+          "time": "8-12 phút",
+          "next": "Làm phần Tự đánh giá một cách trung thực, rồi chọn một thói quen từ Bộ công cụ và một ranh giới bạn đặt ra trước."
+        },
+        "teamwork": {
+          "time": "8-12 phút",
+          "next": "Xem mục Vai trò, rồi viết một Kế hoạch Giao tiếp cho một nhóm thật: ai làm gì, ở đâu và trước khi nào."
+        }
+      },
+      "guidance_mode": {
+        "start_here": "Bắt đầu tại đây",
+        "name_it": "Gọi tên",
+        "calm_now": "Bình tĩnh ngay",
+        "body_reset": "Làm mới cơ thể",
+        "make_a_plan": "Lập kế hoạch",
+        "understand_patterns": "Hiểu các khuôn mẫu",
+        "practice_repair": "Luyện tập hàn gắn",
+        "role_play": "Nhập vai",
+        "facilitated_group": "Nhóm có người điều phối",
+        "reflect": "Suy ngẫm",
+        "practice_speaking_up": "Tập lên tiếng",
+        "make_a_support_plan": "Lập kế hoạch hỗ trợ",
+        "urgent_support": "Hỗ trợ khẩn cấp",
+        "get_support": "Tìm hỗ trợ",
+        "move_gently": "Đi thật nhẹ nhàng",
+        "learn_not_diagnose": "Tìm hiểu, không chẩn đoán",
+        "learn_and_get_support": "Tìm hiểu và tìm hỗ trợ",
+        "check_boundaries": "Kiểm tra ranh giới",
+        "explore_identity": "Khám phá bản dạng",
+        "practice_body_respect": "Luyện tập tôn trọng cơ thể",
+        "map_carefully": "Vẽ bản đồ cẩn thận",
+        "understand_needs": "Hiểu nhu cầu"
+      },
+      "guidance": {
+        "zones": {
+          "note": "Gọi tên điều đang diễn ra trước khi chọn chiến lược."
+        },
+        "emotions": {
+          "note": "Học những từ chỉ cảm xúc chính xác và để ý cường độ."
+        },
+        "coping": {
+          "note": "Thử một chiến lược dựa vào cơ thể hoặc neo giữ, rồi để ý xem điều gì đã thay đổi."
+        },
+        "mindfulness": {
+          "note": "Một khoảng dừng ít phải viết để hít thở, chú ý hoặc cảm nhận cơ thể."
+        },
+        "somaticReset": {
+          "note": "Chọn một vùng cơ thể, rồi thử một bài tập ngắn: tĩnh lặng, thở hoặc vận động nhẹ nhàng. Bộ chọn gọn, dùng được bằng bàn phím, giúp mọi hình ảnh trực quan dễ dùng trên màn hình nhỏ. Các hình ảnh gồm: Sóng Trôi, kết hợp HÍT VÀO · DÂNG LÊN với đường liền và điểm đánh dấu tròn, THỞ RA · LẮNG XUỐNG với đường chấm và điểm đánh dấu hình thoi, TẠM DỪNG với các vạch tạm dừng; Cánh Hoa Nở, kết hợp HÍT VÀO · MỞ RA với viền cánh hoa liền và tâm tròn, THỞ RA · DỊU LẠI với viền chấm và tâm hình thoi, TẠM DỪNG với các vạch tạm dừng ở tâm; Chân Trời Neo Giữ, kết hợp HÍT VÀO · DÂNG LÊN với viền mặt trời liền và tâm tròn, THỞ RA · LẮNG XUỐNG với viền mặt trời chấm và tâm hình thoi, TẠM DỪNG với các vạch tạm dừng trên mặt trời; một đường thẳng dễ đoán có đánh dấu hướng, với nhãn HÍT VÀO và THỞ RA trực tiếp, đích HÍT VÀO hình tròn và đích THỞ RA hình thoi, vệt từ điểm xuất phát đang hoạt động và điểm đến tiếp theo được viền; và Quỹ Đạo Hơi Thở hai phần với các cung pha liền và chấm trở nên đậm hơn khi đang hoạt động, vòng tâm có họa tiết khớp với pha, nhãn HÍT VÀO và THỞ RA trực tiếp, biểu tượng ở tâm khi tạm dừng, trạm chuyển tiếp tiếp theo được viền, điểm đánh dấu theo chiều kim đồng hồ có hình dạng theo pha, bản đồ nhịp được mã hóa bằng hình dạng và gợi ý pha cho trình đọc màn hình. Học sinh có thể thử trước một nhịp thở chuyển động trước khi bộ hẹn giờ bắt đầu, rồi phóng to, làm đứng yên hoặc tắt hình hướng dẫn. Trong Chế độ Yên tĩnh, hình ảnh được phóng to trở thành nút bắt đầu/tạm dừng dùng được bằng bàn phím và cảm ứng. Có thể ẩn đồng hồ đếm ngược; lời hướng dẫn có thể hiển thị đầy đủ, chỉ tên pha hoặc ẩn; việc đếm nhịp thở và chấm điểm bằng số là tùy chọn.",
+          "boundary": "Đây không phải là điều trị hay chẩn đoán. Giữ các chuyển động nhỏ và không gây đau; hãy dừng lại nếu thấy đau, chóng mặt hoặc tê, và báo cho một người lớn đáng tin cậy hoặc nhân viên y tế."
+        },
+        "anxietyToolkit": {
+          "note": "Tách nỗi lo khỏi hành động và chọn một bước tiếp theo thiết thực."
+        },
+        "windowOfTolerance": {
+          "note": "Ghi lại các dấu hiệu kích thích và nguồn hỗ trợ theo thời gian; đây không phải là chẩn đoán."
+        },
+        "stressBucket": {
+          "note": "Xem xét áp lực và nguồn hỗ trợ cùng nhau, kể cả những áp lực nằm ngoài tầm kiểm soát của bạn."
+        },
+        "bigFeelings": {
+          "note": "Dùng cơn giận như một thông tin và lên kế hoạch cho một khoảng dừng hoặc cách hàn gắn an toàn hơn."
+        },
+        "conflict": {
+          "note": "Phù hợp nhất để luyện tập với xung đột ít rủi ro hoặc giả định.",
+          "boundary": "Nếu có đe dọa, ép buộc, bắt nạt, bạo hành hoặc chênh lệch quyền lực không an toàn, hãy dừng lại và nhờ một người lớn đáng tin cậy thay vì tự mình thương lượng."
+        },
+        "conflicttheater": {
+          "note": "Luyện tập nhập vai sống động bản beta với các nhân vật hư cấu; đừng dùng nó để hòa giải một tổn hại đang diễn ra.",
+          "boundary": "Những đe dọa, bạo hành hoặc bắt nạt có thật cần sự hỗ trợ của người lớn và biện pháp bảo đảm an toàn, không phải một bài tập nhập vai."
+        },
+        "restorativeCircle": {
+          "note": "Dùng khi đã có quy tắc vòng tròn rõ ràng và một người lớn điều phối.",
+          "boundary": "Không dùng vòng tròn để gây áp lực buộc ai đó tiết lộ trước mọi người hoặc để xử lý rủi ro an toàn đang diễn ra."
+        },
+        "strengths": {
+          "note": "Suy ngẫm mở về điểm mạnh, không có điểm số, xếp hạng hay chẩn đoán."
+        },
+        "viaStrengths": {
+          "note": "Hoạt động tự phân loại để suy ngẫm, không phải bảng khảo sát VIA chính thức hay kết quả trắc nghiệm tâm lý."
+        },
+        "perma": {
+          "note": "Một bức tranh nhanh về hạnh phúc để gợi mở trò chuyện, không phải đánh giá sức khỏe tâm thần."
+        },
+        "advocacy": {
+          "note": "Các kịch bản chung và luyện tập để bày tỏ nhu cầu và xin hỗ trợ."
+        },
+        "selfAdvocacy": {
+          "note": "Dùng để lập kế hoạch cụ thể về IEP, 504, điều chỉnh hỗ trợ, việc tiết lộ thông tin hoặc hỗ trợ ở trường."
+        },
+        "crisiscompanion": {
+          "note": "Hướng dẫn hỗ trợ cho bạn hoặc một người bạn; đây không phải công cụ sàng lọc khủng hoảng hay thứ thay thế cho người lớn.",
+          "boundary": "Nếu có ai đó có thể đang gặp nguy hiểm ngay lập tức hoặc có thể hành động theo ý nghĩ tự làm hại bản thân, hãy dừng lại ở đây và liên hệ ngay với một người lớn đáng tin cậy hoặc dịch vụ cấp cứu/hỗ trợ khủng hoảng."
+        },
+        "safety": {
+          "note": "Tìm hiểu về ranh giới và các bước tìm đến người lớn đáng tin cậy; đây không phải bài kiểm tra xem một tình huống có an toàn hay không.",
+          "boundary": "Nếu bạn đang gặp nguy hiểm ngay lập tức hoặc có ai đó đang làm hại bạn, hãy dừng lại và liên hệ ngay với một người lớn đáng tin cậy hoặc dịch vụ cấp cứu."
+        },
+        "griefLoss": {
+          "note": "Người bạn đồng hành riêng tư cho nỗi đau buồn và mất mát; hãy bỏ qua bất cứ điều gì cảm thấy quá sức.",
+          "boundary": "Nếu nỗi đau buồn cảm thấy không thể chịu đựng được, bạn cảm thấy không an toàn, hoặc có người khác đang gặp nguy hiểm, hãy nhờ đến một người lớn đáng tin cậy hoặc dịch vụ hỗ trợ khủng hoảng."
+        },
+        "traumaPsychoed": {
+          "note": "Giáo dục tâm lý về các phản ứng với sang chấn; không phải công cụ sàng lọc hay điều trị.",
+          "boundary": "Bạn không cần tiết lộ sang chấn ở đây. Hãy tạm dừng và tìm đến một người lớn đáng tin cậy hoặc chuyên viên tham vấn nếu nội dung khơi lên điều gì đó không an toàn."
+        },
+        "substancePsychoed": {
+          "note": "Thông tin giảm tác hại và suy ngẫm; không phải công cụ sàng lọc hay sự cho phép sử dụng chất gây nghiện.",
+          "boundary": "Đừng dùng công cụ này khi có quá liều hoặc tình huống y tế khẩn cấp; hãy liên hệ cấp cứu hoặc một người lớn đáng tin cậy."
+        },
+        "healthyRelationships": {
+          "note": "Khám phá sự đồng thuận và các khuôn mẫu quan hệ mà không dán nhãn một người hay một mối quan hệ.",
+          "boundary": "Nếu một mối quan hệ có đe dọa, ép buộc hoặc bạo lực, hãy tìm sự giúp đỡ của người lớn; đừng một mình đối mặt với người đó."
+        },
+        "identitySupport": {
+          "note": "Suy ngẫm mang tính khẳng định và hỗ trợ từ cộng đồng; việc chia sẻ là tùy chọn.",
+          "boundary": "Giữ kín thông tin cá nhân và nhờ đến một người lớn đáng tin cậy nếu bạn cảm thấy không an toàn."
+        },
+        "bodyStory": {
+          "note": "Trân trọng cơ thể và hiểu biết truyền thông; không phải để giảm cân hay đánh giá rối loạn ăn uống.",
+          "boundary": "Nếu chuyện ăn uống, hình ảnh cơ thể hoặc tập luyện cảm thấy không an toàn hoặc chiếm hết tâm trí bạn, hãy nói chuyện với một người lớn đáng tin cậy hoặc nhân viên y tế."
+        },
+        "genogram": {
+          "note": "Suy ngẫm cá nhân về gia đình; không phải đánh giá lâm sàng và việc chia sẻ là tùy chọn.",
+          "boundary": "Bỏ qua những chi tiết gia đình cảm thấy không an toàn hoặc riêng tư; hãy nhờ một người lớn đáng tin cậy hỗ trợ."
+        },
+        "sensoryRegulation": {
+          "note": "Xây dựng hồ sơ giác quan và các điều chỉnh hỗ trợ; không phải chẩn đoán.",
+          "boundary": "Chọn những hỗ trợ khiến bạn cảm thấy an toàn; chỉ chia sẻ các điều chỉnh hỗ trợ khi bạn muốn."
+        }
+      },
+      "pathway": {
+        "morning_check": {
+          "name": "Điểm danh Buổi sáng",
+          "desc": "Bắt đầu ngày mới với việc kiểm tra tâm trạng, hít thở và đặt mục tiêu"
+        },
+        "calm_down": {
+          "name": "Góc Bình tĩnh",
+          "desc": "Chiến lược điều chỉnh cho lúc cảm xúc dâng cao"
+        },
+        "conflict_unit": {
+          "name": "Chủ đề Giải quyết Xung đột",
+          "desc": "Luyện tập giải quyết bất đồng và xây dựng kỹ năng hàn gắn"
+        },
+        "empathy_week": {
+          "name": "Tuần Thấu cảm & Góc nhìn",
+          "desc": "Xây dựng sự thấu cảm qua việc đặt mình vào vị trí người khác và nhận thức văn hóa"
+        },
+        "decision_making": {
+          "name": "Tìm hiểu Sâu về Ra quyết định",
+          "desc": "Luyện tập lập luận đạo đức và lựa chọn có trách nhiệm"
+        },
+        "self_discovery": {
+          "name": "Hành trình Khám phá Bản thân",
+          "desc": "Khám phá bạn là ai — điểm mạnh, cảm xúc và tư duy phát triển"
+        },
+        "friendship": {
+          "name": "Tình bạn & Kỹ năng Xã hội",
+          "desc": "Xây dựng tình bạn lành mạnh và kỹ năng giao tiếp"
+        },
+        "transitions": {
+          "name": "Vượt qua Thay đổi",
+          "desc": "Hỗ trợ học sinh qua những giai đoạn chuyển tiếp trong cuộc sống và trải nghiệm mới"
+        }
+      },
+      "pathway_practice": {
+        "morning_check": {
+          "goal": "Để ý điều bạn cần và chọn một bước tiếp theo vừa sức.",
+          "model": "Mình thấy bồn chồn. Mình có thể thử vươn vai, rồi chọn phần đầu tiên của nhiệm vụ.",
+          "practice": "Gọi tên một cảm xúc, chỉ vào một lựa chọn, hoặc lặng lẽ để ý. Thử một cách hỗ trợ và chọn một mục tiêu nhỏ.",
+          "reflect": "Bạn đã để ý thấy gì? Bạn muốn giữ lại hay thay đổi điều gì?",
+          "transfer": "Khi tiết học tiếp theo bắt đầu, mình có thể thử ____. Nếu cần giúp, mình có thể nhờ ____."
+        },
+        "calm_down": {
+          "goal": "Khám phá một cách hỗ trợ phù hợp với cơ thể bạn và khoảnh khắc này.",
+          "model": "Hôm nay tập thở có vẻ không giúp được. Mình có thể thử nhìn quanh phòng hoặc nhờ ai đó ở bên.",
+          "practice": "Chỉ chọn một chiến lược thoải mái. Ngồi yên, quan sát hoặc nghỉ một lát đều là những lựa chọn hợp lệ.",
+          "reflect": "Nó có giúp ích, không thay đổi gì, hay thấy khó chịu? Bạn có thể dừng lại hoặc chọn cách khác.",
+          "transfer": "Khi mình để ý thấy ____, mình có thể thử ____ hoặc nhờ ____ hỗ trợ."
+        },
+        "conflict_unit": {
+          "goal": "Cân nhắc các góc nhìn và tập một cách phản hồi tôn trọng cho một bất đồng thường ngày.",
+          "model": "Cả hai chúng mình đều muốn cùng một món đồ. Mình có thể hỏi bạn cần gì, giải thích mình cần gì, và đề nghị thay phiên nhau.",
+          "practice": "Dùng một bất đồng tưởng tượng, ít rủi ro. Tập một câu hỏi lắng nghe và một bước tiếp theo khả thi.",
+          "reflect": "Cách phản hồi đó đáp ứng nhu cầu của ai? Điều gì có thể cần thay đổi?",
+          "transfer": "Trong một bất đồng an toàn, mình có thể ____. Khi có đe dọa, bắt nạt hoặc ép buộc, mình có thể nhờ một người lớn đáng tin cậy giúp đỡ."
+        },
+        "empathy_week": {
+          "goal": "Khám phá một góc nhìn khác mà không mặc định rằng bạn biết người khác cảm thấy thế nào.",
+          "model": "Bạn ấy đang im lặng. Có thể bạn ấy mệt hoặc đang suy nghĩ; mình có thể hỏi thay vì tự quyết định thay bạn ấy.",
+          "practice": "Dùng một ví dụ hư cấu. Nêu hai góc nhìn có thể có và một câu hỏi tôn trọng mà bạn có thể hỏi.",
+          "reflect": "Bạn biết điều gì, và bạn đang đoán điều gì? Làm sao bạn có thể kiểm tra?",
+          "transfer": "Tuần này, trước khi đưa ra một giả định, mình có thể hỏi ____."
+        },
+        "decision_making": {
+          "goal": "So sánh các lựa chọn dựa trên ảnh hưởng của chúng đến bạn và người khác.",
+          "model": "Trước khi đăng một bức ảnh nhóm, mình có thể xin phép và nghĩ xem ai có thể nhìn thấy nó.",
+          "practice": "Chọn một quyết định tưởng tượng. So sánh hai phương án, những ảnh hưởng có thể xảy ra và một người có thể giúp đỡ.",
+          "reflect": "Thông tin nào còn thiếu? Có phương án nào an toàn hơn hoặc công bằng hơn không?",
+          "transfer": "Trước khi quyết định về ____, mình có thể dừng lại để kiểm tra ____."
+        },
+        "self_discovery": {
+          "goal": "Nhận ra một điểm mạnh và chọn cách sử dụng nó với sự hỗ trợ.",
+          "model": "Mình hay đặt những câu hỏi hữu ích. Mình có thể dùng điểm mạnh đó khi một nhiệm vụ chưa rõ ràng và xin một ví dụ.",
+          "practice": "Chọn một điểm mạnh phù hợp với bạn, hoặc của một nhân vật hư cấu. Đưa ra một ví dụ về điểm mạnh đó khi được thể hiện.",
+          "reflect": "Điều gì đã giúp điểm mạnh đó bộc lộ? Sự hỗ trợ nào sẽ giúp bước tiếp theo trở nên khả thi?",
+          "transfer": "Mình có thể dùng ____ khi ____. Một người hoặc nguồn lực có thể giúp là ____."
+        },
+        "friendship": {
+          "goal": "Luyện tập giao tiếp tôn trọng nhu cầu của bạn và ranh giới của người khác.",
+          "model": "Mình có thể rủ ai đó tham gia cùng và chấp nhận lựa chọn của bạn ấy nếu bạn ấy từ chối.",
+          "practice": "Tập một lời mời, một câu hỏi lắng nghe hoặc một ranh giới tôn trọng. Nói, viết hay dùng AAC đều được tính.",
+          "reflect": "Mỗi người có thật sự được lựa chọn không? Điều gì có thể giúp cuộc tương tác trở nên chào đón hơn?",
+          "transfer": "Trong một cuộc tương tác an toàn tuần này, mình có thể thử ____ và để ý ____."
+        },
+        "transitions": {
+          "goal": "Xác định điều gì đang thay đổi, điều gì có thể giữ ổn định, và một nguồn hỗ trợ.",
+          "model": "Một lớp học mới khiến mình thấy không chắc chắn. Mình có thể tìm phòng học trước và hỏi xem ai có thể giúp.",
+          "practice": "Chọn một thay đổi có thật hoặc hư cấu. Nêu một điều chưa chắc chắn, một nguồn hỗ trợ ổn định và một bước tiếp theo nhỏ.",
+          "reflect": "Phần nào nằm trong tầm kiểm soát của bạn? Sự giúp đỡ hoặc điều chỉnh hỗ trợ nào sẽ hữu ích?",
+          "transfer": "Trước khi thay đổi đến, mình có thể ____. Nếu kế hoạch cần thay đổi, mình có thể ____."
+        }
+      },
+      "cue": {
+        "zones": {
+          "time": "5-8 phút",
+          "format": "Cá nhân hoặc nhóm",
+          "cue": "Hữu ích làm bước điểm danh đầu tiên trước khi chia sẻ bất cứ điều gì."
+        },
+        "emotions": {
+          "time": "5-8 phút",
+          "format": "Cá nhân hoặc theo cặp",
+          "cue": "Hoạt động khởi động tốt về từ vựng."
+        },
+        "coping": {
+          "time": "3-10 phút",
+          "format": "Cá nhân hoặc nhóm",
+          "cue": "Phù hợp nhất để làm mới và điều chỉnh."
+        },
+        "mindfulness": {
+          "time": "2-10 phút",
+          "format": "Cả lớp",
+          "cue": "Lựa chọn điều chỉnh ít phải viết."
+        },
+        "somaticReset": {
+          "time": "3-8 phút",
+          "format": "Cá nhân hoặc cả lớp",
+          "cue": "Bộ chọn hình ảnh gọn giúp mọi hình hướng dẫn luôn sẵn có mà không cần một lưới nút dày đặc. Quỹ Đạo Hơi Thở kết hợp các cung liền và chấm với pha đang hoạt động đậm hơn, vòng tâm liền hoặc chấm tương ứng, và nhãn HÍT VÀO và THỞ RA trực tiếp; khi tạm dừng, tâm chuyển từ một chấm sang các vạch tạm dừng, và hình thoi hoặc vòng được viền cho biết điểm chuyển pha tiếp theo, trong khi điểm đánh dấu theo chiều kim đồng hồ hình tròn hoặc hình thoi, hình thoi chuyển tiếp, vòng quay lại, các vạch hít vào ngắn và các chấm thở ra rỗng giúp nhận ra pha và số đếm tùy chọn mà không cần dựa vào màu sắc. Hãy để học sinh thử trước một nhịp thở chuyển động trước khi bắt đầu hẹn giờ, hoặc chọn Đứng yên. Cho phép lời hướng dẫn đầy đủ, chỉ tên pha hoặc ẩn. Chế độ Yên tĩnh biến hình ảnh được phóng to thành nút bắt đầu/tạm dừng trực tiếp. Sóng Trôi dùng HÍT VÀO · DÂNG LÊN với đường liền và điểm đánh dấu tròn, THỞ RA · LẮNG XUỐNG với đường chấm và điểm đánh dấu hình thoi, và các vạch tạm dừng khi phiên tạm dừng. Cánh Hoa Nở dùng HÍT VÀO · MỞ RA với viền cánh hoa liền và tâm tròn, THỞ RA · DỊU LẠI với viền chấm và tâm hình thoi, và các vạch tạm dừng ở tâm khi phiên tạm dừng. Chân Trời Neo Giữ dùng HÍT VÀO · DÂNG LÊN với viền mặt trời liền và tâm tròn, THỞ RA · LẮNG XUỐNG với viền mặt trời chấm và tâm hình thoi, và các vạch tạm dừng trên mặt trời khi tạm dừng. Đường Hơi Thở dùng đích HÍT VÀO hình tròn, đích THỞ RA hình thoi, vệt từ điểm xuất phát đang hoạt động và điểm đến tiếp theo được viền để hướng đi không phụ thuộc vào màu sắc. Cung cấp gợi ý pha cho trình đọc màn hình, cùng các lựa chọn ẩn đếm ngược, ẩn hướng dẫn, đứng yên chuyển động, không có hình ảnh, thở tự nhiên và không dùng số; không bao giờ yêu cầu chấm điểm hay giải thích về cảm giác trong cơ thể."
+        },
+        "journal": {
+          "time": "5-12 phút",
+          "format": "Cá nhân",
+          "cue": "Suy ngẫm riêng tư. Việc chia sẻ nên là tùy chọn."
+        },
+        "goals": {
+          "time": "5-10 phút",
+          "format": "Cá nhân hoặc tiết cố vấn",
+          "cue": "Bước kết thúc tốt sau phần suy ngẫm."
+        },
+        "conflict": {
+          "time": "8-12 phút",
+          "format": "Theo cặp hoặc nhóm nhỏ",
+          "cue": "Giới thiệu trước các quy tắc trước khi nhập vai."
+        },
+        "restorativeCircle": {
+          "time": "15-30 phút",
+          "format": "Vòng tròn",
+          "cue": "Dùng khi đã có quy tắc vòng tròn rõ ràng."
+        },
+        "peersupport": {
+          "time": "8-15 phút",
+          "format": "Luyện tập theo cặp",
+          "cue": "Rất tốt để tập kỹ năng lắng nghe."
+        },
+        "perspective": {
+          "time": "6-12 phút",
+          "format": "Theo cặp hoặc nhóm",
+          "cue": "Cầu nối thấu cảm tốt trước khi thảo luận."
+        },
+        "digitalWellbeing": {
+          "time": "8-15 phút",
+          "format": "Cá nhân hoặc tiết cố vấn",
+          "cue": "Hữu ích trước khi đặt quy tắc về điện thoại hoặc AI."
+        },
+        "sleep": {
+          "time": "5-10 phút",
+          "format": "Cá nhân",
+          "cue": "Phù hợp cho các chủ đề cố vấn về sức khỏe."
+        },
+        "safety": {
+          "time": "8-15 phút",
+          "format": "Cá nhân",
+          "cue": "Xem trước; tránh ép buộc tiết lộ."
+        },
+        "crisiscompanion": {
+          "time": "3-10 phút",
+          "format": "Cá nhân",
+          "cue": "Dành cho kỹ năng hỗ trợ khẩn cấp, không phải bài tập trên lớp."
+        },
+        "griefLoss": {
+          "time": "10-20 phút",
+          "format": "Cá nhân",
+          "cue": "Xem trước; dùng các hoạt động thay thế cho lựa chọn không tham gia."
+        },
+        "identitySupport": {
+          "time": "8-15 phút",
+          "format": "Cá nhân",
+          "cue": "Dùng với sự tôn trọng quyền riêng tư và lựa chọn không tham gia."
+        },
+        "traumaPsychoed": {
+          "time": "8-15 phút",
+          "format": "Cá nhân hoặc có nhà giáo dục hướng dẫn",
+          "cue": "Chỉ là giáo dục tâm lý; đưa ra lựa chọn không tham gia và con đường tìm đến người lớn đáng tin cậy."
+        },
+        "substancePsychoed": {
+          "time": "8-15 phút",
+          "format": "Cá nhân hoặc bài học sức khỏe",
+          "cue": "Xem trước cách tiếp cận giảm tác hại và cung cấp nguồn hỗ trợ từ người lớn/y tế."
+        },
+        "healthyRelationships": {
+          "time": "10-20 phút",
+          "format": "Cá nhân hoặc bài học sức khỏe",
+          "cue": "Xem trước ngôn ngữ về sự đồng thuận và an toàn; không bao giờ yêu cầu tiết lộ thông tin cá nhân."
+        },
+        "bodyStory": {
+          "time": "8-15 phút",
+          "format": "Cá nhân",
+          "cue": "Cách tiếp cận tôn trọng cơ thể; đưa ra lựa chọn không tham gia và tránh thảo luận tập trung vào cân nặng."
+        },
+        "genogram": {
+          "time": "10-20 phút",
+          "format": "Cá nhân",
+          "cue": "Chỉ là suy ngẫm về gia đình; việc chia sẻ nên là tùy chọn."
+        },
+        "sensoryRegulation": {
+          "time": "8-15 phút",
+          "format": "Cá nhân hoặc lập kế hoạch hỗ trợ",
+          "cue": "Dùng ngôn ngữ khẳng định bản dạng và để học sinh chọn điều muốn chia sẻ."
+        }
+      },
+      "launch": {
+        "advisory_checkin": {
+          "name": "Điểm danh buổi sáng trong tiết cố vấn",
+          "time": "10-15 phút",
+          "format": "Cả lớp",
+          "focus": "Tâm trạng, hơi thở, một bước tiếp theo",
+          "studentView": "Học sinh tự kiểm tra vùng của mình một cách riêng tư, thử một cách điều chỉnh, rồi chọn một nhu cầu cho ngày hôm nay hoặc bỏ qua.",
+          "teacherMove": "Làm mẫu lựa chọn bỏ qua trước. Chỉ mời chia sẻ bằng một từ hoặc một màu sau khi đã luyện tập riêng tư.",
+          "privacyBoundary": "Không thu thập nội dung nhật ký; học sinh tự quyết định sau này có đưa điểm lưu nào vào Gói chia sẻ hay không.",
+          "note": "Bắt đầu bằng việc kiểm tra vùng riêng tư, rồi gợi ý hít thở hoặc đặt mục tiêu. Học sinh có thể chia sẻ một từ, một màu, hoặc bỏ qua."
+        },
+        "calm_reset": {
+          "name": "Năm phút làm mới để bình tĩnh",
+          "time": "5-8 phút",
+          "format": "Cả lớp hoặc góc bình tĩnh",
+          "focus": "Điều chỉnh cơ thể",
+          "studentView": "Học sinh để ý trạng thái cơ thể hiện tại và chọn một bài tập giúp cơ thể bình tĩnh.",
+          "teacherMove": "Giữ hoạt động ít lời và có giới hạn thời gian. Đưa ra các lựa chọn thay thế: vận động, hít thở hoặc yên lặng.",
+          "privacyBoundary": "Học sinh có thể lưu một điểm lưu cho riêng mình; không ai phải giải thích vì sao mình cần làm mới.",
+          "note": "Giữ hoạt động ít lời. Học sinh chọn một bài tập điều chỉnh và để ý điều gì đã thay đổi."
+        },
+        "repair_routine": {
+          "name": "Hoạt động hàn gắn sau xung đột",
+          "time": "15-25 phút",
+          "format": "Nhóm nhỏ hoặc tiết cố vấn",
+          "focus": "Góc nhìn, hàn gắn, hành động tiếp theo",
+          "studentView": "Học sinh có thể dùng một tình huống có thật, giả định hoặc do giáo viên đưa ra để luyện tập ngôn ngữ hàn gắn.",
+          "teacherMove": "Đặt quy tắc hàn gắn trước và tránh việc thú nhận trước mọi người. Tạm dừng nếu tình huống cần người lớn hòa giải.",
+          "privacyBoundary": "Học sinh chọn điều muốn chia sẻ; những suy ngẫm riêng tư về xung đột không nên trở thành bằng chứng của lớp.",
+          "note": "Dùng sau khi đã đặt quy tắc. Tập trung vào ngôn ngữ hàn gắn, không phải thú nhận trước mọi người."
+        },
+        "digital_reset": {
+          "name": "Bài học ngắn về sức khỏe số",
+          "time": "12-20 phút",
+          "format": "Tiết cố vấn hoặc sức khỏe",
+          "focus": "Điện thoại, giấc ngủ, AI và ranh giới",
+          "studentView": "Học sinh xem lại thói quen, chọn một ranh giới để thử và giữ kín lý do nếu muốn.",
+          "teacherMove": "Trình bày như việc thiết kế thói quen, không phải kiểm tra điện thoại. Tránh yêu cầu học sinh tiết lộ ảnh chụp màn hình hoặc dữ liệu sử dụng.",
+          "privacyBoundary": "Học sinh có thể chia sẻ mục tiêu về ranh giới, nhưng các chi tiết cá nhân về giấc ngủ, điện thoại hoặc AI vẫn là tùy chọn.",
+          "note": "Trình bày như việc thiết kế thói quen, không phải kiểm tra điện thoại. Học sinh chọn một ranh giới để thử."
+        }
+      },
+      "evidence": {
+        "strong": {
+          "label": "Cách tiếp cận có cơ sở nghiên cứu",
+          "title": "Nghiên cứu liên quan đến cách tiếp cận gốc; phiên bản chuyển thể kỹ thuật số này chưa được đánh giá ở đây"
+        },
+        "emerging": {
+          "label": "Bằng chứng về cách tiếp cận còn hạn chế",
+          "title": "Hứa hẹn nhưng bằng chứng còn hạn chế hoặc chưa thống nhất"
+        },
+        "contested": {
+          "label": "Mô hình gây tranh cãi",
+          "title": "Phổ biến nhưng còn tranh cãi về mặt khoa học; nên dùng như một phép ẩn dụ, không phải cơ chế"
+        },
+        "practice": {
+          "label": "Thực hành suy ngẫm",
+          "title": "Một thực hành có cấu trúc hoặc phương pháp gợi mở, không phải tuyên bố về hiệu quả thực nghiệm"
+        }
+      },
+      "ui": {
+        "sel_practice": "Thực hành SEL",
+        "default_purpose": "Luyện tập một kỹ năng SEL một cách chu đáo.",
+        "default_next": "Hoàn thành một bước nhỏ, rồi quyết định có lưu hay không.",
+        "private_checkpoint": "Điểm lưu riêng tư",
+        "share_packet_eligible": "Có thể đưa vào Gói chia sẻ",
+        "saving_preparing": "Đang chuẩn bị lưu bài làm SEL của bạn...",
+        "save_requested": "Đã yêu cầu lưu {title}",
+        "returned_to_grid": "Đã quay lại lưới công cụ",
+        "back_to_sel_tools": "Quay lại công cụ SEL",
+        "export_now_aria": "Xuất tệp dự án SEL ngay bây giờ",
+        "export_now": "Xuất ngay",
+        "purpose": "Mục đích",
+        "next_step": "Bước tiếp theo",
+        "saved_work": "Bài đã lưu",
+        "checkpoints_private": "Các điểm lưu của công cụ được giữ riêng tư ở đây trừ khi bạn chọn đưa chúng vào Gói chia sẻ.",
+        "use_with_care_label": "Dùng cẩn thận:",
+        "tool_open_failed_title": "Không thể mở công cụ này",
+        "tool_open_failed_body": "Một phần thông tin đã lưu cho hoạt động này không tải được. Đây không phải lỗi của bạn.",
+        "saved_work_kept": "Bài đã lưu của bạn chưa bị xóa.",
+        "back_to_hub": "Quay lại SEL Hub",
+        "tell_teacher": "Nếu việc này cứ lặp lại, hãy cho giáo viên biết đó là hoạt động nào.",
+        "load_did_not_start": "Công cụ đã tải xuống nhưng không khởi động.",
+        "load_too_long": "Công cụ tải quá lâu.",
+        "this_sel_tool": "Công cụ SEL này",
+        "tool_opening": "Đang mở {name}...",
+        "tool_open_retry": "Không thể mở {name}. Hãy thử lại hoặc chọn công cụ khác.",
+        "station_link_missing": "Liên kết này dẫn đến một trạm không có trong dự án này. Hãy tải gói có chứa trạm đó, hoặc bắt đầu một trạm từ mục Trạm SEL trong bảng Lịch sử.",
+        "started_station": "Đã bắt đầu trạm {name}",
+        "tool_could_not_open": "Không thể mở {name}.",
+        "tool_not_available": "{name} không có sẵn trong SEL Hub này.",
+        "try_again": "Thử lại",
+        "dismiss": "Bỏ qua",
+        "back_to_tools": "Quay lại công cụ",
+        "band_elementary": "Tiểu học",
+        "band_middle": "Trung học cơ sở",
+        "band_high": "Trung học phổ thông",
+        "unsaved_aria": "Bạn có thay đổi chưa lưu",
+        "unsaved_title": "Thay đổi chưa lưu",
+        "unsaved": "Chưa lưu",
+        "unsaved_hint": "Bạn có thay đổi chưa lưu — hãy nhấn Xuất ngay để lưu",
+        "educators_opened": "Đã mở hướng dẫn Dành cho Nhà giáo dục",
+        "educators_aria": "Dành cho Nhà giáo dục: cách sử dụng Hub này một cách có trách nhiệm",
+        "for_educators": "Dành cho Nhà giáo dục",
+        "theme_aria": "Chuyển giao diện (sáng / tối / tương phản cao)",
+        "theme_contrast": "Tương phản cao",
+        "theme_dark": "Chế độ tối",
+        "theme_light": "Chế độ sáng",
+        "theme_contrast_short": "Tương phản",
+        "theme_dark_short": "Tối",
+        "theme_light_short": "Sáng",
+        "xp_aria": "{count} điểm kinh nghiệm SEL",
+        "close_hub": "Đóng SEL Hub",
+        "keep_share_title": "Chọn điều muốn giữ lại và chia sẻ",
+        "keep_share_body": "Một số hoạt động lưu bài làm trên thiết bị này; bài làm khác chỉ tồn tại trong thẻ này. Đóng thẻ không xóa hết mọi thứ. Hãy xuất một tệp để giữ một bản sao. Trên thiết bị dùng chung, hãy xem lại mục Dữ liệu & quyền riêng tư trong Dành cho Nhà giáo dục. Các tính năng AI và chia sẻ dùng dịch vụ bạn đã cấu hình.",
+        "got_it_aria": "Đã hiểu, bắt đầu sử dụng SEL Hub",
+        "got_it": "Đã hiểu",
+        "practice_support": "Hỗ trợ luyện tập",
+        "learning_guide": "Hướng dẫn học tập và các cách luyện tập",
+        "what_you_can_explore": "Những điều bạn có thể khám phá",
+        "worked_example": "Một ví dụ mẫu",
+        "try_one_step": "Thử một bước",
+        "reflect_transfer": "Suy ngẫm và áp dụng ở nơi khác",
+        "look_closer": "Xem kỹ hơn",
+        "next_use": "Một cách dùng tiếp theo",
+        "adapt_together": "Cùng điều chỉnh bài luyện tập",
+        "adapt_smaller": "Bắt đầu nhỏ hơn: làm mẫu một câu hoặc một lựa chọn, dùng tranh ảnh hoặc đồ vật cụ thể, và cho thời gian suy nghĩ.",
+        "adapt_deeper": "Đi sâu hơn: so sánh hai cách phản hồi, xác định thông tin còn thiếu, và giải thích điều gì có thể thay đổi lựa chọn của bạn.",
+        "adapt_context": "Thay đổi bối cảnh: dùng một tình huống hư cấu phù hợp với ngôn ngữ, sở thích, văn hóa và nhu cầu tiếp cận của người học.",
+        "adapt_check": "Kiểm tra sự hiểu biết qua một ví dụ hoặc lời giải thích do người học chọn, không phải một câu chuyện cá nhân, sự thay đổi cảm xúc hay điểm số bắt buộc.",
+        "optional_prompts": "Các câu hỏi gợi ý tùy chọn này không nộp câu trả lời, không ghi nhận hoàn thành, và không thay thế hướng dẫn cũng như thông tin an toàn riêng của hoạt động.",
+        "returned_to_activities": "Đã quay lại danh sách hoạt động. Thao tác này không ghi nhận việc hoàn thành luyện tập.",
+        "return_to_activities": "Quay lại danh sách hoạt động",
+        "chooser_first_reset_coping": "Chọn một cách neo giữ thoải mái. Để ý xem nó có phù hợp không; bạn được phép dừng lại.",
+        "chooser_first_reset_journal": "Viết một điều có thể giúp vài phút tới dễ chịu hơn. Không cần câu chuyện cá nhân.",
+        "chooser_first_feelings_zones": "Chỉ vào một cảm xúc hoặc lặng lẽ để ý. Chọn một cách hỗ trợ; không có vùng nào là đúng mà bạn phải đạt tới.",
+        "chooser_first_feelings_emotions": "Khám phá hai từ chỉ cảm xúc cho một nhân vật hư cấu. Có thể có nhiều câu trả lời phù hợp.",
+        "chooser_first_feelings_journal": "Viết một từ hoặc một đoạn suy ngẫm ngắn về một tình huống hư cấu hoặc thường ngày.",
+        "chooser_first_conversation_advocacy": "Dùng một tình huống hư cấu để tập một lời đề nghị: nói thành tiếng, dùng AAC, hoặc lặng lẽ, không cần điền biểu mẫu.",
+        "chooser_first_conversation_journal": "Soạn một lời đề nghị tôn trọng cho một tình huống an toàn, thường ngày; bạn không cần gửi nó đi.",
+        "chooser_first_decision_decisions": "Suy nghĩ về hai lựa chọn trong một tình huống hư cấu và một ảnh hưởng có thể có của mỗi lựa chọn.",
+        "chooser_first_decision_goals": "Soạn một bước tiếp theo thực tế và một sự hỗ trợ bạn có thể nhờ đến.",
+        "try_a_reset": "Thử làm mới",
+        "need_feeling": "Hiểu một cảm xúc",
+        "need_conversation": "Chuẩn bị một cuộc trò chuyện",
+        "need_decision": "Chọn bước tiếp theo",
+        "help_choose": "Giúp tôi chọn một hoạt động",
+        "help_choose_intro": "Chọn điều bạn muốn thử. Gợi ý chỉ dựa trên các lựa chọn này; chúng không đánh giá cảm xúc của bạn. Thời gian là cho bước đầu tiên, không phải cả hoạt động.",
+        "what_would_help": "Điều gì sẽ giúp ích?",
+        "time_first_step": "Thời gian cho bước đầu tiên",
+        "n_minutes": "{count} phút",
+        "how_respond": "Bạn muốn phản hồi theo cách nào?",
+        "respond_any": "Cách nào cũng được",
+        "respond_offline": "Suy nghĩ, nói, vẽ hoặc AAC",
+        "respond_write": "Viết một câu trả lời ngắn",
+        "options_one": "{count} lựa chọn khởi đầu phù hợp với những gì bạn chọn.",
+        "options_many": "{count} lựa chọn khởi đầu phù hợp với những gì bạn chọn.",
+        "options_none": "Chưa có lựa chọn khởi đầu nào phù hợp. Hãy thử thêm thời gian hoặc một cách phản hồi khác; toàn bộ danh mục vẫn có sẵn.",
+        "why_option_write": "Vì sao có lựa chọn này: {need}, với bước đầu tiên gợi ý {minutes} phút và một câu trả lời viết ngắn.",
+        "why_option_offline": "Vì sao có lựa chọn này: {need}, với bước đầu tiên gợi ý {minutes} phút và một cách luyện tập không cần gõ phím.",
+        "open_named": "Mở {name}",
+        "open_named_unavailable": "Mở {name} (không có sẵn)",
+        "pathway_guide": "Hướng dẫn luyện tập theo lộ trình",
+        "pathway_opened": "Đã mở {opened} trên {total} công cụ. Mở một công cụ không có nghĩa là bạn đã luyện tập kỹ năng đó.",
+        "exit_pathway_aria": "Thoát chế độ lộ trình",
+        "pathway_cleared": "Đã xóa lộ trình",
+        "exit_pathway": "Thoát lộ trình",
+        "practice_goal": "Mục tiêu luyện tập:",
+        "pathway_intro": "Chọn một hoạt động hoặc làm theo thứ tự gợi ý. Bạn có thể bỏ qua, dùng một ví dụ hư cấu, hoặc phản hồi bằng cách nói, vẽ, viết hoặc AAC. Việc chia sẻ là tùy chọn.",
+        "model_practice_reflect": "Làm mẫu, luyện tập và suy ngẫm",
+        "an_example": "Một ví dụ",
+        "notice_adjust": "Để ý và điều chỉnh",
+        "take_with_you": "Mang theo bên mình",
+        "self_check_aria": "Tự đánh giá luyện tập tùy chọn",
+        "self_check_intro": "Sau khi thử một bước, hãy chọn điều phù hợp. Phần này là tùy chọn và không chấm điểm; nó chỉ ở lại trong phiên lộ trình này.",
+        "i_tried": "Tôi đã thử một bước",
+        "another_way": "Tôi cần cách khác",
+        "pass_for_now": "Tạm bỏ qua",
+        "tried_feedback": "Để ý điều gì đã giúp ích, điều gì chưa, và nơi bạn có thể thử lại kỹ năng này.",
+        "adapt_feedback": "Hãy thử một bước nhỏ hơn, một cách phản hồi khác, một công cụ khác, hoặc sự hỗ trợ từ người bạn tin tưởng.",
+        "pass_feedback": "Bỏ qua là một lựa chọn hợp lệ. Bạn có thể quay lại sau hoặc nhờ hỗ trợ.",
+        "next_option": "Lựa chọn tiếp theo: {name}",
+        "open_next": "Mở tiếp: {name}",
+        "view_pathway_tools": "Xem công cụ của lộ trình",
+        "revisit_any": "Bạn có thể xem lại bất kỳ hoạt động nào. Chọn một ý tưởng để thử bên ngoài Hub; không bắt buộc phải hoàn thành mọi công cụ.",
+        "station_activities": "Hoạt động của trạm",
+        "active_station": "Trạm SEL đang hoạt động: {name}",
+        "steps_recorded_passed": "Đã ghi nhận {done} trên {total} bước · {passed} bước tạm bỏ qua. Đây là hồ sơ luyện tập, không phải điểm số.",
+        "steps_recorded": "Đã ghi nhận {done} trên {total} bước. Đây là hồ sơ luyện tập, không phải điểm số.",
+        "active_minutes_done": "{mins} trên {goal} phút hoạt động tại đây. Đã ghi nhận bước.",
+        "active_minutes_counting": "{mins} trên {goal} phút hoạt động tại đây. Chỉ tính khi thẻ này đang hiển thị và bạn đang sử dụng nó.",
+        "exit_station_aria": "Thoát chế độ trạm",
+        "station_cleared": "Đã xóa trạm",
+        "exit_station": "Thoát trạm",
+        "station_tools_steps": "Công cụ, các bước và suy ngẫm của trạm",
+        "station_steps": "Các bước và suy ngẫm của trạm",
+        "station_privacy": "Các bước và ghi chú được lưu trên thiết bị này và có thể được đưa vào tệp dự án. Hãy dùng ví dụ hư cấu hoặc bỏ qua chi tiết cá nhân. Hãy chọn điều muốn chia sẻ.",
+        "step_passed": "Tạm bỏ qua. Bạn có thể quay lại khi sẵn sàng.",
+        "step_marked": "Bạn đã đánh dấu bước này là hoàn thành.",
+        "step_target": "Đã ghi nhận mục tiêu hoạt động; điều này không đo lường kỹ năng hay sức khỏe tinh thần.",
+        "step_ready": "Sẵn sàng khi bạn sẵn sàng.",
+        "open_step_activity": "Mở hoạt động cho bước này",
+        "xp_progress": "{xp} / {target} tổng XP SEL. Bao gồm cả hoạt động trước đó; đây không phải điểm kỹ năng.",
+        "time_progress": "{mins} / {target} phút hoạt động. Thời gian không phải bằng chứng của việc học.",
+        "default_reflect": "Bạn đã để ý thấy gì? Bạn muốn giữ lại hay thay đổi điều gì?",
+        "self_check_ways": "Suy nghĩ, vẽ, nói, dùng ngôn ngữ ký hiệu hoặc AAC. Ghi chú bằng chữ là tùy chọn. Tự đánh dấu bước là hoàn thành, hoặc tạm bỏ qua.",
+        "length_target": "Bước đã lưu này dùng mục tiêu độ dài: {count} / {target} ký tự. Độ dài không đo lường chất lượng suy ngẫm. Ghi chú của bạn vẫn có thể chỉnh sửa.",
+        "reflection_for": "Suy ngẫm cho {name}",
+        "optional_note": "Ghi chú tùy chọn: điều gì đã giúp ích, hoặc điều bạn có thể thử tiếp theo...",
+        "write_reflection": "Viết suy ngẫm...",
+        "mark_complete_aria": "Đánh dấu “{name}” là hoàn thành",
+        "step_reopened": "Đã mở lại bước: {name}",
+        "step_marked_named": "Bạn đã đánh dấu bước này là hoàn thành: {name}",
+        "mark_complete": "Đánh dấu hoàn thành",
+        "step_passed_named": "Tạm bỏ qua: {name}",
+        "filter_pathway": "lộ trình: {name}",
+        "filter_station": "trạm: {name}",
+        "no_tools_match": "Không có công cụ nào khớp với {filters}",
+        "results_one": "{count} trên {total} công cụ khớp với {filters}",
+        "results_many": "{count} trên {total} công cụ khớp với {filters}",
+        "showing_all": "Đang hiển thị tất cả {total} công cụ",
+        "crisis_elementary": "Nếu bạn không thể tìm thấy người lớn ngay, hãy tiếp tục nhờ cho đến khi có người lắng nghe. Bạn xứng đáng được giúp đỡ.",
+        "crisis_call_or_text": "Gọi hoặc nhắn tin cho",
+        "crisis_988": "Đường dây 988 Phòng chống Tự tử & Khủng hoảng (miễn phí, bảo mật, 24/7).",
+        "crisis_text": "Nhắn tin cho",
+        "crisis_text_line": "Crisis Text Line, đường dây nhắn tin hỗ trợ khủng hoảng (miễn phí, bảo mật, 24/7).",
+        "tool_selection": "Chọn công cụ SEL Hub",
+        "jumped_to_list": "Đã chuyển đến danh sách công cụ. {summary}.",
+        "skip_to_list": "Chuyển đến danh sách công cụ",
+        "start_here": "Bắt đầu tại đây",
+        "quick_route": "Chọn một lối đi nhanh, hoặc duyệt bên dưới.",
+        "browsing_all": "Đang duyệt tất cả công cụ SEL",
+        "continue": "Tiếp tục",
+        "continue_desc": "Tiếp tục công cụ SEL bạn mở gần đây nhất.",
+        "starting_idea": "Ý tưởng khởi đầu",
+        "starting_idea_desc": "{name}: một hoạt động gợi ý cho cấp lớp này, kèm các ví dụ bạn có thể điều chỉnh.",
+        "starting_idea_none": "Mở một điểm khởi đầu phù hợp với cấp lớp.",
+        "try_a_reset_desc": "Khám phá một chiến lược thoải mái; không bắt buộc phải cảm thấy bình tĩnh.",
+        "journal": "Nhật ký",
+        "journal_desc": "Viết một đoạn suy ngẫm; xem lại các lựa chọn lưu và chia sẻ.",
+        "browse_all": "Duyệt tất cả",
+        "browse_all_desc": "Tìm kiếm hoặc lọc toàn bộ danh mục.",
+        "need_chip_calm": "Làm dịu cơ thể",
+        "need_chip_feelings": "Gọi tên cảm xúc",
+        "need_chip_stress": "Căng thẳng hoặc lo lắng",
+        "need_chip_friend": "Xung đột với bạn bè",
+        "need_chip_write": "Viết ra",
+        "need_chip_decision": "Đưa ra quyết định",
+        "need_chip_sleep": "Giấc ngủ hoặc mệt mỏi",
+        "need_chip_crisis": "Không an toàn hoặc đang khủng hoảng",
+        "need_chip_relationshipsafety": "An toàn trong mối quan hệ",
+        "need_chip_schoolsupport": "Hỗ trợ ở trường",
+        "need_chip_grief": "Đau buồn hoặc mất mát",
+        "storage_notice": "Một số bài làm SEL được lưu trên thiết bị này. Các tính năng AI dùng dịch vụ bạn đã cấu hình. Hãy chọn điều muốn lưu hoặc chia sẻ, nhất là trên thiết bị dùng chung.",
+        "save_now_aria": "Lưu hoặc xuất bài làm SEL ngay bây giờ",
+        "save_now": "Lưu ngay",
+        "recent_work": "Bài làm SEL gần đây",
+        "saved_here": "Đã lưu tại đây. Hãy xuất để giữ lại sau khi đóng.",
+        "create_packet_aria": "Tạo Gói chia sẻ SEL từ các điểm lưu đã lưu",
+        "review_packets_aria": "Xem lại các Gói chia sẻ SEL đã lưu",
+        "create_packet": "Tạo Gói chia sẻ",
+        "review_packets": "Xem lại Gói chia sẻ",
+        "open_related": "Mở công cụ liên quan.",
+        "related_unavailable": "Công cụ liên quan không có sẵn trong SEL Hub này.",
+        "streak_aria": "Chuỗi SEL {count} ngày. Dài nhất: {longest} ngày.",
+        "streak": "Chuỗi {count} ngày",
+        "streak_best": "cao nhất {count}",
+        "find_activity": "Tìm một hoạt động",
+        "search_placeholder": "Tìm cảm xúc, bạn bè, căng thẳng, mục tiêu...",
+        "search_aria": "Tìm công cụ SEL",
+        "support_options": "Các lựa chọn hỗ trợ",
+        "crisis_hard_moment": "Có vẻ như đây có thể là một khoảnh khắc khó khăn.",
+        "crisis_tell_adult": "Bạn không phải tự mình giải quyết chuyện này, và bạn không cần tìm đúng công cụ trước. Hãy nói với một người lớn đáng tin cậy ngay bây giờ — chuyên viên tham vấn của trường, giáo viên, cha mẹ, hoặc một người lớn khác mà bạn tin tưởng. Việc tìm kiếm ở đây không báo cho ai biết; một người chỉ biết khi bạn nói với họ.",
+        "open_crisis_companion": "Mở Đồng hành Khủng hoảng",
+        "find_by_need": "Tìm công cụ SEL theo nhu cầu",
+        "i_need": "Tôi cần...",
+        "cleared_search": "Đã xóa tìm kiếm SEL",
+        "clear_search_aria": "Xóa tìm kiếm SEL",
+        "clear": "Xóa",
+        "cleared_need": "Đã xóa bộ lọc nhu cầu SEL",
+        "showing_for": "Đang hiển thị công cụ SEL cho {name}",
+        "clear_need_aria": "Xóa bộ lọc nhu cầu: {name}",
+        "find_for_aria": "Tìm công cụ cho: {name}",
+        "browse_by_area": "Duyệt theo lĩnh vực kỹ năng",
+        "filter_by_category": "Lọc công cụ SEL theo danh mục",
+        "showing_all_categories": "Đang hiển thị tất cả danh mục",
+        "show_all_categories_aria": "Hiển thị tất cả danh mục ({count} công cụ)",
+        "all": "Tất cả",
+        "filtered_to": "Đã lọc theo {name}",
+        "filter_chip_aria": "Bộ lọc: {name} ({count} công cụ)",
+        "pathways_heading": "Lộ trình SEL — Chuỗi Học tập được Tuyển chọn",
+        "started_pathway": "Đã bắt đầu lộ trình: {name}",
+        "pathway_started": "Đã bắt đầu lộ trình {name}!",
+        "n_activities": "{count} hoạt động",
+        "grades_range": "lớp {range}",
+        "use_with_care": "Dùng cẩn thận",
+        "visits_many": "{count} lượt truy cập",
+        "visits_one": "{count} lượt truy cập",
+        "best_for": "Phù hợp nhất cho: {mode}.",
+        "teacher_cue": "Gợi ý cho giáo viên: {time}, {format}. {cue}",
+        "preview_first": "Xem trước",
+        "evidence_tradition": "Truyền thống bằng chứng: {tag}",
+        "approach_context": "Bối cảnh cách tiếp cận: {label}. {title}. Huy hiệu này không chứng minh hiệu quả đối với ứng dụng này hay đối với một người học cụ thể.",
+        "step_opened": "Bước {n} · Đã mở",
+        "step_not_opened": "Bước {n} · Chưa mở",
+        "suggested_grades": "Lớp gợi ý {range}",
+        "no_tools_current_view": "Không có công cụ nào khớp với chế độ xem hiện tại",
+        "empty_try": "Hãy thử: bình tĩnh, cảm xúc, căng thẳng, bạn bè, viết, quyết định hoặc giấc ngủ.",
+        "filters_cleared": "Đã xóa bộ lọc. Đang hiển thị tất cả {total} công cụ.",
+        "show_all_tools": "Hiển thị tất cả {total} công cụ",
+        "error_loading": "Lỗi khi tải {name}",
+        "unknown_error": "Lỗi không xác định",
+        "back_to_tools_error": "Quay lại Công cụ",
+        "tool_load_failed": "Không thể tải công cụ này.",
+        "loading_tool": "Đang tải công cụ...",
+        "file_not_arrived": "Tệp chưa được tải về.",
+        "check_connection": "Kiểm tra kết nối, rồi thử lại.",
+        "plugin_fetching": "Tệp plugin vẫn đang được tải.",
+        "research_about": "Về các nhãn nghiên cứu",
+        "research_summary": "Ý nghĩa của các nhãn nghiên cứu",
+        "research_context": "Bối cảnh cách tiếp cận: {label}.",
+        "research_not_app": "Nghiên cứu về một liệu pháp, chương trình giảng dạy hay khung lý thuyết không chứng minh rằng hoạt động kỹ thuật số này có cùng tác dụng. Các nhãn mô tả cách tiếp cận; chúng không đánh giá ứng dụng này hay người học.",
+        "research_check": "Trước khi chọn một hoạt động, hãy kiểm tra các nguồn được trích dẫn, độ tuổi và môi trường đã được nghiên cứu, sự hỗ trợ cần thiết và các kết quả được đo lường. Các nhãn này không chứng minh mức độ phù hợp với đối tượng hay hiệu quả của phiên bản chuyển thể này.",
+        "research_casel_link": "CASEL: lựa chọn và đánh giá một chương trình SEL",
+        "project_save_failed": "Yêu cầu lưu dự án đã thất bại. Hãy giữ Hub này mở và thử Lưu / Xuất trong ứng dụng chính.",
+        "project_save_requested": "Đã yêu cầu lưu dự án. Hãy hoàn tất quá trình lưu trong ứng dụng chính; tại đây chưa xác nhận được tệp đã lưu.",
+        "saving_aria": "Lưu và chia sẻ SEL",
+        "saving_failed_alert": "Một số thay đổi SEL không thể lưu trên thiết bị này. Hãy giữ Hub này mở và lưu một bản sao dự án; bản nháp trạm phải được lưu thành trạm thì mới có trong bản sao đó.",
+        "saving_attention": "Việc lưu cần được chú ý",
+        "saving_title": "Lưu và chia sẻ",
+        "saving_failed_body": "Bài làm hiện tại vẫn có trong Hub đang mở này. Việc lưu cục bộ thất bại có thể để lại một bản sao cũ hơn trên thiết bị này.",
+        "saving_ok_body": "Các trạm đã lưu, ghi chú trạm và điểm lưu của Hub đang được lưu trữ trên thiết bị này. Mỗi hoạt động có nút lưu riêng; trạng thái này không xác nhận rằng mọi thông tin nhập trong hoạt động đều đã được lưu.",
+        "saving_drafts": "Bản nháp trạm được giữ trên thiết bị này để khôi phục. Lưu một trạm sẽ thêm nó vào dữ liệu dự án có sẵn cho Lưu / Xuất; yêu cầu lưu dự án không xác nhận rằng một tệp đã được ghi.",
+        "saving_live": "Một phiên trực tiếp đang được kết nối. Phiên này có thể gửi tiến độ hoặc tín hiệu an toàn đến người chủ trì. AI tùy chọn sẽ gửi nội dung hoạt động đến dịch vụ đã cấu hình. Hãy xem lại Gói chia sẻ trước khi chọn chia sẻ.",
+        "saving_ai": "AI tùy chọn sẽ gửi nội dung hoạt động đến dịch vụ đã cấu hình. Gói chia sẻ chứa các mục và mức độ chi tiết mà bạn chọn; hãy xem trước trước khi chia sẻ.",
+        "saving_retry": "Thử lưu cục bộ lại",
+        "saving_request": "Yêu cầu lưu dự án",
+        "removed_stations": "Trạm đã xóa",
+        "removed_body": "Hoàn tác việc xóa trạm khi Hub này còn mở. Các hồ sơ luyện tập hiện có vẫn được giữ lại.",
+        "station_restored": "Đã khôi phục trạm: {name}",
+        "undo_removal": "Hoàn tác xóa: {name}",
+        "launch_routines_aria": "Các hoạt động khởi động cho giáo viên",
+        "launch_title": "Khởi động cho giáo viên",
+        "launch_note": "Giữ việc luyện tập không chấm điểm và việc chia sẻ là tùy chọn. Giải thích về lưu trữ trên thiết bị, các tính năng AI đã cấu hình và việc chia sẻ trước khi bắt đầu. Dùng ví dụ hư cấu; khuyến khích học sinh xin giúp đỡ hoặc bỏ qua.",
+        "launch_guardrails_aria": "Nguyên tắc an toàn khi khởi động cho giáo viên",
+        "launch_step_boundary": "Đặt ranh giới",
+        "launch_step_boundary_body": "Nói rõ điều gì là riêng tư, điều gì là tùy chọn, và học sinh có thể bỏ qua như thế nào.",
+        "launch_step_run": "Thực hiện hoạt động",
+        "launch_step_run_body": "Dùng các công cụ như một hình thức luyện tập. Giữ phần suy ngẫm mang tính hình thành và không chấm điểm.",
+        "launch_step_close": "Kết thúc bằng lựa chọn",
+        "launch_step_close_body": "Học sinh quyết định có lưu, xuất hoặc đưa một điểm lưu vào sau này hay không.",
+        "launch_student_sees": "Học sinh thấy",
+        "launch_student_sees_default": "Học sinh hoàn thành một hoạt động SEL riêng tư và chọn điều muốn chia sẻ.",
+        "launch_teacher_move": "Việc giáo viên làm",
+        "launch_teacher_move_default": "Trình bày đây là luyện tập, không phải đánh giá.",
+        "launch_sharing_boundary": "Ranh giới chia sẻ",
+        "launch_sharing_boundary_default": "Việc chia sẻ vẫn do học sinh kiểm soát.",
+        "launch_tools_loading": "Đang tải công cụ...",
+        "launch_still_loading": "Vẫn đang tải: {tools}",
+        "launch_preview_sensitive": "Xem trước các công cụ nhạy cảm: {tools}",
+        "launch_load_aria": "Tải kế hoạch khởi động cho giáo viên: {name}",
+        "launch_finish_draft": "Hoàn thành hoặc hủy bản nháp hiện tại trước",
+        "launch_waiting": "Đang chờ công cụ",
+        "launch_loading": "Đang tải",
+        "launch_load": "Tải vào Trình tạo Trạm",
+        "builder_note_student": "Góc nhìn học sinh: {text}",
+        "builder_note_teacher": "Việc giáo viên làm: {text}",
+        "builder_note_sharing": "Ranh giới chia sẻ: {text}",
+        "builder_note_note": "Ghi chú của giáo viên: {text}",
+        "launch_finish_existing": "Hãy hoàn thành hoặc hủy bản nháp trạm hiện có của bạn trước.",
+        "launch_tools_still_loading": "Các công cụ khởi động cho giáo viên vẫn đang tải. Hãy thử lại sau giây lát.",
+        "launch_tools_still_loading_sr": "Các công cụ khởi động cho giáo viên vẫn đang tải.",
+        "launch_default_name": "Hoạt động SEL trên lớp",
+        "launch_default_short": "Hoạt động SEL",
+        "launch_loaded_sr": "Đã tải kế hoạch khởi động cho giáo viên vào trình tạo trạm: {name}",
+        "launch_loaded_toast": "Đã tải kế hoạch khởi động cho giáo viên vào Trình tạo Trạm.",
+        "stations_summary": "Trạm SEL Tùy chỉnh — bộ hoạt động do giáo viên soạn",
+        "station_delete_aria": "Xóa trạm {name}",
+        "station_removed_sr": "Đã xóa trạm. Có thể hoàn tác cho đến khi Hub này đóng.",
+        "station_removed": "Đã xóa trạm",
+        "station_tools_count": "{count} công cụ",
+        "station_quests_count": "{count} nhiệm vụ",
+        "station_activated_sr": "Đã kích hoạt Trạm SEL: {name}",
+        "station_started": "Đã bắt đầu {name}!",
+        "station_activate_aria": "Kích hoạt trạm {name}",
+        "station_start": "Bắt đầu trạm",
+        "station_adapt_aria": "Điều chỉnh một bản sao của trạm {name}",
+        "station_adapt": "Điều chỉnh một bản sao",
+        "draft_aria": "Bản nháp trạm có thể khôi phục",
+        "draft_untitled": "Trạm chưa đặt tên",
+        "draft_body": "Một bản nháp trạm chưa hoàn thành đang được lưu trên thiết bị này: {name}. Hãy tiếp tục hoặc hủy nó trước khi bắt đầu trạm khác.",
+        "draft_resume": "Tiếp tục bản nháp trạm",
+        "draft_discard": "Hủy bản nháp trạm",
+        "builder_opened": "Đã mở trình tạo trạm",
+        "build_station_aria": "Tạo một Trạm SEL tùy chỉnh mới",
+        "build_station": "+ Tạo Trạm Tùy chỉnh"
+      }
+    }
+  },
+  "live_connection": {
+    "host_paused": "Kết nối của giáo viên tạm dừng — vị trí của bạn được giữ nguyên trong khi AlloFlow kết nối lại.",
+    "host_stale": "Thông tin trạng thái của giáo viên đã cũ - phiên trực tiếp có thể vẫn đang kết nối. Bài làm của bạn vẫn được lưu trên thiết bị này.",
+    "dismiss": "Đóng",
+    "dismiss_aria": "Đóng cảnh báo trạng thái giáo viên",
+    "connecting": "Đang kết nối với lớp…",
+    "retrying": "Cập nhật của lớp tạm dừng. Đang tự động kết nối lại…",
+    "failed": "Cập nhật của lớp đã bị ngắt kết nối. Hãy kiểm tra kết nối và thử kết nối lại.",
+    "access": "Quyền truy cập lớp bị từ chối. Hãy nhờ giáo viên kiểm tra quyền truy cập, rồi kết nối lại.",
+    "sign_in": "Đăng nhập lại để khôi phục quyền truy cập lớp, rồi kết nối lại.",
+    "reconnect": "Kết nối lại"
+  },
   "_version": "20260525T1779731932953",
   "_slug": "vietnamese",
   "_display": "Vietnamese",
@@ -5286,9 +6507,99 @@
     "measured_on_target": "Đúng mức {grade}",
     "measured_above": "Cao hơn mức {grade}",
     "measured_below": "Thấp hơn mức {grade}",
-    "measured_note": "Flesch-Kincaid, đo trên đoạn văn này. Dùng Kiểm tra cấp độ để kiểm tra đầy đủ hơn."
+    "measured_note": "Flesch-Kincaid, đo trên đoạn văn này. Dùng Kiểm tra cấp độ để kiểm tra đầy đủ hơn.",
+    "listen_along": "Nghe và theo dõi",
+    "compare_listen_here": "Nghe tại đây",
+    "compare_listen_here_original": "Nghe tại đây văn bản gốc",
+    "compare_listen_here_adapted": "Nghe tại đây văn bản đã điều chỉnh",
+    "compare_stop_reading_original": "Dừng đọc văn bản gốc",
+    "compare_stop_reading_adapted": "Dừng đọc văn bản đã điều chỉnh",
+    "compare_scroll_together": "Cuộn cùng nhau",
+    "reading_width": "Độ rộng đọc",
+    "width_narrow": "Hẹp",
+    "width_medium": "Vừa",
+    "width_wide": "Rộng",
+    "width_extra_wide": "Rất rộng",
+    "reading_width_characters": "khoảng {count} ký tự mỗi dòng",
+    "original_support_spoken": "Hỗ trợ từ “{word}”: {support}"
   },
   "quiz": {
+    "live_student": {
+      "type_missing": "Nhập từ hoặc cụm từ còn thiếu",
+      "explain_thinking": "Giải thích suy nghĩ của bạn",
+      "write_response": "Viết câu trả lời của bạn",
+      "submit_response": "Nộp câu trả lời",
+      "numeric_answer": "Đáp án dạng số",
+      "unit_named": "Đơn vị ({unit})",
+      "unit_optional": "Đơn vị (không bắt buộc)",
+      "submit_numeric": "Nộp đáp án dạng số",
+      "select_all_apply": "Chọn tất cả đáp án phù hợp",
+      "submit_selections": "Nộp các lựa chọn",
+      "part1": "Phần 1 — Chọn đáp án đúng nhất",
+      "part2": "Phần 2 — {prompt}",
+      "default_evidence_prompt": "Chọn bằng chứng hỗ trợ tốt nhất.",
+      "submit_answer_evidence": "Nộp đáp án và bằng chứng",
+      "order_check": "Thứ tự này có đúng không?",
+      "order_yes": "Có, thứ tự đúng",
+      "order_no": "Không, có mục bị đặt sai chỗ",
+      "select_misplaced": "Chọn một mục bị đặt sai chỗ ở trên.",
+      "arrange_instructions": "Sắp xếp các mục theo đúng thứ tự. Nếu đã đúng rồi, hãy giữ nguyên.",
+      "your_order": "Thứ tự của bạn",
+      "move_up": "Chuyển lên: {item}",
+      "move_down": "Chuyển xuống: {item}",
+      "done_arranging": "Đã sắp xếp xong",
+      "principle_question": "Các mục được sắp xếp theo nguyên tắc nào?",
+      "principle_chronological": "thời gian",
+      "principle_cause_effect": "nguyên nhân - kết quả",
+      "principle_process": "quy trình",
+      "principle_size": "kích thước",
+      "principle_hierarchy": "thứ bậc",
+      "find_mismatch": "Tìm cặp ghép sai",
+      "choose_mismatch": "Chọn cặp không phù hợp.",
+      "pair_with_question": "Mục đã chọn nên được ghép với gì?",
+      "replacement_partner": "Mục ghép thay thế",
+      "submit_replacement": "Nộp mục thay thế",
+      "retry_failed": "Không gửi được câu trả lời của bạn. Sự tham gia của bạn vẫn được ghi nhận; hãy thử lại khi có kết nối.",
+      "return_to_quiz": "Quay lại bài kiểm tra trực tiếp",
+      "minimize": "Thu nhỏ",
+      "minimize_aria": "Rời khỏi màn hình bài kiểm tra trực tiếp",
+      "battle_result": "Kết quả trận đấu",
+      "class_victory": "Cả lớp chiến thắng!",
+      "battle_complete": "Trận đấu kết thúc",
+      "regroup": "Cơ hội để tập hợp lại",
+      "end_no_scored": "Các câu hỏi này dùng để thảo luận hoặc để giáo viên xem xét. Không có điểm trận đấu nào được tính.",
+      "end_questions_complete": "Đã hoàn thành tất cả câu hỏi. Kết quả so sánh phần trăm máu còn lại; nếu hòa, lớp sẽ thắng.",
+      "end_victory": "Lớp của bạn đã cùng nhau đánh bại quái vật.",
+      "end_regroup": "Dùng phần giải thích bên dưới để cùng nhau lên kế hoạch cho lần thử tiếp theo.",
+      "end_review_last": "Xem lại câu hỏi cuối cùng bên dưới. Giáo viên của bạn có thể bắt đầu lại trận đấu.",
+      "boss_default_name": "Trùm",
+      "boss_hp": "HP của {name}",
+      "boss_health": "Máu của {name}",
+      "battle_scoring_paused": "Tạm dừng tính điểm trận đấu",
+      "tick_of": "{value} trên {total}",
+      "confidence_legend": "Bạn đã chắc chắn đến mức nào?",
+      "confidence_knew": "Tôi đã biết câu này",
+      "confidence_guessed": "Tôi đã đoán có cơ sở",
+      "confidence_unsure": "Tôi không chắc chắn",
+      "confidence_help": "Điều này giúp giáo viên nhận ra kiến thức vững chắc và những hiểu lầm. Nó không bao giờ thay đổi tính đúng sai hay điểm số.",
+      "retry_send": "Thử gửi lại đáp án",
+      "waiting_for_teacher": "Đang chờ giáo viên bắt đầu câu hỏi này.",
+      "sending": "Đang gửi câu trả lời của bạn…",
+      "receipt_only": "Đã ghi nhận sự tham gia. Câu trả lời của bạn chưa đến được giáo viên để chấm điểm.",
+      "complete_and_submit": "Hoàn thành và nộp câu trả lời của bạn",
+      "poll_closed": "Câu hỏi ý kiến này đã đóng.",
+      "receipt_not_scored": "Giáo viên chỉ nhận được thông tin tham gia. Câu trả lời này không được chấm điểm.",
+      "no_answer_submitted": "Không có câu trả lời nào được nộp cho câu hỏi này. Hãy xem lại cùng cả lớp.",
+      "answer_review": "Xem lại đáp án",
+      "review_answer": "Xem lại câu trả lời",
+      "discuss_with_teacher": "Thảo luận câu trả lời với giáo viên của bạn.",
+      "response_correct": "Câu trả lời đúng.",
+      "response_partial": "Câu trả lời đúng một phần.",
+      "response_incorrect": "Câu trả lời này cần xem lại.",
+      "response_none": "Không có câu trả lời nào được nộp.",
+      "response_submitted": "Đã nộp câu trả lời để xem xét.",
+      "explanation": "Giải thích"
+    },
     "title": "Đánh giá",
     "mcq_count": "Số câu trắc nghiệm",
     "reflections": "Suy ngẫm",

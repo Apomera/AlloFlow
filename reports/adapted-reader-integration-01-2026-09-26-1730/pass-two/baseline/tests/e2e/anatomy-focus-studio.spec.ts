@@ -1,0 +1,23 @@
+import {test,expect} from '@playwright/test';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {GlHarness} from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_anatomy.js',toolId:'anatomy',width:1120,height:1800,appStyles:true,extraScripts:['vendor/three-r128/OrbitControls.js','vendor/three-r128/GLTFLoader.js']});
+test.use({video:'off',trace:'off'});test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());
+test('Inspection layout preserves the view, places controls beside the body, and restores keyboard focus',async({page})=>{
+ test.setTimeout(240000);await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1100});const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await harness.mount(page,{anatomy:{_bodyView3d:true,_body3dStyle:'realistic',_surfaceLighting:'contour',_activeTab:'explore',system:'skeletal',view:'anterior',complexity:3,selectedStructure:'femur'}},undefined,{expectCanvas:false});
+ await page.addStyleTag({content:'#wrap{height:auto;max-width:100%;}'});await mkdir('reports/anatomy-focus-studio',{recursive:true});
+ const canvas=page.locator('[data-anatomy-3d-canvas]');await expect(canvas).toHaveAttribute('data-anatomy-3d-state','ready-model',{timeout:90000});await canvas.evaluate(el=>(el as any).__focusIdentity='same');
+ await page.locator('[data-anatomy-camera-jump=head]').click();await page.locator('[data-anatomy-view-angle=right]').click();const before=await canvas.evaluate(el=>(el as any)._anatomy3dCameraSnapshot());
+ const toggle=page.locator('[data-anatomy-model-focus-toggle]'),root=page.locator('[data-anatomy-tool]');await toggle.click();await expect(root).toHaveAttribute('data-anatomy-focus-studio','true');await expect(canvas).toBeFocused();await expect(canvas).toHaveJSProperty('__focusIdentity','same');expect(await canvas.evaluate(el=>(el as any)._anatomy3dCameraSnapshot())).toEqual(before);
+ await expect(page.locator('[data-anatomy-model-source-controls]')).toBeHidden();await expect(page.locator('[data-anatomy-model-option=blueprint]')).toBeVisible();await expect(page.locator('[data-anatomy-canvas-control=rotate-left]')).toBeVisible();
+ const frame=await page.locator('[data-anatomy-canvas-frame]').boundingBox(),toolbar=await page.locator('[data-anatomy-canvas-toolbar]').boundingBox();expect(toolbar!.x).toBeGreaterThanOrEqual(frame!.x+frame!.width);expect(Math.abs(toolbar!.y-frame!.y)).toBeLessThan(3);
+ await page.locator('[data-anatomy-model-shell]').screenshot({path:'reports/anatomy-focus-studio/desktop.png'});
+ await canvas.press('Escape');await expect(root).toHaveAttribute('data-anatomy-focus-studio','false');await expect(toggle).toBeFocused();await expect(page.locator('[data-anatomy-model-source-controls]')).toBeVisible();expect(await canvas.evaluate(el=>(el as any)._anatomy3dCameraSnapshot())).toEqual(before);
+ await toggle.click();await page.addScriptTag({path:'axe-core/4.12.1/axe.min.js'});const scans:any[]=[];
+ for(const theme of ['light','dark','contrast']){await page.evaluate(theme=>document.body.className=theme==='light'?'':'theme-'+theme,theme);const violations=await page.evaluate(async()=>{const r=await (window as any).axe.run({include:[['[data-anatomy-focus-studio-hint]'],['[data-anatomy-model-focus-toggle]'],['[data-anatomy-view-model-controls]'],['[data-anatomy-canvas-toolbar]']]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>({target:n.target,summary:n.failureSummary}))}));});scans.push({theme,violations});if(theme==='dark')await page.locator('[data-anatomy-model-shell]').screenshot({path:'reports/anatomy-focus-studio/dark.png'});}
+ await writeFile('reports/anatomy-focus-studio/accessibility.json',JSON.stringify(scans,null,2));expect(scans.flatMap(s=>s.violations)).toEqual([]);await page.evaluate(()=>document.body.className='');
+ await page.setViewportSize({width:390,height:1300});await page.addStyleTag({content:'#wrap{width:100%;}'});await page.locator('[data-anatomy-model-shell]').screenshot({path:'reports/anatomy-focus-studio/phone.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(392);
+ await page.locator('[data-anatomy-view-angle=back]').click();await expect(canvas).toHaveAttribute('data-anatomy-camera-angle','back');await toggle.click();await expect(toggle).toBeFocused();await expect(root).toHaveAttribute('data-anatomy-model-focus','false');await expect(canvas).toHaveAttribute('data-anatomy-camera-angle','back');
+ expect(errors).toEqual([]);await harness.destroy(page);
+});

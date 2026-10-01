@@ -1,0 +1,306 @@
+{
+  "measurements": [
+    {
+      "width": 320,
+      "enlarged": false,
+      "list": {
+        "left": 32,
+        "right": 292,
+        "top": 463.25,
+        "bottom": 899.25,
+        "width": 260,
+        "height": 436
+      },
+      "text": {
+        "left": 49,
+        "right": 275,
+        "top": 700.25,
+        "bottom": 778.25,
+        "width": 226,
+        "height": 78
+      },
+      "buttons": [
+        {
+          "left": 49,
+          "right": 244.53125,
+          "top": 786.25,
+          "bottom": 830.25,
+          "width": 195.53125,
+          "height": 44
+        },
+        {
+          "left": 49,
+          "right": 271.109375,
+          "top": 838.25,
+          "bottom": 882.25,
+          "width": 222.109375,
+          "height": 44
+        }
+      ],
+      "overflow": false,
+      "picture": true,
+      "names": [
+        {
+          "visible": "Abrir explicación preparada",
+          "accessible": "Abrir explicación preparada: Ayuda preparada: garza"
+        },
+        {
+          "visible": "Mostrar esta palabra en el texto",
+          "accessible": "Mostrar esta palabra en el texto: garza"
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "enlarged": true,
+      "list": {
+        "left": 44,
+        "right": 280,
+        "top": -438,
+        "bottom": 1338,
+        "width": 236,
+        "height": 1776
+      },
+      "text": {
+        "left": 77,
+        "right": 247,
+        "top": 349,
+        "bottom": 869,
+        "width": 170,
+        "height": 520
+      },
+      "buttons": [
+        {
+          "left": 77,
+          "right": 247,
+          "top": 885,
+          "bottom": 1087,
+          "width": 170,
+          "height": 202
+        },
+        {
+          "left": 77,
+          "right": 247,
+          "top": 1103,
+          "bottom": 1305,
+          "width": 170,
+          "height": 202
+        }
+      ],
+      "overflow": false,
+      "picture": true,
+      "names": [
+        {
+          "visible": "Abrir explicación preparada",
+          "accessible": "Abrir explicación preparada: Ayuda preparada: garza"
+        },
+        {
+          "visible": "Mostrar esta palabra en el texto",
+          "accessible": "Mostrar esta palabra en el texto: garza"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "enlarged": false,
+      "list": {
+        "left": 32,
+        "right": 362,
+        "top": 587.25,
+        "bottom": 899.25,
+        "width": 330,
+        "height": 312
+      },
+      "text": {
+        "left": 117,
+        "right": 345,
+        "top": 700.25,
+        "bottom": 778.25,
+        "width": 228,
+        "height": 78
+      },
+      "buttons": [
+        {
+          "left": 49,
+          "right": 244.53125,
+          "top": 786.25,
+          "bottom": 830.25,
+          "width": 195.53125,
+          "height": 44
+        },
+        {
+          "left": 49,
+          "right": 271.109375,
+          "top": 838.25,
+          "bottom": 882.25,
+          "width": 222.109375,
+          "height": 44
+        }
+      ],
+      "overflow": false,
+      "picture": true,
+      "names": [
+        {
+          "visible": "Abrir explicación preparada",
+          "accessible": "Abrir explicación preparada: Ayuda preparada: garza"
+        },
+        {
+          "visible": "Mostrar esta palabra en el texto",
+          "accessible": "Mostrar esta palabra en el texto: garza"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "enlarged": true,
+      "list": {
+        "left": 44,
+        "right": 350,
+        "top": -142,
+        "bottom": 1042,
+        "width": 306,
+        "height": 1184
+      },
+      "text": {
+        "left": 77,
+        "right": 317,
+        "top": 421,
+        "bottom": 733,
+        "width": 240,
+        "height": 312
+      },
+      "buttons": [
+        {
+          "left": 77,
+          "right": 317,
+          "top": 749,
+          "bottom": 871,
+          "width": 240,
+          "height": 122
+        },
+        {
+          "left": 77,
+          "right": 317,
+          "top": 887,
+          "bottom": 1009,
+          "width": 240,
+          "height": 122
+        }
+      ],
+      "overflow": false,
+      "picture": true,
+      "names": [
+        {
+          "visible": "Abrir explicación preparada",
+          "accessible": "Abrir explicación preparada: Ayuda preparada: garza"
+        },
+        {
+          "visible": "Mostrar esta palabra en el texto",
+          "accessible": "Mostrar esta palabra en el texto: garza"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "enlarged": false,
+      "list": {
+        "left": 75.5,
+        "right": 696.5,
+        "top": 531.25,
+        "bottom": 749.25,
+        "width": 621,
+        "height": 218
+      },
+      "text": {
+        "left": 160.5,
+        "right": 679.5,
+        "top": 624.25,
+        "bottom": 676.25,
+        "width": 519,
+        "height": 52
+      },
+      "buttons": [
+        {
+          "left": 92.5,
+          "right": 288.03125,
+          "top": 688.25,
+          "bottom": 732.25,
+          "width": 195.53125,
+          "height": 44
+        },
+        {
+          "left": 296.03125,
+          "right": 518.140625,
+          "top": 688.25,
+          "bottom": 732.25,
+          "width": 222.109375,
+          "height": 44
+        }
+      ],
+      "overflow": false,
+      "picture": true,
+      "names": [
+        {
+          "visible": "Abrir explicación preparada",
+          "accessible": "Abrir explicación preparada: Ayuda preparada: garza"
+        },
+        {
+          "visible": "Mostrar esta palabra en el texto",
+          "accessible": "Mostrar esta palabra en el texto: garza"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "enlarged": true,
+      "list": {
+        "left": 52,
+        "right": 720,
+        "top": 229.5,
+        "bottom": 851.5,
+        "width": 668,
+        "height": 622
+      },
+      "text": {
+        "left": 221,
+        "right": 687,
+        "top": 454.5,
+        "bottom": 610.5,
+        "width": 466,
+        "height": 156
+      },
+      "buttons": [
+        {
+          "left": 85,
+          "right": 474.046875,
+          "top": 626.5,
+          "bottom": 714.5,
+          "width": 389.046875,
+          "height": 88
+        },
+        {
+          "left": 85,
+          "right": 527.21875,
+          "top": 730.5,
+          "bottom": 818.5,
+          "width": 442.21875,
+          "height": 88
+        }
+      ],
+      "overflow": false,
+      "picture": true,
+      "names": [
+        {
+          "visible": "Abrir explicación preparada",
+          "accessible": "Abrir explicación preparada: Ayuda preparada: garza"
+        },
+        {
+          "visible": "Mostrar esta palabra en el texto",
+          "accessible": "Mostrar esta palabra en el texto: garza"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "styling": "App Tailwind config and index.css, compiled against reader source; host shell excluded."
+}

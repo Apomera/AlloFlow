@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "measurements": [
+    {
+      "name": "pixel-selection",
+      "previewExcludedFromExport": true,
+      "overlapMove": true,
+      "copyPaste": true,
+      "transparentHoles": true,
+      "undo": true
+    }
+  ],
+  "errors": []
+}

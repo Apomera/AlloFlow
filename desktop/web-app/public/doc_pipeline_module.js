@@ -1351,6 +1351,67 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
 // Compact → dotted: first digit = principle, second = guideline, remainder = criterion
 // (111 → 1.1.1, 412 → 4.1.2, 1412 → 1.4.12). Conformance-level tags (wcag2a, wcag21aa) and
 // non-wcag tags are excluded. Returns EVERY criterion a rule maps to, deduped.
+// Honest provenance line for every remediated HTML output (fleet G1, 2026-09-28). Automated checks
+// cannot establish WCAG compliance, conformance or certification, so this line never claims them.
+// fileNameHtml must arrive already escaped. The line is English, so the date is an English long date.
+var _alloOutputProvenanceFooterHtml = function (opts) {
+  var o = opts || {};
+  var d = (o.date instanceof Date && !isNaN(o.date.getTime())) ? o.date : new Date();
+  var when = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  var n = Number(o.pageCount);
+  var pages = (Number.isFinite(n) && n > 0) ? ' (' + n + (n === 1 ? ' page' : ' pages') + ')' : '';
+  return '<p>Prepared with AlloFlow accessibility tools on ' + when + '. ' +
+    "The accompanying report lists what was checked, what was changed, and what still needs a person's review. " +
+    'This is not a certification of WCAG conformance.' +
+    (o.fileNameHtml ? ' Original file: ' + o.fileNameHtml + pages + '.' : '') + '</p>';
+};
+// Right-to-left script detection (fleet G1, 2026-09-28). AlloFlow cannot yet verify RTL reading order
+// or Arabic letter shaping (pdf.js returns some lam-alef pairs reversed), so RTL text in the source
+// earns a plain report warning that someone who reads the language must check the output.
+var _ALLO_RTL_RANGES = [
+  ['Hebrew', 0x0590, 0x05FF], ['Hebrew', 0xFB1D, 0xFB4F],
+  ['Arabic', 0x0600, 0x06FF], ['Arabic', 0x0750, 0x077F], ['Arabic', 0x08A0, 0x08FF],
+  ['Arabic', 0xFB50, 0xFDFF], ['Arabic', 0xFE70, 0xFEFC],
+  ['Syriac', 0x0700, 0x074F], ['Thaana', 0x0780, 0x07BF], ['NKo', 0x07C0, 0x07FF]
+];
+var _alloDetectRtlText = function (text) {
+  var s = String(text == null ? '' : text);
+  var counts = {}, scripts = [], letters = 0;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charCodeAt(i);
+    if (c < 0x0590) continue;
+    for (var r = 0; r < _ALLO_RTL_RANGES.length; r++) {
+      var range = _ALLO_RTL_RANGES[r];
+      if (c >= range[1] && c <= range[2]) { counts[range[0]] = (counts[range[0]] || 0) + 1; letters++; break; }
+    }
+  }
+  for (var k = 0; k < _ALLO_RTL_RANGES.length; k++) {
+    var name = _ALLO_RTL_RANGES[k][0];
+    if (counts[name] && scripts.indexOf(name) === -1) scripts.push(name);
+  }
+  return { detected: letters >= 3, scripts: scripts, letters: letters };
+};
+var _alloRtlReviewNotice = function (text) {
+  var r = _alloDetectRtlText(text);
+  if (!r.detected) return null;
+  var names = r.scripts.join(' and ');
+  var arabic = r.scripts.indexOf('Arabic') !== -1;
+  return {
+    scripts: r.scripts,
+    letters: r.letters,
+    title: 'Right-to-left text: a person needs to check reading order and letter shaping.',
+    body: 'This document contains ' + names + ' text. AlloFlow cannot yet check reading order or letter shaping in right-to-left scripts' +
+      (arabic ? ', and some Arabic letter pairs (such as lam-alef) can come out reversed in the extracted text' : '') +
+      '. Before you share it, ask someone who reads ' + names + ' to compare the output with the original, line by line.'
+  };
+};
+// Report block. Every word comes from the fixed strings above, so nothing here needs escaping.
+var _alloRtlReviewNoticeHtml = function (text) {
+  var n = _alloRtlReviewNotice(text);
+  if (!n) return '';
+  return '<div data-allo-rtl-review="1" role="note" style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;color:#78350f;font-size:12px">' +
+    '<strong>&#9888; ' + n.title + '</strong><p style="margin:6px 0 0">' + n.body + '</p></div>';
+};
 var _alloWcagScFromTags = function (tags) {
   var out = [];
   (tags || []).forEach(function (t) {
@@ -21246,7 +21307,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         const binStr = atob(f.base64);
         const bytes = new Uint8Array(binStr.length);
         for (let bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
-        const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Remediated for accessibility by AlloFlow (batch)' });
+        const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Prepared with AlloFlow accessibility tools (batch); not a certification of conformance' });
         const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
         if (!tBytes) { _taggedNotes.set(f.id, 'failed (no bytes returned)'); continue; }
         const _taggedVerdict = _alloTaggedPdfDeliveryVerdict(tagged);
@@ -21560,7 +21621,7 @@ If there are no significant images, return: {"images": [], "totalImages": 0}`,
       setInputText(extractedText);
       setPendingPdfBase64(null);
       setPendingPdfFile(null);
-      addToast(t('toasts.pdf_transformed_accessible_content'), 'success');
+      addToast((t("toasts.pdf_prepared_for_review") || "PDF content prepared. Review the report before sharing."), 'success');
     } catch (err) {
       warnLog('[PDF Transform] Failed:', err);
       setError('PDF extraction failed. Try copying and pasting the text directly.');
@@ -30870,8 +30931,8 @@ window.__pdfCropImage = function(imgId) {
 <main id="main-content" role="main">
 ${bodyContent}
 </main>
-<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;">
-<p>This document was automatically transformed for accessibility compliance (WCAG 2.2 AA) by AlloFlow. Original: ${_safeFileNameHtml} (${pageCount} pages). Transformed: ${new Date().toLocaleDateString()}.</p>
+<footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;" lang="en" dir="ltr">
+${_alloOutputProvenanceFooterHtml({ fileNameHtml: _safeFileNameHtml, pageCount: pageCount })}
 </footer>
 </body>
 </html>`;
@@ -33061,7 +33122,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // by the first branch above, so this path is always the clean one).
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       } else {
-        addToast(t('toasts.pdf_transformed_accessible_html_verification'), 'info');
+        addToast((t("toasts.pdf_prepared_verification_incomplete") || "PDF content prepared as HTML. Verification could not complete; review is still needed."), 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       }
 
@@ -33301,6 +33362,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     // the accessibility report (post-tag) has the PdfValidator data; the
     // audit report (pre-tag) stays 2-axis.
     let h = '';
+    // Right-to-left text needs a person's check (G1): rendered first so it cannot scroll out of view.
+    if (opts && typeof opts.rtlSourceText === 'string') h += _alloRtlReviewNoticeHtml(opts.rtlSourceText);
     const _axeIncompleteCount = opts && Number.isFinite(opts.axeIncomplete) ? opts.axeIncomplete : 0;
     const _verificationCoverage = opts && opts.verificationCoverage;
     const _verificationState = (opts && opts.verificationState) || null;
@@ -33498,7 +33561,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below. Scope note: the automated engines evaluate WCAG 2.2 rules; the AI content review scores against a WCAG 2.1 AA-era item set (the WCAG 2.2 additions are largely interaction-focused and are covered by the engines where they apply to documents).<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below. Scope note: the automated engines evaluate WCAG 2.2 rules; the AI content review scores against a WCAG 2.1 AA-era item set (the WCAG 2.2 additions are largely interaction-focused and are covered by the engines where they apply to documents).<br>Tool: AlloFlow Document Accessibility Pipeline<br>What this report is: a list of what was checked, what was changed, and what still needs a person's review. It is not a certification of WCAG conformance.</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -33558,7 +33621,11 @@ tr { page-break-inside: avoid; }
     // Image-only scan (audit-only report): the engines saw an empty reconstruction — render
     // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
     const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, verificationReasons: _reportVerification.reasons, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
+    // RTL review notice (G1): source text first, then the output text when no source text rode along.
+    const _rptRtlSource = [d.sourceText, d.after && d.after.sourceText, d.finalText, d.after && d.after.finalText,
+      isBeforeAfter ? (d.after && (d.after.accessibleHtml || d.after.html)) : (d.accessibleHtml || d.html)]
+      .filter((v) => typeof v === 'string' && v).join('\n');
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, rtlSourceText: _rptRtlSource, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, verificationReasons: _reportVerification.reasons, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
 
     // Provenance (2026-08-23): a run that adopted human edits mid-flight is a COLLABORATIVE
     // result. The downloaded report must say so — presenting it as purely automated overclaims,
@@ -33670,7 +33737,7 @@ tr { page-break-inside: avoid; }
     }
     if (issueSource.passes?.length) {
       html += `<h2 style="color:#16a34a">&#10003; AI Audit — Passing Checks (${issueSource.passes.length})</h2>`;
-      html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 8px">${isBeforeAfter ? 'Checks that passed during the initial AI audit (before remediation)' : 'Checks verified as accessible by the AI auditors'}</p>`;
+      html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 8px">${isBeforeAfter ? 'Checks that passed during the initial AI audit (before remediation)' : 'Checks the AI review marked as passing (a person should confirm them)'}</p>`;
       issueSource.passes.forEach(p => {
         const text = typeof p === 'string' ? p : p.description || p.id || '';
         const wcag = typeof p === 'object' && p.wcag ? ` <span style="color:#64748b;font-size:0.85em">[${p.wcag}]</span>` : '';
@@ -33706,7 +33773,7 @@ tr { page-break-inside: avoid; }
         // Show verified passes from AI audit
         const afterPasses = afterAiAudit.passes || [];
         if (afterPasses.length > 0) {
-          html += `<h3 style="color:#16a34a;margin-top:1rem">&#10003; AI-Verified Accessible Checks (${afterPasses.length})</h3>`;
+          html += `<h3 style="color:#16a34a;margin-top:1rem">&#10003; Checks the AI review marked as passing (${afterPasses.length})</h3>`;
           html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 8px">Checks that the AI auditor confirmed are now passing after remediation</p>`;
           afterPasses.forEach(p => {
             const text = typeof p === 'string' ? p : p.description || p.id || '';
@@ -33859,21 +33926,29 @@ tr { page-break-inside: avoid; }
     }
 
     const hasChecks = checks.length > 0;
+    // Headline tiers (G1, 2026-09-28): the headline reports what AUTOMATED checks found. It never
+    // says "Conformant": automated checks cannot establish WCAG or PDF/UA conformance.
+    const _HEADLINE_LABELS = {
+      none: 'Awaiting Tagged PDF',
+      pass: 'No automated failures found',
+      partial: 'Some automated checks failed',
+      fail: 'Automated checks failed',
+    };
+    let _headlineTier = !hasChecks ? 'none' : (checkSum.fail === 0 ? 'pass' : (checkSum.fail <= 2 ? 'partial' : 'fail'));
     let conformanceColor = !hasChecks
       ? '#64748b'
       : (checkSum.fail === 0 ? '#16a34a' : (checkSum.fail <= 2 ? '#d97706' : '#dc2626'));
-    let conformanceLabel = !hasChecks
-      ? 'Awaiting Tagged PDF'
-      : (checkSum.fail === 0 ? 'Conformant' : (checkSum.fail <= 2 ? 'Mostly Conformant' : 'Non-Conformant'));
+    let conformanceLabel = _HEADLINE_LABELS[_headlineTier];
     // BYTE-VALIDATOR FLOOR (audit #18, 2026-06-15): the headline above is the IN-MEMORY HTML self-
     // check. Reconcile it with the INDEPENDENT byte-level validator run on the SHIPPED bytes — if
     // that says FAIL (e.g. a subtree dropped at save), the banner must not still read green
-    // "Conformant" while the lower byte-validation section says it failed (the credibility
+    // "no failures" while the lower byte-validation section says it failed (the credibility
     // contradiction the report had). Only downgrades, never upgrades.
     const _pevSum = opts && opts.postExportValidator && opts.postExportValidator.summary;
-    if (hasChecks && _pevSum && _pevSum.overall === 'FAIL' && conformanceLabel === 'Conformant') {
+    if (hasChecks && _pevSum && _pevSum.overall === 'FAIL' && _headlineTier === 'pass') {
       const _byteFail = typeof _pevSum.fail === 'number' ? _pevSum.fail : 3;
-      conformanceLabel = _byteFail > 2 ? 'Non-Conformant (shipped-file check)' : 'Mostly Conformant (shipped-file check)';
+      _headlineTier = _byteFail > 2 ? 'fail' : 'partial';
+      conformanceLabel = _HEADLINE_LABELS[_headlineTier] + ' (shipped-file check)';
       conformanceColor = _byteFail > 2 ? '#dc2626' : '#d97706';
     }
     // veraPDF FLOOR (2026-06-19): the INDEPENDENT ISO 14289-1 validator (veraPDF) is the authoritative
@@ -33883,18 +33958,20 @@ tr { page-break-inside: avoid; }
     const _vera = opts && opts.veraPdf;
     if (_vera && _vera.compliant === false) {
       const _vfail = (_vera.failedRules && _vera.failedRules.length) || 0;
-      conformanceLabel = 'Non-Conformant (veraPDF · ISO 14289-1' + (_vfail ? ', ' + _vfail + ' rule' + (_vfail === 1 ? '' : 's') + ' failed' : '') + ')';
+      _headlineTier = 'fail';
+      conformanceLabel = 'veraPDF found failures (ISO 14289-1' + (_vfail ? ', ' + _vfail + ' rule' + (_vfail === 1 ? '' : 's') + ' failed' : '') + ')';
       conformanceColor = '#dc2626';
-    } else if (_vera && _vera.compliant === true && hasChecks && conformanceLabel.indexOf('Non-Conformant') === -1 && conformanceLabel.indexOf('Mostly') === -1) {
+    } else if (_vera && _vera.compliant === true && hasChecks && _headlineTier === 'pass') {
       // Only claim the green ISO-verified headline when veraPDF says compliant AND the current-bytes
       // self-check agrees. A compliant veraPDF verdict sitting next to self-check FAILURES ('Mostly
       // Conformant') is a contradiction that usually means the veraPDF result is STALE (validated different
       // bytes, e.g. before a Tier-B re-tag) — don't upgrade to green in that case. (critic gap #3, 2026-06-21)
       // hasChecks GUARD (2026-06-23, maintainer Canvas test): if there is NO current tagged PDF (hasChecks
       // false → 'Awaiting Tagged PDF', 0 self-check rules), a `compliant:true` veraPDF result is necessarily
-      // STALE (it validated a PRIOR export). Without this guard the report claimed "Conformant (veraPDF
-      // verified)" next to "No tagged PDF available · 0 rules checked" — a false conformance claim.
-      conformanceLabel = 'Conformant (veraPDF · ISO 14289-1 verified)';
+      // STALE (it validated a PRIOR export). Without this guard the report claimed a veraPDF pass
+      // next to "No tagged PDF available · 0 rules checked". Even a current pass covers only the
+      // machine-checkable PDF/UA-1 rules, so the label says exactly that and no more.
+      conformanceLabel = 'No failures in veraPDF automated checks (ISO 14289-1)';
       conformanceColor = '#16a34a';
     }
 
@@ -33981,10 +34058,10 @@ tr { page-break-inside: avoid; }
       const _ok = _vera.compliant === true;
       const _color = _ok ? '#16a34a' : '#dc2626';
       const _bg = _ok ? '#dcfce7' : '#fee2e2';
-      const _label = _ok ? '✓ PASSES PDF/UA-1' : ('✕ ' + _vfr.length + ' rule' + (_vfr.length === 1 ? '' : 's') + ' failed');
+      const _label = _ok ? '✓ No failures in veraPDF automated checks' : ('✕ ' + _vfr.length + ' rule' + (_vfr.length === 1 ? '' : 's') + ' failed');
       const _rows = _vfr.map(f => '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;color:#dc2626;font-weight:700;white-space:nowrap">§' + _esc(f.clause) + ' t' + _esc(f.testNumber) + '</td><td style="padding:6px 10px;border:1px solid #e2e8f0">' + _esc(f.message) + (f.count > 1 ? ' <span style="color:#64748b">×' + f.count + '</span>' : '') + '</td></tr>').join('');
       return _h +
-        '<p style="font-size:12px;color:#64748b;margin:0 0 10px;font-style:italic">Authoritative PDF-level verdict on the exported bytes, from the open-source reference validator (veraPDF). Independent of the content audit above — a high content score does not imply PDF/UA conformance. Not a legal accessibility certificate; human review (alt-text quality, reading order) still recommended.</p>' +
+        '<p style="font-size:12px;color:#64748b;margin:0 0 10px;font-style:italic">Result on the exported bytes from the open-source reference validator (veraPDF). It covers the machine-checkable PDF/UA-1 rules only; some PDF/UA requirements (alt-text quality, reading order, meaningful tags) can only be checked by a person. Independent of the content audit above — a high content score does not imply PDF/UA conformance. Not a certification of conformance.</p>' +
         '<div style="margin:0 0 12px;padding:10px 16px;background:' + _bg + ';border:1px solid ' + _color + ';border-radius:6px;display:inline-block"><strong style="color:' + _color + ';font-size:14px">' + _label + '</strong></div>' +
         (_rows ? '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px"><tbody>' + _rows + '</tbody></table>' : '');
     })();
@@ -34046,8 +34123,8 @@ tr { page-break-inside: avoid; }
   .meta { font-size: 12px; color: #64748b; margin-top: 6px; }
   .summary-card { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
   .summary-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-  .conformance { font-size: 48px; font-weight: 900; line-height: 1; }
-  .conformance-pct { font-size: 14px; color: #64748b; font-weight: 600; }
+  .headline { font-size: 32px; font-weight: 900; line-height: 1.1; }
+  .headline-sub { font-size: 14px; color: #64748b; font-weight: 600; }
   .stat-pill { display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
   details summary { outline: 2px solid transparent; outline-offset: 2px; }
@@ -34063,8 +34140,9 @@ tr { page-break-inside: avoid; }
 <body>
 <main>
   <header class="header">
-    <h1>♿ Accessibility Conformance Report</h1>
+    <h1>♿ Accessibility Check Report</h1>
     <div class="meta"><strong>Document:</strong> ${fileName}</div>
+    <div class="meta"><strong>What this report is:</strong> a list of what was checked, what was changed, and what still needs a person's review. It is not a certification of WCAG or PDF/UA conformance.</div>
     <div class="meta"><strong>Generated:</strong> ${_esc(date)} · AlloFlow Document Accessibility Pipeline (${_esc((pdfUa1Checks && pdfUa1Checks.validatorVersion) || 'self-check')})</div>
     <div class="meta"><strong>Specification:</strong> ${_esc((pdfUa1Checks && pdfUa1Checks.spec) || 'PDF/UA-1 (ISO 14289-1) — self-check')} · WCAG 2.2 AA</div>
   </header>
@@ -34072,8 +34150,8 @@ tr { page-break-inside: avoid; }
   <div class="summary-card">
     <div class="summary-row">
       <div>
-        <div class="conformance" style="color:${conformanceColor}">${conformanceLabel}</div>
-        <div class="conformance-pct">${checkSum.conformancePct}% conformance (self-check) · ${checkSum.pass + checkSum.fail + checkSum.warn} automated rules checked</div>
+        <div class="headline" style="color:${conformanceColor}">${conformanceLabel}</div>
+        <div class="headline-sub">${checkSum.conformancePct}% of automated self-check rules passed · ${checkSum.pass + checkSum.fail + checkSum.warn} rules checked · automated checks cannot confirm conformance</div>
       </div>
       <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <span class="stat-pill" style="background:#dcfce7;color:#16a34a">✓ ${checkSum.pass} Passed</span>
@@ -34093,7 +34171,7 @@ tr { page-break-inside: avoid; }
     fr.integrityCoverage,
     opts.postExportValidator && opts.postExportValidator.summary,
     (fr.secondEngineAudit && typeof fr.secondEngineAudit.score === 'number' ? fr.secondEngineAudit.score : undefined),
-    { integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes, axeIncomplete: ((fr.axeAudit || {}).totalIncomplete || 0), verificationCoverage: _accessibilityVerificationCoverage, verificationState: _accessibilityVerificationState, verificationReasons: _accessibilityVerification.reasons, requiresManualReview: _accessibilityRequiresReview, secondEngineAudit: fr.secondEngineAudit }
+    { rtlSourceText: [fr.sourceText, fr.finalText, fr.accessibleHtml].filter((v) => typeof v === 'string' && v).join('\n'), integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes, axeIncomplete: ((fr.axeAudit || {}).totalIncomplete || 0), verificationCoverage: _accessibilityVerificationCoverage, verificationState: _accessibilityVerificationState, verificationReasons: _accessibilityVerification.reasons, requiresManualReview: _accessibilityRequiresReview, secondEngineAudit: fr.secondEngineAudit }
   )}
 
   ${_veraBlock}
@@ -34198,7 +34276,7 @@ tr { page-break-inside: avoid; }
   <h2>PDF/UA-1 Self-Check</h2>
   ${hasChecks
     ? `<p style="font-size:13px;color:#475569;margin:0 0 12px">Automated rule-by-rule verification of the tagged PDF against PDF/UA-1 (ISO 14289-1). Categories follow the Adobe Accessibility Checker format for familiarity. Items marked "Manual Check" cannot be verified automatically and require human review with assistive technology.</p>${_checksBlock}`
-    : `<div style="padding:16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e"><strong>No tagged PDF available for compliance check.</strong> Click <em>Tagged PDF</em> in the action bar to generate a tagged PDF — the next report download will include automated PDF/UA-1 rule verification.</div>`
+    : `<div style="padding:16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e"><strong>No tagged PDF available to check.</strong> Click <em>Tagged PDF</em> in the action bar to generate a tagged PDF — the next report download will include automated PDF/UA-1 rule verification.</div>`
   }
 
   ${_resolutionBlock}
@@ -37882,9 +37960,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // carry document structure into printed PDFs; Firefox/Safari generally do not) and
     // either way it is not AlloFlow's verified tagged output — the in-app tagged-PDF
     // download is. Say what this path actually is: a print-style copy.
-    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, for a print-style copy. For the verified tagged PDF, use AlloFlow's Download Tagged PDF button." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
+    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, for a print-style copy. For the tagged PDF, use AlloFlow's Download Tagged PDF button, and check its report before sharing." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
       <span style="font-weight:bold"><span aria-hidden="true">♿ </span>Accessible Document Ready</span>
-      <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> for a print-style copy · tag preservation depends on your browser — AlloFlow's <strong>Download Tagged PDF</strong> is the verified accessible version</span>
+      <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> for a print-style copy · tag preservation depends on your browser — AlloFlow's <strong>Download Tagged PDF</strong> gives you the tagged copy; check its report before sharing</span>
       <button onclick="document.getElementById('print-banner').remove();window.print()" aria-label="Save as PDF" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px"><span aria-hidden="true">📥 </span>Save as PDF</button>
       <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
@@ -40160,6 +40238,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       if (inTable) html += '</tbody></table>';
       return html;
   };
+  // Study and Family Guides may go to learners; the shared rule lives in SessionTransport.
+  const _docIsStudentGuide = (item) => {
+      const transport = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
+      if (transport && typeof transport.isStudentDeliverableGuide === 'function') return transport.isStudentDeliverableGuide(item);
+      return !!(item && item.type === 'lesson-plan' && ['study', 'family'].includes(item.config?.generationInputs?.mode));
+  };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
       const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
@@ -40396,8 +40480,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const goals = (Array.isArray(data.objectives) ? data.objectives : []).filter(goal => goal && typeof goal.label === 'string' && goal.label.trim());
           const board = data.choiceBoard && data.choiceBoard.enabled === true ? data.choiceBoard : null;
           const choices = board && Array.isArray(board.choices) ? board.choices.filter(choice => choice && typeof choice.label === 'string' && choice.label.trim()) : [];
-          const goalHtml = goals.length ? '<section><h3>' + _escTxt(label('directions.your_goals', 'Your goals')) + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>' : '';
-          const choiceHtml = choices.length ? '<section><h3>' + _escTxt(board.title || label('directions.choose_activity', 'Choose an activity')) + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul>' + choices.map(choice => '<li style="margin:8px 0;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? '<p>' + _escTxt(choice.description) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '';
+          const goalHtml = goals.length ? '<section><h3>' + _escTxt(label('directions.goals_heading', 'Your goals')) + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>' : '';
+          const choiceHtml = choices.length ? '<section><h3>' + _escTxt(board.title || label('directions.choice_board_title', 'Choose an activity')) + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul>' + choices.map(choice => '<li style="margin:8px 0;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? '<p>' + _escTxt(choice.description) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '';
           return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _alloParsePreviewMarkdown(body) + goalHtml + choiceHtml + '</section>';
       }
       if (item.type === 'simplified') {
@@ -40494,6 +40578,31 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 }
           const hasAnyImages = item.data.some(gItem => gItem.image);
           const hasAnyTranslations = item.data.some(gItem => gItem.translations && Object.keys(gItem.translations).length > 0);
+          // The credit drawn under a picked picture is unreadable at these sizes: a text
+          // credit on each card, and every full credit once at the end of the section.
+          const _glossCredit = gItem => {
+              const credit = gItem && gItem.image && gItem.imageAttribution;
+              if (!credit || typeof credit !== 'object') return '';
+              const line = window.AlloModules?.AltText?.openImageCreditLine;
+              return typeof line === 'function' ? line(credit)
+                  : [credit.set, credit.author, credit.license, credit.modified === true ? 'edited' : ''].filter(value => typeof value === 'string' && value.trim()).join(' · ');
+          };
+          const _glossCreditsHtml = (() => {
+              const listed = new Set();
+              const address = (label, url) => `${_escTxt(label)}: <a href="${_escTxt(url)}">${_escTxt(url.replace(/^https?:\/\//i, '').replace(/\/$/, ''))}</a>`;
+              const rows = item.data.map(gItem => {
+                  const line = _glossCredit(gItem);
+                  if (!line) return '';
+                  const where = [];
+                  if (/^https:\/\//i.test(gItem.imageAttribution.licenseUrl || '')) where.push(address(t('flashcards.credit_license') || 'License', gItem.imageAttribution.licenseUrl));
+                  if (/^https?:\/\//i.test(gItem.imageAttribution.url || '')) where.push(address(t('flashcards.credit_source') || 'Source', gItem.imageAttribution.url));
+                  const row = `<li>${_escTxt(line)}${where.length ? ' (' + where.join('; ') + ')' : ''}</li>`;
+                  if (listed.has(row)) return '';
+                  listed.add(row);
+                  return row;
+              }).join('');
+              return rows ? `<div class="alloflow-glossary-picture-credits" data-picture-credits style="margin-top:12px;font-size:0.8em;color:#475569;overflow-wrap:anywhere;"><strong>${_escTxt(t('flashcards.picture_credits') || 'Picture credits')}</strong><ul style="margin:4px 0 0;padding-inline-start:1.2em;">${rows}</ul></div>` : '';
+          })();
           // Glossary display modes (May 11 2026):
           //   'table'       — default, term + def in tabular rows (existing)
           //   'flash-cards' — fold-and-cut cards for print, click-to-flip for digital
@@ -40509,7 +40618,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
                               : '';
                           const imageHtml = gItem.image
-                              ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                                + (_glossCredit(gItem) ? `<div class="alloflow-glossary-card-credit" style="margin:-4px 0 8px;font-size:0.7em;line-height:1.3;color:#475569;overflow-wrap:anywhere;">${_escTxt(_glossCredit(gItem))}</div>` : '')
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
@@ -40559,6 +40669,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       ${enhancedHeader}
                       ${instructionsHtml}
                       ${cardsHtml}
+                      ${_glossCreditsHtml}
                       ${wordSearchHtml}
                   </div>
               `;
@@ -40682,7 +40793,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <tbody>
                       ${item.data.map(gItem => `
                       <tr>
-                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} />` : ''}</td>` : ''}
+                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} />` : ''}</td>` : ''}
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                           </td>
@@ -40738,6 +40849,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     })();
                   </script>`;
                   })()}
+                  ${_glossCreditsHtml}
                   ${wordSearchHtml}
                   ${_glossarySelfTest ? `
                     <style>
@@ -41913,7 +42025,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const ov = _vpAiPositions[idx + '-' + li];
                   const left = ov && ov.left !== undefined ? parseFloat(ov.left) : def.left;
                   const top  = ov && ov.top  !== undefined ? parseFloat(ov.top)  : def.top;
-                  const anchor = _vpAiAnchors[idx + '-' + li];
+                  const anchor = _vpAiAnchors[idx + '-' + li] || (label && typeof label === 'object' && label.anchorX != null && label.anchorY != null ? { x: label.anchorX, y: label.anchorY } : undefined);
                   return { text, left, top, anchor };
               });
               // Leader-line SVG: one line from each label to its anchor
@@ -41962,7 +42074,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return `
                   <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:visible;${_vpPad}">
                       <div class="vp-image-wrap" style="position:relative;">
-                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(panel.decorative ? '' : (panel.alt || _cap || 'Panel ' + (idx + 1)))}"${panel.decorative ? ' role="presentation"' : ''} style="width:100%;height:auto;display:block;" />${_animated ? '<p style="margin:6px 0 0;font-size:0.85em;color:#475569;">' + _vpEsc(_animNote) + '</p>' : ''}` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
+                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(panel.decorative ? '' : ((_vpImageOv[idx] ? (panel.altHash && window.AlloModules?.AltText?.hashImage?.(_vpImageOv[idx]) === panel.altHash ? panel.alt : '') : panel.alt) || _cap || 'Panel ' + (idx + 1)))}"${panel.decorative ? ' role="presentation"' : ''} style="width:100%;height:auto;display:block;" />${_animated ? '<p style="margin:6px 0 0;font-size:0.85em;color:#475569;">' + _vpEsc(_animNote) + '</p>' : ''}` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
                           ${_svgHtml}
                           ${_aiLabelHtml}
                           ${_userLabelHtml}
@@ -42004,6 +42116,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'quiz') {
           const quizQuestions = Array.isArray(item.data?.questions) ? item.data.questions : [];
           const quizId = String(item.id || 'quiz');
+          // Graded quiz: the student copy carries no key and no self-check; answers still save and submit.
+          const quizGraded = !isTeacher && (item.data?.answerKeysWithheld === true || item.data?.deliverySettings?.feedbackTiming === 'teacher-graded');
+          const quizGradedNote = (() => { const value = t('quiz.graded.student_note'); return typeof value === 'string' && value && value !== 'quiz.graded.student_note' ? value : 'Your teacher will check your answers.'; })();
           const reflectionInputHtml = (text, reflectionIndex = 0) => isWorksheet
               ? ruledLines(4)
               : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${_escTxt(quizId + ':reflection:' + reflectionIndex)}" aria-label="${_escTxt(text)}" placeholder="${_escTxt(t('common.type_answer_here'))}"></textarea>`;
@@ -42232,7 +42347,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           }
                           // Default: MCQ render (existing behavior preserved)
                           const correctIdx = _resolveCorrectIdx(q);
-                          const correctAttr = correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
+                          const correctAttr = quizGraded ? ' data-correct=""' : correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
                           const optsArr = Array.isArray(q.options) ? q.options : [];
                           return `
                           <div class="question" data-item-type="mcq"${correctAttr}>
@@ -42254,7 +42369,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       `;
                       }).join('')}
-                      ${isTeacher || isWorksheet ? '' : `
+                      ${quizGraded ? `<p class="alloflow-graded-note" style="margin:1rem 0;font-weight:700;color:#1e293b">${_escTxt(quizGradedNote)}</p>` : isTeacher || isWorksheet ? '' : `
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
                               ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">🎯 Check multiple-choice answers</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
                               <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem">↻ Reset responses</button>
@@ -42970,7 +43085,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         `;
       } else if (item.type === 'lesson-plan') {
           const { materialsNeeded, essentialQuestion, objectives, hook, directInstruction, guidedPractice, independentPractice, closure, extensions, activities, assessmentIdeas } = item.data;
-          const modeKey = isIndependentMode ? 'student' : (isParentMode ? 'parent' : 'teacher');
+          const savedGuideMode = item.config?.generationInputs?.mode;
+          // In a Study or Family Guide, teacher-facing parts leave the STUDENT split; the teacher copy keeps them.
+          const guideTeacherOnly = _docIsStudentGuide(item) ? ' data-allo-teacher-only="lesson-plan"' : '';
+          const modeKey = savedGuideMode === 'study' ? 'student' : savedGuideMode === 'family' ? 'parent' : savedGuideMode === 'teacher' ? 'teacher' : (isIndependentMode ? 'student' : (isParentMode ? 'parent' : 'teacher'));
           const renderHeader = (key) => {
               const translated = t(`lesson_headers.${modeKey}.${key}`);
               if (currentUiLanguage !== 'English') {
@@ -43055,7 +43173,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }).filter(Boolean).join('');
           const legacyAssessmentRows = legacyList(assessmentIdeas).map(legacyText).filter(Boolean).map(idea => `<li>${renderBilingualField(idea)}</li>`).join('');
           const legacySectionsHtml = (legacyActivityRows ? `<section style="margin-top:20px;padding:20px;border:1px solid #e2e8f0;border-radius:8px;"><h3 style="margin:0 0 12px;">${renderBilingualField(legacyLabel('lesson_plan.activities_header', 'Activities'))}</h3><ol style="margin:0;padding-left:24px;">${legacyActivityRows}</ol></section>` : '')
-              + (legacyAssessmentRows ? `<section style="margin-top:20px;padding:20px;border:1px solid #e2e8f0;border-radius:8px;"><h3 style="margin:0 0 12px;">${renderBilingualField(legacyLabel('lesson_plan.assessment_header', 'Assessment'))}</h3><ul style="margin:0;padding-left:24px;">${legacyAssessmentRows}</ul></section>` : '');
+              + (legacyAssessmentRows ? `<section${guideTeacherOnly} style="margin-top:20px;padding:20px;border:1px solid #e2e8f0;border-radius:8px;"><h3 style="margin:0 0 12px;">${renderBilingualField(legacyLabel('lesson_plan.assessment_header', 'Assessment'))}</h3><ul style="margin:0;padding-left:24px;">${legacyAssessmentRows}</ul></section>` : '');
+          // Success criteria and recommended STEAM tools are shown in the plan view, so print/PDF/HTML carry them too.
+          const exportEsc = value => String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          const criteriaRows = legacyList(item.data.successCriteria).map(entry => legacyText(entry && typeof entry === 'object' && !Array.isArray(entry) && 'statement' in entry ? entry.statement : entry)).filter(text => text.trim()).map(text => `<li>${renderBilingualField(text)}</li>`).join('');
+          const successCriteriaHtml = criteriaRows ? `<div style="margin-bottom: 20px;" data-export-success-criteria="true"><h3 style="margin: 0 0 5px 0; color: #4338ca; font-size: 0.9em; text-transform: uppercase;"><span aria-hidden="true" style="margin-right:6px;">&#127937;</span>${exportEsc(legacyLabel('lesson_headers.success_criteria', 'Success criteria'))}</h3><ul style="margin: 0; padding-left: 20px;">${criteriaRows}</ul></div>` : '';
+          const stemRegistry = typeof window !== 'undefined' && Array.isArray(window.STEM_TOOL_REGISTRY) ? window.STEM_TOOL_REGISTRY : [];
+          const stemToolRows = (Array.isArray(item.data.recommendedStemTools) ? item.data.recommendedStemTools : []).filter(tool => tool && typeof tool === 'object' && typeof tool.id === 'string').map(tool => {
+              const meta = stemRegistry.find(entry => entry && typeof entry.id === 'string' && entry.id.toLowerCase() === tool.id.toLowerCase());
+              const rationale = legacyText(tool.rationale), activity = legacyText(tool.suggestedActivity);
+              return `<li style="margin-bottom:10px;break-inside:avoid;"><strong>${exportEsc(meta && meta.name ? meta.name : tool.id)}</strong>${rationale ? `<div>${renderBilingualField(rationale)}</div>` : ''}${activity ? `<div style="font-style:italic;">${renderBilingualField(activity)}</div>` : ''}</li>`;
+          }).join('');
+          const stemToolsHtml = stemToolRows ? `<section${guideTeacherOnly} style="margin-top:20px;padding:20px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;" data-export-stem-tools="true"><h3 style="margin:0 0 12px;color:#065f46;">${exportEsc(legacyLabel('lesson_plan.stem_tools_header', 'Recommended STEAM Lab Tools'))}</h3><ul style="margin:0;padding-left:24px;">${stemToolRows}</ul></section>` : '';
           let extensionsHtml = '';
           if (extensions) {
               if (Array.isArray(extensions)) {
@@ -43068,7 +43197,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             ${renderBilingualField(typeof ext === 'string' ? ext : ext.description)}
                         </div>
                         ${ext.guide ? `
-                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                            <div${guideTeacherOnly} style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
                                 <h6 style="margin: 0 0 5px 0; text-transform: uppercase; font-size: 0.75em; color: #475569;">${t('lesson_plan.teacher_guide')}</h6>
                                 <div style="font-size: 0.9em;">${renderBilingualField(ext.guide, '', '')}</div>
                             </div>
@@ -43123,6 +43252,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </h3>
                           <div>${renderBilingualField(hook)}</div>
                       </div>
+                      ${successCriteriaHtml}
                       <div style="margin-bottom: 20px;">
                           <h3 style="margin: 0 0 5px 0; color: #2563eb; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#128214;</span>${renderHeader('directInstruction')}
@@ -43152,6 +43282,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
                   ${legacySectionsHtml}
                   ${extensionsHtml}
+                  ${stemToolsHtml}
               </div>
           `;
       } else if (item.type === 'alignment-report') {
@@ -43574,7 +43705,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const c = card && typeof card === 'object' ? card : {};
               const factsVerified = cardVerified(c);
               const visualImage = c.visualNeedsReview ? '' : normalizeImage(c.visualImage || c.imageUrl);
-              const visualAlt = String(c.visualAlt == null ? '' : c.visualAlt).trim().slice(0, 800) || placeholderAlt(c);
+              const visualAlt = (specificVisualAlt(c) ? String(c.visualAlt).trim().slice(0, 800) : '') || placeholderAlt(c);
               const visualSource = visualImage && Object.prototype.hasOwnProperty.call(visualSourceLabels, c.visualSource)
                   ? c.visualSource
                   : 'legacy';
@@ -43700,6 +43831,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         : '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + '</p>') + '</section>'
                   : '';
               const currentLinks = _maRules && typeof _maRules.activeConnections === 'function' ? _maRules.activeConnections(c) : [];
+              const customCue = _maRules && typeof _maRules.customCue === 'function' ? _maRules.customCue(c) : !!c.studentDraft;
+              const savedMappingForReview = isTeacher && (customCue || currentLinks.length > 0);
+              const mappingHtml = c.mapping && (isTeacher || (!currentLinks.length && !customCue))
+                  ? '<section class="memory-aid-saved-mapping" style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">' + (savedMappingForReview ? _maT('export_saved_mapping_review_heading', 'Saved mapping for teacher review') : _maT('mapping_heading', 'How the cue connects')) + '</h4>'
+                    + (savedMappingForReview ? '<p role="note">' + _maT('export_saved_mapping_review_note', 'Check this saved mapping against the current cue and facts before using it.') + '</p>' : '')
+                    + '<div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '';
               const savedLinks = (Array.isArray(c.studentConnections) ? c.studentConnections : []).slice(-20).filter(row => row && (row.cue || row.explanation));
               const earlierLinks = savedLinks.filter(row => !currentLinks.some(link => link.learnerIdentified && link.factKey === row.factKey && link.cueKey === row.cueKey));
               const connectionsHtml = (currentLinks.length ? '<section style="margin-top:12px"><h4>' + _maT('mapping_heading', 'How the cue connects') + '</h4><ul>' + currentLinks.map(link => '<li><strong>' + escapeHtml(String(link.cue || '').slice(0,200)) + '</strong> — ' + escapeHtml(String((c.essentialFacts || [])[link.factIndex] || '').slice(0,600)) + (link.explanation ? '<p>' + escapeHtml(String(link.explanation).slice(0,600)) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '')
@@ -43726,7 +43863,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   + hookHtml
                   + modeBlock
                   + connectionsHtml
-                  + (!currentLinks.length && (!_maRules?.customCue ? !c.studentDraft : !_maRules.customCue(c)) && c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">' + _maT('mapping_heading', 'How the cue connects') + '</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
+                  + mappingHtml
                   + visualHtml
                   + '<section style="margin-top:12px;padding:12px;border:2px solid #99f6e4;border-radius:8px;"><h4 style="margin:0 0 5px;color:#115e59;">' + _maT('export_create_remix_heading', 'Create, remix, or personalize your memory aid') + '</h4>'
                   + (c.studentPrompt ? '<p style="margin:0 0 8px;color:#475569;">' + escapeHtml(c.studentPrompt) + '</p>' : '')
@@ -44064,9 +44201,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const d = item.data || {};
           const sections = Array.isArray(d.sections) ? d.sections : [];
           const chartType = d.chartType || d.type || 'reference';
-          const layout = ({ process: 'process', comparison: 'comparison', 'concept-map': 'concept-map' })[chartType] || 'reference';
+          // Same types as the Anchor Chart view (ANCHOR_CHART_TYPE_META); local copy when that module is not loaded.
+          const _acView = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AnchorChartTypeMeta) || {};
+          const _acLocal = { reference: ['Reference', 'reference'], process: ['Process', 'process'], 'concept-map': ['Concept map', 'concept-map'], comparison: ['Comparison', 'comparison'], strategy: ['Strategy', 'reference'], vocabulary: ['Vocabulary', 'grid'], routine: ['Routine', 'process'], 'worked-example': ['Worked example', 'process'], 'criteria-success': ['Success criteria', 'reference'], misconception: ['Misconceptions', 'grid'], 'question-guide': ['Question guide', 'reference'] };
+          const _acType = Object.prototype.hasOwnProperty.call(_acView, chartType) ? { label: _acView[chartType].label, layout: _acView[chartType].layout } : _acLocal[chartType] ? { label: _acLocal[chartType][0], layout: _acLocal[chartType][1] } : { label: 'Reference', layout: 'reference' };
+          const layout = ['process', 'comparison', 'concept-map', 'grid'].includes(_acType.layout) ? _acType.layout : 'reference';
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          const typeLabel = ({ reference: 'Reference', process: 'Process', 'concept-map': 'Concept Map', comparison: 'Comparison' })[chartType] || chartType;
+          const typeLabel = escapeHtml(_acType.label || 'Reference');
           const _acMk = [
               { hex: '#c53030', soft: 'rgba(197,48,48,0.08)', ink: '#7b1d1d' },
               { hex: '#2b6cb0', soft: 'rgba(43,108,176,0.08)', ink: '#1a3f6b' },
@@ -44088,11 +44229,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _acCard = (s, i) => {
               const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
               const label = (s && s.label) || ('Section ' + (i + 1));
-              const icon = (s && s.icon) || '';
+              const icon = (s && (s.iconUrl || s.icon)) || '';
+              const _iconAlt = s && typeof s.iconAlt === 'string' ? s.iconAlt.trim() : '';
               const m = _acMk[i % _acMk.length];
               const rot = _acJit((s && (s.id || s.label)) || ('s' + i));
               const _isImg = typeof icon === 'string' && /^(data:|https?:)/.test(icon);
-              const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon) + '" alt="" style="height:1.5em;width:auto;vertical-align:-0.35em;margin-right:6px;" />') : (escapeHtml(icon) + ' ')) : '';
+              const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon).replace(/"/g, '&quot;') + '" alt="' + escapeHtml(_iconAlt).replace(/"/g, '&quot;') + '" style="height:1.5em;width:auto;vertical-align:-0.35em;margin-right:6px;" />') : (escapeHtml(icon) + ' ')) : '';
               const _badge = (layout === 'process') ? ('<div aria-hidden="true" style="position:absolute;top:-12px;left:-12px;z-index:6;width:30px;height:30px;border-radius:999px;background:' + m.hex + ';color:#fff;display:flex;align-items:center;justify-content:center;font-family:' + _acTF + ';font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
               const _mb = (layout === 'process') ? '4px' : '12px';
               const _bulletsHtml = bullets.length
@@ -44105,8 +44247,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           let sectionsHtml;
           if (sections.length === 0) {
               sectionsHtml = '<div style="font-family:' + _acBF + ';font-size:0.95em;color:#64748b;font-style:italic;padding:12px;">No sections yet.</div>';
-          } else if (layout === 'comparison' || layout === 'concept-map') {
-              const _minw = layout === 'comparison' ? '220px' : '240px';
+          } else if (layout === 'comparison' || layout === 'concept-map' || layout === 'grid') {
+              const _minw = layout === 'concept-map' ? '240px' : '220px';
               sectionsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(' + _minw + ',1fr));gap:14px;align-items:start;">' + sections.map((s, i) => _acCard(s, i)).join('') + '</div>';
           } else if (layout === 'process') {
               const _conn = '<div style="text-align:center;margin:0 0 2px;" aria-hidden="true"><span style="font-size:24px;color:#b7791f;line-height:1;">&#8595;</span></div>';
@@ -44231,6 +44373,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       .filter(([, seed]) => seed.cssVars)
       .map(([id, seed]) => [id, { name: seed.name, emoji: seed.emoji, ..._clampStyleSeedCssVars(seed.cssVars) }])
   );
+  // In-app resource:ID links cannot open from a file. Point each one at that
+  // resource's section when this document has it; otherwise keep the name only.
+  const _alloRewriteResourceLinks = (html) => String(html || '').replace(/<a\b([^>]*?)\shref="resource:([^"]*)"([^>]*)>([\s\S]*?)<\/a>/gi, (match, before, rawId, after, label) => {
+      const id = rawId.trim();
+      const present = !!id && new RegExp('\\sid="' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"').test(html);
+      if (!present) return '<span class="alloflow-resource-ref">' + label + '</span>';
+      return '<a' + (before + after).replace(/\s(?:target|rel)="[^"]*"/gi, '') + ' href="#' + id + '">' + label + '</a>';
+  });
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       if (historyItems.every(item => item.type === 'memory-aid' && item.data && item.data.memoryAidExportPreset === 'no-hints')) { const label = typeof t === 'function' && t('memory_aid.practice_kicker'); topic = label && label !== 'memory_aid.practice_kicker' ? label : 'Recall practice'; }
@@ -44337,7 +44487,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             </div>`
           : '';
         const rid = _escAttr(item && item.id ? item.id : ('resource-' + idx));
-        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}" style="position:relative;">${continuationStrip}${marker}${html}${terminator}</div>`;
+        // A teacher lesson plan is teacher material: the student/teacher splitter drops it from STUDENT
+        // files. Study and Family Guides stay; only their teacher-facing parts are marked inside.
+        const teacherOnly = item && item.type === 'lesson-plan' && !_docIsStudentGuide(item) ? ' data-allo-teacher-only="lesson-plan"' : '';
+        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}"${teacherOnly} style="position:relative;">${continuationStrip}${marker}${html}${terminator}</div>`;
       };
       const _buildTOC = (items, isTeacher) => {
         if (items.length < 2) return '';  // single-resource exports don't need a TOC
@@ -49260,7 +49413,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // .alloflow-cs-controls bar stayed visible. Blank the STRIP ids only (dropzones keep theirs —
       // drag/placement and answer saving are unaffected; the only reader of the strip id is the
       // self-grade Check button, which is hidden here too).
-      let _packHtml = rawHtml;
+      let _packHtml = _alloRewriteResourceLinks(rawHtml);
       if (cfg.assessmentMode === true) {
         _packHtml = _packHtml
           .replace(/ data-correct="\d+"/g, ' data-correct=""')
@@ -49613,6 +49766,9 @@ window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: al
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
+window.AlloModules.createDocPipeline.detectRtlText = _alloDetectRtlText; // static: G1 (2026-09-28) RTL review notice, unit-tested
+window.AlloModules.createDocPipeline.rtlReviewNotice = _alloRtlReviewNotice;
+window.AlloModules.createDocPipeline.outputProvenanceFooterHtml = _alloOutputProvenanceFooterHtml; // static: G1 honest output footer, unit-tested
 window.AlloModules.createDocPipeline.orderTextItems = _alloOrderTextItems; // static: H12 (2026-07-26) — column + RTL reading-order repair; pure, so the direction fix is unit-testable without pdf.js
 window.AlloModules.createDocPipeline.resolveExtractionPageCount = _alloResolveExtractionPageCount; // static: M13 (2026-07-26) — guessed-page-count precedence + cap for the Vision fan-out
 window.AlloModules.createDocPipeline.selectCompletionToast = _alloSelectCompletionToast; // static: H3 (2026-07-26) — the completion-toast ladder, testable against the real decision
